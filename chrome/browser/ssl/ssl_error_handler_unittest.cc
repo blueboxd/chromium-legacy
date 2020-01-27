@@ -18,8 +18,8 @@
 #include "base/test/simple_test_tick_clock.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "chrome/browser/captive_portal/captive_portal_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ssl/ssl_error_assistant.h"
 #include "chrome/browser/ssl/ssl_error_handler.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
@@ -30,6 +30,7 @@
 #include "components/network_time/network_time_tracker.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/security_interstitials/content/common_name_mismatch_handler.h"
+#include "components/security_interstitials/content/ssl_error_assistant.h"
 #include "components/security_interstitials/content/ssl_error_assistant.pb.h"
 #include "components/security_interstitials/core/ssl_error_options_mask.h"
 #include "components/security_interstitials/core/ssl_error_ui.h"
@@ -137,12 +138,20 @@ class TestSSLErrorHandler : public SSLErrorHandler {
                       const net::SSLInfo& ssl_info,
                       network_time::NetworkTimeTracker* network_time_tracker,
                       const GURL& request_url)
-      : SSLErrorHandler(std::move(delegate),
-                        web_contents,
-                        cert_error,
-                        ssl_info,
-                        network_time_tracker,
-                        request_url) {}
+      : SSLErrorHandler(
+            std::move(delegate),
+            web_contents,
+            cert_error,
+            ssl_info,
+            network_time_tracker,
+#if BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION)
+            CaptivePortalServiceFactory::GetForProfile(
+                Profile::FromBrowserContext(web_contents->GetBrowserContext())),
+#else
+            nullptr,
+#endif
+            request_url) {
+  }
 
   using SSLErrorHandler::StartHandlingError;
 };

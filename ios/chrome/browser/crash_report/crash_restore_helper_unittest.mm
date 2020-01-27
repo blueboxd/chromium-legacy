@@ -47,7 +47,7 @@ class CrashRestoreHelperTest : public PlatformTest {
  protected:
   web::WebTaskEnvironment task_environment_;
   std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
-  ios::ChromeBrowserState* off_the_record_chrome_browser_state_;
+  ChromeBrowserState* off_the_record_chrome_browser_state_;
   CrashRestoreHelper* helper_;
 };
 
@@ -57,8 +57,9 @@ TEST_F(CrashRestoreHelperTest, MoveAsideTest) {
   [file_manager removeItemAtPath:backup_path error:NULL];
 
   NSData* data = [NSData dataWithBytes:"hello" length:5];
-  ios::ChromeBrowserState* browser_states[] = {
-      chrome_browser_state_.get(), off_the_record_chrome_browser_state_,
+  ChromeBrowserState* browser_states[] = {
+      chrome_browser_state_.get(),
+      off_the_record_chrome_browser_state_,
   };
 
   for (size_t index = 0; index < base::size(browser_states); ++index) {

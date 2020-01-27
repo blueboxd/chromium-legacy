@@ -306,6 +306,8 @@ void AssistantManagerServiceImpl::UpdateInternalMediaPlayerStatus(
     case media_session::mojom::MediaSessionAction::kStop:
     case media_session::mojom::MediaSessionAction::kSeekTo:
     case media_session::mojom::MediaSessionAction::kScrubTo:
+    case media_session::mojom::MediaSessionAction::kEnterPictureInPicture:
+    case media_session::mojom::MediaSessionAction::kExitPictureInPicture:
       NOTIMPLEMENTED();
       break;
   }

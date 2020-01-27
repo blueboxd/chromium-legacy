@@ -36,38 +36,39 @@ var Unit = cursors.Unit;
 /**
  * A handler for automation events in a focused text field or editable root
  * such as a |contenteditable| subtree.
- * @constructor
- * @param {!AutomationNode} node
  */
-editing.TextEditHandler = function(node) {
-  /** @const {!AutomationNode} @private */
-  this.node_ = node;
+editing.TextEditHandler = class {
+  /**
+   * @param {!AutomationNode} node
+   */
+  constructor(node) {
+    /** @const {!AutomationNode} @private */
+    this.node_ = node;
 
-  if (!node.state[StateType.EDITABLE]) {
-    throw '|node| must be editable.';
+    if (!node.state[StateType.EDITABLE]) {
+      throw '|node| must be editable.';
+    }
+
+    chrome.automation.getDesktop(function(desktop) {
+      // A rich text field is one where selection gets placed on a DOM
+      // descendant to a root text field. This is one of:
+      // - content editables (detected via richly editable state)
+      // - the node is a textarea
+      //
+      // The only other editables we expect are all single line (including those
+      // from ARC++).
+      var useRichText = node.state[StateType.RICHLY_EDITABLE];
+
+      /** @private {!AutomationEditableText} */
+      this.editableText_ = useRichText ? new AutomationRichEditableText(node) :
+                                         new AutomationEditableText(node);
+    }.bind(this));
   }
 
-  chrome.automation.getDesktop(function(desktop) {
-    // A rich text field is one where selection gets placed on a DOM descendant
-    // to a root text field. This is one of:
-    // - content editables (detected via richly editable state)
-    // - the node is a textarea
-    //
-    // The only other editables we expect are all single line (including those
-    // from ARC++).
-    var useRichText = node.state[StateType.RICHLY_EDITABLE];
-
-    /** @private {!AutomationEditableText} */
-    this.editableText_ = useRichText ? new AutomationRichEditableText(node) :
-                                       new AutomationEditableText(node);
-  }.bind(this));
-};
-
-editing.TextEditHandler.prototype = {
   /** @return {!AutomationNode} */
   get node() {
     return this.node_;
-  },
+  }
 
   /**
    * Receives the following kinds of events when the node provided to the
@@ -90,7 +91,7 @@ editing.TextEditHandler.prototype = {
     }
 
     this.editableText_.onUpdate(evt.eventFrom);
-  },
+  }
 
   /**
    * Returns true if selection starts at the first line.
@@ -98,7 +99,7 @@ editing.TextEditHandler.prototype = {
    */
   isSelectionOnFirstLine() {
     return this.editableText_.isSelectionOnFirstLine();
-  },
+  }
 
   /**
    * Returns true if selection ends at the last line.
@@ -106,7 +107,7 @@ editing.TextEditHandler.prototype = {
    */
   isSelectionOnLastLine() {
     return this.editableText_.isSelectionOnLastLine();
-  },
+  }
 
   /**
    * Moves range to after this text field.
@@ -118,37 +119,50 @@ editing.TextEditHandler.prototype = {
         this.node_;
     ChromeVoxState.instance.navigateToRange(cursors.Range.fromNode(after));
   }
+
+  /**
+   * @param {!AutomationNode} node The root editable node, i.e. the root of a
+   *     contenteditable subtree or a text field.
+   * @return {editing.TextEditHandler}
+   */
+  static createForNode(node) {
+    if (!node.state.editable) {
+      throw new Error('Expected editable node.');
+    }
+
+    return new editing.TextEditHandler(node);
+  }
 };
+
 
 /**
  * A |ChromeVoxEditableTextBase| that implements text editing feedback
  * for automation tree text fields.
- * @constructor
- * @param {!AutomationNode} node
- * @extends {ChromeVoxEditableTextBase}
  */
-function AutomationEditableText(node) {
-  if (!node.state.editable) {
-    throw Error('Node must have editable state set to true.');
-  }
-  var value = this.getProcessedValue_(node) || '';
-  /** @private {!Array<number>} */
-  this.lineBreaks_ = [];
-  this.updateLineBreaks_(value);
-  var start = node.textSelStart;
-  var end = node.textSelEnd;
-  ChromeVoxEditableTextBase.call(
-      this, value, Math.min(start, end, value.length),
-      Math.min(Math.max(start, end), value.length),
-      node.state[StateType.PROTECTED] /**password*/, ChromeVox.tts);
-  /** @override */
-  this.multiline = node.state[StateType.MULTILINE] || false;
-  /** @type {!AutomationNode} @private */
-  this.node_ = node;
-}
+var AutomationEditableText = class extends ChromeVoxEditableTextBase {
+  /**
+   * @param {!AutomationNode} node
+   */
+  constructor(node) {
+    if (!node.state.editable) {
+      throw Error('Node must have editable state set to true.');
+    }
+    var value = AutomationEditableText.getProcessedValue_(node) || '';
+    var lineBreaks = AutomationEditableText.getLineBreaks_(value);
+    var start = node.textSelStart;
+    var end = node.textSelEnd;
 
-AutomationEditableText.prototype = {
-  __proto__: ChromeVoxEditableTextBase.prototype,
+    super(
+        value, Math.min(start, end, value.length),
+        Math.min(Math.max(start, end), value.length),
+        node.state[StateType.PROTECTED] /**password*/, ChromeVox.tts);
+    /** @private {!Array<number>} */
+    this.lineBreaks_ = lineBreaks;
+    /** @override */
+    this.multiline = node.state[StateType.MULTILINE] || false;
+    /** @type {!AutomationNode} @private */
+    this.node_ = node;
+  }
 
   /**
    * Called when the text field has been updated.
@@ -158,8 +172,10 @@ AutomationEditableText.prototype = {
     var oldValue = this.value;
     var oldStart = this.start;
     var oldEnd = this.end;
-    var newValue = this.getProcessedValue_(this.node_) || '';
-    this.updateLineBreaks_(newValue);
+    var newValue = AutomationEditableText.getProcessedValue_(this.node_) || '';
+    if (oldValue != newValue) {
+      this.lineBreaks_ = AutomationEditableText.getLineBreaks_(newValue);
+    }
 
     var textChangeEvent = new TextChangeEvent(
         newValue, Math.min(this.node_.textSelStart || 0, newValue.length),
@@ -167,21 +183,21 @@ AutomationEditableText.prototype = {
         true /* triggered by user */);
     this.changed(textChangeEvent);
     this.outputBraille_(oldValue, oldStart, oldEnd);
-  },
+  }
 
   /**
    * Returns true if selection starts on the first line.
    */
   isSelectionOnFirstLine() {
     return this.getLineIndex(this.start) == 0;
-  },
+  }
 
   /**
    * Returns true if selection ends on the last line.
    */
   isSelectionOnLastLine() {
     return this.getLineIndex(this.end) >= this.lineBreaks_.length - 1;
-  },
+  }
 
   /** @override */
   getLineIndex(charIndex) {
@@ -190,7 +206,7 @@ AutomationEditableText.prototype = {
       lineIndex++;
     }
     return lineIndex;
-  },
+  }
 
   /** @override */
   getLineStart(lineIndex) {
@@ -201,12 +217,12 @@ AutomationEditableText.prototype = {
     // The start of this line is defined as the line break of the previous line
     // + 1 (the hard line break).
     return this.lineBreaks_[lineIndex - 1] + 1;
-  },
+  }
 
   /** @override */
   getLineEnd(lineIndex) {
     return this.lineBreaks_[lineIndex];
-  },
+  }
 
   /** @private */
   outputBraille_(oldValue, oldStart, oldEnd) {
@@ -227,38 +243,36 @@ AutomationEditableText.prototype = {
     var startIndex = this.start - lineStart;
     var endIndex = this.end - lineStart;
     var spannable = new Spannable(lineText, new Output.NodeSpan(this.node_));
-
     ChromeVox.braille.write(new NavBraille(
         {text: spannable, startIndex: startIndex, endIndex: endIndex}));
-  },
+  }
 
   /**
    * @param {!AutomationNode} node
    * @return {string|undefined}
    * @private
    */
-  getProcessedValue_(node) {
+  static getProcessedValue_(node) {
     var value = node.value;
     return (value && node.inputType == 'tel') ? value['trimEnd']() : value;
-  },
+  }
 
   /**
+   * @param {string} value
+   * @return {!Array<string>}
    * @private
    */
-  updateLineBreaks_(value) {
-    if (value == this.value) {
-      return;
-    }
-
-    this.lineBreaks_ = [];
+  static getLineBreaks_(value) {
+    var lineBreaks = [];
     var lines = value.split('\n');
     for (var i = 0, total = 0; i < lines.length; i++) {
       total += lines[i].length;
-      this.lineBreaks_[i] = total;
+      lineBreaks[i] = total;
 
       // Account for the line break itself.
       total++;
     }
+    return lineBreaks;
   }
 };
 
@@ -266,62 +280,60 @@ AutomationEditableText.prototype = {
 /**
  * A |ChromeVoxEditableTextBase| that implements text editing feedback
  * for automation tree text fields using anchor and focus selection.
- * @constructor
- * @param {!AutomationNode} node
- * @extends {AutomationEditableText}
  */
-function AutomationRichEditableText(node) {
-  AutomationEditableText.call(this, node);
+var AutomationRichEditableText = class extends AutomationEditableText {
+  /**
+   * @param {!AutomationNode} node
+   */
+  constructor(node) {
+    super(node);
 
-  var root = this.node_.root;
-  if (!root || !root.selectionStartObject || !root.selectionEndObject ||
-      root.selectionStartOffset === undefined ||
-      root.selectionEndOffset === undefined) {
-    return;
+    var root = this.node_.root;
+    if (!root || !root.selectionStartObject || !root.selectionEndObject ||
+        root.selectionStartOffset === undefined ||
+        root.selectionEndOffset === undefined) {
+      return;
+    }
+
+    this.startLine_ = new editing.EditableLine(
+        root.selectionStartObject, root.selectionStartOffset,
+        root.selectionStartObject, root.selectionStartOffset);
+    this.endLine_ = new editing.EditableLine(
+        root.selectionEndObject, root.selectionEndOffset,
+        root.selectionEndObject, root.selectionEndOffset);
+
+    this.line_ = new editing.EditableLine(
+        root.selectionStartObject, root.selectionStartOffset,
+        root.selectionEndObject, root.selectionEndOffset);
+
+    this.updateIntraLineState_(this.line_);
+
+    /** @private {boolean} */
+    this.misspelled = false;
+    /** @private {boolean} */
+    this.grammarError = false;
+
+    /** @private {number|undefined} */
+    this.fontSize_;
+    /** @private {string|undefined} */
+    this.fontColor_;
+    /** @private {boolean|undefined} */
+    this.linked_;
+    /** @private {boolean|undefined} */
+    this.subscript_;
+    /** @private {boolean|undefined} */
+    this.superscript_;
+    /** @private {boolean} */
+    this.bold_ = false;
+    /** @private {boolean} */
+    this.italic_ = false;
+    /** @private {boolean} */
+    this.underline_ = false;
+    /** @private {boolean} */
+    this.lineThrough_ = false;
+    /** @private {string|undefined} */
+    this.fontFamily_;
   }
-
-  this.startLine_ = new editing.EditableLine(
-      root.selectionStartObject, root.selectionStartOffset,
-      root.selectionStartObject, root.selectionStartOffset);
-  this.endLine_ = new editing.EditableLine(
-      root.selectionEndObject, root.selectionEndOffset, root.selectionEndObject,
-      root.selectionEndOffset);
-
-  this.line_ = new editing.EditableLine(
-      root.selectionStartObject, root.selectionStartOffset,
-      root.selectionEndObject, root.selectionEndOffset);
-
-  this.updateIntraLineState_(this.line_);
-
-  /** @private {boolean} */
-  this.misspelled = false;
-  /** @private {boolean} */
-  this.grammarError = false;
-
-  /** @private {number|undefined} */
-  this.fontSize_;
-  /** @private {string|undefined} */
-  this.fontColor_;
-  /** @private {boolean|undefined} */
-  this.linked_;
-  /** @private {boolean|undefined} */
-  this.subscript_;
-  /** @private {boolean|undefined} */
-  this.superscript_;
-  /** @private {boolean} */
-  this.bold_ = false;
-  /** @private {boolean} */
-  this.italic_ = false;
-  /** @private {boolean} */
-  this.underline_ = false;
-  /** @private {boolean} */
-  this.lineThrough_ = false;
-  /** @private {string|undefined} */
-  this.fontFamily_;
-}
-
-AutomationRichEditableText.prototype = {
-  __proto__: AutomationEditableText.prototype,
 
   /** @override */
   isSelectionOnFirstLine() {
@@ -338,7 +350,7 @@ AutomationRichEditableText.prototype = {
     return !!exited.find(function(item) {
       return item == this.node_;
     }.bind(this));
-  },
+  }
 
   /** @override */
   isSelectionOnLastLine() {
@@ -355,7 +367,7 @@ AutomationRichEditableText.prototype = {
     return !!exited.find(function(item) {
       return item == this.node_;
     }.bind(this));
-  },
+  }
 
   /** @override */
   onUpdate(eventFrom) {
@@ -577,7 +589,7 @@ AutomationRichEditableText.prototype = {
       this.brailleCurrentRichLine_();
     }
     this.updateIntraLineState_(cur);
-  },
+  }
 
   /**
    * @param {AutomationNode|undefined} startNode
@@ -615,7 +627,7 @@ AutomationRichEditableText.prototype = {
       text += ' ' + endNode.name.substring(0, endOffset);
     }
     return text;
-  },
+  }
 
   /**
    * @param {AutomationNode!} container
@@ -656,7 +668,7 @@ AutomationRichEditableText.prototype = {
             AbstractTts.PERSONALITY_ANNOTATION);
       });
     }
-  },
+  }
 
   /**
    * @param {!AutomationNode} style
@@ -726,7 +738,7 @@ AutomationRichEditableText.prototype = {
             AbstractTts.PERSONALITY_ANNOTATION);
       });
     }
-  },
+  }
 
   /**
    * @param {editing.EditableLine} prevLine
@@ -761,7 +773,7 @@ AutomationRichEditableText.prototype = {
       prev = cur;
       queueMode = QueueMode.QUEUE;
     }
-  },
+  }
 
   /** @private */
   brailleCurrentRichLine_() {
@@ -835,7 +847,7 @@ AutomationRichEditableText.prototype = {
     value.setSpan(new ValueSelectionSpan(), cur.startOffset, cur.endOffset);
     ChromeVox.braille.write(new NavBraille(
         {text: value, startIndex: cur.startOffset, endIndex: cur.endOffset}));
-  },
+  }
 
   /** @override */
   describeSelectionChanged(evt) {
@@ -849,29 +861,29 @@ AutomationRichEditableText.prototype = {
 
     ChromeVoxEditableTextBase.prototype.describeSelectionChanged.call(
         this, evt);
-  },
+  }
 
   /** @override */
   getLineIndex(charIndex) {
     return 0;
-  },
+  }
 
   /** @override */
   getLineStart(lineIndex) {
     return 0;
-  },
+  }
 
   /** @override */
   getLineEnd(lineIndex) {
     return this.value.length;
-  },
+  }
 
   /** @override */
   changed(evt) {
     // This path does not use the Output module to synthesize speech.
     Output.forceModeForNextSpeechUtterance(undefined);
     ChromeVoxEditableTextBase.prototype.changed.call(this, evt);
-  },
+  }
 
   /**
    * @private
@@ -888,31 +900,16 @@ AutomationRichEditableText.prototype = {
   }
 };
 
-/**
- * @param {!AutomationNode} node The root editable node, i.e. the root of a
- *     contenteditable subtree or a text field.
- * @return {editing.TextEditHandler}
- */
-editing.TextEditHandler.createForNode = function(node) {
-  if (!node.state.editable) {
-    throw new Error('Expected editable node.');
-  }
-
-  return new editing.TextEditHandler(node);
-};
 
 /**
  * An observer that reacts to ChromeVox range changes that modifies braille
  * table output when over email or url text fields.
- * @constructor
  * @implements {ChromeVoxStateObserver}
  */
-editing.EditingChromeVoxStateObserver = function() {
-  ChromeVoxState.addObserver(this);
-};
-
-editing.EditingChromeVoxStateObserver.prototype = {
-  __proto__: ChromeVoxStateObserver,
+editing.EditingChromeVoxStateObserver = class {
+  constructor() {
+    ChromeVoxState.addObserver(this);
+  }
 
   /** @override */
   onCurrentRangeChanged(range) {
@@ -927,6 +924,7 @@ editing.EditingChromeVoxStateObserver.prototype = {
   }
 };
 
+
 /**
  * @private {ChromeVoxStateObserver}
  */
@@ -937,73 +935,73 @@ editing.observer_ = new editing.EditingChromeVoxStateObserver();
  * tree necessary to provide output.
  * Editable: an editable selection (e.g. start/end offsets) get saved.
  * Line: nodes/offsets at the beginning/end of a line get saved.
- * @param {!AutomationNode} startNode
- * @param {number} startIndex
- * @param {!AutomationNode} endNode
- * @param {number} endIndex
- * @param {boolean=} opt_baseLineOnStart  Controls whether to use
- *     |startNode| or |endNode| for Line computations. Selections are
- * automatically truncated up to either the line start or end.
- * @constructor
  */
-editing.EditableLine = function(
-    startNode, startIndex, endNode, endIndex, opt_baseLineOnStart) {
-  /** @private {!Cursor} */
-  this.start_ = new Cursor(startNode, startIndex);
-  this.start_ = this.start_.deepEquivalent || this.start_;
-  /** @private {!Cursor} */
-  this.end_ = new Cursor(endNode, endIndex);
-  this.end_ = this.end_.deepEquivalent || this.end_;
+editing.EditableLine = class {
+  /**
+   * @param {!AutomationNode} startNode
+   * @param {number} startIndex
+   * @param {!AutomationNode} endNode
+   * @param {number} endIndex
+   * @param {boolean=} opt_baseLineOnStart  Controls whether to use
+   *     |startNode| or |endNode| for Line computations. Selections are
+   * automatically truncated up to either the line start or end.
+   */
+  constructor(startNode, startIndex, endNode, endIndex, opt_baseLineOnStart) {
+    /** @private {!Cursor} */
+    this.start_ = new Cursor(startNode, startIndex);
+    this.start_ = this.start_.deepEquivalent || this.start_;
+    /** @private {!Cursor} */
+    this.end_ = new Cursor(endNode, endIndex);
+    this.end_ = this.end_.deepEquivalent || this.end_;
 
-  // Update |startIndex| and |endIndex| if the calls above to
-  // cursors.Cursor.deepEquivalent results in cursors to different container
-  // nodes. The cursors can point directly to inline text boxes, in which case
-  // we should not adjust the container start or end index.
-  if (startNode.role != RoleType.INLINE_TEXT_BOX &&
-      this.start_.node != startNode && this.start_.node.parent != startNode) {
-    startIndex = this.start_.index == cursors.NODE_INDEX ?
-        this.start_.node.name.length :
-        this.start_.index;
+    // Update |startIndex| and |endIndex| if the calls above to
+    // cursors.Cursor.deepEquivalent results in cursors to different container
+    // nodes. The cursors can point directly to inline text boxes, in which case
+    // we should not adjust the container start or end index.
+    if (startNode.role != RoleType.INLINE_TEXT_BOX &&
+        this.start_.node != startNode && this.start_.node.parent != startNode) {
+      startIndex = this.start_.index == cursors.NODE_INDEX ?
+          this.start_.node.name.length :
+          this.start_.index;
+    }
+
+    if (endNode.role != RoleType.INLINE_TEXT_BOX && this.end_.node != endNode &&
+        this.end_.node.parent != endNode) {
+      endIndex = this.end_.index == cursors.NODE_INDEX ?
+          this.end_.node.name.length :
+          this.end_.index;
+    }
+
+    /** @private {number} */
+    this.localContainerStartOffset_ = startIndex;
+    /** @private {number} */
+    this.localContainerEndOffset_ = endIndex;
+
+    // Computed members.
+    /** @private {Spannable} */
+    this.value_;
+    /** @private {AutomationNode|undefined} */
+    this.lineStart_;
+    /** @private {AutomationNode|undefined} */
+    this.lineEnd_;
+    /** @private {AutomationNode|undefined} */
+    this.startContainer_;
+    /** @private {string} */
+    this.startContainerValue_ = '';
+    /** @private {AutomationNode|undefined} */
+    this.lineStartContainer_;
+    /** @private {number} */
+    this.localLineStartContainerOffset_ = 0;
+    /** @private {AutomationNode|undefined} */
+    this.lineEndContainer_;
+    /** @private {number} */
+    this.localLineEndContainerOffset_ = 0;
+    /** @type {RecoveryStrategy} */
+    this.lineStartContainerRecovery_;
+
+    this.computeLineData_(opt_baseLineOnStart);
   }
 
-  if (endNode.role != RoleType.INLINE_TEXT_BOX && this.end_.node != endNode &&
-      this.end_.node.parent != endNode) {
-    endIndex = this.end_.index == cursors.NODE_INDEX ?
-        this.end_.node.name.length :
-        this.end_.index;
-  }
-
-  /** @private {number} */
-  this.localContainerStartOffset_ = startIndex;
-  /** @private {number} */
-  this.localContainerEndOffset_ = endIndex;
-
-  // Computed members.
-  /** @private {Spannable} */
-  this.value_;
-  /** @private {AutomationNode|undefined} */
-  this.lineStart_;
-  /** @private {AutomationNode|undefined} */
-  this.lineEnd_;
-  /** @private {AutomationNode|undefined} */
-  this.startContainer_;
-  /** @private {string} */
-  this.startContainerValue_ = '';
-  /** @private {AutomationNode|undefined} */
-  this.lineStartContainer_;
-  /** @private {number} */
-  this.localLineStartContainerOffset_ = 0;
-  /** @private {AutomationNode|undefined} */
-  this.lineEndContainer_;
-  /** @private {number} */
-  this.localLineEndContainerOffset_ = 0;
-  /** @type {RecoveryStrategy} */
-  this.lineStartContainerRecovery_;
-
-  this.computeLineData_(opt_baseLineOnStart);
-};
-
-editing.EditableLine.prototype = {
   /** @private */
   computeLineData_(opt_baseLineOnStart) {
     // Note that we calculate the line based only upon |start_| or
@@ -1169,7 +1167,7 @@ editing.EditableLine.prototype = {
       } catch (e) {
       }
     }
-  },
+  }
 
   /**
    * Gets the selection offset based on the text content of this line.
@@ -1185,7 +1183,7 @@ editing.EditableLine.prototype = {
       // When that happens, fall back to the start of this line.
       return 0;
     }
-  },
+  }
 
   /**
    * Gets the selection offset based on the text content of this line.
@@ -1198,7 +1196,7 @@ editing.EditableLine.prototype = {
     } catch (e) {
       return this.value_.length;
     }
-  },
+  }
 
   /**
    * Gets the selection offset based on the parent's text.
@@ -1207,7 +1205,7 @@ editing.EditableLine.prototype = {
    */
   get localStartOffset() {
     return this.localContainerStartOffset_;
-  },
+  }
 
   /**
    * Gets the selection offset based on the parent's text.
@@ -1216,16 +1214,17 @@ editing.EditableLine.prototype = {
    */
   get localEndOffset() {
     return this.localContainerEndOffset_;
-  },
+  }
 
   /**
-   * Gets the start offset of the container, relative to the line text content.
-   * The container refers to the static text parenting the inline text box.
+   * Gets the start offset of the container, relative to the line text
+   * content. The container refers to the static text parenting the inline
+   * text box.
    * @return {number}
    */
   get containerStartOffset() {
     return this.value_.getSpanStart(this.startContainer_);
-  },
+  }
 
   /**
    * Gets the end offset of the container, relative to the line text content.
@@ -1234,7 +1233,7 @@ editing.EditableLine.prototype = {
    */
   get containerEndOffset() {
     return this.value_.getSpanEnd(this.startContainer_) - 1;
-  },
+  }
 
   /**
    * The text content of this line.
@@ -1242,17 +1241,17 @@ editing.EditableLine.prototype = {
    */
   get text() {
     return this.value_.toString();
-  },
+  }
 
   /** @return {string} */
   get selectedText() {
     return this.value_.toString().substring(this.startOffset, this.endOffset);
-  },
+  }
 
   /** @return {boolean} */
   hasCollapsedSelection() {
     return this.start_.equals(this.end_);
-  },
+  }
 
   /**
    * Returns whether this line has selection over text nodes.
@@ -1262,7 +1261,7 @@ editing.EditableLine.prototype = {
       return AutomationPredicate.text(this.start_.node) &&
           AutomationPredicate.text(this.end_.node);
     }
-  },
+  }
 
   /**
    * Returns true if |otherLine| surrounds the same line as |this|. Note that
@@ -1284,7 +1283,7 @@ editing.EditableLine.prototype = {
              this.lineStartContainerRecovery_.node &&
          otherLine.localLineStartContainerOffset_ ==
              this.localLineStartContainerOffset_);
-  },
+  }
 
   /**
    * Returns true if |otherLine| surrounds the same line as |this| and has the
@@ -1296,7 +1295,7 @@ editing.EditableLine.prototype = {
     return this.isSameLine(otherLine) &&
         this.startOffset == otherLine.startOffset &&
         this.endOffset == otherLine.endOffset;
-  },
+  }
 
   /**
    * Returns whether this line comes before |otherLine| in document order.
@@ -1310,7 +1309,7 @@ editing.EditableLine.prototype = {
     return AutomationUtil.getDirection(
                this.lineStartContainer_, otherLine.lineStartContainer_) ==
         Dir.FORWARD;
-  },
+  }
 
   /**
    * Performs a validation that this line still refers to a line given its
@@ -1330,8 +1329,8 @@ editing.EditableLine.prototype = {
     var localStartNode = localStart.node;
     var localEndNode = localEnd.node;
 
-    // Unfortunately, there are asymmetric errors in lines, so we need to check
-    // in both directions.
+    // Unfortunately, there are asymmetric errors in lines, so we need to
+    // check in both directions.
     var testStartNode = localStartNode;
     do {
       if (testStartNode == localEndNode) {
@@ -1371,4 +1370,4 @@ editing.EditableLine.prototype = {
     return false;
   }
 };
-});
+});  // goog.scope

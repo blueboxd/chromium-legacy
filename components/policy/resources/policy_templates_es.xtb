@@ -883,7 +883,7 @@ Si no se establece esta política, el teclado en pantalla estará inhabilitado i
 <translation id="2294382669900758280">La reproducción de vídeo en las aplicaciones para Android no se tiene en cuenta, aunque se haya asignado el valor <ph name="TRUE" /> a esta política.</translation>
 <translation id="2299220924812062390">Especificar una lista de complementos habilitados</translation>
 <translation id="2303795211377219696">Habilitar la función Autocompletar para tarjetas de crédito</translation>
-<translation id="2307496301287881990">Informar del estado de la pantalla y los gráficos</translation>
+<translation id="2307496301287881990">Informar del estado de la pantalla y la tarjeta gráfica</translation>
 <translation id="2309390639296060546">Configuración de ubicación geográfica predeterminada</translation>
 <translation id="2327252517317514801">Definir los dominios autorizados para acceder a G Suite</translation>
 <translation id="2328573323851533589">Esta política se puede utilizar para habilitar o inhabilitar de forma forzada la comprobación de filtraciones de credenciales en <ph name="PRODUCT_NAME" />.
@@ -1143,7 +1143,7 @@ Si no se establece esta política, el teclado en pantalla estará inhabilitado i
       Si la política no se configura o se inhabilita, se utilizarán los ajustes predeterminados de aislamiento de sitios web de la plataforma para la pantalla de inicio de sesión.
       </translation>
 <translation id="2587719089023392205">Establecer <ph name="PRODUCT_NAME" /> como navegador predeterminado</translation>
-<translation id="2588071938417715443">Esta política determina el acceso a las funciones controlables de la interfaz de búsqueda local (<ph name="CHROME_DEVICES_LINK" />) que muestra los dispositivos visibles cercanos al usuario, así como los dispositivos en la nube que tenga registrados. En todos los sistemas operativos, excepto <ph name="PRODUCT_OS_NAME" />, la interfaz de búsqueda local también permite a los usuarios añadir a <ph name="CLOUD_PRINT_NAME" /> las impresoras clásicas conectadas a sus ordenadores.</translation>
+<translation id="2588071938417715443">Esta política determina el acceso a las funciones controlables de la interfaz de detección de dispositivos (<ph name="CHROME_DEVICES_LINK" />), que muestra los dispositivos visibles cercanos al usuario, así como los dispositivos en la nube que tenga registrados. En todos los sistemas operativos, excepto <ph name="PRODUCT_OS_NAME" />, la interfaz de detección de dispositivos también permite a los usuarios añadir a <ph name="CLOUD_PRINT_NAME" /> las impresoras clásicas conectadas a sus ordenadores.</translation>
 <translation id="2592091433672667839">Duración de la inactividad antes de que se muestre el protector de pantalla en el modo de venta</translation>
 <translation id="2592162121850992309">Si se asigna el valor "True" a esta política o no se le asigna ningún valor, se habilitará la aceleración por hardware a no ser que se incluya una función de GPU determinada en la lista negra.
 
@@ -5032,11 +5032,11 @@ Los usuarios no pueden cambiar ni anular esta opción.</translation>
           Si no se establece esta política, se utilizará PromptOnAccess y el usuario podrá modificarla.</translation>
 <translation id="8911348623012274122">Define el límite de memoria de las instancias de Chrome</translation>
 <translation id="8911736066340032670">Proporciona información relacionada con la pantalla, como la frecuencia de actualización, e
-      información relacionada con los gráficos, como la versión de controlador.
+      información relacionada con la tarjeta gráfica, como la versión de controlador.
 
       Si se asigna el valor "false" a esta política o no se le asigna ninguno, no se proporcionará información
-      sobre el estado de la pantalla y los gráficos. Si se le asigna el valor "true", se proporcionará información
-      sobre el estado de la pantalla y los gráficos.</translation>
+      sobre el estado de la pantalla y la tarjeta gráfica. Si se le asigna el valor "true", se proporcionará información
+      sobre el estado de la pantalla y la tarjeta gráfica.</translation>
 <translation id="891435090623616439">codificado como cadena JSON, consulta <ph name="COMPLEX_POLICIES_URL" /> para obtener más información</translation>
 <translation id="8917070657147922192">Permite que los usuarios gestionen los certificados de CA instalados.</translation>
 <translation id="8926275581598789324">Ten en cuenta que esta política está obsoleta y se eliminará de la versión 82 de <ph name="PRODUCT_OS_NAME" />. Utiliza <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" /> en su lugar.

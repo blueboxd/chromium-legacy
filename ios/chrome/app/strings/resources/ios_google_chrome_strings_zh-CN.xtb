@@ -27,7 +27,6 @@
 <translation id="4249068189593983585">Chrome 提示。要查看更多的标签页选项，请轻触并按住工具栏（位于屏幕底部或顶部）中的“显示标签页”按钮。</translation>
 <translation id="4523886039239821078">部分插件导致 Chrome 崩溃，请卸载这些插件：</translation>
 <translation id="5389212809648216794">由于另一个应用正在使用您的相机，因此 Google Chrome 无法使用</translation>
-<translation id="5621912349729388018"><ph name="BEGIN_LINK" />查看新版 Chrome 服务条款。<ph name="END_LINK" /></translation>
 <translation id="5639704535586432836">打开“设置”&gt;“隐私”&gt;“相机”&gt;“Google Chrome”，然后开启相机。</translation>
 <translation id="5642200033778930880">Google Chrome 无法在分割视图模式下使用您的相机</translation>
 <translation id="5690427481109656848">Google LLC</translation>
@@ -51,4 +50,5 @@
 <translation id="840168496893712993">部分插件导致 Chrome 崩溃，请尝试卸载这些插件。</translation>
 <translation id="8459495907675268833">所选数据已从 Chrome 和同步的设备中移除。不过，您的 Google 帐号在 history.google.com 上可能有其他形式的浏览记录（例如，在其他 Google 服务中的搜索记录和活动记录）。</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
+<translation id="8574235780160508979">Chrome 的《服务条款》将于 3 月 31 日变更。<ph name="BEGIN_LINK" />请查阅<ph name="END_LINK" /></translation>
 </translationbundle>

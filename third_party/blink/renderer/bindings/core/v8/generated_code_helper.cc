@@ -158,4 +158,30 @@ void V8SetReflectedNullableDOMStringAttribute(
   impl->setAttribute(content_attr, cpp_value);
 }
 
+namespace bindings {
+
+base::Optional<size_t> FindIndexInEnumStringTable(
+    v8::Isolate* isolate,
+    v8::Local<v8::Value> value,
+    base::span<const char* const> enum_value_table,
+    const char* enum_type_name,
+    ExceptionState& exception_state) {
+  const String& str_value = NativeValueTraits<IDLStringV2>::NativeValue(
+      isolate, value, exception_state);
+  if (exception_state.HadException())
+    return base::nullopt;
+
+  for (size_t i = 0; i < enum_value_table.size(); ++i) {
+    if (Equal(str_value.Impl(), enum_value_table[i]))
+      return i;
+  }
+
+  exception_state.ThrowTypeError("The provided value '" + str_value +
+                                 "' is not a valid enum value of type " +
+                                 enum_type_name + ".");
+  return base::nullopt;
+}
+
+}  // namespace bindings
+
 }  // namespace blink

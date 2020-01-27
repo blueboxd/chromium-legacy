@@ -138,6 +138,8 @@ GpuPreferences ParseGpuPreferences(const base::CommandLine* command_line) {
           &gpu_preferences.force_gpu_mem_discardable_limit_bytes)) {
     gpu_preferences.force_gpu_mem_discardable_limit_bytes *= 1024 * 1024;
   }
+  GetUintFromSwitch(command_line, switches::kForceMaxTextureSize,
+                    &gpu_preferences.force_max_texture_size);
   if (GetUintFromSwitch(command_line, switches::kGpuProgramCacheSizeKb,
                         &gpu_preferences.gpu_program_cache_size)) {
     gpu_preferences.gpu_program_cache_size *= 1024;

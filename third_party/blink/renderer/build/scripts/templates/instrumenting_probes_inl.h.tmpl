@@ -49,9 +49,9 @@ class {{export_symbol}} {{probe.name}} : public ProbeBase {
  public:
   explicit {{probe.name}}({{ params_decl(probe) }});
   ~{{probe.name}}();
-  Member<{{sink_class}}> probe_sink;
+  {{sink_class}}* probe_sink = nullptr;
 {% for param in probe.params %}
-  {{param.member_type}} {{param.name}};
+  {{param.type}} {{param.name}};
 {% endfor %}
 };
 

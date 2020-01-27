@@ -13,8 +13,8 @@
 #include "components/sessions/core/live_tab_context.h"
 #include "components/tab_groups/tab_group_id.h"
 #include "components/tab_groups/tab_group_visual_data.h"
-#include "ios/chrome/browser/browser_state/chrome_browser_state_forward.h"
 
+class ChromeBrowserState;
 class WebStateList;
 
 // Implementation of sessions::LiveTabContext which uses an instance
@@ -22,8 +22,7 @@ class WebStateList;
 class TabRestoreServiceDelegateImplIOS : public sessions::LiveTabContext,
                                          public KeyedService {
  public:
-  explicit TabRestoreServiceDelegateImplIOS(
-      ios::ChromeBrowserState* browser_state);
+  explicit TabRestoreServiceDelegateImplIOS(ChromeBrowserState* browser_state);
   ~TabRestoreServiceDelegateImplIOS() override;
 
   // Overridden from KeyedService:
@@ -74,7 +73,7 @@ class TabRestoreServiceDelegateImplIOS : public sessions::LiveTabContext,
   // Retrieves the current |WebStateList| corresponding to |browser_state_|;
   WebStateList* GetWebStateList() const;
 
-  ios::ChromeBrowserState* browser_state_;  // weak
+  ChromeBrowserState* browser_state_;  // weak
   SessionID session_id_;
 
   DISALLOW_COPY_AND_ASSIGN(TabRestoreServiceDelegateImplIOS);

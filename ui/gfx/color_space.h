@@ -182,11 +182,9 @@ class COLOR_SPACE_EXPORT ColorSpace {
   }
 
   // scRGB uses the same primaries as sRGB but has a linear transfer function
-  // for all real values.
-  static constexpr ColorSpace CreateSCRGBLinear() {
-    return ColorSpace(PrimaryID::BT709, TransferID::LINEAR_HDR, MatrixID::RGB,
-                      RangeID::FULL);
-  }
+  // for all real values. The slope of the transfer function may be specified
+  // by |slope|.
+  static ColorSpace CreateSCRGBLinear(float slope = 1.f);
 
   // HDR10 uses BT.2020 primaries with SMPTE ST 2084 PQ transfer function.
   static ColorSpace CreateHDR10(float sdr_white_point = 0.f);
@@ -226,7 +224,10 @@ class COLOR_SPACE_EXPORT ColorSpace {
   static int GetNextId();
   static constexpr int kInvalidId = -1;
 
-  static constexpr float kDefaultSDRWhiteLevel = 80.f;
+  // On macOS and on ChromeOS, sRGB's (1,1,1) always coincides with PQ's 100
+  // nits (which may not be 100 physical nits). Life is more complicated on
+  // Windows.
+  static constexpr float kDefaultSDRWhiteLevel = 100.f;
 
   bool operator==(const ColorSpace& other) const;
   bool operator!=(const ColorSpace& other) const;
@@ -263,6 +264,11 @@ class COLOR_SPACE_EXPORT ColorSpace {
   // Return a combined color space with has the same primary and transfer than
   // the caller but replacing the matrix and range with the given values.
   ColorSpace GetWithMatrixAndRange(MatrixID matrix, RangeID range) const;
+
+  // If this color space has a PQ transfer function that did not specify an
+  // SDR white level, then return |this| with its SDR white level set to
+  // |sdr_white_level|. Otherwise return |this| unmodified.
+  ColorSpace GetWithPQSDRWhiteLevel(float sdr_white_level) const;
 
   // This will return nullptr for non-RGB spaces, spaces with non-FULL
   // range, and unspecified spaces.

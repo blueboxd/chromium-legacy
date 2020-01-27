@@ -449,6 +449,14 @@ HRESULT MakeUsernameForAccount(const base::Value& result,
   // First try to detect if this gaia account has been used to create an OS
   // user already.  If so, return the OS username of that user.
   HRESULT hr = GetSidFromId(*gaia_id, sid, sid_length);
+  if (FAILED(hr)) {
+    LOGFN(INFO) << "Failed fetching Sid from Id : " << putHR(hr);
+    // If there is no gaia id user property available in the registry,
+    // fallback to email address mapping.
+    hr = GetSidFromEmail(email, sid, sid_length);
+    if (FAILED(hr))
+      LOGFN(INFO) << "Failed fetching Sid from email : " << putHR(hr);
+  }
 
   bool has_existing_user_sid = false;
   // Check if the machine is domain joined and get the domain name if domain
@@ -2220,8 +2228,8 @@ HRESULT CGaiaCredentialBase::ValidateOrCreateUser(const base::Value& result,
     }
   }
 
-  // If an existing user associated to the gaia id was found, make sure that it
-  // is valid for this credential.
+  // If an existing user associated to the gaia id or email address was found,
+  // make sure that it is valid for this credential.
   if (found_sid[0]) {
     hr = ValidateExistingUser(found_username, found_domain, found_sid,
                               error_text);

@@ -75,7 +75,7 @@ class HatsServiceBrowserTestBase : public InProcessBrowserTest {
 }  // namespace
 
 IN_PROC_BROWSER_TEST_F(HatsServiceBrowserTestBase, BubbleNotShownOnDefault) {
-  GetHatsService()->LaunchSatisfactionSurvey();
+  GetHatsService()->LaunchSurvey(kHatsSurveyTriggerSatisfaction);
   EXPECT_FALSE(HatsBubbleShown());
 }
 
@@ -100,7 +100,7 @@ class HatsServiceProbabilityZero : public HatsServiceBrowserTestBase {
 }  // namespace
 
 IN_PROC_BROWSER_TEST_F(HatsServiceProbabilityZero, NoShow) {
-  GetHatsService()->LaunchSatisfactionSurvey();
+  GetHatsService()->LaunchSurvey(kHatsSurveyTriggerSatisfaction);
   EXPECT_FALSE(HatsBubbleShown());
 }
 
@@ -111,11 +111,16 @@ class HatsServiceProbabilityOne : public HatsServiceBrowserTestBase {
   HatsServiceProbabilityOne() {
     // TODO(weili): refactor to use constants from hats_service.cc for these
     // parameters.
-    scoped_feature_list_.InitAndEnableFeatureWithParameters(
-        features::kHappinessTrackingSurveysForDesktop,
-        {{"probability", "1.000"},
-         {"survey", "satisfaction"},
-         {"en_site_id", "test_site_id"}});
+    scoped_feature_list_.InitWithFeaturesAndParameters(
+        {{features::kHappinessTrackingSurveysForDesktop,
+          {{"probability", "1.000"},
+           {"survey", kHatsSurveyTriggerSatisfaction},
+           {"en_site_id", "test_site_id"}}},
+         {features::kHappinessTrackingSurveysForDesktopSettings,
+          {{"probability", "1.000"},
+           {"survey", kHatsSurveyTriggerSettings},
+           {"en_site_id", "test_site_id"}}}},
+        {});
   }
 
   ~HatsServiceProbabilityOne() override = default;
@@ -144,7 +149,15 @@ IN_PROC_BROWSER_TEST_F(HatsServiceProbabilityOne, NoShowConsentNotGiven) {
   SetMetricsConsent(false);
   ASSERT_FALSE(
       g_browser_process->GetMetricsServicesManager()->IsMetricsConsentGiven());
-  GetHatsService()->LaunchSatisfactionSurvey();
+  GetHatsService()->LaunchSurvey(kHatsSurveyTriggerSatisfaction);
+  EXPECT_FALSE(HatsBubbleShown());
+}
+
+IN_PROC_BROWSER_TEST_F(HatsServiceProbabilityOne, TriggerMismatchNoShow) {
+  SetMetricsConsent(true);
+  ASSERT_TRUE(
+      g_browser_process->GetMetricsServicesManager()->IsMetricsConsentGiven());
+  GetHatsService()->LaunchSurvey("nonexistent-trigger");
   EXPECT_FALSE(HatsBubbleShown());
 }
 
@@ -152,7 +165,15 @@ IN_PROC_BROWSER_TEST_F(HatsServiceProbabilityOne, AlwaysShow) {
   SetMetricsConsent(true);
   ASSERT_TRUE(
       g_browser_process->GetMetricsServicesManager()->IsMetricsConsentGiven());
-  GetHatsService()->LaunchSatisfactionSurvey();
+  GetHatsService()->LaunchSurvey(kHatsSurveyTriggerSatisfaction);
+  EXPECT_TRUE(HatsBubbleShown());
+}
+
+IN_PROC_BROWSER_TEST_F(HatsServiceProbabilityOne, AlsoShowsSettingsSurvey) {
+  SetMetricsConsent(true);
+  ASSERT_TRUE(
+      g_browser_process->GetMetricsServicesManager()->IsMetricsConsentGiven());
+  GetHatsService()->LaunchSurvey(kHatsSurveyTriggerSettings);
   EXPECT_TRUE(HatsBubbleShown());
 }
 
@@ -162,11 +183,11 @@ IN_PROC_BROWSER_TEST_F(HatsServiceProbabilityOne,
   ASSERT_TRUE(
       g_browser_process->GetMetricsServicesManager()->IsMetricsConsentGiven());
 
-  GetHatsService()->LaunchSatisfactionSurvey();
+  GetHatsService()->LaunchSurvey(kHatsSurveyTriggerSatisfaction);
   EXPECT_TRUE(HatsBubbleShown());
   views::BubbleDialogDelegateView* bubble1 = HatsBubbleView::GetHatsBubble();
 
-  GetHatsService()->LaunchSatisfactionSurvey();
+  GetHatsService()->LaunchSurvey(kHatsSurveyTriggerSatisfaction);
   EXPECT_TRUE(HatsBubbleShown());
   EXPECT_EQ(bubble1, HatsBubbleView::GetHatsBubble());
 }
@@ -176,7 +197,7 @@ IN_PROC_BROWSER_TEST_F(HatsServiceProbabilityOne, SameMajorVersionNoShow) {
   HatsService::SurveyMetadata metadata;
   metadata.last_major_version = version_info::GetVersion().components()[0];
   GetHatsService()->SetSurveyMetadataForTesting(metadata);
-  GetHatsService()->LaunchSatisfactionSurvey();
+  GetHatsService()->LaunchSurvey(kHatsSurveyTriggerSatisfaction);
   EXPECT_FALSE(HatsBubbleShown());
 }
 
@@ -186,7 +207,7 @@ IN_PROC_BROWSER_TEST_F(HatsServiceProbabilityOne, DifferentMajorVersionShow) {
   metadata.last_major_version = 42;
   ASSERT_NE(42u, version_info::GetVersion().components()[0]);
   GetHatsService()->SetSurveyMetadataForTesting(metadata);
-  GetHatsService()->LaunchSatisfactionSurvey();
+  GetHatsService()->LaunchSurvey(kHatsSurveyTriggerSatisfaction);
   EXPECT_TRUE(HatsBubbleShown());
 }
 
@@ -196,7 +217,7 @@ IN_PROC_BROWSER_TEST_F(HatsServiceProbabilityOne,
   HatsService::SurveyMetadata metadata;
   metadata.last_survey_started_time = base::Time::Now();
   GetHatsService()->SetSurveyMetadataForTesting(metadata);
-  GetHatsService()->LaunchSatisfactionSurvey();
+  GetHatsService()->LaunchSurvey(kHatsSurveyTriggerSatisfaction);
   EXPECT_FALSE(HatsBubbleShown());
 }
 
@@ -206,7 +227,7 @@ IN_PROC_BROWSER_TEST_F(HatsServiceProbabilityOne, ProfileTooYoungToShow) {
   static_cast<ProfileImpl*>(browser()->profile())
       ->SetCreationTimeForTesting(base::Time::Now() -
                                   base::TimeDelta::FromDays(15));
-  GetHatsService()->LaunchSatisfactionSurvey();
+  GetHatsService()->LaunchSurvey(kHatsSurveyTriggerSatisfaction);
   EXPECT_FALSE(HatsBubbleShown());
 }
 
@@ -216,7 +237,7 @@ IN_PROC_BROWSER_TEST_F(HatsServiceProbabilityOne, ProfileOldEnoughToShow) {
   static_cast<ProfileImpl*>(browser()->profile())
       ->SetCreationTimeForTesting(base::Time::Now() -
                                   base::TimeDelta::FromDays(31));
-  GetHatsService()->LaunchSatisfactionSurvey();
+  GetHatsService()->LaunchSurvey(kHatsSurveyTriggerSatisfaction);
   EXPECT_TRUE(HatsBubbleShown());
 }
 
@@ -229,6 +250,6 @@ IN_PROC_BROWSER_TEST_F(HatsServiceProbabilityOne, IncognitoModeDisabledNoShow) {
   EXPECT_EQ(IncognitoModePrefs::DISABLED,
             IncognitoModePrefs::GetAvailability(pref_service));
 
-  GetHatsService()->LaunchSatisfactionSurvey();
+  GetHatsService()->LaunchSurvey(kHatsSurveyTriggerSatisfaction);
   EXPECT_FALSE(HatsBubbleShown());
 }

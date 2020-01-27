@@ -26,9 +26,13 @@ class GamesServiceImpl : public GamesService {
       PrefService* prefs);
   ~GamesServiceImpl() override;
 
-  // Will retrieve the currently highlighted game. The given callback may be
-  // invoked asynchronously.
-  void GetHighlightedGame(HighlightedGameCallback callback) override;
+  // Sets a callback to asynchronously retrieve the currently highlighted game.
+  // The callback will be invoked on the next GenerateHub run.
+  void SetHighlightedGameCallback(HighlightedGameCallback callback) override;
+
+  // Starts processing data from the component and asynchronously invokes
+  // callbacks that have been set.
+  void GenerateHub() override;
 
   bool is_updating() { return is_updating_; }
 
@@ -45,6 +49,8 @@ class GamesServiceImpl : public GamesService {
   void DoneUpdating();
 
   bool IsComponentInstalled();
+
+  void HandleFailure(ResponseCode code);
 
   // In charge of parsing and temporarily caching the GamesCatalog that we have
   // on disk. Its cache will be cleared when other stores are done updating.

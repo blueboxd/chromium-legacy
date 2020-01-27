@@ -40,8 +40,8 @@ FaviconWebStateDispatcherImpl::RequestWebState() {
   std::unique_ptr<web::WebState> web_state =
       web::WebState::Create(web_state_create_params);
 
-  ios::ChromeBrowserState* original_browser_state =
-      ios::ChromeBrowserState::FromBrowserState(browser_state_);
+  ChromeBrowserState* original_browser_state =
+      ChromeBrowserState::FromBrowserState(browser_state_);
 
   favicon::WebFaviconDriver::CreateForWebState(
       web_state.get(),

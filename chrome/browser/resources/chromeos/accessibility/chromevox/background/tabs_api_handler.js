@@ -18,43 +18,37 @@ goog.require('NavBraille');
 
 /**
  * Class that adds listeners and handles events from the tabs API.
- * @constructor
  */
-TabsApiHandler = function() {
-  /** @type {function(string, Array<string>=)} @private */
-  this.msg_ = Msgs.getMsg.bind(Msgs);
-  /**
-   * Tracks whether the active tab has finished loading.
-   * @type {boolean}
-   * @private
-   */
-  this.lastActiveTabLoaded_ = false;
+TabsApiHandler = class {
+  constructor() {
+    /** @type {function(string, Array<string>=)} @private */
+    this.msg_ = Msgs.getMsg.bind(Msgs);
+    /**
+     * Tracks whether the active tab has finished loading.
+     * @type {boolean}
+     * @private
+     */
+    this.lastActiveTabLoaded_ = false;
 
-  chrome.tabs.onCreated.addListener(this.onCreated.bind(this));
-  chrome.tabs.onRemoved.addListener(this.onRemoved.bind(this));
-  chrome.tabs.onActivated.addListener(this.onActivated.bind(this));
-  chrome.tabs.onUpdated.addListener(this.onUpdated.bind(this));
+    chrome.tabs.onCreated.addListener(this.onCreated.bind(this));
+    chrome.tabs.onRemoved.addListener(this.onRemoved.bind(this));
+    chrome.tabs.onActivated.addListener(this.onActivated.bind(this));
+    chrome.tabs.onUpdated.addListener(this.onUpdated.bind(this));
 
-  /**
-   * @type {?number} The window.setInterval ID for checking the loading
-   *     status of the current tab.
-   * @private
-   */
-  this.pageLoadIntervalID_ = null;
+    /**
+     * @type {?number} The window.setInterval ID for checking the loading
+     *     status of the current tab.
+     * @private
+     */
+    this.pageLoadIntervalID_ = null;
 
-  /**
-   * @type {?number} The tab ID of the tab being polled because it's loading.
-   * @private
-   */
-  this.pageLoadTabID_ = null;
-};
+    /**
+     * @type {?number} The tab ID of the tab being polled because it's loading.
+     * @private
+     */
+    this.pageLoadTabID_ = null;
+  }
 
-/**
- * @type {boolean}
- */
-TabsApiHandler.shouldOutputSpeechAndBraille = true;
-
-TabsApiHandler.prototype = {
   /**
    * Handles chrome.tabs.onCreated.
    * @param {Object} tab
@@ -68,7 +62,7 @@ TabsApiHandler.prototype = {
           NavBraille.fromText(this.msg_('chrome_tab_created')));
     }
     ChromeVox.earcons.playEarcon(Earcon.OBJECT_OPEN);
-  },
+  }
 
   /**
    * Handles chrome.tabs.onRemoved.
@@ -83,7 +77,7 @@ TabsApiHandler.prototype = {
         this.cancelPageLoadTimer_();
       }
     }.bind(this));
-  },
+  }
 
   /**
    * Handles chrome.tabs.onActivated.
@@ -106,7 +100,7 @@ TabsApiHandler.prototype = {
       }
       ChromeVox.earcons.playEarcon(Earcon.OBJECT_SELECT);
     }.bind(this));
-  },
+  }
 
   /**
    * Called when a tab becomes active or focused.
@@ -124,7 +118,7 @@ TabsApiHandler.prototype = {
         this.cancelPageLoadTimer_();
       }
     }.bind(this));
-  },
+  }
 
   /**
    * Handles chrome.tabs.onUpdated.
@@ -148,7 +142,7 @@ TabsApiHandler.prototype = {
         this.cancelPageLoadTimer_();
       }
     }.bind(this));
-  },
+  }
 
   /**
    * The chrome.tabs API doesn't always fire an onUpdated event when a
@@ -170,7 +164,7 @@ TabsApiHandler.prototype = {
         this.onUpdated(this.pageLoadTabID_, {});
       }
     }.bind(this), 1000);
-  },
+  }
 
   /**
    * Cancel the page loading timer because the active tab is loaded.
@@ -182,7 +176,7 @@ TabsApiHandler.prototype = {
       this.pageLoadIntervalID_ = null;
       this.pageLoadTabID_ = null;
     }
-  },
+  }
 
   /**
    * @return {boolean} True if the page loading sound is playing and our
@@ -192,3 +186,8 @@ TabsApiHandler.prototype = {
     return this.pageLoadIntervalID_ != null;
   }
 };
+
+/**
+ * @type {boolean}
+ */
+TabsApiHandler.shouldOutputSpeechAndBraille = true;

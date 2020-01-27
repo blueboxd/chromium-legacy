@@ -627,11 +627,11 @@ void ComponentLoader::AddComponentFromDir(
 
   base::PostTaskAndReplyWithResult(
       GetExtensionFileTaskRunner().get(), FROM_HERE,
-      base::Bind(&LoadManifestOnFileThread, root_directory, manifest_filename,
-                 true),
-      base::Bind(&ComponentLoader::FinishAddComponentFromDir,
-                 weak_factory_.GetWeakPtr(), root_directory, extension_id,
-                 base::nullopt, base::nullopt, done_cb));
+      base::BindOnce(&LoadManifestOnFileThread, root_directory,
+                     manifest_filename, true),
+      base::BindOnce(&ComponentLoader::FinishAddComponentFromDir,
+                     weak_factory_.GetWeakPtr(), root_directory, extension_id,
+                     base::nullopt, base::nullopt, done_cb));
 }
 
 void ComponentLoader::AddWithNameAndDescriptionFromDir(
@@ -642,11 +642,11 @@ void ComponentLoader::AddWithNameAndDescriptionFromDir(
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   base::PostTaskAndReplyWithResult(
       GetExtensionFileTaskRunner().get(), FROM_HERE,
-      base::Bind(&LoadManifestOnFileThread, root_directory,
-                 extensions::kManifestFilename, false),
-      base::Bind(&ComponentLoader::FinishAddComponentFromDir,
-                 weak_factory_.GetWeakPtr(), root_directory, extension_id,
-                 name_string, description_string, base::Closure()));
+      base::BindOnce(&LoadManifestOnFileThread, root_directory,
+                     extensions::kManifestFilename, false),
+      base::BindOnce(&ComponentLoader::FinishAddComponentFromDir,
+                     weak_factory_.GetWeakPtr(), root_directory, extension_id,
+                     name_string, description_string, base::Closure()));
 }
 
 void ComponentLoader::AddChromeOsSpeechSynthesisExtensions() {

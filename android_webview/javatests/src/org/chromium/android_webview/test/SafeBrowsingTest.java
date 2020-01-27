@@ -30,6 +30,8 @@ import org.chromium.android_webview.AwContents.InternalAccessDelegate;
 import org.chromium.android_webview.AwContents.NativeDrawFunctorFactory;
 import org.chromium.android_webview.AwContentsClient;
 import org.chromium.android_webview.AwContentsStatics;
+import org.chromium.android_webview.AwFeatureList;
+import org.chromium.android_webview.AwFeatures;
 import org.chromium.android_webview.AwSettings;
 import org.chromium.android_webview.AwWebContentsObserver;
 import org.chromium.android_webview.ErrorCodeConversionHelper;
@@ -437,7 +439,13 @@ public class SafeBrowsingTest {
                 mWebContentsObserver.getAttachedInterstitialPageHelper().getCallCount();
         final String responseUrl = mTestServer.getURL(path);
         mActivityTestRule.loadUrlAsync(mAwContents, responseUrl);
-        mWebContentsObserver.getAttachedInterstitialPageHelper().waitForCallback(interstitialCount);
+        if (AwFeatureList.isEnabled(AwFeatures.SAFE_BROWSING_COMMITTED_INTERSTITIALS)) {
+            // Wait for the interstitial to actually render.
+            mActivityTestRule.waitForVisualStateCallback(mAwContents);
+        } else {
+            mWebContentsObserver.getAttachedInterstitialPageHelper().waitForCallback(
+                    interstitialCount);
+        }
     }
 
     private void assertTargetPageHasLoaded(int pageColor) throws Exception {
@@ -647,8 +655,8 @@ public class SafeBrowsingTest {
         loadPathAndWaitForInterstitial(MALWARE_HTML_PATH);
         assertGreenPageNotShowing();
         assertTargetPageNotShowing(MALWARE_PAGE_BACKGROUND_COLOR);
-        // Assume that we are rendering the interstitial, since we see neither the previous page nor
-        // the target page
+        // Assume that we are rendering the interstitial, since we see neither the previous page
+        // nor the target page
     }
 
     @Test
@@ -659,9 +667,8 @@ public class SafeBrowsingTest {
         loadPathAndWaitForInterstitial(IFRAME_HTML_PATH);
         assertGreenPageNotShowing();
         assertTargetPageNotShowing(IFRAME_EMBEDDER_BACKGROUND_COLOR);
-
-        // Assume that we are rendering the interstitial, since we see neither the previous page nor
-        // the target page
+        // Assume that we are rendering the interstitial, since we see neither the previous page
+        // nor the target page
     }
 
     @Test
@@ -713,11 +720,17 @@ public class SafeBrowsingTest {
         loadGreenPage();
         loadPathAndWaitForInterstitial(MALWARE_HTML_PATH);
         waitForInterstitialDomToLoad();
-
         int interstitialCount =
                 mWebContentsObserver.getDetachedInterstitialPageHelper().getCallCount();
+        OnReceivedError2Helper errorHelper = mContentsClient.getOnReceivedError2Helper();
+        int errorCount = errorHelper.getCallCount();
         clickBackToSafety();
-        mWebContentsObserver.getDetachedInterstitialPageHelper().waitForCallback(interstitialCount);
+        if (AwFeatureList.isEnabled(AwFeatures.SAFE_BROWSING_COMMITTED_INTERSTITIALS)) {
+            errorHelper.waitForCallback(errorCount);
+        } else {
+            mWebContentsObserver.getDetachedInterstitialPageHelper().waitForCallback(
+                    interstitialCount);
+        }
 
         mActivityTestRule.waitForVisualStateCallback(mAwContents);
         assertTargetPageNotShowing(MALWARE_PAGE_BACKGROUND_COLOR);
@@ -731,11 +744,17 @@ public class SafeBrowsingTest {
         loadGreenPage();
         loadPathAndWaitForInterstitial(IFRAME_HTML_PATH);
         waitForInterstitialDomToLoad();
-
         int interstitialCount =
                 mWebContentsObserver.getDetachedInterstitialPageHelper().getCallCount();
+        OnReceivedError2Helper errorHelper = mContentsClient.getOnReceivedError2Helper();
+        int errorCount = errorHelper.getCallCount();
         clickBackToSafety();
-        mWebContentsObserver.getDetachedInterstitialPageHelper().waitForCallback(interstitialCount);
+        if (AwFeatureList.isEnabled(AwFeatures.SAFE_BROWSING_COMMITTED_INTERSTITIALS)) {
+            errorHelper.waitForCallback(errorCount);
+        } else {
+            mWebContentsObserver.getDetachedInterstitialPageHelper().waitForCallback(
+                    interstitialCount);
+        }
 
         mActivityTestRule.waitForVisualStateCallback(mAwContents);
         assertTargetPageNotShowing(IFRAME_EMBEDDER_BACKGROUND_COLOR);
@@ -1070,7 +1089,13 @@ public class SafeBrowsingTest {
         int interstitialCount =
                 mWebContentsObserver.getAttachedInterstitialPageHelper().getCallCount();
         mActivityTestRule.loadUrlAsync(mAwContents, WEB_UI_MALWARE_URL);
-        mWebContentsObserver.getAttachedInterstitialPageHelper().waitForCallback(interstitialCount);
+        if (AwFeatureList.isEnabled(AwFeatures.SAFE_BROWSING_COMMITTED_INTERSTITIALS)) {
+            // Wait for the interstitial to actually render.
+            mActivityTestRule.waitForVisualStateCallback(mAwContents);
+        } else {
+            mWebContentsObserver.getAttachedInterstitialPageHelper().waitForCallback(
+                    interstitialCount);
+        }
         waitForInterstitialDomToLoad();
     }
 
@@ -1082,7 +1107,13 @@ public class SafeBrowsingTest {
         int interstitialCount =
                 mWebContentsObserver.getAttachedInterstitialPageHelper().getCallCount();
         mActivityTestRule.loadUrlAsync(mAwContents, WEB_UI_PHISHING_URL);
-        mWebContentsObserver.getAttachedInterstitialPageHelper().waitForCallback(interstitialCount);
+        if (AwFeatureList.isEnabled(AwFeatures.SAFE_BROWSING_COMMITTED_INTERSTITIALS)) {
+            // Wait for the interstitial to actually render.
+            mActivityTestRule.waitForVisualStateCallback(mAwContents);
+        } else {
+            mWebContentsObserver.getAttachedInterstitialPageHelper().waitForCallback(
+                    interstitialCount);
+        }
         waitForInterstitialDomToLoad();
     }
 
@@ -1095,7 +1126,13 @@ public class SafeBrowsingTest {
         int interstitialCount =
                 mWebContentsObserver.getAttachedInterstitialPageHelper().getCallCount();
         mActivityTestRule.loadUrlAsync(mAwContents, WEB_UI_MALWARE_URL);
-        mWebContentsObserver.getAttachedInterstitialPageHelper().waitForCallback(interstitialCount);
+        if (AwFeatureList.isEnabled(AwFeatures.SAFE_BROWSING_COMMITTED_INTERSTITIALS)) {
+            // Wait for the interstitial to actually render.
+            mActivityTestRule.waitForVisualStateCallback(mAwContents);
+        } else {
+            mWebContentsObserver.getAttachedInterstitialPageHelper().waitForCallback(
+                    interstitialCount);
+        }
         waitForInterstitialDomToLoad();
     }
 

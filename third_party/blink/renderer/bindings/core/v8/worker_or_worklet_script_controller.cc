@@ -66,6 +66,7 @@ class WorkerOrWorkletScriptController::ExecutionState final {
  public:
   explicit ExecutionState(WorkerOrWorkletScriptController* controller)
       : had_exception(false),
+        error_event_from_imported_script_(nullptr),
         controller_(controller),
         outer_state_(controller->execution_state_) {
     controller_->execution_state_ = this;
@@ -77,7 +78,7 @@ class WorkerOrWorkletScriptController::ExecutionState final {
   String error_message;
   std::unique_ptr<SourceLocation> location_;
   ScriptValue exception;
-  Member<ErrorEvent> error_event_from_imported_script_;
+  ErrorEvent* error_event_from_imported_script_;
 
   // A ExecutionState context is stack allocated by
   // WorkerOrWorkletScriptController::evaluate(), with the contoller using it
@@ -90,7 +91,7 @@ class WorkerOrWorkletScriptController::ExecutionState final {
   //
   // With Oilpan, |outer_state_| isn't traced. It'll be "up the stack"
   // and its fields will be traced when scanning the stack.
-  Member<WorkerOrWorkletScriptController> controller_;
+  WorkerOrWorkletScriptController* controller_;
   ExecutionState* outer_state_;
 };
 
@@ -412,7 +413,8 @@ bool WorkerOrWorkletScriptController::Evaluate(
     if (error_event) {
       if (state.error_event_from_imported_script_) {
         // Propagate inner error event outwards.
-        *error_event = state.error_event_from_imported_script_.Release();
+        *error_event = state.error_event_from_imported_script_;
+        state.error_event_from_imported_script_ = nullptr;
         return false;
       }
       if (sanitize_script_errors == SanitizeScriptErrors::kSanitize) {
@@ -426,7 +428,8 @@ bool WorkerOrWorkletScriptController::Evaluate(
       DCHECK_EQ(sanitize_script_errors, SanitizeScriptErrors::kDoNotSanitize);
       ErrorEvent* event = nullptr;
       if (state.error_event_from_imported_script_) {
-        event = state.error_event_from_imported_script_.Release();
+        event = state.error_event_from_imported_script_;
+        state.error_event_from_imported_script_ = nullptr;
       } else {
         event =
             ErrorEvent::Create(state.error_message, state.location_->Clone(),

@@ -11,10 +11,10 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "ios/chrome/browser/browser_state/chrome_browser_state_forward.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state_io_data.h"
 #include "ios/chrome/browser/net/net_types.h"
 
+class ChromeBrowserState;
 class IOSChromeURLRequestContextGetter;
 
 namespace net {
@@ -43,7 +43,7 @@ class OffTheRecordChromeBrowserStateIOData : public ChromeBrowserStateIOData {
  public:
   class Handle {
    public:
-    explicit Handle(ios::ChromeBrowserState* browser_state);
+    explicit Handle(ChromeBrowserState* browser_state);
     ~Handle();
 
     scoped_refptr<IOSChromeURLRequestContextGetter>
@@ -74,7 +74,7 @@ class OffTheRecordChromeBrowserStateIOData : public ChromeBrowserStateIOData {
         main_request_context_getter_;
     OffTheRecordChromeBrowserStateIOData* const io_data_;
 
-    ios::ChromeBrowserState* const browser_state_;
+    ChromeBrowserState* const browser_state_;
 
     mutable bool initialized_;
 

@@ -26,6 +26,7 @@
 
 #include "third_party/blink/renderer/core/editing/ime/input_method_controller.h"
 
+#include "third_party/blink/public/mojom/input/focus_type.mojom-blink.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/dom/events/event_dispatcher.h"
@@ -1490,11 +1491,11 @@ int InputMethodController::ComputeWebTextInputNextPreviousFlags() const {
 
   int flags = kWebTextInputFlagNone;
   if (page->GetFocusController().NextFocusableElementInForm(
-          element, kWebFocusTypeForward))
+          element, mojom::blink::FocusType::kForward))
     flags |= kWebTextInputFlagHaveNextFocusableElement;
 
   if (page->GetFocusController().NextFocusableElementInForm(
-          element, kWebFocusTypeBackward))
+          element, mojom::blink::FocusType::kBackward))
     flags |= kWebTextInputFlagHavePreviousFocusableElement;
 
   return flags;

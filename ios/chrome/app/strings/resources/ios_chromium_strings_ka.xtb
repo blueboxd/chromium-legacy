@@ -20,6 +20,7 @@
 <translation id="2915596697727466327">თქვენს პაროლებზე ავტორიზებული წვდომის უზრუნველსაყოფად Chromium იყენებს Face ID-ს.</translation>
 <translation id="3256316712990552818">დაკოპირდა Chromium-ში</translation>
 <translation id="3805899903892079518">Chromium-ს არ აქვს წვდომა თქვენს ფოტოებსა და ვიდეოებზე. ჩართეთ წვდომა iOS-ის მენიუში: პარამეტრები &gt; კონფიდენციალურობა &gt; ფოტოები.</translation>
+<translation id="4287098963058057749">Chromium-ის მომსახურების პირობები შეიცვლება 31 მარტს. <ph name="BEGIN_LINK" />გთხოვთ, გადახედოთ მათ<ph name="END_LINK" /></translation>
 <translation id="4555020257205549924">ამ ფუნქციის ჩართვის შემთხვევაში, Chromium შემოგთავაზებთ სხვა ენებზე შედგენილი გვერდების თარგმნას Google Translate-ით. <ph name="BEGIN_LINK" />შეიტყვეთ მეტი<ph name="END_LINK" /></translation>
 <translation id="4681781466797808448">Chromium სკანერის ჩართვა</translation>
 <translation id="4787850887676698916">სხვა მოწყობილობებზე თქვენ მიერ Chromium-ით გახსნილი ჩანართები აქ გამოჩნდება.</translation>
@@ -48,6 +49,5 @@
 <translation id="8586442755830160949">Copyright <ph name="YEAR" /> The Chromium Authors. ყველა უფლება დაცულია.</translation>
 <translation id="8809780021347235332">სურათების შესანახად, შეეხეთ პარამეტრებს, რათა Chromium-მა თქვენი ფოტოების გამოყენება შეძლოს</translation>
 <translation id="9022552996538154597">შედით Chromium-ში</translation>
-<translation id="9217078088703304241"><ph name="BEGIN_LINK" />გადახედეთ Chromium-ის მომსახურების განახლებულ პირობებს.<ph name="END_LINK" /></translation>
 <translation id="985602178874221306">Chromium-ის ავტორები</translation>
 </translationbundle>

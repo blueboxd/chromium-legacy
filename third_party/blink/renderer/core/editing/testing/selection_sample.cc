@@ -6,12 +6,12 @@
 
 #include <algorithm>
 
+#include "third_party/blink/renderer/bindings/core/v8/v8_shadow_root_init.h"
 #include "third_party/blink/renderer/core/dom/attribute.h"
 #include "third_party/blink/renderer/core/dom/character_data.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/dom/processing_instruction.h"
-#include "third_party/blink/renderer/core/dom/shadow_root_init.h"
 #include "third_party/blink/renderer/core/editing/editing_utilities.h"
 #include "third_party/blink/renderer/core/editing/selection_template.h"
 #include "third_party/blink/renderer/core/html/html_collection.h"
@@ -162,8 +162,8 @@ class Parser final {
     NOTREACHED() << node;
   }
 
-  Member<Node> anchor_node_;
-  Member<Node> focus_node_;
+  Node* anchor_node_ = nullptr;
+  Node* focus_node_ = nullptr;
   int anchor_offset_ = 0;
   int focus_offset_ = 0;
 };

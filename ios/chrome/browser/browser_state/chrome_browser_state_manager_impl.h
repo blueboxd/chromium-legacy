@@ -22,10 +22,10 @@ class ChromeBrowserStateManagerImpl : public ios::ChromeBrowserStateManager {
   ~ChromeBrowserStateManagerImpl() override;
 
   // ChromeBrowserStateManager:
-  ios::ChromeBrowserState* GetLastUsedBrowserState() override;
-  ios::ChromeBrowserState* GetBrowserState(const base::FilePath& path) override;
+  ChromeBrowserState* GetLastUsedBrowserState() override;
+  ChromeBrowserState* GetBrowserState(const base::FilePath& path) override;
   BrowserStateInfoCache* GetBrowserStateInfoCache() override;
-  std::vector<ios::ChromeBrowserState*> GetLoadedBrowserStates() override;
+  std::vector<ChromeBrowserState*> GetLoadedBrowserStates() override;
 
  private:
   using ChromeBrowserStateImplPathMap =
@@ -37,12 +37,12 @@ class ChromeBrowserStateManagerImpl : public ios::ChromeBrowserStateManager {
       const base::FilePath& user_data_dir);
 
   // Final initialization of the browser state.
-  void DoFinalInit(ios::ChromeBrowserState* browser_state);
-  void DoFinalInitForServices(ios::ChromeBrowserState* browser_state);
+  void DoFinalInit(ChromeBrowserState* browser_state);
+  void DoFinalInitForServices(ChromeBrowserState* browser_state);
 
   // Adds |browser_state| to the browser state info cache if it hasn't been
   // added yet.
-  void AddBrowserStateToCache(ios::ChromeBrowserState* browser_state);
+  void AddBrowserStateToCache(ChromeBrowserState* browser_state);
 
   // Holds the ChromeBrowserStateImpl instances that this instance has created.
   ChromeBrowserStateImplPathMap browser_states_;

@@ -415,9 +415,12 @@ Vector<LayoutText::TextBoxInfo> LayoutText::GetTextBoxInfo() const {
 
 bool LayoutText::HasTextBoxes() const {
   if (RuntimeEnabledFeatures::LayoutNGEnabled()) {
-    auto fragments = NGPaintFragment::InlineFragmentsFor(this);
-    if (fragments.IsInLayoutNGInlineFormattingContext())
-      return !(fragments.begin() == fragments.end());
+    if (IsInLayoutNGInlineFormattingContext()) {
+      NGInlineCursor cursor;
+      cursor.MoveTo(*this);
+      return cursor.IsNotNull();
+    }
+
     // When legacy is forced, IsInLayoutNGInlineFormattingContext is false,
     // and we fall back to normal HasTextBox
     return FirstTextBox();
@@ -2461,7 +2464,8 @@ void LayoutText::InvalidateDisplayItemClients(
     PaintInvalidationReason invalidation_reason) const {
   ObjectPaintInvalidator paint_invalidator(*this);
 
-  if (RuntimeEnabledFeatures::LayoutNGBlockFragmentationEnabled()) {
+  if (RuntimeEnabledFeatures::LayoutNGBlockFragmentationEnabled() &&
+      !RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled()) {
     auto fragments = NGPaintFragment::InlineFragmentsFor(this);
     if (fragments.IsInLayoutNGInlineFormattingContext()) {
       for (NGPaintFragment* fragment : fragments) {
@@ -2476,7 +2480,7 @@ void LayoutText::InvalidateDisplayItemClients(
     NGInlineCursor cursor;
     for (cursor.MoveTo(*this); cursor; cursor.MoveToNextForSameLayoutObject()) {
       paint_invalidator.InvalidateDisplayItemClient(
-          *cursor.CurrentDisplayItemClient(), invalidation_reason);
+          *cursor.Current().GetDisplayItemClient(), invalidation_reason);
     }
     return;
   }

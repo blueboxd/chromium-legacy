@@ -902,18 +902,6 @@ class CONTENT_EXPORT RenderProcessHostImpl
   // if the request isn't handled on the IO thread.
   void OnBindHostReceiver(mojo::GenericPendingReceiver receiver);
 
-  // IOThreadHostImpl owns some IO-thread state associated with this
-  // RenderProcessHostImpl. This is mainly to allow various IPCs from the
-  // renderer to be handled on the IO thread without a hop to the UI thread.
-  //
-  // Declare this early to ensure it triggers the destruction of the
-  // IOThreadHostImpl prior to other objects with an IO thread deleter.  This
-  // is necessary to ensure those objects stop receiving mojo messages before
-  // their destruction.
-  class IOThreadHostImpl;
-  friend class IOThreadHostImpl;
-  base::Optional<base::SequenceBound<IOThreadHostImpl>> io_thread_host_impl_;
-
 #if defined(OS_LINUX)
   // Provides /proc/{renderer pid}/status and statm files for the renderer,
   // because the files are required to calculate the renderer's private
@@ -1139,6 +1127,19 @@ class CONTENT_EXPORT RenderProcessHostImpl
   // Keeps this process registered with the tracing subsystem.
   std::unique_ptr<TracingServiceController::ClientRegistration>
       tracing_registration_;
+
+  // IOThreadHostImpl owns some IO-thread state associated with this
+  // RenderProcessHostImpl. This is mainly to allow various IPCs from the
+  // renderer to be handled on the IO thread without a hop to the UI thread.
+  //
+  // Declare this at then end to ensure it triggers the destruction of the
+  // IOThreadHostImpl prior to other members with an IO thread deleter that are
+  // bound to a mojo receiver callback using a base::Unretained.  This is
+  // necessary to ensure those objects stop receiving mojo messages before their
+  // destruction.
+  class IOThreadHostImpl;
+  friend class IOThreadHostImpl;
+  base::Optional<base::SequenceBound<IOThreadHostImpl>> io_thread_host_impl_;
 
   base::WeakPtrFactory<RenderProcessHostImpl> weak_factory_{this};
 

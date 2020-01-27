@@ -35,6 +35,7 @@ struct AwWebResourceRequest final {
 
   // Add default copy/move/assign operators. Adding explicit destructor
   // prevents generating move operator.
+  AwWebResourceRequest(const AwWebResourceRequest& other);
   AwWebResourceRequest(AwWebResourceRequest&& other);
   AwWebResourceRequest& operator=(AwWebResourceRequest&& other);
   ~AwWebResourceRequest();

@@ -176,7 +176,7 @@ HTMLElement* CustomElementDefinition::CreateElement(
 CustomElementDefinition::ConstructionStackScope::ConstructionStackScope(
     CustomElementDefinition& definition,
     Element& element)
-    : construction_stack_(definition.construction_stack_), element_(element) {
+    : construction_stack_(definition.construction_stack_), element_(&element) {
   // Push the construction stack.
   construction_stack_.push_back(&element);
   depth_ = construction_stack_.size();

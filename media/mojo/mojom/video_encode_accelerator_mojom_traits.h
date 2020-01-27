@@ -14,6 +14,40 @@
 namespace mojo {
 
 template <>
+struct StructTraits<
+    media::mojom::VideoEncodeAcceleratorSupportedProfileDataView,
+    media::VideoEncodeAccelerator::SupportedProfile> {
+  static media::VideoCodecProfile profile(
+      const media::VideoEncodeAccelerator::SupportedProfile& profile) {
+    return profile.profile;
+  }
+
+  static const gfx::Size& min_resolution(
+      const media::VideoEncodeAccelerator::SupportedProfile& profile) {
+    return profile.min_resolution;
+  }
+
+  static const gfx::Size& max_resolution(
+      const media::VideoEncodeAccelerator::SupportedProfile& profile) {
+    return profile.max_resolution;
+  }
+
+  static uint32_t max_framerate_numerator(
+      const media::VideoEncodeAccelerator::SupportedProfile& profile) {
+    return profile.max_framerate_numerator;
+  }
+
+  static uint32_t max_framerate_denominator(
+      const media::VideoEncodeAccelerator::SupportedProfile& profile) {
+    return profile.max_framerate_denominator;
+  }
+
+  static bool Read(
+      media::mojom::VideoEncodeAcceleratorSupportedProfileDataView data,
+      media::VideoEncodeAccelerator::SupportedProfile* out);
+};
+
+template <>
 struct EnumTraits<media::mojom::VideoEncodeAccelerator::Error,
                   media::VideoEncodeAccelerator::Error> {
   static media::mojom::VideoEncodeAccelerator::Error ToMojom(

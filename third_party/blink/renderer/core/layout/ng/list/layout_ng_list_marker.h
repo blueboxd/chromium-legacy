@@ -8,6 +8,7 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/layout/layout_block_flow.h"
 #include "third_party/blink/renderer/core/layout/ng/layout_ng_block_flow_mixin.h"
+#include "third_party/blink/renderer/core/layout/ng/list/list_marker.h"
 
 namespace blink {
 
@@ -19,17 +20,18 @@ class CORE_EXPORT LayoutNGListMarker final
 
   void WillCollectInlines() override;
 
-  bool IsContentImage() const;
-
-  LayoutObject* SymbolMarkerLayoutText() const;
-
   const char* GetName() const override { return "LayoutNGListMarker"; }
 
   bool NeedsOccupyWholeLine() const;
 
+  const ListMarker& Marker() const { return list_marker_; }
+  ListMarker& Marker() { return list_marker_; }
+
  private:
   bool IsOfType(LayoutObjectType) const override;
   PositionWithAffinity PositionForPoint(const PhysicalOffset&) const override;
+
+  ListMarker list_marker_;
 };
 
 DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutNGListMarker, IsLayoutNGListMarker());

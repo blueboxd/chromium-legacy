@@ -70,10 +70,10 @@ URLDownloader::~URLDownloader() {
 }
 
 void URLDownloader::OfflinePathExists(const base::FilePath& path,
-                                      base::Callback<void(bool)> callback) {
-  task_tracker_.PostTaskAndReplyWithResult(task_runner_.get(), FROM_HERE,
-                                           base::Bind(&base::PathExists, path),
-                                           callback);
+                                      base::OnceCallback<void(bool)> callback) {
+  task_tracker_.PostTaskAndReplyWithResult(
+      task_runner_.get(), FROM_HERE, base::BindOnce(&base::PathExists, path),
+      std::move(callback));
 }
 
 void URLDownloader::RemoveOfflineURL(const GURL& url) {
@@ -154,13 +154,14 @@ void URLDownloader::HandleNextTask() {
   if (task.first == DELETE) {
     task_tracker_.PostTaskAndReplyWithResult(
         task_runner_.get(), FROM_HERE,
-        base::Bind(&base::DeleteFileRecursively, directory_path),
-        base::Bind(&URLDownloader::DeleteCompletionHandler,
-                   base::Unretained(this), url));
+        base::BindOnce(&base::DeleteFileRecursively, directory_path),
+        base::BindOnce(&URLDownloader::DeleteCompletionHandler,
+                       base::Unretained(this), url));
   } else if (task.first == DOWNLOAD) {
     DCHECK(!distiller_);
-    OfflinePathExists(directory_path, base::Bind(&URLDownloader::DownloadURL,
-                                                 base::Unretained(this), url));
+    OfflinePathExists(directory_path,
+                      base::BindOnce(&URLDownloader::DownloadURL,
+                                     base::Unretained(this), url));
   }
 }
 
@@ -212,10 +213,10 @@ void URLDownloader::OnURLLoadComplete(const GURL& original_url,
 
   task_tracker_.PostTaskAndReplyWithResult(
       task_runner_.get(), FROM_HERE,
-      base::Bind(&URLDownloader::SavePDFFile, base::Unretained(this),
-                 response_path),
-      base::Bind(&URLDownloader::DownloadCompletionHandler,
-                 base::Unretained(this), original_url, "", path));
+      base::BindOnce(&URLDownloader::SavePDFFile, base::Unretained(this),
+                     response_path),
+      base::BindOnce(&URLDownloader::DownloadCompletionHandler,
+                     base::Unretained(this), original_url, "", path));
 
   url_loader_.reset();
 }
@@ -285,12 +286,12 @@ void URLDownloader::DistillerCallback(
   std::string block_html = html;
   task_tracker_.PostTaskAndReplyWithResult(
       task_runner_.get(), FROM_HERE,
-      base::Bind(&URLDownloader::SaveDistilledHTML, base::Unretained(this),
-                 page_url, images_block, block_html),
-      base::Bind(&URLDownloader::DownloadCompletionHandler,
-                 base::Unretained(this), page_url, title,
-                 reading_list::OfflinePagePath(
-                     page_url, reading_list::OFFLINE_TYPE_HTML)));
+      base::BindOnce(&URLDownloader::SaveDistilledHTML, base::Unretained(this),
+                     page_url, images_block, block_html),
+      base::BindOnce(&URLDownloader::DownloadCompletionHandler,
+                     base::Unretained(this), page_url, title,
+                     reading_list::OfflinePagePath(
+                         page_url, reading_list::OFFLINE_TYPE_HTML)));
 }
 
 URLDownloader::SuccessState URLDownloader::SaveDistilledHTML(

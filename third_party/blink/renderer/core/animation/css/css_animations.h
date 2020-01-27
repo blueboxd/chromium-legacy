@@ -164,7 +164,7 @@ class CORE_EXPORT CSSAnimations final {
 
    public:
     CSSAnimationUpdate& update;
-    Member<const Element> animating_element;
+    const Element* animating_element = nullptr;
     const ComputedStyle& old_style;
     const ComputedStyle& style;
     scoped_refptr<const ComputedStyle> cloned_style;

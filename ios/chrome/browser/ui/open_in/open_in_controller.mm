@@ -351,13 +351,13 @@ class OpenInControllerBridge
   // first task needs to be done on the worker pool and returns a BOOL which is
   // then used in the second function, |OnDestinationDirectoryCreated|, which
   // runs on the UI thread.
-  base::Callback<BOOL(void)> task = base::Bind(
+  base::OnceCallback<BOOL(void)> task = base::BindOnce(
       &OpenInControllerBridge::CreateDestinationDirectoryAndRemoveObsoleteFiles,
       _bridge);
-  base::Callback<void(BOOL)> reply = base::Bind(
+  base::OnceCallback<void(BOOL)> reply = base::BindOnce(
       &OpenInControllerBridge::OnDestinationDirectoryCreated, _bridge);
-  base::PostTaskAndReplyWithResult(_sequencedTaskRunner.get(), FROM_HERE, task,
-                                   reply);
+  base::PostTaskAndReplyWithResult(_sequencedTaskRunner.get(), FROM_HERE,
+                                   std::move(task), std::move(reply));
 }
 
 - (void)startDownload {

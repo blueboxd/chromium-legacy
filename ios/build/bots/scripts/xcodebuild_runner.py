@@ -351,8 +351,7 @@ class LaunchCommand(object):
     # total number of attempts is self.retries+1
     for attempt in range(self.retries + 1):
       # Erase all simulators per each attempt
-      if 'simulator' in iossim_util.get_simulator_runtime_by_device_udid(
-          self.udid).lower():
+      if iossim_util.is_device_with_udid_simulator(self.udid):
         # kill all running simulators to prevent possible memory leaks
         test_runner.SimulatorTestRunner.kill_simulators()
         shutdown_all_simulators()
@@ -542,7 +541,7 @@ class SimulatorParallelTestRunner(test_runner.SimulatorTestRunner):
     self.sharding_data = [{
         'app': self.app_path,
         'host': self.host_app_path,
-        'udid': iossim_util.get_simulator(self.platform, self.version),
+        'udid': self.udid,
         'shards': self.shards,
         'test_cases': self.test_cases
     }]
@@ -711,9 +710,6 @@ class DeviceXcodeTestRunner(SimulatorParallelTestRunner,
     self.homedir = ''
     self.set_up()
     self._init_sharding_data()
-    # Destination is required to run tests via xcodebuild on real devices
-    # and it looks like id=%ID%
-    self.sharding_data[0]['destination'] = 'id=%s' % self.udid
     self.start_time = time.strftime('%Y-%m-%d-%H%M%S', time.localtime())
     self.test_results['path_delimiter'] = '/'
 

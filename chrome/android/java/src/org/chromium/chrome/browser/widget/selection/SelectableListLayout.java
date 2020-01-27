@@ -34,6 +34,7 @@ import org.chromium.components.browser_ui.widget.displaystyle.DisplayStyleObserv
 import org.chromium.components.browser_ui.widget.displaystyle.HorizontalDisplayStyle;
 import org.chromium.components.browser_ui.widget.displaystyle.UiConfig;
 import org.chromium.components.browser_ui.widget.displaystyle.UiConfig.DisplayStyle;
+import org.chromium.ui.vr.VrModeProvider;
 
 import java.util.List;
 
@@ -197,13 +198,14 @@ public class SelectableListLayout<E>
     public SelectableListToolbar<E> initializeToolbar(int toolbarLayoutId,
             SelectionDelegate<E> delegate, int titleResId, int normalGroupResId,
             int selectedGroupResId, @Nullable OnMenuItemClickListener listener,
-            boolean showShadowOnSelection, boolean updateStatusBarColor) {
+            boolean showShadowOnSelection, boolean updateStatusBarColor,
+            VrModeProvider vrModeProvider) {
         mToolbarStub.setLayoutResource(toolbarLayoutId);
         @SuppressWarnings("unchecked")
         SelectableListToolbar<E> toolbar = (SelectableListToolbar<E>) mToolbarStub.inflate();
         mToolbar = toolbar;
-        mToolbar.initialize(
-                delegate, titleResId, normalGroupResId, selectedGroupResId, updateStatusBarColor);
+        mToolbar.initialize(delegate, titleResId, normalGroupResId, selectedGroupResId,
+                updateStatusBarColor, vrModeProvider);
 
         if (listener != null) {
             mToolbar.setOnMenuItemClickListener(listener);

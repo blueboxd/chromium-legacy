@@ -11,10 +11,10 @@
 #include "base/strings/string16.h"
 #include "components/infobars/core/confirm_infobar_delegate.h"
 #include "components/sync/driver/sync_service_observer.h"
-#include "ios/chrome/browser/browser_state/chrome_browser_state_forward.h"
 #include "ios/chrome/browser/sync/sync_setup_service.h"
 #include "ui/gfx/image/image.h"
 
+class ChromeBrowserState;
 @protocol SyncPresenter;
 
 namespace gfx {
@@ -29,13 +29,13 @@ class InfoBarManager;
 class SyncErrorInfoBarDelegate : public ConfirmInfoBarDelegate,
                                  public syncer::SyncServiceObserver {
  public:
-  SyncErrorInfoBarDelegate(ios::ChromeBrowserState* browser_state,
+  SyncErrorInfoBarDelegate(ChromeBrowserState* browser_state,
                            id<SyncPresenter> presenter);
   ~SyncErrorInfoBarDelegate() override;
 
   // Creates a sync error infobar and adds it to |infobar_manager|.
   static bool Create(infobars::InfoBarManager* infobar_manager,
-                     ios::ChromeBrowserState* browser_state,
+                     ChromeBrowserState* browser_state,
                      id<SyncPresenter> presenter);
 
   // InfoBarDelegate implementation.
@@ -53,7 +53,7 @@ class SyncErrorInfoBarDelegate : public ConfirmInfoBarDelegate,
 
  private:
   gfx::Image icon_;
-  ios::ChromeBrowserState* browser_state_;
+  ChromeBrowserState* browser_state_;
   SyncSetupService::SyncServiceState error_state_;
   base::string16 message_;
   base::string16 button_text_;

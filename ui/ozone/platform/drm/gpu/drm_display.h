@@ -54,6 +54,7 @@ class DrmDisplay {
   void SetGammaCorrection(
       const std::vector<display::GammaRampRGBEntry>& degamma_lut,
       const std::vector<display::GammaRampRGBEntry>& gamma_lut);
+  void SetPrivacyScreen(bool enabled);
 
  private:
   ScreenManager* screen_manager_;  // Not owned.

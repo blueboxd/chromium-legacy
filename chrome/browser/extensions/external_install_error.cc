@@ -373,6 +373,7 @@ void ExternalInstallError::OnInstallPromptDone(
 
   switch (result) {
     case ExtensionInstallPrompt::Result::ACCEPTED:
+    case ExtensionInstallPrompt::Result::ACCEPTED_AND_OPTION_CHECKED:
       if (extension) {
         ExtensionSystem::Get(browser_context_)
             ->extension_service()

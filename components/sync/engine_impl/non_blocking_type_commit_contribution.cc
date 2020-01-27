@@ -17,17 +17,6 @@
 
 namespace syncer {
 
-namespace {
-
-void SetDatatypeError(const sync_pb::CommitResponse_EntryResponse& response,
-                      FailedCommitResponseData* data) {
-  if (response.has_sharing_message_error()) {
-    data->sharing_message_error = response.sharing_message_error();
-  }
-}
-
-}  // namespace
-
 NonBlockingTypeCommitContribution::NonBlockingTypeCommitContribution(
     ModelType type,
     const sync_pb::DataTypeContext& context,
@@ -140,7 +129,8 @@ SyncerError NonBlockingTypeCommitContribution::ProcessCommitResponse(
       response_data.client_tag_hash = commit_request.entity->client_tag_hash;
 
       response_data.response_type = entry_response.response_type();
-      SetDatatypeError(entry_response, &response_data);
+      response_data.datatype_specific_error =
+          entry_response.datatype_specific_error();
       error_response_list.push_back(response_data);
 
       switch (entry_response.response_type()) {

@@ -94,6 +94,7 @@ class PLATFORM_EXPORT CanvasResourceProvider
 
   void static RecordTypeToUMA(ResourceProviderType type);
 
+  // TODO(juanmihd): Clean up creation methods/usage. See crbug.com/1035589.
   static std::unique_ptr<CanvasResourceProvider> CreateForCanvas(
       const IntSize&,
       ResourceUsage,
@@ -115,6 +116,13 @@ class PLATFORM_EXPORT CanvasResourceProvider
       uint8_t presentation_mode,
       base::WeakPtr<CanvasResourceDispatcher>,
       bool is_origin_top_left = true);
+
+  static std::unique_ptr<CanvasResourceProvider> CreateAccelerated(
+      const IntSize&,
+      base::WeakPtr<WebGraphicsContext3DProviderWrapper>,
+      const CanvasColorParams&,
+      bool is_origin_top_left,
+      uint32_t shared_image_usage_flags);
 
   // Use Snapshot() for capturing a frame that is intended to be displayed via
   // the compositor. Cases that are destined to be transferred via a

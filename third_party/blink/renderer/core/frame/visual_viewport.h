@@ -34,6 +34,7 @@
 #include <memory>
 
 #include "base/single_thread_task_runner.h"
+#include "third_party/blink/public/mojom/scroll/scroll_into_view_params.mojom-blink-forward.h"
 #include "third_party/blink/public/platform/web_size.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
@@ -180,8 +181,9 @@ class CORE_EXPORT VisualViewport : public GarbageCollected<VisualViewport>,
   void SetScrollOffset(const ScrollOffset&,
                        ScrollType,
                        ScrollBehavior = kScrollBehaviorInstant) override;
-  PhysicalRect ScrollIntoView(const PhysicalRect&,
-                              const WebScrollIntoViewParams&) override;
+  PhysicalRect ScrollIntoView(
+      const PhysicalRect&,
+      const mojom::blink::ScrollIntoViewParamsPtr&) override;
   bool IsThrottled() const override {
     // VisualViewport is always in the main frame, so the frame does not get
     // throttled.

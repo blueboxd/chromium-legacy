@@ -21,7 +21,7 @@ import org.chromium.base.test.util.FlakyTest;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
-import org.chromium.chrome.browser.settings.MainPreferences;
+import org.chromium.chrome.browser.settings.MainSettings;
 import org.chromium.chrome.browser.settings.ManagedPreferenceDelegate;
 import org.chromium.chrome.browser.settings.SettingsActivity;
 import org.chromium.chrome.browser.settings.SettingsActivityTest;
@@ -143,11 +143,11 @@ public class SearchEngineSettingsTest {
         SettingsActivity settingsActivity = ActivityUtils.waitForActivity(
                 InstrumentationRegistry.getInstrumentation(), SettingsActivity.class);
 
-        final MainPreferences mainPreferences =
-                ActivityUtils.waitForFragmentToAttach(settingsActivity, MainPreferences.class);
+        final MainSettings mainSettings =
+                ActivityUtils.waitForFragmentToAttach(settingsActivity, MainSettings.class);
 
         final Preference searchEnginePref =
-                waitForPreference(mainPreferences, MainPreferences.PREF_SEARCH_ENGINE);
+                waitForPreference(mainSettings, MainSettings.PREF_SEARCH_ENGINE);
 
         CriteriaHelper.pollUiThread(Criteria.equals(null, new Callable<Object>() {
             @Override
@@ -157,7 +157,7 @@ public class SearchEngineSettingsTest {
         }));
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             ManagedPreferenceDelegate managedPrefDelegate =
-                    mainPreferences.getManagedPreferenceDelegateForTest();
+                    mainSettings.getManagedPreferenceDelegateForTest();
             Assert.assertTrue(managedPrefDelegate.isPreferenceControlledByPolicy(searchEnginePref));
         });
     }

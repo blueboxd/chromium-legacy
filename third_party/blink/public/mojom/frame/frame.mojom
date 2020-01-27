@@ -17,9 +17,11 @@ import "third_party/blink/public/mojom/frame/lifecycle.mojom";
 import "third_party/blink/public/mojom/frame/media_player_action.mojom";
 import "third_party/blink/public/mojom/frame/sudden_termination_disabler_type.mojom";
 import "third_party/blink/public/mojom/frame/user_activation_update_types.mojom";
+import "third_party/blink/public/mojom/input/focus_type.mojom";
 import "third_party/blink/public/mojom/input/scroll_direction.mojom";
 import "third_party/blink/public/mojom/timing/resource_timing.mojom";
 import "third_party/blink/public/mojom/web_feature/web_feature.mojom";
+import "third_party/blink/public/mojom/scroll/scroll_into_view_params.mojom";
 import "ui/events/mojom/scroll_granularity.mojom";
 import "ui/gfx/geometry/mojom/geometry.mojom";
 import "url/mojom/origin.mojom";
@@ -144,6 +146,10 @@ interface LocalFrameHost {
   // a previous navigation on the same eTLD+1. This ensures the state is
   // propagated to any remote frames.
   HadStickyUserActivationBeforeNavigationChanged(bool has_gesture);
+
+  // Sent by a local root to request scrolling in its parent process.
+  ScrollRectToVisibleInParentFrame(gfx.mojom.Rect rect_to_scroll,
+                                   ScrollIntoViewParams params);
 
   // Sent by a local root to continue bubbling a logical scroll in its parent
   // process.
@@ -303,6 +309,11 @@ interface LocalFrame {
   // Tells the renderer to perform the given action on the media player location
   // at the given point in the view coordinate space.
   MediaPlayerActionAt(gfx.mojom.Point location, blink.mojom.MediaPlayerAction action);
+
+  // Notifies this Frame to advance the focus to next input node in the form by
+  // moving in specified direction if the currently focused node is a Text node
+  // (textfield, text area or content editable nodes).
+  AdvanceFocusInForm(blink.mojom.FocusType focus_type);
 };
 
 // Implemented in Browser, this interface defines frame-specific methods that
@@ -418,4 +429,8 @@ interface RemoteFrame {
   // Sent to the remote frame placeholder in the parent process so that
   // resource timing information can be added to the parent frame.
   AddResourceTimingFromChild(ResourceTimingInfo timing);
+
+  // Sent to the remote frame placeholder in the parent process to request
+  // scrolling.
+  ScrollRectToVisible(gfx.mojom.Rect rect, ScrollIntoViewParams params);
 };

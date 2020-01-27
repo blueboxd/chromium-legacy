@@ -85,7 +85,7 @@ void UrlLoadingService::Load(const UrlLoadParams& params) {
       break;
     }
     case UrlLoadStrategy::ALWAYS_IN_INCOGNITO: {
-      ios::ChromeBrowserState* browser_state = browser_->GetBrowserState();
+      ChromeBrowserState* browser_state = browser_->GetBrowserState();
       if (params.disposition == WindowOpenDisposition::CURRENT_TAB &&
           !browser_state->IsOffTheRecord()) {
         UrlLoadingServiceFactory::GetForBrowserState(
@@ -127,7 +127,7 @@ void UrlLoadingService::Dispatch(const UrlLoadParams& params) {
 void UrlLoadingService::LoadUrlInCurrentTab(const UrlLoadParams& params) {
   web::NavigationManager::WebLoadParams web_params = params.web_params;
 
-  ios::ChromeBrowserState* browser_state = browser_->GetBrowserState();
+  ChromeBrowserState* browser_state = browser_->GetBrowserState();
 
   notifier_->TabWillLoadUrl(web_params.url, web_params.transition_type);
 
@@ -224,7 +224,7 @@ void UrlLoadingService::SwitchToTab(const UrlLoadParams& params) {
       Load(UrlLoadParams::InCurrentTab(web_params));
     } else {
       // Load the URL in foreground.
-      ios::ChromeBrowserState* browser_state = browser_->GetBrowserState();
+      ChromeBrowserState* browser_state = browser_->GetBrowserState();
       UrlLoadParams new_tab_params =
           UrlLoadParams::InNewTab(web_params.url, web_params.virtual_url);
       new_tab_params.web_params.referrer = web::Referrer();
@@ -254,7 +254,7 @@ void UrlLoadingService::LoadUrlInNewTab(const UrlLoadParams& params) {
   DCHECK(app_service_);
   DCHECK(delegate_);
   DCHECK(browser_);
-  ios::ChromeBrowserState* browser_state = browser_->GetBrowserState();
+  ChromeBrowserState* browser_state = browser_->GetBrowserState();
 
   // Two UrlLoadingServices exist, normal and incognito.  Handle two special
   // cases that need to be sent up to the AppUrlLoadingService:

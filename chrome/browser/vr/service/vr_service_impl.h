@@ -12,8 +12,9 @@
 
 #include "base/macros.h"
 #include "base/util/type_safety/pass_key.h"
-
+#include "build/build_config.h"
 #include "chrome/browser/vr/metrics/session_metrics_helper.h"
+#include "chrome/browser/vr/service/xr_consent_helper.h"
 #include "chrome/browser/vr/service/xr_consent_prompt_level.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "content/public/browser/web_contents_observer.h"

@@ -28,6 +28,7 @@
 #include "ui/base/models/combobox_model_observer.h"
 #include "ui/base/models/simple_combobox_model.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/color_utils.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/controls/button/image_button.h"
@@ -315,6 +316,14 @@ views::View* PasswordPendingView::GetUsernameTextfieldForTest() const {
 
 PasswordPendingView::~PasswordPendingView() = default;
 
+PasswordBubbleControllerBase* PasswordPendingView::GetController() {
+  return nullptr;
+}
+
+const PasswordBubbleControllerBase* PasswordPendingView::GetController() const {
+  return nullptr;
+}
+
 bool PasswordPendingView::Accept() {
   UpdateUsernameAndPasswordInModel();
   model()->OnSaveClicked();
@@ -414,7 +423,7 @@ void PasswordPendingView::AddedToWidget() {
 
 void PasswordPendingView::OnThemeChanged() {
   if (int id = model()->GetTopIllustration(
-          GetNativeTheme()->ShouldUseDarkColors())) {
+          color_utils::IsDark(GetBubbleFrameView()->GetBackgroundColor()))) {
     GetBubbleFrameView()->SetHeaderView(CreateHeaderImage(id));
   }
 }

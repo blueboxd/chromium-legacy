@@ -10,6 +10,7 @@
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "ash/system/machine_learning/user_settings_event_logger.h"
 #include "ash/system/unified/feature_pod_button.h"
 #include "ash/system/unified/unified_system_tray_controller.h"
 #include "base/metrics/histogram_macros.h"
@@ -20,6 +21,16 @@
 using message_center::MessageCenter;
 
 namespace ash {
+namespace {
+
+void LogUserQuietModeEvent(const bool enabled) {
+  auto* logger = ml::UserSettingsEventLogger::Get();
+  if (logger) {
+    logger->LogQuietModeUkmEvent(enabled);
+  }
+}
+
+}  // namespace
 
 QuietModeFeaturePodController::QuietModeFeaturePodController(
     UnifiedSystemTrayController* tray_controller)
@@ -53,6 +64,7 @@ FeaturePodButton* QuietModeFeaturePodController::CreateButton() {
 void QuietModeFeaturePodController::OnIconPressed() {
   MessageCenter* message_center = MessageCenter::Get();
   bool is_quiet_mode = message_center->IsQuietMode();
+  LogUserQuietModeEvent(!is_quiet_mode);
   message_center->SetQuietMode(!is_quiet_mode);
 
   if (message_center->IsQuietMode()) {

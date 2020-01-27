@@ -4,7 +4,7 @@
 
 #include "third_party/blink/renderer/modules/xr/xr_light_estimation_state.h"
 
-#include "third_party/blink/renderer/modules/xr/xr_light_estimation_state_init.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_xr_light_estimation_state_init.h"
 
 namespace blink {
 

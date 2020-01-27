@@ -10,17 +10,22 @@
 #include "components/security_interstitials/content/blocked_interception_blocking_page.h"
 #include "components/security_interstitials/content/captive_portal_blocking_page.h"
 #include "components/security_interstitials/content/mitm_software_blocking_page.h"
+#include "components/security_interstitials/content/security_blocking_page_factory.h"
 #include "components/security_interstitials/content/ssl_blocking_page.h"
 #include "components/security_interstitials/content/ssl_blocking_page_base.h"
 
-// Contains utilities for Chrome-specific construction of security-related
-// interstitial pages.
-class ChromeSecurityBlockingPageFactory {
+// //chrome's implementation of the SecurityBlockingPageFactory interface.
+class ChromeSecurityBlockingPageFactory : public SecurityBlockingPageFactory {
  public:
-  // Creates an SSL blocking page. |options_mask| must be a bitwise mask of
-  // SSLErrorUI::SSLErrorOptionsMask values. The caller is responsible for
-  // ownership of the returned object.
-  static SSLBlockingPage* CreateSSLPage(
+  ChromeSecurityBlockingPageFactory() = default;
+  ~ChromeSecurityBlockingPageFactory() override = default;
+  ChromeSecurityBlockingPageFactory(const ChromeSecurityBlockingPageFactory&) =
+      delete;
+  ChromeSecurityBlockingPageFactory& operator=(
+      const ChromeSecurityBlockingPageFactory&) = delete;
+
+  // SecurityBlockingPageFactory:
+  SSLBlockingPage* CreateSSLPage(
       content::WebContents* web_contents,
       int cert_error,
       const net::SSLInfo& ssl_info,
@@ -28,57 +33,43 @@ class ChromeSecurityBlockingPageFactory {
       int options_mask,
       const base::Time& time_triggered,
       const GURL& support_url,
-      std::unique_ptr<SSLCertReporter> ssl_cert_reporter);
-
-  // Creates a captive portal blocking page. The caller is responsible for
-  // ownership of the returned object.
-  static CaptivePortalBlockingPage* CreateCaptivePortalBlockingPage(
+      std::unique_ptr<SSLCertReporter> ssl_cert_reporter) override;
+  CaptivePortalBlockingPage* CreateCaptivePortalBlockingPage(
       content::WebContents* web_contents,
       const GURL& request_url,
       const GURL& login_url,
       std::unique_ptr<SSLCertReporter> ssl_cert_reporter,
       const net::SSLInfo& ssl_info,
-      int cert_error);
-
-  // Creates a bad clock blocking page. The caller is responsible for
-  // ownership of the returned object.
-  static BadClockBlockingPage* CreateBadClockBlockingPage(
+      int cert_error) override;
+  BadClockBlockingPage* CreateBadClockBlockingPage(
       content::WebContents* web_contents,
       int cert_error,
       const net::SSLInfo& ssl_info,
       const GURL& request_url,
       const base::Time& time_triggered,
       ssl_errors::ClockState clock_state,
-      std::unique_ptr<SSLCertReporter> ssl_cert_reporter);
-
-  // Creates a man-in-the-middle software blocking page. The caller is
-  // responsible for ownership of the returned object.
-  static MITMSoftwareBlockingPage* CreateMITMSoftwareBlockingPage(
+      std::unique_ptr<SSLCertReporter> ssl_cert_reporter) override;
+  MITMSoftwareBlockingPage* CreateMITMSoftwareBlockingPage(
       content::WebContents* web_contents,
       int cert_error,
       const GURL& request_url,
       std::unique_ptr<SSLCertReporter> ssl_cert_reporter,
       const net::SSLInfo& ssl_info,
-      const std::string& mitm_software_name);
-
-  // Creates a blocked interception blocking page. The caller is
-  // responsible for ownership of the returned object.
-  static BlockedInterceptionBlockingPage* CreateBlockedInterceptionBlockingPage(
+      const std::string& mitm_software_name) override;
+  BlockedInterceptionBlockingPage* CreateBlockedInterceptionBlockingPage(
       content::WebContents* web_contents,
       int cert_error,
       const GURL& request_url,
       std::unique_ptr<SSLCertReporter> ssl_cert_reporter,
-      const net::SSLInfo& ssl_info);
-
-  // Does setup on |page| that is specific to the client (Chrome).
-  static void DoChromeSpecificSetup(SSLBlockingPageBase* page);
+      const net::SSLInfo& ssl_info) override;
 
   // Overrides the calculation of whether the app is enterprise-managed for
   // tests.
   static void SetEnterpriseManagedForTesting(bool enterprise_managed);
 
  private:
-  DISALLOW_IMPLICIT_CONSTRUCTORS(ChromeSecurityBlockingPageFactory);
+  // Does setup on |page| that is specific to the client (Chrome).
+  static void DoChromeSpecificSetup(SSLBlockingPageBase* page);
 };
 
 #endif  // CHROME_BROWSER_SSL_CHROME_SECURITY_BLOCKING_PAGE_FACTORY_H_

@@ -19,67 +19,45 @@ var TreeChangeType = chrome.automation.TreeChangeType;
 
 /**
  * ChromeVox2 live region handler.
- * @param {!ChromeVoxState} chromeVoxState The ChromeVox state object,
- *     keeping track of the current mode and current range.
- * @constructor
  */
-LiveRegions = function(chromeVoxState) {
+LiveRegions = class {
   /**
-   * @type {!ChromeVoxState}
-   * @private
+   * @param {!ChromeVoxState} chromeVoxState The ChromeVox state object,
+   *     keeping track of the current mode and current range.
    */
-  this.chromeVoxState_ = chromeVoxState;
+  constructor(chromeVoxState) {
+    /**
+     * @type {!ChromeVoxState}
+     * @private
+     */
+    this.chromeVoxState_ = chromeVoxState;
 
-  /**
-   * The time the last live region event was output.
-   * @type {!Date}
-   * @private
-   */
-  this.lastLiveRegionTime_ = new Date(0);
+    /**
+     * The time the last live region event was output.
+     * @type {!Date}
+     * @private
+     */
+    this.lastLiveRegionTime_ = new Date(0);
 
-  /**
-   * Set of nodes that have been announced as part of a live region since
-   *     |this.lastLiveRegionTime_|, to prevent duplicate announcements.
-   * @type {!WeakSet<AutomationNode>}
-   * @private
-   */
-  this.liveRegionNodeSet_ = new WeakSet();
+    /**
+     * Set of nodes that have been announced as part of a live region since
+     *     |this.lastLiveRegionTime_|, to prevent duplicate announcements.
+     * @type {!WeakSet<AutomationNode>}
+     * @private
+     */
+    this.liveRegionNodeSet_ = new WeakSet();
 
-  /**
-   * A list of nodes that have changed as part of one atomic tree update.
-   * @private {!Array}
-   */
-  this.changedNodes_ = [];
+    /**
+     * A list of nodes that have changed as part of one atomic tree update.
+     * @private {!Array}
+     */
+    this.changedNodes_ = [];
 
-  chrome.automation.addTreeChangeObserver(
-      TreeChangeObserverFilter.LIVE_REGION_TREE_CHANGES,
-      this.onTreeChange.bind(this));
-};
+    chrome.automation.addTreeChangeObserver(
+        TreeChangeObserverFilter.LIVE_REGION_TREE_CHANGES,
+        this.onTreeChange.bind(this));
+  }
 
-/**
- * Live region events received in fewer than this many milliseconds will
- * queue, otherwise they'll be output with a category flush.
- * @type {number}
- * @const
- */
-LiveRegions.LIVE_REGION_QUEUE_TIME_MS = 5000;
-
-/**
- * Live region events received on the same node in fewer than this many
- * milliseconds will be dropped to avoid a stream of constant chatter.
- * @type {number}
- * @const
- */
-LiveRegions.LIVE_REGION_MIN_SAME_NODE_MS = 20;
-
-/**
- * Whether live regions from background tabs should be announced or not.
- * @type {boolean}
- * @private
- */
-LiveRegions.announceLiveRegionsFromBackgroundTabs_ = false;
-
-LiveRegions.prototype = {
   /**
    * Called when the automation tree is changed.
    * @param {TreeChange} treeChange
@@ -127,7 +105,7 @@ LiveRegions.prototype = {
     if (type == TreeChangeType.SUBTREE_UPDATE_END) {
       this.processQueuedTreeChanges_();
     }
-  },
+  }
 
   /**
    * @param {!AutomationNode} node
@@ -135,13 +113,14 @@ LiveRegions.prototype = {
    */
   queueLiveRegionChange_(node) {
     this.changedNodes_.push(node);
-  },
+  }
 
   /**
    * @private
    */
   processQueuedTreeChanges_() {
-    // Schedule all live regions after all events in the native C++ EventBundle.
+    // Schedule all live regions after all events in the native C++
+    // EventBundle.
     this.liveRegionNodeSet_ = new WeakSet();
     setTimeout(function() {
       for (var i = 0; i < this.changedNodes_.length; i++) {
@@ -150,7 +129,7 @@ LiveRegions.prototype = {
       }
       this.changedNodes_ = [];
     }.bind(this), 0);
-  },
+  }
 
   /**
    * Given a node that needs to be spoken as part of a live region
@@ -176,7 +155,7 @@ LiveRegions.prototype = {
     }
 
     this.outputLiveRegionChangeForNode_(node, opt_prependFormatStr);
-  },
+  }
 
   /**
    * @param {!AutomationNode} node The changed node.
@@ -227,7 +206,7 @@ LiveRegions.prototype = {
     window.prev = output;
     output.go();
     this.lastLiveRegionTime_ = currentTime;
-  },
+  }
 
   /**
    * @param {AutomationNode} root
@@ -238,6 +217,30 @@ LiveRegions.prototype = {
     for (var child = root.firstChild; child; child = child.nextSibling) {
       this.addNodeToNodeSetRecursive_(child);
     }
-  },
+  }
 };
+
+/**
+ * Live region events received in fewer than this many milliseconds will
+ * queue, otherwise they'll be output with a category flush.
+ * @type {number}
+ * @const
+ */
+LiveRegions.LIVE_REGION_QUEUE_TIME_MS = 5000;
+
+/**
+ * Live region events received on the same node in fewer than this many
+ * milliseconds will be dropped to avoid a stream of constant chatter.
+ * @type {number}
+ * @const
+ */
+LiveRegions.LIVE_REGION_MIN_SAME_NODE_MS = 20;
+
+/**
+ * Whether live regions from background tabs should be announced or not.
+ * @type {boolean}
+ * @private
+ */
+LiveRegions.announceLiveRegionsFromBackgroundTabs_ = false;
+
 });  // goog.scope

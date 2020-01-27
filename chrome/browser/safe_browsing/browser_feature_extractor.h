@@ -22,7 +22,7 @@
 #include "base/task/cancelable_task_tracker.h"
 #include "base/time/time.h"
 #include "components/history/core/browser/history_types.h"
-#include "components/security_interstitials/content/unsafe_resource.h"
+#include "components/security_interstitials/core/unsafe_resource.h"
 #include "url/gurl.h"
 
 namespace content {

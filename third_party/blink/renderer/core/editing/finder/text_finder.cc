@@ -30,8 +30,9 @@
 
 #include "third_party/blink/renderer/core/editing/finder/text_finder.h"
 
+#include "third_party/blink/public/mojom/input/focus_type.mojom-blink.h"
+#include "third_party/blink/public/mojom/scroll/scroll_into_view_params.mojom-blink.h"
 #include "third_party/blink/public/platform/web_float_rect.h"
-#include "third_party/blink/public/platform/web_scroll_into_view_params.h"
 #include "third_party/blink/public/platform/web_vector.h"
 #include "third_party/blink/public/web/web_frame_widget.h"
 #include "third_party/blink/public/web/web_local_frame_client.h"
@@ -60,6 +61,7 @@
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/layout/text_autosizer.h"
 #include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/core/scroll/scroll_into_view_params_type_converters.h"
 #include "third_party/blink/renderer/platform/instrumentation/histogram.h"
 #include "third_party/blink/renderer/platform/timer.h"
 
@@ -89,7 +91,7 @@ static void ScrollToVisible(Range* match) {
       smooth_find_enabled ? kScrollBehaviorSmooth : kScrollBehaviorAuto;
   first_node.GetLayoutObject()->ScrollRectToVisible(
       PhysicalRect(match->BoundingBox()),
-      WebScrollIntoViewParams(
+      CreateScrollIntoViewParams(
           ScrollAlignment::kAlignCenterIfNeeded,
           ScrollAlignment::kAlignCenterIfNeeded, kUserScroll,
           true /* make_visible_in_visual_viewport */, scroll_behavior,
@@ -268,7 +270,7 @@ void TextFinder::SetFindEndstateFocusAndSelection() {
                 .Build());
         GetFrame()->GetDocument()->SetFocusedElement(
             element, FocusParams(SelectionBehaviorOnFocus::kNone,
-                                 kWebFocusTypeNone, nullptr));
+                                 mojom::blink::FocusType::kNone, nullptr));
         return;
       }
     }
@@ -284,7 +286,7 @@ void TextFinder::SetFindEndstateFocusAndSelection() {
     if (element->IsFocusable()) {
       GetFrame()->GetDocument()->SetFocusedElement(
           element, FocusParams(SelectionBehaviorOnFocus::kNone,
-                               kWebFocusTypeNone, nullptr));
+                               mojom::blink::FocusType::kNone, nullptr));
       return;
     }
   }
@@ -632,9 +634,9 @@ int TextFinder::SelectFindMatch(unsigned index, WebRect* selection_rect) {
         active_match_->FirstNode()->GetLayoutObject()) {
       active_match_->FirstNode()->GetLayoutObject()->ScrollRectToVisible(
           PhysicalRect(active_match_bounding_box),
-          WebScrollIntoViewParams(ScrollAlignment::kAlignCenterIfNeeded,
-                                  ScrollAlignment::kAlignCenterIfNeeded,
-                                  kUserScroll));
+          CreateScrollIntoViewParams(ScrollAlignment::kAlignCenterIfNeeded,
+                                     ScrollAlignment::kAlignCenterIfNeeded,
+                                     kUserScroll));
 
       // Absolute coordinates are scroll-variant so the bounding box will change
       // if the page is scrolled by ScrollRectToVisible above. Recompute the

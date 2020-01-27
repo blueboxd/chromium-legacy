@@ -29,7 +29,7 @@ GenerateChromeDesktopReportRequest(const base::DictionaryValue& report,
 // Store the |data| associated with the identifier |id|. Calls |callback| on
 // completion with true on success.
 void StoreDeviceData(const std::string& id,
-                     const std::vector<uint8_t>& data,
+                     const std::unique_ptr<std::vector<uint8_t>> data,
                      base::OnceCallback<void(bool)> callback);
 
 // Retrieves the data associated with the identifier |id|. Calls |callback| on

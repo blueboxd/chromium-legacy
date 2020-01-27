@@ -24,7 +24,7 @@ NGUnpositionedListMarker::NGUnpositionedListMarker(const NGBlockNode& node)
 // Returns true if this is an image marker.
 bool NGUnpositionedListMarker::IsImage() const {
   DCHECK(marker_layout_object_);
-  return marker_layout_object_->IsContentImage();
+  return marker_layout_object_->Marker().IsMarkerImage(*marker_layout_object_);
 }
 
 // Compute the inline offset of the marker, relative to the list item.

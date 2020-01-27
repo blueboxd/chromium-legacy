@@ -234,10 +234,11 @@ void CompositorFrameReportingController::DidPresentCompositorFrame(
 }
 
 void CompositorFrameReportingController::SetBlinkBreakdown(
-    std::unique_ptr<BeginMainFrameMetrics> details) {
+    std::unique_ptr<BeginMainFrameMetrics> details,
+    base::TimeTicks main_thread_start_time) {
   DCHECK(reporters_[PipelineStage::kBeginMainFrame]);
   reporters_[PipelineStage::kBeginMainFrame]->SetBlinkBreakdown(
-      std::move(details));
+      std::move(details), main_thread_start_time);
 }
 
 void CompositorFrameReportingController::AddActiveTracker(

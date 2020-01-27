@@ -39,7 +39,7 @@
 
 @interface ULSTestTabModel : OCMockComplexTypeHelper
 - (instancetype)init NS_DESIGNATED_INITIALIZER;
-@property(nonatomic, assign) ios::ChromeBrowserState* browserState;
+@property(nonatomic, assign) ChromeBrowserState* browserState;
 @property(nonatomic, readonly) WebStateList* webStateList;
 @end
 
@@ -146,7 +146,7 @@ class URLLoadingServiceTest : public BlockCleanupTest {
     service_->SetBrowser(browser_);
     service_->SetAppService(app_service_);
 
-    ios::ChromeBrowserState* otr_browser_state =
+    ChromeBrowserState* otr_browser_state =
         chrome_browser_state_.get()->GetOffTheRecordChromeBrowserState();
 
     id otrTabModel = CreateTestTabModel(otr_browser_state);
@@ -181,7 +181,7 @@ class URLLoadingServiceTest : public BlockCleanupTest {
     return web_state;
   }
 
-  id CreateTestTabModel(ios::ChromeBrowserState* browser_state) {
+  id CreateTestTabModel(ChromeBrowserState* browser_state) {
     id tabModel = [[ULSTestTabModel alloc] init];
     [tabModel setBrowserState:browser_state];
 
@@ -351,7 +351,7 @@ TEST_F(URLLoadingServiceTest, TestOpenInCurrentIncognitoTab) {
   ASSERT_EQ(0, otr_web_state_list->count());
 
   // Make app level to be otr.
-  ios::ChromeBrowserState* otr_browser_state =
+  ChromeBrowserState* otr_browser_state =
       chrome_browser_state_.get()->GetOffTheRecordChromeBrowserState();
   app_service_->currentBrowserState = otr_browser_state;
 
@@ -393,7 +393,7 @@ TEST_F(URLLoadingServiceTest, TestOpenInNewIncognitoTab) {
   WebStateList* otr_web_state_list = otr_tab_model_.webStateList;
   ASSERT_EQ(0, otr_web_state_list->count());
 
-  ios::ChromeBrowserState* otr_browser_state =
+  ChromeBrowserState* otr_browser_state =
       chrome_browser_state_.get()->GetOffTheRecordChromeBrowserState();
   app_service_->currentBrowserState = otr_browser_state;
 
@@ -424,7 +424,7 @@ TEST_F(URLLoadingServiceTest, TestOpenNormalInNewTabWithIncognitoService) {
   WebStateList* otr_web_state_list = otr_tab_model_.webStateList;
   ASSERT_EQ(0, otr_web_state_list->count());
 
-  ios::ChromeBrowserState* otr_browser_state =
+  ChromeBrowserState* otr_browser_state =
       chrome_browser_state_.get()->GetOffTheRecordChromeBrowserState();
   app_service_->currentBrowserState = otr_browser_state;
 
@@ -513,7 +513,7 @@ TEST_F(URLLoadingServiceTest, TestOpenIncognitoInCurrentTabWithLoadStrategy) {
   ASSERT_EQ(0, otr_web_state_list->count());
 
   // Make app level to be otr.
-  ios::ChromeBrowserState* otr_browser_state =
+  ChromeBrowserState* otr_browser_state =
       chrome_browser_state_.get()->GetOffTheRecordChromeBrowserState();
   app_service_->currentBrowserState = otr_browser_state;
 

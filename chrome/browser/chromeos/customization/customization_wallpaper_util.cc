@@ -108,11 +108,11 @@ void OnCustomizedDefaultWallpaperDecoded(
            base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN});
   base::PostTaskAndReplyWithResult(
       task_runner.get(), FROM_HERE,
-      base::Bind(&ResizeAndSaveCustomizedDefaultWallpaper,
-                 wallpaper->image().DeepCopy(), resized_small_path,
-                 resized_large_path),
-      base::Bind(&OnCustomizedDefaultWallpaperResizedAndSaved, wallpaper_url,
-                 resized_small_path, resized_large_path));
+      base::BindOnce(&ResizeAndSaveCustomizedDefaultWallpaper,
+                     wallpaper->image().DeepCopy(), resized_small_path,
+                     resized_large_path),
+      base::BindOnce(&OnCustomizedDefaultWallpaperResizedAndSaved,
+                     wallpaper_url, resized_small_path, resized_large_path));
 }
 
 // If |both_sizes_exist| is false or the url doesn't match the current value,
@@ -175,10 +175,10 @@ void StartSettingCustomizedDefaultWallpaper(const GURL& wallpaper_url,
            base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN});
   base::PostTaskAndReplyWithResult(
       task_runner.get(), FROM_HERE,
-      base::Bind(&CheckCustomizedWallpaperFilesExist, resized_small_path,
-                 resized_large_path),
-      base::Bind(&SetCustomizedDefaultWallpaperAfterCheck, wallpaper_url,
-                 file_path, resized_small_path, resized_large_path));
+      base::BindOnce(&CheckCustomizedWallpaperFilesExist, resized_small_path,
+                     resized_large_path),
+      base::BindOnce(&SetCustomizedDefaultWallpaperAfterCheck, wallpaper_url,
+                     file_path, resized_small_path, resized_large_path));
 }
 
 bool GetCustomizedDefaultWallpaperPaths(base::FilePath* small_path_out,

@@ -228,6 +228,7 @@ class IdentityGetAuthTokenFunction : public ChromeAsyncExtensionFunction,
   // The browser resolution consent flow.
   RemoteConsentResolutionData resolution_data_;
   std::unique_ptr<GaiaRemoteConsentFlow> gaia_remote_consent_flow_;
+  std::string consent_result_;
 
   // Invoked when IdentityAPI is shut down.
   std::unique_ptr<base::CallbackList<void()>::Subscription>

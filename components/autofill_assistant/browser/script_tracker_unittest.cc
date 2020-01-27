@@ -133,6 +133,7 @@ class ScriptTrackerTest : public testing::Test, public ScriptTracker::Listener {
   FakeScriptExecutorDelegate delegate_;
   ScriptTracker tracker_;
   std::vector<std::unique_ptr<SupportedScriptProto>> scripts_proto_;
+  UserData user_data_;
 };
 
 TEST_F(ScriptTrackerTest, NoScripts) {
@@ -250,7 +251,7 @@ TEST_F(ScriptTrackerTest, CheckScriptsAgainAfterScriptEnd) {
   EXPECT_CALL(execute_callback,
               Run(Field(&ScriptExecutor::Result::success, true)));
 
-  tracker_.ExecuteScript("script1", TriggerContext::CreateEmpty(),
+  tracker_.ExecuteScript("script1", &user_data_, TriggerContext::CreateEmpty(),
                          execute_callback.Get());
   tracker_.CheckScripts();
 
@@ -309,8 +310,8 @@ TEST_F(ScriptTrackerTest, UpdateScriptList) {
   base::MockCallback<ScriptExecutor::RunScriptCallback> execute_callback;
   EXPECT_CALL(execute_callback,
               Run(Field(&ScriptExecutor::Result::success, true)));
-  tracker_.ExecuteScript("runnable name", TriggerContext::CreateEmpty(),
-                         execute_callback.Get());
+  tracker_.ExecuteScript("runnable name", &user_data_,
+                         TriggerContext::CreateEmpty(), execute_callback.Get());
   tracker_.CheckScripts();
 
   // 3. Verify that the runnable scripts have changed to the updated list.
@@ -351,8 +352,8 @@ TEST_F(ScriptTrackerTest, UpdateScriptListFromInterrupt) {
   base::MockCallback<ScriptExecutor::RunScriptCallback> execute_callback;
   EXPECT_CALL(execute_callback,
               Run(Field(&ScriptExecutor::Result::success, true)));
-  tracker_.ExecuteScript("runnable name", TriggerContext::CreateEmpty(),
-                         execute_callback.Get());
+  tracker_.ExecuteScript("runnable name", &user_data_,
+                         TriggerContext::CreateEmpty(), execute_callback.Get());
   tracker_.CheckScripts();
 
   // 3. Verify that the runnable scripts have changed to the updated list.
@@ -396,7 +397,7 @@ TEST_F(ScriptTrackerTest, UpdateInterruptList) {
   base::MockCallback<ScriptExecutor::RunScriptCallback> execute_callback;
   EXPECT_CALL(execute_callback,
               Run(Field(&ScriptExecutor::Result::success, true)));
-  tracker_.ExecuteScript("main", TriggerContext::CreateEmpty(),
+  tracker_.ExecuteScript("main", &user_data_, TriggerContext::CreateEmpty(),
                          execute_callback.Get());
 }
 

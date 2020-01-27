@@ -360,8 +360,10 @@ void DeepScanningDialogDelegate::ShowForWebContents(
   // If the UI is enabled, create the modal dialog.
   if (show_ui) {
     DeepScanningDialogDelegate* delegate_ptr = delegate.get();
+    bool is_file_scan = !delegate_ptr->data_.paths.empty();
     delegate_ptr->dialog_ =
-        new DeepScanningDialogViews(std::move(delegate), web_contents);
+        new DeepScanningDialogViews(std::move(delegate), web_contents,
+                                    std::move(access_point), is_file_scan);
     return;
   }
 

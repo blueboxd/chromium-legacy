@@ -23,6 +23,9 @@ const base::Feature kAssistantWarmerWelcomeFeature{
 const base::Feature kAssistantAppSupport{"AssistantAppSupport",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kAssistantConversationStartersV2{
+    "AssistantConversationStartersV2", base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kAssistantProactiveSuggestions{
     "AssistantProactiveSuggestions", base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -123,6 +126,10 @@ bool IsAudioEraserEnabled() {
 
 bool IsClearCutLogEnabled() {
   return base::FeatureList::IsEnabled(kEnableClearCutLog);
+}
+
+bool IsConversationStartersV2Enabled() {
+  return base::FeatureList::IsEnabled(kAssistantConversationStartersV2);
 }
 
 bool IsDspHotwordEnabled() {

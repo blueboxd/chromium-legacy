@@ -82,6 +82,7 @@ class PrintingEventObserver : public TestEventRouter::EventObserver {
 };
 
 constexpr char kExtensionId[] = "abcdefghijklmnopqrstuvwxyzabcdef";
+constexpr char kExtensionId2[] = "abcdefghijklmnopqrstuvwxyzaaaaaa";
 constexpr char kPrinterId[] = "printer";
 constexpr int kJobId = 10;
 
@@ -160,13 +161,13 @@ class PrintingAPIHandlerUnittest : public testing::Test {
   void OnPrinterInfoRetrieved(
       base::RepeatingClosure run_loop_closure,
       base::Optional<base::Value> capabilities,
-      base::Optional<api::printing::PrinterStatus> status,
+      base::Optional<api::printing::PrinterStatus> printer_status,
       base::Optional<std::string> error) {
     if (capabilities)
       capabilities_ = capabilities.value().Clone();
     else
       capabilities_ = base::nullopt;
-    status_ = status;
+    printer_status_ = printer_status;
     error_ = error;
     run_loop_closure.Run();
   }
@@ -181,7 +182,7 @@ class PrintingAPIHandlerUnittest : public testing::Test {
   chromeos::TestCupsWrapper* cups_wrapper_;
   std::unique_ptr<PrintingAPIHandler> printing_api_handler_;
   base::Optional<base::Value> capabilities_;
-  base::Optional<api::printing::PrinterStatus> status_;
+  base::Optional<api::printing::PrinterStatus> printer_status_;
   base::Optional<std::string> error_;
 
  private:
@@ -351,7 +352,7 @@ TEST_F(PrintingAPIHandlerUnittest, GetPrinterInfo_InvalidId) {
   // Printer is not added to CupsPrintersManager, so we expect "Invalid printer
   // id" error.
   EXPECT_FALSE(capabilities_.has_value());
-  EXPECT_FALSE(status_.has_value());
+  EXPECT_FALSE(printer_status_.has_value());
   ASSERT_TRUE(error_.has_value());
   EXPECT_EQ("Invalid printer ID", error_.value());
 }
@@ -369,8 +370,8 @@ TEST_F(PrintingAPIHandlerUnittest, GetPrinterInfo_NoCapabilities) {
   run_loop.Run();
 
   EXPECT_FALSE(capabilities_.has_value());
-  ASSERT_TRUE(status_.has_value());
-  EXPECT_EQ(api::printing::PRINTER_STATUS_UNREACHABLE, status_.value());
+  ASSERT_TRUE(printer_status_.has_value());
+  EXPECT_EQ(api::printing::PRINTER_STATUS_UNREACHABLE, printer_status_.value());
   EXPECT_FALSE(error_.has_value());
 }
 
@@ -426,9 +427,66 @@ TEST_F(PrintingAPIHandlerUnittest, GetPrinterInfo) {
   EXPECT_THAT(page_orientation_types,
               testing::UnorderedElementsAre("PORTRAIT", "LANDSCAPE", "AUTO"));
 
-  ASSERT_TRUE(status_.has_value());
-  EXPECT_EQ(api::printing::PRINTER_STATUS_OUT_OF_PAPER, status_.value());
+  ASSERT_TRUE(printer_status_.has_value());
+  EXPECT_EQ(api::printing::PRINTER_STATUS_OUT_OF_PAPER,
+            printer_status_.value());
   EXPECT_FALSE(error_.has_value());
+}
+
+TEST_F(PrintingAPIHandlerUnittest, CancelJob_InvalidId) {
+  base::Optional<std::string> error =
+      printing_api_handler_->CancelJob(kExtensionId, "job_id");
+
+  ASSERT_TRUE(error.has_value());
+  EXPECT_EQ("No active print job with given ID", error.value());
+}
+
+TEST_F(PrintingAPIHandlerUnittest, CancelJob_InvalidId_OtherExtension) {
+  std::unique_ptr<chromeos::CupsPrintJob> print_job =
+      std::make_unique<chromeos::CupsPrintJob>(
+          chromeos::Printer(kPrinterId), kJobId, "title",
+          /*total_page_number=*/3, ::printing::PrintJob::Source::EXTENSION,
+          kExtensionId, chromeos::printing::proto::PrintSettings());
+  print_job_manager_->CreatePrintJob(print_job.get());
+
+  // Try to cancel print job from other extension.
+  base::Optional<std::string> error = printing_api_handler_->CancelJob(
+      kExtensionId2,
+      chromeos::CupsPrintJob::CreateUniqueId(kPrinterId, kJobId));
+
+  ASSERT_TRUE(error.has_value());
+  EXPECT_EQ("No active print job with given ID", error.value());
+}
+
+TEST_F(PrintingAPIHandlerUnittest, CancelJob_InvalidState) {
+  std::unique_ptr<chromeos::CupsPrintJob> print_job =
+      std::make_unique<chromeos::CupsPrintJob>(
+          chromeos::Printer(kPrinterId), kJobId, "title",
+          /*total_page_number=*/3, ::printing::PrintJob::Source::EXTENSION,
+          kExtensionId, chromeos::printing::proto::PrintSettings());
+  print_job_manager_->CreatePrintJob(print_job.get());
+  print_job_manager_->CompletePrintJob(print_job.get());
+
+  // Try to cancel already completed print job.
+  base::Optional<std::string> error = printing_api_handler_->CancelJob(
+      kExtensionId, chromeos::CupsPrintJob::CreateUniqueId(kPrinterId, kJobId));
+
+  ASSERT_TRUE(error.has_value());
+  EXPECT_EQ("No active print job with given ID", error.value());
+}
+
+TEST_F(PrintingAPIHandlerUnittest, CancelJob) {
+  std::unique_ptr<chromeos::CupsPrintJob> print_job =
+      std::make_unique<chromeos::CupsPrintJob>(
+          chromeos::Printer(kPrinterId), kJobId, "title",
+          /*total_page_number=*/3, ::printing::PrintJob::Source::EXTENSION,
+          kExtensionId, chromeos::printing::proto::PrintSettings());
+  print_job_manager_->CreatePrintJob(print_job.get());
+
+  base::Optional<std::string> error = printing_api_handler_->CancelJob(
+      kExtensionId, chromeos::CupsPrintJob::CreateUniqueId(kPrinterId, kJobId));
+
+  EXPECT_FALSE(error.has_value());
 }
 
 }  // namespace extensions

@@ -36,7 +36,7 @@ class MetadataModel {
     /** @private @const {!MetadataProviderCache} */
     this.cache_ = new MetadataProviderCache();
 
-    /** @private @const {!Array<!MetadataProviderCallbackRequest<T>>} */
+    /** @private @const {!Array<!MetadataProviderCallbackRequest>} */
     this.callbackRequests_ = [];
 
     /**

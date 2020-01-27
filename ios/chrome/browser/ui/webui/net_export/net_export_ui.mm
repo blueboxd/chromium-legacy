@@ -212,6 +212,6 @@ void NetExportMessageHandler::NotifyUIWithState(
 NetExportUI::NetExportUI(web::WebUIIOS* web_ui)
     : web::WebUIIOSController(web_ui) {
   web_ui->AddMessageHandler(std::make_unique<NetExportMessageHandler>());
-  web::WebUIIOSDataSource::Add(ios::ChromeBrowserState::FromWebUIIOS(web_ui),
+  web::WebUIIOSDataSource::Add(ChromeBrowserState::FromWebUIIOS(web_ui),
                                CreateNetExportHTMLSource());
 }

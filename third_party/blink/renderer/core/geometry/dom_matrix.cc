@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/geometry/dom_matrix.h"
 
+#include "third_party/blink/renderer/bindings/core/v8/v8_dom_matrix_init.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/platform/transforms/affine_transform.h"
 

@@ -10,6 +10,7 @@
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/input/web_mouse_event.h"
+#include "third_party/blink/public/mojom/input/focus_type.mojom-blink.h"
 #include "third_party/blink/public/platform/modules/remoteplayback/web_remote_playback_client.h"
 #include "third_party/blink/public/platform/web_screen_info.h"
 #include "third_party/blink/public/platform/web_size.h"
@@ -986,7 +987,7 @@ TEST_F(MediaControlsImplTestWithMockScheduler,
   // Mouse move while focused
   MediaControls().DispatchEvent(*Event::Create("focusin"));
   MediaControls().MediaElement().SetFocused(true,
-                                            WebFocusType::kWebFocusTypeNone);
+                                            mojom::blink::FocusType::kNone);
   MediaControls().DispatchEvent(*Event::Create("pointermove"));
 
   // Controls should remain visible
@@ -1013,7 +1014,7 @@ TEST_F(MediaControlsImplTestWithMockScheduler,
   // Mouse move out while focused, controls should hide
   MediaControls().DispatchEvent(*Event::Create("focusin"));
   MediaControls().MediaElement().SetFocused(true,
-                                            WebFocusType::kWebFocusTypeNone);
+                                            mojom::blink::FocusType::kNone);
   MediaControls().DispatchEvent(*Event::Create("pointerout"));
   EXPECT_FALSE(IsElementVisible(*panel));
 }
@@ -1247,7 +1248,7 @@ TEST_F(MediaControlsImplTestWithMockScheduler,
   EXPECT_TRUE(volume_slider->classList().contains("closed"));
 
   // Tab focus should open volume slider immediately.
-  volume_slider->SetFocused(true, WebFocusType::kWebFocusTypeNone);
+  volume_slider->SetFocused(true, mojom::blink::FocusType::kNone);
   volume_slider->DispatchEvent(*Event::Create("focus"));
   EXPECT_FALSE(volume_slider->classList().contains("closed"));
 

@@ -108,7 +108,7 @@ class URLDownloader : reading_list::ReadingListDistillerPageDelegate {
   // Calls callback with true if an offline path exists. |path| must be
   // absolute.
   void OfflinePathExists(const base::FilePath& url,
-                         base::Callback<void(bool)> callback);
+                         base::OnceCallback<void(bool)> callback);
   // Handles the next task in the queue, if no task is currently being handled.
   void HandleNextTask();
   // Callback for completed (or failed) download, handles calling

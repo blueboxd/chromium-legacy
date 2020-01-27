@@ -45,7 +45,6 @@ def main():
                       help=('Use --Wl,-Map to generate a map file. Will be '
                             'gzipped if extension ends with .gz'),
                       metavar='FILE')
-  parser.add_argument('--dwp', help=('The dwp binary to run'), metavar='FILE')
   parser.add_argument('--output',
                       required=True,
                       help='Final output executable file',
@@ -53,10 +52,6 @@ def main():
   parser.add_argument('command', nargs='+',
                       help='Linking command')
   args = parser.parse_args()
-
-  generate_dwp = '--generate-dwp' in args.command
-  if generate_dwp:
-    args.command.remove('--generate-dwp')
 
   # Work-around for gold being slow-by-default. http://crbug.com/632230
   fast_env = dict(os.environ)
@@ -66,28 +61,11 @@ def main():
   if result != 0:
     return result
 
-  # If dwp is set, then package debug info for this exe.
-  dwp_proc = None
-  if generate_dwp:
-    if not args.dwp:
-      parser.error('--generate-dwp requireds --dwp')
-    exe_file = args.output
-    if args.unstripped_file:
-      exe_file = args.unstripped_file
-    dwp_proc = subprocess.Popen(
-        wrapper_utils.CommandToRun(
-            [args.dwp, '-e', exe_file, '-o', args.output + '.dwp']))
-
   # Finally, strip the linked executable (if desired).
   if args.strip:
     result = subprocess.call(CommandToRun([
         args.strip, '-o', args.output, args.unstripped_file
         ]))
-
-  if dwp_proc:
-    dwp_result = dwp_proc.wait()
-    if dwp_result != 0:
-      return dwp_result
 
   return result
 

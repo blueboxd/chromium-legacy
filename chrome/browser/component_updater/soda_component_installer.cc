@@ -11,6 +11,7 @@
 #include "chrome/common/pref_names.h"
 #include "components/component_updater/component_updater_service.h"
 #include "components/crx_file/id_util.h"
+#include "components/soda/constants.h"
 #include "components/update_client/update_client_errors.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "crypto/sha2.h"
@@ -27,9 +28,6 @@ const uint8_t kSODAPublicKeySHA256[32] = {
     0x82, 0xda, 0xe6, 0xe9, 0xfa, 0x59, 0x40, 0x9e, 0xda, 0xcb, 0xfb,
     0x8e, 0xd0, 0x0c, 0xef, 0xa5, 0xc0, 0x97, 0x00, 0x84, 0x1c, 0x21,
     0xa6, 0xae, 0xc8, 0x1b, 0x87, 0xfb, 0x12, 0x27, 0x28, 0xb1};
-
-const base::FilePath::CharType kSODABinaryFileName[] =
-    FILE_PATH_LITERAL("SODAFiles/libsoda.so");
 
 static_assert(base::size(kSODAPublicKeySHA256) == crypto::kSHA256Length,
               "Wrong hash length");
@@ -66,7 +64,7 @@ void SODAComponentInstallerPolicy::UpdateSODAComponentOnDemand() {
 bool SODAComponentInstallerPolicy::VerifyInstallation(
     const base::DictionaryValue& manifest,
     const base::FilePath& install_dir) const {
-  return base::PathExists(install_dir.Append(kSODABinaryFileName));
+  return base::PathExists(install_dir.Append(soda::kSodaBinaryRelativePath));
 }
 
 bool SODAComponentInstallerPolicy::SupportsGroupPolicyEnabledComponentUpdates()
@@ -98,7 +96,7 @@ void SODAComponentInstallerPolicy::ComponentReady(
 }
 
 base::FilePath SODAComponentInstallerPolicy::GetRelativeInstallDir() const {
-  return base::FilePath(FILE_PATH_LITERAL("SODA"));
+  return base::FilePath(soda::kSodaInstallationRelativePath);
 }
 
 void SODAComponentInstallerPolicy::GetHash(std::vector<uint8_t>* hash) const {
@@ -121,7 +119,8 @@ std::vector<std::string> SODAComponentInstallerPolicy::GetMimeTypes() const {
 
 void UpdateSODAInstallDirPref(PrefService* prefs,
                               const base::FilePath& install_dir) {
-  prefs->SetFilePath(prefs::kSODAPath, install_dir.Append(kSODABinaryFileName));
+  prefs->SetFilePath(prefs::kSODAPath,
+                     install_dir.Append(soda::kSodaBinaryRelativePath));
 }
 
 void RegisterSODAComponent(ComponentUpdateService* cus,

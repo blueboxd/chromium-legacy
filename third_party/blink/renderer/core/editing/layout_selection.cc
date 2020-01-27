@@ -191,7 +191,7 @@ struct OldSelectedNodes {
     selected_map = std::move(other.selected_map);
   }
 
-  Member<SelectionPaintRange> paint_range;
+  SelectionPaintRange* paint_range;
   HeapHashMap<Member<const Node>, SelectionState> selected_map;
 
  private:
@@ -230,7 +230,7 @@ struct NewPaintRangeAndSelectedNodes {
 #endif
   }
 
-  Member<SelectionPaintRange> paint_range;
+  SelectionPaintRange* paint_range;
   HeapHashSet<Member<const Node>> selected_objects;
 
  private:

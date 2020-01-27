@@ -1114,7 +1114,7 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
       Si se inhabilita la política o no se configura, se usará la configuración predeterminada de aislamiento de sitios de la plataforma para la pantalla de acceso.
       </translation>
 <translation id="2587719089023392205">Establecer <ph name="PRODUCT_NAME" /> como navegador predeterminado</translation>
-<translation id="2588071938417715443">Esta política establece el acceso a las funciones controlables de la IU de descubrimiento local (<ph name="CHROME_DEVICES_LINK" />) que muestra los dispositivos detectables cerca del usuario y los dispositivos en la nube que están registrados con ellos. En todos los sistemas operativos, excepto en <ph name="PRODUCT_OS_NAME" />, la IU de descubrimiento local también permite que los usuarios agreguen a <ph name="CLOUD_PRINT_NAME" /> impresoras clásicas conectadas a sus computadoras.</translation>
+<translation id="2588071938417715443">Esta política regula el acceso a las funciones controlables de la IU de descubrimiento local (<ph name="CHROME_DEVICES_LINK" />) que muestra cuáles son los dispositivos detectables cerca del usuario y los dispositivos en la nube que están registrados con él. En todos los sistemas operativos, excepto en <ph name="PRODUCT_OS_NAME" />, la IU de descubrimiento local también permite que los usuarios agreguen a <ph name="CLOUD_PRINT_NAME" /> impresoras clásicas conectadas a sus computadoras.</translation>
 <translation id="2592091433672667839">Duración de la inactividad antes de que se muestre el protector de pantalla en el modo de venta</translation>
 <translation id="2592162121850992309">Si esta política se configura como verdadera o no se configura, se habilitará la aceleración de hardware a menos que una función determinada de la GPU esté en la lista negra.
 
@@ -4249,13 +4249,13 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
       Esta política solo es válida si se habilita la extensión <ph name="CHROME_REPORTING_EXTENSION_NAME" />, y la máquina está inscrita en <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="777734450201217641">Habilita las combinaciones de teclas para las funciones de accesibilidad en la pantalla de acceso.
 
-          Si se establece como verdadera esta política, las combinaciones de teclas para las funciones de accesibilidad estarán siempre habilitadas en la pantalla de acceso.
+          Si se configura como verdadera esta política, las combinaciones de teclas para las funciones de accesibilidad estarán siempre habilitadas en la pantalla de acceso.
 
-          Si se establece como falsa, las combinaciones de teclas para las funciones de accesibilidad estarán siempre inhabilitadas en la pantalla de acceso.
+          Si se configura como falsa, las combinaciones de teclas para las funciones de accesibilidad estarán siempre inhabilitadas en la pantalla de acceso.
 
-          Si estableces esta política, los usuarios no podrán cambiarla ni anularla.
+          Si configuras esta política, los usuarios no podrán cambiarla ni anularla.
 
-          Si no la estableces, las combinaciones de teclas para las funciones de accesibilidad estarán habilitadas de forma predeterminada en la pantalla de acceso.</translation>
+          De lo contrario, las combinaciones de teclas para las funciones de accesibilidad estarán habilitadas de forma predeterminada en la pantalla de acceso.</translation>
 <translation id="7777535871204167559">Tratar los dispositivos de almacenamiento externo como de solo lectura</translation>
 <translation id="7788511847830146438">Por perfil</translation>
 <translation id="7792973482799545782">No permitir que ningún sitio cargue contenido mixto bloqueable</translation>
@@ -4682,13 +4682,13 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
 <translation id="8519264904050090490">Direcciones URL de excepción manual de usuario administrado</translation>
 <translation id="8519516251436131647">Habilita las combinaciones de teclas para las funciones de accesibilidad.
 
-          Si se establece esta política como verdadera, las combinaciones de teclas para las funciones de accesibilidad estarán siempre habilitadas.
+          Si se configura esta política como verdadera, las combinaciones de teclas para las funciones de accesibilidad estarán siempre habilitadas.
 
-          Si se establece como falsa, las combinaciones de teclas para las funciones de accesibilidad estarán siempre inhabilitadas.
+          Si se configura como falsa, las combinaciones de teclas para las funciones de accesibilidad estarán siempre inhabilitadas.
 
-          Si estableces esta política, los usuarios no podrán cambiarla ni anularla.
+          Si configuras esta política, los usuarios no podrán cambiarla ni anularla.
 
-          Si no la estableces, las combinaciones de teclas para las funciones de accesibilidad estarán habilitadas de forma predeterminada.</translation>
+          De lo contrario las combinaciones de teclas para las funciones de accesibilidad estarán habilitadas de forma predeterminada.</translation>
 <translation id="8525526490824335042">Contenedor de Linux</translation>
 <translation id="8538235451413605457">Configura los requisitos de la versión mínima permitida de <ph name="PRODUCT_NAME" />. Las versiones anteriores se tratan como obsoletas, y es posible que el dispositivo no permita acceder al usuario si no actualiza el SO.
       Si la versión actual se vuelve obsoleta durante la sesión de usuario, se lo forzará al usuario a salir.
@@ -4930,8 +4930,8 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
 <translation id="8911736066340032670">Informa datos relacionados con la pantalla, como la frecuencia de actualización, y
       con la tarjeta gráfica, como la versión del controlador.
 
-      Si se establece la política como falsa o no se establece, no se informarán
-      los estados de la pantalla y la tarjeta gráfica. Si se establece como verdadera, se informarán
+      Si se configura la política como falsa o no se configura, no se informarán
+      los estados de la pantalla y la tarjeta gráfica. Si se configura como verdadera, se informarán
       estos estados.</translation>
 <translation id="891435090623616439">codificada como cadena JSON; para obtener detalles, se puede consultar <ph name="COMPLEX_POLICIES_URL" /></translation>
 <translation id="8917070657147922192">Permite que los usuarios administren los Certificados de CA instalados</translation>

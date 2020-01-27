@@ -165,6 +165,19 @@ void SetAccountStorageOptIn(PrefService* pref_service,
                             const syncer::SyncService* sync_service,
                             bool opt_in);
 
+// Returns the default storage location for signed-in but non-syncing users
+// (i.e. will new passwords be saved to locally or to the account by default).
+// Always returns an actual value, never kNotSet.
+autofill::PasswordForm::Store GetDefaultPasswordStore(
+    const PrefService* pref_service,
+    const syncer::SyncService* sync_service);
+
+// Sets the default storage location for signed-in but non-syncing users (i.e.
+// will new passwords be saved to locally or to the account by default).
+void SetDefaultPasswordStore(PrefService* pref_service,
+                             const syncer::SyncService* sync_service,
+                             autofill::PasswordForm::Store default_store);
+
 }  // namespace password_manager_util
 
 #endif  // COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_PASSWORD_MANAGER_UTIL_H_

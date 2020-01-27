@@ -25,7 +25,6 @@
 #include "third_party/blink/public/mojom/selection_menu/selection_menu_behavior.mojom-shared.h"
 #include "third_party/blink/public/mojom/web_feature/web_feature.mojom-shared.h"
 #include "third_party/blink/public/platform/task_type.h"
-#include "third_party/blink/public/platform/web_focus_type.h"
 #include "third_party/blink/public/platform/web_size.h"
 #include "third_party/blink/public/platform/web_url_error.h"
 #include "third_party/blink/public/platform/web_url_request.h"
@@ -692,13 +691,6 @@ class WebLocalFrame : public WebFrame {
                                    cc::PaintCanvas* canvas) = 0;
 
   // Focus --------------------------------------------------------------
-
-  // Advance the focus of the WebView to next text input element from current
-  // input field wrt sequential navigation with TAB or Shift + TAB
-  // WebFocusTypeForward simulates TAB and WebFocusTypeBackward simulates
-  // Shift + TAB. (Will be extended to other form controls like select element,
-  // checkbox, radio etc.)
-  virtual void AdvanceFocusInForm(WebFocusType) = 0;
 
   // Returns whether the keyboard should be suppressed for the currently focused
   // element.

@@ -167,7 +167,7 @@ class PreloadJavaScriptDialogPresenter : public web::JavaScriptDialogPresenter {
 }
 
 // The ChromeBrowserState passed on initialization.
-@property(nonatomic) ios::ChromeBrowserState* browserState;
+@property(nonatomic) ChromeBrowserState* browserState;
 
 // Redefine property as readwrite.  The URL that is prerendered in |_webState|.
 // This can be different from the value returned by WebState last committed
@@ -218,7 +218,7 @@ class PreloadJavaScriptDialogPresenter : public web::JavaScriptDialogPresenter {
 
 @implementation PreloadController
 
-- (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState {
+- (instancetype)initWithBrowserState:(ChromeBrowserState*)browserState {
   DCHECK(browserState);
   DCHECK_CURRENTLY_ON(web::WebThread::UI);
   if ((self = [super init])) {

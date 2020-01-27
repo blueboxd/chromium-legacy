@@ -37,11 +37,8 @@ class CONTENT_EXPORT BrowserURLHandler {
 
   // RewriteURLIfNecessary gives all registered URLHandlers a shot at processing
   // the given URL, and modifies it in place.
-  // If the original URL needs to be adjusted if the modified URL is redirected,
-  // this function sets |reverse_on_redirect| to true.
   virtual void RewriteURLIfNecessary(GURL* url,
-                                     BrowserContext* browser_context,
-                                     bool* reverse_on_redirect) = 0;
+                                     BrowserContext* browser_context) = 0;
 
   // Set the specified handler as a preliminary fixup phase to be done before
   // rewriting.  This allows minor cleanup for the URL without having it affect

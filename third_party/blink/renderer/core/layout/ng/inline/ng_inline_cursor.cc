@@ -28,6 +28,8 @@ void NGInlineCursor::SetRoot(const NGFragmentItems& fragment_items,
   DCHECK(!HasRoot());
   fragment_items_ = &fragment_items;
   items_ = items;
+  DCHECK(items_.empty() || (items_.data() >= fragment_items_->Items().data() &&
+                            items_.data() < fragment_items_->Items().end()));
   MoveToItem(items_.begin());
 }
 
@@ -437,11 +439,11 @@ const NGPhysicalBoxFragment* NGInlineCursor::CurrentBoxFragment() const {
   return nullptr;
 }
 
-const DisplayItemClient* NGInlineCursor::CurrentDisplayItemClient() const {
-  if (current_.paint_fragment_)
-    return current_.paint_fragment_;
-  if (current_.item_)
-    return current_.item_;
+const DisplayItemClient* NGInlineCursorPosition::GetDisplayItemClient() const {
+  if (paint_fragment_)
+    return paint_fragment_;
+  if (item_)
+    return item_;
   NOTREACHED();
   return nullptr;
 }
@@ -844,6 +846,28 @@ void NGInlineCursor::MoveTo(const NGInlineCursorPosition& position) {
   current_ = position;
 }
 
+inline unsigned NGInlineCursor::SpanIndexFromItemIndex(unsigned index) const {
+  DCHECK(IsItemCursor());
+  DCHECK_GE(items_.data(), fragment_items_->Items().data());
+  DCHECK_LT(items_.data(), fragment_items_->Items().end());
+  if (items_.data() == fragment_items_->Items().data())
+    return index;
+  unsigned span_index = fragment_items_->Items().data() - items_.data() + index;
+  DCHECK_LT(span_index, items_.size());
+  return span_index;
+}
+
+NGInlineCursor::ItemsSpan::iterator NGInlineCursor::SlowFirstItemIteratorFor(
+    const LayoutObject& layout_object) const {
+  DCHECK(IsItemCursor());
+  for (ItemsSpan::iterator iter = items_.begin(); iter != items_.end();
+       ++iter) {
+    if ((*iter)->GetLayoutObject() == &layout_object)
+      return iter;
+  }
+  return items_.end();
+}
+
 void NGInlineCursor::InternalMoveTo(const LayoutObject& layout_object) {
   DCHECK(layout_object.IsInLayoutNGInlineFormattingContext());
   // If this cursor is rootless, find the root of the inline formatting context.
@@ -865,30 +889,18 @@ void NGInlineCursor::InternalMoveTo(const LayoutObject& layout_object) {
     }
   }
   if (fragment_items_) {
-    const wtf_size_t index = layout_object.FirstInlineFragmentItemIndex();
-    if (!index) {
+    const wtf_size_t item_index = layout_object.FirstInlineFragmentItemIndex();
+    if (!item_index) {
       // TODO(yosin): Once we update all |LayoutObject::FirstInlineFragment()|
       // clients, we should replace to |return MakeNull()|
-      current_.item_iter_ = items_.begin();
-      while (current_.item_ && CurrentLayoutObject() != &layout_object)
-        MoveToNextItem();
+      MoveToItem(SlowFirstItemIteratorFor(layout_object));
       return;
     }
-    DCHECK_LT(index, items_.size());
-    if (!had_root)
-      return MoveToItem(items_.begin() + index);
-    // Map |index| in |NGFragmentItems| to index of |items_|.
-    const LayoutBlockFlow& block_flow =
-        *layout_object.RootInlineFormattingContext();
-    const auto items =
-        ItemsSpan(block_flow.CurrentFragment()->Items()->Items());
-    // Note: We use address instead of iterator because we can't compare
-    // iterators in different span. See |base::CheckedContiguousIterator<T>|.
-    const ptrdiff_t adjusted_index =
-        &*(items.begin() + index) - &*items_.begin();
-    DCHECK_GE(adjusted_index, 0);
-    DCHECK_LT(static_cast<size_t>(adjusted_index), items_.size());
-    return MoveToItem(items_.begin() + adjusted_index);
+    const unsigned span_index = SpanIndexFromItemIndex(item_index);
+    DCHECK_EQ(span_index,
+              static_cast<unsigned>(SlowFirstItemIteratorFor(layout_object) -
+                                    items_.begin()));
+    return MoveToItem(items_.begin() + span_index);
   }
   if (root_paint_fragment_) {
     const auto fragments = NGPaintFragment::InlineFragmentsFor(&layout_object);
@@ -901,7 +913,8 @@ void NGInlineCursor::InternalMoveTo(const LayoutObject& layout_object) {
 void NGInlineCursor::MoveTo(const LayoutObject& layout_object) {
   DCHECK(layout_object.IsInLayoutNGInlineFormattingContext()) << layout_object;
   InternalMoveTo(layout_object);
-  if (*this || !HasRoot()) {
+  if (*this || !HasRoot() ||
+      RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled()) {
     layout_inline_ = nullptr;
     return;
   }

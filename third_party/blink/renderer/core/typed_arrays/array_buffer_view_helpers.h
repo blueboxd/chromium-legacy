@@ -106,13 +106,13 @@ class MaybeShared {
     return *this;
   }
 
-  T* View() const { return typed_array_.Get(); }
+  T* View() const { return typed_array_; }
 
   bool operator!() const { return !typed_array_; }
   explicit operator bool() const { return !!typed_array_; }
 
  private:
-  Member<T> typed_array_;
+  T* typed_array_ = nullptr;
 };
 
 }  // namespace blink

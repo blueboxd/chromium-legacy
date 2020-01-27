@@ -15,6 +15,7 @@
 #include "cc/resources/shared_bitmap_id_registrar.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/command_buffer/common/sync_token.h"
+#include "third_party/blink/public/mojom/input/focus_type.mojom-forward.h"
 #include "third_party/blink/public/web/web_document.h"
 #include "third_party/blink/public/web/web_element.h"
 #include "third_party/blink/public/web/web_local_frame.h"
@@ -82,7 +83,7 @@ class TestPlugin : public blink::WebPlugin, public cc::TextureLayerClient {
                       const blink::WebRect& clip_rect,
                       const blink::WebRect& unobscured_rect,
                       bool is_visible) override;
-  void UpdateFocus(bool focus, blink::WebFocusType focus_type) override {}
+  void UpdateFocus(bool focus, blink::mojom::FocusType focus_type) override {}
   void UpdateVisibility(bool visibility) override {}
   blink::WebInputEventResult HandleInputEvent(
       const blink::WebCoalescedInputEvent& event,

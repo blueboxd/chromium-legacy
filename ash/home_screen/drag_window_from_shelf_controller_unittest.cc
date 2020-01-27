@@ -65,6 +65,7 @@ class DragWindowFromShelfControllerTest : public AshTestBase {
                base::Optional<float> velocity_y) {
     window_drag_controller_->EndDrag(gfx::PointF(location_in_screen),
                                      velocity_y);
+    window_drag_controller_->FinalizeDraggedWindow();
   }
   void CancelDrag() { window_drag_controller_->CancelDrag(); }
 

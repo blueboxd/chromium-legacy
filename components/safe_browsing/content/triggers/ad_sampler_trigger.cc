@@ -18,7 +18,8 @@
 #include "components/safe_browsing/core/features.h"
 #include "components/safe_browsing/core/triggers/trigger_manager.h"
 #include "components/safe_browsing/core/triggers/trigger_throttler.h"
-#include "components/security_interstitials/content/unsafe_resource.h"
+#include "components/security_interstitials/content/unsafe_resource_util.h"
+#include "components/security_interstitials/core/unsafe_resource.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_handle.h"
@@ -147,7 +148,7 @@ void AdSamplerTrigger::CreateAdSampleReport() {
   security_interstitials::UnsafeResource resource;
   resource.threat_type = SB_THREAT_TYPE_AD_SAMPLE;
   resource.url = web_contents()->GetURL();
-  resource.web_contents_getter = resource.GetWebContentsGetter(
+  resource.web_contents_getter = security_interstitials::GetWebContentsGetter(
       web_contents()->GetMainFrame()->GetProcess()->GetID(),
       web_contents()->GetMainFrame()->GetRoutingID());
 

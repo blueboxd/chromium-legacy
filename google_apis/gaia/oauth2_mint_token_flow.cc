@@ -46,6 +46,8 @@ const char kOAuth2IssueTokenBodyFormat[] =
 // (crbug.com/481596)
 const char kOAuth2IssueTokenBodyFormatDeviceIdAddendum[] =
     "&device_id=%s&device_type=chrome&lib_ver=extension";
+const char kOAuth2IssueTokenBodyFormatConsentResultAddendum[] =
+    "&consent_result=%s";
 const char kIssueAdviceKey[] = "issueAdvice";
 const char kIssueAdviceValueConsent[] = "consent";
 const char kIssueAdviceValueRemoteConsent[] = "remoteConsent";
@@ -145,13 +147,14 @@ OAuth2MintTokenFlow::Parameters::Parameters(
     const std::string& cid,
     const std::vector<std::string>& scopes_arg,
     const std::string& device_id,
+    const std::string& consent_result,
     Mode mode_arg)
     : extension_id(eid),
       client_id(cid),
       scopes(scopes_arg),
       device_id(device_id),
-      mode(mode_arg) {
-}
+      consent_result(consent_result),
+      mode(mode_arg) {}
 
 OAuth2MintTokenFlow::Parameters::Parameters(const Parameters& other) = default;
 
@@ -220,6 +223,11 @@ std::string OAuth2MintTokenFlow::CreateApiCallBody() {
     body.append(base::StringPrintf(
         kOAuth2IssueTokenBodyFormatDeviceIdAddendum,
         net::EscapeUrlEncodedData(parameters_.device_id, true).c_str()));
+  }
+  if (!parameters_.consent_result.empty()) {
+    body.append(base::StringPrintf(
+        kOAuth2IssueTokenBodyFormatConsentResultAddendum,
+        net::EscapeUrlEncodedData(parameters_.consent_result, true).c_str()));
   }
   return body;
 }

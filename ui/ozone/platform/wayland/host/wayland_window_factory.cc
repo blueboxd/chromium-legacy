@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "ui/ozone/platform/wayland/host/wayland_connection.h"
 #include "ui/ozone/platform/wayland/host/wayland_popup.h"
 #include "ui/ozone/platform/wayland/host/wayland_subsurface.h"
 #include "ui/ozone/platform/wayland/host/wayland_surface.h"
@@ -21,11 +22,15 @@ std::unique_ptr<WaylandWindow> WaylandWindow::Create(
   switch (properties.type) {
     case PlatformWindowType::kMenu:
     case PlatformWindowType::kPopup:
-      // TODO(msisov): Add WaylandPopup.
-      window.reset(new WaylandPopup(delegate, connection));
+      // We are in the process of drag and requested a popup. Most probably, it
+      // is an arrow window.
+      if (connection->IsDragInProgress()) {
+        window.reset(new WaylandSubsurface(delegate, connection));
+      } else {
+        window.reset(new WaylandPopup(delegate, connection));
+      }
       break;
     case PlatformWindowType::kTooltip:
-      // TODO(msisov): Add WaylandSubsurface.
       window.reset(new WaylandSubsurface(delegate, connection));
       break;
     case PlatformWindowType::kWindow:

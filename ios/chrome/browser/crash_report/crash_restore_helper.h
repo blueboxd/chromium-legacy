@@ -7,7 +7,7 @@
 
 #import <Foundation/Foundation.h>
 
-#include "ios/chrome/browser/browser_state/chrome_browser_state_forward.h"
+class ChromeBrowserState;
 
 @protocol SessionWindowRestoring;
 namespace web {
@@ -17,7 +17,7 @@ class WebState;
 // Helper class for handling session restoration after a crash.
 @interface CrashRestoreHelper : NSObject
 
-- (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState;
+- (instancetype)initWithBrowserState:(ChromeBrowserState*)browserState;
 
 // Saves the session information stored on disk in temporary files and will
 // then delete those from their default location. This will ensure that the

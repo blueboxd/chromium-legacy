@@ -14,6 +14,7 @@
 #include "ash/public/cpp/app_list/app_list_types.h"
 #include "ash/public/cpp/app_types.h"
 #include "ash/public/cpp/ash_pref_names.h"
+#include "ash/public/cpp/assistant/assistant_client.h"
 #include "ash/public/cpp/autotest_desks_api.h"
 #include "ash/public/cpp/autotest_private_api_utils.h"
 #include "ash/public/cpp/default_frame_header.h"
@@ -84,7 +85,6 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
-#include "chrome/browser/ui/ash/assistant/assistant_client.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/ash/launcher/shelf_spinner_controller.h"
 #include "chrome/browser/ui/browser.h"
@@ -2283,7 +2283,7 @@ class AssistantInteractionHelper
 
   void Init(OnInteractionFinishedCallback on_interaction_finished_callback) {
     // Bind to Assistant service interface.
-    AssistantClient::Get()->BindAssistant(
+    ash::AssistantClient::Get()->BindAssistant(
         assistant_.BindNewPipeAndPassReceiver());
 
     // Subscribe to Assistant interaction events.

@@ -22,7 +22,7 @@ void RecordBookmarkLaunch(BookmarkLaunchLocation launch_location) {
                             BOOKMARK_LAUNCH_LOCATION_COUNT);
 }
 
-bool RemoveAllUserBookmarksIOS(ios::ChromeBrowserState* browser_state) {
+bool RemoveAllUserBookmarksIOS(ChromeBrowserState* browser_state) {
   BookmarkModel* bookmark_model =
       ios::BookmarkModelFactory::GetForBrowserState(browser_state);
 

@@ -12,6 +12,7 @@
 #include "base/optional.h"
 #include "chrome/browser/apps/intent_helper/intent_picker_auto_display_service.h"
 #include "chrome/browser/apps/intent_helper/page_transition_util.h"
+#include "chrome/browser/chromeos/apps/metrics/intent_handling_metrics.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/menu_manager.h"
 #include "chrome/browser/prerender/prerender_contents.h"
@@ -156,11 +157,6 @@ void AppsNavigationThrottle::OnIntentPickerClosed(
     case PickerEntryType::kMacNative:
       NOTREACHED();
   }
-  PickerAction action =
-      GetPickerAction(entry_type, close_reason, should_persist);
-  Platform platform = GetDestinationPlatform(launch_name, action);
-  RecordUma(launch_name, entry_type, close_reason, Source::kHttpOrHttps,
-            should_persist, action, platform);
 }
 
 // static
@@ -257,26 +253,6 @@ bool AppsNavigationThrottle::CanCreate(content::WebContents* web_contents) {
     return false;
 
   return true;
-}
-
-// static
-void AppsNavigationThrottle::RecordUma(const std::string& selected_app_package,
-                                       PickerEntryType entry_type,
-                                       IntentPickerCloseReason close_reason,
-                                       Source source,
-                                       bool should_persist,
-                                       PickerAction action,
-                                       Platform platform) {
-  // TODO(crbug.com/985233) For now External Protocol Dialog is only querying
-  // ARC apps.
-  if (source == Source::kExternalProtocol) {
-    UMA_HISTOGRAM_ENUMERATION("ChromeOS.Apps.ExternalProtocolDialog", action);
-  } else {
-    UMA_HISTOGRAM_ENUMERATION("ChromeOS.Apps.IntentPickerAction", action);
-
-    UMA_HISTOGRAM_ENUMERATION("ChromeOS.Apps.IntentPickerDestinationPlatform",
-                              platform);
-  }
 }
 
 // static

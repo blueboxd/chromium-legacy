@@ -134,7 +134,7 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
 @property(nonatomic, assign) bookmarks::BookmarkModel* bookmarks;
 
 // The user's browser state model used.
-@property(nonatomic, assign) ios::ChromeBrowserState* browserState;
+@property(nonatomic, assign) ChromeBrowserState* browserState;
 
 // The mediator that provides data for this view controller.
 @property(nonatomic, strong) BookmarkHomeMediator* mediator;
@@ -206,7 +206,7 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
 #pragma mark - Initializer
 
 - (instancetype)
-    initWithBrowserState:(ios::ChromeBrowserState*)browserState
+    initWithBrowserState:(ChromeBrowserState*)browserState
               dispatcher:(id<ApplicationCommands, BrowserCommands>)dispatcher
             webStateList:(WebStateList*)webStateList {
   DCHECK(browserState);

@@ -4,8 +4,6 @@
 
 #include "third_party/blink/renderer/core/page/scrolling/text_fragment_anchor.h"
 
-#include "third_party/blink/public/platform/web_scroll_into_view_params.h"
-#include "third_party/blink/renderer/core/accessibility/ax_object_cache.h"
 #include "third_party/blink/renderer/core/display_lock/display_lock_utilities.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/element.h"
@@ -21,6 +19,7 @@
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/page/scrolling/text_fragment_selector.h"
 #include "third_party/blink/renderer/core/scroll/scroll_alignment.h"
+#include "third_party/blink/renderer/core/scroll/scroll_into_view_params_type_converters.h"
 #include "third_party/blink/renderer/core/scroll/scrollable_area.h"
 
 namespace blink {
@@ -255,9 +254,9 @@ void TextFragmentAnchor::DidFindMatch(const EphemeralRangeInFlatTree& range) {
     PhysicalRect scrolled_bounding_box =
         node.GetLayoutObject()->ScrollRectToVisible(
             bounding_box,
-            WebScrollIntoViewParams(ScrollAlignment::kAlignCenterAlways,
-                                    ScrollAlignment::kAlignCenterAlways,
-                                    kProgrammaticScroll));
+            CreateScrollIntoViewParams(ScrollAlignment::kAlignCenterAlways,
+                                       ScrollAlignment::kAlignCenterAlways,
+                                       kProgrammaticScroll));
     did_scroll_into_view_ = true;
 
     if (AXObjectCache* cache = frame_->GetDocument()->ExistingAXObjectCache())

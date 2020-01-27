@@ -24,6 +24,7 @@
 <translation id="1029317248976101138">放大</translation>
 <translation id="1030706264415084469"><ph name="URL" /> 要求在您的裝置上永久儲存大量數據</translation>
 <translation id="1031362278801463162">正在載入預覽畫面</translation>
+<translation id="1032605640136438169">請閱讀新版條款</translation>
 <translation id="103279545524624934">請釋出磁碟的儲存空間，以啟動 Android 應用程式。</translation>
 <translation id="1033780634303702874">存取您的序列裝置</translation>
 <translation id="1034942643314881546">啟用 adb 以建立應用程式插圖</translation>
@@ -223,7 +224,6 @@
 <translation id="1306606229401759371">變更設定</translation>
 <translation id="1307165550267142340">已建立 PIN</translation>
 <translation id="1307559529304613120">糟糕！系統無法為這部裝置儲存長期 API 存取憑證。</translation>
-<translation id="1309199320876169714">正在移除 Plugin VM…</translation>
 <translation id="1313405956111467313">自動 Proxy 設定</translation>
 <translation id="131364520783682672">Caps Lock 鍵</translation>
 <translation id="1313705515580255288">系統會將您的書籤、記錄和其他設定與您的 Google 帳戶同步處理。</translation>
@@ -1366,7 +1366,6 @@
 <translation id="2871813825302180988">已有人在這部裝置上使用這個帳戶。</translation>
 <translation id="287286579981869940">新增「<ph name="PROVIDER_NAME" />」…</translation>
 <translation id="2872961005593481000">關閉</translation>
-<translation id="2874478552394649323">移除 Plugin VM</translation>
 <translation id="2874939134665556319">上一首曲目</translation>
 <translation id="2875698561019555027">(Chrome 錯誤頁面)</translation>
 <translation id="2876336351874743617">手指 2</translation>
@@ -1383,7 +1382,6 @@
 <translation id="2889064240420137087">使用其他程式開啟連結…</translation>
 <translation id="2889925978073739256">繼續封鎖無沙箱防護的外掛程式</translation>
 <translation id="2893168226686371498">預設瀏覽器</translation>
-<translation id="2893208266590504003">無法移除 Plugin VM</translation>
 <translation id="2894757982205307093">在群組中新增分頁</translation>
 <translation id="289644616180464099">SIM 卡已鎖定</translation>
 <translation id="2896909745808647285"><ph name="FILE_NAME" /> 已加密並被封鎖，因此無法開啟。</translation>
@@ -2833,6 +2831,7 @@
 <translation id="4998430619171209993">開啟</translation>
 <translation id="4998873842614926205">確認變更</translation>
 <translation id="5000922062037820727">封鎖 (建議)</translation>
+<translation id="5007392906805964215">查看</translation>
 <translation id="5008936837313706385">活動名稱</translation>
 <translation id="5010043101506446253">憑證授權單位</translation>
 <translation id="5015344424288992913">正在解析 Proxy…</translation>
@@ -3038,6 +3037,7 @@
 <translation id="5311304534597152726">正在使用以下身分登入：</translation>
 <translation id="53116743016968120"><ph name="ERROR_MESSAGE" />請再試一次。</translation>
 <translation id="5313628438272378649">此上載項目違反機構的安全性政策，因此無法完成上載。</translation>
+<translation id="5314381603623123224">Chrome 的《服務條款》將於 3 月 31 日變更</translation>
 <translation id="5315738755890845852">多餘的大括弧：<ph name="ERROR_LINE" /></translation>
 <translation id="5315873049536339193">身分</translation>
 <translation id="5317780077021120954">儲存</translation>
@@ -5772,7 +5772,6 @@
 <translation id="9169496697824289689">查看鍵盤快速鍵</translation>
 <translation id="916964310188958970">為什麼會顯示此建議？</translation>
 <translation id="9169931577761441333">將「<ph name="APP_NAME" />」新增至主畫面</translation>
-<translation id="9170305483456271385">Plugin VM 已移除</translation>
 <translation id="9170848237812810038">復原(&amp;U)</translation>
 <translation id="9170884462774788842">電腦中其他程式所新增的主題可能會變更 Chrome 的工作方式。</translation>
 <translation id="9173995187295789444">正在掃瞄藍牙裝置…</translation>

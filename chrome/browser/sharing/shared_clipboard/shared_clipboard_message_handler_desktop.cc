@@ -7,6 +7,7 @@
 #include "base/guid.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/trace_event/trace_event.h"
 #include "chrome/browser/notifications/notification_display_service.h"
 #include "chrome/browser/notifications/notification_display_service_factory.h"
 #include "chrome/grit/generated_resources.h"
@@ -26,6 +27,9 @@ SharedClipboardMessageHandlerDesktop::~SharedClipboardMessageHandlerDesktop() =
 
 void SharedClipboardMessageHandlerDesktop::ShowNotification(
     const std::string& device_name) {
+  TRACE_EVENT0("sharing",
+               "SharedClipboardMessageHandlerDesktop::ShowNotification");
+
   std::string notification_id = base::GenerateGUID();
 
   base::string16 notification_title =

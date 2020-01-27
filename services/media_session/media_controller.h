@@ -51,6 +51,8 @@ class MediaController : public mojom::MediaController,
                          observer) override;
   void SeekTo(base::TimeDelta seek_time) override;
   void ScrubTo(base::TimeDelta seek_time) override;
+  void EnterPictureInPicture() override;
+  void ExitPictureInPicture() override;
 
   // mojom::MediaSessionObserver overrides.
   void MediaSessionInfoChanged(

@@ -57,6 +57,10 @@ std::string SetGammaCorrectionAction(
     const std::vector<display::GammaRampRGBEntry>& degamma_lut,
     const std::vector<display::GammaRampRGBEntry>& gamma_lut);
 
+// Returns a string describing a TestNativedisplaydelegate::SetPrivacyScreen()
+// call.
+std::string SetPrivacyScreenAction(int64_t display_id, bool enabled);
+
 // Joins a sequence of strings describing actions (e.g. kScreenDim) such
 // that they can be compared against a string returned by
 // ActionLogger::GetActionsAndClear().  The list of actions must be

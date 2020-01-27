@@ -28,10 +28,10 @@
 
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/html/track/track_base.h"
-#include "third_party/blink/renderer/core/html/track/track_event_init.h"
 
 namespace blink {
 
+class TrackEventInit;
 class VideoTrackOrAudioTrackOrTextTrack;
 
 class CORE_EXPORT TrackEvent final : public Event {

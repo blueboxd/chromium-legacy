@@ -327,8 +327,7 @@ void RenderFrameMessageFilter::OnOpenChannelToPepperPlugin(
   // Enforce that the sender of the IPC (i.e. |render_process_id_|) is actually
   // able/allowed to host a frame with |embedder_origin|.
   auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
-  if (!embedder_origin.opaque() &&
-      !policy->CanAccessDataForOrigin(render_process_id_, embedder_origin)) {
+  if (!policy->CanAccessDataForOrigin(render_process_id_, embedder_origin)) {
     NOTREACHED() << embedder_origin;
     bad_message::ReceivedBadMessage(
         this, bad_message::RFMF_INVALID_PLUGIN_EMBEDDER_ORIGIN);

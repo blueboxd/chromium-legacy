@@ -87,7 +87,7 @@ void ChromeBrowserProvider::AttachTabHelpers(web::WebState* web_state) const {}
 void ChromeBrowserProvider::AttachBrowserAgents(Browser* browser) const {}
 
 void ChromeBrowserProvider::ScheduleDeferredStartupTasks(
-    ios::ChromeBrowserState* browser_state) const {}
+    ChromeBrowserState* browser_state) const {}
 
 VoiceSearchProvider* ChromeBrowserProvider::GetVoiceSearchProvider() const {
   return nullptr;
@@ -99,7 +99,7 @@ AppDistributionProvider* ChromeBrowserProvider::GetAppDistributionProvider()
 }
 
 id<LogoVendor> ChromeBrowserProvider::CreateLogoVendor(
-    ios::ChromeBrowserState* browser_state,
+    ChromeBrowserState* browser_state,
     web::WebState* web_state) const {
   return nil;
 }

@@ -106,7 +106,6 @@ import org.chromium.chrome.browser.metrics.ActivityTabStartupMetricsTracker;
 import org.chromium.chrome.browser.metrics.LaunchMetrics;
 import org.chromium.chrome.browser.metrics.UmaSessionStats;
 import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
-import org.chromium.chrome.browser.nfc.BeamController;
 import org.chromium.chrome.browser.night_mode.NightModeReparentingController;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.ntp.NewTabPageUma;
@@ -154,7 +153,6 @@ import org.chromium.chrome.browser.ui.appmenu.AppMenuPropertiesDelegate;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager.SnackbarManageable;
 import org.chromium.chrome.browser.ui.system.StatusBarColorController;
-import org.chromium.chrome.browser.ui.widget.textbubble.TextBubble;
 import org.chromium.chrome.browser.util.AccessibilityUtil;
 import org.chromium.chrome.browser.vr.ArDelegate;
 import org.chromium.chrome.browser.vr.ArDelegateProvider;
@@ -164,6 +162,7 @@ import org.chromium.chrome.browser.widget.ScrimView;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
 import org.chromium.components.bookmarks.BookmarkId;
 import org.chromium.components.browser_ui.modaldialog.AppModalPresenter;
+import org.chromium.components.browser_ui.widget.textbubble.TextBubble;
 import org.chromium.components.feature_engagement.EventConstants;
 import org.chromium.components.feature_engagement.Tracker;
 import org.chromium.components.module_installer.builder.Module;
@@ -1053,16 +1052,6 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
             }
             mUpdateNotificationController.onNewIntent(getIntent());
             UpdateMenuItemHelper.getInstance().registerObserver(mUpdateStateChangedListener);
-        });
-
-        DeferredStartupHandler.getInstance().addDeferredTask(() -> {
-            if (isActivityFinishingOrDestroyed()) return;
-            BeamController.registerForBeam(ChromeActivity.this, () -> {
-                Tab currentTab = getActivityTab();
-                if (currentTab == null) return null;
-                if (!currentTab.isUserInteractable()) return null;
-                return currentTab.getUrl();
-            });
         });
 
         final String simpleName = getClass().getSimpleName();

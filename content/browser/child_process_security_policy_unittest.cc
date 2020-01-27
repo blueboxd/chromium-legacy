@@ -1427,14 +1427,15 @@ TEST_F(ChildProcessSecurityPolicyTest, CanAccessDataForOrigin_Origin) {
       // Port differences considered equal.
       "http://foo.com:1234/index.html",
       "blob:http://foo.com:1234/43d75119-d7af-4471-a293-07c6b3d7e61a",
-      "filesystem:http://foo.com:1234/temporary/test.html"};
+      "filesystem:http://foo.com:1234/temporary/test.html",
+      // TODO(acolwell): data: should be in |non_foo_urls| in the long-term.
+      "data:text/html,Hello!"};
 
   const std::vector<const char*> non_foo_urls = {
       "file:///etc/passwd",
       "http://bar.com/index.html",
       "blob:http://bar.com/43d75119-d7af-4471-a293-07c6b3d7e61a",
       "filesystem:http://bar.com/temporary/test.html",
-      "data:text/html,Hello!"
       // foo.com with a different scheme not considered equal.
       "https://foo.com/index.html",
       "blob:https://foo.com/43d75119-d7af-4471-a293-07c6b3d7e61a",
@@ -1459,7 +1460,8 @@ TEST_F(ChildProcessSecurityPolicyTest, CanAccessDataForOrigin_Origin) {
     all_origins.push_back(origin);
   }
   url::Origin opaque_origin_without_precursor;
-  non_foo_origins.push_back(opaque_origin_without_precursor);
+  // TODO(acolwell): This should be in |non_foo_origins| in the long-term.
+  foo_origins.push_back(opaque_origin_without_precursor);
   all_origins.push_back(opaque_origin_without_precursor);
 
   auto opaque_with_bar_precursor =
@@ -1467,7 +1469,7 @@ TEST_F(ChildProcessSecurityPolicyTest, CanAccessDataForOrigin_Origin) {
   non_foo_origins.push_back(opaque_with_bar_precursor);
   all_origins.push_back(opaque_with_bar_precursor);
 
-  // Test invalid ID case.
+  // Test invalid process ID for all cases.
   for (const auto& origin : all_origins)
     EXPECT_FALSE(p->CanAccessDataForOrigin(kRendererID, origin)) << origin;
 

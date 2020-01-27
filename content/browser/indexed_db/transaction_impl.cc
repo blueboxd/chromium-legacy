@@ -206,13 +206,10 @@ void TransactionImpl::CreateBlobInfos(
         *security_policy_failure = true;
         return;
       }
-      (*blob_infos)[i] =
-          IndexedDBBlobInfo(std::move(info->blob), info->uuid, info->file->path,
-                            info->file->name, info->mime_type);
-      if (info->size != -1) {
-        (*blob_infos)[i].set_last_modified(info->file->last_modified);
-        (*blob_infos)[i].set_size(info->size);
-      }
+      DCHECK_NE(info->size, IndexedDBBlobInfo::kUnknownSize);
+      (*blob_infos)[i] = IndexedDBBlobInfo(
+          std::move(info->blob), info->uuid, info->file->path, info->file->name,
+          info->mime_type, info->file->last_modified, info->size);
     } else {
       (*blob_infos)[i] = IndexedDBBlobInfo(std::move(info->blob), info->uuid,
                                            info->mime_type, info->size);

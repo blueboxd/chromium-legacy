@@ -29,9 +29,10 @@
 
 #include "third_party/blink/renderer/core/animation/animation_time_delta.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
-#include "third_party/blink/renderer/core/events/transition_event_init.h"
 
 namespace blink {
+
+class TransitionEventInit;
 
 class TransitionEvent final : public Event {
   DEFINE_WRAPPERTYPEINFO();

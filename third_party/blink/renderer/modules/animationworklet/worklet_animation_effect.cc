@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "third_party/blink/renderer/modules/animationworklet/worklet_animation_effect.h"
-#include "third_party/blink/renderer/core/animation/computed_effect_timing.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_computed_effect_timing.h"
 #include "third_party/blink/renderer/core/animation/timing_calculations.h"
 
 namespace blink {

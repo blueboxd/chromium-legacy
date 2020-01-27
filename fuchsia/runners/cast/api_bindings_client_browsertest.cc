@@ -6,7 +6,6 @@
 #include <lib/fidl/cpp/binding.h>
 
 #include "base/test/bind_test_util.h"
-#include "base/test/test_timeouts.h"
 #include "fuchsia/base/fit_adapter.h"
 #include "fuchsia/base/frame_test_util.h"
 #include "fuchsia/base/mem_buffer_util.h"
@@ -21,10 +20,7 @@ namespace {
 
 class ApiBindingsClientTest : public cr_fuchsia::WebEngineBrowserTest {
  public:
-  ApiBindingsClientTest()
-      : api_service_binding_(&api_service_),
-        run_timeout_(TestTimeouts::action_timeout(),
-                     base::MakeExpectedNotRunClosure(FROM_HERE)) {
+  ApiBindingsClientTest() : api_service_binding_(&api_service_) {
     set_test_server_root(base::FilePath("fuchsia/runners/cast/testdata"));
   }
 
@@ -67,9 +63,6 @@ class ApiBindingsClientTest : public cr_fuchsia::WebEngineBrowserTest {
   std::unique_ptr<ApiBindingsClient> client_;
   cr_fuchsia::TestNavigationListener navigation_listener_;
   fuchsia::web::NavigationControllerPtr controller_;
-
- private:
-  const base::RunLoop::ScopedRunTimeoutForTest run_timeout_;
 
   DISALLOW_COPY_AND_ASSIGN(ApiBindingsClientTest);
 };

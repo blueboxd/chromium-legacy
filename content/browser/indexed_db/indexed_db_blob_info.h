@@ -27,6 +27,9 @@ namespace content {
 
 class CONTENT_EXPORT IndexedDBBlobInfo {
  public:
+  // Used for files with unknown size.
+  const static int64_t kUnknownSize = -1;
+
   static void ConvertBlobInfo(
       const std::vector<IndexedDBBlobInfo>& blob_info,
       std::vector<blink::mojom::IDBBlobInfoPtr>* blob_or_file_info);
@@ -41,14 +44,22 @@ class CONTENT_EXPORT IndexedDBBlobInfo {
                     int64_t size,
                     int64_t blob_number);
   // These two are used for Files.
+  // The |last_modified| time here is stored in two places - first in the
+  // leveldb database, and second as the last_modified time of the file written
+  // to disk. If these don't match, then something modified the file on disk and
+  // it should be considered corrupt.
   IndexedDBBlobInfo(mojo::PendingRemote<blink::mojom::Blob> blob_remote,
                     const std::string& uuid,
                     const base::FilePath& file_path,
                     const base::string16& file_name,
-                    const base::string16& type);
+                    const base::string16& type,
+                    const base::Time& last_modified,
+                    const int64_t size);
   IndexedDBBlobInfo(int64_t blob_number,
                     const base::string16& type,
-                    const base::string16& file_name);
+                    const base::string16& file_name,
+                    const base::Time& last_modified,
+                    const int64_t size);
 
   IndexedDBBlobInfo(const IndexedDBBlobInfo& other);
   ~IndexedDBBlobInfo();

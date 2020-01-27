@@ -25,7 +25,7 @@ class HotModeSpellCheckRequester {
 
  private:
   HeapVector<Member<const Element>> processed_root_editables_;
-  Member<SpellCheckRequester> requester_;
+  SpellCheckRequester* requester_;
 
   DISALLOW_COPY_AND_ASSIGN(HotModeSpellCheckRequester);
 };

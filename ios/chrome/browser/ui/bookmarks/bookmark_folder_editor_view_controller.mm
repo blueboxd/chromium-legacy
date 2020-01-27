@@ -64,7 +64,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 }
 @property(nonatomic, assign) BOOL editingExistingFolder;
 @property(nonatomic, assign) bookmarks::BookmarkModel* bookmarkModel;
-@property(nonatomic, assign) ios::ChromeBrowserState* browserState;
+@property(nonatomic, assign) ChromeBrowserState* browserState;
 @property(nonatomic, assign) const BookmarkNode* folder;
 @property(nonatomic, strong) BookmarkFolderViewController* folderViewController;
 @property(nonatomic, assign) const BookmarkNode* parentFolder;
@@ -122,11 +122,11 @@ typedef NS_ENUM(NSInteger, ItemType) {
   return folderCreator;
 }
 
-+ (instancetype)
-    folderEditorWithBookmarkModel:(bookmarks::BookmarkModel*)bookmarkModel
-                           folder:(const BookmarkNode*)folder
-                     browserState:(ios::ChromeBrowserState*)browserState
-                       dispatcher:(id<BrowserCommands>)dispatcher {
++ (instancetype)folderEditorWithBookmarkModel:
+                    (bookmarks::BookmarkModel*)bookmarkModel
+                                       folder:(const BookmarkNode*)folder
+                                 browserState:(ChromeBrowserState*)browserState
+                                   dispatcher:(id<BrowserCommands>)dispatcher {
   DCHECK(folder);
   DCHECK(!bookmarkModel->is_permanent_node(folder));
   DCHECK(browserState);

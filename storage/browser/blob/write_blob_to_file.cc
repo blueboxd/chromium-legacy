@@ -195,27 +195,31 @@ mojom::WriteBlobToFileResult CopyFileAndMaybeWriteTimeModified(
 
 mojom::WriteBlobToFileResult CreateEmptyFileAndMaybeSetModifiedTime(
     base::FilePath file_path,
-    base::Optional<base::Time> last_modified) {
+    base::Optional<base::Time> last_modified,
+    bool flush_on_write) {
   base::File file(file_path,
                   base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE);
   bool file_success = file.created();
   if (!file_success) {
     return mojom::WriteBlobToFileResult::kIOError;
   }
-  if (last_modified &&
-      !file.SetTimes(last_modified.value(), last_modified.value())) {
+  if (flush_on_write)
+    file.Flush();
+  file.Close();
+  if (last_modified && !base::TouchFile(file_path, last_modified.value(),
+                                        last_modified.value())) {
     // If the file modification time isn't set correctly, then reading
     // the blob later will fail. Thus, failing to save it is an error.
     file.Close();
     return mojom::WriteBlobToFileResult::kTimestampError;
   }
-  file.Close();
   return mojom::WriteBlobToFileResult::kSuccess;
 }
 
 void HandleModifiedTimeOnBlobFileWriteComplete(
     base::FilePath file_path,
     base::Optional<base::Time> last_modified,
+    bool flush_on_write,
     mojom::BlobStorageContext::WriteBlobToFileCallback callback,
     base::File::Error rv,
     int64_t bytes_written,
@@ -234,7 +238,7 @@ void HandleModifiedTimeOnBlobFileWriteComplete(
         {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
          base::ThreadPool()},
         base::BindOnce(CreateEmptyFileAndMaybeSetModifiedTime,
-                       std::move(file_path), last_modified),
+                       std::move(file_path), last_modified, flush_on_write),
         std::move(callback));
     return;
   } else if (success && last_modified) {
@@ -334,7 +338,8 @@ void WriteConstructedBlobToFile(
       IgnoreProgressWrapper(
           std::move(delegate),
           base::BindOnce(HandleModifiedTimeOnBlobFileWriteComplete, file_path,
-                         std::move(last_modified), std::move(callback))));
+                         std::move(last_modified), flush_on_write,
+                         std::move(callback))));
 }
 
 }  // namespace

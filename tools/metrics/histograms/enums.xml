@@ -1906,6 +1906,15 @@ Unknown properties are collapsed to zero. -->
   <int value="2" label="Cache Hit From Disk"/>
 </enum>
 
+<enum name="AnnouncementNotificationEvent">
+  <int value="0" label="Start"/>
+  <int value="1" label="Show notification"/>
+  <int value="2" label="Click"/>
+  <int value="3" label="Close"/>
+  <int value="4" label="Ack"/>
+  <int value="5" label="Review"/>
+</enum>
+
 <enum name="AntiVirusMetricsProviderResult">
   <int value="0" label="RESULT_SUCCESS"/>
   <int value="1" label="RESULT_GENERIC_FAILURE"/>
@@ -21832,6 +21841,7 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
   <int value="1434" label="AUTOTESTPRIVATE_SETARCTOUCHMODE"/>
   <int value="1435" label="PRINTING_SUBMITJOB"/>
   <int value="1436" label="IDENTITYPRIVATE_SETCONSENTRESULT"/>
+  <int value="1437" label="PRINTING_CANCELJOB"/>
 </enum>
 
 <enum name="ExtensionIconState">
@@ -26040,6 +26050,10 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
   <int value="3139" label="MeasureMemory"/>
   <int value="3140" label="V8Animation_ReplaceState_AttributeGetter"/>
   <int value="3141" label="V8Animation_Persist_Method"/>
+  <int value="3142" label="TaskControllerConstructor"/>
+  <int value="3143" label="TaskControllerSetPriority"/>
+  <int value="3144" label="TaskSignalPriority"/>
+  <int value="3145" label="SchedulerPostTask"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -36521,6 +36535,7 @@ from previous Chrome versions.
   <int value="-1946595906" label="enable-push-api-background-mode"/>
   <int value="-1946522787" label="VrCustomTabBrowsing:disabled"/>
   <int value="-1946367770" label="SyncWifiConfigurations:enabled"/>
+  <int value="-1945601266" label="freeze-user-agent"/>
   <int value="-1945524394" label="EnableBackgroundBlur:disabled"/>
   <int value="-1943817505" label="SingleClickAutofill:enabled"/>
   <int value="-1943507605" label="enable-new-video-renderer"/>
@@ -36729,6 +36744,8 @@ from previous Chrome versions.
   <int value="-1703709912" label="enable-new-ntp"/>
   <int value="-1703308540" label="disable-webaudio"/>
   <int value="-1701123067" label="ShowManagedUi:enabled"/>
+  <int value="-1696778023"
+      label="HappinessTrackingSurveysForDesktopSettings:disabled"/>
   <int value="-1696619241" label="OmniboxWrapPopupPosition:disabled"/>
   <int value="-1696366449" label="disable-permissions-bubbles"/>
   <int value="-1695774453" label="skip-extra-ash-window-positioning"/>
@@ -37139,6 +37156,8 @@ from previous Chrome versions.
   <int value="-1224962996" label="PwaImprovedSplashScreen:disabled"/>
   <int value="-1222805155" label="PdfIsolation:enabled"/>
   <int value="-1222556118" label="VirtualDesks:disabled"/>
+  <int value="-1222159993"
+      label="HappinessTrackingSurveysForDesktopSettings:enabled"/>
   <int value="-1218608640" label="disable-offline-load-stale-cache"/>
   <int value="-1217623062"
       label="AutofillAlwaysReturnCloudTokenizedCard:disabled"/>
@@ -37615,6 +37634,7 @@ from previous Chrome versions.
   <int value="-645455405" label="MacViewsNativeDialogs:enabled"/>
   <int value="-641820371" label="EnableCustomMacPaperSizes:enabled"/>
   <int value="-641719457" label="disable-compositor-touch-hit-testing"/>
+  <int value="-639070391" label="FreezeUserAgent:disabled"/>
   <int value="-639026783" label="disable-gpu-appcontainer"/>
   <int value="-638952203" label="RendererSideResourceScheduler:disabled"/>
   <int value="-634122679" label="GoogleBrandedContextMenu:enabled"/>
@@ -37699,6 +37719,7 @@ from previous Chrome versions.
   <int value="-528149352" label="WebRtcUseEchoCanceller3:enabled"/>
   <int value="-526236814" label="WebAssemblyTiering:enabled"/>
   <int value="-523030434" label="EnableBackgroundBlur:enabled"/>
+  <int value="-520221221" label="UserDataSnapshot:enabled"/>
   <int value="-520004021" label="WebXRHitTest:disabled"/>
   <int value="-519960638" label="enable-site-engagement-service"/>
   <int value="-518104091" label="NewAudioRenderingMixingStrategy:enabled"/>
@@ -37714,6 +37735,7 @@ from previous Chrome versions.
   <int value="-506706655" label="respect-autocomplete-off-autofill"/>
   <int value="-506366023" label="VizHitTest:enabled"/>
   <int value="-505679399" label="FontCacheScaling:enabled"/>
+  <int value="-503601144" label="UserDataSnapshot:disabled"/>
   <int value="-503430431" label="XRSandbox:enabled"/>
   <int value="-499186481"
       label="OmniboxGroupSuggestionsBySearchVsUrl:disabled"/>
@@ -38181,7 +38203,6 @@ from previous Chrome versions.
   <int value="64942701" label="OfflinePagesSvelteConcurrentLoading:disabled"/>
   <int value="66897259" label="ModalPermissionDialogView:enabled"/>
   <int value="67639499" label="stop-loading-in-background:disabled"/>
-  <int value="70878462" label="WebAssembly:disabled"/>
   <int value="73929836" label="VrBrowsingInCustomTab:enabled"/>
   <int value="75207621" label="enable-stylus-virtual-keyboard:enabled"/>
   <int value="75237697" label="ash-enable-new-overview-ui"/>
@@ -39469,7 +39490,6 @@ from previous Chrome versions.
   <int value="1700394127" label="OverlayScrollbar:disabled"/>
   <int value="1701972870" label="NTPSnippetsIncreasedVisibility:enabled"/>
   <int value="1702090999" label="ClearOldBrowsingData:disabled"/>
-  <int value="1702821235" label="WebAssembly:enabled"/>
   <int value="1703927420" label="PiexWasm:enabled"/>
   <int value="1705724232" label="use-android-midi-api"/>
   <int value="1707283026" label="SyncPseudoUSSExtensions:disabled"/>
@@ -39626,6 +39646,7 @@ from previous Chrome versions.
   <int value="1892640848" label="third-party-doodle-url"/>
   <int value="1893317228" label="WebPayments:enabled"/>
   <int value="1893463366" label="EnableHtmlBaseUsernameDetector:enabled"/>
+  <int value="1893693031" label="FreezeUserAgent:enabled"/>
   <int value="1896456311" label="enable-password-save-in-page-navigation"/>
   <int value="1896527497" label="ImmersiveUiMode:enabled"/>
   <int value="1898231011" label="enable-native-notifications"/>
@@ -41965,6 +41986,8 @@ Called by update_use_counter_css.py.-->
   <int value="10" label="Stop"/>
   <int value="11" label="Seek to"/>
   <int value="12" label="Scrub to"/>
+  <int value="13" label="Enter picture-in-picture"/>
+  <int value="14" label="Exit picture-in-picture"/>
 </enum>
 
 <enum name="MediaSinkType">
@@ -57359,6 +57382,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="3" label="Corruption Error"/>
   <int value="4" label="Operation Error"/>
   <int value="5" label="Not Supported Error"/>
+  <int value="6" label="Database Disabled Error"/>
 </enum>
 
 <enum name="ServiceWorkerDeleteAndStartOverResult">
@@ -57794,6 +57818,35 @@ Called by update_net_trust_anchors.py.-->
   <int value="6" label="PRIVACY_SECURITY_KEYS"/>
   <int value="7" label="PRIVACY_SITE_SETTINGS"/>
   <int value="8" label="PRIVACY_CLEAR_BROWSING_DATA"/>
+  <int value="9" label="PRIVACY_SAFE_BROWSING"/>
+  <int value="10" label="PRIVACY_PASSWORD_CHECK"/>
+  <int value="11" label="PRIVACY_IMPROVE_SECUITRY"/>
+  <int value="12" label="PRIVACY_SITE_SETTINGS_COOKIES"/>
+  <int value="13" label="PRIVACY_SITE_SETTINGS_LOCATION"/>
+  <int value="14" label="PRIVACY_SITE_SETTINGS_CAMERA"/>
+  <int value="15" label="PRIVACY_SITE_SETTINGS_MICROPHONE"/>
+  <int value="16" label="PRIVACY_SITE_SETTINGS_SENSORS"/>
+  <int value="17" label="PRIVACY_SITE_SETTINGS_NOTIFICATIONS"/>
+  <int value="18" label="PRIVACY_SITE_SETTINGS_JAVASCRIPT"/>
+  <int value="19" label="PRIVACY_SITE_SETTINGS_FLASH"/>
+  <int value="20" label="PRIVACY_SITE_SETTINGS_IMAGES"/>
+  <int value="21" label="PRIVACY_SITE_SETTINGS_POPUPS"/>
+  <int value="22" label="PRIVACY_SITE_SETTINGS_ADS"/>
+  <int value="23" label="PRIVACY_SITE_SETTINGS_BACKGROUND_SYNC"/>
+  <int value="24" label="PRIVACY_SITE_SETTINGS_SOUND"/>
+  <int value="25" label="PRIVACY_SITE_SETTINGS_AUTOMATIC_DOWNLOADS"/>
+  <int value="26" label="PRIVACY_SITE_SETTINGS_UNSANDBOXED_PLUGINS"/>
+  <int value="27" label="PRIVACY_SITE_SETTINGS_HANDLERS"/>
+  <int value="28" label="PRIVACY_SITE_SETTINGS_MIDI_DEVICES"/>
+  <int value="29" label="PRIVACY_SITE_SETTINGS_ZOOM_LEVELS"/>
+  <int value="30" label="PRIVACY_SITE_SETTINGS_USB_DEVICES"/>
+  <int value="31" label="PRIVACY_SITE_SETTINGS_SERIAL_PORTS"/>
+  <int value="32" label="PRIVACY_SITE_SETTINGS_NATIVE_FILE_SYSTEM_WRITE"/>
+  <int value="33" label="PRIVACY_SITE_SETTINGS_PDF_DOCUMENTS"/>
+  <int value="34" label="PRIVACY_SITE_SETTINGS_PROTECTED_CONTENT"/>
+  <int value="35" label="PRIVACY_SITE_SETTINGS_CLIPBOARD"/>
+  <int value="36" label="PRIVACY_SITE_SETTINGS_PAYMENT_HANDLER"/>
+  <int value="37" label="PRIVACY_SITE_SETTINGS_MIXEDSCRIPT"/>
 </enum>
 
 <enum name="SettingsResetPromptConfigError">
@@ -62327,6 +62380,8 @@ would be helpful to identify which type is being sent.
       label="[Deprecated in M79] Sharing notification dismiss button"/>
   <int value="11" label="Sharing error notification try again button"/>
   <int value="12" label="Settings button for notifications."/>
+  <int value="13" label="Announcement notification ack button."/>
+  <int value="14" label="Announcement notification open button."/>
 </enum>
 
 <enum name="SystemNotificationType">
@@ -62351,6 +62406,7 @@ would be helpful to identify which type is being sent.
   <int value="18" label="Shared Clipboard"/>
   <int value="19" label="Permission Requests"/>
   <int value="20" label="Permission Requests High"/>
+  <int value="21" label="Announcement"/>
 </enum>
 
 <enum name="TabBackgroundLoadStatus">
@@ -63910,7 +63966,9 @@ Full version information for the fingerprint enum values:
   <int value="7" label="Can not create extracted file on disk"/>
   <int value="8" label="Can not write the extracted file on disk"/>
   <int value="9" label="Can not set the extract time to file"/>
-  <int value="10" label="Can not close extracted file"/>
+  <int value="10" label="Can not close extracted file (Deprecated)"/>
+  <int value="11" label="Can not create file memory mapping"/>
+  <int value="12" label="File CRC mismatch"/>
 </enum>
 
 <enum name="UnsupportedContainers">

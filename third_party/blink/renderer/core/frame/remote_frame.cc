@@ -10,6 +10,7 @@
 #include "third_party/blink/public/platform/interface_registry.h"
 #include "third_party/blink/public/web/web_frame.h"
 #include "third_party/blink/public/web/web_view.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_fullscreen_options.h"
 #include "third_party/blink/renderer/bindings/core/v8/window_proxy.h"
 #include "third_party/blink/renderer/bindings/core/v8/window_proxy_manager.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
@@ -19,10 +20,11 @@
 #include "third_party/blink/renderer/core/frame/remote_frame_client.h"
 #include "third_party/blink/renderer/core/frame/remote_frame_view.h"
 #include "third_party/blink/renderer/core/fullscreen/fullscreen.h"
-#include "third_party/blink/renderer/core/fullscreen/fullscreen_options.h"
 #include "third_party/blink/renderer/core/html/html_frame_owner_element.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
+#include "third_party/blink/renderer/core/layout/geometry/physical_rect.h"
 #include "third_party/blink/renderer/core/layout/layout_embedded_content.h"
+#include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/loader/frame_load_request.h"
 #include "third_party/blink/renderer/core/loader/frame_loader.h"
 #include "third_party/blink/renderer/core/loader/mixed_content_checker.h"
@@ -30,6 +32,7 @@
 #include "third_party/blink/renderer/core/page/plugin_script_forbidden_scope.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
+#include "third_party/blink/renderer/core/scroll/scroll_into_view_params_type_converters.h"
 #include "third_party/blink/renderer/core/timing/dom_window_performance.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
@@ -41,6 +44,16 @@
 #include "third_party/blink/renderer/platform/weborigin/security_policy.h"
 
 namespace blink {
+
+namespace {
+FloatRect DeNormalizeRect(const WebFloatRect& normalized, const IntRect& base) {
+  FloatRect result = normalized;
+  result.Scale(base.Width(), base.Height());
+  result.MoveBy(FloatPoint(base.Location()));
+  return result;
+}
+
+}  // namespace
 
 RemoteFrame::RemoteFrame(
     RemoteFrameClient* client,
@@ -421,6 +434,61 @@ void RemoteFrame::SetPageFocus(bool is_focused) {
   WebFrame::FromFrame(this)->View()->SetFocus(is_focused);
 }
 
+void RemoteFrame::ScrollRectToVisible(
+    const WebRect& rect_to_scroll,
+    mojom::blink::ScrollIntoViewParamsPtr params) {
+  Element* owner_element = DeprecatedLocalOwner();
+  LayoutObject* owner_object = owner_element->GetLayoutObject();
+  if (!owner_object) {
+    // The LayoutObject could be nullptr by the time we get here. For instance
+    // <iframe>'s style might have been set to 'display: none' right after
+    // scrolling starts in the OOPIF's process (see https://crbug.com/777811).
+    return;
+  }
+
+  // Schedule the scroll.
+  PhysicalRect absolute_rect = owner_object->LocalToAncestorRect(
+      PhysicalRect(LayoutUnit(rect_to_scroll.x), LayoutUnit(rect_to_scroll.y),
+                   LayoutUnit(rect_to_scroll.width),
+                   LayoutUnit(rect_to_scroll.height)),
+      owner_object->View());
+
+  if (!params->zoom_into_rect ||
+      !owner_object->GetDocument().GetFrame()->LocalFrameRoot().IsMainFrame()) {
+    owner_object->ScrollRectToVisible(absolute_rect, std::move(params));
+    return;
+  }
+
+  // ZoomAndScrollToFocusedEditableElementRect will scroll only the layout and
+  // visual viewports. Ensure the element is actually visible in the viewport
+  // scrolling layer. (i.e. isn't clipped by some other content).
+  auto relative_element_bounds = params->relative_element_bounds;
+  auto relative_caret_bounds = params->relative_caret_bounds;
+
+  params->stop_at_main_frame_layout_viewport = true;
+  absolute_rect =
+      owner_object->ScrollRectToVisible(absolute_rect, std::move(params));
+
+  IntRect rect_in_document =
+      owner_object->GetDocument()
+          .GetFrame()
+          ->LocalFrameRoot()
+          .View()
+          ->RootFrameToDocument(EnclosingIntRect(
+              owner_element->GetDocument().View()->ConvertToRootFrame(
+                  absolute_rect)));
+  IntRect element_bounds_in_document = EnclosingIntRect(
+      DeNormalizeRect(relative_element_bounds, rect_in_document));
+  IntRect caret_bounds_in_document = EnclosingIntRect(
+      DeNormalizeRect(relative_caret_bounds, rect_in_document));
+
+  // This is due to something such as scroll focused editable element into
+  // view on Android which also requires an automatic zoom into legible scale.
+  // This is handled by main frame's WebView.
+  WebFrame::FromFrame(this)->View()->ZoomAndScrollToFocusedEditableElementRect(
+      element_bounds_in_document, caret_bounds_in_document, true);
+}
+
 bool RemoteFrame::IsIgnoredForHitTest() const {
   HTMLFrameOwnerElement* owner = DeprecatedLocalOwner();
   if (!owner || !owner->GetLayoutObject())
@@ -437,7 +505,8 @@ void RemoteFrame::UpdateHitTestOcclusionData() {
   if (base::FeatureList::IsEnabled(
           blink::features::kVizHitTestOcclusionCheck)) {
     if (LayoutEmbeddedContent* owner = OwnerLayoutObject()) {
-      if (!owner->GetFrameView()->CanThrottleRendering()) {
+      if (owner->GetFrame()->IsAttached() &&
+          !owner->GetFrameView()->CanThrottleRendering()) {
         HitTestResult hit_test_result(owner->HitTestForOcclusion());
         const Node* hit_node = hit_test_result.InnerNode();
         unoccluded = (!hit_node || hit_node == owner->GetNode());
@@ -466,7 +535,8 @@ void RemoteFrame::SetCcLayer(cc::Layer* cc_layer,
   To<HTMLFrameOwnerElement>(Owner())->SetNeedsCompositingUpdate();
 }
 
-void RemoteFrame::AdvanceFocus(WebFocusType type, LocalFrame* source) {
+void RemoteFrame::AdvanceFocus(mojom::blink::FocusType type,
+                               LocalFrame* source) {
   Client()->AdvanceFocus(type, source);
 }
 

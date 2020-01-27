@@ -22,6 +22,7 @@
 
 #include "third_party/blink/renderer/core/svg/svg_a_element.h"
 
+#include "third_party/blink/public/mojom/input/focus_type.mojom-blink.h"
 #include "third_party/blink/renderer/core/dom/attr.h"
 #include "third_party/blink/renderer/core/dom/attribute.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -174,7 +175,7 @@ bool SVGAElement::SupportsFocus() const {
 }
 
 bool SVGAElement::ShouldHaveFocusAppearance() const {
-  return (GetDocument().LastFocusType() != kWebFocusTypeMouse) ||
+  return (GetDocument().LastFocusType() != mojom::blink::FocusType::kMouse) ||
          SVGGraphicsElement::SupportsFocus();
 }
 

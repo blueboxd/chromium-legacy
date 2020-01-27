@@ -87,7 +87,7 @@ base::string16 IOSSecurityInterstitialPage::GetFormattedHostName() const {
 }
 
 bool IOSSecurityInterstitialPage::IsPrefEnabled(const char* pref_name) const {
-  ios::ChromeBrowserState* browser_state =
-      ios::ChromeBrowserState::FromBrowserState(web_state_->GetBrowserState());
+  ChromeBrowserState* browser_state =
+      ChromeBrowserState::FromBrowserState(web_state_->GetBrowserState());
   return browser_state->GetPrefs()->GetBoolean(pref_name);
 }

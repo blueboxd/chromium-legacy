@@ -26,8 +26,8 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_SPEECH_SPEECH_RECOGNITION_EVENT_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_SPEECH_SPEECH_RECOGNITION_EVENT_H_
 
+#include "third_party/blink/renderer/bindings/modules/v8/v8_speech_recognition_event_init.h"
 #include "third_party/blink/renderer/modules/event_modules.h"
-#include "third_party/blink/renderer/modules/speech/speech_recognition_event_init.h"
 #include "third_party/blink/renderer/modules/speech/speech_recognition_result.h"
 #include "third_party/blink/renderer/modules/speech/speech_recognition_result_list.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"

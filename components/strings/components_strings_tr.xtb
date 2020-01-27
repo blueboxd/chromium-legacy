@@ -290,7 +290,6 @@
 <translation id="2218879909401188352">Şu anda <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> öğesini kullanan saldırganlar cihazınıza zarar verebilecek uygulamalar yükleyebilir, sizden habersiz mobil faturanıza ücretler ekleyebilir veya kişisel bilgilerinizi çalabilirler. <ph name="BEGIN_LEARN_MORE_LINK" />Daha fazla bilgi<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="2224337661447660594">İnternet bağlantısı yok</translation>
 <translation id="2230458221926704099"><ph name="BEGIN_LINK" />Tanılama uygulamasını<ph name="END_LINK" /> kullanarak bağlantınızı düzeltin</translation>
-<translation id="22320125457191592">Size özel</translation>
 <translation id="2239100178324503013">Şimdi gönder</translation>
 <translation id="2248949050832152960">WebAuthn'u kullan</translation>
 <translation id="2250931979407627383">Solda kenar dikişi</translation>
@@ -572,7 +571,6 @@
 <translation id="3531780078352352885">İş sayfaları</translation>
 <translation id="3533328374079021623">Posta kutusu 5</translation>
 <translation id="3539171420378717834">Bu kartın bir kopyasını bu cihazda tut</translation>
-<translation id="3553513561058684206">Size Özel</translation>
 <translation id="3558573058928565255">Gündüz</translation>
 <translation id="3566021033012934673">Bağlantınız gizli değil</translation>
 <translation id="3574305903863751447"><ph name="CITY" />, <ph name="STATE" /> <ph name="COUNTRY" /></translation>

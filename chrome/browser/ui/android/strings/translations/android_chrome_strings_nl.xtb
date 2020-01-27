@@ -134,6 +134,7 @@
 <translation id="1994173015038366702">Site-URL</translation>
 <translation id="2000419248597011803">Hiermee worden bepaalde cookies en de zoekopdrachten in de adresbalk en in het zoekvak verzonden naar je standaard zoekmachine</translation>
 <translation id="2002537628803770967">Creditcards en adressen die Google Pay gebruiken</translation>
+<translation id="2012973609889389923">Snelle site</translation>
 <translation id="2013642289801508067">{FILE_COUNT,plural, =1{# bestand}other{# bestanden}}</translation>
 <translation id="2017836877785168846">Wist de geschiedenis en automatische aanvullingen in de adresbalk.</translation>
 <translation id="2021896219286479412">Siteopties op volledig scherm</translation>
@@ -306,6 +307,7 @@
 <translation id="3298243779924642547">Lite</translation>
 <translation id="3303414029551471755">Doorgaan met het downloaden van de content?</translation>
 <translation id="3306398118552023113">Deze app wordt uitgevoerd in Chrome</translation>
+<translation id="3312292613668865961">Vragen voordat sites toegang krijgen tot je VR-apparaat en -gegevens (aanbevolen)</translation>
 <translation id="3315103659806849044">Je past op dit moment je instellingen voor synchronisatie en Google-services aan. Als je synchronisatie wilt inschakelen, tik je op Bevestigen onderaan het scherm. Omhoog navigeren</translation>
 <translation id="3328801116991980348">Site-informatie</translation>
 <translation id="3333961966071413176">Alle contacten</translation>
@@ -511,6 +513,7 @@ Voor je Google-account kunnen andere vormen van browsegeschiedenis (zoals zoekop
 <translation id="4915549754973153784"><ph name="BEGIN_LINK" />Hulp<ph name="END_LINK" /> bij het zoeken naar apparaten…</translation>
 <translation id="4921180162323349895">{FILE_COUNT,plural, =1{# pagina}other{# pagina's}}</translation>
 <translation id="4932247056774066048">Omdat je uitlogt van een account dat wordt beheerd door <ph name="DOMAIN_NAME" />, worden je Chrome-gegevens verwijderd. De gegevens blijven in je Google-account staan.</translation>
+<translation id="4935305910887312910">Vragen voordat sites toegang krijgen tot je camerapositie of je ruimte in kaart mogen brengen (aanbevolen)</translation>
 <translation id="4943703118917034429">Virtual reality</translation>
 <translation id="4943872375798546930">Geen resultaten</translation>
 <translation id="4958708863221495346"><ph name="URL_OF_THE_CURRENT_TAB" /> heeft toegang tot je scherm</translation>
@@ -744,6 +747,7 @@ Zo kunnen sommige websites op dit verzoek reageren door advertenties weer te gev
 <translation id="6573431926118603307">Tabbladen die je op andere apparaten in Chrome hebt geopend, worden hier weergegeven.</translation>
 <translation id="6583199322650523874">Een bladwijzer toevoegen voor de huidige pagina</translation>
 <translation id="6593061639179217415">Desktopsite</translation>
+<translation id="6597891566292541626">Zorg dat de QR-/streepjescode binnen dit kader valt.</translation>
 <translation id="6600954340915313787">Gekopieerd naar Chrome</translation>
 <translation id="6608650720463149374"><ph name="GIGABYTES" /> GB</translation>
 <translation id="6612358246767739896">Beschermde content</translation>
@@ -953,6 +957,7 @@ De site krijgt GEEN toegang tot de camera. De camerabeelden zijn alleen zichtbaa
 <translation id="8109613176066109935">Schakel synchronisatie in om op al je apparaten toegang tot je bladwijzers te hebben</translation>
 <translation id="8110087112193408731">Je Chrome-activiteit weergeven in Digitaal welzijn?</translation>
 <translation id="8116925261070264013">Gedempt</translation>
+<translation id="8127542551745560481">Homepage bewerken</translation>
 <translation id="813082847718468539">Sitegegevens bekijken</translation>
 <translation id="8156139159503939589">Welke talen lees je?</translation>
 <translation id="8168435359814927499">Content</translation>
@@ -1024,6 +1029,7 @@ De site krijgt GEEN toegang tot de camera. De camerabeelden zijn alleen zichtbaa
 <translation id="8676374126336081632">Invoer wissen</translation>
 <translation id="8687353297350450808">{N_BARS,plural, =1{Signaalsterkte: # streepje}other{Signaalsterkte: # streepjes}}</translation>
 <translation id="868929229000858085">Zoek in je contacten</translation>
+<translation id="8698438463325761328">Voorkomen dat sites toegang krijgen tot je VR-apparaat en -gegevens</translation>
 <translation id="869891660844655955">Vervaldatum</translation>
 <translation id="8719023831149562936">Kan huidig tabblad niet beamen</translation>
 <translation id="8728487861892616501">Door deze app te gebruiken, ga je akkoord met de <ph name="BEGIN_LINK1" />Servicevoorwaarden<ph name="END_LINK1" /> en het <ph name="BEGIN_LINK2" />Privacybeleid<ph name="END_LINK2" /> van Chrome en het <ph name="BEGIN_LINK3" />Privacyverklaring voor Google-accounts die worden beheerd met Family Link<ph name="END_LINK3" />.</translation>
@@ -1041,6 +1047,7 @@ De site krijgt GEEN toegang tot de camera. De camerabeelden zijn alleen zichtbaa
 <translation id="883806473910249246">Er is een fout opgetreden tijdens het downloaden van de content.</translation>
 <translation id="8840953339110955557">Deze pagina kan afwijken van de online versie.</translation>
 <translation id="8847988622838149491">USB</translation>
+<translation id="884828189055900810">Voorkomen dat sites je camerapositie ontvangen of je ruimte in kaart brengen</translation>
 <translation id="8853345339104747198"><ph name="TAB_TITLE" />, tabblad</translation>
 <translation id="885701979325669005">Opslag</translation>
 <translation id="889338405075704026">Naar Chrome-instellingen</translation>
@@ -1048,6 +1055,7 @@ De site krijgt GEEN toegang tot de camera. De camerabeelden zijn alleen zichtbaa
 <translation id="8909135823018751308">Delen</translation>
 <translation id="8912362522468806198">Google-account</translation>
 <translation id="8920114477895755567">Wachten op gegevens van ouders.</translation>
+<translation id="8921772741368021346"><ph name="POSITION" />/<ph name="DURATION" /></translation>
 <translation id="8922289737868596582">Download pagina's via de knop 'Meer opties' om ze offline te gebruiken</translation>
 <translation id="8926666909099850184">NFC is uitgeschakeld voor dit apparaat. Schakel deze functie in via de <ph name="BEGIN_LINK" />Android-instellingen<ph name="END_LINK" />.</translation>
 <translation id="8937772741022875483">Je Chrome-activiteit verwijderen uit Digitaal welzijn?</translation>

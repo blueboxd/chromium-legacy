@@ -10,7 +10,7 @@
 #include "base/callback_forward.h"
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
-#include "chrome/browser/image_decoder.h"
+#include "chrome/browser/image_decoder/image_decoder.h"
 
 namespace base {
 class SequencedTaskRunner;

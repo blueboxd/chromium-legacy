@@ -321,6 +321,11 @@ bool DrmGpuPlatformSupportHost::GpuDestroyWindow(
   return Send(new OzoneGpuMsg_DestroyWindow(widget));
 }
 
+bool DrmGpuPlatformSupportHost::GpuSetPrivacyScreen(int64_t display_id,
+                                                    bool enabled) {
+  return Send(new OzoneGpuMsg_SetPrivacyScreen(display_id, enabled));
+}
+
 bool DrmGpuPlatformSupportHost::GpuCreateWindow(
     gfx::AcceleratedWidget widget,
     const gfx::Rect& initial_bounds) {

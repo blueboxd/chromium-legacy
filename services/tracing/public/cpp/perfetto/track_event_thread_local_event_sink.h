@@ -22,7 +22,7 @@
 #include "third_party/perfetto/include/perfetto/protozero/message_handle.h"
 #include "third_party/perfetto/include/perfetto/tracing/event_context.h"
 #include "third_party/perfetto/protos/perfetto/trace/interned_data/interned_data.pbzero.h"
-#include "third_party/perfetto/protos/perfetto/trace/track_event/thread_descriptor.pbzero.h"
+#include "third_party/perfetto/protos/perfetto/trace/track_event/chrome_thread_descriptor.pbzero.h"
 #include "third_party/perfetto/protos/perfetto/trace/track_event/track_event.pbzero.h"
 
 namespace perfetto {
@@ -130,14 +130,19 @@ class COMPONENT_EXPORT(TRACING_CPP) TrackEventThreadLocalEventSink
  private:
   static constexpr size_t kMaxCompleteEventDepth = 30;
 
-  void EmitThreadDescriptor(
+  void EmitTrackDescriptor(
       protozero::MessageHandle<perfetto::protos::pbzero::TracePacket>*
           trace_packet,
       base::trace_event::TraceEvent* trace_event,
-      bool explicit_timestamp,
+      base::TimeTicks timestamp,
       const char* maybe_new_name = nullptr);
   void DoResetIncrementalState(base::trace_event::TraceEvent* trace_event,
                                bool explicit_timestamp);
+  void SetPacketTimestamp(
+      protozero::MessageHandle<perfetto::protos::pbzero::TracePacket>*
+          trace_packet,
+      base::TimeTicks timestamp,
+      bool force_absolute_timestamp = false);
 
   // TODO(eseckler): Make it possible to register new indexes for use from
   // TRACE_EVENT macros.
@@ -164,8 +169,8 @@ class COMPONENT_EXPORT(TRACING_CPP) TrackEventThreadLocalEventSink
   int process_id_;
   int thread_id_;
   std::string thread_name_;
-  perfetto::protos::pbzero::ThreadDescriptor::ChromeThreadType thread_type_ =
-      perfetto::protos::pbzero::ThreadDescriptor::CHROME_THREAD_UNSPECIFIED;
+  perfetto::protos::pbzero::ChromeThreadDescriptor::ThreadType thread_type_ =
+      perfetto::protos::pbzero::ChromeThreadDescriptor::THREAD_UNSPECIFIED;
 
   const bool privacy_filtering_enabled_;
 

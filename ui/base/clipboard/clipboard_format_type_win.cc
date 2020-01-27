@@ -6,12 +6,70 @@
 
 #include <shlobj.h>
 
+#include "base/containers/flat_map.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/no_destructor.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+
+namespace {
+
+const base::flat_map<UINT, std::string>& PredefinedFormatToNameMap() {
+  // These formats are described in winuser.h and
+  // https://docs.microsoft.com/en-us/windows/win32/dataxchg/standard-clipboard-formats
+  static const base::NoDestructor<base::flat_map<UINT, std::string>>
+      format_to_name({
+          {CF_TEXT, "CF_TEXT"},
+          {CF_BITMAP, "CF_BITMAP"},
+          {CF_METAFILEPICT, "CF_METAFILEPICT"},
+          {CF_SYLK, "CF_SYLK"},
+          {CF_DIF, "CF_DIF"},
+          {CF_TIFF, "CF_TIFF"},
+          {CF_OEMTEXT, "CF_OEMTEXT"},
+          {CF_DIB, "CF_DIB"},
+          {CF_PALETTE, "CF_PALETTE"},
+          {CF_PENDATA, "CF_PENDATA"},
+          {CF_RIFF, "CF_RIFF"},
+          {CF_WAVE, "CF_WAVE"},
+          {CF_UNICODETEXT, "CF_UNICODETEXT"},
+          {CF_ENHMETAFILE, "CF_ENHMETAFILE"},
+          {CF_HDROP, "CF_HDROP"},
+          {CF_LOCALE, "CF_LOCALE"},
+          {CF_DIBV5, "CF_DIBV5"},
+          {CF_OWNERDISPLAY, "CF_OWNERDISPLAY"},
+          {CF_DSPTEXT, "CF_DSPTEXT"},
+          {CF_DSPBITMAP, "CF_DSPBITMAP"},
+          {CF_DSPMETAFILEPICT, "CF_DSPMETAFILEPICT"},
+          {CF_DSPENHMETAFILE, "CF_DSPENHMETAFILE"},
+
+          // These formats are predefined but explicitly blocked from use.
+          // TODO(huangdarwin): Which other formats should always be disallowed?
+          //  {CF_MAX, "CF_MAX"},
+          //  {CF_PRIVATEFIRST, "CF_PRIVATEFIRST"},
+          //  {CF_PRIVATELAST, "CF_PRIVATELAST"},
+          //  {CF_GDIOBJFIRST, "CF_GDIOBJFIRST"},
+          //  {CF_GDIOBJLAST, "CF_GDIOBJLAST"},
+      });
+  return *format_to_name;
+}
+
+const base::flat_map<std::string, UINT>& PredefinedNameToFormatMap() {
+  // Use lambda constructor for thread-safe initialization of name_to_format.
+  static const base::NoDestructor<base::flat_map<std::string, UINT>>
+      name_to_format([] {
+        base::flat_map<std::string, UINT> new_name_to_format;
+        const auto& format_to_name = PredefinedFormatToNameMap();
+        new_name_to_format.reserve(format_to_name.size());
+        for (const auto& it : format_to_name)
+          new_name_to_format.emplace(it.second, it.first);
+        return new_name_to_format;
+      }());
+  return *name_to_format;
+}
+
+}  // namespace
 
 namespace ui {
 
@@ -61,6 +119,24 @@ ClipboardFormatType ClipboardFormatType::Deserialize(
   return ClipboardFormatType(clipboard_format);
 }
 
+std::string ClipboardFormatType::GetName() const {
+  const auto& predefined_format_to_name = PredefinedFormatToNameMap();
+  const auto it = predefined_format_to_name.find(data_.cfFormat);
+  if (it != predefined_format_to_name.end())
+    return it->second;
+
+  constexpr size_t kMaxFormatSize = 1024;
+  static base::NoDestructor<std::vector<wchar_t>> name_buffer(kMaxFormatSize);
+  int name_size = GetClipboardFormatName(data_.cfFormat, name_buffer->data(),
+                                         kMaxFormatSize);
+  if (!name_size) {
+    // Input format doesn't exist or is predefined.
+    return std::string();
+  }
+
+  return base::UTF16ToUTF8(base::string16(name_buffer->data(), name_size));
+}
+
 bool ClipboardFormatType::operator<(const ClipboardFormatType& other) const {
   return data_.cfFormat < other.data_.cfFormat;
 }
@@ -74,6 +150,11 @@ bool ClipboardFormatType::Equals(const ClipboardFormatType& other) const {
 // static
 ClipboardFormatType ClipboardFormatType::GetType(
     const std::string& format_string) {
+  const auto& predefined_name_to_format = PredefinedNameToFormatMap();
+  const auto it = predefined_name_to_format.find(format_string);
+  if (it != predefined_name_to_format.end())
+    return ClipboardFormatType(it->second);
+
   return ClipboardFormatType(
       ::RegisterClipboardFormat(base::ASCIIToUTF16(format_string).c_str()));
 }

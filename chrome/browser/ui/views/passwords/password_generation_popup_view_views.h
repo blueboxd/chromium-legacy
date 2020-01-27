@@ -25,7 +25,6 @@ class PasswordGenerationPopupViewViews : public autofill::AutofillPopupBaseView,
   void UpdatePasswordValue() override;
   void UpdateBoundsAndRedrawPopup() override;
   void PasswordSelectionUpdated() override;
-  bool IsPointInPasswordBounds(const gfx::Point& point) override;
 
  private:
   class GeneratedPasswordBox;

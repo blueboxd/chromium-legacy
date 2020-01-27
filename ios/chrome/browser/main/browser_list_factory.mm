@@ -17,7 +17,7 @@
 
 // static
 BrowserList* BrowserListFactory::GetForBrowserState(
-    ios::ChromeBrowserState* browser_state) {
+    ChromeBrowserState* browser_state) {
   return static_cast<BrowserList*>(
       GetInstance()->GetServiceForBrowserState(browser_state, true));
 }

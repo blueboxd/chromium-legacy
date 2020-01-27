@@ -7,10 +7,6 @@
 
 #include "third_party/skia/include/core/SkColor.h"
 
-namespace gfx {
-class Point;
-}  // namespace gfx
-
 class PasswordGenerationPopupController;
 
 // Interface for creating and controlling a platform dependent view.
@@ -34,8 +30,6 @@ class PasswordGenerationPopupView {
 
   // Called when the password selection state has changed.
   virtual void PasswordSelectionUpdated() = 0;
-
-  virtual bool IsPointInPasswordBounds(const gfx::Point& point) = 0;
 
   // Note that PasswordGenerationPopupView owns itself, and will only be deleted
   // when Hide() is called.

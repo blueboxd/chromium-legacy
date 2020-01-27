@@ -22,10 +22,11 @@
 #include "components/payments/core/payment_request_base_delegate.h"
 #include "components/payments/core/payments_profile_comparator.h"
 #include "components/payments/core/web_payment_request.h"
-#include "ios/chrome/browser/browser_state/chrome_browser_state_forward.h"
 #import "ios/chrome/browser/payments/ios_payment_instrument_finder.h"
 #import "ios/chrome/browser/payments/payment_response_helper.h"
 #include "url/gurl.h"
+
+class ChromeBrowserState;
 
 namespace autofill {
 class AddressNormalizer;
@@ -94,7 +95,7 @@ class PaymentRequest : public PaymentOptionsProvider,
 
   // |personal_data_manager| should not be null and should outlive this object.
   PaymentRequest(const payments::WebPaymentRequest& web_payment_request,
-                 ios::ChromeBrowserState* browser_state,
+                 ChromeBrowserState* browser_state,
                  web::WebState* web_state,
                  autofill::PersonalDataManager* personal_data_manager,
                  id<PaymentRequestUIDelegate> payment_request_ui_delegate);
@@ -376,7 +377,7 @@ class PaymentRequest : public PaymentOptionsProvider,
   payments::WebPaymentRequest web_payment_request_;
 
   // Never null and outlives this object.
-  ios::ChromeBrowserState* browser_state_;
+  ChromeBrowserState* browser_state_;
 
   // Never null and outlives this object.
   web::WebState* web_state_;

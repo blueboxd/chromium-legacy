@@ -14,6 +14,7 @@
 #include "base/threading/thread.h"
 #include "base/threading/thread_checker.h"
 #include "base/timer/timer.h"
+#include "build/build_config.h"
 #include "remoting/base/constants.h"
 #include "remoting/proto/audio.pb.h"
 #include "remoting/protocol/audio_source.h"
@@ -629,7 +630,14 @@ TEST_P(ConnectionTest, VideoStats) {
   EXPECT_LE(stats.client_stats.time_rendered, finish_time);
 }
 
-TEST_P(ConnectionTest, Audio) {
+// Slow/fails on Linux ASan/TSan (http://crbug.com/1045344).
+#if defined(OS_LINUX) && \
+    (defined(ADDRESS_SANITIZER) || defined(THREAD_SANITIZER))
+#define MAYBE_Audio DISABLED_Audio
+#else
+#define MAYBE_Audio Audio
+#endif
+TEST_P(ConnectionTest, MAYBE_Audio) {
   Connect();
 
   std::unique_ptr<AudioStream> audio_stream =

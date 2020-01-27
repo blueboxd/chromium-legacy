@@ -15,6 +15,11 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/printing/print_job.h"
 
+namespace chromeos {
+class CupsPrintJob;
+class CupsPrintJobManager;
+}  // namespace chromeos
+
 namespace printing {
 class MetafileSkia;
 class PrinterQuery;
@@ -32,7 +37,7 @@ class PrintJobController {
   using StartPrintJobCallback =
       base::OnceCallback<void(std::unique_ptr<std::string> job_id)>;
 
-  PrintJobController();
+  explicit PrintJobController(chromeos::CupsPrintJobManager* print_job_manager);
   ~PrintJobController();
 
   // Creates, initializes and adds print job to the queue of pending print jobs.
@@ -41,11 +46,16 @@ class PrintJobController {
                      std::unique_ptr<printing::PrintSettings> settings,
                      StartPrintJobCallback callback);
 
+  // Returns false if there is no active print job with specified id.
+  // Returns true otherwise.
+  bool CancelPrintJob(const std::string& job_id);
+
   // Moves print job pointer to |print_jobs_map_| and resolves corresponding
   // callback.
   // This should be called when CupsPrintJobManager created CupsPrintJob.
   void OnPrintJobCreated(const std::string& extension_id,
-                         const std::string& job_id);
+                         const std::string& job_id,
+                         base::WeakPtr<chromeos::CupsPrintJob> cups_job);
 
   // Removes print job pointer from |print_jobs_map_| as the job is finished.
   // This should be called when CupsPrintJob is finished (it could be either
@@ -81,6 +91,15 @@ class PrintJobController {
   // requests.
   base::flat_map<std::string, scoped_refptr<printing::PrintJob>>
       print_jobs_map_;
+
+  // Stores mapping from job id to chromeos::CupsPrintJob.
+  base::flat_map<std::string, base::WeakPtr<chromeos::CupsPrintJob>>
+      cups_print_jobs_map_;
+
+  // PrintingAPIHandler (which owns PrintJobController) depends on
+  // CupsPrintJobManagerFactory, so |print_job_manager_| outlives
+  // PrintJobController.
+  chromeos::CupsPrintJobManager* const print_job_manager_;
 
   base::WeakPtrFactory<PrintJobController> weak_ptr_factory_{this};
 };

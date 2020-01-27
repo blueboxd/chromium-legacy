@@ -235,8 +235,7 @@ if (strip_absolute_paths_from_debug_symbols_default) {
 # If it wasn't manually set, set to an appropriate default.
 assert(symbol_level >= -1 && symbol_level <= 2, "Invalid symbol_level")
 if (symbol_level == -1) {
-  if (is_android && !is_component_build && !use_thin_lto &&
-      !(use_debug_fission != "default" && use_debug_fission)) {
+  if (is_android && !is_component_build && !use_thin_lto) {
     # Reduce symbol level when it will cause invalid elf files to be created
     # (due to file size). https://crbug.com/648948.
     symbol_level = 1
@@ -293,20 +292,8 @@ if (forbid_non_component_debug_builds) {
 # place for builds using ThinLTO (through '-generate-type-units' flag), so
 # these are exempt from limitation.
 assert(ignore_elf32_limitations || !is_android || target_os == "chromeos" ||
-           is_component_build || use_thin_lto || symbol_level < 2 ||
-           (use_debug_fission != "default" && use_debug_fission),
+           is_component_build || use_thin_lto || symbol_level < 2,
        "Android 32-bit non-component builds cannot have symbol_level=2 " +
            "due to 4GiB file size limit, see https://crbug.com/648948. " +
            "If you really want to try this out, " +
            "set ignore_elf32_limitations=true.")
-
-# Assert that Android build isn't simultaneously expecting ThinLTO and DWARF
-# Fission to work. An exception is made when target_os == "chromeos" as it
-# won't expect Fission to work. The way that ThinLTO is implemented in Android
-# build will silently disable DWARF Fission, causing build steps that expect
-# Fission outputs to break. This work should clear a path to having both
-# enabled for Android: https://crbug.com/877722
-assert(!is_android || target_os == "chromeos" || !use_thin_lto ||
-           use_debug_fission == "default" || !use_debug_fission,
-       "Android builds do not yet support ThinLTO and DWARF Fission " +
-           "simultaneously.")

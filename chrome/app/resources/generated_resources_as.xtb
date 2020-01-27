@@ -24,6 +24,7 @@
 <translation id="1029317248976101138">জুম কৰক</translation>
 <translation id="1030706264415084469"><ph name="URL" />এ আপোনাৰ ডিভাইচত চিৰদিনৰ বাবে ডাঙৰ ডেটা সঞ্চয় কৰিব বিচাৰে</translation>
 <translation id="1031362278801463162">পূৰ্বদৰ্শন ল’ড কৰি থকা হৈছে</translation>
+<translation id="1032605640136438169">অনুগ্ৰহ কৰি নতুন চৰ্তাৱলী পৰ্যালোচনা কৰক</translation>
 <translation id="103279545524624934">Android এপ্ লঞ্চ কৰিবলৈ ডিস্কৰ ঠাই খালী কৰক।</translation>
 <translation id="1033780634303702874">আপোনাৰ ছিৰিয়েল ডিভাইচসমূহ এক্সেছ কৰক</translation>
 <translation id="1034942643314881546">এপ্‌সমূহৰ সবিশেষ বর্ণনা সৃষ্টি কৰিবলৈ adb সক্ষম কৰি থকা হৈছে</translation>
@@ -223,7 +224,6 @@
 <translation id="1306606229401759371">ছেটিংসমূহ সলনি কৰক</translation>
 <translation id="1307165550267142340">আপোনাৰ পিন সৃষ্টি কৰা হ’ল</translation>
 <translation id="1307559529304613120">আমি দুঃখিত!  ছিষ্টেমটোৱে এই ডিভাইচটোৰ বাবে দীৰ্ঘম্যাদী API এক্সেছ ট'কেন ষ্ট'ৰ কৰিব নোৱাৰিলে।</translation>
-<translation id="1309199320876169714">প্লাগইন VM আঁতৰাই থকা হৈছে...</translation>
 <translation id="1313405956111467313">স্বয়ংক্রিয় প্ৰক্সিৰ কনফিগাৰেশ্বন</translation>
 <translation id="131364520783682672">কেপছ-লক</translation>
 <translation id="1313705515580255288">আপোনাৰ বুকমাৰ্ক, ব্ৰাউজিঙৰ ইতিহাস, পাছৱর্ড আৰু অন্য ছেটিংসমূহ আপোনাৰ Google একাউণ্টত ছিংক কৰা হ’ব।</translation>
@@ -1364,7 +1364,6 @@
 <translation id="2871813825302180988">এই একাউণ্টটো ইতিমধ্যেই এই ডিভাইচটোত ব্যৱহাৰ কৰি থকা হৈছে।</translation>
 <translation id="287286579981869940"><ph name="PROVIDER_NAME" /> যোগ কৰক...</translation>
 <translation id="2872961005593481000">শ্বাট ডাউন কৰক</translation>
-<translation id="2874478552394649323">প্লাগইন VM আঁতৰাওক</translation>
 <translation id="2874939134665556319">পূৰ্বৱৰ্তী ট্ৰেক</translation>
 <translation id="2875698561019555027">(Chromeৰ আসোঁৱাহপূৰ্ণ পৃষ্ঠা)</translation>
 <translation id="2876336351874743617">আঙুলি ২</translation>
@@ -1381,7 +1380,6 @@
 <translation id="2889064240420137087">ইয়াৰ এটাৰ জৰিয়তে লিংকটো খোলক...</translation>
 <translation id="2889925978073739256">আনছেণ্ডবক্স কৰা প্লাগইন অৱৰোধ কৰি থাকক</translation>
 <translation id="2893168226686371498">ডিফ’ল্ট ব্ৰাউজাৰ</translation>
-<translation id="2893208266590504003">প্লাগইন VM আঁতৰ কৰিব পৰা নগ’ল</translation>
 <translation id="2894757982205307093">গোটটোত নতুন টেব</translation>
 <translation id="289644616180464099">ছিম কাৰ্ড লক কৰা হৈছে</translation>
 <translation id="2896909745808647285"><ph name="FILE_NAME" />টো এনক্ৰিপ্ট কৰা হৈছে আৰু খোলাৰ পৰা অৱৰোধ কৰা হৈছে।</translation>
@@ -2828,6 +2826,7 @@
 <translation id="4998430619171209993">অন আছে</translation>
 <translation id="4998873842614926205">সালসলনিবোৰ নিশ্চিত কৰক</translation>
 <translation id="5000922062037820727">অৱৰোধিত (চুপাৰিছ কৰা)</translation>
+<translation id="5007392906805964215">পৰ্যালোচনা কৰক</translation>
 <translation id="5008936837313706385">কাৰ্যকলাপৰ নাম</translation>
 <translation id="5010043101506446253">প্ৰমাণপত্ৰৰ কর্তৃত্ব</translation>
 <translation id="5015344424288992913">প্ৰক্সিৰ সমাধান কৰি থকা হৈছে...</translation>
@@ -3033,6 +3032,7 @@
 <translation id="5311304534597152726">এই হিচাপে ছাইন ইন কৰি থকা হৈছে</translation>
 <translation id="53116743016968120"><ph name="ERROR_MESSAGE" /> অনুগ্ৰহ কৰি পুনৰ চেষ্টা কৰক।</translation>
 <translation id="5313628438272378649">এই আপল’ডটোৱে আপোনাৰ প্ৰতিষ্ঠানৰ সুৰক্ষা নীতিসমূহ উলংঘা কৰিছে আৰু ইয়াক সম্পূৰ্ণ কৰিব নোৱাৰি।</translation>
+<translation id="5314381603623123224">৩১ মাৰ্চৰ পৰা Chromeৰ সেৱাৰ চর্তাৱলী সলনি হ’ব</translation>
 <translation id="5315738755890845852">অতিৰিক্ত কার্লী ব্ৰাচ: <ph name="ERROR_LINE" /></translation>
 <translation id="5315873049536339193">পৰিচয়</translation>
 <translation id="5317780077021120954">ছেভ কৰক</translation>
@@ -5758,7 +5758,6 @@
 <translation id="9169496697824289689">কীব’ৰ্ডৰ শ্বৰ্টকাট চাওক</translation>
 <translation id="916964310188958970">এই পৰামৰ্শ কিয় দিয়া হৈছে?</translation>
 <translation id="9169931577761441333"><ph name="APP_NAME" />ক গৃহ স্ক্ৰীণত যোগ কৰক</translation>
-<translation id="9170305483456271385">প্লাগইন VM আঁতৰোৱা হৈছে</translation>
 <translation id="9170848237812810038">&amp;আনডু কৰক</translation>
 <translation id="9170884462774788842">আপোনাৰ কম্পিউটাৰৰ অন্য এটা প্ৰ’গামে যোগ কৰা থীমে Chromeৰ কার্যপ্ৰণালী সলনি কৰিব পাৰে।</translation>
 <translation id="9173995187295789444">ব্লুটুথ ডিভাইচ স্কেন কৰি থকা হৈছে...</translation>

@@ -4,7 +4,6 @@ include_rules = [
   "+chrome/browser/preferences/android/java",
   "+chrome/browser/settings/android",
   "+chrome/browser/ui/android/native_page",
-  "+chrome/browser/ui/android/widget",
   "+chrome/browser/util/android/java",
   "+components/app_modal/android",
   "+components/browser_ui/modaldialog/android",

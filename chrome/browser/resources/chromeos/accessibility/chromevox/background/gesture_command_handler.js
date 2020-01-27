@@ -96,4 +96,5 @@ GestureCommandHandler.init_ = function() {
 GestureCommandHandler.granularity = GestureGranularity.LINE;
 
 GestureCommandHandler.init_();
+
 });  // goog.scope

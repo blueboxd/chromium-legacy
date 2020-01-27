@@ -10,18 +10,18 @@
 #include "base/macros.h"
 #include "base/no_destructor.h"
 #include "components/keyed_service/ios/browser_state_keyed_service_factory.h"
-#include "ios/chrome/browser/browser_state/chrome_browser_state_forward.h"
 
+class ChromeBrowserState;
 class ShareExtensionService;
 
 // Singleton that creates the ShareExtensionService and associates that service
-// with ios::ChromeBrowserState.
+// with ChromeBrowserState.
 class ShareExtensionServiceFactory : public BrowserStateKeyedServiceFactory {
  public:
   static ShareExtensionService* GetForBrowserState(
-      ios::ChromeBrowserState* browser_state);
+      ChromeBrowserState* browser_state);
   static ShareExtensionService* GetForBrowserStateIfExists(
-      ios::ChromeBrowserState* browser_state);
+      ChromeBrowserState* browser_state);
   static ShareExtensionServiceFactory* GetInstance();
 
  private:

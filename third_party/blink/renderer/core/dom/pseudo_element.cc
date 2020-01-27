@@ -35,7 +35,7 @@
 #include "third_party/blink/renderer/core/layout/generated_children.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/layout/layout_quote.h"
-#include "third_party/blink/renderer/core/layout/ng/list/layout_ng_list_item.h"
+#include "third_party/blink/renderer/core/layout/ng/list/list_marker.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/core/style/content_data.h"
@@ -190,11 +190,8 @@ void PseudoElement::AttachLayoutTree(AttachContext& context) {
   const ComputedStyle& style = layout_object->StyleRef();
   switch (style.StyleType()) {
     case kPseudoIdMarker: {
-      LayoutObject* parent = layout_object->Parent();
-      if (parent && parent->IsLayoutNGListItem()) {
-        ToLayoutNGListItem(layout_object->Parent())
-            ->UpdateMarkerContentIfNeeded();
-      }
+      if (ListMarker* marker = ListMarker::Get(layout_object))
+        marker->UpdateMarkerContentIfNeeded(*layout_object);
       if (style.ContentBehavesAsNormal())
         return;
       break;

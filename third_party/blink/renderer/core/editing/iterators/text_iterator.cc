@@ -270,7 +270,7 @@ bool TextIteratorAlgorithm<Strategy>::HandleRememberedProgress() {
     // FIXME: It would be cleaner if we emitted two newlines during the last
     // iteration, instead of using needs_another_newline_.
     Node* last_child = Strategy::LastChild(*node_);
-    const Node* base_node = last_child ? last_child : node_.Get();
+    const Node* base_node = last_child ? last_child : node_;
     EmitChar16AfterNode('\n', *base_node);
     needs_another_newline_ = false;
     return true;
@@ -325,21 +325,20 @@ void TextIteratorAlgorithm<Strategy>::Advance() {
 
     LayoutObject* layout_object = node_->GetLayoutObject();
     if (!layout_object || locked) {
-      if (!locked &&
-          (IsA<ShadowRoot>(node_.Get()) || HasDisplayContents(*node_))) {
+      if (!locked && (IsA<ShadowRoot>(node_) || HasDisplayContents(*node_))) {
         // Shadow roots or display: contents elements don't have LayoutObjects,
         // but we want to visit children anyway.
         iteration_progress_ = iteration_progress_ < kHandledNode
                                   ? kHandledNode
                                   : iteration_progress_;
-        handle_shadow_root_ = IsA<ShadowRoot>(node_.Get());
+        handle_shadow_root_ = IsA<ShadowRoot>(node_);
       } else {
         iteration_progress_ = kHandledChildren;
       }
     } else {
       // Enter author shadow roots, from youngest, if any and if necessary.
       if (iteration_progress_ < kHandledOpenShadowRoots) {
-        auto* element = DynamicTo<Element>(node_.Get());
+        auto* element = DynamicTo<Element>(node_);
         if (std::is_same<Strategy, EditingStrategy>::value &&
             EntersOpenShadowRoots() && element && element->OpenShadowRoot()) {
           ShadowRoot* youngest_shadow_root = element->OpenShadowRoot();
@@ -360,7 +359,7 @@ void TextIteratorAlgorithm<Strategy>::Advance() {
         if (std::is_same<Strategy, EditingStrategy>::value &&
             EntersTextControls() && layout_object->IsTextControl()) {
           ShadowRoot* user_agent_shadow_root =
-              To<Element>(node_.Get())->UserAgentShadowRoot();
+              To<Element>(node_)->UserAgentShadowRoot();
           DCHECK(user_agent_shadow_root->IsUserAgent());
           node_ = user_agent_shadow_root;
           iteration_progress_ = kHandledNone;
@@ -437,7 +436,7 @@ void TextIteratorAlgorithm<Strategy>::Advance() {
           // 4. Reached the top of a shadow root. If it's created by author,
           // then try to visit the next
           // sibling shadow root, if any.
-          const auto* shadow_root = DynamicTo<ShadowRoot>(node_.Get());
+          const auto* shadow_root = DynamicTo<ShadowRoot>(node_);
           if (!shadow_root) {
             NOTREACHED();
             should_stop_ = true;
@@ -493,7 +492,7 @@ void TextIteratorAlgorithm<Strategy>::HandleTextNode() {
 
   DCHECK_NE(last_text_node_, node_)
       << "We should never call HandleTextNode on the same node twice";
-  const auto* text = To<Text>(node_.Get());
+  const auto* text = To<Text>(node_);
   last_text_node_ = text;
 
   // TODO(editing-dev): Introduce a |DOMOffsetRange| class so that we can pass
@@ -820,7 +819,7 @@ void TextIteratorAlgorithm<Strategy>::ExitNode() {
   // case it is a block, because the run should start where the
   // emitted character is positioned visually.
   Node* last_child = Strategy::LastChild(*node_);
-  const Node* base_node = last_child ? last_child : node_.Get();
+  const Node* base_node = last_child ? last_child : node_;
   // FIXME: This shouldn't require the last_text_node to be true, but we can't
   // change that without making the logic in _web_attributedStringFromRange
   // match. We'll get that for free when we switch to use TextIterator in

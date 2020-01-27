@@ -112,6 +112,7 @@
 <translation id="2352467521400612932">Stylusinstellingen</translation>
 <translation id="2354174487190027830"><ph name="NAME" /> activeren</translation>
 <translation id="2359808026110333948">Doorgaan</translation>
+<translation id="2364154243880592194">Statusvak, tijd <ph name="TIME" />, <ph name="BATTERY" />. Druk op Zoeken + pijl-links om het meldingscentrum te openen.</translation>
 <translation id="2365393535144473978">Als je mobiele data inschakelt, wordt Bluetooth ingeschakeld.</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="2412593942846481727">Update beschikbaar</translation>
@@ -335,6 +336,7 @@
 <translation id="5669267381087807207">Wordt geactiveerd</translation>
 <translation id="5673434351075758678">Van '<ph name="FROM_LOCALE" />' naar '<ph name="TO_LOCALE" />' na synchronisatie van je instellingen.</translation>
 <translation id="5682642926269496722">De Google Assistent is niet beschikbaar voor het huidige gebruikersaccount.</translation>
+<translation id="5689633613396158040">Met Nachtverlichting kun je je scherm beter zien en lezen bij weinig licht. Tik om te wijzigen wanneer Nachtverlichting wordt ingeschakeld of schakel de functie helemaal uit.</translation>
 <translation id="5691772641933328258">Vingerafdruk niet herkend</translation>
 <translation id="5710450975648804523">'Niet storen' is ingeschakeld</translation>
 <translation id="573413375004481890">Dit apparaat kan niet al je schermen ondersteunen, dus één scherm is ontkoppeld</translation>
@@ -514,6 +516,7 @@
 <translation id="8142441511840089262">Dubbelklik</translation>
 <translation id="8142699993796781067">Privénetwerk</translation>
 <translation id="8152092012181020186">Druk op Ctrl + W om te sluiten.</translation>
+<translation id="8155007568264258537"><ph name="FEATURE_NAME" /> Deze instelling wordt beheerd door je beheerder.</translation>
 <translation id="8167567890448493835"><ph name="LOCALE_NAME" /> in gebruik</translation>
 <translation id="8190698733819146287">Talen en invoer aanpassen...</translation>
 <translation id="8192202700944119416">Meldingen zijn verborgen.</translation>

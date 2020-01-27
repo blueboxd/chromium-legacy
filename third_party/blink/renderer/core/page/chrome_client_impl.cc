@@ -39,6 +39,7 @@
 #include "build/build_config.h"
 #include "cc/animation/animation_host.h"
 #include "cc/layers/picture_layer.h"
+#include "third_party/blink/public/mojom/input/focus_type.mojom-blink.h"
 #include "third_party/blink/public/platform/web_cursor_info.h"
 #include "third_party/blink/public/platform/web_float_rect.h"
 #include "third_party/blink/public/platform/web_rect.h"
@@ -209,16 +210,16 @@ void ChromeClientImpl::Focus(LocalFrame* calling_frame) {
   }
 }
 
-bool ChromeClientImpl::CanTakeFocus(WebFocusType) {
+bool ChromeClientImpl::CanTakeFocus(mojom::blink::FocusType) {
   // For now the browser can always take focus if we're not running layout
   // tests.
   return !WebTestSupport::IsRunningWebTest();
 }
 
-void ChromeClientImpl::TakeFocus(WebFocusType type) {
+void ChromeClientImpl::TakeFocus(mojom::blink::FocusType type) {
   if (!web_view_->Client())
     return;
-  if (type == kWebFocusTypeBackward)
+  if (type == mojom::blink::FocusType::kBackward)
     web_view_->Client()->FocusPrevious();
   else
     web_view_->Client()->FocusNext();

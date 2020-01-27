@@ -16,7 +16,6 @@
 #include "third_party/blink/public/common/input/web_input_event.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
 #include "third_party/blink/public/platform/web_coalesced_input_event.h"
-#include "third_party/blink/public/platform/web_scroll_into_view_params.h"
 #include "third_party/blink/public/platform/web_url_loader_mock_factory.h"
 #include "third_party/blink/public/web/web_ax_context.h"
 #include "third_party/blink/public/web/web_context_menu_data.h"
@@ -46,6 +45,7 @@
 #include "third_party/blink/renderer/core/paint/compositing/paint_layer_compositor.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
+#include "third_party/blink/renderer/core/scroll/scroll_into_view_params_type_converters.h"
 #include "third_party/blink/renderer/core/scroll/scrollbar_theme_overlay_mobile.h"
 #include "third_party/blink/renderer/core/scroll/smooth_scroll_sequencer.h"
 #include "third_party/blink/renderer/core/testing/color_scheme_helper.h"
@@ -2525,7 +2525,7 @@ class VisualViewportScrollIntoViewTest : public VisualViewportSimTest {
                       bool is_for_scroll_sequence) {
     WebDocument web_doc = WebView().MainFrameImpl()->GetDocument();
     Element* bottom_element = web_doc.GetElementById(element_name);
-    WebScrollIntoViewParams scroll_params(
+    auto scroll_params = CreateScrollIntoViewParams(
         ScrollAlignment::kAlignToEdgeIfNeeded,
         ScrollAlignment::kAlignToEdgeIfNeeded, kProgrammaticScroll,
         /*make_visible_in_visual_viewport=*/true, kScrollBehaviorInstant,

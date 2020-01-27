@@ -9,7 +9,7 @@
 
 #include "base/strings/string_number_conversions.h"
 #include "base/test/scoped_feature_list.h"
-#include "chrome/browser/android/chrome_feature_list.h"
+#include "chrome/browser/flags/android/chrome_feature_list.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace updates {
@@ -37,7 +37,7 @@ TEST(UpdateNotificationConfigTest, FinchConfigTest) {
   scoped_feature_list.InitAndEnableFeatureWithParameters(
       chrome::android::kInlineUpdateFlow, parameters);
   std::unique_ptr<UpdateNotificationConfig> config =
-      UpdateNotificationConfig::Create();
+      UpdateNotificationConfig::CreateFromFinch();
   EXPECT_TRUE(config->is_enabled);
   EXPECT_EQ(config->default_interval.InDays(), 7);
   EXPECT_EQ(config->deliver_window_morning.first.InHours(), 5);

@@ -24,6 +24,7 @@
 
 #include "third_party/blink/renderer/core/html/forms/text_control_element.h"
 
+#include "third_party/blink/public/mojom/input/focus_type.mojom-blink.h"
 #include "third_party/blink/renderer/core/accessibility/ax_object_cache.h"
 #include "third_party/blink/renderer/core/css/style_change_reason.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -82,7 +83,7 @@ TextControlElement::~TextControlElement() = default;
 
 void TextControlElement::DispatchFocusEvent(
     Element* old_focused_element,
-    WebFocusType type,
+    mojom::blink::FocusType type,
     InputDeviceCapabilities* source_capabilities) {
   if (SupportsPlaceholder())
     UpdatePlaceholderVisibility();
@@ -93,7 +94,7 @@ void TextControlElement::DispatchFocusEvent(
 
 void TextControlElement::DispatchBlurEvent(
     Element* new_focused_element,
-    WebFocusType type,
+    mojom::blink::FocusType type,
     InputDeviceCapabilities* source_capabilities) {
   if (SupportsPlaceholder())
     UpdatePlaceholderVisibility();
@@ -222,8 +223,8 @@ void TextControlElement::select() {
   setSelectionRangeForBinding(0, std::numeric_limits<unsigned>::max());
   // Avoid SelectionBehaviorOnFocus::Restore, which scrolls containers to show
   // the selection.
-  focus(
-      FocusParams(SelectionBehaviorOnFocus::kNone, kWebFocusTypeNone, nullptr));
+  focus(FocusParams(SelectionBehaviorOnFocus::kNone,
+                    mojom::blink::FocusType::kNone, nullptr));
   RestoreCachedSelection();
 }
 
@@ -246,7 +247,8 @@ void TextControlElement::ClearValueBeforeFirstUserEdit() {
   value_before_first_user_edit_ = String();
 }
 
-void TextControlElement::SetFocused(bool flag, WebFocusType focus_type) {
+void TextControlElement::SetFocused(bool flag,
+                                    mojom::blink::FocusType focus_type) {
   HTMLFormControlElementWithState::SetFocused(flag, focus_type);
 
   if (!flag)

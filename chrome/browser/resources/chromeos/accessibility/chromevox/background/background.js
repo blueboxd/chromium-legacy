@@ -40,6 +40,7 @@ goog.require('ChromeVoxBackground');
 goog.require('ChromeVoxEditableTextBase');
 goog.require('ExtensionBridge');
 goog.require('NavBraille');
+goog.require('NodeIdentifier');
 
 goog.scope(function() {
 var AutomationNode = chrome.automation.AutomationNode;
@@ -50,118 +51,110 @@ var StateType = chrome.automation.StateType;
 
 /**
  * ChromeVox2 background page.
- * @constructor
- * @extends {ChromeVoxState}
  */
-Background = function() {
-  ChromeVoxState.call(this);
+Background = class extends ChromeVoxState {
+  constructor() {
+    super();
 
-  /**
-   * A list of site substring patterns to use with ChromeVox next. Keep these
-   * strings relatively specific.
-   * @type {!Array<string>}
-   * @private
-   */
-  this.whitelist_ = ['chromevox_next_test'];
+    /**
+     * A list of site substring patterns to use with ChromeVox next. Keep these
+     * strings relatively specific.
+     * @type {!Array<string>}
+     * @private
+     */
+    this.whitelist_ = ['chromevox_next_test'];
 
-  /**
-   * @type {cursors.Range}
-   * @private
-   */
-  this.currentRange_ = null;
+    /**
+     * @type {cursors.Range}
+     * @private
+     */
+    this.currentRange_ = null;
 
-  // Manually bind all functions to |this|.
-  for (var func in this) {
-    if (typeof (this[func]) == 'function') {
-      this[func] = this[func].bind(this);
+    /** @type {!AbstractEarcons} @private */
+    this.nextEarcons_ = new NextEarcons();
+
+    // Read-only earcons.
+    Object.defineProperty(ChromeVox, 'earcons', {
+      get: (function() {
+             return this.nextEarcons_;
+           }).bind(this)
+    });
+
+    Object.defineProperty(ChromeVox, 'modKeyStr', {
+      get() {
+        return 'Search';
+      }
+    });
+
+    Object.defineProperty(ChromeVox, 'typingEcho', {
+      get() {
+        return parseInt(localStorage['typingEcho'], 10);
+      },
+      set(v) {
+        localStorage['typingEcho'] = v;
+      }
+    });
+
+    Object.defineProperty(ChromeVox, 'typingEcho', {
+      get() {
+        var typingEcho = parseInt(localStorage['typingEcho'], 10) || 0;
+        return typingEcho;
+      },
+      set(value) {
+        localStorage['typingEcho'] = value;
+      }
+    });
+
+    ExtensionBridge.addMessageListener(this.onMessage_);
+
+    /** @type {!BackgroundKeyboardHandler} @private */
+    this.keyboardHandler_ = new BackgroundKeyboardHandler();
+
+    /** @type {!BackgroundMouseHandler} @private */
+    this.mouseHandler_ = new BackgroundMouseHandler();
+
+    if (localStorage['speakTextUnderMouse'] == String(true)) {
+      chrome.accessibilityPrivate.enableChromeVoxMouseEvents(true);
     }
+
+    /** @type {!LiveRegions} @private */
+    this.liveRegions_ = new LiveRegions(this);
+
+    document.addEventListener('copy', this.onClipboardEvent_);
+    document.addEventListener('cut', this.onClipboardEvent_);
+    document.addEventListener('paste', this.onClipboardEvent_);
+
+    /** @private {boolean} */
+    this.preventPasteOutput_ = false;
+
+    /**
+     * Maps a non-desktop root automation node to a range position suitable for
+     *     restoration.
+     * @type {WeakMap<AutomationNode, cursors.Range>}
+     * @private
+     */
+    this.focusRecoveryMap_ = new WeakMap();
+
+    /** @private {cursors.Range} */
+    this.pageSel_;
+
+    CommandHandler.init();
+    FindHandler.init();
+    DownloadHandler.init();
+    LanguageSwitching.init();
+    PhoneticData.init();
+
+    Notifications.onStartup();
+
+    chrome.accessibilityPrivate.onAnnounceForAccessibility.addListener(
+        (announceText) => {
+          ChromeVox.tts.speak(announceText.join(' '), QueueMode.FLUSH);
+        });
+
+    // Set the darkScreen state to false, since the display will be on whenever
+    // ChromeVox starts.
+    sessionStorage.setItem('darkScreen', 'false');
   }
-
-  /** @type {!AbstractEarcons} @private */
-  this.nextEarcons_ = new NextEarcons();
-
-  // Read-only earcons.
-  Object.defineProperty(ChromeVox, 'earcons', {
-    get: (function() {
-           return this.nextEarcons_;
-         }).bind(this)
-  });
-
-  Object.defineProperty(ChromeVox, 'modKeyStr', {
-    get() {
-      return 'Search';
-    }
-  });
-
-  Object.defineProperty(ChromeVox, 'typingEcho', {
-    get() {
-      return parseInt(localStorage['typingEcho'], 10);
-    },
-    set(v) {
-      localStorage['typingEcho'] = v;
-    }
-  });
-
-  Object.defineProperty(ChromeVox, 'typingEcho', {
-    get() {
-      var typingEcho = parseInt(localStorage['typingEcho'], 10) || 0;
-      return typingEcho;
-    },
-    set(value) {
-      localStorage['typingEcho'] = value;
-    }
-  });
-
-  ExtensionBridge.addMessageListener(this.onMessage_);
-
-  /** @type {!BackgroundKeyboardHandler} @private */
-  this.keyboardHandler_ = new BackgroundKeyboardHandler();
-
-  /** @type {!BackgroundMouseHandler} @private */
-  this.mouseHandler_ = new BackgroundMouseHandler();
-
-  if (localStorage['speakTextUnderMouse'] == String(true)) {
-    chrome.accessibilityPrivate.enableChromeVoxMouseEvents(true);
-  }
-
-  /** @type {!LiveRegions} @private */
-  this.liveRegions_ = new LiveRegions(this);
-
-  document.addEventListener('copy', this.onClipboardEvent_);
-  document.addEventListener('cut', this.onClipboardEvent_);
-  document.addEventListener('paste', this.onClipboardEvent_);
-
-  /** @private {boolean} */
-  this.preventPasteOutput_ = false;
-
-  /**
-   * Maps a non-desktop root automation node to a range position suitable for
-   *     restoration.
-   * @type {WeakMap<AutomationNode, cursors.Range>}
-   * @private
-   */
-  this.focusRecoveryMap_ = new WeakMap();
-
-  CommandHandler.init();
-  FindHandler.init();
-  DownloadHandler.init();
-  LanguageSwitching.init();
-  PhoneticData.init();
-
-  Notifications.onStartup();
-
-  chrome.accessibilityPrivate.onAnnounceForAccessibility.addListener(
-      (announceText) => {
-        ChromeVox.tts.speak(announceText.join(' '), QueueMode.FLUSH);
-      });
-
-  // Set the darkScreen state to false, since the display will be on whenever
-  // ChromeVox starts.
-  sessionStorage.setItem('darkScreen', 'false');
-};
-
-Background.prototype = {
-  __proto__: ChromeVoxState.prototype,
 
   /**
    * Maps the last node with range in a given root.
@@ -169,7 +162,7 @@ Background.prototype = {
    */
   get focusRecoveryMap() {
     return this.focusRecoveryMap_;
-  },
+  }
 
   /**
    * @override
@@ -179,14 +172,14 @@ Background.prototype = {
       return this.currentRange_;
     }
     return null;
-  },
+  }
 
   /**
    * @override
    */
   getCurrentRangeWithoutRecovery() {
     return this.currentRange_;
-  },
+  }
 
   /**
    * @override
@@ -226,7 +219,7 @@ Background.prototype = {
     var url = root.docUrl;
     url = url.substring(0, url.indexOf('#')) || url;
     ChromeVox.position[url] = position;
-  },
+  }
 
   /**
    * @override
@@ -323,7 +316,7 @@ Background.prototype = {
     if (!skipOutput) {
       o.go();
     }
-  },
+  }
 
   /**
    * Open the options page in a new tab.
@@ -331,14 +324,14 @@ Background.prototype = {
   showOptionsPage() {
     var optionsPage = {url: 'background/options/options.html'};
     chrome.tabs.create(optionsPage);
-  },
+  }
 
   /**
    * @override
    */
   onBrailleKeyEvent(evt, content) {
     return BrailleCommandHandler.onBrailleKeyEvent(evt, content);
-  },
+  }
 
   /**
    * @param {Object} msg A message sent from a content script.
@@ -363,7 +356,7 @@ Background.prototype = {
         }
         break;
     }
-  },
+  }
 
   /**
    * @override
@@ -377,15 +370,15 @@ Background.prototype = {
     if (root) {
       this.focusRecoveryMap_.set(root, this.currentRange);
     }
-  },
+  }
 
   /**
    * Detects various clipboard events and provides spoken output.
    *
    * Note that paste is explicitly skipped sometimes because during a copy or
    * cut, the copied or cut text is retrieved by pasting into a fake text
-   * area. To prevent this from triggering paste output, this staste is tracked
-   * via a field.
+   * area. To prevent this from triggering paste output, this staste is
+   * tracked via a field.
    * @param {!Event} evt
    * @private
    */
@@ -410,7 +403,7 @@ Background.prototype = {
           Msgs.getMsg(evt.type, [clipboardContent]), QueueMode.FLUSH);
       ChromeVoxState.instance.pageSel_ = null;
     }
-  },
+  }
 
   /** @private */
   setCurrentRangeToFocus_() {
@@ -421,7 +414,7 @@ Background.prototype = {
         this.setCurrentRange(null);
       }
     }.bind(this));
-  },
+  }
 
   /**
    * @param {!cursors.Range} range
@@ -440,8 +433,8 @@ Background.prototype = {
 
       entered
           .filter((f) => {
-            return f.role == RoleType.EMBEDDED_OBJECT ||
-                f.role == RoleType.PLUGIN_OBJECT || f.role == RoleType.IFRAME;
+            return f.role == RoleType.PLUGIN_OBJECT ||
+                f.role == RoleType.IFRAME;
           })
           .forEach((container) => {
             if (!container.state[StateType.FOCUSED]) {
@@ -493,28 +486,31 @@ Background.prototype = {
     if (!start.state[StateType.OFFSCREEN]) {
       start.setSequentialFocusNavigationStartingPoint();
     }
-  },
+  }
+
+  /**
+   * Converts a list of globs, as used in the extension manifest, to a regular
+   * expression that matches if and only if any of the globs in the list
+   * matches.
+   * @param {!Array<string>} globs
+   * @return {!RegExp}
+   * @private
+   */
+  static globsToRegExp_(globs) {
+    return new RegExp(
+        '^(' +
+        globs
+            .map(function(glob) {
+              return glob.replace(/[.+^$(){}|[\]\\]/g, '\\$&')
+                  .replace(/\*/g, '.*')
+                  .replace(/\?/g, '.');
+            })
+            .join('|') +
+        ')$');
+  }
 };
 
-/**
- * Converts a list of globs, as used in the extension manifest, to a regular
- * expression that matches if and only if any of the globs in the list matches.
- * @param {!Array<string>} globs
- * @return {!RegExp}
- * @private
- */
-Background.globsToRegExp_ = function(globs) {
-  return new RegExp(
-      '^(' +
-      globs
-          .map(function(glob) {
-            return glob.replace(/[.+^$(){}|[\]\\]/g, '\\$&')
-                .replace(/\*/g, '.*')
-                .replace(/\?/g, '.');
-          })
-          .join('|') +
-      ')$');
-};
 
 new Background();
+
 });  // goog.scope

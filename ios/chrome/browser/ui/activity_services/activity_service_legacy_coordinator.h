@@ -5,11 +5,11 @@
 #ifndef IOS_CHROME_BROWSER_UI_ACTIVITY_SERVICES_ACTIVITY_SERVICE_LEGACY_COORDINATOR_H_
 #define IOS_CHROME_BROWSER_UI_ACTIVITY_SERVICES_ACTIVITY_SERVICE_LEGACY_COORDINATOR_H_
 
-#include "ios/chrome/browser/browser_state/chrome_browser_state_forward.h"
 #import "ios/chrome/browser/ui/coordinators/chrome_coordinator.h"
 
 @protocol ActivityServicePositioner;
 @protocol ActivityServicePresentation;
+class ChromeBrowserState;
 @class CommandDispatcher;
 @class TabModel;
 
@@ -18,7 +18,7 @@
 @interface ActivityServiceLegacyCoordinator : ChromeCoordinator
 
 // Models.
-@property(nonatomic, readwrite, assign) ios::ChromeBrowserState* browserState;
+@property(nonatomic, readwrite, assign) ChromeBrowserState* browserState;
 @property(nonatomic, readwrite, weak) CommandDispatcher* dispatcher;
 @property(nonatomic, readwrite, weak) TabModel* tabModel;
 

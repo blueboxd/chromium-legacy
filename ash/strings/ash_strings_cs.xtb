@@ -112,6 +112,7 @@
 <translation id="2352467521400612932">Nastavení dotykového pera</translation>
 <translation id="2354174487190027830">Aktivace sítě <ph name="NAME" /></translation>
 <translation id="2359808026110333948">Pokračovat</translation>
+<translation id="2364154243880592194">Stavový panel, čas <ph name="TIME" />, <ph name="BATTERY" /> Stisknutím tlačítka Hledat a šipky vlevo přejdete do centra oznámení.</translation>
 <translation id="2365393535144473978">Zapnutím mobilních dat aktivujete Bluetooth.</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="2412593942846481727">K dispozici je aktualizace</translation>
@@ -335,6 +336,7 @@
 <translation id="5669267381087807207">Probíhá aktivace</translation>
 <translation id="5673434351075758678">Po synchronizaci nastavení se oznámení změní z jazyka <ph name="FROM_LOCALE" /> na jazyk <ph name="TO_LOCALE" />.</translation>
 <translation id="5682642926269496722">Asistent Google pro aktuální uživatelský účet není k dispozici.</translation>
+<translation id="5689633613396158040">Noční režim usnadňuje sledování obrazovky nebo čtení při tlumeném osvětlení. Klepnutím můžete změnit čas zapínání nočního režimu, případně ho úplně vypnout.</translation>
 <translation id="5691772641933328258">Otisk prstu nebyl rozpoznán</translation>
 <translation id="5710450975648804523">Režim Nerušit je zapnutý</translation>
 <translation id="573413375004481890">Toto zařízení nemohlo podporovat všechny vaše obrazovky, jedna proto byla odpojena</translation>
@@ -514,6 +516,7 @@
 <translation id="8142441511840089262">Dvojité kliknutí</translation>
 <translation id="8142699993796781067">Soukromá síť</translation>
 <translation id="8152092012181020186">Zavřete stisknutím kláves Ctrl + W.</translation>
+<translation id="8155007568264258537"><ph name="FEATURE_NAME" /> Toto nastavení spravuje administrátor.</translation>
 <translation id="8167567890448493835">Používá se <ph name="LOCALE_NAME" /></translation>
 <translation id="8190698733819146287">Personalizovat jazyky a zadávání...</translation>
 <translation id="8192202700944119416">Oznámení jsou skryta.</translation>

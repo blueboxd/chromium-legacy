@@ -1587,6 +1587,27 @@ be describing additional metrics about the same event.
   </metric>
 </event>
 
+<event name="Blink.FindInPage" singular="True">
+  <owner>vmpstr@chromium.org</owner>
+  <owner>chrishtr@chromium.org</owner>
+  <owner>paint-dev@chromium.org</owner>
+  <summary>
+    Logged once per page; indicates the type of find-in-page behaviors users
+    utilizied.
+  </summary>
+  <metric name="DidHaveRenderSubtreeMatch">
+    <summary>
+      Boolean indicating whether there was an active match in render-subtree
+      locked elements.
+    </summary>
+  </metric>
+  <metric name="DidSearch">
+    <summary>
+      Boolean indicating that find-in-page happened.
+    </summary>
+  </metric>
+</event>
+
 <event name="Blink.PageLoad">
   <owner>schenney@chromium.org</owner>
   <owner>paint-dev@chromium.org</owner>

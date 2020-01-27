@@ -8,8 +8,8 @@
 #import <UIKit/UIKit.h>
 
 #include "base/macros.h"
-#include "ios/chrome/browser/browser_state/chrome_browser_state_forward.h"
 
+class ChromeBrowserState;
 @class ChromeIdentity;
 
 typedef ChromeIdentity* (^SignedInIdentityBlock)(void);
@@ -22,7 +22,7 @@ class MailtoHandlerProvider {
   virtual ~MailtoHandlerProvider();
 
   // Sets up mailto handling for |browser_state|.
-  virtual void PrepareMailtoHandling(ios::ChromeBrowserState* browser_state);
+  virtual void PrepareMailtoHandling(ChromeBrowserState* browser_state);
 
   // Unregisters the mailto handler for browser state.
   virtual void RemoveMailtoHandling();

@@ -61,7 +61,7 @@ class HTMLCollectionIterator {
   }
 
  private:
-  Member<const CollectionType> collection_;
+  const CollectionType* collection_;
   unsigned index_ = 0;
 };
 

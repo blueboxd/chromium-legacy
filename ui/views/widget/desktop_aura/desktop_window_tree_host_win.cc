@@ -169,8 +169,7 @@ void DesktopWindowTreeHostWin::OnWidgetInitDone() {}
 std::unique_ptr<corewm::Tooltip> DesktopWindowTreeHostWin::CreateTooltip() {
   bool force_legacy_tooltips =
       (base::win::GetVersion() < base::win::Version::WIN8);
-  if (base::FeatureList::IsEnabled(features::kEnableAuraTooltipsOnWindows) &&
-      !force_legacy_tooltips)
+  if (!force_legacy_tooltips)
     return std::make_unique<corewm::TooltipAura>();
 
   DCHECK(!tooltip_);

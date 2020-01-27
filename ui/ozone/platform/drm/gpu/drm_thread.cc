@@ -394,6 +394,10 @@ void DrmThread::SetGammaCorrection(
   display_manager_->SetGammaCorrection(display_id, degamma_lut, gamma_lut);
 }
 
+void DrmThread::SetPrivacyScreen(int64_t display_id, bool enabled) {
+  display_manager_->SetPrivacyScreen(display_id, enabled);
+}
+
 void DrmThread::AddDrmDeviceReceiver(
     mojo::PendingReceiver<ozone::mojom::DrmDevice> receiver) {
   TRACE_EVENT0("drm", "DrmThread::AddDrmDeviceReceiver");

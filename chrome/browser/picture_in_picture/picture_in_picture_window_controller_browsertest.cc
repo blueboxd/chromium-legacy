@@ -223,8 +223,7 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
   auto* overlay_window = window_controller()->GetWindowForTesting();
   gfx::NativeWindow native_window =
       static_cast<OverlayWindowViews*>(overlay_window)->GetNativeWindow();
-#if defined(OS_CHROMEOS) || \
-    (defined(MAC_OS_X_VERSION_10_12) && !defined(MAC_OS_VERSION_10_13))
+#if defined(OS_CHROMEOS) || defined(OS_MACOSX)
   EXPECT_FALSE(platform_util::IsWindowActive(native_window));
 #else
   EXPECT_TRUE(platform_util::IsWindowActive(native_window));

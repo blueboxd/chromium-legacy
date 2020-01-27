@@ -25,8 +25,8 @@ class CreditCard;
 
 @interface ManualFillFullCardRequester ()
 
-// The ios::ChromeBrowserState instance passed to the initializer.
-@property(nonatomic, readonly) ios::ChromeBrowserState* browserState;
+// The ChromeBrowserState instance passed to the initializer.
+@property(nonatomic, readonly) ChromeBrowserState* browserState;
 
 // The WebStateList for this instance. Used to instantiate the child
 // coordinators lazily.
@@ -41,7 +41,7 @@ class CreditCard;
   std::unique_ptr<FullCardRequestResultDelegateBridge> _cardAssistant;
 }
 
-- (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState
+- (instancetype)initWithBrowserState:(ChromeBrowserState*)browserState
                         webStateList:(WebStateList*)webStateList
                       resultDelegate:
                           (id<FullCardRequestResultDelegateObserving>)delegate {

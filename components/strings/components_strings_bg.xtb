@@ -290,7 +290,6 @@
 <translation id="2218879909401188352">Понастоящем извършители на атака срещу <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> могат да инсталират опасни приложения, които да повредят устройството ви, да добавят скрити такси към сметката ви за мобилни услуги или да откраднат личната ви информация. <ph name="BEGIN_LEARN_MORE_LINK" />Научете повече<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="2224337661447660594">Няма достъп до интернет</translation>
 <translation id="2230458221926704099">Поправете връзката си посредством <ph name="BEGIN_LINK" />приложението за диагностика<ph name="END_LINK" /></translation>
-<translation id="22320125457191592">За вас</translation>
 <translation id="2239100178324503013">Изпращане сега</translation>
 <translation id="2248949050832152960">Използване на WebAuthn</translation>
 <translation id="2250931979407627383">Зашиване на левия ръб</translation>
@@ -574,7 +573,6 @@
 <translation id="3531780078352352885">Листове за заданието</translation>
 <translation id="3533328374079021623">Пощенска кутия 5</translation>
 <translation id="3539171420378717834">Съхраняване на копие на картата на това устройство</translation>
-<translation id="3553513561058684206">За вас</translation>
 <translation id="3558573058928565255">През деня</translation>
 <translation id="3566021033012934673">Връзката ви не е поверителна</translation>
 <translation id="3574305903863751447"><ph name="CITY" />, <ph name="STATE" /> <ph name="COUNTRY" /></translation>

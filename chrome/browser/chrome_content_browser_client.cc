@@ -44,6 +44,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
 #include "chrome/browser/browsing_data/chrome_browsing_data_remover_delegate.h"
+#include "chrome/browser/captive_portal/captive_portal_service_factory.h"
 #include "chrome/browser/chrome_content_browser_client_parts.h"
 #include "chrome/browser/chrome_quota_permission_context.h"
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
@@ -91,6 +92,7 @@
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/plugins/pdf_iframe_navigation_throttle.h"
 #include "chrome/browser/plugins/plugin_utils.h"
+#include "chrome/browser/prerender/isolated/isolated_prerender_features.h"
 #include "chrome/browser/prerender/isolated/isolated_prerender_url_loader_interceptor.h"
 #include "chrome/browser/prerender/prerender_final_status.h"
 #include "chrome/browser/prerender/prerender_manager.h"
@@ -130,6 +132,7 @@
 #include "chrome/browser/site_isolation/site_isolation_policy.h"
 #include "chrome/browser/speech/chrome_speech_recognition_manager_delegate.h"
 #include "chrome/browser/speech/tts_controller_delegate_impl.h"
+#include "chrome/browser/ssl/chrome_security_blocking_page_factory.h"
 #include "chrome/browser/ssl/ssl_client_auth_metrics.h"
 #include "chrome/browser/ssl/ssl_client_certificate_selector.h"
 #include "chrome/browser/ssl/ssl_error_handler.h"
@@ -184,6 +187,7 @@
 #include "chrome/installer/util/google_update_settings.h"
 #include "components/autofill/core/common/autofill_switches.h"
 #include "components/browsing_data/core/browsing_data_utils.h"
+#include "components/captive_portal/content/captive_portal_service.h"
 #include "components/captive_portal/core/buildflags.h"
 #include "components/cdm/browser/cdm_message_filter_android.h"
 #include "components/certificate_matching/certificate_principal_pattern.h"
@@ -685,10 +689,17 @@ void HandleSSLErrorWrapper(
   if (!profile)
     return;
 
+  CaptivePortalService* captive_portal_service = nullptr;
+
+#if BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION)
+  captive_portal_service = CaptivePortalServiceFactory::GetForProfile(profile);
+#endif
+
   SSLErrorHandler::HandleSSLError(
       web_contents, cert_error, ssl_info, request_url,
       std::move(ssl_cert_reporter), std::move(blocking_page_ready_callback),
-      g_browser_process->network_time_tracker(),
+      g_browser_process->network_time_tracker(), captive_portal_service,
+      std::make_unique<ChromeSecurityBlockingPageFactory>(),
       profile->GetPrefs()->GetBoolean(prefs::kSSLErrorOverrideAllowed));
 }
 
@@ -2807,11 +2818,11 @@ base::OnceClosure ChromeContentBrowserClient::SelectClientCertificate(
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
 #if defined(OS_CHROMEOS)
   if (chromeos::ProfileHelper::IsSigninProfile(profile)) {
-    // TODO(pmarko): crbug.com/723849: Set |may_show_cert_selection| to false
-    // and remove the command-line flag after prototype phase when the
-    // DeviceLoginScreenAutoSelectCertificateForUrls policy is live.
-    may_show_cert_selection =
-        chromeos::switches::IsSigninFrameClientCertUserSelectionEnabled();
+    // On the sign-in profile, never show certificate selection to the user. A
+    // client certificate is an identifier that can be stable for a long time,
+    // so only the administrator is allowed to decide which endpoints should see
+    // it.
+    may_show_cert_selection = false;
 
     content::StoragePartition* storage_partition =
         content::BrowserContext::GetStoragePartition(

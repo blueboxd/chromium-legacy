@@ -79,6 +79,7 @@
 <translation id="129553762522093515">මෑතදී වසන ලදි</translation>
 <translation id="1298536327547837046">අනිෂ්ට මෘදුකාංග ස්කෑන් කිරීම</translation>
 <translation id="129863573139666797"><ph name="BEGIN_LINK" />ඔබේ කුකි හිස් කරමින්<ph name="END_LINK" /></translation>
+<translation id="1301324364792935241">ඔබේ සුරක්‍ෂිත DNS සැකසුම් පරීක්‍ෂා කරන්න</translation>
 <translation id="1307966114820526988">අත් හරින ලද විශේෂාංග</translation>
 <translation id="1314509827145471431">දකුණ බැඳීම</translation>
 <translation id="1320233736580025032">Prc1 (ලියුම් කවරය)</translation>
@@ -152,6 +153,7 @@
 <translation id="1569487616857761740">කල් ඉකුත්වීමේ දිනය ඇතුළත් කරන්න</translation>
 <translation id="1581080074034554886">CVC</translation>
 <translation id="1583429793053364125">මෙම වෙබ් පිටුව සංසංදර්ශනය කිරීමේදී යමක් වැරදී ඇත.</translation>
+<translation id="1586541204584340881">ඔබ ස්ථාපන කර ඇති දිගු මොනවාද</translation>
 <translation id="1588438908519853928">සාමාන්‍ය</translation>
 <translation id="1592005682883173041">ස්ථානීය දත්ත ප්‍රවේශය</translation>
 <translation id="1594030484168838125">තෝරන්න</translation>
@@ -290,7 +292,6 @@
 <translation id="2218879909401188352"><ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> හි දැනට සිටින ප්‍රහාරකයින්ට ඔබේ උපාංගයට හානි කරන, ඔබේ ජංගම බිලට සැඟවුණු ගාස්තු එක් කරන, හෝ ඔබේ පුද්ගලික තොරතුරු සොරකම් කරන භයානක යෙදුම් ස්ථාපනය කළ හැකිය. <ph name="BEGIN_LEARN_MORE_LINK" />තව දැන ගන්න<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="2224337661447660594">අන්තර්ජාලය නැත</translation>
 <translation id="2230458221926704099">ඔබේ සම්බන්ධතාව <ph name="BEGIN_LINK" />දෝෂ නිර්ණ යෙදුම<ph name="END_LINK" /> භාවිතයෙන් නිවැරදි කරන්න</translation>
-<translation id="22320125457191592">ඔබ සඳහා</translation>
 <translation id="2239100178324503013">දැන් යවන්න</translation>
 <translation id="2248949050832152960">WebAuthn භාවිත කරන්න</translation>
 <translation id="2250931979407627383">වමට දාරය මසන්න</translation>
@@ -363,6 +364,7 @@
 <translation id="2544644783021658368">තනි ලේඛනය</translation>
 <translation id="254947805923345898">ප්‍රතිපත්ති අගය වලංගු නොවේ.</translation>
 <translation id="255002559098805027"><ph name="HOST_NAME" /> වලංගු නොවන ප්‍රතිචාරයක් එවීය.</translation>
+<translation id="2553853292994445426">ඔබේ සුරක්‍ෂිත DNS සැකසුම් පරීක්‍ෂා කරන්න. ඔබ සම්බන්ධතා අසමත් වන සුරක්‍ෂිත DNS සේවාදායකයක් වින්‍යාස කර තිබිය හැක.</translation>
 <translation id="2556876185419854533">සංස්කරණය &amp;පසුගමනය කරන්න</translation>
 <translation id="257674075312929031">සමූහය</translation>
 <translation id="2586657967955657006">පසුරු පුවරුව</translation>
@@ -479,6 +481,7 @@
 <translation id="3095940652251934233">ප්‍රකාශය</translation>
 <translation id="3096100844101284527">නංවා ගැනීමේ ලිපිනය එක් කරන්න</translation>
 <translation id="3105172416063519923">වත්කම් ID:</translation>
+<translation id="3107591622054137333"><ph name="BEGIN_LINK" />සුරක්‍ෂිත DNS වින්‍යාසය පරීක්‍ෂා කිරීම<ph name="END_LINK" /></translation>
 <translation id="3109728660330352905">ඔබට මෙම පිටුව බැලීමට අනුමැතිය නැත.</translation>
 <translation id="3113284927548439113">තෙවන වැඩ මුරය</translation>
 <translation id="3116158981186517402">ලැමිනේට් කරන්න</translation>
@@ -570,7 +573,6 @@
 <translation id="3531780078352352885">වැඩ පත්‍ර</translation>
 <translation id="3533328374079021623">තැපැල් පෙට්ටිය 5</translation>
 <translation id="3539171420378717834">මෙම උපාංගය මත මෙම කාඩ්පතේ පිටපතක් තබා ගන්න</translation>
-<translation id="3553513561058684206">ඔබ සඳහා</translation>
 <translation id="3558573058928565255">දවස, වේලාව</translation>
 <translation id="3566021033012934673">ඔබගේ සබැඳුම පුද්ගලික නොවේ</translation>
 <translation id="3574305903863751447"><ph name="CITY" />, <ph name="STATE" /> <ph name="COUNTRY" /></translation>
@@ -779,6 +781,7 @@
 <translation id="4390472908992056574">ගැට්ට</translation>
 <translation id="4406896451731180161">සෙවීම් ප්‍රතිඵල</translation>
 <translation id="4408413947728134509">කුකීස් <ph name="NUM_COOKIES" /></translation>
+<translation id="4414290883293381923">ඔබ මේ දැන් වංචනික අඩවියක ඔබේ මුරපදය ඇතුළු කළා. Chrome <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, <ph name="WEBSITE_3" />, සහ ඔබ මෙම මුරපදය භාවිත කරන වෙනත් වෙබ් අඩවිවලට ගොස් එය දැන් වෙනස් කිරීම නිර්දේශ කරයි.</translation>
 <translation id="4415426530740016218">නංවා ගැනීමේ ලිපිනය</translation>
 <translation id="4424024547088906515">මෙම සේවාදායකයට එය <ph name="DOMAIN" /> බව සනාථ කිරීමට නොහැකි විය; එහි ආරක්ෂණ සහතිකය Chrome මගින් විශ්වාස නොකරයි. මෙය වැරදි වින්‍යාස කිරීමක් හෝ ප්‍රහාරකයකු ඔබගේ සබැඳුමට බාධා කිරීමක් නිසා විය හැකිය.</translation>
 <translation id="443121186588148776">අනුක්‍රමික තොට</translation>
@@ -1211,6 +1214,7 @@
 <translation id="6353505687280762741">{COUNT,plural, =0{කිසිවක් නැත}=1{1 මුරපදයක් (<ph name="DOMAIN_LIST" /> සඳහා, සමමුහූර්තයි)}=2{මුරපද 2 ක් (<ph name="DOMAIN_LIST" /> සඳහා, සමමුහූර්තයි)}one{මුරපද # ක් (<ph name="DOMAIN_LIST" /> සඳහා, සමමුහූර්තයි)}other{මුරපද # ක් (<ph name="DOMAIN_LIST" /> සඳහා, සමමුහූර්තයි)}}</translation>
 <translation id="6358450015545214790">මෙයින් හැඟෙන්නේ කුමක්ද?</translation>
 <translation id="6361757823711327522">B7</translation>
+<translation id="6364095313648930329"><ph name="BEGIN_LINK" />ප්‍රොක්සි, සුරැකුම් පවුර සහ සුරක්‍ෂිත DNS වින්‍යාස කිරීම පරීක්‍ෂා කිරීම<ph name="END_LINK" /></translation>
 <translation id="6366710531182496394">වමට දෙවරක් ස්ටේපල් කරන්න</translation>
 <translation id="6377268785556383139">'<ph name="SEARCH_TEXT" />' සඳහා 1 ප්‍රතිඵලයක්</translation>
 <translation id="6380497234672085559">A0</translation>
@@ -1233,6 +1237,7 @@
 <translation id="6433595998831338502"><ph name="HOST_NAME" /> සබැඳීම ප්‍රතික්ෂේප කරන ලදී.</translation>
 <translation id="6434309073475700221">ඉවත ලන්න</translation>
 <translation id="6440503408713884761">නොතැකූ</translation>
+<translation id="6443406338865242315">ඔබ ස්ථාපන කර ඇති දිගු සහ පේනු මෘදුකාංග</translation>
 <translation id="6446163441502663861">Kahu (ලියුම් කවරය)</translation>
 <translation id="6446608382365791566">තවත් තොරතුරු එක් කරන්න</translation>
 <translation id="6447842834002726250">කුකීස්</translation>
@@ -1342,6 +1347,7 @@
 <translation id="7012363358306927923">China UnionPay</translation>
 <translation id="7016992613359344582">මෙම අය කිරීම් එක්-වර හෝ ප්‍රත්‍යාවර්ත විය හැකි අතර, පැහැදිලි නොවිය හැක.</translation>
 <translation id="7029809446516969842">මුරපද</translation>
+<translation id="7031646650991750659">ඔබ ස්ථාපන කර ඇති Google Play යෙදුම් මොනවාද</translation>
 <translation id="7050187094878475250">ඔබ <ph name="DOMAIN" /> වෙත ළඟා කිරීමට උත්සාහ නමුත්, සේවාදායකයා වලංගු කාලය විශ්වාසවන්ත වීමට දිග වැඩි සහතිකයක් ඉදිරිපත් කළා.</translation>
 <translation id="705310974202322020">{NUM_CARDS,plural, =1{මෙම කාඩ්පත දැනට සුරැකිය නොහැක}one{මෙම කාඩ්පත් දැනට සුරැකිය නොහැක}other{මෙම කාඩ්පත් දැනට සුරැකිය නොහැක}}</translation>
 <translation id="7053983685419859001">අවහිර කරන්න</translation>
@@ -1401,6 +1407,7 @@
 <translation id="7319430975418800333">A3</translation>
 <translation id="7320336641823683070">සම්බන්ධතා උපකාරය</translation>
 <translation id="733354035281974745">උපාංග අභ්‍යන්තර ගිණුම් ප්‍රතික්‍ෂේපය</translation>
+<translation id="7333654844024768166">ඔබ මේ දැන් වංචනික අඩවියක ඔබේ මුරපදය ඇතුළු කළා. Chromium <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, <ph name="WEBSITE_3" />, සහ ඔබ මෙම මුරපදය භාවිත කරන වෙනත් වෙබ් අඩවිවලට ගොස් එය දැන් වෙනස් කිරීම නිර්දේශ කරයි.</translation>
 <translation id="7334320624316649418">යළි ඇනවුම් කිරීම &amp;යළි කරන්න</translation>
 <translation id="7337706099755338005">ඔබේ වේදිකාව මත නොතිබේ.</translation>
 <translation id="733923710415886693">සහතික පාරදෘශ්‍යතාව හරහා සේවාදායකයේ සහතිකය අනාවරණය නොකෙරේ.</translation>

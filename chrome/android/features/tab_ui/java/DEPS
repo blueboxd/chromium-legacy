@@ -1,10 +1,9 @@
 include_rules = [
  "+chrome/lib/lifecycle/public/android/java/src/org/chromium/chrome/browser/lifecycle",
- "+chrome/browser/ui/android/widget",
  "+chrome/browser/ui/messages/android/java",
  "+chrome/browser/util",
-
  "+components/browser_ui/styles/android",
+ "+components/browser_ui/widget/android",
  "+components/feature_engagement/public/android/java/src/org/chromium/components/feature_engagement",
  "+components/module_installer",
 

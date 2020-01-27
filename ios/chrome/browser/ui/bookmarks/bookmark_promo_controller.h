@@ -7,8 +7,7 @@
 
 #import <UIKit/UIKit.h>
 
-#include "ios/chrome/browser/browser_state/chrome_browser_state_forward.h"
-
+class ChromeBrowserState;
 @protocol SigninPresenter;
 @class SigninPromoViewConfigurator;
 @class SigninPromoViewMediator;
@@ -38,7 +37,7 @@
 
 @property(nonatomic, readonly) SigninPromoViewMediator* signinPromoViewMediator;
 
-- (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState
+- (instancetype)initWithBrowserState:(ChromeBrowserState*)browserState
                             delegate:
                                 (id<BookmarkPromoControllerDelegate>)delegate
                            presenter:(id<SigninPresenter>)presenter;

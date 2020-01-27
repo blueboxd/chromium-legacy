@@ -32,7 +32,12 @@ const targetMainFps =
   window.location.hash.length > 1 ? +window.location.hash.substr(1) : 0;
 const skipEvery = targetMainFps > 0 ? parseInt(60 / targetMainFps) : 0;
 
-const shouldJank = window.location.search.indexOf('?jank') >= 0;
+const query = window.location.search.substr(1).split('&');
+const shouldJank = query.indexOf('jank') >= 0;
+const offscreen = query.indexOf('offscreen') >= 0;
+if (offscreen) {
+  document.body.style.marginTop = '5000px';
+}
 
 var currentValue = 0;
 const maxValue = 150;

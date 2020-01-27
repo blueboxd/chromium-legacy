@@ -728,8 +728,12 @@ void IdentityGetAuthTokenFunction::OnGaiaRemoteConsentFlowFailure(
 
 void IdentityGetAuthTokenFunction::OnGaiaRemoteConsentFlowCompleted(
     const std::string& consent_result) {
-  // TODO(crbug.com/1026237): implement this.
-  NOTIMPLEMENTED();
+  DCHECK(!consent_result.empty());
+  consent_result_ = consent_result;
+  should_prompt_for_scopes_ = false;
+  should_prompt_for_signin_ = false;
+  gaia_mint_token_mode_ = OAuth2MintTokenFlow::MODE_MINT_TOKEN_NO_FORCE;
+  StartTokenKeyAccountAccessTokenRequest();
 }
 
 void IdentityGetAuthTokenFunction::OnGetAccessTokenComplete(
@@ -901,11 +905,12 @@ IdentityGetAuthTokenFunction::CreateMintTokenFlow() {
   std::string signin_scoped_device_id =
       GetSigninScopedDeviceIdForProfile(GetProfile());
   auto mint_token_flow = std::make_unique<OAuth2MintTokenFlow>(
-      this, OAuth2MintTokenFlow::Parameters(
-                extension()->id(), oauth2_client_id_,
-                std::vector<std::string>(token_key_.scopes.begin(),
-                                         token_key_.scopes.end()),
-                signin_scoped_device_id, gaia_mint_token_mode_));
+      this,
+      OAuth2MintTokenFlow::Parameters(
+          extension()->id(), oauth2_client_id_,
+          std::vector<std::string>(token_key_.scopes.begin(),
+                                   token_key_.scopes.end()),
+          signin_scoped_device_id, consent_result_, gaia_mint_token_mode_));
   return mint_token_flow;
 }
 

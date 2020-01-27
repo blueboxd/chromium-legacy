@@ -20,17 +20,13 @@
 #include "chrome/test/base/testing_profile.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "content/public/browser/render_process_host.h"
-#include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_renderer_host.h"
-#include "content/public/test/web_contents_tester.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
 using content::BrowserContext;
-using content::WebContents;
-using content::WebContentsTester;
 using UserAction = ChromeNativeFileSystemPermissionContext::UserAction;
 using PermissionStatus =
     content::NativeFileSystemPermissionGrant::PermissionStatus;
@@ -39,20 +35,68 @@ using PermissionRequestOutcome =
 using SensitiveDirectoryResult =
     ChromeNativeFileSystemPermissionContext::SensitiveDirectoryResult;
 
+class TestNativeFileSystemPermissionContext
+    : public ChromeNativeFileSystemPermissionContext {
+ public:
+  explicit TestNativeFileSystemPermissionContext(
+      content::BrowserContext* context)
+      : ChromeNativeFileSystemPermissionContext(context) {}
+  ~TestNativeFileSystemPermissionContext() override = default;
+
+  // content::NativeFileSystemPermissionContext:
+  scoped_refptr<content::NativeFileSystemPermissionGrant>
+  GetReadPermissionGrant(const url::Origin& origin,
+                         const base::FilePath& path,
+                         bool is_directory,
+                         int process_id,
+                         int frame_id) override {
+    NOTREACHED();
+    return nullptr;
+  }
+  scoped_refptr<content::NativeFileSystemPermissionGrant>
+  GetWritePermissionGrant(const url::Origin& origin,
+                          const base::FilePath& path,
+                          bool is_directory,
+                          int process_id,
+                          int frame_id,
+                          UserAction user_action) override {
+    NOTREACHED();
+    return nullptr;
+  }
+
+  // ChromeNativeFileSystemPermissionContext:
+  Grants GetPermissionGrants(const url::Origin& origin,
+                             int process_id,
+                             int frame_id) override {
+    NOTREACHED();
+    return {};
+  }
+  void RevokeGrants(const url::Origin& origin,
+                    int process_id,
+                    int frame_id) override {
+    NOTREACHED();
+  }
+
+ private:
+  base::WeakPtr<ChromeNativeFileSystemPermissionContext> GetWeakPtr() override {
+    return weak_factory_.GetWeakPtr();
+  }
+
+  base::WeakPtrFactory<TestNativeFileSystemPermissionContext> weak_factory_{
+      this};
+};
+
 class ChromeNativeFileSystemPermissionContextTest : public testing::Test {
  public:
   void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-    web_contents_ =
-        content::WebContentsTester::CreateTestWebContents(&profile_, nullptr);
     permission_context_ =
-        std::make_unique<ChromeNativeFileSystemPermissionContext>(
+        std::make_unique<TestNativeFileSystemPermissionContext>(
             browser_context());
   }
 
   void TearDown() override {
     ASSERT_TRUE(temp_dir_.Delete());
-    web_contents_.reset();
   }
 
   SensitiveDirectoryResult ConfirmSensitiveDirectoryAccessSync(
@@ -92,22 +136,6 @@ class ChromeNativeFileSystemPermissionContextTest : public testing::Test {
     return permission_context_.get();
   }
   BrowserContext* browser_context() { return &profile_; }
-  WebContents* web_contents() { return web_contents_.get(); }
-
-  int process_id() {
-    return web_contents()->GetMainFrame()->GetProcess()->GetID();
-  }
-
-  int frame_id() { return web_contents()->GetMainFrame()->GetRoutingID(); }
-
-  void ExpectCanRequestWritePermission(
-      content::NativeFileSystemPermissionGrant* actual_grant,
-      bool expected) {
-    auto* grant = static_cast<
-        ChromeNativeFileSystemPermissionContext::WritePermissionGrantImpl*>(
-        actual_grant);
-    EXPECT_EQ(expected, grant->CanRequestPermission());
-  }
 
  protected:
   const url::Origin kTestOrigin =
@@ -120,194 +148,10 @@ class ChromeNativeFileSystemPermissionContextTest : public testing::Test {
   content::BrowserTaskEnvironment task_environment_;
   base::ScopedTempDir temp_dir_;
   std::unique_ptr<ChromeNativeFileSystemPermissionContext> permission_context_;
-  content::RenderViewHostTestEnabler render_view_host_test_enabler_;
   TestingProfile profile_;
-  std::unique_ptr<WebContents> web_contents_;
 };
 
 #if !defined(OS_ANDROID)
-TEST_F(ChromeNativeFileSystemPermissionContextTest,
-       GetWritePermissionGrant_InitialState_OpenAction) {
-  auto grant = permission_context()->GetWritePermissionGrant(
-      kTestOrigin, kTestPath, /*is_directory=*/false, process_id(), frame_id(),
-      UserAction::kOpen);
-  ExpectCanRequestWritePermission(grant.get(), /*expected=*/true);
-  EXPECT_EQ(PermissionStatus::ASK, grant->GetStatus());
-}
-
-TEST_F(ChromeNativeFileSystemPermissionContextTest,
-       GetWritePermissionGrant_InitialState_WritableImplicitState) {
-  auto grant = permission_context()->GetWritePermissionGrant(
-      kTestOrigin, kTestPath, /*is_directory=*/false, process_id(), frame_id(),
-      UserAction::kSave);
-  ExpectCanRequestWritePermission(grant.get(), /*expected=*/true);
-  EXPECT_EQ(PermissionStatus::GRANTED, grant->GetStatus());
-
-  // The existing grant should not change if the permission is blocked globally.
-  SetDefaultContentSettingValue(
-      ContentSettingsType::NATIVE_FILE_SYSTEM_WRITE_GUARD,
-      CONTENT_SETTING_BLOCK);
-  ExpectCanRequestWritePermission(grant.get(), /*expected=*/false);
-  EXPECT_EQ(PermissionStatus::GRANTED, grant->GetStatus());
-}
-
-TEST_F(ChromeNativeFileSystemPermissionContextTest,
-       GetWritePermissionGrant_WriteGrantedChangesExistingGrant) {
-  auto grant1 = permission_context()->GetWritePermissionGrant(
-      kTestOrigin, kTestPath, /*is_directory=*/false, process_id(), frame_id(),
-      UserAction::kOpen);
-  auto grant2 = permission_context()->GetWritePermissionGrant(
-      kTestOrigin, kTestPath, /*is_directory=*/false, process_id(), frame_id(),
-      UserAction::kSave);
-  auto grant3 = permission_context()->GetWritePermissionGrant(
-      kTestOrigin, kTestPath, /*is_directory=*/false, process_id(), frame_id(),
-      UserAction::kOpen);
-  // All grants should be the same grant, and be granted.
-  EXPECT_EQ(grant1, grant2);
-  EXPECT_EQ(grant1, grant3);
-  ExpectCanRequestWritePermission(grant1.get(), /*expected=*/true);
-  EXPECT_EQ(PermissionStatus::GRANTED, grant1->GetStatus());
-}
-
-TEST_F(ChromeNativeFileSystemPermissionContextTest,
-       GetWritePermissionGrant_GrantIsRevokedWhenNoLongerUsed) {
-  auto grant = permission_context()->GetWritePermissionGrant(
-      kTestOrigin, kTestPath, /*is_directory=*/false, process_id(), frame_id(),
-      UserAction::kSave);
-  EXPECT_EQ(PermissionStatus::GRANTED, grant->GetStatus());
-  grant.reset();
-
-  // After reset grant should go away, so new grant request should be in ASK
-  // state.
-  grant = permission_context()->GetWritePermissionGrant(
-      kTestOrigin, kTestPath, /*is_directory=*/false, process_id(), frame_id(),
-      UserAction::kOpen);
-  ExpectCanRequestWritePermission(grant.get(), /*expected=*/true);
-  EXPECT_EQ(PermissionStatus::ASK, grant->GetStatus());
-}
-
-TEST_F(ChromeNativeFileSystemPermissionContextTest,
-       GetWritePermissionGrant_InitialState_OpenAction_GlobalGuardBlocked) {
-  SetDefaultContentSettingValue(
-      ContentSettingsType::NATIVE_FILE_SYSTEM_WRITE_GUARD,
-      CONTENT_SETTING_BLOCK);
-
-  auto grant = permission_context()->GetWritePermissionGrant(
-      kTestOrigin, kTestPath, /*is_directory=*/false, process_id(), frame_id(),
-      UserAction::kOpen);
-  ExpectCanRequestWritePermission(grant.get(), /*expected=*/false);
-  EXPECT_EQ(PermissionStatus::DENIED, grant->GetStatus());
-  grant.reset();
-
-  SetContentSettingValueForOrigin(
-      kTestOrigin, ContentSettingsType::NATIVE_FILE_SYSTEM_WRITE_GUARD,
-      CONTENT_SETTING_ASK);
-
-  grant = permission_context()->GetWritePermissionGrant(
-      kTestOrigin, kTestPath, /*is_directory=*/false, process_id(), frame_id(),
-      UserAction::kOpen);
-  ExpectCanRequestWritePermission(grant.get(), /*expected=*/true);
-  EXPECT_EQ(PermissionStatus::ASK, grant->GetStatus());
-}
-
-TEST_F(
-    ChromeNativeFileSystemPermissionContextTest,
-    GetWritePermissionGrant_InitialState_WritableImplicitState_GlobalGuardBlocked) {
-  SetDefaultContentSettingValue(
-      ContentSettingsType::NATIVE_FILE_SYSTEM_WRITE_GUARD,
-      CONTENT_SETTING_BLOCK);
-
-  auto grant = permission_context()->GetWritePermissionGrant(
-      kTestOrigin, kTestPath, /*is_directory=*/false, process_id(), frame_id(),
-      UserAction::kSave);
-  ExpectCanRequestWritePermission(grant.get(), /*expected=*/false);
-  EXPECT_EQ(PermissionStatus::DENIED, grant->GetStatus());
-  grant.reset();
-
-  SetContentSettingValueForOrigin(
-      kTestOrigin, ContentSettingsType::NATIVE_FILE_SYSTEM_WRITE_GUARD,
-      CONTENT_SETTING_ASK);
-
-  grant = permission_context()->GetWritePermissionGrant(
-      kTestOrigin, kTestPath, /*is_directory=*/false, process_id(), frame_id(),
-      UserAction::kSave);
-  ExpectCanRequestWritePermission(grant.get(), /*expected=*/true);
-  EXPECT_EQ(PermissionStatus::GRANTED, grant->GetStatus());
-}
-
-TEST_F(
-    ChromeNativeFileSystemPermissionContextTest,
-    GetWritePermissionGrant_WriteGrantedChangesExistingGrant_GlobalGuardBlocked) {
-  SetContentSettingValueForOrigin(
-      kTestOrigin, ContentSettingsType::NATIVE_FILE_SYSTEM_WRITE_GUARD,
-      CONTENT_SETTING_BLOCK);
-
-  auto grant1 = permission_context()->GetWritePermissionGrant(
-      kTestOrigin, kTestPath, /*is_directory=*/false, process_id(), frame_id(),
-      UserAction::kOpen);
-  auto grant2 = permission_context()->GetWritePermissionGrant(
-      kTestOrigin, kTestPath, /*is_directory=*/false, process_id(), frame_id(),
-      UserAction::kSave);
-  auto grant3 = permission_context()->GetWritePermissionGrant(
-      kTestOrigin, kTestPath, /*is_directory=*/false, process_id(), frame_id(),
-      UserAction::kOpen);
-  // All grants should be the same grant, and be denied.
-  EXPECT_EQ(grant1, grant2);
-  EXPECT_EQ(grant1, grant3);
-  ExpectCanRequestWritePermission(grant1.get(), /*expected=*/false);
-  EXPECT_EQ(PermissionStatus::DENIED, grant1->GetStatus());
-}
-
-TEST_F(
-    ChromeNativeFileSystemPermissionContextTest,
-    GetWritePermissionGrant_GrantIsRevokedWhenNoLongerUsed_GlobalGuardBlockedBeforeNewGrant) {
-  SetDefaultContentSettingValue(
-      ContentSettingsType::NATIVE_FILE_SYSTEM_WRITE_GUARD,
-      CONTENT_SETTING_BLOCK);
-
-  auto grant = permission_context()->GetWritePermissionGrant(
-      kTestOrigin, kTestPath, /*is_directory=*/false, process_id(), frame_id(),
-      UserAction::kSave);
-  ExpectCanRequestWritePermission(grant.get(), /*expected=*/false);
-  EXPECT_EQ(PermissionStatus::DENIED, grant->GetStatus());
-  grant.reset();
-
-  // After reset grant should go away, but the new grant request should be in
-  // DENIED state.
-  grant = permission_context()->GetWritePermissionGrant(
-      kTestOrigin, kTestPath, /*is_directory=*/false, process_id(), frame_id(),
-      UserAction::kOpen);
-  ExpectCanRequestWritePermission(grant.get(), /*expected=*/false);
-  EXPECT_EQ(PermissionStatus::DENIED, grant->GetStatus());
-}
-
-TEST_F(
-    ChromeNativeFileSystemPermissionContextTest,
-    GetWritePermissionGrant_GrantIsRevokedWhenNoLongerUsed_GlobalGuardBlockedAfterNewGrant) {
-  auto grant = permission_context()->GetWritePermissionGrant(
-      kTestOrigin, kTestPath, /*is_directory=*/false, process_id(), frame_id(),
-      UserAction::kSave);
-  ExpectCanRequestWritePermission(grant.get(), /*expected=*/true);
-  EXPECT_EQ(PermissionStatus::GRANTED, grant->GetStatus());
-  grant.reset();
-
-  // After reset grant should go away, but the new grant request should be in
-  // ASK state.
-  grant = permission_context()->GetWritePermissionGrant(
-      kTestOrigin, kTestPath, /*is_directory=*/false, process_id(), frame_id(),
-      UserAction::kOpen);
-  ExpectCanRequestWritePermission(grant.get(), /*expected=*/true);
-  EXPECT_EQ(PermissionStatus::ASK, grant->GetStatus());
-
-  SetDefaultContentSettingValue(
-      ContentSettingsType::NATIVE_FILE_SYSTEM_WRITE_GUARD,
-      CONTENT_SETTING_BLOCK);
-
-  // After the guard is blocked, the permission status for |grant| should remain
-  // unchanged, but |CanRequestPermission()| should return false.
-  ExpectCanRequestWritePermission(grant.get(), /*expected=*/false);
-  EXPECT_EQ(PermissionStatus::ASK, grant->GetStatus());
-}
 
 TEST_F(ChromeNativeFileSystemPermissionContextTest,
        ConfirmSensitiveDirectoryAccess_NoSpecialPath) {
@@ -424,153 +268,6 @@ TEST_F(ChromeNativeFileSystemPermissionContextTest,
                 permission_context(),
                 {base::FilePath(FILE_PATH_LITERAL("/dev/foo"))}));
 #endif
-}
-
-TEST_F(ChromeNativeFileSystemPermissionContextTest, RequestPermission) {
-  // The test environment auto-dismisses prompts, as a result, a call to
-  // RequestPermission() should not change PermissionStatus.
-  auto grant = permission_context()->GetWritePermissionGrant(
-      kTestOrigin, kTestPath, /*is_directory=*/false, process_id(), frame_id(),
-      UserAction::kOpen);
-
-  base::RunLoop loop;
-  grant->RequestPermission(
-      process_id(), frame_id(),
-      base::BindLambdaForTesting(
-          [&](PermissionRequestOutcome outcome) { loop.Quit(); }));
-  loop.Run();
-  EXPECT_EQ(PermissionStatus::ASK, grant->GetStatus());
-}
-
-TEST_F(ChromeNativeFileSystemPermissionContextTest,
-       RequestPermission_AlreadyGranted) {
-  // If the permission has already been granted, a call to RequestPermission()
-  // should call the passed-in callback and return immediately without showing a
-  // prompt.
-  auto grant = permission_context()->GetWritePermissionGrant(
-      kTestOrigin, kTestPath, /*is_directory=*/false, process_id(), frame_id(),
-      UserAction::kSave);
-
-  base::RunLoop loop;
-  grant->RequestPermission(
-      process_id(), frame_id(),
-      base::BindLambdaForTesting(
-          [&](PermissionRequestOutcome outcome) { loop.Quit(); }));
-  loop.Run();
-  EXPECT_EQ(PermissionStatus::GRANTED, grant->GetStatus());
-}
-
-TEST_F(ChromeNativeFileSystemPermissionContextTest,
-       RequestPermission_GlobalGuardBlockedBeforeOpenGrant) {
-  // If the guard content setting is blocked, a call to RequestPermission()
-  // should update the PermissionStatus to DENIED, call the passed-in
-  // callback, and return immediately without showing a prompt.
-  SetDefaultContentSettingValue(
-      ContentSettingsType::NATIVE_FILE_SYSTEM_WRITE_GUARD,
-      CONTENT_SETTING_BLOCK);
-
-  auto grant = permission_context()->GetWritePermissionGrant(
-      kTestOrigin, kTestPath, /*is_directory=*/false, process_id(), frame_id(),
-      UserAction::kOpen);
-
-  base::RunLoop loop;
-  grant->RequestPermission(
-      process_id(), frame_id(),
-      base::BindLambdaForTesting(
-          [&](PermissionRequestOutcome outcome) { loop.Quit(); }));
-  loop.Run();
-  EXPECT_EQ(PermissionStatus::DENIED, grant->GetStatus());
-
-  auto grant2 = permission_context()->GetWritePermissionGrant(
-      kTestOrigin2, kTestPath, /*is_directory=*/false, process_id(), frame_id(),
-      UserAction::kOpen);
-
-  base::RunLoop loop2;
-  grant2->RequestPermission(
-      process_id(), frame_id(),
-      base::BindLambdaForTesting(
-          [&](PermissionRequestOutcome outcome) { loop2.Quit(); }));
-  loop2.Run();
-  EXPECT_EQ(PermissionStatus::DENIED, grant2->GetStatus());
-
-  grant2.reset();
-  SetContentSettingValueForOrigin(
-      kTestOrigin2, ContentSettingsType::NATIVE_FILE_SYSTEM_WRITE_GUARD,
-      CONTENT_SETTING_ASK);
-
-  grant2 = permission_context()->GetWritePermissionGrant(
-      kTestOrigin2, kTestPath, /*is_directory=*/false, process_id(), frame_id(),
-      UserAction::kOpen);
-
-  base::RunLoop loop3;
-  grant2->RequestPermission(
-      process_id(), frame_id(),
-      base::BindLambdaForTesting(
-          [&](PermissionRequestOutcome outcome) { loop3.Quit(); }));
-  loop3.Run();
-  EXPECT_EQ(PermissionStatus::ASK, grant2->GetStatus());
-}
-
-TEST_F(ChromeNativeFileSystemPermissionContextTest,
-       RequestPermission_GlobalGuardBlockedAfterOpenGrant) {
-  // If the guard content setting is blocked, a call to RequestPermission()
-  // should update the PermissionStatus to DENIED, call the passed-in
-  // callback, and return immediately without showing a prompt.
-  auto grant = permission_context()->GetWritePermissionGrant(
-      kTestOrigin, kTestPath, /*is_directory=*/false, process_id(), frame_id(),
-      UserAction::kOpen);
-  auto grant2 = permission_context()->GetWritePermissionGrant(
-      kTestOrigin2, kTestPath, /*is_directory=*/false, process_id(), frame_id(),
-      UserAction::kOpen);
-
-  SetDefaultContentSettingValue(
-      ContentSettingsType::NATIVE_FILE_SYSTEM_WRITE_GUARD,
-      CONTENT_SETTING_BLOCK);
-
-  base::RunLoop loop;
-  grant->RequestPermission(
-      process_id(), frame_id(),
-      base::BindLambdaForTesting(
-          [&](PermissionRequestOutcome outcome) { loop.Quit(); }));
-  loop.Run();
-  EXPECT_EQ(PermissionStatus::DENIED, grant->GetStatus());
-
-  base::RunLoop loop2;
-  grant2->RequestPermission(
-      process_id(), frame_id(),
-      base::BindLambdaForTesting(
-          [&](PermissionRequestOutcome outcome) { loop2.Quit(); }));
-  loop2.Run();
-  EXPECT_EQ(PermissionStatus::DENIED, grant2->GetStatus());
-
-  grant.reset();
-  grant2.reset();
-
-  SetContentSettingValueForOrigin(
-      kTestOrigin, ContentSettingsType::NATIVE_FILE_SYSTEM_WRITE_GUARD,
-      CONTENT_SETTING_ASK);
-  grant = permission_context()->GetWritePermissionGrant(
-      kTestOrigin, kTestPath, /*is_directory=*/false, process_id(), frame_id(),
-      UserAction::kOpen);
-  grant2 = permission_context()->GetWritePermissionGrant(
-      kTestOrigin2, kTestPath, /*is_directory=*/false, process_id(), frame_id(),
-      UserAction::kOpen);
-
-  base::RunLoop loop3;
-  grant->RequestPermission(
-      process_id(), frame_id(),
-      base::BindLambdaForTesting(
-          [&](PermissionRequestOutcome outcome) { loop3.Quit(); }));
-  loop3.Run();
-  EXPECT_EQ(PermissionStatus::ASK, grant->GetStatus());
-
-  base::RunLoop loop4;
-  grant2->RequestPermission(
-      process_id(), frame_id(),
-      base::BindLambdaForTesting(
-          [&](PermissionRequestOutcome outcome) { loop4.Quit(); }));
-  loop4.Run();
-  EXPECT_EQ(PermissionStatus::DENIED, grant2->GetStatus());
 }
 
 TEST_F(ChromeNativeFileSystemPermissionContextTest,

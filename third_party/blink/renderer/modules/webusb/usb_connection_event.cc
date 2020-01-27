@@ -4,7 +4,7 @@
 
 #include "third_party/blink/renderer/modules/webusb/usb_connection_event.h"
 
-#include "third_party/blink/renderer/modules/webusb/usb_connection_event_init.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_usb_connection_event_init.h"
 #include "third_party/blink/renderer/modules/webusb/usb_device.h"
 
 namespace blink {

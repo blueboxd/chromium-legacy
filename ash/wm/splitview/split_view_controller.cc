@@ -1517,11 +1517,6 @@ void SplitViewController::EndTabletSplitViewAfterResizingIfAppropriate() {
     Shell::Get()->overview_controller()->EndOverview();
     wm::ActivateWindow(active_window);
   } else if (insert_overview_window) {
-    // The dimensions of |window| will be very slim because of dragging the
-    // divider to the edge. Change the window dimensions to its tablet mode
-    // dimensions.
-    TabletModeWindowState::UpdateWindowPosition(
-        WindowState::Get(insert_overview_window), /*animate=*/false);
     InsertWindowToOverview(insert_overview_window, /*animate=*/false);
   }
 }

@@ -2324,6 +2324,7 @@ void DiskCacheBackendTest::BackendCalculateSizeOfEntriesBetween(
   ASSERT_THAT(CreateEntry("first", &entry), IsOk());
   entry->Close();
   FlushQueueForTest();
+  base::RunLoop().RunUntilIdle();
 
   AddDelay();
   Time middle = Time::Now();
@@ -2334,6 +2335,7 @@ void DiskCacheBackendTest::BackendCalculateSizeOfEntriesBetween(
   ASSERT_THAT(CreateEntry("third_entry", &entry), IsOk());
   entry->Close();
   FlushQueueForTest();
+  base::RunLoop().RunUntilIdle();
 
   AddDelay();
   Time end = Time::Now();

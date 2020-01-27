@@ -16,7 +16,9 @@ class GamesService : public KeyedService {
  public:
   ~GamesService() override = default;
 
-  virtual void GetHighlightedGame(HighlightedGameCallback callback) = 0;
+  virtual void SetHighlightedGameCallback(HighlightedGameCallback callback) = 0;
+
+  virtual void GenerateHub() = 0;
 };
 
 }  // namespace games

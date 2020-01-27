@@ -10,14 +10,11 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/scoped_refptr.h"
 #include "chrome/browser/ui/ui_features.h"
+#include "chrome/browser/ui/views/status_icons/status_icon_button_linux.h"
 #include "ui/message_center/public/cpp/notifier_id.h"
 
 #if defined(USE_DBUS)
 #include "chrome/browser/ui/views/status_icons/status_icon_linux_dbus.h"
-#endif
-
-#if defined(USE_X11)
-#include "chrome/browser/ui/views/status_icons/status_icon_linux_x11.h"
 #endif
 
 namespace {
@@ -121,19 +118,15 @@ ui::MenuModel* StatusIconLinuxWrapper::GetMenuModel() const {
 void StatusIconLinuxWrapper::OnImplInitializationFailed() {
   switch (status_icon_type_) {
     case kTypeDbus:
-#if defined(USE_X11)
+#if defined(USE_DBUS)
       status_icon_dbus_.reset();
-      status_icon_linux_ = std::make_unique<StatusIconLinuxX11>();
+#endif
+      status_icon_linux_ = std::make_unique<StatusIconButtonLinux>();
       status_icon_ = status_icon_linux_.get();
-      status_icon_type_ = kTypeX11;
+      status_icon_type_ = kTypeWindowed;
       status_icon_->SetDelegate(this);
       return;
-#else
-      // Fallthrough needs to be omitted if USE_X11, otherwise clang will
-      // complain about an unreachable fallthrough.
-      FALLTHROUGH;
-#endif
-    case kTypeX11:
+    case kTypeWindowed:
       status_icon_linux_.reset();
       status_icon_ = nullptr;
       status_icon_type_ = kTypeNone;
@@ -158,11 +151,10 @@ StatusIconLinuxWrapper::CreateWrappedStatusIcon(
 #if defined(USE_DBUS)
   return base::WrapUnique(new StatusIconLinuxWrapper(
       base::MakeRefCounted<StatusIconLinuxDbus>(), image, tool_tip));
-#elif defined(USE_X11)
-  return base::WrapUnique(new StatusIconLinuxWrapper(
-      std::make_unique<StatusIconLinuxX11>(), kTypeX11, image, tool_tip));
 #else
-  return nullptr;
+  return base::WrapUnique(
+      new StatusIconLinuxWrapper(std::make_unique<StatusIconButtonLinux>(),
+                                 kTypeWindowed, image, tool_tip));
 #endif
 }
 

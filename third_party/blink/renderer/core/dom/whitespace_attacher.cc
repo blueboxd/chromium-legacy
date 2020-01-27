@@ -160,7 +160,8 @@ void WhitespaceAttacher::ForceLastTextNodeNeedsReattach() {
 void WhitespaceAttacher::UpdateLastTextNodeFromDisplayContents() {
   DCHECK(last_display_contents_);
   DCHECK(last_display_contents_->HasDisplayContentsStyle());
-  Element* contents_element = last_display_contents_.Release();
+  Element* contents_element = last_display_contents_;
+  last_display_contents_ = nullptr;
   Node* sibling =
       LayoutTreeBuilderTraversal::FirstLayoutChild(*contents_element);
 

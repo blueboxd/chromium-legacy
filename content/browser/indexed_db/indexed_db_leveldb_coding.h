@@ -30,7 +30,8 @@ namespace indexed_db {
 // 1 - Adds UserIntVersion to DatabaseMetaData.
 // 2 - Adds DataVersion to to global metadata.
 // 3 - Adds metadata needed for blob support.
-const constexpr int64_t kLatestKnownSchemaVersion = 3;
+// 4 - Adds size & last_modified to 'file' blob_info encodings.
+const constexpr int64_t kLatestKnownSchemaVersion = 4;
 }  // namespace indexed_db
 
 CONTENT_EXPORT extern const unsigned char kMinimumIndexId;
@@ -450,9 +451,9 @@ class ObjectStoreDataKey {
   CONTENT_EXPORT static std::string Encode(int64_t database_id,
                                            int64_t object_store_id,
                                            const std::string encoded_user_key);
-  static std::string Encode(int64_t database_id,
-                            int64_t object_store_id,
-                            const blink::IndexedDBKey& user_key);
+  CONTENT_EXPORT static std::string Encode(int64_t database_id,
+                                           int64_t object_store_id,
+                                           const blink::IndexedDBKey& user_key);
   std::string DebugString() const;
 
   std::unique_ptr<blink::IndexedDBKey> user_key() const;
@@ -484,7 +485,7 @@ class ExistsEntryKey {
   DISALLOW_COPY_AND_ASSIGN(ExistsEntryKey);
 };
 
-class BlobEntryKey {
+class CONTENT_EXPORT BlobEntryKey {
  public:
   BlobEntryKey() : database_id_(0), object_store_id_(0) {}
   static bool Decode(base::StringPiece* slice, BlobEntryKey* result);

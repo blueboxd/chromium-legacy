@@ -127,7 +127,7 @@ FakeChromeIdentityService::PresentAccountDetailsController(
 
 ChromeIdentityInteractionManager*
 FakeChromeIdentityService::CreateChromeIdentityInteractionManager(
-    ios::ChromeBrowserState* browser_state,
+    ChromeBrowserState* browser_state,
     id<ChromeIdentityInteractionManagerDelegate> delegate) const {
   ChromeIdentityInteractionManager* manager =
       [[FakeChromeIdentityInteractionManager alloc] init];

@@ -141,6 +141,10 @@ jumbo_source_set("blink_heap_unittests_sources") {
     "write_barrier_perftest.cc",
   ]
 
+  if (enable_blink_heap_young_generation) {
+    sources += [ "minor_gc_test.cc" ]
+  }
+
   configs += [
     "//third_party/blink/renderer/platform/wtf:wtf_config",
     "//third_party/blink/renderer:config",

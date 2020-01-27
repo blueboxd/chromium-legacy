@@ -44,4 +44,5 @@ FindHandler.onTextMatch_ = function(evt) {
       .withRichSpeechAndBraille(range, null, Output.EventType.NAVIGATE)
       .go();
 };
+
 });  // goog.scope

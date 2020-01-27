@@ -41,6 +41,21 @@ void PrintingSubmitJobFunction::OnPrintJobSubmitted(
   Respond(OneArgument(response.ToValue()));
 }
 
+PrintingCancelJobFunction::~PrintingCancelJobFunction() = default;
+
+ExtensionFunction::ResponseAction PrintingCancelJobFunction::Run() {
+  std::unique_ptr<api::printing::CancelJob::Params> params(
+      api::printing::CancelJob::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get());
+  base::Optional<std::string> error =
+      PrintingAPIHandler::Get(browser_context())
+          ->CancelJob(extension_id(), params->job_id);
+
+  if (error.has_value())
+    return RespondNow(Error(error.value()));
+  return RespondNow(NoArguments());
+}
+
 PrintingGetPrintersFunction::~PrintingGetPrintersFunction() = default;
 
 ExtensionFunction::ResponseAction PrintingGetPrintersFunction::Run() {

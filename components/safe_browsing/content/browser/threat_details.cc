@@ -28,6 +28,7 @@
 #include "components/safe_browsing/core/browser/referrer_chain_provider.h"
 #include "components/safe_browsing/core/db/hit_report.h"
 #include "components/safe_browsing/core/features.h"
+#include "components/security_interstitials/content/unsafe_resource_util.h"
 #include "content/public/browser/back_forward_cache.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -586,7 +587,7 @@ void ThreatDetails::StartCollection() {
     page_url = resource_.navigation_url;
     referrer_url = resource_.referrer_url;
   } else {
-    NavigationEntry* nav_entry = resource_.GetNavigationEntryForResource();
+    NavigationEntry* nav_entry = GetNavigationEntryForResource(resource_);
     if (nav_entry) {
       page_url = nav_entry->GetURL();
       referrer_url = nav_entry->GetReferrer().url;

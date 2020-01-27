@@ -320,7 +320,7 @@ class AppStateTest : public BlockCleanupTest {
   StubBrowserInterfaceProvider* getInterfaceProvider() {
     return interface_provider_;
   }
-  ios::ChromeBrowserState* getBrowserState() { return browser_state_.get(); }
+  ChromeBrowserState* getBrowserState() { return browser_state_.get(); }
 
   BOOL metricsMediatorHasBeenCalled() { return metrics_mediator_called_; }
 

@@ -40,6 +40,7 @@ js2gtest("interactive_ui_tests_js_webui") {
     "$root_gen_dir/chrome/test/data/webui/cr_elements/cr_expand_button_focus_tests.m.js",
     "$root_gen_dir/chrome/test/data/webui/cr_elements/cr_icon_button_focus_tests.m.js",
     "$root_gen_dir/chrome/test/data/webui/cr_elements/cr_input_test.m.js",
+    "$root_gen_dir/chrome/test/data/webui/cr_elements/cr_profile_avatar_selector_tests.m.js",
     "$root_gen_dir/chrome/test/data/webui/cr_elements/cr_tabs_test.m.js",
     "$root_gen_dir/chrome/test/data/webui/cr_elements/cr_toggle_test.m.js",
     "$root_gen_dir/chrome/test/data/webui/cr_elements/iron_list_focus_test.m.js",

@@ -4,8 +4,8 @@
 
 package org.chromium.chrome.browser.toolbar.top;
 
-import static org.chromium.chrome.browser.ui.widget.listmenu.BasicListMenu.buildMenuDivider;
-import static org.chromium.chrome.browser.ui.widget.listmenu.BasicListMenu.buildMenuListItem;
+import static org.chromium.components.browser_ui.widget.listmenu.BasicListMenu.buildMenuDivider;
+import static org.chromium.components.browser_ui.widget.listmenu.BasicListMenu.buildMenuListItem;
 
 import android.content.Context;
 import android.view.View;
@@ -19,11 +19,11 @@ import androidx.annotation.VisibleForTesting;
 import org.chromium.base.Callback;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ui.widget.listmenu.BasicListMenu;
-import org.chromium.chrome.browser.ui.widget.listmenu.ListMenu;
-import org.chromium.chrome.browser.ui.widget.listmenu.ListMenuButton;
-import org.chromium.chrome.browser.ui.widget.listmenu.ListMenuButtonDelegate;
-import org.chromium.chrome.browser.ui.widget.listmenu.ListMenuItemProperties;
+import org.chromium.components.browser_ui.widget.listmenu.BasicListMenu;
+import org.chromium.components.browser_ui.widget.listmenu.ListMenu;
+import org.chromium.components.browser_ui.widget.listmenu.ListMenuButton;
+import org.chromium.components.browser_ui.widget.listmenu.ListMenuButtonDelegate;
+import org.chromium.components.browser_ui.widget.listmenu.ListMenuItemProperties;
 import org.chromium.ui.modelutil.MVCListAdapter.ListItem;
 import org.chromium.ui.modelutil.MVCListAdapter.ModelList;
 import org.chromium.ui.widget.RectProvider;

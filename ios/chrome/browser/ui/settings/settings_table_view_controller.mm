@@ -393,7 +393,7 @@ NSString* kDevViewSourceKey = @"DevViewSource";
       toSectionWithIdentifier:SectionIdentifierBasics];
   [model addItem:[self passwordsDetailItem]
       toSectionWithIdentifier:SectionIdentifierBasics];
-  [model addItem:[self AutoFillCreditCardDetailItem]
+  [model addItem:[self autoFillCreditCardDetailItem]
       toSectionWithIdentifier:SectionIdentifierBasics];
   [model addItem:[self autoFillProfileDetailItem]
       toSectionWithIdentifier:SectionIdentifierBasics];
@@ -477,6 +477,8 @@ NSString* kDevViewSourceKey = @"DevViewSource";
       UITableViewCellAccessoryDisclosureIndicator;
   googleServicesItem.title =
       l10n_util::GetNSString(IDS_IOS_GOOGLE_SERVICES_SETTINGS_TITLE);
+  googleServicesItem.accessibilityIdentifier =
+      kSettingsGoogleSyncAndServicesCellId;
   [self updateGoogleServicesItem:googleServicesItem];
   return googleServicesItem;
 }
@@ -498,12 +500,11 @@ NSString* kDevViewSourceKey = @"DevViewSource";
 
   _defaultSearchEngineItem =
       [self detailItemWithType:ItemTypeSearchEngine
-                          text:l10n_util::GetNSString(
-                                   IDS_IOS_SEARCH_ENGINE_SETTING_TITLE)
-                    detailText:defaultSearchEngineName
-                 iconImageName:kSettingsSearchEngineImageName];
-  _defaultSearchEngineItem.accessibilityIdentifier =
-      kSettingsSearchEngineCellId;
+                             text:l10n_util::GetNSString(
+                                      IDS_IOS_SEARCH_ENGINE_SETTING_TITLE)
+                       detailText:defaultSearchEngineName
+                    iconImageName:kSettingsSearchEngineImageName
+          accessibilityIdentifier:kSettingsSearchEngineCellId];
   return _defaultSearchEngineItem;
 }
 
@@ -515,24 +516,27 @@ NSString* kDevViewSourceKey = @"DevViewSource";
                                   : l10n_util::GetNSString(IDS_IOS_SETTING_OFF);
   _passwordsDetailItem =
       [self detailItemWithType:ItemTypePasswords
-                          text:l10n_util::GetNSString(IDS_IOS_PASSWORDS)
-                    detailText:passwordsDetail
-                 iconImageName:kSettingsPasswordsImageName];
+                             text:l10n_util::GetNSString(IDS_IOS_PASSWORDS)
+                       detailText:passwordsDetail
+                    iconImageName:kSettingsPasswordsImageName
+          accessibilityIdentifier:kSettingsPasswordsCellId];
 
   return _passwordsDetailItem;
 }
 
-- (TableViewItem*)AutoFillCreditCardDetailItem {
+- (TableViewItem*)autoFillCreditCardDetailItem {
   BOOL autofillCreditCardEnabled =
       autofill::prefs::IsAutofillCreditCardEnabled(_browserState->GetPrefs());
   NSString* detailText = autofillCreditCardEnabled
                              ? l10n_util::GetNSString(IDS_IOS_SETTING_ON)
                              : l10n_util::GetNSString(IDS_IOS_SETTING_OFF);
-  _autoFillCreditCardDetailItem = [self
-      detailItemWithType:ItemTypeAutofillCreditCard
-                    text:l10n_util::GetNSString(IDS_AUTOFILL_PAYMENT_METHODS)
-              detailText:detailText
-           iconImageName:kSettingsAutofillCreditCardImageName];
+  _autoFillCreditCardDetailItem =
+      [self detailItemWithType:ItemTypeAutofillCreditCard
+                             text:l10n_util::GetNSString(
+                                      IDS_AUTOFILL_PAYMENT_METHODS)
+                       detailText:detailText
+                    iconImageName:kSettingsAutofillCreditCardImageName
+          accessibilityIdentifier:kSettingsPaymentMethodsCellId];
 
   return _autoFillCreditCardDetailItem;
 }
@@ -545,10 +549,11 @@ NSString* kDevViewSourceKey = @"DevViewSource";
                              : l10n_util::GetNSString(IDS_IOS_SETTING_OFF);
   _autoFillProfileDetailItem =
       [self detailItemWithType:ItemTypeAutofillProfile
-                          text:l10n_util::GetNSString(
-                                   IDS_AUTOFILL_ADDRESSES_SETTINGS_TITLE)
-                    detailText:detailText
-                 iconImageName:kSettingsAutofillProfileImageName];
+                             text:l10n_util::GetNSString(
+                                      IDS_AUTOFILL_ADDRESSES_SETTINGS_TITLE)
+                       detailText:detailText
+                    iconImageName:kSettingsAutofillProfileImageName
+          accessibilityIdentifier:kSettingsAddressesAndMoreCellId];
 
   return _autoFillProfileDetailItem;
 }
@@ -563,37 +568,40 @@ NSString* kDevViewSourceKey = @"DevViewSource";
   NSString* languageName = base::SysUTF16ToNSString(locale.display_name);
   _voiceSearchDetailItem =
       [self detailItemWithType:ItemTypeVoiceSearch
-                          text:l10n_util::GetNSString(
-                                   IDS_IOS_VOICE_SEARCH_SETTING_TITLE)
-                    detailText:languageName
-                 iconImageName:kSettingsVoiceSearchImageName];
-  _voiceSearchDetailItem.accessibilityIdentifier = kSettingsVoiceSearchCellId;
+                             text:l10n_util::GetNSString(
+                                      IDS_IOS_VOICE_SEARCH_SETTING_TITLE)
+                       detailText:languageName
+                    iconImageName:kSettingsVoiceSearchImageName
+          accessibilityIdentifier:kSettingsVoiceSearchCellId];
   return _voiceSearchDetailItem;
 }
 
 - (TableViewItem*)privacyDetailItem {
-  return
-      [self detailItemWithType:ItemTypePrivacy
-                          text:l10n_util::GetNSString(
-                                   IDS_OPTIONS_ADVANCED_SECTION_TITLE_PRIVACY)
-                    detailText:nil
-                 iconImageName:kSettingsPrivacyImageName];
+  return [self
+           detailItemWithType:ItemTypePrivacy
+                         text:l10n_util::GetNSString(
+                                  IDS_OPTIONS_ADVANCED_SECTION_TITLE_PRIVACY)
+                   detailText:nil
+                iconImageName:kSettingsPrivacyImageName
+      accessibilityIdentifier:kSettingsPrivacyCellId];
 }
 
 - (TableViewItem*)languageSettingsDetailItem {
-  return [self
-      detailItemWithType:ItemTypeLanguageSettings
-                    text:l10n_util::GetNSString(IDS_IOS_LANGUAGE_SETTINGS_TITLE)
-              detailText:nil
-           iconImageName:kSettingsLanguageSettingsImageName];
+  return [self detailItemWithType:ItemTypeLanguageSettings
+                             text:l10n_util::GetNSString(
+                                      IDS_IOS_LANGUAGE_SETTINGS_TITLE)
+                       detailText:nil
+                    iconImageName:kSettingsLanguageSettingsImageName
+          accessibilityIdentifier:kSettingsLanguagesCellId];
 }
 
 - (TableViewItem*)contentSettingsDetailItem {
-  return [self
-      detailItemWithType:ItemTypeContentSettings
-                    text:l10n_util::GetNSString(IDS_IOS_CONTENT_SETTINGS_TITLE)
-              detailText:nil
-           iconImageName:kSettingsContentSettingsImageName];
+  return [self detailItemWithType:ItemTypeContentSettings
+                             text:l10n_util::GetNSString(
+                                      IDS_IOS_CONTENT_SETTINGS_TITLE)
+                       detailText:nil
+                    iconImageName:kSettingsContentSettingsImageName
+          accessibilityIdentifier:kSettingsContentSettingsCellId];
 }
 
 - (TableViewItem*)bandwidthManagementDetailItem {
@@ -601,22 +609,25 @@ NSString* kDevViewSourceKey = @"DevViewSource";
                              text:l10n_util::GetNSString(
                                       IDS_IOS_BANDWIDTH_MANAGEMENT_SETTINGS)
                        detailText:nil
-                    iconImageName:kSettingsBandwidthImageName];
+                    iconImageName:kSettingsBandwidthImageName
+          accessibilityIdentifier:kSettingsBandwidthCellId];
 }
 
 - (TableViewItem*)aboutChromeDetailItem {
   return [self detailItemWithType:ItemTypeAboutChrome
                              text:l10n_util::GetNSString(IDS_IOS_PRODUCT_NAME)
                        detailText:nil
-                    iconImageName:kSettingsAboutChromeImageName];
+                    iconImageName:kSettingsAboutChromeImageName
+          accessibilityIdentifier:kSettingsAboutCellId];
 }
 
 - (SettingsSwitchItem*)showMemoryDebugSwitchItem {
   SettingsSwitchItem* showMemoryDebugSwitchItem =
       [self switchItemWithType:ItemTypeMemoryDebugging
-                         title:@"Show memory debug tools"
-                 iconImageName:kSettingsDebugImageName
-               withDefaultsKey:nil];
+                            title:@"Show memory debug tools"
+                    iconImageName:kSettingsDebugImageName
+                  withDefaultsKey:nil
+          accessibilityIdentifier:nil];
   showMemoryDebugSwitchItem.on = [_showMemoryDebugToolsEnabled value];
 
   return showMemoryDebugSwitchItem;
@@ -625,10 +636,11 @@ NSString* kDevViewSourceKey = @"DevViewSource";
 - (SettingsSwitchItem*)articlesForYouSwitchItem {
   SettingsSwitchItem* articlesForYouSwitchItem =
       [self switchItemWithType:ItemTypeArticlesForYou
-                         title:l10n_util::GetNSString(
-                                   IDS_IOS_CONTENT_SUGGESTIONS_SETTING_TITLE)
-                 iconImageName:kSettingsArticleSuggestionsImageName
-               withDefaultsKey:nil];
+                            title:l10n_util::GetNSString(
+                                      IDS_IOS_CONTENT_SUGGESTIONS_SETTING_TITLE)
+                    iconImageName:kSettingsArticleSuggestionsImageName
+                  withDefaultsKey:nil
+          accessibilityIdentifier:kSettingsArticleSuggestionsCellId];
   articlesForYouSwitchItem.on = [_articlesEnabled value];
 
   return articlesForYouSwitchItem;
@@ -639,14 +651,16 @@ NSString* kDevViewSourceKey = @"DevViewSource";
   return [self switchItemWithType:ItemTypeViewSource
                             title:@"View source menu"
                     iconImageName:kSettingsDebugImageName
-                  withDefaultsKey:kDevViewSourceKey];
+                  withDefaultsKey:kDevViewSourceKey
+          accessibilityIdentifier:nil];
 }
 
 - (TableViewDetailIconItem*)tableViewCatalogDetailItem {
   return [self detailItemWithType:ItemTypeTableCellCatalog
                              text:@"TableView Cell Catalog"
                        detailText:nil
-                    iconImageName:kSettingsDebugImageName];
+                    iconImageName:kSettingsDebugImageName
+          accessibilityIdentifier:nil];
 }
 #endif  // BUILDFLAG(CHROMIUM_BRANDING) && !defined(NDEBUG)
 
@@ -655,7 +669,9 @@ NSString* kDevViewSourceKey = @"DevViewSource";
 - (TableViewDetailIconItem*)detailItemWithType:(NSInteger)type
                                           text:(NSString*)text
                                     detailText:(NSString*)detailText
-                                 iconImageName:(NSString*)iconImageName {
+                                 iconImageName:(NSString*)iconImageName
+                       accessibilityIdentifier:
+                           (NSString*)accessibilityIdentifier {
   TableViewDetailIconItem* detailItem =
       [[TableViewDetailIconItem alloc] initWithType:type];
   detailItem.text = text;
@@ -663,6 +679,7 @@ NSString* kDevViewSourceKey = @"DevViewSource";
   detailItem.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
   detailItem.iconImageName = iconImageName;
   detailItem.accessibilityTraits |= UIAccessibilityTraitButton;
+  detailItem.accessibilityIdentifier = accessibilityIdentifier;
 
   return detailItem;
 }
@@ -670,11 +687,14 @@ NSString* kDevViewSourceKey = @"DevViewSource";
 - (SettingsSwitchItem*)switchItemWithType:(NSInteger)type
                                     title:(NSString*)title
                             iconImageName:(NSString*)iconImageName
-                          withDefaultsKey:(NSString*)key {
+                          withDefaultsKey:(NSString*)key
+                  accessibilityIdentifier:(NSString*)accessibilityIdentifier {
   SettingsSwitchItem* switchItem =
       [[SettingsSwitchItem alloc] initWithType:type];
   switchItem.text = title;
   switchItem.iconImageName = iconImageName;
+  switchItem.accessibilityIdentifier = accessibilityIdentifier;
+
   if (key) {
     NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
     switchItem.on = [defaults boolForKey:key];

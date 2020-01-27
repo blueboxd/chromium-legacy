@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/events/application_cache_error_event.h"
 
 #include "third_party/blink/public/mojom/appcache/appcache.mojom-blink.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_application_cache_error_event_init.h"
 #include "third_party/blink/renderer/core/event_type_names.h"
 
 namespace blink {

@@ -9,9 +9,9 @@
 
 #include "base/macros.h"
 #include "base/supports_user_data.h"
-#include "ios/chrome/browser/browser_state/chrome_browser_state_forward.h"
 
 class BrowserObserver;
+class ChromeBrowserState;
 @class CommandDispatcher;
 @class TabModel;
 class WebStateList;
@@ -24,13 +24,12 @@ class WebStateList;
 class Browser : public base::SupportsUserData {
  public:
   // Creates a new Browser attached to |browser_state|.
-  static std::unique_ptr<Browser> Create(
-      ios::ChromeBrowserState* browser_state);
+  static std::unique_ptr<Browser> Create(ChromeBrowserState* browser_state);
 
   ~Browser() override {}
 
   // Accessor for the owning ChromeBrowserState.
-  virtual ios::ChromeBrowserState* GetBrowserState() const = 0;
+  virtual ChromeBrowserState* GetBrowserState() const = 0;
 
   // Accessor for the TabModel. DEPRECATED: prefer GetWebStateList() whenever
   // possible.

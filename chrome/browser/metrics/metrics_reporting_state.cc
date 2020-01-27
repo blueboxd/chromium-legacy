@@ -98,8 +98,8 @@ void ChangeMetricsReportingStateWithReply(
 #endif
   base::PostTaskAndReplyWithResult(
       GoogleUpdateSettings::CollectStatsConsentTaskRunner(), FROM_HERE,
-      base::Bind(&SetGoogleUpdateSettings, enabled),
-      base::Bind(&SetMetricsReporting, enabled, callback_fn));
+      base::BindOnce(&SetGoogleUpdateSettings, enabled),
+      base::BindOnce(&SetMetricsReporting, enabled, callback_fn));
 }
 
 void UpdateMetricsPrefsOnPermissionChange(bool metrics_enabled) {

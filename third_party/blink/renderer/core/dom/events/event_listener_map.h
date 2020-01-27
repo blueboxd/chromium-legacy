@@ -35,13 +35,12 @@
 
 #include "base/macros.h"
 #include "third_party/blink/renderer/core/core_export.h"
-#include "third_party/blink/renderer/core/dom/events/add_event_listener_options_resolved.h"
-#include "third_party/blink/renderer/core/dom/events/event_listener_options.h"
 #include "third_party/blink/renderer/core/dom/events/registered_event_listener.h"
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string_hash.h"
 
 namespace blink {
 
+class EventListenerOptions;
 class EventTarget;
 
 using EventListenerVector = HeapVector<RegisteredEventListener, 1>;

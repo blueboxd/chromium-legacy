@@ -39,7 +39,6 @@ class PasswordGenerationEditingPopupViewAndroid
   void UpdateState() override;
   void UpdateBoundsAndRedrawPopup() override;
   void PasswordSelectionUpdated() override;
-  bool IsPointInPasswordBounds(const gfx::Point& point) override;
 
   // Weak pointer to the controller.
   PasswordGenerationPopupController* controller_;

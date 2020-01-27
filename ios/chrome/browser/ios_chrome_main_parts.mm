@@ -155,7 +155,7 @@ void IOSChromeMainParts::PreMainMessageLoopRun() {
   EnsureBrowserStateKeyedServiceFactoriesBuilt();
   ios::ChromeBrowserStateManager* browser_state_manager =
       application_context_->GetChromeBrowserStateManager();
-  ios::ChromeBrowserState* last_used_browser_state =
+  ChromeBrowserState* last_used_browser_state =
       browser_state_manager->GetLastUsedBrowserState();
 
   // This must occur at PreMainMessageLoopRun because |SetupMetrics()| uses the

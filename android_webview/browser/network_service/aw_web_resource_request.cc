@@ -61,6 +61,8 @@ AwWebResourceRequest::AwWebResourceRequest(
   ConvertRequestHeadersToVectors(in_headers, &header_names, &header_values);
 }
 
+AwWebResourceRequest::AwWebResourceRequest(const AwWebResourceRequest& other) =
+    default;
 AwWebResourceRequest::AwWebResourceRequest(AwWebResourceRequest&& other) =
     default;
 AwWebResourceRequest& AwWebResourceRequest::operator=(

@@ -54,8 +54,6 @@ void ScriptPromiseResolver::Dispose() {
   }
 #endif
   deferred_resolve_task_.Cancel();
-  resolver_.Clear();
-  value_.Clear();
 }
 
 void ScriptPromiseResolver::Reject(ExceptionState& exception_state) {

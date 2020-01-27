@@ -5,8 +5,6 @@
 #ifndef ASH_SHELF_TEST_SHELF_LAYOUT_MANAGER_TEST_BASE_H_
 #define ASH_SHELF_TEST_SHELF_LAYOUT_MANAGER_TEST_BASE_H_
 
-#include <utility>
-
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/workspace/workspace_types.h"
@@ -21,9 +19,7 @@ class ShelfLayoutManager;
 
 class ShelfLayoutManagerTestBase : public AshTestBase {
  public:
-  template <typename... TaskEnvironmentTraits>
-  explicit ShelfLayoutManagerTestBase(TaskEnvironmentTraits&&... traits)
-      : AshTestBase(std::forward<TaskEnvironmentTraits>(traits)...) {}
+  ShelfLayoutManagerTestBase() = default;
 
   // Calls the private SetState() function.
   void SetState(ShelfLayoutManager* layout_manager, ShelfVisibilityState state);

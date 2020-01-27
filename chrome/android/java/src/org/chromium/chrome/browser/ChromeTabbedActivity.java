@@ -98,6 +98,7 @@ import org.chromium.chrome.browser.modaldialog.TabModalPresenter;
 import org.chromium.chrome.browser.multiwindow.MultiInstanceChromeTabbedActivity;
 import org.chromium.chrome.browser.multiwindow.MultiInstanceManager;
 import org.chromium.chrome.browser.native_page.NativePageAssassin;
+import org.chromium.chrome.browser.navigation_predictor.NavigationPredictorBridge;
 import org.chromium.chrome.browser.night_mode.WebContentsDarkModeController;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.ntp.NewTabPageUma;
@@ -847,6 +848,12 @@ public class ChromeTabbedActivity extends ChromeActivity {
             }
         }
 
+        if (isWarmOnResume()) {
+            NavigationPredictorBridge.onActivityWarmResumed();
+        } else {
+            NavigationPredictorBridge.onColdStart();
+        }
+
         // This call is not guarded by a feature flag.
         SearchEngineChoiceNotification.handleSearchEngineChoice(this, getSnackbarManager());
 
@@ -862,6 +869,8 @@ public class ChromeTabbedActivity extends ChromeActivity {
 
         mLocaleManager.setSnackbarManager(null);
         mLocaleManager.stopObservingPhoneChanges();
+
+        NavigationPredictorBridge.onPause();
 
         super.onPauseWithNative();
     }

@@ -146,7 +146,7 @@ void RemoteFrameClientImpl::UpdateRemoteViewportIntersection(
   web_frame_->Client()->UpdateRemoteViewportIntersection(intersection_state);
 }
 
-void RemoteFrameClientImpl::AdvanceFocus(WebFocusType type,
+void RemoteFrameClientImpl::AdvanceFocus(mojom::blink::FocusType type,
                                          LocalFrame* source) {
   web_frame_->Client()->AdvanceFocus(type,
                                      WebLocalFrameImpl::FromFrame(source));

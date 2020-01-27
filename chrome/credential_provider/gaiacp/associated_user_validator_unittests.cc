@@ -106,11 +106,11 @@ TEST_F(AssociatedUserValidatorTest, CleanupStaleUsers) {
   CComBSTR sid_bad;
   CreateDeletedGCPWUser(&sid_bad);
 
-  // Simulate a user created by GCPW that has no gaia id.
+  // Simulate a user created by GCPW that has no gaia id and email.
   CComBSTR sid_no_gaia_id;
   ASSERT_EQ(S_OK, fake_os_user_manager()->CreateTestOSUser(
                       L"username2", L"password", L"Full Name", L"Comment", L"",
-                      L"foo2@gmail.com", &sid_no_gaia_id));
+                      L"", &sid_no_gaia_id));
 
   // Simulate a user created by GCPW that has a gaia id, but no token handle
   // set.
@@ -368,6 +368,51 @@ TEST_F(AssociatedUserValidatorTest,
       CPUS_LOGON, reauth_sids));
   EXPECT_TRUE(validator.IsAuthEnforcedOnAssociatedUsers());
 }
+
+// Clear the UserProperty from registry for those sids which doesn't
+// have either gaia id or email association available.
+class UpdateAssociatedSidsTest
+    : public AssociatedUserValidatorTest,
+      public ::testing::WithParamInterface<std::tuple<bool, bool>> {};
+
+TEST_P(UpdateAssociatedSidsTest, ClearUserPropertyWhenNoGaiaIdOrEmail) {
+  FakeAssociatedUserValidator validator;
+  bool is_gaia_id_available = std::get<0>(GetParam());
+  bool is_email_available = std::get<1>(GetParam());
+
+  CComBSTR sid;
+  // Created a test os user with an assigned domain.
+  ASSERT_EQ(S_OK, fake_os_user_manager()->CreateTestOSUser(
+                      L"username", L"password", L"fullname", L"comment",
+                      L"gaia-id", L"user@domain.com", L"domain", &sid));
+
+  // Clear gaia id if needed.
+  if (!is_gaia_id_available)
+    SetUserProperty((BSTR)sid, kUserId, L"");
+
+  // Clear email if needed.
+  if (!is_email_available)
+    SetUserProperty((BSTR)sid, kUserEmail, L"");
+
+  // Invalid token fetch result.
+  fake_http_url_fetcher_factory()->SetFakeResponse(
+      GURL(AssociatedUserValidator::kTokenInfoUrl),
+      FakeWinHttpUrlFetcher::Headers(), "{}");
+
+  validator.StartRefreshingTokenHandleValidity();
+  size_t count = validator.GetAssociatedUsersCount();
+  size_t expected_count;
+  if (is_gaia_id_available || is_email_available)
+    expected_count = 1;
+  else
+    expected_count = 0;
+  EXPECT_EQ(expected_count, count);
+}
+
+INSTANTIATE_TEST_SUITE_P(All,
+                         UpdateAssociatedSidsTest,
+                         ::testing::Combine(::testing::Bool(),
+                                            ::testing::Bool()));
 
 // Tests various scenarios where user access is blocked.
 // Parameters are:

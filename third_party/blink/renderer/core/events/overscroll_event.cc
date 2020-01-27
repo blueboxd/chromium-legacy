@@ -4,7 +4,10 @@
 
 #include "third_party/blink/renderer/core/events/overscroll_event.h"
 
+#include "third_party/blink/renderer/bindings/core/v8/v8_overscroll_event_init.h"
+
 namespace blink {
+
 OverscrollEvent::OverscrollEvent(const AtomicString& type,
                                  bool bubbles,
                                  double delta_x,

@@ -17,7 +17,7 @@
 #include "components/safe_browsing/core/realtime/url_lookup_service.h"
 #include "components/safe_browsing/core/verdict_cache_manager.h"
 #include "components/safe_browsing/core/web_ui/constants.h"
-#include "components/security_interstitials/content/unsafe_resource.h"
+#include "components/security_interstitials/core/unsafe_resource.h"
 #include "content/public/browser/web_contents.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "net/base/load_flags.h"

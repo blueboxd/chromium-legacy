@@ -17,7 +17,6 @@
 #include "base/memory/weak_ptr.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/prefs/pref_member.h"
-#include "ios/chrome/browser/browser_state/chrome_browser_state_forward.h"
 #include "ios/chrome/browser/ios_chrome_io_thread.h"
 #include "ios/chrome/browser/net/net_types.h"
 #include "net/cert/ct_verifier.h"
@@ -28,6 +27,8 @@
 #include "net/url_request/url_request_interceptor.h"
 #include "net/url_request/url_request_job_factory.h"
 
+class ChromeBrowserState;
+enum class ChromeBrowserStateType;
 class HostContentSettingsMap;
 class IOSChromeHttpUserAgentSettings;
 class IOSChromeNetworkDelegate;
@@ -93,7 +94,7 @@ class ChromeBrowserStateIOData {
     return transport_security_state_.get();
   }
 
-  ios::ChromeBrowserStateType browser_state_type() const {
+  ChromeBrowserStateType browser_state_type() const {
     return browser_state_type_;
   }
 
@@ -156,10 +157,9 @@ class ChromeBrowserStateIOData {
     void* browser_state;
   };
 
-  explicit ChromeBrowserStateIOData(
-      ios::ChromeBrowserStateType browser_state_type);
+  explicit ChromeBrowserStateIOData(ChromeBrowserStateType browser_state_type);
 
-  void InitializeOnUIThread(ios::ChromeBrowserState* browser_state);
+  void InitializeOnUIThread(ChromeBrowserState* browser_state);
   void ApplyProfileParamsToContext(net::URLRequestContext* context) const;
 
   // Called when the ChromeBrowserState is destroyed. |context_getters| must
@@ -263,7 +263,7 @@ class ChromeBrowserStateIOData {
   mutable std::unique_ptr<IOSChromeHttpUserAgentSettings>
       chrome_http_user_agent_settings_;
 
-  const ios::ChromeBrowserStateType browser_state_type_;
+  const ChromeBrowserStateType browser_state_type_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeBrowserStateIOData);
 };

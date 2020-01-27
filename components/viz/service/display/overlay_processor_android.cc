@@ -4,7 +4,6 @@
 
 #include "components/viz/service/display/overlay_processor_android.h"
 
-#include "base/synchronization/waitable_event.h"
 #include "components/viz/common/quads/stream_video_draw_quad.h"
 #include "components/viz/service/display/display_resource_provider.h"
 #include "components/viz/service/display/overlay_processor_on_gpu.h"
@@ -67,6 +66,7 @@ void OverlayProcessorAndroid::InitializeOverlayProcessorOnGpu(
     gpu::SharedImageManager* shared_image_manager) {
   processor_on_gpu_ =
       std::make_unique<OverlayProcessorOnGpu>(shared_image_manager);
+  gpu_init_event_.Signal();
 }
 
 void OverlayProcessorAndroid::DestroyOverlayProcessorOnGpu(
@@ -101,6 +101,10 @@ void OverlayProcessorAndroid::ScheduleOverlays(
   std::vector<gpu::SyncToken> locks_sync_tokens;
   for (auto& read_lock : locks)
     locks_sync_tokens.push_back(read_lock->sync_token());
+
+  // If we haven't finished creating processor_on_gpu_, wait for it.
+  if (!processor_on_gpu_ && able_to_create_processor_on_gpu_)
+    gpu_init_event_.Wait();
 
   auto task = base::BindOnce(&OverlayProcessorOnGpu::ScheduleOverlays,
                              base::Unretained(processor_on_gpu_.get()),
@@ -208,6 +212,10 @@ void OverlayProcessorAndroid::NotifyOverlayPromotion(
     locks_sync_tokens.push_back(read_lock->sync_token());
 
   if (gpu_task_scheduler_) {
+    // If we haven't finished creating processor_on_gpu_, wait for it.
+    if (!processor_on_gpu_ && able_to_create_processor_on_gpu_)
+      gpu_init_event_.Wait();
+
     auto task = base::BindOnce(&OverlayProcessorOnGpu::NotifyOverlayPromotions,
                                base::Unretained(processor_on_gpu_.get()),
                                std::move(promotion_denied),

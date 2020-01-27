@@ -58,12 +58,6 @@ class ChromeOsAppsNavigationThrottle : public apps::AppsNavigationThrottle {
       apps::IntentPickerCloseReason close_reason,
       bool should_persist);
 
-  static void RecordUma(const std::string& selected_app_package,
-                        apps::PickerEntryType entry_type,
-                        apps::IntentPickerCloseReason close_reason,
-                        apps::Source source,
-                        bool should_persist);
-
   ChromeOsAppsNavigationThrottle(content::NavigationHandle* navigation_handle,
                                  bool arc_enabled);
   ~ChromeOsAppsNavigationThrottle() override;

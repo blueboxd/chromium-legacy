@@ -21,21 +21,18 @@
 #include "base/time/clock.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
-#include "chrome/browser/captive_portal/captive_portal_service_factory.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ssl/captive_portal_helper.h"
-#include "chrome/browser/ssl/chrome_security_blocking_page_factory.h"
-#include "chrome/browser/ssl/ssl_error_assistant.h"
-#include "components/captive_portal/core/buildflags.h"
 #include "components/network_time/network_time_tracker.h"
 #include "components/prefs/pref_service.h"
 #include "components/security_interstitials/content/bad_clock_blocking_page.h"
 #include "components/security_interstitials/content/blocked_interception_blocking_page.h"
 #include "components/security_interstitials/content/captive_portal_blocking_page.h"
 #include "components/security_interstitials/content/mitm_software_blocking_page.h"
+#include "components/security_interstitials/content/security_blocking_page_factory.h"
 #include "components/security_interstitials/content/security_interstitial_page.h"
 #include "components/security_interstitials/content/ssl_blocking_page.h"
 #include "components/security_interstitials/content/ssl_cert_reporter.h"
+#include "components/security_interstitials/content/ssl_error_assistant.h"
 #include "components/security_interstitials/core/ssl_error_options_mask.h"
 #include "components/security_interstitials/core/ssl_error_ui.h"
 #include "components/ssl_errors/error_classification.h"
@@ -344,21 +341,27 @@ class SSLErrorHandlerDelegateImpl : public SSLErrorHandler::Delegate {
   SSLErrorHandlerDelegateImpl(
       content::WebContents* web_contents,
       const net::SSLInfo& ssl_info,
-      Profile* const profile,
+      content::BrowserContext* const browser_context,
       int cert_error,
       int options_mask,
       const GURL& request_url,
       std::unique_ptr<SSLCertReporter> ssl_cert_reporter,
+      CaptivePortalService* captive_portal_service,
+      std::unique_ptr<SecurityBlockingPageFactory> blocking_page_factory,
       SSLErrorHandler::OnBlockingPageShownCallback
           on_blocking_page_shown_callback,
       SSLErrorHandler::BlockingPageReadyCallback blocking_page_ready_callback)
       : web_contents_(web_contents),
         ssl_info_(ssl_info),
-        profile_(profile),
+        browser_context_(browser_context),
         cert_error_(cert_error),
         options_mask_(options_mask),
         request_url_(request_url),
         ssl_cert_reporter_(std::move(ssl_cert_reporter)),
+#if BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION)
+        captive_portal_service_(captive_portal_service),
+#endif
+        blocking_page_factory_(std::move(blocking_page_factory)),
         on_blocking_page_shown_callback_(on_blocking_page_shown_callback),
         blocking_page_ready_callback_(std::move(blocking_page_ready_callback)) {
     DCHECK(!blocking_page_ready_callback_.is_null());
@@ -393,12 +396,16 @@ class SSLErrorHandlerDelegateImpl : public SSLErrorHandler::Delegate {
 
   content::WebContents* web_contents_;
   const net::SSLInfo ssl_info_;
-  Profile* const profile_;
+  content::BrowserContext* const browser_context_;
   const int cert_error_;
   const int options_mask_;
   const GURL request_url_;
   std::unique_ptr<CommonNameMismatchHandler> common_name_mismatch_handler_;
   std::unique_ptr<SSLCertReporter> ssl_cert_reporter_;
+#if BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION)
+  CaptivePortalService* captive_portal_service_;
+#endif
+  std::unique_ptr<SecurityBlockingPageFactory> blocking_page_factory_;
   SSLErrorHandler::OnBlockingPageShownCallback on_blocking_page_shown_callback_;
   SSLErrorHandler::BlockingPageReadyCallback blocking_page_ready_callback_;
 };
@@ -412,9 +419,7 @@ SSLErrorHandlerDelegateImpl::~SSLErrorHandlerDelegateImpl() {
 
 void SSLErrorHandlerDelegateImpl::CheckForCaptivePortal() {
 #if BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION)
-  CaptivePortalService* captive_portal_service =
-      CaptivePortalServiceFactory::GetForProfile(profile_);
-  captive_portal_service->DetectCaptivePortal();
+  captive_portal_service_->DetectCaptivePortal();
 #else
   NOTREACHED();
 #endif
@@ -439,7 +444,7 @@ void SSLErrorHandlerDelegateImpl::CheckSuggestedUrl(
     const GURL& suggested_url,
     const CommonNameMismatchHandler::CheckUrlCallback& callback) {
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory(
-      content::BrowserContext::GetDefaultStoragePartition(profile_)
+      content::BrowserContext::GetDefaultStoragePartition(browser_context_)
           ->GetURLLoaderFactoryForBrowserProcess());
   common_name_mismatch_handler_.reset(
       new CommonNameMismatchHandler(request_url_, url_loader_factory));
@@ -461,24 +466,22 @@ bool SSLErrorHandlerDelegateImpl::IsErrorOverridable() const {
 void SSLErrorHandlerDelegateImpl::ShowCaptivePortalInterstitial(
     const GURL& landing_url) {
   // Show captive portal blocking page. The interstitial owns the blocking page.
-  OnBlockingPageReady(
-      ChromeSecurityBlockingPageFactory::CreateCaptivePortalBlockingPage(
-          web_contents_, request_url_, landing_url,
-          std::move(ssl_cert_reporter_), ssl_info_, cert_error_));
+  OnBlockingPageReady(blocking_page_factory_->CreateCaptivePortalBlockingPage(
+      web_contents_, request_url_, landing_url, std::move(ssl_cert_reporter_),
+      ssl_info_, cert_error_));
 }
 
 void SSLErrorHandlerDelegateImpl::ShowMITMSoftwareInterstitial(
     const std::string& mitm_software_name) {
   // Show MITM software blocking page. The interstitial owns the blocking page.
-  OnBlockingPageReady(
-      ChromeSecurityBlockingPageFactory::CreateMITMSoftwareBlockingPage(
-          web_contents_, cert_error_, request_url_,
-          std::move(ssl_cert_reporter_), ssl_info_, mitm_software_name));
+  OnBlockingPageReady(blocking_page_factory_->CreateMITMSoftwareBlockingPage(
+      web_contents_, cert_error_, request_url_, std::move(ssl_cert_reporter_),
+      ssl_info_, mitm_software_name));
 }
 
 void SSLErrorHandlerDelegateImpl::ShowSSLInterstitial(const GURL& support_url) {
   // Show SSL blocking page. The interstitial owns the blocking page.
-  OnBlockingPageReady(ChromeSecurityBlockingPageFactory::CreateSSLPage(
+  OnBlockingPageReady(blocking_page_factory_->CreateSSLPage(
       web_contents_, cert_error_, ssl_info_, request_url_, options_mask_,
       base::Time::NowFromSystemTime(), support_url,
       std::move(ssl_cert_reporter_)));
@@ -488,16 +491,15 @@ void SSLErrorHandlerDelegateImpl::ShowBadClockInterstitial(
     const base::Time& now,
     ssl_errors::ClockState clock_state) {
   // Show bad clock page. The interstitial owns the blocking page.
-  OnBlockingPageReady(
-      ChromeSecurityBlockingPageFactory::CreateBadClockBlockingPage(
-          web_contents_, cert_error_, ssl_info_, request_url_, now, clock_state,
-          std::move(ssl_cert_reporter_)));
+  OnBlockingPageReady(blocking_page_factory_->CreateBadClockBlockingPage(
+      web_contents_, cert_error_, ssl_info_, request_url_, now, clock_state,
+      std::move(ssl_cert_reporter_)));
 }
 
 void SSLErrorHandlerDelegateImpl::ShowBlockedInterceptionInterstitial() {
   // Show interception blocking page. The interstitial owns the blocking page.
   OnBlockingPageReady(
-      ChromeSecurityBlockingPageFactory::CreateBlockedInterceptionBlockingPage(
+      blocking_page_factory_->CreateBlockedInterceptionBlockingPage(
           web_contents_, cert_error_, request_url_,
           std::move(ssl_cert_reporter_), ssl_info_));
 }
@@ -546,12 +548,10 @@ void SSLErrorHandler::HandleSSLError(
         void(std::unique_ptr<security_interstitials::SecurityInterstitialPage>)>
         blocking_page_ready_callback,
     network_time::NetworkTimeTracker* network_time_tracker,
+    CaptivePortalService* captive_portal_service,
+    std::unique_ptr<SecurityBlockingPageFactory> blocking_page_factory,
     bool user_can_proceed_past_interstitial /*=true*/) {
   DCHECK(!FromWebContents(web_contents));
-
-  Profile* profile =
-      Profile::FromBrowserContext(web_contents->GetBrowserContext());
-  DCHECK(profile);
 
   bool hard_override_disabled = !user_can_proceed_past_interstitial;
 
@@ -561,11 +561,14 @@ void SSLErrorHandler::HandleSSLError(
   SSLErrorHandler* error_handler = new SSLErrorHandler(
       std::unique_ptr<SSLErrorHandler::Delegate>(
           new SSLErrorHandlerDelegateImpl(
-              web_contents, ssl_info, profile, cert_error, options_mask,
-              request_url, std::move(ssl_cert_reporter),
+              web_contents, ssl_info, web_contents->GetBrowserContext(),
+              cert_error, options_mask, request_url,
+              std::move(ssl_cert_reporter), captive_portal_service,
+              std::move(blocking_page_factory),
               g_config.Pointer()->on_blocking_page_shown_callback(),
               std::move(blocking_page_ready_callback))),
-      web_contents, cert_error, ssl_info, network_time_tracker, request_url);
+      web_contents, cert_error, ssl_info, network_time_tracker,
+      captive_portal_service, request_url);
   web_contents->SetUserData(UserDataKey(), base::WrapUnique(error_handler));
   error_handler->StartHandlingError();
 }
@@ -638,6 +641,7 @@ SSLErrorHandler::SSLErrorHandler(
     int cert_error,
     const net::SSLInfo& ssl_info,
     network_time::NetworkTimeTracker* network_time_tracker,
+    CaptivePortalService* captive_portal_service,
     const GURL& request_url)
     : content::WebContentsObserver(web_contents),
       delegate_(std::move(delegate)),
@@ -645,7 +649,13 @@ SSLErrorHandler::SSLErrorHandler(
       cert_error_(cert_error),
       ssl_info_(ssl_info),
       request_url_(request_url),
-      network_time_tracker_(network_time_tracker) {}
+      network_time_tracker_(network_time_tracker)
+#if BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION)
+      ,
+      captive_portal_service_(captive_portal_service)
+#endif
+{
+}
 
 SSLErrorHandler::~SSLErrorHandler() = default;
 
@@ -754,11 +764,8 @@ void SSLErrorHandler::StartHandlingError() {
   }
 
 #if BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION)
-  Profile* profile =
-      Profile::FromBrowserContext(web_contents_->GetBrowserContext());
-  subscription_ =
-      CaptivePortalServiceFactory::GetForProfile(profile)->RegisterCallback(
-          base::Bind(&SSLErrorHandler::Observe, base::Unretained(this)));
+  subscription_ = captive_portal_service_->RegisterCallback(
+      base::Bind(&SSLErrorHandler::Observe, base::Unretained(this)));
 
   CaptivePortalTabHelper* captive_portal_tab_helper =
       CaptivePortalTabHelper::FromWebContents(web_contents_);

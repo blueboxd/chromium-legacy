@@ -223,7 +223,6 @@
 <translation id="1306606229401759371">அமைப்புகளை மாற்று</translation>
 <translation id="1307165550267142340">உங்கள் பின் உருவாக்கப்பட்டது</translation>
 <translation id="1307559529304613120">அச்சச்சோ! இந்தச் சாதனத்திற்கான நீண்டகால API அணுகல் டோக்கனை சேமிப்பதில் சிஸ்டம் தோல்வியடைந்தது.</translation>
-<translation id="1309199320876169714">Plugin VM அகற்றப்படுகிறது...</translation>
 <translation id="1313405956111467313">தானியங்கு ப்ராக்ஸி உள்ளமைவு</translation>
 <translation id="131364520783682672">Caps Lock</translation>
 <translation id="1313705515580255288">உங்கள் புத்தகக்குறிகள், வரலாறு மற்றும் பிற அமைப்புகள் ஆகியவை உங்கள் Google கணக்கில் ஒத்திசைக்கப்படும்.</translation>
@@ -1362,7 +1361,6 @@
 <translation id="2871813825302180988">இந்தச் சாதனத்தில் ஏற்கனவே இந்தக் கணக்கு பயன்படுத்தப்படுகிறது.</translation>
 <translation id="287286579981869940"><ph name="PROVIDER_NAME" />ஐச் சேர்...</translation>
 <translation id="2872961005593481000">நிறுத்து</translation>
-<translation id="2874478552394649323">Plugin VMமை அகற்று</translation>
 <translation id="2874939134665556319">முந்தைய ட்ராக்</translation>
 <translation id="2875698561019555027">(Chrome பிழைப் பக்கங்கள்)</translation>
 <translation id="2876336351874743617">விரல் 2</translation>
@@ -1378,7 +1376,6 @@
 <translation id="2889064240420137087">இதைக் கொண்டு இணைப்பைத் திற...</translation>
 <translation id="2889925978073739256">சாண்ட்பாக்ஸ் செய்யப்படாத செருகுநிரல்களைத் தொடர்ந்து தடு</translation>
 <translation id="2893168226686371498">இயல்புநிலை உலாவி</translation>
-<translation id="2893208266590504003">Plugin VMமை அகற்ற முடியவில்லை</translation>
 <translation id="2894757982205307093">குழுவில் புதிய தாவல்</translation>
 <translation id="289644616180464099">சிம் கார்டு பூட்டப்பட்டுள்ளது</translation>
 <translation id="2896909745808647285"><ph name="FILE_NAME" /> என்க்ரிப்ஷன் செய்யப்பட்டுள்ளதுடன் திறக்க முடியாதபடி தடைசெய்யப்பட்டுள்ளது.</translation>
@@ -2825,6 +2822,7 @@
 <translation id="4998430619171209993">ஆன் செய்யப்பட்டுள்ளது</translation>
 <translation id="4998873842614926205">மாற்றங்களை உறுதிசெய்</translation>
 <translation id="5000922062037820727">தடுக்கப்பட்டது (பரிந்துரைத்தது)</translation>
+<translation id="5007392906805964215">சரிபார்</translation>
 <translation id="5008936837313706385">செயல்பாட்டின் பெயர்</translation>
 <translation id="5010043101506446253">சான்றிதழ் அங்கீகாரம்</translation>
 <translation id="5015344424288992913">ப்ராக்ஸியைக் கண்டறிகிறது…</translation>
@@ -5749,7 +5747,6 @@
 <translation id="9169496697824289689">விசைப்பலகைக் குறுக்குவழிகளைக் காட்டு</translation>
 <translation id="916964310188958970">ஏன் இது பரிந்துரைக்கப்படுகிறது?</translation>
 <translation id="9169931577761441333"><ph name="APP_NAME" />ஐ முகப்புத் திரையில் சேர்க்கவும்</translation>
-<translation id="9170305483456271385">Plugin VM அகற்றப்பட்டது</translation>
 <translation id="9170848237812810038">&amp;செயல்தவிர்</translation>
 <translation id="9170884462774788842">உங்கள் கம்ப்யூட்டரில் உள்ள மற்றொரு நிரல் Chrome இயங்கும் முறையை மாற்றும் தீம் ஒன்றைச் சேர்த்துள்ளது.</translation>
 <translation id="9173995187295789444">புளூடூத் சாதனங்களை ஸ்கேன் செய்கிறது...</translation>

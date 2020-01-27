@@ -9,7 +9,8 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
-#include "ios/chrome/browser/browser_state/chrome_browser_state_forward.h"
+
+class ChromeBrowserState;
 
 namespace bookmarks {
 class BookmarkModel;
@@ -34,7 +35,7 @@ void RecordBookmarkLaunch(BookmarkLaunchLocation launch_location);
 // Removes all user bookmarks and clears bookmark-related pref. Requires
 // bookmark model to be loaded.
 // Return true if the bookmarks were successfully removed and false otherwise.
-bool RemoveAllUserBookmarksIOS(ios::ChromeBrowserState* browser_state)
+bool RemoveAllUserBookmarksIOS(ChromeBrowserState* browser_state)
     WARN_UNUSED_RESULT;
 
 // Returns the permanent nodes whose url children are considered uncategorized

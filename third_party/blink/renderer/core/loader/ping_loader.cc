@@ -102,8 +102,8 @@ class BeaconBlob final : public Beacon {
 
     scoped_refptr<EncodedFormData> entity_body = EncodedFormData::Create();
     if (data_->HasBackingFile()) {
-      entity_body->AppendFile(To<File>(data_.Get())->GetPath(),
-                              To<File>(data_.Get())->LastModifiedTime());
+      entity_body->AppendFile(To<File>(data_)->GetPath(),
+                              To<File>(data_)->LastModifiedTime());
     } else {
       entity_body->AppendBlob(data_->Uuid(), data_->GetBlobDataHandle());
     }
@@ -117,7 +117,7 @@ class BeaconBlob final : public Beacon {
   const AtomicString GetContentType() const override { return content_type_; }
 
  private:
-  const Member<Blob> data_;
+  Blob* const data_;
   AtomicString content_type_;
 };
 
@@ -146,7 +146,7 @@ class BeaconDOMArrayBufferView final : public Beacon {
   const AtomicString GetContentType() const override { return g_null_atom; }
 
  private:
-  const Member<DOMArrayBufferView> data_;
+  DOMArrayBufferView* const data_;
 };
 
 class BeaconFormData final : public Beacon {
@@ -167,7 +167,7 @@ class BeaconFormData final : public Beacon {
   const AtomicString GetContentType() const override { return content_type_; }
 
  private:
-  const Member<FormData> data_;
+  FormData* const data_;
   scoped_refptr<EncodedFormData> entity_body_;
   AtomicString content_type_;
 };

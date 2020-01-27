@@ -20,6 +20,7 @@
 <translation id="2915596697727466327">A Chromium a Face ID segítségével ellenőrzi a jogosultságot a jelszavakhoz való hozzáféréshez.</translation>
 <translation id="3256316712990552818">A Chromiumra másolva</translation>
 <translation id="3805899903892079518">A Chromium nem fér hozzá az Ön képeihez és videóihoz. Engedélyezés iOS-en: Beállítások &gt; Adatvédelem &gt; Fényképek.</translation>
+<translation id="4287098963058057749">A Chromium Általános Szerződési Feltételei március 31-én módosulnak. <ph name="BEGIN_LINK" />Kérjük, tekintse meg<ph name="END_LINK" />.</translation>
 <translation id="4555020257205549924">Ha a funkció be van kapcsolva, a Chromium felajánlja a más nyelveken írt oldalak lefordítását a Google Fordító segítségével. <ph name="BEGIN_LINK" />További információ<ph name="END_LINK" />.</translation>
 <translation id="4681781466797808448">Kapcsolja be a Chromium szkennerét</translation>
 <translation id="4787850887676698916">A más eszközökön futó Chromium böngészőben megnyitott lapok itt jelennek meg.</translation>
@@ -48,6 +49,5 @@
 <translation id="8586442755830160949">Copyright <ph name="YEAR" /> – A Chromium szerzői. Minden jog fenntartva.</translation>
 <translation id="8809780021347235332">A képek mentéséhez koppintson a Beállítások lehetőségre, hogy a Chromium használhassa fotóit</translation>
 <translation id="9022552996538154597">Bejelentkezés a Chromiumba</translation>
-<translation id="9217078088703304241"><ph name="BEGIN_LINK" />A Chromium frissített Általános Szerződési Feltételeinek megtekintése.<ph name="END_LINK" /></translation>
 <translation id="985602178874221306">A Chromium szerzői</translation>
 </translationbundle>

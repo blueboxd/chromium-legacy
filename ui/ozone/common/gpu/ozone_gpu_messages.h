@@ -155,6 +155,10 @@ IPC_MESSAGE_CONTROL3(OzoneGpuMsg_SetGammaCorrection,
                      std::vector<display::GammaRampRGBEntry>,  // Degamma lut
                      std::vector<display::GammaRampRGBEntry>)  // Gamma lut
 
+// Set the privacy screen state of the display with |display_id|
+IPC_MESSAGE_CONTROL2(OzoneGpuMsg_SetPrivacyScreen,
+                     int64_t /* display_id */,
+                     bool /* enabled */)
 //------------------------------------------------------------------------------
 // Browser Messages
 // These messages are from the GPU to the browser process.

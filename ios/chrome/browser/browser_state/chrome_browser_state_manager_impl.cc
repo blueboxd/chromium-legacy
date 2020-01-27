@@ -119,12 +119,11 @@ ChromeBrowserStateManagerImpl::~ChromeBrowserStateManagerImpl() {
   }
 }
 
-ios::ChromeBrowserState*
-ChromeBrowserStateManagerImpl::GetLastUsedBrowserState() {
+ChromeBrowserState* ChromeBrowserStateManagerImpl::GetLastUsedBrowserState() {
   return GetBrowserState(GetLastUsedBrowserStateDir(GetUserDataDir()));
 }
 
-ios::ChromeBrowserState* ChromeBrowserStateManagerImpl::GetBrowserState(
+ChromeBrowserState* ChromeBrowserStateManagerImpl::GetBrowserState(
     const base::FilePath& path) {
   // If the browser state is already loaded, just return it.
   auto iter = browser_states_.find(path);
@@ -175,16 +174,16 @@ ChromeBrowserStateManagerImpl::GetBrowserStateInfoCache() {
   return browser_state_info_cache_.get();
 }
 
-std::vector<ios::ChromeBrowserState*>
+std::vector<ChromeBrowserState*>
 ChromeBrowserStateManagerImpl::GetLoadedBrowserStates() {
-  std::vector<ios::ChromeBrowserState*> loaded_browser_states;
+  std::vector<ChromeBrowserState*> loaded_browser_states;
   for (const auto& pair : browser_states_)
     loaded_browser_states.push_back(pair.second.get());
   return loaded_browser_states;
 }
 
 void ChromeBrowserStateManagerImpl::DoFinalInit(
-    ios::ChromeBrowserState* browser_state) {
+    ChromeBrowserState* browser_state) {
   DoFinalInitForServices(browser_state);
   AddBrowserStateToCache(browser_state);
 
@@ -203,7 +202,7 @@ void ChromeBrowserStateManagerImpl::DoFinalInit(
 }
 
 void ChromeBrowserStateManagerImpl::DoFinalInitForServices(
-    ios::ChromeBrowserState* browser_state) {
+    ChromeBrowserState* browser_state) {
   ios::AccountConsistencyServiceFactory::GetForBrowserState(browser_state);
   IdentityManagerFactory::GetForBrowserState(browser_state)
       ->OnNetworkInitialized();
@@ -214,7 +213,7 @@ void ChromeBrowserStateManagerImpl::DoFinalInitForServices(
 }
 
 void ChromeBrowserStateManagerImpl::AddBrowserStateToCache(
-    ios::ChromeBrowserState* browser_state) {
+    ChromeBrowserState* browser_state) {
   DCHECK(!browser_state->IsOffTheRecord());
   BrowserStateInfoCache* cache = GetBrowserStateInfoCache();
   if (browser_state->GetStatePath().DirName() != cache->GetUserDataDir())

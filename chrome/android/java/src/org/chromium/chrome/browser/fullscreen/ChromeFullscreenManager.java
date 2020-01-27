@@ -41,7 +41,6 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabObserver;
 import org.chromium.chrome.browser.toolbar.ControlContainer;
-import org.chromium.chrome.browser.vr.VrModeObserver;
 import org.chromium.chrome.browser.vr.VrModuleProvider;
 import org.chromium.components.embedder_support.view.ContentView;
 import org.chromium.content_public.browser.NavigationHandle;
@@ -50,6 +49,7 @@ import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.common.BrowserControlsState;
 import org.chromium.ui.util.TokenHolder;
+import org.chromium.ui.vr.VrModeObserver;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -360,7 +360,7 @@ public class ChromeFullscreenManager extends FullscreenManager
                 mBrowserVisibilityDelegate.showControlsTransient();
                 updateMultiTouchZoomSupport(!getPersistentFullscreenMode());
                 TabGestureStateListener.from(tab).setFullscreenManager(this);
-                restoreControlsPositions();
+                if (tab.isUserInteractable()) restoreControlsPositions();
             }
         }
 

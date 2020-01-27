@@ -47,7 +47,7 @@ struct CORE_EXPORT EvaluationContext {
   // which lifetime is same as this object, or longer than this object.
   EvaluationContext(Node&, bool& had_type_conversion_error);
 
-  Member<Node> node;
+  Node* node;
   wtf_size_t size;
   wtf_size_t position;
   HashMap<String, String> variable_bindings;

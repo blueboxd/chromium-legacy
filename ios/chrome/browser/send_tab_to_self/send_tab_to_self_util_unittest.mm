@@ -57,8 +57,8 @@ class SendTabToSelfUtilTest : public PlatformTest {
   }
   ~SendTabToSelfUtilTest() override {}
 
-  ios::ChromeBrowserState* browser_state() { return browser_state_.get(); }
-  ios::ChromeBrowserState* OffTheRecordChromeBrowserState() {
+  ChromeBrowserState* browser_state() { return browser_state_.get(); }
+  ChromeBrowserState* OffTheRecordChromeBrowserState() {
     return browser_state_->GetOffTheRecordChromeBrowserState();
   }
 
@@ -67,7 +67,7 @@ class SendTabToSelfUtilTest : public PlatformTest {
   base::test::TaskEnvironment task_environment_;
 
  private:
-  std::unique_ptr<ios::ChromeBrowserState> browser_state_;
+  std::unique_ptr<ChromeBrowserState> browser_state_;
 };
 
 TEST_F(SendTabToSelfUtilTest, HasValidTargetDevice) {

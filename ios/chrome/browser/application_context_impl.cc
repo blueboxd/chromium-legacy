@@ -198,9 +198,9 @@ void ApplicationContextImpl::OnAppEnterForeground() {
 void ApplicationContextImpl::OnAppEnterBackground() {
   DCHECK(thread_checker_.CalledOnValidThread());
   // Mark all the ChromeBrowserStates as clean and persist history.
-  std::vector<ios::ChromeBrowserState*> loaded_browser_state =
+  std::vector<ChromeBrowserState*> loaded_browser_state =
       GetChromeBrowserStateManager()->GetLoadedBrowserStates();
-  for (ios::ChromeBrowserState* browser_state : loaded_browser_state) {
+  for (ChromeBrowserState* browser_state : loaded_browser_state) {
     if (history::HistoryService* history_service =
             ios::HistoryServiceFactory::GetForBrowserStateIfExists(
                 browser_state, ServiceAccessType::EXPLICIT_ACCESS)) {

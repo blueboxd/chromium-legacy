@@ -164,7 +164,16 @@ IN_PROC_BROWSER_TEST_F(SyncErrorTest, MAYBE_ErrorWhileSettingUp) {
 #endif
 }
 
-IN_PROC_BROWSER_TEST_F(SyncErrorTest, BirthdayErrorUsingActionableErrorTest) {
+#if defined(OS_WIN)
+// TODO(crbug.com/1045619) Flaky test on Windows.
+#define MAYBE_BirthdayErrorUsingActionableErrorTest \
+  DISABLED_BirthdayErrorUsingActionableErrorTest
+#else
+#define MAYBE_BirthdayErrorUsingActionableErrorTest \
+  BirthdayErrorUsingActionableErrorTest
+#endif
+IN_PROC_BROWSER_TEST_F(SyncErrorTest,
+                       MAYBE_BirthdayErrorUsingActionableErrorTest) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   const BookmarkNode* node1 = AddFolder(0, 0, "title1");

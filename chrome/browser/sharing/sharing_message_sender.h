@@ -53,6 +53,7 @@ class SharingMessageSender {
   // Delegate type used to send a message.
   enum class DelegateType {
     kFCM,
+    kWebRtc,
   };
 
   SharingMessageSender(
@@ -84,7 +85,8 @@ class SharingMessageSender {
                         base::TimeTicks timestamp,
                         chrome_browser_sharing::MessageType type,
                         SharingDevicePlatform receiver_device_platform,
-                        base::TimeDelta last_updated_age);
+                        base::TimeDelta last_updated_age,
+                        int trace_id);
     SentMessageMetadata(SentMessageMetadata&& other);
     SentMessageMetadata& operator=(SentMessageMetadata&& other);
     ~SentMessageMetadata();
@@ -94,6 +96,7 @@ class SharingMessageSender {
     chrome_browser_sharing::MessageType type;
     SharingDevicePlatform receiver_device_platform;
     base::TimeDelta last_updated_age;
+    int trace_id;
   };
 
   void OnMessageSent(const std::string& message_guid,

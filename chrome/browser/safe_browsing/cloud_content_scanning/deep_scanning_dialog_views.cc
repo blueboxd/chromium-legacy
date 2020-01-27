@@ -8,24 +8,33 @@
 
 #include "base/task/post_task.h"
 #include "cc/paint/paint_flags.h"
+#include "chrome/browser/safe_browsing/cloud_content_scanning/deep_scanning_utils.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/grit/generated_resources.h"
+#include "chrome/grit/theme_resources.h"
 #include "components/constrained_window/constrained_window_views.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/vector_icons/vector_icons.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_palette.h"
+#include "ui/gfx/color_utils.h"
+#include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/text_constants.h"
+#include "ui/native_theme/native_theme.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
+#include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/controls/image_view.h"
+#include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/controls/throbber.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
+#include "ui/views/layout/grid_layout.h"
 
 namespace safe_browsing {
 
@@ -43,7 +52,6 @@ constexpr base::TimeDelta kSuccessDialogTimeout =
 constexpr base::TimeDelta kResizeAnimationDuration =
     base::TimeDelta::FromMilliseconds(100);
 
-constexpr SkColor kScanPendingColor = gfx::kGoogleBlue500;
 constexpr SkColor kScanSuccessColor = gfx::kGoogleGreen500;
 constexpr SkColor kScanFailureColor = gfx::kGoogleRed500;
 
@@ -51,13 +59,10 @@ constexpr SkColor kScanPendingSideImageColor = gfx::kGoogleBlue400;
 constexpr SkColor kScanDoneSideImageColor = SkColorSetRGB(0xFF, 0xFF, 0xFF);
 
 constexpr int kSideImageSize = 24;
-constexpr int kTopImageSize = 100;
 
 constexpr gfx::Insets kSideImageInsets = gfx::Insets(8, 8, 8, 8);
 constexpr gfx::Insets kMessageAndIconRowInsets = gfx::Insets(0, 32, 0, 48);
 constexpr int kSideIconBetweenChildSpacing = 16;
-
-constexpr int kTextLineHeight = 20;
 
 // A simple background class to show a colored circle behind the side icon once
 // the scanning is done.
@@ -79,10 +84,30 @@ class CircleBackground : public views::Background {
 
 }  // namespace
 
+// An image class used for the image at the top of the dialog.
+class DeepScanningTopImageView : public views::ImageView {
+ public:
+  explicit DeepScanningTopImageView(DeepScanningDialogViews* dialog)
+      : dialog_(dialog) {}
+
+  void Update() { SetImage(dialog_->GetTopImage()); }
+
+ protected:
+  void OnThemeChanged() override { Update(); }
+
+ private:
+  DeepScanningDialogViews* dialog_;
+};
+
 DeepScanningDialogViews::DeepScanningDialogViews(
     std::unique_ptr<DeepScanningDialogDelegate> delegate,
-    content::WebContents* web_contents)
-    : delegate_(std::move(delegate)), web_contents_(web_contents) {
+    content::WebContents* web_contents,
+    base::Optional<DeepScanAccessPoint> access_point,
+    bool is_file_scan)
+    : delegate_(std::move(delegate)),
+      web_contents_(web_contents),
+      access_point_(std::move(access_point)),
+      is_file_scan_(is_file_scan) {
   // Show the pending dialog after a delay in case the response is fast enough.
   base::PostDelayedTask(FROM_HERE, {content::BrowserThread::UI},
                         base::BindOnce(&DeepScanningDialogViews::Show,
@@ -156,11 +181,10 @@ void DeepScanningDialogViews::UpdateDialog() {
   // Update the buttons.
   SetupButtons();
 
-  // Update the top image. Currently only the color changes.
-  image_->SetImage(gfx::CreateVectorIcon(vector_icons::kBusinessIcon,
-                                         kTopImageSize, GetImageColor()));
+  // Update the top image.
+  image_->Update();
 
-  // Update the side icon by changing it's image color, adding a background and
+  // Update the side icon by changing its image color, adding a background and
   // removing the spinner.
   side_icon_image_->SetImage(gfx::CreateVectorIcon(
       vector_icons::kBusinessIcon, kSideImageSize, kScanDoneSideImageColor));
@@ -257,12 +281,6 @@ base::string16 DeepScanningDialogViews::GetDialogMessage() const {
                             : IDS_DEEP_SCANNING_DIALOG_UPLOAD_FAILURE_MESSAGE);
 }
 
-SkColor DeepScanningDialogViews::GetImageColor() const {
-  if (!scan_success_.has_value())
-    return kScanPendingColor;
-  return scan_success_.value() ? kScanSuccessColor : kScanFailureColor;
-}
-
 base::string16 DeepScanningDialogViews::GetCancelButtonText() const {
   if (!scan_success_.has_value()) {
     return l10n_util::GetStringUTF16(
@@ -295,10 +313,7 @@ void DeepScanningDialogViews::Show() {
 
   // Add the top image.
   layout->StartRow(views::GridLayout::kFixedSize, 0);
-  auto image = std::make_unique<views::ImageView>();
-  image->SetImage(gfx::CreateVectorIcon(vector_icons::kBusinessIcon,
-                                        kTopImageSize, GetImageColor()));
-  image_ = layout->AddView(std::move(image));
+  image_ = layout->AddView(std::make_unique<DeepScanningTopImageView>(this));
 
   // Add padding to distance the top image from the icon and message.
   layout->AddPaddingRow(views::GridLayout::kFixedSize, 16);
@@ -321,7 +336,6 @@ void DeepScanningDialogViews::Show() {
   // Add the message.
   auto label = std::make_unique<views::Label>(GetDialogMessage());
   label->SetMultiLine(true);
-  label->SetLineHeight(kTextLineHeight);
   label->SetVerticalAlignment(gfx::ALIGN_MIDDLE);
   label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   message_ = icon_and_message_row->AddChildView(std::move(label));
@@ -368,10 +382,38 @@ std::unique_ptr<views::View> DeepScanningDialogViews::CreateSideIcon() {
 
 SkColor DeepScanningDialogViews::GetSideImageBackgroundColor() const {
   DCHECK(scan_success_.has_value());
+  return scan_success_.value() ? kScanSuccessColor : kScanFailureColor;
+}
+
+int DeepScanningDialogViews::GetPasteImageId(bool use_dark) const {
+  if (!scan_success_.has_value())
+    return use_dark ? IDR_PASTE_SCANNING_DARK : IDR_PASTE_SCANNING;
   if (scan_success_.value())
-    return kScanSuccessColor;
-  else
-    return kScanFailureColor;
+    return use_dark ? IDR_PASTE_SUCCESS_DARK : IDR_PASTE_SUCCESS;
+  return use_dark ? IDR_PASTE_VIOLATION_DARK : IDR_PASTE_VIOLATION;
+}
+
+int DeepScanningDialogViews::GetUploadImageId(bool use_dark) const {
+  if (!scan_success_.has_value())
+    return use_dark ? IDR_UPLOAD_SCANNING_DARK : IDR_UPLOAD_SCANNING;
+  if (scan_success_.value())
+    return use_dark ? IDR_UPLOAD_SUCCESS_DARK : IDR_UPLOAD_SUCCESS;
+  return use_dark ? IDR_UPLOAD_VIOLATION_DARK : IDR_UPLOAD_VIOLATION;
+}
+
+const gfx::ImageSkia* DeepScanningDialogViews::GetTopImage() const {
+  const bool use_dark =
+      color_utils::IsDark(GetBubbleFrameView()->GetBackgroundColor());
+  const bool treat_as_text_paste =
+      access_point_.has_value() &&
+      (access_point_.value() == DeepScanAccessPoint::PASTE ||
+       (access_point_.value() == DeepScanAccessPoint::DRAG_AND_DROP &&
+        !is_file_scan_));
+
+  int image_id = treat_as_text_paste ? GetPasteImageId(use_dark)
+                                     : GetUploadImageId(use_dark);
+
+  return ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(image_id);
 }
 
 }  // namespace safe_browsing

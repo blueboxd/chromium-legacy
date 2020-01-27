@@ -62,7 +62,9 @@ class FontVariantLigaturesParser {
   CSSValue* FinalizeValue() {
     if (!result_->length())
       return CSSIdentifierValue::Create(CSSValueID::kNormal);
-    return result_.Release();
+    CSSValue* result = result_;
+    result_ = nullptr;
+    return result;
   }
 
  private:
@@ -70,7 +72,7 @@ class FontVariantLigaturesParser {
   bool saw_discretionary_ligatures_value_;
   bool saw_historical_ligatures_value_;
   bool saw_contextual_ligatures_value_;
-  Member<CSSValueList> result_;
+  CSSValueList* result_;
 };
 
 }  // namespace blink

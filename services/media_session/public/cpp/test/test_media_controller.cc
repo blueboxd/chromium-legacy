@@ -266,6 +266,14 @@ void TestMediaController::SeekTo(base::TimeDelta seek_time) {
   ++seek_to_count_;
 }
 
+void TestMediaController::EnterPictureInPicture() {
+  // TODO(crbug.com/1040263): Implement EnterPictureInPicture.
+}
+
+void TestMediaController::ExitPictureInPicture() {
+  // TODO(crbug.com/1040263): Implement ExitPictureInPicture.
+}
+
 void TestMediaController::SimulateMediaSessionInfoChanged(
     mojom::MediaSessionInfoPtr session_info) {
   for (auto& observer : observers_)

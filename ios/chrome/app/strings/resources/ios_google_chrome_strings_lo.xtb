@@ -27,7 +27,6 @@
 <translation id="4249068189593983585">ເຄັດລັບກ່ຽວກັບ Chrome. ສຳລັບຕົວເລືອກແຖບເພີ່ມເຕີມ, ກະລຸນາແຕະປຸ່ມສະແດງແຖບໃນແຖບເຄື່ອງມືຄ້າງໄວ້ ເຊິ່ງຢູ່ລຸ່ມສຸດ ຫຼື ເທິງສຸດຂອງໜ້າຈໍຂອງທ່ານ.</translation>
 <translation id="4523886039239821078">ການ​ເພີ່ມ​ໃສ່​ບາງ​ອັນ​ເຮັດ​ໃຫ້ Chrome ເກີດ​ຂັດ​ຂ້ອງ. ກະ​ລຸ​ນາ​ຖອນ​ຕິດ​ຕັ້ງ​.</translation>
 <translation id="5389212809648216794">Google Chrome ບໍ່ສາມາດໃຊ້ກ້ອງຖ່າຍຮູບຂອງທ່ານໄດ້ ເພາະວ່າກ້ອງຖືກໃຊ້ໂດຍແອັບພລິເຄຊັນອື່ນ</translation>
-<translation id="5621912349729388018"><ph name="BEGIN_LINK" />ກວດເບິ່ງຂໍ້ກຳນົດການບໍລິການຂອງ Chrome ທີ່ອັບເດດແລ້ວ.<ph name="END_LINK" /></translation>
 <translation id="5639704535586432836">ເປີດການຕັ້ງຄ່າ &gt; ຄວາມເປັນສ່ວນຕົວ &gt; ກ້ອງຖ່າຍຮູບ &gt; Google Chrome ແລະ ເປີດກ້ອງຖ່າຍຮູບ.</translation>
 <translation id="5642200033778930880">Google Chrome ບໍ່ສາມາດໃຊ້ກ້ອງຖ່າຍຮູບຂອງທ່ານໃນໂໝດມຸມມອງແຍກກັນໄດ້</translation>
 <translation id="5690427481109656848">Google LLC</translation>
@@ -51,4 +50,5 @@
 <translation id="840168496893712993">ການ​ເພີ່ມ​ໃສ່​ບາງ​ອັນ​ເຮັດ​ໃຫ້ Chrome ເກີດ​ຂັດ​ຂ້ອງ. ກະ​ລຸ​ນາ​ລອງຖອນ​ຕິດ​ຕັ້ງ​ພວກ​ມັນ.</translation>
 <translation id="8459495907675268833">ຂໍ້ມູນທີ່ເລືອກໄດ້ຖືກລຶບອອກຈາກ Chrome ແລະ ອຸປະກອນທີ່ຊິ້ງແລ້ວ. ບັນຊີ Google ຂອງທ່ານອາດຈະມີປະຫວັດການທ່ອງເວັບຮູບແບບອື່ນ ເຊັ່ນວ່າ ການຄົ້ນຫາ ແລະ ກິດຈະກຳຈາກການບໍລິການອື່ນຂອງ Google ຢູ່ history.google.com.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
+<translation id="8574235780160508979">ຂໍ້ກຳນົດການບໍລິການຂອງ Chrome ຈະປ່ຽນແປງໃນວັນທີ 31 ເດືອນມີນາ. <ph name="BEGIN_LINK" />ກະລຸນາກວດເບິ່ງ<ph name="END_LINK" /></translation>
 </translationbundle>

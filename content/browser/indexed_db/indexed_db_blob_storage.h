@@ -11,7 +11,6 @@
 #include <vector>
 
 #include "base/callback_forward.h"
-#include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/optional.h"
 #include "base/time/time.h"
@@ -65,68 +64,6 @@ class BlobChangeRecord {
   std::string object_store_data_key_;
   std::vector<IndexedDBBlobInfo> blob_info_;
   DISALLOW_COPY_AND_ASSIGN(BlobChangeRecord);
-};
-
-// This holds a BlobEntryKey and the encoded IndexedDBBlobInfo vector stored
-// under that key.
-typedef std::vector<std::pair<BlobEntryKey, std::string>>
-    BlobEntryKeyValuePairVec;
-
-// This is a blob that is going to to be written to a file.
-class CONTENT_EXPORT WriteDescriptor {
- public:
-  WriteDescriptor(mojo::SharedRemote<blink::mojom::Blob> blob,
-                  int64_t blob_number,
-                  int64_t size,
-                  base::Time last_modified);
-  WriteDescriptor(const base::FilePath& path,
-                  int64_t blob_number,
-                  int64_t size,
-                  base::Time last_modified);
-  WriteDescriptor(const WriteDescriptor& other);
-  ~WriteDescriptor();
-  WriteDescriptor& operator=(const WriteDescriptor& other);
-
-  bool is_file() const { return is_file_; }
-  mojo::SharedRemote<blink::mojom::Blob> blob() const {
-    DCHECK(!is_file_);
-    return blob_;
-  }
-  const base::FilePath& file_path() const {
-    DCHECK(is_file_);
-    return file_path_;
-  }
-  int64_t blob_number() const { return blob_number_; }
-  int64_t size() const { return size_; }
-  base::Time last_modified() const { return last_modified_; }
-
- private:
-  bool is_file_;
-  mojo::SharedRemote<blink::mojom::Blob> blob_;
-  base::FilePath file_path_;
-  int64_t blob_number_;
-  int64_t size_;
-  base::Time last_modified_;
-};
-
-typedef std::vector<WriteDescriptor> WriteDescriptorVec;
-
-// This class facilitates writing multiple blobs to files.
-class ChainedBlobWriter : public base::RefCountedThreadSafe<ChainedBlobWriter> {
- public:
-  // Called on the IDB task runner.
-  virtual void ReportWriteCompletion(bool succeeded, int64_t bytes_written) = 0;
-
-  // Called on the IDB task runner.
-  virtual void Abort() = 0;
-
-  // Whether to flush to the file system when writing or not.
-  // Called on the IDB task runner.
-  virtual storage::FlushPolicy GetFlushPolicy() const = 0;
-
- protected:
-  friend class base::RefCountedThreadSafe<ChainedBlobWriter>;
-  virtual ~ChainedBlobWriter() {}
 };
 
 // Reports that the recovery and/or active journals have been processed, and

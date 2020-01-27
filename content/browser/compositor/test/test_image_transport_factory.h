@@ -44,8 +44,6 @@ class TestImageTransportFactory : public ui::ContextFactory,
   void RemoveCompositor(ui::Compositor* compositor) override {}
   gpu::GpuMemoryBufferManager* GetGpuMemoryBufferManager() override;
   cc::TaskGraphRunner* GetTaskGraphRunner() override;
-  void AddObserver(ui::ContextFactoryObserver* observer) override {}
-  void RemoveObserver(ui::ContextFactoryObserver* observer) override {}
 
   // ui::ContextFactoryPrivate implementation.
   viz::FrameSinkId AllocateFrameSinkId() override;

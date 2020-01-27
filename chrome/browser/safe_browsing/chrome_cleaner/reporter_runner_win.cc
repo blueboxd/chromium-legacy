@@ -695,10 +695,11 @@ class ReporterRunner {
     base::TaskRunner* task_runner =
         g_testing_delegate_ ? g_testing_delegate_->BlockingTaskRunner()
                             : blocking_task_runner_.get();
-    auto launch_and_wait = base::Bind(&LaunchAndWaitForExit, next_invocation);
+    auto launch_and_wait =
+        base::BindOnce(&LaunchAndWaitForExit, next_invocation);
     auto reporter_done =
-        base::Bind(&ReporterRunner::ReporterDone, base::Unretained(this), Now(),
-                   next_invocation);
+        base::BindOnce(&ReporterRunner::ReporterDone, base::Unretained(this),
+                       Now(), next_invocation);
     base::PostTaskAndReplyWithResult(task_runner, FROM_HERE,
                                      std::move(launch_and_wait),
                                      std::move(reporter_done));

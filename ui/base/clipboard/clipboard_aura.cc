@@ -453,7 +453,7 @@ bool ClipboardAura::IsFormatAvailable(const ClipboardFormatType& format,
   if (ClipboardFormatType::GetWebKitSmartPasteType().Equals(format))
     return clipboard_internal_->IsFormatAvailable(AuraClipboardFormat::kWeb);
   const ClipboardData* data = clipboard_internal_->GetData();
-  return data && data->custom_data_format() == format.ToString();
+  return data && data->custom_data_format() == format.GetName();
 }
 
 void ClipboardAura::Clear(ClipboardBuffer buffer) {
@@ -475,13 +475,13 @@ void ClipboardAura::ReadAvailableTypes(ClipboardBuffer buffer,
   *contains_filenames = false;
   if (IsFormatAvailable(ClipboardFormatType::GetPlainTextType(), buffer))
     types->push_back(
-        base::UTF8ToUTF16(ClipboardFormatType::GetPlainTextType().ToString()));
+        base::UTF8ToUTF16(ClipboardFormatType::GetPlainTextType().GetName()));
   if (IsFormatAvailable(ClipboardFormatType::GetHtmlType(), buffer))
     types->push_back(
-        base::UTF8ToUTF16(ClipboardFormatType::GetHtmlType().ToString()));
+        base::UTF8ToUTF16(ClipboardFormatType::GetHtmlType().GetName()));
   if (IsFormatAvailable(ClipboardFormatType::GetRtfType(), buffer))
     types->push_back(
-        base::UTF8ToUTF16(ClipboardFormatType::GetRtfType().ToString()));
+        base::UTF8ToUTF16(ClipboardFormatType::GetRtfType().GetName()));
   if (IsFormatAvailable(ClipboardFormatType::GetBitmapType(), buffer))
     types->push_back(base::UTF8ToUTF16(kMimeTypePNG));
 
@@ -491,6 +491,33 @@ void ClipboardAura::ReadAvailableTypes(ClipboardBuffer buffer,
         clipboard_internal_->GetData()->custom_data_data().c_str(),
         clipboard_internal_->GetData()->custom_data_data().size(), types);
   }
+}
+
+std::vector<base::string16>
+ClipboardAura::ReadAvailablePlatformSpecificFormatNames(
+    ClipboardBuffer buffer) const {
+  DCHECK(CalledOnValidThread());
+
+  std::vector<base::string16> types;
+
+  // Includes all non-pickled AvailableTypes.
+  if (IsFormatAvailable(ClipboardFormatType::GetPlainTextType(), buffer)) {
+    types.push_back(
+        base::UTF8ToUTF16(ClipboardFormatType::GetPlainTextType().GetName()));
+  }
+  if (IsFormatAvailable(ClipboardFormatType::GetHtmlType(), buffer)) {
+    types.push_back(
+        base::UTF8ToUTF16(ClipboardFormatType::GetHtmlType().GetName()));
+  }
+  if (IsFormatAvailable(ClipboardFormatType::GetRtfType(), buffer)) {
+    types.push_back(
+        base::UTF8ToUTF16(ClipboardFormatType::GetRtfType().GetName()));
+  }
+  if (IsFormatAvailable(ClipboardFormatType::GetBitmapType(), buffer)) {
+    types.push_back(base::UTF8ToUTF16(kMimeTypePNG));
+  }
+
+  return types;
 }
 
 void ClipboardAura::ReadText(ClipboardBuffer buffer,
@@ -540,7 +567,7 @@ void ClipboardAura::ReadBookmark(base::string16* title,
 void ClipboardAura::ReadData(const ClipboardFormatType& format,
                              std::string* result) const {
   DCHECK(CalledOnValidThread());
-  clipboard_internal_->ReadData(format.ToString(), result);
+  clipboard_internal_->ReadData(format.GetName(), result);
 }
 
 void ClipboardAura::WritePortableRepresentations(ClipboardBuffer buffer,
@@ -596,7 +623,7 @@ void ClipboardAura::WriteBitmap(const SkBitmap& bitmap) {
 void ClipboardAura::WriteData(const ClipboardFormatType& format,
                               const char* data_data,
                               size_t data_len) {
-  ClipboardDataBuilder::WriteData(format.ToString(), data_data, data_len);
+  ClipboardDataBuilder::WriteData(format.GetName(), data_data, data_len);
 }
 
 }  // namespace ui

@@ -5,8 +5,8 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_PICTURE_IN_PICTURE_ENTER_PICTURE_IN_PICTURE_EVENT_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_PICTURE_IN_PICTURE_ENTER_PICTURE_IN_PICTURE_EVENT_H_
 
+#include "third_party/blink/renderer/bindings/modules/v8/v8_enter_picture_in_picture_event_init.h"
 #include "third_party/blink/renderer/modules/event_modules.h"
-#include "third_party/blink/renderer/modules/picture_in_picture/enter_picture_in_picture_event_init.h"
 #include "third_party/blink/renderer/modules/picture_in_picture/picture_in_picture_window.h"
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 

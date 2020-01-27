@@ -34,7 +34,14 @@ inline bool HasMultiplePaintFragments(const LayoutObject& layout_object) {
 }
 
 inline bool HasMultipleFragmentItems(const LayoutObject& layout_object) {
-  return HasMultipleItems(NGFragmentItem::ItemsFor(layout_object));
+  NGInlineCursor cursor;
+  cursor.MoveTo(layout_object);
+  DCHECK(cursor);
+  if (cursor) {
+    cursor.MoveToNextForSameLayoutObject();
+    return cursor;
+  }
+  return false;
 }
 
 }  // namespace

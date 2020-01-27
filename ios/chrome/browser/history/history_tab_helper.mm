@@ -237,8 +237,8 @@ void HistoryTabHelper::WebStateDestroyed(web::WebState* web_state) {
 }
 
 history::HistoryService* HistoryTabHelper::GetHistoryService() {
-  ios::ChromeBrowserState* browser_state =
-      ios::ChromeBrowserState::FromBrowserState(web_state_->GetBrowserState());
+  ChromeBrowserState* browser_state =
+      ChromeBrowserState::FromBrowserState(web_state_->GetBrowserState());
   if (browser_state->IsOffTheRecord())
     return nullptr;
 

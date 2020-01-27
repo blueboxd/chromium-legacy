@@ -481,10 +481,14 @@ void ClientTagBasedModelTypeProcessor::UntrackEntityForClientTagHash(
     const ClientTagHash& client_tag_hash) {
   DCHECK(model_type_state_.initial_sync_done());
   DCHECK(!client_tag_hash.value().empty());
-  // Is a no-op if no entity for |client_tag_hash| is tracked.
-  DCHECK(GetEntityForTagHash(client_tag_hash) == nullptr ||
-         GetEntityForTagHash(client_tag_hash)->storage_key().empty());
-  entities_.erase(client_tag_hash);
+  const ProcessorEntity* entity = GetEntityForTagHash(client_tag_hash);
+  if (entity == nullptr || entity->storage_key().empty()) {
+    // Is a no-op if no entity for |client_tag_hash| is tracked.
+    entities_.erase(client_tag_hash);
+  } else {
+    DCHECK(storage_key_to_tag_hash_.count(entity->storage_key()));
+    UntrackEntityForStorageKey(entity->storage_key());
+  }
 }
 
 bool ClientTagBasedModelTypeProcessor::IsEntityUnsynced(
@@ -763,6 +767,9 @@ ClientTagBasedModelTypeProcessor::OnFullUpdateReceived(
     // Ensure that this is the initial sync, and it was not already marked done.
     DCHECK(!model_type_state_.initial_sync_done());
   }
+
+  // TODO(crbug.com/1041888): the comment below may be wrong in case where a
+  // datatype supports non-incremental updates and local updates are acceptable.
 
   // Given that we either just removed all existing sync entities (in the full
   // update case), or we just started sync for the first time, we should not

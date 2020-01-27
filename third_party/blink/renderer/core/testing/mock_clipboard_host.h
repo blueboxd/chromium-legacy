@@ -32,6 +32,9 @@ class MockClipboardHost : public mojom::blink::ClipboardHost {
                          IsFormatAvailableCallback callback) override;
   void ReadAvailableTypes(mojom::ClipboardBuffer clipboard_buffer,
                           ReadAvailableTypesCallback callback) override;
+  void ReadAvailablePlatformSpecificFormatNames(
+      mojom::ClipboardBuffer clipboard_buffer,
+      ReadAvailablePlatformSpecificFormatNamesCallback callback) override;
   void ReadText(mojom::ClipboardBuffer clipboard_buffer,
                 ReadTextCallback callback) override;
   void ReadHtml(mojom::ClipboardBuffer clipboard_buffer,

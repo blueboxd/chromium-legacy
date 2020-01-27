@@ -93,8 +93,6 @@ COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kDisableRollbackOption[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const char kDisableSigninFrameClientCerts[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
-extern const char kDisableSigninFrameClientCertUserSelection[];
-COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const char kDisableVolumeAdjustSound[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kDisableWakeOnWifi[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kEnableArc[];
@@ -221,11 +219,6 @@ COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool IsCellularFirstDevice();
 // Returns true if client certificate authentication for the sign-in frame on
 // the Chrome OS sign-in screen is enabled.
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool IsSigninFrameClientCertsEnabled();
-
-// Returns true if user selection of certificates is enabled for the sign-in
-// frame on the Chrome OS sign-in screen.
-COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
-bool IsSigninFrameClientCertUserSelectionEnabled();
 
 // Returns true if we should show the modular shelf with the hotseat UI and
 // a smaller shelf in clamshell mode.

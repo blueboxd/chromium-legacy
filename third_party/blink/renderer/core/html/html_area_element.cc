@@ -201,7 +201,7 @@ bool HTMLAreaElement::IsFocusableStyle() const {
 }
 
 void HTMLAreaElement::SetFocused(bool should_be_focused,
-                                 WebFocusType focus_type) {
+                                 mojom::blink::FocusType focus_type) {
   if (IsFocused() == should_be_focused)
     return;
 

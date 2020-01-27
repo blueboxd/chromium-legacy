@@ -52,6 +52,7 @@
 #include "content/browser/indexed_db/indexed_db_task_helper.h"
 #include "content/browser/indexed_db/indexed_db_tombstone_sweeper.h"
 #include "content/browser/indexed_db/indexed_db_tracing.h"
+#include "storage/browser/blob/mojom/blob_storage_context.mojom.h"
 #include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom.h"
 #include "third_party/leveldatabase/env_chromium.h"
 
@@ -165,10 +166,12 @@ std::tuple<bool, leveldb::Status> AreSchemasKnown(
 IndexedDBFactoryImpl::IndexedDBFactoryImpl(
     IndexedDBContextImpl* context,
     IndexedDBClassFactory* indexed_db_class_factory,
-    base::Clock* clock)
+    base::Clock* clock,
+    storage::mojom::BlobStorageContext* blob_storage_context)
     : context_(context),
       class_factory_(indexed_db_class_factory),
-      clock_(clock) {
+      clock_(clock),
+      blob_storage_context_(blob_storage_context) {
   DCHECK(context);
   DCHECK(indexed_db_class_factory);
   DCHECK(clock);
@@ -810,6 +813,7 @@ std::unique_ptr<IndexedDBBackingStore> IndexedDBFactoryImpl::CreateBackingStore(
     const url::Origin& origin,
     const base::FilePath& blob_path,
     std::unique_ptr<TransactionalLevelDBDatabase> db,
+    storage::mojom::BlobStorageContext* blob_storage_context,
     IndexedDBBackingStore::BlobFilesCleanedCallback blob_files_cleaned,
     IndexedDBBackingStore::ReportOutstandingBlobsCallback
         report_outstanding_blobs,
@@ -817,7 +821,7 @@ std::unique_ptr<IndexedDBBackingStore> IndexedDBFactoryImpl::CreateBackingStore(
     scoped_refptr<base::SequencedTaskRunner> io_task_runner) {
   return std::make_unique<IndexedDBBackingStore>(
       backing_store_mode, transactional_leveldb_factory, origin, blob_path,
-      std::move(db), std::move(blob_files_cleaned),
+      std::move(db), blob_storage_context, std::move(blob_files_cleaned),
       std::move(report_outstanding_blobs), std::move(idb_task_runner),
       std::move(io_task_runner));
 }
@@ -946,7 +950,7 @@ IndexedDBFactoryImpl::OpenAndVerifyIndexedDBBackingStore(
                                  : IndexedDBBackingStore::Mode::kOnDisk;
   std::unique_ptr<IndexedDBBackingStore> backing_store = CreateBackingStore(
       backing_store_mode, &class_factory_->transactional_leveldb_factory(),
-      origin, blob_path, std::move(database),
+      origin, blob_path, std::move(database), blob_storage_context_,
       base::BindRepeating(&IndexedDBFactoryImpl::BlobFilesCleaned,
                           weak_factory_.GetWeakPtr(), origin),
       base::BindRepeating(&IndexedDBFactoryImpl::ReportOutstandingBlobs,

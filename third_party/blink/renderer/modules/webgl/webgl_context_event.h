@@ -26,8 +26,8 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBGL_WEBGL_CONTEXT_EVENT_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBGL_WEBGL_CONTEXT_EVENT_H_
 
+#include "third_party/blink/renderer/bindings/modules/v8/v8_webgl_context_event_init.h"
 #include "third_party/blink/renderer/modules/event_modules.h"
-#include "third_party/blink/renderer/modules/webgl/webgl_context_event_init.h"
 
 namespace blink {
 

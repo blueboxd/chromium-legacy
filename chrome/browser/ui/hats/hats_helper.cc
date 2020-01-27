@@ -25,7 +25,7 @@ void HatsHelper::DidFinishLoad(content::RenderFrameHost* render_frame_host,
         profile(), /*create_if_necessary=*/true);
 
     if (hats_service)
-      hats_service->LaunchSatisfactionSurvey();
+      hats_service->LaunchSurvey(kHatsSurveyTriggerSatisfaction);
   }
 }
 

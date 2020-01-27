@@ -1235,6 +1235,7 @@ interface PushSubscriptionOptions
 interface QuicTransport
     attribute @@toStringTag
     getter closed
+    getter ready
     method close
     method constructor
     method receiveDatagrams

@@ -31,6 +31,8 @@
 #include "cc/paint/paint_canvas.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy_feature.mojom-blink.h"
 #include "third_party/blink/public/platform/web_fullscreen_video_status.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_fullscreen_options.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_image_bitmap_options.h"
 #include "third_party/blink/renderer/core/css/css_property_names.h"
 #include "third_party/blink/renderer/core/dom/attribute.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -40,7 +42,6 @@
 #include "third_party/blink/renderer/core/frame/picture_in_picture_controller.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/fullscreen/fullscreen.h"
-#include "third_party/blink/renderer/core/fullscreen/fullscreen_options.h"
 #include "third_party/blink/renderer/core/html/media/media_custom_controls_fullscreen_detector.h"
 #include "third_party/blink/renderer/core/html/media/media_element_parser_helpers.h"
 #include "third_party/blink/renderer/core/html/media/media_remoting_interstitial.h"
@@ -50,7 +51,6 @@
 #include "third_party/blink/renderer/core/html/parser/html_parser_idioms.h"
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/imagebitmap/image_bitmap.h"
-#include "third_party/blink/renderer/core/imagebitmap/image_bitmap_options.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/intersection_observer/intersection_observer_entry.h"
 #include "third_party/blink/renderer/core/layout/layout_image.h"
@@ -735,6 +735,17 @@ WebMediaPlayer::DisplayType HTMLVideoElement::DisplayType() const {
 
 bool HTMLVideoElement::IsInAutoPIP() const {
   return is_auto_picture_in_picture_;
+}
+
+void HTMLVideoElement::RequestEnterPictureInPicture() {
+  PictureInPictureController::From(GetDocument())
+      .EnterPictureInPicture(this, nullptr /* promise */,
+                             nullptr /* options */);
+}
+
+void HTMLVideoElement::RequestExitPictureInPicture() {
+  PictureInPictureController::From(GetDocument())
+      .ExitPictureInPicture(this, nullptr);
 }
 
 void HTMLVideoElement::OnPictureInPictureStateChange() {

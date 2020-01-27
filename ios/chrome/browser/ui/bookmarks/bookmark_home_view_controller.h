@@ -10,7 +10,6 @@
 #include <set>
 #include <vector>
 
-#include "ios/chrome/browser/browser_state/chrome_browser_state_forward.h"
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_controller.h"
 
 @protocol ApplicationCommands;
@@ -19,6 +18,7 @@
 namespace bookmarks {
 class BookmarkNode;
 }  // namespace bookmarks
+class ChromeBrowserState;
 class GURL;
 class WebStateList;
 
@@ -50,7 +50,7 @@ class WebStateList;
 
 // Initializers.
 - (instancetype)
-    initWithBrowserState:(ios::ChromeBrowserState*)browserState
+    initWithBrowserState:(ChromeBrowserState*)browserState
               dispatcher:(id<ApplicationCommands, BrowserCommands>)dispatcher
             webStateList:(WebStateList*)webStateList NS_DESIGNATED_INITIALIZER;
 - (instancetype)initWithStyle:(UITableViewStyle)tableViewStyle NS_UNAVAILABLE;

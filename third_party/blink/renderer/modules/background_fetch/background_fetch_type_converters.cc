@@ -5,6 +5,8 @@
 #include "third_party/blink/renderer/modules/background_fetch/background_fetch_type_converters.h"
 
 #include <utility>
+
+#include "third_party/blink/renderer/bindings/modules/v8/v8_background_fetch_options.h"
 #include "third_party/blink/renderer/modules/background_fetch/background_fetch_registration.h"
 #include "third_party/blink/renderer/modules/manifest/image_resource_type_converters.h"
 #include "third_party/blink/renderer/platform/heap/heap_allocator.h"

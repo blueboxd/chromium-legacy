@@ -39,8 +39,8 @@ base::Closure GetDefaultSearchProviderChangedCallback() {
 
 std::unique_ptr<KeyedService> BuildTemplateURLService(
     web::BrowserState* context) {
-  ios::ChromeBrowserState* browser_state =
-      ios::ChromeBrowserState::FromBrowserState(context);
+  ChromeBrowserState* browser_state =
+      ChromeBrowserState::FromBrowserState(context);
   return std::make_unique<TemplateURLService>(
       browser_state->GetPrefs(),
       std::make_unique<ios::UIThreadSearchTermsData>(),
@@ -56,7 +56,7 @@ std::unique_ptr<KeyedService> BuildTemplateURLService(
 
 // static
 TemplateURLService* TemplateURLServiceFactory::GetForBrowserState(
-    ios::ChromeBrowserState* browser_state) {
+    ChromeBrowserState* browser_state) {
   return static_cast<TemplateURLService*>(
       GetInstance()->GetServiceForBrowserState(browser_state, true));
 }

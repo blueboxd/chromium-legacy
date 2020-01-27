@@ -4,8 +4,8 @@
 
 #include "third_party/blink/renderer/core/html/forms/submit_event.h"
 
+#include "third_party/blink/renderer/bindings/core/v8/v8_submit_event_init.h"
 #include "third_party/blink/renderer/core/event_interface_names.h"
-#include "third_party/blink/renderer/core/html/forms/submit_event_init.h"
 #include "third_party/blink/renderer/core/html/html_element.h"
 
 namespace blink {

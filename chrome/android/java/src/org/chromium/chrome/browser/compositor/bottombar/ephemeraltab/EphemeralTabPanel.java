@@ -79,7 +79,7 @@ public class EphemeralTabPanel extends OverlayPanel {
      * @return {@code true} if the feature is enabled.
      */
     public static boolean isSupported() {
-        return ChromeFeatureList.isEnabled(ChromeFeatureList.EPHEMERAL_TAB)
+        return ChromeFeatureList.isEnabled(ChromeFeatureList.EPHEMERAL_TAB_USING_BOTTOM_SHEET)
                 && !SysUtils.isLowEndDevice();
     }
 

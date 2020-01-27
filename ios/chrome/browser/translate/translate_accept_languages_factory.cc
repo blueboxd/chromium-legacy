@@ -51,8 +51,7 @@ TranslateAcceptLanguagesFactory::GetInstance() {
 
 // static
 translate::TranslateAcceptLanguages*
-TranslateAcceptLanguagesFactory::GetForBrowserState(
-    ios::ChromeBrowserState* state) {
+TranslateAcceptLanguagesFactory::GetForBrowserState(ChromeBrowserState* state) {
   TranslateAcceptLanguagesService* service =
       static_cast<TranslateAcceptLanguagesService*>(
           GetInstance()->GetServiceForBrowserState(state, true));
@@ -71,8 +70,8 @@ TranslateAcceptLanguagesFactory::~TranslateAcceptLanguagesFactory() {
 std::unique_ptr<KeyedService>
 TranslateAcceptLanguagesFactory::BuildServiceInstanceFor(
     web::BrowserState* context) const {
-  ios::ChromeBrowserState* browser_state =
-      ios::ChromeBrowserState::FromBrowserState(context);
+  ChromeBrowserState* browser_state =
+      ChromeBrowserState::FromBrowserState(context);
   return std::make_unique<TranslateAcceptLanguagesService>(
       browser_state->GetPrefs());
 }

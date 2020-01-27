@@ -138,7 +138,7 @@ class ChangedTouches final {
  public:
   // The touches corresponding to the particular change state this struct
   // instance represents.
-  Member<TouchList> touches_;
+  TouchList* touches_ = nullptr;
 
   using EventTargetSet = HeapHashSet<Member<EventTarget>>;
   // Set of targets involved in m_touches.
@@ -472,7 +472,7 @@ TouchEventManager::DispatchTouchEventFromAccumulatdTouchPoints() {
       EventTarget* touch_event_target = event_target;
       TouchEvent* touch_event = TouchEvent::Create(
           coalesced_event, touches, touches_by_target.at(touch_event_target),
-          changed_touches[action_idx].touches_.Get(), event_name,
+          changed_touches[action_idx].touches_, event_name,
           touch_event_target->ToNode()->GetDocument().domWindow(),
           current_touch_action_);
 

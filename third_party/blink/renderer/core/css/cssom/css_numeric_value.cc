@@ -6,6 +6,7 @@
 
 #include <numeric>
 
+#include "third_party/blink/renderer/bindings/core/v8/v8_css_numeric_type.h"
 #include "third_party/blink/renderer/core/css/css_math_expression_node.h"
 #include "third_party/blink/renderer/core/css/css_math_function_value.h"
 #include "third_party/blink/renderer/core/css/css_primitive_value.h"

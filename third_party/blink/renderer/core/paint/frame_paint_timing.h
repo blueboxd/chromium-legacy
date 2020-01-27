@@ -33,7 +33,7 @@ class FramePaintTiming {
 
  private:
   GraphicsContext& context_;
-  Member<const LocalFrame> frame_;
+  const LocalFrame* frame_;
   DISALLOW_COPY_AND_ASSIGN(FramePaintTiming);
 };
 

@@ -31,7 +31,7 @@ class BackgroundImageGeometry {
 
  public:
   // Constructor for LayoutView where the coordinate space is different.
-  BackgroundImageGeometry(const LayoutView&);
+  BackgroundImageGeometry(const LayoutView&, bool root_elemnet_has_transform);
 
   // Constructor for table cells where background_object may be the row or
   // column the background image is attached to.
@@ -181,10 +181,11 @@ class BackgroundImageGeometry {
   FloatPoint phase_;
   LayoutSize tile_size_;
   LayoutSize repeat_spacing_;
-  bool has_non_local_geometry_;
-  bool painting_view_;
-  bool painting_table_cell_;
-  bool cell_using_container_background_;
+  bool has_non_local_geometry_ = false;
+  bool painting_view_ = false;
+  bool painting_table_cell_ = false;
+  bool cell_using_container_background_ = false;
+  bool root_element_has_transform_ = false;
 };
 
 }  // namespace blink

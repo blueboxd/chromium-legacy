@@ -16,7 +16,7 @@ import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.suggestions.SuggestionsDependencyFactory;
 import org.chromium.chrome.browser.suggestions.SuggestionsEventReporter;
 import org.chromium.chrome.browser.suggestions.mostvisited.MostVisitedSites;
-import org.chromium.chrome.browser.widget.ThumbnailProvider;
+import org.chromium.chrome.browser.thumbnail.generator.ThumbnailProvider;
 
 /**
  * Rule that allows mocking native dependencies of the suggestions package.

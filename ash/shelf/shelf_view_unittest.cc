@@ -746,10 +746,10 @@ class ShelfViewTest : public AshTestBase {
 
 // TODO(https://crbug.com/1009638): remove this class and all its descendants
 // when scrollable shelf is launched.
-class ShelfViewTestNotScrollable : public ShelfViewTest {
+class ShelfViewNotScrollableTest : public ShelfViewTest {
  public:
-  ShelfViewTestNotScrollable() = default;
-  ~ShelfViewTestNotScrollable() override = default;
+  ShelfViewNotScrollableTest() = default;
+  ~ShelfViewNotScrollableTest() override = default;
 
   void SetUp() override {
     scoped_feature_list_.InitWithFeatures({},
@@ -761,7 +761,7 @@ class ShelfViewTestNotScrollable : public ShelfViewTest {
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
 
-  DISALLOW_COPY_AND_ASSIGN(ShelfViewTestNotScrollable);
+  DISALLOW_COPY_AND_ASSIGN(ShelfViewNotScrollableTest);
 };
 
 const char*
@@ -819,7 +819,7 @@ TEST_F(ShelfViewTest, EnforceDragType) {
 
 // Adds platform app button until overflow and verifies that the last added
 // platform app button is hidden.
-TEST_F(ShelfViewTestNotScrollable, AddBrowserUntilOverflow) {
+TEST_F(ShelfViewNotScrollableTest, AddBrowserUntilOverflow) {
   // All buttons should be visible.
   ASSERT_EQ(test_api_->GetButtonCount(), shelf_view_->last_visible_index() + 1);
 
@@ -839,7 +839,7 @@ TEST_F(ShelfViewTestNotScrollable, AddBrowserUntilOverflow) {
   EXPECT_FALSE(GetButtonByID(last_added)->GetVisible());
 }
 
-TEST_F(ShelfViewTestNotScrollable, OverflowVisibleIndex) {
+TEST_F(ShelfViewNotScrollableTest, OverflowVisibleIndex) {
   AddAppShortcutsUntilOverflow();
   ASSERT_TRUE(shelf_view_->GetOverflowButton()->GetVisible());
   const int last_visible_index = shelf_view_->last_visible_index();
@@ -867,7 +867,7 @@ TEST_F(ShelfViewTestNotScrollable, OverflowVisibleIndex) {
 // Adds one platform app button then adds app shortcut until overflow. Verifies
 // that the browser button gets hidden on overflow and last added app shortcut
 // is still visible.
-TEST_F(ShelfViewTestNotScrollable,
+TEST_F(ShelfViewNotScrollableTest,
        AddAppShortcutWithBrowserButtonUntilOverflow) {
   // All buttons should be visible.
   ASSERT_EQ(test_api_->GetButtonCount(), shelf_view_->last_visible_index() + 1);
@@ -892,7 +892,7 @@ TEST_F(ShelfViewTestNotScrollable,
 
 // Making sure that no buttons on the shelf will ever overlap after adding many
 // of them.
-TEST_F(ShelfViewTestNotScrollable, AssertNoButtonsOverlap) {
+TEST_F(ShelfViewNotScrollableTest, AssertNoButtonsOverlap) {
   std::vector<ShelfID> button_ids;
   // Add app icons until the overflow button is visible.
   while (!shelf_view_->GetOverflowButton()->GetVisible()) {
@@ -948,7 +948,7 @@ TEST_F(ShelfViewTestNotScrollable, AssertNoButtonsOverlap) {
 // Adds button until overflow then removes first added one. Verifies that
 // the last added one changes from invisible to visible and overflow
 // chevron is gone.
-TEST_F(ShelfViewTestNotScrollable, RemoveButtonRevealsOverflowed) {
+TEST_F(ShelfViewNotScrollableTest, RemoveButtonRevealsOverflowed) {
   // All buttons should be visible.
   ASSERT_EQ(test_api_->GetButtonCount(), shelf_view_->last_visible_index() + 1);
 
@@ -977,7 +977,7 @@ TEST_F(ShelfViewTestNotScrollable, RemoveButtonRevealsOverflowed) {
 }
 
 // Verifies that remove last overflowed button should hide overflow chevron.
-TEST_F(ShelfViewTestNotScrollable, RemoveLastOverflowed) {
+TEST_F(ShelfViewNotScrollableTest, RemoveLastOverflowed) {
   // All buttons should be visible.
   ASSERT_EQ(test_api_->GetButtonCount(), shelf_view_->last_visible_index() + 1);
 
@@ -996,7 +996,7 @@ TEST_F(ShelfViewTestNotScrollable, RemoveLastOverflowed) {
 
 // Tests the visiblity of certain shelf items when the overflow bubble is open
 // and entering or exiting tablet mode.
-TEST_F(ShelfViewTestNotScrollable, OverflowVisibleItemsInTabletMode) {
+TEST_F(ShelfViewNotScrollableTest, OverflowVisibleItemsInTabletMode) {
   // Helper to check whether the item with index |index| is visible on the shelf
   // associated with |shelf_test_api|.
   auto is_visible_on_shelf = [](int index, ShelfViewTestAPI* shelf_test_api) {
@@ -1040,7 +1040,7 @@ TEST_F(ShelfViewTestNotScrollable, OverflowVisibleItemsInTabletMode) {
 
 // Adds platform app button without waiting for animation to finish and verifies
 // that all added buttons are visible.
-TEST_F(ShelfViewTestNotScrollable, AddButtonQuickly) {
+TEST_F(ShelfViewNotScrollableTest, AddButtonQuickly) {
   // All buttons should be visible.
   ASSERT_EQ(test_api_->GetButtonCount(), shelf_view_->last_visible_index() + 1);
 
@@ -1418,7 +1418,7 @@ TEST_F(ShelfViewTest, ShelfTooltipTest) {
   EXPECT_EQ(nullptr, tooltip_manager->GetCurrentAnchorView());
 }
 
-TEST_F(ShelfViewTestNotScrollable, ButtonTitlesTest) {
+TEST_F(ShelfViewNotScrollableTest, ButtonTitlesTest) {
   AddAppShortcutsUntilOverflow();
 
   Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
@@ -1694,7 +1694,7 @@ TEST_P(HotseatShelfViewTest, ShouldHideTooltipWhenHoveringOnTooltip) {
 // Resizing shelf view while an add animation without fade-in is running,
 // which happens when overflow happens. Home button should end up in its
 // new ideal bounds.
-TEST_F(ShelfViewTestNotScrollable, ResizeDuringOverflowAddAnimation) {
+TEST_F(ShelfViewNotScrollableTest, ResizeDuringOverflowAddAnimation) {
   // All buttons should be visible.
   ASSERT_EQ(test_api_->GetButtonCount(), shelf_view_->last_visible_index() + 1);
 
@@ -1728,7 +1728,7 @@ TEST_F(ShelfViewTestNotScrollable, ResizeDuringOverflowAddAnimation) {
 }
 
 // Checks the overflow bubble size when an item is ripped off and re-inserted.
-TEST_F(ShelfViewTestNotScrollable, OverflowBubbleSize) {
+TEST_F(ShelfViewNotScrollableTest, OverflowBubbleSize) {
   AddAppShortcutsUntilOverflow();
   // Add one more button to prevent the overflow bubble to disappear upon
   // dragging an item out on windows (flakiness, see crbug.com/436131).
@@ -1781,7 +1781,7 @@ TEST_F(ShelfViewTestNotScrollable, OverflowBubbleSize) {
             overflow_shelf_view->GetPreferredSize().width());
 }
 
-TEST_F(ShelfViewTestNotScrollable,
+TEST_F(ShelfViewNotScrollableTest,
        DISABLED_OverflowShelfColorIsDerivedFromWallpaper) {
   WallpaperControllerTestApi wallpaper_test_api(
       Shell::Get()->wallpaper_controller());
@@ -1796,7 +1796,7 @@ TEST_F(ShelfViewTestNotScrollable,
 }
 
 // Check the drag insertion bounds of scrolled overflow bubble.
-TEST_F(ShelfViewTestNotScrollable,
+TEST_F(ShelfViewNotScrollableTest,
        CheckDragInsertBoundsOfScrolledOverflowBubble) {
   UpdateDisplay("400x300");
 
@@ -1871,7 +1871,7 @@ TEST_F(ShelfViewTestNotScrollable,
 }
 
 // Check the drag insertion bounds of shelf view in multi monitor environment.
-TEST_F(ShelfViewTestNotScrollable, CheckDragInsertBoundsWithMultiMonitor) {
+TEST_F(ShelfViewNotScrollableTest, CheckDragInsertBoundsWithMultiMonitor) {
   UpdateDisplay("800x600,800x600");
   Shelf* secondary_shelf = Shelf::ForWindow(Shell::GetAllRootWindows()[1]);
   ShelfView* shelf_view_for_secondary =
@@ -1975,7 +1975,7 @@ TEST_F(ShelfViewTest, CheckRipOffFromLeftShelfAlignmentWithMultiMonitor) {
 
 // Checks various drag and drop operations from OverflowBubble to Shelf, and
 // vice versa.
-TEST_F(ShelfViewTestNotScrollable, CheckDragAndDropFromShelfToOtherShelf) {
+TEST_F(ShelfViewNotScrollableTest, CheckDragAndDropFromShelfToOtherShelf) {
   AddAppShortcutsUntilOverflow();
   // Add one more button to prevent the overflow bubble to disappear upon
   // dragging an item out on windows (flakiness, see crbug.com/425097).
@@ -1993,7 +1993,7 @@ TEST_F(ShelfViewTestNotScrollable, CheckDragAndDropFromShelfToOtherShelf) {
 }
 
 // Checks taking a screenshot while dragging an app into the overflow menu.
-TEST_F(ShelfViewTestNotScrollable, TestDragToOverflowAndTakeScreenshot) {
+TEST_F(ShelfViewNotScrollableTest, TestDragToOverflowAndTakeScreenshot) {
   // We'll need UI controls to trigger the accelerator for taking a screenshot.
   ui_controls::InstallUIControlsAura(test::CreateAshUIControls());
 
@@ -2058,7 +2058,7 @@ TEST_F(ShelfViewTestNotScrollable, TestDragToOverflowAndTakeScreenshot) {
 }
 
 // Checks drag-reorder items within the overflow shelf.
-TEST_F(ShelfViewTestNotScrollable, TestDragWithinOverflow) {
+TEST_F(ShelfViewNotScrollableTest, TestDragWithinOverflow) {
   // Prepare the overflow and open it.
   AddAppShortcutsUntilOverflow();
   // Add a couple more to make sure we have things to drag.
@@ -2106,7 +2106,7 @@ TEST_F(ShelfViewTestNotScrollable, TestDragWithinOverflow) {
 
 // Checks creating app shortcut for an opened platform app in overflow bubble
 // should be invisible to the shelf. See crbug.com/605793.
-TEST_F(ShelfViewTestNotScrollable, CheckOverflowStatusPinOpenedAppToShelf) {
+TEST_F(ShelfViewNotScrollableTest, CheckOverflowStatusPinOpenedAppToShelf) {
   AddAppShortcutsUntilOverflow();
 
   // Add a running Platform app.
@@ -2172,7 +2172,7 @@ TEST_F(ShelfViewTest,
       kTimeBetweenWindowMinimizedAndActivatedActionsHistogramName, 1);
 }
 
-TEST_F(ShelfViewTestNotScrollable, TestHideOverflow) {
+TEST_F(ShelfViewNotScrollableTest, TestHideOverflow) {
   // Use an event generator instead of SimulateClick because the overflow bubble
   // uses a Shell pre-target EventHandler to observe input events.
   ui::test::EventGenerator* generator = GetEventGenerator();
@@ -2248,7 +2248,7 @@ TEST_F(ShelfViewTestNotScrollable, TestHideOverflow) {
   EXPECT_TRUE(shelf_view_->IsShowingOverflowBubble());
 }
 
-TEST_F(ShelfViewTestNotScrollable, UnpinningCancelsOverflow) {
+TEST_F(ShelfViewNotScrollableTest, UnpinningCancelsOverflow) {
   // Add just enough items for overflow; one fewer would not require overflow.
   const ShelfID first_shelf_id = AddAppShortcut();
   AddAppShortcutsUntilOverflow();
@@ -2355,7 +2355,7 @@ TEST_F(ShelfViewTest, TabletModeStartAndEndClosesContextMenu) {
 }
 
 // Tests that the overflow button does not show a context menu.
-TEST_F(ShelfViewTestNotScrollable, NoContextMenuOnOverflowButton) {
+TEST_F(ShelfViewNotScrollableTest, NoContextMenuOnOverflowButton) {
   ui::test::EventGenerator* generator = GetEventGenerator();
   AddAppShortcutsUntilOverflow();
   views::View* overflow_button = shelf_view_->GetOverflowButton();
@@ -2766,13 +2766,13 @@ TEST_F(ShelfViewTest, ReplacingDelegateCancelsContextMenu) {
   EXPECT_FALSE(shelf_view_->IsShowingMenu());
 }
 
-class OverflowBubbleViewTest : public ShelfViewTestNotScrollable {
+class OverflowBubbleViewTest : public ShelfViewNotScrollableTest {
  public:
   OverflowBubbleViewTest() = default;
   ~OverflowBubbleViewTest() override = default;
 
   void SetUp() override {
-    ShelfViewTestNotScrollable::SetUp();
+    ShelfViewNotScrollableTest::SetUp();
 
     UpdateDisplay("300x600");
     AddAppShortcutsUntilOverflow();
@@ -3722,13 +3722,13 @@ TEST_F(ShelfViewInkDropTest, DismissingMenuWithDoubleClickDoesntShowInkDrop) {
 }
 
 // Test fixture for testing material design ink drop on overflow button.
-class OverflowButtonInkDropTest : public ShelfViewTestNotScrollable {
+class OverflowButtonInkDropTest : public ShelfViewNotScrollableTest {
  public:
   OverflowButtonInkDropTest() = default;
   ~OverflowButtonInkDropTest() override = default;
 
   void SetUp() override {
-    ShelfViewTestNotScrollable::SetUp();
+    ShelfViewNotScrollableTest::SetUp();
 
     overflow_button_ = shelf_view_->GetOverflowButton();
 

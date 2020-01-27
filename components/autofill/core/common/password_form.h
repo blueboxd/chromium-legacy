@@ -291,13 +291,14 @@ struct PasswordForm {
   // as signal for password generation eligibility.
   bool is_new_password_reliable = false;
 
+  // Serialized to prefs, so don't change numeric values!
   enum class Store {
     // Default value.
-    kNotSet,
+    kNotSet = 0,
     // Credential came from the profile (i.e. local) storage.
-    kProfileStore,
+    kProfileStore = 1,
     // Credential came from the Gaia-account-scoped storage.
-    kAccountStore
+    kAccountStore = 2
   };
   Store in_store = Store::kNotSet;
 

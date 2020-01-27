@@ -254,7 +254,7 @@ DownloadItemView::DownloadItemView(DownloadUIModel::DownloadUIModelPtr download,
   dropdown_button->SetAccessibleName(l10n_util::GetStringUTF16(
       IDS_DOWNLOAD_ITEM_DROPDOWN_BUTTON_ACCESSIBLE_TEXT));
 
-  dropdown_button->SetBorder(views::CreateEmptyBorder(gfx::Insets(4)));
+  dropdown_button->SetBorder(views::CreateEmptyBorder(gfx::Insets(10)));
   dropdown_button->set_has_ink_drop_action_on_click(false);
   dropdown_button->SetFocusForPlatform();
   dropdown_button_ = AddChildView(std::move(dropdown_button));
@@ -576,10 +576,8 @@ gfx::Size DownloadItemView::CalculatePreferredSize() const {
             kProgressTextPadding + kTextWidth + kEndPadding;
   }
 
-  if (mode_ != DANGEROUS_MODE) {
-    // Add an extra kEndPadding as padding before |dropdown_button_|.
-    width += dropdown_button_->GetPreferredSize().width() + kEndPadding;
-  }
+  if (mode_ != DANGEROUS_MODE)
+    width += dropdown_button_->GetPreferredSize().width();
 
   return gfx::Size(width, std::max(kDefaultDownloadItemHeight,
                                    2 * kMinimumVerticalPadding + child_height));

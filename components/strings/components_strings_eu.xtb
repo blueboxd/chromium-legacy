@@ -290,7 +290,6 @@
 <translation id="2218879909401188352"><ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> webguneko erasotzaileek aplikazio arriskutsuak instala ditzakete eta haiek gailua kalte dezakete, mugikorraren fakturan gastu ezkutuak gehi ditzakete edo informazio pertsonala ezkuta dezakete. <ph name="BEGIN_LEARN_MORE_LINK" />Lortu informazio gehiago<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="2224337661447660594">Ez dago Interneteko konexiorik</translation>
 <translation id="2230458221926704099">Egiaztatu konexioa <ph name="BEGIN_LINK" />diagnostikoen aplikazioa<ph name="END_LINK" /> erabilita</translation>
-<translation id="22320125457191592">Zuretzat</translation>
 <translation id="2239100178324503013">Bidali</translation>
 <translation id="2248949050832152960">Erabili WebAuthn</translation>
 <translation id="2250931979407627383">Ezkerreko ertza josita</translation>
@@ -568,7 +567,6 @@
 <translation id="3531780078352352885">Lan-orriak</translation>
 <translation id="3533328374079021623">5. postontzia</translation>
 <translation id="3539171420378717834">Gorde gailu honetan txartelaren kopia bat</translation>
-<translation id="3553513561058684206">Zuretzat</translation>
 <translation id="3558573058928565255">Eguna</translation>
 <translation id="3566021033012934673">Konexioa ez da pribatua</translation>
 <translation id="3574305903863751447"><ph name="CITY" />, <ph name="STATE" />, <ph name="COUNTRY" /></translation>
@@ -1151,7 +1149,7 @@
 <translation id="6051221802930200923">Une honetan ezin zara joan <ph name="SITE" /> webgunera, ziurtagiri-ainguratzea baitarabil. Sareko erroreak eta erasoak aldi baterakoak izan ohi dira; beraz, geroago funtzionatuko du orriak, segur aski.</translation>
 <translation id="6052284303005792909">•</translation>
 <translation id="6058977677006700226">Gailu guztietan erabili nahi dituzu txartelak?</translation>
-<translation id="6059925163896151826">USB gailuak</translation>
+<translation id="6059925163896151826">USB bidezko ailuak</translation>
 <translation id="6060009363608157444">DnsOverHttps moduak ez du balio.</translation>
 <translation id="6064217302520318294">Pantailaren blokeoa</translation>
 <translation id="6080696365213338172">Administratzaileak emandako ziurtagiria erabilita atzitu duzu edukia. <ph name="DOMAIN" /> domeinuari bidalitako datuak administratzaileak atzeman ditzake.</translation>

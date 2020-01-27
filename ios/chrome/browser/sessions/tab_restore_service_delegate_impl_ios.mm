@@ -26,7 +26,7 @@
 #endif
 
 TabRestoreServiceDelegateImplIOS::TabRestoreServiceDelegateImplIOS(
-    ios::ChromeBrowserState* browser_state)
+    ChromeBrowserState* browser_state)
     : browser_state_(browser_state), session_id_(SessionID::NewUnique()) {}
 
 TabRestoreServiceDelegateImplIOS::~TabRestoreServiceDelegateImplIOS() {}

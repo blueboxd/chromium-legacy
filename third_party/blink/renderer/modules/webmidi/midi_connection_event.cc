@@ -30,7 +30,7 @@
 
 #include "third_party/blink/renderer/modules/webmidi/midi_connection_event.h"
 
-#include "third_party/blink/renderer/modules/webmidi/midi_connection_event_init.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_midi_connection_event_init.h"
 
 namespace blink {
 

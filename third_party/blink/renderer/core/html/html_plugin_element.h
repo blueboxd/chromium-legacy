@@ -72,7 +72,7 @@ class CORE_EXPORT HTMLPlugInElement
 
   bool HasPendingActivity() const final;
 
-  void SetFocused(bool, WebFocusType) override;
+  void SetFocused(bool, mojom::blink::FocusType) override;
   void ResetInstance();
   // TODO(dcheng): Consider removing this, since HTMLEmbedElementLegacyCall
   // and HTMLObjectElementLegacyCall usage is extremely low.

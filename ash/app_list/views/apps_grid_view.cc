@@ -598,8 +598,9 @@ bool AppsGridView::UpdateDragFromItem(Pointer pointer,
 
   // If a drag and drop host is provided, see if the drag operation needs to be
   // forwarded.
-  gfx::Point drag_point_in_screen = drag_point_in_grid_view;
-  views::View::ConvertPointToScreen(this, &drag_point_in_screen);
+  gfx::Point drag_point_in_screen = event.root_location();
+  ::wm::ConvertPointToScreen(GetWidget()->GetNativeWindow()->GetRootWindow(),
+                             &drag_point_in_screen);
   DispatchDragEventToDragAndDropHost(drag_point_in_screen);
   if (drag_and_drop_host_) {
     drag_and_drop_host_->UpdateDragIconProxyByLocation(

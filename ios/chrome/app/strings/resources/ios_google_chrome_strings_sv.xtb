@@ -27,7 +27,6 @@
 <translation id="4249068189593983585">Tips för Chrome. Tryck länge på Visa flikar i verktygsfältet så visas fler flikalternativ. Du hittar verktygsfältet längst ned eller högst upp på skärmen.</translation>
 <translation id="4523886039239821078">Några tillägg har fått Chrome att krascha. Avinstallera följande:</translation>
 <translation id="5389212809648216794">Google Chrome kan inte använda kameran eftersom den används av en annan app</translation>
-<translation id="5621912349729388018"><ph name="BEGIN_LINK" />Läs de uppdaterade användarvillkoren för Chrome.<ph name="END_LINK" /></translation>
 <translation id="5639704535586432836">Öppna Inställningar &gt; Sekretess &gt; Kamera &gt; Google Chrome och aktivera kameran.</translation>
 <translation id="5642200033778930880">Google Chrome kan inte använda kameran i delad vy</translation>
 <translation id="5690427481109656848">Google LLC</translation>
@@ -51,4 +50,5 @@
 <translation id="840168496893712993">Några tillägg har fått Chrome att krascha. Testa att avinstallera dem.</translation>
 <translation id="8459495907675268833">Den data som markerades har tagits bort från Chrome och från synkroniserade enheter. Det kan finnas andra former av webbhistorik i Google-kontot på history.google.com, t.ex. sökningar och aktivitet på andra tjänster från Google.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
+<translation id="8574235780160508979">Chromes användarvillkor ändras den 31 mars. <ph name="BEGIN_LINK" />Läs villkoren<ph name="END_LINK" /></translation>
 </translationbundle>

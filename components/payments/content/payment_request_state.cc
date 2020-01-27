@@ -331,6 +331,15 @@ void PaymentRequestState::RecordUseStats() {
   selected_app_->RecordUse();
 }
 
+void PaymentRequestState::SetAvailablePaymentAppForRetry() {
+  DCHECK(selected_app_);
+  base::EraseIf(available_apps_, [this](const auto& payment_app) {
+    // Remove the app if it is not selected.
+    return payment_app.get() != selected_app_;
+  });
+  is_retry_called_ = true;
+}
+
 void PaymentRequestState::AddAutofillPaymentApp(
     bool selected,
     const autofill::CreditCard& card) {

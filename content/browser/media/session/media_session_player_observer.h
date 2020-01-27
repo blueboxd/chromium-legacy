@@ -38,6 +38,12 @@ class MediaSessionPlayerObserver {
   virtual void OnSetVolumeMultiplier(int player_id,
                                      double volume_multiplier) = 0;
 
+  // The given |player_id| has been requested picture-in-picture.
+  virtual void OnEnterPictureInPicture(int player_id) = 0;
+
+  // The given |player_id| has been requested to exit picture-in-picture.
+  virtual void OnExitPictureInPicture(int player_id) = 0;
+
   // Returns the position for |player_id|.
   virtual base::Optional<media_session::MediaPosition> GetPosition(
       int player_id) const = 0;

@@ -11,6 +11,8 @@
 #include "components/viz/common/resources/shared_bitmap.h"
 #include "components/viz/common/resources/transferable_resource.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
+#include "gpu/command_buffer/client/shared_image_interface.h"
+#include "gpu/command_buffer/common/shared_image_usage.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_graphics_context_3d_provider.h"
 #include "third_party/blink/renderer/platform/graphics/accelerated_static_bitmap_image.h"
@@ -148,7 +150,7 @@ bool ImageLayerBridge::PrepareTransferableResource(
   if (gpu_compositing) {
     scoped_refptr<StaticBitmapImage> image_for_compositor =
         MakeAccelerated(image_, SharedGpuContext::ContextProviderWrapper());
-    if (!image_for_compositor)
+    if (!image_for_compositor || !image_for_compositor->ContextProvider())
       return false;
 
     const gfx::Size size(image_for_compositor->width(),
@@ -156,10 +158,15 @@ bool ImageLayerBridge::PrepareTransferableResource(
     uint32_t filter =
         filter_quality_ == kNone_SkFilterQuality ? GL_NEAREST : GL_LINEAR;
     image_for_compositor->EnsureMailbox(kUnverifiedSyncToken, filter);
+    auto mailbox_holder = image_for_compositor->GetMailboxHolder();
+
+    auto* sii = image_for_compositor->ContextProvider()->SharedImageInterface();
+    bool is_overlay_candidate = sii->UsageForMailbox(mailbox_holder.mailbox) &
+                                gpu::SHARED_IMAGE_USAGE_SCANOUT;
+
     *out_resource = viz::TransferableResource::MakeGL(
-        image_for_compositor->GetMailbox(), filter, GL_TEXTURE_2D,
-        image_for_compositor->GetSyncToken(), size,
-        false /* is_overlay_candidate */);
+        mailbox_holder.mailbox, filter, mailbox_holder.texture_target,
+        mailbox_holder.sync_token, size, is_overlay_candidate);
     auto func =
         WTF::Bind(&ImageLayerBridge::ResourceReleasedGpu,
                   WrapWeakPersistent(this), std::move(image_for_compositor));

@@ -274,9 +274,6 @@ TEST_F(ScriptPromisePropertyGarbageCollectedTest,
 
 TEST_F(ScriptPromisePropertyGarbageCollectedTest,
        Promise_DoesNotImpedeGarbageCollection) {
-  ScriptValue holder_wrapper =
-      Wrap(MainWorld(), Holder()->ToGarbageCollectedScriptWrappable());
-
   Persistent<GCObservation> observation;
   {
     ScriptState::Scope scope(MainScriptState());
@@ -290,8 +287,8 @@ TEST_F(ScriptPromisePropertyGarbageCollectedTest,
   Gc();
   EXPECT_FALSE(observation->wasCollected());
 
-  holder_wrapper.Clear();
   ClearHolder();
+
   Gc();
   EXPECT_TRUE(observation->wasCollected());
 }

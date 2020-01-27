@@ -24,7 +24,7 @@ namespace ios {
 
 // static
 history::HistoryService* HistoryServiceFactory::GetForBrowserState(
-    ios::ChromeBrowserState* browser_state,
+    ChromeBrowserState* browser_state,
     ServiceAccessType access_type) {
   // If saving history is disabled, only allow explicit access.
   if (access_type != ServiceAccessType::EXPLICIT_ACCESS &&
@@ -39,7 +39,7 @@ history::HistoryService* HistoryServiceFactory::GetForBrowserState(
 
 // static
 history::HistoryService* HistoryServiceFactory::GetForBrowserStateIfExists(
-    ios::ChromeBrowserState* browser_state,
+    ChromeBrowserState* browser_state,
     ServiceAccessType access_type) {
   // If saving history is disabled, only allow explicit access.
   if (access_type != ServiceAccessType::EXPLICIT_ACCESS &&
@@ -70,8 +70,8 @@ HistoryServiceFactory::~HistoryServiceFactory() {
 
 std::unique_ptr<KeyedService> HistoryServiceFactory::BuildServiceInstanceFor(
     web::BrowserState* context) const {
-  ios::ChromeBrowserState* browser_state =
-      ios::ChromeBrowserState::FromBrowserState(context);
+  ChromeBrowserState* browser_state =
+      ChromeBrowserState::FromBrowserState(context);
   std::unique_ptr<history::HistoryService> history_service(
       new history::HistoryService(
           std::make_unique<HistoryClientImpl>(

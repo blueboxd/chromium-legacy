@@ -10,7 +10,6 @@
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
 #include "components/autofill/core/browser/geo/country_names.h"
 #include "components/autofill_assistant/browser/actions/mock_action_delegate.h"
-#include "components/autofill_assistant/browser/client_memory.h"
 #include "components/autofill_assistant/browser/service.pb.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -29,9 +28,9 @@ class ShowDetailsActionTest : public testing::Test {
   void SetUp() override {
     autofill::CountryNames::SetLocaleString("us-en");
 
-    ON_CALL(mock_action_delegate_, GetClientMemory())
-        .WillByDefault(Return(&client_memory_));
     ON_CALL(mock_action_delegate_, SetDetails(_)).WillByDefault(Return());
+    ON_CALL(mock_action_delegate_, GetUserData)
+        .WillByDefault(Return(&user_data_));
   }
 
  protected:
@@ -55,7 +54,7 @@ class ShowDetailsActionTest : public testing::Test {
     return profile;
   }
 
-  ClientMemory client_memory_;
+  UserData user_data_;
   MockActionDelegate mock_action_delegate_;
   base::MockCallback<Action::ProcessActionCallback> callback_;
   ShowDetailsProto proto_;
@@ -81,7 +80,7 @@ TEST_F(ShowDetailsActionTest, DetailsCase) {
 
 TEST_F(ShowDetailsActionTest, ContactDetailsCase) {
   proto_.set_contact_details("contact");
-  client_memory_.set_selected_address("contact", MakeAutofillProfile());
+  user_data_.selected_addresses_["contact"] = MakeAutofillProfile();
 
   EXPECT_CALL(mock_action_delegate_, SetDetails(_));
   EXPECT_CALL(
@@ -92,7 +91,7 @@ TEST_F(ShowDetailsActionTest, ContactDetailsCase) {
 
 TEST_F(ShowDetailsActionTest, ShippingAddressCase) {
   proto_.set_shipping_address("shipping");
-  client_memory_.set_selected_address("shipping", MakeAutofillProfile());
+  user_data_.selected_addresses_["shipping"] = MakeAutofillProfile();
 
   EXPECT_CALL(mock_action_delegate_, SetDetails(_));
   EXPECT_CALL(
@@ -103,7 +102,7 @@ TEST_F(ShowDetailsActionTest, ShippingAddressCase) {
 
 TEST_F(ShowDetailsActionTest, CreditCardCase) {
   proto_.set_credit_card(true);
-  client_memory_.set_selected_card(MakeCreditCard());
+  user_data_.selected_card_ = MakeCreditCard();
 
   EXPECT_CALL(mock_action_delegate_, SetDetails(_));
   EXPECT_CALL(

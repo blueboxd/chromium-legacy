@@ -67,6 +67,9 @@ class GbmPixmapWayland : public gfx::NativePixmap {
   // Represents widget this pixmap backs.
   gfx::AcceleratedWidget widget_ = gfx::kNullAcceleratedWidget;
 
+  // A unique ID to identify the buffer for this pixmap.
+  const uint32_t buffer_id_;
+
   DISALLOW_COPY_AND_ASSIGN(GbmPixmapWayland);
 };
 

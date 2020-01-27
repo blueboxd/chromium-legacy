@@ -125,11 +125,6 @@ void DeviceOAuth2TokenService::SetRefreshTokenAvailableCallback(
   on_refresh_token_available_callback_ = std::move(callback);
 }
 
-void DeviceOAuth2TokenService::SetRefreshTokenRevokedCallback(
-    RefreshTokenRevokedCallback callback) {
-  on_refresh_token_revoked_callback_ = std::move(callback);
-}
-
 std::unique_ptr<OAuth2AccessTokenManager::Request>
 DeviceOAuth2TokenService::StartAccessTokenRequest(
     const CoreAccountId& account_id,
@@ -213,12 +208,6 @@ void DeviceOAuth2TokenService::FireRefreshTokenAvailable(
     const CoreAccountId& account_id) {
   if (on_refresh_token_available_callback_)
     on_refresh_token_available_callback_.Run(account_id);
-}
-
-void DeviceOAuth2TokenService::FireRefreshTokenRevoked(
-    const CoreAccountId& account_id) {
-  if (on_refresh_token_revoked_callback_)
-    on_refresh_token_revoked_callback_.Run(account_id);
 }
 
 bool DeviceOAuth2TokenService::HandleAccessTokenFetch(

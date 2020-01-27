@@ -29,12 +29,13 @@ import org.chromium.chrome.browser.partnerbookmarks.PartnerBookmarksReader;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.ui.native_page.BasicNativePage;
-import org.chromium.chrome.browser.ui.widget.dragreorder.DragStateDelegate;
 import org.chromium.chrome.browser.util.ConversionUtils;
+import org.chromium.chrome.browser.vr.VrModeProviderImpl;
 import org.chromium.chrome.browser.widget.selection.SelectableListLayout;
 import org.chromium.chrome.browser.widget.selection.SelectableListToolbar.SearchDelegate;
 import org.chromium.chrome.browser.widget.selection.SelectionDelegate;
 import org.chromium.components.bookmarks.BookmarkId;
+import org.chromium.components.browser_ui.widget.dragreorder.DragStateDelegate;
 
 import java.util.Stack;
 
@@ -238,7 +239,7 @@ public class BookmarkManager
 
         mToolbar = (BookmarkActionBar) mSelectableListLayout.initializeToolbar(
                 R.layout.bookmark_action_bar, mSelectionDelegate, 0, R.id.normal_menu_group,
-                R.id.selection_mode_menu_group, null, true, isDialogUi);
+                R.id.selection_mode_menu_group, null, true, isDialogUi, new VrModeProviderImpl());
         mToolbar.initializeSearchView(
                 this, R.string.bookmark_action_bar_search, R.id.search_menu_id);
 

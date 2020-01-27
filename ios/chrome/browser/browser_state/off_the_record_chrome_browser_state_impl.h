@@ -16,14 +16,14 @@ class PrefServiceSyncable;
 // The implementation of ChromeBrowserState that is used for incognito browsing.
 // Each OffTheRecordChromeBrowserStateImpl instance is associated with and owned
 // by a non-incognito ChromeBrowserState instance.
-class OffTheRecordChromeBrowserStateImpl : public ios::ChromeBrowserState {
+class OffTheRecordChromeBrowserStateImpl : public ChromeBrowserState {
  public:
   ~OffTheRecordChromeBrowserStateImpl() override;
 
   // ChromeBrowserState:
-  ios::ChromeBrowserState* GetOriginalChromeBrowserState() override;
+  ChromeBrowserState* GetOriginalChromeBrowserState() override;
   bool HasOffTheRecordChromeBrowserState() const override;
-  ios::ChromeBrowserState* GetOffTheRecordChromeBrowserState() override;
+  ChromeBrowserState* GetOffTheRecordChromeBrowserState() override;
   void DestroyOffTheRecordChromeBrowserState() override;
   PrefProxyConfigTracker* GetProxyConfigTracker() override;
   PrefService* GetPrefs() override;
@@ -45,11 +45,11 @@ class OffTheRecordChromeBrowserStateImpl : public ios::ChromeBrowserState {
   // ChromeBrowserState instance that owns this instance.
   OffTheRecordChromeBrowserStateImpl(
       scoped_refptr<base::SequencedTaskRunner> io_task_runner,
-      ios::ChromeBrowserState* original_chrome_browser_state,
+      ChromeBrowserState* original_chrome_browser_state,
       const base::FilePath& otr_path);
 
   base::FilePath otr_state_path_;
-  ios::ChromeBrowserState* original_chrome_browser_state_;  // weak
+  ChromeBrowserState* original_chrome_browser_state_;  // weak
 
   // Weak pointer owned by |original_chrome_browser_state_|.
   sync_preferences::PrefServiceSyncable* prefs_;

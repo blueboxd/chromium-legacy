@@ -223,7 +223,6 @@
 <translation id="1306606229401759371">Modifier les paramètres</translation>
 <translation id="1307165550267142340">Votre NIP a été créé</translation>
 <translation id="1307559529304613120">Oups! Le système n'a pas réussi à stocker le jeton d'accès aux API à long terme pour cet appareil.</translation>
-<translation id="1309199320876169714">Suppression de Plugin VM en cours…</translation>
 <translation id="1313405956111467313">Configuration automatique du mandataire</translation>
 <translation id="131364520783682672">Verrouillage des majuscules</translation>
 <translation id="1313705515580255288">Vos favoris, votre historique et certains paramètres seront synchronisés avec votre compte Google.</translation>
@@ -1368,7 +1367,6 @@ https://support.google.com/chrome/?p=applescript</translation>
 <translation id="2871813825302180988">Ce compte est déjà utilisé sur cet appareil.</translation>
 <translation id="287286579981869940">Ajouter <ph name="PROVIDER_NAME" />...</translation>
 <translation id="2872961005593481000">Arrêter</translation>
-<translation id="2874478552394649323">Supprimer Plugin VM</translation>
 <translation id="2874939134665556319">Chanson précédente</translation>
 <translation id="2875698561019555027">(pages d'erreur Chrome)</translation>
 <translation id="2876336351874743617">Doigt 2</translation>
@@ -1385,7 +1383,6 @@ https://support.google.com/chrome/?p=applescript</translation>
 <translation id="2889064240420137087">Ouvrir le lien avec...</translation>
 <translation id="2889925978073739256">Continuer à bloquer l'exécution des plugiciels en dehors du carré de sable</translation>
 <translation id="2893168226686371498">Navigateur par défaut</translation>
-<translation id="2893208266590504003">Impossible de supprimer Plugin VM</translation>
 <translation id="2894757982205307093">Nouvel onglet dans le groupe</translation>
 <translation id="289644616180464099">La carte SIM est verrouillée</translation>
 <translation id="2896909745808647285"><ph name="FILE_NAME" /> est chiffré, et son ouverture a été bloquée.</translation>
@@ -2836,6 +2833,7 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="4998430619171209993">Activé</translation>
 <translation id="4998873842614926205">Confirmer les changements</translation>
 <translation id="5000922062037820727">Bloqué (recommandé)</translation>
+<translation id="5007392906805964215">Examiner</translation>
 <translation id="5008936837313706385">Nom de l'activité</translation>
 <translation id="5010043101506446253">Autorité de certification</translation>
 <translation id="5015344424288992913">Résolution du mandataire...</translation>
@@ -5775,7 +5773,6 @@ Conservez votre fichier de clé en lieu sûr. Vous en aurez besoin lors de la cr
 <translation id="9169496697824289689">Voir les raccourcis clavier</translation>
 <translation id="916964310188958970">Pourquoi cette suggestion s'affiche-t-elle?</translation>
 <translation id="9169931577761441333">Ajoutez <ph name="APP_NAME" /> à l'écran d'accueil</translation>
-<translation id="9170305483456271385">Plugin VM a été supprimé</translation>
 <translation id="9170848237812810038">Ann&amp;uler</translation>
 <translation id="9170884462774788842">Un autre programme sur votre ordinateur a ajouté un thème qui risque de modifier le fonctionnement de Google Chrome.</translation>
 <translation id="9173995187295789444">Recherche d'appareils Bluetooth en cours…</translation>

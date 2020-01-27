@@ -97,6 +97,8 @@ IndexedDBContextImpl::IndexedDBContextImpl(
     scoped_refptr<storage::SpecialStoragePolicy> special_storage_policy,
     scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy,
     base::Clock* clock,
+    mojo::PendingRemote<storage::mojom::BlobStorageContext>
+        blob_storage_context,
     scoped_refptr<base::SequencedTaskRunner> io_task_runner,
     scoped_refptr<base::SequencedTaskRunner> custom_task_runner)
     : IndexedDBContext(
@@ -115,10 +117,27 @@ IndexedDBContextImpl::IndexedDBContextImpl(
       io_task_runner_(io_task_runner),
       clock_(clock) {
   IDB_TRACE("init");
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!data_path.empty())
     data_path_ = data_path.Append(kIndexedDBDirectory);
   quota_manager_proxy->RegisterClient(
       base::MakeRefCounted<IndexedDBQuotaClient>(this));
+
+  // This is safe because the IndexedDBContextImpl must be destructed on the
+  // IDBTaskRunner, and this task will always happen before that.
+  if (blob_storage_context) {
+    IDBTaskRunner()->PostTask(
+        FROM_HERE,
+        base::BindOnce(
+            [](mojo::Remote<storage::mojom::BlobStorageContext>*
+                   blob_storage_context,
+               mojo::PendingRemote<storage::mojom::BlobStorageContext>
+                   pending_blob_storage_context) {
+              blob_storage_context->Bind(
+                  std::move(pending_blob_storage_context));
+            },
+            &blob_storage_context_, std::move(blob_storage_context)));
+  }
 }
 
 void IndexedDBContextImpl::Bind(
@@ -400,7 +419,9 @@ IndexedDBFactoryImpl* IndexedDBContextImpl::GetIDBFactory() {
     // detect when dbs are newly created.
     GetOriginSet();
     indexeddb_factory_ = std::make_unique<IndexedDBFactoryImpl>(
-        this, IndexedDBClassFactory::Get(), clock_);
+        this, IndexedDBClassFactory::Get(), clock_,
+        blob_storage_context_.is_bound() ? blob_storage_context_.get()
+                                         : nullptr);
   }
   return indexeddb_factory_.get();
 }

@@ -33,10 +33,25 @@ import "media/mojo/mojom/video_encoder_info.mojom";
 // time the Client can send a RequestEncodingParametersChange() to the VEA. None
 // of these messages are acknowledged.
 
+
+struct VideoEncodeAcceleratorSupportedProfile {
+  VideoCodecProfile profile;
+  gfx.mojom.Size min_resolution;
+  gfx.mojom.Size max_resolution;
+  uint32 max_framerate_numerator;
+  uint32 max_framerate_denominator;
+};
+
+// A renderer process calls this interface's functions. GPU process implements
+// this interface.
 interface VideoEncodeAcceleratorProvider {
   // Creates a VideoEncodeAccelerator bound to |receiver|.
   CreateVideoEncodeAccelerator(
         pending_receiver<VideoEncodeAccelerator> receiver);
+
+  // Get a VideoEncodeAccelerator supported profiles.
+  GetVideoEncodeAcceleratorSupportedProfiles()
+      => (array<VideoEncodeAcceleratorSupportedProfile> profiles);
 };
 
 // Class that describes how video bitrate, in bps, is allocated across temporal

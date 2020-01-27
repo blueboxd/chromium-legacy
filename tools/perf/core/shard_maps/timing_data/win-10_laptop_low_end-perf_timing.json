@@ -3220,10 +3220,6 @@
         "name": "speedometer2/Speedometer2"
     },
     {
-        "duration": "81.0",
-        "name": "system_health.common_desktop/browse:media:flickr_infinite_scroll"
-    },
-    {
         "duration": "55.0",
         "name": "system_health.common_desktop/browse:media:googleplaystore:2018"
     },
@@ -3269,10 +3265,6 @@
     },
     {
         "duration": "61.0",
-        "name": "system_health.common_desktop/browse:search:google"
-    },
-    {
-        "duration": "61.0",
         "name": "system_health.common_desktop/browse:search:google:2018"
     },
     {
@@ -3304,10 +3296,6 @@
         "name": "system_health.common_desktop/browse:tools:earth"
     },
     {
-        "duration": "69.0",
-        "name": "system_health.common_desktop/browse:tools:maps"
-    },
-    {
         "duration": "94.0",
         "name": "system_health.common_desktop/browse:tools:maps:2019"
     },
@@ -3332,10 +3320,6 @@
         "name": "system_health.common_desktop/load:games:alphabetty:2018"
     },
     {
-        "duration": "30.0",
-        "name": "system_health.common_desktop/load:games:bubbles"
-    },
-    {
         "duration": "28.0",
         "name": "system_health.common_desktop/load:games:bubbles:2019"
     },
@@ -3354,10 +3338,6 @@
     {
         "duration": "41.0",
         "name": "system_health.common_desktop/load:media:9gag"
-    },
-    {
-        "duration": "29.0",
-        "name": "system_health.common_desktop/load:media:dailymotion"
     },
     {
         "duration": "31.0",
@@ -3408,10 +3388,6 @@
         "name": "system_health.common_desktop/load:news:nytimes:2018"
     },
     {
-        "duration": "31.0",
-        "name": "system_health.common_desktop/load:news:qq"
-    },
-    {
         "duration": "29.0",
         "name": "system_health.common_desktop/load:news:qq:2018"
     },
@@ -3460,52 +3436,24 @@
         "name": "system_health.common_desktop/load:social:instagram:2018"
     },
     {
-        "duration": "34.0",
-        "name": "system_health.common_desktop/load:social:pinterest"
-    },
-    {
         "duration": "30.0",
         "name": "system_health.common_desktop/load:social:pinterest:2019"
-    },
-    {
-        "duration": "26.0",
-        "name": "system_health.common_desktop/load:social:vk"
     },
     {
         "duration": "28.0",
         "name": "system_health.common_desktop/load:social:vk:2018"
     },
     {
-        "duration": "40.0",
-        "name": "system_health.common_desktop/load:tools:docs"
-    },
-    {
         "duration": "41.0",
         "name": "system_health.common_desktop/load:tools:docs:2019"
-    },
-    {
-        "duration": "33.0",
-        "name": "system_health.common_desktop/load:tools:drive"
     },
     {
         "duration": "31.0",
         "name": "system_health.common_desktop/load:tools:drive:2019"
     },
     {
-        "duration": "29.0",
-        "name": "system_health.common_desktop/load:tools:dropbox"
-    },
-    {
-        "duration": "32.0",
-        "name": "system_health.common_desktop/load:tools:gmail"
-    },
-    {
         "duration": "27.0",
         "name": "system_health.common_desktop/load:tools:stackoverflow:2018"
-    },
-    {
-        "duration": "32.0",
-        "name": "system_health.common_desktop/load:tools:weather"
     },
     {
         "duration": "28.0",
@@ -3542,10 +3490,6 @@
     {
         "duration": "55.0",
         "name": "system_health.common_desktop/play:media:soundcloud:2018"
-    },
-    {
-        "duration": "8.0",
-        "name": "system_health.memory_desktop/browse:media:flickr_infinite_scroll"
     },
     {
         "duration": "44.0",
@@ -3592,10 +3536,6 @@
         "name": "system_health.memory_desktop/browse:news:reddit:2018"
     },
     {
-        "duration": "51.0",
-        "name": "system_health.memory_desktop/browse:search:google"
-    },
-    {
         "duration": "50.0",
         "name": "system_health.memory_desktop/browse:search:google:2018"
     },
@@ -3628,10 +3568,6 @@
         "name": "system_health.memory_desktop/browse:tools:earth"
     },
     {
-        "duration": "55.0",
-        "name": "system_health.memory_desktop/browse:tools:maps"
-    },
-    {
         "duration": "77.0",
         "name": "system_health.memory_desktop/browse:tools:maps:2019"
     },
@@ -3657,10 +3593,6 @@
     },
     {
         "duration": "21.0",
-        "name": "system_health.memory_desktop/load:games:bubbles"
-    },
-    {
-        "duration": "21.0",
         "name": "system_health.memory_desktop/load:games:bubbles:2019"
     },
     {
@@ -3678,10 +3610,6 @@
     {
         "duration": "27.0",
         "name": "system_health.memory_desktop/load:media:9gag"
-    },
-    {
-        "duration": "24.0",
-        "name": "system_health.memory_desktop/load:media:dailymotion"
     },
     {
         "duration": "23.0",
@@ -3732,10 +3660,6 @@
         "name": "system_health.memory_desktop/load:news:nytimes:2018"
     },
     {
-        "duration": "25.0",
-        "name": "system_health.memory_desktop/load:news:qq"
-    },
-    {
         "duration": "24.0",
         "name": "system_health.memory_desktop/load:news:qq:2018"
     },
@@ -3784,24 +3708,12 @@
         "name": "system_health.memory_desktop/load:social:instagram:2018"
     },
     {
-        "duration": "26.0",
-        "name": "system_health.memory_desktop/load:social:pinterest"
-    },
-    {
         "duration": "25.0",
         "name": "system_health.memory_desktop/load:social:pinterest:2019"
     },
     {
-        "duration": "21.0",
-        "name": "system_health.memory_desktop/load:social:vk"
-    },
-    {
         "duration": "23.0",
         "name": "system_health.memory_desktop/load:social:vk:2018"
-    },
-    {
-        "duration": "27.0",
-        "name": "system_health.memory_desktop/load:tools:docs"
     },
     {
         "duration": "29.0",
@@ -3809,27 +3721,11 @@
     },
     {
         "duration": "24.0",
-        "name": "system_health.memory_desktop/load:tools:drive"
-    },
-    {
-        "duration": "24.0",
         "name": "system_health.memory_desktop/load:tools:drive:2019"
-    },
-    {
-        "duration": "22.0",
-        "name": "system_health.memory_desktop/load:tools:dropbox"
-    },
-    {
-        "duration": "24.0",
-        "name": "system_health.memory_desktop/load:tools:gmail"
     },
     {
         "duration": "23.0",
         "name": "system_health.memory_desktop/load:tools:stackoverflow:2018"
-    },
-    {
-        "duration": "26.0",
-        "name": "system_health.memory_desktop/load:tools:weather"
     },
     {
         "duration": "23.0",
@@ -3908,10 +3804,6 @@
         "name": "tracing.tracing_with_background_memory_infra/https://www.google.com/calendar/"
     },
     {
-        "duration": "101.0",
-        "name": "v8.browsing_desktop-future/browse:media:flickr_infinite_scroll"
-    },
-    {
         "duration": "70.0",
         "name": "v8.browsing_desktop-future/browse:media:googleplaystore:2018"
     },
@@ -3956,10 +3848,6 @@
         "name": "v8.browsing_desktop-future/browse:news:reddit:2018"
     },
     {
-        "duration": "23.0",
-        "name": "v8.browsing_desktop-future/browse:search:google"
-    },
-    {
         "duration": "74.0",
         "name": "v8.browsing_desktop-future/browse:search:google:2018"
     },
@@ -3992,20 +3880,12 @@
         "name": "v8.browsing_desktop-future/browse:tools:earth"
     },
     {
-        "duration": "86.0",
-        "name": "v8.browsing_desktop-future/browse:tools:maps"
-    },
-    {
         "duration": "119.0",
         "name": "v8.browsing_desktop-future/browse:tools:maps:2019"
     },
     {
         "duration": "23.0",
         "name": "v8.browsing_desktop-future/browse:tools:sheets:2019"
-    },
-    {
-        "duration": "101.0",
-        "name": "v8.browsing_desktop/browse:media:flickr_infinite_scroll"
     },
     {
         "duration": "70.0",
@@ -4052,10 +3932,6 @@
         "name": "v8.browsing_desktop/browse:news:reddit:2018"
     },
     {
-        "duration": "77.0",
-        "name": "v8.browsing_desktop/browse:search:google"
-    },
-    {
         "duration": "74.0",
         "name": "v8.browsing_desktop/browse:search:google:2018"
     },
@@ -4086,10 +3962,6 @@
     {
         "duration": "96.0",
         "name": "v8.browsing_desktop/browse:tools:earth"
-    },
-    {
-        "duration": "85.0",
-        "name": "v8.browsing_desktop/browse:tools:maps"
     },
     {
         "duration": "120.0",

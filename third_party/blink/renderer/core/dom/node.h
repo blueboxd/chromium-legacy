@@ -27,7 +27,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_NODE_H_
 
 #include "base/macros.h"
-#include "third_party/blink/public/platform/web_focus_type.h"
+#include "third_party/blink/public/mojom/input/focus_type.mojom-blink-forward.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/events/event_target.h"
 #include "third_party/blink/renderer/core/dom/events/simulated_click_options.h"
@@ -584,7 +584,7 @@ class CORE_EXPORT Node : public EventTarget {
     SetFlag(flag, kHasEventTargetDataFlag);
   }
 
-  virtual void SetFocused(bool flag, WebFocusType);
+  virtual void SetFocused(bool flag, mojom::blink::FocusType);
   void SetHasFocusWithin(bool flag);
   virtual void SetDragged(bool flag);
 

@@ -415,4 +415,24 @@ TEST_F(HTMLSelectElementTest, ScrollToOptionAfterLayoutCrash) {
   )HTML");
 }
 
+TEST_F(HTMLSelectElementTest, CrashOnAttachingMenuList) {
+  // crbug.com/1044834
+  // This test passes if no crash.
+  SetHtmlInnerHTML("<select><option selected style='direction:rtl'>o1");
+  GetDocument().UpdateStyleAndLayoutTree();
+  auto* select = To<HTMLSelectElement>(GetDocument().body()->firstChild());
+  ASSERT_TRUE(select->GetLayoutObject());
+
+  // Detach LayoutMenuList.
+  select->setAttribute("style", "display:none;");
+  GetDocument().UpdateStyleAndLayoutTree();
+  ASSERT_FALSE(select->GetLayoutObject());
+
+  // Attach LayoutMenuList again.  It triggered null-dereference in
+  // LayoutMenuList::AdjustInnerStyle().
+  select->removeAttribute("style");
+  GetDocument().UpdateStyleAndLayoutTree();
+  ASSERT_TRUE(select->GetLayoutObject());
+}
+
 }  // namespace blink

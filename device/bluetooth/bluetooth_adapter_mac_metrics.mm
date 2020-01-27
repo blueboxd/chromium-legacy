@@ -12,17 +12,6 @@
 
 namespace {
 
-#if !defined(MAC_OS_X_VERSION_10_13) || \
-    MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_13
-
-const NSInteger CBErrorConnectionFailed = 10;
-const NSInteger CBErrorConnectionLimitReached = 11;
-
-// Match the SDK, which now has a typo. https://openradar.appspot.com/34413811
-const NSInteger CBErrorUnkownDevice = 12;
-
-#endif  // MAC_OS_X_VERSION_10_13
-
 MacOSBluetoothOperationsResult GetMacOSOperationResultFromNSError(
     NSError* error) {
   if (!error)
@@ -63,7 +52,7 @@ MacOSBluetoothOperationsResult GetMacOSOperationResultFromNSError(
         }
       case CBErrorConnectionLimitReached:
         return MacOSBluetoothOperationsResult::CBERROR_CONNECTION_LIMIT_REACHED;
-      case CBErrorUnkownDevice:
+      case CBErrorUnknownDevice:
         return MacOSBluetoothOperationsResult::CBERROR_UNKNOWN_DEVICE;
       default:
         NOTREACHED();

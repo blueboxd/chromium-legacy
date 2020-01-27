@@ -12,6 +12,7 @@
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "ash/system/machine_learning/user_settings_event_logger.h"
 #include "ash/system/model/system_tray_model.h"
 #include "ash/system/tray/hover_highlight_view.h"
 #include "ash/system/tray/tray_info_label.h"
@@ -100,6 +101,13 @@ views::View* CreateDisabledPanel() {
   image_view->SetBorder(
       views::CreateEmptyBorder(label->GetPreferredSize().height(), 0, 0, 0));
   return container;
+}
+
+void LogUserBluetoothEvent(const BluetoothAddress& device_address) {
+  ml::UserSettingsEventLogger* logger = ml::UserSettingsEventLogger::Get();
+  if (logger) {
+    logger->LogBluetoothUkmEvent(device_address);
+  }
 }
 
 }  // namespace
@@ -320,6 +328,7 @@ void BluetoothDetailedView::HandleViewClicked(views::View* view) {
     return;
 
   UpdateClickedDevice(device_address, view);
+  LogUserBluetoothEvent(device_address);
   helper->ConnectToBluetoothDevice(device_address);
 }
 

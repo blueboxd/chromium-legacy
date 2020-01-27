@@ -34,7 +34,9 @@ const blink::WebVector<blink::WebString> convert_to_web_vector(
 ResourceLoadingHintsAgent::ResourceLoadingHintsAgent(
     blink::AssociatedInterfaceRegistry* associated_interfaces,
     content::RenderFrame* render_frame)
-    : content::RenderFrameObserver(render_frame) {
+    : content::RenderFrameObserver(render_frame),
+      content::RenderFrameObserverTracker<ResourceLoadingHintsAgent>(
+          render_frame) {
   DCHECK(render_frame);
   DCHECK(IsMainFrame());
 
@@ -98,6 +100,12 @@ void ResourceLoadingHintsAgent::SetResourceLoadingHints(
        resource_loading_hints->subresources_to_block) {
     subresource_patterns_to_block_.push_back(subresource);
   }
+}
+
+void ResourceLoadingHintsAgent::SetCompressPublicImagesHints(
+    blink::mojom::CompressPublicImagesHintsPtr images_hints) {
+  subresource_redirect_hints_agent_.SetCompressPublicImagesHints(
+      std::move(images_hints));
 }
 
 }  // namespace previews

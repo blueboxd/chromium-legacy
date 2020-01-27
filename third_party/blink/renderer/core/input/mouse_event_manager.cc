@@ -5,7 +5,9 @@
 #include "third_party/blink/renderer/core/input/mouse_event_manager.h"
 
 #include "build/build_config.h"
+#include "third_party/blink/public/mojom/input/focus_type.mojom-blink.h"
 #include "third_party/blink/public/platform/task_type.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_drag_event_init.h"
 #include "third_party/blink/renderer/core/clipboard/data_object.h"
 #include "third_party/blink/renderer/core/clipboard/data_transfer.h"
 #include "third_party/blink/renderer/core/clipboard/data_transfer_access_policy.h"
@@ -638,8 +640,8 @@ WebInputEventResult MouseEventManager::HandleMouseFocus(
   // fields before the button click is processed.
   if (!page->GetFocusController().SetFocusedElement(
           element, frame_,
-          FocusParams(SelectionBehaviorOnFocus::kNone, kWebFocusTypeMouse,
-                      source_capabilities)))
+          FocusParams(SelectionBehaviorOnFocus::kNone,
+                      mojom::blink::FocusType::kMouse, source_capabilities)))
     return WebInputEventResult::kHandledSystem;
   return WebInputEventResult::kNotHandled;
 }
@@ -647,10 +649,11 @@ WebInputEventResult MouseEventManager::HandleMouseFocus(
 bool MouseEventManager::SlideFocusOnShadowHostIfNecessary(
     const Element& element) {
   if (Element* delegated_target = element.GetFocusableArea()) {
-    // Use WebFocusTypeForward instead of WebFocusTypeMouse here to mean the
+    // Use FocusTypeForward instead of FocusTypeMouse here to mean the
     // focus has slided.
     delegated_target->focus(FocusParams(SelectionBehaviorOnFocus::kReset,
-                                        kWebFocusTypeForward, nullptr));
+                                        mojom::blink::FocusType::kForward,
+                                        nullptr));
     return true;
   }
   return false;

@@ -31,6 +31,7 @@
 
 #include "third_party/blink/renderer/core/editing/commands/move_commands.h"
 
+#include "third_party/blink/public/mojom/input/focus_type.mojom-blink.h"
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/editing/editing_behavior.h"
 #include "third_party/blink/renderer/core/editing/editing_utilities.h"
@@ -155,7 +156,8 @@ void MoveCommands::UpdateFocusForCaretBrowsing(LocalFrame& frame) {
 
   frame.GetDocument()->SetFocusedElement(
       new_focused_element,
-      FocusParams(SelectionBehaviorOnFocus::kNone, kWebFocusTypeNone, nullptr));
+      FocusParams(SelectionBehaviorOnFocus::kNone,
+                  mojom::blink::FocusType::kNone, nullptr));
 }
 
 void MoveCommands::UpdateSelectionForCaretBrowsing(LocalFrame& frame) {

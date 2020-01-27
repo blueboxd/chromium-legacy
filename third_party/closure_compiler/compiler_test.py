@@ -302,6 +302,7 @@ var testScript = function() {
     source_file1 = tempfile.NamedTemporaryFile(delete=False)
     with open(source_file1.name, "w") as f:
       f.write("""
+var goog;
 goog.provide('testScript');
 
 var testScript = function() {};
@@ -326,26 +327,10 @@ testScript();
     self.assertFalse(found_errors,
         msg="Expected success, but got failure\n\nOutput:\n%s\n" % stderr)
 
-    expected_output = "'use strict';var testScript=function(){};testScript();\n"
+    expected_output = "'use strict';var goog,testScript=function(){};testScript();\n"
     self.assertTrue(os.path.exists(out_file))
     with open(out_file, "r") as file:
       self.assertEquals(file.read(), expected_output)
-
-  # TODO(crbug.com/1028829): remove this when cr.exportPath() is removed from
-  # --chrome_pass.
-  def testExportPath(self):
-    self._runCompilerTestExpectSuccess(self._CR_DEFINE_DEFINITION +
-        "cr.exportPath('a.b.c');");
-
-  def testExportPathWithTargets(self):
-    self._runCompilerTestExpectSuccess(self._CR_DEFINE_DEFINITION +
-        "var path = 'a.b.c'; cr.exportPath(path, {}, {});")
-
-  def testExportPathNoPath(self):
-    self._runCompilerTestExpectError(self._CR_DEFINE_DEFINITION +
-        "cr.exportPath();",
-        "ERROR - [JSC_CR_EXPORT_PATH_TOO_FEW_ARGUMENTS] cr.exportPath() should"
-            " have at least 1 argument: path name")
 
   def testMissingReturnAssertNotReached(self):
     template = self._ASSERT_DEFINITION + """

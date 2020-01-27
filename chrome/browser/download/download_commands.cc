@@ -18,7 +18,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/download/download_crx_util.h"
 #include "chrome/browser/download/download_ui_model.h"
-#include "chrome/browser/image_decoder.h"
+#include "chrome/browser/image_decoder/image_decoder.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/url_constants.h"
 #include "components/google/core/common/google_util.h"

@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/callback_helpers.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
@@ -250,7 +251,7 @@ scoped_refptr<TestContextProvider> TestContextProvider::Create(
       std::make_unique<TestContextSupport>(),
       std::make_unique<TestGLES2InterfaceForContextProvider>(
           std::move(additional_extensions)),
-      support_locking);
+      /*sii=*/nullptr, support_locking);
 }
 
 // static
@@ -258,7 +259,7 @@ scoped_refptr<TestContextProvider> TestContextProvider::CreateWorker() {
   constexpr bool support_locking = true;
   auto worker_context_provider = base::MakeRefCounted<TestContextProvider>(
       std::make_unique<TestContextSupport>(),
-      std::make_unique<TestGLES2InterfaceForContextProvider>(),
+      std::make_unique<TestGLES2InterfaceForContextProvider>(), /*sii=*/nullptr,
       support_locking);
   // Worker contexts are bound to the thread they are created on.
   auto result = worker_context_provider->BindToCurrentThread();
@@ -273,7 +274,18 @@ scoped_refptr<TestContextProvider> TestContextProvider::Create(
   DCHECK(gl);
   constexpr bool support_locking = false;
   return new TestContextProvider(std::make_unique<TestContextSupport>(),
-                                 std::move(gl), support_locking);
+                                 std::move(gl), /*sii=*/nullptr,
+                                 support_locking);
+}
+
+// static
+scoped_refptr<TestContextProvider> TestContextProvider::Create(
+    std::unique_ptr<TestSharedImageInterface> sii) {
+  DCHECK(sii);
+  constexpr bool support_locking = false;
+  return new TestContextProvider(std::make_unique<TestContextSupport>(),
+                                 /*gl=*/nullptr, std::move(sii),
+                                 support_locking);
 }
 
 // static
@@ -284,7 +296,7 @@ scoped_refptr<TestContextProvider> TestContextProvider::Create(
   return new TestContextProvider(
       std::move(support),
       std::make_unique<TestGLES2InterfaceForContextProvider>(),
-      support_locking);
+      /*sii=*/nullptr, support_locking);
 }
 
 // static
@@ -295,7 +307,7 @@ scoped_refptr<TestContextProvider> TestContextProvider::CreateWorker(
   auto worker_context_provider = base::MakeRefCounted<TestContextProvider>(
       std::move(support),
       std::make_unique<TestGLES2InterfaceForContextProvider>(),
-      support_locking);
+      /*sii=*/nullptr, support_locking);
   // Worker contexts are bound to the thread they are created on.
   auto result = worker_context_provider->BindToCurrentThread();
   if (result != gpu::ContextResult::kSuccess)
@@ -306,21 +318,27 @@ scoped_refptr<TestContextProvider> TestContextProvider::CreateWorker(
 TestContextProvider::TestContextProvider(
     std::unique_ptr<TestContextSupport> support,
     std::unique_ptr<TestGLES2Interface> gl,
+    std::unique_ptr<TestSharedImageInterface> sii,
     bool support_locking)
     : TestContextProvider(std::move(support),
                           std::move(gl),
                           /*raster=*/nullptr,
+                          std::move(sii),
                           support_locking) {}
 
 TestContextProvider::TestContextProvider(
     std::unique_ptr<TestContextSupport> support,
     std::unique_ptr<TestGLES2Interface> gl,
     std::unique_ptr<gpu::raster::RasterInterface> raster,
+    std::unique_ptr<TestSharedImageInterface> sii,
     bool support_locking)
     : support_(std::move(support)),
-      context_gl_(std::move(gl)),
+      context_gl_(
+          gl ? std::move(gl)
+             : std::make_unique<TestGLES2InterfaceForContextProvider>()),
       raster_context_(std::move(raster)),
-      shared_image_interface_(std::make_unique<TestSharedImageInterface>()),
+      shared_image_interface_(
+          sii ? std::move(sii) : std::make_unique<TestSharedImageInterface>()),
       support_locking_(support_locking) {
   DCHECK(main_thread_checker_.CalledOnValidThread());
   DCHECK(context_gl_);
@@ -450,6 +468,52 @@ void TestContextProvider::AddObserver(ContextLostObserver* obs) {
 
 void TestContextProvider::RemoveObserver(ContextLostObserver* obs) {
   observers_.RemoveObserver(obs);
+}
+
+TestVizProcessContextProvider::TestVizProcessContextProvider(
+    std::unique_ptr<TestContextSupport> support,
+    std::unique_ptr<TestGLES2Interface> gl)
+    : support_(std::move(support)), context_gl_(std::move(gl)) {}
+
+TestVizProcessContextProvider::~TestVizProcessContextProvider() = default;
+
+gpu::gles2::GLES2Interface* TestVizProcessContextProvider::ContextGL() {
+  return context_gl_.get();
+}
+
+gpu::ContextSupport* TestVizProcessContextProvider::ContextSupport() {
+  return support_.get();
+}
+
+const gpu::Capabilities& TestVizProcessContextProvider::ContextCapabilities()
+    const {
+  return gpu_capabilities_;
+}
+
+const gpu::GpuFeatureInfo& TestVizProcessContextProvider::GetGpuFeatureInfo()
+    const {
+  return gpu_feature_info_;
+}
+
+void TestVizProcessContextProvider::SetUpdateVSyncParametersCallback(
+    UpdateVSyncParametersCallback callback) {}
+
+void TestVizProcessContextProvider::SetGpuVSyncCallback(
+    GpuVSyncCallback callback) {}
+
+void TestVizProcessContextProvider::SetGpuVSyncEnabled(bool enabled) {}
+
+bool TestVizProcessContextProvider::UseRGB565PixelFormat() const {
+  return false;
+}
+
+uint32_t TestVizProcessContextProvider::GetCopyTextureInternalFormat() {
+  return 0u;
+}
+
+base::ScopedClosureRunner
+TestVizProcessContextProvider::GetCacheBackBufferCb() {
+  return base::ScopedClosureRunner(base::DoNothing());
 }
 
 }  // namespace viz

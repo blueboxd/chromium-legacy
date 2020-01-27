@@ -33,9 +33,9 @@
 #include "third_party/blink/public/common/dom_storage/session_storage_namespace_id.h"
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
 #include "third_party/blink/public/mojom/devtools/console_message.mojom-blink-forward.h"
+#include "third_party/blink/public/mojom/input/focus_type.mojom-blink-forward.h"
 #include "third_party/blink/public/platform/blame_context.h"
 #include "third_party/blink/public/platform/web_drag_operation.h"
-#include "third_party/blink/public/platform/web_focus_type.h"
 #include "third_party/blink/public/web/web_widget_client.h"
 #include "third_party/blink/renderer/core/accessibility/ax_object_cache.h"
 #include "third_party/blink/renderer/core/core_export.h"
@@ -141,8 +141,8 @@ class CORE_EXPORT ChromeClient : public GarbageCollected<ChromeClient> {
 
   virtual void Focus(LocalFrame*) = 0;
 
-  virtual bool CanTakeFocus(WebFocusType) = 0;
-  virtual void TakeFocus(WebFocusType) = 0;
+  virtual bool CanTakeFocus(mojom::blink::FocusType) = 0;
+  virtual void TakeFocus(mojom::blink::FocusType) = 0;
 
   virtual void FocusedElementChanged(Element*, Element*) = 0;
 

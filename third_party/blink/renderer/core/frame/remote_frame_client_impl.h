@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_REMOTE_FRAME_CLIENT_IMPL_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_REMOTE_FRAME_CLIENT_IMPL_H_
 
+#include "third_party/blink/public/mojom/input/focus_type.mojom-blink-forward.h"
 #include "third_party/blink/renderer/core/frame/remote_frame_client.h"
 
 namespace cc {
@@ -46,7 +47,7 @@ class RemoteFrameClientImpl final : public RemoteFrameClient {
                          const IntRect& screen_space_rect) override;
   void UpdateRemoteViewportIntersection(
       const ViewportIntersectionState& intersection_state) override;
-  void AdvanceFocus(WebFocusType, LocalFrame*) override;
+  void AdvanceFocus(mojom::blink::FocusType, LocalFrame*) override;
   void SetIsInert(bool) override;
   void UpdateRenderThrottlingStatus(bool is_throttled,
                                     bool subtree_throttled) override;

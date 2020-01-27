@@ -20,6 +20,10 @@ namespace features {
 extern const base::Feature kDoubleTapToZoomInTabletMode;
 #endif
 
+#if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
+extern const base::Feature kUserDataSnapshot;
+#endif
+
 }  // namespace features
 
 #endif  // CHROME_BROWSER_BROWSER_FEATURES_H_

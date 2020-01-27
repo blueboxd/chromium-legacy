@@ -12,9 +12,9 @@
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/browser/ui/views/passwords/manage_passwords_icon_views.h"
 #include "chrome/browser/ui/views/passwords/password_auto_sign_in_view.h"
+#include "chrome/browser/ui/views/passwords/password_generation_confirmation_view.h"
 #include "chrome/browser/ui/views/passwords/password_items_view.h"
 #include "chrome/browser/ui/views/passwords/password_pending_view.h"
-#include "chrome/browser/ui/views/passwords/password_save_confirmation_view.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "components/autofill/core/common/autofill_payments_features.h"
 #include "components/password_manager/core/common/password_manager_features.h"
@@ -66,7 +66,8 @@ PasswordBubbleViewBase* PasswordBubbleViewBase::CreateBubble(
   } else if (model_state == password_manager::ui::AUTO_SIGNIN_STATE) {
     view = new PasswordAutoSignInView(web_contents, anchor_view, reason);
   } else if (model_state == password_manager::ui::CONFIRMATION_STATE) {
-    view = new PasswordSaveConfirmationView(web_contents, anchor_view, reason);
+    view = new PasswordGenerationConfirmationView(web_contents, anchor_view,
+                                                  reason);
   } else if (model_state ==
                  password_manager::ui::PENDING_PASSWORD_UPDATE_STATE ||
              model_state == password_manager::ui::PENDING_PASSWORD_STATE) {
@@ -93,15 +94,30 @@ void PasswordBubbleViewBase::ActivateBubble() {
 }
 
 const content::WebContents* PasswordBubbleViewBase::GetWebContents() const {
-  return model_.GetWebContents();
+  const PasswordBubbleControllerBase* controller = GetController();
+  if (controller) {
+    return controller->GetWebContents();
+  }
+  DCHECK(model_);
+  return model_->GetWebContents();
 }
 
 base::string16 PasswordBubbleViewBase::GetWindowTitle() const {
-  return model_.title();
+  const PasswordBubbleControllerBase* controller = GetController();
+  if (controller) {
+    return controller->GetTitle();
+  }
+  DCHECK(model_);
+  return model_->title();
 }
 
 bool PasswordBubbleViewBase::ShouldShowWindowTitle() const {
-  return !model_.title().empty();
+  const PasswordBubbleControllerBase* controller = GetController();
+  if (controller) {
+    return controller->GetTitle().empty();
+  }
+  DCHECK(model_);
+  return model_->title().empty();
 }
 
 PasswordBubbleViewBase::PasswordBubbleViewBase(
@@ -109,12 +125,21 @@ PasswordBubbleViewBase::PasswordBubbleViewBase(
     views::View* anchor_view,
     DisplayReason reason,
     bool easily_dismissable)
-    : LocationBarBubbleDelegateView(anchor_view, web_contents),
-      model_(PasswordsModelDelegateFromWebContents(web_contents),
-             reason == AUTOMATIC ? ManagePasswordsBubbleModel::AUTOMATIC
-                                 : ManagePasswordsBubbleModel::USER_ACTION) {
-  // The |mouse_handler| closes the bubble if a keyboard or mouse interactions
-  // happens outside of the bubble. By this the bubble becomes
+    : LocationBarBubbleDelegateView(anchor_view, web_contents) {
+  base::WeakPtr<PasswordsModelDelegate> delegate =
+      PasswordsModelDelegateFromWebContents(web_contents);
+  // Create the model only for the states that hasn't been migrated to using the
+  // bubble controllers.
+  if (delegate->GetState() != password_manager::ui::AUTO_SIGNIN_STATE &&
+      delegate->GetState() != password_manager::ui::CONFIRMATION_STATE) {
+    model_ = std::make_unique<ManagePasswordsBubbleModel>(
+        delegate, reason == AUTOMATIC
+                      ? ManagePasswordsBubbleModel::AUTOMATIC
+                      : ManagePasswordsBubbleModel::USER_ACTION);
+  }
+
+  // The |mouse_handler| closes the bubble if a keyboard or mouse
+  // interactions happens outside of the bubble. By this the bubble becomes
   // 'easily-dissmisable' and this behavior can be enforced by the
   // corresponding flag.
   if (easily_dismissable) {
@@ -138,5 +163,11 @@ void PasswordBubbleViewBase::OnWidgetClosing(views::Widget* widget) {
   // them and it doesn't understand the sequence [open1, open2, close1, close2].
   // Therefore, we reset the model early (before the bubble destructor) to get
   // the following sequence of events [open1, close1, open2, close2].
-  model_.OnBubbleClosing();
+  PasswordBubbleControllerBase* controller = GetController();
+  if (controller) {
+    controller->OnBubbleClosing();
+    return;
+  }
+  DCHECK(model_);
+  model_->OnBubbleClosing();
 }

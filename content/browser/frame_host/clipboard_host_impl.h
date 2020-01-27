@@ -140,6 +140,9 @@ class CONTENT_EXPORT ClipboardHostImpl : public blink::mojom::ClipboardHost {
                          IsFormatAvailableCallback callback) override;
   void ReadAvailableTypes(ui::ClipboardBuffer clipboard_buffer,
                           ReadAvailableTypesCallback callback) override;
+  void ReadAvailablePlatformSpecificFormatNames(
+      ui::ClipboardBuffer clipboard_buffer,
+      ReadAvailablePlatformSpecificFormatNamesCallback callback) override;
   void ReadText(ui::ClipboardBuffer clipboard_buffer,
                 ReadTextCallback callback) override;
   void ReadHtml(ui::ClipboardBuffer clipboard_buffer,

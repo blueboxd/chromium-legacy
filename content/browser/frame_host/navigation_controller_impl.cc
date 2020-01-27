@@ -3097,9 +3097,9 @@ NavigationControllerImpl::CreateNavigationRequestFromLoadParams(
   // For main frames, rewrite the URL if necessary and compute the virtual URL
   // that should be shown in the address bar.
   if (node->IsMainFrame()) {
-    bool reverse_on_redirect = false;
+    bool ignored_reverse_on_redirect = false;
     RewriteUrlForNavigation(params.url, browser_context_, &url_to_load,
-                            &virtual_url, &reverse_on_redirect);
+                            &virtual_url, &ignored_reverse_on_redirect);
 
     // For DATA loads, override the virtual URL.
     if (params.load_type == LOAD_TYPE_DATA)
@@ -3121,7 +3121,7 @@ NavigationControllerImpl::CreateNavigationRequestFromLoadParams(
         << url_to_load << " vs " << frame_entry->url();
 
     // TODO(clamy): In order to remove the pending NavigationEntry,
-    // |virtual_url| and |reverse_on_redirect| should be stored in the
+    // |virtual_url| and |ignored_reverse_on_redirect| should be stored in the
     // NavigationRequest.
   } else {
     url_to_load = params.url;

@@ -9,8 +9,8 @@ import static android.support.test.espresso.action.ViewActions.click;
 import static android.support.test.espresso.assertion.ViewAssertions.doesNotExist;
 import static android.support.test.espresso.matcher.ViewMatchers.withText;
 
-import static org.chromium.chrome.browser.ui.widget.highlight.ViewHighlighterTestUtils.checkHighlightOff;
-import static org.chromium.chrome.browser.ui.widget.highlight.ViewHighlighterTestUtils.checkHighlightPulse;
+import static org.chromium.components.browser_ui.widget.highlight.ViewHighlighterTestUtils.checkHighlightOff;
+import static org.chromium.components.browser_ui.widget.highlight.ViewHighlighterTestUtils.checkHighlightPulse;
 
 import android.support.test.filters.MediumTest;
 import android.support.test.filters.SmallTest;
@@ -33,13 +33,13 @@ import org.chromium.chrome.browser.bookmarks.BookmarkBridge.BookmarkModelObserve
 import org.chromium.chrome.browser.bookmarks.BookmarkPromoHeader.PromoState;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.night_mode.ChromeNightModeTestUtils;
-import org.chromium.chrome.browser.ui.widget.listmenu.ListMenuButton;
 import org.chromium.chrome.browser.widget.selection.SelectableListToolbar.ViewType;
 import org.chromium.chrome.test.ChromeJUnit4RunnerDelegate;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.chrome.test.util.browser.RecyclerViewTestUtils;
 import org.chromium.components.bookmarks.BookmarkId;
 import org.chromium.components.bookmarks.BookmarkType;
+import org.chromium.components.browser_ui.widget.listmenu.ListMenuButton;
 import org.chromium.components.sync.AndroidSyncSettings;
 import org.chromium.components.sync.test.util.MockSyncContentResolverDelegate;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;

@@ -12,11 +12,11 @@ Pass at least:
 
 
 from __future__ import with_statement
+from argparse import ArgumentParser
 from collections import namedtuple
 from collections import OrderedDict
 from functools import partial
 import json
-from optparse import OptionParser
 import re
 import sys
 import textwrap
@@ -215,116 +215,116 @@ def ParseVersionFile(version_path):
 
 
 def main():
-  parser = OptionParser(usage=__doc__)
-  parser.add_option(
+  parser = ArgumentParser(usage=__doc__)
+  parser.add_argument(
       '--pch',
       '--policy-constants-header',
       dest='header_path',
       help='generate header file of policy constants',
       metavar='FILE')
-  parser.add_option(
+  parser.add_argument(
       '--pcc',
       '--policy-constants-source',
       dest='source_path',
       help='generate source file of policy constants',
       metavar='FILE')
-  parser.add_option(
+  parser.add_argument(
       '--cpp',
       '--cloud-policy-protobuf',
       dest='cloud_policy_proto_path',
       help='generate cloud policy protobuf file',
       metavar='FILE')
-  parser.add_option(
+  parser.add_argument(
       '--cpfrp',
       '--cloud-policy-full-runtime-protobuf',
       dest='cloud_policy_full_runtime_proto_path',
       help='generate cloud policy full runtime protobuf',
       metavar='FILE')
-  parser.add_option(
+  parser.add_argument(
       '--csp',
       '--chrome-settings-protobuf',
       dest='chrome_settings_proto_path',
       help='generate chrome settings protobuf file',
       metavar='FILE')
-  parser.add_option(
+  parser.add_argument(
       '--policy-common-definitions-protobuf',
       dest='policy_common_definitions_proto_path',
       help='policy common definitions protobuf file path',
       metavar='FILE')
-  parser.add_option(
+  parser.add_argument(
       '--policy-common-definitions-full-runtime-protobuf',
       dest='policy_common_definitions_full_runtime_proto_path',
       help='generate policy common definitions full runtime protobuf file',
       metavar='FILE')
-  parser.add_option(
+  parser.add_argument(
       '--csfrp',
       '--chrome-settings-full-runtime-protobuf',
       dest='chrome_settings_full_runtime_proto_path',
       help='generate chrome settings full runtime protobuf',
       metavar='FILE')
-  parser.add_option(
+  parser.add_argument(
       '--ard',
       '--app-restrictions-definition',
       dest='app_restrictions_path',
       help='generate an XML file as specified by '
       'Android\'s App Restriction Schema',
       metavar='FILE')
-  parser.add_option(
+  parser.add_argument(
       '--rth',
       '--risk-tag-header',
       dest='risk_header_path',
       help='generate header file for policy risk tags',
       metavar='FILE')
-  parser.add_option(
+  parser.add_argument(
       '--crospch',
       '--cros-policy-constants-header',
       dest='cros_constants_header_path',
       help='generate header file of policy constants for use in '
       'Chrome OS',
       metavar='FILE')
-  parser.add_option(
+  parser.add_argument(
       '--crospcc',
       '--cros-policy-constants-source',
       dest='cros_constants_source_path',
       help='generate source file of policy constants for use in '
       'Chrome OS',
       metavar='FILE')
-  parser.add_option(
+  parser.add_argument(
       '--chrome-version-file',
       dest='chrome_version_file',
       help='path to src/chrome/VERSION',
       metavar='FILE')
-  parser.add_option(
+  parser.add_argument(
       '--all-chrome-versions',
       action='store_true',
       dest='all_chrome_versions',
       default=False,
       help='do not restrict generated policies by chrome version')
-  parser.add_option(
+  parser.add_argument(
       '--target-platform',
       dest='target_platform',
       help='the platform the generated code should run on - can be one of'
       '(win, mac, linux, chromeos, fuchsia)',
       metavar='PLATFORM')
-  parser.add_option(
+  parser.add_argument(
       '--policy-templates-file',
       dest='policy_templates_file',
       help='path to the policy_templates.json input file',
       metavar='FILE')
-  (opts, args) = parser.parse_args()
+  args = parser.parse_args()
 
   has_arg_error = False
 
-  if not opts.target_platform:
+  if not args.target_platform:
     print('Error: Missing --target-platform=<platform>')
     has_arg_error = True
 
-  if not opts.policy_templates_file:
+  if not args.policy_templates_file:
     print('Error: Missing'
           ' --policy-templates-file=<path to policy_templates.json>')
     has_arg_error = True
 
-  if not opts.chrome_version_file and not opts.all_chrome_versions:
+  if not args.chrome_version_file and not args.all_chrome_versions:
     print('Error: Missing'
           ' --chrome-version-file=<path to src/chrome/VERSION>\n'
           ' or --all-chrome-versions')
@@ -335,16 +335,16 @@ def main():
     parser.print_help()
     return 2
 
-  version_path = opts.chrome_version_file
-  target_platform = opts.target_platform
-  template_file_name = opts.policy_templates_file
+  version_path = args.chrome_version_file
+  target_platform = args.target_platform
+  template_file_name = args.policy_templates_file
 
   # --target-platform accepts "chromeos" as its input because that's what is
   # used within GN. Within policy templates, "chrome_os" is used instead.
   if target_platform == 'chromeos':
     target_platform = 'chrome_os'
 
-  if opts.all_chrome_versions:
+  if args.all_chrome_versions:
     chrome_major_version = None
   else:
     chrome_major_version = ParseVersionFile(version_path)
@@ -378,41 +378,41 @@ def main():
                sorted and sorted_policy_atomic_groups or policy_atomic_groups,
                target_platform, f, risk_tags)
 
-  if opts.header_path:
-    GenerateFile(opts.header_path, _WritePolicyConstantHeader, sorted=True)
-  if opts.source_path:
-    GenerateFile(opts.source_path, _WritePolicyConstantSource, sorted=True)
-  if opts.risk_header_path:
-    GenerateFile(opts.risk_header_path, _WritePolicyRiskTagHeader)
-  if opts.cloud_policy_proto_path:
-    GenerateFile(opts.cloud_policy_proto_path, _WriteCloudPolicyProtobuf)
-  if (opts.policy_common_definitions_full_runtime_proto_path and
-      opts.policy_common_definitions_proto_path):
+  if args.header_path:
+    GenerateFile(args.header_path, _WritePolicyConstantHeader, sorted=True)
+  if args.source_path:
+    GenerateFile(args.source_path, _WritePolicyConstantSource, sorted=True)
+  if args.risk_header_path:
+    GenerateFile(args.risk_header_path, _WritePolicyRiskTagHeader)
+  if args.cloud_policy_proto_path:
+    GenerateFile(args.cloud_policy_proto_path, _WriteCloudPolicyProtobuf)
+  if (args.policy_common_definitions_full_runtime_proto_path and
+      args.policy_common_definitions_proto_path):
     GenerateFile(
-        opts.policy_common_definitions_full_runtime_proto_path,
+        args.policy_common_definitions_full_runtime_proto_path,
         partial(_WritePolicyCommonDefinitionsFullRuntimeProtobuf,
-                opts.policy_common_definitions_proto_path))
-  if opts.cloud_policy_full_runtime_proto_path:
-    GenerateFile(opts.cloud_policy_full_runtime_proto_path,
+                args.policy_common_definitions_proto_path))
+  if args.cloud_policy_full_runtime_proto_path:
+    GenerateFile(args.cloud_policy_full_runtime_proto_path,
                  _WriteCloudPolicyFullRuntimeProtobuf)
-  if opts.chrome_settings_proto_path:
-    GenerateFile(opts.chrome_settings_proto_path, _WriteChromeSettingsProtobuf)
-  if opts.chrome_settings_full_runtime_proto_path:
-    GenerateFile(opts.chrome_settings_full_runtime_proto_path,
+  if args.chrome_settings_proto_path:
+    GenerateFile(args.chrome_settings_proto_path, _WriteChromeSettingsProtobuf)
+  if args.chrome_settings_full_runtime_proto_path:
+    GenerateFile(args.chrome_settings_full_runtime_proto_path,
                  _WriteChromeSettingsFullRuntimeProtobuf)
 
-  if target_platform == 'android' and opts.app_restrictions_path:
-    GenerateFile(opts.app_restrictions_path, _WriteAppRestrictions, xml=True)
+  if target_platform == 'android' and args.app_restrictions_path:
+    GenerateFile(args.app_restrictions_path, _WriteAppRestrictions, xml=True)
 
   # Generated code for Chrome OS (unused in Chromium).
-  if opts.cros_constants_header_path:
+  if args.cros_constants_header_path:
     GenerateFile(
-        opts.cros_constants_header_path,
+        args.cros_constants_header_path,
         _WriteChromeOSPolicyConstantsHeader,
         sorted=True)
-  if opts.cros_constants_source_path:
+  if args.cros_constants_source_path:
     GenerateFile(
-        opts.cros_constants_source_path,
+        args.cros_constants_source_path,
         _WriteChromeOSPolicyConstantsSource,
         sorted=True)
 

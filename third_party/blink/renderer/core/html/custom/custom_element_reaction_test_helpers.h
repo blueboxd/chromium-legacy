@@ -143,8 +143,8 @@ class ResetCustomElementReactionStackForTest final {
   CustomElementReactionStack& Stack() { return *stack_; }
 
  private:
-  Member<CustomElementReactionStack> stack_;
-  Member<CustomElementReactionStack> old_stack_;
+  CustomElementReactionStack* stack_;
+  CustomElementReactionStack* old_stack_;
 
   DISALLOW_COPY_AND_ASSIGN(ResetCustomElementReactionStackForTest);
 };

@@ -61,6 +61,8 @@ class CORE_EXPORT NGInlineCursorPosition {
 
   NGStyleVariant StyleVariant() const;
 
+  const DisplayItemClient* GetDisplayItemClient() const;
+
  private:
   const NGPaintFragment* paint_fragment_ = nullptr;
   const NGFragmentItem* item_ = nullptr;
@@ -124,7 +126,7 @@ class CORE_EXPORT NGInlineCursor {
   // or after last fragment in tree.
   bool IsNull() const { return !Current(); }
   bool IsNotNull() const { return Current(); }
-  explicit operator bool() const { return Current(); }
+  operator bool() const { return Current(); }
 
   // True if fragment at the current position can have children.
   bool CanHaveChildren() const;
@@ -208,7 +210,6 @@ class CORE_EXPORT NGInlineCursor {
   // line.
   TextDirection CurrentBaseDirection() const;
   const NGPhysicalBoxFragment* CurrentBoxFragment() const;
-  const DisplayItemClient* CurrentDisplayItemClient() const;
   const LayoutObject* CurrentLayoutObject() const;
   LayoutObject* CurrentMutableLayoutObject() const;
   Node* CurrentNode() const;
@@ -403,6 +404,10 @@ class CORE_EXPORT NGInlineCursor {
   void MoveToNextPaintFragmentSkippingChildren();
   void MoveToPreviousPaintFragment();
   void MoveToPreviousSiblingPaintFragment();
+
+  ItemsSpan::iterator SlowFirstItemIteratorFor(
+      const LayoutObject& layout_object) const;
+  unsigned SpanIndexFromItemIndex(unsigned index) const;
 
   PositionWithAffinity PositionForPointInChild(
       const PhysicalOffset& point,

@@ -51,6 +51,8 @@ class MockMediaSessionPlayerObserver : public MediaSessionPlayerObserver {
   MOCK_METHOD2(OnSeekBackward, void(int player_id, base::TimeDelta seek_time));
   MOCK_METHOD2(OnSetVolumeMultiplier,
                void(int player_id, double volume_multiplier));
+  MOCK_METHOD1(OnEnterPictureInPicture, void(int player_id));
+  MOCK_METHOD1(OnExitPictureInPicture, void(int player_id));
 
   base::Optional<media_session::MediaPosition> GetPosition(
       int player_id) const override {

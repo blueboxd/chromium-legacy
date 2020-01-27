@@ -5,10 +5,10 @@
 #include "third_party/blink/renderer/modules/native_file_system/native_file_system_directory_iterator.h"
 
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_native_file_system_directory_iterator_entry.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/fileapi/file_error.h"
 #include "third_party/blink/renderer/modules/native_file_system/native_file_system_directory_handle.h"
-#include "third_party/blink/renderer/modules/native_file_system/native_file_system_directory_iterator_entry.h"
 #include "third_party/blink/renderer/modules/native_file_system/native_file_system_error.h"
 #include "third_party/blink/renderer/modules/native_file_system/native_file_system_file_handle.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"

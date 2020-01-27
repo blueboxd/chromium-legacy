@@ -43,7 +43,7 @@ class CacheCounterTest : public PlatformTest {
 
   ~CacheCounterTest() override {}
 
-  ios::ChromeBrowserState* browser_state() { return browser_state_.get(); }
+  ChromeBrowserState* browser_state() { return browser_state_.get(); }
 
   PrefService* prefs() { return browser_state_->GetPrefs(); }
 
@@ -225,7 +225,7 @@ class CacheCounterTest : public PlatformTest {
 
   web::WebTaskEnvironment task_environment_;
   std::unique_ptr<base::RunLoop> run_loop_;
-  std::unique_ptr<ios::ChromeBrowserState> browser_state_;
+  std::unique_ptr<ChromeBrowserState> browser_state_;
 
   CacheOperation current_operation_;
   CacheEntryCreationStep next_step_;

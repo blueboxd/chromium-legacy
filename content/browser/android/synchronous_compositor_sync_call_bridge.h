@@ -79,9 +79,11 @@ class SynchronousCompositorSyncCallBridge
   void RemoteClosedOnIOThread();
 
   // Receive a frame. Return false if the corresponding frame wasn't found.
-  bool ReceiveFrameOnIOThread(int frame_sink_id,
-                              uint32_t metadata_version,
-                              base::Optional<viz::CompositorFrame>);
+  bool ReceiveFrameOnIOThread(
+      int frame_sink_id,
+      uint32_t metadata_version,
+      base::Optional<viz::CompositorFrame>,
+      base::Optional<viz::HitTestRegionList> hit_test_region_list);
 
   // Receive a BeginFrameResponse. Returns true if handling the response was
   // successful or not.

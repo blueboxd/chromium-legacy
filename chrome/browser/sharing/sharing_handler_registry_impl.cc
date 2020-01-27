@@ -20,6 +20,8 @@
 #include "chrome/browser/sharing/sms/sms_fetch_request_handler.h"
 #else
 #include "chrome/browser/sharing/shared_clipboard/shared_clipboard_message_handler_desktop.h"
+#include "chrome/browser/sharing/webrtc/sharing_service_host.h"
+#include "chrome/browser/sharing/webrtc/webrtc_message_handler.h"
 #endif  // defined(OS_ANDROID)
 
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX) || \
@@ -33,7 +35,8 @@ SharingHandlerRegistryImpl::SharingHandlerRegistryImpl(
     SharingDeviceRegistration* sharing_device_registration,
     SharingMessageSender* message_sender,
     SharingDeviceSource* device_source,
-    content::SmsFetcher* sms_fetcher) {
+    content::SmsFetcher* sms_fetcher,
+    SharingServiceHost* sharing_service_host) {
   AddSharingHandler(std::make_unique<PingMessageHandler>(),
                     {chrome_browser_sharing::SharingMessage::kPingMessage});
 
@@ -79,6 +82,17 @@ SharingHandlerRegistryImpl::SharingHandlerRegistryImpl(
   }
 #endif  // defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX) ||
         // defined(OS_CHROMEOS)
+
+#if !defined(OS_ANDROID)
+  if (sharing_device_registration->IsPeerConnectionSupported()) {
+    sharing_service_host->SetSharingHandlerRegistry(this);
+    AddSharingHandler(
+        std::make_unique<WebRtcMessageHandler>(sharing_service_host),
+        {chrome_browser_sharing::SharingMessage::kPeerConnectionOfferMessage,
+         chrome_browser_sharing::SharingMessage::
+             kPeerConnectionIceCandidatesMessage});
+  }
+#endif  // !defined(OS_ANDROID)
 }
 
 SharingHandlerRegistryImpl::~SharingHandlerRegistryImpl() = default;

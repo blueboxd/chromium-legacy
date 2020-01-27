@@ -72,28 +72,26 @@ void TaskGroupSampler::Refresh(int64_t refresh_flags) {
   if (TaskManagerObserver::IsResourceRefreshEnabled(REFRESH_TYPE_CPU,
                                                     refresh_flags)) {
     base::PostTaskAndReplyWithResult(
-        blocking_pool_runner_.get(),
-        FROM_HERE,
-        base::Bind(&TaskGroupSampler::RefreshCpuUsage, this),
-        on_cpu_refresh_callback_);
+        blocking_pool_runner_.get(), FROM_HERE,
+        base::BindOnce(&TaskGroupSampler::RefreshCpuUsage, this),
+        base::BindOnce(on_cpu_refresh_callback_));
   }
 
   if (TaskManagerObserver::IsResourceRefreshEnabled(REFRESH_TYPE_SWAPPED_MEM,
                                                     refresh_flags)) {
     base::PostTaskAndReplyWithResult(
         blocking_pool_runner_.get(), FROM_HERE,
-        base::Bind(&TaskGroupSampler::RefreshSwappedMem, this),
-        on_swapped_mem_refresh_callback_);
+        base::BindOnce(&TaskGroupSampler::RefreshSwappedMem, this),
+        base::BindOnce(on_swapped_mem_refresh_callback_));
   }
 
 #if defined(OS_MACOSX) || defined(OS_LINUX)
   if (TaskManagerObserver::IsResourceRefreshEnabled(REFRESH_TYPE_IDLE_WAKEUPS,
                                                     refresh_flags)) {
     base::PostTaskAndReplyWithResult(
-        blocking_pool_runner_.get(),
-        FROM_HERE,
-        base::Bind(&TaskGroupSampler::RefreshIdleWakeupsPerSecond, this),
-        on_idle_wakeups_callback_);
+        blocking_pool_runner_.get(), FROM_HERE,
+        base::BindOnce(&TaskGroupSampler::RefreshIdleWakeupsPerSecond, this),
+        base::BindOnce(on_idle_wakeups_callback_));
   }
 #endif  // defined(OS_MACOSX) || defined(OS_LINUX)
 
@@ -101,20 +99,18 @@ void TaskGroupSampler::Refresh(int64_t refresh_flags) {
   if (TaskManagerObserver::IsResourceRefreshEnabled(REFRESH_TYPE_FD_COUNT,
                                                     refresh_flags)) {
     base::PostTaskAndReplyWithResult(
-        blocking_pool_runner_.get(),
-        FROM_HERE,
-        base::Bind(&TaskGroupSampler::RefreshOpenFdCount, this),
-        on_open_fd_count_callback_);
+        blocking_pool_runner_.get(), FROM_HERE,
+        base::BindOnce(&TaskGroupSampler::RefreshOpenFdCount, this),
+        base::BindOnce(on_open_fd_count_callback_));
   }
 #endif  // defined(OS_LINUX) || defined(OS_MACOSX)
 
   if (TaskManagerObserver::IsResourceRefreshEnabled(REFRESH_TYPE_PRIORITY,
                                                     refresh_flags)) {
     base::PostTaskAndReplyWithResult(
-        blocking_pool_runner_.get(),
-        FROM_HERE,
-        base::Bind(&TaskGroupSampler::RefreshProcessPriority, this),
-        on_process_priority_callback_);
+        blocking_pool_runner_.get(), FROM_HERE,
+        base::BindOnce(&TaskGroupSampler::RefreshProcessPriority, this),
+        base::BindOnce(on_process_priority_callback_));
   }
 }
 

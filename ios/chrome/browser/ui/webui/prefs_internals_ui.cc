@@ -22,7 +22,7 @@ namespace {
 // state.
 class PrefsInternalsSource : public web::URLDataSourceIOS {
  public:
-  explicit PrefsInternalsSource(ios::ChromeBrowserState* browser_state)
+  explicit PrefsInternalsSource(ChromeBrowserState* browser_state)
       : browser_state_(browser_state) {}
   ~PrefsInternalsSource() override = default;
 
@@ -55,7 +55,7 @@ class PrefsInternalsSource : public web::URLDataSourceIOS {
   }
 
  private:
-  ios::ChromeBrowserState* browser_state_;
+  ChromeBrowserState* browser_state_;
 
   DISALLOW_COPY_AND_ASSIGN(PrefsInternalsSource);
 };
@@ -64,8 +64,7 @@ class PrefsInternalsSource : public web::URLDataSourceIOS {
 
 PrefsInternalsUI::PrefsInternalsUI(web::WebUIIOS* web_ui)
     : web::WebUIIOSController(web_ui) {
-  ios::ChromeBrowserState* browser_state =
-      ios::ChromeBrowserState::FromWebUIIOS(web_ui);
+  ChromeBrowserState* browser_state = ChromeBrowserState::FromWebUIIOS(web_ui);
   web::URLDataSourceIOS::Add(browser_state,
                              new PrefsInternalsSource(browser_state));
 }

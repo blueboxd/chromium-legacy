@@ -6,7 +6,7 @@
 
 #include <utility>
 
-#include "third_party/blink/renderer/core/geometry/dom_point_init.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_dom_point_init.h"
 #include "third_party/blink/renderer/core/geometry/dom_point_read_only.h"
 #include "third_party/blink/renderer/modules/xr/xr_utils.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"

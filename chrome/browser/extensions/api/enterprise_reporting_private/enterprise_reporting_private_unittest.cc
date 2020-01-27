@@ -242,6 +242,29 @@ TEST_F(EnterpriseReportingPrivateDeviceDataFunctionsTest, RetrieveDeviceData) {
   ASSERT_TRUE(single_result);
   ASSERT_TRUE(single_result->is_blob());
   EXPECT_EQ(base::Value::BlobStorage({1, 2, 3}), single_result->GetBlob());
+
+  // Clear the data and check that it is gone.
+  auto set_function2 =
+      base::MakeRefCounted<EnterpriseReportingPrivateSetDeviceDataFunction>();
+  std::unique_ptr<base::ListValue> reset_values =
+      std::make_unique<base::ListValue>();
+  reset_values->AppendString("c");
+  extension_function_test_utils::RunFunction(set_function2.get(),
+                                             std::move(reset_values), browser(),
+                                             extensions::api_test_utils::NONE);
+  ASSERT_TRUE(set_function2->GetError().empty());
+
+  auto get_function2 =
+      base::MakeRefCounted<EnterpriseReportingPrivateGetDeviceDataFunction>();
+  std::unique_ptr<base::ListValue> values2 =
+      std::make_unique<base::ListValue>();
+  values2->AppendString("c");
+  extension_function_test_utils::RunFunction(get_function2.get(),
+                                             std::move(values2), browser(),
+                                             extensions::api_test_utils::NONE);
+  ASSERT_TRUE(get_function2->GetResultList());
+  EXPECT_EQ(0u, get_function2->GetResultList()->GetSize());
+  EXPECT_FALSE(get_function2->GetError().empty());
 }
 
 // TODO(pastarmovj): Remove once implementation for the other platform exists.
@@ -308,6 +331,8 @@ TEST_F(EnterpriseReportingPrivateGetDeviceInfoTest, GetDeviceInfo) {
   EXPECT_EQ("macOS", info.os_name);
 #elif defined(OS_WIN)
   EXPECT_EQ("windows", info.os_name);
+#elif defined(OS_LINUX)
+  EXPECT_EQ("linux", info.os_name);
 #else
   // Verify a stub implementation.
   EXPECT_EQ("stubOS", info.os_name);

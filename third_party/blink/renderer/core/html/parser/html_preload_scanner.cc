@@ -745,7 +745,7 @@ class TokenPreloadScanner::StartTagScanner {
   mojom::FetchImportanceMode importance_;
   bool importance_mode_set_;
   String nonce_;
-  Member<MediaValuesCached> media_values_;
+  MediaValuesCached* media_values_;
   bool referrer_policy_set_;
   network::mojom::ReferrerPolicy referrer_policy_;
   bool integrity_attr_set_;

@@ -4,7 +4,10 @@
 
 #include "android_webview/browser/safe_browsing/aw_safe_browsing_subresource_helper.h"
 
+#include <memory>
+
 #include "android_webview/browser/aw_browser_process.h"
+#include "android_webview/browser/network_service/aw_web_resource_request.h"
 #include "android_webview/browser/safe_browsing/aw_safe_browsing_blocking_page.h"
 #include "android_webview/browser/safe_browsing/aw_safe_browsing_ui_manager.h"
 #include "components/security_interstitials/content/security_interstitial_tab_helper.h"
@@ -27,10 +30,18 @@ void AwSafeBrowsingSubresourceHelper::ReadyToCommitNavigation(
     security_interstitials::UnsafeResource resource;
     if (manager->PopUnsafeResourceForURL(navigation_handle->GetURL(),
                                          &resource)) {
+      std::unique_ptr<AwWebResourceRequest> request =
+          std::make_unique<AwWebResourceRequest>(
+              navigation_handle->GetURL().spec(),
+              navigation_handle->IsPost() ? "POST" : "GET",
+              navigation_handle->IsInMainFrame(),
+              navigation_handle->HasUserGesture(),
+              navigation_handle->GetRequestHeaders());
+      request->is_renderer_initiated = navigation_handle->IsRendererInitiated();
       AwSafeBrowsingBlockingPage* blocking_page =
           AwSafeBrowsingBlockingPage::CreateBlockingPage(
               manager, navigation_handle->GetWebContents(),
-              navigation_handle->GetURL(), resource);
+              navigation_handle->GetURL(), resource, std::move(request));
       security_interstitials::SecurityInterstitialTabHelper::
           AssociateBlockingPage(navigation_handle->GetWebContents(),
                                 navigation_handle->GetNavigationId(),

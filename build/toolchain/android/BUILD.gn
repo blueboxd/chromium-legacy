@@ -42,7 +42,6 @@ template("android_clang_toolchain") {
     ld = cxx
     readelf = _tool_prefix + "readelf"
     nm = _tool_prefix + "nm"
-    dwp = _tool_prefix + "dwp"
     strip = rebase_path("//buildtools/third_party/eu-strip/bin/eu-strip",
                         root_build_dir)
     use_unstripped_as_runtime_outputs = android_unstripped_runtime_outputs

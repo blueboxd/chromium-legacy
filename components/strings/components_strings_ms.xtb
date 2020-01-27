@@ -79,6 +79,7 @@
 <translation id="129553762522093515">Ditutup baru-baru ini</translation>
 <translation id="1298536327547837046">Pengimbasan Perisian Hasad</translation>
 <translation id="129863573139666797"><ph name="BEGIN_LINK" />Cuba kosongkan kuki anda<ph name="END_LINK" /></translation>
+<translation id="1301324364792935241">Semak tetapan DNS Selamat anda</translation>
 <translation id="1307966114820526988">Ciri yang Ditamatkan</translation>
 <translation id="1314509827145471431">Ikatan kanan</translation>
 <translation id="1320233736580025032">Prc1 (Sampul Surat)</translation>
@@ -152,6 +153,7 @@
 <translation id="1569487616857761740">Masukkan tarikh tamat tempoh</translation>
 <translation id="1581080074034554886">CVC</translation>
 <translation id="1583429793053364125">Kesilapan berlaku semasa memaparkan halaman web ini.</translation>
+<translation id="1586541204584340881">Sambungan yang telah anda pasang</translation>
 <translation id="1588438908519853928">Biasa</translation>
 <translation id="1592005682883173041">Akses Data Setempat</translation>
 <translation id="1594030484168838125">Pilih</translation>
@@ -290,7 +292,6 @@
 <translation id="2218879909401188352">Penyerang yang berada di <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> boleh memasang apl berbahaya yang boleh merosakkan peranti anda, menambahkan caj yang tersembunyi pada bil mudah alih anda atau mencuri maklumat peribadi anda. <ph name="BEGIN_LEARN_MORE_LINK" />Ketahui lebih lanjut<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="2224337661447660594">Tiada Internet</translation>
 <translation id="2230458221926704099">Betulkan sambungan anda menggunakan <ph name="BEGIN_LINK" />apl diagnostik<ph name="END_LINK" /></translation>
-<translation id="22320125457191592">Untuk anda</translation>
 <translation id="2239100178324503013">Hantar sekarang</translation>
 <translation id="2248949050832152960">Gunakan WebAuthn</translation>
 <translation id="2250931979407627383">Jahitan tepi kiri</translation>
@@ -363,6 +364,7 @@
 <translation id="2544644783021658368">Satu dokumen</translation>
 <translation id="254947805923345898">Nilai dasar tidak sah.</translation>
 <translation id="255002559098805027"><ph name="HOST_NAME" /> menghantar balasan yang tidak sah.</translation>
+<translation id="2553853292994445426">Semak tetapan DNS selamat anda. Anda mungkin telah mengkonfigurasikan pelayan DNS selamat yang menyebabkan sambungan gagal.</translation>
 <translation id="2556876185419854533">&amp;Buat Asal Edit</translation>
 <translation id="257674075312929031">Kumpulan</translation>
 <translation id="2586657967955657006">Papan Keratan</translation>
@@ -485,6 +487,7 @@
 <translation id="3095940652251934233">Kenyataan</translation>
 <translation id="3096100844101284527">Tambahkan Alamat Pengambilan</translation>
 <translation id="3105172416063519923">ID Aset:</translation>
+<translation id="3107591622054137333"><ph name="BEGIN_LINK" />Menyemak konfigurasi DNS selamat<ph name="END_LINK" /></translation>
 <translation id="3109728660330352905">Anda tidak mempunyai kebenaran untuk melihat halaman ini.</translation>
 <translation id="3113284927548439113">Syif ketiga</translation>
 <translation id="3116158981186517402">Lamina</translation>
@@ -576,7 +579,6 @@
 <translation id="3531780078352352885">Helaian tugas</translation>
 <translation id="3533328374079021623">Peti mel 5</translation>
 <translation id="3539171420378717834">Simpan salinan kad ini pada peranti ini</translation>
-<translation id="3553513561058684206">Untuk Anda</translation>
 <translation id="3558573058928565255">Waktu siang</translation>
 <translation id="3566021033012934673">Sambungan anda tidak diperibadikan</translation>
 <translation id="3574305903863751447"><ph name="CITY" />, <ph name="STATE" /> <ph name="COUNTRY" /></translation>
@@ -789,6 +791,7 @@
 <translation id="4390472908992056574">Bertepi</translation>
 <translation id="4406896451731180161">hasil carian</translation>
 <translation id="4408413947728134509">Kuki <ph name="NUM_COOKIES" /></translation>
+<translation id="4414290883293381923">Anda baru sahaja memasukkan kata laluan pada tapak yang menipu. Chrome mengesyorkan supaya anda pergi ke <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, <ph name="WEBSITE_3" /> serta tapak lain yang anda gunakan kata laluan ini dan menukar kata laluan ini sekarang.</translation>
 <translation id="4415426530740016218">Alamat Pengambilan</translation>
 <translation id="4424024547088906515">Pelayan ini tidak dapat membuktikan bahawa domainnya ialah <ph name="DOMAIN" />; sijil keselamatannya tidak dipercayai oleh Chrome. Ini mungkin disebabkan oleh kesilapan konfigurasi atau penyerang memintasi sambungan anda.</translation>
 <translation id="443121186588148776">Port siri</translation>
@@ -1221,6 +1224,7 @@
 <translation id="6353505687280762741">{COUNT,plural, =0{Tiada}=1{1 kata laluan (untuk <ph name="DOMAIN_LIST" />, disegerakkan)}=2{2 kata laluan (untuk <ph name="DOMAIN_LIST" />, disegerakkan)}other{# kata laluan (untuk <ph name="DOMAIN_LIST" />, disegerakkan)}}</translation>
 <translation id="6358450015545214790">Apakah maksudnya?</translation>
 <translation id="6361757823711327522">B7</translation>
+<translation id="6364095313648930329"><ph name="BEGIN_LINK" />Menyemak proksi, tembok api dan konfigurasi DNS Selamat<ph name="END_LINK" /></translation>
 <translation id="6366710531182496394">Dua kokot kiri</translation>
 <translation id="6377268785556383139">1 hasil carian untuk '<ph name="SEARCH_TEXT" />'</translation>
 <translation id="6380497234672085559">A0</translation>
@@ -1243,6 +1247,7 @@
 <translation id="6433595998831338502"><ph name="HOST_NAME" /> enggan menyambung.</translation>
 <translation id="6434309073475700221">Buang</translation>
 <translation id="6440503408713884761">Diabaikan</translation>
+<translation id="6443406338865242315">Sambungan dan pemalam yang telah anda pasang</translation>
 <translation id="6446163441502663861">Kahu (Sampul Surat)</translation>
 <translation id="6446608382365791566">Tambahkan maklumat lanjut</translation>
 <translation id="6447842834002726250">Kuki</translation>
@@ -1352,6 +1357,7 @@
 <translation id="7012363358306927923">China UnionPay</translation>
 <translation id="7016992613359344582">Caj ini mungkin caj sekali atau caj berulang dan mungkin tidak ketara.</translation>
 <translation id="7029809446516969842">Kata laluan</translation>
+<translation id="7031646650991750659">Apl Google Play yang telah anda pasang</translation>
 <translation id="7050187094878475250">Anda cuba untuk mencapai <ph name="DOMAIN" />, tetapi pelayan memberikan sijil yang tempoh sahnya terlalu panjang untuk boleh dipercayai.</translation>
 <translation id="705310974202322020">{NUM_CARDS,plural, =1{Kad ini tidak dapat disimpan sekarang}other{Kad ini tidak dapat disimpan sekarang}}</translation>
 <translation id="7053983685419859001">Sekat</translation>
@@ -1411,6 +1417,7 @@ Butiran tambahan:
 <translation id="7319430975418800333">A3</translation>
 <translation id="7320336641823683070">Bantuan Sambungan</translation>
 <translation id="733354035281974745">Pembatalan akaun setempat peranti</translation>
+<translation id="7333654844024768166">Anda baru sahaja memasukkan kata laluan pada tapak yang menipu. Chromium mengesyorkan supaya anda pergi ke <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, <ph name="WEBSITE_3" /> serta tapak lain yang anda gunakan kata laluan ini dan menukar kata laluan ini sekarang.</translation>
 <translation id="7334320624316649418">&amp;Buat semula susun semula</translation>
 <translation id="7337706099755338005">Tidak tersedia pada platform anda.</translation>
 <translation id="733923710415886693">Sijil pelayan tidak didedahkan melalui Ketelusan Sijil.</translation>

@@ -10,14 +10,14 @@
 #include "base/compiler_specific.h"
 #include "components/omnibox/browser/omnibox_client.h"
 #include "ios/chrome/browser/autocomplete/autocomplete_scheme_classifier_impl.h"
-#include "ios/chrome/browser/browser_state/chrome_browser_state_forward.h"
 
+class ChromeBrowserState;
 class WebOmniboxEditController;
 
 class ChromeOmniboxClientIOS : public OmniboxClient {
  public:
   ChromeOmniboxClientIOS(WebOmniboxEditController* controller,
-                         ios::ChromeBrowserState* browser_state);
+                         ChromeBrowserState* browser_state);
   ~ChromeOmniboxClientIOS() override;
 
   // OmniboxClient.
@@ -57,7 +57,7 @@ class ChromeOmniboxClientIOS : public OmniboxClient {
 
  private:
   WebOmniboxEditController* controller_;
-  ios::ChromeBrowserState* browser_state_;
+  ChromeBrowserState* browser_state_;
   AutocompleteSchemeClassifierImpl scheme_classifier_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeOmniboxClientIOS);

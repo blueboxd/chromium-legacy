@@ -84,7 +84,7 @@ class SVGFilterBuilder {
   void BuildGraph(Filter*, SVGFilterElement&, const FloatRect&);
 
   FilterEffect* GetEffectById(const AtomicString& id) const;
-  FilterEffect* LastEffect() const { return last_effect_.Get(); }
+  FilterEffect* LastEffect() const { return last_effect_; }
 
   static InterpolationSpace ResolveInterpolationSpace(EColorInterpolation);
 
@@ -97,8 +97,8 @@ class SVGFilterBuilder {
   NamedFilterEffectMap builtin_effects_;
   NamedFilterEffectMap named_effects_;
 
-  Member<FilterEffect> last_effect_;
-  Member<SVGFilterGraphNodeMap> node_map_;
+  FilterEffect* last_effect_ = nullptr;
+  SVGFilterGraphNodeMap* node_map_;
 };
 
 }  // namespace blink

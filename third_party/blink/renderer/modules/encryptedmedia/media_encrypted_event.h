@@ -26,7 +26,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_ENCRYPTEDMEDIA_MEDIA_ENCRYPTED_EVENT_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_ENCRYPTEDMEDIA_MEDIA_ENCRYPTED_EVENT_H_
 
-#include "third_party/blink/renderer/modules/encryptedmedia/media_encrypted_event_init.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_media_encrypted_event_init.h"
 #include "third_party/blink/renderer/modules/event_modules.h"
 
 namespace blink {

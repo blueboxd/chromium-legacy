@@ -1552,6 +1552,34 @@ void NavigationRequest::OnRequestRedirected(
   WillRedirectRequest(common_params_->referrer->url, expected_process);
 }
 
+void NavigationRequest::CheckForOriginPolicyIsolationOptIn(
+    const GURL& url,
+    const network::mojom::URLResponseHead* response) {
+  // IsolationOptIn is only available when OriginPolicy is enabled.
+  if (!base::FeatureList::IsEnabled(features::kOriginPolicy))
+    return;
+
+  bool requests_origin_isolation = false;
+  if (response && response->origin_policy) {
+    const network::OriginPolicy& origin_policy =
+        response->origin_policy.value();
+    // For now, we'll take the presence of any isolation_optin_hints value
+    // as an indication to opt-in.
+    requests_origin_isolation =
+        origin_policy.state == network::OriginPolicyState::kLoaded &&
+        origin_policy.contents->isolation_optin_hints.has_value();
+  }
+  auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
+  url::Origin origin = url::Origin::Create(url);
+  // We need to update the master list even if |requests_origin_isolation| is
+  // false, since we need to maintain the master opt-in list according to the
+  // most recently seen OriginPolicy.
+  // TODO(wjmaclean): when we start to support versioning for OriginPolicies,
+  // will we need to key the master list accordingly?
+  policy->UpdateOriginIsolationOptInListIfNecessary(origin,
+                                                    requests_origin_isolation);
+}
+
 void NavigationRequest::OnResponseStarted(
     network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
     network::mojom::URLResponseHeadPtr response_head,
@@ -1690,6 +1718,11 @@ void NavigationRequest::OnResponseStarted(
       return;
     }
   }
+
+  // The navigation may have encountered an OriginPolicy that requests isolation
+  // for the url's origin. Before we pick the renderer, make sure we update the
+  // master list for origin-isolation opt-ins.
+  CheckForOriginPolicyIsolationOptIn(common_params().url, response());
 
   // Select an appropriate renderer to commit the navigation.
   if (IsServedFromBackForwardCache()) {

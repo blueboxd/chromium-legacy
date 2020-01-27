@@ -73,7 +73,7 @@ class OverscrollActionsTabHelperTest : public PlatformTest {
   }
 
   web::WebTaskEnvironment task_environment_;
-  std::unique_ptr<ios::ChromeBrowserState> browser_state_;
+  std::unique_ptr<ChromeBrowserState> browser_state_;
   web::TestWebState web_state_;
   FakeOverscrollActionsControllerDelegate* overscroll_delegate_;
   CRWWebViewScrollViewProxy* scroll_view_proxy_;

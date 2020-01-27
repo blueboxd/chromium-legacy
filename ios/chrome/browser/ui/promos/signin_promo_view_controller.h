@@ -33,7 +33,7 @@ extern NSString* kSigninPromoViewDisplayCountKey;
 @interface SigninPromoViewController : ChromeSigninViewController
 
 // YES if this promo should be shown for |browserState|
-+ (BOOL)shouldBePresentedForBrowserState:(ios::ChromeBrowserState*)browserState;
++ (BOOL)shouldBePresentedForBrowserState:(ChromeBrowserState*)browserState;
 
 // Designated initializer.  |browser| must not be nil.
 - (instancetype)initWithBrowser:(Browser*)browser

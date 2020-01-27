@@ -57,7 +57,7 @@ class PagePlaceholderTabHelperTest : public PlatformTest {
 
   web::WebTaskEnvironment task_environment_;
   ScopedKeyWindow scoped_key_window_;
-  std::unique_ptr<ios::ChromeBrowserState> browser_state_;
+  std::unique_ptr<ChromeBrowserState> browser_state_;
   std::unique_ptr<web::TestWebState> web_state_;
   UIView* web_state_view_ = nil;
 };

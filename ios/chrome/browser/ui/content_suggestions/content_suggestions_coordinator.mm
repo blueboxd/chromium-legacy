@@ -90,7 +90,7 @@
   contentSuggestionsService->user_classifier()->OnEvent(
       ntp_snippets::UserClassifier::Metric::SUGGESTIONS_SHOWN);
   PrefService* prefs =
-      ios::ChromeBrowserState::FromBrowserState(self.browserState)->GetPrefs();
+      ChromeBrowserState::FromBrowserState(self.browserState)->GetPrefs();
   bool contentSuggestionsEnabled =
       prefs->GetBoolean(prefs::kArticlesForYouEnabled);
   bool contentSuggestionsVisible =

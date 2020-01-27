@@ -38,7 +38,7 @@ SuggestionsServiceFactory* SuggestionsServiceFactory::GetInstance() {
 
 // static
 SuggestionsService* SuggestionsServiceFactory::GetForBrowserState(
-    ios::ChromeBrowserState* browser_state) {
+    ChromeBrowserState* browser_state) {
   return static_cast<SuggestionsService*>(
       GetInstance()->GetServiceForBrowserState(browser_state, true));
 }
@@ -57,8 +57,8 @@ SuggestionsServiceFactory::~SuggestionsServiceFactory() {
 std::unique_ptr<KeyedService>
 SuggestionsServiceFactory::BuildServiceInstanceFor(
     web::BrowserState* context) const {
-  ios::ChromeBrowserState* browser_state =
-      ios::ChromeBrowserState::FromBrowserState(context);
+  ChromeBrowserState* browser_state =
+      ChromeBrowserState::FromBrowserState(context);
   signin::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForBrowserState(browser_state);
   syncer::SyncService* sync_service =

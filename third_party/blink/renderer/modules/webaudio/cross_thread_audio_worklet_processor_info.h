@@ -5,7 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_CROSS_THREAD_AUDIO_WORKLET_PROCESSOR_INFO_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_CROSS_THREAD_AUDIO_WORKLET_PROCESSOR_INFO_H_
 
-#include "third_party/blink/renderer/modules/webaudio/audio_param_descriptor.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_audio_param_descriptor.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_worklet_processor_definition.h"
 
 namespace blink {

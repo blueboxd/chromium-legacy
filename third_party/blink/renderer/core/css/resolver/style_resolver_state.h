@@ -211,7 +211,7 @@ class CORE_EXPORT StyleResolverState {
       const ComputedStyle* font_style) const;
 
   ElementResolveContext element_context_;
-  Member<Document> document_;
+  Document* document_;
 
   // style_ is the primary output for each element's style resolve.
   scoped_refptr<ComputedStyle> style_;
@@ -232,8 +232,8 @@ class CORE_EXPORT StyleResolverState {
 
   bool has_dir_auto_attribute_;
 
-  Member<const CSSValue> cascaded_color_value_;
-  Member<const CSSValue> cascaded_visited_color_value_;
+  const CSSValue* cascaded_color_value_;
+  const CSSValue* cascaded_visited_color_value_;
 
   FontBuilder font_builder_;
 
@@ -241,7 +241,7 @@ class CORE_EXPORT StyleResolverState {
   std::unique_ptr<UAStyle> ua_style_;
 
   ElementStyleResources element_style_resources_;
-  Member<Element> pseudo_element_;
+  Element* pseudo_element_;
   AnimatingElementType animating_element_type_;
 
   mutable HeapHashMap<

@@ -261,7 +261,7 @@ bool V8ScriptValueSerializer::WriteDOMObject(ScriptWrappable* wrappable,
       return false;
     }
 
-    auto* execution_context = ExecutionContext::From(script_state_.Get());
+    auto* execution_context = ExecutionContext::From(script_state_);
     // If this ImageBitmap was transferred, it can be serialized by index.
     size_t index = kNotFound;
     if (transferables_)

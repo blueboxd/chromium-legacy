@@ -79,6 +79,7 @@
 <translation id="129553762522093515">Nesen aizvērtas</translation>
 <translation id="1298536327547837046">Ļaunprātīgas programmatūras meklēšana</translation>
 <translation id="129863573139666797"><ph name="BEGIN_LINK" />Dzēsiet sīkfailus<ph name="END_LINK" /></translation>
+<translation id="1301324364792935241">Pārbaudiet drošā DNS servera iestatījumus</translation>
 <translation id="1307966114820526988">Funkcijas, kuru darbība ir pārtraukta</translation>
 <translation id="1314509827145471431">Iesējums labajā pusē</translation>
 <translation id="1320233736580025032">Prc1 (aploksne)</translation>
@@ -152,6 +153,7 @@
 <translation id="1569487616857761740">Ievadīt derīguma termiņu</translation>
 <translation id="1581080074034554886">CVC</translation>
 <translation id="1583429793053364125">Šīs tīmekļa lapas rādīšanas laikā radās kļūda.</translation>
+<translation id="1586541204584340881">Kurus paplašinājumus esat instalējis</translation>
 <translation id="1588438908519853928">Parasts</translation>
 <translation id="1592005682883173041">Piekļuve lokālajiem datiem</translation>
 <translation id="1594030484168838125">Izvēlēties</translation>
@@ -290,7 +292,6 @@
 <translation id="2218879909401188352">Uzbrucēji vietnē <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> varētu instalēt bīstamas lietotnes, kas bojā jūsu ierīci, rada slēptas izmaksas mobilā tālruņa rēķinā vai zog jūsu personas informāciju. <ph name="BEGIN_LEARN_MORE_LINK" />Uzziniet vairāk<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="2224337661447660594">Nav interneta savienojuma</translation>
 <translation id="2230458221926704099">Labojiet savienojumu, izmantojot <ph name="BEGIN_LINK" />diagnostikas lietotni<ph name="END_LINK" /></translation>
-<translation id="22320125457191592">Jums</translation>
 <translation id="2239100178324503013">Sūtīt tūlīt</translation>
 <translation id="2248949050832152960">Izmantot WebAuthn</translation>
 <translation id="2250931979407627383">Malu sašuvums kreisajā pusē</translation>
@@ -363,6 +364,7 @@
 <translation id="2544644783021658368">Viens dokuments</translation>
 <translation id="254947805923345898">Politikas vērtība nav derīga.</translation>
 <translation id="255002559098805027"><ph name="HOST_NAME" /> nosūtīja nederīgu atbildi.</translation>
+<translation id="2553853292994445426">Pārbaudiet droša DNS servera iestatījumus. Iespējams, esat konfigurējis drošu DNS serveri, ar kuru neizdodas izveidot savienojumu.</translation>
 <translation id="2556876185419854533">&amp;Labojuma atsaukšana</translation>
 <translation id="257674075312929031">Grupa</translation>
 <translation id="2586657967955657006">Starpliktuve</translation>
@@ -483,6 +485,7 @@
 <translation id="3095940652251934233">Statement</translation>
 <translation id="3096100844101284527">Pievienot saņemšanas adresi</translation>
 <translation id="3105172416063519923">Līdzekļa ID:</translation>
+<translation id="3107591622054137333"><ph name="BEGIN_LINK" />Pārbaudīt droša DNS servera konfigurāciju<ph name="END_LINK" /></translation>
 <translation id="3109728660330352905">Jums nav pilnvaru, lai skatītu šo lapu.</translation>
 <translation id="3113284927548439113">Trešā maiņa</translation>
 <translation id="3116158981186517402">Laminēšana</translation>
@@ -574,7 +577,6 @@
 <translation id="3531780078352352885">Uzdevuma lapas</translation>
 <translation id="3533328374079021623">5. pastkaste</translation>
 <translation id="3539171420378717834">Saglabāt šīs kartes kopiju šajā ierīcē</translation>
-<translation id="3553513561058684206">Jums</translation>
 <translation id="3558573058928565255">diena</translation>
 <translation id="3566021033012934673">Jūsu savienojums nav privāts</translation>
 <translation id="3574305903863751447"><ph name="CITY" />, <ph name="STATE" /> <ph name="COUNTRY" /></translation>
@@ -785,6 +787,7 @@
 <translation id="4390472908992056574">Apmale</translation>
 <translation id="4406896451731180161">meklēšanas rezultāti</translation>
 <translation id="4408413947728134509">Sīkfaili <ph name="NUM_COOKIES" /></translation>
+<translation id="4414290883293381923">Jūs tikko ievadījāt savu paroli maldinošā vietnē. Chrome ieteikums: tūlīt apmeklējiet vietni <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> un <ph name="WEBSITE_3" />, kā arī citas vietnes, kurās izmantojat šo paroli, un nomainiet to.</translation>
 <translation id="4415426530740016218">Saņemšanas adrese</translation>
 <translation id="4424024547088906515">Šis serveris nevarēja pierādīt, ka šī ir vietne <ph name="DOMAIN" />; tās drošības sertifikāts netiek uzskatīts par uzticamu pārlūkā Chrome. Iespējams, tas ir nepareizas konfigurācijas dēļ vai arī kāds ir ļaunprātīgi izmantojis jūsu savienojumu.</translation>
 <translation id="443121186588148776">Seriālais ports</translation>
@@ -1217,6 +1220,7 @@
 <translation id="6353505687280762741">{COUNT,plural, =0{Nav}=1{1 parole (šādiem domēniem: <ph name="DOMAIN_LIST" />, sinhronizēta)}=2{2 paroles (šādiem domēniem: <ph name="DOMAIN_LIST" />, sinhronizētas)}zero{# paroļu (šādiem domēniem: <ph name="DOMAIN_LIST" />, sinhronizētas)}one{# parole (šādiem domēniem: <ph name="DOMAIN_LIST" />, sinhronizētas)}other{# paroles (šādiem domēniem: <ph name="DOMAIN_LIST" />, sinhronizētas)}}</translation>
 <translation id="6358450015545214790">Ko tas nozīmē?</translation>
 <translation id="6361757823711327522">B7</translation>
+<translation id="6364095313648930329"><ph name="BEGIN_LINK" />Pārbaudiet starpniekserveri, ugunsmūri un droša DNS servera konfigurāciju<ph name="END_LINK" />.</translation>
 <translation id="6366710531182496394">Divkāršs skavojums kreisajā pusē</translation>
 <translation id="6377268785556383139">1 rezultāts vaicājumam “<ph name="SEARCH_TEXT" />”</translation>
 <translation id="6380497234672085559">A0</translation>
@@ -1239,6 +1243,7 @@
 <translation id="6433595998831338502"><ph name="HOST_NAME" /> noraidīja savienojuma izveidi.</translation>
 <translation id="6434309073475700221">Atmest</translation>
 <translation id="6440503408713884761">Ignorēts</translation>
+<translation id="6443406338865242315">Kurus paplašinājumus un spraudņus esat instalējis</translation>
 <translation id="6446163441502663861">Kahu (aploksne)</translation>
 <translation id="6446608382365791566">Papildu informācijas pievienošana</translation>
 <translation id="6447842834002726250">Sīkfaili</translation>
@@ -1348,6 +1353,7 @@
 <translation id="7012363358306927923">China UnionPay</translation>
 <translation id="7016992613359344582">Šie naudas pieprasījumi var būt vienreizēji vai atkārtoti, un tie var nebūt uzreiz pamanāmi.</translation>
 <translation id="7029809446516969842">Paroles</translation>
+<translation id="7031646650991750659">Kuras Google Play lietotnes esat instalējis</translation>
 <translation id="7050187094878475250">Jūs mēģinājāt sasniegt domēnu <ph name="DOMAIN" />, bet serveris uzrādīja sertifikātu, kura derīguma periods ir pārāk ilgs, lai būtu uzticams.</translation>
 <translation id="705310974202322020">{NUM_CARDS,plural, =1{Šo karti pašlaik nevar saglabāt}zero{Pašlaik nevar saglabāt šīs kartes}one{Pašlaik nevar saglabāt šīs kartes}other{Pašlaik nevar saglabāt šīs kartes}}</translation>
 <translation id="7053983685419859001">Bloķēt</translation>
@@ -1407,6 +1413,7 @@ Papildu informācija:
 <translation id="7319430975418800333">A3</translation>
 <translation id="7320336641823683070">Savienojuma palīdzība</translation>
 <translation id="733354035281974745">Ierīces lokālā konta ignorēšana</translation>
+<translation id="7333654844024768166">Jūs tikko ievadījāt savu paroli maldinošā vietnē. Chromium ieteikums: tūlīt apmeklējiet vietni <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> un <ph name="WEBSITE_3" />, kā arī citas vietnes, kurās izmantojat šo paroli, un nomainiet to.</translation>
 <translation id="7334320624316649418">&amp;Atcelt pārkārtošanas atsaukšanu</translation>
 <translation id="7337706099755338005">Nav pieejams jūsu platformā.</translation>
 <translation id="733923710415886693">Servera sertifikāts netika atklāts, izmantojot Certificate Transparency.</translation>

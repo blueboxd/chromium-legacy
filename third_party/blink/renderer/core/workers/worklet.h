@@ -11,13 +11,13 @@
 #include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/workers/worklet_global_scope_proxy.h"
 #include "third_party/blink/renderer/core/workers/worklet_module_responses_map.h"
-#include "third_party/blink/renderer/core/workers/worklet_options.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
 
 class Document;
+class WorkletOptions;
 
 // This is the base implementation of Worklet interface defined in the spec:
 // https://drafts.css-houdini.org/worklets/#worklet

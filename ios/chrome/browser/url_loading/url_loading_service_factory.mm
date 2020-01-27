@@ -18,7 +18,7 @@
 
 // static
 UrlLoadingService* UrlLoadingServiceFactory::GetForBrowserState(
-    ios::ChromeBrowserState* browser_state) {
+    ChromeBrowserState* browser_state) {
   return static_cast<UrlLoadingService*>(
       GetInstance()->GetServiceForBrowserState(browser_state, true));
 }
@@ -31,8 +31,8 @@ UrlLoadingServiceFactory* UrlLoadingServiceFactory::GetInstance() {
 
 std::unique_ptr<KeyedService> BuildTestUrlLoadingService(
     web::BrowserState* context) {
-  ios::ChromeBrowserState* browser_state =
-      ios::ChromeBrowserState::FromBrowserState(context);
+  ChromeBrowserState* browser_state =
+      ChromeBrowserState::FromBrowserState(context);
   return std::make_unique<TestUrlLoadingService>(
       UrlLoadingNotifierFactory::GetForBrowserState(browser_state));
 }
@@ -54,8 +54,8 @@ UrlLoadingServiceFactory::~UrlLoadingServiceFactory() {}
 
 std::unique_ptr<KeyedService> UrlLoadingServiceFactory::BuildServiceInstanceFor(
     web::BrowserState* context) const {
-  ios::ChromeBrowserState* browser_state =
-      ios::ChromeBrowserState::FromBrowserState(context);
+  ChromeBrowserState* browser_state =
+      ChromeBrowserState::FromBrowserState(context);
   return std::make_unique<UrlLoadingService>(
       UrlLoadingNotifierFactory::GetForBrowserState(browser_state));
 }

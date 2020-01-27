@@ -170,7 +170,7 @@ class GLRendererShaderPixelTest : public cc::GLRendererPixelTest {
       const DirectRenderer::DrawingFrame& drawing_frame,
       bool validate_output_color_matrix) {
     renderer()->SetCurrentFrameForTesting(drawing_frame);
-    const size_t kNumSrcColorSpaces = 5;
+    const size_t kNumSrcColorSpaces = 7;
     gfx::ColorSpace src_color_spaces[kNumSrcColorSpaces] = {
         gfx::ColorSpace::CreateSRGB(),
         gfx::ColorSpace(gfx::ColorSpace::PrimaryID::ADOBE_RGB,
@@ -178,6 +178,11 @@ class GLRendererShaderPixelTest : public cc::GLRendererPixelTest {
         gfx::ColorSpace::CreateREC709(),
         gfx::ColorSpace::CreateExtendedSRGB(),
         gfx::ColorSpace::CreateSCRGBLinear(),
+        // This will be adjusted to the display's SDR white level, because no
+        // level was specified.
+        gfx::ColorSpace::CreateHDR10(),
+        // This won't be, because it has a set SDR white level.
+        gfx::ColorSpace::CreateHDR10(123.f),
     };
     const size_t kNumDstColorSpaces = 4;
     gfx::ColorSpace dst_color_spaces[kNumDstColorSpaces] = {
@@ -197,12 +202,13 @@ class GLRendererShaderPixelTest : public cc::GLRendererPixelTest {
         EXPECT_TRUE(renderer()->current_program_->initialized());
 
         if (src_color_space != dst_color_space) {
-          const float sdr_white_level = drawing_frame.sdr_white_level;
           auto adjusted_color_space = src_color_space;
-          if (!src_color_space.IsHDR() &&
-              sdr_white_level != gfx::ColorSpace::kDefaultSDRWhiteLevel) {
-            adjusted_color_space = src_color_space.GetScaledColorSpace(
-                sdr_white_level / gfx::ColorSpace::kDefaultSDRWhiteLevel);
+          // Only in the iteration where we use CreateHDR10 without specifying
+          // an SDR white level should the white level be set by the renderer.
+          if (j == 5) {
+            adjusted_color_space = src_color_space.GetWithPQSDRWhiteLevel(
+                drawing_frame.sdr_white_level);
+            EXPECT_NE(adjusted_color_space, src_color_space);
           }
           auto color_transform = gfx::ColorTransform::NewColorTransform(
               adjusted_color_space, dst_color_space,

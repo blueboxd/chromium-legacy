@@ -21,6 +21,7 @@
 #include "ui/gl/gl_angle_util_win.h"
 #include "ui/gl/gl_surface_presentation_helper.h"
 #include "ui/gl/gl_switches.h"
+#include "ui/gl/gpu_switching_manager.h"
 #include "ui/gl/vsync_thread_win.h"
 
 #ifndef EGL_ANGLE_flexible_surface_compatibility
@@ -102,8 +103,6 @@ void UpdateHardwareOverlaySupport() {
     return;
   }
 
-  bool supports_overlays = false;
-  DXGI_FORMAT overlay_format_used = DXGI_FORMAT_NV12;
   unsigned int i = 0;
   while (true) {
     Microsoft::WRL::ComPtr<IDXGIOutput> output;
@@ -140,17 +139,17 @@ void UpdateHardwareOverlaySupport() {
         // performing an extra scaling Blt before calling the driver. Even when
         // scaled overlays aren't actually supported, presentation using the
         // overlay path should be relatively efficient.
-        overlay_format_used = DXGI_FORMAT_NV12;
-        supports_overlays = true;
+        g_overlay_format_used = DXGI_FORMAT_NV12;
+        g_supports_overlays = true;
       }
     }
-    if (!supports_overlays &&
+    if (!g_supports_overlays &&
         FlagsSupportsOverlays(g_yuy2_overlay_support_flags)) {
       // If NV12 isn't supported, fallback to YUY2 if it's supported.
-      overlay_format_used = DXGI_FORMAT_YUY2;
-      supports_overlays = true;
+      g_overlay_format_used = DXGI_FORMAT_YUY2;
+      g_supports_overlays = true;
     }
-    if (supports_overlays) {
+    if (g_supports_overlays) {
       DXGI_OUTPUT_DESC monitor_desc = {};
       if (SUCCEEDED(output3->GetDesc(&monitor_desc))) {
         g_overlay_monitor_size =
@@ -163,22 +162,19 @@ void UpdateHardwareOverlaySupport() {
     // https://docs.microsoft.com/en-us/windows-hardware/drivers/display/multiplane-overlay-hardware-requirements
     // TODO(sunnyps): If the above is true, then we can only look at first
     // output instead of iterating over all outputs.
-    if (supports_overlays)
+    if (g_supports_overlays)
       break;
   }
 
-  g_supports_overlays = supports_overlays;
-  g_overlay_format_used = overlay_format_used;
-
-  if (supports_overlays != prev_supports_overlays ||
-      overlay_format_used != prev_overlay_format_used) {
+  if (g_supports_overlays != prev_supports_overlays ||
+      g_overlay_format_used != prev_overlay_format_used) {
     // Record the new histograms
-    if (supports_overlays) {
+    if (g_supports_overlays) {
       base::UmaHistogramSparse("GPU.DirectComposition.OverlayFormatUsed3",
-                               overlay_format_used);
+                               g_overlay_format_used);
     }
     UMA_HISTOGRAM_BOOLEAN("GPU.DirectComposition.OverlaysSupported",
-                          supports_overlays);
+                          g_supports_overlays);
   }
 }
 
@@ -227,9 +223,11 @@ DirectCompositionSurfaceWin::DirectCompositionSurfaceWin(
   // Call GetWeakPtr() on main thread before calling on vsync thread so that the
   // internal weak reference is initialized in a thread-safe way.
   weak_ptr_ = weak_factory_.GetWeakPtr();
+  ui::GpuSwitchingManager::GetInstance()->AddObserver(this);
 }
 
 DirectCompositionSurfaceWin::~DirectCompositionSurfaceWin() {
+  ui::GpuSwitchingManager::GetInstance()->RemoveObserver(this);
   Destroy();
 }
 
@@ -754,6 +752,19 @@ void DirectCompositionSurfaceWin::HandleVSyncOnMainThread(
     DCHECK(vsync_callback_);
     vsync_callback_.Run(vsync_time, interval);
   }
+}
+
+void DirectCompositionSurfaceWin::OnGpuSwitched(
+    gl::GpuPreference active_gpu_heuristic) {}
+
+void DirectCompositionSurfaceWin::OnDisplayAdded() {
+  InvalidateOverlayCaps();
+  UpdateHardwareOverlaySupport();
+}
+
+void DirectCompositionSurfaceWin::OnDisplayRemoved() {
+  InvalidateOverlayCaps();
+  UpdateHardwareOverlaySupport();
 }
 
 scoped_refptr<base::TaskRunner>

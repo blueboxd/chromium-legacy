@@ -29,10 +29,11 @@
 #include "services/network/public/mojom/content_security_policy.mojom-shared.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/event_interface_names.h"
-#include "third_party/blink/renderer/core/events/security_policy_violation_event_init.h"
 #include "third_party/blink/renderer/platform/network/content_security_policy_parsers.h"
 
 namespace blink {
+
+class SecurityPolicyViolationEventInit;
 
 class SecurityPolicyViolationEvent final : public Event {
   DEFINE_WRAPPERTYPEINFO();

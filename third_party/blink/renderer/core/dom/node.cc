@@ -28,8 +28,10 @@
 
 #include <algorithm>
 
+#include "third_party/blink/public/mojom/input/focus_type.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/node_or_string_or_trusted_script.h"
 #include "third_party/blink/renderer/bindings/core/v8/string_or_trusted_script.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_get_root_node_options.h"
 #include "third_party/blink/renderer/core/accessibility/ax_object_cache.h"
 #include "third_party/blink/renderer/core/css/css_selector.h"
 #include "third_party/blink/renderer/core/css/resolver/style_resolver.h"
@@ -47,6 +49,7 @@
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/dom/element_rare_data.h"
 #include "third_party/blink/renderer/core/dom/element_traversal.h"
+#include "third_party/blink/renderer/core/dom/events/add_event_listener_options_resolved.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/dom/events/event_dispatch_forbidden_scope.h"
 #include "third_party/blink/renderer/core/dom/events/event_dispatcher.h"
@@ -54,7 +57,6 @@
 #include "third_party/blink/renderer/core/dom/events/event_path.h"
 #include "third_party/blink/renderer/core/dom/flat_tree_node_data.h"
 #include "third_party/blink/renderer/core/dom/flat_tree_traversal.h"
-#include "third_party/blink/renderer/core/dom/get_root_node_options.h"
 #include "third_party/blink/renderer/core/dom/layout_tree_builder_traversal.h"
 #include "third_party/blink/renderer/core/dom/mutation_observer_registration.h"
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
@@ -1244,7 +1246,7 @@ class AllowDirtyShadowV0TraversalScope {
   }
 
  private:
-  Member<Document> document_;
+  Document* document_;
   bool old_value_;
 };
 }  // namespace
@@ -3097,8 +3099,8 @@ HTMLSlotElement* Node::assignedSlotForBinding() {
   return nullptr;
 }
 
-void Node::SetFocused(bool flag, WebFocusType focus_type) {
-  if (focus_type == kWebFocusTypeMouse)
+void Node::SetFocused(bool flag, mojom::blink::FocusType focus_type) {
+  if (focus_type == mojom::blink::FocusType::kMouse)
     GetDocument().SetHadKeyboardEvent(false);
   GetDocument().UserActionElements().SetFocused(this, flag);
 }

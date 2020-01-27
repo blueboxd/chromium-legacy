@@ -14,6 +14,10 @@ namespace {
 static constexpr base::TimeDelta kSegmentSize =
     base::TimeDelta::FromSeconds(5);
 
+// Maximum distance between NNRs for them to be consecutive.
+static constexpr base::TimeDelta kMaxNNRDistance =
+    base::TimeDelta::FromSeconds(60);
+
 // Max proportion of dropped frames in a window before we call it "not smooth".
 static constexpr float kMaxDroppedFramesPerWindow = 0.2;
 }
@@ -76,10 +80,12 @@ class SmoothnessHelperImpl : public SmoothnessHelper {
  public:
   SmoothnessHelperImpl(
       std::unique_ptr<LearningTaskController> consecutive_controller,
+      std::unique_ptr<LearningTaskController> nnr_controller,
       const FeatureVector& features,
       Client* player)
       : SmoothnessHelper(features),
         consecutive_bad_(std::move(consecutive_controller)),
+        consecutive_nnr_(std::move(nnr_controller)),
         player_(player) {
     monitor_ = std::make_unique<SmoothnessWindowMonitor>(
         player_, base::BindRepeating(&SmoothnessHelperImpl::OnWindow,
@@ -91,9 +97,51 @@ class SmoothnessHelperImpl : public SmoothnessHelper {
   // with the default value if we've gotten enough data to set one.
   ~SmoothnessHelperImpl() override = default;
 
+  // See if we've exceeded the intra-NNR distance, and reset everything.  Note
+  // that this can be called even when there isn't an NNR.
+  void UpdateNNRWindow() {
+    if (!most_recent_nnr_)
+      return;
+
+    auto now = base::TimeTicks::Now();
+    auto delta = now - *most_recent_nnr_;
+    if (delta >= kMaxNNRDistance) {
+      most_recent_nnr_.reset();
+      num_consecutive_nnrs_ = 0;
+    }
+  }
+
+  void NotifyNNR() override {
+    UpdateNNRWindow();
+    most_recent_nnr_ = base::TimeTicks::Now();
+    num_consecutive_nnrs_++;
+
+    if (num_consecutive_nnrs_ > max_num_consecutive_nnrs_) {
+      max_num_consecutive_nnrs_ = num_consecutive_nnrs_;
+
+      // Insist that we've started the NNR instance, so that we enforce a
+      // minimum amount of playback time before recording anything.  Though
+      // it's possible that an NNR is interesting enough to record it anyway,
+      // and we only want to elide zero-NNR observations for short playbacks.
+      if (consecutive_nnr_.is_started()) {
+        consecutive_nnr_.UpdateObservation(
+            features(), TargetValue(max_num_consecutive_nnrs_));
+      }
+    }
+  }
+
   // Split playback into segments of length |kSegmentSize|, and update the
   // default value of the current playback.
   void OnWindow(int64_t dropped_frames, int64_t decoded_frames) {
+    // After the first window, start the NNR observation.  We want to ignore any
+    // short playback windows.  We might want to require more than one window.
+    // TODO(liberato): How many windows count as a playback for NNR?
+    if (!consecutive_nnr_.is_started()) {
+      UpdateNNRWindow();
+      consecutive_nnr_.UpdateObservation(
+          features(), TargetValue(max_num_consecutive_nnrs_));
+    }
+
     // Compute the percentage of dropped frames for this window.
     double pct = (static_cast<double>(dropped_frames)) / decoded_frames;
 
@@ -156,6 +204,17 @@ class SmoothnessHelperImpl : public SmoothnessHelper {
   int consecutive_bad_windows_ = 0;
   int max_consecutive_bad_windows_ = 0;
 
+  struct Task consecutive_nnr_;
+
+  // Time of the most recent nnr.
+  base::Optional<base::TimeTicks> most_recent_nnr_;
+
+  // Number of NNRs that have occurred within |kMaxNNRDistance|.
+  int num_consecutive_nnrs_ = 0;
+
+  // Maximum value of |num_consecutive_nnrs_| that we've observed.
+  int max_num_consecutive_nnrs_ = 0;
+
   // WebMediaPlayer which will tell us about the decoded / dropped frame counts.
   Client* player_;
 
@@ -164,11 +223,12 @@ class SmoothnessHelperImpl : public SmoothnessHelper {
 
 // static
 std::unique_ptr<SmoothnessHelper> SmoothnessHelper::Create(
-    std::unique_ptr<LearningTaskController> consecutive_controller,
+    std::unique_ptr<LearningTaskController> bad_controller,
+    std::unique_ptr<LearningTaskController> nnr_controller,
     const FeatureVector& features,
     Client* player) {
   return std::make_unique<SmoothnessHelperImpl>(
-      std::move(consecutive_controller), features, player);
+      std::move(bad_controller), std::move(nnr_controller), features, player);
 }
 
 // static

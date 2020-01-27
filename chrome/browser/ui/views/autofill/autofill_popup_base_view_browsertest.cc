@@ -90,36 +90,6 @@ class AutofillPopupBaseViewTest : public InProcessBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(AutofillPopupBaseViewTest);
 };
 
-IN_PROC_BROWSER_TEST_F(AutofillPopupBaseViewTest, GestureTest) {
-  const int kElementSize = 5;
-  gfx::RectF bounds(0, 0, kElementSize, kElementSize);
-  EXPECT_CALL(mock_delegate_, element_bounds())
-      .WillRepeatedly(ReturnRef(bounds));
-  view_->SetPreferredSize(gfx::Size(2 * kElementSize, 2 * kElementSize));
-  ShowView();
-
-  gfx::Point point = view_->GetLocalBounds().CenterPoint();
-  testing::InSequence dummy;
-
-  // Tap down will select an element.
-  ui::GestureEvent tap_down_event = CreateGestureEvent(ui::ET_GESTURE_TAP_DOWN,
-                                                       point);
-  EXPECT_CALL(mock_delegate_, SetSelectionAtPoint(point));
-  SimulateGesture(&tap_down_event);
-
-  // Tapping will accept the selection.
-  ui::GestureEvent tap_event = CreateGestureEvent(ui::ET_GESTURE_TAP, point);
-  EXPECT_CALL(mock_delegate_, SetSelectionAtPoint(point));
-  EXPECT_CALL(mock_delegate_, AcceptSelectedLine());
-  SimulateGesture(&tap_event);
-
-  // Tapping outside the bounds clears any selection.
-  ui::GestureEvent outside_tap = CreateGestureEvent(ui::ET_GESTURE_TAP,
-                                                    gfx::Point(100, 100));
-  EXPECT_CALL(mock_delegate_, SelectionCleared());
-  SimulateGesture(&outside_tap);
-}
-
 IN_PROC_BROWSER_TEST_F(AutofillPopupBaseViewTest, DoubleClickTest) {
   gfx::RectF bounds(0, 0, 5, 5);
   EXPECT_CALL(mock_delegate_, element_bounds())

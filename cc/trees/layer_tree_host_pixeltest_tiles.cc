@@ -220,8 +220,11 @@ INSTANTIATE_TEST_SUITE_P(All,
                          LayerTreeHostTilesTestPartialInvalidationMultiThread,
                          ::testing::ValuesIn(kTestCasesMultiThread));
 
-// Flaky on Linux TSAN. https://crbug.com/707711
 #if defined(OS_LINUX) && defined(THREAD_SANITIZER)
+// Flaky on Linux TSAN. https://crbug.com/707711
+#define MAYBE_PartialRaster DISABLED_PartialRaster
+#elif defined(OS_WIN) && defined(ADDRESS_SANITIZER)
+// Flaky on Windows ASAN https://crbug.com/1045521
 #define MAYBE_PartialRaster DISABLED_PartialRaster
 #else
 #define MAYBE_PartialRaster PartialRaster

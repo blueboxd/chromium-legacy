@@ -8,14 +8,14 @@
 #import <Foundation/Foundation.h>
 
 #include "base/macros.h"
-#include "ios/chrome/browser/browser_state/chrome_browser_state_forward.h"
 
 @class TabModel;
 
+class ChromeBrowserState;
 class TabModelListObserver;
 
 // A class containing static functions to help maintain a 1:N relationship
-// between an ios::ChromeBrowserState and multiple TabModels.
+// between an ChromeBrowserState and multiple TabModels.
 class TabModelList {
  public:
   // Adds |observer| to the list of observers.
@@ -29,22 +29,22 @@ class TabModelList {
   // It is an error if |tab_model is already registered as associated to
   // |browser_state|.
   static void RegisterTabModelWithChromeBrowserState(
-      ios::ChromeBrowserState* browser_state,
+      ChromeBrowserState* browser_state,
       TabModel* tab_model);
 
   // Unregisters the association between |tab_model| and |browser_state|.
   // It is an error if no such association exists.
   static void UnregisterTabModelFromChromeBrowserState(
-      ios::ChromeBrowserState* browser_state,
+      ChromeBrowserState* browser_state,
       TabModel* tab_model);
 
   // Returns the list of all TabModels associated with |browser_state|.
   static NSArray<TabModel*>* GetTabModelsForChromeBrowserState(
-      ios::ChromeBrowserState* browser_state);
+      ChromeBrowserState* browser_state);
 
   // Returns the last active TabModel associated with |browser_state|.
   static TabModel* GetLastActiveTabModelForChromeBrowserState(
-      ios::ChromeBrowserState* browser_state);
+      ChromeBrowserState* browser_state);
 
   // Returns true if a incognito session is currently active (i.e. at least
   // one incognito tab is open).

@@ -22,6 +22,18 @@ class ExternalBeginFrameSource;
 
 namespace android_webview {
 
+class RootFrameSinkClient {
+ public:
+  virtual ~RootFrameSinkClient() = default;
+
+  virtual void SetNeedsBeginFrames(bool needs_begin_frame) = 0;
+  virtual void Invalidate() = 0;
+  virtual void ReturnResources(
+      viz::FrameSinkId frame_sink_id,
+      uint32_t layer_tree_frame_sink_id,
+      std::vector<viz::ReturnedResource> resources) = 0;
+};
+
 // This class holds per-AwContents classes on the viz thread that do not need
 // access to the GPU. It is single-threaded and refcounted on the viz thread.
 // This needs to be separate from classes for rendering which requires GPU
@@ -31,8 +43,7 @@ class RootFrameSink : public base::RefCounted<RootFrameSink>,
                       public viz::ExternalBeginFrameSourceClient {
  public:
   using SetNeedsBeginFrameCallback = base::RepeatingCallback<void(bool)>;
-  RootFrameSink(SetNeedsBeginFrameCallback set_needs_begin_frame,
-                base::RepeatingClosure invalidate);
+  RootFrameSink(RootFrameSinkClient* client);
 
   viz::CompositorFrameSinkSupport* support() const { return support_.get(); }
   const viz::FrameSinkId& root_frame_sink_id() const {
@@ -44,6 +55,10 @@ class RootFrameSink : public base::RefCounted<RootFrameSink>,
   void SetBeginFrameSourcePaused(bool paused);
   void SetNeedsDraw(bool needs_draw);
   bool IsChildSurface(const viz::FrameSinkId& frame_sink_id);
+
+  void ReturnResources(viz::FrameSinkId frame_sink_id,
+                       uint32_t layer_tree_frame_sink_id,
+                       std::vector<viz::ReturnedResource> resources);
 
   // viz::mojom::CompositorFrameSinkClient implementation.
   void DidReceiveCompositorFrameAck(
@@ -69,8 +84,7 @@ class RootFrameSink : public base::RefCounted<RootFrameSink>,
 
   bool needs_begin_frames_ = false;
   bool needs_draw_ = false;
-  SetNeedsBeginFrameCallback set_needs_begin_frame_;
-  base::RepeatingClosure invalidate_;
+  RootFrameSinkClient* const client_;
 
   THREAD_CHECKER(thread_checker_);
 

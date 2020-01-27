@@ -5,8 +5,8 @@
 #include "third_party/blink/renderer/modules/webgl/webgl_video_texture.h"
 
 #include "build/build_config.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_video_frame_metadata.h"
 #include "third_party/blink/renderer/core/html/media/html_video_element.h"
-#include "third_party/blink/renderer/modules/video_raf/video_frame_metadata.h"
 #include "third_party/blink/renderer/modules/webgl/webgl_rendering_context_base.h"
 #include "third_party/blink/renderer/modules/webgl/webgl_video_texture_enum.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"

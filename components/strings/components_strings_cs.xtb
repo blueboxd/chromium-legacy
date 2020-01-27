@@ -79,6 +79,7 @@
 <translation id="129553762522093515">Nedávno zavřené</translation>
 <translation id="1298536327547837046">Vyhledávání malwaru</translation>
 <translation id="129863573139666797"><ph name="BEGIN_LINK" />Zkuste vymazat soubory cookie<ph name="END_LINK" /></translation>
+<translation id="1301324364792935241">Zkontrolujte nastavení zabezpečeného DNS</translation>
 <translation id="1307966114820526988">Funkce, které již nejsou podporovány</translation>
 <translation id="1314509827145471431">Vazba vpravo</translation>
 <translation id="1320233736580025032">Prc1 (obálka)</translation>
@@ -152,6 +153,7 @@
 <translation id="1569487616857761740">Zadejte datum vypršení platnosti</translation>
 <translation id="1581080074034554886">CVC</translation>
 <translation id="1583429793053364125">Při zobrazování této webové stránky došlo k chybě.</translation>
+<translation id="1586541204584340881">Která rozšíření máte nainstalovaná</translation>
 <translation id="1588438908519853928">Normální</translation>
 <translation id="1592005682883173041">Přístup k místním datům</translation>
 <translation id="1594030484168838125">Zvolit</translation>
@@ -290,7 +292,6 @@
 <translation id="2218879909401188352">Útočníci, kteří na webu <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> aktuálně působí, by vám do zařízení mohli nainstalovat nebezpečné aplikace, které jej poškodí, přidat skryté poplatky na účet za mobilní služby nebo odcizit osobní údaje. <ph name="BEGIN_LEARN_MORE_LINK" />Další informace<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="2224337661447660594">Nejste připojeni k internetu</translation>
 <translation id="2230458221926704099">Opravte připojení pomocí <ph name="BEGIN_LINK" />diagnostické aplikace<ph name="END_LINK" /></translation>
-<translation id="22320125457191592">Pro vás</translation>
 <translation id="2239100178324503013">Odeslat</translation>
 <translation id="2248949050832152960">Použít WebAuthn</translation>
 <translation id="2250931979407627383">Sešití na levém okraji</translation>
@@ -363,6 +364,7 @@
 <translation id="2544644783021658368">Jeden dokument</translation>
 <translation id="254947805923345898">Hodnota zásady není platná.</translation>
 <translation id="255002559098805027">Web <ph name="HOST_NAME" /> vrátil neplatnou odpověď.</translation>
+<translation id="2553853292994445426">Zkontrolujte nastavení zabezpečeného DNS. Je možné, že jste nakonfigurovali zabezpečený server DNS, k němuž se nelze připojit.</translation>
 <translation id="2556876185419854533">&amp;Vrátit úpravy zpět</translation>
 <translation id="257674075312929031">Skupina</translation>
 <translation id="2586657967955657006">Schránka</translation>
@@ -475,6 +477,7 @@
 <translation id="3095940652251934233">Statement</translation>
 <translation id="3096100844101284527">Přidat adresu vyzvednutí</translation>
 <translation id="3105172416063519923">ID díla:</translation>
+<translation id="3107591622054137333"><ph name="BEGIN_LINK" />Zkontrolovat konfiguraci zabezpečeného DNS<ph name="END_LINK" /></translation>
 <translation id="3109728660330352905">K zobrazení této stránky nemáte oprávnění.</translation>
 <translation id="3113284927548439113">Třetí směna</translation>
 <translation id="3116158981186517402">Laminování</translation>
@@ -563,7 +566,6 @@
 <translation id="3531780078352352885">Listy úlohy</translation>
 <translation id="3533328374079021623">Schránka 5</translation>
 <translation id="3539171420378717834">Uchovat kopii této karty v tomto zařízení</translation>
-<translation id="3553513561058684206">Pro vás</translation>
 <translation id="3558573058928565255">Den</translation>
 <translation id="3566021033012934673">Vaše připojení není soukromé</translation>
 <translation id="3574305903863751447"><ph name="CITY" />, <ph name="STATE" /> <ph name="COUNTRY" /></translation>
@@ -769,6 +771,7 @@
 <translation id="4390472908992056574">Brim</translation>
 <translation id="4406896451731180161">výsledky vyhledávání</translation>
 <translation id="4408413947728134509">Soubory cookie <ph name="NUM_COOKIES" /></translation>
+<translation id="4414290883293381923">Právě jste své heslo zadali na klamavém webu. Chrome doporučuje navštívit weby <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, <ph name="WEBSITE_3" />a další weby, na nichž toto heslo používáte, a okamžitě ho změnit.</translation>
 <translation id="4415426530740016218">Adresa vyzvednutí</translation>
 <translation id="4424024547088906515">Server nedokázal prokázat, že patří doméně <ph name="DOMAIN" />. Chrome jeho bezpečnostnímu certifikátu nedůvěřuje. Může to být způsobeno nesprávnou konfigurací nebo tím, že vaše připojení zachytává útočník.</translation>
 <translation id="443121186588148776">Sériový port</translation>
@@ -1199,6 +1202,7 @@ Kontaktujte administrátora systému.</translation>
 <translation id="6353505687280762741">{COUNT,plural, =0{Žádné}=1{1 heslo (pro <ph name="DOMAIN_LIST" />, synchronizováno)}=2{2 hesla (pro <ph name="DOMAIN_LIST" />, synchronizováno)}few{# hesla (pro <ph name="DOMAIN_LIST" />, synchronizováno)}many{# hesla (pro <ph name="DOMAIN_LIST" />, synchronizováno)}other{# hesel (pro <ph name="DOMAIN_LIST" />, synchronizováno)}}</translation>
 <translation id="6358450015545214790">Nápověda</translation>
 <translation id="6361757823711327522">B7</translation>
+<translation id="6364095313648930329"><ph name="BEGIN_LINK" />Zkontrolovat proxy server, firewall a konfiguraci zabezpečeného DNS<ph name="END_LINK" /></translation>
 <translation id="6366710531182496394">Dvě sponky vlevo</translation>
 <translation id="6377268785556383139">1 výsledek pro dotaz <ph name="SEARCH_TEXT" /></translation>
 <translation id="6380497234672085559">A0</translation>
@@ -1221,6 +1225,7 @@ Kontaktujte administrátora systému.</translation>
 <translation id="6433595998831338502">Web <ph name="HOST_NAME" /> odmítl připojení.</translation>
 <translation id="6434309073475700221">Zahodit</translation>
 <translation id="6440503408713884761">Ignorováno</translation>
+<translation id="6443406338865242315">Která rozšíření a pluginy máte nainstalované</translation>
 <translation id="6446163441502663861">Kahu (obálka)</translation>
 <translation id="6446608382365791566">Přidání dalších informací</translation>
 <translation id="6447842834002726250">Soubory cookie</translation>
@@ -1330,6 +1335,7 @@ Kontaktujte administrátora systému.</translation>
 <translation id="7012363358306927923">China UnionPay</translation>
 <translation id="7016992613359344582">Může se jednat o jednorázové nebo opakované poplatky, které nemusejí být jasně patrné.</translation>
 <translation id="7029809446516969842">Hesla</translation>
+<translation id="7031646650991750659">Které aplikace Google Play máte nainstalované</translation>
 <translation id="7050187094878475250">Pokusili jste se připojit k doméně <ph name="DOMAIN" />, ale server předložil certifikát, který má příliš dlouhé období platnosti a je proto nedůvěryhodný.</translation>
 <translation id="705310974202322020">{NUM_CARDS,plural, =1{Tuto kartu v tuto chvíli nelze uložit}few{Tyto karty v tuto chvíli nelze uložit}many{Tyto karty v tuto chvíli nelze uložit}other{Tyto karty v tuto chvíli nelze uložit}}</translation>
 <translation id="7053983685419859001">Blokovat</translation>
@@ -1388,6 +1394,7 @@ Kontaktujte administrátora systému.</translation>
 <translation id="7319430975418800333">A3</translation>
 <translation id="7320336641823683070">Pomoc s připojením</translation>
 <translation id="733354035281974745">Místní přepsání účtu na zařízení</translation>
+<translation id="7333654844024768166">Právě jste své heslo zadali na klamavém webu. Chromium doporučuje navštívit weby <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, <ph name="WEBSITE_3" /> a další weby, na nichž toto heslo používáte, a okamžitě ho změnit.</translation>
 <translation id="7334320624316649418">&amp;Opakovat změnu uspořádání</translation>
 <translation id="7337706099755338005">Pro vaši platformu nedostupné.</translation>
 <translation id="733923710415886693">Certifikát serveru nebyl zveřejněn prostřednictvím projektu Certificate Transparency.</translation>

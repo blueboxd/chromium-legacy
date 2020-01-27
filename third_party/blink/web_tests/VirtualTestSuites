@@ -651,9 +651,9 @@
     "args": ["--enable-blink-features=CSSModules"]
   },
   {
-    "prefix": "out-of-blink-frame-ancestors",
+    "prefix": "out-of-blink-frame-ancestors-disabled",
     "bases": ["external/wpt/content-security-policy/frame-ancestors", "external/wpt/portals/csp"],
-    "args": ["--enable-features=OutOfBlinkFrameAncestors"]
+    "args": ["--disable-features=OutOfBlinkFrameAncestors"]
   },
   {
     "prefix": "import-maps-disabled",

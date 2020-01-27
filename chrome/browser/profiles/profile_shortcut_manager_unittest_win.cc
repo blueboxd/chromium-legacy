@@ -269,9 +269,9 @@ class ProfileShortcutManagerTest : public testing::Test {
         base::CreateCOMSTATaskRunner({base::ThreadPool(), base::MayBlock()})
             .get(),
         location,
-        base::Bind(&ShellUtil::CreateOrUpdateShortcut, shortcut_location,
-                   properties, ShellUtil::SHELL_SHORTCUT_CREATE_ALWAYS),
-        base::Bind([](bool succeeded) { EXPECT_TRUE(succeeded); }));
+        base::BindOnce(&ShellUtil::CreateOrUpdateShortcut, shortcut_location,
+                       properties, ShellUtil::SHELL_SHORTCUT_CREATE_ALWAYS),
+        base::BindOnce([](bool succeeded) { EXPECT_TRUE(succeeded); }));
     task_environment_.RunUntilIdle();
   }
 

@@ -32,7 +32,7 @@
 #endif
 
 #if defined(OS_ANDROID)
-#include "chrome/browser/android/chrome_feature_list.h"
+#include "chrome/browser/flags/android/chrome_feature_list.h"
 #include "chrome/browser/installable/installed_webapp_provider.h"
 #include "chrome/browser/notifications/notification_channels_provider_android.h"
 #endif  // OS_ANDROID

@@ -46,6 +46,7 @@
 
 #include <memory>
 #include "base/macros.h"
+#include "third_party/blink/public/mojom/scroll/scroll_into_view_params.mojom-blink-forward.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/layout/scroll_anchor.h"
 #include "third_party/blink/renderer/core/page/scrolling/sticky_position_scrolling_constraints.h"
@@ -437,8 +438,9 @@ class CORE_EXPORT PaintLayerScrollableArea final
 
   // Returns the new offset, after scrolling, of the given rect in absolute
   // coordinates, clipped by the parent's client rect.
-  PhysicalRect ScrollIntoView(const PhysicalRect&,
-                              const WebScrollIntoViewParams&) override;
+  PhysicalRect ScrollIntoView(
+      const PhysicalRect&,
+      const mojom::blink::ScrollIntoViewParamsPtr&) override;
 
   // Returns true if scrollable area is in the FrameView's collection of
   // scrollable areas. This can only happen if we're scrollable, visible to hit

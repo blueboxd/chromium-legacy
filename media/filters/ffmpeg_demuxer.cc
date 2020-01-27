@@ -1258,10 +1258,10 @@ void FFmpegDemuxer::OnOpenContextDone(bool result) {
   // Fully initialize AVFormatContext by parsing the stream a little.
   base::PostTaskAndReplyWithResult(
       blocking_task_runner_.get(), FROM_HERE,
-      base::Bind(&avformat_find_stream_info, glue_->format_context(),
-                 static_cast<AVDictionary**>(nullptr)),
-      base::Bind(&FFmpegDemuxer::OnFindStreamInfoDone,
-                 weak_factory_.GetWeakPtr()));
+      base::BindOnce(&avformat_find_stream_info, glue_->format_context(),
+                     static_cast<AVDictionary**>(nullptr)),
+      base::BindOnce(&FFmpegDemuxer::OnFindStreamInfoDone,
+                     weak_factory_.GetWeakPtr()));
 }
 
 void FFmpegDemuxer::OnFindStreamInfoDone(int result) {

@@ -131,7 +131,6 @@ class ManagePasswordsBubbleModelTest : public ::testing::Test {
   void PretendPasswordWaiting(ManagePasswordsBubbleModel::DisplayReason reason =
                                   ManagePasswordsBubbleModel::AUTOMATIC);
   void PretendUpdatePasswordWaiting();
-  void PretendAutoSigningIn();
   void PretendManagingPasswords();
 
   void DestroyModelAndVerifyControllerExpectations();
@@ -191,13 +190,6 @@ void ManagePasswordsBubbleModelTest::PretendUpdatePasswordWaiting() {
   forms.push_back(std::move(current_form));
   EXPECT_CALL(*controller(), GetCurrentForms()).WillOnce(ReturnRef(forms));
   SetUpWithState(password_manager::ui::PENDING_PASSWORD_UPDATE_STATE,
-                 ManagePasswordsBubbleModel::AUTOMATIC);
-}
-
-void ManagePasswordsBubbleModelTest::PretendAutoSigningIn() {
-  EXPECT_CALL(*controller(), GetPendingPassword())
-      .WillOnce(ReturnRef(pending_password()));
-  SetUpWithState(password_manager::ui::AUTO_SIGNIN_STATE,
                  ManagePasswordsBubbleModel::AUTOMATIC);
 }
 
@@ -332,14 +324,6 @@ TEST_F(ManagePasswordsBubbleModelTest, ClickManage) {
 
   EXPECT_EQ(password_manager::ui::MANAGE_STATE, model()->state());
   DestroyModelExpectReason(password_manager::metrics_util::CLICKED_MANAGE);
-}
-
-TEST_F(ManagePasswordsBubbleModelTest, PopupAutoSigninToast) {
-  PretendAutoSigningIn();
-
-  model()->OnAutoSignInToastTimeout();
-  DestroyModelExpectReason(
-      password_manager::metrics_util::AUTO_SIGNIN_TOAST_TIMEOUT);
 }
 
 TEST_F(ManagePasswordsBubbleModelTest, ClickUpdate) {

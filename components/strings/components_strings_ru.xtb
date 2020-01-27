@@ -290,7 +290,6 @@
 <translation id="2218879909401188352">Злоумышленники могут использовать сайт <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />, чтобы установить опасные приложения, которые причиняют вред устройствам, увеличивают расходы на мобильную связь и крадут личные данные. <ph name="BEGIN_LEARN_MORE_LINK" />Подробнее…<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="2224337661447660594">Нет подключения к Интернету</translation>
 <translation id="2230458221926704099">Чтобы устранить неполадки, проведите <ph name="BEGIN_LINK" />диагностику<ph name="END_LINK" /> подключения.</translation>
-<translation id="22320125457191592">Для вас</translation>
 <translation id="2239100178324503013">Отправить</translation>
 <translation id="2248949050832152960">Использовать WebAuthn</translation>
 <translation id="2250931979407627383">Скобы по левому краю</translation>
@@ -565,7 +564,6 @@
 <translation id="3531780078352352885">Листы задания</translation>
 <translation id="3533328374079021623">Почтовый ящик 5</translation>
 <translation id="3539171420378717834">Хранить данные карты на этом устройстве</translation>
-<translation id="3553513561058684206">Для вас</translation>
 <translation id="3558573058928565255">До дня</translation>
 <translation id="3566021033012934673">Подключение не защищено</translation>
 <translation id="3574305903863751447"><ph name="CITY" />, <ph name="STATE" /> <ph name="COUNTRY" /></translation>

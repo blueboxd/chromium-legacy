@@ -9,50 +9,47 @@
 goog.provide('MultiSpannable');
 goog.provide('Spannable');
 
-goog.scope(function() {
-
-/**
- * @constructor
- * @param {string|!Spannable=} opt_string Initial value of the spannable.
- * @param {*=} opt_annotation Initial annotation for the entire string.
- */
-Spannable = function(opt_string, opt_annotation) {
+Spannable = class {
   /**
-   * Underlying string.
-   * @type {string}
-   * @private
+   * @param {string|!Spannable=} opt_string Initial value of the spannable.
+   * @param {*=} opt_annotation Initial annotation for the entire string.
    */
-  this.string_ = opt_string instanceof Spannable ? '' : opt_string || '';
+  constructor(opt_string, opt_annotation) {
+    /**
+     * Underlying string.
+     * @type {string}
+     * @private
+     */
+    this.string_ = opt_string instanceof Spannable ? '' : opt_string || '';
 
-  /**
-   * Spans (annotations).
-   * @type {!Array<!SpanStruct>}
-   * @private
-   */
-  this.spans_ = [];
+    /**
+     * Spans (annotations).
+     * @type {!Array<!SpanStruct>}
+     * @private
+     */
+    this.spans_ = [];
 
-  // Append the initial spannable.
-  if (opt_string instanceof Spannable) {
-    this.append(opt_string);
+    // Append the initial spannable.
+    if (opt_string instanceof Spannable) {
+      this.append(opt_string);
+    }
+
+    // Optionally annotate the entire string.
+    if (goog.isDef(opt_annotation)) {
+      var len = this.string_.length;
+      this.spans_.push({value: opt_annotation, start: 0, end: len});
+    }
   }
 
-  // Optionally annotate the entire string.
-  if (goog.isDef(opt_annotation)) {
-    var len = this.string_.length;
-    this.spans_.push({value: opt_annotation, start: 0, end: len});
-  }
-};
-
-Spannable.prototype = {
   /** @override */
   toString() {
     return this.string_;
-  },
+  }
 
   /** @return {number} The length of the string */
   get length() {
     return this.string_.length;
-  },
+  }
 
   /**
    * Adds a span to some region of the string.
@@ -63,7 +60,7 @@ Spannable.prototype = {
   setSpan(value, start, end) {
     this.removeSpan(value);
     this.setSpanInternal(value, start, end);
-  },
+  }
 
   /**
    * @param {*} value Annotation.
@@ -88,7 +85,7 @@ Spannable.prototype = {
           'span out of range (start=' + start + ', end=' + end +
           ', len=' + this.string_.length + ')');
     }
-  },
+  }
 
   /**
    * Removes a span.
@@ -100,7 +97,7 @@ Spannable.prototype = {
         this.spans_.splice(i, 1);
       }
     }
-  },
+  }
 
   /**
    * Appends another Spannable or string to this one.
@@ -118,16 +115,17 @@ Spannable.prototype = {
     } else if (typeof other === 'string') {
       this.string_ += /** @type {string} */ (other);
     }
-  },
+  }
 
   /**
    * Returns the first value matching a position.
    * @param {number} position Position to query.
-   * @return {*} Value annotating that position, or undefined if none is found.
+   * @return {*} Value annotating that position, or undefined if none is
+   *     found.
    */
   getSpan(position) {
     return valueOfSpan(this.spans_.find(spanCoversPosition(position)));
-  },
+  }
 
   /**
    * Returns the first span value which is an instance of a given constructor.
@@ -136,7 +134,7 @@ Spannable.prototype = {
    */
   getSpanInstanceOf(constructor) {
     return valueOfSpan(this.spans_.find(spanInstanceOf(constructor)));
-  },
+  }
 
   /**
    * Returns all span values which are an instance of a given constructor.
@@ -147,7 +145,7 @@ Spannable.prototype = {
    */
   getSpansInstanceOf(constructor) {
     return (this.spans_.filter(spanInstanceOf(constructor)).map(valueOfSpan));
-  },
+  }
 
   /**
    * Returns all spans matching a position.
@@ -156,7 +154,7 @@ Spannable.prototype = {
    */
   getSpans(position) {
     return (this.spans_.filter(spanCoversPosition(position)).map(valueOfSpan));
-  },
+  }
 
   /**
    * Returns whether a span is contained in this object.
@@ -165,7 +163,7 @@ Spannable.prototype = {
    */
   hasSpan(value) {
     return this.spans_.some(spanValueIs(value));
-  },
+  }
 
   /**
    * Returns the start of the requested span. Throws if the span doesn't exist
@@ -175,7 +173,7 @@ Spannable.prototype = {
    */
   getSpanStart(value) {
     return this.getSpanByValueOrThrow_(value).start;
-  },
+  }
 
   /**
    * Returns the end of the requested span. Throws if the span doesn't exist
@@ -185,7 +183,7 @@ Spannable.prototype = {
    */
   getSpanEnd(value) {
     return this.getSpanByValueOrThrow_(value).end;
-  },
+  }
 
   /**
    * @param {*} value Annotation.
@@ -199,7 +197,7 @@ Spannable.prototype = {
         .map(function(s) {
           return {start: s.start, end: s.end};
         });
-  },
+  }
 
   /**
    * Returns the number of characters covered by the given span. Throws if
@@ -210,7 +208,7 @@ Spannable.prototype = {
   getSpanLength(value) {
     var span = this.getSpanByValueOrThrow_(value);
     return span.end - span.start;
-  },
+  }
 
   /**
    * Gets the internal object for a span or throws if the span doesn't exist.
@@ -224,7 +222,7 @@ Spannable.prototype = {
       return span;
     }
     throw new Error('Span ' + value + ' doesn\'t exist in spannable');
-  },
+  }
 
   /**
    * Returns a substring of this spannable.
@@ -253,7 +251,7 @@ Spannable.prototype = {
       }
     });
     return result;
-  },
+  }
 
   /**
    * Trims whitespace from the beginning.
@@ -261,7 +259,7 @@ Spannable.prototype = {
    */
   trimLeft() {
     return this.trim_(true, false);
-  },
+  }
 
   /**
    * Trims whitespace from the end.
@@ -269,7 +267,7 @@ Spannable.prototype = {
    */
   trimRight() {
     return this.trim_(false, true);
-  },
+  }
 
   /**
    * Trims whitespace from the beginning and end.
@@ -277,7 +275,7 @@ Spannable.prototype = {
    */
   trim() {
     return this.trim_(true, true);
-  },
+  }
 
   /**
    * Trims whitespace from either the beginning and end or both.
@@ -305,12 +303,12 @@ Spannable.prototype = {
     var trimmedEnd =
         trimEnd ? this.string_.match(/\s*$/).index : this.string_.length;
     return this.substring(trimmedStart, trimmedEnd);
-  },
+  }
 
   /**
-   * Returns this spannable to a json serializable form, including the text and
-   * span objects whose types have been registered with registerSerializableSpan
-   * or registerStatelessSerializableSpan.
+   * Returns this spannable to a json serializable form, including the text
+   * and span objects whose types have been registered with
+   * registerSerializableSpan or registerStatelessSerializableSpan.
    * @return {!SerializedSpannable} the json serializable form.
    */
   toJson() {
@@ -334,106 +332,105 @@ Spannable.prototype = {
     });
     return result;
   }
+
+  /**
+   * Creates a spannable from a json serializable representation.
+   * @param {!SerializedSpannable} obj object containing the serializable
+   *     representation.
+   * @return {!Spannable}
+   */
+  static fromJson(obj) {
+    if (typeof obj.string !== 'string') {
+      throw new Error(
+          'Invalid spannable json object: string field not a string');
+    }
+    if (!(obj.spans instanceof Array)) {
+      throw new Error('Invalid spannable json object: no spans array');
+    }
+    var result = new Spannable(obj.string);
+    result.spans_ = obj.spans.map(function(span) {
+      if (typeof span.type !== 'string') {
+        throw new Error(
+            'Invalid span in spannable json object: type not a string');
+      }
+      if (typeof span.start !== 'number' || typeof span.end !== 'number') {
+        throw new Error(
+            'Invalid span in spannable json object: start or end not a number');
+      }
+      var serializeInfo = serializableSpansByName.get(span.type);
+      var value = serializeInfo.fromJson(span.value);
+      return {value: value, start: span.start, end: span.end};
+    });
+    return result;
+  }
+
+  /**
+   * Registers a type that can be converted to a json serializable format.
+   * @param {!Function} constructor The type of object that can be converted.
+   * @param {string} name String identifier used in the serializable format.
+   * @param {function(!Object): !Object} fromJson A function that converts
+   *     the serializable object to an actual object of this type.
+   * @param {function(): !Object} toJson A function that converts this object
+   *     to a json serializable object. The function will be called with
+   *     |this| set to the object to convert.
+   */
+  static registerSerializableSpan(constructor, name, fromJson, toJson) {
+    var obj = {name: name, fromJson: fromJson, toJson: toJson};
+    serializableSpansByName.set(name, obj);
+    serializableSpansByConstructor.set(constructor, obj);
+  }
+
+  /**
+   * Registers an object type that can be converted to/from a json
+   * serializable form. Objects of this type carry no state that will be
+   * preserved when serialized.
+   * @param {!Function} constructor The type of the object that can be
+   *     converted. This constructor will be called with no arguments to
+   *     construct new objects.
+   * @param {string} name Name of the type used in the serializable object.
+   */
+  static registerStatelessSerializableSpan(constructor, name) {
+    var obj = {name: name, toJson: undefined};
+    /**
+     * @param {!Object} obj
+     * @return {!Object}
+     */
+    obj.fromJson = function(obj) {
+      return new constructor();
+    };
+    serializableSpansByName.set(name, obj);
+    serializableSpansByConstructor.set(constructor, obj);
+  }
 };
+
 
 /**
  * A spannable that allows a span value to annotate discontinuous regions of the
  * string. In effect, a span value can be set multiple times.
  * Note that most methods that assume a span value is unique such as
  * |getSpanStart| will use the first span value.
- * @constructor
- * @param {string|!Spannable=} opt_string Initial value of the spannable.
- * @param {*=} opt_annotation Initial annotation for the entire string.
- * @extends {Spannable}
  */
-MultiSpannable = function(opt_string, opt_annotation) {
-  Spannable.call(this, opt_string, opt_annotation);
-};
-
-MultiSpannable.prototype = {
-  __proto__: Spannable.prototype,
+MultiSpannable = class extends Spannable {
+  /**
+   * @param {string|!Spannable=} opt_string Initial value of the spannable.
+   * @param {*=} opt_annotation Initial annotation for the entire string.
+   */
+  constructor(opt_string, opt_annotation) {
+    super(opt_string, opt_annotation);
+  }
 
   /** @override */
   setSpan(value, start, end) {
     this.setSpanInternal(value, start, end);
-  },
+  }
 
   /** @override */
   substring(start, opt_end) {
     var ret = Spannable.prototype.substring.call(this, start, opt_end);
     return new MultiSpannable(ret);
-  },
-
-};
-
-/**
- * Creates a spannable from a json serializable representation.
- * @param {!SerializedSpannable} obj object containing the serializable
- *     representation.
- * @return {!Spannable}
- */
-Spannable.fromJson = function(obj) {
-  if (typeof obj.string !== 'string') {
-    throw new Error('Invalid spannable json object: string field not a string');
-  }
-  if (!(obj.spans instanceof Array)) {
-    throw new Error('Invalid spannable json object: no spans array');
-  }
-  var result = new Spannable(obj.string);
-  result.spans_ = obj.spans.map(function(span) {
-    if (typeof span.type !== 'string') {
-      throw new Error(
-          'Invalid span in spannable json object: type not a string');
     }
-    if (typeof span.start !== 'number' || typeof span.end !== 'number') {
-      throw new Error(
-          'Invalid span in spannable json object: start or end not a number');
-    }
-    var serializeInfo = serializableSpansByName.get(span.type);
-    var value = serializeInfo.fromJson(span.value);
-    return {value: value, start: span.start, end: span.end};
-  });
-  return result;
 };
 
-/**
- * Registers a type that can be converted to a json serializable format.
- * @param {!Function} constructor The type of object that can be converted.
- * @param {string} name String identifier used in the serializable format.
- * @param {function(!Object): !Object} fromJson A function that converts
- *     the serializable object to an actual object of this type.
- * @param {function(): !Object} toJson A function that converts this object to
- *     a json serializable object. The function will be called with |this| set
- *     to the object to convert.
- */
-Spannable.registerSerializableSpan = function(
-    constructor, name, fromJson, toJson) {
-  var obj = {name: name, fromJson: fromJson, toJson: toJson};
-  serializableSpansByName.set(name, obj);
-  serializableSpansByConstructor.set(constructor, obj);
-};
-
-/**
- * Registers an object type that can be converted to/from a json serializable
- * form. Objects of this type carry no state that will be preserved
- * when serialized.
- * @param {!Function} constructor The type of the object that can be converted.
- *     This constructor will be called with no arguments to construct
- *     new objects.
- * @param {string} name Name of the type used in the serializable object.
- */
-Spannable.registerStatelessSerializableSpan = function(constructor, name) {
-  var obj = {name: name, toJson: undefined};
-  /**
-   * @param {!Object} obj
-   * @return {!Object}
-   */
-  obj.fromJson = function(obj) {
-    return new constructor();
-  };
-  serializableSpansByName.set(name, obj);
-  serializableSpansByConstructor.set(constructor, obj);
-};
 
 /**
  * An annotation with its start and end points.
@@ -513,4 +510,3 @@ function spanValueIs(value) {
 function valueOfSpan(span) {
   return span ? span.value : undefined;
 }
-});

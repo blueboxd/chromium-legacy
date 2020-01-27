@@ -599,11 +599,6 @@ const base::Feature kV8LowMemoryModeForSubframes{
 const base::Feature kV8VmFuture{"V8VmFuture",
                                 base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enable WebAssembly structured cloning.
-// http://webassembly.org/
-const base::Feature kWebAssembly{"WebAssembly",
-                                 base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Enable WebAssembly baseline compilation and tier up.
 const base::Feature kWebAssemblyBaseline{"WebAssemblyBaseline",
 #ifdef ARCH_CPU_X86_FAMILY

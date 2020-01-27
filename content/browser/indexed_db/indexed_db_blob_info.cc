@@ -13,6 +13,8 @@
 
 namespace content {
 
+const int64_t IndexedDBBlobInfo::kUnknownSize;
+
 // static
 void IndexedDBBlobInfo::ConvertBlobInfo(
     const std::vector<IndexedDBBlobInfo>& blob_info,
@@ -35,7 +37,7 @@ void IndexedDBBlobInfo::ConvertBlobInfo(
   }
 }
 
-IndexedDBBlobInfo::IndexedDBBlobInfo() : is_file_(false), size_(-1) {}
+IndexedDBBlobInfo::IndexedDBBlobInfo() : is_file_(false), size_(kUnknownSize) {}
 
 IndexedDBBlobInfo::IndexedDBBlobInfo(
     mojo::PendingRemote<blink::mojom::Blob> blob_remote,
@@ -58,22 +60,28 @@ IndexedDBBlobInfo::IndexedDBBlobInfo(
     const std::string& uuid,
     const base::FilePath& file_path,
     const base::string16& file_name,
-    const base::string16& type)
+    const base::string16& type,
+    const base::Time& last_modified,
+    const int64_t size)
     : is_file_(true),
       blob_remote_(std::move(blob_remote)),
       uuid_(uuid),
       type_(type),
-      size_(-1),
+      size_(size),
       file_name_(file_name),
-      file_path_(file_path) {}
+      file_path_(file_path),
+      last_modified_(last_modified) {}
 
 IndexedDBBlobInfo::IndexedDBBlobInfo(int64_t blob_number,
                                      const base::string16& type,
-                                     const base::string16& file_name)
+                                     const base::string16& file_name,
+                                     const base::Time& last_modified,
+                                     const int64_t size)
     : is_file_(true),
       type_(type),
-      size_(-1),
+      size_(size),
       file_name_(file_name),
+      last_modified_(last_modified),
       blob_number_(blob_number) {}
 
 IndexedDBBlobInfo::IndexedDBBlobInfo(const IndexedDBBlobInfo& other) = default;

@@ -224,6 +224,9 @@ class COMPONENT_EXPORT(UI_BASE_X) XWindow {
 
   void NotifyBoundsChanged(const gfx::Rect& new_bounds_in_px);
 
+  // Initializes as a status icon window.
+  bool InitializeAsStatusIcon();
+
   // Interface that must be used by a class that inherits the XWindow to receive
   // different messages from X Server.
   virtual void OnXWindowCreated() = 0;

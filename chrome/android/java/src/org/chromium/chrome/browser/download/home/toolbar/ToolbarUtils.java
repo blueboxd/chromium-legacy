@@ -9,8 +9,9 @@ import android.view.View;
 
 import org.chromium.chrome.browser.download.DirectoryOption;
 import org.chromium.chrome.browser.download.DownloadDirectoryProvider;
-import org.chromium.chrome.browser.ui.widget.highlight.ViewHighlighter;
-import org.chromium.chrome.browser.ui.widget.textbubble.TextBubble;
+import org.chromium.chrome.browser.util.AccessibilityUtil;
+import org.chromium.components.browser_ui.widget.highlight.ViewHighlighter;
+import org.chromium.components.browser_ui.widget.textbubble.TextBubble;
 import org.chromium.components.feature_engagement.FeatureConstants;
 import org.chromium.components.feature_engagement.Tracker;
 import org.chromium.ui.widget.ViewRectProvider;
@@ -68,7 +69,7 @@ public class ToolbarUtils {
         TextBubble textBubble = new TextBubble(rootView.getContext(), rootView,
                 org.chromium.chrome.download.R.string.iph_download_settings_text,
                 org.chromium.chrome.download.R.string.iph_download_settings_accessibility_text,
-                new ViewRectProvider(anchorView));
+                new ViewRectProvider(anchorView), AccessibilityUtil.isAccessibilityEnabled());
         textBubble.setDismissOnTouchInteraction(true);
         textBubble.addOnDismissListener(() -> {
             tracker.dismissed(FeatureConstants.DOWNLOAD_SETTINGS_FEATURE);

@@ -59,7 +59,7 @@ const CGFloat kBubblePresentationDelay = 1;
 @property(nonatomic, strong, readwrite)
     BubbleViewControllerPresenter* incognitoTabTipBubblePresenter;
 
-@property(nonatomic, assign) ios::ChromeBrowserState* browserState;
+@property(nonatomic, assign) ChromeBrowserState* browserState;
 @property(nonatomic, weak) id<BubblePresenterDelegate> delegate;
 @property(nonatomic, weak) UIViewController* rootViewController;
 
@@ -79,7 +79,7 @@ const CGFloat kBubblePresentationDelay = 1;
 
 #pragma mark - Public
 
-- (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState
+- (instancetype)initWithBrowserState:(ChromeBrowserState*)browserState
                             delegate:(id<BubblePresenterDelegate>)delegate
                   rootViewController:(UIViewController*)rootViewController {
   self = [super init];

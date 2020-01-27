@@ -11,6 +11,7 @@ source_set("soda_sandbox_hook") {
   deps = [
     "//base",
     "//components/component_updater:component_updater",
+    "//components/soda:constants",
     "//sandbox/linux:sandbox_services",
   ]
 

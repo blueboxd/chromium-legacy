@@ -22,6 +22,7 @@ class COMPONENT_EXPORT(LEARNING_COMMON) MediaLearningTasks {
   enum class Id {
     kWillPlay,
     kConsecutiveBadWindows,
+    kConsecutiveNNRs,
   };
 
   // Return the LearningTask for |id|.

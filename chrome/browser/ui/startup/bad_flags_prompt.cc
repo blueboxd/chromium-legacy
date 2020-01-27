@@ -42,7 +42,7 @@
 #include "ui/base/resource/resource_bundle.h"
 
 #if defined(OS_ANDROID)
-#include "chrome/browser/android/chrome_feature_list.h"
+#include "chrome/browser/flags/android/chrome_feature_list.h"
 #else
 #include "chrome/browser/ui/browser.h"
 #endif  // OS_ANDROID

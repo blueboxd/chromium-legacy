@@ -679,6 +679,13 @@ void DecodeReportingPolicies(const em::ChromeDeviceSettingsProto& policy,
           std::make_unique<base::Value>(container.report_graphics_status()),
           nullptr);
     }
+    if (container.has_report_crash_report_info()) {
+      policies->Set(
+          key::kReportDeviceCrashReportInfo, POLICY_LEVEL_MANDATORY,
+          POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
+          std::make_unique<base::Value>(container.report_crash_report_info()),
+          nullptr);
+    }
     if (container.has_report_power_status()) {
       policies->Set(
           key::kReportDevicePowerStatus, POLICY_LEVEL_MANDATORY,

@@ -20,7 +20,7 @@ namespace payments {
 // static
 payments::PaymentRequestCache*
 IOSPaymentRequestCacheFactory::GetForBrowserState(
-    ios::ChromeBrowserState* browser_state) {
+    ChromeBrowserState* browser_state) {
   return static_cast<payments::PaymentRequestCache*>(
       GetInstance()->GetServiceForBrowserState(browser_state, true));
 }

@@ -85,7 +85,7 @@ void NotifyContextGettersOfShutdownOnIO(
 }  // namespace
 
 void ChromeBrowserStateIOData::InitializeOnUIThread(
-    ios::ChromeBrowserState* browser_state) {
+    ChromeBrowserState* browser_state) {
   DCHECK_CURRENTLY_ON(web::WebThread::UI);
   PrefService* pref_service = browser_state->GetPrefs();
   std::unique_ptr<ProfileParams> params(new ProfileParams);
@@ -149,7 +149,7 @@ ChromeBrowserStateIOData::ProfileParams::ProfileParams()
 ChromeBrowserStateIOData::ProfileParams::~ProfileParams() {}
 
 ChromeBrowserStateIOData::ChromeBrowserStateIOData(
-    ios::ChromeBrowserStateType browser_state_type)
+    ChromeBrowserStateType browser_state_type)
     : initialized_(false), browser_state_type_(browser_state_type) {
   DCHECK_CURRENTLY_ON(web::WebThread::UI);
 }
@@ -249,7 +249,7 @@ HostContentSettingsMap* ChromeBrowserStateIOData::GetHostContentSettingsMap()
 
 bool ChromeBrowserStateIOData::IsOffTheRecord() const {
   return browser_state_type() ==
-         ios::ChromeBrowserStateType::INCOGNITO_BROWSER_STATE;
+         ChromeBrowserStateType::INCOGNITO_BROWSER_STATE;
 }
 
 void ChromeBrowserStateIOData::InitializeMetricsEnabledStateOnUIThread() {

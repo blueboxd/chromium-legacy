@@ -171,7 +171,7 @@ class CORE_EXPORT StyleResolver final : public GarbageCollected<StyleResolver> {
     bool is_inherited_cache_hit;
     bool is_non_inherited_cache_hit;
     unsigned cache_hash;
-    Member<const CachedMatchedProperties> cached_matched_properties;
+    const CachedMatchedProperties* cached_matched_properties;
 
     CacheSuccess(bool is_inherited_cache_hit,
                  bool is_non_inherited_cache_hit,

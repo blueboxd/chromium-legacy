@@ -142,12 +142,18 @@ namespace printing {
   };
 
   callback SubmitJobCallback = void(SubmitJobResponse response);
+  callback CancelJobCallback = void();
   callback GetPrintersCallback = void(Printer[] printers);
   callback GetPrinterInfoCallback = void(GetPrinterInfoResponse response);
 
   interface Functions {
     // Submits the job for print.
     static void submitJob(SubmitJobRequest request, SubmitJobCallback callback);
+
+    // Cancels previously submitted job.
+    // |jobId|: The id of the print job to cancel. This should be the same id
+    // received in a $(ref:SubmitJobResponse).
+    static void cancelJob(DOMString jobId, CancelJobCallback callback);
 
     // Returns the list of available printers on the device. This includes
     // manually added, enterprise and discovered printers.

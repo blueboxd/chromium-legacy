@@ -28,7 +28,7 @@ import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.omnibox.SearchEngineLogoUtils;
 import org.chromium.chrome.browser.toolbar.ToolbarCommonPropertiesModel;
-import org.chromium.chrome.browser.ui.widget.CompositeTouchDelegate;
+import org.chromium.components.browser_ui.widget.CompositeTouchDelegate;
 import org.chromium.ui.widget.Toast;
 
 /**

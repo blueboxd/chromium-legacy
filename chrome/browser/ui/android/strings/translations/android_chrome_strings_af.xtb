@@ -134,6 +134,7 @@
 <translation id="1994173015038366702">Werf-URL</translation>
 <translation id="2000419248597011803">Stuur 'n paar webkoekies en soektogte vanaf die adresbalk en soekkassie na jou versteksoekenjin toe</translation>
 <translation id="2002537628803770967">Kredietkaarte en adresse wat Google Pay gebruik</translation>
+<translation id="2012973609889389923">Vinnige werf</translation>
 <translation id="2013642289801508067">{FILE_COUNT,plural, =1{# lêer}other{# lêers}}</translation>
 <translation id="2017836877785168846">Vee geskiedenis en outovoltooiings in die adresbalk uit.</translation>
 <translation id="2021896219286479412">Volskermwerfkontroles</translation>
@@ -306,6 +307,7 @@
 <translation id="3298243779924642547">Lig</translation>
 <translation id="3303414029551471755">Gaan voort om die inhoud af te laai?</translation>
 <translation id="3306398118552023113">Hierdie program loop tans in Chrome</translation>
+<translation id="3312292613668865961">Vra voordat werwe toegelaat word om toegang tot jou virtuelerealiteit-toestel en -data te kry (aanbeveel)</translation>
 <translation id="3315103659806849044">Jy pasmaak tans jou sinkronisering- en Google-diensinstellings. Tik op die Bevestig-knoppie naby die onderkant van die skerm om die aanskakel van sinkronisering te voltooi. Gaan op</translation>
 <translation id="3328801116991980348">Werfinligting</translation>
 <translation id="3333961966071413176">Alle kontakte</translation>
@@ -511,6 +513,7 @@ Jou Google-rekening het dalk ander vorme van blaaigeskiedenis, soos soektogte en
 <translation id="4915549754973153784"><ph name="BEGIN_LINK" />Kry hulp<ph name="END_LINK" /> terwyl toestelle gesoek word …</translation>
 <translation id="4921180162323349895">{FILE_COUNT,plural, =1{# bladsy}other{# bladsye}}</translation>
 <translation id="4932247056774066048">Jou Chrome-data sal van hierdie toestel af uitgevee word omdat jy uitteken by 'n rekening wat deur <ph name="DOMAIN_NAME" /> bestuur word. Dit sal in jou Google-rekening bly.</translation>
+<translation id="4935305910887312910">Vra voordat werwe toegelaat word om kameraposisie te ontvang of jou vertrek te karteer (aanbeveel)</translation>
 <translation id="4943703118917034429">Virtuele realiteit</translation>
 <translation id="4943872375798546930">Geen resultate nie</translation>
 <translation id="4958708863221495346"><ph name="URL_OF_THE_CURRENT_TAB" /> deel tans jou skerm</translation>
@@ -744,6 +747,7 @@ Byvoorbeeld, sommige webwerwe kan op hierdie versoek reageer deur vir jou advert
 <translation id="6573431926118603307">Oortjies wat jy op jou ander toestelle in Chrome oopgemaak het, sal hier verskyn.</translation>
 <translation id="6583199322650523874">Boekmerk die huidige bladsy</translation>
 <translation id="6593061639179217415">Werkskermwerf</translation>
+<translation id="6597891566292541626">Plaas QR- of strepieskode in hierdie raam.</translation>
 <translation id="6600954340915313787">Na Chrome gekopieer</translation>
 <translation id="6608650720463149374"><ph name="GIGABYTES" /> GB</translation>
 <translation id="6612358246767739896">Beskermde inhoud</translation>
@@ -953,6 +957,7 @@ Die werf kry NIE toegang tot die kamera nie. Net jy kan die kameraprente sien.</
 <translation id="8109613176066109935">Skakel sinkronisering aan om jou boekmerke op al jou toestelle te kry</translation>
 <translation id="8110087112193408731">Wys jou Chrome-aktiwiteit in Digitale Welstand?</translation>
 <translation id="8116925261070264013">Gedemp</translation>
+<translation id="8127542551745560481">Wysig tuisblad</translation>
 <translation id="813082847718468539">Bekyk werfinligting</translation>
 <translation id="8156139159503939589">Watter tale lees jy?</translation>
 <translation id="8168435359814927499">Inhoud</translation>
@@ -1024,6 +1029,7 @@ Die werf kry NIE toegang tot die kamera nie. Net jy kan die kameraprente sien.</
 <translation id="8676374126336081632">Vee invoer uit</translation>
 <translation id="8687353297350450808">{N_BARS,plural, =1{Seinsterktevlak: # stafie}other{Seinsterktevlak: # stafies}}</translation>
 <translation id="868929229000858085">Deursoek jou kontakte</translation>
+<translation id="8698438463325761328">Blokkeer werwe om toegang tot jou virtuelerealiteit-toestel en -data te kry</translation>
 <translation id="869891660844655955">Vervaldatum</translation>
 <translation id="8719023831149562936">Kan nie huidige oortjie straal nie</translation>
 <translation id="8728487861892616501">Deur hierdie program te gebruik, stem jy in tot Chrome se <ph name="BEGIN_LINK1" />diensbepalings<ph name="END_LINK1" /> en <ph name="BEGIN_LINK2" />privaatheidkennisgewing<ph name="END_LINK2" />, en die <ph name="BEGIN_LINK3" />privaatheidkennisgewing vir Google-rekeninge wat met Family Link bestuur word<ph name="END_LINK3" />.</translation>
@@ -1041,6 +1047,7 @@ Die werf kry NIE toegang tot die kamera nie. Net jy kan die kameraprente sien.</
 <translation id="883806473910249246">Kon nie die inhoud aflaai nie.</translation>
 <translation id="8840953339110955557">Hierdie bladsy kan van die aanlyn weergawe verskil.</translation>
 <translation id="8847988622838149491">USB</translation>
+<translation id="884828189055900810">Blokkeer werwe om kameraposisie te ontvang en jou vertrek te karteer</translation>
 <translation id="8853345339104747198"><ph name="TAB_TITLE" />, oortjie</translation>
 <translation id="885701979325669005">Berging</translation>
 <translation id="889338405075704026">Gaan na Chrome-instellings</translation>
@@ -1048,6 +1055,7 @@ Die werf kry NIE toegang tot die kamera nie. Net jy kan die kameraprente sien.</
 <translation id="8909135823018751308">Deel …</translation>
 <translation id="8912362522468806198">Google-rekening</translation>
 <translation id="8920114477895755567">Wag tans vir besonderhede van ouers.</translation>
+<translation id="8921772741368021346"><ph name="POSITION" /> / <ph name="DURATION" /></translation>
 <translation id="8922289737868596582">Laai bladsye vanaf die Meer Opsies-knoppie af om hulle vanlyn te gebruik</translation>
 <translation id="8926666909099850184">NFC is af vir hierdie toestel. Skakel dit aan in <ph name="BEGIN_LINK" />Android-instellings<ph name="END_LINK" />.</translation>
 <translation id="8937772741022875483">Verwyder jou Chrome-aktiwiteit van Digitale Welstand?</translation>

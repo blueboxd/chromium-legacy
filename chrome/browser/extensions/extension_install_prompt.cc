@@ -29,6 +29,7 @@
 #include "extensions/browser/image_loader.h"
 #include "extensions/browser/install/extension_install_ui.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/extension_features.h"
 #include "extensions/common/extension_icon_set.h"
 #include "extensions/common/extension_resource.h"
 #include "extensions/common/feature_switch.h"
@@ -77,6 +78,7 @@ ExtensionInstallPrompt::g_last_prompt_type_for_tests =
 
 ExtensionInstallPrompt::Prompt::Prompt(PromptType type)
     : type_(type),
+      is_requesting_host_permissions_(false),
       is_showing_details_for_retained_files_(false),
       is_showing_details_for_retained_devices_(false),
       extension_(nullptr),
@@ -96,6 +98,9 @@ void ExtensionInstallPrompt::Prompt::AddPermissionSet(
   Manifest::Type type =
       extension_ ? extension_->GetType() : Manifest::TYPE_UNKNOWN;
   prompt_permissions_.LoadFromPermissionSet(&permissions, type);
+  if (!permissions.effective_hosts().is_empty()) {
+    is_requesting_host_permissions_ = true;
+  }
 }
 
 void ExtensionInstallPrompt::Prompt::AddPermissionMessages(
@@ -426,6 +431,14 @@ bool ExtensionInstallPrompt::Prompt::ShouldDisplayRevokeFilesButton() const {
   return !retained_files_.empty();
 }
 
+bool ExtensionInstallPrompt::Prompt::ShouldDisplayWithholdingUI() const {
+  return base::FeatureList::IsEnabled(
+             extensions_features::
+                 kAllowWithholdingExtensionPermissionsOnInstall) &&
+         extensions::util::CanWithholdPermissionsFromExtension(*extension_) &&
+         is_requesting_host_permissions_ && type_ == INSTALL_PROMPT;
+}
+
 // static
 ExtensionInstallPrompt::PromptType
 ExtensionInstallPrompt::GetReEnablePromptTypeForExtension(
@@ -645,10 +658,16 @@ bool ExtensionInstallPrompt::AutoConfirmPromptIfEnabled() {
     // the real implementations it's highly likely the message loop will be
     // pumping a few times before the user clicks accept or cancel.
     case extensions::ScopedTestDialogAutoConfirm::ACCEPT:
-    case extensions::ScopedTestDialogAutoConfirm::ACCEPT_AND_OPTION:
       base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE, base::BindOnce(std::move(done_callback_),
                                     ExtensionInstallPrompt::Result::ACCEPTED));
+      return true;
+    case extensions::ScopedTestDialogAutoConfirm::ACCEPT_AND_OPTION:
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE,
+          base::BindOnce(
+              std::move(done_callback_),
+              ExtensionInstallPrompt::Result::ACCEPTED_AND_OPTION_CHECKED));
       return true;
     case extensions::ScopedTestDialogAutoConfirm::CANCEL:
       base::ThreadTaskRunnerHandle::Get()->PostTask(

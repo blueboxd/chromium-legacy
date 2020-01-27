@@ -419,7 +419,7 @@ GenerateChromeDesktopReportRequest(const base::DictionaryValue& report,
 }
 
 void StoreDeviceData(const std::string& id,
-                     const std::vector<uint8_t>& data,
+                     const std::unique_ptr<std::vector<uint8_t>> data,
                      base::OnceCallback<void(bool)> callback) {
   base::FilePath data_file = GetEndpointVerificationDir();
   if (data_file.empty()) {
@@ -431,28 +431,36 @@ void StoreDeviceData(const std::string& id,
   // subdir+file of the EV folder.
   data_file = data_file.AppendASCII(id);
 
-  // Ensure the directory exists.
-  bool success = base::CreateDirectory(data_file.DirName());
-  if (!success) {
-    LOG(ERROR) << "Could not create directory: "
-               << data_file.DirName().LossyDisplayName();
-    std::move(callback).Run(false);
-    return;
+  bool success = false;
+  if (data) {
+    // Ensure the directory exists.
+    success = base::CreateDirectory(data_file.DirName());
+    if (!success) {
+      LOG(ERROR) << "Could not create directory: "
+                 << data_file.DirName().LossyDisplayName();
+      std::move(callback).Run(false);
+      return;
+    }
+
+    base::FilePath tmp_path;
+    success = base::CreateTemporaryFileInDir(data_file.DirName(), &tmp_path);
+    if (!success) {
+      LOG(ERROR) << "Could not open file for writing: "
+                 << tmp_path.LossyDisplayName();
+      std::move(callback).Run(false);
+      return;
+    }
+
+    base::WriteFile(tmp_path, reinterpret_cast<const char*>(data->data()),
+                    data->size());
+    success = base::Move(tmp_path, data_file);
+  } else {
+    // Not passing a second parameter means clear the data sored under |id|.
+    success = base::DeleteFile(data_file, false);
+    if (base::IsDirectoryEmpty(data_file.DirName()))
+      base::DeleteFile(data_file.DirName(), false);
   }
 
-  base::FilePath tmp_path;
-  success = base::CreateTemporaryFileInDir(data_file.DirName(), &tmp_path);
-  if (!success) {
-    LOG(ERROR) << "Could not open file for writing: "
-               << tmp_path.LossyDisplayName();
-    std::move(callback).Run(false);
-    return;
-  }
-
-  base::WriteFile(tmp_path, reinterpret_cast<const char*>(data.data()),
-                  data.size());
-
-  success = base::Move(tmp_path, data_file);
   std::move(callback).Run(success);
 }
 

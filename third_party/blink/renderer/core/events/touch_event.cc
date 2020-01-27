@@ -27,6 +27,7 @@
 #include "third_party/blink/renderer/core/events/touch_event.h"
 
 #include "third_party/blink/public/platform/web_coalesced_input_event.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_touch_event_init.h"
 #include "third_party/blink/renderer/core/dom/events/event_dispatcher.h"
 #include "third_party/blink/renderer/core/dom/events/event_path.h"
 #include "third_party/blink/renderer/core/event_interface_names.h"

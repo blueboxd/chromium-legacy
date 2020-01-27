@@ -79,6 +79,7 @@
 <translation id="129553762522093515">Các tab đã đóng gần đây</translation>
 <translation id="1298536327547837046">Quét tìm phần mềm độc hại</translation>
 <translation id="129863573139666797"><ph name="BEGIN_LINK" />Thử xóa các cookie của bạn<ph name="END_LINK" /></translation>
+<translation id="1301324364792935241">Kiểm tra tùy chọn cài đặt của DNS bảo mật</translation>
 <translation id="1307966114820526988">Tính năng sắp ngừng hoạt động</translation>
 <translation id="1314509827145471431">Đóng gáy bên phải</translation>
 <translation id="1320233736580025032">Prc1 (Phong bì)</translation>
@@ -152,6 +153,7 @@
 <translation id="1569487616857761740">Nhập ngày hết hạn</translation>
 <translation id="1581080074034554886">CVC</translation>
 <translation id="1583429793053364125">Đã xảy ra lỗi khi hiển thị trang web này.</translation>
+<translation id="1586541204584340881">Các tiện ích bạn đã cài đặt</translation>
 <translation id="1588438908519853928">Bình thường</translation>
 <translation id="1592005682883173041">Quyền truy cập dữ liệu cục bộ</translation>
 <translation id="1594030484168838125">Chọn</translation>
@@ -290,7 +292,6 @@
 <translation id="2218879909401188352">Những kẻ tấn công hiện ở trên <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> có thể cài đặt ứng dụng nguy hiểm làm hỏng thiết bị của bạn, thêm các khoản phí ẩn vào hóa đơn di động hoặc lấy cắp thông tin cá nhân của bạn. <ph name="BEGIN_LEARN_MORE_LINK" />Tìm hiểu thêm<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="2224337661447660594">Không có Internet</translation>
 <translation id="2230458221926704099">Sửa kết nối bằng <ph name="BEGIN_LINK" />ứng dụng chẩn đoán<ph name="END_LINK" /></translation>
-<translation id="22320125457191592">Dành cho bạn</translation>
 <translation id="2239100178324503013">Gửi bây giờ</translation>
 <translation id="2248949050832152960">Sử dụng WebAuthn</translation>
 <translation id="2250931979407627383">May viền ở bên trái</translation>
@@ -363,6 +364,7 @@
 <translation id="2544644783021658368">Một tài liệu</translation>
 <translation id="254947805923345898">Giá trị của chính sách là không hợp lệ.</translation>
 <translation id="255002559098805027"><ph name="HOST_NAME" /> đã gửi phản hồi không hợp lệ.</translation>
+<translation id="2553853292994445426">Hãy kiểm tra tùy chọn cài đặt của DNS bảo mật. Có thể bạn đã định cấu hình máy chủ DNS bảo mật không kết nối được.</translation>
 <translation id="2556876185419854533">&amp;Hoàn tác chỉnh sửa</translation>
 <translation id="257674075312929031">Nhóm</translation>
 <translation id="2586657967955657006">Khay nhớ tạm</translation>
@@ -485,6 +487,7 @@
 <translation id="3095940652251934233">Tuyên bố</translation>
 <translation id="3096100844101284527">Thêm địa chỉ nhận hàng</translation>
 <translation id="3105172416063519923">ID phần tử:</translation>
+<translation id="3107591622054137333"><ph name="BEGIN_LINK" />Kiểm tra cấu hình DNS bảo mật<ph name="END_LINK" /></translation>
 <translation id="3109728660330352905">Bạn không có quyền xem trang này.</translation>
 <translation id="3113284927548439113">Ca thứ 3</translation>
 <translation id="3116158981186517402">Dát mỏng</translation>
@@ -576,7 +579,6 @@
 <translation id="3531780078352352885">Tờ công việc</translation>
 <translation id="3533328374079021623">Hộp thư 5</translation>
 <translation id="3539171420378717834">Giữ bản sao thẻ này trên thiết bị này</translation>
-<translation id="3553513561058684206">Dành cho bạn</translation>
 <translation id="3558573058928565255">Giờ ban ngày</translation>
 <translation id="3566021033012934673">Kết nối của bạn không phải là kết nối riêng tư</translation>
 <translation id="3574305903863751447"><ph name="CITY" />, <ph name="STATE" /> <ph name="COUNTRY" /></translation>
@@ -788,6 +790,7 @@
 <translation id="4390472908992056574">Vành</translation>
 <translation id="4406896451731180161">kết quả tìm kiếm</translation>
 <translation id="4408413947728134509">Cookie <ph name="NUM_COOKIES" /></translation>
+<translation id="4414290883293381923">Bạn vừa nhập mật khẩu vào một trang web lừa đảo. Chrome khuyên bạn nên truy cập vào <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, <ph name="WEBSITE_3" /> và các trang web khác mà bạn dùng mật khẩu này rồi đổi mật khẩu ngay bây giờ.</translation>
 <translation id="4415426530740016218">Địa chỉ nhận hàng</translation>
 <translation id="4424024547088906515">Máy chủ này không chứng minh được rằng đó là <ph name="DOMAIN" />; chứng chỉ bảo mật của máy chủ này không được Chrome tin cậy. Điều này có thể do định cấu hình sai hoặc có kẻ tấn công chặn kết nối của bạn.</translation>
 <translation id="443121186588148776">Cổng nối tiếp</translation>
@@ -1220,6 +1223,7 @@
 <translation id="6353505687280762741">{COUNT,plural, =0{Không có}=1{1 mật khẩu (cho <ph name="DOMAIN_LIST" />, đã đồng bộ hóa)}=2{2 mật khẩu (cho <ph name="DOMAIN_LIST" />, đã đồng bộ hóa)}other{# mật khẩu (cho <ph name="DOMAIN_LIST" />, đã đồng bộ hóa)}}</translation>
 <translation id="6358450015545214790">Những phần này có ý nghĩa gì?</translation>
 <translation id="6361757823711327522">B7</translation>
+<translation id="6364095313648930329"><ph name="BEGIN_LINK" />Kiểm tra cấu hình proxy, tường lửa và DNS bảo mật<ph name="END_LINK" /></translation>
 <translation id="6366710531182496394">Dập 2 ghim bên trái</translation>
 <translation id="6377268785556383139">1 kết quả cho '<ph name="SEARCH_TEXT" />'</translation>
 <translation id="6380497234672085559">A0</translation>
@@ -1242,6 +1246,7 @@
 <translation id="6433595998831338502"><ph name="HOST_NAME" /> đã từ chối kết nối.</translation>
 <translation id="6434309073475700221">Hủy</translation>
 <translation id="6440503408713884761">Bị bỏ qua</translation>
+<translation id="6443406338865242315">Các tiện ích và plugin bạn đã cài đặt</translation>
 <translation id="6446163441502663861">Kahu (Phong bì)</translation>
 <translation id="6446608382365791566">Thêm thông tin khác</translation>
 <translation id="6447842834002726250">Cookie</translation>
@@ -1351,6 +1356,7 @@
 <translation id="7012363358306927923">China UnionPay</translation>
 <translation id="7016992613359344582">Các khoản phí này có thể là khoản thu một lần hoặc định kỳ và có thể không rõ ràng.</translation>
 <translation id="7029809446516969842">Mật khẩu</translation>
+<translation id="7031646650991750659">Những ứng dụng bạn đã cài đặt bằng Google Play</translation>
 <translation id="7050187094878475250">Bạn đã cố gắng truy cập <ph name="DOMAIN" /> nhưng máy chủ đã hiển thị chứng chỉ có thời gian hiệu lực quá dài để có thể tin cậy.</translation>
 <translation id="705310974202322020">{NUM_CARDS,plural, =1{Không thể lưu thẻ này ngay bây giờ}other{Không thể lưu các thẻ này ngay bây giờ}}</translation>
 <translation id="7053983685419859001">Chặn</translation>
@@ -1410,6 +1416,7 @@ Thông tin chi tiết bổ sung:
 <translation id="7319430975418800333">A3</translation>
 <translation id="7320336641823683070">Trợ giúp kết nối</translation>
 <translation id="733354035281974745">Ghi đè tài khoản trên thiết bị</translation>
+<translation id="7333654844024768166">Bạn vừa nhập mật khẩu vào một trang web lừa đảo. Chromium khuyên bạn nên truy cập vào <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, <ph name="WEBSITE_3" /> và các trang web khác mà bạn dùng mật khẩu này rồi đổi mật khẩu ngay bây giờ.</translation>
 <translation id="7334320624316649418">&amp;Làm lại sắp xếp lại</translation>
 <translation id="7337706099755338005">Không được hỗ trợ trên nền tảng của bạn.</translation>
 <translation id="733923710415886693">Chứng chỉ của máy chủ đã không được tiết lộ qua Tính minh bạch của chứng chỉ.</translation>

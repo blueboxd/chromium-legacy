@@ -27,7 +27,6 @@
 <translation id="4249068189593983585">Chrome tip. For more tab options, touch and hold the Show Tabs button in the toolbar, which is at the bottom or top of your screen.</translation>
 <translation id="4523886039239821078">Some add-ons cause Chrome to crash. Please uninstall:</translation>
 <translation id="5389212809648216794">Google Chrome can't use your camera because it's in use by another application</translation>
-<translation id="5621912349729388018"><ph name="BEGIN_LINK" />Review the updated Chrome Terms of Service.<ph name="END_LINK" /></translation>
 <translation id="5639704535586432836">Open Settings &gt; Privacy &gt; Camera &gt; Google Chrome and turn on the camera.</translation>
 <translation id="5642200033778930880">Google Chrome can't use your camera in Split View mode</translation>
 <translation id="5690427481109656848">Google LLC</translation>
@@ -51,4 +50,5 @@
 <translation id="840168496893712993">Some add-ons cause Chrome to crash. Please try uninstalling them.</translation>
 <translation id="8459495907675268833">The selected data has been removed from Chrome and synced devices. Your Google Account may have other forms of browsing history like searches and activity from other Google services at history.google.com.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
+<translation id="8574235780160508979">Chrome’s Terms of Service are changing on 31 March. <ph name="BEGIN_LINK" />Please review<ph name="END_LINK" /></translation>
 </translationbundle>

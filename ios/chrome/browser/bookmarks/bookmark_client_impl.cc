@@ -19,7 +19,7 @@
 #include "ios/chrome/browser/history/history_service_factory.h"
 
 BookmarkClientImpl::BookmarkClientImpl(
-    ios::ChromeBrowserState* browser_state,
+    ChromeBrowserState* browser_state,
     sync_bookmarks::BookmarkSyncService* bookmark_sync_service)
     : browser_state_(browser_state),
       bookmark_sync_service_(bookmark_sync_service) {}

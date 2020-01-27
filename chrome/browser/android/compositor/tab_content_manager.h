@@ -16,7 +16,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "cc/layers/ui_resource_layer.h"
-#include "chrome/browser/android/thumbnail/thumbnail_cache.h"
+#include "chrome/browser/thumbnail/cc/thumbnail_cache.h"
 #include "content/public/browser/render_widget_host_view.h"
 
 using base::android::ScopedJavaLocalRef;

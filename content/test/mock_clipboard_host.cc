@@ -38,16 +38,31 @@ void MockClipboardHost::ReadAvailableTypes(
     ReadAvailableTypesCallback callback) {
   std::vector<base::string16> types;
   if (!plain_text_.empty())
-    types.push_back(base::UTF8ToUTF16("text/plain"));
+    types.push_back(base::ASCIIToUTF16("text/plain"));
   if (!html_text_.empty())
-    types.push_back(base::UTF8ToUTF16("text/html"));
+    types.push_back(base::ASCIIToUTF16("text/html"));
   if (!image_.isNull())
-    types.push_back(base::UTF8ToUTF16("image/png"));
+    types.push_back(base::ASCIIToUTF16("image/png"));
   for (auto& it : custom_data_) {
     CHECK(!base::Contains(types, it.first));
     types.push_back(it.first);
   }
   std::move(callback).Run(types, false);
+}
+
+void MockClipboardHost::ReadAvailablePlatformSpecificFormatNames(
+    ui::ClipboardBuffer clipboard_buffer,
+    ReadAvailablePlatformSpecificFormatNamesCallback callback) {
+  std::vector<base::string16> raw_types;
+  if (!plain_text_.empty())
+    raw_types.push_back(base::ASCIIToUTF16("text/plain"));
+  if (!html_text_.empty())
+    raw_types.push_back(base::ASCIIToUTF16("text/html"));
+  if (!image_.isNull())
+    raw_types.push_back(base::ASCIIToUTF16("image/png"));
+  for (auto& it : raw_data_)
+    raw_types.push_back(it.first);
+  std::move(callback).Run(raw_types);
 }
 
 void MockClipboardHost::IsFormatAvailable(blink::mojom::ClipboardFormat format,

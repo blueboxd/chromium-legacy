@@ -33,6 +33,12 @@ class GL_EXPORT GpuSwitchingManager {
   // If this heuristic fails, then kDefault is passed as argument.
   void NotifyGpuSwitched(gl::GpuPreference active_gpu_heuristic);
 
+  // Called when a monitor is plugged in.
+  void NotifyDisplayAdded();
+
+  // Called when a monitor is unplugged.
+  void NotifyDisplayRemoved();
+
  private:
   friend struct base::DefaultSingletonTraits<GpuSwitchingManager>;
 

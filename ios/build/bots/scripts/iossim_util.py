@@ -148,3 +148,17 @@ def get_home_directory(platform, version):
   return subprocess.check_output(
       ['xcrun', 'simctl', 'getenv',
        get_simulator(platform, version), 'HOME']).rstrip()
+
+
+def is_device_with_udid_simulator(device_udid):
+  """Checks whether a device with udid is simulator or not.
+
+  Args:
+    device_udid: (str) UDID of a device.
+  """
+  simulator_list = get_simulator_list()['devices']
+  for _, simulators in simulator_list.items():
+    for device in simulators:
+      if device_udid == device['udid']:
+        return True
+  return False

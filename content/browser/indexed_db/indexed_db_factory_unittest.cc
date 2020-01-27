@@ -124,6 +124,7 @@ class IndexedDBFactoryTest : public testing::Test {
         CreateAndReturnTempDir(&temp_dir_),
         /*special_storage_policy=*/nullptr, quota_manager_proxy_.get(),
         base::DefaultClock::GetInstance(),
+        /*blob_storage_context=*/mojo::NullRemote(),
         base::SequencedTaskRunnerHandle::Get(),
         base::SequencedTaskRunnerHandle::Get());
   }
@@ -133,6 +134,7 @@ class IndexedDBFactoryTest : public testing::Test {
         base::FilePath(),
         /*special_storage_policy=*/nullptr, quota_manager_proxy_.get(),
         base::DefaultClock::GetInstance(),
+        /*blob_storage_context=*/mojo::NullRemote(),
         base::SequencedTaskRunnerHandle::Get(),
         base::SequencedTaskRunnerHandle::Get());
   }
@@ -141,6 +143,7 @@ class IndexedDBFactoryTest : public testing::Test {
     context_ = base::MakeRefCounted<IndexedDBContextImpl>(
         CreateAndReturnTempDir(&temp_dir_),
         /*special_storage_policy=*/nullptr, quota_manager_proxy_.get(), clock,
+        /*blob_storage_context=*/mojo::NullRemote(),
         base::SequencedTaskRunnerHandle::Get(),
         base::SequencedTaskRunnerHandle::Get());
     if (factory)
@@ -711,7 +714,7 @@ class LookingForQuotaErrorMockCallbacks : public IndexedDBCallbacks {
   bool error_called() const { return error_called_; }
 
  private:
-  ~LookingForQuotaErrorMockCallbacks() override {}
+  ~LookingForQuotaErrorMockCallbacks() override = default;
   bool error_called_;
 
   DISALLOW_COPY_AND_ASSIGN(LookingForQuotaErrorMockCallbacks);
@@ -752,7 +755,7 @@ class ErrorCallbacks : public MockIndexedDBCallbacks {
   bool saw_error() const { return saw_error_; }
 
  private:
-  ~ErrorCallbacks() override {}
+  ~ErrorCallbacks() override = default;
   bool saw_error_;
 
   DISALLOW_COPY_AND_ASSIGN(ErrorCallbacks);
@@ -841,7 +844,7 @@ class DataLossCallbacks final : public MockIndexedDBCallbacks {
   }
 
  private:
-  ~DataLossCallbacks() final {}
+  ~DataLossCallbacks() final = default;
   blink::mojom::IDBDataLoss data_loss_ = blink::mojom::IDBDataLoss::None;
 };
 

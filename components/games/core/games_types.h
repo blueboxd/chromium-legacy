@@ -19,6 +19,7 @@ enum ResponseCode {
   kFileNotFound = 1,
   kInvalidData = 2,
   kMissingCatalog = 3,
+  kComponentNotInstalled = 4,
 };
 
 using GamesCatalogCallback =

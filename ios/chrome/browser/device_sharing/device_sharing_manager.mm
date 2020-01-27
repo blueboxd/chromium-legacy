@@ -19,7 +19,7 @@
 #endif
 
 @interface DeviceSharingManager ()<PrefObserverDelegate> {
-  ios::ChromeBrowserState* _browserState;  // weak
+  ChromeBrowserState* _browserState;  // weak
 
   // Bridge to listen to pref changes to the active browser state.
   std::unique_ptr<PrefObserverBridge> _browserStatePrefObserverBridge;
@@ -43,7 +43,7 @@
 
 @implementation DeviceSharingManager
 
-- (void)updateBrowserState:(ios::ChromeBrowserState*)state {
+- (void)updateBrowserState:(ChromeBrowserState*)state {
   DCHECK(!state || !state->IsOffTheRecord());
   if (_browserState == state) {
     return;

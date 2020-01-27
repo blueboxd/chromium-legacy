@@ -32,9 +32,9 @@
 #include "chrome/android/features/autofill_assistant/jni_headers/AutofillAssistantUiController_jni.h"
 #include "chrome/browser/android/autofill_assistant/generic_ui_controller_android.h"
 #include "chrome/browser/android/autofill_assistant/ui_controller_android_utils.h"
-#include "chrome/browser/android/chrome_feature_list.h"
 #include "chrome/browser/autofill/android/personal_data_manager_android.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
+#include "chrome/browser/flags/android/chrome_feature_list.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
@@ -1074,7 +1074,7 @@ void UiControllerAndroid::OnUserDataChanged(
   if (field_change == UserData::FieldChange::ALL ||
       field_change == UserData::FieldChange::TERMS_AND_CONDITIONS) {
     Java_AssistantCollectUserDataModel_setTermsStatus(
-        env, jmodel, state->terms_and_conditions);
+        env, jmodel, state->terms_and_conditions_);
   }
 
   if (field_change == UserData::FieldChange::ALL ||
@@ -1083,12 +1083,12 @@ void UiControllerAndroid::OnUserDataChanged(
     auto jcontactlist =
         Java_AssistantCollectUserDataModel_createAutofillContactList(env);
     auto contact_indices = SortContactsByCompleteness(
-        *collect_user_data_options, state->available_profiles);
+        *collect_user_data_options, state->available_profiles_);
     for (int index : contact_indices) {
       auto jcontact = Java_AssistantCollectUserDataModel_createAutofillContact(
           env, jcontext,
           autofill::PersonalDataManagerAndroid::CreateJavaProfileFromNative(
-              env, *state->available_profiles[index]),
+              env, *state->available_profiles_[index]),
           collect_user_data_options->request_payer_name,
           collect_user_data_options->request_payer_phone,
           collect_user_data_options->request_payer_email);
@@ -1102,7 +1102,8 @@ void UiControllerAndroid::OnUserDataChanged(
 
     // Ignore changes to FieldChange::CONTACT_PROFILE, this is already coming
     // from the view.
-    autofill::AutofillProfile* contact_profile = state->contact_profile.get();
+    const autofill::AutofillProfile* contact_profile = state->selected_address(
+        collect_user_data_options->contact_details_name);
     Java_AssistantCollectUserDataModel_setSelectedContactDetails(
         env, jmodel,
         contact_profile == nullptr
@@ -1118,7 +1119,7 @@ void UiControllerAndroid::OnUserDataChanged(
     // Billing addresses profiles.
     auto jbillinglist =
         Java_AssistantCollectUserDataModel_createAutofillAddressList(env);
-    for (const auto& profile : state->available_profiles) {
+    for (const auto& profile : state->available_profiles_) {
       auto jaddress = Java_AssistantCollectUserDataModel_createAutofillAddress(
           env, jcontext,
           autofill::PersonalDataManagerAndroid::CreateJavaProfileFromNative(
@@ -1135,12 +1136,12 @@ void UiControllerAndroid::OnUserDataChanged(
     auto jshippinglist =
         Java_AssistantCollectUserDataModel_createAutofillAddressList(env);
     auto address_indices = SortAddressesByCompleteness(
-        *collect_user_data_options, state->available_profiles);
+        *collect_user_data_options, state->available_profiles_);
     for (int index : address_indices) {
       auto jaddress = Java_AssistantCollectUserDataModel_createAutofillAddress(
           env, jcontext,
           autofill::PersonalDataManagerAndroid::CreateJavaProfileFromNative(
-              env, *state->available_profiles[index]));
+              env, *state->available_profiles_[index]));
       if (jaddress) {
         Java_AssistantCollectUserDataModel_addAutofillAddress(
             env, jshippinglist, jaddress);
@@ -1151,7 +1152,8 @@ void UiControllerAndroid::OnUserDataChanged(
 
     // Ignore changes to FieldChange::SHIPPING_ADDRESS, this is already coming
     // from the view.
-    autofill::AutofillProfile* shipping_address = state->shipping_address.get();
+    const autofill::AutofillProfile* shipping_address = state->selected_address(
+        collect_user_data_options->shipping_address_name);
     Java_AssistantCollectUserDataModel_setSelectedShippingAddress(
         env, jmodel,
         shipping_address == nullptr
@@ -1169,9 +1171,9 @@ void UiControllerAndroid::OnUserDataChanged(
             env);
     auto sorted_payment_instrument_indices =
         SortPaymentInstrumentsByCompleteness(
-            *collect_user_data_options, state->available_payment_instruments);
+            *collect_user_data_options, state->available_payment_instruments_);
     for (int index : sorted_payment_instrument_indices) {
-      const auto& instrument = state->available_payment_instruments[index];
+      const auto& instrument = state->available_payment_instruments_[index];
       Java_AssistantCollectUserDataModel_addAutofillPaymentInstrument(
           env, jlist, web_contents,
           instrument->card == nullptr
@@ -1189,8 +1191,9 @@ void UiControllerAndroid::OnUserDataChanged(
 
     // Ignore changes to FieldChange::CARD, this is already coming from the
     // view.
-    autofill::CreditCard* card = state->card.get();
-    autofill::AutofillProfile* billing_address = state->billing_address.get();
+    autofill::CreditCard* card = state->selected_card_.get();
+    const autofill::AutofillProfile* billing_address = state->selected_address(
+        collect_user_data_options->billing_address_name);
     Java_AssistantCollectUserDataModel_setSelectedPaymentInstrument(
         env, jmodel, web_contents,
         card == nullptr ? nullptr

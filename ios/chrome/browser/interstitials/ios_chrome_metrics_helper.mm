@@ -24,7 +24,7 @@ IOSChromeMetricsHelper::IOSChromeMetricsHelper(
           request_url,
           report_details,
           ios::HistoryServiceFactory::GetForBrowserState(
-              ios::ChromeBrowserState::FromBrowserState(
+              ChromeBrowserState::FromBrowserState(
                   web_state->GetBrowserState()),
               ServiceAccessType::EXPLICIT_ACCESS)) {}
 

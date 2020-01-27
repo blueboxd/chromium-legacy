@@ -45,10 +45,9 @@ using completion_block_util::GetSafeDecidePolicyCompletion;
                          completionHandler:(void (^)(BOOL))completionHandler {
   DCHECK(webState);
   DCHECK(completionHandler);
-  self = [super
-      initWithBaseViewController:viewController
-                    browserState:ios::ChromeBrowserState::FromBrowserState(
-                                     webState->GetBrowserState())];
+  self = [super initWithBaseViewController:viewController
+                              browserState:ChromeBrowserState::FromBrowserState(
+                                               webState->GetBrowserState())];
   if (self) {
     _webState = webState;
     CGRect sourceRect = CGRectMake(dialogLocation.x, dialogLocation.y, 1, 1);

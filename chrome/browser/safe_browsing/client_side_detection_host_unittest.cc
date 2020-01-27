@@ -30,6 +30,8 @@
 #include "components/safe_browsing/core/db/database_manager.h"
 #include "components/safe_browsing/core/db/test_database_manager.h"
 #include "components/safe_browsing/core/proto/csd.pb.h"
+#include "components/security_interstitials/content/unsafe_resource_util.h"
+#include "components/security_interstitials/core/unsafe_resource.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_frame_host.h"
@@ -373,10 +375,9 @@ class ClientSideDetectionHostTestBase : public ChromeRenderViewHostTestHarness {
     resource.callback = base::DoNothing();
     resource.callback_thread =
         base::CreateSingleThreadTaskRunner({BrowserThread::IO});
-    resource.web_contents_getter =
-        SafeBrowsingUIManager::UnsafeResource::GetWebContentsGetter(
-            web_contents()->GetMainFrame()->GetProcess()->GetID(),
-            web_contents()->GetMainFrame()->GetRoutingID());
+    resource.web_contents_getter = security_interstitials::GetWebContentsGetter(
+        web_contents()->GetMainFrame()->GetProcess()->GetID(),
+        web_contents()->GetMainFrame()->GetRoutingID());
     csd_host_->OnSafeBrowsingHit(resource);
     resource.callback.Reset();
     ASSERT_EQ(expect_unsafe_resource, csd_host_->DidShowSBInterstitial());
@@ -405,10 +406,9 @@ class ClientSideDetectionHostTestBase : public ChromeRenderViewHostTestHarness {
     resource.callback = base::DoNothing();
     resource.callback_thread =
         base::CreateSingleThreadTaskRunner({BrowserThread::IO});
-    resource.web_contents_getter =
-        SafeBrowsingUIManager::UnsafeResource::GetWebContentsGetter(
-            pending_rvh()->GetProcess()->GetID(),
-            pending_main_rfh()->GetRoutingID());
+    resource.web_contents_getter = security_interstitials::GetWebContentsGetter(
+        pending_rvh()->GetProcess()->GetID(),
+        pending_main_rfh()->GetRoutingID());
     csd_host_->OnSafeBrowsingHit(resource);
     resource.callback.Reset();
 

@@ -22,4 +22,34 @@ extern NSString* const kSettingsSearchEngineCellId;
 // The accessibility identifier of the Voice Search cell.
 extern NSString* const kSettingsVoiceSearchCellId;
 
+// The accessibility identifier of the Sync and Google services cell.
+extern NSString* const kSettingsGoogleSyncAndServicesCellId;
+
+// The accessibility identifier of the Passwords cell.
+extern NSString* const kSettingsPasswordsCellId;
+
+// The accessibility identifier of the Payment Methods cell.
+extern NSString* const kSettingsPaymentMethodsCellId;
+
+// The accessibility identifier of the Addresses and More cell.
+extern NSString* const kSettingsAddressesAndMoreCellId;
+
+// The accessibility identifier of the Privacy cell.
+extern NSString* const kSettingsPrivacyCellId;
+
+// The accessibility identifier of the Article Suggestions cell.
+extern NSString* const kSettingsArticleSuggestionsCellId;
+
+// The accessibility identifier of the Languages cell.
+extern NSString* const kSettingsLanguagesCellId;
+
+// The accessibility identifier of the Content Settings cell.
+extern NSString* const kSettingsContentSettingsCellId;
+
+// The accessibility identifier of the Bandwidth cell.
+extern NSString* const kSettingsBandwidthCellId;
+
+// The accessibility identifier of the Aboud cell.
+extern NSString* const kSettingsAboutCellId;
+
 #endif  // IOS_CHROME_BROWSER_UI_SETTINGS_SETTINGS_TABLE_VIEW_CONTROLLER_CONSTANTS_H_

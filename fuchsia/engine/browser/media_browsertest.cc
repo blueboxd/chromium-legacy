@@ -5,8 +5,6 @@
 #include "fuchsia/engine/test/web_engine_browser_test.h"
 
 #include "base/files/file_path.h"
-#include "base/test/bind_test_util.h"
-#include "base/test/test_timeouts.h"
 #include "fuchsia/base/frame_test_util.h"
 #include "fuchsia/base/test_navigation_listener.h"
 #include "fuchsia/engine/switches.h"
@@ -17,9 +15,7 @@ namespace {
 
 class MediaTest : public cr_fuchsia::WebEngineBrowserTest {
  public:
-  MediaTest()
-      : run_timeout_(TestTimeouts::action_timeout(),
-                     base::MakeExpectedNotRunClosure(FROM_HERE)) {
+  MediaTest() {
     set_test_server_root(base::FilePath(cr_fuchsia::kTestServerRoot));
   }
   ~MediaTest() override = default;
@@ -36,9 +32,6 @@ class MediaTest : public cr_fuchsia::WebEngineBrowserTest {
   }
 
   cr_fuchsia::TestNavigationListener navigation_listener_;
-
- private:
-  const base::RunLoop::ScopedRunTimeoutForTest run_timeout_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaTest);
 };

@@ -376,7 +376,7 @@ TEST_F('ChromeVoxCursorsTest', 'WrappingCursors', function() {
 TEST_F('ChromeVoxCursorsTest', 'IsInWebRange', function() {
   this.runWithLoadedTree(this.simpleDoc, function(root) {
     var para = root.firstChild;
-    var webRange = new cursors.Range.fromNode(para);
+    var webRange = cursors.Range.fromNode(para);
     var auraRange = cursors.Range.fromNode(root.parent);
     assertFalse(auraRange.isWebRange());
     assertTrue(webRange.isWebRange());

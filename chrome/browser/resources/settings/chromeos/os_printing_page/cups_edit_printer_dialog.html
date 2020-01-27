@@ -38,7 +38,8 @@
               id="printerAddress"
               on-input="onPrinterInfoChange_"
               value="{{pendingPrinter_.printerAddress}}"
-              disabled="[[!networkProtocolActive_]]"
+              disabled="[[!isInputFieldEnabled_(networkProtocolActive_,
+                  pendingPrinter_.printServerUri)]]"
               maxlength=63
               readonly="[[!isOnline_]]">
           </cr-input>
@@ -53,8 +54,9 @@
               <select class="md-select" aria-labelledby="printerProtocol"
                   value="[[pendingPrinter_.printerProtocol]]"
                   on-change="onProtocolChange_"
-                  disabled="[[!protocolSelectEnabled(isOnline_,
-                      networkProtocolActive_)]]">
+                  disabled="[[!protocolSelectEnabled_(
+                      networkProtocolActive_,
+                      pendingPrinter_.printServerUri)]]">
                 <option value="ipp">
                   $i18n{printerProtocolIpp}
                 </option>
@@ -92,13 +94,16 @@
               value="{{pendingPrinter_.printerQueue}}"
               on-input="onPrinterInfoChange_"
               maxlength=64
-              disabled="[[!networkProtocolActive_]]"
+              disabled="[[!isInputFieldEnabled_(networkProtocolActive_,
+                  pendingPrinter_.printServerUri)]]"
               readonly="[[!isOnline_]]">
           </cr-input>
         </div>
         <div class="settings-box two-line">
           <cr-input label="$i18n{printerURI}" readonly
-              value="[[getPrinterURI_(pendingPrinter_)]]">
+              value="[[getPrinterURI_(pendingPrinter_)]]"
+              disabled="[[!isInputFieldEnabled_(networkProtocolActive_,
+                  pendingPrinter_.printServerUri)]]">
           </cr-input>
         </div>
         <template id="makeAndModelSection" is="dom-if"

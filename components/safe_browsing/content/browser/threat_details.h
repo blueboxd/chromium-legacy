@@ -22,7 +22,7 @@
 #include "base/memory/ref_counted.h"
 #include "components/safe_browsing/core/common/safe_browsing.mojom.h"
 #include "components/safe_browsing/core/proto/csd.pb.h"
-#include "components/security_interstitials/content/unsafe_resource.h"
+#include "components/security_interstitials/core/unsafe_resource.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "mojo/public/cpp/bindings/remote.h"

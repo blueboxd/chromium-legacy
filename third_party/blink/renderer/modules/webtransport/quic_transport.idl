@@ -20,5 +20,6 @@
 
   // From WebTransport mixin
   void close(optional WebTransportCloseInfo closeInfo = {});
+  readonly attribute Promise<void> ready;
   readonly attribute Promise<WebTransportCloseInfo> closed;
 };

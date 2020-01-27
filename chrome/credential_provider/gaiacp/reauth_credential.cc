@@ -33,25 +33,37 @@ HRESULT CReauthCredential::GetUserGlsCommandline(
   DCHECK(command_line);
   DCHECK(os_user_sid_.Length());
 
+  // This boolean is set to false if generating GlsCommandLine HRESULT
+  // is E_UNEXPECTED.
+  bool get_cmd_line_status = false;
+
   // If this is an existing user with an SID, try to get its gaia id and pass
   // it to the GLS for verification.
   base::string16 gaia_id;
   if (GetIdFromSid(OLE2CW(os_user_sid_), &gaia_id) == S_OK &&
       !gaia_id.empty()) {
     command_line->AppendSwitchNative(kGaiaIdSwitch, gaia_id);
-    if (email_for_reauth_.Length()) {
-      command_line->AppendSwitchNative(kPrefillEmailSwitch,
-                                       OLE2CW(email_for_reauth_));
-    }
-    return CGaiaCredentialBase::GetUserGlsCommandline(command_line);
+    get_cmd_line_status = true;
   } else if (CGaiaCredentialBase::IsCloudAssociationEnabled() &&
              OSUserManager::Get()->IsUserDomainJoined(OLE2CW(os_user_sid_))) {
     // Note that if ADAssociationIsEnabled and the reauth credential is an AD
     // user account, then fallback to the GaiaCredentialBase for loading Gls.
+    get_cmd_line_status = true;
+  }
+
+  // If there is an existing email with an SID then pass it to the GLS
+  // as PrefillEmail switch.
+  if (email_for_reauth_.Length()) {
+    get_cmd_line_status = true;
+    command_line->AppendSwitchNative(kPrefillEmailSwitch,
+                                     OLE2CW(email_for_reauth_));
+  }
+
+  if (get_cmd_line_status) {
     return CGaiaCredentialBase::GetUserGlsCommandline(command_line);
   } else {
     LOGFN(ERROR) << "Reauth credential on user=" << os_username_
-                 << " does not have an associated Gaia id";
+                 << " does not have an associated Gaia id or Email address";
     return E_UNEXPECTED;
   }
 }

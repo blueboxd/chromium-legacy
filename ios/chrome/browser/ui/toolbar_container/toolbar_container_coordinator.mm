@@ -35,7 +35,7 @@
 @synthesize type = _type;
 @synthesize started = _started;
 
-- (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState
+- (instancetype)initWithBrowserState:(ChromeBrowserState*)browserState
                                 type:(ToolbarContainerType)type {
   if (self = [super initWithBaseViewController:nil browserState:browserState]) {
     _type = type;

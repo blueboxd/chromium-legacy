@@ -7,15 +7,15 @@
 
 #include "base/macros.h"
 #include "components/sessions/core/tab_restore_service_client.h"
-#include "ios/chrome/browser/browser_state/chrome_browser_state_forward.h"
+
+class ChromeBrowserState;
 
 // IOSChromeTabRestoreServiceClient provides an implementation of
 // TabRestoreServiceClient that depends on ios/chrome/.
 class IOSChromeTabRestoreServiceClient
     : public sessions::TabRestoreServiceClient {
  public:
-  explicit IOSChromeTabRestoreServiceClient(
-      ios::ChromeBrowserState* browser_state);
+  explicit IOSChromeTabRestoreServiceClient(ChromeBrowserState* browser_state);
   ~IOSChromeTabRestoreServiceClient() override;
 
  private:
@@ -37,7 +37,7 @@ class IOSChromeTabRestoreServiceClient
   void GetLastSession(sessions::GetLastSessionCallback callback,
                       base::CancelableTaskTracker* tracker) override;
 
-  ios::ChromeBrowserState* browser_state_;
+  ChromeBrowserState* browser_state_;
 
   DISALLOW_COPY_AND_ASSIGN(IOSChromeTabRestoreServiceClient);
 };

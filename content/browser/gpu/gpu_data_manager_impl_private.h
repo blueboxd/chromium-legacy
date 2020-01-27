@@ -24,6 +24,7 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "content/browser/gpu/gpu_data_manager_impl.h"
+#include "ui/display/display_observer.h"
 #include "ui/gl/gpu_preference.h"
 
 namespace base {
@@ -121,6 +122,9 @@ class CONTENT_EXPORT GpuDataManagerImplPrivate {
   bool IsGpuProcessUsingHardwareGpu() const;
 
   void SetApplicationVisible(bool is_visible);
+
+  void OnDisplayAdded(const display::Display& new_display);
+  void OnDisplayRemoved(const display::Display& old_display);
 
  private:
   friend class GpuDataManagerImplPrivateTest;

@@ -1869,9 +1869,6 @@ TEST_F(OptimizationGuideStoreTest, LoadPredictionModel) {
   db()->GetCallback(true);
 
   EXPECT_TRUE(last_loaded_prediction_model());
-
-  histogram_tester.ExpectBucketCount(
-      "OptimizationGuide.PredictionModelStore.OnLoadCollided", false, 1);
 }
 
 TEST_F(OptimizationGuideStoreTest, LoadPredictionModelOnUnavailableStore) {
@@ -1893,10 +1890,6 @@ TEST_F(OptimizationGuideStoreTest, LoadPredictionModelOnUnavailableStore) {
   // Verify that the OnPredictionModelLoaded callback runs when the store is
   // unavailable and that the prediction model was correctly set.
   EXPECT_FALSE(last_loaded_prediction_model());
-  // The load failed because of an unavailable store, not because of a
-  // collision.
-  histogram_tester.ExpectBucketCount(
-      "OptimizationGuide.PredictionModelStore.OnLoadCollided", false, 1);
 }
 
 TEST_F(OptimizationGuideStoreTest, LoadPredictionModelWithUpdateInFlight) {
@@ -1924,11 +1917,9 @@ TEST_F(OptimizationGuideStoreTest, LoadPredictionModelWithUpdateInFlight) {
 
   db()->GetCallback(true);
 
-  // Verify that the OnPredictionModelLoaded callback runs when the store is
-  // unavailable and that the prediction model was correctly set.
-  EXPECT_FALSE(last_loaded_prediction_model());
-  histogram_tester.ExpectBucketCount(
-      "OptimizationGuide.PredictionModelStore.OnLoadCollided", true, 1);
+  // Verify that the OnPredictionModelLoaded callback eventually runs with the
+  // prediction model being correctly set.
+  EXPECT_TRUE(last_loaded_prediction_model());
 }
 
 TEST_F(OptimizationGuideStoreTest, HostModelFeaturesMetadataStored) {

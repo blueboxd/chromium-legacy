@@ -155,7 +155,10 @@ class StyleSheetHandler final : public CSSParserObserver {
   StyleSheetHandler(const String& parsed_text,
                     Document* document,
                     CSSRuleSourceDataList* result)
-      : parsed_text_(parsed_text), document_(document), result_(result) {
+      : parsed_text_(parsed_text),
+        document_(document),
+        result_(result),
+        current_rule_data_(nullptr) {
     DCHECK(result_);
   }
 
@@ -177,10 +180,10 @@ class StyleSheetHandler final : public CSSParserObserver {
   inline void SetRuleHeaderEnd(const CharacterType*, unsigned);
 
   const String& parsed_text_;
-  Member<Document> document_;
-  Member<CSSRuleSourceDataList> result_;
+  Document* document_;
+  CSSRuleSourceDataList* result_;
   CSSRuleSourceDataList current_rule_data_stack_;
-  Member<CSSRuleSourceData> current_rule_data_;
+  CSSRuleSourceData* current_rule_data_;
 };
 
 void StyleSheetHandler::StartRuleHeader(StyleRule::RuleType type,

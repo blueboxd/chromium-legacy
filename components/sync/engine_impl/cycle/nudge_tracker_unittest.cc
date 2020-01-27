@@ -870,6 +870,9 @@ TEST_F(NudgeTrackerTest, NoTypesShorterThanDefault) {
 
   std::map<ModelType, base::TimeDelta> delay_map;
   ModelTypeSet protocol_types = ProtocolTypes();
+  // Add exception for low-latency data type.
+  protocol_types.Remove(syncer::SHARING_MESSAGE);
+
   for (ModelType type : protocol_types) {
     delay_map[type] = base::TimeDelta();
   }

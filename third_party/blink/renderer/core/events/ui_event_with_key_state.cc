@@ -21,6 +21,7 @@
 #include "third_party/blink/renderer/core/events/ui_event_with_key_state.h"
 
 #include "build/build_config.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_event_modifier_init.h"
 
 namespace blink {
 

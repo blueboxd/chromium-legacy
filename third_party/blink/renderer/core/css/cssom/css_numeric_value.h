@@ -10,7 +10,6 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/css/css_primitive_value.h"
 #include "third_party/blink/renderer/core/css/cssom/css_numeric_sum_value.h"
-#include "third_party/blink/renderer/core/css/cssom/css_numeric_type.h"
 #include "third_party/blink/renderer/core/css/cssom/css_numeric_value_type.h"
 #include "third_party/blink/renderer/core/css/cssom/css_style_value.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
@@ -18,12 +17,13 @@
 
 namespace blink {
 
+class CSSMathExpressionNode;
+class CSSMathSum;
+class CSSNumericType;
+class CSSNumericValue;
 class CSSUnitValue;
 class ExceptionState;
-class CSSMathExpressionNode;
 
-class CSSNumericValue;
-class CSSMathSum;
 using CSSNumberish = DoubleOrCSSNumericValue;
 using CSSNumericValueVector = HeapVector<Member<CSSNumericValue>>;
 

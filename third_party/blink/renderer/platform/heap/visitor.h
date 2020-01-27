@@ -108,10 +108,20 @@ class PLATFORM_EXPORT Visitor {
     VisitRoot(const_cast<T*>(t), TraceDescriptorFor(t), location);
   }
 
-  template <typename T>
+  template <typename T, bool maybe_deleted = false>
   void Trace(const Member<T>& t) {
-    DCHECK(!t.IsHashTableDeletedValueSafe());
-    Trace(t.GetSafe());
+    T* value = t.GetSafe();
+
+    if (maybe_deleted && Member<T>::IsMemberHashTableDeletedValue(value))
+      return;
+    DCHECK(!Member<T>::IsMemberHashTableDeletedValue(value));
+
+    Trace(value);
+  }
+
+  template <typename T>
+  ALWAYS_INLINE void TraceMaybeDeleted(const Member<T>& t) {
+    Trace<T, true>(t);
   }
 
   // Fallback methods used only when we need to trace raw pointers of T. This is
@@ -187,7 +197,7 @@ class PLATFORM_EXPORT Visitor {
     if (!value)
       return;
 
-    DCHECK(!weak_member.IsHashTableDeletedValueSafe());
+    DCHECK(!WeakMember<T>::IsMemberHashTableDeletedValue(value));
     VisitWeak(value, &weak_member, TraceDescriptorFor(value),
               &HandleWeakCell<T>);
   }

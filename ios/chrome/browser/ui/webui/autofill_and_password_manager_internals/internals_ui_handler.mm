@@ -69,8 +69,8 @@ void InternalsUIHandler::RegisterMessages() {
 void InternalsUIHandler::OnLoaded(const base::ListValue* args) {
   web_ui()->CallJavascriptFunction(call_on_load_, {});
 
-  ios::ChromeBrowserState* browser_state =
-      ios::ChromeBrowserState::FromWebUIIOS(web_ui());
+  ChromeBrowserState* browser_state =
+      ChromeBrowserState::FromWebUIIOS(web_ui());
   base::Value is_incognito(browser_state->IsOffTheRecord());
   web_ui()->CallJavascriptFunction("notifyAboutIncognito", {&is_incognito});
   web_ui()->CallJavascriptFunction("notifyAboutVariations",
@@ -79,8 +79,8 @@ void InternalsUIHandler::OnLoaded(const base::ListValue* args) {
 }
 
 void InternalsUIHandler::StartSubscription() {
-  LogRouter* log_router = get_log_router_function_.Run(
-      ios::ChromeBrowserState::FromWebUIIOS(web_ui()));
+  LogRouter* log_router =
+      get_log_router_function_.Run(ChromeBrowserState::FromWebUIIOS(web_ui()));
   if (!log_router)
     return;
 
@@ -95,8 +95,8 @@ void InternalsUIHandler::EndSubscription() {
   if (!registered_with_log_router_)
     return;
   registered_with_log_router_ = false;
-  LogRouter* log_router = get_log_router_function_.Run(
-      ios::ChromeBrowserState::FromWebUIIOS(web_ui()));
+  LogRouter* log_router =
+      get_log_router_function_.Run(ChromeBrowserState::FromWebUIIOS(web_ui()));
   if (log_router)
     log_router->UnregisterReceiver(this);
 }

@@ -112,7 +112,7 @@ class FrameSwapScope {
   }
 
  private:
-  Member<FrameOwner> frame_owner_;
+  FrameOwner* frame_owner_;
 };
 
 // TODO(dcheng): This class is an internal implementation detail of provisional

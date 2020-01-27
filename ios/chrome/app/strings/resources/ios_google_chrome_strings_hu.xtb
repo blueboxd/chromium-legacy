@@ -27,7 +27,6 @@
 <translation id="4249068189593983585">Tipp a Chrome használatához. A további lapbeállításokhoz érintse meg és tartsa lenyomva az eszköztárban lévő Lapok megjelenítése gombot, amely a képernyő alsó vagy felső részén található.</translation>
 <translation id="4523886039239821078">Bizonyos bővítmények a Chrome összeomlását eredményezik. Távolítsa el a következő(ke)t:</translation>
 <translation id="5389212809648216794">A Google Chrome nem tudja használni a kamerát, mivel egy másik alkalmazás használja</translation>
-<translation id="5621912349729388018"><ph name="BEGIN_LINK" />A Chrome frissített Általános Szerződési Feltételeinek áttekintése.<ph name="END_LINK" /></translation>
 <translation id="5639704535586432836">Nyissa meg a Beállítások &gt; Adatvédelem &gt; Kamera &gt; Google Chrome elemet, és kapcsolja be a kamerát.</translation>
 <translation id="5642200033778930880">A Google Chrome Osztott nézet módban nem tudja használni a kamerát</translation>
 <translation id="5690427481109656848">Google LLC</translation>
@@ -51,4 +50,5 @@
 <translation id="840168496893712993">Bizonyos bővítmények a Chrome összeomlását eredményezik. Próbálja meg eltávolítani őket.</translation>
 <translation id="8459495907675268833">A kiválasztott adatokat eltávolítottuk a Chrome-ból és a szinkronizált eszközökről. Előfordulhat, hogy Google-fiókjában (a history.google.com címen) még szerepelnek a böngészési előzmények egyéb formái, így például a keresések és egyéb tevékenységek más Google-szolgáltatásokból.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
+<translation id="8574235780160508979">A Chrome Általános Szerződési Feltételei március 31-én módosulnak. <ph name="BEGIN_LINK" />Kérjük, tekintse meg<ph name="END_LINK" />.</translation>
 </translationbundle>

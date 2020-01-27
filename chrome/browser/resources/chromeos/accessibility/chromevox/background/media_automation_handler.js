@@ -20,40 +20,34 @@ var EventType = chrome.automation.EventType;
 var RoleType = chrome.automation.RoleType;
 
 /**
- * @constructor
- * @extends {BaseAutomationHandler}
  * @implements {TtsCapturingEventListener}
  */
-MediaAutomationHandler = function() {
-  /** @type {!Set<AutomationNode>} @private */
-  this.mediaRoots_ = new Set();
+MediaAutomationHandler = class extends BaseAutomationHandler {
+  constructor() {
+    super(null);
+    /** @type {!Set<AutomationNode>} @private */
+    this.mediaRoots_ = new Set();
 
-  /** @type {Date} @private */
-  this.lastTtsEvent_ = new Date();
+    /** @type {Date} @private */
+    this.lastTtsEvent_ = new Date();
 
-  ChromeVox.tts.addCapturingEventListener(this);
+    ChromeVox.tts.addCapturingEventListener(this);
 
-  chrome.automation.getDesktop(function(node) {
-    BaseAutomationHandler.call(this, node);
+    chrome.automation.getDesktop((node) => {
+      this.node_ = node;
 
-    this.addListener_(
-        EventType.MEDIA_STARTED_PLAYING, this.onMediaStartedPlaying);
-    this.addListener_(
-        EventType.MEDIA_STOPPED_PLAYING, this.onMediaStoppedPlaying);
-  }.bind(this));
-};
-
-/** @type {number} */
-MediaAutomationHandler.MIN_WAITTIME_MS = 1000;
-
-MediaAutomationHandler.prototype = {
-  __proto__: BaseAutomationHandler.prototype,
+      this.addListener_(
+          EventType.MEDIA_STARTED_PLAYING, this.onMediaStartedPlaying);
+      this.addListener_(
+          EventType.MEDIA_STOPPED_PLAYING, this.onMediaStoppedPlaying);
+    });
+  }
 
   /** @override */
   onTtsStart() {
     this.lastTtsEvent_ = new Date();
     this.update_({start: true});
-  },
+  }
 
   /** @override */
   onTtsEnd() {
@@ -66,12 +60,12 @@ MediaAutomationHandler.prototype = {
       this.lastTtsEvent_ = now;
       this.update_({end: true});
     }.bind(this), MediaAutomationHandler.MIN_WAITTIME_MS);
-  },
+  }
 
   /** @override */
   onTtsInterrupted() {
     this.onTtsEnd();
-  },
+  }
 
   /**
    * @param {!AutomationEvent} evt
@@ -82,14 +76,14 @@ MediaAutomationHandler.prototype = {
     if (ChromeVox.tts.isSpeaking() && audioStrategy == 'audioDuck') {
       this.update_({start: true});
     }
-  },
+  }
 
   /**
    * @param {!AutomationEvent} evt
    */
   onMediaStoppedPlaying(evt) {
     // Intentionally does nothing (to cover resume).
-  },
+  }
 
   /**
    * Updates the media state for all observed automation roots.
@@ -120,6 +114,9 @@ MediaAutomationHandler.prototype = {
     }
   }
 };
-});  // goog.scope
+
+/** @type {number} */
+MediaAutomationHandler.MIN_WAITTIME_MS = 1000;
 
 new MediaAutomationHandler();
+});  // goog.scope

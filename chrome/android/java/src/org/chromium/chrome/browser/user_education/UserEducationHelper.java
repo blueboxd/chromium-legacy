@@ -9,8 +9,9 @@ import android.view.View;
 
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.browser.ui.widget.highlight.ViewHighlighter;
-import org.chromium.chrome.browser.ui.widget.textbubble.TextBubble;
+import org.chromium.chrome.browser.util.AccessibilityUtil;
+import org.chromium.components.browser_ui.widget.highlight.ViewHighlighter;
+import org.chromium.components.browser_ui.widget.textbubble.TextBubble;
 import org.chromium.components.feature_engagement.Tracker;
 import org.chromium.ui.widget.ViewRectProvider;
 
@@ -68,8 +69,9 @@ public class UserEducationHelper {
         assert (!accessibilityString.isEmpty());
         ViewRectProvider rectProvider = new ViewRectProvider(anchorView);
 
-        TextBubble textBubble = new TextBubble(
-                mActivity, anchorView, contentString, accessibilityString, true, rectProvider);
+        TextBubble textBubble =
+                new TextBubble(mActivity, anchorView, contentString, accessibilityString, true,
+                        rectProvider, AccessibilityUtil.isAccessibilityEnabled());
         textBubble.setDismissOnTouchInteraction(iphCommand.dismissOnTouch);
         textBubble.addOnDismissListener(() -> anchorView.getHandler().postDelayed(() -> {
             tracker.dismissed(featureName);

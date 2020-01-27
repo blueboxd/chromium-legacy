@@ -4,7 +4,7 @@
 
 #include "third_party/blink/renderer/core/streams/queuing_strategy_common.h"
 
-#include "third_party/blink/renderer/core/streams/queuing_strategy_init.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_queuing_strategy_init.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 
 namespace blink {

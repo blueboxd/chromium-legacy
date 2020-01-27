@@ -148,9 +148,9 @@ void TabDesktopMediaList::Refresh(bool update_thumnails) {
     // current thread.
     base::PostTaskAndReplyWithResult(
         thumbnail_task_runner_.get(), FROM_HERE,
-        base::Bind(&CreateEnclosedFaviconImage, thumbnail_size_, it.second),
-        base::Bind(&TabDesktopMediaList::UpdateSourceThumbnail,
-                   weak_factory_.GetWeakPtr(), it.first));
+        base::BindOnce(&CreateEnclosedFaviconImage, thumbnail_size_, it.second),
+        base::BindOnce(&TabDesktopMediaList::UpdateSourceThumbnail,
+                       weak_factory_.GetWeakPtr(), it.first));
   }
 
   // OnRefreshComplete() needs to be called after all calls for

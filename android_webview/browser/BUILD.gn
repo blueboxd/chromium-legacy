@@ -183,6 +183,8 @@ source_set("browser") {
     "tracing/aw_tracing_controller.h",
     "tracing/aw_tracing_delegate.cc",
     "tracing/aw_tracing_delegate.h",
+    "webview_app_state_observer.cc",
+    "webview_app_state_observer.h",
   ]
 
   deps = [

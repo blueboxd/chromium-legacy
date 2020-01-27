@@ -95,6 +95,19 @@ TEST_F('CrElementsInputV3Test', 'MAYBE_All', function() {
 });
 
 // eslint-disable-next-line no-var
+var CrElementsProfileAvatarSelectorV3Test =
+    class extends CrElementsV3FocusTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://test?module=cr_elements/cr_profile_avatar_selector_tests.m.js';
+  }
+};
+
+TEST_F('CrElementsProfileAvatarSelectorV3Test', 'All', function() {
+  mocha.run();
+});
+
+// eslint-disable-next-line no-var
 var CrElementsTabsV3Test = class extends CrElementsV3FocusTest {
   /** @override */
   get browsePreload() {

@@ -20,11 +20,6 @@ class CORE_EXPORT LayoutNGListItem final : public LayoutNGBlockFlow {
   ListItemOrdinal& Ordinal() { return ordinal_; }
 
   int Value() const;
-  String MarkerTextWithSuffix() const;
-  String MarkerTextWithoutSuffix() const;
-
-  // Marker text with suffix, e.g. "1. ", for use in accessibility.
-  static String TextAlternative(const LayoutObject& marker);
 
   LayoutObject* Marker() const {
     Element* list_item = To<Element>(GetNode());
@@ -32,13 +27,8 @@ class CORE_EXPORT LayoutNGListItem final : public LayoutNGBlockFlow {
       return marker->GetLayoutObject();
     return nullptr;
   }
-  bool IsMarkerImage() const { return StyleRef().GeneratesMarkerImage(); }
 
-  void UpdateMarkerTextIfNeeded() {
-    if (Marker() && !is_marker_text_updated_ && !IsMarkerImage())
-      UpdateMarkerText();
-  }
-  void UpdateMarkerContentIfNeeded();
+  void UpdateMarkerTextIfNeeded();
 
   void OrdinalValueChanged();
   void WillCollectInlines() override;
@@ -47,7 +37,6 @@ class CORE_EXPORT LayoutNGListItem final : public LayoutNGBlockFlow {
   static const LayoutObject* FindSymbolMarkerLayoutText(const LayoutObject*);
 
   // Find the LayoutNGListItem from a marker.
-  static LayoutNGListItem* FromMarker(const LayoutObject& marker);
   static LayoutNGListItem* FromMarkerOrMarkerContent(const LayoutObject&);
 
   const char* GetName() const override { return "LayoutNGListItem"; }
@@ -62,18 +51,7 @@ class CORE_EXPORT LayoutNGListItem final : public LayoutNGBlockFlow {
 
   bool IsInside() const;
 
-  enum MarkerTextFormat { kWithSuffix, kWithoutSuffix };
-  enum MarkerType { kStatic, kOrdinalValue, kSymbolValue };
-  MarkerType MarkerText(StringBuilder*, MarkerTextFormat) const;
-  void UpdateMarkerText();
-  void UpdateMarkerText(LayoutText*);
-
-  void ListStyleTypeChanged();
-
   ListItemOrdinal ordinal_;
-
-  unsigned marker_type_ : 2;  // MarkerType
-  unsigned is_marker_text_updated_ : 1;
 };
 
 DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutNGListItem, IsLayoutNGListItem());

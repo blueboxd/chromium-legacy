@@ -29,10 +29,10 @@
 #include "third_party/blink/renderer/core/html/canvas/image_data.h"
 
 #include "base/sys_byteorder.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_image_bitmap_options.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_uint8_clamped_array.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/imagebitmap/image_bitmap.h"
-#include "third_party/blink/renderer/core/imagebitmap/image_bitmap_options.h"
 #include "third_party/blink/renderer/platform/graphics/color_behavior.h"
 #include "third_party/skia/include/third_party/skcms/skcms.h"
 #include "v8/include/v8.h"

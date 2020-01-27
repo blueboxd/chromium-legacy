@@ -31,7 +31,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_ANIMATABLE_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_ANIMATABLE_H_
 
-#include "third_party/blink/renderer/core/animation/get_animations_options.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/heap/heap_allocator.h"
 #include "third_party/blink/renderer/platform/heap/member.h"
@@ -41,6 +40,7 @@ namespace blink {
 class Animation;
 class ExceptionState;
 class Element;
+class GetAnimationsOptions;
 class ScriptState;
 class ScriptValue;
 class UnrestrictedDoubleOrKeyframeAnimationOptions;

@@ -118,6 +118,18 @@ void MediaSessionController::OnSetVolumeMultiplier(int player_id,
       volume_multiplier));
 }
 
+void MediaSessionController::OnEnterPictureInPicture(int player_id) {
+  DCHECK_EQ(player_id_, player_id);
+  id_.render_frame_host->Send(new MediaPlayerDelegateMsg_EnterPictureInPicture(
+      id_.render_frame_host->GetRoutingID(), id_.delegate_id));
+}
+
+void MediaSessionController::OnExitPictureInPicture(int player_id) {
+  DCHECK_EQ(player_id_, player_id);
+  id_.render_frame_host->Send(new MediaPlayerDelegateMsg_ExitPictureInPicture(
+      id_.render_frame_host->GetRoutingID(), id_.delegate_id));
+}
+
 RenderFrameHost* MediaSessionController::render_frame_host() const {
   return id_.render_frame_host;
 }

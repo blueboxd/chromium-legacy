@@ -106,10 +106,24 @@ class CORE_EXPORT NGLineBoxFragmentBuilder final
     // level.
     Child(LayoutUnit block_offset, LayoutUnit block_size)
         : rect(LayoutUnit(), block_offset, LayoutUnit(), block_size) {}
+    Child(const NGInlineItem& inline_item,
+          const LogicalRect& rect,
+          unsigned children_count)
+        : inline_item(&inline_item),
+          rect(rect),
+          children_count(children_count) {}
     // Crete a bidi control. A bidi control does not have a fragment, but has
     // bidi level and affects bidi reordering.
     Child(UBiDiLevel bidi_level) : bidi_level(bidi_level) {}
     // Create an in-flow |NGLayoutResult|.
+    Child(scoped_refptr<const NGLayoutResult> layout_result,
+          const LogicalRect& rect,
+          unsigned children_count,
+          UBiDiLevel bidi_level)
+        : layout_result(std::move(layout_result)),
+          rect(rect),
+          children_count(children_count),
+          bidi_level(bidi_level) {}
     Child(scoped_refptr<const NGLayoutResult> layout_result,
           LogicalOffset offset,
           LayoutUnit inline_size,
@@ -247,12 +261,18 @@ class CORE_EXPORT NGLineBoxFragmentBuilder final
     void InsertChild(unsigned index);
     void InsertChild(unsigned index,
                      scoped_refptr<const NGLayoutResult> layout_result,
-                     const LogicalOffset& offset,
+                     const LogicalRect& rect,
                      unsigned children_count) {
       WillInsertChild(index);
-      children_.insert(index, Child{std::move(layout_result), offset,
-                                    /* inline_size */ LayoutUnit(),
-                                    children_count, /* bidi_level */ 0});
+      children_.insert(index, Child(std::move(layout_result), rect,
+                                    children_count, /* bidi_level */ 0));
+    }
+    void InsertChild(unsigned index,
+                     const NGInlineItem& inline_item,
+                     const LogicalRect& rect,
+                     unsigned children_count) {
+      WillInsertChild(index);
+      children_.insert(index, Child(inline_item, rect, children_count));
     }
 
     void MoveInInlineDirection(LayoutUnit);

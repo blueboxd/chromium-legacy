@@ -69,8 +69,8 @@ void AttachTabHelpers(web::WebState* web_state, bool for_prerender) {
   // TabIdHelper sets up the tab ID.
   TabIdTabHelper::CreateForWebState(web_state);
 
-  ios::ChromeBrowserState* browser_state =
-      ios::ChromeBrowserState::FromBrowserState(web_state->GetBrowserState());
+  ChromeBrowserState* browser_state =
+      ChromeBrowserState::FromBrowserState(web_state->GetBrowserState());
 
   // IOSChromeSessionTabHelper sets up the session ID used by other helpers,
   // so it needs to be created before them.
@@ -114,7 +114,7 @@ void AttachTabHelpers(web::WebState* web_state, bool for_prerender) {
   ImageFetchTabHelper::CreateForWebState(web_state);
 
   OpenInTabHelper::CreateForWebState(web_state);
-  ios::ChromeBrowserState* original_browser_state =
+  ChromeBrowserState* original_browser_state =
       browser_state->GetOriginalChromeBrowserState();
   favicon::WebFaviconDriver::CreateForWebState(
       web_state,

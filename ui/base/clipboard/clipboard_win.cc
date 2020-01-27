@@ -279,7 +279,7 @@ void ClipboardWin::ReadAvailableTypes(ClipboardBuffer buffer,
     types->push_back(base::UTF8ToUTF16(kMimeTypePNG));
   *contains_filenames = false;
 
-  // Acquire the clipboard.
+  // Acquire the clipboard to read WebCustomDataType types.
   ScopedClipboard clipboard;
   if (!clipboard.Acquire(GetClipboardWindow()))
     return;
@@ -291,6 +291,31 @@ void ClipboardWin::ReadAvailableTypes(ClipboardBuffer buffer,
 
   ReadCustomDataTypes(::GlobalLock(hdata), ::GlobalSize(hdata), types);
   ::GlobalUnlock(hdata);
+}
+
+std::vector<base::string16>
+ClipboardWin::ReadAvailablePlatformSpecificFormatNames(
+    ClipboardBuffer buffer) const {
+  int count = ::CountClipboardFormats();
+  if (!count)
+    return {};
+
+  std::vector<base::string16> types;
+  types.reserve(count);
+
+  ScopedClipboard clipboard;
+  if (!clipboard.Acquire(GetClipboardWindow()))
+    return {};
+
+  UINT cf_format = 0;
+  cf_format = ::EnumClipboardFormats(cf_format);
+  while (cf_format) {
+    std::string type_name = ClipboardFormatType(cf_format).GetName();
+    if (!type_name.empty())
+      types.push_back(base::UTF8ToUTF16(type_name));
+    cf_format = ::EnumClipboardFormats(cf_format);
+  }
+  return types;
 }
 
 void ClipboardWin::ReadText(ClipboardBuffer buffer,

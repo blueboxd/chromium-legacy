@@ -201,7 +201,7 @@ FlagsUI::FlagsUI(web::WebUIIOS* web_ui)
                 flag_access);
 
   // Set up the about:flags source.
-  web::WebUIIOSDataSource::Add(ios::ChromeBrowserState::FromWebUIIOS(web_ui),
+  web::WebUIIOSDataSource::Add(ChromeBrowserState::FromWebUIIOS(web_ui),
                                CreateFlagsUIHTMLSource());
 }
 

@@ -7,8 +7,7 @@
 
 #import <Foundation/Foundation.h>
 
-#include "ios/chrome/browser/browser_state/chrome_browser_state_forward.h"
-
+class ChromeBrowserState;
 class GURL;
 @class HandoffManager;
 
@@ -27,7 +26,7 @@ class GURL;
 // |-updateBrowserState:nullptr| before |browserState| is destroyed.
 //
 // |browserState| must not be off the record.
-- (void)updateBrowserState:(ios::ChromeBrowserState*)browserState;
+- (void)updateBrowserState:(ChromeBrowserState*)browserState;
 
 // Updates the active URL to be shared with other devices. This method is
 // a no-op if the active browser state was never set previously.

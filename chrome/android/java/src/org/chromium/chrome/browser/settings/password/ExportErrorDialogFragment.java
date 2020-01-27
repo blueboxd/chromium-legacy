@@ -72,7 +72,7 @@ public class ExportErrorDialogFragment extends DialogFragment {
         return new AlertDialog
                 .Builder(getActivity(), R.style.Theme_Chromium_AlertDialog_NoActionBar)
                 .setView(dialog)
-                .setTitle(R.string.save_password_preferences_export_error_title)
+                .setTitle(R.string.password_settings_export_error_title)
                 .setPositiveButton(mParams.positiveButtonLabelId, mHandler)
                 .setNegativeButton(R.string.close, mHandler)
                 .create();

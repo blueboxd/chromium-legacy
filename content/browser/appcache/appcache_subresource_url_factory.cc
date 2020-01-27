@@ -379,8 +379,7 @@ void AppCacheSubresourceURLFactory::CreateLoaderAndStart(
   // process is gone.
   // See https://crbug.com/910287 for details.
   auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
-  if (request.request_initiator.has_value() &&
-      !request.request_initiator.value().opaque() && appcache_host_ &&
+  if (request.request_initiator.has_value() && appcache_host_ &&
       !policy->CanAccessDataForOrigin(appcache_host_->process_id(),
                                       request.request_initiator.value()) &&
       policy->HasSecurityState(appcache_host_->process_id())) {

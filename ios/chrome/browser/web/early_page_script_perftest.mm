@@ -22,7 +22,7 @@ namespace {
 class EarlyPageScriptPerfTest : public PerfTest {
  protected:
   EarlyPageScriptPerfTest() : PerfTest("Early Page Script for WKWebView") {
-    std::unique_ptr<ios::ChromeBrowserState> browser_state =
+    std::unique_ptr<ChromeBrowserState> browser_state =
         TestChromeBrowserState::Builder().Build();
     // |web_view| already has the script injected. |web_view_| is a bare
     // WKWebView, which will be used for script execution testing performance.

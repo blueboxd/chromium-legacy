@@ -8,9 +8,9 @@
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
 
-#include "ios/chrome/browser/browser_state/chrome_browser_state_forward.h"
 #import "ios/chrome/browser/sessions/session_window_restoring.h"
 
+class ChromeBrowserState;
 @class SessionServiceIOS;
 class TabModelSyncedWindowDelegate;
 class TabUsageRecorder;
@@ -29,7 +29,7 @@ class Browser;
     TabModelSyncedWindowDelegate* syncedWindowDelegate;
 
 // BrowserState associated with this TabModel.
-@property(nonatomic, readonly) ios::ChromeBrowserState* browserState;
+@property(nonatomic, readonly) ChromeBrowserState* browserState;
 
 // Records UMA metrics about Tab usage.
 @property(nonatomic, readonly) TabUsageRecorder* tabUsageRecorder;

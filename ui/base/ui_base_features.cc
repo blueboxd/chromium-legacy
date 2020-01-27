@@ -103,18 +103,9 @@ bool IsUsingWMPointerForTouch() {
          base::FeatureList::IsEnabled(kPointerEventsForTouch);
 }
 
-// Enables DirectManipulation API for processing Precision Touchpad events.
-const base::Feature kPrecisionTouchpad{"PrecisionTouchpad",
-                                       base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Enables Logging for DirectManipulation.
 const base::Feature kPrecisionTouchpadLogging{
     "PrecisionTouchpadLogging", base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Enables Swipe left/right to navigation back/forward API for processing
-// Precision Touchpad events.
-const base::Feature kPrecisionTouchpadScrollPhase{
-    "PrecisionTouchpadScrollPhase", base::FEATURE_ENABLED_BY_DEFAULT};
 #endif  // defined(OS_WIN)
 
 #if defined(OS_WIN) || defined(OS_CHROMEOS)

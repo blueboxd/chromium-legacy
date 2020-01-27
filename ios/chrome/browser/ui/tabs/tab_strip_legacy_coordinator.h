@@ -7,12 +7,12 @@
 
 #import <UIKit/UIKit.h>
 
-#include "ios/chrome/browser/browser_state/chrome_browser_state_forward.h"
 #import "ios/chrome/browser/ui/coordinators/chrome_coordinator.h"
 #import "ios/chrome/browser/ui/tabs/requirements/tab_strip_highlighting.h"
 
 @protocol ApplicationCommands;
 @protocol BrowserCommands;
+class ChromeBrowserState;
 @protocol PopupMenuLongPressDelegate;
 @class TabModel;
 @protocol TabStripPresentation;
@@ -22,7 +22,7 @@
 @interface TabStripLegacyCoordinator : ChromeCoordinator<TabStripHighlighting>
 
 // BrowserState for this coordinator.
-@property(nonatomic, assign) ios::ChromeBrowserState* browserState;
+@property(nonatomic, assign) ChromeBrowserState* browserState;
 
 // Dispatcher for sending commands.
 @property(nonatomic, weak) id dispatcher;

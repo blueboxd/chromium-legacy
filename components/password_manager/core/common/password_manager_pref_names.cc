@@ -38,8 +38,6 @@ const char kNumberSignInPasswordPromoShown[] =
 const char kSignInPasswordPromoRevive[] =
     "profile.sign_in_password_promo_revive";
 
-const char kIsAccountStoreDefault[] = "profile.is_account_store_default";
-
 const char kAccountStoragePerAccountSettings[] =
     "profile.password_account_storage_settings";
 

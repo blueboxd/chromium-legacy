@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/events/promise_rejection_event.h"
 
+#include "third_party/blink/renderer/bindings/core/v8/v8_promise_rejection_event_init.h"
 #include "third_party/blink/renderer/core/event_interface_names.h"
 #include "third_party/blink/renderer/platform/bindings/dom_wrapper_world.h"
 

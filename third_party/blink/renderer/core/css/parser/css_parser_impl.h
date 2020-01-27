@@ -198,13 +198,13 @@ class CSSParserImpl {
   // FIXME: Investigate using a smaller inline buffer
   HeapVector<CSSPropertyValue, 256> parsed_properties_;
 
-  Member<const CSSParserContext> context_;
-  Member<StyleSheetContents> style_sheet_;
+  const CSSParserContext* context_;
+  StyleSheetContents* style_sheet_;
 
   // For the inspector
   CSSParserObserver* observer_;
 
-  Member<CSSLazyParsingState> lazy_state_;
+  CSSLazyParsingState* lazy_state_;
   DISALLOW_COPY_AND_ASSIGN(CSSParserImpl);
 };
 

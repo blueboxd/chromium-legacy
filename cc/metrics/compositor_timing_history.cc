@@ -777,7 +777,8 @@ void CompositorTimingHistory::BeginMainFrameAborted(
 void CompositorTimingHistory::NotifyReadyToCommit(
     std::unique_ptr<BeginMainFrameMetrics> details) {
   DCHECK_NE(begin_main_frame_start_time_, base::TimeTicks());
-  compositor_frame_reporting_controller_->SetBlinkBreakdown(std::move(details));
+  compositor_frame_reporting_controller_->SetBlinkBreakdown(
+      std::move(details), begin_main_frame_start_time_);
   begin_main_frame_start_to_ready_to_commit_duration_history_.InsertSample(
       Now() - begin_main_frame_start_time_);
 }

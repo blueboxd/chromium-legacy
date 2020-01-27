@@ -37,7 +37,6 @@
 #include "base/macros.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/core/core_export.h"
-#include "third_party/blink/renderer/core/dom/events/add_event_listener_options_resolved.h"
 #include "third_party/blink/renderer/core/dom/events/event_dispatch_result.h"
 #include "third_party/blink/renderer/core/dom/events/event_listener_map.h"
 #include "third_party/blink/renderer/core/event_target_names.h"
@@ -50,6 +49,7 @@
 namespace blink {
 
 class AddEventListenerOptionsOrBoolean;
+class AddEventListenerOptionsResolved;
 class DOMWindow;
 class Event;
 class EventListenerOptionsOrBoolean;
@@ -58,10 +58,10 @@ class ExecutionContext;
 class LocalDOMWindow;
 class MessagePort;
 class Node;
+class PortalHost;
 class ScriptState;
 class ServiceWorker;
 class V8EventListener;
-class PortalHost;
 
 struct FiringEventIterator {
   DISALLOW_NEW();

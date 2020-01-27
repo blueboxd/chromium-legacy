@@ -200,6 +200,41 @@ void AddA11yStrings(content::WebUIDataSource* html_source) {
           ::switches::kEnableExperimentalAccessibilitySwitchAccessText));
 }
 
+void AddLanguagesStrings(content::WebUIDataSource* html_source) {
+  static constexpr webui::LocalizedString kLocalizedStrings[] = {
+      {"orderLanguagesInstructions",
+       IDS_SETTINGS_LANGUAGES_LANGUAGES_LIST_ORDERING_INSTRUCTIONS},
+      {"osLanguagesPageTitle", IDS_OS_SETTINGS_LANGUAGES_AND_INPUT_PAGE_TITLE},
+      {"osLanguagesListTitle", IDS_OS_SETTINGS_LANGUAGES_LIST_TITLE},
+      {"inputMethodsListTitle",
+       IDS_SETTINGS_LANGUAGES_INPUT_METHODS_LIST_TITLE},
+      {"inputMethodEnabled", IDS_SETTINGS_LANGUAGES_INPUT_METHOD_ENABLED},
+      {"inputMethodsExpandA11yLabel",
+       IDS_SETTINGS_LANGUAGES_INPUT_METHODS_EXPAND_ACCESSIBILITY_LABEL},
+      {"inputMethodsManagedbyPolicy",
+       IDS_SETTINGS_LANGUAGES_INPUT_METHODS_MANAGED_BY_POLICY},
+      {"manageInputMethods", IDS_SETTINGS_LANGUAGES_INPUT_METHODS_MANAGE},
+      {"manageInputMethodsPageTitle",
+       IDS_SETTINGS_LANGUAGES_MANAGE_INPUT_METHODS_TITLE},
+      {"showImeMenu", IDS_SETTINGS_LANGUAGES_SHOW_IME_MENU},
+      {"displayLanguageRestart",
+       IDS_SETTINGS_LANGUAGES_RESTART_TO_DISPLAY_LANGUAGE},
+      {"moveDown", IDS_SETTINGS_LANGUAGES_LANGUAGES_LIST_ORDERING_INSTRUCTIONS},
+      {"displayInThisLanguage",
+       IDS_SETTINGS_LANGUAGES_DISPLAY_IN_THIS_LANGUAGE},
+      {"searchLanguages", IDS_SETTINGS_LANGUAGE_SEARCH},
+      {"addLanguagesDialogTitle",
+       IDS_SETTINGS_LANGUAGES_MANAGE_LANGUAGES_TITLE},
+      {"moveToTop", IDS_SETTINGS_LANGUAGES_LANGUAGES_LIST_MOVE_TO_TOP},
+      {"isDisplayedInThisLanguage",
+       IDS_SETTINGS_LANGUAGES_IS_DISPLAYED_IN_THIS_LANGUAGE},
+      {"removeLanguage", IDS_SETTINGS_LANGUAGES_LANGUAGES_LIST_REMOVE},
+      {"addLanguages", IDS_SETTINGS_LANGUAGES_LANGUAGES_ADD},
+      {"moveUp", IDS_SETTINGS_LANGUAGES_LANGUAGES_ADD},
+  };
+  AddLocalizedStringsBulk(html_source, kLocalizedStrings);
+}
+
 void AddPersonalizationStrings(content::WebUIDataSource* html_source) {
   static constexpr webui::LocalizedString kLocalizedStrings[] = {
       {"changePictureTitle", IDS_OS_SETTINGS_CHANGE_PICTURE_TITLE},
@@ -216,6 +251,7 @@ void AddOsLocalizedStrings(content::WebUIDataSource* html_source,
                            Profile* profile,
                            content::WebContents* web_contents) {
   AddA11yStrings(html_source);
+  AddLanguagesStrings(html_source);
   AddPersonalizationStrings(html_source);
 }
 

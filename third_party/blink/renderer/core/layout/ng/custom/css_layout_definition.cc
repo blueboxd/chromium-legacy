@@ -25,8 +25,6 @@
 #include "third_party/blink/renderer/core/layout/ng/custom/custom_layout_edges.h"
 #include "third_party/blink/renderer/core/layout/ng/custom/custom_layout_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/custom/custom_layout_scope.h"
-#include "third_party/blink/renderer/core/layout/ng/custom/fragment_result_options.h"
-#include "third_party/blink/renderer/core/layout/ng/custom/intrinsic_sizes_result_options.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_block_node.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_input_node.h"
 #include "third_party/blink/renderer/platform/bindings/microtask.h"

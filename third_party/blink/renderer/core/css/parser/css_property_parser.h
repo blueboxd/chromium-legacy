@@ -72,7 +72,7 @@ class CORE_EXPORT CSSPropertyParser {
  private:
   // Inputs:
   CSSParserTokenRange range_;
-  Member<const CSSParserContext> context_;
+  const CSSParserContext* context_;
   // Outputs:
   HeapVector<CSSPropertyValue, 256>* parsed_properties_;
   DISALLOW_COPY_AND_ASSIGN(CSSPropertyParser);

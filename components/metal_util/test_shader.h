@@ -12,13 +12,6 @@
 
 namespace metal {
 
-enum class METAL_UTIL_EXPORT TestShaderComponent {
-  // Test a shader compile from source.
-  kCompile,
-  // Test linking a precompiled shader.
-  kLink,
-};
-
 enum class METAL_UTIL_EXPORT TestShaderResult {
   // Not attempted (e.g, because macOS version does not support Metal).
   kNotAttempted,
@@ -44,7 +37,7 @@ constexpr base::TimeDelta kTestShaderTimeForever =
     base::TimeDelta::FromMinutes(3);
 
 // A default delay before attempting to compile the test shader.
-constexpr base::TimeDelta kTestShaderDelay = base::TimeDelta::FromMinutes(3);
+constexpr base::TimeDelta kTestShaderDelay = base::TimeDelta::FromSeconds(90);
 
 // Attempt to asynchronously compile a trivial Metal shader. If |delay| is zero,
 // then compile synchronously, otherwise, post a delayed task to do the compile.
@@ -58,8 +51,7 @@ constexpr base::TimeDelta kTestShaderDelay = base::TimeDelta::FromMinutes(3);
 void METAL_UTIL_EXPORT
 TestShader(TestShaderCallback callback,
            const base::TimeDelta& delay = kTestShaderDelay,
-           const base::TimeDelta& timeout = kTestShaderTimeout,
-           TestShaderComponent component = TestShaderComponent::kLink);
+           const base::TimeDelta& timeout = kTestShaderTimeout);
 
 }  // namespace metal
 

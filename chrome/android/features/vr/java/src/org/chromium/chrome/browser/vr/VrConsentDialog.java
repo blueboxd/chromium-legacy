@@ -32,8 +32,8 @@ import org.chromium.ui.modelutil.PropertyModel;
 public class VrConsentDialog
         extends WebContentsObserver implements ModalDialogProperties.Controller {
     @NativeMethods
-    /* package */ interface VrConsentUiHelperImpl {
-        void onUserConsentResult(long nativeGvrConsentHelperImpl, boolean allowed);
+    /* package */ interface VrConsentUiHelper {
+        void onUserConsentResult(long nativeGvrConsentHelper, boolean allowed);
     }
 
     private ModalDialogManager mModalDialogManager;

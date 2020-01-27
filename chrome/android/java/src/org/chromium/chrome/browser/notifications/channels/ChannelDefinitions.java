@@ -57,7 +57,8 @@ public class ChannelDefinitions {
     @StringDef({ChannelId.BROWSER, ChannelId.DOWNLOADS, ChannelId.INCOGNITO, ChannelId.MEDIA,
             ChannelId.SCREEN_CAPTURE, ChannelId.CONTENT_SUGGESTIONS, ChannelId.WEBAPP_ACTIONS,
             ChannelId.SITES, ChannelId.SHARING, ChannelId.UPDATES, ChannelId.COMPLETED_DOWNLOADS,
-            ChannelId.PERMISSION_REQUESTS, ChannelId.PERMISSION_REQUESTS_HIGH})
+            ChannelId.PERMISSION_REQUESTS, ChannelId.PERMISSION_REQUESTS_HIGH,
+            ChannelId.ANNOUNCEMENT})
     @Retention(RetentionPolicy.SOURCE)
     public @interface ChannelId {
         String BROWSER = "browser";
@@ -75,6 +76,7 @@ public class ChannelDefinitions {
         String COMPLETED_DOWNLOADS = "completed_downloads";
         String PERMISSION_REQUESTS = "permission_requests";
         String PERMISSION_REQUESTS_HIGH = "permission_requests_high";
+        String ANNOUNCEMENT = "Announcement";
     }
 
     @StringDef({
@@ -176,6 +178,12 @@ public class ChannelDefinitions {
             map.put(ChannelId.COMPLETED_DOWNLOADS,
                     new PredefinedChannel(ChannelId.COMPLETED_DOWNLOADS,
                             R.string.notification_category_completed_downloads,
+                            NotificationManager.IMPORTANCE_LOW, ChannelGroupId.GENERAL,
+                            true /* showNotificationBadges */));
+
+            map.put(ChannelId.ANNOUNCEMENT,
+                    new PredefinedChannel(ChannelId.ANNOUNCEMENT,
+                            R.string.announcement_notification_channel_name,
                             NotificationManager.IMPORTANCE_LOW, ChannelGroupId.GENERAL,
                             true /* showNotificationBadges */));
 

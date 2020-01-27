@@ -22,8 +22,9 @@ class TabCallbackProxy : public TabObserver {
   TabCallbackProxy(JNIEnv* env, jobject obj, Tab* tab);
   ~TabCallbackProxy() override;
 
-  // TabObserver:
+  // BrowserObserver:
   void DisplayedUrlChanged(const GURL& url) override;
+
   void OnRenderProcessGone() override;
 
  private:

@@ -11,6 +11,7 @@
 #include "third_party/perfetto/protos/perfetto/trace/interned_data/interned_data.pbzero.h"
 #include "third_party/perfetto/protos/perfetto/trace/trace.pbzero.h"
 #include "third_party/perfetto/protos/perfetto/trace/trace_packet.pbzero.h"
+#include "third_party/perfetto/protos/perfetto/trace/track_event/track_descriptor.pbzero.h"
 #include "third_party/perfetto/protos/perfetto/trace/track_event/track_event.pbzero.h"
 
 namespace tracing {
@@ -18,6 +19,7 @@ namespace {
 
 using perfetto::protos::pbzero::InternedData;
 using perfetto::protos::pbzero::TracePacket;
+using perfetto::protos::pbzero::TrackDescriptor;
 using perfetto::protos::pbzero::TrackEvent;
 using protozero::ProtoDecoder;
 
@@ -82,10 +84,13 @@ void PrivacyFilteringCheck::CheckProtoForUnexpectedFields(
 
     if (packet.has_track_event()) {
       ++stats_.track_event;
-    } else if (packet.has_process_descriptor()) {
-      ++stats_.process_desc;
-    } else if (packet.has_thread_descriptor()) {
-      ++stats_.thread_desc;
+    } else if (packet.has_track_descriptor()) {
+      TrackDescriptor::Decoder track_decoder(packet.track_descriptor());
+      if (track_decoder.has_process()) {
+        ++stats_.process_desc;
+      } else if (track_decoder.has_thread()) {
+        ++stats_.thread_desc;
+      }
     }
     if (packet.has_interned_data()) {
       InternedData::Decoder interned_data(packet.interned_data().data,

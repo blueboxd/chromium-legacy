@@ -175,6 +175,8 @@ class BLINK_MODULES_EXPORT WebMediaPlayerMS
   void OnMuted(bool muted) override;
   void OnSeekForward(double seconds) override;
   void OnSeekBackward(double seconds) override;
+  void OnEnterPictureInPicture() override;
+  void OnExitPictureInPicture() override;
   void OnVolumeMultiplierUpdate(double multiplier) override;
   void OnBecamePersistentVideo(bool value) override;
 

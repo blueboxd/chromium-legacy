@@ -2185,6 +2185,37 @@ TEST_F(ClientTagBasedModelTypeProcessorTest,
   EXPECT_EQ(nullptr, GetEntityForStorageKey(kKey1));
 }
 
+// Tests that UntrackEntityForClientTagHash won't propagate storage key to
+// ProcessorEntity, and no entity's metadata are added into MetadataChangeList.
+// This test is pretty same as ShouldUntrackEntityForStorageKey.
+TEST_F(ClientTagBasedModelTypeProcessorTest,
+       ShouldUntrackEntityForClientTagHash) {
+  InitializeToReadyState();
+
+  bridge()->WriteItem(kKey1, kValue1);
+  worker()->VerifyPendingCommits({{GetHash(kKey1)}});
+  worker()->AckOnePendingCommit();
+
+  // Check the processor tracks the entity.
+  StatusCounters status_counters;
+  type_processor()->GetStatusCountersForDebugging(
+      base::BindOnce(&CaptureStatusCounters, &status_counters));
+  ASSERT_EQ(1u, status_counters.num_entries);
+  ASSERT_NE(nullptr, GetEntityForStorageKey(kKey1));
+
+  // The bridge deletes the data locally and does not want to sync the deletion.
+  // It only untracks the entity.
+  type_processor()->UntrackEntityForClientTagHash(GetHash(kKey1));
+
+  // The deletion is not synced up.
+  worker()->VerifyPendingCommits({});
+  // The processor tracks no entity any more.
+  type_processor()->GetStatusCountersForDebugging(
+      base::BindOnce(&CaptureStatusCounters, &status_counters));
+  EXPECT_EQ(status_counters.num_entries, 0U);
+  EXPECT_EQ(nullptr, GetEntityForStorageKey(kKey1));
+}
+
 // Tests that the processor reports an error for updates with a version GC
 // directive that are received for types that support incremental updates.
 TEST_F(ClientTagBasedModelTypeProcessorTest,
@@ -2451,8 +2482,8 @@ TEST_F(ClientTagBasedModelTypeProcessorTest,
   FailedCommitResponseData response_data;
   response_data.client_tag_hash = GetHash("dummy tag");
   response_data.response_type = sync_pb::CommitResponse::TRANSIENT_ERROR;
-  response_data.sharing_message_error.set_error_code(
-      sync_pb::SharingMessageCommitError::INVALID_ARGUMENT);
+  response_data.datatype_specific_error.mutable_sharing_message_error()
+      ->set_error_code(sync_pb::SharingMessageCommitError::INVALID_ARGUMENT);
 
   FailedCommitResponseDataList failed_list;
   failed_list.push_back(response_data);
@@ -2480,8 +2511,11 @@ TEST_F(ClientTagBasedModelTypeProcessorTest,
             actual_error_response_list[0].client_tag_hash);
   EXPECT_EQ(response_data.response_type,
             actual_error_response_list[0].response_type);
-  EXPECT_EQ(response_data.sharing_message_error.error_code(),
-            actual_error_response_list[0].sharing_message_error.error_code());
+  EXPECT_EQ(response_data.datatype_specific_error.sharing_message_error()
+                .error_code(),
+            actual_error_response_list[0]
+                .datatype_specific_error.sharing_message_error()
+                .error_code());
 }
 
 TEST_F(ClientTagBasedModelTypeProcessorTest,

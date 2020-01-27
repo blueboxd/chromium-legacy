@@ -31,7 +31,6 @@ class WebString;
 class WebView;
 struct WebIntrinsicSizingInfo;
 struct WebRect;
-struct WebScrollIntoViewParams;
 
 class WebRemoteFrame : public WebFrame {
  public:
@@ -139,14 +138,6 @@ class WebRemoteFrame : public WebFrame {
       blink::WebRemoteFrame* source_frame) = 0;
 
   virtual void SetHadStickyUserActivationBeforeNavigation(bool value) = 0;
-
-  // Scrolls the given rectangle into view. This kicks off the recursive scroll
-  // into visible starting from the frame's owner element. The coordinates of
-  // the rect are absolute (transforms removed) with respect to the frame in
-  // OOPIF process. The parameters are sent by the OOPIF local root and can be
-  // used to properly chain the recursive scrolling between the two processes.
-  virtual void ScrollRectToVisible(const WebRect&,
-                                   const WebScrollIntoViewParams&) = 0;
 
   virtual void IntrinsicSizingInfoChanged(const WebIntrinsicSizingInfo&) = 0;
 

@@ -29,9 +29,10 @@ WebSandboxSupportMac::WebSandboxSupportMac() {
 
 WebSandboxSupportMac::~WebSandboxSupportMac() = default;
 
-bool WebSandboxSupportMac::LoadFont(CTFontRef font,
-                                    CTFontRef* out,
-                                    uint32_t* font_id) {
+bool WebSandboxSupportMac::LoadFont(
+    CTFontRef font,
+    base::ScopedCFTypeRef<CTFontDescriptorRef>* out_descriptor,
+    uint32_t* font_id) {
   if (!sandbox_support_)
     return false;
   base::ScopedCFTypeRef<CFStringRef> name_ref(CTFontCopyPostScriptName(font));
@@ -43,7 +44,7 @@ bool WebSandboxSupportMac::LoadFont(CTFontRef font,
                  *font_id > 0 && font_data.is_valid();
   if (!success) {
     DLOG(ERROR) << "Bad response from LoadFont() for " << font_name;
-    *out = nullptr;
+    out_descriptor->reset();
     *font_id = 0;
     return false;
   }
@@ -55,8 +56,9 @@ bool WebSandboxSupportMac::LoadFont(CTFontRef font,
   // TODO(jeremy): Need to call back into the requesting process to make sure
   // that the font isn't already activated, based on the font id.  If it's
   // already activated, don't reactivate it here - https://crbug.com/72727 .
-  return FontLoader::CTFontRefFromBuffer(
-      std::move(font_data), static_cast<uint32_t>(font_data_size), out);
+  return FontLoader::CTFontDescriptorFromBuffer(
+      std::move(font_data), static_cast<uint32_t>(font_data_size),
+      out_descriptor);
 }
 
 SkColor WebSandboxSupportMac::GetSystemColor(blink::MacSystemColorID color_id) {

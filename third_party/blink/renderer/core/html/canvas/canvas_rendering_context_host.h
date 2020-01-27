@@ -10,7 +10,6 @@
 #include "third_party/blink/renderer/core/dom/events/event_dispatcher.h"
 #include "third_party/blink/renderer/core/dom/events/event_target.h"
 #include "third_party/blink/renderer/core/html/canvas/canvas_image_source.h"
-#include "third_party/blink/renderer/core/html/canvas/image_encode_options.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/geometry/float_rect.h"
@@ -25,6 +24,7 @@ class CanvasRenderingContext;
 class CanvasResource;
 class CanvasResourceDispatcher;
 class FontSelector;
+class ImageEncodeOptions;
 class KURL;
 class StaticBitmapImage;
 

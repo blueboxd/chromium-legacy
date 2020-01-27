@@ -9,6 +9,7 @@ import web_idl
 from . import name_style
 from .blink_v8_bridge import blink_class_name
 from .blink_v8_bridge import blink_type_info
+from .blink_v8_bridge import make_default_value_expr
 from .blink_v8_bridge import make_v8_to_blink_value
 from .code_node import CodeNode
 from .code_node import Likeliness
@@ -30,7 +31,6 @@ from .codegen_format import format_template as _format
 from .codegen_utils import collect_include_headers_of_idl_types
 from .codegen_utils import component_export
 from .codegen_utils import enclose_with_header_guard
-from .codegen_utils import enclose_with_namespace
 from .codegen_utils import make_copyright_header
 from .codegen_utils import make_forward_declarations
 from .codegen_utils import make_header_include_directives
@@ -581,11 +581,20 @@ void FillMembersInternal(
 """))
 
     # C++ member variables for values
-    # TODO(peria): Set default values.
     for member in dictionary.own_members:
+        default_value_initializer = ""
+        if member.default_value:
+            default_expr = make_default_value_expr(member.idl_type,
+                                                   member.default_value)
+            if default_expr.initializer is not None:
+                default_value_initializer = _format("{{{}}}",
+                                                    default_expr.initializer)
+
         _1 = blink_type_info(member.idl_type).member_t
         _2 = _blink_member_name(member).value_var
-        private_section.append(T(_format("{_1} {_2};", _1=_1, _2=_2)))
+        _3 = default_value_initializer
+        private_section.append(
+            T(_format("{_1} {_2}{_3};", _1=_1, _2=_2, _3=_3)))
 
     private_section.append(T(""))
     # C++ member variables for precences
@@ -614,8 +623,9 @@ def generate_dictionary(dictionary):
         base_class_name=base_class_name)
 
     # Filepaths
-    header_path = path_manager.api_path(ext="h")
-    source_path = path_manager.api_path(ext="cc")
+    basename = "dictionary_example"
+    header_path = path_manager.api_path(filename=basename, ext="h")
+    source_path = path_manager.api_path(filename=basename, ext="cc")
 
     # Root nodes
     header_node = ListNode(tail="\n")
@@ -708,5 +718,5 @@ def generate_dictionary(dictionary):
 
 
 def generate_dictionaries(web_idl_database):
-    for dictionary in web_idl_database.dictionaries:
-        generate_dictionary(dictionary)
+    dictionary = web_idl_database.find('BasePropertyIndexedKeyframe')
+    generate_dictionary(dictionary)

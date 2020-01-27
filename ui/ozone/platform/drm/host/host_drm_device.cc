@@ -257,6 +257,14 @@ bool HostDrmDevice::GpuSetGammaCorrection(
   return true;
 }
 
+bool HostDrmDevice::GpuSetPrivacyScreen(int64_t display_id, bool enabled) {
+  DCHECK_CALLED_ON_VALID_THREAD(on_ui_thread_);
+  if (!IsConnected())
+    return false;
+
+  drm_device_->SetPrivacyScreen(display_id, enabled);
+  return true;
+}
 
 void HostDrmDevice::GpuConfigureNativeDisplayCallback(int64_t display_id,
                                                       bool success) const {

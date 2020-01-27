@@ -34,7 +34,7 @@
 // static
 scoped_refptr<password_manager::PasswordStore>
 IOSChromePasswordStoreFactory::GetForBrowserState(
-    ios::ChromeBrowserState* browser_state,
+    ChromeBrowserState* browser_state,
     ServiceAccessType access_type) {
   // |profile| gets always redirected to a non-Incognito profile below, so
   // Incognito & IMPLICIT_ACCESS means that incognito browsing session would
@@ -54,7 +54,7 @@ IOSChromePasswordStoreFactory* IOSChromePasswordStoreFactory::GetInstance() {
 
 // static
 void IOSChromePasswordStoreFactory::OnPasswordsSyncedStatePotentiallyChanged(
-    ios::ChromeBrowserState* browser_state) {
+    ChromeBrowserState* browser_state) {
   scoped_refptr<password_manager::PasswordStore> password_store =
       GetForBrowserState(browser_state, ServiceAccessType::EXPLICIT_ACCESS);
   syncer::SyncService* sync_service =
@@ -104,7 +104,7 @@ IOSChromePasswordStoreFactory::BuildServiceInstanceFor(
     return nullptr;
   }
   password_manager_util::RemoveUselessCredentials(
-      store, ios::ChromeBrowserState::FromBrowserState(context)->GetPrefs(), 60,
+      store, ChromeBrowserState::FromBrowserState(context)->GetPrefs(), 60,
       base::NullCallback());
   return store;
 }

@@ -44,7 +44,7 @@
 #include "third_party/blink/public/common/input/web_menu_source_type.h"
 #include "third_party/blink/public/common/page/page_zoom.h"
 #include "third_party/blink/public/common/plugin/plugin_action.h"
-#include "third_party/blink/public/platform/web_scroll_into_view_params.h"
+#include "third_party/blink/public/mojom/input/focus_type.mojom-blink.h"
 #include "third_party/blink/public/platform/web_text_autosizer_page_info.h"
 #include "third_party/blink/public/platform/web_text_input_info.h"
 #include "third_party/blink/public/platform/web_url_request.h"
@@ -141,6 +141,7 @@
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/core/paint/paint_timing_detector.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
+#include "third_party/blink/renderer/core/scroll/scroll_into_view_params_type_converters.h"
 #include "third_party/blink/renderer/core/scroll/scrollbar_theme.h"
 #include "third_party/blink/renderer/core/timing/dom_window_performance.h"
 #include "third_party/blink/renderer/core/timing/window_performance.h"
@@ -2078,7 +2079,8 @@ void WebViewImpl::SetInitialFocus(bool reverse) {
       document->ClearFocusedElement();
   }
   GetPage()->GetFocusController().SetInitialFocus(
-      reverse ? kWebFocusTypeBackward : kWebFocusTypeForward);
+      reverse ? mojom::blink::FocusType::kBackward
+              : mojom::blink::FocusType::kForward);
 }
 
 // TODO(dglazkov): Remove and replace with Node:hasEditableStyle.
@@ -2118,13 +2120,14 @@ bool WebViewImpl::ScrollFocusedEditableElementIntoView() {
   // only the visual and layout viewports. We'll call ScrollRectToVisible with
   // the stop_at_main_frame_layout_viewport param to ensure the element is
   // actually visible in the page.
-  WebScrollIntoViewParams params(ScrollAlignment::kAlignCenterIfNeeded,
-                                 ScrollAlignment::kAlignCenterIfNeeded,
-                                 kProgrammaticScroll, false,
-                                 kScrollBehaviorInstant);
-  params.stop_at_main_frame_layout_viewport = true;
+  auto params = CreateScrollIntoViewParams(
+      ScrollAlignment::kAlignCenterIfNeeded,
+      ScrollAlignment::kAlignCenterIfNeeded, kProgrammaticScroll, false,
+      kScrollBehaviorInstant);
+  params->stop_at_main_frame_layout_viewport = true;
   layout_object->ScrollRectToVisible(
-      PhysicalRect(layout_object->AbsoluteBoundingBoxRect()), params);
+      PhysicalRect(layout_object->AbsoluteBoundingBoxRect()),
+      std::move(params));
 
   ZoomAndScrollToFocusedEditableElementRect(
       main_frame_view->RootFrameToDocument(
@@ -2161,8 +2164,8 @@ bool WebViewImpl::ShouldZoomToLegibleScale(const Element& element) {
 }
 
 void WebViewImpl::ZoomAndScrollToFocusedEditableElementRect(
-    const IntRect& element_bounds_in_document,
-    const IntRect& caret_bounds_in_document,
+    const WebRect& element_bounds_in_document,
+    const WebRect& caret_bounds_in_document,
     bool zoom_into_legible_scale) {
   float scale;
   IntPoint scroll;
@@ -2296,11 +2299,12 @@ void WebViewImpl::ComputeScaleAndScrollForEditableElementRects(
 }
 
 void WebViewImpl::AdvanceFocus(bool reverse) {
-  GetPage()->GetFocusController().AdvanceFocus(reverse ? kWebFocusTypeBackward
-                                                       : kWebFocusTypeForward);
+  GetPage()->GetFocusController().AdvanceFocus(
+      reverse ? mojom::blink::FocusType::kBackward
+              : mojom::blink::FocusType::kForward);
 }
 
-void WebViewImpl::AdvanceFocusAcrossFrames(WebFocusType type,
+void WebViewImpl::AdvanceFocusAcrossFrames(mojom::blink::FocusType type,
                                            WebRemoteFrame* from,
                                            WebLocalFrame* to) {
   // TODO(alexmos): Pass in proper with sourceCapabilities.

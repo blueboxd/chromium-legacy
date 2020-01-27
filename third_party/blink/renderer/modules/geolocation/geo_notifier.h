@@ -8,7 +8,7 @@
 #include "base/single_thread_task_runner.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_position_callback.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_position_error_callback.h"
-#include "third_party/blink/renderer/modules/geolocation/position_options.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_position_options.h"
 #include "third_party/blink/renderer/platform/bindings/name_client.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/timer.h"

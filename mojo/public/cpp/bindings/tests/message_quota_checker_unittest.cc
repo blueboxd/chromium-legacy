@@ -43,12 +43,18 @@ class MessageQuotaCheckerTest : public testing::Test {
   static void RecordDumpAttempt(size_t total_quota_used,
                                 base::Optional<size_t> message_pipe_quota_used,
                                 int64_t seconds_since_construction,
-                                double average_write_rate) {
+                                double average_write_rate,
+                                uint64_t messages_enqueued,
+                                uint64_t messages_dequeued,
+                                uint64_t messages_written) {
     ++instance_->num_dumps_;
     instance_->last_dump_total_quota_used_ = total_quota_used;
     instance_->last_dump_message_pipe_quota_used_ = message_pipe_quota_used;
     instance_->last_seconds_since_construction_ = seconds_since_construction;
     instance_->last_average_write_rate_ = average_write_rate;
+    instance_->last_messages_enqueued_ = messages_enqueued;
+    instance_->last_messages_dequeued_ = messages_dequeued;
+    instance_->last_messages_written_ = messages_written;
   }
 
   // Mock time to allow testing
@@ -60,6 +66,9 @@ class MessageQuotaCheckerTest : public testing::Test {
   base::Optional<size_t> last_dump_message_pipe_quota_used_;
   int64_t last_seconds_since_construction_ = 0;
   double last_average_write_rate_ = 0.0;
+  uint64_t last_messages_enqueued_ = 0u;
+  uint64_t last_messages_dequeued_ = 0u;
+  uint64_t last_messages_written_ = 0u;
 
   static const Configuration enabled_config_;
 
@@ -222,13 +231,17 @@ TEST_F(MessageQuotaCheckerTest, DumpsCoreOnOverrun) {
 
   Advance(kOneSamplingInterval);
   checker->SetMessagePipe(mojo::MessagePipeHandle());
-  checker->BeforeMessagesEnqueued(250);
+  checker->AfterMessagesDequeued(50);
+  checker->BeforeMessagesEnqueued(300);
   EXPECT_EQ(3u, num_dumps_);
   EXPECT_EQ(350u, last_dump_total_quota_used_);
   EXPECT_FALSE(last_dump_message_pipe_quota_used_.has_value());
   EXPECT_EQ((12 * kOneSamplingInterval).InSeconds(),
             last_seconds_since_construction_);
   EXPECT_EQ(12.75, last_average_write_rate_);
+  EXPECT_EQ(400u, last_messages_enqueued_);
+  EXPECT_EQ(50u, last_messages_dequeued_);
+  EXPECT_EQ(101u, last_messages_written_);
 }
 
 TEST_F(MessageQuotaCheckerTest, DecayingRateAverage) {

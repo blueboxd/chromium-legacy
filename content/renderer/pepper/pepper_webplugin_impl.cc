@@ -205,7 +205,7 @@ void PepperWebPluginImpl::UpdateGeometry(
 }
 
 void PepperWebPluginImpl::UpdateFocus(bool focused,
-                                      blink::WebFocusType focus_type) {
+                                      blink::mojom::FocusType focus_type) {
   // Re-entrancy may cause JS to try to execute script on the plugin before it
   // is fully initialized. See: crbug.com/715747.
   if (instance_)

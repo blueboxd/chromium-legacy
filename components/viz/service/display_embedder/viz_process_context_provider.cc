@@ -31,6 +31,7 @@
 #include "gpu/config/gpu_preferences.h"
 #include "gpu/config/skia_limits.h"
 #include "gpu/ipc/common/surface_handle.h"
+#include "gpu/ipc/in_process_command_buffer.h"
 #include "gpu/skia_bindings/gles2_implementation_with_grcontext_support.h"
 #include "gpu/skia_bindings/grcontext_for_gles2_interface.h"
 #include "third_party/khronos/GLES2/gl2.h"
@@ -132,6 +133,8 @@ VizProcessContextProvider::VizProcessContextProvider(
     UmaRecordContextLost(CONTEXT_INIT_FAILED);
   }
 }
+
+VizProcessContextProvider::VizProcessContextProvider() = default;
 
 VizProcessContextProvider::~VizProcessContextProvider() {
   if (context_result_ == gpu::ContextResult::kSuccess) {

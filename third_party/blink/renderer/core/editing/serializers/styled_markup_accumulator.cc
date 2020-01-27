@@ -107,9 +107,8 @@ void StyledMarkupAccumulator::AppendTextWithInlineStyle(
     DCHECK(document_);
 
     result_.Append("<span style=\"");
-    MarkupFormatter::AppendAttributeValue(result_,
-                                          inline_style->Style()->AsText(),
-                                          IsA<HTMLDocument>(document_.Get()));
+    MarkupFormatter::AppendAttributeValue(
+        result_, inline_style->Style()->AsText(), IsA<HTMLDocument>(document_));
     result_.Append("\">");
   }
   if (!ShouldAnnotate()) {
@@ -196,7 +195,7 @@ void StyledMarkupAccumulator::WrapWithStyleNode(CSSPropertyValueSet* style) {
   StringBuilder open_tag;
   open_tag.Append("<div style=\"");
   MarkupFormatter::AppendAttributeValue(open_tag, style->AsText(),
-                                        IsA<HTMLDocument>(document_.Get()));
+                                        IsA<HTMLDocument>(document_));
   open_tag.Append("\">");
   reversed_preceding_markup_.push_back(open_tag.ToString());
 

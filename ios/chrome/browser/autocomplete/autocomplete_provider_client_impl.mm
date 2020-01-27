@@ -37,7 +37,7 @@
 #endif
 
 AutocompleteProviderClientImpl::AutocompleteProviderClientImpl(
-    ios::ChromeBrowserState* browser_state)
+    ChromeBrowserState* browser_state)
     : browser_state_(browser_state),
       url_consent_helper_(unified_consent::UrlKeyedDataCollectionConsentHelper::
                               NewPersonalizedDataCollectionConsentHelper(

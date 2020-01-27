@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "third_party/blink/renderer/core/html/canvas/text_metrics.h"
-#include "third_party/blink/renderer/core/html/canvas/baselines.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_baselines.h"
 #include "third_party/blink/renderer/platform/fonts/character_range.h"
 
 namespace blink {

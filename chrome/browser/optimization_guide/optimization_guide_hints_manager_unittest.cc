@@ -19,8 +19,6 @@
 #include "chrome/browser/previews/previews_service.h"
 #include "chrome/browser/previews/previews_service_factory.h"
 #include "chrome/test/base/testing_profile.h"
-#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_test_utils.h"
-#include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
 #include "components/optimization_guide/bloom_filter.h"
 #include "components/optimization_guide/hints_component_util.h"
 #include "components/optimization_guide/hints_fetcher.h"
@@ -34,7 +32,6 @@
 #include "components/optimization_guide/proto_database_provider_test_base.h"
 #include "components/optimization_guide/top_host_provider.h"
 #include "components/prefs/testing_pref_service.h"
-#include "components/previews/core/previews_switches.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/mock_navigation_handle.h"
 #include "content/public/test/test_web_contents_factory.h"
@@ -234,20 +231,13 @@ class OptimizationGuideHintsManagerTest
   void SetUp() override {
     optimization_guide::ProtoDatabaseProviderTestBase::SetUp();
     web_contents_factory_.reset(new content::TestWebContentsFactory);
-    drp_test_context_ =
-        data_reduction_proxy::DataReductionProxyTestContext::Builder()
-            .WithMockConfig()
-            .Build();
     CreateServiceAndHintsManager(
         /*optimization_types_at_initialization=*/{},
         /*top_host_provider=*/nullptr);
-    base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        data_reduction_proxy::switches::kEnableDataReductionProxy);
   }
 
   void TearDown() override {
     optimization_guide::ProtoDatabaseProviderTestBase::TearDown();
-    drp_test_context_->DestroySettings();
     ResetHintsManager();
   }
 
@@ -353,23 +343,6 @@ class OptimizationGuideHintsManagerTest
     RunUntilIdle();
   }
 
-  void SetUserPermissions(bool data_saver_enabled, bool has_seen_infobar) {
-    drp_test_context_->SetDataReductionProxyEnabled(data_saver_enabled);
-
-    // Make sure infobar not shown.
-    PreviewsService* previews_service =
-        PreviewsServiceFactory::GetForProfile(&testing_profile_);
-    PreviewsLitePageRedirectDecider* decider =
-        previews_service->previews_lite_page_redirect_decider();
-    // Initialize settings here so Lite Pages Decider checks for the Data Saver
-    // bit.
-    decider->OnSettingsInitialized();
-    if (has_seen_infobar) {
-      base::CommandLine::ForCurrentProcess()->AppendSwitch(
-          previews::switches::kDoNotRequireLitePageRedirectInfoBar);
-    }
-  }
-
   // Creates a navigation handle with the OptimizationGuideWebContentsObserver
   // attached.
   std::unique_ptr<content::MockNavigationHandle>
@@ -427,8 +400,6 @@ class OptimizationGuideHintsManagerTest
       base::test::TaskEnvironment::MainThreadType::UI,
       base::test::TaskEnvironment::TimeSource::MOCK_TIME};
   TestingProfile testing_profile_;
-  std::unique_ptr<data_reduction_proxy::DataReductionProxyTestContext>
-      drp_test_context_;
   std::unique_ptr<content::TestWebContentsFactory> web_contents_factory_;
   std::unique_ptr<OptimizationGuideHintsManager> hints_manager_;
   std::unique_ptr<TestOptimizationGuideService> optimization_guide_service_;
@@ -1840,7 +1811,9 @@ class OptimizationGuideHintsManagerFetchingDisabledTest
 
 TEST_F(OptimizationGuideHintsManagerFetchingDisabledTest,
        HintsFetchNotAllowedIfFeatureIsNotEnabled) {
-  SetUserPermissions(/*data_saver_enabled=*/true, /*has_seen_infobar=*/true);
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      optimization_guide::switches::kDisableCheckingUserPermissionsForTesting);
+
   std::unique_ptr<FakeTopHostProvider> top_host_provider =
       std::make_unique<FakeTopHostProvider>(
           std::vector<std::string>({"example1.com", "example2.com"}));
@@ -1867,9 +1840,29 @@ class OptimizationGuideHintsManagerFetchingTest
 };
 
 TEST_F(OptimizationGuideHintsManagerFetchingTest,
+       HintsFetchNotAllowedIfFeatureIsEnabledButUserNotAllowed) {
+  base::CommandLine::ForCurrentProcess()->RemoveSwitch(
+      optimization_guide::switches::kDisableCheckingUserPermissionsForTesting);
+  std::unique_ptr<FakeTopHostProvider> top_host_provider =
+      std::make_unique<FakeTopHostProvider>(
+          std::vector<std::string>({"example1.com", "example2.com"}));
+
+  CreateServiceAndHintsManager({optimization_guide::proto::DEFER_ALL_SCRIPT},
+                               top_host_provider.get());
+  hints_manager()->SetHintsFetcherForTesting(
+      BuildTestHintsFetcher(HintsFetcherEndState::kFetchSuccessWithHostHints));
+  InitializeWithDefaultConfig("1.0.0");
+
+  // Force timer to expire and schedule a hints fetch.
+  MoveClockForwardBy(base::TimeDelta::FromSeconds(kTestFetchRetryDelaySecs));
+  EXPECT_FALSE(hints_fetcher()->hints_fetched());
+}
+
+TEST_F(OptimizationGuideHintsManagerFetchingTest,
        HintsFetchNotAllowedIfFeatureIsEnabledButTopHostProviderIsNotProvided) {
-  SetUserPermissions(/*data_saver_enabled=*/true, /*has_seen_infobar=*/true);
-  CreateServiceAndHintsManager(/*optimization_types_at_initialization=*/{},
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      optimization_guide::switches::kDisableCheckingUserPermissionsForTesting);
+  CreateServiceAndHintsManager({optimization_guide::proto::DEFER_ALL_SCRIPT},
                                /*top_host_provider=*/nullptr);
   hints_manager()->SetHintsFetcherForTesting(
       BuildTestHintsFetcher(HintsFetcherEndState::kFetchSuccessWithHostHints));
@@ -1881,70 +1874,37 @@ TEST_F(OptimizationGuideHintsManagerFetchingTest,
 }
 
 TEST_F(OptimizationGuideHintsManagerFetchingTest,
-       HintsFetchNotAllowedIfFeatureIsEnabledButDataSaverIsNotEnabled) {
-  SetUserPermissions(/*data_saver_enabled=*/false, /*has_seen_infobar=*/true);
+       NoRegisteredOptimizationTypesAndHintsFetchNotAttempted) {
   std::unique_ptr<FakeTopHostProvider> top_host_provider =
       std::make_unique<FakeTopHostProvider>(
           std::vector<std::string>({"example1.com", "example2.com"}));
 
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      optimization_guide::switches::kDisableCheckingUserPermissionsForTesting);
   CreateServiceAndHintsManager(/*optimization_types_at_initialization=*/{},
                                top_host_provider.get());
+
   hints_manager()->SetHintsFetcherForTesting(
       BuildTestHintsFetcher(HintsFetcherEndState::kFetchSuccessWithHostHints));
   InitializeWithDefaultConfig("1.0.0");
 
-  // Force timer to expire and schedule a hints fetch.
+  // Force timer to expire and schedule a hints fetch but the fetch is not made.
   MoveClockForwardBy(base::TimeDelta::FromSeconds(kTestFetchRetryDelaySecs));
   EXPECT_EQ(0, top_host_provider->get_num_top_hosts_called());
   EXPECT_FALSE(hints_fetcher()->hints_fetched());
-}
-
-TEST_F(OptimizationGuideHintsManagerFetchingTest,
-       HintsFetchAllowedIfFeatureIsEnabledAndDataSaverUserHasNotSeenInfobar) {
-  std::unique_ptr<FakeTopHostProvider> top_host_provider =
-      std::make_unique<FakeTopHostProvider>(
-          std::vector<std::string>({"example1.com", "example2.com"}));
-
-  SetUserPermissions(/*data_saver_enabled=*/true, /*has_seen_infobar=*/false);
-  CreateServiceAndHintsManager(/*optimization_types_at_initialization=*/{},
-                               top_host_provider.get());
-  hints_manager()->SetHintsFetcherForTesting(
-      BuildTestHintsFetcher(HintsFetcherEndState::kFetchSuccessWithHostHints));
-  InitializeWithDefaultConfig("1.0.0");
-
-  // Force timer to expire and schedule a hints fetch.
-  MoveClockForwardBy(base::TimeDelta::FromSeconds(kTestFetchRetryDelaySecs));
-  EXPECT_EQ(0, top_host_provider->get_num_top_hosts_called());
-  EXPECT_FALSE(hints_fetcher()->hints_fetched());
-}
-
-TEST_F(
-    OptimizationGuideHintsManagerFetchingTest,
-    HintsFetchAllowedIfFeatureIsEnabledAndUserMeetsAllDataSaverUserCriteria) {
-  std::unique_ptr<FakeTopHostProvider> top_host_provider =
-      std::make_unique<FakeTopHostProvider>(
-          std::vector<std::string>({"example1.com", "example2.com"}));
-
-  SetUserPermissions(/*data_saver_enabled=*/true, /*has_seen_infobar=*/true);
-  CreateServiceAndHintsManager(/*optimization_types_at_initialization=*/{},
-                               top_host_provider.get());
-  hints_manager()->SetHintsFetcherForTesting(
-      BuildTestHintsFetcher(HintsFetcherEndState::kFetchSuccessWithHostHints));
-  InitializeWithDefaultConfig("1.0.0");
-
-  // Force timer to expire and schedule a hints fetch.
-  MoveClockForwardBy(base::TimeDelta::FromSeconds(kTestFetchRetryDelaySecs));
-  EXPECT_EQ(1, top_host_provider->get_num_top_hosts_called());
-  EXPECT_TRUE(hints_fetcher()->hints_fetched());
 }
 
 TEST_F(OptimizationGuideHintsManagerFetchingTest,
        HintsFetcherEnabledNoHostsToFetch) {
-  SetUserPermissions(/*data_saver_enabled=*/true, /*has_seen_infobar=*/true);
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      optimization_guide::switches::kDisableCheckingUserPermissionsForTesting);
   std::unique_ptr<FakeTopHostProvider> top_host_provider =
       std::make_unique<FakeTopHostProvider>(std::vector<std::string>({}));
   CreateServiceAndHintsManager(/*optimization_types_at_initialization=*/{},
                                top_host_provider.get());
+
+  hints_manager()->RegisterOptimizationTypes(
+      {optimization_guide::proto::DEFER_ALL_SCRIPT});
   hints_manager()->SetHintsFetcherForTesting(
       BuildTestHintsFetcher(HintsFetcherEndState::kFetchSuccessWithHostHints));
   InitializeWithDefaultConfig("1.0.0");
@@ -1957,12 +1917,15 @@ TEST_F(OptimizationGuideHintsManagerFetchingTest,
 
 TEST_F(OptimizationGuideHintsManagerFetchingTest,
        HintsFetcherEnabledWithHostsNoHintsInResponse) {
-  SetUserPermissions(/*data_saver_enabled=*/true, /*has_seen_infobar=*/true);
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      optimization_guide::switches::kDisableCheckingUserPermissionsForTesting);
   std::unique_ptr<FakeTopHostProvider> top_host_provider =
       std::make_unique<FakeTopHostProvider>(
           std::vector<std::string>({"example1.com", "example2.com"}));
   CreateServiceAndHintsManager(/*optimization_types_at_initialization=*/{},
                                top_host_provider.get());
+  hints_manager()->RegisterOptimizationTypes(
+      {optimization_guide::proto::DEFER_ALL_SCRIPT});
   hints_manager()->SetHintsFetcherForTesting(
       BuildTestHintsFetcher(HintsFetcherEndState::kFetchSuccessWithNoHints));
   InitializeWithDefaultConfig("1.0.0");
@@ -1981,13 +1944,16 @@ TEST_F(OptimizationGuideHintsManagerFetchingTest,
 }
 
 TEST_F(OptimizationGuideHintsManagerFetchingTest, HintsFetcherTimerRetryDelay) {
-  SetUserPermissions(/*data_saver_enabled=*/true, /*has_seen_infobar=*/true);
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      optimization_guide::switches::kDisableCheckingUserPermissionsForTesting);
   std::unique_ptr<FakeTopHostProvider> top_host_provider =
       std::make_unique<FakeTopHostProvider>(
           std::vector<std::string>({"example1.com", "example2.com"}));
 
   CreateServiceAndHintsManager(/*optimization_types_at_initialization=*/{},
                                top_host_provider.get());
+  hints_manager()->RegisterOptimizationTypes(
+      {optimization_guide::proto::DEFER_ALL_SCRIPT});
   hints_manager()->SetHintsFetcherForTesting(
       BuildTestHintsFetcher(HintsFetcherEndState::kFetchFailed));
   InitializeWithDefaultConfig("1.0.0");
@@ -2008,7 +1974,8 @@ TEST_F(OptimizationGuideHintsManagerFetchingTest, HintsFetcherTimerRetryDelay) {
 
 TEST_F(OptimizationGuideHintsManagerFetchingTest,
        HintsFetcherTimerFetchSucceeds) {
-  SetUserPermissions(/*data_saver_enabled=*/true, /*has_seen_infobar=*/true);
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      optimization_guide::switches::kDisableCheckingUserPermissionsForTesting);
   std::unique_ptr<FakeTopHostProvider> top_host_provider =
       std::make_unique<FakeTopHostProvider>(
           std::vector<std::string>({"example1.com", "example2.com"}));
@@ -2016,6 +1983,8 @@ TEST_F(OptimizationGuideHintsManagerFetchingTest,
   // Force hints fetch scheduling.
   CreateServiceAndHintsManager(/*optimization_types_at_initialization=*/{},
                                top_host_provider.get());
+  hints_manager()->RegisterOptimizationTypes(
+      {optimization_guide::proto::DEFER_ALL_SCRIPT});
   hints_manager()->SetHintsFetcherForTesting(
       BuildTestHintsFetcher(HintsFetcherEndState::kFetchSuccessWithHostHints));
   InitializeWithDefaultConfig("1.0.0");
@@ -2038,6 +2007,8 @@ TEST_F(OptimizationGuideHintsManagerFetchingTest,
 
 TEST_F(OptimizationGuideHintsManagerFetchingTest,
        HintsFetched_AtSRP_ECT_SLOW_2G) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      optimization_guide::switches::kDisableCheckingUserPermissionsForTesting);
   hints_manager()->RegisterOptimizationTypes(
       {optimization_guide::proto::DEFER_ALL_SCRIPT});
   InitializeWithDefaultConfig("1.0.0.0");
@@ -2060,7 +2031,32 @@ TEST_F(OptimizationGuideHintsManagerFetchingTest,
 }
 
 TEST_F(OptimizationGuideHintsManagerFetchingTest,
+       HintsFetched_AtSRP_NoRegisteredOptimizationTypes) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      optimization_guide::switches::kDisableCheckingUserPermissionsForTesting);
+  InitializeWithDefaultConfig("1.0.0.0");
+
+  // Set ECT estimate so hint is activated.
+  hints_manager()->OnEffectiveConnectionTypeChanged(
+      net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_SLOW_2G);
+  std::unique_ptr<content::MockNavigationHandle> navigation_handle =
+      CreateMockNavigationHandleWithOptimizationGuideWebContentsObserver(
+          url_without_hints());
+  base::HistogramTester histogram_tester;
+  std::vector<GURL> sorted_predicted_urls;
+  sorted_predicted_urls.push_back(GURL("https://foo.com/"));
+  NavigationPredictorKeyedService::Prediction prediction(
+      nullptr, GURL("https://www.google.com/"), sorted_predicted_urls);
+
+  hints_manager()->OnPredictionUpdated(prediction);
+  histogram_tester.ExpectTotalCount(
+      "OptimizationGuide.HintsFetcher.GetHintsRequest.HostCount", 0);
+}
+
+TEST_F(OptimizationGuideHintsManagerFetchingTest,
        HintsFetched_AtSRP_ECT_SLOW_2G_DuplicatesRemoved) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      optimization_guide::switches::kDisableCheckingUserPermissionsForTesting);
   hints_manager()->RegisterOptimizationTypes(
       {optimization_guide::proto::DEFER_ALL_SCRIPT});
   InitializeWithDefaultConfig("1.0.0.0");
@@ -2090,6 +2086,8 @@ TEST_F(OptimizationGuideHintsManagerFetchingTest,
 
 TEST_F(OptimizationGuideHintsManagerFetchingTest,
        HintsFetched_AtSRP_ECT_SLOW_2G_NonHTTPOrHTTPSHostsRemoved) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      optimization_guide::switches::kDisableCheckingUserPermissionsForTesting);
   hints_manager()->RegisterOptimizationTypes(
       {optimization_guide::proto::DEFER_ALL_SCRIPT});
   InitializeWithDefaultConfig("1.0.0.0");
@@ -2117,6 +2115,8 @@ TEST_F(OptimizationGuideHintsManagerFetchingTest,
 }
 
 TEST_F(OptimizationGuideHintsManagerFetchingTest, HintsFetched_AtSRP_ECT_4G) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      optimization_guide::switches::kDisableCheckingUserPermissionsForTesting);
   hints_manager()->RegisterOptimizationTypes(
       {optimization_guide::proto::DEFER_ALL_SCRIPT});
   InitializeWithDefaultConfig("1.0.0.0");
@@ -2140,6 +2140,8 @@ TEST_F(OptimizationGuideHintsManagerFetchingTest, HintsFetched_AtSRP_ECT_4G) {
 
 TEST_F(OptimizationGuideHintsManagerFetchingTest,
        HintsFetched_AtNonSRP_ECT_SLOW_2G) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      optimization_guide::switches::kDisableCheckingUserPermissionsForTesting);
   hints_manager()->RegisterOptimizationTypes(
       {optimization_guide::proto::DEFER_ALL_SCRIPT});
   InitializeWithDefaultConfig("1.0.0.0");
@@ -2163,6 +2165,8 @@ TEST_F(OptimizationGuideHintsManagerFetchingTest,
 
 TEST_F(OptimizationGuideHintsManagerFetchingTest,
        HintsFetchedAtNavigationTime_ECT_SLOW_2G) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      optimization_guide::switches::kDisableCheckingUserPermissionsForTesting);
   hints_manager()->RegisterOptimizationTypes(
       {optimization_guide::proto::DEFER_ALL_SCRIPT});
   InitializeWithDefaultConfig("1.0.0.0");
@@ -2198,6 +2202,8 @@ TEST_F(OptimizationGuideHintsManagerFetchingTest,
 
 TEST_F(OptimizationGuideHintsManagerFetchingTest,
        HintsFetchedAtNavigationTime_HasComponentHintButNotFetched) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      optimization_guide::switches::kDisableCheckingUserPermissionsForTesting);
   hints_manager()->RegisterOptimizationTypes(
       {optimization_guide::proto::DEFER_ALL_SCRIPT});
   InitializeWithDefaultConfig("1.0.0.0");
@@ -2234,6 +2240,8 @@ TEST_F(OptimizationGuideHintsManagerFetchingTest,
 
 TEST_F(OptimizationGuideHintsManagerFetchingTest,
        URLHintsNotFetchedAtNavigationTime) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      optimization_guide::switches::kDisableCheckingUserPermissionsForTesting);
   hints_manager()->RegisterOptimizationTypes(
       {optimization_guide::proto::DEFER_ALL_SCRIPT});
   InitializeWithDefaultConfig("1.0.0.0");
@@ -2294,6 +2302,8 @@ TEST_F(OptimizationGuideHintsManagerFetchingTest,
 
 TEST_F(OptimizationGuideHintsManagerFetchingTest,
        HintsNotFetchedAtNavigationTime_ECT_4G) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      optimization_guide::switches::kDisableCheckingUserPermissionsForTesting);
   hints_manager()->RegisterOptimizationTypes(
       {optimization_guide::proto::DEFER_ALL_SCRIPT});
   InitializeWithDefaultConfig("1.0.0.0");
@@ -2324,6 +2334,8 @@ TEST_F(OptimizationGuideHintsManagerFetchingTest,
 
 TEST_F(OptimizationGuideHintsManagerFetchingTest,
        CanApplyOptimizationCalledMidFetch) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      optimization_guide::switches::kDisableCheckingUserPermissionsForTesting);
   hints_manager()->RegisterOptimizationTypes(
       {optimization_guide::proto::DEFER_ALL_SCRIPT});
   InitializeWithDefaultConfig("1.0.0.0");
@@ -2348,6 +2360,8 @@ TEST_F(OptimizationGuideHintsManagerFetchingTest,
 
 TEST_F(OptimizationGuideHintsManagerFetchingTest,
        CanApplyOptimizationCalledPostFetchButNoHintsCameBack) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      optimization_guide::switches::kDisableCheckingUserPermissionsForTesting);
   hints_manager()->RegisterOptimizationTypes(
       {optimization_guide::proto::DEFER_ALL_SCRIPT});
   InitializeWithDefaultConfig("1.0.0.0");
@@ -2376,6 +2390,8 @@ TEST_F(OptimizationGuideHintsManagerFetchingTest,
 
 TEST_F(OptimizationGuideHintsManagerFetchingTest,
        CanApplyOptimizationCalledPostFetchButFetchFailed) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      optimization_guide::switches::kDisableCheckingUserPermissionsForTesting);
   hints_manager()->RegisterOptimizationTypes(
       {optimization_guide::proto::DEFER_ALL_SCRIPT});
   InitializeWithDefaultConfig("1.0.0.0");
@@ -2404,6 +2420,8 @@ TEST_F(OptimizationGuideHintsManagerFetchingTest,
 
 TEST_F(OptimizationGuideHintsManagerFetchingTest,
        CanApplyOptimizationWithURLKeyedHintApplicableForOptimizationType) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      optimization_guide::switches::kDisableCheckingUserPermissionsForTesting);
   hints_manager()->RegisterOptimizationTypes(
       {optimization_guide::proto::COMPRESS_PUBLIC_IMAGES});
   InitializeWithDefaultConfig("1.0.0");
@@ -2438,6 +2456,8 @@ TEST_F(OptimizationGuideHintsManagerFetchingTest,
 
 TEST_F(OptimizationGuideHintsManagerFetchingTest,
        CanApplyOptimizationNotAllowedByURLButAllowedByHostKeyedHint) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      optimization_guide::switches::kDisableCheckingUserPermissionsForTesting);
   hints_manager()->RegisterOptimizationTypes(
       {optimization_guide::proto::NOSCRIPT});
 
@@ -2470,6 +2490,8 @@ TEST_F(OptimizationGuideHintsManagerFetchingTest,
 
 TEST_F(OptimizationGuideHintsManagerFetchingTest,
        CanApplyOptimizationNotAllowedByURLOrHostKeyedHint) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      optimization_guide::switches::kDisableCheckingUserPermissionsForTesting);
   hints_manager()->RegisterOptimizationTypes(
       {optimization_guide::proto::RESOURCE_LOADING});
 
@@ -2502,6 +2524,8 @@ TEST_F(OptimizationGuideHintsManagerFetchingTest,
 
 TEST_F(OptimizationGuideHintsManagerFetchingTest,
        CanApplyOptimizationNoURLKeyedHintOrHostKeyedHint) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      optimization_guide::switches::kDisableCheckingUserPermissionsForTesting);
   hints_manager()->RegisterOptimizationTypes(
       {optimization_guide::proto::COMPRESS_PUBLIC_IMAGES});
 
@@ -2536,6 +2560,8 @@ TEST_F(OptimizationGuideHintsManagerFetchingTest,
 
 TEST_F(OptimizationGuideHintsManagerFetchingTest,
        CanApplyOptimizationCalledMidFetchForURLKeyedOptimization) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      optimization_guide::switches::kDisableCheckingUserPermissionsForTesting);
   hints_manager()->RegisterOptimizationTypes(
       {optimization_guide::proto::COMPRESS_PUBLIC_IMAGES});
 

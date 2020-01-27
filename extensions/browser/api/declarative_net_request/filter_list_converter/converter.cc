@@ -5,6 +5,7 @@
 #include "extensions/browser/api/declarative_net_request/filter_list_converter/converter.h"
 
 #include <fstream>
+#include <sstream>
 #include <string>
 #include <utility>
 
@@ -115,6 +116,11 @@ class ProtoToJSONRuleConverter {
   bool CheckActivationType() {
     if (input_rule_.activation_types() == proto::ACTIVATION_TYPE_UNSPECIFIED)
       return true;
+
+    if (input_rule_.activation_types() == proto::ACTIVATION_TYPE_DOCUMENT) {
+      is_allow_all_requests_rule_ = true;
+      return true;
+    }
 
     std::vector<std::string> activation_types;
     for (int activation_type = 1; activation_type <= proto::ACTIVATION_TYPE_MAX;
@@ -253,40 +259,8 @@ class ProtoToJSONRuleConverter {
     return true;
   }
 
-  bool PopulateResourceTypes() {
-    // Ensure that |element_types()| is a subset of proto::ElementType_ALL.
-    CHECK_EQ(proto::ELEMENT_TYPE_ALL,
-             proto::ELEMENT_TYPE_ALL | input_rule_.element_types());
-
+  base::Value GetResourceTypeList(int element_mask) {
     base::Value resource_types(base::Value::Type::LIST);
-
-    int kMaskUnsupported =
-        proto::ELEMENT_TYPE_POPUP | proto::ELEMENT_TYPE_OBJECT_SUBREQUEST;
-
-    int element_mask = input_rule_.element_types() & (~kMaskUnsupported);
-
-    // We don't support object-subrequest. Instead let these be treated as rules
-    // matching object requests.
-    if (input_rule_.element_types() & proto::ELEMENT_TYPE_OBJECT_SUBREQUEST)
-      element_mask |= proto::ELEMENT_TYPE_OBJECT;
-
-    // No supported element types.
-    if (!element_mask) {
-      std::vector<std::string> element_types_removed;
-      if (input_rule_.element_types() & proto::ELEMENT_TYPE_POPUP)
-        element_types_removed.emplace_back("popup");
-      error_ = base::StringPrintf(
-          "Rule with filter %s and resource types [%s] ignored, no applicable "
-          "resource types",
-          input_rule_.url_pattern().c_str(),
-          base::JoinString(element_types_removed, "," /*separator*/).c_str());
-      return false;
-    }
-
-    // Omit resource types to block all subresources by default.
-    if (element_mask == (proto::ELEMENT_TYPE_ALL & ~kMaskUnsupported))
-      return true;
-
     for (int element_type = 1; element_type <= proto::ElementType_MAX;
          element_type <<= 1) {
       CHECK(proto::ElementType_IsValid(element_type));
@@ -318,7 +292,6 @@ class ProtoToJSONRuleConverter {
           resource_type = dnr_api::RESOURCE_TYPE_XMLHTTPREQUEST;
           break;
         case proto::ELEMENT_TYPE_OBJECT_SUBREQUEST:
-          // This was removed above.
           CHECK(false);
           break;
         case proto::ELEMENT_TYPE_SUBDOCUMENT:
@@ -345,6 +318,58 @@ class ProtoToJSONRuleConverter {
       }
 
       resource_types.Append(dnr_api::ToString(resource_type));
+    }
+
+    return resource_types;
+  }
+
+  bool PopulateResourceTypes() {
+    // Ensure that |element_types()| is a subset of proto::ElementType_ALL.
+    CHECK_EQ(proto::ELEMENT_TYPE_ALL,
+             proto::ELEMENT_TYPE_ALL | input_rule_.element_types());
+
+    int kMaskUnsupported =
+        proto::ELEMENT_TYPE_POPUP | proto::ELEMENT_TYPE_OBJECT_SUBREQUEST;
+
+    int element_mask = input_rule_.element_types() & (~kMaskUnsupported);
+
+    // We don't support object-subrequest. Instead let these be treated as rules
+    // matching object requests.
+    if (input_rule_.element_types() & proto::ELEMENT_TYPE_OBJECT_SUBREQUEST)
+      element_mask |= proto::ELEMENT_TYPE_OBJECT;
+
+    if (is_allow_all_requests_rule_) {
+      // Any subresource types specified with ACTIVATION_TYPE_DOCUMENT are
+      // invalid.
+      if (element_mask && element_mask != proto::ELEMENT_TYPE_SUBDOCUMENT) {
+        std::stringstream error_stream;
+        error_stream << "$document rule with filter "
+                     << input_rule_.url_pattern()
+                     << " ignored. Invalid resource types: "
+                     << GetResourceTypeList(element_mask);
+        error_ = error_stream.str();
+        return false;
+      }
+    } else if (!element_mask) {  // No supported element types.
+      const char* ignored_types =
+          input_rule_.element_types() & proto::ELEMENT_TYPE_POPUP ? "popup"
+                                                                  : "";
+
+      error_ = base::StringPrintf(
+          "Rule with filter %s and resource types [%s] ignored: No applicable "
+          "resource types",
+          input_rule_.url_pattern().c_str(), ignored_types);
+      return false;
+    }
+
+    // Omit resource types to block all subresources by default.
+    if (element_mask == (proto::ELEMENT_TYPE_ALL & ~kMaskUnsupported))
+      return true;
+
+    base::Value resource_types = GetResourceTypeList(element_mask);
+    if (is_allow_all_requests_rule_) {
+      resource_types.Append(
+          dnr_api::ToString(dnr_api::RESOURCE_TYPE_MAIN_FRAME));
     }
 
     CHECK(json_rule_.SetPath({kRuleConditionKey, kResourceTypesKey},
@@ -385,12 +410,18 @@ class ProtoToJSONRuleConverter {
   bool PopulateRuleActionType() {
     dnr_api::RuleActionType action_type = dnr_api::RULE_ACTION_TYPE_NONE;
 
+    CHECK(!is_allow_all_requests_rule_ ||
+          input_rule_.semantics() == proto::RULE_SEMANTICS_WHITELIST);
+
     switch (input_rule_.semantics()) {
       case proto::RULE_SEMANTICS_BLACKLIST:
         action_type = dnr_api::RULE_ACTION_TYPE_BLOCK;
         break;
       case proto::RULE_SEMANTICS_WHITELIST:
-        action_type = dnr_api::RULE_ACTION_TYPE_ALLOW;
+        if (is_allow_all_requests_rule_)
+          action_type = dnr_api::RULE_ACTION_TYPE_ALLOWALLREQUESTS;
+        else
+          action_type = dnr_api::RULE_ACTION_TYPE_ALLOW;
         break;
       case proto::RULE_SEMANTICS_UNSPECIFIED:
         CHECK(false);
@@ -413,6 +444,7 @@ class ProtoToJSONRuleConverter {
     return true;
   }
 
+  bool is_allow_all_requests_rule_ = false;
   proto::UrlRule input_rule_;
   int rule_id_;
   std::string error_;

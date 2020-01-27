@@ -28,6 +28,7 @@
 
 #include "third_party/blink/renderer/modules/accessibility/ax_layout_object.h"
 
+#include "third_party/blink/renderer/bindings/core/v8/v8_image_bitmap_options.h"
 #include "third_party/blink/renderer/core/aom/accessible_node.h"
 #include "third_party/blink/renderer/core/css/css_property_names.h"
 #include "third_party/blink/renderer/core/dom/element_traversal.h"
@@ -55,7 +56,6 @@
 #include "third_party/blink/renderer/core/html/media/html_video_element.h"
 #include "third_party/blink/renderer/core/html/shadow/shadow_element_names.h"
 #include "third_party/blink/renderer/core/imagebitmap/image_bitmap.h"
-#include "third_party/blink/renderer/core/imagebitmap/image_bitmap_options.h"
 #include "third_party/blink/renderer/core/input_type_names.h"
 #include "third_party/blink/renderer/core/layout/api/line_layout_api_shim.h"
 #include "third_party/blink/renderer/core/layout/geometry/transform_state.h"
@@ -78,7 +78,6 @@
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_cursor.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_node.h"
-#include "third_party/blink/renderer/core/layout/ng/list/layout_ng_list_item.h"
 #include "third_party/blink/renderer/core/layout/ng/list/layout_ng_list_marker.h"
 #include "third_party/blink/renderer/core/loader/progress_tracker.h"
 #include "third_party/blink/renderer/core/page/page.h"
@@ -1542,10 +1541,11 @@ String AXLayoutObject::TextAlternative(bool recursive,
     } else if (layout_object_->IsListMarker() && !recursive) {
       text_alternative = ToLayoutListMarker(layout_object_)->TextAlternative();
       found_text_alternative = true;
-    } else if (layout_object_->IsLayoutNGListMarkerIncludingInside() &&
-               !recursive) {
-      text_alternative = LayoutNGListItem::TextAlternative(*layout_object_);
-      found_text_alternative = true;
+    } else if (!recursive) {
+      if (ListMarker* marker = ListMarker::Get(layout_object_)) {
+        text_alternative = marker->TextAlternative(*layout_object_);
+        found_text_alternative = true;
+      }
     }
 
     if (found_text_alternative) {

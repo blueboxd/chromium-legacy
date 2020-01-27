@@ -541,6 +541,9 @@ void OptimizationGuideHintsManager::ScheduleTopHostsHintsFetch() {
 void OptimizationGuideHintsManager::FetchTopHostsHints() {
   DCHECK(top_host_provider_);
 
+  if (registered_optimization_types_.empty())
+    return;
+
   std::vector<std::string> top_hosts = top_host_provider_->GetTopHosts();
   if (top_hosts.empty())
     return;
@@ -674,6 +677,9 @@ void OptimizationGuideHintsManager::OnPredictionUpdated(
     const base::Optional<NavigationPredictorKeyedService::Prediction>&
         prediction) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  if (registered_optimization_types_.empty())
+    return;
 
   if (!prediction.has_value())
     return;
@@ -973,7 +979,7 @@ void OptimizationGuideHintsManager::OnNavigationStartOrRedirect(
 
 void OptimizationGuideHintsManager::MaybeFetchHintsForNavigation(
     content::NavigationHandle* navigation_handle) {
-  if (registered_optimization_types_.size() == 0)
+  if (registered_optimization_types_.empty())
     return;
 
   if (!IsAllowedToFetchNavigationHints(navigation_handle->GetURL()))

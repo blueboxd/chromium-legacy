@@ -219,7 +219,8 @@ int HTMLFrameElementBase::DefaultTabIndex() const {
   return 0;
 }
 
-void HTMLFrameElementBase::SetFocused(bool received, WebFocusType focus_type) {
+void HTMLFrameElementBase::SetFocused(bool received,
+                                      mojom::blink::FocusType focus_type) {
   HTMLFrameOwnerElement::SetFocused(received, focus_type);
   if (Page* page = GetDocument().GetPage()) {
     if (received) {

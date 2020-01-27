@@ -17,7 +17,6 @@
 #include "base/test/bind_test_util.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
-#include "build/build_config.h"
 #include "components/network_session_configurator/common/network_switches.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/content_browser_test.h"
@@ -132,13 +131,7 @@ class QuicTransportTest : public ContentBrowserTest {
   QuicTransportSimpleServerWithThread server_;
 };
 
-// TODO(crbug.com/1044513): Run this test on Windows.
-#if defined(OS_WIN)
-#define MAYBE_Echo DISABLED_Echo
-#else
-#define MAYBE_Echo Echo
-#endif
-IN_PROC_BROWSER_TEST_F(QuicTransportTest, MAYBE_Echo) {
+IN_PROC_BROWSER_TEST_F(QuicTransportTest, Echo) {
   ASSERT_TRUE(embedded_test_server()->Start());
   ASSERT_TRUE(
       NavigateToURL(shell(), embedded_test_server()->GetURL("/title2.html")));
@@ -190,6 +183,9 @@ IN_PROC_BROWSER_TEST_F(QuicTransportTest, ClientIndicationFailure) {
       // The client indication fails because there is no resource /X
       // on the server.
       const transport = new QuicTransport('quic-transport:localhost:%d/X');
+
+      // Client indication is NOT part of handshake.
+      await transport.ready;
 
       try {
         await transport.closed;

@@ -121,7 +121,7 @@ void QuicTransportSimpleServer::ProcessReadPacket(int result) {
     LOG(ERROR) << "QuicTransportSimpleServer read failed: "
                << ErrorToString(result);
     dispatcher_.Shutdown();
-    exit(EXIT_FAILURE);
+    std::move(read_error_callback_).Run(result);
     return;
   }
 

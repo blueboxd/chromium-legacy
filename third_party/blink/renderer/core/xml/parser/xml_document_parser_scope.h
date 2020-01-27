@@ -48,7 +48,7 @@ class XMLDocumentParserScope {
   static Document* current_document_;
 
  private:
-  Member<Document> old_document_;
+  Document* old_document_;
 
   xmlGenericErrorFunc old_generic_error_func_;
   xmlStructuredErrorFunc old_structured_error_func_;

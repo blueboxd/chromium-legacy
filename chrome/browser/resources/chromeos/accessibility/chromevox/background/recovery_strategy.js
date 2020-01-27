@@ -14,16 +14,15 @@ goog.scope(function() {
 var AutomationNode = chrome.automation.AutomationNode;
 var RoleType = chrome.automation.RoleType;
 
-/**
- * @param {!AutomationNode} node
- * @constructor
- */
-RecoveryStrategy = function(node) {
-  /** @private {!AutomationNode} */
-  this.node_ = node;
-};
+RecoveryStrategy = class {
+  /**
+   * @param {!AutomationNode} node
+   */
+  constructor(node) {
+    /** @private {!AutomationNode} */
+    this.node_ = node;
+  }
 
-RecoveryStrategy.prototype = {
   /** @return {!AutomationNode} */
   get node() {
     if (this.requiresRecovery()) {
@@ -31,12 +30,12 @@ RecoveryStrategy.prototype = {
     }
 
     return this.node_;
-  },
+  }
 
   /** @return {boolean} */
   requiresRecovery() {
     return !this.node_ || !this.node_.role;
-  },
+  }
 
   /**
    * @return {AutomationNode}
@@ -44,40 +43,37 @@ RecoveryStrategy.prototype = {
    */
   recover() {
     return null;
-  },
+  }
 
   equalsWithoutRecovery(rhs) {
     return this.node_ === rhs.node_;
   }
 };
 
+
 /**
  * A recovery strategy that uses the node's ancestors.
- * @constructor
- * @extends {RecoveryStrategy}
  */
-AncestryRecoveryStrategy = function(node) {
-  RecoveryStrategy.call(this, node);
+AncestryRecoveryStrategy = class extends RecoveryStrategy {
+  constructor(node) {
+    super(node);
 
-  /** @type {!Array<AutomationNode>} @private */
-  this.ancestry_ = [];
-  var nodeWalker = node;
-  while (nodeWalker) {
-    this.ancestry_.push(nodeWalker);
-    nodeWalker = nodeWalker.parent;
-    if (nodeWalker && nodeWalker.role == RoleType.WINDOW) {
-      break;
+    /** @type {!Array<AutomationNode>} @private */
+    this.ancestry_ = [];
+    var nodeWalker = node;
+    while (nodeWalker) {
+      this.ancestry_.push(nodeWalker);
+      nodeWalker = nodeWalker.parent;
+      if (nodeWalker && nodeWalker.role == RoleType.WINDOW) {
+        break;
+      }
     }
   }
-};
-
-AncestryRecoveryStrategy.prototype = {
-  __proto__: RecoveryStrategy.prototype,
 
   /** @override */
   recover() {
     return this.ancestry_[this.getFirstValidNodeIndex_()];
-  },
+  }
 
   /**
    * @return {number}
@@ -95,28 +91,25 @@ AncestryRecoveryStrategy.prototype = {
   }
 };
 
+
 /**
  * A recovery strategy that uses the node's tree path.
- * @constructor
- * @extends {AncestryRecoveryStrategy}
  */
-TreePathRecoveryStrategy = function(node) {
-  AncestryRecoveryStrategy.call(this, node);
+TreePathRecoveryStrategy = class extends AncestryRecoveryStrategy {
+  constructor(node) {
+    super(node);
 
-  /** @type {!Array<number>} @private */
-  this.recoveryChildIndex_ = [];
-  var nodeWalker = node;
-  while (nodeWalker) {
-    this.recoveryChildIndex_.push(nodeWalker.indexInParent);
-    nodeWalker = nodeWalker.parent;
-    if (nodeWalker && nodeWalker.role == RoleType.WINDOW) {
-      break;
+    /** @type {!Array<number>} @private */
+    this.recoveryChildIndex_ = [];
+    var nodeWalker = node;
+    while (nodeWalker) {
+      this.recoveryChildIndex_.push(nodeWalker.indexInParent);
+      nodeWalker = nodeWalker.parent;
+      if (nodeWalker && nodeWalker.role == RoleType.WINDOW) {
+        break;
+      }
     }
   }
-};
-
-TreePathRecoveryStrategy.prototype = {
-  __proto__: AncestryRecoveryStrategy.prototype,
 
   /** @override */
   recover() {
@@ -138,4 +131,5 @@ TreePathRecoveryStrategy.prototype = {
     return node;
   }
 };
+
 });  // goog.scope

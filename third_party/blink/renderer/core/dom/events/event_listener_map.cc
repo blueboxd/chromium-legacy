@@ -32,6 +32,8 @@
 
 #include "third_party/blink/renderer/core/dom/events/event_listener_map.h"
 
+#include "third_party/blink/renderer/bindings/core/v8/v8_event_listener_options.h"
+#include "third_party/blink/renderer/core/dom/events/add_event_listener_options_resolved.h"
 #include "third_party/blink/renderer/core/dom/events/event_listener.h"
 #include "third_party/blink/renderer/core/dom/events/event_target.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"

@@ -147,6 +147,8 @@ class CxxFuncDeclNode(CompositeNode):
                  arg_decls,
                  return_type,
                  static=False,
+                 explicit=False,
+                 constexpr=False,
                  const=False,
                  override=False,
                  default=False,
@@ -157,25 +159,33 @@ class CxxFuncDeclNode(CompositeNode):
             arg_decls: List of argument declarations.
             return_type: Return type.
             static: True makes this a static function.
+            explicit: True makes this an explicit constructor.
+            constexpr: True makes this a constexpr function.
             const: True makes this a const function.
             override: True makes this an overriding function.
             default: True makes this have the default implementation.
             delete: True makes this function be deleted.
         """
         assert isinstance(static, bool)
+        assert isinstance(explicit, bool)
+        assert isinstance(constexpr, bool)
         assert isinstance(const, bool)
         assert isinstance(override, bool)
         assert isinstance(default, bool)
         assert isinstance(delete, bool)
         assert not (default and delete)
 
-        template_format = ("{static}{return_type} {name}({arg_decls})"
+        template_format = ("{static}{explicit}{constexpr}"
+                           "{return_type} "
+                           "{name}({arg_decls})"
                            "{const}"
                            "{override}"
                            "{default_or_delete}"
                            ";")
 
         static = "static " if static else ""
+        explicit = "explicit " if explicit else ""
+        constexpr = "constexpr " if constexpr else ""
         const = " const" if const else ""
         override = " override" if override else ""
         if default:
@@ -193,6 +203,8 @@ class CxxFuncDeclNode(CompositeNode):
                 map(_to_maybe_text_node, arg_decls), separator=", "),
             return_type=_to_maybe_text_node(return_type),
             static=static,
+            explicit=explicit,
+            constexpr=constexpr,
             const=const,
             override=override,
             default_or_delete=default_or_delete)
@@ -205,6 +217,9 @@ class CxxFuncDefNode(CompositeNode):
                  return_type,
                  class_name=None,
                  static=False,
+                 inline=False,
+                 explicit=False,
+                 constexpr=False,
                  const=False,
                  override=False,
                  member_initializer_list=None):
@@ -215,15 +230,22 @@ class CxxFuncDefNode(CompositeNode):
             return_type: Return type.
             class_name: Class name to be used as nested-name-specifier.
             static: True makes this a static function.
+            inline: True makes this an inline function.
+            explicit: True makes this an explicit constructor.
+            constexpr: True makes this a constexpr function.
             const: True makes this a const function.
             override: True makes this an overriding function.
             member_initializer_list: List of member initializers.
         """
         assert isinstance(static, bool)
+        assert isinstance(inline, bool)
+        assert isinstance(explicit, bool)
+        assert isinstance(constexpr, bool)
         assert isinstance(const, bool)
         assert isinstance(override, bool)
 
-        template_format = ("{static}{return_type} "
+        template_format = ("{static}{inline}{explicit}{constexpr}"
+                           "{return_type} "
                            "{class_name}{name}({arg_decls})"
                            "{const}"
                            "{override}"
@@ -237,6 +259,9 @@ class CxxFuncDefNode(CompositeNode):
             class_name = ListNode([_to_maybe_text_node(class_name)], tail="::")
 
         static = "static " if static else ""
+        inline = "inline " if inline else ""
+        explicit = "explicit " if explicit else ""
+        constexpr = "constexpr " if constexpr else ""
         const = " const" if const else ""
         override = " override" if override else ""
 
@@ -259,6 +284,9 @@ class CxxFuncDefNode(CompositeNode):
             return_type=_to_maybe_text_node(return_type),
             class_name=class_name,
             static=static,
+            inline=inline,
+            explicit=explicit,
+            constexpr=constexpr,
             const=const,
             override=override,
             member_initializer_list=member_initializer_list,

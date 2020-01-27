@@ -27,7 +27,7 @@ class AppDataMigrator {
 
   void DoMigrationAndReply(const Extension* old,
                            const Extension* extension,
-                           const base::Closure& reply);
+                           base::OnceClosure reply);
 
  private:
   Profile* profile_;

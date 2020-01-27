@@ -201,7 +201,7 @@ Especially, avoid defining a pre-finalizer in a class that can be allocated a lo
 
 ### STACK_ALLOCATED
 
-Class level annotation that should be used if the object is only stack allocated; it disallows use of `operator new`. Any fields holding garbage-collected objects should use `Member<T>` references, but you do not need to define a `Trace()` method as they are on the stack, and automatically traced and kept alive should a conservative GC be required.
+Class level annotation that should be used if the object is only stack allocated; it disallows use of `operator new`. Any fields holding garbage-collected objects should use regular pointers or references and you do not need to define a `Trace()` method as they are on the stack, and automatically traced and kept alive should a conservative GC be required.
 
 Classes with this annotation do not need a `Trace()` method and must not inherit a on-heap garbage collected class.
 

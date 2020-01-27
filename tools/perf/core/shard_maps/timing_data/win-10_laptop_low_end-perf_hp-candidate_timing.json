@@ -1,9 +1,5 @@
 [
     {
-        "duration": "107.0",
-        "name": "v8.browsing_desktop/browse:media:flickr_infinite_scroll"
-    },
-    {
         "duration": "71.0",
         "name": "v8.browsing_desktop/browse:media:googleplaystore:2018"
     },
@@ -48,10 +44,6 @@
         "name": "v8.browsing_desktop/browse:news:reddit:2018"
     },
     {
-        "duration": "80.0",
-        "name": "v8.browsing_desktop/browse:search:google"
-    },
-    {
         "duration": "75.0",
         "name": "v8.browsing_desktop/browse:search:google:2018"
     },
@@ -82,10 +74,6 @@
     {
         "duration": "38.0",
         "name": "v8.browsing_desktop/browse:tools:earth"
-    },
-    {
-        "duration": "29.0",
-        "name": "v8.browsing_desktop/browse:tools:maps"
     },
     {
         "duration": "29.0",

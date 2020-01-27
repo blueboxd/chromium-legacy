@@ -119,7 +119,7 @@ class ChildListMutationScope final {
   }
 
  private:
-  Member<ChildListMutationAccumulator> accumulator_;
+  ChildListMutationAccumulator* accumulator_ = nullptr;
   DISALLOW_COPY_AND_ASSIGN(ChildListMutationScope);
 };
 

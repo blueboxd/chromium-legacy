@@ -6,9 +6,9 @@
 
 #include "base/single_thread_task_runner.h"
 #include "third_party/blink/public/platform/task_type.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_mojo_handle_signals.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_mojo_watch_callback.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
-#include "third_party/blink/renderer/core/mojo/mojo_handle_signals.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"

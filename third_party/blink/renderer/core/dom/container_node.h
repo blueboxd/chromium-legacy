@@ -25,7 +25,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_DOM_CONTAINER_NODE_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_CONTAINER_NODE_H_
 
-#include "third_party/blink/public/platform/web_focus_type.h"
+#include "third_party/blink/public/mojom/input/focus_type.mojom-blink-forward.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/css/style_recalc.h"
 #include "third_party/blink/renderer/core/dom/node.h"
@@ -151,7 +151,7 @@ class CORE_EXPORT ContainerNode : public Node {
   void AttachLayoutTree(AttachContext&) override;
   void DetachLayoutTree(bool performing_reattach = false) override;
   PhysicalRect BoundingBox() const final;
-  void SetFocused(bool, WebFocusType) override;
+  void SetFocused(bool, mojom::blink::FocusType) override;
   void SetHasFocusWithinUpToAncestor(bool, Node* ancestor);
   void FocusStateChanged();
   void FocusVisibleStateChanged();
@@ -343,18 +343,18 @@ class CORE_EXPORT ContainerNode : public Node {
     }
 
     ChildrenChangeType type;
-    Member<Node> sibling_changed;
+    Node* sibling_changed = nullptr;
     // |siblingBeforeChange| is
     //  - siblingChanged.previousSibling before node removal
     //  - siblingChanged.previousSibling after single node insertion
     //  - previousSibling of the first inserted node after multiple node
     //    insertion
-    Member<Node> sibling_before_change;
+    Node* sibling_before_change = nullptr;
     // |siblingAfterChange| is
     //  - siblingChanged.nextSibling before node removal
     //  - siblingChanged.nextSibling after single node insertion
     //  - nextSibling of the last inserted node after multiple node insertion.
-    Member<Node> sibling_after_change;
+    Node* sibling_after_change = nullptr;
     ChildrenChangeSource by_parser;
   };
 

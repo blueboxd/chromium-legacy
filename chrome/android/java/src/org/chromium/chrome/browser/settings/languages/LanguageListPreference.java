@@ -4,8 +4,8 @@
 
 package org.chromium.chrome.browser.settings.languages;
 
-import static org.chromium.chrome.browser.ui.widget.listmenu.BasicListMenu.buildMenuListItem;
-import static org.chromium.chrome.browser.ui.widget.listmenu.BasicListMenu.buildMenuListItemWithEndIcon;
+import static org.chromium.components.browser_ui.widget.listmenu.BasicListMenu.buildMenuListItem;
+import static org.chromium.components.browser_ui.widget.listmenu.BasicListMenu.buildMenuListItemWithEndIcon;
 
 import android.content.Context;
 import android.support.v7.preference.Preference;
@@ -21,10 +21,10 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.translate.TranslateBridge;
-import org.chromium.chrome.browser.ui.widget.listmenu.BasicListMenu;
-import org.chromium.chrome.browser.ui.widget.listmenu.ListMenu;
-import org.chromium.chrome.browser.ui.widget.listmenu.ListMenuItemProperties;
 import org.chromium.components.browser_ui.widget.TintedDrawable;
+import org.chromium.components.browser_ui.widget.listmenu.BasicListMenu;
+import org.chromium.components.browser_ui.widget.listmenu.ListMenu;
+import org.chromium.components.browser_ui.widget.listmenu.ListMenuItemProperties;
 import org.chromium.ui.modelutil.MVCListAdapter.ListItem;
 import org.chromium.ui.modelutil.MVCListAdapter.ModelList;
 

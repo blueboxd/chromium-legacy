@@ -223,7 +223,7 @@ FilterEffect* SVGFilterBuilder::GetEffectById(const AtomicString& id) const {
   }
 
   if (last_effect_)
-    return last_effect_.Get();
+    return last_effect_;
 
   return builtin_effects_.at(FilterInputKeywords::GetSourceGraphic());
 }

@@ -54,7 +54,6 @@ class WebDevToolsAgentImpl;
 class WebLocalFrameImpl;
 class WebSpellCheckPanelHostClient;
 enum class GlobalObjectReusePolicy;
-struct WebScrollIntoViewParams;
 
 class LocalFrameClientImpl final : public LocalFrameClient {
  public:
@@ -245,10 +244,6 @@ class LocalFrameClientImpl final : public LocalFrameClient {
 
   base::UnguessableToken GetDevToolsFrameToken() const override;
 
-  void ScrollRectToVisibleInParentFrame(
-      const WebRect&,
-      const WebScrollIntoViewParams&) override;
-
   String evaluateInInspectorOverlayForTesting(const String& script) override;
 
   bool HandleCurrentKeyboardEvent() override;
@@ -260,6 +255,9 @@ class LocalFrameClientImpl final : public LocalFrameClient {
   Frame* FindFrame(const AtomicString& name) const override;
 
   void FrameRectsChanged(const IntRect&) override;
+
+  void OnMainFrameDocumentIntersectionChanged(
+      const IntRect& intersection_rect) override;
 
   bool IsPluginHandledExternally(HTMLPlugInElement&,
                                  const KURL&,

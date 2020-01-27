@@ -86,6 +86,9 @@ class DISPLAY_TYPES_EXPORT NativeDisplayDelegate {
       const std::vector<GammaRampRGBEntry>& degamma_lut,
       const std::vector<GammaRampRGBEntry>& gamma_lut) = 0;
 
+  // Sets the privacy screen state on the display with |display_id|.
+  virtual void SetPrivacyScreen(int64_t display_id, bool enabled) = 0;
+
   virtual void AddObserver(NativeDisplayObserver* observer) = 0;
 
   virtual void RemoveObserver(NativeDisplayObserver* observer) = 0;

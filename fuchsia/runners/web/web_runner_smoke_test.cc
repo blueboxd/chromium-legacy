@@ -11,9 +11,7 @@
 #include "base/fuchsia/default_context.h"
 #include "base/fuchsia/scoped_service_binding.h"
 #include "base/fuchsia/service_provider_impl.h"
-#include "base/test/bind_test_util.h"
 #include "base/test/task_environment.h"
-#include "base/test/test_timeouts.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
@@ -28,9 +26,7 @@ namespace {
 
 class WebRunnerSmokeTest : public testing::Test {
  public:
-  WebRunnerSmokeTest()
-      : run_timeout_(TestTimeouts::action_timeout(),
-                     base::MakeExpectedNotRunClosure(FROM_HERE)) {}
+  WebRunnerSmokeTest() = default;
   void SetUp() final {
     test_server_.RegisterRequestHandler(base::BindRepeating(
         &WebRunnerSmokeTest::HandleRequest, base::Unretained(this)));
@@ -82,8 +78,6 @@ class WebRunnerSmokeTest : public testing::Test {
   }
 
  protected:
-  const base::RunLoop::ScopedRunTimeoutForTest run_timeout_;
-
   bool test_html_requested_ = false;
   bool test_image_requested_ = false;
 

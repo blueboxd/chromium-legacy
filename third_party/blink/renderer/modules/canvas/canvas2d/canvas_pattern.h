@@ -26,7 +26,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_CANVAS_CANVAS2D_CANVAS_PATTERN_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_CANVAS_CANVAS2D_CANVAS_PATTERN_H_
 
-#include "third_party/blink/renderer/core/geometry/dom_matrix_2d_init.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_dom_matrix_2d_init.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/graphics/pattern.h"
 #include "third_party/blink/renderer/platform/transforms/affine_transform.h"

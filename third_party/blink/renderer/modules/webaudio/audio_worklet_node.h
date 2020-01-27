@@ -6,9 +6,9 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_AUDIO_WORKLET_NODE_H_
 
 #include "base/memory/scoped_refptr.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_audio_worklet_node_options.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_node.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_param_map.h"
-#include "third_party/blink/renderer/modules/webaudio/audio_worklet_node_options.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_worklet_processor_error_state.h"
 #include "third_party/blink/renderer/platform/wtf/threading.h"
 

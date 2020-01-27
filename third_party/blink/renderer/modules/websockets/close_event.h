@@ -31,10 +31,10 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBSOCKETS_CLOSE_EVENT_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBSOCKETS_CLOSE_EVENT_H_
 
+#include "third_party/blink/renderer/bindings/modules/v8/v8_close_event_init.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/event_type_names.h"
 #include "third_party/blink/renderer/modules/event_modules.h"
-#include "third_party/blink/renderer/modules/websockets/close_event_init.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"

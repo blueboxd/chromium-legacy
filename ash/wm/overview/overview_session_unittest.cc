@@ -2465,7 +2465,8 @@ TEST_P(OverviewSessionTest, Backdrop) {
 }
 
 // Test that the rounded corners are removed during animations.
-TEST_P(OverviewSessionTest, RoundedCornersVisibility) {
+// TODO(https://crbug.com/1000730): Re-enable this test.
+TEST_P(OverviewSessionTest, DISABLED_RoundedCornersVisibility) {
   std::unique_ptr<aura::Window> window1(CreateTestWindow());
   std::unique_ptr<aura::Window> window2(CreateTestWindow());
 

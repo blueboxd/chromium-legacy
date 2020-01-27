@@ -19,7 +19,7 @@
 
 OffTheRecordChromeBrowserStateImpl::OffTheRecordChromeBrowserStateImpl(
     scoped_refptr<base::SequencedTaskRunner> io_task_runner,
-    ios::ChromeBrowserState* original_chrome_browser_state,
+    ChromeBrowserState* original_chrome_browser_state,
     const base::FilePath& otr_path)
     : ChromeBrowserState(std::move(io_task_runner)),
       otr_state_path_(otr_path),
@@ -43,7 +43,7 @@ OffTheRecordChromeBrowserStateImpl::~OffTheRecordChromeBrowserStateImpl() {
   GetApplicationContext()->GetIOSChromeIOThread()->ChangedToOnTheRecord();
 }
 
-ios::ChromeBrowserState*
+ChromeBrowserState*
 OffTheRecordChromeBrowserStateImpl::GetOriginalChromeBrowserState() {
   return original_chrome_browser_state_;
 }
@@ -53,7 +53,7 @@ bool OffTheRecordChromeBrowserStateImpl::HasOffTheRecordChromeBrowserState()
   return true;
 }
 
-ios::ChromeBrowserState*
+ChromeBrowserState*
 OffTheRecordChromeBrowserStateImpl::GetOffTheRecordChromeBrowserState() {
   return this;
 }

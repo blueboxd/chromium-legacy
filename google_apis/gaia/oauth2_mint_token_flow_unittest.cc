@@ -215,23 +215,30 @@ class OAuth2MintTokenFlowTest : public testing::Test {
   const network::mojom::URLResponseHeadPtr head_200_;
 
   void CreateFlow(OAuth2MintTokenFlow::Mode mode) {
-    return CreateFlow(&delegate_, mode, "");
+    return CreateFlow(&delegate_, mode, "", "");
   }
 
   void CreateFlowWithDeviceId(const std::string& device_id) {
     return CreateFlow(&delegate_, OAuth2MintTokenFlow::MODE_ISSUE_ADVICE,
-                      device_id);
+                      device_id, "");
+  }
+
+  void CreateFlowWithConsentResult(const std::string& consent_result) {
+    return CreateFlow(&delegate_, OAuth2MintTokenFlow::MODE_MINT_TOKEN_NO_FORCE,
+                      "", consent_result);
   }
 
   void CreateFlow(MockDelegate* delegate,
                   OAuth2MintTokenFlow::Mode mode,
-                  const std::string& device_id) {
+                  const std::string& device_id,
+                  const std::string& consent_result) {
     std::string ext_id = "ext1";
     std::string client_id = "client1";
     std::vector<std::string> scopes(CreateTestScopes());
     flow_ = std::make_unique<MockMintTokenFlow>(
-        delegate, OAuth2MintTokenFlow::Parameters(ext_id, client_id, scopes,
-                                                  device_id, mode));
+        delegate,
+        OAuth2MintTokenFlow::Parameters(ext_id, client_id, scopes, device_id,
+                                        consent_result, mode));
   }
 
   void ProcessApiCallSuccess(const network::mojom::URLResponseHead* head,
@@ -315,6 +322,18 @@ TEST_F(OAuth2MintTokenFlowTest, CreateApiCallBody) {
         "&device_id=device_id1"
         "&device_type=chrome"
         "&lib_ver=extension");
+    EXPECT_EQ(expected_body, body);
+  }
+  {
+    CreateFlowWithConsentResult("consent1");
+    std::string body = flow_->CreateApiCallBody();
+    std::string expected_body(
+        "force=false"
+        "&response_type=token"
+        "&scope=http://scope1+http://scope2"
+        "&client_id=client1"
+        "&origin=ext1"
+        "&consent_result=consent1");
     EXPECT_EQ(expected_body, body);
   }
 }
@@ -601,7 +620,7 @@ TEST_F(OAuth2MintTokenFlowTest, ProcessApiCallSuccess_RemoteConsentFallback) {
 
 TEST_F(OAuth2MintTokenFlowTest, ProcessApiCallFailure_NullDelegate) {
   network::mojom::URLResponseHead head;
-  CreateFlow(nullptr, OAuth2MintTokenFlow::MODE_MINT_TOKEN_NO_FORCE, "");
+  CreateFlow(nullptr, OAuth2MintTokenFlow::MODE_MINT_TOKEN_NO_FORCE, "", "");
   ProcessApiCallFailure(net::ERR_FAILED, &head, nullptr);
   histogram_tester_.ExpectUniqueSample(
       kOAuth2MintTokenApiCallResultHistogram,

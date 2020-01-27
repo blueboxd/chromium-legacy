@@ -84,8 +84,8 @@ class InlineBoxPainterBase {
       bool object_has_multiple_boxes) const = 0;
 
   const ImageResourceObserver& image_observer_;
-  Member<const Document> document_;
-  Member<Node> node_;
+  const Document* document_;
+  Node* node_;
 
   // Style for the corresponding node.
   const ComputedStyle& style_;

@@ -39,11 +39,15 @@ class MEDIA_BLINK_EXPORT SmoothnessHelper {
   // Return the features that we were constructed with.
   const learning::FeatureVector& features() const { return features_; }
 
+  // Notify us that an NNR has occurred.
+  virtual void NotifyNNR() = 0;
+
   // |features| are the features that we'll use for any labelled examples that
   // we create.  They should be features that could be captured at the time a
   // prediction would be needed.
   static std::unique_ptr<SmoothnessHelper> Create(
-      std::unique_ptr<learning::LearningTaskController> consecutive_controller,
+      std::unique_ptr<learning::LearningTaskController> bad_controller,
+      std::unique_ptr<learning::LearningTaskController> nnr_controller,
       const learning::FeatureVector& features,
       Client* player);
 

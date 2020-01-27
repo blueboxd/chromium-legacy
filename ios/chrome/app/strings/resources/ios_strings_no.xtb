@@ -192,6 +192,7 @@
 <translation id="3474649192738347024">Skjemaene er fylt ut.</translation>
 <translation id="3478058380795961209">Utløpsmåned</translation>
 <translation id="3482959374254649722">Fanene dine synkroniseres …</translation>
+<translation id="3484946776651937681">Åpne i Nedlastinger</translation>
 <translation id="3493531032208478708"><ph name="BEGIN_LINK" />Finn ut mer<ph name="END_LINK" /> om foreslått innhold</translation>
 <translation id="3494788280727468875">Bekreft at du vil slette nettleserdataene</translation>
 <translation id="35083190962747987">Åpne ${url}</translation>
@@ -537,6 +538,7 @@ Dataene dine er kryptert med passordfrasen din for synkronisering <ph name="TIME
 <translation id="8319076807703933069">Nytt søk</translation>
 <translation id="8323906514956095947">Trykk og hold inne for flere fanealternativer</translation>
 <translation id="8328777765163860529">Lukk alle</translation>
+<translation id="8386068868580335421">Tilbakestill</translation>
 <translation id="8407669440184693619">Fant ingen passord for dette nettstedet</translation>
 <translation id="842017693807136194">Logget på med</translation>
 <translation id="8428045167754449968">By/tettsted</translation>

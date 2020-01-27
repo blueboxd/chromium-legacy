@@ -79,6 +79,7 @@
 <translation id="129553762522093515">Nyligen stängda</translation>
 <translation id="1298536327547837046">Genomsökning efter skadlig programvara</translation>
 <translation id="129863573139666797"><ph name="BEGIN_LINK" />Testa att rensa cookies<ph name="END_LINK" /></translation>
+<translation id="1301324364792935241">Kontrollera inställningarna för den säkra DNS-konfigurationen</translation>
 <translation id="1307966114820526988">Utfasade funktioner</translation>
 <translation id="1314509827145471431">Bindning till höger</translation>
 <translation id="1320233736580025032">Prc1 (kuvert)</translation>
@@ -152,6 +153,7 @@
 <translation id="1569487616857761740">Ange sista giltighetsdatum</translation>
 <translation id="1581080074034554886">CVC</translation>
 <translation id="1583429793053364125">Ett fel uppstod när webbsidan skulle visas.</translation>
+<translation id="1586541204584340881">Vilka tillägg du har installerat</translation>
 <translation id="1588438908519853928">Normal</translation>
 <translation id="1592005682883173041">Lokal dataåtkomst</translation>
 <translation id="1594030484168838125">Välj</translation>
@@ -290,7 +292,6 @@
 <translation id="2218879909401188352">Angripare på <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> skulle kunna installera farliga appar som skadar enheten, lägger till dolda avgifter på din mobilfaktura eller stjäl personliga uppgifter. <ph name="BEGIN_LEARN_MORE_LINK" />Läs mer<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="2224337661447660594">Inget internet</translation>
 <translation id="2230458221926704099">Åtgärda anslutningsproblemet med hjälp av <ph name="BEGIN_LINK" />diagnostiseringsappen<ph name="END_LINK" /></translation>
-<translation id="22320125457191592">För dig</translation>
 <translation id="2239100178324503013">Skicka nu</translation>
 <translation id="2248949050832152960">Använd WebAuthn</translation>
 <translation id="2250931979407627383">Kanthäftning till vänster</translation>
@@ -363,6 +364,7 @@
 <translation id="2544644783021658368">Enkelt dokument</translation>
 <translation id="254947805923345898">Principens värde är inte giltigt.</translation>
 <translation id="255002559098805027"><ph name="HOST_NAME" /> skickade ett ogiltigt svar.</translation>
+<translation id="2553853292994445426">Kontrollera inställningarna för den säkra DNS-konfigurationen. Du kan ha konfigurerat en säker DNS-server som det inte går att ansluta till.</translation>
 <translation id="2556876185419854533">&amp;Ånga Redigera</translation>
 <translation id="257674075312929031">Grupp</translation>
 <translation id="2586657967955657006">Urklipp</translation>
@@ -485,6 +487,7 @@
 <translation id="3095940652251934233">Statement</translation>
 <translation id="3096100844101284527">Lägg till hämtningsadress</translation>
 <translation id="3105172416063519923">Tillgångs-id:</translation>
+<translation id="3107591622054137333"><ph name="BEGIN_LINK" />Kontrollera den säkra DNS-konfigurationen<ph name="END_LINK" /></translation>
 <translation id="3109728660330352905">Du är inte behörig att se den här sidan.</translation>
 <translation id="3113284927548439113">tredje skiftet</translation>
 <translation id="3116158981186517402">Laminera</translation>
@@ -576,7 +579,6 @@
 <translation id="3531780078352352885">Arbetsordrar</translation>
 <translation id="3533328374079021623">Postfack 5</translation>
 <translation id="3539171420378717834">Spara en kopia av kortet på enheten</translation>
-<translation id="3553513561058684206">För dig</translation>
 <translation id="3558573058928565255">dagtid</translation>
 <translation id="3566021033012934673">Anslutningen är inte privat</translation>
 <translation id="3574305903863751447"><ph name="CITY" />, <ph name="STATE" /> <ph name="COUNTRY" /></translation>
@@ -788,6 +790,7 @@
 <translation id="4390472908992056574">Brim</translation>
 <translation id="4406896451731180161">sökresultat</translation>
 <translation id="4408413947728134509">Cookies <ph name="NUM_COOKIES" /></translation>
+<translation id="4414290883293381923">Du angav just ditt lösenord på en bedräglig webbplats. Vi rekommenderar att du besöker <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, <ph name="WEBSITE_3" /> och andra webbplatser där du använder lösenordet och ändrar det nu.</translation>
 <translation id="4415426530740016218">Hämtningsadress</translation>
 <translation id="4424024547088906515">Servern kunde inte bevisa att den är <ph name="DOMAIN" /> eftersom Chrome inte litar på dess säkerhetscertifikat. Detta kan orsakas av en felaktig konfigurering eller att någon spärrar anslutningen.</translation>
 <translation id="443121186588148776">Serieport</translation>
@@ -1220,6 +1223,7 @@
 <translation id="6353505687280762741">{COUNT,plural, =0{Inga}=1{1 lösenord (för <ph name="DOMAIN_LIST" />, synkroniseras)}=2{2 lösenord (för <ph name="DOMAIN_LIST" />, synkroniseras)}other{# lösenord (för <ph name="DOMAIN_LIST" />, synkroniseras)}}</translation>
 <translation id="6358450015545214790">Vad innebär dessa?</translation>
 <translation id="6361757823711327522">B7</translation>
+<translation id="6364095313648930329"><ph name="BEGIN_LINK" />Kontrollerar proxy, brandvägg, och säker DNS-konfiguration<ph name="END_LINK" /></translation>
 <translation id="6366710531182496394">Två häftklamrar till vänster</translation>
 <translation id="6377268785556383139">1 resultat för <ph name="SEARCH_TEXT" /></translation>
 <translation id="6380497234672085559">A0</translation>
@@ -1242,6 +1246,7 @@
 <translation id="6433595998831338502"><ph name="HOST_NAME" /> avvisade anslutningen.</translation>
 <translation id="6434309073475700221">Kasta</translation>
 <translation id="6440503408713884761">Ignoreras</translation>
+<translation id="6443406338865242315">Vilka tillägg och pluginprogram som du har installerat</translation>
 <translation id="6446163441502663861">Kahu (kuvert)</translation>
 <translation id="6446608382365791566">Lägg till mer information</translation>
 <translation id="6447842834002726250">Cookies</translation>
@@ -1351,6 +1356,7 @@
 <translation id="7012363358306927923">China UnionPay</translation>
 <translation id="7016992613359344582">Debiteringen kan göras en gång eller återkommande och det behöver inte framgå tydligt att detta händer.</translation>
 <translation id="7029809446516969842">Lösenord</translation>
+<translation id="7031646650991750659">Vilka appar från Google Play som du har installerat</translation>
 <translation id="7050187094878475250">Du försökte nå <ph name="DOMAIN" />, men servern svarade med ett certifikat vars giltighetstid är för lång för att det ska vara trovärdigt.</translation>
 <translation id="705310974202322020">{NUM_CARDS,plural, =1{Det går inte att lägga till det här kortet just nu}other{Det går inte att lägga till de här korten just nu}}</translation>
 <translation id="7053983685419859001">Blockera</translation>
@@ -1410,6 +1416,7 @@ Mer information.
 <translation id="7319430975418800333">A3</translation>
 <translation id="7320336641823683070">Anslutningshjälp</translation>
 <translation id="733354035281974745">Åsidosätt enhetens lokala konto</translation>
+<translation id="7333654844024768166">Du angav just ditt lösenord på en bedräglig webbplats. Vi rekommenderar att du besöker <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, <ph name="WEBSITE_3" /> och andra webbplatser där du använder lösenordet och ändrar det nu.</translation>
 <translation id="7334320624316649418">&amp;Gör om Ändra ordning</translation>
 <translation id="7337706099755338005">Ej tillgänglig för din plattform.</translation>
 <translation id="733923710415886693">Servercertifikatet har inte lämnats ut via Certifikattransparens.</translation>

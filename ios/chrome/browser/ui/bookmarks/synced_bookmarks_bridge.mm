@@ -22,7 +22,7 @@ namespace sync_bookmarks {
 
 SyncedBookmarksObserverBridge::SyncedBookmarksObserverBridge(
     id<SyncObserverModelBridge> delegate,
-    ios::ChromeBrowserState* browserState)
+    ChromeBrowserState* browserState)
     : SyncObserverBridge(
           delegate,
           ProfileSyncServiceFactory::GetForBrowserState(browserState)),

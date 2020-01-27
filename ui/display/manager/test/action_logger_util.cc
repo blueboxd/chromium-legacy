@@ -69,6 +69,11 @@ std::string SetGammaCorrectionAction(
                             gamma_table.c_str());
 }
 
+std::string SetPrivacyScreenAction(int64_t display_id, bool enabled) {
+  return base::StringPrintf("set_privacy_screen(id=%" PRId64 ",state=%d)",
+                            display_id, enabled);
+}
+
 std::string JoinActions(const char* action, ...) {
   std::string actions;
 

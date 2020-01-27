@@ -27,7 +27,6 @@
 <translation id="4249068189593983585">Chrome-Tipp: Wenn Sie weitere Tab-Optionen sehen möchten, berühren und halten Sie die Schaltfläche "Tabs anzeigen" in der Symbolleiste. Sie befindet sich unten oder oben auf dem Bildschirm.</translation>
 <translation id="4523886039239821078">Einige Add-ons führen zum Ausfall von Chrome. Bitte deinstallieren Sie:</translation>
 <translation id="5389212809648216794">Google Chrome kann nicht auf die Kamera zugreifen, da diese gerade von einer anderen App verwendet wird</translation>
-<translation id="5621912349729388018"><ph name="BEGIN_LINK" />Lesen Sie sich die aktualisierten Nutzungsbedingungen von Chrome durch.<ph name="END_LINK" /></translation>
 <translation id="5639704535586432836">Öffnen Sie "Einstellungen" &gt; "Datenschutz" &gt; "Kamera" &gt; "Google Chrome" und aktivieren Sie die Kamera.</translation>
 <translation id="5642200033778930880">Google Chrome kann die Kamera nicht im Modus "Geteilte Ansicht" nutzen</translation>
 <translation id="5690427481109656848">Google LLC</translation>
@@ -51,4 +50,5 @@
 <translation id="840168496893712993">Einige Add-ons führen zum Ausfall von Chrome. Bitte deinstallieren Sie diese Add-ons.</translation>
 <translation id="8459495907675268833">Die ausgewählten Daten wurden aus Chrome und von allen synchronisierten Geräten entfernt. Eventuell finden Sie unter history.google.com weitere Arten von Browserverlaufsdaten wie Suchanfragen oder Aktivitäten anderer Google-Dienste für Ihr Google-Konto.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
+<translation id="8574235780160508979">Die Nutzungsbedingungen von Chrome ändern sich am 31. März. <ph name="BEGIN_LINK" />Bitte lesen Sie sich die neue Fassung durch.<ph name="END_LINK" /></translation>
 </translationbundle>

@@ -10,8 +10,6 @@
 #include "base/fuchsia/fuchsia_logging.h"
 #include "base/macros.h"
 #include "base/strings/stringprintf.h"
-#include "base/test/bind_test_util.h"
-#include "base/test/test_timeouts.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
@@ -97,9 +95,7 @@ std::string StringFromMemBufferOrDie(const fuchsia::mem::Buffer& buffer) {
 // navigation commands and page events.
 class FrameImplTest : public cr_fuchsia::WebEngineBrowserTest {
  public:
-  FrameImplTest()
-      : run_timeout_(TestTimeouts::action_timeout(),
-                     base::MakeExpectedNotRunClosure(FROM_HERE)) {
+  FrameImplTest() {
     set_test_server_root(base::FilePath(cr_fuchsia::kTestServerRoot));
   }
 
@@ -115,9 +111,6 @@ class FrameImplTest : public cr_fuchsia::WebEngineBrowserTest {
   }
 
   cr_fuchsia::TestNavigationListener navigation_listener_;
-
- private:
-  const base::RunLoop::ScopedRunTimeoutForTest run_timeout_;
 
   DISALLOW_COPY_AND_ASSIGN(FrameImplTest);
 };

@@ -38,7 +38,7 @@
 #include "base/timer/elapsed_timer.h"
 #include "net/cookies/site_for_cookies.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
-#include "third_party/blink/public/platform/web_focus_type.h"
+#include "third_party/blink/public/mojom/input/focus_type.mojom-blink-forward.h"
 #include "third_party/blink/public/platform/web_insecure_request_policy.h"
 #include "third_party/blink/renderer/core/accessibility/axid.h"
 #include "third_party/blink/renderer/core/core_export.h"
@@ -821,8 +821,8 @@ class CORE_EXPORT Document : public ContainerNode,
     had_keyboard_event_ = had_keyboard_event;
   }
   bool HadKeyboardEvent() const { return had_keyboard_event_; }
-  void SetLastFocusType(WebFocusType last_focus_type);
-  WebFocusType LastFocusType() const { return last_focus_type_; }
+  void SetLastFocusType(mojom::blink::FocusType last_focus_type);
+  mojom::blink::FocusType LastFocusType() const { return last_focus_type_; }
   bool SetFocusedElement(Element*, const FocusParams&);
   void ClearFocusedElement();
   Element* FocusedElement() const { return focused_element_.Get(); }
@@ -842,7 +842,8 @@ class CORE_EXPORT Document : public ContainerNode,
   void FlushAutofocusCandidates();
   void FinalizeAutofocus();
   void SetSequentialFocusNavigationStartingPoint(Node*);
-  Element* SequentialFocusNavigationStartingPoint(WebFocusType) const;
+  Element* SequentialFocusNavigationStartingPoint(
+      mojom::blink::FocusType) const;
 
   void SetActiveElement(Element*);
   Element* GetActiveElement() const { return active_element_.Get(); }
@@ -1645,6 +1646,9 @@ class CORE_EXPORT Document : public ContainerNode,
 
   void ApplyScrollRestorationLogic();
 
+  void MarkHasFindInPageRequest();
+  void MarkHasFindInPageRenderSubtreeActiveMatch();
+
  protected:
   void ClearXMLVersion() { xml_version_ = String(); }
 
@@ -1662,6 +1666,7 @@ class CORE_EXPORT Document : public ContainerNode,
   friend class NthIndexCache;
   FRIEND_TEST_ALL_PREFIXES(FrameFetchContextSubresourceFilterTest,
                            DuringOnFreeze);
+  FRIEND_TEST_ALL_PREFIXES(DocumentTest, FindInPageUkm);
   class NetworkStateObserver;
 
   Document(const DocumentInit& initization,
@@ -1866,7 +1871,7 @@ class CORE_EXPORT Document : public ContainerNode,
 
   // https://html.spec.whatwg.org/C/#autofocus-processed-flag
   bool autofocus_processed_flag_ = false;
-  WebFocusType last_focus_type_;
+  mojom::blink::FocusType last_focus_type_;
   bool had_keyboard_event_;
   TaskRunnerTimer<Document> clear_focused_element_timer_;
   // https://html.spec.whatwg.org/C/#autofocus-candidates
@@ -2181,6 +2186,10 @@ class CORE_EXPORT Document : public ContainerNode,
   bool in_forced_colors_mode_;
 
   bool applying_scroll_restoration_logic_ = false;
+
+  // Records find-in-page metrics, which are sent to UKM on shutdown.
+  bool had_find_in_page_request_ = false;
+  bool had_find_in_page_render_subtree_active_match_ = false;
 };
 
 extern template class CORE_EXTERN_TEMPLATE_EXPORT Supplement<Document>;

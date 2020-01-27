@@ -510,7 +510,7 @@ class ScopedTexture2DRestorer {
   ~ScopedTexture2DRestorer() { context_->RestoreCurrentTexture2D(); }
 
  private:
-  Member<WebGLRenderingContextBase> context_;
+  WebGLRenderingContextBase* context_;
 };
 
 class ScopedFramebufferRestorer {
@@ -523,7 +523,7 @@ class ScopedFramebufferRestorer {
   ~ScopedFramebufferRestorer() { context_->RestoreCurrentFramebuffer(); }
 
  private:
-  Member<WebGLRenderingContextBase> context_;
+  WebGLRenderingContextBase* context_;
 };
 
 class ScopedUnpackParametersResetRestore {
@@ -544,7 +544,7 @@ class ScopedUnpackParametersResetRestore {
   }
 
  private:
-  Member<WebGLRenderingContextBase> context_;
+  WebGLRenderingContextBase* context_;
   bool enabled_;
 };
 

@@ -16,8 +16,8 @@
 #include "base/logging.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/android/chrome_jni_headers/CaptivePortalHelper_jni.h"
-#include "chrome/browser/ssl/ssl_error_assistant.h"
 #include "chrome/browser/ssl/ssl_error_handler.h"
+#include "components/security_interstitials/content/ssl_error_assistant.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/android/network_library.h"
 

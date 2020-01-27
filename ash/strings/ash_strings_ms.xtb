@@ -112,6 +112,7 @@
 <translation id="2352467521400612932">Tetapan stilus</translation>
 <translation id="2354174487190027830">Mengaktifkan <ph name="NAME" /></translation>
 <translation id="2359808026110333948">Teruskan</translation>
+<translation id="2364154243880592194">Dulang status, masa <ph name="TIME" />, <ph name="BATTERY" /> Tekan cari + kiri untuk mengakses pusat pemberitahuan.</translation>
 <translation id="2365393535144473978">Tindakan mendayakan data mudah alih akan turut mendayakan Bluetooth.</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="2412593942846481727">Kemas kini tersedia</translation>
@@ -336,6 +337,7 @@ Semua pengguna mesti log keluar untuk meneruskan.</translation>
 <translation id="5669267381087807207">Mengaktifkan</translation>
 <translation id="5673434351075758678">Daripada "<ph name="FROM_LOCALE" />" kepada "<ph name="TO_LOCALE" />" selepas menyegerakkan tetapan anda.</translation>
 <translation id="5682642926269496722">Google Assistant tidak tersedia untuk akaun pengguna semasa.</translation>
+<translation id="5689633613396158040">Cahaya Malam memudahkan anda melihat skrin atau membaca dalam cahaya malap. Ketik untuk menukar masa Malam Cahaya dihidupkan atau mematikan ciri ini sepenuhnya.</translation>
 <translation id="5691772641933328258">Cap jari tidak dikenali</translation>
 <translation id="5710450975648804523">Jangan Ganggu dihidupkan</translation>
 <translation id="573413375004481890">Peranti ini tidak dapat menyokong semua paparan anda, oleh itu, satu paparan telah diputuskan sambungan</translation>
@@ -515,6 +517,7 @@ Semua pengguna mesti log keluar untuk meneruskan.</translation>
 <translation id="8142441511840089262">Klik dua kali</translation>
 <translation id="8142699993796781067">Rangkaian persendirian</translation>
 <translation id="8152092012181020186">Tekan Ctrl + W untuk tutup.</translation>
+<translation id="8155007568264258537"><ph name="FEATURE_NAME" /> Tetapan ini diurus oleh pentadbir anda.</translation>
 <translation id="8167567890448493835">Menggunakan <ph name="LOCALE_NAME" /></translation>
 <translation id="8190698733819146287">Sesuaikan bahasa dan input...</translation>
 <translation id="8192202700944119416">Pemberitahuan disembunyikan.</translation>

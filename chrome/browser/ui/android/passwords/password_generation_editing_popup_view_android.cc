@@ -90,12 +90,6 @@ void PasswordGenerationEditingPopupViewAndroid::UpdateBoundsAndRedrawPopup() {
 
 void PasswordGenerationEditingPopupViewAndroid::PasswordSelectionUpdated() {}
 
-bool PasswordGenerationEditingPopupViewAndroid::IsPointInPasswordBounds(
-    const gfx::Point& point) {
-  NOTREACHED();
-  return false;
-}
-
 // static
 PasswordGenerationPopupView* PasswordGenerationPopupView::Create(
     PasswordGenerationPopupController* controller) {

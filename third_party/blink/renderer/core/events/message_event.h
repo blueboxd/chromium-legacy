@@ -37,7 +37,6 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/dom/events/event_target.h"
-#include "third_party/blink/renderer/core/events/message_event_init.h"
 #include "third_party/blink/renderer/core/fileapi/blob.h"
 #include "third_party/blink/renderer/core/messaging/message_port.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer.h"
@@ -46,6 +45,7 @@
 
 namespace blink {
 
+class MessageEventInit;
 class UserActivation;
 
 class CORE_EXPORT MessageEvent final : public Event {

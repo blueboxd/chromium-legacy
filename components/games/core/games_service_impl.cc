@@ -33,16 +33,18 @@ GamesServiceImpl::GamesServiceImpl(
 
 GamesServiceImpl::~GamesServiceImpl() = default;
 
-void GamesServiceImpl::GetHighlightedGame(HighlightedGameCallback callback) {
-  // If the Games component wasn't downloaded, we cannot provide the surface
-  // with a highlighted game.
+void GamesServiceImpl::SetHighlightedGameCallback(
+    HighlightedGameCallback callback) {
+  highlighted_games_store_->SetPendingCallback(std::move(callback));
+}
+
+void GamesServiceImpl::GenerateHub() {
   if (!IsComponentInstalled()) {
-    std::move(callback).Run(ResponseCode::kFileNotFound, Game());
+    HandleFailure(ResponseCode::kComponentNotInstalled);
     return;
   }
 
-  highlighted_games_store_->SetPendingCallback(std::move(callback));
-
+  // Try to respond from cache to have the highlighted game appear faster.
   if (highlighted_games_store_->TryRespondFromCache()) {
     // TODO(crbug.com/1018201): Remove return when we have other stores that
     // don't have caching support; this is a temporary optimization.
@@ -76,8 +78,7 @@ void GamesServiceImpl::OnCatalogReceived(ResponseCode code) {
   if (code != ResponseCode::kSuccess) {
     // Make sure all feature stores handle the failure such that pending
     // callbacks are invoked (letting the UI know something failed).
-    highlighted_games_store_->HandleCatalogFailure(code);
-    DoneUpdating();
+    HandleFailure(code);
     return;
   }
 
@@ -113,6 +114,14 @@ bool GamesServiceImpl::IsComponentInstalled() {
   cached_data_files_dir_ =
       std::make_unique<base::FilePath>(std::move(install_dir));
   return true;
+}
+
+void GamesServiceImpl::HandleFailure(ResponseCode code) {
+  highlighted_games_store_->HandleCatalogFailure(code);
+
+  if (is_updating()) {
+    DoneUpdating();
+  }
 }
 
 }  // namespace games

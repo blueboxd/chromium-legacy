@@ -1,6 +1,6 @@
 Name: sqlite
 URL: https://sqlite.org/
-Version: 3.30.1-patched
+Version: 3.31.0
 Included In Release: Yes
 Security Critical: Yes
 License: Public domain
@@ -71,7 +71,7 @@ cd third_party/sqlite
 
 # Must match the version in //third_party/sqlite/sqlite-src-xxxxxxx.
 # This is SQLite's version number, and uses upstream's convention.
-export BASE=3300100
+export BASE=3310000
 export GNU_SED=sed  # OSX: "brew install gnu-sed", then use "gsed" here.
 
 #### Create a reference branch.
@@ -159,14 +159,15 @@ cd third_party/sqlite
 
 # The numbers below are SQLite version numbers, and use upstream's convention
 # for tagging release binaries and source zipballs.
-export OLD=3300100
-export NEW=3310000
+export OLD=3310000
+export NEW=3320000
 export GNU_SED=sed  # OSX: "brew install gnu-sed", then use "gsed" here.
+export YEAR=2020
 
 #### Download and unpack the new SQLite release.
 git new-branch sqlite-new-upstream
 # URL from "Alternative Source Code Formats" at https://sqlite.org/download.html
-curl https://sqlite.org/2019/sqlite-src-${NEW}.zip > upstream.zip
+curl https://sqlite.org/${YEAR}/sqlite-src-${NEW}.zip > upstream.zip
 mkdir sqlite-src-${NEW}
 unzip ./upstream.zip -d sqlite-src-${NEW}
 rm ./upstream.zip
@@ -276,9 +277,10 @@ git rm -r sqlite-src-${OLD}
 git commit -m "sqlite: Remove source code for old release ${OLD}."
 git cl upload
 
-Note that things can be broken down differently, if you prefer.  For instance,
-adding the new version of the SQLite distro and removing the old one can be
-distinct CLs.
+### Update README.chromium to reference the new sqlite version number.
+# Update:
+#  (1) the header's "Version"
+#  (2) `export OLD` and `export NEW` values.
 
 --------------------------------------------
 

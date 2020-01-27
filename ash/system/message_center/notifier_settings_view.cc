@@ -17,6 +17,7 @@
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/style/ash_color_provider.h"
 #include "ash/style/default_color_constants.h"
+#include "ash/system/machine_learning/user_settings_event_logger.h"
 #include "ash/system/message_center/message_center_controller.h"
 #include "ash/system/message_center/message_center_style.h"
 #include "ash/system/tray/tray_popup_utils.h"
@@ -96,6 +97,13 @@ constexpr gfx::Insets kQuietModeViewPadding(0, 18, 0, 0);
 constexpr gfx::Insets kQuietModeLabelPadding(16, 0, 15, 0);
 constexpr SkColor kTopBorderColor = SkColorSetA(SK_ColorBLACK, 0x1F);
 const int kLabelFontSizeDelta = 1;
+
+void LogUserQuietModeEvent(const bool enabled) {
+  auto* logger = ml::UserSettingsEventLogger::Get();
+  if (logger) {
+    logger->LogQuietModeUkmEvent(enabled);
+  }
+}
 
 // NotifierButtonWrapperView ---------------------------------------------------
 
@@ -635,6 +643,7 @@ bool NotifierSettingsView::OnMouseWheel(const ui::MouseWheelEvent& event) {
 void NotifierSettingsView::ButtonPressed(views::Button* sender,
                                          const ui::Event& event) {
   if (sender == quiet_mode_toggle_) {
+    LogUserQuietModeEvent(quiet_mode_toggle_->GetIsOn());
     MessageCenter::Get()->SetQuietMode(quiet_mode_toggle_->GetIsOn());
     return;
   }

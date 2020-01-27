@@ -28,8 +28,8 @@ namespace feature_engagement {
 
 std::unique_ptr<KeyedService> CreateFeatureEngagementTracker(
     web::BrowserState* context) {
-  ios::ChromeBrowserState* browser_state =
-      ios::ChromeBrowserState::FromBrowserState(context);
+  ChromeBrowserState* browser_state =
+      ChromeBrowserState::FromBrowserState(context);
 
   scoped_refptr<base::SequencedTaskRunner> background_task_runner =
       base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock(),

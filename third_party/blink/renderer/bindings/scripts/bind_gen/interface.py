@@ -2732,8 +2732,6 @@ def _collect_include_headers(interface):
 
     def collect_from_idl_type(idl_type):
         idl_type = idl_type.unwrap()
-        if idl_type.is_enumeration:
-            return
         type_def_obj = idl_type.type_definition_object
         if type_def_obj is not None:
             headers.add(PathManager(type_def_obj).api_path(ext="h"))
@@ -3159,5 +3157,5 @@ def generate_interface(interface):
 
 
 def generate_interfaces(web_idl_database):
-    interface = web_idl_database.find("Performance")
+    interface = web_idl_database.find("Node")
     generate_interface(interface)

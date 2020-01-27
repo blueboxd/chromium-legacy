@@ -57,6 +57,7 @@
 #import "ios/chrome/browser/sessions/session_service_ios.h"
 #include "ios/chrome/browser/signin/account_consistency_service_factory.h"
 #include "ios/chrome/browser/snapshots/snapshots_util.h"
+#import "ios/chrome/browser/web/font_size_tab_helper.h"
 #include "ios/chrome/browser/webdata_services/web_data_service_factory.h"
 #include "ios/net/http_cache_helper.h"
 #import "ios/web/common/web_view_creation_util.h"
@@ -152,7 +153,7 @@ BrowsingDataRemoverImpl::RemovalTask::RemovalTask(
 BrowsingDataRemoverImpl::RemovalTask::~RemovalTask() = default;
 
 BrowsingDataRemoverImpl::BrowsingDataRemoverImpl(
-    ios::ChromeBrowserState* browser_state,
+    ChromeBrowserState* browser_state,
     SessionServiceIOS* session_service)
     : browser_state_(browser_state),
       session_service_(session_service),
@@ -511,6 +512,11 @@ void BrowsingDataRemoverImpl::RemoveImpl(base::Time delete_begin,
     // last username, as there will be no data to be merged.
     browser_state_->GetPrefs()->ClearPref(prefs::kGoogleServicesLastAccountId);
     browser_state_->GetPrefs()->ClearPref(prefs::kGoogleServicesLastUsername);
+  }
+
+  // Remove stored zoom levels.
+  if (IsRemoveDataMaskSet(mask, BrowsingDataRemoveMask::REMOVE_SITE_DATA)) {
+    FontSizeTabHelper::ClearUserZoomPrefs(browser_state_->GetPrefs());
   }
 
   // Always wipe accumulated network related data (TransportSecurityState and

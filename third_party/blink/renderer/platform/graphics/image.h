@@ -30,6 +30,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
+#include "third_party/blink/renderer/platform/geometry/float_point.h"
 #include "third_party/blink/renderer/platform/geometry/float_size.h"
 #include "third_party/blink/renderer/platform/geometry/int_rect.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_types.h"
@@ -57,7 +58,6 @@ class ImageDecodeCache;
 namespace blink {
 
 class DarkModeImageClassifier;
-class FloatPoint;
 class FloatRect;
 class GraphicsContext;
 class Image;
@@ -291,7 +291,7 @@ class PLATFORM_EXPORT Image : public ThreadSafeRefCounted<Image> {
   // Whether or not size is available yet.
   virtual bool IsSizeAvailable() { return true; }
 
-  typedef FloatSize ClassificationKey;
+  typedef FloatPoint ClassificationKey;
   HashMap<ClassificationKey, DarkModeClassification> dark_mode_classifications_;
 
  private:

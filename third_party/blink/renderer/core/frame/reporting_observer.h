@@ -7,10 +7,10 @@
 
 #include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_reporting_observer_callback.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_reporting_observer_options.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/frame/report.h"
-#include "third_party/blink/renderer/core/frame/reporting_observer_options.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {

@@ -7,6 +7,7 @@
 #include "ash/shell.h"
 #include "ash/system/brightness/unified_brightness_view.h"
 #include "ash/system/brightness_control_delegate.h"
+#include "ash/system/machine_learning/user_settings_event_logger.h"
 #include "ash/system/unified/unified_system_tray_model.h"
 
 namespace ash {
@@ -17,6 +18,16 @@ namespace {
 // brightness keys, they may turn the backlight off and not know how to turn it
 // back on.
 constexpr double kMinBrightnessPercent = 5.0;
+
+void LogUserBrightnessEvent(const double previous_level,
+                            const double current_level) {
+  auto* logger = ml::UserSettingsEventLogger::Get();
+  if (logger) {
+    // The logger expects an integer between 0 and 100.
+    logger->LogBrightnessUkmEvent(std::floor(previous_level * 100.),
+                                  std::floor(current_level * 100.));
+  }
+}
 
 }  // namespace
 
@@ -63,6 +74,7 @@ void UnifiedBrightnessSliderController::SliderValueChanged(
   previous_percent_ = percent;
 
   percent = std::max(kMinBrightnessPercent, percent);
+  LogUserBrightnessEvent(old_value, value);
   brightness_control_delegate->SetBrightnessPercent(percent, true);
 }
 

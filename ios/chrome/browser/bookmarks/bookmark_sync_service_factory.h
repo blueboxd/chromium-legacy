@@ -8,7 +8,8 @@
 #include "base/macros.h"
 #include "base/no_destructor.h"
 #include "components/keyed_service/ios/browser_state_keyed_service_factory.h"
-#include "ios/chrome/browser/browser_state/chrome_browser_state_forward.h"
+
+class ChromeBrowserState;
 
 namespace sync_bookmarks {
 class BookmarkSyncService;
@@ -21,7 +22,7 @@ class BookmarkSyncServiceFactory : public BrowserStateKeyedServiceFactory {
   // Returns the instance of BookmarkSyncService associated with this profile
   // (creating one if none exists).
   static sync_bookmarks::BookmarkSyncService* GetForBrowserState(
-      ios::ChromeBrowserState* browser_state);
+      ChromeBrowserState* browser_state);
 
   // Returns an instance of the BookmarkSyncServiceFactory singleton.
   static BookmarkSyncServiceFactory* GetInstance();

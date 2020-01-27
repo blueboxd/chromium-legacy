@@ -223,7 +223,6 @@
 <translation id="1306606229401759371">Cambiar la configuración</translation>
 <translation id="1307165550267142340">Se creó tu PIN</translation>
 <translation id="1307559529304613120">El sistema no pudo obtener un token de acceso a la API a largo plazo para este dispositivo.</translation>
-<translation id="1309199320876169714">Quitando Plugin VM…</translation>
 <translation id="1313405956111467313">Configuración automática de proxy</translation>
 <translation id="131364520783682672">Bloq Mayús</translation>
 <translation id="1313705515580255288">Los favoritos, el historial y demás parámetros de configuración se sincronizarán con tu cuenta de Google.</translation>
@@ -1364,7 +1363,6 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="2871813825302180988">Esta cuenta ya está en uso en este dispositivo.</translation>
 <translation id="287286579981869940">Agregar <ph name="PROVIDER_NAME" />...</translation>
 <translation id="2872961005593481000">Apagar</translation>
-<translation id="2874478552394649323">Quitar Plugin VM</translation>
 <translation id="2874939134665556319">Pista anterior</translation>
 <translation id="2875698561019555027">(Páginas de error de Chrome)</translation>
 <translation id="2876336351874743617">Dedo 2</translation>
@@ -1381,7 +1379,6 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="2889064240420137087">Abrir el vínculo con...</translation>
 <translation id="2889925978073739256">Seguir bloqueando los complementos no incluidos en la zona de pruebas</translation>
 <translation id="2893168226686371498">Navegador predeterminado</translation>
-<translation id="2893208266590504003">No se pudo quitar Plugin VM</translation>
 <translation id="2894757982205307093">Nueva pestaña en el grupo</translation>
 <translation id="289644616180464099">La tarjeta SIM está bloqueada</translation>
 <translation id="2896909745808647285">El archivo <ph name="FILE_NAME" /> está encriptado y no tiene permiso para abrirse.</translation>
@@ -2832,6 +2829,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="4998430619171209993">Sí</translation>
 <translation id="4998873842614926205">Confirmar cambios</translation>
 <translation id="5000922062037820727">Bloqueado (recomendado)</translation>
+<translation id="5007392906805964215">Revisar</translation>
 <translation id="5008936837313706385">Nombre de la actividad</translation>
 <translation id="5010043101506446253">Autoridad de certificación</translation>
 <translation id="5015344424288992913">Resolviendo proxy...</translation>
@@ -5772,7 +5770,6 @@ Mantén el archivo de clave en un lugar seguro. Debes crear las nuevas versiones
 <translation id="9169496697824289689">Ver combinaciones de teclas para acceso directo</translation>
 <translation id="916964310188958970">¿Por qué recibo esta sugerencia?</translation>
 <translation id="9169931577761441333">Agrega <ph name="APP_NAME" /> a la pantalla principal</translation>
-<translation id="9170305483456271385">Se quitó Plugin VM</translation>
 <translation id="9170848237812810038">&amp;Deshacer</translation>
 <translation id="9170884462774788842">Otro programa en tu computadora agregó un tema que puede cambiar el funcionamiento de Chrome.</translation>
 <translation id="9173995187295789444">Buscando dispositivos Bluetooth…</translation>

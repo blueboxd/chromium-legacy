@@ -53,6 +53,8 @@ void CastMediaSessionController::Send(
     case media_session::mojom::MediaSessionAction::kSkipAd:
     case media_session::mojom::MediaSessionAction::kSeekTo:
     case media_session::mojom::MediaSessionAction::kScrubTo:
+    case media_session::mojom::MediaSessionAction::kEnterPictureInPicture:
+    case media_session::mojom::MediaSessionAction::kExitPictureInPicture:
       NOTREACHED();
       return;
   }

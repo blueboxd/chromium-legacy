@@ -68,13 +68,14 @@ class GamesServiceBrowserTest : public PlatformBrowserTest {
   void ExpectGetHighlightedGame(const Game& expected_game,
                                 ResponseCode expected_code) {
     base::RunLoop run_loop;
-    games_service()->GetHighlightedGame(
+    games_service()->SetHighlightedGameCallback(
         base::BindLambdaForTesting([&expected_game, &expected_code, &run_loop](
                                        ResponseCode code, const Game game) {
           EXPECT_EQ(expected_code, code);
           test::ExpectProtosEqual(expected_game, game);
           run_loop.Quit();
         }));
+    games_service()->GenerateHub();
     run_loop.Run();
   }
 
@@ -113,7 +114,7 @@ class GamesServiceBrowserTest : public PlatformBrowserTest {
 
 IN_PROC_BROWSER_TEST_F(GamesServiceBrowserTest,
                        GetHighlightedGame_NoComponent) {
-  ExpectGetHighlightedGameFailure(ResponseCode::kFileNotFound);
+  ExpectGetHighlightedGameFailure(ResponseCode::kComponentNotInstalled);
 }
 
 IN_PROC_BROWSER_TEST_F(GamesServiceBrowserTest,

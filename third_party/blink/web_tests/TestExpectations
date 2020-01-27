@@ -380,7 +380,6 @@ crbug.com/1042453 [ Mac ] external/wpt/css/filter-effects/idlharness.any.worker.
 crbug.com/1042783 external/wpt/css/css-backgrounds/background-size/background-size-near-zero-png.html [ Failure ]
 crbug.com/1042783 external/wpt/css/css-backgrounds/background-size/background-size-near-zero-svg.html [ Failure ]
 
-crbug.com/898293 external/wpt/css/css-transforms/transform-translate-background-001.html [ Failure ]
 
 # ====== Paint team owned tests to here ======
 
@@ -1100,18 +1099,14 @@ crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/dynamic/change-spann
 crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/dynamic/insert-block-among-text-in-anonymous-wrapper.html [ Crash Failure ]
 crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/dynamic/insert-block-before-spanner-before-content.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/dynamic/insert-block-before-spanner.html [ Failure ]
-crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/dynamic/insert-block-between-spanners.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/dynamic/insert-block-into-content.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/dynamic/insert-spanner-after-content.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/dynamic/insert-spanner-after-spanner-before-content.html [ Failure ]
-crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/dynamic/insert-spanner-before-content.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/dynamic/insert-spanner-into-content.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/dynamic/insert-spanner-into-stf-constrained-width.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/dynamic/insert-spanner-into-stf-unconstrained-width.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/dynamic/relpos-becomes-static-has-abspos.html [ Failure ]
-crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/dynamic/remove-and-insert-block-after-spanner.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/dynamic/remove-and-insert-block-before-spanner.html [ Failure ]
-crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/dynamic/remove-and-insert-block-between-spanners.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/dynamic/remove-column-content-next-to-abspos-between-spanners.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/dynamic/remove-spanner-in-content.html [ Crash Failure ]
 crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/dynamic/spanner-after-content-becomes-regular-block.html [ Failure ]
@@ -1232,7 +1227,6 @@ crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/span/overflow-on-vie
 crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/span/preferred-widths-with-column-content.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/span/relpos-spanner-with-abspos-child.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/span/span-between-text.html [ Failure ]
-crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/span/spanner-first.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/span/spanner-img.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/span/spanner-last.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/span/spanner-with-margin.html [ Failure ]
@@ -1741,26 +1735,14 @@ crbug.com/987224 [ IOS ] virtual/cascade/external/wpt/css/css-paint-api/idlharne
 # PLEASE DO NOT PUT ANYTHING INSIDE THIS SECTION!!
 # ======
 
-# Put back the one on 4788:
-crbug.com/1035582 fast/forms/suggested-value.html [ Skip ]
-crbug.com/1035582 fast/forms/select/listbox-tap.html [ Skip ]
-
 # These need another look (timeout):
 crbug.com/1035582 external/wpt/css/selectors/focus-visible-003-manual.html [ Skip ]
 crbug.com/1035582 external/wpt/css/selectors/focus-visible-004-manual.html [ Skip ]
 
-# These are flaky or something? Rebaselining doesn't help.
-# See https://test-results.appspot.com/data/layout_results/linux-blink-rel/26507/webkit_layout_tests%20%28with%20patch%29/layout-test-results/results.html
-crbug.com/1035582 external/wpt/css/css-transforms/transform-input-015.html [ Skip ]
+# Still broken, all platforms:
 crbug.com/1035582 fast/forms/button/button-with-float.html [ Skip ]
 crbug.com/1035582 fast/forms/select/listbox-overlay-scrollbar.html [ Skip ]
-crbug.com/1035582 paint/invalidation/scroll/caret-with-composited-scroll.html [ Skip ]
-crbug.com/1035582 paint/pagination/composited-paginated-outlined-box.html [ Skip ]
-
-# https://ci.chromium.org/p/chromium/builders/try/win7-blink-rel/6652
-crbug.com/1035582 [ Win7 ] fast/forms/suggestion-picker/datetimelocal-suggestion-picker-appearance-locale-hebrew.html [ Skip ]
-crbug.com/1035582 [ Win7 ] fast/forms/suggestion-picker/time-suggestion-picker-appearance-rtl.html [ Skip ]
-
+crbug.com/1035582 external/wpt/css/css-transforms/transform-input-015.html [ Skip ]
 
 # ======
 # ====== End of rebaselines for crbug.com/1035582 ======
@@ -1771,9 +1753,8 @@ crbug.com/1035582 [ Win7 ] fast/forms/suggestion-picker/time-suggestion-picker-a
 crbug.com/1035582 [ Mac10.10 ] virtual/controls-refresh-hc/virtual/controls-refresh/color-scheme/select/select-multiple-hover-focused-unselected.html [ Skip ]
 crbug.com/1035582 [ Mac10.10 ] virtual/controls-refresh-hc/virtual/controls-refresh/color-scheme/select/select-multiple-appearance-basic.html [ Skip ]
 
-
-
-
+# Bug in FormControlsRefresh <select multiple> tap behavior:
+crbug.com/1045672 fast/forms/select/listbox-tap.html [ Failure ]
 
 
 # ====== Form Controls Refresh failures until here ======
@@ -2784,6 +2765,7 @@ crbug.com/641245 external/wpt/css/motion/offset-path-ray-contain-004.html [ Fail
 crbug.com/641245 external/wpt/css/motion/offset-path-ray-contain-005.html [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 [ Mac10.12 ] external/wpt/eventsource/eventsource-constructor-url-bogus.any.html [ Failure Timeout ]
 crbug.com/626703 [ Win7 ] external/wpt/css/compositing/mix-blend-mode/mix-blend-mode-animation.html [ Failure ]
 crbug.com/626703 [ Mac ] external/wpt/css/compositing/mix-blend-mode/mix-blend-mode-animation.html [ Failure ]
 crbug.com/626703 [ Linux ] external/wpt/css/compositing/mix-blend-mode/mix-blend-mode-canvas-parent.html [ Failure ]
@@ -4863,7 +4845,7 @@ crbug.com/767469 http/tests/navigation/start-load-during-provisional-loader-deta
 crbug.com/767469 virtual/stable/http/tests/navigation/start-load-during-provisional-loader-detach.html [ Pass Failure ]
 
 # Sheriff failures 2017-10-02
-###crbug.com/770971 [ Win7 ] fast/forms/suggested-value.html [ Pass Failure ]
+crbug.com/770971 [ Win7 ] fast/forms/suggested-value.html [ Pass Failure ]
 crbug.com/771492 [ Win ] external/wpt/css/css-tables/table-model-fixup-2.html [ Failure ]
 crbug.com/771492 [ Linux ] external/wpt/css/css-tables/table-model-fixup-2.html [ Failure ]
 crbug.com/771492 [ Mac ] external/wpt/css/css-tables/table-model-fixup-2.html [ Failure ]
@@ -5670,7 +5652,7 @@ crbug.com/953153 external/wpt/speech-api/idlharness.window.html [ Pass Failure T
 # speculative navigation in the browser, and committing the navigation in the
 # renderer.
 crbug.com/838348 external/wpt/portals/csp/frame-src.sub.html [ Pass Crash ]
-crbug.com/838348 virtual/out-of-blink-frame-ancestors/external/wpt/portals/csp/frame-src.sub.html [ Pass Crash ]
+crbug.com/838348 virtual/out-of-blink-frame-ancestors-disabled/external/wpt/portals/csp/frame-src.sub.html [ Pass Crash ]
 
 # Sheriff 2019-04-17
 crbug.com/953591 [ Win ] css3/masking/mask-repeat-space-padding.html [ Pass Failure ]
@@ -6365,6 +6347,8 @@ crbug.com/1044715 [ Win ] external/wpt/pointerevents/pointerevent_touch-action-p
 crbug.com/1044715 [ Win ] external/wpt/pointerevents/pointerevent_touch-action-inherit_parent-none_touch.html [ Pass Failure ]
 crbug.com/1044715 [ Win ] external/wpt/pointerevents/pointerevent_touch-action-inherit_child-pan-x-child-pan-x_touch.html [ Pass Failure ]
 
+crbug.com/1041848 virtual/off-main-thread-css-paint/external/wpt/css/css-paint-api/idlharness.html [ Pass Timeout ]
+
 # Ref_Tests which fail when SkiaRenderer is enable, and which cannot be
 # rebaselined. TODO(jonross): triage these into any existing bugs or file more
 # specific bugs.
@@ -6457,49 +6441,17 @@ crbug.com/1044496 [ Release Mac ] http/tests/devtools/application-panel/resource
 crbug.com/1044496 [ Release Linux ] http/tests/devtools/application-panel/resources-panel-resource-preview.js [ Pass Timeout ]
 crbug.com/1044418 [ Release Mac ] http/tests/devtools/elements/shadow/elements-panel-shadow-selection-on-refresh-2.js [ Pass Timeout ]
 
-# FIXME(michaelludwig) - Temporary suppression for Skia change + rebaseline
-crbug.com/1045050 [ Linux ] animations/rotate-transform-equivalent.html [ Pass Failure ]
-crbug.com/1045050 [ Linux ] compositing/3d-corners.html  [ Pass Failure ]
-crbug.com/1045050 [ Linux ] compositing/3d-cube.html [ Pass Failure ]
-crbug.com/1045050 [ Linux ] compositing/direct-image-compositing.html [ Pass Failure ]
-crbug.com/1045050 [ Linux ] compositing/lots-of-img-layers-with-opacity.html [ Pass Failure ]
-crbug.com/1045050 [ Linux ] compositing/lots-of-img-layers.html [ Pass Failure ]
-crbug.com/1045050 [ Linux ] compositing/perpendicular-layer-sorting.html [ Pass Failure ]
-crbug.com/1045050 [ Linux ] compositing/perspective-interest-rect.html [ Pass Failure ]
-crbug.com/1045050 [ Linux ] compositing/color-matching/image-color-matching.html [ Pass Failure ]
-crbug.com/1045050 [ Linux ] compositing/geometry/fixed-position-transform-composited-page-scale.html [ Pass Failure ]
-crbug.com/1045050 [ Linux ] compositing/geometry/layer-due-to-layer-children-deep.html [ Pass Failure ]
-crbug.com/1045050 [ Linux ] compositing/geometry/layer-due-to-layer-children.html [ Pass Failure ]
-crbug.com/1045050 [ Linux ] compositing/geometry/vertical-scroll-composited.html [ Pass Failure ]
-crbug.com/1045050 [ Linux ] compositing/overflow/mask-with-filter.html [ Pass Failure ]
-crbug.com/1045050 [ Linux ] compositing/overflow/nested-render-surfaces-with-rotation.html [ Pass Failure ]
-crbug.com/1045050 [ Linux ] compositing/overflow/rotate-then-clip-effect-interleave.html [ Pass Failure ]
-crbug.com/1045050 [ Linux ] compositing/reflections/nested-reflection-animated.html [ Pass Failure ]
-crbug.com/1045050 [ Linux ] compositing/reflections/nested-reflection-transition.html [ Pass Failure ]
-crbug.com/1045050 [ Linux ] css3/blending/background-blend-mode-overlapping-accelerated-elements.html [ Pass Failure ]
-crbug.com/1045050 [ Linux ] fast/clip/overflow-border-radius-composited-parent.html [ Pass Failure ]
-crbug.com/1045050 [ Linux ] fast/clip/overflow-border-radius-composited.html [ Pass Failure ]
-crbug.com/1045050 [ Linux ] images/yuv-decode-eligible/color-profile-layer.html [ Pass Failure ]
-crbug.com/1045050 [ Linux ] media/video-layer-crash.html [ Pass Failure ]
+crbug.com/1045260 external/wpt/IndexedDB/keypath-exceptions.htm [ Pass Failure ]
+
+crbug.com/1045472 [ Win ] external/wpt/WebCryptoAPI/wrapKey_unwrapKey/test_wrapKey_unwrapKey.https.html [ Pass Failure ]
+crbug.com/1045472 [ Win ] external/wpt/WebCryptoAPI/wrapKey_unwrapKey/wrapKey_unwrapKey.https.worker.html [ Pass Failure ]
+
+crbug.com/1045510 [ Win7 ] fast/forms/suggestion-picker/time-suggestion-picker-appearance.html [ Pass Failure ]
+crbug.com/1045510 [ Win7 ] fast/forms/suggestion-picker/week-suggestion-picker-appearance-with-scroll-bar.html [ Pass Failure ]
+crbug.com/1045510 [ Win7 ] fast/forms/suggestion-picker/date-suggestion-picker-appearance-with-scroll-bar.html [ Pass Failure ]
+
+# TODO(michaelludwig) - Temporary suppression for Skia change + rebaseline
 crbug.com/1045050 [ Mac ] media/video-layer-crash.html [ Pass Failure ]
-crbug.com/1045050 [ Linux ] media/video-zoom-controls.html [ Pass Failure ]
-crbug.com/1045050 [ Linux ] overflow/overflow-transform-perspective.html [ Pass Failure ]
-crbug.com/1045050 [ Linux ] transforms/3d/point-mapping/3d-point-mapping-2.html [ Pass Failure ]
-crbug.com/1045050 [ Linux ] transforms/3d/point-mapping/3d-point-mapping-coplanar.html [ Pass Failure ]
-crbug.com/1045050 [ Linux ] transforms/3d/point-mapping/3d-point-mapping-origins.html [ Pass Failure ]
-crbug.com/1045050 [ Linux ] transforms/3d/point-mapping/3d-point-mapping-preserve-3d.html [ Pass Failure ]
-crbug.com/1045050 [ Linux ] transforms/3d/point-mapping/3d-point-mapping.html [ Pass Failure ]
-crbug.com/1045050 [ Linux ] virtual/audio-service/media/video-layer-crash.html [ Pass Failure ]
-crbug.com/1045050 [ Mac ] virtual/audio-service/media/video-layer-crash.html [ Pass Failure ]
-crbug.com/1045050 [ Linux ] virtual/audio-service/media/video-zoom-controls.html [ Pass Failure ]
-crbug.com/1045050 [ Mac ] virtual/audio-service/media/video-zoom-controls.html [ Pass Failure ]
-crbug.com/1045050 [ Linux ] virtual/exotic-color-space/images/yuv-decode-eligible/color-profile-layer.html [ Pass Failure ]
-crbug.com/1045050 [ Linux ] virtual/gpu-rasterization/images/color-profile-background-image-space.html [ Pass Failure ]
-crbug.com/1045050 [ Mac ] virtual/gpu-rasterization/images/color-profile-background-image-space.html [ Pass Failure ]
-crbug.com/1045050 [ Mac ] virtual/gpu-rasterization/images/feature-policy-oversized-images-styles.html [ Pass Failure ]
-crbug.com/1045050 [ Mac ]  virtual/gpu-rasterization/images/image-map-anchor-children.html [ Pass Failure ]
-crbug.com/1045050 [ Linux ] virtual/gpu-rasterization/images/sprite-no-bleed.html [ Pass Failure ]
-crbug.com/1045050 [ Mac ] virtual/gpu-rasterization/images/sprite-no-bleed.html [ Pass Failure ]
-crbug.com/1045050 [ Linux ] virtual/prefer_compositing_to_lcd_text/compositing/overflow/mask-with-filter.html [ Pass Failure ]
-crbug.com/1045050 [ Linux ] virtual/prefer_compositing_to_lcd_text/compositing/overflow/nested-render-surfaces-with-rotation.html [ Pass Failure ]
-crbug.com/1045050 [ Linux ] virtual/prefer_compositing_to_lcd_text/compositing/overflow/rotate-then-clip-effect-interleave.html [ Pass Failure ]
+
+crbug.com/1045329 external/wpt/animation-worklet/idlharness.any.worker.html [ Pass Timeout ]
+crbug.com/1045329 virtual/threaded/external/wpt/animation-worklet/idlharness.any.worker.html [ Pass Timeout ]

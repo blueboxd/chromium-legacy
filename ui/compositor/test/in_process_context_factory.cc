@@ -193,11 +193,6 @@ InProcessContextFactory::~InProcessContextFactory() {
   DCHECK(per_compositor_data_.empty());
 }
 
-void InProcessContextFactory::SendOnLostSharedContext() {
-  for (auto& observer : observer_list_)
-    observer.OnLostSharedContext();
-}
-
 void InProcessContextFactory::SetUseFastRefreshRateForTests() {
   refresh_rate_ = 200.0;
 }
@@ -409,14 +404,6 @@ void InProcessContextFactory::SetDisplayVSyncParameters(
     return;
   iter->second->vsync_timebase = timebase;
   iter->second->vsync_interval = interval;
-}
-
-void InProcessContextFactory::AddObserver(ContextFactoryObserver* observer) {
-  observer_list_.AddObserver(observer);
-}
-
-void InProcessContextFactory::RemoveObserver(ContextFactoryObserver* observer) {
-  observer_list_.RemoveObserver(observer);
 }
 
 SkMatrix44 InProcessContextFactory::GetOutputColorMatrix(

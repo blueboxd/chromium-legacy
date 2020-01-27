@@ -8,7 +8,6 @@
 #include "base/macros.h"
 #include "build/build_config.h"
 #include "third_party/blink/public/common/input/web_input_event.h"
-#include "third_party/blink/public/platform/web_focus_type.h"
 #include "third_party/blink/public/platform/web_input_event_result.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"

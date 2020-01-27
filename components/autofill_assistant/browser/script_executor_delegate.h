@@ -31,7 +31,6 @@ namespace autofill_assistant {
 
 class Service;
 class WebController;
-class ClientMemory;
 struct ClientSettings;
 class TriggerContext;
 class WebsiteLoginFetcher;
@@ -52,7 +51,6 @@ class ScriptExecutorDelegate {
   virtual const GURL& GetDeeplinkURL() = 0;
   virtual Service* GetService() = 0;
   virtual WebController* GetWebController() = 0;
-  virtual ClientMemory* GetClientMemory() = 0;
   virtual const TriggerContext* GetTriggerContext() = 0;
   virtual autofill::PersonalDataManager* GetPersonalDataManager() = 0;
   virtual WebsiteLoginFetcher* GetWebsiteLoginFetcher() = 0;

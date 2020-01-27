@@ -187,7 +187,7 @@ class CORE_EXPORT FindBuffer {
                        LayoutBlockFlow& block_flow,
                        const EphemeralRangeInFlatTree& range);
 
-  Member<Node> node_after_block_;
+  Node* node_after_block_ = nullptr;
   Vector<UChar> buffer_;
   Vector<BufferNodeMapping> buffer_node_mappings_;
   Vector<DisplayLockContext::ScopedForcedUpdate> scoped_forced_update_list_;

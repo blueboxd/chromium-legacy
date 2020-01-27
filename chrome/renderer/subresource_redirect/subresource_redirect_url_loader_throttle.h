@@ -15,15 +15,21 @@ class WebURLRequest;
 
 namespace subresource_redirect {
 
+class SubresourceRedirectHintsAgent;
+
 // This class handles internal redirects for subresouces on HTTPS sites to
 // compressed versions of subresources.
 class SubresourceRedirectURLLoaderThrottle : public blink::URLLoaderThrottle {
  public:
   static std::unique_ptr<SubresourceRedirectURLLoaderThrottle>
   MaybeCreateThrottle(const blink::WebURLRequest& request,
-                      content::ResourceType resource_type);
+                      content::ResourceType resource_type,
+                      int render_frame_id);
 
   ~SubresourceRedirectURLLoaderThrottle() override;
+
+  // virtual for testing.
+  virtual SubresourceRedirectHintsAgent* GetSubresourceRedirectHintsAgent();
 
   // blink::URLLoaderThrottle:
   void WillStartRequest(network::ResourceRequest* request,
@@ -47,7 +53,13 @@ class SubresourceRedirectURLLoaderThrottle : public blink::URLLoaderThrottle {
   void DetachFromCurrentSequence() override;
 
  private:
-  SubresourceRedirectURLLoaderThrottle();
+  friend class TestSubresourceRedirectURLLoaderThrottle;
+
+  explicit SubresourceRedirectURLLoaderThrottle(int render_frame_id);
+
+  // Render frame id to get the hints agent of the render frame.
+  const int render_frame_id_;
+
   DISALLOW_COPY_AND_ASSIGN(SubresourceRedirectURLLoaderThrottle);
 };
 

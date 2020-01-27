@@ -156,7 +156,7 @@
 
   self.regularTabsMediator = [[TabGridMediator alloc]
       initWithConsumer:baseViewController.regularTabsConsumer];
-  ios::ChromeBrowserState* regularBrowserState =
+  ChromeBrowserState* regularBrowserState =
       _regularBrowser ? _regularBrowser->GetBrowserState() : nullptr;
   WebStateList* regularWebStateList =
       _regularBrowser ? _regularBrowser->GetWebStateList() : nullptr;

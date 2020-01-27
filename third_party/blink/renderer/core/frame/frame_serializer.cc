@@ -113,7 +113,7 @@ class SerializerMarkupAccumulator : public MarkupAccumulator {
 
   FrameSerializer::Delegate& delegate_;
   FrameSerializerResourceDelegate& resource_delegate_;
-  Member<Document> document_;
+  Document* document_;
 
   // Elements with links rewritten via appendAttribute method.
   HeapHashSet<Member<const Element>> elements_with_rewritten_links_;
@@ -273,7 +273,7 @@ std::pair<Node*, Element*> SerializerMarkupAccumulator::GetAuxiliaryDOMTree(
 void SerializerMarkupAccumulator::AppendAttributeValue(
     const String& attribute_value) {
   MarkupFormatter::AppendAttributeValue(markup_, attribute_value,
-                                        IsA<HTMLDocument>(document_.Get()));
+                                        IsA<HTMLDocument>(document_));
 }
 
 void SerializerMarkupAccumulator::AppendRewrittenAttribute(

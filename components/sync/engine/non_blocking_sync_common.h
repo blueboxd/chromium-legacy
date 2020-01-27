@@ -77,9 +77,8 @@ struct FailedCommitResponseData {
   sync_pb::CommitResponse::ResponseType response_type =
       sync_pb::CommitResponse::TRANSIENT_ERROR;
 
-  // Datatype specific errors (populated only if committed item is of that
-  // datatype).
-  sync_pb::SharingMessageCommitError sharing_message_error;
+  sync_pb::CommitResponse::EntryResponse::DatatypeSpecificError
+      datatype_specific_error;
 };
 
 struct UpdateResponseData {

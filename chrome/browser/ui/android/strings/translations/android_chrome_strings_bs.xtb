@@ -134,6 +134,7 @@
 <translation id="1994173015038366702">URL web lokacije</translation>
 <translation id="2000419248597011803">Šalje neke kolačiće i pretraživanja s trake za adresu i iz okvira za pretraživanje vašem zadanom pretraživaču</translation>
 <translation id="2002537628803770967">Kreditne kartice i adrese koje koriste uslugu Google Pay</translation>
+<translation id="2012973609889389923">Brza web lokacija</translation>
 <translation id="2013642289801508067">{FILE_COUNT,plural, =1{# fajl}one{# fajl}few{# fajla}other{# fajlova}}</translation>
 <translation id="2017836877785168846">Briše historiju i automatsko dovršavanje na traci za adresu.</translation>
 <translation id="2021896219286479412">Kontr. web lok. na cijelom ekr.</translation>
@@ -306,6 +307,7 @@
 <translation id="3298243779924642547">Jednostav.</translation>
 <translation id="3303414029551471755">Nastaviti s preuzimanjem sadržaja?</translation>
 <translation id="3306398118552023113">Ova aplikacija je pokrenuta u Chromeu</translation>
+<translation id="3312292613668865961">Prikazat će se pitanje prije nego što se web lokacijama dozvoli pristup uređaju i podacima virtuelne realnosti (preporučeno)</translation>
 <translation id="3315103659806849044">Trenutno prilagođavate svoje postavke sinhronizacije i Googleovih usluga. Da završite uključivanje sinhronizacije, dodirnite dugme Potvrdi pri dnu ekrana. Idi gore</translation>
 <translation id="3328801116991980348">Informacije o web lokaciji</translation>
 <translation id="3333961966071413176">Svi kontakti</translation>
@@ -511,6 +513,7 @@ Da biste promijenili tu postavku, <ph name="BEGIN_LINK" />poništite sinkronizac
 <translation id="4915549754973153784"><ph name="BEGIN_LINK" />Primite pomoć<ph name="END_LINK" /> dok tražite uređaje…</translation>
 <translation id="4921180162323349895">{FILE_COUNT,plural, =1{# stranica}one{# stranica}few{# stranice}other{# stranica}}</translation>
 <translation id="4932247056774066048">S obzirom na to da se odjavljujete s računa kojim upravlja domena <ph name="DOMAIN_NAME" />, vaši podaci iz Chromea će se izbrisati s ovog uređaja. Ostat će na vašem Google računu.</translation>
+<translation id="4935305910887312910">Prikazat će se pitanje prije nego što se web lokacijama dozvoli prijem položaja kamere ili mapiranje sobe (preporučeno)</translation>
 <translation id="4943703118917034429">Virtuelna realnost</translation>
 <translation id="4943872375798546930">Nema rezultata</translation>
 <translation id="4958708863221495346"><ph name="URL_OF_THE_CURRENT_TAB" /> dijeli vaš ekran</translation>
@@ -744,6 +747,7 @@ Naprimjer, neke web lokacije mogu reagirati na ovaj zahtjev prikazivanjem oglasa
 <translation id="6573431926118603307">Kartice koje ste otvorili u Chromeu na drugim uređajima prikazat će se ovdje.</translation>
 <translation id="6583199322650523874">Označavanje trenutne stranice</translation>
 <translation id="6593061639179217415">Web lokacija za računar</translation>
+<translation id="6597891566292541626">Postavite QR/bar kôd u ovaj okvir.</translation>
 <translation id="6600954340915313787">Kopirano u Chrome</translation>
 <translation id="6608650720463149374"><ph name="GIGABYTES" /> GB</translation>
 <translation id="6612358246767739896">Zaštićeni sadržaj</translation>
@@ -953,6 +957,7 @@ Web lokacija NEĆE dobiti pristup kameri. Slike kamere ćete moći vidjeti samo 
 <translation id="8109613176066109935">Da biste imali svoje oznake na svim svojim uređajima, uključite sinhronizaciju</translation>
 <translation id="8110087112193408731">Prikazati aktivnosti Chromea u Digitalnom blagostanju?</translation>
 <translation id="8116925261070264013">Isključen zvuk</translation>
+<translation id="8127542551745560481">Uredite početnu stranicu</translation>
 <translation id="813082847718468539">Prikaz informacija o web lokaciji</translation>
 <translation id="8156139159503939589">Koje jezike znate čitati?</translation>
 <translation id="8168435359814927499">Sadržaj</translation>
@@ -1024,6 +1029,7 @@ Web lokacija NEĆE dobiti pristup kameri. Slike kamere ćete moći vidjeti samo 
 <translation id="8676374126336081632">Brisanje unosa</translation>
 <translation id="8687353297350450808">{N_BARS,plural, =1{Nivo jačine signala: # stubac}one{Nivo jačine signala: # stubac}few{Nivo jačine signala: # stupca}other{Nivo jačine signala: # stubaca}}</translation>
 <translation id="868929229000858085">Pretražite kontakte</translation>
+<translation id="8698438463325761328">Ne dozvoljava da web lokacije pristupaju uređaju i podacima virtuelne realnosti</translation>
 <translation id="869891660844655955">Datum isteka</translation>
 <translation id="8719023831149562936">Trenutačnu karticu nije moguće emitirati</translation>
 <translation id="8728487861892616501">Korištenjem ove aplikacije pristajete na Chromeove <ph name="BEGIN_LINK1" />Uslove korištenja usluge<ph name="END_LINK1" /> i <ph name="BEGIN_LINK2" />Obavještenje o privatnosti<ph name="END_LINK2" />, kao i na <ph name="BEGIN_LINK3" />Obavještenje o privatnosti za Google račune kojima se upravlja preko Family Linka<ph name="END_LINK3" />.</translation>
@@ -1041,6 +1047,7 @@ Web lokacija NEĆE dobiti pristup kameri. Slike kamere ćete moći vidjeti samo 
 <translation id="883806473910249246">Došlo je do greške prilikom preuzimanja sadržaja.</translation>
 <translation id="8840953339110955557">Ova stranica se može razlikovati od online verzije.</translation>
 <translation id="8847988622838149491">USB</translation>
+<translation id="884828189055900810">Ne dozvoljava da web lokacije primaju položaj kamere ili mapiraju sobu</translation>
 <translation id="8853345339104747198"><ph name="TAB_TITLE" />, kartica</translation>
 <translation id="885701979325669005">Pohrana</translation>
 <translation id="889338405075704026">Idi u postavke Chromea</translation>
@@ -1048,6 +1055,7 @@ Web lokacija NEĆE dobiti pristup kameri. Slike kamere ćete moći vidjeti samo 
 <translation id="8909135823018751308">Dijeljenje…</translation>
 <translation id="8912362522468806198">Google račun</translation>
 <translation id="8920114477895755567">Čekanje detalja roditelja.</translation>
+<translation id="8921772741368021346"><ph name="POSITION" /> / <ph name="DURATION" /></translation>
 <translation id="8922289737868596582">Preuzmite stranice pomoću dugmeta Više opcija da ih koristite van mreže</translation>
 <translation id="8926666909099850184">NFC je isključen na ovom uređaju. Uključite ga u <ph name="BEGIN_LINK" />Postavkama Androida<ph name="END_LINK" />.</translation>
 <translation id="8937772741022875483">Ukloniti aktivnosti Chromea iz Digitalnog blagostanja?</translation>

@@ -50,6 +50,20 @@ void HeadlessClipboard::ReadAvailableTypes(ui::ClipboardBuffer buffer,
   *contains_filenames = false;
 }
 
+std::vector<base::string16>
+HeadlessClipboard::ReadAvailablePlatformSpecificFormatNames(
+    ui::ClipboardBuffer buffer) const {
+  const auto& data = GetStore(buffer).data;
+  std::vector<base::string16> types;
+  types.reserve(data.size());
+  for (const auto& it : data) {
+    base::string16 type = base::UTF8ToUTF16(it.first.GetName());
+    types.push_back(type);
+  }
+
+  return types;
+}
+
 void HeadlessClipboard::ReadText(ui::ClipboardBuffer buffer,
                                  base::string16* result) const {
   std::string result8;

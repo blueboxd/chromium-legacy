@@ -227,19 +227,10 @@ const char kDisableRollbackOption[] = "disable-rollback-option";
 
 // Disables client certificate authentication on the sign-in frame on the Chrome
 // OS sign-in profile.
-// TODO(pmarko): Remove this flag in M-66 if no issues are found
-// (https://crbug.com/723849).
+// TODO(https://crbug.com/844022): Remove this flag when reaching endpoints that
+// request client certs does not hang anymore when there is no system token yet.
 const char kDisableSigninFrameClientCerts[] =
     "disable-signin-frame-client-certs";
-
-// Disables user selection of client certificate on the sign-in frame on the
-// Chrome OS sign-in profile.
-// TODO(pmarko): Remove this flag in M-65 when the
-// DeviceLoginScreenAutoSelectCertificateForUrls policy is enabled on the server
-// side (https://crbug.com/723849) and completely disable user selection of
-// certificates on the sign-in frame.
-const char kDisableSigninFrameClientCertUserSelection[] =
-    "disable-signin-frame-client-cert-user-selection";
 
 // Disables volume adjust sound.
 const char kDisableVolumeAdjustSound[] = "disable-volume-adjust-sound";
@@ -556,11 +547,6 @@ bool IsCellularFirstDevice() {
 bool IsSigninFrameClientCertsEnabled() {
   return !base::CommandLine::ForCurrentProcess()->HasSwitch(
       kDisableSigninFrameClientCerts);
-}
-
-bool IsSigninFrameClientCertUserSelectionEnabled() {
-  return !base::CommandLine::ForCurrentProcess()->HasSwitch(
-      kDisableSigninFrameClientCertUserSelection);
 }
 
 bool ShouldShowShelfHotseat() {

@@ -14,6 +14,7 @@
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/window_animation_types.h"
 #include "ash/screen_util.h"
+#include "ash/shelf/shelf.h"
 #include "ash/shell.h"
 #include "ash/wallpaper/wallpaper_controller_impl.h"
 #include "ash/wm/always_on_top_controller.h"
@@ -26,6 +27,7 @@
 #include "base/auto_reset.h"
 #include "base/memory/weak_ptr.h"
 #include "chromeos/audio/chromeos_sounds.h"
+#include "chromeos/constants/chromeos_switches.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animation_element.h"
@@ -289,6 +291,13 @@ void BackdropController::UpdateBackdrop() {
   // Skip updating while overview mode is active, since the backdrop is hidden.
   if (pause_update_ || InOverviewSession())
     return;
+
+  base::Optional<Shelf::ScopedAutoHideLock> auto_hide_lock;
+
+  // Updating the back drop widget should not affect the shelf's auto hide
+  // state.
+  if (chromeos::switches::ShouldShowShelfHotseat())
+    auto_hide_lock.emplace(ash::Shelf::ForWindow(container_));
 
   UpdateBackdropInternal();
 }

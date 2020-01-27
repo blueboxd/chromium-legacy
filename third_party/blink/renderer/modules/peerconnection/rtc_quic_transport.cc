@@ -8,6 +8,7 @@
 #include "net/quic/quic_chromium_alarm_factory.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_rtc_quic_transport_stats.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/dom_high_res_time_stamp.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
@@ -20,7 +21,6 @@
 #include "third_party/blink/renderer/modules/peerconnection/rtc_ice_transport.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_quic_stream.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_quic_stream_event.h"
-#include "third_party/blink/renderer/modules/peerconnection/rtc_quic_transport_stats.h"
 
 namespace blink {
 namespace {

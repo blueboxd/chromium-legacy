@@ -11,6 +11,7 @@
 #include <memory>
 
 #include "base/callback_forward.h"
+#include "base/mac/scoped_cftyperef.h"
 #include "content/common/content_export.h"
 #include "mojo/public/cpp/system/buffer.h"
 
@@ -49,19 +50,20 @@ class FontLoader {
                        LoadedCallback callback);
 
   // Given a shared memory buffer containing the raw data for a font file, load
-  // the font and return a CTFontRef.
+  // the font and turn them into a CTFontDescriptor.
   //
   // |data| - A shared memory handle pointing to the raw data from a font file.
   // |data_size| - Size of |data|.
   //
   // On return:
   //  returns true on success, false on failure.
-  //  |out| - A CTFontRef corresponding to the designated font.
+  //  |out| - A CTFontDescriptorRef corresponding to the designated font buffer.
   //  The caller is responsible for releasing this value via CFRelease().
   CONTENT_EXPORT
-  static bool CTFontRefFromBuffer(mojo::ScopedSharedBufferHandle font_data,
-                                  uint32_t font_data_size,
-                                  CTFontRef* out);
+  static bool CTFontDescriptorFromBuffer(
+      mojo::ScopedSharedBufferHandle font_data,
+      uint32_t font_data_size,
+      base::ScopedCFTypeRef<CTFontDescriptorRef>* out_descriptor);
 
   CONTENT_EXPORT
   static std::unique_ptr<ResultInternal> LoadFontForTesting(

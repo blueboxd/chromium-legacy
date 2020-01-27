@@ -17,6 +17,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_blob.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_dom_exception.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_dom_matrix.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_dom_matrix_init.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_dom_matrix_read_only.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_dom_point.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_dom_point_init.h"

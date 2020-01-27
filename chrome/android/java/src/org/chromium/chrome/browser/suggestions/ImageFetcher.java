@@ -15,7 +15,7 @@ import org.chromium.chrome.browser.favicon.LargeIconBridge;
 import org.chromium.chrome.browser.ntp.snippets.SnippetArticle;
 import org.chromium.chrome.browser.ntp.snippets.SuggestionsSource;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.browser.widget.ThumbnailProvider;
+import org.chromium.chrome.browser.thumbnail.generator.ThumbnailProvider;
 
 /**
  * Class responsible for fetching images for the views in the NewTabPage and Chrome Home.

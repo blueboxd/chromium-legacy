@@ -107,6 +107,26 @@ class Database(object):
         return self._impl.find_by_identifier(identifier)
 
     @property
+    def callback_functions(self):
+        """Returns all callback functions."""
+        return self._view_by_kind(Database._Kind.CALLBACK_FUNCTION)
+
+    @property
+    def callback_interfaces(self):
+        """Returns all callback interfaces."""
+        return self._view_by_kind(Database._Kind.CALLBACK_INTERFACE)
+
+    @property
+    def dictionaries(self):
+        """Returns all dictionaries."""
+        return self._view_by_kind(Database._Kind.DICTIONARY)
+
+    @property
+    def enumerations(self):
+        """Returns all enumerations."""
+        return self._view_by_kind(Database._Kind.ENUMERATION)
+
+    @property
     def interfaces(self):
         """
         Returns all interfaces.
@@ -121,24 +141,9 @@ class Database(object):
         return self._view_by_kind(Database._Kind.INTERFACE_MIXIN)
 
     @property
-    def dictionaries(self):
-        """Returns all dictionaries."""
-        return self._view_by_kind(Database._Kind.DICTIONARY)
-
-    @property
     def namespaces(self):
         """Returns all namespaces."""
         return self._view_by_kind(Database._Kind.NAMESPACE)
-
-    @property
-    def callback_functions(self):
-        """Returns all callback functions."""
-        return self._view_by_kind(Database._Kind.CALLBACK_FUNCTION)
-
-    @property
-    def callback_interfaces(self):
-        """Returns all callback interfaces."""
-        return self._view_by_kind(Database._Kind.CALLBACK_INTERFACE)
 
     @property
     def typedefs(self):

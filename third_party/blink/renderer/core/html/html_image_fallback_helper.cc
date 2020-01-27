@@ -104,8 +104,8 @@ class ImageFallbackContentBuilder {
   }
 
  private:
-  Member<Element> place_holder_;
-  Member<Element> broken_image_;
+  Element* place_holder_;
+  Element* broken_image_;
 };
 
 }  // namespace

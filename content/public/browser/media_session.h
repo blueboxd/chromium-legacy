@@ -119,6 +119,12 @@ class MediaSession : public media_session::mojom::MediaSession {
   // scrubbing operation.
   void ScrubTo(base::TimeDelta seek_time) override = 0;
 
+  // Enter picture-in-picture.
+  void EnterPictureInPicture() override = 0;
+
+  // Exit picture-in-picture.
+  void ExitPictureInPicture() override = 0;
+
  protected:
   MediaSession() = default;
 };

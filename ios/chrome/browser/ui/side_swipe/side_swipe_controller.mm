@@ -115,7 +115,7 @@ const NSUInteger kIpadGreySwipeTabCount = 8;
 // The current active WebState.
 @property(nonatomic, readonly) web::WebState* activeWebState;
 // The browser state owning the current browser.
-@property(nonatomic, readonly) ios::ChromeBrowserState* browserState;
+@property(nonatomic, readonly) ChromeBrowserState* browserState;
 // The webStateList owned by the current browser.
 @property(nonatomic, readonly) WebStateList* webStateList;
 
@@ -203,7 +203,7 @@ const NSUInteger kIpadGreySwipeTabCount = 8;
   return self.webStateList ? self.webStateList->GetActiveWebState() : nullptr;
 }
 
-- (ios::ChromeBrowserState*)browserState {
+- (ChromeBrowserState*)browserState {
   return _browser->GetBrowserState();
 }
 

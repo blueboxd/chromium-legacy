@@ -7,8 +7,9 @@
 
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_constant.h"
 
-#include "ios/chrome/browser/browser_state/chrome_browser_state_forward.h"
 #import "ios/chrome/browser/metrics/new_tab_page_uma.h"
+
+class ChromeBrowserState;
 
 namespace web {
 class WebState;
@@ -24,7 +25,7 @@ void RecordNTPImpression(ntp_home::IOSNTPImpression impression_type);
 // Metrics recorder for the action used to potentially leave the NTP.
 @interface NTPHomeMetrics : NSObject
 
-- (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState
+- (instancetype)initWithBrowserState:(ChromeBrowserState*)browserState
                             webState:(web::WebState*)webState
     NS_DESIGNATED_INITIALIZER;
 - (instancetype)init NS_UNAVAILABLE;

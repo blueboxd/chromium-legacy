@@ -46,6 +46,10 @@ void FontSizeTabHelper::RegisterBrowserStatePrefs(
   registry->RegisterDictionaryPref(prefs::kIosUserZoomMultipliers);
 }
 
+void FontSizeTabHelper::ClearUserZoomPrefs(PrefService* pref_service) {
+  pref_service->ClearPref(prefs::kIosUserZoomMultipliers);
+}
+
 void FontSizeTabHelper::SetPageFontSize(int size) {
   tab_helper_has_zoomed_ = true;
   if (web_state_->ContentIsHTML()) {
@@ -124,8 +128,8 @@ void FontSizeTabHelper::PageLoaded(
 }
 
 PrefService* FontSizeTabHelper::GetPrefService() const {
-  ios::ChromeBrowserState* chrome_browser_state =
-      ios::ChromeBrowserState::FromBrowserState(web_state_->GetBrowserState());
+  ChromeBrowserState* chrome_browser_state =
+      ChromeBrowserState::FromBrowserState(web_state_->GetBrowserState());
   return chrome_browser_state->GetPrefs();
 }
 

@@ -38,17 +38,17 @@ void ShowDetailsAction::InternalProcessAction(ProcessActionCallback callback) {
     case ShowDetailsProto::DataToShowCase::kContactDetails:
       details = std::make_unique<Details>();
       details_valid = Details::UpdateFromContactDetails(
-          proto_.show_details(), delegate_->GetClientMemory(), details.get());
+          proto_.show_details(), delegate_->GetUserData(), details.get());
       break;
     case ShowDetailsProto::DataToShowCase::kShippingAddress:
       details = std::make_unique<Details>();
       details_valid = Details::UpdateFromShippingAddress(
-          proto_.show_details(), delegate_->GetClientMemory(), details.get());
+          proto_.show_details(), delegate_->GetUserData(), details.get());
       break;
     case ShowDetailsProto::DataToShowCase::kCreditCard:
       details = std::make_unique<Details>();
       details_valid = Details::UpdateFromSelectedCreditCard(
-          proto_.show_details(), delegate_->GetClientMemory(), details.get());
+          proto_.show_details(), delegate_->GetUserData(), details.get());
       break;
     case ShowDetailsProto::DataToShowCase::DATA_TO_SHOW_NOT_SET:
       // Clear Details. Calling SetDetails with nullptr clears the details.

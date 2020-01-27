@@ -8,7 +8,7 @@
 #include "media/base/video_codecs.h"  // for media::VideoCodecProfile
 #include "media/mojo/mojom/video_decode_perf_history.mojom-blink.h"
 #include "mojo/public/cpp/bindings/remote.h"
-#include "third_party/blink/renderer/modules/media_capabilities/video_configuration.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_video_configuration.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/heap/visitor.h"

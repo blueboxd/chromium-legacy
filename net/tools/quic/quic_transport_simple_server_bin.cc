@@ -42,6 +42,8 @@ int main(int argc, char** argv) {
   net::QuicTransportSimpleServer server(GetQuicFlag(FLAGS_port),
                                         accepted_origins,
                                         quic::CreateDefaultProofSource());
+  server.set_read_error_callback(
+      base::BindOnce([](int /*result*/) { exit(EXIT_FAILURE); }));
   if (server.Start() != EXIT_SUCCESS)
     return EXIT_FAILURE;
 

@@ -154,6 +154,9 @@ class CONTENT_EXPORT GpuVideoAcceleratorFactoriesImpl
 
   void OnSupportedDecoderConfigs(
       const media::SupportedVideoDecoderConfigMap& supported_configs);
+  void OnGetVideoEncodeAcceleratorSupportedProfiles(
+      const media::VideoEncodeAccelerator::SupportedProfiles&
+          supported_profiles);
 
   const scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
   const scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
@@ -186,16 +189,17 @@ class CONTENT_EXPORT GpuVideoAcceleratorFactoriesImpl
 
   // SupportedDecoderConfigs state.
   mojo::Remote<media::mojom::VideoDecoder> video_decoder_;
-  base::Lock supported_decoder_configs_lock_;
+
+  base::Lock supported_profiles_lock_;
+
   // If the Optional is empty, then we have not yet gotten the configs.  If the
   // Optional contains an empty vector, then we have gotten the result and there
   // are no supported configs.
   base::Optional<media::SupportedVideoDecoderConfigMap>
-      supported_decoder_configs_ GUARDED_BY(supported_decoder_configs_lock_);
+      supported_decoder_configs_ GUARDED_BY(supported_profiles_lock_);
 
-  const media::VideoEncodeAccelerator::SupportedProfiles
-      supported_vea_profiles_;
-
+  base::Optional<media::VideoEncodeAccelerator::SupportedProfiles>
+      supported_vea_profiles_ GUARDED_BY(supported_profiles_lock_);
   // For sending requests to allocate shared memory in the Browser process.
   scoped_refptr<ThreadSafeSender> thread_safe_sender_;
 

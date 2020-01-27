@@ -5,6 +5,7 @@
 #include "chrome/browser/navigation_predictor/navigation_predictor_keyed_service.h"
 
 #include "base/compiler_specific.h"
+#include "build/build_config.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
@@ -46,8 +47,10 @@ NavigationPredictorKeyedService::NavigationPredictorKeyedService(
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(!browser_context->IsOffTheRecord());
 
+#if !defined(OS_ANDROID)
   // Start preconnecting to the search engine.
   search_engine_preconnector_.StartPreconnecting(/*with_startup_delay=*/true);
+#endif
 }
 
 NavigationPredictorKeyedService::~NavigationPredictorKeyedService() {
@@ -80,6 +83,7 @@ void NavigationPredictorKeyedService::RemoveObserver(Observer* observer) {
 }
 
 SearchEnginePreconnector*
-NavigationPredictorKeyedService::SearchEnginePreconnectorForTesting() {
+NavigationPredictorKeyedService::search_engine_preconnector() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   return &search_engine_preconnector_;
 }

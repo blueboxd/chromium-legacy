@@ -42,8 +42,21 @@ enum class SharingDialogType {
 const char kSharingUiContextMenu[] = "ContextMenu";
 const char kSharingUiDialog[] = "Dialog";
 
+// Maps SharingSendMessageResult enums to strings used as histogram suffixes.
+// Keep in sync with "SharingSendMessageResult" in histograms.xml.
+std::string SharingSendMessageResultToString(SharingSendMessageResult result);
+
+// Maps PayloadCase enums to MessageType enums.
 chrome_browser_sharing::MessageType SharingPayloadCaseToMessageType(
     chrome_browser_sharing::SharingMessage::PayloadCase payload_case);
+
+// Maps MessageType enums to strings used as histogram suffixes. Keep in sync
+// with "SharingMessage" in histograms.xml.
+const std::string& SharingMessageTypeToString(
+    chrome_browser_sharing::MessageType message_type);
+
+// Generates trace ids for async traces in the "sharing" category.
+int GenerateSharingTraceId();
 
 // Logs the |payload_case| to UMA. This should be called when a SharingMessage
 // is received.

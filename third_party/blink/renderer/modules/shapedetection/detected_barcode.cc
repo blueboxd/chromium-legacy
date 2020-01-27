@@ -4,8 +4,8 @@
 
 #include "third_party/blink/renderer/modules/shapedetection/detected_barcode.h"
 
+#include "third_party/blink/renderer/bindings/modules/v8/v8_point_2d.h"
 #include "third_party/blink/renderer/core/geometry/dom_rect.h"
-#include "third_party/blink/renderer/modules/imagecapture/point_2d.h"
 
 namespace blink {
 

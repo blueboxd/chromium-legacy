@@ -86,7 +86,7 @@ class SelectorChecker {
     Mode mode = kResolvingStyle;
     bool is_ua_rule = false;
     ComputedStyle* element_style = nullptr;
-    Member<CustomScrollbar> scrollbar = nullptr;
+    CustomScrollbar* scrollbar = nullptr;
     ScrollbarPart scrollbar_part = kNoPart;
     PartNames* part_names = nullptr;
   };
@@ -114,9 +114,9 @@ class SelectorChecker {
         : element(element), visited_match_type(visited_match_type) {}
 
     const CSSSelector* selector = nullptr;
-    Member<Element> element = nullptr;
-    Member<Element> previous_element = nullptr;
-    Member<const ContainerNode> scope = nullptr;
+    Element* element = nullptr;
+    Element* previous_element = nullptr;
+    const ContainerNode* scope = nullptr;
     VisitedMatchType visited_match_type;
     PseudoId pseudo_id = kPseudoIdNone;
     bool is_sub_selector = false;
@@ -211,7 +211,7 @@ class SelectorChecker {
   bool CheckPseudoNotForVTT(const SelectorCheckingContext&, MatchResult&) const;
 
   ComputedStyle* element_style_;
-  Member<CustomScrollbar> scrollbar_;
+  CustomScrollbar* scrollbar_;
   PartNames* part_names_;
   ScrollbarPart scrollbar_part_;
   Mode mode_;

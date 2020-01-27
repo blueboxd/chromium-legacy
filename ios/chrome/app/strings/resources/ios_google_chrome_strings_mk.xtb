@@ -27,7 +27,6 @@
 <translation id="4249068189593983585">Совет за Chrome: за повеќе опции за картичките, допрете го и задржете го копчето „Прикажи ги картичките“ во алатникот, што се наоѓа најгоре или најдолу на екранот.</translation>
 <translation id="4523886039239821078">Некои додатоци предизвикуваат пад на Chrome. Деинсталирајте:</translation>
 <translation id="5389212809648216794">Google Chrome не може да ја користи камерата затоа што друга апликација ја користи во моментов</translation>
-<translation id="5621912349729388018"><ph name="BEGIN_LINK" />Прегледајте ги изменетите Услови на користење на Chrome.<ph name="END_LINK" /></translation>
 <translation id="5639704535586432836">Отворете „Поставки“ &gt; „Приватност“ &gt; „Камера“ &gt; Google Chrome и вклучете ја камерата.</translation>
 <translation id="5642200033778930880">Google Chrome не може да ја користи камерата во режимот „Поделен приказ“</translation>
 <translation id="5690427481109656848">Google LLC</translation>
@@ -51,4 +50,5 @@
 <translation id="840168496893712993">Некои додатоци предизвикуваат падови на Chrome. Обидете се да ги деинсталирате.</translation>
 <translation id="8459495907675268833">Избраните податоци се отстранети од Chrome и синхронизираните уреди. Вашата сметка на Google можеби има други форми на историја на прелистување, како на пр., пребарувања и активност од други услуги на Google на history.google.com.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
+<translation id="8574235780160508979">„Условите на користење“ на Chrome се менуваат на 31 март. <ph name="BEGIN_LINK" />Прегледајте ги<ph name="END_LINK" /></translation>
 </translationbundle>

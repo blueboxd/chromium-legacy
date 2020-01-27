@@ -6,6 +6,9 @@ package org.chromium.android_webview.devui;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.ClipData;
+import android.content.ClipboardManager;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
@@ -37,6 +40,7 @@ import org.chromium.android_webview.devui.util.WebViewCrashInfoCollector;
 import org.chromium.base.CommandLine;
 import org.chromium.base.Log;
 import org.chromium.base.task.AsyncTask;
+import org.chromium.ui.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -196,17 +200,46 @@ public class CrashesListActivity extends Activity {
 
             CrashInfo crashInfo = (CrashInfo) getChild(groupPosition, childPosition);
             // Variations keys
-            setTwoLineListItemText(view.findViewById(R.id.variations), "Variations",
+            View variationsView = view.findViewById(R.id.variations);
+            setTwoLineListItemText(variationsView, "Variations",
                     crashInfo.variations == null ? "Not available"
                                                  : crashInfo.variations.toString());
+            variationsView.setOnLongClickListener(v -> {
+                if (crashInfo.variations != null) {
+                    ClipboardManager clipboard =
+                            (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
+                    ClipData clip =
+                            ClipData.newPlainText("variations", crashInfo.variations.toString());
+                    clipboard.setPrimaryClip(clip);
+                    // Show a toast that the text has been copied.
+                    Toast.makeText(CrashesListActivity.this, "Copied variations keys",
+                                 Toast.LENGTH_SHORT)
+                            .show();
+                }
+                return true;
+            });
+
             // Upload info
             String uploadState = uploadStateString(crashInfo.uploadState);
-            String uploadInfo = null;
+            View uploadInfoView = view.findViewById(R.id.upload_status);
             if (crashInfo.uploadState == UploadState.UPLOADED) {
-                uploadInfo = new Date(crashInfo.uploadTime).toString();
-                uploadInfo += "\nID: " + crashInfo.uploadId;
+                final String uploadInfo =
+                        new Date(crashInfo.uploadTime).toString() + "\nID: " + crashInfo.uploadId;
+                uploadInfoView.setOnLongClickListener(v -> {
+                    ClipboardManager clipboard =
+                            (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
+                    ClipData clip = ClipData.newPlainText("upload info", uploadInfo);
+                    clipboard.setPrimaryClip(clip);
+                    // Show a toast that the text has been copied.
+                    Toast.makeText(
+                                 CrashesListActivity.this, "Copied upload info", Toast.LENGTH_SHORT)
+                            .show();
+                    return true;
+                });
+                setTwoLineListItemText(uploadInfoView, uploadState, uploadInfo);
+            } else {
+                setTwoLineListItemText(uploadInfoView, uploadState, null);
             }
-            setTwoLineListItemText(view.findViewById(R.id.upload_status), uploadState, uploadInfo);
 
             Button bugButton = view.findViewById(R.id.crash_report_button);
             // Report button is only clickable if the crash report is uploaded.

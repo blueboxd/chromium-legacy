@@ -4344,7 +4344,7 @@ Bu politika yanlış (false) değerine ayarlanırsa Yeni Sekme sayfasında, otom
 
           Bu politika yanlış (false) değerine ayarlanırsa giriş ekranında erişilebilirlik özellikleri kısayolları her zaman devre dışı bırakılır.
 
-          Bu politikayı ayarlarsanız kullanıcılar değiştiremez veya geçersiz kılamazlar.
+          Bu politikayı ayarlarsanız kullanıcılar değiştiremez veya geçersiz kılamaz.
 
           Bu politika ayarlanmadan bırakılırsa giriş ekranında erişilebilirlik özellikleri kısayolları varsayılan olarak etkinleştirilir.</translation>
 <translation id="7777535871204167559">Harici depolama cihazlarını salt okunur olarak ele al</translation>
@@ -4754,7 +4754,7 @@ Windows'da politika yapılandırmak için önerilen yol GPO kullanmaktır. Ancak
 
           Bu politika yanlış (false) değerine ayarlanırsa erişilebilirlik özellikleri kısayolları her zaman devre dışı bırakılır.
 
-          Bu politikayı ayarlarsanız kullanıcılar değiştiremez veya geçersiz kılamazlar.
+          Bu politikayı ayarlarsanız kullanıcılar değiştiremez veya geçersiz kılamaz.
 
           Bu politika ayarlanmadan bırakılırsa erişilebilirlik özellikleri kısayolları varsayılan olarak etkinleştirilir.</translation>
 <translation id="8525526490824335042">Linux kapsayıcı</translation>

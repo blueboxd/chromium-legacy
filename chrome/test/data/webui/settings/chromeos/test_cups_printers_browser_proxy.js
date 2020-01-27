@@ -24,13 +24,18 @@ cr.define('printerBrowserProxy', function() {
         'getEulaUrl',
       ]);
 
-      this.printerList = /** @type{} CupsPrintersList*/ ({printerList: []});
+      this.printerList = /** @type{?CupsPrintersList} */ ({printerList: []});
       this.printServerPrinters =
-          /** @type{} CupsPrintersList */ ({printerList: []});
-      this.manufacturers = [];
-      this.models = [];
+          /** @type{?CupsPrintersList}  */ ({printerList: []});
+      this.manufacturers =
+          /** @type{?ManufacturersInfo} */ (
+              {success: false, manufacturers: []});
+      this.models =
+          /** @type{?ModelsInfo} */ ({success: false, models: []});
       this.printerInfo = {};
-      this.printerPpdMakeModel = {};
+      this.printerPpdMakeModel =
+          /** @type{PrinterPpdMakeModel */ (
+              {ppdManufacturer: '', ppdModel: ''});
 
       /**
        * |eulaUrl_| in conjunction with |setEulaUrl| mimics setting the EULA url

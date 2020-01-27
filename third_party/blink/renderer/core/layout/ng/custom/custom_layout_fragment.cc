@@ -15,12 +15,15 @@ CustomLayoutFragment::CustomLayoutFragment(
     CustomLayoutToken* token,
     scoped_refptr<const NGLayoutResult> layout_result,
     const LogicalSize& size,
+    const base::Optional<LayoutUnit> baseline,
     v8::Isolate* isolate)
     : child_(child),
       token_(token),
       layout_result_(std::move(layout_result)),
       inline_size_(size.inline_size.ToDouble()),
-      block_size_(size.block_size.ToDouble()) {
+      block_size_(size.block_size.ToDouble()),
+      baseline_(baseline.value_or(LayoutUnit::Min())),
+      is_baseline_null_(!baseline) {
   // Immediately store the result data, so that it remains immutable between
   // layout calls to the child.
   if (SerializedScriptValue* data = layout_result_->CustomLayoutData())
@@ -34,6 +37,11 @@ const NGLayoutResult& CustomLayoutFragment::GetLayoutResult() const {
 
 const NGLayoutInputNode& CustomLayoutFragment::GetLayoutNode() const {
   return child_->GetLayoutNode();
+}
+
+double CustomLayoutFragment::baseline(bool& is_null) const {
+  is_null = is_baseline_null_;
+  return baseline_;
 }
 
 ScriptValue CustomLayoutFragment::data(ScriptState* script_state) const {

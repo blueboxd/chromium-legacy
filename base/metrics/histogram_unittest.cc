@@ -28,6 +28,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/test/gtest_util.h"
 #include "base/time/time.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace base {
@@ -895,6 +896,42 @@ TEST_P(HistogramTest, ExpiredHistogramTest) {
   custom_valid->Add(4);
   samples = custom_valid->SnapshotDelta();
   EXPECT_EQ(2, samples->TotalCount());
+}
+
+TEST_P(HistogramTest, WriteAscii) {
+  HistogramBase* histogram =
+      LinearHistogram::FactoryGet("AsciiOut", /*minimum=*/1, /*maximum=*/10,
+                                  /*bucket_count=*/5, HistogramBase::kNoFlags);
+  histogram->AddCount(/*sample=*/4, /*value=*/5);
+
+  std::string output;
+  histogram->WriteAscii(&output);
+
+  const char kOutputFormatRe[] =
+      R"(Histogram: AsciiOut recorded 5 samples, mean = 4\.0.*\n)"
+      R"(0  \.\.\. \n)"
+      R"(4  -+O \(5 = 100\.0%\) \{0\.0%\}\n)"
+      R"(7  \.\.\. \n)";
+
+  EXPECT_THAT(output, testing::MatchesRegex(kOutputFormatRe));
+}
+
+TEST_P(HistogramTest, WriteHTMLGraph) {
+  HistogramBase* histogram =
+      LinearHistogram::FactoryGet("HTMLOut", /*minimum=*/1, /*maximum=*/10,
+                                  /*bucket_count=*/5, HistogramBase::kNoFlags);
+  histogram->AddCount(/*sample=*/4, /*value=*/5);
+
+  std::string output;
+  histogram->WriteHTMLGraph(&output);
+
+  const char kOutputFormatRe[] =
+      R"(<PRE>Histogram: HTMLOut recorded 5 samples, mean = 4\.0.*<br>)"
+      R"(0  \.\.\. <br>)"
+      R"(4  -+O \(5 = 100\.0%\) \{0\.0%\}<br>)"
+      R"(7  \.\.\. <br><\/PRE>)";
+
+  EXPECT_THAT(output, testing::MatchesRegex(kOutputFormatRe));
 }
 
 }  // namespace base

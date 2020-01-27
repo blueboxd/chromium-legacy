@@ -5,6 +5,7 @@
 #include "weblayer/browser/safe_browsing/safe_browsing_blocking_page.h"
 
 #include "components/security_interstitials/content/security_interstitial_controller_client.h"
+#include "components/security_interstitials/content/unsafe_resource_util.h"
 #include "content/public/browser/navigation_entry.h"
 #include "weblayer/browser/safe_browsing/safe_browsing_ui_manager.h"
 
@@ -33,7 +34,7 @@ SafeBrowsingBlockingPage* SafeBrowsingBlockingPage::CreateBlockingPage(
     const UnsafeResource& unsafe_resource) {
   const UnsafeResourceList unsafe_resources{unsafe_resource};
   content::NavigationEntry* entry =
-      unsafe_resource.GetNavigationEntryForResource();
+      security_interstitials::GetNavigationEntryForResource(unsafe_resource);
   GURL url =
       (main_frame_url.is_empty() && entry) ? entry->GetURL() : main_frame_url;
 

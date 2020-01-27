@@ -23,9 +23,7 @@ if (public_android_sdk) {
   group("webview_cts_tests") {
     _py_files =
         read_file("//android_webview/tools/run_cts.pydeps", "list lines")
-    deps = [
-      "//android_webview:system_webview_apk",
-    ]
+    deps = [ "//android_webview:system_webview_apk" ]
 
     data_deps = [
       "//build/android:logdog_wrapper_py",
@@ -144,9 +142,7 @@ android_assets("webview_instrumentation_apk_assets") {
 
 shared_library("libstandalonelibwebviewchromium") {
   testonly = true
-  sources = [
-    "shell/src/draw_gl/draw_fn.cc",
-  ]
+  sources = [ "shell/src/draw_gl/draw_fn.cc" ]
   ldflags = [ "-Wl,-shared,-Bsymbolic" ]
   deps = [
     ":webview_instrumentation_test_native_jni_impl",
@@ -312,12 +308,9 @@ instrumentation_test_apk("webview_instrumentation_test_apk") {
     "../javatests/src/org/chromium/android_webview/test/util/VideoTestUtil.java",
     "../javatests/src/org/chromium/android_webview/test/util/VideoTestWebServer.java",
   ]
-  data = [
-    "data/",
-  ]
-  data_deps = [
-    "//testing/buildbot/filters:webview_instrumentation_test_apk_filters",
-  ]
+  data = [ "data/" ]
+  data_deps =
+      [ "//testing/buildbot/filters:webview_instrumentation_test_apk_filters" ]
 
   if (enable_chrome_android_internal) {
     data_deps +=
@@ -339,9 +332,7 @@ instrumentation_test_apk("webview_instrumentation_test_apk") {
 
 android_library("webview_instrumentation_test_utils_java") {
   testonly = true
-  sources = [
-    "shell/src/org/chromium/android_webview/test/util/MemoryMetricsLoggerUtils.java",
-  ]
+  sources = [ "shell/src/org/chromium/android_webview/test/util/MemoryMetricsLoggerUtils.java" ]
   deps = [
     "//base:base_java",
     "//base:jni_java",
@@ -351,15 +342,11 @@ android_library("webview_instrumentation_test_utils_java") {
 
 generate_jni("webview_instrumentation_test_native_jni") {
   testonly = true
-  sources = [
-    "shell/src/org/chromium/android_webview/test/util/MemoryMetricsLoggerUtils.java",
-  ]
+  sources = [ "shell/src/org/chromium/android_webview/test/util/MemoryMetricsLoggerUtils.java" ]
 }
 
 source_set("webview_instrumentation_test_native_jni_impl") {
-  sources = [
-    "shell/memory_metrics_logger_utils.cc",
-  ]
+  sources = [ "shell/memory_metrics_logger_utils.cc" ]
 
   deps = [
     ":webview_instrumentation_test_native_jni",
@@ -398,6 +385,7 @@ test("android_webview_unittests") {
     "../browser/aw_browser_context_unittest.cc",
     "../browser/aw_content_browser_client_unittest.cc",
     "../browser/aw_contents_client_bridge_unittest.cc",
+    "../browser/aw_contents_lifecycle_notifier_unittest.cc",
     "../browser/aw_form_database_service_unittest.cc",
     "../browser/aw_media_url_interceptor_unittest.cc",
     "../browser/aw_pac_processor_unittest.cc",
@@ -427,9 +415,7 @@ test("android_webview_unittests") {
 }
 
 android_assets("android_webview_unittests_assets") {
-  sources = [
-    "unittest/assets/asset_file.ogg",
-  ]
+  sources = [ "unittest/assets/asset_file.ogg" ]
 }
 
 android_library("android_webview_unittests_java") {

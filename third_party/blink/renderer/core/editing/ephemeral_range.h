@@ -29,7 +29,7 @@ class TraversalRangeNodes : private TraversalRange<Iterator> {
   Iterator end() { return Iterator(past_end_node_); }
 
  private:
-  const Member<const StartNodeType> past_end_node_;
+  const StartNodeType* const past_end_node_;
 };
 
 // This class acts like |TraversalNextIterator| but in addition

@@ -7,6 +7,7 @@
 #include "base/environment.h"
 #include "base/files/file_util.h"
 #include "base/path_service.h"
+#include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 
 #if defined(OS_ANDROID)
@@ -23,11 +24,6 @@
 namespace weblayer {
 
 namespace {
-
-void CreateDir(const base::FilePath& path) {
-  if (!base::PathExists(path))
-    base::CreateDirectory(path);
-}
 
 bool GetDefaultUserDataDirectory(base::FilePath* result) {
 #if defined(OS_ANDROID)
@@ -52,6 +48,15 @@ bool GetDefaultUserDataDirectory(base::FilePath* result) {
 
 }  // namespace
 
+class WebLayerPathProvider {
+ public:
+  static void CreateDir(const base::FilePath& path) {
+    base::ScopedAllowBlocking allow_io;
+    if (!base::PathExists(path))
+      base::CreateDirectory(path);
+  }
+};
+
 bool PathProvider(int key, base::FilePath* result) {
   base::FilePath cur;
 
@@ -59,7 +64,7 @@ bool PathProvider(int key, base::FilePath* result) {
     case DIR_USER_DATA: {
       bool rv = GetDefaultUserDataDirectory(result);
       if (rv)
-        CreateDir(*result);
+        WebLayerPathProvider::CreateDir(*result);
       return rv;
     }
 #if defined(OS_ANDROID)
@@ -67,7 +72,7 @@ bool PathProvider(int key, base::FilePath* result) {
       if (!base::android::GetCacheDirectory(&cur))
         return false;
       cur = cur.Append(FILE_PATH_LITERAL("Crashpad"));
-      CreateDir(cur);
+      WebLayerPathProvider::CreateDir(cur);
       *result = cur;
       return true;
 #endif

@@ -175,8 +175,8 @@
 #endif
 
 #if defined(OS_ANDROID)
-#include "chrome/browser/android/chrome_feature_list.h"
 #include "chrome/browser/android/explore_sites/explore_sites_feature.h"
+#include "chrome/browser/flags/android/chrome_feature_list.h"
 #include "ui/android/buildflags.h"
 #else  // OS_ANDROID
 #include "chrome/browser/media/router/media_router_feature.h"
@@ -2419,12 +2419,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kCrosRegionsModeDescription, kOsCrOS,
      MULTI_VALUE_TYPE(kCrosRegionsModeChoices)},
 #endif  // OS_CHROMEOS
-#if defined(OS_WIN)
-    {"enable-aura-tooltips-on-windows",
-     flag_descriptions::kEnableAuraTooltipsOnWindowsName,
-     flag_descriptions::kEnableAuraTooltipsOnWindowsDescription, kOsWin,
-     FEATURE_VALUE_TYPE(views::features::kEnableAuraTooltipsOnWindows)},
-#endif  // OS_WIN
 #if defined(TOOLKIT_VIEWS) || defined(OS_ANDROID)
     {"enable-autofill-credit-card-upload",
      flag_descriptions::kAutofillCreditCardUploadName,
@@ -3719,6 +3713,12 @@ const FeatureEntry kFeatureEntries[] = {
      kOsDesktop,
      FEATURE_VALUE_TYPE(features::kHappinessTrackingSurveysForDesktop)},
 
+    {"happiness-tracking-surveys-for-desktop-settings",
+     flag_descriptions::kHappinessTrackingSurveysForDesktopSettingsName,
+     flag_descriptions::kHappinessTrackingSurveysForDesktopSettingsDescription,
+     kOsDesktop,
+     FEATURE_VALUE_TYPE(features::kHappinessTrackingSurveysForDesktopSettings)},
+
     {"happiness-tracking-surveys-for-desktop-demo",
      flag_descriptions::kHappinessTrackingSurveysForDesktopDemoName,
      flag_descriptions::kHappinessTrackingSurveysForDesktopDemoDescription,
@@ -3761,9 +3761,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(chrome::android::kDrawVerticallyEdgeToEdge)},
 #endif
 #if defined(OS_ANDROID)
-    {"enable-ephemeral-tab", flag_descriptions::kEphemeralTabName,
-     flag_descriptions::kEphemeralTabDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(chrome::android::kEphemeralTab)},
     {"enable-ephemeral-tab-bottom-sheet",
      flag_descriptions::kEphemeralTabUsingBottomSheetName,
      flag_descriptions::kEphemeralTabUsingBottomSheetDescription, kOsAndroid,
@@ -3934,12 +3931,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(
          chromeos::assistant::features::kEnableStereoAudioInput)},
 #endif  // defined(OS_CHROMEOS)
-
-#if defined(OS_MACOSX) || defined(OS_CHROMEOS)
-    {"force-enable-system-aec", flag_descriptions::kForceEnableSystemAecName,
-     flag_descriptions::kForceEnableSystemAecDescription, kOsMac | kOsCrOS,
-     FEATURE_VALUE_TYPE(features::kForceEnableSystemAec)},
-#endif  // defined(OS_MACOSX) || defined(OS_CHROMEOS)
 
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW) && defined(OS_MACOSX)
     {"enable-custom-mac-paper-sizes",
@@ -4863,6 +4854,17 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(
          password_manager::features::kRecoverFromNeverSaveAndroid)},
 #endif  // defined(OS_ANDROID)
+
+    {"freeze-user-agent", flag_descriptions::kFreezeUserAgentName,
+     flag_descriptions::kFreezeUserAgentDescription, kOsDesktop | kOsAndroid,
+     FEATURE_VALUE_TYPE(blink::features::kFreezeUserAgent)},
+
+#if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
+    {"enable-user-data-snapshot", flag_descriptions::kUserDataSnapshotName,
+     flag_descriptions::kUserDataSnapshotDescription,
+     kOsMac | kOsWin | kOsLinux,
+     FEATURE_VALUE_TYPE(features::kUserDataSnapshot)},
+#endif
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

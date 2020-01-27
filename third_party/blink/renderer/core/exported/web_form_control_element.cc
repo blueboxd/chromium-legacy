@@ -30,6 +30,7 @@
 
 #include "third_party/blink/public/web/web_form_control_element.h"
 
+#include "third_party/blink/public/mojom/input/focus_type.mojom-blink.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/html/forms/html_form_control_element.h"
@@ -135,8 +136,8 @@ void WebFormControlElement::SetAutofillValue(const WebString& value) {
   // The input and change events will be sent in setValue.
   if (IsA<HTMLInputElement>(*private_) || IsA<HTMLTextAreaElement>(*private_)) {
     if (!Focused()) {
-      Unwrap<Element>()->DispatchFocusEvent(nullptr, kWebFocusTypeForward,
-                                            nullptr);
+      Unwrap<Element>()->DispatchFocusEvent(
+          nullptr, mojom::blink::FocusType::kForward, nullptr);
     }
     Unwrap<Element>()->DispatchScopedEvent(
         *Event::CreateBubble(event_type_names::kKeydown));
@@ -144,18 +145,18 @@ void WebFormControlElement::SetAutofillValue(const WebString& value) {
     Unwrap<Element>()->DispatchScopedEvent(
         *Event::CreateBubble(event_type_names::kKeyup));
     if (!Focused()) {
-      Unwrap<Element>()->DispatchBlurEvent(nullptr, kWebFocusTypeForward,
-                                           nullptr);
+      Unwrap<Element>()->DispatchBlurEvent(
+          nullptr, mojom::blink::FocusType::kForward, nullptr);
     }
   } else if (auto* select = DynamicTo<HTMLSelectElement>(*private_)) {
     if (!Focused()) {
-      Unwrap<Element>()->DispatchFocusEvent(nullptr, kWebFocusTypeForward,
-                                            nullptr);
+      Unwrap<Element>()->DispatchFocusEvent(
+          nullptr, mojom::blink::FocusType::kForward, nullptr);
     }
     select->setValue(value, true);
     if (!Focused()) {
-      Unwrap<Element>()->DispatchBlurEvent(nullptr, kWebFocusTypeForward,
-                                           nullptr);
+      Unwrap<Element>()->DispatchBlurEvent(
+          nullptr, mojom::blink::FocusType::kForward, nullptr);
     }
   }
 }

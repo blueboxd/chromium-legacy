@@ -153,6 +153,8 @@ class COMPONENT_EXPORT(MEDIA_SESSION_TEST_SUPPORT_CPP) TestMediaController
                          observer) override {}
   void SeekTo(base::TimeDelta seek_time) override;
   void ScrubTo(base::TimeDelta seek_time) override {}
+  void EnterPictureInPicture() override;
+  void ExitPictureInPicture() override;
 
   int toggle_suspend_resume_count() const {
     return toggle_suspend_resume_count_;

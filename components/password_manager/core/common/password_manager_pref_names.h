@@ -63,10 +63,6 @@ extern const char kNumberSignInPasswordPromoShown[];
 // Safe to remove for M82.
 extern const char kSignInPasswordPromoRevive[];
 
-// Boolean that is true when the default password store is the Google account
-// store, and false when the profile store is the default store.
-extern const char kIsAccountStoreDefault[];
-
 // A dictionary of account-storage-related settings that exist per Gaia account
 // (e.g. whether that user has opted in). It maps from hash of Gaia ID to
 // dictionary of key-value pairs.

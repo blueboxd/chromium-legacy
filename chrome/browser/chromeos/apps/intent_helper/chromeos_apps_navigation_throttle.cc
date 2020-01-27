@@ -11,6 +11,7 @@
 #include "base/task/post_task.h"
 #include "chrome/browser/apps/intent_helper/apps_navigation_types.h"
 #include "chrome/browser/apps/intent_helper/intent_picker_auto_display_service.h"
+#include "chrome/browser/chromeos/apps/metrics/intent_handling_metrics.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/arc/arc_web_contents_data.h"
 #include "chrome/browser/chromeos/arc/intent_helper/arc_intent_picker_app_fetcher.h"
@@ -92,8 +93,9 @@ void ChromeOsAppsNavigationThrottle::OnIntentPickerClosed(
       } else {
         close_reason = apps::IntentPickerCloseReason::ERROR_AFTER_PICKER;
       }
-      RecordUma(launch_name, entry_type, close_reason,
-                apps::Source::kHttpOrHttps, should_persist);
+      apps::IntentHandlingMetrics::RecordIntentPickerUserInteractionMetrics(
+          launch_name, entry_type, close_reason, apps::Source::kHttpOrHttps,
+          should_persist);
       return;
     case apps::PickerEntryType::kUnknown:
       // TODO(crbug.com/826982): This workaround can be removed when preferences
@@ -112,30 +114,18 @@ void ChromeOsAppsNavigationThrottle::OnIntentPickerClosed(
     case apps::PickerEntryType::kMacNative:
       break;
   }
+
+  apps::AppsNavigationThrottle::PickerAction action =
+      apps::AppsNavigationThrottle::GetPickerAction(entry_type, close_reason,
+                                                    should_persist);
+  apps::AppsNavigationThrottle::Platform platform =
+      apps::AppsNavigationThrottle::GetDestinationPlatform(launch_name, action);
+  apps::IntentHandlingMetrics::RecordIntentPickerMetrics(
+      apps::Source::kHttpOrHttps, should_persist, action, platform);
+
   apps::AppsNavigationThrottle::OnIntentPickerClosed(
       web_contents, ui_auto_display_service, url, launch_name, entry_type,
       close_reason, should_persist);
-}
-
-// static
-void ChromeOsAppsNavigationThrottle::RecordUma(
-    const std::string& selected_app_package,
-    apps::PickerEntryType entry_type,
-    apps::IntentPickerCloseReason close_reason,
-    apps::Source source,
-    bool should_persist) {
-  if (entry_type == apps::PickerEntryType::kArc &&
-      (close_reason == apps::IntentPickerCloseReason::PREFERRED_APP_FOUND ||
-       close_reason == apps::IntentPickerCloseReason::OPEN_APP)) {
-    UMA_HISTOGRAM_ENUMERATION("Arc.UserInteraction",
-                              arc::UserInteractionType::APP_STARTED_FROM_LINK);
-  }
-  PickerAction action = apps::AppsNavigationThrottle::GetPickerAction(
-      entry_type, close_reason, should_persist);
-  Platform platform = GetDestinationPlatform(selected_app_package, action);
-  apps::AppsNavigationThrottle::RecordUma(selected_app_package, entry_type,
-                                          close_reason, source, should_persist,
-                                          action, platform);
 }
 
 ChromeOsAppsNavigationThrottle::ChromeOsAppsNavigationThrottle(

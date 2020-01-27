@@ -112,6 +112,7 @@
 <translation id="2352467521400612932">Поставки за пенкало</translation>
 <translation id="2354174487190027830">Се активира <ph name="NAME" /></translation>
 <translation id="2359808026110333948">Продолжи</translation>
+<translation id="2364154243880592194">Статусна фиока, време <ph name="TIME" />, <ph name="BATTERY" /> Притиснете „Пребарување + лево“ за да пристапите до центарот за известувања.</translation>
 <translation id="2365393535144473978">Ако вклучите мобилен интернет, ќе се вклучи и Bluetooth.</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="2412593942846481727">Достапно е ажурирање</translation>
@@ -336,6 +337,7 @@
 <translation id="5669267381087807207">Се активира</translation>
 <translation id="5673434351075758678">Од „<ph name="FROM_LOCALE" />“ на „<ph name="TO_LOCALE" />“ по синхронизацијата на поставките.</translation>
 <translation id="5682642926269496722">„Помошникот на Google“ не е достапен за тековната корисничка сметка.</translation>
+<translation id="5689633613396158040">„Ноќно светло“ го олеснува гледањето во екранот или читањето при слаба светлина. Допрете за да го промените времето на вклучување на „Ноќно светло“ или исклучете го целосно.</translation>
 <translation id="5691772641933328258">Отпечатокот не е препознаен</translation>
 <translation id="5710450975648804523">Вклучено е „Не вознемирувај“</translation>
 <translation id="573413375004481890">Уредов не можеше да ги поддржува сите ваши екрани, па затоа исклучивме еден</translation>
@@ -515,6 +517,7 @@
 <translation id="8142441511840089262">Двоен клик</translation>
 <translation id="8142699993796781067">Приватна мрежа</translation>
 <translation id="8152092012181020186">Притиснете Ctrl + W за да затворите.</translation>
+<translation id="8155007568264258537"><ph name="FEATURE_NAME" /> Администраторот управува со поставкава.</translation>
 <translation id="8167567890448493835">Се користи <ph name="LOCALE_NAME" /></translation>
 <translation id="8190698733819146287">Приспособи јазици и внесување...</translation>
 <translation id="8192202700944119416">Известувањата се скриени.</translation>

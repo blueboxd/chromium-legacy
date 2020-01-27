@@ -41,15 +41,13 @@
 - (instancetype)initWithBaseViewController:(UIViewController*)viewController
                                      title:(NSString*)title
                                    message:(NSString*)message
-                              browserState:
-                                  (ios::ChromeBrowserState*)browserState
+                              browserState:(ChromeBrowserState*)browserState
     NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)initWithBaseViewController:(UIViewController*)viewController
     NS_UNAVAILABLE;
 - (instancetype)initWithBaseViewController:(UIViewController*)viewController
-                              browserState:
-                                  (ios::ChromeBrowserState*)browserState
+                              browserState:(ChromeBrowserState*)browserState
     NS_UNAVAILABLE;
 - (instancetype)initWithBaseViewController:(UIViewController*)viewController
                                    browser:(Browser*)browser NS_UNAVAILABLE;

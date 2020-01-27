@@ -29,6 +29,7 @@
 #include "ui/gfx/image/image_skia_rep.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/gfx/x/x11_atom_cache.h"
+#include "ui/gfx/x/x11_error_tracker.h"
 #include "ui/gfx/x/x11_path.h"
 #include "ui/platform_window/common/platform_window_defaults.h"
 
@@ -43,6 +44,12 @@ const int kAllWorkspaces = 0xFFFFFFFF;
 constexpr char kX11WindowRolePopup[] = "popup";
 constexpr char kX11WindowRoleBubble[] = "bubble";
 constexpr unsigned char kDarkGtkThemeVariant[] = "dark";
+
+constexpr long kSystemTrayRequestDock = 0;
+
+constexpr int kXembedInfoProtocolVersion = 0;
+constexpr int kXembedFlagMap = 1 << 0;
+constexpr int kXembedInfoFlags = kXembedFlagMap;
 
 // In some situations, views tries to make a zero sized window, and that
 // makes us crash. Make sure we have valid sizes.
@@ -244,6 +251,16 @@ void XWindow::Init(const Configuration& config) {
                            bounds_in_pixels_.height(),
                            0,  // border width
                            depth, InputOutput, visual, attribute_mask, &swa);
+
+  // It can be a status icon window. If it fails to initialize, don't provide
+  // him with a native window handle, close self and let the client destroy
+  // ourselves.
+  if (config.wm_role_name == kStatusIconWmRoleName &&
+      !InitializeAsStatusIcon()) {
+    Close();
+    return;
+  }
+
   OnXWindowCreated();
 
   // TODO(erg): Maybe need to set a ViewProp here like in RWHL::RWHL().
@@ -1654,6 +1671,45 @@ void XWindow::UpdateWindowRegion(XRegion* xregion) {
 void XWindow::NotifyBoundsChanged(const gfx::Rect& new_bounds_in_px) {
   ResetWindowRegion();
   OnXWindowBoundsChanged(new_bounds_in_px);
+}
+
+bool XWindow::InitializeAsStatusIcon() {
+  std::string atom_name =
+      "_NET_SYSTEM_TRAY_S" + base::NumberToString(DefaultScreen(xdisplay_));
+  XID manager = XGetSelectionOwner(xdisplay_, gfx::GetAtom(atom_name.c_str()));
+  if (manager == x11::None)
+    return false;
+
+  ui::SetIntArrayProperty(xwindow_, "_XEMBED_INFO", "CARDINAL",
+                          {kXembedInfoProtocolVersion, kXembedInfoFlags});
+
+  XSetWindowAttributes attrs;
+  unsigned long flags = 0;
+  if (has_alpha()) {
+    flags |= CWBackPixel;
+    attrs.background_pixel = 0;
+  } else {
+    ui::SetIntProperty(xwindow_, "CHROMIUM_COMPOSITE_WINDOW", "CARDINAL", 1);
+    flags |= CWBackPixmap;
+    attrs.background_pixmap = ParentRelative;
+  }
+  XChangeWindowAttributes(xdisplay_, xwindow_, flags, &attrs);
+  XEvent ev;
+  memset(&ev, 0, sizeof(ev));
+  ev.xclient.type = ClientMessage;
+  ev.xclient.window = manager;
+  ev.xclient.message_type = gfx::GetAtom("_NET_SYSTEM_TRAY_OPCODE");
+  ev.xclient.format = 32;
+  ev.xclient.data.l[0] = ui::X11EventSource::GetInstance()->GetTimestamp();
+  ev.xclient.data.l[1] = kSystemTrayRequestDock;
+  ev.xclient.data.l[2] = xwindow_;
+  bool error;
+  {
+    gfx::X11ErrorTracker error_tracker;
+    XSendEvent(xdisplay_, manager, false, NoEventMask, &ev);
+    error = error_tracker.FoundNewError();
+  }
+  return !error;
 }
 
 }  // namespace ui

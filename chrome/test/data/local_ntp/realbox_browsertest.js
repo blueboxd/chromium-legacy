@@ -5,12 +5,6 @@
 // Stuff shared between all realbox[0-9]+ tests.
 test.realbox = {};
 
-// TODO(https://crbug.com/1024825): Numeric suffixes were added to reduce the
-// chance of timeouts. This splits these many tests cases over multiple
-// TEST_F()s which yield more parallelism and more realistic timing.
-test.realbox1 = {};
-test.realbox2 = {};
-
 /**
  * @enum {string}
  * @const
@@ -27,6 +21,7 @@ test.realbox.IDS = {
  * @const
  */
 test.realbox.CLASSES = {
+  CLOCK_ICON: 'clock-icon',
   HAS_IMAGE: 'has-image',
   IMAGE_CONTAINER: 'image-container',
   MATCH_IMAGE: 'match-image',
@@ -132,7 +127,7 @@ test.realbox.realboxEl;
 /**
  * Sets up the page for each individual test.
  */
-test.realbox1.setUp = test.realbox2.setUp = function() {
+function setUp() {
   setUpPage('local-ntp-template');
 
   configData.realboxEnabled = true;
@@ -172,6 +167,13 @@ test.realbox1.setUp = test.realbox2.setUp = function() {
 
   assertFalse(test.realbox.areMatchesShowing());
 };
+
+// TODO(https://crbug.com/1024825): Numeric suffixes were added to reduce the
+// chance of timeouts. This splits these many tests cases over multiple
+// TEST_F()s which yield more parallelism and more realistic timing.
+for (let i = 1; i <= 4; ++i) {
+  test[`realbox${i}`] = {setUp};
+}
 
 test.realbox1.testEmptyValueDoesntQueryAutocomplete = function() {
   test.realbox.realboxEl.value = '';
@@ -308,7 +310,7 @@ test.realbox1.testReplyWithInlineAutocompletion = function() {
 // Ensures that deleting text from the input, pasting text into the input, or
 // changing the input when caret is not at the end of the text informs the
 // backend to prevent inline autocompletion for the default match.
-test.realbox1.testPreventInlineAutocompletion = function() {
+test.realbox2.testPreventInlineAutocompletion = function() {
   test.realbox.realboxEl.value = 'supercal';
   test.realbox.realboxEl.dispatchEvent(new CustomEvent('input'));
   assertEquals(1, test.realbox.queries.length);
@@ -353,7 +355,7 @@ test.realbox1.testPreventInlineAutocompletion = function() {
   assertTrue(test.realbox.queries[5].preventInlineAutocomplete);
 };
 
-test.realbox.testTypeInlineAutocompletion = function() {
+test.realbox2.testTypeInlineAutocompletion = function() {
   test.realbox.realboxEl.value = 'what are the';
   test.realbox.realboxEl.dispatchEvent(new CustomEvent('input'));
 
@@ -410,7 +412,7 @@ test.realbox.testTypeInlineAutocompletion = function() {
   assertFalse(wasValueSetterCalled);
 };
 
-test.realbox1.testResultsPreserveCursorPosition = function() {
+test.realbox2.testResultsPreserveCursorPosition = function() {
   test.realbox.realboxEl.value = 'z';
   test.realbox.realboxEl.dispatchEvent(new CustomEvent('input'));
 
@@ -433,13 +435,13 @@ test.realbox1.testResultsPreserveCursorPosition = function() {
   assertEquals(1, test.realbox.realboxEl.selectionEnd);
 };
 
-test.realbox.testCopyEmptyInputFails = function() {
+test.realbox2.testCopyEmptyInputFails = function() {
   const copyEvent = test.realbox.clipboardEvent('copy');
   test.realbox.realboxEl.dispatchEvent(copyEvent);
   assertFalse(copyEvent.defaultPrevented);
 };
 
-test.realbox1.testCopySearchResultFails = function() {
+test.realbox2.testCopySearchResultFails = function() {
   test.realbox.realboxEl.value = 'skittles!';
   test.realbox.realboxEl.dispatchEvent(new CustomEvent('input'));
 
@@ -455,7 +457,7 @@ test.realbox1.testCopySearchResultFails = function() {
   assertFalse(copyEvent.defaultPrevented);
 };
 
-test.realbox1.testCopyUrlSucceeds = function() {
+test.realbox2.testCopyUrlSucceeds = function() {
   test.realbox.realboxEl.value = 'go';
   test.realbox.realboxEl.dispatchEvent(new CustomEvent('input'));
 
@@ -480,13 +482,13 @@ test.realbox1.testCopyUrlSucceeds = function() {
   assertFalse(test.realbox.realboxEl.value === '');
 };
 
-test.realbox1.testCutEmptyInputFails = function() {
+test.realbox2.testCutEmptyInputFails = function() {
   const cutEvent = test.realbox.clipboardEvent('cut');
   test.realbox.realboxEl.dispatchEvent(cutEvent);
   assertFalse(cutEvent.defaultPrevented);
 };
 
-test.realbox1.testCutSearchResultFails = function() {
+test.realbox2.testCutSearchResultFails = function() {
   test.realbox.realboxEl.value = 'skittles!';
   test.realbox.realboxEl.dispatchEvent(new CustomEvent('input'));
 
@@ -502,7 +504,7 @@ test.realbox1.testCutSearchResultFails = function() {
   assertFalse(cutEvent.defaultPrevented);
 };
 
-test.realbox1.testCutUrlSucceeds = function() {
+test.realbox2.testCutUrlSucceeds = function() {
   test.realbox.realboxEl.value = 'go';
   test.realbox.realboxEl.dispatchEvent(new CustomEvent('input'));
 
@@ -529,7 +531,7 @@ test.realbox1.testCutUrlSucceeds = function() {
   assertTrue(test.realbox.realboxEl.value === '');
 };
 
-test.realbox1.testStaleAutocompleteResult = function() {
+test.realbox2.testStaleAutocompleteResult = function() {
   test.realbox.realboxEl.value = 'g';
   test.realbox.realboxEl.dispatchEvent(new CustomEvent('input'));
 
@@ -555,7 +557,7 @@ test.realbox1.testStaleAutocompleteResult = function() {
   assertTrue(matchesEl === matchesEl2);
 };
 
-test.realbox2.testAutocompleteResultChanged = function() {
+test.realbox3.testAutocompleteResultChanged = function() {
   test.realbox.realboxEl.value = 'g';
   test.realbox.realboxEl.dispatchEvent(new CustomEvent('input'));
 
@@ -607,7 +609,7 @@ test.realbox2.testAutocompleteResultChanged = function() {
   assertFalse(matchesEl === matchesEl3);
 };
 
-test.realbox2.testDeleteAutocompleteResultUnmodifiedDelete = function() {
+test.realbox3.testDeleteAutocompleteResultUnmodifiedDelete = function() {
   const keyEvent = new KeyboardEvent('keydown', {
     bubbles: true,
     cancelable: true,
@@ -617,7 +619,7 @@ test.realbox2.testDeleteAutocompleteResultUnmodifiedDelete = function() {
   assertFalse(keyEvent.defaultPrevented);
 };
 
-test.realbox2.testDeleteAutocompleteResultShiftDeleteWithNoMatches =
+test.realbox3.testDeleteAutocompleteResultShiftDeleteWithNoMatches =
     function() {
   const keyEvent = new KeyboardEvent('keydown', {
     bubbles: true,
@@ -629,7 +631,7 @@ test.realbox2.testDeleteAutocompleteResultShiftDeleteWithNoMatches =
   assertFalse(keyEvent.defaultPrevented);
 };
 
-test.realbox2.testUnsupportedDeletion = function() {
+test.realbox3.testUnsupportedDeletion = function() {
   test.realbox.realboxEl.value = 'hello world';
   test.realbox.realboxEl.dispatchEvent(new CustomEvent('input'));
 
@@ -651,7 +653,7 @@ test.realbox2.testUnsupportedDeletion = function() {
   assertFalse(matchesEl.classList.contains(test.realbox.CLASSES.REMOVABLE));
 };
 
-test.realbox2.testSupportedDeletionSelectNextMatch = function() {
+test.realbox3.testSupportedDeletionSelectNextMatch = function() {
   test.realbox.realboxEl.value = 'hello world';
   test.realbox.realboxEl.dispatchEvent(new CustomEvent('input'));
   assertEquals(1, test.realbox.queries.length);
@@ -711,7 +713,7 @@ test.realbox2.testSupportedDeletionSelectNextMatch = function() {
   assertEquals('hello world', test.realbox.realboxEl.value);
 };
 
-test.realbox2.testSupportedDeletionDoNotSelectNextMatch = function() {
+test.realbox3.testSupportedDeletionDoNotSelectNextMatch = function() {
   test.realbox.realboxEl.value = 'hello';
   test.realbox.realboxEl.dispatchEvent(new CustomEvent('input'));
 
@@ -767,7 +769,7 @@ test.realbox2.testSupportedDeletionDoNotSelectNextMatch = function() {
   assertEquals('hello', test.realbox.realboxEl.value);
 };
 
-test.realbox2.testNonShiftDelete = function() {
+test.realbox3.testNonShiftDelete = function() {
   test.realbox.realboxEl.value = 'hello world';
   test.realbox.realboxEl.dispatchEvent(new CustomEvent('input'));
 
@@ -785,7 +787,7 @@ test.realbox2.testNonShiftDelete = function() {
   assertFalse(deleteKey.defaultPrevented);
 };
 
-test.realbox2.testRemoveIcon = function() {
+test.realbox3.testRemoveIcon = function() {
   test.realbox.realboxEl.value = 'hello world';
   test.realbox.realboxEl.dispatchEvent(new CustomEvent('input'));
 
@@ -823,7 +825,7 @@ test.realbox2.testRemoveIcon = function() {
   assertFalse(test.realbox.areMatchesShowing());
 };
 
-test.realbox2.testPressEnterOnSelectedMatch = function() {
+test.realbox3.testPressEnterOnSelectedMatch = function() {
   test.realbox.realboxEl.dispatchEvent(new Event('focus'));
   test.realbox.realboxEl.value = 'hello world';
   test.realbox.realboxEl.dispatchEvent(new CustomEvent('input'));
@@ -855,7 +857,7 @@ test.realbox2.testPressEnterOnSelectedMatch = function() {
   assertEquals(1, test.realbox.opens.length);
 };
 
-test.realbox2.testPressEnterTooQuickly = function() {
+test.realbox3.testPressEnterTooQuickly = function() {
   test.realbox.realboxEl.dispatchEvent(new Event('focus'));
   test.realbox.realboxEl.value = 'hello';
   test.realbox.realboxEl.dispatchEvent(new CustomEvent('input'));
@@ -902,7 +904,7 @@ test.realbox2.testPressEnterTooQuickly = function() {
   assertEquals(matches[0].destinationUrl, test.realbox.opens[0].url);
 };
 
-test.realbox2.testPressEnterNoSelectedMatch = function() {
+test.realbox4.testPressEnterNoSelectedMatch = function() {
   test.realbox.realboxEl.value = 'hello world';
   test.realbox.realboxEl.dispatchEvent(new CustomEvent('input'));
 
@@ -933,7 +935,7 @@ test.realbox2.testPressEnterNoSelectedMatch = function() {
   assertEquals(0, test.realbox.opens.length);
 };
 
-test.realbox2.testArrowDownMovesFocus = function() {
+test.realbox4.testArrowDownMovesFocus = function() {
   test.realbox.realboxEl.value = 'hello ';
   test.realbox.realboxEl.dispatchEvent(new CustomEvent('input'));
 
@@ -986,7 +988,7 @@ test.realbox2.testArrowDownMovesFocus = function() {
   assertEquals(document.activeElement, matchEls[1])
 };
 
-test.realbox2.testPressEnterAfterFocusout = function() {
+test.realbox4.testPressEnterAfterFocusout = function() {
   test.realbox.realboxEl.value = 'hello world';
   test.realbox.realboxEl.dispatchEvent(new CustomEvent('input'));
 
@@ -1031,7 +1033,7 @@ test.realbox2.testPressEnterAfterFocusout = function() {
   assertEquals(1, test.realbox.opens.length);
 };
 
-test.realbox2.testInputAfterFocusoutPrefixMatches = function() {
+test.realbox4.testInputAfterFocusoutPrefixMatches = function() {
   test.realbox.realboxEl.value = 'hello';
   test.realbox.realboxEl.dispatchEvent(new CustomEvent('input'));
 
@@ -1066,7 +1068,7 @@ test.realbox2.testInputAfterFocusoutPrefixMatches = function() {
   assertEquals('hello world', test.realbox.realboxEl.value);
 };
 
-test.realbox2.testInputAfterFocusoutZeroPrefixMatches = function() {
+test.realbox4.testInputAfterFocusoutZeroPrefixMatches = function() {
   // Trigger zero suggest querying autocomplete.
   test.realbox.realboxEl.onmousedown(test.realbox.trustedEventFacade(
       'mousedown', {button: 0, target: test.realbox.realboxEl}));
@@ -1101,7 +1103,7 @@ test.realbox2.testInputAfterFocusoutZeroPrefixMatches = function() {
   assertEquals('', test.realbox.realboxEl.value);
 };
 
-test.realbox2.testArrowUpDownShowsMatchesWhenHidden = function() {
+test.realbox4.testArrowUpDownShowsMatchesWhenHidden = function() {
   test.realbox.realboxEl.value = 'hello world';
   test.realbox.realboxEl.dispatchEvent(new CustomEvent('input'));
 
@@ -1142,7 +1144,7 @@ test.realbox2.testArrowUpDownShowsMatchesWhenHidden = function() {
 };
 
 // Test that trying to open e.g. chrome:// links goes through the mojo API.
-test.realbox2.testPrivilegedDestinationUrls = function() {
+test.realbox4.testPrivilegedDestinationUrls = function() {
   test.realbox.realboxEl.dispatchEvent(new Event('focus'));
   test.realbox.realboxEl.value = 'about';
   test.realbox.realboxEl.dispatchEvent(new CustomEvent('input'));
@@ -1198,7 +1200,7 @@ test.realbox2.testPrivilegedDestinationUrls = function() {
   assertEquals(3, test.realbox.opens.length);
 };
 
-test.realbox2.testRealboxIconZeroSuggest = function() {
+test.realbox4.testRealboxIconZeroSuggest = function() {
   const realboxIcon = $(test.realbox.IDS.REALBOX_ICON);
   assertFalse(!!realboxIcon.style.backgroundImage);
 
@@ -1249,7 +1251,7 @@ test.realbox2.testRealboxIconZeroSuggest = function() {
   assertTrue(!!realboxIcon.style.backgroundImage);
 };
 
-test.realbox2.testRealboxIconPrefixSearch = function() {
+test.realbox4.testRealboxIconPrefixSearch = function() {
   const realboxIcon = $(test.realbox.IDS.REALBOX_ICON);
   assertFalse(!!realboxIcon.style.backgroundImage);
 
@@ -1261,13 +1263,14 @@ test.realbox2.testRealboxIconPrefixSearch = function() {
     matches: [
       test.realbox.getUrlMatch({allowedToBeDefaultMatch: true}),
       test.realbox.getSearchMatch(),
+      test.realbox.getSearchMatch({type: 'search-history'}),
     ],
   });
   assertTrue(test.realbox.areMatchesShowing());
 
   // First URL match should be showing and the favicon should be in the realbox.
   const matchEls = $(test.realbox.IDS.REALBOX_MATCHES).children;
-  assertEquals(2, matchEls.length);
+  assertEquals(3, matchEls.length);
   assertTrue(matchEls[0].classList.contains(test.realbox.CLASSES.SELECTED));
   assertTrue(!!realboxIcon.style.backgroundImage);
 
@@ -1282,6 +1285,12 @@ test.realbox2.testRealboxIconPrefixSearch = function() {
   // Second search match should clear the favicon.
   assertTrue(matchEls[1].classList.contains(test.realbox.CLASSES.SELECTED));
   assertFalse(!!realboxIcon.style.backgroundImage);
+
+  test.realbox.realboxEl.dispatchEvent(arrowDown);
+
+  // Third search match should change to clock icon.
+  assertTrue(matchEls[2].classList.contains(test.realbox.CLASSES.SELECTED));
+  assertEquals(realboxIcon.className, test.realbox.CLASSES.CLOCK_ICON);
 
   const escapeToDefaultMatch = new KeyboardEvent('keydown', {
     bubbles: true,
@@ -1308,7 +1317,7 @@ test.realbox2.testRealboxIconPrefixSearch = function() {
   assertFalse(!!realboxIcon.style.backgroundImage);
 };
 
-test.realbox2.testEntityMatchImage = function() {
+test.realbox4.testEntityMatchImage = function() {
   const imageUrl = 'http://example.com/star.png';
   const dataUrl = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAC=';
 
@@ -1369,7 +1378,7 @@ test.realbox2.testEntityMatchImage = function() {
   assertEquals('transparent', imageContainerEl.style.backgroundColor);
 };
 
-test.realbox2.testCharTypedToRepaintLatency = function() {
+test.realbox4.testCharTypedToRepaintLatency = function() {
   // Insert a few characters into the input.
   test.realbox.realboxEl.value = 'h';
   test.realbox.realboxEl.dispatchEvent(new CustomEvent('input'));

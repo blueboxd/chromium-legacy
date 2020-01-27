@@ -150,11 +150,12 @@ class Port(object):
     )
 
     CONFIGURATION_SPECIFIER_MACROS = {
-        # NOTE: We don't support specifiers for mac10.14 or mac10.15 because
-        # we don't have separate baselines for them (they share the mac10.13
+        # NOTE: We don't support specifiers for mac10.15 because
+        # we don't have separate baselines for it (it share the mac10.14
         # results in the platform/mac directory). This list will need to be
         # updated if/when we actually have separate baselines.
-        'mac': ['retina', 'mac10.10', 'mac10.11', 'mac10.12', 'mac10.13'],
+        'mac': ['retina', 'mac10.10', 'mac10.11', 'mac10.12', 'mac10.13',
+                'mac10.14'],
         'win': ['win7', 'win10'],
         'linux': ['trusty'],
         'fuschia': ['fuchsia'],

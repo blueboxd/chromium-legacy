@@ -20,6 +20,7 @@
 <translation id="2915596697727466327">Chromium usa Face ID para garantizar el acceso autorizado a tus contraseñas.</translation>
 <translation id="3256316712990552818">Copiada a Chromium</translation>
 <translation id="3805899903892079518">Chromium no puede acceder a tus fotos y vídeos (para permitirlo, ve a Ajustes de iOS &gt; Privacidad &gt; Fotos).</translation>
+<translation id="4287098963058057749">Los Términos del Servicio de Chromium cambiarán el 31 de marzo. <ph name="BEGIN_LINK" />Revísalos<ph name="END_LINK" /></translation>
 <translation id="4555020257205549924">Si esta función está activada, Chromium ofrecerá la posibilidad de traducir páginas escritas en otros idiomas con el Traductor de Google. <ph name="BEGIN_LINK" />Más información<ph name="END_LINK" /></translation>
 <translation id="4681781466797808448">Activar el escáner de Chromium</translation>
 <translation id="4787850887676698916">Aquí aparecerán las pestañas que hayas abierto en Chromium en otros dispositivos.</translation>
@@ -48,6 +49,5 @@
 <translation id="8586442755830160949">Copyright <ph name="YEAR" /> Los creadores de Chromium. Todos los derechos reservados.</translation>
 <translation id="8809780021347235332">Para guardar imágenes, toca Configuración y permite que Chromium use tus fotos</translation>
 <translation id="9022552996538154597">Iniciar sesión en Chromium</translation>
-<translation id="9217078088703304241"><ph name="BEGIN_LINK" />Consulta los Términos del Servicio de Chromium actualizados<ph name="END_LINK" /></translation>
 <translation id="985602178874221306">Los creadores de Chromium</translation>
 </translationbundle>

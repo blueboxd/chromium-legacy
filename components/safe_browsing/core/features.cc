@@ -10,6 +10,7 @@
 #include <vector>
 #include "base/feature_list.h"
 #include "base/metrics/field_trial_params.h"
+#include "components/safe_browsing/buildflags.h"
 
 #include "base/macros.h"
 #include "base/values.h"
@@ -43,17 +44,30 @@ const base::Feature kContentComplianceEnabled{
 const base::Feature kMalwareScanEnabled{"SafeBrowsingMalwareScanEnabled",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enable saved password protection by default only on desktop.
+#if BUILDFLAG(FULL_SAFE_BROWSING)
+const base::Feature kPasswordProtectionForSavedPasswords{
+    "SafeBrowsingPasswordProtectionForSavedPasswords",
+    base::FEATURE_ENABLED_BY_DEFAULT};
+#else
 const base::Feature kPasswordProtectionForSavedPasswords{
     "SafeBrowsingPasswordProtectionForSavedPasswords",
     base::FEATURE_DISABLED_BY_DEFAULT};
+#endif
 
 const base::Feature kPasswordProtectionShowDomainsForSavedPasswords{
     "SafeBrowsingPasswordProtectionShowDomainsForSavedPasswords",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
+#if BUILDFLAG(FULL_SAFE_BROWSING)
+const base::Feature kPasswordProtectionForSignedInUsers{
+    "SafeBrowsingPasswordProtectionForSignedInUsers",
+    base::FEATURE_ENABLED_BY_DEFAULT};
+#else
 const base::Feature kPasswordProtectionForSignedInUsers{
     "SafeBrowsingPasswordProtectionForSignedInUsers",
     base::FEATURE_DISABLED_BY_DEFAULT};
+#endif
 
 const base::Feature kPromptAppForDeepScanning{
     "SafeBrowsingPromptAppForDeepScanning", base::FEATURE_DISABLED_BY_DEFAULT};

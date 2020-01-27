@@ -235,9 +235,8 @@ void SadTabTabHelper::RemoveApplicationDidBecomeActiveObserver() {
 
 void SadTabTabHelper::UpdateFullscreenDisabler() {
   if (showing_sad_tab_ && web_state_->IsVisible()) {
-    ios::ChromeBrowserState* browser_state =
-        ios::ChromeBrowserState::FromBrowserState(
-            web_state_->GetBrowserState());
+    ChromeBrowserState* browser_state =
+        ChromeBrowserState::FromBrowserState(web_state_->GetBrowserState());
     FullscreenController* fullscreen_controller =
         FullscreenControllerFactory::GetInstance()->GetForBrowserState(
             browser_state);

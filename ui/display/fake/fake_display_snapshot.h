@@ -69,6 +69,7 @@ class FAKE_DISPLAY_EXPORT FakeDisplaySnapshot : public DisplaySnapshot {
     Builder& SetLowDPI();
     // Sets physical_size for high DPI display.
     Builder& SetHighDPI();
+    Builder& SetPrivacyScreen(PrivacyScreenState state);
 
    private:
     // Returns a display mode with |size|. If there is no existing mode, insert

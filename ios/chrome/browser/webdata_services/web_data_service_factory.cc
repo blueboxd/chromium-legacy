@@ -26,7 +26,7 @@ namespace ios {
 
 // static
 WebDataServiceWrapper* WebDataServiceFactory::GetForBrowserState(
-    ios::ChromeBrowserState* browser_state,
+    ChromeBrowserState* browser_state,
     ServiceAccessType access_type) {
   DCHECK(access_type == ServiceAccessType::EXPLICIT_ACCESS ||
          !browser_state->IsOffTheRecord());
@@ -36,7 +36,7 @@ WebDataServiceWrapper* WebDataServiceFactory::GetForBrowserState(
 
 // static
 WebDataServiceWrapper* WebDataServiceFactory::GetForBrowserStateIfExists(
-    ios::ChromeBrowserState* browser_state,
+    ChromeBrowserState* browser_state,
     ServiceAccessType access_type) {
   DCHECK(access_type == ServiceAccessType::EXPLICIT_ACCESS ||
          !browser_state->IsOffTheRecord());
@@ -47,7 +47,7 @@ WebDataServiceWrapper* WebDataServiceFactory::GetForBrowserStateIfExists(
 // static
 scoped_refptr<autofill::AutofillWebDataService>
 WebDataServiceFactory::GetAutofillWebDataForBrowserState(
-    ios::ChromeBrowserState* browser_state,
+    ChromeBrowserState* browser_state,
     ServiceAccessType access_type) {
   WebDataServiceWrapper* wrapper =
       GetForBrowserState(browser_state, access_type);
@@ -57,7 +57,7 @@ WebDataServiceFactory::GetAutofillWebDataForBrowserState(
 // static
 scoped_refptr<autofill::AutofillWebDataService>
 WebDataServiceFactory::GetAutofillWebDataForAccount(
-    ios::ChromeBrowserState* browser_state,
+    ChromeBrowserState* browser_state,
     ServiceAccessType access_type) {
   WebDataServiceWrapper* wrapper =
       GetForBrowserState(browser_state, access_type);
@@ -67,7 +67,7 @@ WebDataServiceFactory::GetAutofillWebDataForAccount(
 // static
 scoped_refptr<KeywordWebDataService>
 WebDataServiceFactory::GetKeywordWebDataForBrowserState(
-    ios::ChromeBrowserState* browser_state,
+    ChromeBrowserState* browser_state,
     ServiceAccessType access_type) {
   WebDataServiceWrapper* wrapper =
       GetForBrowserState(browser_state, access_type);
@@ -77,7 +77,7 @@ WebDataServiceFactory::GetKeywordWebDataForBrowserState(
 // static
 scoped_refptr<TokenWebData>
 WebDataServiceFactory::GetTokenWebDataForBrowserState(
-    ios::ChromeBrowserState* browser_state,
+    ChromeBrowserState* browser_state,
     ServiceAccessType access_type) {
   WebDataServiceWrapper* wrapper =
       GetForBrowserState(browser_state, access_type);

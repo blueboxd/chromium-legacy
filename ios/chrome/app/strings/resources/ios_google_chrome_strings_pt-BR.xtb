@@ -27,7 +27,6 @@
 <translation id="4249068189593983585">Dica do Chrome. Para ver mais opções de guia, toque no botão "Mostrar guias" na barra de ferramentas localizada na parte superior ou inferior da tela e mantenha-o pressionado.</translation>
 <translation id="4523886039239821078">Alguns complementos causam a falha do Google Chrome. Desinstale-os.</translation>
 <translation id="5389212809648216794">O Google Chrome não pode usar a câmera porque ela está sendo usada por outro app</translation>
-<translation id="5621912349729388018"><ph name="BEGIN_LINK" />Leia os Termos de Serviço atualizados do Chrome.<ph name="END_LINK" /></translation>
 <translation id="5639704535586432836">Abra Ajustes &gt; Privacidade &gt; Câmera &gt; Google Chrome e ative a câmera.</translation>
 <translation id="5642200033778930880">O Google Chrome não pode usar a câmera no modo Visualização dividida</translation>
 <translation id="5690427481109656848">Google LLC</translation>
@@ -51,4 +50,5 @@
 <translation id="840168496893712993">Alguns complementos causam a falha do Google Chrome. Tente desinstalá-los.</translation>
 <translation id="8459495907675268833">Os dados selecionados foram removidos do Chrome e dos dispositivos sincronizados. É possível que sua Conta do Google tenha outras formas de histórico de navegação, como pesquisas e atividades de outros serviços do Google em history.google.com.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
+<translation id="8574235780160508979">Os Termos de Serviço do Chrome serão atualizados em 31 de março. <ph name="BEGIN_LINK" />Revise-os<ph name="END_LINK" /></translation>
 </translationbundle>

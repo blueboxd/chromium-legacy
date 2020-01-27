@@ -24,7 +24,9 @@
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
 #include "components/safe_browsing/core/features.h"
 #include "components/security_interstitials/content/security_interstitial_controller_client.h"
+#include "components/security_interstitials/content/unsafe_resource_util.h"
 #include "components/security_interstitials/core/safe_browsing_quiet_error_ui.h"
+#include "components/security_interstitials/core/unsafe_resource.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -419,7 +421,7 @@ class SafeBrowsingBlockingPageTestBase
     resource->is_subresource = is_subresource;
     resource->threat_type = type;
     resource->web_contents_getter =
-        security_interstitials::UnsafeResource::GetWebContentsGetter(
+        security_interstitials::GetWebContentsGetter(
             web_contents()->GetMainFrame()->GetProcess()->GetID(),
             web_contents()->GetMainFrame()->GetRoutingID());
     resource->threat_source = safe_browsing::ThreatSource::LOCAL_PVER3;
@@ -1184,7 +1186,7 @@ class SafeBrowsingBlockingQuietPageTest
     resource->is_subresource = is_subresource;
     resource->threat_type = type;
     resource->web_contents_getter =
-        security_interstitials::UnsafeResource::GetWebContentsGetter(
+        security_interstitials::GetWebContentsGetter(
             web_contents()->GetMainFrame()->GetProcess()->GetID(),
             web_contents()->GetMainFrame()->GetRoutingID());
     resource->threat_source = safe_browsing::ThreatSource::LOCAL_PVER3;

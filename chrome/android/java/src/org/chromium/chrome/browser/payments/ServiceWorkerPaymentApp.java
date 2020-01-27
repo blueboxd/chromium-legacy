@@ -5,12 +5,10 @@
 package org.chromium.chrome.browser.payments;
 
 import android.graphics.drawable.BitmapDrawable;
-import android.os.Handler;
 import android.text.TextUtils;
 
 import androidx.annotation.Nullable;
 
-import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.components.payments.MethodStrings;
 import org.chromium.components.payments.PaymentHandlerHost;
 import org.chromium.content_public.browser.WebContents;
@@ -37,16 +35,14 @@ import java.util.Set;
  *
  * @see https://w3c.github.io/payment-handler/
  */
-public class ServiceWorkerPaymentApp extends PaymentInstrument implements PaymentApp {
+public class ServiceWorkerPaymentApp extends PaymentInstrument {
     private final WebContents mWebContents;
     private final long mRegistrationId;
     private final URI mScope;
     private final Set<String> mMethodNames;
-    private final boolean mExplicitlyVerified;
     private final Capabilities[] mCapabilities;
     private final boolean mCanPreselect;
     private final Set<String> mPreferredRelatedApplicationIds;
-    private final boolean mIsIncognito;
     private final SupportedDelegations mSupportedDelegations;
 
     // Below variables are used for installable service worker payment app specifically.
@@ -104,10 +100,6 @@ public class ServiceWorkerPaymentApp extends PaymentInstrument implements Paymen
      * @param icon                           The drawable icon of the payment app.
      * @param methodNames                    A set of payment method names supported by the payment
      *                                       app.
-     * @param explicitlyVerified             A flag indicates whether this app has explicitly
-     *                                       verified payment methods, like listed as default
-     *                                       application or supported origin in the payment methods'
-     *                                       manifest.
      * @param capabilities                   A set of capabilities of the payment instruments in
      *                                       this payment app (only valid for basic-card payment
      *                                       method for now).
@@ -116,9 +108,8 @@ public class ServiceWorkerPaymentApp extends PaymentInstrument implements Paymen
      */
     public ServiceWorkerPaymentApp(WebContents webContents, long registrationId, URI scope,
             @Nullable String name, @Nullable String userHint, String origin,
-            @Nullable BitmapDrawable icon, String[] methodNames, boolean explicitlyVerified,
-            Capabilities[] capabilities, String[] preferredRelatedApplicationIds,
-            SupportedDelegations supportedDelegations) {
+            @Nullable BitmapDrawable icon, String[] methodNames, Capabilities[] capabilities,
+            String[] preferredRelatedApplicationIds, SupportedDelegations supportedDelegations) {
         // Do not display duplicate information.
         super(scope.toString(), TextUtils.isEmpty(name) ? origin : name, userHint,
                 TextUtils.isEmpty(name) ? null : origin, icon);
@@ -135,17 +126,12 @@ public class ServiceWorkerPaymentApp extends PaymentInstrument implements Paymen
             mMethodNames.add(methodNames[i]);
         }
 
-        mExplicitlyVerified = explicitlyVerified;
-
         mCapabilities = Arrays.copyOf(capabilities, capabilities.length);
 
         mPreferredRelatedApplicationIds = new HashSet<>();
         Collections.addAll(mPreferredRelatedApplicationIds, preferredRelatedApplicationIds);
 
         mSupportedDelegations = supportedDelegations;
-
-        ChromeActivity activity = ChromeActivity.fromWebContents(mWebContents);
-        mIsIncognito = activity != null && activity.getCurrentTabModel().isIncognito();
 
         mNeedsInstallation = false;
         mAppName = name;
@@ -187,15 +173,11 @@ public class ServiceWorkerPaymentApp extends PaymentInstrument implements Paymen
         mMethodNames = new HashSet<>();
         mMethodNames.add(methodName);
         // Installable payment apps must be default application of a payment method.
-        mExplicitlyVerified = true;
         mCapabilities = new Capabilities[0];
         mPreferredRelatedApplicationIds = new HashSet<>();
         Collections.addAll(mPreferredRelatedApplicationIds, preferredRelatedApplicationIds);
 
         mSupportedDelegations = supportedDelegations;
-
-        ChromeActivity activity = ChromeActivity.fromWebContents(mWebContents);
-        mIsIncognito = activity != null && activity.getCurrentTabModel().isIncognito();
 
         mNeedsInstallation = true;
         mAppName = name;
@@ -215,48 +197,6 @@ public class ServiceWorkerPaymentApp extends PaymentInstrument implements Paymen
 
     /*package*/ URI getScope() {
         return mScope;
-    }
-
-    @Override
-    public void getInstruments(String id, Map<String, PaymentMethodData> methodDataMap,
-            String origin, String iframeOrigin, byte[][] unusedCertificateChain,
-            Map<String, PaymentDetailsModifier> modifiers, final InstrumentsCallback callback) {
-        // Do not send canMakePayment event when in incognito mode or only standardized payment
-        // methods are supported or this app needs installation for the payment request or this app
-        // has not been explicitly verified.
-        if (mIsIncognito || isOnlySupportStandardizedPaymentMethods(methodDataMap)
-                || mNeedsInstallation || !mExplicitlyVerified) {
-            new Handler().post(() -> {
-                List<PaymentInstrument> instruments =
-                        Collections.singletonList(ServiceWorkerPaymentApp.this);
-                callback.onInstrumentsReady(ServiceWorkerPaymentApp.this, instruments);
-            });
-            return;
-        }
-
-        ServiceWorkerPaymentAppBridge.canMakePayment(mWebContents, mRegistrationId,
-                mScope.toString(), id, origin, iframeOrigin, new HashSet<>(methodDataMap.values()),
-                new HashSet<>(modifiers.values()), (boolean canMakePayment) -> {
-                    List<PaymentInstrument> instruments = canMakePayment
-                            ? Collections.singletonList(ServiceWorkerPaymentApp.this)
-                            : Collections.emptyList();
-                    callback.onInstrumentsReady(ServiceWorkerPaymentApp.this, instruments);
-                });
-    }
-
-    // Returns true if only standardized payment methods are supported.
-    private boolean isOnlySupportStandardizedPaymentMethods(
-            Map<String, PaymentMethodData> methodDataMap) {
-        Set<String> requestMethods = new HashSet<>(methodDataMap.keySet());
-        requestMethods.retainAll(mMethodNames);
-        assert !requestMethods.isEmpty();
-        Set<String> standardizedPaymentMethods = new HashSet<>();
-        standardizedPaymentMethods.add(MethodStrings.BASIC_CARD);
-        standardizedPaymentMethods.add(MethodStrings.INTERLEDGER);
-        standardizedPaymentMethods.add(MethodStrings.PAYEE_CREDIT_TRANSFER);
-        standardizedPaymentMethods.add(MethodStrings.PAYER_CREDIT_TRANSFER);
-        standardizedPaymentMethods.add(MethodStrings.TOKENIZED_CARD);
-        return standardizedPaymentMethods.containsAll(requestMethods);
     }
 
     // Matches ||requestMethodData|.supportedNetwokrs for 'basic-card' payment method with the
@@ -300,30 +240,8 @@ public class ServiceWorkerPaymentApp extends PaymentInstrument implements Paymen
     }
 
     @Override
-    public Set<String> getAppMethodNames() {
-        return Collections.unmodifiableSet(mMethodNames);
-    }
-
-    @Override
-    public boolean supportsMethodsAndData(Map<String, PaymentMethodData> methodsAndData) {
-        Set<String> methodNames = new HashSet<>(methodsAndData.keySet());
-        methodNames.retainAll(mMethodNames);
-        return !methodNames.isEmpty();
-    }
-
-    @Override
-    public Set<String> getPreferredRelatedApplicationIds() {
-        return Collections.unmodifiableSet(mPreferredRelatedApplicationIds);
-    }
-
-    @Override
-    public String getAppIdentifier() {
-        return getIdentifier();
-    }
-
-    @Override
     public Set<String> getInstrumentMethodNames() {
-        return getAppMethodNames();
+        return Collections.unmodifiableSet(mMethodNames);
     }
 
     @Override

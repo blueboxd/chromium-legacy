@@ -5,6 +5,7 @@ twellington@chromium.org
 # This is for simple changes of adding/removing features.  For more structural
 # changes, use the normal OWNERS rules.
 per-file ChromeFeatureList.java=*
+per-file chrome_feature_list.*=*
 
 # TEAM: clank-modularization@chromium.org
 # COMPONENT: UI>Browser>Mobile

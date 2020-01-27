@@ -45,7 +45,7 @@ class PromptAction : public Action {
       base::OnceCallback<void(const ClientStatus&)> wait_for_dom_callback);
   void OnDoneWaitForDom(const ClientStatus& status);
   void OnSuggestionChosen(int choice_index);
-  void EndAction(const ProcessedActionStatusProto& status);
+  void EndAction(const ClientStatus& status);
 
   ProcessActionCallback callback_;
 

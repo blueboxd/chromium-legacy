@@ -763,7 +763,8 @@ void ProfileShortcutManagerWin::HasProfileShortcuts(
   base::PostTaskAndReplyWithResult(
       base::CreateCOMSTATaskRunner({base::ThreadPool(), base::MayBlock()})
           .get(),
-      FROM_HERE, base::Bind(&HasAnyProfileShortcuts, profile_path), callback);
+      FROM_HERE, base::BindOnce(&HasAnyProfileShortcuts, profile_path),
+      base::BindOnce(callback));
 }
 
 void ProfileShortcutManagerWin::GetShortcutProperties(

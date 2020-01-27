@@ -100,6 +100,10 @@
         "specifiers": ["Retina", "Release"],
         "is_try_builder": true
     },
+    "mac10.14-blink-rel": {
+        "port_name": "mac-mac10.14",
+        "specifiers": ["Mac10.14", "Release"]
+    },
     "win7-blink-rel": {
         "port_name": "win-win7",
         "specifiers": ["Win7", "Release"],

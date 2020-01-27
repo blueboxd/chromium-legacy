@@ -134,6 +134,7 @@
 <translation id="1994173015038366702">Saidi URL</translation>
 <translation id="2000419248597011803">Saadab teie vaikeotsingumootorile mõned küpsisefailid ja otsingud teie aadressiribalt ning otsingukastist</translation>
 <translation id="2002537628803770967">Krediitkaardid ja aadressid, mis kasutavad teenust Google Pay</translation>
+<translation id="2012973609889389923">Kiire sait</translation>
 <translation id="2013642289801508067">{FILE_COUNT,plural, =1{# fail}other{# faili}}</translation>
 <translation id="2017836877785168846">Kustutab aadressiribalt ajaloo ja automaatse täitmise teabe.</translation>
 <translation id="2021896219286479412">Saidi juhtelemendid täisekraanil</translation>
@@ -306,6 +307,7 @@
 <translation id="3298243779924642547">Lite</translation>
 <translation id="3303414029551471755">Kas soovite jätkata sisu allalaadimist?</translation>
 <translation id="3306398118552023113">Rakendus töötab Chrome'is</translation>
+<translation id="3312292613668865961">Küsi enne saitidele juurdepääsu andmist virtuaalreaalsuse seadmetele ja andmetele (soovitatav)</translation>
 <translation id="3315103659806849044">Kohandate praegu sünkroonimise ja Google'i teenuste seadeid. Sünkroonimise sisselülitamiseks puudutage ekraani alaosas nuppu Kinnita. Liigu üles</translation>
 <translation id="3328801116991980348">Saiditeave</translation>
 <translation id="3333961966071413176">Kõik kontaktid</translation>
@@ -511,6 +513,7 @@ Seade muutmiseks <ph name="BEGIN_LINK" />lähtestage sünkroonimine<ph name="END
 <translation id="4915549754973153784"><ph name="BEGIN_LINK" />Hankige abi<ph name="END_LINK" />, kuni seadmeid otsitakse …</translation>
 <translation id="4921180162323349895">{FILE_COUNT,plural, =1{# leht}other{# lehte}}</translation>
 <translation id="4932247056774066048">Kuna logite välja kontolt, mida haldab <ph name="DOMAIN_NAME" />, kustutatakse sellest seadmest teie Chrome'i andmed. Need jäävad alles teie Google'i kontole.</translation>
+<translation id="4935305910887312910">Küsi enne saitidele juurdepääsu andmist kaamera asendile või loa andmist ruumi kaardistamiseks (soovitatav)</translation>
 <translation id="4943703118917034429">Virtuaalreaalsus</translation>
 <translation id="4943872375798546930">Tulemusi pole</translation>
 <translation id="4958708863221495346"><ph name="URL_OF_THE_CURRENT_TAB" /> jagab teie ekraani</translation>
@@ -744,6 +747,7 @@ Näiteks võivad mõned veebisaidid taotlusele reageerida nii, et näitavad teil
 <translation id="6573431926118603307">Siin kuvatakse teie teistes seadmetes Chrome'is avatud vahelehed.</translation>
 <translation id="6583199322650523874">Praeguse lehe lisamine järjehoidjatesse</translation>
 <translation id="6593061639179217415">Arvutisait</translation>
+<translation id="6597891566292541626">Paigutage QR-/ribakood sellesse kaadrisse.</translation>
 <translation id="6600954340915313787">Chrome'i kopeeritud</translation>
 <translation id="6608650720463149374"><ph name="GIGABYTES" /> GB</translation>
 <translation id="6612358246767739896">Kaitstud sisu</translation>
@@ -953,6 +957,7 @@ Sait EI saa juurdepääsu kaamerale. Kaamera jäädvustatud pildid on nähtavad 
 <translation id="8109613176066109935">Järjehoidjate kõigisse oma seadmetesse hankimiseks lülitage sünkroonimine sisse</translation>
 <translation id="8110087112193408731">Kas kuvada teie Chrome'i tegevused teenuses Digitaalne heaolu?</translation>
 <translation id="8116925261070264013">Vaigistatud</translation>
+<translation id="8127542551745560481">Avalehe muutmine</translation>
 <translation id="813082847718468539">Kuvab saidi teabe</translation>
 <translation id="8156139159503939589">Millistes keeltes te loete?</translation>
 <translation id="8168435359814927499">Sisu</translation>
@@ -1024,6 +1029,7 @@ Sait EI saa juurdepääsu kaamerale. Kaamera jäädvustatud pildid on nähtavad 
 <translation id="8676374126336081632">Tühjenda sisestus</translation>
 <translation id="8687353297350450808">{N_BARS,plural, =1{Signaalitugevuse tase: # riba}other{Signaalitugevuse tase: # riba}}</translation>
 <translation id="868929229000858085">Otsige kontaktide hulgast</translation>
+<translation id="8698438463325761328">Blokeeri saitide juurdepääs virtuaalreaalsuse seadmetele ja andmetele</translation>
 <translation id="869891660844655955">Aegumiskuupäev</translation>
 <translation id="8719023831149562936">Seda vahelehte ei saa kiirega edastada</translation>
 <translation id="8728487861892616501">Rakendust kasutades nõustute Chrome’i <ph name="BEGIN_LINK1" />teenusetingimuste<ph name="END_LINK1" /> ja <ph name="BEGIN_LINK2" />privaatsusteatisega<ph name="END_LINK2" /> ning <ph name="BEGIN_LINK3" />Family Linkiga hallatavate Google'i kontode privaatsusteatisega<ph name="END_LINK3" />.</translation>
@@ -1041,6 +1047,7 @@ Sait EI saa juurdepääsu kaamerale. Kaamera jäädvustatud pildid on nähtavad 
 <translation id="883806473910249246">Sisu allalaadimisel ilmnes viga.</translation>
 <translation id="8840953339110955557">Leht võib veebiversioonist erineda.</translation>
 <translation id="8847988622838149491">USB</translation>
+<translation id="884828189055900810">Blokeeri saitide jaoks juurdepääs kaamera asendile või luba ruumi kaardistada</translation>
 <translation id="8853345339104747198"><ph name="TAB_TITLE" />, vahekaart</translation>
 <translation id="885701979325669005">Salvestamine</translation>
 <translation id="889338405075704026">Ava Chrome'i seaded</translation>
@@ -1048,6 +1055,7 @@ Sait EI saa juurdepääsu kaamerale. Kaamera jäädvustatud pildid on nähtavad 
 <translation id="8909135823018751308">Jaga ...</translation>
 <translation id="8912362522468806198">Google'i konto</translation>
 <translation id="8920114477895755567">Vanema üksikasjade ootamine.</translation>
+<translation id="8921772741368021346"><ph name="POSITION" />/<ph name="DURATION" /></translation>
 <translation id="8922289737868596582">Laadige lehed alla nupu Rohkem valikuid abil, et neid võrguühenduseta kasutada</translation>
 <translation id="8926666909099850184">NFC on selle seadme puhul välja lülitatud. Lülitage see <ph name="BEGIN_LINK" />Androidi seadetes<ph name="END_LINK" /> sisse.</translation>
 <translation id="8937772741022875483">Kas eemaldada teie Chrome'i tegevused teenusest Digitaalne heaolu?</translation>

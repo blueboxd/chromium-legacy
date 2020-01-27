@@ -97,7 +97,7 @@ class SVGLengthContext {
   float ConvertValueFromUserUnitsToCHS(float value) const;
   float ConvertValueFromCHSToUserUnits(float value) const;
 
-  Member<const SVGElement> context_;
+  const SVGElement* context_;
 };
 
 }  // namespace blink

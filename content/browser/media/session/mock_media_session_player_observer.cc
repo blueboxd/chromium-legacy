@@ -56,6 +56,22 @@ void MockMediaSessionPlayerObserver::OnSetVolumeMultiplier(
   players_[player_id].volume_multiplier_ = volume_multiplier;
 }
 
+void MockMediaSessionPlayerObserver::OnEnterPictureInPicture(int player_id) {
+  EXPECT_GE(player_id, 0);
+  EXPECT_EQ(players_.size(), 1u);
+
+  ++received_enter_picture_in_picture_calls_;
+  players_[player_id].is_in_picture_in_picture_ = true;
+}
+
+void MockMediaSessionPlayerObserver::OnExitPictureInPicture(int player_id) {
+  EXPECT_GE(player_id, 0);
+  EXPECT_EQ(players_.size(), 1u);
+
+  ++received_exit_picture_in_picture_calls_;
+  players_[player_id].is_in_picture_in_picture_ = false;
+}
+
 base::Optional<media_session::MediaPosition>
 MockMediaSessionPlayerObserver::GetPosition(int player_id) const {
   EXPECT_GE(player_id, 0);
@@ -109,6 +125,16 @@ int MockMediaSessionPlayerObserver::received_seek_forward_calls() const {
 
 int MockMediaSessionPlayerObserver::received_seek_backward_calls() const {
   return received_seek_backward_calls_;
+}
+
+int MockMediaSessionPlayerObserver::received_enter_picture_in_picture_calls()
+    const {
+  return received_enter_picture_in_picture_calls_;
+}
+
+int MockMediaSessionPlayerObserver::received_exit_picture_in_picture_calls()
+    const {
+  return received_exit_picture_in_picture_calls_;
 }
 
 MockMediaSessionPlayerObserver::MockPlayer::MockPlayer(bool is_playing,

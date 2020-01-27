@@ -12,27 +12,31 @@ goog.provide('PanelCommandType');
 
 /**
  * Create one command to pass to the ChromeVox Panel.
- * @param {PanelCommandType} type The type of command.
- * @param {string|{groups:Array}=} opt_data
- *     Optional data associated with the command.
- * @constructor
  */
-PanelCommand = function(type, opt_data) {
-  this.type = type;
-  this.data = opt_data;
-};
+PanelCommand = class {
+  /**
+   * @param {PanelCommandType} type The type of command.
+   * @param {string|{groups:Array}=} opt_data
+   *     Optional data associated with the command.
+   */
+  constructor(type, opt_data) {
+    this.type = type;
+    this.data = opt_data;
+  }
 
-/**
- * Send this command to the ChromeVox Panel window.
- */
-PanelCommand.prototype.send = function() {
-  var views = chrome.extension.getViews();
-  for (var i = 0; i < views.length; i++) {
-    if (views[i].location.href.indexOf('background/panel/panel.html') > 0) {
-      views[i].postMessage(JSON.stringify(this), window.location.origin);
+  /**
+   * Send this command to the ChromeVox Panel window.
+   */
+  send() {
+    var views = chrome.extension.getViews();
+    for (var i = 0; i < views.length; i++) {
+      if (views[i].location.href.indexOf('background/panel/panel.html') > 0) {
+        views[i].postMessage(JSON.stringify(this), window.location.origin);
+      }
     }
   }
 };
+
 
 /**
  * Possible panel commands.

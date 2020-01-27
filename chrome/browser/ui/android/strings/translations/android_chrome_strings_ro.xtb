@@ -134,6 +134,7 @@
 <translation id="1994173015038366702">Adresa URL a site-ului</translation>
 <translation id="2000419248597011803">Trimite anumite cookie-uri și căutări din bara de adrese și din caseta de căutare în motorul de căutare prestabilit</translation>
 <translation id="2002537628803770967">Carduri de credit și adrese care folosesc Google Pay</translation>
+<translation id="2012973609889389923">Site rapid</translation>
 <translation id="2013642289801508067">{FILE_COUNT,plural, =1{Un fișier}few{# fișiere}other{# de fișiere}}</translation>
 <translation id="2017836877785168846">Șterge istoricul și completările automate din bara de adrese.</translation>
 <translation id="2021896219286479412">Comenzi site în ecran complet</translation>
@@ -306,6 +307,7 @@
 <translation id="3298243779924642547">Lite</translation>
 <translation id="3303414029551471755">Continui pentru descărcarea conținutului?</translation>
 <translation id="3306398118552023113">Această aplicație rulează în Chrome</translation>
+<translation id="3312292613668865961">Întreabă înainte de a permite site-urilor să acceseze dispozitivele de realitate virtuală și datele conexe (recomandat)</translation>
 <translation id="3315103659806849044">Acum personalizezi setările pentru sincronizare și serviciul Google. Pentru a finaliza activarea sincronizării, atinge butonul Confirmă din partea de jos a ecranului. Navighează în sus</translation>
 <translation id="3328801116991980348">Informații despre site</translation>
 <translation id="3333961966071413176">Toată agenda</translation>
@@ -511,6 +513,7 @@ Pentru a modifica această setare, <ph name="BEGIN_LINK" />resetează sincroniza
 <translation id="4915549754973153784"><ph name="BEGIN_LINK" />Obține ajutor<ph name="END_LINK" /> în timp ce se caută dispozitive…</translation>
 <translation id="4921180162323349895">{FILE_COUNT,plural, =1{O pagină}few{# pagini}other{# pagini}}</translation>
 <translation id="4932247056774066048">Întrucât te deconectezi de la un cont gestionat de <ph name="DOMAIN_NAME" />, datele Chrome vor fi șterse de pe dispozitiv. Acestea vor fi păstrate în Contul tău Google.</translation>
+<translation id="4935305910887312910">Întreabă înainte de a permite site-urilor să primească poziția camerei video sau să mapeze camera (recomandat)</translation>
 <translation id="4943703118917034429">Realitate virtuală</translation>
 <translation id="4943872375798546930">Nu există rezultate</translation>
 <translation id="4958708863221495346"><ph name="URL_OF_THE_CURRENT_TAB" /> accesează conținutul de pe ecran</translation>
@@ -744,6 +747,7 @@ De exemplu, unele site-uri pot răspunde la această solicitare afișând anunț
 <translation id="6573431926118603307">Filele deschise în Chrome pe alte dispozitive vor apărea aici.</translation>
 <translation id="6583199322650523874">Marchează pagina curentă</translation>
 <translation id="6593061639179217415">Versiune site desktop</translation>
+<translation id="6597891566292541626">Poziționează codul QR/de bare în acest cadru.</translation>
 <translation id="6600954340915313787">Copiat în Chrome</translation>
 <translation id="6608650720463149374"><ph name="GIGABYTES" /> GB</translation>
 <translation id="6612358246767739896">Conținut protejat</translation>
@@ -953,6 +957,7 @@ Acest site NU primește acces la cameră. Imaginile camerei sunt vizibile doar p
 <translation id="8109613176066109935">Pentru a accesa marcajele pe toate dispozitivele, activează sincronizarea</translation>
 <translation id="8110087112193408731">Afișezi activitatea din Chrome în Bunăstare digitală?</translation>
 <translation id="8116925261070264013">Cu sunetul dezactivat</translation>
+<translation id="8127542551745560481">Editează pagina de pornire</translation>
 <translation id="813082847718468539">Afișează informațiile privind site-ul</translation>
 <translation id="8156139159503939589">În ce limbi poți să citești?</translation>
 <translation id="8168435359814927499">Conținut</translation>
@@ -1024,6 +1029,7 @@ Acest site NU primește acces la cameră. Imaginile camerei sunt vizibile doar p
 <translation id="8676374126336081632">Șterge textul introdus</translation>
 <translation id="8687353297350450808">{N_BARS,plural, =1{Nivelul puterii semnalului: # bară}few{Nivelul puterii semnalului: # bare}other{Nivelul puterii semnalului: # de bare}}</translation>
 <translation id="868929229000858085">Caută în agendă</translation>
+<translation id="8698438463325761328">Blochează accesul site-urilor la dispozitivele de realitate virtuală și datele conexe</translation>
 <translation id="869891660844655955">Dată de expirare</translation>
 <translation id="8719023831149562936">Fila actuală nu poate fi transmisă</translation>
 <translation id="8728487861892616501">Dacă folosești aplicația, accepți <ph name="BEGIN_LINK1" />Termenii și condițiile<ph name="END_LINK1" /> și <ph name="BEGIN_LINK2" />Notificarea privind confidențialitatea<ph name="END_LINK2" /> Chrome și <ph name="BEGIN_LINK3" />Notificarea privind confidențialitatea pentru Conturile Google gestionate cu Family Link<ph name="END_LINK3" />.</translation>
@@ -1041,6 +1047,7 @@ Acest site NU primește acces la cameră. Imaginile camerei sunt vizibile doar p
 <translation id="883806473910249246">A apărut o eroare la descărcarea conținutului.</translation>
 <translation id="8840953339110955557">Această pagină poate fi diferită de versiunea online.</translation>
 <translation id="8847988622838149491">USB</translation>
+<translation id="884828189055900810">Blochează primirea poziției camerei video sau maparea camerei de către site-uri</translation>
 <translation id="8853345339104747198"><ph name="TAB_TITLE" />, filă</translation>
 <translation id="885701979325669005">Stocare</translation>
 <translation id="889338405075704026">Accesează setările Chrome</translation>
@@ -1048,6 +1055,7 @@ Acest site NU primește acces la cameră. Imaginile camerei sunt vizibile doar p
 <translation id="8909135823018751308">Trimite…</translation>
 <translation id="8912362522468806198">Contul Google</translation>
 <translation id="8920114477895755567">Se așteaptă detaliile părinților.</translation>
+<translation id="8921772741368021346"><ph name="POSITION" />/<ph name="DURATION" /></translation>
 <translation id="8922289737868596582">Descarcă paginile folosind butonul Mai multe opțiuni, pentru a le folosi offline</translation>
 <translation id="8926666909099850184">NFC este dezactivat pentru acest dispozitiv. Activează-l în <ph name="BEGIN_LINK" />Setări Android<ph name="END_LINK" />.</translation>
 <translation id="8937772741022875483">Elimini activitatea în Chrome din Bunăstarea digitală?</translation>

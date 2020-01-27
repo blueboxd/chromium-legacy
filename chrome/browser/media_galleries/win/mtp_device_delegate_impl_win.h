@@ -74,14 +74,14 @@ class MTPDeviceDelegateImplWin : public MTPDeviceAsyncDelegate {
   // Used to represent pending task details.
   struct PendingTaskInfo {
     PendingTaskInfo(const base::Location& location,
-                    const base::Callback<base::File::Error(void)>& task,
-                    const base::Callback<void(base::File::Error)>& reply);
-    PendingTaskInfo(const PendingTaskInfo& other);
+                    base::OnceCallback<base::File::Error(void)> task,
+                    base::OnceCallback<void(base::File::Error)> reply);
+    PendingTaskInfo(PendingTaskInfo&& other);
     ~PendingTaskInfo();
 
-    const base::Location location;
-    const base::Callback<base::File::Error(void)> task;
-    const base::Callback<void(base::File::Error)> reply;
+    base::Location location;
+    base::OnceCallback<base::File::Error(void)> task;
+    base::OnceCallback<void(base::File::Error)> reply;
   };
 
   // Defers the device initializations until the first file operation request.
@@ -166,7 +166,7 @@ class MTPDeviceDelegateImplWin : public MTPDeviceAsyncDelegate {
   // If the device is uninitialized, store the |task_info| in a pending task
   // list and then runs all the pending tasks once the device is successfully
   // initialized.
-  void EnsureInitAndRunTask(const PendingTaskInfo& task_info);
+  void EnsureInitAndRunTask(PendingTaskInfo task_info);
 
   // Writes data chunk from the device to the snapshot file path based on the
   // parameters in |current_snapshot_details_| by doing a call-and-reply to a

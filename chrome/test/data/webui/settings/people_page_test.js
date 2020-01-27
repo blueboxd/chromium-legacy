@@ -112,199 +112,6 @@ cr.define('settings_people_page', function() {
       test('NoManageProfileRow', function() {
         assertFalse(!!peoplePage.$$('#edit-profile'));
       });
-
-      test('GetProfileInfo', function() {
-        let disconnectButton = null;
-        return syncBrowserProxy.whenCalled('getSyncStatus')
-            .then(function() {
-              Polymer.dom.flush();
-              disconnectButton = peoplePage.$$('#disconnectButton');
-              assertTrue(!!disconnectButton);
-              assertFalse(!!peoplePage.$$('settings-signout-dialog'));
-
-              disconnectButton.click();
-              Polymer.dom.flush();
-            })
-            .then(function() {
-              const signoutDialog = peoplePage.$$('settings-signout-dialog');
-              assertTrue(signoutDialog.$$('#dialog').open);
-              assertFalse(signoutDialog.$$('#deleteProfile').hidden);
-
-              const deleteProfileCheckbox = signoutDialog.$$('#deleteProfile');
-              assertTrue(!!deleteProfileCheckbox);
-              assertLT(0, deleteProfileCheckbox.clientHeight);
-
-              const disconnectConfirm = signoutDialog.$$('#disconnectConfirm');
-              assertTrue(!!disconnectConfirm);
-              assertFalse(disconnectConfirm.hidden);
-
-              const popstatePromise = new Promise(function(resolve) {
-                listenOnce(window, 'popstate', resolve);
-              });
-
-              disconnectConfirm.click();
-
-              return popstatePromise;
-            })
-            .then(function() {
-              return syncBrowserProxy.whenCalled('signOut');
-            })
-            .then(function(deleteProfile) {
-              assertFalse(deleteProfile);
-
-              sync_test_util.simulateSyncStatus({
-                signedIn: true,
-                domain: 'example.com',
-              });
-
-              assertFalse(!!peoplePage.$$('#dialog'));
-              disconnectButton.click();
-              Polymer.dom.flush();
-
-              return new Promise(function(resolve) {
-                peoplePage.async(resolve);
-              });
-            })
-            .then(function() {
-              const signoutDialog = peoplePage.$$('settings-signout-dialog');
-              assertTrue(signoutDialog.$$('#dialog').open);
-              assertFalse(!!signoutDialog.$$('#deleteProfile'));
-
-              const disconnectManagedProfileConfirm =
-                  signoutDialog.$$('#disconnectManagedProfileConfirm');
-              assertTrue(!!disconnectManagedProfileConfirm);
-              assertFalse(disconnectManagedProfileConfirm.hidden);
-
-              syncBrowserProxy.resetResolver('signOut');
-
-              const popstatePromise = new Promise(function(resolve) {
-                listenOnce(window, 'popstate', resolve);
-              });
-
-              disconnectManagedProfileConfirm.click();
-
-              return popstatePromise;
-            })
-            .then(function() {
-              return syncBrowserProxy.whenCalled('signOut');
-            })
-            .then(function(deleteProfile) {
-              assertTrue(deleteProfile);
-            });
-      });
-
-      test('getProfileStatsCount', function() {
-        return syncBrowserProxy.whenCalled('getSyncStatus')
-            .then(function() {
-              Polymer.dom.flush();
-
-              // Open the disconnect dialog.
-              disconnectButton = peoplePage.$$('#disconnectButton');
-              assertTrue(!!disconnectButton);
-              disconnectButton.click();
-
-              return profileInfoBrowserProxy.whenCalled('getProfileStatsCount');
-            })
-            .then(function() {
-              Polymer.dom.flush();
-              const signoutDialog = peoplePage.$$('settings-signout-dialog');
-              assertTrue(signoutDialog.$$('#dialog').open);
-
-              // Assert the warning message is as expected.
-              const warningMessage =
-                  signoutDialog.$$('.delete-profile-warning');
-
-              cr.webUIListenerCallback('profile-stats-count-ready', 0);
-              assertEquals(
-                  loadTimeData.getStringF(
-                      'deleteProfileWarningWithoutCounts', 'fakeUsername'),
-                  warningMessage.textContent.trim());
-
-              cr.webUIListenerCallback('profile-stats-count-ready', 1);
-              assertEquals(
-                  loadTimeData.getStringF(
-                      'deleteProfileWarningWithCountsSingular', 'fakeUsername'),
-                  warningMessage.textContent.trim());
-
-              cr.webUIListenerCallback('profile-stats-count-ready', 2);
-              assertEquals(
-                  loadTimeData.getStringF(
-                      'deleteProfileWarningWithCountsPlural', 2,
-                      'fakeUsername'),
-                  warningMessage.textContent.trim());
-
-              // Close the disconnect dialog.
-              signoutDialog.$$('#disconnectConfirm').click();
-              return new Promise(function(resolve) {
-                listenOnce(window, 'popstate', resolve);
-              });
-            });
-      });
-
-      test('NavigateDirectlyToSignOutURL', function() {
-        // Navigate to chrome://settings/signOut
-        settings.Router.getInstance().navigateTo(settings.routes.SIGN_OUT);
-
-        return new Promise(function(resolve) {
-                 peoplePage.async(resolve);
-               })
-            .then(function() {
-              assertTrue(
-                  peoplePage.$$('settings-signout-dialog').$$('#dialog').open);
-              return profileInfoBrowserProxy.whenCalled('getProfileStatsCount');
-            })
-            .then(function() {
-              // 'getProfileStatsCount' can be the first message sent to the
-              // handler if the user navigates directly to
-              // chrome://settings/signOut. if so, it should not cause a crash.
-              new settings.ProfileInfoBrowserProxyImpl().getProfileStatsCount();
-
-              // Close the disconnect dialog.
-              peoplePage.$$('settings-signout-dialog')
-                  .$$('#disconnectConfirm')
-                  .click();
-            })
-            .then(function() {
-              return new Promise(function(resolve) {
-                listenOnce(window, 'popstate', resolve);
-              });
-            });
-      });
-
-      test('Signout dialog suppressed when not signed in', function() {
-        return syncBrowserProxy.whenCalled('getSyncStatus')
-            .then(function() {
-              settings.Router.getInstance().navigateTo(
-                  settings.routes.SIGN_OUT);
-              return new Promise(function(resolve) {
-                peoplePage.async(resolve);
-              });
-            })
-            .then(function() {
-              assertTrue(
-                  peoplePage.$$('settings-signout-dialog').$$('#dialog').open);
-
-              const popstatePromise = new Promise(function(resolve) {
-                listenOnce(window, 'popstate', resolve);
-              });
-
-              sync_test_util.simulateSyncStatus({
-                signedIn: false,
-              });
-
-              return popstatePromise;
-            })
-            .then(function() {
-              const popstatePromise = new Promise(function(resolve) {
-                listenOnce(window, 'popstate', resolve);
-              });
-
-              settings.Router.getInstance().navigateTo(
-                  settings.routes.SIGN_OUT);
-
-              return popstatePromise;
-            });
-      });
     });
 
     suite('DiceUITest', function() {
@@ -436,6 +243,202 @@ cr.define('settings_people_page', function() {
           assertEquals(
               'none', window.getComputedStyle(manageGoogleAccount)['display']);
         });
+      });
+
+      test('SignOutNavigationNormalProfile', function() {
+        // Navigate to chrome://settings/signOut
+        settings.Router.getInstance().navigateTo(settings.routes.SIGN_OUT);
+
+        return new Promise(function(resolve) {
+                 peoplePage.async(resolve);
+               })
+            .then(function() {
+              const signoutDialog = peoplePage.$$('settings-signout-dialog');
+              assertTrue(signoutDialog.$$('#dialog').open);
+              assertFalse(signoutDialog.$$('#deleteProfile').hidden);
+
+              const deleteProfileCheckbox = signoutDialog.$$('#deleteProfile');
+              assertTrue(!!deleteProfileCheckbox);
+              assertLT(0, deleteProfileCheckbox.clientHeight);
+
+              const disconnectConfirm = signoutDialog.$$('#disconnectConfirm');
+              assertTrue(!!disconnectConfirm);
+              assertFalse(disconnectConfirm.hidden);
+
+              const popstatePromise = new Promise(function(resolve) {
+                listenOnce(window, 'popstate', resolve);
+              });
+
+              disconnectConfirm.click();
+
+              return popstatePromise;
+            })
+            .then(function() {
+              return syncBrowserProxy.whenCalled('signOut');
+            })
+            .then(function(deleteProfile) {
+              assertFalse(deleteProfile);
+            });
+      });
+
+      test('SignOutDialogManagedProfile', function() {
+        let accountControl = null;
+        return syncBrowserProxy.whenCalled('getSyncStatus')
+            .then(function() {
+              sync_test_util.simulateSyncStatus({
+                signedIn: true,
+                domain: 'example.com',
+                signinAllowed: true,
+                syncSystemEnabled: true,
+              });
+
+              assertFalse(!!peoplePage.$$('#dialog'));
+              accountControl = peoplePage.$$('settings-sync-account-control');
+              return test_util.waitBeforeNextRender(accountControl);
+            })
+            .then(function() {
+              const turnOffButton = accountControl.$$('#turn-off');
+              turnOffButton.click();
+              Polymer.dom.flush();
+
+              return new Promise(function(resolve) {
+                peoplePage.async(resolve);
+              });
+            })
+            .then(function() {
+              const signoutDialog = peoplePage.$$('settings-signout-dialog');
+              assertTrue(signoutDialog.$$('#dialog').open);
+              assertFalse(!!signoutDialog.$$('#deleteProfile'));
+
+              const disconnectManagedProfileConfirm =
+                  signoutDialog.$$('#disconnectManagedProfileConfirm');
+              assertTrue(!!disconnectManagedProfileConfirm);
+              assertFalse(disconnectManagedProfileConfirm.hidden);
+
+              syncBrowserProxy.resetResolver('signOut');
+
+              const popstatePromise = new Promise(function(resolve) {
+                listenOnce(window, 'popstate', resolve);
+              });
+
+              disconnectManagedProfileConfirm.click();
+
+              return popstatePromise;
+            })
+            .then(function() {
+              return syncBrowserProxy.whenCalled('signOut');
+            })
+            .then(function(deleteProfile) {
+              assertTrue(deleteProfile);
+            });
+      });
+
+      test('getProfileStatsCount', function() {
+        // Navigate to chrome://settings/signOut
+        settings.Router.getInstance().navigateTo(settings.routes.SIGN_OUT);
+
+        return new Promise(function(resolve) {
+                 peoplePage.async(resolve);
+               })
+            .then(function() {
+              Polymer.dom.flush();
+              const signoutDialog = peoplePage.$$('settings-signout-dialog');
+              assertTrue(signoutDialog.$$('#dialog').open);
+
+              // Assert the warning message is as expected.
+              const warningMessage =
+                  signoutDialog.$$('.delete-profile-warning');
+
+              cr.webUIListenerCallback('profile-stats-count-ready', 0);
+              assertEquals(
+                  loadTimeData.getStringF(
+                      'deleteProfileWarningWithoutCounts', 'fakeUsername'),
+                  warningMessage.textContent.trim());
+
+              cr.webUIListenerCallback('profile-stats-count-ready', 1);
+              assertEquals(
+                  loadTimeData.getStringF(
+                      'deleteProfileWarningWithCountsSingular', 'fakeUsername'),
+                  warningMessage.textContent.trim());
+
+              cr.webUIListenerCallback('profile-stats-count-ready', 2);
+              assertEquals(
+                  loadTimeData.getStringF(
+                      'deleteProfileWarningWithCountsPlural', 2,
+                      'fakeUsername'),
+                  warningMessage.textContent.trim());
+
+              // Close the disconnect dialog.
+              signoutDialog.$$('#disconnectConfirm').click();
+              return new Promise(function(resolve) {
+                listenOnce(window, 'popstate', resolve);
+              });
+            });
+      });
+
+      test('NavigateDirectlyToSignOutURL', function() {
+        // Navigate to chrome://settings/signOut
+        settings.Router.getInstance().navigateTo(settings.routes.SIGN_OUT);
+
+        return new Promise(function(resolve) {
+                 peoplePage.async(resolve);
+               })
+            .then(function() {
+              assertTrue(
+                  peoplePage.$$('settings-signout-dialog').$$('#dialog').open);
+              return profileInfoBrowserProxy.whenCalled('getProfileStatsCount');
+            })
+            .then(function() {
+              // 'getProfileStatsCount' can be the first message sent to the
+              // handler if the user navigates directly to
+              // chrome://settings/signOut. if so, it should not cause a crash.
+              new settings.ProfileInfoBrowserProxyImpl().getProfileStatsCount();
+
+              // Close the disconnect dialog.
+              peoplePage.$$('settings-signout-dialog')
+                  .$$('#disconnectConfirm')
+                  .click();
+            })
+            .then(function() {
+              return new Promise(function(resolve) {
+                listenOnce(window, 'popstate', resolve);
+              });
+            });
+      });
+
+      test('Signout dialog suppressed when not signed in', function() {
+        return syncBrowserProxy.whenCalled('getSyncStatus')
+            .then(function() {
+              settings.Router.getInstance().navigateTo(
+                  settings.routes.SIGN_OUT);
+              return new Promise(function(resolve) {
+                peoplePage.async(resolve);
+              });
+            })
+            .then(function() {
+              assertTrue(
+                  peoplePage.$$('settings-signout-dialog').$$('#dialog').open);
+
+              const popstatePromise = new Promise(function(resolve) {
+                listenOnce(window, 'popstate', resolve);
+              });
+
+              sync_test_util.simulateSyncStatus({
+                signedIn: false,
+              });
+
+              return popstatePromise;
+            })
+            .then(function() {
+              const popstatePromise = new Promise(function(resolve) {
+                listenOnce(window, 'popstate', resolve);
+              });
+
+              settings.Router.getInstance().navigateTo(
+                  settings.routes.SIGN_OUT);
+
+              return popstatePromise;
+            });
       });
     });
   }

@@ -60,8 +60,6 @@ jumbo_component("controller") {
       "memory_usage_monitor_posix.h",
       "oom_intervention_impl.cc",
       "oom_intervention_impl.h",
-      "user_level_memory_pressure_signal_generator.cc",
-      "user_level_memory_pressure_signal_generator.h",
     ]
   }
   if (is_win) {
@@ -80,12 +78,15 @@ jumbo_component("controller") {
       "Foundation.framework",
     ]
   }
+
   # HighestPmfReporter depends on MemoryUsageMonitor and MemoryUsageMonitor
   # depends on platform specific code. Explicitly specify supported platforms.
   if (is_linux || is_win || is_android || is_mac) {
     sources += [
       "highest_pmf_reporter.cc",
       "highest_pmf_reporter.h",
+      "user_level_memory_pressure_signal_generator.cc",
+      "user_level_memory_pressure_signal_generator.h",
     ]
   }
 

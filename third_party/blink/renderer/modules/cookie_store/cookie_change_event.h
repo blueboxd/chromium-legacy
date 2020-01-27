@@ -8,7 +8,7 @@
 #include <utility>
 
 #include "services/network/public/mojom/cookie_manager.mojom-blink-forward.h"
-#include "third_party/blink/renderer/modules/cookie_store/cookie_list_item.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_cookie_list_item.h"
 #include "third_party/blink/renderer/modules/event_modules.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"

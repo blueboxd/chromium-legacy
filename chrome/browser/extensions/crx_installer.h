@@ -85,6 +85,10 @@ class CrxInstaller : public SandboxedUnpackerClient {
     NumOffStoreInstallAllowReasons
   };
 
+  // Used to indicate if host permissions should be withheld during
+  // installation.
+  enum WithholdingBehavior { kWithholdPermissions, kDontWithholdPermissions };
+
   // Extensions will be installed into service->install_directory(), then
   // registered with |service|. This does a silent install - see below for
   // other options.
@@ -291,7 +295,8 @@ class CrxInstaller : public SandboxedUnpackerClient {
 
   // Runs on the UI thread. Updates the creation flags for the extension and
   // calls CompleteInstall().
-  void UpdateCreationFlagsAndCompleteInstall();
+  void UpdateCreationFlagsAndCompleteInstall(
+      WithholdingBehavior withholding_behavior);
 
   // Runs on File thread. Install the unpacked extension into the profile and
   // notify the frontend.

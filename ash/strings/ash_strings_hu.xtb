@@ -112,6 +112,7 @@
 <translation id="2352467521400612932">Az érintőceruza beállításai</translation>
 <translation id="2354174487190027830"><ph name="NAME" /> aktiválása</translation>
 <translation id="2359808026110333948">Tovább</translation>
+<translation id="2364154243880592194">Állapottálca, idő: <ph name="TIME" />, <ph name="BATTERY" />. Nyomja meg a keresés billentyűt és a balra nyilat az értesítési központ megnyitásához.</translation>
 <translation id="2365393535144473978">A mobiladat-kapcsolat engedélyezésével a Bluetooth is bekapcsol.</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="2412593942846481727">Rendelkezésre áll frissítés</translation>
@@ -336,6 +337,7 @@ Az összes felhasználónak ki kell jelentkeznie a folytatáshoz.</translation>
 <translation id="5669267381087807207">Aktiválás</translation>
 <translation id="5673434351075758678">Módosítás <ph name="FROM_LOCALE" /> nyelvről <ph name="TO_LOCALE" /> nyelvre a beállítások szinkronizálása után.</translation>
 <translation id="5682642926269496722">A Google Segéd nem áll rendelkezésre ennél a felhasználói fióknál.</translation>
+<translation id="5689633613396158040">Az Éjszakai fény funkció kellemesebbé teszi a képernyő nézését és az olvasást gyenge fény mellett. Koppintson, ha módosítani szeretné, hogy mikor kapcsoljon be az Éjszakai mód, vagy ha teljesen ki szeretné kapcsolni.</translation>
 <translation id="5691772641933328258">Ujjlenyomat felismerése sikertelen</translation>
 <translation id="5710450975648804523">Ne zavarjanak mód: bekapcsolva</translation>
 <translation id="573413375004481890">Ez az eszköz nem tudta támogatni az összes kijelzőt, ezért egyet leválasztott</translation>
@@ -515,6 +517,7 @@ Az összes felhasználónak ki kell jelentkeznie a folytatáshoz.</translation>
 <translation id="8142441511840089262">Dupla kattintás</translation>
 <translation id="8142699993796781067">Privát hálózat</translation>
 <translation id="8152092012181020186">A bezáráshoz nyomja meg a Ctrl + W billentyűkódot.</translation>
+<translation id="8155007568264258537"><ph name="FEATURE_NAME" /> Ezt a beállítást a rendszergazdája kezeli.</translation>
 <translation id="8167567890448493835"><ph name="LOCALE_NAME" /> nyelv használata</translation>
 <translation id="8190698733819146287">Nyelvek és beviteli módok személyre szabása...</translation>
 <translation id="8192202700944119416">Az értesítések el vannak rejtve.</translation>

@@ -413,6 +413,8 @@ blink_core_sources("layout") {
     "ng/list/layout_ng_list_marker.h",
     "ng/list/layout_ng_list_marker_image.cc",
     "ng/list/layout_ng_list_marker_image.h",
+    "ng/list/list_marker.cc",
+    "ng/list/list_marker.h",
     "ng/list/ng_unpositioned_list_marker.cc",
     "ng/list/ng_unpositioned_list_marker.h",
     "ng/mathml/layout_ng_mathml_block.cc",

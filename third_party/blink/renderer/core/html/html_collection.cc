@@ -312,7 +312,7 @@ class IsMatch {
   }
 
  private:
-  Member<const HTMLCollectionType> list_;
+  const HTMLCollectionType* list_;
 };
 
 }  // namespace

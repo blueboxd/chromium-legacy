@@ -104,6 +104,8 @@ class ManagePasswordsUIController
     return bubble_status_ == BubbleStatus::SHOULD_POP_UP;
   }
 
+  // TODO(crbug.com/1044034): Rename to GetControllerDelegateProxy after the
+  // refactoring of ManagePasswordsBubbleModel is done.
   base::WeakPtr<PasswordsModelDelegate> GetModelDelegateProxy();
 
   // PasswordsModelDelegate:

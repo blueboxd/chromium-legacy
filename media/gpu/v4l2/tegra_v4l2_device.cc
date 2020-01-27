@@ -5,7 +5,10 @@
 #include <dlfcn.h>
 #include <fcntl.h>
 #include <linux/videodev2.h>
+#include <unistd.h>
+#include <iterator>
 
+#include "base/files/file_util.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/trace_event/trace_event.h"
 #include "media/gpu/macros.h"
@@ -172,6 +175,16 @@ bool TegraV4L2Device::Open(Type type, uint32_t /* v4l2_pixfmt */) {
 bool TegraV4L2Device::OpenInternal(Type type) {
   const char* device_path = nullptr;
 
+  // Create the dummy FD upon first open.
+  if (!dummy_fd_.is_valid()) {
+    base::ScopedFD dummy_write_fd_;
+
+    if (!base::CreatePipe(&dummy_fd_, &dummy_write_fd_, false)) {
+      VPLOGF(1) << "Error creating dummy file descriptors";
+      return false;
+    }
+  }
+
   switch (type) {
     case Type::kDecoder:
       device_path = kDecoderDevice;
@@ -208,12 +221,18 @@ std::vector<base::ScopedFD> TegraV4L2Device::GetDmabufsForV4L2Buffer(
     size_t num_planes,
     enum v4l2_buf_type /* buf_type */) {
   DVLOGF(3);
+  DCHECK(dummy_fd_.is_valid());
   std::vector<base::ScopedFD> dmabuf_fds;
   // Tegra does not actually provide dmabuf fds currently. Fill the vector with
-  // invalid descriptors to prevent the caller from failing on an empty vector
+  // dummy descriptors to prevent the caller from failing on an empty vector
   // being returned. TegraV4L2Device::CreateEGLImage() will ignore the invalid
   // descriptors and create images based on V4L2 index passed to it.
-  dmabuf_fds.resize(num_planes);
+  std::generate_n(std::back_inserter(dmabuf_fds), num_planes, [this]() {
+    int fd = HANDLE_EINTR(dup(dummy_fd_.get()));
+    DPLOG_IF(ERROR, fd < 0) << "Error duplicating fake DMAbuf FD";
+    return base::ScopedFD(fd);
+  });
+
   return dmabuf_fds;
 }
 

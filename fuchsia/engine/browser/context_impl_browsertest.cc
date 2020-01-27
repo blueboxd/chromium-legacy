@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/macros.h"
+#include "base/no_destructor.h"
 #include "base/path_service.h"
 #include "base/task/post_task.h"
 #include "content/public/browser/browser_context.h"
@@ -80,6 +81,23 @@ class ContextImplTest : public cr_fuchsia::WebEngineBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(ContextImplTest);
 };
 
+fuchsia::web::Cookie CreateExpectedCookie() {
+  fuchsia::web::Cookie cookie;
+  fuchsia::web::CookieId id;
+  id.set_name("foo");
+  id.set_path("/");
+  id.set_domain("127.0.0.1");
+  cookie.set_id(std::move(id));
+  cookie.set_value("bar");
+  return cookie;
+}
+
+const fuchsia::web::Cookie& ExpectedCookie() {
+  static const base::NoDestructor<fuchsia::web::Cookie> expected_cookie(
+      CreateExpectedCookie());
+  return *expected_cookie;
+}
+
 }  // namespace
 
 // BrowserContext with persistent storage stores cookies such that they can
@@ -100,10 +118,7 @@ IN_PROC_BROWSER_TEST_F(ContextImplTest, PersistentCookieStore) {
   std::vector<fuchsia::web::Cookie> cookies = GetCookies();
   ASSERT_EQ(cookies.size(), 1u);
   ASSERT_TRUE(cookies[0].has_id());
-  ASSERT_TRUE(cookies[0].id().has_name());
-  ASSERT_TRUE(cookies[0].has_value());
-  EXPECT_EQ(cookies[0].id().name(), "foo");
-  EXPECT_EQ(cookies[0].value(), "bar");
+  EXPECT_TRUE(fidl::Equals(cookies[0], ExpectedCookie()));
 
   // Check that the cookie persists beyond the lifetime of the Frame by
   // releasing the Frame and re-querying the CookieStore.
@@ -113,10 +128,7 @@ IN_PROC_BROWSER_TEST_F(ContextImplTest, PersistentCookieStore) {
   cookies = GetCookies();
   ASSERT_EQ(cookies.size(), 1u);
   ASSERT_TRUE(cookies[0].has_id());
-  ASSERT_TRUE(cookies[0].id().has_name());
-  ASSERT_TRUE(cookies[0].has_value());
-  EXPECT_EQ(cookies[0].id().name(), "foo");
-  EXPECT_EQ(cookies[0].value(), "bar");
+  EXPECT_TRUE(fidl::Equals(cookies[0], ExpectedCookie()));
 }
 
 // Suite for tests which run the BrowserContext in incognito mode (no data
@@ -166,9 +178,5 @@ IN_PROC_BROWSER_TEST_F(IncognitoContextImplTest, InMemoryCookieStore) {
 
   std::vector<fuchsia::web::Cookie> cookies = GetCookies();
   ASSERT_EQ(cookies.size(), 1u);
-  ASSERT_TRUE(cookies[0].has_id());
-  ASSERT_TRUE(cookies[0].id().has_name());
-  ASSERT_TRUE(cookies[0].has_value());
-  EXPECT_EQ(cookies[0].id().name(), "foo");
-  EXPECT_EQ(cookies[0].value(), "bar");
+  EXPECT_TRUE(fidl::Equals(cookies[0], ExpectedCookie()));
 }

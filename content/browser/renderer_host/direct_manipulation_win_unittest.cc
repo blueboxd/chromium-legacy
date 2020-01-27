@@ -310,8 +310,6 @@ class MockWindowEventTarget : public ui::WindowEventTarget {
 class DirectManipulationUnitTest : public testing::Test {
  public:
   DirectManipulationUnitTest() {
-    scoped_feature_list_.InitAndEnableFeature(features::kPrecisionTouchpad);
-
     viewport_ = Microsoft::WRL::Make<MockDirectManipulationViewport>();
     content_ = Microsoft::WRL::Make<MockDirectManipulationContent>();
     direct_manipulation_helper_ =
@@ -350,7 +348,6 @@ class DirectManipulationUnitTest : public testing::Test {
   Microsoft::WRL::ComPtr<MockDirectManipulationViewport> viewport_;
   Microsoft::WRL::ComPtr<MockDirectManipulationContent> content_;
   MockWindowEventTarget event_target_;
-  base::test::ScopedFeatureList scoped_feature_list_;
 
   DISALLOW_COPY_AND_ASSIGN(DirectManipulationUnitTest);
 };

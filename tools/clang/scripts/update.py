@@ -41,7 +41,7 @@ import zipfile
 # Reverting problematic clang rolls is safe, though.
 CLANG_REVISION = 'c2443155a0fb245c8f17f2c1c72b6ea391e86e81'
 CLANG_SVN_REVISION = 'n332890'
-CLANG_SUB_REVISION = 1
+CLANG_SUB_REVISION = 2
 
 PACKAGE_VERSION = '%s-%s-%s' % (CLANG_SVN_REVISION, CLANG_REVISION[:8],
                                 CLANG_SUB_REVISION)

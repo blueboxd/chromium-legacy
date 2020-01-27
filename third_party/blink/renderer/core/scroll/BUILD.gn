@@ -21,6 +21,8 @@ blink_core_sources("scroll") {
     "scroll_animator_mac.mm",
     "scroll_customization.cc",
     "scroll_customization.h",
+    "scroll_into_view_params_type_converters.cc",
+    "scroll_into_view_params_type_converters.h",
     "scroll_state_data.h",
     "scroll_types.h",
     "scrollable_area.cc",
@@ -42,7 +44,6 @@ blink_core_sources("scroll") {
     "scrollbar_theme_overlay_mock.h",
     "smooth_scroll_sequencer.cc",
     "smooth_scroll_sequencer.h",
-    "web_scroll_into_view_params.cc",
   ]
 
   if (is_mac) {

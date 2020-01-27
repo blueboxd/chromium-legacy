@@ -29,9 +29,9 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_CANVAS_CANVAS2D_PATH_2D_H_
 
 #include "base/macros.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_dom_matrix_2d_init.h"
 #include "third_party/blink/renderer/bindings/modules/v8/path_2d_or_string.h"
 #include "third_party/blink/renderer/core/geometry/dom_matrix.h"
-#include "third_party/blink/renderer/core/geometry/dom_matrix_2d_init.h"
 #include "third_party/blink/renderer/core/svg/svg_path_utilities.h"
 #include "third_party/blink/renderer/modules/canvas/canvas2d/canvas_path.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"

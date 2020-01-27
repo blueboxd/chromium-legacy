@@ -143,6 +143,8 @@ void HardwareKeyMediaController::PerformAction(MediaSessionAction action) {
     case MediaSessionAction::kSkipAd:
     case MediaSessionAction::kSeekTo:
     case MediaSessionAction::kScrubTo:
+    case MediaSessionAction::kEnterPictureInPicture:
+    case MediaSessionAction::kExitPictureInPicture:
       NOTREACHED();
       return;
   }
@@ -188,6 +190,8 @@ HardwareKeyMediaController::MediaSessionActionToKeyCode(
     case MediaSessionAction::kSkipAd:
     case MediaSessionAction::kSeekTo:
     case MediaSessionAction::kScrubTo:
+    case MediaSessionAction::kEnterPictureInPicture:
+    case MediaSessionAction::kExitPictureInPicture:
       return base::nullopt;
   }
 }

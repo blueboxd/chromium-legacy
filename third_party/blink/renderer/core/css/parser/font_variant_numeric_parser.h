@@ -73,11 +73,11 @@ class FontVariantNumericParser {
   }
 
  private:
-  Member<CSSIdentifierValue> numeric_figure_;
-  Member<CSSIdentifierValue> numeric_spacing_;
-  Member<CSSIdentifierValue> numeric_fraction_;
-  Member<CSSIdentifierValue> ordinal_;
-  Member<CSSIdentifierValue> slashed_zero_;
+  CSSIdentifierValue* numeric_figure_ = nullptr;
+  CSSIdentifierValue* numeric_spacing_ = nullptr;
+  CSSIdentifierValue* numeric_fraction_ = nullptr;
+  CSSIdentifierValue* ordinal_ = nullptr;
+  CSSIdentifierValue* slashed_zero_ = nullptr;
 };
 
 }  // namespace blink

@@ -9,7 +9,8 @@
 #include "base/memory/ref_counted.h"
 #include "base/no_destructor.h"
 #include "components/keyed_service/ios/refcounted_browser_state_keyed_service_factory.h"
-#include "ios/chrome/browser/browser_state/chrome_browser_state_forward.h"
+
+class ChromeBrowserState;
 
 namespace content_settings {
 class CookieSettings;
@@ -17,11 +18,11 @@ class CookieSettings;
 
 namespace ios {
 // Singleton that owns all CookieSettings and associates them with
-// ios::ChromeBrowserState.
+// ChromeBrowserState.
 class CookieSettingsFactory : public RefcountedBrowserStateKeyedServiceFactory {
  public:
   static scoped_refptr<content_settings::CookieSettings> GetForBrowserState(
-      ios::ChromeBrowserState* browser_state);
+      ChromeBrowserState* browser_state);
   static CookieSettingsFactory* GetInstance();
 
  private:

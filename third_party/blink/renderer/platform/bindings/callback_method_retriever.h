@@ -75,7 +75,7 @@ class PLATFORM_EXPORT CallbackMethodRetriever {
                                              const StringView& property,
                                              ExceptionState&);
 
-  Member<CallbackFunctionBase> constructor_;
+  CallbackFunctionBase* constructor_;
   v8::Isolate* isolate_;
   v8::Local<v8::Context> current_context_;
   v8::Local<v8::Object> prototype_object_;

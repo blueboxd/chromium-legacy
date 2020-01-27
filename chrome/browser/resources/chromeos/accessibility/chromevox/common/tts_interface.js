@@ -52,88 +52,87 @@ QueueMode = {
  * An interface for clients who want to get notified when an utterance
  * starts or ends from any source.
  */
-TtsCapturingEventListener = function() {};
+TtsCapturingEventListener = class {
+  constructor() {}
 
-/**
- * Called when any utterance starts.
- */
-TtsCapturingEventListener.prototype.onTtsStart = function() {};
+  /**
+   * Called when any utterance starts.
+   */
+  onTtsStart() {}
 
-/**
- * Called when any utterance ends.
- */
-TtsCapturingEventListener.prototype.onTtsEnd = function() {};
+  /**
+   * Called when any utterance ends.
+   */
+  onTtsEnd() {}
 
-/**
- * Called when any utterance gets interrupted.
- */
-TtsCapturingEventListener.prototype.onTtsInterrupted = function() {};
-
-/**
- * @interface
- */
-TtsInterface = function() {};
-
-/**
- * Speaks the given string using the specified queueMode and properties.
- * @param {string} textString The string of text to be spoken.
- * @param {QueueMode} queueMode The queue mode to use for speaking.
- * @param {Object=} properties Speech properties to use for this utterance.
- * @return {TtsInterface} A tts object useful for chaining speak calls.
- */
-TtsInterface.prototype.speak = function(textString, queueMode, properties) {};
+  /**
+   * Called when any utterance gets interrupted.
+   */
+  onTtsInterrupted() {}
+};
 
 
-/**
- * Returns true if the TTS is currently speaking.
- * @return {boolean} True if the TTS is speaking.
- */
-TtsInterface.prototype.isSpeaking = function() {};
+/** @interface */
+TtsInterface = class {
+  constructor() {}
 
+  /**
+   * Speaks the given string using the specified queueMode and properties.
+   * @param {string} textString The string of text to be spoken.
+   * @param {QueueMode} queueMode The queue mode to use for speaking.
+   * @param {Object=} properties Speech properties to use for this utterance.
+   * @return {TtsInterface} A tts object useful for chaining speak calls.
+   */
+  speak(textString, queueMode, properties) {}
 
-/**
- * Stops speech.
- */
-TtsInterface.prototype.stop = function() {};
+  /**
+   * Returns true if the TTS is currently speaking.
+   * @return {boolean} True if the TTS is speaking.
+   */
+  isSpeaking() {}
 
-/**
- * Adds a listener to get called whenever any utterance starts or ends.
- * @param {TtsCapturingEventListener} listener Listener to get called.
- */
-TtsInterface.prototype.addCapturingEventListener = function(listener) {};
+  /**
+   * Stops speech.
+   */
+  stop() {}
 
-/**
- * Increases a TTS speech property.
- * @param {string} propertyName The name of the property to change.
- * @param {boolean} increase If true, increases the property value by one
- *     step size, otherwise decreases.
- */
-TtsInterface.prototype.increaseOrDecreaseProperty = function(
-    propertyName, increase) {};
+  /**
+   * Adds a listener to get called whenever any utterance starts or ends.
+   * @param {TtsCapturingEventListener} listener Listener to get called.
+   */
+  addCapturingEventListener(listener) {}
 
+  /**
+   * Increases a TTS speech property.
+   * @param {string} propertyName The name of the property to change.
+   * @param {boolean} increase If true, increases the property value by one
+   *     step size, otherwise decreases.
+   */
+  increaseOrDecreaseProperty(propertyName, increase) {}
 
-/**
- * Converts an engine property value to a percentage from 0.00 to 1.00.
- * @param {string} property The property to convert.
- * @return {?number} The percentage of the property.
- */
-TtsInterface.prototype.propertyToPercentage = function(property) {};
+  /**
+   * Converts an engine property value to a percentage from 0.00 to 1.00.
+   * @param {string} property The property to convert.
+   * @return {?number} The percentage of the property.
+   */
+  propertyToPercentage(property) {}
 
+  /**
+   * Returns the default properties of the first tts that has default
+   * properties.
+   * @param {string} property Name of property.
+   * @return {?number} The default value.
+   */
+  getDefaultProperty(property) {}
 
-/**
- * Returns the default properties of the first tts that has default properties.
- * @param {string} property Name of property.
- * @return {?number} The default value.
- */
-TtsInterface.prototype.getDefaultProperty = function(property) {};
+  /**
+   * Toggles on or off speech.
+   * @return {boolean} Whether speech is now on or off.
+   */
+  toggleSpeechOnOrOff() {}
 
-/**
- * Toggles on or off speech.
- * @return {boolean} Whether speech is now on or off.
- */
-TtsInterface.prototype.toggleSpeechOnOrOff = function() {};
-
-/**
- * Sets the rate, pitch, and volume TTS Settings to their defaults.
- */
-TtsInterface.prototype.resetTextToSpeechSettings = function() {};
+  /**
+   * Sets the rate, pitch, and volume TTS Settings to their defaults.
+   */
+  resetTextToSpeechSettings() {}
+};

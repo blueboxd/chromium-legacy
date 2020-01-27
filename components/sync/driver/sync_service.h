@@ -20,7 +20,6 @@
 #include "components/sync/base/user_demographics.h"
 #include "components/sync/driver/sync_service_observer.h"
 
-struct CoreAccountId;
 struct CoreAccountInfo;
 class GoogleServiceAuthError;
 class GURL;
@@ -225,7 +224,6 @@ class SyncService : public KeyedService {
   virtual bool IsLocalSyncEnabled() const = 0;
 
   // Information about the currently signed in user.
-  CoreAccountId GetAuthenticatedAccountId() const;
   virtual CoreAccountInfo GetAuthenticatedAccountInfo() const = 0;
   // Whether the currently signed in user is the "primary" browser account (see
   // IdentityManager). If this is false, then IsSyncFeatureEnabled will also be

@@ -483,9 +483,9 @@ void SupervisedUserURLFilter::LoadWhitelists(
 
   base::PostTaskAndReplyWithResult(
       blocking_task_runner_.get(), FROM_HERE,
-      base::Bind(&LoadWhitelistsAsyncThread, site_lists),
-      base::Bind(&SupervisedUserURLFilter::SetContents,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&LoadWhitelistsAsyncThread, site_lists),
+      base::BindOnce(&SupervisedUserURLFilter::SetContents,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void SupervisedUserURLFilter::SetBlacklist(
@@ -503,9 +503,9 @@ void SupervisedUserURLFilter::SetFromPatternsForTesting(
 
   base::PostTaskAndReplyWithResult(
       blocking_task_runner_.get(), FROM_HERE,
-      base::Bind(&CreateWhitelistFromPatternsForTesting, patterns),
-      base::Bind(&SupervisedUserURLFilter::SetContents,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&CreateWhitelistFromPatternsForTesting, patterns),
+      base::BindOnce(&SupervisedUserURLFilter::SetContents,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void SupervisedUserURLFilter::SetFromSiteListsForTesting(
@@ -514,9 +514,9 @@ void SupervisedUserURLFilter::SetFromSiteListsForTesting(
 
   base::PostTaskAndReplyWithResult(
       blocking_task_runner_.get(), FROM_HERE,
-      base::Bind(&CreateWhitelistsFromSiteListsForTesting, site_lists),
-      base::Bind(&SupervisedUserURLFilter::SetContents,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&CreateWhitelistsFromSiteListsForTesting, site_lists),
+      base::BindOnce(&SupervisedUserURLFilter::SetContents,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void SupervisedUserURLFilter::SetManualHosts(

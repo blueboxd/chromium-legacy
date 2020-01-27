@@ -6,11 +6,11 @@
 
 #import <UIKit/UIKit.h>
 
-#include "ios/chrome/browser/browser_state/chrome_browser_state_forward.h"
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_controller.h"
 
 @class BookmarkFolderEditorViewController;
 @protocol BrowserCommands;
+class ChromeBrowserState;
 
 namespace bookmarks {
 class BookmarkModel;
@@ -60,7 +60,7 @@ class BookmarkNode;
 + (instancetype)
     folderEditorWithBookmarkModel:(bookmarks::BookmarkModel*)bookmarkModel
                            folder:(const bookmarks::BookmarkNode*)folder
-                     browserState:(ios::ChromeBrowserState*)browserState
+                     browserState:(ChromeBrowserState*)browserState
                        dispatcher:(id<BrowserCommands>)dispatcher;
 
 - (instancetype)initWithStyle:(UITableViewStyle)style NS_UNAVAILABLE;

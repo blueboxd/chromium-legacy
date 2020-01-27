@@ -303,6 +303,14 @@ void MockMediaSession::ScrubTo(base::TimeDelta seek_time) {
   is_scrubbing_ = true;
 }
 
+void MockMediaSession::EnterPictureInPicture() {
+  // TODO(crbug.com/1040263): Implement EnterPictureinpicture.
+}
+
+void MockMediaSession::ExitPictureInPicture() {
+  // TODO(crbug.com/1040263): Implement ExitPictureinpicture.
+}
+
 void MockMediaSession::SetIsControllable(bool value) {
   is_controllable_ = value;
   NotifyObservers();

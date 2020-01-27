@@ -29,8 +29,10 @@
 #include "components/security_interstitials/content/blocked_interception_blocking_page.h"
 #include "components/security_interstitials/content/mitm_software_blocking_page.h"
 #include "components/security_interstitials/content/origin_policy_ui.h"
+#include "components/security_interstitials/content/unsafe_resource_util.h"
 #include "components/security_interstitials/core/ssl_error_options_mask.h"
 #include "components/security_interstitials/core/ssl_error_ui.h"
+#include "components/security_interstitials/core/unsafe_resource.h"
 #include "content/public/browser/interstitial_page_delegate.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
@@ -154,9 +156,10 @@ SSLBlockingPage* CreateSslBlockingPage(content::WebContents* web_contents) {
   if (strict_enforcement)
     options_mask |=
         security_interstitials::SSLErrorOptionsMask::STRICT_ENFORCEMENT;
-  return ChromeSecurityBlockingPageFactory::CreateSSLPage(
-      web_contents, cert_error, ssl_info, request_url, options_mask,
-      time_triggered_, GURL(), nullptr);
+  ChromeSecurityBlockingPageFactory blocking_page_factory;
+  return blocking_page_factory.CreateSSLPage(web_contents, cert_error, ssl_info,
+                                             request_url, options_mask,
+                                             time_triggered_, GURL(), nullptr);
 }
 
 MITMSoftwareBlockingPage* CreateMITMSoftwareBlockingPage(
@@ -172,12 +175,12 @@ MITMSoftwareBlockingPage* CreateMITMSoftwareBlockingPage(
     is_enterprise_managed = is_enterprise_managed_param == "1";
   }
 
-  ChromeSecurityBlockingPageFactory::SetEnterpriseManagedForTesting(
-      is_enterprise_managed);
+  ChromeSecurityBlockingPageFactory blocking_page_factory;
+  blocking_page_factory.SetEnterpriseManagedForTesting(is_enterprise_managed);
 
   net::SSLInfo ssl_info;
   ssl_info.cert = ssl_info.unverified_cert = CreateFakeCert();
-  return ChromeSecurityBlockingPageFactory::CreateMITMSoftwareBlockingPage(
+  return blocking_page_factory.CreateMITMSoftwareBlockingPage(
       web_contents, cert_error, request_url, nullptr, ssl_info,
       mitm_software_name);
 }
@@ -189,9 +192,9 @@ BlockedInterceptionBlockingPage* CreateBlockedInterceptionBlockingPage(
 
   net::SSLInfo ssl_info;
   ssl_info.cert = ssl_info.unverified_cert = CreateFakeCert();
-  return ChromeSecurityBlockingPageFactory::
-      CreateBlockedInterceptionBlockingPage(web_contents, cert_error,
-                                            request_url, nullptr, ssl_info);
+  ChromeSecurityBlockingPageFactory blocking_page_factory;
+  return blocking_page_factory.CreateBlockedInterceptionBlockingPage(
+      web_contents, cert_error, request_url, nullptr, ssl_info);
 }
 
 BadClockBlockingPage* CreateBadClockBlockingPage(
@@ -239,7 +242,8 @@ BadClockBlockingPage* CreateBadClockBlockingPage(
   if (strict_enforcement)
     options_mask |=
         security_interstitials::SSLErrorOptionsMask::STRICT_ENFORCEMENT;
-  return ChromeSecurityBlockingPageFactory::CreateBadClockBlockingPage(
+  ChromeSecurityBlockingPageFactory blocking_page_factory;
+  return blocking_page_factory.CreateBadClockBlockingPage(
       web_contents, cert_error, ssl_info, request_url, base::Time::Now(),
       clock_state, nullptr);
 }
@@ -295,10 +299,9 @@ safe_browsing::SafeBrowsingBlockingPage* CreateSafeBrowsingBlockingPage(
   resource.is_subresource = request_url != main_frame_url;
   resource.is_subframe = false;
   resource.threat_type = threat_type;
-  resource.web_contents_getter =
-      security_interstitials::UnsafeResource::GetWebContentsGetter(
-          web_contents->GetMainFrame()->GetProcess()->GetID(),
-          web_contents->GetMainFrame()->GetRoutingID());
+  resource.web_contents_getter = security_interstitials::GetWebContentsGetter(
+      web_contents->GetMainFrame()->GetProcess()->GetID(),
+      web_contents->GetMainFrame()->GetRoutingID());
   resource.threat_source = g_browser_process->safe_browsing_service()
                                ->database_manager()
                                ->GetThreatSource();
@@ -347,10 +350,9 @@ TestSafeBrowsingBlockingPageQuiet* CreateSafeBrowsingQuietBlockingPage(
   resource.is_subresource = request_url != main_frame_url;
   resource.is_subframe = false;
   resource.threat_type = threat_type;
-  resource.web_contents_getter =
-      security_interstitials::UnsafeResource::GetWebContentsGetter(
-          web_contents->GetMainFrame()->GetProcess()->GetID(),
-          web_contents->GetMainFrame()->GetRoutingID());
+  resource.web_contents_getter = security_interstitials::GetWebContentsGetter(
+      web_contents->GetMainFrame()->GetProcess()->GetID(),
+      web_contents->GetMainFrame()->GetRoutingID());
   resource.threat_source = g_browser_process->safe_browsing_service()
                                ->database_manager()
                                ->GetThreatSource();
@@ -401,8 +403,9 @@ CaptivePortalBlockingPage* CreateCaptivePortalBlockingPage(
   }
   net::SSLInfo ssl_info;
   ssl_info.cert = ssl_info.unverified_cert = CreateFakeCert();
+  ChromeSecurityBlockingPageFactory blocking_page_factory;
   CaptivePortalBlockingPage* blocking_page =
-      ChromeSecurityBlockingPageFactory::CreateCaptivePortalBlockingPage(
+      blocking_page_factory.CreateCaptivePortalBlockingPage(
           web_contents, request_url, landing_url, nullptr, ssl_info,
           net::ERR_CERT_COMMON_NAME_INVALID);
   blocking_page->OverrideWifiInfoForTesting(is_wifi_connection, wifi_ssid);

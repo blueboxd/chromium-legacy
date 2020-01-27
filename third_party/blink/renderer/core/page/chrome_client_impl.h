@@ -35,6 +35,7 @@
 #include <memory>
 
 #include "cc/input/overscroll_behavior.h"
+#include "third_party/blink/public/mojom/input/focus_type.mojom-blink-forward.h"
 #include "third_party/blink/public/web/web_navigation_policy.h"
 #include "third_party/blink/public/web/web_window_features.h"
 #include "third_party/blink/renderer/core/core_export.h"
@@ -63,8 +64,8 @@ class CORE_EXPORT ChromeClientImpl final : public ChromeClient {
   void SetWindowRect(const IntRect&, LocalFrame&) override;
   IntRect RootWindowRect(LocalFrame&) override;
   void Focus(LocalFrame*) override;
-  bool CanTakeFocus(WebFocusType) override;
-  void TakeFocus(WebFocusType) override;
+  bool CanTakeFocus(mojom::blink::FocusType) override;
+  void TakeFocus(mojom::blink::FocusType) override;
   void FocusedElementChanged(Element* from_node, Element* to_node) override;
   void BeginLifecycleUpdates(LocalFrame& main_frame) override;
   void StartDeferringCommits(LocalFrame& main_frame,

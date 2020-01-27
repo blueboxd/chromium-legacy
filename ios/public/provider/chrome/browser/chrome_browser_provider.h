@@ -15,11 +15,11 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
-#include "ios/chrome/browser/browser_state/chrome_browser_state_forward.h"
 
 class AppDistributionProvider;
 class BrandedImageProvider;
 class BrowserURLRewriterProvider;
+class ChromeBrowserState;
 class FullscreenProvider;
 class MailtoHandlerProvider;
 class OmahaServiceProvider;
@@ -126,7 +126,7 @@ class ChromeBrowserProvider {
 
   // Schedule any embedder-specific startup tasks.
   virtual void ScheduleDeferredStartupTasks(
-      ios::ChromeBrowserState* browser_state) const;
+      ChromeBrowserState* browser_state) const;
 
   // Returns an instance of the voice search provider, if one exists.
   virtual VoiceSearchProvider* GetVoiceSearchProvider() const;
@@ -134,9 +134,9 @@ class ChromeBrowserProvider {
   // Returns an instance of the app distribution provider.
   virtual AppDistributionProvider* GetAppDistributionProvider() const;
 
-  virtual id<LogoVendor> CreateLogoVendor(
-      ios::ChromeBrowserState* browser_state,
-      web::WebState* web_state) const NS_RETURNS_RETAINED;
+  virtual id<LogoVendor> CreateLogoVendor(ChromeBrowserState* browser_state,
+                                          web::WebState* web_state) const
+      NS_RETURNS_RETAINED;
 
   // Returns an instance of the omaha service provider.
   virtual OmahaServiceProvider* GetOmahaServiceProvider() const;

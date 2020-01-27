@@ -9,7 +9,7 @@
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/safe_browsing/ui_manager.h"
 #include "components/security_interstitials/content/security_interstitial_tab_helper.h"
-#include "components/security_interstitials/content/unsafe_resource.h"
+#include "components/security_interstitials/core/unsafe_resource.h"
 #include "content/public/browser/navigation_handle.h"
 
 namespace safe_browsing {

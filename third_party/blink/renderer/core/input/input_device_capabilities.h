@@ -6,10 +6,11 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_INPUT_INPUT_DEVICE_CAPABILITIES_H_
 
 #include "third_party/blink/renderer/core/core_export.h"
-#include "third_party/blink/renderer/core/input/input_device_capabilities_init.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 
 namespace blink {
+
+class InputDeviceCapabilitiesInit;
 
 class CORE_EXPORT InputDeviceCapabilities final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();

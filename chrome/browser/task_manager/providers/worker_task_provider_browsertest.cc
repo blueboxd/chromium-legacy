@@ -293,4 +293,36 @@ IN_PROC_BROWSER_TEST_F(WorkerTaskProviderBrowserTest,
   CloseBrowserSynchronously(browser_2);
 }
 
+IN_PROC_BROWSER_TEST_F(WorkerTaskProviderBrowserTest, CreateExistingTasks) {
+  EXPECT_TRUE(tasks().empty());
+  ui_test_utils::NavigateToURL(
+      browser(), embedded_test_server()->GetURL(
+                     "/service_worker/create_service_worker.html"));
+  EXPECT_EQ("DONE", EvalJs(browser()->tab_strip_model()->GetActiveWebContents(),
+                           "register('respond_with_fetch_worker.js');"));
+
+  // No tasks yet as StartUpdating() wasn't called.
+  EXPECT_TRUE(tasks().empty());
+
+  StartUpdating();
+
+  ASSERT_EQ(tasks().size(), 1u);
+  const Task* task = tasks()[0];
+  EXPECT_EQ(task->GetChildProcessUniqueID(), GetChildProcessID(browser()));
+  EXPECT_EQ(Task::SERVICE_WORKER, task->GetType());
+  EXPECT_TRUE(base::StartsWith(
+      task->title(),
+      ExpectedTaskTitle(
+          embedded_test_server()
+              ->GetURL("/service_worker/respond_with_fetch_worker.js")
+              .spec()),
+      base::CompareCase::INSENSITIVE_ASCII));
+
+  GetServiceWorkerContext(browser())->StopAllServiceWorkersForOrigin(
+      embedded_test_server()->base_url());
+  WaitUntilTaskCount(0);
+
+  StopUpdating();
+}
+
 }  // namespace task_manager

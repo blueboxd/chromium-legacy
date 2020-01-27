@@ -15,8 +15,10 @@
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
 #include "components/safe_browsing/core/features.h"
 #include "components/security_interstitials/content/security_interstitial_controller_client.h"
+#include "components/security_interstitials/content/unsafe_resource_util.h"
 #include "components/security_interstitials/core/metrics_helper.h"
 #include "components/security_interstitials/core/safe_browsing_loud_error_ui.h"
+#include "components/security_interstitials/core/unsafe_resource.h"
 #include "content/public/browser/interstitial_page.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
@@ -108,7 +110,7 @@ void BaseBlockingPage::ShowBlockingPage(
     // to display a new one for the main frame. If there is already an
     // interstitial, showing the new one will automatically hide the old one.
     content::NavigationEntry* entry =
-        unsafe_resource.GetNavigationEntryForResource();
+        GetNavigationEntryForResource(unsafe_resource);
     const UnsafeResourceList unsafe_resources{unsafe_resource};
     BaseBlockingPage* blocking_page = new BaseBlockingPage(
         ui_manager, web_contents, entry ? entry->GetURL() : GURL(),

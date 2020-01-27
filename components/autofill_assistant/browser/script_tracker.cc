@@ -106,6 +106,7 @@ void ScriptTracker::CheckScripts() {
 }
 
 void ScriptTracker::ExecuteScript(const std::string& script_path,
+                                  const UserData* user_data,
                                   std::unique_ptr<TriggerContext> context,
                                   ScriptExecutor::RunScriptCallback callback) {
   if (running()) {
@@ -125,7 +126,7 @@ void ScriptTracker::ExecuteScript(const std::string& script_path,
       &ScriptTracker::OnScriptRun, weak_ptr_factory_.GetWeakPtr(), script_path,
       std::move(callback));
   TerminatePendingChecks();
-  executor_->Run(std::move(run_script_callback));
+  executor_->Run(user_data, std::move(run_script_callback));
 }
 
 void ScriptTracker::StopScript() {

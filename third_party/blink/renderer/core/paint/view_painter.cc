@@ -272,10 +272,12 @@ void ViewPainter::PaintRootElementGroup(
   // the pixel_snapped_background_rect and context to documentElement visual
   // space.
   bool background_renderable = true;
+  bool root_element_has_transform = false;
   IntRect paint_rect = pixel_snapped_background_rect;
   if (!root_object || !root_object->IsBox()) {
     background_renderable = false;
   } else {
+    root_element_has_transform = root_object->StyleRef().HasTransform();
     TransformationMatrix transform;
     root_object->GetTransformFromContainer(root_object->View(),
                                            PhysicalOffset(), transform);
@@ -362,23 +364,18 @@ void ViewPainter::PaintRootElementGroup(
     context.FillRect(paint_rect, Color(), SkBlendMode::kClear);
   }
 
-  BackgroundImageGeometry geometry(layout_view_);
+  BackgroundImageGeometry geometry(layout_view_, root_element_has_transform);
   BoxModelObjectPainter box_model_painter(layout_view_);
   for (const auto* fill_layer : base::Reversed(reversed_paint_list)) {
     DCHECK(fill_layer->Clip() == EFillBox::kBorder);
 
-    if (BackgroundImageGeometry::ShouldUseFixedAttachment(*fill_layer)) {
-      box_model_painter.PaintFillLayer(
-          paint_info, Color(), *fill_layer,
-          PhysicalRect(pixel_snapped_background_rect), kBackgroundBleedNone,
-          geometry);
-    } else {
-      PhysicalRect painting_rect(paint_rect);
+    PhysicalRect painting_rect(paint_rect);
+    if (!BackgroundImageGeometry::ShouldUseFixedAttachment(*fill_layer))
       painting_rect.Move(root_object->FirstFragment().PaintOffset());
-      box_model_painter.PaintFillLayer(paint_info, Color(), *fill_layer,
-                                       painting_rect, kBackgroundBleedNone,
-                                       geometry);
-    }
+
+    box_model_painter.PaintFillLayer(paint_info, Color(), *fill_layer,
+                                     painting_rect, kBackgroundBleedNone,
+                                     geometry);
   }
 
   if (should_draw_background_in_separate_buffer && !painted_separate_backdrop)

@@ -87,8 +87,7 @@ class FuchsiaCdm : public ContentDecryptionModule,
       uint32_t promise_id,
       base::Optional<CdmPromise::Exception> exception);
 
-  // TODO(crbug.com/1012525): Remove |key_id| once fxb/38253 is resolved.
-  void OnNewKey(const std::string& key_id);
+  void OnNewKey();
 
   CdmPromiseAdapter promises_;
   base::flat_map<std::string, std::unique_ptr<CdmSession>> session_map_;
@@ -99,7 +98,7 @@ class FuchsiaCdm : public ContentDecryptionModule,
   FuchsiaDecryptor decryptor_;
 
   base::Lock new_key_cb_for_video_lock_;
-  FuchsiaSecureStreamDecryptor::NewKeyCB new_key_cb_for_video_
+  base::RepeatingClosure new_key_cb_for_video_
       GUARDED_BY(new_key_cb_for_video_lock_);
 
   DISALLOW_COPY_AND_ASSIGN(FuchsiaCdm);

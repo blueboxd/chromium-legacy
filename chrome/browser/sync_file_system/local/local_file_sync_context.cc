@@ -115,10 +115,10 @@ void LocalFileSyncContext::GetFileForLocalSync(
 
   base::PostTaskAndReplyWithResult(
       file_system_context->default_file_task_runner(), FROM_HERE,
-      base::Bind(&LocalFileSyncContext::GetNextURLsForSyncOnFileThread, this,
-                 base::RetainedRef(file_system_context)),
-      base::Bind(&LocalFileSyncContext::TryPrepareForLocalSync, this,
-                 base::RetainedRef(file_system_context), callback));
+      base::BindOnce(&LocalFileSyncContext::GetNextURLsForSyncOnFileThread,
+                     this, base::RetainedRef(file_system_context)),
+      base::BindOnce(&LocalFileSyncContext::TryPrepareForLocalSync, this,
+                     base::RetainedRef(file_system_context), callback));
 }
 
 void LocalFileSyncContext::ClearChangesForURL(
@@ -642,13 +642,15 @@ void LocalFileSyncContext::InitializeFileSystemContextOnIOThread(
         new std::unique_ptr<LocalFileChangeTracker>);
     base::PostTaskAndReplyWithResult(
         file_system_context->default_file_task_runner(), FROM_HERE,
-        base::Bind(&LocalFileSyncContext::InitializeChangeTrackerOnFileThread,
-                   this, tracker_ptr, base::RetainedRef(file_system_context),
-                   origins_with_changes),
-        base::Bind(&LocalFileSyncContext::DidInitializeChangeTrackerOnIOThread,
-                   this, base::Owned(tracker_ptr), source_url,
-                   base::RetainedRef(file_system_context),
-                   base::Owned(origins_with_changes)));
+        base::BindOnce(
+            &LocalFileSyncContext::InitializeChangeTrackerOnFileThread, this,
+            tracker_ptr, base::RetainedRef(file_system_context),
+            origins_with_changes),
+        base::BindOnce(
+            &LocalFileSyncContext::DidInitializeChangeTrackerOnIOThread, this,
+            base::Owned(tracker_ptr), source_url,
+            base::RetainedRef(file_system_context),
+            base::Owned(origins_with_changes)));
     return;
   }
   if (!operation_runner_) {

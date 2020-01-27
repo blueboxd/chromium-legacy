@@ -7,8 +7,7 @@
 
 #import <Foundation/Foundation.h>
 
-#include "ios/chrome/browser/browser_state/chrome_browser_state_forward.h"
-
+class ChromeBrowserState;
 class GURL;
 
 namespace send_tab_to_self {
@@ -21,25 +20,24 @@ bool IsReceivingEnabled();
 bool IsSendingEnabled();
 
 // Returns true if the SendTabToSelf sync datatype is active.
-bool IsUserSyncTypeActive(ios::ChromeBrowserState* browser_state);
+bool IsUserSyncTypeActive(ChromeBrowserState* browser_state);
 
 // Returns true if there is valid device.
-bool HasValidTargetDevice(ios::ChromeBrowserState* browser_state);
+bool HasValidTargetDevice(ChromeBrowserState* browser_state);
 
 // Returns true if the tab and web content requirements are met:
 //  User is viewing an HTTP or HTTPS page.
 //  User is not on a native page.
 //  User is not in Incongnito mode.
 bool AreContentRequirementsMet(const GURL& gurl,
-                               ios::ChromeBrowserState* browser_state);
+                               ChromeBrowserState* browser_state);
 
 // Returns true if all conditions are true and shows the option onto the menu.
-bool ShouldOfferFeature(ios::ChromeBrowserState* browser_state,
-                        const GURL& url);
+bool ShouldOfferFeature(ChromeBrowserState* browser_state, const GURL& url);
 
 // Add a new entry to SendTabToSelfModel when user click "Share to your
 // devices" option.
-void CreateNewEntry(ios::ChromeBrowserState* browser_state,
+void CreateNewEntry(ChromeBrowserState* browser_state,
                     NSString* target_device_id);
 
 }  // namespace send_tab_to_self

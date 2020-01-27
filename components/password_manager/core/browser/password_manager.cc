@@ -201,7 +201,6 @@ void PasswordManager::RegisterProfilePrefs(
 
   registry->RegisterDictionaryPref(prefs::kAccountStoragePerAccountSettings);
 
-  registry->RegisterBooleanPref(prefs::kIsAccountStoreDefault, true);
 #if defined(OS_MACOSX)
   registry->RegisterIntegerPref(prefs::kKeychainMigrationStatus,
                                 4 /* MIGRATED_DELETED */);

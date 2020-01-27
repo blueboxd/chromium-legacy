@@ -7,8 +7,7 @@
 
 #import <Foundation/Foundation.h>
 
-#include "ios/chrome/browser/browser_state/chrome_browser_state_forward.h"
-
+class ChromeBrowserState;
 @protocol BookmarkHomeConsumer;
 @class BookmarkHomeSharedState;
 
@@ -19,7 +18,7 @@
 @property(nonatomic, weak) id<BookmarkHomeConsumer> consumer;
 
 - (instancetype)initWithSharedState:(BookmarkHomeSharedState*)sharedState
-                       browserState:(ios::ChromeBrowserState*)browserState
+                       browserState:(ChromeBrowserState*)browserState
     NS_DESIGNATED_INITIALIZER;
 - (instancetype)init NS_UNAVAILABLE;
 

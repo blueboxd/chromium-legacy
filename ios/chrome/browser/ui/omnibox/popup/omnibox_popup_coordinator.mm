@@ -31,8 +31,7 @@
   std::unique_ptr<OmniboxPopupViewIOS> _popupView;
 }
 
-@property(nonatomic, strong)
-    OmniboxPopupBaseViewController* popupViewController;
+@property(nonatomic, strong) OmniboxPopupViewController* popupViewController;
 @property(nonatomic, strong) OmniboxPopupMediator* mediator;
 
 @end

@@ -89,7 +89,7 @@ class CORE_EXPORT InspectorCSSAgent final
     }
 
    private:
-    Member<ContentSecurityPolicy> content_security_policy_;
+    ContentSecurityPolicy* content_security_policy_;
   };
 
   static CSSStyleRule* AsCSSStyleRule(CSSRule*);

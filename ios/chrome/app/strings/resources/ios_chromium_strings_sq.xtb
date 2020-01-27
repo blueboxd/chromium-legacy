@@ -20,6 +20,7 @@
 <translation id="2915596697727466327">Chromium përdor Face ID për të siguruar qasjen e autorizuar te fjalëkalimet e tua.</translation>
 <translation id="3256316712990552818">U kopjua te Chromium</translation>
 <translation id="3805899903892079518">Chromium nuk ka qasje te fotografitë apo videot e tua. Aktivizo qasjen te Cilësimet e iOS &gt; Privatësia &gt; Fotografitë.</translation>
+<translation id="4287098963058057749">Kushtet e shërbimit të Chromium ndryshojnë më 31 mars. <ph name="BEGIN_LINK" />Shqyrtoji<ph name="END_LINK" /></translation>
 <translation id="4555020257205549924">Kur ky funksion është i aktivizuar, Chromium do të ofrojë që të përkthejë faqet e shkruara në gjuhë të tjera duke përdorur "Përkthe me Google". <ph name="BEGIN_LINK" />Mëso më shumë<ph name="END_LINK" /></translation>
 <translation id="4681781466797808448">Aktivizo skanerin e Chromium</translation>
 <translation id="4787850887676698916">Skedat që ke hapur në Chromium në pajisjet e tjera do të shfaqen këtu.</translation>
@@ -48,6 +49,5 @@
 <translation id="8586442755830160949">Të drejtat e autorit <ph name="YEAR" /> Autorët e Chromium. Të gjitha të drejtat të rezervuara.</translation>
 <translation id="8809780021347235332">Për të ruajtur imazhet, trokit te "Cilësimet" për të lejuar që Chromium të përdorë fotografitë e tua</translation>
 <translation id="9022552996538154597">Identifikohu në Chromium</translation>
-<translation id="9217078088703304241"><ph name="BEGIN_LINK" />Rishiko Kushtet e përditësuara të shërbimit të Chromium.<ph name="END_LINK" /></translation>
 <translation id="985602178874221306">Autorët e Chromium</translation>
 </translationbundle>

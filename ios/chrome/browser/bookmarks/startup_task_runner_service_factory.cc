@@ -15,7 +15,7 @@ namespace ios {
 // static
 bookmarks::StartupTaskRunnerService*
 StartupTaskRunnerServiceFactory::GetForBrowserState(
-    ios::ChromeBrowserState* browser_state) {
+    ChromeBrowserState* browser_state) {
   return static_cast<bookmarks::StartupTaskRunnerService*>(
       GetInstance()->GetServiceForBrowserState(browser_state, true));
 }
@@ -39,8 +39,8 @@ StartupTaskRunnerServiceFactory::~StartupTaskRunnerServiceFactory() {
 std::unique_ptr<KeyedService>
 StartupTaskRunnerServiceFactory::BuildServiceInstanceFor(
     web::BrowserState* context) const {
-  ios::ChromeBrowserState* browser_state =
-      ios::ChromeBrowserState::FromBrowserState(context);
+  ChromeBrowserState* browser_state =
+      ChromeBrowserState::FromBrowserState(context);
   return std::make_unique<bookmarks::StartupTaskRunnerService>(
       browser_state->GetIOTaskRunner());
 }

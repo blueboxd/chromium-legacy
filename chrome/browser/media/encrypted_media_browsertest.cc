@@ -592,7 +592,9 @@ IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_AudioOnly_MP4_OPUS) {
   TestSimplePlayback("bear-opus-cenc.mp4");
 }
 
-IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_VideoOnly_MP4_VP9) {
+// TODO(crbug.com/1045393): Flaky on multiple platforms.
+IN_PROC_BROWSER_TEST_P(EncryptedMediaTest,
+                       DISABLED_Playback_VideoOnly_MP4_VP9) {
   // MP4 without MSE is not support yet, http://crbug.com/170793.
   if (CurrentSourceType() != SrcType::MSE) {
     DVLOG(0) << "Skipping test; Can only play MP4 encrypted streams by MSE.";
@@ -657,7 +659,9 @@ IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, ConfigChangeVideo_ClearToEncrypted) {
   TestConfigChange(ConfigChangeType::CLEAR_TO_ENCRYPTED);
 }
 
-IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, ConfigChangeVideo_EncryptedToClear) {
+// TODO(crbug.com/1045376): Flaky on multiple platforms.
+IN_PROC_BROWSER_TEST_P(EncryptedMediaTest,
+                       DISABLED_ConfigChangeVideo_EncryptedToClear) {
   TestConfigChange(ConfigChangeType::ENCRYPTED_TO_CLEAR);
 }
 

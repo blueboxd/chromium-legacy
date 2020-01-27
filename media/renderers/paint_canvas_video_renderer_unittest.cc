@@ -571,6 +571,16 @@ TEST_F(PaintCanvasVideoRendererTest, TransparentFrameSrcMode) {
             bitmap()->getColor(0, 0));
 }
 
+TEST_F(PaintCanvasVideoRendererTest, TransparentFrameSrcMode1x1) {
+  target_canvas()->clear(SK_ColorRED);
+  // SRC mode completely overwrites the buffer.
+  auto frame = VideoFrame::CreateTransparentFrame(gfx::Size(1, 1));
+  PaintRotated(frame.get(), target_canvas(), gfx::RectF(1, 1), kNone,
+               SkBlendMode::kSrc, kNoTransformation);
+  EXPECT_EQ(static_cast<SkColor>(SK_ColorTRANSPARENT),
+            bitmap()->getColor(0, 0));
+}
+
 TEST_F(PaintCanvasVideoRendererTest, CopyTransparentFrame) {
   target_canvas()->clear(SK_ColorRED);
   Copy(VideoFrame::CreateTransparentFrame(gfx::Size(kWidth, kHeight)).get(),

@@ -394,12 +394,17 @@ void UnifiedMessageCenterView::UpdateVisibility() {
       (!session_controller->IsScreenLocked() ||
        AshMessageCenterLockScreenController::IsEnabled()));
 
-  // When notification list went invisible, the last notification should be
-  // targeted next time.
   if (!GetVisible()) {
+    // When notification list went invisible, the last notification should be
+    // targeted next time.
     model_->set_notification_target_mode(
         UnifiedSystemTrayModel::NotificationTargetMode::LAST_NOTIFICATION);
     NotifyRectBelowScroll();
+
+    // Transfer focus to quick settings when going invisible.
+    auto* widget = GetWidget();
+    if (widget && widget->IsActive())
+      FocusOut(false);
   }
 }
 
@@ -507,7 +512,8 @@ void UnifiedMessageCenterView::NotifyRectBelowScroll() {
 }
 
 void UnifiedMessageCenterView::FocusOut(bool reverse) {
-  message_center_bubble_->FocusOut(reverse);
+  if (message_center_bubble_)
+    message_center_bubble_->FocusOut(reverse);
 }
 
 void UnifiedMessageCenterView::FocusEntered(bool reverse) {

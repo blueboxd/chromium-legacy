@@ -6,12 +6,12 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_EVENTS_DRAG_EVENT_H_
 
 #include "third_party/blink/renderer/core/core_export.h"
-#include "third_party/blink/renderer/core/events/drag_event_init.h"
 #include "third_party/blink/renderer/core/events/mouse_event.h"
 
 namespace blink {
 
 class DataTransfer;
+class DragEventInit;
 
 class CORE_EXPORT DragEvent final : public MouseEvent {
   DEFINE_WRAPPERTYPEINFO();

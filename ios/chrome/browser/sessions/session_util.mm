@@ -21,7 +21,7 @@
 namespace session_util {
 
 std::unique_ptr<web::WebState> CreateWebStateWithNavigationEntries(
-    ios::ChromeBrowserState* browser_state,
+    ChromeBrowserState* browser_state,
     int last_committed_item_index,
     const std::vector<sessions::SerializedNavigationEntry>& navigations) {
   DCHECK_GE(last_committed_item_index, 0);

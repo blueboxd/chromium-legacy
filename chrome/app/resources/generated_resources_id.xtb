@@ -24,6 +24,7 @@
 <translation id="1029317248976101138">Zoom</translation>
 <translation id="1030706264415084469"><ph name="URL" /> ingin menyimpan data berukuran besar di perangkat Anda secara permanen</translation>
 <translation id="1031362278801463162">Memuat pratinjau</translation>
+<translation id="1032605640136438169">Harap tinjau persyaratan baru</translation>
 <translation id="103279545524624934">Kosongkan ruang disk untuk meluncurkan aplikasi Android.</translation>
 <translation id="1033780634303702874">Mengakses perangkat seri Anda</translation>
 <translation id="1034942643314881546">Mengaktifkan adb untuk membuat ilustrasi aplikasi</translation>
@@ -223,7 +224,6 @@
 <translation id="1306606229401759371">Ubah setelan</translation>
 <translation id="1307165550267142340">PIN telah dibuat</translation>
 <translation id="1307559529304613120">Ups! Sistem gagal menyimpan token akses API jangka panjang untuk perangkat ini.</translation>
-<translation id="1309199320876169714">Menghapus Plugin VM...</translation>
 <translation id="1313405956111467313">Konfigurasi proxy otomatis</translation>
 <translation id="131364520783682672">Caps Lock</translation>
 <translation id="1313705515580255288">Bookmark, histori, dan setelan lainnya akan disinkronkan ke Akun Google.</translation>
@@ -1367,7 +1367,6 @@ Anda dapat mengelola setelan akun ini dengan menginstal aplikasi Family Link di 
 <translation id="2871813825302180988">Akun ini sudah digunakan di perangkat ini.</translation>
 <translation id="287286579981869940">Menambahkan <ph name="PROVIDER_NAME" />...</translation>
 <translation id="2872961005593481000">Matikan</translation>
-<translation id="2874478552394649323">Hapus Plugin VM</translation>
 <translation id="2874939134665556319">Lagu sebelumnya</translation>
 <translation id="2875698561019555027">(Halaman kesalahan Chrome)</translation>
 <translation id="2876336351874743617">Jari 2</translation>
@@ -1384,7 +1383,6 @@ Anda dapat mengelola setelan akun ini dengan menginstal aplikasi Family Link di 
 <translation id="2889064240420137087">Buka link dengan...</translation>
 <translation id="2889925978073739256">Lanjutkan pemblokiran plugin yang tidak dimasukkan kotak pasir</translation>
 <translation id="2893168226686371498">Browser default</translation>
-<translation id="2893208266590504003">Gagal menghapus Plugin VM</translation>
 <translation id="2894757982205307093">Tab baru di grup</translation>
 <translation id="289644616180464099">Kartu SIM terkunci</translation>
 <translation id="2896909745808647285"><ph name="FILE_NAME" /> dienkripsi dan telah diblokir agar tidak dapat dibuka.</translation>
@@ -2833,6 +2831,7 @@ Anda dapat mengelola setelan akun ini dengan menginstal aplikasi Family Link di 
 <translation id="4998430619171209993">Aktif</translation>
 <translation id="4998873842614926205">Konfirmasikan Perubahan</translation>
 <translation id="5000922062037820727">Diblokir (disarankan)</translation>
+<translation id="5007392906805964215">Tinjau</translation>
 <translation id="5008936837313706385">Nama Aktivitas</translation>
 <translation id="5010043101506446253">Otoritas sertifikat</translation>
 <translation id="5015344424288992913">Mengontak proxy...</translation>
@@ -3038,6 +3037,7 @@ Anda dapat mengelola setelan akun ini dengan menginstal aplikasi Family Link di 
 <translation id="5311304534597152726">Login sebagai</translation>
 <translation id="53116743016968120"><ph name="ERROR_MESSAGE" /> Coba lagi.</translation>
 <translation id="5313628438272378649">Upload ini melanggar kebijakan keamanan organisasi Anda dan tidak dapat diselesaikan.</translation>
+<translation id="5314381603623123224">Persyaratan Layanan Chrome akan berubah pada 31 Maret</translation>
 <translation id="5315738755890845852">Kurung kurawal tambahan: <ph name="ERROR_LINE" /></translation>
 <translation id="5315873049536339193">identitas</translation>
 <translation id="5317780077021120954">Simpan</translation>
@@ -5773,7 +5773,6 @@ Simpan file kunci Anda di tempat yang aman. Anda akan membutuhkannya untuk membu
 <translation id="9169496697824289689">Lihat pintasan keyboard</translation>
 <translation id="916964310188958970">Mengapa saran ini muncul?</translation>
 <translation id="9169931577761441333">Tambahkan <ph name="APP_NAME" /> ke layar Utama</translation>
-<translation id="9170305483456271385">Plugin VM telah dihapus</translation>
 <translation id="9170848237812810038">&amp;Urung</translation>
 <translation id="9170884462774788842">Program lain di komputer Anda menambahkan tema yang dapat mengubah cara kerja Chrome.</translation>
 <translation id="9173995187295789444">Memindai perangkat Bluetooth...</translation>

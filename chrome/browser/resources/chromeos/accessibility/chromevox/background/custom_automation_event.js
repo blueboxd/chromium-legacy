@@ -13,21 +13,23 @@ goog.provide('CustomAutomationEvent');
 
 /**
  * An object we can use instead of a chrome.automation.AutomationEvent.
- * @constructor
- * @extends {chrome.automation.AutomationEvent}
- * @param {chrome.automation.EventType} type The event type.
- * @param {!chrome.automation.AutomationNode} target The event target.
- * @param {string} eventFrom The source of this event.
  */
-var CustomAutomationEvent = function(type, target, eventFrom) {
-  this.type = type;
-  this.target = target;
-  this.eventFrom = eventFrom;
-};
+CustomAutomationEvent = class {
+  /**
+   * @param {chrome.automation.EventType} type The event type.
+   * @param {!chrome.automation.AutomationNode} target The event target.
+   * @param {string} eventFrom The source of this event.
+   */
+  constructor(type, target, eventFrom) {
+    this.type = type;
+    this.target = target;
+    this.eventFrom = eventFrom;
+  }
 
-/**
- * @override
- */
-CustomAutomationEvent.prototype.stopPropagation = function() {
-  throw Error('Can\'t call stopPropagation on a CustomAutomationEvent');
+  /**
+   * @override
+   */
+  stopPropagation() {
+    throw Error('Can\'t call stopPropagation on a CustomAutomationEvent');
+  }
 };

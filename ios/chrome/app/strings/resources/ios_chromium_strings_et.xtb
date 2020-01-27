@@ -20,6 +20,7 @@
 <translation id="2915596697727466327">Chromium kasutab paroolide volitatud juurdepääsu kontrollimiseks Face ID-d.</translation>
 <translation id="3256316712990552818">Kopeeritud Chromiumi</translation>
 <translation id="3805899903892079518">Chromiumil pole juurdepääsu fotodele ega videotele. Lubage iOS-is juurdepääs valikutega Seaded &gt; Privaatsus &gt; Fotod.</translation>
+<translation id="4287098963058057749">Chromiumi teenusetingimused muutuvad 31. märtsil. <ph name="BEGIN_LINK" />Vaadake need üle<ph name="END_LINK" /></translation>
 <translation id="4555020257205549924">Kui see funktsioon on sisse lülitatud, pakub Chromium võimalust tõlkida teistes keeltes kirjutatud lehti Google'i tõlke abil. <ph name="BEGIN_LINK" />Lisateave<ph name="END_LINK" /></translation>
 <translation id="4681781466797808448">Lülitage sisse Chromiumi skanner</translation>
 <translation id="4787850887676698916">Siin kuvatakse teie teistes seadmetes Chromiumis avatud vahelehed.</translation>
@@ -48,6 +49,5 @@
 <translation id="8586442755830160949">Autoriõigus <ph name="YEAR" /> The Chromium Authors. Kõik õigused on kaitstud.</translation>
 <translation id="8809780021347235332">Kujutiste salvestamiseks puudutage valikut Seaded, et lubada Chromiumil teie fotode kasutamine</translation>
 <translation id="9022552996538154597">Logige Chromiumi sisse</translation>
-<translation id="9217078088703304241"><ph name="BEGIN_LINK" />Vaadake üle Chromiumi värskendatud teenusetingimused.<ph name="END_LINK" /></translation>
 <translation id="985602178874221306">The Chromium Authors</translation>
 </translationbundle>

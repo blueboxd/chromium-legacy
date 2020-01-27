@@ -282,6 +282,12 @@ void BrowserAccessibilityManagerWin::FireGeneratedEvent(
       // This will force ATs that synchronously call get_newText (e.g., NVDA) to
       // read the entire live region hypertext.
       ToBrowserAccessibilityWin(node)->GetCOM()->ForceNewHypertext();
+      // TODO(accessibility) Technically this should only be fired if the new
+      // text is non-empty. Also, IA2_EVENT_TEXT_REMOVED should be fired if
+      // there was non-empty old text. However, this does not known to affect
+      // any current screen reader behavior either way. It could affect
+      // the aria-relevant="removals" case, but that in general is poorly
+      // supported markup across browser-AT combinations, and not recommended.
       FireWinAccessibilityEvent(IA2_EVENT_TEXT_INSERTED, node);
 
       // This event is redundant with the IA2_EVENT_TEXT_INSERTED events;

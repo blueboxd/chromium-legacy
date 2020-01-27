@@ -23,7 +23,7 @@ class FrameClientHintsPreferencesContext final
   void CountPersistentClientHintHeaders() override;
 
  private:
-  Member<LocalFrame> frame_;
+  LocalFrame* frame_;
 };
 
 }  // namespace blink

@@ -25,7 +25,7 @@ size_t DiscardableCacheSizeLimit() {
 // sizes for 1-1.5 renderers. These will be updated as more types of data are
 // moved to this cache.
 #if defined(OS_ANDROID)
-  const size_t kLowEndCacheSizeBytes = 512 * 1024;
+  const size_t kLowEndCacheSizeBytes = 1024 * 1024;
   const size_t kNormalCacheSizeBytes = 128 * 1024 * 1024;
 #else
   const size_t kNormalCacheSizeBytes = 192 * 1024 * 1024;

@@ -162,10 +162,10 @@ ChromeCleanerFetcher::ChromeCleanerFetcher(
                        base::OnTaskRunnerDeleter(blocking_task_runner_)) {
   base::PostTaskAndReplyWithResult(
       blocking_task_runner_.get(), FROM_HERE,
-      base::Bind(&ChromeCleanerFetcher::CreateTemporaryDirectory,
-                 base::Unretained(this)),
-      base::Bind(&ChromeCleanerFetcher::OnTemporaryDirectoryCreated,
-                 base::Unretained(this)));
+      base::BindOnce(&ChromeCleanerFetcher::CreateTemporaryDirectory,
+                     base::Unretained(this)),
+      base::BindOnce(&ChromeCleanerFetcher::OnTemporaryDirectoryCreated,
+                     base::Unretained(this)));
 }
 
 bool ChromeCleanerFetcher::CreateTemporaryDirectory() {

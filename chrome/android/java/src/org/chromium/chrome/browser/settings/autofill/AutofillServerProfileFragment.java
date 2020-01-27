@@ -32,7 +32,7 @@ public class AutofillServerProfileFragment
         getActivity().setTitle(R.string.autofill_edit_profile);
 
         // We know which card to display based on the GUID stuffed in
-        // our extras by MainPreferences.
+        // our extras by MainSettings.
         Bundle extras = getArguments();
         if (extras != null) {
             mGUID = extras.getString(AutofillEditorBase.AUTOFILL_GUID);

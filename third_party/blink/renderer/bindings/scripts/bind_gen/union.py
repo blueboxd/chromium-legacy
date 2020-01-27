@@ -18,7 +18,6 @@ from .codegen_context import CodeGenContext
 from .codegen_format import format_template as _format
 from .codegen_utils import component_export
 from .codegen_utils import enclose_with_header_guard
-from .codegen_utils import enclose_with_namespace
 from .codegen_utils import make_copyright_header
 from .codegen_utils import make_forward_declarations
 from .codegen_utils import make_header_include_directives

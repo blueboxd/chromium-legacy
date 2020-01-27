@@ -220,7 +220,7 @@ class MockActionDelegate : public ActionDelegate {
   MOCK_METHOD0(Shutdown, void());
   MOCK_METHOD0(Close, void());
   MOCK_METHOD0(Restart, void());
-  MOCK_METHOD0(GetClientMemory, ClientMemory*());
+  MOCK_CONST_METHOD0(GetUserData, UserData*());
   MOCK_METHOD0(GetPersonalDataManager, autofill::PersonalDataManager*());
   MOCK_METHOD0(GetWebsiteLoginFetcher, WebsiteLoginFetcher*());
   MOCK_METHOD0(GetWebContents, content::WebContents*());

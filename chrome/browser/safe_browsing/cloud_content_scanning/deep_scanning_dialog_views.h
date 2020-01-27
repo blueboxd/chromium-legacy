@@ -8,8 +8,10 @@
 #include <memory>
 
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "base/time/time.h"
 #include "chrome/browser/safe_browsing/cloud_content_scanning/deep_scanning_dialog_delegate.h"
+#include "chrome/browser/safe_browsing/cloud_content_scanning/deep_scanning_utils.h"
 #include "ui/views/animation/bounds_animator.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/window/dialog_delegate.h"
@@ -18,6 +20,10 @@ namespace content {
 class WebContents;
 }  // namespace content
 
+namespace gfx {
+class ImageSkia;
+}  // namespace gfx
+
 namespace views {
 class ImageView;
 class Throbber;
@@ -25,13 +31,16 @@ class Widget;
 }  // namespace views
 
 namespace safe_browsing {
+class DeepScanningTopImageView;
 
 // Dialog shown for Deep Scanning to offer the possibility of cancelling the
 // upload to the user.
 class DeepScanningDialogViews : public views::DialogDelegate {
  public:
   DeepScanningDialogViews(std::unique_ptr<DeepScanningDialogDelegate> delegate,
-                          content::WebContents* web_contents);
+                          content::WebContents* web_contents,
+                          base::Optional<DeepScanAccessPoint> access_point,
+                          bool is_file_scan);
 
   // views::DialogDelegate:
   base::string16 GetWindowTitle() const override;
@@ -44,6 +53,9 @@ class DeepScanningDialogViews : public views::DialogDelegate {
   // Updates the dialog with the result, and simply delete it from memory if it
   // nothing should be shown.
   void ShowResult(bool success);
+
+  // Returns the appropriate top image depending on |scan_success_|.
+  const gfx::ImageSkia* GetTopImage() const;
 
  private:
   ~DeepScanningDialogViews() override;
@@ -66,14 +78,17 @@ class DeepScanningDialogViews : public views::DialogDelegate {
   // Returns the appropriate dialog message depending on |scan_success_|.
   base::string16 GetDialogMessage() const;
 
-  // Returns the image's color depending on |scan_success_|.
-  SkColor GetImageColor() const;
-
   // Returns the side image's background circle color.
   SkColor GetSideImageBackgroundColor() const;
 
   // Returns the appropriate dialog message depending on |scan_success_|.
   base::string16 GetCancelButtonText() const;
+
+  // Returns the appropriate paste top image ID depending on |scan_success_|.
+  int GetPasteImageId(bool use_dark) const;
+
+  // Returns the appropriate upload top image ID depending on |scan_success_|.
+  int GetUploadImageId(bool use_dark) const;
 
   // Show the dialog. Sets |shown_| to true.
   void Show();
@@ -84,7 +99,7 @@ class DeepScanningDialogViews : public views::DialogDelegate {
 
   // Views above the buttons. |contents_view_| owns every other view.
   std::unique_ptr<views::View> contents_view_;
-  views::ImageView* image_;
+  DeepScanningTopImageView* image_;
   views::ImageView* side_icon_image_;
   views::Throbber* side_icon_spinner_;
   views::Label* message_;
@@ -102,6 +117,14 @@ class DeepScanningDialogViews : public views::DialogDelegate {
 
   // Used to animate dialog height changes.
   std::unique_ptr<views::BoundsAnimator> bounds_animator_;
+
+  // The access point that caused this dialog to open. This changes what text
+  // and top image are shown to the user.
+  base::Optional<DeepScanAccessPoint> access_point_;
+
+  // Indicates whether the scan being done is for files or for text. This
+  // changes what text and top image are shown to the user.
+  bool is_file_scan_;
 
   base::WeakPtrFactory<DeepScanningDialogViews> weak_ptr_factory_{this};
 };

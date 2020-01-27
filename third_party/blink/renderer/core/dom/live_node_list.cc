@@ -37,7 +37,7 @@ class IsMatch {
   }
 
  private:
-  Member<const LiveNodeList> list_;
+  const LiveNodeList* list_;
 };
 
 }  // namespace

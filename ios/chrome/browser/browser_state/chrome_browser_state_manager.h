@@ -9,13 +9,13 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "ios/chrome/browser/browser_state/chrome_browser_state_forward.h"
 
 namespace base {
 class FilePath;
 }
 
 class BrowserStateInfoCache;
+class ChromeBrowserState;
 
 namespace ios {
 // Provides methods that allow for various ways of creating non-incognito

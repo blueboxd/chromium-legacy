@@ -62,6 +62,10 @@ void FindInPage::Find(int request_id,
                       const String& search_text,
                       mojom::blink::FindOptionsPtr options) {
   DCHECK(!search_text.IsEmpty());
+
+  // Record the fact that we have a find-in-page request.
+  frame_->GetFrame()->GetDocument()->MarkHasFindInPageRequest();
+
   blink::WebPlugin* plugin = GetWebPluginForFind();
   // Check if the plugin still exists in the document.
   if (plugin) {

@@ -54,10 +54,6 @@ class InProcessContextFactory : public ContextFactory,
     use_test_surface_ = use_test_surface;
   }
 
-  // This is used to call SendOnLostSharedContext() on all clients, to ensure
-  // they stop using the SharedMainThreadContextProvider.
-  void SendOnLostSharedContext();
-
   // Set refresh rate will be set to 200 to spend less time waiting for
   // BeginFrame when used for tests.
   void SetUseFastRefreshRateForTests();
@@ -97,8 +93,6 @@ class InProcessContextFactory : public ContextFactory,
       ui::Compositor* compositor,
       mojo::PendingRemote<viz::mojom::VSyncParameterObserver> observer)
       override {}
-  void AddObserver(ContextFactoryObserver* observer) override;
-  void RemoveObserver(ContextFactoryObserver* observer) override;
 
   SkMatrix44 GetOutputColorMatrix(Compositor* compositor) const;
   gfx::DisplayColorSpaces GetDisplayColorSpaces(
@@ -125,7 +119,6 @@ class InProcessContextFactory : public ContextFactory,
   double refresh_rate_ = 60.0;
   viz::HostFrameSinkManager* const host_frame_sink_manager_;
   viz::FrameSinkManagerImpl* const frame_sink_manager_;
-  base::ObserverList<ContextFactoryObserver>::Unchecked observer_list_;
 
   viz::RendererSettings renderer_settings_;
   using PerCompositorDataMap =

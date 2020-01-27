@@ -292,7 +292,6 @@
 <translation id="2218879909401188352"><ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> ရှိ လက်ရှိတိုက်ခိုက်သူများသည် သင့်စက်ပစ္စည်းကို ပျက်စီးစေနိုင်သည့် အန္တရာယ်ရှိသောအက်ပ်များ ထည့်သွင်းခြင်း၊ ဖုန်းခငွေပိုမိုကုန်ကျစေခြင်း သို့မဟုတ် သင်၏ ကိုယ်ရေးကိုယ်တာ အချက်အလက်များကို ခိုးယူခြင်းတို့ ပြုလုပ်နိုင်ပါသည်။ <ph name="BEGIN_LEARN_MORE_LINK" />ပိုမိုလေ့လာရန်<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="2224337661447660594">အင်တာနက် မရှိပါ</translation>
 <translation id="2230458221926704099">သင့်ချိတ်ဆက်မှုအား <ph name="BEGIN_LINK" />ပြဿနာအဖြေရှာသည့် အက်ပ်<ph name="END_LINK" /> ကိုအသုံးပြုပြီး ဖြေရှင်းပါ</translation>
-<translation id="22320125457191592">သင့်အတွက်</translation>
 <translation id="2239100178324503013">ယခုပို့ရန်</translation>
 <translation id="2248949050832152960">WebAuthn အသုံးပြုရန်</translation>
 <translation id="2250931979407627383">ဘယ်ဘက်အစွန်းတွင် အပ်ချည်ဖြင့်ချုပ်ရန်</translation>
@@ -576,7 +575,6 @@
 <translation id="3531780078352352885">အလုပ် စာမျက်နှာများ</translation>
 <translation id="3533328374079021623">စာတိုက်ပုံး ၅</translation>
 <translation id="3539171420378717834">ဤစက်ကိရိယာတွင် ထိုကဒ်များ၏ မိတ္တူအား သိမ်းထားရန်</translation>
-<translation id="3553513561058684206">သင့်အတွက်</translation>
 <translation id="3558573058928565255">နေ့အချိန်</translation>
 <translation id="3566021033012934673">သင်၏ ချိတ်ဆက်မှုမှာ ကိုယ်ပိုင် မဟုတ်ပါ</translation>
 <translation id="3574305903863751447"><ph name="CITY" />၊ <ph name="STATE" /> <ph name="COUNTRY" /></translation>

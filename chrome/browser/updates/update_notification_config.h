@@ -51,8 +51,11 @@ constexpr char kUpdateNotificationThrottleOffsetCoefficientParamName[] =
     "update_notification_throttle_co_offset";
 
 struct UpdateNotificationConfig {
-  // Create a update notification config.
+  // Create a default update notification config.
   static std::unique_ptr<UpdateNotificationConfig> Create();
+
+  // Create an update notification config read from Finch.
+  static std::unique_ptr<UpdateNotificationConfig> CreateFromFinch();
 
   UpdateNotificationConfig();
   ~UpdateNotificationConfig();

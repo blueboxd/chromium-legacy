@@ -11,6 +11,27 @@
 
 namespace android_webview {
 
+class RootFrameSinkProxy::RootFrameSinkClientImpl : public RootFrameSinkClient {
+ public:
+  RootFrameSinkClientImpl(RootFrameSinkProxy* owner) : owner_(owner) {}
+  ~RootFrameSinkClientImpl() override = default;
+
+  // RootFrameSinkClient implementation
+  void SetNeedsBeginFrames(bool needs_begin_frame) override {
+    owner_->SetNeedsBeginFramesOnViz(needs_begin_frame);
+  }
+  void Invalidate() override { owner_->InvalidateOnViz(); }
+  void ReturnResources(viz::FrameSinkId frame_sink_id,
+                       uint32_t layer_tree_frame_sink_id,
+                       std::vector<viz::ReturnedResource> resources) override {
+    owner_->ReturnResourcesOnViz(frame_sink_id, layer_tree_frame_sink_id,
+                                 std::move(resources));
+  }
+
+ private:
+  RootFrameSinkProxy* const owner_;
+};
+
 // static
 scoped_refptr<RootFrameSink> RootFrameSinkProxy::GetRootFrameSinkHelper(
     base::WeakPtr<RootFrameSinkProxy> proxy) {
@@ -39,11 +60,9 @@ RootFrameSinkProxy::RootFrameSinkProxy(
 
 void RootFrameSinkProxy::InitializeOnViz() {
   DCHECK_CALLED_ON_VALID_THREAD(viz_thread_checker_);
-  without_gpu_ = base::MakeRefCounted<RootFrameSink>(
-      base::BindRepeating(&RootFrameSinkProxy::SetNeedsBeginFramesOnViz,
-                          weak_ptr_factory_on_viz_.GetWeakPtr()),
-      base::BindRepeating(&RootFrameSinkProxy::InvalidateOnViz,
-                          weak_ptr_factory_on_viz_.GetWeakPtr()));
+  root_frame_sink_client_ = std::make_unique<RootFrameSinkClientImpl>(this);
+  without_gpu_ =
+      base::MakeRefCounted<RootFrameSink>(root_frame_sink_client_.get());
 }
 
 RootFrameSinkProxy::~RootFrameSinkProxy() {
@@ -58,6 +77,7 @@ void RootFrameSinkProxy::DestroyOnViz() {
   DCHECK(without_gpu_->HasOneRef());
   without_gpu_.reset();
   weak_ptr_factory_on_viz_.InvalidateWeakPtrs();
+  root_frame_sink_client_.reset();
 }
 
 void RootFrameSinkProxy::SetNeedsBeginFramesOnViz(bool needs_begin_frames) {
@@ -166,6 +186,26 @@ bool RootFrameSinkProxy::OnBeginFrameDerivedImpl(
     client_->Invalidate();
 
   return true;
+}
+
+void RootFrameSinkProxy::ReturnResourcesOnUI(
+    viz::FrameSinkId frame_sink_id,
+    uint32_t layer_tree_frame_sink_id,
+    std::vector<viz::ReturnedResource> resources) {
+  DCHECK_CALLED_ON_VALID_THREAD(ui_thread_checker_);
+  client_->ReturnResourcesFromViz(frame_sink_id, layer_tree_frame_sink_id,
+                                  std::move(resources));
+}
+void RootFrameSinkProxy::ReturnResourcesOnViz(
+    viz::FrameSinkId frame_sink_id,
+    uint32_t layer_tree_frame_sink_id,
+    std::vector<viz::ReturnedResource> resources) {
+  DCHECK_CALLED_ON_VALID_THREAD(viz_thread_checker_);
+  ui_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&RootFrameSinkProxy::ReturnResourcesOnUI,
+                     weak_ptr_factory_.GetWeakPtr(), frame_sink_id,
+                     layer_tree_frame_sink_id, std::move(resources)));
 }
 
 }  // namespace android_webview

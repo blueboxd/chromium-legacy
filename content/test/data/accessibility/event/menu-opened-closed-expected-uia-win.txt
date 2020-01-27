@@ -1,10 +1,10 @@
 AriaProperties changed on role=menu, name=menu
-MenuOpened 
 MenuOpened on role=menu, name=menu
+MenuOpened on role=region
 === Start Continuation ===
 AriaProperties changed on role=menu
-MenuOpened 
 MenuOpened on role=menu
+MenuOpened on role=region
 === Start Continuation ===
 MenuClosed 
 MenuClosed 

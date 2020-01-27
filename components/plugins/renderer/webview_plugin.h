@@ -11,6 +11,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner_helpers.h"
 #include "content/public/renderer/render_view_observer.h"
+#include "third_party/blink/public/mojom/input/focus_type.mojom-forward.h"
 #include "third_party/blink/public/platform/web_cursor_info.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_url_response.h"
@@ -101,7 +102,7 @@ class WebViewPlugin : public blink::WebPlugin,
                       const blink::WebRect& unobscured_rect,
                       bool is_visible) override;
 
-  void UpdateFocus(bool foucsed, blink::WebFocusType focus_type) override;
+  void UpdateFocus(bool foucsed, blink::mojom::FocusType focus_type) override;
   void UpdateVisibility(bool) override {}
 
   blink::WebInputEventResult HandleInputEvent(

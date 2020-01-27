@@ -524,8 +524,8 @@ void DownloadItemImpl::StealDangerousDownload(
     if (download_file_) {
       base::PostTaskAndReplyWithResult(
           GetDownloadTaskRunner().get(), FROM_HERE,
-          base::Bind(&DownloadFileDetach, base::Passed(&download_file_)),
-          callback);
+          base::BindOnce(&DownloadFileDetach, base::Passed(&download_file_)),
+          base::BindOnce(callback));
     } else {
       callback.Run(GetFullPath());
     }
@@ -535,7 +535,8 @@ void DownloadItemImpl::StealDangerousDownload(
   } else if (download_file_) {
     base::PostTaskAndReplyWithResult(
         GetDownloadTaskRunner().get(), FROM_HERE,
-        base::Bind(&MakeCopyOfDownloadFile, download_file_.get()), callback);
+        base::BindOnce(&MakeCopyOfDownloadFile, download_file_.get()),
+        base::BindOnce(callback));
   } else {
     callback.Run(GetFullPath());
   }

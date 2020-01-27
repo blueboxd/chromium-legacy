@@ -5,7 +5,6 @@
 #include "third_party/blink/renderer/core/layout/ng/list/layout_ng_list_marker.h"
 
 #include "third_party/blink/renderer/core/layout/layout_text.h"
-#include "third_party/blink/renderer/core/layout/ng/list/layout_ng_list_item.h"
 
 namespace blink {
 
@@ -18,20 +17,7 @@ bool LayoutNGListMarker::IsOfType(LayoutObjectType type) const {
 }
 
 void LayoutNGListMarker::WillCollectInlines() {
-  if (LayoutNGListItem* list_item = LayoutNGListItem::FromMarker(*this))
-    list_item->UpdateMarkerTextIfNeeded();
-}
-
-bool LayoutNGListMarker::IsContentImage() const {
-  if (LayoutNGListItem* list_item = LayoutNGListItem::FromMarker(*this))
-    return list_item->IsMarkerImage();
-  return false;
-}
-
-LayoutObject* LayoutNGListMarker::SymbolMarkerLayoutText() const {
-  if (LayoutNGListItem* list_item = LayoutNGListItem::FromMarker(*this))
-    return list_item->SymbolMarkerLayoutText();
-  return nullptr;
+  list_marker_.UpdateMarkerTextIfNeeded(*this);
 }
 
 bool LayoutNGListMarker::NeedsOccupyWholeLine() const {

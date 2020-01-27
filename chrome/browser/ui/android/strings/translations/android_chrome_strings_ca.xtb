@@ -134,6 +134,7 @@
 <translation id="1994173015038366702">URL del lloc web</translation>
 <translation id="2000419248597011803">Envia al motor de cerca predeterminat algunes galetes i cerques de la barra d'adreces i del quadre de cerca</translation>
 <translation id="2002537628803770967">Targetes de crèdit i adreces que fan servir Google Pay</translation>
+<translation id="2012973609889389923">Lloc web ràpid</translation>
 <translation id="2013642289801508067">{FILE_COUNT,plural, =1{# fitxer}other{# fitxers}}</translation>
 <translation id="2017836877785168846">Esborra l'historial i les complecions automàtiques a la barra d'adreces.</translation>
 <translation id="2021896219286479412">Controls de pantalla completa</translation>
@@ -306,6 +307,7 @@
 <translation id="3298243779924642547">Mode bàsic</translation>
 <translation id="3303414029551471755">Voleu baixar el contingut?</translation>
 <translation id="3306398118552023113">Aquesta aplicació s'està executant a Chrome</translation>
+<translation id="3312292613668865961">Pregunta'm abans de permetre que els llocs web accedeixin als meus dispositius i a les meves dades de realitat virtual (opció recomanada)</translation>
 <translation id="3315103659806849044">Estàs personalitzant la configuració de la sincronització i del servei de Google. Per acabar d'activar la sincronització, toca el botó Confirma que hi ha cap a la part inferior de la pantalla. Navega cap amunt</translation>
 <translation id="3328801116991980348">Informació del lloc web</translation>
 <translation id="3333961966071413176">Tots els contactes</translation>
@@ -511,6 +513,7 @@ Per canviar aquesta opció, <ph name="BEGIN_LINK" />restableix la sincronitzaci�
 <translation id="4915549754973153784"><ph name="BEGIN_LINK" />Obtén ajuda<ph name="END_LINK" /> mentre se cerquen dispositius…</translation>
 <translation id="4921180162323349895">{FILE_COUNT,plural, =1{# pàgina}other{# pàgines}}</translation>
 <translation id="4932247056774066048">Com que estàs tancant la sessió d'un compte gestionat per <ph name="DOMAIN_NAME" />, les teves dades de Chrome se suprimiran d'aquest dispositiu. Tanmateix, es conservaran al teu Compte de Google.</translation>
+<translation id="4935305910887312910">Pregunta'm abans de permetre que els llocs web rebin la posició de la càmera o mapin la sala (opció recomanada)</translation>
 <translation id="4943703118917034429">Realitat virtual</translation>
 <translation id="4943872375798546930">No hi ha cap resultat</translation>
 <translation id="4958708863221495346"><ph name="URL_OF_THE_CURRENT_TAB" /> comparteix la teva pantalla</translation>
@@ -744,6 +747,7 @@ Per exemple, és possible que alguns llocs web responguin a aquesta sol·licitud
 <translation id="6573431926118603307">Les pestanyes que tingueu obertes a Chrome als altres dispositius es mostraran aquí.</translation>
 <translation id="6583199322650523874">Afegeix la pàgina actual a les adreces d'interès</translation>
 <translation id="6593061639179217415">Lloc web per a ordinador</translation>
+<translation id="6597891566292541626">Situa el codi QR o de barres dins d'aquest marc.</translation>
 <translation id="6600954340915313787">Copiada de Chrome</translation>
 <translation id="6608650720463149374"><ph name="GIGABYTES" /> GB</translation>
 <translation id="6612358246767739896">Contingut protegit</translation>
@@ -953,6 +957,7 @@ El lloc web NO obté accés a la càmera. Només tu pots veure les imatges de la
 <translation id="8109613176066109935">Per accedir a les adreces d'interès des de tots els dispositius, activa la sincronització</translation>
 <translation id="8110087112193408731">Vols veure l'activitat de Chrome a Benestar digital?</translation>
 <translation id="8116925261070264013">Silenciats</translation>
+<translation id="8127542551745560481">Edita la pàgina d'inici</translation>
 <translation id="813082847718468539">Mostra la informació del lloc</translation>
 <translation id="8156139159503939589">En quins idiomes pots llegir?</translation>
 <translation id="8168435359814927499">Contingut</translation>
@@ -1024,6 +1029,7 @@ El lloc web NO obté accés a la càmera. Només tu pots veure les imatges de la
 <translation id="8676374126336081632">Esborra l'entrada</translation>
 <translation id="8687353297350450808">{N_BARS,plural, =1{Intensitat del senyal: # barra}other{Intensitat del senyal: # barres}}</translation>
 <translation id="868929229000858085">Cerca als contactes</translation>
+<translation id="8698438463325761328">Impedeix que els llocs web accedeixin al teu dispositiu i a les teves dades de realitat virtual</translation>
 <translation id="869891660844655955">Data de caducitat</translation>
 <translation id="8719023831149562936">La pestanya actual no es pot compartir.</translation>
 <translation id="8728487861892616501">En utilitzar aquesta aplicació, acceptes les <ph name="BEGIN_LINK1" />condicions del servei<ph name="END_LINK1" /> i l'<ph name="BEGIN_LINK2" />avís de privadesa<ph name="END_LINK2" /> de Chrome, així com l'<ph name="BEGIN_LINK3" />avís de privadesa per a comptes de Google gestionats amb Family Link<ph name="END_LINK3" />.</translation>
@@ -1041,6 +1047,7 @@ El lloc web NO obté accés a la càmera. Només tu pots veure les imatges de la
 <translation id="883806473910249246">S'ha produït un error en baixar el contingut.</translation>
 <translation id="8840953339110955557">Aquesta pàgina pot ser diferent de la versió en línia.</translation>
 <translation id="8847988622838149491">USB</translation>
+<translation id="884828189055900810">Impedeix que els llocs web rebin la posició de la càmera o mapin la sala</translation>
 <translation id="8853345339104747198"><ph name="TAB_TITLE" />, pestanya</translation>
 <translation id="885701979325669005">Emmagatzematge</translation>
 <translation id="889338405075704026">Ves a la configuració de Chrome</translation>
@@ -1048,6 +1055,7 @@ El lloc web NO obté accés a la càmera. Només tu pots veure les imatges de la
 <translation id="8909135823018751308">Comparteix...</translation>
 <translation id="8912362522468806198">Compte de Google</translation>
 <translation id="8920114477895755567">S'està esperant la informació parental.</translation>
+<translation id="8921772741368021346"><ph name="POSITION" />/<ph name="DURATION" /></translation>
 <translation id="8922289737868596582">Baixa pàgines amb el botó Més opcions per utilitzar-les sense connexió</translation>
 <translation id="8926666909099850184">L'NFC està desactivada en aquest dispositiu. Activa-la a la <ph name="BEGIN_LINK" />configuració d'Android<ph name="END_LINK" />.</translation>
 <translation id="8937772741022875483">Vols suprimir l'activitat de Chrome a Benestar digital?</translation>

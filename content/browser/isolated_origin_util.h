@@ -95,6 +95,11 @@ class CONTENT_EXPORT IsolatedOriginUtil {
   // and origins without a valid registry-controlled domain.  IP addresses are
   // allowed.
   static bool IsValidIsolatedOrigin(const url::Origin& origin);
+
+  // Returns |true| if the two arguments have the same scheme and port, and
+  // |sub_origin|'s host is a strict subdomain of |base_origin|'s.
+  static bool IsStrictSubdomain(const url::Origin& sub_origin,
+                                const url::Origin& base_origin);
 };
 
 }  // namespace content

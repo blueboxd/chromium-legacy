@@ -15,6 +15,7 @@
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_response_init.h"
 #include "third_party/blink/renderer/core/dom/abort_signal.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
@@ -24,7 +25,6 @@
 #include "third_party/blink/renderer/core/fetch/form_data_bytes_consumer.h"
 #include "third_party/blink/renderer/core/fetch/place_holder_bytes_consumer.h"
 #include "third_party/blink/renderer/core/fetch/response.h"
-#include "third_party/blink/renderer/core/fetch/response_init.h"
 #include "third_party/blink/renderer/core/fileapi/blob.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/frame/frame.h"
@@ -319,9 +319,6 @@ void FetchManager::Loader::DidReceiveResponse(
     const ResourceResponse& response) {
   // Verify that we're dealing with the URL we expect (which could be an
   // HTTPS-upgraded variant of `url_list_.back()`.
-  //
-  // TODO(horo): This check could be false when we will use the response url
-  // in service worker responses. (crbug.com/553535)
   DCHECK(
       response.CurrentRequestUrl() == url_list_.back() ||
       (response.CurrentRequestUrl().ProtocolIs("https") &&

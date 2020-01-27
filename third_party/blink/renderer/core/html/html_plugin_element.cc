@@ -150,7 +150,8 @@ void HTMLPlugInElement::SetPersistedPlugin(WebPluginContainerImpl* plugin) {
   persisted_plugin_ = plugin;
 }
 
-void HTMLPlugInElement::SetFocused(bool focused, WebFocusType focus_type) {
+void HTMLPlugInElement::SetFocused(bool focused,
+                                   mojom::blink::FocusType focus_type) {
   WebPluginContainerImpl* plugin = OwnedPlugin();
   if (plugin)
     plugin->SetFocused(focused, focus_type);

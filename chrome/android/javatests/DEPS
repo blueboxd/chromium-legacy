@@ -1,9 +1,9 @@
 include_rules = [
   "+chrome/app",
   "+chrome/browser/preferences/android/java",
+  "+chrome/browser/thumbnail/generator/android/java",
   "+chrome/browser/ui/android/appmenu",
   "-chrome/browser/ui/android/appmenu/internal",
-  "+chrome/browser/ui/android/widget",
   "+chrome/browser/ui/messages/android/java",
   "+chrome/browser/util/android",
   "+chrome/lib/lifecycle/public",
@@ -11,6 +11,7 @@ include_rules = [
   "+components/background_task_scheduler/android/java",
   "+components/bookmarks/common/android/java/src/org/chromium/components/bookmarks",
   "+components/browser_ui/styles/android",
+  "+components/browser_ui/widget/android",
   "+components/crash/android",
   "+components/embedder_support/android",
   "+components/feature_engagement/public/android/java/src/org/chromium/components/feature_engagement",

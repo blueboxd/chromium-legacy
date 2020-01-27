@@ -32,10 +32,12 @@ class NotificationHandler {
     TRANSIENT = 4,  // A generic type for any notification that does not outlive
                     // the browser instance and is controlled by a
                     // NotificationDelegate.
-    PERMISSION_REQUEST = 5,  // A permission request that is presented to the
-                             // user via a notification.
+    // Deprecated
+    // PERMISSION_REQUEST = 5,  // A permission request that is presented to the
+    //                          // user via a notification.
     SHARING = 6,
-    MAX = SHARING,
+    ANNOUNCEMENT = 7,
+    MAX = ANNOUNCEMENT,
   };
 
   virtual ~NotificationHandler();

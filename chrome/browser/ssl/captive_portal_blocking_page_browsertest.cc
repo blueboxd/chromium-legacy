@@ -120,8 +120,9 @@ CaptivePortalTestingNavigationThrottle::WillFailRequest() {
   ssl_info.cert =
       net::ImportCertFromFile(net::GetTestCertsDirectory(), "ok_cert.pem");
   ssl_info.cert_status = net::CERT_STATUS_COMMON_NAME_INVALID;
+  ChromeSecurityBlockingPageFactory blocking_page_factory;
   CaptivePortalBlockingPage* blocking_page =
-      ChromeSecurityBlockingPageFactory::CreateCaptivePortalBlockingPage(
+      blocking_page_factory.CreateCaptivePortalBlockingPage(
           navigation_handle()->GetWebContents(), GURL(kBrokenSSL), login_url_,
           std::move(ssl_cert_reporter_), ssl_info,
           net::ERR_CERT_COMMON_NAME_INVALID);
@@ -423,8 +424,9 @@ class CaptivePortalBlockingPageIDNTest : public SecurityInterstitialIDNTest {
       const GURL& request_url) const override {
     net::SSLInfo empty_ssl_info;
     // Blocking page is owned by the interstitial.
+    ChromeSecurityBlockingPageFactory blocking_page_factory;
     CaptivePortalBlockingPage* blocking_page =
-        ChromeSecurityBlockingPageFactory::CreateCaptivePortalBlockingPage(
+        blocking_page_factory.CreateCaptivePortalBlockingPage(
             contents, GURL(kBrokenSSL), request_url, nullptr, empty_ssl_info,
             net::ERR_CERT_COMMON_NAME_INVALID);
     blocking_page->OverrideWifiInfoForTesting(false, "");

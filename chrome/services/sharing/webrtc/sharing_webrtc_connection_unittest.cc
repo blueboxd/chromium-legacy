@@ -105,7 +105,6 @@ class SharingWebRtcConnectionTest : public testing::Test {
         connection_host_.connection.BindNewPipeAndPassReceiver(),
         connection_host_.socket_manager.BindNewPipeAndPassRemote(),
         connection_host_.mdns_responder.BindNewPipeAndPassRemote(),
-        /*port_allocator=*/nullptr,
         base::BindOnce(&SharingWebRtcConnectionTest::ConnectionClosed,
                        base::Unretained(this)));
     EXPECT_CALL(*mock_data_channel_, RegisterObserver(connection_.get()))
@@ -151,9 +150,9 @@ TEST_F(SharingWebRtcConnectionTest, SendMessage_Empty) {
   EXPECT_EQ(mojom::SendMessageResult::kError, SendMessageBlocking(data));
 }
 
-TEST_F(SharingWebRtcConnectionTest, SendMessage_16MBLimit) {
-  // Expect 16MB packets to succeed.
-  std::vector<uint8_t> data(16 * 1024 * 1024, 0);
+TEST_F(SharingWebRtcConnectionTest, SendMessage_256kBLimit) {
+  // Expect 256kB packets to succeed.
+  std::vector<uint8_t> data(256 * 1024, 0);
   EXPECT_EQ(mojom::SendMessageResult::kSuccess, SendMessageBlocking(data));
 
   // Add one more byte and expect it to fail.

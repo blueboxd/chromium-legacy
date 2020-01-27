@@ -33,6 +33,7 @@
 # target_cpu = "x64"
 
 import("//build/config/clang/clang.gni")
+import("//build/config/compiler/compiler.gni")
 
 declare_args() {
   # These must be specified for a board-specific build.
@@ -54,8 +55,8 @@ declare_args() {
   cros_host_cc = "${clang_base_path}/bin/clang"
   cros_host_cxx = "${clang_base_path}/bin/clang++"
   cros_host_is_clang = true
-  cros_host_nm = ""
-  cros_host_readelf = ""
+  cros_host_nm = "${binutils_path}/nm"
+  cros_host_readelf = "${binutils_path}/readelf"
   cros_host_extra_cflags = ""
   cros_host_extra_cppflags = ""
   cros_host_extra_cxxflags = ""
@@ -65,8 +66,8 @@ declare_args() {
   cros_v8_snapshot_cc = "${clang_base_path}/bin/clang"
   cros_v8_snapshot_cxx = "${clang_base_path}/bin/clang++"
   cros_v8_snapshot_is_clang = true
-  cros_v8_snapshot_nm = ""
-  cros_v8_snapshot_readelf = ""
+  cros_v8_snapshot_nm = "${binutils_path}/nm"
+  cros_v8_snapshot_readelf = "${binutils_path}/readelf"
   cros_v8_snapshot_extra_cflags = ""
   cros_v8_snapshot_extra_cppflags = ""
   cros_v8_snapshot_extra_cxxflags = ""

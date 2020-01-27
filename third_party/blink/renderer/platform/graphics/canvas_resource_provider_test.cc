@@ -238,21 +238,23 @@ TEST_F(CanvasResourceProviderTest,
   auto image = provider->Snapshot();
   ASSERT_TRUE(image);
   auto new_image = provider->Snapshot();
-  EXPECT_EQ(image->GetMailbox(), new_image->GetMailbox());
+  EXPECT_EQ(image->GetMailboxHolder().mailbox,
+            new_image->GetMailboxHolder().mailbox);
   EXPECT_EQ(provider->ProduceCanvasResource()->GetOrCreateGpuMailbox(
                 kOrderingBarrier),
-            image->GetMailbox());
+            image->GetMailboxHolder().mailbox);
 
   // Resource updated after draw.
   provider->Canvas()->clear(SK_ColorWHITE);
   new_image = provider->Snapshot();
-  EXPECT_NE(new_image->GetMailbox(), image->GetMailbox());
+  EXPECT_NE(new_image->GetMailboxHolder().mailbox,
+            image->GetMailboxHolder().mailbox);
 
   // Resource recycled.
-  auto original_mailbox = image->GetMailbox();
+  auto original_mailbox = image->GetMailboxHolder().mailbox;
   image.reset();
   provider->Canvas()->clear(SK_ColorBLACK);
-  EXPECT_EQ(original_mailbox, provider->Snapshot()->GetMailbox());
+  EXPECT_EQ(original_mailbox, provider->Snapshot()->GetMailboxHolder().mailbox);
 }
 
 TEST_F(CanvasResourceProviderTest,

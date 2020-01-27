@@ -15,7 +15,7 @@ namespace ios {
 
 // static
 HostContentSettingsMap* HostContentSettingsMapFactory::GetForBrowserState(
-    ios::ChromeBrowserState* browser_state) {
+    ChromeBrowserState* browser_state) {
   return static_cast<HostContentSettingsMap*>(
       GetInstance()->GetServiceForBrowserState(browser_state, true).get());
 }
@@ -36,8 +36,8 @@ HostContentSettingsMapFactory::~HostContentSettingsMapFactory() {}
 scoped_refptr<RefcountedKeyedService>
 HostContentSettingsMapFactory::BuildServiceInstanceFor(
     web::BrowserState* context) const {
-  ios::ChromeBrowserState* browser_state =
-      ios::ChromeBrowserState::FromBrowserState(context);
+  ChromeBrowserState* browser_state =
+      ChromeBrowserState::FromBrowserState(context);
   if (browser_state->IsOffTheRecord()) {
     // If off-the-record, retrieve the host content settings map of the parent
     // browser state to ensure the preferences have been migrated.

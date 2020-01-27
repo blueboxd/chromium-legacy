@@ -218,6 +218,8 @@ class ControllerTest : public content::RenderViewHostTestHarness {
         .WillRepeatedly(RunOnceCallback<2>(true, response_str));
   }
 
+  UserData* GetUserData() { return controller_->user_data_.get(); }
+
   UiDelegate* GetUiDelegate() { return controller_.get(); }
 
   void SetNavigatingToNewDocument(bool value) {
@@ -577,14 +579,9 @@ TEST_F(ControllerTest, Reset) {
   EXPECT_CALL(*mock_service_, OnGetActions(StrEq("reset"), _, _, _, _, _))
       .WillOnce(RunOnceCallback<5>(true, actions_response_str));
 
-  controller_->GetClientMemory()->set_selected_card(
-      std::make_unique<autofill::CreditCard>());
-  EXPECT_TRUE(controller_->GetClientMemory()->has_selected_card());
+  GetUserData()->selected_card_ = std::make_unique<autofill::CreditCard>();
 
   EXPECT_TRUE(controller_->PerformUserAction(0));
-
-  // Resetting should have cleared the client memory
-  EXPECT_FALSE(controller_->GetClientMemory()->has_selected_card());
 
   // The reset script should be available again, even though it's marked
   // RunOnce, as the script state should have been cleared as well.
@@ -1483,6 +1480,7 @@ TEST_F(ControllerTest, UserDataFormContactInfo) {
   options->request_payer_name = true;
   options->request_payer_email = true;
   options->request_payer_phone = true;
+  options->contact_details_name = "selected_profile";
 
   testing::InSequence seq;
   EXPECT_CALL(mock_observer_, OnUserActionsChanged(UnorderedElementsAre(
@@ -1507,9 +1505,10 @@ TEST_F(ControllerTest, UserDataFormContactInfo) {
                              base::UTF8ToUTF16("+1 23 456 789 01"));
   controller_->SetContactInfo(
       std::make_unique<autofill::AutofillProfile>(contact_profile));
-  EXPECT_THAT(
-      controller_->GetUserData()->contact_profile->Compare(contact_profile),
-      Eq(0));
+  EXPECT_THAT(controller_->GetUserData()
+                  ->selected_address("selected_profile")
+                  ->Compare(contact_profile),
+              Eq(0));
 }
 
 TEST_F(ControllerTest, UserDataFormCreditCard) {
@@ -1517,6 +1516,7 @@ TEST_F(ControllerTest, UserDataFormCreditCard) {
   auto user_data = std::make_unique<UserData>();
 
   options->request_payment_method = true;
+  options->billing_address_name = "billing_address";
   testing::InSequence seq;
   EXPECT_CALL(mock_observer_, OnUserActionsChanged(UnorderedElementsAre(
                                   Property(&UserAction::enabled, Eq(false)))))
@@ -1564,10 +1564,10 @@ TEST_F(ControllerTest, UserDataFormCreditCard) {
   controller_->SetCreditCard(
       std::make_unique<autofill::CreditCard>(*credit_card),
       std::make_unique<autofill::AutofillProfile>(*billing_address));
-  EXPECT_THAT(controller_->GetUserData()->card->Compare(*credit_card), Eq(0));
-  EXPECT_THAT(
-      controller_->GetUserData()->billing_address->Compare(*billing_address),
-      Eq(0));
+  EXPECT_THAT(GetUserData()->selected_card_->Compare(*credit_card), Eq(0));
+  EXPECT_THAT(GetUserData()->selected_addresses_["billing_address"]->Compare(
+                  *billing_address),
+              Eq(0));
 }
 
 TEST_F(ControllerTest, SetTermsAndConditions) {
@@ -1589,7 +1589,7 @@ TEST_F(ControllerTest, SetTermsAndConditions) {
                                 UserData::FieldChange::TERMS_AND_CONDITIONS))
       .Times(1);
   controller_->SetTermsAndConditions(TermsAndConditionsState::ACCEPTED);
-  EXPECT_THAT(controller_->GetUserData()->terms_and_conditions,
+  EXPECT_THAT(controller_->GetUserData()->terms_and_conditions_,
               Eq(TermsAndConditionsState::ACCEPTED));
 }
 
@@ -1612,7 +1612,7 @@ TEST_F(ControllerTest, SetLoginOption) {
       OnUserDataChanged(Not(nullptr), UserData::FieldChange::LOGIN_CHOICE))
       .Times(1);
   controller_->SetLoginOption("1");
-  EXPECT_THAT(controller_->GetUserData()->login_choice_identifier, Eq("1"));
+  EXPECT_THAT(controller_->GetUserData()->login_choice_identifier_, Eq("1"));
 }
 
 TEST_F(ControllerTest, SetShippingAddress) {
@@ -1620,6 +1620,7 @@ TEST_F(ControllerTest, SetShippingAddress) {
   auto user_data = std::make_unique<UserData>();
 
   options->request_shipping = true;
+  options->shipping_address_name = "shipping_address";
   testing::InSequence seq;
   EXPECT_CALL(mock_observer_, OnUserActionsChanged(UnorderedElementsAre(
                                   Property(&UserAction::enabled, Eq(false)))))
@@ -1642,9 +1643,9 @@ TEST_F(ControllerTest, SetShippingAddress) {
       .Times(1);
   controller_->SetShippingAddress(
       std::make_unique<autofill::AutofillProfile>(*shipping_address));
-  EXPECT_THAT(
-      controller_->GetUserData()->shipping_address->Compare(*shipping_address),
-      Eq(0));
+  EXPECT_THAT(GetUserData()->selected_addresses_["shipping_address"]->Compare(
+                  *shipping_address),
+              Eq(0));
 }
 
 TEST_F(ControllerTest, SetAdditionalValues) {
@@ -1652,9 +1653,9 @@ TEST_F(ControllerTest, SetAdditionalValues) {
 
   base::OnceCallback<void(UserData*, UserData::FieldChange*)> callback =
       base::BindOnce([](UserData* user_data, UserData::FieldChange* change) {
-        user_data->additional_values_to_store["key1"] = "123456789";
-        user_data->additional_values_to_store["key2"] = "";
-        user_data->additional_values_to_store["key3"] = "";
+        user_data->additional_values_["key1"] = "123456789";
+        user_data->additional_values_["key2"] = "";
+        user_data->additional_values_["key3"] = "";
         *change = UserData::FieldChange::ADDITIONAL_VALUES;
       });
 
@@ -1672,11 +1673,11 @@ TEST_F(ControllerTest, SetAdditionalValues) {
       .Times(2);
   controller_->SetAdditionalValue("key2", "value2");
   controller_->SetAdditionalValue("key3", "value3");
-  EXPECT_EQ(controller_->GetUserData()->additional_values_to_store.at("key1"),
+  EXPECT_EQ(controller_->GetUserData()->additional_values_.at("key1"),
             "123456789");
-  EXPECT_EQ(controller_->GetUserData()->additional_values_to_store.at("key2"),
+  EXPECT_EQ(controller_->GetUserData()->additional_values_.at("key2"),
             "value2");
-  EXPECT_EQ(controller_->GetUserData()->additional_values_to_store.at("key3"),
+  EXPECT_EQ(controller_->GetUserData()->additional_values_.at("key3"),
             "value3");
   EXPECT_DCHECK_DEATH(controller_->SetAdditionalValue("key4", "someValue"));
 }
@@ -1707,14 +1708,15 @@ TEST_F(ControllerTest, SetDateTimeRange) {
                                 UserData::FieldChange::DATE_TIME_RANGE_START))
       .Times(1);
   controller_->SetDateTimeRangeStart(2019, 11, 14, 9, 42, 0);
-  EXPECT_EQ(controller_->GetUserData()->date_time_range_start.date().day(), 14);
+  EXPECT_EQ(controller_->GetUserData()->date_time_range_start_.date().day(),
+            14);
 
   EXPECT_CALL(mock_observer_,
               OnUserDataChanged(Not(nullptr),
                                 UserData::FieldChange::DATE_TIME_RANGE_END))
       .Times(1);
   controller_->SetDateTimeRangeEnd(2019, 11, 15, 9, 42, 0);
-  EXPECT_EQ(controller_->GetUserData()->date_time_range_end.date().day(), 15);
+  EXPECT_EQ(controller_->GetUserData()->date_time_range_end_.date().day(), 15);
 }
 
 TEST_F(ControllerTest, ChangeClientSettings) {
@@ -1740,12 +1742,12 @@ TEST_F(ControllerTest, WriteUserData) {
 
   base::OnceCallback<void(UserData*, UserData::FieldChange*)> callback =
       base::BindOnce([](UserData* data, UserData::FieldChange* change) {
-        data->terms_and_conditions = TermsAndConditionsState::ACCEPTED;
+        data->terms_and_conditions_ = TermsAndConditionsState::ACCEPTED;
         *change = UserData::FieldChange::TERMS_AND_CONDITIONS;
       });
 
   controller_->WriteUserData(std::move(callback));
-  EXPECT_EQ(controller_->GetUserData()->terms_and_conditions,
+  EXPECT_EQ(GetUserData()->terms_and_conditions_,
             TermsAndConditionsState::ACCEPTED);
 }
 

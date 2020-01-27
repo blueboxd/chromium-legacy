@@ -66,8 +66,7 @@ NSString* GetSyncErrorDescriptionForSyncSetupService(
   }
 }
 
-NSString* GetSyncErrorMessageForBrowserState(
-    ios::ChromeBrowserState* browserState) {
+NSString* GetSyncErrorMessageForBrowserState(ChromeBrowserState* browserState) {
   SyncSetupService* syncSetupService =
       SyncSetupServiceFactory::GetForBrowserState(browserState);
   DCHECK(syncSetupService);
@@ -94,7 +93,7 @@ NSString* GetSyncErrorMessageForBrowserState(
 }
 
 NSString* GetSyncErrorButtonTitleForBrowserState(
-    ios::ChromeBrowserState* browserState) {
+    ChromeBrowserState* browserState) {
   SyncSetupService* syncSetupService =
       SyncSetupServiceFactory::GetForBrowserState(browserState);
   DCHECK(syncSetupService);
@@ -119,7 +118,7 @@ NSString* GetSyncErrorButtonTitleForBrowserState(
 }
 
 SyncSetupService::SyncServiceState GetSyncStateForBrowserState(
-    ios::ChromeBrowserState* browserState) {
+    ChromeBrowserState* browserState) {
   SyncSetupService* syncSetupService =
       SyncSetupServiceFactory::GetForBrowserState(browserState);
   DCHECK(syncSetupService);
@@ -150,7 +149,7 @@ bool ShouldShowSyncSettings(SyncSetupService::SyncServiceState syncState) {
   }
 }
 
-bool DisplaySyncErrors(ios::ChromeBrowserState* browser_state,
+bool DisplaySyncErrors(ChromeBrowserState* browser_state,
                        web::WebState* web_state,
                        id<SyncPresenter> presenter) {
   // Avoid displaying sync errors on incognito tabs.

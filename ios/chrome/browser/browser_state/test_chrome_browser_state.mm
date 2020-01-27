@@ -57,8 +57,8 @@
 
 namespace {
 std::unique_ptr<KeyedService> BuildHistoryService(web::BrowserState* context) {
-  ios::ChromeBrowserState* browser_state =
-      ios::ChromeBrowserState::FromBrowserState(context);
+  ChromeBrowserState* browser_state =
+      ChromeBrowserState::FromBrowserState(context);
   return std::make_unique<history::HistoryService>(
       base::WrapUnique(new HistoryClientImpl(
           ios::BookmarkModelFactory::GetForBrowserState(browser_state))),
@@ -66,8 +66,8 @@ std::unique_ptr<KeyedService> BuildHistoryService(web::BrowserState* context) {
 }
 
 std::unique_ptr<KeyedService> BuildBookmarkModel(web::BrowserState* context) {
-  ios::ChromeBrowserState* browser_state =
-      ios::ChromeBrowserState::FromBrowserState(context);
+  ChromeBrowserState* browser_state =
+      ChromeBrowserState::FromBrowserState(context);
   std::unique_ptr<bookmarks::BookmarkModel> bookmark_model(
       new bookmarks::BookmarkModel(std::make_unique<BookmarkClientImpl>(
           browser_state,
@@ -244,8 +244,7 @@ TestChromeBrowserState::GetIOTaskRunner() {
   return base::ThreadTaskRunnerHandle::Get();
 }
 
-ios::ChromeBrowserState*
-TestChromeBrowserState::GetOriginalChromeBrowserState() {
+ChromeBrowserState* TestChromeBrowserState::GetOriginalChromeBrowserState() {
   if (IsOffTheRecord())
     return original_browser_state_;
   return this;
@@ -255,7 +254,7 @@ bool TestChromeBrowserState::HasOffTheRecordChromeBrowserState() const {
   return otr_browser_state_ != nullptr;
 }
 
-ios::ChromeBrowserState*
+ChromeBrowserState*
 TestChromeBrowserState::GetOffTheRecordChromeBrowserState() {
   if (IsOffTheRecord())
     return this;

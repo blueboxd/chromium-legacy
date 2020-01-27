@@ -212,6 +212,36 @@ TestHintsComponentCreator::CreateHintsComponentInfoWithMixPageHints(
   return WriteConfigToFileAndReturnHintsComponentInfo(config);
 }
 
+optimization_guide::HintsComponentInfo
+TestHintsComponentCreator::CreateHintsComponentInfoWithPublicImageHints(
+    const std::vector<std::string>& page_hint_host_suffixes,
+    const std::string& page_pattern,
+    const std::vector<std::string>& public_image_urls) {
+  optimization_guide::proto::Configuration config;
+  for (const auto& page_hint_site : page_hint_host_suffixes) {
+    optimization_guide::proto::Hint* hint = config.add_hints();
+    hint->set_key(page_hint_site);
+    hint->set_key_representation(optimization_guide::proto::HOST_SUFFIX);
+    hint->set_version(GetDefaultHintVersionString());
+
+    optimization_guide::proto::PageHint* page_hint = hint->add_page_hints();
+    page_hint->set_page_pattern(page_pattern);
+
+    optimization_guide::proto::Optimization* optimization =
+        page_hint->add_whitelisted_optimizations();
+    optimization->set_optimization_type(
+        optimization_guide::proto::COMPRESS_PUBLIC_IMAGES);
+
+    optimization_guide::proto::PublicImageMetadata* public_image_metadata =
+        optimization->mutable_public_image_metadata();
+    for (auto url : public_image_urls) {
+      public_image_metadata->add_url(url);
+    }
+  }
+
+  return WriteConfigToFileAndReturnHintsComponentInfo(config);
+}
+
 base::FilePath TestHintsComponentCreator::GetFilePath(
     std::string file_path_suffix) {
   base::ScopedAllowBlockingForTesting allow_blocking;

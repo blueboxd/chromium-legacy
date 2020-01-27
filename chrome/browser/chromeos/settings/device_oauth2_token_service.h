@@ -40,8 +40,6 @@ class DeviceOAuth2TokenService : public OAuth2AccessTokenManager::Delegate,
  public:
   typedef base::RepeatingCallback<void(const CoreAccountId& /* account_id */)>
       RefreshTokenAvailableCallback;
-  typedef base::RepeatingCallback<void(const CoreAccountId& /* account_id */)>
-      RefreshTokenRevokedCallback;
 
   typedef base::Callback<void(bool)> StatusCallback;
 
@@ -65,9 +63,6 @@ class DeviceOAuth2TokenService : public OAuth2AccessTokenManager::Delegate,
   // If set, this callback will be invoked when a new refresh token is
   // available.
   void SetRefreshTokenAvailableCallback(RefreshTokenAvailableCallback callback);
-
-  // If set, this callback will be invoked when a refresh token is revoked.
-  void SetRefreshTokenRevokedCallback(RefreshTokenRevokedCallback callback);
 
   // Checks in the cache for a valid access token for a specified |account_id|
   // and |scopes|, and if not found starts a request for an OAuth2 access token
@@ -194,7 +189,6 @@ class DeviceOAuth2TokenService : public OAuth2AccessTokenManager::Delegate,
 
   // Callbacks to invoke, if set, for refresh token-related events.
   RefreshTokenAvailableCallback on_refresh_token_available_callback_;
-  RefreshTokenRevokedCallback on_refresh_token_revoked_callback_;
 
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
 

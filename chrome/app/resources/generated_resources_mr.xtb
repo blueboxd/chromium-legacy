@@ -24,6 +24,7 @@
 <translation id="1029317248976101138">झूम करा</translation>
 <translation id="1030706264415084469"><ph name="URL" /> ला तुमच्या डिव्हाइसवर मोठ्या प्रमाणावर डेटा कायमचा स्टोअर करायचा आहे</translation>
 <translation id="1031362278801463162">पूर्वावलोकन लोड करत आहे</translation>
+<translation id="1032605640136438169">कृपया नवीन अटींचे पुनरावलोकन करा</translation>
 <translation id="103279545524624934">Android ॲप्स लाँच करण्यासाठी डिस्क स्थान मोकळे करा.</translation>
 <translation id="1033780634303702874">तुमची सीरिअल डिव्हाइस ॲक्सेस करा</translation>
 <translation id="1034942643314881546">अ‍ॅप्स इलस्ट्रेशन तयार करण्यासाठी adb सुरू करणे</translation>
@@ -223,7 +224,6 @@
 <translation id="1306606229401759371">सेटिंग्ज बदला</translation>
 <translation id="1307165550267142340">तुमचा पिन तयार केला गेला आहे</translation>
 <translation id="1307559529304613120">अरेरे! या डिव्हाइसाठी दीर्घ-मुदतीचे API ॲक्सेस टोकन स्टोअर करण्यात सिस्टम अयशस्वी झाली.</translation>
-<translation id="1309199320876169714">Plugin VM काढत आहे...</translation>
 <translation id="1313405956111467313">स्वयंचलित प्रॉक्सी कॉन्फिगरेशन</translation>
 <translation id="131364520783682672">Caps Lock</translation>
 <translation id="1313705515580255288">तुमचे बुकमार्क, इतिहास आणि इतर सेटिंग्ज आपल्या Google खात्यामध्ये संकालित केल्या जातील.</translation>
@@ -1366,7 +1366,6 @@
 <translation id="2871813825302180988">हे खाते या डिव्‍हाइसवर आधीपासूनच वापरले जात आहे.</translation>
 <translation id="287286579981869940"><ph name="PROVIDER_NAME" /> जोडा...</translation>
 <translation id="2872961005593481000">बंद करा</translation>
-<translation id="2874478552394649323">Plugin VM काढा</translation>
 <translation id="2874939134665556319">मागील ट्रॅक</translation>
 <translation id="2875698561019555027">(Chrome एरर पेज)</translation>
 <translation id="2876336351874743617">दुसरे बोट</translation>
@@ -1383,7 +1382,6 @@
 <translation id="2889064240420137087">यासह लिंक उघडा...</translation>
 <translation id="2889925978073739256">सॅन्डबॉक्स न केलेले प्लगिन अवरोधित करणे सुरू ठेवा</translation>
 <translation id="2893168226686371498">डीफॉल्ट ब्राउझर</translation>
-<translation id="2893208266590504003">Plugin VM काढता आले नाही</translation>
 <translation id="2894757982205307093">गटामधील नवीन टॅब</translation>
 <translation id="289644616180464099">सिम कार्ड लॉक केले आहे</translation>
 <translation id="2896909745808647285"><ph name="FILE_NAME" /> एंक्रिप्ट केलेले आहे आणि ते उघडण्यापासून ब्लॉक केले गेले आहे.</translation>
@@ -2832,6 +2830,7 @@
 <translation id="4998430619171209993">सुरू</translation>
 <translation id="4998873842614926205">बदलांची पुष्‍टी करा</translation>
 <translation id="5000922062037820727">अवरोधित केली (शिफारस केलेले)</translation>
+<translation id="5007392906805964215">पुनरावलोकन करा</translation>
 <translation id="5008936837313706385">ॲक्टिव्हिटीचे नाव</translation>
 <translation id="5010043101506446253">सर्टिफिकेट अधिकारी</translation>
 <translation id="5015344424288992913">प्रॉक्सी निराकरण करीत आहे...</translation>
@@ -3037,6 +3036,7 @@
 <translation id="5311304534597152726">हे म्हणून साइन करा</translation>
 <translation id="53116743016968120"><ph name="ERROR_MESSAGE" /> कृपया पुन्हा प्रयत्न करा.</translation>
 <translation id="5313628438272378649">हे अपलोड तुमच्या संस्थेच्या सुरक्षा धोरणांचे उल्लंघन करते आणि पूर्ण केले जाऊ शकत नाही.</translation>
+<translation id="5314381603623123224">Chrome च्या सेवा अटी ३१ मार्च रोजी बदलणार आहेत</translation>
 <translation id="5315738755890845852">अतिरिक्त महिरपी कंस: <ph name="ERROR_LINE" /></translation>
 <translation id="5315873049536339193">ओळख</translation>
 <translation id="5317780077021120954">सेव्ह करा</translation>
@@ -5772,7 +5772,6 @@ https://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featu
 <translation id="9169496697824289689">कीबोर्ड शॉर्टकट पहा</translation>
 <translation id="916964310188958970">ही सूचना कशासाठी आहे?</translation>
 <translation id="9169931577761441333"><ph name="APP_NAME" /> ला होम स्क्रीनवर जोडा</translation>
-<translation id="9170305483456271385">Plugin VM काढले गेले आहे</translation>
 <translation id="9170848237812810038">&amp;पूर्ववत करा</translation>
 <translation id="9170884462774788842">तुमच्या कॉंप्युटरवरील दुसऱ्या प्रोग्रामने Chrome च्या काम करण्याचा मार्ग बदलू शकणारी थीम जोडली.</translation>
 <translation id="9173995187295789444">ब्लूटूथ डिव्हाइससाठी स्कॅन करत आहे...</translation>

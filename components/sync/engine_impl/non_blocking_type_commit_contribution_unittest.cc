@@ -305,7 +305,8 @@ TEST(NonBlockingTypeCommitContributionTest,
         commit_response->add_entryresponse();
     entry->set_response_type(CommitResponse::TRANSIENT_ERROR);
     SharingMessageCommitError* sharing_message_error =
-        entry->mutable_sharing_message_error();
+        entry->mutable_datatype_specific_error()
+            ->mutable_sharing_message_error();
     sharing_message_error->set_error_code(
         SharingMessageCommitError::INVALID_ARGUMENT);
   }
@@ -318,8 +319,9 @@ TEST(NonBlockingTypeCommitContributionTest,
   FailedCommitResponseData failed_item = actual_error_response_list[0];
   EXPECT_EQ(ClientTagHash::FromHashed("hash"), failed_item.client_tag_hash);
   EXPECT_EQ(CommitResponse::TRANSIENT_ERROR, failed_item.response_type);
-  EXPECT_EQ(SharingMessageCommitError::INVALID_ARGUMENT,
-            failed_item.sharing_message_error.error_code());
+  EXPECT_EQ(
+      SharingMessageCommitError::INVALID_ARGUMENT,
+      failed_item.datatype_specific_error.sharing_message_error().error_code());
 }
 
 }  // namespace

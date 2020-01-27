@@ -27,7 +27,7 @@ namespace {
 std::unique_ptr<KeyedService> BuildBreadcrumbPersistentStorageKeyedService(
     web::BrowserState* browser_state) {
   return std::make_unique<BreadcrumbPersistentStorageKeyedService>(
-      ios::ChromeBrowserState::FromBrowserState(browser_state));
+      ChromeBrowserState::FromBrowserState(browser_state));
 }
 }
 

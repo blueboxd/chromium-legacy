@@ -7,7 +7,7 @@
 
 #include "third_party/blink/public/mojom/payments/payment_app.mojom-blink-forward.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_can_make_payment_event_init.h"
-#include "third_party/blink/renderer/modules/payments/payment_request_event_init.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_payment_request_event_init.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 
 namespace blink {

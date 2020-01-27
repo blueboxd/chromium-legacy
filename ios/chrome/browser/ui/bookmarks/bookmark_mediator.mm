@@ -37,7 +37,7 @@ const int64_t kLastUsedFolderNone = -1;
 @interface BookmarkMediator ()
 
 // BrowserState for this mediator.
-@property(nonatomic, assign) ios::ChromeBrowserState* browserState;
+@property(nonatomic, assign) ChromeBrowserState* browserState;
 
 @end
 
@@ -51,7 +51,7 @@ const int64_t kLastUsedFolderNone = -1;
 }
 
 + (const BookmarkNode*)folderForNewBookmarksInBrowserState:
-    (ios::ChromeBrowserState*)browserState {
+    (ChromeBrowserState*)browserState {
   bookmarks::BookmarkModel* bookmarks =
       ios::BookmarkModelFactory::GetForBrowserState(browserState);
   const BookmarkNode* defaultFolder = bookmarks->mobile_node();
@@ -70,13 +70,13 @@ const int64_t kLastUsedFolderNone = -1;
 }
 
 + (void)setFolderForNewBookmarks:(const BookmarkNode*)folder
-                  inBrowserState:(ios::ChromeBrowserState*)browserState {
+                  inBrowserState:(ChromeBrowserState*)browserState {
   DCHECK(folder && folder->is_folder());
   browserState->GetPrefs()->SetInt64(prefs::kIosBookmarkFolderDefault,
                                      folder->id());
 }
 
-- (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState {
+- (instancetype)initWithBrowserState:(ChromeBrowserState*)browserState {
   self = [super init];
   if (self) {
     _browserState = browserState;

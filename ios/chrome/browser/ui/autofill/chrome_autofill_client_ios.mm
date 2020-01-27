@@ -83,7 +83,7 @@ autofill::CardUnmaskPromptView* CreateCardUnmaskPromptViewBridge(
 namespace autofill {
 
 ChromeAutofillClientIOS::ChromeAutofillClientIOS(
-    ios::ChromeBrowserState* browser_state,
+    ChromeBrowserState* browser_state,
     web::WebState* web_state,
     infobars::InfoBarManager* infobar_manager,
     id<AutofillClientIOSBridge> bridge,

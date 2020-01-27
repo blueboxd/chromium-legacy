@@ -296,7 +296,7 @@ void PasswordGenerationPopupControllerImpl::ViewDestroyed() {
 
 void PasswordGenerationPopupControllerImpl::SetSelectionAtPoint(
     const gfx::Point& point) {
-  PasswordSelected(view_->IsPointInPasswordBounds(point));
+  // The view handles mouse events itself.
 }
 
 bool PasswordGenerationPopupControllerImpl::AcceptSelectedLine() {
@@ -313,6 +313,10 @@ void PasswordGenerationPopupControllerImpl::SelectionCleared() {
 
 bool PasswordGenerationPopupControllerImpl::HasSelection() const {
   return password_selected();
+}
+
+void PasswordGenerationPopupControllerImpl::SetSelected() {
+  PasswordSelected(true);
 }
 
 gfx::NativeView PasswordGenerationPopupControllerImpl::container_view() const {

@@ -29,7 +29,6 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/events/event_target.h"
-#include "third_party/blink/renderer/core/input/touch_init.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/geometry/float_point.h"
 #include "third_party/blink/renderer/platform/geometry/float_size.h"
@@ -39,6 +38,7 @@
 namespace blink {
 
 class LocalFrame;
+class TouchInit;
 
 class CORE_EXPORT Touch final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();

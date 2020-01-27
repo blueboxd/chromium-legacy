@@ -90,7 +90,7 @@ class CORE_EXPORT TextAutosizer final : public GarbageCollected<TextAutosizer> {
     ~LayoutScope();
 
    protected:
-    Member<TextAutosizer> text_autosizer_;
+    TextAutosizer* text_autosizer_;
     LayoutBlock* block_;
   };
 
@@ -109,7 +109,7 @@ class CORE_EXPORT TextAutosizer final : public GarbageCollected<TextAutosizer> {
     ~NGLayoutScope();
 
    protected:
-    Member<TextAutosizer> text_autosizer_;
+    TextAutosizer* text_autosizer_;
     LayoutBlock* block_;
   };
 
@@ -121,7 +121,7 @@ class CORE_EXPORT TextAutosizer final : public GarbageCollected<TextAutosizer> {
     ~DeferUpdatePageInfo();
 
    private:
-    Member<LocalFrame> main_frame_;
+    LocalFrame* main_frame_;
   };
 
  private:

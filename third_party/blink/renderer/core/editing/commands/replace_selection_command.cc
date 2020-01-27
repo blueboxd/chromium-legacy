@@ -105,8 +105,8 @@ class ReplacementFragment final {
 
   void InsertNodeBefore(Node*, Node* ref_node);
 
-  Member<Document> document_;
-  Member<DocumentFragment> fragment_;
+  Document* document_;
+  DocumentFragment* fragment_;
   bool has_interchange_newline_at_start_;
   bool has_interchange_newline_at_end_;
 
@@ -191,7 +191,7 @@ ReplacementFragment::ReplacementFragment(Document* document,
       !(shadow_ancestor_element && shadow_ancestor_element->GetLayoutObject() &&
         shadow_ancestor_element->GetLayoutObject()->IsTextControl()) &&
       HasRichlyEditableStyle(*editable_root)) {
-    RemoveInterchangeNodes(fragment_.Get());
+    RemoveInterchangeNodes(fragment_);
     return;
   }
 
@@ -208,7 +208,7 @@ ReplacementFragment::ReplacementFragment(Document* document,
     // We don't need TestRendering for plain-text editing + plain-text
     // insertion.
     if (is_plain_text) {
-      RemoveInterchangeNodes(fragment_.Get());
+      RemoveInterchangeNodes(fragment_);
       String original_text = fragment_->textContent();
       auto* event =
           MakeGarbageCollected<BeforeTextInsertedEvent>(original_text);
@@ -216,7 +216,7 @@ ReplacementFragment::ReplacementFragment(Document* document,
       if (original_text != event->GetText()) {
         fragment_ = CreateFragmentFromText(
             selection.ToNormalizedEphemeralRange(), event->GetText());
-        RemoveInterchangeNodes(fragment_.Get());
+        RemoveInterchangeNodes(fragment_);
       }
       return;
     }
@@ -224,7 +224,7 @@ ReplacementFragment::ReplacementFragment(Document* document,
 
   HTMLElement* holder = InsertFragmentForTestRendering(editable_root);
   if (!holder) {
-    RemoveInterchangeNodes(fragment_.Get());
+    RemoveInterchangeNodes(fragment_);
     return;
   }
 
@@ -314,7 +314,7 @@ HTMLElement* ReplacementFragment::InsertFragmentForTestRendering(
     Element* root_editable_element) {
   TRACE_EVENT0("blink", "ReplacementFragment::insertFragmentForTestRendering");
   DCHECK(document_);
-  HTMLElement* holder = CreateDefaultParagraphElement(*document_.Get());
+  HTMLElement* holder = CreateDefaultParagraphElement(*document_);
 
   holder->AppendChild(fragment_);
   root_editable_element->AppendChild(holder);
@@ -391,24 +391,24 @@ inline void ReplaceSelectionCommand::InsertedNodes::RespondToNodeInsertion(
 inline void
 ReplaceSelectionCommand::InsertedNodes::WillRemoveNodePreservingChildren(
     Node& node) {
-  if (first_node_inserted_.Get() == node)
+  if (first_node_inserted_ == node)
     first_node_inserted_ = NodeTraversal::Next(node);
-  if (last_node_inserted_.Get() == node)
+  if (last_node_inserted_ == node)
     last_node_inserted_ = node.lastChild()
                               ? node.lastChild()
                               : NodeTraversal::NextSkippingChildren(node);
-  if (ref_node_.Get() == node)
+  if (ref_node_ == node)
     ref_node_ = NodeTraversal::Next(node);
 }
 
 inline void ReplaceSelectionCommand::InsertedNodes::WillRemoveNode(Node& node) {
-  if (first_node_inserted_.Get() == node && last_node_inserted_.Get() == node) {
+  if (first_node_inserted_ == node && last_node_inserted_ == node) {
     first_node_inserted_ = nullptr;
     last_node_inserted_ = nullptr;
-  } else if (first_node_inserted_.Get() == node) {
+  } else if (first_node_inserted_ == node) {
     first_node_inserted_ =
         NodeTraversal::NextSkippingChildren(*first_node_inserted_);
-  } else if (last_node_inserted_.Get() == node) {
+  } else if (last_node_inserted_ == node) {
     last_node_inserted_ =
         NodeTraversal::PreviousSkippingChildren(*last_node_inserted_);
   }
@@ -419,11 +419,11 @@ inline void ReplaceSelectionCommand::InsertedNodes::WillRemoveNode(Node& node) {
 inline void ReplaceSelectionCommand::InsertedNodes::DidReplaceNode(
     Node& node,
     Node& new_node) {
-  if (first_node_inserted_.Get() == node)
+  if (first_node_inserted_ == node)
     first_node_inserted_ = &new_node;
-  if (last_node_inserted_.Get() == node)
+  if (last_node_inserted_ == node)
     last_node_inserted_ = &new_node;
-  if (ref_node_.Get() == node)
+  if (ref_node_ == node)
     ref_node_ = &new_node;
 }
 

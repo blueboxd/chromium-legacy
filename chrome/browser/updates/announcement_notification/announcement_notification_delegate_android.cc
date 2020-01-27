@@ -1,0 +1,30 @@
+// Copyright 2020 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "chrome/browser/updates/announcement_notification/announcement_notification_delegate_android.h"
+
+#include "base/android/jni_android.h"
+#include "base/android/jni_string.h"
+#include "chrome/android/chrome_jni_headers/AnnouncementNotificationManager_jni.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_android.h"
+#include "chrome/browser/updates/announcement_notification/announcement_notification_service_factory.h"
+
+AnnouncementNotificationDelegateAndroid::
+    AnnouncementNotificationDelegateAndroid() = default;
+
+AnnouncementNotificationDelegateAndroid::
+    ~AnnouncementNotificationDelegateAndroid() = default;
+
+void AnnouncementNotificationDelegateAndroid::ShowNotification(
+    const std::string& remote_url) {
+  auto* env = base::android::AttachCurrentThread();
+  Java_AnnouncementNotificationManager_showNotification(
+      env, base::android::ConvertUTF8ToJavaString(env, remote_url));
+}
+
+bool AnnouncementNotificationDelegateAndroid::IsFirstRun() {
+  return Java_AnnouncementNotificationManager_isFirstRun(
+      base::android::AttachCurrentThread());
+}

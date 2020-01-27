@@ -24,6 +24,7 @@
 <translation id="1029317248976101138">ซูม</translation>
 <translation id="1030706264415084469"><ph name="URL" /> ต้องการจัดเก็บข้อมูลขนาดใหญ่อย่างถาวรในอุปกรณ์ของคุณ</translation>
 <translation id="1031362278801463162">กำลังโหลดหน้าตัวอย่าง</translation>
+<translation id="1032605640136438169">โปรดอ่านข้อกำหนดใหม่</translation>
 <translation id="103279545524624934">เพิ่มพื้นที่ว่างในดิสก์เพื่อเปิดแอป Android</translation>
 <translation id="1033780634303702874">เข้าถึงอุปกรณ์ซีเรียล</translation>
 <translation id="1034942643314881546">การเปิดใช้ adb เพื่อสร้างภาพของแอป</translation>
@@ -223,7 +224,6 @@
 <translation id="1306606229401759371">เปลี่ยนการตั้งค่า</translation>
 <translation id="1307165550267142340">สร้าง PIN แล้ว</translation>
 <translation id="1307559529304613120">อ๊ะ!  ระบบล้มเหลวในการจัดเก็บโทเค็นเพื่อการเข้าถึง API ในระยะยาวสำหรับอุปกรณ์นี้</translation>
-<translation id="1309199320876169714">กำลังนำ Plugin VM ออก...</translation>
 <translation id="1313405956111467313">กำหนดค่าพร็อกซีอัตโนมัติ</translation>
 <translation id="131364520783682672">Caps Lock</translation>
 <translation id="1313705515580255288">บุ๊กมาร์ก ประวัติการเข้าชม และการตั้งค่าอื่นๆ ของคุณจะได้รับการซิงค์ไปยังบัญชี Google ของคุณ</translation>
@@ -1367,7 +1367,6 @@
 <translation id="2871813825302180988">มีการใช้บัญชีนี้กับอุปกรณ์นี้อยู่แล้ว</translation>
 <translation id="287286579981869940">เพิ่ม <ph name="PROVIDER_NAME" />...</translation>
 <translation id="2872961005593481000">ปิด</translation>
-<translation id="2874478552394649323">นำ Plugin VM ออก</translation>
 <translation id="2874939134665556319">แทร็กก่อนหน้า</translation>
 <translation id="2875698561019555027">(หน้าข้อผิดพลาดของ Chrome)</translation>
 <translation id="2876336351874743617">นิ้วที่ 2</translation>
@@ -1384,7 +1383,6 @@
 <translation id="2889064240420137087">เปิดลิงก์ด้วย...</translation>
 <translation id="2889925978073739256">บล็อกปลั๊กอินที่ไม่ได้อยู่ในแซนด์บ็อกซ์ต่อไป</translation>
 <translation id="2893168226686371498">เบราว์เซอร์เริ่มต้น</translation>
-<translation id="2893208266590504003">นำ Plugin VM ออกไม่สำเร็จ</translation>
 <translation id="2894757982205307093">แท็บใหม่ในกลุ่ม</translation>
 <translation id="289644616180464099">ซิมการ์ดถูกล็อก</translation>
 <translation id="2896909745808647285">มีการเข้ารหัสไฟล์ <ph name="FILE_NAME" /> และไฟล์ถูกบล็อกไม่ให้เปิด</translation>
@@ -2835,6 +2833,7 @@
 <translation id="4998430619171209993">เปิด</translation>
 <translation id="4998873842614926205">ยืนยันการเปลี่ยนแปลง</translation>
 <translation id="5000922062037820727">ถูกบล็อก (แนะนำ)</translation>
+<translation id="5007392906805964215">ดู</translation>
 <translation id="5008936837313706385">ชื่อกิจกรรม</translation>
 <translation id="5010043101506446253">ผู้ออกใบรับรอง</translation>
 <translation id="5015344424288992913">กำลังแปลงพร็อกซี...</translation>
@@ -3040,6 +3039,7 @@
 <translation id="5311304534597152726">กำลังลงชื่อเข้าใช้ในชื่อ</translation>
 <translation id="53116743016968120"><ph name="ERROR_MESSAGE" /> โปรดลองอีกครั้ง</translation>
 <translation id="5313628438272378649">การอัปโหลดนี้ละเมิดนโยบายความปลอดภัยขององค์กรของคุณและจะอัปโหลดไม่ได้</translation>
+<translation id="5314381603623123224">ข้อกำหนดในการให้บริการของ Chrome จะมีการเปลี่ยนแปลงในวันที่ 31 มีนาคม</translation>
 <translation id="5315738755890845852">เครื่องหมายวงเล็บปีกกาที่เกินมา: <ph name="ERROR_LINE" /></translation>
 <translation id="5315873049536339193">ข้อมูลประจำตัว</translation>
 <translation id="5317780077021120954">บันทึก</translation>
@@ -5775,7 +5775,6 @@
 <translation id="9169496697824289689">ดูแป้นพิมพ์ลัด</translation>
 <translation id="916964310188958970">ทำไมแนะนำการค้นหานี้</translation>
 <translation id="9169931577761441333">เพิ่ม <ph name="APP_NAME" /> ในหน้าจอหลัก</translation>
-<translation id="9170305483456271385">นำ Plugin VM ออกแล้ว</translation>
 <translation id="9170848237812810038">เ&amp;ลิกทำ</translation>
 <translation id="9170884462774788842">โปรแกรมอื่นในคอมพิวเตอร์ของคุณเพิ่มธีมที่อาจเปลี่ยนวิธีการทำงานของ Chrome</translation>
 <translation id="9173995187295789444">กำลังสแกนหาอุปกรณ์บลูทูธ...</translation>

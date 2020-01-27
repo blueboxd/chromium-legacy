@@ -100,11 +100,8 @@ void MaybeShowExtensionControlledNewTabPage(
 
   // See if the current active URL matches a transformed NewTab URL.
   GURL ntp_url(chrome::kChromeUINewTabURL);
-  bool ignored_param;
   content::BrowserURLHandler::GetInstance()->RewriteURLIfNecessary(
-      &ntp_url,
-      web_contents->GetBrowserContext(),
-      &ignored_param);
+      &ntp_url, web_contents->GetBrowserContext());
   if (ntp_url != active_url)
     return;  // Not being overridden by an extension.
 

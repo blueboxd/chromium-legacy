@@ -10,8 +10,6 @@
 #include "components/autofill/content/browser/content_autofill_driver_factory.h"
 #include "components/autofill/core/browser/autofill_manager.h"
 #include "components/autofill/core/browser/autofill_provider.h"
-#include "components/find_in_page/find_tab_helper.h"
-#include "components/find_in_page/find_types.h"
 #include "components/sessions/content/session_tab_helper.h"
 #include "content/public/browser/file_select_listener.h"
 #include "content/public/browser/interstitial_page.h"
@@ -153,9 +151,6 @@ TabImpl::TabImpl(ProfileImpl* profile,
 
   navigation_controller_ = std::make_unique<NavigationControllerImpl>(this);
 
-  find_in_page::FindTabHelper::CreateForWebContents(web_contents_.get());
-  GetFindTabHelper()->AddObserver(this);
-
   sessions::SessionTabHelper::CreateForWebContents(
       web_contents_.get(),
       base::BindRepeating(&TabImpl::GetSessionServiceTabHelperDelegate,
@@ -165,8 +160,6 @@ TabImpl::TabImpl(ProfileImpl* profile,
 TabImpl::~TabImpl() {
   if (browser_)
     browser_->RemoveTab(this);
-
-  GetFindTabHelper()->RemoveObserver(this);
 
   // Destruct WebContents now to avoid it calling back when this object is
   // partially destructed. DidFinishNavigation can be called while destroying
@@ -451,47 +444,6 @@ void TabImpl::CloseContents(content::WebContents* source) {
     new_tab_delegate_->CloseTab();
 }
 
-void TabImpl::FindReply(content::WebContents* web_contents,
-                        int request_id,
-                        int number_of_matches,
-                        const gfx::Rect& selection_rect,
-                        int active_match_ordinal,
-                        bool final_update) {
-  GetFindTabHelper()->HandleFindReply(request_id, number_of_matches,
-                                      selection_rect, active_match_ordinal,
-                                      final_update);
-}
-
-#if defined(OS_ANDROID)
-// FindMatchRectsReply and OnFindResultAvailable forward find-related results to
-// the Java TabImpl. The find actions themselves are initiated directly from
-// Java via FindInPageBridge.
-void TabImpl::FindMatchRectsReply(content::WebContents* web_contents,
-                                  int version,
-                                  const std::vector<gfx::RectF>& rects,
-                                  const gfx::RectF& active_rect) {
-  JNIEnv* env = base::android::AttachCurrentThread();
-  // Create the details object.
-  ScopedJavaLocalRef<jobject> details_object =
-      Java_TabImpl_createFindMatchRectsDetails(
-          env, version, rects.size(),
-          ScopedJavaLocalRef<jobject>(Java_TabImpl_createRectF(
-              env, active_rect.x(), active_rect.y(), active_rect.right(),
-              active_rect.bottom())));
-
-  // Add the rects.
-  for (size_t i = 0; i < rects.size(); ++i) {
-    const gfx::RectF& rect = rects[i];
-    Java_TabImpl_setMatchRectByIndex(
-        env, details_object, i,
-        ScopedJavaLocalRef<jobject>(Java_TabImpl_createRectF(
-            env, rect.x(), rect.y(), rect.right(), rect.bottom())));
-  }
-
-  Java_TabImpl_onFindMatchRectsAvailable(env, java_impl_, details_object);
-}
-#endif
-
 void TabImpl::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
 #if defined(OS_ANDROID)
@@ -514,17 +466,6 @@ void TabImpl::DidFinishNavigation(
 void TabImpl::RenderProcessGone(base::TerminationStatus status) {
   for (auto& observer : observers_)
     observer.OnRenderProcessGone();
-}
-
-void TabImpl::OnFindResultAvailable(content::WebContents* web_contents) {
-#if defined(OS_ANDROID)
-  const find_in_page::FindNotificationDetails& find_result =
-      GetFindTabHelper()->find_result();
-  JNIEnv* env = base::android::AttachCurrentThread();
-  Java_TabImpl_onFindResultAvailable(
-      env, java_impl_, find_result.number_of_matches(),
-      find_result.active_match_ordinal(), find_result.final_update());
-#endif
 }
 
 void TabImpl::OnExitFullscreen() {
@@ -592,10 +533,6 @@ void TabImpl::InitializeAutofill() {
       i18n::GetApplicationLocale(),
       autofill::AutofillManager::DISABLE_AUTOFILL_DOWNLOAD_MANAGER,
       autofill_provider_.get());
-}
-
-find_in_page::FindTabHelper* TabImpl::GetFindTabHelper() {
-  return find_in_page::FindTabHelper::FromWebContents(web_contents_.get());
 }
 
 sessions::SessionTabHelperDelegate* TabImpl::GetSessionServiceTabHelperDelegate(

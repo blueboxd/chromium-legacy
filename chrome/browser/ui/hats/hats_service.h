@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/time/time.h"
@@ -15,11 +16,28 @@
 class PrefRegistrySimple;
 class Profile;
 
+// Trigger identifiers currently used; duplicates not allowed.
+extern const char kHatsSurveyTriggerSatisfaction[];
+extern const char kHatsSurveyTriggerSettings[];
+
 // This class provides the client side logic for determining if a
 // survey should be shown for any trigger based on input from a finch
 // configuration. It is created on a per profile basis.
 class HatsService : public KeyedService {
  public:
+  struct SurveyConfig {
+    SurveyConfig(const double probability, const std::string en_site_id)
+        : probability_(probability), en_site_id_(en_site_id) {}
+
+    SurveyConfig() = default;
+
+    // Probability [0,1] of how likely a chosen user will see the survey.
+    double probability_;
+
+    // Site ID for the survey.
+    std::string en_site_id_;
+  };
+
   struct SurveyMetadata {
     SurveyMetadata();
     ~SurveyMetadata();
@@ -28,16 +46,14 @@ class HatsService : public KeyedService {
     base::Optional<base::Time> last_survey_started_time;
   };
 
+  ~HatsService() override;
+
   explicit HatsService(Profile* profile);
 
   static void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
-  // This is the public function that will launch the "satisfaction" survey if
-  // it's appropriate.
-  void LaunchSatisfactionSurvey();
-
-  // Returns the en-us site ID for the HaTS survey.
-  const std::string& en_site_id() const { return en_site_id_; }
+  // Launch the survey with identifier |trigger| if appropriate.
+  void LaunchSurvey(const std::string& trigger);
 
   void SetSurveyMetadataForTesting(const SurveyMetadata& metadata);
 
@@ -48,14 +64,7 @@ class HatsService : public KeyedService {
   // Profile associated with this service.
   Profile* const profile_;
 
-  // Trigger string identifier.
-  const std::string trigger_;
-
-  // Percent of users [0,1] that will see the survey.
-  const double probability_;
-
-  // Site ID for the survey.
-  const std::string en_site_id_;
+  base::flat_map<std::string, SurveyConfig> survey_configs_by_triggers_;
 
   DISALLOW_COPY_AND_ASSIGN(HatsService);
 };

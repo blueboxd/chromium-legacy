@@ -71,43 +71,41 @@ class GamesServiceImplTest : public testing::Test {
       base::FilePath(FILE_PATH_LITERAL("some/path"));
 };
 
-TEST_F(GamesServiceImplTest, GetHighlightedGame_NotInstalled) {
-  bool callback_invoked = false;
-  games_service_->GetHighlightedGame(base::BindLambdaForTesting(
-      [&callback_invoked](ResponseCode code, const Game game) {
-        EXPECT_EQ(ResponseCode::kFileNotFound, code);
-        test::ExpectProtosEqual(Game(), game);
-        callback_invoked = true;
-      }));
-
-  EXPECT_TRUE(callback_invoked);
-}
-
-TEST_F(GamesServiceImplTest, GetHighlightedGame_RetrievesFromCache) {
-  // Mock component to be installed.
-  SetInstallDirPref();
-
-  // Expect the UI callback to have been given to the highlighted games store.
+TEST_F(GamesServiceImplTest, SetHighlightedGameCallback) {
   EXPECT_CALL(*mock_highlighted_games_store_, SetPendingCallback(_)).Times(1);
-
-  // Don't expect processing to be invoked as we'll have returned from cache.
-  EXPECT_CALL(*mock_catalog_store_, UpdateCatalogAsync(_, _)).Times(0);
-  EXPECT_CALL(*mock_highlighted_games_store_, ProcessAsync(_, _, _)).Times(0);
-
-  SetTryRespondFromCacheResponse(true);
-
-  games_service_->GetHighlightedGame(
+  games_service_->SetHighlightedGameCallback(
       base::BindLambdaForTesting([](ResponseCode code, const Game game) {
         // No-op.
       }));
 }
 
-TEST_F(GamesServiceImplTest, GetHighlightedGame_Success) {
-  SetInstallDirPref();
-  SetTryRespondFromCacheResponse(false);
+TEST_F(GamesServiceImplTest, GenerateHub_NotInstalled) {
+  EXPECT_CALL(*mock_highlighted_games_store_,
+              HandleCatalogFailure(ResponseCode::kComponentNotInstalled))
+      .Times(1);
+  games_service_->GenerateHub();
+}
 
-  // Expect the UI callback to have been given to the highlighted games store.
-  EXPECT_CALL(*mock_highlighted_games_store_, SetPendingCallback(_)).Times(1);
+TEST_F(GamesServiceImplTest, GenerateHub_RetrievesFromCache) {
+  // Mock component as installed.
+  SetInstallDirPref();
+
+  // Mock that Highlighted Games has cached values.
+  SetTryRespondFromCacheResponse(true);
+
+  // Don't expect processing to be invoked as we'll have returned from cache.
+  EXPECT_CALL(*mock_catalog_store_, UpdateCatalogAsync(_, _)).Times(0);
+  EXPECT_CALL(*mock_highlighted_games_store_, ProcessAsync(_, _, _)).Times(0);
+
+  games_service_->GenerateHub();
+}
+
+TEST_F(GamesServiceImplTest, GenerateHub_Success) {
+  // Mock component as installed.
+  SetInstallDirPref();
+
+  // Mock as no cached highlighted game.
+  SetTryRespondFromCacheResponse(false);
 
   GamesCatalog fake_catalog = test::CreateGamesCatalogWithOneGame();
 
@@ -141,16 +139,16 @@ TEST_F(GamesServiceImplTest, GetHighlightedGame_Success) {
 
   EXPECT_CALL(*mock_catalog_store_, ClearCache()).Times(1);
 
-  games_service_->GetHighlightedGame(
-      base::BindLambdaForTesting([](ResponseCode code, const Game game) {
-        // No-op.
-      }));
+  games_service_->GenerateHub();
 
   EXPECT_FALSE(games_service_->is_updating());
 }
 
-TEST_F(GamesServiceImplTest, GetHighlightedGame_CatalogFileNotFound) {
+TEST_F(GamesServiceImplTest, GenerateHub_CatalogFileNotFound) {
+  // Mock component as installed.
   SetInstallDirPref();
+
+  // Mock as no cached highlighted game.
   SetTryRespondFromCacheResponse(false);
 
   EXPECT_CALL(*mock_catalog_store_, UpdateCatalogAsync(fake_install_dir_, _))
@@ -163,14 +161,9 @@ TEST_F(GamesServiceImplTest, GetHighlightedGame_CatalogFileNotFound) {
               HandleCatalogFailure(ResponseCode::kFileNotFound))
       .Times(1);
 
-  EXPECT_CALL(*mock_highlighted_games_store_, SetPendingCallback(_)).Times(1);
-
   EXPECT_CALL(*mock_catalog_store_, ClearCache()).Times(1);
 
-  games_service_->GetHighlightedGame(
-      base::BindLambdaForTesting([](ResponseCode code, const Game game) {
-        // No-op.
-      }));
+  games_service_->GenerateHub();
 }
 
 }  // namespace games

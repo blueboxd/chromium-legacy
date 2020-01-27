@@ -132,7 +132,7 @@ class ShapePathBuilder : public PathBuilder {
   }
 
  private:
-  Member<LocalFrameView> view_;
+  LocalFrameView* view_;
   LayoutObject& layout_object_;
   const ShapeOutsideInfo& shape_outside_info_;
 };

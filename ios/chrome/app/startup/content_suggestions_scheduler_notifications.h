@@ -7,16 +7,16 @@
 
 #import <Foundation/Foundation.h>
 
-#include "ios/chrome/browser/browser_state/chrome_browser_state_forward.h"
+class ChromeBrowserState;
 
 // Notify the scheduler of the Content Suggestions services of the app lifecycle
 // events.
 @interface ContentSuggestionsSchedulerNotifications : NSObject
 
 // Notifies that the application is launching from cold state.
-+ (void)notifyColdStart:(ios::ChromeBrowserState*)browserState;
++ (void)notifyColdStart:(ChromeBrowserState*)browserState;
 // Notifies that the application has been foregrounded.
-+ (void)notifyForeground:(ios::ChromeBrowserState*)browserState;
++ (void)notifyForeground:(ChromeBrowserState*)browserState;
 
 @end
 

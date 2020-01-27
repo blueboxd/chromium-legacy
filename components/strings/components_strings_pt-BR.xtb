@@ -79,6 +79,7 @@
 <translation id="129553762522093515">Recentemente fechadas</translation>
 <translation id="1298536327547837046">Verificação de malware</translation>
 <translation id="129863573139666797"><ph name="BEGIN_LINK" />Tente limpar os cookies<ph name="END_LINK" /></translation>
+<translation id="1301324364792935241">Verifique suas configurações de DNS seguro</translation>
 <translation id="1307966114820526988">Recursos obsoletos</translation>
 <translation id="1314509827145471431">Encadernação do lado direito</translation>
 <translation id="1320233736580025032">Prc1 (Envelope)</translation>
@@ -152,6 +153,7 @@
 <translation id="1569487616857761740">Informar data de validade</translation>
 <translation id="1581080074034554886">CVC</translation>
 <translation id="1583429793053364125">Algo deu errado ao exibir esta página da Web.</translation>
+<translation id="1586541204584340881">quais extensões você instalou;</translation>
 <translation id="1588438908519853928">Normal</translation>
 <translation id="1592005682883173041">Acesso a dados locais</translation>
 <translation id="1594030484168838125">Escolher</translation>
@@ -290,7 +292,6 @@
 <translation id="2218879909401188352">Os invasores que estão em <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> no momento podem instalar apps perigosos que danificam seu dispositivo, acrescentam cobranças ocultas junto à operadora ou roubam suas informações pessoais. <ph name="BEGIN_LEARN_MORE_LINK" />Saiba mais<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="2224337661447660594">Sem Internet</translation>
 <translation id="2230458221926704099">Corrija sua conexão usando o <ph name="BEGIN_LINK" />app de diagnóstico<ph name="END_LINK" /></translation>
-<translation id="22320125457191592">Para você</translation>
 <translation id="2239100178324503013">Enviar agora</translation>
 <translation id="2248949050832152960">Usar WebAuthn</translation>
 <translation id="2250931979407627383">Costura no lado esquerdo</translation>
@@ -363,6 +364,7 @@
 <translation id="2544644783021658368">Documento avulso</translation>
 <translation id="254947805923345898">O valor da política não é válido.</translation>
 <translation id="255002559098805027"><ph name="HOST_NAME" /> enviou uma resposta inválida.</translation>
+<translation id="2553853292994445426">Verifique suas configurações de DNS seguro. Você pode ter configurado um servidor DNS seguro em que as conexões estão falhando.</translation>
 <translation id="2556876185419854533">&amp;Desfazer editar</translation>
 <translation id="257674075312929031">Grupo</translation>
 <translation id="2586657967955657006">Área de transferência</translation>
@@ -475,6 +477,7 @@
 <translation id="3095940652251934233">Meia carta</translation>
 <translation id="3096100844101284527">Adicionar endereço de retirada</translation>
 <translation id="3105172416063519923">Código do recurso:</translation>
+<translation id="3107591622054137333"><ph name="BEGIN_LINK" />Verificar a configuração de DNS seguro<ph name="END_LINK" /></translation>
 <translation id="3109728660330352905">Você não tem autorização para ver esta página.</translation>
 <translation id="3113284927548439113">Terceiro turno</translation>
 <translation id="3116158981186517402">Laminar</translation>
@@ -566,7 +569,6 @@
 <translation id="3531780078352352885">Páginas da tarefa</translation>
 <translation id="3533328374079021623">Caixa de e-mails 5</translation>
 <translation id="3539171420378717834">Manter uma cópia deste cartão neste dispositivo</translation>
-<translation id="3553513561058684206">Para você</translation>
 <translation id="3558573058928565255">Dia</translation>
 <translation id="3566021033012934673">Sua conexão não é particular</translation>
 <translation id="3574305903863751447"><ph name="CITY" />, <ph name="STATE" /> <ph name="COUNTRY" /></translation>
@@ -773,6 +775,7 @@
 <translation id="4390472908992056574">Brim</translation>
 <translation id="4406896451731180161">resultados da pesquisa</translation>
 <translation id="4408413947728134509">Cookies: <ph name="NUM_COOKIES" /></translation>
+<translation id="4414290883293381923">Você acabou de digitar sua senha em um site suspeito. O Chrome recomenda acessar <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, <ph name="WEBSITE_3" /> e outros sites em que você usa essa senha para mudá-la agora mesmo.</translation>
 <translation id="4415426530740016218">Endereço de Retirada</translation>
 <translation id="4424024547088906515">Este servidor não conseguiu provar que é <ph name="DOMAIN" />. O certificado de segurança não é confiável para o Chrome. Isso pode ser causado por uma configuração incorreta ou pela interceptação da sua conexão por um invasor.</translation>
 <translation id="443121186588148776">Porta serial</translation>
@@ -1204,6 +1207,7 @@
 <translation id="6353505687280762741">{COUNT,plural, =0{Nenhuma}=1{1 senha (para <ph name="DOMAIN_LIST" />, sincronizada)}=2{2 senhas (para <ph name="DOMAIN_LIST" />, sincronizadas)}one{# senha (para <ph name="DOMAIN_LIST" />, sincronizada)}other{# senhas (para <ph name="DOMAIN_LIST" />, sincronizadas)}}</translation>
 <translation id="6358450015545214790">O que são essas informações?</translation>
 <translation id="6361757823711327522">B7</translation>
+<translation id="6364095313648930329"><ph name="BEGIN_LINK" />Verificar o proxy, o firewall e a configuração de DNS seguro<ph name="END_LINK" /></translation>
 <translation id="6366710531182496394">Dois grampos no lado esquerdo</translation>
 <translation id="6377268785556383139">1 resultado para "<ph name="SEARCH_TEXT" />"</translation>
 <translation id="6380497234672085559">A0</translation>
@@ -1226,6 +1230,7 @@
 <translation id="6433595998831338502">A conexão com <ph name="HOST_NAME" /> foi recusada.</translation>
 <translation id="6434309073475700221">Descartar</translation>
 <translation id="6440503408713884761">Ignorada</translation>
+<translation id="6443406338865242315">quais extensões e plug-ins você instalou;</translation>
 <translation id="6446163441502663861">Kahu (Envelope)</translation>
 <translation id="6446608382365791566">Adicionar mais informações</translation>
 <translation id="6447842834002726250">Cookies</translation>
@@ -1335,6 +1340,7 @@
 <translation id="7012363358306927923">China UnionPay</translation>
 <translation id="7016992613359344582">Essas cobranças podem ser únicas ou recorrentes e talvez não sejam óbvias.</translation>
 <translation id="7029809446516969842">Senhas</translation>
+<translation id="7031646650991750659">quais apps do Google Play estão instalados.</translation>
 <translation id="7050187094878475250">Você tentou acessar <ph name="DOMAIN" />, mas o servidor apresentou um certificado cujo período de validade é extremamente longo, o que não é confiável.</translation>
 <translation id="705310974202322020">{NUM_CARDS,plural, =1{Não é possível salvar esse cartão no momento}one{Não é possível salvar esse cartão no momento}other{Não é possível salvar esses cartões no momento}}</translation>
 <translation id="7053983685419859001">Bloquear</translation>
@@ -1394,6 +1400,7 @@ Mais detalhes:
 <translation id="7319430975418800333">A3</translation>
 <translation id="7320336641823683070">Ajuda de conexão</translation>
 <translation id="733354035281974745">Substituição de conta local do dispositivo</translation>
+<translation id="7333654844024768166">Você acabou de digitar sua senha em um site suspeito. O Chromium recomenda acessar <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, <ph name="WEBSITE_3" /> e outros sites em que você usa essa senha para mudá-la agora mesmo.</translation>
 <translation id="7334320624316649418">&amp;Refazer reordenar</translation>
 <translation id="7337706099755338005">Não está disponível na sua plataforma.</translation>
 <translation id="733923710415886693">O certificado do servidor não foi divulgado por meio da Transparência dos certificados.</translation>

@@ -155,7 +155,7 @@
           (isDirectionalLockEnabled)
                                        setter:@selector
                                        (setDirectionalLockEnabled:)
-                                         size:sizeof(BOOL)];
+                                         type:@encode(BOOL)];
       [_propertiesStore
           registerObjectPropertyWithGetter:@selector(tintColor)
                                     setter:@selector(setTintColor:)

@@ -34,6 +34,7 @@
 #include "base/auto_reset.h"
 #include "base/debug/dump_without_crashing.h"
 #include "base/feature_list.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/time/time.h"
 #include "services/network/public/cpp/request_mode.h"
 #include "third_party/blink/public/common/features.h"
@@ -97,13 +98,12 @@ namespace {
 constexpr base::TimeDelta kKeepaliveLoadersTimeout =
     base::TimeDelta::FromSeconds(30);
 
-#define DEFINE_SINGLE_RESOURCE_HISTOGRAM(prefix, name)                      \
-  case ResourceType::k##name: {                                             \
-    DEFINE_THREAD_SAFE_STATIC_LOCAL(                                        \
-        EnumerationHistogram, _single_resource_histogram,                   \
-        ("Blink.MemoryCache.RevalidationPolicy." prefix #name, kLoad + 1)); \
-    _single_resource_histogram.Count(policy);                               \
-    break;                                                                  \
+#define RESOURCE_HISTOGRAM_PREFIX "Blink.MemoryCache.RevalidationPolicy."
+
+#define DEFINE_SINGLE_RESOURCE_HISTOGRAM(prefix, name)                         \
+  case ResourceType::k##name: {                                                \
+    UMA_HISTOGRAM_ENUMERATION(RESOURCE_HISTOGRAM_PREFIX prefix #name, policy); \
+    break;                                                                     \
   }
 
 #define DEFINE_RESOURCE_HISTOGRAM(prefix)                    \
@@ -329,7 +329,7 @@ ResourceFetcherInit::ResourceFetcherInit(
     FetchContext* context,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
     ResourceFetcher::LoaderFactory* loader_factory)
-    : properties(properties),
+    : properties(&properties),
       context(context),
       task_runner(std::move(task_runner)),
       loader_factory(loader_factory) {
@@ -512,17 +512,13 @@ ResourceLoadPriority ResourceFetcher::ComputeLoadPriority(
 
   if (properties_->IsSubframeDeprioritizationEnabled()) {
     if (properties_->IsMainFrame()) {
-      DEFINE_STATIC_LOCAL(
-          EnumerationHistogram, main_frame_priority_histogram,
-          ("LowPriorityIframes.MainFrameRequestPriority",
-           static_cast<int>(ResourceLoadPriority::kHighest) + 1));
-      main_frame_priority_histogram.Count(static_cast<int>(priority));
+      UMA_HISTOGRAM_ENUMERATION(
+          "LowPriorityIframes.MainFrameRequestPriority", priority,
+          static_cast<int>(ResourceLoadPriority::kHighest) + 1);
     } else {
-      DEFINE_STATIC_LOCAL(
-          EnumerationHistogram, iframe_priority_histogram,
-          ("LowPriorityIframes.IframeRequestPriority",
-           static_cast<int>(ResourceLoadPriority::kHighest) + 1));
-      iframe_priority_histogram.Count(static_cast<int>(priority));
+      UMA_HISTOGRAM_ENUMERATION(
+          "LowPriorityIframes.IframeRequestPriority", priority,
+          static_cast<int>(ResourceLoadPriority::kHighest) + 1);
       // When enabled, the priority of all resources in subframe is dropped.
       // Non-delayable resources are assigned a priority of kLow, and the rest
       // of them are assigned a priority of kLowest. This ensures that if the
@@ -544,10 +540,10 @@ ResourceFetcher::ResourceFetcher(const ResourceFetcherInit& init)
       context_(init.context),
       task_runner_(init.task_runner),
       use_counter_(init.use_counter
-                       ? init.use_counter.Get()
+                       ? init.use_counter
                        : MakeGarbageCollected<DetachableUseCounter>(nullptr)),
       console_logger_(init.console_logger
-                          ? init.console_logger.Get()
+                          ? init.console_logger
                           : MakeGarbageCollected<DetachableConsoleLogger>()),
       loader_factory_(init.loader_factory),
       scheduler_(MakeGarbageCollected<ResourceLoadScheduler>(
@@ -610,7 +606,7 @@ bool ResourceFetcher::ResourceNeedsLoad(Resource* resource,
            FetchParameters::kDeferImageLoad)) {
     return false;
   }
-  return policy != kUse || resource->StillNeedsLoad();
+  return policy != RevalidationPolicy::kUse || resource->StillNeedsLoad();
 }
 
 void ResourceFetcher::DidLoadResourceFromMemoryCache(
@@ -760,10 +756,8 @@ void ResourceFetcher::UpdateMemoryCacheStats(Resource* resource,
   if (is_static_data)
     return;
 
-  DEFINE_THREAD_SAFE_STATIC_LOCAL(
-      BooleanHistogram, resource_histogram,
-      ("Blink.ResourceFetcher.StaleWhileRevalidate"));
-  resource_histogram.Count(params.IsStaleRevalidation());
+  UMA_HISTOGRAM_BOOLEAN("Blink.ResourceFetcher.StaleWhileRevalidate",
+                        params.IsStaleRevalidation());
 
   if (params.IsSpeculativePreload() || params.IsLinkPreload()) {
     DEFINE_RESOURCE_HISTOGRAM("Preload.");
@@ -781,16 +775,9 @@ void ResourceFetcher::UpdateMemoryCacheStats(Resource* resource,
 
   // Async (and defer) scripts may have more cache misses, track them
   // separately. See https://crbug.com/1043679 for context.
-  if (params.Defer() != FetchParameters::DeferOption::kNoDefer) {
-    // This slightly awkward way avoids generating code which is never reached
-    // (and relying on the compiler to eliminate it, which is not guaranteed).
-    // The DEFINE_RESOURCE_HISTOGRAM() macro generates cases for all resources.
-    switch (factory.GetType()) {
-      DEFINE_SINGLE_RESOURCE_HISTOGRAM("Async", Script);
-
-      default:
-        break;
-    }
+  if (params.Defer() != FetchParameters::DeferOption::kNoDefer &&
+      factory.GetType() == ResourceType::kScript) {
+    UMA_HISTOGRAM_ENUMERATION(RESOURCE_HISTOGRAM_PREFIX "AsyncScript", policy);
   }
 }
 
@@ -1013,7 +1000,7 @@ Resource* ResourceFetcher::RequestResource(FetchParameters& params,
   }
 
   Resource* resource = nullptr;
-  RevalidationPolicy policy = kLoad;
+  RevalidationPolicy policy = RevalidationPolicy::kLoad;
 
   bool is_data_url = resource_request.Url().ProtocolIsData();
   bool is_static_data = is_data_url || archive_;
@@ -1036,7 +1023,7 @@ Resource* ResourceFetcher::RequestResource(FetchParameters& params,
   if (!is_stale_revalidation && !resource) {
     resource = MatchPreload(params, resource_type);
     if (resource) {
-      policy = kUse;
+      policy = RevalidationPolicy::kUse;
       // If |params| is for a blocking resource and a preloaded resource is
       // found, we may need to make it block the onload event.
       MakePreloadedResourceBlockOnloadIfNeeded(resource, params);
@@ -1053,16 +1040,16 @@ Resource* ResourceFetcher::RequestResource(FetchParameters& params,
   UpdateMemoryCacheStats(resource, policy, params, factory, is_static_data);
 
   switch (policy) {
-    case kReload:
+    case RevalidationPolicy::kReload:
       GetMemoryCache()->Remove(resource);
       FALLTHROUGH;
-    case kLoad:
+    case RevalidationPolicy::kLoad:
       resource = CreateResourceForLoading(params, factory);
       break;
-    case kRevalidate:
+    case RevalidationPolicy::kRevalidate:
       InitializeRevalidation(resource_request, resource);
       break;
-    case kUse:
+    case RevalidationPolicy::kUse:
       if (resource_request.AllowsStaleResponse() &&
           resource->ShouldRevalidateStaleResponse()) {
         ScheduleStaleRevalidate(resource);
@@ -1073,7 +1060,7 @@ Resource* ResourceFetcher::RequestResource(FetchParameters& params,
   DCHECK(resource);
   DCHECK_EQ(resource->GetType(), resource_type);
 
-  if (policy != kUse)
+  if (policy != RevalidationPolicy::kUse)
     resource->VirtualTimePauser() = std::move(pauser);
 
   if (client)
@@ -1081,7 +1068,7 @@ Resource* ResourceFetcher::RequestResource(FetchParameters& params,
 
   // TODO(yoav): It is not clear why preloads are exempt from this check. Can we
   // remove the exemption?
-  if (!params.IsSpeculativePreload() || policy != kUse) {
+  if (!params.IsSpeculativePreload() || policy != RevalidationPolicy::kUse) {
     // When issuing another request for a resource that is already in-flight
     // make sure to not demote the priority of the in-flight request. If the new
     // request isn't at the same priority as the in-flight request, only allow
@@ -1096,7 +1083,8 @@ Resource* ResourceFetcher::RequestResource(FetchParameters& params,
 
   // If only the fragment identifiers differ, it is the same resource.
   DCHECK(EqualIgnoringFragmentIdentifier(resource->Url(), params.Url()));
-  if (policy == kUse && resource->GetStatus() == ResourceStatus::kCached &&
+  if (policy == RevalidationPolicy::kUse &&
+      resource->GetStatus() == ResourceStatus::kCached &&
       !cached_resources_map_.Contains(
           MemoryCache::RemoveFragmentIdentifierIfNeeded(params.Url()))) {
     // Loaded from MemoryCache.
@@ -1131,7 +1119,7 @@ Resource* ResourceFetcher::RequestResource(FetchParameters& params,
     }
   }
 
-  if (policy != kUse)
+  if (policy != RevalidationPolicy::kUse)
     InsertAsPreloadIfNecessary(resource, params, resource_type);
 
   if (resource->InspectorId() != identifier ||
@@ -1431,13 +1419,13 @@ ResourceFetcher::DetermineRevalidationPolicy(
 
 const char* ResourceFetcher::GetNameFor(RevalidationPolicy policy) {
   switch (policy) {
-    case kUse:
+    case RevalidationPolicy::kUse:
       return "use";
-    case kRevalidate:
+    case RevalidationPolicy::kRevalidate:
       return "revalidate";
-    case kReload:
+    case RevalidationPolicy::kReload:
       return "reload";
-    case kLoad:
+    case RevalidationPolicy::kLoad:
       return "load";
   }
   NOTREACHED();
@@ -1452,11 +1440,13 @@ ResourceFetcher::DetermineRevalidationPolicyInternal(
   const ResourceRequest& request = fetch_params.GetResourceRequest();
 
   if (IsDownloadOrStreamRequest(request)) {
-    return std::make_pair(kReload, "It is for download or for streaming.");
+    return {RevalidationPolicy::kReload,
+            "It is for download or for streaming."};
   }
 
   if (IsImageResourceDisallowedToBeReused(existing_resource)) {
-    return std::make_pair(kReload, "Reload due to 'allow image' settings.");
+    return {RevalidationPolicy::kReload,
+            "Reload due to 'allow image' settings."};
   }
 
   // If the existing resource is loading and the associated fetcher is not equal
@@ -1464,8 +1454,8 @@ ResourceFetcher::DetermineRevalidationPolicyInternal(
   // happen in redirect handling.
   if (existing_resource.Loader() &&
       existing_resource.Loader()->Fetcher() != this) {
-    return std::make_pair(
-        kReload, "The existing resource is loading in a foreign fetcher.");
+    return {RevalidationPolicy::kReload,
+            "The existing resource is loading in a foreign fetcher."};
   }
 
   // It's hard to share a not-yet-referenced preloads via MemoryCache correctly.
@@ -1473,9 +1463,9 @@ ResourceFetcher::DetermineRevalidationPolicyInternal(
   // the memory cache could be used without this block.
   if ((fetch_params.IsLinkPreload() || fetch_params.IsSpeculativePreload()) &&
       existing_resource.IsUnusedPreload()) {
-    return std::make_pair(kReload,
-                          "The existing resource is an unused preload made "
-                          "from a foreign fetcher.");
+    return {RevalidationPolicy::kReload,
+            "The existing resource is an unused preload made "
+            "from a foreign fetcher."};
   }
 
   // Checks if the resource has an explicit policy about integrity metadata.
@@ -1494,7 +1484,7 @@ ResourceFetcher::DetermineRevalidationPolicyInternal(
   // uncommon case, however, as it implies two same-origin requests to the same
   // resource, but with different integrity metadata.
   if (existing_resource.MustRefetchDueToIntegrityMetadata(fetch_params)) {
-    return std::make_pair(kReload, "Reload due to resource integrity.");
+    return {RevalidationPolicy::kReload, "Reload due to resource integrity."};
   }
 
   // If the same URL has been loaded as a different type, we need to reload.
@@ -1503,35 +1493,36 @@ ResourceFetcher::DetermineRevalidationPolicyInternal(
     // We really should discard the new prefetch since the preload has more
     // specific type information! crbug.com/379893
     // fast/dom/HTMLLinkElement/link-and-subresource-test hits this case.
-    return std::make_pair(kReload, "Reload due to type mismatch.");
+    return {RevalidationPolicy::kReload, "Reload due to type mismatch."};
   }
 
   // If resource was populated from archive or data: url, use it.
   // This doesn't necessarily mean that |resource| was just created by using
   // ResourceForStaticData().
   if (is_static_data) {
-    return std::make_pair(kUse, "Use the existing static resource.");
+    return {RevalidationPolicy::kUse, "Use the existing static resource."};
   }
 
   if (existing_resource.CanReuse(fetch_params) != Resource::MatchStatus::kOk) {
-    return std::make_pair(kReload, "Reload due to Resource::CanReuse.");
+    return {RevalidationPolicy::kReload, "Reload due to Resource::CanReuse."};
   }
 
   // Don't reload resources while pasting.
   if (allow_stale_resources_) {
-    return std::make_pair(
-        kUse, "Use the existing resource due to |allow_stale_resources_|.");
+    return {RevalidationPolicy::kUse,
+            "Use the existing resource due to |allow_stale_resources_|."};
   }
 
   // FORCE_CACHE uses the cache no matter what.
   if (request.GetCacheMode() == mojom::FetchCacheMode::kForceCache) {
-    return std::make_pair(
-        kUse, "Use the existing resource due to cache-mode: 'force-cache'.");
+    return {RevalidationPolicy::kUse,
+            "Use the existing resource due to cache-mode: 'force-cache'."};
   }
 
   // Don't reuse resources with Cache-control: no-store.
   if (existing_resource.HasCacheControlNoStoreHeader()) {
-    return std::make_pair(kReload, "Reload due to cache-control: no-sotre.");
+    return {RevalidationPolicy::kReload,
+            "Reload due to cache-control: no-sotre."};
   }
 
   // During the initial load, avoid loading the same resource multiple times for
@@ -1544,25 +1535,25 @@ ResourceFetcher::DetermineRevalidationPolicyInternal(
         cached_resources_map_.Contains(
             MemoryCache::RemoveFragmentIdentifierIfNeeded(
                 existing_resource.Url()))) {
-      return std::make_pair(kUse,
-                            "Avoid making multiple requests for the same URL "
-                            "during the initial load.");
+      return {RevalidationPolicy::kUse,
+              "Avoid making multiple requests for the same URL "
+              "during the initial load."};
     }
     if (existing_resource.IsLoading()) {
-      return std::make_pair(
-          kUse, "Use the existing resource because it's being loaded.");
+      return {RevalidationPolicy::kUse,
+              "Use the existing resource because it's being loaded."};
     }
   }
 
   // RELOAD always reloads
   if (request.GetCacheMode() == mojom::FetchCacheMode::kBypassCache) {
-    return std::make_pair(kReload, "Reload due to cache-mode: 'reload'.");
+    return {RevalidationPolicy::kReload, "Reload due to cache-mode: 'reload'."};
   }
 
   // We'll try to reload the resource if it failed last time.
   if (existing_resource.ErrorOccurred()) {
-    return std::make_pair(
-        kReload, "Reload because the existing resource has failed loading.");
+    return {RevalidationPolicy::kReload,
+            "Reload because the existing resource has failed loading."};
   }
 
   // List of available images logic allows images to be re-used without cache
@@ -1570,18 +1561,19 @@ ResourceFetcher::DetermineRevalidationPolicyInternal(
   // same as the version in the current document.
   if (type == ResourceType::kImage &&
       &existing_resource == CachedResource(request.Url())) {
-    return std::make_pair(kUse,
-                          "Images can be reused without cache validation.");
+    return {RevalidationPolicy::kUse,
+            "Images can be reused without cache validation."};
   }
 
   if (existing_resource.MustReloadDueToVaryHeader(request)) {
-    return std::make_pair(kReload, "Reload due to vary header.");
+    return {RevalidationPolicy::kReload, "Reload due to vary header."};
   }
 
   // If any of the redirects in the chain to loading the resource were not
   // cacheable, we cannot reuse our cached resource.
   if (!existing_resource.CanReuseRedirectChain()) {
-    return std::make_pair(kReload, "Reload due to an uncacheable redirect.");
+    return {RevalidationPolicy::kReload,
+            "Reload due to an uncacheable redirect."};
   }
 
   // Check if the cache headers requires us to revalidate (cache expiration for
@@ -1593,8 +1585,8 @@ ResourceFetcher::DetermineRevalidationPolicyInternal(
     // Revalidation is harmful for non-matched preloads because it may lead to
     // sharing one preloaded resource among multiple ResourceFetchers.
     if (existing_resource.IsUnusedPreload()) {
-      return std::make_pair(
-          kReload, "Revalidation is harmful for non-matched preloads.");
+      return {RevalidationPolicy::kReload,
+              "Revalidation is harmful for non-matched preloads."};
     }
 
     // See if the resource has usable ETag or Last-modified headers. If the page
@@ -1613,20 +1605,19 @@ ResourceFetcher::DetermineRevalidationPolicyInternal(
       // |Use| policy should be applied to subsequent requests.
       if (existing_resource.IsCacheValidator()) {
         DCHECK(existing_resource.StillNeedsLoad());
-        return std::make_pair(
-            kUse,
-            "Merged to the revalidate request which has not yet started.");
+        return {RevalidationPolicy::kUse,
+                "Merged to the revalidate request which has not yet started."};
       }
-      return std::make_pair(kRevalidate, "");
+      return {RevalidationPolicy::kRevalidate, ""};
     }
 
     // No, must reload.
-    return std::make_pair(kReload, "Reload due to missing cache validators.");
+    return {RevalidationPolicy::kReload,
+            "Reload due to missing cache validators."};
   }
 
-  return std::make_pair(
-      kUse,
-      "Use the existing resource because there is no reason not to do so.");
+  return {RevalidationPolicy::kUse,
+          "Use the existing resource because there is no reason not to do so."};
 }
 
 void ResourceFetcher::SetAutoLoadImages(bool enable) {

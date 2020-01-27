@@ -60,9 +60,9 @@ class CORE_EXPORT ElementResolveContext {
   }
 
  private:
-  Member<Element> element_;
-  Member<ContainerNode> parent_node_;
-  Member<ContainerNode> layout_parent_;
+  Element* element_;
+  ContainerNode* parent_node_;
+  ContainerNode* layout_parent_;
   scoped_refptr<const ComputedStyle> root_element_style_;
   EInsideLink element_link_state_;
   bool distributed_to_insertion_point_;

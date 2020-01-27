@@ -96,7 +96,9 @@ class ScriptExecutor : public ActionDelegate,
   };
 
   using RunScriptCallback = base::OnceCallback<void(const Result&)>;
-  void Run(RunScriptCallback callback);
+  void Run(const UserData* user_data, RunScriptCallback callback);
+
+  const UserData* GetUserData() const override;
 
   // Override ScriptExecutorDelegate::Listener
   void OnNavigationStateChanged() override;
@@ -202,7 +204,6 @@ class ScriptExecutor : public ActionDelegate,
   void Shutdown() override;
   void Close() override;
   void Restart() override;
-  ClientMemory* GetClientMemory() override;
   autofill::PersonalDataManager* GetPersonalDataManager() override;
   WebsiteLoginFetcher* GetWebsiteLoginFetcher() override;
   content::WebContents* GetWebContents() override;
@@ -434,6 +435,8 @@ class ScriptExecutor : public ActionDelegate,
     bool direct_action = false;
   };
   CurrentActionData current_action_data_;
+
+  const UserData* user_data_ = nullptr;
 
   base::WeakPtrFactory<ScriptExecutor> weak_ptr_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(ScriptExecutor);

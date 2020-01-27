@@ -32,13 +32,20 @@ grit("components_resources") {
   grit_flags = [
     "-E",
     "about_credits_file=" + rebase_path(about_credits_file, root_build_dir),
+    "-E",
+    "root_gen_dir=" + rebase_path(root_gen_dir, root_build_dir),
   ]
+
   defines = [
     "enable_basic_printing=$enable_basic_printing",
     "enable_print_preview=$enable_print_preview",
   ]
 
   deps = [ ":about_credits" ]
+
+  if (!is_ios) {
+    deps += [ "//components/resources/ssl/ssl_error_assistant:make_ssl_error_assistant_protobuf" ]
+  }
 }
 
 grit("dev_ui_components_resources") {

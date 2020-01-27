@@ -290,7 +290,6 @@
 <translation id="2218879909401188352">Angreifer auf der Website <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> könnten gefährliche Apps installieren, die Ihr Gerät beschädigen, Ihrer Mobilfunkrechnung versteckte Kosten hinzufügen oder Ihre personenbezogenen Daten stehlen könnten. <ph name="BEGIN_LEARN_MORE_LINK" />Weitere Informationen<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="2224337661447660594">Kein Internet</translation>
 <translation id="2230458221926704099">Beheben Sie den Verbindungsfehler mithilfe der <ph name="BEGIN_LINK" />Diagnose-App<ph name="END_LINK" /></translation>
-<translation id="22320125457191592">Für mich</translation>
 <translation id="2239100178324503013">Jetzt senden</translation>
 <translation id="2248949050832152960">WebAuthn verwenden</translation>
 <translation id="2250931979407627383">Mehrere Heftklammern links</translation>
@@ -569,7 +568,6 @@
 <translation id="3531780078352352885">Auftragsblätter</translation>
 <translation id="3533328374079021623">Ablage 5</translation>
 <translation id="3539171420378717834">Kopie dieser Karte auf diesem Gerät speichern</translation>
-<translation id="3553513561058684206">Für mich</translation>
 <translation id="3558573058928565255">Tageszeit</translation>
 <translation id="3566021033012934673">Dies ist keine sichere Verbindung</translation>
 <translation id="3574305903863751447"><ph name="CITY" />, <ph name="STATE" /> <ph name="COUNTRY" /></translation>

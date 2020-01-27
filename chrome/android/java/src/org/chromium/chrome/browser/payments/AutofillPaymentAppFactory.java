@@ -23,12 +23,13 @@ import java.util.Set;
 
 /** Creates one payment app per card on file in Autofill. */
 public class AutofillPaymentAppFactory implements PaymentAppFactoryInterface {
-    private final Handler mHandler = new Handler();
+    private Handler mHandler;
 
     // PaymentAppFactoryInterface implementation.
     @Override
     public void create(PaymentAppFactoryDelegate delegate) {
         Creator creator = new Creator(delegate);
+        if (mHandler == null) mHandler = new Handler();
         mHandler.post(() -> {
             boolean canMakePayment = creator.createPaymentApps();
             delegate.onCanMakePaymentCalculated(canMakePayment);

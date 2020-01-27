@@ -18,7 +18,8 @@ enum class IsolationOptInHints : unsigned {
   PREFER_ISOLATED_EVENT_LOOP = 0x1,
   PREFER_ISOLATED_MEMORY = 0x2,
   FOR_SIDE_CHANNEL_PROTECTION = 0x4,
-  FOR_MEMORY_ISOLATION = 0x8
+  FOR_MEMORY_ISOLATION = 0x8,
+  ALL_HINTS_ACTIVE = 0xF
 };
 
 // Converts hint strings into their corresponding IsolationOptInHints values.

@@ -37,6 +37,10 @@ class PasswordPendingView : public PasswordBubbleViewBase,
  private:
   ~PasswordPendingView() override;
 
+  // PasswordBubbleViewBase
+  PasswordBubbleControllerBase* GetController() override;
+  const PasswordBubbleControllerBase* GetController() const override;
+
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 

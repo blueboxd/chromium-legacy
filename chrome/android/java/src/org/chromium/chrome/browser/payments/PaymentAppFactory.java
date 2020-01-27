@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.payments;
 
 import android.support.v4.util.ArrayMap;
-import android.text.TextUtils;
 
 import androidx.annotation.VisibleForTesting;
 
@@ -14,7 +13,6 @@ import org.chromium.chrome.browser.payments.PaymentApp.InstrumentsCallback;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.payments.mojom.PaymentMethodData;
 
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -78,10 +76,6 @@ public class PaymentAppFactory implements PaymentAppFactoryInterface {
 
         if (ChromeFeatureList.isEnabled(ChromeFeatureList.ANDROID_PAYMENT_APPS)) {
             mAdditionalFactories.add(new AndroidPaymentAppFactory());
-        }
-
-        if (ChromeFeatureList.isEnabled(ChromeFeatureList.SERVICE_WORKER_PAYMENT_APPS)) {
-            mAdditionalFactories.add(new ServiceWorkerPaymentAppBridge());
         }
     }
 
@@ -178,8 +172,6 @@ public class PaymentAppFactory implements PaymentAppFactoryInterface {
         public void onAllPaymentAppsCreated() {
             assert mPendingApps == null;
 
-            dedupePaymentApps();
-
             mPendingApps = new ArrayList<>(mApps);
 
             Map<PaymentApp, Map<String, PaymentMethodData>> queryApps = new ArrayMap<>();
@@ -211,60 +203,6 @@ public class PaymentAppFactory implements PaymentAppFactoryInterface {
                         mDelegate.getParams().getPaymentRequestOrigin(),
                         mDelegate.getParams().getCertificateChain(),
                         mDelegate.getParams().getModifiers(), /*callback=*/this);
-            }
-        }
-
-        // Dedupe payment apps according to preferred related applications and can deduped
-        // application. Note that this is only work for deduping service worker based payment app
-        // from native Android payment app for now. The identifier of a native Android payment app
-        // is its package name. The identifier of a service worker based payment app is its
-        // registration scope which equals to corresponding native android payment app's default
-        // method name.
-        private void dedupePaymentApps() {
-            // Dedupe ServiceWorkerPaymentApp according to preferred related applications from
-            // ServiceWorkerPaymentApps.
-            Set<String> appIdentifiers = new HashSet<>();
-            for (int i = 0; i < mApps.size(); i++) {
-                appIdentifiers.add(mApps.get(i).getAppIdentifier());
-            }
-            List<PaymentApp> appsToDedupe = new ArrayList<>();
-            for (int i = 0; i < mApps.size(); i++) {
-                Set<String> applicationIds = mApps.get(i).getPreferredRelatedApplicationIds();
-                if (applicationIds == null || applicationIds.isEmpty()) continue;
-                for (String id : applicationIds) {
-                    if (appIdentifiers.contains(id)) {
-                        appsToDedupe.add(mApps.get(i));
-                        break;
-                    }
-                }
-            }
-            if (!appsToDedupe.isEmpty()) mApps.removeAll(appsToDedupe);
-
-            // Dedupe ServiceWorkerPaymentApp according to can deduped applications from native
-            // android payment apps.
-            Set<String> canDedupedApplicationIds = new HashSet<>();
-            for (int i = 0; i < mApps.size(); i++) {
-                URI canDedupedApplicationIdUri = mApps.get(i).getCanDedupedApplicationId();
-                if (canDedupedApplicationIdUri == null) continue;
-                String canDedupedApplicationId = canDedupedApplicationIdUri.toString();
-                if (TextUtils.isEmpty(canDedupedApplicationId)) continue;
-                canDedupedApplicationIds.add(canDedupedApplicationId);
-                // Add the trailing slash, because Service worker registration scope is a directory
-                // path that must end with a '/' (e.g., "https://google.com/pay/"), whereas
-                // "canDedupedApplicationIdUri" is derived from the native Android payment app's
-                // default URL-based payment method name that may not necessarily specify the
-                // trailing slash (e.g., "https://google.com/pay").
-                if (canDedupedApplicationId.charAt(canDedupedApplicationId.length() - 1) != '/') {
-                    canDedupedApplicationIds.add(canDedupedApplicationId + '/');
-                }
-            }
-            for (String appId : canDedupedApplicationIds) {
-                for (int i = 0; i < mApps.size(); i++) {
-                    if (appId.equals(mApps.get(i).getAppIdentifier())) {
-                        mApps.remove(i);
-                        break;
-                    }
-                }
             }
         }
 

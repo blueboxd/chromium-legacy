@@ -251,7 +251,7 @@ class ScopedPaintTimingDetectorBlockPaintHook {
 
     const LayoutBoxModelObject& aggregator_;
     const PropertyTreeState& property_tree_state_;
-    Member<TextPaintTimingDetector> detector_;
+    TextPaintTimingDetector* detector_;
     IntRect aggregated_visual_rect_;
   };
   base::Optional<Data> data_;

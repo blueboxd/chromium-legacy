@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/events/animation_playback_event.h"
 
+#include "third_party/blink/renderer/bindings/core/v8/v8_animation_playback_event_init.h"
 #include "third_party/blink/renderer/core/animation/timing.h"
 #include "third_party/blink/renderer/core/event_interface_names.h"
 

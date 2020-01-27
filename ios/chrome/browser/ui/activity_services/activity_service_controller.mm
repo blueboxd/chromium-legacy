@@ -125,7 +125,7 @@ NSString* const kActivityServicesSnackbarCategory =
 }
 
 - (void)shareWithData:(ShareToData*)data
-            browserState:(ios::ChromeBrowserState*)browserState
+            browserState:(ChromeBrowserState*)browserState
               dispatcher:(id<BrowserCommands, SnackbarCommands>)dispatcher
         passwordProvider:(id<ActivityServicePassword>)passwordProvider
         positionProvider:(id<ActivityServicePositioner>)positionProvider

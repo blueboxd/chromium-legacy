@@ -56,7 +56,7 @@ class StatusIconLinuxWrapper : public StatusIcon,
  private:
   enum StatusIconType {
     kTypeDbus,
-    kTypeX11,
+    kTypeWindowed,
     kTypeNone,
   };
 

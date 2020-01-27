@@ -38,9 +38,9 @@
 using net::test_server::BasicHttpResponse;
 using net::test_server::HttpRequest;
 using net::test_server::HttpResponse;
+using testing::_;
 using testing::Eq;
 using testing::Field;
-using testing::_;
 
 namespace {
 

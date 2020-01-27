@@ -101,6 +101,8 @@
 #include "chrome/browser/transition_manager/full_browser_transition_manager.h"
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
 #include "chrome/browser/ui/webui/prefs_internals_source.h"
+#include "chrome/browser/updates/announcement_notification/announcement_notification_service.h"
+#include "chrome/browser/updates/announcement_notification/announcement_notification_service_factory.h"
 #include "chrome/common/buildflags.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_constants.h"
@@ -724,6 +726,9 @@ void ProfileImpl::DoFinalInit() {
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_PROFILE_CREATED, content::Source<Profile>(this),
       content::NotificationService::NoDetails());
+
+  AnnouncementNotificationServiceFactory::GetForProfile(this)
+      ->MaybeShowNotification();
 }
 
 base::FilePath ProfileImpl::last_selected_directory() {

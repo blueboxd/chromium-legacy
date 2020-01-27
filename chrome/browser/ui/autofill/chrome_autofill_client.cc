@@ -65,9 +65,9 @@
 #include "ui/gfx/geometry/rect.h"
 
 #if defined(OS_ANDROID)
-#include "chrome/browser/android/chrome_feature_list.h"
 #include "chrome/browser/android/preferences/autofill/autofill_profile_bridge.h"
 #include "chrome/browser/android/signin/signin_promo_util_android.h"
+#include "chrome/browser/flags/android/chrome_feature_list.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/ui/android/autofill/autofill_logger_android.h"
 #include "chrome/browser/ui/android/autofill/card_expiration_date_fix_flow_view_android.h"

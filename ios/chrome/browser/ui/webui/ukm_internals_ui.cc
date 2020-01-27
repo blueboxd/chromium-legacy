@@ -81,7 +81,7 @@ UkmInternalsUI::UkmInternalsUI(web::WebUIIOS* web_ui)
   web_ui->AddMessageHandler(std::make_unique<UkmMessageHandler>(ukm_service));
 
   // Set up the chrome://ukm/ source.
-  web::WebUIIOSDataSource::Add(ios::ChromeBrowserState::FromWebUIIOS(web_ui),
+  web::WebUIIOSDataSource::Add(ChromeBrowserState::FromWebUIIOS(web_ui),
                                CreateUkmInternalsUIHTMLSource());
 }
 

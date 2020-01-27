@@ -2486,6 +2486,10 @@ void LayerTreeHostImpl::DidDrawAllLayers(const FrameData& frame) {
 
 int LayerTreeHostImpl::RequestedMSAASampleCount() const {
   if (settings_.gpu_rasterization_msaa_sample_count == -1) {
+    // On "low-end" devices use 4 samples per pixel to save memory.
+    if (base::SysInfo::IsLowEndDevice())
+      return 4;
+
     // Use the most up-to-date version of device_scale_factor that we have.
     float device_scale_factor = pending_tree_
                                     ? pending_tree_->device_scale_factor()

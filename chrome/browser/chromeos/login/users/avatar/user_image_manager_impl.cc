@@ -520,8 +520,9 @@ void UserImageManagerImpl::Job::SaveImageAndUpdateLocalState(
 
   base::PostTaskAndReplyWithResult(
       parent_->background_task_runner_.get(), FROM_HERE,
-      base::Bind(&SaveAndDeleteImage, image_bytes, image_path_, old_image_path),
-      base::Bind(&Job::OnSaveImageDone, weak_factory_.GetWeakPtr()));
+      base::BindOnce(&SaveAndDeleteImage, image_bytes, image_path_,
+                     old_image_path),
+      base::BindOnce(&Job::OnSaveImageDone, weak_factory_.GetWeakPtr()));
 }
 
 void UserImageManagerImpl::Job::OnSaveImageDone(bool success) {

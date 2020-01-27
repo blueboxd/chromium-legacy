@@ -12,7 +12,7 @@
 
 // static
 UrlLoadingNotifier* UrlLoadingNotifierFactory::GetForBrowserState(
-    ios::ChromeBrowserState* browser_state) {
+    ChromeBrowserState* browser_state) {
   return static_cast<UrlLoadingNotifier*>(
       GetInstance()->GetServiceForBrowserState(browser_state, true));
 }

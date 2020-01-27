@@ -1349,6 +1349,9 @@
         android:name="com.google.ipc.invalidation.ticl.android2.AndroidInternalScheduler$AlarmReceiver"/>
     <receiver
         android:exported="false"
+        android:name="org.chromium.chrome.browser.announcement.AnnouncementNotificationManager$Receiver"/>
+    <receiver
+        android:exported="false"
         android:name="org.chromium.chrome.browser.bookmarkswidget.BookmarkWidgetProxy"/>
     <receiver
         android:exported="false"

@@ -66,13 +66,17 @@ class CompositorFrameReportingControllerTest : public testing::Test {
   }
 
   void SimulateCommit(std::unique_ptr<BeginMainFrameMetrics> blink_breakdown) {
-    if (!reporting_controller_.reporters()[CompositorFrameReportingController::
-                                               PipelineStage::kBeginMainFrame])
+    if (!reporting_controller_
+             .reporters()[CompositorFrameReportingController::PipelineStage::
+                              kBeginMainFrame]) {
+      begin_main_start_ = base::TimeTicks::Now();
       SimulateBeginMainFrame();
+    }
     CHECK(
         reporting_controller_.reporters()[CompositorFrameReportingController::
                                               PipelineStage::kBeginMainFrame]);
-    reporting_controller_.SetBlinkBreakdown(std::move(blink_breakdown));
+    reporting_controller_.SetBlinkBreakdown(std::move(blink_breakdown),
+                                            begin_main_start_);
     reporting_controller_.WillCommit();
     reporting_controller_.DidCommit();
   }
@@ -110,6 +114,7 @@ class CompositorFrameReportingControllerTest : public testing::Test {
   TestCompositorFrameReportingController reporting_controller_;
   viz::BeginFrameId current_id_;
   viz::BeginFrameId last_activated_id_;
+  base::TimeTicks begin_main_start_;
 
  private:
   viz::FrameTokenGenerator next_token_;
@@ -352,6 +357,8 @@ TEST_F(CompositorFrameReportingControllerTest, BlinkBreakdown) {
   histogram_tester.ExpectUniqueSample(
       "CompositorLatency.SendBeginMainFrameToCommit.UpdateLayers",
       base::TimeDelta::FromMicroseconds(1).InMilliseconds(), 1);
+  histogram_tester.ExpectTotalCount(
+      "CompositorLatency.SendBeginMainFrameToCommit.BeginMainSentToStarted", 1);
 }
 
 }  // namespace

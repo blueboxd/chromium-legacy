@@ -37,6 +37,8 @@ namespace extensions {
 namespace {
 
 constexpr char kInvalidPrinterIdError[] = "Invalid printer ID";
+constexpr char kNoActivePrintJobWithIdError[] =
+    "No active print job with given ID";
 
 }  // namespace
 
@@ -81,6 +83,7 @@ PrintingAPIHandler::PrintingAPIHandler(
       extension_registry_(extension_registry),
       print_job_manager_(print_job_manager),
       printers_manager_(printers_manager),
+      print_job_controller_(print_job_manager),
       printer_capabilities_provider_(printers_manager,
                                      std::move(printer_configurer)),
       cups_wrapper_(std::move(cups_wrapper)),
@@ -133,6 +136,24 @@ void PrintingAPIHandler::OnPrintJobSubmitted(
   base::SequencedTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::BindOnce(std::move(callback), status, std::move(job_id), error));
+}
+
+base::Optional<std::string> PrintingAPIHandler::CancelJob(
+    const std::string& extension_id,
+    const std::string& job_id) {
+  auto it = print_jobs_extension_ids_.find(job_id);
+  // If there was no print job with specified id sent by the extension return
+  // an error.
+  if (it == print_jobs_extension_ids_.end() || it->second != extension_id)
+    return kNoActivePrintJobWithIdError;
+
+  // If we can't cancel the print job (e.g. it's in terminated state) return an
+  // error.
+  if (!print_job_controller_.CancelPrintJob(job_id))
+    return kNoActivePrintJobWithIdError;
+
+  // Return no error otherwise.
+  return base::nullopt;
 }
 
 std::vector<api::printing::Printer> PrintingAPIHandler::GetPrinters() {
@@ -226,7 +247,10 @@ void PrintingAPIHandler::OnPrintJobCreated(
   DispatchJobStatusChangedEvent(api::printing::JOB_STATUS_PENDING, job);
   if (!job || job->source() != printing::PrintJob::Source::EXTENSION)
     return;
-  print_job_controller_.OnPrintJobCreated(job->source_id(), job->GetUniqueId());
+  const std::string& extension_id = job->source_id();
+  const std::string& job_id = job->GetUniqueId();
+  print_jobs_extension_ids_[job_id] = extension_id;
+  print_job_controller_.OnPrintJobCreated(extension_id, job_id, job);
 }
 
 void PrintingAPIHandler::OnPrintJobStarted(
@@ -271,7 +295,9 @@ void PrintingAPIHandler::DispatchJobStatusChangedEvent(
 void PrintingAPIHandler::FinishJob(base::WeakPtr<chromeos::CupsPrintJob> job) {
   if (!job || job->source() != printing::PrintJob::Source::EXTENSION)
     return;
-  print_job_controller_.OnPrintJobFinished(job->GetUniqueId());
+  const std::string& job_id = job->GetUniqueId();
+  print_jobs_extension_ids_.erase(job_id);
+  print_job_controller_.OnPrintJobFinished(job_id);
 }
 
 template <>

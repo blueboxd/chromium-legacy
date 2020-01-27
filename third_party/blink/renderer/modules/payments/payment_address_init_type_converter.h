@@ -7,7 +7,7 @@
 
 #include "components/payments/mojom/payment_request_data.mojom-blink.h"
 #include "mojo/public/cpp/bindings/type_converter.h"
-#include "third_party/blink/renderer/modules/payments/payment_address_init.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_payment_address_init.h"
 
 namespace mojo {
 

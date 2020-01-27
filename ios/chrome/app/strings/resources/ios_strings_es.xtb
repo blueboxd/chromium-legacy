@@ -192,6 +192,7 @@
 <translation id="3474649192738347024">Se han rellenado formularios.</translation>
 <translation id="3478058380795961209">Mes de caducidad</translation>
 <translation id="3482959374254649722">Sincronizando tus pestañas...</translation>
+<translation id="3484946776651937681">Abrir en la carpeta de descargas</translation>
 <translation id="3493531032208478708"><ph name="BEGIN_LINK" />Más información<ph name="END_LINK" /> sobre el contenido sugerido</translation>
 <translation id="3494788280727468875">Confirma que quieres borrar los datos de navegación</translation>
 <translation id="35083190962747987">Abrir ${url}</translation>
@@ -537,6 +538,7 @@ Tus datos se cifraron con tu frase de contraseña de sincronización el <ph name
 <translation id="8319076807703933069">Nueva búsqueda</translation>
 <translation id="8323906514956095947">Mantén pulsado el botón para ver más opciones de pestañas</translation>
 <translation id="8328777765163860529">Cerrar todo</translation>
+<translation id="8386068868580335421">Restablecer</translation>
 <translation id="8407669440184693619">No se han encontrado contraseñas para este sitio web</translation>
 <translation id="842017693807136194">Has iniciado sesión como</translation>
 <translation id="8428045167754449968">Ciudad/Localidad</translation>

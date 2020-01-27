@@ -11,10 +11,11 @@
 #include "third_party/blink/public/platform/web_crypto.h"
 #include "third_party/blink/public/platform/web_crypto_key_algorithm.h"
 #include "third_party/blink/renderer/bindings/modules/v8/serialization/web_crypto_sub_tags.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_landmark.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_point_2d.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/modules/crypto/crypto_key.h"
 #include "third_party/blink/renderer/modules/filesystem/dom_file_system.h"
-#include "third_party/blink/renderer/modules/imagecapture/point_2d.h"
 #include "third_party/blink/renderer/modules/native_file_system/native_file_system_directory_handle.h"
 #include "third_party/blink/renderer/modules/native_file_system/native_file_system_file_handle.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_certificate.h"
@@ -22,7 +23,6 @@
 #include "third_party/blink/renderer/modules/shapedetection/detected_barcode.h"
 #include "third_party/blink/renderer/modules/shapedetection/detected_face.h"
 #include "third_party/blink/renderer/modules/shapedetection/detected_text.h"
-#include "third_party/blink/renderer/modules/shapedetection/landmark.h"
 
 namespace blink {
 

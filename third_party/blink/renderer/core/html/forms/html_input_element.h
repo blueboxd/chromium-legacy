@@ -26,6 +26,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_FORMS_HTML_INPUT_ELEMENT_H_
 
 #include "base/gtest_prod_util.h"
+#include "third_party/blink/public/mojom/input/focus_type.mojom-blink-forward.h"
 #include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/create_element_flags.h"
@@ -404,7 +405,7 @@ class CORE_EXPORT HTMLInputElement
   void HandleBlurEvent() final;
   void DispatchFocusInEvent(const AtomicString& event_type,
                             Element* old_focused_element,
-                            WebFocusType,
+                            mojom::blink::FocusType,
                             InputDeviceCapabilities* source_capabilities) final;
 
   bool IsOptionalFormControl() const final { return !IsRequiredFormControl(); }

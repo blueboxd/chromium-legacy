@@ -7,11 +7,11 @@
 
 #import <Foundation/Foundation.h>
 
-#include "ios/chrome/browser/browser_state/chrome_browser_state_forward.h"
 #import "ios/chrome/browser/ui/main/browser_interface_provider.h"
 
 class Browser;
 @class BrowserViewController;
+class ChromeBrowserState;
 @class TabModel;
 
 // Test double for BrowserInterface implementors. All properties are writable,
@@ -21,7 +21,7 @@ class Browser;
 @property(nonatomic, readwrite) BrowserViewController* bvc;
 @property(nonatomic, readwrite) TabModel* tabModel;
 @property(nonatomic, readwrite) Browser* browser;
-@property(nonatomic, readwrite) ios::ChromeBrowserState* browserState;
+@property(nonatomic, readwrite) ChromeBrowserState* browserState;
 @property(nonatomic, readwrite) BOOL incognito;
 @end
 

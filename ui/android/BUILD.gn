@@ -319,6 +319,8 @@ android_library("ui_full_java") {
     "java/src/org/chromium/ui/touchless/CursorObserver.java",
     "java/src/org/chromium/ui/touchless/TouchlessEventHandler.java",
     "java/src/org/chromium/ui/util/TokenHolder.java",
+    "java/src/org/chromium/ui/vr/VrModeObserver.java",
+    "java/src/org/chromium/ui/vr/VrModeProvider.java",
     "java/src/org/chromium/ui/widget/AnchoredPopupWindow.java",
     "java/src/org/chromium/ui/widget/ButtonCompat.java",
     "java/src/org/chromium/ui/widget/CheckableImageView.java",

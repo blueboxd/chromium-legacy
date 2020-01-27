@@ -1911,7 +1911,9 @@ bool Editor::IsCommandEnabled(const String& command_name) const {
 }
 
 EditorCommand::EditorCommand()
-    : command_(nullptr), source_(EditorCommandSource::kMenuOrKeyBinding) {}
+    : command_(nullptr),
+      source_(EditorCommandSource::kMenuOrKeyBinding),
+      frame_(nullptr) {}
 
 EditorCommand::EditorCommand(const EditorInternalCommand* command,
                              EditorCommandSource source,
@@ -1972,7 +1974,7 @@ bool EditorCommand::IsSupported() const {
     case EditorCommandSource::kMenuOrKeyBinding:
       return true;
     case EditorCommandSource::kDOM:
-      return command_->is_supported_from_dom(frame_.Get());
+      return command_->is_supported_from_dom(frame_);
   }
   NOTREACHED();
   return false;

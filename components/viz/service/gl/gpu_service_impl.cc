@@ -178,6 +178,10 @@ GpuServiceImpl::GpuServiceImpl(
   GrContextOptions context_options;
   context_options.fGlyphCacheTextureMaximumBytes =
       max_glyph_cache_texture_bytes;
+  if (gpu_preferences_.force_max_texture_size) {
+    context_options.fMaxTextureSizeOverride =
+        gpu_preferences_.force_max_texture_size;
+  }
 
 #if BUILDFLAG(ENABLE_VULKAN)
   if (vulkan_implementation_) {
@@ -846,6 +850,20 @@ void GpuServiceImpl::GpuSwitched(gl::GpuPreference active_gpu_heuristic) {
   if (!in_host_process())
     ui::GpuSwitchingManager::GetInstance()->NotifyGpuSwitched(
         active_gpu_heuristic);
+}
+
+void GpuServiceImpl::DisplayAdded() {
+  DVLOG(1) << "GPU: A monitor is plugged in";
+
+  if (!in_host_process())
+    ui::GpuSwitchingManager::GetInstance()->NotifyDisplayAdded();
+}
+
+void GpuServiceImpl::DisplayRemoved() {
+  DVLOG(1) << "GPU: A monitor is unplugged ";
+
+  if (!in_host_process())
+    ui::GpuSwitchingManager::GetInstance()->NotifyDisplayRemoved();
 }
 
 void GpuServiceImpl::DestroyAllChannels() {

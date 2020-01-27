@@ -20,6 +20,7 @@
 <translation id="2915596697727466327">Chromium menggunakan Face ID untuk memastikan akses terotorisasi ke sandi Anda.</translation>
 <translation id="3256316712990552818">Disalin ke Chromium</translation>
 <translation id="3805899903892079518">Chromium tidak memiliki akses ke foto atau video Anda. Izinkan akses di iOS Settings &gt; Privacy &gt; Photos.</translation>
+<translation id="4287098963058057749">Persyaratan Layanan Chromium akan berubah pada 31 Maret. <ph name="BEGIN_LINK" />Harap tinjau<ph name="END_LINK" /></translation>
 <translation id="4555020257205549924">Saat fitur ini diaktifkan, Chromium akan menawarkan untuk menerjemahkan halaman yang ditulis dalam bahasa lain menggunakan Google Terjemahan. <ph name="BEGIN_LINK" />Pelajari lebih lanjut<ph name="END_LINK" /></translation>
 <translation id="4681781466797808448">Aktifkan pemindai Chromium</translation>
 <translation id="4787850887676698916">Tab yang telah dibuka di Chromium pada perangkat lainnya akan muncul di sini.</translation>
@@ -48,6 +49,5 @@
 <translation id="8586442755830160949">Hak Cipta <ph name="YEAR" /> Pengarang Chromium. Semua hak dilindungi undang-undang.</translation>
 <translation id="8809780021347235332">Untuk menyimpan gambar, ketuk Setelan untuk mengizinkan Chromium menggunakan foto Anda</translation>
 <translation id="9022552996538154597">Login ke Chromium</translation>
-<translation id="9217078088703304241"><ph name="BEGIN_LINK" />Tinjau Persyaratan Layanan Chromium yang diperbarui.<ph name="END_LINK" /></translation>
 <translation id="985602178874221306">Pengarang Chromium</translation>
 </translationbundle>

@@ -39,7 +39,11 @@ class BlobDispatcherHost;
 class BlobDispatcherHostTest;
 class ChromeBlobStorageContext;
 class ShareableBlobDataItem;
-}
+
+namespace indexed_db_backing_store_unittest {
+class BlobStorageContextShim;
+}  // namespace indexed_db_backing_store_unittest
+}  // namespace content
 
 namespace storage {
 class BlobDataBuilder;
@@ -180,6 +184,8 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) BlobStorageContext
   friend class BlobRegistryImplTest;
   friend class BlobStorageContextTest;
   friend class BlobURLTokenImpl;
+  friend class content::indexed_db_backing_store_unittest::
+      BlobStorageContextShim;
 
   enum class TransportQuotaType { MEMORY, FILE };
 

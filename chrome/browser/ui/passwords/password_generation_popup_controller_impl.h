@@ -133,6 +133,7 @@ class PasswordGenerationPopupControllerImpl
   bool AcceptSelectedLine() override;
   void SelectionCleared() override;
   bool HasSelection() const override;
+  void SetSelected() override;
   void PasswordAccepted() override;
   gfx::NativeView container_view() const override;
   gfx::Rect popup_bounds() const override;

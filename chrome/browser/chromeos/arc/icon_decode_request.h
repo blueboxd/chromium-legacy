@@ -9,7 +9,7 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "chrome/browser/image_decoder.h"
+#include "chrome/browser/image_decoder/image_decoder.h"
 
 namespace gfx {
 class ImageSkia;

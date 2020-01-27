@@ -16,7 +16,6 @@
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/browser/statistics_table.h"
 #include "components/password_manager/core/common/password_manager_ui.h"
-#include "ui/gfx/range/range.h"
 
 namespace content {
 class WebContents;
@@ -67,15 +66,6 @@ class ManagePasswordsBubbleModel {
   // Called by the view code when the manage button is clicked by the user.
   void OnManageClicked(password_manager::ManagePasswordsReferrer referrer);
 
-  // Called by the view code when the navigate to passwords.google.com link is
-  // clicked by the user.
-  void OnNavigateToPasswordManagerAccountDashboardLinkClicked(
-      password_manager::ManagePasswordsReferrer referrer);
-
-  // Called by the view code when the auto-signin toast is about to close due to
-  // timeout.
-  void OnAutoSignInToastTimeout();
-
   // Called by the view code to delete or add a password form to the
   // PasswordStore.
   void OnPasswordAction(const autofill::PasswordForm& password_form,
@@ -100,12 +90,6 @@ class ManagePasswordsBubbleModel {
   // Returns the available credentials which match the current site.
   const std::vector<autofill::PasswordForm>& local_credentials() const {
     return local_credentials_;
-  }
-  const base::string16& save_confirmation_text() const {
-    return save_confirmation_text_;
-  }
-  const gfx::Range& save_confirmation_link_range() const {
-    return save_confirmation_link_range_;
   }
 
   bool are_passwords_revealed_when_bubble_is_opened() const {
@@ -171,8 +155,6 @@ class ManagePasswordsBubbleModel {
   base::string16 title_;
   autofill::PasswordForm pending_password_;
   std::vector<autofill::PasswordForm> local_credentials_;
-  base::string16 save_confirmation_text_;
-  gfx::Range save_confirmation_link_range_;
 
   // Responsible for recording all the interactions required.
   std::unique_ptr<InteractionKeeper> interaction_keeper_;

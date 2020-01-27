@@ -4,6 +4,8 @@
 
 #include "ui/gfx/color_space_win.h"
 
+#include "base/logging.h"
+
 namespace gfx {
 
 DXVA2_ExtendedFormat ColorSpaceWin::GetExtendedFormat(
@@ -164,9 +166,16 @@ DXGI_COLOR_SPACE_TYPE ColorSpaceWin::GetDXGIColorSpace(
             color_space.GetTransferID() ==
                 gfx::ColorSpace::TransferID::LINEAR_HDR) {
           return DXGI_COLOR_SPACE_RGB_FULL_G10_NONE_P709;
-        } else {
-          return DXGI_COLOR_SPACE_RGB_FULL_G22_NONE_P709;
+        } else if (color_space.GetTransferID() ==
+                   gfx::ColorSpace::TransferID::CUSTOM_HDR) {
+          skcms_TransferFunction fn;
+          color_space.GetTransferFunction(&fn);
+          if (fn.g == 1.f)
+            return DXGI_COLOR_SPACE_RGB_FULL_G10_NONE_P709;
+          else
+            DLOG(ERROR) << "Windows HDR only supports gamma=1.0.";
         }
+        return DXGI_COLOR_SPACE_RGB_FULL_G22_NONE_P709;
       }
     }
   } else {

@@ -77,6 +77,12 @@ interface MediaController {
   // this will be a no-op. The client should call |SeekTo| to finish the
   // scrubbing operation.
   ScrubTo(mojo_base.mojom.TimeDelta seek_time);
+
+  // Enter picture-in-picture.
+  EnterPictureInPicture();
+
+  // Exit picture-in-picture.
+  ExitPictureInPicture();
 };
 
 // The observer for observing media controller events. This is different to a

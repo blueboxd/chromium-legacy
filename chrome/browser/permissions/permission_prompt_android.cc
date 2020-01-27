@@ -23,7 +23,6 @@ PermissionPromptAndroid::PermissionPromptAndroid(
     Delegate* delegate)
     : web_contents_(web_contents),
       delegate_(delegate),
-      permission_request_notification_(nullptr),
       permission_infobar_(nullptr),
       weak_factory_(this) {
   DCHECK(web_contents);
@@ -61,8 +60,6 @@ void PermissionPromptAndroid::UpdateAnchorPosition() {
 
 PermissionPrompt::TabSwitchingBehavior
 PermissionPromptAndroid::GetTabSwitchingBehavior() {
-  if (permission_request_notification_)
-    return permission_request_notification_->GetTabSwitchingBehavior();
   return TabSwitchingBehavior::kKeepPromptAlive;
 }
 

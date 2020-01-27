@@ -72,6 +72,12 @@ bool SecurityInterstitialTabHelper::IsDisplayingInterstitial() const {
   return blocking_page_for_currently_committed_navigation_ != nullptr;
 }
 
+bool SecurityInterstitialTabHelper::IsInterstitialPendingForNavigation(
+    int64_t navigation_id) const {
+  return blocking_pages_for_navigations_.find(navigation_id) !=
+         blocking_pages_for_navigations_.end();
+}
+
 security_interstitials::SecurityInterstitialPage*
 SecurityInterstitialTabHelper::
     GetBlockingPageForCurrentlyCommittedNavigationForTesting() {

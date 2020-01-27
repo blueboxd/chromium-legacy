@@ -2542,7 +2542,7 @@
         ],
         'linux_args': [
           '--no-xvfb',
-          '--additional-driver-flag=--disable-gpu-sandbox',
+          '--additional-driver-flag=--use-vulkan=native',
         ],
         'merge': {
           'args': [

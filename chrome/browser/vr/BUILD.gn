@@ -244,8 +244,6 @@ component("vr_common") {
     "platform_controller.h",
     "scheduler_browser_renderer_interface.h",
     "scheduler_delegate.h",
-    "service/gvr_consent_helper.cc",
-    "service/gvr_consent_helper.h",
     "service/xr_device_service.cc",
     "service/xr_device_service.h",
     "service/xr_runtime_manager_observer.h",
@@ -264,13 +262,6 @@ component("vr_common") {
     "platform_controller_for_testing.cc",
     "platform_controller_for_testing.h",
   ]
-
-  if (enable_arcore) {
-    sources += [
-      "service/arcore_consent_prompt_interface.cc",
-      "service/arcore_consent_prompt_interface.h",
-    ]
-  }
 
   public_deps = [
     ":vr_base",

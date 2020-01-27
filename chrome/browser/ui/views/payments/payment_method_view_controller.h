@@ -33,8 +33,12 @@ class PaymentMethodViewController : public PaymentRequestSheetController {
   base::string16 GetSecondaryButtonLabel() override;
   int GetSecondaryButtonTag() override;
   int GetSecondaryButtonId() override;
+  bool ShouldShowSecondaryButton() override;
 
   PaymentRequestItemList payment_method_list_;
+
+  // Whether or not adding a new card is allowed.
+  bool enable_add_card_;
 
   DISALLOW_COPY_AND_ASSIGN(PaymentMethodViewController);
 };

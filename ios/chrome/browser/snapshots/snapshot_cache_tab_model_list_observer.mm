@@ -14,7 +14,7 @@
 #import "ios/chrome/browser/tabs/tab_model_list_observer.h"
 
 SnapshotCacheTabModelListObserver::SnapshotCacheTabModelListObserver(
-    ios::ChromeBrowserState* browser_state,
+    ChromeBrowserState* browser_state,
     std::unique_ptr<WebStateListObserver> web_state_list_observer)
     : browser_state_(browser_state),
       web_state_list_observer_(std::move(web_state_list_observer)),
@@ -32,7 +32,7 @@ SnapshotCacheTabModelListObserver::SnapshotCacheTabModelListObserver(
   }
 
   if (browser_state_->HasOffTheRecordChromeBrowserState()) {
-    ios::ChromeBrowserState* otr_state =
+    ChromeBrowserState* otr_state =
         browser_state->GetOffTheRecordChromeBrowserState();
     for (TabModel* model :
          TabModelList::GetTabModelsForChromeBrowserState(otr_state)) {
@@ -47,7 +47,7 @@ SnapshotCacheTabModelListObserver::~SnapshotCacheTabModelListObserver() {
 
 void SnapshotCacheTabModelListObserver::TabModelRegisteredWithBrowserState(
     TabModel* tab_model,
-    ios::ChromeBrowserState* browser_state) {
+    ChromeBrowserState* browser_state) {
   // Normal and Incognito browser states share a SnapshotCache.
   if (browser_state_ == browser_state->GetOriginalChromeBrowserState()) {
     scoped_observer_->Add(tab_model.webStateList);
@@ -56,7 +56,7 @@ void SnapshotCacheTabModelListObserver::TabModelRegisteredWithBrowserState(
 
 void SnapshotCacheTabModelListObserver::TabModelUnregisteredFromBrowserState(
     TabModel* tab_model,
-    ios::ChromeBrowserState* browser_state) {
+    ChromeBrowserState* browser_state) {
   // Normal and Incognito browser states share a SnapshotCache.
   if (browser_state_ == browser_state->GetOriginalChromeBrowserState()) {
     scoped_observer_->Remove(tab_model.webStateList);

@@ -109,15 +109,15 @@ class CORE_EXPORT V8ScriptValueDeserializer
       v8::Isolate*,
       uint32_t) override;
 
-  Member<ScriptState> script_state_;
-  Member<UnpackedSerializedScriptValue> unpacked_value_;
+  ScriptState* script_state_;
+  UnpackedSerializedScriptValue* unpacked_value_;
   scoped_refptr<SerializedScriptValue> serialized_script_value_;
   v8::ValueDeserializer deserializer_;
 
   // Message ports which were transferred in.
   const MessagePortArray* transferred_message_ports_ = nullptr;
 
-  Member<MessagePortArray> transferred_stream_ports_;
+  MessagePortArray* transferred_stream_ports_ = nullptr;
 
   // Blob info for blobs stored by index.
   const WebBlobInfoArray* blob_info_array_ = nullptr;

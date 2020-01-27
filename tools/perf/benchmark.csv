@@ -66,8 +66,8 @@ tracing.tracing_with_background_memory_infra,ssid@chromium.org,,,
 tracing_perftests,"kkraynov@chromium.org, primiano@chromium.org",,,
 v8.browsing_desktop,"mythria@chromium.org, ulan@chromium.org",Blink>JavaScript,,"2016,2018,2019,health_check,images,infinite_scroll,international,javascript_heavy,webgl"
 v8.browsing_desktop-future,"mythria@chromium.org, ulan@chromium.org",Blink>JavaScript,,"2016,2018,2019,health_check,images,infinite_scroll,international,javascript_heavy,webgl"
-v8.browsing_mobile,"mythria@chromium.org, ulan@chromium.org",Blink>JavaScript,,"2016,2018,2019,emerging_market,health_check,images,infinite_scroll,international,javascript_heavy"
-v8.browsing_mobile-future,"mythria@chromium.org, ulan@chromium.org",Blink>JavaScript,,"2016,2018,2019,emerging_market,health_check,images,infinite_scroll,international,javascript_heavy"
+v8.browsing_mobile,"mythria@chromium.org, ulan@chromium.org",Blink>JavaScript,,"2018,2019,emerging_market,health_check,images,infinite_scroll,international,javascript_heavy"
+v8.browsing_mobile-future,"mythria@chromium.org, ulan@chromium.org",Blink>JavaScript,,"2018,2019,emerging_market,health_check,images,infinite_scroll,international,javascript_heavy"
 v8.runtime_stats.top_25,"mythria@chromium.org, ulan@chromium.org",Blink>JavaScript,,"cold,hot,warm"
 validating_command_buffer_perftests,"piman@chromium.org, chrome-gpu-perf-owners@chromium.org",Internals>GPU,,
 views_perftests,tapted@chromium.org,Internals>Views,,

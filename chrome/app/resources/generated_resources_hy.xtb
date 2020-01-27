@@ -223,7 +223,6 @@
 <translation id="1306606229401759371">Փոխել կարգավորումները</translation>
 <translation id="1307165550267142340">PIN կոդն ավելացվեց</translation>
 <translation id="1307559529304613120">Համակարգին չհաջողվեց պահել այս սարքի երկարաժամկետ API մուտքի հետքանշիչը:</translation>
-<translation id="1309199320876169714">Plugin VM-ը հեռացվում է…</translation>
 <translation id="1313405956111467313">Պրոքսի-սերվերի ինքնակազմաձևում</translation>
 <translation id="131364520783682672">Caps Lock</translation>
 <translation id="1313705515580255288">Ձեր էջանիշները, պատմությունը և այլ կարգավորումները կհամաժամացվեն ձեր Google հաշվի հետ:</translation>
@@ -1368,7 +1367,6 @@
 <translation id="2871813825302180988">Այս հաշիվն արդեն օգտագործվում է այս սարքի վրա:</translation>
 <translation id="287286579981869940">Ավելացնել <ph name="PROVIDER_NAME" />...</translation>
 <translation id="2872961005593481000">Անջատել</translation>
-<translation id="2874478552394649323">Հեռացնել Plugin VM-ը</translation>
 <translation id="2874939134665556319">Նախորդը</translation>
 <translation id="2875698561019555027">(Chrome սխալների էջեր)</translation>
 <translation id="2876336351874743617">Մատ 2</translation>
@@ -1385,7 +1383,6 @@
 <translation id="2889064240420137087">Բացել հղումը` օգտագործելով…</translation>
 <translation id="2889925978073739256">Շարունակել արգելափակել պաշտպանված միջավայրից դուրս փլագինները</translation>
 <translation id="2893168226686371498">Կանխադրված դիտարկիչ</translation>
-<translation id="2893208266590504003">Չհաջողվեց հեռացնել Plugin VM-ը</translation>
 <translation id="2894757982205307093">Նոր ներդիր խմբում</translation>
 <translation id="289644616180464099">SIM քարտը կողպված է</translation>
 <translation id="2896909745808647285"><ph name="FILE_NAME" /> ֆայլը գաղտնագրված է և այն արգելափակվել է։</translation>
@@ -2837,6 +2834,7 @@
 <translation id="4998430619171209993">Միացված է</translation>
 <translation id="4998873842614926205">Հաստատեք փոփոխությունները</translation>
 <translation id="5000922062037820727">Արգելափակված է (հանձնարարելի)</translation>
+<translation id="5007392906805964215">Դիտել</translation>
 <translation id="5008936837313706385">Գործողության անունը</translation>
 <translation id="5010043101506446253">Հավաստագրման կենտրոն</translation>
 <translation id="5015344424288992913">Պրոքսի-սերվերի լուծում…</translation>
@@ -5777,7 +5775,6 @@
 <translation id="9169496697824289689">Դիտել ստեղնաշարի դյուրանցումները</translation>
 <translation id="916964310188958970">Ինչո՞ւ եմ տեսնում այս հուշումը</translation>
 <translation id="9169931577761441333">Ավելացնել «<ph name="APP_NAME" />» հավելվածը հիմնական էկրանին</translation>
-<translation id="9170305483456271385">Plugin VM-ը հեռացվեց</translation>
 <translation id="9170848237812810038">&amp;Հետարկել</translation>
 <translation id="9170884462774788842">Ձեր համակարգչի ծրագրերից մեկն ավելացրել է թեմա, որը կարող է ազդել Chrome-ի աշխատանքի վրա:</translation>
 <translation id="9173995187295789444">Bluetooth սարքերի որոնում...</translation>

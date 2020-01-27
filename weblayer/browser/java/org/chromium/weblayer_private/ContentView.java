@@ -22,7 +22,7 @@ import android.view.accessibility.AccessibilityNodeProvider;
 import android.view.autofill.AutofillValue;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
-import android.widget.RelativeLayout;
+import android.widget.FrameLayout;
 
 import org.chromium.base.ObserverList;
 import org.chromium.base.TraceEvent;
@@ -41,7 +41,7 @@ import org.chromium.ui.base.EventOffsetHandler;
  * The containing view for {@link WebContents} that exists in the Android UI hierarchy and exposes
  * the various {@link View} functionality to it.
  */
-public class ContentView extends RelativeLayout
+public class ContentView extends FrameLayout
         implements ViewEventSink.InternalAccessDelegate, SmartClipProvider,
                    OnHierarchyChangeListener, OnSystemUiVisibilityChangeListener {
     private static final String TAG = "ContentView";
@@ -114,7 +114,7 @@ public class ContentView extends RelativeLayout
             // The Autofill system-level infrastructure has heuristics for which Views it considers
             // important for autofill; only these Views will be queried for their autofill
             // structure on notifications that a new (virtual) View was entered. By default,
-            // RelativeLayout is not considered important for autofill. Thus, for ContentView to be
+            // FrameLayout is not considered important for autofill. Thus, for ContentView to be
             // queried for its autofill structure, we must explicitly inform the autofill system
             // that this View is important for autofill.
             setImportantForAutofill(View.IMPORTANT_FOR_AUTOFILL_YES);
@@ -435,7 +435,7 @@ public class ContentView extends RelativeLayout
         return mWebContents != null ? RenderCoordinates.fromWebContents(mWebContents) : null;
     }
 
-    // End RelativeLayout overrides.
+    // End FrameLayout overrides.
 
     @Override
     public boolean awakenScrollBars(int startDelay, boolean invalidate) {

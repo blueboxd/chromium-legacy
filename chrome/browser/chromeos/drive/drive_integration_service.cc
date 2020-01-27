@@ -894,14 +894,13 @@ void DriveIntegrationService::Initialize() {
   state_ = INITIALIZING;
 
   base::PostTaskAndReplyWithResult(
-      blocking_task_runner_.get(),
-      FROM_HERE,
-      base::Bind(&InitializeMetadata,
-                 cache_root_directory_,
-                 metadata_storage_.get(),
-                 file_manager::util::GetDownloadsFolderForProfile(profile_)),
-      base::Bind(&DriveIntegrationService::InitializeAfterMetadataInitialized,
-                 weak_ptr_factory_.GetWeakPtr()));
+      blocking_task_runner_.get(), FROM_HERE,
+      base::BindOnce(
+          &InitializeMetadata, cache_root_directory_, metadata_storage_.get(),
+          file_manager::util::GetDownloadsFolderForProfile(profile_)),
+      base::BindOnce(
+          &DriveIntegrationService::InitializeAfterMetadataInitialized,
+          weak_ptr_factory_.GetWeakPtr()));
 }
 
 void DriveIntegrationService::InitializeAfterMetadataInitialized(

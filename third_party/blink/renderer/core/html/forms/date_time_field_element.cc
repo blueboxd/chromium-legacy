@@ -130,7 +130,8 @@ void DateTimeFieldElement::DefaultKeyboardEventHandler(
   }
 }
 
-void DateTimeFieldElement::SetFocused(bool value, WebFocusType focus_type) {
+void DateTimeFieldElement::SetFocused(bool value,
+                                      mojom::blink::FocusType focus_type) {
   if (field_owner_) {
     if (value) {
       field_owner_->DidFocusOnField(focus_type);

@@ -45,7 +45,6 @@ public final class Tab {
 
     private final ITab mImpl;
     private final NavigationController mNavigationController;
-    private final FindInPageController mFindInPageController;
     private final ObserverList<TabCallback> mCallbacks;
     private Browser mBrowser;
     private DownloadCallbackClientImpl mDownloadCallbackClient;
@@ -66,7 +65,6 @@ public final class Tab {
 
         mCallbacks = new ObserverList<TabCallback>();
         mNavigationController = NavigationController.create(mImpl);
-        mFindInPageController = new FindInPageController(mImpl);
         registerTab(this);
     }
 
@@ -205,12 +203,6 @@ public final class Tab {
     public NavigationController getNavigationController() {
         ThreadCheck.ensureOnUiThread();
         return mNavigationController;
-    }
-
-    @NonNull
-    public FindInPageController getFindInPageController() {
-        ThreadCheck.ensureOnUiThread();
-        return mFindInPageController;
     }
 
     public void registerTabCallback(@Nullable TabCallback callback) {

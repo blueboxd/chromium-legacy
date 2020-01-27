@@ -25,6 +25,10 @@ enum ClipboardBuffer {
   kSelection,
 };
 
+// Allows communication with the system clipboard.
+// Individual operations are atomic, but successive operations are not.
+// Therefore, it's possible that one may see text available from
+// ReadAvailableTypes(), but that a subsequent ReadText() may then fail.
 interface ClipboardHost {
   [Sync]
   GetSequenceNumber(ClipboardBuffer buffer) => (uint64 result);
@@ -33,9 +37,14 @@ interface ClipboardHost {
   IsFormatAvailable(ClipboardFormat format,
                     ClipboardBuffer buffer) => (bool result);
 
+  // Reads sanitized platform-neutral types.
   [Sync]
   ReadAvailableTypes(ClipboardBuffer buffer) =>
       (array<mojo_base.mojom.String16> types, bool result);
+
+  // Reads unsanitized/raw platform-specific types.
+  ReadAvailablePlatformSpecificFormatNames(ClipboardBuffer buffer) =>
+      (array<mojo_base.mojom.String16> raw_types);
 
   [Sync]
   ReadText(ClipboardBuffer buffer) => (mojo_base.mojom.BigString16 result);

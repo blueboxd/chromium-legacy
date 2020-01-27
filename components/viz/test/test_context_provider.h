@@ -20,6 +20,7 @@
 #include "build/build_config.h"
 #include "components/viz/common/gpu/context_provider.h"
 #include "components/viz/common/gpu/raster_context_provider.h"
+#include "components/viz/service/display_embedder/viz_process_context_provider.h"
 #include "components/viz/test/test_context_support.h"
 #include "gpu/command_buffer/client/gles2_interface_stub.h"
 #include "gpu/command_buffer/client/shared_image_interface.h"
@@ -120,16 +121,19 @@ class TestContextProvider
   static scoped_refptr<TestContextProvider> Create(
       std::unique_ptr<TestGLES2Interface> gl);
   static scoped_refptr<TestContextProvider> Create(
+      std::unique_ptr<TestSharedImageInterface> sii);
+  static scoped_refptr<TestContextProvider> Create(
       std::unique_ptr<TestContextSupport> support);
 
-  explicit TestContextProvider(
-      std::unique_ptr<TestContextSupport> support,
-      std::unique_ptr<TestGLES2Interface> gl,
-      bool support_locking);
+  explicit TestContextProvider(std::unique_ptr<TestContextSupport> support,
+                               std::unique_ptr<TestGLES2Interface> gl,
+                               std::unique_ptr<TestSharedImageInterface> sii,
+                               bool support_locking);
   explicit TestContextProvider(
       std::unique_ptr<TestContextSupport> support,
       std::unique_ptr<TestGLES2Interface> gl,
       std::unique_ptr<gpu::raster::RasterInterface> raster,
+      std::unique_ptr<TestSharedImageInterface> sii,
       bool support_locking);
 
   // ContextProvider / RasterContextProvider implementation.
@@ -193,6 +197,38 @@ class TestContextProvider
   base::WeakPtrFactory<TestContextProvider> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(TestContextProvider);
+};
+
+class TestVizProcessContextProvider : public VizProcessContextProvider {
+ public:
+  TestVizProcessContextProvider(std::unique_ptr<TestContextSupport> support,
+                                std::unique_ptr<TestGLES2Interface> gl);
+  TestVizProcessContextProvider(const TestVizProcessContextProvider&) = delete;
+  TestVizProcessContextProvider& operator=(
+      const TestVizProcessContextProvider&) = delete;
+
+  // ContextProvider implementation.
+  gpu::gles2::GLES2Interface* ContextGL() override;
+  gpu::ContextSupport* ContextSupport() override;
+  const gpu::Capabilities& ContextCapabilities() const override;
+  const gpu::GpuFeatureInfo& GetGpuFeatureInfo() const override;
+
+  void SetUpdateVSyncParametersCallback(
+      UpdateVSyncParametersCallback callback) override;
+  void SetGpuVSyncCallback(GpuVSyncCallback callback) override;
+  void SetGpuVSyncEnabled(bool enabled) override;
+  bool UseRGB565PixelFormat() const override;
+  uint32_t GetCopyTextureInternalFormat() override;
+  base::ScopedClosureRunner GetCacheBackBufferCb() override;
+
+ protected:
+  ~TestVizProcessContextProvider() override;
+
+ private:
+  std::unique_ptr<TestContextSupport> support_;
+  std::unique_ptr<TestGLES2Interface> context_gl_;
+  gpu::Capabilities gpu_capabilities_;
+  gpu::GpuFeatureInfo gpu_feature_info_;
 };
 
 }  // namespace viz

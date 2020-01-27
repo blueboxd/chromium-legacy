@@ -46,11 +46,14 @@
 #include "third_party/perfetto/include/perfetto/ext/tracing/core/startup_trace_writer.h"
 #include "third_party/perfetto/include/perfetto/ext/tracing/core/startup_trace_writer_registry.h"
 #include "third_party/perfetto/include/perfetto/ext/tracing/core/trace_writer.h"
+#include "third_party/perfetto/include/perfetto/tracing/track.h"
 #include "third_party/perfetto/protos/perfetto/trace/chrome/chrome_metadata.pbzero.h"
 #include "third_party/perfetto/protos/perfetto/trace/chrome/chrome_trace_event.pbzero.h"
 #include "third_party/perfetto/protos/perfetto/trace/trace_packet.pbzero.h"
 #include "third_party/perfetto/protos/perfetto/trace/track_event/chrome_histogram_sample.pbzero.h"
+#include "third_party/perfetto/protos/perfetto/trace/track_event/chrome_process_descriptor.pbzero.h"
 #include "third_party/perfetto/protos/perfetto/trace/track_event/process_descriptor.pbzero.h"
+#include "third_party/perfetto/protos/perfetto/trace/track_event/track_descriptor.pbzero.h"
 
 #if defined(OS_ANDROID)
 #include "base/android/build_info.h"
@@ -62,30 +65,32 @@ using TraceConfig = base::trace_event::TraceConfig;
 using TracePacketHandle = perfetto::TraceWriter::TracePacketHandle;
 using TraceRecordMode = base::trace_event::TraceRecordMode;
 using perfetto::protos::pbzero::ChromeMetadataPacket;
+using perfetto::protos::pbzero::ChromeProcessDescriptor;
 using perfetto::protos::pbzero::ProcessDescriptor;
+using perfetto::protos::pbzero::TrackDescriptor;
 
 namespace tracing {
 namespace {
 
 TraceEventMetadataSource* g_trace_event_metadata_source_for_testing = nullptr;
 
-ProcessDescriptor::ChromeProcessType GetProcessType(const std::string& name) {
+ChromeProcessDescriptor::ProcessType GetProcessType(const std::string& name) {
   if (name == "Browser") {
-    return ProcessDescriptor::PROCESS_BROWSER;
+    return ChromeProcessDescriptor::PROCESS_BROWSER;
   } else if (name == "Renderer") {
-    return ProcessDescriptor::PROCESS_RENDERER;
+    return ChromeProcessDescriptor::PROCESS_RENDERER;
   } else if (name == "GPU Process") {
-    return ProcessDescriptor::PROCESS_GPU;
+    return ChromeProcessDescriptor::PROCESS_GPU;
   } else if (base::MatchPattern(name, "Service:*")) {
-    return ProcessDescriptor::PROCESS_UTILITY;
+    return ChromeProcessDescriptor::PROCESS_UTILITY;
   } else if (name == "HeadlessBrowser") {
-    return ProcessDescriptor::PROCESS_BROWSER;
+    return ChromeProcessDescriptor::PROCESS_BROWSER;
   } else if (name == "PPAPI Process") {
-    return ProcessDescriptor::PROCESS_PPAPI_PLUGIN;
+    return ChromeProcessDescriptor::PROCESS_PPAPI_PLUGIN;
   } else if (name == "PPAPI Broker Process") {
-    return ProcessDescriptor::PROCESS_PPAPI_BROKER;
+    return ChromeProcessDescriptor::PROCESS_PPAPI_BROKER;
   }
-  return ProcessDescriptor::PROCESS_UNSPECIFIED;
+  return ChromeProcessDescriptor::PROCESS_UNSPECIFIED;
 }
 
 void WriteMetadataProto(ChromeMetadataPacket* metadata_proto,
@@ -550,7 +555,7 @@ void TraceEventDataSource::SetupStartupTracing(bool privacy_filtering_enabled) {
     DCHECK(!trace_writer_);
     trace_writer_ = CreateTraceWriterLocked();
   }
-  EmitProcessDescriptor();
+  EmitTrackDescriptor();
   RegisterWithTraceLog();
   if (base::SequencedTaskRunnerHandle::IsSet()) {
     OnTaskSchedulerAvailable();
@@ -714,9 +719,12 @@ void TraceEventDataSource::StartTracingInternal(
     producer->BindStartupTraceWriterRegistry(
         std::move(unbound_writer_registry), data_source_config.target_buffer());
   } else {
-    EmitProcessDescriptor();
     RegisterWithTraceLog();
   }
+
+  // We emit the track/process descriptor another time even if we were
+  // previously startup tracing, because the process name may have changed.
+  EmitTrackDescriptor();
 
   auto trace_config =
       TraceConfig(data_source_config.chrome_config().trace_config());
@@ -850,7 +858,7 @@ void TraceEventDataSource::Flush(
 
 void TraceEventDataSource::ClearIncrementalState() {
   TrackEventThreadLocalEventSink::ClearIncrementalState();
-  EmitProcessDescriptor();
+  EmitTrackDescriptor();
 }
 
 std::unique_ptr<perfetto::StartupTraceWriter>
@@ -1002,41 +1010,52 @@ void TraceEventDataSource::ReturnTraceWriter(
           trace_writer_raw));
 }
 
-void TraceEventDataSource::EmitProcessDescriptor() {
-  // TODO(ssid): Emitting process descriptor for dead process will cause
-  // telemetry failures due to multiple main threads with same pid. So, fix the
-  // json exporter.
-  if (!privacy_filtering_enabled_) {
-    return;
-  }
-  // Initialize here since the constructor can be called before the process id
-  // in trace log is set.
-  if (process_id_ == base::kNullProcessId) {
-    process_name_ = TraceLog::GetInstance()->process_name();
-    process_id_ = TraceLog::GetInstance()->process_id();
-  }
-  if (process_id_ == base::kNullProcessId) {
+void TraceEventDataSource::EmitTrackDescriptor() {
+  AutoLockWithDeferredTaskPosting lock(lock_);
+
+  int process_id = TraceLog::GetInstance()->process_id();
+  if (process_id == base::kNullProcessId) {
     // Do not emit descriptor without process id.
     return;
   }
 
-  TracePacketHandle trace_packet;
-  {
-    AutoLockWithDeferredTaskPosting lock(lock_);
-    if (!trace_writer_) {
-      return;
-    }
-    trace_packet = trace_writer_->NewTracePacket();
+  if (!trace_writer_) {
+    return;
   }
+
+  std::string process_name = TraceLog::GetInstance()->process_name();
+
+  TracePacketHandle trace_packet = trace_writer_->NewTracePacket();
+
   trace_packet->set_sequence_flags(
       perfetto::protos::pbzero::TracePacket::SEQ_INCREMENTAL_STATE_CLEARED);
   trace_packet->set_timestamp(
       TRACE_TIME_TICKS_NOW().since_origin().InNanoseconds());
   trace_packet->set_timestamp_clock_id(kTraceClockId);
-  auto process_type = GetProcessType(TraceLog::GetInstance()->process_name());
-  ProcessDescriptor* process_desc = trace_packet->set_process_descriptor();
-  process_desc->set_pid(process_id_);
-  process_desc->set_chrome_process_type(process_type);
+
+  TrackDescriptor* track_descriptor = trace_packet->set_track_descriptor();
+  auto process_track = perfetto::ProcessTrack::Current();
+
+  // TODO(eseckler): Call process_track.Serialize() here instead once the
+  // client lib also fills in the ProcessDescriptor's process_name, gets the
+  // correct pid from Chrome, and supports privacy filtering.
+  track_descriptor->set_uuid(process_track.uuid);
+  PERFETTO_DCHECK(!process_track.parent_uuid);
+
+  ProcessDescriptor* process = track_descriptor->set_process();
+  process->set_pid(process_id);
+  if (!privacy_filtering_enabled_ && !process_name.empty()) {
+    process->set_process_name(process_name);
+  }
+
+  ChromeProcessDescriptor* chrome_process =
+      track_descriptor->set_chrome_process();
+  auto process_type = GetProcessType(process_name);
+  if (process_type != ChromeProcessDescriptor::PROCESS_UNSPECIFIED) {
+    chrome_process->set_process_type(process_type);
+  }
+
+  // TODO(eseckler): Set other fields on |chrome_process|.
 
   trace_packet = TracePacketHandle();
   trace_writer_->Flush();

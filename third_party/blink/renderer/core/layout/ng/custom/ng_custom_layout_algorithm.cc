@@ -5,12 +5,12 @@
 #include "third_party/blink/renderer/core/layout/ng/custom/ng_custom_layout_algorithm.h"
 
 #include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_fragment_result_options.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_intrinsic_sizes_result_options.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/layout/ng/custom/custom_layout_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/custom/custom_layout_scope.h"
-#include "third_party/blink/renderer/core/layout/ng/custom/fragment_result_options.h"
-#include "third_party/blink/renderer/core/layout/ng/custom/intrinsic_sizes_result_options.h"
 #include "third_party/blink/renderer/core/layout/ng/custom/layout_worklet.h"
 #include "third_party/blink/renderer/core/layout/ng/custom/layout_worklet_global_scope_proxy.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_block_layout_algorithm.h"
@@ -170,6 +170,12 @@ scoped_refptr<const NGLayoutResult> NGCustomLayoutAlgorithm::Layout() {
       LayoutUnit::FromDoubleRound(fragment_result_options->autoBlockSize()));
   LayoutUnit block_size = ComputeBlockSizeForFragment(
       ConstraintSpace(), Style(), border_padding_, auto_block_size);
+
+  if (fragment_result_options->hasBaseline()) {
+    LayoutUnit baseline =
+        LayoutUnit::FromDoubleRound(fragment_result_options->baseline());
+    container_builder_.SetBaseline(baseline);
+  }
 
   container_builder_.SetCustomLayoutData(std::move(fragment_result_data));
   container_builder_.SetIntrinsicBlockSize(auto_block_size);

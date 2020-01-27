@@ -357,7 +357,7 @@ void RecordMainFrameNavigationMetric(web::WebState* web_state) {
                name:UIApplicationDidEnterBackgroundNotification
              object:nil];
 
-    // Associate with ios::ChromeBrowserState.
+    // Associate with ChromeBrowserState.
     TabModelList::RegisterTabModelWithChromeBrowserState(_browserState, self);
   }
   return self;
@@ -548,7 +548,7 @@ void RecordMainFrameNavigationMetric(web::WebState* web_state) {
 
   [[OmniboxGeolocationController sharedInstance]
       addLocationToNavigationItem:navigationItem
-                     browserState:ios::ChromeBrowserState::FromBrowserState(
+                     browserState:ChromeBrowserState::FromBrowserState(
                                       webState->GetBrowserState())];
 }
 

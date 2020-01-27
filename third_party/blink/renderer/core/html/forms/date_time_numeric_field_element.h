@@ -27,7 +27,6 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_FORMS_DATE_TIME_NUMERIC_FIELD_ELEMENT_H_
 
 #include "base/macros.h"
-#include "third_party/blink/public/platform/web_focus_type.h"
 #include "third_party/blink/renderer/core/html/forms/date_time_field_element.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
@@ -95,7 +94,7 @@ class DateTimeNumericFieldElement : public DateTimeFieldElement {
   String Value() const final;
 
   // Node functions.
-  void SetFocused(bool, WebFocusType) final;
+  void SetFocused(bool, mojom::blink::FocusType) final;
 
   String FormatValue(int) const;
   int RoundUp(int) const;

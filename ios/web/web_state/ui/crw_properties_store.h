@@ -43,13 +43,13 @@ typedef NS_ENUM(NSInteger, CRWStoredPropertyAttribute) {
 
 // Registers a property with a type not an Objective-C object to be preserved.
 // |getter| and |setter| are selectors of the getter/setter of the underlying
-// object. |size| is the byte size of the property type.
+// object. |type| is the type encoding of the property type e.g., @encode(BOOL).
 //
 // This should be used e.g., for scalar types (NSInteger, CGFloat, etc.) and C
 // structures (CGRect, CGPoint, etc.).
 - (void)registerNonObjectPropertyWithGetter:(nonnull SEL)getter
                                      setter:(nonnull SEL)setter
-                                       size:(NSUInteger)size;
+                                       type:(nonnull const char*)type;
 
 // Saves the properties of |object| to the properties store. Should be called
 // against the old underlying object when the underlying object is reassigned.

@@ -79,6 +79,7 @@
 <translation id="129553762522093515">Nedavno zatvoreno</translation>
 <translation id="1298536327547837046">Skeniranje zlonamjernog softvera</translation>
 <translation id="129863573139666797"><ph name="BEGIN_LINK" />Izbrišite kolačiće<ph name="END_LINK" /></translation>
+<translation id="1301324364792935241">Provjerite postavke sigurnog DNS-a</translation>
 <translation id="1307966114820526988">Ukinute značajke</translation>
 <translation id="1314509827145471431">Uvez s desne strane</translation>
 <translation id="1320233736580025032">Prc1 (omotnica)</translation>
@@ -152,6 +153,7 @@
 <translation id="1569487616857761740">Unesite datum isteka</translation>
 <translation id="1581080074034554886">CVC</translation>
 <translation id="1583429793053364125">Nešto nije u redu s prikazivanjem ove web-stranice.</translation>
+<translation id="1586541204584340881">koja ste proširenja instalirali</translation>
 <translation id="1588438908519853928">Uobičajeno</translation>
 <translation id="1592005682883173041">Pristup lokalnim podacima</translation>
 <translation id="1594030484168838125">Odaberi</translation>
@@ -290,7 +292,6 @@
 <translation id="2218879909401188352">Napadači koji su trenutačno na web-lokaciji <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> mogli bi instalirati opasne aplikacije koje će oštetiti uređaj, dodati skrivene troškove na račun za mobilne usluge ili ukrasti vaše osobne podatke. <ph name="BEGIN_LEARN_MORE_LINK" />Saznajte više<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="2224337661447660594">Nema interneta</translation>
 <translation id="2230458221926704099">Riješite problem s povezivanjem pomoću <ph name="BEGIN_LINK" />dijagnostičke aplikacije<ph name="END_LINK" /></translation>
-<translation id="22320125457191592">Za vas</translation>
 <translation id="2239100178324503013">Pošalji sad</translation>
 <translation id="2248949050832152960">Koristi WebAuthn</translation>
 <translation id="2250931979407627383">Rubni šav s lijeve strane</translation>
@@ -363,6 +364,7 @@
 <translation id="2544644783021658368">Jedan dokument</translation>
 <translation id="254947805923345898">Vrijednost pravila nije važeća.</translation>
 <translation id="255002559098805027">Host <ph name="HOST_NAME" /> poslao je nevažeći odgovor.</translation>
+<translation id="2553853292994445426">Provjerite postavke sigurnog DNS-a. Možda ste konfigurirali sigurni DNS poslužitelj s kojim se ne uspijevate povezati.</translation>
 <translation id="2556876185419854533">&amp;Poništi uređivanje</translation>
 <translation id="257674075312929031">Grupa</translation>
 <translation id="2586657967955657006">Međuspremnik</translation>
@@ -485,6 +487,7 @@
 <translation id="3095940652251934233">Izjava</translation>
 <translation id="3096100844101284527">Dodajte adresu preuzimanja</translation>
 <translation id="3105172416063519923">ID uređaja:</translation>
+<translation id="3107591622054137333"><ph name="BEGIN_LINK" />provjeriti konfiguraciju sigurnog DNS-a<ph name="END_LINK" /></translation>
 <translation id="3109728660330352905">Nemate ovlaštenje za prikaz te stranice.</translation>
 <translation id="3113284927548439113">Treća smjena</translation>
 <translation id="3116158981186517402">Laminiranje</translation>
@@ -576,7 +579,6 @@
 <translation id="3531780078352352885">Radni listovi</translation>
 <translation id="3533328374079021623">Izlazni spremnik s odjeljcima 5</translation>
 <translation id="3539171420378717834">Zadrži kopiju te kartice na uređaju</translation>
-<translation id="3553513561058684206">Za vas</translation>
 <translation id="3558573058928565255">Drugi dan</translation>
 <translation id="3566021033012934673">Vaša veza nije privatna</translation>
 <translation id="3574305903863751447"><ph name="CITY" />, <ph name="STATE" /> <ph name="COUNTRY" /></translation>
@@ -787,6 +789,7 @@
 <translation id="4390472908992056574">Rub</translation>
 <translation id="4406896451731180161">rezultati pretraživanja</translation>
 <translation id="4408413947728134509">Kolačića: <ph name="NUM_COOKIES" /></translation>
+<translation id="4414290883293381923">Upravo ste unijeli zaporku na obmanjujućoj web-lokaciji. Chrome preporučuje da otvorite <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, <ph name="WEBSITE_3" /> i druge web-lokacije na kojima koristite tu zaporku i odmah je promijenite.</translation>
 <translation id="4415426530740016218">Adresa preuzimanja</translation>
 <translation id="4424024547088906515">Poslužitelj nije mogao dokazati da je <ph name="DOMAIN" />; Chrome smatra da njegov sigurnosni certifikat nije pouzdan. To može biti uzrokovano pogrešnom konfiguracijom ili napadom na vašu vezu.</translation>
 <translation id="443121186588148776">Serijski priključak</translation>
@@ -1219,6 +1222,7 @@
 <translation id="6353505687280762741">{COUNT,plural, =0{Nijedna}=1{Jedna zaporka (za <ph name="DOMAIN_LIST" />, sinkronizirano)}=2{Dvije zaporke (za <ph name="DOMAIN_LIST" />, sinkronizirano)}one{# zaporka (za <ph name="DOMAIN_LIST" />, sinkronizirano)}few{# zaporke (za <ph name="DOMAIN_LIST" />, sinkronizirano)}other{# zaporki (za <ph name="DOMAIN_LIST" />, sinkronizirano)}}</translation>
 <translation id="6358450015545214790">Što to znači?</translation>
 <translation id="6361757823711327522">B7</translation>
+<translation id="6364095313648930329"><ph name="BEGIN_LINK" />provjeriti proxy, vatrozid i konfiguraciju sigurnog DNS-a<ph name="END_LINK" /></translation>
 <translation id="6366710531182496394">Dvostruko spajanje s lijeve strane</translation>
 <translation id="6377268785556383139">Jedan rezultat za upit "<ph name="SEARCH_TEXT" />"</translation>
 <translation id="6380497234672085559">A0</translation>
@@ -1241,6 +1245,7 @@
 <translation id="6433595998831338502">Host <ph name="HOST_NAME" /> odbio je povezivanje.</translation>
 <translation id="6434309073475700221">Odbaci</translation>
 <translation id="6440503408713884761">Zanemareno</translation>
+<translation id="6443406338865242315">koja ste proširenja i dodatke instalirali</translation>
 <translation id="6446163441502663861">Kahu (omotnica)</translation>
 <translation id="6446608382365791566">Dodajte još podataka</translation>
 <translation id="6447842834002726250">Kolačići</translation>
@@ -1350,6 +1355,7 @@
 <translation id="7012363358306927923">China UnionPay</translation>
 <translation id="7016992613359344582">Ta terećenja mogu biti jednokratna ili ponavljajuća i možda nisu odmah vidljiva.</translation>
 <translation id="7029809446516969842">Zaporke</translation>
+<translation id="7031646650991750659">koje ste Google Play aplikacije instalirali</translation>
 <translation id="7050187094878475250">Pokušali ste pristupiti domeni <ph name="DOMAIN" />, ali je poslužitelj pružio certifikat koji nije pouzdan zbog predugog razdoblja valjanosti.</translation>
 <translation id="705310974202322020">{NUM_CARDS,plural, =1{Ta se kartica trenutačno ne može spremiti}one{Te se kartice trenutačno ne mogu spremiti}few{Te se kartice trenutačno ne mogu spremiti}other{Te se kartice trenutačno ne mogu spremiti}}</translation>
 <translation id="7053983685419859001">Blokiraj</translation>
@@ -1409,6 +1415,7 @@ Dodatne pojedinosti:
 <translation id="7319430975418800333">A3</translation>
 <translation id="7320336641823683070">Pomoć za povezivanje</translation>
 <translation id="733354035281974745">Nadjačavanje lokalnog računa na uređaju</translation>
+<translation id="7333654844024768166">Upravo ste unijeli zaporku na obmanjujućoj web-lokaciji. Chromium preporučuje da otvorite <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, <ph name="WEBSITE_3" /> i druge web-lokacije na kojima koristite tu zaporku i odmah je promijenite.</translation>
 <translation id="7334320624316649418">&amp;Ponovi promjenu rasporeda</translation>
 <translation id="7337706099755338005">Nije dostupno na vašoj platformi.</translation>
 <translation id="733923710415886693">Certifikat poslužitelja nije otkriven putem Transparentnosti certifikata.</translation>

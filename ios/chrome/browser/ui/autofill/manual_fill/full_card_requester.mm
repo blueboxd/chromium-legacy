@@ -24,7 +24,7 @@ autofill::CardUnmaskPromptView* CreateCardUnmaskPromptViewBridge(
 }
 
 FullCardRequester::FullCardRequester(UIViewController* base_view_controller,
-                                     ios::ChromeBrowserState* browser_state)
+                                     ChromeBrowserState* browser_state)
     : base_view_controller_(base_view_controller),
       unmask_controller_(browser_state->GetPrefs(),
                          browser_state->IsOffTheRecord()) {}

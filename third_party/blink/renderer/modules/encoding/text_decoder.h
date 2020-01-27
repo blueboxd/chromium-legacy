@@ -33,8 +33,8 @@
 
 #include <memory>
 #include "third_party/blink/renderer/bindings/core/v8/array_buffer_or_array_buffer_view.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_text_decode_options.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_text_decoder_options.h"
-#include "third_party/blink/renderer/modules/encoding/text_decode_options.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/text/text_codec.h"

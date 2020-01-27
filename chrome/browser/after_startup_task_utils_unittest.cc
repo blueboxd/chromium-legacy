@@ -93,9 +93,9 @@ class AfterStartupTaskTest : public testing::Test {
     bool is_complete;
     base::PostTaskAndReplyWithResult(
         background_sequence_->real_runner(), FROM_HERE,
-        base::Bind(&AfterStartupTaskUtils::IsBrowserStartupComplete),
-        base::Bind(&AfterStartupTaskTest::GotIsOnBrowserStartupComplete,
-                   &run_loop, &is_complete));
+        base::BindOnce(&AfterStartupTaskUtils::IsBrowserStartupComplete),
+        base::BindOnce(&AfterStartupTaskTest::GotIsOnBrowserStartupComplete,
+                       &run_loop, &is_complete));
     run_loop.Run();
     return is_complete;
   }

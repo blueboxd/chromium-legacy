@@ -53,7 +53,7 @@ struct CORE_EXPORT FrameLoadRequest {
   FrameLoadRequest(const FrameLoadRequest&) = delete;
   FrameLoadRequest& operator=(const FrameLoadRequest&) = delete;
 
-  Document* OriginDocument() const { return origin_document_.Get(); }
+  Document* OriginDocument() const { return origin_document_; }
 
   mojom::RequestContextFrameType GetFrameType() const { return frame_type_; }
   void SetFrameType(mojom::RequestContextFrameType frame_type) {
@@ -90,7 +90,7 @@ struct CORE_EXPORT FrameLoadRequest {
     triggering_event_info_ = info;
   }
 
-  HTMLFormElement* Form() const { return form_.Get(); }
+  HTMLFormElement* Form() const { return form_; }
   void SetForm(HTMLFormElement* form) { form_ = form; }
 
   ShouldSendReferrer GetShouldSendReferrer() const {
@@ -148,7 +148,7 @@ struct CORE_EXPORT FrameLoadRequest {
   bool CanDisplay(const KURL&) const;
 
  private:
-  Member<Document> origin_document_;
+  Document* origin_document_;
   ResourceRequest resource_request_;
   AtomicString href_translate_;
   ClientNavigationReason client_navigation_reason_ =
@@ -156,7 +156,7 @@ struct CORE_EXPORT FrameLoadRequest {
   NavigationPolicy navigation_policy_ = kNavigationPolicyCurrentTab;
   TriggeringEventInfo triggering_event_info_ =
       TriggeringEventInfo::kNotFromEvent;
-  Member<HTMLFormElement> form_;
+  HTMLFormElement* form_ = nullptr;
   ShouldSendReferrer should_send_referrer_;
   network::mojom::CSPDisposition
       should_check_main_world_content_security_policy_;

@@ -38,8 +38,9 @@ GbmSurfacelessWayland::GbmSurfacelessWayland(
   unsubmitted_frames_.push_back(std::make_unique<PendingFrame>());
 }
 
-void GbmSurfacelessWayland::QueueOverlayPlane(OverlayPlane plane) {
-  planes_.push_back(std::move(plane));
+void GbmSurfacelessWayland::QueueOverlayPlane(OverlayPlane plane,
+                                              uint32_t buffer_id) {
+  planes_.push_back({std::move(plane), buffer_id});
 }
 
 bool GbmSurfacelessWayland::ScheduleOverlayPlane(
@@ -209,7 +210,7 @@ void GbmSurfacelessWayland::SubmitFrame() {
       return;
     }
 
-    submitted_frame_->buffer_id = planes_.back().pixmap->GetUniqueId();
+    submitted_frame_->buffer_id = planes_.back().buffer_id;
     buffer_manager_->CommitBuffer(widget_, submitted_frame_->buffer_id,
                                   submitted_frame_->damage_region_);
 

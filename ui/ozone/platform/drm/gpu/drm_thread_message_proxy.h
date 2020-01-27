@@ -75,6 +75,7 @@ class DrmThreadMessageProxy : public IPC::MessageFilter,
       int64_t display_id,
       const std::vector<display::GammaRampRGBEntry>& degamma_lut,
       const std::vector<display::GammaRampRGBEntry>& gamma_lut);
+  void OnSetPrivacyScreen(int64_t display_id, bool enabled);
   void OnRefreshNativeDisplaysCallback(MovableDisplaySnapshots displays) const;
   void OnConfigureNativeDisplayCallback(int64_t display_id, bool success) const;
   void OnDisableNativeDisplayCallback(int64_t display_id, bool success) const;

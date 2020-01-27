@@ -569,6 +569,63 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_EQ(kBlockedURL, child->GetLastCommittedURL());
 }
 
+// Verify that website cannot use window.open() to navigate succsesfully a new
+// window to a chrome:// URL.
+IN_PROC_BROWSER_TEST_F(WebUINavigationDisabledWebSecurityBrowserTest,
+                       DisallowWebWindowOpenToChromeURL) {
+  GURL main_frame_url(embedded_test_server()->GetURL("/title1.html"));
+  GURL chrome_url(GetWebUIURL("web-ui/title1.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_frame_url));
+
+  ShellAddedObserver new_shell_observer;
+  const char kWindowOpenScript[] = "var w = window.open($1, '_blank');";
+  EXPECT_TRUE(ExecJs(shell(), JsReplace(kWindowOpenScript, chrome_url),
+                     EXECUTE_SCRIPT_DEFAULT_OPTIONS, 1 /* world_id */));
+  Shell* popup = new_shell_observer.GetShell();
+
+  // Wait for the navigation to complete and examine the state of the new
+  // window. At this time, the navigation is not blocked by the
+  // WebUINavigationThrottle, but rather by FilterURL which successfully commits
+  // kBlockedURL in the same SiteInstance as the initiator of the navigation.
+  EXPECT_TRUE(WaitForLoadStop(popup->web_contents()));
+  EXPECT_EQ(kBlockedURL, popup->web_contents()->GetLastCommittedURL());
+
+  RenderFrameHost* main_rfh = shell()->web_contents()->GetMainFrame();
+  RenderFrameHost* popup_rfh = popup->web_contents()->GetMainFrame();
+  EXPECT_EQ(main_rfh->GetSiteInstance(), popup_rfh->GetSiteInstance());
+  EXPECT_TRUE(main_rfh->GetSiteInstance()->IsRelatedSiteInstance(
+      popup_rfh->GetSiteInstance()));
+}
+
+// Verify that website cannot use window.open() to navigate succsesfully a new
+// window to a chrome-untrusted:// URL.
+IN_PROC_BROWSER_TEST_F(WebUINavigationDisabledWebSecurityBrowserTest,
+                       DisallowWebWindowOpenToChromeUntrustedURL) {
+  GURL main_frame_url(embedded_test_server()->GetURL("/title1.html"));
+  GURL chrome_url(GetWebUIURL("web-ui/title1.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_frame_url));
+
+  ShellAddedObserver new_shell_observer;
+  const char kWindowOpenScript[] = "var w = window.open($1, '_blank');";
+  EXPECT_TRUE(ExecJs(shell(), JsReplace(kWindowOpenScript, chrome_url),
+                     EXECUTE_SCRIPT_DEFAULT_OPTIONS, 1 /* world_id */));
+  Shell* popup = new_shell_observer.GetShell();
+
+  // Wait for the navigation to complete and examine the state of the new
+  // window. At this time, the navigation is not blocked by the
+  // WebUINavigationThrottle, but rather by FilterURL. This is why the
+  // navigation is considered successful, however the last committed URL is
+  // kBlockedURL.
+  EXPECT_TRUE(WaitForLoadStop(popup->web_contents()));
+  EXPECT_EQ(kBlockedURL, popup->web_contents()->GetLastCommittedURL());
+
+  RenderFrameHost* main_rfh = shell()->web_contents()->GetMainFrame();
+  RenderFrameHost* popup_rfh = popup->web_contents()->GetMainFrame();
+  EXPECT_EQ(main_rfh->GetSiteInstance(), popup_rfh->GetSiteInstance());
+  EXPECT_TRUE(main_rfh->GetSiteInstance()->IsRelatedSiteInstance(
+      popup_rfh->GetSiteInstance()));
+}
+
 // Verify that a WebUI document in the main frame is allowed to navigate to
 // web content and it properly does cross-process navigation.
 IN_PROC_BROWSER_TEST_F(WebUINavigationBrowserTest, WebUIMainFrameToWebAllowed) {

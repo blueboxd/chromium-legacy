@@ -32,6 +32,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/extension_features.h"
 #include "extensions/common/permissions/permission_message_provider.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "ui/accessibility/ax_enums.mojom.h"
@@ -44,6 +45,7 @@
 using extensions::PermissionIDSet;
 using extensions::PermissionMessage;
 using extensions::PermissionMessages;
+using extensions::PermissionSet;
 
 class ExtensionInstallDialogViewTestBase
     : public extensions::ExtensionBrowserTest {
@@ -209,8 +211,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionInstallDialogViewTest, NotifyDelegate) {
   }
 }
 
-// Verifies that the "Add extension" button is disabled initally, but re-enabled
-// after a short time delay.
+// Verifies that the "Add extension" button is disabled initially, but
+// re-enabled after a short time delay.
 IN_PROC_BROWSER_TEST_F(ExtensionInstallDialogViewTest, InstallButtonDelay) {
   ExtensionInstallDialogView::SetInstallButtonDelayForTesting(0);
   ExtensionInstallPromptTestHelper helper;
@@ -236,7 +238,10 @@ IN_PROC_BROWSER_TEST_F(ExtensionInstallDialogViewTest, InstallButtonDelay) {
 class ExtensionInstallDialogViewInteractiveBrowserTest
     : public DialogBrowserTest {
  public:
-  ExtensionInstallDialogViewInteractiveBrowserTest() {}
+  ExtensionInstallDialogViewInteractiveBrowserTest() {
+    feature_list_.InitAndEnableFeature(
+        extensions_features::kAllowWithholdingExtensionPermissionsOnInstall);
+  }
 
   // DialogBrowserTest:
   void ShowUi(const std::string& name) override {
@@ -252,7 +257,13 @@ class ExtensionInstallDialogViewInteractiveBrowserTest
     icon.eraseARGB(255, 128, 255, 128);
 
     auto prompt = std::make_unique<ExtensionInstallPrompt::Prompt>(type_);
-    prompt->AddPermissionMessages(permissions_);
+    // The invoke UI tests can either directly set permission messages to easily
+    // test different potential edge cases, or use a proper permission set which
+    // goes through the standard flow to generate the messages.
+    if (permission_set_)
+      prompt->AddPermissionSet(*permission_set_);
+    else
+      prompt->AddPermissionMessages(permission_messages_);
     prompt->set_retained_files(retained_files_);
     prompt->set_retained_device_messages(retained_devices_);
 
@@ -271,8 +282,12 @@ class ExtensionInstallDialogViewInteractiveBrowserTest
 
   void set_type(ExtensionInstallPrompt::PromptType type) { type_ = type; }
 
+  void SetPermissionSet(std::unique_ptr<PermissionSet> permissions) {
+    permission_set_ = std::move(permissions);
+  }
+
   void AddPermission(std::string permission) {
-    permissions_.push_back(
+    permission_messages_.push_back(
         PermissionMessage(base::ASCIIToUTF16(permission), PermissionIDSet()));
   }
 
@@ -287,7 +302,7 @@ class ExtensionInstallDialogViewInteractiveBrowserTest
   void AddPermissionWithDetails(
       std::string main_permission,
       std::vector<base::string16> detailed_permissions) {
-    permissions_.push_back(
+    permission_messages_.push_back(
         PermissionMessage(base::ASCIIToUTF16(main_permission),
                           PermissionIDSet(), std::move(detailed_permissions)));
   }
@@ -296,9 +311,12 @@ class ExtensionInstallDialogViewInteractiveBrowserTest
   ExtensionInstallPrompt::PromptType type_ =
       ExtensionInstallPrompt::INSTALL_PROMPT;
   bool from_webstore_ = false;
-  PermissionMessages permissions_;
+  std::unique_ptr<PermissionSet> permission_set_;
+  PermissionMessages permission_messages_;
   std::vector<base::FilePath> retained_files_;
   std::vector<base::string16> retained_devices_;
+
+  base::test::ScopedFeatureList feature_list_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionInstallDialogViewInteractiveBrowserTest);
 };
@@ -392,6 +410,20 @@ IN_PROC_BROWSER_TEST_F(ExtensionInstallDialogViewInteractiveBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionInstallDialogViewInteractiveBrowserTest,
+                       InvokeUi_WithWithholdingOption) {
+  // The permissions withholding UI requires a proper permission set to be used,
+  // as it checks for host permissions to determine if it should be shown.
+  auto permissions = std::make_unique<PermissionSet>(
+      extensions::APIPermissionSet(), extensions::ManifestPermissionSet(),
+      extensions::URLPatternSet(
+          {URLPattern(extensions::Extension::kValidHostPermissionSchemes,
+                      "http://example.com/*")}),
+      extensions::URLPatternSet());
+  SetPermissionSet(std::move(permissions));
+  ShowAndVerifyUi();
+}
+
+IN_PROC_BROWSER_TEST_F(ExtensionInstallDialogViewInteractiveBrowserTest,
                        InvokeUi_AllInfoTypes) {
   AddPermission("Example permission");
   AddPermissionWithDetails("This permission has details",
@@ -460,4 +492,48 @@ IN_PROC_BROWSER_TEST_F(ExtensionInstallDialogRatingsSectionTest,
   TestRatingsSectionA11y(400, 3.297, "Rated 3.3 by 400 users.");
   TestRatingsSectionA11y(1, 1.0, "Rated 1.0 by one user.");
   TestRatingsSectionA11y(0, 0.0, "Not yet rated by any users.");
+}
+
+class ExtensionInstallDialogWithWithholdPermissionsUI
+    : public ExtensionInstallDialogViewTestBase {
+ public:
+  ExtensionInstallDialogWithWithholdPermissionsUI() {
+    scoped_feature_list_.InitAndEnableFeature(
+        extensions_features::kAllowWithholdingExtensionPermissionsOnInstall);
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+  DISALLOW_COPY_AND_ASSIGN(ExtensionInstallDialogWithWithholdPermissionsUI);
+};
+
+// Verifies that some UI is displayed in the extra view for withholding
+// permissions on installation.
+IN_PROC_BROWSER_TEST_F(ExtensionInstallDialogWithWithholdPermissionsUI,
+                       ShowsWithholdUI) {
+  ExtensionInstallPromptTestHelper helper;
+  std::unique_ptr<ExtensionInstallPrompt::Prompt> prompt =
+      CreatePrompt(ExtensionInstallPrompt::INSTALL_PROMPT);
+  // Add a permission to the prompt with example.com as an explicit pattern.
+  PermissionSet permissions(
+      extensions::APIPermissionSet(), extensions::ManifestPermissionSet(),
+      extensions::URLPatternSet(
+          {URLPattern(extensions::Extension::kValidHostPermissionSchemes,
+                      "http://example.com/*")}),
+      extensions::URLPatternSet());
+  prompt->AddPermissionSet(permissions);
+  auto dialog = std::make_unique<ExtensionInstallDialogView>(
+      profile(), web_contents(), helper.GetCallback(), std::move(prompt));
+  views::DialogDelegateView* delegate_view = dialog.get();
+
+  views::Widget* modal_dialog = views::DialogDelegate::CreateDialogWidget(
+      dialog.release(), nullptr,
+      platform_util::GetViewForWindow(browser()->window()->GetNativeWindow()));
+  modal_dialog->Show();
+
+  const views::View* const extra_view = delegate_view->GetExtraView();
+  EXPECT_TRUE(extra_view);
+  EXPECT_EQ("Checkbox", std::string(extra_view->GetClassName()));
+
+  delegate_view->Close();
 }

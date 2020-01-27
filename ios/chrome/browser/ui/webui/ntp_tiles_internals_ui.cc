@@ -61,7 +61,7 @@ void IOSNTPTilesInternalsMessageHandlerBridge::RegisterMessages() {
 }
 
 bool IOSNTPTilesInternalsMessageHandlerBridge::SupportsNTPTiles() {
-  return !ios::ChromeBrowserState::FromWebUIIOS(web_ui())->IsOffTheRecord();
+  return !ChromeBrowserState::FromWebUIIOS(web_ui())->IsOffTheRecord();
 }
 
 bool IOSNTPTilesInternalsMessageHandlerBridge::DoesSourceExist(
@@ -85,11 +85,11 @@ bool IOSNTPTilesInternalsMessageHandlerBridge::DoesSourceExist(
 std::unique_ptr<ntp_tiles::MostVisitedSites>
 IOSNTPTilesInternalsMessageHandlerBridge::MakeMostVisitedSites() {
   return IOSMostVisitedSitesFactory::NewForBrowserState(
-      ios::ChromeBrowserState::FromWebUIIOS(web_ui()));
+      ChromeBrowserState::FromWebUIIOS(web_ui()));
 }
 
 PrefService* IOSNTPTilesInternalsMessageHandlerBridge::GetPrefs() {
-  return ios::ChromeBrowserState::FromWebUIIOS(web_ui())->GetPrefs();
+  return ChromeBrowserState::FromWebUIIOS(web_ui())->GetPrefs();
 }
 
 void IOSNTPTilesInternalsMessageHandlerBridge::RegisterMessageCallback(
@@ -119,8 +119,7 @@ web::WebUIIOSDataSource* CreateNTPTilesInternalsHTMLSource() {
 
 NTPTilesInternalsUI::NTPTilesInternalsUI(web::WebUIIOS* web_ui)
     : web::WebUIIOSController(web_ui) {
-  ios::ChromeBrowserState* browser_state =
-      ios::ChromeBrowserState::FromWebUIIOS(web_ui);
+  ChromeBrowserState* browser_state = ChromeBrowserState::FromWebUIIOS(web_ui);
   web::WebUIIOSDataSource::Add(browser_state,
                                CreateNTPTilesInternalsHTMLSource());
   web_ui->AddMessageHandler(

@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_ROOT_FRAME_VIEWPORT_H_
 
 #include "base/single_thread_task_runner.h"
+#include "third_party/blink/public/mojom/scroll/scroll_into_view_params.mojom-blink-forward.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/scroll/scrollable_area.h"
 #include "third_party/blink/renderer/platform/graphics/scroll_types.h"
@@ -15,7 +16,6 @@ namespace blink {
 
 class LocalFrameView;
 struct PhysicalRect;
-struct WebScrollIntoViewParams;
 
 // ScrollableArea for the root frame's viewport. This class ties together the
 // concepts of layout and visual viewports, used in pinch-to-zoom. This class
@@ -61,8 +61,9 @@ class CORE_EXPORT RootFrameViewport final
                        ScrollType,
                        ScrollBehavior,
                        ScrollCallback on_finish) override;
-  PhysicalRect ScrollIntoView(const PhysicalRect&,
-                              const WebScrollIntoViewParams&) override;
+  PhysicalRect ScrollIntoView(
+      const PhysicalRect&,
+      const mojom::blink::ScrollIntoViewParamsPtr&) override;
   IntRect VisibleContentRect(
       IncludeScrollbarsInRect = kExcludeScrollbars) const override;
   PhysicalRect VisibleScrollSnapportRect(

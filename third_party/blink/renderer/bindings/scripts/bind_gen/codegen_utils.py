@@ -5,8 +5,8 @@
 import web_idl
 
 from . import name_style
+from . import style_format
 from .blink_v8_bridge import blink_type_info
-from .clang_format import clang_format
 from .code_node import CodeNode
 from .code_node import EmptyNode
 from .code_node import LiteralNode
@@ -90,19 +90,6 @@ def enclose_with_header_guard(code_node, header_guard):
     ])
 
 
-def enclose_with_namespace(code_node, namespace):
-    assert isinstance(code_node, CodeNode)
-    assert isinstance(namespace, str)
-
-    return SequenceNode([
-        LiteralNode("namespace {} {{".format(namespace)),
-        EmptyNode(),
-        code_node,
-        EmptyNode(),
-        LiteralNode("}}  // namespace {}".format(namespace)),
-    ])
-
-
 def collect_include_headers_of_idl_types(idl_types):
     """
     Returns a set of header paths that are required by |idl_types|.
@@ -114,7 +101,7 @@ def collect_include_headers_of_idl_types(idl_types):
 
         if idl_type.is_numeric or idl_type.is_boolean or idl_type.is_typedef:
             pass
-        elif idl_type.is_string or idl_type.is_enumeration:
+        elif idl_type.is_string:
             header_paths.add("third_party/blink/renderer/"
                              "platform/wtf/text/wtf_string.h")
         elif idl_type.is_buffer_source_type:
@@ -162,6 +149,12 @@ def write_code_node_to_file(code_node, filepath):
 
     rendered_text = render_code_node(code_node)
 
-    format_result = clang_format(rendered_text, filename=filepath)
+    format_result = style_format.auto_format(rendered_text, filename=filepath)
+    if not format_result.did_succeed:
+        raise RuntimeError("Style-formatting failed: filename = {filename}\n"
+                           "---- stderr ----\n"
+                           "{stderr}:".format(
+                               filename=format_result.filename,
+                               stderr=format_result.error_message))
 
     web_idl.file_io.write_to_file_if_changed(filepath, format_result.contents)

@@ -134,6 +134,7 @@
 <translation id="1994173015038366702">Vietnes URL</translation>
 <translation id="2000419248597011803">Nosūta dažus sīkfailus un meklēšanas vaicājumus no adreses joslas un meklēšanas lodziņa uz jūsu noklusējuma meklētājprogrammu.</translation>
 <translation id="2002537628803770967">Kredītkartes un adreses no pakalpojuma Google Pay</translation>
+<translation id="2012973609889389923">Ātras darbības vietne</translation>
 <translation id="2013642289801508067">{FILE_COUNT,plural, =1{# fails}zero{# faili}one{# fails}other{# faili}}</translation>
 <translation id="2017836877785168846">Notīra vēsturi un automātiskās pabeigšanas ierakstus adreses joslā.</translation>
 <translation id="2021896219286479412">Pilnekrāna vietnes vadīklas</translation>
@@ -306,6 +307,7 @@
 <translation id="3298243779924642547">Vienkāršota</translation>
 <translation id="3303414029551471755">Vai turpināt ar satura lejupielādi?</translation>
 <translation id="3306398118552023113">Šī lietotne darbojas pārlūkā Chrome</translation>
+<translation id="3312292613668865961">Vaicāt, pirms atļaut vietnēm piekļūt jūsu virtuālās realitātes ierīcei un datiem (ieteicams)</translation>
 <translation id="3315103659806849044">Šobrīd jūs pielāgojat sinhronizēšanas un Google pakalpojuma iestatījumus. Lai pabeigtu sinhronizēšanas ieslēgšanu, pieskarieties pogai Apstiprināt, kas atrodas ekrāna apakšdaļā. Pārvietoties augšup</translation>
 <translation id="3328801116991980348">Vietnes informācija</translation>
 <translation id="3333961966071413176">Visas kontaktpersonas</translation>
@@ -511,6 +513,7 @@ Lai mainītu šo iestatījumu, <ph name="BEGIN_LINK" />atiestatiet sinhronizāci
 <translation id="4915549754973153784"><ph name="BEGIN_LINK" />Saņemiet palīdzību<ph name="END_LINK" />, meklējot ierīces…</translation>
 <translation id="4921180162323349895">{FILE_COUNT,plural, =1{# lapa}zero{# lapas}one{# lapa}other{# lapas}}</translation>
 <translation id="4932247056774066048">Jūs izrakstāties no konta, ko pārvalda <ph name="DOMAIN_NAME" />, tāpēc jūsu Chrome dati tiks izdzēsti no šīs ierīces. Tie joprojām būs pieejami jūsu Google kontā.</translation>
+<translation id="4935305910887312910">Vaicāt, pirms atļaut vietnēm saņemt kameras pozīciju vai kartēt jūsu telpu (ieteicams)</translation>
 <translation id="4943703118917034429">Virtuālā realitāte</translation>
 <translation id="4943872375798546930">Nav rezultātu</translation>
 <translation id="4958708863221495346"><ph name="URL_OF_THE_CURRENT_TAB" /> kopīgo jūsu ekrānu</translation>
@@ -744,6 +747,7 @@ Piemēram, dažas vietnes, reaģējot uz šo pieprasījumu, var rādīt jums rek
 <translation id="6573431926118603307">Šeit būs redzamas cilnes, kuras esat atvēris pārlūkā Chrome citās ierīcēs.</translation>
 <translation id="6583199322650523874">Pievienot pašreizējo lapu grāmatzīmēm</translation>
 <translation id="6593061639179217415">Vietne datoriem</translation>
+<translation id="6597891566292541626">Novietojiet QR kodu vai svītrkodu šajā ietvarā.</translation>
 <translation id="6600954340915313787">Nokopēta pārlūkā Chrome.</translation>
 <translation id="6608650720463149374"><ph name="GIGABYTES" /> GB</translation>
 <translation id="6612358246767739896">Aizsargāts saturs</translation>
@@ -953,6 +957,7 @@ Vietnei NAV piekļuves kamerai. Kameras attēli ir redzami tikai jums.</translat
 <translation id="8109613176066109935">Lai grāmatzīmes būtu pieejamas visās jūsu ierīcēs, ieslēdziet sinhronizāciju.</translation>
 <translation id="8110087112193408731">Vai rādīt jūsu Chrome darbības Digitālajā labjutībā?</translation>
 <translation id="8116925261070264013">Izslēgta skaņa</translation>
+<translation id="8127542551745560481">Rediģēt sākumlapu</translation>
 <translation id="813082847718468539">Skatīt informāciju par vietni</translation>
 <translation id="8156139159503939589">Kādā valodā jūs lasāt?</translation>
 <translation id="8168435359814927499">Saturs</translation>
@@ -1024,6 +1029,7 @@ Vietnei NAV piekļuves kamerai. Kameras attēli ir redzami tikai jums.</translat
 <translation id="8676374126336081632">Notīrīt ievadi</translation>
 <translation id="8687353297350450808">{N_BARS,plural, =1{Signāla stipruma līmenis: # josla}zero{Signāla stipruma līmenis: # joslu}one{Signāla stipruma līmenis: # josla}other{Signāla stipruma līmenis: # joslas}}</translation>
 <translation id="868929229000858085">Meklējiet kontaktpersonas</translation>
+<translation id="8698438463325761328">Bloķēt vietņu piekļuvi jūsu virtuālās realitātes ierīcei un datiem</translation>
 <translation id="869891660844655955">Derīguma termiņš</translation>
 <translation id="8719023831149562936">Nevar kopīgot šo cilni, izmantojot Beam.</translation>
 <translation id="8728487861892616501">Izmantojot šo lietojumprogrammu, jūs piekrītat Chrome <ph name="BEGIN_LINK1" />pakalpojumu sniegšanas noteikumiem<ph name="END_LINK1" />, <ph name="BEGIN_LINK2" />paziņojumam par konfidencialitāti<ph name="END_LINK2" /> un <ph name="BEGIN_LINK3" />paziņojumam par konfidencialitāti Google kontiem, kas tiek pārvaldīti lietotnē Family Link<ph name="END_LINK3" />.</translation>
@@ -1041,6 +1047,7 @@ Vietnei NAV piekļuves kamerai. Kameras attēli ir redzami tikai jums.</translat
 <translation id="883806473910249246">Lejupielādējot saturu, radās kļūda.</translation>
 <translation id="8840953339110955557">Šī lapas versija var atšķirties no tiešsaises versijas.</translation>
 <translation id="8847988622838149491">USB</translation>
+<translation id="884828189055900810">Bloķēt vietņu piekļuvi kameras pozīcijai vai jūsu telpas kartēšanu vietnēs</translation>
 <translation id="8853345339104747198">Cilne <ph name="TAB_TITLE" /></translation>
 <translation id="885701979325669005">Krātuve</translation>
 <translation id="889338405075704026">Pāriet uz Chrome iestatījumiem</translation>
@@ -1048,6 +1055,7 @@ Vietnei NAV piekļuves kamerai. Kameras attēli ir redzami tikai jums.</translat
 <translation id="8909135823018751308">Kopīgot...</translation>
 <translation id="8912362522468806198">Google konts</translation>
 <translation id="8920114477895755567">Gaida vecāku informāciju.</translation>
+<translation id="8921772741368021346"><ph name="POSITION" /> / <ph name="DURATION" /></translation>
 <translation id="8922289737868596582">Izmantojiet pogu Vairāk opciju, lai lejupielādētu lapas un piekļūtu tām bezsaistē</translation>
 <translation id="8926666909099850184">Šajā ierīcē tehnoloģija NFC ir izslēgta. Ieslēdziet to <ph name="BEGIN_LINK" />Android iestatījumos<ph name="END_LINK" />.</translation>
 <translation id="8937772741022875483">Vai noņemt jūsu Chrome darbības no Digitālās labjutības?</translation>

@@ -9,11 +9,11 @@
 
 #include "base/macros.h"
 #include "base/scoped_observer.h"
-#include "ios/chrome/browser/browser_state/chrome_browser_state_forward.h"
 #import "ios/chrome/browser/tabs/tab_model_list_observer.h"
 #include "ios/chrome/browser/web_state_list/web_state_list.h"
 #include "ios/chrome/browser/web_state_list/web_state_list_observer.h"
 
+class ChromeBrowserState;
 @class TabModel;
 
 // SnapshotCacheTabModelListObserver tracks when TabModels are created and
@@ -28,7 +28,7 @@ class SnapshotCacheTabModelListObserver : public TabModelListObserver {
   // date as TabModels are created and destroyed. |browser_state| must be a
   // normal (non-OTR) browser state.
   SnapshotCacheTabModelListObserver(
-      ios::ChromeBrowserState* browser_state,
+      ChromeBrowserState* browser_state,
       std::unique_ptr<WebStateListObserver> web_state_list_observer);
 
   ~SnapshotCacheTabModelListObserver() override;
@@ -36,13 +36,13 @@ class SnapshotCacheTabModelListObserver : public TabModelListObserver {
   // TabModelListObserver.
   void TabModelRegisteredWithBrowserState(
       TabModel* tab_model,
-      ios::ChromeBrowserState* browser_state) override;
+      ChromeBrowserState* browser_state) override;
   void TabModelUnregisteredFromBrowserState(
       TabModel* tab_model,
-      ios::ChromeBrowserState* browser_state) override;
+      ChromeBrowserState* browser_state) override;
 
  private:
-  ios::ChromeBrowserState* browser_state_;
+  ChromeBrowserState* browser_state_;
   std::unique_ptr<WebStateListObserver> web_state_list_observer_;
   std::unique_ptr<ScopedObserver<WebStateList, WebStateListObserver>>
       scoped_observer_;

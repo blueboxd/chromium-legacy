@@ -1244,6 +1244,7 @@ void StoragePartitionImpl::Initialize() {
   indexed_db_context_ = new IndexedDBContextImpl(
       path, browser_context_->GetSpecialStoragePolicy(), quota_manager_proxy,
       base::DefaultClock::GetInstance(),
+      ChromeBlobStorageContext::GetRemoteFor(browser_context_),
       base::CreateSingleThreadTaskRunner({BrowserThread::IO}),
       /*task_runner=*/nullptr);
 

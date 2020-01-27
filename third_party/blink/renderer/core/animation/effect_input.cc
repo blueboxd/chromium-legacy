@@ -39,8 +39,6 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_base_keyframe.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_base_property_indexed_keyframe.h"
 #include "third_party/blink/renderer/core/animation/animation_input_helpers.h"
-#include "third_party/blink/renderer/core/animation/base_keyframe.h"
-#include "third_party/blink/renderer/core/animation/base_property_indexed_keyframe.h"
 #include "third_party/blink/renderer/core/animation/compositor_animations.h"
 #include "third_party/blink/renderer/core/animation/css/css_animations.h"
 #include "third_party/blink/renderer/core/animation/keyframe_effect_model.h"

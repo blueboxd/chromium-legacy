@@ -23,6 +23,8 @@ extern const char kCorbAllowlistAlsoAppliesToOorCorsParamName[];
 
 extern const base::Feature kForceWebRequestProxyForTest;
 
+extern const base::Feature kAllowWithholdingExtensionPermissionsOnInstall;
+
 }  // namespace extensions_features
 
 #endif  // EXTENSIONS_COMMON_EXTENSION_FEATURES_H_

@@ -16,6 +16,7 @@
 #include "services/tracing/public/cpp/trace_event_agent.h"
 #include "services/tracing/public/cpp/trace_event_args_whitelist.h"
 #include "services/tracing/public/cpp/tracing_features.h"
+#include "third_party/perfetto/include/perfetto/tracing/track.h"
 
 namespace tracing {
 namespace {
@@ -34,6 +35,8 @@ void EnableStartupTracingIfNeeded() {
       *base::CommandLine::ForCurrentProcess();
 
   TraceEventDataSource::GetInstance()->RegisterStartupHooks();
+  // TODO(eseckler): Initialize the entire perfetto client library instead.
+  perfetto::internal::TrackRegistry::InitializeInstance();
 
   // TODO(oysteine): Support startup tracing to a perfetto protobuf trace. This
   // should also enable TraceLog and call

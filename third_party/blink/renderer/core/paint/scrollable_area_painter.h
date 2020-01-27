@@ -54,7 +54,7 @@ class ScrollableAreaPainter {
   PaintLayerScrollableArea& GetScrollableArea() const;
   const DisplayItemClient& DisplayItemClientForCorner() const;
 
-  Member<PaintLayerScrollableArea> scrollable_area_;
+  PaintLayerScrollableArea* scrollable_area_;
 
   DISALLOW_COPY_AND_ASSIGN(ScrollableAreaPainter);
 };

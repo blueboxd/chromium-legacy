@@ -8,9 +8,9 @@
 #include <vector>
 
 #include "base/containers/flat_map.h"
-#include "chrome/browser/android/chrome_feature_list.h"
 #include "chrome/browser/android/explore_sites/explore_sites_feature.h"
 #include "chrome/browser/android/explore_sites/url_util.h"
+#include "chrome/browser/flags/android/chrome_feature_list.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/explore_sites_internals/explore_sites_internals.mojom.h"
 #include "components/language/core/browser/pref_names.h"

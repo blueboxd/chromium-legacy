@@ -5,35 +5,56 @@
 #ifndef CHROME_BROWSER_APPS_APP_SERVICE_MENU_UTIL_H_
 #define CHROME_BROWSER_APPS_APP_SERVICE_MENU_UTIL_H_
 
+#include <memory>
+#include <vector>
+
+#include "base/callback.h"
 #include "chrome/services/app_service/public/mojom/types.mojom.h"
+#include "ui/base/models/simple_menu_model.h"
 
 class Profile;
 
 namespace apps {
 
+using GetVectorIconCallback =
+    base::OnceCallback<const gfx::VectorIcon&(int command_id, int string_id)>;
+
+// Adds a command menu item to |menu_items|.
 void AddCommandItem(uint32_t command_id,
                     uint32_t string_id,
                     apps::mojom::MenuItemsPtr* menu_items);
 
-apps::mojom::MenuItemPtr CreateRadioItem(uint32_t command_id,
-                                         uint32_t string_id,
-                                         int group_id);
-
+// Adds a radio menu item to |menu_items|.
 void AddRadioItem(uint32_t command_id,
                   uint32_t string_id,
                   int group_id,
                   apps::mojom::MenuItemsPtr* menu_items);
 
+// Adds a LAUNCH_NEW menu item to |menu_items|, and create radio items for the
+// submenu.
 void CreateOpenNewSubmenu(uint32_t string_id,
                           apps::mojom::MenuItemsPtr* menu_items);
 
+// Returns true if the open menu item can be added, when |menu_type| is Shelf,
+// and the app identified by |app_id| is not running, otherwise returns false.
 bool ShouldAddOpenItem(const std::string& app_id,
                        apps::mojom::MenuType menu_type,
                        Profile* profile);
 
+// Returns true if the close menu item can be added, when |menu_type| is Shelf,
+// and the app identified by |app_id| is running, otherwise returns false.
 bool ShouldAddCloseItem(const std::string& app_id,
                         apps::mojom::MenuType menu_type,
                         Profile* profile);
+
+// Populates the LAUNCH_NEW menu item to a simple menu model |model| from mojo
+// menu items |menu_items|. Returns true if the LAUNCH_NEW menu item is added to
+// |model|, otherwise returns false.
+bool PopulateNewItemFromMojoMenuItems(
+    const std::vector<apps::mojom::MenuItemPtr>& menu_items,
+    ui::SimpleMenuModel* model,
+    ui::SimpleMenuModel* submenu,
+    GetVectorIconCallback get_vector_icon);
 
 }  // namespace apps
 

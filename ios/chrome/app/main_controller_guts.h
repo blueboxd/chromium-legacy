@@ -10,12 +10,12 @@
 #import "base/ios/block_types.h"
 #include "components/browsing_data/core/browsing_data_utils.h"
 #include "ios/chrome/app/startup/chrome_app_startup_parameters.h"
-#include "ios/chrome/browser/browser_state/chrome_browser_state_forward.h"
 #include "ios/chrome/browser/browsing_data/browsing_data_remove_mask.h"
 #import "ios/chrome/browser/crash_report/crash_restore_helper.h"
 
 @class BrowserViewController;
 @class BrowserViewWrangler;
+class ChromeBrowserState;
 @class TabGridCoordinator;
 @protocol BrowserInterfaceProvider;
 @protocol TabSwitcher;
@@ -47,15 +47,15 @@ class AppUrlLoadingService;
 - (BrowserViewWrangler*)browserViewWrangler;
 - (id<TabSwitcher>)tabSwitcher;
 - (TabModel*)currentTabModel;
-- (ios::ChromeBrowserState*)mainBrowserState;
-- (ios::ChromeBrowserState*)currentBrowserState;
+- (ChromeBrowserState*)mainBrowserState;
+- (ChromeBrowserState*)currentBrowserState;
 - (BrowserViewController*)currentBVC;
 - (BrowserViewController*)mainBVC;
 - (BrowserViewController*)otrBVC;
 - (TabGridCoordinator*)mainCoordinator;
 - (id<BrowserInterfaceProvider>)interfaceProvider;
 
-- (void)removeBrowsingDataForBrowserState:(ios::ChromeBrowserState*)browserState
+- (void)removeBrowsingDataForBrowserState:(ChromeBrowserState*)browserState
                                timePeriod:(browsing_data::TimePeriod)timePeriod
                                removeMask:(BrowsingDataRemoveMask)removeMask
                           completionBlock:(ProceduralBlock)completionBlock;

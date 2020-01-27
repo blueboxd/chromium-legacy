@@ -25,8 +25,8 @@
 
 #include "third_party/blink/renderer/modules/webaudio/audio_processing_event.h"
 
+#include "third_party/blink/renderer/bindings/modules/v8/v8_audio_processing_event_init.h"
 #include "third_party/blink/renderer/core/event_type_names.h"
-#include "third_party/blink/renderer/modules/webaudio/audio_processing_event_init.h"
 
 namespace blink {
 

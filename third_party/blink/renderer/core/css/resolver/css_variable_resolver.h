@@ -222,7 +222,7 @@ class CORE_EXPORT CSSVariableResolver {
   const StyleResolverState& state_;
   StyleInheritedVariables* inherited_variables_;
   StyleNonInheritedVariables* non_inherited_variables_;
-  Member<const PropertyRegistry> registry_;
+  const PropertyRegistry* registry_;
   HashSet<AtomicString> variables_seen_;
   // Resolution doesn't finish when a cycle is detected. Fallbacks still
   // need to be tracked for additional cycles, and invalidation only

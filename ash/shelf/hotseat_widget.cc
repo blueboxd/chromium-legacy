@@ -126,6 +126,9 @@ class HotseatWidget::DelegateView : public views::WidgetDelegateView,
   // The WallpaperController, responsible for providing proper colors.
   WallpaperControllerImpl* wallpaper_controller_;
 
+  // The most recent color that the |opaque_background_| has been animated to.
+  SkColor target_color_ = SK_ColorTRANSPARENT;
+
   DISALLOW_COPY_AND_ASSIGN(DelegateView);
 };
 
@@ -167,7 +170,18 @@ void HotseatWidget::DelegateView::SetOpaqueBackground(
   DCHECK(HotseatWidget::ShouldShowHotseatBackground());
 
   opaque_background_.SetVisible(true);
-  opaque_background_.SetColor(ShelfConfig::Get()->GetDefaultShelfColor());
+
+  if (ShelfConfig::Get()->GetDefaultShelfColor() != target_color_) {
+    target_color_ = ShelfConfig::Get()->GetDefaultShelfColor();
+    ui::ScopedLayerAnimationSettings animation_setter(
+        opaque_background_.GetAnimator());
+    animation_setter.SetTransitionDuration(
+        ShelfConfig::Get()->shelf_animation_duration());
+    animation_setter.SetTweenType(gfx::Tween::EASE_OUT);
+    animation_setter.SetPreemptionStrategy(
+        ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
+    opaque_background_.SetColor(target_color_);
+  }
 
   const int radius = ShelfConfig::Get()->hotseat_size() / 2;
   gfx::RoundedCornersF rounded_corners = {radius, radius, radius, radius};

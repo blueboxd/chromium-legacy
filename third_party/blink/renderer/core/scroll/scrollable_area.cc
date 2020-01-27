@@ -350,7 +350,7 @@ void ScrollableArea::UserScrollHelper(const ScrollOffset& offset,
 
 PhysicalRect ScrollableArea::ScrollIntoView(
     const PhysicalRect& rect_in_absolute,
-    const WebScrollIntoViewParams& params) {
+    const mojom::blink::ScrollIntoViewParamsPtr& params) {
   // TODO(bokan): This should really be implemented here but ScrollAlignment is
   // in Core which is a dependency violation.
   NOTREACHED();

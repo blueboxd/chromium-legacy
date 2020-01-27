@@ -773,10 +773,6 @@ class VIEWS_EXPORT HWNDMessageHandler : public gfx::WindowImpl,
   // not WM_TOUCH events.
   bool pointer_events_for_touch_;
 
-  // True if we enable feature kPrecisionTouchpadScrollPhase. Indicate we will
-  // report the scroll phase information or not.
-  bool precision_touchpad_scroll_phase_enabled_;
-
   // True if DWM frame should be cleared on next WM_ERASEBKGND message.  This is
   // necessary to avoid white flashing in the titlebar area around the
   // minimize/maximize/close buttons.  Clearing the frame on every WM_ERASEBKGND

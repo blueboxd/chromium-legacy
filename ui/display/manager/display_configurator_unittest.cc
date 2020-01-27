@@ -1361,6 +1361,63 @@ TEST_F(DisplayConfiguratorTest, SuspendResumeWithMultipleDisplays) {
             configurator_.display_state());
 }
 
+TEST_F(DisplayConfiguratorTest, EnablePrivacyScreenOnSupportedEmbeddedDisplay) {
+  outputs_[0] = FakeDisplaySnapshot::Builder()
+                    .SetId(kDisplayIds[0])
+                    .SetNativeMode(small_mode_.Clone())
+                    .SetCurrentMode(small_mode_.Clone())
+                    .AddMode(big_mode_.Clone())
+                    .SetType(DISPLAY_CONNECTION_TYPE_INTERNAL)
+                    .SetIsAspectPerservingScaling(true)
+                    .SetPrivacyScreen(kDisabled)
+                    .Build();
+
+  state_controller_.set_state(MULTIPLE_DISPLAY_STATE_SINGLE);
+  InitWithOutputs(&small_mode_);
+  observer_.Reset();
+
+  EXPECT_TRUE(configurator_.SetPrivacyScreen(kDisplayIds[0], true));
+  EXPECT_EQ(SetPrivacyScreenAction(kDisplayIds[0], true),
+            log_->GetActionsAndClear());
+}
+
+TEST_F(DisplayConfiguratorTest,
+       EnablePrivacyScreenOnUnsupportedEmbeddedDisplay) {
+  outputs_[0] = FakeDisplaySnapshot::Builder()
+                    .SetId(kDisplayIds[0])
+                    .SetNativeMode(big_mode_.Clone())
+                    .SetCurrentMode(big_mode_.Clone())
+                    .AddMode(small_mode_.Clone())
+                    .SetType(DISPLAY_CONNECTION_TYPE_INTERNAL)
+                    .SetIsAspectPerservingScaling(true)
+                    .SetPrivacyScreen(kNotSupported)
+                    .Build();
+  state_controller_.set_state(MULTIPLE_DISPLAY_STATE_SINGLE);
+  InitWithOutputs(&big_mode_);
+  observer_.Reset();
+
+  EXPECT_FALSE(configurator_.SetPrivacyScreen(kDisplayIds[0], true));
+  EXPECT_EQ(kNoActions, log_->GetActionsAndClear());
+}
+
+TEST_F(DisplayConfiguratorTest, EnablePrivacyScreenOnExternalDisplay) {
+  outputs_[0] = FakeDisplaySnapshot::Builder()
+                    .SetId(kDisplayIds[0])
+                    .SetNativeMode(small_mode_.Clone())
+                    .SetCurrentMode(small_mode_.Clone())
+                    .SetType(DISPLAY_CONNECTION_TYPE_DISPLAYPORT)
+                    .SetIsAspectPerservingScaling(true)
+                    .SetPrivacyScreen(kNotSupported)
+                    .Build();
+
+  state_controller_.set_state(MULTIPLE_DISPLAY_STATE_SINGLE);
+  InitWithOutputs(&small_mode_);
+  observer_.Reset();
+
+  EXPECT_FALSE(configurator_.SetPrivacyScreen(kDisplayIds[0], true));
+  EXPECT_EQ(kNoActions, log_->GetActionsAndClear());
+}
+
 class DisplayConfiguratorMultiMirroringTest : public DisplayConfiguratorTest {
  public:
   DisplayConfiguratorMultiMirroringTest() = default;

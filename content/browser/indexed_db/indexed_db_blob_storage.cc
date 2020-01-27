@@ -27,29 +27,4 @@ std::unique_ptr<BlobChangeRecord> BlobChangeRecord::Clone() const {
   return record;
 }
 
-WriteDescriptor::WriteDescriptor(mojo::SharedRemote<blink::mojom::Blob> blob,
-                                 int64_t blob_number,
-                                 int64_t size,
-                                 base::Time last_modified)
-    : is_file_(false),
-      blob_(std::move(blob)),
-      blob_number_(blob_number),
-      size_(size),
-      last_modified_(last_modified) {}
-
-WriteDescriptor::WriteDescriptor(const base::FilePath& file_path,
-                                 int64_t blob_number,
-                                 int64_t size,
-                                 base::Time last_modified)
-    : is_file_(true),
-      file_path_(file_path),
-      blob_number_(blob_number),
-      size_(size),
-      last_modified_(last_modified) {}
-
-WriteDescriptor::WriteDescriptor(const WriteDescriptor& other) = default;
-WriteDescriptor::~WriteDescriptor() = default;
-WriteDescriptor& WriteDescriptor::operator=(const WriteDescriptor& other) =
-    default;
-
 }  // namespace content

@@ -60,6 +60,20 @@ static_library("core") {
   public_deps = [ "//components/security_interstitials/core/common/mojom" ]
 }
 
+static_library("unsafe_resource") {
+  sources = [
+    "unsafe_resource.cc",
+    "unsafe_resource.h",
+  ]
+
+  deps = [
+    "//base",
+    "//components/safe_browsing/core/db:hit_report",
+    "//components/safe_browsing/core/db:util",
+    "//net",
+  ]
+}
+
 source_set("unit_tests") {
   testonly = true
   sources = [ "ssl_error_options_mask_unittest.cc" ]

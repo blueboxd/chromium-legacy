@@ -159,7 +159,6 @@ std::unique_ptr<ChromeMetricsHelper> CreateBlockedInterceptionMetricsHelper(
 
 }  // namespace
 
-// static
 SSLBlockingPage* ChromeSecurityBlockingPageFactory::CreateSSLPage(
     content::WebContents* web_contents,
     int cert_error,
@@ -222,7 +221,6 @@ SSLBlockingPage* ChromeSecurityBlockingPageFactory::CreateSSLPage(
   return page.release();
 }
 
-// static
 CaptivePortalBlockingPage*
 ChromeSecurityBlockingPageFactory::CreateCaptivePortalBlockingPage(
     content::WebContents* web_contents,
@@ -243,7 +241,6 @@ ChromeSecurityBlockingPageFactory::CreateCaptivePortalBlockingPage(
   return page.release();
 }
 
-// static
 BadClockBlockingPage*
 ChromeSecurityBlockingPageFactory::CreateBadClockBlockingPage(
     content::WebContents* web_contents,
@@ -264,7 +261,6 @@ ChromeSecurityBlockingPageFactory::CreateBadClockBlockingPage(
   return page.release();
 }
 
-// static
 MITMSoftwareBlockingPage*
 ChromeSecurityBlockingPageFactory::CreateMITMSoftwareBlockingPage(
     content::WebContents* web_contents,
@@ -284,7 +280,6 @@ ChromeSecurityBlockingPageFactory::CreateMITMSoftwareBlockingPage(
   return page.release();
 }
 
-// static
 BlockedInterceptionBlockingPage*
 ChromeSecurityBlockingPageFactory::CreateBlockedInterceptionBlockingPage(
     content::WebContents* web_contents,

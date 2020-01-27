@@ -7,6 +7,7 @@
 #include "base/no_destructor.h"
 #include "base/strings/strcat.h"
 #include "base/time/time.h"
+#include "base/trace_event/trace_event.h"
 #include "chrome/browser/sharing/features.h"
 #include "chrome/browser/sharing/sharing_constants.h"
 #include "chrome/browser/sharing/sharing_fcm_sender.h"
@@ -85,6 +86,8 @@ void SharingFCMHandler::ShutdownHandler() {
 
 void SharingFCMHandler::OnMessage(const std::string& app_id,
                                   const gcm::IncomingMessage& message) {
+  TRACE_EVENT_BEGIN0("sharing", "SharingFCMHandler::OnMessage");
+
   base::TimeTicks message_received_time = base::TimeTicks::Now();
   std::string message_id = GetStrippedMessageId(message.message_id);
   chrome_browser_sharing::SharingMessage sharing_message;
@@ -92,23 +95,23 @@ void SharingFCMHandler::OnMessage(const std::string& app_id,
     LOG(ERROR) << "Failed to parse incoming message with id : " << message_id;
     return;
   }
-  DCHECK(sharing_message.payload_case() !=
+  chrome_browser_sharing::SharingMessage::PayloadCase payload_case =
+      sharing_message.payload_case();
+  DCHECK(payload_case !=
          chrome_browser_sharing::SharingMessage::PAYLOAD_NOT_SET)
       << "No payload set in SharingMessage received";
 
   chrome_browser_sharing::MessageType message_type =
-      SharingPayloadCaseToMessageType(sharing_message.payload_case());
-  LogSharingMessageReceived(sharing_message.payload_case());
+      SharingPayloadCaseToMessageType(payload_case);
+  LogSharingMessageReceived(payload_case);
 
   SharingMessageHandler* handler =
-      handler_registry_->GetSharingHandler(sharing_message.payload_case());
+      handler_registry_->GetSharingHandler(payload_case);
   if (!handler) {
-    LOG(ERROR) << "No handler found for payload : "
-               << sharing_message.payload_case();
+    LOG(ERROR) << "No handler found for payload : " << payload_case;
   } else {
     SharingMessageHandler::DoneCallback done_callback = base::DoNothing();
-    if (sharing_message.payload_case() !=
-        chrome_browser_sharing::SharingMessage::kAckMessage) {
+    if (payload_case != chrome_browser_sharing::SharingMessage::kAckMessage) {
       done_callback = base::BindOnce(
           &SharingFCMHandler::SendAckMessage, weak_ptr_factory_.GetWeakPtr(),
           std::move(message_id), message_type, GetTargetInfo(sharing_message),
@@ -118,6 +121,9 @@ void SharingFCMHandler::OnMessage(const std::string& app_id,
 
     handler->OnMessage(std::move(sharing_message), std::move(done_callback));
   }
+
+  TRACE_EVENT_END1("sharing", "SharingFCMHandler::OnMessage", "message_type",
+                   SharingMessageTypeToString(message_type));
 }
 
 void SharingFCMHandler::OnSendAcknowledged(const std::string& app_id,
@@ -164,6 +170,12 @@ void SharingFCMHandler::SendAckMessage(
     return;
   }
 
+  int trace_id = GenerateSharingTraceId();
+  TRACE_EVENT_NESTABLE_ASYNC_BEGIN1(
+      "sharing", "Sharing.SendAckMessage", TRACE_ID_LOCAL(trace_id),
+      "original_message_type",
+      SharingMessageTypeToString(original_message_type));
+
   chrome_browser_sharing::SharingMessage sharing_message;
   chrome_browser_sharing::AckMessage* ack_message =
       sharing_message.mutable_ack_message();
@@ -178,17 +190,22 @@ void SharingFCMHandler::SendAckMessage(
       base::BindOnce(&SharingFCMHandler::OnAckMessageSent,
                      weak_ptr_factory_.GetWeakPtr(),
                      std::move(original_message_id), original_message_type,
-                     sender_device_type));
+                     sender_device_type, trace_id));
 }
 
 void SharingFCMHandler::OnAckMessageSent(
     std::string original_message_id,
     chrome_browser_sharing::MessageType original_message_type,
     SharingDevicePlatform sender_device_type,
+    int trace_id,
     SharingSendMessageResult result,
     base::Optional<std::string> message_id) {
   LogSendSharingAckMessageResult(original_message_type, sender_device_type,
                                  result);
   if (result != SharingSendMessageResult::kSuccessful)
     LOG(ERROR) << "Failed to send ack mesage for " << original_message_id;
+
+  TRACE_EVENT_NESTABLE_ASYNC_END1("sharing", "Sharing.SendAckMessage",
+                                  TRACE_ID_LOCAL(trace_id), "result",
+                                  SharingSendMessageResultToString(result));
 }

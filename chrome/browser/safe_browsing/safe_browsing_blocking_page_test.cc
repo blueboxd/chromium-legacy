@@ -55,8 +55,10 @@
 #include "components/security_interstitials/content/security_interstitial_controller_client.h"
 #include "components/security_interstitials/content/security_interstitial_tab_helper.h"
 #include "components/security_interstitials/content/ssl_blocking_page.h"
+#include "components/security_interstitials/content/unsafe_resource_util.h"
 #include "components/security_interstitials/core/controller_client.h"
 #include "components/security_interstitials/core/metrics_helper.h"
+#include "components/security_interstitials/core/unsafe_resource.h"
 #include "components/security_interstitials/core/urls.h"
 #include "components/security_state/core/security_state.h"
 #include "components/strings/grit/components_strings.h"
@@ -1867,10 +1869,9 @@ class SafeBrowsingBlockingPageIDNTest
     resource.url = request_url;
     resource.is_subresource = is_subresource;
     resource.threat_type = testing::get<1>(GetParam());
-    resource.web_contents_getter =
-        security_interstitials::UnsafeResource::GetWebContentsGetter(
-            contents->GetMainFrame()->GetProcess()->GetID(),
-            contents->GetMainFrame()->GetRoutingID());
+    resource.web_contents_getter = security_interstitials::GetWebContentsGetter(
+        contents->GetMainFrame()->GetProcess()->GetID(),
+        contents->GetMainFrame()->GetRoutingID());
     resource.threat_source = safe_browsing::ThreatSource::LOCAL_PVER3;
 
     return SafeBrowsingBlockingPage::CreateBlockingPage(

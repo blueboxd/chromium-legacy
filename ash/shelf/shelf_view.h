@@ -239,6 +239,10 @@ class ASH_EXPORT ShelfView : public views::AccessiblePaneView,
       const gfx::Point& origin_in_screen_coordinates) override;
 
   void DestroyDragIconProxy() override;
+
+  // Transfers ownership of |drag_image_|, and cleans up DragIconProxy state.
+  DragImageView* RetrieveDragIconProxyAndClearDragProxyState();
+
   bool StartDrag(const std::string& app_id,
                  const gfx::Point& location_in_screen_coordinates) override;
   bool Drag(const gfx::Point& location_in_screen_coordinates) override;
@@ -300,6 +304,9 @@ class ASH_EXPORT ShelfView : public views::AccessiblePaneView,
   // stops the animation.
   void StopAnimatingViewIfAny(views::View* view);
 
+  // Whether ShelfView is handling a drag and drop.
+  bool IsShelfViewHandlingDragAndDrop() const;
+
   // Return the view model for test purposes.
   const views::ViewModel* view_model_for_test() const {
     return view_model_.get();
@@ -357,6 +364,7 @@ class ASH_EXPORT ShelfView : public views::AccessiblePaneView,
   OverflowBubble* overflow_bubble() { return overflow_bubble_.get(); }
   views::ViewModel* view_model() { return view_model_.get(); }
   bool dragged_off_shelf() const { return dragged_off_shelf_; }
+  ShelfID drag_and_drop_shelf_id() const { return drag_and_drop_shelf_id_; }
 
  private:
   friend class ShelfViewTestAPI;

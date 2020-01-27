@@ -10,7 +10,6 @@
 #include "third_party/blink/public/platform/web_float_rect.h"
 #include "third_party/blink/public/platform/web_intrinsic_sizing_info.h"
 #include "third_party/blink/public/platform/web_rect.h"
-#include "third_party/blink/public/platform/web_scroll_into_view_params.h"
 #include "third_party/blink/public/web/web_document.h"
 #include "third_party/blink/public/web/web_frame_owner_properties.h"
 #include "third_party/blink/public/web/web_performance.h"
@@ -43,15 +42,6 @@
 #include "v8/include/v8.h"
 
 namespace blink {
-
-namespace {
-FloatRect DeNormalizeRect(const WebFloatRect& normalized, const IntRect& base) {
-  FloatRect result = normalized;
-  result.Scale(base.Width(), base.Height());
-  result.MoveBy(FloatPoint(base.Location()));
-  return result;
-}
-}  // namespace
 
 WebRemoteFrame* WebRemoteFrame::Create(
     WebTreeScopeType scope,
@@ -331,52 +321,6 @@ void WebRemoteFrameImpl::TransferUserActivationFrom(
     blink::WebRemoteFrame* source_frame) {
   GetFrame()->TransferUserActivationFrom(
       To<WebRemoteFrameImpl>(source_frame)->GetFrame());
-}
-
-void WebRemoteFrameImpl::ScrollRectToVisible(
-    const WebRect& rect_to_scroll,
-    const WebScrollIntoViewParams& params) {
-  Element* owner_element = frame_->DeprecatedLocalOwner();
-  LayoutObject* owner_object = owner_element->GetLayoutObject();
-  if (!owner_object) {
-    // The LayoutObject could be nullptr by the time we get here. For instance
-    // <iframe>'s style might have been set to 'display: none' right after
-    // scrolling starts in the OOPIF's process (see https://crbug.com/777811).
-    return;
-  }
-
-  // Schedule the scroll.
-  PhysicalRect absolute_rect = owner_object->LocalToAncestorRect(
-      PhysicalRect(rect_to_scroll), owner_object->View());
-
-  if (!params.zoom_into_rect ||
-      !owner_object->GetDocument().GetFrame()->LocalFrameRoot().IsMainFrame()) {
-    owner_object->ScrollRectToVisible(absolute_rect, params);
-    return;
-  }
-
-  // ZoomAndScrollToFocusedEditableElementRect will scroll only the layout and
-  // visual viewports. Ensure the element is actually visible in the viewport
-  // scrolling layer. (i.e. isn't clipped by some other content).
-  WebScrollIntoViewParams new_params(params);
-  new_params.stop_at_main_frame_layout_viewport = true;
-  absolute_rect = owner_object->ScrollRectToVisible(absolute_rect, new_params);
-
-  // This is due to something such as scroll focused editable element into
-  // view on Android which also requires an automatic zoom into legible scale.
-  // This is handled by main frame's WebView.
-  WebViewImpl* view_impl = static_cast<WebViewImpl*>(View());
-  IntRect rect_in_document =
-      view_impl->MainFrameImpl()->GetFrame()->View()->RootFrameToDocument(
-          EnclosingIntRect(
-              owner_element->GetDocument().View()->ConvertToRootFrame(
-                  absolute_rect)));
-  IntRect element_bounds_in_document = EnclosingIntRect(
-      DeNormalizeRect(params.relative_element_bounds, rect_in_document));
-  IntRect caret_bounds_in_document = EnclosingIntRect(
-      DeNormalizeRect(params.relative_caret_bounds, rect_in_document));
-  view_impl->ZoomAndScrollToFocusedEditableElementRect(
-      element_bounds_in_document, caret_bounds_in_document, true);
 }
 
 void WebRemoteFrameImpl::IntrinsicSizingInfoChanged(

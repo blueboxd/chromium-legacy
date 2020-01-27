@@ -915,10 +915,12 @@ Polymer({
         continue;
       }
       if ('activeValue' in value) {
-        if (this.isNetworkPolicyRecommended(value)) {
+        if (this.isNetworkPolicyRecommended(
+                /** @type {!OncMojo.ManagedProperty} */ (value))) {
           return true;
         }
-      } else if (this.hasRecommendedFields_(value)) {
+      } else if (this.hasRecommendedFields_(
+                     /** @type {!mojom.ManagedProperties} */ (value))) {
         return true;
       }
     }

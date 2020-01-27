@@ -71,7 +71,7 @@ class NavigationPredictorKeyedService : public KeyedService {
       content::BrowserContext* browser_context);
   ~NavigationPredictorKeyedService() override;
 
-  SearchEnginePreconnector* SearchEnginePreconnectorForTesting();
+  SearchEnginePreconnector* search_engine_preconnector();
 
   // |document_url| may be invalid. Called by navigation predictor.
   void OnPredictionUpdated(const content::WebContents* web_contents,

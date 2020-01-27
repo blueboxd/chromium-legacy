@@ -6,6 +6,7 @@
  * @fileoverview Test suite for the Media History WebUI.
  */
 
+GEN('#include "build/build_config.h"');
 GEN('#include "chrome/browser/ui/browser.h"');
 GEN('#include "media/base/media_switches.h"');
 
@@ -26,7 +27,14 @@ MediaHistoryWebUIBrowserTest.prototype = {
   ],
 };
 
-TEST_F('MediaHistoryWebUIBrowserTest', 'All', function() {
+// https://crbug.com/1045500: Flaky on Windows.
+GEN('#if defined(OS_WIN)');
+GEN('#define MAYBE_All DISABLED_All');
+GEN('#else');
+GEN('#define MAYBE_All All');
+GEN('#endif');
+
+TEST_F('MediaHistoryWebUIBrowserTest', 'MAYBE_All', function() {
   suiteSetup(function() {
     return whenPageIsPopulatedForTest();
   });

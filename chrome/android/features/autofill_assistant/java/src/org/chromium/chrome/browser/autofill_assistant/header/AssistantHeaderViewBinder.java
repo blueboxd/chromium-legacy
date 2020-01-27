@@ -17,7 +17,8 @@ import org.chromium.chrome.browser.autofill_assistant.carousel.AssistantChip;
 import org.chromium.chrome.browser.autofill_assistant.carousel.AssistantChipViewHolder;
 import org.chromium.chrome.browser.settings.SettingsLauncher;
 import org.chromium.chrome.browser.settings.sync.SyncAndServicesSettings;
-import org.chromium.chrome.browser.ui.widget.textbubble.TextBubble;
+import org.chromium.chrome.browser.util.AccessibilityUtil;
+import org.chromium.components.browser_ui.widget.textbubble.TextBubble;
 import org.chromium.ui.modelutil.PropertyKey;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
 import org.chromium.ui.widget.ViewRectProvider;
@@ -166,7 +167,8 @@ class AssistantHeaderViewBinder
         view.mTextBubble = new TextBubble(
                 /*context = */ view.mContext, /*rootView = */ poodle, /*contentString = */ message,
                 /*accessibilityString = */ message, /*showArrow = */ true,
-                /*anchorRectProvider = */ new ViewRectProvider(poodle));
+                /*anchorRectProvider = */ new ViewRectProvider(poodle),
+                AccessibilityUtil.isAccessibilityEnabled());
         view.mTextBubble.setDismissOnTouchInteraction(true);
         view.mTextBubble.show();
     }

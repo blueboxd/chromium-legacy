@@ -64,7 +64,7 @@ DispatchEventResult EventDispatcher::DispatchEvent(Node& node, Event& event) {
 }
 
 EventDispatcher::EventDispatcher(Node& node, Event& event)
-    : node_(node), event_(event) {
+    : node_(&node), event_(&event) {
   view_ = node.GetDocument().View();
   event_->InitEventPath(*node_);
 }

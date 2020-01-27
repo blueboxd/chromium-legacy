@@ -24,9 +24,14 @@ class AwContentSettingsClient : public content::RenderFrameObserver,
   void OnDestruct() override;
 
   // blink::WebContentSettingsClient implementation.
+  bool AllowImage(bool enabled_per_settings,
+                  const blink::WebURL& image_url) override;
+  bool AllowScript(bool enabled_per_settings) override;
   bool AllowRunningInsecureContent(bool enabled_per_settings,
                                    const blink::WebURL& url) override;
   bool ShouldAutoupgradeMixedContent() override;
+
+  bool ShouldAllowlistForContentSettings() const;
 
   DISALLOW_COPY_AND_ASSIGN(AwContentSettingsClient);
 };

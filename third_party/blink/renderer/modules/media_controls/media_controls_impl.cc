@@ -29,11 +29,11 @@
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/platform/web_size.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_mutation_observer_init.h"
 #include "third_party/blink/renderer/core/css/css_property_value_set.h"
 #include "third_party/blink/renderer/core/dom/element_traversal.h"
 #include "third_party/blink/renderer/core/dom/events/event_dispatch_forbidden_scope.h"
 #include "third_party/blink/renderer/core/dom/mutation_observer.h"
-#include "third_party/blink/renderer/core/dom/mutation_observer_init.h"
 #include "third_party/blink/renderer/core/dom/mutation_record.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
 #include "third_party/blink/renderer/core/events/gesture_event.h"
@@ -211,7 +211,7 @@ class MediaControlsImpl::BatchedControlUpdate {
   }
 
  private:
-  Member<MediaControlsImpl> controls_;
+  MediaControlsImpl* controls_;
   static int batch_depth_;
 
   DISALLOW_COPY_AND_ASSIGN(BatchedControlUpdate);

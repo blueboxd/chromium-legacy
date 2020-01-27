@@ -425,12 +425,6 @@ INSTANTIATE_TEST_SUITE_P(PixelResourceTest,
 
 TEST_P(LayerTreeHostBlurFiltersPixelTestGPULayerList,
        BackdropFilterBlurOffAxis) {
-  if (renderer_type() == LayerTreeTest::RENDERER_SKIA_VK ||
-      renderer_type() == LayerTreeTest::RENDERER_SKIA_GL) {
-    // TODO(michaelludwig): Suppress for rebaseline, crbug:1045050
-    return;
-  }
-
 #if defined(OS_WIN) || defined(ARCH_CPU_ARM64)
 #if defined(OS_WIN)
   // Windows has 116 pixels off by at most 2: crbug.com/225027
@@ -889,11 +883,6 @@ TEST_P(LayerTreeHostFiltersPixelTest, RotatedFilter) {
 }
 
 TEST_P(LayerTreeHostFiltersPixelTest, RotatedDropShadowFilter) {
-  if (renderer_type() == LayerTreeTest::RENDERER_SKIA_VK ||
-      renderer_type() == LayerTreeTest::RENDERER_SKIA_GL) {
-    // TODO(michaelludwig): Suppress for rebaseline, crbug:1045050
-    return;
-  }
   scoped_refptr<SolidColorLayer> background =
       CreateSolidColorLayer(gfx::Rect(300, 300), SK_ColorWHITE);
 

@@ -1,5 +1,2 @@
 The org.chromium.components.browser_ui.widget package contains generally useful
 UI utilities with no feature-specific code or dependencies.
-
-TODO(crbug.com/1030785): Most or all of org.chromium.chrome.browser.ui.widget
-should be relocated to this package.

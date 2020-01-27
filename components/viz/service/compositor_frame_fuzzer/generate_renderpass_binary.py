@@ -14,9 +14,9 @@ import sys
 path_to_src_root = os.path.join(
     os.path.abspath(__file__), *[os.path.pardir] * 5)
 
-# allow importing modules from  //src/chrome/browser/resources/protobufs
+# allow importing modules from  //src/components/resources/protobufs
 sys.path.insert(0, os.path.normpath(
-    os.path.join(path_to_src_root, 'chrome/browser/resources/protobufs')))
+    os.path.join(path_to_src_root, 'components/resources/protobufs')))
 
 from binary_proto_generator import BinaryProtoGenerator
 

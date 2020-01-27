@@ -19,24 +19,20 @@ var RoleType = chrome.automation.RoleType;
 var StateType = chrome.automation.StateType;
 
 /**
- * @constructor
  * @implements {ChromeVoxStateObserver}
- * @extends {BaseAutomationHandler}
  */
-RangeAutomationHandler = function() {
-  BaseAutomationHandler.call(this, undefined);
+RangeAutomationHandler = class extends BaseAutomationHandler {
+  constructor() {
+    super(undefined);
 
-  /** @private {AutomationNode} */
-  this.lastAttributeTarget_;
+    /** @private {AutomationNode} */
+    this.lastAttributeTarget_;
 
-  /** @private {Output} */
-  this.lastAttributeOutput_;
+    /** @private {Output} */
+    this.lastAttributeOutput_;
 
-  ChromeVoxState.addObserver(this);
-};
-
-RangeAutomationHandler.prototype = {
-  __proto__: BaseAutomationHandler.prototype,
+    ChromeVoxState.addObserver(this);
+  }
 
   /**
    * @param {cursors.Range} newRange
@@ -65,7 +61,7 @@ RangeAutomationHandler.prototype = {
     this.addListener_(EventType.LOCATION_CHANGED, this.onLocationChanged);
     this.addListener_(EventType.ROW_COLLAPSED, this.onEventIfInRange);
     this.addListener_(EventType.ROW_EXPANDED, this.onEventIfInRange);
-  },
+  }
 
   /**
    * @param {!AutomationEvent} evt
@@ -114,15 +110,15 @@ RangeAutomationHandler.prototype = {
 
       this.lastAttributeOutput_.go();
     }
-  },
+  }
 
   /**
    * @param {!AutomationEvent} evt
    */
   onAriaAttributeChanged(evt) {
     // Don't report changes on editable nodes since they interfere with text
-    // selection changes. Users can query via Search+k for the current state of
-    // the text field (which would also report the entire value).
+    // selection changes. Users can query via Search+k for the current state
+    // of the text field (which would also report the entire value).
     if (evt.target.state[StateType.EDITABLE]) {
       return;
     }
@@ -140,7 +136,7 @@ RangeAutomationHandler.prototype = {
     }
 
     this.onEventIfInRange(evt);
-  },
+  }
 
   /**
    * Provides all feedback once a checked state changed event fires.
@@ -154,7 +150,7 @@ RangeAutomationHandler.prototype = {
     var event = new CustomAutomationEvent(
         EventType.CHECKED_STATE_CHANGED, evt.target, evt.eventFrom);
     this.onEventIfInRange(event);
-  },
+  }
 
   /**
    * Updates the focus ring if the location of the current range, or
@@ -170,8 +166,8 @@ RangeAutomationHandler.prototype = {
       return;
     }
 
-    // Rather than trying to figure out if the current range falls somewhere in
-    // |evt.target|, just update it if our cached bounds don't match.
+    // Rather than trying to figure out if the current range falls somewhere
+    // in |evt.target|, just update it if our cached bounds don't match.
     var oldFocusBounds = ChromeVoxState.instance.getFocusBounds();
     var startRect = cur.start.node.location;
     var endRect = cur.end.node.location;
@@ -184,7 +180,7 @@ RangeAutomationHandler.prototype = {
     }
 
     new Output().withLocation(cur, null, evt.type).go();
-  },
+  }
 
   /**
    * @param {!chrome.accessibilityPrivate.ScreenRect} rectA
@@ -197,6 +193,6 @@ RangeAutomationHandler.prototype = {
         rectA.width == rectB.width && rectA.height == rectB.height;
   }
 };
-});  // goog.scope
 
 new RangeAutomationHandler();
+});  // goog.scope

@@ -20,14 +20,14 @@ class TextOffset {
   TextOffset(Text*, int);
   TextOffset(const TextOffset&);
 
-  Text* GetText() const { return text_.Get(); }
+  Text* GetText() const { return text_; }
   int Offset() const { return offset_; }
 
   bool IsNull() const;
   bool IsNotNull() const;
 
  private:
-  Member<Text> text_;
+  Text* text_ = nullptr;
   int offset_;
 };
 

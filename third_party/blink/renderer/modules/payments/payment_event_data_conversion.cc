@@ -6,13 +6,13 @@
 
 #include "third_party/blink/public/mojom/payments/payment_app.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/to_v8_for_core.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_payment_currency_amount.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_payment_details_modifier.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_payment_item.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_payment_method_data.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_payment_options.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_payment_request_event_init.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_payment_shipping_option.h"
-#include "third_party/blink/renderer/modules/payments/payment_currency_amount.h"
-#include "third_party/blink/renderer/modules/payments/payment_item.h"
-#include "third_party/blink/renderer/modules/payments/payment_method_data.h"
-#include "third_party/blink/renderer/modules/payments/payment_request_event_init.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 
 namespace blink {

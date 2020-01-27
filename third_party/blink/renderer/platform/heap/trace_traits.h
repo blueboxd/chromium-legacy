@@ -359,10 +359,27 @@ struct TraceInCollectionTrait<kNoWeakHandling, T, Traits> {
 };
 
 template <typename T, typename Traits>
+struct TraceInCollectionTrait<kNoWeakHandling, blink::Member<T>, Traits> {
+  static bool IsAlive(blink::Member<T>& t) { return true; }
+  static bool Trace(blink::Visitor* visitor, blink::Member<T>& t) {
+    visitor->TraceMaybeDeleted(t);
+    return false;
+  }
+};
+
+template <typename T, typename Traits>
+struct TraceInCollectionTrait<kWeakHandling, blink::Member<T>, Traits> {
+  static bool IsAlive(blink::Member<T>& t) { return true; }
+  static bool Trace(blink::Visitor* visitor, blink::Member<T>& t) {
+    visitor->TraceMaybeDeleted(t);
+    return false;
+  }
+};
+
+template <typename T, typename Traits>
 struct TraceInCollectionTrait<kNoWeakHandling, blink::WeakMember<T>, Traits> {
   static bool Trace(blink::Visitor* visitor, blink::WeakMember<T>& t) {
-    // Extract raw pointer to avoid using the WeakMember<> overload in Visitor.
-    visitor->Trace(t.Get());
+    visitor->TraceMaybeDeleted(static_cast<blink::Member<T>>(t));
     return false;
   }
 };

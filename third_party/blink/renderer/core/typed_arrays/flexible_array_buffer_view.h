@@ -16,7 +16,8 @@ class CORE_EXPORT FlexibleArrayBufferView {
   STACK_ALLOCATED();
 
  public:
-  FlexibleArrayBufferView() : small_data_(nullptr), small_length_(0) {}
+  FlexibleArrayBufferView()
+      : full_(nullptr), small_data_(nullptr), small_length_(0) {}
 
   void SetFull(DOMArrayBufferView* full) { full_ = full; }
   void SetSmall(void* data, size_t length) {
@@ -60,7 +61,7 @@ class CORE_EXPORT FlexibleArrayBufferView {
   operator bool() const { return !IsEmpty(); }
 
  private:
-  Member<DOMArrayBufferView> full_;
+  DOMArrayBufferView* full_;
 
   void* small_data_;
   size_t small_length_;

@@ -254,7 +254,7 @@ class COMPONENT_EXPORT(TRACING_CPP) TraceEventDataSource
   void LogHistograms();
   // Logs a given histogram in traces.
   void LogHistogram(base::HistogramBase* histogram);
-  void EmitProcessDescriptor();
+  void EmitTrackDescriptor();
 
   void IncrementSessionIdOrClearStartupFlagWhileLocked();
   void SetStartupTracingFlagsWhileLocked();
@@ -287,8 +287,6 @@ class COMPONENT_EXPORT(TRACING_CPP) TraceEventDataSource
   base::OnceClosure flush_complete_task_;
   std::vector<std::string> histograms_;
   bool privacy_filtering_enabled_ = false;
-  std::string process_name_;
-  int process_id_ = base::kNullProcessId;
   SEQUENCE_CHECKER(perfetto_sequence_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(TraceEventDataSource);

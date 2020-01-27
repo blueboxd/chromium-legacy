@@ -625,7 +625,8 @@ public class TopToolbarCoordinator implements Toolbar {
      */
     public void enableExperimentalButton(View.OnClickListener onClickListener, Drawable image,
             @StringRes int contentDescriptionResId) {
-        if (FeatureUtilities.isStartSurfaceSinglePaneEnabled()) {
+        if (mStartSurfaceToolbarCoordinator != null
+                && FeatureUtilities.isStartSurfaceSinglePaneEnabled()) {
             mStartSurfaceToolbarCoordinator.enableExperimentalButton(
                     onClickListener, image, contentDescriptionResId);
         }
@@ -648,7 +649,8 @@ public class TopToolbarCoordinator implements Toolbar {
      * @return The experimental toolbar button if it exists.
      */
     public void updateExperimentalButtonImage(Drawable image) {
-        if (FeatureUtilities.isStartSurfaceSinglePaneEnabled()) {
+        if (mStartSurfaceToolbarCoordinator != null
+                && FeatureUtilities.isStartSurfaceSinglePaneEnabled()) {
             mStartSurfaceToolbarCoordinator.updateExperimentalButtonImage(image);
         }
         mToolbarLayout.updateExperimentalButtonImage(image);
@@ -658,7 +660,8 @@ public class TopToolbarCoordinator implements Toolbar {
      * Disable the experimental toolbar button.
      */
     public void disableExperimentalButton() {
-        if (FeatureUtilities.isStartSurfaceSinglePaneEnabled()) {
+        if (mStartSurfaceToolbarCoordinator != null
+                && FeatureUtilities.isStartSurfaceSinglePaneEnabled()) {
             mStartSurfaceToolbarCoordinator.disableExperimentalButton();
         }
         mToolbarLayout.disableExperimentalButton();

@@ -134,6 +134,7 @@
 <translation id="1994173015038366702">Svetainės URL</translation>
 <translation id="2000419248597011803">Numatytajam paieškos varikliui siunčiami kai kurie slapukai ir į adreso juostą bei paieškos laukelį įvestos paieškos</translation>
 <translation id="2002537628803770967">„Google Pay“ naudojamos kredito kortelės ir adresai</translation>
+<translation id="2012973609889389923">Sparti svetainė</translation>
 <translation id="2013642289801508067">{FILE_COUNT,plural, =1{# failas}one{# failas}few{# failai}many{# failo}other{# failų}}</translation>
 <translation id="2017836877785168846">Išvaloma istorija ir automatiniai užbaigimai adreso juostoje.</translation>
 <translation id="2021896219286479412">Viso ekrano svetainės valdikliai</translation>
@@ -306,6 +307,7 @@
 <translation id="3298243779924642547">Supapr.</translation>
 <translation id="3303414029551471755">Tęsti turinio atsisiuntimo procesą?</translation>
 <translation id="3306398118552023113">Ši programa veikia naršyklėje „Chrome“</translation>
+<translation id="3312292613668865961">Klausti prieš leidžiant svetainėms pasiekti virtualiosios realybės įrenginį ir duomenis (rekomenduojama)</translation>
 <translation id="3315103659806849044">Šiuo metu tinkinate savo sinchronizavimo ir „Google“ paslaugų nustatymus. Jei norite užbaigti sinchronizavimo įjungimo procesą, palieskite mygtuką „Patvirtinti“ netoli ekrano apačios. Eiti į viršų</translation>
 <translation id="3328801116991980348">Svetainės informacija</translation>
 <translation id="3333961966071413176">Visi kontaktai</translation>
@@ -511,6 +513,7 @@ Jei norite pakeisti šį nustatymą, <ph name="BEGIN_LINK" />iš naujo nustatyki
 <translation id="4915549754973153784"><ph name="BEGIN_LINK" />Gaukite pagalbos<ph name="END_LINK" />, kol ieškoma įrenginių…</translation>
 <translation id="4921180162323349895">{FILE_COUNT,plural, =1{# puslapis}one{# puslapis}few{# puslapiai}many{# puslapio}other{# puslapių}}</translation>
 <translation id="4932247056774066048">Atsijungiate nuo paskyros, kurią valdo <ph name="DOMAIN_NAME" />, todėl jūsų „Chrome“ duomenys bus ištrinti iš šio įrenginio. Duomenys liks „Google“ paskyroje.</translation>
+<translation id="4935305910887312910">Klausti prieš leidžiant svetainėms gauti kameros padėtį ar susieti patalpą (rekomenduojama)</translation>
 <translation id="4943703118917034429">Virtualioji realybė</translation>
 <translation id="4943872375798546930">Rezultatų nėra</translation>
 <translation id="4958708863221495346"><ph name="URL_OF_THE_CURRENT_TAB" /> bendrina jūsų ekrano vaizdą</translation>
@@ -744,6 +747,7 @@ Pavyzdžiui, kai kurios svetainės gali atsakyti į šią užklausą rodydamos j
 <translation id="6573431926118603307">Čia bus rodomi kituose įrenginiuose atidaryti „Chrome“ skirtukai.</translation>
 <translation id="6583199322650523874">Pažymėti dabartinį puslapį</translation>
 <translation id="6593061639179217415">Svetainė kompiuteriams</translation>
+<translation id="6597891566292541626">QR / brūkšninis kodas turėtų būti įdėtas į šį rėmelį.</translation>
 <translation id="6600954340915313787">Nukopijuota į „Chrome“</translation>
 <translation id="6608650720463149374"><ph name="GIGABYTES" /> GB</translation>
 <translation id="6612358246767739896">Apsaugotas turinys</translation>
@@ -953,6 +957,7 @@ Svetainė NETURI prieigos prie fotoaparato. Fotoaparato vaizdai matomi tik jums.
 <translation id="8109613176066109935">Jei norite pasiekti žymes visuose įrenginiuose, įjunkite sinchronizavimą</translation>
 <translation id="8110087112193408731">Rodyti „Chrome“ veiklą Skaitmeninės gerovės programoje?</translation>
 <translation id="8116925261070264013">Išjungta</translation>
+<translation id="8127542551745560481">Redaguoti pagrindinį puslapį</translation>
 <translation id="813082847718468539">Žiūrėti svetainės informaciją</translation>
 <translation id="8156139159503939589">Kokiomis kalbomis skaitote?</translation>
 <translation id="8168435359814927499">Turinys</translation>
@@ -1024,6 +1029,7 @@ Svetainė NETURI prieigos prie fotoaparato. Fotoaparato vaizdai matomi tik jums.
 <translation id="8676374126336081632">Išvalyti įvestą tekstą</translation>
 <translation id="8687353297350450808">{N_BARS,plural, =1{Signalo stiprumo lygis: # juosta}one{Signalo stiprumo lygis: # juosta}few{Signalo stiprumo lygis: # juostos}many{Signalo stiprumo lygis: # juostos}other{Signalo stiprumo lygis: # juostų}}</translation>
 <translation id="868929229000858085">Ieškokite savo kontaktuose</translation>
+<translation id="8698438463325761328">Neleisti svetainėms pasiekti virtualiosios realybės įrenginio ir duomenų</translation>
 <translation id="869891660844655955">Galiojimo data</translation>
 <translation id="8719023831149562936">Negalima perduoti esamo skirtuko</translation>
 <translation id="8728487861892616501">Naudodami šią programą sutinkate su „Chrome“ <ph name="BEGIN_LINK1" />paslaugų teikimo sąlygomis<ph name="END_LINK1" />, <ph name="BEGIN_LINK2" />privatumo pranešimu<ph name="END_LINK2" /> ir <ph name="BEGIN_LINK3" />privatumo pranešimu, skirtu „Google“ paskyroms, tvarkomoms naudojant „Family Link“<ph name="END_LINK3" />.</translation>
@@ -1041,6 +1047,7 @@ Svetainė NETURI prieigos prie fotoaparato. Fotoaparato vaizdai matomi tik jums.
 <translation id="883806473910249246">Atsisiunčiant turinį įvyko klaida.</translation>
 <translation id="8840953339110955557">Šis puslapis gali skirtis nuo prisijungus pateiktos versijos.</translation>
 <translation id="8847988622838149491">USB</translation>
+<translation id="884828189055900810">Neleisti svetainėms gauti kameros padėties ar susieti patalpos</translation>
 <translation id="8853345339104747198">„<ph name="TAB_TITLE" />“, skirtukas</translation>
 <translation id="885701979325669005">Saugykla</translation>
 <translation id="889338405075704026">Eiti į „Chrome“ nustatymus</translation>
@@ -1048,6 +1055,7 @@ Svetainė NETURI prieigos prie fotoaparato. Fotoaparato vaizdai matomi tik jums.
 <translation id="8909135823018751308">Bendrinti…</translation>
 <translation id="8912362522468806198">„Google“ paskyra</translation>
 <translation id="8920114477895755567">Laukiama išsamios tėvų informacijos.</translation>
+<translation id="8921772741368021346"><ph name="POSITION" /> / <ph name="DURATION" /></translation>
 <translation id="8922289737868596582">Atsisiųskite puslapius spustelėję mygtuką „Daugiau parinkčių“, kad galėtumėte naudoti juos neprisijungę</translation>
 <translation id="8926666909099850184">ALR išjungtas šiame įrenginyje. Įjunkite ALR <ph name="BEGIN_LINK" />„Android“ nustatymuose<ph name="END_LINK" />.</translation>
 <translation id="8937772741022875483">Pašalinti „Chrome“ veiklą iš Skaitmeninės gerovės programos?</translation>

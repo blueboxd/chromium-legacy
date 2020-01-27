@@ -6,6 +6,7 @@
 
 #include "base/optional.h"
 #include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/renderer/bindings/core/v8/double_or_scroll_timeline_auto_keyword.h"
 #include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value.h"
 #include "third_party/blink/renderer/bindings/modules/v8/animation_effect_or_animation_effect_sequence.h"
 #include "third_party/blink/renderer/core/animation/document_timeline.h"

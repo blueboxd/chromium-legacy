@@ -112,6 +112,7 @@
 <translation id="2352467521400612932">Rašiklio nustatymai</translation>
 <translation id="2354174487190027830">Aktyvinamas „<ph name="NAME" />“</translation>
 <translation id="2359808026110333948">Tęskite</translation>
+<translation id="2364154243880592194">Būsenos dėklas, laikas <ph name="TIME" />, <ph name="BATTERY" /> Paspauskite „Ieškoti“ ir kairėn, kad pasiektumėte pranešimų centrą.</translation>
 <translation id="2365393535144473978">Įgalinus mobiliojo ryšio duomenis bus įgalintas „Bluetooth“.</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="2412593942846481727">Pasiekiamas naujinys</translation>
@@ -335,6 +336,7 @@
 <translation id="5669267381087807207">Aktyvinama</translation>
 <translation id="5673434351075758678">Po nustatymų sinchronizavimo kalba pakeista iš „<ph name="FROM_LOCALE" />“ į „<ph name="TO_LOCALE" />“.</translation>
 <translation id="5682642926269496722">„Google Assistant“ nepasiekiamas dabartinėje naudotojo paskyroje.</translation>
+<translation id="5689633613396158040">Naudojant „Nakties šviesos“ funkciją bus patogiau žiūrėti į ekraną ar skaityti prietemoje. Palieskite, kad pakeistumėte, kokiu metu įjungiama funkcija „Nakties šviesa“, arba ją visiškai išjungtumėte.</translation>
 <translation id="5691772641933328258">Kontrolinis kodas neatpažintas</translation>
 <translation id="5710450975648804523">Netrukdymo režimas įjungtas</translation>
 <translation id="573413375004481890">Šis įrenginys negali palaikyti visų ekranų, todėl vienas iš jų buvo atjungtas</translation>
@@ -514,6 +516,7 @@
 <translation id="8142441511840089262">Dukart spustelėti</translation>
 <translation id="8142699993796781067">Privatus tinklas</translation>
 <translation id="8152092012181020186">Paspauskite „Ctrl“ + W, kad uždarytumėte.</translation>
+<translation id="8155007568264258537"><ph name="FEATURE_NAME" /> Šį nustatymą tvarko jūsų administratorius.</translation>
 <translation id="8167567890448493835">Naudojama: <ph name="LOCALE_NAME" /></translation>
 <translation id="8190698733819146287">Tinkinti kalbas ir įvestį...</translation>
 <translation id="8192202700944119416">Pranešimai yra paslėpti.</translation>

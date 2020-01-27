@@ -224,9 +224,9 @@ TransportSecurityPersister::TransportSecurityPersister(
 
   base::PostTaskAndReplyWithResult(
       background_runner_.get(), FROM_HERE,
-      base::Bind(&LoadState, writer_.path()),
-      base::Bind(&TransportSecurityPersister::CompleteLoad,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&LoadState, writer_.path()),
+      base::BindOnce(&TransportSecurityPersister::CompleteLoad,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 TransportSecurityPersister::~TransportSecurityPersister() {

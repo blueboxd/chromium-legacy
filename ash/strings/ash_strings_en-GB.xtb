@@ -112,6 +112,7 @@
 <translation id="2352467521400612932">Stylus settings</translation>
 <translation id="2354174487190027830">Activating <ph name="NAME" /></translation>
 <translation id="2359808026110333948">Continue</translation>
+<translation id="2364154243880592194">Status tray, time <ph name="TIME" />, <ph name="BATTERY" /> Press search + left to access the notification centre.</translation>
 <translation id="2365393535144473978">Enabling mobile data will enable Bluetooth.</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="2412593942846481727">Update available</translation>
@@ -335,6 +336,7 @@
 <translation id="5669267381087807207">Activating</translation>
 <translation id="5673434351075758678">From '<ph name="FROM_LOCALE" />' to '<ph name="TO_LOCALE" />' after syncing your settings.</translation>
 <translation id="5682642926269496722">The Google Assistant is not available for current user account.</translation>
+<translation id="5689633613396158040">Night Light makes it easier to look at your screen or read in dim light. Tap to change what time Night Light turns on, or turn it off completely.</translation>
 <translation id="5691772641933328258">Fingerprint not recognised</translation>
 <translation id="5710450975648804523">Do Not Disturb is on</translation>
 <translation id="573413375004481890">This device couldn't support all of your displays, so one has been disconnected</translation>
@@ -514,6 +516,7 @@
 <translation id="8142441511840089262">Double click</translation>
 <translation id="8142699993796781067">Private networks</translation>
 <translation id="8152092012181020186">Press Ctrl + W to close.</translation>
+<translation id="8155007568264258537"><ph name="FEATURE_NAME" /> This setting is managed by your administrator.</translation>
 <translation id="8167567890448493835">Using <ph name="LOCALE_NAME" /></translation>
 <translation id="8190698733819146287">Customise languages and input...</translation>
 <translation id="8192202700944119416">Notifications are hidden.</translation>

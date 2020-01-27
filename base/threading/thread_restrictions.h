@@ -222,6 +222,9 @@ class CommandBufferLocal;
 class GpuState;
 class MaterialDesignController;
 }
+namespace weblayer {
+class WebLayerPathProvider;
+}
 namespace net {
 class MultiThreadedCertVerifierScopedAllowBaseSyncPrimitives;
 class MultiThreadedProxyResolverScopedAllowJoinOnIO;
@@ -370,6 +373,7 @@ class BASE_EXPORT ScopedAllowBlocking {
   friend class StackSamplingProfiler;
   friend class weblayer::ProfileImpl;
   friend class content::RenderProcessHostImpl;
+  friend class weblayer::WebLayerPathProvider;
 
   ScopedAllowBlocking() EMPTY_BODY_IF_DCHECK_IS_OFF;
   ~ScopedAllowBlocking() EMPTY_BODY_IF_DCHECK_IS_OFF;

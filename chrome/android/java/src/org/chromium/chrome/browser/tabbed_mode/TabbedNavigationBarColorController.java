@@ -30,9 +30,9 @@ import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
 import org.chromium.chrome.browser.ui.ImmersiveModeManager;
-import org.chromium.chrome.browser.vr.VrModeObserver;
 import org.chromium.chrome.browser.vr.VrModuleProvider;
 import org.chromium.ui.UiUtils;
+import org.chromium.ui.vr.VrModeObserver;
 
 /**
  * Controls the bottom system navigation bar color for the provided {@link Window}.

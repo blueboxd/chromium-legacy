@@ -1148,8 +1148,8 @@ TEST_F(CrostiniManagerRestartTest, OsReleaseSetCorrectly) {
   EXPECT_TRUE(crostini_manager()->IsRestartPending(restart_id_));
   run_loop()->Run();
 
-  const auto* stored_os_release =
-      crostini_manager()->GetContainerOsRelease(kVmName, kContainerName);
+  const auto* stored_os_release = crostini_manager()->GetContainerOsRelease(
+      ContainerId(kVmName, kContainerName));
   EXPECT_NE(stored_os_release, nullptr);
   // Sadly, we can't use MessageDifferencer here because we're using the LITE
   // API in our protos.

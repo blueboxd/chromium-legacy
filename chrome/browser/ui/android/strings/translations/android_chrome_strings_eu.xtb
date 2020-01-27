@@ -68,7 +68,7 @@
 <translation id="1430915738399379752">Inprimatu</translation>
 <translation id="1446450296470737166">Onartu MIDI gailuen kontrol osoa</translation>
 <translation id="1450753235335490080">Ezin da partekatu <ph name="CONTENT_TYPE" /></translation>
-<translation id="145097072038377568">Desaktibatu egin da Android ezarpenetan</translation>
+<translation id="145097072038377568">Desaktibatu egin da Android-en ezarpenetan</translation>
 <translation id="1477626028522505441">Ezin izan da deskargatu <ph name="FILE_NAME" />, zerbitzariarekin arazoak daudelako.</translation>
 <translation id="1506061864768559482">Bilatzailea</translation>
 <translation id="1513352483775369820">Laster-markak eta web-historia</translation>
@@ -110,16 +110,16 @@
 <translation id="1856325424225101786">Oinarrizko modua berrezarri nahi duzu?</translation>
 <translation id="1868024384445905608">Chrome-k orain bizkorrago deskargatzen ditu fitxategiak</translation>
 <translation id="1883903952484604915">Nire fitxategiak</translation>
-<translation id="1887786770086287077">Kokapenerako sarbidea desaktibatuta dago gailuan. Aktiba ezazu <ph name="BEGIN_LINK" />Android ezarpenak<ph name="END_LINK" /> atalean.</translation>
+<translation id="1887786770086287077">Kokapenerako sarbidea desaktibatuta dago gailuan. Aktiba ezazu <ph name="BEGIN_LINK" />Android-en ezarpenetan<ph name="END_LINK" />.</translation>
 <translation id="1891331835972267886">Chrome-n irekiko da <ph name="APP_NAME" />. Aurrera eginez gero, onartu egingo dituzu Chrome-ren <ph name="BEGIN_LINK1" />Zerbitzu-baldintzak<ph name="END_LINK1" /> eta <ph name="BEGIN_LINK2" />Pribatutasun-oharra<ph name="END_LINK2" />.</translation>
 <translation id="1919345977826869612">Iragarkiak</translation>
 <translation id="1919950603503897840">Hautatu kontaktuak</translation>
-<translation id="1922076542920281912">Chrome-ri kokapena atzitzeko baimena emateko, kokapena aktibatu behar duzu <ph name="BEGIN_LINK" />Android ezarpenak<ph name="END_LINK" /> atalean.</translation>
+<translation id="1922076542920281912">Chrome-ri kokapena atzitzeko baimena emateko, kokapena aktibatu behar duzu <ph name="BEGIN_LINK" />Android-en ezarpenetan<ph name="END_LINK" />.</translation>
 <translation id="1923695749281512248"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / <ph name="FILE_SIZE_WITH_UNITS" /></translation>
 <translation id="1928696683969751773">Eguneratzeak</translation>
 <translation id="19288952978244135">Ireki berriro Chrome.</translation>
 <translation id="1933845786846280168">Hautatutako fitxa</translation>
-<translation id="194341124344773587">Aktibatu Chrome-rako baimena <ph name="BEGIN_LINK" />Android ezarpenetan<ph name="END_LINK" />.</translation>
+<translation id="194341124344773587">Aktibatu Chrome-rako baimena <ph name="BEGIN_LINK" />Android-en ezarpenetan<ph name="END_LINK" />.</translation>
 <translation id="1943432128510653496">Gorde pasahitzak</translation>
 <translation id="1952172573699511566">Ahal den heinean, webguneek testua hizkuntza hobetsian erakutsiko dute.</translation>
 <translation id="1960290143419248813">Android-en bertsio honek ez ditu onartuko Chrome-ren eguneratzeak aurrerantzean</translation>
@@ -138,7 +138,7 @@
 <translation id="2017836877785168846">Helbide-barrako historia eta osatze automatikoak garbitzen ditu.</translation>
 <translation id="2021896219286479412">Webgunearen pantaila osoko aukerak</translation>
 <translation id="2038563949887743358">Aktibatu ordenagailuetarako webgunea eskatzeko aukera</translation>
-<translation id="2041019821020695769">Chrome-ri jakinarazpenak bidaltzeko baimena emateko, jakinarazpenak aktibatu behar dituzu <ph name="BEGIN_LINK" />Android ezarpenak<ph name="END_LINK" /> atalean.</translation>
+<translation id="2041019821020695769">Chrome-ri jakinarazpenak bidaltzeko baimena emateko, jakinarazpenak aktibatu behar dituzu <ph name="BEGIN_LINK" />Android-en ezarpenetan<ph name="END_LINK" />.</translation>
 <translation id="204321170514947529"><ph name="APP_NAME" /> aplikazioak ere baditu datuak Chrome-n</translation>
 <translation id="2049574241039454490"><ph name="FILE_SIZE_OF_TOTAL" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
 <translation id="2056878612599315956">Webgunea pausatuta dago</translation>
@@ -212,7 +212,7 @@
 <translation id="2546283357679194313">Cookieak eta webgune-datuak</translation>
 <translation id="2567385386134582609">IRUDIA</translation>
 <translation id="257088987046510401">Gaiak</translation>
-<translation id="2570922361219980984">Kokapenerako sarbidea desaktibatuta dago gailu honetan ere. Aktiba ezazu <ph name="BEGIN_LINK" />Android ezarpenak<ph name="END_LINK" /> atalean.</translation>
+<translation id="2570922361219980984">Kokapenerako sarbidea desaktibatuta dago gailu honetan ere. Aktiba ezazu <ph name="BEGIN_LINK" />Android-en ezarpenetan<ph name="END_LINK" />.</translation>
 <translation id="257931822824936280">Zabalduta; egin klik tolesteko.</translation>
 <translation id="2581165646603367611">Chrome-k garrantzi gabekotzat jotzen dituen cookieak, cachea eta bestelako datuak ezabatuko dira.</translation>
 <translation id="2586657967955657006">Arbela</translation>
@@ -273,7 +273,7 @@
 <translation id="3029613699374795922"><ph name="KBS" /> KB deskargatu dira</translation>
 <translation id="3029704984691124060">Pasaesaldiak ez datoz bat</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Lortu laguntza<ph name="END_LINK" /></translation>
-<translation id="305593374596241526">Kokapena desaktibatuta dago; aktiba ezazu <ph name="BEGIN_LINK" />Android ezarpenetan<ph name="END_LINK" />.</translation>
+<translation id="305593374596241526">Kokapena desaktibatuta dago; aktiba ezazu <ph name="BEGIN_LINK" />Android-en ezarpenetan<ph name="END_LINK" />.</translation>
 <translation id="3058498974290601450">Sinkronizazioa aktibatzeko, joan ezarpenetara</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> laster-marka}other{<ph name="BOOKMARKS_COUNT_MANY" /> laster-marka}}</translation>
 <translation id="3089395242580810162">Ireki ezkutuko fitxa batean</translation>
@@ -283,7 +283,7 @@
 <translation id="3157842584138209013">Sakatu "Aukera gehiago" botoia zenbat datu aurreztu dituzun ikusteko</translation>
 <translation id="3166827708714933426">Fitxetarako eta leihoetarako lasterbideak</translation>
 <translation id="3181954750937456830">Arakatze segurua (webgune arriskutsuen aurka babesten zaituzte gailua eta zu)</translation>
-<translation id="3190152372525844641">Aktibatu Chrome-rako baimenak <ph name="BEGIN_LINK" />Android ezarpenetan<ph name="END_LINK" />.</translation>
+<translation id="3190152372525844641">Aktibatu Chrome-rako baimenak <ph name="BEGIN_LINK" />Android-en ezarpenetan<ph name="END_LINK" />.</translation>
 <translation id="3198916472715691905">Gordetako datuak: <ph name="STORAGE_AMOUNT" /></translation>
 <translation id="3205824638308738187">Ia amaitu dugu!</translation>
 <translation id="3207960819495026254">Laster-marka gisa gordea</translation>
@@ -350,7 +350,7 @@
 <translation id="3701167022068948696">Konpondu</translation>
 <translation id="3714981814255182093">Ireki bilaketa-barra</translation>
 <translation id="3716182511346448902">Chrome-k orri hau pausatu du memoria gehiegi erabiltzen duelako.</translation>
-<translation id="3730075448226062617">Chrome-ri mikrofonoa atzitzeko baimena emateko, mikrofonoa aktibatu behar duzu <ph name="BEGIN_LINK" />Android ezarpenak<ph name="END_LINK" /> atalean.</translation>
+<translation id="3730075448226062617">Chrome-ri mikrofonoa atzitzeko baimena emateko, mikrofonoa aktibatu behar duzu <ph name="BEGIN_LINK" />Android-en ezarpenetan<ph name="END_LINK" />.</translation>
 <translation id="3739899004075612870">Egin da laster-marka <ph name="PRODUCT_NAME" />-n</translation>
 <translation id="3744111561329211289">Atzeko planoko sinkronizazioa</translation>
 <translation id="3749259744154402564">Ez da onartzen</translation>
@@ -682,7 +682,7 @@ Ezarpena aldatzeko, <ph name="BEGIN_LINK" />berrezarri sinkronizazioa<ph name="E
 <translation id="6181444274883918285">Gehitu webgune bat salbuespen gisa</translation>
 <translation id="6192333916571137726">Deskargatu fitxategia</translation>
 <translation id="6192792657125177640">Salbuespenak</translation>
-<translation id="6194112207524046168">Chrome-ri kamera atzitzeko baimena emateko, kamera aktibatu behar duzu <ph name="BEGIN_LINK" />Android ezarpenak<ph name="END_LINK" /> atalean.</translation>
+<translation id="6194112207524046168">Chrome-ri kamera atzitzeko baimena emateko, kamera aktibatu behar duzu <ph name="BEGIN_LINK" />Android-en ezarpenetan<ph name="END_LINK" />.</translation>
 <translation id="6196640612572343990">Blokeatu hirugarrenen cookieak</translation>
 <translation id="6201345951596836663">Kopiatu da esteka</translation>
 <translation id="6206551242102657620">Konexioa segurua da. Webguneari buruzko informazioa</translation>

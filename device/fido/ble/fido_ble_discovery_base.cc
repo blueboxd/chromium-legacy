@@ -36,26 +36,13 @@ const BluetoothUUID& FidoBleDiscoveryBase::CableAdvertisementUUID() {
   return *service_uuid;
 }
 
-void FidoBleDiscoveryBase::OnStartDiscoverySessionWithFilter(
-    std::unique_ptr<BluetoothDiscoverySession> session) {
-  SetDiscoverySession(std::move(session));
-  FIDO_LOG(DEBUG) << "BLE discovery session started";
-}
-
-void FidoBleDiscoveryBase::OnSetPoweredError() {
-  FIDO_LOG(ERROR) << "Failed to power on BLE adapter";
-}
-
-void FidoBleDiscoveryBase::OnStartDiscoverySessionError() {
-  FIDO_LOG(ERROR) << "Failed to start BLE discovery";
-}
-
 void FidoBleDiscoveryBase::SetDiscoverySession(
     std::unique_ptr<BluetoothDiscoverySession> discovery_session) {
   discovery_session_ = std::move(discovery_session);
 }
 
-bool FidoBleDiscoveryBase::IsCableDevice(const BluetoothDevice* device) const {
+// static
+bool FidoBleDiscoveryBase::IsCableDevice(const BluetoothDevice* device) {
   const auto& uuid = CableAdvertisementUUID();
   return base::Contains(device->GetServiceData(), uuid) ||
          base::Contains(device->GetUUIDs(), uuid);

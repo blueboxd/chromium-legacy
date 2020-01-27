@@ -17,7 +17,7 @@
 #include "base/macros.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/task/post_task.h"
-#include "chrome/browser/image_decoder.h"
+#include "chrome/browser/image_decoder/image_decoder.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/ash/launcher/arc_app_shelf_id.h"

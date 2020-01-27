@@ -2067,19 +2067,16 @@ IFACEMETHODIMP AXPlatformNodeWin::get_VerticalViewSize(double* result) {
 // ISelectionItemProvider implementation.
 //
 
-HRESULT AXPlatformNodeWin::ISelectionItemProviderSetSelected(bool selected) {
+HRESULT AXPlatformNodeWin::ISelectionItemProviderSetSelected(
+    bool selected) const {
   UIA_VALIDATE_CALL();
-
   int restriction;
   if (GetIntAttribute(ax::mojom::IntAttribute::kRestriction, &restriction)) {
     if (restriction == static_cast<int>(ax::mojom::Restriction::kDisabled))
       return UIA_E_ELEMENTNOTENABLED;
   }
 
-  bool is_selected;
-  if (!GetBoolAttribute(ax::mojom::BoolAttribute::kSelected, &is_selected))
-    return UIA_E_INVALIDOPERATION;
-  if (is_selected == selected)
+  if (selected == ISelectionItemProviderIsSelected())
     return S_OK;
 
   AXActionData data;
@@ -2087,6 +2084,20 @@ HRESULT AXPlatformNodeWin::ISelectionItemProviderSetSelected(bool selected) {
   if (GetDelegate()->AccessibilityPerformAction(data))
     return S_OK;
   return UIA_E_INVALIDOPERATION;
+}
+
+bool AXPlatformNodeWin::ISelectionItemProviderIsSelected() const {
+  // https://www.w3.org/TR/core-aam-1.1/#mapping_state-property_table
+  // SelectionItem.IsSelected is set according to the True or False value of
+  // aria-checked for 'radio' and 'menuitemradio' roles.
+  if (GetData().role == ax::mojom::Role::kRadioButton ||
+      GetData().role == ax::mojom::Role::kMenuItemRadio)
+    return GetData().GetCheckedState() == ax::mojom::CheckedState::kTrue;
+
+  // https://www.w3.org/TR/wai-aria-1.1/#aria-selected
+  // SelectionItem.IsSelected is set according to the True or False value of
+  // aria-selected.
+  return GetBoolAttribute(ax::mojom::BoolAttribute::kSelected);
 }
 
 IFACEMETHODIMP AXPlatformNodeWin::AddToSelection() {
@@ -2107,22 +2118,7 @@ IFACEMETHODIMP AXPlatformNodeWin::Select() {
 IFACEMETHODIMP AXPlatformNodeWin::get_IsSelected(BOOL* result) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_SELECTIONITEM_GET_ISSELECTED);
   UIA_VALIDATE_CALL_1_ARG(result);
-  // https://www.w3.org/TR/core-aam-1.1/#mapping_state-property_table
-  // SelectionItem.IsSelected is set according to the True or False value of
-  // aria-checked for 'radio' and 'menuitemradio' roles.
-  if (GetData().role == ax::mojom::Role::kRadioButton ||
-      GetData().role == ax::mojom::Role::kMenuItemRadio) {
-    *result = (GetData().GetCheckedState() == ax::mojom::CheckedState::kTrue);
-    return S_OK;
-  }
-
-  // https://www.w3.org/TR/wai-aria-1.1/#aria-selected
-  // SelectionItem.IsSelected is set according to the True or False value of
-  // aria-selected.
-  bool is_selected;
-  if (GetBoolAttribute(ax::mojom::BoolAttribute::kSelected, &is_selected))
-    *result = is_selected;
-
+  *result = ISelectionItemProviderIsSelected();
   return S_OK;
 }
 
@@ -6676,9 +6672,9 @@ bool AXPlatformNodeWin::IsUIAControl() const {
     }
     return true;
   }
-  // non web-content case
+  // non web-content case.
   const ui::AXNodeData& data = GetData();
-  return !(GetData().IsReadOnlyOrDisabled() ||
+  return !((IsReadOnlySupported(data.role) && data.IsReadOnlyOrDisabled()) ||
            data.HasState(ax::mojom::State::kInvisible) ||
            data.role == ax::mojom::Role::kIgnored);
 }

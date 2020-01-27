@@ -38,8 +38,8 @@
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/common/input/web_menu_source_type.h"
+#include "third_party/blink/public/mojom/input/focus_type.mojom-blink-forward.h"
 #include "third_party/blink/public/platform/platform.h"
-#include "third_party/blink/public/platform/web_focus_type.h"
 #include "third_party/blink/public/platform/web_screen_info.h"
 #include "third_party/blink/public/platform/web_spell_check_panel_host_client.h"
 #include "third_party/blink/public/platform/web_url_loader.h"
@@ -89,8 +89,8 @@ class CORE_EXPORT EmptyChromeClient : public ChromeClient {
 
   void Focus(LocalFrame*) override {}
 
-  bool CanTakeFocus(WebFocusType) override { return false; }
-  void TakeFocus(WebFocusType) override {}
+  bool CanTakeFocus(mojom::blink::FocusType) override { return false; }
+  void TakeFocus(mojom::blink::FocusType) override {}
 
   void FocusedElementChanged(Element*, Element*) override {}
   void Show(NavigationPolicy) override {}
@@ -455,7 +455,7 @@ class CORE_EXPORT EmptyRemoteFrameClient : public RemoteFrameClient {
                          const IntRect& transformed_frame_rect) override {}
   void UpdateRemoteViewportIntersection(
       const ViewportIntersectionState& intersection_state) override {}
-  void AdvanceFocus(WebFocusType, LocalFrame* source) override {}
+  void AdvanceFocus(mojom::blink::FocusType, LocalFrame* source) override {}
   void SetIsInert(bool) override {}
   void UpdateRenderThrottlingStatus(bool is_throttled,
                                     bool subtree_throttled) override {}

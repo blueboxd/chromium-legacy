@@ -62,7 +62,7 @@ ContentSuggestion CreateSuggestion(Category category,
 @implementation ContentSuggestionsAppInterface
 
 + (void)setUpService {
-  ios::ChromeBrowserState* browserState =
+  ChromeBrowserState* browserState =
       chrome_test_util::GetOriginalBrowserState();
   // Sets the ContentSuggestionsService associated with this browserState to a
   // service with no provider registered, allowing to register fake providers
@@ -79,7 +79,7 @@ ContentSuggestion CreateSuggestion(Category category,
 }
 
 + (void)resetService {
-  ios::ChromeBrowserState* browserState =
+  ChromeBrowserState* browserState =
       chrome_test_util::GetOriginalBrowserState();
 
   // Resets the Service associated with this browserState to a new service with
@@ -136,7 +136,7 @@ ContentSuggestion CreateSuggestion(Category category,
 
 + (NSString*)defaultSearchEngine {
   // Get the default Search Engine.
-  ios::ChromeBrowserState* browser_state =
+  ChromeBrowserState* browser_state =
       chrome_test_util::GetOriginalBrowserState();
   TemplateURLService* service =
       ios::TemplateURLServiceFactory::GetForBrowserState(browser_state);
@@ -149,7 +149,7 @@ ContentSuggestion CreateSuggestion(Category category,
       base::SysNSStringToUTF16(defaultSearchEngine);
   // Set the search engine back to the default in case the test fails before
   // cleaning it up.
-  ios::ChromeBrowserState* browser_state =
+  ChromeBrowserState* browser_state =
       chrome_test_util::GetOriginalBrowserState();
   TemplateURLService* service =
       ios::TemplateURLServiceFactory::GetForBrowserState(browser_state);

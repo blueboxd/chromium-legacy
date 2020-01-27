@@ -69,7 +69,7 @@ class CORE_EXPORT FrameTree final {
 
    public:
     FindResult(Frame* f, bool is_new) : frame(f), new_window(is_new) {}
-    Member<Frame> frame;
+    Frame* frame;
     bool new_window;
   };
   FindResult FindOrCreateFrameForNavigation(FrameLoadRequest&,

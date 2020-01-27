@@ -125,7 +125,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/task_manager/task_manager_interface.h"
-#include "chrome/browser/ui/ash/assistant/assistant_client.h"
+#include "chrome/browser/ui/ash/assistant/assistant_client_impl.h"
 #include "chrome/browser/ui/ash/assistant/assistant_state_client.h"
 #include "chrome/browser/ui/ash/keyboard/chrome_keyboard_controller_client.h"
 #include "chrome/browser/ui/webui/chromeos/login/discover/discover_manager.h"
@@ -671,7 +671,7 @@ void ChromeBrowserMainPartsChromeos::PreProfileInit() {
   // ChromeBrowserMainExtraPartsAsh::session_controller_client_ to avoid race of
   // SessionChanged event and assistant_client initialization. It must come
   // after AssistantStateClient.
-  assistant_client_ = std::make_unique<AssistantClient>();
+  assistant_client_ = std::make_unique<AssistantClientImpl>();
 
   base::PostTaskAndReplyWithResult(
       FROM_HERE,

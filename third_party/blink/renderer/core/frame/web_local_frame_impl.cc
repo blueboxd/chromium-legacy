@@ -2469,22 +2469,6 @@ static String CreateMarkupInRect(LocalFrame* frame,
   return CreateMarkup(end_position, start_position, create_markup_options);
 }
 
-void WebLocalFrameImpl::AdvanceFocusInForm(WebFocusType focus_type) {
-  DCHECK(GetFrame()->GetDocument());
-  Element* element = GetFrame()->GetDocument()->FocusedElement();
-  if (!element)
-    return;
-
-  Element* next_element =
-      GetFrame()->GetPage()->GetFocusController().NextFocusableElementInForm(
-          element, focus_type);
-  if (!next_element)
-    return;
-
-  next_element->scrollIntoViewIfNeeded(true /*centerIfNeeded*/);
-  next_element->focus();
-}
-
 bool WebLocalFrameImpl::ShouldSuppressKeyboardForFocusedElement() {
   if (!autofill_client_)
     return false;

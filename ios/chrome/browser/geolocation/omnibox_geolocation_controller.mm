@@ -198,15 +198,13 @@ const char* const kGeolocationAuthorizationActionNewUser =
   }
 }
 
-- (void)locationBarDidBecomeFirstResponder:
-    (ios::ChromeBrowserState*)browserState {
+- (void)locationBarDidBecomeFirstResponder:(ChromeBrowserState*)browserState {
   if (self.enabled && browserState && !browserState->IsOffTheRecord()) {
     [self startUpdatingLocation];
   }
 }
 
-- (void)locationBarDidResignFirstResponder:
-    (ios::ChromeBrowserState*)browserState {
+- (void)locationBarDidResignFirstResponder:(ChromeBrowserState*)browserState {
   // It's always okay to stop updating location.
   [self stopUpdatingLocation];
 }

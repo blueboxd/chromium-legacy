@@ -57,6 +57,8 @@ class AssistantSuggestionsController : public AssistantControllerObserver,
   void OnAssistantContextEnabled(bool enabled) override;
 
   void UpdateConversationStarters();
+  void FetchConversationStarters();
+  void ProvideConversationStarters();
 
   AssistantController* const assistant_controller_;  // Owned by Shell.
 
@@ -66,6 +68,11 @@ class AssistantSuggestionsController : public AssistantControllerObserver,
       proactive_suggestions_controller_;
 
   AssistantSuggestionsModel model_;
+
+  // A WeakPtrFactory used to manage lifecycle of conversation starter requests
+  // to the server (via the dedicated ConversationStartersClient).
+  base::WeakPtrFactory<AssistantSuggestionsController>
+      conversation_starters_weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(AssistantSuggestionsController);
 };

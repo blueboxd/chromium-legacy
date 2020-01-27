@@ -50,8 +50,7 @@ enum class PresentAddPassesDialogResult {
 
 // Use -initWithBaseViewController:browser:
 - (instancetype)initWithBaseViewController:(UIViewController*)viewController
-                              browserState:
-                                  (ios::ChromeBrowserState*)browserState
+                              browserState:(ChromeBrowserState*)browserState
     NS_UNAVAILABLE;
 
 // Must be set before calling |start| method. Set to null when stop method is

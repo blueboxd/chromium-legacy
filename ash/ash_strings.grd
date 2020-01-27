@@ -1737,7 +1737,7 @@ This file contains the strings for ash.
         Delete
       </message>
       <message name="IDS_ASH_LOGIN_MANAGED_DEVICE_INDICATOR" desc="Template for text shown as a bottom status on the login screen, informing the user that this device is managed.">
-        Device managed by <ph name="DOMAIN">$1<ex>yourdomain.com</ex></ph>
+        <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> managed by <ph name="DOMAIN">$2<ex>yourdomain.com</ex></ph>
       </message>
       <message name="IDS_ASH_LOGIN_POD_OWNER_USER" desc="Login/lock screen user pod menu title for a user who owns the device.">
         <ph name="USER_NAME">$1<ex>Ivan Arbuzov</ex></ph> (owner)

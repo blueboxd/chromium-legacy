@@ -27,7 +27,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_FORMS_DATE_TIME_EDIT_ELEMENT_H_
 
 #include "base/macros.h"
-#include "third_party/blink/public/platform/web_focus_type.h"
+#include "third_party/blink/public/mojom/input/focus_type.mojom-blink-forward.h"
 #include "third_party/blink/renderer/core/html/forms/date_time_field_element.h"
 #include "third_party/blink/renderer/core/html/forms/step_range.h"
 #include "third_party/blink/renderer/platform/text/date_components.h"
@@ -54,8 +54,8 @@ class DateTimeEditElement final : public HTMLDivElement,
   class EditControlOwner : public GarbageCollectedMixin {
    public:
     virtual ~EditControlOwner();
-    virtual void DidBlurFromControl(WebFocusType) = 0;
-    virtual void DidFocusOnControl(WebFocusType) = 0;
+    virtual void DidBlurFromControl(mojom::blink::FocusType) = 0;
+    virtual void DidFocusOnControl(mojom::blink::FocusType) = 0;
     virtual void EditControlValueChanged() = 0;
     virtual String FormatDateTimeFieldsState(
         const DateTimeFieldsState&) const = 0;
@@ -143,8 +143,8 @@ class DateTimeEditElement final : public HTMLDivElement,
   bool IsDateTimeEditElement() const override;
 
   // DateTimeFieldElement::FieldOwner functions.
-  void DidBlurFromField(WebFocusType) override;
-  void DidFocusOnField(WebFocusType) override;
+  void DidBlurFromField(mojom::blink::FocusType) override;
+  void DidFocusOnField(mojom::blink::FocusType) override;
   void FieldValueChanged() override;
   bool FocusOnNextField(const DateTimeFieldElement&) override;
   bool FocusOnPreviousField(const DateTimeFieldElement&) override;

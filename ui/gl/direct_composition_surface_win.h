@@ -15,6 +15,7 @@
 #include "ui/gl/child_window_win.h"
 #include "ui/gl/gl_export.h"
 #include "ui/gl/gl_surface_egl.h"
+#include "ui/gl/gpu_switching_observer.h"
 #include "ui/gl/vsync_observer.h"
 
 namespace gl {
@@ -24,7 +25,8 @@ class GLSurfacePresentationHelper;
 class VSyncThreadWin;
 
 class GL_EXPORT DirectCompositionSurfaceWin : public GLSurfaceEGL,
-                                              public VSyncObserver {
+                                              public VSyncObserver,
+                                              public ui::GpuSwitchingObserver {
  public:
   using VSyncCallback =
       base::RepeatingCallback<void(base::TimeTicks, base::TimeDelta)>;
@@ -128,6 +130,11 @@ class GL_EXPORT DirectCompositionSurfaceWin : public GLSurfaceEGL,
 
   // VSyncObserver implementation.
   void OnVSync(base::TimeTicks vsync_time, base::TimeDelta interval) override;
+
+  // Implements GpuSwitchingObserver.
+  void OnGpuSwitched(gl::GpuPreference active_gpu_heuristic) override;
+  void OnDisplayAdded() override;
+  void OnDisplayRemoved() override;
 
   HWND window() const { return window_; }
 

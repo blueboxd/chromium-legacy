@@ -43,7 +43,7 @@ class ASH_EXPORT ShelfConfig : public TabletModeObserver,
   void Shutdown();
 
   // TabletModeObserver:
-  void OnTabletModeStarted() override;
+  void OnTabletModeStarting() override;
   void OnTabletModeEnded() override;
 
   // DisplayObserver:

@@ -21,6 +21,7 @@ import android.widget.FrameLayout;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.MathUtils;
+import org.chromium.components.embedder_support.view.ContentView;
 import org.chromium.ui.KeyboardVisibilityDelegate;
 import org.chromium.ui.base.LocalizationUtils;
 import org.chromium.ui.base.WindowAndroid;
@@ -55,7 +56,7 @@ public class FindResultBar extends View {
     private final int mStackedResultHeight;
 
     private FindInPageBridge mFindInPageBridge;
-    private final WindowAndroid mWindowAndroid;
+    private final ContentView mContentView;
 
     private int mRectsVersion = -1;
     private RectF[] mMatches = new RectF[0];
@@ -82,15 +83,14 @@ public class FindResultBar extends View {
     };
 
     /**
-     * Creates an instance of a {@link FindResultBar}. Also adds it to a parent {@link FrameLayout}
-     * and animates itself into view.
+     * Creates an instance of a {@link FindResultBar}.
      * @param context The Context to create this {@link FindResultBar} under.
-     * @param contentView The FrameLayout that will hold this FindResultBar.
-     * @param windowAndroid The WindowAndroid hosting the WebContents under search.
+     * @param contentView The ContentView that holds the WebContents that is being searched. The
+     *         WebContents must have been attached to a view hierarchy and have a WindowAndroid.
      * @param findInPageBridge Facilitator for user interactions.
      */
-    public FindResultBar(Context context, FrameLayout parent, WindowAndroid windowAndroid,
-            FindInPageBridge findInPageBridge) {
+    public FindResultBar(
+            Context context, ContentView contentView, FindInPageBridge findInPageBridge) {
         super(context);
 
         Resources res = context.getResources();
@@ -125,7 +125,8 @@ public class FindResultBar extends View {
 
         mFindInPageBridge = findInPageBridge;
 
-        parent.addView(this,
+        mContentView = contentView;
+        mContentView.addView(this,
                 new FrameLayout.LayoutParams(
                         mBarTouchWidth, ViewGroup.LayoutParams.MATCH_PARENT, Gravity.END));
         setTranslationX(MathUtils.flipSignIf(mBarTouchWidth, LocalizationUtils.isLayoutRtl()));
@@ -133,12 +134,11 @@ public class FindResultBar extends View {
         mVisibilityAnimation = ObjectAnimator.ofFloat(this, TRANSLATION_X, 0);
         mVisibilityAnimation.setDuration(VISIBILITY_ANIMATION_DURATION_MS);
         mVisibilityAnimation.setInterpolator(BakedBezierInterpolator.FADE_IN_CURVE);
-
-        mWindowAndroid = windowAndroid;
-        if (windowAndroid == null) {
-            throw new IllegalArgumentException("WindowAndroid must be non null.");
+        WindowAndroid window = mContentView.getWebContents().getTopLevelNativeWindow();
+        if (window == null) {
+            throw new IllegalArgumentException("ContentView must be attached to a window.");
         }
-        windowAndroid.startAnimationOverContent(mVisibilityAnimation);
+        window.startAnimationOverContent(mVisibilityAnimation);
     }
 
     /** Dismisses this results bar by removing it from the view hierarchy. */
@@ -153,7 +153,8 @@ public class FindResultBar extends View {
                 MathUtils.flipSignIf(mBarTouchWidth, LocalizationUtils.isLayoutRtl()));
         mVisibilityAnimation.setDuration(VISIBILITY_ANIMATION_DURATION_MS);
         mVisibilityAnimation.setInterpolator(BakedBezierInterpolator.FADE_OUT_CURVE);
-        mWindowAndroid.startAnimationOverContent(mVisibilityAnimation);
+        mContentView.getWebContents().getTopLevelNativeWindow().startAnimationOverContent(
+                mVisibilityAnimation);
         mVisibilityAnimation.addListener(new AnimatorListenerAdapter() {
             @Override
             public void onAnimationEnd(Animator animation) {

@@ -45,6 +45,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/common/features.h"
+#include "third_party/blink/public/mojom/input/focus_type.mojom.h"
 #include "third_party/blink/public/mojom/portal/portal.mojom.h"
 #include "url/url_constants.h"
 
@@ -1604,8 +1605,8 @@ IN_PROC_BROWSER_TEST_F(PortalBrowserTest, AdvanceFocusIntoPortal) {
           ->GetProxyToOuterDelegate();
   RenderProcessHostKillWaiter rph_kill_waiter(main_frame->GetProcess());
   outer_delegate_proxy->OnMessageReceived(FrameHostMsg_AdvanceFocus(
-      outer_delegate_proxy->GetRoutingID(),
-      blink::WebFocusType::kWebFocusTypeNone, main_frame->GetRoutingID()));
+      outer_delegate_proxy->GetRoutingID(), blink::mojom::FocusType::kNone,
+      main_frame->GetRoutingID()));
   base::Optional<bad_message::BadMessageReason> result = rph_kill_waiter.Wait();
   EXPECT_TRUE(result.has_value());
   EXPECT_EQ(result.value(), bad_message::RFPH_ADVANCE_FOCUS_INTO_PORTAL);

@@ -8,9 +8,9 @@ import android.graphics.Bitmap;
 
 import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;
-import org.chromium.chrome.browser.widget.ThumbnailProvider;
-import org.chromium.chrome.browser.widget.ThumbnailProvider.ThumbnailRequest;
-import org.chromium.chrome.browser.widget.ThumbnailProviderImpl;
+import org.chromium.chrome.browser.thumbnail.generator.ThumbnailProvider;
+import org.chromium.chrome.browser.thumbnail.generator.ThumbnailProvider.ThumbnailRequest;
+import org.chromium.chrome.browser.thumbnail.generator.ThumbnailProviderImpl;
 import org.chromium.components.offline_items_collection.OfflineContentProvider;
 import org.chromium.components.offline_items_collection.OfflineItem;
 import org.chromium.components.offline_items_collection.OfflineItemVisuals;

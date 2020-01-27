@@ -8,6 +8,27 @@
         <item name="android:minHeight">48dp</item>
     </style>
 
+    <style name="TextAppearance.ListMenuItem">
+        <item name="android:textColor">@color/standard_mode_tint</item>
+        <item name="android:textSize">16sp</item>
+    </style>
+
+    <!-- ListMenuButton -->
+    <style name="ListMenuItemStyle">
+        <item name="android:paddingStart">?android:attr/listPreferredItemPaddingStart</item>
+        <item name="android:paddingEnd">?android:attr/listPreferredItemPaddingEnd</item>
+    </style>
+
+    <style name="OverflowMenuAnim">
+        <item name="android:windowEnterAnimation">@anim/menu_enter</item>
+        <item name="android:windowExitAnimation">@anim/menu_exit</item>
+    </style>
+    <style name="OverflowMenuAnimBottom">
+        <item name="android:windowEnterAnimation">@anim/menu_enter_from_bottom</item>
+        <item name="android:windowExitAnimation">@anim/menu_exit_from_bottom</item>
+    </style>
+
+
     <!-- Promo dialogs -->
     <style name="PromoDialog" >
         <item name="android:background">@android:color/transparent</item>
@@ -24,4 +45,11 @@
         <item name="android:windowIsTranslucent">true</item>
         <item name="android:windowNoTitle">true</item>
     </style>
+
+    <!-- Bubble styles -->
+    <style name="TextBubbleAnimation">
+        <item name="android:windowEnterAnimation">@anim/textbubble_in</item>
+        <item name="android:windowExitAnimation">@anim/textbubble_out</item>
+    </style>
+
 </resources>

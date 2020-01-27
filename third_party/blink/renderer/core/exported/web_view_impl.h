@@ -37,6 +37,7 @@
 #include "build/build_config.h"
 #include "third_party/blink/public/common/input/web_gesture_event.h"
 #include "third_party/blink/public/common/input/web_input_event.h"
+#include "third_party/blink/public/mojom/input/focus_type.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/manifest/display_mode.mojom-shared.h"
 #include "third_party/blink/public/platform/web_input_event_result.h"
 #include "third_party/blink/public/platform/web_rect.h"
@@ -144,9 +145,13 @@ class CORE_EXPORT WebViewImpl final : public WebView,
                     int target_y,
                     base::TimeDelta duration) override;
   void AdvanceFocus(bool reverse) override;
-  void AdvanceFocusAcrossFrames(WebFocusType,
+  void AdvanceFocusAcrossFrames(mojom::blink::FocusType,
                                 WebRemoteFrame* from,
                                 WebLocalFrame* to) override;
+  void ZoomAndScrollToFocusedEditableElementRect(
+      const WebRect& element_bounds_in_document,
+      const WebRect& caret_bounds_in_document,
+      bool zoom_into_legible_scale) override;
   double ZoomLevel() override;
   double SetZoomLevel(double) override;
   float TextZoomFactor() override;
@@ -389,10 +394,6 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   WebInputMethodController* GetActiveWebInputMethodController() const;
 
   bool ShouldZoomToLegibleScale(const Element&);
-  void ZoomAndScrollToFocusedEditableElementRect(
-      const IntRect& element_bounds_in_document,
-      const IntRect& caret_bounds_in_document,
-      bool zoom_into_legible_scale);
 
   // Allows main frame updates to occur if they were previously blocked. They
   // are blocked during loading a navigation, to allow Blink to proceed without

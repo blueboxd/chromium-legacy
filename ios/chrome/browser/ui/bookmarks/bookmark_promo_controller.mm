@@ -22,7 +22,7 @@
 @interface BookmarkPromoController ()<SigninPromoViewConsumer,
                                       IdentityManagerObserverBridgeDelegate> {
   bool _isIncognito;
-  ios::ChromeBrowserState* _browserState;
+  ChromeBrowserState* _browserState;
   std::unique_ptr<signin::IdentityManagerObserverBridge>
       _identityManagerObserverBridge;
 }
@@ -39,7 +39,7 @@
 @synthesize shouldShowSigninPromo = _shouldShowSigninPromo;
 @synthesize signinPromoViewMediator = _signinPromoViewMediator;
 
-- (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState
+- (instancetype)initWithBrowserState:(ChromeBrowserState*)browserState
                             delegate:
                                 (id<BookmarkPromoControllerDelegate>)delegate
                            presenter:(id<SigninPresenter>)presenter {

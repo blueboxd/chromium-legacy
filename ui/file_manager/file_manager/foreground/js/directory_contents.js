@@ -269,7 +269,8 @@ class RecentContentScanner extends ContentScanner {
    */
   scan(entriesCallback, successCallback, errorCallback) {
     chrome.fileManagerPrivate.getRecentFiles(
-        this.sourceRestriction_, entries => {
+        this.sourceRestriction_, chrome.fileManagerPrivate.RecentFileType.ALL,
+        entries => {
           if (chrome.runtime.lastError) {
             console.error(chrome.runtime.lastError.message);
             errorCallback(

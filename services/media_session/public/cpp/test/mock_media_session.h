@@ -140,6 +140,8 @@ class COMPONENT_EXPORT(MEDIA_SESSION_TEST_SUPPORT_CPP) MockMediaSession
                            GetMediaImageBitmapCallback callback) override;
   void SeekTo(base::TimeDelta seek_time) override;
   void ScrubTo(base::TimeDelta scrub_to) override;
+  void EnterPictureInPicture() override;
+  void ExitPictureInPicture() override;
 
   void SetIsControllable(bool value);
   void SetPreferStop(bool value) { prefer_stop_ = value; }

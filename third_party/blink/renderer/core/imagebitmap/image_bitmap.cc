@@ -11,6 +11,7 @@
 #include "base/numerics/checked_math.h"
 #include "base/numerics/clamped_math.h"
 #include "base/single_thread_task_runner.h"
+#include "gpu/command_buffer/client/shared_image_interface.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/html/canvas/html_canvas_element.h"
 #include "third_party/blink/renderer/core/html/canvas/image_data.h"
@@ -230,28 +231,30 @@ static inline bool ShouldAvoidPremul(
 std::unique_ptr<CanvasResourceProvider> CreateProvider(
     base::WeakPtr<WebGraphicsContext3DProviderWrapper> context_provider,
     const SkImageInfo& info,
-    bool is_origin_top_left,
+    const scoped_refptr<StaticBitmapImage>& source_image,
     bool fallback_to_software) {
   IntSize size(info.width(), info.height());
-  unsigned msaa_sample_count = 0;
-  SkFilterQuality filter_quality = kLow_SkFilterQuality;
   CanvasColorParams color_params(info);
-  uint8_t presentation_mode = CanvasResourceProvider::kDefaultPresentationMode;
-  base::WeakPtr<CanvasResourceDispatcher> dispatcher = nullptr;
+  bool is_origin_top_left = source_image->IsOriginTopLeft();
 
   if (context_provider) {
-    // TODO(khushalsagar): Match usage from flags on the source image.
-    auto resource_provider = CanvasResourceProvider::Create(
-        size, CanvasResourceProvider::ResourceUsage::kAcceleratedResourceUsage,
-        context_provider, msaa_sample_count, filter_quality, color_params,
-        presentation_mode, dispatcher, is_origin_top_left);
-    if (resource_provider && resource_provider->IsAccelerated())
+    uint32_t usage_flags =
+        context_provider->ContextProvider()
+            ->SharedImageInterface()
+            ->UsageForMailbox(source_image->GetMailboxHolder().mailbox);
+    auto resource_provider = CanvasResourceProvider::CreateAccelerated(
+        size, context_provider, color_params, is_origin_top_left, usage_flags);
+    if (resource_provider)
       return resource_provider;
 
     if (!fallback_to_software)
       return nullptr;
   }
 
+  unsigned msaa_sample_count = 0;
+  SkFilterQuality filter_quality = kLow_SkFilterQuality;
+  uint8_t presentation_mode = CanvasResourceProvider::kDefaultPresentationMode;
+  base::WeakPtr<CanvasResourceDispatcher> dispatcher = nullptr;
   return CanvasResourceProvider::Create(
       size, CanvasResourceProvider::ResourceUsage::kSoftwareResourceUsage,
       context_provider, msaa_sample_count, filter_quality, color_params,
@@ -305,8 +308,7 @@ scoped_refptr<StaticBitmapImage> FlipImageVertically(
       image->isTextureBacked() && image->alphaType() == kPremul_SkAlphaType;
   auto resource_provider = CreateProvider(
       use_accelerated ? input->ContextProviderWrapper() : nullptr,
-      GetSkImageInfo(input), input->IsOriginTopLeft(),
-      true /* fallback_to_software */);
+      GetSkImageInfo(input), input, true /* fallback_to_software */);
   if (!resource_provider)
     return nullptr;
 
@@ -338,7 +340,7 @@ scoped_refptr<StaticBitmapImage> GetImageWithAlphaDisposition(
   if (alpha_type == kPremul_SkAlphaType) {
     auto resource_provider = CreateProvider(
         image->IsTextureBacked() ? image->ContextProviderWrapper() : nullptr,
-        info, image->IsOriginTopLeft(), true /* fallback_to_software */);
+        info, image, true /* fallback_to_software */);
     if (!resource_provider)
       return nullptr;
 
@@ -377,9 +379,9 @@ scoped_refptr<StaticBitmapImage> ScaleImage(
   // accelerated surface.
   if (!ShouldAvoidPremul(parsed_options) && image->IsTextureBacked() &&
       sk_image->alphaType() == kPremul_SkAlphaType) {
-    auto resource_provider = CreateProvider(
-        image->ContextProviderWrapper(), image_info, image->IsOriginTopLeft(),
-        false /* fallback_to_software */);
+    auto resource_provider =
+        CreateProvider(image->ContextProviderWrapper(), image_info, image,
+                       false /* fallback_to_software */);
     if (resource_provider) {
       cc::PaintFlags paint;
       paint.setFilterQuality(parsed_options.resize_quality);
@@ -421,7 +423,8 @@ scoped_refptr<StaticBitmapImage> ApplyColorSpaceConversion(
     scoped_refptr<StaticBitmapImage>&& image,
     ImageBitmap::ParsedOptions& options) {
   sk_sp<SkColorSpace> color_space = options.color_params.GetSkColorSpace();
-  SkColorType color_type = kN32_SkColorType;
+  SkColorType color_type =
+      image->IsTextureBacked() ? kRGBA_8888_SkColorType : kN32_SkColorType;
   sk_sp<SkImage> sk_image = image->PaintImageForCurrentFrame().GetSkImage();
   if (!sk_image)
     return nullptr;
@@ -494,9 +497,9 @@ static scoped_refptr<StaticBitmapImage> CropImageAndApplyColorSpaceConversion(
     if (result->IsTextureBacked()) {
       auto image_info = paint_image.GetSkImage()->imageInfo().makeWH(
           src_rect.Width(), src_rect.Height());
-      auto resource_provider = CreateProvider(
-          image->ContextProviderWrapper(), image_info,
-          result->IsOriginTopLeft(), true /* fallback_to_software*/);
+      auto resource_provider =
+          CreateProvider(image->ContextProviderWrapper(), image_info, result,
+                         true /* fallback_to_software*/);
       if (!resource_provider)
         return nullptr;
       cc::PaintFlags paint;
@@ -1076,7 +1079,7 @@ unsigned ImageBitmap::height() const {
 }
 
 bool ImageBitmap::IsAccelerated() const {
-  return image_ && (image_->IsTextureBacked() || image_->HasMailbox());
+  return image_ && image_->IsTextureBacked();
 }
 
 IntSize ImageBitmap::Size() const {

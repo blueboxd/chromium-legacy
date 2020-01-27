@@ -28,7 +28,7 @@ SendTabToSelfClientServiceFactory::GetInstance() {
 // static
 SendTabToSelfClientServiceIOS*
 SendTabToSelfClientServiceFactory::GetForBrowserState(
-    ios::ChromeBrowserState* browser_state) {
+    ChromeBrowserState* browser_state) {
   return static_cast<SendTabToSelfClientServiceIOS*>(
       GetInstance()->GetServiceForBrowserState(browser_state, true));
 }
@@ -45,8 +45,8 @@ SendTabToSelfClientServiceFactory::~SendTabToSelfClientServiceFactory() {}
 std::unique_ptr<KeyedService>
 SendTabToSelfClientServiceFactory::BuildServiceInstanceFor(
     web::BrowserState* context) const {
-  ios::ChromeBrowserState* browser_state =
-      ios::ChromeBrowserState::FromBrowserState(context);
+  ChromeBrowserState* browser_state =
+      ChromeBrowserState::FromBrowserState(context);
 
   SendTabToSelfSyncService* sync_service =
       SendTabToSelfSyncServiceFactory::GetForBrowserState(browser_state);

@@ -10,6 +10,7 @@ js_type_check("closure_compile") {
 
 js_library("site_settings_page") {
   deps = [
+    "..:metrics_browser_proxy",
     "..:route",
     "..:router",
     "../site_settings:constants",

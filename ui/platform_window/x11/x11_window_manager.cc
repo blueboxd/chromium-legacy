@@ -74,12 +74,16 @@ void X11WindowManager::AddWindow(X11Window* window) {
 void X11WindowManager::RemoveWindow(X11Window* window) {
   DCHECK(window);
   auto widget = window->GetWidget();
-  DCHECK_NE(gfx::kNullAcceleratedWidget, widget);
   auto it = windows_.find(widget);
-  DCHECK(it != windows_.end());
-  if (window_mouse_currently_on_ == it->second)
-    window_mouse_currently_on_ = nullptr;
-  windows_.erase(it);
+  // The XWindow might not have been initialized due to some errors.
+  if (widget == gfx::kNullAcceleratedWidget) {
+    DCHECK(it == windows_.end());
+  } else {
+    DCHECK(it != windows_.end());
+    if (window_mouse_currently_on_ == it->second)
+      window_mouse_currently_on_ = nullptr;
+    windows_.erase(it);
+  }
 }
 
 X11Window* X11WindowManager::GetWindow(gfx::AcceleratedWidget widget) const {

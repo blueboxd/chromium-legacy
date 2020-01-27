@@ -113,6 +113,11 @@ if (is_win) {
   if (is_mac) {
     dav1d_copts += [ "-D_DARWIN_C_SOURCE" ]
   }
+  if (is_linux || is_android || current_os == "aix") {
+    if (!is_clang) {
+      dav1d_copts += [ "-D_GNU_SOURCE" ]
+    }
+  }
 }
 
 if (enable_nasm) {

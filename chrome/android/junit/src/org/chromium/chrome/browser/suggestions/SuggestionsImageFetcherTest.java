@@ -32,7 +32,7 @@ import org.chromium.chrome.browser.ntp.snippets.KnownCategories;
 import org.chromium.chrome.browser.ntp.snippets.SnippetArticle;
 import org.chromium.chrome.browser.ntp.snippets.SuggestionsSource;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.browser.widget.ThumbnailProvider;
+import org.chromium.chrome.browser.thumbnail.generator.ThumbnailProvider;
 import org.chromium.chrome.test.util.browser.suggestions.SuggestionsDependenciesRule;
 
 import java.util.HashMap;

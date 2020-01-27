@@ -27,14 +27,15 @@
 #include "third_party/blink/public/common/input/web_menu_source_type.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/events/simulated_click_options.h"
-#include "third_party/blink/renderer/core/events/mouse_event_init.h"
 #include "third_party/blink/renderer/core/events/ui_event_with_key_state.h"
 #include "third_party/blink/renderer/platform/geometry/double_point.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
 namespace blink {
+
 class DataTransfer;
 class EventDispatcher;
+class MouseEventInit;
 
 class CORE_EXPORT MouseEvent : public UIEventWithKeyState {
   DEFINE_WRAPPERTYPEINFO();

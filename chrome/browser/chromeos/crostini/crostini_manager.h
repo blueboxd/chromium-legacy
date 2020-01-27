@@ -550,8 +550,7 @@ class CrostiniManager : public KeyedService,
                              std::string container_name,
                              const vm_tools::cicerone::OsRelease& os_release);
   const vm_tools::cicerone::OsRelease* GetContainerOsRelease(
-      std::string vm_name,
-      std::string container_name);
+      const ContainerId& container_id);
   // Returns null if VM or container is not running.
   base::Optional<ContainerInfo> GetContainerInfo(std::string vm_name,
                                                  std::string container_name);
@@ -577,6 +576,9 @@ class CrostiniManager : public KeyedService,
   bool HasInstallerViewStatusObserver(InstallerViewStatusObserver* observer);
 
   void OnDBusShuttingDownForTesting();
+
+  bool IsContainerUpgradeable(const ContainerId& container_id);
+  bool ShouldPromptContainerUpgrade(const ContainerId& container_id);
 
  private:
   class CrostiniRestarter;
@@ -819,6 +821,7 @@ class CrostiniManager : public KeyedService,
   // OsRelease protos keyed by ContainerId. We populate this map even if a
   // container fails to start normally.
   std::map<ContainerId, vm_tools::cicerone::OsRelease> container_os_releases_;
+  std::set<ContainerId> container_upgrade_prompt_shown_;
 
   std::vector<RemoveCrostiniCallback> remove_crostini_callbacks_;
 

@@ -24,7 +24,7 @@ class TestingPrefServiceSyncable;
 }
 
 // This class is the implementation of ChromeBrowserState used for testing.
-class TestChromeBrowserState : public ios::ChromeBrowserState {
+class TestChromeBrowserState : public ChromeBrowserState {
  public:
   typedef std::vector<
       std::pair<BrowserStateKeyedServiceFactory*,
@@ -44,9 +44,9 @@ class TestChromeBrowserState : public ios::ChromeBrowserState {
 
   // ChromeBrowserState:
   scoped_refptr<base::SequencedTaskRunner> GetIOTaskRunner() override;
-  ios::ChromeBrowserState* GetOriginalChromeBrowserState() override;
+  ChromeBrowserState* GetOriginalChromeBrowserState() override;
   bool HasOffTheRecordChromeBrowserState() const override;
-  ios::ChromeBrowserState* GetOffTheRecordChromeBrowserState() override;
+  ChromeBrowserState* GetOffTheRecordChromeBrowserState() override;
   PrefProxyConfigTracker* GetProxyConfigTracker() override;
   PrefService* GetPrefs() override;
   PrefService* GetOffTheRecordPrefs() override;

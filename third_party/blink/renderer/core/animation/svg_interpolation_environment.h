@@ -39,8 +39,8 @@ class SVGInterpolationEnvironment : public InterpolationEnvironment {
   }
 
  private:
-  Member<SVGElement> svg_element_ = nullptr;
-  Member<const SVGPropertyBase> svg_base_value_ = nullptr;
+  SVGElement* svg_element_ = nullptr;
+  const SVGPropertyBase* svg_base_value_ = nullptr;
 };
 
 template <>

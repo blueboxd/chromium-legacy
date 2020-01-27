@@ -48,7 +48,16 @@ bool VerifyBlobToken(int process_id,
 
 bool VerifyInitiatorOrigin(int process_id,
                            const url::Origin& initiator_origin) {
-  // TODO(lukasza, nasko): Verify precursor origin via CanAccessDataForOrigin.
+  // TODO(acolwell, nasko): https://crbug.com/1029092: Ensure the precursor of
+  // opaque origins matches the origin lock.  One known problematic case are
+  // reloads initiated from error pages - see the following
+  // RenderFrameHostManagerTest tests:
+  // 1. ErrorPageNavigationReload:
+  //    - renderer origin lock = chrome-error://chromewebdata/
+  //    - precursor of initiator origin = http://127.0.0.1:.../
+  // 2. ErrorPageNavigationReload_InSubframe_BlockedByClient
+  //    - renderer origin lock = http://b.com:.../
+  //    - precursor of initiator origin = http://c.com:.../
   if (initiator_origin.opaque())
     return true;
 

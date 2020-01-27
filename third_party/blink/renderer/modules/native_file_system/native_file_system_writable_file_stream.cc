@@ -6,12 +6,12 @@
 
 #include "third_party/blink/renderer/bindings/core/v8/array_buffer_or_array_buffer_view_or_blob_or_usv_string.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_queuing_strategy_init.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_write_params.h"
 #include "third_party/blink/renderer/core/streams/count_queuing_strategy.h"
-#include "third_party/blink/renderer/core/streams/queuing_strategy_init.h"
 #include "third_party/blink/renderer/core/streams/writable_stream_default_controller.h"
 #include "third_party/blink/renderer/core/streams/writable_stream_default_writer.h"
 #include "third_party/blink/renderer/modules/native_file_system/native_file_system_underlying_sink.h"
-#include "third_party/blink/renderer/modules/native_file_system/write_params.h"
 
 #include "third_party/blink/renderer/bindings/core/v8/v8_throw_dom_exception.h"
 

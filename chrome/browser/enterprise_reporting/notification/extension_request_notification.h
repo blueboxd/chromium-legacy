@@ -21,7 +21,12 @@ class ExtensionRequestNotification
   using ExtensionIds = std::vector<std::string>;
   // Callback when the notification is closed.
   using NotificationCloseCallback = base::OnceCallback<void(bool by_user)>;
-  enum NotifyType { kApproved = 0, kRejected = 1, kForceInstalled = 2 };
+  enum NotifyType {
+    kApproved = 0,
+    kRejected = 1,
+    kForceInstalled = 2,
+    kNumberOfTypes = 3
+  };
 
   ExtensionRequestNotification();
   ExtensionRequestNotification(Profile* profile,

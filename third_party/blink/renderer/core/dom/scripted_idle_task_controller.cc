@@ -7,7 +7,7 @@
 #include "base/location.h"
 #include "base/metrics/histogram_macros.h"
 #include "third_party/blink/public/platform/platform.h"
-#include "third_party/blink/renderer/core/dom/idle_request_options.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_idle_request_options.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/inspector/inspector_trace_events.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"

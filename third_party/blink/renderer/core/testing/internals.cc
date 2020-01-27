@@ -32,6 +32,7 @@
 #include "base/optional.h"
 #include "cc/layers/picture_layer.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
+#include "third_party/blink/public/mojom/input/focus_type.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_graphics_context_3d_provider.h"
 #include "third_party/blink/public/web/web_device_emulation_params.h"
@@ -3147,7 +3148,8 @@ void Internals::setInitialFocus(bool reverse) {
 
   GetFrame()->GetDocument()->ClearFocusedElement();
   GetFrame()->GetPage()->GetFocusController().SetInitialFocus(
-      reverse ? kWebFocusTypeBackward : kWebFocusTypeForward);
+      reverse ? mojom::blink::FocusType::kBackward
+              : mojom::blink::FocusType::kForward);
 }
 
 Element* Internals::interestedElement() {

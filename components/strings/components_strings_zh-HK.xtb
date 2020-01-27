@@ -290,7 +290,6 @@
 <translation id="2218879909401188352">目前在 <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> 上的攻擊者可能會安裝危險的應用程式來損害您的裝置、暗中加入隱藏的流動服務費用，或竊取您的個人資料。<ph name="BEGIN_LEARN_MORE_LINK" />瞭解詳情<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="2224337661447660594">沒有互聯網</translation>
 <translation id="2230458221926704099">請使用<ph name="BEGIN_LINK" />診斷應用程式<ph name="END_LINK" />修正連線問題</translation>
-<translation id="22320125457191592">為您推薦</translation>
 <translation id="2239100178324503013">立即傳送</translation>
 <translation id="2248949050832152960">使用 WebAuthn</translation>
 <translation id="2250931979407627383">邊緣釘裝 (左側)</translation>
@@ -565,7 +564,6 @@
 <translation id="3531780078352352885">工作表</translation>
 <translation id="3533328374079021623">出紙槽 5</translation>
 <translation id="3539171420378717834">在此裝置上保存此卡片的副本</translation>
-<translation id="3553513561058684206">為您推薦</translation>
 <translation id="3558573058928565255">日間</translation>
 <translation id="3566021033012934673">您的連線不是私人連線</translation>
 <translation id="3574305903863751447"><ph name="CITY" />，<ph name="STATE" />，<ph name="COUNTRY" /></translation>

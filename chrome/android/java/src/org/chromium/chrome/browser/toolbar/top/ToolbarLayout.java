@@ -48,7 +48,8 @@ import org.chromium.chrome.browser.toolbar.ToolbarProgressBar;
 import org.chromium.chrome.browser.toolbar.ToolbarTabController;
 import org.chromium.chrome.browser.toolbar.top.TopToolbarCoordinator.UrlExpansionObserver;
 import org.chromium.chrome.browser.ui.appmenu.AppMenuButtonHelper;
-import org.chromium.chrome.browser.ui.widget.textbubble.TextBubble;
+import org.chromium.chrome.browser.util.AccessibilityUtil;
+import org.chromium.components.browser_ui.widget.textbubble.TextBubble;
 import org.chromium.components.security_state.ConnectionSecurityLevel;
 import org.chromium.ui.UiUtils;
 import org.chromium.ui.base.ViewUtils;
@@ -894,8 +895,9 @@ public abstract class ToolbarLayout
     void showIPHOnExperimentalButton(@StringRes int stringId, @StringRes int accessibilityStringId,
             Runnable dismissedCallback) {
         View experimentalButton = getExperimentalButtonView();
-        TextBubble textBubble = new TextBubble(getContext(), experimentalButton, stringId,
-                accessibilityStringId, experimentalButton);
+        TextBubble textBubble =
+                new TextBubble(getContext(), experimentalButton, stringId, accessibilityStringId,
+                        experimentalButton, AccessibilityUtil.isAccessibilityEnabled());
         textBubble.setDismissOnTouchInteraction(true);
         textBubble.addOnDismissListener(() -> {
             dismissedCallback.run();

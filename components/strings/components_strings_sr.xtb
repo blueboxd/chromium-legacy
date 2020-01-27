@@ -79,6 +79,7 @@
 <translation id="129553762522093515">Недавно затворено</translation>
 <translation id="1298536327547837046">Скенирање малвера</translation>
 <translation id="129863573139666797"><ph name="BEGIN_LINK" />Покушајте да обришете колачиће<ph name="END_LINK" /></translation>
+<translation id="1301324364792935241">Проверите подешавања за безбедан DNS</translation>
 <translation id="1307966114820526988">Застареле функције</translation>
 <translation id="1314509827145471431">Повез на десној страни</translation>
 <translation id="1320233736580025032">Prc1 (коверат)</translation>
@@ -152,6 +153,7 @@
 <translation id="1569487616857761740">Унесите датум истека</translation>
 <translation id="1581080074034554886">CVC</translation>
 <translation id="1583429793053364125">Дошло је до грешке при приказивању ове веб-странице.</translation>
+<translation id="1586541204584340881">додатке које сте инсталирали</translation>
 <translation id="1588438908519853928">Нормалан</translation>
 <translation id="1592005682883173041">Приступ локалним подацима</translation>
 <translation id="1594030484168838125">Одабери</translation>
@@ -290,7 +292,6 @@
 <translation id="2218879909401188352">Нападачи који су тренутно на <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> могу да инсталирају опасне апликације које ће вам оштетити уређај, додати нежељене трошкове код мобилног оператера или украсти личне податке. <ph name="BEGIN_LEARN_MORE_LINK" />Сазнајте више<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="2224337661447660594">Нема интернета</translation>
 <translation id="2230458221926704099">Поправите везу помоћу <ph name="BEGIN_LINK" />апликације за дијагностику<ph name="END_LINK" /></translation>
-<translation id="22320125457191592">За вас</translation>
 <translation id="2239100178324503013">Пошаљи одмах</translation>
 <translation id="2248949050832152960">Користи WebAuthn</translation>
 <translation id="2250931979407627383">Спајање ивица шавом на левој страни</translation>
@@ -363,6 +364,7 @@
 <translation id="2544644783021658368">Један документ</translation>
 <translation id="254947805923345898">Вредност смерница није важећа.</translation>
 <translation id="255002559098805027">Хост <ph name="HOST_NAME" /> је послао неважећи одговор.</translation>
+<translation id="2553853292994445426">Проверите подешавања за безбедан DNS. Можда сте конфигурисали безбедан DNS сервер са којим не успевате да се повежете.</translation>
 <translation id="2556876185419854533">&amp;Опозови измену</translation>
 <translation id="257674075312929031">Група</translation>
 <translation id="2586657967955657006">Меморија</translation>
@@ -485,6 +487,7 @@
 <translation id="3095940652251934233">Изјава</translation>
 <translation id="3096100844101284527">Додај адресу преузимања</translation>
 <translation id="3105172416063519923">ИД елемента:</translation>
+<translation id="3107591622054137333"><ph name="BEGIN_LINK" />да проверите конфигурацију безбедног DNS-а<ph name="END_LINK" /></translation>
 <translation id="3109728660330352905">Немате овлашћење да прегледате ову страницу.</translation>
 <translation id="3113284927548439113">Трећа смена</translation>
 <translation id="3116158981186517402">Ламинирање</translation>
@@ -576,7 +579,6 @@
 <translation id="3531780078352352885">Радни листови</translation>
 <translation id="3533328374079021623">5. поштанско сандуче</translation>
 <translation id="3539171420378717834">Задржи копију ове картице на овом уређају</translation>
-<translation id="3553513561058684206">За вас</translation>
 <translation id="3558573058928565255">Време дана</translation>
 <translation id="3566021033012934673">Веза није приватна</translation>
 <translation id="3574305903863751447"><ph name="CITY" />, <ph name="STATE" /> <ph name="COUNTRY" /></translation>
@@ -788,6 +790,7 @@
 <translation id="4390472908992056574">Обод</translation>
 <translation id="4406896451731180161">резултати претраге</translation>
 <translation id="4408413947728134509">Колачићи (<ph name="NUM_COOKIES" />)</translation>
+<translation id="4414290883293381923">Управо сте унели лозинку на обмањујућем сајту. Chrome вам препоручује да одете на <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, <ph name="WEBSITE_3" /> и на друге сајтове где користите ову лозинку и да је одмах промените.</translation>
 <translation id="4415426530740016218">Адреса преузимања</translation>
 <translation id="4424024547088906515">Овај сервер не може да докаже да је <ph name="DOMAIN" />; Chrome нема поверења у његов безбедносни сертификат. Узрок томе је можда погрешна конфигурација или нападач који је прекинуо везу.</translation>
 <translation id="443121186588148776">Серијски порт</translation>
@@ -1219,6 +1222,7 @@
 <translation id="6353505687280762741">{COUNT,plural, =0{Ниједна}=1{1 лозинка (за <ph name="DOMAIN_LIST" />, синхронизовано)}=2{2 лозинке (за <ph name="DOMAIN_LIST" />, синхронизовано)}one{# лозинка (за <ph name="DOMAIN_LIST" />, синхронизовано)}few{# лозинке (за <ph name="DOMAIN_LIST" />, синхронизовано)}other{# лозинки (за <ph name="DOMAIN_LIST" />, синхронизовано)}}</translation>
 <translation id="6358450015545214790">Шта ово значи?</translation>
 <translation id="6361757823711327522">B7</translation>
+<translation id="6364095313648930329"><ph name="BEGIN_LINK" />да проверите конфигурацију проксија, заштитног зида и безбедног DNS-а<ph name="END_LINK" /></translation>
 <translation id="6366710531182496394">Двоструко спајање на левој страни</translation>
 <translation id="6377268785556383139">1 резултат за „<ph name="SEARCH_TEXT" />“</translation>
 <translation id="6380497234672085559">A0</translation>
@@ -1241,6 +1245,7 @@
 <translation id="6433595998831338502">Хост <ph name="HOST_NAME" /> је одбио повезивање.</translation>
 <translation id="6434309073475700221">Одбаци</translation>
 <translation id="6440503408713884761">Занемарено</translation>
+<translation id="6443406338865242315">додатке и додатне компонента које сте инсталирали</translation>
 <translation id="6446163441502663861">Kahu (коверат)</translation>
 <translation id="6446608382365791566">Додајте још информација</translation>
 <translation id="6447842834002726250">Колачићи</translation>
@@ -1350,6 +1355,7 @@
 <translation id="7012363358306927923">China UnionPay</translation>
 <translation id="7016992613359344582">Те наплате могу да буду једнократне или периодичне и можда нису одмах видљиве.</translation>
 <translation id="7029809446516969842">Лозинке</translation>
+<translation id="7031646650991750659">Google Play које апликације сте инсталирали</translation>
 <translation id="7050187094878475250">Покушали сте да посетите <ph name="DOMAIN" />, али је сервер представио сертификат са периодом важења који је предугачак да би био поуздан.</translation>
 <translation id="705310974202322020">{NUM_CARDS,plural, =1{Ова картица тренутно не може да се сачува}one{Ове картице тренутно не могу да се сачувају}few{Ове картице тренутно не могу да се сачувају}other{Ове картице тренутно не могу да се сачувају}}</translation>
 <translation id="7053983685419859001">Блокирај</translation>
@@ -1409,6 +1415,7 @@
 <translation id="7319430975418800333">A3</translation>
 <translation id="7320336641823683070">Помоћ при повезивању</translation>
 <translation id="733354035281974745">Замена локалног налога на уређају</translation>
+<translation id="7333654844024768166">Управо сте унели лозинку на обмањујућем сајту. Chromium вам препоручује да одете на <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, <ph name="WEBSITE_3" /> и на друге сајтове где користите ову лозинку и да је одмах промените.</translation>
 <translation id="7334320624316649418">&amp;Понови промену редоследа</translation>
 <translation id="7337706099755338005">Није доступно на вашој платформи.</translation>
 <translation id="733923710415886693">Сертификат сервера није откривен помоћу Транспарентности сертификата.</translation>

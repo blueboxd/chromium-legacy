@@ -6,7 +6,7 @@
 
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
-#include "third_party/blink/renderer/core/frame/user_agent.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_user_agent.h"
 
 namespace blink {
 

@@ -435,7 +435,8 @@ void AwContentsClientBridge::NewLoginRequest(const std::string& realm,
 void AwContentsClientBridge::OnReceivedError(
     const AwWebResourceRequest& request,
     int error_code,
-    bool safebrowsing_hit) {
+    bool safebrowsing_hit,
+    bool should_omit_notifications_for_safebrowsing_hit) {
   DCHECK(request.is_renderer_initiated.has_value());
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   JNIEnv* env = AttachCurrentThread();
@@ -454,7 +455,7 @@ void AwContentsClientBridge::OnReceivedError(
       java_web_resource_request.jmethod,
       java_web_resource_request.jheader_names,
       java_web_resource_request.jheader_values, error_code, jstring_description,
-      safebrowsing_hit);
+      safebrowsing_hit, should_omit_notifications_for_safebrowsing_hit);
 }
 
 void AwContentsClientBridge::OnSafeBrowsingHit(

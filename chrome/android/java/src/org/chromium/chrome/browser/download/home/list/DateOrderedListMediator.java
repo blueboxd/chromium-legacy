@@ -36,9 +36,9 @@ import org.chromium.chrome.browser.download.home.list.mutator.ListMutationContro
 import org.chromium.chrome.browser.download.home.metrics.OfflineItemStartupLogger;
 import org.chromium.chrome.browser.download.home.metrics.UmaUtils;
 import org.chromium.chrome.browser.download.home.metrics.UmaUtils.ViewAction;
-import org.chromium.chrome.browser.widget.ThumbnailProvider;
-import org.chromium.chrome.browser.widget.ThumbnailProvider.ThumbnailRequest;
-import org.chromium.chrome.browser.widget.ThumbnailProviderImpl;
+import org.chromium.chrome.browser.thumbnail.generator.ThumbnailProvider;
+import org.chromium.chrome.browser.thumbnail.generator.ThumbnailProvider.ThumbnailRequest;
+import org.chromium.chrome.browser.thumbnail.generator.ThumbnailProviderImpl;
 import org.chromium.chrome.browser.widget.selection.SelectionDelegate;
 import org.chromium.components.offline_items_collection.OfflineContentProvider;
 import org.chromium.components.offline_items_collection.OfflineItem;

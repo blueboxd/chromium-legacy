@@ -41,6 +41,11 @@ class AppContextMenu : public ui::SimpleMenuModel::Delegate {
   const gfx::VectorIcon* GetVectorIconForCommandId(
       int command_id) const override;
 
+  // Helper method to get the gfx::VectorIcon for a |command_id|. Returns an
+  // empty gfx::VectorIcon if there is no icon for this |command_id|.
+  const gfx::VectorIcon& GetMenuItemVectorIcon(int command_id,
+                                               int string_id) const;
+
  protected:
   // Creates default items, derived class may override to add their specific
   // items.
@@ -53,11 +58,6 @@ class AppContextMenu : public ui::SimpleMenuModel::Delegate {
   void AddContextMenuOption(ui::SimpleMenuModel* menu_model,
                             ash::CommandId command_id,
                             int string_id);
-
-  // Helper method to get the gfx::VectorIcon for a |command_id|. Returns an
-  // empty gfx::VectorIcon if there is no icon for this |command_id|.
-  const gfx::VectorIcon& GetMenuItemVectorIcon(int command_id,
-                                               int string_id) const;
 
   const std::string& app_id() const { return app_id_; }
   Profile* profile() const { return profile_; }

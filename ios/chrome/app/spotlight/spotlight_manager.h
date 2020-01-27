@@ -7,7 +7,7 @@
 
 #import <Foundation/Foundation.h>
 
-#include "ios/chrome/browser/browser_state/chrome_browser_state_forward.h"
+class ChromeBrowserState;
 
 // Allows Chrome to add the bookmarks of |bookmarkModel| in the systemwide
 // Spotlight search index.
@@ -24,7 +24,7 @@
 // |browserState| must not be nil.
 // There should be only one SpotlightManager observing |browserState|.
 + (SpotlightManager*)spotlightManagerWithBrowserState:
-    (ios::ChromeBrowserState*)browserState;
+    (ChromeBrowserState*)browserState;
 
 // Resyncs the index if necessary
 - (void)resyncIndex;

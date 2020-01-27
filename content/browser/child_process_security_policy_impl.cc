@@ -11,6 +11,7 @@
 #include "base/command_line.h"
 #include "base/debug/crash_logging.h"
 #include "base/debug/dump_without_crashing.h"
+#include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/macros.h"
@@ -35,6 +36,7 @@
 #include "content/public/common/bindings_policy.h"
 #include "content/public/common/child_process_host.h"
 #include "content/public/common/content_client.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/url_constants.h"
 #include "net/base/filename_util.h"
 #include "net/base/url_util.h"
@@ -549,6 +551,7 @@ class ChildProcessSecurityPolicyImpl::SecurityState {
   DISALLOW_COPY_AND_ASSIGN(SecurityState);
 };
 
+// IsolatedOriginEntry implementation.
 ChildProcessSecurityPolicyImpl::IsolatedOriginEntry::IsolatedOriginEntry(
     const url::Origin& origin,
     BrowsingInstanceId min_browsing_instance_id,
@@ -1325,15 +1328,6 @@ CanCommitStatus ChildProcessSecurityPolicyImpl::CanCommitOriginAndUrl(
     const GURL& url) {
   const url::Origin url_origin = url::Origin::Resolve(url, origin);
   if (!CanAccessDataForOrigin(child_id, url_origin)) {
-    // Allow opaque origins w/o precursors to commit.
-    // TODO(acolwell): Investigate all cases that trigger this path and fix
-    // them so we have precursor information. Remove this logic once that has
-    // been completed.
-    if (url_origin.opaque() &&
-        !url_origin.GetTupleOrPrecursorTupleIfOpaque().IsValid()) {
-      return CanCommitStatus::CAN_COMMIT_ORIGIN_AND_URL;
-    }
-
     // Check for special cases, like blob:null/ and data: URLs, where the
     // origin does not contain information to match against the process lock,
     // but using the whole URL can result in a process lock match.
@@ -1346,17 +1340,8 @@ CanCommitStatus ChildProcessSecurityPolicyImpl::CanCommitOriginAndUrl(
     return CanCommitStatus::CANNOT_COMMIT_URL;
   }
 
-  if (!CanAccessDataForOrigin(child_id, origin)) {
-    // Allow opaque origins w/o precursors to commit.
-    // TODO(acolwell): Investigate all cases that trigger this path and fix
-    // them so we have precursor information. Remove this logic once that has
-    // been completed.
-    if (origin.opaque() &&
-        !origin.GetTupleOrPrecursorTupleIfOpaque().IsValid()) {
-      return CanCommitStatus::CAN_COMMIT_ORIGIN_AND_URL;
-    }
+  if (!CanAccessDataForOrigin(child_id, origin))
     return CanCommitStatus::CANNOT_COMMIT_ORIGIN;
-  }
 
   // Ensure that the origin derived from |url| is consistent with |origin|.
   // Note: We can't use origin.IsSameOriginWith() here because opaque origins
@@ -1405,27 +1390,22 @@ bool ChildProcessSecurityPolicyImpl::CanAccessDataForOrigin(
   if (origin.opaque()) {
     auto precursor_tuple = origin.GetTupleOrPrecursorTupleIfOpaque();
     if (!precursor_tuple.IsValid()) {
-      // We don't have precursor information so we only allow access if
-      // the process lock isn't set yet.
+      // Allow opaque origins w/o precursors (if the security state exists).
+      // TODO(acolwell): Investigate all cases that trigger this path (e.g.,
+      // browser-initiated navigations to data: URLs) and fix them so we have
+      // precursor information (or the process lock is compatible with a missing
+      // precursor). Remove this logic once that has been completed.
       base::AutoLock lock(lock_);
       SecurityState* security_state = GetSecurityState(child_id);
-
-      if (security_state && security_state->origin_lock().is_empty())
-        return true;
-
-      LogCanAccessDataForOriginCrashKeys(
-          /* expected_process_lock= */ "(empty)",
-          GetKilledProcessOriginLock(security_state), origin.GetDebugString(),
-          "opaque_origin_without_precursor_in_locked_process");
-
-      return false;
+      return !!security_state;
     } else {
       url_to_check = precursor_tuple.GetURL();
     }
   } else {
     url_to_check = origin.GetURL();
   }
-  bool success = CanAccessDataForOrigin(child_id, url_to_check);
+  bool success =
+      CanAccessDataForOrigin(child_id, url_to_check, origin.opaque());
   if (success)
     return true;
 
@@ -1440,6 +1420,14 @@ bool ChildProcessSecurityPolicyImpl::CanAccessDataForOrigin(
 
 bool ChildProcessSecurityPolicyImpl::CanAccessDataForOrigin(int child_id,
                                                             const GURL& url) {
+  constexpr bool kUrlIsPrecursorOfOpaqueOrigin = false;
+  return CanAccessDataForOrigin(child_id, url, kUrlIsPrecursorOfOpaqueOrigin);
+}
+
+bool ChildProcessSecurityPolicyImpl::CanAccessDataForOrigin(
+    int child_id,
+    const GURL& url,
+    bool url_is_precursor_of_opaque_origin) {
   DCHECK(IsRunningOnExpectedThread());
   base::AutoLock lock(lock_);
 
@@ -1468,6 +1456,21 @@ bool ChildProcessSecurityPolicyImpl::CanAccessDataForOrigin(int child_id,
       // from origins that require exactly the same lock.
       if (actual_process_lock == expected_process_lock)
         return true;
+
+      // TODO(acolwell, nasko): https://crbug.com/1029092: Ensure the precursor
+      // of opaque origins matches the renderer's origin lock.
+      if (url_is_precursor_of_opaque_origin) {
+        // SitePerProcessBrowserTest.TwoBlobURLsWithNullOriginDontShareProcess.
+        if (actual_process_lock.SchemeIsBlob() &&
+            actual_process_lock.path_piece().starts_with("null/")) {
+          return true;
+        }
+
+        // DeclarativeApiTest.PersistRules.
+        if (actual_process_lock.SchemeIs(url::kDataScheme))
+          return true;
+      }
+
       failure_reason = "lock_mismatch";
     } else {
       // Citadel-style enforcement - an unlocked process should not be able to
@@ -1880,7 +1883,109 @@ bool ChildProcessSecurityPolicyImpl::GetMatchingIsolatedOrigin(
     }
   }
 
+  // If no match was found via IsolatedOrigins, then check the opt-in
+  // isolation status of |origin| in |isolation_context|. Note that while
+  // IsolatedOrigins considers any sub-origin of an isolated origin as also
+  // being isolated, with opt-in we will always either return false, or true
+  // with result set to |origin|.
+  if (!found && DoesOriginRequestOptInIsolation(isolation_context, origin)) {
+    *result = origin;
+    found = true;
+  }
+
   return found;
+}
+
+bool ChildProcessSecurityPolicyImpl::DoesOriginRequestOptInIsolation(
+    const IsolationContext& isolation_context,
+    const url::Origin& origin) {
+  // IsolationOptIn is only available when OriginPolicy is enabled.
+  // We only isolate HTTPS, so early-out if we see other schemes.
+  if (!base::FeatureList::IsEnabled(features::kOriginPolicy) ||
+      !origin.GetURL().SchemeIs(url::kHttpsScheme)) {
+    return false;
+  }
+
+  base::AutoLock origins_isolation_opt_in_lock(origins_isolation_opt_in_lock_);
+  // See if the same origin exists in the BrowsingInstance already, and if so
+  // return its isolation status.
+  // There are two cases we're worried about here: (i) we've previously seen the
+  // origin and isolated it, but it's no longer in the global map, in which case
+  // we should continue to isolate it, and TODO(wjmaclean): (ii) we've
+  // previously seen the origin and *not* isolated it, in which case we should
+  // continue to not isolate it.
+  BrowsingInstanceId browsing_instance_id(
+      isolation_context.browsing_instance_id());
+  if (!browsing_instance_id.is_null()) {
+    auto it = origin_isolation_by_browsing_instance_.find(browsing_instance_id);
+    if (it != origin_isolation_by_browsing_instance_.end()) {
+      if (std::find(it->second.begin(), it->second.end(), origin) !=
+          it->second.end()) {
+        return true;
+      }
+    }
+  }
+
+  // If |origin| isn't already in BrowserInstance, check the master opt_ins set.
+  return origin_isolation_opt_ins_.contains(origin);
+}
+
+void ChildProcessSecurityPolicyImpl::
+    RemoveOptInIsolatedOriginsForBrowsingInstance(
+        const IsolationContext& isolation_context) {
+  BrowsingInstanceId browsing_instance_id(
+      isolation_context.browsing_instance_id());
+  // If a BrowsingInstance is destructing, we should always have an id for it.
+  CHECK(!browsing_instance_id.is_null());
+
+  base::AutoLock origins_isolation_opt_in_lock(origins_isolation_opt_in_lock_);
+  origin_isolation_by_browsing_instance_.erase(browsing_instance_id);
+}
+
+void ChildProcessSecurityPolicyImpl::AddOptInIsolatedOriginForBrowsingInstance(
+    const IsolationContext& isolation_context,
+    const url::Origin& origin) {
+  // Origin Policy only exists for HTTPS, so nothing we isolate will be HTTP.
+  if (!origin.GetURL().SchemeIs(url::kHttpsScheme))
+    return;
+
+  BrowsingInstanceId browsing_instance_id(
+      isolation_context.browsing_instance_id());
+  // This function should only be called when a BrowsingInstance is registering
+  // a new SiteInstance, so |browsing_instance_id| should always be defined.
+  CHECK(!browsing_instance_id.is_null());
+
+  base::AutoLock origins_isolation_opt_in_lock(origins_isolation_opt_in_lock_);
+  auto it = origin_isolation_by_browsing_instance_.find(browsing_instance_id);
+  if (it == origin_isolation_by_browsing_instance_.end()) {
+    origin_isolation_by_browsing_instance_.try_emplace(
+        browsing_instance_id, std::vector<url::Origin>());
+    it = origin_isolation_by_browsing_instance_.find(browsing_instance_id);
+  }
+  // We only support adding new entries, not modifying existing ones. If at
+  // some point in the future we allow isolation status to change during the
+  // lifetime of a BrowsingInstance, then this will need to be updated.
+  if (std::find(it->second.begin(), it->second.end(), origin) ==
+      it->second.end()) {
+    it->second.push_back(origin);
+  }
+}
+
+void ChildProcessSecurityPolicyImpl::UpdateOriginIsolationOptInListIfNecessary(
+    const url::Origin& origin,
+    bool requests_isolation) {
+  // Avoid dealing with non-HTTP/HTTPS and other non-valid-for-isolation
+  // origins.
+  if (!origin.GetURL().SchemeIs(url::kHttpsScheme) ||
+      !IsolatedOriginUtil::IsValidIsolatedOrigin(origin)) {
+    return;
+  }
+
+  base::AutoLock origins_isolation_opt_in_lock(origins_isolation_opt_in_lock_);
+  if (requests_isolation)
+    origin_isolation_opt_ins_.insert(origin);
+  else
+    origin_isolation_opt_ins_.erase(origin);
 }
 
 void ChildProcessSecurityPolicyImpl::RemoveIsolatedOriginForTesting(

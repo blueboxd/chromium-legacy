@@ -470,10 +470,13 @@ void ConvertVideoFrameToRGBPixelsTask(const VideoFrame* video_frame,
   }
 
   base::CheckedNumeric<size_t> chunks = height / rows_per_chunk;
-  DCHECK_LE(height % rows_per_chunk, 1UL);
   const size_t chunk_start = (chunks * task_index / n_tasks).ValueOrDie();
   const size_t chunk_end = (chunks * (task_index + 1) / n_tasks).ValueOrDie();
-  const size_t rows = (chunk_end - chunk_start) * rows_per_chunk;
+
+  // Indivisible heights must process any remaining rows in the last task.
+  size_t rows = (chunk_end - chunk_start) * rows_per_chunk;
+  if (task_index + 1 == n_tasks)
+    rows += height % rows_per_chunk;
 
   struct {
     int stride;
@@ -572,8 +575,7 @@ void ConvertVideoFrameToRGBPixelsTask(const VideoFrame* video_frame,
           plane_meta[VideoFrame::kVPlane].stride,
           plane_meta[VideoFrame::kAPlane].data,
           plane_meta[VideoFrame::kAPlane].stride, pixels, row_bytes, width,
-          rows,
-          1);  // 1 = enable RGB premultiplication by Alpha.
+          rows, 1);  // 1 = enable RGB premultiplication by Alpha.
       break;
 
     case PIXEL_FORMAT_I444:
@@ -1187,10 +1189,12 @@ void PaintCanvasVideoRenderer::ConvertVideoFrameToRGBPixels(
   }
 
   constexpr size_t kTaskBytes = 1024 * 1024;  // 1 MiB
-  const size_t frame_bytes = row_bytes * video_frame->visible_rect().height();
-  const size_t n_tasks =
-      std::min<size_t>(std::max<size_t>(1, frame_bytes / kTaskBytes),
-                       base::SysInfo::NumberOfProcessors());
+  const size_t n_tasks = std::min<size_t>(
+      std::max<size_t>(
+          1, VideoFrame::AllocationSize(video_frame->format(),
+                                        video_frame->visible_rect().size()) /
+                 kTaskBytes),
+      base::SysInfo::NumberOfProcessors());
   base::WaitableEvent event;
   base::RepeatingClosure barrier = base::BarrierClosure(
       n_tasks,

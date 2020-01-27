@@ -180,7 +180,7 @@ TEST_F(FontSizeTabHelperTest, ZoomIn) {
       ZoomMultiplierPrefKey(preferred_content_size_category_, test_url);
   const base::Value* pref =
       chrome_browser_state_->GetPrefs()->Get(prefs::kIosUserZoomMultipliers);
-  EXPECT_EQ(pref->FindDoublePath(pref_key), 1.1);
+  EXPECT_EQ(1.1, pref->FindDoublePath(pref_key));
 }
 
 // Tests that the user can zoom out, and that after zooming out, the correct
@@ -205,7 +205,7 @@ TEST_F(FontSizeTabHelperTest, ZoomOut) {
       ZoomMultiplierPrefKey(preferred_content_size_category_, test_url);
   const base::Value* pref =
       chrome_browser_state_->GetPrefs()->Get(prefs::kIosUserZoomMultipliers);
-  EXPECT_EQ(pref->FindDoublePath(pref_key), 0.9);
+  EXPECT_EQ(0.9, pref->FindDoublePath(pref_key));
 }
 
 // Tests after resetting the zoom level, the correct Javascript has been
@@ -222,7 +222,7 @@ TEST_F(FontSizeTabHelperTest, ResetZoom) {
       ZoomMultiplierPrefKey(preferred_content_size_category_, test_url);
   const base::Value* pref =
       chrome_browser_state_->GetPrefs()->Get(prefs::kIosUserZoomMultipliers);
-  EXPECT_EQ(pref->FindDoublePath(pref_key), 1.1);
+  EXPECT_EQ(1.1, pref->FindDoublePath(pref_key));
 
   // Then reset. The pref key should be removed from the dictionary.
   font_size_tab_helper->UserZoom(ZOOM_RESET);
@@ -252,5 +252,28 @@ TEST_F(FontSizeTabHelperTest, ZoomAndAccessibilityTextSize) {
   // Only the user zoom portion is stored in the preferences.
   const base::Value* pref =
       chrome_browser_state_->GetPrefs()->Get(prefs::kIosUserZoomMultipliers);
-  EXPECT_EQ(pref->FindDoublePath(pref_key), 1.1);
+  EXPECT_EQ(1.1, pref->FindDoublePath(pref_key));
+}
+
+// Tests that the user pref is cleared when requested.
+TEST_F(FontSizeTabHelperTest, ClearUserZoomPrefs) {
+  GURL test_url("https://test.url/");
+  web_state_.SetCurrentURL(test_url);
+
+  FontSizeTabHelper* font_size_tab_helper =
+      FontSizeTabHelper::FromWebState(&web_state_);
+  font_size_tab_helper->UserZoom(ZOOM_IN);
+
+  // Make sure the first value is stored in the pref store.
+  const base::Value* pref =
+      chrome_browser_state_->GetPrefs()->Get(prefs::kIosUserZoomMultipliers);
+  std::string pref_key =
+      ZoomMultiplierPrefKey(preferred_content_size_category_, test_url);
+  EXPECT_EQ(1.1, pref->FindDoublePath(pref_key));
+
+  FontSizeTabHelper::ClearUserZoomPrefs(chrome_browser_state_->GetPrefs());
+
+  EXPECT_TRUE(chrome_browser_state_->GetPrefs()
+                  ->Get(prefs::kIosUserZoomMultipliers)
+                  ->DictEmpty());
 }

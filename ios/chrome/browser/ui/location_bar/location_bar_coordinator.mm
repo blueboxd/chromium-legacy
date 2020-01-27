@@ -95,7 +95,7 @@ const int kLocationAuthorizationStatusCount = 5;
 @property(nonatomic, strong) OmniboxCoordinator* omniboxCoordinator;
 @property(nonatomic, strong) LocationBarMediator* mediator;
 @property(nonatomic, strong) LocationBarViewController* viewController;
-@property(nonatomic, readonly) ios::ChromeBrowserState* browserState;
+@property(nonatomic, readonly) ChromeBrowserState* browserState;
 @property(nonatomic, readonly) WebStateList* webStateList;
 
 // Tracks calls in progress to -cancelOmniboxEdit to avoid calling it from
@@ -109,7 +109,7 @@ const int kLocationAuthorizationStatusCount = 5;
 
 #pragma mark - Accessors
 
-- (ios::ChromeBrowserState*)browserState {
+- (ChromeBrowserState*)browserState {
   return self.browser ? self.browser->GetBrowserState() : nullptr;
 }
 

@@ -100,11 +100,14 @@ class SynchronousCompositorControlHost
   }
 
   // SynchronousCompositorControlHost overrides.
-  void ReturnFrame(uint32_t layer_tree_frame_sink_id,
-                   uint32_t metadata_version,
-                   base::Optional<viz::CompositorFrame> frame) override {
+  void ReturnFrame(
+      uint32_t layer_tree_frame_sink_id,
+      uint32_t metadata_version,
+      base::Optional<viz::CompositorFrame> frame,
+      base::Optional<viz::HitTestRegionList> hit_test_region_list) override {
     if (!bridge_->ReceiveFrameOnIOThread(layer_tree_frame_sink_id,
-                                         metadata_version, std::move(frame))) {
+                                         metadata_version, std::move(frame),
+                                         std::move(hit_test_region_list))) {
       bad_message::ReceivedBadMessage(
           process_id_, bad_message::SYNC_COMPOSITOR_NO_FUTURE_FRAME);
     }
@@ -219,6 +222,7 @@ SynchronousCompositor::Frame SynchronousCompositorHost::DemandDrawHw(
   uint32_t layer_tree_frame_sink_id;
   uint32_t metadata_version = 0u;
   base::Optional<viz::CompositorFrame> compositor_frame;
+  base::Optional<viz::HitTestRegionList> hit_test_region_list;
   SyncCompositorCommonRendererParams common_renderer_params;
 
   {
@@ -228,7 +232,7 @@ SynchronousCompositor::Frame SynchronousCompositorHost::DemandDrawHw(
     if (!IsReadyForSynchronousCall() ||
         !GetSynchronousCompositor()->DemandDrawHw(
             params, &common_renderer_params, &layer_tree_frame_sink_id,
-            &metadata_version, &compositor_frame)) {
+            &metadata_version, &compositor_frame, &hit_test_region_list)) {
       return SynchronousCompositor::Frame();
     }
   }
@@ -242,6 +246,7 @@ SynchronousCompositor::Frame SynchronousCompositorHost::DemandDrawHw(
   frame.frame.reset(new viz::CompositorFrame);
   frame.layer_tree_frame_sink_id = layer_tree_frame_sink_id;
   *frame.frame = std::move(*compositor_frame);
+  frame.hit_test_region_list = std::move(hit_test_region_list);
   UpdateFrameMetaData(metadata_version, frame.frame->metadata.Clone());
   return frame;
 }

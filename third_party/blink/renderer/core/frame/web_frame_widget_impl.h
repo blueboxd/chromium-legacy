@@ -37,6 +37,7 @@
 #include "base/optional.h"
 #include "base/single_thread_task_runner.h"
 #include "base/util/type_safety/pass_key.h"
+#include "third_party/blink/public/mojom/scroll/scroll_into_view_params.mojom-blink-forward.h"
 #include "third_party/blink/public/platform/web_coalesced_input_event.h"
 #include "third_party/blink/public/platform/web_size.h"
 #include "third_party/blink/public/web/web_input_method_controller.h"
@@ -173,7 +174,7 @@ class WebFrameWidgetImpl final : public WebFrameWidgetBase,
   void GetScrollParamsForFocusedEditableElement(
       const Element& element,
       PhysicalRect& rect_to_scroll,
-      WebScrollIntoViewParams& params);
+      mojom::blink::ScrollIntoViewParamsPtr& params);
 
   base::Optional<WebSize> size_;
 

@@ -21,8 +21,8 @@ android_library("java") {
     "//base:base_java",
     "//chrome/browser/ui/android/appmenu:java",
     "//chrome/browser/ui/android/appmenu:java_resources",
-    "//chrome/browser/ui/android/widget:java",
     "//chrome/lib/lifecycle/public/android:java",
+    "//components/browser_ui/widget/android:java",
     "//third_party/android_deps:android_support_v7_appcompat_java",
     "//third_party/android_deps:androidx_annotation_annotation_java",
     "//ui/android:ui_java",
@@ -37,7 +37,7 @@ android_resources("java_resources") {
   # all be accessed through the same custom_package.
   deps = [
     "//chrome/browser/ui/android/appmenu:java_resources",
-    "//chrome/browser/ui/android/widget:ui_widget_java_resources",
+    "//components/browser_ui/widget/android:java_resources",
   ]
 }
 
@@ -58,9 +58,9 @@ android_library("javatests") {
     "//base:base_java_test_support",
     "//chrome/browser/ui/android/appmenu:java",
     "//chrome/browser/ui/android/appmenu:test_support_java",
-    "//chrome/browser/ui/android/widget:test_support_java",
     "//chrome/lib/lifecycle/public/android:java",
     "//chrome/test/android:chrome_java_test_support",
+    "//components/browser_ui/widget/android:test_support_java",
     "//content/public/test/android:content_java_test_support",
     "//third_party/android_deps:android_support_v7_appcompat_java",
     "//third_party/android_support_test_runner:rules_java",

@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/site_instance_impl.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_or_resource_context.h"
@@ -216,6 +217,11 @@ BrowsingInstance::~BrowsingInstance() {
   DCHECK(!default_site_instance_);
   if (default_process_)
     default_process_->RemoveObserver(this);
+
+  // Remove any origin isolation opt-ins related to this instance.
+  ChildProcessSecurityPolicyImpl* policy =
+      ChildProcessSecurityPolicyImpl::GetInstance();
+  policy->RemoveOptInIsolatedOriginsForBrowsingInstance(isolation_context_);
 }
 
 GURL BrowsingInstance::GetSiteForURL(const GURL& url) const {

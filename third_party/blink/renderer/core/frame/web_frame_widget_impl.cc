@@ -38,7 +38,6 @@
 #include "build/build_config.h"
 #include "cc/layers/picture_layer.h"
 #include "third_party/blink/public/platform/platform.h"
-#include "third_party/blink/public/platform/web_scroll_into_view_params.h"
 #include "third_party/blink/public/web/web_autofill_client.h"
 #include "third_party/blink/public/web/web_element.h"
 #include "third_party/blink/public/web/web_frame_widget.h"
@@ -82,6 +81,7 @@
 #include "third_party/blink/renderer/core/page/validation_message_client.h"
 #include "third_party/blink/renderer/core/paint/compositing/paint_layer_compositor.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
+#include "third_party/blink/renderer/core/scroll/scroll_into_view_params_type_converters.h"
 #include "third_party/blink/renderer/platform/graphics/color.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/keyboard_codes.h"
@@ -527,9 +527,10 @@ bool WebFrameWidgetImpl::ScrollFocusedEditableElementIntoView() {
     return false;
 
   PhysicalRect rect_to_scroll;
-  WebScrollIntoViewParams params;
+  auto params = CreateScrollIntoViewParams();
   GetScrollParamsForFocusedEditableElement(*element, rect_to_scroll, params);
-  element->GetLayoutObject()->ScrollRectToVisible(rect_to_scroll, params);
+  element->GetLayoutObject()->ScrollRectToVisible(rect_to_scroll,
+                                                  std::move(params));
   return true;
 }
 
@@ -1075,7 +1076,7 @@ void WebFrameWidgetImpl::DidCreateLocalRootView() {
 void WebFrameWidgetImpl::GetScrollParamsForFocusedEditableElement(
     const Element& element,
     PhysicalRect& rect_to_scroll,
-    WebScrollIntoViewParams& params) {
+    mojom::blink::ScrollIntoViewParamsPtr& params) {
   LocalFrameView& frame_view = *element.GetDocument().View();
   IntRect absolute_element_bounds =
       element.GetLayoutObject()->AbsoluteBoundingBoxRect();
@@ -1111,12 +1112,12 @@ void WebFrameWidgetImpl::GetScrollParamsForFocusedEditableElement(
     }
   }
 
-  params.zoom_into_rect = View()->ShouldZoomToLegibleScale(element);
-  params.relative_element_bounds = NormalizeRect(
+  params->zoom_into_rect = View()->ShouldZoomToLegibleScale(element);
+  params->relative_element_bounds = NormalizeRect(
       Intersection(absolute_element_bounds, maximal_rect), maximal_rect);
-  params.relative_caret_bounds = NormalizeRect(
+  params->relative_caret_bounds = NormalizeRect(
       Intersection(absolute_caret_bounds, maximal_rect), maximal_rect);
-  params.behavior = WebScrollIntoViewParams::kInstant;
+  params->behavior = mojom::blink::ScrollIntoViewParams::Behavior::kInstant;
   rect_to_scroll = PhysicalRect(maximal_rect);
 }
 

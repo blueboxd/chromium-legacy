@@ -772,6 +772,7 @@
           <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> được ưu tiên hơn so với chính sách này. Điều đó có nghĩa là một tiện ích trong danh sách cấm sẽ không được cài đặt, ngay cả khi hoạt động cài đặt này diễn ra từ một trang web thuộc danh sách này.</translation>
 <translation id="214901426630414675">Hạn chế chế độ in hai mặt</translation>
 <translation id="2149330464730004005">Bật chế độ in màu</translation>
+<translation id="2151831603578119302">Bật phím tắt của tính năng hỗ trợ tiếp cận</translation>
 <translation id="2156132677421487971">Định cấu hình các chính sách cho <ph name="PRODUCT_NAME" />, một tính năng cho phép người dùng gửi nội dung của các tab, trang web hoặc màn hình từ trình duyệt đến màn hình và hệ thống âm thanh từ xa.</translation>
 <translation id="2156755242840687300">Máy chủ máy in bên ngoài được bật</translation>
 <translation id="2160336427036785721">Định cấu hình dung lượng bộ nhớ mà một phiên bản <ph name="PRODUCT_NAME" /> có thể sử dụng trước khi các tab bắt đầu bị đóng (nghĩa là dung lượng bộ nhớ mà tab sử dụng sẽ được giải phóng và tab sẽ phải tải lại khi chuyển đổi) để tiết kiệm bộ nhớ.
@@ -885,6 +886,7 @@
 <translation id="2294382669900758280">Video đang phát trong các ứng dụng Android không được xem xét ngay cả khi chính sách này được đặt thành <ph name="TRUE" />.</translation>
 <translation id="2299220924812062390">Chỉ định danh sách plugin được phép</translation>
 <translation id="2303795211377219696">Bật tính năng Tự động điền cho thẻ tín dụng</translation>
+<translation id="2307496301287881990">Báo cáo trạng thái đồ họa và hiển thị</translation>
 <translation id="2309390639296060546">Cài đặt vị trí địa lý mặc định</translation>
 <translation id="2327252517317514801">Xác định miền được phép truy cập vào G Suite</translation>
 <translation id="2328573323851533589">Chính sách này có thể dùng để buộc bật hoặc buộc tắt tính năng kiểm tra rò rỉ thông tin đăng nhập trong <ph name="PRODUCT_NAME" />.
@@ -1143,6 +1145,7 @@
       Nếu bạn tắt hoặc không định cấu hình chính sách này, thì các tùy chọn cài đặt cách ly trang web mặc định của nền tảng sẽ được dùng cho màn hình đăng nhập.
       </translation>
 <translation id="2587719089023392205">Đặt <ph name="PRODUCT_NAME" /> làm trình duyệt mặc định</translation>
+<translation id="2588071938417715443">Chính sách này kiểm soát quyền truy cập vào các tính năng có thể kiểm soát trong giao diện người dùng khám phá cục bộ (<ph name="CHROME_DEVICES_LINK" />). Giao diện này sẽ hiển thị các thiết bị có thể khám phá có vị trí gần người dùng cũng như các thiết bị trên đám mây được đăng ký với những thiết bị đó. Trên tất cả các hệ điều hành ngoại trừ <ph name="PRODUCT_OS_NAME" />, giao diện người dùng khám phá cục bộ cũng cho phép người dùng thêm các máy in cổ điển đã kết nối với máy tính của họ với <ph name="CLOUD_PRINT_NAME" />.</translation>
 <translation id="2592091433672667839">Khoảng thời gian không hoạt động trước khi trình bảo vệ màn hình hiển thị trên màn hình đăng nhập ở chế độ bán lẻ</translation>
 <translation id="2592162121850992309">Nếu bạn không đặt chính sách này hoặc đặt thành true, tính năng tăng tốc phần cứng sẽ được bật trừ khi bạn đưa một tính năng GPU (Đơn vị xử lý đồ họa) nhất định vào danh sách cấm.
 
@@ -2925,6 +2928,7 @@ Khi chính sách này được đặt thành false hoặc không được địn
       Nếu bạn tạo tùy chọn kết nối VPN qua ứng dụng VPN, thì chính sách này sẽ không làm ảnh hưởng đến giao diện người dùng bên trong ứng dụng. Do đó, người dùng vẫn có thể sử dụng ứng dụng để sửa đổi tùy chọn kết nối VPN.
 
       Chính sách này nhằm sử dụng cùng với tính năng "VPN luôn bật", cho phép quản trị viên quyết định thiết lập tùy chọn kết nối VPN khi khởi động.</translation>
+<translation id="5401696449591951427">Bật <ph name="CHROME_DEVICES_LINK" /></translation>
 <translation id="5405289061476885481">Định cấu hình bố cục bàn phím được cho phép trên màn hình đăng nhập <ph name="PRODUCT_OS_NAME" />.
 
       Nếu chính sách này được đặt thành danh sách số nhận dạng phương thức nhập, phương thức nhập được cung cấp sẽ có sẵn trên màn hình đăng nhập. Phương thức nhập được cung cấp đầu tiên sẽ được chọn sẵn. Mặc dù nhóm người dùng được lấy tiêu điểm trên màn hình đăng nhập, phương thức nhập được sử dụng gần đây nhất của người dùng sẽ có sẵn ngoài phương thức nhập được cung cấp bởi chính sách này. Nếu chính sách này chưa được đặt, các phương thức nhập trên màn hình đăng nhập sẽ được lấy từ ngôn ngữ mà màn hình đăng nhập hiển thị. Các giá trị không phải số nhận dạng phương thức nhập hợp lệ sẽ bị bỏ qua.</translation>
@@ -3194,6 +3198,7 @@ Khi chính sách này được đặt thành false hoặc không được địn
           Khi bạn không đặt chính sách này, hành động mặc định là tạm ngưng sẽ được thực hiện.
 
           Nếu hành động là tạm ngưng, bạn có thể định cấu hình <ph name="PRODUCT_OS_NAME" /> một cách riêng biệt thành khóa hoặc không khóa màn hình trước khi tạm ngưng.</translation>
+<translation id="574983287620584622">Bật phím tắt của tính năng hỗ trợ tiếp cận trên màn hình đăng nhập</translation>
 <translation id="5755002458331714762"> Các API Thành phần web phiên bản 0 (Shadow DOM v0, Custom Elements v0 và HTML Imports) đã ngừng hoạt động vào năm 2018 và bị tắt theo mặc định kể từ M80. Theo chính sách này, bạn có thể lựa chọn (các) tính năng nào trong số này sẽ bật lại cho đến M84.
 
       Nếu bạn đặt chính sách này thành True, thì các tính năng của Thành phần web phiên bản 0 sẽ bật cho tất cả trang web.
@@ -4352,6 +4357,15 @@ Nếu bạn không đặt chính sách này thì người dùng sẽ có thể t
       Khi bạn đặt chính sách này thành False thì dữ liệu Duyệt web an toàn sẽ không được thu thập.
 
       Chính sách này chỉ có hiệu lực khi bật <ph name="CHROME_REPORTING_EXTENSION_NAME" /> và đăng ký máy với <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
+<translation id="777734450201217641">Bật phím tắt của tính năng hỗ trợ tiếp cận trên màn hình đăng nhập.
+
+          Nếu đặt chính sách này thành true, thì phím tắt của tính năng hỗ trợ tiếp cận sẽ luôn bật trong màn hình đăng nhập.
+
+          Nếu đặt chính sách này thành false, thì phím tắt của tính năng hỗ trợ tiếp cận sẽ luôn tắt trên màn hình đăng nhập.
+
+          Nếu bạn đặt chính sách này, thì người dùng sẽ không thể thay đổi hay ghi đè chính sách.
+
+          Nếu chưa đặt chính sách này, thì phím tắt của tính năng hỗ trợ tiếp cận sẽ bật theo mặc định trên màn hình đăng nhập.</translation>
 <translation id="7777535871204167559">Coi thiết bị lưu trữ bên ngoài là thiết bị chỉ đọc</translation>
 <translation id="7788511847830146438">Cho mỗi hồ sơ</translation>
 <translation id="7792973482799545782">Không cho phép bất kỳ trang web nào tải nội dung hỗn hợp có thể chặn</translation>
@@ -4765,6 +4779,15 @@ Bạn nên định cấu hình chính sách trên Windows qua GPO, mặc dù vi�
 
       Cảnh báo: Không nên định cấu hình các giới hạn phiên bản vì những giới hạn này có thể khiến người dùng không thể nhận được các bản cập nhật phần mềm và các bản vá bảo mật quan trọng. Giới hạn cập nhật ở một tiền tố phiên bản cụ thể có thể khiến người dùng gặp rủi ro.</translation>
 <translation id="8519264904050090490">URL ngoại lệ hướng dẫn người dùng được quản lý</translation>
+<translation id="8519516251436131647">Bật phím tắt của tính năng hỗ trợ tiếp cận.
+
+          Nếu đặt chính sách này thành true, thì phím tắt tính năng hỗ trợ tiếp cận sẽ luôn bật.
+
+          Nếu đặt chính sách này thành false, phím tắt của tính năng hỗ trợ tiếp cận sẽ luôn bật.
+
+          Nếu bạn đặt chính sách này, thì người dùng sẽ không thể thay đổi hay ghi đè chính sách.
+
+          Nếu không đặt chính sách này, thì phím tắt của tính năng hỗ trợ tiếp cận sẽ bật theo mặc định.</translation>
 <translation id="8525526490824335042">Vùng chứa Linux</translation>
 <translation id="8538235451413605457">Định cấu hình phiên bản <ph name="PRODUCT_NAME" /> tối thiểu được phép. Các phiên bản dưới đây bị coi là lỗi thời và thiết bị sẽ không cho phép người dùng đăng nhập trước khi hệ điều hành được cập nhật.
       Nếu phiên bản hiện tại trở nên lỗi thời trong phiên của người dùng, thì người dùng sẽ buộc phải đăng xuất.
@@ -5009,6 +5032,12 @@ Bạn nên định cấu hình chính sách trên Windows qua GPO, mặc dù vi�
 
           Nếu chính sách này không được đặt, 'PromptOnAccess' sẽ được sử dụng và người dùng có thể thay đổi cài đặt này.</translation>
 <translation id="8911348623012274122">Đặt giới hạn bộ nhớ cho các phiên bản Chrome</translation>
+<translation id="8911736066340032670">Báo cáo thông tin về trạng thái hiển thị, chẳng hạn như tốc độ làm mới và
+      thông tin có liên quan đến đồ họa, ví dụ như phiên bản trình điều khiển.
+
+      Nếu đặt chính sách thành false hoặc không đặt, thì trạng thái đồ họa và hiển thị
+      sẽ không được báo cáo. Nếu đặt thành true, trạng thái đồ họa và hiển thị
+      sẽ được báo cáo.</translation>
 <translation id="891435090623616439">được mã hóa dưới dạng chuỗi JSON, để biết chi tiết hãy xem <ph name="COMPLEX_POLICIES_URL" /></translation>
 <translation id="8917070657147922192">Cho phép người dùng quản lý các chứng chỉ CA đã cài đặt.</translation>
 <translation id="8926275581598789324">Xin lưu ý rằng chính sách này không được dùng nữa và sẽ bị xóa trong <ph name="PRODUCT_OS_NAME" /> phiên bản 82. Thay vào đó, vui lòng sử dụng <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />.

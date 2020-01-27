@@ -14,6 +14,7 @@
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
+#include "build/build_config.h"
 #include "content/browser/indexed_db/cursor_impl.h"
 #include "content/browser/indexed_db/file_stream_reader_to_data_pipe.h"
 #include "content/browser/indexed_db/indexed_db_callbacks.h"
@@ -443,7 +444,13 @@ void IndexedDBDispatcherHost::CreateAllBlobs(
     element->content_type = base::UTF16ToUTF8(blob_info.type());
     element->type = storage::mojom::BlobDataItemType::kIndexedDB;
 
-    BindFileReader(blob_info.file_path(), blob_info.last_modified(),
+    base::Time last_modified;
+    // Android doesn't seem to consistantly be able to set file modification
+    // times. https://crbug.com/1045488
+#if !defined(OS_ANDROID)
+    last_modified = blob_info.last_modified();
+#endif
+    BindFileReader(blob_info.file_path(), last_modified,
                    blob_info.release_callback(),
                    element->reader.InitWithNewPipeAndPassReceiver());
 

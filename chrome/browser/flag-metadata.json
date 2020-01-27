@@ -1013,11 +1013,6 @@
     "expiry_milestone": 82
   },
   {
-    "name": "enable-aura-tooltips-on-windows",
-    "owners": [ "cliffsmo@microsoft.com" ],
-    "expiry_milestone": 78
-  },
-  {
     "name": "enable-autofill-account-wallet-storage",
     "owners": [ "treib", "jsaul@google.com", "butter-team@google.com" ],
     "expiry_milestone": 83
@@ -1478,7 +1473,7 @@
   },
   {
     "name": "enable-immersive-fullscreen-toolbar",
-    "owners": [ "sdy" ],
+    "owners": [ "ellyjones" ],
     "expiry_milestone": 80
   },
   {
@@ -2000,6 +1995,11 @@
     "expiry_milestone": 80
   },
   {
+    "name": "enable-user-data-snapshot",
+    "owners": [ "ydago", "grt" ],
+    "expiry_milestone": 90
+  },
+  {
     "name": "enable-vaapi-jpeg-image-decode-acceleration",
     "owners": [ "chromeos-gfx@google.com" ],
     "expiry_milestone": 83
@@ -2292,11 +2292,6 @@
     "expiry_milestone": -1
   },
   {
-    "name": "force-enable-system-aec",
-    "owners": [ "armax", "guidou" ],
-    "expiry_milestone": 80
-  },
-  {
     "name": "force-show-update-menu-badge",
     "owners": [ "//chrome/android/java/src/org/chromium/chrome/browser/omaha/OWNERS" ],
     // This is required by test teams to verify functionality on devices which
@@ -2339,6 +2334,11 @@
     "name": "fractional-scroll-offsets",
     "owners": [ "bokan" ],
     "expiry_milestone": 81
+  },
+  {
+    "name": "freeze-user-agent",
+    "owners": [ "yoavweiss", "aarontag" ],
+    "expiry_milestone": 85
   },
   {
     "name": "fuzzy-app-search",
@@ -2393,6 +2393,11 @@
     // components for the survey without being limited by the triggering mechanism.
     // This flag should expire along with the above feature flag.
     "expiry_milestone": 82
+  },
+  {
+    "name": "happiness-tracking-surveys-for-desktop-settings",
+    "owners": [ "msramek", "chrome-friendly-settings" ],
+    "expiry_milestone": 86
   },
   {
     "name": "hardware-media-key-handling",
@@ -3400,7 +3405,7 @@
   {
     "name": "system-keyboard-lock",
     "owners": [ "joedow", "garykac", "jamiewalch" ],
-    "expiry_milestone": 79
+    "expiry_milestone": 86
   },
   {
     "name": "tab-groups",

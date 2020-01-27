@@ -122,7 +122,7 @@ class CORE_EXPORT DocumentInit final {
 
   // Specifies the Document to inherit security configurations from.
   DocumentInit& WithOwnerDocument(Document*);
-  Document* OwnerDocument() const { return owner_document_.Get(); }
+  Document* OwnerDocument() const { return owner_document_; }
 
   // Specifies the SecurityOrigin in which the URL was requested. This is
   // relevant for determining properties of the resulting document's origin
@@ -187,14 +187,14 @@ class CORE_EXPORT DocumentInit final {
   Type type_ = Type::kUnspecified;
   String mime_type_;
 
-  Member<DocumentLoader> document_loader_;
-  Member<Document> parent_document_;
+  DocumentLoader* document_loader_ = nullptr;
+  Document* parent_document_ = nullptr;
 
-  Member<HTMLImportsController> imports_controller_;
+  HTMLImportsController* imports_controller_ = nullptr;
 
-  Member<Document> context_document_;
+  Document* context_document_ = nullptr;
   KURL url_;
-  Member<Document> owner_document_;
+  Document* owner_document_ = nullptr;
 
   // Initiator origin is used for calculating the document origin when the
   // navigation is started in a different process. In such cases, the document
@@ -227,7 +227,7 @@ class CORE_EXPORT DocumentInit final {
   // Whether the document should be able to access local file:// resources.
   bool grant_load_local_resources_ = false;
 
-  Member<V0CustomElementRegistrationContext> registration_context_;
+  V0CustomElementRegistrationContext* registration_context_ = nullptr;
   bool create_new_registration_context_;
 
   // The feature policy set via response header.
@@ -240,7 +240,7 @@ class CORE_EXPORT DocumentInit final {
   WebSandboxFlags sandbox_flags_ = WebSandboxFlags::kNone;
 
   // Loader's CSP
-  Member<ContentSecurityPolicy> content_security_policy_;
+  ContentSecurityPolicy* content_security_policy_ = nullptr;
   bool content_security_policy_from_context_doc_;
 
   network::mojom::IPAddressSpace ip_address_space_ =

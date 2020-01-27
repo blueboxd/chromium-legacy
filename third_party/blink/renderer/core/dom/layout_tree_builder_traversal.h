@@ -59,7 +59,7 @@ class CORE_EXPORT LayoutTreeBuilderTraversal {
     }
 
    private:
-    Member<const V0InsertionPoint> insertion_point_;
+    const V0InsertionPoint* insertion_point_;
   };
 
   static ContainerNode* Parent(const Node&, ParentDetails* = nullptr);

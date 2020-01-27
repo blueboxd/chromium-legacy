@@ -6,7 +6,6 @@
 
 #include "base/test/bind_test_util.h"
 #include "base/test/task_environment.h"
-#include "chrome/services/sharing/webrtc/test/fake_port_allocator_factory.h"
 #include "chrome/services/sharing/webrtc/test/mock_sharing_connection_host.h"
 #include "jingle/glue/thread_wrapper.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -17,11 +16,20 @@
 
 namespace {
 
+class MockP2PSocket : public network::mojom::P2PSocket {
+ public:
+  MOCK_METHOD3(Send,
+               void(const std::vector<int8_t>&,
+                    const network::P2PPacketInfo&,
+                    const net::MutableNetworkTrafficAnnotationTag&));
+
+  MOCK_METHOD2(SetOption, void(network::P2PSocketOption, int32_t));
+};
+
 class SharingClient {
  public:
   SharingClient(
       webrtc::PeerConnectionFactoryInterface* pc_factory,
-      std::unique_ptr<cricket::PortAllocator> port_allocator,
       base::OnceCallback<void(sharing::SharingWebRtcConnection*)> on_disconnect)
       : connection_(pc_factory,
                     /*ice_servers=*/{},
@@ -31,7 +39,6 @@ class SharingClient {
                     host_.connection.BindNewPipeAndPassReceiver(),
                     host_.socket_manager.BindNewPipeAndPassRemote(),
                     host_.mdns_responder.BindNewPipeAndPassRemote(),
-                    std::move(port_allocator),
                     std::move(on_disconnect)) {}
 
   sharing::SharingWebRtcConnection& connection() { return connection_; }
@@ -50,11 +57,80 @@ class SharingClient {
         .WillRepeatedly(testing::Invoke(
             &client->connection_,
             &sharing::SharingWebRtcConnection::OnIceCandidatesReceived));
+
+    EXPECT_CALL(mock_socket_, Send(testing::_, testing::_, testing::_))
+        .Times(testing::AtLeast(0))
+        .WillRepeatedly(testing::Invoke(
+            [client](const std::vector<int8_t>& data,
+                     const network::P2PPacketInfo& info,
+                     const net::MutableNetworkTrafficAnnotationTag& tag) {
+              client->socket_client_->DataReceived(info.destination, data,
+                                                   base::TimeTicks());
+            }));
+  }
+
+  void FakeNetwork(const net::IPAddress& address, const net::IPAddress& other) {
+    EXPECT_CALL(host_, StartNetworkNotifications(testing::_))
+        .WillOnce(testing::Invoke(
+            [&](mojo::PendingRemote<
+                network::mojom::P2PNetworkNotificationClient> client) {
+              net::NetworkInterfaceList list;
+              list.push_back(net::NetworkInterface(
+                  "ifname", "ifname", /*index=*/0,
+                  net::NetworkChangeNotifier::CONNECTION_ETHERNET, address,
+                  /*prefixlen=*/24, net::IP_ADDRESS_ATTRIBUTE_NONE));
+
+              network_notification_client_.Bind(std::move(client));
+              network_notification_client_->NetworkListChanged(
+                  list, address, net::IPAddress());
+            }));
+
+    EXPECT_CALL(host_, CreateNameForAddress(testing::_, testing::_))
+        .Times(testing::AtLeast(1))
+        .WillRepeatedly(testing::Invoke(
+            [&](const net::IPAddress& address,
+                network::mojom::MdnsResponder::CreateNameForAddressCallback
+                    callback) { std::move(callback).Run("name", false); }));
+
+    EXPECT_CALL(host_, GetHostAddress(testing::_, testing::_, testing::_))
+        .Times(testing::AtLeast(1))
+        .WillRepeatedly(testing::Invoke(
+            [other](const std::string& name, bool mdns,
+                    network::mojom::P2PSocketManager::GetHostAddressCallback
+                        callback) {
+              net::IPAddressList list;
+              list.push_back(other);
+              std::move(callback).Run(list);
+            }));
+
+    EXPECT_CALL(host_, CreateSocket(testing::_, testing::_, testing::_,
+                                    testing::_, testing::_, testing::_))
+        .Times(testing::AtLeast(1))
+        .WillRepeatedly(testing::Invoke(
+            [&](network::P2PSocketType type,
+                const net::IPEndPoint& local_address,
+                const network::P2PPortRange& range,
+                const network::P2PHostAndIPEndPoint& remote_address,
+                mojo::PendingRemote<network::mojom::P2PSocketClient>
+                    socket_client,
+                mojo::PendingReceiver<network::mojom::P2PSocket> socket) {
+              socket_client_.Bind(std::move(socket_client));
+              socket_.Bind(std::move(socket));
+
+              socket_client_->SocketCreated(
+                  net::IPEndPoint(local_address.address(), /*port=*/8080),
+                  remote_address.ip_address);
+            }));
   }
 
  private:
   sharing::MockSharingConnectionHost host_;
   sharing::SharingWebRtcConnection connection_;
+  mojo::Remote<network::mojom::P2PNetworkNotificationClient>
+      network_notification_client_;
+  MockP2PSocket mock_socket_;
+  mojo::Receiver<network::mojom::P2PSocket> socket_{&mock_socket_};
+  mojo::Remote<network::mojom::P2PSocketClient> socket_client_;
 };
 
 }  // namespace
@@ -86,7 +162,7 @@ class SharingWebRtcConnectionIntegrationTest : public testing::Test {
 
   std::unique_ptr<SharingClient> CreateSharingClient() {
     return std::make_unique<SharingClient>(
-        webrtc_pc_factory_.get(), port_allocator_factory_.CreatePortAllocator(),
+        webrtc_pc_factory_.get(),
         base::BindOnce(
             &SharingWebRtcConnectionIntegrationTest::ConnectionClosed,
             base::Unretained(this)));
@@ -96,8 +172,6 @@ class SharingWebRtcConnectionIntegrationTest : public testing::Test {
   base::test::SingleThreadTaskEnvironment task_environment_{
       base::test::SingleThreadTaskEnvironment::TimeSource::MOCK_TIME};
   rtc::scoped_refptr<webrtc::PeerConnectionFactoryInterface> webrtc_pc_factory_;
-
-  FakePortAllocatorFactory port_allocator_factory_;
 };
 
 TEST_F(SharingWebRtcConnectionIntegrationTest, SendMessage_Success) {
@@ -106,6 +180,12 @@ TEST_F(SharingWebRtcConnectionIntegrationTest, SendMessage_Success) {
 
   client_1->ConnectTo(client_2.get());
   client_2->ConnectTo(client_1.get());
+
+  // Mock responses from the network service.
+  net::IPAddress address_1(192, 168, 0, 1);
+  net::IPAddress address_2(192, 168, 0, 2);
+  client_1->FakeNetwork(address_1, address_2);
+  client_2->FakeNetwork(address_2, address_1);
 
   std::vector<uint8_t> data(1024, /*random_data=*/42);
 

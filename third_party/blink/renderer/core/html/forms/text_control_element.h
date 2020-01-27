@@ -27,7 +27,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_FORMS_TEXT_CONTROL_ELEMENT_H_
 
 #include "base/gtest_prod_util.h"
-#include "third_party/blink/public/platform/web_focus_type.h"
+#include "third_party/blink/public/mojom/input/focus_type.mojom-blink-forward.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/editing/forward.h"
 #include "third_party/blink/renderer/core/html/forms/html_form_control_element_with_state.h"
@@ -66,7 +66,7 @@ class CORE_EXPORT TextControlElement : public HTMLFormControlElementWithState {
 
   void ForwardEvent(Event&);
 
-  void SetFocused(bool, WebFocusType) override;
+  void SetFocused(bool, mojom::blink::FocusType) override;
 
   // The derived class should return true if placeholder processing is needed.
   virtual bool IsPlaceholderVisible() const = 0;
@@ -187,10 +187,10 @@ class CORE_EXPORT TextControlElement : public HTMLFormControlElementWithState {
   static unsigned IndexForPosition(HTMLElement* inner_editor, const Position&);
 
   void DispatchFocusEvent(Element* old_focused_element,
-                          WebFocusType,
+                          mojom::blink::FocusType,
                           InputDeviceCapabilities* source_capabilities) final;
   void DispatchBlurEvent(Element* new_focused_element,
-                         WebFocusType,
+                         mojom::blink::FocusType,
                          InputDeviceCapabilities* source_capabilities) final;
   void ScheduleSelectEvent();
   void DisabledOrReadonlyAttributeChanged(const QualifiedName&);
@@ -203,7 +203,8 @@ class CORE_EXPORT TextControlElement : public HTMLFormControlElementWithState {
   bool IsEmptySuggestedValue() const { return SuggestedValue().IsEmpty(); }
   // Called in dispatchFocusEvent(), after placeholder process, before calling
   // parent's dispatchFocusEvent().
-  virtual void HandleFocusEvent(Element* /* oldFocusedNode */, WebFocusType) {}
+  virtual void HandleFocusEvent(Element* /* oldFocusedNode */,
+                                mojom::blink::FocusType) {}
   // Called in dispatchBlurEvent(), after placeholder process, before calling
   // parent's dispatchBlurEvent().
   virtual void HandleBlurEvent() {}

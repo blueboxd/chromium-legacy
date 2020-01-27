@@ -27,7 +27,6 @@
 #import <AvailabilityMacros.h>
 
 #include "base/mac/foundation_util.h"
-#include "base/mac/scoped_cftyperef.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/stl_util.h"
 #import "third_party/blink/public/platform/mac/web_sandbox_support.h"
@@ -59,10 +58,10 @@ static bool CanLoadInProcess(NSFont* ns_font) {
   return ![font_name isEqualToString:@"LastResort"];
 }
 
-static CTFontDescriptorRef CascadeToLastResortFontDescriptor() {
-  static CTFontDescriptorRef descriptor;
-  if (descriptor)
-    return descriptor;
+static CFDictionaryRef CascadeToLastResortFontAttributes() {
+  static CFDictionaryRef attributes;
+  if (attributes)
+    return attributes;
 
   base::ScopedCFTypeRef<CTFontDescriptorRef> last_resort(
       CTFontDescriptorCreateWithNameAndSize(CFSTR("LastResort"), 0));
@@ -73,13 +72,10 @@ static CTFontDescriptorRef CascadeToLastResortFontDescriptor() {
 
   const void* keys[] = {kCTFontCascadeListAttribute};
   const void* values[] = {values_array};
-  base::ScopedCFTypeRef<CFDictionaryRef> attributes(CFDictionaryCreate(
+  attributes = CFDictionaryCreate(
       kCFAllocatorDefault, keys, values, base::size(keys),
-      &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks));
-
-  descriptor = CTFontDescriptorCreateWithAttributes(attributes);
-
-  return descriptor;
+      &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
+  return attributes;
 }
 
 static sk_sp<SkTypeface> LoadFromBrowserProcess(NSFont* ns_font,
@@ -94,19 +90,22 @@ static sk_sp<SkTypeface> LoadFromBrowserProcess(NSFont* ns_font,
     return nullptr;
   }
 
-  CTFontRef loaded_ct_font;
+  base::ScopedCFTypeRef<CTFontDescriptorRef> loaded_data_descriptor;
   uint32_t font_id;
   if (!sandbox_support->LoadFont(base::mac::NSToCFCast(ns_font),
-                                 &loaded_ct_font, &font_id)) {
+                                 &loaded_data_descriptor, &font_id)) {
     // TODO crbug.com/461279: Make this appear in the inspector console?
     DLOG(ERROR)
         << "Loading user font \"" << [[ns_font familyName] UTF8String]
         << "\" from non system location failed. Corrupt or missing font file?";
     return nullptr;
   }
-  base::ScopedCFTypeRef<CTFontRef> ct_font_base(loaded_ct_font);
-  base::ScopedCFTypeRef<CTFontRef> ct_font(CTFontCreateCopyWithAttributes(
-      ct_font_base, text_size, 0, CascadeToLastResortFontDescriptor()));
+
+  base::ScopedCFTypeRef<CTFontDescriptorRef> data_descriptor_with_cascade(
+      CTFontDescriptorCreateCopyWithAttributes(
+          loaded_data_descriptor, CascadeToLastResortFontAttributes()));
+  base::ScopedCFTypeRef<CTFontRef> ct_font(CTFontCreateWithFontDescriptor(
+      data_descriptor_with_cascade.get(), text_size, 0));
   sk_sp<SkTypeface> return_font(SkCreateTypefaceFromCTFont(ct_font));
 
   if (!return_font.get())
@@ -136,35 +135,34 @@ std::unique_ptr<FontPlatformData> FontPlatformDataFromNSFont(
     typeface = LoadFromBrowserProcess(ns_font, size);
   }
 
+  auto make_typeface_fontplatformdata = [&typeface, &size, &synthetic_bold,
+                                         &synthetic_italic, &orientation]() {
+    return std::make_unique<FontPlatformData>(
+        std::move(typeface), std::string(), size, synthetic_bold,
+        synthetic_italic, orientation);
+  };
+
   wtf_size_t valid_configured_axes =
       variation_settings && variation_settings->size() < UINT16_MAX
           ? variation_settings->size()
           : 0;
 
   // No variable font requested, return static font.
-  if (!valid_configured_axes) {
-    return std::make_unique<FontPlatformData>(
-        std::move(typeface), std::string(), size, synthetic_bold,
-        synthetic_italic, orientation);
-  }
+  if (!valid_configured_axes)
+    return make_typeface_fontplatformdata();
 
   int existing_axes = typeface->getVariationDesignPosition(nullptr, 0);
-  // Don't apply variation parameters if the font does not have axes or we fail
-  // to retrieve the existing ones.
-  if (existing_axes <= 0) {
-    return std::make_unique<FontPlatformData>(
-        std::move(typeface), std::string(), size, synthetic_bold,
-        synthetic_italic, orientation);
-  }
+  // Don't apply variation parameters if the font does not have axes or we
+  // fail to retrieve the existing ones.
+  if (existing_axes <= 0)
+    return make_typeface_fontplatformdata();
 
   Vector<SkFontArguments::VariationPosition::Coordinate> coordinates_to_set;
   coordinates_to_set.resize(existing_axes);
 
   if (typeface->getVariationDesignPosition(coordinates_to_set.data(),
                                            existing_axes) != existing_axes) {
-    return std::make_unique<FontPlatformData>(
-        std::move(typeface), std::string(), size, synthetic_bold,
-        synthetic_italic, orientation);
+    return make_typeface_fontplatformdata();
   }
 
   // Iterate over the font's axes and find a missing tag from variation
@@ -192,9 +190,7 @@ std::unique_ptr<FontPlatformData> FontPlatformDataFromNSFont(
 
   if (!reconfigured_axes) {
     // No variable axes touched, return the previous typeface.
-    return std::make_unique<FontPlatformData>(
-        std::move(typeface), std::string(), size, synthetic_bold,
-        synthetic_italic, orientation);
+    return make_typeface_fontplatformdata();
   }
 
   SkFontArguments::VariationPosition variation_design_position{
@@ -203,11 +199,7 @@ std::unique_ptr<FontPlatformData> FontPlatformDataFromNSFont(
   typeface = typeface->makeClone(
       SkFontArguments().setVariationDesignPosition(variation_design_position));
 
-  return std::make_unique<FontPlatformData>(
-      std::move(typeface),
-      std::string(),  // family_ doesn't exist on Mac, this avoids conversion
-                      // from NSString which requires including a //base header
-      size, synthetic_bold, synthetic_italic, orientation);
+  return make_typeface_fontplatformdata();
 }
 
 void FontPlatformData::SetupSkFont(SkFont* skfont,

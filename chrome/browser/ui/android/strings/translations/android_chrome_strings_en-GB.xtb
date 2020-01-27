@@ -134,6 +134,7 @@
 <translation id="1994173015038366702">Site URL</translation>
 <translation id="2000419248597011803">Sends some cookies and searches from the address bar and search box to your default search engine</translation>
 <translation id="2002537628803770967">Credit cards and addresses using Google Pay</translation>
+<translation id="2012973609889389923">Fast site</translation>
 <translation id="2013642289801508067">{FILE_COUNT,plural, =1{# File}other{# Files}}</translation>
 <translation id="2017836877785168846">Clears history and autocompletions in the address bar.</translation>
 <translation id="2021896219286479412">Full screen site controls</translation>
@@ -306,6 +307,7 @@
 <translation id="3298243779924642547">Lite</translation>
 <translation id="3303414029551471755">Proceed to download the content?</translation>
 <translation id="3306398118552023113">This app is running in Chrome</translation>
+<translation id="3312292613668865961">Ask before allowing sites to access your virtual reality device and data (recommended)</translation>
 <translation id="3315103659806849044">You are currently customising your Sync and Google service settings. To finish turning on sync, tap the Confirm button near the bottom of the screen. Navigate up</translation>
 <translation id="3328801116991980348">Site information</translation>
 <translation id="3333961966071413176">All contacts</translation>
@@ -511,6 +513,7 @@ To change this setting, <ph name="BEGIN_LINK" />reset sync<ph name="END_LINK" />
 <translation id="4915549754973153784"><ph name="BEGIN_LINK" />Get help<ph name="END_LINK" /> while scanning for devices…</translation>
 <translation id="4921180162323349895">{FILE_COUNT,plural, =1{# Page}other{# Pages}}</translation>
 <translation id="4932247056774066048">Because you're signing out of an account managed by <ph name="DOMAIN_NAME" />, your Chrome data will be deleted from this device. It will remain in your Google account.</translation>
+<translation id="4935305910887312910">Ask before allowing sites to receive camera position or map your room (recommended)</translation>
 <translation id="4943703118917034429">Virtual Reality</translation>
 <translation id="4943872375798546930">No results</translation>
 <translation id="4958708863221495346"><ph name="URL_OF_THE_CURRENT_TAB" /> is sharing your screen</translation>
@@ -744,6 +747,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="6573431926118603307">Tabs that you've opened in Chrome on your other devices will appear here.</translation>
 <translation id="6583199322650523874">Bookmark the current page</translation>
 <translation id="6593061639179217415">Desktop site</translation>
+<translation id="6597891566292541626">Position QR/barcode in this frame.</translation>
 <translation id="6600954340915313787">Copied to Chrome</translation>
 <translation id="6608650720463149374"><ph name="GIGABYTES" /> GB</translation>
 <translation id="6612358246767739896">Protected content</translation>
@@ -953,6 +957,7 @@ The site does NOT gain access to the camera. The camera images are only visible 
 <translation id="8109613176066109935">To get your bookmarks on all your devices, turn on sync</translation>
 <translation id="8110087112193408731">Show your Chrome activity in Digital Wellbeing?</translation>
 <translation id="8116925261070264013">Muted</translation>
+<translation id="8127542551745560481">Edit homepage</translation>
 <translation id="813082847718468539">View site information</translation>
 <translation id="8156139159503939589">What languages do you read?</translation>
 <translation id="8168435359814927499">Content</translation>
@@ -1024,6 +1029,7 @@ The site does NOT gain access to the camera. The camera images are only visible 
 <translation id="8676374126336081632">Clear input</translation>
 <translation id="8687353297350450808">{N_BARS,plural, =1{Signal Strength Level: # bar}other{Signal Strength Level: # bars}}</translation>
 <translation id="868929229000858085">Search your contacts</translation>
+<translation id="8698438463325761328">Block sites from accessing your virtual reality device and data</translation>
 <translation id="869891660844655955">Expiry date</translation>
 <translation id="8719023831149562936">Can’t beam current tab</translation>
 <translation id="8728487861892616501">By using this application, you agree to Chrome’s <ph name="BEGIN_LINK1" />Terms of Service<ph name="END_LINK1" /> and <ph name="BEGIN_LINK2" />Privacy Notice<ph name="END_LINK2" />, and the <ph name="BEGIN_LINK3" />Privacy Notice for Google Accounts Managed with Family Link<ph name="END_LINK3" />.</translation>
@@ -1041,6 +1047,7 @@ The site does NOT gain access to the camera. The camera images are only visible 
 <translation id="883806473910249246">An error occurred while downloading the content.</translation>
 <translation id="8840953339110955557">This page may differ from the online version.</translation>
 <translation id="8847988622838149491">USB</translation>
+<translation id="884828189055900810">Block sites from receiving camera position or mapping your room</translation>
 <translation id="8853345339104747198"><ph name="TAB_TITLE" />, tab</translation>
 <translation id="885701979325669005">Storage</translation>
 <translation id="889338405075704026">Go to Chrome settings</translation>
@@ -1048,6 +1055,7 @@ The site does NOT gain access to the camera. The camera images are only visible 
 <translation id="8909135823018751308">Share…</translation>
 <translation id="8912362522468806198">Google Account</translation>
 <translation id="8920114477895755567">Waiting for details of parents.</translation>
+<translation id="8921772741368021346"><ph name="POSITION" />/<ph name="DURATION" /></translation>
 <translation id="8922289737868596582">Download pages from the More Options button to use them offline</translation>
 <translation id="8926666909099850184">NFC is off for this device. Turn it on in <ph name="BEGIN_LINK" />Android settings<ph name="END_LINK" />.</translation>
 <translation id="8937772741022875483">Remove your Chrome activity from Digital Wellbeing?</translation>

@@ -70,6 +70,7 @@ class AwUrlCheckerDelegateImpl : public safe_browsing::UrlCheckerDelegate {
   static void DoApplicationResponse(
       scoped_refptr<AwSafeBrowsingUIManager> ui_manager,
       const security_interstitials::UnsafeResource& resource,
+      const AwWebResourceRequest& request,
       SafeBrowsingAction action,
       bool reporting);
 

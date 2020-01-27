@@ -5,12 +5,12 @@
 package org.chromium.weblayer_private;
 
 import android.content.Context;
+import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
 import android.webkit.ValueCallback;
 import android.widget.FrameLayout;
-import android.widget.RelativeLayout;
 
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.content_public.browser.WebContents;
@@ -25,11 +25,8 @@ public final class BrowserViewController
                    WebContentsGestureStateTracker.OnGestureStateChangedListener {
     private final ContentViewRenderView mContentViewRenderView;
     private final ContentView mContentView;
-    // Child of mContentView, holds top-view from client.
+    // Child of mContentViewRenderView, holds top-view from client.
     private final TopControlsContainerView mTopControlsContainerView;
-    // Other child of mContentView, which holds views that sit on top of the web contents, such as
-    // tab modal dialogs.
-    private final FrameLayout mWebContentsOverlayView;
 
     private TabImpl mTab;
 
@@ -49,23 +46,14 @@ public final class BrowserViewController
                 windowAndroid, ContentViewRenderView.MODE_SURFACE_VIEW);
         mTopControlsContainerView =
                 new TopControlsContainerView(context, mContentViewRenderView, this);
-        mTopControlsContainerView.setId(View.generateViewId());
         mContentView = ContentView.createContentView(
                 context, mTopControlsContainerView.getEventOffsetHandler());
         mContentViewRenderView.addView(mContentView,
                 new FrameLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT,
                         FrameLayout.LayoutParams.UNSPECIFIED_GRAVITY));
         mContentView.addView(mTopControlsContainerView,
-                new RelativeLayout.LayoutParams(
-                        LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
-
-        mWebContentsOverlayView = new FrameLayout(context);
-        RelativeLayout.LayoutParams overlayParams =
-                new RelativeLayout.LayoutParams(LayoutParams.MATCH_PARENT, 0);
-        overlayParams.addRule(RelativeLayout.BELOW, mTopControlsContainerView.getId());
-        overlayParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
-        mContentView.addView(mWebContentsOverlayView, overlayParams);
-        windowAndroid.setAnimationPlaceholderView(mWebContentsOverlayView);
+                new FrameLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT,
+                        Gravity.FILL_HORIZONTAL | Gravity.TOP));
     }
 
     public void destroy() {
@@ -81,10 +69,6 @@ public final class BrowserViewController
 
     public ViewGroup getContentView() {
         return mContentView;
-    }
-
-    public FrameLayout getWebContentsOverlayView() {
-        return mWebContentsOverlayView;
     }
 
     public void setActiveTab(TabImpl tab) {

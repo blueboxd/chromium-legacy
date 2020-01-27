@@ -489,7 +489,7 @@ class ScriptOnDestroyPlugin : public GarbageCollected<ScriptOnDestroyPlugin>,
                       const WebRect&,
                       const WebRect&,
                       bool) override {}
-  void UpdateFocus(bool, WebFocusType) override {}
+  void UpdateFocus(bool, mojom::blink::FocusType) override {}
   void UpdateVisibility(bool) override {}
   WebInputEventResult HandleInputEvent(const WebCoalescedInputEvent&,
                                        WebCursorInfo&) override {

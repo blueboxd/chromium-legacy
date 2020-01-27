@@ -145,9 +145,9 @@ class CORE_EXPORT TextIteratorTextState {
   unsigned text_start_offset_ = 0;
 
   // Position of the current text, in the form to be returned from the iterator.
-  Member<const Node> position_node_;
+  const Node* position_node_ = nullptr;
   // |Text| node when |position_node_type_ == kInText| or |ContainerNode|.
-  mutable Member<const Node> position_container_node_;
+  mutable const Node* position_container_node_ = nullptr;
   mutable base::Optional<unsigned> position_start_offset_;
   mutable base::Optional<unsigned> position_end_offset_;
   PositionNodeType position_node_type_ = PositionNodeType::kNone;

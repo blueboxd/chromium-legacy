@@ -1793,16 +1793,20 @@ void NGLineBreaker::RewindOverflow(unsigned new_end, NGLineInfo* line_info) {
     if (item.Type() == NGInlineItem::kText) {
       // Text items are trailable if they start with trailable spaces.
       DCHECK_GT(item_result.Length(), 0u);
-      if (item_result.shape_result) {
+      if (item_result.shape_result ||  // kNoResultIfOverflow if 'break-word'
+          (break_anywhere_if_overflow_ && !override_break_anywhere_)) {
         DCHECK(item.Style());
         const EWhiteSpace white_space = item.Style()->WhiteSpace();
         if (ComputedStyle::AutoWrap(white_space) &&
             white_space != EWhiteSpace::kBreakSpaces &&
             IsBreakableSpace(text[item_result.start_offset])) {
-          // If all characters are trailable spaces, check the next item.
-          if (IsAllBreakableSpaces(text, item_result.start_offset + 1,
-                                   item_result.end_offset))
+          // If more items left and all characters are trailable spaces, check
+          // the next item.
+          if (item_result.shape_result && index < item_results.size() - 1 &&
+              IsAllBreakableSpaces(text, item_result.start_offset + 1,
+                                   item_result.end_offset)) {
             continue;
+          }
           // If this item starts with spaces followed by non-space characters,
           // rewind to before this item. |HandleText()| will include the spaces
           // and break there.
@@ -1810,6 +1814,9 @@ void NGLineBreaker::RewindOverflow(unsigned new_end, NGLineInfo* line_info) {
           Rewind(index, line_info);
           DCHECK_EQ(static_cast<unsigned>(&item - items.begin()), item_index_);
           HandleTrailingSpaces(item, line_info);
+#if DCHECK_IS_ON()
+          item_results.back().CheckConsistency(false);
+#endif
           return;
         }
       }

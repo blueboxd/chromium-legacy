@@ -64,8 +64,8 @@ void SystemInfoProvider::StartQueryInfoPostInitialization() {
   // and reply with OnQueryCompleted.
   base::PostTaskAndReplyWithResult(
       task_runner_.get(), FROM_HERE,
-      base::Bind(&SystemInfoProvider::QueryInfo, this),
-      base::Bind(&SystemInfoProvider::OnQueryCompleted, this));
+      base::BindOnce(&SystemInfoProvider::QueryInfo, this),
+      base::BindOnce(&SystemInfoProvider::OnQueryCompleted, this));
 }
 
 }  // namespace extensions

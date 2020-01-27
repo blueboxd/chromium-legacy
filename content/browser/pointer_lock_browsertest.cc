@@ -673,7 +673,14 @@ IN_PROC_BROWSER_TEST_F(PointerLockBrowserTestWithOptions,
 }
 
 #if defined(USE_AURA)
-IN_PROC_BROWSER_TEST_F(PointerLockBrowserTestWithOptions, UnadjustedMovement) {
+#if defined(OS_WIN)
+// https://crbug.com/1043985#c9: Flaky on Windows
+#define MAYBE_UnadjustedMovement DISABLED_UnadjustedMovement
+#else
+#define MAYBE_UnadjustedMovement UnadjustedMovement
+#endif
+IN_PROC_BROWSER_TEST_F(PointerLockBrowserTestWithOptions,
+                       MAYBE_UnadjustedMovement) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b)"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));

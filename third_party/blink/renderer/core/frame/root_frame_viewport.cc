@@ -6,7 +6,7 @@
 
 #include "base/barrier_closure.h"
 #include "cc/input/snap_selection_strategy.h"
-#include "third_party/blink/public/platform/web_scroll_into_view_params.h"
+#include "third_party/blink/public/mojom/scroll/scroll_into_view_params.mojom-blink.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/visual_viewport.h"
 #include "third_party/blink/renderer/core/layout/layout_box.h"
@@ -14,6 +14,7 @@
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/core/scroll/scroll_alignment.h"
 #include "third_party/blink/renderer/core/scroll/scroll_animator_base.h"
+#include "third_party/blink/renderer/core/scroll/scroll_into_view_params_type_converters.h"
 #include "third_party/blink/renderer/core/scroll/smooth_scroll_sequencer.h"
 #include "third_party/blink/renderer/platform/geometry/double_rect.h"
 #include "third_party/blink/renderer/platform/geometry/float_rect.h"
@@ -339,7 +340,7 @@ ScrollOffset RootFrameViewport::ClampToUserScrollableOffset(
 
 PhysicalRect RootFrameViewport::ScrollIntoView(
     const PhysicalRect& rect_in_absolute,
-    const WebScrollIntoViewParams& params) {
+    const mojom::blink::ScrollIntoViewParamsPtr& params) {
   PhysicalRect scroll_snapport_rect = VisibleScrollSnapportRect();
 
   PhysicalRect rect_in_document = rect_in_absolute;
@@ -348,9 +349,11 @@ PhysicalRect RootFrameViewport::ScrollIntoView(
 
   ScrollOffset new_scroll_offset =
       ClampScrollOffset(ScrollAlignment::GetScrollOffsetToExpose(
-          scroll_snapport_rect, rect_in_document, params.GetScrollAlignmentX(),
-          params.GetScrollAlignmentY(), GetScrollOffset()));
-  if (params.GetScrollType() == kUserScroll)
+          scroll_snapport_rect, rect_in_document,
+          params->align_x.To<ScrollAlignment>(),
+          params->align_y.To<ScrollAlignment>(), GetScrollOffset()));
+  auto type = mojo::ConvertTo<ScrollType>(params->type);
+  if (type == kUserScroll)
     new_scroll_offset = ClampToUserScrollableOffset(new_scroll_offset);
 
   FloatPoint end_point = ScrollOffsetToPosition(new_scroll_offset);
@@ -363,17 +366,15 @@ PhysicalRect RootFrameViewport::ScrollIntoView(
   }
 
   if (new_scroll_offset != GetScrollOffset()) {
-    if (params.is_for_scroll_sequence) {
-      DCHECK(params.GetScrollType() == kProgrammaticScroll ||
-             params.GetScrollType() == kUserScroll);
+    if (params->is_for_scroll_sequence) {
+      DCHECK(type == kProgrammaticScroll || type == kUserScroll);
       ScrollBehavior behavior = DetermineScrollBehavior(
-          params.GetScrollBehavior(),
+          mojo::ConvertTo<ScrollBehavior>(params->behavior),
           GetLayoutBox()->StyleRef().GetScrollBehavior());
       GetSmoothScrollSequencer()->QueueAnimation(this, new_scroll_offset,
                                                  behavior);
     } else {
-      ScrollableArea::SetScrollOffset(new_scroll_offset,
-                                      params.GetScrollType());
+      ScrollableArea::SetScrollOffset(new_scroll_offset, type);
     }
   }
 

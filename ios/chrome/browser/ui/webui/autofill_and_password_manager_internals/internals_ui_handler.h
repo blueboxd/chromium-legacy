@@ -33,7 +33,7 @@ class InternalsUIHandler : public web::WebUIIOSMessageHandler,
                            public autofill::LogReceiver {
  public:
   using GetLogRouterFunction =
-      base::RepeatingCallback<LogRouter*(ios::ChromeBrowserState*)>;
+      base::RepeatingCallback<LogRouter*(ChromeBrowserState*)>;
 
   explicit InternalsUIHandler(std::string call_on_load,
                               GetLogRouterFunction get_log_router_function);

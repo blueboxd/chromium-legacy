@@ -44,6 +44,10 @@ class PasswordItemsView : public PasswordBubbleViewBase,
  private:
   class PasswordRow;
 
+  // PasswordBubbleViewBase
+  PasswordBubbleControllerBase* GetController() override;
+  const PasswordBubbleControllerBase* GetController() const override;
+
   void NotifyPasswordFormAction(
       const autofill::PasswordForm& password_form,
       ManagePasswordsBubbleModel::PasswordAction action);

@@ -50,6 +50,9 @@ class CONTENT_EXPORT ServiceWorkerRegistry {
   using GetRegistrationsInfosCallback = base::OnceCallback<void(
       blink::ServiceWorkerStatusCode status,
       const std::vector<ServiceWorkerRegistrationInfo>& registrations)>;
+  using GetUserDataCallback =
+      base::OnceCallback<void(const std::vector<std::string>& data,
+                              blink::ServiceWorkerStatusCode status)>;
   using StatusCallback = ServiceWorkerStorage::StatusCallback;
 
   ServiceWorkerRegistry(
@@ -127,6 +130,15 @@ class CONTENT_EXPORT ServiceWorkerRegistry {
       ServiceWorkerRegistration* registration,
       ServiceWorkerRegistration::Status new_status);
 
+  // Wrapper functions of ServiceWorkerStorage. These wrappers provide error
+  // recovering mechanism when database operations fail.
+  void GetUserData(int64_t registration_id,
+                   const std::vector<std::string>& keys,
+                   GetUserDataCallback callback);
+  void GetUserDataByKeyPrefix(int64_t registration_id,
+                              const std::string& key_prefix,
+                              GetUserDataCallback callback);
+
   // TODO(crbug.com/1039200): Make this private once methods/fields related to
   // ServiceWorkerRegistration in ServiceWorkerStorage are moved into this
   // class.
@@ -170,11 +182,23 @@ class CONTENT_EXPORT ServiceWorkerRegistry {
       blink::ServiceWorkerStatusCode status,
       std::unique_ptr<RegistrationList> registration_data_list);
 
-  void DidStoreRegistration(const ServiceWorkerDatabase::RegistrationData& data,
-                            StatusCallback callback,
-                            blink::ServiceWorkerStatusCode status);
-  void DidDeleteRegistration(StatusCallback callback,
-                             blink::ServiceWorkerStatusCode status);
+  void DidStoreRegistration(
+      const ServiceWorkerDatabase::RegistrationData& data,
+      StatusCallback callback,
+      blink::ServiceWorkerStatusCode status,
+      int64_t deleted_version_id,
+      const std::vector<int64_t>& newly_purgeable_resources);
+  void DidDeleteRegistration(
+      StatusCallback callback,
+      blink::ServiceWorkerStatusCode status,
+      int64_t deleted_version_id,
+      const std::vector<int64_t>& newly_purgeable_resources);
+
+  void DidGetUserData(GetUserDataCallback callback,
+                      const std::vector<std::string>& data,
+                      ServiceWorkerDatabase::Status status);
+
+  void ScheduleDeleteAndStartOver();
 
   // The ServiceWorkerContextCore object must outlive this.
   ServiceWorkerContextCore* const context_;

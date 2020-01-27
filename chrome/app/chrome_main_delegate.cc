@@ -120,8 +120,8 @@
 
 #if defined(OS_ANDROID)
 #include "base/android/java_exception_reporter.h"
-#include "chrome/browser/android/chrome_feature_list.h"
 #include "chrome/browser/android/crash/pure_java_exception_handler.h"
+#include "chrome/browser/flags/android/chrome_feature_list.h"
 #include "chrome/common/chrome_descriptors.h"
 #include "net/android/network_change_notifier_factory_android.h"
 #else  // defined(OS_ANDROID)

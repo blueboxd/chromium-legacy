@@ -14,6 +14,8 @@
 #include "base/supports_user_data.h"
 #include "components/safe_browsing/content/base_blocking_page.h"
 #include "components/safe_browsing/core/features.h"
+#include "components/security_interstitials/content/unsafe_resource_util.h"
+#include "components/security_interstitials/core/unsafe_resource.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
@@ -122,7 +124,7 @@ BaseUIManager::~BaseUIManager() {}
 bool BaseUIManager::IsWhitelisted(const UnsafeResource& resource) {
   NavigationEntry* entry = nullptr;
   if (resource.is_subresource) {
-    entry = resource.GetNavigationEntryForResource();
+    entry = GetNavigationEntryForResource(resource);
   }
   SBThreatType unused_threat_type;
   return IsUrlWhitelistedOrPendingForWebContents(
@@ -244,9 +246,9 @@ void BaseUIManager::DisplayBlockingPage(
                        resource.threat_type);
   if (SafeBrowsingInterstitialsAreCommittedNavigations()) {
     GURL unsafe_url = (resource.IsMainPageLoadBlocked() ||
-                       !resource.GetNavigationEntryForResource())
+                       !GetNavigationEntryForResource(resource))
                           ? resource.url
-                          : resource.GetNavigationEntryForResource()->GetURL();
+                          : GetNavigationEntryForResource(resource)->GetURL();
     AddUnsafeResource(unsafe_url, resource);
     // With committed interstitials we just cancel the load from here, the
     // actual interstitial will be shown from the
@@ -258,8 +260,7 @@ void BaseUIManager::DisplayBlockingPage(
       // navigation from here since there will be no navigation to intercept
       // in the throttle.
       content::WebContents* contents = resource.web_contents_getter.Run();
-      content::NavigationEntry* entry =
-          resource.GetNavigationEntryForResource();
+      content::NavigationEntry* entry = GetNavigationEntryForResource(resource);
       // entry can be null if we are on a brand new tab, and a resource is added
       // via javascript without a navigation.
       GURL blocked_url = entry ? entry->GetURL() : resource.url;
@@ -435,7 +436,7 @@ void BaseUIManager::RemoveWhitelistUrlSet(const GURL& whitelist_url,
 GURL BaseUIManager::GetMainFrameWhitelistUrlForResource(
     const security_interstitials::UnsafeResource& resource) {
   if (resource.is_subresource) {
-    NavigationEntry* entry = resource.GetNavigationEntryForResource();
+    NavigationEntry* entry = GetNavigationEntryForResource(resource);
     if (!entry)
       return GURL();
     return entry->GetURL().GetWithEmptyPath();

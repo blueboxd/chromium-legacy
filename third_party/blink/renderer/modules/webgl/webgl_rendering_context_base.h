@@ -36,6 +36,7 @@
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_graphics_context_3d_provider.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_webgl_context_attributes.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/html/canvas/canvas_context_creation_attributes_core.h"
 #include "third_party/blink/renderer/core/html/canvas/canvas_rendering_context.h"
@@ -43,7 +44,6 @@
 #include "third_party/blink/renderer/core/typed_arrays/array_buffer_view_helpers.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_typed_array.h"
 #include "third_party/blink/renderer/core/typed_arrays/typed_flexible_array_buffer_view.h"
-#include "third_party/blink/renderer/modules/webgl/webgl_context_attributes.h"
 #include "third_party/blink/renderer/modules/webgl/webgl_extension_name.h"
 #include "third_party/blink/renderer/modules/webgl/webgl_texture.h"
 #include "third_party/blink/renderer/modules/webgl/webgl_vertex_array_object_base.h"
@@ -122,7 +122,7 @@ class ScopedRGBEmulationColorMask {
   ~ScopedRGBEmulationColorMask();
 
  private:
-  Member<WebGLRenderingContextBase> context_;
+  WebGLRenderingContextBase* context_;
   GLboolean color_mask_[4];
   const bool requires_emulation_;
 };
@@ -986,7 +986,7 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
 
    private:
     DrawingBuffer* drawing_buffer_;
-    Member<WebGLFramebuffer> read_framebuffer_binding_;
+    WebGLFramebuffer* read_framebuffer_binding_;
   };
 
   // Errors raised by synthesizeGLError() while the context is lost.

@@ -23,7 +23,7 @@ bookmarks::BookmarkModel* GetBookmarkModelForWebState(
   if (!browser_state)
     return nullptr;
   return ios::BookmarkModelFactory::GetForBrowserState(
-      ios::ChromeBrowserState::FromBrowserState(browser_state));
+      ChromeBrowserState::FromBrowserState(browser_state));
 }
 }  // namespace
 

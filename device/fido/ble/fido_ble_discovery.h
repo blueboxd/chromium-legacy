@@ -55,6 +55,9 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoBleDiscovery
                             BluetoothDevice* device,
                             const std::string& old_address) override;
 
+  void OnStartDiscoverySessionWithFilter(
+      std::unique_ptr<BluetoothDiscoverySession>);
+
   // Returns true if |device| is a Cable device. If so, add address of |device|
   // to |blacklisted_cable_device_addresses_|.
   bool CheckForExcludedDeviceAndCacheAddress(const BluetoothDevice* device);

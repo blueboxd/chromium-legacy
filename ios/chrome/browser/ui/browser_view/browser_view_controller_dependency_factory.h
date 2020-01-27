@@ -7,10 +7,10 @@
 
 #import <UIKit/UIKit.h>
 
-#include "ios/chrome/browser/browser_state/chrome_browser_state_forward.h"
 
 @class AlertCoordinator;
 @class BrowserViewControllerHelper;
+class ChromeBrowserState;
 @class KeyCommandsProvider;
 class WebStateList;
 
@@ -20,7 +20,7 @@ class WebStateList;
 // Creates a new factory backed by |browserState|. This must be the same browser
 // state provided to BrowserViewController (and like BVC, this is a weak
 // reference).
-- (id)initWithBrowserState:(ios::ChromeBrowserState*)browserState
+- (id)initWithBrowserState:(ChromeBrowserState*)browserState
               webStateList:(WebStateList*)webStateList;
 
 - (BrowserViewControllerHelper*)newBrowserViewControllerHelper;

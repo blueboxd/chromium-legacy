@@ -148,7 +148,7 @@ TEST_F(CrashReporterBreadcrumbObserverTest,
                   forKey:breakpad_helper::kBreadcrumbs];
   breadcrumb_service->AddEvent(event);
 
-  ios::ChromeBrowserState* otr_browser_state =
+  ChromeBrowserState* otr_browser_state =
       chrome_browser_state_->GetOffTheRecordChromeBrowserState();
   BreadcrumbManagerKeyedService* otr_breadcrumb_service =
       BreadcrumbManagerKeyedServiceFactory::GetForBrowserState(

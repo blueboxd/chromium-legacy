@@ -5,8 +5,8 @@
 #include "third_party/blink/renderer/modules/encryptedmedia/media_keys_get_status_for_policy.h"
 
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_media_keys_policy.h"
 #include "third_party/blink/renderer/modules/encryptedmedia/media_keys.h"
-#include "third_party/blink/renderer/modules/encryptedmedia/media_keys_policy.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 
 namespace blink {

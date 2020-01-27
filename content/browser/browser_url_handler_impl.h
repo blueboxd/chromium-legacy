@@ -25,14 +25,19 @@ class CONTENT_EXPORT BrowserURLHandlerImpl : public BrowserURLHandler {
 
   // BrowserURLHandler implementation:
   void RewriteURLIfNecessary(GURL* url,
-                             BrowserContext* browser_context,
-                             bool* reverse_on_redirect) override;
+                             BrowserContext* browser_context) override;
   void SetFixupHandler(URLHandler handler) override;
-  // Add the specified handler pair to the list of URL handlers.
   void AddHandlerPair(URLHandler handler, URLHandler reverse_handler) override;
 
   // Fixes up the URL before rewriting occurs.
   void FixupURLBeforeRewrite(GURL* url, BrowserContext* browser_context);
+
+  // Like the //content-public RewriteURLIfNecessary overload (overridden
+  // above), but if the original URL needs to be adjusted if the modified URL is
+  // redirected, this method sets |*reverse_on_redirect| to true.
+  void RewriteURLIfNecessary(GURL* url,
+                             BrowserContext* browser_context,
+                             bool* reverse_on_redirect);
 
   // Reverses the rewriting that was done for |original| using the new |url|.
   bool ReverseURLRewrite(GURL* url, const GURL& original,

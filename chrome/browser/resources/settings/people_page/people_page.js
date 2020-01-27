@@ -206,8 +206,9 @@ Polymer({
    * @private
    */
   getEditPersonAssocControl_() {
-    return this.diceEnabled_ ? assert(this.$$('#edit-profile')) :
-                               assert(this.$$('#picture-subpage-trigger'));
+    return this.syncStatus.signinAllowed ?
+        assert(this.$$('#edit-profile')) :
+        assert(this.$$('#picture-subpage-trigger'));
   },
 
   /**
@@ -274,8 +275,8 @@ Polymer({
     // Sign-in impressions should be recorded only if the sign-in promo is
     // shown. They should be recorder only once, the first time
     // |this.syncStatus| is set.
-    const shouldRecordSigninImpression =
-        !this.syncStatus && syncStatus && this.showSignin_(syncStatus);
+    const shouldRecordSigninImpression = !this.syncStatus && syncStatus &&
+        !!syncStatus.signinAllowed && !syncStatus.signedIn;
 
     this.syncStatus = syncStatus;
 
@@ -315,29 +316,13 @@ Polymer({
   },
 
   /** @private */
-  onSigninTap_() {
-    this.syncBrowserProxy_.startSignIn();
-  },
-
-  /** @private */
   onDisconnectDialogClosed_(e) {
     this.showSignoutDialog_ = false;
-    // <if expr="not chromeos">
-    if (!this.diceEnabled_) {
-      // If DICE-enabled, this button won't exist here.
-      cr.ui.focusWithoutInk(assert(this.$$('#disconnectButton')));
-    }
-    // </if>
 
     if (settings.Router.getInstance().getCurrentRoute() ==
         settings.routes.SIGN_OUT) {
       settings.Router.getInstance().navigateToPreviousRoute();
     }
-  },
-
-  /** @private */
-  onDisconnectTap_() {
-    settings.Router.getInstance().navigateTo(settings.routes.SIGN_OUT);
   },
 
   /** @private */
@@ -387,36 +372,11 @@ Polymer({
   },
 
   /**
-   * @return {boolean} Whether to show the profile row and associated controls.
-   * @private
-   */
-  shouldShowProfile_() {
-    // Closure compiler doesn't understand <if> so use a variable.
-    let show = false;
-    // <if expr="chromeos">
-    show = !this.shouldShowSyncAccountControl_();
-    // </if>
-    // <if expr="not chromeos">
-    show = !this.diceEnabled_;
-    // </if>
-    return show;
-  },
-
-  /**
    * @param {string} iconUrl
    * @return {string} A CSS image-set for multiple scale factors.
    * @private
    */
   getIconImageSet_(iconUrl) {
     return cr.icon.getImage(iconUrl);
-  },
-
-  /**
-   * @param {!settings.SyncStatus} syncStatus
-   * @return {boolean} Whether to show the "Sign in to Chrome" button.
-   * @private
-   */
-  showSignin_(syncStatus) {
-    return !!syncStatus.signinAllowed && !syncStatus.signedIn;
   },
 });

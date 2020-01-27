@@ -290,7 +290,6 @@
 <translation id="2218879909401188352">Hackere, der i øjeblikket er på <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />, kan installere farlige apps, som kan skade din enhed, føje skjulte gebyrer til din mobilregning eller stjæle dine personlige oplysninger. <ph name="BEGIN_LEARN_MORE_LINK" />Få flere oplysninger<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="2224337661447660594">Der er ingen internetforbindelse</translation>
 <translation id="2230458221926704099">Ret problemerne med din forbindelse ved hjælp af <ph name="BEGIN_LINK" />diagnoseappen<ph name="END_LINK" /></translation>
-<translation id="22320125457191592">Til dig</translation>
 <translation id="2239100178324503013">Send nu</translation>
 <translation id="2248949050832152960">Brug WebAuthn</translation>
 <translation id="2250931979407627383">Kanthæftning i venstre side</translation>
@@ -576,7 +575,6 @@
 <translation id="3531780078352352885">Udskriftsjob</translation>
 <translation id="3533328374079021623">Postkasse 5</translation>
 <translation id="3539171420378717834">Gem en kopi af dette kort på denne enhed</translation>
-<translation id="3553513561058684206">Til dig</translation>
 <translation id="3558573058928565255">Dagtimer</translation>
 <translation id="3566021033012934673">Din forbindelse er ikke privat</translation>
 <translation id="3574305903863751447"><ph name="CITY" />, <ph name="STATE" /> <ph name="COUNTRY" /></translation>

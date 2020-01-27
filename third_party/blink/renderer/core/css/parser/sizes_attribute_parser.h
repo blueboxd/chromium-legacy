@@ -30,7 +30,7 @@ class CORE_EXPORT SizesAttributeParser {
   float EffectiveSizeDefaultValue();
 
   scoped_refptr<MediaQuerySet> media_condition_;
-  Member<MediaValues> media_values_;
+  MediaValues* media_values_;
   float length_;
   bool length_was_set_;
   bool is_valid_;

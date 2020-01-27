@@ -33,7 +33,7 @@
 
 ChromeOmniboxClientIOS::ChromeOmniboxClientIOS(
     WebOmniboxEditController* controller,
-    ios::ChromeBrowserState* browser_state)
+    ChromeBrowserState* browser_state)
     : controller_(controller), browser_state_(browser_state) {}
 
 ChromeOmniboxClientIOS::~ChromeOmniboxClientIOS() {}

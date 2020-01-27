@@ -235,4 +235,67 @@ TEST_F(WebGPUMailboxTest, ErrorWhenUsingTextureAfterDissociate) {
   WaitForCompletion(device);
 }
 
+// This is a regression test for an issue when using multiple shared images
+// where a `ScopedAccess` was destroyed after it's `SharedImageRepresentation`.
+// The code was similar to the following.
+//
+//   struct Pair {
+//       unique_ptr<Representation> representation;
+//       unique_ptr<Access> access;
+//   };
+//
+//   base::flat_map<Key, Pair> map;
+//   map.erase(some_iterator);
+//
+// In the Pair destructor C++ guarantees that `access` is destroyed before
+// `representation` but `erase` can move one element over another, causing
+// the move-assignment operator to be called. In this case the defaulted
+// move-assignment would first move `representation` then `access`. Causing
+// incorrect member destruction order for the move-to object.
+TEST_F(WebGPUMailboxTest, UseA_UseB_DestroyA_DestroyB) {
+  if (!WebGPUSupported()) {
+    LOG(ERROR) << "Test skipped because WebGPU isn't supported";
+    return;
+  }
+  if (!WebGPUSharedImageSupported()) {
+    LOG(ERROR) << "Test skipped because WebGPUSharedImage isn't supported";
+    return;
+  }
+
+  // Create a the shared images.
+  SharedImageInterface* sii = GetSharedImageInterface();
+  Mailbox mailboxA = sii->CreateSharedImage(
+      viz::ResourceFormat::RGBA_8888, {1, 1}, gfx::ColorSpace::CreateSRGB(),
+      SHARED_IMAGE_USAGE_WEBGPU);
+  Mailbox mailboxB = sii->CreateSharedImage(
+      viz::ResourceFormat::RGBA_8888, {1, 1}, gfx::ColorSpace::CreateSRGB(),
+      SHARED_IMAGE_USAGE_WEBGPU);
+
+  // Get a WebGPU device to associate the shared images to.
+  constexpr uint32_t kAdapterID = 0;
+  webgpu()->RequestDeviceAsync(kAdapterID, nullptr,
+                               base::BindOnce(&OnRequestDeviceCallback));
+  wgpu::Device device = wgpu::Device::Acquire(webgpu()->GetDefaultDevice());
+
+  // Associate both mailboxes
+  gpu::webgpu::ReservedTexture reservationA =
+      webgpu()->ReserveTexture(device.Get());
+  webgpu()->AssociateMailbox(0, 0, reservationA.id, reservationA.generation,
+                             WGPUTextureUsage_OutputAttachment,
+                             reinterpret_cast<GLbyte*>(&mailboxA));
+
+  gpu::webgpu::ReservedTexture reservationB =
+      webgpu()->ReserveTexture(device.Get());
+  webgpu()->AssociateMailbox(0, 0, reservationB.id, reservationB.generation,
+                             WGPUTextureUsage_OutputAttachment,
+                             reinterpret_cast<GLbyte*>(&mailboxB));
+
+  // Dissociate both mailboxes in the same order.
+  webgpu()->DissociateMailbox(reservationA.id, reservationA.generation);
+  webgpu()->DissociateMailbox(reservationB.id, reservationB.generation);
+
+  // Send all the previous commands to the WebGPU decoder.
+  webgpu()->FlushCommands();
+}
+
 }  // namespace gpu

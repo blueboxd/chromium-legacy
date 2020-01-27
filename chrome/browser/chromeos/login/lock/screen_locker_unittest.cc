@@ -21,7 +21,7 @@
 #include "chrome/browser/chromeos/settings/device_settings_test_helper.h"
 #include "chrome/browser/chromeos/settings/scoped_testing_cros_settings.h"
 #include "chrome/browser/ui/ash/accessibility/fake_accessibility_controller.h"
-#include "chrome/browser/ui/ash/assistant/assistant_client.h"
+#include "chrome/browser/ui/ash/assistant/assistant_client_impl.h"
 #include "chrome/browser/ui/ash/login_screen_client.h"
 #include "chrome/browser/ui/ash/session_controller_client_impl.h"
 #include "chrome/browser/ui/ash/test_login_screen.h"
@@ -90,8 +90,8 @@ class ScreenLockerUnitTest : public testing::Test {
         std::make_unique<SessionControllerClientImpl>();
     session_controller_client_->Init();
 
-    // Initialize AssistantClient:
-    assistant_client_ = std::make_unique<AssistantClient>();
+    // Initialize AssistantClientImpl:
+    assistant_client_ = std::make_unique<AssistantClientImpl>();
 
     // Initialize AccessibilityManager and dependencies:
     observer_ = std::make_unique<audio::TestObserver>((base::DoNothing()));
@@ -169,7 +169,7 @@ class ScreenLockerUnitTest : public testing::Test {
   ScopedDeviceSettingsTestHelper device_settings_test_helper_;
   TestSessionController test_session_controller_;
   std::unique_ptr<SessionControllerClientImpl> session_controller_client_;
-  std::unique_ptr<AssistantClient> assistant_client_;
+  std::unique_ptr<AssistantClientImpl> assistant_client_;
   chromeos::SessionTerminationManager session_termination_manager_;
 
   std::unique_ptr<audio::TestObserver> observer_;

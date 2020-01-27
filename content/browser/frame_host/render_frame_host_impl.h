@@ -96,6 +96,7 @@
 #include "third_party/blink/public/mojom/frame/user_activation_update_types.mojom.h"
 #include "third_party/blink/public/mojom/idle/idle_manager.mojom.h"
 #include "third_party/blink/public/mojom/image_downloader/image_downloader.mojom.h"
+#include "third_party/blink/public/mojom/input/focus_type.mojom-forward.h"
 #include "third_party/blink/public/mojom/installedapp/installed_app_provider.mojom.h"
 #include "third_party/blink/public/mojom/native_file_system/native_file_system_manager.mojom-forward.h"
 #include "third_party/blink/public/mojom/notifications/notification_service.mojom-forward.h"
@@ -103,6 +104,7 @@
 #include "third_party/blink/public/mojom/permissions/permission.mojom.h"
 #include "third_party/blink/public/mojom/portal/portal.mojom-forward.h"
 #include "third_party/blink/public/mojom/presentation/presentation.mojom.h"
+#include "third_party/blink/public/mojom/scroll/scroll_into_view_params.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_provider.mojom.h"
 #include "third_party/blink/public/mojom/sms/sms_receiver.mojom-forward.h"
 #include "third_party/blink/public/mojom/speech/speech_synthesis.mojom-forward.h"
@@ -113,7 +115,6 @@
 #include "third_party/blink/public/mojom/websockets/websocket_connector.mojom.h"
 #include "third_party/blink/public/mojom/webtransport/quic_transport_connector.mojom.h"
 #include "third_party/blink/public/mojom/worker/dedicated_worker_host_factory.mojom.h"
-#include "third_party/blink/public/platform/web_focus_type.h"
 #include "third_party/blink/public/platform/web_insecure_request_policy.h"
 #include "third_party/blink/public/web/web_text_direction.h"
 #include "third_party/blink/public/web/web_tree_scope_type.h"
@@ -150,7 +151,6 @@ class AssociatedInterfaceProvider;
 class AssociatedInterfaceRegistry;
 struct FramePolicy;
 struct TransferableMessage;
-struct WebScrollIntoViewParams;
 
 namespace mojom {
 class CacheStorage;
@@ -681,7 +681,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // Continues sequential focus navigation in this frame. |source_proxy|
   // represents the frame that requested a focus change. It must be in the same
   // process as this or |nullptr|.
-  void AdvanceFocus(blink::WebFocusType type,
+  void AdvanceFocus(blink::mojom::FocusType type,
                     RenderFrameProxyHost* source_proxy);
 
   // Get the accessibility mode from the delegate and Send a message to the
@@ -1318,6 +1318,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
       bool present,
       blink::mojom::SuddenTerminationDisablerType disabler_type) override;
   void HadStickyUserActivationBeforeNavigationChanged(bool value) override;
+  void ScrollRectToVisibleInParentFrame(
+      const gfx::Rect& rect_to_scroll,
+      blink::mojom::ScrollIntoViewParamsPtr params) override;
   void BubbleLogicalScrollInParentFrame(
       blink::mojom::ScrollDirection direction,
       ui::input_types::ScrollGranularity granularity) override;
@@ -1529,9 +1532,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void OnUpdateUserActivationState(
       blink::mojom::UserActivationUpdateType update_type);
   void OnSetNeedsOcclusionTracking(bool needs_tracking);
-  void OnScrollRectToVisibleInParentFrame(
-      const gfx::Rect& rect_to_scroll,
-      const blink::WebScrollIntoViewParams& params);
   void OnFrameDidCallFocus();
   void OnDownloadUrl(const FrameHostMsg_DownloadUrl_Params& params);
   void OnSaveImageFromDataURL(const std::string& url_str);

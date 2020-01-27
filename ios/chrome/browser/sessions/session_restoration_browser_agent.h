@@ -11,9 +11,9 @@
 
 #include "base/macros.h"
 #include "base/observer_list.h"
-#include "ios/chrome/browser/browser_state/chrome_browser_state_forward.h"
 #include "ios/chrome/browser/main/browser_user_data.h"
 
+class ChromeBrowserState;
 @class SessionWindowIOS;
 @class SessionIOSFactory;
 class SessionRestorationObserver;
@@ -69,7 +69,7 @@ class SessionRestorationBrowserAgent
 
   base::ObserverList<SessionRestorationObserver, true> observers_;
 
-  ios::ChromeBrowserState* browser_state_;
+  ChromeBrowserState* browser_state_;
 
   // Session Factory used to create session data for saving.
   SessionIOSFactory* session_ios_factory_;

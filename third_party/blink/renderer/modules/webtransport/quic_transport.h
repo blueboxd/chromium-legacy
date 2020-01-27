@@ -56,6 +56,7 @@ class MODULES_EXPORT QuicTransport final
   WritableStream* sendDatagrams() { return outgoing_datagrams_; }
   ReadableStream* receiveDatagrams() { return received_datagrams_; }
   void close(const WebTransportCloseInfo*);
+  ScriptPromise ready() { return ready_; }
   ScriptPromise closed() { return closed_; }
 
   // QuicTransportHandshakeClient implementation
@@ -102,6 +103,8 @@ class MODULES_EXPORT QuicTransport final
       handshake_client_receiver_{this};
   mojo::Receiver<network::mojom::blink::QuicTransportClient> client_receiver_{
       this};
+  Member<ScriptPromiseResolver> ready_resolver_;
+  ScriptPromise ready_;
   Member<ScriptPromiseResolver> closed_resolver_;
   ScriptPromise closed_;
 };

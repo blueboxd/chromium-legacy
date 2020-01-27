@@ -7,7 +7,7 @@
 
 #import <Foundation/Foundation.h>
 
-#include "ios/chrome/browser/browser_state/chrome_browser_state_forward.h"
+class ChromeBrowserState;
 
 // Class handling all startup tasks.
 @interface StartupTasks : NSObject
@@ -15,7 +15,7 @@
 // Asynchronously finishes the browser state initialization by starting the
 // deferred task runners.
 + (void)scheduleDeferredBrowserStateInitialization:
-    (ios::ChromeBrowserState*)browserState;
+    (ChromeBrowserState*)browserState;
 // Starts Omaha and, if first run, sets install time.  For official builds only.
 - (void)initializeOmaha;
 // Donate initial Intents.

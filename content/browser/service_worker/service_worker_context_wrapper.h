@@ -71,7 +71,7 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
       ServiceWorkerRegistry::GetRegistrationsCallback;
   using GetRegistrationsInfosCallback =
       ServiceWorkerRegistry::GetRegistrationsInfosCallback;
-  using GetUserDataCallback = ServiceWorkerStorage::GetUserDataCallback;
+  using GetUserDataCallback = ServiceWorkerRegistry::GetUserDataCallback;
   using GetUserKeysAndDataCallback =
       ServiceWorkerStorage::GetUserKeysAndDataCallback;
   using GetUserDataForAllRegistrationsCallback =

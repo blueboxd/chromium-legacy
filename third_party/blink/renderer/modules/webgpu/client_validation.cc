@@ -9,7 +9,7 @@
 #include "third_party/blink/renderer/bindings/modules/v8/unsigned_long_sequence_or_gpu_extent_3d_dict.h"
 #include "third_party/blink/renderer/bindings/modules/v8/unsigned_long_sequence_or_gpu_origin_2d_dict.h"
 #include "third_party/blink/renderer/bindings/modules/v8/unsigned_long_sequence_or_gpu_origin_3d_dict.h"
-#include "third_party/blink/renderer/modules/webgpu/gpu_texture_copy_view.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_gpu_texture_copy_view.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 
 namespace blink {

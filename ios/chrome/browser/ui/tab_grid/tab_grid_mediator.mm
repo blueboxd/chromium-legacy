@@ -106,7 +106,7 @@ web::WebState* GetWebStateWithId(WebStateList* web_state_list,
 // The list from the browser.
 @property(nonatomic, assign) WebStateList* webStateList;
 // The browser state from the browser.
-@property(nonatomic, readonly) ios::ChromeBrowserState* browserState;
+@property(nonatomic, readonly) ChromeBrowserState* browserState;
 // The UI consumer to which updates are made.
 @property(nonatomic, weak) id<GridConsumer> consumer;
 // The saved session window just before close all tabs is called.
@@ -347,7 +347,7 @@ web::WebState* GetWebStateWithId(WebStateList* web_state_list,
   [self removeEntriesFromTabRestoreService];
   self.syncedClosedTabsCount = 0;
   // Unmark all images for deletion since they are now active tabs again.
-  ios::ChromeBrowserState* browserState = self.browser->GetBrowserState();
+  ChromeBrowserState* browserState = self.browser->GetBrowserState();
   [SnapshotCacheFactory::GetForBrowserState(browserState) unmarkAllImages];
 }
 

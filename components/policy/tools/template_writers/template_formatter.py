@@ -6,10 +6,10 @@
 writers and emits various template and doc files (admx, html, json etc.).
 '''
 
+import argparse
 import codecs
 import collections
 import json
-import optparse
 import os
 import re
 import sys
@@ -125,7 +125,7 @@ def _JsonToUtf8Encoding(data, ignore_dicts=False):
   return data
 
 
-def main(argv):
+def main():
   '''Main policy template conversion script.
   Usage: template_formatter
            --translations <translations_path>
@@ -149,51 +149,52 @@ def main(argv):
         is only one output file, not one per language.
     D: List of grit defines, used to assemble writer configuration.
     E, t: Grit environment variables and target platform. Unused, but
-        grit_rule.gni adds them, so OptionParser must handle them.
+        grit_rule.gni adds them, so ArgumentParser must handle them.
   '''
-  parser = optparse.OptionParser()
-  parser.add_option('--translations', dest='translations')
-  parser.add_option('--languages', dest='languages')
-  parser.add_option('--version_path', dest='version_path')
-  parser.add_option('--adm', action='append', dest='adm')
-  parser.add_option('--adml', action='append', dest='adml')
-  parser.add_option('--admx', action='append', dest='admx')
-  parser.add_option('--chromeos_adml', action='append', dest='chromeos_adml')
-  parser.add_option('--chromeos_admx', action='append', dest='chromeos_admx')
-  parser.add_option('--google_adml', action='append', dest='google_adml')
-  parser.add_option('--google_admx', action='append', dest='google_admx')
-  parser.add_option('--reg', action='append', dest='reg')
-  parser.add_option('--doc', action='append', dest='doc')
-  parser.add_option(
+  parser = argparse.ArgumentParser()
+  parser.add_argument('--translations', dest='translations')
+  parser.add_argument('--languages', dest='languages')
+  parser.add_argument('--version_path', dest='version_path')
+  parser.add_argument('--adm', action='append', dest='adm')
+  parser.add_argument('--adml', action='append', dest='adml')
+  parser.add_argument('--admx', action='append', dest='admx')
+  parser.add_argument('--chromeos_adml', action='append', dest='chromeos_adml')
+  parser.add_argument('--chromeos_admx', action='append', dest='chromeos_admx')
+  parser.add_argument('--google_adml', action='append', dest='google_adml')
+  parser.add_argument('--google_admx', action='append', dest='google_admx')
+  parser.add_argument('--reg', action='append', dest='reg')
+  parser.add_argument('--doc', action='append', dest='doc')
+  parser.add_argument(
       '--doc_atomic_groups', action='append', dest='doc_atomic_groups')
-  parser.add_option(
+  parser.add_argument(
       '--local',
       action='store_true',
       help='If set, the documentation will be built so \
             that links work locally in the generated path.')
-  parser.add_option('--json', action='append', dest='json')
-  parser.add_option('--plist', action='append', dest='plist')
-  parser.add_option('--plist_strings', action='append', dest='plist_strings')
-  parser.add_option('--android_policy', action='append', dest='android_policy')
-  parser.add_option('-D', action='append', dest='grit_defines')
-  parser.add_option('-E', action='append', dest='grit_build_env')
-  parser.add_option('-t', action='append', dest='grit_target')
-  options, args = parser.parse_args(argv[1:])
+  parser.add_argument('--json', action='append', dest='json')
+  parser.add_argument('--plist', action='append', dest='plist')
+  parser.add_argument('--plist_strings', action='append', dest='plist_strings')
+  parser.add_argument(
+      '--android_policy', action='append', dest='android_policy')
+  parser.add_argument('-D', action='append', dest='grit_defines')
+  parser.add_argument('-E', action='append', dest='grit_build_env')
+  parser.add_argument('-t', action='append', dest='grit_target')
+  args = parser.parse_args()
 
   _LANG_PLACEHOLDER = "${lang}"
-  assert _LANG_PLACEHOLDER in options.translations
+  assert _LANG_PLACEHOLDER in args.translations
 
-  languages = filter(bool, options.languages.split(','))
+  languages = filter(bool, args.languages.split(','))
   assert _DEFAULT_LANGUAGE in languages
 
-  config = _GetWriterConfiguration(options.grit_defines)
-  config['major_version'] = _ParseVersionFile(options.version_path)
-  config['local'] = options.local
+  config = _GetWriterConfiguration(args.grit_defines)
+  config['major_version'] = _ParseVersionFile(args.version_path)
+  config['local'] = args.local
 
   # For each language, load policy data once and run all writers on it.
   for lang in languages:
     # Load the policy data.
-    policy_templates_json_path = options.translations.replace(
+    policy_templates_json_path = args.translations.replace(
         _LANG_PLACEHOLDER, lang)
     # Loads the localized policy json file which must be a valid json file
     # encoded in utf-8.
@@ -212,7 +213,7 @@ def main(argv):
 
       # Was the current writer type passed as argument, e.g. --admx <path>?
       # Note that all paths are arrays and we loop over all of them.
-      output_paths = getattr(options, writer_desc.type, '')
+      output_paths = getattr(args, writer_desc.type, '')
       if (not output_paths):
         continue
       for output_path in output_paths:
@@ -245,4 +246,4 @@ def main(argv):
 
 
 if '__main__' == __name__:
-  sys.exit(main(sys.argv))
+  sys.exit(main())

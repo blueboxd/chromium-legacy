@@ -134,6 +134,7 @@
 <translation id="1994173015038366702">Adresa URL webu</translation>
 <translation id="2000419248597011803">Odesílá soubory cookie a vyhledávací dotazy z adresního řádku a vyhledávacího pole a několik souborů cookie vašemu výchozímu vyhledávači</translation>
 <translation id="2002537628803770967">Platební karty a adresy pomocí služby Google Pay</translation>
+<translation id="2012973609889389923">Rychlý web</translation>
 <translation id="2013642289801508067">{FILE_COUNT,plural, =1{# soubor}few{# soubory}many{# souboru}other{# souborů}}</translation>
 <translation id="2017836877785168846">Vymaže historii a automatická dokončení v adresním řádku.</translation>
 <translation id="2021896219286479412">Ovládání webu na celé obrazovce</translation>
@@ -306,6 +307,7 @@
 <translation id="3298243779924642547">Lite</translation>
 <translation id="3303414029551471755">Chcete pokračovat ke stažení obsahu?</translation>
 <translation id="3306398118552023113">Tato aplikace je spuštěna v Chromu</translation>
+<translation id="3312292613668865961">Předtím, než webům bude povolen přístup k zařízením a datům pro virtuální realitu, se nejdříve zeptat (doporučeno)</translation>
 <translation id="3315103659806849044">Aktuálně upravujete své nastavení synchronizace a služeb Google. Zapnutí synchronizace dokončíte klepnutím na tlačítko Potvrdit, které se nachází u dolního okraje obrazovky. Přejít nahoru</translation>
 <translation id="3328801116991980348">Informace o stránkách</translation>
 <translation id="3333961966071413176">Všechny kontakty</translation>
@@ -511,6 +513,7 @@ Chcete-toto nastavení změnit, <ph name="BEGIN_LINK" />resetujte synchronizaci<
 <translation id="4915549754973153784"><ph name="BEGIN_LINK" />Nápověda<ph name="END_LINK" /> k vyhledávání zařízení…</translation>
 <translation id="4921180162323349895">{FILE_COUNT,plural, =1{# stránka}few{# stránky}many{# stránky}other{# stránek}}</translation>
 <translation id="4932247056774066048">Protože se odhlašujete z účtu spravovaného doménou <ph name="DOMAIN_NAME" />, vaše data prohlížeče Chrome z tohoto zařízení budou smazána. Ve vašem účtu Google zůstanou.</translation>
+<translation id="4935305910887312910">Předtím, než webům bude povoleno zjistit pozici kamery nebo zmapovat vaši místnost, se nejdříve zeptat (doporučeno)</translation>
 <translation id="4943703118917034429">Virtuální realita</translation>
 <translation id="4943872375798546930">Žádné výsledky</translation>
 <translation id="4958708863221495346">Stránka <ph name="URL_OF_THE_CURRENT_TAB" /> sdílí vaši obrazovku</translation>
@@ -744,6 +747,7 @@ Některé weby mohou například na tento požadavek reagovat tak, že vám zobr
 <translation id="6573431926118603307">Zde se objeví karty, které jste otevřeli v Chromu ve svých ostatních zařízeních.</translation>
 <translation id="6583199322650523874">Přidat aktuální stránku do záložek</translation>
 <translation id="6593061639179217415">Stránky pro počítač</translation>
+<translation id="6597891566292541626">Do tohoto rámečku umístěte QR kód nebo čárový kód.</translation>
 <translation id="6600954340915313787">Zkopírováno do Chromu</translation>
 <translation id="6608650720463149374"><ph name="GIGABYTES" /> GB</translation>
 <translation id="6612358246767739896">Chráněný obsah</translation>
@@ -953,6 +957,7 @@ Web NEZÍSKÁ přístup k fotoaparátu. Fotky z fotoaparátu uvidíte pouze vy
 <translation id="8109613176066109935">Chcete-li mít záložky ve všech zařízeních, zapněte synchronizaci</translation>
 <translation id="8110087112193408731">Zobrazovat vaši aktivitu v Chromu v digitální rovnováze?</translation>
 <translation id="8116925261070264013">Ztlumeno</translation>
+<translation id="8127542551745560481">Upravit domovskou stránku</translation>
 <translation id="813082847718468539">Zobrazit informace o stránkách</translation>
 <translation id="8156139159503939589">Jaké jazyky ovládáte?</translation>
 <translation id="8168435359814927499">Obsah</translation>
@@ -1024,6 +1029,7 @@ Web NEZÍSKÁ přístup k fotoaparátu. Fotky z fotoaparátu uvidíte pouze vy
 <translation id="8676374126336081632">Vymazat vstup</translation>
 <translation id="8687353297350450808">{N_BARS,plural, =1{Síla signálu: # čárka}few{Síla signálu: # čárky}many{Síla signálu: # čárky}other{Síla signálu: # čárek}}</translation>
 <translation id="868929229000858085">Vyhledat v kontaktech</translation>
+<translation id="8698438463325761328">Blokovat webům přístup k zařízením a datům pro virtuální realitu</translation>
 <translation id="869891660844655955">Datum vypršení platnosti</translation>
 <translation id="8719023831149562936">Aktuální kartu nelze přenést</translation>
 <translation id="8728487861892616501">Používáním této aplikace vyjadřujete souhlas se <ph name="BEGIN_LINK1" />smluvními podmínkami<ph name="END_LINK1" /> a <ph name="BEGIN_LINK2" />upozorněním ve věci ochrany soukromí<ph name="END_LINK2" /> prohlížeče Chrome a <ph name="BEGIN_LINK3" />upozorněním ve věci ochrany soukromí pro účty Google spravované prostřednictvím služby Family Link<ph name="END_LINK3" />.</translation>
@@ -1041,6 +1047,7 @@ Web NEZÍSKÁ přístup k fotoaparátu. Fotky z fotoaparátu uvidíte pouze vy
 <translation id="883806473910249246">Při stahování obsahu došlo k chybě.</translation>
 <translation id="8840953339110955557">Tato stránka se může od online verze lišit.</translation>
 <translation id="8847988622838149491">USB</translation>
+<translation id="884828189055900810">Bránit webům ve zjištění pozice kamery a mapování místnosti</translation>
 <translation id="8853345339104747198"><ph name="TAB_TITLE" />, karta</translation>
 <translation id="885701979325669005">Úložiště</translation>
 <translation id="889338405075704026">Přejít do nastavení Chromu</translation>
@@ -1048,6 +1055,7 @@ Web NEZÍSKÁ přístup k fotoaparátu. Fotky z fotoaparátu uvidíte pouze vy
 <translation id="8909135823018751308">Sdílet…</translation>
 <translation id="8912362522468806198">Účet Google</translation>
 <translation id="8920114477895755567">Čekáme na podrobnosti o rodičích.</translation>
+<translation id="8921772741368021346"><ph name="POSITION" />/<ph name="DURATION" /></translation>
 <translation id="8922289737868596582">Stáhněte si stránky k použití offline pomocí tlačítka Další možnosti</translation>
 <translation id="8926666909099850184">Funkce NFC je v tomto zařízení vypnutá. Zapnete ji v <ph name="BEGIN_LINK" />Nastavení Android<ph name="END_LINK" />.</translation>
 <translation id="8937772741022875483">Odstranit vaši aktivitu v Chromu z digitální rovnováhy?</translation>

@@ -67,7 +67,8 @@ class CC_EXPORT CompositorFrameReportingController {
       uint32_t frame_token,
       const viz::FrameTimingDetails& details);
 
-  void SetBlinkBreakdown(std::unique_ptr<BeginMainFrameMetrics> details);
+  void SetBlinkBreakdown(std::unique_ptr<BeginMainFrameMetrics> details,
+                         base::TimeTicks main_thread_start_time);
 
   void SetUkmManager(UkmManager* manager);
 

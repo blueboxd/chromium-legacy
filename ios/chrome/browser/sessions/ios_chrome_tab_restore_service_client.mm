@@ -27,12 +27,12 @@
 namespace {
 sessions::LiveTabContext* FindLiveTabContextWithCondition(
     base::RepeatingCallback<bool(TabModel*)> condition) {
-  std::vector<ios::ChromeBrowserState*> browser_states =
+  std::vector<ChromeBrowserState*> browser_states =
       GetApplicationContext()
           ->GetChromeBrowserStateManager()
           ->GetLoadedBrowserStates();
 
-  for (ios::ChromeBrowserState* browser_state : browser_states) {
+  for (ChromeBrowserState* browser_state : browser_states) {
     DCHECK(!browser_state->IsOffTheRecord());
     NSArray<TabModel*>* tab_models;
 
@@ -47,7 +47,7 @@ sessions::LiveTabContext* FindLiveTabContextWithCondition(
     if (!browser_state->HasOffTheRecordChromeBrowserState())
       continue;
 
-    ios::ChromeBrowserState* otr_browser_state =
+    ChromeBrowserState* otr_browser_state =
         browser_state->GetOffTheRecordChromeBrowserState();
 
     tab_models =
@@ -65,7 +65,7 @@ sessions::LiveTabContext* FindLiveTabContextWithCondition(
 }  // namespace
 
 IOSChromeTabRestoreServiceClient::IOSChromeTabRestoreServiceClient(
-    ios::ChromeBrowserState* browser_state)
+    ChromeBrowserState* browser_state)
     : browser_state_(browser_state) {}
 
 IOSChromeTabRestoreServiceClient::~IOSChromeTabRestoreServiceClient() {}

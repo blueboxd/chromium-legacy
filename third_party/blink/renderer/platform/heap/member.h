@@ -195,8 +195,12 @@ class MemberBase {
     return result;
   }
 
+  static bool IsMemberHashTableDeletedValue(T* t) {
+    return t == reinterpret_cast<T*>(kHashTableDeletedRawValue);
+  }
+
   bool IsHashTableDeletedValue() const {
-    return GetRaw() == reinterpret_cast<T*>(kHashTableDeletedRawValue);
+    return IsMemberHashTableDeletedValue(GetRaw());
   }
 
  protected:
@@ -235,11 +239,6 @@ class MemberBase {
     // TOOD(omerkatz): replace this cast with std::atomic_ref (C++20) once it
     // becomes available
     return WTF::AsAtomicPtr(&raw_)->load(std::memory_order_relaxed);
-  }
-
-  // Thread safe version of IsHashTableDeletedValue for use while tracing.
-  bool IsHashTableDeletedValueSafe() const {
-    return GetSafe() == reinterpret_cast<T*>(kHashTableDeletedRawValue);
   }
 
   T* raw_;

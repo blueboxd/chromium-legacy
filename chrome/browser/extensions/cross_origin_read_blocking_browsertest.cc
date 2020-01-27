@@ -53,6 +53,7 @@ enum TestParam {
   kAllowlisted = 1 << 0,
   kOutOfBlinkCors = 1 << 1,
   kAllowlistForCors = 1 << 2,
+  kDeriveOriginFromUrl = 1 << 3,
 };
 
 const char kCorsErrorWhenFetching[] = "error: TypeError: Failed to fetch";
@@ -382,6 +383,17 @@ class CrossOriginReadBlockingExtensionAllowlistingTest
       disabled_features.push_back(network::features::kOutOfBlinkCors);
     }
 
+    if (DeriveOriginFromUrl()) {
+      enabled_features.emplace_back(
+          network::features::
+              kDeriveOriginFromUrlForNeitherGetNorHeadRequestWhenHavingSpecialAccess,
+          base::FieldTrialParams());
+    } else {
+      disabled_features.push_back(
+          network::features::
+              kDeriveOriginFromUrlForNeitherGetNorHeadRequestWhenHavingSpecialAccess);
+    }
+
     if (ShouldAllowlistAlsoApplyToOorCors()) {
       base::FieldTrialParams field_trial_params;
       if (IsExtensionAllowlisted()) {
@@ -411,6 +423,10 @@ class CrossOriginReadBlockingExtensionAllowlistingTest
 
   bool ShouldAllowlistAlsoApplyToOorCors() {
     return (GetParam() & TestParam::kAllowlistForCors) != 0;
+  }
+
+  bool DeriveOriginFromUrl() {
+    return (GetParam() & TestParam::kDeriveOriginFromUrl) != 0;
   }
 
   const Extension* InstallExtension(
@@ -1205,7 +1221,10 @@ IN_PROC_BROWSER_TEST_F(CrossOriginReadBlockingExtensionTest,
   }
 }
 
-IN_PROC_BROWSER_TEST_P(CrossOriginReadBlockingExtensionAllowlistingTest,
+using OriginHeaderExtensionAllowlistingTest =
+    CrossOriginReadBlockingExtensionAllowlistingTest;
+
+IN_PROC_BROWSER_TEST_P(OriginHeaderExtensionAllowlistingTest,
                        OriginHeaderInCrossOriginGetRequest) {
   const char kResourcePath[] = "/simulated-resource";
   net::test_server::ControllableHttpResponse http_request(
@@ -1258,7 +1277,7 @@ IN_PROC_BROWSER_TEST_P(CrossOriginReadBlockingExtensionAllowlistingTest,
               ::testing::Not(::testing::HasSubstr("chrome-extension")));
 }
 
-IN_PROC_BROWSER_TEST_P(CrossOriginReadBlockingExtensionAllowlistingTest,
+IN_PROC_BROWSER_TEST_P(OriginHeaderExtensionAllowlistingTest,
                        OriginHeaderInCrossOriginPostRequest) {
   const char kResourcePath[] = "/simulated-resource";
   net::test_server::ControllableHttpResponse http_request(
@@ -1305,7 +1324,7 @@ IN_PROC_BROWSER_TEST_P(CrossOriginReadBlockingExtensionAllowlistingTest,
               ::testing::Not(::testing::HasSubstr("chrome-extension")));
 }
 
-IN_PROC_BROWSER_TEST_P(CrossOriginReadBlockingExtensionAllowlistingTest,
+IN_PROC_BROWSER_TEST_P(OriginHeaderExtensionAllowlistingTest,
                        OriginHeaderInSameOriginPostRequest) {
   ASSERT_TRUE(embedded_test_server()->Start());
   ASSERT_TRUE(InstallExtension());
@@ -1522,5 +1541,44 @@ INSTANTIATE_TEST_SUITE_P(Allowlisted_InBlinkCors,
 INSTANTIATE_TEST_SUITE_P(NotAllowlisted_InBlinkCors,
                          CrossOriginReadBlockingExtensionAllowlistingTest,
                          ::testing::Values(0));
+
+INSTANTIATE_TEST_SUITE_P(
+    Allowlisted_LegacyOriginHeaderBehavior_AllowlistForCors,
+    OriginHeaderExtensionAllowlistingTest,
+    ::testing::Values(TestParam::kAllowlisted | TestParam::kAllowlistForCors |
+                      TestParam::kOutOfBlinkCors));
+INSTANTIATE_TEST_SUITE_P(Allowlisted_NewOriginHeaderBehavior_AllowlistForCors,
+                         OriginHeaderExtensionAllowlistingTest,
+                         ::testing::Values(TestParam::kAllowlisted |
+                                           TestParam::kAllowlistForCors |
+                                           TestParam::kOutOfBlinkCors |
+                                           TestParam::kDeriveOriginFromUrl));
+INSTANTIATE_TEST_SUITE_P(
+    NotAllowlisted_LegacyOriginHeaderBehavior_AllowlistForCors,
+    OriginHeaderExtensionAllowlistingTest,
+    ::testing::Values(TestParam::kOutOfBlinkCors |
+                      TestParam::kAllowlistForCors));
+INSTANTIATE_TEST_SUITE_P(
+    NotAllowlisted_NewOriginHeaderBehavior_AllowlistForCors,
+    OriginHeaderExtensionAllowlistingTest,
+    ::testing::Values(TestParam::kOutOfBlinkCors |
+                      TestParam::kAllowlistForCors |
+                      TestParam::kDeriveOriginFromUrl));
+INSTANTIATE_TEST_SUITE_P(Allowlisted_LegacyOriginHeaderBehavior,
+                         OriginHeaderExtensionAllowlistingTest,
+                         ::testing::Values(TestParam::kAllowlisted |
+                                           TestParam::kOutOfBlinkCors));
+INSTANTIATE_TEST_SUITE_P(Allowlisted_NewOriginHeaderBehavior,
+                         OriginHeaderExtensionAllowlistingTest,
+                         ::testing::Values(TestParam::kAllowlisted |
+                                           TestParam::kOutOfBlinkCors |
+                                           TestParam::kDeriveOriginFromUrl));
+INSTANTIATE_TEST_SUITE_P(NotAllowlisted_LegacyOriginHeaderBehavior,
+                         OriginHeaderExtensionAllowlistingTest,
+                         ::testing::Values(TestParam::kOutOfBlinkCors));
+INSTANTIATE_TEST_SUITE_P(NotAllowlisted_NewOriginHeaderBehavior,
+                         OriginHeaderExtensionAllowlistingTest,
+                         ::testing::Values(TestParam::kOutOfBlinkCors |
+                                           TestParam::kDeriveOriginFromUrl));
 
 }  // namespace extensions

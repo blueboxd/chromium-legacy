@@ -9,15 +9,11 @@
 
 #include "base/bind.h"
 #include "chrome/android/features/vr/jni_headers/ArConsentDialog_jni.h"
-#include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/android/vr/ar_jni_headers/ArCoreInstallUtils_jni.h"
 #include "chrome/browser/android/vr/arcore_device/arcore_device_provider.h"
-#include "content/public/browser/render_frame_host.h"
-#include "content/public/browser/web_contents.h"
 #include "device/vr/android/arcore/arcore_device_provider_factory.h"
 
 using base::android::AttachCurrentThread;
-using base::android::ScopedJavaLocalRef;
 
 namespace vr {
 
@@ -39,30 +35,10 @@ ArCoreDeviceProviderFactoryImpl::CreateDeviceProvider() {
   return std::make_unique<device::ArCoreDeviceProvider>();
 }
 
-base::android::ScopedJavaLocalRef<jobject> GetTabFromRenderer(
-    int render_process_id,
-    int render_frame_id) {
-  content::RenderFrameHost* render_frame_host =
-      content::RenderFrameHost::FromID(render_process_id, render_frame_id);
-  DCHECK(render_frame_host);
-
-  content::WebContents* web_contents =
-      content::WebContents::FromRenderFrameHost(render_frame_host);
-  DCHECK(web_contents);
-
-  TabAndroid* tab_android = TabAndroid::FromWebContents(web_contents);
-  DCHECK(tab_android);
-
-  base::android::ScopedJavaLocalRef<jobject> j_tab_android =
-      tab_android->GetJavaObject();
-  DCHECK(!j_tab_android.is_null());
-
-  return j_tab_android;
-}
-
 }  // namespace
 
-ArCoreConsentPrompt::ArCoreConsentPrompt() : weak_ptr_factory_(this) {}
+ArCoreConsentPrompt::ArCoreConsentPrompt()
+    : XrConsentHelper(), weak_ptr_factory_(this) {}
 
 ArCoreConsentPrompt::~ArCoreConsentPrompt() = default;
 
@@ -89,12 +65,14 @@ void ArCoreConsentPrompt::OnUserConsentResult(JNIEnv* env,
   RequestArModule();
 }
 
-// static
 void ArCoreConsentPrompt::ShowConsentPrompt(
     int render_process_id,
     int render_frame_id,
-    base::OnceCallback<void(bool)> response_callback) {
+    XrConsentPromptLevel consent_level,
+    OnUserConsentCallback response_callback) {
+  DCHECK(!on_user_consent_callback_);
   on_user_consent_callback_ = std::move(response_callback);
+  consent_level_ = consent_level;
   render_process_id_ = render_process_id;
   render_frame_id_ = render_frame_id;
 
@@ -103,7 +81,7 @@ void ArCoreConsentPrompt::ShowConsentPrompt(
       env, reinterpret_cast<jlong>(this),
       GetTabFromRenderer(render_process_id_, render_frame_id_));
   if (jdelegate_.is_null()) {
-    std::move(on_user_consent_callback_).Run(false);
+    CallDeferredUserConsentCallback(false);
   }
 }
 
@@ -212,8 +190,10 @@ void ArCoreConsentPrompt::OnRequestArCoreInstallOrUpdateResult(bool success) {
 
 void ArCoreConsentPrompt::CallDeferredUserConsentCallback(
     bool is_permission_granted) {
-  if (on_user_consent_callback_)
-    std::move(on_user_consent_callback_).Run(is_permission_granted);
+  if (on_user_consent_callback_) {
+    std::move(on_user_consent_callback_)
+        .Run(consent_level_, is_permission_granted);
+  }
 }
 
 static void JNI_ArCoreInstallUtils_InstallArCoreDeviceProviderFactory(

@@ -461,22 +461,49 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTestWithGCExposed,
   SimpleTest(GetTestUrl("indexeddb", "database_callbacks_first.html"));
 }
 
-static void CopyLevelDBToProfile(Shell* shell,
-                                 scoped_refptr<IndexedDBContextImpl> context,
-                                 const std::string& test_directory) {
+struct BlobModificationTime {
+  base::FilePath relative_blob_path;
+  base::Time time;
+};
+
+static void CopyLevelDBToProfile(
+    Shell* shell,
+    scoped_refptr<IndexedDBContextImpl> context,
+    const std::string& test_directory,
+    std::vector<BlobModificationTime> modification_times) {
   DCHECK(context->IDBTaskRunner()->RunsTasksInCurrentSequence());
   base::FilePath leveldb_dir(FILE_PATH_LITERAL("file__0.indexeddb.leveldb"));
-  base::FilePath test_data_dir =
+  base::FilePath blob_dir(FILE_PATH_LITERAL("file__0.indexeddb.blob"));
+  base::FilePath test_leveldb_data_dir =
       GetTestFilePath("indexeddb", test_directory.c_str()).Append(leveldb_dir);
-  base::FilePath dest = context->data_path().Append(leveldb_dir);
-  // If we don't create the destination directory first, the contents of the
+  base::FilePath test_blob_data_dir =
+      GetTestFilePath("indexeddb", test_directory.c_str()).Append(blob_dir);
+  base::FilePath leveldb_dest = context->data_path().Append(leveldb_dir);
+  base::FilePath blob_dest = context->data_path().Append(blob_dir);
+  // If we don't create the destination directories first, the contents of the
   // leveldb directory are copied directly into profile/IndexedDB instead of
   // profile/IndexedDB/file__0.xxx/
-  ASSERT_TRUE(base::CreateDirectory(dest));
+  ASSERT_TRUE(base::CreateDirectory(leveldb_dest));
   const bool kRecursive = true;
-  ASSERT_TRUE(base::CopyDirectory(test_data_dir,
-                                  context->data_path(),
+  ASSERT_TRUE(base::CopyDirectory(test_leveldb_data_dir, context->data_path(),
                                   kRecursive));
+
+  if (!base::PathExists(test_blob_data_dir))
+    return;
+  ASSERT_TRUE(base::CreateDirectory(blob_dest));
+  ASSERT_TRUE(base::CopyDirectory(test_blob_data_dir, context->data_path(),
+                                  kRecursive));
+  // For some reason touching files on Android fails with EPERM.
+  // https://crbug.com/1045488
+#if !defined(OS_ANDROID)
+  // The modification time of the saved blobs is used for File objects, so these
+  // need to manually be set (they are clobbered both by the above copy
+  // operation and by git).
+  for (const BlobModificationTime& time : modification_times) {
+    base::FilePath total_path = blob_dest.Append(time.relative_blob_path);
+    ASSERT_TRUE(base::TouchFile(total_path, time.time, time.time));
+  }
+#endif
 }
 
 class IndexedDBBrowserTestWithPreexistingLevelDB : public IndexedDBBrowserTest {
@@ -485,14 +512,19 @@ class IndexedDBBrowserTestWithPreexistingLevelDB : public IndexedDBBrowserTest {
   void SetUpOnMainThread() override {
     scoped_refptr<IndexedDBContextImpl> context = GetContext();
     context->IDBTaskRunner()->PostTask(
-        FROM_HERE, base::BindOnce(&CopyLevelDBToProfile, shell(), context,
-                                  EnclosingLevelDBDir()));
+        FROM_HERE,
+        base::BindOnce(&CopyLevelDBToProfile, shell(), context,
+                       EnclosingLevelDBDir(), CustomModificationTimes()));
     scoped_refptr<base::ThreadTestHelper> helper(
         new base::ThreadTestHelper(GetContext()->IDBTaskRunner()));
     ASSERT_TRUE(helper->Run());
   }
 
   virtual std::string EnclosingLevelDBDir() = 0;
+
+  virtual std::vector<BlobModificationTime> CustomModificationTimes() {
+    return std::vector<BlobModificationTime>();
+  }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(IndexedDBBrowserTestWithPreexistingLevelDB);
@@ -505,6 +537,33 @@ class IndexedDBBrowserTestWithVersion0Schema : public
 
 IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTestWithVersion0Schema, MigrationTest) {
   SimpleTest(GetTestUrl("indexeddb", "migration_test.html"));
+}
+
+class IndexedDBBrowserTestWithVersion3Schema
+    : public IndexedDBBrowserTestWithPreexistingLevelDB {
+  std::string EnclosingLevelDBDir() override { return "v3_migration_test"; }
+
+  std::vector<BlobModificationTime> CustomModificationTimes() override {
+    return {
+        {base::FilePath(FILE_PATH_LITERAL("1/00/3")),
+         base::Time::FromJsTime(1579809038000)},
+        {base::FilePath(FILE_PATH_LITERAL("1/00/4")),
+         base::Time::FromJsTime(1579808985000)},
+        {base::FilePath(FILE_PATH_LITERAL("1/00/5")),
+         base::Time::FromJsTime(1579199256000)},
+    };
+  }
+};
+
+IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTestWithVersion3Schema, MigrationTest) {
+  const GURL test_url = GetTestUrl("indexeddb", "v3_migration_test.html");
+  // For some reason setting empty file modification time on Android fails with
+  // EPERM. https://crbug.com/1045488
+#if defined(OS_ANDROID)
+  SimpleTest(GURL(test_url.spec() + "#ignoreTimes"));
+#else
+  SimpleTest(GURL(test_url.spec()));
+#endif
 }
 
 class IndexedDBBrowserTestWithVersion123456Schema : public
@@ -638,9 +697,6 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, EmptyBlob) {
 #else
   SimpleTest(GURL(test_url.spec()));
 #endif
-  // As both of these files are empty, they do not create BlobDataItems.
-  // As they can't be read, the backing files are immediately released.
-  EXPECT_EQ(0, RequestBlobFileCount(FileOrigin()));
 }
 
 // Very flaky on many bots. See crbug.com/459835

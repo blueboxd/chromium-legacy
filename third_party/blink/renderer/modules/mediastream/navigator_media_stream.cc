@@ -24,6 +24,7 @@
 #include "third_party/blink/renderer/modules/mediastream/navigator_media_stream.h"
 
 #include "third_party/blink/renderer/bindings/core/v8/dictionary.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_media_stream_constraints.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_navigator_user_media_error_callback.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_navigator_user_media_success_callback.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -32,7 +33,6 @@
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/modules/mediastream/media_error_state.h"
-#include "third_party/blink/renderer/modules/mediastream/media_stream_constraints.h"
 #include "third_party/blink/renderer/modules/mediastream/user_media_controller.h"
 #include "third_party/blink/renderer/modules/mediastream/user_media_request.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"

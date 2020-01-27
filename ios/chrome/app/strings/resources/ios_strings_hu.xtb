@@ -192,6 +192,7 @@
 <translation id="3474649192738347024">Mezők kitöltve.</translation>
 <translation id="3478058380795961209">Lejárat hónapja</translation>
 <translation id="3482959374254649722">Lapok szinkronizálása…</translation>
+<translation id="3484946776651937681">Megnyitás a Letöltések mappában</translation>
 <translation id="3493531032208478708"><ph name="BEGIN_LINK" />További információ<ph name="END_LINK" /> a javasolt tartalomról</translation>
 <translation id="3494788280727468875">Böngészési adatok törlésének megerősítése</translation>
 <translation id="35083190962747987">${url} megnyitása</translation>
@@ -537,6 +538,7 @@ Adatainak titkosítása megtörtént összetett szinkronizálási jelszavával a
 <translation id="8319076807703933069">Új keresés</translation>
 <translation id="8323906514956095947">Nyomva tartva további lapbeállításokat láthat</translation>
 <translation id="8328777765163860529">Összes bezárása</translation>
+<translation id="8386068868580335421">Visszaállítás</translation>
 <translation id="8407669440184693619">Nem található jelszó a webhelyhez</translation>
 <translation id="842017693807136194">Bejelentkezve a következővel:</translation>
 <translation id="8428045167754449968">Város/helység</translation>

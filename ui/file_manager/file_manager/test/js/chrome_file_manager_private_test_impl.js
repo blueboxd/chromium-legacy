@@ -65,6 +65,12 @@ chrome.fileManagerPrivate = {
     ANY_SOURCE: 'any_source',
     NATIVE_SOURCE: 'native_source',
   },
+  RecentFileType: {
+    ALL: 'all',
+    AUDIO: 'audio',
+    IMAGE: 'image',
+    VIDEO: 'video',
+  },
   addFileWatch: (entry, callback) => {
     // Returns success.
     setTimeout(callback, 0, true);
@@ -128,7 +134,7 @@ chrome.fileManagerPrivate = {
     // Returns chrome.fileManagerPrivate.Provider[].
     setTimeout(callback, 0, []);
   },
-  getRecentFiles: (restriction, callback) => {
+  getRecentFiles: (restriction, fileType, callback) => {
     // Returns Entry[].
     setTimeout(callback, 0, []);
   },

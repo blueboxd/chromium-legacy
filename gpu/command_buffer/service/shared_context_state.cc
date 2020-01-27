@@ -218,6 +218,8 @@ void SharedContextState::InitializeGrContext(
           GrContextOptions::ShaderCacheStrategy::kBackendSource;
     }
     options.fShaderErrorHandler = this;
+    if (gpu_preferences.force_max_texture_size)
+      options.fMaxTextureSizeOverride = gpu_preferences.force_max_texture_size;
     // TODO(csmartdalton): enable internal multisampling after the related Skia
     // rolls are in.
     options.fInternalMultisampleCount = 0;

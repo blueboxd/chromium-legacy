@@ -87,6 +87,12 @@ class TegraV4L2Device : public V4L2Device {
   // The actual device fd.
   int device_fd_ = -1;
 
+  // Dummy FD returned as fake DMABuf FD by GetDmabufsForV4L2Buffer(). Tegra
+  // is the only platform that does not support DMABufs, but upper layers still
+  // expect valid FDs that can be duplicated, passed around, and closed. So
+  // we just return fake DMAbuf FDs that are duplicates of this one.
+  base::ScopedFD dummy_fd_;
+
   // The v4l2_format cache passed to the driver via VIDIOC_S_FMT. The key is
   // v4l2_buf_type.
   std::map<enum v4l2_buf_type, struct v4l2_format> v4l2_format_cache_;

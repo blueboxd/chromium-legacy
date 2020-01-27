@@ -76,6 +76,9 @@ interface DrmDevice {
                      array<display.mojom.GammaRampRGBEntry> degamma_lut,
                      array<display.mojom.GammaRampRGBEntry> gamma_lut);
 
+  // Sets the state of the privacy screen feature.
+  SetPrivacyScreen(int64 display_id, bool enabled);
+
   // Provides a DeviceCursor interface. The provided interface needs to be
   // associated because the AcceleratedWidgets referenced by its methods are
   // registered via CreateWindow() in this interface.

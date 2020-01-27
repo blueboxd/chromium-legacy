@@ -26,6 +26,8 @@
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
 #include "components/safe_browsing/core/ping_manager.h"
 #include "components/security_interstitials/content/security_interstitial_tab_helper.h"
+#include "components/security_interstitials/content/unsafe_resource_util.h"
+#include "components/security_interstitials/core/unsafe_resource.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
@@ -69,7 +71,7 @@ void SafeBrowsingUIManager::CreateAndSendHitReport(
   hit_report.threat_source = resource.threat_source;
   hit_report.population_id = resource.threat_metadata.population_id;
 
-  NavigationEntry* entry = resource.GetNavigationEntryForResource();
+  NavigationEntry* entry = GetNavigationEntryForResource(resource);
   if (entry) {
     hit_report.page_url = entry->GetURL();
     hit_report.referrer_url = entry->GetReferrer().url;

@@ -4887,7 +4887,7 @@ Pengguna tidak dapat mengubah atau mengganti setelan ini.</translation>
           Jika kebijakan ini tidak disetel, 'PromptOnAccess' akan digunakan dan pengguna dapat mengubahnya.</translation>
 <translation id="8911348623012274122">Menetapkan batas memori untuk instance Chrome</translation>
 <translation id="8911736066340032670">Melaporkan informasi terkait tampilan, seperti rasio pembaruan, dan
-      informasi terkait grafik, seperti versi driver.
+      informasi terkait grafis, seperti versi driver.
 
       Jika kebijakan ditetapkan ke false atau tidak ditetapkan, status tampilan dan grafis
       tidak akan dilaporkan. Jika ditetapkan ke true, status tampilan dan grafis

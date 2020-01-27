@@ -64,6 +64,14 @@ void PepperPlayerDelegate::OnSetVolumeMultiplier(int player_id,
   SetVolume(player_id, volume_multiplier);
 }
 
+void PepperPlayerDelegate::OnEnterPictureInPicture(int player_id) {
+  // Pepper player cannot enter picture-in-picture. Do nothing.
+}
+
+void PepperPlayerDelegate::OnExitPictureInPicture(int player_id) {
+  // Pepper player cannot exit picture-in-picture. Do nothing.
+}
+
 base::Optional<media_session::MediaPosition> PepperPlayerDelegate::GetPosition(
     int player_id) const {
   // Pepper does not support position data.

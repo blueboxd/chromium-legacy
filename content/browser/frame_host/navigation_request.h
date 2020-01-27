@@ -546,6 +546,13 @@ class CONTENT_EXPORT NavigationRequest
           navigation_initiator,
       RenderFrameHostImpl* rfh_restored_from_back_forward_cache);
 
+  // Checks if the OriginPolicy in a NavigationRequest's response contains a
+  // request to isolate the url's origin, and if so registers it with the global
+  // origin isolation map.
+  void CheckForOriginPolicyIsolationOptIn(
+      const GURL& url,
+      const network::mojom::URLResponseHead* response);
+
   // NavigationURLLoaderDelegate implementation.
   void OnRequestRedirected(
       const net::RedirectInfo& redirect_info,

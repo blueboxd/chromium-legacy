@@ -29,7 +29,7 @@ class GbmSurfacelessWayland : public gl::SurfacelessEGL,
   GbmSurfacelessWayland(WaylandBufferManagerGpu* buffer_manager,
                         gfx::AcceleratedWidget widget);
 
-  void QueueOverlayPlane(OverlayPlane plane);
+  void QueueOverlayPlane(OverlayPlane plane, uint32_t buffer_id);
 
   // gl::GLSurface:
   bool ScheduleOverlayPlane(int z_order,
@@ -88,13 +88,18 @@ class GbmSurfacelessWayland : public gl::SurfacelessEGL,
     PresentationCallback presentation_callback;
   };
 
+  struct PlaneData {
+    OverlayPlane plane;
+    const uint32_t buffer_id;
+  };
+
   void SubmitFrame();
 
   EGLSyncKHR InsertFence(bool implicit);
   void FenceRetired(PendingFrame* frame);
 
   WaylandBufferManagerGpu* const buffer_manager_;
-  std::vector<OverlayPlane> planes_;
+  std::vector<PlaneData> planes_;
 
   // The native surface. Deleting this is allowed to free the EGLNativeWindow.
   gfx::AcceleratedWidget widget_;

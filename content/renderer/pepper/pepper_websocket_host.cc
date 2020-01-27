@@ -124,7 +124,8 @@ void PepperWebSocketHost::DidReceiveArrayBuffer(
 
   // Send an IPC to transport received data.
   uint8_t* data = static_cast<uint8_t*>(binaryData.Data());
-  std::vector<uint8_t> array_message(data, data + binaryData.ByteLength());
+  std::vector<uint8_t> array_message(data,
+                                     data + binaryData.ByteLengthAsSizeT());
   host()->SendUnsolicitedReply(
       pp_resource(),
       PpapiPluginMsg_WebSocket_ReceiveBinaryReply(array_message));

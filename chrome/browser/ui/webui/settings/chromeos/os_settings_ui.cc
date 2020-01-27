@@ -214,15 +214,18 @@ OSSettingsUI::OSSettingsUI(content::WebUI* web_ui)
   html_source->AddResourcePath("app-management/image_info.mojom-lite.js",
                                IDR_APP_MANAGEMENT_IMAGE_INFO_MOJO_LITE_JS);
 
-  ::chromeos::settings::AddOsLocalizedStrings(html_source, profile,
-                                              web_ui->GetWebContents());
-  ::settings::AddSharedLocalizedStrings(html_source, profile,
-                                        web_ui->GetWebContents());
-
   // TODO(crbug/967888): Remove when all the needed keys have been added
   // to os_localized_string_provider.
   ::settings::AddBrowserLocalizedStrings(html_source, profile,
                                          web_ui->GetWebContents());
+  ::settings::AddSharedLocalizedStrings(html_source, profile,
+                                        web_ui->GetWebContents());
+
+  // AddOsLocalizedStrings must be added after AddBrowserLocalizedStrings
+  // as repeated keys used by the OS strings should override the same keys
+  // that may be used in the Browser string provider.
+  ::chromeos::settings::AddOsLocalizedStrings(html_source, profile,
+                                              web_ui->GetWebContents());
 
   auto plural_string_handler = std::make_unique<PluralStringHandler>();
   plural_string_handler->AddLocalizedString("profileLabel",
@@ -333,6 +336,10 @@ void OSSettingsUI::InitOSWebUIHandlers(content::WebUIDataSource* html_source) {
               profile));
     }
   }
+
+  html_source->AddBoolean(
+      "privacySettingsRedesignEnabled",
+      base::FeatureList::IsEnabled(::features::kPrivacySettingsRedesign));
 
   html_source->AddBoolean(
       "multideviceAllowedByPolicy",

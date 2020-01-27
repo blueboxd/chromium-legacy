@@ -9,10 +9,10 @@
 #include "third_party/blink/renderer/bindings/modules/v8/double_sequence_or_gpu_color_dict.h"
 #include "third_party/blink/renderer/bindings/modules/v8/unsigned_long_sequence_or_gpu_extent_3d_dict.h"
 #include "third_party/blink/renderer/bindings/modules/v8/unsigned_long_sequence_or_gpu_origin_3d_dict.h"
-#include "third_party/blink/renderer/modules/webgpu/gpu_programmable_stage_descriptor.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_gpu_programmable_stage_descriptor.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_gpu_texture_copy_view.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_shader_module.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_texture.h"
-#include "third_party/blink/renderer/modules/webgpu/gpu_texture_copy_view.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {

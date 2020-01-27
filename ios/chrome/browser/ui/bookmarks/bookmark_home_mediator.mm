@@ -52,7 +52,7 @@ const int kMaxBookmarksSearchResults = 50;
 @property(nonatomic, strong) BookmarkHomeSharedState* sharedState;
 
 // The browser state for this mediator.
-@property(nonatomic, assign) ios::ChromeBrowserState* browserState;
+@property(nonatomic, assign) ChromeBrowserState* browserState;
 
 // The controller managing the display of the promo cell and the promo view
 // controller.
@@ -67,7 +67,7 @@ const int kMaxBookmarksSearchResults = 50;
 @synthesize sharedState = _sharedState;
 
 - (instancetype)initWithSharedState:(BookmarkHomeSharedState*)sharedState
-                       browserState:(ios::ChromeBrowserState*)browserState {
+                       browserState:(ChromeBrowserState*)browserState {
   if ((self = [super init])) {
     _sharedState = sharedState;
     _browserState = browserState;

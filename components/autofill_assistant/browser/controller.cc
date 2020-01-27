@@ -151,13 +151,6 @@ WebController* Controller::GetWebController() {
   return web_controller_.get();
 }
 
-ClientMemory* Controller::GetClientMemory() {
-  if (!memory_) {
-    memory_ = std::make_unique<ClientMemory>();
-  }
-  return memory_.get();
-}
-
 const TriggerContext* Controller::GetTriggerContext() {
   DCHECK(trigger_context_);
   return trigger_context_.get();
@@ -786,7 +779,7 @@ void Controller::ExecuteScript(const std::string& script_path,
   // TODO(crbug.com/806868): Consider making ClearRunnableScripts part of
   // ExecuteScripts to simplify the controller.
   script_tracker()->ExecuteScript(
-      script_path, std::move(context),
+      script_path, user_data_.get(), std::move(context),
       base::BindOnce(&Controller::OnScriptExecuted,
                      // script_tracker_ is owned by Controller.
                      base::Unretained(this), script_path, end_state));
@@ -836,9 +829,9 @@ void Controller::OnScriptExecuted(const std::string& script_path,
       end_state = AutofillAssistantState::TRACKING;
       return;
 
+    // TODO(b/148194528): Remove.
     case ScriptExecutor::RESTART:
       script_tracker_.reset();
-      memory_.reset();
       script_domain_ = "";
       break;
 
@@ -1028,7 +1021,7 @@ void Controller::OnCollectUserDataContinueButtonClicked() {
   // TODO(crbug.com/806868): succeed is currently always true, but we might want
   // to set it to false and propagate the result to CollectUserDataAction
   // when the user clicks "Cancel" during that action.
-  user_data_->succeed = true;
+  user_data_->succeed_ = true;
 
   SetCollectUserDataOptions(nullptr);
   std::move(callback).Run(user_data_.get(), &user_model_);
@@ -1070,7 +1063,7 @@ void Controller::SetDateTimeRangeStart(int year,
   if (!user_data_)
     return;
 
-  SetDateTimeProto(&user_data_->date_time_range_start, year, month, day, hour,
+  SetDateTimeProto(&user_data_->date_time_range_start_, year, month, day, hour,
                    minute, second);
   for (ControllerObserver& observer : observers_) {
     observer.OnUserDataChanged(user_data_.get(),
@@ -1088,7 +1081,7 @@ void Controller::SetDateTimeRangeEnd(int year,
   if (!user_data_)
     return;
 
-  SetDateTimeProto(&user_data_->date_time_range_end, year, month, day, hour,
+  SetDateTimeProto(&user_data_->date_time_range_end_, year, month, day, hour,
                    minute, second);
   for (ControllerObserver& observer : observers_) {
     observer.OnUserDataChanged(user_data_.get(),
@@ -1101,8 +1094,8 @@ void Controller::SetAdditionalValue(const std::string& client_memory_key,
                                     const std::string& value) {
   if (!user_data_)
     return;
-  auto it = user_data_->additional_values_to_store.find(client_memory_key);
-  if (it == user_data_->additional_values_to_store.end()) {
+  auto it = user_data_->additional_values_.find(client_memory_key);
+  if (it == user_data_->additional_values_.end()) {
     NOTREACHED() << client_memory_key << " not found";
     return;
   }
@@ -1117,42 +1110,62 @@ void Controller::SetAdditionalValue(const std::string& client_memory_key,
 
 void Controller::SetShippingAddress(
     std::unique_ptr<autofill::AutofillProfile> address) {
-  if (!user_data_)
+  if (collect_user_data_options_ == nullptr) {
     return;
-
-  user_data_->shipping_address = std::move(address);
-  for (ControllerObserver& observer : observers_) {
-    observer.OnUserDataChanged(user_data_.get(),
-                               UserData::FieldChange::SHIPPING_ADDRESS);
   }
-  UpdateCollectUserDataActions();
+
+  DCHECK(!collect_user_data_options_->shipping_address_name.empty());
+  SetProfile(collect_user_data_options_->shipping_address_name,
+             UserData::FieldChange::SHIPPING_ADDRESS, std::move(address));
 }
 
 void Controller::SetContactInfo(
     std::unique_ptr<autofill::AutofillProfile> profile) {
-  if (!user_data_)
+  if (collect_user_data_options_ == nullptr) {
     return;
-
-  user_data_->contact_profile = std::move(profile);
-  for (ControllerObserver& observer : observers_) {
-    observer.OnUserDataChanged(user_data_.get(),
-                               UserData::FieldChange::CONTACT_PROFILE);
   }
-  UpdateCollectUserDataActions();
+
+  DCHECK(!collect_user_data_options_->contact_details_name.empty());
+  SetProfile(collect_user_data_options_->contact_details_name,
+             UserData::FieldChange::CONTACT_PROFILE, std::move(profile));
 }
 
 void Controller::SetCreditCard(
     std::unique_ptr<autofill::CreditCard> card,
     std::unique_ptr<autofill::AutofillProfile> billing_profile) {
-  if (!user_data_)
+  if (user_data_ == nullptr || collect_user_data_options_ == nullptr) {
     return;
+  }
 
-  user_data_->billing_address = std::move(billing_profile);
-  user_data_->card = std::move(card);
+  DCHECK(!collect_user_data_options_->billing_address_name.empty());
+
+  user_data_->selected_card_ = std::move(card);
   for (ControllerObserver& observer : observers_) {
     observer.OnUserDataChanged(user_data_.get(), UserData::FieldChange::CARD);
-    observer.OnUserDataChanged(user_data_.get(),
-                               UserData::FieldChange::BILLING_ADDRESS);
+  }
+  SetProfile(collect_user_data_options_->billing_address_name,
+             UserData::FieldChange::BILLING_ADDRESS,
+             std::move(billing_profile));
+}
+
+void Controller::SetProfile(
+    const std::string& key,
+    UserData::FieldChange field_change,
+    std::unique_ptr<autofill::AutofillProfile> profile) {
+  if (user_data_ == nullptr) {
+    return;
+  }
+
+  auto it = user_data_->selected_addresses_.find(key);
+  if (it != user_data_->selected_addresses_.end()) {
+    user_data_->selected_addresses_.erase(it);
+  }
+  if (profile != nullptr) {
+    user_data_->selected_addresses_.emplace(key, std::move(profile));
+  }
+
+  for (ControllerObserver& observer : observers_) {
+    observer.OnUserDataChanged(user_data_.get(), field_change);
   }
   UpdateCollectUserDataActions();
 }
@@ -1162,7 +1175,7 @@ void Controller::SetTermsAndConditions(
   if (!user_data_)
     return;
 
-  user_data_->terms_and_conditions = terms_and_conditions;
+  user_data_->terms_and_conditions_ = terms_and_conditions;
   UpdateCollectUserDataActions();
   for (ControllerObserver& observer : observers_) {
     observer.OnUserDataChanged(user_data_.get(),
@@ -1174,7 +1187,7 @@ void Controller::SetLoginOption(std::string identifier) {
   if (!user_data_ || !collect_user_data_options_)
     return;
 
-  user_data_->login_choice_identifier.assign(identifier);
+  user_data_->login_choice_identifier_.assign(identifier);
   UpdateCollectUserDataActions();
   for (ControllerObserver& observer : observers_) {
     observer.OnUserDataChanged(user_data_.get(),

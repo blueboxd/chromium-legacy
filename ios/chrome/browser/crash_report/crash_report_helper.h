@@ -5,8 +5,6 @@
 #ifndef IOS_CHROME_BROWSER_CRASH_REPORT_CRASH_REPORT_HELPER_H_
 #define IOS_CHROME_BROWSER_CRASH_REPORT_CRASH_REPORT_HELPER_H_
 
-#include "ios/chrome/browser/browser_state/chrome_browser_state_forward.h"
-
 @class NSString;
 
 class BreadcrumbManager;

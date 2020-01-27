@@ -8,12 +8,13 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "components/browsing_data/core/counters/browsing_data_counter.h"
-#include "ios/chrome/browser/browser_state/chrome_browser_state_forward.h"
+
+class ChromeBrowserState;
 
 // CacheCounter is a BrowsingDataCounter used to compute the cache size.
 class CacheCounter : public browsing_data::BrowsingDataCounter {
  public:
-  explicit CacheCounter(ios::ChromeBrowserState* browser_state);
+  explicit CacheCounter(ChromeBrowserState* browser_state);
   ~CacheCounter() override;
 
   // browsing_data::BrowsingDataCounter implementation.
@@ -24,7 +25,7 @@ class CacheCounter : public browsing_data::BrowsingDataCounter {
   // Invoked when cache size has been computed.
   void OnCacheSizeCalculated(int64_t cache_size);
 
-  ios::ChromeBrowserState* browser_state_;
+  ChromeBrowserState* browser_state_;
 
   base::WeakPtrFactory<CacheCounter> weak_ptr_factory_;
 

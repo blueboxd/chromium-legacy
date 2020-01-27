@@ -479,7 +479,13 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  protocolSelectEnabled() {
+  protocolSelectEnabled_() {
+    // Print server printer's protocol should not be editable; disable the
+    // drop down if the printer is from a print server.
+    if (this.pendingPrinter_.printServerUri) {
+      return false;
+    }
+
     return this.isOnline_ && this.networkProtocolActive_;
   },
 
@@ -498,6 +504,21 @@ Polymer({
         .getEulaUrl(
             this.pendingPrinter_.ppdManufacturer, this.pendingPrinter_.ppdModel)
         .then(this.onGetEulaUrlCompleted_.bind(this));
+  },
+
+  /**
+   * @return {boolean} True if we're on an active network and the printer
+   * is not from a print server. If true, the input field is enabled.
+   * @private
+   */
+  isInputFieldEnabled_() {
+    // Print server printers should not be editable (except for the name field).
+    // Return false to disable the field.
+    if (this.pendingPrinter_.printServerUri) {
+      return false;
+    }
+
+    return this.networkProtocolActive_;
   },
 
 });

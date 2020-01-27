@@ -9,7 +9,7 @@
 #include <algorithm>
 #include <cmath>
 
-#include "third_party/blink/renderer/modules/xr/xr_render_state_init.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_xr_render_state_init.h"
 #include "third_party/blink/renderer/modules/xr/xr_webgl_layer.h"
 
 namespace blink {

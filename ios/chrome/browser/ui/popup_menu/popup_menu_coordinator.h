@@ -20,8 +20,7 @@ class WebStateList;
 
 // PopupMenuCoordinator needs to be initialized with a Browser.
 - (instancetype)initWithBaseViewController:(UIViewController*)viewController
-                              browserState:
-                                  (ios::ChromeBrowserState*)browserState
+                              browserState:(ChromeBrowserState*)browserState
     NS_UNAVAILABLE;
 
 // Dispatcher used by this coordinator to receive the PopupMenuCommands.

@@ -5,12 +5,12 @@
 #include "chrome/browser/mac/bluetooth_utility.h"
 
 #import <Foundation/Foundation.h>
+#import <IOBluetooth/IOBluetooth.h>
 #include <IOKit/IOKitLib.h>
 
 #include "base/mac/foundation_util.h"
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_ioobject.h"
-#include "base/mac/sdk_forward_declarations.h"
 
 namespace bluetooth_utility {
 

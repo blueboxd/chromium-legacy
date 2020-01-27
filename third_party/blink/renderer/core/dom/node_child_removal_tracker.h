@@ -45,7 +45,7 @@ class NodeChildRemovalTracker {
   const Node& GetNode() const { return *node_; }
   NodeChildRemovalTracker* Previous() { return previous_; }
 
-  Member<const Node> node_;
+  const Node* node_;
   // Using raw pointers are safe because these NodeChildRemovalTrackers are
   // guaranteed to be on a stack.
   NodeChildRemovalTracker* previous_;
@@ -53,7 +53,7 @@ class NodeChildRemovalTracker {
 };
 
 inline NodeChildRemovalTracker::NodeChildRemovalTracker(const Node& node)
-    : node_(node), previous_(last_) {
+    : node_(&node), previous_(last_) {
   last_ = this;
 }
 

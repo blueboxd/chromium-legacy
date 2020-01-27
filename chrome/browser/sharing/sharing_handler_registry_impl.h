@@ -20,6 +20,7 @@ class SharingDeviceRegistration;
 class SharingDeviceSource;
 class SharingMessageSender;
 class Profile;
+class SharingServiceHost;
 
 // Interface for handling incoming SharingMessage.
 class SharingHandlerRegistryImpl : public SharingHandlerRegistry {
@@ -29,7 +30,8 @@ class SharingHandlerRegistryImpl : public SharingHandlerRegistry {
       SharingDeviceRegistration* sharing_device_registration,
       SharingMessageSender* message_sender,
       SharingDeviceSource* device_source,
-      content::SmsFetcher* sms_fetcher);
+      content::SmsFetcher* sms_fetcher,
+      SharingServiceHost* sharing_service_host);
   ~SharingHandlerRegistryImpl() override;
 
   // Gets SharingMessageHandler registered for |payload_case|.

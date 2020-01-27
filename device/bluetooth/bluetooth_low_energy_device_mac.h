@@ -5,12 +5,7 @@
 #ifndef DEVICE_BLUETOOTH_BLUETOOTH_LOW_ENERGY_DEVICE_MAC_H_
 #define DEVICE_BLUETOOTH_BLUETOOTH_LOW_ENERGY_DEVICE_MAC_H_
 
-#if defined(OS_IOS)
 #import <CoreBluetooth/CoreBluetooth.h>
-#else  // !defined(OS_IOS)
-#import <IOBluetooth/IOBluetooth.h>
-#endif  // defined(OS_IOS)
-
 #include <stdint.h>
 
 #include <set>
@@ -22,6 +17,10 @@
 #include "build/build_config.h"
 #include "crypto/sha2.h"
 #include "device/bluetooth/bluetooth_device_mac.h"
+
+#if !defined(OS_IOS)
+#import <IOBluetooth/IOBluetooth.h>
+#endif
 
 @class BluetoothLowEnergyPeripheralDelegate;
 

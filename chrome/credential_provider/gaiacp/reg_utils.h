@@ -104,6 +104,7 @@ HRESULT RemoveAllUserProperties(const base::string16& sid);
 
 struct UserTokenHandleInfo {
   base::string16 gaia_id;
+  base::string16 email_address;
   base::string16 token_handle;
 };
 
@@ -119,6 +120,19 @@ HRESULT GetUserTokenHandles(
 // Gets the SID associated with the given gaia id.  If none exists, returns
 // HRESULT_FROM_WIN32(ERROR_NONE_MAPPED).
 HRESULT GetSidFromId(const base::string16& id, wchar_t* sid, ULONG length);
+
+// Gets the SID associated with the given email.  If none exists, returns
+// HRESULT_FROM_WIN32(ERROR_NONE_MAPPED).
+HRESULT GetSidFromEmail(const base::string16& email,
+                        wchar_t* sid,
+                        ULONG length);
+
+// Gets the SID associated with the given input key. If none exists, returns
+// HRESULT_FROM_WIN32(ERROR_NONE_MAPPED).
+HRESULT GetSidFromKey(const wchar_t* key,
+                      const base::string16& value,
+                      wchar_t* sid,
+                      ULONG length);
 
 // Gets the gaia id associated with the given SID.  If none exists, returns
 // HRESULT_FROM_WIN32(ERROR_NONE_MAPPED).

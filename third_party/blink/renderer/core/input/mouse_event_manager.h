@@ -189,9 +189,9 @@ class CORE_EXPORT MouseEventManager final
                   const String& canvas_region_id,
                   const WebMouseEvent&,
                   bool check_for_listener);
-    Member<MouseEventManager> mouse_event_manager_;
+    MouseEventManager* mouse_event_manager_;
     const WebMouseEvent* web_mouse_event_;
-    Member<EventTarget> exited_target_;
+    EventTarget* exited_target_;
     String canvas_region_id_;
     DISALLOW_COPY_AND_ASSIGN(MouseEventBoundaryEventDispatcher);
   };

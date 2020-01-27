@@ -223,7 +223,6 @@
 <translation id="1306606229401759371">שנה הגדרות</translation>
 <translation id="1307165550267142340">קוד האימות שלך נוצר</translation>
 <translation id="1307559529304613120">‏אופס! המערכת לא הצליחה לאחסן את אסימון הגישה לטווח ארוך אל ממשק ה-API עבור המכשיר הזה.</translation>
-<translation id="1309199320876169714">‏המערכת מסירה את Plugin VM…</translation>
 <translation id="1313405956111467313">‏תצורה אוטומטית של שרת proxy</translation>
 <translation id="131364520783682672">Caps Lock</translation>
 <translation id="1313705515580255288">‏הסימניות, ההיסטוריה והגדרות נוספות יסונכרנו עם חשבון Google שלך.</translation>
@@ -766,7 +765,7 @@
 <translation id="2075959085554270910">הגדרות אלה מאפשרות להפעיל או להשבית את תכונות הנגיעה הקלה וההקשה לגרירה</translation>
 <translation id="2076269580855484719">הסתר פלאגין זה</translation>
 <translation id="2076672359661571384">בינוני (מומלץ)</translation>
-<translation id="2077129598763517140">השתמש בהאצת חומרה כשניתן</translation>
+<translation id="2077129598763517140">יש להשתמש בהאצת חומרה, כשזה אפשרי</translation>
 <translation id="2078019350989722914">הזהר לפני היציאה (<ph name="KEY_EQUIVALENT" />)</translation>
 <translation id="2079053412993822885">אם תמחק את אחד מהאישורים שלך, לא תוכל להמשיך ולהשתמש בו כדי לזהות את עצמך.</translation>
 <translation id="2079545284768500474">ביטול הפעולה</translation>
@@ -1364,7 +1363,6 @@
 <translation id="2871813825302180988">חשבון זה כבר נמצא בשימוש במכשיר זה.</translation>
 <translation id="287286579981869940">הוסף את <ph name="PROVIDER_NAME" />...</translation>
 <translation id="2872961005593481000">כיבוי</translation>
-<translation id="2874478552394649323">‏הסרת Plugin VM</translation>
 <translation id="2874939134665556319">הרצועה הקודמת</translation>
 <translation id="2875698561019555027">‏(דפי שגיאה ב-Chrome)</translation>
 <translation id="2876336351874743617">אצבע שנייה</translation>
@@ -1381,7 +1379,6 @@
 <translation id="2889064240420137087">פתח קישור באמצעות...</translation>
 <translation id="2889925978073739256">המשך לחסום יישומי פלאגין שאינם בארגז חול</translation>
 <translation id="2893168226686371498">דפדפן ברירת מחדל</translation>
-<translation id="2893208266590504003">‏לא ניתן להסיר את Plugin VM</translation>
 <translation id="2894757982205307093">כרטיסייה חדשה בקבוצה</translation>
 <translation id="289644616180464099">‏כרטיס ה-SIM נעול</translation>
 <translation id="2896909745808647285">הקובץ <ph name="FILE_NAME" /> מוצפן והפתיחה שלו נחסמה.</translation>
@@ -2832,6 +2829,7 @@
 <translation id="4998430619171209993">מופעל</translation>
 <translation id="4998873842614926205">אשר שינויים</translation>
 <translation id="5000922062037820727">חסומה (מומלץ)</translation>
+<translation id="5007392906805964215">עיון</translation>
 <translation id="5008936837313706385">שם הפעילות</translation>
 <translation id="5010043101506446253">רשות אישורים</translation>
 <translation id="5015344424288992913">פותר פרוקסי...</translation>
@@ -3019,7 +3017,7 @@
 <translation id="52895863590846877">הדף לא ב<ph name="LANGUAGE" /></translation>
 <translation id="52912272896845572">קובץ המפתח הפרטי אינו חוקי</translation>
 <translation id="529175790091471945">פרמט מכשיר זה</translation>
-<translation id="5293170712604732402">שחזר את ההגדרות לברירות המחדל המקוריות שלהן</translation>
+<translation id="5293170712604732402">שחזור ההגדרות לברירות המחדל המקוריות שלהן</translation>
 <translation id="5296471962619441686">צריך לפתור השגיאה כדי להמשיך בסנכרון</translation>
 <translation id="5297082477358294722">הסיסמה נשמרה. אפשר להציג סיסמאות שמורות ולנהל אותן דרך <ph name="SAVED_PASSWORDS_STORE" />.</translation>
 <translation id="5298219193514155779">נושא שנוצר על ידי</translation>
@@ -5773,7 +5771,6 @@
 <translation id="9169496697824289689">הצג מקשי קיצור</translation>
 <translation id="916964310188958970">למה ההצעה הזאת הופיעה?</translation>
 <translation id="9169931577761441333">הוספה של <ph name="APP_NAME" /> למסך דף הבית</translation>
-<translation id="9170305483456271385">‏המערכת הסירה את Plugin VM</translation>
 <translation id="9170848237812810038">&amp;ביטול</translation>
 <translation id="9170884462774788842">‏תכנית אחרת במחשב שלך הוסיפה עיצוב שעשוי לשנות את אופן הפעולה של Chrome.</translation>
 <translation id="9173995187295789444">‏מחפש מכשירי Bluetooth...</translation>

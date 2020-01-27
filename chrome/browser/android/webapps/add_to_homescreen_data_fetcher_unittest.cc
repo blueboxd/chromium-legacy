@@ -18,7 +18,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "chrome/browser/android/chrome_feature_list.h"
+#include "chrome/browser/flags/android/chrome_feature_list.h"
 #include "chrome/browser/installable/installable_manager.h"
 #include "chrome/browser/installable/installable_metrics.h"
 #include "chrome/common/web_application_info.h"

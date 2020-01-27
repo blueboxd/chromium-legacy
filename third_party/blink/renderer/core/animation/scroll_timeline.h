@@ -6,13 +6,15 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_SCROLL_TIMELINE_H_
 
 #include "third_party/blink/renderer/core/animation/animation_timeline.h"
-#include "third_party/blink/renderer/core/animation/scroll_timeline_options.h"
 #include "third_party/blink/renderer/core/animation/timing.h"
 #include "third_party/blink/renderer/core/css/css_primitive_value.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
+
+class DoubleOrScrollTimelineAutoKeyword;
+class ScrollTimelineOptions;
 
 // Implements the ScrollTimeline concept from the Scroll-linked Animations spec.
 //

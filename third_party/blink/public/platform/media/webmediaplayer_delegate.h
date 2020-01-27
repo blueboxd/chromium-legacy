@@ -65,6 +65,8 @@ class BLINK_PLATFORM_EXPORT WebMediaPlayerDelegate {
     virtual void OnMuted(bool muted) = 0;
     virtual void OnSeekForward(double seconds) = 0;
     virtual void OnSeekBackward(double seconds) = 0;
+    virtual void OnEnterPictureInPicture() = 0;
+    virtual void OnExitPictureInPicture() = 0;
 
     // Called to control audio ducking. Output volume should be set to
     // |player_volume| * |multiplier|. The range of |multiplier| is [0, 1],

@@ -66,22 +66,25 @@ class PromptActionTest : public testing::Test {
           void(BatchElementChecker*,
                base::OnceCallback<void(const ClientStatus&)>)>& check_elements,
       base::OnceCallback<void(const ClientStatus&)>& done_waiting_callback) {
-    RunFakeWaitForDom(check_elements, std::move(done_waiting_callback));
+    fake_wait_for_dom_done_ = std::move(done_waiting_callback);
+    RunFakeWaitForDom(check_elements);
   }
 
   void RunFakeWaitForDom(
       base::RepeatingCallback<
           void(BatchElementChecker*,
-               base::OnceCallback<void(const ClientStatus&)>)> check_elements,
-      base::OnceCallback<void(const ClientStatus&)> done_waiting_callback) {
+               base::OnceCallback<void(const ClientStatus&)>)> check_elements) {
+    if (!fake_wait_for_dom_done_)
+      return;
+
     checker_ = std::make_unique<BatchElementChecker>();
     has_check_elements_result_ = false;
     check_elements.Run(checker_.get(),
                        base::BindOnce(&PromptActionTest::OnCheckElementsDone,
                                       base::Unretained(this)));
-    checker_->AddAllDoneCallback(base::BindOnce(
-        &PromptActionTest::OnWaitForDomDone, base::Unretained(this),
-        check_elements, std::move(done_waiting_callback)));
+    checker_->AddAllDoneCallback(
+        base::BindOnce(&PromptActionTest::OnWaitForDomDone,
+                       base::Unretained(this), check_elements));
     checker_->Run(&mock_web_controller_);
   }
 
@@ -97,20 +100,21 @@ class PromptActionTest : public testing::Test {
   void OnWaitForDomDone(
       base::RepeatingCallback<
           void(BatchElementChecker*,
-               base::OnceCallback<void(const ClientStatus&)>)> check_elements,
-      base::OnceCallback<void(const ClientStatus&)> done_waiting_callback) {
+               base::OnceCallback<void(const ClientStatus&)>)> check_elements) {
     ASSERT_TRUE(
         has_check_elements_result_);  // OnCheckElementsDone() not called
 
+    if (!fake_wait_for_dom_done_)
+      return;
+
     if (check_elements_result_.ok()) {
-      std::move(done_waiting_callback).Run(check_elements_result_);
+      std::move(fake_wait_for_dom_done_).Run(check_elements_result_);
     } else {
       wait_for_dom_timer_ = std::make_unique<base::OneShotTimer>();
       wait_for_dom_timer_->Start(
           FROM_HERE, base::TimeDelta::FromSeconds(1),
           base::BindOnce(&PromptActionTest::RunFakeWaitForDom,
-                         base::Unretained(this), check_elements,
-                         std::move(done_waiting_callback)));
+                         base::Unretained(this), check_elements));
     }
   }
 
@@ -121,6 +125,7 @@ class PromptActionTest : public testing::Test {
   MockActionDelegate mock_action_delegate_;
   MockWebController mock_web_controller_;
   base::MockCallback<Action::ProcessActionCallback> callback_;
+  base::OnceCallback<void(const ClientStatus&)> fake_wait_for_dom_done_;
   ActionProto proto_;
   PromptProto* prompt_proto_;
   std::unique_ptr<std::vector<UserAction>> user_actions_;
@@ -405,6 +410,33 @@ TEST_F(PromptActionTest, ForceExpandSheetDisable) {
   EXPECT_CALL(mock_action_delegate_, Prompt(_, Eq(true)));
   PromptAction action(&mock_action_delegate_, proto_);
   action.ProcessAction(callback_.Get());
+}
+
+TEST_F(PromptActionTest, ForwardInterruptFailure) {
+  prompt_proto_->set_allow_interrupt(true);
+  auto* choice_proto = prompt_proto_->add_choices();
+  choice_proto->set_server_payload("auto-select");
+  choice_proto->mutable_auto_select_if_element_exists()->add_selectors(
+      "element");
+
+  PromptAction action(&mock_action_delegate_, proto_);
+  action.ProcessAction(callback_.Get());
+  EXPECT_THAT(user_actions_, Pointee(SizeIs(0)));
+
+  // First round of element checks: element doesn't exist.
+  task_env_.FastForwardBy(base::TimeDelta::FromSeconds(1));
+
+  // Second round of element checks: an interrupt ran and failed. No choice was
+  // selected.
+  EXPECT_CALL(
+      callback_,
+      Run(AllOf(
+          Pointee(Property(&ProcessedActionProto::status, INTERRUPT_FAILED)),
+          Pointee(
+              Property(&ProcessedActionProto::prompt_choice,
+                       Property(&PromptProto::Choice::server_payload, ""))))));
+  ASSERT_TRUE(fake_wait_for_dom_done_);
+  std::move(fake_wait_for_dom_done_).Run(ClientStatus(INTERRUPT_FAILED));
 }
 
 }  // namespace

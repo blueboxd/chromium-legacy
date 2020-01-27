@@ -70,7 +70,6 @@ def main():
   parser.add_argument('--strip',
                       help='The strip binary to run',
                       metavar='PATH')
-  parser.add_argument('--dwp', help='The dwp binary to run', metavar='PATH')
   parser.add_argument('--sofile',
                       required=True,
                       help='Shared object file produced by linking command',
@@ -103,10 +102,6 @@ def main():
   if link_only:
     args.command.remove('--link-only')
 
-  generate_dwp = '--generate-dwp' in args.command
-  if generate_dwp:
-    args.command.remove('--generate-dwp')
-
   # First, run the actual link.
   command = wrapper_utils.CommandToRun(args.command)
   result = wrapper_utils.RunLinkWithOptionalMapFile(command, env=fast_env,
@@ -135,15 +130,6 @@ def main():
       pass
     return 0
 
-  # If dwp is set, then package debug info for this SO.
-  dwp_proc = None
-  if generate_dwp:
-    if not args.dwp:
-      parser.error('--generate-dwp requireds --dwp')
-    dwp_proc = subprocess.Popen(
-        wrapper_utils.CommandToRun(
-            [args.dwp, '-e', args.sofile, '-o', args.output + '.dwp']))
-
   # Next, generate the contents of the TOC file.
   result, toc = CollectTOC(args)
   if result != 0:
@@ -157,11 +143,6 @@ def main():
   if args.strip:
     result = subprocess.call(wrapper_utils.CommandToRun(
         [args.strip, '-o', args.output, args.sofile]))
-
-  if dwp_proc:
-    dwp_result = dwp_proc.wait()
-    if dwp_result != 0:
-      return dwp_result
 
   return result
 

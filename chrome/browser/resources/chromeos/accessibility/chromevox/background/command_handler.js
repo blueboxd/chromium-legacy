@@ -1370,4 +1370,4 @@ CommandHandler.init = function() {
     }
   });
 };
-});  //  goog.scope
+});  // goog.scope

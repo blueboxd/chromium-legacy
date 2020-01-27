@@ -88,10 +88,10 @@ class InspectDOMHandler : public web::WebUIIOSMessageHandler,
   // TabModelListObserver
   void TabModelRegisteredWithBrowserState(
       TabModel* tab_model,
-      ios::ChromeBrowserState* browser_state) override;
+      ChromeBrowserState* browser_state) override;
   void TabModelUnregisteredFromBrowserState(
       TabModel* tab_model,
-      ios::ChromeBrowserState* browser_state) override;
+      ChromeBrowserState* browser_state) override;
 
   // WebStateListObserver
   void WebStateInsertedAt(WebStateList* web_state_list,
@@ -152,8 +152,8 @@ void InspectDOMHandler::SetLoggingEnabled(bool enabled) {
   logging_enabled_ = enabled;
 
   web::BrowserState* browser_state = web_ui()->GetWebState()->GetBrowserState();
-  ios::ChromeBrowserState* chrome_browser_state =
-      ios::ChromeBrowserState::FromBrowserState(browser_state);
+  ChromeBrowserState* chrome_browser_state =
+      ChromeBrowserState::FromBrowserState(browser_state);
   NSArray<TabModel*>* tab_models =
       TabModelList::GetTabModelsForChromeBrowserState(chrome_browser_state);
 
@@ -219,14 +219,14 @@ void InspectDOMHandler::SetDelegateForWebStatesInTabModel(
 // TabModelListObserver
 void InspectDOMHandler::TabModelRegisteredWithBrowserState(
     TabModel* tab_model,
-    ios::ChromeBrowserState* browser_state) {
+    ChromeBrowserState* browser_state) {
   tab_model.webStateList->AddObserver(this);
   SetDelegateForWebStatesInTabModel(tab_model, this);
 }
 
 void InspectDOMHandler::TabModelUnregisteredFromBrowserState(
     TabModel* tab_model,
-    ios::ChromeBrowserState* browser_state) {
+    ChromeBrowserState* browser_state) {
   tab_model.webStateList->RemoveObserver(this);
   SetDelegateForWebStatesInTabModel(tab_model, nullptr);
 }
@@ -260,7 +260,7 @@ InspectUI::InspectUI(web::WebUIIOS* web_ui) : web::WebUIIOSController(web_ui) {
 
   web_ui->AddMessageHandler(std::make_unique<InspectDOMHandler>());
 
-  web::WebUIIOSDataSource::Add(ios::ChromeBrowserState::FromWebUIIOS(web_ui),
+  web::WebUIIOSDataSource::Add(ChromeBrowserState::FromWebUIIOS(web_ui),
                                CreateInspectUIHTMLSource());
 }
 

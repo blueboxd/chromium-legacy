@@ -285,14 +285,13 @@ INSTANTIATE_TEST_SUITE_P(All,
 
 class GcpReauthCredentialGlsRunnerTest : public GlsRunnerTestBase {};
 
-TEST_F(GcpReauthCredentialGlsRunnerTest, NoGaiaIdAvailable) {
+TEST_F(GcpReauthCredentialGlsRunnerTest, NoGaiaIdOrEmailAvailable) {
   USES_CONVERSION;
   CredentialProviderSigninDialogTestDataStorage test_data_storage;
 
   CComBSTR username = L"foo_bar";
   CComBSTR full_name = A2COLE(test_data_storage.GetSuccessFullName().c_str());
   CComBSTR password = A2COLE(test_data_storage.GetSuccessPassword().c_str());
-  CComBSTR email = A2COLE(test_data_storage.GetSuccessEmail().c_str());
 
   // Create a fake user to reauth.
   CComBSTR sid;
@@ -300,7 +299,7 @@ TEST_F(GcpReauthCredentialGlsRunnerTest, NoGaiaIdAvailable) {
             fake_os_user_manager()->CreateTestOSUser(
                 OLE2CW(username), OLE2CW(password), OLE2CW(full_name),
                 L"comment", base::UTF8ToUTF16(test_data_storage.GetSuccessId()),
-                OLE2CW(email), &sid));
+                base::string16(), &sid));
 
   // Create provider and start logon.
   Microsoft::WRL::ComPtr<ICredentialProviderCredential> cred;
@@ -309,7 +308,7 @@ TEST_F(GcpReauthCredentialGlsRunnerTest, NoGaiaIdAvailable) {
   SetDefaultTokenHandleResponse(kDefaultInvalidTokenHandleResponse);
   ASSERT_EQ(S_OK, InitializeProviderAndGetCredential(1, &cred));
 
-  // Change the registry entry for gaia id to empty string.
+  // Change the registry entry for gaia id and email to empty string.
   ASSERT_EQ(S_OK, SetUserProperty(OLE2CW(sid), kUserId, L""));
 
   // The GetSerialization call that loads the GLS should fail.
@@ -488,6 +487,43 @@ TEST_F(GcpReauthCredentialGlsRunnerTest, NormalReauthWithoutEmail) {
 
   Microsoft::WRL::ComPtr<ITestCredential> test;
   ASSERT_EQ(S_OK, cred.As(&test));
+
+  ASSERT_EQ(S_OK, StartLogonProcessAndWait());
+
+  // Email associated should be the default one
+  EXPECT_EQ(test->GetFinalEmail(), kDefaultEmail);
+
+  // Teardown of the test should confirm that the logon was successful.
+}
+
+TEST_F(GcpReauthCredentialGlsRunnerTest, NormalReauthWithoutGaiaId) {
+  USES_CONVERSION;
+  CredentialProviderSigninDialogTestDataStorage test_data_storage;
+
+  CComBSTR username = L"foo_bar";
+  CComBSTR full_name = A2COLE(test_data_storage.GetSuccessFullName().c_str());
+  CComBSTR password = A2COLE(test_data_storage.GetSuccessPassword().c_str());
+
+  // Create a fake user to reauth with no gaia-id specified.
+  CComBSTR sid;
+  ASSERT_EQ(S_OK, fake_os_user_manager()->CreateTestOSUser(
+                      OLE2CW(username), OLE2CW(password), OLE2CW(full_name),
+                      L"comment", base::string16(),
+                      base::UTF8ToUTF16(kDefaultEmail), &sid));
+
+  // Create provider and start logon.
+  Microsoft::WRL::ComPtr<ICredentialProviderCredential> cred;
+
+  // Create with invalid token handle response so that a reauth occurs.
+  SetDefaultTokenHandleResponse(kDefaultInvalidTokenHandleResponse);
+  ASSERT_EQ(S_OK, InitializeProviderAndGetCredential(1, &cred));
+
+  Microsoft::WRL::ComPtr<ITestCredential> test;
+  ASSERT_EQ(S_OK, cred.As(&test));
+
+  // Don't send a forced e-mail. It will be sent from the user that was
+  // updated during the last sign in.
+  ASSERT_EQ(S_OK, test->SetGlsEmailAddress(std::string()));
 
   ASSERT_EQ(S_OK, StartLogonProcessAndWait());
 

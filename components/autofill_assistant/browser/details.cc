@@ -112,15 +112,15 @@ bool Details::UpdateFromProto(const ShowDetailsProto& proto, Details* details) {
 
 // static
 bool Details::UpdateFromContactDetails(const ShowDetailsProto& proto,
-                                       ClientMemory* client_memory,
+                                       const UserData* user_data,
                                        Details* details) {
   std::string contact_details = proto.contact_details();
-  if (!client_memory->has_selected_address(contact_details)) {
+  if (!user_data->has_selected_address(contact_details)) {
     return false;
   }
 
   ShowDetailsProto updated_proto = proto;
-  auto* profile = client_memory->selected_address(contact_details);
+  auto* profile = user_data->selected_address(contact_details);
   auto* details_proto = updated_proto.mutable_details();
   details_proto->set_title(
       l10n_util::GetStringUTF8(IDS_PAYMENTS_CONTACT_DETAILS_LABEL));
@@ -134,15 +134,15 @@ bool Details::UpdateFromContactDetails(const ShowDetailsProto& proto,
 
 // static
 bool Details::UpdateFromShippingAddress(const ShowDetailsProto& proto,
-                                        ClientMemory* client_memory,
+                                        const UserData* user_data,
                                         Details* details) {
   std::string shipping_address = proto.shipping_address();
-  if (!client_memory->has_selected_address(shipping_address)) {
+  if (!user_data->has_selected_address(shipping_address)) {
     return false;
   }
 
   ShowDetailsProto updated_proto = proto;
-  auto* profile = client_memory->selected_address(shipping_address);
+  auto* profile = user_data->selected_address(shipping_address);
   auto* details_proto = updated_proto.mutable_details();
   autofill::CountryNames* country_names = autofill::CountryNames::GetInstance();
   details_proto->set_title(
@@ -165,14 +165,14 @@ bool Details::UpdateFromShippingAddress(const ShowDetailsProto& proto,
 }
 
 bool Details::UpdateFromSelectedCreditCard(const ShowDetailsProto& proto,
-                                           ClientMemory* client_memory,
+                                           const UserData* user_data,
                                            Details* details) {
-  if (!client_memory->has_selected_card() || !proto.credit_card()) {
+  if (user_data->selected_card_.get() == nullptr || !proto.credit_card()) {
     return false;
   }
 
   ShowDetailsProto updated_proto = proto;
-  auto* card = client_memory->selected_card();
+  auto* card = user_data->selected_card_.get();
   auto* details_proto = updated_proto.mutable_details();
   details_proto->set_title(
       l10n_util::GetStringUTF8(IDS_PAYMENTS_METHOD_OF_PAYMENT_LABEL));

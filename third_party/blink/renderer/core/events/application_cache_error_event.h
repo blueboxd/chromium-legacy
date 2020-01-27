@@ -8,10 +8,11 @@
 #include "third_party/blink/public/mojom/appcache/appcache.mojom-blink-forward.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/event_interface_names.h"
-#include "third_party/blink/renderer/core/events/application_cache_error_event_init.h"
 #include "third_party/blink/renderer/core/loader/appcache/application_cache_host.h"
 
 namespace blink {
+
+class ApplicationCacheErrorEventInit;
 
 class ApplicationCacheErrorEvent final : public Event {
   DEFINE_WRAPPERTYPEINFO();

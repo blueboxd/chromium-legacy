@@ -236,7 +236,7 @@ public class FirstRunActivity extends FirstRunActivityBase implements FirstRunPa
             }
         };
         mFirstRunFlowSequencer.start();
-
+        FirstRunStatus.setFirstRunTriggered(true);
         recordFreProgressHistogram(FRE_PROGRESS_STARTED);
         onInitialLayoutInflationComplete();
     }

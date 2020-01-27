@@ -109,6 +109,8 @@ class WaylandConnection : public PlatformEventSource,
     return &wayland_window_manager_;
   }
 
+  WaylandDataDevice* wayland_data_device() const { return data_device_.get(); }
+
   // Starts drag with |data| to be delivered, |operation| supported by the
   // source side initiated the dragging.
   void StartDrag(const ui::OSExchangeData& data, int operation);

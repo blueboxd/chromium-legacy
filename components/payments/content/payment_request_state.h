@@ -176,6 +176,9 @@ class PaymentRequestState : public PaymentAppFactory::Delegate,
   // Record the use of the data models that were used in the Payment Request.
   void RecordUseStats();
 
+  // Sets selected app as the only available app for retry.
+  void SetAvailablePaymentAppForRetry();
+
   // Gets the Autofill Profile representing the shipping address or contact
   // information currently selected for this PaymentRequest flow. Can return
   // null.
@@ -249,6 +252,8 @@ class PaymentRequestState : public PaymentAppFactory::Delegate,
   bool are_requested_methods_supported() const {
     return are_requested_methods_supported_;
   }
+
+  bool is_retry_called() const { return is_retry_called_; }
 
   const std::string& GetApplicationLocale();
   autofill::PersonalDataManager* GetPersonalDataManager();
@@ -352,6 +357,9 @@ class PaymentRequestState : public PaymentAppFactory::Delegate,
 
   // Whether the data is currently being validated by the merchant.
   bool is_waiting_for_merchant_validation_ = false;
+
+  // Whether retry() has been called by the merchant.
+  bool is_retry_called_ = false;
 
   const std::string app_locale_;
 

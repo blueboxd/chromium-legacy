@@ -254,6 +254,15 @@ class CORE_EXPORT Scrollbar : public GarbageCollected<Scrollbar>,
   bool track_needs_repaint_;
   bool thumb_needs_repaint_;
   bool injected_gesture_scroll_begin_;
+
+  // This is set based on the event modifiers. In scenarios like scrolling or
+  // layout, the element that the cursor is over can change without the cursor
+  // itself moving. In these cases, a "fake" mouse move may be dispatched (see
+  // MouseEventManager::RecomputeMouseHoverState) in order to apply hover etc.
+  // Such mouse events do not have the modifier set and hence, maintaining this
+  // additional state is necessary.
+  bool scrollbar_manipulation_in_progress_on_cc_thread_;
+
   IntRect visual_rect_;
   IntRect frame_rect_;
   Member<Element> style_source_;

@@ -5835,7 +5835,7 @@ TEST_F(AXPlatformNodeWinTest, TestISelectionItemProviderSimple) {
   EXPECT_TRUE(selected);
 }
 
-TEST_F(AXPlatformNodeWinTest, TestISelectionItemProviderRadioButtonIsSelected) {
+TEST_F(AXPlatformNodeWinTest, TestISelectionItemProviderRadioButton) {
   AXNodeData root;
   root.id = 1;
   root.role = ax::mojom::Role::kRadioGroup;
@@ -5876,14 +5876,14 @@ TEST_F(AXPlatformNodeWinTest, TestISelectionItemProviderRadioButtonIsSelected) {
 
   BOOL selected;
 
-  // CheckedState::kNone
+  // Option 1, CheckedState::kNone, ISelectionItemProvider is not supported.
   ComPtr<ISelectionItemProvider> option1_provider;
   EXPECT_HRESULT_SUCCEEDED(
       GetIRawElementProviderSimpleFromChildIndex(0)->GetPatternProvider(
           UIA_SelectionItemPatternId, &option1_provider));
   ASSERT_EQ(nullptr, option1_provider.Get());
 
-  // CheckedState::kFalse
+  // Option 2, CheckedState::kFalse.
   ComPtr<ISelectionItemProvider> option2_provider;
   EXPECT_HRESULT_SUCCEEDED(
       GetIRawElementProviderSimpleFromChildIndex(1)->GetPatternProvider(
@@ -5893,7 +5893,11 @@ TEST_F(AXPlatformNodeWinTest, TestISelectionItemProviderRadioButtonIsSelected) {
   EXPECT_HRESULT_SUCCEEDED(option2_provider->get_IsSelected(&selected));
   EXPECT_FALSE(selected);
 
-  // CheckedState::kTrue
+  EXPECT_HRESULT_SUCCEEDED(option2_provider->Select());
+  EXPECT_HRESULT_SUCCEEDED(option2_provider->get_IsSelected(&selected));
+  EXPECT_TRUE(selected);
+
+  // Option 3, CheckedState::kTrue.
   ComPtr<ISelectionItemProvider> option3_provider;
   EXPECT_HRESULT_SUCCEEDED(
       GetIRawElementProviderSimpleFromChildIndex(2)->GetPatternProvider(
@@ -5903,7 +5907,103 @@ TEST_F(AXPlatformNodeWinTest, TestISelectionItemProviderRadioButtonIsSelected) {
   EXPECT_HRESULT_SUCCEEDED(option3_provider->get_IsSelected(&selected));
   EXPECT_TRUE(selected);
 
+  EXPECT_HRESULT_SUCCEEDED(option3_provider->RemoveFromSelection());
+  EXPECT_HRESULT_SUCCEEDED(option3_provider->get_IsSelected(&selected));
+  EXPECT_FALSE(selected);
+
+  EXPECT_HRESULT_SUCCEEDED(option3_provider->AddToSelection());
+  EXPECT_HRESULT_SUCCEEDED(option3_provider->get_IsSelected(&selected));
+  EXPECT_TRUE(selected);
+
+  // Option 4, CheckedState::kMixed, ISelectionItemProvider is not supported.
+  ComPtr<ISelectionItemProvider> option4_provider;
+  EXPECT_HRESULT_SUCCEEDED(
+      GetIRawElementProviderSimpleFromChildIndex(3)->GetPatternProvider(
+          UIA_SelectionItemPatternId, &option4_provider));
+  ASSERT_EQ(nullptr, option4_provider.Get());
+}
+
+TEST_F(AXPlatformNodeWinTest, TestISelectionItemProviderMenuItemRadio) {
+  AXNodeData root;
+  root.id = 1;
+  root.role = ax::mojom::Role::kMenu;
+
+  // CheckedState::kNone
+  AXNodeData option1;
+  option1.id = 2;
+  option1.AddIntAttribute(ax::mojom::IntAttribute::kCheckedState,
+                          static_cast<int>(ax::mojom::CheckedState::kNone));
+  option1.role = ax::mojom::Role::kMenuItemRadio;
+  root.child_ids.push_back(option1.id);
+
+  // CheckedState::kFalse
+  AXNodeData option2;
+  option2.id = 3;
+  option2.AddIntAttribute(ax::mojom::IntAttribute::kCheckedState,
+                          static_cast<int>(ax::mojom::CheckedState::kFalse));
+  option2.role = ax::mojom::Role::kMenuItemRadio;
+  root.child_ids.push_back(option2.id);
+
+  // CheckedState::kTrue
+  AXNodeData option3;
+  option3.id = 4;
+  option3.AddIntAttribute(ax::mojom::IntAttribute::kCheckedState,
+                          static_cast<int>(ax::mojom::CheckedState::kTrue));
+  option3.role = ax::mojom::Role::kMenuItemRadio;
+  root.child_ids.push_back(option3.id);
+
   // CheckedState::kMixed
+  AXNodeData option4;
+  option4.id = 5;
+  option4.AddIntAttribute(ax::mojom::IntAttribute::kCheckedState,
+                          static_cast<int>(ax::mojom::CheckedState::kMixed));
+  option4.role = ax::mojom::Role::kMenuItemRadio;
+  root.child_ids.push_back(option4.id);
+
+  Init(root, option1, option2, option3, option4);
+
+  BOOL selected;
+
+  // Option 1, CheckedState::kNone, ISelectionItemProvider is not supported.
+  ComPtr<ISelectionItemProvider> option1_provider;
+  EXPECT_HRESULT_SUCCEEDED(
+      GetIRawElementProviderSimpleFromChildIndex(0)->GetPatternProvider(
+          UIA_SelectionItemPatternId, &option1_provider));
+  ASSERT_EQ(nullptr, option1_provider.Get());
+
+  // Option 2, CheckedState::kFalse.
+  ComPtr<ISelectionItemProvider> option2_provider;
+  EXPECT_HRESULT_SUCCEEDED(
+      GetIRawElementProviderSimpleFromChildIndex(1)->GetPatternProvider(
+          UIA_SelectionItemPatternId, &option2_provider));
+  ASSERT_NE(nullptr, option2_provider.Get());
+
+  EXPECT_HRESULT_SUCCEEDED(option2_provider->get_IsSelected(&selected));
+  EXPECT_FALSE(selected);
+
+  EXPECT_HRESULT_SUCCEEDED(option2_provider->Select());
+  EXPECT_HRESULT_SUCCEEDED(option2_provider->get_IsSelected(&selected));
+  EXPECT_TRUE(selected);
+
+  // Option 3, CheckedState::kTrue.
+  ComPtr<ISelectionItemProvider> option3_provider;
+  EXPECT_HRESULT_SUCCEEDED(
+      GetIRawElementProviderSimpleFromChildIndex(2)->GetPatternProvider(
+          UIA_SelectionItemPatternId, &option3_provider));
+  ASSERT_NE(nullptr, option3_provider.Get());
+
+  EXPECT_HRESULT_SUCCEEDED(option3_provider->get_IsSelected(&selected));
+  EXPECT_TRUE(selected);
+
+  EXPECT_HRESULT_SUCCEEDED(option3_provider->RemoveFromSelection());
+  EXPECT_HRESULT_SUCCEEDED(option3_provider->get_IsSelected(&selected));
+  EXPECT_FALSE(selected);
+
+  EXPECT_HRESULT_SUCCEEDED(option3_provider->AddToSelection());
+  EXPECT_HRESULT_SUCCEEDED(option3_provider->get_IsSelected(&selected));
+  EXPECT_TRUE(selected);
+
+  // Option 4, CheckedState::kMixed, ISelectionItemProvider is not supported.
   ComPtr<ISelectionItemProvider> option4_provider;
   EXPECT_HRESULT_SUCCEEDED(
       GetIRawElementProviderSimpleFromChildIndex(3)->GetPatternProvider(

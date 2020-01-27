@@ -609,7 +609,6 @@ cr.define('settings_people_page_sync_page', function() {
 
     if (!cr.isChromeOS) {
       test('SyncSetupCancel', function() {
-        syncPage.diceEnabled = true;
         syncPage.syncStatus = {
           signinAllowed: true,
           syncSystemEnabled: true,
@@ -633,7 +632,6 @@ cr.define('settings_people_page_sync_page', function() {
       });
 
       test('SyncSetupConfirm', function() {
-        syncPage.diceEnabled = true;
         syncPage.syncStatus = {
           signinAllowed: true,
           syncSystemEnabled: true,
@@ -731,7 +729,6 @@ cr.define('settings_people_page_sync_page', function() {
 
       test('ShowAccountRow', function() {
         assertFalse(!!syncPage.$$('settings-sync-account-control'));
-        syncPage.diceEnabled = true;
         Polymer.dom.flush();
         assertFalse(!!syncPage.$$('settings-sync-account-control'));
         syncPage.syncStatus = {signinAllowed: false, syncSystemEnabled: false};

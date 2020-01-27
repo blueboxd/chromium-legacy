@@ -71,10 +71,41 @@ var EarconDescription = {
 };
 
 
-/**
- * @constructor
- */
-AbstractEarcons = function() {};
+AbstractEarcons = class {
+  constructor() {}
+
+  /**
+   * Plays the specified earcon sound.
+   * @param {Earcon} earcon An earcon identifier.
+   * @param {Object=} opt_location A location associated with the earcon such as
+   *     a
+   * control's bounding rectangle.
+   */
+  playEarcon(earcon, opt_location) {}
+
+  /**
+   * Cancels the specified earcon sound.
+   * @param {Earcon} earcon An earcon identifier.
+   */
+  cancelEarcon(earcon) {}
+
+  /**
+   * Whether or not earcons are available.
+   * @return {boolean} True if earcons are available.
+   */
+  earconsAvailable() {
+    return true;
+  }
+
+  /**
+   * Toggles earcons on or off.
+   * @return {boolean} True if earcons are now enabled; false otherwise.
+   */
+  toggle() {
+    AbstractEarcons.enabled = !AbstractEarcons.enabled;
+    return AbstractEarcons.enabled;
+  }
+};
 
 
 /**
@@ -83,38 +114,3 @@ AbstractEarcons = function() {};
  * @type {boolean}
  */
 AbstractEarcons.enabled = true;
-
-
-/**
- * Plays the specified earcon sound.
- * @param {Earcon} earcon An earcon identifier.
- * @param {Object=} opt_location A location associated with the earcon such as a
- * control's bounding rectangle.
- */
-AbstractEarcons.prototype.playEarcon = function(earcon, opt_location) {};
-
-
-/**
- * Cancels the specified earcon sound.
- * @param {Earcon} earcon An earcon identifier.
- */
-AbstractEarcons.prototype.cancelEarcon = function(earcon) {};
-
-
-/**
- * Whether or not earcons are available.
- * @return {boolean} True if earcons are available.
- */
-AbstractEarcons.prototype.earconsAvailable = function() {
-  return true;
-};
-
-
-/**
- * Toggles earcons on or off.
- * @return {boolean} True if earcons are now enabled; false otherwise.
- */
-AbstractEarcons.prototype.toggle = function() {
-  AbstractEarcons.enabled = !AbstractEarcons.enabled;
-  return AbstractEarcons.enabled;
-};

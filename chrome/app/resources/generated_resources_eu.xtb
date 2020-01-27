@@ -24,6 +24,7 @@
 <translation id="1029317248976101138">Zooma</translation>
 <translation id="1030706264415084469"><ph name="URL" /> webguneak datu asko gorde nahi ditu gailuan modu iraunkorrean</translation>
 <translation id="1031362278801463162">Aurrebista kargatzen</translation>
+<translation id="1032605640136438169">Irakurri baldintza berriak</translation>
 <translation id="103279545524624934">Egin tokia diskoan Android-erako aplikazioak abiarazteko.</translation>
 <translation id="1033780634303702874">Atzitu serieko gailuak</translation>
 <translation id="1034942643314881546">ADB gaitzen aplikazioen ilustrazioak egiteko</translation>
@@ -223,7 +224,6 @@
 <translation id="1306606229401759371">Aldatu ezarpenak</translation>
 <translation id="1307165550267142340">Sortu da PIN kodea</translation>
 <translation id="1307559529304613120">Sistemak ezin izan du biltegiratu gailu honi dagokion APIaren epe luzerako sarbide-tokena.</translation>
-<translation id="1309199320876169714">Plugin VM kentzen…</translation>
 <translation id="1313405956111467313">Proxy-konfigurazio automatikoa</translation>
 <translation id="131364520783682672">Maiuskula-blokeoa</translation>
 <translation id="1313705515580255288">Laster-markak, historia eta bestelako ezarpenak Google-ko kontuarekin sinkronizatuko dira.</translation>
@@ -1367,7 +1367,6 @@ Kontu honen ezarpenak kudeatzeko, instalatu Family Link aplikazioa zure gailuan.
 <translation id="2871813825302180988">Kontua gailuan erabiltzen ari da dagoeneko.</translation>
 <translation id="287286579981869940">Gehitu <ph name="PROVIDER_NAME" /></translation>
 <translation id="2872961005593481000">Itzali</translation>
-<translation id="2874478552394649323">Kendu Plugin VM</translation>
 <translation id="2874939134665556319">Aurreko pista</translation>
 <translation id="2875698561019555027">(Chrome errore-orriak)</translation>
 <translation id="2876336351874743617">2. hatz-marka</translation>
@@ -1384,7 +1383,6 @@ Kontu honen ezarpenak kudeatzeko, instalatu Family Link aplikazioa zure gailuan.
 <translation id="2889064240420137087">Ireki esteka honekin…</translation>
 <translation id="2889925978073739256">Jarraitu blokeatzen proben eremuan sartu gabeko pluginak</translation>
 <translation id="2893168226686371498">Arakatzaile lehenetsia</translation>
-<translation id="2893208266590504003">Ezin izan da kendu Plugin VM</translation>
 <translation id="2894757982205307093">Gehitu fitxa bat taldean</translation>
 <translation id="289644616180464099">Blokeatuta dago SIM txartela</translation>
 <translation id="2896909745808647285"><ph name="FILE_NAME" /> enkriptatuta dago, eta hura irekitzeko aukera blokeatuta.</translation>
@@ -2835,6 +2833,7 @@ Kontu honen ezarpenak kudeatzeko, instalatu Family Link aplikazioa zure gailuan.
 <translation id="4998430619171209993">Aktibatuta</translation>
 <translation id="4998873842614926205">Berretsi aldaketak</translation>
 <translation id="5000922062037820727">Blokeatuta (gomendatua)</translation>
+<translation id="5007392906805964215">Berrikusi</translation>
 <translation id="5008936837313706385">Jardueraren izena</translation>
 <translation id="5010043101506446253">Autoritate ziurtagiri-emailea</translation>
 <translation id="5015344424288992913">Proxya ebazten…</translation>
@@ -3040,6 +3039,7 @@ Kontu honen ezarpenak kudeatzeko, instalatu Family Link aplikazioa zure gailuan.
 <translation id="5311304534597152726">Kontu honetan hasiko duzu saioa:</translation>
 <translation id="53116743016968120"><ph name="ERROR_MESSAGE" /> Saiatu berriro.</translation>
 <translation id="5313628438272378649">Eduki hori kargatuz gero, erakundearen segurtasun-gidalerroak urratuko lirateke; beraz, ezin da kargatu.</translation>
+<translation id="5314381603623123224">Martxoaren 31n aldatuko dira Chrome-ren Zerbitzu-baldintzak</translation>
 <translation id="5315738755890845852">Giltza gehigarria: <ph name="ERROR_LINE" /></translation>
 <translation id="5315873049536339193">Identitatea</translation>
 <translation id="5317780077021120954">Gorde</translation>
@@ -3330,7 +3330,7 @@ Kontu honen ezarpenak kudeatzeko, instalatu Family Link aplikazioa zure gailuan.
 <translation id="5715711091495208045">Pluginaren bitartekaria: <ph name="PLUGIN_NAME" /></translation>
 <translation id="5719603411793408026">Bilatzaile lehenetsiak</translation>
 <translation id="5720705177508910913">Uneko erabiltzailea</translation>
-<translation id="572155275267014074">Android ezarpenak</translation>
+<translation id="572155275267014074">Android-en ezarpenak</translation>
 <translation id="5722086096420375088">Berdea eta zuria</translation>
 <translation id="5722930212736070253">Hutsegite bat izan da. Errore bat gertatu da Zip Archiver aplikazioan.</translation>
 <translation id="572328651809341494">Azken fitxak</translation>
@@ -3572,7 +3572,7 @@ Kontu honen ezarpenak kudeatzeko, instalatu Family Link aplikazioa zure gailuan.
 <translation id="6057381398996433816">Webgune honi blokeatu egin zaio mugimenduaren eta argiaren sentsoreak erabiltzeko aukera.</translation>
 <translation id="6058567592298841668">Plugin bidezko makina birtuala: <ph name="PLUGIN_VM_NAME" /></translation>
 <translation id="6059652578941944813">Ziurtagirien hierarkia</translation>
-<translation id="6059925163896151826">USB gailuak</translation>
+<translation id="6059925163896151826">USB bidezko ailuak</translation>
 <translation id="6061882183774845124">Bidali esteka gailuetara</translation>
 <translation id="6064217302520318294">Pantailaren blokeoa</translation>
 <translation id="6065289257230303064">Ziurtagiria jasoko duen entitatearen direktorio-atributuak</translation>
@@ -5774,7 +5774,6 @@ Horrek ez die eragiten beste gailu batzuetako aplikazioei edo edukiei.</translat
 <translation id="9169496697824289689">Ikusi laster-teklak</translation>
 <translation id="916964310188958970">Zergatik jaso dut iradokizun hau?</translation>
 <translation id="9169931577761441333">Gehitu <ph name="APP_NAME" /> hasierako pantailan</translation>
-<translation id="9170305483456271385">Kendu da Plugin VM</translation>
 <translation id="9170848237812810038">&amp;Desegin</translation>
 <translation id="9170884462774788842">Ordenagailuko beste programa batek Chrome-ren funtzionamenduari eragin diezaiokeen gai bat gehitu du.</translation>
 <translation id="9173995187295789444">Bluetooth gailuak bilatzen…</translation>

@@ -22,10 +22,10 @@ import androidx.annotation.DrawableRes;
 import androidx.annotation.NonNull;
 
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ui.widget.dragreorder.DragReorderableListAdapter;
-import org.chromium.chrome.browser.ui.widget.dragreorder.DragStateDelegate;
-import org.chromium.chrome.browser.ui.widget.listmenu.ListMenuButton;
-import org.chromium.chrome.browser.ui.widget.listmenu.ListMenuButtonDelegate;
+import org.chromium.components.browser_ui.widget.dragreorder.DragReorderableListAdapter;
+import org.chromium.components.browser_ui.widget.dragreorder.DragStateDelegate;
+import org.chromium.components.browser_ui.widget.listmenu.ListMenuButton;
+import org.chromium.components.browser_ui.widget.listmenu.ListMenuButtonDelegate;
 
 import java.util.ArrayList;
 import java.util.List;

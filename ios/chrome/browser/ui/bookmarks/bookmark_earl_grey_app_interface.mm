@@ -30,7 +30,7 @@
 #pragma mark - Public Interface
 
 + (void)clearBookmarksPositionCache {
-  ios::ChromeBrowserState* browser_state =
+  ChromeBrowserState* browser_state =
       chrome_test_util::GetOriginalBrowserState();
   [BookmarkPathCache
       clearBookmarkTopMostRowCacheWithPrefService:browser_state->GetPrefs()];
@@ -283,7 +283,7 @@
 }
 
 + (NSError*)verifyPromoAlreadySeen:(BOOL)seen {
-  ios::ChromeBrowserState* browserState =
+  ChromeBrowserState* browserState =
       chrome_test_util::GetOriginalBrowserState();
   PrefService* prefs = browserState->GetPrefs();
   if (prefs->GetBoolean(prefs::kIosBookmarkPromoAlreadySeen) == seen) {

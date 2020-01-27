@@ -249,7 +249,12 @@ void WaylandSurface::OnDragEnter(const gfx::PointF& point,
   WmDropHandler* drop_handler = GetWmDropHandler(*this);
   if (!drop_handler)
     return;
-  drop_handler->OnDragEnter(point, std::move(data), operation);
+
+  // Wayland sends locations in DIP so they need to be translated to
+  // physical pixels.
+  drop_handler->OnDragEnter(
+      gfx::ScalePoint(point, buffer_scale(), buffer_scale()), std::move(data),
+      operation);
 }
 
 int WaylandSurface::OnDragMotion(const gfx::PointF& point,
@@ -259,7 +264,10 @@ int WaylandSurface::OnDragMotion(const gfx::PointF& point,
   if (!drop_handler)
     return 0;
 
-  return drop_handler->OnDragMotion(point, operation);
+  // Wayland sends locations in DIP so they need to be translated to
+  // physical pixels.
+  return drop_handler->OnDragMotion(
+      gfx::ScalePoint(point, buffer_scale(), buffer_scale()), operation);
 }
 
 void WaylandSurface::OnDragDrop(std::unique_ptr<OSExchangeData> data) {

@@ -72,11 +72,6 @@ class DOMTypedArray final : public DOMArrayBufferView {
   ValueType* Data() const { return View()->Data(); }
   ValueType* DataMaybeShared() const { return View()->DataMaybeShared(); }
   size_t lengthAsSizeT() const { return View()->length(); }
-  // This function is deprecated and should not be used. Use {lengthAsSizeT}
-  // instead.
-  unsigned deprecatedLengthAsUnsigned() const {
-    return base::checked_cast<unsigned>(View()->length());
-  }
   // Invoked by the indexed getter. Does not perform range checks; caller
   // is responsible for doing so and returning undefined as necessary.
   ValueType Item(size_t index) const { return View()->Item(index); }

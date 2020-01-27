@@ -223,7 +223,6 @@
 <translation id="1306606229401759371">ប្ដូរ​ការកំណត់</translation>
 <translation id="1307165550267142340">បាន​បង្កើតកូដ PIN ហើយ</translation>
 <translation id="1307559529304613120">អូយ! ប្រព័ន្ធបានបរាជ័យក្នុងផ្ទុកសញ្ញាដំណាងការចូលប្រើ API រយៈពេលវែងសម្រាប់ឧបករណ៍នេះ។</translation>
-<translation id="1309199320876169714">កំពុងលុប Plugin VM...</translation>
 <translation id="1313405956111467313">ការតំឡើងប្រូកស៊ីដោយស្វ័យប្រវត្តិ</translation>
 <translation id="131364520783682672">Caps Lock</translation>
 <translation id="1313705515580255288">ចំណាំ ប្រវត្តិ និងការកំណត់ផ្សេងទៀតរបស់អ្នកនឹងត្រូវបានធ្វើសមកម្មទៅគណនី Google របស់អ្នក។</translation>
@@ -1367,7 +1366,6 @@
 <translation id="2871813825302180988">គណនីនេះរួចរាល់ក្នុងការប្រើនៅលើឧបករណ៍នេះហើយ។</translation>
 <translation id="287286579981869940">បន្ថែម <ph name="PROVIDER_NAME" />...</translation>
 <translation id="2872961005593481000">បិទ</translation>
-<translation id="2874478552394649323">លុប Plugin VM</translation>
 <translation id="2874939134665556319">បទ​មុន</translation>
 <translation id="2875698561019555027">(ទំព័រកំហុសរបស់ Chrome)</translation>
 <translation id="2876336351874743617">ម្រាមដៃទី 2</translation>
@@ -1384,7 +1382,6 @@
 <translation id="2889064240420137087">បើកតំណជាមួយ...</translation>
 <translation id="2889925978073739256">បន្តរារាំងកម្មវិធីជំនួយដែលមិនបានសេនបក់</translation>
 <translation id="2893168226686371498">កម្មវិធីរុករកលំនាំដើម</translation>
-<translation id="2893208266590504003">មិនអាច​លុប Plugin VM បានទេ</translation>
 <translation id="2894757982205307093">ផ្ទាំងថ្មី​នៅក្នុងក្រុម</translation>
 <translation id="289644616180464099">ស៊ីមកាតជាប់សោ</translation>
 <translation id="2896909745808647285">បាន​អ៊ីនគ្រីប និងបានទប់ស្កាត់ <ph name="FILE_NAME" /> ​មិនឱ្យបើក។</translation>
@@ -2835,6 +2832,7 @@
 <translation id="4998430619171209993">បើក</translation>
 <translation id="4998873842614926205">អះអាងការប្តូរ</translation>
 <translation id="5000922062037820727">បានរារាំង (បានណែនាំ)</translation>
+<translation id="5007392906805964215">ពិនិត្យមើល</translation>
 <translation id="5008936837313706385">ឈ្មោះសកម្មភាព</translation>
 <translation id="5010043101506446253">អាជ្ញាធរវិញ្ញាបនប័ត្រ</translation>
 <translation id="5015344424288992913">កំពុងដោះស្រាយប្រូកស៊ី...</translation>
@@ -5775,7 +5773,6 @@
 <translation id="9169496697824289689">មើលផ្លូវកាត់ក្តារចុច</translation>
 <translation id="916964310188958970">ហេតុអ្វី​ឃើញ​ការណែនាំ​នេះ?</translation>
 <translation id="9169931577761441333">បញ្ចូល <ph name="APP_NAME" /> ទៅ​អេក្រង់​ដើម</translation>
-<translation id="9170305483456271385">Plugin VM ត្រូវបាន​លុប​ចេញហើយ</translation>
 <translation id="9170848237812810038">បកក្រោយ</translation>
 <translation id="9170884462774788842">កម្មវិធីដ៏ទៃទៀតនៅលើកុំព្យូទ័ររបស់អ្នកបានបន្ថែមធីម ដែលអាចប្តូររបៀបដំណើរការរបស់ Chrome។</translation>
 <translation id="9173995187295789444">កំពុងស្កេនរកឧបករណ៍ប៊្លូធូស...</translation>

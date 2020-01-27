@@ -10,6 +10,8 @@ import android.content.ClipboardManager;
 import android.content.Context;
 import android.support.v7.content.res.AppCompatResources;
 
+import androidx.annotation.VisibleForTesting;
+
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
@@ -43,11 +45,11 @@ public class ShareSheetCoordinator {
      * @param tabCreator The TabCreator for the current selected {@link TabModel}.
      */
     public ShareSheetCoordinator(BottomSheetController controller, ActivityTabProvider provider,
-            TabCreatorManager.TabCreator tabCreator) {
+            TabCreatorManager.TabCreator tabCreator, ShareSheetPropertyModelBuilder modelBuilder) {
         mBottomSheetController = controller;
         mActivityTabProvider = provider;
         mTabCreator = tabCreator;
-        mPropertyModelBuilder = new ShareSheetPropertyModelBuilder(mBottomSheetController);
+        mPropertyModelBuilder = modelBuilder;
     }
 
     protected void showShareSheet(ShareParams params) {
@@ -67,7 +69,8 @@ public class ShareSheetCoordinator {
         mBottomSheetController.requestShowContent(bottomSheet, true);
     }
 
-    private ArrayList<PropertyModel> createTopRowPropertyModels(
+    @VisibleForTesting
+    ArrayList<PropertyModel> createTopRowPropertyModels(
             ShareSheetBottomSheetContent bottomSheet, Activity activity) {
         ArrayList<PropertyModel> models = new ArrayList<>();
         // QR Codes
@@ -141,7 +144,8 @@ public class ShareSheetCoordinator {
         return models;
     }
 
-    private ArrayList<PropertyModel> createBottomRowPropertyModels(
+    @VisibleForTesting
+    ArrayList<PropertyModel> createBottomRowPropertyModels(
             ShareSheetBottomSheetContent bottomSheet, Activity activity, ShareParams params) {
         ArrayList<PropertyModel> models =
                 mPropertyModelBuilder.selectThirdPartyApps(activity, bottomSheet, params);

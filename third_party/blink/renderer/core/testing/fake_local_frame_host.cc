@@ -67,6 +67,10 @@ void FakeLocalFrameHost::SuddenTerminationDisablerChanged(
 void FakeLocalFrameHost::HadStickyUserActivationBeforeNavigationChanged(
     bool value) {}
 
+void FakeLocalFrameHost::ScrollRectToVisibleInParentFrame(
+    const WebRect& rect_to_scroll,
+    blink::mojom::blink::ScrollIntoViewParamsPtr params) {}
+
 void FakeLocalFrameHost::BubbleLogicalScrollInParentFrame(
     blink::mojom::blink::ScrollDirection direction,
     ui::input_types::ScrollGranularity granularity) {}

@@ -192,6 +192,7 @@
 <translation id="3474649192738347024">S'han emplenat els formularis.</translation>
 <translation id="3478058380795961209">Mes de caducitat</translation>
 <translation id="3482959374254649722">S'estan sincronitzant les pestanyes...</translation>
+<translation id="3484946776651937681">Obre a Baixades</translation>
 <translation id="3493531032208478708"><ph name="BEGIN_LINK" />Més informació<ph name="END_LINK" /> sobre el contingut suggerit</translation>
 <translation id="3494788280727468875">Confirma que vols esborrar les dades de navegació</translation>
 <translation id="35083190962747987">Obre ${url}</translation>
@@ -537,6 +538,7 @@ Les vostres dades es van encriptar el dia <ph name="TIME" /> amb la vostra frase
 <translation id="8319076807703933069">Cerca nova</translation>
 <translation id="8323906514956095947">Mantén premut el botó per veure més opcions de pestanyes</translation>
 <translation id="8328777765163860529">Tanca-ho tot</translation>
+<translation id="8386068868580335421">Restableix</translation>
 <translation id="8407669440184693619">No s'ha trobat cap contrasenya per a aquest lloc web</translation>
 <translation id="842017693807136194">S'ha iniciat la sessió amb</translation>
 <translation id="8428045167754449968">Ciutat/població</translation>

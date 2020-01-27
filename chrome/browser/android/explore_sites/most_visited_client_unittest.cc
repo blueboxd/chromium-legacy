@@ -5,7 +5,7 @@
 #include "chrome/browser/android/explore_sites/most_visited_client.h"
 
 #include "base/test/scoped_feature_list.h"
-#include "chrome/browser/android/chrome_feature_list.h"
+#include "chrome/browser/flags/android/chrome_feature_list.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace explore_sites {

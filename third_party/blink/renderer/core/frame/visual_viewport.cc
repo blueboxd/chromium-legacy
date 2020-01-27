@@ -34,8 +34,8 @@
 
 #include "cc/input/main_thread_scrolling_reason.h"
 #include "cc/layers/scrollbar_layer_base.h"
+#include "third_party/blink/public/mojom/scroll/scroll_into_view_params.mojom-blink.h"
 #include "third_party/blink/public/platform/task_type.h"
-#include "third_party/blink/public/platform/web_scroll_into_view_params.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
@@ -57,6 +57,7 @@
 #include "third_party/blink/renderer/core/paint/paint_property_tree_builder.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/core/scroll/scroll_animator_base.h"
+#include "third_party/blink/renderer/core/scroll/scroll_into_view_params_type_converters.h"
 #include "third_party/blink/renderer/core/scroll/scrollbar.h"
 #include "third_party/blink/renderer/core/scroll/scrollbar_theme_overlay_mobile.h"
 #include "third_party/blink/renderer/core/scroll/smooth_scroll_sequencer.h"
@@ -708,25 +709,25 @@ void VisualViewport::SetScrollOffset(const ScrollOffset& offset,
 
 PhysicalRect VisualViewport::ScrollIntoView(
     const PhysicalRect& rect_in_absolute,
-    const WebScrollIntoViewParams& params) {
+    const mojom::blink::ScrollIntoViewParamsPtr& params) {
   PhysicalRect scroll_snapport_rect = VisibleScrollSnapportRect();
 
   ScrollOffset new_scroll_offset =
       ClampScrollOffset(ScrollAlignment::GetScrollOffsetToExpose(
-          scroll_snapport_rect, rect_in_absolute, params.GetScrollAlignmentX(),
-          params.GetScrollAlignmentY(), GetScrollOffset()));
+          scroll_snapport_rect, rect_in_absolute,
+          params->align_x.To<ScrollAlignment>(),
+          params->align_y.To<ScrollAlignment>(), GetScrollOffset()));
 
   if (new_scroll_offset != GetScrollOffset()) {
-    ScrollBehavior behavior = params.GetScrollBehavior();
-    if (params.is_for_scroll_sequence) {
-      DCHECK(params.GetScrollType() == kProgrammaticScroll ||
-             params.GetScrollType() == kUserScroll);
+    auto behavior = mojo::ConvertTo<ScrollBehavior>(params->behavior);
+    auto type = mojo::ConvertTo<ScrollType>(params->type);
+    if (params->is_for_scroll_sequence) {
+      DCHECK(type == kProgrammaticScroll || type == kUserScroll);
       if (SmoothScrollSequencer* sequencer = GetSmoothScrollSequencer()) {
         sequencer->QueueAnimation(this, new_scroll_offset, behavior);
       }
     } else {
-      SetScrollOffset(new_scroll_offset, params.GetScrollType(), behavior,
-                      ScrollCallback());
+      SetScrollOffset(new_scroll_offset, type, behavior, ScrollCallback());
     }
   }
 

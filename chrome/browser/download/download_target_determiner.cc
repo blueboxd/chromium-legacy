@@ -732,9 +732,10 @@ DownloadTargetDeterminer::Result
   base::PostTaskAndReplyWithResult(
       base::CreateCOMSTATaskRunner({base::ThreadPool(), base::MayBlock()})
           .get(),
-      FROM_HERE, base::Bind(&::IsAdobeReaderUpToDate),
-      base::Bind(&DownloadTargetDeterminer::DetermineIfAdobeReaderUpToDateDone,
-                 weak_ptr_factory_.GetWeakPtr()));
+      FROM_HERE, base::BindOnce(&::IsAdobeReaderUpToDate),
+      base::BindOnce(
+          &DownloadTargetDeterminer::DetermineIfAdobeReaderUpToDateDone,
+          weak_ptr_factory_.GetWeakPtr()));
   return QUIT_DOLOOP;
 #else
   return CONTINUE;

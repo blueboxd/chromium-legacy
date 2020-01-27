@@ -109,20 +109,11 @@ ModuleDatabase::~ModuleDatabase() {
 
 // static
 scoped_refptr<base::SequencedTaskRunner> ModuleDatabase::GetTaskRunner() {
-  static constexpr base::Feature kDistinctModuleDatabaseSequence{
-      "DistinctModuleDatabaseSequence", base::FEATURE_ENABLED_BY_DEFAULT};
-
-  static base::LazySequencedTaskRunner g_distinct_task_runner =
+  static base::LazySequencedTaskRunner g_module_database_task_runner =
       LAZY_SEQUENCED_TASK_RUNNER_INITIALIZER(
           base::TaskTraits(base::ThreadPool(), base::TaskPriority::BEST_EFFORT,
                            base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN));
-
-  // A new task runner to the UI thread can be "created" every time in the
-  // disabled arm, in practice it's always the same task runner (it doesn't need
-  // a lazy instance to a privately owned sequence).
-  return base::FeatureList::IsEnabled(kDistinctModuleDatabaseSequence)
-             ? g_distinct_task_runner.Get()
-             : base::CreateSequencedTaskRunner({content::BrowserThread::UI});
+  return g_module_database_task_runner.Get();
 }
 
 // static

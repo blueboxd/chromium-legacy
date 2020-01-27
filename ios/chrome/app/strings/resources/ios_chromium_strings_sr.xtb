@@ -20,6 +20,7 @@
 <translation id="2915596697727466327">Chromium користи Face ID да би лозинкама могле да приступају само овлашћене особе.</translation>
 <translation id="3256316712990552818">Копирана у Chromium</translation>
 <translation id="3805899903892079518">Chromium не може да приступа сликама или видео снимцима. Омогућите приступ у iOS Settings (Подешавања iOS-а) &gt; Privacy (Приватност) &gt; Photos (Слике).</translation>
+<translation id="4287098963058057749">Chromium услови коришћења услуге се мењају 31. марта. <ph name="BEGIN_LINK" />Прегледајте<ph name="END_LINK" /></translation>
 <translation id="4555020257205549924">Када је ова функција укључена, Chromium ће нудити да преводи странице написане на другим језицима помоћу Google преводиоца. <ph name="BEGIN_LINK" />Сазнајте више<ph name="END_LINK" /></translation>
 <translation id="4681781466797808448">Укључите Chromium скенер</translation>
 <translation id="4787850887676698916">Овде ће се приказати картице које сте отворили у Chromium-у на другим уређајима.</translation>
@@ -48,6 +49,5 @@
 <translation id="8586442755830160949">Ауторска права <ph name="YEAR" />. Аутори Chromium-а. Сва права задржана.</translation>
 <translation id="8809780021347235332">Да бисте сачували слике, додирните Подешавања како бисте омогућили Chromium-у да користи слике</translation>
 <translation id="9022552996538154597">Пријављивање на Chromium</translation>
-<translation id="9217078088703304241"><ph name="BEGIN_LINK" />Прегледајте ажуриране Chromium услове коришћења услуге.<ph name="END_LINK" /></translation>
 <translation id="985602178874221306">The Chromium Authors</translation>
 </translationbundle>

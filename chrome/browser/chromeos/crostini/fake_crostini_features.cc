@@ -45,4 +45,10 @@ bool FakeCrostiniFeatures::IsRootAccessAllowed(Profile* profile) {
   return original_features_->IsRootAccessAllowed(profile);
 }
 
+bool FakeCrostiniFeatures::IsContainerUpgradeUIAllowed(Profile* profile) {
+  if (container_upgrade_ui_allowed_set_)
+    return container_upgrade_ui_allowed_;
+  return original_features_->IsContainerUpgradeUIAllowed(profile);
+}
+
 }  // namespace crostini

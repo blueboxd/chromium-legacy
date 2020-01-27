@@ -75,22 +75,19 @@ class CORE_EXPORT CSSRule : public ScriptWrappable {
 
   CSSStyleSheet* parentStyleSheet() const {
     if (parent_is_rule_)
-      return parent_rule_ ? parent_rule_->parentStyleSheet() : nullptr;
-    return parent_style_sheet_;
+      return parent_ ? ParentAsCSSRule()->parentStyleSheet() : nullptr;
+    return ParentAsCSSStyleSheet();
   }
 
   CSSRule* parentRule() const {
-    return parent_is_rule_ ? parent_rule_ : nullptr;
+    return parent_is_rule_ ? ParentAsCSSRule() : nullptr;
   }
 
   // The CSSOM spec states that "setting the cssText attribute must do nothing."
   void setCSSText(const String&) {}
 
  protected:
-  CSSRule(CSSStyleSheet* parent)
-      : has_cached_selector_text_(false),
-        parent_is_rule_(false),
-        parent_style_sheet_(parent) {}
+  CSSRule(CSSStyleSheet* parent);
 
   bool HasCachedSelectorText() const { return has_cached_selector_text_; }
   void SetHasCachedSelectorText(bool has_cached_selector_text) const {
@@ -100,14 +97,27 @@ class CORE_EXPORT CSSRule : public ScriptWrappable {
   const CSSParserContext* ParserContext(SecureContextMode) const;
 
  private:
+  bool VerifyParentIsCSSRule() const;
+  bool VerifyParentIsCSSStyleSheet() const;
+
+  CSSRule* ParentAsCSSRule() const {
+    DCHECK(parent_is_rule_);
+    DCHECK(VerifyParentIsCSSRule());
+    return reinterpret_cast<CSSRule*>(parent_.Get());
+  }
+  CSSStyleSheet* ParentAsCSSStyleSheet() const {
+    DCHECK(!parent_is_rule_);
+    DCHECK(VerifyParentIsCSSStyleSheet());
+    return reinterpret_cast<CSSStyleSheet*>(parent_.Get());
+  }
+
   mutable unsigned char has_cached_selector_text_ : 1;
   unsigned char parent_is_rule_ : 1;
 
-  // These should be Members, but no Members in unions.
-  union {
-    CSSRule* parent_rule_;
-    CSSStyleSheet* parent_style_sheet_;
-  };
+  // parent_ should reference either CSSRule or CSSStyleSheet (both are
+  // descendants of ScriptWrappable). This field should only be accessed
+  // via the getters above (ParentAsCSSRule and ParentAsCSSStyleSheet).
+  Member<ScriptWrappable> parent_;
 };
 
 }  // namespace blink

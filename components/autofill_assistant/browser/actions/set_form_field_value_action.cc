@@ -85,7 +85,7 @@ void SetFormFieldValueAction::InternalProcessAction(
         FALLTHROUGH;
       case SetFormFieldValueProto_KeyPress::kUsePassword:
         // Login information must have been stored by a previous action.
-        if (!delegate_->GetClientMemory()->has_selected_login()) {
+        if (!delegate_->GetUserData()->selected_login_.has_value()) {
           DVLOG(1) << "SetFormFieldValueAction: requested login details not "
                       "available in client memory.";
           EndAction(ClientStatus(PRECONDITION_FAILED));
@@ -93,9 +93,8 @@ void SetFormFieldValueAction::InternalProcessAction(
         }
         if (keypress.keypress_case() ==
             SetFormFieldValueProto_KeyPress::kUseUsername) {
-          field_inputs_.emplace_back(/* value = */ delegate_->GetClientMemory()
-                                         ->selected_login()
-                                         ->username);
+          field_inputs_.emplace_back(/* value = */ delegate_->GetUserData()
+                                         ->selected_login_->username);
         } else {
           field_inputs_.emplace_back(/* use_password = */ true,
                                      /* generate_password = */ false);
@@ -111,7 +110,7 @@ void SetFormFieldValueAction::InternalProcessAction(
           EndAction(ClientStatus(INVALID_ACTION));
           return;
         }
-        if (!delegate_->GetClientMemory()->has_additional_value(
+        if (!delegate_->GetUserData()->has_additional_value(
                 keypress.client_memory_key())) {
           DVLOG(1) << "SetFormFieldValueAction: requested key '"
                    << keypress.client_memory_key()
@@ -120,7 +119,7 @@ void SetFormFieldValueAction::InternalProcessAction(
           return;
         }
         field_inputs_.emplace_back(
-            /* value = */ *delegate_->GetClientMemory()->additional_value(
+            /* value = */ *delegate_->GetUserData()->additional_value(
                 keypress.client_memory_key()));
         break;
       case SetFormFieldValueProto_KeyPress::kGeneratePassword:
@@ -177,7 +176,7 @@ void SetFormFieldValueAction::OnSetFieldValue(int next,
               /* field_index = */ next));
     } else {
       delegate_->GetWebsiteLoginFetcher()->GetPasswordForLogin(
-          *delegate_->GetClientMemory()->selected_login(),
+          *delegate_->GetUserData()->selected_login_,
           base::BindOnce(&SetFormFieldValueAction::OnGetStoredPassword,
                          weak_ptr_factory_.GetWeakPtr(),
                          /* field_index = */ next));

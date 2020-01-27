@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.omnibox.suggestions.base;
 
 import android.content.Context;
-import android.support.annotation.IdRes;
 import android.support.v7.widget.AppCompatImageView;
 import android.util.TypedValue;
 import android.view.KeyEvent;
@@ -26,9 +25,9 @@ import org.chromium.components.browser_ui.widget.RoundedCornerImageView;
  * Base layout for common suggestion types. Includes support for a configurable suggestion content
  * and the common suggestion patterns shared across suggestion formats.
  */
-public class BaseSuggestionView extends SimpleHorizontalLayoutView {
+public class BaseSuggestionView<T extends View> extends SimpleHorizontalLayoutView {
     protected final ImageView mActionView;
-    protected final DecoratedSuggestionView mDecoratedView;
+    protected final DecoratedSuggestionView<T> mDecoratedView;
 
     private SuggestionViewDelegate mDelegate;
 
@@ -37,7 +36,7 @@ public class BaseSuggestionView extends SimpleHorizontalLayoutView {
      *
      * @param context The context used to construct the suggestion view.
      */
-    public BaseSuggestionView(View view) {
+    public BaseSuggestionView(T view) {
         super(view.getContext());
 
         TypedValue themeRes = new TypedValue();
@@ -79,7 +78,7 @@ public class BaseSuggestionView extends SimpleHorizontalLayoutView {
      * @param layoutId Layout ID to be inflated as the contents view.
      */
     public BaseSuggestionView(Context context, @LayoutRes int layoutId) {
-        this(LayoutInflater.from(context).inflate(layoutId, null));
+        this((T) LayoutInflater.from(context).inflate(layoutId, null));
     }
 
     @Override
@@ -116,12 +115,12 @@ public class BaseSuggestionView extends SimpleHorizontalLayoutView {
      *
      * @param view View to be displayed as suggestion content.
      */
-    void setContentView(View view) {
+    void setContentView(T view) {
         mDecoratedView.setContentView(view);
     }
 
     /** @return Embedded suggestion content view. */
-    public View getContentView() {
+    public T getContentView() {
         return mDecoratedView.getContentView();
     }
 
@@ -147,18 +146,5 @@ public class BaseSuggestionView extends SimpleHorizontalLayoutView {
     /** @return Widget holding action icon. */
     ImageView getActionImageView() {
         return mActionView;
-    }
-
-    /**
-     * Find content view by view id.
-     *
-     * Scoped {@link #findViewById(int)} search for the view specified in
-     * {@link #setContentView(View)}.
-     *
-     * @param id View ID of the sought view.
-     * @return View with the specified ID or null, if view could not be found.
-     */
-    public <T extends View> T findContentView(@IdRes int id) {
-        return mDecoratedView.findContentView(id);
     }
 }

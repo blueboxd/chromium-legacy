@@ -93,21 +93,16 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoCableDiscovery
 
   // FidoBleDiscoveryBase:
   void OnSetPowered() override;
-  void OnStartDiscoverySessionWithFilter(
-      std::unique_ptr<BluetoothDiscoverySession>) override;
 
   void StartCableDiscovery();
+  void OnStartDiscoverySession(std::unique_ptr<BluetoothDiscoverySession>);
+  void OnStartDiscoverySessionError();
   void StartAdvertisement();
   void OnAdvertisementRegistered(
       const CableEidArray& client_eid,
       scoped_refptr<BluetoothAdvertisement> advertisement);
   void OnAdvertisementRegisterError(
       BluetoothAdvertisement::ErrorCode error_code);
-  // Keeps a counter of success/failure of advertisements done by the client.
-  // If all advertisements fail, then immediately stop discovery process and
-  // invoke NotifyDiscoveryStarted(false). Otherwise kick off discovery session
-  // once all advertisements has been processed.
-  void RecordAdvertisementResult(bool is_success);
   // Attempt to stop all on-going advertisements in best-effort basis.
   // Once all the callbacks for Unregister() function is received, invoke
   // |callback|.
@@ -143,8 +138,6 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoCableDiscovery
   // not completely effective.
   std::set<std::string> active_devices_;
   base::Optional<QRGeneratorKey> qr_generator_key_;
-  size_t advertisement_success_counter_ = 0;
-  size_t advertisement_failure_counter_ = 0;
   std::map<CableEidArray, scoped_refptr<BluetoothAdvertisement>>
       advertisements_;
   std::vector<std::unique_ptr<FidoCableHandshakeHandler>>
@@ -152,6 +145,8 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoCableDiscovery
   base::Optional<
       base::RepeatingCallback<void(std::unique_ptr<CableDiscoveryData>)>>
       pairing_callback_;
+
+  bool is_powered_ = false;
 
   // observed_devices_ caches the information from observed caBLE devices so
   // that the device-log isn't spammed.

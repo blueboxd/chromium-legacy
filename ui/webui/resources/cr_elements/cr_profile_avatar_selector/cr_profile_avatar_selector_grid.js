@@ -65,10 +65,9 @@ Polymer({
     const rows = Math.ceil(items.length / rowSize);
     const gridSize = rows * rowSize;
 
-    const focusIndex =
-        Array.prototype.slice.call(items).findIndex(function(item) {
-          return Polymer.dom(item).getOwnerRoot().activeElement === item;
-        });
+    const focusIndex = Array.prototype.slice.call(items).findIndex(item => {
+      return this.parentNode.activeElement === item;
+    });
 
     let nextItem = null;
     if (direction === 'ArrowDown' || direction === 'ArrowUp') {
@@ -93,6 +92,6 @@ Polymer({
     }
 
     nextItem.focus();
-    assert(Polymer.dom(nextItem).getOwnerRoot().activeElement === nextItem);
+    assert(this.parentNode.activeElement === nextItem);
   }
 });

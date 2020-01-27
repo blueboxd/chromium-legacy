@@ -8,6 +8,8 @@
 #include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_hid_device_filter.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_hid_device_request_options.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
@@ -15,8 +17,6 @@
 #include "third_party/blink/renderer/modules/event_target_modules.h"
 #include "third_party/blink/renderer/modules/hid/hid_connection_event.h"
 #include "third_party/blink/renderer/modules/hid/hid_device.h"
-#include "third_party/blink/renderer/modules/hid/hid_device_filter.h"
-#include "third_party/blink/renderer/modules/hid/hid_device_request_options.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {

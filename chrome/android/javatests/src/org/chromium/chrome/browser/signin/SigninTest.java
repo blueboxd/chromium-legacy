@@ -38,7 +38,7 @@ import org.chromium.chrome.browser.bookmarks.BookmarkBridge;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.browser.settings.MainPreferences;
+import org.chromium.chrome.browser.settings.MainSettings;
 import org.chromium.chrome.browser.settings.SettingsActivity;
 import org.chromium.chrome.browser.settings.sync.AccountManagementFragment;
 import org.chromium.chrome.browser.settings.sync.SignInPreference;
@@ -279,8 +279,8 @@ public class SigninTest {
 
         // Verify that its preference UI is enabled.
         SettingsActivity settingsActivity = mActivityTestRule.startSettingsActivity(null);
-        MainPreferences mainPrefs = getMainPreferences(settingsActivity);
-        Preference passwordPref = mainPrefs.findPreference(MainPreferences.PREF_SAVED_PASSWORDS);
+        MainSettings mainPrefs = getMainSettings(settingsActivity);
+        Preference passwordPref = mainPrefs.findPreference(MainSettings.PREF_PASSWORDS);
         Assert.assertNotNull(passwordPref);
         // This preference opens a new fragment when clicked.
         Assert.assertNotNull(passwordPref.getFragment());
@@ -353,16 +353,16 @@ public class SigninTest {
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();
     }
 
-    private static MainPreferences getMainPreferences(SettingsActivity settingsActivity) {
+    private static MainSettings getMainSettings(SettingsActivity settingsActivity) {
         Fragment fragment = settingsActivity.getMainFragment();
         Assert.assertNotNull(fragment);
-        Assert.assertTrue(fragment instanceof MainPreferences);
-        return (MainPreferences) fragment;
+        Assert.assertTrue(fragment instanceof MainSettings);
+        return (MainSettings) fragment;
     }
 
     private static void clickSigninPreference(SettingsActivity settingsActivity) {
-        MainPreferences mainPrefs = getMainPreferences(settingsActivity);
-        Preference signinPref = mainPrefs.findPreference(MainPreferences.PREF_SIGN_IN);
+        MainSettings mainPrefs = getMainSettings(settingsActivity);
+        Preference signinPref = mainPrefs.findPreference(MainSettings.PREF_SIGN_IN);
         Assert.assertNotNull(signinPref);
         Assert.assertTrue(signinPref instanceof SignInPreference);
         Assert.assertNotNull(signinPref.getOnPreferenceClickListener());

@@ -26,6 +26,7 @@
 
 #include "base/metrics/histogram_macros.h"
 #include "third_party/blink/public/common/features.h"
+#include "third_party/blink/public/mojom/input/focus_type.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_prescient_networking.h"
 #include "third_party/blink/renderer/core/editing/editing_utilities.h"
@@ -110,7 +111,7 @@ bool HTMLAnchorElement::SupportsFocus() const {
 }
 
 bool HTMLAnchorElement::ShouldHaveFocusAppearance() const {
-  return (GetDocument().LastFocusType() != kWebFocusTypeMouse) ||
+  return (GetDocument().LastFocusType() != mojom::blink::FocusType::kMouse) ||
          HTMLElement::SupportsFocus();
 }
 

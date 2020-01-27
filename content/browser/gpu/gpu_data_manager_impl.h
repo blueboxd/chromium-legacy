@@ -29,6 +29,7 @@
 #include "gpu/config/gpu_feature_info.h"
 #include "gpu/config/gpu_info.h"
 #include "gpu/config/gpu_mode.h"
+#include "ui/display/display_observer.h"
 
 class GURL;
 
@@ -40,7 +41,8 @@ namespace content {
 
 class GpuDataManagerImplPrivate;
 
-class CONTENT_EXPORT GpuDataManagerImpl : public GpuDataManager {
+class CONTENT_EXPORT GpuDataManagerImpl : public GpuDataManager,
+                                          public display::DisplayObserver {
  public:
   // Getter for the singleton. This will return NULL on failure.
   static GpuDataManagerImpl* GetInstance();
@@ -158,6 +160,10 @@ class CONTENT_EXPORT GpuDataManagerImpl : public GpuDataManager {
   // State tracking allows us to customize GPU process launch depending on
   // whether we are in the foreground or background.
   void SetApplicationVisible(bool is_visible);
+
+  // DisplayObserver overrides.
+  void OnDisplayAdded(const display::Display& new_display) override;
+  void OnDisplayRemoved(const display::Display& old_display) override;
 
  private:
   friend class GpuDataManagerImplPrivate;

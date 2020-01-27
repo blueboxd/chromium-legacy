@@ -19,6 +19,7 @@
 <translation id="2915596697727466327">Chromium ले तपाईंका पासवर्डहरूको अधिकृत पहुँच सुनिश्चित गर्न Face ID को प्रयोग गर्छ।</translation>
 <translation id="3256316712990552818">Chromium मा सारियो</translation>
 <translation id="3805899903892079518">Chromiumसँग तपाईंको तस्बिर वा भिडियोहरूमा पहुँच छैन। iOS सेटिङहरू &gt; गोपनीयता &gt; तस्बिरहरूमा पहुँच सक्रिय गर्नुहोस्।</translation>
+<translation id="4287098963058057749">३१ मार्चदेखि Chromium को सेवाका सर्तहरू परिवर्तन हुँदै छन्। <ph name="BEGIN_LINK" />कृपया समीक्षा गर्नुहोस्<ph name="END_LINK" /></translation>
 <translation id="4555020257205549924">यो सुविधा सक्रिय भएपछि, Chromium ले Google अनुवादकको प्रयोग गरी अन्य भाषाहरूमा लेखिएका पृष्ठहरू अनुवाद गर्न प्रस्ताव गर्ने छ। <ph name="BEGIN_LINK" />थप जान्नुहोस्<ph name="END_LINK" /></translation>
 <translation id="4681781466797808448">Chromium को स्क्यानर सक्रिय गर्नुहोस्</translation>
 <translation id="4787850887676698916">तपाईँले आफ्ना अन्य यन्त्रहरूमा Chromium मा खोल्नुभएका ट्याबहरू यहाँ देखिनेछन्।</translation>
@@ -47,6 +48,5 @@
 <translation id="8586442755830160949">Copyright <ph name="YEAR" /> क्रोमियम लेखक। सबै अधिकार सुरक्षित।</translation>
 <translation id="8809780021347235332">छविहरू सुरक्षित गर्नका लागि Chromium लाई तपाईँका तस्बिरहरूको प्रयोग गर्न दिन सेटिङहरूमा ट्याप गर्नुहोस्</translation>
 <translation id="9022552996538154597">क्रोमियममा साइन इन हुनुहोस्</translation>
-<translation id="9217078088703304241"><ph name="BEGIN_LINK" />Chromium को अद्यावधिक गरिएको सेवाका सर्तहरूको समीक्षा गर्नुहोस्।<ph name="END_LINK" /></translation>
 <translation id="985602178874221306">Chromium लेखकहरू</translation>
 </translationbundle>

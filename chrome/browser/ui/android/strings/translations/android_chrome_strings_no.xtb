@@ -134,6 +134,7 @@
 <translation id="1994173015038366702">Nettadressen til nettstedet</translation>
 <translation id="2000419248597011803">Sender noen informasjonskapsler og søk fra adressefeltet og søkefeltet samt noen informasjonskapsler til standardsøkemotoren din</translation>
 <translation id="2002537628803770967">Kredittkort og adresser ved bruk av Google Pay</translation>
+<translation id="2012973609889389923">Raskt nettsted</translation>
 <translation id="2013642289801508067">{FILE_COUNT,plural, =1{# fil}other{# filer}}</translation>
 <translation id="2017836877785168846">Tømmer loggen og fjerner automatiske fullføringer fra adressefeltet.</translation>
 <translation id="2021896219286479412">Navigering i full skjerm</translation>
@@ -306,6 +307,7 @@
 <translation id="3298243779924642547">Forenklet</translation>
 <translation id="3303414029551471755">Vil du gå videre med å laste ned innholdet?</translation>
 <translation id="3306398118552023113">Denne appen kjører i Chrome</translation>
+<translation id="3312292613668865961">Spør før nettsteder får tilgang til virtuell virkelighet-enheten din eller -dataene dine (anbefales)</translation>
 <translation id="3315103659806849044">Du holder på å tilpasse innstillingene for Synkronisering og Google-tjenester. For å gjøre deg ferdig med å slå på synkronisering, trykk på Bekreft-knappen nederst på skjermen. Gå opp</translation>
 <translation id="3328801116991980348">Informasjon om nettstedet</translation>
 <translation id="3333961966071413176">Alle kontakter</translation>
@@ -511,6 +513,7 @@ For å endre denne innstillingen, <ph name="BEGIN_LINK" />tilbakestill synkronis
 <translation id="4915549754973153784"><ph name="BEGIN_LINK" />Få hjelp<ph name="END_LINK" /> mens du skanner etter enheter …</translation>
 <translation id="4921180162323349895">{FILE_COUNT,plural, =1{# side}other{# sider}}</translation>
 <translation id="4932247056774066048">Fordi du logger av en konto som administreres av <ph name="DOMAIN_NAME" />, slettes Chrome-dataene dine fra denne enheten. De blir værende i Google-kontoen din.</translation>
+<translation id="4935305910887312910">Spør før nettsteder får tillatelse til å motta kameraposisjonen din eller kartlegge rommet ditt (anbefales)</translation>
 <translation id="4943703118917034429">Virtuell virkelighet</translation>
 <translation id="4943872375798546930">Ingen resultater</translation>
 <translation id="4958708863221495346"><ph name="URL_OF_THE_CURRENT_TAB" /> deler skjermen din</translation>
@@ -744,6 +747,7 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="6573431926118603307">Faner du har åpnet i Chrome på de andre enhetene dine, vises her.</translation>
 <translation id="6583199322650523874">Sett den aktive siden som bokmerke</translation>
 <translation id="6593061639179217415">Side for datamaskiner</translation>
+<translation id="6597891566292541626">Plassér QR-/strekkoden i denne rammen.</translation>
 <translation id="6600954340915313787">Kopiert til Chrome</translation>
 <translation id="6608650720463149374"><ph name="GIGABYTES" /> GB</translation>
 <translation id="6612358246767739896">Beskyttet innhold</translation>
@@ -953,6 +957,7 @@ Nettstedet får IKKE tilgang til kameraet. Kamerabildene er kun synlige for deg.
 <translation id="8109613176066109935">For å få bokmerkene dine på alle enhetene dine, slå på synkronisering</translation>
 <translation id="8110087112193408731">Vil du vise Chrome-aktiviteten din i Digital balanse?</translation>
 <translation id="8116925261070264013">Kuttet lyd</translation>
+<translation id="8127542551745560481">Endre startsiden</translation>
 <translation id="813082847718468539">Vis nettstedsinformasjon</translation>
 <translation id="8156139159503939589">Hvilke språk kan du lese?</translation>
 <translation id="8168435359814927499">Innhold</translation>
@@ -1024,6 +1029,7 @@ Nettstedet får IKKE tilgang til kameraet. Kamerabildene er kun synlige for deg.
 <translation id="8676374126336081632">Slett teksten</translation>
 <translation id="8687353297350450808">{N_BARS,plural, =1{Signalstyrkenivå: # stolpe}other{Signalstyrkenivå: # stolper}}</translation>
 <translation id="868929229000858085">Søk i kontaktene dine</translation>
+<translation id="8698438463325761328">Blokkér nettsteder fra å få tilgang til virtuell virkelighet-enheten din og -dataene dine</translation>
 <translation id="869891660844655955">Utløpsdato</translation>
 <translation id="8719023831149562936">Kan ikke beame gjeldende fane</translation>
 <translation id="8728487861892616501">Når du bruker denne appen, godtar du <ph name="BEGIN_LINK1" />vilkårene for bruk<ph name="END_LINK1" /> av Chrome, <ph name="BEGIN_LINK2" />merknaden om personvern<ph name="END_LINK2" /> og <ph name="BEGIN_LINK3" />merknaden om personvern for Google-kontoer som administreres med Family Link<ph name="END_LINK3" />.</translation>
@@ -1041,6 +1047,7 @@ Nettstedet får IKKE tilgang til kameraet. Kamerabildene er kun synlige for deg.
 <translation id="883806473910249246">Det oppsto en feil under nedlastingen av innholdet.</translation>
 <translation id="8840953339110955557">Denne siden kan avvike fra nettversjonen.</translation>
 <translation id="8847988622838149491">USB</translation>
+<translation id="884828189055900810">Blokkér nettsteder fra å motta kameraposisjonen din eller kartlegge rommet ditt</translation>
 <translation id="8853345339104747198"><ph name="TAB_TITLE" /> – fane</translation>
 <translation id="885701979325669005">Lagring</translation>
 <translation id="889338405075704026">Gå til Chrome-innstillingene</translation>
@@ -1048,6 +1055,7 @@ Nettstedet får IKKE tilgang til kameraet. Kamerabildene er kun synlige for deg.
 <translation id="8909135823018751308">Del</translation>
 <translation id="8912362522468806198">Google-konto</translation>
 <translation id="8920114477895755567">Venter på informasjon om foreldre.</translation>
+<translation id="8921772741368021346"><ph name="POSITION" />/<ph name="DURATION" /></translation>
 <translation id="8922289737868596582">Last ned sider via Flere alternativer-knappen for å bruke dem uten nett</translation>
 <translation id="8926666909099850184">NFC er av for denne enheten. Slå det på i <ph name="BEGIN_LINK" />Android-innstillingene<ph name="END_LINK" />.</translation>
 <translation id="8937772741022875483">Vil du fjerne Chrome-aktiviteten din fra Digital balanse?</translation>

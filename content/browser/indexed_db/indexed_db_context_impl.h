@@ -22,7 +22,10 @@
 #include "content/browser/browser_main_loop.h"
 #include "content/browser/indexed_db/indexed_db_backing_store.h"
 #include "content/public/browser/indexed_db_context.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
+#include "mojo/public/cpp/bindings/remote.h"
+#include "storage/browser/blob/mojom/blob_storage_context.mojom.h"
 #include "storage/browser/quota/quota_manager_proxy.h"
 #include "storage/browser/quota/special_storage_policy.h"
 #include "url/origin.h"
@@ -63,11 +66,14 @@ class CONTENT_EXPORT IndexedDBContextImpl
 
   // If |data_path| is empty, nothing will be saved to disk.
   // |task_runner| is optional, and only set during testing.
+  // This is called on the UI thread.
   IndexedDBContextImpl(
       const base::FilePath& data_path,
       scoped_refptr<storage::SpecialStoragePolicy> special_storage_policy,
       scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy,
       base::Clock* clock,
+      mojo::PendingRemote<storage::mojom::BlobStorageContext>
+          blob_storage_context,
       scoped_refptr<base::SequencedTaskRunner> io_task_runner,
       scoped_refptr<base::SequencedTaskRunner> custom_task_runner);
 
@@ -185,6 +191,8 @@ class CONTENT_EXPORT IndexedDBContextImpl
   // backing stores); the cache will be primed as needed by checking disk.
   std::set<url::Origin>* GetOriginSet();
 
+  // Bound and accessed on the |idb_task_runner_|.
+  mojo::Remote<storage::mojom::BlobStorageContext> blob_storage_context_;
   std::unique_ptr<IndexedDBFactoryImpl> indexeddb_factory_;
 
   // If |data_path_| is empty then this is an incognito session and the backing

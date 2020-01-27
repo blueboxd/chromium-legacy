@@ -27,7 +27,6 @@
 <translation id="4249068189593983585">Savjet za Chrome. Za više opcija za kartice dodirnite i držite gumb Prikaži kartice na alatnoj traci pri dnu ili vrhu zaslona.</translation>
 <translation id="4523886039239821078">Neki programski dodaci uzrokuju rušenje preglednika Chrome. Deinstalirajte:</translation>
 <translation id="5389212809648216794">Google Chrome ne može upotrebljavati vaš fotoaparat jer ga upotrebljava neka druga aplikacija</translation>
-<translation id="5621912349729388018"><ph name="BEGIN_LINK" />Pregledajte ažurirane Chromove uvjete pružanja usluge.<ph name="END_LINK" /></translation>
 <translation id="5639704535586432836">Otvorite Postavke &gt; Privatnost &gt; Fotoaparat &gt; Google Chrome i uključite fotoaparat.</translation>
 <translation id="5642200033778930880">Google Chrome ne može upotrebljavati vaš fotoaparat u načinu podijeljenog prikaza</translation>
 <translation id="5690427481109656848">Google LLC</translation>
@@ -51,4 +50,5 @@
 <translation id="840168496893712993">Neki programski dodaci uzrokuju rušenje preglednika Chrome. Pokušajte ih deinstalirati.</translation>
 <translation id="8459495907675268833">Odabrani podaci uklonjeni su iz Chromea i sa sinkroniziranih uređaja. Na Google računu možda postoje drugi oblici povijesti pregledavanja, primjerice pretraživanja i aktivnosti s drugih Googleovih usluga, na stranici history.google.com.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
+<translation id="8574235780160508979">Chromeovi Uvjeti pružanja usluge mijenjaju se 31. ožujka. <ph name="BEGIN_LINK" />Pregledajte<ph name="END_LINK" /></translation>
 </translationbundle>

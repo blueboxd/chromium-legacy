@@ -212,8 +212,15 @@ Display CreateDisplayFromDisplayInfo(const DisplayInfo& display_info,
   if (!Display::HasForceDisplayColorProfile()) {
     if (hdr_enabled) {
       gfx::DisplayColorSpaces color_spaces;
-      color_spaces.hdr_opaque = gfx::ColorSpace::CreateHDR10();
-      color_spaces.hdr_transparent = gfx::ColorSpace::CreateSCRGBLinear();
+      // This will map to DXGI_COLOR_SPACE_RGB_FULL_G2084_NONE_P2020, with
+      // sRGB's (1,1,1) mapping to the specified number of nits.
+      color_spaces.hdr_opaque =
+          gfx::ColorSpace::CreateHDR10(display_info.sdr_white_level());
+      // This will map to DXGI_COLOR_SPACE_RGB_FULL_G10_NONE_P709. In that
+      // space, the brightness of (1,1,1) is 80 nits. That's where the magic
+      // constant of 80 comes in.
+      color_spaces.hdr_transparent = gfx::ColorSpace::CreateSCRGBLinear(
+          80.f / display_info.sdr_white_level());
       color_spaces.sdr_white_level = display_info.sdr_white_level();
       display.set_color_spaces(color_spaces);
       display.set_color_depth(Display::kHDR10BitsPerPixel);

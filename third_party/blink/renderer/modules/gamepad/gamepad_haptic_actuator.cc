@@ -9,8 +9,8 @@
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_gamepad_effect_parameters.h"
 #include "third_party/blink/renderer/modules/gamepad/gamepad_dispatcher.h"
-#include "third_party/blink/renderer/modules/gamepad/gamepad_effect_parameters.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 

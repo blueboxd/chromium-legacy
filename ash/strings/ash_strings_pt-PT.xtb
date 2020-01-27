@@ -112,6 +112,7 @@
 <translation id="2352467521400612932">Definições da caneta stylus</translation>
 <translation id="2354174487190027830">A ativar <ph name="NAME" /></translation>
 <translation id="2359808026110333948">Continuar</translation>
+<translation id="2364154243880592194">Tabuleiro do estado, hora <ph name="TIME" />, <ph name="BATTERY" />. Prima Pesquisa + seta para a esquerda para aceder ao centro de notificações.</translation>
 <translation id="2365393535144473978">A ativação dos dados móveis ativa o Bluetooth.</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="2412593942846481727">Atualização disponível</translation>
@@ -335,6 +336,7 @@
 <translation id="5669267381087807207">A activar</translation>
 <translation id="5673434351075758678">De "<ph name="FROM_LOCALE" />" para "<ph name="TO_LOCALE" />" após a sincronização das suas definições.</translation>
 <translation id="5682642926269496722">O Assistente Google não está disponível para a conta do utilizador atual.</translation>
+<translation id="5689633613396158040">A Luz noturna torna mais fácil olhar para o ecrã ou ler com pouca luz. Toque para alterar a hora em que a Luz noturna é ativada ou desativada totalmente.</translation>
 <translation id="5691772641933328258">Impressão digital não reconhecida</translation>
 <translation id="5710450975648804523">Modo Não incomodar ativado</translation>
 <translation id="573413375004481890">Este dispositivo não conseguiu suportar todos os seus ecrãs, pelo que um foi desligado.</translation>
@@ -514,6 +516,7 @@
 <translation id="8142441511840089262">Clicar duas vezes</translation>
 <translation id="8142699993796781067">Rede privada</translation>
 <translation id="8152092012181020186">Prima Ctrl + W para fechar.</translation>
+<translation id="8155007568264258537"><ph name="FEATURE_NAME" /> Esta definição é gerida pelo seu administrador.</translation>
 <translation id="8167567890448493835">A utilizar <ph name="LOCALE_NAME" />...</translation>
 <translation id="8190698733819146287">Personalizar idiomas e introdução...</translation>
 <translation id="8192202700944119416">As notificações estão ocultas.</translation>

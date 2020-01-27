@@ -4,9 +4,14 @@
 
 #include "chrome/browser/chromeos/extensions/printing/print_job_controller.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/task/post_task.h"
+#include "chrome/browser/chromeos/printing/cups_print_job.h"
+#include "chrome/browser/chromeos/printing/cups_print_job_manager.h"
+#include "chrome/browser/printing/print_job.h"
 #include "chrome/browser/printing/printer_query.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -56,7 +61,9 @@ PrintJobController::JobState& PrintJobController::JobState::operator=(
 
 PrintJobController::JobState::~JobState() = default;
 
-PrintJobController::PrintJobController() = default;
+PrintJobController::PrintJobController(
+    chromeos::CupsPrintJobManager* print_job_manager)
+    : print_job_manager_(print_job_manager) {}
 
 PrintJobController::~PrintJobController() = default;
 
@@ -100,9 +107,24 @@ void PrintJobController::StartPrinting(
   job->StartPrinting();
 }
 
-void PrintJobController::OnPrintJobCreated(const std::string& extension_id,
-                                           const std::string& job_id) {
+bool PrintJobController::CancelPrintJob(const std::string& job_id) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  auto it = cups_print_jobs_map_.find(job_id);
+  if (it == cups_print_jobs_map_.end() || !it->second)
+    return false;
+  print_job_manager_->CancelPrintJob(it->second.get());
+  return true;
+}
+
+void PrintJobController::OnPrintJobCreated(
+    const std::string& extension_id,
+    const std::string& job_id,
+    base::WeakPtr<chromeos::CupsPrintJob> cups_job) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  DCHECK(!cups_print_jobs_map_.contains(job_id));
+  cups_print_jobs_map_[job_id] = cups_job;
 
   auto it = extension_pending_jobs_.find(extension_id);
   if (it == extension_pending_jobs_.end())
@@ -127,6 +149,7 @@ void PrintJobController::OnPrintJobFinished(const std::string& job_id) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   print_jobs_map_.erase(job_id);
+  cups_print_jobs_map_.erase(job_id);
 }
 
 }  // namespace extensions

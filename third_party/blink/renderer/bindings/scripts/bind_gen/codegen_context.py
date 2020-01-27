@@ -142,13 +142,13 @@ class CodeGenContext(object):
         for attr in self._context_attrs.iterkeys():
             value = getattr(self, attr)
             if value is None:
-                value = NonRenderable()
+                value = NonRenderable(attr)
             bindings[attr] = value
 
         for attr in self._computational_attrs:
             value = getattr(self, attr)
             if value is None:
-                value = NonRenderable()
+                value = NonRenderable(attr)
             bindings[attr.strip("_")] = value
 
         return bindings
@@ -173,7 +173,7 @@ class CodeGenContext(object):
         idl_def = self.member_like or self.idl_definition
         if idl_def and not isinstance(idl_def, web_idl.Union):
             location = idl_def.debug_info.location
-            text = PathManager.relpath_to_project_root(location.filepath)
+            text = location.filepath
             if location.line_number is not None:
                 text += ":{}".format(location.line_number)
             return text

@@ -226,7 +226,9 @@ class MathFunctionParser {
     if (!calc_value_)
       return nullptr;
     source_range_ = range_;
-    return calc_value_.Release();
+    CSSMathFunctionValue* result = calc_value_;
+    calc_value_ = nullptr;
+    return result;
   }
 
   CSSPrimitiveValue* ConsumeRoundedInt() {
@@ -261,7 +263,7 @@ class MathFunctionParser {
  private:
   CSSParserTokenRange& source_range_;
   CSSParserTokenRange range_;
-  Member<CSSMathFunctionValue> calc_value_;
+  CSSMathFunctionValue* calc_value_ = nullptr;
 };
 
 CSSPrimitiveValue* ConsumeInteger(CSSParserTokenRange& range,

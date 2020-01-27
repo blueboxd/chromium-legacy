@@ -25,7 +25,7 @@ UserActionsUI::UserActionsUI(web::WebUIIOS* web_ui)
   html_source->SetDefaultResource(IDR_USER_ACTIONS_HTML);
   html_source->AddResourcePath("user_actions.css", IDR_USER_ACTIONS_CSS);
   html_source->AddResourcePath("user_actions.js", IDR_USER_ACTIONS_JS);
-  web::WebUIIOSDataSource::Add(ios::ChromeBrowserState::FromWebUIIOS(web_ui),
+  web::WebUIIOSDataSource::Add(ChromeBrowserState::FromWebUIIOS(web_ui),
                                html_source);
 }
 

@@ -7,6 +7,7 @@
 
 #include <CoreText/CoreText.h>
 
+#include "base/mac/scoped_cftyperef.h"
 #include "base/memory/read_only_shared_memory_region.h"
 #include "base/memory/shared_memory_mapping.h"
 #include "content/common/sandbox_support_mac.mojom.h"
@@ -24,7 +25,9 @@ class WebSandboxSupportMac : public blink::WebSandboxSupport {
   ~WebSandboxSupportMac() override;
 
   // blink::WebSandboxSupport:
-  bool LoadFont(CTFontRef font, CTFontRef* out, uint32_t* font_id) override;
+  bool LoadFont(CTFontRef font,
+                base::ScopedCFTypeRef<CTFontDescriptorRef>* out_descriptor,
+                uint32_t* font_id) override;
   SkColor GetSystemColor(blink::MacSystemColorID color_id) override;
 
  private:

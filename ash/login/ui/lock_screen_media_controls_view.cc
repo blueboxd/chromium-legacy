@@ -125,6 +125,8 @@ const gfx::VectorIcon& GetVectorIconForMediaAction(MediaSessionAction action) {
     case MediaSessionAction::kSkipAd:
     case MediaSessionAction::kSeekTo:
     case MediaSessionAction::kScrubTo:
+    case MediaSessionAction::kEnterPictureInPicture:
+    case MediaSessionAction::kExitPictureInPicture:
       NOTREACHED();
       break;
   }

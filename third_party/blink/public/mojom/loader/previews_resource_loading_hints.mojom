@@ -19,9 +19,19 @@ struct PreviewsResourceLoadingHints {
     array<string> subresources_to_block;
 };
 
+// Image loading hints passed by the browser to renderers. Send at most once
+// per page load from browser to renderer. The hints are provided to the
+// renderer and aid in redirecting these public images to compressed versions.
+struct CompressPublicImagesHints {
+    array<string> image_urls;
+};
+
 // Render process implemented interface that receives hints from the browser
 // about how to load resources.
 interface PreviewsResourceLoadingHintsReceiver {
     // Sends the resource loading hints from the browser to renderers.
     SetResourceLoadingHints(PreviewsResourceLoadingHints previews_resource_loading_hints);
+
+    // Sends the public image URL hints from the browser to renderers.
+    SetCompressPublicImagesHints(CompressPublicImagesHints images_hints);
 };

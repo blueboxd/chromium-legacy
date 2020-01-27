@@ -290,7 +290,6 @@
 <translation id="2218879909401188352">Útočníci na webe <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> by mohli nainštalovať nebezpečné aplikácie, ktoré poškodia vaše zariadenia, pridať skryté poplatky do vašej faktúry za mobilné služby alebo ukradnúť vaše osobné informácie. <ph name="BEGIN_LEARN_MORE_LINK" />Ďalšie informácie<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="2224337661447660594">Bez internetu</translation>
 <translation id="2230458221926704099">Opravte svoje pripojenie pomocou <ph name="BEGIN_LINK" />diagnostickej aplikácie<ph name="END_LINK" /></translation>
-<translation id="22320125457191592">Pre vás</translation>
 <translation id="2239100178324503013">Odoslať</translation>
 <translation id="2248949050832152960">Použiť WebAuthn</translation>
 <translation id="2250931979407627383">Zošiť hrebeňovou väzbou vľavo</translation>
@@ -563,7 +562,6 @@
 <translation id="3531780078352352885">Hárky úlohy</translation>
 <translation id="3533328374079021623">Poštová schránka č. 5</translation>
 <translation id="3539171420378717834">Ponechať kópiu tejto karty na tomto zariadení</translation>
-<translation id="3553513561058684206">Pre vás</translation>
 <translation id="3558573058928565255">Čas dňa</translation>
 <translation id="3566021033012934673">Vaše pripojenie nie je súkromné</translation>
 <translation id="3574305903863751447"><ph name="CITY" />, <ph name="STATE" /> <ph name="COUNTRY" /></translation>

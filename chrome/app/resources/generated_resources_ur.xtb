@@ -24,6 +24,7 @@
 <translation id="1029317248976101138">زوم کریں</translation>
 <translation id="1030706264415084469"><ph name="URL" /> آپ کے آلے پر مستقل طور پر بڑا ڈیٹا اسٹور کرنا چاہتا ہے</translation>
 <translation id="1031362278801463162">پیش منظر لوڈ کیا جا رہا ہے</translation>
+<translation id="1032605640136438169">براہ کرم نئی شرائط کا جائزہ لیں</translation>
 <translation id="103279545524624934">‏Android ایپس شروع کرنے کیلئے ڈسک اسپیس خالی کریں۔</translation>
 <translation id="1033780634303702874">اپنے سلسلہ وار آلات تک رسائی حاصل کریں</translation>
 <translation id="1034942643314881546">‏ایپس کا نمونہ تخلیق کرنے کے لیے adb کو فعال کریں</translation>
@@ -224,7 +225,6 @@ myaccount.google.com/activitycontrols/search پر تبدیل کر سکتے ہي�
 <translation id="1306606229401759371">ترتیبات تبدیل کریں</translation>
 <translation id="1307165550267142340">‏آپ کا PIN تخلیق ہو گیا</translation>
 <translation id="1307559529304613120">‏افوہ!  سسٹم اس آلہ کیلئے ایک طویل مدتی API رسائی کا ٹوکن اسٹور کرنے میں ناکام ہوگیا۔</translation>
-<translation id="1309199320876169714">‏Plugin VM ہٹایا جا رہا ہے...</translation>
 <translation id="1313405956111467313">خود کار پراکسی کنفیگریشن</translation>
 <translation id="131364520783682672">Caps Lock</translation>
 <translation id="1313705515580255288">‏آپ کے بُک مارکس، سرگزشت اور دیگر ترتیبات کی آپ کے Google اکاؤنٹ سے مطابقت پذیری کی جائے گی۔</translation>
@@ -1368,7 +1368,6 @@ myaccount.google.com/activitycontrols/search پر تبدیل کر سکتے ہي�
 <translation id="2871813825302180988">یہ اکاؤنٹ پہلے سے ہی اس آلے پر استعمال کیا جا رہا ہے۔</translation>
 <translation id="287286579981869940"><ph name="PROVIDER_NAME" /> شامل کریں…</translation>
 <translation id="2872961005593481000">بند کریں</translation>
-<translation id="2874478552394649323">‏Plugin VM ہٹائیں</translation>
 <translation id="2874939134665556319">پچھلا ٹریک</translation>
 <translation id="2875698561019555027">‏(Chrome میں خرابی کے صفحات)</translation>
 <translation id="2876336351874743617">فنگر 2</translation>
@@ -1385,7 +1384,6 @@ myaccount.google.com/activitycontrols/search پر تبدیل کر سکتے ہي�
 <translation id="2889064240420137087">اس کے ساتھ لنک کھولیں…</translation>
 <translation id="2889925978073739256">سینڈ باکس سے نکالے ہوئے پلگ انز کو مسدود کرنا جاری رکھیں</translation>
 <translation id="2893168226686371498">ڈیفالٹ براؤزر</translation>
-<translation id="2893208266590504003">‏Plugin VM کو ہٹانے میں ناکامی</translation>
 <translation id="2894757982205307093">گروپ میں نیا ٹیب</translation>
 <translation id="289644616180464099">‏SIM کارڈ مقفل ہے</translation>
 <translation id="2896909745808647285"><ph name="FILE_NAME" /> مرموز کردہ ہے اور اسے کھلنے سے مسدود کر دیا گیا ہے۔</translation>
@@ -2836,6 +2834,7 @@ myaccount.google.com/activitycontrols/search پر تبدیل کر سکتے ہي�
 <translation id="4998430619171209993">آن</translation>
 <translation id="4998873842614926205">تبدیلیوں کی توثیق کریں</translation>
 <translation id="5000922062037820727">مسدود کردہ (تجویز کردہ)</translation>
+<translation id="5007392906805964215">جائزہ لیں</translation>
 <translation id="5008936837313706385">سرگرمی کا نام</translation>
 <translation id="5010043101506446253">سرٹیفکیٹ اتھارٹی</translation>
 <translation id="5015344424288992913">پراکسی کو حل کیا جا رہا ہے…</translation>
@@ -3041,6 +3040,7 @@ myaccount.google.com/activitycontrols/search پر تبدیل کر سکتے ہي�
 <translation id="5311304534597152726">اس کے بطور سائن ان کرنا</translation>
 <translation id="53116743016968120"><ph name="ERROR_MESSAGE" /> براہ کرم دوبارہ کوشش کریں۔</translation>
 <translation id="5313628438272378649">یہ اپ لوڈ آپ کی تنظیم کی سیکیورٹی پالیسیوں کی خلاف ورزی کرتا ہے اور مکمل نہیں کیا جا سکتا۔</translation>
+<translation id="5314381603623123224">‏Chrome کی سروس کی شرائط 31 مارچ کو بدل رہی ہیں</translation>
 <translation id="5315738755890845852">اضافی خمیدہ قوسین: <ph name="ERROR_LINE" /></translation>
 <translation id="5315873049536339193">شناخت</translation>
 <translation id="5317780077021120954">محفوظ کریں</translation>
@@ -5776,7 +5776,6 @@ myaccount.google.com/activitycontrols/search پر تبدیل کر سکتے ہي�
 <translation id="9169496697824289689">کی بورڈ شارٹ کٹس دیکھیں</translation>
 <translation id="916964310188958970">یہ تجویز کیوں ظاہر ہوتی ہے؟</translation>
 <translation id="9169931577761441333"><ph name="APP_NAME" /> کو ہوم اسکرین میں شامل کریں</translation>
-<translation id="9170305483456271385">‏Plugin VM کو ہٹا دیا گیا ہے</translation>
 <translation id="9170848237812810038">&amp;کالعدم کریں</translation>
 <translation id="9170884462774788842">‏آپ کے کمپیوٹر پر موجود ایک دوسرے پروگرام نے ایک تھیم شامل کی جو Chrome کے کام کرنے کا طریقہ تبدیل کر سکتی ہے۔</translation>
 <translation id="9173995187295789444">بلوٹوتھ آلات کیلئے اسکین کیا جا رہا ہے...</translation>

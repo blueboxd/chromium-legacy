@@ -4542,7 +4542,8 @@ TEST_F(AutofillManagerTest, OnLoadedServerPredictions) {
   signatures.push_back(form_structure2->FormSignatureAsStr());
 
   base::HistogramTester histogram_tester;
-  autofill_manager_->OnLoadedServerPredictions(response_string, signatures);
+  autofill_manager_->OnLoadedServerPredictionsForTest(response_string,
+                                                      signatures);
   // Verify that FormStructure::ParseQueryResponse was called (here and below).
   histogram_tester.ExpectBucketCount("Autofill.ServerQueryResponse",
                                      AutofillMetrics::QUERY_RESPONSE_RECEIVED,
@@ -4644,8 +4645,8 @@ TEST_F(AutofillManagerTest, OnLoadedServerPredictionsFromApi) {
 
   // Run method under test.
   base::HistogramTester histogram_tester;
-  autofill_manager_->OnLoadedServerPredictions(encoded_response_string,
-                                               signatures);
+  autofill_manager_->OnLoadedServerPredictionsForTest(encoded_response_string,
+                                                      signatures);
 
   // Verify whether the relevant histograms were updated.
   histogram_tester.ExpectBucketCount("Autofill.ServerQueryResponse",
@@ -4704,7 +4705,8 @@ TEST_F(AutofillManagerTest, OnLoadedServerPredictions_ResetManager) {
   autofill_manager_->Reset();
 
   base::HistogramTester histogram_tester;
-  autofill_manager_->OnLoadedServerPredictions(response_string, signatures);
+  autofill_manager_->OnLoadedServerPredictionsForTest(response_string,
+                                                      signatures);
 
   // Verify that FormStructure::ParseQueryResponse was NOT called.
   histogram_tester.ExpectTotalCount("Autofill.ServerQueryResponse", 0);
@@ -4755,7 +4757,8 @@ TEST_F(AutofillManagerTest, DetermineHeuristicsWithOverallPrediction) {
   signatures.push_back(form_structure->FormSignatureAsStr());
 
   base::HistogramTester histogram_tester;
-  autofill_manager_->OnLoadedServerPredictions(response_string, signatures);
+  autofill_manager_->OnLoadedServerPredictionsForTest(response_string,
+                                                      signatures);
   // Verify that FormStructure::ParseQueryResponse was called (here and below).
   histogram_tester.ExpectBucketCount("Autofill.ServerQueryResponse",
                                      AutofillMetrics::QUERY_RESPONSE_RECEIVED,
@@ -5120,7 +5123,7 @@ TEST_P(ProfileMatchingTypesTest, DeterminePossibleFieldTypesForUpload) {
   FormStructure form_structure(form);
 
   base::HistogramTester histogram_tester;
-  AutofillManager::DeterminePossibleFieldTypesForUpload(
+  AutofillManager::DeterminePossibleFieldTypesForUploadForTest(
       profiles, credit_cards, base::string16(), "en-us", &form_structure);
 
   ASSERT_EQ(1U, form_structure.field_count());
@@ -5269,7 +5272,7 @@ TEST_F(AutofillManagerTest, DeterminePossibleFieldTypesWithMultipleValidities) {
       form_structure.field(i)->set_server_type(test_fields[i].field_type);
     }
 
-    AutofillManager::DeterminePossibleFieldTypesForUpload(
+    AutofillManager::DeterminePossibleFieldTypesForUploadForTest(
         profiles, {}, base::string16(), "en-us", &form_structure);
 
     ASSERT_EQ(test_fields.size(), form_structure.field_count());
@@ -5456,7 +5459,7 @@ TEST_F(AutofillManagerTest, DisambiguateUploadTypes) {
       form_structure.field(i)->set_server_type(test_fields[i].predicted_type);
     }
 
-    AutofillManager::DeterminePossibleFieldTypesForUpload(
+    AutofillManager::DeterminePossibleFieldTypesForUploadForTest(
         profiles, credit_cards, base::string16(), "en-us", &form_structure);
     ASSERT_EQ(test_fields.size(), form_structure.field_count());
 
@@ -5489,7 +5492,7 @@ TEST_F(AutofillManagerTest, CrowdsourceUPIVPA) {
   form.fields.push_back(field);
   FormStructure form_structure(form);
 
-  AutofillManager::DeterminePossibleFieldTypesForUpload(
+  AutofillManager::DeterminePossibleFieldTypesForUploadForTest(
       profiles, credit_cards, base::string16(), "en-us", &form_structure);
 
   EXPECT_THAT(form_structure.field(0)->possible_types(), ElementsAre(UPI_VPA));
@@ -5530,7 +5533,7 @@ TEST_F(AutofillManagerTest, CrowdsourceCVCFieldByValue) {
   FormStructure form_structure(form);
   form_structure.field(0)->set_possible_types({CREDIT_CARD_NUMBER});
 
-  AutofillManager::DeterminePossibleFieldTypesForUpload(
+  AutofillManager::DeterminePossibleFieldTypesForUploadForTest(
       profiles, credit_cards, base::ASCIIToUTF16(cvc), "en-us",
       &form_structure);
 
@@ -5584,7 +5587,7 @@ TEST_F(AutofillManagerTest,
   // Set up the test profiles.
   std::vector<AutofillProfile> profiles;
 
-  AutofillManager::DeterminePossibleFieldTypesForUpload(
+  AutofillManager::DeterminePossibleFieldTypesForUploadForTest(
       profiles, credit_cards, base::string16(), "en-us", &form_structure);
 
   CheckThatOnlyFieldByIndexHasThisPossibleType(form_structure, 2,
@@ -5637,7 +5640,7 @@ TEST_F(AutofillManagerTest, CrowdsourceCVCFieldAfterExpDateByHeuristics) {
   // Set up the test profiles.
   std::vector<AutofillProfile> profiles;
 
-  AutofillManager::DeterminePossibleFieldTypesForUpload(
+  AutofillManager::DeterminePossibleFieldTypesForUploadForTest(
       profiles, credit_cards, base::string16(), "en-us", &form_structure);
 
   CheckThatOnlyFieldByIndexHasThisPossibleType(form_structure, 2,
@@ -5690,7 +5693,7 @@ TEST_F(AutofillManagerTest, CrowdsourceCVCFieldBeforeExpDateByHeuristics) {
   // Set up the test profiles.
   std::vector<AutofillProfile> profiles;
 
-  AutofillManager::DeterminePossibleFieldTypesForUpload(
+  AutofillManager::DeterminePossibleFieldTypesForUploadForTest(
       profiles, credit_cards, base::string16(), "en-us", &form_structure);
 
   CheckThatOnlyFieldByIndexHasThisPossibleType(form_structure, 1,
@@ -5743,7 +5746,7 @@ TEST_F(AutofillManagerTest, CrowdsourceNoCVCFieldDueToMissingCreditCardNumber) {
   // Set up the test profiles.
   std::vector<AutofillProfile> profiles;
 
-  AutofillManager::DeterminePossibleFieldTypesForUpload(
+  AutofillManager::DeterminePossibleFieldTypesForUploadForTest(
       profiles, credit_cards, base::string16(), "en-us", &form_structure);
   CheckThatNoFieldHasThisPossibleType(form_structure,
                                       CREDIT_CARD_VERIFICATION_CODE);
@@ -5793,7 +5796,7 @@ TEST_F(AutofillManagerTest, CrowdsourceNoCVCDueToInvalidCandidateValue) {
   // Set up the test profiles.
   std::vector<AutofillProfile> profiles;
 
-  AutofillManager::DeterminePossibleFieldTypesForUpload(
+  AutofillManager::DeterminePossibleFieldTypesForUploadForTest(
       profiles, credit_cards, base::string16(), "en-us", &form_structure);
 
   CheckThatNoFieldHasThisPossibleType(form_structure,

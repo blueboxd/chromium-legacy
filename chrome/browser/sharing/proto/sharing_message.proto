@@ -30,8 +30,8 @@ enum MessageType {
   SHARED_CLIPBOARD_MESSAGE = 4;
   SMS_FETCH_REQUEST = 5;
   REMOTE_COPY_MESSAGE = 6;
-  SIGNALLING_MESSAGE = 7;
-  ICE_CANDIDATE_MESSAGE = 8;
+  PEER_CONNECTION_OFFER_MESSAGE = 7;
+  PEER_CONNECTION_ICE_CANDIDATES_MESSAGE = 8;
   DISCOVERY_REQUEST = 9;
   WEB_RTC_SIGNALING_FRAME = 10;
 }
@@ -50,8 +50,9 @@ message SharingMessage {
     SharedClipboardMessage shared_clipboard_message = 5;
     SmsFetchRequest sms_fetch_request = 8;
     RemoteCopyMessage remote_copy_message = 9;
-    SignallingMessage signalling_message = 10;
-    IceCandidateMessage ice_candidate_message = 11;
+    PeerConnectionOfferMessage peer_connection_offer_message = 10;
+    PeerConnectionIceCandidatesMessage peer_connection_ice_candidates_message =
+        11;
     DiscoveryRequest discovery_request = 13;
     WebRtcSignalingMessage web_rtc_signaling_frame = 14;
   }
@@ -92,7 +93,7 @@ message ResponseMessage {
   // Payload of the response, contains one of the messages below. required.
   oneof payload {
     SmsFetchResponse sms_fetch_response = 1;
-    SignallingMessage signalling_message_response = 2;
+    PeerConnectionAnswerMessage peer_connection_answer_message_response = 2;
     DiscoveryResponse discovery_response = 3;
   }
 }
@@ -150,4 +151,14 @@ message DiscoveryResponse {
 message WebRtcSignalingMessage {
   // required
   bytes web_rtc_signaling_frame = 1;
+}
+
+// Message for sending data between devices using webRTC.
+message WebRtcMessage {
+  // Randomly generated guid. Required for messages other than AckMessage.
+  string message_guid = 1;
+
+  // The actual SharingMessage to be sent across the two remote devices.
+  // Required.
+  SharingMessage message = 2;
 }

@@ -20,6 +20,7 @@
 <translation id="2915596697727466327">Chromium 透過 Face ID 確保只有獲授權人士才可存取您的密碼。</translation>
 <translation id="3256316712990552818">已複製至 Chromium</translation>
 <translation id="3805899903892079518">Chromium 沒有存取相片或影片的權限。請前往「iOS 設定」&gt;「私隱」&gt;「相片」開放權限。</translation>
+<translation id="4287098963058057749">Chromium 的《服務條款》將於 3 月 31 日變更。<ph name="BEGIN_LINK" />請查看詳情<ph name="END_LINK" /></translation>
 <translation id="4555020257205549924">開啟這項功能後，Chromium 會使用「Google 翻譯」來翻譯其他語言的網頁。<ph name="BEGIN_LINK" />瞭解詳情<ph name="END_LINK" /></translation>
 <translation id="4681781466797808448">開啟 Chromium 掃瞄器</translation>
 <translation id="4787850887676698916">您在其他裝置上開啟的 Chromium 分頁會在這裡顯示。</translation>
@@ -48,6 +49,5 @@
 <translation id="8586442755830160949">Copyright <ph name="YEAR" /> The Chromium Authors. 保留所有權利。</translation>
 <translation id="8809780021347235332">如要儲存圖片，請輕按 [設定]，以允許 Chromium 使用您的相片</translation>
 <translation id="9022552996538154597">登入 Chromium</translation>
-<translation id="9217078088703304241"><ph name="BEGIN_LINK" />查看更新的 Chromium 服務條款。<ph name="END_LINK" /></translation>
 <translation id="985602178874221306">The Chromium Authors</translation>
 </translationbundle>

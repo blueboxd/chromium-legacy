@@ -187,6 +187,10 @@ void QuicTransport::close(const WebTransportCloseInfo* close_info) {
     promise->MarkAsHandled();
   }
   closed_resolver_->Resolve(close_info);
+
+  v8::Local<v8::Value> reason = V8ThrowException::CreateTypeError(
+      script_state_->GetIsolate(), "Connection closed.");
+  ready_resolver_->Reject(reason);
   Dispose();
 }
 
@@ -208,6 +212,8 @@ void QuicTransport::OnConnectionEstablished(
 
   DCHECK(!quic_transport_);
   quic_transport_.Bind(std::move(quic_transport), task_runner);
+
+  ready_resolver_->Resolve();
 }
 
 QuicTransport::~QuicTransport() = default;
@@ -218,6 +224,7 @@ void QuicTransport::OnHandshakeFailed() {
     ScriptState::Scope scope(script_state_);
     v8::Local<v8::Value> reason = V8ThrowException::CreateTypeError(
         script_state_->GetIsolate(), "Connection lost.");
+    ready_resolver_->Reject(reason);
     closed_resolver_->Reject(reason);
   }
   Dispose();
@@ -266,6 +273,8 @@ void QuicTransport::Trace(Visitor* visitor) {
   visitor->Trace(received_datagrams_controller_);
   visitor->Trace(outgoing_datagrams_);
   visitor->Trace(script_state_);
+  visitor->Trace(ready_resolver_);
+  visitor->Trace(ready_);
   visitor->Trace(closed_resolver_);
   visitor->Trace(closed_);
   ContextLifecycleObserver::Trace(visitor);
@@ -296,6 +305,9 @@ void QuicTransport::Init(const String& url, ExceptionState& exception_state) {
             "'). Fragment identifiers are not allowed in QuicTransport URLs.");
     return;
   }
+
+  ready_resolver_ = MakeGarbageCollected<ScriptPromiseResolver>(script_state_);
+  ready_ = ready_resolver_->Promise();
 
   closed_resolver_ = MakeGarbageCollected<ScriptPromiseResolver>(script_state_);
   closed_ = closed_resolver_->Promise();
@@ -361,6 +373,7 @@ void QuicTransport::OnConnectionError() {
     received_datagrams_controller_->Error(reason);
     WritableStreamDefaultController::Error(
         script_state_, outgoing_datagrams_->Controller(), reason);
+    ready_resolver_->Reject(reason);
     closed_resolver_->Reject(reason);
   }
 

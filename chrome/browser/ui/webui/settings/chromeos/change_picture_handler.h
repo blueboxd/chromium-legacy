@@ -9,7 +9,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
 #include "chrome/browser/chromeos/camera_presence_notifier.h"
-#include "chrome/browser/image_decoder.h"
+#include "chrome/browser/image_decoder/image_decoder.h"
 #include "chrome/browser/ui/webui/settings/settings_page_ui_handler.h"
 #include "components/user_manager/user_manager.h"
 #include "ui/gfx/image/image_skia.h"

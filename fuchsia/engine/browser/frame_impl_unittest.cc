@@ -75,7 +75,7 @@ TEST(FrameImplUnitTest, DiffNavigationEntriesGoBackAndForward) {
 
   EXPECT_FALSE(difference.IsEmpty());
   EXPECT_TRUE(difference.has_can_go_back());
-  EXPECT_TRUE(difference.has_can_go_back());
+  EXPECT_TRUE(difference.has_can_go_forward());
   EXPECT_TRUE(difference.can_go_forward());
   EXPECT_FALSE(difference.can_go_back());
 }

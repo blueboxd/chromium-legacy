@@ -6,10 +6,10 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_BACKGROUND_FETCH_BACKGROUND_FETCH_TYPE_CONVERTERS_H_
 
 #include "third_party/blink/public/mojom/background_fetch/background_fetch.mojom-blink.h"
-#include "third_party/blink/renderer/modules/background_fetch/background_fetch_options.h"
 
 namespace blink {
 class BackgroundFetchRegistration;
+class BackgroundFetchOptions;
 }
 
 namespace mojo {

@@ -37,7 +37,7 @@ class NodeWithIndex {
   STACK_ALLOCATED();
 
  public:
-  explicit NodeWithIndex(Node& node) : node_(node), index_(-1) {}
+  explicit NodeWithIndex(Node& node) : node_(&node), index_(-1) {}
 
   Node& GetNode() const { return *node_; }
 
@@ -53,7 +53,7 @@ class NodeWithIndex {
  private:
   bool HasIndex() const { return index_ >= 0; }
 
-  Member<Node> node_;
+  Node* node_;
   mutable int index_;
 };
 

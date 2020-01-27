@@ -6,6 +6,7 @@
 
 #include "base/android/jni_string.h"
 #include "base/logging.h"
+#include "base/trace_event/trace_event.h"
 #include "chrome/android/chrome_jni_headers/ClickToCallMessageHandler_jni.h"
 #include "chrome/browser/sharing/proto/click_to_call_message.pb.h"
 #include "chrome/browser/sharing/proto/sharing_message.pb.h"
@@ -18,6 +19,8 @@ void ClickToCallMessageHandler::OnMessage(
     chrome_browser_sharing::SharingMessage message,
     SharingMessageHandler::DoneCallback done_callback) {
   DCHECK(message.has_click_to_call_message());
+  TRACE_EVENT0("sharing", "ClickToCallMessageHandler::OnMessage");
+
   std::string phone_number = message.click_to_call_message().phone_number();
   JNIEnv* env = base::android::AttachCurrentThread();
 

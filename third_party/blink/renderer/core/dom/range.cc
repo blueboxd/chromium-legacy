@@ -72,7 +72,7 @@ class RangeUpdateScope {
     DCHECK(range);
     if (++scope_count_ == 1) {
       range_ = range;
-      old_document_ = range->OwnerDocument();
+      old_document_ = &range->OwnerDocument();
 #if DCHECK_IS_ON()
       current_range_ = range;
     } else {
@@ -107,8 +107,8 @@ class RangeUpdateScope {
   //  - RangeUpdateScope is used only in Range member functions.
   static Range* current_range_;
 #endif
-  Member<Range> range_;
-  Member<Document> old_document_;
+  Range* range_ = nullptr;
+  Document* old_document_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(RangeUpdateScope);
 };

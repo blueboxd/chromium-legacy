@@ -27,7 +27,6 @@
 <translation id="4249068189593983585">Consell de Chrome. Per accedir a més opcions de pestanyes, mantén premut el botó Mostra pestanyes a la barra d'eines, que és a la part inferior o superior de la pantalla.</translation>
 <translation id="4523886039239821078">Alguns complements fan que Chrome es bloquegi. Desinstal·leu-los.</translation>
 <translation id="5389212809648216794">Google Chrome no pot utilitzar la càmera perquè l'està utilitzant una altra aplicació</translation>
-<translation id="5621912349729388018"><ph name="BEGIN_LINK" />Revisa les condicions del servei actualitzades de Chrome.<ph name="END_LINK" /></translation>
 <translation id="5639704535586432836">Obre Configuració &gt; Privacitat &gt; Càmera &gt; Google Chrome i activa la càmera.</translation>
 <translation id="5642200033778930880">Google Chrome no pot utilitzar la càmera en mode de visualització dividida</translation>
 <translation id="5690427481109656848">Google LLC</translation>
@@ -51,4 +50,5 @@
 <translation id="840168496893712993">Alguns complements fan que Chrome es bloquegi. Proveu de desinstal·lar-los.</translation>
 <translation id="8459495907675268833">Les dades seleccionades s'han suprimit de Chrome i dels dispositius sincronitzats. És possible que el vostre compte de Google tingui altres formes de l'historial de navegació a history.google.com, com ara les cerques i l'activitat d'altres serveis de Google.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
+<translation id="8574235780160508979">Les condicions del servei de Chrome canviaran el 31 de març. <ph name="BEGIN_LINK" />Revisa-les<ph name="END_LINK" /></translation>
 </translationbundle>

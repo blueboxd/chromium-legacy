@@ -79,6 +79,7 @@
 <translation id="129553762522093515">ბოლოს დახურული</translation>
 <translation id="1298536327547837046">მავნე პროგრამების სკანირება</translation>
 <translation id="129863573139666797"><ph name="BEGIN_LINK" />ცადეთ თქვენი ქუქი-ჩანაწერების გასუფთავება<ph name="END_LINK" /></translation>
+<translation id="1301324364792935241">შეამოწმეთ თქვენი დაცული DNS-ის პარამეტრები</translation>
 <translation id="1307966114820526988">მოძველებული ფუნქციები</translation>
 <translation id="1314509827145471431">აკინძვა მარჯვნივ</translation>
 <translation id="1320233736580025032">Prc1 (კონვერტი)</translation>
@@ -152,6 +153,7 @@
 <translation id="1569487616857761740">შეიყვანეთ მოქმედების ვადის გასვლის თარიღი</translation>
 <translation id="1581080074034554886">CVC</translation>
 <translation id="1583429793053364125">ამ ვებგვერდის ჩვენებისას პრობლემა წარმოიქმნა.</translation>
+<translation id="1586541204584340881">თქვენ მიერ დაინსტალირებული გაფართოებები</translation>
 <translation id="1588438908519853928">ნორმალური</translation>
 <translation id="1592005682883173041">ადგილობრივ მონაცემებზე წვდომა</translation>
 <translation id="1594030484168838125">არჩევა</translation>
@@ -290,7 +292,6 @@
 <translation id="2218879909401188352"><ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />-ზე შეტევის შედეგად თქვენს მოწყობილობაზე შეიძლება დაინსტალირდეს სახიფათო აპები, რომლებსაც შეუძლია თქვენი მოწყობილობის დაზიანება, მობილური სერვისის საფასურის ფარულად გაზრდა თუ პერსონალური ინფორმაციის მოპარვა. <ph name="BEGIN_LEARN_MORE_LINK" />შეიტყვეთ მეტი<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="2224337661447660594">ინტერნეტ-კავშირი არ არის</translation>
 <translation id="2230458221926704099">გაასწორეთ თქვენი კავშირი <ph name="BEGIN_LINK" />დიაგნოსტიკური აპის<ph name="END_LINK" /> მეშვეობით</translation>
-<translation id="22320125457191592">თქვენთვის</translation>
 <translation id="2239100178324503013">ახლავე გაგზავნა</translation>
 <translation id="2248949050832152960">WebAuthn-ის გამოყენება</translation>
 <translation id="2250931979407627383">კიდეების მიკერება მარცხნივ</translation>
@@ -363,6 +364,7 @@
 <translation id="2544644783021658368">ერთი დოკუმენტი</translation>
 <translation id="254947805923345898">წესების მნიშვნელობა არასწორია.</translation>
 <translation id="255002559098805027"><ph name="HOST_NAME" />-მა არასწორი პასუხი გამოაგზავნა.</translation>
+<translation id="2553853292994445426">შეამოწმეთ თქვენი დაცული DNS-ის პარამეტრები. შესაძლოა, კონფიგურირებული გქონდეთ დაცული DNS სერვერი, რომელთანაც დაკავშირება ვერ ხერხდება.</translation>
 <translation id="2556876185419854533">რედაქტირების &amp;მოქმედების გაუქმება</translation>
 <translation id="257674075312929031">ჯგუფი</translation>
 <translation id="2586657967955657006">გაცვლის ბუფერი</translation>
@@ -475,6 +477,7 @@
 <translation id="3095940652251934233">Statement</translation>
 <translation id="3096100844101284527">წამოღების მისამართის დამატება</translation>
 <translation id="3105172416063519923">საინვენტარო ID:</translation>
+<translation id="3107591622054137333"><ph name="BEGIN_LINK" />დაცული DNS-ის კონფიგურაციის შემოწმება<ph name="END_LINK" /></translation>
 <translation id="3109728660330352905">თქვენ არ გაქვთ ამ გვერდის სანახავად აუცილებელი ავტორიზაცია.</translation>
 <translation id="3113284927548439113">მესამე წანაცვლება</translation>
 <translation id="3116158981186517402">ლამინირება</translation>
@@ -566,7 +569,6 @@
 <translation id="3531780078352352885">დავალების ფურცლები</translation>
 <translation id="3533328374079021623">საფოსტო ყუთი 5</translation>
 <translation id="3539171420378717834">ამ ბარათის ასლის მოწყობილობაში შენახვა</translation>
-<translation id="3553513561058684206">თქვენთვის</translation>
 <translation id="3558573058928565255">დღე</translation>
 <translation id="3566021033012934673">თქვენი კავშირი არ არის პირადი</translation>
 <translation id="3574305903863751447"><ph name="CITY" />, <ph name="STATE" /> <ph name="COUNTRY" /></translation>
@@ -773,6 +775,7 @@
 <translation id="4390472908992056574">კიდეების გადავსება</translation>
 <translation id="4406896451731180161">ძიების შედეგები</translation>
 <translation id="4408413947728134509">ქუქი-ჩანაწერები <ph name="NUM_COOKIES" /></translation>
+<translation id="4414290883293381923">თქვენ ეს-ესაა შეიყვანეთ პაროლი შეცდომაში შემყვან საიტზე. Chrome გირჩევთ, ახლავე გადახვიდეთ <ph name="WEBSITE_1" />-ზე, <ph name="WEBSITE_2" />-ზე, <ph name="WEBSITE_3" />-სა და სხვა საიტებზე, სადაც ამ პაროლს იყენებთ, შემდეგ კი შეცვალოთ ის.</translation>
 <translation id="4415426530740016218">წაღების მისამართი</translation>
 <translation id="4424024547088906515">ეს სერვერი ვერ ამტკიცებს, რომ ის არის <ph name="DOMAIN" />; მისი უსაფრთხოების სერთიფიკატი არ ენდობა Chrome. ეს შეიძლება იყოს გამოწვეული არასწორი კონფიგურაციით ან თავდამსხმელის მიერ თქვენი კავშირის გადაჭრით.</translation>
 <translation id="443121186588148776">თანმიმდევრული პორტი</translation>
@@ -1204,6 +1207,7 @@
 <translation id="6353505687280762741">{COUNT,plural, =0{არცერთი}=1{1 პაროლი (<ph name="DOMAIN_LIST" />-ისთვის, სინქრონიზებული)}=2{2 პაროლი (<ph name="DOMAIN_LIST" />-ისთვის, სინქრონიზებული)}other{# პაროლი (<ph name="DOMAIN_LIST" />-ისთვის, სინქრონიზებული)}}</translation>
 <translation id="6358450015545214790">რას ნიშნავს ეს?</translation>
 <translation id="6361757823711327522">B7</translation>
+<translation id="6364095313648930329"><ph name="BEGIN_LINK" />პროქსის, ქსელის დაცვისა და დაცული DNS-ის კონფიგურაციის შემოწმება<ph name="END_LINK" /></translation>
 <translation id="6366710531182496394">ორმაგად დასტეპლერება მარცხნივ</translation>
 <translation id="6377268785556383139">მოთხოვნაზე „<ph name="SEARCH_TEXT" />“ მოიძებნა 1 შედეგი</translation>
 <translation id="6380497234672085559">A0</translation>
@@ -1226,6 +1230,7 @@
 <translation id="6433595998831338502"><ph name="HOST_NAME" />-მა უარყო დაკავშირება.</translation>
 <translation id="6434309073475700221">გაუქმება</translation>
 <translation id="6440503408713884761">იგნორირებული</translation>
+<translation id="6443406338865242315">თქვენ მიერ დაინსტალირებული გაფართოებები და დანამატები</translation>
 <translation id="6446163441502663861">Kahu (კონვერტი)</translation>
 <translation id="6446608382365791566">დამატებითი ინფორმაციის მითითება</translation>
 <translation id="6447842834002726250">ქუქი ფაილები</translation>
@@ -1335,6 +1340,7 @@
 <translation id="7012363358306927923">ჩინეთის UnionPay</translation>
 <translation id="7016992613359344582">აღნიშნული გადახდები შეიძლება განხორციელდეს ერთჯერადად ან პერიოდულად და არ იყოს ადვილად შესამჩნევი.</translation>
 <translation id="7029809446516969842">პაროლები</translation>
+<translation id="7031646650991750659">თქვენ მიერ დაინსტალირებული Google Play აპები</translation>
 <translation id="7050187094878475250">თქვენ ცდილობდით <ph name="DOMAIN" />-თან დაკავშირებას, მაგრამ სერვერის მიერ წარმოდგენილი სერთიფიკატის მოქმედების პერიოდი ზედმეტად ხანგრძლივია, იმისათვის რომ სანდო იყოს.</translation>
 <translation id="705310974202322020">{NUM_CARDS,plural, =1{ამ ბარათის შენახვა ამჟამად ვერ მოხერხდება}other{ამ ბარათების შენახვა ამჟამად ვერ მოხერხდება}}</translation>
 <translation id="7053983685419859001">დაბლოკვა</translation>
@@ -1394,6 +1400,7 @@
 <translation id="7319430975418800333">A3</translation>
 <translation id="7320336641823683070">კავშირთან დაკავშირებული დახმარება</translation>
 <translation id="733354035281974745">მოწყობილობის ადგილობრივი ანგარიშის უგულებელყოფა</translation>
+<translation id="7333654844024768166">თქვენ ეს-ესაა შეიყვანეთ პაროლი შეცდომაში შემყვან საიტზე. Chromium გირჩევთ, ახლავე გადახვიდეთ <ph name="WEBSITE_1" />-ზე, <ph name="WEBSITE_2" />-ზე, <ph name="WEBSITE_3" />-სა და სხვა საიტებზე, სადაც ამ პაროლს იყენებთ, შემდეგ კი შეცვალოთ ის.</translation>
 <translation id="7334320624316649418">გადალაგების &amp;გამეორება</translation>
 <translation id="7337706099755338005">მიუწვდომელია თქვენი პლატფორმისთვის.</translation>
 <translation id="733923710415886693">სერვერის სერტიფიკატის გამოქვეყნება სერტიფიკატთა გამჭვირვალობის შესახებ წესების შესაბამისად არ მომხდარა.</translation>

@@ -60,11 +60,11 @@ class APP_LIST_EXPORT AppListAssistantMainStage
 
  private:
   void InitLayout();
-  views::View* CreateContentLayoutContainer();
-  void InitGreetingLabel();
-  views::View* CreateMainContentLayoutContainer();
-  views::View* CreateDividerLayoutContainer();
-  views::View* CreateFooterLayoutContainer();
+  std::unique_ptr<views::View> CreateContentLayoutContainer();
+  std::unique_ptr<views::Label> InitGreetingLabel();
+  std::unique_ptr<views::View> CreateMainContentLayoutContainer();
+  std::unique_ptr<views::View> CreateDividerLayoutContainer();
+  std::unique_ptr<views::View> CreateFooterLayoutContainer();
 
   void AnimateInGreetingLabel();
   void AnimateInFooter();

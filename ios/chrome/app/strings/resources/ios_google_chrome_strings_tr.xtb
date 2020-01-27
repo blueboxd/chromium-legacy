@@ -27,7 +27,6 @@
 <translation id="4249068189593983585">Chrome için ipucu. Sekmelerle ilgili daha fazla seçenek görmek için ekranınızın altında veya üstünde görünen araç çubuğunda Sekmeleri Göster düğmesine dokunup basılı tutun.</translation>
 <translation id="4523886039239821078">Bazı eklentiler Chrome'un kilitlenmesine neden oluyor. Lütfen şunların yüklemelerini kaldırın:</translation>
 <translation id="5389212809648216794">Kameranız başka bir uygulama tarafından kullanıldığından Google Chrome, kameranızı kullanamıyor.</translation>
-<translation id="5621912349729388018"><ph name="BEGIN_LINK" />Güncellenen Chrome Hizmet Şartları'nı inceleyin.<ph name="END_LINK" /></translation>
 <translation id="5639704535586432836">Ayarlar &gt; Gizlilik &gt; Kamera &gt; Google Chrome'a gidin ve kamerayı açın.</translation>
 <translation id="5642200033778930880">Google Chrome, kameranızı Bölünmüş Görünüm modunda kullanamıyor</translation>
 <translation id="5690427481109656848">Google LLC</translation>
@@ -51,4 +50,5 @@
 <translation id="840168496893712993">Bazı eklentiler Chrome'un kilitlenmesine neden oluyor. Lütfen bunların yüklemesini kaldırmayı deneyin.</translation>
 <translation id="8459495907675268833">Seçilen veriler Chrome'dan ve senkronize edilen cihazlardan kaldırıldı. Diğer Google hizmetlerinden yapılan aramalar ve etkinlikler gibi Google Hesabınızla ilişkili başka biçimlerde tarama geçmişi history.google.com adresinde bulunabilir.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
+<translation id="8574235780160508979">Chrome'un Hizmet Şartları 31 Mart'ta değişiyor. <ph name="BEGIN_LINK" />Lütfen inceleyin<ph name="END_LINK" /></translation>
 </translationbundle>

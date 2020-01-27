@@ -65,6 +65,7 @@ source_set("browsing_data") {
     "//ios/chrome/browser/snapshots",
     "//ios/chrome/browser/sync",
     "//ios/chrome/browser/translate:translate",
+    "//ios/chrome/browser/web",
     "//ios/chrome/browser/webdata_services",
     "//ios/net",
     "//ios/public/provider/chrome/browser",

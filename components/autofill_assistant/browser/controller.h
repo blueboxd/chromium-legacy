@@ -13,7 +13,6 @@
 #include "base/macros.h"
 #include "base/optional.h"
 #include "components/autofill_assistant/browser/client.h"
-#include "components/autofill_assistant/browser/client_memory.h"
 #include "components/autofill_assistant/browser/client_settings.h"
 #include "components/autofill_assistant/browser/element_area.h"
 #include "components/autofill_assistant/browser/event_handler.h"
@@ -101,7 +100,6 @@ class Controller : public ScriptExecutorDelegate,
   const GURL& GetDeeplinkURL() override;
   Service* GetService() override;
   WebController* GetWebController() override;
-  ClientMemory* GetClientMemory() override;
   const TriggerContext* GetTriggerContext() override;
   autofill::PersonalDataManager* GetPersonalDataManager() override;
   WebsiteLoginFetcher* GetWebsiteLoginFetcher() override;
@@ -295,6 +293,9 @@ class Controller : public ScriptExecutorDelegate,
 
   void SetOverlayColors(std::unique_ptr<OverlayColors> colors);
   void ReportNavigationStateChanged();
+  void SetProfile(const std::string& key,
+                  UserData::FieldChange field_change,
+                  std::unique_ptr<autofill::AutofillProfile> profile);
 
   // Enter step while ignoring the return value.
   void EnterStateSilent(AutofillAssistantState state);
@@ -316,9 +317,6 @@ class Controller : public ScriptExecutorDelegate,
   // Lazily instantiate in GetService().
   std::unique_ptr<Service> service_;
   std::unique_ptr<TriggerContext> trigger_context_;
-
-  // Lazily instantiate in GetClientMemory().
-  std::unique_ptr<ClientMemory> memory_;
 
   AutofillAssistantState state_ = AutofillAssistantState::INACTIVE;
 

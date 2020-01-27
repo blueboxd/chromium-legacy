@@ -20,7 +20,7 @@ IOSCanMakePaymentQueryFactory* IOSCanMakePaymentQueryFactory::GetInstance() {
 // static
 payments::CanMakePaymentQuery*
 IOSCanMakePaymentQueryFactory::GetForBrowserState(
-    ios::ChromeBrowserState* browser_state) {
+    ChromeBrowserState* browser_state) {
   return static_cast<payments::CanMakePaymentQuery*>(
       GetInstance()->GetServiceForBrowserState(browser_state, true));
 }

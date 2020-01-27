@@ -28,10 +28,11 @@
 #include <memory>
 #include "third_party/blink/public/common/input/web_keyboard_event.h"
 #include "third_party/blink/renderer/core/core_export.h"
-#include "third_party/blink/renderer/core/events/keyboard_event_init.h"
 #include "third_party/blink/renderer/core/events/ui_event_with_key_state.h"
 
 namespace blink {
+
+class KeyboardEventInit;
 
 class CORE_EXPORT KeyboardEvent final : public UIEventWithKeyState {
   DEFINE_WRAPPERTYPEINFO();

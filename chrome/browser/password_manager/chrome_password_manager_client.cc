@@ -506,17 +506,20 @@ void ChromePasswordManagerClient::AutomaticPasswordSave(
 #endif
 }
 
+void ChromePasswordManagerClient::UpdateCredentialCache(
+    const GURL& origin,
+    const std::vector<const autofill::PasswordForm*>& best_matches) {
+#if defined(OS_ANDROID)
+  credential_cache_.SaveCredentialsForOrigin(best_matches,
+                                             url::Origin::Create(origin));
+#endif
+}
+
 void ChromePasswordManagerClient::PasswordWasAutofilled(
     const std::vector<const PasswordForm*>& best_matches,
     const GURL& origin,
     const std::vector<const PasswordForm*>* federated_matches) {
-#if defined(OS_ANDROID)
-  if (!PasswordAccessoryController::AllowedForWebContents(web_contents())) {
-    return;  // No need to even create the bridge if it's not going to be used.
-  }
-  credential_cache_.SaveCredentialsForOrigin(best_matches,
-                                             url::Origin::Create(origin));
-#else  // !defined(OS_ANDROID)
+#if !defined(OS_ANDROID)
   PasswordsClientUIDelegate* manage_passwords_ui_controller =
       PasswordsClientUIDelegateFromWebContents(web_contents());
   manage_passwords_ui_controller->OnPasswordAutofilled(best_matches, origin,

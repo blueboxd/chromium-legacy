@@ -47,6 +47,7 @@
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/drop_data.h"
+#include "third_party/blink/public/mojom/input/focus_type.mojom.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/events/blink/web_input_event_traits.h"
 #include "ui/gfx/geometry/size_conversions.h"
@@ -130,15 +131,15 @@ base::WeakPtr<BrowserPluginGuest> BrowserPluginGuest::AsWeakPtr() {
 
 void BrowserPluginGuest::SetFocus(RenderWidgetHost* rwh,
                                   bool focused,
-                                  blink::WebFocusType focus_type) {
+                                  blink::mojom::FocusType focus_type) {
   focused_ = focused;
   if (!rwh)
     return;
 
-  if ((focus_type == blink::kWebFocusTypeForward) ||
-      (focus_type == blink::kWebFocusTypeBackward)) {
+  if ((focus_type == blink::mojom::FocusType::kForward) ||
+      (focus_type == blink::mojom::FocusType::kBackward)) {
     static_cast<RenderViewHostImpl*>(RenderViewHost::From(rwh))
-        ->SetInitialFocus(focus_type == blink::kWebFocusTypeBackward);
+        ->SetInitialFocus(focus_type == blink::mojom::FocusType::kBackward);
   }
   RenderWidgetHostImpl::From(rwh)->GetWidgetInputHandler()->SetFocus(focused);
   if (!focused && mouse_locked_)
@@ -168,7 +169,7 @@ WebContentsImpl* BrowserPluginGuest::CreateNewGuestWindow(
 void BrowserPluginGuest::InitInternal(WebContentsImpl* owner_web_contents) {
   focused_ = false;
   OnSetFocus(browser_plugin::kInstanceIDNone, focused_,
-             blink::kWebFocusTypeNone);
+             blink::mojom::FocusType::kNone);
 
   is_full_page_plugin_ = false;
   frame_rect_ = gfx::Rect();
@@ -577,7 +578,7 @@ void BrowserPluginGuest::OnLockMouseAck(int browser_plugin_instance_id,
 
 void BrowserPluginGuest::OnSetFocus(int browser_plugin_instance_id,
                                     bool focused,
-                                    blink::WebFocusType focus_type) {
+                                    blink::mojom::FocusType focus_type) {
   RenderWidgetHostView* rwhv = web_contents()->GetRenderWidgetHostView();
   RenderWidgetHost* rwh = rwhv ? rwhv->GetRenderWidgetHost() : nullptr;
   SetFocus(rwh, focused, focus_type);

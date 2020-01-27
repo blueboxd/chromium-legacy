@@ -1,4 +1,5 @@
 include_rules = [
+  "+chrome/browser/image_decoder",
   "-chrome/browser/ui/views",
   "+components/page_load_metrics/browser",
   "+mash/public/mojom",

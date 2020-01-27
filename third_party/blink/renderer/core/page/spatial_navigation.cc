@@ -742,7 +742,7 @@ PhysicalRect StartEdgeForAreaElement(const HTMLAreaElement& area,
 }
 
 HTMLFrameOwnerElement* FrameOwnerElement(const FocusCandidate& candidate) {
-  return DynamicTo<HTMLFrameOwnerElement>(candidate.visible_node.Get());
+  return DynamicTo<HTMLFrameOwnerElement>(candidate.visible_node);
 }
 
 // The visual viewport's rect (given in the root frame's coordinate space).

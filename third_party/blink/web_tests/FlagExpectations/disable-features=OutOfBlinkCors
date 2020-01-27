@@ -3,6 +3,16 @@
 # tags: [ Release Debug ]
 # results: [ Timeout Crash Pass Failure Slow Skip ]
 
+# The fetch-request-xhr.https.html fails on some checks, but has an expectation
+# file to ignore text diffs. It also fails on the same checks even without
+# OOR-CORS, but with different texts. Just mark them as Failure.
+crbug.com/870173 external/wpt/service-workers/service-worker/fetch-request-xhr.https.html [ Failure ]
+crbug.com/870173 virtual/cache-storage-eager-reading/external/wpt/service-workers/service-worker/fetch-request-xhr.https.html [ Failure ]
+crbug.com/870173 virtual/cache-storage-high-priority-match/external/wpt/service-workers/service-worker/fetch-request-xhr.https.html [ Failure ]
+crbug.com/870173 virtual/cache-storage-sequence/external/wpt/service-workers/service-worker/fetch-request-xhr.https.html [ Failure ]
+crbug.com/870173 virtual/omt-service-worker-startup/external/wpt/service-workers/service-worker/fetch-request-xhr.https.html [ Failure ]
+crbug.com/870173 virtual/omt-worker-fetch/external/wpt/service-workers/service-worker/fetch-request-xhr.https.html [ Failure ]
+
 # Tests that passes only with OOR-CORS.
 # Following tests should not pass at linux-blink-cors-rel fyi bot.
 # TODO(cbur.com/1001450): Remove this file after removing the OOR-CORS releted
@@ -39,17 +49,6 @@ crbug.com/1042580 virtual/scalefactor200withoutzoom/external/wpt/element-timing/
 crbug.com/1042580 virtual/scalefactor200withoutzoom/external/wpt/largest-contentful-paint/multiple-redirects-TAO.html [ Skip ]
 crbug.com/1042580 virtual/scalefactor200withoutzoom/external/wpt/largest-contentful-paint/redirects-tao-star.html [ Skip ]
 
-
-# The fetch-request-xhr.https.html fails on some checks, but has an expectation
-# file to ignore text diffs. It also fails on the same checks even without
-# OOR-CORS, but with different texts. Just mark them as Failure.
-crbug.com/870173 external/wpt/service-workers/service-worker/fetch-request-xhr.https.html [ Failure ]
-crbug.com/870173 virtual/cache-storage-eager-reading/external/wpt/service-workers/service-worker/fetch-request-xhr.https.html [ Failure ]
-crbug.com/870173 virtual/cache-storage-high-priority-match/external/wpt/service-workers/service-worker/fetch-request-xhr.https.html [ Failure ]
-crbug.com/870173 virtual/cache-storage-sequence/external/wpt/service-workers/service-worker/fetch-request-xhr.https.html [ Failure ]
-crbug.com/870173 virtual/omt-service-worker-startup/external/wpt/service-workers/service-worker/fetch-request-xhr.https.html [ Failure ]
-crbug.com/870173 virtual/omt-worker-fetch/external/wpt/service-workers/service-worker/fetch-request-xhr.https.html [ Failure ]
-
 # preflight support for fetch keepalive and sendBeacon is only for OOR-CORS.
 crbug.com/835821 external/wpt/beacon/beacon-basic-blob.html [ Failure ]
 crbug.com/835821 external/wpt/beacon/beacon-basic-blobMax.html [ Failure ]
@@ -58,4 +57,5 @@ crbug.com/835821 external/wpt/beacon/beacon-navigate.html [ Failure ]
 crbug.com/835821 external/wpt/beacon/beacon-redirect.window.html [ Failure ]
 crbug.com/835821 external/wpt/fetch/api/basic/keepalive.html [ Failure ]
 crbug.com/835821 http/tests/sendbeacon/beacon-blob-with-non-simple-type.html [ Failure ]
+crbug.com/835821 virtual/omt-worker-fetch/external/wpt/fetch/api/basic/keepalive.html [ Failure ]
 crbug.com/835821 virtual/stable/http/tests/sendbeacon/beacon-blob-with-non-simple-type.html [ Failure ]

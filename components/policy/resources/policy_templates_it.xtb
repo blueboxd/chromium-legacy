@@ -1098,7 +1098,7 @@ Se questa norma non viene impostata, l'utente potrà scegliere se utilizzare o m
       Se il criterio non è configurato o è disattivato, per la schermata di accesso verranno usate le impostazioni di isolamento dei siti predefinite della piattaforma.
       </translation>
 <translation id="2587719089023392205">Imposta <ph name="PRODUCT_NAME" /> come browser predefinito</translation>
-<translation id="2588071938417715443">Questo criterio consente di gestire l'accesso alle funzionalità controllabili nell'interfaccia utente di individuazione di dispositivi locali (<ph name="CHROME_DEVICES_LINK" />), in cui vengono mostrati i dispositivi rilevabili accanto all'utente, nonché i dispositivi cloud registrati per loro. Su tutti i sistemi operativi tranne <ph name="PRODUCT_OS_NAME" />, l'interfaccia utente di individuazione di dispositivi locali consente inoltre agli utenti di aggiungere a <ph name="CLOUD_PRINT_NAME" /> stampanti classiche collegate ai loro computer.</translation>
+<translation id="2588071938417715443">Questo criterio consente di gestire l'accesso alle funzionalità controllabili nell'interfaccia utente di individuazione di dispositivi locali (<ph name="CHROME_DEVICES_LINK" />), in cui vengono mostrati i dispositivi rilevabili accanto all'utente, nonché i dispositivi cloud a cui è registrato. Su tutti i sistemi operativi tranne <ph name="PRODUCT_OS_NAME" />, l'interfaccia utente di individuazione di dispositivi locali consente inoltre agli utenti di aggiungere a <ph name="CLOUD_PRINT_NAME" /> stampanti classiche collegate ai loro computer.</translation>
 <translation id="2592091433672667839">Durata inattività prima della visualizzazione del salvaschermo nella schermata di accesso in modalità retail</translation>
 <translation id="2592162121850992309">Se questa norma è impostata su true o non è impostata, verrà attivata l'accelerazione hardware a meno che una determinata funzione della GPU non sia stata inserita nella lista nera.
 
@@ -4225,7 +4225,7 @@ Nota. Attualmente i riavvii automatici vengono attivati soltanto durante la visu
 
           Se questo criterio viene impostato su false, le scorciatoie delle funzioni di accessibilità saranno sempre disattivate nella schermata di accesso.
 
-          Se imposti questo criterio, gli utenti non potranno modificarlo o ignorarlo.
+          Se imposti questo criterio, gli utenti non potranno modificarlo o eseguirne l'override.
 
           Se questo criterio non viene impostato, le scorciatoie delle funzioni di accessibilità saranno attive per impostazione predefinita nella schermata di accesso.</translation>
 <translation id="7777535871204167559">Considera i dispositivi di archiviazione esterni come di sola lettura</translation>
@@ -4634,7 +4634,7 @@ Se questa norma non viene impostata, le pagine saranno sottoposte a scansione pe
 
           Se questo criterio viene impostato su false, le scorciatoie delle funzioni di accessibilità saranno sempre disattivate.
 
-          Se imposti questo criterio, gli utenti non potranno modificarlo o ignorarlo.
+          Se imposti questo criterio, gli utenti non potranno modificarlo o eseguirne l'override.
 
           Se questo criterio non viene impostato, le scorciatoie delle funzioni di accessibilità saranno attive per impostazione predefinita.</translation>
 <translation id="8525526490824335042">Container Linux</translation>
@@ -4866,7 +4866,7 @@ Se la norma non viene impostata o viene impostata su false, la posizione non vie
 
           Se questa norma non viene impostata, verrà utilizzata la norma "PromptOnAccess" e l'utente sarà in grado di modificarla.</translation>
 <translation id="8911348623012274122">Imposta un limite di memoria per le istanze di Chrome</translation>
-<translation id="8911736066340032670">Consente di segnalare informazioni relative al display, ad esempio la frequenza di aggiornamento, e alla grafica, ad esempio la versione del driver.
+<translation id="8911736066340032670">Consente di segnalare informazioni relative al display, come la frequenza di aggiornamento, e alla grafica, ad esempio la versione del driver.
 
       Se il criterio viene impostato su false o non viene impostato, gli stati relativi a display e grafica non vengono segnalati. Se viene impostato su true, gli stati relativi a display e grafica vengono segnalati.</translation>
 <translation id="891435090623616439">codificato sotto forma di stringa JSON; per informazioni dettagliate, visita la pagina <ph name="COMPLEX_POLICIES_URL" /></translation>

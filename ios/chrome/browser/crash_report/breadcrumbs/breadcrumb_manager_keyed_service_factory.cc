@@ -19,7 +19,7 @@ BreadcrumbManagerKeyedServiceFactory::GetInstance() {
 // static
 BreadcrumbManagerKeyedService*
 BreadcrumbManagerKeyedServiceFactory::GetForBrowserState(
-    ios::ChromeBrowserState* browser_state) {
+    ChromeBrowserState* browser_state) {
   return static_cast<BreadcrumbManagerKeyedService*>(
       GetInstance()->GetServiceForBrowserState(browser_state, /*create=*/true));
 }

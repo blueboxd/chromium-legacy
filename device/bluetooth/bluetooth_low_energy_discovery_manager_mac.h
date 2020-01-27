@@ -5,17 +5,16 @@
 #ifndef DEVICE_BLUETOOTH_BLUETOOTH_LOW_ENERGY_DISCOVERY_MANAGER_MAC_H_
 #define DEVICE_BLUETOOTH_BLUETOOTH_LOW_ENERGY_DISCOVERY_MANAGER_MAC_H_
 
-#if defined(OS_IOS)
 #import <CoreBluetooth/CoreBluetooth.h>
-#else
-#import <IOBluetooth/IOBluetooth.h>
-#endif
 
 #include "base/mac/scoped_nsobject.h"
-#include "base/mac/sdk_forward_declarations.h"
 #include "base/macros.h"
 #include "build/build_config.h"
 #include "device/bluetooth/bluetooth_device.h"
+
+#if !defined(OS_IOS)
+#import <IOBluetooth/IOBluetooth.h>
+#endif
 
 namespace device {
 

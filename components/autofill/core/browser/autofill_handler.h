@@ -8,6 +8,7 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/time/time.h"
@@ -140,6 +141,14 @@ class AutofillHandler {
 
   // Returns the present form structures seen by Autofill handler.
   const FormStructureMap& form_structures() const { return form_structures_; }
+
+#if defined(UNIT_TEST)
+  // A public wrapper that calls |mutable_form_structures| for testing purposes
+  // only.
+  FormStructureMap* mutable_form_structures_for_test() {
+    return mutable_form_structures();
+  }
+#endif
 
  protected:
   AutofillHandler(AutofillDriver* driver, LogManager* log_manager);

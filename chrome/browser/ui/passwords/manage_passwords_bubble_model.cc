@@ -212,23 +212,9 @@ ManagePasswordsBubbleModel::ManagePasswordsBubbleModel(
                           kCredentialManagementAPI;
 
     UpdatePendingStateTitle();
-  } else if (state_ == password_manager::ui::CONFIRMATION_STATE) {
-    title_ =
-        l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_CONFIRM_SAVED_TITLE);
-  } else if (state_ == password_manager::ui::AUTO_SIGNIN_STATE) {
-    pending_password_ = delegate_->GetPendingPassword();
   } else if (state_ == password_manager::ui::MANAGE_STATE) {
     local_credentials_ = DeepCopyForms(delegate_->GetCurrentForms());
     UpdateManageStateTitle();
-  }
-
-  if (state_ == password_manager::ui::CONFIRMATION_STATE) {
-    base::string16 link = l10n_util::GetStringUTF16(IDS_MANAGE_PASSWORDS_LINK);
-
-    size_t offset;
-    save_confirmation_text_ = l10n_util::GetStringFUTF16(
-        IDS_MANAGE_PASSWORDS_CONFIRM_GENERATED_TEXT, link, &offset);
-    save_confirmation_link_range_ = gfx::Range(offset, offset + link.length());
   }
 
   password_manager::metrics_util::UIDisplayDisposition display_disposition =
@@ -245,9 +231,6 @@ ManagePasswordsBubbleModel::ManagePasswordsBubbleModel(
         display_disposition = metrics_util::MANUAL_MANAGE_PASSWORDS;
         break;
       case password_manager::ui::CONFIRMATION_STATE:
-        display_disposition =
-            metrics_util::MANUAL_GENERATED_PASSWORD_CONFIRMATION;
-        break;
       case password_manager::ui::CREDENTIAL_REQUEST_STATE:
       case password_manager::ui::AUTO_SIGNIN_STATE:
       case password_manager::ui::CHROME_SIGN_IN_PROMO_STATE:
@@ -265,12 +248,7 @@ ManagePasswordsBubbleModel::ManagePasswordsBubbleModel(
             metrics_util::AUTOMATIC_WITH_PASSWORD_PENDING_UPDATE;
         break;
       case password_manager::ui::CONFIRMATION_STATE:
-        display_disposition =
-            metrics_util::AUTOMATIC_GENERATED_PASSWORD_CONFIRMATION;
-        break;
       case password_manager::ui::AUTO_SIGNIN_STATE:
-        display_disposition = metrics_util::AUTOMATIC_SIGNIN_TOAST;
-        break;
       case password_manager::ui::MANAGE_STATE:
       case password_manager::ui::CREDENTIAL_REQUEST_STATE:
       case password_manager::ui::CHROME_SIGN_IN_PROMO_STATE:
@@ -345,20 +323,6 @@ void ManagePasswordsBubbleModel::OnManageClicked(
   interaction_keeper_->set_dismissal_reason(metrics_util::CLICKED_MANAGE);
   if (delegate_)
     delegate_->NavigateToPasswordManagerSettingsPage(referrer);
-}
-
-void ManagePasswordsBubbleModel::
-    OnNavigateToPasswordManagerAccountDashboardLinkClicked(
-        password_manager::ManagePasswordsReferrer referrer) {
-  interaction_keeper_->set_dismissal_reason(
-      metrics_util::CLICKED_PASSWORDS_DASHBOARD);
-  if (delegate_)
-    delegate_->NavigateToPasswordManagerAccountDashboard(referrer);
-}
-
-void ManagePasswordsBubbleModel::OnAutoSignInToastTimeout() {
-  interaction_keeper_->set_dismissal_reason(
-      metrics_util::AUTO_SIGNIN_TOAST_TIMEOUT);
 }
 
 void ManagePasswordsBubbleModel::OnPasswordAction(

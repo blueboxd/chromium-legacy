@@ -942,10 +942,6 @@ const char kEnableSubresourceRedirectName[] =
 const char kEnableSubresourceRedirectDescription[] =
     "Allow Render Level Data Use Optimization";
 
-const char kEnableWasmName[] = "WebAssembly structured cloning support.";
-const char kEnableWasmDescription[] =
-    "Enable web pages to use WebAssembly structured cloning.";
-
 const char kEnableWebAuthenticationCableV2SupportName[] =
     "Web Authentication caBLE v2 support";
 const char kEnableWebAuthenticationCableV2SupportDescription[] =
@@ -1071,6 +1067,12 @@ const char kFractionalScrollOffsetsName[] = "Fractional Scroll Offsets";
 const char kFractionalScrollOffsetsDescription[] =
     "Enables fractional scroll offsets inside Blink, exposing non-integer "
     "offsets to web APIs.";
+
+const char kFreezeUserAgentName[] = "Freeze User-Agent request header";
+const char kFreezeUserAgentDescription[] =
+    "Set the User-Agent request header to a static string that conforms to the "
+    "current User-Agent string format but only reveals desktop vs Android and "
+    "if the 'mobile' flag is set";
 
 const char kForceEffectiveConnectionTypeName[] =
     "Override effective connection type";
@@ -2583,14 +2585,11 @@ const char kEnableOfflinePreviewsDescription[] =
 const char kEnableWebNfcName[] = "WebNFC";
 const char kEnableWebNfcDescription[] = "Enable WebNFC support.";
 
-const char kEphemeralTabName[] = "An ephemeral Preview Tab in an Overlay Panel";
-const char kEphemeralTabDescription[] =
-    "Enable a 'Preview page/image' at a linked page into an overlay.";
-
 const char kEphemeralTabUsingBottomSheetName[] =
-    "An ephemeral Preview Tab in the bottom sheet";
+    "An ephemeral Preview Tab using the bottom sheet";
 const char kEphemeralTabUsingBottomSheetDescription[] =
-    "Enable a 'Preview page/image' at a linked page into the bottom sheet.";
+    "Enable a 'Preview page/image' at a linked page into the bottom sheet. "
+    "No other flags are needed for this feature.";
 
 const char kExploreSitesName[] = "Explore websites";
 const char kExploreSitesDescription[] =
@@ -2968,6 +2967,12 @@ const char kHappinessTrackingSurveysForDesktopDemoName[] =
 const char kHappinessTrackingSurveysForDesktopDemoDescription[] =
     "Enable showing Happiness Tracking Surveys Demo to users on Desktop";
 
+const char kHappinessTrackingSurveysForDesktopSettingsName[] =
+    "Happiness Tracking Surveys for Settings";
+const char kHappinessTrackingSurveysForDesktopSettingsDescription[] =
+    "Enable showing Happiness Tracking Surveys for Settings to users on "
+    "Desktop";
+
 const char kIntentPickerName[] = "Intent picker";
 const char kIntentPickerDescription[] =
     "When going to a site that has URL managable by a PWA, show the intent"
@@ -3078,11 +3083,6 @@ const char kCloudPrintXpsDescription[] =
 const char kD3D11VideoDecoderName[] = "D3D11 Video Decoder";
 const char kD3D11VideoDecoderDescription[] =
     "Enables D3D11VideoDecoder for hardware accelerated video decoding.";
-
-const char kEnableAuraTooltipsOnWindowsName[] =
-    "Enable aura tooltips on Windows";
-const char kEnableAuraTooltipsOnWindowsDescription[] =
-    "Enables aura tooltips instead of the native comctl32 tooltips on Windows.";
 
 const char kEnableGpuAppcontainerName[] = "Enable GPU AppContainer Lockdown.";
 const char kEnableGpuAppcontainerDescription[] =
@@ -3972,16 +3972,6 @@ const char kDirectManipulationStylusDescription[] =
 
 #endif  // defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
 
-#if defined(OS_MACOSX) || defined(OS_CHROMEOS)
-
-const char kForceEnableSystemAecName[] = "Force enable system AEC";
-const char kForceEnableSystemAecDescription[] =
-    "Use system echo canceller instead of WebRTC echo canceller. If there is "
-    "no system echo canceller available, getUserMedia with echo cancellation "
-    "enabled will fail.";
-
-#endif  // defined(OS_MACOSX) || defined(OS_CHROMEOS)
-
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
 
 const char kWebContentsOcclusionName[] = "Enable occlusion of web contents";
@@ -4058,6 +4048,15 @@ extern const char kWebrtcPipeWireCapturerDescription[] =
     "capturing the desktop content on the Wayland display server.";
 
 #endif  // #if defined(WEBRTC_USE_PIPEWIRE)
+
+#if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
+
+const char kUserDataSnapshotName[] = "Enable user data snapshots";
+const char kUserDataSnapshotDescription[] =
+    "Enables taking snapshots of the user data directory after a Chrome "
+    "update and restoring them after a version rollback.";
+
+#endif  // !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
 
 // ============================================================================
 // Don't just add flags to the end, put them in the right section in

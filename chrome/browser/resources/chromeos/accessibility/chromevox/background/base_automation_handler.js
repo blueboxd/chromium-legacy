@@ -14,24 +14,26 @@ var AutomationEvent = chrome.automation.AutomationEvent;
 var AutomationNode = chrome.automation.AutomationNode;
 var EventType = chrome.automation.EventType;
 
-/**
- * @param {AutomationNode|undefined} node
- * @constructor
- */
-BaseAutomationHandler = function(node) {
+BaseAutomationHandler = class {
   /**
-   * @type {AutomationNode|undefined}
+   * @param {AutomationNode|undefined} node
    */
-  this.node_ = node;
+  constructor(node) {
+    /**
+     * @type {AutomationNode|undefined}
+     */
+    this.node_ = node;
 
-  /** @type {!Object<EventType, function(!AutomationEvent): void>} @private */
-  this.listeners_ = {};
-};
+    /**
+     * @type {!Object<EventType,
+     *     function(!AutomationEvent): void>} @private
+     */
+    this.listeners_ = {};
+  }
 
-BaseAutomationHandler.prototype = {
   /**
    * Adds an event listener to this handler.
-   * @param {chrome.automation.EventType} eventType
+   * @param {EventType} eventType
    * @param {!function(!AutomationEvent): void} eventCallback
    * @protected
    */
@@ -43,7 +45,7 @@ BaseAutomationHandler.prototype = {
     var listener = this.makeListener_(eventCallback.bind(this));
     this.node_.addEventListener(eventType, listener, true);
     this.listeners_[eventType] = listener;
-  },
+  }
 
   /**
    * Removes all listeners from this handler.
@@ -55,7 +57,7 @@ BaseAutomationHandler.prototype = {
     }
 
     this.listeners_ = {};
-  },
+  }
 
   /**
    * @return {!function(!AutomationEvent): void}
@@ -69,7 +71,7 @@ BaseAutomationHandler.prototype = {
       callback(evt);
       this.didHandleEvent_(evt);
     }.bind(this);
-  },
+  }
 
   /**
    * Called before the event |evt| is handled.
@@ -78,7 +80,7 @@ BaseAutomationHandler.prototype = {
    */
   willHandleEvent_(evt) {
     return false;
-  },
+  }
 
   /**
    * Called after the event |evt| is handled.
@@ -86,4 +88,5 @@ BaseAutomationHandler.prototype = {
    */
   didHandleEvent_(evt) {}
 };
+
 });  // goog.scope

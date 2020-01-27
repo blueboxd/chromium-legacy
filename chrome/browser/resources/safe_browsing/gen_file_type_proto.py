@@ -18,7 +18,7 @@ import sys
 # which is five directories above, and the finds the protobufs directory from
 # there.
 proto_generator_path = os.path.normpath(os.path.join(os.path.abspath(__file__),
-    *[os.path.pardir] * 5 + ['chrome/browser/resources/protobufs']))
+    *[os.path.pardir] * 5 + ['components/resources/protobufs']))
 sys.path.insert(0, proto_generator_path)
 from binary_proto_generator import BinaryProtoGenerator
 

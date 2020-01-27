@@ -72,11 +72,11 @@ enum class PresentedState {
     BookmarkHomeViewControllerDelegate,
     TableViewPresentationControllerDelegate> {
   // The browser state of the current user.
-  ios::ChromeBrowserState* _currentBrowserState;  // weak
+  ChromeBrowserState* _currentBrowserState;  // weak
 
   // The browser state to use, might be different from _currentBrowserState if
   // it is incognito.
-  ios::ChromeBrowserState* _browserState;  // weak
+  ChromeBrowserState* _browserState;  // weak
 
   // The parent controller on top of which the UI needs to be presented.
   __weak UIViewController* _parentController;
@@ -156,7 +156,7 @@ enum class PresentedState {
 @synthesize mediator = _mediator;
 
 - (instancetype)
-    initWithBrowserState:(ios::ChromeBrowserState*)browserState
+    initWithBrowserState:(ChromeBrowserState*)browserState
         parentController:(UIViewController*)parentController
               dispatcher:(id<ApplicationCommands, BrowserCommands>)dispatcher
             webStateList:(WebStateList*)webStateList {

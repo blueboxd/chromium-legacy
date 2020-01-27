@@ -135,6 +135,7 @@ class AutofillPopupItemView : public AutofillPopupRowView {
   void OnMouseEntered(const ui::MouseEvent& event) override;
   void OnMouseExited(const ui::MouseEvent& event) override;
   void OnMouseReleased(const ui::MouseEvent& event) override;
+  void OnGestureEvent(ui::GestureEvent* event) override;
 
  protected:
   AutofillPopupItemView(AutofillPopupViewNativeViews* popup_view,
@@ -374,6 +375,26 @@ void AutofillPopupItemView::OnMouseReleased(const ui::MouseEvent& event) {
   if (controller && event.IsOnlyLeftMouseButton() &&
       HitTestPoint(event.location())) {
     controller->AcceptSuggestion(line_number());
+  }
+}
+
+void AutofillPopupItemView::OnGestureEvent(ui::GestureEvent* event) {
+  AutofillPopupController* controller = popup_view()->controller();
+  if (!controller)
+    return;
+  switch (event->type()) {
+    case ui::ET_GESTURE_TAP_DOWN:
+      controller->SetSelectedLine(line_number());
+      break;
+    case ui::ET_GESTURE_TAP:
+      controller->AcceptSuggestion(line_number());
+      break;
+    case ui::ET_GESTURE_TAP_CANCEL:
+    case ui::ET_GESTURE_END:
+      controller->SelectionCleared();
+      break;
+    default:
+      return;
   }
 }
 

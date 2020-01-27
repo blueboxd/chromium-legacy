@@ -74,7 +74,7 @@ void InputTypeView::DispatchSimulatedClickIfActive(KeyboardEvent& event) const {
 
 void InputTypeView::AccessKeyAction(bool) {
   GetElement().focus(FocusParams(SelectionBehaviorOnFocus::kReset,
-                                 kWebFocusTypeNone, nullptr));
+                                 mojom::blink::FocusType::kNone, nullptr));
 }
 
 bool InputTypeView::ShouldSubmitImplicitly(const Event& event) {
@@ -115,7 +115,7 @@ bool InputTypeView::HasCustomFocusLogic() const {
 
 void InputTypeView::HandleBlurEvent() {}
 
-void InputTypeView::HandleFocusInEvent(Element*, WebFocusType) {}
+void InputTypeView::HandleFocusInEvent(Element*, mojom::blink::FocusType) {}
 
 void InputTypeView::StartResourceLoading() {}
 

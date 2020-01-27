@@ -18,7 +18,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/task_environment.h"
-#include "base/test/test_timeouts.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "fuchsia/base/agent_impl.h"
 #include "fuchsia/base/fake_component_context.h"
@@ -234,10 +233,7 @@ class CastRunnerIntegrationTest : public testing::Test {
 
  protected:
   explicit CastRunnerIntegrationTest(
-      fuchsia::web::ContextFeatureFlags feature_flags)
-      : run_timeout_(
-            TestTimeouts::action_timeout(),
-            base::MakeExpectedNotRunClosure(FROM_HERE, "Run() timed out.")) {
+      fuchsia::web::ContextFeatureFlags feature_flags) {
     // Create the CastRunner, published into |outgoing_directory_|.
     fuchsia::web::CreateContextParams create_context_params;
     create_context_params.set_features(feature_flags);
@@ -284,7 +280,6 @@ class CastRunnerIntegrationTest : public testing::Test {
         &component_services_, component_url);
   }
 
-  const base::RunLoop::ScopedRunTimeoutForTest run_timeout_;
   base::test::SingleThreadTaskEnvironment task_environment_{
       base::test::SingleThreadTaskEnvironment::MainThreadType::IO};
   net::EmbeddedTestServer test_server_;

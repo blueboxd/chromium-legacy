@@ -27,7 +27,6 @@
 <translation id="4249068189593983585">Савет за Chrome. Ако желите више опција за картице, додирните и задржите дугме Прикажи картице на траци с алаткама, која се налази у дну или врху екрана.</translation>
 <translation id="4523886039239821078">Неки програмски додаци изазивају отказивање Chrome-а. Деинсталирајте:</translation>
 <translation id="5389212809648216794">Google Chrome не може да користи камеру зато што је већ користи друга апликација</translation>
-<translation id="5621912349729388018"><ph name="BEGIN_LINK" />Прегледајте ажуриране Chrome услове коришћења услуге.<ph name="END_LINK" /></translation>
 <translation id="5639704535586432836">Отворите Подешавања &gt; Приватност &gt; Камера &gt; Google Chrome и укључите камеру.</translation>
 <translation id="5642200033778930880">Google Chrome не може да користи камеру у режиму подељеног приказа</translation>
 <translation id="5690427481109656848">Google LLC</translation>
@@ -51,4 +50,5 @@
 <translation id="840168496893712993">Неки програмски додаци изазивају отказивање Chrome-а. Покушајте да их деинсталирате.</translation>
 <translation id="8459495907675268833">Изабрани подаци су уклоњени из Chrome-а и са синхронизованих уређаја. Google налог можда има друге облике историје прегледања, попут претрага и активности у другим Google услугама на history.google.com.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
+<translation id="8574235780160508979">Chrome услови коришћења услуге се мењају 31. марта. <ph name="BEGIN_LINK" />Прегледајте<ph name="END_LINK" /></translation>
 </translationbundle>

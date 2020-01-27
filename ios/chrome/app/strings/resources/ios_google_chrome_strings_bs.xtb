@@ -27,7 +27,6 @@
 <translation id="4249068189593983585">Savjet za Chrome. Za više opcija za kartice dodirnite i zadržite dugme Prikaži kartice na alatnoj traci, na dnu ili na vrhu ekrana.</translation>
 <translation id="4523886039239821078">Zbog nekih dodataka Chrome može prestati da radi. Deinstalirajte:</translation>
 <translation id="5389212809648216794">Google Chrome ne može koristiti vašu kameru jer je koristi druga aplikacija</translation>
-<translation id="5621912349729388018"><ph name="BEGIN_LINK" />Pregledajte ažurirane Uslove korištenja usluge Chrome.<ph name="END_LINK" /></translation>
 <translation id="5639704535586432836">Otvorite Postavke &gt; Privatnost &gt; Kamera &gt; Google Chrome i uključite kameru.</translation>
 <translation id="5642200033778930880">Google Chrome ne može koristiti vašu kameru u podijeljenom načinu prikaza</translation>
 <translation id="5690427481109656848">Google LLC</translation>
@@ -51,4 +50,5 @@
 <translation id="840168496893712993">Neki dodaci uzrokuju pad aplikacije Chromea. Pokušajte ih deinstalirati.</translation>
 <translation id="8459495907675268833">Odabrani podaci su uklonjeni iz Chromea i sinhroniziranih uređaja. Vaš Google račun može imati druge oblike historije pregledanja, kao što su pretraživanja i aktivnosti s drugih Googleovih usluga na history.google.com.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
+<translation id="8574235780160508979">Chromeovi Uslovi korištenja usluge će se promijeniti 31. marta. <ph name="BEGIN_LINK" />Pročitajte<ph name="END_LINK" /></translation>
 </translationbundle>

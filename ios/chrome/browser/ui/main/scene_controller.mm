@@ -620,8 +620,7 @@ enum class TabSwitcherDismissalMode { NONE, NORMAL, INCOGNITO };
 }
 
 - (NSString*)currentPageSyncedUserName {
-  ios::ChromeBrowserState* browserState =
-      self.mainController.currentBrowserState;
+  ChromeBrowserState* browserState = self.mainController.currentBrowserState;
   if (browserState->IsOffTheRecord())
     return nil;
   signin::IdentityManager* identity_manager =
@@ -1110,7 +1109,7 @@ enum class TabSwitcherDismissalMode { NONE, NORMAL, INCOGNITO };
                                                focusOmnibox:focusOmnibox];
 }
 
-- (ios::ChromeBrowserState*)currentBrowserState {
+- (ChromeBrowserState*)currentBrowserState {
   return self.mainController.interfaceProvider.currentInterface.browserState;
 }
 
@@ -1208,7 +1207,7 @@ enum class TabSwitcherDismissalMode { NONE, NORMAL, INCOGNITO };
 #pragma mark - AppNavigation
 
 - (void)presentSignedInAccountsViewControllerForBrowserState:
-    (ios::ChromeBrowserState*)browserState {
+    (ChromeBrowserState*)browserState {
   UIViewController* accountsViewController =
       [[SignedInAccountsViewController alloc]
           initWithBrowserState:browserState
@@ -1331,7 +1330,7 @@ enum class TabSwitcherDismissalMode { NONE, NORMAL, INCOGNITO };
 - (void)clearIOSSpecificIncognitoData {
   DCHECK(self.mainController.mainBrowserState
              ->HasOffTheRecordChromeBrowserState());
-  ios::ChromeBrowserState* otrBrowserState =
+  ChromeBrowserState* otrBrowserState =
       self.mainController.mainBrowserState->GetOffTheRecordChromeBrowserState();
   [self.mainController
       removeBrowsingDataForBrowserState:otrBrowserState

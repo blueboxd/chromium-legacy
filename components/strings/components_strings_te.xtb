@@ -292,7 +292,6 @@
 <translation id="2218879909401188352"><ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />లోని హ్యాకర్‌లు మీ పరికరంలో హానికరమైన యాప్‌లను ఇన్‌స్టాల్ చేయవచ్చు. మీ మొబైల్ బిల్‌లో అదృశ్య ఛార్జీలకు కారణం కావచ్చు లేదా మీ వ్యక్తిగత సమాచారాన్ని దొంగిలించవచ్చు. <ph name="BEGIN_LEARN_MORE_LINK" />మరింత తెలుసుకోండి<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="2224337661447660594">ఇంటర్నెట్ లేదు</translation>
 <translation id="2230458221926704099"><ph name="BEGIN_LINK" />విశ్లేషణల యాప్‌<ph name="END_LINK" />ను ఉపయోగించి మీ కనెక్షన్‌ను సరి చేయండి</translation>
-<translation id="22320125457191592">మీ కోసం</translation>
 <translation id="2239100178324503013">ఇప్పుడే పంపండి</translation>
 <translation id="2248949050832152960">WebAuthnను ఉపయోగించండి</translation>
 <translation id="2250931979407627383">ఎడమవైపు కుట్టిన అంచు</translation>
@@ -576,7 +575,6 @@
 <translation id="3531780078352352885">జాబ్ షీట్‌లు</translation>
 <translation id="3533328374079021623">మెయిల్‌బాక్స్ 5</translation>
 <translation id="3539171420378717834">ఈ పరికరంలో ఈ కార్డ్ కాపీని ఉంచు</translation>
-<translation id="3553513561058684206">మీ కోసం</translation>
 <translation id="3558573058928565255">రోజు, సమయం</translation>
 <translation id="3566021033012934673">మీ కనెక్షన్ ప్రైవేట్ కాదు</translation>
 <translation id="3574305903863751447"><ph name="CITY" />, <ph name="STATE" /> <ph name="COUNTRY" /></translation>

@@ -34,8 +34,8 @@
 
 #if defined(OS_ANDROID)
 #include "base/android/build_info.h"
-#include "chrome/browser/android/chrome_feature_list.h"
-#include "chrome/browser/android/mock_location_settings.h"
+#include "chrome/browser/flags/android/chrome_feature_list.h"
+#include "chrome/browser/geolocation/android/mock_location_settings.h"
 #include "chrome/browser/geolocation/geolocation_permission_context_android.h"
 #endif  // defined(OS_ANDROID)
 

@@ -561,6 +561,7 @@ do_test 4.3 {
   }]
 } {64}
 
+
 #-------------------------------------------------------------------------
 # Request a snippet from a query with more than 64 phrases.
 #

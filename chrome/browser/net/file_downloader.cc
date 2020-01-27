@@ -53,9 +53,9 @@ FileDownloader::FileDownloader(
              base::TaskPriority::BEST_EFFORT,
              base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN})
             .get(),
-        FROM_HERE, base::Bind(&base::PathExists, local_path_),
-        base::Bind(&FileDownloader::OnFileExistsCheckDone,
-                   weak_ptr_factory_.GetWeakPtr()));
+        FROM_HERE, base::BindOnce(&base::PathExists, local_path_),
+        base::BindOnce(&FileDownloader::OnFileExistsCheckDone,
+                       weak_ptr_factory_.GetWeakPtr()));
   }
 }
 
@@ -80,9 +80,9 @@ void FileDownloader::OnSimpleDownloadComplete(base::FilePath response_path) {
                               base::TaskPriority::BEST_EFFORT,
                               base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN})
           .get(),
-      FROM_HERE, base::Bind(&base::Move, response_path, local_path_),
-      base::Bind(&FileDownloader::OnFileMoveDone,
-                 weak_ptr_factory_.GetWeakPtr()));
+      FROM_HERE, base::BindOnce(&base::Move, response_path, local_path_),
+      base::BindOnce(&FileDownloader::OnFileMoveDone,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void FileDownloader::OnFileExistsCheckDone(bool exists) {

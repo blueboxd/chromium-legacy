@@ -32,11 +32,9 @@ class MockTabModelListObserver : public TabModelListObserver {
   MockTabModelListObserver() : TabModelListObserver() {}
 
   MOCK_METHOD2(TabModelRegisteredWithBrowserState,
-               void(TabModel* tab_model,
-                    ios::ChromeBrowserState* browser_state));
+               void(TabModel* tab_model, ChromeBrowserState* browser_state));
   MOCK_METHOD2(TabModelUnregisteredFromBrowserState,
-               void(TabModel* tab_model,
-                    ios::ChromeBrowserState* browser_state));
+               void(TabModel* tab_model, ChromeBrowserState* browser_state));
 };
 
 class TabModelListTest : public PlatformTest {
@@ -66,11 +64,9 @@ class TabModelListTest : public PlatformTest {
     return TabModelList::GetTabModelsForChromeBrowserState(otr_browser_state());
   }
 
-  ios::ChromeBrowserState* browser_state() {
-    return browser_->GetBrowserState();
-  }
+  ChromeBrowserState* browser_state() { return browser_->GetBrowserState(); }
 
-  ios::ChromeBrowserState* otr_browser_state() {
+  ChromeBrowserState* otr_browser_state() {
     return otr_browser_->GetBrowserState();
   }
 

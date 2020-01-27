@@ -30,6 +30,7 @@
 
 #include "third_party/blink/public/mojom/frame/lifecycle.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/manifest/display_mode.mojom-shared.h"
+#include "third_party/blink/public/mojom/scroll/scroll_into_view_params.mojom-blink-forward.h"
 #include "third_party/blink/public/platform/shape_properties.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/frame/frame_view.h"
@@ -97,7 +98,6 @@ struct AnnotatedRegionValue;
 struct IntrinsicSizingInfo;
 struct PhysicalOffset;
 struct PhysicalRect;
-struct WebScrollIntoViewParams;
 
 typedef uint64_t DOMTimeStamp;
 using LayerTreeFlags = unsigned;
@@ -643,7 +643,7 @@ class CORE_EXPORT LocalFrameView final
   // When the frame is a local root and not a main frame, any recursive
   // scrolling should continue in the parent process.
   void ScrollRectToVisibleInRemoteParent(const PhysicalRect&,
-                                         const WebScrollIntoViewParams&);
+                                         mojom::blink::ScrollIntoViewParamsPtr);
 
   PaintArtifactCompositor* GetPaintArtifactCompositor() const;
 
@@ -692,7 +692,7 @@ class CORE_EXPORT LocalFrameView final
   void ParentVisibleChanged() override;
   void NotifyFrameRectsChangedIfNeeded();
   void SetViewportIntersection(
-      const ViewportIntersectionState& intersection_state) override {}
+      const ViewportIntersectionState& intersection_state) override;
   void VisibilityForThrottlingChanged() override;
   bool LifecycleUpdatesThrottled() const override {
     return lifecycle_updates_throttled_;

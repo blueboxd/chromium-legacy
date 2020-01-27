@@ -293,7 +293,8 @@ class BASE_EXPORT Histogram : public HistogramBase {
   //----------------------------------------------------------------------------
   // Helpers for emitting Ascii graphic.  Each method appends data to output.
 
-  void WriteAsciiImpl(bool graph_it,
+  void WriteAsciiBody(const SampleVector& snapshot,
+                      bool graph_it,
                       const std::string& newline,
                       std::string* output) const;
 
@@ -302,7 +303,6 @@ class BASE_EXPORT Histogram : public HistogramBase {
 
   // Write a common header message describing this histogram.
   void WriteAsciiHeader(const SampleVectorBase& samples,
-                        Count sample_count,
                         std::string* output) const;
 
   // Write information about previous, current, and next buckets.

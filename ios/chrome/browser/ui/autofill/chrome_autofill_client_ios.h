@@ -39,7 +39,7 @@ namespace autofill {
 // Chrome iOS implementation of AutofillClient.
 class ChromeAutofillClientIOS : public AutofillClient {
  public:
-  ChromeAutofillClientIOS(ios::ChromeBrowserState* browser_state,
+  ChromeAutofillClientIOS(ChromeBrowserState* browser_state,
                           web::WebState* web_state,
                           infobars::InfoBarManager* infobar_manager,
                           id<AutofillClientIOSBridge> bridge,
@@ -138,7 +138,7 @@ class ChromeAutofillClientIOS : public AutofillClient {
   syncer::SyncService* sync_service_;
   PersonalDataManager* personal_data_manager_;
   AutocompleteHistoryManager* autocomplete_history_manager_;
-  ios::ChromeBrowserState* browser_state_;
+  ChromeBrowserState* browser_state_;
   web::WebState* web_state_;
   __weak id<AutofillClientIOSBridge> bridge_;
   signin::IdentityManager* identity_manager_;

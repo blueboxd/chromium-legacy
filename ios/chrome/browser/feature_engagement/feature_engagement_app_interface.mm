@@ -40,7 +40,7 @@ std::unique_ptr<KeyedService> CreateTestFeatureEngagementTracker(
 }
 
 BOOL LoadFeatureEngagementTracker() {
-  ios::ChromeBrowserState* browser_state =
+  ChromeBrowserState* browser_state =
       chrome_test_util::GetOriginalBrowserState();
 
   feature_engagement::TrackerFactory::GetInstance()->SetTestingFactory(

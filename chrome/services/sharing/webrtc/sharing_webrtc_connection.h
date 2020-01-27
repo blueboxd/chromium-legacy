@@ -20,8 +20,8 @@
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
-#include "services/network/public/mojom/mdns_responder.mojom-forward.h"
-#include "services/network/public/mojom/p2p.mojom-forward.h"
+#include "services/network/public/mojom/mdns_responder.mojom.h"
+#include "services/network/public/mojom/p2p.mojom.h"
 #include "third_party/webrtc/api/data_channel_interface.h"
 #include "third_party/webrtc/api/peer_connection_interface.h"
 
@@ -30,6 +30,8 @@ class SessionDescriptionInterface;
 }  // namespace webrtc
 
 namespace sharing {
+
+class IpcPacketSocketFactory;
 
 // Manages a WebRTC PeerConnection. Signalling is handled via the passed sender
 // and receiver. All network communication is handled by the network service via
@@ -50,7 +52,6 @@ class SharingWebRtcConnection : public mojom::SignallingReceiver,
       mojo::PendingReceiver<mojom::SharingWebRtcConnection> connection,
       mojo::PendingRemote<network::mojom::P2PSocketManager> socket_manager,
       mojo::PendingRemote<network::mojom::MdnsResponder> mdns_responder,
-      std::unique_ptr<cricket::PortAllocator> port_allocator,
       base::OnceCallback<void(SharingWebRtcConnection*)> on_disconnect);
   SharingWebRtcConnection(const SharingWebRtcConnection&) = delete;
   SharingWebRtcConnection& operator=(const SharingWebRtcConnection&) = delete;
@@ -116,6 +117,8 @@ class SharingWebRtcConnection : public mojom::SignallingReceiver,
 
   void AddIceCandidates(std::vector<mojom::IceCandidatePtr> ice_candidates);
 
+  void OnNetworkConnectionLost();
+
   void CloseConnection();
 
   void MaybeSendQueuedMessages();
@@ -124,7 +127,10 @@ class SharingWebRtcConnection : public mojom::SignallingReceiver,
   mojo::Remote<mojom::SignallingSender> signalling_sender_;
   mojo::Receiver<mojom::SharingWebRtcConnection> connection_;
   mojo::Remote<mojom::SharingWebRtcConnectionDelegate> delegate_;
+  mojo::Remote<network::mojom::P2PSocketManager> p2p_socket_manager_;
+  mojo::Remote<network::mojom::MdnsResponder> mdns_responder_;
 
+  std::unique_ptr<IpcPacketSocketFactory> socket_factory_;
   scoped_refptr<webrtc::PeerConnectionInterface> peer_connection_;
   scoped_refptr<webrtc::DataChannelInterface> channel_;
 

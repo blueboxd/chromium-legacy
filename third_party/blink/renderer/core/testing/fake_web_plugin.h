@@ -31,6 +31,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_TESTING_FAKE_WEB_PLUGIN_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_TESTING_FAKE_WEB_PLUGIN_H_
 
+#include "third_party/blink/public/mojom/input/focus_type.mojom-blink-forward.h"
 #include "third_party/blink/public/web/web_plugin.h"
 
 namespace cc {
@@ -59,7 +60,7 @@ class FakeWebPlugin : public WebPlugin {
                       const WebRect& clip_rect,
                       const WebRect& window_clip_rect,
                       bool is_visible) override {}
-  void UpdateFocus(bool, WebFocusType) override {}
+  void UpdateFocus(bool, mojom::blink::FocusType) override {}
   void UpdateVisibility(bool) override {}
   WebInputEventResult HandleInputEvent(const WebCoalescedInputEvent&,
                                        WebCursorInfo&) override {

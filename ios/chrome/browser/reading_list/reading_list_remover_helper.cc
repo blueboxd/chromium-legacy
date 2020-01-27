@@ -14,7 +14,7 @@
 namespace reading_list {
 
 ReadingListRemoverHelper::ReadingListRemoverHelper(
-    ios::ChromeBrowserState* browser_state) {
+    ChromeBrowserState* browser_state) {
   reading_list_model_ =
       ReadingListModelFactory::GetForBrowserState(browser_state);
   reading_list_download_service_ =

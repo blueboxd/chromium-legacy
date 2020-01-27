@@ -20,7 +20,6 @@
 #include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill_assistant/browser/actions/action_delegate.h"
 #include "components/autofill_assistant/browser/actions/required_fields_fallback_handler.h"
-#include "components/autofill_assistant/browser/client_memory.h"
 #include "components/autofill_assistant/browser/client_status.h"
 
 namespace autofill_assistant {
@@ -66,8 +65,8 @@ void UseCreditCardAction::InternalProcessAction(
   process_action_callback_ = std::move(action_callback);
 
   // Ensure data already selected in a previous action.
-  auto* client_memory = delegate_->GetClientMemory();
-  if (!client_memory->has_selected_card()) {
+  auto* user_data = delegate_->GetUserData();
+  if (user_data->selected_card_.get() == nullptr) {
     EndAction(ClientStatus(PRECONDITION_FAILED));
     return;
   }

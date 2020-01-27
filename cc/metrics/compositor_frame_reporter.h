@@ -102,6 +102,7 @@ class CC_EXPORT CompositorFrameReporter {
     kScrollingCoordinator = 7,
     kCompositeCommit = 8,
     kUpdateLayers = 9,
+    kBeginMainSentToStarted = 10,
     kBreakdownCount
   };
 
@@ -137,8 +138,8 @@ class CC_EXPORT CompositorFrameReporter {
   void StartStage(StageType stage_type, base::TimeTicks start_time);
   void TerminateFrame(FrameTerminationStatus termination_status,
                       base::TimeTicks termination_time);
-  void SetBlinkBreakdown(
-      std::unique_ptr<BeginMainFrameMetrics> blink_breakdown);
+  void SetBlinkBreakdown(std::unique_ptr<BeginMainFrameMetrics> blink_breakdown,
+                         base::TimeTicks begin_main_start);
   void SetVizBreakdown(const viz::FrameTimingDetails& viz_breakdown);
 
   int StageHistorySizeForTesting() { return stage_history_.size(); }
@@ -162,6 +163,7 @@ class CC_EXPORT CompositorFrameReporter {
           FrameSequenceTrackerType::kMaxType) const;
   void ReportBlinkBreakdowns(
       MissedFrameReportTypes report_type,
+      const base::TimeTicks start_time,
       FrameSequenceTrackerType frame_sequence_tracker_type) const;
   void ReportVizBreakdowns(
       MissedFrameReportTypes report_type,
@@ -188,6 +190,7 @@ class CC_EXPORT CompositorFrameReporter {
   const bool is_single_threaded_;
   bool submitted_frame_missed_deadline_ = false;
   base::TimeTicks frame_termination_time_;
+  base::TimeTicks begin_main_frame_start_;
   FrameTerminationStatus frame_termination_status_ =
       FrameTerminationStatus::kUnknown;
 

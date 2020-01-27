@@ -54,6 +54,7 @@
 #include "third_party/blink/public/web/web_history_item.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/public/web/web_view.h"
+#include "ui/gfx/geometry/point.h"
 #include "ui/native_theme/native_theme_features.h"
 
 using blink::WebString;
@@ -168,7 +169,9 @@ class RenderFrameImplTest : public RenderViewTest {
 class RenderFrameTestObserver : public RenderFrameObserver {
  public:
   explicit RenderFrameTestObserver(RenderFrame* render_frame)
-      : RenderFrameObserver(render_frame), visible_(false) {}
+      : RenderFrameObserver(render_frame),
+        visible_(false),
+        last_intersection_rect_(-1, -1, -1, -1) {}
 
   ~RenderFrameTestObserver() override {}
 
@@ -176,11 +179,17 @@ class RenderFrameTestObserver : public RenderFrameObserver {
   void WasShown() override { visible_ = true; }
   void WasHidden() override { visible_ = false; }
   void OnDestruct() override { delete this; }
+  void OnMainFrameDocumentIntersectionChanged(
+      const blink::WebRect& intersection_rect) override {
+    last_intersection_rect_ = intersection_rect;
+  }
 
   bool visible() { return visible_; }
+  blink::WebRect last_intersection_rect() { return last_intersection_rect_; }
 
  private:
   bool visible_;
+  blink::WebRect last_intersection_rect_;
 };
 
 // Verify that a frame with a RenderFrameProxy as a parent has its own
@@ -485,6 +494,22 @@ TEST_F(RenderFrameImplTest, FileUrlPathAlias) {
     GetMainRenderFrame()->WillSendRequest(request);
     EXPECT_EQ(test_case.transformed, request.Url().GetString().Utf8());
   }
+}
+
+TEST_F(RenderFrameImplTest, MainFrameDocumentIntersectionRecorded) {
+  RenderFrameTestObserver observer(frame());
+  gfx::Point viewport_offset(7, -11);
+  blink::WebRect viewport_intersection(0, 11, 200, 89);
+  blink::WebRect mainframe_intersection(0, 0, 200, 140);
+  blink::FrameOcclusionState occlusion_state =
+      blink::FrameOcclusionState::kUnknown;
+  WidgetMsg_SetViewportIntersection set_viewport_intersection_message(
+      0, {viewport_offset, viewport_intersection, mainframe_intersection,
+          blink::WebRect(), occlusion_state});
+  frame_widget()->OnMessageReceived(set_viewport_intersection_message);
+  // Setting a new frame intersection in a local frame triggers the render frame
+  // observer call.
+  EXPECT_EQ(observer.last_intersection_rect(), blink::WebRect(0, 0, 200, 140));
 }
 
 // Used to annotate the source of an interface request.

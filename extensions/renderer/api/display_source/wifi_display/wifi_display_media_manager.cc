@@ -116,18 +116,15 @@ void WiFiDisplayMediaManager::Play() {
         &WiFiDisplayMediaManager::RegisterMediaService,
         base::Unretained(this),
         base::ThreadTaskRunnerHandle::Get());
-    base::PostTaskAndReplyWithResult(io_task_runner_.get(), FROM_HERE,
-        base::Bind(
-            &WiFiDisplayMediaPipeline::Create,
-            GetSessionType(),
-            video_encoder_parameters_,
-            optimal_audio_codec_,
-            sink_ip_address_,
-            sink_rtp_ports_,
-            service_callback,  // To be invoked on IO thread.
-            media::BindToCurrentLoop(error_callback_)),
-        base::Bind(&WiFiDisplayMediaManager::OnPlayerCreated,
-                   weak_factory_.GetWeakPtr()));
+    base::PostTaskAndReplyWithResult(
+        io_task_runner_.get(), FROM_HERE,
+        base::BindOnce(&WiFiDisplayMediaPipeline::Create, GetSessionType(),
+                       video_encoder_parameters_, optimal_audio_codec_,
+                       sink_ip_address_, sink_rtp_ports_,
+                       service_callback,  // To be invoked on IO thread.
+                       media::BindToCurrentLoop(error_callback_)),
+        base::BindOnce(&WiFiDisplayMediaManager::OnPlayerCreated,
+                       weak_factory_.GetWeakPtr()));
     return;
   }
 

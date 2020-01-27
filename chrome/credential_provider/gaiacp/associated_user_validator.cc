@@ -252,7 +252,10 @@ HRESULT AssociatedUserValidator::UpdateAssociatedSids(
   for (const auto& sid_to_association : sids_to_handle_info) {
     const base::string16& sid = sid_to_association.first;
     const UserTokenHandleInfo& info = sid_to_association.second;
-    if (info.gaia_id.empty()) {
+
+    // If both gaia id and email address are empty. Then remove the
+    // User Properties as it is invalid.
+    if (info.gaia_id.empty() && info.email_address.empty()) {
       users_to_delete.insert(sid_to_association.first);
       continue;
     }
@@ -416,8 +419,9 @@ void AssociatedUserValidator::CheckTokenHandleValidity(
       continue;
     }
 
-    // User exists, has a gaia id, but no token handle. Consider this an invalid
-    // token handle and the user needs to sign in with Gaia to get a new one.
+    // User exists, has a gaia id or email address, but no token handle.
+    // Consider this an invalid token handle and the user needs to sign in
+    // with Gaia to get a new one.
     if (it->second.empty()) {
       user_to_token_handle_info_[it->first] =
           std::make_unique<TokenHandleInfo>(base::string16());

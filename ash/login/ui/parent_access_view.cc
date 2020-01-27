@@ -13,6 +13,7 @@
 #include "ash/login/ui/login_button.h"
 #include "ash/login/ui/login_pin_view.h"
 #include "ash/login/ui/non_accessible_view.h"
+#include "ash/public/cpp/login_constants.h"
 #include "ash/public/cpp/login_types.h"
 #include "ash/public/cpp/shelf_config.h"
 #include "ash/resources/vector_icons/vector_icons.h"
@@ -36,6 +37,7 @@
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/events/event.h"
+#include "ui/events/keycodes/dom/dom_code.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_analysis.h"
 #include "ui/gfx/color_palette.h"
@@ -52,6 +54,7 @@
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/controls/textfield/textfield_controller.h"
 #include "ui/views/layout/box_layout.h"
+#include "ui/views/layout/fill_layout.h"
 #include "ui/views/vector_icons.h"
 
 namespace ash {
@@ -87,6 +90,10 @@ constexpr int kSubmitButtonBottomMarginDp = 28;
 constexpr int kTitleFontSizeDeltaDp = 3;
 constexpr int kDescriptionFontSizeDeltaDp = -1;
 constexpr int kDescriptionTextLineHeightDp = 16;
+
+constexpr int kAccessCodeFlexLengthWidthDp = 192;
+constexpr int kAccessCodeFontSizeDeltaDp = 5;
+constexpr int kObscuredGlyphSpacingDp = 6;
 
 constexpr int kAccessCodeInputFieldWidthDp = 24;
 constexpr int kAccessCodeInputFieldHeightDp = 32;
@@ -154,7 +161,199 @@ base::string16 GetAccessibleTitle() {
   return l10n_util::GetStringUTF16(IDS_ASH_LOGIN_PARENT_ACCESS_DIALOG_NAME);
 }
 
-// Accessible input field. Customizes field description and focus behavior.
+void RecordAction(ParentAccessView::UMAAction action) {
+  UMA_HISTOGRAM_ENUMERATION(ParentAccessView::kUMAParentAccessCodeAction,
+                            action);
+}
+
+void RecordUsage(ParentAccessRequestReason reason) {
+  switch (reason) {
+    case ParentAccessRequestReason::kUnlockTimeLimits: {
+      UMA_HISTOGRAM_ENUMERATION(ParentAccessView::kUMAParentAccessCodeUsage,
+                                ParentAccessView::UMAUsage::kTimeLimits);
+      return;
+    }
+    case ParentAccessRequestReason::kChangeTime: {
+      bool is_login = Shell::Get()->session_controller()->GetSessionState() ==
+                      session_manager::SessionState::LOGIN_PRIMARY;
+      UMA_HISTOGRAM_ENUMERATION(
+          ParentAccessView::kUMAParentAccessCodeUsage,
+          is_login ? ParentAccessView::UMAUsage::kTimeChangeLoginScreen
+                   : ParentAccessView::UMAUsage::kTimeChangeInSession);
+      return;
+    }
+    case ParentAccessRequestReason::kChangeTimezone: {
+      UMA_HISTOGRAM_ENUMERATION(ParentAccessView::kUMAParentAccessCodeUsage,
+                                ParentAccessView::UMAUsage::kTimezoneChange);
+      return;
+    }
+  }
+  NOTREACHED() << "Unknown ParentAccessRequestReason";
+}
+
+}  // namespace
+
+class ParentAccessView::AccessCodeInput : public views::View,
+                                          public views::TextfieldController {
+ public:
+  AccessCodeInput() = default;
+
+  ~AccessCodeInput() override = default;
+
+  // Deletes the last character.
+  virtual void Backspace() = 0;
+
+  // Appends a digit to the code.
+  virtual void InsertDigit(int value) = 0;
+
+  // Returns access code as string.
+  virtual base::Optional<std::string> GetCode() const = 0;
+
+  // Sets the color of the input text.
+  virtual void SetInputColor(SkColor color) = 0;
+};
+
+class ParentAccessView::FlexCodeInput : public AccessCodeInput {
+ public:
+  using OnInputChange = base::RepeatingCallback<void(bool enable_submit)>;
+  using OnEnter = base::RepeatingClosure;
+  using OnEscape = base::RepeatingClosure;
+
+  // Builds the view for an access code that consists out of an unknown number
+  // of digits. |on_input_change| will be called upon digit insertion, deletion
+  // or change. |on_enter| will be called when code is complete and user presses
+  // enter to submit it for validation. |on_escape| will be called when pressing
+  // the escape key. |obscure_pin| determines whether the entered pin is
+  // displayed as clear text or as bullet points.
+  FlexCodeInput(OnInputChange on_input_change,
+                OnEnter on_enter,
+                OnEscape on_escape,
+                bool obscure_pin)
+      : on_input_change_(std::move(on_input_change)),
+        on_enter_(std::move(on_enter)),
+        on_escape_(std::move(on_escape)) {
+    DCHECK(on_input_change_);
+
+    SetLayoutManager(std::make_unique<views::FillLayout>());
+
+    code_field_ = AddChildView(std::make_unique<views::Textfield>());
+    code_field_->set_controller(this);
+    code_field_->SetTextColor(login_constants::kAuthMethodsTextColor);
+    code_field_->SetFontList(views::Textfield::GetDefaultFontList().Derive(
+        kAccessCodeFontSizeDeltaDp, gfx::Font::FontStyle::NORMAL,
+        gfx::Font::Weight::NORMAL));
+    code_field_->SetBorder(views::CreateSolidSidedBorder(
+        0, 0, kAccessCodeInputFieldUnderlineThicknessDp, 0, kTextColor));
+    code_field_->SetBackgroundColor(SK_ColorTRANSPARENT);
+    code_field_->SetFocusBehavior(FocusBehavior::ALWAYS);
+    code_field_->SetPreferredSize(
+        gfx::Size(kAccessCodeFlexLengthWidthDp, kAccessCodeInputFieldHeightDp));
+
+    if (obscure_pin) {
+      code_field_->SetTextInputType(ui::TEXT_INPUT_TYPE_PASSWORD);
+      code_field_->SetObscuredGlyphSpacing(kObscuredGlyphSpacingDp);
+    } else {
+      code_field_->SetTextInputType(ui::TEXT_INPUT_TYPE_NUMBER);
+    }
+  }
+
+  ~FlexCodeInput() override = default;
+  FlexCodeInput(const FlexCodeInput&) = delete;
+  FlexCodeInput& operator=(const FlexCodeInput&) = delete;
+
+  // Appends |value| to the code
+  void InsertDigit(int value) override {
+    DCHECK_LE(0, value);
+    DCHECK_GE(9, value);
+
+    code_field_->SetText(code_field_->GetText() +
+                         base::NumberToString16(value));
+    on_input_change_.Run(true);
+  }
+
+  // Deletes the last character or the selected text.
+  void Backspace() override {
+    // Instead of just adjusting code_field_ text directly, fire a backspace key
+    // event as this handles the various edge cases (ie, selected text).
+
+    // views::Textfield::OnKeyPressed is private, so we call it via views::View.
+    auto* view = static_cast<views::View*>(code_field_);
+    view->OnKeyPressed(ui::KeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_BACK,
+                                    ui::DomCode::BACKSPACE, ui::EF_NONE));
+    view->OnKeyPressed(ui::KeyEvent(ui::ET_KEY_RELEASED, ui::VKEY_BACK,
+                                    ui::DomCode::BACKSPACE, ui::EF_NONE));
+    // This triggers ContentsChanged(), which calls |on_input_change_|.
+  }
+
+  // Returns access code as string if field contains input.
+  base::Optional<std::string> GetCode() const override {
+    base::string16 code = code_field_->GetText();
+    if (!code.length()) {
+      return base::nullopt;
+    }
+    return base::UTF16ToUTF8(code);
+  }
+
+  // Sets the color of the input text.
+  void SetInputColor(SkColor color) override {
+    code_field_->SetTextColor(color);
+  }
+
+  void RequestFocus() override { code_field_->RequestFocus(); }
+
+  // views::TextfieldController
+  void ContentsChanged(views::Textfield* sender,
+                       const base::string16& new_contents) override {
+    const bool has_content = new_contents.length() > 0;
+    on_input_change_.Run(has_content);
+  }
+
+  // views::TextfieldController
+  bool HandleKeyEvent(views::Textfield* sender,
+                      const ui::KeyEvent& key_event) override {
+    // Default handling for events with Alt modifier like spoken feedback.
+    if (key_event.IsAltDown())
+      return false;
+
+    // FlexCodeInput class responds to a limited subset of key press events.
+    // All events not handled below are sent to |code_field_|.
+    const ui::KeyboardCode key_code = key_event.key_code();
+    if (key_code == ui::VKEY_RETURN) {
+      if (GetCode().has_value()) {
+        on_enter_.Run();
+      }
+      return true;
+    }
+
+    if (key_code == ui::VKEY_ESCAPE) {
+      on_escape_.Run();
+      return true;
+    }
+
+    if (key_code >= ui::VKEY_A && key_code <= ui::VKEY_Z) {
+      // We only expect digits in the PIN, so we swallow all letters.
+      return true;
+    }
+
+    return false;
+  }
+
+ private:
+  views::Textfield* code_field_;
+
+  // To be called when access input code changes (digit is inserted, deleted or
+  // updated). Passes true when code non-empty.
+  OnInputChange on_input_change_;
+
+  // To be called when user pressed enter to submit.
+  OnEnter on_enter_;
+
+  // To be called when user presses escape to go back.
+  OnEscape on_escape_;
+};
+
+// Accessible input field for a single digit in fixed length codes.
+// Customizes field description and focus behavior.
 class AccessibleInputField : public views::Textfield {
  public:
   AccessibleInputField() = default;
@@ -203,38 +402,6 @@ class AccessibleInputField : public views::Textfield {
   DISALLOW_COPY_AND_ASSIGN(AccessibleInputField);
 };
 
-void RecordAction(ParentAccessView::UMAAction action) {
-  UMA_HISTOGRAM_ENUMERATION(ParentAccessView::kUMAParentAccessCodeAction,
-                            action);
-}
-
-void RecordUsage(ParentAccessRequestReason reason) {
-  switch (reason) {
-    case ParentAccessRequestReason::kUnlockTimeLimits: {
-      UMA_HISTOGRAM_ENUMERATION(ParentAccessView::kUMAParentAccessCodeUsage,
-                                ParentAccessView::UMAUsage::kTimeLimits);
-      return;
-    }
-    case ParentAccessRequestReason::kChangeTime: {
-      bool is_login = Shell::Get()->session_controller()->GetSessionState() ==
-                      session_manager::SessionState::LOGIN_PRIMARY;
-      UMA_HISTOGRAM_ENUMERATION(
-          ParentAccessView::kUMAParentAccessCodeUsage,
-          is_login ? ParentAccessView::UMAUsage::kTimeChangeLoginScreen
-                   : ParentAccessView::UMAUsage::kTimeChangeInSession);
-      return;
-    }
-    case ParentAccessRequestReason::kChangeTimezone: {
-      UMA_HISTOGRAM_ENUMERATION(ParentAccessView::kUMAParentAccessCodeUsage,
-                                ParentAccessView::UMAUsage::kTimezoneChange);
-      return;
-    }
-  }
-  NOTREACHED() << "Unknown ParentAccessRequestReason";
-}
-
-}  // namespace
-
 // Label button that displays focus ring.
 class ParentAccessView::FocusableLabelButton : public views::LabelButton {
  public:
@@ -252,37 +419,45 @@ class ParentAccessView::FocusableLabelButton : public views::LabelButton {
 
 // Digital access code input view for variable length of input codes.
 // Displays a separate underscored field for every input code digit.
-class ParentAccessView::AccessCodeInput : public views::View,
-                                          public views::TextfieldController {
+class ParentAccessView::FixedLengthCodeInput : public AccessCodeInput {
  public:
   using OnInputChange =
-      base::RepeatingCallback<void(bool complete, bool last_field_active)>;
+      base::RepeatingCallback<void(bool last_field_active, bool complete)>;
   using OnEnter = base::RepeatingClosure;
+  using OnEscape = base::RepeatingClosure;
 
   class TestApi {
    public:
-    explicit TestApi(ParentAccessView::AccessCodeInput* access_code_input)
-        : access_code_input_(access_code_input) {}
+    explicit TestApi(
+        ParentAccessView::FixedLengthCodeInput* fixed_length_code_input)
+        : fixed_length_code_input_(fixed_length_code_input) {}
     ~TestApi() = default;
 
     views::Textfield* GetInputTextField(int index) {
       DCHECK_LT(static_cast<size_t>(index),
-                access_code_input_->input_fields_.size());
-      return access_code_input_->input_fields_[index];
+                fixed_length_code_input_->input_fields_.size());
+      return fixed_length_code_input_->input_fields_[index];
     }
 
    private:
-    ParentAccessView::AccessCodeInput* access_code_input_;
+    ParentAccessView::FixedLengthCodeInput* fixed_length_code_input_;
   };
 
   // Builds the view for an access code that consists out of |length| digits.
   // |on_input_change| will be called upon access code digit insertion, deletion
   // or change. True will be passed if the current code is complete (all digits
   // have input values) and false otherwise. |on_enter| will be called when code
-  // is complete and user presses enter to submit it for validation.
-  AccessCodeInput(int length, OnInputChange on_input_change, OnEnter on_enter)
+  // is complete and user presses enter to submit it for validation. |on_escape|
+  // will be called when pressing the escape key. |obscure_pin| determines
+  // whether the entered pin is displayed as clear text or as bullet points.
+  FixedLengthCodeInput(int length,
+                       OnInputChange on_input_change,
+                       OnEnter on_enter,
+                       OnEscape on_escape,
+                       bool obscure_pin)
       : on_input_change_(std::move(on_input_change)),
-        on_enter_(std::move(on_enter)) {
+        on_enter_(std::move(on_enter)),
+        on_escape_(std::move(on_escape)) {
     DCHECK_LT(0, length);
     DCHECK(on_input_change_);
 
@@ -300,7 +475,11 @@ class ParentAccessView::AccessCodeInput : public views::View,
                                         kAccessCodeInputFieldHeightDp));
       field->SetHorizontalAlignment(gfx::HorizontalAlignment::ALIGN_CENTER);
       field->SetBackgroundColor(SK_ColorTRANSPARENT);
-      field->SetTextInputType(ui::TEXT_INPUT_TYPE_NUMBER);
+      if (obscure_pin) {
+        field->SetTextInputType(ui::TEXT_INPUT_TYPE_PASSWORD);
+      } else {
+        field->SetTextInputType(ui::TEXT_INPUT_TYPE_NUMBER);
+      }
       field->SetTextColor(kTextColor);
       field->SetFontList(views::Textfield::GetDefaultFontList().Derive(
           kDescriptionFontSizeDeltaDp, gfx::Font::FontStyle::NORMAL,
@@ -315,11 +494,13 @@ class ParentAccessView::AccessCodeInput : public views::View,
     }
   }
 
-  ~AccessCodeInput() override = default;
+  ~FixedLengthCodeInput() override = default;
+  FixedLengthCodeInput(const FixedLengthCodeInput&) = delete;
+  FixedLengthCodeInput& operator=(const FixedLengthCodeInput&) = delete;
 
   // Inserts |value| into the |active_field_| and moves focus to the next field
   // if it exists.
-  void InsertDigit(int value) {
+  void InsertDigit(int value) override {
     DCHECK_LE(0, value);
     DCHECK_GE(9, value);
 
@@ -329,25 +510,25 @@ class ParentAccessView::AccessCodeInput : public views::View,
     // Moving focus is delayed by using PostTask to allow for proper
     // a11y announcements. Without that some of them are skipped.
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(&AccessCodeInput::FocusNextField,
+        FROM_HERE, base::BindOnce(&FixedLengthCodeInput::FocusNextField,
                                   weak_ptr_factory_.GetWeakPtr()));
 
-    on_input_change_.Run(GetCode().has_value(), was_last_field);
+    on_input_change_.Run(was_last_field, GetCode().has_value());
   }
 
   // Clears input from the |active_field_|. If |active_field| is empty moves
   // focus to the previous field (if exists) and clears input there.
-  void Backspace() {
+  void Backspace() override {
     if (ActiveInput().empty()) {
       FocusPreviousField();
     }
 
     ActiveField()->SetText(base::string16());
-    on_input_change_.Run(false, IsLastFieldActive());
+    on_input_change_.Run(IsLastFieldActive(), false /*complete*/);
   }
 
   // Returns access code as string if all fields contain input.
-  base::Optional<std::string> GetCode() const {
+  base::Optional<std::string> GetCode() const override {
     std::string result;
     size_t length;
     for (auto* field : input_fields_) {
@@ -362,7 +543,7 @@ class ParentAccessView::AccessCodeInput : public views::View,
   }
 
   // Sets the color of the input text.
-  void SetInputColor(SkColor color) {
+  void SetInputColor(SkColor color) override {
     for (auto* field : input_fields_) {
       field->SetTextColor(color);
     }
@@ -390,8 +571,8 @@ class ParentAccessView::AccessCodeInput : public views::View,
     if (key_event.IsAltDown())
       return false;
 
-    // AccessCodeInput class responds to limited subset of key press events.
-    // All key pressed events not handled below are ignored.
+    // FixedLengthCodeInput class responds to limited subset of key press
+    // events. All key pressed events not handled below are ignored.
     const ui::KeyboardCode key_code = key_event.key_code();
     if (key_code == ui::VKEY_TAB || key_code == ui::VKEY_BACKTAB) {
       // Allow using tab for keyboard navigation.
@@ -411,6 +592,8 @@ class ParentAccessView::AccessCodeInput : public views::View,
     } else if (key_code == ui::VKEY_RETURN) {
       if (GetCode().has_value())
         on_enter_.Run();
+    } else if (key_code == ui::VKEY_ESCAPE) {
+      on_escape_.Run();
     }
 
     return true;
@@ -491,6 +674,8 @@ class ParentAccessView::AccessCodeInput : public views::View,
 
   // To be called when user pressed enter to submit.
   OnEnter on_enter_;
+  // To be called when user pressed escape to close view.
+  OnEscape on_escape_;
 
   // An active/focused input field index. Incoming digit will be inserted here.
   int active_input_index_ = 0;
@@ -498,9 +683,7 @@ class ParentAccessView::AccessCodeInput : public views::View,
   // Unowned input textfields ordered from the first to the last digit.
   std::vector<AccessibleInputField*> input_fields_;
 
-  base::WeakPtrFactory<AccessCodeInput> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(AccessCodeInput);
+  base::WeakPtrFactory<FixedLengthCodeInput> weak_ptr_factory_{this};
 };
 
 ParentAccessView::TestApi::TestApi(ParentAccessView* view) : view_(view) {
@@ -538,7 +721,9 @@ LoginPinView* ParentAccessView::TestApi::pin_keyboard_view() {
 }
 
 views::Textfield* ParentAccessView::TestApi::GetInputTextField(int index) {
-  return ParentAccessView::AccessCodeInput::TestApi(view_->access_code_view_)
+  return ParentAccessView::FixedLengthCodeInput::TestApi(
+             static_cast<ParentAccessView::FixedLengthCodeInput*>(
+                 view_->access_code_view_))
       .GetInputTextField(index);
 }
 
@@ -684,14 +869,16 @@ ParentAccessView::ParentAccessView(const AccountId& account_id,
   add_spacer(kDescriptionToAccessCodeDistanceDp);
 
   // Access code input view.
-  access_code_view_ =
-      new AccessCodeInput(kParentAccessCodePinLength,
-                          base::BindRepeating(&ParentAccessView::OnInputChange,
-                                              base::Unretained(this)),
-                          base::BindRepeating(&ParentAccessView::SubmitCode,
-                                              base::Unretained(this)));
+  access_code_view_ = AddChildView(std::make_unique<FixedLengthCodeInput>(
+      kParentAccessCodePinLength,
+      base::BindRepeating(&ParentAccessView::OnInputChange,
+                          base::Unretained(this)),
+      base::BindRepeating(&ParentAccessView::SubmitCode,
+                          base::Unretained(this)),
+      base::BindRepeating(&ParentAccessView::OnBack, base::Unretained(this)),
+      false /*obscure_pin*/));
+
   access_code_view_->SetFocusBehavior(FocusBehavior::ALWAYS);
-  AddChildView(access_code_view_);
 
   add_spacer(kAccessCodeToPinKeyboardDistanceDp);
 
@@ -798,8 +985,7 @@ base::string16 ParentAccessView::GetAccessibleWindowTitle() const {
 void ParentAccessView::ButtonPressed(views::Button* sender,
                                      const ui::Event& event) {
   if (sender == back_button_) {
-    RecordAction(ParentAccessView::UMAAction::kCanceledByUser);
-    callbacks_.on_finished.Run(false);
+    OnBack();
   } else if (sender == help_button_) {
     RecordAction(ParentAccessView::UMAAction::kGetHelp);
     // TODO(https://crbug.com/999387): Remove this when handling touch
@@ -859,6 +1045,11 @@ void ParentAccessView::SubmitCode() {
   UpdateState(State::kError);
 }
 
+void ParentAccessView::OnBack() {
+  RecordAction(ParentAccessView::UMAAction::kCanceledByUser);
+  callbacks_.on_finished.Run(false /*access_granted*/);
+}
+
 void ParentAccessView::UpdateState(State state) {
   if (state_ == state)
     return;
@@ -894,7 +1085,7 @@ void ParentAccessView::FocusSubmitButton() {
   submit_button_->RequestFocus();
 }
 
-void ParentAccessView::OnInputChange(bool complete, bool last_field_active) {
+void ParentAccessView::OnInputChange(bool last_field_active, bool complete) {
   if (state_ == State::kError)
     UpdateState(State::kNormal);
 

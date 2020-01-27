@@ -407,7 +407,6 @@
         <include name="IDR_IME_WINDOW_CLOSE_C" file="resources\input_ime\ime_window_close_click.png" type="BINDATA" />
         <include name="IDR_IME_WINDOW_CLOSE_H" file="resources\input_ime\ime_window_close_hover.png" type="BINDATA" />
       </if>
-      <include name="IDR_SSL_ERROR_ASSISTANT_PB" file="${root_gen_dir}/chrome/browser/resources/ssl/ssl_error_assistant/ssl_error_assistant.pb" use_base_dir="false" type="BINDATA" compress="gzip" />
       <include name="IDR_PWA_HTML" file="resources\pwa.html" type="BINDATA" />
       <if expr="chromeos">
         <include name="IDR_SMB_SHARES_DIALOG_CONTAINER_HTML" file="resources\chromeos\smb_shares\smb_share_dialog_container.html" flattenhtml="true" allowexternalscript="true" compress="gzip" type="chrome_html" />

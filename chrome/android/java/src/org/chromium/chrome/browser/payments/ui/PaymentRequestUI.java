@@ -627,6 +627,15 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
     }
 
     /**
+     * Disables adding new cards during retry.
+     */
+    public void disableAddingNewCardsDuringRetry() {
+        assert mPaymentMethodSection != null;
+        mPaymentMethodSection.setCanAddItems(false);
+        mPaymentMethodSection.update(mPaymentMethodSectionInformation);
+    }
+
+    /**
      * Sets the icon in the top left of the UI. This can be, for example, the favicon of the
      * merchant website. This is not a part of the constructor because favicon retrieval is
      * asynchronous.

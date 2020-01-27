@@ -192,6 +192,7 @@
 <translation id="3474649192738347024">Vormid on täidetud.</translation>
 <translation id="3478058380795961209">Aegumiskuu</translation>
 <translation id="3482959374254649722">Vahelehtede sünkroonimine ...</translation>
+<translation id="3484946776651937681">Ava kaust Allalaadimised</translation>
 <translation id="3493531032208478708"><ph name="BEGIN_LINK" />Lisateave<ph name="END_LINK" /> soovitatud sisu kohta</translation>
 <translation id="3494788280727468875">Kinnita sirvimisandmete kustutamine</translation>
 <translation id="35083190962747987">Avage ${url}</translation>
@@ -537,6 +538,7 @@ Teie andmed krüpteeriti <ph name="TIME" /> teie sünkroonimisparooliga. Sisesta
 <translation id="8319076807703933069">Uus otsing</translation>
 <translation id="8323906514956095947">Vahelehtede lisavalikute nägemiseks puudutage ja hoidke</translation>
 <translation id="8328777765163860529">Sule kõik</translation>
+<translation id="8386068868580335421">Lähtesta</translation>
 <translation id="8407669440184693619">Selle saidi jaoks ei leitud paroole</translation>
 <translation id="842017693807136194">Sisse logitud:</translation>
 <translation id="8428045167754449968">Linn</translation>

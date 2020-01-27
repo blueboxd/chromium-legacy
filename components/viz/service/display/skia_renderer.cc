@@ -99,29 +99,6 @@ bool IsTextureResource(DisplayResourceProvider* resource_provider,
   return !resource_provider->IsResourceSoftwareBacked(resource_id);
 }
 
-bool CanExplicitlyScissor(const DrawQuad* quad,
-                          const gfx::QuadF* draw_region,
-                          const gfx::Transform& contents_device_transform) {
-  // PICTURE_CONTENT is not like the others, since it is executing a list of
-  // draw calls into the canvas.
-  if (quad->material == DrawQuad::Material::kPictureContent)
-    return false;
-  // Intersection with scissor and a quadrilateral is not necessarily a quad,
-  // so don't complicate things
-  if (draw_region)
-    return false;
-
-  // This is slightly different than
-  // gfx::Transform::IsPositiveScaleAndTranslation in that it also allows zero
-  // scales. This is because in the common orthographic case the z scale is 0.
-  if (!contents_device_transform.IsScaleOrTranslation())
-    return false;
-
-  return contents_device_transform.matrix().get(0, 0) >= 0.0 &&
-         contents_device_transform.matrix().get(1, 1) >= 0.0 &&
-         contents_device_transform.matrix().get(2, 2) >= 0.0;
-}
-
 void ApplyExplicitScissor(const DrawQuad* quad,
                           const gfx::Rect& scissor_rect,
                           const gfx::Transform& device_transform,
@@ -1357,6 +1334,38 @@ SkiaRenderer::DrawQuadParams SkiaRenderer::CalculateDrawQuadParams(
   }
 
   return params;
+}
+
+bool SkiaRenderer::CanExplicitlyScissor(
+    const DrawQuad* quad,
+    const gfx::QuadF* draw_region,
+    const gfx::Transform& contents_device_transform) const {
+  // PICTURE_CONTENT is not like the others, since it is executing a list of
+  // draw calls into the canvas.
+  if (quad->material == DrawQuad::Material::kPictureContent)
+    return false;
+  // Intersection with scissor and a quadrilateral is not necessarily a quad,
+  // so don't complicate things
+  if (draw_region)
+    return false;
+
+  // This is slightly different than
+  // gfx::Transform::IsPositiveScaleAndTranslation in that it also allows zero
+  // scales. This is because in the common orthographic case the z scale is 0.
+  if (!contents_device_transform.IsScaleOrTranslation())
+    return false;
+
+  if (quad->material == DrawQuad::Material::kRenderPass) {
+    // If the renderpass has filters, the filters may modify the effective
+    // geometry beyond the quad's visible_rect, so it's not safe to pre-clip.
+    auto pass_id = RenderPassDrawQuad::MaterialCast(quad)->render_pass_id;
+    if (FiltersForPass(pass_id) || BackdropFiltersForPass(pass_id))
+      return false;
+  }
+
+  return contents_device_transform.matrix().get(0, 0) >= 0.0 &&
+         contents_device_transform.matrix().get(1, 1) >= 0.0 &&
+         contents_device_transform.matrix().get(2, 2) >= 0.0;
 }
 
 const DrawQuad* SkiaRenderer::CanPassBeDrawnDirectly(const RenderPass* pass) {

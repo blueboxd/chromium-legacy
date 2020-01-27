@@ -268,13 +268,24 @@ IntRect NGFragmentItem::VisualRect() const {
   return GetLayoutObject()->VisualRectForInlineBox();
 }
 
+IntRect NGFragmentItem::PartialInvalidationVisualRect() const {
+  // TODO(yosin): Need to reconsider the storage of |VisualRect|, to integrate
+  // better with |FragmentData| and to avoid dependency to |LayoutObject|.
+  DCHECK(GetLayoutObject());
+  return GetLayoutObject()->PartialInvalidationVisualRectForInlineBox();
+}
+
 PhysicalRect NGFragmentItem::LocalVisualRectFor(
     const LayoutObject& layout_object) {
   DCHECK(RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled());
   DCHECK(layout_object.IsInLayoutNGInlineFormattingContext());
 
   PhysicalRect visual_rect;
-  for (const NGFragmentItem& item : ItemsFor(layout_object)) {
+  NGInlineCursor cursor;
+  for (cursor.MoveTo(layout_object); cursor;
+       cursor.MoveToNextForSameLayoutObject()) {
+    DCHECK(cursor.Current().Item());
+    const NGFragmentItem& item = *cursor.Current().Item();
     if (UNLIKELY(item.IsHiddenForPaint()))
       continue;
     PhysicalRect child_visual_rect = item.SelfInkOverflow();
@@ -436,49 +447,6 @@ unsigned NGFragmentItem::TextOffsetForPoint(
                                  : size.inline_size - point_in_line_direction;
   DCHECK_EQ(1u, TextLength());
   return inline_offset <= size.inline_size / 2 ? StartOffset() : EndOffset();
-}
-
-NGFragmentItem::ItemsForLayoutObject NGFragmentItem::ItemsFor(
-    const LayoutObject& layout_object) {
-  DCHECK(layout_object.IsInLayoutNGInlineFormattingContext());
-  DCHECK(layout_object.IsText() || layout_object.IsLayoutInline() ||
-         (layout_object.IsBox() && layout_object.IsInline()));
-
-  if (const LayoutBlockFlow* block_flow =
-          layout_object.RootInlineFormattingContext()) {
-    if (const NGPhysicalBoxFragment* fragment = block_flow->CurrentFragment()) {
-      if (wtf_size_t index = layout_object.FirstInlineFragmentItemIndex()) {
-        const auto& items = fragment->Items()->Items();
-        return ItemsForLayoutObject(items, index, items[index].get());
-      }
-      // TODO(yosin): Once we update all usages of |FirstInlineFragment()|,
-      // we should get rid of below code.
-      if (const NGFragmentItems* items = fragment->Items()) {
-        for (unsigned i = 0; i < items->Items().size(); ++i) {
-          const NGFragmentItem* item = items->Items()[i].get();
-          if (item->GetLayoutObject() == &layout_object)
-            return ItemsForLayoutObject(items->Items(), i, item);
-        }
-      }
-    }
-  }
-
-  return ItemsForLayoutObject();
-}
-
-NGFragmentItem::ItemsForLayoutObject::Iterator&
-NGFragmentItem::ItemsForLayoutObject::Iterator::operator++() {
-  // TODO(kojii): This is a hot function needed by paint and several other
-  // operations. Make this fast, by not iterating.
-  if (!current_)
-    return *this;
-  if (!current_->delta_to_next_for_same_layout_object_) {
-    current_ = nullptr;
-    return *this;
-  }
-  index_ += current_->delta_to_next_for_same_layout_object_;
-  current_ = (*items_)[index_].get();
-  return *this;
 }
 
 std::ostream& operator<<(std::ostream& ostream, const NGFragmentItem& item) {

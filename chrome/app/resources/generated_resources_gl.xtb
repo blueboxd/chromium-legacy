@@ -223,7 +223,6 @@
 <translation id="1306606229401759371">Cambiar configuración</translation>
 <translation id="1307165550267142340">Creouse o teu PIN</translation>
 <translation id="1307559529304613120">O sistema non puido almacenar o token de acceso á API de longo prazo para este dispositivo.</translation>
-<translation id="1309199320876169714">Quitando Plugin VM…</translation>
 <translation id="1313405956111467313">Configuración do proxy automática</translation>
 <translation id="131364520783682672">Bloqueo de maiúsculas</translation>
 <translation id="1313705515580255288">Os teus marcadores, historiais e demais configuracións sincronizaranse coa túa conta de Google.</translation>
@@ -1366,7 +1365,6 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="2871813825302180988">Esta conta xa se está utilizando neste dispositivo.</translation>
 <translation id="287286579981869940">Engadir a <ph name="PROVIDER_NAME" />...</translation>
 <translation id="2872961005593481000">Pechar</translation>
-<translation id="2874478552394649323">Quitar Plugin VM</translation>
 <translation id="2874939134665556319">Pista anterior</translation>
 <translation id="2875698561019555027">(Páxinas de erro de Chrome)</translation>
 <translation id="2876336351874743617">Dedo 2</translation>
@@ -1383,7 +1381,6 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="2889064240420137087">Abrir ligazón con...</translation>
 <translation id="2889925978073739256">Continuar bloqueando plugins de illamento de procesos</translation>
 <translation id="2893168226686371498">Navegador predeterminado</translation>
-<translation id="2893208266590504003">Produciuse un erro ao quitar Plugin VM</translation>
 <translation id="2894757982205307093">Nova pestana no grupo</translation>
 <translation id="289644616180464099">A tarxeta SIM está bloqueada</translation>
 <translation id="2896909745808647285">O ficheiro <ph name="FILE_NAME" /> está encriptado e bloqueouse a súa apertura.</translation>
@@ -1439,7 +1436,7 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="2972581237482394796">&amp;Refacer</translation>
 <translation id="2973324205039581528">Silenciar sitio</translation>
 <translation id="2977480621796371840">Quitar do grupo</translation>
-<translation id="2979520980928493164">Chrome máis rápido e en mellor estado</translation>
+<translation id="2979520980928493164">Unha versión de Chrome máis sa e áxil</translation>
 <translation id="2979639724566107830">Abre o marcador nunha ventá nova</translation>
 <translation id="2981113813906970160">Mostrar cursor do rato grande</translation>
 <translation id="2982970937345031">Enviar informe de maneira anónima</translation>
@@ -2764,7 +2761,7 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="4900392736118574277">A páxina de inicio cambiou a <ph name="URL" />.</translation>
 <translation id="4902546322522096650">Rede <ph name="NETWORK_INDEX" /> de <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, intensidade do sinal do <ph name="SIGNAL_STRENGTH" /> %, conectar</translation>
 <translation id="49027928311173603">A política descargada do servidor non é válida: <ph name="VALIDATION_ERROR" />.</translation>
-<translation id="4906490889887219338">Configura ou xestiona sistemas de ficheiros compartidos en rede. <ph name="LINK_BEGIN" />Máis información<ph name="LINK_END" /></translation>
+<translation id="4906490889887219338">Configurar ou xestionar sistemas de ficheiros compartidos en rede. <ph name="LINK_BEGIN" />Máis información<ph name="LINK_END" /></translation>
 <translation id="4907161631261076876">Este ficheiro non se descarga habitualmente e pode ser perigoso.</translation>
 <translation id="4907306957610201395">Categoría de permisos</translation>
 <translation id="4908811072292128752">Abre unha nova pestana para explorar dous sitios á vez</translation>
@@ -2834,6 +2831,7 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="4998430619171209993">Si</translation>
 <translation id="4998873842614926205">Confirmar cambios</translation>
 <translation id="5000922062037820727">Bloqueado (recomendado)</translation>
+<translation id="5007392906805964215">Revisar</translation>
 <translation id="5008936837313706385">Nome da actividade</translation>
 <translation id="5010043101506446253">Autoridade de certificación</translation>
 <translation id="5015344424288992913">Resolvendo proxy...</translation>
@@ -5773,7 +5771,6 @@ Mantén o ficheiro de clave nun lugar seguro, xa que o precisarás para crear no
 <translation id="9169496697824289689">Ver atallos de teclado</translation>
 <translation id="916964310188958970">Por que ves esta suxestión?</translation>
 <translation id="9169931577761441333">Engade <ph name="APP_NAME" /> á pantalla de inicio</translation>
-<translation id="9170305483456271385">Quitouse Plugin VM</translation>
 <translation id="9170848237812810038">&amp;Desfacer</translation>
 <translation id="9170884462774788842">Outro programa do teu ordenador engadiu un tema que pode cambiar o funcionamento de Chrome.</translation>
 <translation id="9173995187295789444">Buscando dispositivos Bluetooth…</translation>

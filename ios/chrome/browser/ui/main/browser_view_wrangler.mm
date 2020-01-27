@@ -67,7 +67,7 @@
   return self.coordinator.browser;
 }
 
-- (ios::ChromeBrowserState*)browserState {
+- (ChromeBrowserState*)browserState {
   return self.coordinator.viewController.browserState;
 }
 
@@ -92,7 +92,7 @@
 @end
 
 @interface BrowserViewWrangler () <WebStateListObserving, CRWWebStateObserver> {
-  ios::ChromeBrowserState* _browserState;
+  ChromeBrowserState* _browserState;
   __weak id<ApplicationCommands> _applicationCommandEndpoint;
   __weak id<BrowsingDataCommands> _browsingDataCommandEndpoint;
   __weak id<BrowserStateStorageSwitching> _storageSwitcher;
@@ -132,7 +132,7 @@
 // then any existing tabs that have been saved for |browserState| will be
 // loaded; otherwise, the tab model will be left empty.
 - (void)setUpTabModel:(TabModel*)tabModel
-         withBrowserState:(ios::ChromeBrowserState*)browserState
+         withBrowserState:(ChromeBrowserState*)browserState
     restorePersistedState:(BOOL)restorePersistedState;
 
 // Setters for the main and otr Browsers.
@@ -152,7 +152,7 @@
 
 @synthesize currentInterface = _currentInterface;
 
-- (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState
+- (instancetype)initWithBrowserState:(ChromeBrowserState*)browserState
                 webStateListObserver:(id<WebStateListObserving>)observer
           applicationCommandEndpoint:
               (id<ApplicationCommands>)applicationCommandEndpoint
@@ -235,7 +235,7 @@
   if (!_incognitoInterface) {
     // The backing coordinator should not have been created yet.
     DCHECK(!_incognitoBrowserCoordinator);
-    ios::ChromeBrowserState* otrBrowserState =
+    ChromeBrowserState* otrBrowserState =
         _browserState->GetOffTheRecordChromeBrowserState();
     DCHECK(otrBrowserState);
     _incognitoBrowserCoordinator = [self coordinatorForBrowser:self.otrBrowser];
@@ -420,7 +420,7 @@
 - (std::unique_ptr<Browser>)buildOtrBrowser:(BOOL)restorePersistedState {
   DCHECK(_browserState);
   // Ensure that the OTR ChromeBrowserState is created.
-  ios::ChromeBrowserState* otrBrowserState =
+  ChromeBrowserState* otrBrowserState =
       _browserState->GetOffTheRecordChromeBrowserState();
   DCHECK(otrBrowserState);
 
@@ -436,7 +436,7 @@
 }
 
 - (void)setUpTabModel:(TabModel*)tabModel
-         withBrowserState:(ios::ChromeBrowserState*)browserState
+         withBrowserState:(ChromeBrowserState*)browserState
     restorePersistedState:(BOOL)restorePersistedState {
   DCHECK_EQ(0U, tabModel.count);
   SessionWindowIOS* sessionWindow = nil;

@@ -1143,7 +1143,7 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
       이 정책이 구성되지 않거나 사용 중지되면 로그인 화면에서 플랫폼 기본 사이트 격리 설정이 사용됩니다.
       </translation>
 <translation id="2587719089023392205"><ph name="PRODUCT_NAME" />을(를) 기본 브라우저로 설정</translation>
-<translation id="2588071938417715443">이 정책은 로컬 검색 UI(<ph name="CHROME_DEVICES_LINK" />)에서 제어 가능한 기능에 대한 액세스 권한을 제어합니다. 로컬 검색은 사용자 근처의 검색 가능한 기기 및 이러한 기기에 등록된 클라우드 기기를 표시합니다. 사용자는 <ph name="PRODUCT_OS_NAME" />을(를) 제외한 모든 운영체제에서 로컬 검색 UI를 통해 컴퓨터에 연결된 일반 프린터를 <ph name="CLOUD_PRINT_NAME" />에 추가할 수 있습니다.</translation>
+<translation id="2588071938417715443">이 정책은 로컬 검색 UI(<ph name="CHROME_DEVICES_LINK" />)에서 제어 가능한 기능에 대한 액세스 권한을 제어합니다. 로컬 검색 UI는 사용자 근처의 검색 가능한 기기 및 이러한 기기에 등록된 클라우드 기기를 표시합니다. 사용자는 <ph name="PRODUCT_OS_NAME" />을(를) 제외한 모든 운영체제에서 로컬 검색 UI를 통해 컴퓨터에 연결된 일반 프린터를 <ph name="CLOUD_PRINT_NAME" />에 추가할 수 있습니다.</translation>
 <translation id="2592091433672667839">판매 모드의 로그인 화면에 화면 보호기가 표시되기 전에 비활성화 상태의 지속 시간</translation>
 <translation id="2592162121850992309">이 정책을 true로 설정하거나 설정하지 않으면 특정 GPU 기능이 차단된 경우를 제외하고 하드웨어 가속이 사용 설정됩니다.
 

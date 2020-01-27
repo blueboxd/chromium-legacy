@@ -43,7 +43,7 @@ class StyleSheetCandidate {
  public:
   enum Type { kHTMLLink, kHTMLStyle, kSVGStyle, kPi, kInvalid };
 
-  StyleSheetCandidate(Node& node) : node_(node), type_(TypeOf(node)) {}
+  StyleSheetCandidate(Node& node) : node_(&node), type_(TypeOf(node)) {}
 
   bool IsXSL() const;
   bool IsImport() const;
@@ -64,7 +64,7 @@ class StyleSheetCandidate {
 
   static Type TypeOf(Node&);
 
-  Member<Node> node_;
+  Node* node_;
   Type type_;
 };
 

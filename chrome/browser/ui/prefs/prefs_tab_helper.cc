@@ -50,7 +50,7 @@
 #include "ui/base/l10n/l10n_util.h"
 
 #if defined(OS_ANDROID)
-#include "chrome/browser/android/chrome_feature_list.h"
+#include "chrome/browser/flags/android/chrome_feature_list.h"
 #else  // !defined(OS_ANDROID)
 #include "chrome/browser/ui/zoom/chrome_zoom_level_prefs.h"
 #endif

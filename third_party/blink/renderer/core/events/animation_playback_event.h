@@ -7,9 +7,10 @@
 
 #include "base/optional.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
-#include "third_party/blink/renderer/core/events/animation_playback_event_init.h"
 
 namespace blink {
+
+class AnimationPlaybackEventInit;
 
 class AnimationPlaybackEvent final : public Event {
   DEFINE_WRAPPERTYPEINFO();

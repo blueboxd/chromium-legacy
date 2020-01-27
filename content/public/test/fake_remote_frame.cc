@@ -60,6 +60,10 @@ void FakeRemoteFrame::RenderFallbackContent() {}
 void FakeRemoteFrame::AddResourceTimingFromChild(
     blink::mojom::ResourceTimingInfoPtr timing) {}
 
+void FakeRemoteFrame::ScrollRectToVisible(
+    const gfx::Rect& rect,
+    blink::mojom::ScrollIntoViewParamsPtr params) {}
+
 void FakeRemoteFrame::FakeRemoteFrame::BindFrameHostReceiver(
     mojo::ScopedInterfaceEndpointHandle handle) {
   receiver_.Bind(mojo::PendingAssociatedReceiver<blink::mojom::RemoteFrame>(

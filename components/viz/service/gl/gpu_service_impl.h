@@ -169,6 +169,8 @@ class VIZ_SERVICE_EXPORT GpuServiceImpl : public gpu::GpuChannelManagerDelegate,
                     const std::string& data) override;
   void WakeUpGpu() override;
   void GpuSwitched(gl::GpuPreference active_gpu_heuristic) override;
+  void DisplayAdded() override;
+  void DisplayRemoved() override;
   void DestroyAllChannels() override;
   void OnBackgroundCleanup() override;
   void OnBackgrounded() override;

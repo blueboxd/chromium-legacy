@@ -62,9 +62,9 @@ class ModelTypeChangeProcessor {
   virtual void UntrackEntityForStorageKey(const std::string& storage_key) = 0;
 
   // Remove entity metadata and do not track the entity, exactly like
-  // UntrackEntityForStorageKey() above. This function should only be called by
-  // datatypes that can't generate storage keys. The call is ignored if
-  // |client_tag_hash| is unknown.
+  // UntrackEntityForStorageKey() above. This method may be called even if
+  // entity does not have storage key. The call is ignored if |client_tag_hash|
+  // is unknown.
   virtual void UntrackEntityForClientTagHash(
       const ClientTagHash& client_tag_hash) = 0;
 

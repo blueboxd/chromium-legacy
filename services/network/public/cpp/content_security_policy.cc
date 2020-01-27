@@ -368,8 +368,7 @@ void ContentSecurityPolicy::Parse(const GURL& base_url,
     auto policy = mojom::ContentSecurityPolicy::New();
 
     policy->header = mojom::ContentSecurityPolicyHeader::New(
-        header_value.as_string(), type,
-        mojom::ContentSecurityPolicySource::kHTTP);
+        header.as_string(), type, mojom::ContentSecurityPolicySource::kHTTP);
 
     auto frame_ancestors = directives.find("frame-ancestors");
     if (frame_ancestors != directives.end())

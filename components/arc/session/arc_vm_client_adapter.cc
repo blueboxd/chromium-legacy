@@ -155,7 +155,6 @@ std::vector<std::string> GenerateKernelCmdline(
     }
   }
 
-  // TODO(yusukes): Handle |demo_session_apps_path| in |upgrade_params|.
   // TODO(yusukes): Handle |is_managed_account| in |upgrade_params|.
   return result;
 }
@@ -164,6 +163,7 @@ vm_tools::concierge::StartArcVmRequest CreateStartArcVmRequest(
     const std::string& user_id_hash,
     uint32_t cpus,
     const base::FilePath& data_disk_path,
+    const base::FilePath& demo_session_apps_path,
     const FileSystemStatus& file_system_status,
     std::vector<std::string> kernel_cmdline) {
   vm_tools::concierge::StartArcVmRequest request;
@@ -177,6 +177,15 @@ vm_tools::concierge::StartArcVmRequest CreateStartArcVmRequest(
     request.add_params("rw");
   }
   request.add_params("init=/init");
+
+  // TIP: When you want to see all dmesg logs from the Android system processes
+  // such as init, uncomment the following line. By default, the guest kernel
+  // rate-limits the logging and you might not be able to see all LOGs from
+  // them. The logs could be silently dropped. This is useful when modifying
+  // init.bertha.rc, for example.
+  //
+  // request.add_params("printk.devkmsg=on");
+
   for (auto& entry : kernel_cmdline)
     request.add_params(std::move(entry));
 
@@ -198,10 +207,18 @@ vm_tools::concierge::StartArcVmRequest CreateStartArcVmRequest(
   // Add /vendor as /dev/vdc.
   disk_image = request.add_disks();
   disk_image->set_path(file_system_status.vendor_image_path().value());
-
   disk_image->set_image_type(vm_tools::concierge::DISK_IMAGE_AUTO);
   disk_image->set_writable(false);
   disk_image->set_do_mount(true);
+  // Add /run/imageloader/.../android_demo_apps.squash as /dev/vdd if needed.
+  // TODO(b/144542975): Do this on upgrade instead.
+  if (!demo_session_apps_path.empty()) {
+    disk_image = request.add_disks();
+    disk_image->set_path(demo_session_apps_path.value());
+    disk_image->set_image_type(vm_tools::concierge::DISK_IMAGE_AUTO);
+    disk_image->set_writable(false);
+    disk_image->set_do_mount(true);
+  }
 
   // Add Android fstab.
   request.set_fstab(file_system_status.fstab_path().value());
@@ -485,9 +502,9 @@ class ArcVmClientAdapter : public ArcClientAdapter,
         start_params_, params, file_system_status, *is_dev_mode_,
         is_host_on_vm_, version_info::GetChannelString(channel_),
         serial_number_);
-    auto start_request =
-        CreateStartArcVmRequest(user_id_hash_, cpus, data_disk_path,
-                                file_system_status, std::move(kernel_cmdline));
+    auto start_request = CreateStartArcVmRequest(
+        user_id_hash_, cpus, data_disk_path, params.demo_session_apps_path,
+        file_system_status, std::move(kernel_cmdline));
 
     GetConciergeClient()->StartArcVm(
         start_request,

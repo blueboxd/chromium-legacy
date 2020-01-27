@@ -6,8 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_STATIC_BITMAP_IMAGE_H_
 
 #include "base/memory/weak_ptr.h"
-#include "gpu/command_buffer/common/mailbox.h"
-#include "gpu/command_buffer/common/sync_token.h"
+#include "gpu/command_buffer/common/mailbox_holder.h"
 #include "third_party/blink/renderer/platform/graphics/canvas_color_params.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_types.h"
 #include "third_party/blink/renderer/platform/graphics/image.h"
@@ -43,7 +42,6 @@ class PLATFORM_EXPORT StaticBitmapImage : public Image {
 
   // Methods that have a default implementation, and overridden by only one
   // sub-class
-  virtual bool HasMailbox() const { return false; }
   virtual bool IsValid() const { return true; }
   virtual void Transfer() {}
   virtual bool IsOriginTopLeft() const { return true; }
@@ -83,12 +81,10 @@ class PLATFORM_EXPORT StaticBitmapImage : public Image {
   // Case 3: Passing to a gpu context on the same stream.
   //   Use kOrderingBarrier
   virtual void EnsureMailbox(MailboxSyncMode, GLenum filter) { NOTREACHED(); }
-  virtual const gpu::Mailbox& GetMailbox() const {
+  virtual gpu::MailboxHolder GetMailboxHolder() const {
     NOTREACHED();
-    static const gpu::Mailbox mailbox;
-    return mailbox;
+    return gpu::MailboxHolder();
   }
-  virtual const gpu::SyncToken& GetSyncToken() const;
   virtual void UpdateSyncToken(const gpu::SyncToken&) {}
   virtual bool IsPremultiplied() const { return true; }
 

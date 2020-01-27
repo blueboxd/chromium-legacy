@@ -265,6 +265,14 @@ PasswordItemsView::PasswordItemsView(content::WebContents* web_contents,
 
 PasswordItemsView::~PasswordItemsView() = default;
 
+PasswordBubbleControllerBase* PasswordItemsView::GetController() {
+  return nullptr;
+}
+
+const PasswordBubbleControllerBase* PasswordItemsView::GetController() const {
+  return nullptr;
+}
+
 void PasswordItemsView::RecreateLayout() {
   // This method should only be used when we have password rows, otherwise the
   // dialog should only show the no-passwords title and doesn't need to be

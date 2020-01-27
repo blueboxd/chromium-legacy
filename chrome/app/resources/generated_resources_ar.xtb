@@ -223,7 +223,6 @@
 <translation id="1306606229401759371">تغيير الإعدادات</translation>
 <translation id="1307165550267142340">تم إنشاء رقم التعريف الشخصي</translation>
 <translation id="1307559529304613120">عفوًا! تعذّر النظام في تخزين الرمز المميز للدخول طويل المدى إلى واجهة برمجة التطبيقات على هذا الجهاز.</translation>
-<translation id="1309199320876169714">‏جارٍ إزالة Plugin VM...</translation>
 <translation id="1313405956111467313">تهيئة تلقائية للخادم الوكيل</translation>
 <translation id="131364520783682672">Caps Lock</translation>
 <translation id="1313705515580255288">‏ستتم مزامنة الإشارات المرجعية والسجل وغير ذلك من الإعدادات مع حسابك على Google.</translation>
@@ -1367,7 +1366,6 @@
 <translation id="2871813825302180988">يتم الآن استخدام هذا الحساب فعلاً على هذا الجهاز.</translation>
 <translation id="287286579981869940">جارٍ إضافة <ph name="PROVIDER_NAME" />...</translation>
 <translation id="2872961005593481000">إيقاف التشغيل</translation>
-<translation id="2874478552394649323">‏إزالة Plugin VM</translation>
 <translation id="2874939134665556319">المقطع الصوتي السابق</translation>
 <translation id="2875698561019555027">‏(صفحات الخطأ في Chrome)</translation>
 <translation id="2876336351874743617">إصبع 2</translation>
@@ -1384,7 +1382,6 @@
 <translation id="2889064240420137087">فتح الرابط باستخدام...</translation>
 <translation id="2889925978073739256">متابعة حظر المكونات الإضافية غير المحمية</translation>
 <translation id="2893168226686371498">المتصفح التلقائي</translation>
-<translation id="2893208266590504003">‏تعذّر إزالة Plugin VM.</translation>
 <translation id="2894757982205307093">علامة تبويب جديدة في مجموعة</translation>
 <translation id="289644616180464099">‏تم قفل شريحة SIM</translation>
 <translation id="2896909745808647285">تم تشفير <ph name="FILE_NAME" /> وحظر فتحه.</translation>
@@ -2604,7 +2601,7 @@
 <translation id="4664482161435122549">‏خطأ في تصدير PKCS #12</translation>
 <translation id="4665014895760275686">جهة التصنيع</translation>
 <translation id="4665446389743427678">سيتم حذف جميع البيانات المُخزَّنة من خلال <ph name="SITE" />.</translation>
-<translation id="4668721319092543482">انقر لتمكين <ph name="PLUGIN_NAME" /></translation>
+<translation id="4668721319092543482">انقر لتفعيل <ph name="PLUGIN_NAME" /></translation>
 <translation id="4672657274720418656">صفحة التنقية</translation>
 <translation id="46733273239502219">سيتم أيضًا محو البيانات المتوفرة بلا اتصال بالإنترنت في التطبيقات المثبّتة.</translation>
 <translation id="4673442866648850031">فتح أدوات قلم الشاشة عندما تتم إزالة قلم الشاشة</translation>
@@ -2832,6 +2829,7 @@
 <translation id="4998430619171209993">مفعّل</translation>
 <translation id="4998873842614926205">تأكيد التغييرات</translation>
 <translation id="5000922062037820727">محظور  (موصى به)</translation>
+<translation id="5007392906805964215">مراجعة</translation>
 <translation id="5008936837313706385">اسم النشاط</translation>
 <translation id="5010043101506446253">صلاحية الشهادة</translation>
 <translation id="5015344424288992913">إثبات هوية الخادم الوسيط...</translation>
@@ -4275,7 +4273,7 @@
 <translation id="7078120482318506217">جميع الشبكات</translation>
 <translation id="708060913198414444">ن&amp;سخ عنوان الصوت</translation>
 <translation id="7081952801286122383">أنت تستخدم وضع التصفُّح المُتخفِّي</translation>
-<translation id="708278670402572152">قطع الاتصال لتمكين الفحص</translation>
+<translation id="708278670402572152">قطع الاتصال لتفعيل الفحص</translation>
 <translation id="7085389578340536476">‏هل تسمح لمتصفح Chrome بتسجيل الصوت؟</translation>
 <translation id="7088434364990739311">تعذّر بدء التحقق من التحديثات (رمز الخطأ <ph name="ERROR" />).</translation>
 <translation id="7088561041432335295">‏Zip Archiver - فتح ملفات ZIP وتجميعها في تطبيق "الملفات".</translation>
@@ -5773,7 +5771,6 @@
 <translation id="9169496697824289689">عرض اختصارات لوحة المفاتيح</translation>
 <translation id="916964310188958970">لماذا يظهر هذا الاقتراح؟</translation>
 <translation id="9169931577761441333">إضافة تطبيق <ph name="APP_NAME" /> إلى الشاشة الرئيسية</translation>
-<translation id="9170305483456271385">‏تمت إزالة Plugin VM.</translation>
 <translation id="9170848237812810038">&amp;إلغاء</translation>
 <translation id="9170884462774788842">‏أضاف برنامج آخر بجهاز الكمبيوتر مظهرًا قد يؤدي إلى تغيير طريقة عمل Chrome.</translation>
 <translation id="9173995187295789444">جارٍ البحث عن أجهزة بلوتوث...</translation>

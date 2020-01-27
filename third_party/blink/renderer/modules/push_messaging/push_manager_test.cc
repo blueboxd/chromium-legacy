@@ -5,9 +5,9 @@
 #include "third_party/blink/renderer/modules/push_messaging/push_manager.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_push_subscription_options_init.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer.h"
 #include "third_party/blink/renderer/modules/push_messaging/push_subscription_options.h"
-#include "third_party/blink/renderer/modules/push_messaging/push_subscription_options_init.h"
 #include "third_party/blink/renderer/platform/wtf/text/base64.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 

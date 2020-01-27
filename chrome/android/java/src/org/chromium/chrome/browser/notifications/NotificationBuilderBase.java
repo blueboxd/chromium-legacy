@@ -150,7 +150,6 @@ public abstract class NotificationBuilderBase {
     protected boolean mRenotify;
     protected int mPriority;
     private Bitmap mLargeIcon;
-    private boolean mHideLargeIcon;
 
     public NotificationBuilderBase(Resources resources) {
         mLargeIconWidthPx =
@@ -425,11 +424,6 @@ public abstract class NotificationBuilderBase {
         return this;
     }
 
-    public NotificationBuilderBase setHideLargeIcon(boolean hideLargeIcon) {
-        mHideLargeIcon = hideLargeIcon;
-        return this;
-    }
-
     /**
      * Gets the large icon for the notification.
      *
@@ -441,9 +435,6 @@ public abstract class NotificationBuilderBase {
      * See {@link NotificationBuilderBase#ensureNormalizedIcon} for more details.
      */
     protected Bitmap getNormalizedLargeIcon() {
-        if (mHideLargeIcon) {
-            return null;
-        }
         return ensureNormalizedIcon(mLargeIcon, mOrigin);
     }
 

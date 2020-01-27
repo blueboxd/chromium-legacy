@@ -94,7 +94,7 @@ MinidumpUploader::MinidumpUploader(CastSysInfo* sys_info,
     : MinidumpUploader(sys_info,
                        server_url,
                        nullptr,
-                       base::BindOnce(&CreatePrefService)) {}
+                       base::BindRepeating(&CreatePrefService)) {}
 
 MinidumpUploader::~MinidumpUploader() {}
 
@@ -126,8 +126,7 @@ bool MinidumpUploader::DoWork() {
 
   int num_uploaded = 0;
 
-  std::unique_ptr<PrefService> pref_service =
-      std::move(pref_service_generator_).Run();
+  std::unique_ptr<PrefService> pref_service = pref_service_generator_.Run();
   const std::string& client_id(
       pref_service->GetString(::metrics::prefs::kMetricsClientID));
   std::string virtual_channel(pref_service->GetString(kVirtualChannel));

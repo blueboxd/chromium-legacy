@@ -1202,6 +1202,9 @@ android:value="true" />
             android:exported="false" />
         {% endfor %}
 
+        <receiver android:name="org.chromium.chrome.browser.announcement.AnnouncementNotificationManager$Receiver"
+            android:exported="false"/>
+
         <receiver android:name="org.chromium.chrome.browser.notifications.NotificationIntentInterceptor$Receiver"
             android:exported="false"/>
 

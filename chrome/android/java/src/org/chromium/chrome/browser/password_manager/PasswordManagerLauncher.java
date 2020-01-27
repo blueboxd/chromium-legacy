@@ -16,7 +16,7 @@ import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.settings.SettingsLauncher;
-import org.chromium.chrome.browser.settings.password.SavePasswordsPreferences;
+import org.chromium.chrome.browser.settings.password.PasswordSettings;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
 import org.chromium.components.signin.ChromeSigninController;
 import org.chromium.components.sync.ModelType;
@@ -61,7 +61,7 @@ public class PasswordManagerLauncher {
             }
         }
 
-        SettingsLauncher.getInstance().launchSettingsPage(activity, SavePasswordsPreferences.class);
+        SettingsLauncher.getInstance().launchSettingsPage(activity, PasswordSettings.class);
     }
 
     @CalledByNative

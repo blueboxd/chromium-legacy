@@ -51,8 +51,8 @@ void CameraDetector::StartPresenceCheck(const base::Closure& callback) {
                               base::TaskPriority::BEST_EFFORT,
                               base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})
           .get(),
-      FROM_HERE, base::Bind(&CameraDetector::CheckPresence),
-      base::Bind(&CameraDetector::OnPresenceCheckDone, callback));
+      FROM_HERE, base::BindOnce(&CameraDetector::CheckPresence),
+      base::BindOnce(&CameraDetector::OnPresenceCheckDone, callback));
 }
 
 // static

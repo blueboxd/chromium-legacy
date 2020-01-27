@@ -43,4 +43,10 @@ const char kCorbAllowlistAlsoAppliesToOorCorsParamName[] =
 const base::Feature kForceWebRequestProxyForTest{
     "ForceWebRequestProxyForTest", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables the UI in the install prompt which lets a user choose to withhold
+// requested host permissions by default.
+const base::Feature kAllowWithholdingExtensionPermissionsOnInstall{
+    "AllowWithholdingExtensionPermissionsOnInstall",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
 }  // namespace extensions_features

@@ -9,6 +9,7 @@
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/mojom/frame/frame.mojom-blink.h"
+#include "third_party/blink/public/mojom/scroll/scroll_into_view_params.mojom-blink.h"
 
 namespace blink {
 
@@ -47,6 +48,9 @@ class FakeLocalFrameHost : public mojom::blink::LocalFrameHost {
       bool present,
       blink::mojom::SuddenTerminationDisablerType disabler_type) override;
   void HadStickyUserActivationBeforeNavigationChanged(bool value) override;
+  void ScrollRectToVisibleInParentFrame(
+      const WebRect& rect_to_scroll,
+      blink::mojom::blink::ScrollIntoViewParamsPtr params) override;
   void BubbleLogicalScrollInParentFrame(
       blink::mojom::blink::ScrollDirection direction,
       ui::input_types::ScrollGranularity granularity) override;

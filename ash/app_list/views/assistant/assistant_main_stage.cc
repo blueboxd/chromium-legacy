@@ -158,35 +158,33 @@ void AppListAssistantMainStage::InitLayout() {
   layout->set_cross_axis_alignment(
       views::BoxLayout::CrossAxisAlignment::kCenter);
 
-  auto* content_layout_container = CreateContentLayoutContainer();
-  AddChildView(content_layout_container);
-  layout->SetFlexForView(content_layout_container, 1);
+  layout->SetFlexForView(AddChildView(CreateContentLayoutContainer()), 1);
 
   AddChildView(CreateFooterLayoutContainer());
 }
 
-views::View* AppListAssistantMainStage::CreateContentLayoutContainer() {
+std::unique_ptr<views::View>
+AppListAssistantMainStage::CreateContentLayoutContainer() {
   // The content layout container stacks two views.
   // On top is a main content container including the line separator, progress
   // indicator query view and |ui_element_container_|.
   // |greeting_label_| is laid out above of the main content container. As
   // such, it floats above and does not cause repositioning to any of content
   // layout's underlying views.
-  views::View* content_layout_container = new views::View();
+  auto content_layout_container = std::make_unique<views::View>();
 
   auto* stack_layout = content_layout_container->SetLayoutManager(
       std::make_unique<StackLayout>());
 
-  auto* main_content_layout_container = CreateMainContentLayoutContainer();
-  content_layout_container->AddChildView(main_content_layout_container);
+  auto* main_content_layout_container = content_layout_container->AddChildView(
+      CreateMainContentLayoutContainer());
 
   // Do not respect height, otherwise bounds will not be set correctly for
   // scrolling.
   stack_layout->SetRespectDimensionForView(
       main_content_layout_container, StackLayout::RespectDimension::kWidth);
 
-  InitGreetingLabel();
-  content_layout_container->AddChildView(greeting_label_);
+  greeting_label_ = content_layout_container->AddChildView(InitGreetingLabel());
 
   // We need to stretch |greeting_label_| to match its parent so that it
   // won't use heuristics in Label to infer line breaking, which seems to cause
@@ -199,26 +197,27 @@ views::View* AppListAssistantMainStage::CreateContentLayoutContainer() {
   return content_layout_container;
 }
 
-void AppListAssistantMainStage::InitGreetingLabel() {
+std::unique_ptr<views::Label> AppListAssistantMainStage::InitGreetingLabel() {
   // Greeting label, which will be animated on its own layer.
-  greeting_label_ = new views::Label(
+  auto greeting_label = std::make_unique<views::Label>(
       l10n_util::GetStringUTF16(IDS_ASH_ASSISTANT_PROMPT_DEFAULT));
-  greeting_label_->SetID(AssistantViewID::kGreetingLabel);
-  greeting_label_->SetAutoColorReadabilityEnabled(false);
-  greeting_label_->SetEnabledColor(kTextColorPrimary);
-  greeting_label_->SetFontList(
-      assistant::ui::GetDefaultFontList()
-          .DeriveWithSizeDelta(8)
-          .DeriveWithWeight(gfx::Font::Weight::MEDIUM));
-  greeting_label_->SetHorizontalAlignment(
+  greeting_label->SetID(AssistantViewID::kGreetingLabel);
+  greeting_label->SetAutoColorReadabilityEnabled(false);
+  greeting_label->SetEnabledColor(kTextColorPrimary);
+  greeting_label->SetFontList(assistant::ui::GetDefaultFontList()
+                                  .DeriveWithSizeDelta(8)
+                                  .DeriveWithWeight(gfx::Font::Weight::MEDIUM));
+  greeting_label->SetHorizontalAlignment(
       gfx::HorizontalAlignment::ALIGN_CENTER);
-  greeting_label_->SetMultiLine(true);
-  greeting_label_->SetPaintToLayer();
-  greeting_label_->SetBackground(views::CreateSolidBackground(SK_ColorWHITE));
+  greeting_label->SetMultiLine(true);
+  greeting_label->SetPaintToLayer();
+  greeting_label->SetBackground(views::CreateSolidBackground(SK_ColorWHITE));
+  return greeting_label;
 }
 
-views::View* AppListAssistantMainStage::CreateMainContentLayoutContainer() {
-  views::View* content_layout_container = new views::View();
+std::unique_ptr<views::View>
+AppListAssistantMainStage::CreateMainContentLayoutContainer() {
+  auto content_layout_container = std::make_unique<views::View>();
   views::BoxLayout* content_layout = content_layout_container->SetLayoutManager(
       std::make_unique<views::BoxLayout>(
           views::BoxLayout::Orientation::kVertical));
@@ -230,61 +229,63 @@ views::View* AppListAssistantMainStage::CreateMainContentLayoutContainer() {
   content_layout_container->AddChildView(CreateDividerLayoutContainer());
 
   // Query view. Will be animated on its own layer.
-  query_view_ = new AssistantQueryView();
+  query_view_ = content_layout_container->AddChildView(
+      std::make_unique<AssistantQueryView>());
   query_view_->SetPaintToLayer();
   query_view_->SetBackground(views::CreateSolidBackground(SK_ColorWHITE));
   query_view_->AddObserver(this);
-  content_layout_container->AddChildView(query_view_);
 
   // UI element container.
-  ui_element_container_ = new UiElementContainerView(delegate_);
+  ui_element_container_ = content_layout_container->AddChildView(
+      std::make_unique<UiElementContainerView>(delegate_));
   ui_element_container_->AddObserver(this);
-  content_layout_container->AddChildView(ui_element_container_);
   content_layout->SetFlexForView(ui_element_container_, 1,
                                  /*use_min_size=*/true);
 
   return content_layout_container;
 }
 
-views::View* AppListAssistantMainStage::CreateDividerLayoutContainer() {
+std::unique_ptr<views::View>
+AppListAssistantMainStage::CreateDividerLayoutContainer() {
   // Dividers: the progress indicator and the horizontal separator will be the
   // separator when querying and showing the results, respectively.
-  views::View* divider_container = new views::View();
+  auto divider_container = std::make_unique<views::View>();
   divider_container->SetLayoutManager(std::make_unique<StackLayout>());
 
   // Progress indicator, which will be animated on its own layer.
-  progress_indicator_ = new AssistantProgressIndicator();
+  progress_indicator_ = divider_container->AddChildView(
+      std::make_unique<AssistantProgressIndicator>());
   progress_indicator_->SetPaintToLayer();
   progress_indicator_->layer()->SetFillsBoundsOpaquely(false);
-  divider_container->AddChildView(progress_indicator_);
 
   // Horizontal separator, which will be animated on its own layer.
-  horizontal_separator_ = new HorizontalSeparator(
-      kSeparatorWidthDip, progress_indicator_->GetPreferredSize().height());
+  horizontal_separator_ =
+      divider_container->AddChildView(std::make_unique<HorizontalSeparator>(
+          kSeparatorWidthDip,
+          progress_indicator_->GetPreferredSize().height()));
   horizontal_separator_->SetPaintToLayer();
   horizontal_separator_->layer()->SetFillsBoundsOpaquely(false);
-  divider_container->AddChildView(horizontal_separator_);
 
   return divider_container;
 }
 
-views::View* AppListAssistantMainStage::CreateFooterLayoutContainer() {
+std::unique_ptr<views::View>
+AppListAssistantMainStage::CreateFooterLayoutContainer() {
   // Footer.
   // Note that the |footer_| is placed within its own view container so that as
   // its visibility changes, its parent container will still reserve the same
   // layout space. This prevents jank that would otherwise occur due to
   // |ui_element_container_| claiming that empty space.
-  views::View* footer_container = new views::View();
+  auto footer_container = std::make_unique<views::View>();
   footer_container->SetLayoutManager(std::make_unique<views::FillLayout>());
 
-  footer_ = new AssistantFooterView(delegate_);
+  footer_ = footer_container->AddChildView(
+      std::make_unique<AssistantFooterView>(delegate_));
   footer_->AddObserver(this);
 
   // The footer will be animated on its own layer.
   footer_->SetPaintToLayer();
   footer_->layer()->SetFillsBoundsOpaquely(false);
-
-  footer_container->AddChildView(footer_);
 
   return footer_container;
 }

@@ -122,6 +122,18 @@ void WebviewController::ProcessRequest(const webview::WebviewRequest& request) {
   }
 }
 
+void WebviewController::DidFirstVisuallyNonEmptyPaint() {
+  if (client_) {
+    std::unique_ptr<webview::WebviewResponse> response =
+        std::make_unique<webview::WebviewResponse>();
+    auto* event = response->mutable_page_event();
+    event->set_url(contents_->GetURL().spec());
+    event->set_current_page_state(current_state());
+    event->set_did_first_visually_non_empty_paint(true);
+    client_->EnqueueSend(std::move(response));
+  }
+}
+
 void WebviewController::SendNavigationEvent(
     WebviewNavigationThrottle* throttle,
     content::NavigationHandle* navigation_handle) {

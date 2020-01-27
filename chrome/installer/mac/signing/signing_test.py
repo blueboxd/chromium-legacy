@@ -326,13 +326,17 @@ class TestSignChrome(unittest.TestCase):
 
     @mock.patch('signing.signing._sanity_check_version_keys')
     def test_sign_chrome_optional_parts(self, *args, **kwargs):
+        # The optional library must be an actual library from the dylibs list in
+        # "signing.py".
+        optional_library = 'libEGL.dylib'
+        optional_identifier = 'libEGL'
 
         def _fail_to_sign(*args):
-            if args[2].identifier == 'libwidevinecdm':
+            if args[2].identifier == optional_identifier:
                 raise FileNotFoundError(args[2].path)
 
         def _file_exists(*args):
-            return not args[0].endswith('libwidevinecdm.dylib')
+            return not args[0].endswith(optional_library)
 
         kwargs['sign_part'].side_effect = _fail_to_sign
 
@@ -349,7 +353,7 @@ class TestSignChrome(unittest.TestCase):
 
                 @property
                 def optional_parts(self):
-                    return set(('libwidevinecdm.dylib',))
+                    return set((optional_library,))
 
             # With the part marked as optional, it should succeed.
             config = model.Distribution().to_config(Config())

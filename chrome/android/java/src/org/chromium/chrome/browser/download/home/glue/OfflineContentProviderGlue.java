@@ -7,7 +7,7 @@ package org.chromium.chrome.browser.download.home.glue;
 import org.chromium.base.Callback;
 import org.chromium.base.ObserverList;
 import org.chromium.chrome.browser.download.home.DownloadManagerUiConfig;
-import org.chromium.chrome.browser.widget.ThumbnailProvider;
+import org.chromium.chrome.browser.thumbnail.generator.ThumbnailProvider;
 import org.chromium.components.offline_items_collection.ContentId;
 import org.chromium.components.offline_items_collection.LaunchLocation;
 import org.chromium.components.offline_items_collection.LegacyHelpers;

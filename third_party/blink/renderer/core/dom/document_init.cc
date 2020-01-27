@@ -332,7 +332,7 @@ V0CustomElementRegistrationContext* DocumentInit::RegistrationContext(
   if (create_new_registration_context_)
     return MakeGarbageCollected<V0CustomElementRegistrationContext>();
 
-  return registration_context_.Get();
+  return registration_context_;
 }
 
 Document* DocumentInit::ContextDocument() const {

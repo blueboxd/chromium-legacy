@@ -21,6 +21,9 @@ class PasswordGenerationPopupController
   // Called by the view when the password was accepted.
   virtual void PasswordAccepted() = 0;
 
+  // Called by the view when the password was selected.
+  virtual void SetSelected() = 0;
+
   // Accessors
   virtual GenerationUIState state() const = 0;
   virtual bool password_selected() const = 0;

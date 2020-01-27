@@ -15,29 +15,28 @@ goog.require('Msgs');
 
 /**
  * A widget used for interacting with bluetooth braille displays.
- * @constructor
  * @implements {BluetoothBrailleDisplayListener}
  */
-BluetoothBrailleDisplayUI = function() {
-  /** @private {!BluetoothBrailleDisplayManager} */
-  this.manager_ = new BluetoothBrailleDisplayManager();
+BluetoothBrailleDisplayUI = class {
+  constructor() {
+    /** @private {!BluetoothBrailleDisplayManager} */
+    this.manager_ = new BluetoothBrailleDisplayManager();
 
-  this.manager_.addListener(this);
+    this.manager_.addListener(this);
 
-  /** @private {Element} */
-  this.root_;
+    /** @private {Element} */
+    this.root_;
 
-  /** @private {Element} */
-  this.displaySelect_;
+    /** @private {Element} */
+    this.displaySelect_;
 
-  /** @private {Element} */
-  this.controls_;
+    /** @private {Element} */
+    this.controls_;
 
-  /** @private {string|undefined} */
-  this.selectedAndConnectedDisplayAddress_;
-};
+    /** @private {string|undefined} */
+    this.selectedAndConnectedDisplayAddress_;
+  }
 
-BluetoothBrailleDisplayUI.prototype = {
   /**
    * Attaches this widget to |element|.
    * @param {!Element} element
@@ -85,7 +84,7 @@ BluetoothBrailleDisplayUI.prototype = {
     forget.textContent =
         Msgs.getMsg('options_bluetooth_braille_display_forget');
     forget.disabled = true;
-  },
+  }
 
   /**
    * Detaches the rendered widget.
@@ -97,7 +96,7 @@ BluetoothBrailleDisplayUI.prototype = {
       this.root_.remove();
       this.root_ = null;
     }
-  },
+  }
 
   /** @override */
   onDisplayListChanged(displays) {
@@ -131,7 +130,7 @@ BluetoothBrailleDisplayUI.prototype = {
       name.textContent = display.name;
     });
     this.updateControls_();
-  },
+  }
 
   /** @override */
   onPincodeRequested(display) {
@@ -179,7 +178,7 @@ BluetoothBrailleDisplayUI.prototype = {
 
     document.body.blur();
     pincodeField.focus();
-  },
+  }
 
   /**
    * @private
@@ -235,6 +234,7 @@ BluetoothBrailleDisplayUI.prototype = {
     });
   }
 };
+
 
 /** @private {string} */
 BluetoothBrailleDisplayUI.CONNECTED_METRIC_NAME_ =

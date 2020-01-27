@@ -120,6 +120,13 @@ interface GpuService {
   // is reconfigured, for example.
   GpuSwitched(gl.mojom.GpuPreference active_gpu_heuristic);
 
+  // Tells GPU that host has seen a monitor being plugged in.
+  DisplayAdded();
+
+  // Tells GPU that host has seen a monitor being unplugged.
+  DisplayRemoved();
+
+  // Tells GPU that all GPU channels are to be destroyed.
   DestroyAllChannels();
 
   // Called by the browser shortly after the application is backgrounded. The

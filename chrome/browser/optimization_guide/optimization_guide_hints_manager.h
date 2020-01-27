@@ -149,6 +149,8 @@ class OptimizationGuideHintsManager
  private:
   FRIEND_TEST_ALL_PREFIXES(OptimizationGuideHintsManagerTest, IsGoogleURL);
   FRIEND_TEST_ALL_PREFIXES(OptimizationGuideHintsManagerFetchingTest,
+                           HintsFetched_AtSRP_NoRegisteredOptimizationTypes);
+  FRIEND_TEST_ALL_PREFIXES(OptimizationGuideHintsManagerFetchingTest,
                            HintsFetched_AtSRP_ECT_SLOW_2G);
   FRIEND_TEST_ALL_PREFIXES(OptimizationGuideHintsManagerFetchingTest,
                            HintsFetched_AtSRP_ECT_4G);

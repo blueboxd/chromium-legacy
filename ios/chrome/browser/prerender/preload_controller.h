@@ -10,7 +10,6 @@
 #include <memory>
 
 #include "components/prefs/pref_change_registrar.h"
-#include "ios/chrome/browser/browser_state/chrome_browser_state_forward.h"
 #import "ios/chrome/browser/net/connection_type_observer_bridge.h"
 #include "ios/web/public/navigation/referrer.h"
 #import "ios/web/public/web_state_delegate_bridge.h"
@@ -18,6 +17,7 @@
 #include "ui/base/page_transition_types.h"
 #include "url/gurl.h"
 
+class ChromeBrowserState;
 @protocol PreloadControllerDelegate;
 
 namespace web {
@@ -39,7 +39,7 @@ class WebState;
 @property(nonatomic, readonly, getter=isEnabled) BOOL enabled;
 
 // Designated initializer.
-- (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState;
+- (instancetype)initWithBrowserState:(ChromeBrowserState*)browserState;
 
 // Called when the browser state this object was initialized with is being
 // destroyed.

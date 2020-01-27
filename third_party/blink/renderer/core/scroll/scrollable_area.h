@@ -28,6 +28,7 @@
 
 #include "base/callback_helpers.h"
 #include "cc/input/scroll_snap_data.h"
+#include "third_party/blink/public/mojom/scroll/scroll_into_view_params.mojom-blink-forward.h"
 #include "third_party/blink/public/platform/web_color_scheme.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/layout/geometry/physical_rect.h"
@@ -64,7 +65,6 @@ class ScrollAnchor;
 class ScrollAnimatorBase;
 struct SerializedAnchor;
 class SmoothScrollSequencer;
-struct WebScrollIntoViewParams;
 
 using MainThreadScrollingReasons = uint32_t;
 
@@ -123,8 +123,9 @@ class CORE_EXPORT ScrollableArea : public GarbageCollectedMixin {
   // Scrolls the area so that the given rect, given in absolute coordinates,
   // such that it's visible in the area. Returns the new location of the input
   // rect in absolute coordinates.
-  virtual PhysicalRect ScrollIntoView(const PhysicalRect&,
-                                      const WebScrollIntoViewParams&);
+  virtual PhysicalRect ScrollIntoView(
+      const PhysicalRect&,
+      const mojom::blink::ScrollIntoViewParamsPtr&);
 
   static bool ScrollBehaviorFromString(const String&, ScrollBehavior&);
 

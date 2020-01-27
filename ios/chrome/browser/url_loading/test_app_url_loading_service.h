@@ -5,9 +5,10 @@
 #ifndef IOS_CHROME_BROWSER_URL_LOADING_TEST_APP_URL_LOADING_SERVICE_H_
 #define IOS_CHROME_BROWSER_URL_LOADING_TEST_APP_URL_LOADING_SERVICE_H_
 
-#include "ios/chrome/browser/browser_state/chrome_browser_state_forward.h"
 #include "ios/chrome/browser/url_loading/app_url_loading_service.h"
 #import "ios/chrome/browser/url_loading/url_loading_params.h"
+
+class ChromeBrowserState;
 
 // Service used to manage url loading at application level.
 class TestAppUrlLoadingService : public AppUrlLoadingService {
@@ -18,14 +19,14 @@ class TestAppUrlLoadingService : public AppUrlLoadingService {
   void LoadUrlInNewTab(const UrlLoadParams& params) override;
 
   // Returns the current browser state.
-  ios::ChromeBrowserState* GetCurrentBrowserState() override;
+  ChromeBrowserState* GetCurrentBrowserState() override;
 
   // These are the last parameters passed to |LoadUrlInNewTab|.
   UrlLoadParams last_params;
   int load_new_tab_call_count = 0;
 
   // This can be set by the test.
-  ios::ChromeBrowserState* currentBrowserState;
+  ChromeBrowserState* currentBrowserState;
 };
 
 #endif  // IOS_CHROME_BROWSER_URL_LOADING_APP_URL_LOADING_SERVICE_H_

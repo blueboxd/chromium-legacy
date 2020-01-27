@@ -103,6 +103,9 @@ constexpr const char* GetStageName(int stage_type_index) {
     case static_cast<int>(BlinkBreakdown::kUpdateLayers) +
         kBlinkBreakdownInitialIndex:
       return "SendBeginMainFrameToCommit.UpdateLayers";
+    case static_cast<int>(BlinkBreakdown::kBeginMainSentToStarted) +
+        kBlinkBreakdownInitialIndex:
+      return "SendBeginMainFrameToCommit.BeginMainSentToStarted";
     default:
       return "";
   }
@@ -237,12 +240,16 @@ void CompositorFrameReporter::OnAbortBeginMainFrame() {
 }
 
 void CompositorFrameReporter::SetBlinkBreakdown(
-    std::unique_ptr<BeginMainFrameMetrics> blink_breakdown) {
+    std::unique_ptr<BeginMainFrameMetrics> blink_breakdown,
+    base::TimeTicks begin_main_start) {
   DCHECK(blink_breakdown_.paint.is_zero());
   if (blink_breakdown)
     blink_breakdown_ = *blink_breakdown;
   else
     blink_breakdown_ = BeginMainFrameMetrics();
+
+  DCHECK(begin_main_frame_start_.is_null());
+  begin_main_frame_start_ = begin_main_start;
 }
 
 void CompositorFrameReporter::SetVizBreakdown(
@@ -333,7 +340,8 @@ void CompositorFrameReporter::ReportStageHistogramWithBreakdown(
                   static_cast<int>(stage.stage_type), stage_delta);
   switch (stage.stage_type) {
     case StageType::kSendBeginMainFrameToCommit: {
-      ReportBlinkBreakdowns(report_type, frame_sequence_tracker_type);
+      ReportBlinkBreakdowns(report_type, stage.start_time,
+                            frame_sequence_tracker_type);
       break;
     }
     case StageType::kSubmitCompositorFrameToPresentationCompositorFrame: {
@@ -348,6 +356,7 @@ void CompositorFrameReporter::ReportStageHistogramWithBreakdown(
 
 void CompositorFrameReporter::ReportBlinkBreakdowns(
     CompositorFrameReporter::MissedFrameReportTypes report_type,
+    base::TimeTicks start_time,
     FrameSequenceTrackerType frame_sequence_tracker_type) const {
   std::vector<std::pair<BlinkBreakdown, base::TimeDelta>> breakdowns = {
       {BlinkBreakdown::kHandleInputEvents,
@@ -361,7 +370,9 @@ void CompositorFrameReporter::ReportBlinkBreakdowns(
       {BlinkBreakdown::kScrollingCoordinator,
        blink_breakdown_.scrolling_coordinator},
       {BlinkBreakdown::kCompositeCommit, blink_breakdown_.composite_commit},
-      {BlinkBreakdown::kUpdateLayers, blink_breakdown_.update_layers}};
+      {BlinkBreakdown::kUpdateLayers, blink_breakdown_.update_layers},
+      {BlinkBreakdown::kBeginMainSentToStarted,
+       begin_main_frame_start_ - start_time}};
 
   for (const auto& pair : breakdowns) {
     ReportHistogram(report_type, frame_sequence_tracker_type,

@@ -70,7 +70,7 @@ void OffTheRecordChromeBrowserStateIOData::Handle::DoomIncognitoCache() {
 }
 
 OffTheRecordChromeBrowserStateIOData::Handle::Handle(
-    ios::ChromeBrowserState* browser_state)
+    ChromeBrowserState* browser_state)
     : io_data_(new OffTheRecordChromeBrowserStateIOData()),
       browser_state_(browser_state),
       initialized_(false) {
@@ -137,7 +137,7 @@ OffTheRecordChromeBrowserStateIOData::Handle::GetAllContextGetters() {
 
 OffTheRecordChromeBrowserStateIOData::OffTheRecordChromeBrowserStateIOData()
     : ChromeBrowserStateIOData(
-          ios::ChromeBrowserStateType::INCOGNITO_BROWSER_STATE) {}
+          ChromeBrowserStateType::INCOGNITO_BROWSER_STATE) {}
 
 OffTheRecordChromeBrowserStateIOData::~OffTheRecordChromeBrowserStateIOData() {}
 

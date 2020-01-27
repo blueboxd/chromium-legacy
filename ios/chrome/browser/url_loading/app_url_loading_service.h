@@ -11,9 +11,9 @@
 #include "base/ios/block_types.h"
 #import "ios/chrome/app/application_delegate/tab_opening.h"
 #include "ios/chrome/app/application_mode.h"
-#include "ios/chrome/browser/browser_state/chrome_browser_state_forward.h"
 #include "ui/base/page_transition_types.h"
 
+class ChromeBrowserState;
 struct UrlLoadParams;
 
 @class TabModel;
@@ -50,7 +50,7 @@ struct UrlLoadParams;
 - (void)expectNewForegroundTabForMode:(ApplicationMode)targetMode;
 
 // TODO(crbug.com/907527): refactor to remove these and most methods above.
-- (ios::ChromeBrowserState*)currentBrowserState;
+- (ChromeBrowserState*)currentBrowserState;
 - (TabModel*)currentTabModel;
 
 @end
@@ -66,7 +66,7 @@ class AppUrlLoadingService {
   virtual void LoadUrlInNewTab(const UrlLoadParams& params);
 
   // Returns the current browser state.
-  virtual ios::ChromeBrowserState* GetCurrentBrowserState();
+  virtual ChromeBrowserState* GetCurrentBrowserState();
 
  private:
   __weak id<AppURLLoadingServiceDelegate> delegate_;

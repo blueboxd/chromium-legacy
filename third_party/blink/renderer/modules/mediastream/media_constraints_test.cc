@@ -4,8 +4,8 @@
 
 #include "third_party/blink/renderer/platform/mediastream/media_constraints.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_media_track_constraints.h"
 #include "third_party/blink/renderer/modules/mediastream/media_constraints_impl.h"
-#include "third_party/blink/renderer/modules/mediastream/media_track_constraints.h"
 
 namespace blink {
 

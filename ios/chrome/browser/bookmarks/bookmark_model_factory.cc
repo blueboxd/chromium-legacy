@@ -27,14 +27,14 @@ namespace ios {
 
 // static
 bookmarks::BookmarkModel* BookmarkModelFactory::GetForBrowserState(
-    ios::ChromeBrowserState* browser_state) {
+    ChromeBrowserState* browser_state) {
   return static_cast<bookmarks::BookmarkModel*>(
       GetInstance()->GetServiceForBrowserState(browser_state, true));
 }
 
 // static
 bookmarks::BookmarkModel* BookmarkModelFactory::GetForBrowserStateIfExists(
-    ios::ChromeBrowserState* browser_state) {
+    ChromeBrowserState* browser_state) {
   return static_cast<bookmarks::BookmarkModel*>(
       GetInstance()->GetServiceForBrowserState(browser_state, false));
 }
@@ -62,8 +62,8 @@ void BookmarkModelFactory::RegisterBrowserStatePrefs(
 
 std::unique_ptr<KeyedService> BookmarkModelFactory::BuildServiceInstanceFor(
     web::BrowserState* context) const {
-  ios::ChromeBrowserState* browser_state =
-      ios::ChromeBrowserState::FromBrowserState(context);
+  ChromeBrowserState* browser_state =
+      ChromeBrowserState::FromBrowserState(context);
   std::unique_ptr<bookmarks::BookmarkModel> bookmark_model(
       new bookmarks::BookmarkModel(std::make_unique<BookmarkClientImpl>(
           browser_state,

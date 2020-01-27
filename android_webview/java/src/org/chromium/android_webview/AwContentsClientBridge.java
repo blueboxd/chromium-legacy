@@ -305,7 +305,8 @@ public class AwContentsClientBridge {
             String url, boolean isMainFrame, boolean hasUserGesture, boolean isRendererInitiated,
             String method, String[] requestHeaderNames, String[] requestHeaderValues,
             // WebResourceError
-            @NetError int errorCode, String description, boolean safebrowsingHit) {
+            @NetError int errorCode, String description, boolean safebrowsingHit,
+            boolean shouldOmitNotificationsForSafeBrowsingHit) {
         AwContentsClient.AwWebResourceRequest request = new AwContentsClient.AwWebResourceRequest(
                 url, isMainFrame, hasUserGesture, method, requestHeaderNames, requestHeaderValues);
         AwContentsClient.AwWebResourceError error = new AwContentsClient.AwWebResourceError();
@@ -325,7 +326,16 @@ public class AwContentsClientBridge {
             // Android WebView does not notify the embedder of these situations using
             // this error code with the WebViewClient.onReceivedError callback.
             if (safebrowsingHit) {
-                error.errorCode = ErrorCodeConversionHelper.ERROR_UNSAFE_RESOURCE;
+                if (shouldOmitNotificationsForSafeBrowsingHit
+                        && AwFeatureList.isEnabled(
+                                AwFeatures.SAFE_BROWSING_COMMITTED_INTERSTITIALS)) {
+                    // With committed interstitials we don't fire these notifications when the
+                    // interstitial shows, we instead handle them once the interstitial is
+                    // dismissed.
+                    return;
+                } else {
+                    error.errorCode = ErrorCodeConversionHelper.ERROR_UNSAFE_RESOURCE;
+                }
             } else {
                 error.errorCode = ErrorCodeConversionHelper.convertErrorCode(error.errorCode);
             }

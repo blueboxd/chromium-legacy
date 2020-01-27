@@ -141,6 +141,9 @@ struct GPU_EXPORT GpuPreferences {
   // Sets the maximum discardable cache size limit for GPU resources.
   uint32_t force_gpu_mem_discardable_limit_bytes = 0u;
 
+  // Sets maximum texture size.
+  uint32_t force_max_texture_size = 0u;
+
   // Sets the maximum size of the in-memory gpu program cache, in kb
   uint32_t gpu_program_cache_size = kDefaultMaxProgramCacheMemoryBytes;
 

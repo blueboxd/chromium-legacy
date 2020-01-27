@@ -156,6 +156,6 @@ CrashesUI::CrashesUI(web::WebUIIOS* web_ui) : web::WebUIIOSController(web_ui) {
   web_ui->AddMessageHandler(std::make_unique<CrashesDOMHandler>());
 
   // Set up the chrome://crashes/ source.
-  web::WebUIIOSDataSource::Add(ios::ChromeBrowserState::FromWebUIIOS(web_ui),
+  web::WebUIIOSDataSource::Add(ChromeBrowserState::FromWebUIIOS(web_ui),
                                CreateCrashesUIHTMLSource());
 }

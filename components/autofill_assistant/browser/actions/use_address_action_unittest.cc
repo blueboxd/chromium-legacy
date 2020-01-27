@@ -45,13 +45,12 @@ class UseAddressActionTest : public testing::Test {
     autofill::test::SetProfileInfo(&autofill_profile_, kFirstName, "",
                                    kLastName, kEmail, "", "", "", "", "", "",
                                    "", "");
-    client_memory_.set_selected_address(kAddressName,
-                                        std::move(autofill_profile));
+    user_data_.selected_addresses_[kAddressName] = std::move(autofill_profile);
 
     ON_CALL(mock_personal_data_manager_, GetProfileByGUID)
         .WillByDefault(Return(&autofill_profile_));
-    ON_CALL(mock_action_delegate_, GetClientMemory)
-        .WillByDefault(Return(&client_memory_));
+    ON_CALL(mock_action_delegate_, GetUserData)
+        .WillByDefault(Return(&user_data_));
     ON_CALL(mock_action_delegate_, GetPersonalDataManager)
         .WillByDefault(Return(&mock_personal_data_manager_));
     ON_CALL(mock_action_delegate_, RunElementChecks)
@@ -100,7 +99,7 @@ class UseAddressActionTest : public testing::Test {
   MockPersonalDataManager mock_personal_data_manager_;
   MockActionDelegate mock_action_delegate_;
   MockWebController mock_web_controller_;
-  ClientMemory client_memory_;
+  UserData user_data_;
 
   autofill::AutofillProfile autofill_profile_;
 };
@@ -126,7 +125,7 @@ TEST_F(UseAddressActionTest, NoSelectedAddress) {
   ActionProto action_proto = CreateUseAddressAction();
   action_proto.mutable_use_address()->set_prompt(kSelectionPrompt);
 
-  client_memory_.set_selected_address(kAddressName, nullptr);
+  user_data_.selected_addresses_[kAddressName] = nullptr;
 
   EXPECT_EQ(ProcessedActionStatusProto::PRECONDITION_FAILED,
             ProcessAction(action_proto));
@@ -137,8 +136,8 @@ TEST_F(UseAddressActionTest, PreconditionFailedPopulatesUnexpectedErrorInfo) {
 
   ActionProto action_proto = CreateUseAddressAction();
   action_proto.mutable_use_address()->set_prompt(kSelectionPrompt);
-  client_memory_.set_selected_address(kAddressName, nullptr);
-  client_memory_.set_selected_address("one_more", nullptr);
+  user_data_.selected_addresses_[kAddressName] = nullptr;
+  user_data_.selected_addresses_["one_more"] = nullptr;
 
   UseAddressAction action(&mock_action_delegate_, action_proto);
 

@@ -115,23 +115,6 @@ void RecordFilterResultEvent(
     base::UmaHistogramSparse("ManagedUsers.FilteringResult", value);
 }
 
-bool IsMainFrameWhitelisted(content::WebContents* web_contents) {
-  auto* navigation_observer =
-      SupervisedUserNavigationObserver::FromWebContents(web_contents);
-  if (!navigation_observer)
-    return false;
-  auto behavior = navigation_observer->main_frame_filtering_behavior();
-  auto reason = navigation_observer->main_frame_filtering_behavior_reason();
-  bool is_allowed =
-      behavior == SupervisedUserURLFilter::FilteringBehavior::ALLOW;
-  bool is_whitelisted =
-      reason == supervised_user_error_page::FilteringBehaviorReason::WHITELIST;
-  bool is_manual =
-      reason == supervised_user_error_page::FilteringBehaviorReason::MANUAL;
-
-  return is_allowed && (is_whitelisted || is_manual);
-}
-
 }  // namespace
 
 // static
@@ -148,11 +131,6 @@ SupervisedUserNavigationThrottle::MaybeCreateThrottleFor(
     SupervisedUserService* service =
         SupervisedUserServiceFactory::GetForProfile(profile);
     if (!service->IsSupervisedUserIframeFilterEnabled())
-      return nullptr;
-
-    // If the url in the main main frame has already been whitelisted by
-    // parents, then don't create the throttle for the subframe.
-    if (IsMainFrameWhitelisted(navigation_handle->GetWebContents()))
       return nullptr;
   }
 

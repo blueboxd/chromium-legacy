@@ -63,7 +63,6 @@
 #if defined(OS_ANDROID)
 #include "third_party/blink/renderer/controller/crash_memory_metrics_reporter_impl.h"
 #include "third_party/blink/renderer/controller/oom_intervention_impl.h"
-#include "third_party/blink/renderer/controller/user_level_memory_pressure_signal_generator.h"
 #endif
 
 #if defined(OS_LINUX)
@@ -73,6 +72,7 @@
 #if defined(OS_LINUX) || defined(OS_ANDROID) || defined(OS_MACOSX) || \
     defined(OS_WIN)
 #include "third_party/blink/renderer/controller/highest_pmf_reporter.h"
+#include "third_party/blink/renderer/controller/user_level_memory_pressure_signal_generator.h"
 #endif
 
 namespace blink {
@@ -141,9 +141,6 @@ void InitializeCommon(Platform* platform, mojo::BinderMap* binders) {
     MemoryAblationExperiment::MaybeStartForRenderer(task_runner);
 
 #if defined(OS_ANDROID)
-  // Initialize UserLevelMemoryPressureSignalGenerator so it starts monitoring.
-  UserLevelMemoryPressureSignalGenerator::Instance();
-
   // Initialize CrashMemoryMetricsReporterImpl in order to assure that memory
   // allocation does not happen in OnOOMCallback.
   CrashMemoryMetricsReporterImpl::Instance();
@@ -151,6 +148,10 @@ void InitializeCommon(Platform* platform, mojo::BinderMap* binders) {
 
 #if defined(OS_LINUX) || defined(OS_ANDROID) || defined(OS_MACOSX) || \
     defined(OS_WIN)
+  // Initialize UserLevelMemoryPressureSignalGenerator so it starts monitoring.
+  if (UserLevelMemoryPressureSignalGenerator::Enabled())
+    UserLevelMemoryPressureSignalGenerator::Instance();
+
   // Start reporting the highest private memory footprint after the first
   // navigation.
   HighestPmfReporter::Instance();

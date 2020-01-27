@@ -24,6 +24,7 @@
 <translation id="1029317248976101138">जुम आउट गर्नुहोस्</translation>
 <translation id="1030706264415084469"><ph name="URL" /> तपाईंको यन्त्रमा स्थायी रूपमा ठूलो परिमाणको डेटा भण्डारण गर्न चाहन्छ</translation>
 <translation id="1031362278801463162">पूर्वावलोकन लोड गर्दै</translation>
+<translation id="1032605640136438169">कृपया नयाँ सर्तहरूको समीक्षा गर्नुहोस्</translation>
 <translation id="103279545524624934">Android अनुप्रयोग सुरु गर्न डिस्कमा ठाउँ खाली गर्नुहोस्।</translation>
 <translation id="1033780634303702874">आफ्नो धारावाहिक यन्त्रहरू पहुँच गर्नुहोस्</translation>
 <translation id="1034942643314881546">अनुप्रयोगको चित्रण सक्षम पार्न ADB सक्षम पारिँदै</translation>
@@ -221,7 +222,6 @@
 <translation id="1306606229401759371">सेटिङहरू बदल्नुहोस्</translation>
 <translation id="1307165550267142340">तपाईंको PIN सिर्जना गरियो</translation>
 <translation id="1307559529304613120">ओहो! सिस्टमले यो यन्त्रको लागि दीर्घकालीन API पहुँच टोकन भण्डारण गर्न असफल भयो।</translation>
-<translation id="1309199320876169714">Plugin VM हटाउँदै...</translation>
 <translation id="1313405956111467313">स्वचालित प्रोक्सी कन्फिगरेसन</translation>
 <translation id="131364520783682672">Caps Lock</translation>
 <translation id="1313705515580255288">तपाइँका पृष्ठमञ्जूषाहरू, इतिहास, र अन्य सेटिङहरू तपाइँको Google खातामा समक्रमण गरिनेछन्।</translation>
@@ -1363,7 +1363,6 @@
 <translation id="2871813825302180988">यो खाता यस यन्त्रमा पहिले नै प्रयोग भइरहेको छ।</translation>
 <translation id="287286579981869940"><ph name="PROVIDER_NAME" /> थप्नुहोस्...</translation>
 <translation id="2872961005593481000">बन्द गर्नुहोस्</translation>
-<translation id="2874478552394649323">Plugin VM हटाउनुहोस्</translation>
 <translation id="2874939134665556319">अघिल्लो ट्र्याक</translation>
 <translation id="2875698561019555027">(क्रोम त्रुटि पृष्ठ)</translation>
 <translation id="2876336351874743617">औँला २</translation>
@@ -1380,7 +1379,6 @@
 <translation id="2889064240420137087">कृपया लिङ्क खोल्नुहोस्...</translation>
 <translation id="2889925978073739256">स्यान्डबक्स हटाइएका प्लगइनहरू रोक्न जारी राख्नुहोस्</translation>
 <translation id="2893168226686371498">पूर्वनिर्धारित ब्राउजर</translation>
-<translation id="2893208266590504003">Plugin VM हटाउन सकिएन</translation>
 <translation id="2894757982205307093">समूहमा नयाँ ट्याब थप्नुहोस्</translation>
 <translation id="289644616180464099">SIM कार्ड लक गरिएको छ</translation>
 <translation id="2896909745808647285"><ph name="FILE_NAME" /> इन्क्रिप्ट गरिएको छ र यसलाई खोल्न रोक लगाइएको छ।</translation>
@@ -2831,6 +2829,7 @@
 <translation id="4998430619171209993">सक्रिय छ</translation>
 <translation id="4998873842614926205">परिवर्तनहरू निश्चित गर्न</translation>
 <translation id="5000922062037820727">(सिफारिस गरिएको) रोकिएको</translation>
+<translation id="5007392906805964215">समीक्षा गर्नुहोस्</translation>
 <translation id="5008936837313706385">क्रियाकलापको नाम</translation>
 <translation id="5010043101506446253">प्रमाणपत्र अधिकार</translation>
 <translation id="5015344424288992913">प्रोक्सी समाधान गर्दै...</translation>
@@ -3036,6 +3035,7 @@
 <translation id="5311304534597152726">यस रूपमा साइन इन गर्दै</translation>
 <translation id="53116743016968120"><ph name="ERROR_MESSAGE" /> कृपया फेरि प्रयास गर्नुहोस्।</translation>
 <translation id="5313628438272378649">यो डेटा अपलोड गर्दा तपाईंको संस्थाका सुरक्षासम्बन्धी नीतिहरूको उल्लङ्घन हुने भएकाले यो कार्य सम्पन्न गर्न सकिँदैन।</translation>
+<translation id="5314381603623123224">३१ मार्चदेखि Chrome को सेवाका सर्तहरू परिवर्तन हुँदै छन्</translation>
 <translation id="5315738755890845852">अतिरिक्त मझौला कोष्ठक: <ph name="ERROR_LINE" /></translation>
 <translation id="5315873049536339193">पहिचान</translation>
 <translation id="5317780077021120954">बचत गर्नुहोस्</translation>
@@ -5769,7 +5769,6 @@
 <translation id="9169496697824289689">किबोर्ड शर्टकटरहरू हेर्नुहोस्</translation>
 <translation id="916964310188958970">यो सुझाव किन देखाइयो?</translation>
 <translation id="9169931577761441333"><ph name="APP_NAME" /> लाई गृह स्क्रिनमा थप्नुहोस्‌</translation>
-<translation id="9170305483456271385">Plugin VM हटाइएको छ</translation>
 <translation id="9170848237812810038">&amp;पूर्वस्थितिमा फर्काउनुहोस्</translation>
 <translation id="9170884462774788842">तपाईंको कम्प्युटरमा रहेको अर्को कार्यक्रमले एउटा थिम थपेको छ जसले Chrome ले काम गर्ने तरिकालाई बदल्न सक्छ।</translation>
 <translation id="9173995187295789444">ब्लुटुथ यन्त्रहरू छन् कि भनी जाँच गर्दै...</translation>

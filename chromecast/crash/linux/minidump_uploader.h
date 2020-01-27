@@ -23,7 +23,7 @@ class CastSysInfo;
 class MinidumpUploader : public SynchronizedMinidumpManager {
  public:
   using PrefServiceGeneratorCallback =
-      base::OnceCallback<std::unique_ptr<PrefService>()>;
+      base::RepeatingCallback<std::unique_ptr<PrefService>()>;
 
   // If |server_url| is empty, a default server url will be chosen.
   MinidumpUploader(CastSysInfo* sys_info, const std::string& server_url);

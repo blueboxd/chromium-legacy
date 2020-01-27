@@ -29,6 +29,8 @@
 #include "components/safe_browsing/core/db/allowlist_checker_client.h"
 #include "components/safe_browsing/core/db/database_manager.h"
 #include "components/safe_browsing/core/proto/csd.pb.h"
+#include "components/security_interstitials/content/unsafe_resource_util.h"
+#include "components/security_interstitials/core/unsafe_resource.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_controller.h"
@@ -377,7 +379,7 @@ void ClientSideDetectionHost::OnSafeBrowsingHit(
   if (web_contents() != resource.web_contents_getter.Run())
     return;
 
-  NavigationEntry* entry = resource.GetNavigationEntryForResource();
+  NavigationEntry* entry = GetNavigationEntryForResource(resource);
   if (!entry)
     return;
 
@@ -471,8 +473,8 @@ void ClientSideDetectionHost::MaybeShowPhishingWarning(GURL phishing_url,
       resource.threat_type = SB_THREAT_TYPE_URL_CLIENT_SIDE_PHISHING;
       resource.threat_source =
           safe_browsing::ThreatSource::CLIENT_SIDE_DETECTION;
-      resource.web_contents_getter = safe_browsing::SafeBrowsingUIManager::
-          UnsafeResource::GetWebContentsGetter(
+      resource.web_contents_getter =
+          security_interstitials::GetWebContentsGetter(
               web_contents()->GetMainFrame()->GetProcess()->GetID(),
               web_contents()->GetMainFrame()->GetRoutingID());
       if (!ui_manager_->IsWhitelisted(resource)) {

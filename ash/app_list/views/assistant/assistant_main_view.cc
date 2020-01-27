@@ -114,14 +114,14 @@ void AssistantMainView::InitLayout() {
       views::BoxLayout::CrossAxisAlignment::kCenter);
 
   // Dialog plate, which will be animated on its own layer.
-  dialog_plate_ = new AssistantDialogPlate(delegate_);
+  dialog_plate_ =
+      AddChildView(std::make_unique<AssistantDialogPlate>(delegate_));
   dialog_plate_->SetPaintToLayer();
   dialog_plate_->layer()->SetFillsBoundsOpaquely(false);
-  AddChildView(dialog_plate_);
 
   // Main stage.
-  main_stage_ = new AppListAssistantMainStage(delegate_);
-  AddChildView(main_stage_);
+  main_stage_ =
+      AddChildView(std::make_unique<AppListAssistantMainStage>(delegate_));
 
   layout->SetFlexForView(main_stage_, 1);
 }

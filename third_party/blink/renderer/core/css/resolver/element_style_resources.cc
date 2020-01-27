@@ -220,8 +220,8 @@ void ElementStyleResources::LoadPendingImages(ComputedStyle* style) {
                 LoadPendingImage(style, To<StylePendingImage>(background_image),
                                  image_request_optimization);
             if (new_image && new_image->IsLazyloadPossiblyDeferred()) {
-              LazyImageHelper::StartMonitoring(
-                  pseudo_element_ ? pseudo_element_ : element_.Get());
+              LazyImageHelper::StartMonitoring(pseudo_element_ ? pseudo_element_
+                                                               : element_);
             }
             background_layer->SetImage(new_image);
           }

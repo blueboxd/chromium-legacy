@@ -120,7 +120,7 @@ bool ShouldClearSessionCookies() {
 }
 
 // Clears the session cookies for |profile|.
-void ClearSessionCookies(ios::ChromeBrowserState* browser_state) {
+void ClearSessionCookies(ChromeBrowserState* browser_state) {
   scoped_refptr<net::URLRequestContextGetter> getter =
       browser_state->GetRequestContext();
   base::PostTask(FROM_HERE, {web::WebThread::IO}, base::BindOnce(^{

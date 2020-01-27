@@ -13,4 +13,11 @@ const base::Feature kDoubleTapToZoomInTabletMode{
     "DoubleTapToZoomInTabletMode", base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
 
+#if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
+// Enables taking snapshots of the user data directory after a major
+// milestone update and restoring them after a version rollback.
+const base::Feature kUserDataSnapshot{"UserDataSnapshot",
+                                      base::FEATURE_DISABLED_BY_DEFAULT};
+#endif  // !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
+
 }  // namespace features

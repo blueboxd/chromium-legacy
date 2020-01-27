@@ -21,7 +21,7 @@
 
 std::unique_ptr<ntp_tiles::MostVisitedSites>
 IOSMostVisitedSitesFactory::NewForBrowserState(
-    ios::ChromeBrowserState* browser_state) {
+    ChromeBrowserState* browser_state) {
   return std::make_unique<ntp_tiles::MostVisitedSites>(
       browser_state->GetPrefs(),
       ios::TopSitesFactory::GetForBrowserState(browser_state),

@@ -20,8 +20,8 @@ import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.suggestions.mostvisited.MostVisitedSites;
 import org.chromium.chrome.browser.suggestions.mostvisited.MostVisitedSitesBridge;
-import org.chromium.chrome.browser.widget.ThumbnailProvider;
-import org.chromium.chrome.browser.widget.ThumbnailProviderImpl;
+import org.chromium.chrome.browser.thumbnail.generator.ThumbnailProvider;
+import org.chromium.chrome.browser.thumbnail.generator.ThumbnailProviderImpl;
 
 /**
  * Provides an injection mechanisms for dependencies of the suggestions package.

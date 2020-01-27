@@ -123,4 +123,10 @@ bool CrostiniFeatures::IsRootAccessAllowed(Profile* profile) {
   return true;
 }
 
+bool CrostiniFeatures::IsContainerUpgradeUIAllowed(Profile* profile) {
+  return g_crostini_features->IsUIAllowed(profile, true) &&
+         base::FeatureList::IsEnabled(
+             chromeos::features::kCrostiniWebUIUpgrader);
+}
+
 }  // namespace crostini

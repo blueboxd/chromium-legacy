@@ -452,10 +452,6 @@ class OptimizationGuideStore {
   // is needed often.
   EntryKeyPrefix component_hint_entry_key_prefix_;
 
-  // If a component data update is in the middle of being processed; when this
-  // is true, keys and hints will not be returned by the store.
-  bool data_update_in_flight_ = false;
-
   // The next update time for the fetched hints that are currently in the
   // store.
   base::Time fetched_update_time_;

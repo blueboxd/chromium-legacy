@@ -7,12 +7,12 @@
 #include <utility>
 
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_point_2d.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/geometry/dom_rect.h"
 #include "third_party/blink/renderer/core/html/canvas/canvas_image_source.h"
 #include "third_party/blink/renderer/core/workers/worker_thread.h"
-#include "third_party/blink/renderer/modules/imagecapture/point_2d.h"
 #include "third_party/blink/renderer/modules/shapedetection/detected_text.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 

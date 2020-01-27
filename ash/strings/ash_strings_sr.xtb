@@ -112,6 +112,7 @@
 <translation id="2352467521400612932">Подешавања писаљке</translation>
 <translation id="2354174487190027830">Активирање мреже <ph name="NAME" /></translation>
 <translation id="2359808026110333948">Наставите</translation>
+<translation id="2364154243880592194">Статусна трака, време <ph name="TIME" />, <ph name="BATTERY" /> Притисните тастер за претрагу и стрелицу улево да бисте приступили центру за обавештења.</translation>
 <translation id="2365393535144473978">Ако омогућите мобилне податке, омогућавате Bluetooth.</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="2412593942846481727">Доступно је ажурирање</translation>
@@ -335,6 +336,7 @@
 <translation id="5669267381087807207">Активирање</translation>
 <translation id="5673434351075758678">Са језика „<ph name="FROM_LOCALE" />“ на „<ph name="TO_LOCALE" />“ после синхронизације уређаја.</translation>
 <translation id="5682642926269496722">Google није доступан за актуелни кориснички налог.</translation>
+<translation id="5689633613396158040">Ноћно светло вам олакшава да прегледате садржај екрана или да читате при пригушеном светлу. Додирните да бисте променили време када се ноћно светло укључује или га потпуно искључите.</translation>
 <translation id="5691772641933328258">Отисак прста није препознат</translation>
 <translation id="5710450975648804523">Режим Не узнемиравај је укључен</translation>
 <translation id="573413375004481890">Овај уређај не може да подржава све ваше екране, па је веза са једним од њих прекинута</translation>
@@ -514,6 +516,7 @@
 <translation id="8142441511840089262">Двоструки клик</translation>
 <translation id="8142699993796781067">Приватна мрежа</translation>
 <translation id="8152092012181020186">Притисните Ctrl + W да бисте затворили.</translation>
+<translation id="8155007568264258537"><ph name="FEATURE_NAME" /> Овим подешавањем управља администратор.</translation>
 <translation id="8167567890448493835">Користи се <ph name="LOCALE_NAME" /></translation>
 <translation id="8190698733819146287">Прилагоди језике и унос...</translation>
 <translation id="8192202700944119416">Обавештења су сакривена.</translation>

@@ -67,6 +67,16 @@ class TestHintsComponentCreator {
       const std::vector<std::string>& experimental_resource_patterns,
       const std::vector<std::string>& default_resource_patterns);
 
+  // Creates component data based on |whitelisted_host_suffixes| and
+  // |page_pattern| with page hints for type |optimization_type| blocking
+  // resources specified by |resource_patterns|, and returns the
+  // HintsComponentInfo for it.
+  optimization_guide::HintsComponentInfo
+  CreateHintsComponentInfoWithPublicImageHints(
+      const std::vector<std::string>& page_hint_host_suffixes,
+      const std::string& page_pattern,
+      const std::vector<std::string>& public_image_urls);
+
  private:
   // Returns the scoped temp directory path with the |file_path_suffix| that is
   // valid for the lifetime of this instance.

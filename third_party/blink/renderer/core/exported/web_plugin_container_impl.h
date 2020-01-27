@@ -34,8 +34,8 @@
 
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/public/common/input/web_touch_event.h"
+#include "third_party/blink/public/mojom/input/focus_type.mojom-blink-forward.h"
 #include "third_party/blink/public/platform/web_coalesced_input_event.h"
-#include "third_party/blink/public/platform/web_focus_type.h"
 #include "third_party/blink/public/web/web_plugin_container.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
@@ -107,7 +107,7 @@ class CORE_EXPORT WebPluginContainerImpl final
   bool WantsWheelEvents() const;
   void UpdateAllLifecyclePhases();
   void InvalidateRect(const IntRect&);
-  void SetFocused(bool, WebFocusType);
+  void SetFocused(bool, mojom::blink::FocusType);
   void HandleEvent(Event&);
   bool IsErrorplaceholder();
   void EventListenersRemoved();

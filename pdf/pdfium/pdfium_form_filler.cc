@@ -47,6 +47,7 @@ PDFiumFormFiller::PDFiumFormFiller(PDFiumEngine* engine, bool enable_javascript)
   FPDF_FORMFILLINFO::FFI_DoGoToAction = Form_DoGoToAction;
 #if defined(PDF_ENABLE_XFA)
   FPDF_FORMFILLINFO::version = 2;
+  FPDF_FORMFILLINFO::xfa_disabled = false;
   FPDF_FORMFILLINFO::FFI_EmailTo = Form_EmailTo;
   FPDF_FORMFILLINFO::FFI_DisplayCaret = Form_DisplayCaret;
   FPDF_FORMFILLINFO::FFI_SetCurrentPage = Form_SetCurrentPage;

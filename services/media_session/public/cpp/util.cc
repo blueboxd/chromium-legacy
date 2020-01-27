@@ -40,6 +40,12 @@ void PerformMediaSessionAction(
     case mojom::MediaSessionAction::kStop:
       media_controller_remote->Stop();
       break;
+    case mojom::MediaSessionAction::kEnterPictureInPicture:
+      media_controller_remote->EnterPictureInPicture();
+      break;
+    case mojom::MediaSessionAction::kExitPictureInPicture:
+      media_controller_remote->ExitPictureInPicture();
+      break;
     case mojom::MediaSessionAction::kSkipAd:
     case mojom::MediaSessionAction::kSeekTo:
     case mojom::MediaSessionAction::kScrubTo:

@@ -436,7 +436,7 @@ class WebGPUDecoderImpl final : public WebGPUDecoder {
   // Map from the <ID, generation> pair for a wire texture to the shared image
   // representation and access for it.
   base::flat_map<std::tuple<uint32_t, uint32_t>,
-                 SharedImageRepresentationAndAccess>
+                 std::unique_ptr<SharedImageRepresentationAndAccess>>
       associated_shared_image_map_;
 
   std::unique_ptr<dawn_platform::Platform> dawn_platform_;
@@ -855,11 +855,15 @@ error::Error WebGPUDecoderImpl::HandleAssociateMailboxImmediate(
     return error::kInvalidArguments;
   }
 
+  std::unique_ptr<SharedImageRepresentationAndAccess>
+      representation_and_access =
+          std::make_unique<SharedImageRepresentationAndAccess>();
+  representation_and_access->representation = std::move(shared_image);
+  representation_and_access->access = std::move(shared_image_access);
+
   std::tuple<uint32_t, uint32_t> id_and_generation{id, generation};
-  SharedImageRepresentationAndAccess shared_image_representation_and_access{
-      std::move(shared_image), std::move(shared_image_access)};
   auto insertion = associated_shared_image_map_.emplace(
-      id_and_generation, std::move(shared_image_representation_and_access));
+      id_and_generation, std::move(representation_and_access));
 
   // InjectTexture already validated that the (ID, generation) can't have been
   // registered before.

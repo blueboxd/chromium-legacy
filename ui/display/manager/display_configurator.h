@@ -266,6 +266,11 @@ class DISPLAY_MANAGER_EXPORT DisplayConfigurator
                           const std::vector<GammaRampRGBEntry>& degamma_lut,
                           const std::vector<GammaRampRGBEntry>& gamma_lut);
 
+  // Enabled/disable the privacy screen on the display with |display_id|.
+  // For this to succeed the display must be internal and support the privacy
+  // screen feature.
+  bool SetPrivacyScreen(int64_t display_id, bool enabled);
+
   // Returns the requested power state if set or the default power state.
   chromeos::DisplayPowerState GetRequestedPowerState() const;
 

@@ -8,7 +8,8 @@
 #include "base/macros.h"
 #include "components/omnibox/browser/autocomplete_provider_client.h"
 #include "ios/chrome/browser/autocomplete/autocomplete_scheme_classifier_impl.h"
-#include "ios/chrome/browser/browser_state/chrome_browser_state_forward.h"
+
+class ChromeBrowserState;
 
 namespace unified_consent {
 class UrlKeyedDataCollectionConsentHelper;
@@ -22,8 +23,7 @@ class ComponentUpdateService;
 // AutocompleteProviderClient interface.
 class AutocompleteProviderClientImpl : public AutocompleteProviderClient {
  public:
-  explicit AutocompleteProviderClientImpl(
-      ios::ChromeBrowserState* browser_state);
+  explicit AutocompleteProviderClientImpl(ChromeBrowserState* browser_state);
   ~AutocompleteProviderClientImpl() override;
 
   // AutocompleteProviderClient implementation.
@@ -73,7 +73,7 @@ class AutocompleteProviderClientImpl : public AutocompleteProviderClient {
                         const AutocompleteInput* input) override;
 
  private:
-  ios::ChromeBrowserState* browser_state_;
+  ChromeBrowserState* browser_state_;
   AutocompleteSchemeClassifierImpl scheme_classifier_;
   std::unique_ptr<unified_consent::UrlKeyedDataCollectionConsentHelper>
       url_consent_helper_;

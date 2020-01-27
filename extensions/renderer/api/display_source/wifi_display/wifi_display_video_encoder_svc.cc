@@ -68,12 +68,12 @@ void WiFiDisplayVideoEncoderSVC::Create(
 
   base::PostTaskAndReplyWithResult(
       media_thread->task_runner().get(), FROM_HERE,
-      base::Bind(
+      base::BindOnce(
           &WiFiDisplayVideoEncoderSVC::InitOnMediaThread,
           base::WrapRefCounted(new WiFiDisplayVideoEncoderSVC(
               base::ThreadTaskRunnerHandle::Get(), std::move(media_thread))),
           params),
-      encoder_callback);
+      base::BindOnce(encoder_callback));
 }
 
 WiFiDisplayVideoEncoderSVC::WiFiDisplayVideoEncoderSVC(

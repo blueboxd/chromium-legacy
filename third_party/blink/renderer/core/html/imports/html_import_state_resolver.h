@@ -52,7 +52,7 @@ class HTMLImportStateResolver final {
   bool ShouldBlockScriptExecution() const;
   bool IsActive() const;
 
-  Member<HTMLImport> import_;
+  HTMLImport* import_;
 };
 
 }  // namespace blink

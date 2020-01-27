@@ -108,18 +108,17 @@ public class PasswordEntryViewer
     public View onCreateView(
             LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        // Extras are set on this intent in class {@link SavePasswordsPreferences}.
+        // Extras are set on this intent in class {@link PasswordSettings}.
         mExtras = getArguments();
         assert mExtras != null;
-        mID = mExtras.getInt(SavePasswordsPreferences.PASSWORD_LIST_ID);
-        mFoundViaSearch =
-                mExtras.getBoolean(SavePasswordsPreferences.EXTRA_FOUND_VIA_SEARCH, false);
-        final String name = mExtras.containsKey(SavePasswordsPreferences.PASSWORD_LIST_NAME)
-                ? mExtras.getString(SavePasswordsPreferences.PASSWORD_LIST_NAME)
+        mID = mExtras.getInt(PasswordSettings.PASSWORD_LIST_ID);
+        mFoundViaSearch = mExtras.getBoolean(PasswordSettings.EXTRA_FOUND_VIA_SEARCH, false);
+        final String name = mExtras.containsKey(PasswordSettings.PASSWORD_LIST_NAME)
+                ? mExtras.getString(PasswordSettings.PASSWORD_LIST_NAME)
                 : null;
 
         mException = (name == null);
-        final String url = mExtras.getString(SavePasswordsPreferences.PASSWORD_LIST_URL);
+        final String url = mExtras.getString(PasswordSettings.PASSWORD_LIST_URL);
         mClipboard = (ClipboardManager) getActivity().getApplicationContext().getSystemService(
                 Context.CLIPBOARD_SERVICE);
         View inflatedView =
@@ -299,8 +298,8 @@ public class PasswordEntryViewer
         copyUsernameButton.setContentDescription(
                 getActivity().getString(R.string.password_entry_viewer_copy_stored_username));
         copyUsernameButton.setOnClickListener(v -> {
-            ClipData clip = ClipData.newPlainText("username",
-                    getArguments().getString(SavePasswordsPreferences.PASSWORD_LIST_NAME));
+            ClipData clip = ClipData.newPlainText(
+                    "username", getArguments().getString(PasswordSettings.PASSWORD_LIST_NAME));
             mClipboard.setPrimaryClip(clip);
             Toast.makeText(getActivity().getApplicationContext(),
                          R.string.password_entry_viewer_username_copied_into_clipboard,
@@ -321,7 +320,7 @@ public class PasswordEntryViewer
 
         copySiteButton.setOnClickListener(v -> {
             ClipData clip = ClipData.newPlainText(
-                    "site", getArguments().getString(SavePasswordsPreferences.PASSWORD_LIST_URL));
+                    "site", getArguments().getString(PasswordSettings.PASSWORD_LIST_URL));
             mClipboard.setPrimaryClip(clip);
             Toast.makeText(getActivity().getApplicationContext(),
                          R.string.password_entry_viewer_site_copied_into_clipboard,
@@ -344,7 +343,7 @@ public class PasswordEntryViewer
         TextView passwordView = mView.findViewById(R.id.password_entry_viewer_password);
         ImageButton viewPasswordButton =
                 mView.findViewById(R.id.password_entry_viewer_view_password);
-        passwordView.setText(mExtras.getString(SavePasswordsPreferences.PASSWORD_LIST_PASSWORD));
+        passwordView.setText(mExtras.getString(PasswordSettings.PASSWORD_LIST_PASSWORD));
         passwordView.setInputType(inputType);
         viewPasswordButton.setImageResource(visibilityIcon);
         viewPasswordButton.setContentDescription(getActivity().getString(annotation));
@@ -378,8 +377,8 @@ public class PasswordEntryViewer
     }
 
     private void copyPassword() {
-        ClipData clip = ClipData.newPlainText("password",
-                getArguments().getString(SavePasswordsPreferences.PASSWORD_LIST_PASSWORD));
+        ClipData clip = ClipData.newPlainText(
+                "password", getArguments().getString(PasswordSettings.PASSWORD_LIST_PASSWORD));
         mClipboard.setPrimaryClip(clip);
         Toast.makeText(getActivity().getApplicationContext(),
                      R.string.password_entry_viewer_password_copied_into_clipboard,

@@ -488,8 +488,8 @@ NSString* const kSuggestionSuffix = @" ••••••••";
   return _webState;
 }
 
-- (ios::ChromeBrowserState*)browserState {
-  return _webState ? ios::ChromeBrowserState::FromBrowserState(
+- (ChromeBrowserState*)browserState {
+  return _webState ? ChromeBrowserState::FromBrowserState(
                          _webState->GetBrowserState())
                    : nullptr;
 }

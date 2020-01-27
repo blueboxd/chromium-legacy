@@ -8,7 +8,6 @@
 #include <memory>
 
 #include "third_party/blink/renderer/bindings/core/v8/string_or_unrestricted_double_sequence.h"
-#include "third_party/blink/renderer/core/geometry/dom_matrix_2d_init.h"
 #include "third_party/blink/renderer/core/typed_arrays/array_buffer_view_helpers.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_typed_array.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
@@ -21,6 +20,7 @@ namespace blink {
 
 class DOMMatrix;
 class DOMMatrixInit;
+class DOMMatrix2DInit;
 class DOMPoint;
 class DOMPointInit;
 

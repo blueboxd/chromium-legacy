@@ -7,7 +7,7 @@
 
 #import <UIKit/UIKit.h>
 
-#include "ios/chrome/browser/browser_state/chrome_browser_state_forward.h"
+class ChromeBrowserState;
 
 namespace bookmarks {
 class BookmarkNode;
@@ -24,7 +24,7 @@ class GURL;
 @interface BookmarkMediator : NSObject
 
 - (instancetype)init NS_UNAVAILABLE;
-- (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState
+- (instancetype)initWithBrowserState:(ChromeBrowserState*)browserState
     NS_DESIGNATED_INITIALIZER;
 
 // Registers the feature preferences.
@@ -33,9 +33,9 @@ class GURL;
 // Accesses the default folder for bookmarks. The default folder is Mobile
 // Bookmarks.
 + (const bookmarks::BookmarkNode*)folderForNewBookmarksInBrowserState:
-    (ios::ChromeBrowserState*)browserState;
+    (ChromeBrowserState*)browserState;
 + (void)setFolderForNewBookmarks:(const bookmarks::BookmarkNode*)folder
-                  inBrowserState:(ios::ChromeBrowserState*)browserState;
+                  inBrowserState:(ChromeBrowserState*)browserState;
 
 // Adds a bookmark with a |title| and a |URL| and display a snackbar with an
 // |editAction|. Returns a message to be displayed after the Bookmark has been

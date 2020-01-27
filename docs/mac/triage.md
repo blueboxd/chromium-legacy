@@ -131,9 +131,9 @@ If the bug is Mac-specific and in scope for the Mac team, try to:
     * `Mac-Enterprise`: avi@
     * `Mac-Graphics`: ccameron@
     * `Mac-Infra`: ellyjones@
-    * `Mac-Performance`: lgrey@ or sdy@
-    * `Mac-PlatformIntegration`: sdy@
-    * `Mac-Polish`: sdy@
+    * `Mac-Performance`: lgrey@
+    * `Mac-PlatformIntegration`: ellyjones@
+    * `Mac-Polish`: ellyjones@
     * `Mac-TechDebt`: ellyjones@
     * `Mac-UI`: anyone
 

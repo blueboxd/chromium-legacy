@@ -127,6 +127,14 @@ config("config") {
       "no-gc-finalized",
     ]
 
+    # Disallow members in stack allocated classes.
+    cflags += [
+      "-Xclang",
+      "-plugin-arg-blink-gc-plugin",
+      "-Xclang",
+      "no-members-in-stack-allocated",
+    ]
+
     # Add arguments for enabled GC plugin options:
     if (blink_gc_plugin_option_do_dump_graph) {
       cflags += [

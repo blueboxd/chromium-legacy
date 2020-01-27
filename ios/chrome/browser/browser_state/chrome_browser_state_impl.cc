@@ -129,12 +129,11 @@ ChromeBrowserStateImpl::~ChromeBrowserStateImpl() {
   DestroyOffTheRecordChromeBrowserState();
 }
 
-ios::ChromeBrowserState*
-ChromeBrowserStateImpl::GetOriginalChromeBrowserState() {
+ChromeBrowserState* ChromeBrowserStateImpl::GetOriginalChromeBrowserState() {
   return this;
 }
 
-ios::ChromeBrowserState*
+ChromeBrowserState*
 ChromeBrowserStateImpl::GetOffTheRecordChromeBrowserState() {
   if (!otr_state_) {
     otr_state_.reset(new OffTheRecordChromeBrowserStateImpl(
@@ -168,7 +167,7 @@ base::FilePath ChromeBrowserStateImpl::GetStatePath() const {
 }
 
 void ChromeBrowserStateImpl::SetOffTheRecordChromeBrowserState(
-    std::unique_ptr<ios::ChromeBrowserState> otr_state) {
+    std::unique_ptr<ChromeBrowserState> otr_state) {
   DCHECK(!otr_state_);
   otr_state_ = std::move(otr_state);
 }

@@ -36,7 +36,7 @@ namespace {
 class BlockPopupInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
   BlockPopupInfoBarDelegate(
-      ios::ChromeBrowserState* browser_state,
+      ChromeBrowserState* browser_state,
       web::WebState* web_state,
       const std::vector<BlockedPopupTabHelper::Popup>& popups)
       : browser_state_(browser_state), web_state_(web_state), popups_(popups) {
@@ -103,7 +103,7 @@ class BlockPopupInfoBarDelegate : public ConfirmInfoBarDelegate {
   int GetButtons() const override { return BUTTON_OK; }
 
  private:
-  ios::ChromeBrowserState* browser_state_;
+  ChromeBrowserState* browser_state_;
   web::WebState* web_state_;
   // The popups to open.
   std::vector<BlockedPopupTabHelper::Popup> popups_;
@@ -172,9 +172,8 @@ void BlockedPopupTabHelper::ShowInfoBar() {
                                     kInfobarConfirmTypeBlockPopups];
 }
 
-ios::ChromeBrowserState* BlockedPopupTabHelper::GetBrowserState() const {
-  return ios::ChromeBrowserState::FromBrowserState(
-      web_state_->GetBrowserState());
+ChromeBrowserState* BlockedPopupTabHelper::GetBrowserState() const {
+  return ChromeBrowserState::FromBrowserState(web_state_->GetBrowserState());
 }
 
 void BlockedPopupTabHelper::RegisterAsInfoBarManagerObserverIfNeeded(

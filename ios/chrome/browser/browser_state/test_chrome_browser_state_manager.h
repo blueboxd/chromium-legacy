@@ -18,21 +18,21 @@ class TestChromeBrowserStateManager : public ios::ChromeBrowserStateManager {
  public:
   explicit TestChromeBrowserStateManager(const base::FilePath& user_data_dir);
   explicit TestChromeBrowserStateManager(
-      std::unique_ptr<ios::ChromeBrowserState> browser_state);
+      std::unique_ptr<ChromeBrowserState> browser_state);
   TestChromeBrowserStateManager(
-      std::unique_ptr<ios::ChromeBrowserState> browser_state,
+      std::unique_ptr<ChromeBrowserState> browser_state,
       const base::FilePath& user_data_dir);
   ~TestChromeBrowserStateManager() override;
 
   // ChromeBrowserStateManager:
-  ios::ChromeBrowserState* GetLastUsedBrowserState() override;
-  ios::ChromeBrowserState* GetBrowserState(const base::FilePath& path) override;
+  ChromeBrowserState* GetLastUsedBrowserState() override;
+  ChromeBrowserState* GetBrowserState(const base::FilePath& path) override;
   BrowserStateInfoCache* GetBrowserStateInfoCache() override;
-  std::vector<ios::ChromeBrowserState*> GetLoadedBrowserStates() override;
+  std::vector<ChromeBrowserState*> GetLoadedBrowserStates() override;
 
  private:
   IOSChromeScopedTestingLocalState local_state_;
-  std::unique_ptr<ios::ChromeBrowserState> browser_state_;
+  std::unique_ptr<ChromeBrowserState> browser_state_;
   BrowserStateInfoCache browser_state_info_cache_;
 
   DISALLOW_COPY_AND_ASSIGN(TestChromeBrowserStateManager);

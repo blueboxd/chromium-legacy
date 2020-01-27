@@ -50,9 +50,9 @@
 #include "cc/input/snap_selection_strategy.h"
 #include "cc/layers/picture_layer.h"
 #include "third_party/blink/public/common/features.h"
+#include "third_party/blink/public/mojom/scroll/scroll_into_view_params.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/task_type.h"
-#include "third_party/blink/public/platform/web_scroll_into_view_params.h"
 #include "third_party/blink/renderer/core/accessibility/ax_object_cache.h"
 #include "third_party/blink/renderer/core/animation/scroll_timeline.h"
 #include "third_party/blink/renderer/core/content_capture/content_capture_manager.h"
@@ -95,6 +95,7 @@
 #include "third_party/blink/renderer/core/paint/paint_layer_fragment.h"
 #include "third_party/blink/renderer/core/scroll/scroll_alignment.h"
 #include "third_party/blink/renderer/core/scroll/scroll_animator_base.h"
+#include "third_party/blink/renderer/core/scroll/scroll_into_view_params_type_converters.h"
 #include "third_party/blink/renderer/core/scroll/scrollbar_theme.h"
 #include "third_party/blink/renderer/core/scroll/smooth_scroll_sequencer.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
@@ -2202,7 +2203,7 @@ void PaintLayerScrollableArea::Resize(const IntPoint& pos,
 
 PhysicalRect PaintLayerScrollableArea::ScrollIntoView(
     const PhysicalRect& absolute_rect,
-    const WebScrollIntoViewParams& params) {
+    const mojom::blink::ScrollIntoViewParamsPtr& params) {
   PhysicalRect local_expose_rect =
       GetLayoutBox()->AbsoluteToLocalRect(absolute_rect);
   PhysicalOffset border_origin_to_scroll_origin(-GetLayoutBox()->BorderLeft(),
@@ -2219,13 +2220,15 @@ PhysicalRect PaintLayerScrollableArea::ScrollIntoView(
   PhysicalRect scroll_snapport_rect = VisibleScrollSnapportRect();
 
   ScrollOffset target_offset = ScrollAlignment::GetScrollOffsetToExpose(
-      scroll_snapport_rect, local_expose_rect, params.GetScrollAlignmentX(),
-      params.GetScrollAlignmentY(), GetScrollOffset());
+      scroll_snapport_rect, local_expose_rect,
+      params->align_x.To<ScrollAlignment>(),
+      params->align_y.To<ScrollAlignment>(), GetScrollOffset());
   ScrollOffset new_scroll_offset(
       ClampScrollOffset(RoundedIntSize(target_offset)));
 
   ScrollOffset old_scroll_offset = GetScrollOffset();
-  if (params.GetScrollType() == kUserScroll) {
+  auto type = mojo::ConvertTo<ScrollType>(params->type);
+  if (type == kUserScroll) {
     if (!UserInputScrollable(kHorizontalScrollbar))
       new_scroll_offset.SetWidth(old_scroll_offset.Width());
     if (!UserInputScrollable(kVerticalScrollbar))
@@ -2239,17 +2242,15 @@ PhysicalRect PaintLayerScrollableArea::ScrollIntoView(
   end_point = GetSnapPositionAndSetTarget(*strategy).value_or(end_point);
   new_scroll_offset = ScrollPositionToOffset(end_point);
 
-  if (params.is_for_scroll_sequence) {
-    DCHECK(params.GetScrollType() == kProgrammaticScroll ||
-           params.GetScrollType() == kUserScroll);
-    ScrollBehavior behavior =
-        DetermineScrollBehavior(params.GetScrollBehavior(),
-                                GetLayoutBox()->StyleRef().GetScrollBehavior());
+  if (params->is_for_scroll_sequence) {
+    DCHECK(type == kProgrammaticScroll || type == kUserScroll);
+    ScrollBehavior behavior = DetermineScrollBehavior(
+        mojo::ConvertTo<ScrollBehavior>(params->behavior),
+        GetLayoutBox()->StyleRef().GetScrollBehavior());
     GetSmoothScrollSequencer()->QueueAnimation(this, new_scroll_offset,
                                                behavior);
   } else {
-    SetScrollOffset(new_scroll_offset, params.GetScrollType(),
-                    kScrollBehaviorInstant);
+    SetScrollOffset(new_scroll_offset, type, kScrollBehaviorInstant);
   }
 
   ScrollOffset scroll_offset_difference = new_scroll_offset - old_scroll_offset;

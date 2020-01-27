@@ -46,11 +46,9 @@ IntentPickerAppInfo AppInfoForAppUrl(NSURL* app_url) {
 // TODO(avi): When we move to the 10.15 SDK, use correct weak-linking of this
 // framework rather than dlopen(), and correct @available syntax to access this
 // class.
-SFUniversalLink* GetUniversalLink(const GURL& url) {
+SFUniversalLink* API_AVAILABLE(macos(10.15)) GetUniversalLink(const GURL& url) {
   static void* safari_services = []() -> void* {
-    if (@available(macOS 10.15, *))
-      return dlopen(kSafariServicesFrameworkPath, RTLD_LAZY);
-    return nullptr;
+    return dlopen(kSafariServicesFrameworkPath, RTLD_LAZY);
   }();
 
   static const Class SFUniversalLink_class =
@@ -64,9 +62,11 @@ SFUniversalLink* GetUniversalLink(const GURL& url) {
 }
 
 base::Optional<IntentPickerAppInfo> AppInfoForUrl(const GURL& url) {
-  SFUniversalLink* link = GetUniversalLink(url);
-  if (link)
-    return AppInfoForAppUrl(link.applicationURL);
+  if (@available(macOS 10.15, *)) {
+    SFUniversalLink* link = GetUniversalLink(url);
+    if (link)
+      return AppInfoForAppUrl(link.applicationURL);
+  }
 
   return base::nullopt;
 }
@@ -149,13 +149,6 @@ void MacAppsNavigationThrottle::OnIntentPickerClosed(
                  configuration:@{}
                          error:nil];
     }
-    PickerAction action = apps::AppsNavigationThrottle::GetPickerAction(
-        entry_type, close_reason, should_persist);
-    Platform platform = apps::AppsNavigationThrottle::GetDestinationPlatform(
-        launch_name, action);
-    apps::AppsNavigationThrottle::RecordUma(launch_name, entry_type,
-                                            close_reason, Source::kHttpOrHttps,
-                                            should_persist, action, platform);
     return;
   }
   apps::AppsNavigationThrottle::OnIntentPickerClosed(

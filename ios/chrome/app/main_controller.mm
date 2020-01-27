@@ -243,7 +243,7 @@ class MainControllerAuthenticationServiceDelegate
     : public AuthenticationServiceDelegate {
  public:
   MainControllerAuthenticationServiceDelegate(
-      ios::ChromeBrowserState* browser_state,
+      ChromeBrowserState* browser_state,
       id<BrowsingDataCommands> dispatcher);
   ~MainControllerAuthenticationServiceDelegate() override;
 
@@ -251,7 +251,7 @@ class MainControllerAuthenticationServiceDelegate
   void ClearBrowsingData(ProceduralBlock completion) override;
 
  private:
-  ios::ChromeBrowserState* browser_state_ = nullptr;
+  ChromeBrowserState* browser_state_ = nullptr;
   __weak id<BrowsingDataCommands> dispatcher_ = nil;
 
   DISALLOW_COPY_AND_ASSIGN(MainControllerAuthenticationServiceDelegate);
@@ -259,7 +259,7 @@ class MainControllerAuthenticationServiceDelegate
 
 MainControllerAuthenticationServiceDelegate::
     MainControllerAuthenticationServiceDelegate(
-        ios::ChromeBrowserState* browser_state,
+        ChromeBrowserState* browser_state,
         id<BrowsingDataCommands> dispatcher)
     : browser_state_(browser_state), dispatcher_(dispatcher) {}
 
@@ -339,8 +339,7 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 @property(nonatomic, strong) BrowserViewWrangler* browserViewWrangler;
 
 // The ChromeBrowserState associated with the main (non-OTR) browsing mode.
-@property(nonatomic, assign)
-    ios::ChromeBrowserState* mainBrowserState;  // Weak.
+@property(nonatomic, assign) ChromeBrowserState* mainBrowserState;  // Weak.
 
 // The main coordinator, lazily created the first time it is accessed. Manages
 // the main view controller. This property should not be accessed before the
@@ -352,8 +351,8 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 // Switch all global states for the given mode (normal or incognito).
 - (void)switchGlobalStateToMode:(ApplicationMode)mode;
 // Updates the local storage, cookie store, and sets the global state.
-- (void)changeStorageFromBrowserState:(ios::ChromeBrowserState*)oldState
-                       toBrowserState:(ios::ChromeBrowserState*)newState;
+- (void)changeStorageFromBrowserState:(ChromeBrowserState*)oldState
+                       toBrowserState:(ChromeBrowserState*)newState;
 // Returns the set of the sessions ids of the tabs in the given |tabModel|.
 - (NSMutableSet*)liveSessionsForTabModel:(TabModel*)tabModel;
 // Purge the unused snapshots.
@@ -410,7 +409,7 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 // Handles the notification that first run modal dialog UI completed.
 - (void)handleFirstRunUIDidFinish;
 // Performs synchronous browser state initialization steps.
-- (void)initializeBrowserState:(ios::ChromeBrowserState*)browserState;
+- (void)initializeBrowserState:(ChromeBrowserState*)browserState;
 // Helper methods to initialize the application to a specific stage.
 // Setting |_browserInitializationStage| to a specific stage requires the
 // corresponding function to return YES.
@@ -561,7 +560,7 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 
   _browserStateManager =
       GetApplicationContext()->GetChromeBrowserStateManager();
-  ios::ChromeBrowserState* chromeBrowserState =
+  ChromeBrowserState* chromeBrowserState =
       _browserStateManager->GetLastUsedBrowserState();
 
   // The CrashRestoreHelper must clean up the old browser state information
@@ -683,7 +682,7 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   tests_hook::RunTestsIfPresent();
 }
 
-- (void)initializeBrowserState:(ios::ChromeBrowserState*)browserState {
+- (void)initializeBrowserState:(ChromeBrowserState*)browserState {
   DCHECK(!browserState->IsOffTheRecord());
   search_engines::UpdateSearchEnginesIfNeeded(
       browserState->GetPrefs(),
@@ -1204,7 +1203,7 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
                    experimental_flags::AlwaysDisplayFirstRun()) &&
                   !tests_hook::DisableFirstRun();
 
-  ios::ChromeBrowserState* browserState =
+  ChromeBrowserState* browserState =
       (launchMode == ApplicationMode::INCOGNITO)
           ? self.mainBrowserState->GetOffTheRecordChromeBrowserState()
           : self.mainBrowserState;
@@ -1406,8 +1405,8 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   [standardDefaults synchronize];
 }
 
-- (void)changeStorageFromBrowserState:(ios::ChromeBrowserState*)oldState
-                       toBrowserState:(ios::ChromeBrowserState*)newState {
+- (void)changeStorageFromBrowserState:(ChromeBrowserState*)oldState
+                       toBrowserState:(ChromeBrowserState*)newState {
   ApplicationMode mode = newState->IsOffTheRecord() ? ApplicationMode::INCOGNITO
                                                     : ApplicationMode::NORMAL;
   [self switchGlobalStateToMode:mode];
@@ -1421,7 +1420,7 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   return self.interfaceProvider.currentInterface.browser;
 }
 
-- (ios::ChromeBrowserState*)currentBrowserState {
+- (ChromeBrowserState*)currentBrowserState {
   return self.currentBVC.browserState;
 }
 
@@ -1472,7 +1471,7 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 
 #pragma mark - BrowsingDataCommands
 
-- (void)removeBrowsingDataForBrowserState:(ios::ChromeBrowserState*)browserState
+- (void)removeBrowsingDataForBrowserState:(ChromeBrowserState*)browserState
                                timePeriod:(browsing_data::TimePeriod)timePeriod
                                removeMask:(BrowsingDataRemoveMask)removeMask
                           completionBlock:(ProceduralBlock)completionBlock {

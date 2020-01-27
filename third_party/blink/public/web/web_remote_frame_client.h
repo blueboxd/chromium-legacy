@@ -7,8 +7,8 @@
 
 #include "cc/paint/paint_canvas.h"
 #include "third_party/blink/public/mojom/frame/lifecycle.mojom-shared.h"
+#include "third_party/blink/public/mojom/input/focus_type.mojom-shared.h"
 #include "third_party/blink/public/platform/viewport_intersection_state.h"
-#include "third_party/blink/public/platform/web_focus_type.h"
 #include "third_party/blink/public/platform/web_security_origin.h"
 #include "third_party/blink/public/platform/web_touch_action.h"
 #include "third_party/blink/public/web/web_dom_message_event.h"
@@ -61,7 +61,7 @@ class WebRemoteFrameClient {
   // Continue sequential focus navigation in this frame.  This is called when
   // the |source| frame is searching for the next focusable element (e.g., in
   // response to <tab>) and encounters a remote frame.
-  virtual void AdvanceFocus(WebFocusType type, WebLocalFrame* source) {}
+  virtual void AdvanceFocus(mojom::FocusType type, WebLocalFrame* source) {}
 
   // Returns token to be used as a frame id in the devtools protocol.
   // It is derived from the content's devtools_frame_token, is

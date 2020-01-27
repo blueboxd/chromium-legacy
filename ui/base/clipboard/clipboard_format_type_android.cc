@@ -26,6 +26,10 @@ ClipboardFormatType ClipboardFormatType::Deserialize(
   return ClipboardFormatType(serialization);
 }
 
+std::string ClipboardFormatType::GetName() const {
+  return Serialize();
+}
+
 bool ClipboardFormatType::operator<(const ClipboardFormatType& other) const {
   return data_ < other.data_;
 }

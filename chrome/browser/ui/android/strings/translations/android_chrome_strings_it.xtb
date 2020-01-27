@@ -134,6 +134,7 @@
 <translation id="1994173015038366702">URL sito</translation>
 <translation id="2000419248597011803">Invia al tuo motore di ricerca predefinito alcune ricerche dalla barra degli indirizzi e dalla casella di ricerca, nonché alcuni cookie</translation>
 <translation id="2002537628803770967">Carte di credito e indirizzi che utilizzano Google Pay</translation>
+<translation id="2012973609889389923">Sito veloce</translation>
 <translation id="2013642289801508067">{FILE_COUNT,plural, =1{# file}other{# file}}</translation>
 <translation id="2017836877785168846">Consente di cancellare la cronologia e i completamenti automatici nella barra degli indirizzi.</translation>
 <translation id="2021896219286479412">Controlli sito a schermo intero</translation>
@@ -306,6 +307,7 @@
 <translation id="3298243779924642547">Lite</translation>
 <translation id="3303414029551471755">Procedere al download dei contenuti?</translation>
 <translation id="3306398118552023113">Questa app è in esecuzione in Chrome</translation>
+<translation id="3312292613668865961">Chiedi conferma prima di consentire ai siti di accedere ai dati e dispositivi per realtà virtuale (opzione consigliata)</translation>
 <translation id="3315103659806849044">Stai personalizzando le impostazioni Sincronizzazione e servizi Google. Per terminare l'attivazione della sincronizzazione, tocca il pulsante Conferma nella parte inferiore dello schermo. Torna indietro</translation>
 <translation id="3328801116991980348">Informazioni sito</translation>
 <translation id="3333961966071413176">Tutti i contatti</translation>
@@ -511,6 +513,7 @@ Per cambiare questa impostazione, <ph name="BEGIN_LINK" />reimposta la sincroniz
 <translation id="4915549754973153784"><ph name="BEGIN_LINK" />Richiedi assistenza<ph name="END_LINK" /> durante la ricerca di dispositivi…</translation>
 <translation id="4921180162323349895">{FILE_COUNT,plural, =1{# pagina}other{# pagine}}</translation>
 <translation id="4932247056774066048">Poiché stai uscendo da un account gestito da <ph name="DOMAIN_NAME" />, i tuoi dati di Chrome verranno eliminati da questo dispositivo. Rimarranno memorizzati nel tuo Account Google.</translation>
+<translation id="4935305910887312910">Chiedi conferma prima di consentire ai siti di ricevere la posizione della videocamera o creare una mappa della stanza (opzione consigliata)</translation>
 <translation id="4943703118917034429">Realtà virtuale</translation>
 <translation id="4943872375798546930">Nessun risultato</translation>
 <translation id="4958708863221495346"><ph name="URL_OF_THE_CURRENT_TAB" /> sta condividendo il tuo schermo</translation>
@@ -744,6 +747,7 @@ Ad esempio, alcuni siti web potrebbero rispondere alla richiesta mostrando annun
 <translation id="6573431926118603307">Le schede aperte in Chrome sugli altri dispositivi verranno visualizzate qui.</translation>
 <translation id="6583199322650523874">Aggiungi la pagina corrente ai Preferiti</translation>
 <translation id="6593061639179217415">Sito desktop</translation>
+<translation id="6597891566292541626">Posiziona il codice a barre/QR all'interno di quest'area.</translation>
 <translation id="6600954340915313787">Copiata in Chrome</translation>
 <translation id="6608650720463149374"><ph name="GIGABYTES" /> GB</translation>
 <translation id="6612358246767739896">Contenuti protetti</translation>
@@ -953,6 +957,7 @@ Il sito NON ottiene l'accesso alla videocamera. Le immagini della videocamera so
 <translation id="8109613176066109935">Attiva la sincronizzazione per trovare i tuoi preferiti su tutti i dispositivi</translation>
 <translation id="8110087112193408731">Vuoi mostrare la tua attività di Chrome in Benessere digitale?</translation>
 <translation id="8116925261070264013">Con audio disattivato</translation>
+<translation id="8127542551745560481">Modifica home page</translation>
 <translation id="813082847718468539">Visualizza informazioni sul sito</translation>
 <translation id="8156139159503939589">In quali lingue sai leggere?</translation>
 <translation id="8168435359814927499">Contenuti</translation>
@@ -1024,6 +1029,7 @@ Il sito NON ottiene l'accesso alla videocamera. Le immagini della videocamera so
 <translation id="8676374126336081632">Cancella testo inserito</translation>
 <translation id="8687353297350450808">{N_BARS,plural, =1{Intensità del segnale: # barra}other{Intensità del segnale: # barre}}</translation>
 <translation id="868929229000858085">Cerca nei contatti</translation>
+<translation id="8698438463325761328">Impedisci ai siti di accedere ai dati e dispositivi per realtà virtuale</translation>
 <translation id="869891660844655955">Data di scadenza</translation>
 <translation id="8719023831149562936">Impossibile trasmettere scheda corrente</translation>
 <translation id="8728487861892616501">Utilizzando questa applicazione, accetti i <ph name="BEGIN_LINK1" />Termini di servizio<ph name="END_LINK1" /> di Chrome, le <ph name="BEGIN_LINK2" />Norme sulla privacy<ph name="END_LINK2" /> e le <ph name="BEGIN_LINK3" />Norme sulla privacy per gli Account Google gestiti tramite Family Link<ph name="END_LINK3" />.</translation>
@@ -1041,6 +1047,7 @@ Il sito NON ottiene l'accesso alla videocamera. Le immagini della videocamera so
 <translation id="883806473910249246">Si è verificato un errore durante il download dei contenuti.</translation>
 <translation id="8840953339110955557">Questa pagina potrebbe essere diversa dalla versione online.</translation>
 <translation id="8847988622838149491">USB</translation>
+<translation id="884828189055900810">Impedisci ai siti di ricevere la posizione della videocamera o creare una mappa della stanza</translation>
 <translation id="8853345339104747198"><ph name="TAB_TITLE" />, scheda</translation>
 <translation id="885701979325669005">Dati memorizzati dai siti</translation>
 <translation id="889338405075704026">Apri le impostazioni di Chrome</translation>
@@ -1048,6 +1055,7 @@ Il sito NON ottiene l'accesso alla videocamera. Le immagini della videocamera so
 <translation id="8909135823018751308">Condividi…</translation>
 <translation id="8912362522468806198">Google Account</translation>
 <translation id="8920114477895755567">In attesa dei dettagli sui genitori.</translation>
+<translation id="8921772741368021346"><ph name="POSITION" />/<ph name="DURATION" /></translation>
 <translation id="8922289737868596582">Usa il pulsante Altre opzioni per scaricare le pagine da usare offline</translation>
 <translation id="8926666909099850184">Funzionalità NFC non attiva per questo dispositivo. Attivala nelle <ph name="BEGIN_LINK" />Impostazioni Android<ph name="END_LINK" />.</translation>
 <translation id="8937772741022875483">Vuoi rimuovere la tua attività di Chrome da Benessere digitale?</translation>

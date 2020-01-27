@@ -8,7 +8,7 @@
 #include "ios/chrome/browser/sync/profile_sync_service_factory.h"
 
 BookmarkModelLoadedObserver::BookmarkModelLoadedObserver(
-    ios::ChromeBrowserState* browser_state)
+    ChromeBrowserState* browser_state)
     : browser_state_(browser_state) {}
 
 void BookmarkModelLoadedObserver::BookmarkModelChanged() {}

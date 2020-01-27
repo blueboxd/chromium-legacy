@@ -498,12 +498,12 @@ void BubbleFrameView::SetFootnoteView(std::unique_ptr<View> view) {
   // Remove the old footnote container.
   delete footnote_container_;
   footnote_container_ = nullptr;
-  if (!view)
-    return;
-
-  int radius = bubble_border_ ? bubble_border_->corner_radius() : 0;
-  footnote_container_ = AddChildView(std::make_unique<FootnoteContainerView>(
-      footnote_margins_, std::move(view), radius));
+  if (view) {
+    int radius = bubble_border_ ? bubble_border_->corner_radius() : 0;
+    footnote_container_ = AddChildView(std::make_unique<FootnoteContainerView>(
+        footnote_margins_, std::move(view), radius));
+  }
+  InvalidateLayout();
 }
 
 View* BubbleFrameView::GetFootnoteView() const {

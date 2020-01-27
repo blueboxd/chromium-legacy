@@ -879,7 +879,7 @@
 <translation id="2294382669900758280">Er wordt geen rekening gehouden met het afspelen van video in Android-apps, zelfs niet wanneer dit beleid is ingesteld op <ph name="TRUE" /> (Waar).</translation>
 <translation id="2299220924812062390">Een lijst met ingeschakelde plug-ins specificeren</translation>
 <translation id="2303795211377219696">Automatisch aanvullen inschakelen voor creditcards</translation>
-<translation id="2307496301287881990">Statussen van scherm en graphics rapporteren</translation>
+<translation id="2307496301287881990">Statussen van scherm en grafische kaart rapporteren</translation>
 <translation id="2309390639296060546">Standaardinstelling voor geolocatie</translation>
 <translation id="2327252517317514801">Domeinen definiëren voor toegang tot G Suite</translation>
 <translation id="2328573323851533589">Dit beleid kan worden gebruikt om controle op gegevenslekken gedwongen in of uit te schakelen in <ph name="PRODUCT_NAME" />.
@@ -4990,9 +4990,9 @@ Als dit beleid niet is ingesteld, worden er geen beperkingen toegepast en kan de
 
           Als dit beleid niet is ingesteld, wordt 'PromptOnAccess' gebruikt en kan de gebruiker dit wijzigen.</translation>
 <translation id="8911348623012274122">Geheugenlimiet instellen voor Chrome-instanties</translation>
-<translation id="8911736066340032670">Rapporteer informatie over het scherm, zoals de vernieuwingssnelheid, en informatie over graphics, zoals de stuurprogrammaversie.
+<translation id="8911736066340032670">Rapporteer informatie over het scherm, zoals de vernieuwingssnelheid, en informatie over de grafische kaart, zoals de stuurprogrammaversie.
 
-      Als het beleid is ingesteld op False of niet is ingesteld, worden de statussen van het scherm en de graphics niet gerapporteerd. Als het beleid is ingesteld op True, worden de statussen van het scherm en de graphics gerapporteerd.</translation>
+      Als het beleid is ingesteld op False of niet is ingesteld, worden de statussen van het scherm en de grafische kaart niet gerapporteerd. Als het beleid is ingesteld op True, worden de statussen van het scherm en de grafische kaart gerapporteerd.</translation>
 <translation id="891435090623616439">gecodeerd als een JSON-tekenreeks. Ga voor meer informatie naar <ph name="COMPLEX_POLICIES_URL" /></translation>
 <translation id="8917070657147922192">Gebruikers toestaan geïnstalleerde CA-certificaten te beheren.</translation>
 <translation id="8926275581598789324">Dit beleid is beëindigd en wordt verwijderd in <ph name="PRODUCT_OS_NAME" /> versie 82. Gebruik in plaats daarvan <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />.

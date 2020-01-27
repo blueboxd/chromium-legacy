@@ -9,14 +9,17 @@
 
 #include <memory>
 
+#include "base/callback_helpers.h"
 #include "base/observer_list.h"
 #include "base/trace_event/memory_dump_provider.h"
+#include "components/viz/common/display/update_vsync_parameters_callback.h"
 #include "components/viz/common/gpu/context_cache_controller.h"
 #include "components/viz/common/gpu/context_provider.h"
+#include "components/viz/common/gpu/gpu_vsync_callback.h"
 #include "components/viz/service/viz_service_export.h"
 #include "gpu/command_buffer/common/context_creation_attribs.h"
+#include "gpu/ipc/common/surface_handle.h"
 #include "gpu/ipc/gpu_task_scheduler_helper.h"
-#include "gpu/ipc/in_process_command_buffer.h"
 #include "ui/gfx/native_widget_types.h"
 
 class GrContext;
@@ -26,9 +29,11 @@ namespace gles2 {
 class GLES2CmdHelper;
 class GLES2Implementation;
 }  // namespace gles2
+class CommandBufferTaskExecutor;
 class GpuChannelManagerDelegate;
 class GpuMemoryBufferManager;
 class ImageFactory;
+class InProcessCommandBuffer;
 class TransferBuffer;
 struct SharedMemoryLimits;
 }  // namespace gpu
@@ -73,23 +78,26 @@ class VIZ_SERVICE_EXPORT VizProcessContextProvider
   void RemoveObserver(ContextLostObserver* obs) override;
   gpu::SharedImageManager* GetSharedImageManager() override;
 
-  void SetUpdateVSyncParametersCallback(UpdateVSyncParametersCallback callback);
-  void SetGpuVSyncCallback(GpuVSyncCallback callback);
-  void SetGpuVSyncEnabled(bool enabled);
-  bool UseRGB565PixelFormat() const;
+  virtual void SetUpdateVSyncParametersCallback(
+      UpdateVSyncParametersCallback callback);
+  virtual void SetGpuVSyncCallback(GpuVSyncCallback callback);
+  virtual void SetGpuVSyncEnabled(bool enabled);
+  virtual bool UseRGB565PixelFormat() const;
 
   // Provides the GL internal format that should be used when calling
   // glCopyTexImage2D() on the default framebuffer.
-  uint32_t GetCopyTextureInternalFormat();
+  virtual uint32_t GetCopyTextureInternalFormat();
 
-  base::ScopedClosureRunner GetCacheBackBufferCb();
+  virtual base::ScopedClosureRunner GetCacheBackBufferCb();
 
   scoped_refptr<gpu::GpuTaskSchedulerHelper> GetGpuTaskSchedulerHelper();
 
- private:
+ protected:
   friend class base::RefCountedThreadSafe<VizProcessContextProvider>;
+  VizProcessContextProvider();  // For testing only.
   ~VizProcessContextProvider() override;
 
+ private:
   void InitializeContext(
       gpu::CommandBufferTaskExecutor* task_executor,
       gpu::SurfaceHandle surface_handle,

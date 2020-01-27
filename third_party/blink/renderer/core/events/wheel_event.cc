@@ -23,6 +23,7 @@
 
 #include "third_party/blink/renderer/core/events/wheel_event.h"
 
+#include "third_party/blink/renderer/bindings/core/v8/v8_wheel_event_init.h"
 #include "third_party/blink/renderer/core/clipboard/data_transfer.h"
 #include "third_party/blink/renderer/core/dom/events/event_dispatcher.h"
 #include "third_party/blink/renderer/core/event_interface_names.h"

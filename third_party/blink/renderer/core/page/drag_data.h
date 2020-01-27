@@ -87,7 +87,7 @@ class CORE_EXPORT DragData {
  private:
   const FloatPoint client_position_;
   const FloatPoint global_position_;
-  const Member<DataObject> platform_drag_data_;
+  DataObject* const platform_drag_data_;
   const DragOperation dragging_source_operation_mask_;
   const DragApplicationFlags application_flags_;
 

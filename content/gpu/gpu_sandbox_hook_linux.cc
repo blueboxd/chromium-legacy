@@ -267,6 +267,9 @@ void AddStandardGpuWhiteList(std::vector<BrokerFilePermission>* permissions) {
   static const char kNvidiaDeviceModeSetPath[] = "/dev/nvidia-modeset";
   static const char kNvidiaParamsPath[] = "/proc/driver/nvidia/params";
   static const char kDevShm[] = "/dev/shm/";
+  static const char kVulkanIcdPath[] = "/usr/share/vulkan/icd.d";
+  static const char kNvidiaVulkanIcd[] =
+      "/usr/share/vulkan/icd.d/nvidia_icd.json";
 
   // For shared memory.
   permissions->push_back(
@@ -287,6 +290,9 @@ void AddStandardGpuWhiteList(std::vector<BrokerFilePermission>* permissions) {
   permissions->push_back(
       BrokerFilePermission::ReadWrite(kNvidiaDeviceModeSetPath));
   permissions->push_back(BrokerFilePermission::ReadOnly(kNvidiaParamsPath));
+
+  permissions->push_back(BrokerFilePermission::ReadOnly(kVulkanIcdPath));
+  permissions->push_back(BrokerFilePermission::ReadOnly(kNvidiaVulkanIcd));
 }
 
 std::vector<BrokerFilePermission> FilePermissionsForGpu(

@@ -27,6 +27,7 @@ struct WrapperTypeInfo;
 namespace bindings {
 
 class DictionaryBase;
+class EnumerationBase;
 class UnionBase;
 
 CORE_EXPORT ScriptWrappable* NativeValueTraitsInterfaceNativeValue(
@@ -737,6 +738,20 @@ struct NativeValueTraits<
   static T* NativeValue(v8::Isolate* isolate,
                         v8::Local<v8::Value> value,
                         ExceptionState& exception_state) {
+    return T::Create(isolate, value, exception_state);
+  }
+};
+
+// Enumeration
+template <typename T>
+struct NativeValueTraits<
+    T,
+    typename std::enable_if_t<
+        std::is_base_of<bindings::EnumerationBase, T>::value>>
+    : public NativeValueTraitsBase<T> {
+  static T NativeValue(v8::Isolate* isolate,
+                       v8::Local<v8::Value> value,
+                       ExceptionState& exception_state) {
     return T::Create(isolate, value, exception_state);
   }
 };

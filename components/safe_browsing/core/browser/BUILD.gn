@@ -24,10 +24,11 @@ jumbo_source_set("browser") {
     "//components/safe_browsing/core/common:common",
     "//components/safe_browsing/core/common:thread_utils",
     "//components/safe_browsing/core/db:database_manager",
+    "//components/safe_browsing/core/db:util",
     "//components/safe_browsing/core/realtime:policy_engine",
     "//components/safe_browsing/core/realtime:url_lookup_service",
     "//components/safe_browsing/core/web_ui:constants",
-    "//components/security_interstitials/content:security_interstitial_page",
+    "//components/security_interstitials/core:unsafe_resource",
     "//content/public/browser:browser",
     "//net:extras",
   ]

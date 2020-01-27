@@ -127,6 +127,7 @@ struct StructTraits<gpu::mojom::GpuPreferencesDataView, gpu::GpuPreferences> {
     out->force_gpu_mem_available_bytes = prefs.force_gpu_mem_available_bytes();
     out->force_gpu_mem_discardable_limit_bytes =
         prefs.force_gpu_mem_discardable_limit_bytes();
+    out->force_max_texture_size = prefs.force_max_texture_size();
     out->gpu_program_cache_size = prefs.gpu_program_cache_size();
     out->disable_gpu_shader_disk_cache = prefs.disable_gpu_shader_disk_cache();
     out->enable_threaded_texture_mailboxes =
@@ -254,6 +255,9 @@ struct StructTraits<gpu::mojom::GpuPreferencesDataView, gpu::GpuPreferences> {
   static uint32_t force_gpu_mem_discardable_limit_bytes(
       const gpu::GpuPreferences& prefs) {
     return prefs.force_gpu_mem_discardable_limit_bytes;
+  }
+  static uint32_t force_max_texture_size(const gpu::GpuPreferences& prefs) {
+    return prefs.force_max_texture_size;
   }
   static uint32_t gpu_program_cache_size(const gpu::GpuPreferences& prefs) {
     return prefs.gpu_program_cache_size;

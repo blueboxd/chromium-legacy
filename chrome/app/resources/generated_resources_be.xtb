@@ -223,7 +223,6 @@
 <translation id="1306606229401759371">Змяніць налады</translation>
 <translation id="1307165550267142340">PIN-код створаны</translation>
 <translation id="1307559529304613120">Памылка.  Сістэме не ўдалося захаваць доўгатэрміновы маркер доступу API для гэтай прылады.</translation>
-<translation id="1309199320876169714">Выдаленне Plugin VM...</translation>
 <translation id="1313405956111467313">Аўтаматычная канфігурацыя проксі-сервера</translation>
 <translation id="131364520783682672">Caps Lock</translation>
 <translation id="1313705515580255288">Вашы закладкі, гісторыя і іншыя налады будуць сінхранізавацца з Уліковым запісам Google.</translation>
@@ -1367,7 +1366,6 @@
 <translation id="2871813825302180988">Гэты ўліковы запіс ужо выкарыстоўваецца на гэтай прыладзе.</translation>
 <translation id="287286579981869940">Дадаць: <ph name="PROVIDER_NAME" />...</translation>
 <translation id="2872961005593481000">Завяршыць працу</translation>
-<translation id="2874478552394649323">Выдаліць Plugin VM</translation>
 <translation id="2874939134665556319">Папярэдні трэк</translation>
 <translation id="2875698561019555027">(Старонкі памылак Chrome)</translation>
 <translation id="2876336351874743617">Палец 2</translation>
@@ -1384,7 +1382,6 @@
 <translation id="2889064240420137087">Адкрыць спасылку з дапамогай...</translation>
 <translation id="2889925978073739256">Працягваць блакіраваць не змешчаныя ў пясочніцу ўбудовы</translation>
 <translation id="2893168226686371498">Стандартны браўзер</translation>
-<translation id="2893208266590504003">Не ўдалося выдаліць Plugin VM</translation>
 <translation id="2894757982205307093">Стварыць у групе новую ўкладку</translation>
 <translation id="289644616180464099">SIM-карта заблакіравана</translation>
 <translation id="2896909745808647285">Файл "<ph name="FILE_NAME" />" зашыфраваны, таму яго адкрыццё было заблакіравана.</translation>
@@ -2835,6 +2832,7 @@
 <translation id="4998430619171209993">Уключана</translation>
 <translation id="4998873842614926205">Пацвердзіць змяненні</translation>
 <translation id="5000922062037820727">Заблакіравана (рэкамендуецца)</translation>
+<translation id="5007392906805964215">Праглядзець</translation>
 <translation id="5008936837313706385">Назва дзеяння</translation>
 <translation id="5010043101506446253">Цэнтр сертыфікацыі</translation>
 <translation id="5015344424288992913">Вызначэнне проксі-сервера...</translation>
@@ -5774,7 +5772,6 @@
 <translation id="9169496697824289689">Паказаць спалучэнні клавіш</translation>
 <translation id="916964310188958970">Чаму паказваецца гэта прапанова?</translation>
 <translation id="9169931577761441333">Дадайце праграму "<ph name="APP_NAME" />" на галоўны экран</translation>
-<translation id="9170305483456271385">Plugin VM выдалены</translation>
 <translation id="9170848237812810038">&amp;Адрабіць</translation>
 <translation id="9170884462774788842">Іншая праграма на камп'ютары дадала тэму, якая можа змяніць працу Chrome.</translation>
 <translation id="9173995187295789444">Ідзе пошук прылад Bluetooth...</translation>

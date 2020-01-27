@@ -782,6 +782,31 @@ bool DisplayConfigurator::SetGammaCorrection(
                      display_id, degamma_lut, gamma_lut));
 }
 
+bool DisplayConfigurator::SetPrivacyScreen(int64_t display_id, bool enabled) {
+  for (DisplaySnapshot* display : cached_displays_) {
+    if (display->display_id() != display_id)
+      continue;
+
+    if (display->type() != DISPLAY_CONNECTION_TYPE_INTERNAL) {
+      LOG(ERROR) << "[Display ID: " << display_id
+                 << "] Privacy screen is not supported for external displays "
+                    "at this time.";
+      return false;
+    }
+
+    if (display->privacy_screen_state() == kNotSupported) {
+      LOG(ERROR) << "Display with ID " << display_id
+                 << " does not support the privacy-screen property.";
+      return false;
+    }
+
+    native_display_delegate_->SetPrivacyScreen(display_id, enabled);
+    return true;
+  }
+
+  return false;
+}
+
 chromeos::DisplayPowerState DisplayConfigurator::GetRequestedPowerState()
     const {
   return requested_power_state_.value_or(chromeos::DISPLAY_POWER_ALL_ON);

@@ -112,6 +112,7 @@
 <translation id="2352467521400612932">Postavke pisaljke</translation>
 <translation id="2354174487190027830">Aktiviranje mreže <ph name="NAME" /></translation>
 <translation id="2359808026110333948">Nastavi</translation>
+<translation id="2364154243880592194">Ladica statusa, vrijeme <ph name="TIME" />, <ph name="BATTERY" /> Pritisnite Pretraživanje + Lijevo da biste pristupili centru obavijesti.</translation>
 <translation id="2365393535144473978">Omogućivanjem mobilnih podataka omogućit će Bluetooth.</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="2412593942846481727">Dostupno je ažuriranje</translation>
@@ -335,6 +336,7 @@
 <translation id="5669267381087807207">Aktivacija</translation>
 <translation id="5673434351075758678">"<ph name="FROM_LOCALE" />" je promijenjen u "<ph name="TO_LOCALE" />" nakon sinkronizacije postavki.</translation>
 <translation id="5682642926269496722">Google asistent nije dostupan za trenutačni korisnički račun.</translation>
+<translation id="5689633613396158040">Noćno svjetlo olakšava gledanje zaslona ili čitanje pri slabom svjetlu. Dodirnite da biste promijenili vrijeme uključivanja Noćnog svjetla ili ga potpuno isključili.</translation>
 <translation id="5691772641933328258">Otisak prsta nije prepoznat</translation>
 <translation id="5710450975648804523">Način Ne uznemiravaj uključen</translation>
 <translation id="573413375004481890">Uređaj ne podržava sve vaše zaslone, pa je s jednim prekinuta veza.</translation>
@@ -514,6 +516,7 @@
 <translation id="8142441511840089262">Dvostruki klik</translation>
 <translation id="8142699993796781067">Privatna mreža</translation>
 <translation id="8152092012181020186">Pritisnite Ctrl + W da biste zatvorili.</translation>
+<translation id="8155007568264258537"><ph name="FEATURE_NAME" /> Tom postavkom upravlja vaš administrator.</translation>
 <translation id="8167567890448493835">Upotrebljava se <ph name="LOCALE_NAME" /></translation>
 <translation id="8190698733819146287">Prilagodi jezike i unos...</translation>
 <translation id="8192202700944119416">Obavijesti su skrivene.</translation>

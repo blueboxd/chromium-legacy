@@ -290,7 +290,6 @@
 <translation id="2218879909401188352"><ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> 上的现有攻击者可能会安装危险应用来损害您的设备、给您的手机帐单增添隐含费用或窃取您的个人信息。<ph name="BEGIN_LEARN_MORE_LINK" />了解详情<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="2224337661447660594">未连接到互联网</translation>
 <translation id="2230458221926704099">请使用<ph name="BEGIN_LINK" />诊断应用<ph name="END_LINK" />修复网络连接</translation>
-<translation id="22320125457191592">为您推荐</translation>
 <translation id="2239100178324503013">立即发送</translation>
 <translation id="2248949050832152960">使用 WebAuthn</translation>
 <translation id="2250931979407627383">边缘装订（左侧）</translation>
@@ -563,7 +562,6 @@
 <translation id="3531780078352352885">工作表</translation>
 <translation id="3533328374079021623">信箱 5</translation>
 <translation id="3539171420378717834">在此设备上保存此信用卡的副本</translation>
-<translation id="3553513561058684206">为您推荐</translation>
 <translation id="3558573058928565255">日间</translation>
 <translation id="3566021033012934673">您的连接不是私密连接</translation>
 <translation id="3574305903863751447"><ph name="COUNTRY" /><ph name="STATE" /><ph name="CITY" /></translation>

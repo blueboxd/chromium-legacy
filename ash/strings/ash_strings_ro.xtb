@@ -112,6 +112,7 @@
 <translation id="2352467521400612932">Setările creionului</translation>
 <translation id="2354174487190027830">Se activează <ph name="NAME" /></translation>
 <translation id="2359808026110333948">Continuă</translation>
+<translation id="2364154243880592194">Bară de stare, durată <ph name="TIME" />, <ph name="BATTERY" /> Apasă pe tasta de căutare + stânga pentru a accesa centrul de notificări.</translation>
 <translation id="2365393535144473978">Activând datele mobile, se va activa Bluetooth.</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="2412593942846481727">Actualizare disponibilă</translation>
@@ -335,6 +336,7 @@
 <translation id="5669267381087807207">Se activează</translation>
 <translation id="5673434351075758678">Din „<ph name="FROM_LOCALE" />” în „<ph name="TO_LOCALE" />” după sincronizarea setărilor.</translation>
 <translation id="5682642926269496722">Asistentul Google nu este disponibil pentru contul de utilizator actual.</translation>
+<translation id="5689633613396158040">Lumină de noapte îți oferă mai multă comoditate când privești ecranul sau citești într-o lumină slabă. Atinge pentru a schimba ora la care se activează Lumina de noapte sau dezactiveaz-o complet.</translation>
 <translation id="5691772641933328258">Amprenta nu a fost recunoscută</translation>
 <translation id="5710450975648804523">Funcția Nu deranja este activată</translation>
 <translation id="573413375004481890">Acest dispozitiv nu acceptă toate afișajele, prin urmare unul a fost deconectat</translation>
@@ -514,6 +516,7 @@
 <translation id="8142441511840089262">Dublu clic</translation>
 <translation id="8142699993796781067">Rețea privată</translation>
 <translation id="8152092012181020186">Apasă Ctrl + W pentru a închide.</translation>
+<translation id="8155007568264258537"><ph name="FEATURE_NAME" /> Această setare este gestionată de administrator.</translation>
 <translation id="8167567890448493835">Se folosește <ph name="LOCALE_NAME" /></translation>
 <translation id="8190698733819146287">Personalizează limbile și modul de introducere...</translation>
 <translation id="8192202700944119416">Notificările sunt ascunse.</translation>

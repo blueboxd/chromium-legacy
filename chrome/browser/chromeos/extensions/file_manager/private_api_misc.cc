@@ -1019,10 +1019,28 @@ FileManagerPrivateInternalGetRecentFilesFunction::Run() {
   chromeos::RecentModel* model =
       chromeos::RecentModel::GetForProfile(chrome_details_.GetProfile());
 
+  chromeos::RecentModel::FileType file_type;
+  switch (params->file_type) {
+    case api::file_manager_private::RECENT_FILE_TYPE_ALL:
+      file_type = chromeos::RecentModel::FileType::kAll;
+      break;
+    case api::file_manager_private::RECENT_FILE_TYPE_AUDIO:
+      file_type = chromeos::RecentModel::FileType::kAudio;
+      break;
+    case api::file_manager_private::RECENT_FILE_TYPE_IMAGE:
+      file_type = chromeos::RecentModel::FileType::kImage;
+      break;
+    case api::file_manager_private::RECENT_FILE_TYPE_VIDEO:
+      file_type = chromeos::RecentModel::FileType::kVideo;
+      break;
+    default:
+      NOTREACHED();
+      return RespondNow(Error("Unknown recent file type is specified."));
+  }
+
   model->GetRecentFiles(
       file_system_context.get(),
-      Extension::GetBaseURLFromExtensionId(extension_id()),
-      chromeos::RecentModel::FileType::kAll,
+      Extension::GetBaseURLFromExtensionId(extension_id()), file_type,
       base::BindOnce(
           &FileManagerPrivateInternalGetRecentFilesFunction::OnGetRecentFiles,
           this, params->restriction));

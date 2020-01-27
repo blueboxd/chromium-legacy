@@ -555,16 +555,35 @@ bool TestAXNodeWrapper::AccessibilityPerformAction(
       return true;
     }
 
-    case ax::mojom::Action::kDoDefault:
-      if (GetData().role == ax::mojom::Role::kListBoxOption ||
-          GetData().role == ax::mojom::Role::kCell) {
-        bool current_value =
-            GetData().GetBoolAttribute(ax::mojom::BoolAttribute::kSelected);
-        ReplaceBoolAttribute(ax::mojom::BoolAttribute::kSelected,
-                             !current_value);
+    case ax::mojom::Action::kDoDefault: {
+      switch (GetData().role) {
+        case ax::mojom::Role::kListBoxOption:
+        case ax::mojom::Role::kCell: {
+          bool current_value =
+              GetData().GetBoolAttribute(ax::mojom::BoolAttribute::kSelected);
+          ReplaceBoolAttribute(ax::mojom::BoolAttribute::kSelected,
+                               !current_value);
+          break;
+        }
+        case ax::mojom::Role::kRadioButton:
+        case ax::mojom::Role::kMenuItemRadio: {
+          if (GetData().GetCheckedState() == ax::mojom::CheckedState::kTrue)
+            ReplaceIntAttribute(
+                node_->id(), ax::mojom::IntAttribute::kCheckedState,
+                static_cast<int32_t>(ax::mojom::CheckedState::kFalse));
+          else if (GetData().GetCheckedState() ==
+                   ax::mojom::CheckedState::kFalse)
+            ReplaceIntAttribute(
+                node_->id(), ax::mojom::IntAttribute::kCheckedState,
+                static_cast<int32_t>(ax::mojom::CheckedState::kTrue));
+          break;
+        }
+        default:
+          break;
       }
       g_node_from_last_default_action = node_;
       return true;
+    }
 
     case ax::mojom::Action::kSetValue:
       if (GetData().IsRangeValueSupported()) {

@@ -68,6 +68,10 @@ class BaselineOptimizerTest(unittest.TestCase):
                 'port_name': 'linux-trusty',
                 'specifiers': ['Trusty', 'Release']
             },
+            'Fake Test Mac10.14': {
+                'port_name': 'mac-mac10.14',
+                'specifiers': ['Mac10.14', 'Release']
+            },
             'Fake Test Mac10.13': {
                 'port_name': 'mac-mac10.13',
                 'specifiers': ['Mac10.13', 'Release']
@@ -89,7 +93,7 @@ class BaselineOptimizerTest(unittest.TestCase):
         # assertion fails, port configurations are likely changed, and the
         # tests need to be adjusted accordingly.
         self.assertEqual(sorted(self.host.port_factory.all_port_names()),
-                         ['linux-trusty', 'mac-mac10.10', 'mac-mac10.11', 'mac-mac10.12', 'mac-mac10.13', 'win-win10'])
+                         ['linux-trusty', 'mac-mac10.10', 'mac-mac10.11', 'mac-mac10.12', 'mac-mac10.13', 'mac-mac10.14', 'win-win10'])
 
     def _assert_optimization(self, results_by_directory, directory_to_new_results, baseline_dirname='', suffix='txt'):
         web_tests_dir = PathFinder(self.fs).web_tests_dir()

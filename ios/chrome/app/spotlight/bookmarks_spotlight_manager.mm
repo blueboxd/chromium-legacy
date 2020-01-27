@@ -151,7 +151,7 @@ class SpotlightBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
 @implementation BookmarksSpotlightManager
 
 + (BookmarksSpotlightManager*)bookmarksSpotlightManagerWithBrowserState:
-    (ios::ChromeBrowserState*)browserState {
+    (ChromeBrowserState*)browserState {
   return [[BookmarksSpotlightManager alloc]
       initWithLargeIconService:IOSChromeLargeIconServiceFactory::
                                    GetForBrowserState(browserState)

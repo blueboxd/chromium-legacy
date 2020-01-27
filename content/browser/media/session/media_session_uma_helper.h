@@ -45,7 +45,9 @@ class CONTENT_EXPORT MediaSessionUmaHelper {
     Stop = 10,
     SeekTo = 11,
     ScrubTo = 12,
-    kMaxValue = ScrubTo,
+    EnterPictureInPicture = 13,
+    ExitPictureInPicture = 14,
+    kMaxValue = ExitPictureInPicture,
   };
 
   MediaSessionUmaHelper();

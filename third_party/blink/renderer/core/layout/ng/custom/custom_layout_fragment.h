@@ -39,6 +39,7 @@ class CustomLayoutFragment : public ScriptWrappable {
                        CustomLayoutToken*,
                        scoped_refptr<const NGLayoutResult>,
                        const LogicalSize& size,
+                       const base::Optional<LayoutUnit> baseline,
                        v8::Isolate*);
   ~CustomLayoutFragment() override = default;
 
@@ -50,6 +51,8 @@ class CustomLayoutFragment : public ScriptWrappable {
 
   void setInlineOffset(double inline_offset) { inline_offset_ = inline_offset; }
   void setBlockOffset(double block_offset) { block_offset_ = block_offset; }
+
+  double baseline(bool& is_null) const;
 
   ScriptValue data(ScriptState*) const;
 
@@ -87,6 +90,10 @@ class CustomLayoutFragment : public ScriptWrappable {
   // The offset is relative to our parent, and in the parent's writing mode.
   double inline_offset_ = 0;
   double block_offset_ = 0;
+
+  // The first-line baseline.
+  const double baseline_;
+  const bool is_baseline_null_;
 
   TraceWrapperV8Reference<v8::Value> layout_worklet_world_v8_data_;
 

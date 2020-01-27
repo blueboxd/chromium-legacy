@@ -356,7 +356,7 @@ class ServiceWorkerStorageTest : public testing::Test {
       std::vector<std::string>* data) {
     base::RunLoop loop;
     base::Optional<blink::ServiceWorkerStatusCode> result;
-    storage()->GetUserData(
+    registry()->GetUserData(
         registration_id, keys,
         base::BindOnce(&UserDataCallback, loop.QuitClosure(), data, &result));
     EXPECT_FALSE(result.has_value());  // always async
@@ -370,7 +370,7 @@ class ServiceWorkerStorageTest : public testing::Test {
       std::vector<std::string>* data) {
     base::RunLoop loop;
     base::Optional<blink::ServiceWorkerStatusCode> result;
-    storage()->GetUserDataByKeyPrefix(
+    registry()->GetUserDataByKeyPrefix(
         registration_id, key_prefix,
         base::BindOnce(&UserDataCallback, loop.QuitClosure(), data, &result));
     EXPECT_FALSE(result.has_value());  // always async

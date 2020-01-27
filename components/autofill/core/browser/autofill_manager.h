@@ -262,6 +262,51 @@ class AutofillManager : public AutofillHandler,
   // Returns the last form the autofill manager considered in this frame.
   virtual const FormData& last_query_form() const;
 
+#if defined(UNIT_TEST)
+  // A public wrapper that calls |DeterminePossibleFieldTypesForUpload| for
+  // testing purposes only.
+  static void DeterminePossibleFieldTypesForUploadForTest(
+      const std::vector<AutofillProfile>& profiles,
+      const std::vector<CreditCard>& credit_cards,
+      const base::string16& last_unlocked_credit_card_cvc,
+      const std::string& app_locale,
+      FormStructure* submitted_form) {
+    DeterminePossibleFieldTypesForUpload(profiles, credit_cards,
+                                         last_unlocked_credit_card_cvc,
+                                         app_locale, submitted_form);
+  }
+
+  // A public wrapper that calls |OnLoadedServerPredictions| for testing
+  // purposes only.
+  void OnLoadedServerPredictionsForTest(
+      std::string response,
+      const std::vector<std::string>& form_signatures) {
+    OnLoadedServerPredictions(response, form_signatures);
+  }
+
+  // A public wrapper that calls |MakeFrontendID| for testing purposes only.
+  int MakeFrontendIDForTest(const std::string& cc_backend_id,
+                            const std::string& profile_backend_id) const {
+    return MakeFrontendID(cc_backend_id, profile_backend_id);
+  }
+
+  // A public wrapper that calls |form_interactions_ukm_logger| for testing
+  // purposes only.
+  AutofillMetrics::FormInteractionsUkmLogger*
+  form_interactions_ukm_logger_for_test() {
+    return form_interactions_ukm_logger();
+  }
+
+  // A public wrapper that calls |ShouldTriggerRefill| for testing purposes
+  // only.
+  bool ShouldTriggerRefillForTest(const FormStructure& form_structure) {
+    return ShouldTriggerRefill(form_structure);
+  }
+
+  // A public wrapper that calls |TriggerRefill| for testing purposes only.
+  void TriggerRefillForTest(const FormData& form) { TriggerRefill(form); }
+#endif
+
  protected:
   // Test code should prefer to use this constructor.
   AutofillManager(
@@ -657,113 +702,6 @@ class AutofillManager : public AutofillHandler,
   friend class FormStructureBrowserTest;
   friend class GetMatchingTypesTest;
   friend class CreditCardAccessoryControllerTest;
-  FRIEND_TEST_ALL_PREFIXES(ProfileMatchingTypesTest,
-                           DeterminePossibleFieldTypesForUpload);
-  FRIEND_TEST_ALL_PREFIXES(AutofillManagerTest,
-                           DeterminePossibleFieldTypesForUpload);
-  FRIEND_TEST_ALL_PREFIXES(AutofillManagerTest,
-                           DeterminePossibleFieldTypesForUploadStressTest);
-  FRIEND_TEST_ALL_PREFIXES(AutofillManagerTest, DisambiguateUploadTypes);
-  FRIEND_TEST_ALL_PREFIXES(AutofillManagerTest, CrowdsourceUPIVPA);
-  FRIEND_TEST_ALL_PREFIXES(AutofillManagerTest, CrowdsourceCVCFieldByValue);
-  FRIEND_TEST_ALL_PREFIXES(AutofillManagerTest,
-                           CrowdsourceCVCFieldAfterExpDateByHeuristics);
-  FRIEND_TEST_ALL_PREFIXES(AutofillManagerTest,
-                           CrowdsourceCVCFieldDisableHeurisitcs);
-  FRIEND_TEST_ALL_PREFIXES(AutofillManagerTest,
-                           CrowdsourceNoCVCDueToInvalidCandidateValue);
-  FRIEND_TEST_ALL_PREFIXES(AutofillManagerTest,
-                           CrowdsourceNoCVCFieldDueToMissingCreditCardNumber);
-  FRIEND_TEST_ALL_PREFIXES(AutofillManagerTest,
-                           CrowdsourceCVCFieldAfterInvalidExpDateByHeuristics);
-  FRIEND_TEST_ALL_PREFIXES(AutofillManagerTest,
-                           CrowdsourceCVCFieldBeforeExpDateByHeuristics);
-  FRIEND_TEST_ALL_PREFIXES(AutofillManagerTest,
-                           DisabledAutofillDispatchesError);
-  FRIEND_TEST_ALL_PREFIXES(AutofillManagerTest,
-                           DetermineHeuristicsWithOverallPrediction);
-  FRIEND_TEST_ALL_PREFIXES(AutofillManagerTest,
-                           DeterminePossibleFieldTypesWithMultipleValidities);
-  FRIEND_TEST_ALL_PREFIXES(AutofillMetricsTest, AddressFilledFormEvents);
-  FRIEND_TEST_ALL_PREFIXES(AutofillMetricsTest, AddressSubmittedFormEvents);
-  FRIEND_TEST_ALL_PREFIXES(AutofillMetricsTest, AddressWillSubmitFormEvents);
-  FRIEND_TEST_ALL_PREFIXES(AutofillMetricsTest, AddressSuggestionsCount);
-  FRIEND_TEST_ALL_PREFIXES(AutofillMetricsTest, AutofillFormSubmittedState);
-  FRIEND_TEST_ALL_PREFIXES(AutofillMetricsTest, AutofillIsEnabledAtPageLoad);
-  FRIEND_TEST_ALL_PREFIXES(AutofillMetricsIFrameTest,
-                           CreditCardSelectedFormEvents);
-  FRIEND_TEST_ALL_PREFIXES(AutofillMetricsIFrameTest,
-                           CreditCardFilledFormEvents);
-  FRIEND_TEST_ALL_PREFIXES(AutofillMetricsTest,
-                           CreditCardUnmaskingPreflightCall);
-  FRIEND_TEST_ALL_PREFIXES(AutofillMetricsTest, CreditCardGetRealPanDuration);
-  FRIEND_TEST_ALL_PREFIXES(AutofillMetricsIFrameTest,
-                           CreditCardWillSubmitFormEvents);
-  FRIEND_TEST_ALL_PREFIXES(AutofillMetricsIFrameTest,
-                           CreditCardSubmittedFormEvents);
-  FRIEND_TEST_ALL_PREFIXES(AutofillMetricsTest,
-                           CreditCardCheckoutFlowUserActions);
-  FRIEND_TEST_ALL_PREFIXES(AutofillMetricsTest,
-                           LogHiddenRepresentationalFieldSkipDecision);
-  FRIEND_TEST_ALL_PREFIXES(AutofillMetricsTest,
-                           LogRepeatedAddressTypeRationalized);
-  FRIEND_TEST_ALL_PREFIXES(AutofillMetricsTest,
-                           LogRepeatedStateCountryTypeRationalized);
-
-  FRIEND_TEST_ALL_PREFIXES(
-      AutofillMetricsTest,
-      CreditCardSubmittedWithoutSelectingSuggestionsNoCard);
-  FRIEND_TEST_ALL_PREFIXES(
-      AutofillMetricsTest,
-      CreditCardSubmittedWithoutSelectingSuggestionsUnknownCard);
-  FRIEND_TEST_ALL_PREFIXES(
-      AutofillMetricsTest,
-      CreditCardSubmittedWithoutSelectingSuggestionsKnownCard);
-  FRIEND_TEST_ALL_PREFIXES(
-      AutofillMetricsIFrameTest,
-      ShouldNotLogSubmitWithoutSelectingSuggestionsIfSuggestionFilled);
-  FRIEND_TEST_ALL_PREFIXES(AutofillMetricsTest, ProfileCheckoutFlowUserActions);
-  FRIEND_TEST_ALL_PREFIXES(AutofillMetricsTest, DeveloperEngagement);
-  FRIEND_TEST_ALL_PREFIXES(AutofillMetricsTest, FormFillDuration);
-  FRIEND_TEST_ALL_PREFIXES(AutofillMetricsTest,
-                           NoQualityMetricsForNonAutofillableForms);
-  FRIEND_TEST_ALL_PREFIXES(AutofillMetricsTest, QualityMetrics);
-  FRIEND_TEST_ALL_PREFIXES(AutofillMetricsTest,
-                           QualityMetrics_BasedOnAutocomplete);
-  FRIEND_TEST_ALL_PREFIXES(
-      AutofillMetricsTest,
-      QualityMetrics_LoggedCorrecltyForOnlyFillWhenFocusedField);
-  FRIEND_TEST_ALL_PREFIXES(AutofillMetricsTest,
-                           QualityMetrics_LoggedCorrecltyForRationalizationOk);
-  FRIEND_TEST_ALL_PREFIXES(
-      AutofillMetricsTest,
-      QualityMetrics_LoggedCorrecltyForRationalizationGood);
-  FRIEND_TEST_ALL_PREFIXES(AutofillMetricsTest,
-                           QualityMetrics_LoggedCorrecltyForRationalizationBad);
-
-  FRIEND_TEST_ALL_PREFIXES(AutofillMetricsTest, SaneMetricsWithCacheMismatch);
-  FRIEND_TEST_ALL_PREFIXES(AutofillMetricsTest, DynamicFormMetrics);
-  FRIEND_TEST_ALL_PREFIXES(AutofillManagerTest, TestExternalDelegate);
-  FRIEND_TEST_ALL_PREFIXES(AutofillManagerTest,
-                           TestTabContentsWithExternalDelegate);
-  FRIEND_TEST_ALL_PREFIXES(AutofillMetricsTest,
-                           UserHappinessFormLoadAndSubmission);
-  FRIEND_TEST_ALL_PREFIXES(AutofillMetricsTest,
-                           UserHappinessFormInteraction_AddressForm);
-  FRIEND_TEST_ALL_PREFIXES(AutofillMetricsTest,
-                           UserHappinessFormInteraction_CreditCardForm);
-  FRIEND_TEST_ALL_PREFIXES(AutofillManagerTest, OnLoadedServerPredictions);
-  FRIEND_TEST_ALL_PREFIXES(AutofillManagerTest,
-                           OnLoadedServerPredictionsFromApi);
-  FRIEND_TEST_ALL_PREFIXES(AutofillManagerTest,
-                           OnLoadedServerPredictions_ResetManager);
-  FRIEND_TEST_ALL_PREFIXES(AutofillManagerTest, DontOfferToSavePaymentsCard);
-  FRIEND_TEST_ALL_PREFIXES(AutofillManagerTest, FillInUpdatedExpirationDate);
-  FRIEND_TEST_ALL_PREFIXES(AutofillMetricsFunnelTest, LogFunnelMetrics);
-  FRIEND_TEST_ALL_PREFIXES(AutofillMetricsKeyMetricsTest,
-                           LogUserFixesFilledData);
-  FRIEND_TEST_ALL_PREFIXES(AutofillMetricsKeyMetricsTest,
-                           LogUserFixesFilledDataButDoesNotSubmit);
   DISALLOW_COPY_AND_ASSIGN(AutofillManager);
 };
 

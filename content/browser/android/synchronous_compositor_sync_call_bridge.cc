@@ -41,7 +41,8 @@ void SynchronousCompositorSyncCallBridge::RemoteClosedOnIOThread() {
 bool SynchronousCompositorSyncCallBridge::ReceiveFrameOnIOThread(
     int layer_tree_frame_sink_id,
     uint32_t metadata_version,
-    base::Optional<viz::CompositorFrame> compositor_frame) {
+    base::Optional<viz::CompositorFrame> compositor_frame,
+    base::Optional<viz::HitTestRegionList> hit_test_region_list) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   base::AutoLock lock(lock_);
   if (remote_state_ != RemoteState::READY || frame_futures_.empty())
@@ -61,6 +62,7 @@ bool SynchronousCompositorSyncCallBridge::ReceiveFrameOnIOThread(
                                   compositor_frame->metadata.Clone()));
     frame_ptr->frame.reset(new viz::CompositorFrame);
     *frame_ptr->frame = std::move(*compositor_frame);
+    frame_ptr->hit_test_region_list = std::move(hit_test_region_list);
   }
   future->SetFrame(std::move(frame_ptr));
   return true;

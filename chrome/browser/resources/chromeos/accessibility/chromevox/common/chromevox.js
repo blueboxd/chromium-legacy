@@ -17,10 +17,23 @@ goog.provide('ChromeVox');
 
 goog.require('constants');
 
-/**
- * @constructor
- */
-ChromeVox = function() {};
+ChromeVox = class {
+  constructor() {}
+
+  /**
+   * Returns whether sticky mode is on, taking both the global sticky mode
+   * pref and the temporary sticky mode override into account.
+   *
+   * @return {boolean} Whether sticky mode is on.
+   */
+  static isStickyModeOn() {
+    if (ChromeVox.stickyOverride !== null) {
+      return ChromeVox.stickyOverride;
+    } else {
+      return ChromeVox.isStickyPrefOn;
+    }
+  }
+};
 
 // Constants
 /**
@@ -98,19 +111,6 @@ ChromeVox.modKeyStr = 'Shift+Search';
  */
 ChromeVox.sequenceSwitchKeyCodes = [];
 
-/**
- * Returns whether sticky mode is on, taking both the global sticky mode
- * pref and the temporary sticky mode override into account.
- *
- * @return {boolean} Whether sticky mode is on.
- */
-ChromeVox.isStickyModeOn = function() {
-  if (ChromeVox.stickyOverride !== null) {
-    return ChromeVox.stickyOverride;
-  } else {
-    return ChromeVox.isStickyPrefOn;
-  }
-};
 
 /**
  * Shortcut for document.getElementById.

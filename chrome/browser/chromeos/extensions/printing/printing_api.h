@@ -34,6 +34,17 @@ class PrintingSubmitJobFunction : public ExtensionFunction {
   DECLARE_EXTENSION_FUNCTION("printing.submitJob", PRINTING_SUBMITJOB)
 };
 
+class PrintingCancelJobFunction : public ExtensionFunction {
+ protected:
+  ~PrintingCancelJobFunction() override;
+
+  // ExtensionFunction:
+  ResponseAction Run() override;
+
+ private:
+  DECLARE_EXTENSION_FUNCTION("printing.cancelJob", PRINTING_CANCELJOB)
+};
+
 class PrintingGetPrintersFunction : public ExtensionFunction {
  protected:
   ~PrintingGetPrintersFunction() override;

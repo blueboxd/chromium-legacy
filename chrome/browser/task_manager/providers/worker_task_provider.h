@@ -64,10 +64,6 @@ class WorkerTaskProvider : public TaskProvider,
   void StartUpdating() override;
   void StopUpdating() override;
 
-  // Creates WorkerTasks for the given |profile| and notifies the observer of
-  // their additions.
-  void CreateTasksForProfile(Profile* profile);
-
   // Creates a WorkerTask from the given |running_info| and notifies the
   // observer of its addition.
   void CreateTask(content::ServiceWorkerContext* context,

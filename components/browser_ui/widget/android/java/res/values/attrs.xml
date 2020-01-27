@@ -29,11 +29,19 @@
         <attr name="dualControlLayoutHorizontalPadding" format="dimension"/>
     </declare-styleable>
 
+    <declare-styleable name="ListMenuButton">
+        <attr name="menuMaxWidth" format="reference|dimension" />
+        <attr name="menuVerticalOverlapAnchor" format="boolean" />
+        <attr name="menuHorizontalOverlapAnchor" format="boolean" />
+        <attr name="menuBackground" format="reference" />
+    </declare-styleable>
+
     <declare-styleable name="MaterialProgressBar">
         <attr name="colorBackground" format="reference|color" />
         <attr name="colorProgress" format="reference|color" />
         <attr name="colorSecondaryProgress" format="reference|color" />
     </declare-styleable>
+
 
     <declare-styleable name="PaddedFrameLayout">
         <attr name="maxChildWidth" format="dimension" />

@@ -4,13 +4,16 @@
 
 #include "chrome/renderer/subresource_redirect/subresource_redirect_url_loader_throttle.h"
 
+#include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
-#include "chrome/renderer/subresource_redirect/subresource_redirect_experiments.h"
+#include "chrome/renderer/previews/resource_loading_hints_agent.h"
+#include "chrome/renderer/subresource_redirect/subresource_redirect_hints_agent.h"
 #include "chrome/renderer/subresource_redirect/subresource_redirect_params.h"
 #include "chrome/renderer/subresource_redirect/subresource_redirect_util.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers.h"
 #include "content/public/common/previews_state.h"
 #include "content/public/common/resource_type.h"
+#include "content/public/renderer/render_frame.h"
 #include "net/base/escape.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_status_code.h"
@@ -25,7 +28,8 @@ namespace subresource_redirect {
 std::unique_ptr<SubresourceRedirectURLLoaderThrottle>
 SubresourceRedirectURLLoaderThrottle::MaybeCreateThrottle(
     const blink::WebURLRequest& request,
-    content::ResourceType resource_type) {
+    content::ResourceType resource_type,
+    int render_frame_id) {
   if (base::FeatureList::IsEnabled(blink::features::kSubresourceRedirect) &&
       resource_type == content::ResourceType::kImage &&
       (request.GetPreviewsState() &
@@ -34,13 +38,15 @@ SubresourceRedirectURLLoaderThrottle::MaybeCreateThrottle(
     // TODO(rajendrant): Verify that data saver is enabled as well, to not
     // trigger the subresource redirect for incognito profiles.
     return base::WrapUnique<SubresourceRedirectURLLoaderThrottle>(
-        new SubresourceRedirectURLLoaderThrottle());
+        new SubresourceRedirectURLLoaderThrottle(render_frame_id));
   }
   return nullptr;
 }
 
-SubresourceRedirectURLLoaderThrottle::SubresourceRedirectURLLoaderThrottle() =
-    default;
+SubresourceRedirectURLLoaderThrottle::SubresourceRedirectURLLoaderThrottle(
+    int render_frame_id)
+    : render_frame_id_(render_frame_id) {}
+
 SubresourceRedirectURLLoaderThrottle::~SubresourceRedirectURLLoaderThrottle() =
     default;
 
@@ -54,14 +60,33 @@ void SubresourceRedirectURLLoaderThrottle::WillStartRequest(
          content::PreviewsTypes::SUBRESOURCE_REDIRECT_ON);
   DCHECK(request->url.SchemeIs(url::kHttpsScheme));
 
-  // Image subresources that have paths that do not end in one of the
-  // following common formats are commonly single pixel images that will not
-  // benefit from being sent to the compression server.
-  if (!ShouldIncludeMediaSuffix(request->url))
+  auto* subresource_redirect_hints_agent = GetSubresourceRedirectHintsAgent();
+  if (!subresource_redirect_hints_agent)
     return;
+
+  if (!subresource_redirect_hints_agent->ShouldRedirectImage(request->url))
+    return;
+
+  if (!base::GetFieldTrialParamByFeatureAsBool(
+          blink::features::kSubresourceRedirect, "enable_lite_page_redirect",
+          false)) {
+    return;
+  }
 
   request->url = GetSubresourceURLForURL(request->url);
   *defer = false;
+}
+
+SubresourceRedirectHintsAgent*
+SubresourceRedirectURLLoaderThrottle::GetSubresourceRedirectHintsAgent() {
+  if (content::RenderFrame* render_frame =
+          content::RenderFrame::FromRoutingID(render_frame_id_)) {
+    if (auto* resource_loading_hints_agent =
+            previews::ResourceLoadingHintsAgent::Get(render_frame)) {
+      return &resource_loading_hints_agent->subresource_redirect_hints_agent();
+    }
+  }
+  return nullptr;
 }
 
 void SubresourceRedirectURLLoaderThrottle::WillRedirectRequest(

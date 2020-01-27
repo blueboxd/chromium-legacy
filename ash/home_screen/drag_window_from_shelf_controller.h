@@ -104,6 +104,12 @@ class ASH_EXPORT DragWindowFromShelfController : public aura::WindowObserver {
 
   bool IsDraggedWindowAnimating() const;
 
+  // Performs the action on the dragged window depending on
+  // |window_drag_result_|, such as scaling up/down the dragged window. This
+  // method should be called after EndDrag() which computes
+  // |window_drag_result_|.
+  void FinalizeDraggedWindow();
+
   // aura::WindowObserver:
   void OnWindowDestroying(aura::Window* window) override;
 
@@ -203,6 +209,9 @@ class ASH_EXPORT DragWindowFromShelfController : public aura::WindowObserver {
 
   // True if overview is active and its windows are showing.
   bool show_overview_windows_ = false;
+
+  // A pending action from EndDrag() to be performed in FinalizeDraggedWindow().
+  base::Optional<ShelfWindowDragResult> window_drag_result_;
 
   base::ObserverList<Observer> observers_;
 

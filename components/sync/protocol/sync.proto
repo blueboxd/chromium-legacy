@@ -868,10 +868,13 @@ message CommitResponse {
     // to override the client-supplied mtime during a commit operation.
     optional int64 mtime = 10;
 
-    // Datatype specific error (if any).
-    oneof datatype_error {
-      SharingMessageCommitError sharing_message_error = 11;
+    message DatatypeSpecificError {
+      oneof datatype_error {
+        SharingMessageCommitError sharing_message_error = 1;
+      }
     }
+    // Datatype specific error (if any).
+    optional DatatypeSpecificError datatype_specific_error = 11;
   }
 }
 

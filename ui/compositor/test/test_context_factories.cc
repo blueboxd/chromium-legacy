@@ -39,10 +39,7 @@ TestContextFactories::TestContextFactories(bool enable_pixel_output,
   host_frame_sink_manager_->SetLocalManager(frame_sink_manager_.get());
 }
 
-TestContextFactories::~TestContextFactories() {
-  if (implicit_factory_)
-    implicit_factory_->SendOnLostSharedContext();
-}
+TestContextFactories::~TestContextFactories() = default;
 
 ContextFactory* TestContextFactories::GetContextFactory() const {
   return implicit_factory_.get();

@@ -63,6 +63,8 @@ void FakeLocalFrame::MediaPlayerActionAt(
     const gfx::Point& location,
     blink::mojom::MediaPlayerActionPtr action) {}
 
+void FakeLocalFrame::AdvanceFocusInForm(blink::mojom::FocusType focus_type) {}
+
 void FakeLocalFrame::BindFrameHostReceiver(
     mojo::ScopedInterfaceEndpointHandle handle) {
   receiver_.Bind(mojo::PendingAssociatedReceiver<blink::mojom::LocalFrame>(

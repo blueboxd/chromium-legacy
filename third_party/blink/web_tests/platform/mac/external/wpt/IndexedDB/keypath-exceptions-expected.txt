@@ -1,9 +1,0 @@
-This is a testharness.js-based test.
-PASS The last element of keypath is validated
-PASS Key path evaluation: Exceptions from non-enumerable getters
-PASS Key path evaluation: Exceptions from enumerable getters
-PASS Key path evaluation: Exceptions from non-enumerable getters on prototype
-PASS Key path evaluation: Exceptions from enumerable getters on prototype
-FAIL Array key conversion should not invoke prototype getters assert_equals: Prototype getter should not be called expected 0 but got 5
-Harness: the test ran to completion.
-

@@ -94,6 +94,7 @@ class DeviceSettingsProviderTest : public DeviceSettingsTestBase {
     proto->set_report_hardware_status(enable_reporting);
     proto->set_report_session_status(enable_reporting);
     proto->set_report_graphics_status(enable_reporting);
+    proto->set_report_crash_report_info(enable_reporting);
     proto->set_report_os_update_status(enable_reporting);
     proto->set_report_running_kiosk_app(enable_reporting);
     proto->set_report_power_status(enable_reporting);
@@ -160,15 +161,23 @@ class DeviceSettingsProviderTest : public DeviceSettingsTestBase {
   void VerifyReportingSettings(bool expected_enable_state,
                                int expected_frequency) {
     const char* reporting_settings[] = {
-        kReportDeviceVersionInfo, kReportDeviceActivityTimes,
-        kReportDeviceBoardStatus, kReportDeviceBootMode,
+        kReportDeviceVersionInfo,
+        kReportDeviceActivityTimes,
+        kReportDeviceBoardStatus,
+        kReportDeviceBootMode,
         // Device location reporting is not currently supported.
         // kReportDeviceLocation,
-        kReportDeviceNetworkInterfaces, kReportDeviceUsers,
-        kReportDeviceHardwareStatus, kReportDevicePowerStatus,
-        kReportDeviceStorageStatus, kReportDeviceSessionStatus,
-        kReportDeviceGraphicsStatus, kReportOsUpdateStatus,
-        kReportRunningKioskApp};
+        kReportDeviceNetworkInterfaces,
+        kReportDeviceUsers,
+        kReportDeviceHardwareStatus,
+        kReportDevicePowerStatus,
+        kReportDeviceStorageStatus,
+        kReportDeviceSessionStatus,
+        kReportDeviceGraphicsStatus,
+        kReportDeviceCrashReportInfo,
+        kReportOsUpdateStatus,
+        kReportRunningKioskApp,
+    };
 
     const base::Value expected_enable_value(expected_enable_state);
     for (auto* setting : reporting_settings) {

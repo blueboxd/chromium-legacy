@@ -81,6 +81,6 @@ void AppUrlLoadingService::LoadUrlInNewTab(const UrlLoadParams& params) {
   }
 }
 
-ios::ChromeBrowserState* AppUrlLoadingService::GetCurrentBrowserState() {
+ChromeBrowserState* AppUrlLoadingService::GetCurrentBrowserState() {
   return [delegate_ currentBrowserState];
 }

@@ -79,6 +79,7 @@
 <translation id="129553762522093515">Ostatnio zamknięte</translation>
 <translation id="1298536327547837046">Skanowanie w poszukiwaniu złośliwego oprogramowania</translation>
 <translation id="129863573139666797"><ph name="BEGIN_LINK" />Usuń pliki cookie<ph name="END_LINK" /></translation>
+<translation id="1301324364792935241">Sprawdź ustawienia bezpiecznego DNS</translation>
 <translation id="1307966114820526988">Funkcje wycofane</translation>
 <translation id="1314509827145471431">Wiązanie przy prawej krawędzi</translation>
 <translation id="1320233736580025032">Prc1 (koperta)</translation>
@@ -152,6 +153,7 @@
 <translation id="1569487616857761740">Wpisz datę ważności</translation>
 <translation id="1581080074034554886">CVC</translation>
 <translation id="1583429793053364125">Podczas wyświetlania strony wystąpił błąd.</translation>
+<translation id="1586541204584340881">Zainstalowane przez Ciebie rozszerzenia</translation>
 <translation id="1588438908519853928">Normalny</translation>
 <translation id="1592005682883173041">Lokalny dostęp do danych</translation>
 <translation id="1594030484168838125">Wybierz</translation>
@@ -290,7 +292,6 @@
 <translation id="2218879909401188352">Osoby obecnie atakujące stronę <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> mogą instalować niebezpieczne aplikacje, które mogą uszkodzić Twoje urządzenie, dodać ukryte opłaty do rachunku za usługi telefoniczne lub wykraść Twoje dane osobowe. <ph name="BEGIN_LEARN_MORE_LINK" />Więcej informacji<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="2224337661447660594">Brak internetu</translation>
 <translation id="2230458221926704099">Napraw połączenie, używając <ph name="BEGIN_LINK" />aplikacji diagnostycznej<ph name="END_LINK" /></translation>
-<translation id="22320125457191592">Dla Ciebie</translation>
 <translation id="2239100178324503013">Wyślij teraz</translation>
 <translation id="2248949050832152960">Używaj WebAuthn</translation>
 <translation id="2250931979407627383">Zszywanie wzdłuż lewej krawędzi</translation>
@@ -363,6 +364,7 @@
 <translation id="2544644783021658368">Pojedynczy dokument</translation>
 <translation id="254947805923345898">Wartość zasady jest nieprawidłowa.</translation>
 <translation id="255002559098805027">Serwer <ph name="HOST_NAME" /> wysłał nieprawidłową odpowiedź.</translation>
+<translation id="2553853292994445426">Sprawdź ustawienia bezpiecznego DNS. Być może masz skonfigurowany serwer bezpiecznego DNS, z którym nie można się połączyć.</translation>
 <translation id="2556876185419854533">&amp;Cofnij edycję</translation>
 <translation id="257674075312929031">Grupa</translation>
 <translation id="2586657967955657006">Schowek</translation>
@@ -485,6 +487,7 @@
 <translation id="3095940652251934233">Statement</translation>
 <translation id="3096100844101284527">Dodaj adres odbioru</translation>
 <translation id="3105172416063519923">Identyfikator zasobu:</translation>
+<translation id="3107591622054137333"><ph name="BEGIN_LINK" />sprawdzić konfigurację bezpiecznego DNS<ph name="END_LINK" /></translation>
 <translation id="3109728660330352905">Nie masz uprawnień do wyświetlania tej strony.</translation>
 <translation id="3113284927548439113">Trzecia zmiana</translation>
 <translation id="3116158981186517402">Laminowanie</translation>
@@ -576,7 +579,6 @@
 <translation id="3531780078352352885">Arkusze zadań</translation>
 <translation id="3533328374079021623">Zestaw tac odbiorczych 5</translation>
 <translation id="3539171420378717834">Zachowaj kopię tej karty na urządzeniu</translation>
-<translation id="3553513561058684206">Dla Ciebie</translation>
 <translation id="3558573058928565255">Dzień godzina</translation>
 <translation id="3566021033012934673">Połączenie nie jest prywatne</translation>
 <translation id="3574305903863751447"><ph name="CITY" />, <ph name="STATE" /> <ph name="COUNTRY" /></translation>
@@ -788,6 +790,7 @@
 <translation id="4390472908992056574">Krawędź</translation>
 <translation id="4406896451731180161">wyniki wyszukiwania</translation>
 <translation id="4408413947728134509">Pliki cookie (<ph name="NUM_COOKIES" />)</translation>
+<translation id="4414290883293381923">Przed chwilą wpisano hasło na stronie wprowadzającej w błąd. Chrome zaleca, by natychmiast zmienić je na <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, <ph name="WEBSITE_3" /> i innych stronach, na których go używasz.</translation>
 <translation id="4415426530740016218">Adres odbioru</translation>
 <translation id="4424024547088906515">Ten serwer nie mógł udowodnić, że należy do <ph name="DOMAIN" />. Jego certyfikat bezpieczeństwa nie jest zaufany w Chrome. Może to być spowodowane błędną konfiguracją lub przechwyceniem połączenia przez atakującego.</translation>
 <translation id="443121186588148776">Port szeregowy</translation>
@@ -1220,6 +1223,7 @@
 <translation id="6353505687280762741">{COUNT,plural, =0{Brak}=1{1 hasło (do <ph name="DOMAIN_LIST" />, zsynchronizowano)}=2{2 hasła (do <ph name="DOMAIN_LIST" />, zsynchronizowano)}few{# hasła (do <ph name="DOMAIN_LIST" />, zsynchronizowano)}many{# haseł (do <ph name="DOMAIN_LIST" />, zsynchronizowano)}other{# hasła (do <ph name="DOMAIN_LIST" />, zsynchronizowano)}}</translation>
 <translation id="6358450015545214790">Co to oznacza?</translation>
 <translation id="6361757823711327522">B7</translation>
+<translation id="6364095313648930329"><ph name="BEGIN_LINK" />Sprawdzanie konfiguracji serwera proxy, zapory sieciowej i bezpiecznego DNS<ph name="END_LINK" /></translation>
 <translation id="6366710531182496394">Dwie zszywki po lewej</translation>
 <translation id="6377268785556383139">1 wynik dla zapytania „<ph name="SEARCH_TEXT" />”</translation>
 <translation id="6380497234672085559">A0</translation>
@@ -1242,6 +1246,7 @@
 <translation id="6433595998831338502">Serwer <ph name="HOST_NAME" /> odrzucił połączenie.</translation>
 <translation id="6434309073475700221">Przerwij</translation>
 <translation id="6440503408713884761">Ignorowany</translation>
+<translation id="6443406338865242315">Zainstalowane przez Ciebie rozszerzenia i wtyczki</translation>
 <translation id="6446163441502663861">Kahu (koperta)</translation>
 <translation id="6446608382365791566">Dodaj więcej informacji</translation>
 <translation id="6447842834002726250">Pliki cookie</translation>
@@ -1351,6 +1356,7 @@
 <translation id="7012363358306927923">China UnionPay</translation>
 <translation id="7016992613359344582">Może to być opłata jednorazowa lub cykliczna, a informacje o niej mogą nie być wyraźnie podane.</translation>
 <translation id="7029809446516969842">Hasła</translation>
+<translation id="7031646650991750659">Zainstalowane przez Ciebie aplikacje z Google Play</translation>
 <translation id="7050187094878475250">Próbujesz połączyć się z domeną <ph name="DOMAIN" />, ale serwer przedstawił certyfikat, którego okres ważności jest za długi, by był wiarygodny.</translation>
 <translation id="705310974202322020">{NUM_CARDS,plural, =1{Nie można teraz zapisać tej karty}few{Nie można teraz zapisać tych kart}many{Nie można teraz zapisać tych kart}other{Nie można teraz zapisać tych kart}}</translation>
 <translation id="7053983685419859001">Blokuj</translation>
@@ -1410,6 +1416,7 @@ Dodatkowe informacje:
 <translation id="7319430975418800333">A3</translation>
 <translation id="7320336641823683070">Pomoc dotycząca połączeń</translation>
 <translation id="733354035281974745">Zastąpienie przez konto lokalne na urządzeniu</translation>
+<translation id="7333654844024768166">Przed chwilą wpisano hasło na stronie wprowadzającej w błąd. Chromium zaleca, by natychmiast zmienić je na <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, <ph name="WEBSITE_3" /> i innych stronach, na których go używasz.</translation>
 <translation id="7334320624316649418">&amp;Ponów zmianę kolejności</translation>
 <translation id="7337706099755338005">Niedostępny na Twojej platformie.</translation>
 <translation id="733923710415886693">Certyfikat serwera nie został ujawniony przez protokół Certificate Transparency.</translation>

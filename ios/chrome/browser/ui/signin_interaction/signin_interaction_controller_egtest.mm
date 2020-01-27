@@ -43,6 +43,7 @@ using chrome_test_util::SettingsDoneButton;
 using chrome_test_util::SettingsImportDataContinueButton;
 using chrome_test_util::SettingsImportDataImportButton;
 using chrome_test_util::SettingsImportDataKeepSeparateButton;
+using chrome_test_util::SettingsMenuBackButton;
 using chrome_test_util::StaticTextWithAccessibilityLabelId;
 using chrome_test_util::SyncSettingsConfirmButton;
 using l10n_util::GetNSString;
@@ -130,6 +131,13 @@ void ChooseImportOrKeepDataSepareteDialog(id<GREYMatcher> choiceButtonMatcher) {
 
 @implementation SigninInteractionControllerTestCase
 
+#if defined(CHROME_EARL_GREY_2)
++ (NSArray*)testInvocations {
+  // TODO(crbug.com/1037676): Fix and enable the tests for EG2.
+  return @[];
+}
+#endif
+
 - (void)setUp {
   [super setUp];
   // Remove closed tab history to make sure the sign-in promo is always visible
@@ -192,28 +200,24 @@ void ChooseImportOrKeepDataSepareteDialog(id<GREYMatcher> choiceButtonMatcher) {
 }
 
 // Tests that signing in, tapping the Settings link on the confirmation screen
-// and closing the Settings correctly leaves the user signed in without any
-// Settings shown.
+// and closing the advanced sign-in settings correctly leaves the user signed
+// in.
 - (void)testSignInOpenSettings {
   FakeChromeIdentity* fakeIdentity = [SigninEarlGreyUtils fakeIdentity1];
   [SigninEarlGreyUtils addFakeIdentity:fakeIdentity];
 
-  [ChromeEarlGreyUI openSettingsMenu];
-  [ChromeEarlGreyUI tapSettingsMenuButton:SecondarySignInButton()];
-  [SigninEarlGreyUI selectIdentityWithEmail:fakeIdentity.userEmail];
-
-  // Wait until the next screen appears.
-  [SigninEarlGreyUI tapSettingsLink];
+  [self openSigninFromView:OpenSigninMethodFromSettings tapSettingsLink:YES];
 
   [[EarlGrey selectElementWithMatcher:SyncSettingsConfirmButton()]
       performAction:grey_tap()];
 
-  // All Settings should be gone and user signed in.
+  // Test sync is on in the settings view.
   id<GREYMatcher> settings_matcher =
       chrome_test_util::StaticTextWithAccessibilityLabelId(
-          IDS_IOS_SETTINGS_TITLE);
+          IDS_IOS_SIGN_IN_TO_CHROME_SETTING_SYNC_ON);
   [[EarlGrey selectElementWithMatcher:settings_matcher]
-      assertWithMatcher:grey_notVisible()];
+      assertWithMatcher:grey_sufficientlyVisible()];
+  // Test the user is signed in.
   [SigninEarlGreyUtils checkSignedInWithFakeIdentity:fakeIdentity];
 }
 

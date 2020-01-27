@@ -72,6 +72,9 @@ class WebviewController : public CastWebContents::Delegate,
   // CastWebContents::Observer
   void ResourceLoadFailed(CastWebContents* cast_web_contents) override;
 
+  // content::WebContentsObserver
+  void DidFirstVisuallyNonEmptyPaint() override;
+
   std::unique_ptr<content::WebContents> contents_;
   std::unique_ptr<CastWebContents> cast_web_contents_;
   bool stopped_ = false;

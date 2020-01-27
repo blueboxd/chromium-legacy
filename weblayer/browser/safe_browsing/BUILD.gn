@@ -29,6 +29,8 @@ source_set("safe_browsing") {
     "//components/safe_browsing/core/browser:network_context",
     "//components/safe_browsing/core/common",
     "//components/safe_browsing/core/db:database_manager",
+    "//components/security_interstitials/content:security_interstitial_page",
+    "//components/security_interstitials/core:unsafe_resource",
     "//components/security_interstitials/core/",
     "//content/public/browser",
     "//skia",

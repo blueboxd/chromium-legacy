@@ -40,6 +40,9 @@ class CrostiniFeatures {
   // true when advanced access controls feature flag is disabled.
   virtual bool IsRootAccessAllowed(Profile*);
 
+  // Returns true if container upgrade ui is allowed by flag.
+  virtual bool IsContainerUpgradeUIAllowed(Profile*);
+
   // TODO(crbug.com/1004708): Move other functions from crostini_util to here.
 
  protected:

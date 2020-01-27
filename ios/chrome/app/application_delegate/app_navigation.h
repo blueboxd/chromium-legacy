@@ -8,8 +8,8 @@
 #import <Foundation/Foundation.h>
 
 #include "base/ios/block_types.h"
-#include "ios/chrome/browser/browser_state/chrome_browser_state_forward.h"
 
+class ChromeBrowserState;
 @class SettingsNavigationController;
 
 // Handles the navigation through the application.
@@ -22,7 +22,7 @@
 // Presents a SignedInAccountsViewController for |browserState| on the top view
 // controller.
 - (void)presentSignedInAccountsViewControllerForBrowserState:
-    (ios::ChromeBrowserState*)browserState;
+    (ChromeBrowserState*)browserState;
 
 // Closes the settings UI with or without animation, with an optional
 // completion block.

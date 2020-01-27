@@ -9,6 +9,7 @@
 
 #include "base/bind_helpers.h"
 #include "base/numerics/ranges.h"
+#include "build/build_config.h"
 #include "chrome/browser/vr/service/vr_service_impl.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
@@ -19,6 +20,15 @@
 #include "device/vr/vr_device.h"
 #include "ui/gfx/transform.h"
 #include "ui/gfx/transform_util.h"
+
+#if defined(OS_WIN)
+#include "chrome/browser/vr/service/xr_session_request_consent_manager.h"
+#elif defined(OS_ANDROID)
+#include "chrome/browser/android/vr/gvr_consent_helper.h"
+#if BUILDFLAG(ENABLE_ARCORE)
+#include "chrome/browser/android/vr/arcore_device/arcore_consent_prompt.h"
+#endif
+#endif
 
 namespace vr {
 
@@ -205,6 +215,21 @@ bool ContainsFeature(
   return std::find(feature_list.begin(), feature_list.end(), feature) !=
          feature_list.end();
 }
+
+#if defined(OS_WIN)
+content::WebContents* GetWebContents(int render_process_id,
+                                     int render_frame_id) {
+  content::RenderFrameHost* render_frame_host =
+      content::RenderFrameHost::FromID(render_process_id, render_frame_id);
+  DCHECK(render_frame_host);
+
+  content::WebContents* web_contents =
+      content::WebContents::FromRenderFrameHost(render_frame_host);
+  DCHECK(web_contents);
+
+  return web_contents;
+}
+#endif
 }  // anonymous namespace
 
 BrowserXRRuntime::BrowserXRRuntime(
@@ -221,6 +246,17 @@ BrowserXRRuntime::BrowserXRRuntime(
       receiver_.BindNewEndpointAndPassRemote(),
       base::BindOnce(&BrowserXRRuntime::OnDisplayInfoChanged,
                      base::Unretained(this)));
+
+#if defined(OS_ANDROID)
+  if (id_ == device::mojom::XRDeviceId::GVR_DEVICE_ID) {
+    consent_helper_ = std::make_unique<GvrConsentHelper>();
+  }
+#if BUILDFLAG(ENABLE_ARCORE)
+  if (id_ == device::mojom::XRDeviceId::ARCORE_DEVICE_ID) {
+    consent_helper_ = std::make_unique<ArCoreConsentPrompt>();
+  }
+#endif
+#endif
 }
 
 BrowserXRRuntime::~BrowserXRRuntime() {
@@ -473,6 +509,28 @@ void BrowserXRRuntime::OnRequestSessionResult(
       StopImmersiveSession(base::DoNothing());
     }
   }
+}
+
+void BrowserXRRuntime::ShowConsentPrompt(
+    int render_process_id,
+    int render_frame_id,
+    XrConsentPromptLevel consent_level,
+    OnUserConsentCallback consent_callback) {
+#if defined(OS_WIN)
+  XRSessionRequestConsentManager::Instance()->ShowDialogAndGetConsent(
+      GetWebContents(render_process_id, render_frame_id), consent_level,
+      std::move(consent_callback));
+#else
+  // It is the responsibility of the consent prompt to ensure that the callback
+  // is run in the event that we get removed (and it gets destroyed).
+  if (consent_helper_) {
+    consent_helper_->ShowConsentPrompt(render_process_id, render_frame_id,
+                                       consent_level,
+                                       std::move(consent_callback));
+  } else {
+    std::move(consent_callback).Run(consent_level, false);
+  }
+#endif
 }
 
 void BrowserXRRuntime::OnImmersiveSessionError() {

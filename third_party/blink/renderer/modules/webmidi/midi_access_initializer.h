@@ -12,9 +12,9 @@
 #include "third_party/blink/public/mojom/permissions/permission_status.mojom-blink-forward.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_midi_options.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/modules/webmidi/midi_dispatcher.h"
-#include "third_party/blink/renderer/modules/webmidi/midi_options.h"
 #include "third_party/blink/renderer/modules/webmidi/midi_port.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 

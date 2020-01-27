@@ -85,15 +85,6 @@ class LoadFlipkartDesktop2018(_LoadingStory):
   TAGS = [story_tags.INTERNATIONAL, story_tags.YEAR_2018]
 
 
-class LoadTaobaoMobileStory(_LoadingStory):
-  NAME = 'load:search:taobao'
-  # "ali_trackid" in the URL suppresses "Download app" interstitial.
-  URL = 'http://m.intl.taobao.com/?ali_trackid'
-  SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
-  TAGS = [story_tags.INTERNATIONAL, story_tags.HEALTH_CHECK,
-          story_tags.YEAR_2016]
-
-
 class LoadTaobaoMobileStory2019(_LoadingStory):
   NAME = 'load:search:taobao:2019'
   URL = 'http://m.intl.taobao.com/'
@@ -119,15 +110,6 @@ class LoadEbayStory2018(_LoadingStory):
 ################################################################################
 
 
-class LoadTwitterStory(_LoadingStory):
-  NAME = 'load:social:twitter'
-  URL = 'https://www.twitter.com/nasa'
-  TAGS = [story_tags.YEAR_2016]
-
-  # Desktop version is already covered by
-  # 'browse:social:twitter_infinite_scroll'
-  SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
-
 class LoadTwitterMoibleStory2019(_LoadingStory):
   NAME = 'load:social:twitter:2019'
   URL = 'https://www.twitter.com/nasa'
@@ -136,16 +118,6 @@ class LoadTwitterMoibleStory2019(_LoadingStory):
   # Desktop version is already covered by
   # 'browse:social:twitter_infinite_scroll'
   SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
-
-class LoadVkStory(_LoadingStory):
-  NAME = 'load:social:vk'
-  URL = 'https://vk.com/sbeatles'
-  # Due to the deterministic date injected by WPR (February 2008), the cookie
-  # set by https://vk.com immediately expires, so the page keeps refreshing
-  # indefinitely on mobile
-  # (see https://github.com/chromium/web-page-replay/issues/71).
-  SUPPORTED_PLATFORMS = platforms.DESKTOP_ONLY
-  TAGS = [story_tags.INTERNATIONAL, story_tags.YEAR_2016]
 
 
 class LoadVkDesktopStory2018(_LoadingStory):
@@ -161,19 +133,12 @@ class LoadInstagramDesktopStory2018(_LoadingStory):
   TAGS = [story_tags.YEAR_2018]
   SUPPORTED_PLATFORMS = platforms.DESKTOP_ONLY
 
+
 class LoadInstagramMobileStory2019(_LoadingStory):
   NAME = 'load:social:instagram:2019'
   URL = 'https://www.instagram.com/selenagomez/'
   TAGS = [story_tags.YEAR_2019]
   SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
-
-class LoadPinterestStory(_LoadingStory):
-  NAME = 'load:social:pinterest'
-  URL = 'https://uk.pinterest.com/categories/popular/'
-  TAGS = [story_tags.JAVASCRIPT_HEAVY, story_tags.YEAR_2016]
-  # Mobile story is already covered by
-  # 'browse:social:pinterest_infinite_scroll'.
-  SUPPORTED_PLATFORMS = platforms.DESKTOP_ONLY
 
 
 class LoadPinterestStory2019(_LoadingStory):
@@ -228,29 +193,19 @@ class LoadNytimesDesktopStory2018(_LoadingStory):
   SUPPORTED_PLATFORMS = platforms.DESKTOP_ONLY
 
 
-class LoadNytimesMobileStory(_LoadingStory):
-  NAME = 'load:news:nytimes'
-  URL = 'http://mobile.nytimes.com'
-  SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
-  TAGS = [story_tags.HEALTH_CHECK, story_tags.YEAR_2016]
-
 class LoadNytimesMobileStory2019(_LoadingStory):
   NAME = 'load:news:nytimes:2019'
   URL = 'http://mobile.nytimes.com'
   SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
   TAGS = [story_tags.HEALTH_CHECK, story_tags.YEAR_2019]
 
-class LoadQqMobileStory(_LoadingStory):
-  NAME = 'load:news:qq'
-  # Using "https://" hangs and shows "This site can't be reached".
-  URL = 'http://news.qq.com'
-  TAGS = [story_tags.INTERNATIONAL, story_tags.YEAR_2016]
 
 class LoadQqMobileStory2019(_LoadingStory):
   NAME = 'load:news:qq:2019'
   URL = 'https://xw.qq.com/?f=c_news'
   TAGS = [story_tags.INTERNATIONAL, story_tags.YEAR_2019]
   SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
+
 
 class LoadQqDesktopStory2018(_LoadingStory):
   NAME = 'load:news:qq:2018'
@@ -266,35 +221,12 @@ class LoadRedditDesktopStory2018(_LoadingStory):
   SUPPORTED_PLATFORMS = platforms.DESKTOP_ONLY
 
 
-class LoadRedditMobileStory(_LoadingStory):
-  NAME = 'load:news:reddit'
-  URL = 'https://www.reddit.com/r/news/top/?sort=top&t=week'
-  SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
-  TAGS = [story_tags.HEALTH_CHECK, story_tags.YEAR_2016]
-
 class LoadRedditMobileStory2019(_LoadingStory):
   NAME = 'load:news:reddit:2019'
   URL = 'https://www.reddit.com/r/news/top/?sort=top&t=week'
   SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
   TAGS = [story_tags.HEALTH_CHECK, story_tags.YEAR_2019]
 
-class LoadWashingtonPostMobileStory(_LoadingStory):
-  NAME = 'load:news:washingtonpost'
-  URL = 'https://www.washingtonpost.com/pwa'
-  SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
-  TAGS = [story_tags.HEALTH_CHECK, story_tags.YEAR_2016]
-  _CLOSE_BUTTON_SELECTOR = '.close'
-
-  def _DidLoadDocument(self, action_runner):
-    # Close the popup window. On Nexus 9 (and probably other tables) the popup
-    # window does not have a "Close" button, instead it has only a "Send link
-    # to phone" button. So on tablets we run with the popup window open. The
-    # popup is transparent, so this is mostly an aesthetical issue.
-    has_button = action_runner.EvaluateJavaScript(
-        '!!document.querySelector({{ selector }})',
-        selector=self._CLOSE_BUTTON_SELECTOR)
-    if has_button:
-      action_runner.ClickElement(selector=self._CLOSE_BUTTON_SELECTOR)
 
 class LoadWashingtonPostMobileStory2019(_LoadingStory):
   NAME = 'load:news:washingtonpost:2019'
@@ -323,19 +255,11 @@ class LoadWashingtonPostMobileStory2019(_LoadingStory):
       action_runner.ClickElement(element_function=element_function)
 
 
-
 class LoadWikipediaStory2018(_LoadingStory):
   NAME = 'load:news:wikipedia:2018'
   URL = 'https://en.wikipedia.org/wiki/Science'
   TAGS = [story_tags.EMERGING_MARKET, story_tags.YEAR_2018]
 
-
-class LoadIrctcStory(_LoadingStory):
-  NAME = 'load:news:irctc'
-  URL = 'https://www.irctc.co.in'
-  SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
-  TAGS = [story_tags.EMERGING_MARKET, story_tags.HEALTH_CHECK,
-          story_tags.YEAR_2016]
 
 class LoadIrctcStory2019(_LoadingStory):
   NAME = 'load:news:irctc:2019'
@@ -362,15 +286,6 @@ class LoadYouTubeStory2018(_LoadingStory):
   URL = 'https://www.youtube.com/watch?v=QGfhS1hfTWw&autoplay=false'
   TAGS = [story_tags.EMERGING_MARKET, story_tags.HEALTH_CHECK,
           story_tags.YEAR_2018]
-
-
-class LoadDailymotionStory(_LoadingStory):
-  # The side panel with related videos doesn't show on desktop due to
-  # https://github.com/chromium/web-page-replay/issues/74.
-  NAME = 'load:media:dailymotion'
-  URL = (
-      'https://www.dailymotion.com/video/x489k7d_street-performer-shows-off-slinky-skills_fun?autoplay=false')
-  TAGS = [story_tags.YEAR_2016]
 
 
 class LoadDailymotionStory2019(_LoadingStory):
@@ -411,14 +326,6 @@ class LoadFlickrStory2018(_LoadingStory):
   TAGS = [story_tags.YEAR_2018]
 
 
-class LoadFacebookPhotosMobileStory(_LoadingStory):
-  """Load a page of rihanna's facebook with a photo."""
-  NAME = 'load:media:facebook_photos'
-  URL = (
-      'https://m.facebook.com/rihanna/photos/a.207477806675.138795.10092511675/10153911739606676/?type=3&source=54&ref=page_internal')
-  SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
-  TAGS = [story_tags.EMERGING_MARKET, story_tags.YEAR_2016]
-
 class LoadFacebookPhotosMobileStory2019(_LoadingStory):
   """Load a page of rihanna's facebook with a photo."""
   NAME = 'load:media:facebook_photos:2019'
@@ -440,14 +347,6 @@ class LoadFacebookPhotosDesktopStory2018(_LoadingStory):
 ################################################################################
 # Online tools (documents, emails, storage, ...).
 ################################################################################
-
-
-class LoadDocsStory(_LoadingStory):
-  """Load a typical google doc page."""
-  NAME = 'load:tools:docs'
-  URL = (
-      'https://docs.google.com/document/d/1GvzDP-tTLmJ0myRhUAfTYWs3ZUFilUICg8psNHyccwQ/edit?usp=sharing')
-  TAGS = [story_tags.HEALTH_CHECK, story_tags.YEAR_2016]
 
 
 class LoadDocsStory2019(_LoadingStory):
@@ -476,29 +375,6 @@ class _LoadGmailBaseStory(_LoadingStory):
     action_runner.Navigate(
         'https://mail.google.com/mail/mu/mp/872/trigger_redirection_loop')
     action_runner.tab.WaitForDocumentReadyStateToBeComplete()
-
-
-class LoadGmailDesktopStory(_LoadGmailBaseStory):
-  TAGS = [story_tags.YEAR_2016]
-  SUPPORTED_PLATFORMS = platforms.DESKTOP_ONLY
-
-  def _DidLoadDocument(self, action_runner):
-    # Wait until the UI loads.
-    action_runner.WaitForJavaScriptCondition(
-        'document.getElementById("loading").style.display === "none"')
-
-
-class LoadGmailMobileStory(_LoadGmailBaseStory):
-  TAGS = [story_tags.YEAR_2016]
-  SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
-  # TODO(crbug.com/862077): Story breaks if login is skipped during replay.
-  SKIP_LOGIN = False
-
-  def _DidLoadDocument(self, action_runner):
-    # Wait until the UI loads.
-    action_runner.WaitForElement('#apploadingdiv')
-    action_runner.WaitForJavaScriptCondition(
-        'document.getElementById("apploadingdiv").style.height === "0px"')
 
 
 class LoadGmailStory2019(_LoadingStory):
@@ -531,14 +407,6 @@ class LoadStackOverflowStory2018(_LoadingStory):
   TAGS = [story_tags.HEALTH_CHECK, story_tags.YEAR_2018]
 
 
-class LoadDropboxStory(_LoadingStory):
-  NAME = 'load:tools:dropbox'
-  URL = 'https://www.dropbox.com'
-  TAGS = [story_tags.YEAR_2016]
-
-  def _Login(self, action_runner):
-    dropbox_login.LoginAccount(action_runner, 'dropbox')
-
 class LoadDropboxStory2019(_LoadingStory):
   NAME = 'load:tools:dropbox:2019'
   URL = 'https://www.dropbox.com/'
@@ -550,25 +418,11 @@ class LoadDropboxStory2019(_LoadingStory):
   def _Login(self, action_runner):
     dropbox_login.LoginAccount(action_runner, 'dropbox')
 
-class LoadWeatherStory(_LoadingStory):
-  NAME = 'load:tools:weather'
-  URL = 'https://weather.com/en-GB/weather/today/l/USCA0286:1:US'
-  TAGS = [story_tags.JAVASCRIPT_HEAVY, story_tags.YEAR_2016]
-
 
 class LoadWeatherStory2019(_LoadingStory):
   NAME = 'load:tools:weather:2019'
   URL = 'https://weather.com/en-GB/weather/today/l/USCA0286:1:US'
   TAGS = [story_tags.JAVASCRIPT_HEAVY, story_tags.YEAR_2019]
-
-
-class LoadDriveStory(_LoadingStory):
-  NAME = 'load:tools:drive'
-  URL = 'https://drive.google.com/drive/my-drive'
-  TAGS = [story_tags.JAVASCRIPT_HEAVY, story_tags.YEAR_2016]
-
-  def _Login(self, action_runner):
-    google_login.LoginGoogleAccount(action_runner, 'googletest')
 
 
 class LoadDriveStory2019(_LoadingStory):
@@ -585,24 +439,13 @@ class LoadDriveStory2019(_LoadingStory):
 ################################################################################
 
 
-class LoadBubblesStory(_LoadingStory):
-  """Load "smarty bubbles" game on famobi.com"""
-  NAME = 'load:games:bubbles'
-  URL = (
-      'https://games.cdn.famobi.com/html5games/s/smarty-bubbles/v010/?fg_domain=play.famobi.com&fg_uid=d8f24956-dc91-4902-9096-a46cb1353b6f&fg_pid=4638e320-4444-4514-81c4-d80a8c662371&fg_beat=620')
-  TAGS = [story_tags.HEALTH_CHECK, story_tags.YEAR_2016]
-
-  def _DidLoadDocument(self, action_runner):
-    # The #logo element is removed right before the main menu is displayed.
-    action_runner.WaitForJavaScriptCondition(
-        'document.getElementById("logo") === null')
-
 class LoadBubblesStory2019(_LoadingStory):
   """Load "smarty bubbles" game on famobi.com"""
   NAME = 'load:games:bubbles:2019'
   URL = (
       'https://games.cdn.famobi.com/html5games/s/smarty-bubbles/v010/?fg_domain=play.famobi.com&fg_uid=d8f24956-dc91-4902-9096-a46cb1353b6f&fg_pid=4638e320-4444-4514-81c4-d80a8c662371&fg_beat=620')
   TAGS = [story_tags.HEALTH_CHECK, story_tags.YEAR_2019]
+
 
 class LoadLazorsStory(_LoadingStory):
   NAME = 'load:games:lazors'
@@ -635,5 +478,5 @@ class LoadMiniclipStory2018(_LoadingStory):
 class LoadAlphabettyStory2018(_LoadingStory):
   NAME = 'load:games:alphabetty:2018'
   URL = 'https://king.com/play/alphabetty'
-  TAGS = [story_tags.YEAR_2016]
+  TAGS = [story_tags.YEAR_2018]
   SUPPORTED_PLATFORMS = platforms.DESKTOP_ONLY  # Requires Flash.

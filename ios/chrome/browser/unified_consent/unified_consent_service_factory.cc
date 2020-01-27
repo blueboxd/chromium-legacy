@@ -31,7 +31,7 @@ UnifiedConsentServiceFactory::~UnifiedConsentServiceFactory() = default;
 // static
 unified_consent::UnifiedConsentService*
 UnifiedConsentServiceFactory::GetForBrowserState(
-    ios::ChromeBrowserState* browser_state) {
+    ChromeBrowserState* browser_state) {
   return static_cast<unified_consent::UnifiedConsentService*>(
       GetInstance()->GetServiceForBrowserState(browser_state, true));
 }
@@ -39,7 +39,7 @@ UnifiedConsentServiceFactory::GetForBrowserState(
 // static
 unified_consent::UnifiedConsentService*
 UnifiedConsentServiceFactory::GetForBrowserStateIfExists(
-    ios::ChromeBrowserState* browser_state) {
+    ChromeBrowserState* browser_state) {
   return static_cast<unified_consent::UnifiedConsentService*>(
       GetInstance()->GetServiceForBrowserState(browser_state, false));
 }
@@ -53,8 +53,8 @@ UnifiedConsentServiceFactory* UnifiedConsentServiceFactory::GetInstance() {
 std::unique_ptr<KeyedService>
 UnifiedConsentServiceFactory::BuildServiceInstanceFor(
     web::BrowserState* context) const {
-  ios::ChromeBrowserState* browser_state =
-      ios::ChromeBrowserState::FromBrowserState(context);
+  ChromeBrowserState* browser_state =
+      ChromeBrowserState::FromBrowserState(context);
   sync_preferences::PrefServiceSyncable* user_pref_service =
       browser_state->GetSyncablePrefs();
 

@@ -24,6 +24,7 @@
 <translation id="1029317248976101138">സൂം ചെയ്യുക</translation>
 <translation id="1030706264415084469">നിങ്ങളുടെ ഉപകരണത്തിൽ ശാശ്വതമായി വലിയ അളവിൽ ഡാറ്റ സംഭരിക്കാന്‍ <ph name="URL" />ആഗ്രഹിക്കുന്നു</translation>
 <translation id="1031362278801463162">പ്രിവ്യൂ ലോഡ് ചെയ്യുന്നു</translation>
+<translation id="1032605640136438169">പുതിയ നിബന്ധനകൾ അവലോകനം ചെയ്യുക</translation>
 <translation id="103279545524624934">Android ആപ്പ് ആരംഭിക്കുന്നതിന്, ഡിസ്‌ക്കിൽ ഇടം സൃഷ്‌ടിക്കുക.</translation>
 <translation id="1033780634303702874">നിങ്ങളുടെ സീരിയൽ ഉപകരണങ്ങൾ ആക്‌സസ് ചെയ്യുക</translation>
 <translation id="1034942643314881546">ആപ്പുകളുടെ ചിത്രീകരണം സൃഷ്ടിക്കാൻ adb പ്രവർത്തനക്ഷമമാക്കുന്നു</translation>
@@ -223,7 +224,6 @@
 <translation id="1306606229401759371">ക്രമീകരണങ്ങൾ മാറ്റുക</translation>
 <translation id="1307165550267142340">നിങ്ങളുടെ പിൻ സൃഷ്‌ടിച്ചു</translation>
 <translation id="1307559529304613120">ക്ഷമിക്കണം!  ഈ ഉപകരണത്തിനായി ദീർഘകാല API ആക്‌സസ് ടോക്കൺ സംഭരിക്കുന്നതിൽ സിസ്റ്റം പരാജയപ്പെട്ടു.</translation>
-<translation id="1309199320876169714">Plugin VM നീക്കം ചെയ്യുന്നു...</translation>
 <translation id="1313405956111467313">സ്വയമേവയുള്ള പ്രോക്സി ക്രമീകരണം</translation>
 <translation id="131364520783682672">ക്യാപ്സ് ലോക്ക്</translation>
 <translation id="1313705515580255288">നിങ്ങളുടെ ബുക്ക്‌മാർക്കുകൾ, ചരിത്രം, മറ്റ് ക്രമീകരണങ്ങൾ എന്നിവ Google അക്കൗണ്ടുമായി സമന്വയിപ്പിക്കും.</translation>
@@ -1364,7 +1364,6 @@
 <translation id="2871813825302180988">ഈ അക്കൗണ്ട് ഇതേ ഉപകരണത്തിൽ ഇപ്പോൾ തന്നെ ഉപയോഗിക്കുന്നുണ്ട്.</translation>
 <translation id="287286579981869940"><ph name="PROVIDER_NAME" /> ചേർക്കുക...</translation>
 <translation id="2872961005593481000">അടയ്ക്കുക</translation>
-<translation id="2874478552394649323">Plugin VM നീക്കം ചെയ്യുക</translation>
 <translation id="2874939134665556319">മുമ്പത്തെ ട്രാക്ക്</translation>
 <translation id="2875698561019555027">(Chrome പിശക് പേജുകൾ)</translation>
 <translation id="2876336351874743617">വിരൽ 2</translation>
@@ -1381,7 +1380,6 @@
 <translation id="2889064240420137087">ഇനിപ്പറയുന്നതിൽ ലിങ്ക് തുറക്കുക...</translation>
 <translation id="2889925978073739256">അൺസാൻഡ്‌ബോക്‌സ് ചെയ്‌ത പ്ലഗിന്നുകൾ തടയുന്നത് തുടരുക</translation>
 <translation id="2893168226686371498">ഡിഫോൾട്ട് ബ്രൗസര്‍</translation>
-<translation id="2893208266590504003">Plugin VM നീക്കം ചെയ്യാനായില്ല</translation>
 <translation id="2894757982205307093">ഗ്രൂപ്പിലെ പുതിയ ടാബ്</translation>
 <translation id="289644616180464099">സിം കാർഡ് ലോക്കുചെയ്‌തു</translation>
 <translation id="2896909745808647285"><ph name="FILE_NAME" /> എൻക്രിപ്റ്റ് ചെയ്‌തിരിക്കുന്നു, കൂടാതെ തുറക്കുന്നതിൽ നിന്ന് ബ്ലോക്കും ചെയ്‌തിരിക്കുന്നു.</translation>
@@ -2831,6 +2829,7 @@
 <translation id="4998430619171209993">ഓണാണ്</translation>
 <translation id="4998873842614926205">മാറ്റങ്ങൾ സ്ഥിരീകരിക്കുക</translation>
 <translation id="5000922062037820727">തടഞ്ഞിരിക്കുന്നു (ശുപാർശചെയ്‌തത്)</translation>
+<translation id="5007392906805964215">അവലോകനം ചെയ്യുക</translation>
 <translation id="5008936837313706385">ആക്റ്റിവിറ്റിയുടെ പേര്</translation>
 <translation id="5010043101506446253">സർട്ടിഫിക്കറ്റ് അധികാരി</translation>
 <translation id="5015344424288992913">റിസോള്‍വിംഗ് പ്രോക്സി...</translation>
@@ -3036,6 +3035,7 @@
 <translation id="5311304534597152726">ഈ പേരിൽ സൈൻ ഇൻ ചെയ്യുന്നു</translation>
 <translation id="53116743016968120"><ph name="ERROR_MESSAGE" /> വീണ്ടും ശ്രമിക്കുക.</translation>
 <translation id="5313628438272378649">ഈ അപ്‌ലോഡ് നിങ്ങളുടെ ഓർഗനൈസേഷന്റെ സുരക്ഷാ നയങ്ങൾ ലംഘിക്കുന്നതിനാൽ അത് പൂർത്തിയാക്കാനാവില്ല.</translation>
+<translation id="5314381603623123224">Chrome-ന്റെ സേവന നിബന്ധനകളിൽ മാർച്ച് 31-ന് മാറ്റം വരുന്നു</translation>
 <translation id="5315738755890845852">അധിക ചുരുൾ ബ്രാക്കറ്റ്: <ph name="ERROR_LINE" /></translation>
 <translation id="5315873049536339193">വ്യക്തിത്വം</translation>
 <translation id="5317780077021120954">സംരക്ഷിക്കുക</translation>
@@ -5772,7 +5772,6 @@
 <translation id="9169496697824289689">കീബോർഡ് കുറുക്കുവഴികൾ കാണുക</translation>
 <translation id="916964310188958970">എന്തിനാണ് ഈ നിർദ്ദേശം?</translation>
 <translation id="9169931577761441333">ഹോം സ്‌ക്രീനിലേക്ക് <ph name="APP_NAME" /> ചേർക്കുക</translation>
-<translation id="9170305483456271385">Plugin VM നീക്കംചെയ്തു</translation>
 <translation id="9170848237812810038">‍&amp;പൂര്‍വാവസ്ഥയിലാക്കുക</translation>
 <translation id="9170884462774788842">നിങ്ങളുടെ കമ്പ്യൂട്ടറിലെ മറ്റൊരു പ്രോഗ്രാം Chrome പ്രവർത്തിക്കുന്ന രീതി മാറ്റിയേക്കാവുന്ന ഒരു തീം ചേർത്തു.</translation>
 <translation id="9173995187295789444">Bluetooth ഉപകരണങ്ങൾക്കായി സ്‌കാൻ ചെയ്യുന്നു...</translation>

@@ -15,6 +15,7 @@ import android.content.res.Resources;
 import android.view.View;
 import android.widget.ImageView;
 
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -48,6 +49,9 @@ public class BaseSuggestionViewBinderUnitTest {
     @Mock
     ImageView mActionView;
 
+    @Mock
+    ImageView mContentView;
+
     private Activity mActivity;
     private Resources mResources;
     private PropertyModel mModel;
@@ -65,11 +69,14 @@ public class BaseSuggestionViewBinderUnitTest {
         when(mBaseView.getDecoratedSuggestionView()).thenReturn(mDecoratedView);
         when(mBaseView.getSuggestionImageView()).thenReturn(mIconView);
         when(mBaseView.getActionImageView()).thenReturn(mActionView);
-
+        when(mDecoratedView.getContentView()).thenReturn(mContentView);
+        when(mBaseView.getContentView()).thenReturn(mContentView);
         when(mDecoratedView.getResources()).thenReturn(mResources);
 
         mModel = new PropertyModel(BaseSuggestionViewProperties.ALL_KEYS);
-        PropertyModelChangeProcessor.create(mModel, mBaseView, new BaseSuggestionViewBinder());
+        PropertyModelChangeProcessor.create(mModel, mBaseView,
+                new BaseSuggestionViewBinder(
+                        (m, v, p) -> { Assert.assertEquals(mContentView, v); }));
     }
 
     @Test

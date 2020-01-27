@@ -12,8 +12,7 @@
 #include "ios/chrome/browser/bookmarks/bookmarks_utils.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 
-BookmarkRemoverHelper::BookmarkRemoverHelper(
-    ios::ChromeBrowserState* browser_state)
+BookmarkRemoverHelper::BookmarkRemoverHelper(ChromeBrowserState* browser_state)
     : browser_state_(browser_state) {
   DCHECK(browser_state_);
 }

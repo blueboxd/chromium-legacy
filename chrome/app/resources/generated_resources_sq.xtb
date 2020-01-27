@@ -24,6 +24,7 @@
 <translation id="1029317248976101138">Zmadho</translation>
 <translation id="1030706264415084469"><ph name="URL" /> do të ruajë në mënyrë të përhershme të dhëna të mëdha në pajisjen tënde</translation>
 <translation id="1031362278801463162">Po ngarkohet pamja paraprake...</translation>
+<translation id="1032605640136438169">Shqyrto kushtet e reja</translation>
 <translation id="103279545524624934">Liro hapësirë në disk për të nisur aplikacionet Android.</translation>
 <translation id="1033780634303702874">Qasu në pajisjet e tua seriale</translation>
 <translation id="1034942643314881546">ADB-ja po aktivizohet për të krijuar ilustrimin e aplikacioneve</translation>
@@ -223,7 +224,6 @@
 <translation id="1306606229401759371">Ndrysho cilësimet</translation>
 <translation id="1307165550267142340">Kodi yt PIN është krijuar</translation>
 <translation id="1307559529304613120">Mos! Sistemi nuk arriti të ruante kodin afatgjatë të qasjes së API-së për këtë pajisje.</translation>
-<translation id="1309199320876169714">Po heq Plugin VM...</translation>
 <translation id="1313405956111467313">Konfigurimi automatik i përfaqësuesit</translation>
 <translation id="131364520783682672">Kyçja e kapitaleve</translation>
 <translation id="1313705515580255288">Faqeshënuesit e tu, historiku dhe cilësime të tjera do të sinkronizohen në llogarinë tënde të Google.</translation>
@@ -1364,7 +1364,6 @@ Cilësimet e kësaj llogarie mund t'i menaxhosh duke instaluar aplikacionin Fami
 <translation id="2871813825302180988">Kjo llogari përdoret tashmë në këtë pajisje.</translation>
 <translation id="287286579981869940">Shto <ph name="PROVIDER_NAME" />...</translation>
 <translation id="2872961005593481000">Ndërprit punën</translation>
-<translation id="2874478552394649323">Hiq Plugin VM</translation>
 <translation id="2874939134665556319">Kënga e mëparshme</translation>
 <translation id="2875698561019555027">(Faqet e gabimit të Chrome)</translation>
 <translation id="2876336351874743617">Gishti 2</translation>
@@ -1381,7 +1380,6 @@ Cilësimet e kësaj llogarie mund t'i menaxhosh duke instaluar aplikacionin Fami
 <translation id="2889064240420137087">Hap lidhjen me...</translation>
 <translation id="2889925978073739256">Vazhdo bllokimin e përbërësve shtesë të pakufizuar</translation>
 <translation id="2893168226686371498">Shfletuesi i parazgjedhur</translation>
-<translation id="2893208266590504003">Heqja e Plugin VM dështoi</translation>
 <translation id="2894757982205307093">Skedë e re në grup</translation>
 <translation id="289644616180464099">Karta SIM është e kyçur</translation>
 <translation id="2896909745808647285"><ph name="FILE_NAME" /> është i enkriptuar dhe hapja e tij është bllokuar.</translation>
@@ -2832,6 +2830,7 @@ Cilësimet e kësaj llogarie mund t'i menaxhosh duke instaluar aplikacionin Fami
 <translation id="4998430619171209993">Aktiv</translation>
 <translation id="4998873842614926205">Konfirmo ndryshimet</translation>
 <translation id="5000922062037820727">Bllokuar (rekomandohet)</translation>
+<translation id="5007392906805964215">Rishiko</translation>
 <translation id="5008936837313706385">Emri i aktivitetit</translation>
 <translation id="5010043101506446253">Autoriteti i certifikatës</translation>
 <translation id="5015344424288992913">Po zgjidh përfaqësuesin...</translation>
@@ -3037,6 +3036,7 @@ Cilësimet e kësaj llogarie mund t'i menaxhosh duke instaluar aplikacionin Fami
 <translation id="5311304534597152726">Identifikuar si</translation>
 <translation id="53116743016968120"><ph name="ERROR_MESSAGE" /> Provo përsëri.</translation>
 <translation id="5313628438272378649">Ky ngarkim shkel politikat e sigurisë së organizatës sate dhe nuk mund të përfundohet.</translation>
+<translation id="5314381603623123224">Kushtet e shërbimit të Chrome ndryshojnë më 31 mars</translation>
 <translation id="5315738755890845852">Kllapë gjarpërushe shtesë: <ph name="ERROR_LINE" /></translation>
 <translation id="5315873049536339193">Identiteti</translation>
 <translation id="5317780077021120954">Ruaj</translation>
@@ -5770,7 +5770,6 @@ Mbaje skedarin e çelësit tënd në një vend të sigurt. Do të të duhet për
 <translation id="9169496697824289689">Shiko shkurtoret e tastierës</translation>
 <translation id="916964310188958970">Pse ky sugjerim?</translation>
 <translation id="9169931577761441333">Shto <ph name="APP_NAME" /> në "Ekranin bazë"</translation>
-<translation id="9170305483456271385">Plugin VM është hequr</translation>
 <translation id="9170848237812810038">&amp;Zhbëj</translation>
 <translation id="9170884462774788842">Një program tjetër në kompjuterin tënd shtoi një temë që mund të ndryshojë mënyrën e funksionimit të Chrome.</translation>
 <translation id="9173995187295789444">Po skanon për pajisje Bluetooth...</translation>

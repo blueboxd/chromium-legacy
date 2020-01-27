@@ -23,6 +23,9 @@
 // The selector of the setter of the property.
 @property(nonatomic, readonly) SEL setter;
 
+// The type encoding of the property type e.g., @encode(BOOL).
+@property(nonatomic, readonly) const char* type;
+
 // A pointer to the value with the byte size |size|.
 @property(nonatomic, readonly) const void* valueBytes;
 
@@ -59,7 +62,7 @@
 
 - (instancetype)initWithGetter:(SEL)getter
                         setter:(SEL)setter
-                          size:(NSUInteger)size NS_DESIGNATED_INITIALIZER;
+                          type:(const char*)type NS_DESIGNATED_INITIALIZER;
 - (instancetype)initWithGetter:(SEL)getter setter:(SEL)setter NS_UNAVAILABLE;
 
 @end
@@ -67,6 +70,7 @@
 @implementation CRWPropertyStore
 
 @dynamic valueBytes;
+@dynamic type;
 @dynamic size;
 
 - (instancetype)initWithGetter:(SEL)getter setter:(SEL)setter {
@@ -97,6 +101,10 @@
   return &_value;
 }
 
+- (const char*)type {
+  return @encode(id);
+}
+
 - (NSUInteger)size {
   return sizeof(id);
 }
@@ -123,6 +131,10 @@
 
 - (const void*)valueBytes {
   return &_value;
+}
+
+- (const char*)type {
+  return @encode(id);
 }
 
 - (NSUInteger)size {
@@ -152,6 +164,10 @@
   return &_value;
 }
 
+- (const char*)type {
+  return @encode(id);
+}
+
 - (NSUInteger)size {
   return sizeof(id);
 }
@@ -174,22 +190,25 @@
   NSMutableData* _valueData;
 }
 
+@synthesize type = _type;
+@synthesize size = _size;
+
 - (instancetype)initWithGetter:(SEL)getter
                         setter:(SEL)setter
-                          size:(NSUInteger)size {
+                          type:(const char*)type {
   self = [super initWithGetter:getter setter:setter];
   if (self) {
-    _valueData = [NSMutableData dataWithLength:size];
+    DCHECK_NE(strcmp(type, @encode(id)), 0)
+        << "CRWNonObjectPropertyStore must not be used for object types";
+    _type = type;
+    NSGetSizeAndAlignment(type, &_size, nullptr);
+    _valueData = [NSMutableData dataWithLength:_size];
   }
   return self;
 }
 
 - (const void*)valueBytes {
   return _valueData.bytes;
-}
-
-- (NSUInteger)size {
-  return _valueData.length;
 }
 
 - (void)setValueFromBytes:(const void*)bytes {
@@ -253,11 +272,11 @@
 
 - (void)registerNonObjectPropertyWithGetter:(SEL)getter
                                      setter:(SEL)setter
-                                       size:(NSUInteger)size {
+                                       type:(const char*)type {
   [self registerPropertyWithStore:[[CRWNonObjectPropertyStore alloc]
                                       initWithGetter:getter
                                               setter:setter
-                                                size:size]];
+                                                type:type]];
 }
 
 - (void)registerPropertyWithStore:(CRWPropertyStore*)store {
@@ -317,30 +336,90 @@
       _propertyStoreByGetter[[NSValue valueWithPointer:invocation.selector]];
   if (getterPropertyStore) {
     // This is the getter of a registered property. Return the stored value.
-    // const_cast is necessary because the first parameter of -setReturnVaule:
-    // is somehow typed void* instead of const void*. But it shouldn't modify
-    // its content in reality.
-    [invocation
-        setReturnValue:const_cast<void*>(getterPropertyStore.valueBytes)];
-    return YES;
+    return [self returnValueInPropertyStore:getterPropertyStore
+                              forInvocation:invocation];
   }
 
   CRWPropertyStore* setterPropertyStore =
       _propertyStoreBySetter[[NSValue valueWithPointer:invocation.selector]];
   if (setterPropertyStore) {
-    // This is the setter of a registered property. Retrieve the assigned value,
-    // which is the first argument of the invocation. The first argument is at
-    // index 2 because the index 0 and 1 are for self and _cmd.
-    NSMutableData* data =
-        [NSMutableData dataWithLength:setterPropertyStore.size];
-    [invocation getArgument:data.mutableBytes atIndex:2];
-
-    // Store the assigned value.
-    [setterPropertyStore setValueFromBytes:data.bytes];
-    return YES;
+    // This is the setter of a registered property. Retrieve the assigned value
+    // and store it.
+    return [self storeArgumentOfInvocation:invocation
+                           toPropertyStore:setterPropertyStore];
   }
 
   return NO;
+}
+
+// Returns a value in |propertyStore| as a return value of |invocation|. Returns
+// YES on success.
+- (BOOL)returnValueInPropertyStore:(CRWPropertyStore*)propertyStore
+                     forInvocation:(NSInvocation*)invocation {
+  const char* returnType = invocation.methodSignature.methodReturnType;
+  if (strcmp(returnType, propertyStore.type) != 0) {
+    // It has NOTREACHED() followed by returning NO as an exception to the style
+    // guide. This is because it should never reach here in the current version
+    // of iOS, but it might reach here in a *future* version of iOS for the same
+    // build, even though it should be quite rare. This happens if this class is
+    // used for properties of an iOS standard class and Apple changes the type
+    // of an existing property. When it happens, this method gives up handling
+    // the specific property and continues execution by returning NO, rather
+    // than causing buffer overflow.
+    NOTREACHED()
+        << "The return value type of "
+        << NSStringFromSelector(invocation.selector).UTF8String << " ("
+        << returnType
+        << ") does not match the type registered to CRWPropertiesStore ("
+        << propertyStore.type << ")";
+    return NO;
+  }
+
+  // const_cast is necessary because the first parameter of -setReturnVaule:
+  // is somehow typed void* instead of const void*. But it shouldn't modify
+  // its content in reality.
+  [invocation setReturnValue:const_cast<void*>(propertyStore.valueBytes)];
+  return YES;
+}
+
+// Stores the only argument of |invocation| to |propertyStore|. Returns YES on
+// success.
+- (BOOL)storeArgumentOfInvocation:(NSInvocation*)invocation
+                  toPropertyStore:(CRWPropertyStore*)propertyStore {
+  NSUInteger numArguments = invocation.methodSignature.numberOfArguments;
+  DCHECK_EQ(numArguments, 3UL)
+      << NSStringFromSelector(invocation.selector).UTF8String
+      << " must take exactly 3 arguments (including self and _cmd) "
+         "but it takes "
+      << numArguments;
+
+  // The argument is at index 2 because the index 0 and 1 are for self and _cmd.
+  const NSUInteger kArgumentIndex = 2;
+
+  const char* argumentType =
+      [invocation.methodSignature getArgumentTypeAtIndex:kArgumentIndex];
+  if (strcmp(argumentType, propertyStore.type) != 0) {
+    // It has NOTREACHED() followed by returning NO as an exception to the style
+    // guide. This is because it should never reach here in the current version
+    // of iOS, but it might reach here in a *future* version of iOS for the same
+    // build, even though it should be quite rare. This happens if this class is
+    // used for properties of an iOS standard class and Apple changes the type
+    // of an existing property. When it happens, this method gives up handling
+    // the specific property and continues execution by returning NO, rather
+    // than causing buffer overflow.
+    NOTREACHED()
+        << "The argument type of "
+        << NSStringFromSelector(invocation.selector).UTF8String << " ("
+        << argumentType
+        << ") does not match the type registered to CRWPropertiesStore ("
+        << propertyStore.type << ")";
+    return NO;
+  }
+
+  NSMutableData* data = [NSMutableData dataWithLength:propertyStore.size];
+  [invocation getArgument:data.mutableBytes atIndex:kArgumentIndex];
+  [propertyStore setValueFromBytes:data.bytes];
+  return YES;
 }
 
 @end

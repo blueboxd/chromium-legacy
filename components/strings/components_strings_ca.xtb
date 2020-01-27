@@ -79,6 +79,7 @@
 <translation id="129553762522093515">Tancades recentment</translation>
 <translation id="1298536327547837046">Escaneig per detectar programari maliciós</translation>
 <translation id="129863573139666797"><ph name="BEGIN_LINK" />Esborreu les galetes<ph name="END_LINK" /></translation>
+<translation id="1301324364792935241">Revisa la configuració de DNS segur</translation>
 <translation id="1307966114820526988">Funcions obsoletes</translation>
 <translation id="1314509827145471431">Enquadernació a la dreta</translation>
 <translation id="1320233736580025032">Prc1 (sobre)</translation>
@@ -152,6 +153,7 @@
 <translation id="1569487616857761740">Introdueix la data de caducitat</translation>
 <translation id="1581080074034554886">CVC</translation>
 <translation id="1583429793053364125">S'ha produït un error en mostrar aquesta pàgina web.</translation>
+<translation id="1586541204584340881">Quines extensions has instal·lat</translation>
 <translation id="1588438908519853928">Normal</translation>
 <translation id="1592005682883173041">Accés a les dades locals</translation>
 <translation id="1594030484168838125">Tria</translation>
@@ -187,7 +189,7 @@
 <translation id="1728677426644403582">Estàs consultant el codi font d'una pàgina web</translation>
 <translation id="173080396488393970">Aquest tipus de targeta no s'admet</translation>
 <translation id="1734864079702812349">Amex</translation>
-<translation id="1734878702283171397">Proveu de contactar amb l'administrador del sistema.</translation>
+<translation id="1734878702283171397">Prova de contactar amb l'administrador del sistema.</translation>
 <translation id="1736420071277903564">Ordinador</translation>
 <translation id="1740951997222943430">Introdueix un mes de caducitat vàlid</translation>
 <translation id="1741613555002899862">S'ha d'especificar juntament amb una cadena vàlida quan DnsOverHttpsMode sigui <ph name="SECURE_DNS_MODE_SECURE" />.</translation>
@@ -290,7 +292,6 @@
 <translation id="2218879909401188352">És possible que els atacants que es troben a <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> instal·lin aplicacions perilloses que malmetin el teu dispositiu, afegeixin càrrecs amagats a la teva factura telefònica o et robin informació personal. <ph name="BEGIN_LEARN_MORE_LINK" />Més informació<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="2224337661447660594">Sense connexió a Internet</translation>
 <translation id="2230458221926704099">Repareu la connexió amb l'<ph name="BEGIN_LINK" />aplicació de diagnòstic<ph name="END_LINK" /></translation>
-<translation id="22320125457191592">Per a tu</translation>
 <translation id="2239100178324503013">Envia ara</translation>
 <translation id="2248949050832152960">Utilitza WebAuthn</translation>
 <translation id="2250931979407627383">Cosit de la vora a l'esquerra</translation>
@@ -363,6 +364,7 @@
 <translation id="2544644783021658368">Document únic</translation>
 <translation id="254947805923345898">El valor de la política no és vàlid.</translation>
 <translation id="255002559098805027"><ph name="HOST_NAME" /> ha enviat una resposta que no és vàlida.</translation>
+<translation id="2553853292994445426">Revisa la configuració de DNS segur. Pot ser que hagis configurat un servidor de DNS segur en què fallin les connexions.</translation>
 <translation id="2556876185419854533">&amp;Desfés la modificació</translation>
 <translation id="257674075312929031">Grup</translation>
 <translation id="2586657967955657006">Porta-retalls</translation>
@@ -475,6 +477,7 @@
 <translation id="3095940652251934233">Statement</translation>
 <translation id="3096100844101284527">Afegeix l'adreça de recollida</translation>
 <translation id="3105172416063519923">Identificador de l'element:</translation>
+<translation id="3107591622054137333"><ph name="BEGIN_LINK" />Comprova la configuració de DNS segur<ph name="END_LINK" /></translation>
 <translation id="3109728660330352905">No teniu permís per veure aquesta pàgina.</translation>
 <translation id="3113284927548439113">Tercer torn</translation>
 <translation id="3116158981186517402">Laminat</translation>
@@ -566,7 +569,6 @@
 <translation id="3531780078352352885">Fulls de treball</translation>
 <translation id="3533328374079021623">Bústia de correu 5</translation>
 <translation id="3539171420378717834">Desa una còpia d'aquesta targeta al dispositiu</translation>
-<translation id="3553513561058684206">Per a tu</translation>
 <translation id="3558573058928565255">Durant el dia</translation>
 <translation id="3566021033012934673">La connexió no és privada</translation>
 <translation id="3574305903863751447"><ph name="CITY" />, <ph name="STATE" /> <ph name="COUNTRY" /></translation>
@@ -773,6 +775,7 @@
 <translation id="4390472908992056574">Brim</translation>
 <translation id="4406896451731180161">resultats de la cerca</translation>
 <translation id="4408413947728134509">Galetes <ph name="NUM_COOKIES" /></translation>
+<translation id="4414290883293381923">Acabes d'introduir la contrasenya en un lloc web enganyós. Chrome et recomana que vagis a <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, <ph name="WEBSITE_3" /> i a altres llocs web en què utilitzis aquesta contrasenya i que la canviïs ara.</translation>
 <translation id="4415426530740016218">Adreça de recollida</translation>
 <translation id="4424024547088906515">Aquest servidor no ha pogut comprovar que sigui <ph name="DOMAIN" /> perquè Chrome considera que el seu certificat de seguretat no és de confiança. Això pot ser a causa d'una configuració incorrecta o d'un atacant que intercepta la vostra connexió.</translation>
 <translation id="443121186588148776">Port en sèrie</translation>
@@ -800,7 +803,7 @@
 <translation id="4542971377163063093">Safata 6</translation>
 <translation id="455113658016510503">A9</translation>
 <translation id="4552089082226364758">Flash</translation>
-<translation id="4558551763791394412">Desactiveu les extensions</translation>
+<translation id="4558551763791394412">Desactiva les extensions</translation>
 <translation id="4559332380232738994">10x11</translation>
 <translation id="457875822857220463">Entrega</translation>
 <translation id="4579056131138995126">Personal (sobre)</translation>
@@ -1204,6 +1207,7 @@
 <translation id="6353505687280762741">{COUNT,plural, =0{Cap}=1{1 contrasenya per a <ph name="DOMAIN_LIST" /> (sincronitzats)}=2{2 contrasenyes per a <ph name="DOMAIN_LIST" /> (sincronitzats)}other{# contrasenyes per a <ph name="DOMAIN_LIST" /> (sincronitzats)}}</translation>
 <translation id="6358450015545214790">Què vol dir tot això?</translation>
 <translation id="6361757823711327522">B7</translation>
+<translation id="6364095313648930329"><ph name="BEGIN_LINK" />Comprova el servidor intermediari, el tallafoc i la configuració de DNS segur<ph name="END_LINK" /></translation>
 <translation id="6366710531182496394">Grapat doble a l'esquerra</translation>
 <translation id="6377268785556383139">1 resultat per a "<ph name="SEARCH_TEXT" />"</translation>
 <translation id="6380497234672085559">A0</translation>
@@ -1226,6 +1230,7 @@
 <translation id="6433595998831338502"><ph name="HOST_NAME" /> no ens ha permès establir la connexió.</translation>
 <translation id="6434309073475700221">Descarta</translation>
 <translation id="6440503408713884761">Ignorada</translation>
+<translation id="6443406338865242315">Quines extensions i connectors has instal·lat</translation>
 <translation id="6446163441502663861">Kahu (sobre)</translation>
 <translation id="6446608382365791566">Afegeix més informació</translation>
 <translation id="6447842834002726250">Galetes</translation>
@@ -1335,6 +1340,7 @@
 <translation id="7012363358306927923">China UnionPay</translation>
 <translation id="7016992613359344582">Aquests càrrecs poden ser únics o periòdics i és possible que no s'indiquin d'una manera evident.</translation>
 <translation id="7029809446516969842">Contrasenyes</translation>
+<translation id="7031646650991750659">Quines aplicacions de Google Play has instal·lat</translation>
 <translation id="7050187094878475250">Has provat de connectar-te a <ph name="DOMAIN" />, però el servidor ha presentat un certificat amb un període de validesa massa llarg per poder confiar-hi.</translation>
 <translation id="705310974202322020">{NUM_CARDS,plural, =1{En aquest moment no es pot desar la targeta}other{En aquest moment no es poden desar les targetes}}</translation>
 <translation id="7053983685419859001">Bloqueja</translation>
@@ -1394,6 +1400,7 @@ Detalls addicionals:
 <translation id="7319430975418800333">A3</translation>
 <translation id="7320336641823683070">Ajuda amb la connexió</translation>
 <translation id="733354035281974745">Substitució del compte local del dispositiu</translation>
+<translation id="7333654844024768166">Acabes d'introduir la contrasenya en un lloc web enganyós. Chromium et recomana que vagis a <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, <ph name="WEBSITE_3" /> i a altres llocs web en què utilitzis aquesta contrasenya i que la canviïs ara.</translation>
 <translation id="7334320624316649418">&amp;Refés el canvi d'ordre</translation>
 <translation id="7337706099755338005">No està disponible a la teva plataforma.</translation>
 <translation id="733923710415886693">El certificat del servidor no s'ha divulgat mitjançant la Transparència de certificats.</translation>

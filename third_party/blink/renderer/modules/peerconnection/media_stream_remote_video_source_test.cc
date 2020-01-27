@@ -34,10 +34,11 @@ namespace blink {
 namespace {
 // On Linux the clock in WebRTC and Chromium are more or less the same.
 // On Windows they are not the same and the accuracy of the measured time
-// difference is in the range [-1, 1] ms. Since this is compensated for both
-// here and in MediaStreamRemoteVideoSource::RemoteVideoSourceDelegate we need
-// to use the worst case difference between these two measurements.
-float kChromiumWebRtcMaxTimeDiffMs = 2.0f;
+// difference is typically in the range [-1, 1] ms. However, for certain builds
+// such as ASAN it can be in the order of 10-20 ms. Since this is compensated
+// for both here and in MediaStreamRemoteVideoSource::RemoteVideoSourceDelegate
+// we need to use the worst case difference between these two measurements.
+float kChromiumWebRtcMaxTimeDiffMs = 40.0f;
 }  // namespace
 
 ACTION_P(RunClosure, closure) {

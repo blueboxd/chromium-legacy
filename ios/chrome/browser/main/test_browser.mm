@@ -15,20 +15,19 @@
 #error "This file requires ARC support."
 #endif
 
-TestBrowser::TestBrowser(ios::ChromeBrowserState* browser_state,
-                         TabModel* tab_model)
+TestBrowser::TestBrowser(ChromeBrowserState* browser_state, TabModel* tab_model)
     : command_dispatcher_([[CommandDispatcher alloc] init]),
       browser_state_(browser_state),
       tab_model_(tab_model),
       web_state_list_(tab_model_.webStateList) {}
 
-TestBrowser::TestBrowser(ios::ChromeBrowserState* browser_state,
+TestBrowser::TestBrowser(ChromeBrowserState* browser_state,
                          WebStateList* web_state_list)
     : command_dispatcher_([[CommandDispatcher alloc] init]),
       browser_state_(browser_state),
       web_state_list_(web_state_list) {}
 
-TestBrowser::TestBrowser(ios::ChromeBrowserState* browser_state)
+TestBrowser::TestBrowser(ChromeBrowserState* browser_state)
     : command_dispatcher_([[CommandDispatcher alloc] init]),
       browser_state_(browser_state) {
   owned_web_state_list_ =
@@ -57,7 +56,7 @@ TestBrowser::~TestBrowser() {
 
 #pragma mark - Browser
 
-ios::ChromeBrowserState* TestBrowser::GetBrowserState() const {
+ChromeBrowserState* TestBrowser::GetBrowserState() const {
   return browser_state_;
 }
 

@@ -6,6 +6,8 @@
 #include "base/test/bind_test_util.h"
 #include "build/build_config.h"
 #include "chrome/browser/background/background_contents_service.h"
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/extensions/chrome_extension_test_notification_observer.h"
 #include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_management_constants.h"
@@ -17,6 +19,7 @@
 #include "chrome/browser/extensions/unpacked_installer.h"
 #include "chrome/browser/extensions/updater/extension_updater.h"
 #include "chrome/browser/policy/policy_test_utils.h"
+#include "chrome/browser/policy/profile_policy_connector_builder.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/extensions/extension_test_util.h"
@@ -41,6 +44,7 @@
 #include "extensions/common/features/feature_channel.h"
 #include "extensions/common/manifest.h"
 #include "extensions/common/manifest_handlers/shared_module_info.h"
+#include "extensions/common/permissions/permissions_data.h"
 #include "extensions/common/value_builder.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
@@ -49,11 +53,26 @@
 #include "base/win/win_util.h"
 #endif
 
+#if defined(OS_CHROMEOS)
+#include "chromeos/constants/chromeos_switches.h"
+#endif
+
 using testing::AtLeast;
 using testing::Sequence;
 
 namespace policy {
 
+// Called when an additional profile has been created.
+// The created profile is stored in *|out_created_profile|.
+void OnProfileInitialized(Profile** out_created_profile,
+                          const base::Closure& closure,
+                          Profile* profile,
+                          Profile::CreateStatus status) {
+  if (status == Profile::CREATE_STATUS_INITIALIZED) {
+    *out_created_profile = profile;
+    closure.Run();
+  }
+}
 namespace {
 
 const base::FilePath::CharType kGoodCrxName[] = FILE_PATH_LITERAL("good.crx");
@@ -1302,6 +1321,207 @@ IN_PROC_BROWSER_TEST_F(WebAppInstallForceListPolicyTest, StartUpInstallation) {
   const GURL installed_app_url =
       extensions::AppLaunchInfo::GetFullLaunchURL(installed_extension);
   EXPECT_EQ(policy_app_url_, installed_app_url);
+}
+
+// Fixture for tests that have two profiles with a different policy for each.
+class ExtensionPolicyTest2Contexts : public PolicyTest {
+ public:
+  ExtensionPolicyTest2Contexts() = default;
+  ExtensionPolicyTest2Contexts(const ExtensionPolicyTest2Contexts& other) =
+      delete;
+  ~ExtensionPolicyTest2Contexts() override = default;
+
+ protected:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+#if defined(OS_CHROMEOS)
+    command_line->AppendSwitch(
+        chromeos::switches::kIgnoreUserProfileMappingForTests);
+#endif
+    PolicyTest::SetUpCommandLine(command_line);
+  }
+
+  void SetUp() override {
+    PolicyTest::SetUp();
+    test_extension_cache1_ = std::make_unique<extensions::ExtensionCacheFake>();
+    test_extension_cache2_ = std::make_unique<extensions::ExtensionCacheFake>();
+  }
+
+  void TearDown() override {
+    test_extension_cache1_.reset();
+    test_extension_cache2_.reset();
+    PolicyTest::TearDown();
+  }
+
+  void SetUpInProcessBrowserTestFixture() override {
+    PolicyTest::SetUpInProcessBrowserTestFixture();
+    EXPECT_CALL(profile1_policy_, IsInitializationComplete(testing::_))
+        .WillRepeatedly(testing::Return(true));
+    policy::PushProfilePolicyConnectorProviderForTesting(&profile1_policy_);
+  }
+
+  void SetUpOnMainThread() override {
+    PolicyTest::SetUpOnMainThread();
+    profile1_ = browser()->profile();
+
+    profile2_ = CreateProfile(&profile2_policy_);
+
+    service1_ = CreateExtensionService(profile1_);
+    service2_ = CreateExtensionService(profile2_);
+    service1_->updater()->SetExtensionCacheForTesting(
+        test_extension_cache1_.get());
+    service2_->updater()->SetExtensionCacheForTesting(
+        test_extension_cache2_.get());
+    registry1_ = CreateExtensionRegistry(profile1_);
+    registry2_ = CreateExtensionRegistry(profile2_);
+  }
+
+ protected:
+  const extensions::Extension* InstallExtension(
+      const base::FilePath::StringType& path,
+      const base::FilePath::StringType& name,
+      content::BrowserContext* browser_context,
+      extensions::ExtensionService* extension_service,
+      extensions::ExtensionRegistry* extension_registry) {
+    base::FilePath extension_path(ui_test_utils::GetTestFilePath(
+        base::FilePath(path), base::FilePath(name)));
+    scoped_refptr<extensions::CrxInstaller> installer =
+        extensions::CrxInstaller::CreateSilent(extension_service);
+    installer->set_allow_silent_install(true);
+    installer->set_install_cause(extension_misc::INSTALL_CAUSE_AUTOMATION);
+    installer->set_creation_flags(extensions::Extension::FROM_WEBSTORE);
+    installer->set_off_store_install_allow_reason(
+        extensions::CrxInstaller::OffStoreInstallAllowReason::
+            OffStoreInstallAllowedInTest);
+
+    extensions::ChromeExtensionTestNotificationObserver observer(
+        browser_context);
+    observer.Watch(extensions::NOTIFICATION_CRX_INSTALLER_DONE,
+                   content::Source<extensions::CrxInstaller>(installer.get()));
+    installer->InstallCrx(extension_path);
+    observer.Wait();
+    if (!observer.WaitForExtensionViewsToLoad())
+      return nullptr;
+    return extension_registry->GetExtensionById(
+        observer.last_loaded_extension_id(),
+        extensions::ExtensionRegistry::ENABLED);
+  }
+
+  void SetTabSpecificPermissionsForURL(const extensions::Extension* extension,
+                                       int tab_id,
+                                       GURL& url,
+                                       int url_scheme) {
+    extensions::URLPatternSet new_hosts;
+    new_hosts.AddOrigin(url_scheme, url);
+    extension->permissions_data()->UpdateTabSpecificPermissions(
+        1, extensions::PermissionSet(extensions::APIPermissionSet(),
+                                     extensions::ManifestPermissionSet(),
+                                     std::move(new_hosts),
+                                     extensions::URLPatternSet()));
+  }
+
+  MockConfigurationPolicyProvider* GetProfile1Policy() {
+    return &profile1_policy_;
+  }
+  MockConfigurationPolicyProvider* GetProfile2Policy() {
+    return &profile2_policy_;
+  }
+  Profile* GetProfile1() { return browser()->profile(); }
+  Profile* GetProfile2() { return profile2_; }
+  Browser* GetBrowser1() { return browser(); }
+  extensions::ExtensionRegistry* GetExtensionRegistry1() { return registry1_; }
+  extensions::ExtensionRegistry* GetExtensionRegistry2() { return registry2_; }
+  extensions::ExtensionService* GetExtensionService1() { return service1_; }
+  extensions::ExtensionService* GetExtensionService2() { return service2_; }
+
+ private:
+  // Creates a Profile for testing. The Profile is returned.
+  // The policy for the profile has to be passed via policy_for_profile.
+  // This method is called from SetUp and only from there.
+  Profile* CreateProfile(MockConfigurationPolicyProvider* policy_for_profile) {
+    EXPECT_CALL(*policy_for_profile, IsInitializationComplete(testing::_))
+        .WillRepeatedly(testing::Return(true));
+    Profile* profile = nullptr;
+    policy::PushProfilePolicyConnectorProviderForTesting(policy_for_profile);
+
+    ProfileManager* profile_manager = g_browser_process->profile_manager();
+
+    // Create an additional profile.
+    base::FilePath path_profile =
+        profile_manager->GenerateNextProfileDirectoryPath();
+    base::RunLoop run_loop;
+    profile_manager->CreateProfileAsync(
+        path_profile,
+        base::Bind(&policy::OnProfileInitialized, &profile,
+                   run_loop.QuitClosure()),
+        base::string16(), std::string());
+
+    // Run the message loop to allow profile creation to take place; the loop is
+    // terminated by OnProfileInitialized calling the loop's QuitClosure when
+    // the profile is created.
+    run_loop.Run();
+    return profile;
+  }
+
+  extensions::ExtensionService* CreateExtensionService(
+      content::BrowserContext* context) {
+    extensions::ExtensionSystem* system =
+        extensions::ExtensionSystem::Get(context);
+    return system->extension_service();
+  }
+
+  extensions::ExtensionRegistry* CreateExtensionRegistry(
+      content::BrowserContext* context) {
+    return extensions::ExtensionRegistry::Get(context);
+  }
+
+  std::unique_ptr<extensions::ExtensionCacheFake> test_extension_cache1_;
+  std::unique_ptr<extensions::ExtensionCacheFake> test_extension_cache2_;
+  extensions::ScopedIgnoreContentVerifierForTest ignore_content_verifier_;
+  Profile* profile1_;
+  Profile* profile2_;
+  MockConfigurationPolicyProvider profile1_policy_;
+  MockConfigurationPolicyProvider profile2_policy_;
+  extensions::ExtensionRegistry* registry1_;
+  extensions::ExtensionRegistry* registry2_;
+  extensions::ExtensionService* service1_;
+  extensions::ExtensionService* service2_;
+};
+
+// Verifies that default policy host block/allow settings are applied as
+// expected.
+IN_PROC_BROWSER_TEST_F(ExtensionPolicyTest2Contexts,
+                       ExtensionDefaultPolicyBlockedHost) {
+  GURL test_url = GURL("http://www.google.com");
+  std::string* error = nullptr;
+  int tab_id = 1;
+
+  const extensions::Extension* app1 =
+      InstallExtension(kTestExtensionsDir, kGoodCrxName, GetProfile1(),
+                       GetExtensionService1(), GetExtensionRegistry1());
+  ASSERT_TRUE(app1);
+  const extensions::Extension* app2 =
+      InstallExtension(kTestExtensionsDir, kGoodCrxName, GetProfile2(),
+                       GetExtensionService2(), GetExtensionRegistry2());
+  ASSERT_TRUE(app2);
+  SetTabSpecificPermissionsForURL(app1, tab_id, test_url,
+                                  URLPattern::SCHEME_ALL);
+  SetTabSpecificPermissionsForURL(app2, tab_id, test_url,
+                                  URLPattern::SCHEME_ALL);
+
+  ASSERT_TRUE(GetExtensionService1()->IsExtensionEnabled(app1->id()));
+  ASSERT_TRUE(GetExtensionService2()->IsExtensionEnabled(app2->id()));
+
+  ASSERT_TRUE(app1->permissions_data()->CanAccessPage(test_url, tab_id, error));
+  ASSERT_TRUE(app2->permissions_data()->CanAccessPage(test_url, tab_id, error));
+
+  {
+    extensions::ExtensionManagementPolicyUpdater pref(GetProfile1Policy());
+    pref.AddPolicyBlockedHost("*", "*://*.google.com");
+  }
+
+  EXPECT_FALSE(
+      app1->permissions_data()->CanAccessPage(test_url, tab_id, error));
+  EXPECT_TRUE(app2->permissions_data()->CanAccessPage(test_url, tab_id, error));
 }
 
 }  // namespace policy

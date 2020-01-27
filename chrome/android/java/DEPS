@@ -3,9 +3,9 @@ include_rules = [
 
   "+chrome/browser/android/thin_webview/java",
   "+chrome/browser/share/android",
+  "+chrome/browser/thumbnail/generator/android/java",
   "+chrome/browser/ui/android/appmenu",
   "-chrome/browser/ui/android/appmenu/internal",
-  "+chrome/browser/ui/android/widget",
   "+chrome/browser/ui/messages/android/java",
   "+chrome/browser/download/android/java",
   "+chrome/browser/image_fetcher/android/java",
@@ -16,6 +16,7 @@ include_rules = [
   "+components/autofill/android/java/src/org/chromium/components/autofill",
   "+components/background_task_scheduler/android/java/src/org/chromium/components/background_task_scheduler",
   "+components/bookmarks/common/android/java/src/org/chromium/components/bookmarks",
+  "+components/browser_ui/widget/android",
   "+components/browser_ui/styles/android",
   "+components/crash/android/java",
   "+components/dom_distiller/content/browser/android/java/src/org/chromium/components/dom_distiller/content",

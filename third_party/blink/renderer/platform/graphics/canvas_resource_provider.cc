@@ -24,6 +24,18 @@
 #include "third_party/skia/include/core/SkSurface.h"
 
 namespace blink {
+namespace {
+
+bool IsGMBAllowed(IntSize size,
+                  const CanvasColorParams& color_params,
+                  const gpu::Capabilities& caps) {
+  return gpu::IsImageSizeValidForGpuMemoryBufferFormat(
+             gfx::Size(size), color_params.GetBufferFormat()) &&
+         gpu::IsImageFromGpuMemoryBufferFormatSupported(
+             color_params.GetBufferFormat(), caps);
+}
+
+}  // namespace
 
 // * Renders to a Skia RAM-backed bitmap.
 // * Mailboxing is not supported : cannot be directly composited.
@@ -704,6 +716,33 @@ std::unique_ptr<CanvasResourceProvider> CanvasResourceProvider::CreateForCanvas(
   return provider;
 }
 
+std::unique_ptr<CanvasResourceProvider>
+CanvasResourceProvider::CreateAccelerated(
+    const IntSize& size,
+    base::WeakPtr<WebGraphicsContext3DProviderWrapper> context_provider_wrapper,
+    const CanvasColorParams& color_params,
+    bool is_origin_top_left,
+    uint32_t shared_image_usage_flags) {
+  const auto& caps =
+      context_provider_wrapper->ContextProvider()->GetCapabilities();
+  if (size.Width() > caps.max_texture_size ||
+      size.Height() > caps.max_texture_size) {
+    return nullptr;
+  }
+
+  if (!IsGMBAllowed(size, color_params, caps))
+    shared_image_usage_flags &= ~gpu::SHARED_IMAGE_USAGE_SCANOUT;
+
+  auto provider = std::make_unique<CanvasResourceProviderSharedImage>(
+      size, 0 /* msaa_sample_count */, kLow_SkFilterQuality, color_params,
+      context_provider_wrapper, nullptr /* resource_dispatcher*/,
+      is_origin_top_left, true /* is_accelerated */, shared_image_usage_flags);
+  if (provider->IsValid())
+    return provider;
+
+  return nullptr;
+}
+
 std::unique_ptr<CanvasResourceProvider> CanvasResourceProvider::Create(
     const IntSize& size,
     ResourceUsage usage,
@@ -731,10 +770,7 @@ std::unique_ptr<CanvasResourceProvider> CanvasResourceProvider::Create(
     is_gpu_memory_buffer_image_allowed =
         (presentation_mode & kAllowImageChromiumPresentationMode) &&
         Platform::Current()->GetGpuMemoryBufferManager() &&
-        gpu::IsImageSizeValidForGpuMemoryBufferFormat(
-            gfx::Size(size), color_params.GetBufferFormat()) &&
-        gpu::IsImageFromGpuMemoryBufferFormatSupported(
-            color_params.GetBufferFormat(), context_capabilities);
+        IsGMBAllowed(size, color_params, context_capabilities);
 
     is_swap_chain_allowed =
         (presentation_mode & kAllowSwapChainPresentationMode) &&

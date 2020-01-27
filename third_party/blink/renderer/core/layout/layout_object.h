@@ -31,6 +31,7 @@
 
 #include "base/auto_reset.h"
 #include "base/macros.h"
+#include "third_party/blink/public/mojom/scroll/scroll_into_view_params.mojom-blink-forward.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/display_lock/display_lock_context.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -89,7 +90,6 @@ class PaintLayer;
 class PseudoElementStyleRequest;
 struct PaintInfo;
 struct PaintInvalidatorContext;
-struct WebScrollIntoViewParams;
 
 enum VisualRectFlags {
   kDefaultVisualRectFlags = 0,
@@ -377,7 +377,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   // TODO(nburris): The returned rect is actually in document coordinates, not
   // root frame coordinates.
   PhysicalRect ScrollRectToVisible(const PhysicalRect&,
-                                   const WebScrollIntoViewParams&);
+                                   mojom::blink::ScrollIntoViewParamsPtr);
 
   // Convenience function for getting to the nearest enclosing box of a
   // LayoutObject.
@@ -2748,8 +2748,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
 
   bool SelfPaintingLayerNeedsVisualOverflowRecalc() const;
   inline void MarkContainerChainForOverflowRecalcIfNeeded(
-      bool mark_container_chain_layout_overflow_recalc,
-      bool mark_container_chain_visual_overflow_recalc);
+      bool mark_container_chain_layout_overflow_recalc);
 
   inline void SetNeedsPaintOffsetAndVisualRectUpdate();
 

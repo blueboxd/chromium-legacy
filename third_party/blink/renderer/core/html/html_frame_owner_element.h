@@ -240,7 +240,7 @@ class SubframeLoadingDisabler {
 
   CORE_EXPORT static SubtreeRootSet& DisabledSubtreeRoots();
 
-  Member<Node> root_;
+  Node* root_;
 };
 
 template <>

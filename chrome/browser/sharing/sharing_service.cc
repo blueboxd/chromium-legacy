@@ -79,6 +79,7 @@ void SharingService::SendMessageToDevice(
     base::TimeDelta response_timeout,
     chrome_browser_sharing::SharingMessage message,
     SharingMessageSender::ResponseCallback callback) {
+  // TODO(knollr): Select between kFCM and kWebRtc.
   message_sender_->SendMessageToDevice(
       device, response_timeout, std::move(message),
       SharingMessageSender::DelegateType::kFCM, std::move(callback));

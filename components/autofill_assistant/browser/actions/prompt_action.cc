@@ -28,7 +28,7 @@ PromptAction::~PromptAction() {}
 void PromptAction::InternalProcessAction(ProcessActionCallback callback) {
   callback_ = std::move(callback);
   if (proto_.prompt().choices_size() == 0) {
-    EndAction(INVALID_ACTION);
+    EndAction(ClientStatus(INVALID_ACTION));
     return;
   }
 
@@ -197,10 +197,17 @@ void PromptAction::OnElementChecksDone(
 }
 
 void PromptAction::OnDoneWaitForDom(const ClientStatus& status) {
-  // Status doesn't matter; it's just forwarded from AutoSelectDone.
+  if (!callback_) {
+    return;
+  }
+  // Status comes either from AutoSelectDone(), from checking the selector, or
+  // from an interrupt failure. Special-case the AutoSelectDone() case.
   if (auto_select_choice_index_ >= 0) {
     OnSuggestionChosen(auto_select_choice_index_);
+    return;
   }
+  // Everything else should be forwarded.
+  EndAction(status);
 }
 
 void PromptAction::OnSuggestionChosen(int choice_index) {
@@ -213,10 +220,10 @@ void PromptAction::OnSuggestionChosen(int choice_index) {
   PromptProto::Choice choice;
   *processed_action_proto_->mutable_prompt_choice() =
       proto_.prompt().choices(choice_index);
-  EndAction(ACTION_APPLIED);
+  EndAction(ClientStatus(ACTION_APPLIED));
 }
 
-void PromptAction::EndAction(const ProcessedActionStatusProto& status) {
+void PromptAction::EndAction(const ClientStatus& status) {
   delegate_->CleanUpAfterPrompt();
   UpdateProcessedAction(status);
   std::move(callback_).Run(std::move(processed_action_proto_));

@@ -28,6 +28,8 @@ class MockMediaSessionPlayerObserver : public MediaSessionPlayerObserver {
   void OnSeekForward(int player_id, base::TimeDelta seek_time) override;
   void OnSeekBackward(int player_id, base::TimeDelta seek_time) override;
   void OnSetVolumeMultiplier(int player_id, double volume_multiplier) override;
+  void OnEnterPictureInPicture(int player_id) override;
+  void OnExitPictureInPicture(int player_id) override;
   base::Optional<media_session::MediaPosition> GetPosition(
       int player_id) const override;
   RenderFrameHost* render_frame_host() const override;
@@ -52,6 +54,8 @@ class MockMediaSessionPlayerObserver : public MediaSessionPlayerObserver {
   int received_resume_calls() const;
   int received_seek_forward_calls() const;
   int received_seek_backward_calls() const;
+  int received_enter_picture_in_picture_calls() const;
+  int received_exit_picture_in_picture_calls() const;
 
  private:
   // Internal representation of the players to keep track of their statuses.
@@ -64,6 +68,7 @@ class MockMediaSessionPlayerObserver : public MediaSessionPlayerObserver {
     bool is_playing_;
     double volume_multiplier_;
     base::Optional<media_session::MediaPosition> position_;
+    bool is_in_picture_in_picture_;
   };
 
   // Basic representation of the players. The position in the vector is the
@@ -76,6 +81,8 @@ class MockMediaSessionPlayerObserver : public MediaSessionPlayerObserver {
   int received_suspend_calls_ = 0;
   int received_seek_forward_calls_ = 0;
   int received_seek_backward_calls_ = 0;
+  int received_enter_picture_in_picture_calls_ = 0;
+  int received_exit_picture_in_picture_calls_ = 0;
 };
 
 }  // namespace content

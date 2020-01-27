@@ -34,7 +34,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_FORMS_INPUT_TYPE_VIEW_H_
 
 #include "base/macros.h"
-#include "third_party/blink/public/platform/web_focus_type.h"
+#include "third_party/blink/public/mojom/input/focus_type.mojom-blink-forward.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/events/event_dispatcher.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -91,7 +91,8 @@ class CORE_EXPORT InputTypeView : public GarbageCollectedMixin {
   virtual bool ShouldSubmitImplicitly(const Event&);
   virtual HTMLFormElement* FormForSubmission() const;
   virtual bool HasCustomFocusLogic() const;
-  virtual void HandleFocusInEvent(Element* old_focused_element, WebFocusType);
+  virtual void HandleFocusInEvent(Element* old_focused_element,
+                                  mojom::blink::FocusType);
   virtual void HandleBlurEvent();
   virtual void HandleDOMActivateEvent(Event&);
   virtual void AccessKeyAction(bool send_mouse_events);

@@ -99,7 +99,7 @@ Value LocationPath::Evaluate(EvaluationContext& evaluation_context) const {
   // the spec and treat / as the root node of the detached tree.
   // This is for compatibility with Firefox, and also seems like a more
   // logical treatment of where you would expect the "root" to be.
-  Node* context = evaluation_context.node.Get();
+  Node* context = evaluation_context.node;
   if (absolute_ && context->getNodeType() != Node::kDocumentNode) {
     if (context->isConnected())
       context = context->ownerDocument();

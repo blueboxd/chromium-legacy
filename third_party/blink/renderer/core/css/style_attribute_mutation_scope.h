@@ -51,8 +51,8 @@ class StyleAttributeMutationScope {
   static bool should_notify_inspector_;
   static bool should_deliver_;
 
-  Member<MutationObserverInterestGroup> mutation_recipients_;
-  Member<MutationRecord> mutation_;
+  MutationObserverInterestGroup* mutation_recipients_ = nullptr;
+  MutationRecord* mutation_ = nullptr;
   AtomicString old_value_;
   DISALLOW_COPY_AND_ASSIGN(StyleAttributeMutationScope);
 };

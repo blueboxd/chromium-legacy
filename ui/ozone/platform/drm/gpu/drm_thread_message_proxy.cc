@@ -58,6 +58,7 @@ bool DrmThreadMessageProxy::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(OzoneGpuMsg_SetHDCPState, OnSetHDCPState)
     IPC_MESSAGE_HANDLER(OzoneGpuMsg_SetColorMatrix, OnSetColorMatrix)
     IPC_MESSAGE_HANDLER(OzoneGpuMsg_SetGammaCorrection, OnSetGammaCorrection)
+    IPC_MESSAGE_HANDLER(OzoneGpuMsg_SetPrivacyScreen, OnSetPrivacyScreen)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -233,6 +234,15 @@ void DrmThreadMessageProxy::OnSetGammaCorrection(
       FROM_HERE, base::BindOnce(&DrmThread::SetGammaCorrection,
                                 base::Unretained(drm_thread_), display_id,
                                 degamma_lut, gamma_lut));
+}
+
+void DrmThreadMessageProxy::OnSetPrivacyScreen(int64_t display_id,
+                                               bool enabled) {
+  DCHECK(drm_thread_->IsRunning());
+  drm_thread_->task_runner()->PostTask(
+      FROM_HERE,
+      base::BindOnce(&DrmThread::SetPrivacyScreen,
+                     base::Unretained(drm_thread_), display_id, enabled));
 }
 
 void DrmThreadMessageProxy::OnRefreshNativeDisplaysCallback(

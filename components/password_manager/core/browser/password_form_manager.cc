@@ -11,6 +11,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
@@ -558,7 +559,6 @@ PasswordFormManager::PasswordFormManager(
 void PasswordFormManager::OnFetchCompleted() {
   received_stored_credentials_time_ = TimeTicks::Now();
 
-  // Copy out blacklisted matches.
   newly_blacklisted_ = false;
   autofills_left_ = kMaxTimesAutofill;
 
@@ -567,6 +567,9 @@ void PasswordFormManager::OnFetchCompleted() {
     // filling required.
     return;
   }
+
+  client_->UpdateCredentialCache(observed_form_.url.GetOrigin(),
+                                 form_fetcher_->GetBestMatches());
 
   if (is_submitted_)
     CreatePendingCredentials();

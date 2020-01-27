@@ -158,6 +158,10 @@ WaylandBufferManagerGpu::GetModifiersForBufferFormat(
   return dummy;
 }
 
+uint32_t WaylandBufferManagerGpu::AllocateBufferID() {
+  return ++next_buffer_id_;
+}
+
 void WaylandBufferManagerGpu::CreateDmabufBasedBufferInternal(
     base::ScopedFD dmabuf_fd,
     gfx::Size size,

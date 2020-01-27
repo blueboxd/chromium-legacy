@@ -112,6 +112,7 @@
 <translation id="2352467521400612932">Izilungiselelo ze-stylus</translation>
 <translation id="2354174487190027830">Yenza kusebenze i-<ph name="NAME" /></translation>
 <translation id="2359808026110333948">Qhubeka</translation>
+<translation id="2364154243880592194">Isimo, isikhathi <ph name="TIME" />, <ph name="BATTERY" /> Cindezela ukusesha + kwesokunxele ukuze ufinyelele isikhungo sesaziso.</translation>
 <translation id="2365393535144473978">Ukunika amandla idatha yeselula kuzonika amandla i-Bluetooth.</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="2412593942846481727">Isibuyekezo siyatholakala</translation>
@@ -335,6 +336,7 @@
 <translation id="5669267381087807207">Yenza kusebenze</translation>
 <translation id="5673434351075758678">Kusukela ku-"<ph name="FROM_LOCALE" />" ukuya ku-"<ph name="TO_LOCALE" />" ngemuva kokuvumelanisa izilungiselelo zakho.</translation>
 <translation id="5682642926269496722">Umsizi we-Google akatholakaleli i-akhawunti yamanje yomsebenzisi.</translation>
+<translation id="5689633613396158040">Ukukhanya kwasebusuku kwenza kubelula ukubheka esikrinini sakho noma ukufunda ngomkhanyo ofiphele. Thepha ukuze ushintshe ukuthi ukukhanya kwasebusuku kuvula noma kuvala nini ngokuphelele.</translation>
 <translation id="5691772641933328258">Isigxivizo somunwe asaziwa</translation>
 <translation id="5710450975648804523">Ukungaphazamisi kuvuliwe</translation>
 <translation id="573413375004481890">Le divayisi ayikwazanga ukusekela zonke izibonisi zakho, ngakho-ke oyedwa unqanyuliwe</translation>
@@ -514,6 +516,7 @@
 <translation id="8142441511840089262">Chofoza kabili</translation>
 <translation id="8142699993796781067">Inethiwekhi eyimfihlo</translation>
 <translation id="8152092012181020186">Cindezela ku-Ctrl + W ukuze uvale.</translation>
+<translation id="8155007568264258537"><ph name="FEATURE_NAME" /> Lesi silungiselelo siphethwe umlawuli wakho.</translation>
 <translation id="8167567890448493835">Usebenzisa i-<ph name="LOCALE_NAME" /></translation>
 <translation id="8190698733819146287">Yenza ngokwezifiso izilimi nokokufaka...</translation>
 <translation id="8192202700944119416">Izaziso zifihlakele.</translation>

@@ -78,6 +78,10 @@ void PercentEncodeCommas(std::wstring* url) {
   }
 }
 
+void PercentUnencodeQuotes(std::wstring* url) {
+  base::ReplaceSubstringsAfterOffset(url, 0, L"%27", L"'");
+}
+
 std::wstring GetBrowserLocation(const wchar_t* regkey_name) {
   DCHECK(regkey_name);
   base::win::RegKey key;
@@ -132,6 +136,9 @@ void AppendCommandLineArguments(base::CommandLine* cmd_line,
                                 const std::vector<std::string>& raw_args,
                                 const GURL& url) {
   std::wstring url_spec = base::UTF8ToWide(url.spec());
+  // IE has some quirks with quote characters. Send them verbatim instead
+  // of percent-encoding them.
+  PercentUnencodeQuotes(&url_spec);
   std::vector<std::wstring> command_line;
   bool contains_url = false;
   for (const auto& arg : raw_args) {
@@ -212,6 +219,7 @@ bool AlternativeBrowserDriverImpl::TryLaunchWithDde(const GURL& url) {
     // for the WWW_OpenURL verb and the url is trimmed on the first one.
     // Spaces are already encoded by GURL.
     std::wstring encoded_url(base::UTF8ToWide(url.spec()));
+    PercentUnencodeQuotes(&encoded_url);
     PercentEncodeCommas(&encoded_url);
 
     success =

@@ -134,6 +134,7 @@
 <translation id="1994173015038366702">URL ya Tovuti</translation>
 <translation id="2000419248597011803">Hutuma baadhi ya vidakuzi na utafutaji kutoka kwenye sehemu ya anwani na kisanduku cha kutafutia kwenye mtambo wako chaguomsingi wa kutafuta</translation>
 <translation id="2002537628803770967">Kadi za mikopo na anwani zinazotumia Google Pay</translation>
+<translation id="2012973609889389923">Tovuti inayopakia haraka</translation>
 <translation id="2013642289801508067">{FILE_COUNT,plural, =1{Faili #}other{Faili #}}</translation>
 <translation id="2017836877785168846">Hufuta historia na ujazaji kiotomatiki katika sehemu ya anwani.</translation>
 <translation id="2021896219286479412">Vidhibiti vya tovuti vya skrini nzima</translation>
@@ -306,6 +307,7 @@
 <translation id="3298243779924642547">Nyepesi</translation>
 <translation id="3303414029551471755">Ungependa kuendelea kupakua maudhui?</translation>
 <translation id="3306398118552023113">Programu hii inatumika katika Chrome</translation>
+<translation id="3312292613668865961">Uliza kabla ya kuruhusu tovuti kufikia data na kifaa chako cha uhalisia pepe (inapendekezwa)</translation>
 <translation id="3315103659806849044">Kwa sasa, unaweka mapendeleo kwenye mipangilio ya Usawazishaji na huduma ya Google. Ili ukamilishe kuwasha usawazishaji, gusa kitufe cha 'Thibitisha' kwenye sehemu ya chini ya skrini. Sogeza juu</translation>
 <translation id="3328801116991980348">Maelezo ya tovuti</translation>
 <translation id="3333961966071413176">Anwani zote</translation>
@@ -511,6 +513,7 @@ Ili ubadilishe mipangilio hii, <ph name="BEGIN_LINK" />fanya usawazishaji upya<p
 <translation id="4915549754973153784"><ph name="BEGIN_LINK" />Pata usaidizi<ph name="END_LINK" /> huku ukitafuta vifaa...</translation>
 <translation id="4921180162323349895">{FILE_COUNT,plural, =1{Ukurasa #}other{Kurasa #}}</translation>
 <translation id="4932247056774066048">Kwa sababu unaondoka katika akaunti inayodhibitiwa na <ph name="DOMAIN_NAME" />, data yako ya Chrome itafutwa kwenye kifaa hiki. Itabaki katika Akaunti yako ya Google.</translation>
+<translation id="4935305910887312910">Uliza kabla ya kuruhusu tovuti kufikia nafasi ya kamera au kuunda ramani ya chumba chako (inapendekezwa)</translation>
 <translation id="4943703118917034429">Uhalisia Pepe</translation>
 <translation id="4943872375798546930">Hakuna matokeo yoyote yaliyopatikana</translation>
 <translation id="4958708863221495346"><ph name="URL_OF_THE_CURRENT_TAB" /> inashiriki skrini yako</translation>
@@ -744,6 +747,7 @@ Kwa mfano, baadhi ya tovuti zinaweza kujibu ombi hili kwa kukuonyesha matangazo 
 <translation id="6573431926118603307">Vichupo ulivyofungua katika Chrome kwenye vifaa vyako vingine vitaonekana hapa.</translation>
 <translation id="6583199322650523874">Wekea alamisho kwenye ukurasa uliofungua</translation>
 <translation id="6593061639179217415">Tovuti ya kompyuta ya mezani</translation>
+<translation id="6597891566292541626">Weka QR/msimbopau katika fremu hii.</translation>
 <translation id="6600954340915313787">Imenakiliwa kwenye Chrome</translation>
 <translation id="6608650720463149374">GB <ph name="GIGABYTES" /></translation>
 <translation id="6612358246767739896">Maudhui yanayolindwa</translation>
@@ -952,6 +956,7 @@ Tovuti hii HAIPATI idhini ya kufikia kamera. Ni wewe pekee utaona picha hizi za 
 <translation id="8109613176066109935">Washa kipengele cha usawazishaji ili upate alamisho kwenye vifaa vyako vyote</translation>
 <translation id="8110087112193408731">Ungependa kuonyesha shughuli zako za Chrome katika mpango wa Nidhamu Dijitali?</translation>
 <translation id="8116925261070264013">Imezimwa</translation>
+<translation id="8127542551745560481">Badilisha ukurasa wa mwanzo</translation>
 <translation id="813082847718468539">Angalia maelezo ya tovuti</translation>
 <translation id="8156139159503939589">Unaweza kusoma katika lugha gani?</translation>
 <translation id="8168435359814927499">Maudhui</translation>
@@ -1023,6 +1028,7 @@ Tovuti hii HAIPATI idhini ya kufikia kamera. Ni wewe pekee utaona picha hizi za 
 <translation id="8676374126336081632">Futa uingizaji wa maandishi</translation>
 <translation id="8687353297350450808">{N_BARS,plural, =1{Kiwango cha Udhibiti wa Mawimbi: upau #}other{Kiwango cha Udhibiti wa Mawimbi: pau #}}</translation>
 <translation id="868929229000858085">Tafuta kwenye anwani zako</translation>
+<translation id="8698438463325761328">Zuia tovuti zisifikie data na vifaa vyako vya uhalisia pepe</translation>
 <translation id="869891660844655955">Muda wake unakwisha tarehe</translation>
 <translation id="8719023831149562936">Haiwezi kusambaza kichupo cha sasa</translation>
 <translation id="8728487861892616501">Kwa kutumia programu hii, unakubaliana na <ph name="BEGIN_LINK1" />Sheria na Masharti<ph name="END_LINK1" /> na <ph name="BEGIN_LINK2" />Ilani ya Faragha<ph name="END_LINK2" /> ya Chrome na <ph name="BEGIN_LINK3" />Ilani ya Faragha ya Akaunti za Google Zinazodhibitiwa na Family Link<ph name="END_LINK3" />.</translation>
@@ -1040,6 +1046,7 @@ Tovuti hii HAIPATI idhini ya kufikia kamera. Ni wewe pekee utaona picha hizi za 
 <translation id="883806473910249246">Hitilafu imetokea wakati wa kupakua maudhui.</translation>
 <translation id="8840953339110955557">Ukurasa huu huenda ukatofautiana na toleo la mtandaoni.</translation>
 <translation id="8847988622838149491">USB</translation>
+<translation id="884828189055900810">Zuia tovuti zisifikie nafasi ya kamera au kuunda ramani ya chumba chako</translation>
 <translation id="8853345339104747198"><ph name="TAB_TITLE" />, kichupo</translation>
 <translation id="885701979325669005">Hifadhi</translation>
 <translation id="889338405075704026">Nenda kwenye mipangilio ya Chrome</translation>
@@ -1047,6 +1054,7 @@ Tovuti hii HAIPATI idhini ya kufikia kamera. Ni wewe pekee utaona picha hizi za 
 <translation id="8909135823018751308">Shiriki...</translation>
 <translation id="8912362522468806198">Akaunti ya Google</translation>
 <translation id="8920114477895755567">Tunasubiri maelezo ya wazazi.</translation>
+<translation id="8921772741368021346"><ph name="POSITION" /> / <ph name="DURATION" /></translation>
 <translation id="8922289737868596582">Pakua kurasa kwenye kitufe cha Chaguo zaidi ili uzitumie nje ya mtandao</translation>
 <translation id="8926666909099850184">Kipengele cha NFC kimezimwa kwenye kifaa hiki. Kiwashe katika <ph name="BEGIN_LINK" />Mipangilio ya Android<ph name="END_LINK" />.</translation>
 <translation id="8937772741022875483">Ungependa kuondoa Shughuli zako za Chrome kwenye mpango wa Nidhamu Dijitali?</translation>

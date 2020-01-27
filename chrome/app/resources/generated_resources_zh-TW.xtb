@@ -223,7 +223,6 @@
 <translation id="1306606229401759371">變更設定</translation>
 <translation id="1307165550267142340">已建立 PIN 碼</translation>
 <translation id="1307559529304613120">糟糕！系統無法為這個裝置儲存長期 API 存取符記。</translation>
-<translation id="1309199320876169714">正在移除 Plugin VM…</translation>
 <translation id="1313405956111467313">自動 Proxy 設定</translation>
 <translation id="131364520783682672">Caps Lock 鍵</translation>
 <translation id="1313705515580255288">系統會將你的書籤、歷史記錄和其他設定與你的 Google 帳戶同步處理。</translation>
@@ -1366,7 +1365,6 @@
 <translation id="2871813825302180988">已有人在這個裝置上使用這個帳戶。</translation>
 <translation id="287286579981869940">新增 <ph name="PROVIDER_NAME" />...</translation>
 <translation id="2872961005593481000">關閉</translation>
-<translation id="2874478552394649323">移除 Plugin VM</translation>
 <translation id="2874939134665556319">上一首曲目</translation>
 <translation id="2875698561019555027">(Chrome 錯誤頁面)</translation>
 <translation id="2876336351874743617">手指 2</translation>
@@ -1383,7 +1381,6 @@
 <translation id="2889064240420137087">使用其他程式開啟連結...</translation>
 <translation id="2889925978073739256">繼續封鎖無沙箱防護的外掛程式</translation>
 <translation id="2893168226686371498">預設瀏覽器</translation>
-<translation id="2893208266590504003">無法移除 Plugin VM</translation>
 <translation id="2894757982205307093">在群組中新增分頁</translation>
 <translation id="289644616180464099">SIM 卡已鎖定</translation>
 <translation id="2896909745808647285"><ph name="FILE_NAME" /> 已加密，系統已禁止使用者開啟這個檔案。</translation>
@@ -2833,6 +2830,7 @@
 <translation id="4998430619171209993">開啟</translation>
 <translation id="4998873842614926205">確認變更</translation>
 <translation id="5000922062037820727">已封鎖 (建議)</translation>
+<translation id="5007392906805964215">查看</translation>
 <translation id="5008936837313706385">活動名稱</translation>
 <translation id="5010043101506446253">憑證授權單位</translation>
 <translation id="5015344424288992913">正在解析 proxy...</translation>
@@ -5772,7 +5770,6 @@
 <translation id="9169496697824289689">查看鍵盤快速鍵</translation>
 <translation id="916964310188958970">為什麼會顯示這項建議？</translation>
 <translation id="9169931577761441333">將 <ph name="APP_NAME" /> 新增至主畫面</translation>
-<translation id="9170305483456271385">已移除 Plugin VM</translation>
 <translation id="9170848237812810038">取消(&amp;U)</translation>
 <translation id="9170884462774788842">電腦中其他程式所新增的主題可能會變更 Chrome 的運作方式。</translation>
 <translation id="9173995187295789444">正在掃描藍牙裝置…</translation>

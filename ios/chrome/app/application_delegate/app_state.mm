@@ -172,7 +172,7 @@ initWithBrowserLauncher:(id<BrowserLauncher>)browserLauncher
   }
   _applicationInBackground = YES;
 
-  ios::ChromeBrowserState* browserState =
+  ChromeBrowserState* browserState =
       _browserLauncher.interfaceProvider.mainInterface.browserState;
   if (browserState) {
     AuthenticationServiceFactory::GetForBrowserState(browserState)
@@ -284,7 +284,7 @@ initWithBrowserLauncher:(id<BrowserLauncher>)browserLauncher
     return;
 
   _applicationInBackground = NO;
-  ios::ChromeBrowserState* browserState =
+  ChromeBrowserState* browserState =
       _browserLauncher.interfaceProvider.mainInterface.browserState;
   if (browserState) {
     AuthenticationServiceFactory::GetForBrowserState(browserState)
@@ -311,7 +311,7 @@ initWithBrowserLauncher:(id<BrowserLauncher>)browserLauncher
                                                  .interfaceProvider];
   [memoryHelper resetForegroundMemoryWarningCount];
 
-  ios::ChromeBrowserState* currentBrowserState =
+  ChromeBrowserState* currentBrowserState =
       _browserLauncher.interfaceProvider.currentInterface.browserState;
   if ([SignedInAccountsViewController
           shouldBePresentedForBrowserState:currentBrowserState]) {
@@ -320,7 +320,7 @@ initWithBrowserLauncher:(id<BrowserLauncher>)browserLauncher
   }
 
   // Use the mainBVC as the ContentSuggestions can only be started in non-OTR.
-  ios::ChromeBrowserState* mainBrowserState =
+  ChromeBrowserState* mainBrowserState =
       _browserLauncher.interfaceProvider.mainInterface.browserState;
   [ContentSuggestionsSchedulerNotifications notifyForeground:mainBrowserState];
 

@@ -9,8 +9,7 @@
 
 #include <memory>
 
-#include "ios/chrome/browser/browser_state/chrome_browser_state_forward.h"
-
+class ChromeBrowserState;
 @class CommandDispatcher;
 @protocol OmniboxPopupPresenterDelegate;
 @protocol OmniboxFocuser;
@@ -25,7 +24,7 @@ class WebStateList;
 - (instancetype)init NS_UNAVAILABLE;
 
 // BrowserState.
-@property(nonatomic, assign) ios::ChromeBrowserState* browserState;
+@property(nonatomic, assign) ChromeBrowserState* browserState;
 // Positioner for the popup.
 @property(nonatomic, weak) id<OmniboxPopupPresenterDelegate> presenterDelegate;
 // Whether this coordinator has results to show.

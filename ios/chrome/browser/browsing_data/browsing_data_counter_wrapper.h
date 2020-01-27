@@ -10,8 +10,8 @@
 #include "base/callback_forward.h"
 #include "base/strings/string_piece.h"
 #include "components/browsing_data/core/counters/browsing_data_counter.h"
-#include "ios/chrome/browser/browser_state/chrome_browser_state_forward.h"
 
+class ChromeBrowserState;
 class PrefService;
 
 // Wrapper around a browsing data volume counter that bridges the update counter
@@ -25,7 +25,7 @@ class BrowsingDataCounterWrapper {
   // |pref_name| or null if there is no such counter.
   static std::unique_ptr<BrowsingDataCounterWrapper> CreateCounterWrapper(
       base::StringPiece pref_name,
-      ios::ChromeBrowserState* browser_state,
+      ChromeBrowserState* browser_state,
       PrefService* pref_service,
       UpdateUICallback update_ui_callback);
 

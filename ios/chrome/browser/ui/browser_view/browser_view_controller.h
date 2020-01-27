@@ -8,13 +8,13 @@
 #import <UIKit/UIKit.h>
 
 #import "base/ios/block_types.h"
-#include "ios/chrome/browser/browser_state/chrome_browser_state_forward.h"
 #import "ios/chrome/browser/ui/page_info/requirements/page_info_presentation.h"
 #import "ios/chrome/browser/ui/settings/sync/utils/sync_presenter.h"
 #import "ios/chrome/browser/ui/toolbar/toolbar_coordinator_delegate.h"
 #import "ios/public/provider/chrome/browser/voice/logo_animation_controller.h"
 
 class Browser;
+class ChromeBrowserState;
 @protocol ApplicationCommands;
 @protocol BrowserCommands;
 @protocol BrowsingDataCommands;
@@ -83,7 +83,7 @@ class Browser;
 @property(nonatomic, weak, readonly) TabModel* tabModel;
 
 // The Browser's ChromeBrowserState.
-@property(nonatomic, assign, readonly) ios::ChromeBrowserState* browserState;
+@property(nonatomic, assign, readonly) ChromeBrowserState* browserState;
 
 // Whether the receiver is currently the primary BVC.
 - (void)setPrimary:(BOOL)primary;

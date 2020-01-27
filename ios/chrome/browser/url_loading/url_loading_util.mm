@@ -30,7 +30,7 @@ bool IsURLAllowedInIncognito(const GURL& url) {
 }
 
 void LoadJavaScriptURL(const GURL& url,
-                       ios::ChromeBrowserState* browser_state,
+                       ChromeBrowserState* browser_state,
                        web::WebState* web_state) {
   DCHECK(url.SchemeIs(url::kJavaScriptScheme));
   DCHECK(web_state);
@@ -47,7 +47,7 @@ void LoadJavaScriptURL(const GURL& url,
 
 void RestoreTab(const SessionID session_id,
                 WindowOpenDisposition disposition,
-                ios::ChromeBrowserState* browser_state) {
+                ChromeBrowserState* browser_state) {
   TabRestoreServiceDelegateImplIOS* delegate =
       TabRestoreServiceDelegateImplIOSFactory::GetForBrowserState(
           browser_state);

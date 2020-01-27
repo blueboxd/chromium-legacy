@@ -5,8 +5,15 @@
 #include "chrome/browser/updates/announcement_notification/announcement_notification_service.h"
 
 #include "base/bind.h"
+#include "base/files/file_path.h"
+#include "base/memory/weak_ptr.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/profiles/profile_attributes_entry.h"
+#include "chrome/browser/profiles/profile_attributes_storage.h"
+#include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/updates/announcement_notification/announcement_notification_metrics.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
 
@@ -15,18 +22,28 @@ namespace {
 // Default value for Finch parameter |kVersion|.
 const int kInvalidVersion = -1;
 
+// Whether the announcement notification is shown.
+static bool notification_shown = false;
+
 }  // namespace
 
 class AnnouncementNotificationServiceImpl
     : public AnnouncementNotificationService {
  public:
-  AnnouncementNotificationServiceImpl(PrefService* pref_service,
+  AnnouncementNotificationServiceImpl(const base::FilePath& profile_path,
+                                      bool new_profile,
+                                      PrefService* pref_service,
                                       std::unique_ptr<Delegate> delegate)
-      : pref_service_(pref_service),
+      : profile_path_(profile_path),
+        new_profile_(new_profile),
+        pref_service_(pref_service),
         delegate_(std::move(delegate)),
         skip_first_run_(true),
+        skip_new_profile_(false),
         skip_display_(false),
-        remote_version_(kInvalidVersion) {
+        remote_version_(kInvalidVersion),
+        require_signout_(false),
+        show_one_(false) {
     if (!IsFeatureEnabled())
       return;
 
@@ -35,10 +52,18 @@ class AnnouncementNotificationServiceImpl
     // By default do nothing in first run.
     skip_first_run_ = base::GetFieldTrialParamByFeatureAsBool(
         kAnnouncementNotification, kSkipFirstRun, true);
+    skip_new_profile_ = base::GetFieldTrialParamByFeatureAsBool(
+        kAnnouncementNotification, kSkipNewProfile, false);
     skip_display_ = base::GetFieldTrialParamByFeatureAsBool(
         kAnnouncementNotification, kSkipDisplay, false);
     remote_version_ = base::GetFieldTrialParamByFeatureAsInt(
         kAnnouncementNotification, kVersion, kInvalidVersion);
+    require_signout_ = base::GetFieldTrialParamByFeatureAsBool(
+        kAnnouncementNotification, kRequireSignout, false);
+    show_one_ = base::GetFieldTrialParamByFeatureAsBool(
+        kAnnouncementNotification, kShowOneAllProfiles, false);
+    remote_url_ = base::GetFieldTrialParamValueByFeature(
+        kAnnouncementNotification, kAnnouncementUrl);
   }
 
   ~AnnouncementNotificationServiceImpl() override = default;
@@ -49,10 +74,14 @@ class AnnouncementNotificationServiceImpl
     if (!IsFeatureEnabled())
       return;
 
+    RecordAnnouncementHistogram(AnnouncementNotificationEvent::kStart);
+
     // No valid version Finch parameter.
     if (!IsVersionValid(remote_version_))
       return;
 
+    // Update the version preference. This happens earilier than checks in
+    // ShowNotification.
     int current_version = pref_service_->GetInteger(kCurrentVersionPrefName);
     pref_service_->SetInteger(kCurrentVersionPrefName, remote_version_);
 
@@ -67,12 +96,6 @@ class AnnouncementNotificationServiceImpl
 
   bool IsVersionValid(int version) const { return version >= 0; }
 
-  void OnFirstRun() {
-    if (skip_first_run_)
-      return;
-    ShowNotification();
-  }
-
   void OnNewVersion() {
     // Skip first run if needed.
     if (delegate_->IsFirstRun() && skip_first_run_)
@@ -85,20 +108,66 @@ class AnnouncementNotificationServiceImpl
     if (skip_display_)
       return;
 
-    delegate_->ShowNotification();
+    // Skip new profile if needed.
+    if (skip_new_profile_ && new_profile_)
+      return;
+
+    // Require signed out but the user signed in.
+    if (require_signout_ && IsUserSignIn())
+      return;
+
+    // Check if we only want to show once.
+    if (show_one_ && notification_shown)
+      return;
+
+    notification_shown = true;
+    delegate_->ShowNotification(remote_url_);
   }
 
+  bool IsUserSignIn() {
+    DCHECK(g_browser_process);
+    // No browser process, assume the user is not signed in.
+    if (!g_browser_process)
+      return false;
+
+    ProfileAttributesStorage& storage =
+        g_browser_process->profile_manager()->GetProfileAttributesStorage();
+
+    // Can't find the profile path, assume the user is not signed in.
+    ProfileAttributesEntry* entry = nullptr;
+    if (!storage.GetProfileAttributesWithPath(profile_path_, &entry))
+      return false;
+
+    return entry->GetSigninState() != SigninState::kNotSignedIn;
+  }
+
+  const base::FilePath profile_path_;
+  bool new_profile_;
   PrefService* pref_service_;
   std::unique_ptr<Delegate> delegate_;
 
   // Whether to skip first Chrome launch. Parsed from Finch.
   bool skip_first_run_;
 
+  // Whether to skip new profile. Parsed from Finch.
+  bool skip_new_profile_;
+
   // Don't show notification if true. Parsed from Finch.
   bool skip_display_;
 
   // The new notification version. Parsed from Finch.
   int remote_version_;
+
+  // Whether only show notification to signed out users. Parsed from Finch.
+  bool require_signout_;
+
+  // Whether only show one notification in each Chrome launch. Parsed from
+  // Finch.
+  bool show_one_;
+
+  // The announcement URL parsed from Finch. If empty then we use the default
+  // URL.
+  std::string remote_url_;
 
   base::WeakPtrFactory<AnnouncementNotificationServiceImpl> weak_ptr_factory_{
       this};
@@ -118,10 +187,12 @@ void AnnouncementNotificationService::RegisterProfilePrefs(
 
 // static
 AnnouncementNotificationService* AnnouncementNotificationService::Create(
+    const base::FilePath& profile_path,
+    bool new_profile,
     PrefService* pref_service,
     std::unique_ptr<Delegate> delegate) {
-  return new AnnouncementNotificationServiceImpl(pref_service,
-                                                 std::move(delegate));
+  return new AnnouncementNotificationServiceImpl(
+      profile_path, new_profile, pref_service, std::move(delegate));
 }
 
 AnnouncementNotificationService::AnnouncementNotificationService() = default;

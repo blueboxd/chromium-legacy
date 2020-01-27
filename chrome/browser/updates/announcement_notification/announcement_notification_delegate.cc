@@ -4,17 +4,44 @@
 
 #include "chrome/browser/updates/announcement_notification/announcement_notification_delegate.h"
 
-#include "base/logging.h"
+#include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/first_run/first_run.h"
+#include "chrome/browser/notifications/notification_display_service.h"
+#include "chrome/grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util.h"
+#include "ui/message_center/public/cpp/notification.h"
 
-AnnouncementNotificationDelegate::AnnouncementNotificationDelegate() = default;
+AnnouncementNotificationDelegate::AnnouncementNotificationDelegate(
+    NotificationDisplayService* display_service)
+    : display_service_(display_service) {
+  DCHECK(display_service_);
+}
 
 AnnouncementNotificationDelegate::~AnnouncementNotificationDelegate() = default;
 
-void AnnouncementNotificationDelegate::ShowNotification() {
-  NOTIMPLEMENTED();
+void AnnouncementNotificationDelegate::ShowNotification(
+    const std::string& remote_url) {
+  auto rich_notification_data = message_center::RichNotificationData();
+  message_center::ButtonInfo button1(
+      l10n_util::GetStringUTF16(IDS_TOS_NOTIFICATION_ACK_BUTTON_TEXT));
+  message_center::ButtonInfo button2(
+      l10n_util::GetStringUTF16(IDS_TOS_NOTIFICATION_REVIEW_BUTTON_TEXT));
+  rich_notification_data.buttons.emplace_back(button1);
+  rich_notification_data.buttons.emplace_back(button2);
+
+  message_center::Notification notification(
+      message_center::NOTIFICATION_TYPE_SIMPLE, kAnnouncementNotificationId,
+      l10n_util::GetStringUTF16(IDS_TOS_NOTIFICATION_TITLE),
+      l10n_util::GetStringUTF16(IDS_TOS_NOTIFICATION_BODY_TEXT), gfx::Image(),
+      base::string16(), GURL(),
+      message_center::NotifierId(message_center::NotifierType::SYSTEM_COMPONENT,
+                                 kAnnouncementNotificationId),
+      rich_notification_data, nullptr /*delegate*/);
+
+  display_service_->Display(NotificationHandler::Type::ANNOUNCEMENT,
+                            notification, nullptr /*metadata*/);
 }
 
 bool AnnouncementNotificationDelegate::IsFirstRun() {
-  NOTIMPLEMENTED();
-  return false;
+  return first_run::IsChromeFirstRun();
 }

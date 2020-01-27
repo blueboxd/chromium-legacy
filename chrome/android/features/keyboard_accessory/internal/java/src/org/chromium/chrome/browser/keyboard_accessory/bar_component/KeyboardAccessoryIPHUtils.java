@@ -11,7 +11,8 @@ import androidx.annotation.StringRes;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
 import org.chromium.chrome.browser.keyboard_accessory.R;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.browser.ui.widget.textbubble.ImageTextBubble;
+import org.chromium.chrome.browser.util.AccessibilityUtil;
+import org.chromium.components.browser_ui.widget.textbubble.ImageTextBubble;
 import org.chromium.components.feature_engagement.EventConstants;
 import org.chromium.components.feature_engagement.FeatureConstants;
 import org.chromium.components.feature_engagement.Tracker;
@@ -61,7 +62,8 @@ class KeyboardAccessoryIPHUtils {
         @StringRes
         int helpText = getHelpTextForFeature(feature);
         ImageTextBubble helpBubble = new ImageTextBubble(view.getContext(), rootView, helpText,
-                helpText, true, new ViewRectProvider(view), R.drawable.ic_chrome);
+                helpText, true, new ViewRectProvider(view), R.drawable.ic_chrome,
+                AccessibilityUtil.isAccessibilityEnabled());
         helpBubble.setDismissOnTouchInteraction(true);
         helpBubble.show();
         // To emphasize which chip is pointed to, set selected to true for the built-in highlight.

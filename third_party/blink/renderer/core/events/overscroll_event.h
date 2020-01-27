@@ -6,9 +6,10 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_EVENTS_OVERSCROLL_EVENT_H_
 
 #include "third_party/blink/renderer/core/dom/events/event.h"
-#include "third_party/blink/renderer/core/events/overscroll_event_init.h"
 
 namespace blink {
+
+class OverscrollEventInit;
 
 class OverscrollEvent final : public Event {
   DEFINE_WRAPPERTYPEINFO();

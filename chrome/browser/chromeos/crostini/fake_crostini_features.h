@@ -27,6 +27,7 @@ class FakeCrostiniFeatures : public CrostiniFeatures {
   bool IsEnabled(Profile* profile) override;
   bool IsExportImportUIAllowed(Profile* profile) override;
   bool IsRootAccessAllowed(Profile* profile) override;
+  bool IsContainerUpgradeUIAllowed(Profile*) override;
 
   void set_allowed(bool allowed) {
     allowed_set_ = true;
@@ -48,6 +49,10 @@ class FakeCrostiniFeatures : public CrostiniFeatures {
     root_access_allowed_set_ = true;
     root_access_allowed_ = allowed;
   }
+  void container_upgrade_ui_allowed(bool allowed) {
+    container_upgrade_ui_allowed_set_ = true;
+    container_upgrade_ui_allowed_ = allowed;
+  }
 
  private:
   // Original global static when this instance is created.  It is captured when
@@ -64,6 +69,8 @@ class FakeCrostiniFeatures : public CrostiniFeatures {
   bool export_import_ui_allowed_ = false;
   bool root_access_allowed_set_ = false;
   bool root_access_allowed_ = false;
+  bool container_upgrade_ui_allowed_set_ = false;
+  bool container_upgrade_ui_allowed_ = false;
 };
 
 }  // namespace crostini

@@ -103,7 +103,7 @@ class SadTabTabHelperTest : public PlatformTest {
   base::test::TaskEnvironment environment_;
   ScopedKeyWindow scoped_key_window_;
   UIView* web_state_view_;
-  std::unique_ptr<ios::ChromeBrowserState> browser_state_;
+  std::unique_ptr<ChromeBrowserState> browser_state_;
   web::TestWebState web_state_;
   web::TestNavigationManager* navigation_manager_;
   id application_;
@@ -391,7 +391,7 @@ TEST_F(SadTabTabHelperTest, FailureInterval) {
 
   // N.B. The test fixture web_state_ is not used for this test as a custom
   // |repeat_failure_interval| is required.
-  std::unique_ptr<ios::ChromeBrowserState> browser_state =
+  std::unique_ptr<ChromeBrowserState> browser_state =
       TestChromeBrowserState::Builder().Build();
 
   std::unique_ptr<web::TestNavigationManager> navigation_manager =

@@ -31,13 +31,20 @@ TEST_F(MediaLearningTasksTest, ConsecutiveBadWindowsTask) {
   EXPECT_EQ(task.name, "MediaLearningConsecutiveBadWindows");
 }
 
+TEST_F(MediaLearningTasksTest, ConsecutiveNNRsTask) {
+  LearningTask task =
+      MediaLearningTasks::Get(MediaLearningTasks::Id::kConsecutiveNNRs);
+  // Make sure the name is correct, mostly to reduce cut-and-paste errors.
+  EXPECT_EQ(task.name, "MediaLearningConsecutiveNNRs");
+}
+
 TEST_F(MediaLearningTasksTest, EnumeratesAllTasks) {
   int count = 0;
   auto cb = base::BindRepeating(
       [](int* count, const LearningTask& task) { (*count)++; },
       base::Unretained(&count));
   MediaLearningTasks::Register(std::move(cb));
-  EXPECT_EQ(count, 2);
+  EXPECT_EQ(count, 3);
 }
 
 }  // namespace learning

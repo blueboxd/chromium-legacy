@@ -7,13 +7,14 @@
 
 #import <Foundation/Foundation.h>
 
-#include "ios/chrome/browser/browser_state/chrome_browser_state_forward.h"
 #include "ios/chrome/browser/main/browser_user_data.h"
 #import "ios/web/public/navigation/navigation_manager.h"
 
 namespace web {
 class WebState;
 }
+
+class ChromeBrowserState;
 class WebStateList;
 
 namespace TabInsertion {
@@ -44,7 +45,7 @@ class TabInsertionBrowserAgent
   friend class BrowserUserData<TabInsertionBrowserAgent>;
   BROWSER_USER_DATA_KEY_DECL();
 
-  ios::ChromeBrowserState* browser_state_;
+  ChromeBrowserState* browser_state_;
   WebStateList* web_state_list_;
 };
 

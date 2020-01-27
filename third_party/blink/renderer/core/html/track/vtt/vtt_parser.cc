@@ -437,10 +437,10 @@ class VTTTreeBuilder {
   Document& GetDocument() const { return *document_; }
 
   VTTToken token_;
-  Member<ContainerNode> current_node_;
+  ContainerNode* current_node_ = nullptr;
   Vector<AtomicString> language_stack_;
-  Member<Document> document_;
-  Member<TextTrack> track_;
+  Document* document_;
+  TextTrack* track_;
 };
 
 DocumentFragment* VTTTreeBuilder::BuildFromString(const String& cue_text) {
@@ -600,7 +600,7 @@ void VTTTreeBuilder::ConstructTreeFromToken(Document& document) {
       if (node_type == kVTTNodeTypeNone)
         break;
 
-      auto* curr_vtt_element = DynamicTo<VTTElement>(current_node_.Get());
+      auto* curr_vtt_element = DynamicTo<VTTElement>(current_node_);
       VTTNodeType current_type = curr_vtt_element
                                      ? curr_vtt_element->WebVTTNodeType()
                                      : kVTTNodeTypeNone;
@@ -635,7 +635,7 @@ void VTTTreeBuilder::ConstructTreeFromToken(Document& document) {
 
       // The only non-VTTElement would be the DocumentFragment root. (Text
       // nodes and PIs will never appear as current_node_.)
-      auto* curr_vtt_element = DynamicTo<VTTElement>(current_node_.Get());
+      auto* curr_vtt_element = DynamicTo<VTTElement>(current_node_);
       if (!curr_vtt_element)
         break;
 

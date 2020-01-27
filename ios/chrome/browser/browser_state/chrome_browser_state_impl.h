@@ -23,14 +23,14 @@ class PrefProxyConfigTracker;
 
 // This class is the implementation of ChromeBrowserState used for
 // non-incognito browsing.
-class ChromeBrowserStateImpl : public ios::ChromeBrowserState {
+class ChromeBrowserStateImpl : public ChromeBrowserState {
  public:
   ~ChromeBrowserStateImpl() override;
 
   // ChromeBrowserState:
-  ios::ChromeBrowserState* GetOriginalChromeBrowserState() override;
+  ChromeBrowserState* GetOriginalChromeBrowserState() override;
   bool HasOffTheRecordChromeBrowserState() const override;
-  ios::ChromeBrowserState* GetOffTheRecordChromeBrowserState() override;
+  ChromeBrowserState* GetOffTheRecordChromeBrowserState() override;
   void DestroyOffTheRecordChromeBrowserState() override;
   PrefProxyConfigTracker* GetProxyConfigTracker() override;
   PrefService* GetPrefs() override;
@@ -54,7 +54,7 @@ class ChromeBrowserStateImpl : public ios::ChromeBrowserState {
 
   // Sets the OffTheRecordChromeBrowserState.
   void SetOffTheRecordChromeBrowserState(
-      std::unique_ptr<ios::ChromeBrowserState> otr_state);
+      std::unique_ptr<ChromeBrowserState> otr_state);
 
   base::FilePath state_path_;
 
@@ -62,7 +62,7 @@ class ChromeBrowserStateImpl : public ios::ChromeBrowserState {
   // ChromeBrowserState instance. NULL if |GetOffTheRecordChromeBrowserState()|
   // has never been called or has not been called since
   // |DestroyOffTheRecordChromeBrowserState()|.
-  std::unique_ptr<ios::ChromeBrowserState> otr_state_;
+  std::unique_ptr<ChromeBrowserState> otr_state_;
   base::FilePath otr_state_path_;
 
   // !!! BIG HONKING WARNING !!!

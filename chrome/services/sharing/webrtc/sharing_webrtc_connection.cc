@@ -8,6 +8,11 @@
 #include "base/callback.h"
 #include "base/memory/ptr_util.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "chrome/services/sharing/public/cpp/sharing_webrtc_metrics.h"
+#include "chrome/services/sharing/webrtc/ipc_network_manager.h"
+#include "chrome/services/sharing/webrtc/ipc_packet_socket_factory.h"
+#include "chrome/services/sharing/webrtc/mdns_responder_adapter.h"
+#include "chrome/services/sharing/webrtc/p2p_port_allocator.h"
 #include "third_party/webrtc/api/jsep.h"
 
 namespace {
@@ -15,6 +20,9 @@ namespace {
 constexpr char kChannelName[] = "chrome-sharing";
 // This needs to be less or equal to the WebRTC DataChannel buffer size.
 constexpr size_t kMaxQueuedSendDataBytes = 16 * 1024 * 1024;
+// Individual message size limit. Needs to be less or equal to the
+// SctpSendBufferSize.
+constexpr size_t kMaxMessageSize = 256 * 1024;
 
 // A webrtc::SetSessionDescriptionObserver implementation used to receive the
 // results of setting local and remote descriptions of the PeerConnection.
@@ -22,6 +30,12 @@ class SetSessionDescriptionObserverWrapper
     : public webrtc::SetSessionDescriptionObserver {
  public:
   typedef base::OnceCallback<void(webrtc::RTCError error)> ResultCallback;
+
+  SetSessionDescriptionObserverWrapper(
+      const SetSessionDescriptionObserverWrapper&) = delete;
+  SetSessionDescriptionObserverWrapper& operator=(
+      const SetSessionDescriptionObserverWrapper&) = delete;
+
   static SetSessionDescriptionObserverWrapper* Create(
       ResultCallback result_callback) {
     return new rtc::RefCountedObject<SetSessionDescriptionObserverWrapper>(
@@ -41,7 +55,6 @@ class SetSessionDescriptionObserverWrapper
 
  private:
   ResultCallback result_callback_;
-  DISALLOW_COPY_AND_ASSIGN(SetSessionDescriptionObserverWrapper);
 };
 
 // A webrtc::CreateSessionDescriptionObserver implementation used to receive the
@@ -53,6 +66,12 @@ class CreateSessionDescriptionObserverWrapper
       std::unique_ptr<webrtc::SessionDescriptionInterface> description,
       webrtc::RTCError error)>
       ResultCallback;
+
+  CreateSessionDescriptionObserverWrapper(
+      const CreateSessionDescriptionObserverWrapper&) = delete;
+  CreateSessionDescriptionObserverWrapper& operator=(
+      const CreateSessionDescriptionObserverWrapper&) = delete;
+
   static CreateSessionDescriptionObserverWrapper* Create(
       ResultCallback result_callback) {
     return new rtc::RefCountedObject<CreateSessionDescriptionObserverWrapper>(
@@ -74,7 +93,22 @@ class CreateSessionDescriptionObserverWrapper
 
  private:
   ResultCallback result_callback_;
-  DISALLOW_COPY_AND_ASSIGN(CreateSessionDescriptionObserverWrapper);
+};
+
+class ProxyAsyncResolverFactory final : public webrtc::AsyncResolverFactory {
+ public:
+  explicit ProxyAsyncResolverFactory(
+      sharing::IpcPacketSocketFactory* socket_factory)
+      : socket_factory_(socket_factory) {
+    DCHECK(socket_factory_);
+  }
+
+  rtc::AsyncResolverInterface* Create() override {
+    return socket_factory_->CreateAsyncResolver();
+  }
+
+ private:
+  sharing::IpcPacketSocketFactory* socket_factory_;
 };
 
 }  // namespace
@@ -90,12 +124,13 @@ SharingWebRtcConnection::SharingWebRtcConnection(
     mojo::PendingReceiver<mojom::SharingWebRtcConnection> connection,
     mojo::PendingRemote<network::mojom::P2PSocketManager> socket_manager,
     mojo::PendingRemote<network::mojom::MdnsResponder> mdns_responder,
-    std::unique_ptr<cricket::PortAllocator> port_allocator,
     base::OnceCallback<void(SharingWebRtcConnection*)> on_disconnect)
     : signalling_receiver_(this, std::move(signalling_receiver)),
       signalling_sender_(std::move(signalling_sender)),
       connection_(this, std::move(connection)),
       delegate_(std::move(delegate)),
+      p2p_socket_manager_(std::move(socket_manager)),
+      mdns_responder_(std::move(mdns_responder)),
       on_disconnect_(std::move(on_disconnect)) {
   webrtc::PeerConnectionInterface::RTCConfiguration rtc_config;
   for (const auto& ice_server : ice_servers) {
@@ -116,12 +151,67 @@ SharingWebRtcConnection::SharingWebRtcConnection(
       base::BindOnce(&SharingWebRtcConnection::CloseConnection,
                      weak_ptr_factory_.GetWeakPtr()));
 
+  p2p_socket_manager_.set_disconnect_handler(
+      base::BindOnce(&SharingWebRtcConnection::OnNetworkConnectionLost,
+                     weak_ptr_factory_.GetWeakPtr()));
+  mdns_responder_.set_disconnect_handler(
+      base::BindOnce(&SharingWebRtcConnection::OnNetworkConnectionLost,
+                     weak_ptr_factory_.GetWeakPtr()));
+
+  net::NetworkTrafficAnnotationTag traffic_annotation =
+      net::DefineNetworkTrafficAnnotation("sharing_webrtc_connection", R"(
+        semantics {
+          sender: "Chrome Sharing via WebRTC"
+          description:
+            "Chrome Sharing allows users to send data securely between their "
+            "devices. WebRTC allows Chrome to establish a secure session with "
+            "another Chrome instance running on a different device and to "
+            "transmit and receive data that users want to share across their "
+            "devices. The source data depends on the Sharing feature used, "
+            "e.g. selected text for SharedClipboard or phone numbers for Click "
+            "to Call."
+          trigger:
+            "User uses the Sharing feature and selects one of their devices to "
+            "send the data to."
+          data:
+            "Text and media encrypted via AES-128-GCM. Protocol-level messages "
+            "for the various subprotocols employed by WebRTC (including ICE, "
+            "DTLS, RTCP, etc.) are encrypted via DTLS-SRTP. Note that ICE "
+            "connectivity checks may leak the user's IP address(es), subject "
+            "to the restrictions/guidance in "
+            "https://datatracker.ietf.org/doc/draft-ietf-rtcweb-ip-handling."
+          destination: OTHER
+          destination_other:
+            "A remote Chrome instance that receives this data in a sandboxed "
+            "process."
+        }
+        policy {
+          cookies_allowed: NO
+          setting: "This feature can be disabled by signing out of Chrome."
+          chrome_policy {
+            BrowserSignin {
+              policy_options {mode: MANDATORY}
+              BrowserSignin: 0
+            }
+          }
+        }
+    )");
+
+  socket_factory_ = std::make_unique<IpcPacketSocketFactory>(
+      p2p_socket_manager_.get(), traffic_annotation);
+
+  auto network_manager = std::make_unique<IpcNetworkManager>(
+      p2p_socket_manager_.get(),
+      std::make_unique<MdnsResponderAdapter>(mdns_responder_.get()));
+
   webrtc::PeerConnectionDependencies dependencies(this);
-
-  if (port_allocator)
-    dependencies.allocator = std::move(port_allocator);
-
-  // TODO(knollr): Connect to |socket_manager| and |mdns_responder|.
+  P2PPortAllocator::Config port_config;
+  port_config.enable_multiple_routes = true;
+  port_config.enable_nonproxied_udp = true;
+  dependencies.allocator = std::make_unique<P2PPortAllocator>(
+      std::move(network_manager), socket_factory_.get(), port_config);
+  dependencies.async_resolver_factory =
+      std::make_unique<ProxyAsyncResolverFactory>(socket_factory_.get());
 
   peer_connection_ = connection_factory->CreatePeerConnection(
       rtc_config, std::move(dependencies));
@@ -183,7 +273,14 @@ void SharingWebRtcConnection::SendMessage(const std::vector<uint8_t>& message,
     return;
   }
 
-  // TODO(crbug.com/1039280): Split / merge logic for messages > 16MB.
+  // TODO(crbug.com/1039280): Split / merge logic for messages > 256k.
+  if (message.size() > kMaxMessageSize) {
+    LOG(ERROR) << "Message too large. Tried to send " << message.size()
+               << " bytes but limit is " << kMaxMessageSize;
+    std::move(callback).Run(mojom::SendMessageResult::kError);
+    return;
+  }
+
   if (message.size() > AvailableBufferSize()) {
     LOG(ERROR) << "Buffer is not large enough";
     std::move(callback).Run(mojom::SendMessageResult::kError);
@@ -454,18 +551,27 @@ void SharingWebRtcConnection::AddIceCandidates(
         webrtc::CreateIceCandidate(
             ice_candidate->sdp_mid, ice_candidate->sdp_mline_index,
             ice_candidate->candidate, /*error=*/nullptr));
+
     if (candidate) {
       peer_connection_->AddIceCandidate(
-          std::move(candidate), [](webrtc::RTCError error) {
-            if (!error.ok()) {
-              LOG(ERROR) << "Failed to add IceCandidate: " << error.message()
-                         << " (" << webrtc::ToString(error.type()) << ")";
-            }
-          });
+          std::move(candidate),
+          [](webrtc::RTCError error) { LogWebRtcAddIceCandidate(error.ok()); });
     } else {
-      LOG(ERROR) << "Skipping invalid IceCandidate";
+      LogWebRtcAddIceCandidate(false);
     }
   }
+}
+
+void SharingWebRtcConnection::OnNetworkConnectionLost() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  // Force close the DataChannel if we lost network access.
+  if (channel_) {
+    channel_->UnregisterObserver();
+    channel_ = nullptr;
+  }
+
+  CloseConnection();
 }
 
 void SharingWebRtcConnection::CloseConnection() {
@@ -489,11 +595,12 @@ void SharingWebRtcConnection::CloseConnection() {
         // DataChannel is still going through the close procedure and will call
         // OnStateChange when done.
         return;
+      case webrtc::DataChannelInterface::DataState::kConnecting:
       case webrtc::DataChannelInterface::DataState::kClosed:
         channel_->UnregisterObserver();
         channel_ = nullptr;
         break;
-      default:
+      case webrtc::DataChannelInterface::DataState::kOpen:
         // Start the closing procedure of the DataChannel.
         channel_->Close();
         return;

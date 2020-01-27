@@ -348,7 +348,7 @@ class SaveCardInfobarEGTestHelper
 }
 
 + (void)clearProfilesStore {
-  ios::ChromeBrowserState* browserState =
+  ChromeBrowserState* browserState =
       chrome_test_util::GetOriginalBrowserState();
   autofill::PersonalDataManager* personalDataManager =
       autofill::PersonalDataManagerFactory::GetForBrowserState(browserState);
@@ -461,7 +461,7 @@ class SaveCardInfobarEGTestHelper
 
 // The PersonalDataManager instance for the current browser state.
 + (autofill::PersonalDataManager*)personalDataManager {
-  ios::ChromeBrowserState* browserState =
+  ChromeBrowserState* browserState =
       chrome_test_util::GetOriginalBrowserState();
   autofill::PersonalDataManager* personalDataManager =
       autofill::PersonalDataManagerFactory::GetForBrowserState(browserState);

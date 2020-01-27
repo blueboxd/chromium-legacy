@@ -1220,6 +1220,23 @@ are declared in tools/grit/grit_rule.gni.
           Request mobile site
         </message>
       </if>
+
+      <message name="IDS_TOS_NOTIFICATION_TITLE" desc="The title of the notification that informs the user that a term of service change is coming." formatter_data="android_java">
+        Chrome’s Terms of Service are changing March 31
+      </message>
+      <message name="IDS_TOS_NOTIFICATION_BODY_TEXT" desc="The body text of the notification that informs the user that a term of service change is coming." formatter_data="android_java">
+        Please review the new terms
+      </message>
+      <message name="IDS_TOS_NOTIFICATION_ACK_BUTTON_TEXT" desc="The button text on the TOS notification for the user to acknowledge the TOS change." formatter_data="android_java">
+        Got it
+      </message>
+      <message name="IDS_TOS_NOTIFICATION_REVIEW_BUTTON_TEXT" desc="The button text on the TOS notification for the user to review the TOS change." formatter_data="android_java">
+        Review
+      </message>
+      <message name="IDS_TOS_NOTIFICATION_LINK" desc="The URL for the new TOS change link." translateable="false" formatter_data="android_java">
+        https://www.google.com/chrome/privacy/eula_text.html
+      </message>
+
       <message name="IDS_HELP_MENU" desc="The text label of the Help sub-menu item in the wrench menu">
         H&amp;elp
       </message>
@@ -3770,6 +3787,9 @@ are declared in tools/grit/grit_rule.gni.
       </message>
       <message name="IDS_EXTENSION_NO_SPECIAL_PERMISSIONS" desc="Shown when the app/extension requires no special permission">
         Has no special permissions.
+      </message>
+      <message name="IDS_EXTENSION_WITHHOLD_PERMISSIONS" desc="Label next to the checkbox in the extension or app installation prompt, which indicates if a user wants to manually control which sites the extension can access.">
+        Manually control site permissions.
       </message>
 
       <message name="IDS_EXTENSION_PERMISSION_LINE" desc="Template for item in list of privileges that an extension or app has">

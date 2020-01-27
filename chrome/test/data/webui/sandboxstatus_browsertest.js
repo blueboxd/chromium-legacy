@@ -142,7 +142,8 @@ SandboxStatusWindowsUITest.prototype = {
 // This test is for Windows only.
 GEN('#if defined(OS_WIN)');
 GEN('# define MAYBE_testSandboxStatus \\');
-GEN('     testSandboxStatus');
+// TODO(https://crbug.com/1045564) Flaky on Windows.
+GEN('     DISABLED_testSandboxStatus');
 GEN('#else');
 GEN('# define MAYBE_testSandboxStatus \\');
 GEN('     DISABLED_testSandboxStatus');

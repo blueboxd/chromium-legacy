@@ -7,7 +7,6 @@
  * 'settings-privacy-page' is the settings page containing privacy and
  * security settings.
  */
-
 cr.define('settings', function() {
   /**
    * @typedef {{
@@ -245,6 +244,8 @@ cr.define('settings', function() {
       this.ChooserType = settings.ChooserType;
 
       this.browserProxy_ = settings.PrivacyPageBrowserProxyImpl.getInstance();
+      this.metricsBrowserProxy_ =
+          settings.MetricsBrowserProxyImpl.getInstance();
 
       this.onBlockAutoplayStatusChanged_({
         pref: /** @type {chrome.settingsPrivate.PrefObject} */ ({value: false}),
@@ -271,6 +272,8 @@ cr.define('settings', function() {
 
     /** @private */
     onSafeBrowsingReportingToggleChange_() {
+      this.metricsBrowserProxy_.recordSettingsPageHistogram(
+          settings.SettingsPageInteractions.PRIVACY_IMPROVE_SECURITY);
       this.setPrefValue(
           'safebrowsing.scout_reporting_enabled',
           this.$$('#safeBrowsingReportingToggle').checked);
@@ -346,7 +349,7 @@ cr.define('settings', function() {
      * @private
      */
     onCanMakePaymentChange_() {
-      this.browserProxy_.recordSettingsPageHistogram(
+      this.metricsBrowserProxy_.recordSettingsPageHistogram(
           settings.SettingsPageInteractions.PRIVACY_PAYMENT_METHOD);
     },
 
@@ -357,7 +360,7 @@ cr.define('settings', function() {
      * @private
      */
     onDoNotTrackChange_(event) {
-      this.browserProxy_.recordSettingsPageHistogram(
+      this.metricsBrowserProxy_.recordSettingsPageHistogram(
           settings.SettingsPageInteractions.PRIVACY_DO_NOT_TRACK);
       const target = /** @type {!SettingsToggleButtonElement} */ (event.target);
       if (!target.checked) {
@@ -413,14 +416,14 @@ cr.define('settings', function() {
 
     /** @private */
     onManageCertificatesTap_() {
+      this.metricsBrowserProxy_.recordSettingsPageHistogram(
+          settings.SettingsPageInteractions.PRIVACY_MANAGE_CERTIFICATES);
       // <if expr="use_nss_certs">
       settings.Router.getInstance().navigateTo(settings.routes.CERTIFICATES);
       // </if>
       // <if expr="is_win or is_macosx">
       this.browserProxy_.showManageSSLCertificates();
       // </if>
-      this.browserProxy_.recordSettingsPageHistogram(
-          settings.SettingsPageInteractions.PRIVACY_MANAGE_CERTIFICATES);
     },
 
     /**
@@ -430,7 +433,7 @@ cr.define('settings', function() {
      * @private
      */
     onNetworkPredictionChange_() {
-      this.browserProxy_.recordSettingsPageHistogram(
+      this.metricsBrowserProxy_.recordSettingsPageHistogram(
           settings.SettingsPageInteractions.PRIVACY_NETWORK_PREDICTION);
     },
 
@@ -454,17 +457,23 @@ cr.define('settings', function() {
 
     /** @private */
     onSiteSettingsTap_() {
-      settings.Router.getInstance().navigateTo(settings.routes.SITE_SETTINGS);
-      this.browserProxy_.recordSettingsPageHistogram(
+      this.metricsBrowserProxy_.recordSettingsPageHistogram(
           settings.SettingsPageInteractions.PRIVACY_SITE_SETTINGS);
+      settings.Router.getInstance().navigateTo(settings.routes.SITE_SETTINGS);
+    },
+
+    /** @private */
+    onSafeBrowsingToggleChange_: function() {
+      this.metricsBrowserProxy_.recordSettingsPageHistogram(
+          settings.SettingsPageInteractions.PRIVACY_SAFE_BROWSING);
     },
 
     /** @private */
     onClearBrowsingDataTap_() {
+      this.metricsBrowserProxy_.recordSettingsPageHistogram(
+          settings.SettingsPageInteractions.PRIVACY_CLEAR_BROWSING_DATA);
       settings.Router.getInstance().navigateTo(
           settings.routes.CLEAR_BROWSER_DATA);
-      this.browserProxy_.recordSettingsPageHistogram(
-          settings.SettingsPageInteractions.PRIVACY_CLEAR_BROWSING_DATA);
     },
 
     /** @private */
@@ -476,9 +485,9 @@ cr.define('settings', function() {
 
     /** @private */
     onSecurityKeysTap_() {
-      settings.Router.getInstance().navigateTo(settings.routes.SECURITY_KEYS);
-      this.browserProxy_.recordSettingsPageHistogram(
+      this.metricsBrowserProxy_.recordSettingsPageHistogram(
           settings.SettingsPageInteractions.PRIVACY_SECURITY_KEYS);
+      settings.Router.getInstance().navigateTo(settings.routes.SECURITY_KEYS);
     },
 
     /** @private */

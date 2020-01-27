@@ -27,7 +27,6 @@
 <translation id="4249068189593983585">Astuce Chrome : Pour afficher plus d'options d'onglets, appuyez de manière prolongée sur le bouton "Afficher les onglets" situé dans la barre d'outils affichée dans la partie inférieure ou supérieure de l'écran.</translation>
 <translation id="4523886039239821078">Certains modules complémentaires entraînent le plantage de Chrome. Veuillez les désinstaller.</translation>
 <translation id="5389212809648216794">Google Chrome ne peut pas utiliser l'appareil photo, car celui-ci est utilisé par une autre application</translation>
-<translation id="5621912349729388018"><ph name="BEGIN_LINK" />Passez en revue les Conditions d'utilisation de Chrome mises à jour.<ph name="END_LINK" /></translation>
 <translation id="5639704535586432836">Ouvrez Paramètres &gt; Confidentialité &gt; Appareil photo &gt; Google Chrome, puis activez l'appareil photo.</translation>
 <translation id="5642200033778930880">Google Chrome ne peut pas utiliser votre appareil photo en mode Vue fractionnée</translation>
 <translation id="5690427481109656848">Google LLC</translation>
@@ -51,4 +50,5 @@
 <translation id="840168496893712993">Certains modules complémentaires entraînent le plantage de Chrome. Veuillez essayer de les désinstaller.</translation>
 <translation id="8459495907675268833">Les données sélectionnées ont été supprimées de Chrome et des appareils synchronisés. Votre compte Google conserve peut-être d'autres formes d'historique de navigation sur la page history.google.com concernant, par exemple, vos recherches ou vos activités via d'autres services Google.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
+<translation id="8574235780160508979">Les conditions d'utilisation de Chrome vont changer le 31 mars. <ph name="BEGIN_LINK" />Veuillez consulter les modifications<ph name="END_LINK" /></translation>
 </translationbundle>

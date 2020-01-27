@@ -55,9 +55,11 @@ namespace enterprise.reportingPrivate {
     // Gets the device data for |id|. Sets runtime.lastError on failure.
     static void getDeviceData(DOMString id, GetDeviceDataCallback callback);
 
-    // Sets the device data for |id|. Sets runtime.lastError on failure.
+    // Sets the device data for |id|. Sets runtime.lastError on failure. If the
+    // |data| parameter is undefined and there is already data associated with
+    // |id| it will be cleared.
     static void setDeviceData(DOMString id,
-             ArrayBuffer data,
+             optional ArrayBuffer data,
              optional DoneCallback callback);
 
     // Gets the device information (including disk encryption status,

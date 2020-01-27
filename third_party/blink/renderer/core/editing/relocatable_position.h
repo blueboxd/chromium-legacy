@@ -25,7 +25,7 @@ class CORE_EXPORT RelocatablePosition final {
   Position GetPosition() const;
 
  private:
-  const Member<Range> range_;
+  Range* const range_;
 
   DISALLOW_COPY_AND_ASSIGN(RelocatablePosition);
 };

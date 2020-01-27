@@ -155,8 +155,8 @@ FileMonitorImpl::~FileMonitorImpl() = default;
 void FileMonitorImpl::Initialize(const InitCallback& callback) {
   base::PostTaskAndReplyWithResult(
       file_thread_task_runner_.get(), FROM_HERE,
-      base::Bind(&InitializeAndCreateDownloadDirectory, download_file_dir_),
-      callback);
+      base::BindOnce(&InitializeAndCreateDownloadDirectory, download_file_dir_),
+      base::BindOnce(callback));
 }
 
 void FileMonitorImpl::DeleteUnknownFiles(
@@ -206,7 +206,8 @@ void FileMonitorImpl::DeleteFiles(
 void FileMonitorImpl::HardRecover(const InitCallback& callback) {
   base::PostTaskAndReplyWithResult(
       file_thread_task_runner_.get(), FROM_HERE,
-      base::Bind(&HardRecoverOnFileThread, download_file_dir_), callback);
+      base::BindOnce(&HardRecoverOnFileThread, download_file_dir_),
+      base::BindOnce(callback));
 }
 
 }  // namespace download

@@ -17,7 +17,7 @@ class ChromiumCodeSignConfig(BuildPropsCodeSignConfig):
     def optional_parts(self):
         # This part requires src-internal, so it is not required for a Chromium
         # build signing.
-        return set(('libwidevinecdm.dylib',))
+        return set()
 
     @property
     def provisioning_profile_basename(self):

@@ -266,7 +266,7 @@ EnterpriseReportingPrivateSetDeviceDataFunction::Run() {
       {base::ThreadPool(), base::MayBlock(),
        base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
       base::BindOnce(
-          &StoreDeviceData, params->id, params->data,
+          &StoreDeviceData, params->id, std::move(params->data),
           base::BindOnce(
               &EnterpriseReportingPrivateSetDeviceDataFunction::OnDataStored,
               this)));

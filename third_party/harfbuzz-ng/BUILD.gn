@@ -48,6 +48,7 @@ if (use_system_harfbuzz) {
       "src/src/hb-icu.h",
       "src/src/hb-map.h",
       "src/src/hb-ot-font.h",
+      "src/src/hb-ot-glyph.h",
       "src/src/hb-ot-layout.h",
       "src/src/hb-ot-math.h",
       "src/src/hb-ot-shape.h",
@@ -126,6 +127,9 @@ if (use_system_harfbuzz) {
       "src/src/hb-ot-face.hh",
       "src/src/hb-ot-font.cc",
       "src/src/hb-ot-gasp-table.hh",
+      "src/src/hb-ot-glyph.cc",
+      "src/src/hb-ot-glyph.h",
+      "src/src/hb-ot-glyph.hh",
       "src/src/hb-ot-hdmx-table.hh",
       "src/src/hb-ot-head-table.hh",
       "src/src/hb-ot-hhea-table.hh",
@@ -300,9 +304,7 @@ if (use_system_harfbuzz) {
 
     public_configs = [ ":harfbuzz_config" ]
 
-    deps = [
-      "//third_party/icu:icuuc",
-    ]
+    deps = [ "//third_party/icu:icuuc" ]
 
     if (use_glib) {
       configs += [ "//build/config/linux:glib" ]
@@ -313,12 +315,8 @@ if (use_system_harfbuzz) {
 }
 
 fuzzer_test("harfbuzz_fuzzer") {
-  sources = [
-    "fuzz/harfbuzz_fuzzer.cc",
-  ]
-  deps = [
-    "//third_party:freetype_harfbuzz",
-  ]
+  sources = [ "fuzz/harfbuzz_fuzzer.cc" ]
+  deps = [ "//third_party:freetype_harfbuzz" ]
   libfuzzer_options = [ "max_len=16800" ]
   seed_corpus = "fuzz/seed_corpus"
 }

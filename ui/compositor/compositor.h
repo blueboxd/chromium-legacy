@@ -80,21 +80,6 @@ class ScrollInputHandler;
 
 constexpr int kCompositorLockTimeoutMs = 67;
 
-class COMPOSITOR_EXPORT ContextFactoryObserver {
- public:
-  virtual ~ContextFactoryObserver() {}
-
-  // Notifies that the viz::ContextProviders returned from
-  // ui::ContextFactory::SharedMainThreadContextProvider and/or
-  // ui::ContextFactory::SharedMainThreadRasterContextProvider were lost.
-  // When this is called, the old resources (e.g. shared context, GL helper)
-  // still exist, but are about to be destroyed. Getting a reference to those
-  // resources from the ContextFactory (e.g. through
-  // SharedMainThreadContextProvider()) will return newly recreated, valid
-  // resources.
-  virtual void OnLostSharedContext() = 0;
-};
-
 // This is privileged interface to the compositor. It is a global object.
 class COMPOSITOR_EXPORT ContextFactoryPrivate {
  public:
@@ -179,10 +164,6 @@ class COMPOSITOR_EXPORT ContextFactory {
 
   // Gets the task graph runner.
   virtual cc::TaskGraphRunner* GetTaskGraphRunner() = 0;
-
-  virtual void AddObserver(ContextFactoryObserver* observer) = 0;
-
-  virtual void RemoveObserver(ContextFactoryObserver* observer) = 0;
 };
 
 // Compositor object to take care of GPU painting.

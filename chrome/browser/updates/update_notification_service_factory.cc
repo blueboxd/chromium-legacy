@@ -41,7 +41,7 @@ KeyedService* UpdateNotificationServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   auto* schedule_service =
       NotificationScheduleServiceFactory::GetForBrowserContext(context);
-  auto config = updates::UpdateNotificationConfig::Create();
+  auto config = updates::UpdateNotificationConfig::CreateFromFinch();
   auto bridge =
       std::make_unique<updates::UpdateNotificationServiceBridgeAndroid>();
   return static_cast<KeyedService*>(new updates::UpdateNotificationServiceImpl(

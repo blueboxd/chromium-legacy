@@ -107,9 +107,6 @@
   </message>
 
   <!-- Sync Page -->
-  <message name="IDS_SETTINGS_SYNC_SIGNIN" desc="The label that appears on the sync button in the options dialog when sync has not been set up by the user.">
-    Sign in to Chrome
-  </message>
   <message name="IDS_SETTINGS_SYNC_DATA_ENCRYPTED_TEXT" desc="Text alerting the user that synced data is encrypted.">
     For added security, Google Chrome will encrypt your data
   </message>

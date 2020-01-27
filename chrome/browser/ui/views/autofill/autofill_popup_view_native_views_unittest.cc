@@ -208,6 +208,33 @@ TEST_F(AutofillPopupViewNativeViewsTest, AccessibilityTest) {
       node_data_3.GetBoolAttribute(ax::mojom::BoolAttribute::kSelected));
 }
 
+TEST_F(AutofillPopupViewNativeViewsTest, Gestures) {
+  CreateAndShowView({autofill::POPUP_ITEM_ID_PASSWORD_ENTRY,
+                     autofill::POPUP_ITEM_ID_SEPARATOR,
+                     autofill::POPUP_ITEM_ID_ALL_SAVED_PASSWORDS_ENTRY});
+
+  // Tap down will select an element.
+  ui::GestureEvent tap_down_event(
+      /*x=*/0, /*y=*/0, /*flags=*/0, ui::EventTimeForNow(),
+      ui::GestureEventDetails(ui::ET_GESTURE_TAP_DOWN));
+  EXPECT_CALL(autofill_popup_controller_, SetSelectedLine(testing::Eq(0)));
+  view()->GetRowsForTesting()[0]->OnGestureEvent(&tap_down_event);
+
+  // Tapping will accept the selection.
+  ui::GestureEvent tap_event(/*x=*/0, /*y=*/0, /*flags=*/0,
+                             ui::EventTimeForNow(),
+                             ui::GestureEventDetails(ui::ET_GESTURE_TAP));
+  EXPECT_CALL(autofill_popup_controller_, AcceptSuggestion(0));
+  view()->GetRowsForTesting()[0]->OnGestureEvent(&tap_event);
+
+  // Canceling gesture clears any selection.
+  ui::GestureEvent tap_cancel(
+      /*x=*/0, /*y=*/0, /*flags=*/0, ui::EventTimeForNow(),
+      ui::GestureEventDetails(ui::ET_GESTURE_TAP_CANCEL));
+  EXPECT_CALL(autofill_popup_controller_, SelectionCleared());
+  view()->GetRowsForTesting()[2]->OnGestureEvent(&tap_cancel);
+}
+
 TEST_P(AutofillPopupViewNativeViewsForEveryTypeTest, ShowClickTest) {
   const TypeClicks& click = GetParam();
   CreateAndShowView({click.id});

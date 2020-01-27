@@ -1257,7 +1257,10 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
                                      LONG* n_selected);
 
   // Helper method for mutating the ISelectionItemProvider selected state
-  HRESULT ISelectionItemProviderSetSelected(bool selected);
+  HRESULT ISelectionItemProviderSetSelected(bool selected) const;
+
+  // Helper method getting the selected status.
+  bool ISelectionItemProviderIsSelected() const;
 
   //
   // Getters for UIA GetTextAttributeValue

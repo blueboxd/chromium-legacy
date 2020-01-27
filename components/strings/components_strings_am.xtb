@@ -79,6 +79,7 @@
 <translation id="129553762522093515">በቅርብ ጊዜ የተዘጉ</translation>
 <translation id="1298536327547837046">የማልዌር ቅኝት</translation>
 <translation id="129863573139666797"><ph name="BEGIN_LINK" />ኩኪዎችዎን ማጽዳት ይሞክሩ<ph name="END_LINK" /></translation>
+<translation id="1301324364792935241">ደህንነታቸው የተጠበቁ የዲኤንኤስ ቅንብሮችዎን ይፈትሹ።</translation>
 <translation id="1307966114820526988">የተቋረጡ ባህሪያት</translation>
 <translation id="1314509827145471431">ወደቀኝ እጠፍ</translation>
 <translation id="1320233736580025032">Prc1 (የደብዳቤ ፖስታ)</translation>
@@ -152,6 +153,7 @@
 <translation id="1569487616857761740">የጊዜ ማብቂያ ቀን ያስገቡ</translation>
 <translation id="1581080074034554886">CVC</translation>
 <translation id="1583429793053364125">ይህን ድረ-ገጽ በማሳየት ላይ ሳለ የሆነ ችግር ተፈጥሯል።</translation>
+<translation id="1586541204584340881">የትኛዎቹ ቅጥያዎች ናቸው እርስዎ የጫኑት</translation>
 <translation id="1588438908519853928">መደበኛ</translation>
 <translation id="1592005682883173041">አካባቢያዊ የውሂብ መድረሻ</translation>
 <translation id="1594030484168838125">ምረጥ</translation>
@@ -290,7 +292,6 @@
 <translation id="2218879909401188352">በ<ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> ላይ አሁን ያሉ አጥቂዎች የእርስዎን መሣሪያ የሚያበላሹ አደገኛ መተግበሪያዎችን ሊጭኑ፣ በእርስዎ ሞባይል ክፍያ መጠየቂያ ላይ የተደበቁ ክፍያ መጠየቂያዎችን ሊያክሉ ወይም የእርስዎን የግል መረጃ ሊሰርቁ ይችላሉ። <ph name="BEGIN_LEARN_MORE_LINK" />የበለጠ ለመረዳት<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="2224337661447660594">ምንም በይነመረብ የለም</translation>
 <translation id="2230458221926704099"><ph name="BEGIN_LINK" />የመመርመሪያ መተግበሪያውን<ph name="END_LINK" /> በመጠቀም ግንኙነትዎን ያስተካክሉት</translation>
-<translation id="22320125457191592">ለእርስዎ</translation>
 <translation id="2239100178324503013">አሁን ላክ</translation>
 <translation id="2248949050832152960">WebAuthnን ተጠቀም</translation>
 <translation id="2250931979407627383">በግራ በኩል ጫፉን ስፋ።</translation>
@@ -363,6 +364,7 @@
 <translation id="2544644783021658368">ነጠላ ሰነድ</translation>
 <translation id="254947805923345898">የመመሪያ እሴት የሚሰራ አይደለም።</translation>
 <translation id="255002559098805027"><ph name="HOST_NAME" /> ልክ ያልኾነ ምላሽ ልኳል።</translation>
+<translation id="2553853292994445426">ደህንነታቸው የተጠበቁ የዲኤንኤስ ቅንብሮችዎን ይፈትሹ። ግንኙነቶቹ እየተሳኩ ያልሆነ ደህንነቱ የተጠበቀ የዲኤንኤስ አገልጋይ አዋቅረው ሊሆኑ ይችላሉ።</translation>
 <translation id="2556876185419854533">&amp;አርትዕን ቀልብስ</translation>
 <translation id="257674075312929031">ቡድን</translation>
 <translation id="2586657967955657006">የቅንጥብ ሰሌዳ</translation>
@@ -481,6 +483,7 @@
 <translation id="3095940652251934233">መግለጫ</translation>
 <translation id="3096100844101284527">የመውሰጃ አድራሻ ያክሉ</translation>
 <translation id="3105172416063519923">የእሴት መታወቂያ፦</translation>
+<translation id="3107591622054137333"><ph name="BEGIN_LINK" />ደህንነቱ የተጠበቀ የዲኤስንኤስ ውቅረትን በመፈተሽ ላይ<ph name="END_LINK" /></translation>
 <translation id="3109728660330352905">ይህን ገጽ ለማየት ፍቃድ የለዎትም።</translation>
 <translation id="3113284927548439113">ሶስተኛ ፈረቃ</translation>
 <translation id="3116158981186517402">አሽግ</translation>
@@ -571,7 +574,6 @@
 <translation id="3531780078352352885">የስራ ሉሆች</translation>
 <translation id="3533328374079021623">የመልዕክት ሳጥን 5</translation>
 <translation id="3539171420378717834">የዚህን ካርድ ቅጂ በዚህ መሣሪያ ላይ አቆይ</translation>
-<translation id="3553513561058684206">ለእርስዎ</translation>
 <translation id="3558573058928565255">የቀን ሰዓት</translation>
 <translation id="3566021033012934673">ግንኙነትዎ የግል አይደለም</translation>
 <translation id="3574305903863751447"><ph name="CITY" />፣ <ph name="STATE" /> <ph name="COUNTRY" /></translation>
@@ -781,6 +783,7 @@
 <translation id="4390472908992056574">ከፈፍ</translation>
 <translation id="4406896451731180161">የፍለጋ ውጤቶች</translation>
 <translation id="4408413947728134509">ኩኪዎች <ph name="NUM_COOKIES" /></translation>
+<translation id="4414290883293381923">አሁን የይለፍ ቃልዎን በአንድ አታላይ ጣቢያ ላይ አስገብተዋል። Chrome ወደ <ph name="WEBSITE_1" />፣ <ph name="WEBSITE_2" />፣ <ph name="WEBSITE_3" /> እና ይህን የይለፍ ቃል በሚጠቀሙባቸው ሌሎች ጣቢያዎች ሄደው አሁኑኑ እንዲለውጡት ይመክራል።</translation>
 <translation id="4415426530740016218">የመውሰጃ አድራሻ</translation>
 <translation id="4424024547088906515">ይህ አገልጋይ <ph name="DOMAIN" /> መሆኑን ሊያረጋግጥ አልቻለም፤ የደህንነት እውቅና ማረጋገጫው በChrome የሚታመን አይደለም። ይሄ በተሳሳተ አወቃቀር ወይም አንድ አጥቂ ግንኙነትዎን በመጥለፉ የተከሰተ ሊሆን ይችላል።</translation>
 <translation id="443121186588148776">የመለያ ወደብ</translation>
@@ -1213,6 +1216,7 @@
 <translation id="6353505687280762741">{COUNT,plural, =0{ምንም}=1{1 ይለፍ ቃል (ለ<ph name="DOMAIN_LIST" />፣ ሰምሯል)}=2{2 ይለፍ ቃላት (ለ<ph name="DOMAIN_LIST" />፣ ሰምሯል)}one{# ይለፍ ቃላት (ለ<ph name="DOMAIN_LIST" />፣ ሰምሯል)}other{# ይለፍ ቃላት (ለ<ph name="DOMAIN_LIST" />፣ ሰምሯል)}}</translation>
 <translation id="6358450015545214790">እነዚህ ምን ማለት ናቸው?</translation>
 <translation id="6361757823711327522">B7</translation>
+<translation id="6364095313648930329"><ph name="BEGIN_LINK" />ተኪውን፣ ኬላውን እና ደህንነቱ የተጠበቀ የዲኤንኤስ ውቅረትን በመፈተሽ ላይ<ph name="END_LINK" /></translation>
 <translation id="6366710531182496394">ድርብ በግራ በኩል ስቴፕለር ምታ</translation>
 <translation id="6377268785556383139">ለ«<ph name="SEARCH_TEXT" />» 1 ውጤት</translation>
 <translation id="6380497234672085559">A0</translation>
@@ -1235,6 +1239,7 @@
 <translation id="6433595998831338502"><ph name="HOST_NAME" /> ማገናኘት አሻፈረኝ ብሏል።</translation>
 <translation id="6434309073475700221">አስወግድ</translation>
 <translation id="6440503408713884761">የተተወ</translation>
+<translation id="6443406338865242315">የትኛዎቹ ቅጥያዎች እና ተሰኪዎች ናቸው እርስዎ የጫኑት</translation>
 <translation id="6446163441502663861">ካሁ (የደብዳቤ ፖስታ)</translation>
 <translation id="6446608382365791566">ተጨማሪ መረጃ ያክሉ</translation>
 <translation id="6447842834002726250">ኩኪዎች</translation>
@@ -1344,6 +1349,7 @@
 <translation id="7012363358306927923">China UnionPay</translation>
 <translation id="7016992613359344582">እነዚህ ክፍያዎች የአንድ ጊዜ ወይም ተደጋጋሚ፣ እና የማያስታውቁ ሊሆኑ ይችላሉ።</translation>
 <translation id="7029809446516969842">የይለፍ ቃላት</translation>
+<translation id="7031646650991750659">የትኛዎቹን የGoogle Play መተግበሪያዎች እንደጫኑ</translation>
 <translation id="7050187094878475250"><ph name="DOMAIN" /> ጋር ለመድረስ ሞክረዋል፣ ነገር ግን አገልጋዩ አስተማማኝ ለመሆን የሚያስቸግር በጣም ረጅም የሆነ የማረጋገጫ ጊዜ ነው ያለው።</translation>
 <translation id="705310974202322020">{NUM_CARDS,plural, =1{ይህ ካርድ አሁን ሊቀመጥ አይችልም}one{እነዚህ ካርዶች አሁን ሊቀመጡ አይችሉም}other{እነዚህ ካርዶች አሁን ሊቀመጡ አይችሉም}}</translation>
 <translation id="7053983685419859001">አግድ</translation>
@@ -1403,6 +1409,7 @@
 <translation id="7319430975418800333">A3</translation>
 <translation id="7320336641823683070">የግንኙነት እገዛ</translation>
 <translation id="733354035281974745">የመሣሪያ አካባቢያዊ መለያ መሻር</translation>
+<translation id="7333654844024768166">አሁን የይለፍ ቃልዎን በአንድ አታላይ ጣቢያ ላይ አስገብተዋል። Chromium ወደ <ph name="WEBSITE_1" />፣ <ph name="WEBSITE_2" />፣ <ph name="WEBSITE_3" /> እና የይህን ይለፍ ቃል ወደሚጠቀሙባቸው ሌሎች ጣቢያዎች ሄደው አሁኑኑ እንዲለውጡት ይመክራል።</translation>
 <translation id="7334320624316649418">&amp;ማስተካከልን ድገም</translation>
 <translation id="7337706099755338005">በእርስዎ የመሣሪያ ስርዓት ላይ አይገኝም።</translation>
 <translation id="733923710415886693">የአገልጋዩ የእውቅና ማረጋገጫ በእውቅና ማረጋገጫ ግልጽነት በኩል አልተገለጸም።</translation>

@@ -160,7 +160,7 @@ class CORE_EXPORT CSSStyleSheet final : public StyleSheet {
     ~RuleMutationScope();
 
    private:
-    Member<CSSStyleSheet> style_sheet_;
+    CSSStyleSheet* style_sheet_;
     DISALLOW_COPY_AND_ASSIGN(RuleMutationScope);
   };
 
@@ -176,7 +176,7 @@ class CORE_EXPORT CSSStyleSheet final : public StyleSheet {
     ~InspectorMutationScope();
 
    private:
-    Member<CSSStyleSheet> style_sheet_;
+    CSSStyleSheet* style_sheet_;
     DISALLOW_COPY_AND_ASSIGN(InspectorMutationScope);
   };
 

@@ -21,7 +21,7 @@
 
 @interface StaticFileViewController ()<UIScrollViewDelegate,
                                        WKNavigationDelegate> {
-  ios::ChromeBrowserState* _browserState;  // weak
+  ChromeBrowserState* _browserState;  // weak
   NSURL* _URL;
   // YES if the header has been configured for RTL.
   BOOL _headerLaidOutForRTL;
@@ -40,7 +40,7 @@
 
 @synthesize loadStatus = _loadStatus;
 
-- (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState
+- (instancetype)initWithBrowserState:(ChromeBrowserState*)browserState
                                  URL:(NSURL*)URL {
   DCHECK(browserState);
   DCHECK(URL);

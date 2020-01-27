@@ -20,6 +20,7 @@
 <translation id="2915596697727466327">Chromium bruker Face ID til å sikre at bare godkjente personer får tilgang til passordene dine.</translation>
 <translation id="3256316712990552818">Kopiert til Chromium</translation>
 <translation id="3805899903892079518">Chromium har ikke tilgang til bildene eller videoene dine. Slå på tilgangen i iOS-innstillingene &gt; Personvern &gt; Bilder.</translation>
+<translation id="4287098963058057749">Vilkårene for bruk av Chromium endres 31. mars. <ph name="BEGIN_LINK" />Les gjennom dem<ph name="END_LINK" /></translation>
 <translation id="4555020257205549924">Når denne funksjonen er slått på, tilbyr Chromium å oversette sider som er skrevet på andre språk, ved hjelp av Google Oversetter. <ph name="BEGIN_LINK" />Finn ut mer<ph name="END_LINK" /></translation>
 <translation id="4681781466797808448">Slå på Chromium-skanneren</translation>
 <translation id="4787850887676698916">Faner du har åpnet i Chromium på de andre enhetene dine, vises her.</translation>
@@ -48,6 +49,5 @@
 <translation id="8586442755830160949">Copyright <ph name="YEAR" /> – The Chromium Authors. Med enerett.</translation>
 <translation id="8809780021347235332">For å lagre bilder, trykk på Innstillinger for å la Chromium bruke bildene dine.</translation>
 <translation id="9022552996538154597">Logg på Chromium</translation>
-<translation id="9217078088703304241"><ph name="BEGIN_LINK" />Gjennomgå de oppdaterte vilkårene for Chromium.<ph name="END_LINK" /></translation>
 <translation id="985602178874221306">The Chromium Authors</translation>
 </translationbundle>

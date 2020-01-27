@@ -194,6 +194,8 @@ class CORE_EXPORT HTMLVideoElement final
   void MediaRemotingStopped(int error_code) final;
   WebMediaPlayer::DisplayType DisplayType() const final;
   bool IsInAutoPIP() const final;
+  void RequestEnterPictureInPicture() final;
+  void RequestExitPictureInPicture() final;
   void OnPictureInPictureStateChange() final;
 
   // Used by the PictureInPictureController as callback when the video element

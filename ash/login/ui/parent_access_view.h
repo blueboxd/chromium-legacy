@@ -155,12 +155,17 @@ class ASH_EXPORT ParentAccessView : public views::DialogDelegateView,
  private:
   class FocusableLabelButton;
   class AccessCodeInput;
+  class FlexCodeInput;
+  class FixedLengthCodeInput;
 
   // Submits access code for validation.
   void SubmitCode();
 
   // Updates state of the view.
   void UpdateState(State state);
+
+  // Closes the view.
+  void OnBack();
 
   // Updates view's preferred size.
   void UpdatePreferredSize();
@@ -171,7 +176,7 @@ class ASH_EXPORT ParentAccessView : public views::DialogDelegateView,
   // Called when access code input changes. |complete| brings information
   // whether current input code is complete. |last_field_active| contains
   // information whether last input field is currently active.
-  void OnInputChange(bool complete, bool last_field_active);
+  void OnInputChange(bool last_field_active, bool complete);
 
   // Callbacks to be called when user performs certain actions.
   const Callbacks callbacks_;

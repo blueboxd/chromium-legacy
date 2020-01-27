@@ -72,6 +72,33 @@ void TestClipboard::ReadAvailableTypes(ClipboardBuffer buffer,
   *contains_filenames = false;
 }
 
+std::vector<base::string16>
+TestClipboard::ReadAvailablePlatformSpecificFormatNames(
+    ClipboardBuffer buffer) const {
+  const auto& data = GetStore(buffer).data;
+  std::vector<base::string16> types;
+  types.reserve(data.size());
+  for (const auto& it : data)
+    types.push_back(base::UTF8ToUTF16(it.first.GetName()));
+
+  // Some platforms add additional raw types to represent text, or offer them
+  // as available formats by automatically converting between them.
+  if (IsFormatAvailable(ClipboardFormatType::GetPlainTextType(), buffer)) {
+#if defined(USE_X11)
+    types.push_back(base::ASCIIToUTF16("TEXT"));
+    types.push_back(base::ASCIIToUTF16("STRING"));
+    types.push_back(base::ASCIIToUTF16("UTF8_STRING"));
+#elif defined(OS_WIN)
+    types.push_back(base::ASCIIToUTF16("CF_LOCALE"));
+    types.push_back(base::ASCIIToUTF16("CF_OEMTEXT"));
+#elif defined(OS_MACOSX)
+    types.push_back(base::ASCIIToUTF16("NSStringPboardType"));
+#endif
+  }
+
+  return types;
+}
+
 void TestClipboard::ReadText(ClipboardBuffer buffer,
                              base::string16* result) const {
   std::string result8;

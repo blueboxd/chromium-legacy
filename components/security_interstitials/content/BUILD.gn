@@ -27,6 +27,7 @@ static_library("security_interstitial_page") {
     "origin_policy_interstitial_page.h",
     "origin_policy_ui.cc",
     "origin_policy_ui.h",
+    "security_blocking_page_factory.h",
     "security_interstitial_controller_client.cc",
     "security_interstitial_controller_client.h",
     "security_interstitial_page.cc",
@@ -38,10 +39,12 @@ static_library("security_interstitial_page") {
     "ssl_blocking_page_base.cc",
     "ssl_blocking_page_base.h",
     "ssl_cert_reporter.h",
+    "ssl_error_assistant.cc",
+    "ssl_error_assistant.h",
     "ssl_error_navigation_throttle.cc",
     "ssl_error_navigation_throttle.h",
-    "unsafe_resource.cc",
-    "unsafe_resource.h",
+    "unsafe_resource_util.cc",
+    "unsafe_resource_util.h",
     "urls.cc",
     "urls.h",
   ]
@@ -57,9 +60,8 @@ static_library("security_interstitial_page") {
     "//components/prefs:prefs",
     "//components/resources",
     "//components/safe_browsing/core/common:safe_browsing_prefs",
-    "//components/safe_browsing/core/db:hit_report",
-    "//components/safe_browsing/core/db:util",
     "//components/security_interstitials/core:core",
+    "//components/security_interstitials/core:unsafe_resource",
     "//components/ssl_errors",
     "//components/strings:components_strings_grit",
     "//components/url_formatter",
@@ -68,7 +70,10 @@ static_library("security_interstitial_page") {
     "//components/version_info",
     "//content/public/browser",
     "//content/public/common",
+    "//crypto",
     "//services/network/public/cpp:cpp",
+    "//third_party/protobuf:protobuf_lite",
+    "//third_party/re2",
   ]
 
   if (is_win || is_mac) {
@@ -88,6 +93,7 @@ source_set("unit_tests") {
   sources = [
     "certificate_error_report_unittest.cc",
     "security_interstitial_tab_helper_unittest.cc",
+    "ssl_error_assistant_unittest.cc",
     "ssl_error_navigation_throttle_unittest.cc",
   ]
 

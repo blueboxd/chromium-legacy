@@ -33,7 +33,7 @@ void SharingImpl::CreateSharingWebRtcConnection(
       webrtc_peer_connection_factory_.get(), std::move(ice_servers),
       std::move(signalling_sender), std::move(signalling_receiver),
       std::move(delegate), std::move(connection), std::move(socket_manager),
-      std::move(mdns_responder), /*port_allocator=*/nullptr,
+      std::move(mdns_responder),
       base::BindOnce(&SharingImpl::SharingWebRtcConnectionDisconnected,
                      base::Unretained(this)));
   SharingWebRtcConnection* sharing_connection_ptr = sharing_connection.get();

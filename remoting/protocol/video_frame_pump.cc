@@ -131,10 +131,11 @@ void VideoFramePump::OnCaptureResult(
   // that we don't start capturing frame n+2 before frame n is freed.
   base::PostTaskAndReplyWithResult(
       encode_task_runner_.get(), FROM_HERE,
-      base::Bind(&VideoFramePump::EncodeFrame, encoder_.get(),
-                 base::Passed(&frame),
-                 base::Passed(&captured_frame_timestamps_)),
-      base::Bind(&VideoFramePump::OnFrameEncoded, weak_factory_.GetWeakPtr()));
+      base::BindOnce(&VideoFramePump::EncodeFrame, encoder_.get(),
+                     base::Passed(&frame),
+                     base::Passed(&captured_frame_timestamps_)),
+      base::BindOnce(&VideoFramePump::OnFrameEncoded,
+                     weak_factory_.GetWeakPtr()));
 }
 
 void VideoFramePump::CaptureNextFrame() {

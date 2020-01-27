@@ -110,7 +110,6 @@ class WebMediaPlayerSource;
 class WebRemotePlaybackClient;
 class WebServiceWorkerProvider;
 class WebSpellCheckPanelHostClient;
-struct WebScrollIntoViewParams;
 class WebTextCheckClient;
 
 class CORE_EXPORT LocalFrameClient : public FrameClient {
@@ -372,12 +371,6 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
   virtual std::unique_ptr<WebURLLoaderFactory> CreateURLLoaderFactory() = 0;
 
   virtual void AnnotatedRegionsChanged() = 0;
-
-  // Called when the corresponding frame should be scrolled in a remote parent
-  // frame.
-  virtual void ScrollRectToVisibleInParentFrame(
-      const WebRect&,
-      const WebScrollIntoViewParams&) {}
 
   virtual void SetVirtualTimePauser(
       WebScopedVirtualTimePauser virtual_time_pauser) {}

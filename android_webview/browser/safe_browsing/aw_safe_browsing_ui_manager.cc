@@ -143,7 +143,7 @@ AwSafeBrowsingUIManager::CreateBlockingPageForSubresource(
   AwSafeBrowsingSubresourceHelper::CreateForWebContents(contents);
   AwSafeBrowsingBlockingPage* blocking_page =
       AwSafeBrowsingBlockingPage::CreateBlockingPage(
-          this, contents, blocked_url, unsafe_resource);
+          this, contents, blocked_url, unsafe_resource, nullptr);
   return blocking_page;
 }
 

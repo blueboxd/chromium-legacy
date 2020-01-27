@@ -1136,29 +1136,15 @@ TEST_P(PasswordProtectionServiceTest, VerifyShouldShowModalWarning) {
       LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE,
       reused_password_account_type, LoginReputationClientResponse::PHISHING));
 
-  // Don't show modal warning if it is a saved password reuse and the experiment
-  // isn't on.
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndDisableFeature(
-      safe_browsing::kPasswordProtectionForSignedInUsers);
   reused_password_account_type.set_account_type(
       ReusedPasswordAccountType::SAVED_PASSWORD);
-  EXPECT_FALSE(password_protection_service_->ShouldShowModalWarning(
+  EXPECT_TRUE(password_protection_service_->ShouldShowModalWarning(
       LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
       reused_password_account_type, LoginReputationClientResponse::PHISHING));
-
-  {
-    base::test::ScopedFeatureList feature_list;
-    feature_list.InitAndEnableFeature(
-        safe_browsing::kPasswordProtectionForSavedPasswords);
-    EXPECT_TRUE(password_protection_service_->ShouldShowModalWarning(
-        LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
-        reused_password_account_type, LoginReputationClientResponse::PHISHING));
-    EXPECT_TRUE(password_protection_service_->ShouldShowModalWarning(
-        LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
-        reused_password_account_type,
-        LoginReputationClientResponse::LOW_REPUTATION));
-  }
+  EXPECT_TRUE(password_protection_service_->ShouldShowModalWarning(
+      LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
+      reused_password_account_type,
+      LoginReputationClientResponse::LOW_REPUTATION));
 
   {
     base::test::ScopedFeatureList feature_list;
@@ -1289,7 +1275,7 @@ TEST_P(PasswordProtectionServiceTest, VerifyIsSupportedPasswordTypeForPinging) {
       PasswordType::SAVED_PASSWORD));
   EXPECT_TRUE(password_protection_service_->IsSupportedPasswordTypeForPinging(
       PasswordType::PRIMARY_ACCOUNT_PASSWORD));
-  EXPECT_FALSE(password_protection_service_->IsSupportedPasswordTypeForPinging(
+  EXPECT_TRUE(password_protection_service_->IsSupportedPasswordTypeForPinging(
       PasswordType::OTHER_GAIA_PASSWORD));
   EXPECT_TRUE(password_protection_service_->IsSupportedPasswordTypeForPinging(
       PasswordType::ENTERPRISE_PASSWORD));

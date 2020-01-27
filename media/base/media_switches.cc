@@ -610,12 +610,12 @@ const base::Feature kMediaLearningExperiment{"MediaLearningExperiment",
 // Enables the general purpose media machine learning framework. Adds reporting
 // only; does not change media behavior.
 const base::Feature kMediaLearningFramework{"MediaLearningFramework",
-                                            base::FEATURE_DISABLED_BY_DEFAULT};
+                                            base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables the smoothness prediction experiment.  Requires
 // kMediaLearningFramework to be enabled also, else it does nothing.
 const base::Feature kMediaLearningSmoothnessExperiment{
-    "MediaLearningSmoothnessExperiment", base::FEATURE_DISABLED_BY_DEFAULT};
+    "MediaLearningSmoothnessExperiment", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enable aggregate power measurement for media playback.
 const base::Feature kMediaPowerExperiment{"MediaPowerExperiment",

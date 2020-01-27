@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <utility>
 
+#include "components/sync/base/sync_base_switches.h"
 #include "components/sync/engine/polling_constants.h"
 
 namespace syncer {
@@ -18,6 +19,16 @@ const int kDefaultNudgeDelayMilliseconds = 200;
 const int kSlowNudgeDelayMilliseconds = 2000;
 const int kSyncRefreshDelayMilliseconds = 500;
 const int kSyncSchedulerDelayMilliseconds = 250;
+
+base::TimeDelta GetSharingMessageDelay(base::TimeDelta default_delay) {
+  if (!base::FeatureList::IsEnabled(
+          switches::kSyncCustomSharingMessageNudgeDelay)) {
+    return default_delay;
+  }
+
+  return base::TimeDelta::FromMilliseconds(
+      switches::kSyncSharingMessageNudgeDelayMilliseconds.Get());
+}
 
 base::TimeDelta GetDefaultDelayForType(ModelType model_type,
                                        base::TimeDelta minimum_delay) {
@@ -35,6 +46,8 @@ base::TimeDelta GetDefaultDelayForType(ModelType model_type,
       // Types with sometimes automatic changes get longer delays to allow more
       // coalescing.
       return base::TimeDelta::FromMilliseconds(kSlowNudgeDelayMilliseconds);
+    case SHARING_MESSAGE:
+      return GetSharingMessageDelay(minimum_delay);
     default:
       return minimum_delay;
   }

@@ -198,18 +198,18 @@ class TextIteratorAlgorithm {
   void EnsurePositionContainer() const;
 
   // The range.
-  const Member<const Node> start_container_;
+  const Node* const start_container_;
   const unsigned start_offset_;
-  const Member<const Node> end_container_;
+  const Node* const end_container_;
   const unsigned end_offset_;
   // |end_node_| stores |Strategy::ChildAt(*end_container_, end_offfset_ - 1)|,
   // if it exists, or |nullptr| otherwise.
-  const Member<const Node> end_node_;
-  const Member<const Node> past_end_node_;
+  const Node* const end_node_;
+  const Node* const past_end_node_;
 
   // Current position, not necessarily of the text being returned, but position
   // as we walk through the DOM tree.
-  Member<const Node> node_;
+  const Node* node_;
   IterationProgress iteration_progress_;
   FullyClippedStateStackAlgorithm<Strategy> fully_clipped_stack_;
   unsigned shadow_depth_;
@@ -219,7 +219,7 @@ class TextIteratorAlgorithm {
   bool needs_another_newline_ = false;
   bool needs_handle_replaced_element_ = false;
 
-  Member<const Text> last_text_node_;
+  const Text* last_text_node_ = nullptr;
 
   const TextIteratorBehavior behavior_;
 

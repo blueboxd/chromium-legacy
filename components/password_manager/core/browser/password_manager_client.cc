@@ -40,6 +40,10 @@ BiometricAuthenticator* PasswordManagerClient::GetBiometricAuthenticator() {
 
 void PasswordManagerClient::GeneratePassword() {}
 
+void PasswordManagerClient::UpdateCredentialCache(
+    const GURL& origin,
+    const std::vector<const autofill::PasswordForm*>& best_matches) {}
+
 void PasswordManagerClient::PasswordWasAutofilled(
     const std::vector<const autofill::PasswordForm*>& best_matches,
     const GURL& origin,

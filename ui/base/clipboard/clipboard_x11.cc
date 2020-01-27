@@ -156,7 +156,7 @@ bool TargetList::ContainsText() const {
 }
 
 bool TargetList::ContainsFormat(const ClipboardFormatType& format_type) const {
-  ::Atom atom = gfx::GetAtom(format_type.ToString().c_str());
+  ::Atom atom = gfx::GetAtom(format_type.GetName().c_str());
   return ContainsAtom(atom);
 }
 
@@ -412,7 +412,7 @@ std::vector<::Atom> ClipboardX11::X11Details::GetTextAtoms() const {
 
 std::vector<::Atom> ClipboardX11::X11Details::GetAtomsForFormat(
     const ClipboardFormatType& format) {
-  return {gfx::GetAtom(format.ToString().c_str())};
+  return {gfx::GetAtom(format.GetName().c_str())};
 }
 
 void ClipboardX11::X11Details::Clear(ClipboardBuffer buffer) {
@@ -576,6 +576,33 @@ void ClipboardX11::ReadAvailableTypes(ClipboardBuffer buffer,
                   ClipboardFormatType::GetWebCustomDataType())));
   if (data.IsValid())
     ReadCustomDataTypes(data.GetData(), data.GetSize(), types);
+}
+
+std::vector<base::string16>
+ClipboardX11::ReadAvailablePlatformSpecificFormatNames(
+    ClipboardBuffer buffer) const {
+  DCHECK(CalledOnValidThread());
+
+  // Copy target_list(), so that XGetAtomNames can get a non-const Atom*.
+  TargetList::AtomVector target_list =
+      x11_details_->WaitAndGetTargetsList(buffer).target_list();
+  if (target_list.empty())
+    return {};
+
+  std::vector<char*> types_buffer(target_list.size());
+  // Call XGetAtomNames to minimize trips to the X11 server.
+  int status = XGetAtomNames(gfx::GetXDisplay(), target_list.data(),
+                             target_list.size(), types_buffer.data());
+  DCHECK(status) << "XGetAtomNames failed! An invalid Atom was passed in.";
+
+  std::vector<base::string16> types;
+  types.reserve(target_list.size());
+  for (char* type : types_buffer) {
+    types.push_back(base::UTF8ToUTF16(type));
+    XFree(type);
+  }
+
+  return types;
 }
 
 void ClipboardX11::ReadText(ClipboardBuffer buffer,
@@ -790,7 +817,7 @@ void ClipboardX11::WriteData(const ClipboardFormatType& format,
   std::vector<unsigned char> bytes(data_data, data_data + data_len);
   scoped_refptr<base::RefCountedMemory> mem(
       base::RefCountedBytes::TakeVector(&bytes));
-  x11_details_->InsertMapping(format.ToString(), mem);
+  x11_details_->InsertMapping(format.GetName(), mem);
 }
 
 }  // namespace ui

@@ -93,9 +93,6 @@ DeviceIdentityProvider::DeviceIdentityProvider(
     token_service->SetRefreshTokenAvailableCallback(
         base::BindRepeating(&DeviceIdentityProvider::OnRefreshTokenAvailable,
                             base::Unretained(this)));
-    token_service->SetRefreshTokenRevokedCallback(
-        base::BindRepeating(&DeviceIdentityProvider::OnRefreshTokenRevoked,
-                            base::Unretained(this)));
   }
 }
 
@@ -103,7 +100,6 @@ DeviceIdentityProvider::~DeviceIdentityProvider() {
   // TODO(blundell): Can |token_service_| ever actually be non-null?
   if (token_service_) {
     token_service_->SetRefreshTokenAvailableCallback(base::NullCallback());
-    token_service_->SetRefreshTokenRevokedCallback(base::NullCallback());
   }
 }
 
@@ -156,11 +152,6 @@ void DeviceIdentityProvider::InvalidateAccessToken(
 void DeviceIdentityProvider::OnRefreshTokenAvailable(
     const CoreAccountId& account_id) {
   ProcessRefreshTokenUpdateForAccount(account_id);
-}
-
-void DeviceIdentityProvider::OnRefreshTokenRevoked(
-    const CoreAccountId& account_id) {
-  ProcessRefreshTokenRemovalForAccount(account_id);
 }
 
 }  // namespace chromeos

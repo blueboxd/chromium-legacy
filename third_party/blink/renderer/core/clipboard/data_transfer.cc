@@ -148,8 +148,8 @@ class DraggedNodeImageBuilder {
   }
 
  private:
-  const Member<LocalFrame> local_frame_;
-  const Member<Node> node_;
+  LocalFrame* const local_frame_;
+  Node* const node_;
 #if DCHECK_IS_ON()
   const uint64_t dom_tree_version_;
 #endif

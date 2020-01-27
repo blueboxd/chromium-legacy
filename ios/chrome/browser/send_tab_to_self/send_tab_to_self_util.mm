@@ -35,7 +35,7 @@
 
 namespace send_tab_to_self {
 
-bool IsUserSyncTypeActive(ios::ChromeBrowserState* browser_state) {
+bool IsUserSyncTypeActive(ChromeBrowserState* browser_state) {
   SendTabToSelfSyncService* service =
       SendTabToSelfSyncServiceFactory::GetForBrowserState(browser_state);
   // The service will be null if the user is in incognito mode so better to
@@ -44,7 +44,7 @@ bool IsUserSyncTypeActive(ios::ChromeBrowserState* browser_state) {
          service->GetSendTabToSelfModel()->IsReady();
 }
 
-bool HasValidTargetDevice(ios::ChromeBrowserState* browser_state) {
+bool HasValidTargetDevice(ChromeBrowserState* browser_state) {
   SendTabToSelfSyncService* service =
       SendTabToSelfSyncServiceFactory::GetForBrowserState(browser_state);
   return service && service->GetSendTabToSelfModel() &&
@@ -52,21 +52,20 @@ bool HasValidTargetDevice(ios::ChromeBrowserState* browser_state) {
 }
 
 bool AreContentRequirementsMet(const GURL& url,
-                               ios::ChromeBrowserState* browser_state) {
+                               ChromeBrowserState* browser_state) {
   bool is_http_or_https = url.SchemeIsHTTPOrHTTPS();
   bool is_native_page = url.SchemeIs(kChromeUIScheme);
   bool is_incognito_mode = browser_state->IsOffTheRecord();
   return is_http_or_https && !is_native_page && !is_incognito_mode;
 }
 
-bool ShouldOfferFeature(ios::ChromeBrowserState* browser_state,
-                        const GURL& url) {
+bool ShouldOfferFeature(ChromeBrowserState* browser_state, const GURL& url) {
   return IsUserSyncTypeActive(browser_state) &&
          HasValidTargetDevice(browser_state) &&
          AreContentRequirementsMet(url, browser_state);
 }
 
-void CreateNewEntry(ios::ChromeBrowserState* browser_state,
+void CreateNewEntry(ChromeBrowserState* browser_state,
                     NSString* target_device_id) {
   // If there is no web state or it is not visible then nothing should be
   // shared.

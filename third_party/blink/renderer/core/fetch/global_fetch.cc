@@ -4,9 +4,9 @@
 
 #include "third_party/blink/renderer/core/fetch/global_fetch.h"
 
+#include "third_party/blink/renderer/bindings/core/v8/v8_request_init.h"
 #include "third_party/blink/renderer/core/fetch/fetch_manager.h"
 #include "third_party/blink/renderer/core/fetch/request.h"
-#include "third_party/blink/renderer/core/fetch/request_init.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"

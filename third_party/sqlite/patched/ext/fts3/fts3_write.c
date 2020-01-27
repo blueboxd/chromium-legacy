@@ -1237,6 +1237,8 @@ int sqlite3Fts3ReadBlock(
       }
       *paBlob = aByte;
     }
+  }else if( rc==SQLITE_ERROR ){
+    rc = FTS_CORRUPT_VTAB;
   }
 
   return rc;
@@ -2976,14 +2978,12 @@ int sqlite3Fts3SegReaderStep(
           ** doclist. */
           sqlite3_int64 iDelta;
           if( p->bDescIdx && nDoclist>0 ){
+            if( iPrev<=iDocid ) return FTS_CORRUPT_VTAB;
             iDelta = (i64)((u64)iPrev - (u64)iDocid);
           }else{
+            if( nDoclist>0 && iPrev>=iDocid ) return FTS_CORRUPT_VTAB;
             iDelta = (i64)((u64)iDocid - (u64)iPrev);
           }
-          if( iDelta<=0 && (nDoclist>0 || iDelta!=iDocid) ){
-            return FTS_CORRUPT_VTAB;
-          }
-          assert( nDoclist>0 || iDelta==iDocid );
 
           nByte = sqlite3Fts3VarintLen(iDelta) + (isRequirePos?nList+1:0);
           if( nDoclist+nByte>pCsr->nBuffer ){
@@ -3492,7 +3492,10 @@ static int fts3DoOptimize(Fts3Table *p, int bReturnDone){
   int rc;
   sqlite3_stmt *pAllLangid = 0;
 
-  rc = fts3SqlStmt(p, SQL_SELECT_ALL_LANGID, &pAllLangid, 0);
+  rc = sqlite3Fts3PendingTermsFlush(p);
+  if( rc==SQLITE_OK ){
+    rc = fts3SqlStmt(p, SQL_SELECT_ALL_LANGID, &pAllLangid, 0);
+  }
   if( rc==SQLITE_OK ){
     int rc2;
     sqlite3_bind_int(pAllLangid, 1, p->iPrevLangid);
@@ -3513,7 +3516,6 @@ static int fts3DoOptimize(Fts3Table *p, int bReturnDone){
   }
 
   sqlite3Fts3SegmentsClose(p);
-  sqlite3Fts3PendingTermsClear(p);
 
   return (rc==SQLITE_OK && bReturnDone && bSeenDone) ? SQLITE_DONE : rc;
 }
@@ -4246,6 +4248,10 @@ static int fts3IncrmergeLoad(
       pWriter->bNoLeafData = (pWriter->nLeafData==0);
       nRoot = sqlite3_column_bytes(pSelect, 4);
       aRoot = sqlite3_column_blob(pSelect, 4);
+      if( aRoot==0 ){
+        sqlite3_reset(pSelect);
+        return nRoot ? SQLITE_NOMEM : FTS_CORRUPT_VTAB;
+      }
     }else{
       return sqlite3_reset(pSelect);
     }
@@ -4973,8 +4979,15 @@ int sqlite3Fts3Incrmerge(Fts3Table *p, int nMerge, int nMin){
     }
     if( SQLITE_OK==rc && pCsr->nSegment==nSeg
      && SQLITE_OK==(rc = sqlite3Fts3SegReaderStart(p, pCsr, pFilter))
-     && SQLITE_ROW==(rc = sqlite3Fts3SegReaderStep(p, pCsr))
     ){
+      int bEmpty = 0;
+      rc = sqlite3Fts3SegReaderStep(p, pCsr);
+      if( rc==SQLITE_OK ){
+        bEmpty = 1;
+      }else if( rc!=SQLITE_ROW ){
+        sqlite3Fts3SegReaderFinish(pCsr);
+        break;
+      }
       if( bUseHint && iIdx>0 ){
         const char *zKey = pCsr->zTerm;
         int nKey = pCsr->nTerm;
@@ -4985,11 +4998,13 @@ int sqlite3Fts3Incrmerge(Fts3Table *p, int nMerge, int nMin){
 
       if( rc==SQLITE_OK && pWriter->nLeafEst ){
         fts3LogMerge(nSeg, iAbsLevel);
-        do {
-          rc = fts3IncrmergeAppend(p, pWriter, pCsr);
-          if( rc==SQLITE_OK ) rc = sqlite3Fts3SegReaderStep(p, pCsr);
-          if( pWriter->nWork>=nRem && rc==SQLITE_ROW ) rc = SQLITE_OK;
-        }while( rc==SQLITE_ROW );
+        if( bEmpty==0 ){
+          do {
+            rc = fts3IncrmergeAppend(p, pWriter, pCsr);
+            if( rc==SQLITE_OK ) rc = sqlite3Fts3SegReaderStep(p, pCsr);
+            if( pWriter->nWork>=nRem && rc==SQLITE_ROW ) rc = SQLITE_OK;
+          }while( rc==SQLITE_ROW );
+        }
 
         /* Update or delete the input segments */
         if( rc==SQLITE_OK ){
@@ -5196,7 +5211,11 @@ static u64 fts3ChecksumIndex(
               pCsr += sqlite3Fts3GetVarint(pCsr, &iCol);
             }else{
               pCsr += sqlite3Fts3GetVarintU(pCsr, &iVal);
-              iDocid = (i64)((u64)iDocid + iVal);
+              if( p->bDescIdx ){
+                iDocid = (i64)((u64)iDocid - iVal);
+              }else{
+                iDocid = (i64)((u64)iDocid + iVal);
+              }
             }
           }else{
             iPos += (iVal - 2);
@@ -5269,10 +5288,9 @@ static int fts3IntegrityCheck(Fts3Table *p, int *pbOk){
       for(iCol=0; rc==SQLITE_OK && iCol<p->nColumn; iCol++){
         if( p->abNotindexed[iCol]==0 ){
           const char *zText = (const char *)sqlite3_column_text(pStmt, iCol+1);
-          int nText = sqlite3_column_bytes(pStmt, iCol+1);
           sqlite3_tokenizer_cursor *pT = 0;
 
-          rc = sqlite3Fts3OpenTokenizer(p->pTokenizer, iLang, zText, nText,&pT);
+          rc = sqlite3Fts3OpenTokenizer(p->pTokenizer, iLang, zText, -1, &pT);
           while( rc==SQLITE_OK ){
             char const *zToken;       /* Buffer containing token */
             int nToken = 0;           /* Number of bytes in token */
@@ -5393,10 +5411,7 @@ static int fts3SpecialInsert(Fts3Table *p, sqlite3_value *pVal){
       rc = SQLITE_OK;
     }
 #endif
-
-
   }
-
   return rc;
 }
 

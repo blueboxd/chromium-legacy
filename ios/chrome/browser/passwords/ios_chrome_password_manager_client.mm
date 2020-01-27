@@ -49,8 +49,7 @@ using password_manager::SyncState;
 
 namespace {
 
-const syncer::SyncService* GetSyncService(
-    ios::ChromeBrowserState* browser_state) {
+const syncer::SyncService* GetSyncService(ChromeBrowserState* browser_state) {
   return ProfileSyncServiceFactory::GetForBrowserStateIfExists(browser_state);
 }
 

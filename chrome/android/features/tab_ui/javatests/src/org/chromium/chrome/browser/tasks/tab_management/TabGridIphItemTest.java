@@ -21,7 +21,6 @@ import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.e
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.rotateDeviceToOrientation;
 
 import android.content.res.Configuration;
-import android.os.Build;
 import android.support.test.espresso.NoMatchingRootException;
 import android.support.test.filters.MediumTest;
 import android.view.ViewGroup;
@@ -117,7 +116,7 @@ public class TabGridIphItemTest {
 
     @Test
     @MediumTest
-    @DisableIf.Build(sdk_is_greater_than = Build.VERSION_CODES.N_MR1, message = "https://crbug.com/1023430")
+    @DisableIf.Build(message = "https://crbug.com/1023430, https://crbug.com/1045417")
     public void testIphItemScreenRotation() throws InterruptedException {
         final ChromeTabbedActivity cta = mActivityTestRule.getActivity();
 

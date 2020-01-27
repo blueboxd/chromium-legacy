@@ -16,59 +16,245 @@ goog.require('goog.i18n.MessageFormat');
 
 /**
  * Creates a new instance.
- * @constructor
  * @implements {TtsInterface}
  */
-AbstractTts = function() {
-  this.ttsProperties = new Object();
+AbstractTts = class {
+  constructor() {
+    this.ttsProperties = new Object();
 
-  /**
-   * Default value for TTS properties.
-   * Note that these as well as the subsequent properties might be different
-   * on different host platforms (like Chrome, Android, etc.).
-   * @type {{pitch : number,
-   *         rate: number,
-   *         volume: number}}
-   * @protected
-   */
-  this.propertyDefault = {'rate': 0.5, 'pitch': 0.5, 'volume': 0.5};
+    /**
+     * Default value for TTS properties.
+     * Note that these as well as the subsequent properties might be different
+     * on different host platforms (like Chrome, Android, etc.).
+     * @type {{pitch : number,
+     *         rate: number,
+     *         volume: number}}
+     * @protected
+     */
+    this.propertyDefault = {'rate': 0.5, 'pitch': 0.5, 'volume': 0.5};
 
-  /**
-   * Min value for TTS properties.
-   * @type {{pitch : number,
-   *         rate: number,
-   *         volume: number}}
-   * @protected
-   */
-  this.propertyMin = {'rate': 0.0, 'pitch': 0.0, 'volume': 0.0};
+    /**
+     * Min value for TTS properties.
+     * @type {{pitch : number,
+     *         rate: number,
+     *         volume: number}}
+     * @protected
+     */
+    this.propertyMin = {'rate': 0.0, 'pitch': 0.0, 'volume': 0.0};
 
-  /**
-   * Max value for TTS properties.
-   * @type {{pitch : number,
-   *         rate: number,
-   *         volume: number}}
-   * @protected
-   */
-  this.propertyMax = {'rate': 1.0, 'pitch': 1.0, 'volume': 1.0};
+    /**
+     * Max value for TTS properties.
+     * @type {{pitch : number,
+     *         rate: number,
+     *         volume: number}}
+     * @protected
+     */
+    this.propertyMax = {'rate': 1.0, 'pitch': 1.0, 'volume': 1.0};
 
-  /**
-   * Step value for TTS properties.
-   * @type {{pitch : number,
-   *         rate: number,
-   *         volume: number}}
-   * @protected
-   */
-  this.propertyStep = {'rate': 0.1, 'pitch': 0.1, 'volume': 0.1};
+    /**
+     * Step value for TTS properties.
+     * @type {{pitch : number,
+     *         rate: number,
+     *         volume: number}}
+     * @protected
+     */
+    this.propertyStep = {'rate': 0.1, 'pitch': 0.1, 'volume': 0.1};
 
-  if (AbstractTts.substitutionDictionaryRegexp_ == undefined) {
-    // Create an expression that matches all words in the substitution
-    // dictionary.
-    var symbols = [];
-    for (var symbol in AbstractTts.SUBSTITUTION_DICTIONARY) {
-      symbols.push(symbol);
+    if (AbstractTts.substitutionDictionaryRegexp_ == undefined) {
+      // Create an expression that matches all words in the substitution
+      // dictionary.
+      var symbols = [];
+      for (var symbol in AbstractTts.SUBSTITUTION_DICTIONARY) {
+        symbols.push(symbol);
+      }
+      var expr = '(' + symbols.join('|') + ')';
+      AbstractTts.substitutionDictionaryRegexp_ = new RegExp(expr, 'ig');
     }
-    var expr = '(' + symbols.join('|') + ')';
-    AbstractTts.substitutionDictionaryRegexp_ = new RegExp(expr, 'ig');
+  }
+
+  /** @override */
+  speak(textString, queueMode, properties) {
+    return this;
+  }
+
+  /** @override */
+  isSpeaking() {
+    return false;
+  }
+
+  /** @override */
+  stop() {}
+
+  /** @override */
+  addCapturingEventListener(listener) {}
+
+  /** @override */
+  increaseOrDecreaseProperty(propertyName, increase) {
+    var min = this.propertyMin[propertyName];
+    var max = this.propertyMax[propertyName];
+    var step = this.propertyStep[propertyName];
+    var current = this.ttsProperties[propertyName];
+    current = increase ? current + step : current - step;
+    this.ttsProperties[propertyName] = Math.max(Math.min(current, max), min);
+  }
+
+  /**
+   * Converts an engine property value to a percentage from 0.00 to 1.00.
+   * @param {string} property The property to convert.
+   * @return {?number} The percentage of the property.
+   */
+  propertyToPercentage(property) {
+    return (this.ttsProperties[property] - this.propertyMin[property]) /
+        Math.abs(this.propertyMax[property] - this.propertyMin[property]);
+  }
+
+  /**
+   * Merges the given properties with the default ones. Always returns a
+   * new object, so that you can safely modify the result of mergeProperties
+   * without worrying that you're modifying an object used elsewhere.
+   * @param {Object=} properties The properties to merge with the current ones.
+   * @return {Object} The merged properties.
+   * @protected
+   */
+  mergeProperties(properties) {
+    var mergedProperties = new Object();
+    var p;
+    if (this.ttsProperties) {
+      for (p in this.ttsProperties) {
+        mergedProperties[p] = this.ttsProperties[p];
+      }
+    }
+    if (properties) {
+      var tts = AbstractTts;
+      if (typeof (properties[tts.VOLUME]) == 'number') {
+        mergedProperties[tts.VOLUME] = properties[tts.VOLUME];
+      }
+      if (typeof (properties[tts.PITCH]) == 'number') {
+        mergedProperties[tts.PITCH] = properties[tts.PITCH];
+      }
+      if (typeof (properties[tts.RATE]) == 'number') {
+        mergedProperties[tts.RATE] = properties[tts.RATE];
+      }
+      if (typeof (properties[tts.LANG]) == 'string') {
+        mergedProperties[tts.LANG] = properties[tts.LANG];
+      }
+
+      var context = this;
+      var mergeRelativeProperty = function(abs, rel) {
+        if (typeof (properties[rel]) == 'number' &&
+            typeof (mergedProperties[abs]) == 'number') {
+          mergedProperties[abs] += properties[rel];
+          var min = context.propertyMin[abs];
+          var max = context.propertyMax[abs];
+          if (mergedProperties[abs] > max) {
+            mergedProperties[abs] = max;
+          } else if (mergedProperties[abs] < min) {
+            mergedProperties[abs] = min;
+          }
+        }
+      };
+
+      mergeRelativeProperty(tts.VOLUME, tts.RELATIVE_VOLUME);
+      mergeRelativeProperty(tts.PITCH, tts.RELATIVE_PITCH);
+      mergeRelativeProperty(tts.RATE, tts.RELATIVE_RATE);
+    }
+
+    for (p in properties) {
+      if (!mergedProperties.hasOwnProperty(p)) {
+        mergedProperties[p] = properties[p];
+      }
+    }
+
+    return mergedProperties;
+  }
+
+  /**
+   * Method to preprocess text to be spoken properly by a speech
+   * engine.
+   *
+   * 1. Replace any single character with a description of that character.
+   *
+   * 2. Convert all-caps words to lowercase if they don't look like an
+   *    acronym / abbreviation.
+   *
+   * @param {string} text A text string to be spoken.
+   * @param {Object= } properties Out parameter populated with how to speak the
+   *     string.
+   * @return {string} The text formatted in a way that will sound better by
+   *     most speech engines.
+   * @protected
+   */
+  preprocess(text, properties) {
+    if (text.length == 1 && text >= 'A' && text <= 'Z') {
+      // Describe capital letters according to user's setting.
+      if (localStorage['capitalStrategy'] == 'increasePitch') {
+        for (var prop in AbstractTts.PERSONALITY_CAPITAL) {
+          if (properties[prop] === undefined) {
+            properties[prop] = AbstractTts.PERSONALITY_CAPITAL[prop];
+          }
+        }
+      } else if (localStorage['capitalStrategy'] == 'announceCapitals') {
+        text = Msgs.getMsg('announce_capital_letter', [text]);
+      }
+    }
+
+    // Substitute all symbols in the substitution dictionary. This is pretty
+    // efficient because we use a single regexp that matches all symbols
+    // simultaneously.
+    text = text.replace(
+        AbstractTts.substitutionDictionaryRegexp_, function(symbol) {
+          return ' ' + AbstractTts.SUBSTITUTION_DICTIONARY[symbol] + ' ';
+        });
+
+    // Handle single characters that we want to make sure we pronounce.
+    if (text.length == 1) {
+      return AbstractTts.CHARACTER_DICTIONARY[text] ?
+          (new goog.i18n.MessageFormat(
+               Msgs.getMsg(AbstractTts.CHARACTER_DICTIONARY[text])))
+              .format({'COUNT': 1}) :
+          text.toUpperCase();
+    }
+
+    // Expand all repeated characters.
+    text = text.replace(
+        AbstractTts.repetitionRegexp_, AbstractTts.repetitionReplace_);
+
+    return text;
+  }
+
+  /**
+   * Constructs a description of a repeated character. Use as a param to
+   * string.replace.
+   * @param {string} match The matching string.
+   * @return {string} The description.
+   * @private
+   */
+  static repetitionReplace_(match) {
+    var count = match.length;
+    return ' ' +
+        (new goog.i18n.MessageFormat(
+             Msgs.getMsg(AbstractTts.CHARACTER_DICTIONARY[match[0]])))
+            .format({'COUNT': count}) +
+        ' ';
+  }
+
+  /**
+   * @override
+   */
+  getDefaultProperty(property) {
+    return this.propertyDefault[property];
+  }
+
+  /** @override */
+  toggleSpeechOnOrOff() {
+    return true;
+  }
+
+  /** @override */
+  resetTextToSpeechSettings() {
+    for (var [key, value] of Object.entries(this.propertyDefault)) {
+      this.ttsProperties[key] = value;
+    }
   }
 };
 
@@ -79,163 +265,6 @@ AbstractTts = function() {
  * @protected
  */
 AbstractTts.prototype.ttsProperties;
-
-
-/** @override */
-AbstractTts.prototype.speak = function(textString, queueMode, properties) {
-  return this;
-};
-
-
-/** @override */
-AbstractTts.prototype.isSpeaking = function() {
-  return false;
-};
-
-
-/** @override */
-AbstractTts.prototype.stop = function() {};
-
-
-/** @override */
-AbstractTts.prototype.addCapturingEventListener = function(listener) {};
-
-
-/** @override */
-AbstractTts.prototype.increaseOrDecreaseProperty = function(
-    propertyName, increase) {
-  var min = this.propertyMin[propertyName];
-  var max = this.propertyMax[propertyName];
-  var step = this.propertyStep[propertyName];
-  var current = this.ttsProperties[propertyName];
-  current = increase ? current + step : current - step;
-  this.ttsProperties[propertyName] = Math.max(Math.min(current, max), min);
-};
-
-/**
- * Converts an engine property value to a percentage from 0.00 to 1.00.
- * @param {string} property The property to convert.
- * @return {?number} The percentage of the property.
- */
-AbstractTts.prototype.propertyToPercentage = function(property) {
-  return (this.ttsProperties[property] - this.propertyMin[property]) /
-      Math.abs(this.propertyMax[property] - this.propertyMin[property]);
-};
-
-/**
- * Merges the given properties with the default ones. Always returns a
- * new object, so that you can safely modify the result of mergeProperties
- * without worrying that you're modifying an object used elsewhere.
- * @param {Object=} properties The properties to merge with the current ones.
- * @return {Object} The merged properties.
- * @protected
- */
-AbstractTts.prototype.mergeProperties = function(properties) {
-  var mergedProperties = new Object();
-  var p;
-  if (this.ttsProperties) {
-    for (p in this.ttsProperties) {
-      mergedProperties[p] = this.ttsProperties[p];
-    }
-  }
-  if (properties) {
-    var tts = AbstractTts;
-    if (typeof (properties[tts.VOLUME]) == 'number') {
-      mergedProperties[tts.VOLUME] = properties[tts.VOLUME];
-    }
-    if (typeof (properties[tts.PITCH]) == 'number') {
-      mergedProperties[tts.PITCH] = properties[tts.PITCH];
-    }
-    if (typeof (properties[tts.RATE]) == 'number') {
-      mergedProperties[tts.RATE] = properties[tts.RATE];
-    }
-    if (typeof (properties[tts.LANG]) == 'string') {
-      mergedProperties[tts.LANG] = properties[tts.LANG];
-    }
-
-    var context = this;
-    var mergeRelativeProperty = function(abs, rel) {
-      if (typeof (properties[rel]) == 'number' &&
-          typeof (mergedProperties[abs]) == 'number') {
-        mergedProperties[abs] += properties[rel];
-        var min = context.propertyMin[abs];
-        var max = context.propertyMax[abs];
-        if (mergedProperties[abs] > max) {
-          mergedProperties[abs] = max;
-        } else if (mergedProperties[abs] < min) {
-          mergedProperties[abs] = min;
-        }
-      }
-    };
-
-    mergeRelativeProperty(tts.VOLUME, tts.RELATIVE_VOLUME);
-    mergeRelativeProperty(tts.PITCH, tts.RELATIVE_PITCH);
-    mergeRelativeProperty(tts.RATE, tts.RELATIVE_RATE);
-  }
-
-  for (p in properties) {
-    if (!mergedProperties.hasOwnProperty(p)) {
-      mergedProperties[p] = properties[p];
-    }
-  }
-
-  return mergedProperties;
-};
-
-
-/**
- * Method to preprocess text to be spoken properly by a speech
- * engine.
- *
- * 1. Replace any single character with a description of that character.
- *
- * 2. Convert all-caps words to lowercase if they don't look like an
- *    acronym / abbreviation.
- *
- * @param {string} text A text string to be spoken.
- * @param {Object= } properties Out parameter populated with how to speak the
- *     string.
- * @return {string} The text formatted in a way that will sound better by
- *     most speech engines.
- * @protected
- */
-AbstractTts.prototype.preprocess = function(text, properties) {
-  if (text.length == 1 && text >= 'A' && text <= 'Z') {
-    // Describe capital letters according to user's setting.
-    if (localStorage['capitalStrategy'] == 'increasePitch') {
-      for (var prop in AbstractTts.PERSONALITY_CAPITAL) {
-        if (properties[prop] === undefined) {
-          properties[prop] = AbstractTts.PERSONALITY_CAPITAL[prop];
-        }
-      }
-    } else if (localStorage['capitalStrategy'] == 'announceCapitals') {
-      text = Msgs.getMsg('announce_capital_letter', [text]);
-    }
-  }
-
-  // Substitute all symbols in the substitution dictionary. This is pretty
-  // efficient because we use a single regexp that matches all symbols
-  // simultaneously.
-  text =
-      text.replace(AbstractTts.substitutionDictionaryRegexp_, function(symbol) {
-        return ' ' + AbstractTts.SUBSTITUTION_DICTIONARY[symbol] + ' ';
-      });
-
-  // Handle single characters that we want to make sure we pronounce.
-  if (text.length == 1) {
-    return AbstractTts.CHARACTER_DICTIONARY[text] ?
-        (new goog.i18n.MessageFormat(
-             Msgs.getMsg(AbstractTts.CHARACTER_DICTIONARY[text])))
-            .format({'COUNT': 1}) :
-        text.toUpperCase();
-  }
-
-  // Expand all repeated characters.
-  text = text.replace(
-      AbstractTts.repetitionRegexp_, AbstractTts.repetitionReplace_);
-
-  return text;
-};
 
 
 /** TTS rate property. @type {string} */
@@ -488,42 +517,3 @@ AbstractTts.substitutionDictionaryRegexp_;
  */
 AbstractTts.repetitionRegexp_ =
     /([-\/\\|!@#$%^&*\(\)=_+\[\]\{\}.?;'":<>\u2022])\1{1,}/g;
-
-
-/**
- * Constructs a description of a repeated character. Use as a param to
- * string.replace.
- * @param {string} match The matching string.
- * @return {string} The description.
- * @private
- */
-AbstractTts.repetitionReplace_ = function(match) {
-  var count = match.length;
-  return ' ' +
-      (new goog.i18n.MessageFormat(
-           Msgs.getMsg(AbstractTts.CHARACTER_DICTIONARY[match[0]])))
-          .format({'COUNT': count}) +
-      ' ';
-};
-
-
-/**
- * @override
- */
-AbstractTts.prototype.getDefaultProperty = function(property) {
-  return this.propertyDefault[property];
-};
-
-
-/** @override */
-AbstractTts.prototype.toggleSpeechOnOrOff = function() {
-  return true;
-};
-
-
-/** @override */
-AbstractTts.prototype.resetTextToSpeechSettings = function() {
-  for (var [key, value] of Object.entries(this.propertyDefault)) {
-    this.ttsProperties[key] = value;
-  }
-};

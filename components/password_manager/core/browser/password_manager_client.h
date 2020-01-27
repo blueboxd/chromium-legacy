@@ -198,8 +198,14 @@ class PasswordManagerClient {
   // Inform the embedder that the site called 'store()'.
   virtual void NotifyStorePasswordCalled() = 0;
 
+  // Update the CredentialCache used to display fetched credentials in the UI.
+  // Currently only implemented on Android.
+  virtual void UpdateCredentialCache(
+      const GURL& origin,
+      const std::vector<const autofill::PasswordForm*>& best_matches);
+
   // Called when a password is saved in an automated fashion. Embedder may
-  // inform the user that this save has occured.
+  // inform the user that this save has occurred.
   virtual void AutomaticPasswordSave(
       std::unique_ptr<PasswordFormManagerForUI> saved_form_manager) = 0;
 

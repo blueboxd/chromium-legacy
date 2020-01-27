@@ -53,8 +53,8 @@ class CONTENT_EXPORT ServiceWorkerDatabase {
   ~ServiceWorkerDatabase();
 
   // Used in UMA. A new value must be appended only.
-  // TODO(bashi): Change this enum to an enum class and migrate from legacy
-  // histogram APIs to new ones. See //tools/metrics/histograms/README.md.
+  // TODO(bashi): Change this enum to a mojo enum and update corresponding
+  // UMAs. See //tools/metrics/histograms/README.md
   enum Status {
     STATUS_OK,
     STATUS_ERROR_NOT_FOUND,
@@ -62,6 +62,7 @@ class CONTENT_EXPORT ServiceWorkerDatabase {
     STATUS_ERROR_CORRUPTED,
     STATUS_ERROR_FAILED,
     STATUS_ERROR_NOT_SUPPORTED,
+    STATUS_ERROR_DISABLED,
     STATUS_ERROR_MAX,
   };
   static const char* StatusToString(Status status);

@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.download.home.list.holder;
 
-import static org.chromium.chrome.browser.ui.widget.listmenu.BasicListMenu.buildMenuListItem;
+import static org.chromium.components.browser_ui.widget.listmenu.BasicListMenu.buildMenuListItem;
 
 import android.graphics.Matrix;
 import android.graphics.drawable.BitmapDrawable;
@@ -21,12 +21,12 @@ import org.chromium.chrome.browser.download.home.list.UiUtils;
 import org.chromium.chrome.browser.download.home.list.view.AsyncImageView;
 import org.chromium.chrome.browser.download.home.metrics.UmaUtils;
 import org.chromium.chrome.browser.download.home.view.SelectionView;
-import org.chromium.chrome.browser.ui.widget.listmenu.BasicListMenu;
-import org.chromium.chrome.browser.ui.widget.listmenu.ListMenu;
-import org.chromium.chrome.browser.ui.widget.listmenu.ListMenuButton;
-import org.chromium.chrome.browser.ui.widget.listmenu.ListMenuButtonDelegate;
-import org.chromium.chrome.browser.ui.widget.listmenu.ListMenuItemProperties;
 import org.chromium.chrome.download.R;
+import org.chromium.components.browser_ui.widget.listmenu.BasicListMenu;
+import org.chromium.components.browser_ui.widget.listmenu.ListMenu;
+import org.chromium.components.browser_ui.widget.listmenu.ListMenuButton;
+import org.chromium.components.browser_ui.widget.listmenu.ListMenuButtonDelegate;
+import org.chromium.components.browser_ui.widget.listmenu.ListMenuItemProperties;
 import org.chromium.components.offline_items_collection.OfflineItem;
 import org.chromium.components.offline_items_collection.OfflineItemVisuals;
 import org.chromium.ui.modelutil.MVCListAdapter.ModelList;

@@ -63,11 +63,11 @@ class ChromeWebClientTest : public PlatformTest {
 
   ~ChromeWebClientTest() override = default;
 
-  ios::ChromeBrowserState* browser_state() { return browser_state_.get(); }
+  ChromeBrowserState* browser_state() { return browser_state_.get(); }
 
  private:
   base::test::TaskEnvironment environment_;
-  std::unique_ptr<ios::ChromeBrowserState> browser_state_;
+  std::unique_ptr<ChromeBrowserState> browser_state_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeWebClientTest);
 };

@@ -7,7 +7,7 @@
 #include <string>
 
 #include "base/strings/string_util.h"
-#include "chrome/browser/android/chrome_feature_list.h"
+#include "chrome/browser/flags/android/chrome_feature_list.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/url_constants.h"

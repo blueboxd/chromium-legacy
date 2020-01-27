@@ -38,7 +38,6 @@
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/task_type.h"
-#include "third_party/blink/public/platform/web_scroll_into_view_params.h"
 #include "third_party/blink/renderer/bindings/modules/v8/rendering_context.h"
 #include "third_party/blink/renderer/core/accessibility/ax_object_cache.h"
 #include "third_party/blink/renderer/core/css/css_font_selector.h"
@@ -56,6 +55,7 @@
 #include "third_party/blink/renderer/core/layout/layout_theme.h"
 #include "third_party/blink/renderer/core/origin_trials/origin_trials.h"
 #include "third_party/blink/renderer/core/scroll/scroll_alignment.h"
+#include "third_party/blink/renderer/core/scroll/scroll_into_view_params_type_converters.h"
 #include "third_party/blink/renderer/core/typed_arrays/array_buffer/array_buffer_contents.h"
 #include "third_party/blink/renderer/modules/canvas/canvas2d/canvas_style.h"
 #include "third_party/blink/renderer/modules/canvas/canvas2d/hit_region.h"
@@ -109,7 +109,7 @@ class CanvasRenderingContext2DAutoRestoreSkCanvas {
   }
 
  private:
-  Member<CanvasRenderingContext2D> context_;
+  CanvasRenderingContext2D* context_;
   int save_count_;
 };
 
@@ -392,9 +392,9 @@ void CanvasRenderingContext2D::ScrollPathIntoViewInternal(const Path& path) {
     vertical_scroll_mode = ScrollAlignment::kAlignToEdgeIfNeeded;
   }
   renderer->ScrollRectToVisible(
-      path_rect,
-      WebScrollIntoViewParams(horizontal_scroll_mode, vertical_scroll_mode,
-                              kProgrammaticScroll, false, kScrollBehaviorAuto));
+      path_rect, CreateScrollIntoViewParams(
+                     horizontal_scroll_mode, vertical_scroll_mode,
+                     kProgrammaticScroll, false, kScrollBehaviorAuto));
 }
 
 void CanvasRenderingContext2D::clearRect(double x,

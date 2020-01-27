@@ -14,6 +14,10 @@
 #include "base/optional.h"
 #include "components/keyed_service/core/keyed_service.h"
 
+namespace {
+class FilePath;
+}  // namespace
+
 class PrefRegistrySimple;
 class PrefService;
 
@@ -24,11 +28,26 @@ extern const base::Feature kAnnouncementNotification;
 // notification on first run.
 constexpr char kSkipFirstRun[] = "skip_first_run";
 
+// The Finch parameter name for a boolean value that whether to show
+// notification for new profile.
+constexpr char kSkipNewProfile[] = "skip_new_profile";
+
 // The Finch parameter to control whether to skip notification display.
 constexpr char kSkipDisplay[] = "skip_display";
 
 // The Finch parameter to define the latest version number of the notification.
 constexpr char kVersion[] = "version";
+
+// The Finch parameter to define whether to show the announcement to users not
+// signed in.
+constexpr char kRequireSignout[] = "require_sign_out";
+
+// The Finch parameter to define whether to show the announcement to users not
+// signed in.
+constexpr char kShowOneAllProfiles[] = "show_one_all_profiles";
+
+// The Finch parameter to define the announcement URL.
+constexpr char kAnnouncementUrl[] = "announcement_url";
 
 // Preference name to persist the current version sent from Finch parameter.
 constexpr char kCurrentVersionPrefName[] =
@@ -43,8 +62,8 @@ class AnnouncementNotificationService : public KeyedService {
     Delegate() = default;
     virtual ~Delegate() = default;
 
-    // Show notification.
-    virtual void ShowNotification() = 0;
+    // Show notification. Fallback to default URL when |remote_url| is empty.
+    virtual void ShowNotification(const std::string& remote_url) = 0;
 
     // Is Chrome first time to run.
     virtual bool IsFirstRun() = 0;
@@ -55,6 +74,8 @@ class AnnouncementNotificationService : public KeyedService {
 
   static void RegisterProfilePrefs(PrefRegistrySimple* registry);
   static AnnouncementNotificationService* Create(
+      const base::FilePath& profile_path,
+      bool new_profile,
       PrefService* pref_service,
       std::unique_ptr<Delegate> delegate);
 

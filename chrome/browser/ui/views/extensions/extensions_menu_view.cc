@@ -335,7 +335,7 @@ void ExtensionsMenuView::Update() {
     }
 
     for (ExtensionsMenuItemView* menu_item : views_to_move) {
-      section->container->RemoveChildView(menu_item);
+      section->menu_items->RemoveChildView(menu_item);
       InsertMenuItem(menu_item);
     }
   };

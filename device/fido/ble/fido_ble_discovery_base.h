@@ -28,16 +28,12 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoBleDiscoveryBase
 
  protected:
   static const BluetoothUUID& CableAdvertisementUUID();
+  static bool IsCableDevice(const BluetoothDevice* device);
 
   virtual void OnSetPowered() = 0;
-  virtual void OnStartDiscoverySessionWithFilter(
-      std::unique_ptr<BluetoothDiscoverySession>);
 
-  void OnSetPoweredError();
-  void OnStartDiscoverySessionError();
   void SetDiscoverySession(
       std::unique_ptr<BluetoothDiscoverySession> discovery_session);
-  bool IsCableDevice(const BluetoothDevice* device) const;
 
   BluetoothAdapter* adapter() { return adapter_.get(); }
 

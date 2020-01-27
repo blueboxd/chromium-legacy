@@ -38,7 +38,7 @@ requestAllFileSystems().then(function() {
   chrome.test.runTests([
     function testGetRecentFiles() {
       chrome.fileManagerPrivate.getRecentFiles(
-          'native_source', chrome.test.callbackPass(function(entries) {
+          'native_source', 'all', chrome.test.callbackPass(function(entries) {
             var found = false;
             for (var i = 0; i < entries.length; ++i) {
               if (entries[i].name === 'all-justice.jpg') {

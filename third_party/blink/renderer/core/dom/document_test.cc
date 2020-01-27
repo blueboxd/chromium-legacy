@@ -34,6 +34,7 @@
 
 #include "base/strings/stringprintf.h"
 #include "build/build_config.h"
+#include "components/ukm/test_ukm_recorder.h"
 #include "services/network/public/mojom/referrer_policy.mojom-blink.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -1257,6 +1258,44 @@ TEST_F(DocumentTest, DocumentPolicyFeaturePolicyCoexist) {
                    ->IsFeatureSupported(unsupported_feature));
   EXPECT_TRUE(
       GetDocument().IsFeatureEnabled(unsupported_feature, report_option));
+}
+
+TEST_F(DocumentTest, FindInPageUkm) {
+  GetDocument().ukm_recorder_ = std::make_unique<ukm::TestUkmRecorder>();
+  auto* recorder =
+      static_cast<ukm::TestUkmRecorder*>(GetDocument().UkmRecorder());
+
+  EXPECT_EQ(recorder->entries_count(), 0u);
+  GetDocument().MarkHasFindInPageRequest();
+  EXPECT_EQ(recorder->entries_count(), 1u);
+  GetDocument().MarkHasFindInPageRequest();
+  EXPECT_EQ(recorder->entries_count(), 1u);
+
+  auto entries = recorder->GetEntriesByName("Blink.FindInPage");
+  EXPECT_EQ(entries.size(), 1u);
+  EXPECT_TRUE(ukm::TestUkmRecorder::EntryHasMetric(entries[0], "DidSearch"));
+  EXPECT_EQ(*ukm::TestUkmRecorder::GetEntryMetric(entries[0], "DidSearch"), 1);
+  EXPECT_FALSE(ukm::TestUkmRecorder::EntryHasMetric(
+      entries[0], "DidHaveRenderSubtreeMatch"));
+
+  GetDocument().MarkHasFindInPageRenderSubtreeActiveMatch();
+  EXPECT_EQ(recorder->entries_count(), 2u);
+  GetDocument().MarkHasFindInPageRenderSubtreeActiveMatch();
+  EXPECT_EQ(recorder->entries_count(), 2u);
+  entries = recorder->GetEntriesByName("Blink.FindInPage");
+  EXPECT_EQ(entries.size(), 2u);
+
+  EXPECT_TRUE(ukm::TestUkmRecorder::EntryHasMetric(entries[0], "DidSearch"));
+  EXPECT_EQ(*ukm::TestUkmRecorder::GetEntryMetric(entries[0], "DidSearch"), 1);
+  EXPECT_FALSE(ukm::TestUkmRecorder::EntryHasMetric(
+      entries[0], "DidHaveRenderSubtreeMatch"));
+
+  EXPECT_TRUE(ukm::TestUkmRecorder::EntryHasMetric(
+      entries[1], "DidHaveRenderSubtreeMatch"));
+  EXPECT_EQ(*ukm::TestUkmRecorder::GetEntryMetric(entries[1],
+                                                  "DidHaveRenderSubtreeMatch"),
+            1);
+  EXPECT_FALSE(ukm::TestUkmRecorder::EntryHasMetric(entries[1], "DidSearch"));
 }
 
 /**

@@ -97,12 +97,6 @@ GpuVideoAcceleratorFactoriesImpl::GpuVideoAcceleratorFactoriesImpl(
       video_accelerator_enabled_(enable_video_accelerator),
       gpu_memory_buffer_manager_(
           RenderThreadImpl::current()->GetGpuMemoryBufferManager()),
-      supported_vea_profiles_(
-          enable_video_accelerator
-              ? media::GpuVideoAcceleratorUtil::ConvertGpuToMediaEncodeProfiles(
-                    gpu_channel_host_->gpu_info()
-                        .video_encode_accelerator_supported_profiles)
-              : media::VideoEncodeAccelerator::SupportedProfiles()),
       thread_safe_sender_(ChildThreadImpl::current()->thread_safe_sender()) {
   DCHECK(main_thread_task_runner_);
   DCHECK(gpu_channel_host_);
@@ -136,6 +130,11 @@ void GpuVideoAcceleratorFactoriesImpl::BindOnTaskRunner(
 
   context_provider_->AddObserver(this);
 
+  vea_provider_->GetVideoEncodeAcceleratorSupportedProfiles(
+      base::BindOnce(&GpuVideoAcceleratorFactoriesImpl::
+                         OnGetVideoEncodeAcceleratorSupportedProfiles,
+                     base::Unretained(this)));
+
 #if BUILDFLAG(ENABLE_MOJO_VIDEO_DECODER)
   // Note: This is a bit of a hack, since we don't specify the implementation
   // before asking for the map of supported configs.  We do this because it
@@ -152,9 +151,17 @@ void GpuVideoAcceleratorFactoriesImpl::BindOnTaskRunner(
 
 void GpuVideoAcceleratorFactoriesImpl::OnSupportedDecoderConfigs(
     const media::SupportedVideoDecoderConfigMap& supported_configs) {
-  base::AutoLock lock(supported_decoder_configs_lock_);
+  base::AutoLock lock(supported_profiles_lock_);
   supported_decoder_configs_ = supported_configs;
   video_decoder_.reset();
+}
+
+void GpuVideoAcceleratorFactoriesImpl::
+    OnGetVideoEncodeAcceleratorSupportedProfiles(
+        const media::VideoEncodeAccelerator::SupportedProfiles&
+            supported_profiles) {
+  base::AutoLock lock(supported_profiles_lock_);
+  supported_vea_profiles_ = supported_profiles;
 }
 
 bool GpuVideoAcceleratorFactoriesImpl::CheckContextLost() {
@@ -216,7 +223,7 @@ GpuVideoAcceleratorFactoriesImpl::IsDecoderConfigSupported(
     return Supported::kFalse;
   }
 
-  base::AutoLock lock(supported_decoder_configs_lock_);
+  base::AutoLock lock(supported_profiles_lock_);
 
   // If GetSupportedConfigs() has not completed (or was never started), report
   // that all configs are supported. Clients will find out that configs are not
@@ -270,6 +277,16 @@ GpuVideoAcceleratorFactoriesImpl::CreateVideoEncodeAccelerator() {
   if (CheckContextLost())
     return nullptr;
 
+  base::AutoLock lock(supported_profiles_lock_);
+  // When |supported_vea_profiles_| is empty, no hw encoder is available or
+  // we have not yet gotten the supported profiles.
+  if (!supported_vea_profiles_) {
+    DVLOG(2) << "VEA's profiles have not yet been gotten";
+  } else if (supported_vea_profiles_->empty()) {
+    // There is no profile supported by VEA.
+    return nullptr;
+  }
+
   mojo::PendingRemote<media::mojom::VideoEncodeAccelerator> vea;
   vea_provider_->CreateVideoEncodeAccelerator(
       vea.InitWithNewPipeAndPassReceiver());
@@ -278,8 +295,10 @@ GpuVideoAcceleratorFactoriesImpl::CreateVideoEncodeAccelerator() {
     return nullptr;
 
   return std::unique_ptr<media::VideoEncodeAccelerator>(
-      new media::MojoVideoEncodeAccelerator(std::move(vea),
-                                            supported_vea_profiles_));
+      new media::MojoVideoEncodeAccelerator(
+          std::move(vea),
+          supported_vea_profiles_.value_or(
+              media::VideoEncodeAccelerator::SupportedProfiles())));
 }
 
 std::unique_ptr<gfx::GpuMemoryBuffer>
@@ -389,7 +408,9 @@ GpuVideoAcceleratorFactoriesImpl::GetTaskRunner() {
 
 media::VideoEncodeAccelerator::SupportedProfiles
 GpuVideoAcceleratorFactoriesImpl::GetVideoEncodeAcceleratorSupportedProfiles() {
-  return supported_vea_profiles_;
+  base::AutoLock lock(supported_profiles_lock_);
+  return supported_vea_profiles_.value_or(
+      media::VideoEncodeAccelerator::SupportedProfiles());
 }
 
 scoped_refptr<viz::ContextProvider>

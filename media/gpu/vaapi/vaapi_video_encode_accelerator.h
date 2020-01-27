@@ -155,9 +155,10 @@ class MEDIA_GPU_EXPORT VaapiVideoEncodeAccelerator
   scoped_refptr<VaapiWrapper> vaapi_wrapper_;
 
   // The aligned size of the allocated physical buffer for input buffer.
-  gfx::Size aligned_input_frame_size_;
-  // The visible rect of a blit surface.
-  gfx::Rect blit_visible_rect_;
+  gfx::Size aligned_va_surface_size_;
+
+  // The visible rect to be encoded.
+  gfx::Rect visible_rect_;
 
   // Size in bytes required for output bitstream buffers.
   size_t output_buffer_byte_size_;

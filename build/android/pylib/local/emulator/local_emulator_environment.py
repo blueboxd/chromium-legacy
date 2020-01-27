@@ -8,6 +8,7 @@ from devil import base_error
 from devil.android import device_errors
 from devil.android import device_utils
 from devil.utils import parallelizer
+from devil.utils import reraiser_thread
 from devil.utils import timeout_retry
 from pylib.local.device import local_device_environment
 from pylib.local.emulator import avd
@@ -61,13 +62,16 @@ class LocalEmulatorEnvironment(local_device_environment.LocalDeviceEnvironment):
           raise
         return e
 
+      def retry_on_timeout(exc):
+        return (isinstance(exc, device_errors.CommandTimeoutError)
+                or isinstance(exc, reraiser_thread.TimeoutError))
+
       return timeout_retry.Run(
           impl,
-          timeout=30,
+          timeout=120 if self._writable_system else 30,
           retries=2,
           args=[e],
-          retry_if_func=
-          lambda exc: isinstance(exc, device_errors.CommandTimeoutError))
+          retry_if_func=retry_on_timeout)
 
     parallel_emulators = parallelizer.SyncParallelizer(emulator_instances)
     self._emulator_instances = [

@@ -30,13 +30,13 @@ class CORE_EXPORT ResizeViewportAnchor final
     STACK_ALLOCATED();
 
    public:
-    explicit ResizeScope(ResizeViewportAnchor& anchor) : anchor_(anchor) {
+    explicit ResizeScope(ResizeViewportAnchor& anchor) : anchor_(&anchor) {
       anchor_->BeginScope();
     }
     ~ResizeScope() { anchor_->EndScope(); }
 
    private:
-    Member<ResizeViewportAnchor> anchor_;
+    ResizeViewportAnchor* anchor_;
   };
 
   void ResizeFrameView(const IntSize&);

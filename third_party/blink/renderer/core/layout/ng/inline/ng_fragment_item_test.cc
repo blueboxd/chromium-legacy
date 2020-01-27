@@ -8,6 +8,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/core/layout/layout_block_flow.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_fragment_items.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_cursor.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_test.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
 
@@ -22,9 +23,12 @@ class NGFragmentItemTest : public NGLayoutTest,
 
   Vector<const NGFragmentItem*> ItemsForAsVector(
       const LayoutObject& layout_object) {
-    const auto items = NGFragmentItem::ItemsFor(layout_object);
     Vector<const NGFragmentItem*> list;
-    for (const NGFragmentItem& item : items) {
+    NGInlineCursor cursor;
+    for (cursor.MoveTo(layout_object); cursor;
+         cursor.MoveToNextForSameLayoutObject()) {
+      DCHECK(cursor.Current().Item());
+      const NGFragmentItem& item = *cursor.Current().Item();
       EXPECT_EQ(item.GetLayoutObject(), &layout_object);
       list.push_back(&item);
     }

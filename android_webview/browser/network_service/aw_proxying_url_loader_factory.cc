@@ -480,7 +480,7 @@ void OnReceivedErrorOnUiThread(int process_id,
                   << request.url;
     return;
   }
-  client->OnReceivedError(request, error_code, safebrowsing_hit);
+  client->OnReceivedError(request, error_code, safebrowsing_hit, true);
 }
 
 void OnNewLoginRequestOnUiThread(int process_id,

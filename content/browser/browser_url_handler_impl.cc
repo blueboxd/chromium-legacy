@@ -118,15 +118,11 @@ void BrowserURLHandlerImpl::AddHandlerPair(URLHandler handler,
 
 void BrowserURLHandlerImpl::RewriteURLIfNecessary(
     GURL* url,
-    BrowserContext* browser_context,
-    bool* reverse_on_redirect) {
-  for (size_t i = 0; i < url_handlers_.size(); ++i) {
-    URLHandler handler = *url_handlers_[i].first;
-    if (handler && handler(url, browser_context)) {
-      *reverse_on_redirect = (url_handlers_[i].second != NULL);
-      return;
-    }
-  }
+    BrowserContext* browser_context) {
+  DCHECK(url);
+  DCHECK(browser_context);
+  bool ignored_reverse_on_redirect;
+  RewriteURLIfNecessary(url, browser_context, &ignored_reverse_on_redirect);
 }
 
 void BrowserURLHandlerImpl::FixupURLBeforeRewrite(
@@ -136,13 +132,31 @@ void BrowserURLHandlerImpl::FixupURLBeforeRewrite(
     fixup_handler_(url, browser_context);
 }
 
+void BrowserURLHandlerImpl::RewriteURLIfNecessary(
+    GURL* url,
+    BrowserContext* browser_context,
+    bool* reverse_on_redirect) {
+  DCHECK(url);
+  DCHECK(browser_context);
+  DCHECK(reverse_on_redirect);
+
+  for (const auto& it : url_handlers_) {
+    const URLHandler& handler = it.first;
+    bool has_reverse_rewriter = it.second;
+    if (handler && handler(url, browser_context)) {
+      *reverse_on_redirect = has_reverse_rewriter;
+      return;
+    }
+  }
+}
+
 bool BrowserURLHandlerImpl::ReverseURLRewrite(
     GURL* url, const GURL& original, BrowserContext* browser_context) {
-  for (size_t i = 0; i < url_handlers_.size(); ++i) {
-    URLHandler reverse_rewriter = *url_handlers_[i].second;
+  for (const auto& it : url_handlers_) {
+    const URLHandler& handler = it.first;
+    const URLHandler& reverse_rewriter = it.second;
     if (reverse_rewriter) {
       GURL test_url(original);
-      URLHandler handler = *url_handlers_[i].first;
       if (!handler) {
         if (reverse_rewriter(url, browser_context))
           return true;

@@ -33,10 +33,10 @@
 #include <memory>
 #include <utility>
 
+#include "third_party/blink/renderer/bindings/core/v8/v8_blob_property_bag.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/fetch/blob_bytes_consumer.h"
 #include "third_party/blink/renderer/core/fetch/body_stream_buffer.h"
-#include "third_party/blink/renderer/core/fileapi/blob_property_bag.h"
 #include "third_party/blink/renderer/core/fileapi/file_reader_loader.h"
 #include "third_party/blink/renderer/core/fileapi/file_reader_loader_client.h"
 #include "third_party/blink/renderer/core/frame/web_feature.h"

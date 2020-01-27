@@ -395,9 +395,9 @@ bool NativeFileSystemUsageBubbleView::Cancel() {
   if (!context)
     return true;
 
-  context->RevokeGrantsForOriginAndTab(
-      origin_, web_contents()->GetMainFrame()->GetProcess()->GetID(),
-      web_contents()->GetMainFrame()->GetRoutingID());
+  context->RevokeGrants(origin_,
+                        web_contents()->GetMainFrame()->GetProcess()->GetID(),
+                        web_contents()->GetMainFrame()->GetRoutingID());
   return true;
 }
 

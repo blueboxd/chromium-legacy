@@ -58,12 +58,12 @@ TEST_F(SSLBlockingPageTest,
   ssl_info.cert_status = net::CERT_STATUS_DATE_INVALID;
 
   // Simulates the showing of a SSL blocking page.
-  SSLBlockingPage* blocking_page =
-      ChromeSecurityBlockingPageFactory::CreateSSLPage(
-          web_contents(), net::ERR_CERT_DATE_INVALID, ssl_info, request_url,
-          /*options_mask=*/0, base::Time::NowFromSystemTime(),
-          /*support_url=*/GURL(),
-          /*ssl_cert_reporter=*/nullptr);
+  ChromeSecurityBlockingPageFactory blocking_page_factory;
+  SSLBlockingPage* blocking_page = blocking_page_factory.CreateSSLPage(
+      web_contents(), net::ERR_CERT_DATE_INVALID, ssl_info, request_url,
+      /*options_mask=*/0, base::Time::NowFromSystemTime(),
+      /*support_url=*/GURL(),
+      /*ssl_cert_reporter=*/nullptr);
   blocking_page->DontCreateViewForTesting();
   blocking_page->Show();
 

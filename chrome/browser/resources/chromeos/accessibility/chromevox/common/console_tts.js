@@ -14,22 +14,18 @@ goog.require('AbstractTts');
 goog.require('TtsInterface');
 
 /**
- * @constructor
  * @implements {TtsInterface}
  */
-ConsoleTts = function() {
-  /**
-   * True if the console TTS is enabled by the user.
-   * @type {boolean}
-   * @private
-   */
-  this.enabled_ = false;
-};
-goog.addSingletonGetter(ConsoleTts);
+ConsoleTts = class {
+  constructor() {
+    /**
+     * True if the console TTS is enabled by the user.
+     * @type {boolean}
+     * @private
+     */
+    this.enabled_ = false;
+  }
 
-
-/** @override */
-ConsoleTts.prototype = {
   speak(textString, queueMode, properties) {
     if (this.enabled_ && window['console']) {
       var category = TtsCategory.NAV;
@@ -42,28 +38,28 @@ ConsoleTts.prototype = {
       console.log(speechLog.toString());
     }
     return this;
-  },
+  }
 
   /** @override */
   isSpeaking() {
     return false;
-  },
+  }
 
   /** @override */
   stop() {
     if (this.enabled_) {
       console.log('Stop');
     }
-  },
+  }
 
   /** @override */
-  addCapturingEventListener(listener) {},
+  addCapturingEventListener(listener) {}
 
   /** @override */
-  increaseOrDecreaseProperty() {},
+  increaseOrDecreaseProperty() {}
 
   /** @override */
-  propertyToPercentage() {},
+  propertyToPercentage() {}
 
   /**
    * Sets the enabled bit.
@@ -71,14 +67,15 @@ ConsoleTts.prototype = {
    */
   setEnabled(enabled) {
     this.enabled_ = enabled;
-  },
+  }
 
   /** @override */
-  getDefaultProperty(property) {},
+  getDefaultProperty(property) {}
 
   /** @override */
-  toggleSpeechOnOrOff() {},
+  toggleSpeechOnOrOff() {}
 
   /** @override */
   resetTextToSpeechSettings() {}
 };
+goog.addSingletonGetter(ConsoleTts);

@@ -607,8 +607,8 @@ void NGInlineLayoutStateStack::CreateBoxFragments(
 
       // |AddBoxFragmentPlaceholder| adds a placeholder at |fragment_start|, but
       // bidi reordering may move it. Insert in such case.
-      line_box->InsertChild(start, std::move(box_fragment),
-                            box_data.rect.offset, end - start + 1);
+      line_box->InsertChild(start, std::move(box_fragment), box_data.rect,
+                            end - start + 1);
       ChildInserted(start + 1);
       continue;
     }
@@ -624,7 +624,7 @@ void NGInlineLayoutStateStack::CreateBoxFragments(
 
     // |AddBoxFragmentPlaceholder| adds a placeholder at |fragment_start|, but
     // bidi reordering may move it. Insert in such case.
-    line_box->InsertChild(start, /*box_fragment*/ nullptr, box_data.rect.offset,
+    line_box->InsertChild(start, *box_data.item, box_data.rect,
                           end - start + 1);
     ChildInserted(start + 1);
   }

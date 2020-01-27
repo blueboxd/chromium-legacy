@@ -26,6 +26,7 @@
 #include "net/ssl/ssl_cert_request_info.h"
 #include "net/ssl/ssl_info.h"
 #include "net/url_request/redirect_info.h"
+#include "services/network/public/cpp/isolation_opt_in_hints.h"
 #include "services/network/public/cpp/net_ipc_param_traits.h"
 #include "services/network/public/cpp/origin_policy.h"
 #include "services/network/public/cpp/resource_request_body.h"
@@ -117,10 +118,14 @@ IPC_ENUM_TRAITS_MAX_VALUE(network::mojom::FetchResponseType,
 IPC_ENUM_TRAITS_MAX_VALUE(network::OriginPolicyState,
                           network::OriginPolicyState::kMaxValue)
 
+IPC_ENUM_TRAITS_MAX_VALUE(network::IsolationOptInHints,
+                          network::IsolationOptInHints::ALL_HINTS_ACTIVE)
+
 IPC_STRUCT_TRAITS_BEGIN(network::OriginPolicyContents)
   IPC_STRUCT_TRAITS_MEMBER(feature_policy)
   IPC_STRUCT_TRAITS_MEMBER(content_security_policies)
   IPC_STRUCT_TRAITS_MEMBER(content_security_policies_report_only)
+  IPC_STRUCT_TRAITS_MEMBER(isolation_optin_hints)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(network::OriginPolicy)

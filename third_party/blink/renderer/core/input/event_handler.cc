@@ -843,12 +843,7 @@ WebInputEventResult EventHandler::HandleMousePressEvent(
     mouse_event_manager_->SetCapturesDragging(false);
   }
 
-  // If the scrollbar manipulation was already handled on the compositor thread,
-  // don't pass on the event to the scrollbar.
-  if (mouse_event.GetModifiers() &
-          WebInputEvent::Modifiers::
-              kScrollbarManipulationHandledOnCompositorThread ||
-      PassMousePressEventToScrollbar(mev))
+  if (PassMousePressEventToScrollbar(mev))
     event_result = WebInputEventResult::kHandledSystem;
 
   if (event_result == WebInputEventResult::kNotHandled) {

@@ -268,6 +268,9 @@ COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kHappinessTrackingSurveysForDesktop;
 
 COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::Feature kHappinessTrackingSurveysForDesktopSettings;
+
+COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kHappinessTrackingSurveysForDesktopDemo;
 #endif
 
@@ -333,6 +336,9 @@ extern const base::Feature kMixedContentSiteSetting;
 COMPONENT_EXPORT(CHROME_FEATURES) extern const base::Feature kOnConnectNative;
 #endif
 
+COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::Feature kNativeFileSystemOriginScopedPermissions;
+
 #if BUILDFLAG(ENABLE_NATIVE_NOTIFICATIONS)
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kNativeNotifications;
@@ -375,9 +381,6 @@ extern const base::Feature kPredictivePrefetchingAllowedOnAllConnectionTypes;
 
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kPrerenderFallbackToPreconnect;
-
-COMPONENT_EXPORT(CHROME_FEATURES)
-extern const base::Feature kIsolatePrerenders;
 
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kPrivacySettingsRedesign;

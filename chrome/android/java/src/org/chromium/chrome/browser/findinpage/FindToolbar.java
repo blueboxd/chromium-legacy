@@ -749,7 +749,7 @@ public class FindToolbar extends LinearLayout {
             assert mFindInPageBridge != null;
 
             mResultBar = new FindResultBar(
-                    getContext(), mCurrentTab.getContentView(), mWindowAndroid, mFindInPageBridge);
+                    getContext(), mCurrentTab.getContentView(), mFindInPageBridge);
         } else if (!visibility) {
             if (mResultBar != null) {
                 mResultBar.dismiss();

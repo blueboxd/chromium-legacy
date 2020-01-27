@@ -96,6 +96,17 @@ void V8SetReflectedNullableDOMStringAttribute(
     const v8::FunctionCallbackInfo<v8::Value>& info,
     const QualifiedName& content_attr);
 
+namespace bindings {
+
+base::Optional<size_t> FindIndexInEnumStringTable(
+    v8::Isolate* isolate,
+    v8::Local<v8::Value> value,
+    base::span<const char* const> enum_value_table,
+    const char* enum_type_name,
+    ExceptionState& exception_state);
+
+}  // namespace bindings
+
 }  // namespace blink
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_GENERATED_CODE_HELPER_H_

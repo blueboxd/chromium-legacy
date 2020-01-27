@@ -11,9 +11,10 @@
 #include "base/macros.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/send_tab_to_self/send_tab_to_self_model_observer.h"
-#include "ios/chrome/browser/browser_state/chrome_browser_state_forward.h"
 #import "ios/chrome/browser/web_state_list/web_state_list_observer.h"
 #include "ios/web/public/web_state_observer.h"
+
+class ChromeBrowserState;
 
 namespace web {
 class WebState;
@@ -30,7 +31,7 @@ class SendTabToSelfClientServiceIOS : public KeyedService,
                                       public WebStateListObserver,
                                       public web::WebStateObserver {
  public:
-  SendTabToSelfClientServiceIOS(ios::ChromeBrowserState* browser_state,
+  SendTabToSelfClientServiceIOS(ChromeBrowserState* browser_state,
                                 SendTabToSelfModel* model);
   ~SendTabToSelfClientServiceIOS() override;
 
@@ -70,7 +71,7 @@ class SendTabToSelfClientServiceIOS : public KeyedService,
   SendTabToSelfModel* model_;
 
   // The current browser state. Must outlive this object.
-  ios::ChromeBrowserState* browser_state_;
+  ChromeBrowserState* browser_state_;
 
   // The pending SendTabToSelf entry to display an InfoBar for.
   const SendTabToSelfEntry* entry_ = nullptr;

@@ -79,6 +79,7 @@
 <translation id="129553762522093515">최근에 닫은 탭</translation>
 <translation id="1298536327547837046">멀웨어 검사</translation>
 <translation id="129863573139666797"><ph name="BEGIN_LINK" />쿠키 삭제해 보기<ph name="END_LINK" /></translation>
+<translation id="1301324364792935241">보안 DNS 설정 확인</translation>
 <translation id="1307966114820526988">지원 중단 기능</translation>
 <translation id="1314509827145471431">오른쪽 바인드</translation>
 <translation id="1320233736580025032">Prc1(봉투)</translation>
@@ -152,6 +153,7 @@
 <translation id="1569487616857761740">만료일 입력</translation>
 <translation id="1581080074034554886">CVC</translation>
 <translation id="1583429793053364125">이 웹페이지를 표시하는 도중 문제가 발생했습니다.</translation>
+<translation id="1586541204584340881">내가 설치한 확장 프로그램</translation>
 <translation id="1588438908519853928">일반</translation>
 <translation id="1592005682883173041">로컬 데이터 액세스</translation>
 <translation id="1594030484168838125">선택</translation>
@@ -290,7 +292,6 @@
 <translation id="2218879909401188352">현재 <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />의 공격자가 기기를 손상시키거나, 모바일 요금에 몰래 추가 요금을 부과하거나, 개인정보를 도용하는 위험한 앱을 설치할 수도 있습니다. <ph name="BEGIN_LEARN_MORE_LINK" />자세히 알아보기<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="2224337661447660594">인터넷 연결 없음</translation>
 <translation id="2230458221926704099"><ph name="BEGIN_LINK" />진단 앱<ph name="END_LINK" />을 사용하여 연결 문제를 해결하세요.</translation>
-<translation id="22320125457191592">추천</translation>
 <translation id="2239100178324503013">지금 보내기</translation>
 <translation id="2248949050832152960">WebAuthn 사용</translation>
 <translation id="2250931979407627383">왼쪽 에지 스티치</translation>
@@ -363,6 +364,7 @@
 <translation id="2544644783021658368">단일 문서</translation>
 <translation id="254947805923345898">정책 값이 유효하지 않습니다.</translation>
 <translation id="255002559098805027"><ph name="HOST_NAME" />에서 잘못된 응답을 전송했습니다.</translation>
+<translation id="2553853292994445426">보안 DNS 설정을 확인하세요. 연결되지 않는 보안 DNS 서버를 설정했을 수도 있습니다.</translation>
 <translation id="2556876185419854533">수정 실행 취소(&amp;U)</translation>
 <translation id="257674075312929031">그룹</translation>
 <translation id="2586657967955657006">클립보드</translation>
@@ -483,6 +485,7 @@
 <translation id="3095940652251934233">Statement</translation>
 <translation id="3096100844101284527">수령 주소 추가</translation>
 <translation id="3105172416063519923">애셋 ID:</translation>
+<translation id="3107591622054137333"><ph name="BEGIN_LINK" />보안 DNS 구성 확인<ph name="END_LINK" /></translation>
 <translation id="3109728660330352905">이 페이지를 볼 수 있는 권한이 없습니다.</translation>
 <translation id="3113284927548439113">세 번째 근무조</translation>
 <translation id="3116158981186517402">라미네이트</translation>
@@ -574,7 +577,6 @@
 <translation id="3531780078352352885">작업 시트</translation>
 <translation id="3533328374079021623">메일박스 5</translation>
 <translation id="3539171420378717834">카드 사본을 이 기기에 저장</translation>
-<translation id="3553513561058684206">추천</translation>
 <translation id="3558573058928565255">낮</translation>
 <translation id="3566021033012934673">연결이 비공개로 설정되어 있지 않습니다.</translation>
 <translation id="3574305903863751447"><ph name="COUNTRY" /> <ph name="STATE" />, <ph name="CITY" /></translation>
@@ -786,6 +788,7 @@
 <translation id="4390472908992056574">브림</translation>
 <translation id="4406896451731180161">검색결과</translation>
 <translation id="4408413947728134509">쿠키 <ph name="NUM_COOKIES" />개</translation>
+<translation id="4414290883293381923">사기성 사이트에 비밀번호를 입력했습니다. 지금 바로 <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, <ph name="WEBSITE_3" /> 등 동일한 비밀번호를 사용한 사이트로 이동하여 비밀번호를 변경하시기 바랍니다.</translation>
 <translation id="4415426530740016218">픽업 주소</translation>
 <translation id="4424024547088906515">이 서버가 <ph name="DOMAIN" />임을 입증할 수 없으며 Chrome에서 신뢰하는 보안 인증서가 아닙니다. 서버를 잘못 설정했거나 불법 사용자가 연결을 가로채고 있기 때문일 수 있습니다.</translation>
 <translation id="443121186588148776">직렬 포트</translation>
@@ -1218,6 +1221,7 @@
 <translation id="6353505687280762741">{COUNT,plural, =0{없음}=1{비밀번호 1개(도메인: <ph name="DOMAIN_LIST" />, 동기화됨)}=2{비밀번호 2개(도메인: <ph name="DOMAIN_LIST" />, 동기화됨)}other{비밀번호 #개(도메인: <ph name="DOMAIN_LIST" />, 동기화됨)}}</translation>
 <translation id="6358450015545214790">자세히 알아보기</translation>
 <translation id="6361757823711327522">B7</translation>
+<translation id="6364095313648930329"><ph name="BEGIN_LINK" />프록시, 방화벽, 보안 DNS 설정 확인<ph name="END_LINK" /></translation>
 <translation id="6366710531182496394">왼쪽 듀얼 스테이플</translation>
 <translation id="6377268785556383139">'<ph name="SEARCH_TEXT" />' 검색결과 1개</translation>
 <translation id="6380497234672085559">A0</translation>
@@ -1240,6 +1244,7 @@
 <translation id="6433595998831338502"><ph name="HOST_NAME" />에서 연결을 거부했습니다.</translation>
 <translation id="6434309073475700221">중지</translation>
 <translation id="6440503408713884761">무시됨</translation>
+<translation id="6443406338865242315">내가 설치한 확장 프로그램 및 플러그인</translation>
 <translation id="6446163441502663861">Kahu(봉투)</translation>
 <translation id="6446608382365791566">자세한 정보 추가</translation>
 <translation id="6447842834002726250">쿠키</translation>
@@ -1349,6 +1354,7 @@
 <translation id="7012363358306927923">China UnionPay</translation>
 <translation id="7016992613359344582">이러한 금액 청구는 일회성이거나 반복적일 수 있으며 불분명한 방식으로 이루어질 수도 있습니다.</translation>
 <translation id="7029809446516969842">비밀번호</translation>
+<translation id="7031646650991750659">내가 설치한 Google Play 앱</translation>
 <translation id="7050187094878475250"><ph name="DOMAIN" />에 접속하려고 했지만 서버가 제시한 인증서의 유효 기간이 너무 길어서 신뢰할 수 없습니다.</translation>
 <translation id="705310974202322020">{NUM_CARDS,plural, =1{지금은 이 카드를 저장할 수 없습니다.}other{지금은 이 카드를 저장할 수 없습니다.}}</translation>
 <translation id="7053983685419859001">차단</translation>
@@ -1408,6 +1414,7 @@
 <translation id="7319430975418800333">A3</translation>
 <translation id="7320336641823683070">연결 도움말</translation>
 <translation id="733354035281974745">기기 로컬 계정 재정의</translation>
+<translation id="7333654844024768166">사기성 사이트에 비밀번호를 입력했습니다. 지금 바로 <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, <ph name="WEBSITE_3" /> 등 동일한 비밀번호를 사용한 사이트로 이동하여 비밀번호를 변경하시기 바랍니다.</translation>
 <translation id="7334320624316649418">재정렬 다시 실행(&amp;R)</translation>
 <translation id="7337706099755338005">사용 중인 플랫폼에서는 제공되지 않습니다.</translation>
 <translation id="733923710415886693">서버 인증서가 인증서 투명성 정책을 사용하여 공개되지 않았습니다.</translation>

@@ -9,8 +9,8 @@
 #include "third_party/blink/public/mojom/webaudio/audio_context_manager.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_audio_context_options.h"
 #include "third_party/blink/renderer/core/html/media/autoplay_policy.h"
-#include "third_party/blink/renderer/modules/webaudio/audio_context_options.h"
 #include "third_party/blink/renderer/modules/webaudio/base_audio_context.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 

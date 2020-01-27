@@ -25,6 +25,7 @@ import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.CreditCard;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.content_public.browser.WebContents;
 import org.chromium.payments.mojom.BasicCardNetwork;
 import org.chromium.ui.test.util.DisableAnimationsTestRule;
 
@@ -38,7 +39,9 @@ import java.util.concurrent.TimeoutException;
         // For all the tests in this file, we expect abort exception when there is no supported
         // payment instruments instead of showing payment request UI.
         "enable-features=" + ChromeFeatureList.STRICT_HAS_ENROLLED_AUTOFILL_INSTRUMENT,
-        "disable-field-trial-config"})
+        "disable-field-trial-config",
+        // Prevent crawling the web for real payment apps.
+        "disable-features=" + ChromeFeatureList.SERVICE_WORKER_PAYMENT_APPS})
 public class PaymentRequestServiceWorkerPaymentAppTest {
     // Disable animations to reduce flakiness.
     @ClassRule
@@ -52,47 +55,54 @@ public class PaymentRequestServiceWorkerPaymentAppTest {
      * Installs a mock service worker based payment app with given supported delegations for
      * testing.
      *
+     * @param scope                Service worker scope that identifies the payment app. Must be
+     *                             unique.
      * @param supportedMethodNames The supported payment methods of the mock payment app.
      * @param capabilities         The capabilities of the mocked payment app.
      * @param name                 The name of the mocked payment app.
      * @param withIcon             Whether provide payment app icon.
      * @param supportedDelegations The supported delegations of the mock payment app.
      */
-    private void installMockServiceWorkerPaymentApp(final String[] supportedMethodNames,
+    private void installMockServiceWorkerPaymentApp(String scope,
+            final String[] supportedMethodNames,
             final ServiceWorkerPaymentApp.Capabilities[] capabilities, final String name,
             final boolean withIcon, SupportedDelegations supportedDelegations) {
-        PaymentAppFactory.getInstance().addAdditionalFactory(
-                (webContents, methodNames, mayCrawlUnused, callback) -> {
-                    ChromeActivity activity = ChromeActivity.fromWebContents(webContents);
-                    BitmapDrawable icon = withIcon
-                            ? new BitmapDrawable(activity.getResources(),
-                                      Bitmap.createBitmap(new int[] {Color.RED}, 1 /* width */,
-                                              1 /* height */, Bitmap.Config.ARGB_8888))
-                            : null;
-                    callback.onPaymentAppCreated(new ServiceWorkerPaymentApp(webContents,
-                            0 /* registrationId */,
-                            UriUtils.parseUriFromString("https://bobpay.com") /* scope */, name,
-                            "test@bobpay.com" /* userHint */, "https://bobpay.com" /* origin */,
-                            icon /* icon */, supportedMethodNames /* methodNames */,
-                            true /* explicitlyVerified */, capabilities /* capabilities */,
-                            new String[0] /* preferredRelatedApplicationIds */,
-                            supportedDelegations));
-                    callback.onAllPaymentAppsCreated();
-                });
+        PaymentAppService.getInstance().addFactory(new PaymentAppFactoryInterface() {
+            @Override
+            public void create(PaymentAppFactoryDelegate delegate) {
+                WebContents webContents = delegate.getParams().getWebContents();
+                ChromeActivity activity = ChromeActivity.fromWebContents(webContents);
+                BitmapDrawable icon = withIcon
+                        ? new BitmapDrawable(activity.getResources(),
+                                Bitmap.createBitmap(new int[] {Color.RED}, 1 /* width */,
+                                        1 /* height */, Bitmap.Config.ARGB_8888))
+                        : null;
+                delegate.onPaymentAppCreated(new ServiceWorkerPaymentApp(webContents,
+                        0 /* registrationId */, UriUtils.parseUriFromString(scope) /*scope*/, name,
+                        "test@bobpay.com" /* userHint */, "https://bobpay.com" /* origin */,
+                        icon /* icon */, supportedMethodNames /* methodNames */,
+                        capabilities /* capabilities */,
+                        new String[0] /* preferredRelatedApplicationIds */, supportedDelegations));
+                delegate.onDoneCreatingPaymentApps(this);
+            }
+        });
     }
 
     /**
      * Installs a mock service worker based payment app with no supported delegations for testing.
      *
+     * @param scope                The service worker scope that identifies this payment app. Must
+     *                             be unique.
      * @param supportedMethodNames The supported payment methods of the mock payment app.
      * @param capabilities         The capabilities of the mocked payment app.
      * @param withName             Whether provide payment app name.
      * @param withIcon             Whether provide payment app icon.
      */
-    private void installMockServiceWorkerPaymentApp(final String[] supportedMethodNames,
+    private void installMockServiceWorkerPaymentApp(String scope,
+            final String[] supportedMethodNames,
             final ServiceWorkerPaymentApp.Capabilities[] capabilities, final boolean withName,
             final boolean withIcon) {
-        installMockServiceWorkerPaymentApp(supportedMethodNames, capabilities,
+        installMockServiceWorkerPaymentApp(scope, supportedMethodNames, capabilities,
                 withName ? "BobPay" : null, withIcon, new SupportedDelegations());
     }
 
@@ -100,17 +110,19 @@ public class PaymentRequestServiceWorkerPaymentAppTest {
      * Installs a mock service worker based payment app for bobpay with given supported delegations
      * for testing.
      *
+     * @param scope             The service worker scope that identifies this payment app. Must be
+     *                          unique.
      * @param shippingAddress   Whether or not the mock payment app provides shipping address.
      * @param payerName         Whether or not the mock payment app provides payer's name.
      * @param payerPhone        Whether or not the mock payment app provides payer's phone number.
      * @param payerEmail        Whether or not the mock payment app provides payer's email address.
      * @param name              The name of the mocked payment app.
      */
-    private void installMockServiceWorkerPaymentAppWithDelegations(final boolean shippingAddress,
-            final boolean payerName, final boolean payerPhone, final boolean payerEmail,
-            final String name) {
+    private void installMockServiceWorkerPaymentAppWithDelegations(String scope,
+            final boolean shippingAddress, final boolean payerName, final boolean payerPhone,
+            final boolean payerEmail, final String name) {
         String[] supportedMethodNames = {"https://bobpay.xyz"};
-        installMockServiceWorkerPaymentApp(supportedMethodNames,
+        installMockServiceWorkerPaymentApp(scope, supportedMethodNames,
                 new ServiceWorkerPaymentApp.Capabilities[0], name, true /*withIcon*/,
                 new SupportedDelegations(shippingAddress, payerName, payerPhone, payerEmail));
     }
@@ -132,11 +144,6 @@ public class PaymentRequestServiceWorkerPaymentAppTest {
     @MediumTest
     @Feature({"Payments"})
     public void testNoSupportedPaymentMethods() throws TimeoutException {
-        installMockServiceWorkerPaymentApp(
-                new String[0], new ServiceWorkerPaymentApp.Capabilities[0], true, true);
-
-        ServiceWorkerPaymentAppBridge.setCanMakePaymentForTesting(true);
-
         mPaymentRequestTestRule.openPageAndClickBuyAndWait(mPaymentRequestTestRule.getShowFailed());
         mPaymentRequestTestRule.expectResultContains(
                 new String[] {"show() rejected", "Payment method not supported"});
@@ -147,8 +154,8 @@ public class PaymentRequestServiceWorkerPaymentAppTest {
     @Feature({"Payments"})
     public void testHasSupportedPaymentMethods() throws TimeoutException {
         String[] supportedMethodNames = {"https://bobpay.com"};
-        installMockServiceWorkerPaymentApp(
-                supportedMethodNames, new ServiceWorkerPaymentApp.Capabilities[0], true, true);
+        installMockServiceWorkerPaymentApp("https://bobpay.com", supportedMethodNames,
+                new ServiceWorkerPaymentApp.Capabilities[0], true, true);
 
         ServiceWorkerPaymentAppBridge.setCanMakePaymentForTesting(true);
         // Payment sheet skips to the app since it is the only available app.
@@ -164,7 +171,8 @@ public class PaymentRequestServiceWorkerPaymentAppTest {
 
         String[] supportedMethodNames = {"https://bobpay.com", "basic-card"};
         ServiceWorkerPaymentApp.Capabilities[] capabilities = {};
-        installMockServiceWorkerPaymentApp(supportedMethodNames, capabilities, true, true);
+        installMockServiceWorkerPaymentApp(
+                "https://bobpay.com", supportedMethodNames, capabilities, true, true);
 
         ServiceWorkerPaymentAppBridge.setCanMakePaymentForTesting(true);
 
@@ -206,7 +214,8 @@ public class PaymentRequestServiceWorkerPaymentAppTest {
         int[] networks = {BasicCardNetwork.VISA};
         ServiceWorkerPaymentApp.Capabilities[] capabilities = {
                 new ServiceWorkerPaymentApp.Capabilities(networks)};
-        installMockServiceWorkerPaymentApp(supportedMethodNames, capabilities, true, true);
+        installMockServiceWorkerPaymentApp(
+                "https://bobpay.com", supportedMethodNames, capabilities, true, true);
 
         ServiceWorkerPaymentAppBridge.setCanMakePaymentForTesting(true);
 
@@ -240,7 +249,8 @@ public class PaymentRequestServiceWorkerPaymentAppTest {
         int[] networks = {BasicCardNetwork.MASTERCARD};
         ServiceWorkerPaymentApp.Capabilities[] capabilities = {
                 new ServiceWorkerPaymentApp.Capabilities(networks)};
-        installMockServiceWorkerPaymentApp(supportedMethodNames, capabilities, true, true);
+        installMockServiceWorkerPaymentApp(
+                "https://bobpay.com", supportedMethodNames, capabilities, true, true);
 
         ServiceWorkerPaymentAppBridge.setCanMakePaymentForTesting(true);
 
@@ -274,8 +284,8 @@ public class PaymentRequestServiceWorkerPaymentAppTest {
         // Add a credit card to force showing payment sheet UI.
         addCreditCard();
         String[] supportedMethodNames = {"basic-card"};
-        installMockServiceWorkerPaymentApp(
-                supportedMethodNames, new ServiceWorkerPaymentApp.Capabilities[0], true, true);
+        installMockServiceWorkerPaymentApp("https://bobpay.com", supportedMethodNames,
+                new ServiceWorkerPaymentApp.Capabilities[0], true, true);
 
         // Sets setCanMakePaymentForTesting(false) to return false for CanMakePayment since there is
         // no real sw payment app, so if CanMakePayment is called then no payment instruments will
@@ -289,28 +299,10 @@ public class PaymentRequestServiceWorkerPaymentAppTest {
     @Test
     @MediumTest
     @Feature({"Payments"})
-    public void testCallCanMakePayment() throws TimeoutException {
-        String[] supportedMethodNames = {"https://bobpay.com", "basic-card"};
-        installMockServiceWorkerPaymentApp(
-                supportedMethodNames, new ServiceWorkerPaymentApp.Capabilities[0], true, true);
-
-        // Sets setCanMakePaymentForTesting(false) to return false for CanMakePayment since there is
-        // no real sw payment app, so if CanMakePayment is called then no payment instruments will
-        // be available, otherwise CanMakePayment is not called.
-        ServiceWorkerPaymentAppBridge.setCanMakePaymentForTesting(false);
-
-        mPaymentRequestTestRule.openPageAndClickBuyAndWait(mPaymentRequestTestRule.getShowFailed());
-        mPaymentRequestTestRule.expectResultContains(
-                new String[] {"show() rejected", "Payment method not supported"});
-    }
-
-    @Test
-    @MediumTest
-    @Feature({"Payments"})
     public void testCanPreselect() throws TimeoutException {
         String[] supportedMethodNames = {"https://bobpay.com"};
-        installMockServiceWorkerPaymentApp(
-                supportedMethodNames, new ServiceWorkerPaymentApp.Capabilities[0], true, true);
+        installMockServiceWorkerPaymentApp("https://bobpay.com", supportedMethodNames,
+                new ServiceWorkerPaymentApp.Capabilities[0], true, true);
 
         ServiceWorkerPaymentAppBridge.setCanMakePaymentForTesting(true);
 
@@ -323,8 +315,8 @@ public class PaymentRequestServiceWorkerPaymentAppTest {
     @Feature({"Payments"})
     public void testCanNotPreselectWithoutName() throws TimeoutException {
         String[] supportedMethodNames = {"https://bobpay.com"};
-        installMockServiceWorkerPaymentApp(
-                supportedMethodNames, new ServiceWorkerPaymentApp.Capabilities[0], false, true);
+        installMockServiceWorkerPaymentApp("https://bobpay.com", supportedMethodNames,
+                new ServiceWorkerPaymentApp.Capabilities[0], false, true);
 
         ServiceWorkerPaymentAppBridge.setCanMakePaymentForTesting(true);
 
@@ -337,8 +329,8 @@ public class PaymentRequestServiceWorkerPaymentAppTest {
     @Feature({"Payments"})
     public void testCanNotPreselectWithoutIcon() throws TimeoutException {
         String[] supportedMethodNames = {"https://bobpay.com"};
-        installMockServiceWorkerPaymentApp(
-                supportedMethodNames, new ServiceWorkerPaymentApp.Capabilities[0], true, false);
+        installMockServiceWorkerPaymentApp("https://bobpay.com", supportedMethodNames,
+                new ServiceWorkerPaymentApp.Capabilities[0], true, false);
 
         ServiceWorkerPaymentAppBridge.setCanMakePaymentForTesting(true);
 
@@ -351,8 +343,8 @@ public class PaymentRequestServiceWorkerPaymentAppTest {
     @Feature({"Payments"})
     public void testCanNotPreselectWithoutNameAndIcon() throws TimeoutException {
         String[] supportedMethodNames = {"https://bobpay.com"};
-        installMockServiceWorkerPaymentApp(
-                supportedMethodNames, new ServiceWorkerPaymentApp.Capabilities[0], false, false);
+        installMockServiceWorkerPaymentApp("https://bobpay.com", supportedMethodNames,
+                new ServiceWorkerPaymentApp.Capabilities[0], false, false);
 
         ServiceWorkerPaymentAppBridge.setCanMakePaymentForTesting(true);
 
@@ -364,16 +356,16 @@ public class PaymentRequestServiceWorkerPaymentAppTest {
     @MediumTest
     @Feature({"Payments"})
     public void testPaymentAppProvidingShippingComesFirst() throws TimeoutException {
-        installMockServiceWorkerPaymentAppWithDelegations(false /*shippingAddress*/,
-                false /*payerName*/, false /*payerPhone*/, false /*payerEmail*/,
-                "noSupportedDelegation" /*name*/);
-        installMockServiceWorkerPaymentAppWithDelegations(true /*shippingAddress*/,
-                false /*payerName*/, false /*payerPhone*/, false /*payerEmail*/,
-                "shippingSupported1" /*name */);
+        installMockServiceWorkerPaymentAppWithDelegations("https://alicepay.com" /*scope*/,
+                false /*shippingAddress*/, false /*payerName*/, false /*payerPhone*/,
+                false /*payerEmail*/, "noSupportedDelegation" /*name*/);
+        installMockServiceWorkerPaymentAppWithDelegations("https://bobpay.com" /*scope*/,
+                true /*shippingAddress*/, false /*payerName*/, false /*payerPhone*/,
+                false /*payerEmail*/, "shippingSupported1" /*name */);
         // Install the second app supporting shipping delegation to force showing payment sheet.
-        installMockServiceWorkerPaymentAppWithDelegations(true /*shippingAddress*/,
-                false /*payerName*/, false /*payerPhone*/, false /*payerEmail*/,
-                "shippingSupported2" /*name */);
+        installMockServiceWorkerPaymentAppWithDelegations("https://charliepay.com" /*scope*/,
+                true /*shippingAddress*/, false /*payerName*/, false /*payerPhone*/,
+                false /*payerEmail*/, "shippingSupported2" /*name */);
 
         ServiceWorkerPaymentAppBridge.setCanMakePaymentForTesting(true);
 
@@ -390,19 +382,19 @@ public class PaymentRequestServiceWorkerPaymentAppTest {
     @MediumTest
     @Feature({"Payments"})
     public void testPaymentAppProvidingContactComesFirst() throws TimeoutException {
-        installMockServiceWorkerPaymentAppWithDelegations(false /*shippingAddress*/,
-                false /*payerName*/, false /*payerPhone*/, false /*payerEmail*/,
-                "noSupportedDelegation" /*name*/);
-        installMockServiceWorkerPaymentAppWithDelegations(false /*shippingAddress*/,
-                true /*payerName*/, true /*payerPhone*/, true /*payerEmail*/,
-                "contactSupported" /*name */);
-        installMockServiceWorkerPaymentAppWithDelegations(false /*shippingAddress*/,
-                false /*payerName*/, false /*payerPhone*/, true /*payerEmail*/,
-                "emailOnlySupported" /*name */);
+        installMockServiceWorkerPaymentAppWithDelegations("https://alicepay.com" /*scope*/,
+                false /*shippingAddress*/, false /*payerName*/, false /*payerPhone*/,
+                false /*payerEmail*/, "noSupportedDelegation" /*name*/);
+        installMockServiceWorkerPaymentAppWithDelegations("https://bobpay.com" /*scope*/,
+                false /*shippingAddress*/, true /*payerName*/, true /*payerPhone*/,
+                true /*payerEmail*/, "contactSupported" /*name */);
+        installMockServiceWorkerPaymentAppWithDelegations("https://charliepay.com" /*scope*/,
+                false /*shippingAddress*/, false /*payerName*/, false /*payerPhone*/,
+                true /*payerEmail*/, "emailOnlySupported" /*name */);
         // Install the second app supporting contact delegation to force showing payment sheet.
-        installMockServiceWorkerPaymentAppWithDelegations(false /*shippingAddress*/,
-                true /*payerName*/, true /*payerPhone*/, true /*payerEmail*/,
-                "contactSupported2" /*name */);
+        installMockServiceWorkerPaymentAppWithDelegations("https://davepay.com" /*scope*/,
+                false /*shippingAddress*/, true /*payerName*/, true /*payerPhone*/,
+                true /*payerEmail*/, "contactSupported2" /*name */);
 
         ServiceWorkerPaymentAppBridge.setCanMakePaymentForTesting(true);
 
@@ -423,20 +415,20 @@ public class PaymentRequestServiceWorkerPaymentAppTest {
     @MediumTest
     @Feature({"Payments"})
     public void testPaymentAppProvidingAllRequiredInfoComesFirst() throws TimeoutException {
-        installMockServiceWorkerPaymentAppWithDelegations(true /*shippingAddress*/,
-                false /*payerName*/, false /*payerPhone*/, false /*payerEmail*/,
-                "shippingSupported" /*name */);
-        installMockServiceWorkerPaymentAppWithDelegations(false /*shippingAddress*/,
-                true /*payerName*/, true /*payerPhone*/, true /*payerEmail*/,
-                "contactSupported" /*name */);
-        installMockServiceWorkerPaymentAppWithDelegations(true /*shippingAddress*/,
-                true /*payerName*/, true /*payerPhone*/, true /*payerEmail*/,
-                "shippingAndContactSupported" /*name*/);
+        installMockServiceWorkerPaymentAppWithDelegations("https://alicepay.com" /*scope*/,
+                true /*shippingAddress*/, false /*payerName*/, false /*payerPhone*/,
+                false /*payerEmail*/, "shippingSupported" /*name */);
+        installMockServiceWorkerPaymentAppWithDelegations("https://bobpay.com" /*scope*/,
+                false /*shippingAddress*/, true /*payerName*/, true /*payerPhone*/,
+                true /*payerEmail*/, "contactSupported" /*name */);
+        installMockServiceWorkerPaymentAppWithDelegations("https://charliepay.com" /*scope*/,
+                true /*shippingAddress*/, true /*payerName*/, true /*payerPhone*/,
+                true /*payerEmail*/, "shippingAndContactSupported" /*name*/);
         // Install the second app supporting both shipping and contact delegations to force showing
         // payment sheet.
-        installMockServiceWorkerPaymentAppWithDelegations(true /*shippingAddress*/,
-                true /*payerName*/, true /*payerPhone*/, true /*payerEmail*/,
-                "shippingAndContactSupported2" /*name*/);
+        installMockServiceWorkerPaymentAppWithDelegations("https://davepay.com" /*scope*/,
+                true /*shippingAddress*/, true /*payerName*/, true /*payerPhone*/,
+                true /*payerEmail*/, "shippingAndContactSupported2" /*name*/);
 
         ServiceWorkerPaymentAppBridge.setCanMakePaymentForTesting(true);
 
@@ -457,12 +449,12 @@ public class PaymentRequestServiceWorkerPaymentAppTest {
     @MediumTest
     @Feature({"Payments"})
     public void testSkipsToSinglePaymentAppProvidingShipping() throws TimeoutException {
-        installMockServiceWorkerPaymentAppWithDelegations(false /*shippingAddress*/,
-                false /*payerName*/, false /*payerPhone*/, false /*payerEmail*/,
-                "noSupportedDelegation" /*name*/);
-        installMockServiceWorkerPaymentAppWithDelegations(true /*shippingAddress*/,
-                false /*payerName*/, false /*payerPhone*/, false /*payerEmail*/,
-                "shippingSupported" /*name */);
+        installMockServiceWorkerPaymentAppWithDelegations("https://alicepay.com" /*scope*/,
+                false /*shippingAddress*/, false /*payerName*/, false /*payerPhone*/,
+                false /*payerEmail*/, "noSupportedDelegation" /*name*/);
+        installMockServiceWorkerPaymentAppWithDelegations("https://bobpay.com" /*scope*/,
+                true /*shippingAddress*/, false /*payerName*/, false /*payerPhone*/,
+                false /*payerEmail*/, "shippingSupported" /*name */);
 
         ServiceWorkerPaymentAppBridge.setCanMakePaymentForTesting(true);
         mPaymentRequestTestRule.openPageAndClickNodeAndWait(
@@ -473,15 +465,15 @@ public class PaymentRequestServiceWorkerPaymentAppTest {
     @MediumTest
     @Feature({"Payments"})
     public void testSkipsToSinglePaymentAppProvidingContact() throws TimeoutException {
-        installMockServiceWorkerPaymentAppWithDelegations(false /*shippingAddress*/,
-                false /*payerName*/, false /*payerPhone*/, false /*payerEmail*/,
-                "noSupportedDelegation" /*name*/);
-        installMockServiceWorkerPaymentAppWithDelegations(false /*shippingAddress*/,
-                true /*payerName*/, true /*payerPhone*/, true /*payerEmail*/,
-                "contactSupported" /*name */);
-        installMockServiceWorkerPaymentAppWithDelegations(false /*shippingAddress*/,
-                false /*payerName*/, false /*payerPhone*/, true /*payerEmail*/,
-                "emailOnlySupported" /*name */);
+        installMockServiceWorkerPaymentAppWithDelegations("https://alicepay.com" /*scope*/,
+                false /*shippingAddress*/, false /*payerName*/, false /*payerPhone*/,
+                false /*payerEmail*/, "noSupportedDelegation" /*name*/);
+        installMockServiceWorkerPaymentAppWithDelegations("https://bobpay.com" /*scope*/,
+                false /*shippingAddress*/, true /*payerName*/, true /*payerPhone*/,
+                true /*payerEmail*/, "contactSupported" /*name */);
+        installMockServiceWorkerPaymentAppWithDelegations("https://charliepay.com" /*scope*/,
+                false /*shippingAddress*/, false /*payerName*/, false /*payerPhone*/,
+                true /*payerEmail*/, "emailOnlySupported" /*name */);
 
         ServiceWorkerPaymentAppBridge.setCanMakePaymentForTesting(true);
         mPaymentRequestTestRule.openPageAndClickNodeAndWait(
@@ -492,15 +484,15 @@ public class PaymentRequestServiceWorkerPaymentAppTest {
     @MediumTest
     @Feature({"Payments"})
     public void testSkipsToSinglePaymentAppProvidingAllRequiredInfo() throws TimeoutException {
-        installMockServiceWorkerPaymentAppWithDelegations(true /*shippingAddress*/,
-                false /*payerName*/, false /*payerPhone*/, false /*payerEmail*/,
-                "shippingSupported" /*name */);
-        installMockServiceWorkerPaymentAppWithDelegations(false /*shippingAddress*/,
-                true /*payerName*/, true /*payerPhone*/, true /*payerEmail*/,
-                "contactSupported" /*name */);
-        installMockServiceWorkerPaymentAppWithDelegations(true /*shippingAddress*/,
-                true /*payerName*/, true /*payerPhone*/, true /*payerEmail*/,
-                "shippingAndContactSupported" /*name*/);
+        installMockServiceWorkerPaymentAppWithDelegations("https://alicepay.com" /*scope*/,
+                true /*shippingAddress*/, false /*payerName*/, false /*payerPhone*/,
+                false /*payerEmail*/, "shippingSupported" /*name */);
+        installMockServiceWorkerPaymentAppWithDelegations("https://bobpay.com" /*scope*/,
+                false /*shippingAddress*/, true /*payerName*/, true /*payerPhone*/,
+                true /*payerEmail*/, "contactSupported" /*name */);
+        installMockServiceWorkerPaymentAppWithDelegations("https://charliepay.com" /*scope*/,
+                true /*shippingAddress*/, true /*payerName*/, true /*payerPhone*/,
+                true /*payerEmail*/, "shippingAndContactSupported" /*name*/);
 
         ServiceWorkerPaymentAppBridge.setCanMakePaymentForTesting(true);
         mPaymentRequestTestRule.openPageAndClickNodeAndWait(

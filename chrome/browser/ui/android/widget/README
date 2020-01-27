@@ -1,4 +1,0 @@
-Note: this directory is in the process of being migrated to
-//components/browser_ui/widget/android. Consider adding new code there instead
-of here. If your code is specific to Chrome (e.g. references tabs, omnibox,
-etc), it likely does not belong in widget.

@@ -106,6 +106,7 @@ if (is_fuchsia) {
     testonly = true
     binary = ":ozone_demo"
     package_name_override = "ozone_demo"
+    manifest = "//build/config/fuchsia/gfx_tests.cmx"
   }
 
   fuchsia_package_runner("ozone_demo_fuchsia") {

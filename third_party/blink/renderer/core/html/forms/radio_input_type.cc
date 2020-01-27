@@ -21,6 +21,7 @@
 
 #include "third_party/blink/renderer/core/html/forms/radio_input_type.h"
 
+#include "third_party/blink/public/mojom/input/focus_type.mojom-blink.h"
 #include "third_party/blink/public/strings/grit/blink_strings.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/element_traversal.h"
@@ -153,9 +154,9 @@ void RadioInputType::HandleKeydownEvent(KeyboardEvent& event) {
     }
   }
   if (input_element) {
-    document.SetFocusedElement(input_element,
-                               FocusParams(SelectionBehaviorOnFocus::kRestore,
-                                           kWebFocusTypeNone, nullptr));
+    document.SetFocusedElement(
+        input_element, FocusParams(SelectionBehaviorOnFocus::kRestore,
+                                   mojom::blink::FocusType::kNone, nullptr));
     input_element->DispatchSimulatedClick(&event, kSendNoEvents);
     event.SetDefaultHandled();
     return;

@@ -868,6 +868,13 @@ void BrowserViewRenderer::Invalidate() {
   PostInvalidate(compositor_);
 }
 
+void BrowserViewRenderer::ReturnResourcesFromViz(
+    viz::FrameSinkId frame_sink_id,
+    uint32_t layer_tree_frame_sink_id,
+    std::vector<viz::ReturnedResource> resources) {
+  ReturnUsedResources(resources, frame_sink_id, layer_tree_frame_sink_id);
+}
+
 void BrowserViewRenderer::OnInputEvent() {
   if (root_frame_sink_proxy_)
     root_frame_sink_proxy_->OnInputEvent();

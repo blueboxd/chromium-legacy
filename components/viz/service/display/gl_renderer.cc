@@ -3245,17 +3245,14 @@ void GLRenderer::SetUseProgram(const ProgramKey& program_key_no_color,
                                const gfx::ColorSpace& dst_color_space) {
   DCHECK(dst_color_space.IsValid());
 
-  gfx::ColorSpace adjusted_color_space = src_color_space;
-  float sdr_white_level = current_frame()->sdr_white_level;
-  if (src_color_space.IsValid() && !src_color_space.IsHDR() &&
-      sdr_white_level != gfx::ColorSpace::kDefaultSDRWhiteLevel) {
-    adjusted_color_space = src_color_space.GetScaledColorSpace(
-        sdr_white_level / gfx::ColorSpace::kDefaultSDRWhiteLevel);
-  }
+  // If the input color space is PQ, and it did not specify a white level,
+  // override it with the frame's white level.
+  gfx::ColorSpace adjusted_src_color_space =
+      src_color_space.GetWithPQSDRWhiteLevel(current_frame()->sdr_white_level);
 
   ProgramKey program_key = program_key_no_color;
   const gfx::ColorTransform* color_transform =
-      GetColorTransform(adjusted_color_space, dst_color_space);
+      GetColorTransform(adjusted_src_color_space, dst_color_space);
   program_key.SetColorTransform(color_transform);
 
   const bool is_root_render_pass =

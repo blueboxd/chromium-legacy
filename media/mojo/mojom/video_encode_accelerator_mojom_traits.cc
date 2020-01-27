@@ -12,6 +12,22 @@
 namespace mojo {
 
 // static
+bool StructTraits<media::mojom::VideoEncodeAcceleratorSupportedProfileDataView,
+                  media::VideoEncodeAccelerator::SupportedProfile>::
+    Read(media::mojom::VideoEncodeAcceleratorSupportedProfileDataView data,
+         media::VideoEncodeAccelerator::SupportedProfile* out) {
+  if (!data.ReadMinResolution(&out->min_resolution) ||
+      !data.ReadMaxResolution(&out->max_resolution) ||
+      !data.ReadProfile(&out->profile)) {
+    return false;
+  }
+
+  out->max_framerate_numerator = data.max_framerate_numerator();
+  out->max_framerate_denominator = data.max_framerate_denominator();
+  return true;
+}
+
+// static
 media::mojom::VideoEncodeAccelerator::Error
 EnumTraits<media::mojom::VideoEncodeAccelerator::Error,
            media::VideoEncodeAccelerator::Error>::

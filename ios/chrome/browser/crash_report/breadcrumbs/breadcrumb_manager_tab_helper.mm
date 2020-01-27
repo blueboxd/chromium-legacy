@@ -25,8 +25,8 @@ BreadcrumbManagerTabHelper::BreadcrumbManagerTabHelper(web::WebState* web_state)
 BreadcrumbManagerTabHelper::~BreadcrumbManagerTabHelper() = default;
 
 void BreadcrumbManagerTabHelper::LogEvent(const std::string& event) {
-  ios::ChromeBrowserState* chrome_browser_state =
-      ios::ChromeBrowserState::FromBrowserState(web_state_->GetBrowserState());
+  ChromeBrowserState* chrome_browser_state =
+      ChromeBrowserState::FromBrowserState(web_state_->GetBrowserState());
   std::string event_log =
       base::StringPrintf("Tab%d %s", unique_id_, event.c_str());
   BreadcrumbManagerKeyedServiceFactory::GetForBrowserState(chrome_browser_state)

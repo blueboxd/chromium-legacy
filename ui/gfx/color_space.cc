@@ -102,6 +102,19 @@ bool ColorSpace::IsValid() const {
 }
 
 // static
+ColorSpace ColorSpace::CreateSCRGBLinear(float slope) {
+  if (slope == 1.f) {
+    return ColorSpace(PrimaryID::BT709, TransferID::LINEAR_HDR, MatrixID::RGB,
+                      RangeID::FULL);
+  }
+  skcms_TransferFunction fn = {0};
+  fn.g = 1.f;
+  fn.a = slope;
+  return ColorSpace(PrimaryID::BT709, TransferID::CUSTOM_HDR, MatrixID::RGB,
+                    RangeID::FULL, nullptr, &fn);
+}
+
+// static
 ColorSpace ColorSpace::CreateHDR10(float sdr_white_point) {
   ColorSpace result(PrimaryID::BT2020, TransferID::SMPTEST2084, MatrixID::RGB,
                     RangeID::FULL);
@@ -183,20 +196,23 @@ void ColorSpace::SetCustomTransferFunction(const skcms_TransferFunction& fn) {
          transfer_ == TransferID::CUSTOM_HDR);
   // These are all TransferIDs that will return a transfer function from
   // GetTransferFunction. When multiple ids map to the same function, this list
-  // prioritizes the most common name (eg IEC61966_2_1).
-  const TransferID kIDsToCheck[] = {
-      TransferID::IEC61966_2_1, TransferID::LINEAR,
-      TransferID::GAMMA18,      TransferID::GAMMA22,
-      TransferID::GAMMA24,      TransferID::GAMMA28,
-      TransferID::SMPTE240M,    TransferID::BT709_APPLE,
-      TransferID::SMPTEST428_1,
-  };
-  for (TransferID id : kIDsToCheck) {
-    skcms_TransferFunction id_fn;
-    GetTransferFunction(id, &id_fn);
-    if (FloatsEqualWithinTolerance(&fn.g, &id_fn.g, 7, 0.001f)) {
-      transfer_ = id;
-      return;
+  // prioritizes the most common name (eg IEC61966_2_1). This applies only to
+  // SDR transfer functions.
+  if (transfer_ == TransferID::CUSTOM) {
+    const TransferID kIDsToCheck[] = {
+        TransferID::IEC61966_2_1, TransferID::LINEAR,
+        TransferID::GAMMA18,      TransferID::GAMMA22,
+        TransferID::GAMMA24,      TransferID::GAMMA28,
+        TransferID::SMPTE240M,    TransferID::BT709_APPLE,
+        TransferID::SMPTEST428_1,
+    };
+    for (TransferID id : kIDsToCheck) {
+      skcms_TransferFunction id_fn;
+      GetTransferFunction(id, &id_fn);
+      if (FloatsEqualWithinTolerance(&fn.g, &id_fn.g, 7, 0.001f)) {
+        transfer_ = id;
+        return;
+      }
     }
   }
   transfer_params_[0] = fn.a;
@@ -506,6 +522,13 @@ ColorSpace ColorSpace::GetWithMatrixAndRange(MatrixID matrix,
 
   result.matrix_ = matrix;
   result.range_ = range;
+  return result;
+}
+
+ColorSpace ColorSpace::GetWithPQSDRWhiteLevel(float sdr_white_level) const {
+  ColorSpace result = *this;
+  if (transfer_ == TransferID::SMPTEST2084 && transfer_params_[0] == 0.f)
+    result.transfer_params_[0] = sdr_white_level;
   return result;
 }
 

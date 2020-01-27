@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.incognito;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 
 import android.view.Window;
@@ -23,11 +24,8 @@ import org.robolectric.annotation.Config;
 
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManagerChrome;
-import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
-
-import java.util.HashMap;
 
 /**
  * Unit tests for IncognitoTabSnapshotController.java.
@@ -58,51 +56,53 @@ public class IncognitoTabSnapshotControllerTest {
     }
 
     @Test
-    public void testUpdateIncognitoStateIncognitoAndEarlyReturn() {
+    public void testUpdateIncognitoState_IncognitoAndEarlyReturn() {
         mParams.flags = WindowManager.LayoutParams.FLAG_SECURE;
         doReturn(mParams).when(mWindow).getAttributes();
 
-        mController = new TestIncognitoTabSnapshotController(true);
+        mController = spy(new IncognitoTabSnapshotController(mWindow, mLayoutManager, mSelector));
+        doReturn(true).when(mController).isShowingIncognito();
         mController.updateIncognitoState();
         verify(mWindow, never()).addFlags(WindowManager.LayoutParams.FLAG_SECURE);
         verify(mWindow, never()).clearFlags(WindowManager.LayoutParams.FLAG_SECURE);
-        Assert.assertEquals(
-                "Flag should be secure", WindowManager.LayoutParams.FLAG_SECURE, mParams.flags);
     }
 
     @Test
-    public void testUpdateIncognitoStateNotIncognitoAndEarlyReturn() {
+    public void testUpdateIncognitoState_NotIncognitoAndEarlyReturn() {
         mParams.flags = 0;
         doReturn(mParams).when(mWindow).getAttributes();
 
-        mController = new TestIncognitoTabSnapshotController(false);
+        mController = spy(new IncognitoTabSnapshotController(mWindow, mLayoutManager, mSelector));
+        doReturn(false).when(mController).isShowingIncognito();
         mController.updateIncognitoState();
         verify(mWindow, never()).addFlags(WindowManager.LayoutParams.FLAG_SECURE);
-        Assert.assertEquals("Flag should be zero", 0, mParams.flags);
+        verify(mWindow, never()).clearFlags(WindowManager.LayoutParams.FLAG_SECURE);
     }
 
     @Test
-    public void testUpdateIncognitoStateSwitchingToIncognito() {
+    public void testUpdateIncognitoState_SwitchingToIncognito() {
         mParams.flags = 0;
         doReturn(mParams).when(mWindow).getAttributes();
 
-        mController = new TestIncognitoTabSnapshotController(true);
+        mController = spy(new IncognitoTabSnapshotController(mWindow, mLayoutManager, mSelector));
+        doReturn(true).when(mController).isShowingIncognito();
         mController.updateIncognitoState();
         verify(mWindow, atLeastOnce()).addFlags(WindowManager.LayoutParams.FLAG_SECURE);
     }
 
     @Test
-    public void testUpdateIncognitoStateSwitchingToNonIncognito() {
+    public void testUpdateIncognitoState_SwitchingToNonIncognito() {
         mParams.flags = WindowManager.LayoutParams.FLAG_SECURE;
         doReturn(mParams).when(mWindow).getAttributes();
 
-        mController = new TestIncognitoTabSnapshotController(false);
+        mController = spy(new IncognitoTabSnapshotController(mWindow, mLayoutManager, mSelector));
+        doReturn(false).when(mController).isShowingIncognito();
         mController.updateIncognitoState();
         verify(mWindow, atLeastOnce()).clearFlags(WindowManager.LayoutParams.FLAG_SECURE);
     }
 
     @Test
-    public void testIsShowingIncognitoNotInOverviewMode() {
+    public void testIsShowingIncognito_IncognitoModel_NotInOverviewMode() {
         mController = new IncognitoTabSnapshotController(mWindow, mLayoutManager, mSelector);
         mController.setInOverViewMode(false);
         doReturn(mTabModel).when(mSelector).getCurrentModel();
@@ -113,9 +113,9 @@ public class IncognitoTabSnapshotControllerTest {
     }
 
     @Test
-    public void testIsShowingIncognitoInOverviewMode() {
+    public void testIsShowingIncognito_IncognitoModel_InOverviewMode() {
         mController = new IncognitoTabSnapshotController(mWindow, mLayoutManager, mSelector);
-        mController.setInOverViewMode(false);
+        mController.setInOverViewMode(true);
         doReturn(mTabModel).when(mSelector).getCurrentModel();
         doReturn(true).when(mTabModel).isIncognito();
         Assert.assertTrue("isShowingIncognito should be true", mController.isShowingIncognito());
@@ -124,52 +124,41 @@ public class IncognitoTabSnapshotControllerTest {
     }
 
     @Test
-    public void testInOverviewModeWithIncognitoTab() {
-        HashMap<String, Boolean> features = new HashMap<String, Boolean>();
-        features.put(ChromeFeatureList.HORIZONTAL_TAB_SWITCHER_ANDROID, false);
-        ChromeFeatureList.setTestFeatures(features);
-
-        mController = new IncognitoTabSnapshotController(mWindow, mLayoutManager, mSelector);
+    public void testIsShowingIncognito_NormalModel_WithIncognitoTab_GridTabSwitcher() {
+        mController = spy(new IncognitoTabSnapshotController(mWindow, mLayoutManager, mSelector));
         mController.setInOverViewMode(true);
 
         doReturn(mTabModel).when(mSelector).getCurrentModel();
         doReturn(false).when(mTabModel).isIncognito();
+        doReturn(true).when(mController).isGridTabSwitcherEnabled();
+        doReturn(mTabModel).when(mSelector).getModel(true);
+        doReturn(1).when(mTabModel).getCount();
+        Assert.assertFalse("isShowingIncognito should be false", mController.isShowingIncognito());
+    }
+
+    @Test
+    public void testIsShowingIncognito_NormalModel_WithIncognitoTab() {
+        mController = spy(new IncognitoTabSnapshotController(mWindow, mLayoutManager, mSelector));
+        mController.setInOverViewMode(true);
+
+        doReturn(mTabModel).when(mSelector).getCurrentModel();
+        doReturn(false).when(mTabModel).isIncognito();
+        doReturn(false).when(mController).isGridTabSwitcherEnabled();
         doReturn(mTabModel).when(mSelector).getModel(true);
         doReturn(1).when(mTabModel).getCount();
         Assert.assertTrue("isShowingIncognito should be true", mController.isShowingIncognito());
-
-        verify(mTabModel, atLeastOnce()).getCount();
     }
 
     @Test
-    public void testInOverviewModeWithNoIncognitoTab() {
-        HashMap<String, Boolean> features = new HashMap<String, Boolean>();
-        features.put(ChromeFeatureList.HORIZONTAL_TAB_SWITCHER_ANDROID, false);
-        ChromeFeatureList.setTestFeatures(features);
-
-        mController = new IncognitoTabSnapshotController(mWindow, mLayoutManager, mSelector);
+    public void testIsShowingIncognito_NormalModel_NoIncognitoTab() {
+        mController = spy(new IncognitoTabSnapshotController(mWindow, mLayoutManager, mSelector));
         mController.setInOverViewMode(true);
 
         doReturn(mTabModel).when(mSelector).getCurrentModel();
         doReturn(false).when(mTabModel).isIncognito();
+        doReturn(false).when(mController).isGridTabSwitcherEnabled();
         doReturn(mTabModel).when(mSelector).getModel(true);
         doReturn(0).when(mTabModel).getCount();
         Assert.assertFalse("isShowingIncognito should be false", mController.isShowingIncognito());
-
-        verify(mTabModel, atLeastOnce()).getCount();
-    }
-
-    class TestIncognitoTabSnapshotController extends IncognitoTabSnapshotController {
-        private boolean mIsShowingIncognito;
-
-        public TestIncognitoTabSnapshotController(boolean isShowingIncognito) {
-            super(mWindow, mLayoutManager, mSelector);
-            mIsShowingIncognito = isShowingIncognito;
-        }
-
-        @Override
-        boolean isShowingIncognito() {
-            return mIsShowingIncognito;
-        }
     }
 }

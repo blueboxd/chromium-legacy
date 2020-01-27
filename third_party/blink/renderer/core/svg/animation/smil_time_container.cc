@@ -58,6 +58,44 @@ class AnimationTargetsMutationsForbidden {
 #endif
 };
 
+class SMILTimeContainer::TimingUpdate {
+  STACK_ALLOCATED();
+
+ public:
+  TimingUpdate(SMILTimeContainer& time_container, SMILTime target_time)
+      : target_time_(target_time), time_container_(&time_container) {}
+
+  const SMILTime& Time() const { return time_container_->latest_update_time_; }
+  bool TryAdvanceTime(SMILTime next_time) {
+    if (time_container_->latest_update_time_ >= target_time_)
+      return false;
+    if (next_time > target_time_) {
+      time_container_->latest_update_time_ = target_time_;
+      return false;
+    }
+    time_container_->latest_update_time_ = next_time;
+    return true;
+  }
+  void RewindTimeToZero() { time_container_->latest_update_time_ = SMILTime(); }
+  const SMILTime& TargetTime() const { return target_time_; }
+  void HandleEvents(SVGSMILElement*, SVGSMILElement::EventDispatchMask);
+
+ private:
+  bool ShouldDispatchEvents() const {
+    return time_container_->should_dispatch_events_;
+  }
+
+  SMILTime target_time_;
+  SMILTimeContainer* time_container_;
+};
+
+void SMILTimeContainer::TimingUpdate::HandleEvents(
+    SVGSMILElement* element,
+    SVGSMILElement::EventDispatchMask events_to_dispatch) {
+  if (ShouldDispatchEvents() && events_to_dispatch)
+    element->DispatchEvents(events_to_dispatch);
+}
+
 static constexpr base::TimeDelta kAnimationPolicyOnceDuration =
     base::TimeDelta::FromSeconds(3);
 
@@ -206,7 +244,8 @@ void SMILTimeContainer::Start() {
   SynchronizeToDocumentTimeline();
   started_ = true;
 
-  UpdateAnimationsAndScheduleFrameIfNeeded(presentation_time_);
+  TimingUpdate update(*this, presentation_time_);
+  UpdateAnimationsAndScheduleFrameIfNeeded(update);
 }
 
 void SMILTimeContainer::Pause() {
@@ -255,14 +294,9 @@ void SMILTimeContainer::SetElapsed(SMILTime elapsed) {
   if (!IsPaused())
     SynchronizeToDocumentTimeline();
 
-  // If we are rewinding the timeline, we need to start from 0 and then move
-  // forward to the new presentation time. If we're moving forward we can just
-  // perform the update in the normal fashion.
-  if (elapsed < latest_update_time_) {
-    ResetIntervals();
-    latest_update_time_ = SMILTime();
-  }
-  UpdateAnimationsAndScheduleFrameIfNeeded(elapsed);
+  TimingUpdate update(*this, presentation_time_);
+  PrepareSeek(update);
+  UpdateAnimationsAndScheduleFrameIfNeeded(update);
 }
 
 void SMILTimeContainer::ScheduleAnimationFrame(base::TimeDelta delay_time) {
@@ -307,7 +341,8 @@ void SMILTimeContainer::WakeupTimerFired(TimerBase*) {
     DCHECK(IsTimelineRunning());
     ServiceOnNextFrame();
   } else {
-    UpdateAnimationsAndScheduleFrameIfNeeded(Elapsed());
+    TimingUpdate update(*this, Elapsed());
+    UpdateAnimationsAndScheduleFrameIfNeeded(update);
   }
 }
 
@@ -396,11 +431,12 @@ void SMILTimeContainer::ServiceAnimations() {
   // document, so this should be turned into a DCHECK.
   if (!GetDocument().IsActive())
     return;
-  UpdateAnimationsAndScheduleFrameIfNeeded(Elapsed());
+  TimingUpdate update(*this, Elapsed());
+  UpdateAnimationsAndScheduleFrameIfNeeded(update);
 }
 
 void SMILTimeContainer::UpdateAnimationsAndScheduleFrameIfNeeded(
-    SMILTime elapsed) {
+    TimingUpdate& update) {
   DCHECK(GetDocument().IsActive());
   DCHECK(!wakeup_timer_.IsActive());
   // If the priority queue is empty, there are no timed elements to process and
@@ -408,17 +444,17 @@ void SMILTimeContainer::UpdateAnimationsAndScheduleFrameIfNeeded(
   if (priority_queue_.IsEmpty())
     return;
   AnimationTargetsMutationsForbidden scope(this);
-  UpdateAnimationTimings(elapsed);
-  ApplyTimedEffects(elapsed);
+  UpdateTimedElements(update);
+  ApplyTimedEffects(update.TargetTime());
   DCHECK(!wakeup_timer_.IsActive());
   DCHECK(!HasPendingSynchronization());
 
   if (!IsTimelineRunning())
     return;
-  SMILTime next_progress_time = NextProgressTime(elapsed);
+  SMILTime next_progress_time = NextProgressTime(update.TargetTime());
   if (!next_progress_time.IsFinite())
     return;
-  SMILTime delay_time = next_progress_time - elapsed;
+  SMILTime delay_time = next_progress_time - update.TargetTime();
   DCHECK(delay_time.IsFinite());
   ScheduleAnimationFrame(
       base::TimeDelta::FromMicroseconds(delay_time.InMicroseconds()));
@@ -435,6 +471,17 @@ SMILTime SMILTimeContainer::NextProgressTime(SMILTime presentation_time) const {
   return next_progress_time;
 }
 
+void SMILTimeContainer::PrepareSeek(TimingUpdate& update) {
+  // If we are rewinding the timeline, we need to start from 0 and then move
+  // forward to the new presentation time. If we're moving forward we can just
+  // perform the update in the normal fashion.
+  if (update.TargetTime() < update.Time()) {
+    ResetIntervals();
+    // TODO(fs): Clear resolved end times.
+    update.RewindTimeToZero();
+  }
+}
+
 void SMILTimeContainer::ResetIntervals() {
   base::AutoReset<bool> updating_intervals_scope(&is_updating_intervals_, true);
   AnimationTargetsMutationsForbidden scope(this);
@@ -446,7 +493,8 @@ void SMILTimeContainer::ResetIntervals() {
   priority_queue_.ResetAllPriorities(SMILTime::Earliest());
 }
 
-void SMILTimeContainer::UpdateIntervals(SMILTime document_time) {
+void SMILTimeContainer::UpdateIntervals(TimingUpdate& update) {
+  const SMILTime document_time = update.Time();
   DCHECK(document_time.IsFinite());
   DCHECK_GE(document_time, SMILTime());
   DCHECK(!priority_queue_.IsEmpty());
@@ -459,8 +507,7 @@ void SMILTimeContainer::UpdateIntervals(SMILTime document_time) {
     SVGSMILElement* element = priority_queue_.MinElement();
     element->UpdateInterval(document_time);
     auto events_to_dispatch = element->UpdateActiveState(document_time);
-    if (should_dispatch_events_ && events_to_dispatch)
-      element->DispatchEvents(events_to_dispatch);
+    update.HandleEvents(element, events_to_dispatch);
     SMILTime next_interval_time =
         element->ComputeNextIntervalTime(document_time);
     priority_queue_.Update(next_interval_time, element);
@@ -469,21 +516,12 @@ void SMILTimeContainer::UpdateIntervals(SMILTime document_time) {
   }
 }
 
-void SMILTimeContainer::UpdateAnimationTimings(SMILTime presentation_time) {
-  DCHECK(GetDocument().IsActive());
-
+void SMILTimeContainer::UpdateTimedElements(TimingUpdate& update) {
   // Flush any "late" interval updates.
-  UpdateIntervals(latest_update_time_);
+  UpdateIntervals(update);
 
-  while (latest_update_time_ < presentation_time) {
-    const SMILTime interval_time = priority_queue_.Min();
-    if (interval_time <= presentation_time) {
-      latest_update_time_ = interval_time;
-      UpdateIntervals(latest_update_time_);
-    } else {
-      latest_update_time_ = presentation_time;
-    }
-  }
+  while (update.TryAdvanceTime(priority_queue_.Min()))
+    UpdateIntervals(update);
 }
 
 void SMILTimeContainer::ApplyTimedEffects(SMILTime elapsed) {

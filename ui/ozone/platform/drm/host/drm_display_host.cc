@@ -117,6 +117,10 @@ void DrmDisplayHost::SetGammaCorrection(
                                  gamma_lut);
 }
 
+void DrmDisplayHost::SetPrivacyScreen(bool enabled) {
+  sender_->GpuSetPrivacyScreen(snapshot_->display_id(), enabled);
+}
+
 void DrmDisplayHost::OnGpuProcessLaunched() {}
 
 void DrmDisplayHost::OnGpuThreadReady() {

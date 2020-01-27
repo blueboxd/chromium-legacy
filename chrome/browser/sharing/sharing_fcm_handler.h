@@ -79,6 +79,7 @@ class SharingFCMHandler : public gcm::GCMAppHandler {
       std::string original_message_id,
       chrome_browser_sharing::MessageType original_message_type,
       SharingDevicePlatform sender_device_type,
+      int trace_id,
       SharingSendMessageResult result,
       base::Optional<std::string> message_id);
 

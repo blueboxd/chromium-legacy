@@ -31,8 +31,7 @@
 - (instancetype)initWithBaseViewController:(UIViewController*)viewController
                                      title:(NSString*)title
                                    message:(NSString*)message
-                              browserState:
-                                  (ios::ChromeBrowserState*)browserState
+                              browserState:(ChromeBrowserState*)browserState
     NS_UNAVAILABLE;
 
 // Configures the underlying UIAlertController's popover arrow direction.

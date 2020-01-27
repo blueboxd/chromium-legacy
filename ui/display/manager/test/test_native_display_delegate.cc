@@ -146,6 +146,11 @@ bool TestNativeDisplayDelegate::SetGammaCorrection(
   return true;
 }
 
+void TestNativeDisplayDelegate::SetPrivacyScreen(int64_t display_id,
+                                                 bool enabled) {
+  log_->AppendAction(SetPrivacyScreenAction(display_id, enabled));
+}
+
 void TestNativeDisplayDelegate::AddObserver(NativeDisplayObserver* observer) {
   observers_.AddObserver(observer);
 }

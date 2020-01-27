@@ -592,6 +592,8 @@ class WebMediaPlayerMSTest
   void RequestPlay() override {}
   void RequestPause() override {}
   void RequestMuted(bool muted) override {}
+  void RequestEnterPictureInPicture() override {}
+  void RequestExitPictureInPicture() override {}
   Features GetFeatures() override { return Features(); }
   void OnRequestAnimationFrame(
       base::TimeTicks presentation_time,

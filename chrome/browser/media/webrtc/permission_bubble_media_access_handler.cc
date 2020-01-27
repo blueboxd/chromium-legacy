@@ -27,7 +27,7 @@
 #if defined(OS_ANDROID)
 #include <vector>
 
-#include "chrome/browser/android/chrome_feature_list.h"
+#include "chrome/browser/flags/android/chrome_feature_list.h"
 #include "chrome/browser/media/webrtc/screen_capture_infobar_delegate_android.h"
 #include "chrome/browser/permissions/permission_uma_util.h"
 #include "chrome/browser/permissions/permission_util.h"

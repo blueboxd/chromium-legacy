@@ -94,8 +94,8 @@ class FakeNavigationManager : public web::TestNavigationManager {
 
 std::unique_ptr<KeyedService> BuildReadingListModel(
     web::BrowserState* context) {
-  ios::ChromeBrowserState* browser_state =
-      ios::ChromeBrowserState::FromBrowserState(context);
+  ChromeBrowserState* browser_state =
+      ChromeBrowserState::FromBrowserState(context);
   std::unique_ptr<ReadingListModelImpl> reading_list_model(
       new ReadingListModelImpl(nullptr, browser_state->GetPrefs(),
                                base::DefaultClock::GetInstance()));

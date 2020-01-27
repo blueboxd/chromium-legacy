@@ -16,7 +16,7 @@
 
 // static
 PrerenderService* PrerenderServiceFactory::GetForBrowserState(
-    ios::ChromeBrowserState* browser_state) {
+    ChromeBrowserState* browser_state) {
   return static_cast<PrerenderService*>(
       GetInstance()->GetServiceForBrowserState(browser_state, true));
 }
@@ -36,8 +36,8 @@ PrerenderServiceFactory::~PrerenderServiceFactory() {}
 
 std::unique_ptr<KeyedService> PrerenderServiceFactory::BuildServiceInstanceFor(
     web::BrowserState* context) const {
-  ios::ChromeBrowserState* browser_state =
-      ios::ChromeBrowserState::FromBrowserState(context);
+  ChromeBrowserState* browser_state =
+      ChromeBrowserState::FromBrowserState(context);
   return std::make_unique<PrerenderService>(browser_state);
 }
 

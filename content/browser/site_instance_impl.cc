@@ -30,6 +30,7 @@
 #include "content/public/common/url_constants.h"
 #include "content/public/common/url_utils.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
+#include "url/origin.h"
 
 namespace content {
 
@@ -365,6 +366,22 @@ void SiteInstanceImpl::SetSiteAndLockInternal(const GURL& site_url,
   has_site_ = true;
   site_ = site_url;
   lock_url_ = lock_url;
+
+  // Check if |site_url| corresponds to an opt-in isolated origin, and if so,
+  // track this origin in the current BrowsingInstance.  This is needed to
+  // consistently isolate future navigations to this origin in this
+  // BrowsingInstance, even if its opt-in status changes later.
+  ChildProcessSecurityPolicyImpl* policy =
+      ChildProcessSecurityPolicyImpl::GetInstance();
+  url::Origin site_origin(url::Origin::Create(site_url));
+  // At this point, this should be a simple lookup on the master list, since
+  // this SiteInstance is new to the BrowsingInstance.
+  bool isolated = policy->DoesOriginRequestOptInIsolation(
+      browsing_instance_->isolation_context(), site_origin);
+  if (isolated) {
+    policy->AddOptInIsolatedOriginForBrowsingInstance(
+        browsing_instance_->isolation_context(), site_origin);
+  }
 
   // Now that we have a site, register it with the BrowsingInstance.  This
   // ensures that we won't create another SiteInstance for this site within
@@ -792,6 +809,21 @@ GURL SiteInstanceImpl::GetSiteForURLInternal(
     if (policy->GetMatchingIsolatedOrigin(isolation_context, origin, site_url,
                                           &isolated_origin))
       return isolated_origin.GetURL();
+
+    // The following check will determine if we have a sub-origin that does
+    // not request isolation, but the base-origin does. In that case, we need
+    // to place the sub-origin into a different SiteInstance, effectively
+    // isolating it as well.
+    // TODO(wjmaclean): Remove this when we implement site-keyed and
+    // origin-keyed SiteInstances, since the call to GetMatchingIsolatedOrigin
+    // above should correctly cause non-isolated sub origins to go to the
+    // site-keyed SiteInstance, regardless of what the base origin does.
+    url::Origin base_origin = url::Origin::Create(site_url);
+    if (IsolatedOriginUtil::IsStrictSubdomain(origin, base_origin) &&
+        policy->DoesOriginRequestOptInIsolation(isolation_context,
+                                                base_origin)) {
+      return origin.GetURL();
+    }
 
     // If an effective URL was used, augment the effective site URL with the
     // underlying web site in the hash.  This is needed to keep

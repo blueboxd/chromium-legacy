@@ -3207,7 +3207,7 @@ O campo <ph name="PROXY_MODE_PROXY_SETTINGS_FIELD" /> permite que você especifi
 <translation id="6034341625190551415">Controla sessões públicas e tipos de conta de quiosque.</translation>
 <translation id="6034603289689965535">Permite que uma página mostre pop-ups ao fazer unload</translation>
 <translation id="6036523166753287175">Habilitar passagem de firewall a partir do host de acesso remoto</translation>
-<translation id="6038407313189625985">Se esta política for ativada ou não for definida, a integridade de código do renderizador será ativada. Ela será desativada apenas se forem encontrados problemas de compatibilidade com software de terceiros que precisa ser executado dentro dos processos de renderização do Chrome.
+<translation id="6038407313189625985">Se esta política for ativada ou não for definida, a integridade de código renderizador será ativada. Ela será desativada apenas se forem encontrados problemas de compatibilidade com software de terceiros que precisa ser executado dentro dos processos de renderização do Chrome.
 
       A desativação desta política prejudica a segurança e a estabilidade do Chrome, uma vez que códigos desconhecidos e potencialmente hostis poderão ser carregados nos processos de renderização do Chrome. Consulte https://chromium.googlesource.com/chromium/src/+/master/docs/design/sandbox.md#Process-mitigation-policies (link em inglês) para mais informações.</translation>
 <translation id="6048199181629830227">Ativar o gerenciamento de energia no período de pico</translation>

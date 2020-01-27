@@ -60,12 +60,11 @@
 #include "third_party/blink/public/mojom/frame/blocked_navigation_types.mojom.h"
 #include "third_party/blink/public/mojom/frame/lifecycle.mojom.h"
 #include "third_party/blink/public/mojom/frame/user_activation_update_types.mojom.h"
+#include "third_party/blink/public/mojom/input/focus_type.mojom.h"
 #include "third_party/blink/public/mojom/web_feature/web_feature.mojom.h"
 #include "third_party/blink/public/platform/viewport_intersection_state.h"
-#include "third_party/blink/public/platform/web_focus_type.h"
 #include "third_party/blink/public/platform/web_insecure_request_policy.h"
 #include "third_party/blink/public/platform/web_intrinsic_sizing_info.h"
-#include "third_party/blink/public/platform/web_scroll_into_view_params.h"
 #include "third_party/blink/public/web/web_frame_owner_properties.h"
 #include "third_party/blink/public/web/web_tree_scope_type.h"
 #include "ui/gfx/geometry/rect.h"
@@ -99,18 +98,12 @@ IPC_ENUM_TRAITS_MAX_VALUE(content::FrameDeleteIntention,
                           content::FrameDeleteIntention::kMaxValue)
 IPC_ENUM_TRAITS_MAX_VALUE(blink::FrameOwnerElementType,
                           blink::FrameOwnerElementType::kMaxValue)
-IPC_ENUM_TRAITS_MAX_VALUE(
-    blink::WebScrollIntoViewParams::AlignmentBehavior,
-    blink::WebScrollIntoViewParams::kLastAlignmentBehavior)
-IPC_ENUM_TRAITS_MAX_VALUE(blink::WebScrollIntoViewParams::Type,
-                          blink::WebScrollIntoViewParams::kLastType)
-IPC_ENUM_TRAITS_MAX_VALUE(blink::WebScrollIntoViewParams::Behavior,
-                          blink::WebScrollIntoViewParams::kLastBehavior)
 IPC_ENUM_TRAITS_MAX_VALUE(blink::ContextMenuDataMediaType,
                           blink::ContextMenuDataMediaType::kLast)
 IPC_ENUM_TRAITS_MAX_VALUE(blink::ContextMenuDataInputFieldType,
                           blink::ContextMenuDataInputFieldType::kMaxValue)
-IPC_ENUM_TRAITS_MAX_VALUE(blink::WebFocusType, blink::kWebFocusTypeLast)
+IPC_ENUM_TRAITS_MAX_VALUE(blink::mojom::FocusType,
+                          blink::mojom::FocusType::kMaxValue)
 IPC_ENUM_TRAITS_MAX_VALUE(
     blink::WebFrameOwnerProperties::ScrollingMode,
     blink::WebFrameOwnerProperties::ScrollingMode::kMaxValue)
@@ -156,24 +149,6 @@ IPC_STRUCT_TRAITS_BEGIN(blink::WebIntrinsicSizingInfo)
   IPC_STRUCT_TRAITS_MEMBER(aspect_ratio)
   IPC_STRUCT_TRAITS_MEMBER(has_width)
   IPC_STRUCT_TRAITS_MEMBER(has_height)
-IPC_STRUCT_TRAITS_END()
-
-IPC_STRUCT_TRAITS_BEGIN(blink::WebScrollIntoViewParams::Alignment)
-  IPC_STRUCT_TRAITS_MEMBER(rect_visible)
-  IPC_STRUCT_TRAITS_MEMBER(rect_hidden)
-  IPC_STRUCT_TRAITS_MEMBER(rect_partial)
-IPC_STRUCT_TRAITS_END()
-
-IPC_STRUCT_TRAITS_BEGIN(blink::WebScrollIntoViewParams)
-  IPC_STRUCT_TRAITS_MEMBER(align_x)
-  IPC_STRUCT_TRAITS_MEMBER(align_y)
-  IPC_STRUCT_TRAITS_MEMBER(type)
-  IPC_STRUCT_TRAITS_MEMBER(make_visible_in_visual_viewport)
-  IPC_STRUCT_TRAITS_MEMBER(behavior)
-  IPC_STRUCT_TRAITS_MEMBER(is_for_scroll_sequence)
-  IPC_STRUCT_TRAITS_MEMBER(zoom_into_rect)
-  IPC_STRUCT_TRAITS_MEMBER(relative_element_bounds)
-  IPC_STRUCT_TRAITS_MEMBER(relative_caret_bounds)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(content::ContextMenuParams)
@@ -703,14 +678,8 @@ IPC_MESSAGE_ROUTED1(FrameMsg_SetFrameOwnerProperties,
 // request.  This message is sent when pressing <tab> or <shift-tab> needs to
 // find the next focusable element in a cross-process frame.
 IPC_MESSAGE_ROUTED2(FrameMsg_AdvanceFocus,
-                    blink::WebFocusType /* type */,
+                    blink::mojom::FocusType /* type */,
                     int32_t /* source_routing_id */)
-
-// Tells the RenderFrame to advance the focus to next input node in the form by
-// moving in specified direction if the currently focused node is a Text node
-// (textfield, text area or content editable nodes).
-IPC_MESSAGE_ROUTED1(FrameMsg_AdvanceFocusInForm,
-                    blink::WebFocusType /* direction for advancing focus */)
 
 // Notify the renderer of our overlay routing token.
 IPC_MESSAGE_ROUTED1(FrameMsg_SetOverlayRoutingToken,
@@ -733,11 +702,6 @@ IPC_MESSAGE_ROUTED2(FrameMsg_SetPepperVolume,
 // the frame console.
 IPC_MESSAGE_ROUTED1(FrameMsg_MixedContentFound,
                     FrameMsg_MixedContentFound_Params)
-
-// Sent to the parent process of a cross-process frame to request scrolling.
-IPC_MESSAGE_ROUTED2(FrameMsg_ScrollRectToVisible,
-                    gfx::Rect /* rect_to_scroll */,
-                    blink::WebScrollIntoViewParams /* properties */)
 
 // Tell the renderer to add a property to the WebUI binding object.  This
 // only works if we allowed WebUI bindings.
@@ -1093,7 +1057,7 @@ IPC_MESSAGE_ROUTED2(FrameHostMsg_SerializedHtmlWithLocalLinksResponse,
 // <tab> or <shift-tab> hits an out-of-process iframe when searching for the
 // next focusable element.
 IPC_MESSAGE_ROUTED2(FrameHostMsg_AdvanceFocus,
-                    blink::WebFocusType /* type */,
+                    blink::mojom::FocusType /* type */,
                     int32_t /* source_routing_id */)
 
 // Request that the host send its overlay routing token for this render frame
@@ -1109,11 +1073,6 @@ IPC_MESSAGE_ROUTED1(FrameHostMsg_UpdateFaviconURL,
 IPC_MESSAGE_ROUTED2(FrameHostMsg_WebUISend,
                     std::string /* message */,
                     base::ListValue /* args */)
-
-// Sent by a local root to request scrolling in its parent process.
-IPC_MESSAGE_ROUTED2(FrameHostMsg_ScrollRectToVisibleInParentFrame,
-                    gfx::Rect /* rect_to_scroll */,
-                    blink::WebScrollIntoViewParams /* properties */)
 
 // Sent to notify that a frame called |window.focus()|.
 IPC_MESSAGE_ROUTED0(FrameHostMsg_FrameDidCallFocus)

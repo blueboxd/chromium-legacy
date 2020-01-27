@@ -62,31 +62,36 @@ def _Spawn(args):
       '-d', 'gpu', 'none',
       '-d', 'cpu', args.arch,
     ]
-  elif args.target_os == 'android' or args.target_os == 'win':
-    if args.target_os == 'android':
-      trigger_args += ['-d', 'device_os', args.device_os]
-    # The canonical version numbers are stored in the infra repository here:
-    # build/scripts/slave/recipe_modules/swarming/api.py
-    cpython_version = 'version:2.7.15.chromium14'
-    vpython_version = 'git_revision:98a268c6432f18aedd55d62b9621765316dc2a16'
-    cpython_pkg = (
-        '.swarming_module:infra/python/cpython/${platform}:' +
-        cpython_version)
-    vpython_native_pkg = (
-        '.swarming_module:infra/tools/luci/vpython-native/${platform}:' +
-        vpython_version)
-    vpython_pkg = (
-        '.swarming_module:infra/tools/luci/vpython/${platform}:' +
-        vpython_version)
-    trigger_args += [
-        '--cipd-package', cpython_pkg,
-        '--cipd-package', vpython_native_pkg,
-        '--cipd-package', vpython_pkg,
-        '--env-prefix', 'PATH', '.swarming_module',
-        '--env-prefix', 'PATH', '.swarming_module/bin',
-        '--env-prefix', 'VPYTHON_VIRTUALENV_ROOT',
-        '.swarming_module_cache/vpython',
-    ]
+  if args.target_os == 'android':
+    trigger_args += ['-d', 'device_os', args.device_os]
+  # The canonical version numbers are stored in the infra repository here:
+  # build/scripts/slave/recipe_modules/swarming/api.py
+  cpython_version = 'version:2.7.15.chromium14'
+  vpython_version = 'git_revision:98a268c6432f18aedd55d62b9621765316dc2a16'
+  cpython_pkg = (
+      '.swarming_module:infra/python/cpython/${platform}:' + cpython_version)
+  vpython_native_pkg = (
+      '.swarming_module:infra/tools/luci/vpython-native/${platform}:' +
+      vpython_version)
+  vpython_pkg = ('.swarming_module:infra/tools/luci/vpython/${platform}:' +
+                 vpython_version)
+  trigger_args += [
+      '--cipd-package',
+      cpython_pkg,
+      '--cipd-package',
+      vpython_native_pkg,
+      '--cipd-package',
+      vpython_pkg,
+      '--env-prefix',
+      'PATH',
+      '.swarming_module',
+      '--env-prefix',
+      'PATH',
+      '.swarming_module/bin',
+      '--env-prefix',
+      'VPYTHON_VIRTUALENV_ROOT',
+      '.swarming_module_cache/vpython',
+  ]
   trigger_args += [
       '--',
       '--test-launcher-summary-output=${ISOLATED_OUTDIR}/output.json',

@@ -23,11 +23,8 @@ viz::FrameSinkId AllocateParentSinkId() {
 
 }  // namespace
 
-RootFrameSink::RootFrameSink(SetNeedsBeginFrameCallback set_needs_begin_frame,
-                             base::RepeatingClosure invalidate)
-    : root_frame_sink_id_(AllocateParentSinkId()),
-      set_needs_begin_frame_(set_needs_begin_frame),
-      invalidate_(invalidate) {
+RootFrameSink::RootFrameSink(RootFrameSinkClient* client)
+    : root_frame_sink_id_(AllocateParentSinkId()), client_(client) {
   constexpr bool is_root = true;
   GetFrameSinkManager()->RegisterFrameSinkId(root_frame_sink_id_,
                                              false /* report_activationa */);
@@ -72,7 +69,7 @@ void RootFrameSink::OnNeedsBeginFrames(bool needs_begin_frames) {
                        TRACE_EVENT_SCOPE_THREAD, "needs_begin_frames",
                        needs_begin_frames);
   needs_begin_frames_ = needs_begin_frames;
-  set_needs_begin_frame_.Run(needs_begin_frames);
+  client_->SetNeedsBeginFrames(needs_begin_frames);
 }
 
 void RootFrameSink::AddChildFrameSinkId(const viz::FrameSinkId& frame_sink_id) {
@@ -114,12 +111,20 @@ void RootFrameSink::SetNeedsDraw(bool needs_draw) {
   // It's possible that client submitted last frame and unsubscribed from
   // BeginFrames, but we haven't draw it yet.
   if (!needs_begin_frames_ && needs_draw) {
-    invalidate_.Run();
+    client_->Invalidate();
   }
 }
 
 bool RootFrameSink::IsChildSurface(const viz::FrameSinkId& frame_sink_id) {
   return child_frame_sink_ids_.contains(frame_sink_id);
+}
+
+void RootFrameSink::ReturnResources(
+    viz::FrameSinkId frame_sink_id,
+    uint32_t layer_tree_frame_sink_id,
+    std::vector<viz::ReturnedResource> resources) {
+  client_->ReturnResources(frame_sink_id, layer_tree_frame_sink_id,
+                           std::move(resources));
 }
 
 }  // namespace android_webview

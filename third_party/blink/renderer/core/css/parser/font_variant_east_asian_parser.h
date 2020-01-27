@@ -55,12 +55,18 @@ class FontVariantEastAsianParser {
 
   CSSValue* FinalizeValue() {
     CSSValueList* result = CSSValueList::CreateSpaceSeparated();
-    if (east_asian_form_value_)
-      result->Append(*east_asian_form_value_.Release());
-    if (east_asian_width_value_)
-      result->Append(*east_asian_width_value_.Release());
-    if (ruby_value_)
-      result->Append(*ruby_value_.Release());
+    if (east_asian_form_value_) {
+      result->Append(*east_asian_form_value_);
+      east_asian_form_value_ = nullptr;
+    }
+    if (east_asian_width_value_) {
+      result->Append(*east_asian_width_value_);
+      east_asian_width_value_ = nullptr;
+    }
+    if (ruby_value_) {
+      result->Append(*ruby_value_);
+      ruby_value_ = nullptr;
+    }
 
     if (!result->length())
       return CSSIdentifierValue::Create(CSSValueID::kNormal);
@@ -68,9 +74,9 @@ class FontVariantEastAsianParser {
   }
 
  private:
-  Member<CSSIdentifierValue> east_asian_form_value_;
-  Member<CSSIdentifierValue> east_asian_width_value_;
-  Member<CSSIdentifierValue> ruby_value_;
+  CSSIdentifierValue* east_asian_form_value_;
+  CSSIdentifierValue* east_asian_width_value_;
+  CSSIdentifierValue* ruby_value_;
 };
 
 }  // namespace blink

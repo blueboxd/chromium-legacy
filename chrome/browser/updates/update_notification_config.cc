@@ -5,7 +5,7 @@
 #include "chrome/browser/updates/update_notification_config.h"
 
 #include "base/metrics/field_trial_params.h"
-#include "chrome/browser/android/chrome_feature_list.h"
+#include "chrome/browser/flags/android/chrome_feature_list.h"
 
 namespace updates {
 namespace {
@@ -53,8 +53,12 @@ constexpr double kDefaultThrottleIntervalOffset = 0.0;
 // Default update notification state.
 constexpr bool kDefaultUpdateNotificationState = false;
 
-// TODO(hesen): Create a CreateFromFinch method (issue 1043237).
 std::unique_ptr<UpdateNotificationConfig> UpdateNotificationConfig::Create() {
+  return std::make_unique<UpdateNotificationConfig>();
+}
+
+std::unique_ptr<UpdateNotificationConfig>
+UpdateNotificationConfig::CreateFromFinch() {
   std::unique_ptr<UpdateNotificationConfig> config =
       std::make_unique<UpdateNotificationConfig>();
 

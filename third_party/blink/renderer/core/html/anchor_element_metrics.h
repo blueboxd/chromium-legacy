@@ -72,7 +72,7 @@ class CORE_EXPORT AnchorElementMetrics {
   void RecordMetricsOnClick() const;
 
   // The anchor element that this class is associated with.
-  Member<const HTMLAnchorElement> anchor_element_;
+  const HTMLAnchorElement* anchor_element_;
 
   // The ratio of the absolute/visible clickable region area of an anchor
   // element, and the viewport area.

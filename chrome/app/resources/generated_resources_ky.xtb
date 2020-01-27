@@ -24,6 +24,7 @@
 <translation id="1029317248976101138">Ченөлчөм</translation>
 <translation id="1030706264415084469"><ph name="URL" /> түзмөгүңүзгө көлөмдүү дайындарды биротоло сактаганы жатат</translation>
 <translation id="1031362278801463162">Алдын ала көрүү жүктөлүүдө</translation>
+<translation id="1032605640136438169">Жаңы шарттарды карап чыгыңыз</translation>
 <translation id="103279545524624934">Android колдонмолорун ишке киргизүү үчүн дисктен орун бошотуңуз.</translation>
 <translation id="1033780634303702874">Ыраатталган интерфейстүү түзмөктөрүңүздү колдонуңуз</translation>
 <translation id="1034942643314881546">Колдонмолордун иллюстрациясын түзүү үчүн ADB'ни иштетүү</translation>
@@ -223,7 +224,6 @@
 <translation id="1306606229401759371">Жөндөөлөрдү өзгөртүү</translation>
 <translation id="1307165550267142340">PIN кодуңуз түзүлдү</translation>
 <translation id="1307559529304613120">Ой! Тутум бул түзмөктүн узак мөөнөттүү API энбелгисин сактап калган жок.</translation>
-<translation id="1309199320876169714">Plugin VM өчүрүлүүдө...</translation>
 <translation id="1313405956111467313">Автоматтык прокси конфигурациясы</translation>
 <translation id="131364520783682672">Caps Lock</translation>
 <translation id="1313705515580255288">Кыстармаларыңыз, таржымалыңыз жана башка жөндөөлөрүңүз Google Аккаунтуңуз менен шайкештештирилет.</translation>
@@ -1367,7 +1367,6 @@ Family Link колдонмосун түзмөгүңүзгө орнотуп, бу
 <translation id="2871813825302180988">Мындай каттоо эсеби бул түзмөктө колдонулууда.</translation>
 <translation id="287286579981869940"><ph name="PROVIDER_NAME" /> кошуу…</translation>
 <translation id="2872961005593481000">Жабуу</translation>
-<translation id="2874478552394649323">Plugin VM'ди өчүрүү</translation>
 <translation id="2874939134665556319">Мурунку трек</translation>
 <translation id="2875698561019555027">(Chrome ката барактары)</translation>
 <translation id="2876336351874743617">2-манжа</translation>
@@ -1384,7 +1383,6 @@ Family Link колдонмосун түзмөгүңүзгө орнотуп, бу
 <translation id="2889064240420137087">Шилтемени төмөнкү менен ачуу…</translation>
 <translation id="2889925978073739256">Сынамык чөйрөсүнөн тышкары плагиндер бөгөттөлө берсин</translation>
 <translation id="2893168226686371498">Демейки серепчи</translation>
-<translation id="2893208266590504003">Plugin VM өчүрүлгөн жок</translation>
 <translation id="2894757982205307093">Топтогу жаңы өтмөк</translation>
 <translation id="289644616180464099">SIM-карта кулпуланган</translation>
 <translation id="2896909745808647285"><ph name="FILE_NAME" /> шифрленген, андыктан аны ачуу бөгөттөлгөн.</translation>
@@ -2835,6 +2833,7 @@ Family Link колдонмосун түзмөгүңүзгө орнотуп, бу
 <translation id="4998430619171209993">Күйүк</translation>
 <translation id="4998873842614926205">Өзгөрүүлөрдү ырастаңыз</translation>
 <translation id="5000922062037820727">Бөгөттөлгөн (сунушталат)</translation>
+<translation id="5007392906805964215">Карап көрүү</translation>
 <translation id="5008936837313706385">Иш-аракеттин аталышы</translation>
 <translation id="5010043101506446253">Тастыктама борбору</translation>
 <translation id="5015344424288992913">Прокси чечилүүдө…</translation>
@@ -3040,6 +3039,7 @@ Family Link колдонмосун түзмөгүңүзгө орнотуп, бу
 <translation id="5311304534597152726">Төмөнкү катары кирүүдө:</translation>
 <translation id="53116743016968120"><ph name="ERROR_MESSAGE" /> Кайра аракет кылыңыз.</translation>
 <translation id="5313628438272378649">Сиз жүктөп берип жаткан дайын-даректер уюмуңуздун коопсуздук саясаттарын бузгандыктан жүктөлүп берилбейт.</translation>
+<translation id="5314381603623123224">Chrome’дун Тейлөө шарттары 31-марттан кийин өзгөргөнү жатат</translation>
 <translation id="5315738755890845852">Ашыкча ийри кашаа: <ph name="ERROR_LINE" /></translation>
 <translation id="5315873049536339193">Идентификация</translation>
 <translation id="5317780077021120954">Сактоо</translation>
@@ -5774,7 +5774,6 @@ Family Link колдонмосун түзмөгүңүзгө орнотуп, бу
 <translation id="9169496697824289689">Ыкчам баскычтардын айкалышын карап көрүү</translation>
 <translation id="916964310188958970">Бул сунуш эмне үчүн көрсөтүлдү?</translation>
 <translation id="9169931577761441333"><ph name="APP_NAME" /> колдонмосун башкы экранга кошуңуз</translation>
-<translation id="9170305483456271385">Plugin VM өчүрүлдү</translation>
 <translation id="9170848237812810038">&amp;Кайтаруу</translation>
 <translation id="9170884462774788842">Chrome'дун ишин өзгөртө турган теманы компьютериңиздеги башка программа кошуп койду.</translation>
 <translation id="9173995187295789444">Bluetooth түзмөктөрү изделип жатат...</translation>

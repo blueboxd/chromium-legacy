@@ -36,10 +36,8 @@ class WebContents;
 }  // namespace content
 
 namespace autofill_assistant {
-class ClientMemory;
 class ClientStatus;
 struct ClientSettings;
-struct UserData;
 struct CollectUserDataOptions;
 class UserAction;
 class WebsiteLoginFetcher;
@@ -277,9 +275,6 @@ class ActionDelegate {
   // state.
   virtual void Restart() = 0;
 
-  // Return the current ClientMemory.
-  virtual ClientMemory* GetClientMemory() = 0;
-
   // Get current personal data manager.
   virtual autofill::PersonalDataManager* GetPersonalDataManager() = 0;
 
@@ -352,6 +347,9 @@ class ActionDelegate {
   // direct action which realizes it needs to interact with the user. Once
   // shown, the UI stays up until the end of the flow.
   virtual void RequireUI() = 0;
+
+  // Gets the user data.
+  virtual const UserData* GetUserData() const = 0;
 
  protected:
   ActionDelegate() = default;

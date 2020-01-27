@@ -28,7 +28,7 @@
 
 // static
 bool SyncErrorInfoBarDelegate::Create(infobars::InfoBarManager* infobar_manager,
-                                      ios::ChromeBrowserState* browser_state,
+                                      ChromeBrowserState* browser_state,
                                       id<SyncPresenter> presenter) {
   DCHECK(infobar_manager);
   std::unique_ptr<ConfirmInfoBarDelegate> delegate(
@@ -38,7 +38,7 @@ bool SyncErrorInfoBarDelegate::Create(infobars::InfoBarManager* infobar_manager,
 }
 
 SyncErrorInfoBarDelegate::SyncErrorInfoBarDelegate(
-    ios::ChromeBrowserState* browser_state,
+    ChromeBrowserState* browser_state,
     id<SyncPresenter> presenter)
     : browser_state_(browser_state), presenter_(presenter) {
   DCHECK(!browser_state->IsOffTheRecord());

@@ -1600,8 +1600,9 @@ void ExtensionService::AddNewOrUpdatedExtension(
   const Extension* old = registry_->GetInstalledExtension(extension->id());
   if (AppDataMigrator::NeedsMigration(old, extension)) {
     app_data_migrator_->DoMigrationAndReply(
-        old, extension, base::Bind(&ExtensionService::FinishInstallation,
-                                   AsWeakPtr(), base::RetainedRef(extension)));
+        old, extension,
+        base::BindOnce(&ExtensionService::FinishInstallation, AsWeakPtr(),
+                       base::RetainedRef(extension)));
     return;
   }
 

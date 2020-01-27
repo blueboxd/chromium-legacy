@@ -53,7 +53,7 @@ web::WebUIIOSDataSource* CreateSyncInternalsHTMLSource() {
 
 SyncInternalsUI::SyncInternalsUI(web::WebUIIOS* web_ui)
     : web::WebUIIOSController(web_ui) {
-  web::WebUIIOSDataSource::Add(ios::ChromeBrowserState::FromWebUIIOS(web_ui),
+  web::WebUIIOSDataSource::Add(ChromeBrowserState::FromWebUIIOS(web_ui),
                                CreateSyncInternalsHTMLSource());
   web_ui->AddMessageHandler(std::make_unique<SyncInternalsMessageHandler>());
 }

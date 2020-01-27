@@ -33,7 +33,7 @@
 
 @interface TabStripControllerTestTabModel : NSObject
 
-@property(nonatomic, assign) ios::ChromeBrowserState* browserState;
+@property(nonatomic, assign) ChromeBrowserState* browserState;
 
 @end
 

@@ -16,6 +16,7 @@
 #include "gpu/command_buffer/common/shared_image_usage.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/khronos/GLES2/gl2ext.h"
+#include "ui/gfx/swap_result.h"
 #include "ui/gl/gl_utils.h"
 
 namespace viz {

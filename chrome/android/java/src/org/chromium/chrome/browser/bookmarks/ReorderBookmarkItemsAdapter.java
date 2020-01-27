@@ -25,10 +25,10 @@ import org.chromium.chrome.browser.bookmarks.BookmarkManager.ItemsAdapter;
 import org.chromium.chrome.browser.bookmarks.BookmarkRow.Location;
 import org.chromium.chrome.browser.signin.PersonalizedSigninPromoView;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
-import org.chromium.chrome.browser.ui.widget.dragreorder.DragReorderableListAdapter;
-import org.chromium.chrome.browser.ui.widget.highlight.ViewHighlighter;
 import org.chromium.components.bookmarks.BookmarkId;
 import org.chromium.components.bookmarks.BookmarkType;
+import org.chromium.components.browser_ui.widget.dragreorder.DragReorderableListAdapter;
+import org.chromium.components.browser_ui.widget.highlight.ViewHighlighter;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;

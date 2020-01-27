@@ -29,7 +29,7 @@
 #include "third_party/blink/renderer/modules/accessibility/ax_object.h"
 
 #include "third_party/blink/public/common/features.h"
-#include "third_party/blink/public/platform/web_scroll_into_view_params.h"
+#include "third_party/blink/public/mojom/input/focus_type.mojom-blink.h"
 #include "third_party/blink/renderer/core/aom/accessible_node.h"
 #include "third_party/blink/renderer/core/aom/accessible_node_list.h"
 #include "third_party/blink/renderer/core/css/resolver/style_resolver.h"
@@ -54,6 +54,7 @@
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/focus_controller.h"
 #include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/core/scroll/scroll_into_view_params_type_converters.h"
 #include "third_party/blink/renderer/modules/accessibility/ax_object_cache_impl.h"
 #include "third_party/blink/renderer/modules/accessibility/ax_range.h"
 #include "third_party/blink/renderer/modules/accessibility/ax_sparse_attribute_setter.h"
@@ -3194,8 +3195,8 @@ bool AXObject::OnNativeClickAction() {
       if (page) {
         page->GetFocusController().SetFocusedElement(
             element, GetDocument()->GetFrame(),
-            FocusParams(SelectionBehaviorOnFocus::kNone, kWebFocusTypeMouse,
-                        nullptr));
+            FocusParams(SelectionBehaviorOnFocus::kNone,
+                        mojom::blink::FocusType::kMouse, nullptr));
       }
     }
 
@@ -3292,10 +3293,10 @@ bool AXObject::OnNativeScrollToMakeVisibleAction() const {
     return false;
   PhysicalRect target_rect(layout_object->AbsoluteBoundingBoxRect());
   layout_object->ScrollRectToVisible(
-      target_rect,
-      WebScrollIntoViewParams(ScrollAlignment::kAlignCenterIfNeeded,
-                              ScrollAlignment::kAlignCenterIfNeeded,
-                              kProgrammaticScroll, false, kScrollBehaviorAuto));
+      target_rect, CreateScrollIntoViewParams(
+                       ScrollAlignment::kAlignCenterIfNeeded,
+                       ScrollAlignment::kAlignCenterIfNeeded,
+                       kProgrammaticScroll, false, kScrollBehaviorAuto));
   AXObjectCache().PostNotification(
       AXObjectCache().GetOrCreate(GetDocument()->GetLayoutView()),
       ax::mojom::Event::kLocationChanged);
@@ -3314,10 +3315,10 @@ bool AXObject::OnNativeScrollToMakeVisibleWithSubFocusAction(
       layout_object->LocalToAbsoluteRect(PhysicalRect(rect));
   layout_object->ScrollRectToVisible(
       target_rect,
-      WebScrollIntoViewParams(horizontal_scroll_alignment,
-                              vertical_scroll_alignment, kProgrammaticScroll,
-                              false /* make_visible_in_visual_viewport */,
-                              kScrollBehaviorAuto));
+      CreateScrollIntoViewParams(horizontal_scroll_alignment,
+                                 vertical_scroll_alignment, kProgrammaticScroll,
+                                 false /* make_visible_in_visual_viewport */,
+                                 kScrollBehaviorAuto));
   AXObjectCache().PostNotification(
       AXObjectCache().GetOrCreate(GetDocument()->GetLayoutView()),
       ax::mojom::Event::kLocationChanged);
@@ -3333,10 +3334,10 @@ bool AXObject::OnNativeScrollToGlobalPointAction(
   PhysicalRect target_rect(layout_object->AbsoluteBoundingBoxRect());
   target_rect.Move(-PhysicalOffset(global_point));
   layout_object->ScrollRectToVisible(
-      target_rect,
-      WebScrollIntoViewParams(ScrollAlignment::kAlignLeftAlways,
-                              ScrollAlignment::kAlignTopAlways,
-                              kProgrammaticScroll, false, kScrollBehaviorAuto));
+      target_rect, CreateScrollIntoViewParams(ScrollAlignment::kAlignLeftAlways,
+                                              ScrollAlignment::kAlignTopAlways,
+                                              kProgrammaticScroll, false,
+                                              kScrollBehaviorAuto));
   AXObjectCache().PostNotification(
       AXObjectCache().GetOrCreate(GetDocument()->GetLayoutView()),
       ax::mojom::Event::kLocationChanged);

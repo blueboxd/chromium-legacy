@@ -28,18 +28,6 @@ class _BackgroundStory(system_health_story.SystemHealthStory):
     return 'Load %s, then put the browser into the background.' % cls.URL
 
 
-class BackgroundGoogleStory(_BackgroundStory):
-  NAME = 'background:search:google'
-  URL = 'https://www.google.co.uk/#q=tom+cruise+movies'
-  TAGS = [story_tags.HEALTH_CHECK, story_tags.YEAR_2016]
-
-  def _DidLoadDocument(self, action_runner):
-    # Activte the immersive movie browsing experience
-    action_runner.WaitForElement(selector='g-fab')
-    action_runner.ScrollPageToElement(selector='g-fab')
-    action_runner.TapElement(selector='g-fab')
-
-
 class BackgroundGoogleStory2019(_BackgroundStory):
   NAME = 'background:search:google:2019'
   URL = 'https://www.google.co.uk/#q=tom+cruise+movies'
@@ -52,47 +40,11 @@ class BackgroundGoogleStory2019(_BackgroundStory):
     action_runner.ClickElement(selector='.knHJyb')
 
 
-class BackgroundFacebookMobileStory(_BackgroundStory):
-  NAME = 'background:social:facebook'
-  URL = 'https://www.facebook.com/rihanna'
-  SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
-  TAGS = [story_tags.YEAR_2016]
-
 class BackgroundFacebookMobileStory2019(_BackgroundStory):
   NAME = 'background:social:facebook:2019'
   URL = 'https://www.facebook.com/rihanna'
   SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
   TAGS = [story_tags.YEAR_2019]
-
-class BackgroundNytimesMobileStory(_BackgroundStory):
-  NAME = 'background:news:nytimes'
-  URL = 'http://www.nytimes.com/2016/10/04/us/politics/vice-presidential-debate.html?_r=0'
-  SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
-  TAGS = [story_tags.JAVASCRIPT_HEAVY, story_tags.YEAR_2016]
-
-  def _DidLoadDocument(self, action_runner):
-    # Dismiss the 'You have n free articles' message.
-    action_runner.WaitForElement(selector='.growl-dismiss')
-    action_runner.TapElement(selector='.growl-dismiss')
-
-    # Tap the 'Show Full Article' button.
-    action_runner.WaitForElement(selector='#additional-content button')
-    action_runner.ScrollPageToElement(selector='#additional-content button')
-    # TapElement seems flaky here so use JavaScript instead.
-    action_runner.ExecuteJavaScript(
-        'document.querySelector("#additional-content button").click()')
-
-    # Scroll to video, start it and then wait for a few seconds.
-    action_runner.WaitForElement(selector='.nytd-player-poster')
-    action_runner.ScrollPageToElement(selector='.nytd-player-poster')
-    # For some reason on some devices (e.g. Nexus7) we don't scroll all the way
-    # to the element. I think this might be caused by the page reflowing (due to
-    # vidoes loading) during the scroll. To be sure we get to the element
-    # wait a moment and then try to scroll again.
-    action_runner.Wait(1)
-    action_runner.ScrollPageToElement(selector='.nytd-player-poster')
-    action_runner.TapElement(selector='.nytd-player-poster')
-    action_runner.Wait(_WAIT_FOR_VIDEO_SECONDS)
 
 
 class BackgroundNytimesMobileStory2019(browsing_stories.NytimesMobileStory2019):
@@ -108,28 +60,11 @@ class BackgroundNytimesMobileStory2019(browsing_stories.NytimesMobileStory2019):
     super(BackgroundNytimesMobileStory2019, self)._Measure(action_runner)
 
 
-class BackgroundImgurMobileStory(_BackgroundStory):
-  NAME = 'background:media:imgur'
-  URL = 'http://imgur.com/gallery/hUita'
-  SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
-  TAGS = [story_tags.HEALTH_CHECK, story_tags.YEAR_2016]
-
-
 class BackgroundImgurMobileStory2019(_BackgroundStory):
   NAME = 'background:media:imgur:2019'
   URL = 'http://imgur.com/gallery/hUita'
   SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
   TAGS = [story_tags.HEALTH_CHECK, story_tags.YEAR_2019]
-
-
-class BackgroundGmailMobileStory(loading_stories.LoadGmailMobileStory):
-  NAME = 'background:tools:gmail'
-  SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
-  TAGS = [story_tags.HEALTH_CHECK, story_tags.YEAR_2016]
-
-  def _Measure(self, action_runner):
-    action_runner.tab.browser.Background()
-    super(BackgroundGmailMobileStory, self)._Measure(action_runner)
 
 
 class BackgroundGmailMobileStory2019(loading_stories.LoadGmailStory2019):

@@ -20,9 +20,6 @@ if (!is_ios) {
       "safe_browsing_controller_client.cc",
       "safe_browsing_controller_client.h",
     ]
-    public_deps = [
-      "//components/security_interstitials/content:security_interstitial_page",
-    ]
     deps = [
       "//base:base",
       "//base:i18n",
@@ -33,7 +30,9 @@ if (!is_ios) {
       "//components/safe_browsing/core/common:safe_browsing_prefs",
       "//components/safe_browsing/core/db:database_manager",
       "//components/safe_browsing/core/web_ui:constants",
-      "//components/security_interstitials/core:core",
+      "//components/security_interstitials/content:security_interstitial_page",
+      "//components/security_interstitials/core",
+      "//components/security_interstitials/core:unsafe_resource",
       "//content/public/browser:browser",
       "//content/public/common:common",
       "//net:net",

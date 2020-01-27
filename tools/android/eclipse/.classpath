@@ -116,9 +116,6 @@ to the classpath for downstream development. See "additional_entries" below.
     <classpathentry kind="src" path="chrome/browser/ui/android/appmenu/internal/java/src"/>
     <classpathentry kind="src" path="chrome/browser/ui/android/appmenu/java/src"/>
     <classpathentry kind="src" path="chrome/browser/ui/android/appmenu/test/java/src"/>
-    <classpathentry kind="src" path="chrome/browser/ui/android/styles/java/src"/>
-    <classpathentry kind="src" path="chrome/browser/ui/android/widget/java/src"/>
-    <classpathentry kind="src" path="chrome/browser/ui/android/widget/test/java/src"/>
     <classpathentry kind="src" path="chrome/browser/util/android/java/src"/>
     <classpathentry kind="src" path="chrome/lib/lifecycle/public/android/java/src"/>
     <classpathentry kind="src" path="chrome/test/android/cast_emulator/src"/>
@@ -133,6 +130,10 @@ to the classpath for downstream development. See "additional_entries" below.
     <classpathentry kind="src" path="components/background_task_scheduler/android/java/src"/>
     <classpathentry kind="src" path="components/background_task_scheduler/android/javatests/src"/>
     <classpathentry kind="src" path="components/background_task_scheduler/android/junit/src"/>
+    <classpathentry kind="src" path="components/browser_ui/widget/modaldialog/java/src"/>
+    <classpathentry kind="src" path="components/browser_ui/styles/android/java/src"/>
+    <classpathentry kind="src" path="components/browser_ui/widget/android/java/src"/>
+    <classpathentry kind="src" path="components/browser_ui/widget/android/test/java/src"/>
     <classpathentry kind="src" path="components/bookmarks/common/android/java/src"/>
     <classpathentry kind="src" path="components/content_capture/android/java/src"/>
     <classpathentry kind="src" path="components/crash/android/java/src"/>

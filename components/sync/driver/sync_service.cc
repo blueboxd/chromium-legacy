@@ -20,10 +20,6 @@ SyncSetupInProgressHandle::~SyncSetupInProgressHandle() {
   std::move(on_destroy_).Run();
 }
 
-CoreAccountId SyncService::GetAuthenticatedAccountId() const {
-  return GetAuthenticatedAccountInfo().account_id;
-}
-
 bool SyncService::HasCompletedSyncCycle() const {
   // Stats on the last Sync cycle are only available in internal "for debugging"
   // information. Better to access that here than making clients do it.

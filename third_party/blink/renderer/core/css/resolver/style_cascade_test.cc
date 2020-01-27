@@ -6,13 +6,13 @@
 
 #include <vector>
 
+#include "third_party/blink/renderer/bindings/core/v8/v8_css_style_sheet_init.h"
 #include "third_party/blink/renderer/core/animation/css/css_animations.h"
 #include "third_party/blink/renderer/core/css/active_style_sheets.h"
 #include "third_party/blink/renderer/core/css/css_custom_property_declaration.h"
 #include "third_party/blink/renderer/core/css/css_pending_interpolation_value.h"
 #include "third_party/blink/renderer/core/css/css_pending_substitution_value.h"
 #include "third_party/blink/renderer/core/css/css_primitive_value.h"
-#include "third_party/blink/renderer/core/css/css_style_sheet_init.h"
 #include "third_party/blink/renderer/core/css/css_test_helpers.h"
 #include "third_party/blink/renderer/core/css/css_variable_reference_value.h"
 #include "third_party/blink/renderer/core/css/document_style_environment_variables.h"
@@ -265,7 +265,7 @@ class TestCascadeResolver {
  private:
   friend class TestCascadeAutoLock;
 
-  Member<Document> document_;
+  Document* document_;
   StyleCascadeSlots slots_;
   StyleCascade::Excluder excluder_;
   StyleCascade::Resolver resolver_;
@@ -348,7 +348,7 @@ class StyleCascadeTest : public PageTestBase, private ScopedCSSCascadeForTest {
       return document_->GetStyleEngine().EnsureEnvironmentVariables();
     }
 
-    Member<Document> document_;
+    Document* document_;
     AtomicString name_;
   };
 };

@@ -245,6 +245,47 @@
   };
 
   /**
+   * Tests that Quick View opens via the context menu when multiple files
+   * are selected (file-list check-select mode).
+   */
+  testcase.openQuickViewViaContextMenuCheckSelections = async () => {
+    // Open Files app on Downloads containing BASIC_LOCAL_ENTRY_SET.
+    const appId = await setupAndWaitUntilReady(
+        RootPath.DOWNLOADS, BASIC_LOCAL_ENTRY_SET, []);
+
+    // Ctrl+A to select all files in the file-list.
+    const ctrlA = ['#file-list', 'a', true, false, false];
+    await remoteCall.fakeKeyDown(appId, ...ctrlA);
+
+    // Right-click the file in the file-list.
+    const query = '#file-list [file-name="hello.txt"]';
+    chrome.test.assertTrue(!!await remoteCall.callRemoteTestUtil(
+        'fakeMouseRightClick', appId, [query]));
+
+    // Wait because WebUI Menu ignores the following click if it happens in
+    // <200ms from the previous click.
+    await wait(300);
+
+    // Click the file-list context menu "Get info" command.
+    const getInfoMenuItem = '#file-context-menu:not([hidden]) ' +
+        ' [command="#get-info"]:not([hidden])';
+    await remoteCall.simulateUiClick(appId, getInfoMenuItem);
+
+    // Check: the Quick View dialog should be shown.
+    const caller = getCaller();
+    await repeatUntil(async () => {
+      const query = ['#quick-view', '#dialog[open]'];
+      const elements = await remoteCall.callRemoteTestUtil(
+          'deepQueryAllElements', appId, [query, ['display']]);
+      const haveElements = Array.isArray(elements) && elements.length !== 0;
+      if (!haveElements || elements[0].styles.display !== 'block') {
+        return pending(caller, 'Waiting for Quick View to open.');
+      }
+      return true;
+    });
+  };
+
+  /**
    * Tests opening then closing Quick View on a local downloads file.
    */
   testcase.closeQuickView = async () => {

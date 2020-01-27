@@ -31,6 +31,7 @@
 #include "base/optional.h"
 #include "third_party/blink/public/common/input/web_input_event.h"
 #include "third_party/blink/public/common/input/web_menu_source_type.h"
+#include "third_party/blink/public/mojom/input/focus_type.mojom-blink-forward.h"
 #include "third_party/blink/public/platform/web_input_event_result.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/events/text_event_input_type.h"
@@ -371,7 +372,7 @@ class CORE_EXPORT EventHandler final : public GarbageCollected<EventHandler> {
   void DefaultBackspaceEventHandler(KeyboardEvent*);
   void DefaultTabEventHandler(KeyboardEvent*);
   void DefaultEscapeEventHandler(KeyboardEvent*);
-  void DefaultArrowEventHandler(WebFocusType, KeyboardEvent*);
+  void DefaultArrowEventHandler(mojom::blink::FocusType, KeyboardEvent*);
 
   // |last_scrollbar_under_mouse_| is set when the mouse moves off of a
   // scrollbar, and used to notify it of MouseUp events to release mouse

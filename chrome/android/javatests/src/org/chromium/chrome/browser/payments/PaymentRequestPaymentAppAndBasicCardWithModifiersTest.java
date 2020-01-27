@@ -9,8 +9,6 @@ import static junit.framework.Assert.assertFalse;
 import static junit.framework.Assert.assertTrue;
 
 import static org.chromium.chrome.browser.payments.PaymentRequestTestRule.DELAYED_RESPONSE;
-import static org.chromium.chrome.browser.payments.PaymentRequestTestRule.ENABLE_EXPERIMENTAL_WEB_PLATFORM_FEATURES;
-import static org.chromium.chrome.browser.payments.PaymentRequestTestRule.ENABLE_WEB_PAYMENTS_MODIFIERS;
 import static org.chromium.chrome.browser.payments.PaymentRequestTestRule.HAVE_INSTRUMENTS;
 import static org.chromium.chrome.browser.payments.PaymentRequestTestRule.IMMEDIATE_RESPONSE;
 
@@ -33,8 +31,8 @@ import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.autofill.AutofillTestHelper;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.CreditCard;
-import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.content_public.browser.WebContents;
 import org.chromium.payments.mojom.BasicCardNetwork;
 import org.chromium.ui.test.util.DisableAnimationsTestRule;
 
@@ -45,9 +43,7 @@ import java.util.concurrent.TimeoutException;
  * modifiers.
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
-@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
-        ENABLE_EXPERIMENTAL_WEB_PLATFORM_FEATURES, ENABLE_WEB_PAYMENTS_MODIFIERS,
-        "enable-features=" + ChromeFeatureList.WEB_PAYMENTS_RETURN_GOOGLE_PAY_IN_BASIC_CARD})
+@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 public class PaymentRequestPaymentAppAndBasicCardWithModifiersTest {
     // Disable animations to reduce flakiness.
     @ClassRule
@@ -56,19 +52,6 @@ public class PaymentRequestPaymentAppAndBasicCardWithModifiersTest {
     @Rule
     public PaymentRequestTestRule mPaymentRequestTestRule = new PaymentRequestTestRule(
             "payment_request_bobpay_and_basic_card_with_modifiers_test.html");
-
-    /**
-     * Adds a credit cart to ensure that autofill app is available.
-     */
-    public void addCreditCard() throws TimeoutException {
-        AutofillTestHelper helper = new AutofillTestHelper();
-        String billingAddressId = helper.setProfile(new AutofillProfile("", "https://example.com",
-                true, "John Smith", "Google", "340 Main St", "CA", "Los Angeles", "", "90291", "",
-                "US", "310-310-6000", "john.smith@gmail.com", "en-US"));
-        helper.setCreditCard(new CreditCard("", "https://example.com", true, true, "Jon Doe",
-                "4111111111111111", "1111", "12", "2050", "visa", R.drawable.visa_card,
-                billingAddressId, "" /* serverId */));
-    }
 
     private AutofillTestHelper mHelper;
     private String mBillingAddressId;
@@ -89,7 +72,7 @@ public class PaymentRequestPaymentAppAndBasicCardWithModifiersTest {
     @Feature({"Payments"})
     public void testUpdateTotalAndInstrumentLabelWithBobPayModifiers() throws TimeoutException {
         // Mastercard card with complete set of information and unknown type.
-        mHelper.setCreditCard(new CreditCard("", "https://example.com", true /* isLocal */,
+        mHelper.setCreditCard(new CreditCard(/*guid=*/"", "https://example.com", true /* isLocal */,
                 true /* isCached */, "Jon Doe", "5555555555554444", "" /* obfuscatedNumber */, "12",
                 "2050", "mastercard", R.drawable.mc_card, mBillingAddressId, "" /* serverId */));
         mPaymentRequestTestRule.installPaymentApp(HAVE_INSTRUMENTS, IMMEDIATE_RESPONSE);
@@ -116,28 +99,32 @@ public class PaymentRequestPaymentAppAndBasicCardWithModifiersTest {
     @Feature({"Payments"})
     public void testUpdateTotalAndInstrumentLabelWithVisaModifiers() throws TimeoutException {
         // Credit visa card with complete set of information.
-        mHelper.addServerCreditCard(new CreditCard("guid_1", "https://example.com",
-                false /* isLocal */, true /* isCached */, "Jon Doe", "4111111111111111",
+        String guid1 = mHelper.setCreditCard(new CreditCard(/*guid=*/"", "https://example.com",
+                true /* isLocal */, true /* isCached */, "Jon Doe", "4111111111111111",
                 "" /* obfuscatedNumber */, "12", "2050", "visa", R.drawable.visa_card,
                 mBillingAddressId, "server-id-1"));
-        mHelper.setCreditCardUseStatsForTesting("guid_1", 100, 5000);
+        PaymentPreferencesUtil.setPaymentInstrumentUseCountForTest(guid1, /*count=*/100);
         // Credit mastercard with complete set of information.
-        mHelper.addServerCreditCard(new CreditCard("guid_2", "https://example.com",
-                false /* isLocal */, true /* isCached */, "Jon Doe", "5200828282828210",
+        String guid2 = mHelper.setCreditCard(new CreditCard(/*guid=*/"", "https://example.com",
+                true /* isLocal */, true /* isCached */, "Jon Doe", "5200828282828210",
                 "" /* obfuscatedNumber */, "12", "2050", "mastercard", R.drawable.mc_card,
                 mBillingAddressId, "server-id-2"));
-        mHelper.setCreditCardUseStatsForTesting("guid_2", 1, 5000);
+        PaymentPreferencesUtil.setPaymentInstrumentUseCountForTest(guid2, /*count=*/1);
         mPaymentRequestTestRule.triggerUIAndWait(
                 "visa_supported_network", mPaymentRequestTestRule.getReadyToPay());
 
-        assertTrue(mPaymentRequestTestRule.getSelectedPaymentInstrumentLabel().startsWith("Visa"));
+        assertTrue("\"" + mPaymentRequestTestRule.getSelectedPaymentInstrumentLabel()
+                        + "\" should start with \"Visa\".",
+                mPaymentRequestTestRule.getSelectedPaymentInstrumentLabel().startsWith("Visa"));
         assertEquals("USD $4.00", mPaymentRequestTestRule.getOrderSummaryTotal());
 
         // select the other credit mastercard and verify modifier is not applied.
         mPaymentRequestTestRule.clickOnPaymentMethodSuggestionOptionAndWait(
                 1, mPaymentRequestTestRule.getReadyForInput());
-        assertTrue(mPaymentRequestTestRule.getSelectedPaymentInstrumentLabel().startsWith(
-                "Mastercard"));
+        assertTrue("\"" + mPaymentRequestTestRule.getSelectedPaymentInstrumentLabel()
+                        + "\" should start with \"Mastercard\".",
+                mPaymentRequestTestRule.getSelectedPaymentInstrumentLabel().startsWith(
+                        "Mastercard"));
         assertEquals("USD $5.00", mPaymentRequestTestRule.getOrderSummaryTotal());
     }
 
@@ -148,41 +135,46 @@ public class PaymentRequestPaymentAppAndBasicCardWithModifiersTest {
     @MediumTest
     @Feature({"Payments"})
     public void testUpdateTotalAndInstrumentLabelWithMastercardModifiers() throws TimeoutException {
-        // Mastercard card with complete set of information and unknown type.
-        String guid = mHelper.setCreditCard(
-                new CreditCard("", "https://example.com", true /* isLocal */, true /* isCached */,
-                        "Jon Doe", "5555555555554444", "" /* obfuscatedNumber */, "12", "2050",
-                        "mastercard", R.drawable.mc_card, mBillingAddressId, "" /* serverId */));
-        mHelper.setCreditCardUseStatsForTesting(guid, 1000, 5000);
+        // 1st Mastercard card with complete set of information.
+        String guid = mHelper.setCreditCard(new CreditCard(/*guid=*/"", "https://example.com",
+                true /* isLocal */, true /* isCached */, "Jon Doe", "5555555555554444",
+                "" /* obfuscatedNumber */, "12", "2050", "mastercard", R.drawable.mc_card,
+                mBillingAddressId, "" /* serverId */));
+        PaymentPreferencesUtil.setPaymentInstrumentUseCountForTest(guid, /*count=*/1000);
 
-        // Credit mastercard with complete set of information.
-        mHelper.addServerCreditCard(new CreditCard("guid_1", "https://example.com",
-                false /* isLocal */, true /* isCached */, "Jon Doe", "5200828282828210",
+        // 2nd Mastercard with complete set of information.
+        String guid1 = mHelper.setCreditCard(new CreditCard(/*guid=*/"", "https://example.com",
+                true /* isLocal */, true /* isCached */, "Jon Doe", "5200828282828210",
                 "" /* obfuscatedNumber */, "12", "2050", "mastercard", R.drawable.mc_card,
                 mBillingAddressId, "server-id-1"));
-        mHelper.setCreditCardUseStatsForTesting("guid_1", 100, 5000);
+        PaymentPreferencesUtil.setPaymentInstrumentUseCountForTest(guid1, /*count=*/100);
 
         // Visa card with complete set of information and unknown type.
-        mHelper.addServerCreditCard(new CreditCard("guid_2", "https://example.com",
-                false /* isLocal */, true /* isCached */, "Jon Doe", "4111111111111111",
+        String guid2 = mHelper.setCreditCard(new CreditCard(/*guid=*/"", "https://example.com",
+                true /* isLocal */, true /* isCached */, "Jon Doe", "4111111111111111",
                 "" /* obfuscatedNumber */, "12", "2050", "visa", R.drawable.visa_card,
                 mBillingAddressId, "server-id-2"));
-        mHelper.setCreditCardUseStatsForTesting("guid_2", 1, 5000);
+        PaymentPreferencesUtil.setPaymentInstrumentUseCountForTest(guid2, /*count=*/1);
 
+        // The most frequently used Mastercard is selected by default.
         mPaymentRequestTestRule.triggerUIAndWait(
                 "mastercard_any_supported_type", mPaymentRequestTestRule.getReadyToPay());
-        assertTrue(mPaymentRequestTestRule.getSelectedPaymentInstrumentLabel().startsWith(
-                "Mastercard"));
+        assertTrue("\"" + mPaymentRequestTestRule.getSelectedPaymentInstrumentLabel()
+                        + "\" should start with \"Mastercard\".",
+                mPaymentRequestTestRule.getSelectedPaymentInstrumentLabel().startsWith(
+                        "Mastercard"));
         assertEquals("USD $4.00", mPaymentRequestTestRule.getOrderSummaryTotal());
 
-        // select the other credit Mastercard and verify modifier is applied.
+        // Select the other credit Mastercard and verify modifier is applied.
         mPaymentRequestTestRule.clickOnPaymentMethodSuggestionOptionAndWait(
                 1, mPaymentRequestTestRule.getReadyForInput());
-        assertTrue(mPaymentRequestTestRule.getSelectedPaymentInstrumentLabel().startsWith(
-                "Mastercard"));
+        assertTrue("\"" + mPaymentRequestTestRule.getSelectedPaymentInstrumentLabel()
+                        + "\" should start with \"Mastercard\".",
+                mPaymentRequestTestRule.getSelectedPaymentInstrumentLabel().startsWith(
+                        "Mastercard"));
         assertEquals("USD $4.00", mPaymentRequestTestRule.getOrderSummaryTotal());
 
-        // select the other visa card with unknown type and verify modifier is not applied.
+        // Select the visa card and verify modifier is not applied.
         mPaymentRequestTestRule.clickOnPaymentMethodSuggestionOptionAndWait(
                 2, mPaymentRequestTestRule.getReadyForInput());
         assertTrue(mPaymentRequestTestRule.getSelectedPaymentInstrumentLabel().startsWith("Visa"));
@@ -197,7 +189,13 @@ public class PaymentRequestPaymentAppAndBasicCardWithModifiersTest {
     @Feature({"Payments"})
     public void testPaymentAppCanPayWithModifiers() throws TimeoutException {
         // Add a credit card to force showing payment sheet UI.
-        addCreditCard();
+        String billingAddressId = mHelper.setProfile(new AutofillProfile("", "https://example.com",
+                true, "John Smith", "Google", "340 Main St", "CA", "Los Angeles", "", "90291", "",
+                "US", "310-310-6000", "john.smith@gmail.com", "en-US"));
+        mHelper.setCreditCard(new CreditCard(/*guid=*/"", "https://example.com", true, true,
+                "Jon Doe", "4111111111111111", "1111", "12", "2050", "visa", R.drawable.visa_card,
+                billingAddressId, "" /* serverId */));
+
         mPaymentRequestTestRule.installPaymentApp(HAVE_INSTRUMENTS, DELAYED_RESPONSE);
         mPaymentRequestTestRule.triggerUIAndWait(
                 "buy_with_bobpay_discount", mPaymentRequestTestRule.getReadyToPay());
@@ -232,33 +230,35 @@ public class PaymentRequestPaymentAppAndBasicCardWithModifiersTest {
         ServiceWorkerPaymentApp.Capabilities[] alicepayCapabilities = {
                 new ServiceWorkerPaymentApp.Capabilities(alicepayNetworks)};
 
-        PaymentAppFactory.getInstance().addAdditionalFactory((webContents, methodNames,
-                                                                     mayCrawlUnused, callback) -> {
-            ChromeActivity activity = ChromeActivity.fromWebContents(webContents);
-            BitmapDrawable icon = new BitmapDrawable(activity.getResources(),
-                    Bitmap.createBitmap(new int[] {Color.RED}, 1 /* width */, 1 /* height */,
-                            Bitmap.Config.ARGB_8888));
+        PaymentAppService.getInstance().addFactory(new PaymentAppFactoryInterface() {
+            @Override
+            public void create(PaymentAppFactoryDelegate delegate) {
+                WebContents webContents = delegate.getParams().getWebContents();
+                ChromeActivity activity = ChromeActivity.fromWebContents(webContents);
+                BitmapDrawable icon = new BitmapDrawable(activity.getResources(),
+                        Bitmap.createBitmap(new int[] {Color.RED}, 1 /* width */, 1 /* height */,
+                                Bitmap.Config.ARGB_8888));
 
-            ServiceWorkerPaymentAppBridge.setCanMakePaymentForTesting(true);
-            callback.onPaymentAppCreated(
-                    new ServiceWorkerPaymentApp(webContents, 0 /* registrationId */,
-                            UriUtils.parseUriFromString("https://bobpay.com") /* scope */,
-                            "BobPay" /* label */, "https://bobpay.com" /* sublabel*/,
-                            "https://bobpay.com" /* tertiarylabel */, icon /* icon */,
-                            bobpayMethodNames /* methodNames */, true /* explicitlyVerified */,
-                            bobpayCapabilities /* capabilities */,
-                            new String[0] /* preferredRelatedApplicationIds */,
-                            new SupportedDelegations()));
-            callback.onPaymentAppCreated(
-                    new ServiceWorkerPaymentApp(webContents, 0 /* registrationId */,
-                            UriUtils.parseUriFromString("https://alicepay.com") /* scope */,
-                            "AlicePay" /* label */, "https://bobpay.com" /* sublabel*/,
-                            "https://alicepay.com" /* tertiarylabel */, icon /* icon */,
-                            alicepayMethodNames /* methodNames */, true /* explicitlyVerified */,
-                            alicepayCapabilities /* capabilities */,
-                            new String[0] /* preferredRelatedApplicationIds */,
-                            new SupportedDelegations()));
-            callback.onAllPaymentAppsCreated();
+                ServiceWorkerPaymentAppBridge.setCanMakePaymentForTesting(true);
+                delegate.onPaymentAppCreated(new ServiceWorkerPaymentApp(webContents,
+                        0 /* registrationId */,
+                        UriUtils.parseUriFromString("https://bobpay.com") /* scope */,
+                        "BobPay" /* label */, "https://bobpay.com" /* sublabel*/,
+                        "https://bobpay.com" /* tertiarylabel */, icon /* icon */,
+                        bobpayMethodNames /* methodNames */, bobpayCapabilities /* capabilities */,
+                        new String[0] /* preferredRelatedApplicationIds */,
+                        new SupportedDelegations()));
+                delegate.onPaymentAppCreated(
+                        new ServiceWorkerPaymentApp(webContents, 0 /* registrationId */,
+                                UriUtils.parseUriFromString("https://alicepay.com") /* scope */,
+                                "AlicePay" /* label */, "https://bobpay.com" /* sublabel*/,
+                                "https://alicepay.com" /* tertiarylabel */, icon /* icon */,
+                                alicepayMethodNames /* methodNames */,
+                                alicepayCapabilities /* capabilities */,
+                                new String[0] /* preferredRelatedApplicationIds */,
+                                new SupportedDelegations()));
+                delegate.onDoneCreatingPaymentApps(this);
+            }
         });
         mPaymentRequestTestRule.triggerUIAndWait(
                 "visa_supported_network", mPaymentRequestTestRule.getReadyToPay());

@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_VIZ_SERVICE_DISPLAY_OVERLAY_PROCESSOR_ANDROID_H_
 #define COMPONENTS_VIZ_SERVICE_DISPLAY_OVERLAY_PROCESSOR_ANDROID_H_
 
+#include "base/synchronization/waitable_event.h"
 #include "components/viz/service/display/overlay_processor_using_strategy.h"
 
 namespace base {
@@ -76,6 +77,9 @@ class VIZ_SERVICE_EXPORT OverlayProcessorAndroid
   bool able_to_create_processor_on_gpu_ = false;
   // This class is created, accessed, and destroyed on the gpu thread.
   std::unique_ptr<OverlayProcessorOnGpu> processor_on_gpu_;
+  base::WaitableEvent gpu_init_event_{
+      base::WaitableEvent::ResetPolicy::MANUAL,
+      base::WaitableEvent::InitialState::NOT_SIGNALED};
 
   OverlayCandidateList overlay_candidates_;
 };

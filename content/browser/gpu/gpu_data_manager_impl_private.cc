@@ -4,7 +4,14 @@
 
 #include "content/browser/gpu/gpu_data_manager_impl_private.h"
 
+#if defined(OS_WIN)
+#include <aclapi.h>
+#include <sddl.h>
+#include <windows.h>
+#endif  // OS_WIN
+
 #include <algorithm>
+#include <array>
 #include <iterator>
 #include <memory>
 #include <utility>
@@ -14,9 +21,12 @@
 #include "base/command_line.h"
 #include "base/debug/dump_without_crashing.h"
 #include "base/feature_list.h"
+#include "base/files/file_path.h"
+#include "base/files/file_util.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/path_service.h"
 #include "base/rand_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -55,6 +65,7 @@
 #include "gpu/vulkan/buildflags.h"
 #include "media/media_buildflags.h"
 #include "ui/base/ui_base_switches.h"
+#include "ui/display/screen.h"
 #include "ui/gfx/switches.h"
 #include "ui/gl/buildflags.h"
 #include "ui/gl/gl_implementation.h"
@@ -72,6 +83,7 @@
 #include <ApplicationServices/ApplicationServices.h>
 #endif  // OS_MACOSX
 #if defined(OS_WIN)
+#include "base/base_paths_win.h"
 #include "base/win/windows_version.h"
 #endif  // OS_WIN
 
@@ -111,6 +123,104 @@ int GetGpuBlacklistHistogramValueWin(gpu::GpuFeatureStatus status) {
   DCHECK_NE(gpu::kGpuFeatureStatusMax, status);
   int entry_index = static_cast<int>(version) * gpu::kGpuFeatureStatusMax;
   return entry_index + static_cast<int>(status);
+}
+
+// This function checks the created file to ensure it wasn't redirected
+// to another location using a symbolic link or a hard link.
+bool ValidateFileHandle(HANDLE cache_file_handle,
+                        const base::FilePath& cache_file_path) {
+  // Check that the file wasn't hardlinked to something else.
+  BY_HANDLE_FILE_INFORMATION file_info = {};
+  if (!::GetFileInformationByHandle(cache_file_handle, &file_info))
+    return false;
+  if (file_info.nNumberOfLinks > 1)
+    return false;
+
+  // Check the final path matches the expected path.
+  wchar_t final_path_buffer[MAX_PATH];
+  if (!::GetFinalPathNameByHandle(cache_file_handle, final_path_buffer,
+                                  _countof(final_path_buffer),
+                                  FILE_NAME_NORMALIZED | VOLUME_NAME_DOS)) {
+    return false;
+  }
+  // Returned string should start with \\?\. If not then fail validation.
+  if (!base::StartsWith(final_path_buffer, L"\\\\?\\",
+                        base::CompareCase::INSENSITIVE_ASCII)) {
+    return false;
+  }
+  // Expected filename and actual file name must be an exact match.
+  return cache_file_path == base::FilePath(&final_path_buffer[4]);
+}
+
+// Generate Intel cache file names depending on the app name.
+bool GetIntelCacheFileNames(std::vector<base::FilePath::StringType>* names) {
+  DCHECK(names);
+  DCHECK(names->empty());
+  base::FilePath module_path;
+  if (!base::PathService::Get(base::FILE_EXE, &module_path))
+    return false;
+  module_path = module_path.BaseName().RemoveExtension();
+  base::FilePath::StringType module_name = module_path.value();
+  if (module_name.size() == 0)
+    return false;
+  // The Intel shader cache files should be appName_[0|1|2].
+  names->push_back(module_name + L"_0");
+  names->push_back(module_name + L"_1");
+  names->push_back(module_name + L"_2");
+  return true;
+}
+
+void EnableIntelShaderCache() {
+  base::FilePath dir;
+  if (!base::PathService::Get(base::DIR_COMMON_APP_DATA, &dir))
+    return;
+  dir = dir.Append(L"Intel").Append(L"ShaderCache");
+  if (!base::DirectoryExists(dir))
+    return;
+
+  PSECURITY_DESCRIPTOR sd = nullptr;
+  ULONG sd_length = 0;
+  // Set Full Access to All Users and Administrators, then grant RWX to
+  // AppContainers and Low Privilege AppContainers.
+  BOOL success = ::ConvertStringSecurityDescriptorToSecurityDescriptor(
+      L"D:(A;;FA;;;AU)(A;;FA;;;BA)(A;;GRGWGX;;;S-1-15-2-1)(A;;GRGWGX;;;S-1-15-"
+      L"2-2)",
+      SDDL_REVISION_1, &sd, &sd_length);
+  if (!success)
+    return;
+  DCHECK(sd);
+  DCHECK_LT(0u, sd_length);
+  std::unique_ptr<void, decltype(::LocalFree)*> sd_holder(sd, ::LocalFree);
+  PACL dacl = nullptr;
+  BOOL present = FALSE, defaulted = FALSE;
+  success = ::GetSecurityDescriptorDacl(sd, &present, &dacl, &defaulted);
+  if (!success)
+    return;
+  DCHECK(present);
+  DCHECK(dacl);
+  DCHECK(!defaulted);
+
+  std::vector<base::FilePath::StringType> cache_file_names;
+  if (!GetIntelCacheFileNames(&cache_file_names))
+    return;
+  for (const auto& cache_file_name : cache_file_names) {
+    base::FilePath cache_file_path = dir.Append(cache_file_name);
+    HANDLE cache_file_handle = ::CreateFileW(
+        cache_file_path.value().c_str(), WRITE_DAC,
+        FILE_SHARE_READ | FILE_SHARE_WRITE, nullptr, OPEN_ALWAYS, 0, nullptr);
+    base::win::ScopedHandle handle_holder(cache_file_handle);
+    if (cache_file_handle == INVALID_HANDLE_VALUE ||
+        !ValidateFileHandle(cache_file_handle, cache_file_path)) {
+      continue;
+    }
+
+    DWORD result = ::SetSecurityInfo(cache_file_handle, SE_KERNEL_OBJECT,
+                                     DACL_SECURITY_INFORMATION, nullptr,
+                                     nullptr, dacl, nullptr);
+    if (result != ERROR_SUCCESS) {
+      LOG(ERROR) << "SetSecurityInfo returned " << result;
+    }
+  }
 }
 #endif  // OS_WIN
 
@@ -285,11 +395,8 @@ bool SwiftShaderAllowed() {
 #endif
 }
 
-// These functions are never called on the Fuchsia path. Leave them undefined to
-// fix a compiler warning.
-#if !defined(OS_FUCHSIA)
 // Determines if Vulkan is available for the GPU process.
-bool VulkanAllowed() {
+bool ALLOW_UNUSED_TYPE VulkanAllowed() {
 #if BUILDFLAG(ENABLE_VULKAN)
   // Vulkan will be enabled if certain flags are present.
   // --enable-features=Vulkan will cause Vulkan to be used for compositing and
@@ -307,14 +414,13 @@ bool VulkanAllowed() {
 }
 
 // Determines if Metal is available for the GPU process.
-bool MetalAllowed() {
+bool ALLOW_UNUSED_TYPE MetalAllowed() {
 #if defined(OS_MACOSX)
   return base::FeatureList::IsEnabled(features::kMetal);
 #else
   return false;
 #endif
 }
-#endif  // !OS_FUCHSIA
 
 // These values are logged to UMA. Entries should not be renumbered and numeric
 // values should never be reused. Please keep in sync with "CompositingMode" in
@@ -331,7 +437,6 @@ enum class CompositingMode {
 NOINLINE void IntentionallyCrashBrowserForUnusableGpuProcess() {
   LOG(FATAL) << "GPU process isn't usable. Goodbye.";
 }
-
 }  // anonymous namespace
 
 GpuDataManagerImplPrivate::GpuDataManagerImplPrivate(GpuDataManagerImpl* owner)
@@ -339,6 +444,9 @@ GpuDataManagerImplPrivate::GpuDataManagerImplPrivate(GpuDataManagerImpl* owner)
       observer_list_(base::MakeRefCounted<GpuDataManagerObserverList>()) {
   DCHECK(owner_);
   InitializeGpuModes();
+#if defined(OS_WIN)
+  EnableIntelShaderCache();
+#endif  // OS_WIN
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kDisableGpuCompositing)) {
     SetGpuCompositingDisabled();
@@ -352,6 +460,12 @@ GpuDataManagerImplPrivate::GpuDataManagerImplPrivate(GpuDataManagerImpl* owner)
 #if defined(OS_MACOSX)
   CGDisplayRegisterReconfigurationCallback(DisplayReconfigCallback, owner_);
 #endif  // OS_MACOSX
+
+#if defined(OS_WIN)
+  if (BrowserThread::CurrentlyOn(BrowserThread::UI) &&
+      display::Screen::GetScreen())
+    display::Screen::GetScreen()->AddObserver(owner_);
+#endif
 
   // For testing only.
   if (command_line->HasSwitch(switches::kDisableDomainBlockingFor3DAPIs))
@@ -368,6 +482,11 @@ GpuDataManagerImplPrivate::GpuDataManagerImplPrivate(GpuDataManagerImpl* owner)
 GpuDataManagerImplPrivate::~GpuDataManagerImplPrivate() {
 #if defined(OS_MACOSX)
   CGDisplayRemoveReconfigurationCallback(DisplayReconfigCallback, owner_);
+#endif
+
+#if defined(OS_WIN)
+  if (display::Screen::GetScreen())
+    display::Screen::GetScreen()->RemoveObserver(owner_);
 #endif
 }
 
@@ -717,9 +836,19 @@ void GpuDataManagerImplPrivate::UpdateGpuFeatureInfo(
     const base::Optional<gpu::GpuFeatureInfo>&
         gpu_feature_info_for_hardware_gpu) {
   gpu_feature_info_ = gpu_feature_info;
-  // If Vulkan initialization fails, the GPU process can silently fallback to
-  // GL. Update the GPU mode for this case.
 #if !defined(OS_FUCHSIA)
+  // With Vulkan or Metal, GL might be blocked, so make sure we don't fallback
+  // to it later.
+  if (HardwareAccelerationEnabled() &&
+      gpu_feature_info_.status_values[gpu::GPU_FEATURE_TYPE_ACCELERATED_GL] !=
+          gpu::GpuFeatureStatus::kGpuFeatureStatusEnabled) {
+    fallback_modes_.erase(
+        std::remove(fallback_modes_.begin(), fallback_modes_.end(),
+                    gpu::GpuMode::HARDWARE_GL),
+        fallback_modes_.end());
+  }
+  // If Vulkan initialization fails, the GPU process can silently fallback to
+  // GL.
   if (gpu_mode_ == gpu::GpuMode::HARDWARE_VULKAN &&
       gpu_feature_info_.status_values[gpu::GPU_FEATURE_TYPE_VULKAN] !=
           gpu::GpuFeatureStatus::kGpuFeatureStatusEnabled) {
@@ -901,8 +1030,9 @@ void GpuDataManagerImplPrivate::OnGpuBlocked() {
   NotifyGpuInfoUpdate();
 }
 
-void GpuDataManagerImplPrivate::AddLogMessage(
-    int level, const std::string& header, const std::string& message) {
+void GpuDataManagerImplPrivate::AddLogMessage(int level,
+                                              const std::string& header,
+                                              const std::string& message) {
   // Some clients emit many log messages. This has been observed to consume GBs
   // of memory in the wild
   // https://bugs.chromium.org/p/chromium/issues/detail?id=798012. Use a limit
@@ -947,6 +1077,32 @@ void GpuDataManagerImplPrivate::HandleGpuSwitch() {
               host->gpu_service()->GpuSwitched(active_gpu);
           },
           active_gpu_heuristic_));
+}
+
+void GpuDataManagerImplPrivate::OnDisplayAdded(
+    const display::Display& new_display) {
+  base::AutoUnlock unlock(owner_->lock_);
+  // Notify observers in the browser process.
+  ui::GpuSwitchingManager::GetInstance()->NotifyDisplayAdded();
+  // Pass the notification to the GPU process to notify observers there.
+  GpuProcessHost::CallOnIO(GPU_PROCESS_KIND_SANDBOXED, false /* force_create */,
+                           base::BindOnce([](GpuProcessHost* host) {
+                             if (host)
+                               host->gpu_service()->DisplayAdded();
+                           }));
+}
+
+void GpuDataManagerImplPrivate::OnDisplayRemoved(
+    const display::Display& old_display) {
+  base::AutoUnlock unlock(owner_->lock_);
+  // Notify observers in the browser process.
+  ui::GpuSwitchingManager::GetInstance()->NotifyDisplayRemoved();
+  // Pass the notification to the GPU process to notify observers there.
+  GpuProcessHost::CallOnIO(GPU_PROCESS_KIND_SANDBOXED, false /* force_create */,
+                           base::BindOnce([](GpuProcessHost* host) {
+                             if (host)
+                               host->gpu_service()->DisplayRemoved();
+                           }));
 }
 
 bool GpuDataManagerImplPrivate::UpdateActiveGpu(uint32_t vendor_id,

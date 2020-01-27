@@ -5,8 +5,8 @@
 #include "third_party/blink/renderer/modules/payments/skip_to_gpay_utils.h"
 
 #include "base/logging.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_payment_method_data.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_payment_options.h"
-#include "third_party/blink/renderer/modules/payments/payment_method_data.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/json/json_parser.h"
 #include "third_party/blink/renderer/platform/json/json_values.h"

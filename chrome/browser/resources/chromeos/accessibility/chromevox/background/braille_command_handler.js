@@ -218,4 +218,4 @@ BrailleCommandHandler.onEditCommand_ = function(command) {
 
 /** @private {boolean} */
 BrailleCommandHandler.enabled_ = true;
-});  //  goog.scope
+});  // goog.scope

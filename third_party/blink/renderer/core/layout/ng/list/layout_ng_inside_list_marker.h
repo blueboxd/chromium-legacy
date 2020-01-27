@@ -7,6 +7,7 @@
 
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/layout/layout_inline.h"
+#include "third_party/blink/renderer/core/layout/ng/list/list_marker.h"
 
 namespace blink {
 
@@ -16,6 +17,9 @@ class CORE_EXPORT LayoutNGInsideListMarker final : public LayoutInline {
   explicit LayoutNGInsideListMarker(Element*);
 
   const char* GetName() const override { return "LayoutNGInsideListMarker"; }
+
+  const ListMarker& Marker() const { return list_marker_; }
+  ListMarker& Marker() { return list_marker_; }
 
 #if DCHECK_IS_ON()
   void AddChild(LayoutObject* new_child, LayoutObject* before_child) override {
@@ -28,7 +32,12 @@ class CORE_EXPORT LayoutNGInsideListMarker final : public LayoutInline {
  private:
   bool IsOfType(LayoutObjectType) const override;
   PositionWithAffinity PositionForPoint(const PhysicalOffset&) const override;
+
+  ListMarker list_marker_;
 };
+
+DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutNGInsideListMarker,
+                                IsLayoutNGInsideListMarker());
 
 }  // namespace blink
 

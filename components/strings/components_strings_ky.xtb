@@ -290,7 +290,6 @@
 <translation id="2218879909401188352">Учурда <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> сайтындагы чабуулчулар түзмөгүңүзгө зыян келтирүүчү колдонмолорду орнотуп, мобилдик эсебиңизге жашыруун төлөмдөрдү кошуп же жеке маалыматыңызды уурдашы мүмкүн. <ph name="BEGIN_LEARN_MORE_LINK" />Кеңири маалымат<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="2224337661447660594">Интернет жок</translation>
 <translation id="2230458221926704099">Бузулууларды оңдоо үчүн туташуунун абалын <ph name="BEGIN_LINK" />текшериңиз<ph name="END_LINK" /></translation>
-<translation id="22320125457191592">Сизге</translation>
 <translation id="2239100178324503013">Азыр жөнөтүү</translation>
 <translation id="2248949050832152960">WebAuthn функциясын колдонуу</translation>
 <translation id="2250931979407627383">Сол жаккы бурчун жамоо</translation>
@@ -575,7 +574,6 @@
 <translation id="3531780078352352885">Жумуш барактары</translation>
 <translation id="3533328374079021623">5-электрондук каттар кутусу</translation>
 <translation id="3539171420378717834">Бул картанын көчүрмөсү ушул түзмөктө сакталсын</translation>
-<translation id="3553513561058684206">Сизге</translation>
 <translation id="3558573058928565255">Күндүз</translation>
 <translation id="3566021033012934673">Туташууңуз купуя эмес</translation>
 <translation id="3574305903863751447"><ph name="CITY" />, <ph name="STATE" /> <ph name="COUNTRY" /></translation>

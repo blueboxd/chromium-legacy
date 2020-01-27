@@ -291,7 +291,7 @@ class TabGridMediatorTest : public PlatformTest {
 
  protected:
   web::WebTaskEnvironment task_environment_;
-  std::unique_ptr<ios::ChromeBrowserState> browser_state_;
+  std::unique_ptr<ChromeBrowserState> browser_state_;
   std::unique_ptr<TabHelperFakeWebStateListDelegate> web_state_list_delegate_;
   std::unique_ptr<WebStateList> web_state_list_;
   std::unique_ptr<FakeTabRestoreService> tab_restore_service_;

@@ -79,6 +79,7 @@
 <translation id="129553762522093515">Vilivyofungwa hivi karibuni</translation>
 <translation id="1298536327547837046">Uchanganuzi wa Programu Hasidi</translation>
 <translation id="129863573139666797"><ph name="BEGIN_LINK" />Jaribu kufuta vidakuzi kwenye kivinjari chako<ph name="END_LINK" /></translation>
+<translation id="1301324364792935241">Angalia mipangilio yako ya DNS Salama</translation>
 <translation id="1307966114820526988">Vipengele Vilivyoacha Kutumiwa</translation>
 <translation id="1314509827145471431">Unganisha kulia</translation>
 <translation id="1320233736580025032">Prc1 (Bahasha)</translation>
@@ -152,6 +153,7 @@
 <translation id="1569487616857761740">Weka tarehe ya mwisho wa matumizi</translation>
 <translation id="1581080074034554886">CVC</translation>
 <translation id="1583429793053364125">Hitilafu ilitokea wakati wa kuonyesha ukurasa huu wa wavuti.</translation>
+<translation id="1586541204584340881">Viendelezi ambavyo umesakinisha</translation>
 <translation id="1588438908519853928">Ya kawaida</translation>
 <translation id="1592005682883173041">Ufikiaji wa Data Iliyo Katika Kifaa Chako</translation>
 <translation id="1594030484168838125">Chagua</translation>
@@ -290,7 +292,6 @@
 <translation id="2218879909401188352">Wavamizi walio kwenye <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> hivi sasa, wanaweza kusakinisha programu hatari zinazoweza kukiharibu kifaa chako, kuongeza gharama fiche kwenye malipo yako ya simu, au kuiba maelezo yako ya binafsi. <ph name="BEGIN_LEARN_MORE_LINK" />Pata maelezo zaidi<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="2224337661447660594">Hakuna intaneti</translation>
 <translation id="2230458221926704099">Weka muunganisho wako kwa kutumia <ph name="BEGIN_LINK" />programu ya kuchunguza<ph name="END_LINK" /></translation>
-<translation id="22320125457191592">Kwa ajili yako</translation>
 <translation id="2239100178324503013">Tuma sasa</translation>
 <translation id="2248949050832152960">Tumia WebAuthn</translation>
 <translation id="2250931979407627383">Shona ncha ya kushoto</translation>
@@ -363,6 +364,7 @@
 <translation id="2544644783021658368">Hati moja</translation>
 <translation id="254947805923345898">Thamani ya sera si sahihi.</translation>
 <translation id="255002559098805027"><ph name="HOST_NAME" /> imetuma jibu ambalo si sahihi.</translation>
+<translation id="2553853292994445426">Angalia mipangilio yako ya DNS salama. Huenda umeweka mipangilio ya seva ya DNS salama ambayo inasababisha hitilafu ya kuunganisha.</translation>
 <translation id="2556876185419854533">Tendua Kuhariri</translation>
 <translation id="257674075312929031">Kikundi</translation>
 <translation id="2586657967955657006">Ubao wa kunakili</translation>
@@ -481,6 +483,7 @@
 <translation id="3095940652251934233">Statement</translation>
 <translation id="3096100844101284527">Ongeza Anwani ya Mahali pa Kuchukulia Bidhaa</translation>
 <translation id="3105172416063519923">Kitambulisho cha Kipengee:</translation>
+<translation id="3107591622054137333"><ph name="BEGIN_LINK" />Inakagua mipangilio ya DNS salama<ph name="END_LINK" /></translation>
 <translation id="3109728660330352905">Huna idhini ya kuona ukurasa huu.</translation>
 <translation id="3113284927548439113">Awamu ya tatu</translation>
 <translation id="3116158981186517402">Funika kwa tabaka</translation>
@@ -572,7 +575,6 @@
 <translation id="3531780078352352885">Majedwali ya kazi</translation>
 <translation id="3533328374079021623">Kikasha cha barua cha tano</translation>
 <translation id="3539171420378717834">Weka nakala ya kadi hii kwenye kifaa hiki</translation>
-<translation id="3553513561058684206">Kwa Ajili Yako</translation>
 <translation id="3558573058928565255">Mchana</translation>
 <translation id="3566021033012934673">Muunganisho wako si wa faragha</translation>
 <translation id="3574305903863751447"><ph name="CITY" />, <ph name="STATE" /> <ph name="COUNTRY" /></translation>
@@ -783,6 +785,7 @@
 <translation id="4390472908992056574">Pomoni</translation>
 <translation id="4406896451731180161">matokeo ya utafutaji</translation>
 <translation id="4408413947728134509">Vidakuzi <ph name="NUM_COOKIES" /></translation>
+<translation id="4414290883293381923">Umeweka nenosiri lako kwenye tovuti inayotiliwa shaka. Chrome inapendekeza uende kwenye <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, <ph name="WEBSITE_3" /> na tovuti nyingine unakotumia nenosiri hili na ulibadilishe sasa.</translation>
 <translation id="4415426530740016218">Anwani ya Mahali pa Kuchukulia Bidhaa</translation>
 <translation id="4424024547088906515">Seva hii haikuweza kuthibitisha kuwa ni <ph name="DOMAIN" />; cheti chake cha usalama hakiaminiwi na Chrome. Hii inaweza kusababishwa na usanidi usiofaa au mvamizi kuingilia muunganisho wako.</translation>
 <translation id="443121186588148776">Mlango wa nambari ya ufuatiliaji</translation>
@@ -1214,6 +1217,7 @@
 <translation id="6353505687280762741">{COUNT,plural, =0{Hamna}=1{Nenosiri 1 (la <ph name="DOMAIN_LIST" />, limesawazishwa)}=2{Manenosiri 2 (ya <ph name="DOMAIN_LIST" />, yamesawazishwa)}other{Manenosiri # (ya <ph name="DOMAIN_LIST" />, yamesawazishwa)}}</translation>
 <translation id="6358450015545214790">Je, hii inamaanisha nini?</translation>
 <translation id="6361757823711327522">B7</translation>
+<translation id="6364095313648930329"><ph name="BEGIN_LINK" />Kuangalia seva mbadala, kinga mtandao na Imarisha mipangilio ya DNS salama<ph name="END_LINK" /></translation>
 <translation id="6366710531182496394">Bana mara mbili kushoto</translation>
 <translation id="6377268785556383139">Imepata tokeo 1 la '<ph name="SEARCH_TEXT" />'</translation>
 <translation id="6380497234672085559">A0</translation>
@@ -1236,6 +1240,7 @@
 <translation id="6433595998831338502"><ph name="HOST_NAME" /> imekataa kuunganisha.</translation>
 <translation id="6434309073475700221">Tupa</translation>
 <translation id="6440503408713884761">Imepuuzwa</translation>
+<translation id="6443406338865242315">Viendelezi au programu jalizi ulizosakinisha</translation>
 <translation id="6446163441502663861">Kahu (Bahasha)</translation>
 <translation id="6446608382365791566">Ongeza maelezo zaidi</translation>
 <translation id="6447842834002726250">Vidakuzi</translation>
@@ -1345,6 +1350,7 @@
 <translation id="7012363358306927923">China UnionPay</translation>
 <translation id="7016992613359344582">Gharama hizi zinaweza kuwa za mara moja au za kujirudia na huenda zisiwe za moja kwa moja.</translation>
 <translation id="7029809446516969842">Manenosiri</translation>
+<translation id="7031646650991750659">Programu za Google Play ambazo umesakinisha</translation>
 <translation id="7050187094878475250">Ulijaribu kufikia <ph name="DOMAIN" />, lakini seva ikawasilisha cheti ambacho muda wake sahihi ni mrefu sana wa kuweza kuaminika.</translation>
 <translation id="705310974202322020">{NUM_CARDS,plural, =1{Huwezi kuhifadhi kadi hii sasa hivi}other{Huwezi kuhifadhi kadi hizi sasa hivi}}</translation>
 <translation id="7053983685419859001">Zuia</translation>
@@ -1402,6 +1408,7 @@
 <translation id="7319430975418800333">A3</translation>
 <translation id="7320336641823683070">Usaidizi kuhusu Muunganisho</translation>
 <translation id="733354035281974745">Futa akaunti ya ndani ya kifaa</translation>
+<translation id="7333654844024768166">Umeweka nenosiri lako kwenye tovuti inayotiliwa shaka. Chromium inapendekeza uende kwenye <ph name="WEBSITE_1" />,<ph name="WEBSITE_2" />, <ph name="WEBSITE_3" /> na tovuti nyingine unakotumia nenosiri hili na ulibadilishe sasa.</translation>
 <translation id="7334320624316649418">Rudia Kupanga Upya</translation>
 <translation id="7337706099755338005">Haipatikani kwenye mfumo wako.</translation>
 <translation id="733923710415886693">Cheti cha seva hakikufichuliwa kupitia Uwazi wa Cheti.</translation>

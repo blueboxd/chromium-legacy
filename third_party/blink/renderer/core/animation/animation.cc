@@ -216,7 +216,6 @@ Animation::Animation(ExecutionContext* execution_context,
   else
     document_->Timeline().AnimationAttached(this);
 
-  AttachCompositorTimeline();
   probe::DidCreateAnimation(document_, sequence_number_);
 }
 

@@ -19,7 +19,7 @@ namespace payments {
 
 TestPaymentRequest::TestPaymentRequest(
     const payments::WebPaymentRequest& web_payment_request,
-    ios::ChromeBrowserState* browser_state,
+    ChromeBrowserState* browser_state,
     web::WebState* web_state,
     autofill::PersonalDataManager* personal_data_manager,
     id<PaymentRequestUIDelegate> payment_request_ui_delegate)
@@ -36,7 +36,7 @@ TestPaymentRequest::TestPaymentRequest(
 
 TestPaymentRequest::TestPaymentRequest(
     const payments::WebPaymentRequest& web_payment_request,
-    ios::ChromeBrowserState* browser_state,
+    ChromeBrowserState* browser_state,
     web::WebState* web_state,
     autofill::PersonalDataManager* personal_data_manager)
     : TestPaymentRequest(web_payment_request,

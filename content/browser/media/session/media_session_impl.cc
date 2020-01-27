@@ -128,6 +128,10 @@ MediaSessionUserAction MediaSessionActionToUserAction(
       return MediaSessionUserAction::SeekTo;
     case media_session::mojom::MediaSessionAction::kScrubTo:
       return MediaSessionUserAction::ScrubTo;
+    case media_session::mojom::MediaSessionAction::kEnterPictureInPicture:
+      return MediaSessionUserAction::EnterPictureInPicture;
+    case media_session::mojom::MediaSessionAction::kExitPictureInPicture:
+      return MediaSessionUserAction::ExitPictureInPicture;
   }
   NOTREACHED();
   return MediaSessionUserAction::Play;
@@ -1003,6 +1007,34 @@ void MediaSessionImpl::ScrubTo(base::TimeDelta seek_time) {
       media_session::mojom::MediaSessionAction::kSeekTo,
       blink::mojom::MediaSessionActionDetails::NewSeekTo(
           blink::mojom::MediaSessionSeekToDetails::New(seek_time, true)));
+}
+
+void MediaSessionImpl::EnterPictureInPicture() {
+  if (ShouldRouteAction(
+          media_session::mojom::MediaSessionAction::kEnterPictureInPicture)) {
+    DidReceiveAction(
+        media_session::mojom::MediaSessionAction::kEnterPictureInPicture);
+    return;
+  }
+
+  // There should be one and only one player when we enter picture-in-picture.
+  DCHECK_EQ(normal_players_.size(), 1u);
+  normal_players_.begin()->first.observer->OnEnterPictureInPicture(
+      normal_players_.begin()->first.player_id);
+}
+
+void MediaSessionImpl::ExitPictureInPicture() {
+  if (ShouldRouteAction(
+          media_session::mojom::MediaSessionAction::kExitPictureInPicture)) {
+    DidReceiveAction(
+        media_session::mojom::MediaSessionAction::kExitPictureInPicture);
+    return;
+  }
+
+  // There should be one and only one player when we exit picture-in-picture.
+  DCHECK_EQ(normal_players_.size(), 1u);
+  normal_players_.begin()->first.observer->OnExitPictureInPicture(
+      normal_players_.begin()->first.player_id);
 }
 
 void MediaSessionImpl::GetMediaImageBitmap(

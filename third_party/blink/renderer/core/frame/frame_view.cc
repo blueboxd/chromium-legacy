@@ -137,8 +137,8 @@ void FrameView::UpdateViewportIntersection(unsigned flags,
       }
     }
 
+    PhysicalRect mainframe_intersection_rect;
     if (!geometry.UnclippedIntersectionRect().IsEmpty()) {
-      PhysicalRect mainframe_intersection_rect;
       mainframe_intersection_rect = PhysicalRect::EnclosingRect(
           matrix.ProjectQuad(FloatRect(geometry.UnclippedIntersectionRect()))
               .BoundingBox());

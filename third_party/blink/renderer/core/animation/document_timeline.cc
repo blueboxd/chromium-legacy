@@ -30,10 +30,10 @@
 
 #include "third_party/blink/renderer/core/animation/document_timeline.h"
 #include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_document_timeline_options.h"
 #include "third_party/blink/renderer/core/animation/animation.h"
 #include "third_party/blink/renderer/core/animation/animation_clock.h"
 #include "third_party/blink/renderer/core/animation/animation_effect.h"
-#include "third_party/blink/renderer/core/animation/document_timeline_options.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/platform/animation/compositor_animation_timeline.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"

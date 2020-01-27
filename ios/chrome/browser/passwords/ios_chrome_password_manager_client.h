@@ -15,8 +15,9 @@
 #include "components/password_manager/core/browser/password_manager_metrics_recorder.h"
 #include "components/password_manager/core/browser/sync_credentials_filter.h"
 #include "components/prefs/pref_member.h"
-#include "ios/chrome/browser/browser_state/chrome_browser_state_forward.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
+
+class ChromeBrowserState;
 
 namespace autofill {
 class LogManager;
@@ -53,7 +54,7 @@ using password_manager::CredentialLeakType;
 
 @property(readonly, nonatomic) web::WebState* webState;
 
-@property(readonly, nonatomic) ios::ChromeBrowserState* browserState;
+@property(readonly, nonatomic) ChromeBrowserState* browserState;
 
 @property(readonly) password_manager::PasswordManager* passwordManager;
 

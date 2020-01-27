@@ -93,6 +93,10 @@ class ASH_EXPORT ScrollableShelfView : public views::AccessiblePaneView,
 
   void SetTestObserver(TestObserver* test_observer);
 
+  void SetRoundedCornersForShelf(bool show, views::View* ink_drop_host);
+  // Returns whether the ink drop for the |ink_drop_host| needs to be clipped.
+  bool InkDropNeedsClipping(views::View* ink_drop_host);
+
   ShelfView* shelf_view() { return shelf_view_; }
   ShelfContainerView* shelf_container_view() { return shelf_container_view_; }
   ScrollArrowView* left_arrow() { return left_arrow_; }

@@ -49,7 +49,7 @@
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_fragment_item.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_cursor.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_text_fragment.h"
-#include "third_party/blink/renderer/core/layout/ng/list/layout_ng_list_item.h"
+#include "third_party/blink/renderer/core/layout/ng/list/list_marker.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_image.h"
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_inline.h"
@@ -981,8 +981,10 @@ String MarkerTextForListItem(Element* element) {
   if (layout_object) {
     if (layout_object->IsListItem())
       return ToLayoutListItem(layout_object)->MarkerText();
-    if (layout_object->IsLayoutNGListItem())
-      return ToLayoutNGListItem(layout_object)->MarkerTextWithoutSuffix();
+    if (layout_object->IsLayoutNGListItem()) {
+      if (LayoutObject* marker = ToLayoutNGListItem(layout_object)->Marker())
+        return ListMarker::Get(marker)->MarkerTextWithoutSuffix(*marker);
+    }
   }
   return String();
 }

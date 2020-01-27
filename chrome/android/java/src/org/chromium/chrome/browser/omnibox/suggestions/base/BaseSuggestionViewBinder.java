@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.omnibox.suggestions.base;
 
 import android.content.res.ColorStateList;
 import android.content.res.Resources;
-import android.support.annotation.CallSuper;
 import android.support.annotation.ColorRes;
 import android.support.v4.view.ViewCompat;
 import android.support.v7.content.res.AppCompatResources;
@@ -24,12 +23,22 @@ import org.chromium.ui.modelutil.PropertyModelChangeProcessor.ViewBinder;
 
 /**
  * Binds base suggestion view properties.
+ *
+ * This binder should be used by all suggestions that also utilize BaseSuggestionView<T> to
+ * construct the view, and manages shared suggestion properties (such as decorations or theme).
  */
-public class BaseSuggestionViewBinder
-        implements ViewBinder<PropertyModel, BaseSuggestionView, PropertyKey> {
+public final class BaseSuggestionViewBinder<T extends View>
+        implements ViewBinder<PropertyModel, BaseSuggestionView<T>, PropertyKey> {
+    private final ViewBinder<PropertyModel, T, PropertyKey> mContentBinder;
+
+    public BaseSuggestionViewBinder(ViewBinder<PropertyModel, T, PropertyKey> contentBinder) {
+        mContentBinder = contentBinder;
+    }
+
     @Override
-    @CallSuper
-    public void bind(PropertyModel model, BaseSuggestionView view, PropertyKey propertyKey) {
+    public void bind(PropertyModel model, BaseSuggestionView<T> view, PropertyKey propertyKey) {
+        mContentBinder.bind(model, view.getContentView(), propertyKey);
+
         if (BaseSuggestionViewProperties.SUGGESTION_DELEGATE == propertyKey) {
             view.setDelegate(model.get(BaseSuggestionViewProperties.SUGGESTION_DELEGATE));
             updateContentViewPadding(model, view.getDecoratedSuggestionView());

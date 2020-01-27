@@ -34,6 +34,7 @@
 #include "third_party/blink/renderer/platform/geometry/int_size.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
+#include "third_party/blink/renderer/platform/wtf/hash_traits.h"
 #include "third_party/skia/include/core/SkPoint.h"
 #include "ui/gfx/geometry/point3_f.h"
 #include "ui/gfx/geometry/point_f.h"
@@ -70,6 +71,11 @@ class PLATFORM_EXPORT FloatPoint {
   static constexpr FloatPoint Zero() { return FloatPoint(); }
 
   static FloatPoint NarrowPrecision(double x, double y);
+
+  bool IsValid() const {
+    return x_ != -std::numeric_limits<float>::infinity() &&
+           y_ != -std::numeric_limits<float>::infinity();
+  }
 
   constexpr float X() const { return x_; }
   constexpr float Y() const { return y_; }
@@ -139,6 +145,9 @@ class PLATFORM_EXPORT FloatPoint {
 
  private:
   float x_, y_;
+
+  friend struct ::WTF::DefaultHash<blink::FloatSize>;
+  friend struct ::WTF::HashTraits<blink::FloatSize>;
 };
 
 inline FloatPoint& operator+=(FloatPoint& a, const FloatSize& b) {
@@ -247,4 +256,42 @@ PLATFORM_EXPORT WTF::TextStream& operator<<(WTF::TextStream&,
 
 }  // namespace blink
 
-#endif
+namespace WTF {
+
+template <>
+struct DefaultHash<blink::FloatPoint> {
+  STATIC_ONLY(DefaultHash);
+  struct Hash {
+    STATIC_ONLY(Hash);
+    typedef typename IntTypes<sizeof(float)>::UnsignedType Bits;
+    static unsigned GetHash(const blink::FloatPoint& key) {
+      return HashInts(bit_cast<Bits>(key.X()), bit_cast<Bits>(key.Y()));
+    }
+    static bool Equal(const blink::FloatPoint& a, const blink::FloatPoint& b) {
+      return bit_cast<Bits>(a.X()) == bit_cast<Bits>(b.X()) &&
+             bit_cast<Bits>(a.Y()) == bit_cast<Bits>(b.Y());
+    }
+    static const bool safe_to_compare_to_empty_or_deleted = true;
+  };
+};
+
+template <>
+struct HashTraits<blink::FloatPoint> : GenericHashTraits<blink::FloatPoint> {
+  STATIC_ONLY(HashTraits);
+  static const bool kEmptyValueIsZero = false;
+  static blink::FloatPoint EmptyValue() {
+    return blink::FloatPoint(std::numeric_limits<float>::infinity(),
+                             std::numeric_limits<float>::infinity());
+  }
+  static void ConstructDeletedValue(blink::FloatPoint& slot, bool) {
+    slot = blink::FloatPoint(-std::numeric_limits<float>::infinity(),
+                             -std::numeric_limits<float>::infinity());
+  }
+  static bool IsDeletedValue(const blink::FloatPoint& value) {
+    return !value.IsValid();
+  }
+};
+
+}  // namespace WTF
+
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_GEOMETRY_FLOAT_POINT_H_

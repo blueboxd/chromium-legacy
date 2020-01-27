@@ -1081,7 +1081,10 @@ void RenderWidgetHostViewAndroid::FrameTokenChangedForSynchronousCompositor(
     uint32_t frame_token,
     const gfx::ScrollOffset& root_scroll_offset) {
   if (host() && frame_token) {
-    host()->DidProcessFrame(frame_token);
+    if (!using_viz_for_webview_) {
+      // For viz it's reported through FrameSinkManager.
+      host()->DidProcessFrame(frame_token);
+    }
 
     // DevTools ScreenCast support for Android WebView. Don't call this if
     // we're currently in SynchronousCopyContents, as this can lead to

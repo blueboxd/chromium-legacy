@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "android_webview/browser/network_service/aw_web_resource_request.h"
 #include "components/safe_browsing/content/base_blocking_page.h"
 #include "components/security_interstitials/core/base_safe_browsing_error_ui.h"
 
@@ -33,7 +34,10 @@ class AwSafeBrowsingBlockingPage : public safe_browsing::BaseBlockingPage {
       AwSafeBrowsingUIManager* ui_manager,
       content::WebContents* web_contents,
       const GURL& main_frame_url,
-      const UnsafeResource& unsafe_resource);
+      const UnsafeResource& unsafe_resource,
+      std::unique_ptr<AwWebResourceRequest> resource_request);
+
+  ~AwSafeBrowsingBlockingPage() override;
 
  protected:
   // Used to specify which BaseSafeBrowsingErrorUI to instantiate, and
@@ -53,7 +57,8 @@ class AwSafeBrowsingBlockingPage : public safe_browsing::BaseBlockingPage {
           security_interstitials::SecurityInterstitialControllerClient>
           controller_client,
       const BaseSafeBrowsingErrorUI::SBErrorDisplayOptions& display_options,
-      ErrorUiType errorUiType);
+      ErrorUiType errorUiType,
+      std::unique_ptr<AwWebResourceRequest> resource_request);
 
   // Called when the interstitial is going away. If there is a
   // pending threat details object, we look at the user's
@@ -63,9 +68,15 @@ class AwSafeBrowsingBlockingPage : public safe_browsing::BaseBlockingPage {
                            bool did_proceed,
                            int num_visits) override;
 
+  void OnInterstitialClosing() override;
+
   // Whether ThreatDetails collection is in progress as part of this
   // interstitial.
   bool threat_details_in_progress_;
+
+  // Holds a copy of the resource request that triggered this blocking page,
+  // only used with committed interstitials.
+  std::unique_ptr<AwWebResourceRequest> resource_request_;
 };
 
 }  // namespace android_webview

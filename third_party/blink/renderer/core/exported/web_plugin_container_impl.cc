@@ -214,7 +214,8 @@ void WebPluginContainerImpl::InvalidateRect(const IntRect& rect) {
   layout_object->InvalidatePaintRectangle(PhysicalRect(dirty_rect));
 }
 
-void WebPluginContainerImpl::SetFocused(bool focused, WebFocusType focus_type) {
+void WebPluginContainerImpl::SetFocused(bool focused,
+                                        mojom::blink::FocusType focus_type) {
   web_plugin_->UpdateFocus(focused, focus_type);
 }
 

@@ -23,7 +23,7 @@
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_registry.h"
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
 #include "third_party/blink/public/mojom/frame/user_activation_update_types.mojom.h"
-#include "third_party/blink/public/platform/web_focus_type.h"
+#include "third_party/blink/public/mojom/input/focus_type.mojom-forward.h"
 #include "third_party/blink/public/platform/web_insecure_request_policy.h"
 #include "third_party/blink/public/web/web_remote_frame.h"
 #include "third_party/blink/public/web/web_remote_frame_client.h"
@@ -32,7 +32,6 @@
 namespace blink {
 struct FramePolicy;
 struct WebRect;
-struct WebScrollIntoViewParams;
 }
 
 namespace content {
@@ -192,7 +191,7 @@ class CONTENT_EXPORT RenderFrameProxy : public IPC::Listener,
   void UpdateRenderThrottlingStatus(bool is_throttled,
                                     bool subtree_throttled) override;
   void DidChangeOpener(blink::WebFrame* opener) override;
-  void AdvanceFocus(blink::WebFocusType type,
+  void AdvanceFocus(blink::mojom::FocusType type,
                     blink::WebLocalFrame* source) override;
   base::UnguessableToken GetDevToolsFrameToken() override;
   uint32_t Print(const blink::WebRect& rect, cc::PaintCanvas* canvas) override;
@@ -239,8 +238,6 @@ class CONTENT_EXPORT RenderFrameProxy : public IPC::Listener,
   void OnEnforceInsecureRequestPolicy(blink::WebInsecureRequestPolicy policy);
   void OnSetFrameOwnerProperties(const FrameOwnerProperties& properties);
   void OnTransferUserActivationFrom(int32_t source_routing_id);
-  void OnScrollRectToVisible(const gfx::Rect& rect_to_scroll,
-                             const blink::WebScrollIntoViewParams& params);
   void OnDidUpdateVisualProperties(const cc::RenderFrameMetadata& metadata);
   void OnEnableAutoResize(const gfx::Size& min_size, const gfx::Size& max_size);
   void OnDisableAutoResize();

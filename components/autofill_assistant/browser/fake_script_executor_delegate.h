@@ -11,7 +11,6 @@
 #include <string>
 #include <vector>
 
-#include "components/autofill_assistant/browser/client_memory.h"
 #include "components/autofill_assistant/browser/client_settings.h"
 #include "components/autofill_assistant/browser/script_executor_delegate.h"
 #include "components/autofill_assistant/browser/trigger_context.h"
@@ -30,7 +29,6 @@ class FakeScriptExecutorDelegate : public ScriptExecutorDelegate {
   const GURL& GetDeeplinkURL() override;
   Service* GetService() override;
   WebController* GetWebController() override;
-  ClientMemory* GetClientMemory() override;
   TriggerContext* GetTriggerContext() override;
   autofill::PersonalDataManager* GetPersonalDataManager() override;
   WebsiteLoginFetcher* GetWebsiteLoginFetcher() override;
@@ -120,7 +118,6 @@ class FakeScriptExecutorDelegate : public ScriptExecutorDelegate {
   GURL current_url_;
   Service* service_ = nullptr;
   WebController* web_controller_ = nullptr;
-  ClientMemory memory_;
   std::unique_ptr<TriggerContext> trigger_context_;
   std::vector<AutofillAssistantState> state_history_;
   std::string status_message_;

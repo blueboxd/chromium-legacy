@@ -9,9 +9,7 @@
 #include <utility>
 
 #include "base/logging.h"
-#include "base/test/bind_test_util.h"
 #include "base/test/task_environment.h"
-#include "base/test/test_timeouts.h"
 #include "fuchsia/base/fit_adapter.h"
 #include "fuchsia/fidl/chromium/cast/cpp/fidl.h"
 #include "fuchsia/runners/cast/application_controller_impl.h"
@@ -36,9 +34,7 @@ class ApplicationControllerImplTest
       public testing::Test {
  public:
   ApplicationControllerImplTest()
-      : run_timeout_(TestTimeouts::action_timeout(),
-                     base::MakeExpectedNotRunClosure(FROM_HERE)),
-        application_receiver_binding_(this),
+      : application_receiver_binding_(this),
         application_(&frame_, application_receiver_binding_.NewBinding()) {
     base::RunLoop run_loop;
     wait_for_controller_callback_ = run_loop.QuitClosure();
@@ -58,7 +54,6 @@ class ApplicationControllerImplTest
     std::move(wait_for_controller_callback_).Run();
   }
 
-  const base::RunLoop::ScopedRunTimeoutForTest run_timeout_;
   base::test::SingleThreadTaskEnvironment task_environment_{
       base::test::SingleThreadTaskEnvironment::MainThreadType::IO};
 

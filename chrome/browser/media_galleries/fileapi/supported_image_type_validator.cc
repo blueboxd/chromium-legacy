@@ -18,7 +18,7 @@
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "base/threading/scoped_blocking_call.h"
-#include "chrome/browser/image_decoder.h"
+#include "chrome/browser/image_decoder/image_decoder.h"
 #include "content/public/browser/browser_thread.h"
 
 using content::BrowserThread;

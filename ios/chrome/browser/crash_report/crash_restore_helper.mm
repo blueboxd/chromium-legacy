@@ -49,7 +49,7 @@
 // Deletes the session file for the given browser state, optionally backing it
 // up beforehand to |backupFile| if it is not nil.  This method returns YES in
 // case of success, NO otherwise.
-- (BOOL)deleteSessionForBrowserState:(ios::ChromeBrowserState*)browserState
+- (BOOL)deleteSessionForBrowserState:(ChromeBrowserState*)browserState
                           backupFile:(NSString*)file;
 // Returns the path where the sessions for the main browser state are backed up.
 - (NSString*)sessionBackupPath;
@@ -204,7 +204,7 @@ int SessionCrashedInfoBarDelegate::GetIconId() const {
 }  // namespace
 
 @implementation CrashRestoreHelper {
-  ios::ChromeBrowserState* _browserState;
+  ChromeBrowserState* _browserState;
   BOOL _needRestoration;
   std::unique_ptr<InfoBarManagerObserverBridge> _infoBarBridge;
   // Object that will handle session restoration.
@@ -215,7 +215,7 @@ int SessionCrashedInfoBarDelegate::GetIconId() const {
   BOOL _sessionRestored;
 }
 
-- (id)initWithBrowserState:(ios::ChromeBrowserState*)browserState {
+- (id)initWithBrowserState:(ChromeBrowserState*)browserState {
   if (self = [super init]) {
     _browserState = browserState;
   }
@@ -242,7 +242,7 @@ int SessionCrashedInfoBarDelegate::GetIconId() const {
   _infoBarBridge.reset(new InfoBarManagerObserverBridge(infoBarManager, self));
 }
 
-- (BOOL)deleteSessionForBrowserState:(ios::ChromeBrowserState*)browserState
+- (BOOL)deleteSessionForBrowserState:(ChromeBrowserState*)browserState
                           backupFile:(NSString*)file {
   NSString* stashPath =
       base::SysUTF8ToNSString(browserState->GetStatePath().value());
@@ -290,7 +290,7 @@ int SessionCrashedInfoBarDelegate::GetIconId() const {
 - (void)moveAsideSessionInformation {
   // This may be the first time that the OTR browser state is being accessed, so
   // ensure that the OTR ChromeBrowserState is created first.
-  ios::ChromeBrowserState* otrBrowserState =
+  ChromeBrowserState* otrBrowserState =
       _browserState->GetOffTheRecordChromeBrowserState();
   [self deleteSessionForBrowserState:otrBrowserState backupFile:nil];
   _needRestoration =

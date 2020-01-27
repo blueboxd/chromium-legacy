@@ -134,7 +134,6 @@ template("js_compile_checked") {
         "--jscomp_error=missingProperties",
         "--jscomp_error=undefinedVars",
         "--jscomp_error=accessControls",
-        "--jscomp_error=ambiguousFunctionDecl",
         "--jscomp_error=constantProperty",
         "--jscomp_error=deprecated",
         "--jscomp_error=externsValidation",

@@ -30,6 +30,7 @@
 
 #include "third_party/blink/renderer/core/html/forms/multiple_fields_temporal_input_type_view.h"
 
+#include "third_party/blink/public/mojom/input/focus_type.mojom-blink.h"
 #include "third_party/blink/renderer/core/css/style_change_reason.h"
 #include "third_party/blink/renderer/core/css_value_keywords.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -176,7 +177,7 @@ inline bool MultipleFieldsTemporalInputTypeView::ContainsFocusedShadowElement()
 }
 
 void MultipleFieldsTemporalInputTypeView::DidBlurFromControl(
-    WebFocusType focus_type) {
+    mojom::blink::FocusType focus_type) {
   // We don't need to call blur(). This function is called when control
   // lost focus.
 
@@ -190,7 +191,7 @@ void MultipleFieldsTemporalInputTypeView::DidBlurFromControl(
 }
 
 void MultipleFieldsTemporalInputTypeView::DidFocusOnControl(
-    WebFocusType focus_type) {
+    mojom::blink::FocusType focus_type) {
   // We don't need to call focus(). This function is called when control
   // got focus.
 
@@ -444,16 +445,18 @@ void MultipleFieldsTemporalInputTypeView::HandleClickEvent(MouseEvent& event) {
 
 void MultipleFieldsTemporalInputTypeView::HandleFocusInEvent(
     Element* old_focused_element,
-    WebFocusType type) {
+    mojom::blink::FocusType type) {
   DateTimeEditElement* edit = GetDateTimeEditElement();
   if (!edit || is_destroying_shadow_subtree_)
     return;
-  if (type == kWebFocusTypeBackward) {
+  if (type == mojom::blink::FocusType::kBackward) {
     if (GetElement().GetDocument().GetPage())
       GetElement().GetDocument().GetPage()->GetFocusController().AdvanceFocus(
           type);
-  } else if (type == kWebFocusTypeNone || type == kWebFocusTypeMouse ||
-             type == kWebFocusTypePage || type == kWebFocusTypeAccessKey) {
+  } else if (type == mojom::blink::FocusType::kNone ||
+             type == mojom::blink::FocusType::kMouse ||
+             type == mojom::blink::FocusType::kPage ||
+             type == mojom::blink::FocusType::kAccessKey) {
     edit->FocusByOwner(old_focused_element);
   } else {
     edit->FocusByOwner();

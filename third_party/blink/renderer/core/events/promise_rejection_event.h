@@ -9,12 +9,13 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
-#include "third_party/blink/renderer/core/events/promise_rejection_event_init.h"
 #include "third_party/blink/renderer/platform/bindings/dom_wrapper_world.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/bindings/trace_wrapper_v8_reference.h"
 
 namespace blink {
+
+class PromiseRejectionEventInit;
 
 class CORE_EXPORT PromiseRejectionEvent final : public Event {
   DEFINE_WRAPPERTYPEINFO();

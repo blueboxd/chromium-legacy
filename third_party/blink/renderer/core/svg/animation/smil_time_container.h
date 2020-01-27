@@ -107,10 +107,12 @@ class SMILTimeContainer final : public GarbageCollected<SMILTimeContainer> {
   void AnimationPolicyTimerFired(TimerBase*);
   ImageAnimationPolicy AnimationPolicy() const;
   bool HandleAnimationPolicy(AnimationPolicyOnceAction);
-  void UpdateAnimationsAndScheduleFrameIfNeeded(SMILTime elapsed);
+  class TimingUpdate;
+  void UpdateAnimationsAndScheduleFrameIfNeeded(TimingUpdate&);
+  void PrepareSeek(TimingUpdate&);
   void ResetIntervals();
-  void UpdateIntervals(SMILTime presentation_time);
-  void UpdateAnimationTimings(SMILTime elapsed);
+  void UpdateIntervals(TimingUpdate&);
+  void UpdateTimedElements(TimingUpdate&);
   void ApplyTimedEffects(SMILTime elapsed);
   SMILTime NextProgressTime(SMILTime presentation_time) const;
   void ServiceOnNextFrame();

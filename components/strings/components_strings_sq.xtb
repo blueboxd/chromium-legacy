@@ -290,7 +290,6 @@
 <translation id="2218879909401188352">Sulmuesit aktualisht në <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> mund të instalojnë aplikacione të rrezikshme që e dëmtojnë pajisjen tënde, shtojnë tarifa të fshehura në faturën tënde të celularit ose vjedhin informacionet e tua personale. <ph name="BEGIN_LEARN_MORE_LINK" />Mëso më shumë<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="2224337661447660594">Nuk ka internet</translation>
 <translation id="2230458221926704099">Rregullo lidhjen duke përdorur <ph name="BEGIN_LINK" />aplikacionin e diagnostikimit<ph name="END_LINK" /></translation>
-<translation id="22320125457191592">Për ty</translation>
 <translation id="2239100178324503013">Dërgo tani</translation>
 <translation id="2248949050832152960">Përdor WebAuthn</translation>
 <translation id="2250931979407627383">Qepje anësore majtas</translation>
@@ -566,7 +565,6 @@
 <translation id="3531780078352352885">Fletët e punës</translation>
 <translation id="3533328374079021623">Kutia postare 5</translation>
 <translation id="3539171420378717834">Mbaj një kopje të kësaj karte në këtë pajisje</translation>
-<translation id="3553513561058684206">Për ty</translation>
 <translation id="3558573058928565255">Dita dhe ora</translation>
 <translation id="3566021033012934673">Lidhja jote nuk është private.</translation>
 <translation id="3574305903863751447"><ph name="CITY" />, <ph name="STATE" /> <ph name="COUNTRY" /></translation>

@@ -8,6 +8,7 @@
 
 #include "build/build_config.h"
 #include "third_party/blink/public/common/input/web_input_event.h"
+#include "third_party/blink/public/mojom/input/focus_type.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/editing/editing_utilities.h"
@@ -155,7 +156,7 @@ bool KeyboardEventManager::HandleAccessKey(const WebKeyboardEvent& evt) {
   if (!elem)
     return false;
   elem->focus(FocusParams(SelectionBehaviorOnFocus::kReset,
-                          kWebFocusTypeAccessKey, nullptr));
+                          mojom::blink::FocusType::kAccessKey, nullptr));
   elem->AccessKeyAction(false);
   return true;
 }
@@ -472,8 +473,9 @@ void KeyboardEventManager::DefaultTabEventHandler(KeyboardEvent* event) {
   if (!page->TabKeyCyclesThroughElements())
     return;
 
-  WebFocusType focus_type =
-      event->shiftKey() ? kWebFocusTypeBackward : kWebFocusTypeForward;
+  mojom::blink::FocusType focus_type = event->shiftKey()
+                                           ? mojom::blink::FocusType::kBackward
+                                           : mojom::blink::FocusType::kForward;
 
   // Tabs can be used in design mode editing.
   if (frame_->GetDocument()->InDesignMode())

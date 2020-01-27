@@ -29,7 +29,7 @@ class FakeChromeIdentityService : public ChromeIdentityService {
       UIViewController* viewController,
       BOOL animated) override;
   ChromeIdentityInteractionManager* CreateChromeIdentityInteractionManager(
-      ios::ChromeBrowserState* browser_state,
+      ChromeBrowserState* browser_state,
       id<ChromeIdentityInteractionManagerDelegate> delegate) const override;
 
   bool IsValidIdentity(ChromeIdentity* identity) const override;

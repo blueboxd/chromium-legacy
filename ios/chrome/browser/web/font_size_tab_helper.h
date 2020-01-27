@@ -44,6 +44,9 @@ class FontSizeTabHelper : public web::WebStateObserver,
   // the min zoom level.).
   bool CanUserZoomOut() const;
 
+  // Remove any stored zoom levels from the provided |PrefService|.
+  static void ClearUserZoomPrefs(PrefService* pref_service);
+
   static void RegisterBrowserStatePrefs(
       user_prefs::PrefRegistrySyncable* registry);
 

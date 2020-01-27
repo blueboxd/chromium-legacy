@@ -5,8 +5,9 @@
 #ifndef IOS_CHROME_BROWSER_UI_CONTENT_SUGGESTIONS_CONTENT_SUGGESTIONS_COORDINATOR_H_
 #define IOS_CHROME_BROWSER_UI_CONTENT_SUGGESTIONS_CONTENT_SUGGESTIONS_COORDINATOR_H_
 
-#include "ios/chrome/browser/browser_state/chrome_browser_state_forward.h"
 #import "ios/chrome/browser/ui/coordinators/chrome_coordinator.h"
+
+class ChromeBrowserState;
 
 namespace web {
 class WebState;
@@ -25,7 +26,7 @@ class WebState;
 @interface ContentSuggestionsCoordinator : ChromeCoordinator
 
 // BrowserState used to create the ContentSuggestionFactory.
-@property(nonatomic, assign) ios::ChromeBrowserState* browserState;
+@property(nonatomic, assign) ChromeBrowserState* browserState;
 // URLLoader used to open pages.
 @property(nonatomic, assign) web::WebState* webState;
 @property(nonatomic, weak) id<NewTabPageControllerDelegate> toolbarDelegate;

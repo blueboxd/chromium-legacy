@@ -26,3 +26,9 @@ http/tests/inspector-protocol/fetch/fetch-oopif.js [ Skip ]
 
 # JS Self-Profiling currently requires site isolation.
 crbug.com/956688 http/tests/js-self-profiling/* [ Skip ]
+
+# With site isolation turned off, the navigations done in this file aren't
+# going through the browser process, causing this to fail. In the future
+# we will remove the non-browser navigation code path (by relanding
+# https://crrev.com/c/1626417) and this test will pass.
+crbug.com/981819 security/about-blank-include-file.html [ Failure ]

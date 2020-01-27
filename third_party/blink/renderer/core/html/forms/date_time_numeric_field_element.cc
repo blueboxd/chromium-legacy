@@ -94,8 +94,9 @@ int DateTimeNumericFieldElement::DefaultValueForStepUp() const {
   return range_.minimum;
 }
 
-void DateTimeNumericFieldElement::SetFocused(bool value,
-                                             WebFocusType focus_type) {
+void DateTimeNumericFieldElement::SetFocused(
+    bool value,
+    mojom::blink::FocusType focus_type) {
   if (!value) {
     int type_ahead_value = TypeAheadValue();
     type_ahead_buffer_.Clear();

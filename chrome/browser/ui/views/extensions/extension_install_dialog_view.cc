@@ -37,6 +37,7 @@
 #include "ui/gfx/geometry/insets.h"
 #include "ui/views/border.h"
 #include "ui/views/bubble/bubble_frame_view.h"
+#include "ui/views/controls/button/checkbox.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/link.h"
@@ -200,7 +201,8 @@ ExtensionInstallDialogView::ExtensionInstallDialogView(
       title_(prompt_->GetDialogTitle()),
       scroll_view_(nullptr),
       handled_result_(false),
-      install_button_enabled_(false) {
+      install_button_enabled_(false),
+      withhold_permissions_checkbox_(nullptr) {
   DCHECK(prompt_->extension());
 
   int buttons = prompt_->GetDialogButtons();
@@ -215,7 +217,12 @@ ExtensionInstallDialogView::ExtensionInstallDialogView(
     store_link->set_callback(base::BindRepeating(
         &ExtensionInstallDialogView::LinkClicked, base::Unretained(this)));
     DialogDelegate::SetExtraView(std::move(store_link));
+  } else if (prompt_->ShouldDisplayWithholdingUI()) {
+    withhold_permissions_checkbox_ =
+        DialogDelegate::SetExtraView(std::make_unique<views::Checkbox>(
+            l10n_util::GetStringUTF16(IDS_EXTENSION_WITHHOLD_PERMISSIONS)));
   }
+
   DialogDelegate::set_button_label(ui::DIALOG_BUTTON_OK,
                                    prompt_->GetAcceptButtonLabel());
   DialogDelegate::set_button_label(ui::DIALOG_BUTTON_CANCEL,
@@ -361,7 +368,14 @@ bool ExtensionInstallDialogView::Accept() {
 
   handled_result_ = true;
   UpdateInstallResultHistogram(true);
-  std::move(done_callback_).Run(ExtensionInstallPrompt::Result::ACCEPTED);
+  // If the prompt had a checkbox element and it was checked we send that along
+  // as the result, otherwise we just send a normal accepted result.
+  auto result =
+      withhold_permissions_checkbox_ &&
+              withhold_permissions_checkbox_->GetChecked()
+          ? ExtensionInstallPrompt::Result::ACCEPTED_AND_OPTION_CHECKED
+          : ExtensionInstallPrompt::Result::ACCEPTED;
+  std::move(done_callback_).Run(result);
   return true;
 }
 

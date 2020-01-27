@@ -143,7 +143,6 @@ android_resources("chrome_app_java_resources") {
     "//chrome/browser/settings:java_resources",
     "//chrome/browser/ui/android/appmenu:java_resources",
     "//chrome/browser/ui/android/strings:ui_strings_grd",
-    "//chrome/browser/ui/android/widget:ui_widget_java_resources",
     "//chrome/browser/ui/messages/android:java_resources",
     "//components/app_modal/android:java_resources",
     "//components/autofill/android:autofill_java_resources",
@@ -213,6 +212,7 @@ android_library("chrome_public_java") {
 
 android_library("chrome_java") {
   deps = [
+    ":chrome_android_java_switches",
     ":chrome_app_java_resources",
     ":chrome_download_java_resources",
     ":chrome_public_android_manifest",
@@ -220,7 +220,6 @@ android_library("chrome_java") {
     ":chrome_public_java",
     ":chrome_version_constants",
     ":partner_location_descriptor_proto_java",
-    ":thumbnail_cache_entry_proto_java",
     ":update_proto_java",
     ":usage_stats_proto_java",
     "$google_play_services_package:google_play_services_auth_base_java",
@@ -249,16 +248,17 @@ android_library("chrome_java") {
     "//chrome/browser/android/thin_webview:java",
     "//chrome/browser/download/android:java",
     "//chrome/browser/flags:java",
+    "//chrome/browser/geolocation/android:java",
     "//chrome/browser/image_fetcher:java",
     "//chrome/browser/notifications/chime/android:java",
     "//chrome/browser/preferences:java",
     "//chrome/browser/settings:java",
     "//chrome/browser/share/android:java_resources",
     "//chrome/browser/share/android:screenshot_java",
+    "//chrome/browser/thumbnail:java",
     "//chrome/browser/ui/android/appmenu:factory_java",
     "//chrome/browser/ui/android/appmenu:java",
     "//chrome/browser/ui/android/native_page:java",
-    "//chrome/browser/ui/android/widget:java",
     "//chrome/browser/ui/messages/android:java",
     "//chrome/browser/util:java",
     "//chrome/lib/lifecycle/public/android:java",
@@ -380,7 +380,6 @@ android_library("chrome_java") {
   srcjar_deps = [
     ":chrome_android_java_enums_srcjar",
     ":chrome_android_java_google_api_keys_srcjar",
-    ":chrome_android_java_switches_srcjar",
     ":chrome_product_config",
     ":photo_picker_aidl",
     ":resource_id_javagen",
@@ -405,6 +404,7 @@ android_library("chrome_java") {
     "//chrome/browser/supervised_user/supervised_user_error_page:enums_srcjar",
     "//chrome/browser/ui:cookie_controls_controller_status_javagen",
     "//chrome/browser/ui:tab_model_enums_java",
+    "//chrome/browser/updates/announcement_notification:jni_enums",
     "//components/autofill_assistant/browser:autofill_assistant_enums_java",
     "//components/browsing_data/core:browsing_data_utils_java",
     "//components/browsing_data/core:clear_browsing_data_tab_java",
@@ -525,6 +525,7 @@ group("jni_headers") {
     "//chrome/android/public/profiles:jni_headers",
     "//chrome/browser/download/android:jni_headers",
     "//chrome/browser/flags:jni_headers",
+    "//chrome/browser/geolocation/android:jni_headers",
     "//chrome/browser/image_fetcher:jni_headers",
     "//chrome/browser/preferences:jni_headers",
     "//chrome/browser/touch_to_fill/android:jni_headers",
@@ -591,14 +592,13 @@ java_cpp_strings("chrome_android_java_switches_srcjar") {
   template = "//chrome/android/java_templates/ChromeSwitches.java.tmpl"
 }
 
+android_library("chrome_android_java_switches") {
+  srcjar_deps = [ ":chrome_android_java_switches_srcjar" ]
+}
+
 proto_java_library("partner_location_descriptor_proto_java") {
   proto_path = "java/src/org/chromium/chrome/browser/omnibox/geo"
   sources = [ "$proto_path/partner_location_descriptor.proto" ]
-}
-
-proto_java_library("thumbnail_cache_entry_proto_java") {
-  proto_path = "java/src/org/chromium/chrome/browser/widget"
-  sources = [ "$proto_path/thumbnail_cache_entry.proto" ]
 }
 
 proto_java_library("update_proto_java") {
@@ -646,12 +646,13 @@ junit_binary("chrome_junit_tests") {
     "//chrome/android/webapk/test:junit_test_support",
     "//chrome/browser/image_fetcher:java",
     "//chrome/browser/preferences:preferences_junit_tests",
+    "//chrome/browser/thumbnail:java",
     "//chrome/browser/ui/android/appmenu/internal:junit",
-    "//chrome/browser/ui/android/widget:ui_widget_junit_tests",
     "//chrome/browser/ui/messages/android:junit",
     "//chrome/test/android:chrome_java_test_support",
     "//components/background_task_scheduler:background_task_scheduler_java",
     "//components/bookmarks/common/android:bookmarks_java",
+    "//components/browser_ui/widget/android:junit",
     "//components/invalidation/impl:java",
     "//components/minidump_uploader:minidump_uploader_java",
     "//components/module_installer/android:module_installer_java",
@@ -737,6 +738,7 @@ android_library("chrome_test_java") {
 
   deps = [
     ":browser_java_test_support",
+    ":chrome_android_java_switches",
     ":chrome_app_java_resources",
     ":chrome_test_util_java",
     ":partner_location_descriptor_proto_java",
@@ -766,10 +768,10 @@ android_library("chrome_test_java") {
     "//chrome/browser/flags:java",
     "//chrome/browser/preferences:java",
     "//chrome/browser/settings:java",
+    "//chrome/browser/thumbnail:java",
+    "//chrome/browser/thumbnail:javatests",
     "//chrome/browser/ui/android/appmenu:java",
     "//chrome/browser/ui/android/appmenu:test_support_java",
-    "//chrome/browser/ui/android/widget:java",
-    "//chrome/browser/ui/android/widget:test_support_java",
     "//chrome/browser/ui/messages/android:java",
     "//chrome/browser/util:java",
     "//chrome/lib/lifecycle/public/android:java",
@@ -786,6 +788,7 @@ android_library("chrome_test_java") {
     "//components/browser_ui/styles/android:java",
     "//components/browser_ui/widget/android:java",
     "//components/browser_ui/widget/android:javatests",
+    "//components/browser_ui/widget/android:test_support_java",
     "//components/crash/android:java",
     "//components/dom_distiller/core/android:dom_distiller_core_java",
     "//components/download/internal/background_service:internal_java",
@@ -1480,6 +1483,7 @@ java_group("chrome_public_base_module_java_for_test") {
     "//chrome/android/features/autofill_assistant:autofill_assistant_java_test_support",
     "//chrome/browser/android/metrics:ukm_java_test_support",
     "//chrome/browser/subresource_filter:subresource_filter_java_test_support",
+    "//chrome/browser/thumbnail:thumbnail_java_test_support",
     "//components/minidump_uploader:minidump_uploader_java",
     "//content/public/test/android:content_java_test_support",
   ]
@@ -1544,6 +1548,7 @@ static_library("browser_test_support") {
   deps = [
     ":test_support_jni_headers",
     "//chrome/browser",
+    "//chrome/browser/thumbnail:test_support",
     "//components/offline_pages/core/background:test_support",
     "//content/test:test_support",
   ]
@@ -1994,7 +1999,6 @@ chrome_test_apk_tmpl("chrome_public_test_apk") {
     "//chrome/browser/subresource_filter:subresource_filter_javatests",
     "//chrome/browser/touch_to_fill/android:test_java",
     "//chrome/browser/ui/android/appmenu/internal:javatests",
-    "//chrome/browser/ui/android/widget:ui_widget_java_tests",
     "//chrome/browser/ui/messages/android:javatests",
     "//chrome/browser/util:javatests",
   ]
@@ -2535,6 +2539,7 @@ generate_jni("chrome_jni_headers") {
     "java/src/org/chromium/chrome/browser/WarmupManager.java",
     "java/src/org/chromium/chrome/browser/WebContentsFactory.java",
     "java/src/org/chromium/chrome/browser/accessibility/FontSizePrefs.java",
+    "java/src/org/chromium/chrome/browser/announcement/AnnouncementNotificationManager.java",
     "java/src/org/chromium/chrome/browser/autofill/AutofillExpirationDateFixFlowBridge.java",
     "java/src/org/chromium/chrome/browser/autofill/AutofillLogger.java",
     "java/src/org/chromium/chrome/browser/autofill/AutofillNameFixFlowBridge.java",
@@ -2598,8 +2603,6 @@ generate_jni("chrome_jni_headers") {
     "java/src/org/chromium/chrome/browser/download/DownloadItem.java",
     "java/src/org/chromium/chrome/browser/download/DownloadLocationDialogBridge.java",
     "java/src/org/chromium/chrome/browser/download/DownloadManagerService.java",
-    "java/src/org/chromium/chrome/browser/download/DownloadMediaData.java",
-    "java/src/org/chromium/chrome/browser/download/DownloadMediaParserBridge.java",
     "java/src/org/chromium/chrome/browser/download/DownloadUtils.java",
     "java/src/org/chromium/chrome/browser/download/home/rename/RenameUtils.java",
     "java/src/org/chromium/chrome/browser/download/items/OfflineContentAggregatorFactory.java",
@@ -2675,6 +2678,7 @@ generate_jni("chrome_jni_headers") {
     "java/src/org/chromium/chrome/browser/metrics/UmaUtils.java",
     "java/src/org/chromium/chrome/browser/metrics/VariationsSession.java",
     "java/src/org/chromium/chrome/browser/mojo/ChromeInterfaceRegistrar.java",
+    "java/src/org/chromium/chrome/browser/navigation_predictor/NavigationPredictorBridge.java",
     "java/src/org/chromium/chrome/browser/net/nqe/NetworkQualityProvider.java",
     "java/src/org/chromium/chrome/browser/net/spdyproxy/DataReductionProxySettings.java",
     "java/src/org/chromium/chrome/browser/notifications/ActionInfo.java",
@@ -2756,7 +2760,6 @@ generate_jni("chrome_jni_headers") {
     "java/src/org/chromium/chrome/browser/send_tab_to_self/SendTabToSelfInfoBar.java",
     "java/src/org/chromium/chrome/browser/send_tab_to_self/SendTabToSelfModelObserverBridge.java",
     "java/src/org/chromium/chrome/browser/send_tab_to_self/TargetDeviceInfo.java",
-    "java/src/org/chromium/chrome/browser/settings/LocationSettings.java",
     "java/src/org/chromium/chrome/browser/settings/NfcSystemLevelSetting.java",
     "java/src/org/chromium/chrome/browser/settings/about/AboutSettingsBridge.java",
     "java/src/org/chromium/chrome/browser/settings/autofill/AutofillProfileBridge.java",
@@ -2812,7 +2815,6 @@ generate_jni("chrome_jni_headers") {
     "java/src/org/chromium/chrome/browser/webapps/addtohomescreen/AddToHomescreenCoordinator.java",
     "java/src/org/chromium/chrome/browser/webapps/addtohomescreen/AddToHomescreenInstaller.java",
     "java/src/org/chromium/chrome/browser/webapps/addtohomescreen/AddToHomescreenMediator.java",
-    "java/src/org/chromium/chrome/browser/widget/ThumbnailGenerator.java",
   ]
 
   # Used for testing only, should not be shipped to end users.

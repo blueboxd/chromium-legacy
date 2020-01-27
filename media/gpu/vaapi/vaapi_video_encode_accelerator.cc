@@ -394,29 +394,27 @@ void VaapiVideoEncodeAccelerator::InitializeTask(const Config& config) {
   vpp_va_surface_release_cb_ = BindToCurrentLoop(base::BindRepeating(
       &VaapiVideoEncodeAccelerator::RecycleVPPVASurfaceID, encoder_weak_this_));
 
-  blit_visible_rect_ = gfx::Rect(config.input_visible_size);
+  visible_rect_ = gfx::Rect(config.input_visible_size);
   // The surface size for a reconstructed surface is a coded size.
   gfx::Size reconstructed_surface_size = encoder_->GetCodedSize();
-  if (native_input_mode_) {
-    // In native input mode, we do not need surfaces for input frames.
-    va_surfaces_per_video_frame_ = kNumSurfacesForOutputPicture;
-    // The aligned input size must be the same as a size of a native graphic
-    // buffer.
-    aligned_input_frame_size_ =
-        GetInputFrameSize(config.input_format, config.input_visible_size);
-    if (aligned_input_frame_size_.IsEmpty()) {
-      NOTIFY_ERROR(kPlatformFailureError, "Failed to get frame size");
-      return;
-    }
-  } else {
-    // In non-native mode, we need to create additional surfaces for input
-    // frames.
-    va_surfaces_per_video_frame_ =
-        kNumSurfacesForOutputPicture + kNumSurfacesPerInputVideoFrame;
-    // There is no way to know aligned size that a client provided, so we
-    // request coded size.
-    aligned_input_frame_size_ = encoder_->GetCodedSize();
+  // The aligned surface size must be the same as a size of a native graphic
+  // buffer.
+  aligned_va_surface_size_ =
+      GetInputFrameSize(config.input_format, config.input_visible_size);
+  if (aligned_va_surface_size_.IsEmpty()) {
+    NOTIFY_ERROR(kPlatformFailureError, "Failed to get frame size");
+    return;
   }
+
+  va_surfaces_per_video_frame_ =
+      native_input_mode_
+          ?
+          // In native input mode, we do not need surfaces for input frames.
+          kNumSurfacesForOutputPicture
+          :
+          // In non-native mode, we need to create additional surfaces for input
+          // frames.
+          kNumSurfacesForOutputPicture + kNumSurfacesPerInputVideoFrame;
 
   // The number of required buffers is the number of required reference frames
   // + 1 for the current frame to be encoded.
@@ -434,10 +432,9 @@ void VaapiVideoEncodeAccelerator::InitializeTask(const Config& config) {
   }
 
   child_task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&Client::RequireBitstreamBuffers, client_,
-                     num_frames_in_flight_, aligned_input_frame_size_,
-                     output_buffer_byte_size_));
+      FROM_HERE, base::BindOnce(&Client::RequireBitstreamBuffers, client_,
+                                num_frames_in_flight_, visible_rect_.size(),
+                                output_buffer_byte_size_));
 
   encoder_info_.scaling_settings = encoder_->GetScalingSettings();
 
@@ -634,21 +631,21 @@ std::unique_ptr<VaapiEncodeJob> VaapiVideoEncodeAccelerator::CreateEncodeJob(
       return nullptr;
     }
   } else {
-    if (aligned_input_frame_size_ != frame->coded_size()) {
+    if (visible_rect_.size() != frame->coded_size()) {
+      // We don't support scaling with memory based frame.
       NOTIFY_ERROR(kPlatformFailureError,
-                   "Expected frame size: "
-                       << aligned_input_frame_size_.ToString()
-                       << ", but got: " << frame->coded_size().ToString());
+                   "Expected frame size: " << visible_rect_.size().ToString()
+                                           << ", but got: "
+                                           << frame->coded_size().ToString());
       return nullptr;
     }
     input_surface = new VASurface(available_va_surface_ids_.back(),
-                                  aligned_input_frame_size_, kVaSurfaceFormat,
+                                  aligned_va_surface_size_, kVaSurfaceFormat,
                                   base::BindOnce(va_surface_release_cb_));
     available_va_surface_ids_.pop_back();
   }
 
-  if (aligned_input_frame_size_ !=
-      gfx::Size(frame->stride(0), frame->coded_size().height())) {
+  if (visible_rect_.size() != frame->coded_size()) {
     // Do cropping/scaling.  Here the buffer size contained in |input_surface|
     // is |frame->coded_size()|.
     if (!vpp_vaapi_wrapper_) {
@@ -663,7 +660,7 @@ std::unique_ptr<VaapiEncodeJob> VaapiVideoEncodeAccelerator::CreateEncodeJob(
 
       // Allocate the same number of surfaces as reconstructed surfaces.
       if (!vpp_vaapi_wrapper_->CreateContextAndSurfaces(
-              kVaSurfaceFormat, aligned_input_frame_size_,
+              kVaSurfaceFormat, aligned_va_surface_size_,
               VaapiWrapper::SurfaceUsageHint::kVideoProcessWrite,
               num_frames_in_flight_ + 1, &available_vpp_va_surface_ids_)) {
         NOTIFY_ERROR(kPlatformFailureError,
@@ -673,20 +670,21 @@ std::unique_ptr<VaapiEncodeJob> VaapiVideoEncodeAccelerator::CreateEncodeJob(
       };
     }
     scoped_refptr<VASurface> blit_surface = new VASurface(
-        available_vpp_va_surface_ids_.back(), aligned_input_frame_size_,
+        available_vpp_va_surface_ids_.back(), aligned_va_surface_size_,
         kVaSurfaceFormat, base::BindOnce(vpp_va_surface_release_cb_));
     available_vpp_va_surface_ids_.pop_back();
-    // Crop/Scale the visible area of |frame| -> |blit_visible_rect|.
+    // Crop/Scale the visible area of |frame->visible_rect()| ->
+    // |visible_rect_|.
     if (!vpp_vaapi_wrapper_->BlitSurface(*input_surface, *blit_surface,
                                          frame->visible_rect(),
-                                         blit_visible_rect_)) {
+                                         visible_rect_)) {
       NOTIFY_ERROR(
           kPlatformFailureError,
           "Failed BlitSurface on frame size: "
               << frame->coded_size().ToString()
               << " (visible rect: " << frame->visible_rect().ToString()
-              << ") -> frame size: " << aligned_input_frame_size_.ToString()
-              << " (visible rect: " << blit_visible_rect_.ToString() << ")");
+              << ") -> frame size: " << aligned_va_surface_size_.ToString()
+              << " (visible rect: " << visible_rect_.ToString() << ")");
       return nullptr;
     }
     // We can destroy the original |input_surface| because the buffer is already
@@ -694,10 +692,10 @@ std::unique_ptr<VaapiEncodeJob> VaapiVideoEncodeAccelerator::CreateEncodeJob(
     input_surface = std::move(blit_surface);
   }
 
-  // Here, the size contained in |input_surface| is |aligned_input_frame_size_|
-  // regardless of scaling.
+  // Here, the surface size contained in |input_surface| is
+  // |aligned_va_surface_size_| regardless of scaling.
   scoped_refptr<VASurface> reconstructed_surface =
-      new VASurface(available_va_surface_ids_.back(), aligned_input_frame_size_,
+      new VASurface(available_va_surface_ids_.back(), aligned_va_surface_size_,
                     kVaSurfaceFormat, base::BindOnce(va_surface_release_cb_));
   available_va_surface_ids_.pop_back();
 

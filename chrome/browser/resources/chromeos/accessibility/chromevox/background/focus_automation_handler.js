@@ -18,23 +18,18 @@ var EventType = chrome.automation.EventType;
 var RoleType = chrome.automation.RoleType;
 var StateType = chrome.automation.StateType;
 
-/**
- * @constructor
- * @extends {BaseAutomationHandler}
- */
-FocusAutomationHandler = function() {
-  BaseAutomationHandler.call(this, null);
 
-  /** @private {AutomationNode|undefined} */
-  this.previousActiveDescendant_;
+FocusAutomationHandler = class extends BaseAutomationHandler {
+  constructor() {
+    super(null);
 
-  chrome.automation.getDesktop((desktop) => {
-    desktop.addEventListener(EventType.FOCUS, this.onFocus.bind(this), false);
-  });
-};
+    /** @private {AutomationNode|undefined} */
+    this.previousActiveDescendant_;
 
-FocusAutomationHandler.prototype = {
-  __proto__: BaseAutomationHandler.prototype,
+    chrome.automation.getDesktop((desktop) => {
+      desktop.addEventListener(EventType.FOCUS, this.onFocus.bind(this), false);
+    });
+  }
 
   /**
    * @param {!AutomationEvent} evt
@@ -45,7 +40,7 @@ FocusAutomationHandler.prototype = {
     this.node_ = evt.target;
     this.addListener_(
         EventType.ACTIVEDESCENDANTCHANGED, this.onActiveDescendantChanged);
-  },
+  }
 
   /**
    * Handles active descendant changes.
@@ -71,6 +66,6 @@ FocusAutomationHandler.prototype = {
     this.previousActiveDescendant_ = evt.target.activeDescendant;
   }
 };
-});  // goog.scope
 
 new FocusAutomationHandler();
+});  // goog.scope

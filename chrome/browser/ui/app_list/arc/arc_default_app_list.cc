@@ -4,12 +4,16 @@
 
 #include "chrome/browser/ui/app_list/arc/arc_default_app_list.h"
 
+#include <string.h>
+
 #include "base/barrier_closure.h"
 #include "base/bind.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
 #include "base/json/json_file_value_serializer.h"
 #include "base/path_service.h"
+#include "base/strings/string_split.h"
+#include "base/strings/string_util.h"
 #include "base/task/post_task.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -17,6 +21,7 @@
 #include "chrome/browser/ui/app_list/arc/arc_app_scoped_pref_update.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/common/chrome_paths.h"
+#include "components/arc/arc_util.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/extension_registry.h"
@@ -40,6 +45,8 @@ const base::FilePath::CharType kArcTestBoardDirectory[] =
     FILE_PATH_LITERAL("arc_board_default_apps");
 const base::FilePath::CharType kBoardDirectory[] =
     FILE_PATH_LITERAL("/var/cache/arc_default_apps");
+const base::FilePath::CharType kBuildProp[] =
+    FILE_PATH_LITERAL("/usr/share/arcvm/properties/build.prop");
 
 bool use_test_apps_directory = false;
 
@@ -123,6 +130,30 @@ bool IsAppHidden(const PrefService* prefs, const std::string& app_id) {
   return app_dict->GetBoolean(kHidden, &hidden) && hidden;
 }
 
+std::string GetBoardName(const base::FilePath& build_prop_path) {
+  constexpr char kKeyToFind[] = "ro.product.board=";
+
+  std::string content;
+  if (!base::ReadFileToString(build_prop_path, &content)) {
+    PLOG(ERROR) << "Failed to read " << build_prop_path;
+    return std::string();
+  }
+
+  const std::vector<std::string> lines = base::SplitString(
+      content, "\n", base::WhitespaceHandling::KEEP_WHITESPACE,
+      base::SplitResult::SPLIT_WANT_ALL);
+  for (const auto& line : lines) {
+    if (!base::StartsWith(line, kKeyToFind, base::CompareCase::SENSITIVE))
+      continue;
+    const std::string board = line.substr(strlen(kKeyToFind));
+    VLOG(2) << "Current board is " << board;
+    return board;
+  }
+
+  LOG(ERROR) << "Failed to find " << kKeyToFind << " in " << build_prop_path;
+  return std::string();
+}
+
 }  // namespace
 
 // static
@@ -134,6 +165,12 @@ void ArcDefaultAppList::UseTestAppsDirectory() {
 void ArcDefaultAppList::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterDictionaryPref(kDefaultApps);
+}
+
+// static
+std::string ArcDefaultAppList::GetBoardNameForTesting(
+    const base::FilePath& build_prop_path) {
+  return GetBoardName(build_prop_path);
 }
 
 ArcDefaultAppList::ArcDefaultAppList(Profile* profile,
@@ -155,8 +192,18 @@ ArcDefaultAppList::ArcDefaultAppList(Profile* profile,
     const bool valid_path = base::PathService::Get(
         chrome::DIR_STANDALONE_EXTERNAL_EXTENSIONS, &base_path);
     DCHECK(valid_path);
-    sources.push_back(base_path.Append(kArcDirectory));
-    sources.push_back(base::FilePath(kBoardDirectory));
+    const base::FilePath base_arc_path = base_path.Append(kArcDirectory);
+    sources.push_back(base_arc_path);
+    if (arc::IsArcVmEnabled()) {
+      // ARCVM environment doesn't have the symlink. Get the board name on the
+      // fly instead.
+      // TODO(yusukes): Do the same for ARC and remove the arc-setup code for
+      // creating the symlink.
+      sources.push_back(
+          base_arc_path.Append(GetBoardName(base::FilePath(kBuildProp))));
+    } else {
+      sources.push_back(base::FilePath(kBoardDirectory));
+    }
   } else {
     const bool valid_path =
         base::PathService::Get(chrome::DIR_TEST_DATA, &base_path);

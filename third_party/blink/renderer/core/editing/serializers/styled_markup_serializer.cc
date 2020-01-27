@@ -105,8 +105,8 @@ class StyledMarkupTraverser {
   bool ShouldSerializeUnrenderedElement(const Node&) const;
 
   StyledMarkupAccumulator* accumulator_;
-  Member<Node> last_closed_;
-  Member<EditingStyle> wrapping_style_;
+  Node* last_closed_;
+  EditingStyle* wrapping_style_;
   DISALLOW_COPY_AND_ASSIGN(StyledMarkupTraverser);
 };
 
@@ -135,7 +135,8 @@ StyledMarkupSerializer<Strategy>::StyledMarkupSerializer(
       end_(end),
       highest_node_to_be_serialized_(highest_node_to_be_serialized),
       options_(options),
-      last_closed_(highest_node_to_be_serialized) {}
+      last_closed_(highest_node_to_be_serialized),
+      wrapping_style_(nullptr) {}
 
 template <typename Strategy>
 static bool NeedInterchangeNewlineAfter(
@@ -358,9 +359,9 @@ Node* StyledMarkupTraverser<Strategy>::Traverse(Node* start_node,
     // If |n| is a selection boundary such as <input>, traverse the child
     // nodes in the DOM tree instead of the flat tree.
     if (HandleSelectionBoundary<Strategy>(*n)) {
-      last_closed = StyledMarkupTraverser<EditingStrategy>(accumulator_,
-                                                           last_closed_.Get())
-                        .Traverse(n, EditingStrategy::NextSkippingChildren(*n));
+      last_closed =
+          StyledMarkupTraverser<EditingStrategy>(accumulator_, last_closed_)
+              .Traverse(n, EditingStrategy::NextSkippingChildren(*n));
       next = EditingInFlatTreeStrategy::NextSkippingChildren(*n);
     } else {
       next = Strategy::Next(*n);

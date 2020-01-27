@@ -253,8 +253,7 @@ bool WaitForOpenInDownloadsButton() {
 }
 
 // Tests that filename label and "Open in Downloads" button are showing.
-// TODO(crbug.com/1044676): Fails on iPad iOS 13 simulator.
-- (void)DISABLED_testVisibleFileNameAndOpenInDownloads {
+- (void)testVisibleFileNameAndOpenInDownloads {
   // Apple is hiding UIActivityViewController's contents from the host app on
   // iOS 12. However, at least on iOS 13, the actions provided by the host app
   // itself are not obfuscated.
@@ -262,6 +261,11 @@ bool WaitForOpenInDownloadsButton() {
   } else {
     EARL_GREY_TEST_SKIPPED(@"Test skipped on iOS12.");
   }
+
+  // Apple is hiding UIActivityViewController's contents from the host app on
+  // iPad.
+  if ([ChromeEarlGrey isIPadIdiom])
+    EARL_GREY_TEST_SKIPPED(@"Test skipped on iPad.");
 
 // Earl Grey 1 can't test UI elements out of Chrome process.
 #if defined(CHROME_EARL_GREY_1)

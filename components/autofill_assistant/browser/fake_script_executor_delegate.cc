@@ -33,10 +33,6 @@ WebController* FakeScriptExecutorDelegate::GetWebController() {
   return web_controller_;
 }
 
-ClientMemory* FakeScriptExecutorDelegate::GetClientMemory() {
-  return &memory_;
-}
-
 TriggerContext* FakeScriptExecutorDelegate::GetTriggerContext() {
   return trigger_context_.get();
 }

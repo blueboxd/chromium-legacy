@@ -98,7 +98,7 @@ class CORE_EXPORT LegacyDOMSnapshotAgent {
   // the corresponding node.
   OriginUrlMap* origin_url_map_;
   using DocumentOrderMap = HeapHashMap<Member<Document>, int>;
-  Member<InspectorDOMDebuggerAgent> dom_debugger_agent_;
+  InspectorDOMDebuggerAgent* dom_debugger_agent_;
   DISALLOW_COPY_AND_ASSIGN(LegacyDOMSnapshotAgent);
 };
 

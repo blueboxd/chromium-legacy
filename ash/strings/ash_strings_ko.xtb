@@ -112,6 +112,7 @@
 <translation id="2352467521400612932">스타일러스 설정</translation>
 <translation id="2354174487190027830"><ph name="NAME" /> 활성화 중</translation>
 <translation id="2359808026110333948">계속</translation>
+<translation id="2364154243880592194">상태 표시줄, 시간 <ph name="TIME" />, <ph name="BATTERY" /> 검색 + 왼쪽 키를 눌러 알림 센터에 액세스하세요.</translation>
 <translation id="2365393535144473978">모바일 데이터를 사용 설정하면 블루투스가 사용 설정됩니다.</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="2412593942846481727">업데이트 가능</translation>
@@ -335,6 +336,7 @@
 <translation id="5669267381087807207">활성화 중</translation>
 <translation id="5673434351075758678">설정 동기화 후 ‘<ph name="FROM_LOCALE" />’에서 ‘<ph name="TO_LOCALE" />’(으)로 변경합니다.</translation>
 <translation id="5682642926269496722">현재 사용자 계정에서 Google 어시스턴트를 사용할 수 없습니다.</translation>
+<translation id="5689633613396158040">야간 조명을 사용하면 주위가 어두울 때도 편안하게 화면을 보고 읽을 수 있습니다. 탭하여 야간 조명을 켜거나 완전히 끌 시간을 변경하세요.</translation>
 <translation id="5691772641933328258">지문을 인식할 수 없음</translation>
 <translation id="5710450975648804523">방해 금지 모드 사용 중</translation>
 <translation id="573413375004481890">사용 중인 일부 디스플레이가 기기에서 지원되지 않아 1개 디스플레이의 연결이 끊김</translation>
@@ -514,6 +516,7 @@
 <translation id="8142441511840089262">더블클릭</translation>
 <translation id="8142699993796781067">사설 네트워크</translation>
 <translation id="8152092012181020186">닫으려면 Ctrl + W를 누릅니다.</translation>
+<translation id="8155007568264258537"><ph name="FEATURE_NAME" /> 관리자가 관리하는 설정입니다.</translation>
 <translation id="8167567890448493835"><ph name="LOCALE_NAME" /> 사용 중</translation>
 <translation id="8190698733819146287">언어 및 입력 설정...</translation>
 <translation id="8192202700944119416">알림이 숨겨져 있음</translation>

@@ -112,6 +112,7 @@
 <translation id="2352467521400612932">Configuració del llapis òptic</translation>
 <translation id="2354174487190027830">S'està activant <ph name="NAME" /></translation>
 <translation id="2359808026110333948">Continua</translation>
+<translation id="2364154243880592194">Safata d'estat. Temps: <ph name="TIME" />. <ph name="BATTERY" /> Prem Cerca+fletxa esquerra per accedir al centre de notificacions.</translation>
 <translation id="2365393535144473978">En activar les dades mòbils s'activarà el Bluetooth.</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="2412593942846481727">Hi ha una actualització disponible</translation>
@@ -335,6 +336,7 @@
 <translation id="5669267381087807207">S'està activant</translation>
 <translation id="5673434351075758678">Després de sincronitzar la configuració, canvia <ph name="FROM_LOCALE" /> per <ph name="TO_LOCALE" />.</translation>
 <translation id="5682642926269496722">L'Assistent de Google no està disponible per al compte d'usuari actual.</translation>
+<translation id="5689633613396158040">Amb la funció Llum nocturna, és més fàcil mirar la pantalla i llegir-hi amb poca llum. Toca per canviar l'hora en què s'activa o per desactivar-la completament.</translation>
 <translation id="5691772641933328258">L'empremta digital no s'ha reconegut</translation>
 <translation id="5710450975648804523">Mode No molestis activat</translation>
 <translation id="573413375004481890">Com que aquest dispositiu no ha pogut admetre totes les pantalles, se n'ha desconnectat una</translation>
@@ -514,6 +516,7 @@
 <translation id="8142441511840089262">Fes doble clic</translation>
 <translation id="8142699993796781067">Xarxa privada</translation>
 <translation id="8152092012181020186">Prem Ctrl+W per tancar.</translation>
+<translation id="8155007568264258537"><ph name="FEATURE_NAME" /> El teu administrador gestiona aquesta opció de configuració.</translation>
 <translation id="8167567890448493835">S'està utilitzant <ph name="LOCALE_NAME" /></translation>
 <translation id="8190698733819146287">Personalitza idiomes i introducció de text...</translation>
 <translation id="8192202700944119416">S'han amagat les notificacions.</translation>

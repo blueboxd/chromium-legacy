@@ -20,6 +20,8 @@ namespace {
 
 const char kContentProtection[] = "Content Protection";
 
+const char kPrivacyScreen[] = "privacy-screen";
+
 struct ContentProtectionMapping {
   const char* name;
   display::HDCPState state;
@@ -197,6 +199,27 @@ void DrmDisplay::SetGammaCorrection(
   if (!drm_->plane_manager()->SetGammaCorrection(crtc_, degamma_lut,
                                                  gamma_lut)) {
     LOG(ERROR) << "Failed to set gamma tables for display: crtc_id = " << crtc_;
+  }
+}
+
+// TODO(gildekel): consider reformatting this to use the new DRM API or cache
+// |privacy_screen_property| after crrev.com/c/1715751 lands.
+void DrmDisplay::SetPrivacyScreen(bool enabled) {
+  if (!connector_)
+    return;
+
+  ScopedDrmPropertyPtr privacy_screen_property(
+      drm_->GetProperty(connector_.get(), kPrivacyScreen));
+
+  if (!privacy_screen_property) {
+    LOG(ERROR) << "'" << kPrivacyScreen << "' property doesn't exist.";
+    return;
+  }
+
+  if (!drm_->SetProperty(connector_->connector_id,
+                         privacy_screen_property->prop_id, enabled)) {
+    LOG(ERROR) << (enabled ? "Enabling" : "Disabling") << " property '"
+               << kPrivacyScreen << "' failed!";
   }
 }
 

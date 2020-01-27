@@ -5,8 +5,8 @@
 #include "third_party/blink/renderer/core/geometry/dom_rect_read_only.h"
 
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_dom_rect_init.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_object_builder.h"
-#include "third_party/blink/renderer/core/geometry/dom_rect_init.h"
 
 namespace blink {
 

@@ -4,8 +4,8 @@
 
 #include "third_party/blink/renderer/core/animation/timing.h"
 
-#include "third_party/blink/renderer/core/animation/computed_effect_timing.h"
-#include "third_party/blink/renderer/core/animation/effect_timing.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_computed_effect_timing.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_effect_timing.h"
 #include "third_party/blink/renderer/core/animation/timing_calculations.h"
 
 namespace blink {

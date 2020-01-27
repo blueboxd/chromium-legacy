@@ -7,6 +7,7 @@
 #include "components/viz/common/resources/single_release_callback.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
+#include "gpu/command_buffer/client/shared_image_interface.h"
 #include "gpu/command_buffer/common/sync_token.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_graphics_context_3d_provider.h"
@@ -204,6 +205,12 @@ void AcceleratedStaticBitmapImage::EnsureMailbox(MailboxSyncMode mode,
   mailbox_texture_holder_->Sync(mode);
 }
 
+gpu::MailboxHolder AcceleratedStaticBitmapImage::GetMailboxHolder() const {
+  return gpu::MailboxHolder(mailbox_texture_holder_->GetMailbox(),
+                            mailbox_texture_holder_->GetSyncToken(),
+                            mailbox_texture_holder_->texture_target());
+}
+
 void AcceleratedStaticBitmapImage::Transfer() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   EnsureMailbox(kVerifiedSyncToken, GL_NEAREST);
@@ -224,6 +231,11 @@ AcceleratedStaticBitmapImage::ConvertToColorSpace(
     sk_sp<SkColorSpace> color_space,
     SkColorType color_type) {
   DCHECK(color_space);
+  DCHECK(color_type == kRGBA_F16_SkColorType ||
+         color_type == kRGBA_8888_SkColorType);
+
+  if (!ContextProviderWrapper())
+    return nullptr;
 
   sk_sp<SkImage> skia_image = PaintImageForCurrentFrame().GetSkImage();
   if (SkColorSpace::Equals(color_space.get(), skia_image->colorSpace()) &&
@@ -234,13 +246,15 @@ AcceleratedStaticBitmapImage::ConvertToColorSpace(
   auto image_info = skia_image->imageInfo()
                         .makeColorSpace(color_space)
                         .makeColorType(color_type);
-  auto provider = CanvasResourceProvider::Create(
-      Size(), CanvasResourceProvider::ResourceUsage::kAcceleratedResourceUsage,
-      ContextProviderWrapper(), 0, kLow_SkFilterQuality,
-      CanvasColorParams(image_info),
-      CanvasResourceProvider::kDefaultPresentationMode, nullptr,
-      IsOriginTopLeft());
-  if (!provider || !provider->IsAccelerated()) {
+  auto usage_flags =
+      ContextProviderWrapper()
+          ->ContextProvider()
+          ->SharedImageInterface()
+          ->UsageForMailbox(mailbox_texture_holder_->GetMailbox());
+  auto provider = CanvasResourceProvider::CreateAccelerated(
+      Size(), ContextProviderWrapper(), CanvasColorParams(image_info),
+      IsOriginTopLeft(), usage_flags);
+  if (!provider) {
     return nullptr;
   }
 

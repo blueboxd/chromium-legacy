@@ -47,6 +47,10 @@ ClipboardFormatType ClipboardFormatType::Deserialize(
   return ClipboardFormatType(base::SysUTF8ToNSString(serialization));
 }
 
+std::string ClipboardFormatType::GetName() const {
+  return Serialize();
+}
+
 bool ClipboardFormatType::operator<(const ClipboardFormatType& other) const {
   return [data_ compare:other.data_] == NSOrderedAscending;
 }

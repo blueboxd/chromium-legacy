@@ -12,8 +12,11 @@
 
 #include "base/callback.h"
 #include "base/optional.h"
+#include "components/autofill/core/browser/data_model/autofill_profile.h"
+#include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill_assistant/browser/service.pb.h"
 #include "components/autofill_assistant/browser/user_action.h"
+#include "components/autofill_assistant/browser/website_login_fetcher.h"
 
 namespace autofill {
 class AutofillProfile;
@@ -75,7 +78,8 @@ struct PaymentInstrument {
 };
 
 // Struct for holding the user data.
-struct UserData {
+class UserData {
+ public:
   UserData();
   ~UserData();
 
@@ -95,21 +99,43 @@ struct UserData {
     AVAILABLE_PAYMENT_INSTRUMENTS,
   };
 
-  bool succeed = false;
-  std::unique_ptr<autofill::AutofillProfile> contact_profile;
-  std::unique_ptr<autofill::CreditCard> card;
-  std::unique_ptr<autofill::AutofillProfile> shipping_address;
-  std::unique_ptr<autofill::AutofillProfile> billing_address;
-  std::string login_choice_identifier;
-  TermsAndConditionsState terms_and_conditions = NOT_SELECTED;
-  DateTimeProto date_time_range_start;
-  DateTimeProto date_time_range_end;
+  bool succeed_ = false;
+  std::unique_ptr<autofill::CreditCard> selected_card_;
+  std::string login_choice_identifier_;
+  TermsAndConditionsState terms_and_conditions_ = NOT_SELECTED;
+  DateTimeProto date_time_range_start_;
+  DateTimeProto date_time_range_end_;
 
   // A set of additional key/value pairs to be stored in client_memory.
-  std::map<std::string, std::string> additional_values_to_store;
+  std::map<std::string, std::string> additional_values_;
 
-  std::vector<std::unique_ptr<autofill::AutofillProfile>> available_profiles;
-  std::vector<std::unique_ptr<PaymentInstrument>> available_payment_instruments;
+  std::vector<std::unique_ptr<autofill::AutofillProfile>> available_profiles_;
+  std::vector<std::unique_ptr<PaymentInstrument>>
+      available_payment_instruments_;
+
+  // The address key requested by the autofill action.
+  std::map<std::string, std::unique_ptr<autofill::AutofillProfile>>
+      selected_addresses_;
+
+  base::Optional<WebsiteLoginFetcher::Login> selected_login_;
+
+  // Return true if address has been selected, otherwise return false.
+  // Note that selected_address() might return nullptr when
+  // has_selected_address() is true because fill manually was chosen.
+  bool has_selected_address(const std::string& name) const;
+
+  // Returns true if an additional value is stored for |key|.
+  bool has_additional_value(const std::string& key) const;
+
+  // Selected address for |name|. It will be a nullptr if didn't select anything
+  // or if selected 'Fill manually'.
+  const autofill::AutofillProfile* selected_address(
+      const std::string& name) const;
+
+  // The additional value for |key|, or nullptr if it does not exist.
+  const std::string* additional_value(const std::string& key) const;
+
+  std::string GetAllAddressKeyNames() const;
 };
 
 // Struct for holding the payment request options.
@@ -134,6 +160,10 @@ struct CollectUserDataOptions {
   std::string terms_require_review_text;
   std::string privacy_notice_text;
   bool show_terms_as_checkbox = false;
+
+  std::string billing_address_name;
+  std::string shipping_address_name;
+  std::string contact_details_name;
 
   std::vector<std::string> supported_basic_card_networks;
   std::vector<LoginChoice> login_choices;

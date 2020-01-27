@@ -332,8 +332,8 @@ void SyncInternalsMessageHandler::SendAboutInfo() {
 
 // Gets the SyncService of the underlying original profile. May return null.
 syncer::SyncService* SyncInternalsMessageHandler::GetSyncService() {
-  ios::ChromeBrowserState* browser_state =
-      ios::ChromeBrowserState::FromWebUIIOS(web_ui());
+  ChromeBrowserState* browser_state =
+      ChromeBrowserState::FromWebUIIOS(web_ui());
   return ProfileSyncServiceFactory::GetForBrowserState(
       browser_state->GetOriginalChromeBrowserState());
 }

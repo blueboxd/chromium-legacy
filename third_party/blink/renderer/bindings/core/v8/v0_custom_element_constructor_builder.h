@@ -84,11 +84,11 @@ class V0CustomElementConstructorBuilder {
   bool PrototypeIsValid(const AtomicString& type, ExceptionState&) const;
   v8::MaybeLocal<v8::Function> RetrieveCallback(const char* name);
 
-  Member<ScriptState> script_state_;
-  Member<const ElementRegistrationOptions> options_;
+  ScriptState* script_state_;
+  const ElementRegistrationOptions* options_;
   v8::Local<v8::Object> prototype_;
   v8::Local<v8::Function> constructor_;
-  Member<V8V0CustomElementLifecycleCallbacks> callbacks_;
+  V8V0CustomElementLifecycleCallbacks* callbacks_;
 
   DISALLOW_COPY_AND_ASSIGN(V0CustomElementConstructorBuilder);
 };

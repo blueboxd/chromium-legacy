@@ -576,7 +576,6 @@ InputHandlerProxy::RouteToTypeSpecificHandler(
                 original_latency_info, mouse_event.TimeStamp());
           }
 
-          // Mark this event as being handled on the compositor thread.
           if (event_with_callback) {
             event_with_callback
                 ->SetScrollbarManipulationHandledOnCompositorThread();
@@ -602,7 +601,6 @@ InputHandlerProxy::RouteToTypeSpecificHandler(
                                        pointer_result, original_latency_info,
                                        mouse_event.TimeStamp());
 
-          // Mark this event as being handled on the compositor thread.
           if (event_with_callback) {
             event_with_callback
                 ->SetScrollbarManipulationHandledOnCompositorThread();
@@ -622,13 +620,15 @@ InputHandlerProxy::RouteToTypeSpecificHandler(
               gfx::Point(mouse_event.PositionInWidget().x(),
                          mouse_event.PositionInWidget().y()));
       if (pointer_result.type == cc::PointerResultType::kScrollbarScroll) {
-        // Generate a GSU event and add it to the CompositorThreadEventQueue.
-        InjectScrollbarGestureScroll(WebInputEvent::Type::kGestureScrollUpdate,
-                                     mouse_event.PositionInWidget(),
-                                     pointer_result, original_latency_info,
-                                     mouse_event.TimeStamp());
+        // Generate a GSU event and add it to the CompositorThreadEventQueue if
+        // delta is non zero.
+        if (!pointer_result.scroll_offset.IsZero()) {
+          InjectScrollbarGestureScroll(
+              WebInputEvent::Type::kGestureScrollUpdate,
+              mouse_event.PositionInWidget(), pointer_result,
+              original_latency_info, mouse_event.TimeStamp());
+        }
 
-        // Mark this event as being handled on the compositor thread.
         if (event_with_callback) {
           event_with_callback
               ->SetScrollbarManipulationHandledOnCompositorThread();

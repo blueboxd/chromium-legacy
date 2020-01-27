@@ -28,7 +28,7 @@ class FramePainter {
  private:
   const LocalFrameView& GetFrameView();
 
-  Member<const LocalFrameView> frame_view_;
+  const LocalFrameView* frame_view_;
   static bool in_paint_contents_;
 
   DISALLOW_COPY_AND_ASSIGN(FramePainter);

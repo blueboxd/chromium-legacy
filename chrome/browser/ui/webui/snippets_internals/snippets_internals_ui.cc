@@ -18,7 +18,7 @@
 #include "mojo/public/cpp/bindings/pending_remote.h"
 
 #if defined(OS_ANDROID)
-#include "chrome/browser/android/chrome_feature_list.h"
+#include "chrome/browser/flags/android/chrome_feature_list.h"
 #endif
 
 SnippetsInternalsUI::SnippetsInternalsUI(content::WebUI* web_ui)

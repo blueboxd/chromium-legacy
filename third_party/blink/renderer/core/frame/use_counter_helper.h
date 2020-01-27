@@ -57,7 +57,7 @@ class UseCounterMuteScope {
   ~UseCounterMuteScope();
 
  private:
-  Member<DocumentLoader> loader_;
+  DocumentLoader* loader_;
 };
 
 // This class provides an implementation of UseCounter - see the class comment

@@ -60,17 +60,15 @@ void PasswordFeatureManagerImpl::SetAccountStorageOptIn(bool opt_in) {
 
 void PasswordFeatureManagerImpl::SetDefaultPasswordStore(
     const PasswordForm::Store& store) {
-  DCHECK(pref_service_);
-  pref_service_->SetBoolean(prefs::kIsAccountStoreDefault,
-                            store == PasswordForm::Store::kAccountStore);
+  password_manager_util::SetDefaultPasswordStore(pref_service_, sync_service_,
+                                                 store);
 }
 
 PasswordForm::Store PasswordFeatureManagerImpl::GetDefaultPasswordStore()
     const {
   DCHECK(pref_service_);
-  return pref_service_->GetBoolean(prefs::kIsAccountStoreDefault)
-             ? PasswordForm::Store::kAccountStore
-             : PasswordForm::Store::kProfileStore;
+  return password_manager_util::GetDefaultPasswordStore(pref_service_,
+                                                        sync_service_);
 }
 
 }  // namespace password_manager

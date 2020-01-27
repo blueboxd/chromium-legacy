@@ -100,23 +100,11 @@ class PLATFORM_EXPORT AcceleratedStaticBitmapImage final
                      bool unpack_flip_y,
                      const IntPoint& dest_point,
                      const IntRect& source_sub_rectangle) override;
-
-  bool HasMailbox() const final { return !!mailbox_texture_holder_; }
-
   // To be called on sender thread before performing a transfer to a different
   // thread.
   void Transfer() final;
 
   void EnsureMailbox(MailboxSyncMode, GLenum filter) final;
-
-  // Provides the mailbox backing for this image. The caller must wait on the
-  // sync token from GetSyncToken before accessing this mailbox.
-  const gpu::Mailbox& GetMailbox() const final {
-    return mailbox_texture_holder_->GetMailbox();
-  }
-  const gpu::SyncToken& GetSyncToken() const final {
-    return mailbox_texture_holder_->GetSyncToken();
-  }
 
   // Updates the sync token that must be waited on before recycling or deleting
   // the mailbox for this image. This must be set by callers using the mailbox
@@ -124,6 +112,10 @@ class PLATFORM_EXPORT AcceleratedStaticBitmapImage final
   void UpdateSyncToken(const gpu::SyncToken& sync_token) final {
     mailbox_texture_holder_->UpdateSyncToken(sync_token);
   }
+
+  // Provides the mailbox backing for this image. The caller must wait on the
+  // sync token before accessing this mailbox.
+  gpu::MailboxHolder GetMailboxHolder() const final;
   bool IsOriginTopLeft() const final {
     return texture_holder()->IsOriginTopLeft();
   }

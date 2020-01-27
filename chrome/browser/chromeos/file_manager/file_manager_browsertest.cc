@@ -443,6 +443,7 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("openQuickView").InGuestMode(),
         TestCase("openQuickView").TabletMode(),
         TestCase("openQuickViewViaContextMenuSingleSelection"),
+        TestCase("openQuickViewViaContextMenuCheckSelections"),
         TestCase("openQuickViewAudio"),
         TestCase("openQuickViewAudioWithImageMetadata"),
         TestCase("openQuickViewImage"),

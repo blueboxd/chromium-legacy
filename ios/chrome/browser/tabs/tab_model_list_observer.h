@@ -6,8 +6,8 @@
 #define IOS_CHROME_BROWSER_TABS_TAB_MODEL_LIST_OBSERVER_H_
 
 #include "base/macros.h"
-#include "ios/chrome/browser/browser_state/chrome_browser_state_forward.h"
 
+class ChromeBrowserState;
 @class TabModel;
 
 // Interface for getting notified when TabModels get associated/dissociated
@@ -20,12 +20,12 @@ class TabModelListObserver {
   // Called when |tab_model| is associated to |browser_state|.
   virtual void TabModelRegisteredWithBrowserState(
       TabModel* tab_model,
-      ios::ChromeBrowserState* browser_state) = 0;
+      ChromeBrowserState* browser_state) = 0;
 
   // Called when the |tab_model| is dissociated from |browser_state|.
   virtual void TabModelUnregisteredFromBrowserState(
       TabModel* tab_model,
-      ios::ChromeBrowserState* browser_state) = 0;
+      ChromeBrowserState* browser_state) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TabModelListObserver);

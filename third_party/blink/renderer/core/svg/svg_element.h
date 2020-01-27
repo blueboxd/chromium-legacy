@@ -187,7 +187,7 @@ class CORE_EXPORT SVGElement : public Element {
     ~InvalidationGuard() { element_->InvalidateInstances(); }
 
    private:
-    Member<SVGElement> element_;
+    SVGElement* element_;
     DISALLOW_COPY_AND_ASSIGN(InvalidationGuard);
   };
 
@@ -199,7 +199,7 @@ class CORE_EXPORT SVGElement : public Element {
     ~InstanceUpdateBlocker();
 
    private:
-    Member<SVGElement> target_element_;
+    SVGElement* target_element_;
     DISALLOW_COPY_AND_ASSIGN(InstanceUpdateBlocker);
   };
 

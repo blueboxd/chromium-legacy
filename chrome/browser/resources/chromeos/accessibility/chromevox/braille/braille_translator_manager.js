@@ -12,59 +12,58 @@ goog.require('BrailleTable');
 goog.require('ExpandingBrailleTranslator');
 goog.require('LibLouis');
 
-/**
- * @param {LibLouis=} opt_liblouisForTest Liblouis instance to use
- *     for testing.
- * @constructor
- */
-BrailleTranslatorManager = function(opt_liblouisForTest) {
+BrailleTranslatorManager = class {
   /**
-   * @type {!LibLouis}
-   * @private
+   * @param {LibLouis=} opt_liblouisForTest Liblouis instance to use
+   *     for testing.
    */
-  this.liblouis_ = opt_liblouisForTest ||
-      new LibLouis(chrome.extension.getURL('braille/liblouis_wrapper.js'),
-                   chrome.extension.getURL('braille/tables'),
-                   this.loadLiblouis_.bind(this));
+  constructor(opt_liblouisForTest) {
+    /**
+     * @type {!LibLouis}
+     * @private
+     */
+    this.liblouis_ = opt_liblouisForTest ||
+        new LibLouis(chrome.extension.getURL('braille/liblouis_wrapper.js'),
+                     chrome.extension.getURL('braille/tables'),
+                     this.loadLiblouis_.bind(this));
 
-  /**
-   * @type {!Array<function()>}
-   * @private
-   */
-  this.changeListeners_ = [];
-  /**
-   * @type {!Array<BrailleTable.Table>}
-   * @private
-   */
-  this.tables_ = [];
-  /**
-   * @type {ExpandingBrailleTranslator}
-   * @private
-   */
-  this.expandingTranslator_ = null;
-  /**
-   * @type {LibLouis.Translator}
-   * @private
-   */
-  this.defaultTranslator_ = null;
-  /**
-   * @type {string?}
-   * @private
-   */
-  this.defaultTableId_ = null;
-  /**
-   * @type {LibLouis.Translator}
-   * @private
-   */
-  this.uncontractedTranslator_ = null;
-  /**
-   * @type {string?}
-   * @private
-   */
-  this.uncontractedTableId_ = null;
-};
+    /**
+     * @type {!Array<function()>}
+     * @private
+     */
+    this.changeListeners_ = [];
+    /**
+     * @type {!Array<BrailleTable.Table>}
+     * @private
+     */
+    this.tables_ = [];
+    /**
+     * @type {ExpandingBrailleTranslator}
+     * @private
+     */
+    this.expandingTranslator_ = null;
+    /**
+     * @type {LibLouis.Translator}
+     * @private
+     */
+    this.defaultTranslator_ = null;
+    /**
+     * @type {string?}
+     * @private
+     */
+    this.defaultTableId_ = null;
+    /**
+     * @type {LibLouis.Translator}
+     * @private
+     */
+    this.uncontractedTranslator_ = null;
+    /**
+     * @type {string?}
+     * @private
+     */
+    this.uncontractedTableId_ = null;
+  }
 
-BrailleTranslatorManager.prototype = {
   /**
    * Adds a listener to be called whenever there is a change in the
    * translator(s) returned by other methods of this instance.
@@ -72,7 +71,7 @@ BrailleTranslatorManager.prototype = {
    */
   addChangeListener(listener) {
     this.changeListeners_.push(listener);
-  },
+  }
 
   /**
    * Refreshes the braille translator(s) used for input and output.  This
@@ -156,7 +155,7 @@ BrailleTranslatorManager.prototype = {
             });
       }
     }.bind(this));
-  },
+  }
 
   /**
    * @return {ExpandingBrailleTranslator} The current expanding braille
@@ -164,7 +163,7 @@ BrailleTranslatorManager.prototype = {
    */
   getExpandingTranslator() {
     return this.expandingTranslator_;
-  },
+  }
 
   /**
    * @return {LibLouis.Translator} The current braille translator to use
@@ -172,7 +171,7 @@ BrailleTranslatorManager.prototype = {
    */
   getDefaultTranslator() {
     return this.defaultTranslator_;
-  },
+  }
 
   /**
    * @return {LibLouis.Translator} The current uncontracted braille
@@ -181,7 +180,7 @@ BrailleTranslatorManager.prototype = {
    */
   getUncontractedTranslator() {
     return this.uncontractedTranslator_;
-  },
+  }
 
   /**
    * Asynchronously fetches the list of braille tables and refreshes the
@@ -195,7 +194,7 @@ BrailleTranslatorManager.prototype = {
       // Initial refresh; set options from user preferences.
       this.refresh(localStorage['brailleTable']);
     }.bind(this));
-  },
+  }
 
   /**
    * Loads the liblouis instance by attaching it to the document.
@@ -203,14 +202,14 @@ BrailleTranslatorManager.prototype = {
    */
   loadLiblouis_() {
     this.fetchTables_();
-  },
+  }
 
   /**
    * @return {!LibLouis} The liblouis instance used by this object.
    */
   getLibLouisForTest() {
     return this.liblouis_;
-  },
+  }
 
   /**
    * @return {!Array<BrailleTable.Table>} The currently loaded braille

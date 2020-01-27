@@ -131,7 +131,7 @@ NSError* PrepareAutofillProfileWithValues(const base::Value* autofill_profile) {
   }
 
   // Save the profile and credit card generated to the personal data manager.
-  ios::ChromeBrowserState* browser_state =
+  ChromeBrowserState* browser_state =
       chrome_test_util::GetOriginalBrowserState();
   PersonalDataManager* personal_data_manager =
       PersonalDataManagerFactory::GetForBrowserState(browser_state);

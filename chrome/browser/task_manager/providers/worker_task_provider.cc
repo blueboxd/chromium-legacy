@@ -32,6 +32,14 @@ void WorkerTaskProvider::OnProfileAdded(Profile* profile) {
       content::BrowserContext::GetDefaultStoragePartition(profile)
           ->GetServiceWorkerContext();
   scoped_context_observer_.Add(context);
+
+  // Create tasks for existing service workers.
+  for (const auto& kv : context->GetRunningServiceWorkerInfos()) {
+    const int64_t version_id = kv.first;
+    const content::ServiceWorkerRunningInfo& running_info = kv.second;
+
+    CreateTask(context, version_id, running_info);
+  }
 }
 
 void WorkerTaskProvider::OnOffTheRecordProfileCreated(Profile* off_the_record) {
@@ -99,22 +107,6 @@ void WorkerTaskProvider::StopUpdating() {
 
   // Delete all tracked tasks.
   service_worker_task_map_.clear();
-}
-
-void WorkerTaskProvider::CreateTasksForProfile(Profile* profile) {
-  content::ServiceWorkerContext* context =
-      content::BrowserContext::GetDefaultStoragePartition(profile)
-          ->GetServiceWorkerContext();
-
-  if (!scoped_context_observer_.IsObserving(context))
-    scoped_context_observer_.Add(context);
-
-  for (const auto& kv : context->GetRunningServiceWorkerInfos()) {
-    const int64_t version_id = kv.first;
-    const content::ServiceWorkerRunningInfo& running_info = kv.second;
-
-    CreateTask(context, version_id, running_info);
-  }
 }
 
 void WorkerTaskProvider::CreateTask(

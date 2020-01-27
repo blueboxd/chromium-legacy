@@ -9,8 +9,11 @@
 
 #include "ash/assistant/assistant_controller.h"
 #include "ash/assistant/assistant_ui_controller.h"
+#include "ash/assistant/model/assistant_ui_model.h"
 #include "ash/assistant/util/assistant_util.h"
 #include "ash/assistant/util/deep_link_util.h"
+#include "ash/public/cpp/assistant/conversation_starter.h"
+#include "ash/public/cpp/assistant/conversation_starters_client.h"
 #include "ash/public/cpp/assistant/proactive_suggestions.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
@@ -24,6 +27,12 @@ namespace ash {
 
 namespace {
 
+using chromeos::assistant::features::IsConversationStartersV2Enabled;
+using chromeos::assistant::features::IsProactiveSuggestionsEnabled;
+using chromeos::assistant::mojom::AssistantSuggestion;
+using chromeos::assistant::mojom::AssistantSuggestionPtr;
+using chromeos::assistant::mojom::AssistantSuggestionType;
+
 // Conversation starters -------------------------------------------------------
 
 constexpr int kMaxNumOfConversationStarters = 3;
@@ -35,13 +44,17 @@ constexpr int kMaxNumOfConversationStarters = 3;
 AssistantSuggestionsController::AssistantSuggestionsController(
     AssistantController* assistant_controller)
     : assistant_controller_(assistant_controller) {
-  if (chromeos::assistant::features::IsProactiveSuggestionsEnabled()) {
+  if (IsProactiveSuggestionsEnabled()) {
     proactive_suggestions_controller_ =
         std::make_unique<AssistantProactiveSuggestionsController>(
             assistant_controller_);
   }
 
-  UpdateConversationStarters();
+  // In conversation starters V2, we only update conversation starters when the
+  // Assistant UI is becoming visible so as to maximize freshness.
+  if (!IsConversationStartersV2Enabled())
+    UpdateConversationStarters();
+
   assistant_controller_->AddObserver(this);
   AssistantState::Get()->AddObserver(this);
 }
@@ -74,6 +87,26 @@ void AssistantSuggestionsController::OnUiVisibilityChanged(
     AssistantVisibility old_visibility,
     base::Optional<AssistantEntryPoint> entry_point,
     base::Optional<AssistantExitPoint> exit_point) {
+  if (IsConversationStartersV2Enabled()) {
+    // When Assistant is starting a session, we update our cache of conversation
+    // starters so that they are as fresh as possible. Note that we may need to
+    // modify this logic later if latency becomes a concern.
+    if (assistant::util::IsStartingSession(new_visibility, old_visibility)) {
+      UpdateConversationStarters();
+      return;
+    }
+    // When Assistant is finishing a session, we clear our cache of conversation
+    // starters so that, when the next session begins, we won't show stale
+    // conversation starters while we fetch fresh ones.
+    if (assistant::util::IsFinishingSession(new_visibility)) {
+      conversation_starters_weak_factory_.InvalidateWeakPtrs();
+      model_.SetConversationStarters({});
+    }
+    return;
+  }
+
+  DCHECK(!IsConversationStartersV2Enabled());
+
   // When Assistant is finishing a session, we update our cache of conversation
   // starters so that they're fresh for the next launch.
   if (assistant::util::IsFinishingSession(new_visibility))
@@ -86,18 +119,55 @@ void AssistantSuggestionsController::OnProactiveSuggestionsChanged(
 }
 
 void AssistantSuggestionsController::OnAssistantContextEnabled(bool enabled) {
+  // We currently assume that the context setting is not being modified while
+  // Assistant UI is visible.
+  DCHECK_NE(AssistantVisibility::kVisible,
+            assistant_controller_->ui_controller()->model()->visibility());
+
+  // In conversation starters V2, we only update conversation starters when
+  // Assistant UI is becoming visible so as to maximize freshness.
+  if (IsConversationStartersV2Enabled())
+    return;
+
   UpdateConversationStarters();
 }
 
-// TODO(dmblack): The conversation starter cache should receive its contents
-// from the server. Hard-coding for the time being.
 void AssistantSuggestionsController::UpdateConversationStarters() {
-  using chromeos::assistant::mojom::AssistantSuggestion;
-  using chromeos::assistant::mojom::AssistantSuggestionPtr;
-  using chromeos::assistant::mojom::AssistantSuggestionType;
+  // If conversation starters V2 is enabled, we'll fetch a fresh set of
+  // conversation starters from the server.
+  if (IsConversationStartersV2Enabled()) {
+    FetchConversationStarters();
+    return;
+  }
+  // Otherwise we'll use a locally provided set of proactive suggestions.
+  ProvideConversationStarters();
+}
 
+void AssistantSuggestionsController::FetchConversationStarters() {
+  DCHECK(IsConversationStartersV2Enabled());
+
+  // Invalidate any requests that are already in flight.
+  conversation_starters_weak_factory_.InvalidateWeakPtrs();
+
+  // Fetch a fresh set of conversation starters from the server (via the
+  // dedicated ConversationStartersClient).
+  ConversationStartersClient::Get()->FetchConversationStarters(base::BindOnce(
+      [](const base::WeakPtr<AssistantSuggestionsController>& self,
+         std::vector<ConversationStarter>&& conversation_starters) {
+        // When the server doesn't respond with any conversation starters we'll
+        // fallback to the locally provided set.
+        if (self && conversation_starters.empty())
+          self->ProvideConversationStarters();
+
+        // TODO(dmblack): Handle non-empty case.
+      },
+      conversation_starters_weak_factory_.GetWeakPtr()));
+}
+
+void AssistantSuggestionsController::ProvideConversationStarters() {
   std::vector<AssistantSuggestionPtr> conversation_starters;
 
+  // Adds a conversation starter for the given |message_id| and |action_url|.
   auto AddConversationStarter = [&conversation_starters](
                                     int message_id, GURL action_url = GURL()) {
     AssistantSuggestionPtr starter = AssistantSuggestion::New();

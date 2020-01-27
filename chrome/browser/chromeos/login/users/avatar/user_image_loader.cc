@@ -156,11 +156,11 @@ void UserImageRequest::OnImageDecoded(const SkBitmap& decoded_image) {
         user_manager::UserImage::FORMAT_UNKNOWN);
     base::PostTaskAndReplyWithResult(
         background_task_runner_.get(), FROM_HERE,
-        base::Bind(&CropImage, decoded_image, target_size, bitmap,
-                   image_format),
-        base::Bind(&UserImageRequest::OnImageCropped,
-                   weak_ptr_factory_.GetWeakPtr(), base::Owned(bitmap),
-                   base::Owned(image_format)));
+        base::BindOnce(&CropImage, decoded_image, target_size, bitmap,
+                       image_format),
+        base::BindOnce(&UserImageRequest::OnImageCropped,
+                       weak_ptr_factory_.GetWeakPtr(), base::Owned(bitmap),
+                       base::Owned(image_format)));
   } else {
     const user_manager::UserImage::ImageFormat image_format =
         ChooseImageFormatFromCodec(image_info_.image_codec);

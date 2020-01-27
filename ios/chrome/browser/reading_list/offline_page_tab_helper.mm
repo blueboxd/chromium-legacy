@@ -275,8 +275,8 @@ void OfflinePageTabHelper::PresentOfflinePageForOnlineUrl(const GURL& url) {
     web_state_->GetNavigationManager()->LoadURLWithParams(params);
     return;
   }
-  ios::ChromeBrowserState* browser_state =
-      ios::ChromeBrowserState::FromBrowserState(web_state_->GetBrowserState());
+  ChromeBrowserState* browser_state =
+      ChromeBrowserState::FromBrowserState(web_state_->GetBrowserState());
   base::FilePath offline_root =
       ReadingListDownloadServiceFactory::GetForBrowserState(browser_state)
           ->OfflineRoot()

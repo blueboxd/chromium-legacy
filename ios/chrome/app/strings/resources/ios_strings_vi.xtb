@@ -192,6 +192,7 @@
 <translation id="3474649192738347024">Đã điền biểu mẫu.</translation>
 <translation id="3478058380795961209">Tháng hết hạn</translation>
 <translation id="3482959374254649722">Đang đồng bộ hóa tab của bạn...</translation>
+<translation id="3484946776651937681">Mở trong thư mục Tệp đã tải xuống</translation>
 <translation id="3493531032208478708"><ph name="BEGIN_LINK" />Tìm hiểu thêm<ph name="END_LINK" /> về nội dung đề xuất</translation>
 <translation id="3494788280727468875">Xác nhận xóa dữ liệu duyệt web</translation>
 <translation id="35083190962747987">Mở ${url}</translation>
@@ -537,6 +538,7 @@ Dữ liệu của bạn đã được mã hóa bằng cụm mật khẩu đồng
 <translation id="8319076807703933069">Tìm kiếm mới</translation>
 <translation id="8323906514956095947">Chạm và giữ để hiển thị thêm tùy chọn về tab</translation>
 <translation id="8328777765163860529">Đóng tất cả</translation>
+<translation id="8386068868580335421">Đặt lại</translation>
 <translation id="8407669440184693619">Không tìm thấy mật khẩu nào cho trang web này</translation>
 <translation id="842017693807136194">Đăng nhập bằng</translation>
 <translation id="8428045167754449968">Thành phố/thị trấn</translation>

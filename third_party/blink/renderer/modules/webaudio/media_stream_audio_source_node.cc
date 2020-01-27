@@ -26,9 +26,9 @@
 #include "third_party/blink/renderer/modules/webaudio/media_stream_audio_source_node.h"
 
 #include <memory>
+#include "third_party/blink/renderer/bindings/modules/v8/v8_media_stream_audio_source_options.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_context.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_node_output.h"
-#include "third_party/blink/renderer/modules/webaudio/media_stream_audio_source_options.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 
 namespace blink {

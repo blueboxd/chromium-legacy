@@ -7,6 +7,7 @@
 #include "base/guid.h"
 #include "base/stl_util.h"
 #include "base/task/post_task.h"
+#include "base/trace_event/trace_event.h"
 #include "chrome/browser/sharing/sharing_constants.h"
 #include "chrome/browser/sharing/sharing_metrics.h"
 #include "chrome/browser/sharing/sharing_sync_preference.h"
@@ -32,6 +33,13 @@ void SharingMessageSender::SendMessageToDevice(
   DCHECK(message.payload_case() !=
          chrome_browser_sharing::SharingMessage::kAckMessage);
 
+  int trace_id = GenerateSharingTraceId();
+  TRACE_EVENT_NESTABLE_ASYNC_BEGIN1(
+      "sharing", "Sharing.SendMessage", TRACE_ID_LOCAL(trace_id),
+      "message_type",
+      SharingMessageTypeToString(
+          SharingPayloadCaseToMessageType(message.payload_case())));
+
   std::string message_guid = base::GenerateGUID();
   chrome_browser_sharing::MessageType message_type =
       SharingPayloadCaseToMessageType(message.payload_case());
@@ -44,7 +52,7 @@ void SharingMessageSender::SendMessageToDevice(
       message_metadata_, message_guid,
       SentMessageMetadata(std::move(callback), base::TimeTicks::Now(),
                           message_type, receiver_device_platform,
-                          last_updated_age));
+                          last_updated_age, trace_id));
   DCHECK(inserted.second);
 
   auto delegate_iter = send_delegates_.find(delegate_type);
@@ -84,6 +92,8 @@ void SharingMessageSender::SendMessageToDevice(
   message.set_sender_device_name(
       send_tab_to_self::GetSharingDeviceNames(local_device_info).full_name);
 
+  TRACE_EVENT_NESTABLE_ASYNC_BEGIN0("sharing", "Sharing.DoSendMessage",
+                                    TRACE_ID_LOCAL(trace_id));
   delegate->DoSendMessageToDevice(
       device, response_timeout, std::move(message),
       base::BindOnce(&SharingMessageSender::OnMessageSent,
@@ -94,6 +104,10 @@ void SharingMessageSender::OnMessageSent(
     const std::string& message_guid,
     SharingSendMessageResult result,
     base::Optional<std::string> message_id) {
+  TRACE_EVENT_NESTABLE_ASYNC_END1(
+      "sharing", "Sharing.DoSendMessage",
+      TRACE_ID_LOCAL(message_metadata_.find(message_guid)->second.trace_id),
+      "result", SharingSendMessageResultToString(result));
   if (result != SharingSendMessageResult::kSuccessful) {
     InvokeSendMessageCallback(message_guid, result,
                               /*response=*/nullptr);
@@ -114,6 +128,7 @@ void SharingMessageSender::OnMessageSent(
 void SharingMessageSender::OnAckReceived(
     const std::string& message_id,
     std::unique_ptr<chrome_browser_sharing::ResponseMessage> response) {
+  TRACE_EVENT0("sharing", "SharingMessageSender::OnAckReceived");
   auto guid_iter = message_guids_.find(message_id);
   if (guid_iter == message_guids_.end()) {
     // We don't have the guid yet, store the response until we receive it.
@@ -159,6 +174,9 @@ void SharingMessageSender::InvokeSendMessageCallback(
   LogSendSharingMessageResult(metadata.type, metadata.receiver_device_platform,
                               result);
   LogSharingDeviceLastUpdatedAgeWithResult(result, metadata.last_updated_age);
+  TRACE_EVENT_NESTABLE_ASYNC_END1("sharing", "SharingMessageSender.SendMessage",
+                                  TRACE_ID_LOCAL(metadata.trace_id), "result",
+                                  SharingSendMessageResultToString(result));
 }
 
 SharingMessageSender::SentMessageMetadata::SentMessageMetadata(
@@ -166,12 +184,14 @@ SharingMessageSender::SentMessageMetadata::SentMessageMetadata(
     base::TimeTicks timestamp,
     chrome_browser_sharing::MessageType type,
     SharingDevicePlatform receiver_device_platform,
-    base::TimeDelta last_updated_age)
+    base::TimeDelta last_updated_age,
+    int trace_id)
     : callback(std::move(callback)),
       timestamp(timestamp),
       type(type),
       receiver_device_platform(receiver_device_platform),
-      last_updated_age(last_updated_age) {}
+      last_updated_age(last_updated_age),
+      trace_id(trace_id) {}
 
 SharingMessageSender::SentMessageMetadata::SentMessageMetadata(
     SentMessageMetadata&& other) = default;

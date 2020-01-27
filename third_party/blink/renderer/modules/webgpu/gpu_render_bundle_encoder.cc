@@ -4,13 +4,13 @@
 
 #include "third_party/blink/renderer/modules/webgpu/gpu_render_bundle_encoder.h"
 
+#include "third_party/blink/renderer/bindings/modules/v8/v8_gpu_render_bundle_descriptor.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_gpu_render_bundle_encoder_descriptor.h"
 #include "third_party/blink/renderer/modules/webgpu/dawn_conversions.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_bind_group.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_buffer.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_device.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_render_bundle.h"
-#include "third_party/blink/renderer/modules/webgpu/gpu_render_bundle_descriptor.h"
-#include "third_party/blink/renderer/modules/webgpu/gpu_render_bundle_encoder_descriptor.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_render_pipeline.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 

@@ -134,6 +134,7 @@
 <translation id="1994173015038366702">Webhely URL-je</translation>
 <translation id="2000419248597011803">Bizonyos cookie-kat és kereséseket küld a címsávból és a keresőmezőből az alapértelmezett keresőmotornak</translation>
 <translation id="2002537628803770967">A Google Pay szolgáltatást használó hitelkártyák és címek</translation>
+<translation id="2012973609889389923">Gyors webhely</translation>
 <translation id="2013642289801508067">{FILE_COUNT,plural, =1{# fájl}other{# fájl}}</translation>
 <translation id="2017836877785168846">Törli a címsávban található előzményeket és automatikus kiegészítéseket.</translation>
 <translation id="2021896219286479412">Teljes képernyős oldal vezérlői</translation>
@@ -306,6 +307,7 @@
 <translation id="3298243779924642547">Egyszerű</translation>
 <translation id="3303414029551471755">Biztosan letölti a tartalmat?</translation>
 <translation id="3306398118552023113">Ez az alkalmazás fut a Chrome-ban</translation>
+<translation id="3312292613668865961">Kérdezzen rá, mielőtt engedélyezi a webhelyek számára a virtuálisvalóság-eszközökhöz és -adatokhoz való hozzáférést (ajánlott)</translation>
 <translation id="3315103659806849044">Jelenleg a Szinkronizálás és Google beállításait szabja személyre. A szinkronizálás bekapcsolásának véglegesítéséhez koppintson a képernyő alján található Megerősítés gombra. Fel</translation>
 <translation id="3328801116991980348">Webhelyadatok</translation>
 <translation id="3333961966071413176">Összes névjegy</translation>
@@ -511,6 +513,7 @@ A beállítás módosításához <ph name="BEGIN_LINK" />állítsa vissza a szin
 <translation id="4915549754973153784"><ph name="BEGIN_LINK" />Kérjen segítséget<ph name="END_LINK" />, miközben eszközöket keresünk…</translation>
 <translation id="4921180162323349895">{FILE_COUNT,plural, =1{# oldal}other{# oldal}}</translation>
 <translation id="4932247056774066048">Mivel kijelentkezik a(z) <ph name="DOMAIN_NAME" /> által kezelt fiókból, a rendszer törli az Ön Chrome-adatait erről az eszközről. Google-fiókjában továbbra is megmaradnak ezek az adatok.</translation>
+<translation id="4935305910887312910">Kérdezzen rá, mielőtt engedélyezi a webhelyek számára a kamera pozíciójához való hozzáférést vagy a helyiség feltérképezését (ajánlott)</translation>
 <translation id="4943703118917034429">Virtuális valóság</translation>
 <translation id="4943872375798546930">Nincs találat</translation>
 <translation id="4958708863221495346">A(z) <ph name="URL_OF_THE_CURRENT_TAB" /> webhely megosztja az Ön képernyőjét</translation>
@@ -744,6 +747,7 @@ Egyes webhelyek például válaszolhatnak rá úgy, hogy olyan hirdetéseket jel
 <translation id="6573431926118603307">A más eszközökön futó Chrome böngészőben megnyitott lapok itt jelennek meg.</translation>
 <translation id="6583199322650523874">Az aktuális oldal felvétele a könyvjelzők közé</translation>
 <translation id="6593061639179217415">Asztali webhely</translation>
+<translation id="6597891566292541626">Igazítsa a QR-kódot/vonalkódot ehhez a kerethez.</translation>
 <translation id="6600954340915313787">A Chrome-ba másolva</translation>
 <translation id="6608650720463149374"><ph name="GIGABYTES" /> GB</translation>
 <translation id="6612358246767739896">Védett tartalom</translation>
@@ -953,6 +957,7 @@ A webhely NEM kap hozzáférést a kamerához. A kamera képét csak Ön láthat
 <translation id="8109613176066109935">Ha az összes eszközén szeretné elérni könyvjelzőit, kapcsolja be a szinkronizálást</translation>
 <translation id="8110087112193408731">Chrome-beli tevékenysége megjelenjen a digitális jóllét funkcióban?</translation>
 <translation id="8116925261070264013">Némítva</translation>
+<translation id="8127542551745560481">Kezdőoldal szerkesztése</translation>
 <translation id="813082847718468539">Az oldalinformációk megtekintése</translation>
 <translation id="8156139159503939589">Milyen nyelveken olvas?</translation>
 <translation id="8168435359814927499">Tartalom</translation>
@@ -1024,6 +1029,7 @@ A webhely NEM kap hozzáférést a kamerához. A kamera képét csak Ön láthat
 <translation id="8676374126336081632">Beírt szöveg törlése</translation>
 <translation id="8687353297350450808">{N_BARS,plural, =1{Jelerősség szintje: # sáv}other{Jelerősség szintje: # sáv}}</translation>
 <translation id="868929229000858085">Keresés a névjegyek között</translation>
+<translation id="8698438463325761328">A virtuálisvalóság-eszközökhöz és -adatokhoz való hozzáférés letiltása a webhelyek számára</translation>
 <translation id="869891660844655955">Lejárati dátum</translation>
 <translation id="8719023831149562936">Nem lehet átsugározni a jelenlegi lapot</translation>
 <translation id="8728487861892616501">Az alkalmazás használatával elfogadja a Chrome <ph name="BEGIN_LINK1" />általános szerződési feltételeit<ph name="END_LINK1" /> és <ph name="BEGIN_LINK2" />adatvédelmi közleményét<ph name="END_LINK2" />, valamint <ph name="BEGIN_LINK3" />a Family Link szolgáltatással kezelt Google-fiókokra vonatkozó adatvédelmi közleményt<ph name="END_LINK3" />.</translation>
@@ -1041,6 +1047,7 @@ A webhely NEM kap hozzáférést a kamerához. A kamera képét csak Ön láthat
 <translation id="883806473910249246">Hiba történt a tartalom letöltésekor.</translation>
 <translation id="8840953339110955557">Az oldal eltérhet az online változattól.</translation>
 <translation id="8847988622838149491">USB</translation>
+<translation id="884828189055900810">A kamera pozíciójához való hozzáférés, illetve a helyiség feltérképezésének letiltása a webhelyek számára</translation>
 <translation id="8853345339104747198"><ph name="TAB_TITLE" /> lap</translation>
 <translation id="885701979325669005">Tárolás</translation>
 <translation id="889338405075704026">Ugrás a Chrome beállításaira</translation>
@@ -1048,6 +1055,7 @@ A webhely NEM kap hozzáférést a kamerához. A kamera képét csak Ön láthat
 <translation id="8909135823018751308">Megosztás...</translation>
 <translation id="8912362522468806198">Google Fiókjába</translation>
 <translation id="8920114477895755567">Várakozás a szülői adatokra.</translation>
+<translation id="8921772741368021346"><ph name="POSITION" />/<ph name="DURATION" /></translation>
 <translation id="8922289737868596582">A További lehetőségek gomb segítségével letölthet oldalakat offline használatra</translation>
 <translation id="8926666909099850184">Az NFC ki van kapcsolva ezen az eszközön. Kapcsolja be az <ph name="BEGIN_LINK" />Android Beállítások alkalmazásában<ph name="END_LINK" />.</translation>
 <translation id="8937772741022875483">Eltávolítja Chrome-beli tevékenységét a digitális jóllét funkcióból?</translation>

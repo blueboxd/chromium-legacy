@@ -5,6 +5,7 @@
 #include <string>
 
 #include "build/build_config.h"
+#include "third_party/blink/public/mojom/input/focus_type.mojom-blink.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/editing/commands/move_commands.h"
 #include "third_party/blink/renderer/core/editing/editor.h"
@@ -27,8 +28,8 @@ class MoveCommandsTest : public EditingTestBase {
                              SetSelectionOptions());
     GetDocument().SetFocusedElement(
         GetDocument().QuerySelector(initial_focus_element),
-        FocusParams(SelectionBehaviorOnFocus::kNone, kWebFocusTypeNone,
-                    nullptr));
+        FocusParams(SelectionBehaviorOnFocus::kNone,
+                    mojom::blink::FocusType::kNone, nullptr));
     GetDocument().GetFrame()->GetSettings()->SetCaretBrowsingEnabled(true);
     execute(*GetDocument().GetFrame(), nullptr,
             EditorCommandSource::kMenuOrKeyBinding, String());
@@ -316,7 +317,8 @@ TEST_F(MoveCommandsTest, CaretBrowsingSelectionUpdate) {
       SetSelectionOptions());
   GetDocument().SetFocusedElement(
       GetDocument().QuerySelector("a"),
-      FocusParams(SelectionBehaviorOnFocus::kNone, kWebFocusTypeNone, nullptr));
+      FocusParams(SelectionBehaviorOnFocus::kNone,
+                  mojom::blink::FocusType::kNone, nullptr));
   GetDocument().GetFrame()->GetSettings()->SetCaretBrowsingEnabled(true);
   MoveCommands::ExecuteMoveRight(*GetDocument().GetFrame(), nullptr,
                                  EditorCommandSource::kMenuOrKeyBinding,

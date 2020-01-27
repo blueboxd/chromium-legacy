@@ -164,14 +164,12 @@ void XRFrameTransport::FrameSubmit(
 
     // Create mailbox and sync token for transfer.
     TRACE_EVENT_BEGIN0("gpu", "XRFrameTransport::GetMailbox");
-    auto mailbox = static_image->GetMailbox();
+    auto mailbox_holder = static_image->GetMailboxHolder();
     TRACE_EVENT_END0("gpu", "XRFrameTransport::GetMailbox");
-    auto sync_token = static_image->GetSyncToken();
 
     TRACE_EVENT_BEGIN0("gpu", "XRFrameTransport::SubmitFrame");
-    vr_presentation_provider->SubmitFrame(
-        vr_frame_id, gpu::MailboxHolder(mailbox, sync_token, GL_TEXTURE_2D),
-        frame_wait_time_);
+    vr_presentation_provider->SubmitFrame(vr_frame_id, mailbox_holder,
+                                          frame_wait_time_);
     TRACE_EVENT_END0("gpu", "XRFrameTransport::SubmitFrame");
   } else if (transport_options_->transport_method ==
              device::mojom::blink::XRPresentationTransportMethod::

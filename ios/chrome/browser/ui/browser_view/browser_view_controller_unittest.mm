@@ -97,7 +97,7 @@ class BrowserViewControllerTest : public BlockCleanupTest {
         .andReturn(
             // As OCMock compare types as string, the cast is required otherwise
             // it will complain that the value has an incompatible type.
-            static_cast<ios::ChromeBrowserState*>(chrome_browser_state_.get()));
+            static_cast<ChromeBrowserState*>(chrome_browser_state_.get()));
 
     // Enable web usage for the mock TabModel's WebStateList.
     WebStateListWebUsageEnabler* enabler =

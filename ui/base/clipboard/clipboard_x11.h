@@ -31,6 +31,8 @@ class ClipboardX11 : public Clipboard {
   void ReadAvailableTypes(ClipboardBuffer buffer,
                           std::vector<base::string16>* types,
                           bool* contains_filenames) const override;
+  std::vector<base::string16> ReadAvailablePlatformSpecificFormatNames(
+      ClipboardBuffer buffer) const override;
   void ReadText(ClipboardBuffer buffer, base::string16* result) const override;
   void ReadAsciiText(ClipboardBuffer buffer,
                      std::string* result) const override;

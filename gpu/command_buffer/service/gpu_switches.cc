@@ -47,6 +47,9 @@ const char kForceGpuMemAvailableMb[]        = "force-gpu-mem-available-mb";
 const char kForceGpuMemDiscardableLimitMb[] =
     "force-gpu-mem-discardable-limit-mb";
 
+// Sets the maximum texture size in pixels.
+const char kForceMaxTextureSize[] = "force-max-texture-size";
+
 // Sets the maximum size of the in-memory gpu program cache, in kb
 const char kGpuProgramCacheSizeKb[]         = "gpu-program-cache-size-kb";
 

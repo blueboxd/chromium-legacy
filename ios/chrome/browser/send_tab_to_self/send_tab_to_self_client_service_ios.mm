@@ -31,7 +31,7 @@
 namespace send_tab_to_self {
 
 SendTabToSelfClientServiceIOS::SendTabToSelfClientServiceIOS(
-    ios::ChromeBrowserState* browser_state,
+    ChromeBrowserState* browser_state,
     SendTabToSelfModel* model)
     : model_(model), browser_state_(browser_state) {
   model_->AddObserver(this);

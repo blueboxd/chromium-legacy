@@ -291,7 +291,6 @@ og röng skilríki til baka. Þetta getur gerst þegar tölvuþrjótur reynir a�
 <translation id="2218879909401188352">Tölvuþrjótar sem eru á <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> núna gætu sett upp hættuleg forrit sem skaða tækið þitt, setja faldar færslur á símreikninginn þinn eða stela persónuupplýsingunum þínum. <ph name="BEGIN_LEARN_MORE_LINK" />Frekari upplýsingar<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="2224337661447660594">Engin nettenging</translation>
 <translation id="2230458221926704099">Lagaðu tenginguna með því að nota <ph name="BEGIN_LINK" />greiningarforritið<ph name="END_LINK" /></translation>
-<translation id="22320125457191592">Fyrir þig</translation>
 <translation id="2239100178324503013">Senda núna</translation>
 <translation id="2248949050832152960">Nota WebAuthn</translation>
 <translation id="2250931979407627383">Saumur vinstra megin</translation>
@@ -577,7 +576,6 @@ og röng skilríki til baka. Þetta getur gerst þegar tölvuþrjótur reynir a�
 <translation id="3531780078352352885">Vinnslublöð</translation>
 <translation id="3533328374079021623">Pósthólf 5</translation>
 <translation id="3539171420378717834">Geyma afrit af þessu korti í þessu tæki</translation>
-<translation id="3553513561058684206">Fyrir þig</translation>
 <translation id="3558573058928565255">Dagur og tími</translation>
 <translation id="3566021033012934673">Tengingin þín er ekki örugg</translation>
 <translation id="3574305903863751447"><ph name="CITY" />, <ph name="STATE" /> <ph name="COUNTRY" /></translation>

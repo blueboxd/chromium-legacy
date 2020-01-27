@@ -53,26 +53,6 @@
             ]
         }
     ],
-    "AccountConsistencyVariations": [
-        {
-            "platforms": [
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "DiceMigration",
-                    "params": {
-                        "method": "dice_migration"
-                    },
-                    "enable_features": [
-                        "AccountConsistency"
-                    ]
-                }
-            ]
-        }
-    ],
     "AdTagging": [
         {
             "platforms": [
@@ -809,26 +789,6 @@
             ]
         }
     ],
-    "AutofillDynamicForms": [
-        {
-            "platforms": [
-                "android",
-                "chromeos",
-                "ios",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "FullLaunch",
-                    "enable_features": [
-                        "AutofillDynamicForms"
-                    ]
-                }
-            ]
-        }
-    ],
     "AutofillEnableLocalCardMigrationForNonSyncUser": [
         {
             "platforms": [
@@ -860,46 +820,6 @@
             "experiments": [
                 {
                     "name": "Enabled"
-                }
-            ]
-        }
-    ],
-    "AutofillImportDynamicForms": [
-        {
-            "platforms": [
-                "android",
-                "chromeos",
-                "ios",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "AutofillImportDynamicForms"
-                    ]
-                }
-            ]
-        }
-    ],
-    "AutofillImportNonFocusableCreditCardForms": [
-        {
-            "platforms": [
-                "android",
-                "chromeos",
-                "ios",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "AutofillImportNonFocusableCreditCardForms"
-                    ]
                 }
             ]
         }
@@ -1239,40 +1159,6 @@
                     "name": "Enabled",
                     "enable_features": [
                         "AutofillUseServerCVCPrediction"
-                    ]
-                }
-            ]
-        }
-    ],
-    "AutomaticTabDiscarding": [
-        {
-            "platforms": [
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled_Once_10-gen2",
-                    "params": {
-                        "MinimumProtectionTime": "600"
-                    },
-                    "enable_features": [
-                        "AutomaticTabDiscarding"
-                    ]
-                }
-            ]
-        }
-    ],
-    "BackgroundTaskComponentUpdate": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "BackgroundTaskComponentUpdateEnabled",
-                    "enable_features": [
-                        "BackgroundTaskComponentUpdate"
                     ]
                 }
             ]
@@ -1678,23 +1564,6 @@
             ]
         }
     ],
-    "ChromeSuggestionsTuningForceTopSites": [
-        {
-            "platforms": [
-                "windows",
-                "mac",
-                "chromeos",
-                "linux",
-                "ios",
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "Disabled"
-                }
-            ]
-        }
-    ],
     "ChromeosVideoDecoder": [
         {
             "platforms": [
@@ -1756,25 +1625,6 @@
                     "name": "Enabled",
                     "enable_features": [
                         "PolicyFCMInvalidations"
-                    ]
-                }
-            ]
-        }
-    ],
-    "CompositorImageAnimation": [
-        {
-            "platforms": [
-                "android",
-                "chromeos",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "CompositorImageAnimation",
-                    "enable_features": [
-                        "CompositorImageAnimation"
                     ]
                 }
             ]
@@ -2055,25 +1905,6 @@
                     "name": "Experiment",
                     "enable_features": [
                         "DecodeJpeg420ImagesToYUV"
-                    ]
-                }
-            ]
-        }
-    ],
-    "DecoupleTranslateLanguage": [
-        {
-            "platforms": [
-                "android",
-                "chromeos",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Experiment",
-                    "enable_features": [
-                        "DecoupleTranslateLanguageFeature"
                     ]
                 }
             ]
@@ -2695,7 +2526,6 @@
                         "session_rate": "any"
                     },
                     "enable_features": [
-                        "EphemeralTab",
                         "EphemeralTabUsingBottomSheet",
                         "IPH_EphemeralTab"
                     ]
@@ -3207,21 +3037,6 @@
                     "name": "Enabled",
                     "enable_features": [
                         "EmbedderBlockRestoreUrl"
-                    ]
-                }
-            ]
-        }
-    ],
-    "IOSSettingsAddPaymentMethod": [
-        {
-            "platforms": [
-                "ios"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "SettingsAddPaymentMethod"
                     ]
                 }
             ]
@@ -7360,6 +7175,23 @@
                     "name": "UserActivityEventLogging",
                     "enable_features": [
                         "UserActivityEventLogging"
+                    ]
+                }
+            ]
+        }
+    ],
+    "UserDataSnapshot": [
+        {
+            "platforms": [
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "UserDataSnapshot",
+                    "enable_features": [
+                        "UserDataSnapshot"
                     ]
                 }
             ]

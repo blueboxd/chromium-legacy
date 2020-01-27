@@ -92,7 +92,7 @@ class StyledMarkupAccumulator final {
   MarkupFormatter formatter_;
   const TextOffset start_;
   const TextOffset end_;
-  const Member<Document> document_;
+  Document* const document_;
   const CreateMarkupOptions options_;
   StringBuilder result_;
   Vector<String> reversed_preceding_markup_;

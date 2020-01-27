@@ -40,11 +40,11 @@ class CORE_EXPORT SelectorFilterParentScope {
   void PushAncestors(Element&);
   void PopAncestors(Element&);
 
-  Member<Element> parent_;
+  Element* parent_;
   bool pushed_ = false;
   ScopeType scope_type_;
   SelectorFilterParentScope* previous_;
-  Member<StyleResolver> resolver_;
+  StyleResolver* resolver_;
 
   static SelectorFilterParentScope* current_scope_;
 };
@@ -70,7 +70,10 @@ class CORE_EXPORT SelectorFilterRootScope final
 inline SelectorFilterParentScope::SelectorFilterParentScope(
     Element* parent,
     ScopeType scope_type)
-    : parent_(parent), scope_type_(scope_type), previous_(current_scope_) {
+    : parent_(parent),
+      scope_type_(scope_type),
+      previous_(current_scope_),
+      resolver_(nullptr) {
   DCHECK(scope_type != ScopeType::kRoot || !parent || !previous_ ||
          !previous_->parent_ ||
          &parent_->GetDocument() != &previous_->parent_->GetDocument());

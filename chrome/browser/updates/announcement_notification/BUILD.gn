@@ -2,10 +2,14 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+if (is_android) {
+  import("//build/config/android/rules.gni")
+}
+
 source_set("announcement_notification") {
   sources = [
-    "announcement_notification_delegate.cc",
-    "announcement_notification_delegate.h",
+    "announcement_notification_metrics.cc",
+    "announcement_notification_metrics.h",
     "announcement_notification_service.cc",
     "announcement_notification_service.h",
     "announcement_notification_service_factory.cc",
@@ -17,7 +21,30 @@ source_set("announcement_notification") {
   deps = [
     "//base",
     "//components/keyed_service/content",
+    "//skia",
   ]
+
+  if (is_android) {
+    sources += [
+      "announcement_notification_delegate_android.cc",
+      "announcement_notification_delegate_android.h",
+    ]
+  } else {
+    sources += [
+      "announcement_notification_delegate.cc",
+      "announcement_notification_delegate.h",
+      "announcement_notification_handler.cc",
+      "announcement_notification_handler.h",
+    ]
+
+    deps += [ "//chrome/browser/ui" ]
+  }
+}
+
+if (is_android) {
+  java_cpp_enum("jni_enums") {
+    sources = [ "announcement_notification_metrics.h" ]
+  }
 }
 
 source_set("unit_tests") {
@@ -26,6 +53,8 @@ source_set("unit_tests") {
 
   deps = [
     ":announcement_notification",
+    "//chrome/test:test_support",
+    "//skia",
     "//testing/gmock",
     "//testing/gtest",
   ]

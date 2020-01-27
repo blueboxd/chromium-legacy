@@ -4,12 +4,12 @@
 
 #include "third_party/blink/renderer/core/geometry/dom_quad.h"
 
+#include "third_party/blink/renderer/bindings/core/v8/v8_dom_point_init.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_dom_quad_init.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_dom_rect_init.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_object_builder.h"
 #include "third_party/blink/renderer/core/geometry/dom_point.h"
-#include "third_party/blink/renderer/core/geometry/dom_point_init.h"
-#include "third_party/blink/renderer/core/geometry/dom_quad_init.h"
 #include "third_party/blink/renderer/core/geometry/dom_rect.h"
-#include "third_party/blink/renderer/core/geometry/dom_rect_init.h"
 
 namespace blink {
 namespace {

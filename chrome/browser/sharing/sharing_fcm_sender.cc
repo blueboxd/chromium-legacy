@@ -30,6 +30,8 @@ void SharingFCMSender::SendMessageToTargetInfo(
     base::TimeDelta time_to_live,
     SharingMessage message,
     SendMessageCallback callback) {
+  TRACE_EVENT0("sharing", "SharingFCMSender::SendMessageToTargetInfo");
+
   base::Optional<SharingSyncPreference::FCMRegistration> fcm_registration =
       sync_preference_->GetFCMRegistration();
   if (!fcm_registration) {
@@ -64,6 +66,8 @@ void SharingFCMSender::DoSendMessageToDevice(const syncer::DeviceInfo& device,
                                              base::TimeDelta time_to_live,
                                              SharingMessage message,
                                              SendMessageCallback callback) {
+  TRACE_EVENT0("sharing", "SharingFCMSender::DoSendMessageToDevice");
+
   base::Optional<syncer::DeviceInfo::SharingTargetInfo> target_info =
       GetTargetInfo(device);
   if (!target_info) {
@@ -118,6 +122,8 @@ bool SharingFCMSender::SetMessageSenderInfo(SharingMessage* message) {
 void SharingFCMSender::OnMessageSent(SendMessageCallback callback,
                                      gcm::SendWebPushMessageResult result,
                                      base::Optional<std::string> message_id) {
+  TRACE_EVENT1("sharing", "SharingFCMSender::OnMessageSent", "result", result);
+
   SharingSendMessageResult send_message_result;
   switch (result) {
     case gcm::SendWebPushMessageResult::kSuccessful:

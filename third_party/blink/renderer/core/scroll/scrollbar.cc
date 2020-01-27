@@ -72,6 +72,7 @@ Scrollbar::Scrollbar(ScrollableArea* scrollable_area,
       track_needs_repaint_(true),
       thumb_needs_repaint_(true),
       injected_gesture_scroll_begin_(false),
+      scrollbar_manipulation_in_progress_on_cc_thread_(false),
       style_source_(style_source) {
   theme_.RegisterScrollbar(*this);
 
@@ -450,6 +451,15 @@ bool Scrollbar::HandleTapGesture() {
 
 void Scrollbar::MouseMoved(const WebMouseEvent& evt) {
   IntPoint position = FlooredIntPoint(evt.PositionInRootFrame());
+  ScrollbarPart part = GetTheme().HitTestRootFramePosition(*this, position);
+
+  // If the WebMouseEvent was already handled on the compositor thread, simply
+  // set up the ScrollbarPart for invalidation and exit.
+  if (scrollbar_manipulation_in_progress_on_cc_thread_) {
+    SetHoveredPart(part);
+    return;
+  }
+
   if (pressed_part_ == kThumbPart) {
     if (GetTheme().ShouldSnapBackToDragOrigin(*this, evt)) {
       if (scrollable_area_) {
@@ -472,7 +482,6 @@ void Scrollbar::MouseMoved(const WebMouseEvent& evt) {
                        : ConvertFromRootFrame(position).Y();
   }
 
-  ScrollbarPart part = GetTheme().HitTestRootFramePosition(*this, position);
   if (part != hovered_part_) {
     if (pressed_part_ != kNoPart) {
       if (part == pressed_part_) {
@@ -506,6 +515,11 @@ void Scrollbar::MouseExited() {
 void Scrollbar::MouseUp(const WebMouseEvent& mouse_event) {
   bool is_captured = pressed_part_ == kThumbPart;
   SetPressedPart(kNoPart, mouse_event.GetType());
+  if (scrollbar_manipulation_in_progress_on_cc_thread_) {
+    scrollbar_manipulation_in_progress_on_cc_thread_ = false;
+    return;
+  }
+
   pressed_pos_ = 0;
   dragging_document_ = false;
   StopTimerIfNeeded();
@@ -537,6 +551,19 @@ void Scrollbar::MouseDown(const WebMouseEvent& evt) {
   IntPoint position = FlooredIntPoint(evt.PositionInRootFrame());
   SetPressedPart(GetTheme().HitTestRootFramePosition(*this, position),
                  evt.GetType());
+
+  // Scrollbar manipulation (for a mouse) always begins with a MouseDown. If
+  // this is already being handled by the compositor thread, blink::Scrollbar
+  // needs to be made aware of this. It also means that, all the actions which
+  // follow (like MouseMove(s) and MouseUp) will also be handled on the cc
+  // thread. However, the scrollbar parts still need to be invalidated on the
+  // main thread.
+  scrollbar_manipulation_in_progress_on_cc_thread_ =
+      evt.GetModifiers() &
+      WebInputEvent::Modifiers::kScrollbarManipulationHandledOnCompositorThread;
+  if (scrollbar_manipulation_in_progress_on_cc_thread_)
+    return;
+
   int pressed_pos = Orientation() == kHorizontalScrollbar
                         ? ConvertFromRootFrame(position).X()
                         : ConvertFromRootFrame(position).Y();

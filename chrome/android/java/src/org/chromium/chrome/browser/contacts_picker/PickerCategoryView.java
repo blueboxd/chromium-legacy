@@ -26,6 +26,7 @@ import org.chromium.chrome.browser.GlobalDiscardableReferencePool;
 import org.chromium.chrome.browser.favicon.RoundedIconGenerator;
 import org.chromium.chrome.browser.util.BitmapCache;
 import org.chromium.chrome.browser.util.ConversionUtils;
+import org.chromium.chrome.browser.vr.VrModeProviderImpl;
 import org.chromium.chrome.browser.widget.selection.SelectableListLayout;
 import org.chromium.chrome.browser.widget.selection.SelectableListToolbar;
 import org.chromium.chrome.browser.widget.selection.SelectionDelegate;
@@ -165,7 +166,7 @@ public class PickerCategoryView extends OptimizedFrameLayout
                                             : R.string.contacts_picker_select_contact;
         mToolbar = (ContactsPickerToolbar) mSelectableListLayout.initializeToolbar(
                 R.layout.contacts_picker_toolbar, mSelectionDelegate, titleId, 0, 0, null, false,
-                false);
+                false, new VrModeProviderImpl());
         mToolbar.setNavigationOnClickListener(this);
         mToolbar.initializeSearchView(this, R.string.contacts_picker_search, 0);
         mToolbar.setDelegate(delegate);

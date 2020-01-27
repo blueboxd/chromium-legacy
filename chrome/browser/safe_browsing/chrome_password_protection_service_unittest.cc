@@ -421,10 +421,9 @@ TEST_F(ChromePasswordProtectionServiceTest,
 
   RequestOutcome reason;
   service_->ConfigService(false /*incognito*/, false /*SBER*/);
-  EXPECT_FALSE(service_->IsPingingEnabled(
+  EXPECT_TRUE(service_->IsPingingEnabled(
       LoginReputationClientRequest::PASSWORD_REUSE_EVENT, reused_password_type,
       &reason));
-  EXPECT_EQ(RequestOutcome::DISABLED_DUE_TO_USER_POPULATION, reason);
 
   service_->ConfigService(false /*incognito*/, true /*SBER*/);
   EXPECT_TRUE(service_->IsPingingEnabled(
@@ -432,7 +431,7 @@ TEST_F(ChromePasswordProtectionServiceTest,
       &reason));
 
   service_->ConfigService(true /*incognito*/, false /*SBER*/);
-  EXPECT_FALSE(service_->IsPingingEnabled(
+  EXPECT_TRUE(service_->IsPingingEnabled(
       LoginReputationClientRequest::PASSWORD_REUSE_EVENT, reused_password_type,
       &reason));
 

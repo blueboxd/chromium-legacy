@@ -61,6 +61,8 @@ class ArcDefaultAppList {
 
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
   static void UseTestAppsDirectory();
+  static std::string GetBoardNameForTesting(
+      const base::FilePath& build_prop_path);
 
   // Returns default app info if it is found in defaults and its package is not
   // marked as uninstalled.

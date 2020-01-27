@@ -179,7 +179,8 @@ PaymentMethodViewController::PaymentMethodViewController(
     PaymentRequestState* state,
     PaymentRequestDialogView* dialog)
     : PaymentRequestSheetController(spec, state, dialog),
-      payment_method_list_(dialog) {
+      payment_method_list_(dialog),
+      enable_add_card_(!state->is_retry_called()) {
   const std::vector<std::unique_ptr<PaymentApp>>& available_apps =
       state->available_apps();
   for (const auto& app : available_apps) {
@@ -240,6 +241,10 @@ int PaymentMethodViewController::GetSecondaryButtonTag() {
 
 int PaymentMethodViewController::GetSecondaryButtonId() {
   return static_cast<int>(DialogViewID::PAYMENT_METHOD_ADD_CARD_BUTTON);
+}
+
+bool PaymentMethodViewController::ShouldShowSecondaryButton() {
+  return enable_add_card_;
 }
 
 }  // namespace payments

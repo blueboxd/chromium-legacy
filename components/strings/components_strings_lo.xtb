@@ -290,7 +290,6 @@
 <translation id="2218879909401188352">ຜູ້ໂຈມຕີເຊິ່ງໃນປັດຈຸບັນຢູ່ໃນ <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> ສາມາດຕິດຕັ້ງແອັບອັນຕະລາຍທີ່ເຮັດໃຫ້ອຸປະກອນຂອງທ່ານເສຍຫາຍໄດ້, ເພີ່ມການຄິດຄ່າທີ່ເຊື່ອງໄວ້ໃສ່ໃບບິນມືຖືຂອງທ່ານ ຫຼື ລັກເອົາຂໍ້ມູນສ່ວນຂອງທ່ານ. <ph name="BEGIN_LEARN_MORE_LINK" />ສຶກສາເພີ່ມເຕີມ<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="2224337661447660594">ບໍ່ມີອິນເຕີເນັດ</translation>
 <translation id="2230458221926704099">ແກ້ໄຂການເຊື່ອມຕໍ່ຂອງທ່ານ ໂດຍໃຊ້ <ph name="BEGIN_LINK" />ແອັບກວດວິເຄາະ<ph name="END_LINK" /></translation>
-<translation id="22320125457191592">ສຳລັບທ່ານ</translation>
 <translation id="2239100178324503013">ສົ່ງດຽວນີ້</translation>
 <translation id="2248949050832152960">ໃຊ້ WebAuthn</translation>
 <translation id="2250931979407627383">ຫຍິບຂອບເບື້ອງຂວາ</translation>
@@ -576,7 +575,6 @@
 <translation id="3531780078352352885">ແຜ່ນວຽກ</translation>
 <translation id="3533328374079021623">ກ່ອງຈົດໝາຍ 5</translation>
 <translation id="3539171420378717834">ຮັກ​ສາ​ສຳ​ເນົາ​ຂອງ​ບັດ​ນີ້​ໄວ້​ຢູ່​ໃນ​ອຸ​ປະ​ກອນ​ຂອງ​ທ່ານ</translation>
-<translation id="3553513561058684206">ສຳລັບທ່ານ</translation>
 <translation id="3558573058928565255">ຕອນກາງເວັນ</translation>
 <translation id="3566021033012934673">ການເຊື່ອມຕໍ່ຂອງທ່ານບໍ່ເປັນສ່ວນຕົວ</translation>
 <translation id="3574305903863751447"><ph name="CITY" />, <ph name="STATE" /> <ph name="COUNTRY" /></translation>

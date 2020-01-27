@@ -17,7 +17,6 @@ suite('discards', function() {
       visibility: 0,  // hidden
       state: 0,       // active
       canFreeze: false,
-      canDiscard: false,
       isAutoDiscardable: false,
       discardCount: 0,
       utilityRank: 0,
@@ -29,7 +28,6 @@ suite('discards', function() {
       visibility: 1,  // occluded
       state: 3,       // frozen
       canFreeze: true,
-      canDiscard: true,
       isFrozen: true,
       isDiscarded: true,
       isAutoDiscardable: true,
@@ -38,8 +36,8 @@ suite('discards', function() {
       lastActiveSeconds: 1
     };
 
-    ['title', 'tabUrl', 'visibility', 'state', 'canFreeze', 'canDiscard',
-     'isAutoDiscardable', 'discardCount', 'utilityRank', 'lastActiveSeconds']
+    ['title', 'tabUrl', 'visibility', 'state', 'canFreeze', 'isAutoDiscardable',
+     'discardCount', 'utilityRank', 'lastActiveSeconds']
         .forEach((sortKey) => {
           assertTrue(compareTabDiscardsInfos(sortKey, dummy1, dummy2) < 0);
           assertTrue(compareTabDiscardsInfos(sortKey, dummy2, dummy1) > 0);

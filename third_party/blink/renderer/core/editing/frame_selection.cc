@@ -26,7 +26,6 @@
 #include "third_party/blink/renderer/core/editing/frame_selection.h"
 
 #include <stdio.h>
-#include "third_party/blink/public/platform/web_scroll_into_view_params.h"
 #include "third_party/blink/renderer/core/accessibility/ax_object_cache.h"
 #include "third_party/blink/renderer/core/css/css_property_value_set.h"
 #include "third_party/blink/renderer/core/display_lock/display_lock_utilities.h"
@@ -81,6 +80,7 @@
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/page/spatial_navigation.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
+#include "third_party/blink/renderer/core/scroll/scroll_into_view_params_type_converters.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/geometry/float_quad.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context.h"
@@ -1017,7 +1017,7 @@ void FrameSelection::RevealSelection(const ScrollAlignment& alignment,
     return;
 
   start.AnchorNode()->GetLayoutObject()->ScrollRectToVisible(
-      selection_rect, WebScrollIntoViewParams(alignment, alignment));
+      selection_rect, CreateScrollIntoViewParams(alignment, alignment));
   UpdateAppearance();
 }
 

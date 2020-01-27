@@ -57,7 +57,7 @@ class NewTabPageCoordinatorTest : public PlatformTest {
 
   void CreateCoordinator(bool off_the_record) {
     if (off_the_record) {
-      ios::ChromeBrowserState* otr_state =
+      ChromeBrowserState* otr_state =
           browser_state_->GetOffTheRecordChromeBrowserState();
       coordinator_ =
           [[NewTabPageCoordinator alloc] initWithBrowserState:otr_state];

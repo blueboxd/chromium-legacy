@@ -134,6 +134,7 @@
 <translation id="1994173015038366702">URL trang web</translation>
 <translation id="2000419248597011803">Gửi một số cookie và nội dung tìm kiếm từ thanh địa chỉ cũng như hộp tìm kiếm tới công cụ tìm kiếm mặc định</translation>
 <translation id="2002537628803770967">Thẻ tín dụng và địa chỉ lưu trong Google Pay</translation>
+<translation id="2012973609889389923">Trang web tải nhanh</translation>
 <translation id="2013642289801508067">{FILE_COUNT,plural, =1{# tệp}other{# tệp}}</translation>
 <translation id="2017836877785168846">Xóa lịch sử duyệt web và nội dung tự động hoàn thành trong thanh địa chỉ.</translation>
 <translation id="2021896219286479412">Kiểm soát trang toàn màn hình</translation>
@@ -306,6 +307,7 @@
 <translation id="3298243779924642547">Phiên bản rút gọn</translation>
 <translation id="3303414029551471755">Tiếp tục tải xuống nội dung?</translation>
 <translation id="3306398118552023113">Ứng dụng này đang chạy trong Chrome</translation>
+<translation id="3312292613668865961">Hỏi ý bạn trước khi cho phép các trang web truy cập vào dữ liệu và thiết bị thực tế ảo của bạn (nên dùng)</translation>
 <translation id="3315103659806849044">Bạn đang tùy chỉnh các tùy chọn cài đặt Đồng bộ hóa và dịch vụ của Google. Để hoàn tất thao tác bật tính năng đồng bộ hóa, hãy nhấn vào nút Xác nhận ở gần cuối màn hình. Di chuyển lên</translation>
 <translation id="3328801116991980348">Thông tin về trang web</translation>
 <translation id="3333961966071413176">Tất cả người liên hệ</translation>
@@ -511,6 +513,7 @@ Tài khoản Google của bạn có thể có các dạng lịch sử duyệt we
 <translation id="4915549754973153784"><ph name="BEGIN_LINK" />Nhận trợ giúp<ph name="END_LINK" /> trong khi quét tìm thiết bị…</translation>
 <translation id="4921180162323349895">{FILE_COUNT,plural, =1{# trang}other{# trang}}</translation>
 <translation id="4932247056774066048">Vì bạn đang đăng xuất khỏi một tài khoản thuộc quản lý của <ph name="DOMAIN_NAME" /> nên dữ liệu của bạn trên Chrome sẽ bị xóa khỏi thiết bị này. Tuy nhiên, dữ liệu đó sẽ vẫn còn trong Tài khoản Google của bạn.</translation>
+<translation id="4935305910887312910">Hỏi ý bạn trước khi cho phép các trang web nhận thông tin vị trí của máy ảnh hoặc vẽ bản đồ phòng của bạn (nên dùng)</translation>
 <translation id="4943703118917034429">Thực tế ảo</translation>
 <translation id="4943872375798546930">Không tìm thấy kết quả nào</translation>
 <translation id="4958708863221495346"><ph name="URL_OF_THE_CURRENT_TAB" /> đang chia sẻ màn hình của bạn</translation>
@@ -744,6 +747,7 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="6573431926118603307">Các tab bạn đã mở trong Chrome trên thiết bị khác sẽ xuất hiện tại đây.</translation>
 <translation id="6583199322650523874">Đánh dấu trang hiện tại</translation>
 <translation id="6593061639179217415">Trang web cho máy tính</translation>
+<translation id="6597891566292541626">Điều chỉnh sao cho mã vạch/mã QR nằm trong khung này.</translation>
 <translation id="6600954340915313787">Đã sao chép vào Chrome</translation>
 <translation id="6608650720463149374"><ph name="GIGABYTES" /> GB</translation>
 <translation id="6612358246767739896">Nội dung được bảo vệ</translation>
@@ -953,6 +957,7 @@ Trang web này KHÔNG có quyền truy cập vào máy ảnh. Chỉ bạn mới 
 <translation id="8109613176066109935">Để sử dụng dấu trang trên tất cả các thiết bị, hãy bật tính năng đồng bộ hóa</translation>
 <translation id="8110087112193408731">Bạn có muốn hiển thị hoạt động của mình trên Chrome trong Digital Wellbeing không?</translation>
 <translation id="8116925261070264013">Đã ẩn</translation>
+<translation id="8127542551745560481">Chỉnh sửa trang chủ</translation>
 <translation id="813082847718468539">Xem thông tin trang web</translation>
 <translation id="8156139159503939589">Bạn sử dụng ngôn ngữ nào?</translation>
 <translation id="8168435359814927499">Nội dung</translation>
@@ -1024,6 +1029,7 @@ Trang web này KHÔNG có quyền truy cập vào máy ảnh. Chỉ bạn mới 
 <translation id="8676374126336081632">Xóa văn bản nhập</translation>
 <translation id="8687353297350450808">{N_BARS,plural, =1{Mức cường độ tín hiệu: # vạch}other{Mức cường độ tín hiệu: # vạch}}</translation>
 <translation id="868929229000858085">Tìm kiếm trong danh bạ</translation>
+<translation id="8698438463325761328">Chặn không cho các trang web truy cập vào dữ liệu và thiết bị thực tế ảo của bạn</translation>
 <translation id="869891660844655955">Ngày hết hạn</translation>
 <translation id="8719023831149562936">Không thể chiếu tab hiện tại</translation>
 <translation id="8728487861892616501">Bằng việc sử dụng ứng dụng này, bạn đồng ý với <ph name="BEGIN_LINK1" />Điều khoản dịch vụ<ph name="END_LINK1" /> và <ph name="BEGIN_LINK2" />Thông báo quyền riêng tư<ph name="END_LINK2" /> của Chrome cũng như <ph name="BEGIN_LINK3" />Thông báo quyền riêng tư cho Tài khoản Google được quản lý bằng Family Link<ph name="END_LINK3" />.</translation>
@@ -1041,6 +1047,7 @@ Trang web này KHÔNG có quyền truy cập vào máy ảnh. Chỉ bạn mới 
 <translation id="883806473910249246">Đã xảy ra lỗi khi tải nội dung xuống.</translation>
 <translation id="8840953339110955557">Trang này có thể khác với phiên bản trực tuyến.</translation>
 <translation id="8847988622838149491">USB</translation>
+<translation id="884828189055900810">Chặn không cho trang web nhận thông tin vị trí của máy ảnh hoặc vẽ bản đồ phòng của bạn</translation>
 <translation id="8853345339104747198">Tab <ph name="TAB_TITLE" /></translation>
 <translation id="885701979325669005">Bộ nhớ</translation>
 <translation id="889338405075704026">Chuyển đến phần Cài đặt của Chrome</translation>
@@ -1048,6 +1055,7 @@ Trang web này KHÔNG có quyền truy cập vào máy ảnh. Chỉ bạn mới 
 <translation id="8909135823018751308">Chia sẻ...</translation>
 <translation id="8912362522468806198">Tài khoản Google</translation>
 <translation id="8920114477895755567">Đang đợi thông tin chi tiết của phụ huynh.</translation>
+<translation id="8921772741368021346"><ph name="POSITION" />/<ph name="DURATION" /></translation>
 <translation id="8922289737868596582">Tải trang xuống từ nút Thêm tùy chọn để sử dụng ngoại tuyến</translation>
 <translation id="8926666909099850184">NFC đã tắt đối với thiết bị này. Hãy bật trong phần <ph name="BEGIN_LINK" />Cài đặt Android<ph name="END_LINK" />.</translation>
 <translation id="8937772741022875483">Bạn có muốn xóa hoạt động của mình trên Chrome khỏi Digital Wellbeing không?</translation>

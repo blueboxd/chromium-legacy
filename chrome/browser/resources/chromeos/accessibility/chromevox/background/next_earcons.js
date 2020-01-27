@@ -16,44 +16,40 @@ goog.require('TextLog');
 goog.require('AbstractEarcons');
 
 
-/**
- * @constructor
- * @extends {AbstractEarcons}
- */
-NextEarcons = function() {
-  AbstractEarcons.call(this);
+NextEarcons = class extends AbstractEarcons {
+  constructor() {
+    super();
 
-  if (localStorage['earcons'] === 'false') {
-    AbstractEarcons.enabled = false;
+    if (localStorage['earcons'] === 'false') {
+      AbstractEarcons.enabled = false;
+    }
+
+    /**
+     * @type {EarconEngine}
+     * @private
+     */
+    this.engine_ = new EarconEngine();
+
+    /** @private {boolean} */
+    this.shouldPan_ = true;
+
+    if (chrome.audio) {
+      chrome.audio.getDevices(
+          {isActive: true, streamTypes: [chrome.audio.StreamType.OUTPUT]},
+          this.updateShouldPanForDevices_.bind(this));
+      chrome.audio.onDeviceListChanged.addListener(
+          this.updateShouldPanForDevices_.bind(this));
+    } else {
+      this.shouldPan_ = false;
+    }
   }
 
-  /**
-   * @type {EarconEngine}
-   * @private
-   */
-  this.engine_ = new EarconEngine();
-
-  /** @private {boolean} */
-  this.shouldPan_ = true;
-
-  if (chrome.audio) {
-    chrome.audio.getDevices(
-        {isActive: true, streamTypes: [chrome.audio.StreamType.OUTPUT]},
-        this.updateShouldPanForDevices_.bind(this));
-    chrome.audio.onDeviceListChanged.addListener(
-        this.updateShouldPanForDevices_.bind(this));
-  } else {
-    this.shouldPan_ = false;
-  }
-};
-
-NextEarcons.prototype = {
   /**
    * @return {string} The human-readable name of the earcon set.
    */
   getName() {
     return 'ChromeVox Next earcons';
-  },
+  }
 
   /**
    * @override
@@ -143,7 +139,7 @@ NextEarcons.prototype = {
         this.engine_.onWrap();
         break;
     }
-  },
+  }
 
   /**
    * @override
@@ -154,11 +150,11 @@ NextEarcons.prototype = {
         this.engine_.cancelProgress();
         break;
     }
-  },
+  }
 
   /**
-   * Updates |this.shouldPan_| based on whether internal speakers are active or
-   * not.
+   * Updates |this.shouldPan_| based on whether internal speakers are active
+   * or not.
    * @param {Array<chrome.audio.AudioDeviceInfo>} devices
    * @private
    */
@@ -167,5 +163,5 @@ NextEarcons.prototype = {
       return device.isActive &&
           device.deviceType == chrome.audio.DeviceType.INTERNAL_SPEAKER;
     });
-  },
+  }
 };

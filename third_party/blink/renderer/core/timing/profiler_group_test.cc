@@ -6,8 +6,8 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_profiler_init_options.h"
 #include "third_party/blink/renderer/core/timing/profiler.h"
-#include "third_party/blink/renderer/core/timing/profiler_init_options.h"
 
 namespace blink {
 

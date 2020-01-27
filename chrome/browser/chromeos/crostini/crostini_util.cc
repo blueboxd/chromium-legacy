@@ -85,18 +85,14 @@ void OnLaunchFailed(const std::string& app_id) {
   chrome_controller->GetShelfSpinnerController()->CloseSpinner(app_id);
 }
 
-// TODO(nverne): Real conditions (e.g. once per session max, container id is
-// default and still on old version).
-bool ShouldPromptContainerUpgrade() {
-  return false;
-}
-
 void OnCrostiniRestarted(Profile* profile,
+                         crostini::ContainerId container_id,
                          const std::string& app_id,
                          Browser* browser,
                          base::OnceClosure callback,
                          crostini::CrostiniResult result) {
-  if (ShouldPromptContainerUpgrade()) {
+  if (crostini::CrostiniManager::GetForProfile(profile)
+          ->ShouldPromptContainerUpgrade(container_id)) {
     chromeos::CrostiniUpgraderDialog::Show(std::move(callback));
     return;
   }
@@ -441,8 +437,9 @@ void LaunchCrostiniApp(Profile* profile,
 
   auto restart_id = crostini_manager->RestartCrostini(
       vm_name, container_name,
-      base::BindOnce(OnCrostiniRestarted, profile, app_id, browser,
-                     std::move(launch_closure)));
+      base::BindOnce(OnCrostiniRestarted, profile,
+                     crostini::ContainerId(vm_name, container_name), app_id,
+                     browser, std::move(launch_closure)));
 
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,

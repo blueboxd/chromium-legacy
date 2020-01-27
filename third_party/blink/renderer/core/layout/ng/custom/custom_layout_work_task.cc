@@ -9,9 +9,11 @@
 #include "third_party/blink/renderer/core/layout/ng/custom/custom_layout_child.h"
 #include "third_party/blink/renderer/core/layout/ng/custom/custom_layout_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_block_node.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_box_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_constraint_space_builder.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_result.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_length_utils.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_space_utils.h"
 
 namespace blink {
@@ -124,16 +126,18 @@ void CustomLayoutWorkTask::RunLayoutFragmentTask(
   builder.SetIsShrinkToFit(child.Style().LogicalWidth().IsAuto());
   builder.SetIsFixedInlineSize(is_fixed_inline_size);
   builder.SetIsFixedBlockSize(is_fixed_block_size);
+  builder.SetNeedsBaseline(true);
   if (child.IsLayoutNGCustom())
     builder.SetCustomLayoutData(std::move(constraint_data_));
   auto space = builder.ToConstraintSpace();
   auto result = To<NGBlockNode>(child).Layout(space, nullptr /* break_token */);
 
-  LogicalSize size = result->PhysicalFragment().Size().ConvertToLogical(
-      parent_space.GetWritingMode());
+  NGBoxFragment fragment(parent_space.GetWritingMode(),
+                         parent_space.Direction(),
+                         To<NGPhysicalBoxFragment>(result->PhysicalFragment()));
 
   resolver_->Resolve(MakeGarbageCollected<CustomLayoutFragment>(
-      child_, token_, std::move(result), size,
+      child_, token_, std::move(result), fragment.Size(), fragment.Baseline(),
       resolver_->GetScriptState()->GetIsolate()));
 }
 

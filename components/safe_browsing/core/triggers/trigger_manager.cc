@@ -12,7 +12,7 @@
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
 #include "components/safe_browsing/core/common/thread_utils.h"
 #include "components/safe_browsing/core/features.h"
-#include "components/security_interstitials/content/unsafe_resource.h"
+#include "components/security_interstitials/core/unsafe_resource.h"
 #include "content/public/browser/browser_context.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 

@@ -4,7 +4,6 @@
 
 strict_error_checking_closure_args = [
   "jscomp_error=accessControls",
-  "jscomp_error=ambiguousFunctionDecl",
   "jscomp_error=checkTypes",
   "jscomp_error=checkVars",
   "jscomp_error=constantProperty",

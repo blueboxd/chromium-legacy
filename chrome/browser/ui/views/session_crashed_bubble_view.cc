@@ -131,9 +131,9 @@ void SessionCrashedBubble::ShowIfNotOffTheRecordProfile(Browser* browser) {
   if (DoesSupportConsentCheck()) {
     base::PostTaskAndReplyWithResult(
         GoogleUpdateSettings::CollectStatsConsentTaskRunner(), FROM_HERE,
-        base::Bind(&GoogleUpdateSettings::GetCollectStatsConsent),
-        base::Bind(&SessionCrashedBubbleView::Show,
-                   base::Passed(&browser_observer)));
+        base::BindOnce(&GoogleUpdateSettings::GetCollectStatsConsent),
+        base::BindOnce(&SessionCrashedBubbleView::Show,
+                       base::Passed(&browser_observer)));
   } else {
     SessionCrashedBubbleView::Show(std::move(browser_observer), false);
   }

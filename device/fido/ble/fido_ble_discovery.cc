@@ -60,9 +60,14 @@ void FidoBleDiscovery::OnSetPowered() {
       base::AdaptCallbackForRepeating(
           base::BindOnce(&FidoBleDiscovery::OnStartDiscoverySessionWithFilter,
                          weak_factory_.GetWeakPtr())),
-      base::AdaptCallbackForRepeating(
-          base::BindOnce(&FidoBleDiscovery::OnStartDiscoverySessionError,
-                         weak_factory_.GetWeakPtr())));
+      base::BindRepeating(
+          []() { FIDO_LOG(ERROR) << "Failed to start BLE discovery"; }));
+}
+
+void FidoBleDiscovery::OnStartDiscoverySessionWithFilter(
+    std::unique_ptr<BluetoothDiscoverySession> session) {
+  SetDiscoverySession(std::move(session));
+  FIDO_LOG(DEBUG) << "BLE discovery session started";
 }
 
 void FidoBleDiscovery::DeviceAdded(BluetoothAdapter* adapter,

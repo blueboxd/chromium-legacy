@@ -58,7 +58,7 @@ class DetailsTest : public testing::Test {
     return profile;
   }
 
-  ClientMemory client_memory_;
+  UserData user_data_;
 };
 
 TEST_F(DetailsTest, UpdateFromParametersEmpty) {
@@ -163,17 +163,16 @@ TEST_F(DetailsTest, UpdateFromProtoBackwardsCompatibility) {
 
 TEST_F(DetailsTest, UpdateFromContactDetailsNoAddressInMemory) {
   EXPECT_FALSE(Details::UpdateFromContactDetails(ShowDetailsProto(),
-                                                 &client_memory_, nullptr));
+                                                 &user_data_, nullptr));
 }
 
 TEST_F(DetailsTest, UpdateFromContactDetails) {
   ShowDetailsProto proto;
   proto.set_contact_details("contact");
-  client_memory_.set_selected_address("contact", MakeAutofillProfile());
+  user_data_.selected_addresses_["contact"] = MakeAutofillProfile();
 
   Details details;
-  EXPECT_TRUE(
-      Details::UpdateFromContactDetails(proto, &client_memory_, &details));
+  EXPECT_TRUE(Details::UpdateFromContactDetails(proto, &user_data_, &details));
 
   EXPECT_THAT(details.title(),
               Eq(l10n_util::GetStringUTF8(IDS_PAYMENTS_CONTACT_DETAILS_LABEL)));
@@ -183,17 +182,16 @@ TEST_F(DetailsTest, UpdateFromContactDetails) {
 
 TEST_F(DetailsTest, UpdateFromShippingAddressNoAddressInMemory) {
   EXPECT_FALSE(Details::UpdateFromShippingAddress(ShowDetailsProto(),
-                                                  &client_memory_, nullptr));
+                                                  &user_data_, nullptr));
 }
 
 TEST_F(DetailsTest, UpdateFromShippingAddress) {
   ShowDetailsProto proto;
   proto.set_shipping_address("shipping");
-  client_memory_.set_selected_address("shipping", MakeAutofillProfile());
+  user_data_.selected_addresses_["shipping"] = MakeAutofillProfile();
 
   Details details;
-  EXPECT_TRUE(
-      Details::UpdateFromShippingAddress(proto, &client_memory_, &details));
+  EXPECT_TRUE(Details::UpdateFromShippingAddress(proto, &user_data_, &details));
 
   EXPECT_THAT(
       details.title(),
@@ -207,25 +205,25 @@ TEST_F(DetailsTest, UpdateFromSelectedCreditCardEmptyMemory) {
   ShowDetailsProto proto;
   proto.set_credit_card(true);
   EXPECT_FALSE(Details::UpdateFromContactDetails(ShowDetailsProto(),
-                                                 &client_memory_, nullptr));
+                                                 &user_data_, nullptr));
 }
 
 TEST_F(DetailsTest, UpdateFromSelectedCreditCardNotRequested) {
   ShowDetailsProto proto;
   proto.set_credit_card(false);
-  client_memory_.set_selected_card(MakeCreditCard());
+  user_data_.selected_card_ = MakeCreditCard();
   EXPECT_FALSE(Details::UpdateFromContactDetails(ShowDetailsProto(),
-                                                 &client_memory_, nullptr));
+                                                 &user_data_, nullptr));
 }
 
 TEST_F(DetailsTest, UpdateFromCreditCard) {
   ShowDetailsProto proto;
   proto.set_credit_card(true);
-  client_memory_.set_selected_card(MakeCreditCard());
+  user_data_.selected_card_ = MakeCreditCard();
 
   Details details;
   EXPECT_TRUE(
-      Details::UpdateFromSelectedCreditCard(proto, &client_memory_, &details));
+      Details::UpdateFromSelectedCreditCard(proto, &user_data_, &details));
 
   EXPECT_THAT(
       details.title(),

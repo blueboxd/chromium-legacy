@@ -561,9 +561,6 @@ extern const char kEnableUseZoomForDsfChoiceDisabled[];
 extern const char kEnableScrollAnchorSerializationName[];
 extern const char kEnableScrollAnchorSerializationDescription[];
 
-extern const char kEnableWasmName[];
-extern const char kEnableWasmDescription[];
-
 extern const char kEnableWebAuthenticationCableV2SupportName[];
 extern const char kEnableWebAuthenticationCableV2SupportDescription[];
 
@@ -641,6 +638,9 @@ extern const char kFilteringScrollPredictionDescription[];
 
 extern const char kFractionalScrollOffsetsName[];
 extern const char kFractionalScrollOffsetsDescription[];
+
+extern const char kFreezeUserAgentName[];
+extern const char kFreezeUserAgentDescription[];
 
 extern const char kForceEffectiveConnectionTypeName[];
 extern const char kForceEffectiveConnectionTypeDescription[];
@@ -1540,9 +1540,6 @@ extern const char kEnableOfflinePreviewsDescription[];
 extern const char kEnableWebNfcName[];
 extern const char kEnableWebNfcDescription[];
 
-extern const char kEphemeralTabName[];
-extern const char kEphemeralTabDescription[];
-
 extern const char kEphemeralTabUsingBottomSheetName[];
 extern const char kEphemeralTabUsingBottomSheetDescription[];
 
@@ -1748,6 +1745,9 @@ extern const char kHappinessTrackingSurveysForDesktopDescription[];
 extern const char kHappinessTrackingSurveysForDesktopDemoName[];
 extern const char kHappinessTrackingSurveysForDesktopDemoDescription[];
 
+extern const char kHappinessTrackingSurveysForDesktopSettingsName[];
+extern const char kHappinessTrackingSurveysForDesktopSettingsDescription[];
+
 extern const char kIntentPickerName[];
 extern const char kIntentPickerDescription[];
 
@@ -1808,9 +1808,6 @@ extern const char kCloudPrintXpsDescription[];
 
 extern const char kD3D11VideoDecoderName[];
 extern const char kD3D11VideoDecoderDescription[];
-
-extern const char kEnableAuraTooltipsOnWindowsName[];
-extern const char kEnableAuraTooltipsOnWindowsDescription[];
 
 extern const char kEnableGpuAppcontainerName[];
 extern const char kEnableGpuAppcontainerDescription[];
@@ -2385,13 +2382,6 @@ extern const char kDirectManipulationStylusDescription[];
 
 #endif  // defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
 
-#if defined(OS_MACOSX) || defined(OS_CHROMEOS)
-
-extern const char kForceEnableSystemAecName[];
-extern const char kForceEnableSystemAecDescription[];
-
-#endif  // defined(OS_MACOSX) || defined(OS_CHROMEOS)
-
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
 
 extern const char kWebContentsOcclusionName[];
@@ -2451,6 +2441,13 @@ extern const char kWebrtcPipeWireCapturerName[];
 extern const char kWebrtcPipeWireCapturerDescription[];
 
 #endif  // #if defined(WEBRTC_USE_PIPEWIRE)
+
+#if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
+
+extern const char kUserDataSnapshotName[];
+extern const char kUserDataSnapshotDescription[];
+
+#endif  // !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
 
 // ============================================================================
 // Don't just add flags to the end, put them in the right section in

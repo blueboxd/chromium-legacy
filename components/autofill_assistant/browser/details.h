@@ -9,8 +9,8 @@
 #include <string>
 
 #include "base/values.h"
-#include "components/autofill_assistant/browser/client_memory.h"
 #include "components/autofill_assistant/browser/service.pb.h"
+#include "components/autofill_assistant/browser/user_data.h"
 
 namespace autofill_assistant {
 class TriggerContext;
@@ -38,19 +38,19 @@ class Details {
   // Updates the details to show selected contact details. It shows only full
   // name and email. Returns true if |details| were successfully updated.
   static bool UpdateFromContactDetails(const ShowDetailsProto& proto,
-                                       ClientMemory* client_memory,
+                                       const UserData* user_data,
                                        Details* details);
 
   // Updates the details to show selected shipping details. It shows full name
   // and address. Returns true if |details| were successfully updated.
   static bool UpdateFromShippingAddress(const ShowDetailsProto& proto,
-                                        ClientMemory* client_memory,
+                                        const UserData* user_data,
                                         Details* details);
 
   // Updates the details to show credit card selected by the user. Returns true
   // if |details| were successfully updated.
   static bool UpdateFromSelectedCreditCard(const ShowDetailsProto& proto,
-                                           ClientMemory* client_memory,
+                                           const UserData* user_data,
                                            Details* details);
 
   const std::string title() const;

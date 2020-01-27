@@ -14,6 +14,7 @@
 #include "chrome/browser/extensions/extension_install_prompt.h"
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
 #include "ui/views/controls/button/button.h"
+#include "ui/views/controls/button/checkbox.h"
 #include "ui/views/view.h"
 
 class Profile;
@@ -100,6 +101,9 @@ class ExtensionInstallDialogView : public views::BubbleDialogDelegateView {
 
   // Used to determine whether the install button should be enabled.
   bool install_button_enabled_;
+
+  // Checkbox used to indicate if permissions should be withheld on install.
+  views::Checkbox* withhold_permissions_checkbox_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionInstallDialogView);
 };

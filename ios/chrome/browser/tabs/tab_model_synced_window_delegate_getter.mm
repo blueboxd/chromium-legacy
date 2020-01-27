@@ -25,7 +25,7 @@ TabModelSyncedWindowDelegatesGetter::SyncedWindowDelegateMap
 TabModelSyncedWindowDelegatesGetter::GetSyncedWindowDelegates() {
   SyncedWindowDelegateMap synced_window_delegates;
 
-  std::vector<ios::ChromeBrowserState*> browser_states =
+  std::vector<ChromeBrowserState*> browser_states =
       GetApplicationContext()
           ->GetChromeBrowserStateManager()
           ->GetLoadedBrowserStates();

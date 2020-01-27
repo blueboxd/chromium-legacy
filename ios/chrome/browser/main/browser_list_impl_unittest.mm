@@ -82,7 +82,7 @@ TEST_F(BrowserListImplTest, AddRemoveIncognitoBrowsers) {
 
   TestBrowser browser_1(chrome_browser_state_.get());
 
-  ios::ChromeBrowserState* incognito_browser_state =
+  ChromeBrowserState* incognito_browser_state =
       chrome_browser_state_->GetOffTheRecordChromeBrowserState();
   TestBrowser incognito_browser_1(incognito_browser_state);
 
@@ -147,7 +147,7 @@ TEST_F(BrowserListImplTest, MAYBE_BrowserListObserver) {
   browser_list_->AddObserver(observer);
 
   Browser* browser_1 = new TestBrowser(chrome_browser_state_.get());
-  ios::ChromeBrowserState* incognito_browser_state =
+  ChromeBrowserState* incognito_browser_state =
       chrome_browser_state_->GetOffTheRecordChromeBrowserState();
   Browser* incognito_browser_1 = new TestBrowser(incognito_browser_state);
 

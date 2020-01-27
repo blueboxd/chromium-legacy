@@ -28,7 +28,7 @@ class TabModelListUserData : public base::SupportsUserData::Data {
   ~TabModelListUserData() override;
 
   static TabModelListUserData* GetForBrowserState(
-      ios::ChromeBrowserState* browser_state,
+      ChromeBrowserState* browser_state,
       bool create);
 
   NSMutableSet<TabModel*>* tab_models() const { return tab_models_; }
@@ -52,7 +52,7 @@ TabModelListUserData::~TabModelListUserData() {
 
 // static
 TabModelListUserData* TabModelListUserData::GetForBrowserState(
-    ios::ChromeBrowserState* browser_state,
+    ChromeBrowserState* browser_state,
     bool create) {
   TabModelListUserData* tab_model_list_user_data =
       static_cast<TabModelListUserData*>(
@@ -85,7 +85,7 @@ void TabModelList::RemoveObserver(TabModelListObserver* observer) {
 
 // static
 void TabModelList::RegisterTabModelWithChromeBrowserState(
-    ios::ChromeBrowserState* browser_state,
+    ChromeBrowserState* browser_state,
     TabModel* tab_model) {
   NSMutableSet<TabModel*>* tab_models =
       TabModelListUserData::GetForBrowserState(browser_state, true)
@@ -99,7 +99,7 @@ void TabModelList::RegisterTabModelWithChromeBrowserState(
 
 // static
 void TabModelList::UnregisterTabModelFromChromeBrowserState(
-    ios::ChromeBrowserState* browser_state,
+    ChromeBrowserState* browser_state,
     TabModel* tab_model) {
   NSMutableSet<TabModel*>* tab_models =
       TabModelListUserData::GetForBrowserState(browser_state, false)
@@ -113,7 +113,7 @@ void TabModelList::UnregisterTabModelFromChromeBrowserState(
 
 // static
 NSArray<TabModel*>* TabModelList::GetTabModelsForChromeBrowserState(
-    ios::ChromeBrowserState* browser_state) {
+    ChromeBrowserState* browser_state) {
   TabModelListUserData* tab_model_list_user_data =
       TabModelListUserData::GetForBrowserState(browser_state, false);
   return tab_model_list_user_data
@@ -123,7 +123,7 @@ NSArray<TabModel*>* TabModelList::GetTabModelsForChromeBrowserState(
 
 // static
 TabModel* TabModelList::GetLastActiveTabModelForChromeBrowserState(
-    ios::ChromeBrowserState* browser_state) {
+    ChromeBrowserState* browser_state) {
   TabModelListUserData* tab_model_list_user_data =
       TabModelListUserData::GetForBrowserState(browser_state, false);
   if (!tab_model_list_user_data ||
@@ -139,17 +139,17 @@ TabModel* TabModelList::GetLastActiveTabModelForChromeBrowserState(
 
 // static
 bool TabModelList::IsOffTheRecordSessionActive() {
-  std::vector<ios::ChromeBrowserState*> browser_states =
+  std::vector<ChromeBrowserState*> browser_states =
       GetApplicationContext()
           ->GetChromeBrowserStateManager()
           ->GetLoadedBrowserStates();
 
-  for (ios::ChromeBrowserState* browser_state : browser_states) {
+  for (ChromeBrowserState* browser_state : browser_states) {
     DCHECK(!browser_state->IsOffTheRecord());
     if (!browser_state->HasOffTheRecordChromeBrowserState())
       continue;
 
-    ios::ChromeBrowserState* otr_browser_state =
+    ChromeBrowserState* otr_browser_state =
         browser_state->GetOffTheRecordChromeBrowserState();
 
     TabModelListUserData* tab_model_list_user_data =

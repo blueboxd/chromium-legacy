@@ -3514,6 +3514,22 @@
       "features": [
         "limit_d3d11_video_decoder_to_11_0"
       ]
+    },
+    {
+      "id": 330,
+      "cr_bugs": [1038671],
+      "description": "WebGL MSAA for PowerVR.*GX6250 context lost with GL_UNKNOWN_CONTEXT_RESET_KHR",
+      "os": {
+        "type": "chromeos"
+      },
+      "gl_vendor": "Imagination.*",
+      "gl_renderer": "PowerVR.*GX6250",
+      "features": [
+        "webgl_msaa_is_broken"
+      ],
+      "disabled_extensions": [
+        "GL_EXT_multisampled_render_to_texture"
+      ]
     }
   ]
 }

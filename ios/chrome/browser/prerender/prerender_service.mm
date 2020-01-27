@@ -20,7 +20,7 @@
 #error "This file requires ARC support."
 #endif
 
-PrerenderService::PrerenderService(ios::ChromeBrowserState* browser_state)
+PrerenderService::PrerenderService(ChromeBrowserState* browser_state)
     : controller_(
           [[PreloadController alloc] initWithBrowserState:browser_state]),
       loading_prerender_(false) {}

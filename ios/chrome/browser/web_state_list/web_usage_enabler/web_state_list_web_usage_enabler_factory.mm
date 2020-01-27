@@ -19,7 +19,7 @@
 // static
 WebStateListWebUsageEnabler*
 WebStateListWebUsageEnablerFactory::GetForBrowserState(
-    ios::ChromeBrowserState* browser_state) {
+    ChromeBrowserState* browser_state) {
   return static_cast<WebStateListWebUsageEnabler*>(
       GetInstance()->GetServiceForBrowserState(browser_state, true));
 }

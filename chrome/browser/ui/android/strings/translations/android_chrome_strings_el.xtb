@@ -134,6 +134,7 @@
 <translation id="1994173015038366702">URL ιστότοπου</translation>
 <translation id="2000419248597011803">Στέλνει ορισμένα cookie και αναζητήσεις από τη γραμμή διευθύνσεων και το πλαίσιο αναζήτησης στην προεπιλεγμένη μηχανή αναζήτησης</translation>
 <translation id="2002537628803770967">Πιστωτικές κάρτες και διευθύνσεις που χρησιμοποιούν το Google Pay</translation>
+<translation id="2012973609889389923">Γρήγορος ιστότοπος</translation>
 <translation id="2013642289801508067">{FILE_COUNT,plural, =1{# Αρχείο}other{# Αρχεία}}</translation>
 <translation id="2017836877785168846">Διαγράφει το ιστορικό και τις αυτόματες συμπληρώσεις στη γραμμή διευθύνσεων.</translation>
 <translation id="2021896219286479412">Στοιχ. ελέγ. σε πλήρη οθόνη</translation>
@@ -306,6 +307,7 @@
 <translation id="3298243779924642547">Lite</translation>
 <translation id="3303414029551471755">Συνέχεια για λήψη του περιεχομένου;</translation>
 <translation id="3306398118552023113">Αυτή η εφαρμογή εκτελείται στο Chrome</translation>
+<translation id="3312292613668865961">Να γίνεται ερώτηση προτού επιτραπεί στους ιστοτόπους να αποκτήσουν πρόσβαση στη συσκευή και τα δεδομένα εικονικής πραγματικότητας (συνιστάται).</translation>
 <translation id="3315103659806849044">Αυτήν τη στιγμή, προσαρμόζετε τις ρυθμίσεις του Συγχρονισμού και των Υπηρεσιών Google. Για να ολοκληρώσετε την ενεργοποίηση του συγχρονισμού, πατήστε το κουμπί Επιβεβαίωσης κοντά στην κορυφή της οθόνης. Πλοήγηση προς τα επάνω</translation>
 <translation id="3328801116991980348">Πληροφορίες ιστοτόπου</translation>
 <translation id="3333961966071413176">Όλες οι επαφές</translation>
@@ -511,6 +513,7 @@
 <translation id="4915549754973153784"><ph name="BEGIN_LINK" />Λήψη βοήθειας<ph name="END_LINK" /> κατά τη σάρωση για συσκευές…</translation>
 <translation id="4921180162323349895">{FILE_COUNT,plural, =1{# Σελίδα}other{# Σελίδες}}</translation>
 <translation id="4932247056774066048">Τα δεδομένα σας Chrome θα διαγραφούν από αυτήν τη συσκευή, λόγω της αποσύνδεσής σας από έναν λογαριασμό, η διαχείριση του οποίου γίνεται από τον τομέα <ph name="DOMAIN_NAME" />. Θα παραμείνει στον Λογαριασμό σας Google.</translation>
+<translation id="4935305910887312910">Να γίνεται ερώτηση προτού επιτραπεί στους ιστοτόπους να λαμβάνουν τη θέση κάμερας ή να χαρτογραφούν το δωμάτιο (συνιστάται).</translation>
 <translation id="4943703118917034429">Εικονική πραγματικότητα</translation>
 <translation id="4943872375798546930">Δεν υπάρχουν αποτελέσματα</translation>
 <translation id="4958708863221495346">Η καρτέλα <ph name="URL_OF_THE_CURRENT_TAB" /> μοιράζεται την οθόνη σας.</translation>
@@ -744,6 +747,7 @@
 <translation id="6573431926118603307">Οι καρτέλες που έχετε ανοίξει στο Chrome στις άλλες συσκευές σας θα εμφανίζονται εδώ.</translation>
 <translation id="6583199322650523874">Προσθήκη σελιδοδείκτη στην τρέχουσα σελίδα</translation>
 <translation id="6593061639179217415">Για υπολογιστή</translation>
+<translation id="6597891566292541626">Τοποθετήστε τον κωδικό QR/γραμμωτό κώδικα σε αυτό το πλαίσιο.</translation>
 <translation id="6600954340915313787">Αντιγράφηκε στο Chrome</translation>
 <translation id="6608650720463149374"><ph name="GIGABYTES" /> GB</translation>
 <translation id="6612358246767739896">Προστατ. περιεχ.</translation>
@@ -953,6 +957,7 @@
 <translation id="8109613176066109935">Για να εμφανίζονται οι σελιδοδείκτες σας σε όλες τις συσκευές σας, ενεργοποιήστε τον συγχρονισμό</translation>
 <translation id="8110087112193408731">Να εμφανίζεται στο Digital Wellbeing η δραστηριότητά σας στο Chrome;</translation>
 <translation id="8116925261070264013">Σε σίγαση</translation>
+<translation id="8127542551745560481">Επεξεργασία αρχικής σελίδας</translation>
 <translation id="813082847718468539">Προβολή πληροφοριών τοποθεσίας</translation>
 <translation id="8156139159503939589">Σε ποιες γλώσσες μπορείτε να διαβάσετε;</translation>
 <translation id="8168435359814927499">Περιεχόμενο</translation>
@@ -1024,6 +1029,7 @@
 <translation id="8676374126336081632">Διαγραφή καταχώρισης</translation>
 <translation id="8687353297350450808">{N_BARS,plural, =1{Επίπεδο ισχύος σήματος: # γραμμή}other{Επίπεδο ισχύος σήματος: # γραμμές}}</translation>
 <translation id="868929229000858085">Αναζήτηση στις επαφές σας</translation>
+<translation id="8698438463325761328">Αποκλείστε την πρόσβαση των ιστοτόπων στη συσκευή και τα δεδομένα εικονικής πραγματικότητας.</translation>
 <translation id="869891660844655955">Ημερομηνία λήξης</translation>
 <translation id="8719023831149562936">Δεν είναι δυνατή η ζεύξη της τρέχουσας καρτέλας</translation>
 <translation id="8728487861892616501">Χρησιμοποιώντας αυτήν την εφαρμογή, συμφωνείτε με τους <ph name="BEGIN_LINK1" />Όρους Παροχής Υπηρεσιών<ph name="END_LINK1" /> και τη <ph name="BEGIN_LINK2" />Σημείωση απορρήτου<ph name="END_LINK2" /> του Chrome, καθώς και με τη <ph name="BEGIN_LINK3" />Σημείωση απορρήτου για Λογαριασμούς Google, των οποίων η διαχείριση γίνεται μέσω του Family Link<ph name="END_LINK3" />.</translation>
@@ -1041,6 +1047,7 @@
 <translation id="883806473910249246">Παρουσιάστηκε σφάλμα κατά τη λήψη του περιεχομένου.</translation>
 <translation id="8840953339110955557">Αυτή η σελίδα μπορεί να διαφέρει από την έκδοση στο διαδίκτυο.</translation>
 <translation id="8847988622838149491">USB</translation>
+<translation id="884828189055900810">Αποκλείστε ιστοτόπους από τη λήψη της θέσης της κάμερας ή τη χαρτογράφηση του δωματίου σας.</translation>
 <translation id="8853345339104747198">Καρτέλα <ph name="TAB_TITLE" /></translation>
 <translation id="885701979325669005">Αποθήκευση</translation>
 <translation id="889338405075704026">Μεταβείτε στις ρυθμίσεις του Chrome</translation>
@@ -1048,6 +1055,7 @@
 <translation id="8909135823018751308">Κοινοποίηση…</translation>
 <translation id="8912362522468806198">Λογαριασμός Google</translation>
 <translation id="8920114477895755567">Αναμονή για λεπτομέρειες γονέων.</translation>
+<translation id="8921772741368021346"><ph name="POSITION" />/<ph name="DURATION" /></translation>
 <translation id="8922289737868596582">Κατεβάστε σελίδες από το κουμπί "Περισσότερες επιλογές" για να τις χρησιμοποιήσετε εκτός σύνδεσης</translation>
 <translation id="8926666909099850184">Το NFC είναι ανενεργό για αυτήν τη συσκευή. Ενεργοποιήστε το στις <ph name="BEGIN_LINK" />Ρυθμίσεις Android<ph name="END_LINK" />.</translation>
 <translation id="8937772741022875483">Να καταργηθεί η δραστηριότητα του Chrome από το Digital Wellbeing;</translation>

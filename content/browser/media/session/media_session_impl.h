@@ -246,6 +246,12 @@ class MediaSessionImpl : public MediaSession,
   // Scrub ("fast seek") the media session to a specific time.
   void ScrubTo(base::TimeDelta seek_time) override;
 
+  // Enter picture-in-picture.
+  void EnterPictureInPicture() override;
+
+  // Exit picture-in-picture.
+  void ExitPictureInPicture() override;
+
   // Downloads the bitmap version of a MediaImage at least |minimum_size_px|
   // and closest to |desired_size_px|. If the download failed, was too small or
   // the image did not come from the media session then returns a null image.

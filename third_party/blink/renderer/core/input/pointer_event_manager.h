@@ -149,8 +149,8 @@ class CORE_EXPORT PointerEventManager final
                   EventTarget* related_target,
                   const AtomicString&,
                   bool check_for_listener);
-    Member<PointerEventManager> pointer_event_manager_;
-    Member<PointerEvent> pointer_event_;
+    PointerEventManager* pointer_event_manager_;
+    PointerEvent* pointer_event_;
     DISALLOW_COPY_AND_ASSIGN(PointerEventBoundaryEventDispatcher);
   };
 

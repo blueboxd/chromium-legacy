@@ -6,8 +6,8 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_PEERCONNECTION_RTC_RTP_TRANSCEIVER_H_
 
 #include "base/optional.h"
-#include "third_party/blink/renderer/modules/peerconnection/rtc_rtp_codec_capability.h"
-#include "third_party/blink/renderer/modules/peerconnection/rtc_rtp_transceiver_init.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_rtc_rtp_codec_capability.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_rtc_rtp_transceiver_init.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"

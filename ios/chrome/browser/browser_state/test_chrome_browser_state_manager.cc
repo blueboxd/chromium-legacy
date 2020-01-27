@@ -12,24 +12,23 @@ TestChromeBrowserStateManager::TestChromeBrowserStateManager(
     : TestChromeBrowserStateManager(nullptr, user_data_dir) {}
 
 TestChromeBrowserStateManager::TestChromeBrowserStateManager(
-    std::unique_ptr<ios::ChromeBrowserState> browser_state)
+    std::unique_ptr<ChromeBrowserState> browser_state)
     : TestChromeBrowserStateManager(std::move(browser_state),
                                     base::FilePath()) {}
 
 TestChromeBrowserStateManager::TestChromeBrowserStateManager(
-    std::unique_ptr<ios::ChromeBrowserState> browser_state,
+    std::unique_ptr<ChromeBrowserState> browser_state,
     const base::FilePath& user_data_dir)
     : browser_state_(std::move(browser_state)),
       browser_state_info_cache_(local_state_.Get(), user_data_dir) {}
 
 TestChromeBrowserStateManager::~TestChromeBrowserStateManager() {}
 
-ios::ChromeBrowserState*
-TestChromeBrowserStateManager::GetLastUsedBrowserState() {
+ChromeBrowserState* TestChromeBrowserStateManager::GetLastUsedBrowserState() {
   return browser_state_.get();
 }
 
-ios::ChromeBrowserState* TestChromeBrowserStateManager::GetBrowserState(
+ChromeBrowserState* TestChromeBrowserStateManager::GetBrowserState(
     const base::FilePath& path) {
   return nullptr;
 }
@@ -39,9 +38,9 @@ TestChromeBrowserStateManager::GetBrowserStateInfoCache() {
   return &browser_state_info_cache_;
 }
 
-std::vector<ios::ChromeBrowserState*>
+std::vector<ChromeBrowserState*>
 TestChromeBrowserStateManager::GetLoadedBrowserStates() {
-  std::vector<ios::ChromeBrowserState*> result;
+  std::vector<ChromeBrowserState*> result;
   if (browser_state_)
     result.push_back(browser_state_.get());
   return result;

@@ -44,6 +44,7 @@
 #include "chrome/browser/plugins/pdf_plugin_placeholder_observer.h"
 #include "chrome/browser/predictors/loading_predictor_factory.h"
 #include "chrome/browser/predictors/loading_predictor_tab_helper.h"
+#include "chrome/browser/prerender/isolated/isolated_prerender_tab_helper.h"
 #include "chrome/browser/prerender/prerender_tab_helper.h"
 #include "chrome/browser/previews/previews_lite_page_redirect_predictor.h"
 #include "chrome/browser/previews/previews_ui_tab_helper.h"
@@ -58,6 +59,7 @@
 #include "chrome/browser/ssl/connection_help_tab_helper.h"
 #include "chrome/browser/ssl/security_state_tab_helper.h"
 #include "chrome/browser/subresource_filter/chrome_subresource_filter_client.h"
+#include "chrome/browser/subresource_redirect/subresource_redirect_observer.h"
 #include "chrome/browser/sync/sessions/sync_sessions_router_tab_helper.h"
 #include "chrome/browser/sync/sessions/sync_sessions_web_contents_router_factory.h"
 #include "chrome/browser/sync/sync_encryption_keys_tab_helper.h"
@@ -105,10 +107,10 @@
 #include "printing/buildflags/buildflags.h"
 
 #if defined(OS_ANDROID)
-#include "chrome/browser/android/chrome_feature_list.h"
 #include "chrome/browser/android/oom_intervention/oom_intervention_tab_helper.h"
 #include "chrome/browser/android/search_permissions/search_geolocation_disclosure_tab_helper.h"
 #include "chrome/browser/banners/app_banner_manager_android.h"
+#include "chrome/browser/flags/android/chrome_feature_list.h"
 #include "chrome/browser/ui/android/context_menu_helper.h"
 #include "chrome/browser/ui/android/view_android_helper.h"
 #else
@@ -161,6 +163,10 @@
 
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
 #include "chrome/browser/supervised_user/supervised_user_navigation_observer.h"
+#endif
+
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/child_accounts/time_limits/web_time_navigation_observer.h"
 #endif
 
 using content::WebContents;
@@ -235,6 +241,7 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
   HistoryTabHelper::CreateForWebContents(web_contents);
   InfoBarService::CreateForWebContents(web_contents);
   InstallableManager::CreateForWebContents(web_contents);
+  IsolatedPrerenderTabHelper::CreateForWebContents(web_contents);
   metrics::RendererUptimeWebContentsObserver::CreateForWebContents(
       web_contents);
   MixedContentSettingsTabHelper::CreateForWebContents(web_contents);
@@ -271,6 +278,8 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
   if (SiteEngagementService::IsEnabled())
     SiteEngagementService::Helper::CreateForWebContents(web_contents);
   SoundContentSettingObserver::CreateForWebContents(web_contents);
+  subresource_redirect::SubresourceRedirectObserver::MaybeCreateForWebContents(
+      web_contents);
   sync_sessions::SyncSessionsRouterTabHelper::CreateForWebContents(
       web_contents,
       sync_sessions::SyncSessionsWebContentsRouterFactory::GetForProfile(
@@ -373,6 +382,11 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
 
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
   SupervisedUserNavigationObserver::MaybeCreateForWebContents(web_contents);
+#endif
+
+#if defined(OS_CHROMEOS)
+  chromeos::app_time::WebTimeNavigationObserver::MaybeCreateForWebContents(
+      web_contents);
 #endif
 
   if (predictors::LoadingPredictorFactory::GetForProfile(profile))

@@ -29,6 +29,8 @@
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/common/thread_safe_browser_interface_broker_proxy.h"
 #include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_speech_synthesis_error_event_init.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_speech_synthesis_event_init.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/deprecation.h"
@@ -36,9 +38,7 @@
 #include "third_party/blink/renderer/core/timing/dom_window_performance.h"
 #include "third_party/blink/renderer/core/timing/performance.h"
 #include "third_party/blink/renderer/modules/speech/speech_synthesis_error_event.h"
-#include "third_party/blink/renderer/modules/speech/speech_synthesis_error_event_init.h"
 #include "third_party/blink/renderer/modules/speech/speech_synthesis_event.h"
-#include "third_party/blink/renderer/modules/speech/speech_synthesis_event_init.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 
 namespace blink {

@@ -57,7 +57,7 @@
 namespace blink {
 
 DOMPatchSupport::DOMPatchSupport(DOMEditor* dom_editor, Document& document)
-    : dom_editor_(dom_editor), document_(document) {}
+    : dom_editor_(dom_editor), document_(&document) {}
 
 void DOMPatchSupport::PatchDocument(const String& markup) {
   Document* new_document = nullptr;

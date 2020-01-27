@@ -35,10 +35,9 @@ size_t CalculateStride(int width) {
 
 class WaylandCanvasSurface::SharedMemoryBuffer {
  public:
-  SharedMemoryBuffer(uint32_t buffer_id,
-                     gfx::AcceleratedWidget widget,
+  SharedMemoryBuffer(gfx::AcceleratedWidget widget,
                      WaylandBufferManagerGpu* buffer_manager)
-      : buffer_id_(buffer_id),
+      : buffer_id_(buffer_manager->AllocateBufferID()),
         widget_(widget),
         buffer_manager_(buffer_manager) {
     DCHECK(buffer_manager_);
@@ -294,8 +293,8 @@ std::unique_ptr<WaylandCanvasSurface::SharedMemoryBuffer>
 WaylandCanvasSurface::CreateSharedMemoryBuffer() {
   DCHECK(!size_.IsEmpty());
 
-  auto canvas_buffer = std::make_unique<SharedMemoryBuffer>(
-      ++buffer_id_, widget_, buffer_manager_);
+  auto canvas_buffer =
+      std::make_unique<SharedMemoryBuffer>(widget_, buffer_manager_);
   return canvas_buffer->Initialize(size_) ? std::move(canvas_buffer) : nullptr;
 }
 

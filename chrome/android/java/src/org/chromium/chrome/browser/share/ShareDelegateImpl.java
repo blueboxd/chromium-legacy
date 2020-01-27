@@ -257,8 +257,8 @@ public class ShareDelegateImpl implements ShareDelegate {
             if (params.shareDirectly()) {
                 ShareHelper.shareDirectly(params);
             } else if (ChromeFeatureList.isEnabled(ChromeFeatureList.CHROME_SHARING_HUB)) {
-                ShareSheetCoordinator coordinator =
-                        new ShareSheetCoordinator(controller, tabProvider, tabCreator);
+                ShareSheetCoordinator coordinator = new ShareSheetCoordinator(controller,
+                        tabProvider, tabCreator, new ShareSheetPropertyModelBuilder(controller));
                 // TODO(crbug/1009124): open custom share sheet.
                 coordinator.showShareSheet(params);
             } else {

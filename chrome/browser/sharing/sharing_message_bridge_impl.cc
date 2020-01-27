@@ -123,11 +123,12 @@ std::string SharingMessageBridgeImpl::GetStorageKey(
 void SharingMessageBridgeImpl::OnCommitAttemptErrors(
     const syncer::FailedCommitResponseDataList& error_response_list) {
   for (const syncer::FailedCommitResponseData& response : error_response_list) {
-    // TODO(rushans): untrack entity in change processor on error. We cannot
-    // untrack it by only client tag hash and there is no storage key in
-    // response data.
-    ProcessCommitResponse(response.client_tag_hash,
-                          response.sharing_message_error);
+    // We do not want to retry committing again, thus, the bridge has to untrack
+    // the failed item.
+    change_processor()->UntrackEntityForClientTagHash(response.client_tag_hash);
+    ProcessCommitResponse(
+        response.client_tag_hash,
+        response.datatype_specific_error.sharing_message_error());
   }
 }
 
@@ -136,8 +137,7 @@ void SharingMessageBridgeImpl::ProcessCommitResponse(
     const sync_pb::SharingMessageCommitError& commit_error_message) {
   const auto iter = commit_callbacks_.find(client_tag_hash);
   if (iter == commit_callbacks_.end()) {
-    // TODO(crbug.com/1034930): mark as NOTREACHABLE() when the entity will be
-    // untracked on commit errors.
+    NOTREACHED();
     return;
   }
   std::move(iter->second).Run(commit_error_message);

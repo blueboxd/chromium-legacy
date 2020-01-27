@@ -122,7 +122,7 @@ class BoxPainterBase {
     // FillLayerInfo is a temporary, stack-allocated container which cannot
     // outlive the StyleImage.  This would normally be a raw pointer, if not for
     // the Oilpan tooling complaints.
-    Member<StyleImage> image;
+    StyleImage* image;
     Color color;
 
     RespectImageOrientationEnum respect_image_orientation;
@@ -169,9 +169,9 @@ class BoxPainterBase {
                                   bool include_logical_right_edge = true);
 
  private:
-  Member<const Document> document_;
+  const Document* document_;
   const ComputedStyle& style_;
-  Member<Node> node_;
+  Node* node_;
 };
 
 }  // namespace blink

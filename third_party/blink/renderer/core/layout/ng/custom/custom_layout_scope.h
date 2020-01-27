@@ -64,7 +64,7 @@ class CustomLayoutScope {
 
   CustomLayoutScope* prev_scope_;
   CustomLayoutWorkQueue queue_;
-  Member<CustomLayoutToken> token_;
+  CustomLayoutToken* token_;
 };
 
 inline bool CustomLayoutToken::IsValid() const {

@@ -233,9 +233,6 @@ public class TabContextMenuItemDelegate implements ContextMenuItemDelegate {
         if (ChromeFeatureList.isEnabled(ChromeFeatureList.EPHEMERAL_TAB_USING_BOTTOM_SHEET)) {
             mTab.getActivity().getEphemeralTabCoordinator().requestOpenSheet(
                     url, title, mTab.isIncognito());
-        } else {
-            mTab.getActivity().getEphemeralTabPanel().requestOpenPanel(
-                    url, title, mTab.isIncognito());
         }
     }
 

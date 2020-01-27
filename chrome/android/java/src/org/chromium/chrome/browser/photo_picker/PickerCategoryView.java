@@ -42,6 +42,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.util.ConversionUtils;
+import org.chromium.chrome.browser.vr.VrModeProviderImpl;
 import org.chromium.chrome.browser.widget.selection.SelectableListLayout;
 import org.chromium.chrome.browser.widget.selection.SelectionDelegate;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
@@ -263,7 +264,7 @@ public class PickerCategoryView extends RelativeLayout
                                             : R.string.photo_picker_select_image;
         PhotoPickerToolbar toolbar = (PhotoPickerToolbar) mSelectableListLayout.initializeToolbar(
                 R.layout.photo_picker_toolbar, mSelectionDelegate, titleId, 0, 0, null, false,
-                false);
+                false, new VrModeProviderImpl());
         toolbar.setNavigationOnClickListener(this);
         toolbar.setDelegate(delegate);
         Button doneButton = (Button) toolbar.findViewById(R.id.done);

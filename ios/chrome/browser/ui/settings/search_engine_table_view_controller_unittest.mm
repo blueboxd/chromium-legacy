@@ -290,9 +290,10 @@ TEST_F(SearchEngineTableViewControllerTest,
 
   ASSERT_EQ(2, NumberOfSections());
   ASSERT_EQ(3, NumberOfItemsInSection(0));
-  CheckPrepopulatedItem(kEngineP1Name, EngineP1Url(), false, 0, 0);
-  CheckPrepopulatedItem(kEngineP2Name, EngineP2Url(), true, 0, 1);
-  CheckPrepopulatedItem(kEngineP3Name, EngineP3Url(), false, 0, 2);
+  // Assert order of prepopulated hasn't changed.
+  CheckPrepopulatedItem(kEngineP3Name, EngineP3Url(), false, 0, 0);
+  CheckPrepopulatedItem(kEngineP1Name, EngineP1Url(), false, 0, 1);
+  CheckPrepopulatedItem(kEngineP2Name, EngineP2Url(), true, 0, 2);
 
   ASSERT_EQ(3, NumberOfItemsInSection(1));
   CheckCustomItem(kEngineC1Name, EngineC1Url(), false, 1, 0);
@@ -326,9 +327,9 @@ TEST_F(SearchEngineTableViewControllerTest,
 
   ASSERT_EQ(2, NumberOfSections());
   ASSERT_EQ(4, NumberOfItemsInSection(0));
-  CheckPrepopulatedItem(kEngineP1Name, EngineP1Url(), false, 0, 0);
-  CheckPrepopulatedItem(kEngineP2Name, EngineP2Url(), false, 0, 1);
-  CheckPrepopulatedItem(kEngineP3Name, EngineP3Url(), false, 0, 2);
+  CheckPrepopulatedItem(kEngineP3Name, EngineP3Url(), false, 0, 0);
+  CheckPrepopulatedItem(kEngineP1Name, EngineP1Url(), false, 0, 1);
+  CheckPrepopulatedItem(kEngineP2Name, EngineP2Url(), false, 0, 2);
   CheckCustomItem(kEngineC2Name, EngineC2Url(), true, 0, 3);
 
   ASSERT_EQ(2, NumberOfItemsInSection(1));
@@ -393,12 +394,6 @@ TEST_F(SearchEngineTableViewControllerTest, TestChangeProvider) {
           *TemplateURLDataFromPrepopulatedEngine(*prepopulated_engines[1])));
   ASSERT_TRUE(url_p2);
 
-  // Expected indexes of prepopulated engines in the list.
-  int url_p1_index = 0;
-  int url_p2_index = 1;
-  if (url_p1->prepopulate_id() > url_p2->prepopulate_id())
-    std::swap(url_p1_index, url_p2_index);
-
   // Also add some custom search engines.
   TemplateURL* url_c1 = AddCustomSearchEngine(kEngineC1Name, EngineC1Url(),
                                               base::Time::Now(), false);
@@ -411,14 +406,13 @@ TEST_F(SearchEngineTableViewControllerTest, TestChangeProvider) {
 
   // Choose url_p1 as default.
   [controller() tableView:[controller() tableView]
-      didSelectRowAtIndexPath:[NSIndexPath indexPathForRow:url_p1_index
-                                                 inSection:0]];
+      didSelectRowAtIndexPath:[NSIndexPath indexPathForRow:0 inSection:0]];
 
   ASSERT_EQ(2, NumberOfSections());
   // Check first list.
   ASSERT_EQ(2, NumberOfItemsInSection(0));
-  CheckRealItem(url_p1, true, 0, url_p1_index);
-  CheckRealItem(url_p2, false, 0, url_p2_index);
+  CheckRealItem(url_p1, true, 0, 0);
+  CheckRealItem(url_p2, false, 0, 1);
   // Check second list.
   ASSERT_EQ(2, NumberOfItemsInSection(1));
   CheckCustomItem(kEngineC1Name, EngineC1Url(), false, 1, 0);
@@ -432,14 +426,13 @@ TEST_F(SearchEngineTableViewControllerTest, TestChangeProvider) {
 
   // Choose url_p2 as default.
   [controller() tableView:[controller() tableView]
-      didSelectRowAtIndexPath:[NSIndexPath indexPathForRow:url_p2_index
-                                                 inSection:0]];
+      didSelectRowAtIndexPath:[NSIndexPath indexPathForRow:1 inSection:0]];
 
   ASSERT_EQ(2, NumberOfSections());
   // Check first list.
   ASSERT_EQ(2, NumberOfItemsInSection(0));
-  CheckRealItem(url_p1, false, 0, url_p1_index);
-  CheckRealItem(url_p2, true, 0, url_p2_index);
+  CheckRealItem(url_p1, false, 0, 0);
+  CheckRealItem(url_p2, true, 0, 1);
   // Check second list.
   ASSERT_EQ(2, NumberOfItemsInSection(1));
   CheckCustomItem(kEngineC1Name, EngineC1Url(), false, 1, 0);
@@ -463,8 +456,8 @@ TEST_F(SearchEngineTableViewControllerTest, TestChangeProvider) {
   // The selected Custom search engine is moved to the first section.
   // Check first list.
   ASSERT_EQ(3, NumberOfItemsInSection(0));
-  CheckRealItem(url_p1, false, 0, url_p1_index);
-  CheckRealItem(url_p2, false, 0, url_p2_index);
+  CheckRealItem(url_p1, false, 0, 0);
+  CheckRealItem(url_p2, false, 0, 1);
   // Check second list.
   ASSERT_EQ(1, NumberOfItemsInSection(1));
   CheckCustomItem(kEngineC1Name, EngineC1Url(), true, 0, 2);
@@ -516,9 +509,9 @@ TEST_F(SearchEngineTableViewControllerTest, EditingMode) {
 
   EXPECT_TRUE([searchEngineController editButtonEnabled]);
   EXPECT_TRUE([searchEngineController shouldHideToolbar]);
-  CheckPrepopulatedItem(kEngineP1Name, EngineP1Url(), false, 0, 0);
-  CheckPrepopulatedItem(kEngineP2Name, EngineP2Url(), true, 0, 1);
-  CheckPrepopulatedItem(kEngineP3Name, EngineP3Url(), false, 0, 2);
+  CheckPrepopulatedItem(kEngineP3Name, EngineP3Url(), false, 0, 0);
+  CheckPrepopulatedItem(kEngineP1Name, EngineP1Url(), false, 0, 1);
+  CheckPrepopulatedItem(kEngineP2Name, EngineP2Url(), true, 0, 2);
   CheckCustomItem(kEngineC1Name, EngineC1Url(), false, 1, 0);
   CheckCustomItem(kEngineC2Name, EngineC2Url(), false, 1, 1);
 
@@ -529,9 +522,9 @@ TEST_F(SearchEngineTableViewControllerTest, EditingMode) {
   EXPECT_TRUE([searchEngineController shouldHideToolbar]);
 
   // Prepopulated engines should be disabled with checkmark removed.
-  CheckPrepopulatedItem(kEngineP1Name, EngineP1Url(), false, 0, 0, false);
-  CheckPrepopulatedItem(kEngineP2Name, EngineP2Url(), false, 0, 1, false);
-  CheckPrepopulatedItem(kEngineP3Name, EngineP3Url(), false, 0, 2, false);
+  CheckPrepopulatedItem(kEngineP3Name, EngineP3Url(), false, 0, 0, false);
+  CheckPrepopulatedItem(kEngineP1Name, EngineP1Url(), false, 0, 1, false);
+  CheckPrepopulatedItem(kEngineP2Name, EngineP2Url(), false, 0, 2, false);
   CheckCustomItem(kEngineC1Name, EngineC1Url(), false, 1, 0);
   CheckCustomItem(kEngineC2Name, EngineC2Url(), false, 1, 1);
 
@@ -553,9 +546,9 @@ TEST_F(SearchEngineTableViewControllerTest, EditingMode) {
 
   EXPECT_TRUE([searchEngineController editButtonEnabled]);
   EXPECT_TRUE([searchEngineController shouldHideToolbar]);
-  CheckPrepopulatedItem(kEngineP1Name, EngineP1Url(), false, 0, 0);
-  CheckPrepopulatedItem(kEngineP2Name, EngineP2Url(), true, 0, 1);
-  CheckPrepopulatedItem(kEngineP3Name, EngineP3Url(), false, 0, 2);
+  CheckPrepopulatedItem(kEngineP3Name, EngineP3Url(), false, 0, 0);
+  CheckPrepopulatedItem(kEngineP1Name, EngineP1Url(), false, 0, 1);
+  CheckPrepopulatedItem(kEngineP2Name, EngineP2Url(), true, 0, 2);
   CheckCustomItem(kEngineC1Name, EngineC1Url(), false, 1, 0);
   CheckCustomItem(kEngineC2Name, EngineC2Url(), false, 1, 1);
 }
@@ -597,9 +590,9 @@ TEST_F(SearchEngineTableViewControllerTest, DeleteItems) {
         return NumberOfItemsInSection(0) == 3;
       }));
   ASSERT_TRUE(NumberOfItemsInSection(1) == 2);
-  CheckPrepopulatedItem(kEngineP1Name, EngineP1Url(), true, 0, 0);
-  CheckPrepopulatedItem(kEngineP2Name, EngineP2Url(), false, 0, 1);
-  CheckPrepopulatedItem(kEngineP3Name, EngineP3Url(), false, 0, 2);
+  CheckPrepopulatedItem(kEngineP3Name, EngineP3Url(), true, 0, 0);
+  CheckPrepopulatedItem(kEngineP1Name, EngineP1Url(), false, 0, 1);
+  CheckPrepopulatedItem(kEngineP2Name, EngineP2Url(), false, 0, 2);
   CheckCustomItem(kEngineC2Name, EngineC2Url(), false, 1, 0);
   CheckCustomItem(kEngineC4Name, EngineC4Url(), false, 1, 1);
 
@@ -612,9 +605,9 @@ TEST_F(SearchEngineTableViewControllerTest, DeleteItems) {
 
   ASSERT_EQ(4, NumberOfItemsInSection(0));
   ASSERT_EQ(1, NumberOfItemsInSection(1));
-  CheckPrepopulatedItem(kEngineP1Name, EngineP1Url(), false, 0, 0);
-  CheckPrepopulatedItem(kEngineP2Name, EngineP2Url(), false, 0, 1);
-  CheckPrepopulatedItem(kEngineP3Name, EngineP3Url(), false, 0, 2);
+  CheckPrepopulatedItem(kEngineP3Name, EngineP3Url(), false, 0, 0);
+  CheckPrepopulatedItem(kEngineP1Name, EngineP1Url(), false, 0, 1);
+  CheckPrepopulatedItem(kEngineP2Name, EngineP2Url(), false, 0, 2);
   CheckCustomItem(kEngineC2Name, EngineC2Url(), false, 1, 0);
   CheckCustomItem(kEngineC4Name, EngineC4Url(), true, 0, 3);
 
@@ -628,9 +621,9 @@ TEST_F(SearchEngineTableViewControllerTest, DeleteItems) {
         return NumberOfSections() == 1;
       }));
   ASSERT_TRUE(NumberOfItemsInSection(0) == 3);
-  CheckPrepopulatedItem(kEngineP1Name, EngineP1Url(), true, 0, 0);
-  CheckPrepopulatedItem(kEngineP2Name, EngineP2Url(), false, 0, 1);
-  CheckPrepopulatedItem(kEngineP3Name, EngineP3Url(), false, 0, 2);
+  CheckPrepopulatedItem(kEngineP3Name, EngineP3Url(), true, 0, 0);
+  CheckPrepopulatedItem(kEngineP1Name, EngineP1Url(), false, 0, 1);
+  CheckPrepopulatedItem(kEngineP2Name, EngineP2Url(), false, 0, 2);
 }
 
 }  // namespace

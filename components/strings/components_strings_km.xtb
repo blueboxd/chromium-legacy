@@ -292,7 +292,6 @@
 <translation id="2218879909401188352">ថ្មីៗនេះ​អ្នក​វាយ​ប្រហារ​នៅលើ <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> អាច​ដំឡើង​កម្មវិធី​ដែល​មាន​គ្រោះថ្នាក់​ដែល​អាច​ប៉ះពាល់​ដល់ឧបករណ៍របស់អ្នក បន្ថែម​ការចំណាយ​ទៅក្នុង​វិក្កយបត្រ​សេវា​ទូរសព្ទ​ចល័ត​ដោយ​មិន​ឲ្យ​អ្នកដឹង ឬ​លួច​ព័ត៌មាន​ផ្ទាល់ខ្លួន​របស់​អ្នក។ <ph name="BEGIN_LEARN_MORE_LINK" />ស្វែងយល់​បន្ថែម<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="2224337661447660594">គ្មាន​អ៊ីនធឺណិតទេ</translation>
 <translation id="2230458221926704099">សូមដោះស្រាយការតភ្ជាប់របស់អ្នកដោយប្រើ<ph name="BEGIN_LINK" />កម្មវិធីវិនិច្ឆ័យ<ph name="END_LINK" /></translation>
-<translation id="22320125457191592">សម្រាប់​អ្នក</translation>
 <translation id="2239100178324503013">ផ្ញើឥឡូវនេះ</translation>
 <translation id="2248949050832152960">ប្រើ WebAuthn</translation>
 <translation id="2250931979407627383">ដេរគែម​ខាងឆ្វេង</translation>
@@ -579,7 +578,6 @@
 <translation id="3531780078352352885">សន្លឹក​កិច្ចការ</translation>
 <translation id="3533328374079021623">ប្រអប់​សំបុត្រទី 5</translation>
 <translation id="3539171420378717834">រក្សាច្បាប់ចម្លងនៃកាតនេះនៅលើឧបករណ៍នេះ</translation>
-<translation id="3553513561058684206">សម្រាប់អ្នក</translation>
 <translation id="3558573058928565255">ពេលថ្ងៃ</translation>
 <translation id="3566021033012934673">ការភ្ជាប់របស់អ្នកមិនឯកជនទេ</translation>
 <translation id="3574305903863751447"><ph name="CITY" />, <ph name="STATE" /> <ph name="COUNTRY" /></translation>

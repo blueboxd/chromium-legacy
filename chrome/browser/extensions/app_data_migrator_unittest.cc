@@ -115,9 +115,6 @@ scoped_refptr<const Extension> GetTestExtension(bool platform_app) {
   return app;
 }
 
-void MigrationCallback() {
-}
-
 void DidWrite(base::File::Error status, int64_t bytes, bool complete) {
   base::RunLoop::QuitCurrentWhenIdleDeprecated();
 }
@@ -252,7 +249,7 @@ TEST_F(AppDataMigratorTest, NoOpMigration) {
 
   // Nothing to migrate. Basically this should just not cause an error
   migrator_->DoMigrationAndReply(old_ext.get(), new_ext.get(),
-                                 base::Bind(&MigrationCallback));
+                                 base::DoNothing());
 }
 
 // crbug.com/747589
@@ -264,7 +261,7 @@ TEST_F(AppDataMigratorTest, DISABLED_FileSystemMigration) {
                     default_fs_context_, profile_.get());
 
   migrator_->DoMigrationAndReply(old_ext.get(), new_ext.get(),
-                                 base::Bind(&MigrationCallback));
+                                 base::DoNothing());
 
   content::RunAllTasksUntilIdle();
 

@@ -8,7 +8,7 @@
 #include <memory>
 #include <vector>
 
-#include "chrome/browser/image_decoder.h"
+#include "chrome/browser/image_decoder/image_decoder.h"
 #include "components/image_fetcher/core/image_decoder.h"
 
 // image_fetcher::ImageDecoder implementation.

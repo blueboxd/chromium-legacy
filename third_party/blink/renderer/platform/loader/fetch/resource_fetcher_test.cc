@@ -558,7 +558,7 @@ class ScopedMockRedirectRequester {
   }
 
  private:
-  Member<MockFetchContext> context_;
+  MockFetchContext* context_;
   const scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(ScopedMockRedirectRequester);

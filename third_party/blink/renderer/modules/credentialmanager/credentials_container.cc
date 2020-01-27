@@ -12,6 +12,12 @@
 #include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_authentication_extensions_client_inputs.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_authenticator_selection_criteria.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_credential_creation_options.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_credential_request_options.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_federated_credential_request_options.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_public_key_credential_creation_options.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_public_key_credential_request_options.h"
 #include "third_party/blink/renderer/core/dom/abort_signal.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -24,20 +30,14 @@
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/page/frame_tree.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer.h"
-#include "third_party/blink/renderer/modules/credentialmanager/authentication_extensions_client_inputs.h"
 #include "third_party/blink/renderer/modules/credentialmanager/authenticator_assertion_response.h"
 #include "third_party/blink/renderer/modules/credentialmanager/authenticator_attestation_response.h"
-#include "third_party/blink/renderer/modules/credentialmanager/authenticator_selection_criteria.h"
 #include "third_party/blink/renderer/modules/credentialmanager/credential.h"
-#include "third_party/blink/renderer/modules/credentialmanager/credential_creation_options.h"
 #include "third_party/blink/renderer/modules/credentialmanager/credential_manager_proxy.h"
 #include "third_party/blink/renderer/modules/credentialmanager/credential_manager_type_converters.h"
-#include "third_party/blink/renderer/modules/credentialmanager/credential_request_options.h"
 #include "third_party/blink/renderer/modules/credentialmanager/federated_credential.h"
-#include "third_party/blink/renderer/modules/credentialmanager/federated_credential_request_options.h"
 #include "third_party/blink/renderer/modules/credentialmanager/password_credential.h"
 #include "third_party/blink/renderer/modules/credentialmanager/public_key_credential.h"
-#include "third_party/blink/renderer/modules/credentialmanager/public_key_credential_creation_options.h"
 #include "third_party/blink/renderer/modules/credentialmanager/scoped_promise_resolver.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
@@ -47,7 +47,7 @@
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 
 #if defined(OS_ANDROID)
-#include "third_party/blink/renderer/modules/credentialmanager/public_key_credential_rp_entity.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_public_key_credential_rp_entity.h"
 #endif
 
 namespace blink {

@@ -61,10 +61,10 @@ ChromeIOSTranslateClient::ChromeIOSTranslateClient(web::WebState* web_state)
       translate_manager_(std::make_unique<translate::TranslateManager>(
           this,
           translate::TranslateRankerFactory::GetForBrowserState(
-              ios::ChromeBrowserState::FromBrowserState(
+              ChromeBrowserState::FromBrowserState(
                   web_state->GetBrowserState())),
           LanguageModelManagerFactory::GetForBrowserState(
-              ios::ChromeBrowserState::FromBrowserState(
+              ChromeBrowserState::FromBrowserState(
                   web_state->GetBrowserState()))
               ->GetPrimaryModel())),
       translate_driver_(web_state,
@@ -136,16 +136,16 @@ translate::IOSTranslateDriver* ChromeIOSTranslateClient::GetTranslateDriver() {
 
 PrefService* ChromeIOSTranslateClient::GetPrefs() {
   DCHECK(web_state_);
-  ios::ChromeBrowserState* chrome_browser_state =
-      ios::ChromeBrowserState::FromBrowserState(web_state_->GetBrowserState());
+  ChromeBrowserState* chrome_browser_state =
+      ChromeBrowserState::FromBrowserState(web_state_->GetBrowserState());
   return chrome_browser_state->GetOriginalChromeBrowserState()->GetPrefs();
 }
 
 std::unique_ptr<translate::TranslatePrefs>
 ChromeIOSTranslateClient::GetTranslatePrefs() {
   DCHECK(web_state_);
-  ios::ChromeBrowserState* chrome_browser_state =
-      ios::ChromeBrowserState::FromBrowserState(web_state_->GetBrowserState());
+  ChromeBrowserState* chrome_browser_state =
+      ChromeBrowserState::FromBrowserState(web_state_->GetBrowserState());
   return CreateTranslatePrefs(chrome_browser_state->GetPrefs());
 }
 
@@ -153,7 +153,7 @@ translate::TranslateAcceptLanguages*
 ChromeIOSTranslateClient::GetTranslateAcceptLanguages() {
   DCHECK(web_state_);
   return TranslateAcceptLanguagesFactory::GetForBrowserState(
-      ios::ChromeBrowserState::FromBrowserState(web_state_->GetBrowserState()));
+      ChromeBrowserState::FromBrowserState(web_state_->GetBrowserState()));
 }
 
 int ChromeIOSTranslateClient::GetInfobarIconID() const {

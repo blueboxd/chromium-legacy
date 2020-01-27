@@ -223,7 +223,6 @@
 <translation id="1306606229401759371">Тохиргоог өөрчлөх</translation>
 <translation id="1307165550267142340">Таны ПИН-г үүсгэлээ</translation>
 <translation id="1307559529304613120">Өө! Систем нь энэ төхөөрөмжид урт хугацааны API нэвтрэх түлхүүрийг хадгалж чадсангүй.</translation>
-<translation id="1309199320876169714">Plugin VM-г устгаж байна...</translation>
 <translation id="1313405956111467313">Автомат прокси тохиргоо</translation>
 <translation id="131364520783682672">Үсгийн хэмжээг түгжин тогтоох</translation>
 <translation id="1313705515580255288">Таны хайлтын жагсаалт, түүх болон бусад тохиргоонуудыг таны Google Account руу шууд sync хийнэ.</translation>
@@ -1362,7 +1361,6 @@
 <translation id="2871813825302180988">Энэ бүртгэлийг аль хэдийн энэ төхөөрөмж дээр ашиглаж эхэлсэн байна.</translation>
 <translation id="287286579981869940"><ph name="PROVIDER_NAME" />... нэмэх</translation>
 <translation id="2872961005593481000">Унтраах</translation>
-<translation id="2874478552394649323">Plugin VM-г устгах</translation>
 <translation id="2874939134665556319">Өмнөх бичлэг</translation>
 <translation id="2875698561019555027">(Chrome алдааны хуудас)</translation>
 <translation id="2876336351874743617">Хуруу 2</translation>
@@ -1379,7 +1377,6 @@
 <translation id="2889064240420137087">Холбоосыг ...-аар нээх</translation>
 <translation id="2889925978073739256">Хамгаалалтгүй нэмэлт өргөтгөлүүдийг блоклох үйлдлийг үргэлжлүүлэх</translation>
 <translation id="2893168226686371498">Стандарт вэб хөтөч</translation>
-<translation id="2893208266590504003">Plugin VM-г устгаж чадсангүй</translation>
 <translation id="2894757982205307093">Бүлэг доторх шинэ таб</translation>
 <translation id="289644616180464099">SIM карт түгжигдсэн</translation>
 <translation id="2896909745808647285"><ph name="FILE_NAME" /> нь кодчилогдсон бөгөөд нээхийг хориглосон.</translation>
@@ -2829,6 +2826,7 @@
 <translation id="4998430619171209993">Асаалттай</translation>
 <translation id="4998873842614926205">Өөрчлөлтийг баталгаажуул</translation>
 <translation id="5000922062037820727">Хориглосон (санал болгосон)</translation>
+<translation id="5007392906805964215">Шалгах</translation>
 <translation id="5008936837313706385">Үйл ажиллагааны нэр</translation>
 <translation id="5010043101506446253">Гэрчилгээний бүрэн эрх</translation>
 <translation id="5015344424288992913">Проксигийн асуудлыг шийдэж байна...</translation>
@@ -5763,7 +5761,6 @@
 <translation id="9169496697824289689">Компьютерын гарын богино холбоосыг үзэх</translation>
 <translation id="916964310188958970">Яагаад энэ зөвлөмж гэж?</translation>
 <translation id="9169931577761441333"><ph name="APP_NAME" />-г Үндсэн нүүрэнд нэмэх</translation>
-<translation id="9170305483456271385">Plugin VM-г устгалаа</translation>
 <translation id="9170848237812810038">&amp; Буцаах</translation>
 <translation id="9170884462774788842">Таны компьютер дээрх өөр нэг апп theme нэмжээ. Энэ нь Chrome-ийн ажиллах зарчимд нөлөө үзүүлж болзошгүй.</translation>
 <translation id="9173995187295789444">Bluetooth төхөөрөмжүүдийг хайж байна...</translation>

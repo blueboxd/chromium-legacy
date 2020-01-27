@@ -114,7 +114,7 @@
                   "$i18n{peopleSignInPromptSecondaryWithNoAccount}">
           </settings-sync-account-control>
         </template>
-        <template is="dom-if" if="[[shouldShowProfile_(
+        <template is="dom-if" if="[[!shouldShowSyncAccountControl_(
             syncStatus.syncSystemEnabled, syncStatus.signinAllowed)]]" restamp>
           <div id="picture-subpage-trigger" class="settings-box first two-line">
             <template is="dom-if" if="[[syncStatus]]">
@@ -129,9 +129,13 @@
                   actionable$="[[isProfileActionable_]]">
                 <div class="flex text-elide settings-box-text">
                   <span id="profile-name">[[profileName_]]</span>
+<!-- When the user is signed-in, the settings-sync-account-control is always
+  shown on non-ChromeOS platforms -->
+<if expr="chromeos">
                   <div class="secondary" hidden="[[!syncStatus.signedIn]]">
                     [[syncStatus.signedInUsername]]
                   </div>
+</if>
                 </div>
 <if expr="not chromeos">
                 <cr-icon-button class="subpage-arrow"
@@ -148,26 +152,9 @@
                     aria-describedby="profile-name"></cr-icon-button>
 </if>
               </div>
-<!-- Chrome OS is always signed-in and does not show a sign-out button. -->
-<if expr="not chromeos">
-              <template is="dom-if" if="[[showSignin_(syncStatus)]]">
-                <div class="separator"></div>
-                <cr-button class="action-button" on-click="onSigninTap_"
-                    disabled="[[syncStatus.firstSetupInProgress]]">
-                  $i18n{syncSignin}
-                </cr-button>
-              </template>
-              <template is="dom-if" if="[[syncStatus.signedIn]]">
-                <div class="separator"></div>
-                <cr-button id="disconnectButton" on-click="onDisconnectTap_"
-                    disabled="[[syncStatus.firstSetupInProgress]]">
-                  $i18n{syncDisconnect}
-                </cr-button>
-              </template>
-</if>
             </template>
           </div>
-        </template> <!-- if="[[shouldShowProfile_()]]" -->
+        </template> <!-- if="[[!shouldShowSyncAccountControl_()]]" -->
 
 <!-- Chrome OS uses settings-sync-account-control for sync promos. -->
 <if expr="not chromeos">
@@ -243,7 +230,8 @@
 <if expr="not chromeos">
       <template is="dom-if" route-path="/manageProfile">
         <settings-subpage
-            associated-control="[[getEditPersonAssocControl_(diceEnabled_)]]"
+            associated-control="[[getEditPersonAssocControl_(
+                syncStatus.signinAllowed)]]"
             page-title="$i18n{editPerson}">
           <settings-manage-profile profile-name="[[profileName_]]"
               sync-status="[[syncStatus]]">

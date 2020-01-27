@@ -968,6 +968,14 @@ void WebMediaPlayerMS::OnSeekBackward(double seconds) {
   // TODO(perkj, magjed): See TODO in OnPlay().
 }
 
+void WebMediaPlayerMS::OnEnterPictureInPicture() {
+  client_->RequestEnterPictureInPicture();
+}
+
+void WebMediaPlayerMS::OnExitPictureInPicture() {
+  client_->RequestExitPictureInPicture();
+}
+
 void WebMediaPlayerMS::OnVolumeMultiplierUpdate(double multiplier) {
   // TODO(perkj, magjed): See TODO in OnPlay().
 }

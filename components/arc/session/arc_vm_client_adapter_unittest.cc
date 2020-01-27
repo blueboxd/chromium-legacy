@@ -4,7 +4,6 @@
 
 #include "components/arc/session/arc_vm_client_adapter.h"
 
-#include <iterator>
 #include <memory>
 #include <string>
 #include <utility>
@@ -592,6 +591,38 @@ TEST_F(ArcVmClientAdapterTest, StartUpgradeArc_VariousParams2) {
   EXPECT_FALSE(arc_instance_stopped_called());
 }
 
+// Try to start and upgrade the instance with demo mode enabled.
+TEST_F(ArcVmClientAdapterTest, StartUpgradeArc_DemoMode) {
+  constexpr char kDemoImage[] =
+      "/run/imageloader/demo-mode-resources/0.0.1.7/android_demo_apps.squash";
+
+  StartParams start_params(GetPopulatedStartParams());
+  SetValidUserInfo();
+  StartMiniArcWithParams(std::move(start_params));
+
+  UpgradeParams params(GetPopulatedUpgradeParams());
+  // Enable demo mode.
+  params.is_demo_session = true;
+  params.demo_session_apps_path = base::FilePath(kDemoImage);
+
+  UpgradeArcWithParams(true, std::move(params));
+  EXPECT_TRUE(GetStartConciergeCalled());
+  EXPECT_TRUE(GetTestConciergeClient()->start_arc_vm_called());
+  EXPECT_FALSE(arc_instance_stopped_called());
+
+  // Verify the request.
+  auto request = GetTestConciergeClient()->start_arc_vm_request();
+  // Make sure disks have the squashfs image.
+  EXPECT_TRUE(([&kDemoImage, &request]() {
+    for (const auto& disk : request.disks()) {
+      if (disk.path() == kDemoImage)
+        return true;
+    }
+    return false;
+  }()));
+  EXPECT_TRUE(base::Contains(request.params(), "androidboot.arc_demo_mode=1"));
+}
+
 // Tests that StartArcVm() is called with valid parameters.
 TEST_F(ArcVmClientAdapterTest, UpgradeArc_StartArcVmParams) {
   SetValidUserInfo();
@@ -721,10 +752,7 @@ TEST_F(ArcVmClientAdapterTest, KernelParam_RO) {
 
   // Check "rw" is not in |params|.
   auto request = GetTestConciergeClient()->start_arc_vm_request();
-  const std::vector<std::string> params(
-      std::make_move_iterator(request.mutable_params()->begin()),
-      std::make_move_iterator(request.mutable_params()->end()));
-  EXPECT_FALSE(base::Contains(params, "rw"));
+  EXPECT_FALSE(base::Contains(request.params(), "rw"));
 }
 
 // Tests that the kernel parameter does include "rw" when '/' is writable and
@@ -739,10 +767,7 @@ TEST_F(ArcVmClientAdapterTest, KernelParam_RW) {
 
   // Check "rw" is in |params|.
   auto request = GetTestConciergeClient()->start_arc_vm_request();
-  const std::vector<std::string> params(
-      std::make_move_iterator(request.mutable_params()->begin()),
-      std::make_move_iterator(request.mutable_params()->end()));
-  EXPECT_TRUE(base::Contains(params, "rw"));
+  EXPECT_TRUE(base::Contains(request.params(), "rw"));
 }
 
 // Tests that CreateArcVmClientAdapter(), the non-testing version, doesn't

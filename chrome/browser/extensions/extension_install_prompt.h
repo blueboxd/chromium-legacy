@@ -114,6 +114,7 @@ class ExtensionInstallPrompt {
     base::string16 GetRetainedDevicesHeading() const;
 
     bool ShouldShowPermissions() const;
+    bool ShouldDisplayWithholdingUI() const;
 
     // Getters for webstore metadata. Only populated when the type is
     // INLINE_INSTALL_PROMPT, EXTERNAL_INSTALL_PROMPT, or REPAIR_PROMPT.
@@ -178,6 +179,8 @@ class ExtensionInstallPrompt {
     // permissions if only additional ones are being requested)
     extensions::InstallPromptPermissions prompt_permissions_;
 
+    bool is_requesting_host_permissions_;
+
     bool is_showing_details_for_retained_files_;
     bool is_showing_details_for_retained_devices_;
 
@@ -216,6 +219,7 @@ class ExtensionInstallPrompt {
 
   enum class Result {
     ACCEPTED,
+    ACCEPTED_AND_OPTION_CHECKED,
     USER_CANCELED,
     ABORTED,
   };

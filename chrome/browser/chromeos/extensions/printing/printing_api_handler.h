@@ -87,6 +87,10 @@ class PrintingAPIHandler : public BrowserContextKeyedAPI,
                  std::unique_ptr<api::printing::SubmitJob::Params> params,
                  PrintJobSubmitter::SubmitJobCallback callback);
 
+  // Returns an error message if an error occurred.
+  base::Optional<std::string> CancelJob(const std::string& extension_id,
+                                        const std::string& job_id);
+
   std::vector<api::printing::Printer> GetPrinters();
 
   void GetPrinterInfo(const std::string& printer_id,
@@ -152,6 +156,11 @@ class PrintingAPIHandler : public BrowserContextKeyedAPI,
 
   // Remote interface used to flatten a PDF.
   mojo::Remote<printing::mojom::PdfFlattener> pdf_flattener_;
+
+  // Stores mapping from job id to the extension id.
+  // This is needed to disallow extensions to cancel jobs initiated by other
+  // extensions.
+  base::flat_map<std::string, std::string> print_jobs_extension_ids_;
 
   ScopedObserver<chromeos::CupsPrintJobManager,
                  chromeos::CupsPrintJobManager::Observer>

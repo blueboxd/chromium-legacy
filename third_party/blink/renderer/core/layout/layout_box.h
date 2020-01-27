@@ -26,6 +26,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "third_party/blink/public/mojom/scroll/scroll_into_view_params.mojom-blink-forward.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/layout/layout_box_model_object.h"
 #include "third_party/blink/renderer/core/layout/min_max_size.h"
@@ -49,7 +50,6 @@ enum class NGLayoutCacheStatus;
 class NGLayoutResult;
 struct NGPhysicalBoxStrut;
 struct PaintInfo;
-struct WebScrollIntoViewParams;
 
 enum SizeType { kMainOrPreferredSize, kMinSize, kMaxSize };
 enum AvailableLogicalHeightType {
@@ -718,8 +718,9 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   void ScrollByRecursively(const ScrollOffset& delta);
   // If makeVisibleInVisualViewport is set, the visual viewport will be scrolled
   // if required to make the rect visible.
-  PhysicalRect ScrollRectToVisibleRecursive(const PhysicalRect&,
-                                            const WebScrollIntoViewParams&);
+  PhysicalRect ScrollRectToVisibleRecursive(
+      const PhysicalRect&,
+      mojom::blink::ScrollIntoViewParamsPtr);
 
   LayoutRectOutsets MarginBoxOutsets() const { return margin_box_outsets_; }
   LayoutUnit MarginTop() const override { return margin_box_outsets_.Top(); }
@@ -1795,7 +1796,7 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   // Returns true when the current recursive scroll into visible could propagate
   // to parent frame.
   bool AllowedToPropagateRecursiveScrollToParentFrame(
-      const WebScrollIntoViewParams&);
+      const mojom::blink::ScrollIntoViewParamsPtr&);
 
   PhysicalRect DebugRect() const override;
 

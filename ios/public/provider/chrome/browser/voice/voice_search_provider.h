@@ -10,10 +10,10 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "ios/chrome/browser/browser_state/chrome_browser_state_forward.h"
 
 @protocol ApplicationCommands;
 class AudioSessionController;
+class ChromeBrowserState;
 class VoiceSearchController;
 
 // VoiceSearchProvider allows embedders to provide functionality related to
@@ -35,7 +35,7 @@ class VoiceSearchProvider {
 
   // Creates a new VoiceSearchController object.
   virtual scoped_refptr<VoiceSearchController> CreateVoiceSearchController(
-      ios::ChromeBrowserState* browser_state) const;
+      ChromeBrowserState* browser_state) const;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(VoiceSearchProvider);

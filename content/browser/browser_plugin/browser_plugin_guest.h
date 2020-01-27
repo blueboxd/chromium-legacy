@@ -39,8 +39,8 @@
 #include "content/public/common/input_event_ack_state.h"
 #include "content/public/common/screen_info.h"
 #include "third_party/blink/public/common/input/web_input_event.h"
+#include "third_party/blink/public/mojom/input/focus_type.mojom-forward.h"
 #include "third_party/blink/public/platform/web_drag_operation.h"
-#include "third_party/blink/public/platform/web_focus_type.h"
 #include "third_party/blink/public/web/web_drag_status.h"
 #include "third_party/blink/public/web/web_ime_text_span.h"
 #include "ui/base/ime/text_input_mode.h"
@@ -131,7 +131,7 @@ class CONTENT_EXPORT BrowserPluginGuest : public GuestHost,
   // Sets the focus state of the current RenderWidgetHostView.
   void SetFocus(RenderWidgetHost* rwh,
                 bool focused,
-                blink::WebFocusType focus_type);
+                blink::mojom::FocusType focus_type);
 
   // Sets the lock state of the pointer. Returns true if |allowed| is true and
   // the mouse has been successfully locked.
@@ -263,7 +263,7 @@ class CONTENT_EXPORT BrowserPluginGuest : public GuestHost,
   // Resizes the guest's web contents.
   void OnSetFocus(int instance_id,
                   bool focused,
-                  blink::WebFocusType focus_type);
+                  blink::mojom::FocusType focus_type);
   // Sets the name of the guest so that other guests in the same partition can
   // access it.
   void OnSetName(int instance_id, const std::string& name);

@@ -82,7 +82,7 @@ void MigrateFileSystem(WeakPtr<extensions::AppDataMigrator> migrator,
                        StoragePartition* old_partition,
                        StoragePartition* current_partition,
                        const extensions::Extension* extension,
-                       const base::Closure& reply) {
+                       base::OnceClosure reply) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   // Since this method is static and it's being run as a closure task, check to
@@ -103,14 +103,14 @@ void MigrateFileSystem(WeakPtr<extensions::AppDataMigrator> migrator,
       base::BindOnce(
           &MigrateOnFileSystemThread, base::RetainedRef(old_fs_context),
           base::RetainedRef(fs_context), base::RetainedRef(extension)),
-      reply);
+      std::move(reply));
 }
 
 void MigrateLegacyPartition(WeakPtr<extensions::AppDataMigrator> migrator,
                             StoragePartition* old_partition,
                             StoragePartition* current_partition,
                             const extensions::Extension* extension,
-                            const base::Closure& reply) {
+                            base::OnceClosure reply) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   IndexedDBContext* indexed_db_context =
@@ -120,9 +120,9 @@ void MigrateLegacyPartition(WeakPtr<extensions::AppDataMigrator> migrator,
 
   // Create a closure for the file system migration. This is the next step in
   // the migration flow after the IndexedDB migration.
-  base::Closure migrate_fs =
-      base::Bind(&MigrateFileSystem, migrator, old_partition, current_partition,
-                 base::RetainedRef(extension), reply);
+  base::OnceClosure migrate_fs = base::BindOnce(
+      &MigrateFileSystem, migrator, old_partition, current_partition,
+      base::RetainedRef(extension), std::move(reply));
 
   // Perform the IndexedDB migration on the old context's sequenced task
   // runner. After completion, it should call MigrateFileSystem.
@@ -131,7 +131,7 @@ void MigrateLegacyPartition(WeakPtr<extensions::AppDataMigrator> migrator,
       base::BindOnce(
           &MigrateOnIndexedDBThread, base::RetainedRef(old_indexed_db_context),
           base::RetainedRef(indexed_db_context), base::RetainedRef(extension)),
-      migrate_fs);
+      std::move(migrate_fs));
 }
 
 }  // namespace
@@ -151,7 +151,7 @@ bool AppDataMigrator::NeedsMigration(const Extension* old,
 
 void AppDataMigrator::DoMigrationAndReply(const Extension* old,
                                           const Extension* extension,
-                                          const base::Closure& reply) {
+                                          base::OnceClosure reply) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(NeedsMigration(old, extension));
 
@@ -174,7 +174,7 @@ void AppDataMigrator::DoMigrationAndReply(const Extension* old,
     registry_->AddEnabled(old);
 
   MigrateLegacyPartition(weak_factory_.GetWeakPtr(), old_partition,
-                         new_partition, extension, reply);
+                         new_partition, extension, std::move(reply));
 }
 
 }  // namespace extensions

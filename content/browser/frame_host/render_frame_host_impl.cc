@@ -497,16 +497,13 @@ url::Origin GetOriginForURLLoaderFactory(
   url::Origin result =
       GetOriginForURLLoaderFactoryUnchecked(navigation_request);
 
-  // Any non-opaque |result| must be an origin that is allowed to be accessed
-  // from the process that is the target of this navigation.
-  //
-  // TODO(lukasza): https://crbug.com/1029092: The CHECK below should also apply
-  // to opaque origin.
-  if (!result.opaque()) {
+  // |result| must be an origin that is allowed to be accessed from the process
+  // that is the target of this navigation.
+  if (navigation_request) {
+    int process_id =
+        navigation_request->GetRenderFrameHost()->GetProcess()->GetID();
     auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
-    CHECK(policy->CanAccessDataForOrigin(
-        navigation_request->GetRenderFrameHost()->GetProcess()->GetID(),
-        result));
+    CHECK(policy->CanAccessDataForOrigin(process_id, result));
   }
 
   return result;
@@ -1705,8 +1702,6 @@ bool RenderFrameHostImpl::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(FrameHostMsg_FocusedNodeChanged, OnFocusedNodeChanged)
     IPC_MESSAGE_HANDLER(FrameHostMsg_UpdateUserActivationState,
                         OnUpdateUserActivationState)
-    IPC_MESSAGE_HANDLER(FrameHostMsg_ScrollRectToVisibleInParentFrame,
-                        OnScrollRectToVisibleInParentFrame)
     IPC_MESSAGE_HANDLER(FrameHostMsg_FrameDidCallFocus, OnFrameDidCallFocus)
     IPC_MESSAGE_HANDLER(FrameHostMsg_DownloadUrl, OnDownloadUrl)
 #if BUILDFLAG(USE_EXTERNAL_POPUP_MENU)
@@ -4192,14 +4187,14 @@ void RenderFrameHostImpl::HadStickyUserActivationBeforeNavigationChanged(
   frame_tree_node_->OnSetHadStickyUserActivationBeforeNavigation(value);
 }
 
-void RenderFrameHostImpl::OnScrollRectToVisibleInParentFrame(
+void RenderFrameHostImpl::ScrollRectToVisibleInParentFrame(
     const gfx::Rect& rect_to_scroll,
-    const blink::WebScrollIntoViewParams& params) {
+    blink::mojom::ScrollIntoViewParamsPtr params) {
   RenderFrameProxyHost* proxy =
       frame_tree_node_->render_manager()->GetProxyToParent();
   if (!proxy)
     return;
-  proxy->ScrollRectToVisible(rect_to_scroll, params);
+  proxy->ScrollRectToVisible(rect_to_scroll, std::move(params));
 }
 
 void RenderFrameHostImpl::BubbleLogicalScrollInParentFrame(
@@ -5230,7 +5225,7 @@ void RenderFrameHostImpl::SetFocusedFrame() {
   GetAssociatedLocalFrame()->Focus();
 }
 
-void RenderFrameHostImpl::AdvanceFocus(blink::WebFocusType type,
+void RenderFrameHostImpl::AdvanceFocus(blink::mojom::FocusType type,
                                        RenderFrameProxyHost* source_proxy) {
   DCHECK(!source_proxy ||
          (source_proxy->GetProcess()->GetID() == GetProcess()->GetID()));
@@ -5508,15 +5503,25 @@ void RenderFrameHostImpl::CommitNavigation(
     subresource_loader_factories->pending_default_factory() =
         std::move(pending_default_factory);
 
-    // Only file resources can load file subresources.
+    // Only file resources and about:blank with an initiator that can load files
+    // can load file subresources.
     //
-    // Other URLs like about:srcdoc or about:blank might be able load files, but
-    // only because they will inherit loaders from their parents instead of the
-    // ones provided by the browser process here.
+    // Other URLs like about:srcdoc might be able load files, but only because
+    // they will inherit loaders from their parents instead of the ones
+    // provided by the browser process here.
+    // TODO(crbug.com/949510): Make about:srcdoc also use this path instead of
+    // inheriting loaders from the parent.
     //
     // For loading Web Bundle files, we don't set FileURLLoaderFactory.
     // Because loading local files from a Web Bundle file is prohibited.
-    if (common_params->url.SchemeIsFile() && !navigation_to_web_bundle) {
+    //
+    // TODO(crbug.com/888079): In the future, use
+    // GetOriginForURLLoaderFactory/GetOriginToCommit.
+    if ((common_params->url.SchemeIsFile() ||
+         (common_params->url.IsAboutBlank() &&
+          common_params->initiator_origin &&
+          common_params->initiator_origin->scheme() == url::kFileScheme)) &&
+        !navigation_to_web_bundle) {
       auto file_factory = std::make_unique<FileURLLoaderFactory>(
           browser_context->GetPath(),
           browser_context->GetSharedCorsOriginAccessList(),

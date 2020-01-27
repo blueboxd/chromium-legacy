@@ -5,8 +5,8 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_CREDENTIALMANAGER_PUBLIC_KEY_CREDENTIAL_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_CREDENTIALMANAGER_PUBLIC_KEY_CREDENTIAL_H_
 
+#include "third_party/blink/renderer/bindings/modules/v8/v8_authentication_extensions_client_outputs.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer.h"
-#include "third_party/blink/renderer/modules/credentialmanager/authentication_extensions_client_outputs.h"
 #include "third_party/blink/renderer/modules/credentialmanager/authenticator_response.h"
 #include "third_party/blink/renderer/modules/credentialmanager/credential.h"
 #include "third_party/blink/renderer/modules/modules_export.h"

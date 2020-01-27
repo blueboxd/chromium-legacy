@@ -225,11 +225,6 @@ template("gcc_toolchain") {
     } else {
       nm = "nm"
     }
-    if (defined(invoker.dwp)) {
-      dwp = invoker.dwp
-    } else {
-      dwp = "dwp"
-    }
 
     if (defined(invoker.shlib_extension)) {
       default_shlib_extension = invoker.shlib_extension
@@ -391,7 +386,7 @@ template("gcc_toolchain") {
       # The host might not have a POSIX shell and utilities (e.g. Windows).
       solink_wrapper =
           rebase_path("//build/toolchain/gcc_solink_wrapper.py", root_build_dir)
-      command = "$python_path \"$solink_wrapper\" --readelf=\"$readelf\" --nm=\"$nm\" $strip_switch--dwp=\"${dwp}\" --sofile=\"$unstripped_sofile\" --tocfile=\"$tocfile\"$map_switch --output=\"$sofile\" -- $link_command"
+      command = "$python_path \"$solink_wrapper\" --readelf=\"$readelf\" --nm=\"$nm\" $strip_switch--sofile=\"$unstripped_sofile\" --tocfile=\"$tocfile\"$map_switch --output=\"$sofile\" -- $link_command"
 
       if (target_cpu == "mipsel" && is_component_build && is_android) {
         rspfile_content = "-Wl,--start-group -Wl,--whole-archive {{inputs}} {{solibs}} -Wl,--no-whole-archive {{libs}} -Wl,--end-group"
@@ -521,9 +516,13 @@ template("gcc_toolchain") {
         strip_switch = " --strip=\"${invoker.strip}\" --unstripped-file=\"$unstripped_outfile\""
       }
 
-      link_wrapper =
-          rebase_path("//build/toolchain/gcc_link_wrapper.py", root_build_dir)
-      command = "$python_path \"$link_wrapper\" --output=\"$outfile\"$strip_switch$map_switch --dwp=\"${dwp}\" -- $link_command"
+      if (strip_switch != "" || map_switch != "") {
+        link_wrapper =
+            rebase_path("//build/toolchain/gcc_link_wrapper.py", root_build_dir)
+        command = "$python_path \"$link_wrapper\" --output=\"$outfile\"$strip_switch$map_switch -- $link_command"
+      } else {
+        command = link_command
+      }
 
       description = "LINK $outfile"
       rspfile_content = "{{inputs}}"
@@ -585,7 +584,6 @@ template("clang_toolchain") {
     readelf = "${toolprefix}readelf"
     ar = "${prefix}/llvm-ar"
     nm = "${toolprefix}nm"
-    dwp = "${toolprefix}dwp"
 
     forward_variables_from(invoker,
                            [

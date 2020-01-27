@@ -9,7 +9,7 @@ import "mojo/public/mojom/base/time.mojom";
 import "ui/gfx/geometry/mojom/geometry.mojom";
 import "url/mojom/url.mojom";
 
-// Next MinVersion: 7
+// Next MinVersion: 8
 
 [Extensible]
 enum MediaPlaybackState {
@@ -29,6 +29,8 @@ enum MediaSessionAction {
   kStop,
   kSeekTo,
   kScrubTo,
+  kEnterPictureInPicture,
+  kExitPictureInPicture,
 };
 
 [Extensible]
@@ -38,6 +40,12 @@ enum MediaSessionImageType {
 
   // The icon associated with the source of the media session.
   kSourceIcon,
+};
+
+[Extensible]
+enum MediaPictureInPictureState {
+  kNotInPictureInPicture,
+  kInPictureInPicture,
 };
 
 // Album art in MediaMetadata
@@ -124,6 +132,10 @@ struct MediaSessionInfo {
   // off the record profile). This may result in it being hidden from certain
   // UIs (e.g. lock screen media controls).
   [MinVersion=6] bool is_sensitive;
+
+  // The picture-in-picture state tells the client whether the media is
+  // currently in a picture-in-picture window.
+  [MinVersion=7] MediaPictureInPictureState picture_in_picture_state;
 };
 
 // Contains debugging information about a MediaSession. This will be displayed
@@ -166,7 +178,7 @@ interface MediaSessionObserver {
 // WebContents or ARC app.
 // TODO(https://crbug.com/875004): migrate media session from content/public
 // to mojo.
-// Next Method ID: 15
+// Next Method ID: 17
 interface MediaSession {
   [Extensible]
   enum SuspendType {
@@ -242,4 +254,10 @@ interface MediaSession {
   // this will be a no-op. The client should call |SeekTo| to finish the
   // scrubbing operation.
   ScrubTo@14(mojo_base.mojom.TimeDelta seek_time);
+
+  // Enter picture-in-picture.
+  EnterPictureInPicture@15();
+
+  // Exit picture-in-picture.
+  ExitPictureInPicture@16();
 };

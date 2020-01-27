@@ -56,6 +56,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/user_activity/user_activity_detector.h"
 #include "ui/base/user_activity/user_activity_observer.h"
+#include "ui/chromeos/devicetype_utils.h"
 #include "ui/display/display.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/manager/managed_display_info.h"
@@ -616,6 +617,7 @@ void LockContentsView::ShowEntrepriseDomainName(
       AshColorProvider::ContentLayerType::kIconPrimary);
   bottom_status_indicator_->SetText(
       l10n_util::GetStringFUTF16(IDS_ASH_LOGIN_MANAGED_DEVICE_INDICATOR,
+                                 ui::GetChromeOSDeviceName(),
                                  base::UTF8ToUTF16(entreprise_domain_name)),
       gfx::kGoogleGrey200);
   bottom_status_indicator_->SetVisible(true);

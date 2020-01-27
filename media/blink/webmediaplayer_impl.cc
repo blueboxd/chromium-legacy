@@ -52,7 +52,6 @@
 #include "media/filters/chunk_demuxer.h"
 #include "media/filters/ffmpeg_demuxer.h"
 #include "media/filters/memory_data_source.h"
-#include "media/learning/common/media_learning_tasks.h"
 #include "media/learning/mojo/public/cpp/mojo_learning_task_controller.h"
 #include "media/media_buildflags.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -686,6 +685,10 @@ void WebMediaPlayerImpl::DoLoad(LoadType load_type,
   SetReadyState(WebMediaPlayer::kReadyStateHaveNothing);
   media_log_->AddEvent<MediaLogEvent::kLoad>(url.GetString().Utf8());
   load_start_time_ = base::TimeTicks::Now();
+
+  // If we're adapting, then restart the smoothness experiment.
+  if (smoothness_helper_)
+    smoothness_helper_.reset();
 
   media_metrics_provider_->Initialize(
       load_type == kLoadTypeMediaSource,
@@ -2119,6 +2122,14 @@ void WebMediaPlayerImpl::OnBufferingStateChangeInternal(
     SetReadyState(WebMediaPlayer::kReadyStateHaveCurrentData);
   }
 
+  // If this is an NNR, then notify the smoothness helper about it.  Note that
+  // it's unclear what we should do if there is no smoothness helper yet.  As it
+  // is, we just discard the NNR.
+  if (state == BUFFERING_HAVE_NOTHING && reason == DECODER_UNDERFLOW &&
+      smoothness_helper_) {
+    smoothness_helper_->NotifyNNR();
+  }
+
   UpdatePlayState();
 }
 
@@ -2426,6 +2437,14 @@ void WebMediaPlayerImpl::OnSeekForward(double seconds) {
 void WebMediaPlayerImpl::OnSeekBackward(double seconds) {
   DCHECK_GE(seconds, 0) << "Attempted to seek by a negative number of seconds";
   client_->RequestSeek(CurrentTime() - seconds);
+}
+
+void WebMediaPlayerImpl::OnEnterPictureInPicture() {
+  client_->RequestEnterPictureInPicture();
+}
+
+void WebMediaPlayerImpl::OnExitPictureInPicture() {
+  client_->RequestExitPictureInPicture();
 }
 
 void WebMediaPlayerImpl::OnVolumeMultiplierUpdate(double multiplier) {
@@ -2829,6 +2848,7 @@ void WebMediaPlayerImpl::UpdatePlayState() {
         !paused_ && !seeking_ && !IsHidden() && !state.is_suspended &&
         ready_state_ == kReadyStateHaveEnoughData);
   }
+  UpdateSmoothnessHelper();
 }
 
 void WebMediaPlayerImpl::UpdateMediaPositionState() {
@@ -3082,8 +3102,10 @@ void WebMediaPlayerImpl::ReportMemoryUsage() {
   if (demuxer_ && !IsNetworkStateError(network_state_)) {
     base::PostTaskAndReplyWithResult(
         media_task_runner_.get(), FROM_HERE,
-        base::Bind(&Demuxer::GetMemoryUsage, base::Unretained(demuxer_.get())),
-        base::Bind(&WebMediaPlayerImpl::FinishMemoryUsageReport, weak_this_));
+        base::BindOnce(&Demuxer::GetMemoryUsage,
+                       base::Unretained(demuxer_.get())),
+        base::BindOnce(&WebMediaPlayerImpl::FinishMemoryUsageReport,
+                       weak_this_));
   } else {
     FinishMemoryUsageReport(0);
   }
@@ -3704,18 +3726,25 @@ void WebMediaPlayerImpl::UpdateSmoothnessHelper() {
     return;
 
   // Create or restart the smoothness helper with |features|.
-  // Get the LearningTaskController for |task|.
-  learning::LearningTask task = learning::MediaLearningTasks::Get(
-      learning::MediaLearningTasks::Id::kConsecutiveBadWindows);
+  smoothness_helper_ = SmoothnessHelper::Create(
+      GetLearningTaskController(
+          learning::MediaLearningTasks::Id::kConsecutiveBadWindows),
+      GetLearningTaskController(
+          learning::MediaLearningTasks::Id::kConsecutiveNNRs),
+      features, this);
+}
+
+std::unique_ptr<learning::LearningTaskController>
+WebMediaPlayerImpl::GetLearningTaskController(
+    learning::MediaLearningTasks::Id task_id) {
+  // Get the LearningTaskController for |task_id|.
+  learning::LearningTask task = learning::MediaLearningTasks::Get(task_id);
 
   mojo::Remote<media::learning::mojom::LearningTaskController> remote_ltc;
   media_metrics_provider_->AcquireLearningTaskController(
       task.name, remote_ltc.BindNewPipeAndPassReceiver());
-  auto mojo_ltc = std::make_unique<learning::MojoLearningTaskController>(
+  return std::make_unique<learning::MojoLearningTaskController>(
       task, std::move(remote_ltc));
-
-  smoothness_helper_ =
-      SmoothnessHelper::Create(std::move(mojo_ltc), features, this);
 }
 
 }  // namespace media

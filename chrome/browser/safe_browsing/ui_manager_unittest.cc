@@ -18,7 +18,9 @@
 #include "chrome/test/base/testing_profile.h"
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
 #include "components/safe_browsing/core/db/util.h"
+#include "components/security_interstitials/content/unsafe_resource_util.h"
 #include "components/security_interstitials/core/base_safe_browsing_error_ui.h"
+#include "components/security_interstitials/core/unsafe_resource.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_frame_host.h"
@@ -131,10 +133,9 @@ class SafeBrowsingUIManagerTest : public ChromeRenderViewHostTestHarness {
     security_interstitials::UnsafeResource resource;
     resource.url = GURL(url);
     resource.is_subresource = is_subresource;
-    resource.web_contents_getter =
-        security_interstitials::UnsafeResource::GetWebContentsGetter(
-            web_contents()->GetMainFrame()->GetProcess()->GetID(),
-            web_contents()->GetMainFrame()->GetRoutingID());
+    resource.web_contents_getter = security_interstitials::GetWebContentsGetter(
+        web_contents()->GetMainFrame()->GetProcess()->GetID(),
+        web_contents()->GetMainFrame()->GetRoutingID());
     resource.threat_type = SB_THREAT_TYPE_URL_MALWARE;
     return resource;
   }

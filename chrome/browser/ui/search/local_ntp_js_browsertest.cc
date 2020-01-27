@@ -4,6 +4,7 @@
 
 #include <string>
 
+#include "base/strings/stringprintf.h"
 #include "build/build_config.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/ui/browser.h"
@@ -15,6 +16,10 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
+
+#if defined(OS_WIN)
+#include "base/win/windows_version.h"
+#endif  // defined(OS_WIN)
 
 // A test class that sets up a local HTML file as the NTP URL.
 class LocalNTPJavascriptTestBase : public InProcessBrowserTest {
@@ -47,6 +52,14 @@ class LocalNTPJavascriptTest : public LocalNTPJavascriptTestBase {
  public:
   LocalNTPJavascriptTest()
       : LocalNTPJavascriptTestBase("/local_ntp_browsertest.html") {}
+
+  bool ShouldRunRealboxTest() const {
+#if defined(OS_WIN)
+    return base::win::GetVersion() > base::win::Version::WIN7;
+#else
+    return true;
+#endif
+  }
 };
 
 // This runs a bunch of pure JS-side tests, i.e. those that don't require any
@@ -98,27 +111,29 @@ IN_PROC_BROWSER_TEST_F(LocalNTPJavascriptTest, DISABLED_CustomizeMenuTests) {
 }
 
 #if !(defined(LEAK_SANITIZER) || defined(ADDRESS_SANITIZER))
-IN_PROC_BROWSER_TEST_F(LocalNTPJavascriptTest, Realbox1Tests) {
-  content::WebContents* active_tab = local_ntp_test_utils::OpenNewTab(
-      browser(), GURL(chrome::kChromeUINewTabURL));
-  ASSERT_TRUE(search::IsInstantNTP(active_tab));
+#define REALBOX_SUITE(suite_number)                                        \
+  IN_PROC_BROWSER_TEST_F(LocalNTPJavascriptTest,                           \
+                         Realbox##suite_number##Tests) {                   \
+    if (!ShouldRunRealboxTest())                                           \
+      return;                                                              \
+    content::WebContents* active_tab = local_ntp_test_utils::OpenNewTab(   \
+        browser(), GURL(chrome::kChromeUINewTabURL));                      \
+    ASSERT_TRUE(search::IsInstantNTP(active_tab));                         \
+                                                                           \
+    bool success = false;                                                  \
+    ASSERT_TRUE(instant_test_utils::GetBoolFromJS(                         \
+        active_tab,                                                        \
+        base::StringPrintf("!!runSimpleTests('realbox%d')", suite_number), \
+        &success));                                                        \
+    EXPECT_TRUE(success);                                                  \
+  }
 
-  bool success = false;
-  ASSERT_TRUE(instant_test_utils::GetBoolFromJS(
-      active_tab, "!!runSimpleTests('realbox1')", &success));
-  EXPECT_TRUE(success);
-}
+REALBOX_SUITE(1)
+REALBOX_SUITE(2)
+REALBOX_SUITE(3)
+REALBOX_SUITE(4)
 
-IN_PROC_BROWSER_TEST_F(LocalNTPJavascriptTest, Realbox2Tests) {
-  content::WebContents* active_tab = local_ntp_test_utils::OpenNewTab(
-      browser(), GURL(chrome::kChromeUINewTabURL));
-  ASSERT_TRUE(search::IsInstantNTP(active_tab));
-
-  bool success = false;
-  ASSERT_TRUE(instant_test_utils::GetBoolFromJS(
-      active_tab, "!!runSimpleTests('realbox2')", &success));
-  EXPECT_TRUE(success);
-}
+#undef REALBOX_SUITE
 #endif
 
 // A test class that sets up most_visited_browsertest.html as the NTP URL. It's

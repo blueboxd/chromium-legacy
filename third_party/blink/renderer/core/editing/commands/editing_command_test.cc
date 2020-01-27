@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/stl_util.h"
+#include "third_party/blink/public/mojom/input/focus_type.mojom-blink.h"
 #include "third_party/blink/renderer/core/editing/commands/editing_command_type.h"
 #include "third_party/blink/renderer/core/editing/commands/editor_command.h"
 #include "third_party/blink/renderer/core/editing/commands/editor_command_names.h"
@@ -91,8 +92,8 @@ TEST_F(EditingCommandTest, EnabledVisibleSelection) {
       SetSelectionOptions());
   Element* div = GetDocument().QuerySelector("div");
   GetDocument().SetFocusedElement(
-      div,
-      FocusParams(SelectionBehaviorOnFocus::kNone, kWebFocusTypeNone, nullptr));
+      div, FocusParams(SelectionBehaviorOnFocus::kNone,
+                       mojom::blink::FocusType::kNone, nullptr));
   EXPECT_TRUE(command.IsEnabled());
   div->removeAttribute("contenteditable");
   EXPECT_FALSE(command.IsEnabled());
@@ -108,8 +109,8 @@ TEST_F(EditingCommandTest, EnabledVisibleSelectionAndMark) {
       SetSelectionOptions());
   Element* div = GetDocument().QuerySelector("div");
   GetDocument().SetFocusedElement(
-      div,
-      FocusParams(SelectionBehaviorOnFocus::kNone, kWebFocusTypeNone, nullptr));
+      div, FocusParams(SelectionBehaviorOnFocus::kNone,
+                       mojom::blink::FocusType::kNone, nullptr));
   EXPECT_FALSE(command.IsEnabled());
   editor.SetMark();
   EXPECT_TRUE(command.IsEnabled());
@@ -135,8 +136,8 @@ TEST_F(EditingCommandTest, EnabledInEditableTextOrCaretBrowsing) {
       SetSelectionOptions());
   Element* div = GetDocument().QuerySelector("div");
   GetDocument().SetFocusedElement(
-      div,
-      FocusParams(SelectionBehaviorOnFocus::kNone, kWebFocusTypeNone, nullptr));
+      div, FocusParams(SelectionBehaviorOnFocus::kNone,
+                       mojom::blink::FocusType::kNone, nullptr));
   EXPECT_TRUE(command.IsEnabled());
   div->removeAttribute("contenteditable");
   EXPECT_FALSE(command.IsEnabled());

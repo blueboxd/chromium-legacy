@@ -174,6 +174,7 @@ ClientImageTransferCacheEntry::ClientImageTransferCacheEntry(
   safe_size += sizeof(uint32_t);  // height
   safe_size += sizeof(uint32_t);  // has mips
   safe_size += sizeof(uint64_t) + align;  // pixels size + alignment
+  safe_size += sizeof(uint64_t) + align;  // row bytes + alignment
   safe_size += target_color_space_size + sizeof(uint64_t) + align;
   safe_size += pixmap_color_space_size + sizeof(uint64_t) + align;
   // Include 4 bytes of padding so we can always align our data pointer to a
@@ -298,13 +299,11 @@ bool ClientImageTransferCacheEntry::Serialize(base::span<uint8_t> data) const {
   writer.Write(pixmap_->height());
   writer.Write(static_cast<uint32_t>(needs_mips_ ? 1 : 0));
 
-  DCHECK_EQ(pixmap_->rowBytes(), pixmap_->info().minRowBytes());
-
   size_t pixmap_size = pixmap_->computeByteSize();
   if (pixmap_size == SIZE_MAX)
     return false;
   writer.WriteSize(pixmap_size);
-  // TODO(enne): we should consider caching these in some form.
+  writer.WriteSize(pixmap_->rowBytes());
   writer.Write(pixmap_->colorSpace());
   writer.Write(target_color_space_);
   writer.AlignMemory(4);
@@ -489,6 +488,8 @@ bool ServiceImageTransferCacheEntry::Deserialize(
   has_mips_ = needs_mips;
   size_t pixel_size;
   reader.ReadSize(&pixel_size);
+  size_t row_bytes;
+  reader.ReadSize(&row_bytes);
   sk_sp<SkColorSpace> pixmap_color_space;
   reader.Read(&pixmap_color_space);
   sk_sp<SkColorSpace> target_color_space;
@@ -499,8 +500,10 @@ bool ServiceImageTransferCacheEntry::Deserialize(
 
   SkImageInfo image_info = SkImageInfo::Make(
       width, height, color_type, kPremul_SkAlphaType, pixmap_color_space);
-  if (image_info.computeMinByteSize() > pixel_size)
+  if (row_bytes < image_info.minRowBytes() ||
+      image_info.computeByteSize(row_bytes) > pixel_size) {
     return false;
+  }
 
   // Align data to a 4-byte boundry, to match what we did when writing.
   reader.AlignMemory(4);
@@ -516,8 +519,7 @@ bool ServiceImageTransferCacheEntry::Deserialize(
   // Const-cast away the "volatile" on |pixel_data|. We specifically understand
   // that a malicious caller may change our pixels under us, and are OK with
   // this as the worst case scenario is visual corruption.
-  SkPixmap pixmap(image_info, const_cast<const void*>(pixel_data),
-                  image_info.minRowBytes());
+  SkPixmap pixmap(image_info, const_cast<const void*>(pixel_data), row_bytes);
   image_ = MakeSkImage(pixmap, width, height, target_color_space);
 
   if (image_) {

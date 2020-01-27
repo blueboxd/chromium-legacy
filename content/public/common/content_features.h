@@ -132,7 +132,6 @@ CONTENT_EXPORT extern const base::Feature kUserActivationSameOriginVisibility;
 CONTENT_EXPORT extern const base::Feature kUserAgentClientHint;
 CONTENT_EXPORT extern const base::Feature kV8LowMemoryModeForSubframes;
 CONTENT_EXPORT extern const base::Feature kV8VmFuture;
-CONTENT_EXPORT extern const base::Feature kWebAssembly;
 CONTENT_EXPORT extern const base::Feature kWebAssemblyBaseline;
 CONTENT_EXPORT extern const base::Feature kWebAssemblyCodeGC;
 CONTENT_EXPORT extern const base::Feature kWebAssemblyLazyCompilation;

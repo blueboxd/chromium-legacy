@@ -7,11 +7,11 @@
 
 #include "base/macros.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "ios/chrome/browser/browser_state/chrome_browser_state_forward.h"
 #include "ios/web/public/navigation/referrer.h"
 #include "ui/base/page_transition_types.h"
 #include "url/gurl.h"
 
+class ChromeBrowserState;
 @class PreloadController;
 @protocol PreloadControllerDelegate;
 
@@ -27,7 +27,7 @@ class PrerenderService : public KeyedService {
   // TODO(crbug.com/754050): Convert this constructor to take lower-level
   // objects instead of the entire ChromeBrowserState.  This will make unit
   // testing much simpler.
-  PrerenderService(ios::ChromeBrowserState* browser_state);
+  PrerenderService(ChromeBrowserState* browser_state);
   ~PrerenderService() override;
 
   // Sets the delegate that will provide information to this service.

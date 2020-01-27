@@ -307,12 +307,21 @@ InputHandlerPointerResult ScrollbarController::HandlePointerMove(
   RecomputeAutoscrollStateIfNeeded();
   InputHandlerPointerResult scroll_result;
 
-  // If a thumb drag is not in progress or if a GSU was already produced for a
-  // thumb drag in this frame, there's no point in continuing on. Please see the
-  // header file for details.
   const ScrollbarLayerImplBase* scrollbar = ScrollbarLayer();
-  if (!scrollbar || !drag_state_.has_value() ||
-      drag_processed_for_current_frame_)
+  if (!scrollbar || !drag_state_.has_value())
+    return scroll_result;
+
+  // If the scrollbar thumb is being dragged, it qualifies as a kScrollbarScroll
+  // (although the delta might still be zero). Setting the "type" to
+  // kScrollbarScroll ensures that the correct event modifier (in
+  // InputHandlerProxy) is set which in-turn tells the main thread to invalidate
+  // the respective scrollbar parts. This needs to be done for all
+  // pointermove(s) since they are not VSync aligned.
+  scroll_result.type = PointerResultType::kScrollbarScroll;
+
+  // If a GSU was already produced for a thumb drag in this frame, there's no
+  // point in continuing on. Please see the header file for details.
+  if (drag_processed_for_current_frame_)
     return scroll_result;
 
   const ScrollNode* currently_scrolling_node =
@@ -339,7 +348,6 @@ InputHandlerPointerResult ScrollbarController::HandlePointerMove(
   // movement. Hence we use kPrecisePixel when dragging the thumb.
   scroll_result.scroll_units =
       ui::input_types::ScrollGranularity::kScrollByPrecisePixel;
-  scroll_result.type = PointerResultType::kScrollbarScroll;
   scroll_result.scroll_offset = gfx::ScrollOffset(clamped_scroll_offset);
   drag_processed_for_current_frame_ = true;
 

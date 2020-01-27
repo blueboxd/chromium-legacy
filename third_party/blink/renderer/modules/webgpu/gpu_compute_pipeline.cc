@@ -4,12 +4,12 @@
 
 #include "third_party/blink/renderer/modules/webgpu/gpu_compute_pipeline.h"
 
+#include "third_party/blink/renderer/bindings/modules/v8/v8_gpu_compute_pipeline_descriptor.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_gpu_programmable_stage_descriptor.h"
 #include "third_party/blink/renderer/modules/webgpu/dawn_conversions.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_bind_group_layout.h"
-#include "third_party/blink/renderer/modules/webgpu/gpu_compute_pipeline_descriptor.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_device.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_pipeline_layout.h"
-#include "third_party/blink/renderer/modules/webgpu/gpu_programmable_stage_descriptor.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_shader_module.h"
 
 namespace blink {

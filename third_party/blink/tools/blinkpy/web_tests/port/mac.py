@@ -51,7 +51,7 @@ class MacPort(base.Port):
 
     FALLBACK_PATHS['mac10.15'] = ['mac']
     FALLBACK_PATHS['mac10.14'] = ['mac']
-    FALLBACK_PATHS['mac10.13'] = ['mac']
+    FALLBACK_PATHS['mac10.13'] = ['mac-mac10.13'] + FALLBACK_PATHS['mac10.14']
     FALLBACK_PATHS['mac10.12'] = ['mac-mac10.12'] + FALLBACK_PATHS['mac10.13']
     FALLBACK_PATHS['mac10.11'] = ['mac-mac10.11'] + FALLBACK_PATHS['mac10.12']
     FALLBACK_PATHS['mac10.10'] = ['mac-mac10.10'] + FALLBACK_PATHS['mac10.11']

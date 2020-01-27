@@ -134,6 +134,21 @@ class SupervisedUserNavigationThrottleTest
   void SetUpOnMainThread() override;
 
   void BlockHost(const std::string& host) {
+    SetManualFilterForHost(host, /* whitelist */ false);
+  }
+
+  void WhitelistHost(const std::string& host) {
+    SetManualFilterForHost(host, /* whitelist */ true);
+  }
+
+  bool IsInterstitialBeingShownInMainFrame(Browser* browser);
+
+  virtual chromeos::LoggedInUserMixin::LogInType GetLogInType() {
+    return chromeos::LoggedInUserMixin::LogInType::kChild;
+  }
+
+ private:
+  void SetManualFilterForHost(const std::string& host, bool whitelist) {
     Profile* profile = browser()->profile();
     SupervisedUserSettingsService* settings_service =
         SupervisedUserSettingsServiceFactory::GetForKey(
@@ -158,23 +173,16 @@ class SupervisedUserNavigationThrottleTest
       dict_to_insert = std::make_unique<base::DictionaryValue>();
     }
 
-    dict_to_insert->SetKey(host, base::Value(false));
+    dict_to_insert->SetKey(host, base::Value(whitelist));
     settings_service->SetLocalSetting(
         supervised_users::kContentPackManualBehaviorHosts,
         std::move(dict_to_insert));
   }
 
-  bool IsInterstitialBeingShown(Browser* browser);
-
-  virtual chromeos::LoggedInUserMixin::LogInType GetLogInType() {
-    return chromeos::LoggedInUserMixin::LogInType::kChild;
-  }
-
- private:
   std::unique_ptr<chromeos::LoggedInUserMixin> logged_in_user_mixin_;
 };
 
-bool SupervisedUserNavigationThrottleTest::IsInterstitialBeingShown(
+bool SupervisedUserNavigationThrottleTest::IsInterstitialBeingShownInMainFrame(
     Browser* browser) {
   WebContents* tab = browser->tab_strip_model()->GetActiveWebContents();
   base::string16 title;
@@ -233,12 +241,12 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserNavigationThrottleTest,
   GURL allowed_url = embedded_test_server()->GetURL(
       kExampleHost, "/supervised_user/simple.html");
   ui_test_utils::NavigateToURL(browser(), allowed_url);
-  EXPECT_FALSE(IsInterstitialBeingShown(browser()));
+  EXPECT_FALSE(IsInterstitialBeingShownInMainFrame(browser()));
 
   GURL blocked_url = embedded_test_server()->GetURL(
       kExampleHost2, "/supervised_user/simple.html");
   ui_test_utils::NavigateToURL(browser(), blocked_url);
-  EXPECT_TRUE(IsInterstitialBeingShown(browser()));
+  EXPECT_TRUE(IsInterstitialBeingShownInMainFrame(browser()));
 }
 
 IN_PROC_BROWSER_TEST_F(SupervisedUserNavigationThrottleTest,
@@ -251,7 +259,7 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserNavigationThrottleTest,
   GURL allowed_url_with_iframes = embedded_test_server()->GetURL(
       kExampleHost, "/supervised_user/with_iframes.html");
   ui_test_utils::NavigateToURL(browser(), allowed_url_with_iframes);
-  EXPECT_FALSE(IsInterstitialBeingShown(browser()));
+  EXPECT_FALSE(IsInterstitialBeingShownInMainFrame(browser()));
 
   // Both iframes (from allowed host iframe1.com as well as from blocked host
   // iframe2.com) should be loaded normally, since we don't filter iframes
@@ -394,7 +402,7 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserIframeFilterTest, BlockSubFrame) {
   GURL allowed_url_with_iframes = embedded_test_server()->GetURL(
       kExampleHost, "/supervised_user/with_iframes.html");
   ui_test_utils::NavigateToURL(browser(), allowed_url_with_iframes);
-  EXPECT_FALSE(IsInterstitialBeingShown(browser()));
+  EXPECT_FALSE(IsInterstitialBeingShownInMainFrame(browser()));
 
   // The first iframe's source is |kIframeHost1| and it is not blocked. It will
   // successfully load.
@@ -425,7 +433,7 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserIframeFilterTest, BlockMultipleSubFrames) {
   GURL allowed_url_with_iframes = embedded_test_server()->GetURL(
       kExampleHost, "/supervised_user/with_iframes.html");
   ui_test_utils::NavigateToURL(browser(), allowed_url_with_iframes);
-  EXPECT_FALSE(IsInterstitialBeingShown(browser()));
+  EXPECT_FALSE(IsInterstitialBeingShownInMainFrame(browser()));
 
   auto blocked = GetBlockedFrames();
   EXPECT_EQ(blocked.size(), 2u);
@@ -469,7 +477,7 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserIframeFilterTest, TestBackButton) {
   GURL allowed_url_with_iframes = embedded_test_server()->GetURL(
       kExampleHost, "/supervised_user/with_iframes.html");
   ui_test_utils::NavigateToURL(browser(), allowed_url_with_iframes);
-  EXPECT_FALSE(IsInterstitialBeingShown(browser()));
+  EXPECT_FALSE(IsInterstitialBeingShownInMainFrame(browser()));
 
   auto blocked = GetBlockedFrames();
   EXPECT_EQ(blocked.size(), 1u);
@@ -501,7 +509,7 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserIframeFilterTest,
   GURL allowed_url_with_iframes = embedded_test_server()->GetURL(
       kExampleHost, "/supervised_user/with_iframes.html");
   ui_test_utils::NavigateToURL(browser(), allowed_url_with_iframes);
-  EXPECT_TRUE(IsInterstitialBeingShown(browser()));
+  EXPECT_TRUE(IsInterstitialBeingShownInMainFrame(browser()));
 
   auto blocked = GetBlockedFrames();
   EXPECT_EQ(blocked.size(), 1u);
@@ -526,6 +534,20 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserIframeFilterTest,
   EXPECT_FALSE(value);
 }
 
+IN_PROC_BROWSER_TEST_F(SupervisedUserIframeFilterTest,
+                       WhitelistedMainFrameBlacklistedIframe) {
+  WhitelistHost(kExampleHost);
+  BlockHost(kIframeHost1);
+
+  GURL allowed_url_with_iframes = embedded_test_server()->GetURL(
+      kExampleHost, "/supervised_user/with_iframes.html");
+  ui_test_utils::NavigateToURL(browser(), allowed_url_with_iframes);
+  EXPECT_FALSE(IsInterstitialBeingShownInMainFrame(browser()));
+  auto blocked = GetBlockedFrames();
+  EXPECT_EQ(blocked.size(), 1u);
+  EXPECT_EQ(kIframeHost1, GetBlockedFrameURL(blocked[0]).host());
+}
+
 class SupervisedUserNavigationThrottleNotSupervisedTest
     : public SupervisedUserNavigationThrottleTest {
  protected:
@@ -546,5 +568,5 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserNavigationThrottleNotSupervisedTest,
   ui_test_utils::NavigateToURL(browser(), blocked_url);
   // Even though the URL is marked as blocked, the load should go through, since
   // the user isn't supervised.
-  EXPECT_FALSE(IsInterstitialBeingShown(browser()));
+  EXPECT_FALSE(IsInterstitialBeingShownInMainFrame(browser()));
 }

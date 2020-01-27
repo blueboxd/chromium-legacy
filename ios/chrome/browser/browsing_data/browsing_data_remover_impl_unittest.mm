@@ -102,7 +102,7 @@ class BrowsingDataRemoverImplTest : public PlatformTest {
 
  protected:
   web::WebTaskEnvironment task_environment_;
-  std::unique_ptr<ios::ChromeBrowserState> browser_state_;
+  std::unique_ptr<ChromeBrowserState> browser_state_;
   BrowsingDataRemoverImpl browsing_data_remover_;
 
  private:

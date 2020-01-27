@@ -741,13 +741,51 @@ void CrostiniManager::ConfigureForArcSideload() {
 }
 
 const vm_tools::cicerone::OsRelease* CrostiniManager::GetContainerOsRelease(
-    std::string vm_name,
-    std::string container_name) {
-  auto it = container_os_releases_.find(ContainerId(vm_name, container_name));
+    const ContainerId& container_id) {
+  auto it = container_os_releases_.find(container_id);
   if (it != container_os_releases_.end()) {
     return &it->second;
   }
   return nullptr;
+}
+
+bool CrostiniManager::IsContainerUpgradeable(const ContainerId& container_id) {
+  ContainerOsVersion version = ContainerOsVersion::kUnknown;
+  const auto* os_release = GetContainerOsRelease(container_id);
+  if (os_release) {
+    version = VersionFromOsRelease(*os_release);
+  } else {
+    // Check prefs instead.
+    const base::Value* value = GetContainerPrefValue(
+        profile_, container_id, prefs::kContainerOsVersionKey);
+    if (value) {
+      version = static_cast<ContainerOsVersion>(value->GetInt());
+    }
+  }
+  return version == ContainerOsVersion::kDebianStretch;
+}
+
+bool CrostiniManager::ShouldPromptContainerUpgrade(
+    const ContainerId& container_id) {
+  if (!CrostiniFeatures::Get()->IsContainerUpgradeUIAllowed(profile_)) {
+    return false;
+  }
+  if (container_upgrade_prompt_shown_.count(container_id) != 0) {
+    // Already shown the upgrade dialog.
+    return false;
+  }
+  if (container_id !=
+      ContainerId(kCrostiniDefaultVmName, kCrostiniDefaultContainerName)) {
+    return false;
+  }
+  bool upgradable = IsContainerUpgradeable(container_id);
+  if (upgradable) {
+    // Currently a true return value from this function  implies the
+    // prompt must be shown. Storing this state in CrostiniManager implies that
+    // the prompt will only be shown once per session.
+    container_upgrade_prompt_shown_.insert(container_id);
+  }
+  return upgradable;
 }
 
 base::Optional<ContainerInfo> CrostiniManager::GetContainerInfo(
@@ -940,11 +978,11 @@ void CrostiniManager::OnInstallTerminaComponent(
           g_browser_process->platform_part()->cros_component_manager();
       if (cros_component_manager) {
         // Try again, this time with no update checking. The reason we do this
-        // is that we may still be offline even when is_offline above was false.
-        // It's notoriously difficult to know when you're really connected to
-        // the Internet, and it's also possible to be unable to connect to a
-        // service like ComponentUpdaterService even when you are connected to
-        // the rest of the Internet.
+        // is that we may still be offline even when is_offline above was
+        // false. It's notoriously difficult to know when you're really
+        // connected to the Internet, and it's also possible to be unable to
+        // connect to a service like ComponentUpdaterService even when you are
+        // connected to the rest of the Internet.
         UpdatePolicy update_policy = UpdatePolicy::kDontForce;
 
         LOG(ERROR) << "Retrying cros-termina component load, no update check";
@@ -1517,10 +1555,10 @@ void CrostiniManager::UpgradeContainer(const ContainerId& key,
     return;
   }
   if (!GetCiceroneClient()->IsUpgradeContainerProgressSignalConnected()) {
-    // Technically we could still start the upgrade, but we wouldn't be able to
-    // detect when the upgrade completes, successfully or otherwise.
-    LOG(ERROR)
-        << "Attempted to upgrade container when progress signal not connected.";
+    // Technically we could still start the upgrade, but we wouldn't be able
+    // to detect when the upgrade completes, successfully or otherwise.
+    LOG(ERROR) << "Attempted to upgrade container when progress signal not "
+                  "connected.";
     std::move(callback).Run(CrostiniResult::UPGRADE_CONTAINER_FAILED);
     return;
   }
@@ -1641,8 +1679,8 @@ void CrostiniManager::InstallLinuxPackage(
   }
 
   if (!GetCiceroneClient()->IsInstallLinuxPackageProgressSignalConnected()) {
-    // Technically we could still start the install, but we wouldn't be able to
-    // detect when the install completes, successfully or otherwise.
+    // Technically we could still start the install, but we wouldn't be able
+    // to detect when the install completes, successfully or otherwise.
     LOG(ERROR)
         << "Attempted to install package when progress signal not connected.";
     std::move(callback).Run(CrostiniResult::INSTALL_LINUX_PACKAGE_FAILED);
@@ -1667,8 +1705,8 @@ void CrostiniManager::InstallLinuxPackageFromApt(
     const std::string& package_id,
     InstallLinuxPackageCallback callback) {
   if (!GetCiceroneClient()->IsInstallLinuxPackageProgressSignalConnected()) {
-    // Technically we could still start the install, but we wouldn't be able to
-    // detect when the install completes, successfully or otherwise.
+    // Technically we could still start the install, but we wouldn't be able
+    // to detect when the install completes, successfully or otherwise.
     LOG(ERROR)
         << "Attempted to install package when progress signal not connected.";
     std::move(callback).Run(CrostiniResult::INSTALL_LINUX_PACKAGE_FAILED);
@@ -1695,8 +1733,8 @@ void CrostiniManager::UninstallPackageOwningFile(
   if (!GetCiceroneClient()->IsUninstallPackageProgressSignalConnected()) {
     // Technically we could still start the uninstall, but we wouldn't be able
     // to detect when the uninstall completes, successfully or otherwise.
-    LOG(ERROR)
-        << "Attempted to uninstall package when progress signal not connected.";
+    LOG(ERROR) << "Attempted to uninstall package when progress signal not "
+                  "connected.";
     std::move(callback).Run(CrostiniResult::UNINSTALL_PACKAGE_FAILED);
     return;
   }
@@ -1916,8 +1954,8 @@ void CrostiniManager::OnAbortRestartCrostini(
         break;
       }
     }
-    // This invalidates the iterator and potentially destroys the restarter, so
-    // those shouldn't be accessed after this.
+    // This invalidates the iterator and potentially destroys the restarter,
+    // so those shouldn't be accessed after this.
     restarters_by_id_.erase(restarter_it);
   }
 
@@ -2890,8 +2928,8 @@ void CrostiniManager::OnExportLxdContainer(
   }
 
   // If export has started, the callback will be invoked when the
-  // ExportLxdContainerProgressSignal signal indicates that export is complete,
-  // otherwise this is an error.
+  // ExportLxdContainerProgressSignal signal indicates that export is
+  // complete, otherwise this is an error.
   if (response->status() !=
       vm_tools::cicerone::ExportLxdContainerResponse::EXPORTING) {
     LOG(ERROR) << "Failed to export container: status=" << response->status()
@@ -2981,8 +3019,8 @@ void CrostiniManager::OnImportLxdContainer(
   }
 
   // If import has started, the callback will be invoked when the
-  // ImportLxdContainerProgressSignal signal indicates that import is complete,
-  // otherwise this is an error.
+  // ImportLxdContainerProgressSignal signal indicates that import is
+  // complete, otherwise this is an error.
   if (response->status() !=
       vm_tools::cicerone::ImportLxdContainerResponse::IMPORTING) {
     LOG(ERROR) << "Failed to import container: " << response->failure_reason();

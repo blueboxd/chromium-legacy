@@ -19,8 +19,7 @@ using autofill::LogRouter;
 
 AutofillInternalsUIIOS::AutofillInternalsUIIOS(web::WebUIIOS* web_ui)
     : web::WebUIIOSController(web_ui) {
-  ios::ChromeBrowserState* browser_state =
-      ios::ChromeBrowserState::FromWebUIIOS(web_ui);
+  ChromeBrowserState* browser_state = ChromeBrowserState::FromWebUIIOS(web_ui);
   web::WebUIIOSDataSource::Add(
       browser_state,
       autofill::CreateInternalsHTMLSource(kChromeUIAutofillInternalsHost));

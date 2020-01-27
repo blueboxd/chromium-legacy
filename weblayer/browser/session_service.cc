@@ -385,9 +385,8 @@ void SessionService::ProcessRestoreCommands(
         session_tab.navigations[selected_navigation_index].virtual_url();
     content::SessionStorageNamespaceMap session_storage_namespace_map;
     session_storage_namespace_map[std::string()] = session_storage_namespace;
-    bool reverse_on_redirect;
     content::BrowserURLHandler::GetInstance()->RewriteURLIfNecessary(
-        &restore_url, browser_context, &reverse_on_redirect);
+        &restore_url, browser_context);
     content::WebContents::CreateParams create_params(
         browser_context,
         content::SiteInstance::ShouldAssignSiteForURL(restore_url)

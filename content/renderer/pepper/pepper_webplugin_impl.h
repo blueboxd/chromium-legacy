@@ -15,6 +15,7 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "ppapi/c/pp_var.h"
 #include "third_party/blink/public/mojom/clipboard/clipboard.mojom.h"
+#include "third_party/blink/public/mojom/input/focus_type.mojom-forward.h"
 #include "third_party/blink/public/web/web_plugin.h"
 #include "ui/gfx/geometry/rect.h"
 
@@ -51,7 +52,7 @@ class PepperWebPluginImpl : public blink::WebPlugin {
                       const blink::WebRect& clip_rect,
                       const blink::WebRect& unobscured_rect,
                       bool is_visible) override;
-  void UpdateFocus(bool focused, blink::WebFocusType focus_type) override;
+  void UpdateFocus(bool focused, blink::mojom::FocusType focus_type) override;
   void UpdateVisibility(bool visible) override;
   blink::WebInputEventResult HandleInputEvent(
       const blink::WebCoalescedInputEvent& event,

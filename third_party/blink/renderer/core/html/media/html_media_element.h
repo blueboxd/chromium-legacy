@@ -455,6 +455,8 @@ class CORE_EXPORT HTMLMediaElement
   void RequestPlay() final;
   void RequestPause() final;
   void RequestMuted(bool muted) final;
+  void RequestEnterPictureInPicture() override {}
+  void RequestExitPictureInPicture() override {}
 
   void LoadTimerFired(TimerBase*);
   void ProgressEventTimerFired(TimerBase*);

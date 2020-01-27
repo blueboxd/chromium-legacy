@@ -46,9 +46,6 @@ DirectManipulationHelper::CreateInstance(HWND window,
   if (!::IsWindow(window) || !compositor || !event_target)
     return nullptr;
 
-  if (!base::FeatureList::IsEnabled(features::kPrecisionTouchpad))
-    return nullptr;
-
   // DM_POINTERHITTEST supported since Win10.
   if (base::win::GetVersion() < base::win::Version::WIN10)
     return nullptr;
@@ -67,9 +64,6 @@ std::unique_ptr<DirectManipulationHelper>
 DirectManipulationHelper::CreateInstanceForTesting(
     ui::WindowEventTarget* event_target,
     Microsoft::WRL::ComPtr<IDirectManipulationViewport> viewport) {
-  if (!base::FeatureList::IsEnabled(features::kPrecisionTouchpad))
-    return nullptr;
-
   // DM_POINTERHITTEST supported since Win10.
   if (base::win::GetVersion() < base::win::Version::WIN10)
     return nullptr;

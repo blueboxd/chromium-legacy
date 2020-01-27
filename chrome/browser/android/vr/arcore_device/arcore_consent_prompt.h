@@ -11,21 +11,20 @@
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
-#include "chrome/browser/vr/service/arcore_consent_prompt_interface.h"
+#include "chrome/browser/vr/service/xr_consent_helper.h"
 #include "chrome/browser/vr/vr_export.h"
 
 namespace vr {
 
-class VR_EXPORT ArCoreConsentPrompt : public ArCoreConsentPromptInterface {
+class VR_EXPORT ArCoreConsentPrompt : public XrConsentHelper {
  public:
   ArCoreConsentPrompt();
-  ~ArCoreConsentPrompt();
+  ~ArCoreConsentPrompt() override;
 
-  // ArCoreConsentPromptInterface:
-  void ShowConsentPrompt(
-      int render_process_id,
-      int render_frame_id,
-      base::OnceCallback<void(bool)> response_callback) override;
+  void ShowConsentPrompt(int render_process_id,
+                         int render_frame_id,
+                         XrConsentPromptLevel consent_level,
+                         OnUserConsentCallback response_callback) override;
 
   // Called from Java end.
   void OnUserConsentResult(JNIEnv* env,
@@ -57,7 +56,8 @@ class VR_EXPORT ArCoreConsentPrompt : public ArCoreConsentPromptInterface {
     return weak_ptr_factory_.GetWeakPtr();
   }
 
-  base::OnceCallback<void(bool)> on_user_consent_callback_;
+  OnUserConsentCallback on_user_consent_callback_;
+  XrConsentPromptLevel consent_level_;
 
   base::OnceCallback<void(bool)> on_request_ar_module_result_callback_;
   base::OnceCallback<void(bool)>

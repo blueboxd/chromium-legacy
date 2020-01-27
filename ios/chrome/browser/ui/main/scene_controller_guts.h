@@ -9,11 +9,11 @@
 
 #include "ios/chrome/app/application_delegate/startup_information.h"
 #import "ios/chrome/app/application_delegate/tab_opening.h"
-#include "ios/chrome/browser/browser_state/chrome_browser_state_forward.h"
 #import "ios/chrome/browser/procedural_block_types.h"
 #import "ios/chrome/browser/url_loading/url_loading_params.h"
 #import "ios/chrome/browser/web_state_list/web_state_list_observer_bridge.h"
 
+class ChromeBrowserState;
 @class TabModel;
 
 @protocol SceneControllerGuts <WebStateListObserving>
@@ -55,7 +55,7 @@
 // Presents a SignedInAccountsViewController for |browserState| on the top view
 // controller.
 - (void)presentSignedInAccountsViewControllerForBrowserState:
-    (ios::ChromeBrowserState*)browserState;
+    (ChromeBrowserState*)browserState;
 
 // Clears incognito data that is specific to iOS and won't be cleared by
 // deleting the browser state.

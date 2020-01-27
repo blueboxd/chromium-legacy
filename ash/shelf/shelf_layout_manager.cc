@@ -2472,6 +2472,11 @@ void ShelfLayoutManager::CompleteDrag(const ui::LocatedEvent& event_in_screen) {
   else
     CancelDrag(window_drag_result);
 
+  // Dragged window is finalized after drag handling is completed so drag state
+  // does not interfere with updates on shelf state during window state changes.
+  if (window_drag_controller_.get())
+    window_drag_controller_->FinalizeDraggedWindow();
+
   // Hotseat gestures are meaningful only in tablet mode with hotseat enabled.
   if (chromeos::switches::ShouldShowShelfHotseat() && IsTabletModeEnabled()) {
     base::Optional<InAppShelfGestures> gesture_to_record =

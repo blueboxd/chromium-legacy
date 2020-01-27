@@ -18,7 +18,7 @@
 // static
 TabRestoreServiceDelegateImplIOS*
 TabRestoreServiceDelegateImplIOSFactory::GetForBrowserState(
-    ios::ChromeBrowserState* browser_state) {
+    ChromeBrowserState* browser_state) {
   return static_cast<TabRestoreServiceDelegateImplIOS*>(
       GetInstance()->GetServiceForBrowserState(browser_state, true));
 }
@@ -43,5 +43,5 @@ std::unique_ptr<KeyedService>
 TabRestoreServiceDelegateImplIOSFactory::BuildServiceInstanceFor(
     web::BrowserState* context) const {
   return std::make_unique<TabRestoreServiceDelegateImplIOS>(
-      ios::ChromeBrowserState::FromBrowserState(context));
+      ChromeBrowserState::FromBrowserState(context));
 }

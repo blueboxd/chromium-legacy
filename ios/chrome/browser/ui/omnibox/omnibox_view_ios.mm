@@ -71,7 +71,7 @@ UIColor* IncognitoSecureTextColor() {
 OmniboxViewIOS::OmniboxViewIOS(OmniboxTextFieldIOS* field,
                                WebOmniboxEditController* controller,
                                id<OmniboxLeftImageConsumer> left_image_consumer,
-                               ios::ChromeBrowserState* browser_state,
+                               ChromeBrowserState* browser_state,
                                id<OmniboxFocuser> omnibox_focuser)
     : OmniboxView(controller,
                   controller

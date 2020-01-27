@@ -26,7 +26,15 @@
 #include "components/version_info/version_info.h"
 #include "net/base/network_change_notifier.h"
 
+constexpr char kHatsSurveyTriggerSatisfaction[] = "satisfaction";
+constexpr char kHatsSurveyTriggerSettings[] = "settings";
+
 namespace {
+
+const base::Feature* survey_features[] = {
+    &features::kHappinessTrackingSurveysForDesktop,
+    &features::kHappinessTrackingSurveysForDesktopSettings};
+
 // Which survey we're triggering
 constexpr char kHatsSurveyTrigger[] = "survey";
 
@@ -37,8 +45,6 @@ constexpr char kHatsSurveyEnSiteID[] = "en_site_id";
 constexpr double kHatsSurveyProbabilityDefault = 0;
 
 constexpr char kHatsSurveyEnSiteIDDefault[] = "ty52vxwjrabfvhusawtrmkmx6m";
-
-constexpr char kHatsSurveyTriggerSatisfaction[] = "satisfaction";
 
 constexpr base::TimeDelta kMinimumTimeBetweenSurveyStarts =
     base::TimeDelta::FromDays(60);
@@ -83,31 +89,38 @@ enum class ShouldShowSurveyReasons {
 HatsService::SurveyMetadata::SurveyMetadata() = default;
 HatsService::SurveyMetadata::~SurveyMetadata() = default;
 
-HatsService::HatsService(Profile* profile)
-    : profile_(profile),
-      trigger_(base::FeatureParam<std::string>(
-                   &features::kHappinessTrackingSurveysForDesktop,
-                   kHatsSurveyTrigger,
-                   "")
-                   .Get()),
-      probability_(base::FeatureParam<double>(
-                       &features::kHappinessTrackingSurveysForDesktop,
-                       kHatsSurveyProbability,
-                       kHatsSurveyProbabilityDefault)
-                       .Get()),
-      en_site_id_(base::FeatureParam<std::string>(
-                      &features::kHappinessTrackingSurveysForDesktop,
-                      kHatsSurveyEnSiteID,
-                      kHatsSurveyEnSiteIDDefault)
-                      .Get()) {}
+HatsService::HatsService(Profile* profile) : profile_(profile) {
+  for (auto* survey_feature : survey_features) {
+    survey_configs_by_triggers_.emplace(
+        base::FeatureParam<std::string>(survey_feature, kHatsSurveyTrigger, "")
+            .Get(),
+        SurveyConfig(
+            base::FeatureParam<double>(survey_feature, kHatsSurveyProbability,
+                                       kHatsSurveyProbabilityDefault)
+                .Get(),
+            base::FeatureParam<std::string>(survey_feature, kHatsSurveyEnSiteID,
+                                            kHatsSurveyEnSiteIDDefault)
+                .Get()));
+  }
+  // Ensure a default survey exists (for demo purpose).
+  if (survey_configs_by_triggers_.find(kHatsSurveyTriggerSatisfaction) ==
+      survey_configs_by_triggers_.end()) {
+    survey_configs_by_triggers_.emplace(
+        kHatsSurveyTriggerSatisfaction,
+        SurveyConfig(kHatsSurveyProbabilityDefault,
+                     kHatsSurveyEnSiteIDDefault));
+  }
+}
+
+HatsService::~HatsService() = default;
 
 // static
 void HatsService::RegisterProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterDictionaryPref(prefs::kHatsSurveyMetadata);
 }
 
-void HatsService::LaunchSatisfactionSurvey() {
-  if (ShouldShowSurvey(kHatsSurveyTriggerSatisfaction)) {
+void HatsService::LaunchSurvey(const std::string& trigger) {
+  if (ShouldShowSurvey(trigger)) {
     Browser* browser = chrome::FindLastActive();
     // Never show HaTS bubble for Incognito mode.
     if (browser && browser->is_type_normal() &&
@@ -124,16 +137,16 @@ void HatsService::LaunchSatisfactionSurvey() {
 
       UMA_HISTOGRAM_ENUMERATION(kHatsShouldShowSurveyReasonHistogram,
                                 ShouldShowSurveyReasons::kYes);
-      browser->window()->ShowHatsBubble(en_site_id_);
+      browser->window()->ShowHatsBubble(
+          survey_configs_by_triggers_.at(trigger).en_site_id_);
 
       DictionaryPrefUpdate update(profile_->GetPrefs(),
                                   prefs::kHatsSurveyMetadata);
       base::DictionaryValue* pref_data = update.Get();
-      pref_data->SetIntPath(GetMajorVersionPath(kHatsSurveyTriggerSatisfaction),
+      pref_data->SetIntPath(GetMajorVersionPath(trigger),
                             version_info::GetVersion().components()[0]);
-      pref_data->SetPath(
-          GetLastSurveyStartedTime(kHatsSurveyTriggerSatisfaction),
-          util::TimeToValue(base::Time::Now()));
+      pref_data->SetPath(GetLastSurveyStartedTime(trigger),
+                         util::TimeToValue(base::Time::Now()));
     } else {
       UMA_HISTOGRAM_ENUMERATION(kHatsShouldShowSurveyReasonHistogram,
                                 ShouldShowSurveyReasons::kNoNotRegularBrowser);
@@ -167,6 +180,16 @@ void HatsService::SetSurveyMetadataForTesting(
 }
 
 bool HatsService::ShouldShowSurvey(const std::string& trigger) const {
+  // Survey should not be loaded if the corresponding survey config is
+  // unavailable.
+  if (survey_configs_by_triggers_.find(trigger) ==
+      survey_configs_by_triggers_.end()) {
+    UMA_HISTOGRAM_ENUMERATION(
+        kHatsShouldShowSurveyReasonHistogram,
+        ShouldShowSurveyReasons::kNoTriggerStringMismatch);
+    return false;
+  }
+
   if (base::FeatureList::IsEnabled(
           features::kHappinessTrackingSurveysForDesktopDemo)) {
     // Always show the survey in demo mode.
@@ -225,13 +248,7 @@ bool HatsService::ShouldShowSurvey(const std::string& trigger) const {
     }
   }
 
-  if (trigger_ != trigger) {
-    UMA_HISTOGRAM_ENUMERATION(
-        kHatsShouldShowSurveyReasonHistogram,
-        ShouldShowSurveyReasons::kNoTriggerStringMismatch);
-    return false;
-  }
-
+  auto probability_ = survey_configs_by_triggers_.at(trigger).probability_;
   bool should_show_survey = base::RandDouble() < probability_;
   if (!should_show_survey) {
     UMA_HISTOGRAM_ENUMERATION(

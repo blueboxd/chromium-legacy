@@ -71,35 +71,17 @@ class DirectManipulationBrowserTestBase : public ContentBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(DirectManipulationBrowserTestBase);
 };
 
-class DirectManipulationBrowserTest : public DirectManipulationBrowserTestBase,
-                                      public testing::WithParamInterface<bool> {
+class DirectManipulationBrowserTest : public DirectManipulationBrowserTestBase {
  public:
-  DirectManipulationBrowserTest() {
-    if (GetParam()) {
-      scoped_feature_list_.InitWithFeatures(
-          {features::kPrecisionTouchpad,
-           features::kPrecisionTouchpadScrollPhase},
-          {});
-    } else {
-      scoped_feature_list_.InitWithFeatures(
-          {features::kPrecisionTouchpad},
-          {features::kPrecisionTouchpadScrollPhase});
-    }
-  }
+  DirectManipulationBrowserTest() {}
 
  private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-
   DISALLOW_COPY_AND_ASSIGN(DirectManipulationBrowserTest);
 };
 
-INSTANTIATE_TEST_SUITE_P(WithScrollEventPhase,
-                         DirectManipulationBrowserTest,
-                         testing::Bool());
-
 // Ensure the AnimationObserver is only created after direct manipulation
 // interaction begin and destroyed after direct manipulation interaction end.
-IN_PROC_BROWSER_TEST_P(DirectManipulationBrowserTest,
+IN_PROC_BROWSER_TEST_F(DirectManipulationBrowserTest,
                        ObserverDuringInteraction) {
   if (base::win::GetVersion() < base::win::Version::WIN10)
     return;
@@ -152,7 +134,7 @@ class EventLogger : public ui::EventRewriter {
 };
 
 // Check DirectManipulation events convert to ui::event correctly.
-IN_PROC_BROWSER_TEST_P(DirectManipulationBrowserTest, EventConvert) {
+IN_PROC_BROWSER_TEST_F(DirectManipulationBrowserTest, EventConvert) {
   if (base::win::GetVersion() < base::win::Version::WIN10)
     return;
 
@@ -176,21 +158,13 @@ IN_PROC_BROWSER_TEST_P(DirectManipulationBrowserTest, EventConvert) {
     std::unique_ptr<ui::Event> event = event_logger.ReleaseLastEvent();
     ASSERT_TRUE(event);
 
-    if (GetParam()) {
-      EXPECT_EQ(ui::ET_SCROLL, event->type());
-      ui::ScrollEvent* scroll_event = event->AsScrollEvent();
-      EXPECT_EQ(1, scroll_event->x_offset());
-      EXPECT_EQ(2, scroll_event->y_offset());
-      EXPECT_EQ(ui::EventMomentumPhase::NONE, scroll_event->momentum_phase());
-      EXPECT_EQ(ui::ScrollEventPhase::kUpdate,
-                scroll_event->scroll_event_phase());
-    } else {
-      EXPECT_EQ(ui::ET_MOUSEWHEEL, event->type());
-      ui::MouseWheelEvent* wheel_event = event->AsMouseWheelEvent();
-      EXPECT_EQ(1, wheel_event->x_offset());
-      EXPECT_EQ(2, wheel_event->y_offset());
-      EXPECT_TRUE(wheel_event->flags() & ui::EF_PRECISION_SCROLLING_DELTA);
-    }
+    EXPECT_EQ(ui::ET_SCROLL, event->type());
+    ui::ScrollEvent* scroll_event = event->AsScrollEvent();
+    EXPECT_EQ(1, scroll_event->x_offset());
+    EXPECT_EQ(2, scroll_event->y_offset());
+    EXPECT_EQ(ui::EventMomentumPhase::NONE, scroll_event->momentum_phase());
+    EXPECT_EQ(ui::ScrollEventPhase::kUpdate,
+              scroll_event->scroll_event_phase());
   }
 
   {
@@ -198,98 +172,65 @@ IN_PROC_BROWSER_TEST_P(DirectManipulationBrowserTest, EventConvert) {
     std::unique_ptr<ui::Event> event = event_logger.ReleaseLastEvent();
     ASSERT_TRUE(event);
 
-    if (GetParam()) {
-      EXPECT_EQ(ui::ET_SCROLL, event->type());
-      ui::ScrollEvent* scroll_event = event->AsScrollEvent();
-      EXPECT_EQ(1, scroll_event->x_offset());
-      EXPECT_EQ(2, scroll_event->y_offset());
-      EXPECT_EQ(ui::EventMomentumPhase::INERTIAL_UPDATE,
-                scroll_event->momentum_phase());
-      EXPECT_EQ(ui::ScrollEventPhase::kNone,
-                scroll_event->scroll_event_phase());
-    } else {
-      EXPECT_EQ(ui::ET_MOUSEWHEEL, event->type());
-      ui::MouseWheelEvent* wheel_event = event->AsMouseWheelEvent();
-      EXPECT_EQ(1, wheel_event->x_offset());
-      EXPECT_EQ(2, wheel_event->y_offset());
-      EXPECT_TRUE(wheel_event->flags() & ui::EF_PRECISION_SCROLLING_DELTA);
-    }
+    EXPECT_EQ(ui::ET_SCROLL, event->type());
+    ui::ScrollEvent* scroll_event = event->AsScrollEvent();
+    EXPECT_EQ(1, scroll_event->x_offset());
+    EXPECT_EQ(2, scroll_event->y_offset());
+    EXPECT_EQ(ui::EventMomentumPhase::INERTIAL_UPDATE,
+              scroll_event->momentum_phase());
+    EXPECT_EQ(ui::ScrollEventPhase::kNone, scroll_event->scroll_event_phase());
   }
 
   {
     target->ApplyPanGestureScrollBegin(1, 2);
     std::unique_ptr<ui::Event> event = event_logger.ReleaseLastEvent();
 
-    if (GetParam()) {
-      ASSERT_TRUE(event);
-      EXPECT_EQ(ui::ET_SCROLL, event->type());
-      ui::ScrollEvent* scroll_event = event->AsScrollEvent();
-      EXPECT_EQ(1, scroll_event->x_offset());
-      EXPECT_EQ(2, scroll_event->y_offset());
-      EXPECT_EQ(ui::EventMomentumPhase::NONE, scroll_event->momentum_phase());
-      EXPECT_EQ(ui::ScrollEventPhase::kBegan,
-                scroll_event->scroll_event_phase());
-    } else {
-      EXPECT_EQ(ui::ET_MOUSEWHEEL, event->type());
-      ui::MouseWheelEvent* wheel_event = event->AsMouseWheelEvent();
-      EXPECT_EQ(1, wheel_event->x_offset());
-      EXPECT_EQ(2, wheel_event->y_offset());
-      EXPECT_TRUE(wheel_event->flags() & ui::EF_PRECISION_SCROLLING_DELTA);
-    }
+    ASSERT_TRUE(event);
+    EXPECT_EQ(ui::ET_SCROLL, event->type());
+    ui::ScrollEvent* scroll_event = event->AsScrollEvent();
+    EXPECT_EQ(1, scroll_event->x_offset());
+    EXPECT_EQ(2, scroll_event->y_offset());
+    EXPECT_EQ(ui::EventMomentumPhase::NONE, scroll_event->momentum_phase());
+    EXPECT_EQ(ui::ScrollEventPhase::kBegan, scroll_event->scroll_event_phase());
   }
 
   {
     target->ApplyPanGestureScrollEnd(true);
     std::unique_ptr<ui::Event> event = event_logger.ReleaseLastEvent();
 
-    if (GetParam()) {
-      ASSERT_TRUE(event);
-      EXPECT_EQ(ui::ET_SCROLL, event->type());
-      ui::ScrollEvent* scroll_event = event->AsScrollEvent();
-      EXPECT_EQ(0, scroll_event->x_offset());
-      EXPECT_EQ(0, scroll_event->y_offset());
-      EXPECT_EQ(ui::EventMomentumPhase::BLOCKED,
-                scroll_event->momentum_phase());
-      EXPECT_EQ(ui::ScrollEventPhase::kEnd, scroll_event->scroll_event_phase());
-    } else {
-      ASSERT_FALSE(event);
-    }
+    ASSERT_TRUE(event);
+    EXPECT_EQ(ui::ET_SCROLL, event->type());
+    ui::ScrollEvent* scroll_event = event->AsScrollEvent();
+    EXPECT_EQ(0, scroll_event->x_offset());
+    EXPECT_EQ(0, scroll_event->y_offset());
+    EXPECT_EQ(ui::EventMomentumPhase::BLOCKED, scroll_event->momentum_phase());
+    EXPECT_EQ(ui::ScrollEventPhase::kEnd, scroll_event->scroll_event_phase());
   }
 
   {
     target->ApplyPanGestureFlingBegin();
     std::unique_ptr<ui::Event> event = event_logger.ReleaseLastEvent();
 
-    if (GetParam()) {
-      ASSERT_TRUE(event);
-      EXPECT_EQ(ui::ET_SCROLL, event->type());
-      ui::ScrollEvent* scroll_event = event->AsScrollEvent();
-      EXPECT_EQ(0, scroll_event->x_offset());
-      EXPECT_EQ(0, scroll_event->y_offset());
-      EXPECT_EQ(ui::EventMomentumPhase::BEGAN, scroll_event->momentum_phase());
-      EXPECT_EQ(ui::ScrollEventPhase::kNone,
-                scroll_event->scroll_event_phase());
-    } else {
-      ASSERT_FALSE(event);
-    }
+    ASSERT_TRUE(event);
+    EXPECT_EQ(ui::ET_SCROLL, event->type());
+    ui::ScrollEvent* scroll_event = event->AsScrollEvent();
+    EXPECT_EQ(0, scroll_event->x_offset());
+    EXPECT_EQ(0, scroll_event->y_offset());
+    EXPECT_EQ(ui::EventMomentumPhase::BEGAN, scroll_event->momentum_phase());
+    EXPECT_EQ(ui::ScrollEventPhase::kNone, scroll_event->scroll_event_phase());
   }
 
   {
     target->ApplyPanGestureFlingEnd();
     std::unique_ptr<ui::Event> event = event_logger.ReleaseLastEvent();
 
-    if (GetParam()) {
-      ASSERT_TRUE(event);
-      EXPECT_EQ(ui::ET_SCROLL, event->type());
-      ui::ScrollEvent* scroll_event = event->AsScrollEvent();
-      EXPECT_EQ(0, scroll_event->x_offset());
-      EXPECT_EQ(0, scroll_event->y_offset());
-      EXPECT_EQ(ui::EventMomentumPhase::END, scroll_event->momentum_phase());
-      EXPECT_EQ(ui::ScrollEventPhase::kNone,
-                scroll_event->scroll_event_phase());
-    } else {
-      ASSERT_FALSE(event);
-    }
+    ASSERT_TRUE(event);
+    EXPECT_EQ(ui::ET_SCROLL, event->type());
+    ui::ScrollEvent* scroll_event = event->AsScrollEvent();
+    EXPECT_EQ(0, scroll_event->x_offset());
+    EXPECT_EQ(0, scroll_event->y_offset());
+    EXPECT_EQ(ui::EventMomentumPhase::END, scroll_event->momentum_phase());
+    EXPECT_EQ(ui::ScrollEventPhase::kNone, scroll_event->scroll_event_phase());
   }
 
   {

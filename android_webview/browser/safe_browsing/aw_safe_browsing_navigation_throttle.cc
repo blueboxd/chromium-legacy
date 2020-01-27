@@ -4,12 +4,15 @@
 
 #include "android_webview/browser/safe_browsing/aw_safe_browsing_navigation_throttle.h"
 
+#include <memory>
+
 #include "android_webview/browser/aw_browser_process.h"
+#include "android_webview/browser/network_service/aw_web_resource_request.h"
 #include "android_webview/browser/safe_browsing/aw_safe_browsing_blocking_page.h"
 #include "android_webview/browser/safe_browsing/aw_safe_browsing_ui_manager.h"
 #include "base/memory/ptr_util.h"
 #include "components/security_interstitials/content/security_interstitial_tab_helper.h"
-#include "components/security_interstitials/content/unsafe_resource.h"
+#include "components/security_interstitials/core/unsafe_resource.h"
 #include "content/public/browser/navigation_handle.h"
 
 namespace android_webview {
@@ -30,9 +33,16 @@ AwSafeBrowsingNavigationThrottle::WillFailRequest() {
     security_interstitials::UnsafeResource resource;
     content::NavigationHandle* handle = navigation_handle();
     if (manager->PopUnsafeResourceForURL(handle->GetURL(), &resource)) {
+      std::unique_ptr<AwWebResourceRequest> request =
+          std::make_unique<AwWebResourceRequest>(
+              handle->GetURL().spec(), handle->IsPost() ? "POST" : "GET",
+              handle->IsInMainFrame(), handle->HasUserGesture(),
+              handle->GetRequestHeaders());
+      request->is_renderer_initiated = handle->IsRendererInitiated();
       AwSafeBrowsingBlockingPage* blocking_page =
           AwSafeBrowsingBlockingPage::CreateBlockingPage(
-              manager, handle->GetWebContents(), handle->GetURL(), resource);
+              manager, handle->GetWebContents(), handle->GetURL(), resource,
+              std::move(request));
       std::string error_page_content = blocking_page->GetHTMLContents();
       security_interstitials::SecurityInterstitialTabHelper::
           AssociateBlockingPage(handle->GetWebContents(),

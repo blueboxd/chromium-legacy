@@ -86,7 +86,7 @@ class StylePropertySerializer {
    public:
     explicit PropertyValueForSerializer(
         CSSPropertyValueSet::PropertyReference property)
-        : value_(property.Value()),
+        : value_(&property.Value()),
           property_(property.Property()),
           is_important_(property.IsImportant()),
           is_inherited_(property.IsInherited()) {}
@@ -107,7 +107,7 @@ class StylePropertySerializer {
     bool IsValid() const { return value_; }
 
    private:
-    Member<const CSSValue> value_;
+    const CSSValue* value_;
     const CSSProperty& property_;
     bool is_important_;
     bool is_inherited_;

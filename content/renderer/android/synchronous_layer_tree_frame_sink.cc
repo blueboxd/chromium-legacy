@@ -413,7 +413,8 @@ void SynchronousLayerTreeFrameSink::SubmitCompositorFrame(
   // NOTE: submit_frame will be empty if viz_frame_submission_enabled_ enabled,
   // but it won't be used upstream
   sync_client_->SubmitCompositorFrame(layer_tree_frame_sink_id_,
-                                      std::move(submit_frame));
+                                      std::move(submit_frame),
+                                      client_->BuildHitTestData());
   did_submit_frame_ = true;
 }
 

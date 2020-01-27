@@ -2245,6 +2245,16 @@ public class PaymentRequestImpl
 
         mWasRetryCalled = true;
 
+        // Remove all payment instruments except the selected one.
+        assert mPaymentMethodsSection != null;
+        PaymentInstrument selectedInstrument =
+                (PaymentInstrument) mPaymentMethodsSection.getSelectedItem();
+        assert selectedInstrument != null;
+        mPaymentMethodsSection = new SectionInformation(PaymentRequestUI.DataType.PAYMENT_METHODS,
+                /* selection = */ 0, new ArrayList<>(Arrays.asList(selectedInstrument)));
+        mUI.updateSection(PaymentRequestUI.DataType.PAYMENT_METHODS, mPaymentMethodsSection);
+        mUI.disableAddingNewCardsDuringRetry();
+
         // Go back to the payment sheet
         mUI.onPayButtonProcessingCancelled();
         if (!TextUtils.isEmpty(errors.error)) {

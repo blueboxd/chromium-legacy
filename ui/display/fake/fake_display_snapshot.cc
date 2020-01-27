@@ -259,6 +259,11 @@ Builder& Builder::SetHighDPI() {
   return SetDPI(326);  // Retina-ish.
 }
 
+Builder& Builder::SetPrivacyScreen(PrivacyScreenState state) {
+  privacy_screen_state_ = state;
+  return *this;
+}
+
 const DisplayMode* Builder::AddOrFindDisplayMode(const gfx::Size& size) {
   for (auto& mode : modes_) {
     if (mode->size() == size)

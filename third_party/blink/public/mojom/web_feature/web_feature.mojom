@@ -2504,6 +2504,10 @@ enum WebFeature {
   kMeasureMemory = 3139,
   kV8Animation_ReplaceState_AttributeGetter = 3140,
   kV8Animation_Persist_Method = 3141,
+  kTaskControllerConstructor = 3142,
+  kTaskControllerSetPriority= 3143,
+  kTaskSignalPriority = 3144,
+  kSchedulerPostTask = 3145,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

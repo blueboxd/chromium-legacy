@@ -110,8 +110,7 @@ void PrivacyInfoView::StyledLabelLinkClicked(views::StyledLabel* label,
 void PrivacyInfoView::InitLayout() {
   SetLayoutManager(std::make_unique<views::FillLayout>());
   SetBorder(views::CreateEmptyBorder(gfx::Insets(kRowMarginDip)));
-  row_container_ = new views::View();
-  AddChildView(row_container_);
+  row_container_ = AddChildView(std::make_unique<views::View>());
 
   constexpr int kVerticalPaddingDip = 0;
   auto* layout_manager =
@@ -135,20 +134,19 @@ void PrivacyInfoView::InitLayout() {
   InitText();
 
   // Spacer.
-  views::View* spacer = new views::View();
-  row_container_->AddChildView(spacer);
-  layout_manager->SetFlexForView(spacer, 1);
+  layout_manager->SetFlexForView(
+      row_container_->AddChildView(std::make_unique<views::View>()), 1);
 
   // Close button.
   InitCloseButton();
 }
 
 void PrivacyInfoView::InitInfoIcon() {
-  info_icon_ = new views::ImageView();
+  info_icon_ =
+      row_container_->AddChildView(std::make_unique<views::ImageView>());
   info_icon_->SetImageSize(gfx::Size(kIconSizeDip, kIconSizeDip));
   info_icon_->SetImage(gfx::CreateVectorIcon(views::kInfoIcon, kIconSizeDip,
                                              gfx::kGoogleBlue600));
-  row_container_->AddChildView(info_icon_);
 }
 
 void PrivacyInfoView::InitText() {
@@ -157,51 +155,51 @@ void PrivacyInfoView::InitText() {
   size_t offset;
   const base::string16 text = l10n_util::GetStringFUTF16(
       IDS_APP_LIST_ASSISTANT_PRIVACY_INFO, link, &offset);
-  text_view_ = new views::StyledLabel(text, this);
+  auto text_view = std::make_unique<views::StyledLabel>(text, this);
   views::StyledLabel::RangeStyleInfo style;
-  style.custom_font = text_view_->GetDefaultFontList().Derive(
+  style.custom_font = text_view->GetDefaultFontList().Derive(
       0, gfx::Font::FontStyle::NORMAL, gfx::Font::Weight::NORMAL);
   style.override_color = gfx::kGoogleGrey900;
-  text_view_->AddStyleRange(gfx::Range(0, offset), style);
+  text_view->AddStyleRange(gfx::Range(0, offset), style);
 
   views::StyledLabel::RangeStyleInfo link_style =
       views::StyledLabel::RangeStyleInfo::CreateForLink();
   link_style.override_color = gfx::kGoogleBlue700;
-  text_view_->AddStyleRange(gfx::Range(offset, offset + link.length()),
-                            link_style);
-  text_view_->SetAutoColorReadabilityEnabled(false);
-  row_container_->AddChildView(text_view_);
+  text_view->AddStyleRange(gfx::Range(offset, offset + link.length()),
+                           link_style);
+  text_view->SetAutoColorReadabilityEnabled(false);
+  text_view_ = row_container_->AddChildView(std::move(text_view));
 }
 
 void PrivacyInfoView::InitCloseButton() {
-  close_button_ = new views::ImageButton(this);
-  close_button_->SetImage(views::ImageButton::STATE_NORMAL,
-                          gfx::CreateVectorIcon(views::kCloseIcon, kIconSizeDip,
-                                                gfx::kGoogleGrey700));
-  close_button_->SetImageHorizontalAlignment(views::ImageButton::ALIGN_CENTER);
-  close_button_->SetImageVerticalAlignment(views::ImageButton::ALIGN_MIDDLE);
+  auto close_button = std::make_unique<views::ImageButton>(this);
+  close_button->SetImage(views::ImageButton::STATE_NORMAL,
+                         gfx::CreateVectorIcon(views::kCloseIcon, kIconSizeDip,
+                                               gfx::kGoogleGrey700));
+  close_button->SetImageHorizontalAlignment(views::ImageButton::ALIGN_CENTER);
+  close_button->SetImageVerticalAlignment(views::ImageButton::ALIGN_MIDDLE);
   base::string16 close_button_label(
       l10n_util::GetStringUTF16(IDS_APP_LIST_ASSISTANT_PRIVACY_INFO_CLOSE));
-  close_button_->SetAccessibleName(close_button_label);
-  close_button_->SetTooltipText(close_button_label);
-  close_button_->SetFocusBehavior(FocusBehavior::ALWAYS);
+  close_button->SetAccessibleName(close_button_label);
+  close_button->SetTooltipText(close_button_label);
+  close_button->SetFocusBehavior(FocusBehavior::ALWAYS);
   constexpr int kImageButtonSizeDip = 40;
   constexpr int kIconMarginDip = (kImageButtonSizeDip - kIconSizeDip) / 2;
-  close_button_->SetBorder(
+  close_button->SetBorder(
       views::CreateEmptyBorder(gfx::Insets(kIconMarginDip)));
-  close_button_->SizeToPreferredSize();
+  close_button->SizeToPreferredSize();
 
   // Ink ripple.
-  close_button_->SetInkDropMode(views::InkDropHostView::InkDropMode::ON);
+  close_button->SetInkDropMode(views::InkDropHostView::InkDropMode::ON);
   constexpr SkColor kInkDropBaseColor = gfx::kGoogleGrey900;
   constexpr float kInkDropVisibleOpacity = 0.06f;
   constexpr float kInkDropHighlightOpacity = 0.08f;
-  close_button_->set_ink_drop_visible_opacity(kInkDropVisibleOpacity);
-  close_button_->set_ink_drop_highlight_opacity(kInkDropHighlightOpacity);
-  close_button_->set_ink_drop_base_color(kInkDropBaseColor);
-  close_button_->set_has_ink_drop_action_on_click(true);
-  views::InstallCircleHighlightPathGenerator(close_button_);
-  row_container_->AddChildView(close_button_);
+  close_button->set_ink_drop_visible_opacity(kInkDropVisibleOpacity);
+  close_button->set_ink_drop_highlight_opacity(kInkDropHighlightOpacity);
+  close_button->set_ink_drop_base_color(kInkDropBaseColor);
+  close_button->set_has_ink_drop_action_on_click(true);
+  views::InstallCircleHighlightPathGenerator(close_button.get());
+  close_button_ = row_container_->AddChildView(std::move(close_button));
 }
 
 }  // namespace ash

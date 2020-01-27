@@ -84,4 +84,58 @@ TEST(PrinterConfigurationTest, ParseUriSubdomainQueueAndPort) {
   EXPECT_EQ(result->path(), "/ipp/print");
 }
 
+TEST(PrinterConfigurationTest, SecureProtocolIpps) {
+  chromeos::Printer printer;
+  printer.set_uri("ipps://1.2.3.4");
+  EXPECT_TRUE(printer.HasSecureProtocol());
+}
+
+TEST(PrinterConfigurationTest, SecureProtocolHttps) {
+  chromeos::Printer printer;
+  printer.set_uri("https://1.2.3.4");
+  EXPECT_TRUE(printer.HasSecureProtocol());
+}
+
+TEST(PrinterConfigurationTest, SecureProtocolUsb) {
+  chromeos::Printer printer;
+  printer.set_uri("usb://");
+  EXPECT_TRUE(printer.HasSecureProtocol());
+}
+
+TEST(PrinterConfigurationTest, SecureProtocolIppusb) {
+  chromeos::Printer printer;
+  printer.set_uri("ippusb://");
+  EXPECT_TRUE(printer.HasSecureProtocol());
+}
+
+TEST(PrinterConfigurationTest, NonSecureProtocolIpp) {
+  chromeos::Printer printer;
+  printer.set_uri("ipp://1.2.3.4");
+  EXPECT_FALSE(printer.HasSecureProtocol());
+}
+
+TEST(PrinterConfigurationTest, NonSecureProtocolHttp) {
+  chromeos::Printer printer;
+  printer.set_uri("http://1.2.3.4");
+  EXPECT_FALSE(printer.HasSecureProtocol());
+}
+
+TEST(PrinterConfigurationTest, NonSecureProtocolSocket) {
+  chromeos::Printer printer;
+  printer.set_uri("socket://1.2.3.4");
+  EXPECT_FALSE(printer.HasSecureProtocol());
+}
+
+TEST(PrinterConfigurationTest, NonSecureProtocolLpd) {
+  chromeos::Printer printer;
+  printer.set_uri("lpd://1.2.3.4");
+  EXPECT_FALSE(printer.HasSecureProtocol());
+}
+
+TEST(PrinterConfigurationTest, NonSecureProtocolUnknown) {
+  chromeos::Printer printer;
+  printer.set_uri("foobar");
+  EXPECT_FALSE(printer.HasSecureProtocol());
+}
+
 }  // namespace

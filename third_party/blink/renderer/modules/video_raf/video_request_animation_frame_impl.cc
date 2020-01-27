@@ -7,10 +7,10 @@
 #include <memory>
 #include <utility>
 
+#include "third_party/blink/renderer/bindings/modules/v8/v8_video_frame_metadata.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
-#include "third_party/blink/renderer/modules/video_raf/video_frame_metadata.h"
 #include "third_party/blink/renderer/modules/video_raf/video_frame_request_callback_collection.h"
 
 namespace blink {

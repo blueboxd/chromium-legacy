@@ -4,10 +4,10 @@
 
 #include "third_party/blink/renderer/core/timing/measure_memory/measure_memory_delegate.h"
 
+#include "third_party/blink/renderer/bindings/core/v8/v8_measure_memory.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_measure_memory_entry.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_measure_memory_options.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
-#include "third_party/blink/renderer/core/timing/measure_memory/measure_memory.h"
-#include "third_party/blink/renderer/core/timing/measure_memory/measure_memory_entry.h"
-#include "third_party/blink/renderer/core/timing/measure_memory/measure_memory_options.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"

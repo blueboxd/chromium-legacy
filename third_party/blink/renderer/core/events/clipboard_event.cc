@@ -22,6 +22,7 @@
 
 #include "third_party/blink/renderer/core/events/clipboard_event.h"
 
+#include "third_party/blink/renderer/bindings/core/v8/v8_clipboard_event_init.h"
 #include "third_party/blink/renderer/core/event_interface_names.h"
 
 namespace blink {

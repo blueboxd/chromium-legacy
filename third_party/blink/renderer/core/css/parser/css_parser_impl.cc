@@ -65,7 +65,10 @@ AtomicString ConsumeStringOrURI(CSSParserTokenStream& stream) {
 
 CSSParserImpl::CSSParserImpl(const CSSParserContext* context,
                              StyleSheetContents* style_sheet)
-    : context_(context), style_sheet_(style_sheet), observer_(nullptr) {}
+    : context_(context),
+      style_sheet_(style_sheet),
+      observer_(nullptr),
+      lazy_state_(nullptr) {}
 
 MutableCSSPropertyValueSet::SetResult CSSParserImpl::ParseValue(
     MutableCSSPropertyValueSet* declaration,

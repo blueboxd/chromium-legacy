@@ -89,7 +89,7 @@ void CreateSentinel() {
 }
 
 // Helper function for recording first run metrics.
-void RecordFirstRunMetricsInternal(ios::ChromeBrowserState* browserState,
+void RecordFirstRunMetricsInternal(ChromeBrowserState* browserState,
                                    bool sign_in_attempted,
                                    bool has_sso_accounts) {
   first_run::SignInStatus sign_in_status;
@@ -140,10 +140,9 @@ BOOL FixOrphanWord(UILabel* label) {
   return false;
 }
 
-void WriteFirstRunSentinelAndRecordMetrics(
-    ios::ChromeBrowserState* browserState,
-    BOOL sign_in_attempted,
-    BOOL has_sso_account) {
+void WriteFirstRunSentinelAndRecordMetrics(ChromeBrowserState* browserState,
+                                           BOOL sign_in_attempted,
+                                           BOOL has_sso_account) {
   base::PostTask(
       FROM_HERE,
       {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
@@ -152,7 +151,7 @@ void WriteFirstRunSentinelAndRecordMetrics(
                                 has_sso_account);
 }
 
-void FinishFirstRun(ios::ChromeBrowserState* browserState,
+void FinishFirstRun(ChromeBrowserState* browserState,
                     web::WebState* web_state,
                     FirstRunConfiguration* config,
                     id<SyncPresenter> presenter) {

@@ -26,10 +26,11 @@
 
 #include "third_party/blink/public/common/input/web_input_event.h"
 #include "third_party/blink/renderer/core/core_export.h"
-#include "third_party/blink/renderer/core/dom/events/event_modifier_init.h"
 #include "third_party/blink/renderer/core/events/ui_event.h"
 
 namespace blink {
+
+class EventModifierInit;
 
 class CORE_EXPORT UIEventWithKeyState : public UIEvent {
  public:

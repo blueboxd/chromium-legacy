@@ -24,8 +24,8 @@ namespace {
 
 std::unique_ptr<KeyedService> BuildInMemoryURLIndex(
     web::BrowserState* context) {
-  ios::ChromeBrowserState* browser_state =
-      ios::ChromeBrowserState::FromBrowserState(context);
+  ChromeBrowserState* browser_state =
+      ChromeBrowserState::FromBrowserState(context);
 
   SchemeSet schemes_to_whilelist;
   schemes_to_whilelist.insert(kChromeUIScheme);
@@ -45,7 +45,7 @@ std::unique_ptr<KeyedService> BuildInMemoryURLIndex(
 
 // static
 InMemoryURLIndex* InMemoryURLIndexFactory::GetForBrowserState(
-    ios::ChromeBrowserState* browser_state) {
+    ChromeBrowserState* browser_state) {
   return static_cast<InMemoryURLIndex*>(
       GetInstance()->GetServiceForBrowserState(browser_state, true));
 }

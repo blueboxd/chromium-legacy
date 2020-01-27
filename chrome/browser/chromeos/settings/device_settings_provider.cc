@@ -112,6 +112,7 @@ const char* const kKnownSettings[] = {
     kReportDeviceActivityTimes,
     kReportDeviceBoardStatus,
     kReportDeviceBootMode,
+    kReportDeviceCrashReportInfo,
     kReportDeviceCpuInfo,
     kReportDeviceHardwareStatus,
     kReportDeviceLocation,
@@ -510,6 +511,10 @@ void DecodeReportingPolicies(const em::ChromeDeviceSettingsProto& policy,
     if (reporting_policy.has_report_boot_mode()) {
       new_values_cache->SetBoolean(kReportDeviceBootMode,
                                    reporting_policy.report_boot_mode());
+    }
+    if (reporting_policy.has_report_crash_report_info()) {
+      new_values_cache->SetBoolean(kReportDeviceCrashReportInfo,
+                                   reporting_policy.report_crash_report_info());
     }
     if (reporting_policy.has_report_network_interfaces()) {
       new_values_cache->SetBoolean(

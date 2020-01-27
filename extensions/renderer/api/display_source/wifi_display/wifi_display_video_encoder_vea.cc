@@ -101,12 +101,12 @@ void WiFiDisplayVideoEncoderVEA::Create(
 
   base::PostTaskAndReplyWithResult(
       media_task_runner.get(), FROM_HERE,
-      base::Bind(&WiFiDisplayVideoEncoderVEA::InitOnMediaThread,
-                 base::WrapRefCounted(new WiFiDisplayVideoEncoderVEA(
-                     std::move(media_task_runner), vea.release(),
-                     params.create_memory_callback)),
-                 params),
-      encoder_callback);
+      base::BindOnce(&WiFiDisplayVideoEncoderVEA::InitOnMediaThread,
+                     base::WrapRefCounted(new WiFiDisplayVideoEncoderVEA(
+                         std::move(media_task_runner), vea.release(),
+                         params.create_memory_callback)),
+                     params),
+      base::BindOnce(encoder_callback));
 }
 
 WiFiDisplayVideoEncoderVEA::WiFiDisplayVideoEncoderVEA(

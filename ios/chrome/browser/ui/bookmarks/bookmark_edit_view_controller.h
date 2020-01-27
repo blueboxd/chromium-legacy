@@ -6,12 +6,12 @@
 
 #import <UIKit/UIKit.h>
 
-#include "ios/chrome/browser/browser_state/chrome_browser_state_forward.h"
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_controller.h"
 
 @class BookmarkEditViewController;
 @class BookmarkFolderViewController;
 @protocol BrowserCommands;
+class ChromeBrowserState;
 
 namespace bookmarks {
 class BookmarkNode;
@@ -52,7 +52,7 @@ class BookmarkNode;
 // |bookmark|: mustn't be NULL at initialization time. It also mustn't be a
 //             folder.
 - (instancetype)initWithBookmark:(const bookmarks::BookmarkNode*)bookmark
-                    browserState:(ios::ChromeBrowserState*)browserState
+                    browserState:(ChromeBrowserState*)browserState
                       dispatcher:(id<BrowserCommands>)dispatcher
     NS_DESIGNATED_INITIALIZER;
 - (instancetype)initWithStyle:(UITableViewStyle)style NS_UNAVAILABLE;

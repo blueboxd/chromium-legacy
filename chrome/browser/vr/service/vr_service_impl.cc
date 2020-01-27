@@ -11,7 +11,6 @@
 #include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/trace_event/common/trace_event_common.h"
-#include "build/build_config.h"
 #include "chrome/browser/permissions/permission_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/vr/metrics/session_metrics_helper.h"
@@ -32,15 +31,6 @@
 #include "device/vr/buildflags/buildflags.h"
 #include "device/vr/public/cpp/session_mode.h"
 #include "device/vr/vr_device.h"
-
-#if defined(OS_WIN)
-#include "chrome/browser/vr/service/xr_session_request_consent_manager.h"
-#elif defined(OS_ANDROID)
-#include "chrome/browser/vr/service/gvr_consent_helper.h"
-#if BUILDFLAG(ENABLE_ARCORE)
-#include "chrome/browser/vr/service/arcore_consent_prompt_interface.h"
-#endif
-#endif
 
 namespace {
 
@@ -459,44 +449,13 @@ void VRServiceImpl::ShowConsentPrompt(
     return;
   }
 
-  // TODO(crbug.com/968233): Unify the below consent flow.
-#if defined(OS_ANDROID)
-  if (options->mode == device::mojom::XRSessionMode::kImmersiveAr) {
-#if BUILDFLAG(ENABLE_ARCORE)
-    ArCoreConsentPromptInterface::GetInstance()->ShowConsentPrompt(
-        render_frame_host_->GetProcess()->GetID(),
-        render_frame_host_->GetRoutingID(),
-        base::BindOnce(&VRServiceImpl::OnConsentResult,
-                       weak_ptr_factory_.GetWeakPtr(), std::move(options),
-                       std::move(callback), runtime->GetId(),
-                       std::move(requested_features), consent_level));
-    return;
-#else
-    std::move(callback).Run(nullptr);
-    return;
-#endif
-  } else {
-    // GVR.
-    GvrConsentHelper::GetInstance()->PromptUserAndGetConsent(
-        render_frame_host_->GetProcess()->GetID(),
-        render_frame_host_->GetRoutingID(), consent_level,
-        base::BindOnce(&VRServiceImpl::OnConsentResult,
-                       weak_ptr_factory_.GetWeakPtr(), std::move(options),
-                       std::move(callback), runtime->GetId(),
-                       std::move(requested_features)));
-    return;
-  }
-#elif defined(OS_WIN)
-  XRSessionRequestConsentManager::Instance()->ShowDialogAndGetConsent(
-      GetWebContents(), consent_level,
+  runtime->ShowConsentPrompt(
+      render_frame_host_->GetProcess()->GetID(),
+      render_frame_host_->GetRoutingID(), consent_level,
       base::BindOnce(&VRServiceImpl::OnConsentResult,
                      weak_ptr_factory_.GetWeakPtr(), std::move(options),
                      std::move(callback), runtime->GetId(),
                      std::move(requested_features)));
-  return;
-#endif
-
-  NOTREACHED();
 }
 
 // TODO(alcooper): Once the ConsentFlow can be removed expected_runtime_id and

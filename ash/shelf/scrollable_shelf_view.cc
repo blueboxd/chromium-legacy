@@ -23,8 +23,10 @@
 #include "ui/compositor/paint_recorder.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/geometry/insets.h"
+#include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/geometry/vector2d_conversions.h"
 #include "ui/gfx/skia_paint_util.h"
+#include "ui/gfx/transform_util.h"
 #include "ui/strings/grit/ui_strings.h"
 #include "ui/views/focus/focus_search.h"
 #include "ui/views/view_targeter_delegate.h"
@@ -132,10 +134,12 @@ class ScrollableShelfView::DragIconDropAnimationDelegate
     : public ui::ImplicitAnimationObserver {
  public:
   DragIconDropAnimationDelegate(views::View* original_view,
-                                const gfx::Rect& target_bounds,
+                                const gfx::RectF& src_bounds_in_screen,
+                                const gfx::RectF& dst_bounds_in_screen,
                                 std::unique_ptr<DragImageView> proxy_view)
       : original_view_(original_view),
-        target_bounds_(target_bounds),
+        src_bounds_in_screen_(src_bounds_in_screen),
+        dst_bounds_in_screen_(dst_bounds_in_screen),
         proxy_view_(std::move(proxy_view)) {}
   ~DragIconDropAnimationDelegate() override = default;
 
@@ -151,7 +155,8 @@ class ScrollableShelfView::DragIconDropAnimationDelegate
         ui::LayerAnimator::IMMEDIATELY_SET_NEW_TARGET);
     animation_settings.AddObserver(this);
 
-    proxy_view_->layer()->SetBounds(target_bounds_);
+    proxy_view_->layer()->SetTransform(gfx::TransformBetweenRects(
+        src_bounds_in_screen_, dst_bounds_in_screen_));
   }
 
   // ui::ImplicitAnimationObserver:
@@ -166,13 +171,14 @@ class ScrollableShelfView::DragIconDropAnimationDelegate
 
  private:
   // Original app icon being dragged in ShelfView.
-  views::View* original_view_ = nullptr;
+  views::View* const original_view_ = nullptr;
 
-  // The target bounds after icon is dropped in |proxy_view_| parent's
-  // coordinates.
-  gfx::Rect target_bounds_;
-
-  // Placeholder icon representing |original_icon_| that moves with the pointer
+  // Bounds of the DragImageView, aka the DragIconProxy created by the user of
+  // ApplicationDragAndDropHost.
+  gfx::RectF const src_bounds_in_screen_;
+  // Bounds of the ShelfAppButton which DragImageView is imitating.
+  gfx::RectF const dst_bounds_in_screen_;
+  // Placeholder icon representing |original_view_| that moves with the pointer
   // while being dragged.
   std::unique_ptr<DragImageView> proxy_view_;
 };
@@ -652,6 +658,33 @@ views::View* ScrollableShelfView::GetShelfContainerViewForTest() {
   return shelf_container_view_;
 }
 
+void ScrollableShelfView::SetRoundedCornersForShelf(
+    bool show,
+    views::View* ink_drop_host) {
+  shelf_container_view_->layer()->SetRoundedCornerRadius(
+      show && InkDropNeedsClipping(ink_drop_host)
+          ? CalculateShelfContainerRoundedCorners()
+          : gfx::RoundedCornersF());
+  shelf_container_view_->layer()->SetIsFastRoundedCorner(true);
+}
+
+bool ScrollableShelfView::InkDropNeedsClipping(views::View* ink_drop_host) {
+  // The ink drop needs to be clipped only if the host is the app at one of the
+  // corners of the shelf. This happens if it is either the first or the last
+  // tappable app and no arrow is showing on its side.
+  if (shelf_view_->view_model()->view_at(first_tappable_app_index_) ==
+      ink_drop_host) {
+    return !(layout_strategy_ == kShowButtons ||
+             layout_strategy_ == kShowLeftArrowButton);
+  }
+  if (shelf_view_->view_model()->view_at(last_tappable_app_index_) ==
+      ink_drop_host) {
+    return !(layout_strategy_ == kShowButtons ||
+             layout_strategy_ == kShowRightArrowButton);
+  }
+  return false;
+}
+
 bool ScrollableShelfView::ShouldAdjustForTest() const {
   return CalculateAdjustmentOffset(CalculateMainAxisScrollDistance(),
                                    layout_strategy_, GetSpaceForIcons());
@@ -859,9 +892,6 @@ void ScrollableShelfView::Layout() {
 
   // Layout |shelf_container_view_|.
   shelf_container_view_->SetBoundsRect(shelf_container_bounds);
-
-  shelf_container_view_->layer()->SetRoundedCornerRadius(
-      CalculateShelfContainerRoundedCorners());
 }
 
 void ScrollableShelfView::ChildPreferredSizeChanged(views::View* child) {
@@ -1181,7 +1211,7 @@ void ScrollableShelfView::DestroyDragIconProxy() {
   if (page_flip_timer_.IsRunning())
     page_flip_timer_.AbandonAndStop();
 
-  views::View* drag_view = shelf_view_->drag_view();
+  ShelfAppButton* drag_view = shelf_view_->drag_view();
 
   const bool should_start_animation =
       drag_view && !shelf_view_->dragged_off_shelf() && drag_icon_.get();
@@ -1194,13 +1224,13 @@ void ScrollableShelfView::DestroyDragIconProxy() {
   views::ViewModel* shelf_view_model = shelf_view_->view_model();
   const gfx::Rect target_bounds = shelf_view_model->ideal_bounds(
       shelf_view_model->GetIndexOfView(drag_view));
-  const gfx::Rect mirrored_target_bounds =
+  const gfx::Rect mirrored_target_bounds_in_shelf_view =
       shelf_view_->GetMirroredRect(target_bounds);
 
   // No animation is created if the target slot for the drag icon is not on the
   // current page. This edge case may be triggered by trying to move the icon of
   // a running app to the area exclusively for pinned apps.
-  gfx::RectF target_bounds_in_local(mirrored_target_bounds);
+  gfx::RectF target_bounds_in_local(mirrored_target_bounds_in_shelf_view);
   ConvertRectToTarget(shelf_view_, this, &target_bounds_in_local);
   if (!visible_space_.Contains(gfx::ToEnclosedRect(target_bounds_in_local))) {
     drag_icon_.reset();
@@ -1208,16 +1238,38 @@ void ScrollableShelfView::DestroyDragIconProxy() {
     return;
   }
 
-  // Converts the ideal bounds to |drag_icon_|'s coordinates. Notes that
-  // |drag_icon_| and |shelf_view_| are in different widgets.
-  gfx::Point origin_point = mirrored_target_bounds.origin();
-  ConvertPointToScreen(shelf_view_, &origin_point);
-  ConvertPointFromScreen(drag_icon_->parent(), &origin_point);
+  const bool drag_originated_from_app_list =
+      chromeos::switches::ShouldShowScrollableShelf() &&
+      shelf_view_->IsShelfViewHandlingDragAndDrop();
+
+  // The drag proxy is the DragImageView created for the DragAndDropHost which
+  // could be either the ShelfView or ScrollableShelfView depending on where the
+  // drag originated from.
+  std::unique_ptr<DragImageView> drag_proxy =
+      drag_originated_from_app_list
+          ? std::unique_ptr<DragImageView>(
+                shelf_view_->RetrieveDragIconProxyAndClearDragProxyState())
+          : std::move(drag_icon_);
+  gfx::RectF start_in_screen(drag_proxy->GetBoundsInScreen());
+
+  gfx::RectF end_in_screen;
+  if (drag_originated_from_app_list) {
+    // If the drag originated from the AppList, |drag_view| bounds are no longer
+    // correct, so calculate the ideal bounds of the dragged icon.
+    end_in_screen = gfx::RectF(
+        GetTargetScreenBoundsOfItemIcon(shelf_view_->drag_and_drop_shelf_id()));
+  } else {
+    end_in_screen = gfx::RectF(drag_view->GetIconBoundsInScreen());
+  }
+
+  if (start_in_screen.IsEmpty() || end_in_screen.IsEmpty()) {
+    drag_proxy.reset();
+    return;
+  }
 
   drag_icon_drop_animation_delegate_ =
       std::make_unique<DragIconDropAnimationDelegate>(
-          drag_view, gfx::Rect(origin_point, target_bounds.size()),
-          std::move(drag_icon_));
+          drag_view, start_in_screen, end_in_screen, std::move(drag_proxy));
   drag_icon_drop_animation_delegate_->StartAnimation();
 }
 
@@ -1910,8 +1962,6 @@ void ScrollableShelfView::UpdateAvailableSpace() {
   padding_insets_ = CalculateEdgePadding(/*use_target_bounds=*/false);
   available_space_ = GetLocalBounds();
   available_space_.Inset(padding_insets_);
-  if (ShouldAdaptToRTL())
-    available_space_ = GetMirroredRect(available_space_);
 
   // The hotseat uses |available_space_| to determine where to show its
   // background, so notify it when it is recalculated.
@@ -1923,8 +1973,10 @@ void ScrollableShelfView::UpdateAvailableSpace() {
   // Paddings are within the shelf view. It makes sure that |shelf_view_|'s
   // bounds are not changed by adding/removing the shelf icon under the same
   // layout strategy.
+  const int horizontal_inset =
+      ShouldAdaptToRTL() ? padding_insets_.right() : padding_insets_.left();
   shelf_view_->set_app_icons_layout_offset(GetShelf()->IsHorizontalAlignment()
-                                               ? padding_insets_.left()
+                                               ? horizontal_inset
                                                : padding_insets_.top());
 }
 
@@ -1992,7 +2044,7 @@ ScrollableShelfView::CalculateShelfContainerRoundedCorners() const {
   const bool is_horizontal_alignment = GetShelf()->IsHorizontalAlignment();
   const float radius = (is_horizontal_alignment ? height() : width()) / 2.f;
 
-  const int upper_left = left_arrow_->GetVisible() ? 0 : radius;
+  int upper_left = left_arrow_->GetVisible() ? 0 : radius;
 
   int upper_right;
   if (is_horizontal_alignment)
@@ -2000,13 +2052,18 @@ ScrollableShelfView::CalculateShelfContainerRoundedCorners() const {
   else
     upper_right = left_arrow_->GetVisible() ? 0 : radius;
 
-  const int lower_right = right_arrow_->GetVisible() ? 0 : radius;
+  int lower_right = right_arrow_->GetVisible() ? 0 : radius;
 
   int lower_left;
   if (is_horizontal_alignment)
     lower_left = left_arrow_->GetVisible() ? 0 : radius;
   else
     lower_left = right_arrow_->GetVisible() ? 0 : radius;
+
+  if (ShouldAdaptToRTL()) {
+    std::swap(upper_left, upper_right);
+    std::swap(lower_left, lower_right);
+  }
 
   return gfx::RoundedCornersF(upper_left, upper_right, lower_right, lower_left);
 }

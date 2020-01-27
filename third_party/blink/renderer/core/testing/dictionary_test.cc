@@ -5,11 +5,11 @@
 #include "third_party/blink/renderer/core/testing/dictionary_test.h"
 
 #include "third_party/blink/renderer/bindings/core/v8/script_iterator.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_internal_dictionary.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_internal_dictionary_derived.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_internal_dictionary_derived_derived.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_object_builder.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
-#include "third_party/blink/renderer/core/testing/internal_dictionary.h"
-#include "third_party/blink/renderer/core/testing/internal_dictionary_derived.h"
-#include "third_party/blink/renderer/core/testing/internal_dictionary_derived_derived.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 

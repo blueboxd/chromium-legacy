@@ -336,8 +336,7 @@ BOOL ViewHierarchyContainsWKWebView(UIView* view) {
 
 - (SnapshotCache*)snapshotCache {
   return SnapshotCacheFactory::GetForBrowserState(
-      ios::ChromeBrowserState::FromBrowserState(
-          self.webState->GetBrowserState()));
+      ChromeBrowserState::FromBrowserState(self.webState->GetBrowserState()));
 }
 
 #pragma mark - CRWWebStateObserver

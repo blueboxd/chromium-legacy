@@ -112,7 +112,7 @@ class IOThreadCacheCounter {
 
 }  // namespace
 
-CacheCounter::CacheCounter(ios::ChromeBrowserState* browser_state)
+CacheCounter::CacheCounter(ChromeBrowserState* browser_state)
     : browser_state_(browser_state), weak_ptr_factory_(this) {}
 
 CacheCounter::~CacheCounter() = default;

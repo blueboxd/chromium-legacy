@@ -99,9 +99,4 @@ bool StaticBitmapImage::CopyToByteArray(
   return true;
 }
 
-const gpu::SyncToken& StaticBitmapImage::GetSyncToken() const {
-  static const gpu::SyncToken sync_token;
-  return sync_token;
-}
-
 }  // namespace blink

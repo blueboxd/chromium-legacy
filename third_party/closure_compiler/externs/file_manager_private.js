@@ -242,6 +242,14 @@ chrome.fileManagerPrivate.SourceRestriction = {
 };
 
 /** @enum {string} */
+chrome.fileManagerPrivate.RecentFileType = {
+  ALL: 'all',
+  AUDIO: 'audio',
+  IMAGE: 'image',
+  VIDEO: 'video',
+};
+
+/** @enum {string} */
 chrome.fileManagerPrivate.InstallLinuxPackageResponse = {
   STARTED: 'started',
   FAILED: 'failed',
@@ -927,9 +935,10 @@ chrome.fileManagerPrivate.getDirectorySize = function(entry, callback) {};
 /**
  * Gets recently modified files across file systems.
  * @param {string} restriction
+ * @param {string} fileType
  * @param {function((!Array<!FileEntry>))} callback
  */
-chrome.fileManagerPrivate.getRecentFiles = function(restriction, callback) {};
+chrome.fileManagerPrivate.getRecentFiles = function(restriction, fileType, callback) {};
 
 /**
  * Starts and mounts crostini container.

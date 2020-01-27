@@ -395,17 +395,9 @@ const char kUmaSelectDefaultSearchEngine[] =
     else
       _secondList.push_back(url);
   }
-  // Sort |fixedCutomeSearchEngines_| by TemplateURL's prepopulate_id. If
-  // prepopulated_id == 0, it's a custom search engine and should be put in the
-  // end of the list.
-  std::sort(_firstList.begin(), _firstList.end(),
-            [](const TemplateURL* lhs, const TemplateURL* rhs) {
-              if (lhs->prepopulate_id() == 0)
-                return false;
-              if (rhs->prepopulate_id() == 0)
-                return true;
-              return lhs->prepopulate_id() < rhs->prepopulate_id();
-            });
+
+  // Do not sort prepopulated search engines, they are already sorted by
+  // locale use.
 
   // Partially sort |_secondList| by TemplateURL's last_visited time.
   auto begin = _secondList.begin();

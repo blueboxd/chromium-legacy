@@ -178,8 +178,7 @@ NSSet* GaiaIdSetWithIdentities(NSArray* identities) {
 
 #pragma mark - PromoViewController
 
-+ (BOOL)shouldBePresentedForBrowserState:
-    (ios::ChromeBrowserState*)browserState {
++ (BOOL)shouldBePresentedForBrowserState:(ChromeBrowserState*)browserState {
   if (signin::ForceStartupSigninPromo())
     return YES;
 
@@ -231,7 +230,6 @@ NSSet* GaiaIdSetWithIdentities(NSArray* identities) {
   return [lastKnownGaiaIdSet isSubsetOfSet:currentGaiaIdSet] &&
          ![lastKnownGaiaIdSet isEqualToSet:currentGaiaIdSet];
 }
-
 
 #pragma mark - ChromeSigninViewControllerDelegate
 

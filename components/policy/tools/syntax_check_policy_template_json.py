@@ -6,8 +6,8 @@
 Checks a policy_templates.json file for conformity to its syntax specification.
 '''
 
+import argparse
 import json
-import optparse
 import os
 import re
 import sys
@@ -1469,32 +1469,25 @@ class PolicyTemplateChecker(object):
           filename=None,
           original_file_contents=None,
           current_version=None):
-    parser = optparse.OptionParser(
+    parser = argparse.ArgumentParser(
         usage='usage: %prog [options] filename',
         description='Syntax check a policy_templates.json file.')
-    parser.add_option(
+    parser.add_argument(
         '--device_policy_proto_path',
-        help='[REQUIRED] File path of the device policy proto file.',
-        type='string')
-    parser.add_option(
+        help='[REQUIRED] File path of the device policy proto file.')
+    parser.add_argument(
         '--fix', action='store_true', help='Automatically fix formatting.')
-    parser.add_option(
+    parser.add_argument(
         '--backup',
         action='store_true',
         help='Create backup of original file (before fixing).')
-    parser.add_option(
+    parser.add_argument(
         '--stats', action='store_true', help='Generate statistics.')
-    (options, args) = parser.parse_args(argv)
+    args = parser.parse_args(argv)
     if filename is None:
-      if len(args) != 2:
-        parser.print_help()
-        return 1
-      filename = args[1]
-    if options.device_policy_proto_path is None:
+      print('Error: Filename not specified.')
+      return 1
+    if args.device_policy_proto_path is None:
       print('Error: Missing --device_policy_proto_path argument.')
       return 1
-    return self.Main(filename, options, original_file_contents, current_version)
-
-
-if __name__ == '__main__':
-  sys.exit(PolicyTemplateChecker().Run(sys.argv))
+    return self.Main(filename, args, original_file_contents, current_version)

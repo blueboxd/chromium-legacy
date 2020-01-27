@@ -17,7 +17,6 @@
 #include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill_assistant/browser/actions/action.h"
 #include "components/autofill_assistant/browser/batch_element_checker.h"
-#include "components/autofill_assistant/browser/client_memory.h"
 #include "components/autofill_assistant/browser/client_status.h"
 #include "components/autofill_assistant/browser/protocol_utils.h"
 #include "components/autofill_assistant/browser/self_delete_full_card_requester.h"
@@ -90,9 +89,13 @@ ScriptExecutor::~ScriptExecutor() {
 ScriptExecutor::Result::Result() = default;
 ScriptExecutor::Result::~Result() = default;
 
-void ScriptExecutor::Run(RunScriptCallback callback) {
+void ScriptExecutor::Run(const UserData* user_data,
+                         RunScriptCallback callback) {
   DVLOG(2) << "Starting script " << script_path_;
   (*scripts_state_)[script_path_] = SCRIPT_STATUS_RUNNING;
+
+  DCHECK(user_data);
+  user_data_ = user_data;
 
   delegate_->AddListener(this);
 
@@ -107,6 +110,11 @@ void ScriptExecutor::Run(RunScriptCallback callback) {
       last_global_payload_, last_script_payload_,
       base::BindOnce(&ScriptExecutor::OnGetActions,
                      weak_ptr_factory_.GetWeakPtr()));
+}
+
+const UserData* ScriptExecutor::GetUserData() const {
+  DCHECK(user_data_);
+  return user_data_;
 }
 
 void ScriptExecutor::OnNavigationStateChanged() {
@@ -250,7 +258,7 @@ void ScriptExecutor::OnTermsAndConditionsLinkClicked(
 }
 
 void ScriptExecutor::GetFullCard(GetFullCardCallback callback) {
-  DCHECK(GetClientMemory()->selected_card());
+  DCHECK(GetUserData()->selected_card_.get());
 
   // User might be asked to provide the cvc.
   delegate_->EnterState(AutofillAssistantState::MODAL_DIALOG);
@@ -259,7 +267,7 @@ void ScriptExecutor::GetFullCard(GetFullCardCallback callback) {
   // so as to unit test it.
   (new SelfDeleteFullCardRequester())
       ->GetFullCard(
-          GetWebContents(), GetClientMemory()->selected_card(),
+          GetWebContents(), GetUserData()->selected_card_.get(),
           base::BindOnce(&ScriptExecutor::OnGetFullCard,
                          weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
@@ -503,10 +511,6 @@ void ScriptExecutor::Close() {
 
 void ScriptExecutor::Restart() {
   at_end_ = RESTART;
-}
-
-ClientMemory* ScriptExecutor::GetClientMemory() {
-  return delegate_->GetClientMemory();
 }
 
 autofill::PersonalDataManager* ScriptExecutor::GetPersonalDataManager() {
@@ -941,6 +945,7 @@ void ScriptExecutor::WaitForDomOperation::RunInterrupt(
   delegate_->EnterState(AutofillAssistantState::RUNNING);
   delegate_->SetUserActions(nullptr);
   interrupt_executor_->Run(
+      main_script_->user_data_,
       base::BindOnce(&ScriptExecutor::WaitForDomOperation::OnInterruptDone,
                      base::Unretained(this)));
   // base::Unretained(this) is safe because interrupt_executor_ belongs to this

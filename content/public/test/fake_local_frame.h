@@ -9,6 +9,7 @@
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/mojom/frame/frame.mojom.h"
+#include "third_party/blink/public/mojom/input/focus_type.mojom-forward.h"
 
 namespace gfx {
 class Point;
@@ -50,6 +51,7 @@ class FakeLocalFrame : public blink::mojom::LocalFrame {
   void BeforeUnload(bool is_reload, BeforeUnloadCallback callback) override;
   void MediaPlayerActionAt(const gfx::Point& location,
                            blink::mojom::MediaPlayerActionPtr action) override;
+  void AdvanceFocusInForm(blink::mojom::FocusType focus_type) override;
 
  private:
   void BindFrameHostReceiver(mojo::ScopedInterfaceEndpointHandle handle);

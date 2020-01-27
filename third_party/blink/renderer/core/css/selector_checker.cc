@@ -30,6 +30,7 @@
 #include "third_party/blink/renderer/core/css/selector_checker.h"
 
 #include "base/auto_reset.h"
+#include "third_party/blink/public/mojom/input/focus_type.mojom-blink.h"
 #include "third_party/blink/renderer/core/css/css_selector_list.h"
 #include "third_party/blink/renderer/core/css/part_names.h"
 #include "third_party/blink/renderer/core/css/style_engine.h"
@@ -1271,7 +1272,7 @@ bool SelectorChecker::CheckPseudoClass(const SelectorCheckingContext& context,
         return false;
       if (context.scope == &element.GetDocument())
         return element == element.GetDocument().documentElement();
-      if (auto* shadow_root = DynamicTo<ShadowRoot>(context.scope.Get()))
+      if (auto* shadow_root = DynamicTo<ShadowRoot>(context.scope))
         return element == shadow_root->host();
       return context.scope == &element;
     case CSSSelector::kPseudoUnresolved:
@@ -1663,7 +1664,7 @@ bool SelectorChecker::MatchesFocusVisiblePseudoClass(const Element& element) {
   bool last_focus_from_mouse =
       document.GetFrame() &&
       document.GetFrame()->Selection().FrameIsFocusedAndActive() &&
-      document.LastFocusType() == kWebFocusTypeMouse;
+      document.LastFocusType() == mojom::blink::FocusType::kMouse;
   bool had_keyboard_event = document.HadKeyboardEvent();
 
   return (!last_focus_from_mouse || had_keyboard_event ||

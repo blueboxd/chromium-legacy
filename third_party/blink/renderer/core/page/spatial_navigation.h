@@ -21,7 +21,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_PAGE_SPATIAL_NAVIGATION_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_PAGE_SPATIAL_NAVIGATION_H_
 
-#include "third_party/blink/public/platform/web_focus_type.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/node.h"
 #include "third_party/blink/renderer/core/layout/geometry/physical_rect.h"
@@ -58,8 +57,8 @@ struct FocusCandidate {
   // areas of imagemaps, where visibleNode would represent the image element and
   // focusableNode would represent the area element.  In all other cases,
   // visibleNode and focusableNode are one and the same.
-  Member<Node> visible_node;
-  Member<Node> focusable_node;
+  Node* visible_node;
+  Node* focusable_node;
   PhysicalRect rect_in_root_frame;
   bool is_offscreen;
 };

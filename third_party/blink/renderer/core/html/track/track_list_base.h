@@ -8,7 +8,6 @@
 #include "third_party/blink/renderer/core/dom/events/event_target.h"
 #include "third_party/blink/renderer/core/html/media/html_media_element.h"
 #include "third_party/blink/renderer/core/html/track/track_event.h"
-#include "third_party/blink/renderer/core/html/track/track_event_init.h"
 
 namespace blink {
 

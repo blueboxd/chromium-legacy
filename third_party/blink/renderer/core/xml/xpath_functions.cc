@@ -431,7 +431,7 @@ Value FunLocalName::Evaluate(EvaluationContext& context) const {
     return node ? ExpandedNameLocalPart(node) : "";
   }
 
-  return ExpandedNameLocalPart(context.node.Get());
+  return ExpandedNameLocalPart(context.node);
 }
 
 Value FunNamespaceURI::Evaluate(EvaluationContext& context) const {
@@ -444,7 +444,7 @@ Value FunNamespaceURI::Evaluate(EvaluationContext& context) const {
     return node ? ExpandedNamespaceURI(node) : "";
   }
 
-  return ExpandedNamespaceURI(context.node.Get());
+  return ExpandedNamespaceURI(context.node);
 }
 
 Value FunName::Evaluate(EvaluationContext& context) const {
@@ -457,7 +457,7 @@ Value FunName::Evaluate(EvaluationContext& context) const {
     return node ? ExpandedName(node) : "";
   }
 
-  return ExpandedName(context.node.Get());
+  return ExpandedName(context.node);
 }
 
 Value FunCount::Evaluate(EvaluationContext& context) const {
@@ -468,7 +468,7 @@ Value FunCount::Evaluate(EvaluationContext& context) const {
 
 Value FunString::Evaluate(EvaluationContext& context) const {
   if (!ArgCount())
-    return Value(context.node.Get()).ToString();
+    return Value(context.node).ToString();
   return Arg(0)->Evaluate(context).ToString();
 }
 
@@ -586,15 +586,14 @@ Value FunSubstring::Evaluate(EvaluationContext& context) const {
 
 Value FunStringLength::Evaluate(EvaluationContext& context) const {
   if (!ArgCount())
-    return Value(context.node.Get()).ToString().length();
+    return Value(context.node).ToString().length();
   return Arg(0)->Evaluate(context).ToString().length();
 }
 
 Value FunNormalizeSpace::Evaluate(EvaluationContext& context) const {
   // https://www.w3.org/TR/1999/REC-xpath-19991116/#function-normalize-space
-  String s =
-      (ArgCount() == 0 ? Value(context.node.Get()) : Arg(0)->Evaluate(context))
-          .ToString();
+  String s = (ArgCount() == 0 ? Value(context.node) : Arg(0)->Evaluate(context))
+                 .ToString();
   return s.SimplifyWhiteSpace(IsXMLSpace);
 }
 
@@ -635,7 +634,7 @@ Value FunLang::Evaluate(EvaluationContext& context) const {
   String lang = Arg(0)->Evaluate(context).ToString();
 
   const Attribute* language_attribute = nullptr;
-  Node* node = context.node.Get();
+  Node* node = context.node;
   while (node) {
     if (auto* element = DynamicTo<Element>(node))
       language_attribute = element->Attributes().Find(xml_names::kLangAttr);
@@ -669,7 +668,7 @@ Value FunFalse::Evaluate(EvaluationContext&) const {
 
 Value FunNumber::Evaluate(EvaluationContext& context) const {
   if (!ArgCount())
-    return Value(context.node.Get()).ToNumber();
+    return Value(context.node).ToNumber();
   return Arg(0)->Evaluate(context).ToNumber();
 }
 

@@ -88,10 +88,10 @@
 #include "third_party/blink/public/mojom/devtools/console_message.mojom.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom.h"
 #include "third_party/blink/public/mojom/frame/user_activation_update_types.mojom.h"
+#include "third_party/blink/public/mojom/input/focus_type.mojom-forward.h"
 #include "third_party/blink/public/mojom/renderer_preferences.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom.h"
 #include "third_party/blink/public/mojom/use_counter/css_property_id.mojom.h"
-#include "third_party/blink/public/platform/web_focus_type.h"
 #include "third_party/blink/public/platform/web_media_player.h"
 #include "third_party/blink/public/web/web_ax_object.h"
 #include "third_party/blink/public/web/web_document_loader.h"
@@ -131,7 +131,6 @@ struct FramePolicy;
 struct WebContextMenuData;
 struct WebCursorInfo;
 struct WebImeTextSpan;
-struct WebScrollIntoViewParams;
 }  // namespace blink
 
 namespace gfx {
@@ -740,6 +739,8 @@ class CONTENT_EXPORT RenderFrameImpl
   void ShowContextMenu(const blink::WebContextMenuData& data) override;
   void SaveImageFromDataURL(const blink::WebString& data_url) override;
   void FrameRectsChanged(const blink::WebRect& frame_rect) override;
+  void OnMainFrameDocumentIntersectionChanged(
+      const blink::WebRect& intersect_rect) override;
   void WillSendRequest(blink::WebURLRequest& request) override;
   void DidLoadResourceFromMemoryCache(
       const blink::WebURLRequest& request,
@@ -781,12 +782,6 @@ class CONTENT_EXPORT RenderFrameImpl
       blink::WebSetSinkIdCompleteCallback callback) override;
   std::unique_ptr<blink::WebURLLoaderFactory> CreateURLLoaderFactory() override;
   void DraggableRegionsChanged() override;
-  // |rect_to_scroll| is with respect to this frame's origin. |rect_to_scroll|
-  // will later be converted to this frame's parent frame origin before being
-  // continuing recursive scrolling in the parent frame's process.
-  void ScrollRectToVisibleInParentFrame(
-      const blink::WebRect& rect_to_scroll,
-      const blink::WebScrollIntoViewParams& params) override;
   blink::BrowserInterfaceBrokerProxy* GetBrowserInterfaceBroker() override;
 
   // WebFrameSerializerClient implementation:
@@ -1064,8 +1059,7 @@ class CONTENT_EXPORT RenderFrameImpl
   void OnDidUpdateFramePolicy(const blink::FramePolicy& frame_policy);
   void OnSetFrameOwnerProperties(
       const FrameOwnerProperties& frame_owner_properties);
-  void OnAdvanceFocus(blink::WebFocusType type, int32_t source_routing_id);
-  void OnAdvanceFocusInForm(blink::WebFocusType focus_type);
+  void OnAdvanceFocus(blink::mojom::FocusType type, int32_t source_routing_id);
   void OnTextTrackSettingsChanged(
       const FrameMsg_TextTrackSettings_Params& params);
   void OnGetSavableResourceLinks();
@@ -1599,6 +1593,10 @@ class CONTENT_EXPORT RenderFrameImpl
   // Used for tracking the frame's size and replicating it to the browser
   // process when it changes.
   base::Optional<gfx::Size> frame_size_;
+
+  // Used for tracking a frame's main frame document intersection and
+  // and replicating it to the browser when it changes.
+  base::Optional<blink::WebRect> mainframe_document_intersection_rect_;
 
 #if defined(OS_MACOSX)
   // Return the mojo interface for making ClipboardHost calls.

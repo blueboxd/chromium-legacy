@@ -76,7 +76,7 @@ class CORE_EXPORT EditorCommand {
 
   const EditorInternalCommand* command_;
   const EditorCommandSource source_;
-  const Member<LocalFrame> frame_;
+  LocalFrame* const frame_;
 };
 
 }  // namespace blink

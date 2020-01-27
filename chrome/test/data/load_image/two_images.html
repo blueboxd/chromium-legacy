@@ -1,0 +1,18 @@
+<html>
+<head></head>
+<img src="image.png" />
+<img src="image.png?foo" />
+<script>
+function checkBothImagesLoaded() {
+	sendValueToTest(document.images[0].complete && document.images[1].complete);
+}
+
+function imageSrc() {
+	sendValueToTest(document.images[0].src);
+}
+
+function sendValueToTest(value) {
+  window.domAutomationController.send(value);
+}
+</script>
+</html>

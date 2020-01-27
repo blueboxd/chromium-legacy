@@ -13,6 +13,10 @@ config("system_zlib") {
   defines = [ "USE_SYSTEM_ZLIB=1" ]
 }
 
+config("zlib_config") {
+  configs = [ ":system_zlib" ]
+}
+
 source_set("zlib") {
   deps = [ ":zlib_shim" ]
   libs = [ "z" ]

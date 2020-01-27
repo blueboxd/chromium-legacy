@@ -192,6 +192,7 @@
 <translation id="3474649192738347024">Forms filled.</translation>
 <translation id="3478058380795961209">Month of Expiry</translation>
 <translation id="3482959374254649722">Syncing your tabs...</translation>
+<translation id="3484946776651937681">Open in downloads</translation>
 <translation id="3493531032208478708"><ph name="BEGIN_LINK" />Find out more<ph name="END_LINK" /> about suggested content</translation>
 <translation id="3494788280727468875">Confirm Clear Browsing Data</translation>
 <translation id="35083190962747987">Open ${url}</translation>
@@ -537,6 +538,7 @@ Your data was encrypted with your sync passphrase on <ph name="TIME" />. Enter i
 <translation id="8319076807703933069">New Search</translation>
 <translation id="8323906514956095947">Touch and hold for more tab options</translation>
 <translation id="8328777765163860529">Close All</translation>
+<translation id="8386068868580335421">Reset</translation>
 <translation id="8407669440184693619">No passwords found for this site</translation>
 <translation id="842017693807136194">Signed in with</translation>
 <translation id="8428045167754449968">City / Town</translation>

@@ -11,7 +11,6 @@
 #include "base/test/gmock_callback_support.h"
 #include "base/test/mock_callback.h"
 #include "base/test/task_environment.h"
-#include "components/autofill_assistant/browser/client_memory.h"
 #include "components/autofill_assistant/browser/fake_script_executor_delegate.h"
 #include "components/autofill_assistant/browser/mock_service.h"
 #include "components/autofill_assistant/browser/service.h"
@@ -161,6 +160,8 @@ class ScriptExecutorTest : public testing::Test,
   std::unique_ptr<ScriptExecutor> executor_;
   StrictMock<base::MockCallback<ScriptExecutor::RunScriptCallback>>
       executor_callback_;
+
+  UserData user_data_;
 };
 
 TEST_F(ScriptExecutorTest, GetActionsFails) {
@@ -170,7 +171,7 @@ TEST_F(ScriptExecutorTest, GetActionsFails) {
               Run(AllOf(Field(&ScriptExecutor::Result::success, false),
                         Field(&ScriptExecutor::Result::at_end,
                               ScriptExecutor::CONTINUE))));
-  executor_->Run(executor_callback_.Get());
+  executor_->Run(&user_data_, executor_callback_.Get());
 }
 
 TEST_F(ScriptExecutorTest, ForwardParameters) {
@@ -198,7 +199,7 @@ TEST_F(ScriptExecutorTest, ForwardParameters) {
 
   EXPECT_CALL(executor_callback_,
               Run(Field(&ScriptExecutor::Result::success, true)));
-  executor_->Run(executor_callback_.Get());
+  executor_->Run(&user_data_, executor_callback_.Get());
 }
 
 TEST_F(ScriptExecutorTest, RunOneActionReportAndReturn) {
@@ -219,7 +220,7 @@ TEST_F(ScriptExecutorTest, RunOneActionReportAndReturn) {
               Run(AllOf(Field(&ScriptExecutor::Result::success, true),
                         Field(&ScriptExecutor::Result::at_end,
                               ScriptExecutor::CONTINUE))));
-  executor_->Run(executor_callback_.Get());
+  executor_->Run(&user_data_, executor_callback_.Get());
 
   ASSERT_EQ(1u, processed_actions_capture.size());
   EXPECT_EQ(OTHER_ACTION_STATUS, processed_actions_capture[0].status());
@@ -246,7 +247,7 @@ TEST_F(ScriptExecutorTest, RunMultipleActions) {
                       RunOnceCallback<4>(true, "")));
   EXPECT_CALL(executor_callback_,
               Run(Field(&ScriptExecutor::Result::success, true)));
-  executor_->Run(executor_callback_.Get());
+  executor_->Run(&user_data_, executor_callback_.Get());
 
   EXPECT_EQ(2u, processed_actions1_capture.size());
   EXPECT_EQ(1u, processed_actions2_capture.size());
@@ -265,7 +266,7 @@ TEST_F(ScriptExecutorTest, UnsupportedAction) {
                       RunOnceCallback<4>(true, "")));
   EXPECT_CALL(executor_callback_,
               Run(Field(&ScriptExecutor::Result::success, true)));
-  executor_->Run(executor_callback_.Get());
+  executor_->Run(&user_data_, executor_callback_.Get());
 
   ASSERT_EQ(1u, processed_actions_capture.size());
   EXPECT_EQ(UNSUPPORTED_ACTION, processed_actions_capture[0].status());
@@ -284,7 +285,7 @@ TEST_F(ScriptExecutorTest, StopAfterEnd) {
               Run(AllOf(Field(&ScriptExecutor::Result::success, true),
                         Field(&ScriptExecutor::Result::at_end,
                               ScriptExecutor::SHUTDOWN))));
-  executor_->Run(executor_callback_.Get());
+  executor_->Run(&user_data_, executor_callback_.Get());
 }
 
 TEST_F(ScriptExecutorTest, ResetAfterEnd) {
@@ -300,7 +301,7 @@ TEST_F(ScriptExecutorTest, ResetAfterEnd) {
               Run(AllOf(Field(&ScriptExecutor::Result::success, true),
                         Field(&ScriptExecutor::Result::at_end,
                               ScriptExecutor::RESTART))));
-  executor_->Run(executor_callback_.Get());
+  executor_->Run(&user_data_, executor_callback_.Get());
 }
 
 TEST_F(ScriptExecutorTest, InterruptActionListOnError) {
@@ -330,7 +331,7 @@ TEST_F(ScriptExecutorTest, InterruptActionListOnError) {
                       RunOnceCallback<4>(true, "")));
   EXPECT_CALL(executor_callback_,
               Run(Field(&ScriptExecutor::Result::success, true)));
-  executor_->Run(executor_callback_.Get());
+  executor_->Run(&user_data_, executor_callback_.Get());
 
   ASSERT_EQ(2u, processed_actions1_capture.size());
   EXPECT_EQ(ACTION_APPLIED, processed_actions1_capture[0].status());
@@ -359,7 +360,7 @@ TEST_F(ScriptExecutorTest, RunDelayedAction) {
 
   // executor_callback_.Run() not expected to be run just yet, as the action is
   // delayed.
-  executor_->Run(executor_callback_.Get());
+  executor_->Run(&user_data_, executor_callback_.Get());
   EXPECT_TRUE(task_environment_.NextTaskIsDelayed());
 
   // Moving forward in time triggers action execution.
@@ -385,7 +386,7 @@ TEST_F(ScriptExecutorTest, ClearDetailsWhenFinished) {
               Run(Field(&ScriptExecutor::Result::success, true)));
 
   delegate_.SetDetails(std::make_unique<Details>());  // empty, but not null
-  executor_->Run(executor_callback_.Get());
+  executor_->Run(&user_data_, executor_callback_.Get());
   EXPECT_EQ(nullptr, delegate_.GetDetails());
 }
 
@@ -405,7 +406,7 @@ TEST_F(ScriptExecutorTest, DontClearDetailsIfOtherActionsAreLeft) {
               Run(Field(&ScriptExecutor::Result::success, true)));
 
   delegate_.SetDetails(std::make_unique<Details>());  // empty, but not null
-  executor_->Run(executor_callback_.Get());
+  executor_->Run(&user_data_, executor_callback_.Get());
   EXPECT_NE(nullptr, delegate_.GetDetails());
 }
 
@@ -419,7 +420,7 @@ TEST_F(ScriptExecutorTest, ClearDetailsOnError) {
   EXPECT_CALL(executor_callback_,
               Run(Field(&ScriptExecutor::Result::success, false)));
   delegate_.SetDetails(std::make_unique<Details>());  // empty, but not null
-  executor_->Run(executor_callback_.Get());
+  executor_->Run(&user_data_, executor_callback_.Get());
   EXPECT_EQ(nullptr, delegate_.GetDetails());
 }
 
@@ -429,7 +430,7 @@ TEST_F(ScriptExecutorTest, UpdateScriptStateWhileRunning) {
   EXPECT_CALL(mock_service_, OnGetActions(_, _, _, _, _, _));
 
   EXPECT_THAT(scripts_state_, IsEmpty());
-  executor_->Run(executor_callback_.Get());
+  executor_->Run(&user_data_, executor_callback_.Get());
   EXPECT_THAT(scripts_state_,
               Contains(Pair(kScriptPath, SCRIPT_STATUS_RUNNING)));
 }
@@ -439,7 +440,7 @@ TEST_F(ScriptExecutorTest, UpdateScriptStateOnError) {
       .WillOnce(RunOnceCallback<5>(false, ""));
   EXPECT_CALL(executor_callback_,
               Run(Field(&ScriptExecutor::Result::success, false)));
-  executor_->Run(executor_callback_.Get());
+  executor_->Run(&user_data_, executor_callback_.Get());
 
   EXPECT_THAT(scripts_state_,
               Contains(Pair(kScriptPath, SCRIPT_STATUS_FAILURE)));
@@ -454,7 +455,7 @@ TEST_F(ScriptExecutorTest, UpdateScriptStateOnSuccess) {
       .WillOnce(RunOnceCallback<4>(true, ""));
   EXPECT_CALL(executor_callback_,
               Run(Field(&ScriptExecutor::Result::success, true)));
-  executor_->Run(executor_callback_.Get());
+  executor_->Run(&user_data_, executor_callback_.Get());
 
   EXPECT_THAT(scripts_state_,
               Contains(Pair(kScriptPath, SCRIPT_STATUS_SUCCESS)));
@@ -478,7 +479,7 @@ TEST_F(ScriptExecutorTest, ForwardLastPayloadOnSuccess) {
       .WillOnce(RunOnceCallback<4>(true, Serialize(next_actions_response)));
 
   EXPECT_CALL(executor_callback_, Run(_));
-  executor_->Run(executor_callback_.Get());
+  executor_->Run(&user_data_, executor_callback_.Get());
 
   EXPECT_EQ("last global payload", last_global_payload_);
   EXPECT_EQ("last payload", last_script_payload_);
@@ -499,7 +500,7 @@ TEST_F(ScriptExecutorTest, ForwardLastPayloadOnError) {
       .WillOnce(RunOnceCallback<4>(false, ""));
 
   EXPECT_CALL(executor_callback_, Run(_));
-  executor_->Run(executor_callback_.Get());
+  executor_->Run(&user_data_, executor_callback_.Get());
 
   EXPECT_EQ("actions global payload", last_global_payload_);
   EXPECT_EQ("actions payload", last_script_payload_);
@@ -522,7 +523,7 @@ TEST_F(ScriptExecutorTest, WaitForDomWaitUntil) {
   EXPECT_CALL(mock_web_controller_,
               OnElementCheck(Eq(Selector({"element"})), _))
       .WillOnce(RunOnceCallback<1>(ClientStatus()));
-  executor_->Run(executor_callback_.Get());
+  executor_->Run(&user_data_, executor_callback_.Get());
 
   EXPECT_CALL(mock_web_controller_,
               OnElementCheck(Eq(Selector({"element"})), _))
@@ -551,7 +552,7 @@ TEST_F(ScriptExecutorTest, WaitForDomWaitWhile) {
   EXPECT_CALL(mock_web_controller_,
               OnElementCheck(Eq(Selector({"element"})), _))
       .WillOnce(RunOnceCallback<1>(OkClientStatus()));
-  executor_->Run(executor_callback_.Get());
+  executor_->Run(&user_data_, executor_callback_.Get());
 
   EXPECT_CALL(mock_web_controller_,
               OnElementCheck(Eq(Selector({"element"})), _))
@@ -580,7 +581,7 @@ TEST_F(ScriptExecutorTest, RunInterrupt) {
 
   EXPECT_CALL(executor_callback_,
               Run(Field(&ScriptExecutor::Result::success, true)));
-  executor_->Run(executor_callback_.Get());
+  executor_->Run(&user_data_, executor_callback_.Get());
 
   EXPECT_THAT(scripts_state_,
               Contains(Pair(kScriptPath, SCRIPT_STATUS_SUCCESS)));
@@ -624,7 +625,7 @@ TEST_F(ScriptExecutorTest, RunMultipleInterruptInOrder) {
 
   EXPECT_CALL(executor_callback_,
               Run(Field(&ScriptExecutor::Result::success, true)));
-  executor_->Run(executor_callback_.Get());
+  executor_->Run(&user_data_, executor_callback_.Get());
 
   EXPECT_THAT(scripts_state_,
               Contains(Pair(kScriptPath, SCRIPT_STATUS_SUCCESS)));
@@ -659,7 +660,7 @@ TEST_F(ScriptExecutorTest, RunSameInterruptMultipleTimes) {
 
   EXPECT_CALL(executor_callback_,
               Run(Field(&ScriptExecutor::Result::success, true)));
-  executor_->Run(executor_callback_.Get());
+  executor_->Run(&user_data_, executor_callback_.Get());
 }
 
 TEST_F(ScriptExecutorTest, ForwardMainScriptPayloadWhenInterruptRuns) {
@@ -688,7 +689,7 @@ TEST_F(ScriptExecutorTest, ForwardMainScriptPayloadWhenInterruptRuns) {
 
   EXPECT_CALL(executor_callback_,
               Run(Field(&ScriptExecutor::Result::success, true)));
-  executor_->Run(executor_callback_.Get());
+  executor_->Run(&user_data_, executor_callback_.Get());
 
   EXPECT_EQ("last global payload from main", last_global_payload_);
   EXPECT_EQ("last payload from main", last_script_payload_);
@@ -707,7 +708,7 @@ TEST_F(ScriptExecutorTest, ForwardMainScriptPayloadWhenInterruptFails) {
       .WillOnce(RunOnceCallback<4>(false, ""));
 
   EXPECT_CALL(executor_callback_, Run(_));
-  executor_->Run(executor_callback_.Get());
+  executor_->Run(&user_data_, executor_callback_.Get());
 
   EXPECT_EQ("global payload for interrupt", last_global_payload_);
   EXPECT_EQ("main script payload", last_script_payload_);
@@ -731,7 +732,7 @@ TEST_F(ScriptExecutorTest, DoNotRunInterruptIfPreconditionsDontMatch) {
 
   EXPECT_CALL(executor_callback_,
               Run(Field(&ScriptExecutor::Result::success, true)));
-  executor_->Run(executor_callback_.Get());
+  executor_->Run(&user_data_, executor_callback_.Get());
 
   EXPECT_THAT(scripts_state_,
               Contains(Pair(kScriptPath, SCRIPT_STATUS_SUCCESS)));
@@ -756,7 +757,7 @@ TEST_F(ScriptExecutorTest, DoNotRunInterruptIfNotInterruptible) {
 
   EXPECT_CALL(executor_callback_,
               Run(Field(&ScriptExecutor::Result::success, true)));
-  executor_->Run(executor_callback_.Get());
+  executor_->Run(&user_data_, executor_callback_.Get());
 
   EXPECT_THAT(scripts_state_,
               Contains(Pair(kScriptPath, SCRIPT_STATUS_SUCCESS)));
@@ -786,7 +787,7 @@ TEST_F(ScriptExecutorTest, InterruptFailsMainScript) {
 
   EXPECT_CALL(executor_callback_,
               Run(Field(&ScriptExecutor::Result::success, false)));
-  executor_->Run(executor_callback_.Get());
+  executor_->Run(&user_data_, executor_callback_.Get());
 
   EXPECT_THAT(scripts_state_,
               Contains(Pair(kScriptPath, SCRIPT_STATUS_FAILURE)));
@@ -817,7 +818,7 @@ TEST_F(ScriptExecutorTest, InterruptReturnsShutdown) {
               Run(AllOf(Field(&ScriptExecutor::Result::success, true),
                         Field(&ScriptExecutor::Result::at_end,
                               ScriptExecutor::SHUTDOWN))));
-  executor_->Run(executor_callback_.Get());
+  executor_->Run(&user_data_, executor_callback_.Get());
 
   EXPECT_THAT(scripts_state_,
               Contains(Pair(kScriptPath, SCRIPT_STATUS_SUCCESS)));
@@ -856,7 +857,7 @@ TEST_F(ScriptExecutorTest, RunInterruptDuringPrompt) {
 
   EXPECT_CALL(executor_callback_,
               Run(Field(&ScriptExecutor::Result::success, true)));
-  executor_->Run(executor_callback_.Get());
+  executor_->Run(&user_data_, executor_callback_.Get());
 
   EXPECT_THAT(scripts_state_,
               Contains(Pair(kScriptPath, SCRIPT_STATUS_SUCCESS)));
@@ -919,7 +920,7 @@ TEST_F(ScriptExecutorTest, RunInterruptMultipleTimesDuringPrompt) {
 
   EXPECT_CALL(executor_callback_,
               Run(Field(&ScriptExecutor::Result::success, true)));
-  executor_->Run(executor_callback_.Get());
+  executor_->Run(&user_data_, executor_callback_.Get());
   for (int try_count = 0;
        try_count < 10 && scripts_state_[kScriptPath] == SCRIPT_STATUS_RUNNING;
        try_count++) {
@@ -963,7 +964,7 @@ TEST_F(ScriptExecutorTest, UpdateScriptListGetNext) {
 
   EXPECT_CALL(executor_callback_,
               Run(Field(&ScriptExecutor::Result::success, true)));
-  executor_->Run(executor_callback_.Get());
+  executor_->Run(&user_data_, executor_callback_.Get());
 
   EXPECT_TRUE(should_update_scripts_);
   EXPECT_THAT(scripts_update_, SizeIs(1));
@@ -995,7 +996,7 @@ TEST_F(ScriptExecutorTest, UpdateScriptListShouldNotifyMultipleTimes) {
 
   EXPECT_CALL(executor_callback_,
               Run(Field(&ScriptExecutor::Result::success, true)));
-  executor_->Run(executor_callback_.Get());
+  executor_->Run(&user_data_, executor_callback_.Get());
 
   EXPECT_TRUE(should_update_scripts_);
   EXPECT_THAT(scripts_update_count_, Eq(2));
@@ -1033,7 +1034,7 @@ TEST_F(ScriptExecutorTest, UpdateScriptListFromInterrupt) {
 
   EXPECT_CALL(executor_callback_,
               Run(Field(&ScriptExecutor::Result::success, true)));
-  executor_->Run(executor_callback_.Get());
+  executor_->Run(&user_data_, executor_callback_.Get());
 
   EXPECT_THAT(scripts_state_,
               Contains(Pair(kScriptPath, SCRIPT_STATUS_SUCCESS)));
@@ -1071,7 +1072,7 @@ TEST_F(ScriptExecutorTest, RestorePreInterruptStatusMessage) {
               Run(Field(&ScriptExecutor::Result::success, true)));
 
   delegate_.SetStatusMessage("pre-run status");
-  executor_->Run(executor_callback_.Get());
+  executor_->Run(&user_data_, executor_callback_.Get());
   EXPECT_EQ("pre-interrupt status", delegate_.GetStatusMessage());
 }
 
@@ -1092,7 +1093,7 @@ TEST_F(ScriptExecutorTest, KeepStatusMessageWhenNotInterrupted) {
               Run(Field(&ScriptExecutor::Result::success, true)));
 
   delegate_.SetStatusMessage("pre-run status");
-  executor_->Run(executor_callback_.Get());
+  executor_->Run(&user_data_, executor_callback_.Get());
   EXPECT_EQ("pre-interrupt status", delegate_.GetStatusMessage());
 }
 
@@ -1113,7 +1114,7 @@ TEST_F(ScriptExecutorTest, PauseWaitForDomWhileNavigating) {
   EXPECT_CALL(mock_web_controller_,
               OnElementCheck(Eq(Selector({"element"})), _))
       .WillOnce(RunOnceCallback<1>(ClientStatus()));
-  executor_->Run(executor_callback_.Get());
+  executor_->Run(&user_data_, executor_callback_.Get());
 
   // Navigation starts while WaitForDom is waiting. The action doesn't fail,
   // even though navigation takes a few seconds longer than the WaitForDom
@@ -1151,7 +1152,7 @@ TEST_F(ScriptExecutorTest, StartWaitForDomWhileNavigating) {
   // a paused state.
   delegate_.UpdateNavigationState(/* navigating= */ true, /* error= */ false);
 
-  executor_->Run(executor_callback_.Get());
+  executor_->Run(&user_data_, executor_callback_.Get());
 
   // The end of navigation un-pauses WaitForDom, which then succeeds
   // immediately.
@@ -1178,7 +1179,7 @@ TEST_F(ScriptExecutorTest, ReportErrorAsNavigationError) {
 
   delegate_.UpdateNavigationState(/* navigating= */ false, /* error= */ true);
   EXPECT_CALL(executor_callback_, Run(_));
-  executor_->Run(executor_callback_.Get());
+  executor_->Run(&user_data_, executor_callback_.Get());
 
   ASSERT_EQ(1u, processed_actions_capture.size());
 
@@ -1216,7 +1217,7 @@ TEST_F(ScriptExecutorTest, NavigateWhileRunningInterrupt) {
                       RunOnceCallback<4>(true, "")));
 
   EXPECT_CALL(executor_callback_, Run(_));
-  executor_->Run(executor_callback_.Get());
+  executor_->Run(&user_data_, executor_callback_.Get());
 
   EXPECT_EQ(ACTION_APPLIED, processed_actions1_capture[0].status());
   EXPECT_EQ(ACTION_APPLIED, processed_actions2_capture[0].status());
@@ -1236,7 +1237,7 @@ TEST_F(ScriptExecutorTest, ReportNavigationErrors) {
 
   delegate_.UpdateNavigationState(/* navigating= */ false, /* error= */ true);
   EXPECT_CALL(executor_callback_, Run(_));
-  executor_->Run(executor_callback_.Get());
+  executor_->Run(&user_data_, executor_callback_.Get());
 
   ASSERT_THAT(processed_actions_capture, SizeIs(2));
   EXPECT_EQ(ACTION_APPLIED, processed_actions_capture[0].status());
@@ -1260,7 +1261,7 @@ TEST_F(ScriptExecutorTest, ReportNavigationEnd) {
   // Navigation starts, before the script is run.
   delegate_.UpdateNavigationState(/* navigating= */ true, /* error= */ false);
   EXPECT_CALL(executor_callback_, Run(_));
-  executor_->Run(executor_callback_.Get());
+  executor_->Run(&user_data_, executor_callback_.Get());
 
   // WaitForDom waits for navigation to end, then checks for the element, which
   // fails.
@@ -1299,7 +1300,7 @@ TEST_F(ScriptExecutorTest, ReportUnexpectedNavigationStart) {
               OnElementCheck(Eq(Selector({"element"})), _))
       .WillOnce(RunOnceCallback<1>(ClientStatus()));
   EXPECT_CALL(executor_callback_, Run(_));
-  executor_->Run(executor_callback_.Get());
+  executor_->Run(&user_data_, executor_callback_.Get());
 
   delegate_.UpdateNavigationState(/* navigating= */ true, /* error= */ false);
 
@@ -1333,7 +1334,7 @@ TEST_F(ScriptExecutorTest, ReportExpectedNavigationStart) {
               OnElementCheck(Eq(Selector({"element"})), _))
       .WillOnce(RunOnceCallback<1>(ClientStatus()));
   EXPECT_CALL(executor_callback_, Run(_));
-  executor_->Run(executor_callback_.Get());
+  executor_->Run(&user_data_, executor_callback_.Get());
 
   delegate_.UpdateNavigationState(/* navigating= */ true, /* error= */ false);
 
@@ -1363,7 +1364,7 @@ TEST_F(ScriptExecutorTest, WaitForNavigationWithoutExpectation) {
 
   // WaitForNavigation returns immediately
   EXPECT_CALL(executor_callback_, Run(_));
-  executor_->Run(executor_callback_.Get());
+  executor_->Run(&user_data_, executor_callback_.Get());
 
   ASSERT_THAT(processed_actions_capture, SizeIs(1));
   EXPECT_EQ(INVALID_ACTION, processed_actions_capture[0].status());
@@ -1383,7 +1384,7 @@ TEST_F(ScriptExecutorTest, ExpectNavigation) {
 
   // WaitForNavigation waits for navigation to start after expect_navigation
   EXPECT_CALL(executor_callback_, Run(_));
-  executor_->Run(executor_callback_.Get());
+  executor_->Run(&user_data_, executor_callback_.Get());
 
   delegate_.UpdateNavigationState(/* navigating= */ true, /* error= */ false);
   delegate_.UpdateNavigationState(/* navigating= */ false, /* error= */ false);
@@ -1409,7 +1410,7 @@ TEST_F(ScriptExecutorTest, MultipleWaitForNavigation) {
   // The first wait_for_navigation waits for the navigation to happen. After
   // that, the other wait_for_navigation return immediately.
   EXPECT_CALL(executor_callback_, Run(_));
-  executor_->Run(executor_callback_.Get());
+  executor_->Run(&user_data_, executor_callback_.Get());
 
   delegate_.UpdateNavigationState(/* navigating= */ true, /* error= */ false);
   delegate_.UpdateNavigationState(/* navigating= */ false, /* error= */ false);
@@ -1435,7 +1436,7 @@ TEST_F(ScriptExecutorTest, ExpectLaterNavigationIgnoringNavigationInProgress) {
   delegate_.UpdateNavigationState(/* navigating= */ true, /* error= */ false);
 
   // WaitForNavigation waits for navigation to *start* after expect_navigation
-  executor_->Run(executor_callback_.Get());
+  executor_->Run(&user_data_, executor_callback_.Get());
 
   // This ends the navigation that was in progress when expect_navigation was
   // called. wait_for_navigation should not return, since navigation started
@@ -1468,7 +1469,7 @@ TEST_F(ScriptExecutorTest, WaitForNavigationReportsError) {
 
   // WaitForNavigation waits for navigation to start after expect_navigation
   EXPECT_CALL(executor_callback_, Run(_));
-  executor_->Run(executor_callback_.Get());
+  executor_->Run(&user_data_, executor_callback_.Get());
 
   delegate_.UpdateNavigationState(/* navigating= */ true, /* error= */ false);
   delegate_.UpdateNavigationState(/* navigating= */ false, /* error= */ true);
@@ -1488,7 +1489,7 @@ TEST_F(ScriptExecutorTest, InterceptUserActions) {
   EXPECT_CALL(mock_service_, OnGetActions(_, _, _, _, _, _))
       .WillOnce(RunOnceCallback<5>(true, Serialize(actions_response)));
 
-  executor_->Run(executor_callback_.Get());
+  executor_->Run(&user_data_, executor_callback_.Get());
   EXPECT_EQ(AutofillAssistantState::PROMPT, delegate_.GetState());
   ASSERT_NE(nullptr, delegate_.GetUserActions());
   ASSERT_THAT(*delegate_.GetUserActions(), SizeIs(1));
@@ -1518,7 +1519,7 @@ TEST_F(ScriptExecutorTest, ReportDirectActionsChoices) {
 
   auto context = std::make_unique<TriggerContextImpl>();
   context->SetDirectAction(true);
-  executor_->Run(executor_callback_.Get());
+  executor_->Run(&user_data_, executor_callback_.Get());
 
   ASSERT_NE(nullptr, delegate_.GetUserActions());
   ASSERT_THAT(*delegate_.GetUserActions(), SizeIs(1));

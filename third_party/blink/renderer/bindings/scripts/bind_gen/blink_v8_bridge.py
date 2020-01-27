@@ -24,7 +24,8 @@ def blink_class_name(idl_definition):
         return class_name
 
     if isinstance(idl_definition,
-                  (web_idl.CallbackFunction, web_idl.CallbackInterface)):
+                  (web_idl.CallbackFunction, web_idl.CallbackInterface,
+                   web_idl.Enumeration)):
         return name_style.class_("v8", idl_definition.identifier)
     else:
         return name_style.class_(idl_definition.identifier)
@@ -60,7 +61,7 @@ def blink_type_info(idl_type):
                      typename,
                      member_fmt="{}",
                      ref_fmt="{}",
-                     const_ref_fmt="{}",
+                     const_ref_fmt="const {}",
                      value_fmt="{}",
                      has_null_value=False):
             self.typename = typename
@@ -91,7 +92,7 @@ def blink_type_info(idl_type):
         }
         return TypeInfo(cxx_type[real_type.keyword_typename])
 
-    if real_type.is_string or real_type.is_enumeration:
+    if real_type.is_string:
         return TypeInfo(
             "String",
             ref_fmt="{}&",
@@ -119,6 +120,10 @@ def blink_type_info(idl_type):
 
     if real_type.is_void:
         assert False, "Blink does not support/accept IDL void type."
+
+    if real_type.is_enumeration:
+        blink_impl_type = blink_class_name(real_type.type_definition_object)
+        return TypeInfo(blink_impl_type)
 
     if real_type.type_definition_object is not None:
         blink_impl_type = blink_class_name(real_type.type_definition_object)
@@ -237,12 +242,42 @@ def make_default_value_expr(idl_type, default_value):
     """
     assert default_value.is_type_compatible_with(idl_type)
 
-    if idl_type.is_union:
-        for member_type in idl_type.flattened_member_types:
+    class DefaultValueExpr:
+        def __init__(self, initializer, is_initializer_lightweight,
+                     assignment_value):
+            assert initializer is None or isinstance(initializer, str)
+            assert isinstance(is_initializer_lightweight, bool)
+            assert isinstance(assignment_value, str)
+            self.initializer = initializer
+            self.is_initializer_lightweight = is_initializer_lightweight
+            self.assignment_value = assignment_value
+
+    if idl_type.unwrap(typedef=True).is_union:
+        union_type = idl_type.unwrap(typedef=True)
+        member_type = None
+        for member_type in union_type.flattened_member_types:
             if default_value.is_type_compatible_with(member_type):
-                idl_type = member_type
+                member_type = member_type
                 break
-        assert default_value.is_type_compatible_with(idl_type)
+        assert member_type is not None
+
+        union_class_name = blink_class_name(union_type.union_definition_object)
+        member_default_expr = make_default_value_expr(member_type,
+                                                      default_value)
+        if default_value.idl_type.is_nullable:
+            initializer = None
+            assignment_value = _format("{}()", union_class_name)
+        else:
+            func_name = name_style.func("From", member_type.type_name)
+            argument = member_default_expr.assignment_value
+            initializer = _format("{}::{}({})", union_class_name, func_name,
+                                  argument)
+            assignment_value = initializer
+        return DefaultValueExpr(
+            initializer=initializer,
+            is_initializer_lightweight=False,
+            assignment_value=assignment_value)
+
     type_info = blink_type_info(idl_type)
 
     is_initializer_lightweight = False
@@ -254,6 +289,10 @@ def make_default_value_expr(idl_type, default_value):
         elif idl_type.unwrap().is_string:
             initializer = None  # String::IsNull() by default
             assignment_value = "String()"
+        elif idl_type.unwrap().is_buffer_source_type:
+            initializer = "nullptr"
+            is_initializer_lightweight = True
+            assignment_value = "nullptr"
         elif type_info.value_t == "ScriptValue":
             initializer = None  # ScriptValue::IsEmpty() by default
             assignment_value = "ScriptValue()"
@@ -301,16 +340,6 @@ def make_default_value_expr(idl_type, default_value):
         assignment_value = value
     else:
         assert False
-
-    class DefaultValueExpr:
-        def __init__(self, initializer, is_initializer_lightweight,
-                     assignment_value):
-            assert initializer is None or isinstance(initializer, str)
-            assert isinstance(is_initializer_lightweight, bool)
-            assert isinstance(assignment_value, str)
-            self.initializer = initializer
-            self.is_initializer_lightweight = is_initializer_lightweight
-            self.assignment_value = assignment_value
 
     return DefaultValueExpr(
         initializer=initializer,

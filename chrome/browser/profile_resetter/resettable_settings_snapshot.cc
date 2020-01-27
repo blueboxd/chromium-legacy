@@ -140,9 +140,9 @@ void ResettableSettingsSnapshot::RequestShortcuts(
       base::CreateCOMSTATaskRunner({base::ThreadPool(), base::MayBlock(),
                                     base::TaskPriority::USER_VISIBLE})
           .get(),
-      FROM_HERE, base::Bind(&GetChromeLaunchShortcuts, cancellation_flag_),
-      base::Bind(&ResettableSettingsSnapshot::SetShortcutsAndReport,
-                 weak_ptr_factory_.GetWeakPtr(), callback));
+      FROM_HERE, base::BindOnce(&GetChromeLaunchShortcuts, cancellation_flag_),
+      base::BindOnce(&ResettableSettingsSnapshot::SetShortcutsAndReport,
+                     weak_ptr_factory_.GetWeakPtr(), callback));
 #else   // defined(OS_WIN)
   // Shortcuts are only supported on Windows.
   std::vector<ShortcutCommand> no_shortcuts;

@@ -114,7 +114,7 @@ struct DataForDeserializer {
  public:
   DataForDeserializer(Document* document) : document(document) {}
 
-  Member<Document> document;
+  Document* document;
   // Figures if we failed the deserialization.
   bool did_fail = false;
 };

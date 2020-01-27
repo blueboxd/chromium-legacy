@@ -18,8 +18,7 @@
 
 // Use -initWithBaseViewController:browser:
 - (instancetype)initWithBaseViewController:(UIViewController*)viewController
-                              browserState:
-                                  (ios::ChromeBrowserState*)browserState
+                              browserState:(ChromeBrowserState*)browserState
     NS_UNAVAILABLE;
 
 //|originPoint| is the midpoint of the UI element from which the page info

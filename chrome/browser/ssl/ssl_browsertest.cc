@@ -58,7 +58,6 @@
 #include "chrome/browser/ssl/chrome_ssl_host_state_delegate.h"
 #include "chrome/browser/ssl/security_state_tab_helper.h"
 #include "chrome/browser/ssl/ssl_browsertest_util.h"
-#include "chrome/browser/ssl/ssl_error_assistant.h"
 #include "chrome/browser/ssl/ssl_error_controller_client.h"
 #include "chrome/browser/ssl/ssl_error_handler.h"
 #include "chrome/browser/ui/browser.h"
@@ -98,6 +97,7 @@
 #include "components/security_interstitials/content/security_interstitial_controller_client.h"
 #include "components/security_interstitials/content/security_interstitial_tab_helper.h"
 #include "components/security_interstitials/content/ssl_blocking_page.h"
+#include "components/security_interstitials/content/ssl_error_assistant.h"
 #include "components/security_interstitials/content/ssl_error_assistant.pb.h"
 #include "components/security_interstitials/core/controller_client.h"
 #include "components/security_interstitials/core/metrics_helper.h"
@@ -5343,7 +5343,8 @@ class SSLBlockingPageIDNTest
     net::SSLInfo ssl_info;
     ssl_info.cert =
         net::ImportCertFromFile(net::GetTestCertsDirectory(), "ok_cert.pem");
-    return ChromeSecurityBlockingPageFactory::CreateSSLPage(
+    ChromeSecurityBlockingPageFactory blocking_page_factory;
+    return blocking_page_factory.CreateSSLPage(
         contents, net::ERR_CERT_CONTAINS_ERRORS, ssl_info, request_url, 0,
         base::Time::NowFromSystemTime(), GURL(), nullptr);
   }

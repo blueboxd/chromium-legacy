@@ -104,7 +104,7 @@ bool WebPepperSocketImpl::SendText(const WebString& message) {
 
 bool WebPepperSocketImpl::SendArrayBuffer(
     const WebArrayBuffer& web_array_buffer) {
-  unsigned size = web_array_buffer.ByteLength();
+  size_t size = web_array_buffer.ByteLengthAsSizeT();
   buffered_amount_ += size;
   if (is_closing_or_closed_)
     buffered_amount_after_close_ += size;

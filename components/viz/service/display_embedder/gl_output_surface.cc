@@ -19,6 +19,7 @@
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/common/swap_buffers_complete_params.h"
 #include "gpu/command_buffer/common/swap_buffers_flags.h"
+#include "gpu/config/gpu_feature_info.h"
 #include "ui/gfx/overlay_transform_utils.h"
 
 namespace viz {

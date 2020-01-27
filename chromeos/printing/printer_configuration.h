@@ -174,6 +174,10 @@ class CHROMEOS_EXPORT Printer {
   // kIppUsb.
   bool IsUsbProtocol() const;
 
+  // Returns true if the current protocol is either local (kUsb or kIppUsb) or
+  // secure (kIpps or kHttps).
+  bool HasSecureProtocol() const;
+
   Source source() const { return source_; }
   void set_source(const Source source) { source_ = source; }
 

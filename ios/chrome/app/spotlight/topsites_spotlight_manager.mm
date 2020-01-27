@@ -151,7 +151,7 @@ class SpotlightSuggestionsBridge
 @synthesize topSites = _topSites;
 
 + (TopSitesSpotlightManager*)topSitesSpotlightManagerWithBrowserState:
-    (ios::ChromeBrowserState*)browserState {
+    (ChromeBrowserState*)browserState {
   return [[TopSitesSpotlightManager alloc]
       initWithLargeIconService:IOSChromeLargeIconServiceFactory::
                                    GetForBrowserState(browserState)

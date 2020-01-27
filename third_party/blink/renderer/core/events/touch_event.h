@@ -30,12 +30,13 @@
 #include "third_party/blink/public/common/input/web_touch_event.h"
 #include "third_party/blink/public/platform/web_coalesced_input_event.h"
 #include "third_party/blink/renderer/core/core_export.h"
-#include "third_party/blink/renderer/core/events/touch_event_init.h"
 #include "third_party/blink/renderer/core/events/ui_event_with_key_state.h"
 #include "third_party/blink/renderer/core/input/touch_list.h"
 #include "third_party/blink/renderer/platform/graphics/touch_action.h"
 
 namespace blink {
+
+class TouchEventInit;
 
 class CORE_EXPORT TouchEvent final : public UIEventWithKeyState {
   DEFINE_WRAPPERTYPEINFO();

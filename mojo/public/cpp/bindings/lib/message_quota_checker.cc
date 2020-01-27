@@ -40,7 +40,10 @@ NOINLINE void MaybeDumpWithoutCrashing(
     size_t total_quota_used,
     base::Optional<size_t> message_pipe_quota_used,
     int64_t seconds_since_construction,
-    double average_write_rate) {
+    double average_write_rate,
+    uint64_t messages_enqueued,
+    uint64_t messages_dequeued,
+    uint64_t messages_written) {
   static bool have_crashed = false;
   if (have_crashed)
     return;
@@ -65,6 +68,14 @@ NOINLINE void MaybeDumpWithoutCrashing(
   base::debug::Alias(&had_message_pipe);
   base::debug::Alias(&seconds_since_construction);
   base::debug::Alias(&average_write_rate_per_second);
+
+  // Note that these values are acquired non-atomically with respect to the
+  // variables above, and so may have increased since the quota overflow
+  // occurred. They will still give a good indication of the traffic and the
+  // traffic mix on this MessageQuotaChecker.
+  base::debug::Alias(&messages_enqueued);
+  base::debug::Alias(&messages_dequeued);
+  base::debug::Alias(&messages_written);
 
   // This is happening because the user of the interface implicated on the crash
   // stack has queued up an unreasonable number of messages, namely
@@ -245,9 +256,10 @@ void MessageQuotaChecker::QuotaCheckImpl(size_t num_enqueued) {
       total_quota_used >= config_->crash_threshold) {
     DCHECK(!now.is_null());
     int64_t seconds_since_construction = (now - creation_time_).InSeconds();
-    config_->maybe_crash_function(total_quota_used, message_pipe_quota_used,
-                                  seconds_since_construction,
-                                  average_write_rate);
+    config_->maybe_crash_function(
+        total_quota_used, message_pipe_quota_used, seconds_since_construction,
+        average_write_rate, messages_enqueued_.load(),
+        messages_dequeued_.load(), messages_written_.load());
   }
 }
 

@@ -40,7 +40,7 @@ public class ExportWarningDialogFragment extends DialogFragment {
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         return new AlertDialog
                 .Builder(getActivity(), R.style.Theme_Chromium_AlertDialog_NoActionBar)
-                .setPositiveButton(R.string.save_password_preferences_export_action_title, mHandler)
+                .setPositiveButton(R.string.password_settings_export_action_title, mHandler)
                 .setNegativeButton(R.string.cancel, mHandler)
                 .setMessage(getActivity().getResources().getString(
                         R.string.settings_passwords_export_description))

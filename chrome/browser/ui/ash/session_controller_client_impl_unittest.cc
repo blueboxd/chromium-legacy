@@ -23,7 +23,7 @@
 #include "chrome/browser/chromeos/settings/scoped_cros_settings_test_helper.h"
 #include "chrome/browser/supervised_user/supervised_user_service.h"
 #include "chrome/browser/supervised_user/supervised_user_service_factory.h"
-#include "chrome/browser/ui/ash/assistant/assistant_client.h"
+#include "chrome/browser/ui/ash/assistant/assistant_client_impl.h"
 #include "chrome/browser/ui/ash/test_session_controller.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_browser_process.h"
@@ -112,8 +112,8 @@ class SessionControllerClientImplTest : public testing::Test {
     user_manager_ = new TestChromeUserManager;
     user_manager_enabler_ = std::make_unique<user_manager::ScopedUserManager>(
         base::WrapUnique(user_manager_));
-    // Initialize AssistantClient singleton.
-    assistant_client_ = std::make_unique<AssistantClient>();
+    // Initialize AssistantClientImpl singleton.
+    assistant_client_ = std::make_unique<AssistantClientImpl>();
 
     profile_manager_.reset(
         new TestingProfileManager(TestingBrowserProcess::GetGlobal()));
@@ -191,7 +191,7 @@ class SessionControllerClientImplTest : public testing::Test {
 
   content::BrowserTaskEnvironment task_environment_;
   std::unique_ptr<TestingProfileManager> profile_manager_;
-  std::unique_ptr<AssistantClient> assistant_client_;
+  std::unique_ptr<AssistantClientImpl> assistant_client_;
   session_manager::SessionManager session_manager_;
   chromeos::SessionTerminationManager session_termination_manager_;
 

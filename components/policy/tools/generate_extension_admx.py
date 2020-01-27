@@ -29,7 +29,7 @@ Example:
 import re
 import sys
 
-from optparse import OptionParser
+from argparse import ArgumentParser
 from xml.dom import minidom
 
 
@@ -371,34 +371,33 @@ def ConvertJsonToAdmx(extension_id, extension_name, schema_file, admx_file,
 
 def main():
   '''Main function, usage see top of file.'''
-  parser = OptionParser(usage=__doc__)
-  parser.add_option(
+  parser = ArgumentParser(usage=__doc__)
+  parser.add_argument(
       '--name',
       dest='extension_name',
       help='extension name (e.g. Managed Bookmarks)')
-  parser.add_option(
+  parser.add_argument(
       '--id',
       dest='extension_id',
       help='extension id (e.g. gihmafigllmhbppdfjnfecimiohcljba)')
-  parser.add_option(
+  parser.add_argument(
       '--schema',
       dest='schema_file',
       help='Input schema.json file for the extension',
       metavar='FILE')
-  parser.add_option(
+  parser.add_argument(
       '--admx', dest='admx_file', help='Output ADMX file', metavar='FILE')
-  parser.add_option(
+  parser.add_argument(
       '--adml', dest='adml_file', help='Output ADML file', metavar='FILE')
-  (options, args) = parser.parse_args()
+  args = parser.parse_args()
 
-  if (not options.extension_name or not options.extension_id or
-      not options.schema_file or not options.admx_file or
-      not options.adml_file):
+  if (not args.extension_name or not args.extension_id or
+      not args.schema_file or not args.admx_file or not args.adml_file):
     parser.print_help()
     return 1
 
-  ConvertJsonToAdmx(options.extension_name, options.extension_id,
-                    options.schema_file, options.admx_file, options.adml_file)
+  ConvertJsonToAdmx(args.extension_name, args.extension_id, args.schema_file,
+                    args.admx_file, args.adml_file)
   return 0
 
 

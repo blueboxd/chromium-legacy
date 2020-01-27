@@ -196,7 +196,7 @@ void OSExchangeDataProviderAuraX11::SetPickledData(
   scoped_refptr<base::RefCountedMemory> mem(
       base::RefCountedBytes::TakeVector(&bytes));
 
-  format_map_.Insert(gfx::GetAtom(format.ToString().c_str()), mem);
+  format_map_.Insert(gfx::GetAtom(format.GetName().c_str()), mem);
 }
 
 bool OSExchangeDataProviderAuraX11::GetString(base::string16* result) const {
@@ -305,7 +305,7 @@ bool OSExchangeDataProviderAuraX11::GetPickledData(
     const ClipboardFormatType& format,
     base::Pickle* pickle) const {
   std::vector< ::Atom> requested_types;
-  requested_types.push_back(gfx::GetAtom(format.ToString().c_str()));
+  requested_types.push_back(gfx::GetAtom(format.GetName().c_str()));
 
   ui::SelectionData data(format_map_.GetFirstOf(requested_types));
   if (data.IsValid()) {
@@ -385,7 +385,7 @@ bool OSExchangeDataProviderAuraX11::HasFile() const {
 bool OSExchangeDataProviderAuraX11::HasCustomFormat(
     const ClipboardFormatType& format) const {
   std::vector< ::Atom> url_atoms;
-  url_atoms.push_back(gfx::GetAtom(format.ToString().c_str()));
+  url_atoms.push_back(gfx::GetAtom(format.GetName().c_str()));
   std::vector< ::Atom> requested_types;
   GetAtomIntersection(url_atoms, GetTargets(), &requested_types);
 

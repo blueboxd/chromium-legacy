@@ -405,6 +405,7 @@ public class AutofillAssistantPersonalDataManagerTest {
         list.add((ActionProto) ActionProto.newBuilder()
                          .setCollectUserData(CollectUserDataProto.newBuilder()
                                                      .setRequestPaymentMethod(true)
+                                                     .setBillingAddressName("billing_address")
                                                      .setRequestTermsAndConditions(false))
                          .build());
         // No UseCreditCardAction, that is tested in PaymentTest.
@@ -441,6 +442,7 @@ public class AutofillAssistantPersonalDataManagerTest {
                          .setCollectUserData(
                                  CollectUserDataProto.newBuilder()
                                          .setRequestPaymentMethod(true)
+                                         .setBillingAddressName("billing_address")
                                          .setRequireBillingPostalCode(true)
                                          .setBillingPostalCodeMissingText("Missing Billing Code")
                                          .setRequestTermsAndConditions(false))
@@ -485,6 +487,7 @@ public class AutofillAssistantPersonalDataManagerTest {
         list.add((ActionProto) ActionProto.newBuilder()
                          .setCollectUserData(CollectUserDataProto.newBuilder()
                                                      .setRequestPaymentMethod(true)
+                                                     .setBillingAddressName("billing_address")
                                                      .setRequestTermsAndConditions(false))
                          .build());
         AutofillAssistantTestScript script = new AutofillAssistantTestScript(

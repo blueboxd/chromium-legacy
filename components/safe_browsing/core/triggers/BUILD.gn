@@ -12,6 +12,7 @@ source_set("triggers") {
   public_deps = [
     "//components/security_interstitials/content:security_interstitial_page",
     "//components/security_interstitials/core:core",
+    "//components/security_interstitials/core:unsafe_resource",
     "//content/public/browser:browser",
   ]
   deps = [

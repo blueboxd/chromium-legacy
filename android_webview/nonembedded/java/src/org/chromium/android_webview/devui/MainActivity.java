@@ -52,15 +52,17 @@ public class MainActivity extends Activity {
         ArrayAdapter<InfoItem> itemsArrayAdapter = new InfoListAdapter(infoItems);
         infoListView.setAdapter(itemsArrayAdapter);
 
-        // Copy item's text to clipboard on tapping a list item.
-        infoListView.setOnItemClickListener((parent, view, pos, id) -> {
-            InfoItem item = infoItems[pos];
+        // Copy item's text to clipboard on long tapping a list item.
+        infoListView.setOnItemLongClickListener((parent, view, pos, id) -> {
+            InfoItem item = (InfoItem) parent.getItemAtPosition(pos);
             ClipboardManager clipboard =
                     (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
             ClipData clip = ClipData.newPlainText(item.title, item.subtitle);
             clipboard.setPrimaryClip(clip);
             // Show a toast that the text has been copied.
             Toast.makeText(MainActivity.this, "Copied " + item.title, Toast.LENGTH_SHORT).show();
+
+            return true;
         });
 
         mDifferentPackageError =

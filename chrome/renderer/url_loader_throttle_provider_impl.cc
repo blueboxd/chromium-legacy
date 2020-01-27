@@ -259,7 +259,7 @@ URLLoaderThrottleProviderImpl::CreateThrottles(
 #endif  // defined(OS_CHROMEOS)
 
   auto throttle = subresource_redirect::SubresourceRedirectURLLoaderThrottle::
-      MaybeCreateThrottle(request, resource_type);
+      MaybeCreateThrottle(request, resource_type, render_frame_id);
   if (throttle)
     throttles.push_back(std::move(throttle));
 

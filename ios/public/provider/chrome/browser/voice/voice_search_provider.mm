@@ -24,7 +24,6 @@ AudioSessionController* VoiceSearchProvider::GetAudioSessionController() const {
 
 scoped_refptr<VoiceSearchController>
 VoiceSearchProvider::CreateVoiceSearchController(
-    ios::ChromeBrowserState* browser_state) const {
+    ChromeBrowserState* browser_state) const {
   return scoped_refptr<VoiceSearchController>(nullptr);
 }
-

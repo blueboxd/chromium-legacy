@@ -53,7 +53,7 @@ public class NotificationUmaTracker {
             SystemNotificationType.SEND_TAB_TO_SELF, SystemNotificationType.UPDATES,
             SystemNotificationType.CLICK_TO_CALL, SystemNotificationType.SHARED_CLIPBOARD,
             SystemNotificationType.PERMISSION_REQUESTS,
-            SystemNotificationType.PERMISSION_REQUESTS_HIGH})
+            SystemNotificationType.PERMISSION_REQUESTS_HIGH, SystemNotificationType.ANNOUNCEMENT})
     @Retention(RetentionPolicy.SOURCE)
     public @interface SystemNotificationType {
         int UNKNOWN = -1;
@@ -78,8 +78,9 @@ public class NotificationUmaTracker {
         int SHARED_CLIPBOARD = 18;
         int PERMISSION_REQUESTS = 19;
         int PERMISSION_REQUESTS_HIGH = 20;
+        int ANNOUNCEMENT = 21;
 
-        int NUM_ENTRIES = 21;
+        int NUM_ENTRIES = 22;
     }
 
     /*
@@ -94,7 +95,7 @@ public class NotificationUmaTracker {
             ActionType.CONTENT_SUGGESTION_SETTINGS, ActionType.WEB_APP_ACTION_SHARE,
             ActionType.WEB_APP_ACTION_OPEN_IN_CHROME,
             ActionType.OFFLINE_CONTENT_SUGGESTION_SETTINGS, ActionType.SHARING_TRY_AGAIN,
-            ActionType.SETTINGS})
+            ActionType.SETTINGS, ActionType.ANNOUNCEMENT_ACK, ActionType.ANNOUNCEMENT_OPEN})
     @Retention(RetentionPolicy.SOURCE)
     public @interface ActionType {
         int UNKNOWN = -1;
@@ -124,8 +125,12 @@ public class NotificationUmaTracker {
         int SHARING_TRY_AGAIN = 11;
         // Settings button for notifications.
         int SETTINGS = 12;
+        // Ack button on announcement notification.
+        int ANNOUNCEMENT_ACK = 13;
+        // Open button on announcement notification.
+        int ANNOUNCEMENT_OPEN = 14;
 
-        int NUM_ENTRIES = 13;
+        int NUM_ENTRIES = 15;
     }
 
     private static class LazyHolder {

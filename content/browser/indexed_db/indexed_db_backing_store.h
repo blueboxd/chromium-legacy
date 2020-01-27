@@ -31,6 +31,7 @@
 #include "content/browser/indexed_db/indexed_db_leveldb_coding.h"
 #include "content/common/content_export.h"
 #include "storage/browser/blob/blob_data_handle.h"
+#include "storage/browser/blob/mojom/blob_storage_context.mojom-forward.h"
 #include "storage/common/file_system/file_system_mount_option.h"
 #include "third_party/blink/public/common/indexeddb/indexeddb_key.h"
 #include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom.h"
@@ -49,6 +50,7 @@ struct IndexedDBDatabaseMetadata;
 
 namespace content {
 class IndexedDBActiveBlobRegistry;
+class LevelDBWriteBatch;
 class TransactionalLevelDBDatabase;
 class TransactionalLevelDBFactory;
 class TransactionalLevelDBIterator;
@@ -93,6 +95,14 @@ class CONTENT_EXPORT IndexedDBBackingStore {
 
   class CONTENT_EXPORT Transaction {
    public:
+    struct BlobWriteState {
+      BlobWriteState();
+      explicit BlobWriteState(int calls_left, BlobWriteCallback on_complete);
+      ~BlobWriteState();
+      int calls_left = 0;
+      BlobWriteCallback on_complete;
+    };
+
     Transaction(base::WeakPtr<IndexedDBBackingStore> backing_store,
                 blink::mojom::IDBTransactionDurability durability,
                 blink::mojom::IDBTransactionMode mode);
@@ -142,14 +152,11 @@ class CONTENT_EXPORT IndexedDBBackingStore {
 
     blink::mojom::IDBTransactionMode mode() const { return mode_; }
 
-    class ChainedBlobWriterImpl;
-
    private:
     // Called by CommitPhaseOne: Identifies the blob entries to write and adds
     // them to the recovery blob journal directly (i.e. not as part of the
     // transaction). Populates blobs_to_write_.
-    leveldb::Status HandleBlobPreTransaction(
-        WriteDescriptorVec* new_files_to_write);
+    leveldb::Status HandleBlobPreTransaction();
 
     // Called by CommitPhaseOne: Populates blob_files_to_remove_ by
     // determining which blobs are deleted as part of the transaction, and
@@ -160,8 +167,7 @@ class CONTENT_EXPORT IndexedDBBackingStore {
     // Called by CommitPhaseOne: Kicks off the asynchronous writes of blobs
     // identified in HandleBlobPreTransaction. The callback will be called
     // eventually on success or failure.
-    leveldb::Status WriteNewBlobs(WriteDescriptorVec* new_files_to_write,
-                                  BlobWriteCallback callback);
+    leveldb::Status WriteNewBlobs(BlobWriteCallback callback);
 
     // Called by CommitPhaseTwo: Partition blob references in blobs_to_remove_
     // into live (active references) and dead (no references).
@@ -191,7 +197,12 @@ class CONTENT_EXPORT IndexedDBBackingStore {
     // be added to either the recovery or live blob journal as appropriate
     // following a successful commit.
     BlobJournalType blobs_to_remove_;
-    scoped_refptr<ChainedBlobWriter> chained_blob_writer_;
+
+    // Populated when blobs are being written to disk. This is saved here (as
+    // opposed to being ephemeral and owned by the WriteBlobToFile callbacks)
+    // because the transaction needs to be able to cancel this operation in
+    // Rollback().
+    base::Optional<BlobWriteState> write_state_;
 
     // Set to true between CommitPhaseOne and CommitPhaseTwo/Rollback, to
     // indicate that the committing_transaction_count_ on the backing store
@@ -321,6 +332,7 @@ class CONTENT_EXPORT IndexedDBBackingStore {
       const url::Origin& origin,
       const base::FilePath& blob_path,
       std::unique_ptr<TransactionalLevelDBDatabase> db,
+      storage::mojom::BlobStorageContext* blob_storage_context,
       BlobFilesCleanedCallback blob_files_cleaned,
       ReportOutstandingBlobsCallback report_outstanding_blobs,
       scoped_refptr<base::SequencedTaskRunner> idb_task_runner,
@@ -509,13 +521,14 @@ class CONTENT_EXPORT IndexedDBBackingStore {
       TransactionalLevelDBDatabase* database,
       bool* blobs_exist);
 
+  leveldb::Status UpgradeBlobEntriesToV4(
+      TransactionalLevelDBDatabase* database,
+      LevelDBWriteBatch* write_batch,
+      std::vector<base::FilePath>* empty_blobs_to_delete);
+
   // TODO(dmurph): Move this completely to IndexedDBMetadataFactory.
   leveldb::Status GetCompleteMetadata(
       std::vector<blink::IndexedDBDatabaseMetadata>* output);
-
-  virtual bool WriteBlobFile(int64_t database_id,
-                             const WriteDescriptor& descriptor,
-                             ChainedBlobWriter* chained_blob_writer);
 
   // Remove the referenced file on disk.
   virtual bool RemoveBlobFile(int64_t database_id, int64_t key) const;
@@ -566,6 +579,9 @@ class CONTENT_EXPORT IndexedDBBackingStore {
   TransactionalLevelDBFactory* const transactional_leveldb_factory_;
   const url::Origin origin_;
   base::FilePath blob_path_;
+
+  // Raw pointer is safe because the binding is owned by IndexedDBContextImpl.
+  storage::mojom::BlobStorageContext* blob_storage_context_;
 
   // The origin identifier is a key prefix unique to the origin used in the
   // leveldb backing store to partition data by origin. It is a normalized

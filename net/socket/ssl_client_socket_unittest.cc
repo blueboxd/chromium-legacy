@@ -2405,7 +2405,13 @@ TEST_P(SSLClientSocketReadTest, Read_SmallChunks) {
   } while (rv > 0);
 }
 
-TEST_P(SSLClientSocketReadTest, Read_ManySmallRecords) {
+#if defined(OS_CHROMEOS)
+// TODO(crbug.com/1045656) Flaky on ChromeOS.
+#define MAYBE_Read_ManySmallRecords DISABLED_Read_ManySmallRecords
+#else
+#define MAYBE_Read_ManySmallRecords Read_ManySmallRecords
+#endif
+TEST_P(SSLClientSocketReadTest, MAYBE_Read_ManySmallRecords) {
   ASSERT_TRUE(
       StartEmbeddedTestServer(EmbeddedTestServer::CERT_OK, GetServerConfig()));
 

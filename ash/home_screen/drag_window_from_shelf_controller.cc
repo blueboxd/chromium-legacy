@@ -235,35 +235,32 @@ DragWindowFromShelfController::EndDrag(const gfx::PointF& location_in_screen,
   SplitViewController::SnapPosition snap_position =
       GetSnapPositionOnDragEnd(location_in_screen, velocity_y);
 
-  base::Optional<ShelfWindowDragResult> window_drag_result;
+  window_drag_result_ = base::nullopt;
   if (ShouldGoToHomeScreen(location_in_screen, velocity_y)) {
     DCHECK(!in_splitview);
     if (in_overview) {
       overview_controller->EndOverview(
           OverviewSession::EnterExitOverviewType::kFadeOutExit);
     }
-    ScaleDownWindowAfterDrag();
-    window_drag_result = ShelfWindowDragResult::kGoToHomeScreen;
+    window_drag_result_ = ShelfWindowDragResult::kGoToHomeScreen;
   } else if (ShouldRestoreToOriginalBounds(location_in_screen)) {
-    ScaleUpToRestoreWindowAfterDrag();
-    window_drag_result = ShelfWindowDragResult::kRestoreToOriginalBounds;
+    window_drag_result_ = ShelfWindowDragResult::kRestoreToOriginalBounds;
   } else if (!in_overview) {
     // if overview is not active during the entire drag process, scale down the
     // dragged window to go to home screen.
-    ScaleDownWindowAfterDrag();
-    window_drag_result = ShelfWindowDragResult::kGoToHomeScreen;
+    window_drag_result_ = ShelfWindowDragResult::kGoToHomeScreen;
   } else {
     if (drop_window_in_overview)
-      window_drag_result = ShelfWindowDragResult::kGoToOverviewMode;
+      window_drag_result_ = ShelfWindowDragResult::kGoToOverviewMode;
     else if (snap_position != SplitViewController::NONE)
-      window_drag_result = ShelfWindowDragResult::kGoToSplitviewMode;
+      window_drag_result_ = ShelfWindowDragResult::kGoToSplitviewMode;
     // For window that may drop in overview or snap in split screen, restore its
     // original backdrop mode.
     window_->SetProperty(kBackdropWindowMode, original_backdrop_mode_);
   }
 
   OnDragEnded(location_in_screen, drop_window_in_overview, snap_position);
-  return window_drag_result;
+  return window_drag_result_;
 }
 
 void DragWindowFromShelfController::CancelDrag() {
@@ -290,6 +287,29 @@ void DragWindowFromShelfController::CancelDrag() {
 
 bool DragWindowFromShelfController::IsDraggedWindowAnimating() const {
   return window_ && window_->layer()->GetAnimator()->is_animating();
+}
+
+void DragWindowFromShelfController::FinalizeDraggedWindow() {
+  if (!window_drag_result_.has_value())
+    return;
+
+  DCHECK(!drag_started_);
+  DCHECK(window_);
+
+  switch (*window_drag_result_) {
+    case ShelfWindowDragResult::kGoToHomeScreen:
+      ScaleDownWindowAfterDrag();
+      break;
+    case ShelfWindowDragResult::kRestoreToOriginalBounds:
+      ScaleUpToRestoreWindowAfterDrag();
+      break;
+    case ShelfWindowDragResult::kGoToOverviewMode:
+    case ShelfWindowDragResult::kGoToSplitviewMode:
+      // No action is needed.
+      break;
+  }
+
+  window_drag_result_.reset();
 }
 
 void DragWindowFromShelfController::OnWindowDestroying(aura::Window* window) {

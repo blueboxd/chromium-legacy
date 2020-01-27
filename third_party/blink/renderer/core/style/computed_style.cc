@@ -2206,9 +2206,9 @@ int ComputedStyle::GetDefaultOffsetForFocusRing() const {
   if (!::features::IsFormControlsRefreshEnabled())
     return 0;
 
-  // For FormControlsRefresh checkbox, radio and links have a 2px inner padding.
+  // For FormControlsRefresh checkbox and radio have a 2px inner padding.
   if (EffectiveAppearance() == kCheckboxPart ||
-      EffectiveAppearance() == kRadioPart || IsLink())
+      EffectiveAppearance() == kRadioPart)
     return 2;
   return 0;
 }

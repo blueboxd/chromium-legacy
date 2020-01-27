@@ -81,8 +81,8 @@ class CORE_EXPORT CSSSelectorParser {
       std::unique_ptr<CSSParserSelector> compound_selector);
   void RecordUsageAndDeprecations(const CSSSelectorList&);
 
-  Member<const CSSParserContext> context_;
-  Member<const StyleSheetContents> style_sheet_;
+  const CSSParserContext* context_;
+  const StyleSheetContents* style_sheet_;
 
   bool failed_parsing_ = false;
   bool disallow_pseudo_elements_ = false;

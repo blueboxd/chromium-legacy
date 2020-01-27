@@ -76,7 +76,7 @@ class TextIteratorTextNodeHandler {
                 unsigned text_end_offset);
 
   // The current text node and offset range, from which text should be emitted.
-  Member<const Text> text_node_;
+  const Text* text_node_ = nullptr;
   unsigned offset_ = 0;
   unsigned end_offset_ = 0;
 

@@ -82,6 +82,7 @@ class ScriptTracker : public ScriptExecutor::Listener {
   // on top of what's available in the context returned by
   // ScriptExecutorDelegate.
   void ExecuteScript(const std::string& path,
+                     const UserData* user_data,
                      std::unique_ptr<TriggerContext> context,
                      ScriptExecutor::RunScriptCallback callback);
 

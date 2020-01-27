@@ -458,6 +458,12 @@ TEST_F(VideoUtilTest, ComputeLetterboxRegion) {
                                    gfx::Size(40000, 30000)));
   EXPECT_TRUE(ComputeLetterboxRegion(gfx::Rect(0, 0, 2000000000, 2000000000),
                                      gfx::Size(0, 0)).IsEmpty());
+
+  // Some operations in the internal ScaleSizeToTarget() use rounded division
+  // and might lose some precision, this expectation codifies that.
+  EXPECT_EQ(
+      gfx::Rect(0, 0, 1279, 720),
+      ComputeLetterboxRegion(gfx::Rect(0, 0, 1280, 720), gfx::Size(1057, 595)));
 }
 
 // Tests the ComputeLetterboxRegionForI420 function.

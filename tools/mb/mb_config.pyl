@@ -572,7 +572,6 @@
     },
 
     'client.v8.fyi': {
-      'Android Builder': 'official_goma_minimal_symbols_android',
       'Android V8 FYI Release (Nexus 5X)': 'gpu_tests_android_release_trybot_arm64',
       'Linux ASAN Builder': 'asan_lsan_release_trybot',
       'Linux Debug Builder': 'debug_bot',

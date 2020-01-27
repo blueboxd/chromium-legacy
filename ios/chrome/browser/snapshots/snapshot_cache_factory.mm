@@ -22,10 +22,10 @@
 
 namespace {
 // C++ wrapper around SnapshotCache, owning the SnapshotCache and allowing it
-// bind it to an ios::ChromeBrowserState as a KeyedService.
+// bind it to an ChromeBrowserState as a KeyedService.
 class SnapshotCacheWrapper : public KeyedService {
  public:
-  explicit SnapshotCacheWrapper(ios::ChromeBrowserState* browser_state,
+  explicit SnapshotCacheWrapper(ChromeBrowserState* browser_state,
                                 SnapshotCache* snapshot_cache);
   ~SnapshotCacheWrapper() override;
 
@@ -41,9 +41,8 @@ class SnapshotCacheWrapper : public KeyedService {
   DISALLOW_COPY_AND_ASSIGN(SnapshotCacheWrapper);
 };
 
-SnapshotCacheWrapper::SnapshotCacheWrapper(
-    ios::ChromeBrowserState* browser_state,
-    SnapshotCache* snapshot_cache)
+SnapshotCacheWrapper::SnapshotCacheWrapper(ChromeBrowserState* browser_state,
+                                           SnapshotCache* snapshot_cache)
     : snapshot_cache_(snapshot_cache) {
   DCHECK(snapshot_cache);
   tab_model_list_observer_ =
@@ -64,8 +63,8 @@ void SnapshotCacheWrapper::Shutdown() {
 
 std::unique_ptr<KeyedService> BuildSnapshotCacheWrapper(
     web::BrowserState* context) {
-  ios::ChromeBrowserState* chrome_browser_state =
-      ios::ChromeBrowserState::FromBrowserState(context);
+  ChromeBrowserState* chrome_browser_state =
+      ChromeBrowserState::FromBrowserState(context);
   return std::make_unique<SnapshotCacheWrapper>(chrome_browser_state,
                                                 [[SnapshotCache alloc] init]);
 }
@@ -73,7 +72,7 @@ std::unique_ptr<KeyedService> BuildSnapshotCacheWrapper(
 
 // static
 SnapshotCache* SnapshotCacheFactory::GetForBrowserState(
-    ios::ChromeBrowserState* browser_state) {
+    ChromeBrowserState* browser_state) {
   SnapshotCacheWrapper* wrapper = static_cast<SnapshotCacheWrapper*>(
       GetInstance()->GetServiceForBrowserState(browser_state, true));
   return wrapper ? wrapper->snapshot_cache() : nil;

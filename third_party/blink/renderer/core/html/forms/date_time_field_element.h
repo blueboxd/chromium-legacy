@@ -27,7 +27,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_FORMS_DATE_TIME_FIELD_ELEMENT_H_
 
 #include "base/macros.h"
-#include "third_party/blink/public/platform/web_focus_type.h"
+#include "third_party/blink/public/mojom/input/focus_type.mojom-blink-forward.h"
 #include "third_party/blink/renderer/core/html/html_div_element.h"
 #include "third_party/blink/renderer/core/html/html_span_element.h"
 
@@ -61,8 +61,8 @@ class DateTimeFieldElement : public HTMLSpanElement {
   class FieldOwner : public GarbageCollectedMixin {
    public:
     virtual ~FieldOwner();
-    virtual void DidBlurFromField(WebFocusType) = 0;
-    virtual void DidFocusOnField(WebFocusType) = 0;
+    virtual void DidBlurFromField(mojom::blink::FocusType) = 0;
+    virtual void DidFocusOnField(mojom::blink::FocusType) = 0;
     virtual void FieldValueChanged() = 0;
     virtual bool FocusOnNextField(const DateTimeFieldElement&) = 0;
     virtual bool FocusOnPreviousField(const DateTimeFieldElement&) = 0;
@@ -108,7 +108,7 @@ class DateTimeFieldElement : public HTMLSpanElement {
   virtual int ValueForARIAValueNow() const;
 
   // Node functions.
-  void SetFocused(bool, WebFocusType) override;
+  void SetFocused(bool, mojom::blink::FocusType) override;
 
  private:
   void DefaultKeyboardEventHandler(KeyboardEvent&);

@@ -21,6 +21,7 @@
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/blink/public/common/page/page_zoom.h"
+#include "third_party/blink/public/mojom/input/focus_type.mojom.h"
 #include "third_party/blink/public/platform/scheduler/web_thread_scheduler.h"
 #include "third_party/blink/public/platform/web_coalesced_input_event.h"
 #include "third_party/blink/public/platform/web_url.h"
@@ -93,7 +94,7 @@ void WebViewPlugin::ReplayReceivedData(WebPlugin* plugin) {
   }
   // We need to transfer the |focused_| to new plugin after it loaded.
   if (focused_)
-    plugin->UpdateFocus(true, blink::kWebFocusTypeNone);
+    plugin->UpdateFocus(true, blink::mojom::FocusType::kNone);
   if (finished_loading_)
     plugin->DidFinishLoading();
   if (error_)
@@ -201,7 +202,8 @@ void WebViewPlugin::UpdateGeometry(const WebRect& window_rect,
                                 unobscured_rect));
 }
 
-void WebViewPlugin::UpdateFocus(bool focused, blink::WebFocusType focus_type) {
+void WebViewPlugin::UpdateFocus(bool focused,
+                                blink::mojom::FocusType focus_type) {
   focused_ = focused;
 }
 

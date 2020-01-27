@@ -52,8 +52,8 @@ void IOSTranslateInternalsHandler::CallJavascriptFunction(
 
 void IOSTranslateInternalsHandler::RegisterMessages() {
   web::BrowserState* browser_state = web_ui()->GetWebState()->GetBrowserState();
-  ios::ChromeBrowserState* chrome_browser_state =
-      ios::ChromeBrowserState::FromBrowserState(browser_state)
+  ChromeBrowserState* chrome_browser_state =
+      ChromeBrowserState::FromBrowserState(browser_state)
           ->GetOriginalChromeBrowserState();
   NSArray<TabModel*>* tab_models =
       TabModelList::GetTabModelsForChromeBrowserState(chrome_browser_state);

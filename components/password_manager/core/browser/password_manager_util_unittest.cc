@@ -13,13 +13,16 @@
 #include "base/macros.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/task_environment.h"
+#include "base/test/scoped_feature_list.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/password_manager_test_utils.h"
 #include "components/password_manager/core/browser/test_password_store.h"
+#include "components/password_manager/core/common/password_manager_features.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
+#include "components/signin/public/identity_manager/account_info.h"
+#include "components/sync/driver/test_sync_service.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -362,6 +365,113 @@ TEST(PasswordManagerUtil, MakeNormalizedBlacklistedForm_Proxy) {
   EXPECT_EQ(PasswordForm::Scheme::kBasic, blacklisted_credential.scheme);
   EXPECT_EQ(kTestProxySignonRealm, blacklisted_credential.signon_realm);
   EXPECT_EQ(GURL(kTestProxyOrigin), blacklisted_credential.origin);
+}
+
+TEST(PasswordManagerUtil, AccountStoragePerAccountSettings_FeatureDisabled) {
+  base::test::ScopedFeatureList features;
+  features.InitAndDisableFeature(
+      password_manager::features::kEnablePasswordsAccountStorage);
+
+  TestingPrefServiceSimple pref_service;
+  pref_service.registry()->RegisterDictionaryPref(
+      password_manager::prefs::kAccountStoragePerAccountSettings);
+
+  CoreAccountInfo account;
+  account.email = "first@account.com";
+  account.gaia = "first";
+  account.account_id = CoreAccountId::FromGaiaId(account.gaia);
+
+  // SyncService is running in transport mode with |account|.
+  syncer::TestSyncService sync_service;
+  sync_service.SetIsAuthenticatedAccountPrimary(false);
+  sync_service.SetAuthenticatedAccountInfo(account);
+  ASSERT_EQ(sync_service.GetTransportState(),
+            syncer::SyncService::TransportState::ACTIVE);
+  ASSERT_FALSE(sync_service.IsSyncFeatureEnabled());
+
+  // Since the account storage feature is disabled, the profile store should be
+  // the default.
+  EXPECT_FALSE(IsOptedInForAccountStorage(&pref_service, &sync_service));
+  EXPECT_FALSE(ShouldShowAccountStorageOptIn(&pref_service, &sync_service));
+  EXPECT_EQ(GetDefaultPasswordStore(&pref_service, &sync_service),
+            autofill::PasswordForm::Store::kProfileStore);
+
+  // Same if the user is signed out.
+  sync_service.SetAuthenticatedAccountInfo(CoreAccountInfo());
+  sync_service.SetTransportState(syncer::SyncService::TransportState::DISABLED);
+  EXPECT_FALSE(IsOptedInForAccountStorage(&pref_service, &sync_service));
+  EXPECT_EQ(GetDefaultPasswordStore(&pref_service, &sync_service),
+            autofill::PasswordForm::Store::kProfileStore);
+}
+
+TEST(PasswordManagerUtil, AccountStoragePerAccountSettings) {
+  base::test::ScopedFeatureList features;
+  features.InitAndEnableFeature(
+      password_manager::features::kEnablePasswordsAccountStorage);
+
+  TestingPrefServiceSimple pref_service;
+  pref_service.registry()->RegisterDictionaryPref(
+      password_manager::prefs::kAccountStoragePerAccountSettings);
+
+  CoreAccountInfo first_account;
+  first_account.email = "first@account.com";
+  first_account.gaia = "first";
+  first_account.account_id = CoreAccountId::FromGaiaId(first_account.gaia);
+
+  CoreAccountInfo second_account;
+  second_account.email = "second@account.com";
+  second_account.gaia = "second";
+  second_account.account_id = CoreAccountId::FromGaiaId(second_account.gaia);
+
+  // SyncService is running in transport mode with |first_account|.
+  syncer::TestSyncService sync_service;
+  sync_service.SetIsAuthenticatedAccountPrimary(false);
+  sync_service.SetAuthenticatedAccountInfo(first_account);
+  ASSERT_EQ(sync_service.GetTransportState(),
+            syncer::SyncService::TransportState::ACTIVE);
+  ASSERT_FALSE(sync_service.IsSyncFeatureEnabled());
+
+  // By default, the user is not opted in. But since they're eligible for
+  // account storage, the default store should be the account one.
+  EXPECT_FALSE(IsOptedInForAccountStorage(&pref_service, &sync_service));
+  EXPECT_TRUE(ShouldShowAccountStorageOptIn(&pref_service, &sync_service));
+  EXPECT_EQ(GetDefaultPasswordStore(&pref_service, &sync_service),
+            autofill::PasswordForm::Store::kAccountStore);
+
+  // Opt in!
+  SetAccountStorageOptIn(&pref_service, &sync_service, true);
+  EXPECT_TRUE(IsOptedInForAccountStorage(&pref_service, &sync_service));
+  EXPECT_FALSE(ShouldShowAccountStorageOptIn(&pref_service, &sync_service));
+  // ...and change the default store to the profile one.
+  SetDefaultPasswordStore(&pref_service, &sync_service,
+                          autofill::PasswordForm::Store::kProfileStore);
+  EXPECT_EQ(GetDefaultPasswordStore(&pref_service, &sync_service),
+            autofill::PasswordForm::Store::kProfileStore);
+
+  // Change to |second_account|. The opt-in for |first_account| should not
+  // apply, and similarly the default store should be back to "account".
+  sync_service.SetAuthenticatedAccountInfo(second_account);
+  EXPECT_FALSE(IsOptedInForAccountStorage(&pref_service, &sync_service));
+  EXPECT_TRUE(ShouldShowAccountStorageOptIn(&pref_service, &sync_service));
+  EXPECT_EQ(GetDefaultPasswordStore(&pref_service, &sync_service),
+            autofill::PasswordForm::Store::kAccountStore);
+
+  // Change back to |first_account|. The previous opt-in and chosen default
+  // store should now apply again.
+  sync_service.SetAuthenticatedAccountInfo(first_account);
+  EXPECT_TRUE(IsOptedInForAccountStorage(&pref_service, &sync_service));
+  EXPECT_FALSE(ShouldShowAccountStorageOptIn(&pref_service, &sync_service));
+  EXPECT_EQ(GetDefaultPasswordStore(&pref_service, &sync_service),
+            autofill::PasswordForm::Store::kProfileStore);
+
+  // Sign out. Now the settings should have reasonable default values (not opted
+  // in, save to profile store).
+  sync_service.SetAuthenticatedAccountInfo(CoreAccountInfo());
+  sync_service.SetTransportState(syncer::SyncService::TransportState::DISABLED);
+  EXPECT_FALSE(IsOptedInForAccountStorage(&pref_service, &sync_service));
+  EXPECT_FALSE(ShouldShowAccountStorageOptIn(&pref_service, &sync_service));
+  EXPECT_EQ(GetDefaultPasswordStore(&pref_service, &sync_service),
+            autofill::PasswordForm::Store::kProfileStore);
 }
 
 }  // namespace password_manager_util

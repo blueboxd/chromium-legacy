@@ -79,6 +79,7 @@
 <translation id="129553762522093515">Έκλεισαν πρόσφατα</translation>
 <translation id="1298536327547837046">Σάρωση για κακόβουλο λογισμικό</translation>
 <translation id="129863573139666797"><ph name="BEGIN_LINK" />Δοκιμάστε να διαγράψετε τα cookie σας<ph name="END_LINK" /></translation>
+<translation id="1301324364792935241">Ελέγξτε τις ρυθμίσεις ασφαλούς DNS</translation>
 <translation id="1307966114820526988">Λειτουργίες που καταργήθηκαν</translation>
 <translation id="1314509827145471431">Δέσιμο δεξιά</translation>
 <translation id="1320233736580025032">Prc1 (Φάκελος)</translation>
@@ -152,6 +153,7 @@
 <translation id="1569487616857761740">Εισαγωγή ημερομηνίας λήξης</translation>
 <translation id="1581080074034554886">CVC</translation>
 <translation id="1583429793053364125">Παρουσιάστηκε πρόβλημα κατά την εμφάνιση αυτής της ιστοσελίδας.</translation>
+<translation id="1586541204584340881">Ποιες επεκτάσεις έχετε εγκαταστήσει</translation>
 <translation id="1588438908519853928">Κανονική λειτουργία</translation>
 <translation id="1592005682883173041">Πρόσβαση σε τοπικά δεδομένα</translation>
 <translation id="1594030484168838125">Επιλογή</translation>
@@ -290,7 +292,6 @@
 <translation id="2218879909401188352">Οι εισβολείς στον ιστότοπο <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> θα μπορούσαν να εγκαταστήσουν επικίνδυνες εφαρμογές που προκαλούν ζημιά στη συσκευή σας, να προσθέσουν κρυφές χρεώσεις στον λογαριασμό του κινητού σας ή να κλέψουν τα προσωπικά στοιχεία σας. <ph name="BEGIN_LEARN_MORE_LINK" />Μάθετε περισσότερα<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="2224337661447660594">Χωρίς σύνδεση στο διαδίκτυο</translation>
 <translation id="2230458221926704099">Επιδιορθώστε τη σύνδεσή σας χρησιμοποιώντας την <ph name="BEGIN_LINK" />εφαρμογή διαγνωστικών ελέγχων<ph name="END_LINK" /></translation>
-<translation id="22320125457191592">Για εσάς</translation>
 <translation id="2239100178324503013">Αποστολή τώρα</translation>
 <translation id="2248949050832152960">Χρήση WebAuthn</translation>
 <translation id="2250931979407627383">Ραφή στο αριστερό άκρο</translation>
@@ -363,6 +364,7 @@
 <translation id="2544644783021658368">Ένα έγγραφο</translation>
 <translation id="254947805923345898">Η τιμή πολιτικής δεν είναι έγκυρη.</translation>
 <translation id="255002559098805027">Ο κεντρικός υπολογιστής <ph name="HOST_NAME" /> έστειλε μια μη έγκυρη απόκριση.</translation>
+<translation id="2553853292994445426">Ελέγξτε τις ρυθμίσεις ασφαλούς DNS. Μπορεί να έχετε διαμορφώσει έναν ασφαλή διακομιστή DNS στον οποίο οι συνδέσεις αποτυγχάνουν.</translation>
 <translation id="2556876185419854533">&amp;Αναίρεση επεξεργασίας</translation>
 <translation id="257674075312929031">Ομάδα</translation>
 <translation id="2586657967955657006">Πρόχειρο</translation>
@@ -485,6 +487,7 @@
 <translation id="3095940652251934233">Statement</translation>
 <translation id="3096100844101284527">Προσθήκη διεύθυνσης παραλαβής</translation>
 <translation id="3105172416063519923">Αναγνωριστικό στοιχείο:</translation>
+<translation id="3107591622054137333"><ph name="BEGIN_LINK" />Έλεγχος διαμόρφωσης ασφαλούς DNS<ph name="END_LINK" /></translation>
 <translation id="3109728660330352905">Δεν έχετε εξουσιοδότηση για την προβολή αυτής της σελίδας.</translation>
 <translation id="3113284927548439113">Τρίτη βάρδια</translation>
 <translation id="3116158981186517402">Πλαστικοποίηση</translation>
@@ -576,7 +579,6 @@
 <translation id="3531780078352352885">Φύλλα εργασίας</translation>
 <translation id="3533328374079021623">Γραμματοκιβώτιο 5</translation>
 <translation id="3539171420378717834">Διατήρηση αντιγράφου αυτής της κάρτας σε αυτήν τη συσκευή</translation>
-<translation id="3553513561058684206">Για εσάς</translation>
 <translation id="3558573058928565255">Ημέρα</translation>
 <translation id="3566021033012934673">Η σύνδεσή σας δεν είναι ιδιωτική</translation>
 <translation id="3574305903863751447"><ph name="CITY" />, <ph name="STATE" /> <ph name="COUNTRY" /></translation>
@@ -789,6 +791,7 @@
 <translation id="4390472908992056574">Χείλος</translation>
 <translation id="4406896451731180161">αποτελέσματα αναζήτησης</translation>
 <translation id="4408413947728134509">Cookie <ph name="NUM_COOKIES" /></translation>
+<translation id="4414290883293381923">Μόλις καταχωρίσατε τον κωδικό πρόσβασής σας σε έναν παραπλανητικό ιστότοπο. Το Chrome συνιστά να μεταβείτε στους ιστοτόπους <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> και <ph name="WEBSITE_3" />, καθώς και σε άλλους ιστοτόπους όπου χρησιμοποιείτε αυτόν τον κωδικό πρόσβασης και να τον αλλάξετε άμεσα.</translation>
 <translation id="4415426530740016218">Διεύθυνση παραλαβής</translation>
 <translation id="4424024547088906515">Ο διακομιστής δεν μπόρεσε να αποδείξει ότι είναι <ph name="DOMAIN" />. Το πιστοποιητικό ασφαλείας του δεν θεωρείται έμπιστο από τον Chrome. Αυτό μπορεί να οφείλεται σε λανθασμένη ρύθμιση ή σε κάποιον τρίτο που επιτίθεται στη σύνδεσή σας.</translation>
 <translation id="443121186588148776">Σειριακή θύρα</translation>
@@ -1221,6 +1224,7 @@
 <translation id="6353505687280762741">{COUNT,plural, =0{Κανένας}=1{1 κωδικός πρόσβασης (για <ph name="DOMAIN_LIST" />, συγχρονισμένος)}=2{2 κωδικοί πρόσβασης (για <ph name="DOMAIN_LIST" />, συγχρονισμένοι)}other{# κωδικοί πρόσβασης (για <ph name="DOMAIN_LIST" />, συγχρονισμένοι)}}</translation>
 <translation id="6358450015545214790">Τι σημαίνουν αυτά;</translation>
 <translation id="6361757823711327522">B7</translation>
+<translation id="6364095313648930329"><ph name="BEGIN_LINK" />Έλεγχος του διακομιστή μεσολάβησης, του τείχους προστασίας και της διαμόρφωσης ασφαλούς DNS<ph name="END_LINK" /></translation>
 <translation id="6366710531182496394">Διπλή συρραφή στα αριστερά</translation>
 <translation id="6377268785556383139">1 αποτέλεσμα για την αναζήτηση "<ph name="SEARCH_TEXT" />"</translation>
 <translation id="6380497234672085559">A0</translation>
@@ -1243,6 +1247,7 @@
 <translation id="6433595998831338502">Ο κεντρικός υπολογιστής <ph name="HOST_NAME" /> απέρριψε τη σύνδεση.</translation>
 <translation id="6434309073475700221">Απόρριψη</translation>
 <translation id="6440503408713884761">Αγνοείται</translation>
+<translation id="6443406338865242315">Ποιες επεκτάσεις και προσθήκες έχετε εγκαταστήσει</translation>
 <translation id="6446163441502663861">Kahu (Φάκελος)</translation>
 <translation id="6446608382365791566">Προσθήκη περισσότερων πληροφοριών</translation>
 <translation id="6447842834002726250">Cookie</translation>
@@ -1352,6 +1357,7 @@
 <translation id="7012363358306927923">China UnionPay</translation>
 <translation id="7016992613359344582">Αυτές οι χρεώσεις μπορεί να είναι εφάπαξ ή επαναλαμβανόμενες και ίσως να μην είναι εμφανείς.</translation>
 <translation id="7029809446516969842">Κωδ. πρόσβασης</translation>
+<translation id="7031646650991750659">Ποιες εφαρμογές Google Play έχετε εγκαταστήσει</translation>
 <translation id="7050187094878475250">Επιχειρήσατε να μεταβείτε στο <ph name="DOMAIN" />, αλλά ο διακομιστής παρουσίασε ένα πιστοποιητικό με περίοδο εγκυρότητας η οποία είναι πολύ μεγάλη για να θεωρηθεί αξιόπιστη.</translation>
 <translation id="705310974202322020">{NUM_CARDS,plural, =1{Αυτήν τη στιγμή, δεν είναι δυνατή η αποθήκευση αυτής της κάρτας}other{Αυτήν τη στιγμή, δεν είναι δυνατή η αποθήκευση αυτών των καρτών}}</translation>
 <translation id="7053983685419859001">Αποκλεισμός</translation>
@@ -1411,6 +1417,7 @@
 <translation id="7319430975418800333">A3</translation>
 <translation id="7320336641823683070">Βοήθεια σύνδεσης</translation>
 <translation id="733354035281974745">Παράκαμψη τοπικού λογαριασμού συσκευής</translation>
+<translation id="7333654844024768166">Μόλις καταχωρίσατε τον κωδικό πρόσβασής σας σε έναν παραπλανητικό ιστότοπο. Το Chromium συνιστά να μεταβείτε στους ιστοτόπους <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> και <ph name="WEBSITE_3" />, καθώς και σε άλλους ιστοτόπους όπου χρησιμοποιείτε αυτόν τον κωδικό πρόσβασης και να τον αλλάξετε άμεσα.</translation>
 <translation id="7334320624316649418">&amp;Επανάληψη αναδιάταξης</translation>
 <translation id="7337706099755338005">Δεν είναι διαθέσιμο στην πλατφόρμα σας.</translation>
 <translation id="733923710415886693">Το πιστοποιητικό του διακομιστή δεν αποκαλύφθηκε μέσω της Διαφάνειας πιστοποιητικών.</translation>

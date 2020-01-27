@@ -542,12 +542,11 @@ void SyncEngine::DumpFiles(const GURL& origin,
   ListCallback tracked_callback =
       callback_tracker_.Register(abort_closure, callback);
 
-  PostTaskAndReplyWithResult(worker_task_runner_.get(),
-                             FROM_HERE,
-                             base::Bind(&SyncWorkerInterface::DumpFiles,
-                                        base::Unretained(sync_worker_.get()),
-                                        origin),
-                             tracked_callback);
+  PostTaskAndReplyWithResult(
+      worker_task_runner_.get(), FROM_HERE,
+      base::BindOnce(&SyncWorkerInterface::DumpFiles,
+                     base::Unretained(sync_worker_.get()), origin),
+      base::BindOnce(tracked_callback));
 }
 
 void SyncEngine::DumpDatabase(const ListCallback& callback) {
@@ -562,11 +561,11 @@ void SyncEngine::DumpDatabase(const ListCallback& callback) {
   ListCallback tracked_callback =
       callback_tracker_.Register(abort_closure, callback);
 
-  PostTaskAndReplyWithResult(worker_task_runner_.get(),
-                             FROM_HERE,
-                             base::Bind(&SyncWorkerInterface::DumpDatabase,
-                                        base::Unretained(sync_worker_.get())),
-                             tracked_callback);
+  PostTaskAndReplyWithResult(
+      worker_task_runner_.get(), FROM_HERE,
+      base::BindOnce(&SyncWorkerInterface::DumpDatabase,
+                     base::Unretained(sync_worker_.get())),
+      base::BindOnce(tracked_callback));
 }
 
 void SyncEngine::SetSyncEnabled(bool sync_enabled) {

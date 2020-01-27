@@ -36,7 +36,7 @@ TEST_F(BreadcrumbPersistentStorageUtilTest, UniqueStorage) {
 TEST_F(BreadcrumbPersistentStorageUtilTest, UniqueIncognitoStorage) {
   base::FilePath path1 =
       GetBreadcrumbPersistentStorageFilePath(GetBrowserState());
-  ios::ChromeBrowserState* off_the_record_browser_state =
+  ChromeBrowserState* off_the_record_browser_state =
       chrome_browser_state_->GetOffTheRecordChromeBrowserState();
   base::FilePath path2 =
       GetBreadcrumbPersistentStorageFilePath(off_the_record_browser_state);

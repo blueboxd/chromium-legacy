@@ -267,6 +267,8 @@ const char* ServiceWorkerDatabase::StatusToString(
       return "Database operation failed";
     case ServiceWorkerDatabase::STATUS_ERROR_NOT_SUPPORTED:
       return "Database operation not supported";
+    case ServiceWorkerDatabase::STATUS_ERROR_DISABLED:
+      return "Database is disabled";
     case ServiceWorkerDatabase::STATUS_ERROR_MAX:
       NOTREACHED();
       return "Database unknown error";

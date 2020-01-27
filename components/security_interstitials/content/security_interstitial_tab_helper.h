@@ -49,6 +49,11 @@ class SecurityInterstitialTabHelper
   // Whether this tab helper is tracking a currently-displaying interstitial.
   bool IsDisplayingInterstitial() const;
 
+  // Whether an interstitial has been associated for |navigation_id|, but hasn't
+  // committed yet. For checking if the interstitial has committed use
+  // IsDisplayingInterstitial.
+  bool IsInterstitialPendingForNavigation(int64_t navigation_id) const;
+
   security_interstitials::SecurityInterstitialPage*
   GetBlockingPageForCurrentlyCommittedNavigationForTesting();
 

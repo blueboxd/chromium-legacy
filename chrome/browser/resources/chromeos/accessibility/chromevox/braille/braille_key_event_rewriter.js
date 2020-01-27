@@ -14,14 +14,13 @@ goog.require('BrailleKeyEvent');
 /**
  * A class that transforms a sequence of braille key events into a standard key
  * event.
- * @constructor
  */
-BrailleKeyEventRewriter = function() {
-  /** @private {Object} */
-  this.incrementalKey_ = null;
-};
+BrailleKeyEventRewriter = class {
+  constructor() {
+    /** @private {Object} */
+    this.incrementalKey_ = null;
+  }
 
-BrailleKeyEventRewriter.prototype = {
   /**
    * Accumulates and optionally modifies in-coming braille key events.
    * @param {BrailleKeyEvent} evt

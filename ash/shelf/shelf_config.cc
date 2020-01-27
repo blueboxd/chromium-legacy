@@ -101,7 +101,12 @@ void ShelfConfig::Shutdown() {
   shell->tablet_mode_controller()->RemoveObserver(this);
 }
 
-void ShelfConfig::OnTabletModeStarted() {
+void ShelfConfig::OnTabletModeStarting() {
+  // Update the shelf config at the "starting" stage of the tablet mode
+  // transition, so that the shelf bounds are set and remains stable during the
+  // transition animation. Otherwise, updating the shelf bounds during the
+  // animation will lead to work-area bounds changes which lead to many
+  // re-layouts, hurting the animation's smoothness. https://crbug.com/1044316.
   UpdateConfig(is_app_list_visible_);
 }
 
@@ -304,10 +309,20 @@ SkColor ShelfConfig::GetDefaultShelfColor() const {
         AshColorProvider::AshColorMode::kDark);
   }
 
+  AshColorProvider::BaseLayerType layer_type;
+  if (!chromeos::switches::ShouldShowShelfHotseat()) {
+    layer_type = IsTabletMode()
+                     ? AshColorProvider::BaseLayerType::kTransparent60
+                     : AshColorProvider::BaseLayerType::kTransparent74;
+  } else if (IsTabletMode()) {
+    layer_type = is_in_app() ? AshColorProvider::BaseLayerType::kTransparent90
+                             : AshColorProvider::BaseLayerType::kTransparent60;
+  } else {
+    layer_type = AshColorProvider::BaseLayerType::kTransparent74;
+  }
+
   SkColor final_color = AshColorProvider::Get()->GetBaseLayerColor(
-      IsTabletMode() ? AshColorProvider::BaseLayerType::kTransparent60
-                     : AshColorProvider::BaseLayerType::kTransparent74,
-      AshColorProvider::AshColorMode::kDark);
+      layer_type, AshColorProvider::AshColorMode::kDark);
 
   return GetThemedColorFromWallpaper(final_color);
 }

@@ -4,8 +4,8 @@
 
 #include "third_party/blink/renderer/modules/webgpu/gpu_shader_module.h"
 
+#include "third_party/blink/renderer/bindings/modules/v8/v8_gpu_shader_module_descriptor.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_device.h"
-#include "third_party/blink/renderer/modules/webgpu/gpu_shader_module_descriptor.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 
 namespace blink {

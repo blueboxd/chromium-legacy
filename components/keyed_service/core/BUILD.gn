@@ -42,6 +42,7 @@ component("core") {
     "//base",
     "//components/pref_registry",
     "//components/prefs",
+    "//services/tracing/public/cpp:cpp",
   ]
 }
 

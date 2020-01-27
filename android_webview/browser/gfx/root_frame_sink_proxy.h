@@ -19,6 +19,10 @@ namespace android_webview {
 class RootFrameSinkProxyClient {
  public:
   virtual void Invalidate() = 0;
+  virtual void ReturnResourcesFromViz(
+      viz::FrameSinkId frame_sink_id,
+      uint32_t layer_tree_frame_sink_id,
+      std::vector<viz::ReturnedResource> resources) = 0;
 };
 
 // Per-AwContents object. Straddles UI and Viz thread. Public methods should be
@@ -40,6 +44,7 @@ class RootFrameSinkProxy : public viz::BeginFrameObserverBase {
   RootFrameSinkGetter GetRootFrameSinkCallback();
 
  private:
+  class RootFrameSinkClientImpl;
   static scoped_refptr<RootFrameSink> GetRootFrameSinkHelper(
       base::WeakPtr<RootFrameSinkProxy> proxy);
 
@@ -55,6 +60,12 @@ class RootFrameSinkProxy : public viz::BeginFrameObserverBase {
   void SetBeginFrameSourcePausedOnViz(bool paused);
   void InvalidateOnViz();
   void InvalidateOnUI();
+  void ReturnResourcesOnViz(viz::FrameSinkId frame_sink_id,
+                            uint32_t layer_tree_frame_sink_id,
+                            std::vector<viz::ReturnedResource> resources);
+  void ReturnResourcesOnUI(viz::FrameSinkId frame_sink_id,
+                           uint32_t layer_tree_frame_sink_id,
+                           std::vector<viz::ReturnedResource> resources);
 
   bool BeginFrame(const viz::BeginFrameArgs& args);
 
@@ -64,6 +75,7 @@ class RootFrameSinkProxy : public viz::BeginFrameObserverBase {
   const scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;
   const scoped_refptr<base::SingleThreadTaskRunner> viz_task_runner_;
   RootFrameSinkProxyClient* const client_;
+  std::unique_ptr<RootFrameSinkClient> root_frame_sink_client_;
   scoped_refptr<RootFrameSink> without_gpu_;
   viz::BeginFrameSource* const begin_frame_source_;
   bool had_input_event_ = false;

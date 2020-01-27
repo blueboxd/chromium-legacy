@@ -8,8 +8,12 @@ source_set("content") {
 
   if (enable_captive_portal_detection) {
     sources += [
+      "captive_portal_login_detector.cc",
+      "captive_portal_login_detector.h",
       "captive_portal_service.cc",
       "captive_portal_service.h",
+      "captive_portal_tab_reloader.cc",
+      "captive_portal_tab_reloader.h",
     ]
   }
 
@@ -34,7 +38,10 @@ source_set("unit_tests") {
   sources = []
 
   if (enable_captive_portal_detection) {
-    sources += [ "captive_portal_service_unittest.cc" ]
+    sources += [
+      "captive_portal_service_unittest.cc",
+      "captive_portal_tab_reloader_unittest.cc",
+    ]
   }
   deps = [
     ":content",

@@ -27,10 +27,11 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_EVENTS_FOCUS_EVENT_H_
 
 #include "third_party/blink/renderer/core/dom/events/event_target.h"
-#include "third_party/blink/renderer/core/events/focus_event_init.h"
 #include "third_party/blink/renderer/core/events/ui_event.h"
 
 namespace blink {
+
+class FocusEventInit;
 
 class FocusEvent final : public UIEvent {
   DEFINE_WRAPPERTYPEINFO();

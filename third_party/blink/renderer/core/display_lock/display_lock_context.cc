@@ -468,6 +468,8 @@ void DisplayLockContext::CommitForActivationWithSignal(
   StartCommit();
 
   RecordActivationReason(reason_for_metrics);
+  if (reason_for_metrics == DisplayLockActivationReason::kFindInPage)
+    document_->MarkHasFindInPageRenderSubtreeActiveMatch();
 
   if (!IsAttributeVersion(this)) {
     css_is_activated_ = true;

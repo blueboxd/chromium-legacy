@@ -9,23 +9,18 @@ import android.view.View;
 import android.widget.TextView;
 
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.omnibox.suggestions.base.BaseSuggestionView;
-import org.chromium.chrome.browser.omnibox.suggestions.base.BaseSuggestionViewBinder;
 import org.chromium.ui.modelutil.PropertyKey;
 import org.chromium.ui.modelutil.PropertyModel;
 
 /** A mechanism binding EntitySuggestion properties to its view. */
-public class EntitySuggestionViewBinder extends BaseSuggestionViewBinder {
-    /** @see BaseSuggestionViewBinder#bind(PropertyModel, BaseSuggestionView, PropertyKey) */
-    @Override
-    public void bind(PropertyModel model, BaseSuggestionView view, PropertyKey propertyKey) {
-        super.bind(model, view, propertyKey);
-
+public class EntitySuggestionViewBinder {
+    /** @see PropertyModelChangeProcessor.ViewBinder#bind(Object, Object, Object) */
+    public static void bind(PropertyModel model, View view, PropertyKey propertyKey) {
         if (EntitySuggestionViewProperties.SUBJECT_TEXT == propertyKey) {
-            final TextView tv = view.findContentView(R.id.entity_subject);
+            final TextView tv = view.findViewById(R.id.entity_subject);
             tv.setText(model.get(EntitySuggestionViewProperties.SUBJECT_TEXT));
         } else if (EntitySuggestionViewProperties.DESCRIPTION_TEXT == propertyKey) {
-            final TextView tv = view.findContentView(R.id.entity_description);
+            final TextView tv = view.findViewById(R.id.entity_description);
             final String text = model.get(EntitySuggestionViewProperties.DESCRIPTION_TEXT);
             if (TextUtils.isEmpty(text)) {
                 tv.setVisibility(View.GONE);

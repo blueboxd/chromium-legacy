@@ -38,8 +38,6 @@ android_library("java") {
     "org/chromium/weblayer/DownloadError.java",
     "org/chromium/weblayer/DownloadState.java",
     "org/chromium/weblayer/ErrorPageCallback.java",
-    "org/chromium/weblayer/FindInPageCallback.java",
-    "org/chromium/weblayer/FindInPageController.java",
     "org/chromium/weblayer/FullscreenCallback.java",
     "org/chromium/weblayer/LoadError.java",
     "org/chromium/weblayer/Navigation.java",

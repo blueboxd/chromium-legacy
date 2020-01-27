@@ -79,6 +79,7 @@
 <translation id="129553762522093515">Nedavno zatvoreno</translation>
 <translation id="1298536327547837046">Skeniranje na prisustvo zlonamjernog softvera</translation>
 <translation id="129863573139666797"><ph name="BEGIN_LINK" />Pokušajte obrisati kolačiće<ph name="END_LINK" /></translation>
+<translation id="1301324364792935241">Provjerite postavke sigurnosnog DNS-a</translation>
 <translation id="1307966114820526988">Zastarjele funkcije</translation>
 <translation id="1314509827145471431">Povezivanje desne strane</translation>
 <translation id="1320233736580025032">Prc1 (koverta)</translation>
@@ -152,6 +153,7 @@
 <translation id="1569487616857761740">Unesite datum isteka</translation>
 <translation id="1581080074034554886">CVC</translation>
 <translation id="1583429793053364125">Došlo je do problema prilikom prikazivanja ove web stranice.</translation>
+<translation id="1586541204584340881">Koje ekstenzije ste instalirali</translation>
 <translation id="1588438908519853928">Normalno</translation>
 <translation id="1592005682883173041">Pristup lokalnim podacima</translation>
 <translation id="1594030484168838125">Odaberi</translation>
@@ -290,7 +292,6 @@
 <translation id="2218879909401188352">Napadači koji se trenutno nalaze na web lokaciji <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> mogu instalirati opasne aplikacije koje izazivaju oštećenja vašeg uređaja, prouzrokuju skrivene troškove na vašem računu za mobilnu mrežu ili kradu vaše lične podatke. <ph name="BEGIN_LEARN_MORE_LINK" />Saznajte više<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="2224337661447660594">Nema internetske veze</translation>
 <translation id="2230458221926704099">Riješite svoju grešku prilikom povezivanja pomoću <ph name="BEGIN_LINK" />aplikacije za dijagnostiku<ph name="END_LINK" /></translation>
-<translation id="22320125457191592">Za vas</translation>
 <translation id="2239100178324503013">Pošalji sad</translation>
 <translation id="2248949050832152960">Koristi mrežnu provjeru autentičnosti</translation>
 <translation id="2250931979407627383">Uvez uz desni rub</translation>
@@ -363,6 +364,7 @@
 <translation id="2544644783021658368">Jedan dokument</translation>
 <translation id="254947805923345898">Vrijednost pravila nije važeća.</translation>
 <translation id="255002559098805027">Host računar <ph name="HOST_NAME" /> je poslao nevažeći odgovor.</translation>
+<translation id="2553853292994445426">Provjerite postavke sigurnosnog DNS-a. Moguće je da ste konfigurirali sigurnosni DNS server s kojim povezivanje ne uspijeva.</translation>
 <translation id="2556876185419854533">&amp;Poništi uređivanje</translation>
 <translation id="257674075312929031">Grupa</translation>
 <translation id="2586657967955657006">Međumemorija</translation>
@@ -485,6 +487,7 @@
 <translation id="3095940652251934233">Izjava</translation>
 <translation id="3096100844101284527">Dodaj adresu za preuzimanje</translation>
 <translation id="3105172416063519923">ID materijala:</translation>
+<translation id="3107591622054137333"><ph name="BEGIN_LINK" />Provjeravanje konfiguracije sigurnosnog DNS-a<ph name="END_LINK" /></translation>
 <translation id="3109728660330352905">Nemate ovlaštenje za prikaz ove stranice.</translation>
 <translation id="3113284927548439113">Treća smjena</translation>
 <translation id="3116158981186517402">Laminiranje</translation>
@@ -576,7 +579,6 @@
 <translation id="3531780078352352885">Tabele za posao</translation>
 <translation id="3533328374079021623">Poštansko sanduče 5</translation>
 <translation id="3539171420378717834">Zadrži kopiju ove kartice na ovom uređaju</translation>
-<translation id="3553513561058684206">Za vas</translation>
 <translation id="3558573058928565255">Dan</translation>
 <translation id="3566021033012934673">Vaša veza nije privatna</translation>
 <translation id="3574305903863751447"><ph name="CITY" />, <ph name="STATE" /> <ph name="COUNTRY" /></translation>
@@ -788,6 +790,7 @@
 <translation id="4390472908992056574">Rub</translation>
 <translation id="4406896451731180161">rezultati pretraživanja</translation>
 <translation id="4408413947728134509">Broj kolačića: <ph name="NUM_COOKIES" /></translation>
+<translation id="4414290883293381923">Upravo ste unijeli lozinku na obmanjujućoj web lokaciji. Chrome preporučuje da odete na <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, <ph name="WEBSITE_3" /> i druge web lokacije na kojima koristite ovu lozinku i odmah je promijenite.</translation>
 <translation id="4415426530740016218">Adresa preuzimanja</translation>
 <translation id="4424024547088906515">Ovaj server nije uspio dokazati da predstavlja domenu <ph name="DOMAIN" />. Chrome ne smatra njenu potvrdu sigurnosti pouzdanom. Uzrok tome može biti pogrešna konfiguracija ili napadač koji je prekinuo vašu vezu.</translation>
 <translation id="443121186588148776">Serijski priključak</translation>
@@ -1220,6 +1223,7 @@
 <translation id="6353505687280762741">{COUNT,plural, =0{Ništa}=1{1 lozinka (za <ph name="DOMAIN_LIST" />, sinhronizirano)}=2{2 lozinke (za <ph name="DOMAIN_LIST" />, sinhronizirano)}one{# lozinka (za <ph name="DOMAIN_LIST" />, sinhronizirano)}few{# lozinke (za <ph name="DOMAIN_LIST" />, sinhronizirano)}other{# lozinki (za <ph name="DOMAIN_LIST" />, sinhronizirano)}}</translation>
 <translation id="6358450015545214790">Šta ovo znači?</translation>
 <translation id="6361757823711327522">B7</translation>
+<translation id="6364095313648930329"><ph name="BEGIN_LINK" />provjeriti konfiguraciju proksi servera, zaštitnog zida i sigurnosnog DNS-a<ph name="END_LINK" /></translation>
 <translation id="6366710531182496394">Dvostruko spajanje na lijevoj strani</translation>
 <translation id="6377268785556383139">1 rezultat za pojam "'<ph name="SEARCH_TEXT" />"</translation>
 <translation id="6380497234672085559">A0</translation>
@@ -1242,6 +1246,7 @@
 <translation id="6433595998831338502">Host računar <ph name="HOST_NAME" /> je odbio povezivanje.</translation>
 <translation id="6434309073475700221">Odbaci</translation>
 <translation id="6440503408713884761">Zanemareno</translation>
+<translation id="6443406338865242315">Koje ekstenzije i dodatke ste instalirali</translation>
 <translation id="6446163441502663861">Kahu (koverta)</translation>
 <translation id="6446608382365791566">Dodajte više informacija</translation>
 <translation id="6447842834002726250">Kolačići</translation>
@@ -1351,6 +1356,7 @@
 <translation id="7012363358306927923">China UnionPay</translation>
 <translation id="7016992613359344582">Ti troškovi mogu biti jednokratni ili ponavljajući te također mogu biti diskretni.</translation>
 <translation id="7029809446516969842">Lozinke</translation>
+<translation id="7031646650991750659">Koje Google Play aplikacije ste instalirali</translation>
 <translation id="7050187094878475250">Pokušali ste pristupiti domeni <ph name="DOMAIN" />, ali je server prikazao potvrdu čiji period važenja je predugačak da bi bio vjerodostojan.</translation>
 <translation id="705310974202322020">{NUM_CARDS,plural, =1{Trenutno nije moguće sačuvati ovu karticu}one{Trenutno nije moguće sačuvati ove kartice}few{Trenutno nije moguće sačuvati ove kartice}other{Trenutno nije moguće sačuvati ove kartice}}</translation>
 <translation id="7053983685419859001">Blokiraj</translation>
@@ -1410,6 +1416,7 @@ Dodatni detalji:
 <translation id="7319430975418800333">A3</translation>
 <translation id="7320336641823683070">Pomoć s povezivanjem</translation>
 <translation id="733354035281974745">Zaobilaženje lokalnog računa uređaja</translation>
+<translation id="7333654844024768166">Upravo ste unijeli lozinku na obmanjujućoj web lokaciji. Chromium preporučuje da odete na <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, <ph name="WEBSITE_3" /> i druge web lokacije na kojima koristite ovu lozinku i odmah je promijenite.</translation>
 <translation id="7334320624316649418">&amp;Ponovi preuređivanje</translation>
 <translation id="7337706099755338005">Nije dostupno na vašoj platformi.</translation>
 <translation id="733923710415886693">Potvrda servera nije otkrivena korištenjem pravila o transparentnosti potvrde.</translation>

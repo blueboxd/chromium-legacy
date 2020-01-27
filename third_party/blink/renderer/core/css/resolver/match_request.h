@@ -53,9 +53,9 @@ class MatchRequest {
     rule_set->CompactRulesIfNeeded();
   }
 
-  Member<const RuleSet> rule_set;
-  Member<const ContainerNode> scope;
-  Member<const CSSStyleSheet> style_sheet;
+  const RuleSet* rule_set;
+  const ContainerNode* scope;
+  const CSSStyleSheet* style_sheet;
   const unsigned style_sheet_index;
   bool is_from_vtt;
 };

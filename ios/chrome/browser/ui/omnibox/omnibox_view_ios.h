@@ -8,9 +8,9 @@
 #import <UIKit/UIKit.h>
 
 #include <memory>
+
 #include "components/omnibox/browser/location_bar_model.h"
 #include "components/omnibox/browser/omnibox_view.h"
-#include "ios/chrome/browser/browser_state/chrome_browser_state_forward.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_left_image_consumer.h"
 #include "ios/chrome/browser/ui/omnibox/omnibox_text_change_delegate.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_text_field_ios.h"
@@ -18,6 +18,7 @@
 #import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_view_suggestions_delegate.h"
 
 class AutocompleteResult;
+class ChromeBrowserState;
 class GURL;
 class WebOmniboxEditController;
 struct AutocompleteMatch;
@@ -35,7 +36,7 @@ class OmniboxViewIOS : public OmniboxView,
   OmniboxViewIOS(OmniboxTextFieldIOS* field,
                  WebOmniboxEditController* controller,
                  id<OmniboxLeftImageConsumer> left_image_consumer,
-                 ios::ChromeBrowserState* browser_state,
+                 ChromeBrowserState* browser_state,
                  id<OmniboxFocuser> omnibox_focuser);
 
   void SetPopupProvider(OmniboxPopupProvider* provider) {
@@ -118,7 +119,7 @@ class OmniboxViewIOS : public OmniboxView,
                                  const base::string16& pasted_text,
                                  size_t index) override;
 
-  ios::ChromeBrowserState* browser_state() { return browser_state_; }
+  ChromeBrowserState* browser_state() { return browser_state_; }
 
   // Updates this edit view to show the proper text, highlight and images.
   void UpdateAppearance();
@@ -164,7 +165,7 @@ class OmniboxViewIOS : public OmniboxView,
   // TODO(crbug.com/303212): Remove this workaround once the crash is fixed.
   bool ShouldIgnoreUserInputDueToPendingVoiceSearch();
 
-  ios::ChromeBrowserState* browser_state_;
+  ChromeBrowserState* browser_state_;
 
   OmniboxTextFieldIOS* field_;
 

@@ -30,7 +30,7 @@
 #include <memory>
 
 #include "cc/input/snap_selection_strategy.h"
-#include "third_party/blink/public/platform/web_scroll_into_view_params.h"
+#include "third_party/blink/public/mojom/scroll/scroll_into_view_params.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/dictionary.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/bindings/core/v8/scroll_into_view_options_or_boolean.h"
@@ -38,6 +38,10 @@
 #include "third_party/blink/renderer/bindings/core/v8/string_or_trusted_html_or_trusted_script_or_trusted_script_url.h"
 #include "third_party/blink/renderer/bindings/core/v8/string_or_trusted_script.h"
 #include "third_party/blink/renderer/bindings/core/v8/string_or_trusted_script_url.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_pointer_lock_options.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_scroll_into_view_options.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_scroll_to_options.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_shadow_root_init.h"
 #include "third_party/blink/renderer/core/accessibility/ax_context.h"
 #include "third_party/blink/renderer/core/accessibility/ax_object_cache.h"
 #include "third_party/blink/renderer/core/animation/css/css_animations.h"
@@ -76,12 +80,10 @@
 #include "third_party/blink/renderer/core/dom/mutation_record.h"
 #include "third_party/blink/renderer/core/dom/named_node_map.h"
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
-#include "third_party/blink/renderer/core/dom/pointer_lock_options.h"
 #include "third_party/blink/renderer/core/dom/presentation_attribute_style.h"
 #include "third_party/blink/renderer/core/dom/pseudo_element.h"
 #include "third_party/blink/renderer/core/dom/scriptable_document_parser.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
-#include "third_party/blink/renderer/core/dom/shadow_root_init.h"
 #include "third_party/blink/renderer/core/dom/shadow_root_v0.h"
 #include "third_party/blink/renderer/core/dom/slot_assignment.h"
 #include "third_party/blink/renderer/core/dom/space_split_string.h"
@@ -100,8 +102,6 @@
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
-#include "third_party/blink/renderer/core/frame/scroll_into_view_options.h"
-#include "third_party/blink/renderer/core/frame/scroll_to_options.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/frame/visual_viewport.h"
 #include "third_party/blink/renderer/core/fullscreen/fullscreen.h"
@@ -145,6 +145,7 @@
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/core/resize_observer/resize_observation.h"
+#include "third_party/blink/renderer/core/scroll/scroll_into_view_params_type_converters.h"
 #include "third_party/blink/renderer/core/scroll/scrollable_area.h"
 #include "third_party/blink/renderer/core/scroll/scrollbar_theme.h"
 #include "third_party/blink/renderer/core/scroll/smooth_scroll_sequencer.h"
@@ -1143,8 +1144,9 @@ void Element::ScrollIntoViewNoVisualUpdate(
 
   PhysicalRect bounds = BoundingBoxForScrollIntoView();
   GetLayoutObject()->ScrollRectToVisible(
-      bounds, {align_x, align_y, kProgrammaticScroll,
-               /*make_visible_in_visual_viewport=*/true, behavior});
+      bounds, CreateScrollIntoViewParams(
+                  align_x, align_y, kProgrammaticScroll,
+                  /*make_visible_in_visual_viewport=*/true, behavior));
 
   GetDocument().SetSequentialFocusNavigationStartingPoint(this);
 }
@@ -1158,12 +1160,14 @@ void Element::scrollIntoViewIfNeeded(bool center_if_needed) {
   PhysicalRect bounds = BoundingBoxForScrollIntoView();
   if (center_if_needed) {
     GetLayoutObject()->ScrollRectToVisible(
-        bounds, {ScrollAlignment::kAlignCenterIfNeeded,
-                 ScrollAlignment::kAlignCenterIfNeeded});
+        bounds,
+        CreateScrollIntoViewParams(ScrollAlignment::kAlignCenterIfNeeded,
+                                   ScrollAlignment::kAlignCenterIfNeeded));
   } else {
     GetLayoutObject()->ScrollRectToVisible(
-        bounds, {ScrollAlignment::kAlignToEdgeIfNeeded,
-                 ScrollAlignment::kAlignToEdgeIfNeeded});
+        bounds,
+        CreateScrollIntoViewParams(ScrollAlignment::kAlignToEdgeIfNeeded,
+                                   ScrollAlignment::kAlignToEdgeIfNeeded));
   }
 }
 
@@ -3826,7 +3830,7 @@ void Element::ChildrenChanged(const ChildrenChange& change) {
     CheckForSiblingStyleChanges(
         change.type == kElementRemoved ? kSiblingElementRemoved
                                        : kSiblingElementInserted,
-        To<Element>(change.sibling_changed.Get()), change.sibling_before_change,
+        To<Element>(change.sibling_changed), change.sibling_before_change,
         change.sibling_after_change);
 
   if (ShadowRoot* shadow_root = GetShadowRoot())
@@ -4132,8 +4136,8 @@ Element* Element::GetFocusableArea() const {
 }
 
 void Element::focus(const FocusOptions* options) {
-  focus(FocusParams(SelectionBehaviorOnFocus::kRestore, kWebFocusTypeNone,
-                    nullptr, options));
+  focus(FocusParams(SelectionBehaviorOnFocus::kRestore,
+                    mojom::blink::FocusType::kNone, nullptr, options));
 }
 
 void Element::focus(const FocusParams& params) {
@@ -4165,8 +4169,8 @@ void Element::focus(const FocusParams& params) {
       // Unlike the specification, we re-run focus() for new_focus_target
       // because we can't change |this| in a member function.
       new_focus_target->focus(FocusParams(SelectionBehaviorOnFocus::kReset,
-                                          kWebFocusTypeForward, nullptr,
-                                          params.options));
+                                          mojom::blink::FocusType::kForward,
+                                          nullptr, params.options));
     }
     // 2. If new focus target is null, then:
     //  2.1. If no fallback target was specified, then return.
@@ -4175,7 +4179,7 @@ void Element::focus(const FocusParams& params) {
   // If script called focus(), then the type would be none. This means we are
   // activating because of a script action (kScriptFocus). Otherwise, this is a
   // user activation (kUserFocus).
-  ActivateDisplayLockIfNeeded(params.type == kWebFocusTypeNone
+  ActivateDisplayLockIfNeeded(params.type == mojom::blink::FocusType::kNone
                                   ? DisplayLockActivationReason::kScriptFocus
                                   : DisplayLockActivationReason::kUserFocus);
   DispatchActivateInvisibleEventIfNeeded();
@@ -4249,7 +4253,7 @@ void Element::UpdateFocusAppearanceWithOptions(
              !GetLayoutObject()->IsLayoutEmbeddedContent()) {
     if (!options->preventScroll()) {
       GetLayoutObject()->ScrollRectToVisible(BoundingBoxForScrollIntoView(),
-                                             WebScrollIntoViewParams());
+                                             CreateScrollIntoViewParams());
     }
   }
 }
@@ -4554,7 +4558,7 @@ Element* Element::AdjustedFocusedElementInTreeScope() const {
 }
 
 void Element::DispatchFocusEvent(Element* old_focused_element,
-                                 WebFocusType type,
+                                 mojom::blink::FocusType type,
                                  InputDeviceCapabilities* source_capabilities) {
   DispatchEvent(*FocusEvent::Create(
       event_type_names::kFocus, Event::Bubbles::kNo, GetDocument().domWindow(),
@@ -4562,7 +4566,7 @@ void Element::DispatchFocusEvent(Element* old_focused_element,
 }
 
 void Element::DispatchBlurEvent(Element* new_focused_element,
-                                WebFocusType type,
+                                mojom::blink::FocusType type,
                                 InputDeviceCapabilities* source_capabilities) {
   DispatchEvent(*FocusEvent::Create(
       event_type_names::kBlur, Event::Bubbles::kNo, GetDocument().domWindow(),
@@ -4572,7 +4576,7 @@ void Element::DispatchBlurEvent(Element* new_focused_element,
 void Element::DispatchFocusInEvent(
     const AtomicString& event_type,
     Element* old_focused_element,
-    WebFocusType,
+    mojom::blink::FocusType,
     InputDeviceCapabilities* source_capabilities) {
 #if DCHECK_IS_ON()
   DCHECK(!EventDispatchForbiddenScope::IsEventDispatchForbidden());

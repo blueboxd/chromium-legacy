@@ -7,6 +7,7 @@
 
 #include "base/scoped_observer.h"
 #include "base/timer/timer.h"
+#include "chrome/browser/ui/passwords/bubble_controllers/auto_sign_in_bubble_controller.h"
 #include "chrome/browser/ui/views/passwords/password_bubble_view_base.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/widget/widget.h"
@@ -30,6 +31,10 @@ class PasswordAutoSignInView : public PasswordBubbleViewBase,
  private:
   ~PasswordAutoSignInView() override;
 
+  // PasswordBubbleViewBase
+  PasswordBubbleControllerBase* GetController() override;
+  const PasswordBubbleControllerBase* GetController() const override;
+
   // LocationBarBubbleDelegateView:
   gfx::Size CalculatePreferredSize() const override;
   void OnWidgetActivationChanged(views::Widget* widget, bool active) override;
@@ -39,6 +44,8 @@ class PasswordAutoSignInView : public PasswordBubbleViewBase,
 
   void OnTimer();
   static base::TimeDelta GetTimeout();
+
+  AutoSignInBubbleController controller_;
 
   base::OneShotTimer timer_;
 

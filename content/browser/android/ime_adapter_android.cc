@@ -357,8 +357,8 @@ void ImeAdapterAndroid::AdvanceFocusInForm(JNIEnv* env,
   if (!rfh)
     return;
 
-  rfh->Send(new FrameMsg_AdvanceFocusInForm(
-      rfh->GetRoutingID(), static_cast<blink::WebFocusType>(focus_type)));
+  rfh->GetAssociatedLocalFrame()->AdvanceFocusInForm(
+      static_cast<blink::mojom::FocusType>(focus_type));
 }
 
 void ImeAdapterAndroid::SetEditableSelectionOffsets(

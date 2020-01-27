@@ -6,7 +6,6 @@
 
 #include "base/stl_util.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_basic_card_request.h"
-#include "third_party/blink/renderer/modules/payments/basic_card_request.h"
 #include "third_party/blink/renderer/modules/payments/payment_request.h"
 
 namespace blink {

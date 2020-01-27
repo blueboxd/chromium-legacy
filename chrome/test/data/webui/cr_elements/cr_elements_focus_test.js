@@ -32,9 +32,9 @@ TEST_F('CrElementsActionMenuTest', 'All', function() {
   mocha.run();
 });
 
-function CrElementsProfileAvatarSelectorFocusTest() {}
+function CrElementsProfileAvatarSelectorTest() {}
 
-CrElementsProfileAvatarSelectorFocusTest.prototype = {
+CrElementsProfileAvatarSelectorTest.prototype = {
   __proto__: CrElementsFocusTest.prototype,
 
   /** @override */
@@ -46,9 +46,8 @@ CrElementsProfileAvatarSelectorFocusTest.prototype = {
   ]),
 };
 
-TEST_F('CrElementsProfileAvatarSelectorFocusTest', 'All', function() {
-  cr_profile_avatar_selector.registerTests();
-  mocha.grep(cr_profile_avatar_selector.TestNames.Focus).run();
+TEST_F('CrElementsProfileAvatarSelectorTest', 'All', function() {
+  mocha.run();
 });
 
 /**

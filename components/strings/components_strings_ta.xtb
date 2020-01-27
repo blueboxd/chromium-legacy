@@ -272,7 +272,6 @@
 <translation id="2218879909401188352">தற்போது <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> எனும் தளத்தில் உள்ள தீங்கிழைப்பவர்கள் உங்கள் சாதனத்தைச் சேதப்படுத்தும் ஆபத்தான ஆப்ஸை நிறுவலாம், மொபைல் கட்டணத்தில் மறைமுகக் கட்டணங்களைச் சேர்க்கலாம் அல்லது உங்கள் தனிப்பட்ட தகவலைத் திருடலாம். <ph name="BEGIN_LEARN_MORE_LINK" />மேலும் அறிக<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="2224337661447660594">இணைய இணைப்பு இல்லை</translation>
 <translation id="2230458221926704099"><ph name="BEGIN_LINK" />கண்டறியும் பயன்பாட்டைப்<ph name="END_LINK" /> பயன்படுத்தி இணைப்பைச் சரிசெய்யவும்</translation>
-<translation id="22320125457191592">உங்களுக்கானவை</translation>
 <translation id="2239100178324503013">இப்போதே அனுப்பு</translation>
 <translation id="2248949050832152960">WebAuthnனைப் பயன்படுத்து</translation>
 <translation id="2250931979407627383">எட்ஜ் ஸ்டிட்ச் லெஃப்ட்</translation>
@@ -526,7 +525,6 @@
 <translation id="3528485271872257980">அடர் பழுப்பு</translation>
 <translation id="3530944546672790857">{COUNT,plural, =0{ஒத்திசைத்த சாதனங்களில் குறைந்தது 1 உருப்படி உள்ளது}=1{1 உருப்படி (ஒத்திசைத்த சாதனங்களில் இதற்கு மேல் உள்ளன)}other{# உருப்படிகள் (ஒத்திசைத்த சாதனங்களில் இதற்கு மேல் உள்ளன)}}</translation>
 <translation id="3539171420378717834">இந்தக் கார்டின் பிரதியை சாதனத்தில் சேமி</translation>
-<translation id="3553513561058684206">உங்களுக்கானவை</translation>
 <translation id="3566021033012934673">உங்கள் இணைப்பு தனிப்பட்டது அல்ல</translation>
 <translation id="3574305903863751447"><ph name="CITY" />, <ph name="STATE" /> <ph name="COUNTRY" /></translation>
 <translation id="3576616784287504635"><ph name="SITE" /> இல் உள்ள உட்பொதிக்கப்பட்ட பக்கம் தெரிவிப்பது:</translation>

@@ -928,14 +928,6 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
       [self setLastCommittedNavigationItemTitle:webView.title];
     }
   }
-
-  // Report cases where SSL cert is missing for a secure connection.
-  if (self.documentURL.SchemeIsCryptographic()) {
-    scoped_refptr<net::X509Certificate> cert;
-    cert = web::CreateCertFromTrust(webView.serverTrust);
-    UMA_HISTOGRAM_BOOLEAN("WebController.WKWebViewHasCertForSecureConnection",
-                          static_cast<bool>(cert));
-  }
 }
 
 - (void)webView:(WKWebView*)webView

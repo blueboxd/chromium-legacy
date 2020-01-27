@@ -21,7 +21,7 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.Feature;
-import org.chromium.chrome.browser.settings.password.SavePasswordsPreferences;
+import org.chromium.chrome.browser.settings.password.PasswordSettings;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
 import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.test.util.AccountHolder;
@@ -45,7 +45,7 @@ public class PasswordViewingTypeTest {
     @Rule
     public AccountManagerTestRule mAccountManagerTestRule = new AccountManagerTestRule();
 
-    private MainPreferences mMainPreferences;
+    private MainSettings mMainSettings;
     private ChromeBasePreference mPasswordsPref;
     private Context mContext;
     private MockSyncContentResolverDelegate mSyncContentResolverDelegate;
@@ -57,11 +57,11 @@ public class PasswordViewingTypeTest {
         setupTestAccount();
         mSyncContentResolverDelegate = new MockSyncContentResolverDelegate();
         mContext = InstrumentationRegistry.getTargetContext();
-        mMainPreferences = (MainPreferences) startMainPreferences(
+        mMainSettings = (MainSettings) startMainSettings(
                 InstrumentationRegistry.getInstrumentation(), mContext)
-                                   .getMainFragment();
-        mPasswordsPref = (ChromeBasePreference) mMainPreferences.findPreference(
-                MainPreferences.PREF_SAVED_PASSWORDS);
+                                .getMainFragment();
+        mPasswordsPref = (ChromeBasePreference) mMainSettings.findPreference(
+                MainSettings.PREF_PASSWORDS);
         AndroidSyncSettings.overrideForTests(mSyncContentResolverDelegate, null);
         mAuthority = AndroidSyncSettings.get().getContractAuthority();
         AndroidSyncSettings.get().updateAccount(mAccount);
@@ -80,13 +80,13 @@ public class PasswordViewingTypeTest {
     }
 
     /**
-     * Launches the main preferences.
+     * Launches the main settings.
      */
-    private static SettingsActivity startMainPreferences(
+    private static SettingsActivity startMainSettings(
             Instrumentation instrumentation, final Context mContext) {
         Intent intent = SettingsLauncher.getInstance().createIntentForSettingsPage(
-                mContext, MainPreferences.class.getName());
-        Activity activity = (SettingsActivity) instrumentation.startActivitySync(intent);
+                mContext, MainSettings.class.getName());
+        Activity activity = instrumentation.startActivitySync(intent);
         return (SettingsActivity) activity;
     }
 
@@ -145,7 +145,7 @@ public class PasswordViewingTypeTest {
             Assert.assertFalse(ProfileSyncService.get().isUsingSecondaryPassphrase());
         });
         Assert.assertEquals(
-                SavePasswordsPreferences.class.getCanonicalName(), mPasswordsPref.getFragment());
+                PasswordSettings.class.getCanonicalName(), mPasswordsPref.getFragment());
     }
 
     /**
@@ -158,8 +158,8 @@ public class PasswordViewingTypeTest {
         setSyncability(true);
         overrideProfileSyncService(true);
         Assert.assertEquals(
-                SavePasswordsPreferences.class.getCanonicalName(), mPasswordsPref.getFragment());
-        Assert.assertNotNull(mMainPreferences.getActivity().getIntent());
+                PasswordSettings.class.getCanonicalName(), mPasswordsPref.getFragment());
+        Assert.assertNotNull(mMainSettings.getActivity().getIntent());
     }
 
     /**
@@ -170,7 +170,7 @@ public class PasswordViewingTypeTest {
     public void testNonSyncingNativePasswordView() throws InterruptedException {
         setSyncability(false);
         Assert.assertEquals(
-                SavePasswordsPreferences.class.getCanonicalName(), mPasswordsPref.getFragment());
+                PasswordSettings.class.getCanonicalName(), mPasswordsPref.getFragment());
     }
 
 }

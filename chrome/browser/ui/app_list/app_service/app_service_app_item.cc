@@ -13,6 +13,7 @@
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
+#include "chrome/browser/ui/app_list/app_service/app_service_context_menu.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_context_menu.h"
 #include "chrome/browser/ui/app_list/crostini/crostini_app_context_menu.h"
 #include "chrome/browser/ui/app_list/extension_app_context_menu.h"
@@ -158,8 +159,14 @@ const char* AppServiceAppItem::GetItemType() const {
 }
 
 void AppServiceAppItem::GetContextMenuModel(GetMenuModelCallback callback) {
-  context_menu_ = MakeAppContextMenu(app_type_, this, profile(), id(),
-                                     GetController(), is_platform_app_);
+  if (base::FeatureList::IsEnabled(features::kAppServiceContextMenu)) {
+    context_menu_ = std::make_unique<AppServiceContextMenu>(
+        this, profile(), id(), GetController());
+  } else {
+    context_menu_ = MakeAppContextMenu(app_type_, this, profile(), id(),
+                                       GetController(), is_platform_app_);
+  }
+
   context_menu_->GetMenuModel(std::move(callback));
 }
 

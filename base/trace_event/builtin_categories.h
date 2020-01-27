@@ -123,6 +123,7 @@
   X("sequence_manager")                                                  \
   X("service_manager")                                                   \
   X("ServiceWorker")                                                     \
+  X("sharing")                                                           \
   X("shell")                                                             \
   X("shortcut_viewer")                                                   \
   X("shutdown")                                                          \

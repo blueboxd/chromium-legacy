@@ -48,6 +48,8 @@
 #include "components/safe_browsing/core/proto/csd.pb.h"
 #include "components/safe_browsing/core/triggers/trigger_throttler.h"
 #include "components/safe_browsing/core/verdict_cache_manager.h"
+#include "components/security_interstitials/content/unsafe_resource_util.h"
+#include "components/security_interstitials/core/unsafe_resource.h"
 #include "components/signin/public/identity_manager/account_info.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/strings/grit/components_strings.h"
@@ -564,7 +566,7 @@ void ChromePasswordProtectionService::MaybeStartThreatDetailsCollection(
     resource.threat_type = SB_THREAT_TYPE_SIGNED_IN_NON_SYNC_PASSWORD_REUSE;
   }
   resource.url = web_contents->GetLastCommittedURL();
-  resource.web_contents_getter = resource.GetWebContentsGetter(
+  resource.web_contents_getter = security_interstitials::GetWebContentsGetter(
       web_contents->GetMainFrame()->GetProcess()->GetID(),
       web_contents->GetMainFrame()->GetRoutingID());
   resource.token = token;

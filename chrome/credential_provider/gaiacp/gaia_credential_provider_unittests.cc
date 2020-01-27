@@ -443,11 +443,15 @@ INSTANTIATE_TEST_SUITE_P(
 // 3. bool - is internet available.
 // 4. bool - is active directory user.
 // 5. bool - is internet not available but validity expired.
+// 6. int - 0. Both GaiaID and Email are available.
+//          1. Gaia ID is not available
+//          2. Email is not available
+//          3. Both are unavailable.
 
 class GcpCredentialProviderWithGaiaUsersTest
     : public GcpCredentialProviderTest,
       public ::testing::WithParamInterface<
-          std::tuple<bool, bool, bool, bool, bool>> {
+          std::tuple<bool, bool, bool, bool, bool, int>> {
  protected:
   void SetUp() override;
 };
@@ -466,6 +470,7 @@ TEST_P(GcpCredentialProviderWithGaiaUsersTest, ReauthCredentialTest) {
       has_internet ? FakeInternetAvailabilityChecker::kHicForceYes
                    : FakeInternetAvailabilityChecker::kHicForceNo);
   const bool is_offline_validity_expired = std::get<4>(GetParam());
+  const int user_property_status = std::get<5>(GetParam());
 
   CComBSTR sid;
   if (is_ad_user) {
@@ -480,6 +485,15 @@ TEST_P(GcpCredentialProviderWithGaiaUsersTest, ReauthCredentialTest) {
     ASSERT_EQ(S_OK, fake_os_user_manager()->CreateTestOSUser(
                         L"username", L"password", L"full name", L"comment",
                         L"gaia-id", L"foo@gmail.com", &sid));
+  }
+
+  if (user_property_status & 1) {
+    // Gaia id is not available.
+    SetUserProperty((BSTR)sid, kUserId, L"");
+  }
+  if (user_property_status & 2) {
+    // Email is not available.
+    SetUserProperty((BSTR)sid, kUserEmail, L"");
   }
 
   ASSERT_EQ(S_OK,
@@ -505,8 +519,9 @@ TEST_P(GcpCredentialProviderWithGaiaUsersTest, ReauthCredentialTest) {
   ASSERT_EQ(S_OK, InitializeProviderWithCredentials(&count, &provider));
 
   bool should_reauth_user =
-      (!has_internet && is_offline_validity_expired) ||
-      (has_internet && (!has_token_handle || !valid_token_handle));
+      (user_property_status != 3) &&
+      ((!has_internet && is_offline_validity_expired) ||
+       (has_internet && (!has_token_handle || !valid_token_handle)));
 
   // Check if there is a IReauthCredential depending on the state of the token
   // handle.
@@ -526,7 +541,8 @@ INSTANTIATE_TEST_SUITE_P(All,
                                             ::testing::Bool(),
                                             ::testing::Bool(),
                                             ::testing::Bool(),
-                                            ::testing::Bool()));
+                                            ::testing::Bool(),
+                                            ::testing::Values(0, 1, 2, 3)));
 
 // Check that reauth credentials only exists when either user is an AD user or
 // the token handle for the associated user is no longer valid when internet is

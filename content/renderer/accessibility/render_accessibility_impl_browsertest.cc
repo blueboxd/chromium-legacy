@@ -34,6 +34,7 @@
 #include "services/image_annotation/public/mojom/image_annotation.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/platform/web_float_rect.h"
 #include "third_party/blink/public/platform/web_size.h"
 #include "third_party/blink/public/web/web_ax_object.h"
 #include "third_party/blink/public/web/web_document.h"

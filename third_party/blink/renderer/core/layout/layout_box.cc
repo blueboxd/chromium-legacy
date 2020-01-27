@@ -30,8 +30,8 @@
 #include <algorithm>
 
 #include "cc/input/scroll_snap_data.h"
+#include "third_party/blink/public/mojom/scroll/scroll_into_view_params.mojom-blink.h"
 #include "third_party/blink/public/platform/web_rect.h"
-#include "third_party/blink/public/platform/web_scroll_into_view_params.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/editing/editing_utilities.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
@@ -85,6 +85,7 @@
 #include "third_party/blink/renderer/core/paint/ng/ng_paint_fragment.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
+#include "third_party/blink/renderer/core/scroll/scroll_into_view_params_type_converters.h"
 #include "third_party/blink/renderer/core/style/shadow_list.h"
 #include "third_party/blink/renderer/platform/geometry/double_rect.h"
 #include "third_party/blink/renderer/platform/geometry/float_quad.h"
@@ -655,9 +656,10 @@ int LayoutBox::PixelSnappedScrollHeight() const {
 
 PhysicalRect LayoutBox::ScrollRectToVisibleRecursive(
     const PhysicalRect& absolute_rect,
-    const WebScrollIntoViewParams& params) {
-  DCHECK(params.GetScrollType() == kProgrammaticScroll ||
-         params.GetScrollType() == kUserScroll);
+    mojom::blink::ScrollIntoViewParamsPtr params) {
+  auto type = mojo::ConvertTo<ScrollType>(params->type);
+
+  DCHECK(type == kProgrammaticScroll || type == kUserScroll);
 
   if (!GetFrameView())
     return absolute_rect;
@@ -667,7 +669,7 @@ PhysicalRect LayoutBox::ScrollRectToVisibleRecursive(
   // if the stop_at_main_frame_layout_viewport option is set. We do this so
   // that we can allow a smooth "scroll and zoom" animation to do the final
   // scroll in cases like scrolling a focused editable box into view.
-  if (params.stop_at_main_frame_layout_viewport && IsGlobalRootScroller())
+  if (params->stop_at_main_frame_layout_viewport && IsGlobalRootScroller())
     return absolute_rect;
 
   // Presumably the same issue as in setScrollTop. See crbug.com/343132.
@@ -689,7 +691,7 @@ PhysicalRect LayoutBox::ScrollRectToVisibleRecursive(
     absolute_rect_for_parent =
         GetScrollableArea()->ScrollIntoView(absolute_rect_to_scroll, params);
   } else if (!parent_box && CanBeProgramaticallyScrolled()) {
-    ScrollableArea* area_to_scroll = params.make_visible_in_visual_viewport
+    ScrollableArea* area_to_scroll = params->make_visible_in_visual_viewport
                                          ? GetFrameView()->GetScrollableArea()
                                          : GetFrameView()->LayoutViewport();
     absolute_rect_for_parent =
@@ -714,7 +716,7 @@ PhysicalRect LayoutBox::ScrollRectToVisibleRecursive(
   // have any effect, so we avoid using the RootFrameViewport and explicitly
   // scroll the visual viewport if we can.  If not, we're done.
   if (StyleRef().GetPosition() == EPosition::kFixed && Container() == View() &&
-      params.make_visible_in_visual_viewport) {
+      params->make_visible_in_visual_viewport) {
     if (GetFrame()->IsMainFrame()) {
       // TODO(donnd): We should continue the recursion if we're in a subframe.
       return GetFrame()->GetPage()->GetVisualViewport().ScrollIntoView(
@@ -726,11 +728,11 @@ PhysicalRect LayoutBox::ScrollRectToVisibleRecursive(
 
   if (parent_box) {
     return parent_box->ScrollRectToVisibleRecursive(absolute_rect_for_parent,
-                                                    params);
+                                                    std::move(params));
   } else if (GetFrame()->IsLocalRoot() && !GetFrame()->IsMainFrame()) {
     if (AllowedToPropagateRecursiveScrollToParentFrame(params)) {
       GetFrameView()->ScrollRectToVisibleInRemoteParent(
-          absolute_rect_for_parent, params);
+          absolute_rect_for_parent, std::move(params));
     }
   }
 
@@ -1090,9 +1092,9 @@ void LayoutBox::Autoscroll(const PhysicalOffset& position_in_root_frame) {
   ScrollRectToVisibleRecursive(
       PhysicalRect(absolute_position,
                    PhysicalSize(LayoutUnit(1), LayoutUnit(1))),
-      WebScrollIntoViewParams(ScrollAlignment::kAlignToEdgeIfNeeded,
-                              ScrollAlignment::kAlignToEdgeIfNeeded,
-                              kUserScroll));
+      CreateScrollIntoViewParams(ScrollAlignment::kAlignToEdgeIfNeeded,
+                                 ScrollAlignment::kAlignToEdgeIfNeeded,
+                                 kUserScroll));
 }
 
 bool LayoutBox::CanAutoscroll() const {
@@ -6331,11 +6333,11 @@ void LayoutBox::ReassignSnapAreas(LayoutBox& new_container) {
 }
 
 bool LayoutBox::AllowedToPropagateRecursiveScrollToParentFrame(
-    const WebScrollIntoViewParams& params) {
+    const mojom::blink::ScrollIntoViewParamsPtr& params) {
   if (!GetFrameView()->SafeToPropagateScrollToParent())
     return false;
 
-  if (params.GetScrollType() != kProgrammaticScroll)
+  if (mojo::ConvertTo<ScrollType>(params->type) != kProgrammaticScroll)
     return true;
 
   return !GetDocument().IsVerticalScrollEnforced();

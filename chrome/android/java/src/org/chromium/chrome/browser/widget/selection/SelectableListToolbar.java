@@ -39,8 +39,6 @@ import androidx.annotation.VisibleForTesting;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.util.ColorUtils;
-import org.chromium.chrome.browser.vr.VrModeObserver;
-import org.chromium.chrome.browser.vr.VrModuleProvider;
 import org.chromium.chrome.browser.widget.NumberRollView;
 import org.chromium.chrome.browser.widget.selection.SelectionDelegate.SelectionObserver;
 import org.chromium.components.browser_ui.widget.TintedDrawable;
@@ -49,6 +47,8 @@ import org.chromium.components.browser_ui.widget.displaystyle.HorizontalDisplayS
 import org.chromium.components.browser_ui.widget.displaystyle.UiConfig;
 import org.chromium.ui.KeyboardVisibilityDelegate;
 import org.chromium.ui.UiUtils;
+import org.chromium.ui.vr.VrModeObserver;
+import org.chromium.ui.vr.VrModeProvider;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -97,6 +97,7 @@ public class SelectableListToolbar<E>
 
     protected boolean mIsSelectionEnabled;
     protected SelectionDelegate<E> mSelectionDelegate;
+    protected VrModeProvider mVrModeProvider;
 
     private boolean mIsSearching;
     private boolean mHasSearchView;
@@ -158,7 +159,7 @@ public class SelectableListToolbar<E>
         mIsDestroyed = true;
         if (mSelectionDelegate != null) mSelectionDelegate.removeObserver(this);
         hideKeyboard();
-        VrModuleProvider.unregisterVrModeObserver(this);
+        if (mVrModeProvider != null) mVrModeProvider.unregisterVrModeObserver(this);
     }
 
     /**
@@ -174,9 +175,10 @@ public class SelectableListToolbar<E>
      * @param updateStatusBarColor Whether the status bar color should be updated to match the
      *                             toolbar color. If true, the status bar will only be updated if
      *                             the current device fully supports theming and is on Android M+.
+     * @param vrModeProvider Used to modify behavior based on VR state.
      */
     public void initialize(SelectionDelegate<E> delegate, int titleResId, int normalGroupResId,
-            int selectedGroupResId, boolean updateStatusBarColor) {
+            int selectedGroupResId, boolean updateStatusBarColor, VrModeProvider vrModeProvider) {
         mTitleResId = titleResId;
         mNormalGroupResId = normalGroupResId;
         mSelectedGroupResId = selectedGroupResId;
@@ -219,8 +221,9 @@ public class SelectableListToolbar<E>
         mNavigationIconDrawable = UiUtils.getTintedDrawable(
                 getContext(), R.drawable.ic_arrow_back_white_24dp, R.color.standard_mode_tint);
 
-        VrModuleProvider.registerVrModeObserver(this);
-        if (VrModuleProvider.getDelegate().isInVr()) onEnterVr();
+        mVrModeProvider = vrModeProvider;
+        mVrModeProvider.registerVrModeObserver(this);
+        if (mVrModeProvider.isInVr()) onEnterVr();
 
         mShowInfoIcon = true;
         mShowInfoStringId = R.string.show_info;
@@ -614,7 +617,7 @@ public class SelectableListToolbar<E>
                 infoMenuItem.setIcon(iconDrawable);
             }
 
-            if (VrModuleProvider.getDelegate().isInVr()) {
+            if (mVrModeProvider.isInVr()) {
                 // There seems to be a bug with the support library, only on Android N, where the
                 // toast showing the title shows up every time the info menu item is clicked or
                 // scrolled on, even if its long press handler is overridden. VR on N doesn't

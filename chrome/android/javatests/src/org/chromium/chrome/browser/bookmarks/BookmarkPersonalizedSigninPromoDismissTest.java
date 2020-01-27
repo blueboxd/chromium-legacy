@@ -25,6 +25,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
@@ -93,6 +94,7 @@ public class BookmarkPersonalizedSigninPromoDismissTest {
 
     @Test
     @MediumTest
+    @DisabledTest // Flaky https://crbug.com/1045480
     public void testPromoImpressionCountIncrementAfterDisplayingSigninPromo() {
         assertEquals(0, SigninPromoController.getSigninPromoImpressionsCountBookmarksForTests());
         BookmarkTestUtil.showBookmarkManager(mSyncTestRule.getActivity());

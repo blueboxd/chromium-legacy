@@ -62,22 +62,23 @@ class PathManager(object):
         }
         cls._is_initialized = True
 
-    @staticmethod
-    def gen_path_to(path):
+    @classmethod
+    def gen_path_to(cls, path):
         """
         Returns the absolute path of |path| that must be relative to the root
         directory of generated files.
         """
-        assert PathManager._is_initialized, PathManager._REQUIRE_INIT_MESSAGE
-        return os.path.abspath(os.path.join(PathManager._root_gen_dir, path))
+        assert cls._is_initialized, cls._REQUIRE_INIT_MESSAGE
+        return os.path.abspath(os.path.join(cls._root_gen_dir, path))
 
     @classmethod
-    def relpath_to_project_root(cls, path):
-        index = path.find(cls._blink_path_prefix)
-        if index < 0:
-            assert path.startswith(cls._blink_path_prefix[1:])
-            return path
-        return path[index + 1:]
+    def src_path_to(cls, path):
+        """
+        Returns the absolute path of |path| that must be relative to the
+        project root directory.
+        """
+        assert cls._is_initialized, cls._REQUIRE_INIT_MESSAGE
+        return os.path.abspath(os.path.join(cls._root_src_dir, path))
 
     def __init__(self, idl_definition):
         assert self._is_initialized, self._REQUIRE_INIT_MESSAGE

@@ -7,9 +7,9 @@
 #include <ostream>  // NOLINT
 
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/renderer/modules/payments/address_errors.h"
-#include "third_party/blink/renderer/modules/payments/payer_errors.h"
-#include "third_party/blink/renderer/modules/payments/payment_validation_errors.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_address_errors.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_payer_errors.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_payment_validation_errors.h"
 #include "third_party/blink/renderer/platform/weborigin/security_policy.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 

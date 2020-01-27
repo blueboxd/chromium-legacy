@@ -139,10 +139,10 @@ class ScopedPrintContext {
   explicit ScopedPrintContext(LocalFrame*);
   ~ScopedPrintContext();
 
-  PrintContext* operator->() const { return context_.Get(); }
+  PrintContext* operator->() const { return context_; }
 
  private:
-  Member<PrintContext> context_;
+  PrintContext* context_;
 
   DISALLOW_COPY_AND_ASSIGN(ScopedPrintContext);
 };

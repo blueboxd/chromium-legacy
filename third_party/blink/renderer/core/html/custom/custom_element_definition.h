@@ -136,7 +136,7 @@ class CORE_EXPORT CustomElementDefinition
 
    private:
     ConstructionStack& construction_stack_;
-    Member<Element> element_;
+    Element* element_;
     size_t depth_;
   };
 

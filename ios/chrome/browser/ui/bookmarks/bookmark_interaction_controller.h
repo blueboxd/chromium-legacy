@@ -6,11 +6,12 @@
 
 #import <UIKit/UIKit.h>
 
-#include "ios/chrome/browser/browser_state/chrome_browser_state_forward.h"
 
 @protocol ApplicationCommands;
 @protocol BrowserCommands;
 @protocol BookmarkInteractionControllerDelegate;
+
+class ChromeBrowserState;
 
 namespace bookmarks {
 class BookmarkNode;
@@ -30,7 +31,7 @@ class WebStateList;
 @property(nonatomic, weak) id<BookmarkInteractionControllerDelegate> delegate;
 
 - (instancetype)
-    initWithBrowserState:(ios::ChromeBrowserState*)browserState
+    initWithBrowserState:(ChromeBrowserState*)browserState
         parentController:(UIViewController*)parentController
               dispatcher:(id<ApplicationCommands, BrowserCommands>)dispatcher
             webStateList:(WebStateList*)webStateList NS_DESIGNATED_INITIALIZER;

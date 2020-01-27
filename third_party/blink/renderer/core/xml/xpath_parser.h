@@ -68,7 +68,7 @@ class Parser {
   Parser();
   ~Parser();
 
-  XPathNSResolver* Resolver() const { return resolver_.Get(); }
+  XPathNSResolver* Resolver() const { return resolver_; }
   bool ExpandQName(const String& q_name,
                    AtomicString& local_name,
                    AtomicString& namespace_uri);
@@ -81,7 +81,7 @@ class Parser {
 
   int Lex(void* yylval);
 
-  Member<Expression> top_expr_;
+  Expression* top_expr_;
   bool got_namespace_error_;
 
  private:
@@ -109,7 +109,7 @@ class Parser {
   unsigned next_pos_;
   String data_;
   int last_token_type_;
-  Member<XPathNSResolver> resolver_;
+  XPathNSResolver* resolver_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(Parser);
 };

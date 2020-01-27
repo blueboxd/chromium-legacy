@@ -20,7 +20,7 @@ namespace {
 
 // Returns true if the user is signed-in and full history sync is enabled,
 // false otherwise.
-bool IsHistorySyncEnabled(ios::ChromeBrowserState* browser_state) {
+bool IsHistorySyncEnabled(ChromeBrowserState* browser_state) {
   syncer::SyncService* sync_service =
       ProfileSyncServiceFactory::GetForBrowserState(browser_state);
   return sync_service && sync_service->IsSyncFeatureActive() &&
@@ -32,7 +32,7 @@ bool IsHistorySyncEnabled(ios::ChromeBrowserState* browser_state) {
 
 // static
 history::WebHistoryService* WebHistoryServiceFactory::GetForBrowserState(
-    ios::ChromeBrowserState* browser_state) {
+    ChromeBrowserState* browser_state) {
   // Ensure that the service is not instantiated or used if the user is not
   // signed into sync, or if web history is not enabled.
   if (!IsHistorySyncEnabled(browser_state))
@@ -61,8 +61,8 @@ WebHistoryServiceFactory::~WebHistoryServiceFactory() {
 
 std::unique_ptr<KeyedService> WebHistoryServiceFactory::BuildServiceInstanceFor(
     web::BrowserState* context) const {
-  ios::ChromeBrowserState* browser_state =
-      ios::ChromeBrowserState::FromBrowserState(context);
+  ChromeBrowserState* browser_state =
+      ChromeBrowserState::FromBrowserState(context);
   return std::make_unique<history::WebHistoryService>(
       IdentityManagerFactory::GetForBrowserState(browser_state),
       base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(

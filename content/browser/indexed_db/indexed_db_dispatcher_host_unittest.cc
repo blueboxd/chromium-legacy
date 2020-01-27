@@ -180,6 +180,7 @@ class IndexedDBDispatcherHostTest : public testing::Test {
             special_storage_policy_,
             quota_manager_->proxy(),
             base::DefaultClock::GetInstance(),
+            ChromeBlobStorageContext::GetRemoteFor(&browser_context_),
             base::CreateSingleThreadTaskRunner({BrowserThread::IO}),
             nullptr)),
         host_(new IndexedDBDispatcherHost(

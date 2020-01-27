@@ -34,6 +34,7 @@ import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
@@ -255,6 +256,7 @@ public class AdaptiveToolbarTest {
 
     @Test
     @MediumTest
+    @DisableIf.Build(message = "Flaky test: https://crbug.com/1045415")
     public void testTopToolbar_WithoutGTS_WithBottomToolbar_Home_Search_Tab_Switcher() {
         BottomToolbarVariationManager.setVariation(Variations.HOME_SEARCH_TAB_SWITCHER);
         setupFlagsAndLaunchActivity(true, false);

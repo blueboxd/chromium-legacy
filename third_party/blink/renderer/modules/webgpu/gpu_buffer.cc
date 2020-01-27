@@ -8,11 +8,11 @@
 
 #include "gpu/command_buffer/client/webgpu_interface.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_gpu_buffer_descriptor.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer.h"
 #include "third_party/blink/renderer/modules/webgpu/dawn_callback.h"
 #include "third_party/blink/renderer/modules/webgpu/dawn_conversions.h"
-#include "third_party/blink/renderer/modules/webgpu/gpu_buffer_descriptor.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_device.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"

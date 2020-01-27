@@ -5,7 +5,8 @@
 #include "third_party/blink/renderer/core/page/spatial_navigation_controller.h"
 
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
-#include "third_party/blink/public/platform/web_scroll_into_view_params.h"
+#include "third_party/blink/public/mojom/input/focus_type.mojom-blink.h"
+#include "third_party/blink/public/mojom/scroll/scroll_into_view_params.mojom-blink.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/dom/element_traversal.h"
@@ -28,6 +29,7 @@
 #include "third_party/blink/renderer/core/page/focus_controller.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/page/spatial_navigation.h"
+#include "third_party/blink/renderer/core/scroll/scroll_into_view_params_type_converters.h"
 #include "third_party/blink/renderer/platform/geometry/layout_rect.h"
 #include "third_party/blink/renderer/platform/instrumentation/histogram.h"
 
@@ -116,9 +118,8 @@ static void ConsiderForBestCandidate(SpatialNavigationDirection direction,
   if (distance == kMaxDistance)
     return;
 
-  Element* candidate_element = To<Element>(candidate.visible_node.Get());
-  Element* best_candidate_element =
-      To<Element>(best_candidate->visible_node.Get());
+  Element* candidate_element = To<Element>(candidate.visible_node);
+  Element* best_candidate_element = To<Element>(best_candidate->visible_node);
 
   if (candidate_element->IsDescendantOf(best_candidate_element) &&
       IsSkippableCandidate(best_candidate_element) &&
@@ -220,9 +221,9 @@ bool SpatialNavigationController::HandleEnterKeyboardEvent(
     // convert the Enter key into click on down and press (and up) events.
     if (RuntimeEnabledFeatures::FocuslessSpatialNavigationEnabled() &&
         enter_key_down_seen_ && enter_key_press_seen_) {
-      interest_element->focus(FocusParams(SelectionBehaviorOnFocus::kReset,
-                                          kWebFocusTypeSpatialNavigation,
-                                          nullptr));
+      interest_element->focus(
+          FocusParams(SelectionBehaviorOnFocus::kReset,
+                      mojom::blink::FocusType::kSpatialNavigation, nullptr));
       // We need enter to activate links, etc. The click should be after the
       // focus in case the site transfers focus upon clicking.
       interest_element->DispatchSimulatedClick(event, kSendMouseUpDownEvents);
@@ -415,7 +416,7 @@ bool SpatialNavigationController::AdvanceWithinContainer(
     return ScrollInDirection(&container, direction);
   }
 
-  auto* element = To<Element>(candidate.focusable_node.Get());
+  auto* element = To<Element>(candidate.focusable_node);
   DCHECK(element);
   MoveInterestTo(element);
   return true;
@@ -483,7 +484,8 @@ void SpatialNavigationController::MoveInterestTo(Node* next_node) {
       DCHECK(layout_object);
 
       layout_object->ScrollRectToVisible(
-          element->BoundingBoxForScrollIntoView(), WebScrollIntoViewParams());
+          element->BoundingBoxForScrollIntoView(),
+          CreateScrollIntoViewParams());
     }
 
     // Despite the name, we actually do move focus in "focusless" mode if we're
@@ -511,7 +513,8 @@ void SpatialNavigationController::MoveInterestTo(Node* next_node) {
   ClearFocusInExitedFrames(old_frame, next_node->GetDocument().GetFrame());
 
   element->focus(FocusParams(SelectionBehaviorOnFocus::kReset,
-                             kWebFocusTypeSpatialNavigation, nullptr));
+                             mojom::blink::FocusType::kSpatialNavigation,
+                             nullptr));
   // The focused element could be changed due to elm.focus() on focus handlers.
   // So we need to update the current focused element before DispatchMouseMove.
   // This is tested in snav-applies-hover-with-focused.html.
@@ -612,7 +615,8 @@ void SpatialNavigationController::FullscreenStateChanged(Element* element) {
     return;
   if (IsA<HTMLMediaElement>(element)) {
     element->focus(FocusParams(SelectionBehaviorOnFocus::kReset,
-                               kWebFocusTypeSpatialNavigation, nullptr));
+                               mojom::blink::FocusType::kSpatialNavigation,
+                               nullptr));
   }
 }
 
@@ -658,7 +662,7 @@ bool SpatialNavigationController::UpdateHasNextFormElement(Element* element) {
   bool has_next_form_element =
       IsFocused(element) &&
       page_->GetFocusController().NextFocusableElementInForm(
-          element, kWebFocusTypeForward);
+          element, mojom::blink::FocusType::kForward);
   if (has_next_form_element == spatial_navigation_state_->has_next_form_element)
     return false;
 

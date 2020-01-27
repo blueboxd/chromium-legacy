@@ -39,4 +39,38 @@ UserData::~UserData() = default;
 CollectUserDataOptions::CollectUserDataOptions() = default;
 CollectUserDataOptions::~CollectUserDataOptions() = default;
 
+bool UserData::has_selected_address(const std::string& name) const {
+  return selected_address(name) != nullptr;
+}
+
+bool UserData::has_additional_value(const std::string& key) const {
+  return additional_values_.find(key) != additional_values_.end();
+}
+
+const autofill::AutofillProfile* UserData::selected_address(
+    const std::string& name) const {
+  auto it = selected_addresses_.find(name);
+  if (it == selected_addresses_.end()) {
+    return nullptr;
+  }
+
+  return it->second.get();
+}
+
+const std::string* UserData::additional_value(const std::string& key) const {
+  auto it = additional_values_.find(key);
+  if (it == additional_values_.end()) {
+    return nullptr;
+  }
+  return &it->second;
+}
+
+std::string UserData::GetAllAddressKeyNames() const {
+  std::vector<std::string> entries;
+  for (const auto& entry : selected_addresses_) {
+    entries.emplace_back(entry.first);
+  }
+  std::sort(entries.begin(), entries.end());
+  return base::JoinString(entries, ",");
+}
 }  // namespace autofill_assistant

@@ -23,13 +23,13 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_gc_controller.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_iterator_result_value.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_uint8_array.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_web_transport_close_info.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/streams/readable_stream.h"
 #include "third_party/blink/renderer/core/streams/readable_stream_default_reader.h"
 #include "third_party/blink/renderer/core/streams/writable_stream.h"
 #include "third_party/blink/renderer/core/streams/writable_stream_default_writer.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_typed_array.h"
-#include "third_party/blink/renderer/modules/webtransport/web_transport_close_info.h"
 #include "third_party/blink/renderer/platform/bindings/exception_code.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
@@ -314,7 +314,13 @@ TEST_F(QuicTransportTest, SuccessfulConnect) {
   V8TestingScope scope;
   auto* quic_transport =
       CreateAndConnectSuccessfully(scope, "quic-transport://example.com");
+  ScriptPromiseTester ready_tester(scope.GetScriptState(),
+                                   quic_transport->ready());
+
   EXPECT_TRUE(quic_transport->HasPendingActivity());
+
+  ready_tester.WaitUntilSettled();
+  EXPECT_TRUE(ready_tester.IsFulfilled());
 }
 
 TEST_F(QuicTransportTest, FailedConnect) {
@@ -323,6 +329,8 @@ TEST_F(QuicTransportTest, FailedConnect) {
   auto* quic_transport = QuicTransport::Create(
       scope.GetScriptState(), String("quic-transport://example.com/"),
       ASSERT_NO_EXCEPTION);
+  ScriptPromiseTester ready_tester(scope.GetScriptState(),
+                                   quic_transport->ready());
   ScriptPromiseTester closed_tester(scope.GetScriptState(),
                                     quic_transport->closed());
 
@@ -338,6 +346,7 @@ TEST_F(QuicTransportTest, FailedConnect) {
 
   test::RunPendingTasks();
   EXPECT_FALSE(quic_transport->HasPendingActivity());
+  EXPECT_TRUE(ready_tester.IsRejected());
   EXPECT_TRUE(closed_tester.IsRejected());
 }
 
@@ -347,6 +356,8 @@ TEST_F(QuicTransportTest, CloseDuringConnect) {
   auto* quic_transport = QuicTransport::Create(
       scope.GetScriptState(), String("quic-transport://example.com/"),
       ASSERT_NO_EXCEPTION);
+  ScriptPromiseTester ready_tester(scope.GetScriptState(),
+                                   quic_transport->ready());
   ScriptPromiseTester closed_tester(scope.GetScriptState(),
                                     quic_transport->closed());
 
@@ -360,6 +371,7 @@ TEST_F(QuicTransportTest, CloseDuringConnect) {
   test::RunPendingTasks();
 
   EXPECT_FALSE(quic_transport->HasPendingActivity());
+  EXPECT_TRUE(ready_tester.IsRejected());
   EXPECT_TRUE(closed_tester.IsFulfilled());
 }
 
@@ -367,6 +379,8 @@ TEST_F(QuicTransportTest, CloseAfterConnection) {
   V8TestingScope scope;
   auto* quic_transport =
       CreateAndConnectSuccessfully(scope, "quic-transport://example.com");
+  ScriptPromiseTester ready_tester(scope.GetScriptState(),
+                                   quic_transport->ready());
   ScriptPromiseTester closed_tester(scope.GetScriptState(),
                                     quic_transport->closed());
 
@@ -381,6 +395,7 @@ TEST_F(QuicTransportTest, CloseAfterConnection) {
   // start sending it.
 
   EXPECT_FALSE(quic_transport->HasPendingActivity());
+  EXPECT_TRUE(ready_tester.IsFulfilled());
   EXPECT_TRUE(closed_tester.IsFulfilled());
 
   // Calling close again does nothing.

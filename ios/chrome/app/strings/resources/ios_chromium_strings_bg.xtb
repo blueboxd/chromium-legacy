@@ -20,6 +20,7 @@
 <translation id="2915596697727466327">Chromium използва Face ID, за да обезпечи упълномощен достъп до паролите ви.</translation>
 <translation id="3256316712990552818">Копирано в Chromium</translation>
 <translation id="3805899903892079518">Chromium няма достъп до снимките или видеоклиповете ви. Активирайте го от „Settings“ &gt; „Privacy“ &gt; „Photos“ в iOS.</translation>
+<translation id="4287098963058057749">Общите условия на Chromium ще бъдат променени на 31 март. <ph name="BEGIN_LINK" />Моля, прегледайте ги<ph name="END_LINK" /></translation>
 <translation id="4555020257205549924">Когато тази функция е включена, Chromium ще предлага да преведе страниците, написани на други езици, посредством Google Преводач. <ph name="BEGIN_LINK" />Научете повече<ph name="END_LINK" /></translation>
 <translation id="4681781466797808448">Включване на скенера в Chromium</translation>
 <translation id="4787850887676698916">Тук ще се показват разделите, които сте отворили в Chromium на другите си устройства.</translation>
@@ -48,6 +49,5 @@
 <translation id="8586442755830160949">Авторски права <ph name="YEAR" /> Авторите на Chromium. Всички права запазени.</translation>
 <translation id="8809780021347235332">За да запазите изображения, докоснете „Settings“ и разрешете на Chromium да използва снимките ви</translation>
 <translation id="9022552996538154597">Вход в Chromium</translation>
-<translation id="9217078088703304241"><ph name="BEGIN_LINK" />Прегледайте актуализираните Общи условия на Chromium.<ph name="END_LINK" /></translation>
 <translation id="985602178874221306">Авторите на Chromium</translation>
 </translationbundle>

@@ -535,12 +535,6 @@ class WebviewClientCertsLoginTestBase : public WebviewLoginTest {
   }
 
  protected:
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    command_line->AppendSwitch(
-        switches::kDisableSigninFrameClientCertUserSelection);
-    WebviewLoginTest::SetUpCommandLine(command_line);
-  }
-
   void SetUpInProcessBrowserTestFixture() override {
     // Override FakeSessionManagerClient. This will be shut down by the browser.
     chromeos::SessionManagerClient::InitializeFakeInMemory();

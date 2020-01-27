@@ -785,9 +785,8 @@ TEST(ColorSpaceTest, PQSDRWhiteLevel) {
         EXPECT_NEAR(val.z(), 1.f, kMathEpsilon);
         break;
       case 3:
-        // Check that the default white level is 80 nits. This will change to
-        // 100 nits in the future.
-        EXPECT_NEAR(val.x(), 1.f, kMathEpsilon);
+        // Check that the default white level is 100 nits.
+        EXPECT_NEAR(val.y(), 1.f, kMathEpsilon);
         break;
     }
 

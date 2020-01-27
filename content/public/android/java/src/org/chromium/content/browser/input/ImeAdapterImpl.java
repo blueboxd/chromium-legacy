@@ -39,7 +39,7 @@ import org.chromium.base.UserData;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
-import org.chromium.blink_public.web.WebFocusType;
+import org.chromium.blink.mojom.FocusType;
 import org.chromium.blink_public.web.WebInputEventModifier;
 import org.chromium.blink_public.web.WebInputEventType;
 import org.chromium.blink_public.web.WebTextInputMode;
@@ -751,10 +751,10 @@ public class ImeAdapterImpl implements ImeAdapter, WindowEventObserver, UserData
         if (mTextInputAction == TextInputAction.DEFAULT) {
             switch (actionCode) {
                 case EditorInfo.IME_ACTION_NEXT:
-                    advanceFocusInForm(WebFocusType.FORWARD);
+                    advanceFocusInForm(FocusType.FORWARD);
                     return true;
                 case EditorInfo.IME_ACTION_PREVIOUS:
-                    advanceFocusInForm(WebFocusType.BACKWARD);
+                    advanceFocusInForm(FocusType.BACKWARD);
                     return true;
             }
         }

@@ -9,5 +9,5 @@
     ImplementedAs=DOMTaskSignal,
     RuntimeEnabled=WebScheduler
 ] interface TaskSignal : AbortSignal {
-  readonly attribute TaskPriority priority;
+  [MeasureAs=TaskSignalPriority] readonly attribute TaskPriority priority;
 };

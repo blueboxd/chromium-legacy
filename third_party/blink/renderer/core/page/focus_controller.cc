@@ -28,6 +28,7 @@
 
 #include <limits>
 
+#include "third_party/blink/public/mojom/input/focus_type.mojom-blink.h"
 #include "third_party/blink/renderer/core/accessibility/ax_object_cache.h"
 #include "third_party/blink/renderer/core/dom/container_node.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -176,14 +177,13 @@ class ScopedFocusNavigation {
   // [1]
   // https://html.spec.whatwg.org/C/#sequential-focus-navigation
   // [2] https://w3c.github.io/webcomponents/spec/shadow/#focus-navigation
-  Element* FindFocusableElement(WebFocusType type) {
-    return (type == kWebFocusTypeForward) ? NextFocusableElement()
-                                          : PreviousFocusableElement();
+  Element* FindFocusableElement(mojom::blink::FocusType type) {
+    return (type == mojom::blink::FocusType::kForward)
+               ? NextFocusableElement()
+               : PreviousFocusableElement();
   }
 
-  Element* CurrentElement() const {
-    return const_cast<Element*>(current_.Get());
-  }
+  Element* CurrentElement() const { return const_cast<Element*>(current_); }
   Element* Owner() const;
 
   static ScopedFocusNavigation CreateFor(const Element&,
@@ -210,7 +210,7 @@ class ScopedFocusNavigation {
                         const Element* current,
                         FocusController::OwnerMap&);
 
-  Element* FindElementWithExactTabIndex(int tab_index, WebFocusType);
+  Element* FindElementWithExactTabIndex(int tab_index, mojom::blink::FocusType);
   Element* NextElementWithGreaterTabIndex(int tab_index);
   Element* PreviousElementWithLowerTabIndex(int tab_index);
   Element* NextFocusableElement();
@@ -222,8 +222,8 @@ class ScopedFocusNavigation {
   void MoveToFirst();
   void MoveToLast();
 
-  Member<const Element> current_;
-  Member<FocusNavigation> navigation_;
+  const Element* current_;
+  FocusNavigation* navigation_;
 };
 
 ScopedFocusNavigation::ScopedFocusNavigation(
@@ -355,7 +355,7 @@ bool ScopedFocusNavigation::IsSlotFallbackScopedForThisSlot(
 
 inline void DispatchBlurEvent(const Document& document,
                               Element& focused_element) {
-  focused_element.DispatchBlurEvent(nullptr, kWebFocusTypePage);
+  focused_element.DispatchBlurEvent(nullptr, mojom::blink::FocusType::kPage);
   if (focused_element == document.FocusedElement()) {
     focused_element.DispatchFocusOutEvent(event_type_names::kFocusout, nullptr);
     if (focused_element == document.FocusedElement())
@@ -366,13 +366,14 @@ inline void DispatchBlurEvent(const Document& document,
 
 inline void DispatchFocusEvent(const Document& document,
                                Element& focused_element) {
-  focused_element.DispatchFocusEvent(nullptr, kWebFocusTypePage);
+  focused_element.DispatchFocusEvent(nullptr, mojom::blink::FocusType::kPage);
   if (focused_element == document.FocusedElement()) {
     focused_element.DispatchFocusInEvent(event_type_names::kFocusin, nullptr,
-                                         kWebFocusTypePage);
+                                         mojom::blink::FocusType::kPage);
     if (focused_element == document.FocusedElement()) {
       focused_element.DispatchFocusInEvent(event_type_names::kDOMFocusIn,
-                                           nullptr, kWebFocusTypePage);
+                                           nullptr,
+                                           mojom::blink::FocusType::kPage);
     }
   }
 }
@@ -393,8 +394,9 @@ inline void DispatchEventsOnWindowAndFocusedElement(Document* document,
 
   if (!focused && document->FocusedElement()) {
     Element* focused_element = document->FocusedElement();
-    // Use focus_type kWebFocusTypePage, same as used in DispatchBlurEvent.
-    focused_element->SetFocused(false, kWebFocusTypePage);
+    // Use focus_type mojom::blink::FocusType::kPage, same as used in
+    // DispatchBlurEvent.
+    focused_element->SetFocused(false, mojom::blink::FocusType::kPage);
     focused_element->SetHasFocusWithinUpToAncestor(false, nullptr);
     DispatchBlurEvent(*document, *focused_element);
   }
@@ -405,8 +407,9 @@ inline void DispatchEventsOnWindowAndFocusedElement(Document* document,
   }
   if (focused && document->FocusedElement()) {
     Element* focused_element(document->FocusedElement());
-    // Use focus_type kWebFocusTypePage, same as used in DispatchFocusEvent.
-    focused_element->SetFocused(true, kWebFocusTypePage);
+    // Use focus_type mojom::blink::FocusType::kPage, same as used in
+    // DispatchFocusEvent.
+    focused_element->SetFocused(true, mojom::blink::FocusType::kPage);
     focused_element->SetHasFocusWithinUpToAncestor(true, nullptr);
     DispatchFocusEvent(*document, *focused_element);
   }
@@ -461,10 +464,11 @@ inline bool ShouldVisit(Element& element) {
 
 Element* ScopedFocusNavigation::FindElementWithExactTabIndex(
     int tab_index,
-    WebFocusType type) {
+    mojom::blink::FocusType type) {
   // Search is inclusive of start
-  for (; CurrentElement();
-       type == kWebFocusTypeForward ? MoveToNext() : MoveToPrevious()) {
+  for (; CurrentElement(); type == mojom::blink::FocusType::kForward
+                               ? MoveToNext()
+                               : MoveToPrevious()) {
     Element* current = CurrentElement();
     if (ShouldVisit(*current) && AdjustedTabIndex(*current) == tab_index)
       return current;
@@ -524,8 +528,8 @@ Element* ScopedFocusNavigation::NextFocusableElement() {
       // First try to find an element with the same tabindex as start that comes
       // after start in the scope.
       MoveToNext();
-      if (Element* winner =
-              FindElementWithExactTabIndex(tab_index, kWebFocusTypeForward))
+      if (Element* winner = FindElementWithExactTabIndex(
+              tab_index, mojom::blink::FocusType::kForward))
         return winner;
     }
     if (!tab_index) {
@@ -548,7 +552,7 @@ Element* ScopedFocusNavigation::NextFocusableElement() {
   // There are no elements with a tabindex greater than start's tabindex,
   // so find the first element with a tabindex of 0.
   MoveToFirst();
-  return FindElementWithExactTabIndex(0, kWebFocusTypeForward);
+  return FindElementWithExactTabIndex(0, mojom::blink::FocusType::kForward);
 }
 
 Element* ScopedFocusNavigation::PreviousFocusableElement() {
@@ -574,8 +578,8 @@ Element* ScopedFocusNavigation::PreviousFocusableElement() {
         return current;
     }
   } else {
-    if (Element* winner =
-            FindElementWithExactTabIndex(tab_index, kWebFocusTypeBackward))
+    if (Element* winner = FindElementWithExactTabIndex(
+            tab_index, mojom::blink::FocusType::kBackward))
       return winner;
   }
 
@@ -594,7 +598,8 @@ Element* FindFocusableElementRecursivelyForward(
     ScopedFocusNavigation& scope,
     FocusController::OwnerMap& owner_map) {
   // Starting element is exclusive.
-  while (Element* found = scope.FindFocusableElement(kWebFocusTypeForward)) {
+  while (Element* found =
+             scope.FindFocusableElement(mojom::blink::FocusType::kForward)) {
     if (found->DelegatesFocus()) {
       // If tabindex is positive, invalid, or missing, find focusable element
       // inside its shadow tree.
@@ -629,7 +634,8 @@ Element* FindFocusableElementRecursivelyBackward(
     ScopedFocusNavigation& scope,
     FocusController::OwnerMap& owner_map) {
   // Starting element is exclusive.
-  while (Element* found = scope.FindFocusableElement(kWebFocusTypeBackward)) {
+  while (Element* found =
+             scope.FindFocusableElement(mojom::blink::FocusType::kBackward)) {
     // Now |found| is on a focusable shadow host.
     // Find inside shadow backwards. If any focusable element is found, return
     // it, otherwise return the host itself.
@@ -668,16 +674,16 @@ Element* FindFocusableElementRecursivelyBackward(
   return nullptr;
 }
 
-Element* FindFocusableElementRecursively(WebFocusType type,
+Element* FindFocusableElementRecursively(mojom::blink::FocusType type,
                                          ScopedFocusNavigation& scope,
                                          FocusController::OwnerMap& owner_map) {
-  return (type == kWebFocusTypeForward)
+  return (type == mojom::blink::FocusType::kForward)
              ? FindFocusableElementRecursivelyForward(scope, owner_map)
              : FindFocusableElementRecursivelyBackward(scope, owner_map);
 }
 
 Element* FindFocusableElementDescendingDownIntoFrameDocument(
-    WebFocusType type,
+    mojom::blink::FocusType type,
     Element* element,
     FocusController::OwnerMap& owner_map) {
   // The element we found might be a HTMLFrameOwnerElement, so descend down the
@@ -730,7 +736,7 @@ Element* FindFocusableElementAcrossFocusScopesForward(
     found = FindFocusableElementRecursivelyForward(current_scope, owner_map);
   }
   return FindFocusableElementDescendingDownIntoFrameDocument(
-      kWebFocusTypeForward, found, owner_map);
+      mojom::blink::FocusType::kForward, found, owner_map);
 }
 
 Element* FindFocusableElementAcrossFocusScopesBackward(
@@ -753,14 +759,14 @@ Element* FindFocusableElementAcrossFocusScopesBackward(
     found = FindFocusableElementRecursivelyBackward(current_scope, owner_map);
   }
   return FindFocusableElementDescendingDownIntoFrameDocument(
-      kWebFocusTypeBackward, found, owner_map);
+      mojom::blink::FocusType::kBackward, found, owner_map);
 }
 
 Element* FindFocusableElementAcrossFocusScopes(
-    WebFocusType type,
+    mojom::blink::FocusType type,
     ScopedFocusNavigation& scope,
     FocusController::OwnerMap& owner_map) {
-  return (type == kWebFocusTypeForward)
+  return (type == mojom::blink::FocusType::kForward)
              ? FindFocusableElementAcrossFocusScopesForward(scope, owner_map)
              : FindFocusableElementAcrossFocusScopesBackward(scope, owner_map);
 }
@@ -932,7 +938,7 @@ void FocusController::SetFocusEmulationEnabled(bool emulate_focus) {
     FocusHasChanged();
 }
 
-bool FocusController::SetInitialFocus(WebFocusType type) {
+bool FocusController::SetInitialFocus(mojom::blink::FocusType type) {
   bool did_advance_focus = AdvanceFocus(type, true);
 
   // If focus is being set initially, accessibility needs to be informed that
@@ -951,12 +957,12 @@ bool FocusController::SetInitialFocus(WebFocusType type) {
 }
 
 bool FocusController::AdvanceFocus(
-    WebFocusType type,
+    mojom::blink::FocusType type,
     bool initial_focus,
     InputDeviceCapabilities* source_capabilities) {
   switch (type) {
-    case kWebFocusTypeForward:
-    case kWebFocusTypeBackward: {
+    case mojom::blink::FocusType::kForward:
+    case mojom::blink::FocusType::kBackward: {
       // We should never hit this when a RemoteFrame is focused, since the key
       // event that initiated focus advancement should've been routed to that
       // frame's process from the beginning.
@@ -964,7 +970,7 @@ bool FocusController::AdvanceFocus(
       return AdvanceFocusInDocumentOrder(starting_frame, nullptr, type,
                                          initial_focus, source_capabilities);
     }
-    case kWebFocusTypeSpatialNavigation:
+    case mojom::blink::FocusType::kSpatialNavigation:
       // Fallthrough - SpatialNavigation should use
       // SpatialNavigationController.
     default:
@@ -975,7 +981,7 @@ bool FocusController::AdvanceFocus(
 }
 
 bool FocusController::AdvanceFocusAcrossFrames(
-    WebFocusType type,
+    mojom::blink::FocusType type,
     RemoteFrame* from,
     LocalFrame* to,
     InputDeviceCapabilities* source_capabilities) {
@@ -1006,7 +1012,7 @@ inline bool IsNonFocusableShadowHost(const Element& element) {
 bool FocusController::AdvanceFocusInDocumentOrder(
     LocalFrame* frame,
     Element* start,
-    WebFocusType type,
+    mojom::blink::FocusType type,
     bool initial_focus,
     InputDeviceCapabilities* source_capabilities) {
   DCHECK(frame);
@@ -1125,18 +1131,20 @@ bool FocusController::AdvanceFocusInDocumentOrder(
   return true;
 }
 
-Element* FocusController::FindFocusableElement(WebFocusType type,
+Element* FocusController::FindFocusableElement(mojom::blink::FocusType type,
                                                Element& element,
                                                OwnerMap& owner_map) {
   // FIXME: No spacial navigation code yet.
-  DCHECK(type == kWebFocusTypeForward || type == kWebFocusTypeBackward);
+  DCHECK(type == mojom::blink::FocusType::kForward ||
+         type == mojom::blink::FocusType::kBackward);
   ScopedFocusNavigation scope =
       ScopedFocusNavigation::CreateFor(element, owner_map);
   return FindFocusableElementAcrossFocusScopes(type, scope, owner_map);
 }
 
-Element* FocusController::NextFocusableElementInForm(Element* element,
-                                                     WebFocusType focus_type) {
+Element* FocusController::NextFocusableElementInForm(
+    Element* element,
+    mojom::blink::FocusType focus_type) {
   // TODO(ajith.v) Due to crbug.com/781026 when next/previous element is far
   // from current element in terms of tabindex, then it's signalling CPU load.
   // Will nvestigate further for a proper solution later.
@@ -1219,9 +1227,11 @@ Element* FocusController::FindFocusableElementInShadowHost(
   return nullptr;
 }
 
-Element* FocusController::FindFocusableElementAfter(Element& element,
-                                                    WebFocusType type) {
-  if (type != kWebFocusTypeForward && type != kWebFocusTypeBackward)
+Element* FocusController::FindFocusableElementAfter(
+    Element& element,
+    mojom::blink::FocusType type) {
+  if (type != mojom::blink::FocusType::kForward &&
+      type != mojom::blink::FocusType::kBackward)
     return nullptr;
   element.GetDocument().UpdateStyleAndLayout();
 
@@ -1238,7 +1248,8 @@ bool FocusController::SetFocusedElement(Element* element,
                                         Frame* new_focused_frame) {
   return SetFocusedElement(
       element, new_focused_frame,
-      FocusParams(SelectionBehaviorOnFocus::kNone, kWebFocusTypeNone, nullptr));
+      FocusParams(SelectionBehaviorOnFocus::kNone,
+                  mojom::blink::FocusType::kNone, nullptr));
 }
 
 bool FocusController::SetFocusedElement(Element* element,

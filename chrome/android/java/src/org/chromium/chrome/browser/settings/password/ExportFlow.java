@@ -253,7 +253,7 @@ public class ExportFlow {
         try {
             mExportFileUri = ContentUriUtils.getContentUriFromFile(passwordsFile);
         } catch (IllegalArgumentException e) {
-            showExportErrorAndAbort(R.string.save_password_preferences_export_tips, e.getMessage(),
+            showExportErrorAndAbort(R.string.password_settings_export_tips, e.getMessage(),
                     R.string.try_again, HistogramExportResult.WRITE_FAILED);
             return;
         }
@@ -294,8 +294,8 @@ public class ExportFlow {
                     shareSerializedPasswords(pathToPasswordsFile);
                 },
                 (String errorMessage) -> {
-                    showExportErrorAndAbort(R.string.save_password_preferences_export_tips,
-                            errorMessage, R.string.try_again, HistogramExportResult.WRITE_FAILED);
+                    showExportErrorAndAbort(R.string.password_settings_export_tips, errorMessage,
+                            R.string.try_again, HistogramExportResult.WRITE_FAILED);
                 });
         if (!ReauthenticationManager.isScreenLockSetUp(
                     mDelegate.getActivity().getApplicationContext())) {
@@ -423,8 +423,7 @@ public class ExportFlow {
         if (detailedDescription != null) {
             mErrorDialogParams.detailedDescription =
                     mDelegate.getActivity().getResources().getString(
-                            R.string.save_password_preferences_export_error_details,
-                            detailedDescription);
+                            R.string.password_settings_export_error_details, detailedDescription);
         }
 
         if (mExportWarningDialogFragment == null) showExportErrorDialogFragment();
@@ -447,7 +446,7 @@ public class ExportFlow {
             public void onClick(DialogInterface dialog, int which) {
                 if (which == AlertDialog.BUTTON_POSITIVE) {
                     if (positiveButtonLabelId
-                            == R.string.save_password_preferences_export_learn_google_drive) {
+                            == R.string.password_settings_export_learn_google_drive) {
                         // Link to the help article about how to use Google Drive.
                         Intent intent = new Intent(Intent.ACTION_VIEW,
                                 Uri.parse("https://support.google.com/drive/answer/2424384"));
@@ -481,15 +480,15 @@ public class ExportFlow {
         send.putExtra(Intent.EXTRA_STREAM, mExportFileUri);
         send.putExtra(Intent.EXTRA_SUBJECT,
                 mDelegate.getActivity().getResources().getString(
-                        R.string.save_password_preferences_export_subject));
+                        R.string.password_settings_export_subject));
 
         try {
             Intent chooser = Intent.createChooser(send, null);
             chooser.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             ContextUtils.getApplicationContext().startActivity(chooser);
         } catch (ActivityNotFoundException e) {
-            showExportErrorAndAbort(R.string.save_password_preferences_export_no_app, null,
-                    R.string.save_password_preferences_export_learn_google_drive,
+            showExportErrorAndAbort(R.string.password_settings_export_no_app, null,
+                    R.string.password_settings_export_learn_google_drive,
                     HistogramExportResult.NO_CONSUMER);
         }
         mExportFileUri = null;

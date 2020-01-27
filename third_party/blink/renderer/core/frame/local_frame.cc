@@ -1351,6 +1351,12 @@ bool LocalFrame::ClipsContent() const {
 void LocalFrame::SetViewportIntersectionFromParent(
     const ViewportIntersectionState& intersection_state) {
   DCHECK(IsLocalRoot());
+  // Notify the render frame observers when the main frame intersection changes.
+  if (intersection_state_.main_frame_document_intersection !=
+      intersection_state.main_frame_document_intersection) {
+    Client()->OnMainFrameDocumentIntersectionChanged(
+        intersection_state.main_frame_document_intersection);
+  }
   // We only schedule an update if the viewport intersection or occlusion state
   // has changed; neither the viewport offset nor the compositing bounds will
   // affect IntersectionObserver.
@@ -2075,6 +2081,26 @@ void LocalFrame::MediaPlayerActionAt(
   IntPoint location(viewport_position.x, viewport_position.y);
 
   MediaPlayerActionAtViewportPoint(location, action->type, action->enable);
+}
+
+void LocalFrame::AdvanceFocusInForm(mojom::blink::FocusType focus_type) {
+  auto* focused_frame = GetPage()->GetFocusController().FocusedFrame();
+  if (focused_frame != this)
+    return;
+
+  DCHECK(GetDocument());
+  Element* element = GetDocument()->FocusedElement();
+  if (!element)
+    return;
+
+  Element* next_element =
+      GetPage()->GetFocusController().NextFocusableElementInForm(element,
+                                                                 focus_type);
+  if (!next_element)
+    return;
+
+  next_element->scrollIntoViewIfNeeded(true /*centerIfNeeded*/);
+  next_element->focus();
 }
 
 void LocalFrame::BindToReceiver(

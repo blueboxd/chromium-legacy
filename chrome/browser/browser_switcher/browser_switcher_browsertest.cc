@@ -41,6 +41,11 @@ namespace {
 const char kTestUrl[] = "http://example.com/foobar";
 const char kTestUrlWithSpaces[] = "http://example.com/foobar baz";
 
+#if defined(OS_WIN)
+// Only referenced on Windows.
+const char kTestUrlWithQuotes[] = "http://example.com/?q='world'";
+#endif
+
 // A URL that shouldn't trigger a switch.
 const char kOtherUrl[] = "http://google.com/";
 
@@ -106,9 +111,7 @@ base::CommandLine GenerateEchoCommandLine(const base::FilePath& output_file) {
 #if defined(OS_WIN)
   // cmd.exe /C echo ${url} > "output_file"
   std::vector<std::wstring> args = {
-      L"cmd.exe",
-      base::UTF8ToUTF16(base::StringPrintf("/C echo ${url}> \"%s\"",
-                                           output_file.MaybeAsASCII().c_str())),
+      L"cmd.exe", L"/C", L"echo", L"${url}>", output_file.value().c_str(),
   };
   return base::CommandLine(std::move(args));
 #else
@@ -226,6 +229,48 @@ IN_PROC_BROWSER_TEST_F(BrowserSwitcherBrowserTest, DoesNotKeepSpaces) {
       TestTimeouts::action_timeout());
   run_loop.Run();
 }
+
+#if defined(OS_WIN)
+// IE has some quirks with quote characters. Make sure IE doesn't receive them
+// percent-encoded.
+IN_PROC_BROWSER_TEST_F(BrowserSwitcherBrowserTest, UnencodesSingleQUotes) {
+  base::FilePath temp_file =
+      GetTempDir().AppendASCII("UnencodesSingleQuotes.txt");
+  base::CommandLine cmd_line = GenerateEchoCommandLine(temp_file);
+
+  InitPolicies(provider(), cmd_line);
+
+  // We open a new tab, because closing the last tab in the browser
+  // causes the whole browser to close.
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), GURL(kTestUrlWithQuotes),
+      WindowOpenDisposition::NEW_FOREGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_NONE);
+
+  base::RunLoop run_loop;
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE,
+      base::BindOnce(
+          [](base::FilePath path, base::OnceClosure quit) {
+            base::ScopedAllowBlockingForTesting allow_blocking;
+            base::File file(path,
+                            base::File::FLAG_OPEN | base::File::FLAG_READ);
+            ASSERT_TRUE(file.IsValid());
+
+            std::unique_ptr<char[]> buffer(new char[file.GetLength() + 1]);
+            buffer.get()[file.GetLength()] = '\0';
+            file.Read(0, buffer.get(), file.GetLength());
+            // Check that there's no space in the URL (i.e. replaced with %20).
+            EXPECT_EQ("http://example.com/?q='world'\r\n",
+                      std::string(buffer.get()));
+
+            std::move(quit).Run();
+          },
+          std::move(temp_file), run_loop.QuitClosure()),
+      TestTimeouts::action_timeout());
+  run_loop.Run();
+}
+#endif
 
 IN_PROC_BROWSER_TEST_F(BrowserSwitcherBrowserTest, DoesNotRunOnRandomUrls) {
   base::FilePath temp_file =

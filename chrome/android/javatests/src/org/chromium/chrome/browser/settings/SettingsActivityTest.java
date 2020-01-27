@@ -53,7 +53,7 @@ public class SettingsActivityTest {
     @Test
     @SmallTest
     @Policies.Add({ @Policies.Item(key = "PasswordManagerEnabled", string = "false") })
-    public void testSavePasswordsPreferences_ManagedAndDisabled() {
+    public void testPasswordSettings_ManagedAndDisabled() {
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> { ChromeBrowserInitializer.getInstance().handleSynchronousStartup(); });
 
@@ -66,9 +66,9 @@ public class SettingsActivityTest {
         });
 
         SettingsActivityTest.startSettingsActivity(
-                InstrumentationRegistry.getInstrumentation(), MainPreferences.class.getName());
+                InstrumentationRegistry.getInstrumentation(), MainSettings.class.getName());
 
-        onView(withText(R.string.prefs_saved_passwords_title)).perform(click());
-        onView(withText(R.string.prefs_saved_passwords)).check(matches(isDisplayed()));
+        onView(withText(R.string.password_settings_title)).perform(click());
+        onView(withText(R.string.password_settings_save_passwords)).check(matches(isDisplayed()));
     }
 }

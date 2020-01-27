@@ -69,7 +69,7 @@ class CORE_EXPORT PseudoElement : public Element {
     ~AttachLayoutTreeScope();
 
    private:
-    Member<PseudoElement> element_;
+    PseudoElement* element_;
     scoped_refptr<const ComputedStyle> original_style_;
   };
 

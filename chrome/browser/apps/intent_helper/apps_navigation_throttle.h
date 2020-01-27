@@ -90,7 +90,6 @@ class AppsNavigationThrottle : public content::NavigationThrottle {
   content::NavigationThrottle::ThrottleCheckResult WillRedirectRequest()
       override;
 
- protected:
   // These enums are used to define the buckets for an enumerated UMA histogram
   // and need to be synced with the ArcIntentHandlerAction enum in enums.xml.
   // This enum class should also be treated as append-only.
@@ -137,24 +136,7 @@ class AppsNavigationThrottle : public content::NavigationThrottle {
     kMaxValue = MAC_NATIVE,
   };
 
-  // These enums are used to define the intent picker show state, whether the
-  // picker is popped out or just displayed as a clickable omnibox icon.
-  enum class PickerShowState {
-    kOmnibox = 1,  // Only show the intent icon in the omnibox
-    kPopOut = 2,   // show the intent picker icon and pop out bubble
-  };
-
-  // Checks whether we can create the apps_navigation_throttle.
-  static bool CanCreate(content::WebContents* web_contents);
-
-  static void RecordUma(const std::string& selected_app_package,
-                        PickerEntryType entry_type,
-                        IntentPickerCloseReason close_reason,
-                        Source source,
-                        bool should_persist,
-                        PickerAction action,
-                        Platform platform);
-
+  // TODO(ajlinker): move these two functions below to IntentHandlingMetrics.
   // Determines the destination of the current navigation. We know that if the
   // |picker_action| is either ERROR or DIALOG_DEACTIVATED the navigation MUST
   // stay in Chrome, and when |picker_action| is PWA_APP_PRESSED the navigation
@@ -169,6 +151,17 @@ class AppsNavigationThrottle : public content::NavigationThrottle {
   static PickerAction GetPickerAction(PickerEntryType entry_type,
                                       IntentPickerCloseReason close_reason,
                                       bool should_persist);
+
+ protected:
+  // These enums are used to define the intent picker show state, whether the
+  // picker is popped out or just displayed as a clickable omnibox icon.
+  enum class PickerShowState {
+    kOmnibox = 1,  // Only show the intent icon in the omnibox
+    kPopOut = 2,   // show the intent picker icon and pop out bubble
+  };
+
+  // Checks whether we can create the apps_navigation_throttle.
+  static bool CanCreate(content::WebContents* web_contents);
 
   // This is a wrapper method for querying apps for a URL. Normally this
   // method will simply querying PWAs that can handle the URL from. If we are

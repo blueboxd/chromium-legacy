@@ -85,12 +85,12 @@ class CORE_EXPORT SecurityContextInit : public FeaturePolicyParserDelegate {
   bool initialized_feature_policy_state_ = false;
   Vector<String> feature_policy_parse_messages_;
   ParsedFeaturePolicy feature_policy_header_;
-  Member<LocalFrame> frame_for_opener_feature_state_;
-  Member<Frame> parent_frame_;
+  LocalFrame* frame_for_opener_feature_state_ = nullptr;
+  Frame* parent_frame_ = nullptr;
   ParsedFeaturePolicy container_policy_;
-  Member<ContentSecurityPolicy> csp_;
-  Member<OriginTrialContext> origin_trials_;
-  Member<Agent> agent_;
+  ContentSecurityPolicy* csp_ = nullptr;
+  OriginTrialContext* origin_trials_ = nullptr;
+  Agent* agent_ = nullptr;
   HashSet<mojom::blink::FeaturePolicyFeature> parsed_feature_policies_;
   HashSet<mojom::WebFeature> feature_count_;
   bool bind_csp_immediately_ = false;

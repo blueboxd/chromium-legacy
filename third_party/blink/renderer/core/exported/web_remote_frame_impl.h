@@ -26,7 +26,6 @@ class RemoteFrameClientImpl;
 enum class WebFrameLoadType;
 class WebView;
 struct WebRect;
-struct WebScrollIntoViewParams;
 class WindowAgentFactory;
 
 class CORE_EXPORT WebRemoteFrameImpl final
@@ -97,8 +96,6 @@ class CORE_EXPORT WebRemoteFrameImpl final
   void UpdateUserActivationState(
       mojom::blink::UserActivationUpdateType) override;
   void TransferUserActivationFrom(blink::WebRemoteFrame* source_frame) override;
-  void ScrollRectToVisible(const WebRect&,
-                           const WebScrollIntoViewParams&) override;
   void IntrinsicSizingInfoChanged(const WebIntrinsicSizingInfo&) override;
   void SetHadStickyUserActivationBeforeNavigation(bool value) override;
   v8::Local<v8::Object> GlobalProxy() const override;

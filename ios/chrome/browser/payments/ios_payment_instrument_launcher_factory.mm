@@ -20,7 +20,7 @@ namespace payments {
 // static
 payments::IOSPaymentInstrumentLauncher*
 IOSPaymentInstrumentLauncherFactory::GetForBrowserState(
-    ios::ChromeBrowserState* browser_state) {
+    ChromeBrowserState* browser_state) {
   return static_cast<payments::IOSPaymentInstrumentLauncher*>(
       GetInstance()->GetServiceForBrowserState(browser_state, true));
 }

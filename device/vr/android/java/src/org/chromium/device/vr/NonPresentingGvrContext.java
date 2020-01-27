@@ -7,7 +7,6 @@ package org.chromium.device.vr;
 import android.content.Context;
 import android.os.StrictMode;
 import android.view.Display;
-import android.view.WindowManager;
 
 import com.google.vr.cardboard.DisplaySynchronizer;
 import com.google.vr.ndk.base.GvrApi;
@@ -16,6 +15,7 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
+import org.chromium.ui.display.DisplayAndroidManager;
 
 /**
  * Creates an active GvrContext from a GvrApi created from the Application Context. This GvrContext
@@ -33,9 +33,7 @@ public class NonPresentingGvrContext {
     private NonPresentingGvrContext(long nativeGvrDevice) {
         mNativeGvrDevice = nativeGvrDevice;
         Context context = ContextUtils.getApplicationContext();
-        WindowManager windowManager =
-                (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
-        Display display = windowManager.getDefaultDisplay();
+        Display display = DisplayAndroidManager.getDefaultDisplayForContext(context);
         mDisplaySynchronizer = new DisplaySynchronizer(context, display) {
             @Override
             public void onConfigurationChanged() {

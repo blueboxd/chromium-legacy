@@ -44,7 +44,7 @@ public class AutofillProfileEditorPreference extends Preference {
     protected void onClick() {
         Bundle extras = getExtras();
         // We know which profile to edit based on the GUID stuffed in our extras
-        // by MainPreferences.
+        // by MainSettings.
         mGUID = extras.getString(AutofillEditorBase.AUTOFILL_GUID);
         prepareEditorDialog();
         prepareAddressEditor();

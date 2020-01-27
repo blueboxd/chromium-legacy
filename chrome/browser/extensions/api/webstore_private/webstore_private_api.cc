@@ -386,10 +386,18 @@ void WebstorePrivateBeginInstallWithManifest3Function::OnWebstoreParseFailure(
 
 void WebstorePrivateBeginInstallWithManifest3Function::OnInstallPromptDone(
     ExtensionInstallPrompt::Result result) {
-  if (result == ExtensionInstallPrompt::Result::ACCEPTED) {
-    HandleInstallProceed();
-  } else {
-    HandleInstallAbort(result == ExtensionInstallPrompt::Result::USER_CANCELED);
+  switch (result) {
+    case ExtensionInstallPrompt::Result::ACCEPTED:
+    case ExtensionInstallPrompt::Result::ACCEPTED_AND_OPTION_CHECKED: {
+      HandleInstallProceed();
+      break;
+    }
+    case ExtensionInstallPrompt::Result::USER_CANCELED:
+    case ExtensionInstallPrompt::Result::ABORTED: {
+      HandleInstallAbort(result ==
+                         ExtensionInstallPrompt::Result::USER_CANCELED);
+      break;
+    }
   }
 
   // Matches the AddRef in Run().

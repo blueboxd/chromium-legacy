@@ -74,8 +74,8 @@ class SearchEngineTabHelperTest : public ChromeWebTest {
 
   // Returns the testing TemplateURLService.
   TemplateURLService* template_url_service() {
-    ios::ChromeBrowserState* browser_state =
-        ios::ChromeBrowserState::FromBrowserState(GetBrowserState());
+    ChromeBrowserState* browser_state =
+        ChromeBrowserState::FromBrowserState(GetBrowserState());
     return ios::TemplateURLServiceFactory::GetForBrowserState(browser_state);
   }
 

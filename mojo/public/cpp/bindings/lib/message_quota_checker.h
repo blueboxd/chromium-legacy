@@ -118,9 +118,9 @@ class COMPONENT_EXPORT(MOJO_CPP_BINDINGS) MessageQuotaChecker
 
   // Cumulative counts for the number of messages enqueued with
   // |BeforeMessagesEnqueued()| and dequeued with |BeforeMessagesDequeued()|.
-  std::atomic<uint64_t> messages_enqueued_;
-  std::atomic<uint64_t> messages_dequeued_;
-  std::atomic<uint64_t> messages_written_;
+  std::atomic<uint64_t> messages_enqueued_{0};
+  std::atomic<uint64_t> messages_dequeued_{0};
+  std::atomic<uint64_t> messages_written_{0};
 
   // A decaying average of the rate of call to BeforeWrite per second.
   DecayingRateAverage write_rate_average_;
@@ -142,7 +142,10 @@ struct MessageQuotaChecker::Configuration {
   void (*maybe_crash_function)(size_t quota_used,
                                base::Optional<size_t> message_pipe_quota_used,
                                int64_t seconds_since_construction,
-                               double average_write_rate);
+                               double average_write_rate,
+                               uint64_t messages_enqueued,
+                               uint64_t messages_dequeued,
+                               uint64_t messages_written);
 };
 
 }  // namespace internal

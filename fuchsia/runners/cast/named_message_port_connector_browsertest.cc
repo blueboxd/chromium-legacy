@@ -9,8 +9,6 @@
 #include "base/files/file_util.h"
 #include "base/macros.h"
 #include "base/path_service.h"
-#include "base/test/bind_test_util.h"
-#include "base/test/test_timeouts.h"
 #include "base/threading/thread_restrictions.h"
 #include "fuchsia/base/fit_adapter.h"
 #include "fuchsia/base/frame_test_util.h"
@@ -26,9 +24,7 @@
 
 class NamedMessagePortConnectorTest : public cr_fuchsia::WebEngineBrowserTest {
  public:
-  NamedMessagePortConnectorTest()
-      : run_timeout_(TestTimeouts::action_timeout(),
-                     base::MakeExpectedNotRunClosure(FROM_HERE)) {
+  NamedMessagePortConnectorTest() {
     set_test_server_root(base::FilePath("fuchsia/runners/cast/testdata"));
     navigation_listener_.SetBeforeAckHook(
         base::BindRepeating(&NamedMessagePortConnectorTest::OnBeforeAckHook,
@@ -65,9 +61,6 @@ class NamedMessagePortConnectorTest : public cr_fuchsia::WebEngineBrowserTest {
   fuchsia::web::FramePtr frame_;
   std::unique_ptr<NamedMessagePortConnector> connector_;
   cr_fuchsia::TestNavigationListener navigation_listener_;
-
- private:
-  const base::RunLoop::ScopedRunTimeoutForTest run_timeout_;
 
   DISALLOW_COPY_AND_ASSIGN(NamedMessagePortConnectorTest);
 };

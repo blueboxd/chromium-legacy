@@ -185,19 +185,26 @@ std::unique_ptr<OutputSurface> OutputSurfaceProviderImpl::CreateOutputSurface(
 #if defined(USE_OZONE)
       output_surface = std::make_unique<GLOutputSurfaceBufferQueue>(
           std::move(context_provider), surface_handle,
-          gpu_memory_buffer_manager_.get(),
-          display::DisplaySnapshot::PrimaryFormat());
+          std::make_unique<BufferQueue>(
+              context_provider->SharedImageInterface(),
+              display::DisplaySnapshot::PrimaryFormat(),
+              gpu_memory_buffer_manager_.get(), surface_handle));
 #elif defined(OS_MACOSX)
       output_surface = std::make_unique<GLOutputSurfaceBufferQueue>(
           std::move(context_provider), surface_handle,
-          gpu_memory_buffer_manager_.get(), gfx::BufferFormat::RGBA_8888);
+          std::make_unique<BufferQueue>(
+              context_provider->SharedImageInterface(),
+              gfx::BufferFormat::RGBA_8888, gpu_memory_buffer_manager_.get(),
+              surface_handle));
 #elif defined(OS_ANDROID)
       auto buffer_format = context_provider->UseRGB565PixelFormat()
                                ? gfx::BufferFormat::BGR_565
                                : gfx::BufferFormat::RGBA_8888;
       output_surface = std::make_unique<GLOutputSurfaceBufferQueue>(
           std::move(context_provider), surface_handle,
-          gpu_memory_buffer_manager_.get(), buffer_format);
+          std::make_unique<BufferQueue>(
+              context_provider->SharedImageInterface(), buffer_format,
+              gpu_memory_buffer_manager_.get(), surface_handle));
 #else
       NOTREACHED();
 #endif

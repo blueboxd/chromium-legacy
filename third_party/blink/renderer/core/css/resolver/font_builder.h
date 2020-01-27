@@ -139,7 +139,7 @@ class CORE_EXPORT FontBuilder {
                                          float effective_zoom,
                                          float specified_size);
 
-  Member<const Document> document_;
+  const Document* document_;
   FontDescription font_description_;
 
   enum class PropertySetFlag {

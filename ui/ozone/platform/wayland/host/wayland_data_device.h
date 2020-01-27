@@ -58,6 +58,8 @@ class WaylandDataDevice : public internal::WaylandDataDeviceBase {
 
   bool IsDragEntered() { return drag_offer_ != nullptr; }
 
+  WaylandWindow* entered_window() const { return window_; }
+
  private:
   void ReadDragDataFromFD(
       base::ScopedFD fd,

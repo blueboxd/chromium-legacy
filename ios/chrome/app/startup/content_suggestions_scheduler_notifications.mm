@@ -15,7 +15,7 @@
 
 @implementation ContentSuggestionsSchedulerNotifications
 
-+ (void)notifyColdStart:(ios::ChromeBrowserState*)browserState {
++ (void)notifyColdStart:(ChromeBrowserState*)browserState {
   ntp_snippets::ContentSuggestionsService* contentSuggestionsService =
       IOSChromeContentSuggestionsServiceFactory::GetForBrowserState(
           browserState);
@@ -23,7 +23,7 @@
       ->OnBrowserColdStart();
 }
 
-+ (void)notifyForeground:(ios::ChromeBrowserState*)browserState {
++ (void)notifyForeground:(ChromeBrowserState*)browserState {
   ntp_snippets::ContentSuggestionsService* contentSuggestionsService =
       IOSChromeContentSuggestionsServiceFactory::GetForBrowserState(
           browserState);

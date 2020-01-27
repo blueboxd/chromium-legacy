@@ -108,7 +108,7 @@ void TextIteratorTextState::ResetPositionContainerNode(
   DCHECK_NE(node_type, PositionNodeType::kNone);
   position_node_type_ = node_type;
   position_container_node_ = nullptr;
-  position_node_ = node;
+  position_node_ = &node;
   position_start_offset_ = base::nullopt;
   position_end_offset_ = base::nullopt;
 }

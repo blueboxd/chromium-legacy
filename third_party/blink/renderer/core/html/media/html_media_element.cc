@@ -265,7 +265,7 @@ class AudioSourceProviderClientLockScope {
   }
 
  private:
-  Member<AudioSourceProviderClient> client_;
+  AudioSourceProviderClient* client_;
 };
 
 const AtomicString& AudioKindToString(

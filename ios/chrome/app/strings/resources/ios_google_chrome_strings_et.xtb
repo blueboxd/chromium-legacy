@@ -27,7 +27,6 @@
 <translation id="4249068189593983585">Chrome'i nõuanne. Vahelehtede lisavalikute nägemiseks puudutage ja hoidke all ekraanikuva üla- või alaosas tööriistaribal olevat nuppu Kuva vahelehed.</translation>
 <translation id="4523886039239821078">Mõned pistikprogrammid põhjustavad Chrome'i kokkujooksmise. Desinstallige need:</translation>
 <translation id="5389212809648216794">Google Chrome ei saa kaamerat kasutada, kuna seda kasutab muu rakendus</translation>
-<translation id="5621912349729388018"><ph name="BEGIN_LINK" />Vaadake üle Chrome'i värskendatud teenusetingimused.<ph name="END_LINK" /></translation>
 <translation id="5639704535586432836">Tehke valikud Seaded &gt; Privaatsus &gt; Kaamera &gt; Google Chrome ja lülitage kaamera sisse.</translation>
 <translation id="5642200033778930880">Google Chrome ei saa kaamerat poolitatud vaate režiimis kasutada</translation>
 <translation id="5690427481109656848">Google LLC</translation>
@@ -51,4 +50,5 @@
 <translation id="840168496893712993">Mõned pistikprogrammid põhjustavad Chrome'i kokkujooksmise. Proovige need desinstallida.</translation>
 <translation id="8459495907675268833">Valitud andmed eemaldati Chrome'ist ja sünkroonitud seadmetest. Aadressil history.google.com võib teie Google'i kontol olla muus vormis sirvimisajalugu, nagu otsingud ja tegevused muudes Google'i teenustes.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
+<translation id="8574235780160508979">Chrome'i teenusetingimused muutuvad 31. märtsil. <ph name="BEGIN_LINK" />Vaadake need üle<ph name="END_LINK" /></translation>
 </translationbundle>

@@ -1056,6 +1056,8 @@ jumbo_static_library("ui") {
       "passwords/bubble_controllers/auto_sign_in_bubble_controller.h",
       "passwords/bubble_controllers/generation_confirmation_bubble_controller.cc",
       "passwords/bubble_controllers/generation_confirmation_bubble_controller.h",
+      "passwords/bubble_controllers/items_bubble_controller.cc",
+      "passwords/bubble_controllers/items_bubble_controller.h",
       "passwords/bubble_controllers/password_bubble_controller_base.cc",
       "passwords/bubble_controllers/password_bubble_controller_base.h",
       "passwords/credential_leak_dialog_controller.h",

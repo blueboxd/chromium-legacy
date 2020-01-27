@@ -541,6 +541,8 @@ const char* ToString(ax::mojom::Role role) {
       return "pluginObject";
     case ax::mojom::Role::kPopUpButton:
       return "popUpButton";
+    case ax::mojom::Role::kPortal:
+      return "portal";
     case ax::mojom::Role::kPre:
       return "pre";
     case ax::mojom::Role::kPresentational:
@@ -921,6 +923,8 @@ ax::mojom::Role ParseRole(const char* role) {
     return ax::mojom::Role::kPluginObject;
   if (0 == strcmp(role, "popUpButton"))
     return ax::mojom::Role::kPopUpButton;
+  if (0 == strcmp(role, "portal"))
+    return ax::mojom::Role::kPortal;
   if (0 == strcmp(role, "pre"))
     return ax::mojom::Role::kPre;
   if (0 == strcmp(role, "presentational"))

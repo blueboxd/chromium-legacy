@@ -224,6 +224,7 @@
     paragraph,
     pluginObject,
     popUpButton,
+    portal,
     pre,
     presentational,
     progressIndicator,

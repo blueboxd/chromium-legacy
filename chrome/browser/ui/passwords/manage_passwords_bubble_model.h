@@ -63,14 +63,6 @@ class ManagePasswordsBubbleModel {
   // Called by the view code when the save/update button is clicked by the user.
   void OnSaveClicked();
 
-  // Called by the view code when the manage button is clicked by the user.
-  void OnManageClicked(password_manager::ManagePasswordsReferrer referrer);
-
-  // Called by the view code to delete or add a password form to the
-  // PasswordStore.
-  void OnPasswordAction(const autofill::PasswordForm& password_form,
-                        PasswordAction action);
-
   // Called by the view when the "Sign in" button or the "Sync to" button in the
   // promo bubble is clicked.
   void OnSignInToChromeClicked(const AccountInfo& account,
@@ -86,10 +78,6 @@ class ManagePasswordsBubbleModel {
   const base::string16& title() const { return title_; }
   const autofill::PasswordForm& pending_password() const {
     return pending_password_;
-  }
-  // Returns the available credentials which match the current site.
-  const std::vector<autofill::PasswordForm>& local_credentials() const {
-    return local_credentials_;
   }
 
   bool are_passwords_revealed_when_bubble_is_opened() const {
@@ -146,8 +134,6 @@ class ManagePasswordsBubbleModel {
   class InteractionKeeper;
   // Updates |title_| for the PENDING_PASSWORD_STATE.
   void UpdatePendingStateTitle();
-  // Updates |title_| for the MANAGE_STATE.
-  void UpdateManageStateTitle();
 
   // URL of the page from where this bubble was triggered.
   GURL origin_;

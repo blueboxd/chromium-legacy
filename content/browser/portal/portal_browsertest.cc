@@ -1636,8 +1636,9 @@ IN_PROC_BROWSER_TEST_F(PortalBrowserTest,
   RenderFrameHostImpl* portal_frame = portal_contents->GetMainFrame();
   WaitForAccessibilityTree(portal_contents);
 
-  EXPECT_EQ(portal_frame->browser_accessibility_manager()->GetRootManager(),
-            main_frame->browser_accessibility_manager());
+  EXPECT_NE(nullptr, portal_frame->browser_accessibility_manager());
+  EXPECT_EQ(nullptr,
+            portal_frame->browser_accessibility_manager()->GetRootManager());
 
   // Activate portal and adopt predecessor.
   EXPECT_TRUE(ExecJs(portal_frame,

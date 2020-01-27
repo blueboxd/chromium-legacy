@@ -70,6 +70,7 @@
 #include "third_party/blink/renderer/core/html/html_table_section_element.h"
 #include "third_party/blink/renderer/core/html/media/html_media_element.h"
 #include "third_party/blink/renderer/core/html/parser/html_parser_idioms.h"
+#include "third_party/blink/renderer/core/html/portal/html_portal_element.h"
 #include "third_party/blink/renderer/core/input_type_names.h"
 #include "third_party/blink/renderer/core/layout/layout_block_flow.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
@@ -616,8 +617,12 @@ ax::mojom::Role AXNodeObject::NativeRoleIgnoringAria() const {
                                             : ax::mojom::Role::kLink;
   }
 
+  if (IsA<HTMLPortalElement>(*GetNode())) {
+    return ax::mojom::Role::kPortal;
+  }
+
   if (IsA<HTMLAnchorElement>(*GetNode())) {
-    // We assume that an anchor element is LinkRole if it has event listners
+    // We assume that an anchor element is LinkRole if it has event listeners
     // even though it doesn't have kHrefAttr.
     if (IsClickable())
       return ax::mojom::Role::kLink;

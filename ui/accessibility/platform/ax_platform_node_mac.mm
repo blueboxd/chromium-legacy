@@ -169,6 +169,7 @@ RoleMap BuildRoleMap() {
       {ax::mojom::Role::kParagraph, NSAccessibilityGroupRole},
       {ax::mojom::Role::kPluginObject, NSAccessibilityGroupRole},
       {ax::mojom::Role::kPopUpButton, NSAccessibilityPopUpButtonRole},
+      {ax::mojom::Role::kPortal, NSAccessibilityButtonRole},
       {ax::mojom::Role::kPre, NSAccessibilityGroupRole},
       {ax::mojom::Role::kPresentational, NSAccessibilityGroupRole},
       {ax::mojom::Role::kProgressIndicator,

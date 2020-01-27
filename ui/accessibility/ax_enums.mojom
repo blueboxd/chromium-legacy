@@ -255,6 +255,7 @@ enum Role {
   kParagraph,
   kPluginObject,
   kPopUpButton,
+  kPortal,
   kPre,
   kPresentational,
   kProgressIndicator,

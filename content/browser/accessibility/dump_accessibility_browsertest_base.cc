@@ -121,6 +121,8 @@ void DumpAccessibilityTestBase::SetUp() {
   // TODO(1012108): remove this once Mac is also enabled by default.
   enabled_features.emplace_back(features::kFormControlsRefresh);
 
+  enabled_features.emplace_back(blink::features::kPortals);
+
   // TODO(dmazzoni): DumpAccessibilityTree expectations are based on the
   // assumption that the accessibility labels feature is off. (There are
   // also several tests that explicitly enable the feature.) It'd be better
@@ -334,6 +336,51 @@ void DumpAccessibilityTestBase::RunTestForPlatform(
     waiter.WaitForNotification();
   }
 
+  WaitForAXTreeLoaded(web_contents, wait_for);
+
+  // Call the subclass to dump the output.
+  std::vector<std::string> actual_lines = Dump(run_until);
+
+  // Execute and wait for specified string
+  for (const auto& function_name : execute) {
+    DLOG(INFO) << "executing: " << function_name;
+    base::Value result =
+        ExecuteScriptAndGetValue(web_contents->GetMainFrame(), function_name);
+    const std::string& str = result.is_string() ? result.GetString() : "";
+    // If no string is specified, do not wait.
+    bool wait_for_string = str != "";
+    while (wait_for_string) {
+      // Loop until specified string is found.
+      base::string16 tree_dump = DumpUnfilteredAccessibilityTreeAsString();
+      if (base::UTF16ToUTF8(tree_dump).find(str) != std::string::npos) {
+        wait_for_string = false;
+        // Append an additional dump if the specified string was found.
+        std::vector<std::string> additional_dump = Dump(run_until);
+        actual_lines.emplace_back("=== Start Continuation ===");
+        actual_lines.insert(actual_lines.end(), additional_dump.begin(),
+                            additional_dump.end());
+        break;
+      }
+      // Block until the next accessibility notification in any frame.
+      VLOG(1) << "Still waiting on this text to be found: " << str;
+      VLOG(1) << "Waiting until the next accessibility event";
+      AccessibilityNotificationWaiter accessibility_waiter(
+          web_contents, ui::AXMode(), ax::mojom::Event::kNone);
+      accessibility_waiter.WaitForNotification();
+    }
+  }
+
+  // Validate against the expectation file.
+  bool matches_expectation = test_helper.ValidateAgainstExpectation(
+      file_path, expected_file, actual_lines, *expected_lines);
+  EXPECT_TRUE(matches_expectation);
+  if (!matches_expectation)
+    OnDiffFailed();
+}
+
+void DumpAccessibilityTestBase::WaitForAXTreeLoaded(
+    WebContentsImpl* web_contents,
+    const std::vector<std::string>& wait_for) {
   // Get the url of every frame in the frame tree.
   FrameTree* frame_tree = web_contents->GetFrameTree();
   std::vector<std::string> all_frame_urls;
@@ -344,9 +391,15 @@ void DumpAccessibilityTestBase::RunTestForPlatform(
     //
     // In this scenario, B's contentWindow.location.href matches A's url,
     // but B's url in the browser frame tree is still "about:blank".
+    //
+    // We also ignore frame tree nodes created for portals in the outer
+    // WebContents as the node doesn't have a url set.
     std::string url = node->current_url().spec();
-    if (url != url::kAboutBlankURL)
+    if (url != url::kAboutBlankURL &&
+        node->frame_owner_element_type() !=
+            blink::FrameOwnerElementType::kPortal) {
       all_frame_urls.push_back(url);
+    }
   }
 
   // Wait for the accessibility tree to fully load for all frames,
@@ -400,48 +453,14 @@ void DumpAccessibilityTestBase::RunTestForPlatform(
     // Block until the next accessibility notification in any frame.
     VLOG(1) << "Waiting until the next accessibility event";
     AccessibilityNotificationWaiter accessibility_waiter(
-        web_contents, ui::AXMode(), ax::mojom::Event::kNone);
+        web_contents, ui::kAXModeComplete, ax::mojom::Event::kNone);
     accessibility_waiter.WaitForNotification();
   }
 
-  // Call the subclass to dump the output.
-  std::vector<std::string> actual_lines = Dump(run_until);
-
-  // Execute and wait for specified string
-  for (const auto& function_name : execute) {
-    DLOG(INFO) << "executing: " << function_name;
-    base::Value result =
-        ExecuteScriptAndGetValue(web_contents->GetMainFrame(), function_name);
-    const std::string& str = result.is_string() ? result.GetString() : "";
-    // If no string is specified, do not wait.
-    bool wait_for_string = str != "";
-    while (wait_for_string) {
-      // Loop until specified string is found.
-      base::string16 tree_dump = DumpUnfilteredAccessibilityTreeAsString();
-      if (base::UTF16ToUTF8(tree_dump).find(str) != std::string::npos) {
-        wait_for_string = false;
-        // Append an additional dump if the specified string was found.
-        std::vector<std::string> additional_dump = Dump(run_until);
-        actual_lines.emplace_back("=== Start Continuation ===");
-        actual_lines.insert(actual_lines.end(), additional_dump.begin(),
-                            additional_dump.end());
-        break;
-      }
-      // Block until the next accessibility notification in any frame.
-      VLOG(1) << "Still waiting on this text to be found: " << str;
-      VLOG(1) << "Waiting until the next accessibility event";
-      AccessibilityNotificationWaiter accessibility_waiter(
-          web_contents, ui::AXMode(), ax::mojom::Event::kNone);
-      accessibility_waiter.WaitForNotification();
-    }
+  for (WebContents* inner_contents : web_contents->GetInnerWebContents()) {
+    WaitForAXTreeLoaded(static_cast<WebContentsImpl*>(inner_contents),
+                        std::vector<std::string>());
   }
-
-  // Validate against the expectation file.
-  bool matches_expectation = test_helper.ValidateAgainstExpectation(
-      file_path, expected_file, actual_lines, *expected_lines);
-  EXPECT_TRUE(matches_expectation);
-  if (!matches_expectation)
-    OnDiffFailed();
 }
 
 BrowserAccessibility* DumpAccessibilityTestBase::FindNode(

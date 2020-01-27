@@ -383,6 +383,7 @@ const InternalRoleEntry kInternalRoles[] = {
     {ax::mojom::Role::kParagraph, "Paragraph"},
     {ax::mojom::Role::kPluginObject, "PluginObject"},
     {ax::mojom::Role::kPopUpButton, "PopUpButton"},
+    {ax::mojom::Role::kPortal, "Portal"},
     {ax::mojom::Role::kPre, "Pre"},
     {ax::mojom::Role::kPresentational, "Presentational"},
     {ax::mojom::Role::kProgressIndicator, "ProgressIndicator"},
@@ -3474,6 +3475,7 @@ bool AXObject::NameFromContents(bool recursive) const {
     case ax::mojom::Role::kMenuItemRadio:
     case ax::mojom::Role::kMenuListOption:
     case ax::mojom::Role::kPopUpButton:
+    case ax::mojom::Role::kPortal:
     case ax::mojom::Role::kRadioButton:
     case ax::mojom::Role::kRowHeader:
     case ax::mojom::Role::kStaticText:

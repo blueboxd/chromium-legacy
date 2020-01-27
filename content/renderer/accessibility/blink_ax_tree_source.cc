@@ -1136,9 +1136,11 @@ void BlinkAXTreeSource::SerializeNode(WebAXObject src,
     if (src.HasAriaAttribute())
       dst->AddBoolAttribute(ax::mojom::BoolAttribute::kHasAriaAttribute, true);
 
-    // Frames and iframes.
+    // Frames and iframes. We don't add a child routing id for Portals (even
+    // though they are a frame owner and have a subframe) as they can't be
+    // interacted with and we want to omit their contents from the AxTree.
     WebFrame* frame = WebFrame::FromFrameOwnerElement(element);
-    if (frame) {
+    if (frame && dst->role != ax::mojom::Role::kPortal) {
       dst->AddContentIntAttribute(AX_CONTENT_ATTR_CHILD_ROUTING_ID,
                                   RenderFrame::GetRoutingIdForWebFrame(frame));
     }

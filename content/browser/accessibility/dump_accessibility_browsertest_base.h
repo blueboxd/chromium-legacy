@@ -14,6 +14,7 @@
 #include "content/browser/accessibility/accessibility_event_recorder.h"
 #include "content/public/browser/accessibility_tree_formatter.h"
 #include "content/public/test/content_browser_test.h"
+#include "third_party/blink/public/common/features.h"
 
 namespace content {
 
@@ -132,6 +133,9 @@ class DumpAccessibilityTestBase : public ContentBrowserTest,
  private:
   BrowserAccessibility* FindNodeInSubtree(BrowserAccessibility& node,
                                           const std::string& name);
+
+  void WaitForAXTreeLoaded(WebContentsImpl* web_contents,
+                           const std::vector<std::string>& wait_for);
 };
 
 }  // namespace content

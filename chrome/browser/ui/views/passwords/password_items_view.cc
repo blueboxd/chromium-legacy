@@ -10,8 +10,10 @@
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/vector_icons/vector_icons.h"
+#include "chrome/browser/ui/passwords/bubble_controllers/items_bubble_controller.h"
 #include "chrome/browser/ui/passwords/manage_passwords_bubble_model.h"
 #include "chrome/browser/ui/passwords/manage_passwords_view_utils.h"
+#include "chrome/browser/ui/passwords/passwords_model_delegate.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/chrome_typography.h"
 #include "chrome/grit/generated_resources.h"
@@ -245,16 +247,16 @@ PasswordItemsView::PasswordItemsView(content::WebContents* web_contents,
     : PasswordBubbleViewBase(web_contents,
                              anchor_view,
                              reason,
-                             /*easily_dismissable=*/true) {
+                             /*easily_dismissable=*/true),
+      controller_(PasswordsModelDelegateFromWebContents(web_contents)) {
   DialogDelegate::set_buttons(ui::DIALOG_BUTTON_OK);
   DialogDelegate::SetExtraView(CreateManageButton(this));
-  DCHECK_EQ(password_manager::ui::MANAGE_STATE, model()->state());
 
-  if (model()->local_credentials().empty()) {
+  if (controller_.local_credentials().empty()) {
     // A LayoutManager is required for GetHeightForWidth() even without content.
     SetLayoutManager(std::make_unique<views::FillLayout>());
   } else {
-    for (auto& password_form : model()->local_credentials()) {
+    for (auto& password_form : controller_.local_credentials()) {
       password_rows_.push_back(
           std::make_unique<PasswordRow>(this, &password_form));
     }
@@ -266,18 +268,18 @@ PasswordItemsView::PasswordItemsView(content::WebContents* web_contents,
 PasswordItemsView::~PasswordItemsView() = default;
 
 PasswordBubbleControllerBase* PasswordItemsView::GetController() {
-  return nullptr;
+  return &controller_;
 }
 
 const PasswordBubbleControllerBase* PasswordItemsView::GetController() const {
-  return nullptr;
+  return &controller_;
 }
 
 void PasswordItemsView::RecreateLayout() {
   // This method should only be used when we have password rows, otherwise the
   // dialog should only show the no-passwords title and doesn't need to be
   // recreated.
-  DCHECK(!model()->local_credentials().empty());
+  DCHECK(!controller_.local_credentials().empty());
 
   RemoveAllChildViews(true);
 
@@ -307,7 +309,7 @@ void PasswordItemsView::NotifyPasswordFormAction(
   RecreateLayout();
   // After the view is consistent, notify the model that the password needs to
   // be updated (either removed or put back into the store, as appropriate.
-  model()->OnPasswordAction(password_form, action);
+  controller_.OnPasswordAction(password_form, action);
 }
 
 bool PasswordItemsView::ShouldShowCloseButton() const {
@@ -323,7 +325,7 @@ gfx::Size PasswordItemsView::CalculatePreferredSize() const {
 
 void PasswordItemsView::ButtonPressed(views::Button* sender,
                                       const ui::Event& event) {
-  model()->OnManageClicked(
+  controller_.OnManageClicked(
       password_manager::ManagePasswordsReferrer::kManagePasswordsBubble);
   CloseBubble();
 }

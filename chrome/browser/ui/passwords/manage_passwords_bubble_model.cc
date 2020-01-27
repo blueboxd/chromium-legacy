@@ -212,9 +212,6 @@ ManagePasswordsBubbleModel::ManagePasswordsBubbleModel(
                           kCredentialManagementAPI;
 
     UpdatePendingStateTitle();
-  } else if (state_ == password_manager::ui::MANAGE_STATE) {
-    local_credentials_ = DeepCopyForms(delegate_->GetCurrentForms());
-    UpdateManageStateTitle();
   }
 
   password_manager::metrics_util::UIDisplayDisposition display_disposition =
@@ -228,8 +225,6 @@ ManagePasswordsBubbleModel::ManagePasswordsBubbleModel(
         display_disposition = metrics_util::MANUAL_WITH_PASSWORD_PENDING_UPDATE;
         break;
       case password_manager::ui::MANAGE_STATE:
-        display_disposition = metrics_util::MANUAL_MANAGE_PASSWORDS;
-        break;
       case password_manager::ui::CONFIRMATION_STATE:
       case password_manager::ui::CREDENTIAL_REQUEST_STATE:
       case password_manager::ui::AUTO_SIGNIN_STATE:
@@ -316,29 +311,6 @@ void ManagePasswordsBubbleModel::OnSaveClicked() {
     delegate_->SavePassword(pending_password_.username_value,
                             pending_password_.password_value);
   }
-}
-
-void ManagePasswordsBubbleModel::OnManageClicked(
-    password_manager::ManagePasswordsReferrer referrer) {
-  interaction_keeper_->set_dismissal_reason(metrics_util::CLICKED_MANAGE);
-  if (delegate_)
-    delegate_->NavigateToPasswordManagerSettingsPage(referrer);
-}
-
-void ManagePasswordsBubbleModel::OnPasswordAction(
-    const autofill::PasswordForm& password_form,
-    PasswordAction action) {
-  Profile* profile = GetProfile();
-  if (!profile)
-    return;
-  password_manager::PasswordStore* password_store =
-      GetPasswordStore(profile, password_form.IsUsingAccountStore()).get();
-
-  DCHECK(password_store);
-  if (action == REMOVE_PASSWORD)
-    password_store->RemoveLogin(password_form);
-  else
-    password_store->AddLogin(password_form);
 }
 
 void ManagePasswordsBubbleModel::OnSignInToChromeClicked(
@@ -456,9 +428,4 @@ void ManagePasswordsBubbleModel::UpdatePendingStateTitle() {
                  : PasswordTitleType::SAVE_ACCOUNT);
   GetSavePasswordDialogTitleTextAndLinkRange(GetWebContents()->GetVisibleURL(),
                                              origin_, type, &title_);
-}
-
-void ManagePasswordsBubbleModel::UpdateManageStateTitle() {
-  GetManagePasswordsDialogTitleText(GetWebContents()->GetVisibleURL(), origin_,
-                                    !local_credentials_.empty(), &title_);
 }

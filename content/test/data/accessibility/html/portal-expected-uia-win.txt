@@ -1,0 +1,6 @@
+document
+++group IsControlElement=false
+++++description Name='Before portal'
+++button Name='portal'
+++group IsControlElement=false
+++++description Name='After portal'

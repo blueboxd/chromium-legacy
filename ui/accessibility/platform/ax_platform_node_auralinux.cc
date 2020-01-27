@@ -2618,6 +2618,8 @@ AtkRole AXPlatformNodeAuraLinux::GetAtkRole() const {
         return ATK_ROLE_COMBO_BOX;
       return ATK_ROLE_PUSH_BUTTON;
     }
+    case ax::mojom::Role::kPortal:
+      return ATK_ROLE_PUSH_BUTTON;
     case ax::mojom::Role::kPre:
       return ATK_ROLE_SECTION;
     case ax::mojom::Role::kProgressIndicator:

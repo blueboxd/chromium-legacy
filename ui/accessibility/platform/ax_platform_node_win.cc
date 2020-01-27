@@ -4915,6 +4915,9 @@ int AXPlatformNodeWin::MSAARole() {
       return ROLE_SYSTEM_BUTTONMENU;
     }
 
+    case ax::mojom::Role::kPortal:
+      return ROLE_SYSTEM_PUSHBUTTON;
+
     case ax::mojom::Role::kPre:
       return ROLE_SYSTEM_TEXT;
 
@@ -5753,6 +5756,9 @@ base::string16 AXPlatformNodeWin::UIAAriaRole() {
       return L"menu";
     }
 
+    case ax::mojom::Role::kPortal:
+      return L"button";
+
     case ax::mojom::Role::kPre:
       return L"region";
 
@@ -6417,6 +6423,9 @@ LONG AXPlatformNodeWin::ComputeUIAControlType() {  // NOLINT(runtime/int)
         return UIA_ComboBoxControlTypeId;
       return UIA_MenuControlTypeId;
     }
+
+    case ax::mojom::Role::kPortal:
+      return UIA_ButtonControlTypeId;
 
     case ax::mojom::Role::kPre:
       return UIA_PaneControlTypeId;

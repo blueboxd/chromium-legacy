@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "chrome/browser/ui/passwords/bubble_controllers/items_bubble_controller.h"
 #include "chrome/browser/ui/passwords/manage_passwords_bubble_model.h"
 #include "chrome/browser/ui/views/passwords/password_bubble_view_base.h"
 #include "components/autofill/core/common/password_form.h"
@@ -61,6 +62,8 @@ class PasswordItemsView : public PasswordBubbleViewBase,
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
   std::vector<std::unique_ptr<PasswordRow>> password_rows_;
+
+  ItemsBubbleController controller_;
 
   DISALLOW_COPY_AND_ASSIGN(PasswordItemsView);
 };

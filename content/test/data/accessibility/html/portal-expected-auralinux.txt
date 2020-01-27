@@ -1,0 +1,6 @@
+[document web]
+++[paragraph]
+++++[static] name='Before portal'
+++[push button] name='portal'
+++[paragraph]
+++++[static] name='After portal'

@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -225,6 +225,7 @@ chrome.automation.RoleType = {
   PARAGRAPH: 'paragraph',
   PLUGIN_OBJECT: 'pluginObject',
   POP_UP_BUTTON: 'popUpButton',
+  PORTAL: 'portal',
   PRE: 'pre',
   PRESENTATIONAL: 'presentational',
   PROGRESS_INDICATOR: 'progressIndicator',
@@ -770,7 +771,7 @@ chrome.automation.AutomationNode.prototype.activeDescendantFor;
 chrome.automation.AutomationNode.prototype.inPageLinkTarget;
 
 /**
- * The nodes, if any that provide more details about the current node.
+ * A node that provides more details about the current node.
  * @type {(!Array<!chrome.automation.AutomationNode>|undefined)}
  * @see https://developer.chrome.com/extensions/automation#type-details
  */

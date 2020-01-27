@@ -965,6 +965,9 @@ base::string16 BrowserAccessibilityAndroid::GetRoleDescription() const {
     case ax::mojom::Role::kPopUpButton:
       message_id = IDS_AX_ROLE_POP_UP_BUTTON;
       break;
+    case ax::mojom::Role::kPortal:
+      message_id = IDS_AX_ROLE_BUTTON;
+      break;
     case ax::mojom::Role::kPre:
       // No role description.
       break;

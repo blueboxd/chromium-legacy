@@ -1,0 +1,6 @@
+AXWebArea
+++AXGroup
+++++AXStaticText AXValue='Before portal'
+++AXButton AXDescription='portal'
+++AXGroup
+++++AXStaticText AXValue='After portal'

@@ -2715,9 +2715,6 @@ void LayoutBlockFlow::CreateFloatingObjects() {
 }
 
 void LayoutBlockFlow::WillBeDestroyed() {
-  // Mark as being destroyed to avoid trouble with merges in removeChild().
-  being_destroyed_ = true;
-
   // Make sure to destroy anonymous children first while they are still
   // connected to the rest of the tree, so that they will properly dirty line
   // boxes that they are removed from. Effects that do :before/:after only on

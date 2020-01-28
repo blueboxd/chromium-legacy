@@ -265,7 +265,8 @@ TEST_P(ScrollAnchorTest, ClearScrollAnchorsOnAncestors) {
   // Scrolling the nested scroller should clear the anchor on the main frame.
   ScrollableArea* scroller =
       ScrollerForElement(GetDocument().getElementById("scroller"));
-  scroller->ScrollBy(ScrollOffset(0, 100), kUserScroll);
+  scroller->ScrollBy(ScrollOffset(0, 100),
+                     mojom::blink::ScrollIntoViewParams::Type::kUser);
   EXPECT_EQ(nullptr, GetScrollAnchor(viewport).AnchorObject());
 }
 
@@ -365,7 +366,8 @@ TEST_P(ScrollAnchorTest, AnchorWithLayerInScrollingDiv) {
   Element* block1 = GetDocument().getElementById("block1");
   Element* block2 = GetDocument().getElementById("block2");
 
-  scroller->ScrollBy(ScrollOffset(0, 150), kUserScroll);
+  scroller->ScrollBy(ScrollOffset(0, 150),
+                     mojom::blink::ScrollIntoViewParams::Type::kUser);
 
   // In this layout pass we will anchor to #block2 which has its own PaintLayer.
   SetHeight(block1, 200);
@@ -450,7 +452,8 @@ TEST_P(ScrollAnchorTest, RemoveScrollerWithLayerInScrollingDiv) {
   Element* changer2 = GetDocument().getElementById("changer2");
   Element* anchor = GetDocument().getElementById("anchor");
 
-  scroller->ScrollBy(ScrollOffset(0, 150), kUserScroll);
+  scroller->ScrollBy(ScrollOffset(0, 150),
+                     mojom::blink::ScrollIntoViewParams::Type::kUser);
   ScrollLayoutViewport(ScrollOffset(0, 50));
 
   // In this layout pass both the inner and outer scroller will anchor to
@@ -1046,7 +1049,8 @@ TEST_P(ScrollAnchorTest, ClampAdjustsAnchorAnimation) {
     <div class="content" id=three></div>
     <div class="content" id=four></div>
   )HTML");
-  LayoutViewport()->SetScrollOffset(ScrollOffset(0, 2000), kUserScroll);
+  LayoutViewport()->SetScrollOffset(
+      ScrollOffset(0, 2000), mojom::blink::ScrollIntoViewParams::Type::kUser);
   Update();
   GetDocument().getElementById("hidden")->setAttribute(html_names::kStyleAttr,
                                                        "display:block");

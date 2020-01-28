@@ -60,11 +60,10 @@ class ServiceWorkerMetrics {
   // Used for UMA. Append-only.
   // This class is used to indicate which event is fired/finished. Most events
   // have only one request that starts the event and one response that finishes
-  // the event, but the fetch and the foreign fetch event have two responses, so
-  // there are two types of EventType to break down the measurement into two:
-  // FETCH/FOREIGN_FETCH and FETCH_WAITUNTIL/FOREIGN_FETCH_WAITUNTIL.
-  // Moreover, FETCH is separated into the four: MAIN_FRAME, SUB_FRAME,
-  // SHARED_WORKER and SUB_RESOURCE for more detailed UMA.
+  // the event, but the fetch event has two responses, so there are two types of
+  // EventType to break down the measurement into two: FETCH and
+  // FETCH_WAITUNTIL. Moreover, FETCH is separated into the four: MAIN_FRAME,
+  // SUB_FRAME, SHARED_WORKER and SUB_RESOURCE for more detailed UMA.
   enum class EventType {
     ACTIVATE = 0,
     INSTALL = 1,
@@ -81,9 +80,9 @@ class ServiceWorkerMetrics {
     FETCH_SHARED_WORKER = 12,
     FETCH_SUB_RESOURCE = 13,
     UNKNOWN = 14,  // Used when event type is not known.
-    FOREIGN_FETCH = 15,
+    // FOREIGN_FETCH = 15,  // Obsolete
     FETCH_WAITUNTIL = 16,
-    FOREIGN_FETCH_WAITUNTIL = 17,
+    // FOREIGN_FETCH_WAITUNTIL = 17,  // Obsolete
     // NAVIGATION_HINT_LINK_MOUSE_DOWN = 18,  // Obsolete
     // NAVIGATION_HINT_LINK_TAP_UNCONFIRMED = 19,  // Obsolete
     // NAVIGATION_HINT_LINK_TAP_DOWN = 20,  // Obsolete

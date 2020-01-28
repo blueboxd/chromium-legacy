@@ -232,7 +232,7 @@ void AutofillClientImpl::UpdateAutofillPopupDataListValues(
   NOTREACHED();
 }
 
-void AutofillClientImpl::HideAutofillPopup() {
+void AutofillClientImpl::HideAutofillPopup(autofill::PopupHidingReason reason) {
   // This is invoked on the user moving away from an autofill context (e.g., a
   // navigation finishing or a tab being hidden). As all showing/hiding of
   // autofill UI in WebLayer is driven by the system, there is no action to

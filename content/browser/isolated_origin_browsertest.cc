@@ -1110,8 +1110,7 @@ IN_PROC_BROWSER_TEST_F(IsolatedOriginTest, ProcessLimit) {
     GURL lock_url(
         SiteInstanceImpl::DetermineProcessLockURL(isolation_context, url));
     return RenderProcessHostImpl::IsSuitableHost(
-        process, browser_context, isolation_context, site_url, lock_url,
-        /* is_guest= */ false);
+        process, isolation_context, site_url, lock_url, /* is_guest= */ false);
   };
   EXPECT_TRUE(is_suitable_host(foo_process, foo_url));
   EXPECT_FALSE(is_suitable_host(foo_process, isolated_foo_url));

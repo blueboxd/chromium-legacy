@@ -17471,7 +17471,7 @@
 
       If this policy is not set, networking code will run out of the browser process by default.
 
-      This policy will be removed in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> version 82.''',
+      This policy will be removed in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> version 84.''',
     },
     {
       'name': 'VoiceInteractionContextEnabled',

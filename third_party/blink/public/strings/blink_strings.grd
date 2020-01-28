@@ -662,6 +662,9 @@ below:
         <message name="IDS_AX_ROLE_NOTE" desc="Accessibility role description for a note">
           note
         </message>
+        <message name="IDS_AX_ROLE_PDF_HIGHLIGHT" desc="Accessibility role description for PDF highlight.">
+          highlight
+        </message>
         <message name="IDS_AX_ROLE_POP_UP_BUTTON" desc="Accessibility role description for a pop up button">
           pop up button
         </message>

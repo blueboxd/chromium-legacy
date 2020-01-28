@@ -108,7 +108,8 @@ class TextPaintTimingDetectorTest : public testing::Test {
   }
 
   void SimulateScroll() {
-    GetPaintTimingDetector().NotifyScroll(ScrollType::kUserScroll);
+    GetPaintTimingDetector().NotifyScroll(
+        mojom::blink::ScrollIntoViewParams::Type::kUser);
   }
 
   void SimulateKeyUp() {

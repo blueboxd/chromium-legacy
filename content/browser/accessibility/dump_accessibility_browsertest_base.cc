@@ -371,6 +371,7 @@ void DumpAccessibilityTestBase::RunTestForPlatform(
   }
 
   // Validate against the expectation file.
+  actual_lines.push_back(kMarkEndOfFile);
   bool matches_expectation = test_helper.ValidateAgainstExpectation(
       file_path, expected_file, actual_lines, *expected_lines);
   EXPECT_TRUE(matches_expectation);

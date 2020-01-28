@@ -135,8 +135,9 @@ TEST_F(DataTransferTest, NodeImageUnderScrollOffset) {
 
   const int scroll_amount = 10;
   LocalFrameView* frame_view = GetDocument().View();
-  frame_view->LayoutViewport()->SetScrollOffset(ScrollOffset(0, scroll_amount),
-                                                kProgrammaticScroll);
+  frame_view->LayoutViewport()->SetScrollOffset(
+      ScrollOffset(0, scroll_amount),
+      mojom::blink::ScrollIntoViewParams::Type::kProgrammatic);
 
   // The first div should be offset by the scroll offset.
   Element& first = *GetDocument().getElementById("first");
@@ -176,8 +177,9 @@ TEST_F(DataTransferTest, NodeImageSizeWithPageScaleFactor) {
   // page scale factor.
   const int scroll_amount = 10;
   LocalFrameView* frame_view = GetDocument().View();
-  frame_view->LayoutViewport()->SetScrollOffset(ScrollOffset(0, scroll_amount),
-                                                kProgrammaticScroll);
+  frame_view->LayoutViewport()->SetScrollOffset(
+      ScrollOffset(0, scroll_amount),
+      mojom::blink::ScrollIntoViewParams::Type::kProgrammatic);
   const auto image_with_offset = DataTransfer::NodeImage(GetFrame(), node);
   EXPECT_EQ(
       IntSize(node_width * page_scale_factor, node_height * page_scale_factor),
@@ -207,8 +209,9 @@ TEST_F(DataTransferTest, NodeImageSizeWithPageScaleFactorTooLarge) {
   // page scale factor.
   const int scroll_amount = 10;
   LocalFrameView* frame_view = GetDocument().View();
-  frame_view->LayoutViewport()->SetScrollOffset(ScrollOffset(0, scroll_amount),
-                                                kProgrammaticScroll);
+  frame_view->LayoutViewport()->SetScrollOffset(
+      ScrollOffset(0, scroll_amount),
+      mojom::blink::ScrollIntoViewParams::Type::kProgrammatic);
   const auto image_with_offset = DataTransfer::NodeImage(GetFrame(), node);
   EXPECT_EQ(IntSize(node_width * page_scale_factor,
                     (node_height - scroll_amount) * page_scale_factor),
@@ -272,8 +275,9 @@ TEST_F(DataTransferTest, NodeImageFullyOffscreen) {
 
   const int scroll_amount = 800;
   LocalFrameView* frame_view = GetDocument().View();
-  frame_view->LayoutViewport()->SetScrollOffset(ScrollOffset(0, scroll_amount),
-                                                kProgrammaticScroll);
+  frame_view->LayoutViewport()->SetScrollOffset(
+      ScrollOffset(0, scroll_amount),
+      mojom::blink::ScrollIntoViewParams::Type::kProgrammatic);
 
   Element& target = *GetDocument().getElementById("target");
   const auto image = DataTransfer::NodeImage(GetFrame(), target);

@@ -152,7 +152,7 @@ class WebApps : public apps::mojom::Publisher,
 
   std::set<std::string> paused_apps_;
 
-  web_app::WebAppProvider* const provider_;
+  web_app::WebAppProvider* provider_ = nullptr;
 
   ArcAppListPrefs* arc_prefs_ = nullptr;
 

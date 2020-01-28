@@ -84,6 +84,16 @@ BrowserThreadGlobals& GetBrowserThreadGlobals() {
 
 }  // namespace
 
+scoped_refptr<base::SingleThreadTaskRunner> GetUIThreadTaskRunner(
+    const BrowserTaskTraits& traits) {
+  return BrowserTaskExecutor::GetUIThreadTaskRunner(traits);
+}
+
+scoped_refptr<base::SingleThreadTaskRunner> GetIOThreadTaskRunner(
+    const BrowserTaskTraits& traits) {
+  return BrowserTaskExecutor::GetIOThreadTaskRunner(traits);
+}
+
 BrowserThreadImpl::BrowserThreadImpl(
     ID identifier,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner)

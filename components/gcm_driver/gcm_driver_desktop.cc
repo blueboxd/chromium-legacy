@@ -20,7 +20,6 @@
 #include "build/build_config.h"
 #include "components/gcm_driver/gcm_account_mapper.h"
 #include "components/gcm_driver/gcm_app_handler.h"
-#include "components/gcm_driver/gcm_channel_status_syncer.h"
 #include "components/gcm_driver/gcm_client_factory.h"
 #include "components/gcm_driver/gcm_delayed_task_controller.h"
 #include "components/gcm_driver/instance_id/instance_id_impl.h"
@@ -514,7 +513,6 @@ void GCMDriverDesktop::IOWorker::RecordDecryptionFailure(
 GCMDriverDesktop::GCMDriverDesktop(
     std::unique_ptr<GCMClientFactory> gcm_client_factory,
     const GCMClient::ChromeBuildInfo& chrome_build_info,
-    const std::string& channel_status_request_url,
     const std::string& user_agent,
     PrefService* prefs,
     const base::FilePath& store_path,
@@ -528,12 +526,6 @@ GCMDriverDesktop::GCMDriverDesktop(
     const scoped_refptr<base::SequencedTaskRunner>& io_thread,
     const scoped_refptr<base::SequencedTaskRunner>& blocking_task_runner)
     : GCMDriver(store_path, blocking_task_runner, url_loader_factory_for_ui),
-      gcm_channel_status_syncer_(
-          new GCMChannelStatusSyncer(this,
-                                     prefs,
-                                     channel_status_request_url,
-                                     user_agent,
-                                     url_loader_factory_for_ui)),
       signed_in_(false),
       gcm_started_(false),
       gcm_enabled_(true),
@@ -546,8 +538,6 @@ GCMDriverDesktop::GCMDriverDesktop(
       ui_thread_(ui_thread),
       io_thread_(io_thread),
       wake_from_suspend_enabled_(false) {
-  gcm_enabled_ = gcm_channel_status_syncer_->gcm_enabled();
-
   // Create and initialize the GCMClient. Note that this does not initiate the
   // GCM check-in.
   io_worker_.reset(new IOWorker(ui_thread, io_thread));
@@ -623,11 +613,6 @@ void GCMDriverDesktop::Shutdown() {
   Stop();
   GCMDriver::Shutdown();
 
-  // Dispose the syncer in order to release the reference to
-  // URLRequestContextGetter that needs to be done before IOThread gets
-  // deleted.
-  gcm_channel_status_syncer_.reset();
-
   io_thread_->DeleteSoon(FROM_HERE, io_worker_.release());
 }
 
@@ -654,10 +639,8 @@ void GCMDriverDesktop::RemoveAppHandler(const std::string& app_id) {
 
   // Stops the GCM service when no app intends to consume it. Stop function will
   // remove the last app handler - account mapper.
-  if (app_handlers().size() == 1) {
+  if (app_handlers().size() == 1)
     Stop();
-    gcm_channel_status_syncer_->Stop();
-  }
 }
 
 void GCMDriverDesktop::AddConnectionObserver(GCMConnectionObserver* observer) {
@@ -1261,10 +1244,6 @@ GCMClient::Result GCMDriverDesktop::EnsureStarted(
   // Have any app requested the service?
   if (app_handlers().empty())
     return GCMClient::UNKNOWN_ERROR;
-
-  // Polling for channel status should be invoked when GCM is being requested,
-  // no matter whether GCM is enabled or nor.
-  gcm_channel_status_syncer_->EnsureStarted();
 
   if (!gcm_enabled_)
     return GCMClient::GCM_DISABLED;

@@ -292,13 +292,8 @@ void ServiceWorkerRegistry::GetUserDataByKeyPrefix(
     int64_t registration_id,
     const std::string& key_prefix,
     GetUserDataCallback callback) {
-  if (registration_id == blink::mojom::kInvalidServiceWorkerRegistrationId) {
-    RunSoon(FROM_HERE,
-            base::BindOnce(std::move(callback), std::vector<std::string>(),
-                           blink::ServiceWorkerStatusCode::kErrorFailed));
-    return;
-  }
-  if (key_prefix.empty()) {
+  if (registration_id == blink::mojom::kInvalidServiceWorkerRegistrationId ||
+      key_prefix.empty()) {
     RunSoon(FROM_HERE,
             base::BindOnce(std::move(callback), std::vector<std::string>(),
                            blink::ServiceWorkerStatusCode::kErrorFailed));
@@ -308,6 +303,25 @@ void ServiceWorkerRegistry::GetUserDataByKeyPrefix(
   storage()->GetUserDataByKeyPrefix(
       registration_id, key_prefix,
       base::BindOnce(&ServiceWorkerRegistry::DidGetUserData,
+                     weak_factory_.GetWeakPtr(), std::move(callback)));
+}
+
+void ServiceWorkerRegistry::GetUserKeysAndDataByKeyPrefix(
+    int64_t registration_id,
+    const std::string& key_prefix,
+    GetUserKeysAndDataCallback callback) {
+  if (registration_id == blink::mojom::kInvalidServiceWorkerRegistrationId ||
+      key_prefix.empty()) {
+    RunSoon(FROM_HERE,
+            base::BindOnce(std::move(callback),
+                           base::flat_map<std::string, std::string>(),
+                           blink::ServiceWorkerStatusCode::kErrorFailed));
+    return;
+  }
+
+  storage()->GetUserKeysAndDataByKeyPrefix(
+      registration_id, key_prefix,
+      base::BindOnce(&ServiceWorkerRegistry::DidGetUserKeysAndData,
                      weak_factory_.GetWeakPtr(), std::move(callback)));
 }
 
@@ -655,6 +669,18 @@ void ServiceWorkerRegistry::DidGetUserData(
   }
   std::move(callback).Run(
       data, ServiceWorkerStorage::DatabaseStatusToStatusCode(status));
+}
+
+void ServiceWorkerRegistry::DidGetUserKeysAndData(
+    GetUserKeysAndDataCallback callback,
+    const base::flat_map<std::string, std::string>& data_map,
+    ServiceWorkerDatabase::Status status) {
+  if (status != ServiceWorkerDatabase::STATUS_OK &&
+      status != ServiceWorkerDatabase::STATUS_ERROR_NOT_FOUND) {
+    ScheduleDeleteAndStartOver();
+  }
+  std::move(callback).Run(
+      data_map, ServiceWorkerStorage::DatabaseStatusToStatusCode(status));
 }
 
 void ServiceWorkerRegistry::ScheduleDeleteAndStartOver() {

@@ -186,8 +186,10 @@ void PaintTimingDetector::NotifyInputEvent(WebInputEvent::Type type) {
   StopRecordingLargestContentfulPaint();
 }
 
-void PaintTimingDetector::NotifyScroll(ScrollType scroll_type) {
-  if (scroll_type != kUserScroll && scroll_type != kCompositorScroll)
+void PaintTimingDetector::NotifyScroll(
+    mojom::blink::ScrollIntoViewParams::Type scroll_type) {
+  if (scroll_type != mojom::blink::ScrollIntoViewParams::Type::kUser &&
+      scroll_type != mojom::blink::ScrollIntoViewParams::Type::kCompositor)
     return;
   StopRecordingLargestContentfulPaint();
 }

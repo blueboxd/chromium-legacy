@@ -120,6 +120,10 @@ There are some fundamental metrics.
 : Counts of `new DedicatedWorker()` calls in `DedicatedWorkerGlobalScope`.
 - [SharedWorkerStart](https://www.chromestatus.com/metrics/feature/timeline/popularity/5)
 : Counts of `new SharedWorker()` calls in `Document`.
+- [ClassicSharedWorker](https://www.chromestatus.com/metrics/feature/timeline/popularity/3148)
+: Counts of new SharedWorker() calls with `{ type: 'classic' }` or without `WorkerOptions#type` argument.
+- [ModuleSharedWorker](https://www.chromestatus.com/metrics/feature/timeline/popularity/3149)
+: Counts of new SharedWorker() calls with `{ type: 'module' }`.
 - [WorkletAddModule](https://www.chromestatus.com/metrics/feature/timeline/popularity/2364)
 : Counts of `Worklet#addModule()` calls in `Document`. This includes all worklet
 types. Each worklet type has its own counter, too.

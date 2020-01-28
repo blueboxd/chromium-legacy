@@ -169,6 +169,11 @@ const AutofillPopupLayoutModel& AutofillKeyboardAccessoryAdapter::layout_model()
 
 // AutofillPopupViewDelegate implementation
 
+void AutofillKeyboardAccessoryAdapter::Hide(PopupHidingReason reason) {
+  if (controller_)
+    controller_->Hide(reason);
+}
+
 void AutofillKeyboardAccessoryAdapter::ViewDestroyed() {
   if (controller_)
     controller_->ViewDestroyed();

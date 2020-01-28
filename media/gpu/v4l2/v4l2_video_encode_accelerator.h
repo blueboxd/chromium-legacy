@@ -179,11 +179,12 @@ class MEDIA_GPU_EXPORT V4L2VideoEncodeAccelerator
   // Other utility functions.  Called on the |encoder_task_runner_|.
   //
 
-  // Create image processor that will process input_layout to output_layout. The
-  // visible size of processed video frames are |visible_size|.
+  // Create image processor that will process |input_layout| +
+  // |input_visible_rect| to |output_layout|+|output_visible_rect|.
   bool CreateImageProcessor(const VideoFrameLayout& input_layout,
                             const VideoFrameLayout& output_layout,
-                            const gfx::Size& visible_size);
+                            const gfx::Rect& input_visible_rect,
+                            const gfx::Rect& output_visible_rect);
   // Process one video frame in |image_processor_input_queue_| by
   // |image_processor_|.
   void InputImageProcessorTask();
@@ -203,8 +204,7 @@ class MEDIA_GPU_EXPORT V4L2VideoEncodeAccelerator
 
   // Reconfigure format of input buffers and image processor if frame size
   // given by client is different from one set in input buffers.
-  bool ReconfigureFormatIfNeeded(VideoPixelFormat format,
-                                 const gfx::Size& new_frame_size);
+  bool ReconfigureFormatIfNeeded(const VideoFrame& frame);
 
   // Try to set up the device to the input format we were Initialized() with,
   // or if the device doesn't support it, use one it can support, so that we
@@ -228,8 +228,7 @@ class MEDIA_GPU_EXPORT V4L2VideoEncodeAccelerator
 
   // Allocates |count| video frames with |visible_size| for image processor's
   // output buffers. Returns false if there's something wrong.
-  bool AllocateImageProcessorOutputBuffers(size_t count,
-                                           const gfx::Size& visible_size);
+  bool AllocateImageProcessorOutputBuffers(size_t count);
 
   // Recycle output buffer of image processor with |output_buffer_index|.
   void ReuseImageProcessorOutputBuffer(size_t output_buffer_index);
@@ -249,18 +248,20 @@ class MEDIA_GPU_EXPORT V4L2VideoEncodeAccelerator
   const scoped_refptr<base::SingleThreadTaskRunner> child_task_runner_;
   SEQUENCE_CHECKER(child_sequence_checker_);
 
-  gfx::Size visible_size_;
+  // A coded_size() of VideoFrame on VEA::Encode(). This is updated on the first
+  // time Encode() if the coded size is different from the expected one by VEA.
+  // For example, it happens in WebRTC simulcast case.
+  gfx::Size input_frame_size_;
+
+  // Visible rectangle of VideoFrame to be fed to an encoder driver, in other
+  // words, a visible rectangle that output encoded bitstream buffers represent.
+  gfx::Rect encoder_input_visible_rect_;
+
   // Layout of device accepted input VideoFrame.
   base::Optional<VideoFrameLayout> device_input_layout_;
 
   // Stands for whether an input buffer is native graphic buffer.
   bool native_input_mode_;
-
-  // Input allocated size calculated by
-  // V4L2Device::AllocatedSizeFromV4L2Format().
-  // TODO(crbug.com/914700): Remove this once Client::RequireBitstreamBuffers
-  // uses input's VideoFrameLayout to allocate input buffer.
-  gfx::Size input_allocated_size_;
 
   size_t output_buffer_byte_size_;
   uint32_t output_format_fourcc_;

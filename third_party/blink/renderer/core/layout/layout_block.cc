@@ -103,7 +103,6 @@ LayoutBlock::LayoutBlock(ContainerNode* node)
     : LayoutBox(node),
       has_margin_before_quirk_(false),
       has_margin_after_quirk_(false),
-      being_destroyed_(false),
       has_markup_truncation_(false),
       width_available_to_children_changed_(false),
       height_available_to_children_changed_(false),

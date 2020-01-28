@@ -57,20 +57,20 @@ class PriorityQueueWithSequencesTest : public testing::Test {
   test::TaskEnvironment task_environment{
       test::TaskEnvironment::TimeSource::MOCK_TIME};
 
-  scoped_refptr<TaskSource> sequence_a = MakeSequenceWithTraitsAndTask(
-      TaskTraits(ThreadPool(), TaskPriority::USER_VISIBLE));
+  scoped_refptr<TaskSource> sequence_a =
+      MakeSequenceWithTraitsAndTask(TaskTraits(TaskPriority::USER_VISIBLE));
   SequenceSortKey sort_key_a = sequence_a->BeginTransaction().GetSortKey();
 
-  scoped_refptr<TaskSource> sequence_b = MakeSequenceWithTraitsAndTask(
-      TaskTraits(ThreadPool(), TaskPriority::USER_BLOCKING));
+  scoped_refptr<TaskSource> sequence_b =
+      MakeSequenceWithTraitsAndTask(TaskTraits(TaskPriority::USER_BLOCKING));
   SequenceSortKey sort_key_b = sequence_b->BeginTransaction().GetSortKey();
 
-  scoped_refptr<TaskSource> sequence_c = MakeSequenceWithTraitsAndTask(
-      TaskTraits(ThreadPool(), TaskPriority::USER_BLOCKING));
+  scoped_refptr<TaskSource> sequence_c =
+      MakeSequenceWithTraitsAndTask(TaskTraits(TaskPriority::USER_BLOCKING));
   SequenceSortKey sort_key_c = sequence_c->BeginTransaction().GetSortKey();
 
-  scoped_refptr<TaskSource> sequence_d = MakeSequenceWithTraitsAndTask(
-      TaskTraits(ThreadPool(), TaskPriority::BEST_EFFORT));
+  scoped_refptr<TaskSource> sequence_d =
+      MakeSequenceWithTraitsAndTask(TaskTraits(TaskPriority::BEST_EFFORT));
   SequenceSortKey sort_key_d = sequence_d->BeginTransaction().GetSortKey();
 
   PriorityQueue pq;

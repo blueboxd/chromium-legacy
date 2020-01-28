@@ -222,6 +222,7 @@
     note,
     pane,
     paragraph,
+    pdfActionableHighlight, // PDF specific highlight role.
     pluginObject,
     popUpButton,
     portal,

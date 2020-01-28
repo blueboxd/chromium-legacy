@@ -65,7 +65,7 @@ static void AppendMailtoPostFormDataToURL(KURL& url,
                                           const String& encoding_type) {
   String body = data.FlattenToString();
 
-  if (DeprecatedEqualIgnoringCase(encoding_type, "text/plain")) {
+  if (EqualIgnoringASCIICase(encoding_type, "text/plain")) {
     // Convention seems to be to decode, and s/&/\r\n/. Also, spaces are encoded
     // as %20.
     body = DecodeURLEscapeSequences(
@@ -93,9 +93,9 @@ void FormSubmission::Attributes::ParseAction(const String& action) {
 }
 
 AtomicString FormSubmission::Attributes::ParseEncodingType(const String& type) {
-  if (DeprecatedEqualIgnoringCase(type, "multipart/form-data"))
+  if (EqualIgnoringASCIICase(type, "multipart/form-data"))
     return AtomicString("multipart/form-data");
-  if (DeprecatedEqualIgnoringCase(type, "text/plain"))
+  if (EqualIgnoringASCIICase(type, "text/plain"))
     return AtomicString("text/plain");
   return AtomicString("application/x-www-form-urlencoded");
 }
@@ -109,7 +109,7 @@ FormSubmission::SubmitMethod FormSubmission::Attributes::ParseMethodType(
     const String& type) {
   if (DeprecatedEqualIgnoringCase(type, "post"))
     return FormSubmission::kPostMethod;
-  if (DeprecatedEqualIgnoringCase(type, "dialog"))
+  if (EqualIgnoringASCIICase(type, "dialog"))
     return FormSubmission::kDialogMethod;
   return FormSubmission::kGetMethod;
 }

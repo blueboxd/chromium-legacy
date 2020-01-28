@@ -91,7 +91,8 @@ void AutofillUiTest::TearDownOnMainThread() {
   // Make sure to close any showing popups prior to tearing down the UI.
   AutofillManager* autofill_manager = GetAutofillManager();
   if (autofill_manager)
-    autofill_manager->client()->HideAutofillPopup();
+    autofill_manager->client()->HideAutofillPopup(
+        autofill::PopupHidingReason::kTabGone);
   test::ReenableSystemServices();
 }
 

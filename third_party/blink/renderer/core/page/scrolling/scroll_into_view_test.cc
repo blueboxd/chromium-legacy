@@ -591,7 +591,7 @@ TEST_F(ScrollIntoViewTest, StopAtLayoutViewportOption) {
       GetDocument().getElementById("target")->GetLayoutObject();
   auto params = CreateScrollIntoViewParams(
       ScrollAlignment::kAlignLeftAlways, ScrollAlignment::kAlignTopAlways,
-      kProgrammaticScroll, false,
+      mojom::blink::ScrollIntoViewParams::Type::kProgrammatic, false,
       mojom::blink::ScrollIntoViewParams::Behavior::kInstant);
   params->stop_at_main_frame_layout_viewport = true;
   target->ScrollRectToVisible(PhysicalRect(target->AbsoluteBoundingBoxRect()),
@@ -687,7 +687,8 @@ TEST_F(ScrollIntoViewTest, SmoothUserScrollNotAbortedByProgrammaticScrolls) {
       content->BoundingBoxForScrollIntoView(),
       CreateScrollIntoViewParams(
           ScrollAlignment::kAlignToEdgeIfNeeded,
-          ScrollAlignment::kAlignTopAlways, kUserScroll, false,
+          ScrollAlignment::kAlignTopAlways,
+          mojom::blink::ScrollIntoViewParams::Type::kUser, false,
           mojom::blink::ScrollIntoViewParams::Behavior::kSmooth, true));
 
   // Animating the container

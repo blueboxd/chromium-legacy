@@ -14,6 +14,7 @@ import android.widget.FrameLayout;
 
 import org.chromium.base.Callback;
 import org.chromium.base.Log;
+import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.download.home.DownloadManagerUiConfig;
 import org.chromium.chrome.browser.download.home.FaviconProvider;
@@ -92,6 +93,8 @@ public class DateOrderedListCoordinator implements ToolbarCoordinator.ToolbarLis
      * {@code provider} as a list of items.
      * @param context The {@link Context} to use to build the views.
      * @param config The {@link DownloadManagerUiConfig} to provide UI configuration params.
+     * @param isPrefetchEnabledSupplier A supplier that indicates whether or not prefetch is
+     *         enabled.
      * @param provider The {@link OfflineContentProvider} to visually represent.
      * @param legacyProvider A legacy version of a provider for downloads.
      * @param deleteController A class to manage whether or not items can be deleted.
@@ -101,8 +104,9 @@ public class DateOrderedListCoordinator implements ToolbarCoordinator.ToolbarLis
      * @param dateOrderedListObserver A {@link DateOrderedListObserver}.
      */
     public DateOrderedListCoordinator(Context context, DownloadManagerUiConfig config,
-            OfflineContentProvider provider, LegacyDownloadProvider legacyProvider,
-            DeleteController deleteController, SelectionDelegate<ListItem> selectionDelegate,
+            ObservableSupplier<Boolean> isPrefetchEnabledSupplier, OfflineContentProvider provider,
+            LegacyDownloadProvider legacyProvider, DeleteController deleteController,
+            SelectionDelegate<ListItem> selectionDelegate,
             FilterCoordinator.Observer filterObserver,
             DateOrderedListObserver dateOrderedListObserver, ModalDialogManager modalDialogManager,
             FaviconProvider faviconProvider) {
@@ -122,7 +126,8 @@ public class DateOrderedListCoordinator implements ToolbarCoordinator.ToolbarLis
 
         mStorageCoordinator = new StorageCoordinator(context, mMediator.getFilterSource());
 
-        mFilterCoordinator = new FilterCoordinator(context, mMediator.getFilterSource());
+        mFilterCoordinator = new FilterCoordinator(
+                context, mMediator.getFilterSource(), isPrefetchEnabledSupplier);
         mFilterCoordinator.addObserver(mMediator::onFilterTypeSelected);
         mFilterCoordinator.addObserver(filterObserver);
         mFilterCoordinator.addObserver(mEmptyCoordinator);

@@ -48,21 +48,33 @@
 namespace blink {
 
 const ScrollAlignment ScrollAlignment::kAlignCenterIfNeeded = {
-    kScrollAlignmentNoScroll, kScrollAlignmentCenter,
-    kScrollAlignmentClosestEdge};
+    mojom::blink::ScrollAlignment::Behavior::kNoScroll,
+    mojom::blink::ScrollAlignment::Behavior::kCenter,
+    mojom::blink::ScrollAlignment::Behavior::kClosestEdge};
 const ScrollAlignment ScrollAlignment::kAlignToEdgeIfNeeded = {
-    kScrollAlignmentNoScroll, kScrollAlignmentClosestEdge,
-    kScrollAlignmentClosestEdge};
+    mojom::blink::ScrollAlignment::Behavior::kNoScroll,
+    mojom::blink::ScrollAlignment::Behavior::kClosestEdge,
+    mojom::blink::ScrollAlignment::Behavior::kClosestEdge};
 const ScrollAlignment ScrollAlignment::kAlignCenterAlways = {
-    kScrollAlignmentCenter, kScrollAlignmentCenter, kScrollAlignmentCenter};
+    mojom::blink::ScrollAlignment::Behavior::kCenter,
+    mojom::blink::ScrollAlignment::Behavior::kCenter,
+    mojom::blink::ScrollAlignment::Behavior::kCenter};
 const ScrollAlignment ScrollAlignment::kAlignTopAlways = {
-    kScrollAlignmentTop, kScrollAlignmentTop, kScrollAlignmentTop};
+    mojom::blink::ScrollAlignment::Behavior::kTop,
+    mojom::blink::ScrollAlignment::Behavior::kTop,
+    mojom::blink::ScrollAlignment::Behavior::kTop};
 const ScrollAlignment ScrollAlignment::kAlignBottomAlways = {
-    kScrollAlignmentBottom, kScrollAlignmentBottom, kScrollAlignmentBottom};
+    mojom::blink::ScrollAlignment::Behavior::kBottom,
+    mojom::blink::ScrollAlignment::Behavior::kBottom,
+    mojom::blink::ScrollAlignment::Behavior::kBottom};
 const ScrollAlignment ScrollAlignment::kAlignLeftAlways = {
-    kScrollAlignmentLeft, kScrollAlignmentLeft, kScrollAlignmentLeft};
+    mojom::blink::ScrollAlignment::Behavior::kLeft,
+    mojom::blink::ScrollAlignment::Behavior::kLeft,
+    mojom::blink::ScrollAlignment::Behavior::kLeft};
 const ScrollAlignment ScrollAlignment::kAlignRightAlways = {
-    kScrollAlignmentRight, kScrollAlignmentRight, kScrollAlignmentRight};
+    mojom::blink::ScrollAlignment::Behavior::kRight,
+    mojom::blink::ScrollAlignment::Behavior::kRight,
+    mojom::blink::ScrollAlignment::Behavior::kRight};
 
 ScrollOffset ScrollAlignment::GetScrollOffsetToExpose(
     const PhysicalRect& scroll_snapport_rect,
@@ -80,7 +92,7 @@ ScrollOffset ScrollAlignment::GetScrollOffsetToExpose(
     non_zero_visible_rect.SetHeight(minimum_layout_unit);
 
   // Determine the appropriate X behavior.
-  ScrollAlignmentBehavior scroll_x;
+  mojom::blink::ScrollAlignment::Behavior scroll_x;
   PhysicalRect expose_rect_x(expose_rect.X(), non_zero_visible_rect.Y(),
                              expose_rect.Width(),
                              non_zero_visible_rect.Height());
@@ -95,8 +107,8 @@ ScrollOffset ScrollAlignment::GetScrollOffsetToExpose(
     // If the rect is bigger than the visible area, don't bother trying to
     // center. Other alignments will work.
     scroll_x = GetVisibleBehavior(align_x);
-    if (scroll_x == kScrollAlignmentCenter)
-      scroll_x = kScrollAlignmentNoScroll;
+    if (scroll_x == mojom::blink::ScrollAlignment::Behavior::kCenter)
+      scroll_x = mojom::blink::ScrollAlignment::Behavior::kNoScroll;
   } else if (intersect_width > 0) {
     // If the rectangle is partially visible, but not above the minimum
     // threshold, use the specified partial behavior
@@ -105,7 +117,7 @@ ScrollOffset ScrollAlignment::GetScrollOffsetToExpose(
     scroll_x = GetHiddenBehavior(align_x);
   }
 
-  if (scroll_x == kScrollAlignmentClosestEdge) {
+  if (scroll_x == mojom::blink::ScrollAlignment::Behavior::kClosestEdge) {
     // Closest edge is the right in two cases:
     // (1) exposeRect to the right of and smaller than nonZeroVisibleRect
     // (2) exposeRect to the left of and larger than nonZeroVisibleRect
@@ -113,12 +125,12 @@ ScrollOffset ScrollAlignment::GetScrollOffsetToExpose(
          expose_rect.Width() < non_zero_visible_rect.Width()) ||
         (expose_rect.Right() < non_zero_visible_rect.Right() &&
          expose_rect.Width() > non_zero_visible_rect.Width())) {
-      scroll_x = kScrollAlignmentRight;
+      scroll_x = mojom::blink::ScrollAlignment::Behavior::kRight;
     }
   }
 
   // Determine the appropriate Y behavior.
-  ScrollAlignmentBehavior scroll_y;
+  mojom::blink::ScrollAlignment::Behavior scroll_y;
   PhysicalRect expose_rect_y(non_zero_visible_rect.X(), expose_rect.Y(),
                              non_zero_visible_rect.Width(),
                              expose_rect.Height());
@@ -131,8 +143,8 @@ ScrollOffset ScrollAlignment::GetScrollOffsetToExpose(
     // If the rect is bigger than the visible area, don't bother trying to
     // center. Other alignments will work.
     scroll_y = GetVisibleBehavior(align_y);
-    if (scroll_y == kScrollAlignmentCenter)
-      scroll_y = kScrollAlignmentNoScroll;
+    if (scroll_y == mojom::blink::ScrollAlignment::Behavior::kCenter)
+      scroll_y = mojom::blink::ScrollAlignment::Behavior::kNoScroll;
   } else if (intersect_height > 0) {
     // If the rectangle is partially visible, use the specified partial behavior
     scroll_y = GetPartialBehavior(align_y);
@@ -140,7 +152,7 @@ ScrollOffset ScrollAlignment::GetScrollOffsetToExpose(
     scroll_y = GetHiddenBehavior(align_y);
   }
 
-  if (scroll_y == kScrollAlignmentClosestEdge) {
+  if (scroll_y == mojom::blink::ScrollAlignment::Behavior::kClosestEdge) {
     // Closest edge is the bottom in two cases:
     // (1) exposeRect below and smaller than nonZeroVisibleRect
     // (2) exposeRect above and larger than nonZeroVisibleRect
@@ -148,7 +160,7 @@ ScrollOffset ScrollAlignment::GetScrollOffsetToExpose(
          expose_rect.Height() < non_zero_visible_rect.Height()) ||
         (expose_rect.Bottom() < non_zero_visible_rect.Bottom() &&
          expose_rect.Height() > non_zero_visible_rect.Height())) {
-      scroll_y = kScrollAlignmentBottom;
+      scroll_y = mojom::blink::ScrollAlignment::Behavior::kBottom;
     }
   }
 
@@ -159,11 +171,11 @@ ScrollOffset ScrollAlignment::GetScrollOffsetToExpose(
 
   // Given the X behavior, compute the X coordinate.
   float x;
-  if (scroll_x == kScrollAlignmentNoScroll) {
+  if (scroll_x == mojom::blink::ScrollAlignment::Behavior::kNoScroll) {
     x = current_scroll_offset.Width();
-  } else if (scroll_x == kScrollAlignmentRight) {
+  } else if (scroll_x == mojom::blink::ScrollAlignment::Behavior::kRight) {
     x = (expose_rect.Right() - non_zero_visible_rect.Right()).ToFloat();
-  } else if (scroll_x == kScrollAlignmentCenter) {
+  } else if (scroll_x == mojom::blink::ScrollAlignment::Behavior::kCenter) {
     x = ((expose_rect.X() + expose_rect.Right() -
           (non_zero_visible_rect.X() + non_zero_visible_rect.Right())) /
          2)
@@ -174,11 +186,11 @@ ScrollOffset ScrollAlignment::GetScrollOffsetToExpose(
 
   // Given the Y behavior, compute the Y coordinate.
   float y;
-  if (scroll_y == kScrollAlignmentNoScroll) {
+  if (scroll_y == mojom::blink::ScrollAlignment::Behavior::kNoScroll) {
     y = current_scroll_offset.Height();
-  } else if (scroll_y == kScrollAlignmentBottom) {
+  } else if (scroll_y == mojom::blink::ScrollAlignment::Behavior::kBottom) {
     y = (expose_rect.Bottom() - non_zero_visible_rect.Bottom()).ToFloat();
-  } else if (scroll_y == kScrollAlignmentCenter) {
+  } else if (scroll_y == mojom::blink::ScrollAlignment::Behavior::kCenter) {
     y = ((expose_rect.Y() + expose_rect.Bottom() -
           (non_zero_visible_rect.Y() + non_zero_visible_rect.Bottom())) /
          2)

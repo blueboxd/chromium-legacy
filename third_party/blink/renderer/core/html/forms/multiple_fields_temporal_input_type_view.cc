@@ -612,6 +612,13 @@ void MultipleFieldsTemporalInputTypeView::ClosePopupView() {
     picker->ClosePopup();
 }
 
+bool MultipleFieldsTemporalInputTypeView::HasOpenedPopup() const {
+  if (PickerIndicatorElement* picker = GetPickerIndicatorElement())
+    return picker->HasOpenedPopup();
+
+  return false;
+}
+
 void MultipleFieldsTemporalInputTypeView::ValueAttributeChanged() {
   if (!GetElement().HasDirtyValue())
     UpdateView();

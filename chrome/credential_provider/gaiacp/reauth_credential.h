@@ -66,6 +66,10 @@ class ATL_NO_VTABLE CReauthCredential
                                BSTR* error_text) override;
   HRESULT GetStringValueImpl(DWORD field_id, wchar_t** value) override;
 
+  // Check if tos has been accepted by this user at least once prior to this
+  // login attempt.
+  bool CheckIfTosAccepted();
+
   // Information about the OS user.
   CComBSTR os_user_domain_;
   CComBSTR os_username_;

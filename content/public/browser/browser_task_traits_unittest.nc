@@ -14,11 +14,9 @@ namespace content {
 #if defined(NCTEST_BROWSER_TASK_TRAITS_MULTIPLE_THREADS)  // [r"The traits bag contains multiple traits of the same type."]
 constexpr base::TaskTraits traits = {BrowserThread::UI,
                                      BrowserThread::IO};
-#elif defined(NCTEST_BROWSER_TASK_TRAITS_MULTIPLE_TASK_TYPES)  // [r"The traits bag is missing a required trait."]
+#elif defined(NCTEST_BROWSER_TASK_TRAITS_MULTIPLE_TASK_TYPES)  // [r"The traits bag contains multiple traits of the same type."]
 constexpr base::TaskTraits traits = {BrowserTaskType::kNavigation,
                                      BrowserTaskType::kBootstrap};
-#elif defined(NCTEST_BROWSER_TASK_TRAITS_NO_THREAD_ID)  // [r"The traits bag is missing a required trait."]
-constexpr base::TaskTraits traits = {BrowserTaskType::kNavigation};
 #endif
 
 

@@ -1958,12 +1958,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
 
   void DestroyAndCleanupAnonymousWrappers();
 
-  // While the destroy() method is virtual, this should only be overriden in
-  // very rare circumstances.
-  // You want to override willBeDestroyed() instead unless you explicitly need
-  // to stop this object from being destroyed (for example,
-  // LayoutEmbeddedContent overrides destroy() for this purpose).
-  virtual void Destroy();
+  void Destroy();
 
   // Virtual function helpers for the deprecated Flexible Box Layout (display:
   // -webkit-box).
@@ -2502,6 +2497,8 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     bitfields_.SetHasNonCollapsedBorderDecoration(b);
   }
 
+  bool BeingDestroyed() const { return bitfields_.BeingDestroyed(); }
+
   DisplayLockContext* GetDisplayLockContext() const {
     if (!RuntimeEnabledFeatures::DisplayLockingEnabled(&GetDocument()))
       return nullptr;
@@ -2590,6 +2587,15 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     kLayoutObjectSVGResourceFilterPrimitive,
   };
   virtual bool IsOfType(LayoutObjectType type) const { return false; }
+
+  // While the |DeleteThis()| method is virtual, this should only be overridden
+  // in very rare circumstances.
+  // You want to override |WillBeDestroyed()| instead unless you explicitly need
+  // to stop this object from being destroyed (for example,
+  // |LayoutEmbeddedContent| overrides |DeleteThis()| for this purpose).
+  virtual void DeleteThis();
+
+  void SetBeingDestroyedForTesting() { bitfields_.SetBeingDestroyed(true); }
 
   const ComputedStyle& SlowEffectiveStyle(NGStyleVariant style_variant) const;
 
@@ -2903,6 +2909,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
           registered_as_first_line_image_observer_(false),
           is_html_legend_element_(false),
           has_non_collapsed_border_decoration_(false),
+          being_destroyed_(false),
           positioned_state_(kIsStaticallyPositioned),
           selection_state_(static_cast<unsigned>(SelectionState::kNone)),
           subtree_paint_property_update_reasons_(
@@ -3162,6 +3169,9 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     // !Table()->ShouldCollapseBorders().
     ADD_BOOLEAN_BITFIELD(has_non_collapsed_border_decoration_,
                          HasNonCollapsedBorderDecoration);
+
+    // True at start of |Destroy()| before calling |WillBeDestroyed()|.
+    ADD_BOOLEAN_BITFIELD(being_destroyed_, BeingDestroyed);
 
    private:
     // This is the cached 'position' value of this object

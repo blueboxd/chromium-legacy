@@ -58,19 +58,24 @@ class CONTENT_EXPORT BaseBrowserTaskExecutor : public base::TaskExecutor {
       base::SingleThreadTaskRunnerThreadMode thread_mode) override;
 #endif  // defined(OS_WIN)
 
-  struct ThreadIdAndQueueType {
-    BrowserThread::ID thread_id;
-    BrowserTaskQueues::QueueType queue_type;
-  };
-
-  ThreadIdAndQueueType GetThreadIdAndQueueType(
+  // Returns the task runner for |traits| under |identifier|. Note: during the
+  // migration away from task traits extension, |traits| may also contain a
+  // browser thread id, if so, it should match |identifier| (|identifier| has to
+  // be provided explicitly because in the new source of tasks it's not part of
+  // |traits|) -- ref. crbug.com/1026641.
+  scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner(
+      BrowserThread::ID identifier,
       const base::TaskTraits& traits) const;
+
+  // Helper to match a QueueType from TaskTraits.
+  // TODO(1026641): Take BrowserTaskTraits as a parameter when getting off the
+  // need to support base::TaskTraits currently passed to this class in its role
+  // as a base::TaskExecutor.
+  static content::BrowserTaskQueues::QueueType GetQueueType(
+      const base::TaskTraits& traits);
 
  protected:
   virtual BrowserThread::ID GetCurrentThreadID() const = 0;
-
-  scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner(
-      const base::TaskTraits& traits) const;
 
   scoped_refptr<BrowserUIThreadScheduler::Handle> browser_ui_thread_handle_;
   scoped_refptr<BrowserIOThreadDelegate::Handle> browser_io_thread_handle_;
@@ -125,6 +130,16 @@ class CONTENT_EXPORT BrowserTaskExecutor : public BaseBrowserTaskExecutor {
   // Enables all queues on all threads.
   // Can be called multiple times.
   static void EnableAllQueues();
+
+  // Helpers to statically call into BaseBrowserTaskExecutor::GetTaskRunner()
+  // from browser_thread_impl.cc. Callers should use browser_thread.h's
+  // GetUIThreadTaskRunner over this.
+  // TODO(1026641): Clean up this indirection after the migration (once
+  // registering a base::BrowserTaskExecutor is no longer necessary).
+  static scoped_refptr<base::SingleThreadTaskRunner> GetUIThreadTaskRunner(
+      const BrowserTaskTraits& traits);
+  static scoped_refptr<base::SingleThreadTaskRunner> GetIOThreadTaskRunner(
+      const BrowserTaskTraits& traits);
 
   // As Create but with the user provided objects. Must call
   // BindToUIThreadForTesting before tasks can be run on the UI thread.

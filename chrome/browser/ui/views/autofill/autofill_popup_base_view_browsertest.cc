@@ -29,7 +29,7 @@ using testing::ReturnRef;
 
 class MockAutofillPopupViewDelegate : public AutofillPopupViewDelegate {
  public:
-  MOCK_METHOD0(Hide, void());
+  MOCK_METHOD1(Hide, void(PopupHidingReason));
   MOCK_METHOD0(ViewDestroyed, void());
   MOCK_METHOD1(SetSelectionAtPoint, void(const gfx::Point&));
   MOCK_METHOD0(AcceptSelectedLine, bool());

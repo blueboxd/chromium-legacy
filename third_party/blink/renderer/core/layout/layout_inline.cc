@@ -1046,14 +1046,31 @@ bool LayoutInline::NodeAtPoint(HitTestResult& result,
     // PaintLayer::HitTestContents() without going through any ancestor, in
     // which case the element must have self painting layer.
     DCHECK(HasSelfPaintingLayer());
-    for (const NGPaintFragment* fragment :
-         NGPaintFragment::InlineFragmentsFor(this)) {
+    NGInlineCursor cursor;
+    for (cursor.MoveTo(*this); cursor; cursor.MoveToNextForSameLayoutObject()) {
+      if (const NGPaintFragment* paint_fragment =
+              cursor.Current().PaintFragment()) {
+        // NGBoxFragmentPainter::NodeAtPoint() takes an offset that is
+        // accumulated up to the fragment itself. Compute this offset.
+        const PhysicalOffset child_offset =
+            accumulated_offset + paint_fragment->InlineOffsetToContainerBox();
+        if (NGBoxFragmentPainter(*paint_fragment)
+                .NodeAtPoint(result, hit_test_location, child_offset,
+                             hit_test_action))
+          return true;
+        continue;
+      }
+      DCHECK(cursor.Current().Item());
+      const NGFragmentItem& item = *cursor.Current().Item();
+      const NGPhysicalBoxFragment* box_fragment = item.BoxFragment();
+      DCHECK(box_fragment);
+      NGInlineCursor descendants = cursor.CursorForDescendants();
       // NGBoxFragmentPainter::NodeAtPoint() takes an offset that is accumulated
       // up to the fragment itself. Compute this offset.
-      PhysicalOffset adjusted_location =
-          accumulated_offset + fragment->InlineOffsetToContainerBox();
-      if (NGBoxFragmentPainter(*fragment).NodeAtPoint(
-              result, hit_test_location, adjusted_location, hit_test_action))
+      const PhysicalOffset child_offset = accumulated_offset + item.Offset();
+      if (NGBoxFragmentPainter(item, *box_fragment, &descendants)
+              .NodeAtPoint(result, hit_test_location, child_offset,
+                           hit_test_action))
         return true;
     }
     return false;

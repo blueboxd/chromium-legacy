@@ -18,6 +18,11 @@
         android:label="Tests for {{manifest_package}}"/>
 {% endblock %}
 
+{% block extra_application_attributes %}
+{{ super() }}
+android:requestLegacyExternalStorage="true"
+{% endblock %}
+
 {% block extra_application_definitions %}
     <meta-data android:name="com.google.ar.core.session_settings"
       android:value="dataset_path,/sdcard/chromium_tests_root/chrome/test/data/xr/dataset.mp4"/>

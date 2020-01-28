@@ -13,6 +13,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "url/gurl.h"
 
 namespace {
 class FilePath;
@@ -62,8 +63,8 @@ class AnnouncementNotificationService : public KeyedService {
     Delegate() = default;
     virtual ~Delegate() = default;
 
-    // Show notification. Fallback to default URL when |remote_url| is empty.
-    virtual void ShowNotification(const std::string& remote_url) = 0;
+    // Show notification.
+    virtual void ShowNotification() = 0;
 
     // Is Chrome first time to run.
     virtual bool IsFirstRun() = 0;
@@ -78,6 +79,7 @@ class AnnouncementNotificationService : public KeyedService {
       bool new_profile,
       PrefService* pref_service,
       std::unique_ptr<Delegate> delegate);
+  static GURL GetAnnouncementURL();
 
   AnnouncementNotificationService();
   ~AnnouncementNotificationService() override;

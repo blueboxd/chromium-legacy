@@ -164,8 +164,9 @@ class CORE_EXPORT ScrollAnimatorMac : public ScrollAnimatorBase {
   void DidAddHorizontalScrollbar(Scrollbar&) override;
   void WillRemoveHorizontalScrollbar(Scrollbar&) override;
 
-  void NotifyContentAreaScrolled(const ScrollOffset& delta,
-                                 ScrollType) override;
+  void NotifyContentAreaScrolled(
+      const ScrollOffset& delta,
+      mojom::blink::ScrollIntoViewParams::Type) override;
 
   bool SetScrollbarsVisibleForTesting(bool) override;
 

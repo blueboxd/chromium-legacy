@@ -4901,6 +4901,9 @@ int AXPlatformNodeWin::MSAARole() {
     case ax::mojom::Role::kParagraph:
       return ROLE_SYSTEM_GROUPING;
 
+    case ax::mojom::Role::kPdfActionableHighlight:
+      return ROLE_SYSTEM_PUSHBUTTON;
+
     case ax::mojom::Role::kPluginObject:
       if (GetDelegate()->GetChildCount())
         return ROLE_SYSTEM_GROUPING;
@@ -5742,6 +5745,9 @@ base::string16 AXPlatformNodeWin::UIAAriaRole() {
     case ax::mojom::Role::kParagraph:
       return L"group";
 
+    case ax::mojom::Role::kPdfActionableHighlight:
+      return L"button";
+
     case ax::mojom::Role::kPluginObject:
       if (GetDelegate()->GetChildCount())
         return L"group";
@@ -6410,6 +6416,9 @@ LONG AXPlatformNodeWin::ComputeUIAControlType() {  // NOLINT(runtime/int)
     case ax::mojom::Role::kParagraph:
       return UIA_GroupControlTypeId;
 
+    case ax::mojom::Role::kPdfActionableHighlight:
+      return UIA_CustomControlTypeId;
+
     case ax::mojom::Role::kPluginObject:
       if (GetDelegate()->GetChildCount())
         return UIA_GroupControlTypeId;
@@ -6613,6 +6622,7 @@ bool AXPlatformNodeWin::IsUIAControl() const {
           case ax::mojom::Role::kMenuItemCheckBox:
           case ax::mojom::Role::kMenuItemRadio:
           case ax::mojom::Role::kMenuListOption:
+          case ax::mojom::Role::kPdfActionableHighlight:
           case ax::mojom::Role::kRadioButton:
           case ax::mojom::Role::kRow:
           case ax::mojom::Role::kRowGroup:

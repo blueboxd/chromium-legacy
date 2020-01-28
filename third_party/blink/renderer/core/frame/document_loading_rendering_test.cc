@@ -118,6 +118,7 @@ TEST_F(DocumentLoadingRenderingTest,
 
   // Sheet finishes loading, but no documentElement yet so don't resume.
   css_resource.Complete("a { color: red; }");
+  test::RunPendingTasks();
   EXPECT_TRUE(Compositor().DeferMainFrameUpdate());
 
   // Root inserted so resume.
@@ -155,6 +156,7 @@ TEST_F(DocumentLoadingRenderingTest, ShouldResumeCommitsAfterSheetsLoadForXml) {
 
   // Sheet finished, so resume commits.
   css_resource.Finish();
+  test::RunPendingTasks();
   EXPECT_FALSE(Compositor().DeferMainFrameUpdate());
 }
 

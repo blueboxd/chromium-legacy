@@ -1,8 +1,9 @@
+include_rules = [
+  "+ui/base/ui_base_features.h",
+]
+
 specific_include_rules = {
   "file_input_type_test.cc": [
     "+base/run_loop.h",
-  ],
-  "(color_chooser_popup_ui_controller|date_time_chooser_impl|multiple_fields_temporal_input_type_view|picker_indicator_element|slider_thumb_element)\.cc": [
-    "+ui/base/ui_base_features.h",
   ],
 }

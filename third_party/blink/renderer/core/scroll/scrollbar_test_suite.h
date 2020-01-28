@@ -78,7 +78,8 @@ class MockScrollableArea : public GarbageCollected<MockScrollableArea>,
   bool UserInputScrollable(ScrollbarOrientation) const override { return true; }
   bool ScrollbarsCanBeActive() const override { return true; }
   bool ShouldPlaceVerticalScrollbarOnLeft() const override { return false; }
-  void UpdateScrollOffset(const ScrollOffset& offset, ScrollType) override {
+  void UpdateScrollOffset(const ScrollOffset& offset,
+                          mojom::blink::ScrollIntoViewParams::Type) override {
     scroll_offset_ = offset.ShrunkTo(maximum_scroll_offset_);
   }
   IntSize ScrollOffsetInt() const override {

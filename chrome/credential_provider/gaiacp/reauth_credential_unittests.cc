@@ -161,7 +161,6 @@ INSTANTIATE_TEST_SUITE_P(All,
                                             ::testing::Bool()));
 
 // Tests the GetStringValue method specific to FID_DESCRIPTION label for reasons
-// Tests the GetStringValue method specific to FID_DESCRIPTION label for reasons
 // to enforce GLS. Parameters are:
 // 1. Is enrolled with mdm.
 // 2. Is encrypted data missing in lsa store.
@@ -427,9 +426,19 @@ TEST_F(GcpReauthCredentialGlsRunnerTest, UserGaiaIdMismatch) {
   ASSERT_EQ(S_OK, FinishLogonProcess(false, false, IDS_ACCOUNT_IN_USE_BASE));
 }
 
-TEST_F(GcpReauthCredentialGlsRunnerTest, NormalReauth) {
+// Tests the normal reauth scenario.
+// 1. Is gem features enabled. If enabled, tos should be tested out.
+//    Otherwise, ToS shouldn't be set irrespective of the |kAcceptTos|
+//    registry entry.
+class GcpNormalReauthCredentialGlsRunnerTest
+    : public GcpReauthCredentialGlsRunnerTest,
+      public ::testing::WithParamInterface<bool> {};
+
+TEST_P(GcpNormalReauthCredentialGlsRunnerTest, WithGemFeatures) {
   USES_CONVERSION;
   CredentialProviderSigninDialogTestDataStorage test_data_storage;
+
+  bool is_gem_features_enabled = GetParam();
 
   CComBSTR username = L"foo_bar";
   CComBSTR full_name = A2COLE(test_data_storage.GetSuccessFullName().c_str());
@@ -443,6 +452,16 @@ TEST_F(GcpReauthCredentialGlsRunnerTest, NormalReauth) {
                 OLE2CW(username), OLE2CW(password), OLE2CW(full_name),
                 L"comment", base::UTF8ToUTF16(test_data_storage.GetSuccessId()),
                 OLE2CW(email), &sid));
+
+  if (is_gem_features_enabled) {
+    // Set |kKeyEnableGemFeatures| registry entry to 1.
+    ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kKeyEnableGemFeatures, 1u));
+    // Set that ToS was already accepted by the user.
+    ASSERT_EQ(S_OK, SetUserProperty(OLE2CW(sid), kKeyAcceptTos, 1u));
+  } else {
+    // Set |kKeyEnableGemFeatures| registry entry to 0.
+    ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kKeyEnableGemFeatures, 0u));
+  }
 
   // Create provider and start logon.
   Microsoft::WRL::ComPtr<ICredentialProviderCredential> cred;
@@ -458,8 +477,13 @@ TEST_F(GcpReauthCredentialGlsRunnerTest, NormalReauth) {
 
   ASSERT_EQ(S_OK, StartLogonProcessAndWait());
 
-  // Teardown of the test should confirm that the logon was successful.
+  // Verify command line switch for show_tos.
+  ASSERT_EQ("0", test->GetShowTosFromCmdLine());
 }
+
+INSTANTIATE_TEST_SUITE_P(All,
+                         GcpNormalReauthCredentialGlsRunnerTest,
+                         ::testing::Values(true, false));
 
 TEST_F(GcpReauthCredentialGlsRunnerTest, NormalReauthWithoutEmail) {
   USES_CONVERSION;

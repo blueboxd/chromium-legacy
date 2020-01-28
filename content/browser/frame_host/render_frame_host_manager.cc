@@ -1526,8 +1526,7 @@ RenderFrameHostManager::DetermineSiteInstanceForURL(
     bool use_process_per_site =
         RenderProcessHost::ShouldUseProcessPerSite(browser_context, dest_url) &&
         RenderProcessHostImpl::GetSoleProcessHostForURL(
-            browser_context, current_instance_impl->GetIsolationContext(),
-            dest_url);
+            current_instance_impl->GetIsolationContext(), dest_url);
     if (current_instance_impl->HasRelatedSiteInstance(dest_url) ||
         use_process_per_site) {
       return SiteInstanceDescriptor(browser_context, dest_url,

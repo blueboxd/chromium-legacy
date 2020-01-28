@@ -30,12 +30,9 @@ TEST(CrostiniFeaturesTest, TestExportImportUIAllowed) {
   content::BrowserTaskEnvironment task_environment;
   TestingProfile profile;
   FakeCrostiniFeatures crostini_features;
-  base::test::ScopedFeatureList scoped_feature_list;
 
   // Set up for success.
   crostini_features.set_ui_allowed(true);
-  scoped_feature_list.InitWithFeatures({chromeos::features::kCrostiniBackup},
-                                       {});
   profile.GetPrefs()->SetBoolean(
       crostini::prefs::kUserCrostiniExportImportUIAllowedByPolicy, true);
 
@@ -46,14 +43,6 @@ TEST(CrostiniFeaturesTest, TestExportImportUIAllowed) {
   crostini_features.set_ui_allowed(false);
   EXPECT_FALSE(crostini_features.IsExportImportUIAllowed(&profile));
   crostini_features.set_ui_allowed(true);
-
-  // Feature disabled.
-  {
-    base::test::ScopedFeatureList feature_list_disabled;
-    feature_list_disabled.InitWithFeatures(
-        {}, {chromeos::features::kCrostiniBackup});
-    EXPECT_FALSE(crostini_features.IsExportImportUIAllowed(&profile));
-  }
 
   // Pref off.
   profile.GetPrefs()->SetBoolean(

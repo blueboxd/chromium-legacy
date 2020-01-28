@@ -474,7 +474,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientWalletSyncTest,
   // On top of expecting convergence on AutofillWalletChecker, expect
   // convergence on wallet metadata and on autofill profiles.
   EXPECT_TRUE(AutofillWalletMetadataSizeChecker(0, 1).Wait());
-  EXPECT_TRUE(AutofillProfileChecker(0, 1).Wait());
+  EXPECT_TRUE(AutofillProfileChecker(0, 1, /*expected_count=*/1U).Wait());
 
   // Make sure both have has_converted true.
   std::vector<AutofillProfile*> server_addresses = GetServerProfiles(0);

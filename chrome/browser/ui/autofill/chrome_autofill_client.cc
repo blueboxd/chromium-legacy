@@ -500,9 +500,9 @@ void ChromeAutofillClient::UpdateAutofillPopupDataListValues(
     popup_controller_->UpdateDataListValues(values, labels);
 }
 
-void ChromeAutofillClient::HideAutofillPopup() {
+void ChromeAutofillClient::HideAutofillPopup(PopupHidingReason reason) {
   if (popup_controller_.get())
-    popup_controller_->Hide();
+    popup_controller_->Hide(reason);
 }
 
 bool ChromeAutofillClient::IsAutocompleteEnabled() {
@@ -590,21 +590,21 @@ void ChromeAutofillClient::MainFrameWasResized(bool width_changed) {
     return;
 #endif
 
-  HideAutofillPopup();
+  HideAutofillPopup(PopupHidingReason::kWidgetChanged);
 }
 
 void ChromeAutofillClient::WebContentsDestroyed() {
-  HideAutofillPopup();
+  HideAutofillPopup(PopupHidingReason::kTabGone);
 }
 
 void ChromeAutofillClient::DidAttachInterstitialPage() {
-  HideAutofillPopup();
+  HideAutofillPopup(PopupHidingReason::kAttachInterstitialPage);
 }
 
 #if !defined(OS_ANDROID)
 void ChromeAutofillClient::OnZoomChanged(
     const zoom::ZoomController::ZoomChangedEventData& data) {
-  HideAutofillPopup();
+  HideAutofillPopup(PopupHidingReason::kContentAreaMoved);
 }
 #endif  // !defined(OS_ANDROID)
 

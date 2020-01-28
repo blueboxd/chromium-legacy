@@ -269,6 +269,34 @@ base::Optional<uint32_t> Fourcc::ToVAFourCC() const {
 
 #endif  // BUILDFLAG(USE_VAAPI)
 
+base::Optional<Fourcc> Fourcc::ToSinglePlanar() const {
+  switch (value_) {
+    case AR24:
+    case AB24:
+    case XR24:
+    case XB24:
+    case RGB4:
+    case YU12:
+    case YV12:
+    case YUYV:
+    case NV12:
+    case NV21:
+      return Fourcc(value_);
+    case YM12:
+      return Fourcc(YU12);
+    case YM21:
+      return Fourcc(YV12);
+    case NM12:
+      return Fourcc(NV12);
+    case NM21:
+      return Fourcc(NV21);
+    case YM16:
+    case MT21:
+    case MM21:
+      return base::nullopt;
+  }
+}
+
 bool operator!=(const Fourcc& lhs, const Fourcc& rhs) {
   return !(lhs == rhs);
 }

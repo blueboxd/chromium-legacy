@@ -2609,6 +2609,8 @@ AtkRole AXPlatformNodeAuraLinux::GetAtkRole() const {
       return ATK_ROLE_PANEL;
     case ax::mojom::Role::kParagraph:
       return ATK_ROLE_PARAGRAPH;
+    case ax::mojom::Role::kPdfActionableHighlight:
+      return ATK_ROLE_PUSH_BUTTON;
     case ax::mojom::Role::kPluginObject:
       return ATK_ROLE_EMBEDDED;
     case ax::mojom::Role::kPopUpButton: {

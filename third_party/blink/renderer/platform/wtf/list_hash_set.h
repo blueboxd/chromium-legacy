@@ -308,21 +308,16 @@ class ListHashSetNodeBasePointer {
   NodeType& operator*() const { return *Get(); }
 
  private:
-  template <bool = Allocator::kIsGarbageCollected>
   void SetSafe(NodeType* node) {
-    AsAtomicPtr(&node_)->store(node, std::memory_order_relaxed);
-  }
-  template <>
-  void SetSafe<false>(NodeType* node) {
-    node_ = node;
+    if (Allocator::kIsGarbageCollected)
+      AsAtomicPtr(&node_)->store(node, std::memory_order_relaxed);
+    else
+      node_ = node;
   }
 
-  template <bool = Allocator::kIsGarbageCollected>
   NodeType* GetSafe() const {
-    return AsAtomicPtr(&node_)->load(std::memory_order_relaxed);
-  }
-  template <>
-  NodeType* GetSafe<false>() const {
+    if (Allocator::kIsGarbageCollected)
+      return AsAtomicPtr(&node_)->load(std::memory_order_relaxed);
     return node_;
   }
 

@@ -5,8 +5,6 @@
 #ifndef CHROME_BROWSER_UPDATES_ANNOUNCEMENT_NOTIFICATION_ANNOUNCEMENT_NOTIFICATION_DELEGATE_H_
 #define CHROME_BROWSER_UPDATES_ANNOUNCEMENT_NOTIFICATION_ANNOUNCEMENT_NOTIFICATION_DELEGATE_H_
 
-#include <string>
-
 #include "base/macros.h"
 #include "chrome/browser/updates/announcement_notification/announcement_notification_service.h"
 
@@ -26,7 +24,7 @@ class AnnouncementNotificationDelegate
 
  private:
   // AnnouncementNotificationService::Delegate implementation.
-  void ShowNotification(const std::string& remote_url) override;
+  void ShowNotification() override;
   bool IsFirstRun() override;
 
   // Used to show the notification.

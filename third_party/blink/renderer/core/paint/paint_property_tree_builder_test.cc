@@ -370,7 +370,8 @@ TEST_P(PaintPropertyTreeBuilderTest, OverflowScrollVerticalRL) {
             &overflow_clip->LocalTransformSpace());
   EXPECT_EQ(FloatRoundedRect(10, 10, 85, 85), overflow_clip->ClipRect());
 
-  scroller->GetScrollableArea()->ScrollBy(ScrollOffset(-100, 0), kUserScroll);
+  scroller->GetScrollableArea()->ScrollBy(
+      ScrollOffset(-100, 0), mojom::blink::ScrollIntoViewParams::Type::kUser);
   UpdateAllLifecyclePhasesForTest();
 
   // Only scroll_translation is affected by scrolling.
@@ -422,7 +423,8 @@ TEST_P(PaintPropertyTreeBuilderTest, OverflowScrollRTL) {
             &overflow_clip->LocalTransformSpace());
   EXPECT_EQ(FloatRoundedRect(25, 10, 85, 85), overflow_clip->ClipRect());
 
-  scroller->GetScrollableArea()->ScrollBy(ScrollOffset(-100, 0), kUserScroll);
+  scroller->GetScrollableArea()->ScrollBy(
+      ScrollOffset(-100, 0), mojom::blink::ScrollIntoViewParams::Type::kUser);
   UpdateAllLifecyclePhasesForTest();
 
   // Only scroll_translation is affected by scrolling.
@@ -481,7 +483,8 @@ TEST_P(PaintPropertyTreeBuilderTest, OverflowScrollVerticalRLMulticol) {
   // Fragment geometries are not affected by parent scrolling.
   ToLayoutBox(GetLayoutObjectByElementId("scroller"))
       ->GetScrollableArea()
-      ->ScrollBy(ScrollOffset(-100, 200), kUserScroll);
+      ->ScrollBy(ScrollOffset(-100, 200),
+                 mojom::blink::ScrollIntoViewParams::Type::kUser);
   UpdateAllLifecyclePhasesForTest();
   check_fragments();
 }
@@ -3982,8 +3985,8 @@ TEST_P(PaintPropertyTreeBuilderTest, PaintOffsetsUnderMultiColumnScrolled) {
   )HTML");
 
   LayoutObject* scroller = GetLayoutObjectByElementId("scroller");
-  ToLayoutBox(scroller)->GetScrollableArea()->ScrollBy(ScrollOffset(0, 300),
-                                                       kUserScroll);
+  ToLayoutBox(scroller)->GetScrollableArea()->ScrollBy(
+      ScrollOffset(0, 300), mojom::blink::ScrollIntoViewParams::Type::kUser);
   UpdateAllLifecyclePhasesForTest();
 
   EXPECT_EQ(FloatSize(8, 8), scroller->FirstFragment()
@@ -4072,8 +4075,8 @@ TEST_P(PaintPropertyTreeBuilderTest,
   EXPECT_EQ(PhysicalOffset(51, -20),
             multicol_container->FirstFragment().NextFragment()->PaintOffset());
 
-  GetDocument().View()->LayoutViewport()->ScrollBy(ScrollOffset(0, 25),
-                                                   kUserScroll);
+  GetDocument().View()->LayoutViewport()->ScrollBy(
+      ScrollOffset(0, 25), mojom::blink::ScrollIntoViewParams::Type::kUser);
   UpdateAllLifecyclePhasesForTest();
 
   ASSERT_TRUE(multicol_container->FirstFragment().NextFragment());

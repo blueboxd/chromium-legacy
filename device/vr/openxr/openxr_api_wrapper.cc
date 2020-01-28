@@ -27,6 +27,15 @@ constexpr XrViewConfigurationType kSupportedViewConfiguration =
     XR_VIEW_CONFIGURATION_TYPE_PRIMARY_STEREO;
 constexpr uint32_t kNumViews = 2;
 
+// We can get into a state where frames are not requested, such as when the
+// visibility state is hidden. Since OpenXR events are polled at the beginning
+// of a frame, polling would not occur in this state. To ensure events are
+// occasionally polled, a timer loop run every kTimeBetweenPollingEvents to poll
+// events if significant time has elapsed since the last time events were
+// polled.
+constexpr base::TimeDelta kTimeBetweenPollingEvents =
+    base::TimeDelta::FromSecondsD(1);
+
 }  // namespace
 
 std::unique_ptr<OpenXrApiWrapper> OpenXrApiWrapper::Create() {
@@ -69,6 +78,10 @@ void OpenXrApiWrapper::Reset() {
 bool OpenXrApiWrapper::Initialize() {
   Reset();
   session_ended_ = false;
+  // Set to min so that the first call to EnsureEventPolling is guaranteed to
+  // call ProcessEvents, which will update this variable from there on.
+  last_process_events_time_ = base::TimeTicks::Min();
+
   if (XR_FAILED(CreateInstance(&instance_, &instance_metadata_))) {
     return false;
   }
@@ -114,6 +127,9 @@ void OpenXrApiWrapper::Uninitialize() {
 
   Reset();
   session_ended_ = true;
+
+  // Set to max so events are no longer polled in the EnsureEventPolling loop.
+  last_process_events_time_ = base::TimeTicks::Max();
 }
 
 bool OpenXrApiWrapper::HasInstance() const {
@@ -259,6 +275,8 @@ XrResult OpenXrApiWrapper::InitSession(
   DCHECK(HasSpace(XR_REFERENCE_SPACE_TYPE_LOCAL));
   DCHECK(HasSpace(XR_REFERENCE_SPACE_TYPE_VIEW));
   DCHECK(input_helper);
+
+  EnsureEventPolling();
 
   return XR_SUCCESS;
 }
@@ -571,6 +589,29 @@ XrResult OpenXrApiWrapper::GetLuid(LUID* luid) const {
   return XR_SUCCESS;
 }
 
+void OpenXrApiWrapper::EnsureEventPolling() {
+  // Events are usually processed at the beginning of a frame. When frames
+  // aren't being requested, this timer loop ensures OpenXR events are
+  // occasionally polled while the session is active.
+  if (!session_ended_) {
+    if (base::TimeTicks::Now() - last_process_events_time_ >
+        kTimeBetweenPollingEvents) {
+      if (XR_FAILED(ProcessEvents())) {
+        DCHECK(session_ended_);
+      }
+    }
+
+    // Verify that the session is still active after processing events.
+    if (!session_ended_) {
+      base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+          FROM_HERE,
+          base::BindOnce(&OpenXrApiWrapper::EnsureEventPolling,
+                         weak_ptr_factory_.GetWeakPtr()),
+          kTimeBetweenPollingEvents);
+    }
+  }
+}
+
 XrResult OpenXrApiWrapper::ProcessEvents() {
   XrEventDataBuffer event_data{XR_TYPE_EVENT_DATA_BUFFER};
   XrResult xr_result = xrPollEvent(instance_, &event_data);
@@ -584,11 +625,11 @@ XrResult OpenXrApiWrapper::ProcessEvents() {
       DCHECK(session_state_changed->session == session_);
       switch (session_state_changed->state) {
         case XR_SESSION_STATE_READY:
-          RETURN_IF_XR_FAILED(BeginSession());
+          xr_result = BeginSession();
           break;
         case XR_SESSION_STATE_STOPPING:
           session_ended_ = true;
-          RETURN_IF_XR_FAILED(xrEndSession(session_));
+          xr_result = xrEndSession(session_);
           break;
         case XR_SESSION_STATE_SYNCHRONIZED:
           visibility_changed_callback_.Run(
@@ -608,6 +649,7 @@ XrResult OpenXrApiWrapper::ProcessEvents() {
     } else if (event_data.type == XR_TYPE_EVENT_DATA_INSTANCE_LOSS_PENDING) {
       DCHECK(session_ != XR_NULL_HANDLE);
       Uninitialize();
+      return XR_ERROR_INSTANCE_LOST;
     } else if (event_data.type ==
                XR_TYPE_EVENT_DATA_REFERENCE_SPACE_CHANGE_PENDING) {
       XrEventDataReferenceSpaceChangePending* reference_space_change_pending =
@@ -627,11 +669,21 @@ XrResult OpenXrApiWrapper::ProcessEvents() {
           reinterpret_cast<XrEventDataInteractionProfileChanged*>(&event_data);
       DCHECK(interaction_profile_changed->session == session_);
       interaction_profile_changed_callback_.Run(&xr_result);
-      RETURN_IF_XR_FAILED(xr_result);
     }
+
+    if (XR_FAILED(xr_result)) {
+      Uninitialize();
+      return xr_result;
+    }
+
     event_data.type = XR_TYPE_EVENT_DATA_BUFFER;
     xr_result = xrPollEvent(instance_, &event_data);
   }
+
+  last_process_events_time_ = base::TimeTicks::Now();
+
+  if (XR_FAILED(xr_result))
+    Uninitialize();
   return xr_result;
 }
 

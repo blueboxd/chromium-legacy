@@ -5,10 +5,5 @@
 mojom = "//services/network/public/mojom/ip_address.mojom"
 public_headers = [ "//net/base/ip_address.h" ]
 traits_headers = [ "//services/network/public/cpp/ip_address_mojom_traits.h" ]
-sources = [
-  "//services/network/public/cpp/ip_address_mojom_traits.cc",
-]
 type_mappings = [ "network.mojom.IPAddress=::net::IPAddress" ]
-public_deps = [
-  "//net",
-]
+public_deps = [ "//net" ]

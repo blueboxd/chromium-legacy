@@ -5,14 +5,22 @@
 #include "chrome/browser/ui/webui/settings/shared_settings_localized_strings_provider.h"
 
 #include "base/feature_list.h"
+#include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/user_manager/user_manager.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "content/public/common/content_features.h"
 #include "media/base/media_switches.h"
 #include "ui/base/webui/web_ui_util.h"
+
+#if defined(OS_CHROMEOS)
+#include "ui/base/l10n/l10n_util.h"
+#endif
 
 namespace settings {
 namespace {

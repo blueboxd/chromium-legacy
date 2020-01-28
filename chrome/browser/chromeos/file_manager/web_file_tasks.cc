@@ -29,21 +29,9 @@
 namespace file_manager {
 namespace file_tasks {
 
-namespace {
-
-bool WebAppFileHandlingDisabled() {
-  return !base::FeatureList::IsEnabled(blink::features::kNativeFileSystemAPI) ||
-         !base::FeatureList::IsEnabled(blink::features::kFileHandlingAPI);
-}
-
-}  // namespace
-
 void FindWebTasks(Profile* profile,
                   const std::vector<extensions::EntryInfo>& entries,
                   std::vector<FullTaskDescriptor>* result_list) {
-  if (WebAppFileHandlingDisabled())
-    return;
-
   DCHECK(!entries.empty());
   DCHECK(result_list);
 
@@ -55,6 +43,9 @@ void FindWebTasks(Profile* profile,
 
   auto app_ids = registrar.GetAppIds();
   for (const auto& app_id : app_ids) {
+    if (!file_handler_manager.IsFileHandlingAPIAvailable(app_id))
+      continue;
+
     const auto* file_handlers =
         file_handler_manager.GetEnabledFileHandlers(app_id);
 
@@ -97,13 +88,6 @@ void ExecuteWebTask(Profile* profile,
                     const TaskDescriptor& task,
                     const std::vector<storage::FileSystemURL>& file_system_urls,
                     FileTaskFinishedCallback done) {
-  if (WebAppFileHandlingDisabled()) {
-    std::move(done).Run(
-        extensions::api::file_manager_private::TASK_RESULT_FAILED,
-        "Web app file handling is disabled.");
-    return;
-  }
-
   web_app::WebAppProviderBase* provider =
       web_app::WebAppProviderBase::GetProviderBase(profile);
   web_app::AppRegistrar& registrar = provider->registrar();
@@ -112,6 +96,14 @@ void ExecuteWebTask(Profile* profile,
     std::move(done).Run(
         extensions::api::file_manager_private::TASK_RESULT_FAILED,
         base::StrCat({"Web app ", task.app_id, " is not installed."}));
+    return;
+  }
+
+  if (!provider->file_handler_manager().IsFileHandlingAPIAvailable(
+          task.app_id)) {
+    std::move(done).Run(
+        extensions::api::file_manager_private::TASK_RESULT_FAILED,
+        "Web app file handling disabled");
     return;
   }
 

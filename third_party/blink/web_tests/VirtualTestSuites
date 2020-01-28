@@ -702,11 +702,6 @@
     "args": ["--disable-features=SplitCacheByNetworkIsolationKey"]
   },
   {
-    "prefix": "document-policy",
-    "bases": ["external/wpt/document-policy"],
-    "args": ["--enable-features=DocumentPolicy"]
-  },
-  {
     "prefix": "web-components-v0-disabled",
     "bases": ["external/wpt/dom",
               "external/wpt/shadow-dom",

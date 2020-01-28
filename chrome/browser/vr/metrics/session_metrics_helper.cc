@@ -112,7 +112,10 @@ void WebXRSessionTracker::ReportFeatureUsed(
       ukm_entry_->SetFeatureUse_Unbounded(true);
       break;
     case XRSessionFeature::DOM_OVERLAY:
-      // Not recording metrics for this feature currently
+    case XRSessionFeature::HIT_TEST:
+      // Not recording metrics for these features currently.
+      // TODO(https://crbug.com/965729): Add metrics for the AR-related features
+      // that are enabled by default.
       break;
   }
 }
@@ -144,7 +147,10 @@ void WebXRSessionTracker::SetFeatureRequest(
       ukm_entry_->SetFeatureRequest_Local(static_cast<int64_t>(status));
       break;
     case XRSessionFeature::DOM_OVERLAY:
-      // Not recording metrics for this feature currently.
+    case XRSessionFeature::HIT_TEST:
+      // Not recording metrics for these features currently.
+      // TODO(https://crbug.com/965729): Add metrics for the AR-related features
+      // that are enabled by default.
       break;
   }
 }

@@ -127,7 +127,7 @@ class PasswordGenerationPopupControllerImpl
  private:
   class KeyPressRegistrator;
   // PasswordGenerationPopupController implementation:
-  void Hide() override;
+  void Hide(autofill::PopupHidingReason reason) override;
   void ViewDestroyed() override;
   void SetSelectionAtPoint(const gfx::Point& point) override;
   bool AcceptSelectedLine() override;

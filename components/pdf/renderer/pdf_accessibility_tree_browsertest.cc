@@ -404,7 +404,8 @@ TEST_F(PdfAccessibilityTreeTest, TestHighlightCreation) {
 
   ui::AXNode* highlight_node = paragraph_node->children()[0];
   ASSERT_TRUE(highlight_node);
-  EXPECT_EQ(ax::mojom::Role::kMark, highlight_node->data().role);
+  EXPECT_EQ(ax::mojom::Role::kPdfActionableHighlight,
+            highlight_node->data().role);
   EXPECT_EQ(l10n_util::GetStringUTF8(IDS_AX_ROLE_DESCRIPTION_PDF_HIGHLIGHT),
             highlight_node->GetStringAttribute(
                 ax::mojom::StringAttribute::kRoleDescription));

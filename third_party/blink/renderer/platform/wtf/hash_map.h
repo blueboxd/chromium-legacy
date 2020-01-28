@@ -22,6 +22,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_HASH_MAP_H_
 
 #include <initializer_list>
+#include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/partition_allocator.h"
 #include "third_party/blink/renderer/platform/wtf/construct_traits.h"
 #include "third_party/blink/renderer/platform/wtf/hash_table.h"
@@ -42,6 +43,12 @@ struct KeyValuePairKeyExtractor {
   template <typename T>
   static const typename T::KeyType& Extract(const T& p) {
     return p.key;
+  }
+  // Assumes out points to a buffer of size at least sizeof(T::KeyType).
+  template <typename T>
+  static const typename T::KeyType& ExtractSafe(const T& p, void* out) {
+    AtomicMemcpy<sizeof(typename T::KeyType)>(out, &p.key);
+    return *reinterpret_cast<typename T::KeyType*>(out);
   }
 };
 

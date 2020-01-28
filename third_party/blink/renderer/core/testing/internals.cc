@@ -223,9 +223,9 @@ static base::Optional<DocumentMarker::MarkerType> MarkerTypeFrom(
     const String& marker_type) {
   if (DeprecatedEqualIgnoringCase(marker_type, "Spelling"))
     return DocumentMarker::kSpelling;
-  if (DeprecatedEqualIgnoringCase(marker_type, "Grammar"))
+  if (EqualIgnoringASCIICase(marker_type, "Grammar"))
     return DocumentMarker::kGrammar;
-  if (DeprecatedEqualIgnoringCase(marker_type, "TextMatch"))
+  if (EqualIgnoringASCIICase(marker_type, "TextMatch"))
     return DocumentMarker::kTextMatch;
   if (DeprecatedEqualIgnoringCase(marker_type, "Composition"))
     return DocumentMarker::kComposition;
@@ -238,7 +238,7 @@ static base::Optional<DocumentMarker::MarkerType> MarkerTypeFrom(
 
 static base::Optional<DocumentMarker::MarkerTypes> MarkerTypesFrom(
     const String& marker_type) {
-  if (marker_type.IsEmpty() || DeprecatedEqualIgnoringCase(marker_type, "all"))
+  if (marker_type.IsEmpty() || EqualIgnoringASCIICase(marker_type, "all"))
     return DocumentMarker::MarkerTypes::All();
   base::Optional<DocumentMarker::MarkerType> type = MarkerTypeFrom(marker_type);
   if (!type)
@@ -290,8 +290,8 @@ void Internals::ResetToConsistentState(Page* page) {
   }
 
   LocalFrame* frame = page->DeprecatedLocalMainFrame();
-  frame->View()->LayoutViewport()->SetScrollOffset(ScrollOffset(),
-                                                   kProgrammaticScroll);
+  frame->View()->LayoutViewport()->SetScrollOffset(
+      ScrollOffset(), mojom::blink::ScrollIntoViewParams::Type::kProgrammatic);
   OverrideUserPreferredLanguagesForTesting(Vector<AtomicString>());
   if (page->DeprecatedLocalMainFrame()->GetEditor().IsOverwriteModeEnabled())
     page->DeprecatedLocalMainFrame()->GetEditor().ToggleOverwriteModeEnabled();

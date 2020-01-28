@@ -713,8 +713,8 @@ const base::Feature kSoundContentSetting{"SoundContentSetting",
 
 #if !defined(OS_ANDROID)
 // Enables or disables the Javascript API to propagate sync encryption keys.
-const base::Feature kSyncEncryptionKeysWebApi{"SyncEncryptionKeysWebApi",
-                                              base::FEATURE_ENABLED_BY_DEFAULT};
+const base::Feature kSyncEncryptionKeysWebApi{
+    "SyncEncryptionKeysWebApi", base::FEATURE_DISABLED_BY_DEFAULT};
 #endif  // !defined(OS_ANDROID)
 
 #if defined(OS_CHROMEOS)

@@ -13,6 +13,9 @@ class FilePath;
 
 namespace content {
 
+// Sentinal value to mark end of actual/expected results.
+extern const char kMarkEndOfFile[];
+
 class AccessibilityTestExpectationsLocator;
 
 // A helper class for writing accessibility tree dump tests.

@@ -25,6 +25,7 @@
 #include "build/branding_buildflags.h"
 #include "chrome/credential_provider/common/gcp_strings.h"
 #include "chrome/credential_provider/gaiacp/gcp_utils.h"
+#include "chrome/credential_provider/gaiacp/gcpw_strings.h"
 #include "chrome/credential_provider/gaiacp/logging.h"
 #include "chrome/credential_provider/gaiacp/reg_utils.h"
 
@@ -384,6 +385,11 @@ bool PasswordRecoveryEnabled() {
     return false;
 
   return true;
+}
+
+bool IsGemEnabled() {
+  // The gem features are enabled by default.
+  return GetGlobalFlagOrDefault(kKeyEnableGemFeatures, 1);
 }
 
 HRESULT EnrollToGoogleMdmIfNeeded(const base::Value& properties) {

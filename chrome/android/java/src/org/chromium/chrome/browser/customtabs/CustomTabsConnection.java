@@ -1035,6 +1035,13 @@ public class CustomTabsConnection {
     }
 
     /**
+     * See {@link ClientManager#setClientDataHeaderValue}.
+     */
+    String getClientDataHeaderValueForSession(CustomTabsSessionToken session) {
+        return mClientManager.getClientDataHeaderValue(session);
+    }
+
+    /**
      * Extracts the creator package name from the intent.
      * @param intent The intent to get the package name from.
      * @return the package name which can be null.

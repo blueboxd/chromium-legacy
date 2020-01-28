@@ -108,6 +108,7 @@ class CORE_EXPORT InputTypeView : public GarbageCollectedMixin {
   virtual TextDirection ComputedTextDirection();
   virtual void StartResourceLoading();
   virtual void ClosePopupView();
+  virtual bool HasOpenedPopup() const;
 
   // Functions for shadow trees
 

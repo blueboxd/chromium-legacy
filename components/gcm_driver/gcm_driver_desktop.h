@@ -18,7 +18,6 @@
 #include "base/observer_list.h"
 #include "base/tuple.h"
 #include "components/gcm_driver/crypto/gcm_decryption_result.h"
-#include "components/gcm_driver/gcm_channel_status_syncer.h"
 #include "components/gcm_driver/gcm_client.h"
 #include "components/gcm_driver/gcm_connection_observer.h"
 #include "components/gcm_driver/gcm_driver.h"
@@ -55,7 +54,6 @@ class GCMDriverDesktop : public GCMDriver,
   GCMDriverDesktop(
       std::unique_ptr<GCMClientFactory> gcm_client_factory,
       const GCMClient::ChromeBuildInfo& chrome_build_info,
-      const std::string& channel_status_request_url,
       const std::string& user_agent,
       PrefService* prefs,
       const base::FilePath& store_path,
@@ -105,9 +103,6 @@ class GCMDriverDesktop : public GCMDriver,
 
   // Exposed for testing purpose.
   bool gcm_enabled() const { return gcm_enabled_; }
-  GCMChannelStatusSyncer* gcm_channel_status_syncer_for_testing() {
-    return gcm_channel_status_syncer_.get();
-  }
 
  protected:
   // GCMDriver implementation:
@@ -207,8 +202,6 @@ class GCMDriverDesktop : public GCMDriver,
                            const std::string& authorized_entity,
                            const std::string& scope,
                            GCMClient::Result result);
-
-  std::unique_ptr<GCMChannelStatusSyncer> gcm_channel_status_syncer_;
 
   // Flag to indicate whether the user is signed in to a GAIA account.
   bool signed_in_;

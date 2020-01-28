@@ -34,6 +34,7 @@
 #include "chrome/browser/web_applications/components/install_finalizer.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_id.h"
+#include "chrome/browser/web_applications/components/web_app_utils.h"
 #include "chrome/browser/web_applications/system_web_app_manager.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
@@ -103,7 +104,6 @@ namespace apps {
 WebApps::WebApps(const mojo::Remote<apps::mojom::AppService>& app_service,
                  Profile* profile)
     : profile_(profile),
-      provider_(web_app::WebAppProvider::Get(profile)),
       app_service_(nullptr) {
   Initialize(app_service);
 }
@@ -128,7 +128,8 @@ void WebApps::Shutdown() {
     arc_prefs_ = nullptr;
   }
 
-  if (profile_) {
+  if (provider_) {
+    registrar_observer_.Remove(&provider_->registrar());
     content_settings_observer_.RemoveAll();
   }
 }
@@ -148,13 +149,19 @@ void WebApps::ObserveArc() {
 void WebApps::Initialize(
     const mojo::Remote<apps::mojom::AppService>& app_service) {
   DCHECK(profile_);
+  if (!web_app::AreWebAppsEnabled(profile_)) {
+    return;
+  }
+
+  provider_ = web_app::WebAppProvider::Get(profile_);
   DCHECK(provider_);
-  app_service->RegisterPublisher(receiver_.BindNewPipeAndPassRemote(),
-                                 apps::mojom::AppType::kWeb);
 
   registrar_observer_.Add(&provider_->registrar());
   content_settings_observer_.Add(
       HostContentSettingsMapFactory::GetForProfile(profile_));
+
+  app_service->RegisterPublisher(receiver_.BindNewPipeAndPassRemote(),
+                                 apps::mojom::AppType::kWeb);
   app_service_ = app_service.get();
 }
 

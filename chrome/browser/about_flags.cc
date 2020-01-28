@@ -2107,9 +2107,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kReducedReferrerGranularityDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kReducedReferrerGranularity)},
 #if defined(OS_CHROMEOS)
-    {"crostini-backup", flag_descriptions::kCrostiniBackupName,
-     flag_descriptions::kCrostiniBackupDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(chromeos::features::kCrostiniBackup)},
     {"crostini-port-forwarding", flag_descriptions::kCrostiniPortForwardingName,
      flag_descriptions::kCrostiniPortForwardingDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kCrostiniPortForwarding)},
@@ -4043,6 +4040,12 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kMobileIdentityConsistencyName,
      flag_descriptions::kMobileIdentityConsistencyDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(signin::kMiceFeature)},
+#endif  // defined(OS_ANDROID)
+
+#if defined(OS_ANDROID)
+    {"sync-error-infobar", flag_descriptions::kSyncErrorInfoBarName,
+     flag_descriptions::kSyncErrorInfoBarDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(switches::kSyncErrorInfoBarAndroid)},
 #endif  // defined(OS_ANDROID)
 
     {"autofill-use-improved-label-disambiguation",

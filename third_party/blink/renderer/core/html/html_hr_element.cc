@@ -48,13 +48,13 @@ void HTMLHRElement::CollectStyleForPresentationAttribute(
     const AtomicString& value,
     MutableCSSPropertyValueSet* style) {
   if (name == html_names::kAlignAttr) {
-    if (DeprecatedEqualIgnoringCase(value, "left")) {
+    if (EqualIgnoringASCIICase(value, "left")) {
       AddPropertyToPresentationAttributeStyle(
           style, CSSPropertyID::kMarginLeft, 0,
           CSSPrimitiveValue::UnitType::kPixels);
       AddPropertyToPresentationAttributeStyle(
           style, CSSPropertyID::kMarginRight, CSSValueID::kAuto);
-    } else if (DeprecatedEqualIgnoringCase(value, "right")) {
+    } else if (EqualIgnoringASCIICase(value, "right")) {
       AddPropertyToPresentationAttributeStyle(style, CSSPropertyID::kMarginLeft,
                                               CSSValueID::kAuto);
       AddPropertyToPresentationAttributeStyle(

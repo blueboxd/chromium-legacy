@@ -4275,6 +4275,7 @@ if (enable_java_templates) {
                                  "deps",
                                  "input_jars_paths",
                                  "proguard_configs",
+                                 "skip_jetify",
                                ])
         if (!defined(deps)) {
           deps = []

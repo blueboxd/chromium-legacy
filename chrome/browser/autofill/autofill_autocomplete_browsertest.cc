@@ -92,7 +92,7 @@ class AutofillAutocompleteTest : public InProcessBrowserTest {
         ->DriverForFrame(web_contents->GetMainFrame())
         ->autofill_manager()
         ->client()
-        ->HideAutofillPopup();
+        ->HideAutofillPopup(PopupHidingReason::kTabGone);
     test::ReenableSystemServices();
   }
 

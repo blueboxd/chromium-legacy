@@ -85,6 +85,9 @@ class SSLServerContextImpl::SocketImpl : public SSLServerSocket,
   int Read(IOBuffer* buf,
            int buf_len,
            CompletionOnceCallback callback) override;
+  int ReadIfReady(IOBuffer* buf,
+                  int buf_len,
+                  CompletionOnceCallback callback) override;
   int Write(IOBuffer* buf,
             int buf_len,
             CompletionOnceCallback callback,
@@ -162,7 +165,7 @@ class SSLServerContextImpl::SocketImpl : public SSLServerSocket,
 
   void OnHandshakeIOComplete(int result);
 
-  int DoPayloadRead();
+  int DoPayloadRead(IOBuffer* buf, int buf_len);
   int DoPayloadWrite();
 
   int DoHandshakeLoop(int last_io_result);
@@ -435,23 +438,28 @@ int SSLServerContextImpl::SocketImpl::ExportKeyingMaterial(
 int SSLServerContextImpl::SocketImpl::Read(IOBuffer* buf,
                                            int buf_len,
                                            CompletionOnceCallback callback) {
+  int rv = ReadIfReady(buf, buf_len, std::move(callback));
+  if (rv == ERR_IO_PENDING) {
+    user_read_buf_ = buf;
+    user_read_buf_len_ = buf_len;
+  }
+  return rv;
+}
+
+int SSLServerContextImpl::SocketImpl::ReadIfReady(
+    IOBuffer* buf,
+    int buf_len,
+    CompletionOnceCallback callback) {
   DCHECK(user_read_callback_.is_null());
   DCHECK(user_handshake_callback_.is_null());
   DCHECK(!user_read_buf_);
   DCHECK(!callback.is_null());
-
-  user_read_buf_ = buf;
-  user_read_buf_len_ = buf_len;
-
   DCHECK(completed_handshake_);
 
-  int rv = DoPayloadRead();
+  int rv = DoPayloadRead(buf, buf_len);
 
   if (rv == ERR_IO_PENDING) {
     user_read_callback_ = std::move(callback);
-  } else {
-    user_read_buf_ = nullptr;
-    user_read_buf_len_ = 0;
   }
 
   return rv;
@@ -583,10 +591,14 @@ void SSLServerContextImpl::SocketImpl::OnReadReady() {
 
   // BoringSSL does not support renegotiation as a server, so the only other
   // operation blocked on Read is DoPayloadRead.
-  if (!user_read_buf_)
+  if (!user_read_buf_) {
+    if (!user_read_callback_.is_null()) {
+      DoReadCallback(OK);
+    }
     return;
+  }
 
-  int rv = DoPayloadRead();
+  int rv = DoPayloadRead(user_read_buf_.get(), user_read_buf_len_);
   if (rv != ERR_IO_PENDING)
     DoReadCallback(rv);
 }
@@ -618,14 +630,15 @@ void SSLServerContextImpl::SocketImpl::OnHandshakeIOComplete(int result) {
     DoHandshakeCallback(rv);
 }
 
-int SSLServerContextImpl::SocketImpl::DoPayloadRead() {
+int SSLServerContextImpl::SocketImpl::DoPayloadRead(IOBuffer* buf,
+                                                    int buf_len) {
   DCHECK(completed_handshake_);
   DCHECK_EQ(STATE_NONE, next_handshake_state_);
-  DCHECK(user_read_buf_);
-  DCHECK_GT(user_read_buf_len_, 0);
+  DCHECK(buf);
+  DCHECK_GT(buf_len, 0);
 
   crypto::OpenSSLErrStackTracer err_tracer(FROM_HERE);
-  int rv = SSL_read(ssl_.get(), user_read_buf_->data(), user_read_buf_len_);
+  int rv = SSL_read(ssl_.get(), buf->data(), buf_len);
   if (rv >= 0) {
     if (SSL_in_early_data(ssl_.get()))
       early_data_received_ = true;

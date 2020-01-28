@@ -309,6 +309,7 @@ LayoutObject::LayoutObject(Node* node)
 LayoutObject::~LayoutObject() {
 #if DCHECK_IS_ON()
   DCHECK(!has_ax_object_);
+  DCHECK(BeingDestroyed());
 #endif
   InstanceCounters::DecrementCounter(InstanceCounters::kLayoutObjectCounter);
 }
@@ -751,11 +752,11 @@ PhysicalRect LayoutObject::ScrollRectToVisible(
   if (!enclosing_box)
     return rect;
 
-  auto type = mojo::ConvertTo<ScrollType>(params->type);
-
   GetDocument().GetFrame()->GetSmoothScrollSequencer().AbortAnimations();
-  GetDocument().GetFrame()->GetSmoothScrollSequencer().SetScrollType(type);
-  params->is_for_scroll_sequence |= type == kProgrammaticScroll;
+  GetDocument().GetFrame()->GetSmoothScrollSequencer().SetScrollType(
+      params->type);
+  params->is_for_scroll_sequence |=
+      params->type == mojom::blink::ScrollIntoViewParams::Type::kProgrammatic;
   PhysicalRect new_location =
       enclosing_box->ScrollRectToVisibleRecursive(rect, std::move(params));
   GetDocument().GetFrame()->GetSmoothScrollSequencer().RunQueuedAnimations();
@@ -3330,7 +3331,14 @@ void LayoutObject::DestroyAndCleanupAnonymousWrappers() {
 }
 
 void LayoutObject::Destroy() {
+  // Mark as being destroyed to avoid trouble with merges in |RemoveChild()| and
+  // other house keepings.
+  bitfields_.SetBeingDestroyed(true);
   WillBeDestroyed();
+  DeleteThis();
+}
+
+void LayoutObject::DeleteThis() {
   delete this;
 }
 

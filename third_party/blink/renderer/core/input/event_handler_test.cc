@@ -217,8 +217,9 @@ TEST_F(EventHandlerTest, dragSelectionAfterScroll) {
       "</div>");
 
   LocalFrameView* frame_view = GetDocument().View();
-  frame_view->LayoutViewport()->SetScrollOffset(ScrollOffset(0, 400),
-                                                kProgrammaticScroll);
+  frame_view->LayoutViewport()->SetScrollOffset(
+      ScrollOffset(0, 400),
+      mojom::blink::ScrollIntoViewParams::Type::kProgrammatic);
 
   WebMouseEvent mouse_down_event(WebInputEvent::kMouseDown, gfx::PointF(0, 0),
                                  gfx::PointF(100, 200),
@@ -1905,7 +1906,8 @@ TEST_F(EventHandlerSimTest, TestUpdateHoverAfterJSScrollAtBeginFrame) {
       GetDocument().GetLayoutView()->GetScrollableArea();
   bool finished = false;
   scrollable_area->SetScrollOffset(
-      ScrollOffset(0, 1000), kProgrammaticScroll,
+      ScrollOffset(0, 1000),
+      mojom::blink::ScrollIntoViewParams::Type::kProgrammatic,
       mojom::blink::ScrollIntoViewParams::Behavior::kSmooth,
       ScrollableArea::ScrollCallback(
           base::BindOnce([](bool* finished) { *finished = true; }, &finished)));

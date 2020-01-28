@@ -362,19 +362,24 @@ class CORE_EXPORT PaintLayerScrollableArea final
       const FloatPoint& position,
       mojom::blink::ScrollIntoViewParams::Behavior scroll_behavior =
           mojom::blink::ScrollIntoViewParams::Behavior::kInstant,
-      ScrollType scroll_type = kProgrammaticScroll) {
+      mojom::blink::ScrollIntoViewParams::Type scroll_type =
+          mojom::blink::ScrollIntoViewParams::Type::kProgrammatic) {
     SetScrollOffset(position - ScrollOrigin(), scroll_type, scroll_behavior);
   }
 
   // This will set the scroll position without clamping, and it will do all
   // post-update work even if the scroll position didn't change.
-  void SetScrollOffsetUnconditionally(const ScrollOffset&,
-                                      ScrollType = kProgrammaticScroll);
+  void SetScrollOffsetUnconditionally(
+      const ScrollOffset&,
+      mojom::blink::ScrollIntoViewParams::Type =
+          mojom::blink::ScrollIntoViewParams::Type::kProgrammatic);
 
   // This will set the scroll position without clamping, and it will do all
   // post-update work even if the scroll position didn't change.
-  void SetScrollPositionUnconditionally(const DoublePoint&,
-                                        ScrollType = kProgrammaticScroll);
+  void SetScrollPositionUnconditionally(
+      const DoublePoint&,
+      mojom::blink::ScrollIntoViewParams::Type =
+          mojom::blink::ScrollIntoViewParams::Type::kProgrammatic);
 
   // TODO(szager): Actually run these after all of layout is finished.
   // Currently, they run at the end of box()'es layout (or after all flexbox
@@ -607,7 +612,8 @@ class CORE_EXPORT PaintLayerScrollableArea final
   // Update the proportions used for thumb rect dimensions.
   void UpdateScrollbarProportions();
 
-  void UpdateScrollOffset(const ScrollOffset&, ScrollType) override;
+  void UpdateScrollOffset(const ScrollOffset&,
+                          mojom::blink::ScrollIntoViewParams::Type) override;
   void InvalidatePaintForScrollOffsetChange();
 
   int VerticalScrollbarStart(int min_x, int max_x) const;

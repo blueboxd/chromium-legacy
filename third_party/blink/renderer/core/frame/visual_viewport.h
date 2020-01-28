@@ -175,12 +175,12 @@ class CORE_EXPORT VisualViewport : public GarbageCollected<VisualViewport>,
   ChromeClient* GetChromeClient() const override;
   SmoothScrollSequencer* GetSmoothScrollSequencer() const override;
   void SetScrollOffset(const ScrollOffset&,
-                       ScrollType,
+                       mojom::blink::ScrollIntoViewParams::Type,
                        mojom::blink::ScrollIntoViewParams::Behavior,
                        ScrollCallback on_finish) override;
   void SetScrollOffset(
       const ScrollOffset&,
-      ScrollType,
+      mojom::blink::ScrollIntoViewParams::Type,
       mojom::blink::ScrollIntoViewParams::Behavior =
           mojom::blink::ScrollIntoViewParams::Behavior::kInstant) override;
   PhysicalRect ScrollIntoView(
@@ -210,7 +210,8 @@ class CORE_EXPORT VisualViewport : public GarbageCollected<VisualViewport>,
   CompositorElementId GetScrollElementId() const override;
   bool ScrollAnimatorEnabled() const override;
   void ScrollControlWasSetNeedsPaintInvalidation() override {}
-  void UpdateScrollOffset(const ScrollOffset&, ScrollType) override;
+  void UpdateScrollOffset(const ScrollOffset&,
+                          mojom::blink::ScrollIntoViewParams::Type) override;
   cc::Layer* LayerForScrolling() const override;
   cc::Layer* LayerForHorizontalScrollbar() const override;
   cc::Layer* LayerForVerticalScrollbar() const override;

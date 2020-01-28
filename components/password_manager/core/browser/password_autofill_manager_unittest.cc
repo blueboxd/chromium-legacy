@@ -117,7 +117,7 @@ class MockAutofillClient : public autofill::TestAutofillClient {
                     bool autoselect_first_suggestion,
                     PopupType popup_type,
                     base::WeakPtr<autofill::AutofillPopupDelegate> delegate));
-  MOCK_METHOD0(HideAutofillPopup, void());
+  MOCK_METHOD1(HideAutofillPopup, void(autofill::PopupHidingReason));
   MOCK_METHOD1(ExecuteCommand, void(int));
 };
 
@@ -298,7 +298,9 @@ TEST_F(PasswordAutofillManagerTest, ExternalDelegatePasswordSuggestions) {
     EXPECT_CALL(*client->mock_driver(),
                 FillSuggestion(test_username_, test_password_));
     // Accepting a suggestion should trigger a call to hide the popup.
-    EXPECT_CALL(*autofill_client, HideAutofillPopup());
+    EXPECT_CALL(
+        *autofill_client,
+        HideAutofillPopup(autofill::PopupHidingReason::kAcceptSuggestion));
     base::HistogramTester histograms;
     password_autofill_manager_->DidAcceptSuggestion(
         test_username_,
@@ -607,7 +609,9 @@ TEST_F(PasswordAutofillManagerTest, PreviewAndFillEmptyUsernameSuggestion) {
   // Check that fill of the empty username works.
   EXPECT_CALL(*client->mock_driver(),
               FillSuggestion(base::string16(), test_password_));
-  EXPECT_CALL(*autofill_client, HideAutofillPopup());
+  EXPECT_CALL(
+      *autofill_client,
+      HideAutofillPopup(autofill::PopupHidingReason::kAcceptSuggestion));
   password_autofill_manager_->DidAcceptSuggestion(
       no_username_string, autofill::POPUP_ITEM_ID_PASSWORD_ENTRY, 1);
   testing::Mock::VerifyAndClearExpectations(client->mock_driver());
@@ -664,7 +668,9 @@ TEST_F(PasswordAutofillManagerTest, ShowAllPasswordsOptionOnPasswordField) {
         *client,
         NavigateToManagePasswordsPage(
             password_manager::ManagePasswordsReferrer::kPasswordDropdown));
-    EXPECT_CALL(autofill_client, HideAutofillPopup());
+    EXPECT_CALL(
+        autofill_client,
+        HideAutofillPopup(autofill::PopupHidingReason::kAcceptSuggestion));
     password_autofill_manager_->DidAcceptSuggestion(
         base::string16(), autofill::POPUP_ITEM_ID_ALL_SAVED_PASSWORDS_ENTRY, 0);
     // Expect a sample in both the shown and accepted histogram.
@@ -782,7 +788,9 @@ TEST_F(PasswordAutofillManagerTest,
 
   // Click "Generate password".
   EXPECT_CALL(*client, GeneratePassword());
-  EXPECT_CALL(*autofill_client, HideAutofillPopup());
+  EXPECT_CALL(
+      *autofill_client,
+      HideAutofillPopup(autofill::PopupHidingReason::kAcceptSuggestion));
   password_autofill_manager_->DidAcceptSuggestion(
       base::string16(), autofill::POPUP_ITEM_ID_GENERATE_PASSWORD_ENTRY, 1);
   histograms.ExpectUniqueSample(

@@ -319,28 +319,26 @@ class CONTENT_EXPORT RenderProcessHostImpl
   static void FilterURL(RenderProcessHost* rph, bool empty_allowed, GURL* url);
 
   // Returns true if |host| is suitable for rendering a page in the given
-  // |browser_context|, where the page would utilize |site_url| as its
+  // |isolation_context|, where the page would utilize |site_url| as its
   // SiteInstance site URL, and its process would be locked to |lock_url|.
   // |site_url| and |lock_url| may differ in cases where an effective URL is
   // not the actual site that the process is locked to, which happens for
   // hosted apps. |is_guest| should be set to true if the call is being made
   // for a <webview> guest SiteInstance.
   static bool IsSuitableHost(RenderProcessHost* host,
-                             BrowserContext* browser_context,
                              const IsolationContext& isolation_context,
                              const GURL& site_url,
                              const GURL& lock_url,
                              bool is_guest);
 
-  // Returns an existing RenderProcessHost for |url| in |browser_context|,
-  // if one exists.  Otherwise a new RenderProcessHost should be created and
+  // Returns an existing RenderProcessHost for |url| in |isolation_context|, if
+  // one exists.  Otherwise a new RenderProcessHost should be created and
   // registered using RegisterProcessHostForSite().
   // This should only be used for process-per-site mode, which can be enabled
   // globally with a command line flag or per-site, as determined by
   // SiteInstanceImpl::ShouldUseProcessPerSite.
   // Important: |url| should be a full URL and *not* a site URL.
   static RenderProcessHost* GetSoleProcessHostForURL(
-      BrowserContext* browser_context,
       const IsolationContext& isolation_context,
       const GURL& url);
 
@@ -348,19 +346,17 @@ class CONTENT_EXPORT RenderProcessHostImpl
   // process's origin lock URL, when they are known. |is_guest| should be set
   // to true if the call is being made for a <webview> guest SiteInstance.
   static RenderProcessHost* GetSoleProcessHostForSite(
-      BrowserContext* browser_context,
       const IsolationContext& isolation_context,
       const GURL& site_url,
       const GURL& lock_url,
       const bool is_guest);
 
   // Registers the given |process| to be used for all sites identified by
-  // |site_instance| within |browser_context|.
-  // This should only be used for process-per-site mode, which can be enabled
-  // globally with a command line flag or per-site, as determined by
+  // |site_instance| within its BrowserContext. This should only be used for
+  // process-per-site mode, which can be enabled globally with a command line
+  // flag or per-site, as determined by
   // SiteInstanceImpl::ShouldUseProcessPerSite.
-  static void RegisterSoleProcessHostForSite(BrowserContext* browser_context,
-                                             RenderProcessHost* process,
+  static void RegisterSoleProcessHostForSite(RenderProcessHost* process,
                                              SiteInstanceImpl* site_instance);
 
   // Returns a suitable RenderProcessHost to use for |site_instance|. Depending

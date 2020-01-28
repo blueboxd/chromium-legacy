@@ -14,8 +14,10 @@
 #include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/updates/announcement_notification/announcement_notification_metrics.h"
+#include "chrome/grit/generated_resources.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace {
 
@@ -121,7 +123,7 @@ class AnnouncementNotificationServiceImpl
       return;
 
     notification_shown = true;
-    delegate_->ShowNotification(remote_url_);
+    delegate_->ShowNotification();
   }
 
   bool IsUserSignIn() {
@@ -193,6 +195,17 @@ AnnouncementNotificationService* AnnouncementNotificationService::Create(
     std::unique_ptr<Delegate> delegate) {
   return new AnnouncementNotificationServiceImpl(
       profile_path, new_profile, pref_service, std::move(delegate));
+}
+
+// static
+GURL AnnouncementNotificationService::GetAnnouncementURL() {
+  std::string remote_url = base::GetFieldTrialParamValueByFeature(
+      kAnnouncementNotification, kAnnouncementUrl);
+  // Fallback to default URL if |remote_url| is empty.
+  std::string url = remote_url.empty()
+                        ? l10n_util::GetStringUTF8(IDS_TOS_NOTIFICATION_LINK)
+                        : remote_url;
+  return GURL(url);
 }
 
 AnnouncementNotificationService::AnnouncementNotificationService() = default;

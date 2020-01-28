@@ -84,7 +84,7 @@ class CORE_EXPORT LayoutEmbeddedContent : public LayoutReplaced {
   CompositingReasons AdditionalCompositingReasons() const override;
 
   void WillBeDestroyed() final;
-  void Destroy() final;
+  void DeleteThis() final;
 
   bool NodeAtPointOverEmbeddedContentView(
       HitTestResult&,

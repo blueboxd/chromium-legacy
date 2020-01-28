@@ -75,23 +75,6 @@ class CORE_EXPORT LayoutMenuList final : public LayoutFlexibleBox {
 
   bool HasLineIfEmpty() const override { return true; }
 
-  // Flexbox defines baselines differently than regular blocks.
-  // For backwards compatibility, menulists need to do the regular block
-  // behavior.
-  LayoutUnit BaselinePosition(FontBaseline baseline,
-                              bool first_line,
-                              LineDirectionMode direction,
-                              LinePositionMode position) const override {
-    return LayoutBlock::BaselinePosition(baseline, first_line, direction,
-                                         position);
-  }
-  LayoutUnit FirstLineBoxBaseline() const override {
-    return LayoutBlock::FirstLineBoxBaseline();
-  }
-  LayoutUnit InlineBlockBaseline(LineDirectionMode direction) const override {
-    return LayoutBlock::InlineBlockBaseline(direction);
-  }
-
   void CreateInnerBlock();
   scoped_refptr<ComputedStyle> CreateInnerStyle();
   void UpdateInnerStyle();

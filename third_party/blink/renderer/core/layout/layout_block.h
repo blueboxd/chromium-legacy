@@ -564,7 +564,6 @@ class CORE_EXPORT LayoutBlock : public LayoutBox {
                                      // in LayoutBlockRareData since they are
                                      // set too frequently.
   unsigned has_margin_after_quirk_ : 1;
-  unsigned being_destroyed_ : 1;
   unsigned has_markup_truncation_ : 1;
   unsigned width_available_to_children_changed_ : 1;
   unsigned height_available_to_children_changed_ : 1;

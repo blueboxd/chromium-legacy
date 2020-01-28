@@ -8,6 +8,7 @@
 #include <stddef.h>
 #include <vector>
 
+#include "components/autofill/core/browser/ui/popup_types.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/text_constants.h"
 
@@ -26,8 +27,9 @@ struct Suggestion;
 class AutofillPopupViewDelegate {
  public:
   // Called when the popup should be hidden. Controller will be deleted after
-  // the view has been hidden and destroyed.
-  virtual void Hide() = 0;
+  // the view has been hidden and destroyed. The reason can be used to decide
+  // whether to defer that.
+  virtual void Hide(PopupHidingReason reason) = 0;
 
   // Called whent the popup view was destroyed.
   virtual void ViewDestroyed() = 0;

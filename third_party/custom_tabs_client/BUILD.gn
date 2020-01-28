@@ -8,9 +8,7 @@ android_resources("chrome_tabs_client_example_apk_resources") {
   resource_dirs = [ "src/Application/src/main/res" ]
   android_manifest = "src/Application/src/main/AndroidManifest.xml"
   custom_package = "org.chromium.customtabsclient"
-  deps = [
-    "//third_party/android_deps:android_support_v7_appcompat_java",
-  ]
+  deps = [ "//third_party/android_deps:android_support_v7_appcompat_java" ]
 }
 
 android_resources("custom_tabs_support_resources") {
@@ -42,6 +40,7 @@ android_apk("custom_tabs_client_example_apk") {
 }
 
 android_library("custom_tabs_client_shared_java") {
+  skip_jetify = true
   sources = [
     "src/shared/src/main/java/org/chromium/customtabsclient/shared/CustomTabsHelper.java",
     "src/shared/src/main/java/org/chromium/customtabsclient/shared/KeepAliveService.java",
@@ -49,13 +48,12 @@ android_library("custom_tabs_client_shared_java") {
     "src/shared/src/main/java/org/chromium/customtabsclient/shared/ServiceConnectionCallback.java",
   ]
 
-  deps = [
-    ":custom_tabs_support_java",
-  ]
+  deps = [ ":custom_tabs_support_java" ]
   chromium_code = false
 }
 
 android_library("custom_tabs_support_java") {
+  skip_jetify = true
   sources = [
     "src/customtabs/src/android/support/customtabs/CustomTabColorSchemeParams.java",
     "src/customtabs/src/android/support/customtabs/CustomTabsCallback.java",

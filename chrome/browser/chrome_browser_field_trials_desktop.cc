@@ -109,7 +109,7 @@ void RecordChromeModuleInfo(
 
 void SetupStabilityDebugging() {
   if (!base::FeatureList::IsEnabled(
-          browser_watcher::kStabilityDebuggingFeature)) {
+          browser_watcher::kExtendedCrashReportingFeature)) {
     return;
   }
 
@@ -121,13 +121,13 @@ void SetupStabilityDebugging() {
 
   // Check whether activities are to be recorded persistently or only in-memory.
   const bool in_memory_only = base::GetFieldTrialParamByFeatureAsBool(
-      browser_watcher::kStabilityDebuggingFeature,
+      browser_watcher::kExtendedCrashReportingFeature,
       browser_watcher::kInMemoryOnlyParam, true);
   if (in_memory_only) {
     base::debug::GlobalActivityTracker::CreateWithAllocator(
         std::make_unique<base::LocalPersistentMemoryAllocator>(
             kMemorySize, kAllocatorId,
-            browser_watcher::kStabilityDebuggingFeature.name),
+            browser_watcher::kExtendedCrashReportingFeature.name),
         kStackDepth, 0);
   } else {
     // Ensure the stability directory exists and determine the stability file's
@@ -207,7 +207,7 @@ void SetupStabilityDebugging() {
     // this is a potentially expensive operation, so done under an experiment
     // to allow measuring the performance effects, if any.
     const bool should_flush = base::GetFieldTrialParamByFeatureAsBool(
-        browser_watcher::kStabilityDebuggingFeature,
+        browser_watcher::kExtendedCrashReportingFeature,
         browser_watcher::kInitFlushParam, false);
     if (should_flush) {
       base::PostTask(

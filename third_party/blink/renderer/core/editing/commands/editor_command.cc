@@ -361,12 +361,12 @@ static bool ExecuteDefaultParagraphSeparator(LocalFrame& frame,
                                              Event*,
                                              EditorCommandSource,
                                              const String& value) {
-  if (DeprecatedEqualIgnoringCase(value, "div")) {
+  if (EqualIgnoringASCIICase(value, "div")) {
     frame.GetEditor().SetDefaultParagraphSeparator(
         EditorParagraphSeparator::kIsDiv);
     return true;
   }
-  if (DeprecatedEqualIgnoringCase(value, "p")) {
+  if (EqualIgnoringASCIICase(value, "p")) {
     frame.GetEditor().SetDefaultParagraphSeparator(
         EditorParagraphSeparator::kIsP);
   }

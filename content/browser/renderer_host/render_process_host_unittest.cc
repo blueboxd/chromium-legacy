@@ -47,11 +47,11 @@ TEST_F(RenderProcessHostUnitTest, GuestsAreNotSuitableHosts) {
   scoped_refptr<SiteInstanceImpl> site_instance =
       SiteInstanceImpl::CreateForURL(browser_context(), test_url);
   EXPECT_FALSE(RenderProcessHostImpl::IsSuitableHost(
-      &guest_host, browser_context(), site_instance->GetIsolationContext(),
+      &guest_host, site_instance->GetIsolationContext(),
       site_instance->GetSiteURL(), site_instance->lock_url(),
       site_instance->IsGuest()));
   EXPECT_TRUE(RenderProcessHostImpl::IsSuitableHost(
-      process(), browser_context(), site_instance->GetIsolationContext(),
+      process(), site_instance->GetIsolationContext(),
       site_instance->GetSiteURL(), site_instance->lock_url(),
       site_instance->IsGuest()));
   EXPECT_EQ(process(),

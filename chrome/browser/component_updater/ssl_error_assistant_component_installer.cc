@@ -13,8 +13,8 @@
 #include "base/memory/ref_counted.h"
 #include "base/stl_util.h"
 #include "base/task/post_task.h"
-#include "chrome/browser/ssl/ssl_error_handler.h"
 #include "components/security_interstitials/content/ssl_error_assistant.h"
+#include "components/security_interstitials/content/ssl_error_handler.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 

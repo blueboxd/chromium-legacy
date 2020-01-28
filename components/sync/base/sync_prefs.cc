@@ -293,6 +293,10 @@ void SyncPrefs::RegisterProfilePrefs(
   }
 #endif
 
+  // The encryption bootstrap token represents a user-entered passphrase.
+  registry->RegisterStringPref(prefs::kSyncEncryptionBootstrapToken,
+                               std::string());
+
   // Internal or bookkeeping prefs.
   registry->RegisterStringPref(prefs::kSyncCacheGuid, std::string());
   registry->RegisterStringPref(prefs::kSyncBirthday, std::string());
@@ -301,8 +305,6 @@ void SyncPrefs::RegisterProfilePrefs(
   registry->RegisterInt64Pref(prefs::kSyncLastPollTime, 0);
   registry->RegisterInt64Pref(prefs::kSyncPollIntervalSeconds, 0);
   registry->RegisterBooleanPref(prefs::kSyncManaged, false);
-  registry->RegisterStringPref(prefs::kSyncEncryptionBootstrapToken,
-                               std::string());
   registry->RegisterStringPref(prefs::kSyncKeystoreEncryptionBootstrapToken,
                                std::string());
   registry->RegisterBooleanPref(prefs::kSyncPassphrasePrompted, false);
@@ -347,7 +349,7 @@ void SyncPrefs::RemoveSyncPrefObserver(SyncPrefObserver* sync_pref_observer) {
   sync_pref_observers_.RemoveObserver(sync_pref_observer);
 }
 
-void SyncPrefs::ClearPreferences() {
+void SyncPrefs::ClearLocalSyncTransportData() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // Clear user's birth year and gender.
@@ -357,31 +359,19 @@ void SyncPrefs::ClearPreferences() {
   // even reveal their true birth year.
   pref_service_->ClearPref(prefs::kSyncDemographics);
 
-  ClearDirectoryConsistencyPreferences();
-
   pref_service_->ClearPref(prefs::kSyncLastSyncedTime);
   pref_service_->ClearPref(prefs::kSyncLastPollTime);
   pref_service_->ClearPref(prefs::kSyncPollIntervalSeconds);
-  pref_service_->ClearPref(prefs::kSyncEncryptionBootstrapToken);
   pref_service_->ClearPref(prefs::kSyncKeystoreEncryptionBootstrapToken);
   pref_service_->ClearPref(prefs::kSyncPassphrasePrompted);
   pref_service_->ClearPref(prefs::kSyncInvalidationVersions);
   pref_service_->ClearPref(prefs::kSyncLastRunVersion);
-  // No need to clear kManaged, kEnableLocalSyncBackend or kLocalSyncBackendDir,
-  // since they're never actually set as user preferences.
-
-  // Note: We do *not* clear prefs which are directly user-controlled such as
-  // the set of selected types here, so that if the user ever chooses to enable
-  // Sync again, they start off with their previous settings by default.
-  // We do however require going through first-time setup again.
-  pref_service_->ClearPref(prefs::kSyncFirstSetupComplete);
-}
-
-void SyncPrefs::ClearDirectoryConsistencyPreferences() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   pref_service_->ClearPref(prefs::kSyncCacheGuid);
   pref_service_->ClearPref(prefs::kSyncBirthday);
   pref_service_->ClearPref(prefs::kSyncBagOfChips);
+
+  // No need to clear kManaged, kEnableLocalSyncBackend or kLocalSyncBackendDir,
+  // since they're never actually set as user preferences.
 }
 
 bool SyncPrefs::IsFirstSetupComplete() const {
@@ -392,6 +382,11 @@ bool SyncPrefs::IsFirstSetupComplete() const {
 void SyncPrefs::SetFirstSetupComplete() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   pref_service_->SetBoolean(prefs::kSyncFirstSetupComplete, true);
+}
+
+void SyncPrefs::ClearFirstSetupComplete() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  pref_service_->ClearPref(prefs::kSyncFirstSetupComplete);
 }
 
 bool SyncPrefs::IsSyncRequested() const {
@@ -554,6 +549,11 @@ std::string SyncPrefs::GetEncryptionBootstrapToken() const {
 void SyncPrefs::SetEncryptionBootstrapToken(const std::string& token) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   pref_service_->SetString(prefs::kSyncEncryptionBootstrapToken, token);
+}
+
+void SyncPrefs::ClearEncryptionBootstrapToken() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  pref_service_->ClearPref(prefs::kSyncEncryptionBootstrapToken);
 }
 
 std::string SyncPrefs::GetKeystoreEncryptionBootstrapToken() const {

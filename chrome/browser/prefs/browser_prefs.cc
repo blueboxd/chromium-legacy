@@ -95,7 +95,6 @@
 #include "components/dom_distiller/core/distilled_page_prefs.h"
 #include "components/feature_engagement/buildflags.h"
 #include "components/flags_ui/pref_service_flags_storage.h"
-#include "components/gcm_driver/gcm_channel_status_syncer.h"
 #include "components/image_fetcher/core/cache/image_cache.h"
 #include "components/invalidation/impl/invalidator_registrar_with_memory.h"
 #include "components/invalidation/impl/per_user_topic_subscription_manager.h"
@@ -527,6 +526,10 @@ const char kBlacklistedCredentialsNormalized[] =
 const char kKeyCreated[] = "os_crypt.key_created";
 #endif  // defined(OS_MACOSX)
 
+const char kGCMChannelStatus[] = "gcm.channel_status";
+const char kGCMChannelPollIntervalSeconds[] = "gcm.poll_interval";
+const char kGCMChannelLastCheckTime[] = "gcm.check_time";
+
 // Register prefs used only for migration (clearing or moving to a new key).
 void RegisterProfilePrefsForMigration(
     user_prefs::PrefRegistrySyncable* registry) {
@@ -614,6 +617,10 @@ void RegisterProfilePrefsForMigration(
 #endif  // defined(OS_CHROMEOS)
 
   registry->RegisterBooleanPref(kBlacklistedCredentialsNormalized, false);
+
+  registry->RegisterBooleanPref(kGCMChannelStatus, true);
+  registry->RegisterIntegerPref(kGCMChannelPollIntervalSeconds, 0);
+  registry->RegisterInt64Pref(kGCMChannelLastCheckTime, 0);
 }
 
 }  // namespace
@@ -668,8 +675,6 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
   ::android::RegisterPrefs(registry);
 #else
   enterprise_reporting::RegisterLocalStatePrefs(registry);
-  // The native GCM is used on Android instead.
-  gcm::GCMChannelStatusSyncer::RegisterPrefs(registry);
   gcm::RegisterPrefs(registry);
   media_router::RegisterLocalStatePrefs(registry);
   metrics::TabStatsTracker::RegisterPrefs(registry);
@@ -784,6 +789,11 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
 #if defined(TOOLKIT_VIEWS)
   RegisterBrowserViewLocalPrefs(registry);
 #endif
+
+  // Obsolete. See MigrateObsoleteBrowserPrefs().
+  registry->RegisterBooleanPref(kGCMChannelStatus, true);
+  registry->RegisterIntegerPref(kGCMChannelPollIntervalSeconds, 0);
+  registry->RegisterInt64Pref(kGCMChannelLastCheckTime, 0);
 }
 
 // Register prefs applicable to all profiles.
@@ -935,7 +945,6 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry,
   extensions::CommandService::RegisterProfilePrefs(registry);
   extensions::TabsCaptureVisibleTabFunction::RegisterProfilePrefs(registry);
   first_run::RegisterProfilePrefs(registry);
-  gcm::GCMChannelStatusSyncer::RegisterProfilePrefs(registry);
   gcm::RegisterProfilePrefs(registry);
   HatsService::RegisterProfilePrefs(registry);
   HistoryUI::RegisterProfilePrefs(registry);
@@ -1103,6 +1112,9 @@ void MigrateObsoleteBrowserPrefs(Profile* profile, PrefService* local_state) {
 #if defined(OS_MACOSX)
   local_state->ClearPref(kKeyCreated);
 #endif  // defined(OS_MACOSX)
+  local_state->ClearPref(kGCMChannelStatus);
+  local_state->ClearPref(kGCMChannelPollIntervalSeconds);
+  local_state->ClearPref(kGCMChannelLastCheckTime);
 }
 
 // This method should be periodically pruned of year+ old migrations.
@@ -1241,4 +1253,9 @@ void MigrateObsoleteProfilePrefs(Profile* profile) {
 
   // Added 11/2019.
   profile_prefs->ClearPref(kBlacklistedCredentialsNormalized);
+
+  // Added 1/2020.
+  profile_prefs->ClearPref(kGCMChannelStatus);
+  profile_prefs->ClearPref(kGCMChannelPollIntervalSeconds);
+  profile_prefs->ClearPref(kGCMChannelLastCheckTime);
 }

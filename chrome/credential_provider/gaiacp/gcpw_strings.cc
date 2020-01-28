@@ -9,4 +9,7 @@ namespace credential_provider {
 const char kKeyLastSuccessfulOnlineLoginMillis[] =
     "last_successful_online_login_millis";
 const char kKeyValidityPeriodInDays[] = "validity_period_in_days";
+
+const wchar_t kKeyAcceptTos[] = L"accept_tos";
+const wchar_t kKeyEnableGemFeatures[] = L"enable_gem_features";
 }  // namespace credential_provider

@@ -26130,6 +26130,8 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
   <int value="3145" label="SchedulerPostTask"/>
   <int value="3146" label="V8Animation_Onremove_AttributeGetter"/>
   <int value="3147" label="V8Animation_Onremove_AttributeSetter"/>
+  <int value="3148" label="ClassicSharedWorker"/>
+  <int value="3149" label="ModuleSharedWorker"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -31719,7 +31721,8 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
 <enum name="HotseatInAppGesture">
   <int value="0" label="Swipe up the hotseat"/>
   <int value="1" label="Swipe down the hotseat"/>
-  <int value="2" label="Fling up the hotseat"/>
+  <int value="2" label="Fling up the hotseat to show homescreen"/>
+  <int value="3" label="Interact outside of shelf to hide hotseat"/>
 </enum>
 
 <enum name="HotwordAvailability">
@@ -37382,6 +37385,7 @@ from previous Chrome versions.
   <int value="-1039889738" label="NativeNotifications:enabled"/>
   <int value="-1039555838" label="GamepadExtensions:enabled"/>
   <int value="-1037128156" label="HomeLauncherGestures:disabled"/>
+  <int value="-1035346097" label="SyncErrorInfoBarAndroid:enabled"/>
   <int value="-1034344165" label="V8NoTurbo:disabled"/>
   <int value="-1033738911" label="enable-mac-views-dialogs"/>
   <int value="-1032884201" label="HeavyAdPrivacyMitigations:enabled"/>
@@ -38534,7 +38538,6 @@ from previous Chrome versions.
   <int value="401983950" label="enable-spdy4"/>
   <int value="402143634" label="enable-search-button-in-omnibox-always"/>
   <int value="403288255" label="enable-wheel-scroll-latching"/>
-  <int value="403741682" label="CrostiniBackup:enabled"/>
   <int value="403939322" label="UnifiedMessageCenterRefactor:disabled"/>
   <int value="405329388"
       label="FramebustingNeedsSameOriginOrUserGesture:enabled"/>
@@ -38978,6 +38981,7 @@ from previous Chrome versions.
   <int value="996637686" label="NativeFileSystemAPI:enabled"/>
   <int value="996643125" label="EnableAppShortcutSearch:disabled"/>
   <int value="996701528" label="SystemKeyboardLock:enabled"/>
+  <int value="998748600" label="SyncErrorInfoBarAndroid:disabled"/>
   <int value="1000045846" label="OverlayNewLayout:disabled"/>
   <int value="1000587036" label="OfflinePagesDescriptiveFailStatus:disabled"/>
   <int value="1000706989" label="AutomaticTabDiscarding:disabled"/>
@@ -39601,7 +39605,6 @@ from previous Chrome versions.
   <int value="1747279677" label="disable-delegated-renderer"/>
   <int value="1748481830" label="AppManagement:enabled"/>
   <int value="1749028785" label="SubresourceRedirect:disabled"/>
-  <int value="1750822869" label="CrostiniBackup:disabled"/>
   <int value="1752168018" label="enable-stale-while-revalidate"/>
   <int value="1755024316" label="HostWindowsInAppShimProcess:disabled"/>
   <int value="1758262950"

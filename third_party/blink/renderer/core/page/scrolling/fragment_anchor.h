@@ -49,7 +49,7 @@ class CORE_EXPORT FragmentAnchor : public GarbageCollected<FragmentAnchor> {
   // anchor to perform some initialization.
   virtual void Installed() = 0;
 
-  virtual void DidScroll(ScrollType type) = 0;
+  virtual void DidScroll(mojom::blink::ScrollIntoViewParams::Type type) = 0;
   virtual void PerformPreRafActions() = 0;
 
   // Dismissing the fragment anchor removes indicators of the anchor, such as

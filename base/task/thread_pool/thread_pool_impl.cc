@@ -420,14 +420,13 @@ bool ThreadPoolImpl::PostTaskWithSequence(Task task,
 
 bool ThreadPoolImpl::ShouldYield(const TaskSource* task_source) const {
   const TaskPriority priority = task_source->priority_racy();
-  auto* const thread_group = GetThreadGroupForTraits(
-      {ThreadPool(), priority, task_source->thread_policy()});
+  auto* const thread_group =
+      GetThreadGroupForTraits({priority, task_source->thread_policy()});
   // A task whose priority changed and is now running in the wrong thread group
   // should yield so it's rescheduled in the right one.
   if (!thread_group->IsBoundToCurrentThread())
     return true;
-  return GetThreadGroupForTraits(
-             {ThreadPool(), priority, task_source->thread_policy()})
+  return GetThreadGroupForTraits({priority, task_source->thread_policy()})
       ->ShouldYield(priority);
 }
 

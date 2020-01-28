@@ -19,6 +19,23 @@ enum class PopupType {
   kPasswords,
 };
 
+// This reason is passed whenever a popup needs to be closed.
+enum class PopupHidingReason {
+  kAcceptSuggestion,        // A suggestion was accepted.
+  kAttachInterstitialPage,  // An interstitial page displaces the popup.
+  kEndEditing,    // A field isn't edited anymore but remains focused for now.
+  kFocusChanged,  // Focus removed from field. Follows kEndEditing.
+  kContentAreaMoved,  // Scrolling or zooming into the page displaces popup.
+  kNavigation,        // A navigation on page or frame level.
+  kNoSuggestions,     // The popup is or would become empty.
+  kRendererEvent,     // The renderer explicitly requested closing the popup.
+  kTabGone,  // The tab with popup is destroyed, hidden or has become inactive.
+  kStaleData,      // The popup contains stale data.
+  kUserAborted,    // The user explicitly dismissed the popup (e.g. ESC key).
+  kViewDestroyed,  // The popup view (or its controller) goes out of scope.
+  kWidgetChanged,  // The platform-native UI changed (e.g. window resize).
+};
+
 }  // namespace autofill
 
 #endif  // COMPONENTS_AUTOFILL_CORE_BROWSER_UI_POPUP_TYPES_H_

@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/time/time.h"
-#include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/interstitials/chrome_metrics_helper.h"
 #include "chrome/browser/profiles/profile.h"
@@ -32,12 +31,24 @@
 
 #if defined(OS_ANDROID)
 #include "base/android/jni_android.h"
-#include "chrome/browser/ssl/captive_portal_helper_android.h"
+#include "components/security_interstitials/content/captive_portal_helper_android.h"
 #include "content/public/common/referrer.h"
 #include "net/android/network_library.h"
 #include "ui/base/window_open_disposition.h"
-#else
-#include "chrome/browser/captive_portal/captive_portal_tab_helper.h"
+#endif
+
+#if BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION)
+#include "chrome/browser/captive_portal/captive_portal_service_factory.h"
+#include "chrome/browser/net/system_network_context_manager.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
+#include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/tab_contents/tab_contents_iterator.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "components/captive_portal/content/captive_portal_tab_helper.h"
+#include "net/base/net_errors.h"
+#include "net/dns/dns_config.h"
 #endif
 
 namespace {
@@ -78,20 +89,20 @@ bool IsEnterpriseManaged() {
 // CaptivePortalBlockingPage to be invoked when the user has pressed the
 // connect button.
 void OpenLoginPage(content::WebContents* web_contents) {
-#if defined(OS_ANDROID)
-  {
-    // CaptivePortalTabHelper is not available on Android. Simply open the
-    // platform's portal detection URL in a new tab.
-    const std::string url = chrome::android::GetCaptivePortalServerUrl(
-        base::android::AttachCurrentThread());
-    content::OpenURLParams params(GURL(url), content::Referrer(),
-                                  WindowOpenDisposition::NEW_FOREGROUND_TAB,
-                                  ui::PAGE_TRANSITION_LINK, false);
-    web_contents->OpenURL(params);
-  }
+#if !BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION)
+  // OpenLoginTabForWebContents() is not available on Android (the only
+  // platform on which captive portal detection is not enabled). Simply open
+  // the platform's portal detection URL in a new tab.
+  const std::string url = security_interstitials::GetCaptivePortalServerUrl(
+      base::android::AttachCurrentThread());
+  content::OpenURLParams params(GURL(url), content::Referrer(),
+                                WindowOpenDisposition::NEW_FOREGROUND_TAB,
+                                ui::PAGE_TRANSITION_LINK, false);
+  web_contents->OpenURL(params);
 #else
-  CaptivePortalTabHelper::OpenLoginTabForWebContents(web_contents, true);
-#endif
+  ChromeSecurityBlockingPageFactory::OpenLoginTabForWebContents(web_contents,
+                                                                true);
+#endif  // !BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION)
 }
 
 std::unique_ptr<ChromeMetricsHelper> CreateCaptivePortalMetricsHelper(
@@ -327,6 +338,88 @@ void ChromeSecurityBlockingPageFactory::DoChromeSpecificSetup(
         report->AddNetworkTimeInfo(g_browser_process->network_time_tracker());
       }));
 }
+
+#if BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION)
+// static
+void ChromeSecurityBlockingPageFactory::OpenLoginTabForWebContents(
+    content::WebContents* web_contents,
+    bool focus) {
+  Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
+
+  // If the Profile doesn't have a tabbed browser window open, do nothing.
+  if (!browser)
+    return;
+
+  bool insecure_stub_resolver_enabled;
+  net::DnsConfig::SecureDnsMode secure_dns_mode;
+  base::Optional<std::vector<network::mojom::DnsOverHttpsServerPtr>>
+      dns_over_https_servers;
+  SystemNetworkContextManager::GetStubResolverConfig(
+      g_browser_process->local_state(), &insecure_stub_resolver_enabled,
+      &secure_dns_mode, &dns_over_https_servers);
+
+  // If the DNS mode is SECURE, captive portal login tabs should be opened in
+  // new popup windows where secure DNS will be disabled.
+  if (secure_dns_mode == net::DnsConfig::SecureDnsMode::SECURE) {
+    // If there is already a captive portal popup window, do not create another.
+    for (auto* contents : AllTabContentses()) {
+      CaptivePortalTabHelper* captive_portal_tab_helper =
+          CaptivePortalTabHelper::FromWebContents(contents);
+      if (captive_portal_tab_helper->IsLoginTab()) {
+        Browser* browser_with_login_tab =
+            chrome::FindBrowserWithWebContents(contents);
+        browser_with_login_tab->window()->Show();
+        browser_with_login_tab->tab_strip_model()->ActivateTabAt(
+            browser_with_login_tab->tab_strip_model()->GetIndexOfWebContents(
+                contents));
+        return;
+      }
+    }
+
+    // Otherwise, create a captive portal popup window.
+    NavigateParams params(
+        browser,
+        CaptivePortalServiceFactory::GetForProfile(browser->profile())
+            ->test_url(),
+        ui::PAGE_TRANSITION_TYPED);
+    params.disposition = WindowOpenDisposition::NEW_POPUP;
+    Navigate(&params);
+    content::WebContents* new_contents = params.navigated_or_inserted_contents;
+    CaptivePortalTabHelper* captive_portal_tab_helper =
+        CaptivePortalTabHelper::FromWebContents(new_contents);
+    captive_portal_tab_helper->set_is_captive_portal_window();
+    captive_portal_tab_helper->SetIsLoginTab();
+    return;
+  }
+
+  // Check if the Profile's topmost browser window already has a login tab.
+  // If so, do nothing.
+  // TODO(mmenke):  Consider focusing that tab, at least if this is the tab
+  //                helper for the currently active tab for the profile.
+  for (int i = 0; i < browser->tab_strip_model()->count(); ++i) {
+    content::WebContents* contents =
+        browser->tab_strip_model()->GetWebContentsAt(i);
+    CaptivePortalTabHelper* captive_portal_tab_helper =
+        CaptivePortalTabHelper::FromWebContents(contents);
+    if (captive_portal_tab_helper->IsLoginTab()) {
+      if (focus)
+        browser->tab_strip_model()->ActivateTabAt(i);
+      return;
+    }
+  }
+
+  // Otherwise, open a login tab.  Only end up here when a captive portal result
+  // was received, so it's safe to assume profile has a CaptivePortalService.
+  content::WebContents* new_contents = chrome::AddSelectedTabWithURL(
+      browser,
+      CaptivePortalServiceFactory::GetForProfile(browser->profile())
+          ->test_url(),
+      ui::PAGE_TRANSITION_TYPED);
+  CaptivePortalTabHelper* captive_portal_tab_helper =
+      CaptivePortalTabHelper::FromWebContents(new_contents);
+  captive_portal_tab_helper->SetIsLoginTab();
+}
+#endif  // BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION)
 
 void ChromeSecurityBlockingPageFactory::SetEnterpriseManagedForTesting(
     bool enterprise_managed) {

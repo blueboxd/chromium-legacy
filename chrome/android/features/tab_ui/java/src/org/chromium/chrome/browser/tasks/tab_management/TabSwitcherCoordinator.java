@@ -8,7 +8,6 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Rect;
 import android.graphics.RectF;
-import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView.ViewHolder;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -186,23 +185,6 @@ public class TabSwitcherCoordinator
                             R.layout.new_tab_tile_card_item, container, false);
                 }, NewTabTileViewBinder::bind);
             }
-
-            assert mTabListCoordinator.getContainerView().getLayoutManager()
-                            instanceof GridLayoutManager;
-
-            // TODO(1004570): Have a flexible approach for span size look up for each UiType.
-            ((GridLayoutManager) mTabListCoordinator.getContainerView().getLayoutManager())
-                    .setSpanSizeLookup(new GridLayoutManager.SpanSizeLookup() {
-                        @Override
-                        public int getSpanSize(int position) {
-                            int itemType = mTabListCoordinator.getContainerView()
-                                                   .getAdapter()
-                                                   .getItemViewType(position);
-
-                            if (itemType == TabProperties.UiType.MESSAGE) return 2;
-                            return 1;
-                        }
-                    });
         }
 
         mMenuOrKeyboardActionController = menuOrKeyboardActionController;

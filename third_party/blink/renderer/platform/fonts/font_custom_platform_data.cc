@@ -45,16 +45,6 @@
 
 namespace blink {
 
-namespace {
-sk_sp<SkFontMgr> FontManagerForSubType(
-    FontFormatCheck::VariableFontSubType font_sub_type) {
-  CHECK_NE(font_sub_type, FontFormatCheck::VariableFontSubType::kNotVariable);
-  if (font_sub_type == FontFormatCheck::VariableFontSubType::kVariableCFF2)
-    return WebFontTypefaceFactory::FreeTypeFontManager();
-  return WebFontTypefaceFactory::FontManagerForVariations();
-}
-}  // namespace
-
 FontCustomPlatformData::FontCustomPlatformData(sk_sp<SkTypeface> typeface,
                                                size_t data_size)
     : base_typeface_(std::move(typeface)), data_size_(data_size) {}
@@ -124,12 +114,8 @@ FontPlatformData FontCustomPlatformData::GetFontPlatformData(
       axes.push_back(opsz_axis);
     }
 
-    int index;
-    std::unique_ptr<SkStreamAsset> stream(base_typeface_->openStream(&index));
-    sk_sp<SkTypeface> sk_variation_font(FontManagerForSubType(font_sub_type)
-        ->makeFromStream(std::move(stream),
-                         SkFontArguments().setCollectionIndex(index)
-                                          .setAxes(axes.data(), axes.size())));
+    sk_sp<SkTypeface> sk_variation_font(base_typeface_->makeClone(
+        SkFontArguments().setAxes(axes.data(), axes.size())));
 
     if (sk_variation_font) {
       return_typeface = sk_variation_font;

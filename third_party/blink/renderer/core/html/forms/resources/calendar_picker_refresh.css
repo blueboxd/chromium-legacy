@@ -114,6 +114,13 @@ body {
   font-weight: bold;
 }
 
+.calendar-table-view:focus .day-cell.selected,
+.year-list-view:focus .month-button.selected,
+.calendar-table-view:focus .week-number-cell.selected {
+  outline: solid 2px -webkit-focus-ring-color;
+  outline-offset: -2px;
+}
+
 .day-cell.highlighted.today,
 .day-cell.today,
 .month-button.today {
@@ -260,6 +267,12 @@ body {
   .week-number-cell.selected {
     background-color: Highlight;
     color: Window;
+  }
+
+  .calendar-table-view:focus .day-cell.selected,
+  .year-list-view:focus .month-button.selected,
+  .calendar-table-view:focus .week-number-cell.selected {
+    outline: none;
   }
 
   .day-cell.highlighted.today,

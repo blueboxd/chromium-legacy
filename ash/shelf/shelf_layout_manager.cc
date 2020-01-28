@@ -645,6 +645,9 @@ void ShelfLayoutManager::ProcessGestureEventOfInAppHotseat(
     return;
 
   base::AutoReset<bool> hide_hotseat(&should_hide_hotseat_, true);
+  UMA_HISTOGRAM_ENUMERATION(
+      kHotseatGestureHistogramName,
+      InAppShelfGestures::kHotseatHiddenDueToInteractionOutsideOfShelf);
   UpdateVisibilityState();
 }
 

@@ -155,7 +155,7 @@ class CORE_EXPORT HTMLDocumentParser : public ScriptableDocumentParser,
   void ExecuteScriptsWaitingForResources() final;
   void DidAddPendingParserBlockingStylesheet() final;
   void DidLoadAllPendingParserBlockingStylesheets() final;
-  void CheckIfBodyStylesheetAdded();
+  void CheckIfBlockingStylesheetAdded();
   void DocumentElementAvailable() override;
 
   // HTMLParserScriptRunnerHost

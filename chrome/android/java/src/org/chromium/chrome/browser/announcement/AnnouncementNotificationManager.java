@@ -9,7 +9,6 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.support.annotation.IntDef;
-import android.text.TextUtils;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.annotations.CalledByNative;
@@ -30,7 +29,6 @@ import org.chromium.chrome.browser.notifications.NotificationUmaTracker;
 import org.chromium.chrome.browser.notifications.PendingIntentProvider;
 import org.chromium.chrome.browser.notifications.channels.ChannelDefinitions;
 import org.chromium.chrome.browser.util.IntentUtils;
-import org.chromium.ui.base.LocalizationUtils;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -44,8 +42,7 @@ public class AnnouncementNotificationManager {
     private static final int ANNOUNCEMENT_NOTIFICATION_ID = 100;
     private static final String EXTRA_INTENT_TYPE =
             "org.chromium.chrome.browser.announcement.EXTRA_INTENT_TYPE";
-    private static final String EXTRA_REMOTE_URL =
-            "org.chromium.chrome.browser.announcement.EXTRA_REMOTE_URL";
+    private static final String EXTRA_URL = "org.chromium.chrome.browser.announcement.EXTRA_URL";
 
     @IntDef({IntentType.UNKNOWN, IntentType.CLICK, IntentType.CLOSE, IntentType.ACK,
             IntentType.OPEN})
@@ -70,13 +67,13 @@ public class AnnouncementNotificationManager {
                     @IntentType
                     int intentType = IntentUtils.safeGetIntExtra(
                             intent, EXTRA_INTENT_TYPE, IntentType.UNKNOWN);
-                    String remoteUrl = IntentUtils.safeGetStringExtra(intent, EXTRA_REMOTE_URL);
+                    String url = IntentUtils.safeGetStringExtra(intent, EXTRA_URL);
                     switch (intentType) {
                         case IntentType.UNKNOWN:
                             break;
                         case IntentType.CLICK:
                             recordHistogram(AnnouncementNotificationEvent.CLICK);
-                            openUrl(context, remoteUrl);
+                            openUrl(context, url);
                             break;
                         case IntentType.CLOSE:
                             recordHistogram(AnnouncementNotificationEvent.CLOSE);
@@ -87,7 +84,7 @@ public class AnnouncementNotificationManager {
                             break;
                         case IntentType.OPEN:
                             recordHistogram(AnnouncementNotificationEvent.OPEN);
-                            openUrl(context, remoteUrl);
+                            openUrl(context, url);
                             close();
                             break;
                     }
@@ -101,21 +98,17 @@ public class AnnouncementNotificationManager {
     }
 
     private static PendingIntentProvider createIntent(
-            Context context, @IntentType int intentType, String remoteUrl) {
+            Context context, @IntentType int intentType, String url) {
         Intent intent = new Intent(context, AnnouncementNotificationManager.Receiver.class);
         intent.putExtra(EXTRA_INTENT_TYPE, intentType);
-        intent.putExtra(EXTRA_REMOTE_URL, remoteUrl);
+        intent.putExtra(EXTRA_URL, url);
         return PendingIntentProvider.getBroadcast(
                 context, intentType /*requestCode*/, intent, PendingIntent.FLAG_UPDATE_CURRENT);
     }
 
-    private static void openUrl(Context context, String remoteUrl) {
+    private static void openUrl(Context context, String url) {
         // Open the announcement URL, fallback to default URL if remote URL is empty.
-        String url = TextUtils.isEmpty(remoteUrl)
-                ? context.getResources().getString(R.string.tos_notification_link)
-                : remoteUrl;
-        CustomTabActivity.showInfoPage(
-                context, LocalizationUtils.substituteLocalePlaceholder((url)));
+        CustomTabActivity.showInfoPage(context, url);
     }
 
     private static void close() {
@@ -126,11 +119,11 @@ public class AnnouncementNotificationManager {
 
     private static void recordHistogram(@AnnouncementNotificationEvent int event) {
         RecordHistogram.recordEnumeratedHistogram("Notifications.Announcement.Events", event,
-                org.chromium.chrome.browser.announcement.AnnouncementNotificationEvent.MAX);
+                org.chromium.chrome.browser.announcement.AnnouncementNotificationEvent.MAX_VALUE);
     }
 
     @CalledByNative
-    private static void showNotification(String remoteUrl) {
+    private static void showNotification(String url) {
         Context context = ContextUtils.getApplicationContext();
         ChromeNotificationBuilder builder =
                 NotificationBuilderFactory
@@ -142,18 +135,18 @@ public class AnnouncementNotificationManager {
                                         ANNOUNCEMENT_NOTIFICATION_TAG,
                                         ANNOUNCEMENT_NOTIFICATION_ID))
                         .setContentTitle(context.getString(R.string.tos_notification_title))
-                        .setContentIntent(createIntent(context, IntentType.CLICK, remoteUrl))
-                        .setDeleteIntent(createIntent(context, IntentType.CLOSE, remoteUrl))
+                        .setContentIntent(createIntent(context, IntentType.CLICK, url))
+                        .setDeleteIntent(createIntent(context, IntentType.CLOSE, url))
                         .setContentText(context.getString(R.string.tos_notification_body_text))
                         .setSmallIcon(R.drawable.ic_chrome)
                         .setShowWhen(false)
                         .setAutoCancel(true)
                         .setLocalOnly(true);
         builder.addAction(0, context.getString(R.string.tos_notification_ack_button_text),
-                createIntent(context, IntentType.ACK, remoteUrl),
+                createIntent(context, IntentType.ACK, url),
                 NotificationUmaTracker.ActionType.ANNOUNCEMENT_ACK);
         builder.addAction(0, context.getString(R.string.tos_notification_review_button_text),
-                createIntent(context, IntentType.OPEN, remoteUrl),
+                createIntent(context, IntentType.OPEN, url),
                 NotificationUmaTracker.ActionType.ANNOUNCEMENT_OPEN);
 
         NotificationManagerProxy nm = new NotificationManagerProxyImpl(context);

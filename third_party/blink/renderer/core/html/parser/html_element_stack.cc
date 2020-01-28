@@ -249,8 +249,8 @@ bool HTMLElementStack::IsHTMLIntegrationPoint(HTMLStackItem* item) {
         item->GetAttributeItem(mathml_names::kEncodingAttr);
     if (encoding_attr) {
       const String& encoding = encoding_attr->Value();
-      return DeprecatedEqualIgnoringCase(encoding, "text/html") ||
-             DeprecatedEqualIgnoringCase(encoding, "application/xhtml+xml");
+      return EqualIgnoringASCIICase(encoding, "text/html") ||
+             EqualIgnoringASCIICase(encoding, "application/xhtml+xml");
     }
     return false;
   }

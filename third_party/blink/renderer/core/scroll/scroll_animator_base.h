@@ -111,7 +111,9 @@ class CORE_EXPORT ScrollAnimatorBase
   virtual void DidAddHorizontalScrollbar(Scrollbar&) {}
   virtual void WillRemoveHorizontalScrollbar(Scrollbar&) {}
 
-  virtual void NotifyContentAreaScrolled(const ScrollOffset&, ScrollType) {}
+  virtual void NotifyContentAreaScrolled(
+      const ScrollOffset&,
+      mojom::blink::ScrollIntoViewParams::Type) {}
 
   virtual bool SetScrollbarsVisibleForTesting(bool) { return false; }
 

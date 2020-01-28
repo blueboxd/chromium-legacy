@@ -316,7 +316,8 @@ class IdlCompiler(object):
             self._ir_map.add(new_ir)
             for ir in irs_to_be_merged:
                 to_be_merged = make_copy(ir)
-                new_ir.add_components(to_be_merged.components)
+                if new_ir.is_mixin == to_be_merged.is_mixin:
+                    new_ir.add_components(to_be_merged.components)
                 new_ir.debug_info.add_locations(
                     to_be_merged.debug_info.all_locations)
                 new_ir.attributes.extend(to_be_merged.attributes)

@@ -380,22 +380,15 @@ bool EditContext::SetComposition(
   }
   // Update the selection and buffer if the composition range has changed.
   String update_text(text);
-  if (composition_range_start_ != selection_start_ &&
-      composition_range_end_ != selection_end_) {
-    selection_start_ = composition_range_end_;
-    selection_end_ = composition_range_end_;
-  }
-  text_ = text_.Substring(0, selection_start_) + update_text +
-          text_.Substring(selection_end_);
+  text_ = text_.Substring(0, composition_range_start_) + update_text +
+          text_.Substring(composition_range_end_);
 
   // Fire textupdate and textformatupdate events to JS.
   const uint32_t update_range_start = composition_range_start_;
   const uint32_t update_range_end = composition_range_end_;
-  if (has_composition_) {
-    // Replace the existing composition with empty string.
-    composition_range_start_ = selection_start_;
-    composition_range_end_ = selection_end_;
-  }
+  // Update the new selection.
+  selection_start_ = composition_range_start_ + selection_end;
+  selection_end_ = composition_range_start_ + selection_end;
   DispatchTextUpdateEvent(update_text, update_range_start, update_range_end,
                           selection_start_, selection_end_);
   composition_range_end_ = composition_range_start_ + selection_end;

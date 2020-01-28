@@ -298,13 +298,6 @@ SigninScreenHandler::~SigninScreenHandler() {
   network_state_informer_->RemoveObserver(this);
   proximity_auth::ScreenlockBridge::Get()->SetLockHandler(nullptr);
   proximity_auth::ScreenlockBridge::Get()->SetFocusedUser(EmptyAccountId());
-  // TODO(https://crbug.com/1033572) Quick fix to close feedback form when login
-  // was performed.
-  login_feedback_.reset();
-  extensions::FeedbackPrivateDelegate* feedback_private_delegate =
-      extensions::ExtensionsAPIClient::Get()->GetFeedbackPrivateDelegate();
-  feedback_private_delegate->UnloadFeedbackExtension(
-      Profile::FromWebUI(web_ui()));
 }
 
 void SigninScreenHandler::DeclareLocalizedValues(

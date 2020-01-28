@@ -91,6 +91,8 @@ const char kUnableToRetrieveNativeOrigin[] =
     "The operation was unable to retrieve the native origin from XRSpace and "
     "could not be completed.";
 
+const char kHitTestFeatureNotSupported[] = "Hit test feature is not supported.";
+
 const char kHitTestSubscriptionFailed[] = "Hit test subscription failed.";
 
 const char kEntityTypesNotSpecified[] =
@@ -298,7 +300,8 @@ void XRSession::MetricsReporter::ReportFeatureUsed(
       recorder_->ReportFeatureUsed(XRSessionFeature::REF_SPACE_UNBOUNDED);
       break;
     case XRSessionFeature::DOM_OVERLAY:
-      // Not recording metrics for this feature currently
+    case XRSessionFeature::HIT_TEST:
+      // Not recording metrics for these features currently.
       break;
   }
 }
@@ -738,6 +741,18 @@ ScriptPromise XRSession::requestHitTestSource(
   DVLOG(2) << __func__;
   DCHECK(options_init);
 
+  if (!IsFeatureEnabled(device::mojom::XRSessionFeature::HIT_TEST)) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kNotSupportedError,
+                                      kHitTestFeatureNotSupported);
+    return {};
+  }
+
+  if (ended_) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
+                                      kSessionEnded);
+    return {};
+  }
+
   // 1. Grab the native origin from the passed in XRSpace.
   base::Optional<XRNativeOriginInformation> maybe_native_origin =
       options_init && options_init->hasSpace()
@@ -813,6 +828,18 @@ ScriptPromise XRSession::requestHitTestSourceForTransientInput(
     ExceptionState& exception_state) {
   DVLOG(2) << __func__;
   DCHECK(options_init);
+
+  if (!IsFeatureEnabled(device::mojom::XRSessionFeature::HIT_TEST)) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kNotSupportedError,
+                                      kHitTestFeatureNotSupported);
+    return {};
+  }
+
+  if (ended_) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
+                                      kSessionEnded);
+    return {};
+  }
 
   if (options_init->hasEntityTypes() && options_init->entityTypes().IsEmpty()) {
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,

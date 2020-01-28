@@ -13,7 +13,7 @@
 #include "base/callback.h"
 #include "base/optional.h"
 #include "base/synchronization/waitable_event.h"
-#include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/task/thread_pool/thread_pool_instance.h"
 #include "base/threading/simple_thread.h"
 #include "base/time/time.h"
@@ -93,7 +93,7 @@ class ThreadPoolPerfTest : public testing::Test {
   // Posting actions:
 
   void ContinuouslyBindAndPostNoOpTasks(size_t num_tasks) {
-    scoped_refptr<TaskRunner> task_runner = CreateTaskRunner({ThreadPool()});
+    scoped_refptr<TaskRunner> task_runner = ThreadPool::CreateTaskRunner({});
     for (size_t i = 0; i < num_tasks; ++i) {
       ++num_tasks_pending_;
       ++num_posted_tasks_;
@@ -107,7 +107,7 @@ class ThreadPoolPerfTest : public testing::Test {
   }
 
   void ContinuouslyPostNoOpTasks(size_t num_tasks) {
-    scoped_refptr<TaskRunner> task_runner = CreateTaskRunner({ThreadPool()});
+    scoped_refptr<TaskRunner> task_runner = ThreadPool::CreateTaskRunner({});
     base::RepeatingClosure closure = base::BindRepeating(
         [](std::atomic_size_t* num_task_pending) { (*num_task_pending)--; },
         &num_tasks_pending_);
@@ -120,7 +120,7 @@ class ThreadPoolPerfTest : public testing::Test {
 
   void ContinuouslyPostBusyWaitTasks(size_t num_tasks,
                                      base::TimeDelta duration) {
-    scoped_refptr<TaskRunner> task_runner = CreateTaskRunner({ThreadPool()});
+    scoped_refptr<TaskRunner> task_runner = ThreadPool::CreateTaskRunner({});
     base::RepeatingClosure closure = base::BindRepeating(
         [](std::atomic_size_t* num_task_pending, base::TimeDelta duration) {
           base::TimeTicks end_time = base::TimeTicks::Now() + duration;

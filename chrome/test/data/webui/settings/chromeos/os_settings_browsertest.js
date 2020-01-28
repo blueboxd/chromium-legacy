@@ -419,6 +419,10 @@ TEST_F('OSSettingsDevicePageTest', 'PowerTest', () => {
   mocha.grep(assert(device_page_tests.TestNames.Power)).run();
 });
 
+TEST_F('OSSettingsDevicePageTest', 'StorageTest', () => {
+  mocha.grep(assert(device_page_tests.TestNames.Storage)).run();
+});
+
 TEST_F('OSSettingsDevicePageTest', 'StylusTest', () => {
   mocha.grep(assert(device_page_tests.TestNames.Stylus)).run();
 });

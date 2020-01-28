@@ -68,7 +68,7 @@ WebViewAutofillClientIOS::WebViewAutofillClientIOS(
           base::Closure())) {}
 
 WebViewAutofillClientIOS::~WebViewAutofillClientIOS() {
-  HideAutofillPopup();
+  HideAutofillPopup(PopupHidingReason::kTabGone);
 }
 
 PersonalDataManager* WebViewAutofillClientIOS::GetPersonalDataManager() {
@@ -239,7 +239,7 @@ void WebViewAutofillClientIOS::UpdateAutofillPopupDataListValues(
   NOTREACHED();
 }
 
-void WebViewAutofillClientIOS::HideAutofillPopup() {
+void WebViewAutofillClientIOS::HideAutofillPopup(PopupHidingReason reason) {
   [bridge_ hideAutofillPopup];
 }
 

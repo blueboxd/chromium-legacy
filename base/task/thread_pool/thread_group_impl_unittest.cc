@@ -175,7 +175,7 @@ class ThreadPostingTasksWaitIdle : public SimpleThread {
       TaskSourceExecutionMode execution_mode)
       : SimpleThread("ThreadPostingTasksWaitIdle"),
         thread_group_(thread_group),
-        factory_(CreateTaskRunnerWithExecutionMode(
+        factory_(CreatePooledTaskRunnerWithExecutionMode(
                      execution_mode,
                      mock_pooled_task_runner_delegate_),
                  execution_mode) {
@@ -234,8 +234,8 @@ TEST_P(ThreadGroupImplImplTestParam, PostTasksWithOneAvailableWorker) {
   std::vector<std::unique_ptr<test::TestTaskFactory>> blocked_task_factories;
   for (size_t i = 0; i < (kMaxTasks - 1); ++i) {
     blocked_task_factories.push_back(std::make_unique<test::TestTaskFactory>(
-        CreateTaskRunnerWithExecutionMode(GetParam(),
-                                          &mock_pooled_task_runner_delegate_),
+        CreatePooledTaskRunnerWithExecutionMode(
+            GetParam(), &mock_pooled_task_runner_delegate_),
         GetParam()));
     EXPECT_TRUE(blocked_task_factories.back()->PostTask(
         PostNestedTask::NO,
@@ -246,8 +246,8 @@ TEST_P(ThreadGroupImplImplTestParam, PostTasksWithOneAvailableWorker) {
   // Post |kNumTasksPostedPerThread| tasks that should all run despite the fact
   // that only one worker in |thread_group_| isn't busy.
   test::TestTaskFactory short_task_factory(
-      CreateTaskRunnerWithExecutionMode(GetParam(),
-                                        &mock_pooled_task_runner_delegate_),
+      CreatePooledTaskRunnerWithExecutionMode(
+          GetParam(), &mock_pooled_task_runner_delegate_),
       GetParam());
   for (size_t i = 0; i < kNumTasksPostedPerThread; ++i)
     EXPECT_TRUE(short_task_factory.PostTask(PostNestedTask::NO, OnceClosure()));
@@ -270,8 +270,8 @@ TEST_P(ThreadGroupImplImplTestParam, Saturate) {
   std::vector<std::unique_ptr<test::TestTaskFactory>> factories;
   for (size_t i = 0; i < kMaxTasks; ++i) {
     factories.push_back(std::make_unique<test::TestTaskFactory>(
-        CreateTaskRunnerWithExecutionMode(GetParam(),
-                                          &mock_pooled_task_runner_delegate_),
+        CreatePooledTaskRunnerWithExecutionMode(
+            GetParam(), &mock_pooled_task_runner_delegate_),
         GetParam()));
     EXPECT_TRUE(factories.back()->PostTask(
         PostNestedTask::NO,
@@ -326,8 +326,8 @@ TEST_F(ThreadGroupImplImplTest, ShouldYieldFloodedUserVisible) {
   // Note: This is only true because this test is using a single ThreadGroup.
   //       Under the ThreadPool this wouldn't be racy because BEST_EFFORT tasks
   //       run in an independent ThreadGroup.
-  test::CreateTaskRunner({ThreadPool(), TaskPriority::BEST_EFFORT},
-                         &mock_pooled_task_runner_delegate_)
+  test::CreatePooledTaskRunner({TaskPriority::BEST_EFFORT},
+                               &mock_pooled_task_runner_delegate_)
       ->PostTask(
           FROM_HERE, BindLambdaForTesting([&]() {
             EXPECT_FALSE(thread_group_->ShouldYield(TaskPriority::BEST_EFFORT));
@@ -337,8 +337,8 @@ TEST_F(ThreadGroupImplImplTest, ShouldYieldFloodedUserVisible) {
   EXPECT_FALSE(thread_group_->ShouldYield(TaskPriority::USER_BLOCKING));
 
   // Posting a USER_VISIBLE task should cause BEST_EFFORT tasks to yield.
-  test::CreateTaskRunner({ThreadPool(), TaskPriority::USER_VISIBLE},
-                         &mock_pooled_task_runner_delegate_)
+  test::CreatePooledTaskRunner({TaskPriority::USER_VISIBLE},
+                               &mock_pooled_task_runner_delegate_)
       ->PostTask(FROM_HERE, BindLambdaForTesting([&]() {
                    EXPECT_FALSE(
                        thread_group_->ShouldYield(TaskPriority::USER_VISIBLE));
@@ -349,8 +349,8 @@ TEST_F(ThreadGroupImplImplTest, ShouldYieldFloodedUserVisible) {
 
   // Posting a USER_BLOCKING task should cause BEST_EFFORT and USER_VISIBLE
   // tasks to yield.
-  test::CreateTaskRunner({ThreadPool(), TaskPriority::USER_BLOCKING},
-                         &mock_pooled_task_runner_delegate_)
+  test::CreatePooledTaskRunner({TaskPriority::USER_BLOCKING},
+                               &mock_pooled_task_runner_delegate_)
       ->PostTask(FROM_HERE, BindLambdaForTesting([&]() {
                    // Once this task got to start, no other task needs to yield.
                    EXPECT_FALSE(
@@ -410,14 +410,14 @@ TEST_F(ThreadGroupImplImplStartInBodyTest, PostTasksBeforeStart) {
   // up.
   WaitableEvent barrier;
 
-  test::CreateTaskRunner({ThreadPool(), WithBaseSyncPrimitives()},
-                         &mock_pooled_task_runner_delegate_)
+  test::CreatePooledTaskRunner({WithBaseSyncPrimitives()},
+                               &mock_pooled_task_runner_delegate_)
       ->PostTask(
           FROM_HERE,
           BindOnce(&TaskPostedBeforeStart, Unretained(&task_1_thread_ref),
                    Unretained(&task_1_running), Unretained(&barrier)));
-  test::CreateTaskRunner({ThreadPool(), WithBaseSyncPrimitives()},
-                         &mock_pooled_task_runner_delegate_)
+  test::CreatePooledTaskRunner({WithBaseSyncPrimitives()},
+                               &mock_pooled_task_runner_delegate_)
       ->PostTask(
           FROM_HERE,
           BindOnce(&TaskPostedBeforeStart, Unretained(&task_2_thread_ref),
@@ -445,9 +445,8 @@ TEST_F(ThreadGroupImplImplStartInBodyTest, PostTasksBeforeStart) {
 // Verify that posting many tasks before Start will cause the number of workers
 // to grow to |max_tasks_| after Start.
 TEST_F(ThreadGroupImplImplStartInBodyTest, PostManyTasks) {
-  scoped_refptr<TaskRunner> task_runner =
-      test::CreateTaskRunner({ThreadPool(), WithBaseSyncPrimitives()},
-                             &mock_pooled_task_runner_delegate_);
+  scoped_refptr<TaskRunner> task_runner = test::CreatePooledTaskRunner(
+      {WithBaseSyncPrimitives()}, &mock_pooled_task_runner_delegate_);
   constexpr size_t kNumTasksPosted = 2 * kMaxTasks;
 
   WaitableEvent threads_running;
@@ -526,8 +525,8 @@ TEST_F(ThreadGroupImplCheckTlsReuse, CheckCleanupWorkers) {
   std::vector<std::unique_ptr<test::TestTaskFactory>> factories;
   for (size_t i = 0; i < kMaxTasks; ++i) {
     factories.push_back(std::make_unique<test::TestTaskFactory>(
-        test::CreateTaskRunner({ThreadPool(), WithBaseSyncPrimitives()},
-                               &mock_pooled_task_runner_delegate_),
+        test::CreatePooledTaskRunner({WithBaseSyncPrimitives()},
+                                     &mock_pooled_task_runner_delegate_),
         TaskSourceExecutionMode::kParallel));
     ASSERT_TRUE(factories.back()->PostTask(
         PostNestedTask::NO,
@@ -587,9 +586,8 @@ class ThreadGroupImplHistogramTest : public ThreadGroupImplImplTest {
   void FloodPool(WaitableEvent* continue_event) {
     ASSERT_FALSE(continue_event->IsSignaled());
 
-    auto task_runner =
-        test::CreateTaskRunner({ThreadPool(), WithBaseSyncPrimitives()},
-                               &mock_pooled_task_runner_delegate_);
+    auto task_runner = test::CreatePooledTaskRunner(
+        {WithBaseSyncPrimitives()}, &mock_pooled_task_runner_delegate_);
 
     const auto max_tasks = thread_group_->GetMaxTasksForTesting();
 
@@ -621,9 +619,8 @@ class ThreadGroupImplHistogramTest : public ThreadGroupImplImplTest {
 
 TEST_F(ThreadGroupImplHistogramTest, NumTasksBeforeCleanup) {
   CreateThreadGroup();
-  auto histogrammed_thread_task_runner =
-      test::CreateSequencedTaskRunner({ThreadPool(), WithBaseSyncPrimitives()},
-                                      &mock_pooled_task_runner_delegate_);
+  auto histogrammed_thread_task_runner = test::CreatePooledSequencedTaskRunner(
+      {WithBaseSyncPrimitives()}, &mock_pooled_task_runner_delegate_);
 
   // Post 3 tasks and hold the thread for idle thread stack ordering.
   // This test assumes |histogrammed_thread_task_runner| gets assigned the same
@@ -688,9 +685,8 @@ TEST_F(ThreadGroupImplHistogramTest, NumTasksBeforeCleanup) {
   // |histogrammed_thread_task_runner| to cleanup.
   WaitableEvent top_idle_thread_running;
   WaitableEvent top_idle_thread_continue;
-  auto task_runner_for_top_idle =
-      test::CreateSequencedTaskRunner({ThreadPool(), WithBaseSyncPrimitives()},
-                                      &mock_pooled_task_runner_delegate_);
+  auto task_runner_for_top_idle = test::CreatePooledSequencedTaskRunner(
+      {WithBaseSyncPrimitives()}, &mock_pooled_task_runner_delegate_);
   task_runner_for_top_idle->PostTask(
       FROM_HERE,
       BindOnce(
@@ -754,9 +750,8 @@ TEST_F(ThreadGroupImplStandbyPolicyTest, InitOne) {
 // Verify that the ThreadGroupImpl keeps at least one idle standby
 // thread, capacity permitting.
 TEST_F(ThreadGroupImplStandbyPolicyTest, VerifyStandbyThread) {
-  auto task_runner =
-      test::CreateTaskRunner({ThreadPool(), WithBaseSyncPrimitives()},
-                             &mock_pooled_task_runner_delegate_);
+  auto task_runner = test::CreatePooledTaskRunner(
+      {WithBaseSyncPrimitives()}, &mock_pooled_task_runner_delegate_);
 
   WaitableEvent thread_running(WaitableEvent::ResetPolicy::AUTOMATIC);
   WaitableEvent threads_continue;
@@ -790,8 +785,8 @@ TEST_F(ThreadGroupImplStandbyPolicyTest, VerifyStandbyThread) {
 // reclaimed even if not on top of the idle stack when reclaim timeout expires).
 // Regression test for https://crbug.com/847501.
 TEST_F(ThreadGroupImplStandbyPolicyTest, InAndOutStandbyThreadIsActive) {
-  auto sequenced_task_runner = test::CreateSequencedTaskRunner(
-      {ThreadPool()}, &mock_pooled_task_runner_delegate_);
+  auto sequenced_task_runner = test::CreatePooledSequencedTaskRunner(
+      {}, &mock_pooled_task_runner_delegate_);
 
   WaitableEvent timer_started;
 
@@ -826,8 +821,8 @@ TEST_F(ThreadGroupImplStandbyPolicyTest, InAndOutStandbyThreadIsActive) {
 // Verify that being "the" idle thread counts as being active but isn't sticky.
 // Regression test for https://crbug.com/847501.
 TEST_F(ThreadGroupImplStandbyPolicyTest, OnlyKeepActiveStandbyThreads) {
-  auto sequenced_task_runner = test::CreateSequencedTaskRunner(
-      {ThreadPool()}, &mock_pooled_task_runner_delegate_);
+  auto sequenced_task_runner = test::CreatePooledSequencedTaskRunner(
+      {}, &mock_pooled_task_runner_delegate_);
 
   // Start this test like
   // ThreadGroupImplStandbyPolicyTest.InAndOutStandbyThreadIsActive and
@@ -844,9 +839,8 @@ TEST_F(ThreadGroupImplStandbyPolicyTest, OnlyKeepActiveStandbyThreads) {
 
   // Then also flood the thread group (cycling the top of the idle stack).
   {
-    auto task_runner =
-        test::CreateTaskRunner({ThreadPool(), WithBaseSyncPrimitives()},
-                               &mock_pooled_task_runner_delegate_);
+    auto task_runner = test::CreatePooledTaskRunner(
+        {WithBaseSyncPrimitives()}, &mock_pooled_task_runner_delegate_);
 
     WaitableEvent thread_running(WaitableEvent::ResetPolicy::AUTOMATIC);
     WaitableEvent threads_continue;
@@ -1016,9 +1010,9 @@ class ThreadGroupImplBlockingTest
   // Unblocks tasks posted by SaturateWithBusyTasks().
   void UnblockBusyTasks() { busy_threads_continue_.Signal(); }
 
-  const scoped_refptr<TaskRunner> task_runner_ = test::CreateTaskRunner(
-      {ThreadPool(), MayBlock(), WithBaseSyncPrimitives()},
-      &mock_pooled_task_runner_delegate_);
+  const scoped_refptr<TaskRunner> task_runner_ =
+      test::CreatePooledTaskRunner({MayBlock(), WithBaseSyncPrimitives()},
+                                   &mock_pooled_task_runner_delegate_);
 
  private:
   WaitableEvent blocking_threads_continue_;
@@ -1069,9 +1063,9 @@ TEST_P(ThreadGroupImplBlockingTest, TooManyBestEffortTasks) {
         kMaxBestEffortTasks + 1,
         BindOnce(&WaitableEvent::Signal, Unretained(&threads_running)));
 
-    const auto best_effort_task_runner = test::CreateTaskRunner(
-        {ThreadPool(), TaskPriority::BEST_EFFORT, MayBlock()},
-        &mock_pooled_task_runner_delegate_);
+    const auto best_effort_task_runner =
+        test::CreatePooledTaskRunner({TaskPriority::BEST_EFFORT, MayBlock()},
+                                     &mock_pooled_task_runner_delegate_);
     for (size_t i = 0; i < kMaxBestEffortTasks + 1; ++i) {
       best_effort_task_runner->PostTask(
           FROM_HERE, BindLambdaForTesting([&]() {
@@ -1253,8 +1247,8 @@ TEST_P(ThreadGroupImplBlockingTest, ThreadBlockedUnblockedShouldYield) {
 
   // Post a USER_VISIBLE task that can't run since workers are saturated. This
   // should cause BEST_EFFORT tasks to yield.
-  test::CreateTaskRunner({ThreadPool(), TaskPriority::USER_VISIBLE},
-                         &mock_pooled_task_runner_delegate_)
+  test::CreatePooledTaskRunner({TaskPriority::USER_VISIBLE},
+                               &mock_pooled_task_runner_delegate_)
       ->PostTask(
           FROM_HERE, BindLambdaForTesting([&]() {
             EXPECT_FALSE(thread_group_->ShouldYield(TaskPriority::BEST_EFFORT));
@@ -1263,8 +1257,8 @@ TEST_P(ThreadGroupImplBlockingTest, ThreadBlockedUnblockedShouldYield) {
 
   // Post a USER_BLOCKING task that can't run since workers are saturated. This
   // should cause USER_VISIBLE tasks to yield.
-  test::CreateTaskRunner({ThreadPool(), TaskPriority::USER_BLOCKING},
-                         &mock_pooled_task_runner_delegate_)
+  test::CreatePooledTaskRunner({TaskPriority::USER_BLOCKING},
+                               &mock_pooled_task_runner_delegate_)
       ->PostTask(FROM_HERE, BindLambdaForTesting([&]() {
                    EXPECT_FALSE(
                        thread_group_->ShouldYield(TaskPriority::USER_VISIBLE));
@@ -1328,9 +1322,9 @@ TEST_F(ThreadGroupImplBlockingTest, MayBlockIncreaseCapacityNestedWillBlock) {
   CreateAndStartThreadGroup();
 
   ASSERT_EQ(thread_group_->GetMaxTasksForTesting(), kMaxTasks);
-  auto task_runner = test::CreateTaskRunner(
-      {ThreadPool(), MayBlock(), WithBaseSyncPrimitives()},
-      &mock_pooled_task_runner_delegate_);
+  auto task_runner =
+      test::CreatePooledTaskRunner({MayBlock(), WithBaseSyncPrimitives()},
+                                   &mock_pooled_task_runner_delegate_);
   WaitableEvent can_return;
 
   // Saturate the thread group so that a MAY_BLOCK ScopedBlockingCall would
@@ -1383,9 +1377,9 @@ class ThreadGroupImplOverCapacityTest : public ThreadGroupImplImplTestBase,
 
   void SetUp() override {
     CreateAndStartThreadGroup(kReclaimTimeForCleanupTests, kLocalMaxTasks);
-    task_runner_ = test::CreateTaskRunner(
-        {ThreadPool(), MayBlock(), WithBaseSyncPrimitives()},
-        &mock_pooled_task_runner_delegate_);
+    task_runner_ =
+        test::CreatePooledTaskRunner({MayBlock(), WithBaseSyncPrimitives()},
+                                     &mock_pooled_task_runner_delegate_);
   }
 
   void TearDown() override { ThreadGroupImplImplTestBase::CommonTearDown(); }
@@ -1591,11 +1585,12 @@ TEST_F(ThreadGroupImplImplStartInBodyTest, MaxBestEffortTasks) {
   StartThreadGroup(TimeDelta::Max(),      // |suggested_reclaim_time|
                    kMaxTasks,             // |max_tasks|
                    kMaxBestEffortTasks);  // |max_best_effort_tasks|
-  const scoped_refptr<TaskRunner> foreground_runner = test::CreateTaskRunner(
-      {ThreadPool(), MayBlock()}, &mock_pooled_task_runner_delegate_);
-  const scoped_refptr<TaskRunner> background_runner = test::CreateTaskRunner(
-      {ThreadPool(), TaskPriority::BEST_EFFORT, MayBlock()},
-      &mock_pooled_task_runner_delegate_);
+  const scoped_refptr<TaskRunner> foreground_runner =
+      test::CreatePooledTaskRunner({MayBlock()},
+                                   &mock_pooled_task_runner_delegate_);
+  const scoped_refptr<TaskRunner> background_runner =
+      test::CreatePooledTaskRunner({TaskPriority::BEST_EFFORT, MayBlock()},
+                                   &mock_pooled_task_runner_delegate_);
 
   // It should be possible to have |kMaxBestEffortTasks|
   // TaskPriority::BEST_EFFORT tasks running concurrently.
@@ -1649,9 +1644,9 @@ TEST_F(ThreadGroupImplImplStartInBodyTest,
                    kMaxTasks,             // |max_tasks|
                    kMaxBestEffortTasks);  // |max_best_effort_tasks|
 
-  const scoped_refptr<TaskRunner> runner = test::CreateTaskRunner(
-      {ThreadPool(), TaskPriority::BEST_EFFORT, MayBlock()},
-      &mock_pooled_task_runner_delegate_);
+  const scoped_refptr<TaskRunner> runner =
+      test::CreatePooledTaskRunner({TaskPriority::BEST_EFFORT, MayBlock()},
+                                   &mock_pooled_task_runner_delegate_);
 
   for (size_t i = 0; i < kLargeNumber; ++i) {
     runner->PostTask(FROM_HERE, BindLambdaForTesting([&]() {
@@ -1714,8 +1709,8 @@ TEST_F(ThreadGroupImplImplStartInBodyTest,
                    kNumWorkers,        // |max_tasks|
                    nullopt,            // |max_best_effort_tasks|
                    &worker_observer);  // |worker_observer|
-  const scoped_refptr<TaskRunner> runner = test::CreateTaskRunner(
-      {ThreadPool(), MayBlock()}, &mock_pooled_task_runner_delegate_);
+  const scoped_refptr<TaskRunner> runner = test::CreatePooledTaskRunner(
+      {MayBlock()}, &mock_pooled_task_runner_delegate_);
 
   WaitableEvent hold_will_block_task;
   runner->PostTask(FROM_HERE, BindLambdaForTesting([&]() {
@@ -1773,9 +1768,9 @@ class ThreadGroupImplBlockingCallAndMaxBestEffortTasksTest
 
 TEST_P(ThreadGroupImplBlockingCallAndMaxBestEffortTasksTest,
        BlockingCallAndMaxBestEffortTasksTest) {
-  const scoped_refptr<TaskRunner> background_runner = test::CreateTaskRunner(
-      {ThreadPool(), TaskPriority::BEST_EFFORT, MayBlock()},
-      &mock_pooled_task_runner_delegate_);
+  const scoped_refptr<TaskRunner> background_runner =
+      test::CreatePooledTaskRunner({TaskPriority::BEST_EFFORT, MayBlock()},
+                                   &mock_pooled_task_runner_delegate_);
 
   // Post |kMaxBestEffortTasks| TaskPriority::BEST_EFFORT tasks that block in a
   // ScopedBlockingCall.
@@ -1841,9 +1836,8 @@ TEST_F(ThreadGroupImplImplStartInBodyTest, RacyCleanup) {
                        service_thread_.task_runner(), nullptr,
                        ThreadGroup::WorkerEnvironment::NONE);
 
-  scoped_refptr<TaskRunner> task_runner =
-      test::CreateTaskRunner({ThreadPool(), WithBaseSyncPrimitives()},
-                             &mock_pooled_task_runner_delegate_);
+  scoped_refptr<TaskRunner> task_runner = test::CreatePooledTaskRunner(
+      {WithBaseSyncPrimitives()}, &mock_pooled_task_runner_delegate_);
 
   WaitableEvent threads_running;
   WaitableEvent unblock_threads;

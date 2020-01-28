@@ -5,6 +5,7 @@
 import("//build/config/android/rules.gni")
 
 android_java_prebuilt("runner_java") {
+  skip_jetify = true
   testonly = true
   jar_path = "lib/runner-release-no-dep.jar"
   deps = [
@@ -16,13 +17,13 @@ android_java_prebuilt("runner_java") {
 }
 
 android_java_prebuilt("exposed_instrumentation_api_publish_java") {
+  skip_jetify = true
   jar_path = "lib/exposed-instrumentation-api-publish-no-dep.jar"
 }
 
 android_aar_prebuilt("rules_java") {
+  skip_jetify = true
   testonly = true
   aar_path = "lib/rules.aar"
-  deps = [
-    "//third_party/android_support_test_runner:runner_java",
-  ]
+  deps = [ "//third_party/android_support_test_runner:runner_java" ]
 }

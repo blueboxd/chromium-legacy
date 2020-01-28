@@ -2043,6 +2043,11 @@ const char kSyncDeviceInfoInTransportModeDescription[] =
     "When enabled, allows syncing DeviceInfo datatype for users who are "
     "signed-in but not necessary sync-ing.";
 
+const char kSyncErrorInfoBarName[] = "Enable SyncErrorInfoBar.";
+const char kSyncErrorInfoBarDescription[] =
+    "When enabled, shows an infobar for sync errors that can be resolved "
+    "by user interaction in the settings page.";
+
 const char kSyncSandboxName[] = "Use Chrome Sync sandbox";
 const char kSyncSandboxDescription[] =
     "Connects to the testing server for Chrome Sync.";
@@ -3334,9 +3339,6 @@ const char kCrosRegionsModeHide[] = "Hide VPD values.";
 const char kCrostiniAppSearchName[] = "Crostini App Search";
 const char kCrostiniAppSearchDescription[] =
     "Enable search and installation of Crostini apps in the launcher.";
-
-const char kCrostiniBackupName[] = "Crostini Backup";
-const char kCrostiniBackupDescription[] = "Enable Crostini export and import.";
 
 const char kCrostiniPortForwardingName[] = "Crostini Port Forwarding";
 const char kCrostiniPortForwardingDescription[] =

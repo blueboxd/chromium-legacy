@@ -46,13 +46,13 @@ void HTMLUListElement::CollectStyleForPresentationAttribute(
     if (DeprecatedEqualIgnoringCase(value, "disc")) {
       AddPropertyToPresentationAttributeStyle(
           style, CSSPropertyID::kListStyleType, CSSValueID::kDisc);
-    } else if (DeprecatedEqualIgnoringCase(value, "circle")) {
+    } else if (EqualIgnoringASCIICase(value, "circle")) {
       AddPropertyToPresentationAttributeStyle(
           style, CSSPropertyID::kListStyleType, CSSValueID::kCircle);
     } else if (DeprecatedEqualIgnoringCase(value, "square")) {
       AddPropertyToPresentationAttributeStyle(
           style, CSSPropertyID::kListStyleType, CSSValueID::kSquare);
-    } else if (DeprecatedEqualIgnoringCase(value, "none")) {
+    } else if (EqualIgnoringASCIICase(value, "none")) {
       AddPropertyToPresentationAttributeStyle(
           style, CSSPropertyID::kListStyleType, CSSValueID::kNone);
     }

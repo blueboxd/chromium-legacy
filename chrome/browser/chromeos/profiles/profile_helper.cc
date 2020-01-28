@@ -4,10 +4,15 @@
 
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 
+#include <set>
+#include <string>
+#include <vector>
+
 #include "base/barrier_closure.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/command_line.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/browser_process.h"
@@ -19,6 +24,8 @@
 #include "chrome/browser/chromeos/login/signin/oauth2_login_manager_factory.h"
 #include "chrome/browser/chromeos/login/signin_partition_manager.h"
 #include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
+#include "chrome/browser/extensions/component_loader.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profiles_state.h"
@@ -27,16 +34,36 @@
 #include "chrome/common/chrome_switches.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "components/account_id/account_id.h"
+#include "components/crx_file/id_util.h"
 #include "components/prefs/pref_service.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/browsing_data_remover.h"
+#include "extensions/browser/extension_system.h"
 #include "extensions/browser/pref_names.h"
 
 namespace chromeos {
 
 namespace {
+
+// This array contains a subset of explicitly whitelist extensions that, which
+// are defined in extensions/common/api/_behavior_features.json. The extension
+// is treated as risky if it has some UI elements which remain accessible
+// after the signin was completed.
+const char* kNonRiskyExtensionsIdsHashes[] = {
+    "E24F1786D842E91E74C27929B0B3715A4689A473",  // Gnubby component extension
+    "6F9E349A0561C78A0D3F41496FE521C5151C7F71",  // Gnubby app
+    "8EBDF73405D0B84CEABB8C7513C9B9FA9F1DC2CE",  // Genius app (help)
+    "06BE211D5F014BAB34BC22D9DDA09C63A81D828E",  // Chrome OS XKB
+    "3F50C3A83839D9C76334BCE81CDEC06174F266AF",  // Virtual Keyboard
+    "2F47B526FA71F44816618C41EC55E5EE9543FDCC",  // Braille Keyboard
+    "86672C8D7A04E24EFB244BF96FE518C4C4809F73",  // Speech synthesis
+    "1CF709D51B2B96CF79D00447300BD3BFBE401D21",  // Mobile activation
+    "40FF1103292F40C34066E023B8BE8CAE18306EAE",  // Chromeos help
+    "3C654B3B6682CA194E75AD044CEDE927675DDEE8",  // Easy unlock
+    "2FCBCE08B34CCA1728A85F1EFBD9A34DD2558B2E",  // ChromeVox
+};
 
 // As defined in /chromeos/dbus/cryptohome/cryptohome_client.cc.
 static const char kUserIdHashSuffix[] = "-hash";
@@ -448,6 +475,24 @@ void ProfileHelperImpl::ClearSigninProfile(
           &WrapAsBrowsersCloseCallback,
           on_clear_profile_stage_finished_) /* on_close_aborted */,
       true /* skip_beforeunload */);
+
+  // Unload all extensions that could possibly leak the SigninProfile for
+  // unauthorized usage.
+  // TODO(https://crbug.com/1045929): This also can be fixed by restricting URLs
+  //                                  or browser windows from opening.
+  const std::set<std::string> allowed_ids_hashes(
+      std::begin(kNonRiskyExtensionsIdsHashes),
+      std::end(kNonRiskyExtensionsIdsHashes));
+  auto* component_loader = extensions::ExtensionSystem::Get(GetSigninProfile())
+                               ->extension_service()
+                               ->component_loader();
+  const std::vector<std::string> loaded_extensions =
+      component_loader->GetRegisteredComponentExtensionsIds();
+  for (const auto& el : loaded_extensions) {
+    const std::string hex_hash = crx_file::id_util::HashedIdInHex(el);
+    if (!allowed_ids_hashes.count(hex_hash))
+      component_loader->Remove(el);
+  }
 }
 
 Profile* ProfileHelperImpl::GetProfileByAccountId(const AccountId& account_id) {

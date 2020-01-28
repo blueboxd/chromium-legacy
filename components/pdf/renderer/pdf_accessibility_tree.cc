@@ -224,7 +224,7 @@ ui::AXNode* GetStaticTextNodeFromNode(ui::AXNode* node) {
   // Get the static text from the link node.
   if (node &&
       (node->data().role == ax::mojom::Role::kLink ||
-       node->data().role == ax::mojom::Role::kMark) &&
+       node->data().role == ax::mojom::Role::kPdfActionableHighlight) &&
       node->children().size() == 1) {
     static_node = node->children()[0];
   }
@@ -907,7 +907,8 @@ ui::AXNodeData* PdfAccessibilityTree::CreateImageNode(
 
 ui::AXNodeData* PdfAccessibilityTree::CreateHighlightNode(
     const ppapi::PdfAccessibilityHighlightInfo& highlight) {
-  ui::AXNodeData* highlight_node = CreateNode(ax::mojom::Role::kMark);
+  ui::AXNodeData* highlight_node =
+      CreateNode(ax::mojom::Role::kPdfActionableHighlight);
 
   highlight_node->AddStringAttribute(
       ax::mojom::StringAttribute::kRoleDescription,

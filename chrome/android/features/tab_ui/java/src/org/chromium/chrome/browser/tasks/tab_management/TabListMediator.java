@@ -1020,7 +1020,7 @@ class TabListMediator {
     }
 
     /**
-     * Update the grid layout span count base on orientation.
+     * Update the grid layout span count and span size lookup base on orientation.
      * @param manager     The {@link GridLayoutManager} used to update the span count.
      * @param orientation The orientation base on which we update the span count.
      */
@@ -1030,9 +1030,19 @@ class TabListMediator {
             manager.setSpanCount(TabListCoordinator.GRID_LAYOUT_SPAN_COUNT_PORTRAIT);
             return;
         }
-        manager.setSpanCount(orientation == Configuration.ORIENTATION_PORTRAIT
-                        ? TabListCoordinator.GRID_LAYOUT_SPAN_COUNT_PORTRAIT
-                        : TabListCoordinator.GRID_LAYOUT_SPAN_COUNT_LANDSCAPE);
+        int spanCount = orientation == Configuration.ORIENTATION_PORTRAIT
+                ? TabListCoordinator.GRID_LAYOUT_SPAN_COUNT_PORTRAIT
+                : TabListCoordinator.GRID_LAYOUT_SPAN_COUNT_LANDSCAPE;
+        manager.setSpanCount(spanCount);
+        manager.setSpanSizeLookup(new GridLayoutManager.SpanSizeLookup() {
+            @Override
+            public int getSpanSize(int position) {
+                int itemType = mModel.get(position).type;
+
+                if (itemType == TabProperties.UiType.MESSAGE) return spanCount;
+                return 1;
+            }
+        });
     }
 
     /**

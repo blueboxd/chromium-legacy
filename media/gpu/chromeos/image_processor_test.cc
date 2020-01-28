@@ -170,14 +170,6 @@ TEST_P(ImageProcessorParamTest, ConvertOneTime_MemToMem) {
   test::Image output_image(std::get<1>(GetParam()));
   ASSERT_TRUE(input_image.Load());
   ASSERT_TRUE(output_image.LoadMetadata());
-  if (input_image.PixelFormat() == output_image.PixelFormat()) {
-    // If the input format is the same as the output format, then the conversion
-    // is scaling. LibyuvImageProcessorBackend doesn't support scaling yet. So
-    // skip this test case.
-    // TODO(hiroh): Remove this skip once LibyuvIP supports scaling.
-    GTEST_SKIP();
-  }
-
   auto ip_client = CreateImageProcessorClient(
       input_image, {VideoFrame::STORAGE_OWNED_MEMORY}, &output_image,
       {VideoFrame::STORAGE_OWNED_MEMORY});
@@ -201,14 +193,6 @@ TEST_P(ImageProcessorParamTest, ConvertOneTime_DmabufToMem) {
   test::Image output_image(std::get<1>(GetParam()));
   ASSERT_TRUE(input_image.Load());
   ASSERT_TRUE(output_image.LoadMetadata());
-  if (input_image.PixelFormat() == output_image.PixelFormat()) {
-    // If the input format is the same as the output format, then the conversion
-    // is scaling. LibyuvImageProcessorBackend doesn't support scaling yet. So
-    // skip this test case.
-    // TODO(hiroh): Remove this skip once LibyuvIP supports scaling.
-    GTEST_SKIP();
-  }
-
   auto ip_client = CreateImageProcessorClient(
       input_image, {VideoFrame::STORAGE_DMABUFS}, &output_image,
       {VideoFrame::STORAGE_OWNED_MEMORY});

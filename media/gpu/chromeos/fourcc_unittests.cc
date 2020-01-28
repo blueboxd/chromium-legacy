@@ -179,4 +179,24 @@ TEST(FourccTest, VideoPixelFormatToVAFourCC) {
 }
 #endif  // BUILDFLAG(USE_VAAPI)
 
+TEST(FourccTest, FourccToSinglePlanar) {
+  EXPECT_EQ(Fourcc(Fourcc::AR24).ToSinglePlanar(), Fourcc(Fourcc::AR24));
+  EXPECT_EQ(Fourcc(Fourcc::AB24).ToSinglePlanar(), Fourcc(Fourcc::AB24));
+  EXPECT_EQ(Fourcc(Fourcc::XR24).ToSinglePlanar(), Fourcc(Fourcc::XR24));
+  EXPECT_EQ(Fourcc(Fourcc::XB24).ToSinglePlanar(), Fourcc(Fourcc::XB24));
+  EXPECT_EQ(Fourcc(Fourcc::RGB4).ToSinglePlanar(), Fourcc(Fourcc::RGB4));
+  EXPECT_EQ(Fourcc(Fourcc::YU12).ToSinglePlanar(), Fourcc(Fourcc::YU12));
+  EXPECT_EQ(Fourcc(Fourcc::YV12).ToSinglePlanar(), Fourcc(Fourcc::YV12));
+  EXPECT_EQ(Fourcc(Fourcc::YUYV).ToSinglePlanar(), Fourcc(Fourcc::YUYV));
+  EXPECT_EQ(Fourcc(Fourcc::NV12).ToSinglePlanar(), Fourcc(Fourcc::NV12));
+  EXPECT_EQ(Fourcc(Fourcc::NV21).ToSinglePlanar(), Fourcc(Fourcc::NV21));
+  EXPECT_EQ(Fourcc(Fourcc::YM12).ToSinglePlanar(),
+            Fourcc(Fourcc::YU12).ToSinglePlanar());
+  EXPECT_EQ(Fourcc(Fourcc::YM21).ToSinglePlanar(),
+            Fourcc(Fourcc::YV12).ToSinglePlanar());
+  EXPECT_EQ(Fourcc(Fourcc::NM12).ToSinglePlanar(),
+            Fourcc(Fourcc::NV12).ToSinglePlanar());
+  EXPECT_EQ(Fourcc(Fourcc::NM21).ToSinglePlanar(),
+            Fourcc(Fourcc::NV21).ToSinglePlanar());
+}
 }  // namespace media

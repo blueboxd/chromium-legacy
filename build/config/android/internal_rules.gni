@@ -1469,6 +1469,7 @@ if (enable_java_templates) {
   #    from the final .jar file.
   #  jar_included_patterns: OPtional list of .class file patterns to include
   #    in the final .jar file. jar_excluded_patterns take precedence over this.
+  #  skip_jetify: A boolean on whether to skip jetifying or not.
   #  strip_resource_classes:
   #  deps:
   #  java_files:
@@ -1501,6 +1502,10 @@ if (enable_java_templates) {
 
     _desugar = defined(invoker.supports_android) && invoker.supports_android
     _jacoco_instrument = invoker.jacoco_instrument
+    _skip_jetify = defined(invoker.skip_jetify) && invoker.skip_jetify
+
+    # TODO(bjoyce): Remove once Androidx with jetifying lands.
+    not_needed([ "_skip_jetify" ])
 
     _enable_bytecode_rewriter =
         _enable_assert || _enable_custom_resources || _enable_thread_annotations
@@ -3367,6 +3372,7 @@ if (enable_java_templates) {
                                    "enable_bytecode_rewriter",
                                    "jar_excluded_patterns",
                                    "jar_included_patterns",
+                                   "skip_jetify",
                                  ])
           is_prebuilt = _is_prebuilt
           supports_android = _supports_android

@@ -18,9 +18,10 @@ namespace content {
 namespace {
 const char kCommentToken = '#';
 const char kMarkSkipFile[] = "#<skip";
-const char kMarkEndOfFile[] = "<-- End-of-file -->";
 const char kSignalDiff[] = "*";
 }  // namespace
+
+const char kMarkEndOfFile[] = "<-- End-of-file -->";
 
 DumpAccessibilityTestHelper::DumpAccessibilityTestHelper(
     AccessibilityTestExpectationsLocator* test_locator)
@@ -122,7 +123,6 @@ bool DumpAccessibilityTestHelper::ValidateAgainstExpectation(
     diff += "------\n";
     diff += base::JoinString(actual_lines, "\n");
     diff += "\n";
-    diff += kMarkEndOfFile;
     LOG(ERROR) << "Diff:\n" << diff;
   } else {
     LOG(INFO) << "Test output matches expectations.";

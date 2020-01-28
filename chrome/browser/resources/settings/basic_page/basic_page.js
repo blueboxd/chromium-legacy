@@ -88,16 +88,6 @@ Polymer({
     },
 
     // <if expr="chromeos">
-    /**
-     * Whether the user is a secondary user. Computed so that it is calculated
-     * correctly after loadTimeData is available.
-     * @private
-     */
-    showSecondaryUserBanner_: {
-      type: Boolean,
-      computed: 'computeShowSecondaryUserBanner_(hasExpandedSection_)',
-    },
-
     /** @private */
     showOSSettingsBanner_: {
       type: Boolean,
@@ -215,15 +205,6 @@ Polymer({
   },
 
   // <if expr="chromeos">
-  /**
-   * @return {boolean}
-   * @private
-   */
-  computeShowSecondaryUserBanner_() {
-    return !this.hasExpandedSection_ &&
-        loadTimeData.getBoolean('isSecondaryUser');
-  },
-
   /**
    * @return {boolean|undefined}
    * @private

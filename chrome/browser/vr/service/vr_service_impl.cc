@@ -10,6 +10,7 @@
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/stl_util.h"
 #include "base/trace_event/common/trace_event_common.h"
 #include "chrome/browser/permissions/permission_manager.h"
 #include "chrome/browser/profiles/profile.h"
@@ -46,9 +47,14 @@ vr::XrConsentPromptLevel GetRequiredConsentLevel(
     device::mojom::XRSessionMode mode,
     const vr::BrowserXRRuntime* runtime,
     const std::set<device::mojom::XRSessionFeature>& requested_features) {
-  if (requested_features.find(
-          device::mojom::XRSessionFeature::REF_SPACE_BOUNDED_FLOOR) !=
-      requested_features.end()) {
+  if (base::Contains(
+          requested_features,
+          device::mojom::XRSessionFeature::REF_SPACE_BOUNDED_FLOOR)) {
+    return vr::XrConsentPromptLevel::kVRFloorPlan;
+  }
+
+  if (base::Contains(requested_features,
+                     device::mojom::XRSessionFeature::HIT_TEST)) {
     return vr::XrConsentPromptLevel::kVRFloorPlan;
   }
 
@@ -63,9 +69,8 @@ vr::XrConsentPromptLevel GetRequiredConsentLevel(
   // height, we need to warn about physical features being exposed.
   // Note that while this is also the case for bounded-floor, that is covered
   // by the stricter kVRFloorPlan Prompt set above.
-  if (requested_features.find(
-          device::mojom::XRSessionFeature::REF_SPACE_LOCAL_FLOOR) !=
-          requested_features.end() &&
+  if (base::Contains(requested_features,
+                     device::mojom::XRSessionFeature::REF_SPACE_LOCAL_FLOOR) &&
       runtime->SupportsNonEmulatedHeight()) {
     return vr::XrConsentPromptLevel::kVRFeatures;
   }
@@ -164,6 +169,8 @@ void VRServiceImpl::SetClient(
 }
 
 void VRServiceImpl::ResolvePendingRequests() {
+  DVLOG(2) << __func__
+           << ": pending_requests_.size()=" << pending_requests_.size();
   for (auto& callback : pending_requests_) {
     std::move(callback).Run();
   }
@@ -360,6 +367,7 @@ void VRServiceImpl::RequestSession(
 
   // Queue the request to get to when initialization has completed.
   if (!initialization_complete_) {
+    DVLOG(2) << __func__ << ": initialization not yet complete, defer request";
     pending_requests_.push_back(
         base::BindOnce(&VRServiceImpl::RequestSession, base::Unretained(this),
                        std::move(options), std::move(callback)));
@@ -367,6 +375,8 @@ void VRServiceImpl::RequestSession(
   }
 
   if (runtime_manager_->IsOtherClientPresenting(this)) {
+    DVLOG(2) << __func__
+             << ": can't create sessions while an immersive session exists";
     // Can't create sessions while an immersive session exists.
     std::move(callback).Run(
         device::mojom::RequestSessionResult::NewFailureReason(
@@ -407,6 +417,7 @@ void VRServiceImpl::ShowConsentPrompt(
     device::mojom::VRService::RequestSessionCallback callback,
     BrowserXRRuntime* runtime,
     std::set<device::mojom::XRSessionFeature> requested_features) {
+  DVLOG(2) << __func__;
   DCHECK(options);
   DCHECK(runtime);
 
@@ -479,6 +490,8 @@ void VRServiceImpl::OnConsentResult(
     std::set<device::mojom::XRSessionFeature> enabled_features,
     XrConsentPromptLevel consent_level,
     bool is_consent_granted) {
+  DVLOG(2) << __func__;
+
   if (!is_consent_granted) {
     std::move(callback).Run(
         device::mojom::RequestSessionResult::NewFailureReason(

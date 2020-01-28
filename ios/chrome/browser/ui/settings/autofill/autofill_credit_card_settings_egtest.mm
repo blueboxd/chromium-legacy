@@ -162,6 +162,13 @@ id<GREYMatcher> BottomToolbar() {
 
 // Test that the page for editing Autofill credit card details is accessible.
 - (void)testAccessibilityOnCreditCardEditPage {
+// TODO(crbug.com/1046096): fix for iphone-device and reenable.
+#if !TARGET_IPHONE_SIMULATOR
+  if (![ChromeEarlGrey isIPadIdiom]) {
+    EARL_GREY_TEST_DISABLED(@"Test disabled on iPhone devices.");
+  }
+#endif
+
   NSString* lastDigits = [AutofillAppInterface saveLocalCreditCard];
   [self openEditCreditCard:[self creditCardLabel:lastDigits]];
 

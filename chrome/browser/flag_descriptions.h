@@ -1213,6 +1213,9 @@ extern const char kSuggestionsWithSubStringMatchDescription[];
 extern const char kSyncDeviceInfoInTransportModeName[];
 extern const char kSyncDeviceInfoInTransportModeDescription[];
 
+extern const char kSyncErrorInfoBarName[];
+extern const char kSyncErrorInfoBarDescription[];
+
 extern const char kSyncSandboxName[];
 extern const char kSyncSandboxDescription[];
 
@@ -1979,9 +1982,6 @@ extern const char kCrosRegionsModeHide[];
 
 extern const char kCrostiniAppSearchName[];
 extern const char kCrostiniAppSearchDescription[];
-
-extern const char kCrostiniBackupName[];
-extern const char kCrostiniBackupDescription[];
 
 extern const char kCrostiniPortForwardingName[];
 extern const char kCrostiniPortForwardingDescription[];

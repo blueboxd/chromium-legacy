@@ -82,6 +82,7 @@
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/text/platform_locale.h"
+#include "ui/base/ui_base_features.h"
 
 namespace blink {
 
@@ -331,6 +332,15 @@ void HTMLSelectElement::ParseAttribute(
 
 bool HTMLSelectElement::MayTriggerVirtualKeyboard() const {
   return true;
+}
+
+bool HTMLSelectElement::ShouldHaveFocusAppearance() const {
+  // For FormControlsRefresh don't draw focus ring for a select that has its
+  // popup open.
+  if (::features::IsFormControlsRefreshEnabled() && PopupIsVisible())
+    return false;
+
+  return HTMLFormControlElementWithState::ShouldHaveFocusAppearance();
 }
 
 bool HTMLSelectElement::CanSelectAll() const {
@@ -952,7 +962,8 @@ void HTMLSelectElement::ScrollToOptionTask() {
       bounds,
       CreateScrollIntoViewParams(
           ScrollAlignment::kAlignToEdgeIfNeeded,
-          ScrollAlignment::kAlignToEdgeIfNeeded, kProgrammaticScroll, false,
+          ScrollAlignment::kAlignToEdgeIfNeeded,
+          mojom::blink::ScrollIntoViewParams::Type::kProgrammatic, false,
           mojom::blink::ScrollIntoViewParams::Behavior::kInstant));
 }
 
@@ -1337,6 +1348,14 @@ bool HTMLSelectElement::ShouldOpenPopupForKeyPressEvent(
   return ((layout_theme.PopsMenuBySpaceKey() && key_code == ' ' &&
            !type_ahead_.HasActiveSession(event)) ||
           (layout_theme.PopsMenuByReturnKey() && key_code == '\r'));
+}
+
+void HTMLSelectElement::SetPopupIsVisible(bool popup_is_visible) {
+  popup_is_visible_ = popup_is_visible;
+  if (::features::IsFormControlsRefreshEnabled() && GetLayoutObject()) {
+    // Invalidate paint to ensure that the focus ring is updated.
+    GetLayoutObject()->SetShouldDoFullPaintInvalidation();
+  }
 }
 
 void HTMLSelectElement::MenuListDefaultEventHandler(Event& event) {
@@ -2015,7 +2034,7 @@ LayoutUnit HTMLSelectElement::ClientPaddingRight() const {
 }
 
 void HTMLSelectElement::PopupDidHide() {
-  popup_is_visible_ = false;
+  SetPopupIsVisible(false);
   UnobserveTreeMutation();
   if (AXObjectCache* cache = GetDocument().ExistingAXObjectCache()) {
     if (GetLayoutObject() && GetLayoutObject()->IsMenuList())
@@ -2089,7 +2108,7 @@ void HTMLSelectElement::ShowPopup() {
   if (!popup_)
     return;
 
-  popup_is_visible_ = true;
+  SetPopupIsVisible(true);
   ObserveTreeMutation();
 
   popup_->Show();
@@ -2132,7 +2151,7 @@ void HTMLSelectElement::DetachLayoutTree(bool performing_reattach) {
   HTMLFormControlElementWithState::DetachLayoutTree(performing_reattach);
   if (popup_)
     popup_->DisconnectClient();
-  popup_is_visible_ = false;
+  SetPopupIsVisible(false);
   popup_ = nullptr;
   option_style_ = nullptr;
   UnobserveTreeMutation();

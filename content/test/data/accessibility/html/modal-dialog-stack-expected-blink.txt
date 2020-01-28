@@ -14,4 +14,3 @@ rootWebArea
 ++++button name='This is in the active dialog and should be in the tree.'
 ++++++staticText name='This is in the active dialog and should be in the tree.'
 ++++++++inlineTextBox name='This is in the active dialog and should be in the tree.'
-++genericContainer

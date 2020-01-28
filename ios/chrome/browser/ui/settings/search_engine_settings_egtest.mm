@@ -85,6 +85,13 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
 
 // Deletes a custom search engine by swiping and tapping on the "Delete" button.
 - (void)testDeleteCustomSearchEngineSwipeAndTap {
+  // TODO(crbug.com/1046290): fix for iPad 13.3 and reenable.
+  if (@available(iOS 13.3, *)) {
+    if ([ChromeEarlGrey isIPadIdiom]) {
+      EARL_GREY_TEST_DISABLED(@"Test disabled on iPad with iOS > 13.3.");
+    }
+  }
+
   if (@available(iOS 13, *)) {
   } else {
     EARL_GREY_TEST_SKIPPED(

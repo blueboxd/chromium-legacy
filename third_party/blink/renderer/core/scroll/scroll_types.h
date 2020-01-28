@@ -59,23 +59,15 @@ enum ScrollDirectionPhysical {
   kScrollRight
 };
 
-enum ScrollType {
-  kUserScroll,
-  kProgrammaticScroll,
-  kClampingScroll,
-  kCompositorScroll,
-  kAnchoringScroll,
-  // These are programmatic sequenced scrolls from SmoothScrollSequencer.
-  // SetScrollOffset called with kSequencedScroll should not abort the smooth
-  // scroll sequence.
-  kSequencedScroll
-};
-
 // An explicit scroll is one that was requested by the user or the webpage.
 // An implicit scroll is a side effect of a layout change.
-inline bool IsExplicitScrollType(ScrollType scroll_type) {
-  return scroll_type == kUserScroll || scroll_type == kProgrammaticScroll ||
-         scroll_type == kCompositorScroll || scroll_type == kSequencedScroll;
+inline bool IsExplicitScrollType(
+    mojom::blink::ScrollIntoViewParams::Type scroll_type) {
+  return scroll_type == mojom::blink::ScrollIntoViewParams::Type::kUser ||
+         scroll_type ==
+             mojom::blink::ScrollIntoViewParams::Type::kProgrammatic ||
+         scroll_type == mojom::blink::ScrollIntoViewParams::Type::kCompositor ||
+         scroll_type == mojom::blink::ScrollIntoViewParams::Type::kSequenced;
 }
 
 // Convert logical scroll direction to physical. Physical scroll directions are

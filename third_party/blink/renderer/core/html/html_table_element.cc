@@ -284,9 +284,9 @@ static bool GetBordersFromFrameAttributeValue(const AtomicString& value,
   border_bottom = false;
   border_left = false;
 
-  if (DeprecatedEqualIgnoringCase(value, "above"))
+  if (EqualIgnoringASCIICase(value, "above"))
     border_top = true;
-  else if (DeprecatedEqualIgnoringCase(value, "below"))
+  else if (EqualIgnoringASCIICase(value, "below"))
     border_bottom = true;
   else if (DeprecatedEqualIgnoringCase(value, "hsides"))
     border_top = border_bottom = true;
@@ -296,10 +296,10 @@ static bool GetBordersFromFrameAttributeValue(const AtomicString& value,
     border_left = true;
   else if (DeprecatedEqualIgnoringCase(value, "rhs"))
     border_right = true;
-  else if (DeprecatedEqualIgnoringCase(value, "box") ||
-           DeprecatedEqualIgnoringCase(value, "border"))
+  else if (EqualIgnoringASCIICase(value, "box") ||
+           EqualIgnoringASCIICase(value, "border"))
     border_top = border_bottom = border_left = border_right = true;
-  else if (!DeprecatedEqualIgnoringCase(value, "void"))
+  else if (!EqualIgnoringASCIICase(value, "void"))
     return false;
   return true;
 }
@@ -347,7 +347,7 @@ void HTMLTableElement::CollectStyleForPresentationAttribute(
     }
   } else if (name == html_names::kAlignAttr) {
     if (!value.IsEmpty()) {
-      if (DeprecatedEqualIgnoringCase(value, "center")) {
+      if (EqualIgnoringASCIICase(value, "center")) {
         AddPropertyToPresentationAttributeStyle(
             style, CSSPropertyID::kMarginInlineStart, CSSValueID::kAuto);
         AddPropertyToPresentationAttributeStyle(
@@ -425,7 +425,7 @@ void HTMLTableElement::ParseAttribute(
         params.new_value, border_top, border_right, border_bottom, border_left);
   } else if (name == html_names::kRulesAttr) {
     rules_attr_ = kUnsetRules;
-    if (DeprecatedEqualIgnoringCase(params.new_value, "none"))
+    if (EqualIgnoringASCIICase(params.new_value, "none"))
       rules_attr_ = kNoneRules;
     else if (DeprecatedEqualIgnoringCase(params.new_value, "groups"))
       rules_attr_ = kGroupsRules;
@@ -433,7 +433,7 @@ void HTMLTableElement::ParseAttribute(
       rules_attr_ = kRowsRules;
     else if (DeprecatedEqualIgnoringCase(params.new_value, "cols"))
       rules_attr_ = kColsRules;
-    else if (DeprecatedEqualIgnoringCase(params.new_value, "all"))
+    else if (EqualIgnoringASCIICase(params.new_value, "all"))
       rules_attr_ = kAllRules;
   } else if (params.name == html_names::kCellpaddingAttr) {
     if (!params.new_value.IsEmpty()) {

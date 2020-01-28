@@ -86,6 +86,9 @@ bool MdmEnrollmentEnabled();
 // machine.
 bool PasswordRecoveryEnabled();
 
+// Returns true if the |kKeyEnableGemFeatures| is set to 1.
+bool IsGemEnabled();
+
 // Gets the escrow service URL as defined in the registry or a default value if
 // nothing is set.
 GURL EscrowServiceUrl();

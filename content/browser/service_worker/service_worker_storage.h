@@ -89,9 +89,6 @@ class CONTENT_EXPORT ServiceWorkerStorage {
       blink::ServiceWorkerStatusCode status,
       int64_t deleted_version_id,
       const std::vector<int64_t>& newly_purgeable_resources)>;
-  using GetUserKeysAndDataCallback = base::OnceCallback<void(
-      const base::flat_map<std::string, std::string>& data_map,
-      blink::ServiceWorkerStatusCode status)>;
   using GetUserDataForAllRegistrationsCallback = base::OnceCallback<void(
       const std::vector<std::pair<int64_t, std::string>>& user_data,
       blink::ServiceWorkerStatusCode status)>;
@@ -99,6 +96,9 @@ class CONTENT_EXPORT ServiceWorkerStorage {
   using GetUserDataInDBCallback =
       base::OnceCallback<void(const std::vector<std::string>& data,
                               ServiceWorkerDatabase::Status)>;
+  using GetUserKeysAndDataInDBCallback = base::OnceCallback<void(
+      const base::flat_map<std::string, std::string>& data_map,
+      ServiceWorkerDatabase::Status)>;
 
   ~ServiceWorkerStorage();
 
@@ -233,7 +233,7 @@ class CONTENT_EXPORT ServiceWorkerStorage {
   // The map keys have |key_prefix| stripped from them.
   void GetUserKeysAndDataByKeyPrefix(int64_t registration_id,
                                      const std::string& key_prefix,
-                                     GetUserKeysAndDataCallback callback);
+                                     GetUserKeysAndDataInDBCallback callback);
 
   // Stored data is deleted when the associated registraton is deleted.
   void StoreUserData(
@@ -361,9 +361,6 @@ class CONTENT_EXPORT ServiceWorkerStorage {
       const ServiceWorkerDatabase::RegistrationData& data,
       const ResourceList& resources,
       ServiceWorkerDatabase::Status status)>;
-  using GetUserKeysAndDataInDBCallback = base::OnceCallback<void(
-      const base::flat_map<std::string, std::string>& data_map,
-      ServiceWorkerDatabase::Status)>;
   using GetUserDataForAllRegistrationsInDBCallback = base::OnceCallback<void(
       const std::vector<std::pair<int64_t, std::string>>& user_data,
       ServiceWorkerDatabase::Status)>;
@@ -418,10 +415,6 @@ class CONTENT_EXPORT ServiceWorkerStorage {
                                       ServiceWorkerDatabase::Status status);
   void DidStoreUserData(StatusCallback callback,
                         ServiceWorkerDatabase::Status status);
-  void DidGetUserKeysAndData(
-      GetUserKeysAndDataCallback callback,
-      const base::flat_map<std::string, std::string>& map,
-      ServiceWorkerDatabase::Status status);
   void DidDeleteUserData(StatusCallback callback,
                          ServiceWorkerDatabase::Status status);
   void DidGetUserDataForAllRegistrations(

@@ -206,17 +206,6 @@ TEST_F(NotificationPlatformBridgeMacTest,
   EXPECT_FALSE(NotificationPlatformBridgeMac::VerifyNotificationData(response));
 }
 
-TEST_F(NotificationPlatformBridgeMacTest, TestNotificationVerifyOrigin) {
-  NSMutableDictionary* response = BuildDefaultNotificationResponse();
-  [response setValue:@"invalidorigin"
-              forKey:notification_constants::kNotificationOrigin];
-  EXPECT_FALSE(NotificationPlatformBridgeMac::VerifyNotificationData(response));
-
-  // If however the origin is not present the response should be fine.
-  [response removeObjectForKey:notification_constants::kNotificationOrigin];
-  EXPECT_TRUE(NotificationPlatformBridgeMac::VerifyNotificationData(response));
-}
-
 TEST_F(NotificationPlatformBridgeMacTest, TestDisplayNoButtons) {
   std::unique_ptr<Notification> notification =
       CreateBanner("Title", "Context", "https://gmail.com", nullptr, nullptr);

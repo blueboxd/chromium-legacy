@@ -641,7 +641,7 @@ bool WebViewImpl::StartPageScaleAnimation(const IntPoint& target_position,
       if (view && view->GetScrollableArea()) {
         view->GetScrollableArea()->SetScrollOffset(
             ScrollOffset(clamped_point.x(), clamped_point.y()),
-            kProgrammaticScroll);
+            mojom::blink::ScrollIntoViewParams::Type::kProgrammatic);
       }
 
       return false;
@@ -2122,7 +2122,8 @@ bool WebViewImpl::ScrollFocusedEditableElementIntoView() {
   // actually visible in the page.
   auto params = CreateScrollIntoViewParams(
       ScrollAlignment::kAlignCenterIfNeeded,
-      ScrollAlignment::kAlignCenterIfNeeded, kProgrammaticScroll, false,
+      ScrollAlignment::kAlignCenterIfNeeded,
+      mojom::blink::ScrollIntoViewParams::Type::kProgrammatic, false,
       mojom::blink::ScrollIntoViewParams::Behavior::kInstant);
   params->stop_at_main_frame_layout_viewport = true;
   layout_object->ScrollRectToVisible(
@@ -2697,8 +2698,11 @@ void WebViewImpl::ResetScrollAndScaleState() {
   if (LocalFrameView* frame_view = main_local_frame->View()) {
     ScrollableArea* scrollable_area = frame_view->LayoutViewport();
 
-    if (!scrollable_area->GetScrollOffset().IsZero())
-      scrollable_area->SetScrollOffset(ScrollOffset(), kProgrammaticScroll);
+    if (!scrollable_area->GetScrollOffset().IsZero()) {
+      scrollable_area->SetScrollOffset(
+          ScrollOffset(),
+          mojom::blink::ScrollIntoViewParams::Type::kProgrammatic);
+    }
   }
 
   if (Document* document = main_local_frame->GetDocument()) {

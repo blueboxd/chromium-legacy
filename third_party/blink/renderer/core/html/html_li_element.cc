@@ -54,11 +54,11 @@ CSSValueID ListTypeToCSSValueID(const AtomicString& value) {
     return CSSValueID::kDecimal;
   if (DeprecatedEqualIgnoringCase(value, "disc"))
     return CSSValueID::kDisc;
-  if (DeprecatedEqualIgnoringCase(value, "circle"))
+  if (EqualIgnoringASCIICase(value, "circle"))
     return CSSValueID::kCircle;
   if (DeprecatedEqualIgnoringCase(value, "square"))
     return CSSValueID::kSquare;
-  if (DeprecatedEqualIgnoringCase(value, "none"))
+  if (EqualIgnoringASCIICase(value, "none"))
     return CSSValueID::kNone;
   return CSSValueID::kInvalid;
 }

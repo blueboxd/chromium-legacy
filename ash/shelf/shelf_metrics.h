@@ -28,8 +28,11 @@ enum class InAppShelfGestures {
   // Fling up to show the home screen.
   kFlingUpToShowHomeScreen = 2,
 
+  // Hotseat hidden due to interacting outside of the shelf/hotseat.
+  kHotseatHiddenDueToInteractionOutsideOfShelf = 3,
+
   // New items should be added before to keep this one always the last.
-  kMaxInAppShelfGestures = 3,
+  kMaxInAppShelfGestures = 4,
 
   kMaxValue = kMaxInAppShelfGestures
 };

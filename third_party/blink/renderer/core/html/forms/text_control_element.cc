@@ -974,11 +974,11 @@ String TextControlElement::DirectionForFormData() const {
     if (dir_attribute_value.IsNull())
       continue;
 
-    if (DeprecatedEqualIgnoringCase(dir_attribute_value, "rtl") ||
-        DeprecatedEqualIgnoringCase(dir_attribute_value, "ltr"))
+    if (EqualIgnoringASCIICase(dir_attribute_value, "rtl") ||
+        EqualIgnoringASCIICase(dir_attribute_value, "ltr"))
       return dir_attribute_value;
 
-    if (DeprecatedEqualIgnoringCase(dir_attribute_value, "auto")) {
+    if (EqualIgnoringASCIICase(dir_attribute_value, "auto")) {
       bool is_auto;
       TextDirection text_direction =
           element->DirectionalityIfhasDirAutoAttribute(is_auto);

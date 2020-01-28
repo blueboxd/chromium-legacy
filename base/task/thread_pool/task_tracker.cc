@@ -492,7 +492,7 @@ RegisteredTaskSource TaskTracker::RunAndPopNextTask(
 
   // Run the next task in |task_source|.
   Optional<Task> task;
-  TaskTraits traits{ThreadPool()};
+  TaskTraits traits;
   {
     auto transaction = task_source->BeginTransaction();
     task = task_is_worker_task ? task_source.TakeTask(&transaction)

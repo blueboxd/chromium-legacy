@@ -17,6 +17,7 @@
 #include "base/system/sys_info.h"
 #include "base/task/post_task.h"
 #include "base/values.h"
+#include "chrome/browser/chromeos/crostini/crostini_features.h"
 #include "chrome/browser/chromeos/crostini/crostini_pref_names.h"
 #include "chrome/browser/extensions/api/terminal/crostini_startup_status.h"
 #include "chrome/browser/extensions/api/terminal/terminal_extension_helper.h"
@@ -204,6 +205,11 @@ TerminalPrivateOpenTerminalProcessFunction::Run() {
     }
 
   } else if (params->process_name == kVmShellName) {
+    // Ensure crostini is allowed before starting terminal.
+    Profile* profile = Profile::FromBrowserContext(browser_context());
+    if (!crostini::CrostiniFeatures::Get()->IsAllowed(profile))
+      return RespondNow(Error("vmshell not allowed"));
+
     // command=vmshell: ensure --owner_id, --vm_name, and --target_container are
     // set and the specified vm/container is running.
     base::CommandLine vmshell_cmd({kVmShellCommand});
@@ -223,8 +229,7 @@ TerminalPrivateOpenTerminalProcessFunction::Run() {
     auto open_process =
         base::BindOnce(&TerminalPrivateOpenTerminalProcessFunction::OpenProcess,
                        this, user_id_hash, tab_id, vmshell_cmd.argv());
-    auto* mgr = crostini::CrostiniManager::GetForProfile(
-        Profile::FromBrowserContext(browser_context()));
+    auto* mgr = crostini::CrostiniManager::GetForProfile(profile);
     bool verbose =
         !mgr->GetContainerInfo(crostini::kCrostiniDefaultVmName,
                                crostini::kCrostiniDefaultContainerName)

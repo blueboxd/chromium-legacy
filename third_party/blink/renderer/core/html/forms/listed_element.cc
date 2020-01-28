@@ -314,8 +314,7 @@ void ListedElement::UpdateWillValidateCache() {
 }
 
 bool ListedElement::CustomError() const {
-  return ToHTMLElement().willValidate() &&
-         !custom_validation_message_.IsEmpty();
+  return !custom_validation_message_.IsEmpty();
 }
 
 bool ListedElement::HasBadInput() const {
@@ -371,7 +370,9 @@ void ListedElement::SetCustomValidationMessage(const String& message) {
 }
 
 String ListedElement::validationMessage() const {
-  return CustomError() ? custom_validation_message_ : String();
+  return ToHTMLElement().willValidate() && CustomError()
+             ? custom_validation_message_
+             : String();
 }
 
 String ListedElement::ValidationSubMessage() const {

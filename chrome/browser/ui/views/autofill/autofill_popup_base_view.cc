@@ -132,7 +132,7 @@ void AutofillPopupBaseView::OnWidgetBoundsChanged(views::Widget* widget,
   if (widget != parent_widget_)
     return;
 
-  HideController();
+  HideController(PopupHidingReason::kWidgetChanged);
 }
 
 void AutofillPopupBaseView::OnWidgetDestroying(views::Widget* widget) {
@@ -150,7 +150,7 @@ void AutofillPopupBaseView::OnWidgetDestroying(views::Widget* widget) {
   // destruction (e.g., by attempting to remove observers).
   parent_widget_ = nullptr;
 
-  HideController();
+  HideController(PopupHidingReason::kWidgetChanged);
 }
 
 void AutofillPopupBaseView::RemoveWidgetObservers() {
@@ -190,7 +190,7 @@ void AutofillPopupBaseView::DoUpdateBoundsAndRedrawPopup() {
 
 void AutofillPopupBaseView::OnNativeFocusChanged(gfx::NativeView focused_now) {
   if (GetWidget() && GetWidget()->GetNativeView() != focused_now)
-    HideController();
+    HideController(PopupHidingReason::kFocusChanged);
 }
 
 void AutofillPopupBaseView::OnMouseCaptureLost() {
@@ -282,9 +282,9 @@ void AutofillPopupBaseView::ClearSelection() {
     delegate_->SelectionCleared();
 }
 
-void AutofillPopupBaseView::HideController() {
+void AutofillPopupBaseView::HideController(PopupHidingReason reason) {
   if (delegate_)
-    delegate_->Hide();
+    delegate_->Hide(reason);
   // This will eventually result in the deletion of |this|, as the delegate
   // will hide |this|. See |DoHide| above for an explanation on why the precise
   // timing of that deletion is tricky.

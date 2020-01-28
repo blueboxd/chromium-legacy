@@ -111,17 +111,23 @@ TEST_F(ScrollTimelineTest,
       ScrollTimeline::Create(GetDocument(), options, ASSERT_NO_EXCEPTION);
 
   bool current_time_is_null = false;
-  scrollable_area->SetScrollOffset(ScrollOffset(0, 5), kProgrammaticScroll);
+  scrollable_area->SetScrollOffset(
+      ScrollOffset(0, 5),
+      mojom::blink::ScrollIntoViewParams::Type::kProgrammatic);
   scroll_timeline->currentTime(current_time_is_null);
   EXPECT_TRUE(current_time_is_null);
 
   current_time_is_null = true;
-  scrollable_area->SetScrollOffset(ScrollOffset(0, 50), kProgrammaticScroll);
+  scrollable_area->SetScrollOffset(
+      ScrollOffset(0, 50),
+      mojom::blink::ScrollIntoViewParams::Type::kProgrammatic);
   scroll_timeline->currentTime(current_time_is_null);
   EXPECT_FALSE(current_time_is_null);
 
   current_time_is_null = false;
-  scrollable_area->SetScrollOffset(ScrollOffset(0, 100), kProgrammaticScroll);
+  scrollable_area->SetScrollOffset(
+      ScrollOffset(0, 100),
+      mojom::blink::ScrollIntoViewParams::Type::kProgrammatic);
   scroll_timeline->currentTime(current_time_is_null);
   EXPECT_TRUE(current_time_is_null);
   EXPECT_TRUE(scroll_timeline->IsActive());
@@ -156,7 +162,9 @@ TEST_F(ScrollTimelineTest,
       ScrollTimeline::Create(GetDocument(), options, ASSERT_NO_EXCEPTION);
 
   bool current_time_is_null = false;
-  scrollable_area->SetScrollOffset(ScrollOffset(0, 50), kProgrammaticScroll);
+  scrollable_area->SetScrollOffset(
+      ScrollOffset(0, 50),
+      mojom::blink::ScrollIntoViewParams::Type::kProgrammatic);
   scroll_timeline->currentTime(current_time_is_null);
   EXPECT_TRUE(current_time_is_null);
   EXPECT_TRUE(scroll_timeline->IsActive());
@@ -270,7 +278,9 @@ TEST_F(ScrollTimelineTest, ScheduleFrameOnlyWhenScrollOffsetChanges) {
   LayoutBoxModelObject* scroller =
       ToLayoutBoxModelObject(GetLayoutObjectByElementId("scroller"));
   PaintLayerScrollableArea* scrollable_area = scroller->GetScrollableArea();
-  scrollable_area->SetScrollOffset(ScrollOffset(0, 20), kProgrammaticScroll);
+  scrollable_area->SetScrollOffset(
+      ScrollOffset(0, 20),
+      mojom::blink::ScrollIntoViewParams::Type::kProgrammatic);
 
   Element* scroller_element = GetElementById("scroller");
   TestScrollTimeline* scroll_timeline =
@@ -297,7 +307,9 @@ TEST_F(ScrollTimelineTest, ScheduleFrameOnlyWhenScrollOffsetChanges) {
 
   // Validate that frame is scheduled when scroll changes.
   scroll_timeline->ResetNextServiceScheduled();
-  scrollable_area->SetScrollOffset(ScrollOffset(0, 30), kProgrammaticScroll);
+  scrollable_area->SetScrollOffset(
+      ScrollOffset(0, 30),
+      mojom::blink::ScrollIntoViewParams::Type::kProgrammatic);
   scroll_timeline->ScheduleNextService();
   EXPECT_TRUE(scroll_timeline->NextServiceScheduled());
 }
@@ -329,7 +341,9 @@ TEST_F(ScrollTimelineTest, MAYBE_ScheduleFrameWhenScrollerLayoutChanges) {
   LayoutBoxModelObject* scroller =
       ToLayoutBoxModelObject(GetLayoutObjectByElementId("scroller"));
   PaintLayerScrollableArea* scrollable_area = scroller->GetScrollableArea();
-  scrollable_area->SetScrollOffset(ScrollOffset(0, 20), kProgrammaticScroll);
+  scrollable_area->SetScrollOffset(
+      ScrollOffset(0, 20),
+      mojom::blink::ScrollIntoViewParams::Type::kProgrammatic);
   Element* scroller_element = GetElementById("scroller");
   TestScrollTimeline* scroll_timeline =
       MakeGarbageCollected<TestScrollTimeline>(&GetDocument(), scroller_element,

@@ -13,6 +13,7 @@
 #include "base/timer/timer.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_event_status.mojom-blink-forward.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/platform/scheduler/public/post_cancellable_task.h"
 #include "third_party/blink/renderer/platform/wtf/deque.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
 
@@ -33,12 +34,14 @@ namespace blink {
 // 1) Event timeout: when an event starts, StartEvent() records the expiration
 // time of the event (kEventTimeout). If EndEvent() has not been called within
 // the timeout time, |abort_callback| passed to StartEvent() is called with
-// status TIMEOUT. Also, |zero_idle_timer_delay_| is set to true to shut down
+// status TIMEOUT. Additionally, the |idle_delay_| is set to zero to shut down
 // the worker as soon as possible since the worker may have gone into bad state.
-// 2) Idle timeout: when a certain time has passed (kIdleDelay) since all of
-// events have ended, ServiceWorkerEventQueue calls the |idle_callback|.
-// |idle_callback| will be continuously called at a certain interval
-// (kUpdateInterval) until the next event starts.
+// 2) Idle timeout: when a certain time has passed (|idle_delay_|) since all of
+// events have ended, ServiceWorkerEventQueue calls the |idle_callback_|.
+// Idle callbacks are called on the |task_runner| passed by the constructor.
+// Note that the implementation assumes the task runner is provided by
+// ServiceWorkerGlobalScope, and the lifetime of the task runner is shorter than
+// |this|.
 //
 // The lifetime of ServiceWorkerEventQueue is the same with the worker
 // thread. If ServiceWorkerEventQueue is destructed while there are inflight
@@ -64,10 +67,12 @@ class MODULES_EXPORT ServiceWorkerEventQueue {
       base::RepeatingCallback<void(/*is_offline_event=*/bool)>;
 
   ServiceWorkerEventQueue(BeforeStartEventCallback before_start_event_callback,
-                          base::RepeatingClosure idle_callback);
+                          base::RepeatingClosure idle_callback,
+                          scoped_refptr<base::SequencedTaskRunner> task_runner);
   // For testing.
   ServiceWorkerEventQueue(BeforeStartEventCallback before_start_event_callback,
                           base::RepeatingClosure idle_callback,
+                          scoped_refptr<base::SequencedTaskRunner> task_runner,
                           const base::TickClock* tick_clock);
   ~ServiceWorkerEventQueue();
 
@@ -101,22 +106,21 @@ class MODULES_EXPORT ServiceWorkerEventQueue {
   // Returns true if |event_id| was started and hasn't ended.
   bool HasEvent(int event_id) const;
 
-  // Creates a StayAwakeToken to ensure that the idle timer won't be triggered
-  // while any of these are alive.
+  // Creates a StayAwakeToken to ensure that the idle callback won't be
+  // triggered while any of these are alive.
   std::unique_ptr<StayAwakeToken> CreateStayAwakeToken();
 
-  // Sets the |zero_idle_timer_delay_| to true and triggers the idle callback if
-  // there are not inflight events. If there are, the callback will be called
-  // next time when the set of inflight events becomes empty in EndEvent().
-  void SetIdleTimerDelayToZero();
+  // Sets the |idle_delay_| to the new value, and re-schedule the idle callback
+  // based on the new delay if it's now pending.
+  void SetIdleDelay(base::TimeDelta idle_delay);
 
-  // Returns true if the timer thinks no events ran for a while, and has
-  // triggered the |idle_callback| passed to the constructor. It'll be reset to
+  // Returns true if the event queue thinks no events ran for a while, and has
+  // triggered the |idle_callback_| passed to the constructor. It'll be reset to
   // false again when StartEvent() is called.
   bool did_idle_timeout() const { return did_idle_timeout_; }
 
   // Idle timeout duration since the last event has finished.
-  static constexpr base::TimeDelta kIdleDelay =
+  static constexpr base::TimeDelta kDefaultIdleDelay =
       base::TimeDelta::FromSeconds(30);
   // Duration of the long standing event timeout since StartEvent() has been
   // called.
@@ -176,12 +180,15 @@ class MODULES_EXPORT ServiceWorkerEventQueue {
   // Starts a single event.
   void StartEvent(std::unique_ptr<Event> event);
 
-  // Updates the internal states and fires timeout callbacks if any.
+  // Updates the internal states and fires the event timeout callbacks if any.
+  // TODO(shimazu): re-implement it by delayed tasks and cancelable callbacks.
   void UpdateStatus();
 
-  // Triggers idle timer if |zero_idle_timer_delay_| is true. Returns true if
-  // the idle callback is called.
-  bool MaybeTriggerIdleTimer();
+  // Schedules the idle callback in |delay|.
+  void ScheduleIdleCallback(base::TimeDelta delay);
+
+  // Runs the idle callback and updates the state accordingly.
+  void TriggerIdleCallback();
 
   // Sets the |idle_time_| and maybe calls |idle_callback_| immediately if the
   // timeout delay is set to zero.
@@ -193,6 +200,12 @@ class MODULES_EXPORT ServiceWorkerEventQueue {
   // Processes all events in |queue_|.
   void ProcessEvents();
 
+  // Resets the members for idle timeouts to cancel the idle callback.
+  void ResetIdleTimeout();
+
+  // True if the idle callback is scheduled to run.
+  bool HasScheduledIdleCallback() const;
+
   struct EventInfo {
     EventInfo(base::TimeTicks expiration_time,
               base::OnceCallback<void(mojom::blink::ServiceWorkerEventStatus)>
@@ -203,24 +216,30 @@ class MODULES_EXPORT ServiceWorkerEventQueue {
         abort_callback;
   };
 
+  scoped_refptr<base::SequencedTaskRunner> task_runner_;
+
   // For long standing event timeouts. This is used to look up an EventInfo
   // by event id.
   HashMap<int /* event_id */, std::unique_ptr<EventInfo>> id_event_map_;
 
-  // For idle timeouts. The time the service worker started being considered
-  // idle. This time is null if there are any inflight events.
-  base::TimeTicks idle_time_;
-
-  // Set to true if the idle callback should be fired immediately after all
-  // inflight events finish.
-  bool zero_idle_timer_delay_ = false;
-
   // Callback which is run just before starting an event.
   BeforeStartEventCallback before_start_event_callback_;
 
-  // For idle timeouts. Invoked when UpdateStatus() is called after
-  // |idle_time_|.
+  // For idle timeouts. When there's no inflight event, this is scheduled to run
+  // in |idle_delay_|.
   base::RepeatingClosure idle_callback_;
+
+  // For idle timeouts. The handle of the scheduled |idle_callback_|. This can
+  // be canceled when a new event happens before the scheduled callback runs.
+  TaskHandle idle_callback_handle_;
+
+  // For idle timeouts. The time when there's no inflight event. Set to null if
+  // there are inflight events.
+  base::TimeTicks last_no_inflight_event_;
+
+  // For idle timeouts. The delay until the worker is identified as idle after
+  // all inflight events are completed.
+  base::TimeDelta idle_delay_ = kDefaultIdleDelay;
 
   // Set to true once |idle_callback_| has been invoked. Set to false when
   // StartEvent() is called.

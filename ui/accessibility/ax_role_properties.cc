@@ -47,6 +47,7 @@ bool IsClickable(const ax::mojom::Role role) {
     case ax::mojom::Role::kMenuItemRadio:
     case ax::mojom::Role::kMenuListOption:
     case ax::mojom::Role::kMenuListPopup:
+    case ax::mojom::Role::kPdfActionableHighlight:
     case ax::mojom::Role::kPopUpButton:
     case ax::mojom::Role::kRadioButton:
     case ax::mojom::Role::kSwitch:
@@ -109,6 +110,7 @@ bool IsControl(const ax::mojom::Role role) {
     case ax::mojom::Role::kMenuItemRadio:
     case ax::mojom::Role::kMenuListOption:
     case ax::mojom::Role::kMenuListPopup:
+    case ax::mojom::Role::kPdfActionableHighlight:
     case ax::mojom::Role::kPopUpButton:
     case ax::mojom::Role::kRadioButton:
     case ax::mojom::Role::kScrollBar:

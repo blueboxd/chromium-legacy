@@ -135,6 +135,10 @@ SharedWorker* SharedWorker::Create(ExecutionContext* context,
     NOTREACHED();
   }
   DCHECK(!options->name.IsNull());
+  if (options->type == mojom::blink::ScriptType::kClassic)
+    UseCounter::Count(document, WebFeature::kClassicSharedWorker);
+  else if (options->type == mojom::blink::ScriptType::kModule)
+    UseCounter::Count(document, WebFeature::kModuleSharedWorker);
 
   SharedWorkerClientHolder::From(*document)->Connect(
       worker, std::move(remote_port), script_url, std::move(blob_url_token),

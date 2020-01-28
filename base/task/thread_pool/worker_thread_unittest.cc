@@ -166,9 +166,8 @@ class ThreadPoolWorkerTest : public testing::TestWithParam<int> {
       }
 
       // Create a Sequence with TasksPerSequence() Tasks.
-      scoped_refptr<Sequence> sequence =
-          MakeRefCounted<Sequence>(TaskTraits{ThreadPool()}, nullptr,
-                                   TaskSourceExecutionMode::kParallel);
+      scoped_refptr<Sequence> sequence = MakeRefCounted<Sequence>(
+          TaskTraits(), nullptr, TaskSourceExecutionMode::kParallel);
       Sequence::Transaction sequence_transaction(sequence->BeginTransaction());
       for (int i = 0; i < outer_->TasksPerSequence(); ++i) {
         Task task(FROM_HERE,
@@ -445,7 +444,7 @@ class ControllableCleanupDelegate : public WorkerThreadDefaultDelegate {
 
     controls_->work_requested_ = true;
     scoped_refptr<Sequence> sequence = MakeRefCounted<Sequence>(
-        TaskTraits(ThreadPool(), WithBaseSyncPrimitives(),
+        TaskTraits(WithBaseSyncPrimitives(),
                    TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN),
         nullptr, TaskSourceExecutionMode::kParallel);
     Task task(
@@ -746,9 +745,9 @@ TEST(ThreadPoolWorkerTest, BumpPriorityOfAliveThreadDuringShutdown) {
 
   // Block shutdown to ensure that the worker doesn't exit when StartShutdown()
   // is called.
-  scoped_refptr<Sequence> sequence = MakeRefCounted<Sequence>(
-      TaskTraits{ThreadPool(), TaskShutdownBehavior::BLOCK_SHUTDOWN}, nullptr,
-      TaskSourceExecutionMode::kParallel);
+  scoped_refptr<Sequence> sequence =
+      MakeRefCounted<Sequence>(TaskTraits{TaskShutdownBehavior::BLOCK_SHUTDOWN},
+                               nullptr, TaskSourceExecutionMode::kParallel);
   auto registered_task_source =
       task_tracker.RegisterTaskSource(std::move(sequence));
 

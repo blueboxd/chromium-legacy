@@ -494,6 +494,9 @@ TEST_P(HotseatWidgetTest, TappingActiveWindowHidesHotseat) {
                                      InAppShelfGestures::kSwipeDownToHide, 0);
   histogram_tester.ExpectBucketCount(kHotseatGestureHistogramName,
                                      InAppShelfGestures::kSwipeUpToShow, 0);
+  histogram_tester.ExpectBucketCount(
+      kHotseatGestureHistogramName,
+      InAppShelfGestures::kHotseatHiddenDueToInteractionOutsideOfShelf, 0);
 
   // Swipe up on the shelf to show the hotseat.
   SwipeUpOnShelf();
@@ -502,6 +505,9 @@ TEST_P(HotseatWidgetTest, TappingActiveWindowHidesHotseat) {
                                      InAppShelfGestures::kSwipeDownToHide, 0);
   histogram_tester.ExpectBucketCount(kHotseatGestureHistogramName,
                                      InAppShelfGestures::kSwipeUpToShow, 1);
+  histogram_tester.ExpectBucketCount(
+      kHotseatGestureHistogramName,
+      InAppShelfGestures::kHotseatHiddenDueToInteractionOutsideOfShelf, 0);
 
   // Tap the shelf background, nothing should happen.
   gfx::Rect display_bounds =
@@ -525,6 +531,9 @@ TEST_P(HotseatWidgetTest, TappingActiveWindowHidesHotseat) {
                                      InAppShelfGestures::kSwipeDownToHide, 0);
   histogram_tester.ExpectBucketCount(kHotseatGestureHistogramName,
                                      InAppShelfGestures::kSwipeUpToShow, 1);
+  histogram_tester.ExpectBucketCount(
+      kHotseatGestureHistogramName,
+      InAppShelfGestures::kHotseatHiddenDueToInteractionOutsideOfShelf, 1);
 }
 
 // Tests that gesture dragging an active window hides the hotseat.

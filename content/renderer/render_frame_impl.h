@@ -1142,11 +1142,8 @@ class CONTENT_EXPORT RenderFrameImpl
 
   // Used to load the initial empty document. This one is special, since it
   // isn't the result of a navigation.
-  //
-  // TODO(arthursonzogni): This function is also used for renderer initiated
-  // navigations to about:blank pages. The browser initiated ones uses the
-  // normal code path in the browser process. Stop maintaining two code path by
-  // removing this one.
+  // TODO(rakina): Rename the method now that this is only used for the
+  // special case of committing the initial empty document.
   void CommitSyncNavigation(std::unique_ptr<blink::WebNavigationInfo> info);
 
   // Commit navigation with |navigation_params| prepared.
@@ -1610,12 +1607,6 @@ class CONTENT_EXPORT RenderFrameImpl
   base::TimeTicks burst_download_start_time_;
 
   RenderFrameMediaPlaybackOptions renderer_media_playback_options_;
-
-  // Used by renderer initiated navigations to about:blank pages. This edge case
-  // doesn't use yet the normal code path in the browser process.
-  // TODO(arthursonzogni): Remove this. Everything should use the default code
-  // path and be driven by the browser process.
-  base::CancelableOnceCallback<void()> sync_navigation_callback_;
 
   class MHTMLBodyLoaderClient;
   std::unique_ptr<MHTMLBodyLoaderClient> mhtml_body_loader_client_;

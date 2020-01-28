@@ -683,8 +683,9 @@ WebSize WebLocalFrameImpl::GetScrollOffset() const {
 
 void WebLocalFrameImpl::SetScrollOffset(const WebSize& offset) {
   if (ScrollableArea* scrollable_area = LayoutViewport()) {
-    scrollable_area->SetScrollOffset(ScrollOffset(offset.width, offset.height),
-                                     kProgrammaticScroll);
+    scrollable_area->SetScrollOffset(
+        ScrollOffset(offset.width, offset.height),
+        mojom::blink::ScrollIntoViewParams::Type::kProgrammatic);
   }
 }
 
@@ -2045,7 +2046,7 @@ bool WebLocalFrameImpl::ScrollTo(const gfx::Point& scrollPosition,
   ScrollOffset offset = area->ScrollPositionToOffset(
       FloatPoint(scrollPosition.x(), scrollPosition.y()));
   area->SetScrollOffset(
-      offset, kProgrammaticScroll,
+      offset, mojom::blink::ScrollIntoViewParams::Type::kProgrammatic,
       animate ? mojom::blink::ScrollIntoViewParams::Behavior::kSmooth
               : mojom::blink::ScrollIntoViewParams::Behavior::kInstant,
       ScrollableArea::ScrollCallback(std::move(on_finish)));

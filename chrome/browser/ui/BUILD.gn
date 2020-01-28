@@ -426,6 +426,7 @@ jumbo_static_library("ui") {
     "//components/browsing_data/content",
     "//components/browsing_data/core",
     "//components/bubble",
+    "//components/captive_portal/content",
     "//components/captive_portal/core:buildflags",
     "//components/consent_auditor/",
     "//components/content_settings/core/browser",

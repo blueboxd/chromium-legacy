@@ -6153,12 +6153,7 @@ crbug.com/1006759 http/tests/devtools/modules-load-network.js [ Pass Failure ]
 crbug.com/1006759 http/tests/devtools/modules-load-source.js [ Pass Failure ]
 
 # Failing document policy tests
-crbug.com/993790 external/wpt/document-policy/required-policy/document-policy.html [ Failure ]
-crbug.com/993790 external/wpt/document-policy/required-policy/no-document-policy.html [ Failure ]
-crbug.com/993790 external/wpt/document-policy/required-policy/required-document-policy-nested.html [ Failure ]
-crbug.com/993790 external/wpt/document-policy/required-policy/required-document-policy.html [ Failure ]
 crbug.com/993790 external/wpt/document-policy/required-policy/separate-document-policies.html [ Failure ]
-crbug.com/993790 virtual/document-policy/external/wpt/document-policy/required-policy/separate-document-policies.html [ Failure ]
 
 # Temporary suppression to allow devtools-frontend changes
 crbug.com/1029489 http/tests/devtools/elements/elements-linkify-attributes.js [ Pass Failure ]

@@ -449,7 +449,9 @@ TEST_F(SpatialNavigationTest, PartiallyVisible) {
 
   // Do some scrolling.
   ScrollableArea* root_scroller = GetDocument().View()->GetScrollableArea();
-  root_scroller->SetScrollOffset(ScrollOffset(0, 600), kProgrammaticScroll);
+  root_scroller->SetScrollOffset(
+      ScrollOffset(0, 600),
+      mojom::blink::ScrollIntoViewParams::Type::kProgrammatic);
   PhysicalRect button_after_scroll = NodeRectInRootFrame(b);
   ASSERT_NE(button_in_root_frame,
             button_after_scroll);  // As we scrolled, the

@@ -46,6 +46,7 @@ class SVGImageTest : public testing::Test {
     observer_ = MakeGarbageCollected<PauseControlImageObserver>(should_pause);
     image_ = SVGImage::Create(observer_);
     image_->SetData(SharedBuffer::Create(data, strlen(data)), true);
+    test::RunPendingTasks();
   }
 
   void LoadUsingFileName(const String& file_name) {
@@ -56,6 +57,7 @@ class SVGImageTest : public testing::Test {
     observer_ = MakeGarbageCollected<PauseControlImageObserver>(true);
     image_ = SVGImage::Create(observer_);
     image_->SetData(image_data, true);
+    test::RunPendingTasks();
   }
 
   void PumpFrame() {

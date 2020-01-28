@@ -48,7 +48,8 @@ class CORE_EXPORT LayoutShiftTracker {
                             FloatSize paint_offset_delta);
   void NotifyPrePaintFinished();
   void NotifyInput(const WebInputEvent&);
-  void NotifyScroll(ScrollType, ScrollOffset delta);
+  void NotifyScroll(mojom::blink::ScrollIntoViewParams::Type,
+                    ScrollOffset delta);
   void NotifyViewportSizeChanged();
   bool IsActive();
   double Score() const { return score_; }

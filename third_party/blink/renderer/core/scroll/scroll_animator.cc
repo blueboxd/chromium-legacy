@@ -211,7 +211,7 @@ bool ScrollAnimator::WillAnimateToOffset(const ScrollOffset& target_offset) {
 
 void ScrollAnimator::AdjustAnimationAndSetScrollOffset(
     const ScrollOffset& offset,
-    ScrollType scroll_type) {
+    mojom::blink::ScrollIntoViewParams::Type scroll_type) {
   IntSize adjustment = RoundedIntSize(offset) -
                        RoundedIntSize(scrollable_area_->GetScrollOffset());
   ScrollOffsetChanged(offset, scroll_type);

@@ -64,23 +64,23 @@
 namespace blink {
 
 namespace {
-blink::ScrollAlignmentBehavior ToBlinkScrollAlignmentBehavior(
+mojom::blink::ScrollAlignment::Behavior ToBlinkScrollAlignmentBehavior(
     ax::mojom::ScrollAlignment alignment) {
   switch (alignment) {
     case ax::mojom::ScrollAlignment::kNone:
-      return blink::kScrollAlignmentNoScroll;
+      return mojom::blink::ScrollAlignment::Behavior::kNoScroll;
     case ax::mojom::ScrollAlignment::kScrollAlignmentCenter:
-      return blink::kScrollAlignmentCenter;
+      return mojom::blink::ScrollAlignment::Behavior::kCenter;
     case ax::mojom::ScrollAlignment::kScrollAlignmentTop:
-      return blink::kScrollAlignmentTop;
+      return mojom::blink::ScrollAlignment::Behavior::kTop;
     case ax::mojom::ScrollAlignment::kScrollAlignmentBottom:
-      return blink::kScrollAlignmentBottom;
+      return mojom::blink::ScrollAlignment::Behavior::kBottom;
     case ax::mojom::ScrollAlignment::kScrollAlignmentLeft:
-      return blink::kScrollAlignmentLeft;
+      return mojom::blink::ScrollAlignment::Behavior::kLeft;
     case ax::mojom::ScrollAlignment::kScrollAlignmentRight:
-      return blink::kScrollAlignmentRight;
+      return mojom::blink::ScrollAlignment::Behavior::kRight;
     case ax::mojom::ScrollAlignment::kScrollAlignmentClosestEdge:
-      return blink::kScrollAlignmentClosestEdge;
+      return mojom::blink::ScrollAlignment::Behavior::kClosestEdge;
   }
   NOTREACHED() << alignment;
 }
@@ -1611,14 +1611,14 @@ bool WebAXObject::ScrollToMakeVisibleWithSubFocus(
   auto vertical_behavior =
       ToBlinkScrollAlignmentBehavior(vertical_scroll_alignment);
 
-  blink::ScrollAlignmentBehavior visible_horizontal_behavior =
+  mojom::blink::ScrollAlignment::Behavior visible_horizontal_behavior =
       scroll_behavior == ax::mojom::ScrollBehavior::kScrollIfVisible
           ? horizontal_behavior
-          : kScrollAlignmentNoScroll;
-  blink::ScrollAlignmentBehavior visible_vertical_behavior =
+          : mojom::blink::ScrollAlignment::Behavior::kNoScroll;
+  mojom::blink::ScrollAlignment::Behavior visible_vertical_behavior =
       scroll_behavior == ax::mojom::ScrollBehavior::kScrollIfVisible
           ? vertical_behavior
-          : kScrollAlignmentNoScroll;
+          : mojom::blink::ScrollAlignment::Behavior::kNoScroll;
 
   blink::ScrollAlignment blink_horizontal_scroll_alignment = {
       visible_horizontal_behavior, horizontal_behavior, horizontal_behavior};

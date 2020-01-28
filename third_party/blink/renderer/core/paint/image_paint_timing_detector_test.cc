@@ -235,7 +235,10 @@ class ImagePaintTimingDetectorTest : public testing::Test {
     To<SVGImageElement>(element)->SetImageForTest(content);
   }
 
-  void SimulateScroll() { GetPaintTimingDetector().NotifyScroll(kUserScroll); }
+  void SimulateScroll() {
+    GetPaintTimingDetector().NotifyScroll(
+        mojom::blink::ScrollIntoViewParams::Type::kUser);
+  }
 
   void SimulateKeyUp() {
     GetPaintTimingDetector().NotifyInputEvent(WebInputEvent::kKeyUp);

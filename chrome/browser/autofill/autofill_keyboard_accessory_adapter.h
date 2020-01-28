@@ -81,7 +81,7 @@ class AutofillKeyboardAccessoryAdapter : public AutofillPopupView,
   const AutofillPopupLayoutModel& layout_model() const override;
 
   // AutofillPopupViewDelegate implementation
-  // Hidden: void Hide() override;
+  void Hide(PopupHidingReason reason) override;
   void ViewDestroyed() override;
   void SetSelectionAtPoint(const gfx::Point& point) override;
   bool AcceptSelectedLine() override;

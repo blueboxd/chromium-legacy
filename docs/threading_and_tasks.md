@@ -109,7 +109,8 @@ Every Chrome process has
    * in the browser process (BrowserThread::UI): updates the UI
    * in renderer processes (Blink main thread): runs most of Blink
 * an IO thread
-   * in the browser process (BrowserThread::IO): handles IPCs and network requests
+   * in the browser process (BrowserThread::IO): handles IPCs and network
+     requests
    * in renderer processes: handles IPCs
 * a few more special-purpose threads
 * and a pool of general-purpose threads
@@ -222,8 +223,8 @@ class A {
 ```
 
 Unless a test needs to control precisely how tasks are executed, it is preferred
-to call `base::ThreadPool::PostTask*()` directly (ref. [Testing](#Testing) for less invasive
-ways of controlling tasks in tests).
+to call `base::ThreadPool::PostTask*()` directly (ref. [Testing](#Testing) for
+less invasive ways of controlling tasks in tests).
 
 ## Posting a Sequenced Task
 
@@ -336,10 +337,17 @@ posting order.
 ### Posting to the Main Thread or to the IO Thread in the Browser Process
 
 To post tasks to the main thread or to the IO thread, use
-`base::PostTask()` or get the appropriate SingleThreadTaskRunner using
-`base::CreateSingleThreadTaskRunner`, supplying a `BrowserThread::ID`
-as trait. For this, you'll also need to include
-[`content/public/browser/browser_task_traits.h`](https://cs.chromium.org/chromium/src/content/public/browser/browser_task_traits.h).
+`content::GetUIThreadTaskRunner({})` or `content::GetUIThreadTaskRunner({})`
+from
+[`content/public/browser/browser_thread.h`](https://cs.chromium.org/chromium/src/content/public/browser/browser_thread.h)
+
+You may provide additional BrowserTaskTraits as a parameter to those methods
+though this is generally still uncommon in BrowserThreads and should be reserved
+for advanced use cases.
+
+There's an ongoing migration ([task APIs v3]) away from the previous
+base-API-with-traits which you may still find throughout the codebase (it's
+equivalent):
 
 ```cpp
 base::PostTask(FROM_HERE, {content::BrowserThread::UI}, ...);
@@ -348,8 +356,10 @@ base::CreateSingleThreadTaskRunner({content::BrowserThread::IO})
     ->PostTask(FROM_HERE, ...);
 ```
 
-Note: This API will soon be updated to follow the API-as-a-destination design
-for [task APIs v3], stay tuned!
+Note: For the duration of the migration, you'll unfortunately need to continue
+manually including
+[`content/public/browser/browser_task_traits.h`](https://cs.chromium.org/chromium/src/content/public/browser/browser_task_traits.h).
+to use the browser_thread.h API.
 
 The main thread and the IO thread are already super busy. Therefore, prefer
 posting to a general purpose thread when possible (ref.
@@ -362,13 +372,14 @@ Note: It is not necessary to have an explicit post task to the IO thread to
 send/receive an IPC or send/receive data on the network.
 
 ### Posting to the Main Thread in a Renderer Process
-TODO
+TODO(blink-dev)
 
 ### Posting to a Custom SingleThreadTaskRunner
 
 If multiple tasks need to run on the same thread and that thread doesn’t have to
 be the main thread or the IO thread, post them to a
-`base::SingleThreadTaskRunner` created by `base::Threadpool::CreateSingleThreadTaskRunner`.
+`base::SingleThreadTaskRunner` created by
+`base::Threadpool::CreateSingleThreadTaskRunner`.
 
 ```cpp
 scoped_refptr<SingleThreadTaskRunner> single_thread_task_runner =
@@ -387,13 +398,14 @@ be necessary.
 
 *** note
 **IMPORTANT:** To post a task that needs mutual exclusion with the current
-sequence of tasks but doesn’t absolutely need to run on the current physical thread,
-use `base::SequencedTaskRunnerHandle::Get()` instead of
+sequence of tasks but doesn’t absolutely need to run on the current physical
+thread, use `base::SequencedTaskRunnerHandle::Get()` instead of
 `base::ThreadTaskRunnerHandle::Get()` (ref. [Posting to the Current
-Sequence](#Posting-to-the-Current-Virtual_Thread)). That will better document the
-requirements of the posted task and will avoid unnecessarily making your API
-physical thread-affine. In a single-thread task, `base::SequencedTaskRunnerHandle::Get()`
-is equivalent to `base::ThreadTaskRunnerHandle::Get()`.
+Sequence](#Posting-to-the-Current-Virtual_Thread)). That will better document
+the requirements of the posted task and will avoid unnecessarily making your API
+physical thread-affine. In a single-thread task,
+`base::SequencedTaskRunnerHandle::Get()` is equivalent to
+`base::ThreadTaskRunnerHandle::Get()`.
 ***
 
 If you must post a task to the current physical thread nonetheless, use
@@ -480,11 +492,6 @@ base::ThreadPool::PostTask(
 // execution is complete.
 base::ThreadPool::PostTask(
     FROM_HERE, {base::TaskShutdownBehavior::BLOCK_SHUTDOWN},
-    base::BindOnce(...));
-
-// This task will run on the Browser UI thread.
-base::ThreadPool::PostTask(
-    FROM_HERE, {content::BrowserThread::UI},
     base::BindOnce(...));
 ```
 

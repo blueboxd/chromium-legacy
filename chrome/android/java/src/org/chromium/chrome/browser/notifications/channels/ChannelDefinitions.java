@@ -76,7 +76,7 @@ public class ChannelDefinitions {
         String COMPLETED_DOWNLOADS = "completed_downloads";
         String PERMISSION_REQUESTS = "permission_requests";
         String PERMISSION_REQUESTS_HIGH = "permission_requests_high";
-        String ANNOUNCEMENT = "Announcement";
+        String ANNOUNCEMENT = "announcement";
     }
 
     @StringDef({

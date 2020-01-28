@@ -25,7 +25,6 @@
 #include "base/memory/weak_ptr.h"
 #include "components/gcm_driver/account_tracker.h"
 #include "components/gcm_driver/gcm_account_tracker.h"
-#include "components/gcm_driver/gcm_channel_status_syncer.h"
 #include "components/gcm_driver/gcm_client_factory.h"
 #include "components/gcm_driver/gcm_desktop_utils.h"
 #include "components/gcm_driver/gcm_driver_desktop.h"
@@ -124,11 +123,7 @@ void GCMProfileService::IdentityObserver::StartAccountTracker(
 
 // static
 bool GCMProfileService::IsGCMEnabled(PrefService* prefs) {
-#if BUILDFLAG(USE_GCM_FROM_PLATFORM)
   return true;
-#else
-  return prefs->GetBoolean(gcm::prefs::kGCMChannelStatus);
-#endif  // BUILDFLAG(USE_GCM_FROM_PLATFORM)
 }
 
 #if BUILDFLAG(USE_GCM_FROM_PLATFORM)

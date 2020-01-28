@@ -84,7 +84,8 @@ ScrollOffset ScrollAnimatorBase::CurrentOffset() const {
 }
 
 void ScrollAnimatorBase::NotifyOffsetChanged() {
-  ScrollOffsetChanged(current_offset_, kUserScroll);
+  ScrollOffsetChanged(current_offset_,
+                      mojom::blink::ScrollIntoViewParams::Type::kUser);
 }
 
 void ScrollAnimatorBase::Trace(blink::Visitor* visitor) {

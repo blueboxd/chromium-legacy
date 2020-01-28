@@ -25,16 +25,16 @@ struct LocaleUIFallbackPair {
 
 // This list MUST be sorted by the first element in the pair, because we perform
 // binary search on it.
-// TODO(claudiomagni): Investigate Norvegian language. There are 2 codes ("nn",
-// "no") that fallback to "nb", but the base language should be "nn".
+// Note that no (Norwegian) is an alias, and should fallback to Norwegian
+// Bokmål (nb)
 const LocaleUIFallbackPair kLocaleUIFallbackTable[] = {
     {"en", "en-US"},     {"en-AU", "en-GB"},  {"en-CA", "en-GB"},
     {"en-IN", "en-GB"},  {"en-NZ", "en-GB"},  {"en-ZA", "en-GB"},
     {"es-AR", "es-419"}, {"es-CL", "es-419"}, {"es-CO", "es-419"},
     {"es-CR", "es-419"}, {"es-HN", "es-419"}, {"es-MX", "es-419"},
     {"es-PE", "es-419"}, {"es-US", "es-419"}, {"es-UY", "es-419"},
-    {"es-VE", "es-419"}, {"it-CH", "it"},     {"nn", "nb"},
-    {"no", "nb"},        {"pt", "pt-PT"}};
+    {"es-VE", "es-419"}, {"it-CH", "it"},     {"no", "nb"},
+    {"pt", "pt-PT"}};
 
 bool LocaleCompare(const LocaleUIFallbackPair& p1, const std::string& p2) {
   return p1.chosen_locale < p2;

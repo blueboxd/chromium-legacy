@@ -345,12 +345,14 @@ WebContents* OpenEnabledApplication(Profile* profile,
       break;
   }
 
-  if (base::FeatureList::IsEnabled(blink::features::kFileHandlingAPI)) {
-    web_launch::WebLaunchFilesHelper::SetLaunchPaths(tab, url,
-                                                     params.launch_files);
-  }
-
   if (extension->from_bookmark()) {
+    if (web_app::WebAppProviderBase::GetProviderBase(profile)
+            ->file_handler_manager()
+            .IsFileHandlingAPIAvailable(extension->id())) {
+      web_launch::WebLaunchFilesHelper::SetLaunchPaths(tab, url,
+                                                       params.launch_files);
+    }
+
     UMA_HISTOGRAM_ENUMERATION("Extensions.BookmarkAppLaunchSource",
                               params.source);
     UMA_HISTOGRAM_ENUMERATION("Extensions.BookmarkAppLaunchContainer",

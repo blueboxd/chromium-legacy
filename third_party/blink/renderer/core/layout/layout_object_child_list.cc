@@ -58,7 +58,11 @@ void InvalidateInlineItems(LayoutObject* object) {
     }
   }
 
-  if (NGPaintFragment* fragment = object->FirstInlineFragment()) {
+  if (RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled()) {
+    // TODO(yosin): Tells |NGFragmentItem| about they become not to associate
+    // to layout object.
+    object->ClearFirstInlineFragmentItemIndex();
+  } else if (NGPaintFragment* fragment = object->FirstInlineFragment()) {
     // This LayoutObject is not technically destroyed, but further access should
     // be prohibited when moved to different parent as if it were destroyed.
     fragment->LayoutObjectWillBeDestroyed();
@@ -129,6 +133,8 @@ LayoutObject* LayoutObjectChildList::RemoveChildNode(
 
     if (old_child->IsInLayoutNGInlineFormattingContext()) {
       owner->SetChildNeedsCollectInlines();
+      if (RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled())
+        InvalidateInlineItems(old_child);
     }
   }
 
@@ -182,6 +188,12 @@ void LayoutObjectChildList::InsertChildNode(LayoutObject* owner,
   if (before_child && before_child->Parent() != owner) {
     NOTREACHED();
     return;
+  }
+
+  if (RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled() &&
+      !owner->DocumentBeingDestroyed() &&
+      new_child->IsInLayoutNGInlineFormattingContext()) {
+    InvalidateInlineItems(new_child);
   }
 
   new_child->SetParent(owner);

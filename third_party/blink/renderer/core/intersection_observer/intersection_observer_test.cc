@@ -197,7 +197,8 @@ TEST_F(IntersectionObserverTest, DocumentRootClips) {
   EXPECT_TRUE(observer_delegate->LastEntry()->isIntersecting());
 
   iframe_document->View()->LayoutViewport()->SetScrollOffset(
-      ScrollOffset(0, 1000), kProgrammaticScroll);
+      ScrollOffset(0, 1000),
+      mojom::blink::ScrollIntoViewParams::Type::kProgrammatic);
   Compositor().BeginFrame();
   test::RunPendingTasks();
   EXPECT_EQ(observer_delegate->CallCount(), 2);
@@ -295,8 +296,9 @@ TEST_F(IntersectionObserverTest, ResumePostsTask) {
 
   // When document is not suspended, beginFrame() will generate notifications
   // and post a task to deliver them.
-  GetDocument().View()->LayoutViewport()->SetScrollOffset(ScrollOffset(0, 300),
-                                                          kProgrammaticScroll);
+  GetDocument().View()->LayoutViewport()->SetScrollOffset(
+      ScrollOffset(0, 300),
+      mojom::blink::ScrollIntoViewParams::Type::kProgrammatic);
   Compositor().BeginFrame();
   EXPECT_EQ(observer_delegate->CallCount(), 1);
   test::RunPendingTasks();
@@ -306,8 +308,9 @@ TEST_F(IntersectionObserverTest, ResumePostsTask) {
   // but it will not be delivered.  The notification will, however, be
   // available via takeRecords();
   WebView().GetPage()->SetPaused(true);
-  GetDocument().View()->LayoutViewport()->SetScrollOffset(ScrollOffset(0, 0),
-                                                          kProgrammaticScroll);
+  GetDocument().View()->LayoutViewport()->SetScrollOffset(
+      ScrollOffset(0, 0),
+      mojom::blink::ScrollIntoViewParams::Type::kProgrammatic);
   Compositor().BeginFrame();
   EXPECT_EQ(observer_delegate->CallCount(), 2);
   test::RunPendingTasks();
@@ -316,8 +319,9 @@ TEST_F(IntersectionObserverTest, ResumePostsTask) {
 
   // Generate a notification while document is suspended; then resume document.
   // Notification should happen in a post task.
-  GetDocument().View()->LayoutViewport()->SetScrollOffset(ScrollOffset(0, 300),
-                                                          kProgrammaticScroll);
+  GetDocument().View()->LayoutViewport()->SetScrollOffset(
+      ScrollOffset(0, 300),
+      mojom::blink::ScrollIntoViewParams::Type::kProgrammatic);
   Compositor().BeginFrame();
   test::RunPendingTasks();
   EXPECT_EQ(observer_delegate->CallCount(), 2);
@@ -359,8 +363,9 @@ TEST_F(IntersectionObserverTest, HitTestAfterMutation) {
   test::RunPendingTasks();
   EXPECT_EQ(observer_delegate->CallCount(), 1);
 
-  GetDocument().View()->LayoutViewport()->SetScrollOffset(ScrollOffset(0, 300),
-                                                          kProgrammaticScroll);
+  GetDocument().View()->LayoutViewport()->SetScrollOffset(
+      ScrollOffset(0, 300),
+      mojom::blink::ScrollIntoViewParams::Type::kProgrammatic);
 
   HitTestLocation location{PhysicalOffset()};
   HitTestResult result(
@@ -406,8 +411,9 @@ TEST_F(IntersectionObserverTest, DisconnectClearsNotifications) {
 
   // If disconnect() is called while an observer has unsent notifications,
   // those notifications should be discarded.
-  GetDocument().View()->LayoutViewport()->SetScrollOffset(ScrollOffset(0, 300),
-                                                          kProgrammaticScroll);
+  GetDocument().View()->LayoutViewport()->SetScrollOffset(
+      ScrollOffset(0, 300),
+      mojom::blink::ScrollIntoViewParams::Type::kProgrammatic);
   Compositor().BeginFrame();
   observer->disconnect();
   EXPECT_EQ(controller.GetTrackedObserverCountForTesting(), 0u);
@@ -457,8 +463,9 @@ TEST_F(IntersectionObserverTest, RootIntersectionWithForceZeroLayoutHeight) {
   ASSERT_EQ(observer_delegate->CallCount(), 1);
   EXPECT_TRUE(observer_delegate->LastIntersectionRect().IsEmpty());
 
-  GetDocument().View()->LayoutViewport()->SetScrollOffset(ScrollOffset(0, 600),
-                                                          kProgrammaticScroll);
+  GetDocument().View()->LayoutViewport()->SetScrollOffset(
+      ScrollOffset(0, 600),
+      mojom::blink::ScrollIntoViewParams::Type::kProgrammatic);
   Compositor().BeginFrame();
   test::RunPendingTasks();
   ASSERT_EQ(observer_delegate->CallCount(), 2);
@@ -466,8 +473,9 @@ TEST_F(IntersectionObserverTest, RootIntersectionWithForceZeroLayoutHeight) {
   EXPECT_EQ(PhysicalRect(200, 400, 100, 100),
             observer_delegate->LastIntersectionRect());
 
-  GetDocument().View()->LayoutViewport()->SetScrollOffset(ScrollOffset(0, 1200),
-                                                          kProgrammaticScroll);
+  GetDocument().View()->LayoutViewport()->SetScrollOffset(
+      ScrollOffset(0, 1200),
+      mojom::blink::ScrollIntoViewParams::Type::kProgrammatic);
   Compositor().BeginFrame();
   test::RunPendingTasks();
   ASSERT_EQ(observer_delegate->CallCount(), 3);
@@ -715,7 +723,9 @@ TEST_F(IntersectionObserverTest, CachedRectsTest) {
 
   // Scrolling the root should not invalidate.
   PaintLayerScrollableArea* root_scroller = root->GetScrollableArea();
-  root_scroller->SetScrollOffset(ScrollOffset(0, 100), kProgrammaticScroll);
+  root_scroller->SetScrollOffset(
+      ScrollOffset(0, 100),
+      mojom::blink::ScrollIntoViewParams::Type::kProgrammatic);
   EXPECT_TRUE(observation1->CanUseCachedRectsForTesting());
 
   // Changing layout between root and target should invalidate.

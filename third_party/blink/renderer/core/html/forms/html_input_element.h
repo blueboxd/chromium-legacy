@@ -344,6 +344,7 @@ class CORE_EXPORT HTMLInputElement
   bool HasCustomFocusLogic() const final;
   bool IsKeyboardFocusable() const final;
   bool MayTriggerVirtualKeyboard() const final;
+  bool ShouldHaveFocusAppearance() const final;
   bool IsEnumeratable() const final;
   bool IsInteractiveContent() const final;
   bool IsLabelable() const final;

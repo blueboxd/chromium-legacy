@@ -518,9 +518,7 @@ void ProfileSyncService::StartUpSlowEngineComponents() {
   // updates requires that the request either has a birthday, or there should be
   // no progress marker).
   if (sync_prefs_.GetCacheGuid().empty() || sync_prefs_.GetBirthday().empty()) {
-    // TODO(crbug.com/923285): This doesn't seem to belong here, or if it does,
-    // all preferences should be cleared via SyncPrefs::ClearPreferences().
-    sync_prefs_.ClearDirectoryConsistencyPreferences();
+    sync_prefs_.ClearLocalSyncTransportData();
     sync_prefs_.SetCacheGuid(GenerateCacheGUID());
   }
 
@@ -627,6 +625,7 @@ void ProfileSyncService::ShutdownImpl(ShutdownReason reason) {
             base::BindOnce(&syncable::Directory::DeleteDirectoryFiles,
                            sync_client_->GetSyncDataPath()));
       }
+      sync_prefs_.ClearLocalSyncTransportData();
     }
     return;
   }
@@ -681,6 +680,10 @@ void ProfileSyncService::ShutdownImpl(ShutdownReason reason) {
     auth_manager_->ConnectionClosed();
   }
 
+  if (reason == ShutdownReason::DISABLE_SYNC) {
+    sync_prefs_.ClearLocalSyncTransportData();
+  }
+
   NotifyObservers();
 }
 
@@ -692,11 +695,15 @@ void ProfileSyncService::StopImpl(SyncStopDataFate data_fate) {
     case CLEAR_DATA:
       ClearUnrecoverableError();
       ShutdownImpl(DISABLE_SYNC);
-      // Clear prefs (including SyncSetupHasCompleted) before shutting down so
-      // PSS clients don't think we're set up while we're shutting down.
-      // Note: We do this after shutting down, so that notifications about the
-      // changed pref values don't mess up our state.
-      sync_prefs_.ClearPreferences();
+      // Note: ShutdownImpl(DISABLE_SYNC) does *not* clear prefs which are
+      // directly user-controlled such as the set of selected types here, so
+      // that if the user ever chooses to enable Sync again, they start off
+      // with their previous settings by default. We do however require going
+      // through first-time setup again.
+      sync_prefs_.ClearFirstSetupComplete();
+      // For explicit passphrase users, clear the encryption key, such that they
+      // will need to reenter it if sync gets re-enabled.
+      sync_prefs_.ClearEncryptionBootstrapToken();
       break;
   }
 }
@@ -856,15 +863,6 @@ void ProfileSyncService::OnUnrecoverableErrorImpl(
 
   // Shut all data types down.
   ShutdownImpl(DISABLE_SYNC);
-
-  // This is the equivalent for Directory::DeleteDirectoryFiles(), guaranteed
-  // to be called, either directly in ShutdownImpl(), or later in
-  // SyncEngineBackend::DoShutdown().
-  // TODO(crbug.com/923285): This doesn't seem to belong here, or if it does,
-  // all preferences should be cleared via SyncPrefs::ClearPreferences(),
-  // which is done by some of the callers (but not all). Care must be taken
-  // however for scenarios like custom passphrase being set.
-  sync_prefs_.ClearDirectoryConsistencyPreferences();
 }
 
 void ProfileSyncService::DataTypePreconditionChanged(ModelType type) {
@@ -1062,27 +1060,9 @@ void ProfileSyncService::OnActionableError(const SyncProtocolError& error) {
       // restart.
       sync_disabled_by_admin_ = true;
       ShutdownImpl(DISABLE_SYNC);
-      // This is the equivalent for Directory::DeleteDirectoryFiles(),
-      // guaranteed to be called, either directly in ShutdownImpl(), or later in
-      // SyncEngineBackend::DoShutdown().
-      // TODO(crbug.com/923285): This doesn't seem to belong here, or if it
-      // does, all preferences should be cleared via
-      // SyncPrefs::ClearPreferences(), which is done by some of the callers
-      // (but not all). Care must be taken however for scenarios like custom
-      // passphrase being set.
-      sync_prefs_.ClearDirectoryConsistencyPreferences();
       break;
     case RESET_LOCAL_SYNC_DATA:
       ShutdownImpl(DISABLE_SYNC);
-      // This is the equivalent for Directory::DeleteDirectoryFiles(),
-      // guaranteed to be called, either directly in ShutdownImpl(), or later in
-      // SyncEngineBackend::DoShutdown().
-      // TODO(crbug.com/923285): This doesn't seem to belong here, or if it
-      // does, all preferences should be cleared via
-      // SyncPrefs::ClearPreferences(), which is done by some of the callers
-      // (but not all). Care must be taken however for scenarios like custom
-      // passphrase being set.
-      sync_prefs_.ClearDirectoryConsistencyPreferences();
       startup_controller_->TryStart(/*force_immediate=*/true);
       break;
     case UNKNOWN_ACTION:

@@ -242,8 +242,7 @@ bool IsRootEditableElementWithCounting(const Element& element) {
       UseCounter::Count(doc, WebFeature::kWebKitUserModifyReadWriteEffective);
       UseCounter::Count(doc, WebFeature::kWebKitUserModifyEffective);
     }
-  } else if (ce_value.IsEmpty() ||
-             DeprecatedEqualIgnoringCase(ce_value, "true")) {
+  } else if (ce_value.IsEmpty() || EqualIgnoringASCIICase(ce_value, "true")) {
     if (user_modify == EUserModify::kReadWritePlaintextOnly) {
       UseCounter::Count(doc, WebFeature::kPlainTextEditingEffective);
       UseCounter::Count(doc, WebFeature::kWebKitUserModifyPlainTextEffective);
@@ -252,7 +251,7 @@ bool IsRootEditableElementWithCounting(const Element& element) {
       UseCounter::Count(doc, WebFeature::kWebKitUserModifyReadOnlyEffective);
       UseCounter::Count(doc, WebFeature::kWebKitUserModifyEffective);
     }
-  } else if (DeprecatedEqualIgnoringCase(ce_value, "plaintext-only")) {
+  } else if (EqualIgnoringASCIICase(ce_value, "plaintext-only")) {
     UseCounter::Count(doc, WebFeature::kPlainTextEditingEffective);
     if (user_modify == EUserModify::kReadWrite) {
       UseCounter::Count(doc, WebFeature::kWebKitUserModifyReadWriteEffective);
@@ -1146,7 +1145,8 @@ void Element::ScrollIntoViewNoVisualUpdate(
   PhysicalRect bounds = BoundingBoxForScrollIntoView();
   GetLayoutObject()->ScrollRectToVisible(
       bounds, CreateScrollIntoViewParams(
-                  align_x, align_y, kProgrammaticScroll,
+                  align_x, align_y,
+                  mojom::blink::ScrollIntoViewParams::Type::kProgrammatic,
                   /*make_visible_in_visual_viewport=*/true, behavior));
 
   GetDocument().SetSequentialFocusNavigationStartingPoint(this);
@@ -1446,7 +1446,7 @@ void Element::setScrollLeft(double new_left) {
             scrollable_area->ScrollPositionToOffset(snap_point.value());
       }
       scrollable_area->SetScrollOffset(
-          end_offset, kProgrammaticScroll,
+          end_offset, mojom::blink::ScrollIntoViewParams::Type::kProgrammatic,
           mojom::blink::ScrollIntoViewParams::Behavior::kAuto);
     } else {
       FloatPoint end_point(new_left * box->Style()->EffectiveZoom(),
@@ -1513,7 +1513,7 @@ void Element::setScrollTop(double new_top) {
       }
 
       scrollable_area->SetScrollOffset(
-          end_offset, kProgrammaticScroll,
+          end_offset, mojom::blink::ScrollIntoViewParams::Type::kProgrammatic,
           mojom::blink::ScrollIntoViewParams::Behavior::kAuto);
     } else {
       FloatPoint end_point(scrollable_area->ScrollPosition().X(),
@@ -1718,8 +1718,9 @@ void Element::ScrollLayoutBoxTo(const ScrollToOptions* scroll_to_options) {
             scrollable_area->ScrollPositionToOffset(snap_point.value());
       }
 
-      scrollable_area->SetScrollOffset(new_offset, kProgrammaticScroll,
-                                       scroll_behavior);
+      scrollable_area->SetScrollOffset(
+          new_offset, mojom::blink::ScrollIntoViewParams::Type::kProgrammatic,
+          scroll_behavior);
     } else {
       FloatPoint new_position(scrollable_area->ScrollPosition().X(),
                               scrollable_area->ScrollPosition().Y());
@@ -1780,8 +1781,9 @@ void Element::ScrollFrameBy(const ScrollToOptions* scroll_to_options) {
           RuntimeEnabledFeatures::FractionalScrollOffsetsEnabled());
   new_position =
       viewport->GetSnapPositionAndSetTarget(*strategy).value_or(new_position);
-  viewport->SetScrollOffset(viewport->ScrollPositionToOffset(new_position),
-                            kProgrammaticScroll, scroll_behavior);
+  viewport->SetScrollOffset(
+      viewport->ScrollPositionToOffset(new_position),
+      mojom::blink::ScrollIntoViewParams::Type::kProgrammatic, scroll_behavior);
 }
 
 void Element::ScrollFrameTo(const ScrollToOptions* scroll_to_options) {
@@ -1817,7 +1819,9 @@ void Element::ScrollFrameTo(const ScrollToOptions* scroll_to_options) {
   new_position =
       viewport->GetSnapPositionAndSetTarget(*strategy).value_or(new_position);
   new_offset = viewport->ScrollPositionToOffset(new_position);
-  viewport->SetScrollOffset(new_offset, kProgrammaticScroll, scroll_behavior);
+  viewport->SetScrollOffset(
+      new_offset, mojom::blink::ScrollIntoViewParams::Type::kProgrammatic,
+      scroll_behavior);
 }
 
 IntRect Element::BoundsInViewport() const {
@@ -4822,8 +4826,8 @@ void Element::resetSubtreeRendered() {
 static Node* ContextNodeForInsertion(const String& where,
                                      Element* element,
                                      ExceptionState& exception_state) {
-  if (DeprecatedEqualIgnoringCase(where, "beforeBegin") ||
-      DeprecatedEqualIgnoringCase(where, "afterEnd")) {
+  if (EqualIgnoringASCIICase(where, "beforeBegin") ||
+      EqualIgnoringASCIICase(where, "afterEnd")) {
     Node* parent = element->parentNode();
     if (!parent || IsA<Document>(parent)) {
       exception_state.ThrowDOMException(
@@ -4833,8 +4837,8 @@ static Node* ContextNodeForInsertion(const String& where,
     }
     return parent;
   }
-  if (DeprecatedEqualIgnoringCase(where, "afterBegin") ||
-      DeprecatedEqualIgnoringCase(where, "beforeEnd"))
+  if (EqualIgnoringASCIICase(where, "afterBegin") ||
+      EqualIgnoringASCIICase(where, "beforeEnd"))
     return element;
   exception_state.ThrowDOMException(
       DOMExceptionCode::kSyntaxError,
@@ -5624,8 +5628,8 @@ SpellcheckAttributeState Element::GetSpellcheckAttributeState() const {
   const AtomicString& value = FastGetAttribute(html_names::kSpellcheckAttr);
   if (value == g_null_atom)
     return kSpellcheckAttributeDefault;
-  if (DeprecatedEqualIgnoringCase(value, "true") ||
-      DeprecatedEqualIgnoringCase(value, ""))
+  if (EqualIgnoringASCIICase(value, "true") ||
+      EqualIgnoringASCIICase(value, ""))
     return kSpellcheckAttributeTrue;
   if (DeprecatedEqualIgnoringCase(value, "false"))
     return kSpellcheckAttributeFalse;

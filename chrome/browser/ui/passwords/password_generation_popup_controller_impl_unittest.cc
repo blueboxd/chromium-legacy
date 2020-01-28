@@ -181,7 +181,9 @@ TEST_F(PasswordGenerationPopupControllerImplTest, DestroyInPasswordAccepted) {
   // crash.
   EXPECT_CALL(*driver,
               GeneratedPasswordAccepted(_, 100 /*generation_element_id*/, _))
-      .WillOnce([controller](auto, auto, auto) { controller->Hide(); });
+      .WillOnce([controller](auto, auto, auto) {
+        controller->Hide(autofill::PopupHidingReason::kViewDestroyed);
+      });
   controller->PasswordAccepted();
 }
 

@@ -1,0 +1,4 @@
+This is a testharness.js-based test.
+FAIL Color picker: Color values at the bottom edge of the color picker at zoom 150% should be valid numbers. assert_equals: expected Element node <color-selection-ring tabindex="0" style="top: -6px; left... but got Element node <color-selection-ring tabindex="0" style="top: -2.5px; le...
+Harness: the test ran to completion.
+

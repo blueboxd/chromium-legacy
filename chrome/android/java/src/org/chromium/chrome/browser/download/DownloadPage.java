@@ -43,9 +43,8 @@ public class DownloadPage extends BasicNativePage implements DownloadManagerCoor
                         .setShowPaginationHeaders(DownloadUtils.shouldShowPaginationHeaders())
                         .build();
 
-        mDownloadCoordinator = DownloadManagerCoordinatorFactory.create(activity, config,
-                activity.getSnackbarManager(), activity.getComponentName(),
-                activity.getModalDialogManager());
+        mDownloadCoordinator = DownloadManagerCoordinatorFactory.create(
+                activity, config, activity.getSnackbarManager(), activity.getModalDialogManager());
 
         mDownloadCoordinator.addObserver(this);
         mTitle = activity.getString(R.string.menu_downloads);

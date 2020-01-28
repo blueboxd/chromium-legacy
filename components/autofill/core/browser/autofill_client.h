@@ -422,7 +422,7 @@ class AutofillClient : public RiskDataLoader {
       const std::vector<base::string16>& labels) = 0;
 
   // Hide the Autofill popup if one is currently showing.
-  virtual void HideAutofillPopup() = 0;
+  virtual void HideAutofillPopup(PopupHidingReason reason) = 0;
 
   // Whether the Autocomplete feature of Autofill should be enabled.
   virtual bool IsAutocompleteEnabled() = 0;

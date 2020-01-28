@@ -47,7 +47,7 @@ void HTMLBRElement::CollectStyleForPresentationAttribute(
     // <br clear> and <br clear=""> are just treated like <br> by Gecko, Mac IE,
     // etc. -dwh
     if (!value.IsEmpty()) {
-      if (DeprecatedEqualIgnoringCase(value, "all")) {
+      if (EqualIgnoringASCIICase(value, "all")) {
         AddPropertyToPresentationAttributeStyle(style, CSSPropertyID::kClear,
                                                 CSSValueID::kBoth);
       } else {

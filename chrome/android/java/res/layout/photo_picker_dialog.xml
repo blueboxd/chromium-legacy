@@ -28,5 +28,11 @@
         app:srcCompat="@drawable/zoom_in"
         android:visibility="gone" />
 
-    <include layout="@layout/video_player" />
+    <org.chromium.chrome.browser.photo_picker.PickerVideoPlayer
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/playback_container"
+        android:background="@android:color/black"
+        android:clickable="true"
+        android:visibility="gone" />
 </org.chromium.ui.widget.OptimizedFrameLayout>

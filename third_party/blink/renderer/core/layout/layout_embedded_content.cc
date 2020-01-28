@@ -69,8 +69,7 @@ void LayoutEmbeddedContent::WillBeDestroyed() {
   LayoutReplaced::WillBeDestroyed();
 }
 
-void LayoutEmbeddedContent::Destroy() {
-  WillBeDestroyed();
+void LayoutEmbeddedContent::DeleteThis() {
   // We call clearNode here because LayoutEmbeddedContent is ref counted. This
   // call to destroy may not actually destroy the layout object. We can keep it
   // around because of references from the LocalFrameView class. (The actual

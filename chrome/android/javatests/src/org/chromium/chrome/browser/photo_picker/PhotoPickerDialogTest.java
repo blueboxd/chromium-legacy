@@ -52,7 +52,7 @@ import java.util.concurrent.TimeUnit;
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 public class PhotoPickerDialogTest implements PhotoPickerListener, SelectionObserver<PickerBitmap>,
                                               DecoderServiceHost.ServiceReadyCallback,
-                                              PickerCategoryView.VideoPlaybackStatusCallback,
+                                              PickerVideoPlayer.VideoPlaybackStatusCallback,
                                               AnimationListener {
     // The timeout (in seconds) to wait for the decoder service to be ready.
     private static final long WAIT_TIMEOUT_SECONDS = 30L;
@@ -110,7 +110,7 @@ public class PhotoPickerDialogTest implements PhotoPickerListener, SelectionObse
         mTestFiles.add(new PickerBitmap(Uri.parse("e"), 1L, PickerBitmap.TileTypes.PICTURE));
         mTestFiles.add(new PickerBitmap(Uri.parse("f"), 0L, PickerBitmap.TileTypes.PICTURE));
         PickerCategoryView.setTestFiles(mTestFiles);
-        PickerCategoryView.setProgressCallback(this);
+        PickerVideoPlayer.setProgressCallback(this);
         PickerBitmapView.setAnimationListenerForTest(this);
 
         DecoderServiceHost.setReadyCallback(this);
@@ -357,7 +357,7 @@ public class PhotoPickerDialogTest implements PhotoPickerListener, SelectionObse
 
             TestThreadUtils.runOnUiThreadBlocking(() -> {
                 View mute = categoryView.findViewById(R.id.mute);
-                categoryView.onClick(mute);
+                categoryView.getVideoPlayerForTesting().onClick(mute);
             });
 
             // Clicking the play button should restart playback.
@@ -365,7 +365,7 @@ public class PhotoPickerDialogTest implements PhotoPickerListener, SelectionObse
 
             TestThreadUtils.runOnUiThreadBlocking(() -> {
                 View playbutton = categoryView.findViewById(R.id.video_player_play_button);
-                categoryView.onClick(playbutton);
+                categoryView.getVideoPlayerForTesting().onClick(playbutton);
             });
 
             onVideoEndedCallback.waitForCallback(callCount, 1);

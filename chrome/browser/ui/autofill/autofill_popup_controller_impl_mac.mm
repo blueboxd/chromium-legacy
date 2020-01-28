@@ -28,7 +28,7 @@ WeakPtr<AutofillPopupControllerImpl> AutofillPopupControllerImpl::GetOrCreate(
   }
 
   if (previous.get())
-    previous->Hide();
+    previous->Hide(PopupHidingReason::kViewDestroyed);
 
   AutofillPopupControllerImpl* controller = new AutofillPopupControllerImplMac(
       delegate, web_contents, container_view, element_bounds, text_direction);
@@ -83,13 +83,13 @@ void AutofillPopupControllerImplMac::UpdateDataListValues(
   // |UpdateDataListValues| should be the last line.
 }
 
-void AutofillPopupControllerImplMac::Hide() {
+void AutofillPopupControllerImplMac::Hide(PopupHidingReason reason) {
   if (touch_bar_controller_) {
     [touch_bar_controller_ hideCreditCardAutofillTouchBar];
     touch_bar_controller_ = nil;
   }
 
-  AutofillPopupControllerImpl::Hide();
+  AutofillPopupControllerImpl::Hide(reason);
   // No code below this line!
   // |Hide()| destroys |this|, so it should be the last line.
 }

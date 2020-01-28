@@ -47,3 +47,7 @@ bool IncreasedContrastThemeSupplier::GetColor(int id, SkColor* color) const {
   }
   return false;
 }
+
+bool IncreasedContrastThemeSupplier::CanUseIncognitoColors() const {
+  return false;
+}

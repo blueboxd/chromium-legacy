@@ -91,7 +91,7 @@ class AutofillPopupBaseView : public views::WidgetDelegateView,
 
   // Hide the controller of this view. This assumes that doing so will
   // eventually hide this view in the process.
-  void HideController();
+  void HideController(PopupHidingReason reason);
 
   // Returns the border to be applied to the popup.
   std::unique_ptr<views::Border> CreateBorder();

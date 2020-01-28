@@ -67,7 +67,8 @@ TEST_F(FractionalScrollSimTest, GetBoundingClientRectAtFractional) {
 
   // Scroll on the layout viewport.
   GetDocument().View()->GetScrollableArea()->SetScrollOffset(
-      FloatSize(700.5f, 500.6f), kProgrammaticScroll,
+      FloatSize(700.5f, 500.6f),
+      mojom::blink::ScrollIntoViewParams::Type::kProgrammatic,
       mojom::blink::ScrollIntoViewParams::Behavior::kInstant);
 
   Compositor().BeginFrame();
@@ -130,7 +131,8 @@ TEST_F(FractionalScrollSimTest, NoRepaintOnScrollFromSubpixel) {
 
   // Scroll on the layout viewport.
   GetDocument().View()->GetScrollableArea()->SetScrollOffset(
-      FloatSize(0.f, 100.5f), kProgrammaticScroll,
+      FloatSize(0.f, 100.5f),
+      mojom::blink::ScrollIntoViewParams::Type::kProgrammatic,
       mojom::blink::ScrollIntoViewParams::Behavior::kInstant);
 
   Compositor().BeginFrame();
@@ -173,7 +175,8 @@ TEST_F(FractionalScrollSimTest, StickyDoesntOscillate) {
   // Try sub-layout-unit scroll offsets. The sticky box shouldn't move.
   for (int i = 0; i < 3; ++i) {
     GetDocument().View()->GetScrollableArea()->ScrollBy(
-        ScrollOffset(0.f, kOneLayoutUnitF / 4.f), kProgrammaticScroll);
+        ScrollOffset(0.f, kOneLayoutUnitF / 4.f),
+        mojom::blink::ScrollIntoViewParams::Type::kProgrammatic);
     Compositor().BeginFrame();
     EXPECT_EQ(8, sticky->getBoundingClientRect()->top());
   }
@@ -181,7 +184,8 @@ TEST_F(FractionalScrollSimTest, StickyDoesntOscillate) {
   // This offset is specifically chosen since it doesn't land on a LayoutUnit
   // boundary and reproduced https://crbug.com/1010961.
   GetDocument().View()->GetScrollableArea()->SetScrollOffset(
-      FloatSize(0.f, 98.8675308f), kProgrammaticScroll,
+      FloatSize(0.f, 98.8675308f),
+      mojom::blink::ScrollIntoViewParams::Type::kProgrammatic,
       mojom::blink::ScrollIntoViewParams::Behavior::kInstant);
   Compositor().BeginFrame();
   EXPECT_EQ(0, sticky->getBoundingClientRect()->top());
@@ -190,7 +194,8 @@ TEST_F(FractionalScrollSimTest, StickyDoesntOscillate) {
   // fixed.
   for (int i = 0; i < 4; ++i) {
     GetDocument().View()->GetScrollableArea()->ScrollBy(
-        ScrollOffset(0.f, kOneLayoutUnitF / 3.f), kProgrammaticScroll);
+        ScrollOffset(0.f, kOneLayoutUnitF / 3.f),
+        mojom::blink::ScrollIntoViewParams::Type::kProgrammatic);
     Compositor().BeginFrame();
     EXPECT_EQ(0, sticky->getBoundingClientRect()->top());
   }
@@ -440,7 +445,8 @@ TEST_F(ScrollAnimatorSimTest, TestRootFrameUserScrollCallBackCancelAnimation) {
   // Programmatic scroll will cancel the current user scroll animation and the
   // callback will be executed.
   GetDocument().View()->GetScrollableArea()->SetScrollOffset(
-      ScrollOffset(0, 300), kProgrammaticScroll,
+      ScrollOffset(0, 300),
+      mojom::blink::ScrollIntoViewParams::Type::kProgrammatic,
       mojom::blink::ScrollIntoViewParams::Behavior::kSmooth,
       ScrollableArea::ScrollCallback());
   Compositor().BeginFrame();

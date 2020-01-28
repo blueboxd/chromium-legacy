@@ -15,6 +15,7 @@ class IncreasedContrastThemeSupplier : public CustomThemeSupplier {
   explicit IncreasedContrastThemeSupplier(bool is_dark_mode);
 
   bool GetColor(int id, SkColor* color) const override;
+  bool CanUseIncognitoColors() const override;
 
  protected:
   ~IncreasedContrastThemeSupplier() override;

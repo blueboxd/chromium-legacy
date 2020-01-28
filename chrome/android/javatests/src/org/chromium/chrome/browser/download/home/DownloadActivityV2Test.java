@@ -24,6 +24,7 @@ import static org.hamcrest.core.AllOf.allOf;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
+import android.content.Context;
 import android.os.Handler;
 import android.os.Looper;
 import android.support.test.espresso.action.ViewActions;
@@ -37,11 +38,11 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import org.chromium.base.Callback;
+import org.chromium.base.supplier.ObservableSupplierImpl;
 import org.chromium.base.task.PostTask;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.JniMocker;
 import org.chromium.base.test.util.Restriction;
-import org.chromium.chrome.browser.download.home.filter.FilterCoordinator;
 import org.chromium.chrome.browser.download.home.rename.RenameUtils;
 import org.chromium.chrome.browser.download.home.toolbar.DownloadHomeToolbar;
 import org.chromium.chrome.browser.download.items.OfflineContentAggregatorFactory;
@@ -133,7 +134,6 @@ public class DownloadActivityV2Test extends DummyUiActivityTestCase {
     }
 
     private void setUpUi() {
-        FilterCoordinator.setPrefetchUserSettingValueForTesting(true);
         DownloadManagerUiConfig config = DownloadManagerUiConfigHelper.fromFlags()
                                                  .setIsOffTheRecord(false)
                                                  .setIsSeparateActivity(true)
@@ -147,8 +147,13 @@ public class DownloadActivityV2Test extends DummyUiActivityTestCase {
                 new ModalDialogManager(mAppModalPresenter, ModalDialogManager.ModalDialogType.APP);
 
         FaviconProvider faviconProvider = (url, faviconSizePx, callback) -> {};
+        Callback<Context> settingsLauncher = context -> {};
+        ObservableSupplierImpl<Boolean> isPrefetchEnabledSupplier = new ObservableSupplierImpl<>();
+        isPrefetchEnabledSupplier.set(true);
+
         mDownloadCoordinator = new DownloadManagerCoordinatorImpl(getActivity(), config,
-                mSnackbarManager, mModalDialogManager, mTracker, faviconProvider,
+                isPrefetchEnabledSupplier, settingsLauncher, mSnackbarManager, mModalDialogManager,
+                mTracker, faviconProvider, OfflineContentAggregatorFactory.get(),
                 /* LegacyDownloadProvider */ null);
         getActivity().setContentView(mDownloadCoordinator.getView());
 
@@ -179,12 +184,12 @@ public class DownloadActivityV2Test extends DummyUiActivityTestCase {
 
         Matcher filesTabMatcher = allOf(
                 withText(equalToIgnoringCase("My Files")), isDescendantOfA(withId(R.id.tabs)));
-        Matcher prefetchTabMatcher = allOf(withText(equalToIgnoringCase("Articles for you")),
+        Matcher prefetchTabMatcher = allOf(withText(equalToIgnoringCase("Explore Offline")),
                 isDescendantOfA(withId(R.id.tabs)));
         onView(filesTabMatcher).check(matches(isDisplayed()));
         onView(prefetchTabMatcher).check(matches(isDisplayed()));
 
-        // Select Articles for you tab, and verify the contents.
+        // Select Explore Offline tab, and verify the contents.
         onView(prefetchTabMatcher).perform(ViewActions.click());
         checkItemsDisplayed(false, false, false, false);
 
@@ -233,7 +238,7 @@ public class DownloadActivityV2Test extends DummyUiActivityTestCase {
         onView(withId(R.id.empty)).check(matches(not(isDisplayed())));
 
         // Go to Prefetch tab. It should be empty.
-        onView(withText(equalToIgnoringCase("Articles for you")))
+        onView(withText(equalToIgnoringCase("Explore Offline")))
                 .check(matches(isDisplayed()))
                 .perform(ViewActions.click());
         onView(withText(containsString("Articles appear here"))).check(matches(isDisplayed()));

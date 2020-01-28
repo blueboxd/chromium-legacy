@@ -58,26 +58,13 @@
         font-weight: 600;
       }
 
-      #osSettingsBanner,
-      #secondaryUserBanner {
+      #osSettingsBanner {
         @apply --cr-card-elevation;
         align-items: center;
         background-color: white;
         border-radius: 2px;
         display: flex;
         margin-top: 21px;
-      }
-
-      #secondaryUserIcon {
-        /* TODO(stevenjb): Replace this with the correct variable or color once
-         * established by UX, see crbug.com/687749. */
-        background-color : rgb(210, 210, 212);
-        background-image: url(chrome://theme/IDR_SECONDARY_USER_SETTINGS);
-        background-position: center;
-        background-repeat: no-repeat;
-        height: 55px;
-        margin: 18px;
-        width: 58px;
       }
 
       #toggleContainer {
@@ -119,10 +106,6 @@
             </cr-icon-button>
           </div>
         </template>
-        <div id="secondaryUserBanner" hidden="[[!showSecondaryUserBanner_]]">
-          <div id="secondaryUserIcon"></div>
-          <div class="flex">$i18n{secondaryUserBannerText}</div>
-        </div>
 </if>
         <template is="dom-if" if="[[showChangePassword]]" restamp>
           <settings-section section="changePassword">

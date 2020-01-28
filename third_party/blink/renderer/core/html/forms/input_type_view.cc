@@ -121,6 +121,10 @@ void InputTypeView::StartResourceLoading() {}
 
 void InputTypeView::ClosePopupView() {}
 
+bool InputTypeView::HasOpenedPopup() const {
+  return false;
+}
+
 bool InputTypeView::NeedsShadowSubtree() const {
   return true;
 }

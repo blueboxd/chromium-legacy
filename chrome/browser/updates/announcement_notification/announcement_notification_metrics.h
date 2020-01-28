@@ -23,7 +23,7 @@ enum class AnnouncementNotificationEvent {
   kAck = 4,
   // The open button is clicked.
   kOpen = 5,
-  kMax = 6,
+  kMaxValue = kOpen,
 };
 
 // Records announcement notification event.

@@ -187,6 +187,8 @@ class CORE_EXPORT HTMLSelectElement final
 
   bool MayTriggerVirtualKeyboard() const override;
 
+  bool ShouldHaveFocusAppearance() const final;
+
   void DispatchFocusEvent(
       Element* old_focused_element,
       mojom::blink::FocusType,
@@ -252,6 +254,7 @@ class CORE_EXPORT HTMLSelectElement final
   void HandlePopupOpenKeyboardEvent(Event&);
   bool ShouldOpenPopupForKeyDownEvent(const KeyboardEvent&);
   bool ShouldOpenPopupForKeyPressEvent(const KeyboardEvent&);
+  void SetPopupIsVisible(bool);
   void ListBoxDefaultEventHandler(Event&);
   void SetOptionsChangedOnLayoutObject();
   wtf_size_t SearchOptionsForValue(const String&,

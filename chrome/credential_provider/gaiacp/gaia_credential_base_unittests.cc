@@ -134,7 +134,25 @@ TEST_F(GcpGaiaCredentialBaseTest, GetSerialization_Start) {
   ASSERT_EQ(S_OK, StartLogonProcessAndWait());
 }
 
-TEST_F(GcpGaiaCredentialBaseTest, GetSerialization_Finish) {
+// Tests the GetSerialization Finish scenario.
+// 1. Is gem features enabled. If enabled, tos should be tested out.
+//    Otherwise, ToS shouldn't be set irrespective of the |kAcceptTos|
+//    registry entry.
+class GcpGaiaCredentialGetSerializationBaseTest
+    : public GcpGaiaCredentialBaseTest,
+      public ::testing::WithParamInterface<bool> {};
+
+TEST_P(GcpGaiaCredentialGetSerializationBaseTest, Finish) {
+  bool is_gem_features_enabled = GetParam();
+
+  if (is_gem_features_enabled) {
+    // Set |kKeyEnableGemFeatures| registry entry to 1.
+    ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kKeyEnableGemFeatures, 1u));
+  } else {
+    // Set |kKeyEnableGemFeatures| registry entry to 0.
+    ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kKeyEnableGemFeatures, 0u));
+  }
+
   // Create provider and start logon.
   Microsoft::WRL::ComPtr<ICredentialProviderCredential> cred;
 
@@ -152,11 +170,35 @@ TEST_F(GcpGaiaCredentialBaseTest, GetSerialization_Finish) {
   EXPECT_EQ(S_OK, fake_os_user_manager()->GetUserSID(
                       OSUserManager::GetLocalDomain().c_str(), kDefaultUsername,
                       &sid));
-  ::LocalFree(sid);
 
   // New user should be created.
   EXPECT_EQ(2ul, fake_os_user_manager()->GetUserCount());
+
+  // Finishing logon process should trigger credential changed and trigger
+  // GetSerialization.
+  ASSERT_EQ(S_OK, FinishLogonProcess(true, true, 0));
+
+  // Make sure ToS acceptance when is_gem_features_enabled isn't enabled.
+  DWORD accept_tos = 0u;
+  wchar_t* user_sid_string = nullptr;
+  ASSERT_TRUE(ConvertSidToStringSid(sid, &user_sid_string));
+  HRESULT hr = GetUserProperty(user_sid_string, kKeyAcceptTos, &accept_tos);
+  if (is_gem_features_enabled) {
+    ASSERT_EQ(S_OK, hr);
+    ASSERT_EQ(1u, accept_tos);
+    // Verify command line switch for show_tos.
+    ASSERT_EQ("1", test->GetShowTosFromCmdLine());
+  } else {
+    ASSERT_TRUE(FAILED(hr));
+    ASSERT_EQ(0u, accept_tos);
+    // Verify command line switch for show_tos.
+    ASSERT_EQ("0", test->GetShowTosFromCmdLine());
+  }
 }
+
+INSTANTIATE_TEST_SUITE_P(All,
+                         GcpGaiaCredentialGetSerializationBaseTest,
+                         ::testing::Values(true, false));
 
 // This test emulates the scenario where SetDeselected is triggered by the
 // Windows Login UI process after GetSerialization prior to invocation of
@@ -1360,6 +1402,8 @@ void GcpGaiaCredentialBaseAdScenariosTest::SetUp() {
   // Override registry to enable cloud association with google.
   constexpr wchar_t kRegCloudAssociation[] = L"enable_cloud_association";
   ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegCloudAssociation, 1));
+  // Set |kKeyEnableGemFeatures| registry entry
+  ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kKeyEnableGemFeatures, 1u));
 
   ASSERT_EQ(S_OK, InitializeProviderAndGetCredential(0, &cred_));
 }
@@ -1480,6 +1524,12 @@ TEST_F(GcpGaiaCredentialBaseAdScenariosTest,
       GetUserProperty(sid_str.c_str(), kUserId, gaia_id, &length);
   ASSERT_EQ(S_OK, gaia_id_hr);
   ASSERT_TRUE(gaia_id[0]);
+
+  // Make sure ToS acceptance was recorded.
+  DWORD accept_tos;
+  HRESULT hr = GetUserProperty(sid_str.c_str(), kKeyAcceptTos, &accept_tos);
+  ASSERT_EQ(S_OK, hr);
+  ASSERT_EQ(1u, accept_tos);
 
   // Verify that the authentication results dictionary is now empty.
   ASSERT_TRUE(test->IsAuthenticationResultsEmpty());

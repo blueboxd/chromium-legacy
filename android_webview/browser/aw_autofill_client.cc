@@ -39,7 +39,7 @@ using content::WebContents;
 namespace android_webview {
 
 AwAutofillClient::~AwAutofillClient() {
-  HideAutofillPopup();
+  HideAutofillPopup(autofill::PopupHidingReason::kTabGone);
 }
 
 void AwAutofillClient::SetSaveFormData(bool enabled) {
@@ -226,7 +226,7 @@ void AwAutofillClient::UpdateAutofillPopupDataListValues(
   // See crrev.com/18102002 if need to implement.
 }
 
-void AwAutofillClient::HideAutofillPopup() {
+void AwAutofillClient::HideAutofillPopup(autofill::PopupHidingReason reason) {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
   if (obj.is_null())

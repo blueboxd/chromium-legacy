@@ -253,7 +253,8 @@ void PasswordAutofillManager::DidAcceptSuggestion(const base::string16& value,
     DCHECK(success);
   }
 
-  autofill_client_->HideAutofillPopup();
+  autofill_client_->HideAutofillPopup(
+      autofill::PopupHidingReason::kAcceptSuggestion);
 }
 
 bool PasswordAutofillManager::GetDeletionConfirmationText(
@@ -306,8 +307,10 @@ void PasswordAutofillManager::OnAddPasswordFillData(
 
 void PasswordAutofillManager::DeleteFillData() {
   fill_data_.reset();
-  if (autofill_client_)
-    autofill_client_->HideAutofillPopup();
+  if (autofill_client_) {
+    autofill_client_->HideAutofillPopup(
+        autofill::PopupHidingReason::kStaleData);
+  }
 }
 
 void PasswordAutofillManager::OnShowPasswordSuggestions(
@@ -333,7 +336,8 @@ void PasswordAutofillManager::OnShowPasswordSuggestions(
   }
 
   if (suggestions.empty() && !show_account_storage_optin) {
-    autofill_client_->HideAutofillPopup();
+    autofill_client_->HideAutofillPopup(
+        autofill::PopupHidingReason::kNoSuggestions);
     return;
   }
 

@@ -21,11 +21,11 @@ AutofillDriver* AutofillDriverFactory::DriverForKey(void* key) {
 }
 
 void AutofillDriverFactory::NavigationFinished() {
-  client_->HideAutofillPopup();
+  client_->HideAutofillPopup(PopupHidingReason::kNavigation);
 }
 
 void AutofillDriverFactory::TabHidden() {
-  client_->HideAutofillPopup();
+  client_->HideAutofillPopup(PopupHidingReason::kTabGone);
 }
 
 void AutofillDriverFactory::AddForKey(

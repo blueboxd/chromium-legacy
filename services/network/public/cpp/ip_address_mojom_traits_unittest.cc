@@ -5,6 +5,7 @@
 #include "services/network/public/cpp/ip_address_mojom_traits.h"
 
 #include "mojo/public/cpp/test_support/test_utils.h"
+#include "services/network/public/mojom/ip_address.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace net {

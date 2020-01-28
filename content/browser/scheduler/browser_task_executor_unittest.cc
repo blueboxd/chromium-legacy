@@ -11,7 +11,6 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool/thread_pool_instance.h"
 #include "base/test/bind_test_util.h"
@@ -49,15 +48,15 @@ using StrictMockTask =
     testing::StrictMock<base::MockCallback<base::RepeatingCallback<void()>>>;
 
 TEST_F(BrowserTaskExecutorTest, RegisterExecutorForBothThreads) {
-  base::PostTask(FROM_HERE, {BrowserThread::UI}, base::BindOnce([]() {
-                   EXPECT_THAT(base::GetTaskExecutorForCurrentThread(),
-                               NotNull());
-                 }));
+  GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce([]() {
+        EXPECT_THAT(base::GetTaskExecutorForCurrentThread(), NotNull());
+      }));
 
-  base::PostTask(FROM_HERE, {BrowserThread::IO}, base::BindOnce([]() {
-                   EXPECT_THAT(base::GetTaskExecutorForCurrentThread(),
-                               NotNull());
-                 }));
+  GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce([]() {
+        EXPECT_THAT(base::GetTaskExecutorForCurrentThread(), NotNull());
+      }));
 
   BrowserTaskExecutor::RunAllPendingTasksOnThreadForTesting(BrowserThread::UI);
   BrowserTaskExecutor::RunAllPendingTasksOnThreadForTesting(BrowserThread::IO);
@@ -70,7 +69,7 @@ TEST_F(BrowserTaskExecutorTest, RunAllPendingTasksForTestingOnUI) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, task_2.Get());
   }));
 
-  base::PostTask(FROM_HERE, {BrowserThread::UI}, task_1.Get());
+  GetUIThreadTaskRunner({})->PostTask(FROM_HERE, task_1.Get());
 
   BrowserTaskExecutor::RunAllPendingTasksOnThreadForTesting(BrowserThread::UI);
 
@@ -84,10 +83,10 @@ TEST_F(BrowserTaskExecutorTest, RunAllPendingTasksForTestingOnIO) {
   StrictMockTask task_1;
   StrictMockTask task_2;
   EXPECT_CALL(task_1, Run).WillOnce(testing::Invoke([&]() {
-    base::PostTask(FROM_HERE, {BrowserThread::IO}, task_2.Get());
+    GetIOThreadTaskRunner({})->PostTask(FROM_HERE, task_2.Get());
   }));
 
-  base::PostTask(FROM_HERE, {BrowserThread::IO}, task_1.Get());
+  GetIOThreadTaskRunner({})->PostTask(FROM_HERE, task_1.Get());
 
   BrowserTaskExecutor::RunAllPendingTasksOnThreadForTesting(BrowserThread::IO);
 
@@ -103,15 +102,15 @@ TEST_F(BrowserTaskExecutorTest, RunAllPendingTasksForTestingOnIOIsReentrant) {
   StrictMockTask task_3;
 
   EXPECT_CALL(task_1, Run).WillOnce(Invoke([&]() {
-    base::PostTask(FROM_HERE, {BrowserThread::IO}, task_2.Get());
+    GetIOThreadTaskRunner({})->PostTask(FROM_HERE, task_2.Get());
     BrowserTaskExecutor::RunAllPendingTasksOnThreadForTesting(
         BrowserThread::IO);
   }));
   EXPECT_CALL(task_2, Run).WillOnce(Invoke([&]() {
-    base::PostTask(FROM_HERE, {BrowserThread::IO}, task_3.Get());
+    GetIOThreadTaskRunner({})->PostTask(FROM_HERE, task_3.Get());
   }));
 
-  base::PostTask(FROM_HERE, {BrowserThread::IO}, task_1.Get());
+  GetIOThreadTaskRunner({})->PostTask(FROM_HERE, task_1.Get());
   BrowserTaskExecutor::RunAllPendingTasksOnThreadForTesting(BrowserThread::IO);
 
   // Cleanup pending tasks, as BrowserTaskEnvironment will run them.
@@ -134,44 +133,33 @@ class BrowserTaskTraitsMappingTest : public BrowserTaskExecutorTest {
     }
   };
 
-  template <BrowserThread::ID ID>
-  void CheckExpectations() {
-    EXPECT_EQ(GetQueueType({ID, TaskPriority::BEST_EFFORT}),
-              QueueType::kBestEffort);
-    EXPECT_EQ(GetQueueType({ID, TaskPriority::USER_VISIBLE}),
-              QueueType::kUserVisible);
-    EXPECT_EQ(GetQueueType({ID, TaskPriority::USER_BLOCKING}),
-              QueueType::kUserBlocking);
-
-    EXPECT_EQ(GetQueueType({ID, BrowserTaskType::kBootstrap}),
-              QueueType::kBootstrap);
-    EXPECT_EQ(GetQueueType({ID, BrowserTaskType::kDefault}),
-              QueueType::kUserBlocking);
-    EXPECT_EQ(GetQueueType({ID, BrowserTaskType::kNavigation}),
-              QueueType::kNavigationAndPreconnection);
-    EXPECT_EQ(GetQueueType({ID, BrowserTaskType::kPreconnect}),
-              QueueType::kNavigationAndPreconnection);
-
-    EXPECT_EQ(GetQueueType({ID}), QueueType::kUserBlocking);
-  }
-
  private:
-  QueueType GetQueueType(const base::TaskTraits& traits) {
-    return test_executor_.GetThreadIdAndQueueType(traits).queue_type;
-  }
-
   TestExecutor test_executor_;
 };
 
 TEST_F(BrowserTaskTraitsMappingTest, BrowserTaskTraitsMapToProperPriorities) {
-  CheckExpectations<BrowserThread::UI>();
-  CheckExpectations<BrowserThread::IO>();
+  EXPECT_EQ(BrowserTaskExecutor::GetQueueType({TaskPriority::BEST_EFFORT}),
+            QueueType::kBestEffort);
+  EXPECT_EQ(BrowserTaskExecutor::GetQueueType({TaskPriority::USER_VISIBLE}),
+            QueueType::kUserVisible);
+  EXPECT_EQ(BrowserTaskExecutor::GetQueueType({TaskPriority::USER_BLOCKING}),
+            QueueType::kUserBlocking);
+
+  EXPECT_EQ(BrowserTaskExecutor::GetQueueType({BrowserTaskType::kBootstrap}),
+            QueueType::kBootstrap);
+  EXPECT_EQ(BrowserTaskExecutor::GetQueueType({BrowserTaskType::kDefault}),
+            QueueType::kUserBlocking);
+  EXPECT_EQ(BrowserTaskExecutor::GetQueueType({BrowserTaskType::kNavigation}),
+            QueueType::kNavigationAndPreconnection);
+  EXPECT_EQ(BrowserTaskExecutor::GetQueueType({BrowserTaskType::kPreconnect}),
+            QueueType::kNavigationAndPreconnection);
+
+  EXPECT_EQ(BrowserTaskExecutor::GetQueueType({}), QueueType::kUserBlocking);
 }
 
 TEST_F(BrowserTaskTraitsMappingTest,
        UIThreadTaskRunnerHasSamePriorityAsUIBlocking) {
-  auto ui_blocking = base::CreateSingleThreadTaskRunner(
-      {BrowserThread::UI, TaskPriority::USER_BLOCKING});
+  auto ui_blocking = GetUIThreadTaskRunner({TaskPriority::USER_BLOCKING});
   auto thread_task_runner = base::ThreadTaskRunnerHandle::Get();
 
   std::vector<int> order;
@@ -213,8 +201,6 @@ class BrowserTaskExecutorWithCustomSchedulerTest : public testing::Test {
   };
 
  public:
-  using QueueType = BrowserTaskQueues::QueueType;
-
   ~BrowserTaskExecutorWithCustomSchedulerTest() override {
     BrowserTaskExecutor::ResetForTesting();
   }
@@ -229,14 +215,17 @@ TEST_F(BrowserTaskExecutorWithCustomSchedulerTest,
   StrictMockTask user_visible;
   StrictMockTask user_blocking;
 
-  base::PostTask(FROM_HERE,
-                 {BrowserThread::UI, base::TaskPriority::BEST_EFFORT},
+  GetUIThreadTaskRunner({base::TaskPriority::BEST_EFFORT})
+      ->PostTask(FROM_HERE,
+
                  best_effort.Get());
-  base::PostTask(FROM_HERE,
-                 {BrowserThread::UI, base::TaskPriority::USER_VISIBLE},
+  GetUIThreadTaskRunner({base::TaskPriority::USER_VISIBLE})
+      ->PostTask(FROM_HERE,
+
                  user_visible.Get());
-  base::PostTask(FROM_HERE,
-                 {BrowserThread::UI, base::TaskPriority::USER_BLOCKING},
+  GetUIThreadTaskRunner({base::TaskPriority::USER_BLOCKING})
+      ->PostTask(FROM_HERE,
+
                  user_blocking.Get());
 
   EXPECT_CALL(user_visible, Run);
@@ -247,19 +236,20 @@ TEST_F(BrowserTaskExecutorWithCustomSchedulerTest,
 
 TEST_F(BrowserTaskExecutorWithCustomSchedulerTest,
        BestEffortTasksRunAfterStartup) {
-  auto ui_best_effort_runner = base::CreateSingleThreadTaskRunner(
-      {BrowserThread::UI, base::TaskPriority::BEST_EFFORT});
+  auto ui_best_effort_runner =
+      GetUIThreadTaskRunner({base::TaskPriority::BEST_EFFORT});
 
   StrictMockTask best_effort;
 
   ui_best_effort_runner->PostTask(FROM_HERE, best_effort.Get());
   ui_best_effort_runner->PostDelayedTask(
       FROM_HERE, best_effort.Get(), base::TimeDelta::FromMilliseconds(100));
-  base::PostDelayedTask(
-      FROM_HERE, {BrowserThread::UI, base::TaskPriority::BEST_EFFORT},
-      best_effort.Get(), base::TimeDelta::FromMilliseconds(100));
-  base::PostTask(FROM_HERE,
-                 {BrowserThread::UI, base::TaskPriority::BEST_EFFORT},
+  GetUIThreadTaskRunner({base::TaskPriority::BEST_EFFORT})
+      ->PostDelayedTask(FROM_HERE, best_effort.Get(),
+                        base::TimeDelta::FromMilliseconds(100));
+  GetUIThreadTaskRunner({base::TaskPriority::BEST_EFFORT})
+      ->PostTask(FROM_HERE,
+
                  best_effort.Get());
   task_environment_.RunUntilIdle();
 

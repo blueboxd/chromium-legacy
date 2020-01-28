@@ -32,7 +32,7 @@ void FileHandlerManager::DisableOsIntegrationForTesting() {
 }
 
 void FileHandlerManager::EnableAndRegisterOsFileHandlers(const AppId& app_id) {
-  if (!base::FeatureList::IsEnabled(blink::features::kFileHandlingAPI))
+  if (!IsFileHandlingAPIAvailable(app_id))
     return;
 
   UpdateBoolWebAppPref(profile()->GetPrefs(), app_id, kFileHandlersEnabled,
@@ -61,8 +61,7 @@ void FileHandlerManager::DisableAndUnregisterOsFileHandlers(
   UpdateBoolWebAppPref(profile()->GetPrefs(), app_id, kFileHandlersEnabled,
                        /*value=*/false);
 
-  if (!base::FeatureList::IsEnabled(blink::features::kFileHandlingAPI) ||
-      !ShouldRegisterFileHandlersWithOs() ||
+  if (!ShouldRegisterFileHandlersWithOs() ||
       disable_os_integration_for_testing_) {
     return;
   }
@@ -72,10 +71,14 @@ void FileHandlerManager::DisableAndUnregisterOsFileHandlers(
 
 const std::vector<apps::FileHandlerInfo>*
 FileHandlerManager::GetEnabledFileHandlers(const AppId& app_id) {
-  if (AreFileHandlersEnabled(app_id))
+  if (AreFileHandlersEnabled(app_id) && IsFileHandlingAPIAvailable(app_id))
     return GetAllFileHandlers(app_id);
 
   return nullptr;
+}
+
+bool FileHandlerManager::IsFileHandlingAPIAvailable(const AppId& app_id) {
+  return base::FeatureList::IsEnabled(blink::features::kFileHandlingAPI);
 }
 
 bool FileHandlerManager::AreFileHandlersEnabled(const AppId& app_id) const {
@@ -97,7 +100,7 @@ void FileHandlerManager::OnAppRegistrarDestroyed() {
 const base::Optional<GURL> FileHandlerManager::GetMatchingFileHandlerURL(
     const AppId& app_id,
     const std::vector<base::FilePath>& launch_files) {
-  if (!base::FeatureList::IsEnabled(blink::features::kFileHandlingAPI))
+  if (!IsFileHandlingAPIAvailable(app_id))
     return base::nullopt;
 
   const std::vector<apps::FileHandlerInfo>* file_handlers =

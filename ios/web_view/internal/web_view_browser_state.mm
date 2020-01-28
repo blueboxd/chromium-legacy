@@ -13,7 +13,6 @@
 #include "base/task/post_task.h"
 #include "base/threading/thread_restrictions.h"
 #include "components/autofill/core/common/autofill_prefs.h"
-#include "components/gcm_driver/gcm_channel_status_syncer.h"
 #include "components/history/core/common/pref_names.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
 #include "components/language/core/browser/language_prefs.h"
@@ -178,7 +177,6 @@ void WebViewBrowserState::RegisterPrefs(
 #endif  // BUILDFLAG(IOS_WEB_VIEW_ENABLE_AUTOFILL)
 
 #if BUILDFLAG(IOS_WEB_VIEW_ENABLE_SYNC)
-  gcm::GCMChannelStatusSyncer::RegisterProfilePrefs(pref_registry);
   sync_sessions::SessionSyncPrefs::RegisterProfilePrefs(pref_registry);
   syncer::SyncPrefs::RegisterProfilePrefs(pref_registry);
   syncer::DeviceInfoPrefs::RegisterProfilePrefs(pref_registry);

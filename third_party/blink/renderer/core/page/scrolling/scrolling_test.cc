@@ -1164,7 +1164,8 @@ TEST_P(ScrollingTest, NestedIFramesMainThreadScrollingRegion) {
 
   // Scroll the frame to ensure the rect is in the correct coordinate space.
   GetFrame()->GetDocument()->View()->GetScrollableArea()->SetScrollOffset(
-      ScrollOffset(0, 1000), kProgrammaticScroll);
+      ScrollOffset(0, 1000),
+      mojom::blink::ScrollIntoViewParams::Type::kProgrammatic);
 
   ForceFullCompositingUpdate();
 
@@ -1227,7 +1228,8 @@ TEST_P(ScrollingTest, NestedFixedIFramesMainThreadScrollingRegion) {
 
   // Scroll the frame to ensure the rect is in the correct coordinate space.
   GetFrame()->GetDocument()->View()->GetScrollableArea()->SetScrollOffset(
-      ScrollOffset(0, 1000), kProgrammaticScroll);
+      ScrollOffset(0, 1000),
+      mojom::blink::ScrollIntoViewParams::Type::kProgrammatic);
 
   ForceFullCompositingUpdate();
   auto* non_fast_layer = LayerByDOMElementId("iframe");
@@ -1376,7 +1378,9 @@ TEST_P(ScrollingTest, ScrollOffsetClobberedBeforeCompositingUpdate) {
 
   // Before updating the lifecycle, set the scroll offset back to what it was
   // before the commit from the main thread.
-  scrollable_area->SetScrollOffset(ScrollOffset(0, 0), kProgrammaticScroll);
+  scrollable_area->SetScrollOffset(
+      ScrollOffset(0, 0),
+      mojom::blink::ScrollIntoViewParams::Type::kProgrammatic);
 
   // Ensure the offset is up-to-date on the cc::Layer even though, as far as
   // the main thread is concerned, it was unchanged since the last time we
@@ -1610,8 +1614,9 @@ TEST_P(ScrollingTest, TouchActionUpdatesOutsideInterestRect) {
   ForceFullCompositingUpdate();
 
   auto* scroller = GetFrame()->GetDocument()->getElementById("scroller");
-  scroller->GetScrollableArea()->SetScrollOffset(ScrollOffset(0, 5100),
-                                                 kProgrammaticScroll);
+  scroller->GetScrollableArea()->SetScrollOffset(
+      ScrollOffset(0, 5100),
+      mojom::blink::ScrollIntoViewParams::Type::kProgrammatic);
 
   ForceFullCompositingUpdate();
 

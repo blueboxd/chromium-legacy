@@ -5,24 +5,21 @@
 #ifndef CHROME_CREDENTIAL_PROVIDER_TEST_TEST_CREDENTIAL_H_
 #define CHROME_CREDENTIAL_PROVIDER_TEST_TEST_CREDENTIAL_H_
 
-#include <memory>
-#include <string>
-
 #include <atlbase.h>
 #include <atlcom.h>
 #include <atlcomcli.h>
 #include <credentialprovider.h>
 
+#include <memory>
+#include <string>
+
+#include "base/command_line.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/synchronization/waitable_event.h"
 #include "chrome/credential_provider/common/gcp_strings.h"
 #include "chrome/credential_provider/gaiacp/gaia_credential_base.h"
 #include "chrome/credential_provider/test/gls_runner_test_base.h"
-
-namespace base {
-class CommandLine;
-}
 
 namespace credential_provider {
 
@@ -56,6 +53,7 @@ class DECLSPEC_UUID("3710aa3a-13c7-44c2-bc38-09ba137804d8") ITestCredential
   virtual bool STDMETHODCALLTYPE IsGlsRunning() = 0;
   virtual bool STDMETHODCALLTYPE IsAdJoinedUser() = 0;
   virtual bool STDMETHODCALLTYPE ContainsIsAdJoinedUser() = 0;
+  virtual std::string STDMETHODCALLTYPE GetShowTosFromCmdLine() = 0;
 };
 
 // Test implementation of an ICredentialProviderCredential backed by a Gaia
@@ -97,6 +95,7 @@ class ATL_NO_VTABLE CTestCredentialBase : public T, public ITestCredential {
   bool STDMETHODCALLTYPE IsGlsRunning() override;
   bool STDMETHODCALLTYPE IsAdJoinedUser() override;
   bool STDMETHODCALLTYPE ContainsIsAdJoinedUser() override;
+  std::string STDMETHODCALLTYPE GetShowTosFromCmdLine() override;
 
   void SignalGlsCompletion();
 
@@ -137,6 +136,7 @@ class ATL_NO_VTABLE CTestCredentialBase : public T, public ITestCredential {
   bool gls_process_started_ = false;
   bool ignore_expected_gaia_id_ = false;
   bool fail_loading_gaia_logon_stub_ = false;
+  std::string show_tos_command_line_;
 };
 
 template <class T>
@@ -264,6 +264,11 @@ bool CTestCredentialBase<T>::ContainsIsAdJoinedUser() {
 }
 
 template <class T>
+std::string CTestCredentialBase<T>::GetShowTosFromCmdLine() {
+  return show_tos_command_line_;
+}
+
+template <class T>
 BSTR CTestCredentialBase<T>::GetErrorText() {
   return error_text_;
 }
@@ -308,6 +313,12 @@ HRESULT CTestCredentialBase<T>::ForkGaiaLogonStub(
     OSProcessManager* process_manager,
     const base::CommandLine& command_line,
     CGaiaCredentialBase::UIProcessInfo* uiprocinfo) {
+  // Record command_line parameter "show_tos" into global variable.
+  show_tos_command_line_ =
+      command_line.HasSwitch(kShowTosSwitch)
+          ? command_line.GetSwitchValueASCII(kShowTosSwitch)
+          : "0";
+
   if (fail_loading_gaia_logon_stub_)
     return E_FAIL;
 

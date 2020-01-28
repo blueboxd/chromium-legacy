@@ -16,15 +16,18 @@ import static android.support.test.espresso.matcher.ViewMatchers.withParent;
 import static org.hamcrest.core.AllOf.allOf;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.areAnimatorsEnabled;
+import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.rotateDeviceToOrientation;
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.verifyTabModelTabCount;
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.verifyTabSwitcherCardCount;
 import static org.chromium.chrome.browser.util.UrlConstants.NTP_URL;
 import static org.chromium.content_public.browser.test.util.CriteriaHelper.DEFAULT_MAX_TIME_TO_POLL;
 import static org.chromium.content_public.browser.test.util.CriteriaHelper.DEFAULT_POLLING_INTERVAL;
 
+import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.os.Build;
@@ -35,6 +38,7 @@ import android.support.test.espresso.NoMatchingViewException;
 import android.support.test.espresso.ViewAssertion;
 import android.support.test.espresso.contrib.RecyclerViewActions;
 import android.support.test.filters.MediumTest;
+import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.view.View;
@@ -66,6 +70,7 @@ import org.chromium.chrome.browser.flags.FeatureUtilities;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabFeatureUtilities;
 import org.chromium.chrome.browser.tabmodel.TabModel;
+import org.chromium.chrome.browser.tasks.tab_management.TabProperties;
 import org.chromium.chrome.browser.tasks.tab_management.TabSelectionEditorTestingRobot;
 import org.chromium.chrome.browser.tasks.tab_management.TabSuggestionMessageService;
 import org.chromium.chrome.browser.tasks.tab_management.TabSwitcher;
@@ -740,7 +745,6 @@ public class StartSurfaceLayoutTest {
     @Feature("TabSuggestion")
     // clang-format off
     @Features.EnableFeatures(ChromeFeatureList.CLOSE_TAB_SUGGESTIONS + "<Study")
-    @Features.DisableFeatures(ChromeFeatureList.TAB_TO_GTS_ANIMATION)
     @CommandLineFlags.Add({BASE_PARAMS + "/close_tab_suggestions_stale_time_ms/0"})
     public void testTabSuggestionMessageCard_dismiss() throws InterruptedException {
         // clang-format on
@@ -776,7 +780,6 @@ public class StartSurfaceLayoutTest {
     @Feature("TabSuggestion")
     // clang-format off
     @Features.EnableFeatures(ChromeFeatureList.CLOSE_TAB_SUGGESTIONS + "<Study")
-    @Features.DisableFeatures(ChromeFeatureList.TAB_TO_GTS_ANIMATION)
     @CommandLineFlags.Add({BASE_PARAMS + "/close_tab_suggestions_stale_time_ms/0"})
     public void testTabSuggestionMessageCard_review() throws InterruptedException {
         // clang-format on
@@ -808,8 +811,7 @@ public class StartSurfaceLayoutTest {
     @MediumTest
     @Feature("NewTabTile")
     // clang-format off
-    @Features.DisableFeatures({ChromeFeatureList.TAB_TO_GTS_ANIMATION,
-            ChromeFeatureList.CLOSE_TAB_SUGGESTIONS})
+    @Features.DisableFeatures({ChromeFeatureList.CLOSE_TAB_SUGGESTIONS})
     @CommandLineFlags.Add({BASE_PARAMS + "/tab_grid_layout_android_new_tab_tile/NewTabTile"
             + "/tab_grid_layout_android_new_tab/false"})
     public void testNewTabTile() throws InterruptedException {
@@ -858,6 +860,77 @@ public class StartSurfaceLayoutTest {
         switchTabModel(true);
         onView(withId(R.id.tab_list_view)).check(TabCountAssertion.havingTabCount(1));
         onView(withId(R.id.new_tab_tile)).check(matches(isDisplayed()));
+    }
+
+    @Test
+    @MediumTest
+    @Feature("TabSuggestion")
+    // clang-format off
+    @Features.EnableFeatures(ChromeFeatureList.CLOSE_TAB_SUGGESTIONS + "<Study")
+    @CommandLineFlags.Add({BASE_PARAMS + "/close_tab_suggestions_stale_time_ms/0"})
+    public void testTabSuggestionMessageCard_orientation() throws InterruptedException {
+        // clang-format on
+        ChromeTabbedActivity cta = mActivityTestRule.getActivity();
+        prepareTabs(3, 0, null);
+
+        CriteriaHelper.pollInstrumentationThread(
+                ()
+                        -> TabSuggestionMessageService.isSuggestionAvailableForTesting()
+                        && mActivityTestRule.getActivity()
+                                        .getTabModelSelector()
+                                        .getCurrentModel()
+                                        .getCount()
+                                == 3);
+
+        enterGTSWithThumbnailChecking();
+        CriteriaHelper.pollInstrumentationThread(
+                TabSwitcherCoordinator::hasAppendedMessagesForTesting);
+
+        onView(withId(R.id.tab_list_view))
+                .check(MessageCardWidthAssertion.checkMessageItemSpanSize(3, 2));
+
+        rotateDeviceToOrientation(cta, Configuration.ORIENTATION_LANDSCAPE);
+
+        onView(withId(R.id.tab_list_view))
+                .check(MessageCardWidthAssertion.checkMessageItemSpanSize(3, 3));
+
+        // Reset device orientation.
+        rotateDeviceToOrientation(cta, Configuration.ORIENTATION_PORTRAIT);
+    }
+
+    private static class MessageCardWidthAssertion implements ViewAssertion {
+        private int mIndex;
+        private int mSpanCount;
+
+        public static MessageCardWidthAssertion checkMessageItemSpanSize(int index, int spanCount) {
+            return new MessageCardWidthAssertion(index, spanCount);
+        }
+
+        public MessageCardWidthAssertion(int index, int spanCount) {
+            mIndex = index;
+            mSpanCount = spanCount;
+        }
+
+        @Override
+        public void check(View view, NoMatchingViewException noMatchException) {
+            if (noMatchException != null) throw noMatchException;
+            int tabListPadding =
+                    (int) view.getResources().getDimension(R.dimen.tab_list_card_padding);
+
+            assertTrue(view instanceof RecyclerView);
+            RecyclerView recyclerView = (RecyclerView) view;
+            GridLayoutManager layoutManager = (GridLayoutManager) recyclerView.getLayoutManager();
+            assertEquals(mSpanCount, layoutManager.getSpanCount());
+
+            RecyclerView.ViewHolder messageItemViewHolder =
+                    recyclerView.findViewHolderForAdapterPosition(mIndex);
+            assertNotNull(messageItemViewHolder);
+            assertEquals(TabProperties.UiType.MESSAGE, messageItemViewHolder.getItemViewType());
+            View messageItemView = messageItemViewHolder.itemView;
+
+            // The message card item width should always be recyclerView width minus padding.
+            assertEquals(recyclerView.getWidth() - 2 * tabListPadding, messageItemView.getWidth());
+        }
     }
 
     @Test

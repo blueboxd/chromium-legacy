@@ -89,6 +89,9 @@ class ComponentLoader {
   // Reloads a registered component extension.
   void Reload(const std::string& extension_id);
 
+  // Return ids of all registered extensions.
+  std::vector<std::string> GetRegisteredComponentExtensionsIds() const;
+
 #if defined(OS_CHROMEOS)
   // Add a component extension from a specific directory. Assumes that the
   // extension uses a different manifest file when this is a guest session

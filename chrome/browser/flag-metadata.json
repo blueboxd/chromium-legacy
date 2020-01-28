@@ -592,11 +592,6 @@
     "expiry_milestone": 83
   },
   {
-    "name": "crostini-backup",
-    "owners": [ "joelhockey", "nverne", "benwells" ],
-    "expiry_milestone": 77
-  },
-  {
     "name": "crostini-disk-resizing",
     "owners": [ "davidmunro", "nverne", "clumptini" ],
     "expiry_milestone": 83
@@ -2603,7 +2598,7 @@
   {
     "name": "mobile-identity-consistency",
     "owners": [ "bsazonov", "droger", "msarda" ],
-    "expiry_milestone": 80
+    "expiry_milestone": 84
   },
   {
     "name": "mouse-subframe-no-implicit-capture",
@@ -3386,6 +3381,11 @@
     "name": "SupervisedUserCommittedInterstitials",
     "owners": [ "carlosil" ],
     "expiry_milestone": 77
+  },
+  {
+    "name": "sync-error-infobar",
+    "owners": [ "triploblastic", "bsazonov" ],
+    "expiry_milestone": 82
   },
   {
     "name": "sync-setup-friendly-settings",

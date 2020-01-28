@@ -1511,7 +1511,8 @@ TEST_F(ScrollbarsTestWithVirtualTimer, TestNonCompositedOverlayScrollbarsFade) {
   EXPECT_TRUE(scrollable_area->ScrollbarsHiddenIfOverlay());
 
   scrollable_area->SetScrollOffset(
-      ScrollOffset(10, 10), kProgrammaticScroll,
+      ScrollOffset(10, 10),
+      mojom::blink::ScrollIntoViewParams::Type::kProgrammatic,
       mojom::blink::ScrollIntoViewParams::Behavior::kInstant);
 
   EXPECT_FALSE(scrollable_area->ScrollbarsHiddenIfOverlay());
@@ -1535,7 +1536,8 @@ TEST_F(ScrollbarsTestWithVirtualTimer, TestNonCompositedOverlayScrollbarsFade) {
   // Non-composited scrollbars don't fade out while mouse is over.
   EXPECT_TRUE(scrollable_area->VerticalScrollbar());
   scrollable_area->SetScrollOffset(
-      ScrollOffset(20, 20), kProgrammaticScroll,
+      ScrollOffset(20, 20),
+      mojom::blink::ScrollIntoViewParams::Type::kProgrammatic,
       mojom::blink::ScrollIntoViewParams::Behavior::kInstant);
   EXPECT_FALSE(scrollable_area->ScrollbarsHiddenIfOverlay());
   scrollable_area->MouseEnteredScrollbar(*scrollable_area->VerticalScrollbar());
@@ -1694,8 +1696,9 @@ TEST_P(ScrollbarAppearanceTest, HugeScrollingThumbPosition) {
 
   Compositor().BeginFrame();
 
-  scrollable_area->SetScrollOffset(ScrollOffset(0, 10000000),
-                                   kProgrammaticScroll);
+  scrollable_area->SetScrollOffset(
+      ScrollOffset(0, 10000000),
+      mojom::blink::ScrollIntoViewParams::Type::kProgrammatic);
 
   Compositor().BeginFrame();
 
@@ -2678,7 +2681,8 @@ TEST_F(ScrollbarsTestWithVirtualTimer,
 
   // Scroll to bottom.
   scrollable_area->SetScrollOffset(
-      ScrollOffset(0, 400), kProgrammaticScroll,
+      ScrollOffset(0, 400),
+      mojom::blink::ScrollIntoViewParams::Type::kProgrammatic,
       mojom::blink::ScrollIntoViewParams::Behavior::kInstant);
   EXPECT_EQ(scrollable_area->ScrollOffsetInt(), IntSize(0, 200));
 

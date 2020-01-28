@@ -581,7 +581,8 @@ TEST_F(FallbackCursorEventManagerTest, AccountsForOverflowHidden) {
 
   // Fully scroll the layout viewport to the bottom.
   GetDocument().View()->LayoutViewport()->SetScrollOffset(
-      ScrollOffset(0, 100000), kProgrammaticScroll);
+      ScrollOffset(0, 100000),
+      mojom::blink::ScrollIntoViewParams::Type::kProgrammatic);
 
   // Move the mouse to the bottom of the viewport, we shouldn't lock because
   // both layout and visual are at the extent.

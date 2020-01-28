@@ -310,7 +310,8 @@ bool ScrollInDirection(Node* container, SpatialNavigationDirection direction) {
   if (!scroller)
     return false;
 
-  scroller->ScrollBy(ScrollOffset(dx, dy), kUserScroll);
+  scroller->ScrollBy(ScrollOffset(dx, dy),
+                     mojom::blink::ScrollIntoViewParams::Type::kUser);
   return true;
 }
 

@@ -283,6 +283,12 @@ bool BrowserXRRuntime::SupportsFeature(
       if (feature == device::mojom::XRSessionFeature::DOM_OVERLAY) {
         return base::FeatureList::IsEnabled(features::kWebXrIncubations);
       }
+
+      // Only support hit test if the feature flag is enabled.
+      if (feature == device::mojom::XRSessionFeature::HIT_TEST) {
+        return base::FeatureList::IsEnabled(features::kWebXrHitTest);
+      }
+
       return ContainsFeature(kARCoreDeviceFeatures, feature);
     case device::mojom::XRDeviceId::ORIENTATION_DEVICE_ID:
       return ContainsFeature(kOrientationDeviceFeatures, feature);

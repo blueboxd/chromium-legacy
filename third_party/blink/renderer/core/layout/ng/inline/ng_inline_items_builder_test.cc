@@ -448,11 +448,12 @@ TEST_F(NGInlineItemsBuilderTest, BidiBlockOverride) {
             builder.ToString());
 }
 
-static std::unique_ptr<LayoutInline> CreateLayoutInline(
+static LayoutInline* CreateLayoutInline(
+    Document* document,
     void (*initialize_style)(ComputedStyle*)) {
   scoped_refptr<ComputedStyle> style(ComputedStyle::Create());
   initialize_style(style.get());
-  std::unique_ptr<LayoutInline> node = std::make_unique<LayoutInline>(nullptr);
+  LayoutInline* const node = LayoutInline::CreateAnonymous(document);
   node->SetModifiedStyleOutsideStyleRecalc(
       std::move(style), LayoutObject::ApplyStyleChanges::kNo);
   node->SetIsInLayoutNGInlineFormattingContext(true);
@@ -463,14 +464,14 @@ TEST_F(NGInlineItemsBuilderTest, BidiIsolate) {
   Vector<NGInlineItem> items;
   NGInlineItemsBuilder builder(&items);
   AppendText("Hello ", &builder);
-  std::unique_ptr<LayoutInline> isolate_rtl(
-      CreateLayoutInline([](ComputedStyle* style) {
+  LayoutInline* const isolate_rtl =
+      CreateLayoutInline(&GetDocument(), [](ComputedStyle* style) {
         style->SetUnicodeBidi(UnicodeBidi::kIsolate);
         style->SetDirection(TextDirection::kRtl);
-      }));
-  builder.EnterInline(isolate_rtl.get());
+      });
+  builder.EnterInline(isolate_rtl);
   AppendText(u"\u05E2\u05D1\u05E8\u05D9\u05EA", &builder);
-  builder.ExitInline(isolate_rtl.get());
+  builder.ExitInline(isolate_rtl);
   AppendText(" World", &builder);
 
   // Expected control characters as defined in:
@@ -481,20 +482,21 @@ TEST_F(NGInlineItemsBuilderTest, BidiIsolate) {
                    u"\u2069"
                    u" World"),
             builder.ToString());
+  isolate_rtl->Destroy();
 }
 
 TEST_F(NGInlineItemsBuilderTest, BidiIsolateOverride) {
   Vector<NGInlineItem> items;
   NGInlineItemsBuilder builder(&items);
   AppendText("Hello ", &builder);
-  std::unique_ptr<LayoutInline> isolate_override_rtl(
-      CreateLayoutInline([](ComputedStyle* style) {
+  LayoutInline* const isolate_override_rtl =
+      CreateLayoutInline(&GetDocument(), [](ComputedStyle* style) {
         style->SetUnicodeBidi(UnicodeBidi::kIsolateOverride);
         style->SetDirection(TextDirection::kRtl);
-      }));
-  builder.EnterInline(isolate_override_rtl.get());
+      });
+  builder.EnterInline(isolate_override_rtl);
   AppendText(u"\u05E2\u05D1\u05E8\u05D9\u05EA", &builder);
-  builder.ExitInline(isolate_override_rtl.get());
+  builder.ExitInline(isolate_override_rtl);
   AppendText(" World", &builder);
 
   // Expected control characters as defined in:
@@ -505,6 +507,7 @@ TEST_F(NGInlineItemsBuilderTest, BidiIsolateOverride) {
                    u"\u202C\u2069"
                    u" World"),
             builder.ToString());
+  isolate_override_rtl->Destroy();
 }
 
 }  // namespace blink

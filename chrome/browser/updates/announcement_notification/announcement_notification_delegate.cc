@@ -4,6 +4,8 @@
 
 #include "chrome/browser/updates/announcement_notification/announcement_notification_delegate.h"
 
+#include <string>
+
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/notifications/notification_display_service.h"
@@ -19,15 +21,14 @@ AnnouncementNotificationDelegate::AnnouncementNotificationDelegate(
 
 AnnouncementNotificationDelegate::~AnnouncementNotificationDelegate() = default;
 
-void AnnouncementNotificationDelegate::ShowNotification(
-    const std::string& remote_url) {
+void AnnouncementNotificationDelegate::ShowNotification() {
   auto rich_notification_data = message_center::RichNotificationData();
   message_center::ButtonInfo button1(
       l10n_util::GetStringUTF16(IDS_TOS_NOTIFICATION_ACK_BUTTON_TEXT));
   message_center::ButtonInfo button2(
       l10n_util::GetStringUTF16(IDS_TOS_NOTIFICATION_REVIEW_BUTTON_TEXT));
-  rich_notification_data.buttons.emplace_back(button1);
-  rich_notification_data.buttons.emplace_back(button2);
+  rich_notification_data.buttons.push_back(button1);
+  rich_notification_data.buttons.push_back(button2);
 
   message_center::Notification notification(
       message_center::NOTIFICATION_TYPE_SIMPLE, kAnnouncementNotificationId,

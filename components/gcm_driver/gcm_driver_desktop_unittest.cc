@@ -23,14 +23,10 @@
 #include "components/gcm_driver/fake_gcm_client.h"
 #include "components/gcm_driver/fake_gcm_client_factory.h"
 #include "components/gcm_driver/gcm_app_handler.h"
-#include "components/gcm_driver/gcm_channel_status_request.h"
-#include "components/gcm_driver/gcm_channel_status_syncer.h"
 #include "components/gcm_driver/gcm_client_factory.h"
 #include "components/gcm_driver/gcm_connection_observer.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
-#include "components/sync/protocol/experiment_status.pb.h"
-#include "components/sync/protocol/experiments_specifics.pb.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_test_util.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -43,7 +39,6 @@ namespace gcm {
 
 namespace {
 
-const char kTestChannelStatusRequestURL[] = "http://channel.status.request.com";
 const char kTestAppID1[] = "TestApp1";
 const char kTestAppID2[] = "TestApp2";
 const char kUserID1[] = "user1";
@@ -198,7 +193,6 @@ GCMDriverTest::~GCMDriverTest() {
 }
 
 void GCMDriverTest::SetUp() {
-  GCMChannelStatusSyncer::RegisterPrefs(prefs_.registry());
   io_thread_.Start();
   ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
 }
@@ -249,8 +243,7 @@ void GCMDriverTest::CreateDriver() {
   driver_ = std::make_unique<GCMDriverDesktop>(
       std::unique_ptr<GCMClientFactory>(new FakeGCMClientFactory(
           base::ThreadTaskRunnerHandle::Get(), io_thread_.task_runner())),
-      chrome_build_info, kTestChannelStatusRequestURL, "user-agent-string",
-      &prefs_, temp_dir_.GetPath(),
+      chrome_build_info, "user-agent-string", &prefs_, temp_dir_.GetPath(),
       /*remove_account_mappings_with_email_key=*/true, base::DoNothing(),
       base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
           &test_url_loader_factory_),
@@ -938,236 +931,6 @@ TEST_F(GCMDriverFunctionalTest, LastTokenFetchTime) {
   base::Time fetch_time = base::Time::Now();
   driver()->SetLastTokenFetchTime(fetch_time);
   EXPECT_EQ(fetch_time, driver()->GetLastTokenFetchTime());
-}
-
-// Tests a single instance of GCMDriver.
-class GCMChannelStatusSyncerTest : public GCMDriverTest {
- public:
-  GCMChannelStatusSyncerTest();
-  ~GCMChannelStatusSyncerTest() override;
-
-  // testing::Test:
-  void SetUp() override;
-
-  void CompleteGCMChannelStatusRequest(bool enabled, int poll_interval_seconds);
-  bool CompareDelaySeconds(int64_t expected_delay_seconds,
-                           int64_t actual_delay_seconds);
-
-  GCMChannelStatusSyncer* syncer() {
-    return driver()->gcm_channel_status_syncer_for_testing();
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(GCMChannelStatusSyncerTest);
-};
-
-GCMChannelStatusSyncerTest::GCMChannelStatusSyncerTest() {
-}
-
-GCMChannelStatusSyncerTest::~GCMChannelStatusSyncerTest() {
-}
-
-void GCMChannelStatusSyncerTest::SetUp() {
-  GCMDriverTest::SetUp();
-}
-
-void GCMChannelStatusSyncerTest::CompleteGCMChannelStatusRequest(
-    bool enabled, int poll_interval_seconds) {
-  sync_pb::ExperimentStatusResponse response_proto;
-  sync_pb::ExperimentsSpecifics* experiment_specifics =
-      response_proto.add_experiment();
-  experiment_specifics->mutable_gcm_channel()->set_enabled(enabled);
-
-  if (poll_interval_seconds)
-    response_proto.set_poll_interval_seconds(poll_interval_seconds);
-
-  syncer()->request_for_testing()->ParseResponseProto(response_proto);
-}
-
-bool GCMChannelStatusSyncerTest::CompareDelaySeconds(
-    int64_t expected_delay_seconds,
-    int64_t actual_delay_seconds) {
-  // Most of time, the actual delay should not be smaller than the expected
-  // delay.
-  if (actual_delay_seconds >= expected_delay_seconds)
-    return true;
-  // It is also OK that the actual delay is a bit smaller than the expected
-  // delay in case that the test runs slowly.
-  return expected_delay_seconds - actual_delay_seconds < 30;
-}
-
-TEST_F(GCMChannelStatusSyncerTest, DisableAndEnable) {
-  // Create GCMDriver first. By default, GCM is enabled.
-  CreateDriver();
-  EXPECT_TRUE(driver()->gcm_enabled());
-  EXPECT_TRUE(syncer()->gcm_enabled());
-
-  // Remove delay such that the request could be executed immediately.
-  syncer()->set_delay_removed_for_testing(true);
-
-  // GCM is still enabled at this point.
-  AddAppHandlers();
-  EXPECT_TRUE(driver()->gcm_enabled());
-  EXPECT_TRUE(syncer()->gcm_enabled());
-
-  // Wait until the GCM channel status request gets triggered.
-  PumpUILoop();
-
-  // Complete the request that disables the GCM.
-  CompleteGCMChannelStatusRequest(false, 0);
-  EXPECT_FALSE(driver()->gcm_enabled());
-  EXPECT_FALSE(syncer()->gcm_enabled());
-  EXPECT_FALSE(driver()->IsStarted());
-
-  // Wait until next GCM channel status request gets triggered.
-  PumpUILoop();
-
-  // Complete the request that enables the GCM.
-  CompleteGCMChannelStatusRequest(true, 0);
-  EXPECT_TRUE(driver()->gcm_enabled());
-  EXPECT_TRUE(syncer()->gcm_enabled());
-}
-
-// This test is flaky, see https://crbug.com/1010462
-TEST_F(GCMChannelStatusSyncerTest, DISABLED_DisableRestartAndEnable) {
-  // Create GCMDriver first. By default, GCM is enabled.
-  CreateDriver();
-  EXPECT_TRUE(driver()->gcm_enabled());
-  EXPECT_TRUE(syncer()->gcm_enabled());
-
-  // Remove delay such that the request could be executed immediately.
-  syncer()->set_delay_removed_for_testing(true);
-
-  // GCM is still enabled at this point.
-  AddAppHandlers();
-  EXPECT_TRUE(driver()->gcm_enabled());
-  EXPECT_TRUE(syncer()->gcm_enabled());
-
-  // Wait until the GCM channel status request gets triggered.
-  PumpUILoop();
-
-  // Complete the request that disables the GCM.
-  CompleteGCMChannelStatusRequest(false, 0);
-  EXPECT_FALSE(driver()->gcm_enabled());
-  EXPECT_FALSE(syncer()->gcm_enabled());
-
-  // Simulate browser start by recreating GCMDriver.
-  ShutdownDriver();
-  CreateDriver();
-
-  // Remove delay such that the request could be executed immediately.
-  syncer()->set_delay_removed_for_testing(true);
-
-  // GCM is still disabled.
-  EXPECT_FALSE(driver()->gcm_enabled());
-  EXPECT_FALSE(syncer()->gcm_enabled());
-
-  AddAppHandlers();
-  EXPECT_FALSE(driver()->gcm_enabled());
-  EXPECT_FALSE(syncer()->gcm_enabled());
-
-  // Wait until the GCM channel status request gets triggered.
-  PumpUILoop();
-
-  // Complete the request that re-enables the GCM.
-  CompleteGCMChannelStatusRequest(true, 0);
-  EXPECT_TRUE(driver()->gcm_enabled());
-  EXPECT_TRUE(syncer()->gcm_enabled());
-}
-
-TEST_F(GCMChannelStatusSyncerTest, FirstTimePolling) {
-  // Start GCM.
-  CreateDriver();
-  AddAppHandlers();
-
-  // The 1st request should be triggered shortly without jittering.
-  EXPECT_EQ(GCMChannelStatusSyncer::first_time_delay_seconds(),
-            syncer()->current_request_delay_interval().InSeconds());
-}
-
-TEST_F(GCMChannelStatusSyncerTest, SubsequentPollingWithDefaultInterval) {
-  // Create GCMDriver first. GCM is not started.
-  CreateDriver();
-
-  // Remove delay such that the request could be executed immediately.
-  syncer()->set_delay_removed_for_testing(true);
-
-  // Now GCM is started.
-  AddAppHandlers();
-
-  // Wait until the GCM channel status request gets triggered.
-  PumpUILoop();
-
-  // Keep delay such that we can find out the computed delay time.
-  syncer()->set_delay_removed_for_testing(false);
-
-  // Complete the request. The default interval is intact.
-  CompleteGCMChannelStatusRequest(true, 0);
-
-  // The next request should be scheduled at the expected default interval.
-  int64_t actual_delay_seconds =
-      syncer()->current_request_delay_interval().InSeconds();
-  int64_t expected_delay_seconds =
-      GCMChannelStatusRequest::default_poll_interval_seconds();
-  EXPECT_TRUE(CompareDelaySeconds(expected_delay_seconds, actual_delay_seconds))
-      << "expected delay: " << expected_delay_seconds
-      << " actual delay: " << actual_delay_seconds;
-
-  // Simulate browser start by recreating GCMDriver.
-  ShutdownDriver();
-  CreateDriver();
-  AddAppHandlers();
-
-  // After start-up, the request should still be scheduled at the expected
-  // default interval.
-  actual_delay_seconds =
-      syncer()->current_request_delay_interval().InSeconds();
-  EXPECT_TRUE(CompareDelaySeconds(expected_delay_seconds, actual_delay_seconds))
-      << "expected delay: " << expected_delay_seconds
-      << " actual delay: " << actual_delay_seconds;
-}
-
-TEST_F(GCMChannelStatusSyncerTest, SubsequentPollingWithUpdatedInterval) {
-  // Create GCMDriver first. GCM is not started.
-  CreateDriver();
-
-  // Remove delay such that the request could be executed immediately.
-  syncer()->set_delay_removed_for_testing(true);
-
-  // Now GCM is started.
-  AddAppHandlers();
-
-  // Wait until the GCM channel status request gets triggered.
-  PumpUILoop();
-
-  // Keep delay such that we can find out the computed delay time.
-  syncer()->set_delay_removed_for_testing(false);
-
-  // Complete the request. The interval is being changed.
-  int new_poll_interval_seconds =
-      GCMChannelStatusRequest::default_poll_interval_seconds() * 2;
-  CompleteGCMChannelStatusRequest(true, new_poll_interval_seconds);
-
-  // The next request should be scheduled at the expected updated interval.
-  int64_t actual_delay_seconds =
-      syncer()->current_request_delay_interval().InSeconds();
-  int64_t expected_delay_seconds = new_poll_interval_seconds;
-  EXPECT_TRUE(CompareDelaySeconds(expected_delay_seconds, actual_delay_seconds))
-      << "expected delay: " << expected_delay_seconds
-      << " actual delay: " << actual_delay_seconds;
-
-  // Simulate browser start by recreating GCMDriver.
-  ShutdownDriver();
-  CreateDriver();
-  AddAppHandlers();
-
-  // After start-up, the request should still be scheduled at the expected
-  // updated interval.
-  actual_delay_seconds =
-      syncer()->current_request_delay_interval().InSeconds();
-  EXPECT_TRUE(CompareDelaySeconds(expected_delay_seconds, actual_delay_seconds))
-      << "expected delay: " << expected_delay_seconds
-      << " actual delay: " << actual_delay_seconds;
 }
 
 class GCMDriverInstanceIDTest : public GCMDriverTest {

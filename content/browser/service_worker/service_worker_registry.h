@@ -53,6 +53,9 @@ class CONTENT_EXPORT ServiceWorkerRegistry {
   using GetUserDataCallback =
       base::OnceCallback<void(const std::vector<std::string>& data,
                               blink::ServiceWorkerStatusCode status)>;
+  using GetUserKeysAndDataCallback = base::OnceCallback<void(
+      const base::flat_map<std::string, std::string>& data_map,
+      blink::ServiceWorkerStatusCode status)>;
   using StatusCallback = ServiceWorkerStorage::StatusCallback;
 
   ServiceWorkerRegistry(
@@ -138,6 +141,9 @@ class CONTENT_EXPORT ServiceWorkerRegistry {
   void GetUserDataByKeyPrefix(int64_t registration_id,
                               const std::string& key_prefix,
                               GetUserDataCallback callback);
+  void GetUserKeysAndDataByKeyPrefix(int64_t registration_id,
+                                     const std::string& key_prefix,
+                                     GetUserKeysAndDataCallback callback);
 
   // TODO(crbug.com/1039200): Make this private once methods/fields related to
   // ServiceWorkerRegistration in ServiceWorkerStorage are moved into this
@@ -197,6 +203,10 @@ class CONTENT_EXPORT ServiceWorkerRegistry {
   void DidGetUserData(GetUserDataCallback callback,
                       const std::vector<std::string>& data,
                       ServiceWorkerDatabase::Status status);
+  void DidGetUserKeysAndData(
+      GetUserKeysAndDataCallback callback,
+      const base::flat_map<std::string, std::string>& data_map,
+      ServiceWorkerDatabase::Status status);
 
   void ScheduleDeleteAndStartOver();
 

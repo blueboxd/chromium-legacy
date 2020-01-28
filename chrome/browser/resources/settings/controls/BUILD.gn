@@ -14,6 +14,7 @@ js_type_check("closure_compile") {
     ":settings_boolean_control_behavior",
     ":settings_checkbox",
     ":settings_dropdown_menu",
+    ":settings_idle_load",
     ":settings_radio_group",
     ":settings_slider",
     ":settings_textarea",
@@ -86,6 +87,10 @@ js_library("settings_dropdown_menu") {
     "//ui/webui/resources/js:load_time_data",
   ]
   externs_list = [ "$externs_path/settings_private.js" ]
+}
+
+js_library("settings_idle_load") {
+  externs_list = [ "$externs_path/pending_polymer.js" ]
 }
 
 js_library("settings_radio_group") {

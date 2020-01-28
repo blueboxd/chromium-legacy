@@ -86,12 +86,12 @@ void HTMLFrameSetElement::ParseAttribute(
     }
   } else if (name == html_names::kFrameborderAttr) {
     if (!value.IsNull()) {
-      if (DeprecatedEqualIgnoringCase(value, "no") ||
-          DeprecatedEqualIgnoringCase(value, "0")) {
+      if (EqualIgnoringASCIICase(value, "no") ||
+          EqualIgnoringASCIICase(value, "0")) {
         frameborder_ = false;
         frameborder_set_ = true;
       } else if (DeprecatedEqualIgnoringCase(value, "yes") ||
-                 DeprecatedEqualIgnoringCase(value, "1")) {
+                 EqualIgnoringASCIICase(value, "1")) {
         frameborder_set_ = true;
       }
     } else {

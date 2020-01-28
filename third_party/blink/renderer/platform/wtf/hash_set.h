@@ -22,6 +22,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_HASH_SET_H_
 
 #include <initializer_list>
+#include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/partition_allocator.h"
 #include "third_party/blink/renderer/platform/wtf/hash_table.h"
 #include "third_party/blink/renderer/platform/wtf/wtf_size_t.h"
@@ -150,6 +151,12 @@ struct IdentityExtractor {
   template <typename T>
   static const T& Extract(const T& t) {
     return t;
+  }
+  // Assumes out points to a buffer of size at least sizeof(T).
+  template <typename T>
+  static const T& ExtractSafe(const T& t, void* out) {
+    AtomicMemcpy<sizeof(T)>(out, &t);
+    return *reinterpret_cast<T*>(out);
   }
 };
 

@@ -161,13 +161,13 @@ void HTMLObjectElement::ParametersForPlugin(PluginParameters& plugin_params) {
     // for compatibility, allow the resource's URL to be given by a param
     // element with one of the common names if we know that resource points
     // to a plugin.
-    if (url_.IsEmpty() && !DeprecatedEqualIgnoringCase(name, "data") &&
+    if (url_.IsEmpty() && !EqualIgnoringASCIICase(name, "data") &&
         HTMLParamElement::IsURLParameter(name)) {
       SetUrl(StripLeadingAndTrailingHTMLSpaces(p->Value()));
     }
     // TODO(schenney): crbug.com/572908 serviceType calculation does not belong
     // in this function.
-    if (service_type_.IsEmpty() && DeprecatedEqualIgnoringCase(name, "type")) {
+    if (service_type_.IsEmpty() && EqualIgnoringASCIICase(name, "type")) {
       wtf_size_t pos = p->Value().Find(";");
       if (pos != kNotFound)
         SetServiceType(p->Value().GetString().Left(pos));

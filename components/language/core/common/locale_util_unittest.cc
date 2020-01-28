@@ -212,11 +212,6 @@ TEST_F(LocaleUtilTest, ConvertToActualUILocale) {
   EXPECT_TRUE(is_ui);
   EXPECT_EQ("it", locale);
 
-  locale = "nn";
-  is_ui = language::ConvertToActualUILocale(&locale);
-  EXPECT_TRUE(is_ui);
-  EXPECT_EQ("nb", locale);
-
   locale = "no";
   is_ui = language::ConvertToActualUILocale(&locale);
   EXPECT_TRUE(is_ui);

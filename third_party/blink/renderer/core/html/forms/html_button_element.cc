@@ -86,7 +86,7 @@ void HTMLButtonElement::ParseAttribute(
   if (params.name == html_names::kTypeAttr) {
     if (DeprecatedEqualIgnoringCase(params.new_value, "reset"))
       type_ = RESET;
-    else if (DeprecatedEqualIgnoringCase(params.new_value, "button"))
+    else if (EqualIgnoringASCIICase(params.new_value, "button"))
       type_ = BUTTON;
     else
       type_ = SUBMIT;

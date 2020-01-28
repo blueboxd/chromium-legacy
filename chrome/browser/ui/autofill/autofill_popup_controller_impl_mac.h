@@ -35,7 +35,7 @@ class AutofillPopupControllerImplMac : public AutofillPopupControllerImpl {
 
   // Hides the popup and destroys the controller. This also invalidates
   // |delegate_|.
-  void Hide() override;
+  void Hide(PopupHidingReason reason) override;
 
  private:
   // The controller providing the autofill touch bar.

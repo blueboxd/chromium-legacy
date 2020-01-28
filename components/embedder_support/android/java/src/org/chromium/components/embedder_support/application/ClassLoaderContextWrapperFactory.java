@@ -151,5 +151,13 @@ public class ClassLoaderContextWrapperFactory {
             }
             return getBaseContext().getResources();
         }
+
+        @Override
+        public Resources.Theme getTheme() {
+            if (sResourceOverrideContext != null) {
+                return sResourceOverrideContext.getTheme();
+            }
+            return getBaseContext().getTheme();
+        }
     }
 }

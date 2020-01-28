@@ -6,6 +6,7 @@ import("//build/config/android/rules.gni")
 
 android_library("junit") {
   chromium_code = false
+  skip_jetify = true
   testonly = true
   proguard_configs = [ "//third_party/junit/proguard.flags" ]
   deps = [

@@ -16,7 +16,7 @@ class AnnouncementNotificationDelegateAndroid
 
  private:
   // AnnouncementNotificationService::Delegate implementation.
-  void ShowNotification(const std::string& remote_url) override;
+  void ShowNotification() override;
   bool IsFirstRun() override;
 
   DISALLOW_COPY_AND_ASSIGN(AnnouncementNotificationDelegateAndroid);

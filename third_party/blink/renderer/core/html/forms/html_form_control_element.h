@@ -143,7 +143,7 @@ class CORE_EXPORT HTMLFormControlElement : public HTMLElement,
 
   bool SupportsFocus() const override;
   bool IsKeyboardFocusable() const override;
-  bool ShouldHaveFocusAppearance() const final;
+  bool ShouldHaveFocusAppearance() const override;
 
   virtual void ResetImpl() {}
 

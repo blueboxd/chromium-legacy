@@ -34,8 +34,10 @@ void ProgrammaticScrollAnimator::ResetAnimationState() {
 
 void ProgrammaticScrollAnimator::NotifyOffsetChanged(
     const ScrollOffset& offset) {
-  ScrollType scroll_type =
-      is_sequenced_scroll_ ? kSequencedScroll : kProgrammaticScroll;
+  mojom::blink::ScrollIntoViewParams::Type scroll_type =
+      is_sequenced_scroll_
+          ? mojom::blink::ScrollIntoViewParams::Type::kSequenced
+          : mojom::blink::ScrollIntoViewParams::Type::kProgrammatic;
   ScrollOffsetChanged(offset, scroll_type);
 }
 

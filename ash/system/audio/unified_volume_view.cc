@@ -175,11 +175,13 @@ void UnifiedVolumeView::Update(bool by_user) {
 
   // Slider's value is in finer granularity than audio volume level(0.01),
   // there will be a small discrepancy between slider's value and volume level
-  // on audio side. To avoid the jittering in slider UI, do not set change
-  // slider value if the change is less than the threshold.
+  // on audio side. To avoid the jittering in slider UI, use the slider's
+  // current value.
   if (std::abs(level - slider()->GetValue()) < kSliderIgnoreUpdateThreshold)
-    return;
+    level = slider()->GetValue();
 
+  // Note: even if the value does not change, we still need to call this
+  // function to enable accessibility events (crbug.com/1013251).
   SetSliderValue(level, by_user);
 }
 

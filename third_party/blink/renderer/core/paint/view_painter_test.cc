@@ -45,7 +45,8 @@ void ViewPainterFixedBackgroundTest::RunFixedBackgroundTest(
   ScrollableArea* layout_viewport = frame_view->LayoutViewport();
 
   ScrollOffset scroll_offset(200, 150);
-  layout_viewport->SetScrollOffset(scroll_offset, kUserScroll);
+  layout_viewport->SetScrollOffset(
+      scroll_offset, mojom::blink::ScrollIntoViewParams::Type::kUser);
   frame_view->UpdateAllLifecyclePhases(
       DocumentLifecycle::LifecycleUpdateReason::kTest);
 

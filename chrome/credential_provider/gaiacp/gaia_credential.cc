@@ -4,7 +4,10 @@
 
 #include "chrome/credential_provider/gaiacp/gaia_credential.h"
 
+#include "base/command_line.h"
+#include "chrome/credential_provider/common/gcp_strings.h"
 #include "chrome/credential_provider/gaiacp/logging.h"
+#include "chrome/credential_provider/gaiacp/mdm_utils.h"
 
 namespace credential_provider {
 
@@ -19,6 +22,18 @@ HRESULT CGaiaCredential::FinalConstruct() {
 
 void CGaiaCredential::FinalRelease() {
   LOGFN(INFO);
+}
+
+HRESULT CGaiaCredential::GetUserGlsCommandline(
+    base::CommandLine* command_line) {
+  // Don't show tos when GEM isn't enabled.
+  if (IsGemEnabled()) {
+    // In default add user flow, the user has to accept tos
+    // every time. So we need to set the show_tos switch to 1.
+    command_line->AppendSwitchASCII(kShowTosSwitch, "1");
+  }
+
+  return S_OK;
 }
 
 }  // namespace credential_provider

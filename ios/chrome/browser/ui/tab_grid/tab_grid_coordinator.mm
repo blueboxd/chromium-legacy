@@ -286,6 +286,11 @@
     if (base::FeatureList::IsEnabled(kContainedBVC)) {
       [self.baseViewController contentWillAppearAnimated:NO];
       [self.bvcContainer willMoveToParentViewController:nil];
+      self.baseViewController.childViewControllerForStatusBarStyle = nil;
+
+      // TODO(crbug.com/1038034): This should be part of the animation block.
+      [self.baseViewController setNeedsStatusBarAppearanceUpdate];
+
       [self.bvcContainer.view removeFromSuperview];
       [self.bvcContainer removeFromParentViewController];
       self.bvcContainer = nil;
@@ -345,8 +350,15 @@
 
   if (base::FeatureList::IsEnabled(kContainedBVC)) {
     [self.baseViewController addChildViewController:self.bvcContainer];
+    self.baseViewController.childViewControllerForStatusBarStyle =
+        self.bvcContainer.currentBVC;
+
     self.bvcContainer.view.frame = self.baseViewController.view.bounds;
     [self.baseViewController.view addSubview:self.bvcContainer.view];
+
+    // TODO(crbug.com/1038034): This should be part of the animation block.
+    [self.baseViewController setNeedsStatusBarAppearanceUpdate];
+
     [self.bvcContainer didMoveToParentViewController:self.baseViewController];
     extendedCompletion();
   } else {

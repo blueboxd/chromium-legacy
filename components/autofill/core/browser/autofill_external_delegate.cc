@@ -150,7 +150,7 @@ void AutofillExternalDelegate::OnSuggestionsReturned(
   if (suggestions.empty()) {
     OnAutofillAvailabilityEvent(mojom::AutofillState::kNoSuggestions);
     // No suggestions, any popup currently showing is obsolete.
-    manager_->client()->HideAutofillPopup();
+    manager_->client()->HideAutofillPopup(PopupHidingReason::kNoSuggestions);
     return;
   }
 
@@ -280,7 +280,7 @@ void AutofillExternalDelegate::DidAcceptSuggestion(const base::string16& value,
     should_show_cards_from_account_option_ = false;
     manager_->RefetchCardsAndUpdatePopup(query_id_, query_form_, query_field_);
   } else {
-    manager_->client()->HideAutofillPopup();
+    manager_->client()->HideAutofillPopup(PopupHidingReason::kAcceptSuggestion);
   }
 }
 
@@ -306,7 +306,7 @@ bool AutofillExternalDelegate::RemoveSuggestion(const base::string16& value,
 }
 
 void AutofillExternalDelegate::DidEndTextFieldEditing() {
-  manager_->client()->HideAutofillPopup();
+  manager_->client()->HideAutofillPopup(PopupHidingReason::kEndEditing);
 }
 
 void AutofillExternalDelegate::ClearPreviewedForm() {
@@ -331,7 +331,7 @@ void AutofillExternalDelegate::RegisterDeletionCallback(
 }
 
 void AutofillExternalDelegate::Reset() {
-  manager_->client()->HideAutofillPopup();
+  manager_->client()->HideAutofillPopup(PopupHidingReason::kNavigation);
 }
 
 base::WeakPtr<AutofillExternalDelegate> AutofillExternalDelegate::GetWeakPtr() {

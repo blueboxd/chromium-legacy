@@ -138,7 +138,7 @@ class CORE_EXPORT PaintTimingDetector
   void NotifyPaintFinished();
   void NotifyInputEvent(WebInputEvent::Type);
   bool NeedToNotifyInputOrScroll() const;
-  void NotifyScroll(ScrollType);
+  void NotifyScroll(mojom::blink::ScrollIntoViewParams::Type);
   // The returned value indicates whether the candidates have changed.
   bool NotifyIfChangedLargestImagePaint(base::TimeTicks, uint64_t size);
   bool NotifyIfChangedLargestTextPaint(base::TimeTicks, uint64_t size);

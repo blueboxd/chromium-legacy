@@ -220,11 +220,19 @@ ServiceWorkerGlobalScope::ServiceWorkerGlobalScope(
       cache_storage_remote_(std::move(cache_storage_remote)) {
   // Create the event queue. At this point its timer is not started. It will be
   // started by DidEvaluateScript().
+  //
+  // We are using TaskType::kInternalDefault for the idle callback, and it can
+  // be paused or throttled. This should work for now because we don't throttle
+  // or pause service worker threads, while it may cause not calling idle
+  // callback. We need to revisit this once we want to implement pausing
+  // service workers, but basically that won't be big problem because we have
+  // ping-pong timer and that will kill paused service workers.
   event_queue_ = std::make_unique<ServiceWorkerEventQueue>(
       WTF::BindRepeating(&ServiceWorkerGlobalScope::OnBeforeStartEvent,
                          WrapWeakPersistent(this)),
       WTF::BindRepeating(&ServiceWorkerGlobalScope::OnIdleTimeout,
-                         WrapWeakPersistent(this)));
+                         WrapWeakPersistent(this)),
+      GetTaskRunner(TaskType::kInternalDefault));
 }
 
 ServiceWorkerGlobalScope::~ServiceWorkerGlobalScope() = default;
@@ -2303,7 +2311,7 @@ void ServiceWorkerGlobalScope::Ping(PingCallback callback) {
 void ServiceWorkerGlobalScope::SetIdleTimerDelayToZero() {
   DCHECK(IsContextThread());
   DCHECK(event_queue_);
-  event_queue_->SetIdleTimerDelayToZero();
+  event_queue_->SetIdleDelay(base::TimeDelta::FromSeconds(0));
 }
 
 void ServiceWorkerGlobalScope::AddMessageToConsole(

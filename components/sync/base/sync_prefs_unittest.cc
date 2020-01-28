@@ -122,9 +122,7 @@ TEST_F(SyncPrefsTest, ObservedPrefs) {
 
   sync_prefs_->SetFirstSetupComplete();
   EXPECT_TRUE(sync_prefs_->IsFirstSetupComplete());
-  // There's no direct way to clear the first-setup-complete bit, so just reset
-  // all prefs instead.
-  sync_prefs_->ClearPreferences();
+  sync_prefs_->ClearFirstSetupComplete();
   EXPECT_FALSE(sync_prefs_->IsFirstSetupComplete());
 
   sync_prefs_->SetSyncRequested(true);
@@ -148,24 +146,32 @@ TEST_F(SyncPrefsTest, SetSelectedOsTypesTriggersPreferredDataTypesPrefChange) {
 }
 #endif
 
-TEST_F(SyncPrefsTest, ClearPreferences) {
-  EXPECT_FALSE(sync_prefs_->IsFirstSetupComplete());
-  EXPECT_EQ(base::Time(), sync_prefs_->GetLastSyncedTime());
-  EXPECT_TRUE(sync_prefs_->GetEncryptionBootstrapToken().empty());
+TEST_F(SyncPrefsTest, ClearLocalSyncTransportData) {
+  ASSERT_FALSE(sync_prefs_->IsFirstSetupComplete());
+  ASSERT_EQ(base::Time(), sync_prefs_->GetLastSyncedTime());
+  ASSERT_TRUE(sync_prefs_->GetEncryptionBootstrapToken().empty());
 
   sync_prefs_->SetFirstSetupComplete();
   sync_prefs_->SetLastSyncedTime(base::Time::Now());
-  sync_prefs_->SetEncryptionBootstrapToken("token");
+  sync_prefs_->SetEncryptionBootstrapToken("explicit_passphrase_token");
+  sync_prefs_->SetKeystoreEncryptionBootstrapToken("keystore_token");
 
-  EXPECT_TRUE(sync_prefs_->IsFirstSetupComplete());
-  EXPECT_NE(base::Time(), sync_prefs_->GetLastSyncedTime());
-  EXPECT_EQ("token", sync_prefs_->GetEncryptionBootstrapToken());
+  ASSERT_TRUE(sync_prefs_->IsFirstSetupComplete());
+  ASSERT_NE(base::Time(), sync_prefs_->GetLastSyncedTime());
+  ASSERT_EQ("explicit_passphrase_token",
+            sync_prefs_->GetEncryptionBootstrapToken());
+  ASSERT_EQ("keystore_token",
+            sync_prefs_->GetKeystoreEncryptionBootstrapToken());
 
-  sync_prefs_->ClearPreferences();
+  sync_prefs_->ClearLocalSyncTransportData();
 
-  EXPECT_FALSE(sync_prefs_->IsFirstSetupComplete());
   EXPECT_EQ(base::Time(), sync_prefs_->GetLastSyncedTime());
-  EXPECT_TRUE(sync_prefs_->GetEncryptionBootstrapToken().empty());
+  EXPECT_TRUE(sync_prefs_->GetKeystoreEncryptionBootstrapToken().empty());
+
+  // User-entered field should not have been cleared.
+  EXPECT_TRUE(sync_prefs_->IsFirstSetupComplete());
+  EXPECT_EQ("explicit_passphrase_token",
+            sync_prefs_->GetEncryptionBootstrapToken());
 }
 
 TEST_F(SyncPrefsTest, ReadDemographicsWithRandomOffset) {
@@ -221,7 +227,7 @@ TEST_F(SyncPrefsTest, ReadAndClearUserDemographicPreferences) {
     ASSERT_TRUE(demographics_result.IsSuccess());
   }
 
-  sync_prefs_->ClearPreferences();
+  sync_prefs_->ClearLocalSyncTransportData();
 
   // Verify that demographics are not provided and kSyncDemographics is cleared.
   // Note that we retain kSyncDemographicsBirthYearOffset. If the user resumes

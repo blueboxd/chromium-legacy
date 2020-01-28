@@ -45,7 +45,8 @@ TaskExecutor* GetTaskExecutorForTraits(const TaskTraits& traits) {
       traits.extension_id() != TaskTraitsExtensionStorage::kInvalidExtensionId;
   DCHECK(has_extension ^ traits.use_thread_pool())
       << "A destination (e.g. ThreadPool or BrowserThread) must be specified "
-         "to use the post_task.h API.";
+         "to use the post_task.h API. However, you should prefer the direct "
+         "thread_pool.h or browser_thread.h APIs in new code.";
 
   if (traits.use_thread_pool()) {
     DCHECK(ThreadPoolInstance::Get())

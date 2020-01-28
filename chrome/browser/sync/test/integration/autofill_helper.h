@@ -121,7 +121,9 @@ class AutofillKeysChecker : public MultiClientStatusChangeChecker {
 class AutofillProfileChecker : public StatusChangeChecker,
                                public autofill::PersonalDataManagerObserver {
  public:
-  AutofillProfileChecker(int profile_a, int profile_b);
+  AutofillProfileChecker(int profile_a,
+                         int profile_b,
+                         base::Optional<unsigned int> expected_count);
   ~AutofillProfileChecker() override;
 
   // StatusChangeChecker implementation.
@@ -134,6 +136,7 @@ class AutofillProfileChecker : public StatusChangeChecker,
  private:
   const int profile_a_;
   const int profile_b_;
+  const base::Optional<unsigned int> expected_count_;
 };
 
 class PersonalDataLoadedObserverMock

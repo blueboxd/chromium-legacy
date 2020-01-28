@@ -175,6 +175,13 @@ GREYElementInteraction* CellWithMatcher(id<GREYMatcher> matcher) {
 // Tests that when the page is reloaded using the tools menu, the suggestions
 // are updated.
 - (void)testReloadPage {
+// TODO(crbug.com/1046258): fix for iphone-device and reenable.
+#if !TARGET_IPHONE_SIMULATOR
+  if (![ChromeEarlGrey isIPadIdiom]) {
+    EARL_GREY_TEST_DISABLED(@"Test disabled on iPhone devices.");
+  }
+#endif
+
   // Add 2 suggestions, persisted accross page loads.
   [ContentSuggestionsAppInterface addNumberOfSuggestions:2
                                 additionalSuggestionsURL:nil];

@@ -11,8 +11,6 @@
 Polymer({
   is: 'settings-idle-load',
 
-  behaviors: [Polymer.Templatizer],
-
   properties: {
     /**
      * If specified, it will be loaded via an HTML import before stamping the
@@ -32,7 +30,9 @@ Polymer({
 
   /** @override */
   attached() {
-    this.idleCallback_ = requestIdleCallback(this.get.bind(this));
+    this.idleCallback_ = requestIdleCallback(() => {
+      this.get();
+    });
   },
 
   /** @override */
@@ -52,11 +52,14 @@ Polymer({
 
     this.loading_ = new Promise((resolve, reject) => {
       this.importHref(this.url, () => {
-        assert(!this.ctor);
-        this.templatize(this.getContentChildren()[0]);
-        assert(this.ctor);
+        const template =
+            /** @type {!HTMLTemplateElement} */ (this.getContentChildren()[0]);
+        const TemplateClass = Polymer.Templatize.templatize(template, this, {
+          mutableData: false,
+          forwardHostProp: this._forwardHostPropV2,
+        });
 
-        this.instance_ = this.stamp({});
+        this.instance_ = new TemplateClass();
 
         assert(!this.child_);
         this.child_ = this.instance_.root.firstElementChild;

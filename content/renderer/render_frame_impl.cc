@@ -3463,7 +3463,6 @@ void RenderFrameImpl::CommitFailedNavigation(
   DCHECK(!NavigationTypeUtils::IsSameDocument(common_params->navigation_type));
   RenderFrameImpl::PrepareRenderViewForNavigation(common_params->url,
                                                   *commit_params);
-  sync_navigation_callback_.Cancel();
   mhtml_body_loader_client_.reset();
 
   GetContentClient()->SetActiveURL(
@@ -4740,7 +4739,6 @@ base::UnguessableToken RenderFrameImpl::GetDevToolsFrameToken() {
 
 void RenderFrameImpl::AbortClientNavigation() {
   browser_side_navigation_pending_ = false;
-  sync_navigation_callback_.Cancel();
   mhtml_body_loader_client_.reset();
   NotifyObserversOfFailedProvisionalLoad();
   navigation_client_impl_.reset();
@@ -5562,7 +5560,6 @@ void RenderFrameImpl::PrepareFrameForCommit(
     const mojom::CommitNavigationParams& commit_params) {
   browser_side_navigation_pending_ = false;
   browser_side_navigation_pending_url_ = GURL();
-  sync_navigation_callback_.Cancel();
   mhtml_body_loader_client_.reset();
 
   GetContentClient()->SetActiveURL(
@@ -5876,7 +5873,6 @@ void RenderFrameImpl::BeginNavigation(
         observer.WillSubmitForm(info->form);
     }
 
-    sync_navigation_callback_.Cancel();
     mhtml_body_loader_client_.reset();
 
     // First navigation in a frame to an empty document must be handled
@@ -5890,28 +5886,6 @@ void RenderFrameImpl::BeginNavigation(
       for (auto& observer : observers_)
         observer.DidStartNavigation(url, info->navigation_type);
       CommitSyncNavigation(std::move(info));
-      return;
-    }
-
-    // Navigation to about:blank don't need to consult the browser. The document
-    // content is already available in the renderer process.
-    // TODO(arthursonzogni): Remove this. Everything should use the default code
-    // path and be driven by the browser process.
-    if (WebDocumentLoader::WillLoadUrlAsEmpty(url) && !url.IsAboutSrcdoc() &&
-        !is_history_navigation_in_new_child_frame) {
-      if (!frame_->WillStartNavigation(
-              *info, false /* is_history_navigation_in_new_child_frame */))
-        return;
-      for (auto& observer : observers_)
-        observer.DidStartNavigation(url, info->navigation_type);
-      // Only the first navigation in a frame to an empty document must be
-      // handled synchronously, the others are required to happen
-      // asynchronously. So a PostTask is used.
-      sync_navigation_callback_.Reset(
-          base::BindOnce(&RenderFrameImpl::CommitSyncNavigation,
-                         weak_factory_.GetWeakPtr(), base::Passed(&info)));
-      frame_->GetTaskRunner(blink::TaskType::kInternalLoading)
-          ->PostTask(FROM_HERE, sync_navigation_callback_.callback());
       return;
     }
 

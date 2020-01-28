@@ -61,7 +61,7 @@ WeakPtr<AutofillPopupControllerImpl> AutofillPopupControllerImpl::GetOrCreate(
   }
 
   if (previous.get())
-    previous->Hide();
+    previous->Hide(PopupHidingReason::kViewDestroyed);
 
   AutofillPopupControllerImpl* controller =
       new AutofillPopupControllerImpl(
@@ -104,7 +104,7 @@ void AutofillPopupControllerImpl::Show(
     // treat the popup as hiding right away.
     if (!view_) {
       delegate_->OnPopupSuppressed();
-      Hide();
+      Hide(PopupHidingReason::kViewDestroyed);
       return;
     }
     just_created = true;
@@ -185,7 +185,7 @@ void AutofillPopupControllerImpl::UpdateDataListValues(
     if (HasSuggestions())
       OnSuggestionsChanged();
     else
-      Hide();
+      Hide(PopupHidingReason::kNoSuggestions);
 
     return;
   }
@@ -220,7 +220,9 @@ void AutofillPopupControllerImpl::UpdateDataListValues(
   DCHECK_EQ(suggestions_.size(), elided_labels_.size());
 }
 
-void AutofillPopupControllerImpl::Hide() {
+void AutofillPopupControllerImpl::Hide(PopupHidingReason reason) {
+  // TODO(https://crbug.com/1043963): Prevent hiding if waiting for updates and
+  // reason is kEndEditing or kStaleData.
   if (delegate_) {
     delegate_->ClearPreviewedForm();
     delegate_->OnPopupHidden();
@@ -233,9 +235,9 @@ void AutofillPopupControllerImpl::Hide() {
 
 void AutofillPopupControllerImpl::ViewDestroyed() {
   // The view has already been destroyed so clear the reference to it.
-  view_ = NULL;
+  view_ = nullptr;
 
-  Hide();
+  Hide(PopupHidingReason::kViewDestroyed);
 }
 
 bool AutofillPopupControllerImpl::HandleKeyPressEvent(
@@ -257,7 +259,7 @@ bool AutofillPopupControllerImpl::HandleKeyPressEvent(
       SetSelectedLine(GetLineCount() - 1);
       return true;
     case ui::VKEY_ESCAPE:
-      Hide();
+      Hide(PopupHidingReason::kUserAborted);
       return true;
     case ui::VKEY_DELETE:
       return (event.GetModifiers() &
@@ -415,7 +417,7 @@ bool AutofillPopupControllerImpl::RemoveSuggestion(int list_index) {
     delegate_->ClearPreviewedForm();
     OnSuggestionsChanged();
   } else {
-    Hide();
+    Hide(PopupHidingReason::kNoSuggestions);
   }
 
   return true;

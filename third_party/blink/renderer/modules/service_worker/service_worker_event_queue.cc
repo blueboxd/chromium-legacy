@@ -28,7 +28,7 @@ int NextEventId() {
 }  // namespace
 
 // static
-constexpr base::TimeDelta ServiceWorkerEventQueue::kIdleDelay;
+constexpr base::TimeDelta ServiceWorkerEventQueue::kDefaultIdleDelay;
 constexpr base::TimeDelta ServiceWorkerEventQueue::kEventTimeout;
 constexpr base::TimeDelta ServiceWorkerEventQueue::kUpdateInterval;
 
@@ -36,6 +36,7 @@ ServiceWorkerEventQueue::StayAwakeToken::StayAwakeToken(
     base::WeakPtr<ServiceWorkerEventQueue> event_queue)
     : event_queue_(std::move(event_queue)) {
   DCHECK(event_queue_);
+  event_queue_->ResetIdleTimeout();
   event_queue_->num_of_stay_awake_tokens_++;
 }
 
@@ -53,16 +54,20 @@ ServiceWorkerEventQueue::StayAwakeToken::~StayAwakeToken() {
 
 ServiceWorkerEventQueue::ServiceWorkerEventQueue(
     BeforeStartEventCallback before_start_event_callback,
-    base::RepeatingClosure idle_callback)
+    base::RepeatingClosure idle_callback,
+    scoped_refptr<base::SequencedTaskRunner> task_runner)
     : ServiceWorkerEventQueue(std::move(before_start_event_callback),
                               std::move(idle_callback),
+                              std::move(task_runner),
                               base::DefaultTickClock::GetInstance()) {}
 
 ServiceWorkerEventQueue::ServiceWorkerEventQueue(
     BeforeStartEventCallback before_start_event_callback,
     base::RepeatingClosure idle_callback,
+    scoped_refptr<base::SequencedTaskRunner> task_runner,
     const base::TickClock* tick_clock)
-    : before_start_event_callback_(std::move(before_start_event_callback)),
+    : task_runner_(std::move(task_runner)),
+      before_start_event_callback_(std::move(before_start_event_callback)),
       idle_callback_(std::move(idle_callback)),
       tick_clock_(tick_clock) {}
 
@@ -77,9 +82,10 @@ ServiceWorkerEventQueue::~ServiceWorkerEventQueue() {
 
 void ServiceWorkerEventQueue::Start() {
   DCHECK(!timer_.IsRunning());
-  // |idle_callback_| will be invoked if no event happens in |kIdleDelay|.
-  if (!HasInflightEvent() && idle_time_.is_null())
-    idle_time_ = tick_clock_->NowTicks() + kIdleDelay;
+  if (!HasInflightEvent() && !HasScheduledIdleCallback()) {
+    // If no event happens until Start(), the idle callback should be scheduled.
+    OnNoInflightEvent();
+  }
   timer_.Start(FROM_HERE, kUpdateInterval,
                WTF::BindRepeating(&ServiceWorkerEventQueue::UpdateStatus,
                                   WTF::Unretained(this)));
@@ -125,12 +131,11 @@ void ServiceWorkerEventQueue::EnqueueEvent(std::unique_ptr<Event> event) {
   bool can_start_processing_events =
       !processing_events_ && event->type != Event::Type::Pending;
   queue_.emplace_back(std::move(event));
+
   if (!can_start_processing_events)
     return;
-  if (did_idle_timeout()) {
-    idle_time_ = base::TimeTicks();
-    did_idle_timeout_ = false;
-  }
+
+  ResetIdleTimeout();
   ProcessEvents();
 }
 
@@ -153,7 +158,6 @@ void ServiceWorkerEventQueue::ProcessEvents() {
 void ServiceWorkerEventQueue::StartEvent(std::unique_ptr<Event> event) {
   DCHECK(CanStartEvent(*event));
   running_offline_events_ = event->type == Event::Type::Offline;
-  idle_time_ = base::TimeTicks();
   const int event_id = NextEventId();
   DCHECK(!HasEvent(event_id));
   id_event_map_.insert(
@@ -186,10 +190,38 @@ ServiceWorkerEventQueue::CreateStayAwakeToken() {
       weak_factory_.GetWeakPtr());
 }
 
-void ServiceWorkerEventQueue::SetIdleTimerDelayToZero() {
-  zero_idle_timer_delay_ = true;
-  if (!HasInflightEvent())
-    MaybeTriggerIdleTimer();
+void ServiceWorkerEventQueue::SetIdleDelay(base::TimeDelta idle_delay) {
+  idle_delay_ = idle_delay;
+
+  if (HasInflightEvent())
+    return;
+
+  if (did_idle_timeout()) {
+    // The idle callback has already been called. It should not be called again
+    // until this worker becomes active.
+    return;
+  }
+
+  // There should be a scheduled idle callback because this is now in the idle
+  // delay. The idle callback will be rescheduled based on the new idle delay.
+  DCHECK(HasScheduledIdleCallback());
+  idle_callback_handle_.Cancel();
+
+  // Calculate the updated time of when the |idle_callback_| should be invoked.
+  DCHECK(!last_no_inflight_event_.is_null());
+  auto new_idle_callback_time = last_no_inflight_event_ + idle_delay;
+  base::TimeDelta delta_until_idle =
+      new_idle_callback_time - tick_clock_->NowTicks();
+
+  if (delta_until_idle <= base::TimeDelta::FromSeconds(0)) {
+    // The new idle delay is shorter than the previous idle delay, and the idle
+    // time has been already passed. Let's run the idle callback immediately.
+    TriggerIdleCallback();
+    return;
+  }
+
+  // Let's schedule the idle callback in |delta_until_idle|.
+  ScheduleIdleCallback(delta_until_idle);
 }
 
 void ServiceWorkerEventQueue::UpdateStatus() {
@@ -197,6 +229,7 @@ void ServiceWorkerEventQueue::UpdateStatus() {
 
   HashMap<int /* event_id */, std::unique_ptr<EventInfo>> new_id_event_map;
 
+  bool should_idle_delay_to_be_zero = false;
   // Abort all events exceeding |kEventTimeout|.
   for (auto& it : id_event_map_) {
     auto& event_info = it.value;
@@ -206,33 +239,41 @@ void ServiceWorkerEventQueue::UpdateStatus() {
     }
     std::move(event_info->abort_callback)
         .Run(blink::mojom::ServiceWorkerEventStatus::TIMEOUT);
-    // Shut down the worker as soon as possible since the worker may have gone
-    // into bad state.
-    zero_idle_timer_delay_ = true;
+    should_idle_delay_to_be_zero = true;
   }
   id_event_map_.swap(new_id_event_map);
-
-  // If the worker is now idle, set the |idle_time_| and possibly trigger the
-  // idle callback.
-  if (!HasInflightEvent() && idle_time_.is_null()) {
-    OnNoInflightEvent();
-    return;
-  }
-
-  if (!idle_time_.is_null() && idle_time_ < now) {
-    did_idle_timeout_ = true;
-    idle_callback_.Run();
+  if (should_idle_delay_to_be_zero) {
+    // Inflight events might be timed out and there might be no inflight event
+    // at this point.
+    if (!HasInflightEvent()) {
+      OnNoInflightEvent();
+    }
+    // Shut down the worker as soon as possible since the worker may have gone
+    // into bad state.
+    SetIdleDelay(base::TimeDelta::FromSeconds(0));
   }
 }
 
-bool ServiceWorkerEventQueue::MaybeTriggerIdleTimer() {
+void ServiceWorkerEventQueue::ScheduleIdleCallback(base::TimeDelta delay) {
   DCHECK(!HasInflightEvent());
-  if (!zero_idle_timer_delay_)
-    return false;
+  DCHECK(!HasScheduledIdleCallback());
+
+  // WTF::Unretained() is safe because the task runner will be destroyed
+  // before |this| is destroyed at ServiceWorkerGlobalScope::Dispose().
+  idle_callback_handle_ = PostDelayedCancellableTask(
+      *task_runner_, FROM_HERE,
+      WTF::Bind(&ServiceWorkerEventQueue::TriggerIdleCallback,
+                WTF::Unretained(this)),
+      delay);
+}
+
+void ServiceWorkerEventQueue::TriggerIdleCallback() {
+  DCHECK(!HasInflightEvent());
+  DCHECK(!HasScheduledIdleCallback());
+  DCHECK(!did_idle_timeout_);
 
   did_idle_timeout_ = true;
   idle_callback_.Run();
-  return true;
 }
 
 void ServiceWorkerEventQueue::OnNoInflightEvent() {
@@ -244,12 +285,22 @@ void ServiceWorkerEventQueue::OnNoInflightEvent() {
     ProcessEvents();
     return;
   }
-  idle_time_ = tick_clock_->NowTicks() + kIdleDelay;
-  MaybeTriggerIdleTimer();
+  last_no_inflight_event_ = tick_clock_->NowTicks();
+  ScheduleIdleCallback(idle_delay_);
 }
 
 bool ServiceWorkerEventQueue::HasInflightEvent() const {
   return !id_event_map_.IsEmpty() || num_of_stay_awake_tokens_ > 0;
+}
+
+void ServiceWorkerEventQueue::ResetIdleTimeout() {
+  last_no_inflight_event_ = base::TimeTicks();
+  idle_callback_handle_.Cancel();
+  did_idle_timeout_ = false;
+}
+
+bool ServiceWorkerEventQueue::HasScheduledIdleCallback() const {
+  return idle_callback_handle_.IsActive();
 }
 
 ServiceWorkerEventQueue::Event::Event(

@@ -93,7 +93,7 @@ TextResourceDecoderOptions::ContentType DetermineContentType(
     const String& mime_type) {
   if (DeprecatedEqualIgnoringCase(mime_type, "text/css"))
     return TextResourceDecoderOptions::kCSSContent;
-  if (DeprecatedEqualIgnoringCase(mime_type, "text/html"))
+  if (EqualIgnoringASCIICase(mime_type, "text/html"))
     return TextResourceDecoderOptions::kHTMLContent;
   if (DOMImplementation::IsXMLMIMEType(mime_type))
     return TextResourceDecoderOptions::kXMLContent;

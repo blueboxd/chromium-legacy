@@ -69,6 +69,8 @@
 
 .controls-refresh .suggestion-list-entry:focus {
   background-color: #E5E5E5;
+  outline: solid 2px -webkit-focus-ring-color;
+  outline-offset: -2px;
 }
 
 .controls-refresh .suggestion-list-entry .title {

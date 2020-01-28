@@ -2,12 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/captive_portal/captive_portal_tab_helper.h"
+#include "components/captive_portal/content/captive_portal_tab_helper.h"
 
 #include <memory>
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "chrome/browser/captive_portal/captive_portal_service_factory.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "components/captive_portal/content/captive_portal_service.h"
@@ -73,8 +74,9 @@ class CaptivePortalTabHelperTest : public ChromeRenderViewHostTestHarness {
         content::WebContentsTester::For(web_contents());
     web_contents_tester->NavigateAndCommit(GURL(kStartUrl));
 
-    tab_helper_.reset(new CaptivePortalTabHelper(web_contents()));
-    tab_helper_->profile_ = nullptr;
+    tab_helper_.reset(new CaptivePortalTabHelper(
+        web_contents(), CaptivePortalServiceFactory::GetForProfile(profile()),
+        base::DoNothing()));
     tab_helper_->SetTabReloaderForTest(mock_reloader_);
   }
 

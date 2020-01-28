@@ -1063,8 +1063,9 @@ TEST_F(FrameSelectionTest, SelectionBounds) {
   // bottom is visible. The unclipped selection bounds should not be clipped.
   const int scroll_offset = 500;
   LocalFrameView* frame_view = GetDocument().View();
-  frame_view->LayoutViewport()->SetScrollOffset(ScrollOffset(0, scroll_offset),
-                                                kProgrammaticScroll);
+  frame_view->LayoutViewport()->SetScrollOffset(
+      ScrollOffset(0, scroll_offset),
+      mojom::blink::ScrollIntoViewParams::Type::kProgrammatic);
   EXPECT_EQ(PhysicalRect(0, node_margin_top, node_width, node_height),
             frame_view->FrameToDocument(Selection().AbsoluteUnclippedBounds()));
 

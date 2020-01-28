@@ -155,6 +155,10 @@ class MEDIA_GPU_EXPORT Fourcc {
   base::Optional<uint32_t> ToVAFourCC() const;
 #endif  // BUILDFLAG(USE_VAAPI)
 
+  // Returns the single-planar Fourcc of the value. If value is a single-planar,
+  // returns the same Fourcc. Returns nullopt if no mapping is found.
+  base::Optional<Fourcc> ToSinglePlanar() const;
+
   // Returns whether |value_| is multi planar format.
   bool IsMultiPlanar() const;
 

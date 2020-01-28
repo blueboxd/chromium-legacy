@@ -235,8 +235,8 @@ void WatcherMetricsProviderWin::AsyncInit(base::OnceClosure done_callback) {
 void WatcherMetricsProviderWin::CollectPostmortemReportsImpl() {
   SCOPED_UMA_HISTOGRAM_TIMER("ActivityTracker.Collect.TotalTime");
 
-  bool is_stability_debugging_on =
-      base::FeatureList::IsEnabled(browser_watcher::kStabilityDebuggingFeature);
+  bool is_stability_debugging_on = base::FeatureList::IsEnabled(
+      browser_watcher::kExtendedCrashReportingFeature);
   if (!is_stability_debugging_on) {
     return;  // TODO(manzagop): scan for possible data to delete?
   }
@@ -265,7 +265,7 @@ void WatcherMetricsProviderWin::CollectPostmortemReportsImpl() {
 
   // If postmortem collection is disabled, delete the files.
   const bool should_collect = base::GetFieldTrialParamByFeatureAsBool(
-      browser_watcher::kStabilityDebuggingFeature,
+      browser_watcher::kExtendedCrashReportingFeature,
       browser_watcher::kCollectPostmortemParam, false);
 
   // Create a database. Note: Chrome already has a g_database in crashpad.cc but

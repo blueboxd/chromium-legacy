@@ -69,41 +69,34 @@ IN_PROC_BROWSER_TEST_F(TwoClientAutofillProfileSyncTest,
 
   // Client0 adds a profile.
   AddProfile(0, CreateAutofillProfile(PROFILE_HOMER));
-  EXPECT_TRUE(AutofillProfileChecker(0, 1).Wait());
-  EXPECT_EQ(1U, GetAllAutoFillProfiles(0).size());
+  EXPECT_TRUE(AutofillProfileChecker(0, 1, /*expected_count=*/1U).Wait());
 
   // Client1 adds a profile.
   AddProfile(1, CreateAutofillProfile(PROFILE_MARION));
-  EXPECT_TRUE(AutofillProfileChecker(0, 1).Wait());
-  EXPECT_EQ(2U, GetAllAutoFillProfiles(0).size());
+  EXPECT_TRUE(AutofillProfileChecker(0, 1, /*expected_count=*/2U).Wait());
 
   // Client0 adds the same profile.
   AddProfile(0, CreateAutofillProfile(PROFILE_MARION));
-  EXPECT_TRUE(AutofillProfileChecker(0, 1).Wait());
-  EXPECT_EQ(2U, GetAllAutoFillProfiles(0).size());
+  EXPECT_TRUE(AutofillProfileChecker(0, 1, /*expected_count=*/2U).Wait());
 
   // Client1 removes a profile.
   RemoveProfile(1, GetAllAutoFillProfiles(1)[0]->guid());
-  EXPECT_TRUE(AutofillProfileChecker(0, 1).Wait());
-  EXPECT_EQ(1U, GetAllAutoFillProfiles(0).size());
+  EXPECT_TRUE(AutofillProfileChecker(0, 1, /*expected_count=*/1U).Wait());
 
   // Client0 updates a profile.
   UpdateProfile(0,
                 GetAllAutoFillProfiles(0)[0]->guid(),
                 AutofillType(autofill::NAME_FIRST),
                 base::ASCIIToUTF16("Bart"));
-  EXPECT_TRUE(AutofillProfileChecker(0, 1).Wait());
-  EXPECT_EQ(1U, GetAllAutoFillProfiles(0).size());
+  EXPECT_TRUE(AutofillProfileChecker(0, 1, /*expected_count=*/1U).Wait());
 
   // Client1 removes remaining profile.
   RemoveProfile(1, GetAllAutoFillProfiles(1)[0]->guid());
-  EXPECT_TRUE(AutofillProfileChecker(0, 1).Wait());
-  EXPECT_EQ(0U, GetAllAutoFillProfiles(0).size());
+  EXPECT_TRUE(AutofillProfileChecker(0, 1, /*expected_count=*/0U).Wait());
 
   // Client1 adds a final new profile.
   AddProfile(1, CreateAutofillProfile(PROFILE_FRASIER));
-  EXPECT_TRUE(AutofillProfileChecker(0, 1).Wait());
-  EXPECT_EQ(1U, GetAllAutoFillProfiles(0).size());
+  EXPECT_TRUE(AutofillProfileChecker(0, 1, /*expected_count=*/1U).Wait());
 
   // Each of the clients deletes one profile.
   histograms.ExpectBucketCount("Sync.ModelTypeEntityChange3.AUTOFILL_PROFILE",
@@ -130,9 +123,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientAutofillProfileSyncTest,
 
   // Commit sequentially to make sure there is no race condition.
   SetupSyncOneClientAfterAnother();
-  EXPECT_TRUE(AutofillProfileChecker(0, 1).Wait());
-
-  ASSERT_EQ(2U, GetAllAutoFillProfiles(0).size());
+  EXPECT_TRUE(AutofillProfileChecker(0, 1, /*expected_count=*/2U).Wait());
 
   // The order of events is roughly: First client (whichever that happens to be)
   // connects to the server, commits its entity, and gets no initial updates
@@ -158,7 +149,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientAutofillProfileSyncTest, AddDuplicateProfiles) {
   AddProfile(0, CreateAutofillProfile(PROFILE_HOMER));
   AddProfile(0, CreateAutofillProfile(PROFILE_HOMER));
   ASSERT_TRUE(SetupSync());
-  EXPECT_TRUE(AutofillProfileChecker(0, 1).Wait());
+  EXPECT_TRUE(AutofillProfileChecker(0, 1, /*expected_count=*/1U).Wait());
   EXPECT_EQ(1U, GetAllAutoFillProfiles(0).size());
 }
 
@@ -174,11 +165,9 @@ IN_PROC_BROWSER_TEST_F(TwoClientAutofillProfileSyncTest,
   AddProfile(0, profile0);
   AddProfile(1, profile1);
   ASSERT_TRUE(SetupSync());
-  EXPECT_TRUE(AutofillProfileChecker(0, 1).Wait());
-  EXPECT_EQ(1U, GetAllAutoFillProfiles(0).size());
+  EXPECT_TRUE(AutofillProfileChecker(0, 1, /*expected_count=*/1U).Wait());
 }
 
-// Flaky on all platform. See crbug.com/971666
 IN_PROC_BROWSER_TEST_F(TwoClientAutofillProfileSyncTest,
                        AddDuplicateProfiles_OneIsVerified) {
   ASSERT_TRUE(SetupClients());
@@ -193,9 +182,8 @@ IN_PROC_BROWSER_TEST_F(TwoClientAutofillProfileSyncTest,
   AddProfile(1, profile1);
   // Commit sequentially to make sure there is no race condition.
   SetupSyncOneClientAfterAnother();
-  EXPECT_TRUE(AutofillProfileChecker(0, 1).Wait());
+  EXPECT_TRUE(AutofillProfileChecker(0, 1, /*expected_count=*/1U).Wait());
 
-  EXPECT_EQ(1U, GetAllAutoFillProfiles(0).size());
   EXPECT_EQ(verified_origin, GetAllAutoFillProfiles(0)[0]->origin());
   EXPECT_EQ(verified_origin, GetAllAutoFillProfiles(1)[0]->origin());
 }
@@ -213,15 +201,14 @@ IN_PROC_BROWSER_TEST_F(
   // We start by having the verified profile.
   AddProfile(1, profile1);
   ASSERT_TRUE(SetupSync());
-  EXPECT_TRUE(AutofillProfileChecker(0, 1).Wait());
+  EXPECT_TRUE(AutofillProfileChecker(0, 1, /*expected_count=*/1U).Wait());
 
-  EXPECT_EQ(1U, GetAllAutoFillProfiles(0).size());
   EXPECT_EQ(verified_origin, GetAllAutoFillProfiles(0)[0]->origin());
   EXPECT_EQ(verified_origin, GetAllAutoFillProfiles(1)[0]->origin());
 
   // Add the same (but non-verified) profile on the other client, afterwards.
   AddProfile(0, profile0);
-  EXPECT_TRUE(AutofillProfileChecker(0, 1).Wait());
+  EXPECT_TRUE(AutofillProfileChecker(0, 1, /*expected_count=*/1U).Wait());
 
   // The profiles should de-duplicate via sync on both other client, the
   // verified one should win.
@@ -237,8 +224,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientAutofillProfileSyncTest, AddEmptyProfile) {
   ASSERT_TRUE(SetupSync());
 
   AddProfile(0, CreateAutofillProfile(PROFILE_NULL));
-  EXPECT_TRUE(AutofillProfileChecker(0, 1).Wait());
-  EXPECT_EQ(0U, GetAllAutoFillProfiles(0).size());
+  EXPECT_TRUE(AutofillProfileChecker(0, 1, /*expected_count=*/0U).Wait());
 }
 
 // Tests that adding a profile on one client results in it being added on the
@@ -248,12 +234,8 @@ IN_PROC_BROWSER_TEST_F(TwoClientAutofillProfileSyncTest, AddProfile) {
 
   AddProfile(0, CreateAutofillProfile(PROFILE_HOMER));
 
-  // Wait for the sync to happen.
-  EXPECT_TRUE(AutofillProfileChecker(0, 1).Wait());
-
-  // Make sure that both clients have one profile.
-  EXPECT_EQ(1U, GetProfileCount(0));
-  EXPECT_EQ(1U, GetProfileCount(1));
+  // Wait for the sync to happen and make sure both clients have one profile.
+  EXPECT_TRUE(AutofillProfileChecker(0, 1, /*expected_count=*/1U).Wait());
 }
 
 // Tests that adding a profile on one client results in it being added on the
@@ -266,12 +248,8 @@ IN_PROC_BROWSER_TEST_F(TwoClientAutofillProfileSyncTest,
   AddProfile(0, CreateAutofillProfile(PROFILE_HOMER));
   ASSERT_TRUE(SetupSync());
 
-  // Wait for the sync to happen.
-  EXPECT_TRUE(AutofillProfileChecker(0, 1).Wait());
-
-  // Make sure that both clients have one profile.
-  EXPECT_EQ(1U, GetProfileCount(0));
-  EXPECT_EQ(1U, GetProfileCount(1));
+  // Wait for the sync to happen and make sure both clients have one profile.
+  EXPECT_TRUE(AutofillProfileChecker(0, 1, /*expected_count=*/1U).Wait());
 }
 
 // Tests that adding the same profile on the two clients before sync is started
@@ -290,11 +268,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientAutofillProfileSyncTest,
 
   // Commit sequentially to make sure there is no race condition.
   SetupSyncOneClientAfterAnother();
-  EXPECT_TRUE(AutofillProfileChecker(0, 1).Wait());
-
-  // Make sure that both clients have one profile.
-  EXPECT_EQ(1U, GetProfileCount(0));
-  EXPECT_EQ(1U, GetProfileCount(1));
+  EXPECT_TRUE(AutofillProfileChecker(0, 1, /*expected_count=*/1U).Wait());
 
   // Make sure that they have the same GUID.
   EXPECT_EQ(GetAllAutoFillProfiles(0)[0]->guid(),
@@ -311,8 +285,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientAutofillProfileSyncTest,
   AddProfile(0, CreateAutofillProfile(PROFILE_MARION));
   AddProfile(0, CreateAutofillProfile(PROFILE_FRASIER));
   ASSERT_TRUE(SetupSync());
-  EXPECT_TRUE(AutofillProfileChecker(0, 1).Wait());
-  EXPECT_EQ(3U, GetAllAutoFillProfiles(0).size());
+  EXPECT_TRUE(AutofillProfileChecker(0, 1, /*expected_count=*/3U).Wait());
 }
 
 // Tests that adding multiple profiles to two client results both clients having
@@ -325,8 +298,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientAutofillProfileSyncTest,
   AddProfile(1, CreateAutofillProfile(PROFILE_MARION));
   AddProfile(1, CreateAutofillProfile(PROFILE_FRASIER));
   ASSERT_TRUE(SetupSync());
-  EXPECT_TRUE(AutofillProfileChecker(0, 1).Wait());
-  EXPECT_EQ(3U, GetAllAutoFillProfiles(0).size());
+  EXPECT_TRUE(AutofillProfileChecker(0, 1, /*expected_count=*/3U).Wait());
 }
 
 // Tests that deleting a profile on one client results in it being deleted on
@@ -336,15 +308,11 @@ IN_PROC_BROWSER_TEST_F(TwoClientAutofillProfileSyncTest, DeleteProfile) {
 
   // Setup the test by making the 2 clients have the same profile.
   AddProfile(0, CreateAutofillProfile(PROFILE_HOMER));
-  EXPECT_TRUE(AutofillProfileChecker(0, 1).Wait());
-  EXPECT_EQ(1U, GetAllAutoFillProfiles(0).size());
+  EXPECT_TRUE(AutofillProfileChecker(0, 1, /*expected_count=*/1U).Wait());
 
   // Remove the profile from one client.
   RemoveProfile(1, GetAllAutoFillProfiles(1)[0]->guid());
-  EXPECT_TRUE(AutofillProfileChecker(0, 1).Wait());
-
-  // Make sure both clients don't have any profiles.
-  EXPECT_EQ(0U, GetAllAutoFillProfiles(0).size());
+  EXPECT_TRUE(AutofillProfileChecker(0, 1, /*expected_count=*/0U).Wait());
 }
 
 // Tests that modifying a profile while syncing results in the other client
@@ -353,8 +321,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientAutofillProfileSyncTest, UpdateFields) {
   ASSERT_TRUE(SetupSync());
 
   AddProfile(0, CreateAutofillProfile(PROFILE_HOMER));
-  EXPECT_TRUE(AutofillProfileChecker(0, 1).Wait());
-  EXPECT_EQ(1U, GetAllAutoFillProfiles(0).size());
+  EXPECT_TRUE(AutofillProfileChecker(0, 1, /*expected_count=*/1U).Wait());
 
   // Modify the profile on one client.
   std::string new_name = "Lisa";
@@ -367,8 +334,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientAutofillProfileSyncTest, UpdateFields) {
                 base::ASCIIToUTF16(new_email));
 
   // Make sure the change is propagated to the other client.
-  EXPECT_TRUE(AutofillProfileChecker(0, 1).Wait());
-  EXPECT_EQ(1U, GetAllAutoFillProfiles(0).size());
+  EXPECT_TRUE(AutofillProfileChecker(0, 1, /*expected_count=*/1U).Wait());
   EXPECT_EQ(new_name,
             base::UTF16ToUTF8(GetAllAutoFillProfiles(1)[0]->GetRawInfo(
                 autofill::NAME_FIRST)));
@@ -386,8 +352,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientAutofillProfileSyncTest,
 
   // Make the two clients have the same profile.
   AddProfile(0, CreateAutofillProfile(PROFILE_HOMER));
-  EXPECT_TRUE(AutofillProfileChecker(0, 1).Wait());
-  EXPECT_EQ(1U, GetAllAutoFillProfiles(0).size());
+  EXPECT_TRUE(AutofillProfileChecker(0, 1, /*expected_count=*/1U).Wait());
 
   // Update the same field differently on the two clients at the same time.
   UpdateProfile(0,
@@ -398,8 +363,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientAutofillProfileSyncTest,
                 AutofillType(autofill::NAME_FIRST), base::ASCIIToUTF16("Bart"));
 
   // Don't care which write wins the conflict, only that the two clients agree.
-  EXPECT_TRUE(AutofillProfileChecker(0, 1).Wait());
-  EXPECT_EQ(1U, GetAllAutoFillProfiles(0).size());
+  EXPECT_TRUE(AutofillProfileChecker(0, 1, /*expected_count=*/1U).Wait());
 }
 
 // Tests that modifying a profile at the same time one two clients while
@@ -423,8 +387,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientAutofillProfileSyncTest,
   ASSERT_TRUE(SetupSync());
 
   // Don't care which write wins the conflict, only that the two clients agree.
-  EXPECT_TRUE(AutofillProfileChecker(0, 1).Wait());
-  EXPECT_EQ(1U, GetAllAutoFillProfiles(0).size());
+  EXPECT_TRUE(AutofillProfileChecker(0, 1, /*expected_count=*/1U).Wait());
 }
 
 // Tests that modifying a profile at the same time on two clients while
@@ -435,14 +398,13 @@ IN_PROC_BROWSER_TEST_F(TwoClientAutofillProfileSyncTest, DeleteAndUpdate) {
 
   // Make the two clients have the same profile.
   AddProfile(0, CreateAutofillProfile(PROFILE_HOMER));
-  ASSERT_TRUE(AutofillProfileChecker(0, 1).Wait());
-  ASSERT_EQ(1U, GetAllAutoFillProfiles(0).size());
+  ASSERT_TRUE(AutofillProfileChecker(0, 1, /*expected_count=*/1U).Wait());
 
   RemoveProfile(0, GetAllAutoFillProfiles(0)[0]->guid());
   UpdateProfile(1, GetAllAutoFillProfiles(1)[0]->guid(),
                 AutofillType(autofill::NAME_FIRST), base::ASCIIToUTF16("Bart"));
 
-  EXPECT_TRUE(AutofillProfileChecker(0, 1).Wait());
+  EXPECT_TRUE(AutofillProfileChecker(0, 1, base::nullopt).Wait());
   // The exact result is non-deterministic without a strong consistency model
   // server-side, but both clients should converge (either update or delete).
   EXPECT_EQ(GetAllAutoFillProfiles(0).size(), GetAllAutoFillProfiles(1).size());
@@ -467,8 +429,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientAutofillProfileSyncTest,
 
   // Make the two clients have the same profile.
   AddProfile(0, CreateAutofillProfile(PROFILE_HOMER));
-  ASSERT_TRUE(AutofillProfileChecker(0, 1).Wait());
-  ASSERT_EQ(1U, GetAllAutoFillProfiles(0).size());
+  ASSERT_TRUE(AutofillProfileChecker(0, 1, /*expected_count=*/1U).Wait());
 
   RemoveProfile(0, GetAllAutoFillProfiles(0)[0]->guid());
   UpdateProfile(1, GetAllAutoFillProfiles(1)[0]->guid(),
@@ -478,17 +439,14 @@ IN_PROC_BROWSER_TEST_F(TwoClientAutofillProfileSyncTest,
   // server to resolve the conflict and recommit. The conflict resolution should
   // be undeletion wins, which can mean local wins or remote wins, depending on
   // which client is involved.
-  EXPECT_TRUE(AutofillProfileChecker(0, 1).Wait());
-  EXPECT_EQ(1U, GetAllAutoFillProfiles(0).size());
-  EXPECT_EQ(1U, GetAllAutoFillProfiles(1).size());
+  EXPECT_TRUE(AutofillProfileChecker(0, 1, /*expected_count=*/1U).Wait());
 }
 
 IN_PROC_BROWSER_TEST_F(TwoClientAutofillProfileSyncTest, MaxLength) {
   ASSERT_TRUE(SetupSync());
 
   AddProfile(0, CreateAutofillProfile(PROFILE_HOMER));
-  ASSERT_TRUE(AutofillProfileChecker(0, 1).Wait());
-  ASSERT_EQ(1U, GetAllAutoFillProfiles(0).size());
+  ASSERT_TRUE(AutofillProfileChecker(0, 1, /*expected_count=*/1U).Wait());
 
   base::string16 max_length_string(AutofillTable::kMaxDataLength, '.');
   UpdateProfile(0,
@@ -504,15 +462,14 @@ IN_PROC_BROWSER_TEST_F(TwoClientAutofillProfileSyncTest, MaxLength) {
                 AutofillType(autofill::ADDRESS_HOME_LINE1),
                 max_length_string);
 
-  EXPECT_TRUE(AutofillProfileChecker(0, 1).Wait());
+  EXPECT_TRUE(AutofillProfileChecker(0, 1, /*expected_count=*/1U).Wait());
 }
 
 IN_PROC_BROWSER_TEST_F(TwoClientAutofillProfileSyncTest, ExceedsMaxLength) {
   ASSERT_TRUE(SetupSync());
 
   AddProfile(0, CreateAutofillProfile(PROFILE_HOMER));
-  ASSERT_TRUE(AutofillProfileChecker(0, 1).Wait());
-  ASSERT_EQ(1U, GetAllAutoFillProfiles(0).size());
+  ASSERT_TRUE(AutofillProfileChecker(0, 1, /*expected_count=*/1U).Wait());
 
   base::string16 exceeds_max_length_string(
       AutofillTable::kMaxDataLength + 1, '.');
@@ -553,8 +510,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientAutofillProfileSyncTest, NoCreditCardSync) {
   // profile to sync between both clients, it should give the credit card enough
   // time to sync. We cannot directly wait/block for the credit card to sync
   // because we're expecting it to not sync.
-  EXPECT_TRUE(AutofillProfileChecker(0, 1).Wait());
-  EXPECT_EQ(1U, GetAllAutoFillProfiles(0).size());
+  EXPECT_TRUE(AutofillProfileChecker(0, 1, /*expected_count=*/1U).Wait());
 
   PersonalDataManager* pdm = GetPersonalDataManager(1);
   EXPECT_EQ(0U, pdm->GetCreditCards().size());
@@ -566,7 +522,8 @@ IN_PROC_BROWSER_TEST_F(TwoClientAutofillProfileSyncTest,
   ASSERT_TRUE(SetupSync());
 
   // All profiles should sync same autofill profiles.
-  ASSERT_TRUE(AutofillProfileChecker(0, 1).Wait())
+  ASSERT_TRUE(
+      AutofillProfileChecker(0, 1, /*expected_count=*/base::nullopt).Wait())
       << "Initial autofill profiles did not match for all profiles.";
 
   // For clean profiles, the autofill profiles count should be zero. We are not
@@ -577,13 +534,9 @@ IN_PROC_BROWSER_TEST_F(TwoClientAutofillProfileSyncTest,
   // Add a new autofill profile to the first client.
   AddProfile(0, CreateUniqueAutofillProfile());
 
-  EXPECT_TRUE(AutofillProfileChecker(0, 1).Wait());
-
-  // Check that the total number of autofill profiles is as expected
-  for (int i = 0; i < num_clients(); ++i) {
-    EXPECT_EQ(GetProfileCount(i), init_autofill_profiles_count + 1U)
-        << "Total autofill profile count is wrong.";
-  }
+  EXPECT_TRUE(AutofillProfileChecker(
+                  0, 1, /*expected_count=*/init_autofill_profiles_count + 1)
+                  .Wait());
 }
 
 }  // namespace

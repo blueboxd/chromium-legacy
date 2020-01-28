@@ -446,7 +446,11 @@ void ThrottlingURLLoader::StartNow() {
     response_head->headers = base::MakeRefCounted<net::HttpResponseHeaders>(
         net::HttpUtil::AssembleRawHeaders(header_string));
     response_head->encoded_data_length = header_string.size();
-    OnReceiveRedirect(redirect_info, std::move(response_head));
+    start_info_->task_runner->PostTask(
+        FROM_HERE,
+        base::BindOnce(&ThrottlingURLLoader::OnReceiveRedirect,
+                       base::Unretained(this), std::move(redirect_info),
+                       std::move(response_head)));
     return;
   }
 

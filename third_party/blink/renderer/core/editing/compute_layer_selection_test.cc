@@ -121,7 +121,9 @@ TEST_F(ComputeLayerSelectionTest, PositionInScrollableRoot) {
       To<HTMLInputElement>(GetDocument().getElementById("target")));
 
   ScrollableArea* root_scroller = GetDocument().View()->GetScrollableArea();
-  root_scroller->SetScrollOffset(ScrollOffset(800, 500), kProgrammaticScroll);
+  root_scroller->SetScrollOffset(
+      ScrollOffset(800, 500),
+      mojom::blink::ScrollIntoViewParams::Type::kProgrammatic);
   ASSERT_EQ(ScrollOffset(800, 500), root_scroller->GetScrollOffset());
 
   UpdateAllLifecyclePhasesForTest();
@@ -185,7 +187,9 @@ TEST_F(ComputeLayerSelectionTest, PositionInScroller) {
   Element* e = GetDocument().getElementById("scroller");
   PaintLayerScrollableArea* scroller =
       ToLayoutBox(e->GetLayoutObject())->GetScrollableArea();
-  scroller->SetScrollOffset(ScrollOffset(900, 800), kProgrammaticScroll);
+  scroller->SetScrollOffset(
+      ScrollOffset(900, 800),
+      mojom::blink::ScrollIntoViewParams::Type::kProgrammatic);
   ASSERT_EQ(ScrollOffset(900, 800), scroller->GetScrollOffset());
 
   UpdateAllLifecyclePhasesForTest();

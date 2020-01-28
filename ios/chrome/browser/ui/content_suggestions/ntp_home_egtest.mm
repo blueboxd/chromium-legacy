@@ -153,6 +153,13 @@ id<GREYMatcher> OmniboxWidthBetween(CGFloat width, CGFloat margin) {
 
 // Tests that the collections shortcut are displayed and working.
 - (void)testCollectionShortcuts {
+// TODO(crbug.com/1046253): fix for iphone-device and reenable.
+#if !TARGET_IPHONE_SIMULATOR
+  if (![ChromeEarlGrey isIPadIdiom]) {
+    EARL_GREY_TEST_DISABLED(@"Test disabled on iPhone devices.");
+  }
+#endif
+
   // Check the Bookmarks.
   [[EarlGrey
       selectElementWithMatcher:chrome_test_util::ButtonWithAccessibilityLabelId(
@@ -213,6 +220,14 @@ id<GREYMatcher> OmniboxWidthBetween(CGFloat width, CGFloat margin) {
   if ([ChromeEarlGrey isIPadIdiom]) {
     EARL_GREY_TEST_DISABLED(@"Disabled for iPad due to device rotation bug.");
   }
+
+// TODO(crbug.com/1046253): fix for iphone-device and reenable.
+#if !TARGET_IPHONE_SIMULATOR
+  if (![ChromeEarlGrey isIPadIdiom]) {
+    EARL_GREY_TEST_DISABLED(@"Test disabled on iPhone devices.");
+  }
+#endif
+
   [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
   UIEdgeInsets safeArea =
       [ContentSuggestionsAppInterface collectionView].safeAreaInsets;
@@ -254,6 +269,14 @@ id<GREYMatcher> OmniboxWidthBetween(CGFloat width, CGFloat margin) {
   if ([ChromeEarlGrey isRegularXRegularSizeClass]) {
     EARL_GREY_TEST_DISABLED(@"Disabled for iPad due to device rotation bug.");
   }
+
+// TODO(crbug.com/1046253): fix for iphone-device and reenable.
+#if !TARGET_IPHONE_SIMULATOR
+  if (![ChromeEarlGrey isIPadIdiom]) {
+    EARL_GREY_TEST_DISABLED(@"Test disabled on iPhone devices.");
+  }
+#endif
+
   [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
   UIEdgeInsets safeArea =
       [ContentSuggestionsAppInterface collectionView].safeAreaInsets;
@@ -300,6 +323,13 @@ id<GREYMatcher> OmniboxWidthBetween(CGFloat width, CGFloat margin) {
   if ([ChromeEarlGrey isRegularXRegularSizeClass]) {
     EARL_GREY_TEST_DISABLED(@"Disabled for iPad due to device rotation bug.");
   }
+
+// TODO(crbug.com/1046253): fix for iphone-device and reenable.
+#if !TARGET_IPHONE_SIMULATOR
+  if (![ChromeEarlGrey isIPadIdiom]) {
+    EARL_GREY_TEST_DISABLED(@"Test disabled on iPhone devices.");
+  }
+#endif
 
   [[EarlGrey selectElementWithMatcher:chrome_test_util::
                                           ContentSuggestionCollectionView()]
@@ -475,6 +505,13 @@ id<GREYMatcher> OmniboxWidthBetween(CGFloat width, CGFloat margin) {
     // toolbar.
     return;
   }
+// TODO(crbug.com/1046253): fix for iphone-device and reenable.
+#if !TARGET_IPHONE_SIMULATOR
+  if (![ChromeEarlGrey isIPadIdiom]) {
+    EARL_GREY_TEST_DISABLED(@"Test disabled on iPhone devices.");
+  }
+#endif
+
   [ContentSuggestionsAppInterface swizzleSearchButtonLogging];
 
   // Tap the search button.
@@ -542,6 +579,13 @@ id<GREYMatcher> OmniboxWidthBetween(CGFloat width, CGFloat margin) {
 // Tests that tapping the fake omnibox then unfocusing it moves the collection
 // back to where it was.
 - (void)testTapFakeOmniboxScrollScrolled {
+// TODO(crbug.com/1046253): fix for iphone-device and reenable.
+#if !TARGET_IPHONE_SIMULATOR
+  if (![ChromeEarlGrey isIPadIdiom]) {
+    EARL_GREY_TEST_DISABLED(@"Test disabled on iPhone devices.");
+  }
+#endif
+
   // Get the collection and its layout.
   UICollectionView* collectionView =
       [ContentSuggestionsAppInterface collectionView];
@@ -580,6 +624,13 @@ id<GREYMatcher> OmniboxWidthBetween(CGFloat width, CGFloat margin) {
     // This only happens on iPhone, since on iPad there's no secondary toolbar.
     return;
   }
+
+// TODO(crbug.com/1046253): fix for iphone-device and reenable.
+#if !TARGET_IPHONE_SIMULATOR
+  if (![ChromeEarlGrey isIPadIdiom]) {
+    EARL_GREY_TEST_DISABLED(@"Test disabled on iPhone devices.");
+  }
+#endif
 
   [[EarlGrey selectElementWithMatcher:chrome_test_util::
                                           ContentSuggestionCollectionView()]
@@ -629,6 +680,13 @@ id<GREYMatcher> OmniboxWidthBetween(CGFloat width, CGFloat margin) {
 }
 
 - (void)testFavicons {
+// TODO(crbug.com/1046253): fix for iphone-device and reenable.
+#if !TARGET_IPHONE_SIMULATOR
+  if (![ChromeEarlGrey isIPadIdiom]) {
+    EARL_GREY_TEST_DISABLED(@"Test disabled on iPhone devices.");
+  }
+#endif
+
   for (NSInteger index = 0; index < 8; index++) {
     [[EarlGrey selectElementWithMatcher:
                    grey_accessibilityID([NSString

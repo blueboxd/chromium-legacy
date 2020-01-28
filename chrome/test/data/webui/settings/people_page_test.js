@@ -105,57 +105,17 @@ cr.define('settings_people_page', function() {
         assertTrue(peoplePage.$.toast.open);
       });
 
-      // This makes sure UI meant for DICE-enabled profiles are not leaked to
-      // non-dice profiles.
-      // TODO(tangltom): This should be removed once all profiles are fully
-      // migrated.
-      test('NoManageProfileRow', function() {
-        assertFalse(!!peoplePage.$$('#edit-profile'));
-      });
-    });
-
-    suite('DiceUITest', function() {
-      suiteSetup(function() {
-        // Force UIs to think DICE is enabled for this profile.
-        loadTimeData.overrideValues({
-          diceEnabled: true,
-        });
-      });
-
-      setup(function() {
-        syncBrowserProxy = new TestSyncBrowserProxy();
-        settings.SyncBrowserProxyImpl.instance_ = syncBrowserProxy;
-
-        profileInfoBrowserProxy = new TestProfileInfoBrowserProxy();
-        settings.ProfileInfoBrowserProxyImpl.instance_ =
-            profileInfoBrowserProxy;
-
-        PolymerTest.clearBody();
-        peoplePage = document.createElement('settings-people-page');
-        peoplePage.pageVisibility = settings.pageVisibility;
-        document.body.appendChild(peoplePage);
-
-        Polymer.dom.flush();
-      });
-
-      teardown(function() {
-        peoplePage.remove();
-      });
-
       test('ShowCorrectRows', function() {
         return syncBrowserProxy.whenCalled('getSyncStatus').then(function() {
           // The correct /manageProfile link row is shown.
           assertTrue(!!peoplePage.$$('#edit-profile'));
           assertFalse(!!peoplePage.$$('#picture-subpage-trigger'));
 
-          // Sync-overview row should not exist when diceEnabled is true, even
-          // if syncStatus values would've warranted the row otherwise.
           sync_test_util.simulateSyncStatus({
             signedIn: false,
             signinAllowed: true,
             syncSystemEnabled: true,
           });
-          assertFalse(!!peoplePage.$$('#sync-overview'));
 
           // The control element should exist when policy allows.
           const accountControl = peoplePage.$$('settings-sync-account-control');

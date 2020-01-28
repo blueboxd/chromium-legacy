@@ -104,6 +104,11 @@ body.controls-refresh {
     width: 4px;
 }
 
+.controls-refresh .color-swatch:focus {
+    outline: solid 2px -webkit-focus-ring-color;
+    outline-offset: -2px;
+}
+
 .other-color {
     width: 100%;
     margin: 4px 0 0 0;
@@ -136,7 +141,7 @@ body.controls-refresh {
     }
 
     .controls-refresh .color-swatch:focus {
-        border-color: Highlight;
+        outline-color: Highlight;
     }
 
     .controls-refresh .color-swatch-container {

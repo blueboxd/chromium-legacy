@@ -4,7 +4,7 @@
 
 #include "third_party/blink/renderer/core/layout/ng/list/layout_ng_list_item.h"
 
-#include "third_party/blink/renderer/core/layout/ng/list/layout_ng_list_marker.h"
+#include "third_party/blink/renderer/core/layout/ng/list/list_marker.h"
 
 namespace blink {
 
@@ -112,25 +112,20 @@ int LayoutNGListItem::Value() const {
   return ordinal_.Value(*GetNode());
 }
 
-LayoutObject* LayoutNGListItem::SymbolMarkerLayoutText() const {
-  LayoutObject* marker = Marker();
-  if (ListMarker* list_marker = ListMarker::Get(marker))
-    return list_marker->SymbolMarkerLayoutText(*marker);
-  return nullptr;
-}
-
 const LayoutObject* LayoutNGListItem::FindSymbolMarkerLayoutText(
     const LayoutObject* object) {
   if (!object)
     return nullptr;
 
-  if (object->IsLayoutNGListItem())
-    return ToLayoutNGListItem(object)->SymbolMarkerLayoutText();
-
-  if (object->IsLayoutNGListMarker()) {
-    return ToLayoutNGListMarker(object)->Marker().SymbolMarkerLayoutText(
-        *object);
+  if (object->IsLayoutNGListItem()) {
+    const LayoutObject* marker = ToLayoutNGListItem(object)->Marker();
+    if (const ListMarker* list_marker = ListMarker::Get(marker))
+      return list_marker->SymbolMarkerLayoutText(*marker);
+    return nullptr;
   }
+
+  if (const ListMarker* list_marker = ListMarker::Get(object))
+    return list_marker->SymbolMarkerLayoutText(*object);
 
   if (object->IsAnonymousBlock())
     return FindSymbolMarkerLayoutText(object->Parent());

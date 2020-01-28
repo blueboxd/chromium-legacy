@@ -7,6 +7,5 @@
 #include "base/metrics/histogram_macros.h"
 
 void RecordAnnouncementHistogram(AnnouncementNotificationEvent event) {
-  UMA_HISTOGRAM_ENUMERATION("Notifications.Announcement.Events", event,
-                            AnnouncementNotificationEvent::kMax);
+  UMA_HISTOGRAM_ENUMERATION("Notifications.Announcement.Events", event);
 }

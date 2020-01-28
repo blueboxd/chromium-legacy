@@ -55,6 +55,20 @@ using chromeos::disks::DiskMountManager;
 
 namespace chromeos {
 namespace settings {
+
+void StorageHandler::TestAPI::UpdateSizeStat() {
+  handler_->UpdateSizeStat();
+}
+
+void StorageHandler::TestAPI::OnGetSizeStat(int64_t* total_size,
+                                            int64_t* available_size) {
+  handler_->OnGetSizeStat(total_size, available_size);
+}
+
+void StorageHandler::TestAPI::UpdateMyFilesSize() {
+  handler_->UpdateMyFilesSize();
+}
+
 namespace {
 
 void GetSizeStatBlocking(const base::FilePath& mount_path,
@@ -206,15 +220,15 @@ void StorageHandler::HandleUpdateExternalStorages(
 }
 
 void StorageHandler::UpdateSizeStat() {
-  const base::FilePath downloads_path =
-      file_manager::util::GetDownloadsFolderForProfile(profile_);
+  const base::FilePath my_files_path =
+      file_manager::util::GetMyFilesFolderForProfile(profile_);
 
   int64_t* total_size = new int64_t(0);
   int64_t* available_size = new int64_t(0);
   base::PostTaskAndReply(
       FROM_HERE,
       {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_VISIBLE},
-      base::Bind(&GetSizeStatBlocking, downloads_path, total_size,
+      base::Bind(&GetSizeStatBlocking, my_files_path, total_size,
                  available_size),
       base::Bind(&StorageHandler::OnGetSizeStat, weak_ptr_factory_.GetWeakPtr(),
                  base::Owned(total_size), base::Owned(available_size)));
@@ -224,7 +238,6 @@ void StorageHandler::OnGetSizeStat(int64_t* total_size,
                                    int64_t* available_size) {
   int64_t used_size = *total_size - *available_size;
   base::DictionaryValue size_stat;
-  size_stat.SetString("totalSize", ui::FormatBytes(*total_size));
   size_stat.SetString("availableSize", ui::FormatBytes(*available_size));
   size_stat.SetString("usedSize", ui::FormatBytes(used_size));
   size_stat.SetDouble("usedRatio",
@@ -247,34 +260,36 @@ void StorageHandler::UpdateMyFilesSize() {
   const base::FilePath my_files_path =
       file_manager::util::GetMyFilesFolderForProfile(profile_);
 
+  const base::FilePath android_files_path =
+      base::FilePath(file_manager::util::GetAndroidPlayFilesPath());
+
   base::PostTaskAndReplyWithResult(
       FROM_HERE,
       {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::BindOnce(&StorageHandler::ComputeLocalFilesSize,
-                     base::Unretained(this), my_files_path),
+                     base::Unretained(this), my_files_path, android_files_path),
       base::BindOnce(&StorageHandler::OnGetMyFilesSize,
                      weak_ptr_factory_.GetWeakPtr()));
 }
 
 int64_t StorageHandler::ComputeLocalFilesSize(
-    const base::FilePath& my_files_path) {
+    const base::FilePath& my_files_path,
+    const base::FilePath& android_files_path) {
   int64_t size = 0;
 
   // Compute directory size of My Files
   size += base::ComputeDirectorySize(my_files_path);
 
   // Compute directory size of Play Files
-  const base::FilePath android_files_path =
-      base::FilePath(file_manager::util::kAndroidFilesPath);
   size += base::ComputeDirectorySize(android_files_path);
 
   // Remove size of Download. If Android is enabled, the size of the Download
   // folder is counted in both My Files and Play files. If Android is disabled,
   // the Download folder doesn't exist and the returned size is 0.
   const base::FilePath download_files_path =
-      base::FilePath(file_manager::util::kAndroidFilesPath)
-          .AppendASCII("Download");
+      android_files_path.AppendASCII("Download");
   size -= base::ComputeDirectorySize(download_files_path);
+
   return size;
 }
 

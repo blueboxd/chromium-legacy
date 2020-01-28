@@ -1107,7 +1107,7 @@ void LocalDOMWindow::scrollBy(const ScrollToOptions* scroll_to_options) const {
                                            scroll_behavior);
   viewport->SetScrollOffset(
       viewport->ScrollPositionToOffset(new_scaled_position),
-      kProgrammaticScroll, scroll_behavior);
+      mojom::blink::ScrollIntoViewParams::Type::kProgrammatic, scroll_behavior);
 }
 
 void LocalDOMWindow::scrollTo(double x, double y) const {
@@ -1172,7 +1172,7 @@ void LocalDOMWindow::scrollTo(const ScrollToOptions* scroll_to_options) const {
                                            scroll_behavior);
   viewport->SetScrollOffset(
       viewport->ScrollPositionToOffset(new_scaled_position),
-      kProgrammaticScroll, scroll_behavior);
+      mojom::blink::ScrollIntoViewParams::Type::kProgrammatic, scroll_behavior);
 }
 
 void LocalDOMWindow::moveBy(int x, int y) const {

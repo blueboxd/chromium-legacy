@@ -135,10 +135,10 @@ void HTMLFrameElementBase::ParseAttribute(
   } else if (name == html_names::kScrollingAttr) {
     // Auto and yes both simply mean "allow scrolling." No means "don't allow
     // scrolling."
-    if (DeprecatedEqualIgnoringCase(value, "auto") ||
+    if (EqualIgnoringASCIICase(value, "auto") ||
         DeprecatedEqualIgnoringCase(value, "yes"))
       SetScrollingMode(ScrollbarMode::kAuto);
-    else if (DeprecatedEqualIgnoringCase(value, "no"))
+    else if (EqualIgnoringASCIICase(value, "no"))
       SetScrollingMode(ScrollbarMode::kAlwaysOff);
   } else if (name == html_names::kOnbeforeunloadAttr) {
     // FIXME: should <frame> elements have beforeunload handlers?

@@ -781,7 +781,7 @@ void InputType::ApplyStep(const Decimal& current,
   Decimal new_value = current;
   const AtomicString& step_string =
       GetElement().FastGetAttribute(html_names::kStepAttr);
-  if (!DeprecatedEqualIgnoringCase(step_string, "any") &&
+  if (!EqualIgnoringASCIICase(step_string, "any") &&
       step_range.StepMismatch(current)) {
     // Snap-to-step / clamping steps
     // If the current value is not matched to step value:
@@ -802,7 +802,7 @@ void InputType::ApplyStep(const Decimal& current,
   }
   new_value = new_value + step_range.Step() * Decimal::FromDouble(count);
 
-  if (!DeprecatedEqualIgnoringCase(step_string, "any"))
+  if (!EqualIgnoringASCIICase(step_string, "any"))
     new_value = step_range.AlignValueForStep(current, new_value);
 
   // 8. If the element has a minimum, and value is less than that minimum,

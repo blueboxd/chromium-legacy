@@ -829,7 +829,7 @@ void Page::DidCommitLoad(LocalFrame* frame) {
     // after a new history item is created in FrameLoader.
     // See crbug.com/642279
     GetVisualViewport().SetScrollOffset(
-        ScrollOffset(), kProgrammaticScroll,
+        ScrollOffset(), mojom::blink::ScrollIntoViewParams::Type::kProgrammatic,
         mojom::blink::ScrollIntoViewParams::Behavior::kInstant,
         ScrollableArea::ScrollCallback());
     hosts_using_features_.UpdateMeasurementsAndClear();

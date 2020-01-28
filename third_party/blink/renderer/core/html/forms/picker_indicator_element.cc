@@ -111,10 +111,15 @@ void PickerIndicatorElement::DidChooseValue(double value) {
 void PickerIndicatorElement::DidEndChooser() {
   chooser_.Clear();
   picker_indicator_owner_->DidEndChooser();
+  if (::features::IsFormControlsRefreshEnabled() &&
+      OwnerElement().GetLayoutObject()) {
+    // Invalidate paint to ensure that the focus ring is shown.
+    OwnerElement().GetLayoutObject()->SetShouldDoFullPaintInvalidation();
+  }
 }
 
 void PickerIndicatorElement::OpenPopup() {
-  if (chooser_)
+  if (HasOpenedPopup())
     return;
   if (!GetDocument().GetPage())
     return;
@@ -125,6 +130,11 @@ void PickerIndicatorElement::OpenPopup() {
     return;
   chooser_ = GetDocument().GetPage()->GetChromeClient().OpenDateTimeChooser(
       GetDocument().GetFrame(), this, parameters);
+  if (::features::IsFormControlsRefreshEnabled() &&
+      OwnerElement().GetLayoutObject()) {
+    // Invalidate paint to ensure that the focus ring is removed.
+    OwnerElement().GetLayoutObject()->SetShouldDoFullPaintInvalidation();
+  }
 }
 
 Element& PickerIndicatorElement::OwnerElement() const {
@@ -136,6 +146,10 @@ void PickerIndicatorElement::ClosePopup() {
   if (!chooser_)
     return;
   chooser_->EndChooser();
+}
+
+bool PickerIndicatorElement::HasOpenedPopup() const {
+  return chooser_;
 }
 
 void PickerIndicatorElement::DetachLayoutTree(bool performing_reattach) {

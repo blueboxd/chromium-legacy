@@ -1233,7 +1233,7 @@ are declared in tools/grit/grit_rule.gni.
       <message name="IDS_TOS_NOTIFICATION_REVIEW_BUTTON_TEXT" desc="The button text on the TOS notification for the user to review the TOS change." formatter_data="android_java">
         Review
       </message>
-      <message name="IDS_TOS_NOTIFICATION_LINK" desc="The URL for the new TOS change link." translateable="false" formatter_data="android_java">
+      <message name="IDS_TOS_NOTIFICATION_LINK" desc="The URL for the new TOS change link." translateable="false">
         https://www.google.com/chrome/privacy/eula_text.html
       </message>
 

@@ -45,6 +45,7 @@
 #include "third_party/blink/renderer/core/html/forms/html_option_element.h"
 #include "third_party/blink/renderer/core/html/html_div_element.h"
 #include "third_party/blink/renderer/core/input_type_names.h"
+#include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/layout/layout_theme.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
@@ -52,6 +53,7 @@
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+#include "ui/base/ui_base_features.h"
 
 namespace blink {
 
@@ -150,7 +152,7 @@ void ColorInputType::HandleDOMActivateEvent(Event& event) {
     return;
 
   ChromeClient* chrome_client = GetChromeClient();
-  if (chrome_client && !chooser_) {
+  if (chrome_client && !HasOpenedPopup()) {
     UseCounter::Count(
         document,
         (event.UnderlyingEvent() && event.UnderlyingEvent()->isTrusted())
@@ -158,6 +160,11 @@ void ColorInputType::HandleDOMActivateEvent(Event& event) {
             : WebFeature::kColorInputTypeChooserByUntrustedClick);
     chooser_ = chrome_client->OpenColorChooser(document.GetFrame(), this,
                                                ValueAsColor());
+    if (::features::IsFormControlsRefreshEnabled() &&
+        GetElement().GetLayoutObject()) {
+      // Invalidate paint to ensure that the focus ring is removed.
+      GetElement().GetLayoutObject()->SetShouldDoFullPaintInvalidation();
+    }
   }
 
   event.SetDefaultHandled();
@@ -166,6 +173,10 @@ void ColorInputType::HandleDOMActivateEvent(Event& event) {
 void ColorInputType::ClosePopupView() {
   if (chooser_)
     chooser_->EndChooser();
+}
+
+bool ColorInputType::HasOpenedPopup() const {
+  return chooser_;
 }
 
 bool ColorInputType::ShouldRespectListAttribute() {
@@ -204,6 +215,11 @@ void ColorInputType::DidEndChooser() {
   if (LayoutTheme::GetTheme().IsModalColorChooser())
     GetElement().EnqueueChangeEvent();
   chooser_.Clear();
+  if (::features::IsFormControlsRefreshEnabled() &&
+      GetElement().GetLayoutObject()) {
+    // Invalidate paint to ensure that the focus ring is shown.
+    GetElement().GetLayoutObject()->SetShouldDoFullPaintInvalidation();
+  }
 }
 
 void ColorInputType::UpdateView() {

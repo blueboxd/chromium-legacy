@@ -153,7 +153,7 @@ bool NumberInputType::SizeShouldIncludeDecoration(int default_size,
 
   const String step_string =
       GetElement().FastGetAttribute(html_names::kStepAttr);
-  if (DeprecatedEqualIgnoringCase(step_string, "any"))
+  if (EqualIgnoringASCIICase(step_string, "any"))
     return false;
 
   const Decimal minimum = ParseToDecimalForNumberType(

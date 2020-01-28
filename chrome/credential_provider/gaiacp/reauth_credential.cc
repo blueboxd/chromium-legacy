@@ -7,7 +7,9 @@
 #include "base/command_line.h"
 #include "chrome/credential_provider/common/gcp_strings.h"
 #include "chrome/credential_provider/gaiacp/gaia_resources.h"
+#include "chrome/credential_provider/gaiacp/gcpw_strings.h"
 #include "chrome/credential_provider/gaiacp/logging.h"
+#include "chrome/credential_provider/gaiacp/mdm_utils.h"
 #include "chrome/credential_provider/gaiacp/os_user_manager.h"
 #include "chrome/credential_provider/gaiacp/reg_utils.h"
 
@@ -27,6 +29,15 @@ void CReauthCredential::FinalRelease() {
 }
 
 // CGaiaCredentialBase /////////////////////////////////////////////////////////
+bool CReauthCredential::CheckIfTosAccepted() {
+  DCHECK(os_user_sid_.Length());
+
+  DWORD acceptTos = 0;
+  HRESULT hr = GetUserProperty(OLE2W(os_user_sid_), kKeyAcceptTos, &acceptTos);
+  if (FAILED(hr))
+    LOGFN(ERROR) << "Failed getting accept_tos. hr = " << putHR(hr);
+  return acceptTos == 1;
+}
 
 HRESULT CReauthCredential::GetUserGlsCommandline(
     base::CommandLine* command_line) {
@@ -36,6 +47,15 @@ HRESULT CReauthCredential::GetUserGlsCommandline(
   // This boolean is set to false if generating GlsCommandLine HRESULT
   // is E_UNEXPECTED.
   bool get_cmd_line_status = false;
+
+  // Check if tos is accepted. If not, we need to load gaia login page
+  // with ToS acceptance screen.
+  // Note:
+  // 1. We need to append this switch irrespective of whether its a
+  // reauth flow vs add user flow.
+  // 2. We only show tos for GEM usecases.
+  if (!CheckIfTosAccepted() && IsGemEnabled())
+    command_line->AppendSwitchASCII(kShowTosSwitch, "1");
 
   // If this is an existing user with an SID, try to get its gaia id and pass
   // it to the GLS for verification.

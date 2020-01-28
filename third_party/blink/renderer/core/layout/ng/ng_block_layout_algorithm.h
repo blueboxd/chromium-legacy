@@ -232,7 +232,7 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
   NGBreakStatus BreakBeforeChildIfNeeded(NGLayoutInputNode child,
                                          const NGLayoutResult&,
                                          NGPreviousInflowPosition*,
-                                         LayoutUnit block_offset,
+                                         LayoutUnit bfc_block_offset,
                                          bool has_container_separation);
 
   // Look for a better breakpoint (than we already have) between lines (i.e. a

@@ -3,15 +3,8 @@
      Use of this source code is governed by a BSD-style license that can be
      found in the LICENSE file. -->
 
-<FrameLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:id="@+id/playback_container"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="@android:color/black"
-    android:clickable="true"
-    android:visibility="gone">
+<merge xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <VideoView
         android:id="@+id/video_player"
@@ -72,4 +65,4 @@
                 style="@style/PhotoPicker.SeekBar" />
         </FrameLayout>
     </FrameLayout>
-</FrameLayout>
+</merge>

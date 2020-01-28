@@ -875,7 +875,7 @@ mojom::blink::FetchAPIRequestPtr Request::CreateFetchAPIRequest() const {
 
   HTTPHeaderMap headers;
   for (const auto& header : headers_->HeaderList()->List()) {
-    if (DeprecatedEqualIgnoringCase(header.first, "referer"))
+    if (EqualIgnoringASCIICase(header.first, "referer"))
       continue;
     AtomicString key(header.first);
     AtomicString value(header.second);

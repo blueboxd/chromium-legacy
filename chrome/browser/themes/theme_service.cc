@@ -1126,7 +1126,9 @@ bool ThemeService::UsingCustomTheme() const {
 bool ThemeService::UseIncognitoColor(int id) const {
   // Incognito is disabled for any non-ignored custom theme colors so they apply
   // atop a predictable state.
-  return !UsingCustomTheme() || ShouldIgnoreThemeSupplier(id, true);
+  return ShouldIgnoreThemeSupplier(id, true) ||
+         (!UsingCustomTheme() &&
+          (!theme_supplier_ || theme_supplier_->CanUseIncognitoColors()));
 }
 
 bool ThemeService::UseDarkModeColors() const {

@@ -64,7 +64,7 @@ class AutofillPopupControllerImpl : public AutofillPopupController {
 
   // Hides the popup and destroys the controller. This also invalidates
   // |delegate_|.
-  void Hide() override;
+  void Hide(PopupHidingReason reason) override;
 
   // Invoked when the view was destroyed by by someone other than this class.
   void ViewDestroyed() override;

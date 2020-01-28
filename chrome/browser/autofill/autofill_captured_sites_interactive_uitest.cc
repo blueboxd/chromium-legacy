@@ -101,7 +101,8 @@ class AutofillCapturedSitesInteractiveTest
     int tries = 0;
     while (tries < attempts) {
       tries++;
-      autofill_manager->client()->HideAutofillPopup();
+      autofill_manager->client()->HideAutofillPopup(
+          autofill::PopupHidingReason::kViewDestroyed);
 
       if (!ShowAutofillSuggestion(focus_element_css_selector, iframe_path,
                                   frame)) {
@@ -132,7 +133,8 @@ class AutofillCapturedSitesInteractiveTest
       return true;
     }
 
-    autofill_manager->client()->HideAutofillPopup();
+    autofill_manager->client()->HideAutofillPopup(
+        autofill::PopupHidingReason::kViewDestroyed);
     ADD_FAILURE() << "Failed to autofill the form!";
     return false;
   }

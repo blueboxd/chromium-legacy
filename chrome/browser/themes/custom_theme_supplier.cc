@@ -57,3 +57,7 @@ base::RefCountedMemory* CustomThemeSupplier::GetRawData(
 bool CustomThemeSupplier::HasCustomImage(int id) const {
   return false;
 }
+
+bool CustomThemeSupplier::CanUseIncognitoColors() const {
+  return true;
+}

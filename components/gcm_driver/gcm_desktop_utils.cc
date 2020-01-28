@@ -20,8 +20,6 @@ namespace gcm {
 
 namespace {
 
-const char kChannelStatusRelativePath[] = "/experimentstatus";
-
 GCMClient::ChromePlatform GetPlatform() {
 #if defined(OS_WIN)
   return GCMClient::PLATFORM_WIN;
@@ -74,12 +72,6 @@ GCMClient::ChromeBuildInfo GetChromeBuildInfo(
   return chrome_build_info;
 }
 
-std::string GetChannelStatusRequestUrl(version_info::Channel channel) {
-  GURL sync_url(syncer::GetSyncServiceURL(
-      *base::CommandLine::ForCurrentProcess(), channel));
-  return sync_url.spec() + kChannelStatusRelativePath;
-}
-
 }  // namespace
 
 std::unique_ptr<GCMDriver> CreateGCMDriverDesktop(
@@ -100,7 +92,6 @@ std::unique_ptr<GCMDriver> CreateGCMDriverDesktop(
   return std::unique_ptr<GCMDriver>(new GCMDriverDesktop(
       std::move(gcm_client_factory),
       GetChromeBuildInfo(channel, product_category_for_subtypes),
-      GetChannelStatusRequestUrl(channel),
       syncer::MakeUserAgentForSync(channel), prefs, store_path,
       remove_account_mappings_with_email_key, get_socket_factory_callback,
       std::move(url_loader_factory), network_connection_tracker, ui_task_runner,

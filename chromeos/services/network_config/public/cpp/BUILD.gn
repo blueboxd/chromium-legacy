@@ -10,7 +10,10 @@ source_set("cpp") {
     "cros_network_config_util.h",
   ]
 
-  deps = [ "//chromeos/services/network_config/public/mojom" ]
+  deps = [
+    "//chromeos/services/network_config/public/mojom",
+    "//services/network/public/cpp:ip_address_mojom_support",
+  ]
 }
 
 source_set("test_support") {

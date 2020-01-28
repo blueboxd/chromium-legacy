@@ -84,7 +84,7 @@ void HTMLEmbedElement::CollectStyleForPresentationAttribute(
     MutableCSSPropertyValueSet* style) {
   if (name == html_names::kHiddenAttr) {
     if (DeprecatedEqualIgnoringCase(value, "yes") ||
-        DeprecatedEqualIgnoringCase(value, "true")) {
+        EqualIgnoringASCIICase(value, "true")) {
       AddPropertyToPresentationAttributeStyle(
           style, CSSPropertyID::kWidth, 0,
           CSSPrimitiveValue::UnitType::kPixels);

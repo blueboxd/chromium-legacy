@@ -111,7 +111,7 @@ class CORE_EXPORT Scrollbar : public GarbageCollected<Scrollbar>,
 
   // Called by the ScrollableArea when the scroll offset changes.
   // Will trigger paint invalidation if required.
-  void OffsetDidChange(ScrollType scroll_type);
+  void OffsetDidChange(mojom::blink::ScrollIntoViewParams::Type scroll_type);
 
   virtual void DisconnectFromScrollableArea();
   ScrollableArea* GetScrollableArea() const { return scrollable_area_; }

@@ -265,8 +265,7 @@ bool SiteInstanceImpl::HasProcess() {
   if (has_site_ &&
       RenderProcessHost::ShouldUseProcessPerSite(browser_context, site_) &&
       RenderProcessHostImpl::GetSoleProcessHostForSite(
-          browser_context, GetIsolationContext(), site_, lock_url_,
-          IsGuest())) {
+          GetIsolationContext(), site_, lock_url_, IsGuest())) {
     return true;
   }
 
@@ -307,8 +306,7 @@ RenderProcessHost* SiteInstanceImpl::GetProcess() {
     // at this time, we will register it in SetSite().)
     if (process_reuse_policy_ == ProcessReusePolicy::PROCESS_PER_SITE &&
         has_site_) {
-      RenderProcessHostImpl::RegisterSoleProcessHostForSite(browser_context,
-                                                            process_, this);
+      RenderProcessHostImpl::RegisterSoleProcessHostForSite(process_, this);
     }
 
     TRACE_EVENT2("navigation", "SiteInstanceImpl::GetProcess",
@@ -401,10 +399,9 @@ void SiteInstanceImpl::SetSiteAndLockInternal(const GURL& site_url,
     LockToOriginIfNeeded();
 
     // Ensure the process is registered for this site if necessary.
-    if (should_use_process_per_site) {
-      RenderProcessHostImpl::RegisterSoleProcessHostForSite(browser_context,
-                                                            process_, this);
-    }
+    if (should_use_process_per_site)
+      RenderProcessHostImpl::RegisterSoleProcessHostForSite(process_, this);
+
     MaybeSetBrowsingInstanceDefaultProcess();
   }
 }
@@ -519,8 +516,7 @@ bool SiteInstanceImpl::IsSuitableForURL(const GURL& url) {
   }
 
   return RenderProcessHostImpl::IsSuitableHost(
-      GetProcess(), browsing_instance_->GetBrowserContext(),
-      GetIsolationContext(), site_url, origin_lock, IsGuest());
+      GetProcess(), GetIsolationContext(), site_url, origin_lock, IsGuest());
 }
 
 bool SiteInstanceImpl::RequiresDedicatedProcess() {

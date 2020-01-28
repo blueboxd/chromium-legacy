@@ -254,6 +254,11 @@ class BuildConfigGenerator extends DefaultTask {
                 sb.append('  strip_drawables = true\n')
             }
         }
+        if (dependencyId.startsWith('androidx_') ||
+            dependencyId.startsWith('com_android_support_') ||
+            dependencyId.startsWith('android_arch_')) {
+          sb.append('  skip_jetify  = true\n')
+        }
         switch(dependencyId) {
             case 'androidx_annotation_annotation':
                 sb.append('  # https://crbug.com/989505\n')

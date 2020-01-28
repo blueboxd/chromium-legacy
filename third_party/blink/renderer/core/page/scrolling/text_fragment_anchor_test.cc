@@ -847,8 +847,8 @@ TEST_F(TextFragmentAnchorTest, ScrollCancelled) {
 
   Compositor().PaintFrame();
   if (!RuntimeEnabledFeatures::BlockHTMLParserOnStyleSheetsEnabled()) {
-    GetDocument().View()->LayoutViewport()->ScrollBy(ScrollOffset(0, 100),
-                                                     kUserScroll);
+    GetDocument().View()->LayoutViewport()->ScrollBy(
+        ScrollOffset(0, 100), mojom::blink::ScrollIntoViewParams::Type::kUser);
     // Set the target text to visible and change its position to cause a layout
     // and invoke the fragment anchor in the next begin frame.
     css_request.Complete("p { visibility: visible; top: 1001px; }");
@@ -868,8 +868,8 @@ TEST_F(TextFragmentAnchorTest, ScrollCancelled) {
 
     // Before invoking again, perform a user scroll. This should abort future
     // scrolls during fragment invocation.
-    GetDocument().View()->LayoutViewport()->SetScrollOffset(ScrollOffset(0, 0),
-                                                            kUserScroll);
+    GetDocument().View()->LayoutViewport()->SetScrollOffset(
+        ScrollOffset(0, 0), mojom::blink::ScrollIntoViewParams::Type::kUser);
     ASSERT_FALSE(ViewportRect().Contains(BoundingRectInFrame(p)));
 
     img_request.Complete("");

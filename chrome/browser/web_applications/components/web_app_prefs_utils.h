@@ -18,6 +18,8 @@ namespace web_app {
 
 extern const char kWasExternalAppUninstalledByUser[];
 
+extern const char kFileHandlingOriginTrialExpiryTime[];
+
 extern const char kFileHandlersEnabled[];
 
 bool GetBoolWebAppPref(const PrefService* pref_service,
@@ -28,6 +30,15 @@ void UpdateBoolWebAppPref(PrefService* pref_service,
                           const AppId& app_id,
                           base::StringPiece path,
                           bool value);
+
+double GetDoubleWebAppPref(const PrefService* pref_service,
+                           const AppId& app_id,
+                           base::StringPiece path);
+
+void UpdateDoubleWebAppPref(PrefService* pref_service,
+                            const AppId& app_id,
+                            base::StringPiece path,
+                            double value);
 
 void WebAppPrefsUtilsRegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry);

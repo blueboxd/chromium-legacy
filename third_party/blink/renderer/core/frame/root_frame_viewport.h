@@ -58,7 +58,7 @@ class CORE_EXPORT RootFrameViewport final
   // ScrollableArea Implementation
   bool IsRootFrameViewport() const override { return true; }
   void SetScrollOffset(const ScrollOffset&,
-                       ScrollType,
+                       mojom::blink::ScrollIntoViewParams::Type,
                        mojom::blink::ScrollIntoViewParams::Behavior,
                        ScrollCallback on_finish) override;
   PhysicalRect ScrollIntoView(
@@ -78,7 +78,8 @@ class CORE_EXPORT RootFrameViewport final
   int ScrollSize(ScrollbarOrientation) const override;
   bool IsScrollCornerVisible() const override;
   IntRect ScrollCornerRect() const override;
-  void UpdateScrollOffset(const ScrollOffset&, ScrollType) override;
+  void UpdateScrollOffset(const ScrollOffset&,
+                          mojom::blink::ScrollIntoViewParams::Type) override;
   IntSize ScrollOffsetInt() const override;
   ScrollOffset GetScrollOffset() const override;
   IntSize MinimumScrollOffsetInt() const override;
@@ -155,7 +156,7 @@ class CORE_EXPORT RootFrameViewport final
 
   void DistributeScrollBetweenViewports(
       const ScrollOffset&,
-      ScrollType,
+      mojom::blink::ScrollIntoViewParams::Type,
       mojom::blink::ScrollIntoViewParams::Behavior,
       ViewportToScrollFirst,
       ScrollCallback on_finish = ScrollCallback());

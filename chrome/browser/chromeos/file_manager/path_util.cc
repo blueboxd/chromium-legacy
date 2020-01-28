@@ -157,6 +157,17 @@ base::FilePath GetMyFilesFolderForProfile(Profile* profile) {
   return profile->GetPath().AppendASCII(kFolderNameMyFiles);
 }
 
+base::FilePath GetAndroidPlayFilesPath() {
+  // Check if Android has a registered path already. This happens for tests.
+  const std::string mount_point_name = util::GetAndroidFilesMountPointName();
+  storage::ExternalMountPoints* const mount_points =
+      storage::ExternalMountPoints::GetSystemInstance();
+  base::FilePath path;
+  if (mount_points->GetRegisteredPath(mount_point_name, &path))
+    return path;
+  return base::FilePath(file_manager::util::kAndroidFilesPath);
+}
+
 bool MigratePathFromOldFormat(Profile* profile,
                               const base::FilePath& old_base,
                               const base::FilePath& old_path,

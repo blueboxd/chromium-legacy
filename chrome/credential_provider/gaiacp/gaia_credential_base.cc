@@ -1132,7 +1132,7 @@ HRESULT CGaiaCredentialBase::GetGlsCommandline(
 
   hr = GetUserGlsCommandline(command_line);
   if (FAILED(hr)) {
-    LOGFN(ERROR) << "GetBaseGlsCommandline hr=" << putHR(hr);
+    LOGFN(ERROR) << "GetUserGlsCommandline hr=" << putHR(hr);
     return hr;
   }
 
@@ -2089,6 +2089,14 @@ HRESULT RegisterAssociation(const base::string16& sid,
   if (FAILED(hr)) {
     LOGFN(ERROR) << "SetUserProperty(email) hr=" << putHR(hr);
     return hr;
+  }
+
+  if (IsGemEnabled()) {
+    hr = SetUserProperty(sid, kKeyAcceptTos, 1u);
+    if (FAILED(hr)) {
+      LOGFN(ERROR) << "SetUserProperty(acceptTos) hr=" << putHR(hr);
+      return hr;
+    }
   }
 
   return S_OK;

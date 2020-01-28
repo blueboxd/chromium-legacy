@@ -172,6 +172,20 @@ public class ClientManagerTest {
 
     @Test
     @SmallTest
+    public void testClientDataHeader() {
+        Assert.assertTrue(mClientManager.newSession(mSession, mUid, null, null, null));
+
+        String headerValue = "header value";
+
+        mClientManager.setClientDataHeaderValue(mSession, headerValue);
+        Assert.assertEquals(headerValue, mClientManager.getClientDataHeaderValue(mSession));
+
+        mClientManager.setClientDataHeaderValue(mSession, null);
+        Assert.assertNull(mClientManager.getClientDataHeaderValue(mSession));
+    }
+
+    @Test
+    @SmallTest
     public void testPostMessageOriginVerification() {
         final ClientManager cm = mClientManager;
         // TODO(peconn): Get rid of this anonymous class once PostMessageServiceConnection is made

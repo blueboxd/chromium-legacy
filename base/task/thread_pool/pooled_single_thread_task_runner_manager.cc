@@ -364,7 +364,7 @@ class WorkerThreadCOMDelegate : public WorkerThreadDelegate {
 
   bool get_work_first_ = true;
   const scoped_refptr<Sequence> message_pump_sequence_ =
-      MakeRefCounted<Sequence>(TaskTraits{ThreadPool(), MayBlock()},
+      MakeRefCounted<Sequence>(TaskTraits{MayBlock()},
                                nullptr,
                                TaskSourceExecutionMode::kParallel);
   std::unique_ptr<win::ScopedCOMInitializer> scoped_com_initializer_;

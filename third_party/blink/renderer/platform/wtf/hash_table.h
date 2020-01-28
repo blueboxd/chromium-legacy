@@ -649,15 +649,23 @@ struct HashTableAddResult final {
 
 template <typename Value, typename Extractor, typename KeyTraits>
 struct HashTableHelper {
+  using Key = typename KeyTraits::TraitType;
+
   STATIC_ONLY(HashTableHelper);
-  static bool IsEmptyBucket(const Value& value) {
-    return IsHashTraitsEmptyValue<KeyTraits>(Extractor::Extract(value));
+  static bool IsEmptyBucket(const Key& key) {
+    return IsHashTraitsEmptyValue<KeyTraits>(key);
   }
-  static bool IsDeletedBucket(const Value& value) {
-    return KeyTraits::IsDeletedValue(Extractor::Extract(value));
+  static bool IsDeletedBucket(const Key& key) {
+    return KeyTraits::IsDeletedValue(key);
   }
   static bool IsEmptyOrDeletedBucket(const Value& value) {
-    return IsEmptyBucket(value) || IsDeletedBucket(value);
+    const auto& key = Extractor::Extract(value);
+    return IsEmptyBucket(key) || IsDeletedBucket(key);
+  }
+  static bool IsEmptyOrDeletedBucketSafe(const Value& value) {
+    char buf[sizeof(Key)];
+    const Key& key = Extractor::ExtractSafe(value, &buf);
+    return IsEmptyBucket(key) || IsDeletedBucket(key);
   }
 };
 

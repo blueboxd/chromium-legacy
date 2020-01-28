@@ -11,6 +11,7 @@ cr.define('device_page_tests', function() {
     NightLight: 'night light',
     Pointers: 'pointers',
     Power: 'power',
+    Storage: 'storage',
     Stylus: 'stylus',
   };
 
@@ -1795,6 +1796,114 @@ cr.define('device_page_tests', function() {
                   'prefs.settings.restore_last_lock_screen_note.value', true);
               expectTrue(keepLastNoteOnLockScreenToggle().checked);
             });
+      });
+    });
+
+    suite(assert(TestNames.Storage), function() {
+      /** @type {!Element} */
+      let storagePage;
+
+      /**
+       * Simulate storage size stat callback.
+       * @param {string} availableSize
+       * @param {string} usedSize
+       * @param {number} usedRatio
+       * @param {number} spaceState
+       */
+      function sendStorageSizeStat(
+          usedSize, availableSize, usedRatio, spaceState) {
+        cr.webUIListenerCallback('storage-size-stat-changed', {
+          usedSize: usedSize,
+          availableSize: availableSize,
+          usedRatio: usedRatio,
+          spaceState: spaceState,
+        });
+        Polymer.dom.flush();
+      }
+
+      /**
+       * @param {?Element} element
+       * @return {boolean}
+       */
+      function isHidden(element) {
+        return !element ||
+            (element.offsetWidth == 0 && element.offsetHeight == 0);
+      }
+
+      suiteSetup(function() {
+        // Disable animations so sub-pages open within one event loop.
+        testing.Test.disableAnimationsAndTransitions();
+      });
+
+      setup(function() {
+        // Avoid unwanted callbacks by disabling storage computations when the
+        // storage page is loaded.
+        registerMessageCallback(
+            'updateStorageInfo', null /* message handler */,
+            () => {} /* callback */);
+
+        return showAndGetDeviceSubpage('storage', settings.routes.STORAGE)
+            .then(function(page) {
+              storagePage = page;
+              storagePage.stopPeriodicUpdate_();
+            });
+      });
+
+      test('storage stats size', async function() {
+        // Low available storage space.
+        sendStorageSizeStat(
+            '9.1 GB', '0.9 GB', 0.91, settings.StorageSpaceState.LOW);
+        assertEquals('91%', storagePage.$.inUseLabelArea.style.width);
+        assertEquals('9%', storagePage.$.availableLabelArea.style.width);
+        assertFalse(isHidden(storagePage.$$('#lowMessage')));
+        assertTrue(isHidden(storagePage.$$('#criticallyLowMessage')));
+        assertTrue(!!storagePage.$$('#bar.space-low'));
+        assertFalse(!!storagePage.$$('#bar.space-critically-low'));
+        assertEquals(
+            '9.1 GB',
+            storagePage.$.inUseLabelArea.querySelector('.storage-size')
+                .innerText);
+        assertEquals(
+            '0.9 GB',
+            storagePage.$.availableLabelArea.querySelector('.storage-size')
+                .innerText);
+
+        // Critically low available storage space.
+        sendStorageSizeStat(
+            '9.7 GB', '0.3 GB', 0.97,
+            settings.StorageSpaceState.CRITICALLY_LOW);
+        assertEquals('97%', storagePage.$.inUseLabelArea.style.width);
+        assertEquals('3%', storagePage.$.availableLabelArea.style.width);
+        assertTrue(isHidden(storagePage.$$('#lowMessage')));
+        assertFalse(isHidden(storagePage.$$('#criticallyLowMessage')));
+        assertFalse(!!storagePage.$$('#bar.space-low'));
+        assertTrue(!!storagePage.$$('#bar.space-critically-low'));
+        assertEquals(
+            '9.7 GB',
+            storagePage.$.inUseLabelArea.querySelector('.storage-size')
+                .innerText);
+        assertEquals(
+            '0.3 GB',
+            storagePage.$.availableLabelArea.querySelector('.storage-size')
+                .innerText);
+
+        // Normal storage usage.
+        sendStorageSizeStat(
+            '2.5 GB', '7.5 GB', 0.25, settings.StorageSpaceState.NORMAL);
+        assertEquals('25%', storagePage.$.inUseLabelArea.style.width);
+        assertEquals('75%', storagePage.$.availableLabelArea.style.width);
+        assertTrue(isHidden(storagePage.$$('#lowMessage')));
+        assertTrue(isHidden(storagePage.$$('#criticallyLowMessage')));
+        assertFalse(!!storagePage.$$('#bar.space-low'));
+        assertFalse(!!storagePage.$$('#bar.space-critically-low'));
+        assertEquals(
+            '2.5 GB',
+            storagePage.$.inUseLabelArea.querySelector('.storage-size')
+                .innerText);
+        assertEquals(
+            '7.5 GB',
+            storagePage.$.availableLabelArea.querySelector('.storage-size')
+                .innerText);
       });
     });
   });

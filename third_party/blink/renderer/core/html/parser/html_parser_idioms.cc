@@ -379,7 +379,7 @@ WTF::TextEncoding EncodingFromMetaAttributes(
     const AtomicString& attribute_value = AtomicString(html_attribute.second);
 
     if (ThreadSafeMatch(attribute_name, html_names::kHttpEquivAttr)) {
-      if (DeprecatedEqualIgnoringCase(attribute_value, "content-type"))
+      if (EqualIgnoringASCIICase(attribute_value, "content-type"))
         got_pragma = true;
     } else if (ThreadSafeMatch(attribute_name, html_names::kCharsetAttr)) {
       has_charset = true;

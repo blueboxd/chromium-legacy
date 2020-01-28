@@ -55,6 +55,7 @@ enum XRSessionFeature {
 
   // Experimental or not-yet-standardized feature names.
   DOM_OVERLAY = 6,
+  HIT_TEST = 7,
 };
 
 // These values are persisted to logs. Entries should not be renumbered and

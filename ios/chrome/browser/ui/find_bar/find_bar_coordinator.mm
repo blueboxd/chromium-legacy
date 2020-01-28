@@ -66,10 +66,16 @@
   if (!self.presenter.isPresenting) {
     return;
   }
-  FindTabHelper* helper = FindTabHelper::FromWebState(self.currentWebState);
+
   // If the FindUI is still active, the dismiss should be unanimated, because
   // the UI will be brought back later.
-  BOOL animated = helper && !helper->IsFindUIActive();
+  BOOL animated;
+  if (self.currentWebState) {
+    FindTabHelper* helper = FindTabHelper::FromWebState(self.currentWebState);
+    animated = helper && !helper->IsFindUIActive();
+  } else {
+    animated = true;
+  }
   [self.findBarController findBarViewWillHide];
   [self.presenter dismissAnimated:animated];
 }

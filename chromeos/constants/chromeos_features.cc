@@ -51,10 +51,6 @@ const char kBlueZLongTermKeyBlocklistParamName[] = "ltk_blocklist";
 const base::Feature kCameraSystemWebApp{"CameraSystemWebApp",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enables or disables Crostini Backup.
-const base::Feature kCrostiniBackup{"CrostiniBackup",
-                                    base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Enables or disables Crostini port forwarding.
 const base::Feature kCrostiniPortForwarding{"CrostiniPortForwarding",
                                             base::FEATURE_DISABLED_BY_DEFAULT};

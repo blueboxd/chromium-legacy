@@ -8,11 +8,10 @@
 #include "chrome/browser/notifications/notification_display_service.h"
 #include "chrome/browser/notifications/notification_display_service_factory.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
+#include "chrome/browser/ui/browser_navigator.h"
+#include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/updates/announcement_notification/announcement_notification_delegate.h"
 #include "chrome/browser/updates/announcement_notification/announcement_notification_metrics.h"
-#include "chrome/grit/generated_resources.h"
-#include "ui/base/l10n/l10n_util.h"
 
 namespace {
 
@@ -71,17 +70,9 @@ void AnnouncementNotificationHandler::OnClick(
 
 void AnnouncementNotificationHandler::OpenAnnouncement(Profile* profile) {
   // Open the announcement URL in a new tab.
-  // Fallback to default URL if |remote_url| is empty.
-  // TODO(xingliu): Pass |remote_url| from AnnouncementNotificationService.
-  std::string remote_url = base::GetFieldTrialParamValueByFeature(
-      kAnnouncementNotification, kAnnouncementUrl);
-  std::string url = remote_url.empty()
-                        ? l10n_util::GetStringUTF8(IDS_TOS_NOTIFICATION_LINK)
-                        : remote_url;
-  chrome::ScopedTabbedBrowserDisplayer browser_displayer(profile);
-  content::OpenURLParams params(GURL(url), content::Referrer(),
-                                WindowOpenDisposition::NEW_FOREGROUND_TAB,
-                                ui::PageTransition::PAGE_TRANSITION_FIRST,
-                                false /*is_renderer_initiated*/);
-  browser_displayer.browser()->OpenURL(params);
+  GURL url = AnnouncementNotificationService::GetAnnouncementURL();
+  NavigateParams params(profile, url, ui::PAGE_TRANSITION_LINK);
+  params.disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
+  params.window_action = NavigateParams::SHOW_WINDOW;
+  Navigate(&params);
 }

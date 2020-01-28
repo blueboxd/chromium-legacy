@@ -959,6 +959,9 @@ base::string16 BrowserAccessibilityAndroid::GetRoleDescription() const {
     case ax::mojom::Role::kParagraph:
       // No role description.
       break;
+    case ax::mojom::Role::kPdfActionableHighlight:
+      message_id = IDS_AX_ROLE_PDF_HIGHLIGHT;
+      break;
     case ax::mojom::Role::kPluginObject:
       message_id = IDS_AX_ROLE_EMBEDDED_OBJECT;
       break;

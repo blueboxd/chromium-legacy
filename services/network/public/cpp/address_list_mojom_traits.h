@@ -9,12 +9,14 @@
 #include <vector>
 
 #include "mojo/public/cpp/bindings/struct_traits.h"
-#include "services/network/public/mojom/address_list.mojom.h"
+#include "net/base/address_list.h"
+#include "services/network/public/mojom/address_list.mojom-shared.h"
 
 namespace mojo {
 
 template <>
-struct StructTraits<network::mojom::AddressListDataView, net::AddressList> {
+struct COMPONENT_EXPORT(NETWORK_CPP_BASE)
+    StructTraits<network::mojom::AddressListDataView, net::AddressList> {
   static const std::vector<net::IPEndPoint>& addresses(
       const net::AddressList& obj) {
     return obj.endpoints();

@@ -183,8 +183,9 @@ TEST_F(CompositedLayerMappingTest, TallCompositedScrolledLayerInterestRect) {
   )HTML");
 
   UpdateAllLifecyclePhasesForTest();
-  GetDocument().View()->LayoutViewport()->SetScrollOffset(ScrollOffset(0, 8000),
-                                                          kProgrammaticScroll);
+  GetDocument().View()->LayoutViewport()->SetScrollOffset(
+      ScrollOffset(0, 8000),
+      mojom::blink::ScrollIntoViewParams::Type::kProgrammatic);
   UpdateAllLifecyclePhasesForTest();
 
   Element* element = GetDocument().getElementById("target");
@@ -201,8 +202,9 @@ TEST_F(CompositedLayerMappingTest, TallNonCompositedScrolledLayerInterestRect) {
   )HTML");
 
   UpdateAllLifecyclePhasesForTest();
-  GetDocument().View()->LayoutViewport()->SetScrollOffset(ScrollOffset(0, 8000),
-                                                          kProgrammaticScroll);
+  GetDocument().View()->LayoutViewport()->SetScrollOffset(
+      ScrollOffset(0, 8000),
+      mojom::blink::ScrollIntoViewParams::Type::kProgrammatic);
   UpdateAllLifecyclePhasesForTest();
 
   PaintLayer* paint_layer = GetDocument().GetLayoutView()->Layer();
@@ -241,7 +243,8 @@ TEST_F(CompositedLayerMappingTest, VerticalRightLeftWritingModeDocument) {
 
   UpdateAllLifecyclePhasesForTest();
   GetDocument().View()->LayoutViewport()->SetScrollOffset(
-      ScrollOffset(-5000, 0), kProgrammaticScroll);
+      ScrollOffset(-5000, 0),
+      mojom::blink::ScrollIntoViewParams::Type::kProgrammatic);
   UpdateAllLifecyclePhasesForTest();
 
   PaintLayer* paint_layer = GetDocument().GetLayoutView()->Layer();
@@ -620,8 +623,9 @@ TEST_F(CompositedLayerMappingTest, InterestRectChangeOnViewportScroll) {
   EXPECT_EQ(IntRect(0, 0, 800, 4600),
             PreviousInterestRect(root_scrolling_layer));
 
-  GetDocument().View()->LayoutViewport()->SetScrollOffset(ScrollOffset(0, 300),
-                                                          kProgrammaticScroll);
+  GetDocument().View()->LayoutViewport()->SetScrollOffset(
+      ScrollOffset(0, 300),
+      mojom::blink::ScrollIntoViewParams::Type::kProgrammatic);
   UpdateAllLifecyclePhasesForTest();
   // Still use the previous interest rect because the recomputed rect hasn't
   // changed enough.
@@ -630,8 +634,9 @@ TEST_F(CompositedLayerMappingTest, InterestRectChangeOnViewportScroll) {
   EXPECT_EQ(IntRect(0, 0, 800, 4600),
             PreviousInterestRect(root_scrolling_layer));
 
-  GetDocument().View()->LayoutViewport()->SetScrollOffset(ScrollOffset(0, 600),
-                                                          kProgrammaticScroll);
+  GetDocument().View()->LayoutViewport()->SetScrollOffset(
+      ScrollOffset(0, 600),
+      mojom::blink::ScrollIntoViewParams::Type::kProgrammatic);
   UpdateAllLifecyclePhasesForTest();
   // Use recomputed interest rect because it changed enough.
   EXPECT_EQ(IntRect(0, 0, 800, 5200),
@@ -639,16 +644,18 @@ TEST_F(CompositedLayerMappingTest, InterestRectChangeOnViewportScroll) {
   EXPECT_EQ(IntRect(0, 0, 800, 5200),
             PreviousInterestRect(root_scrolling_layer));
 
-  GetDocument().View()->LayoutViewport()->SetScrollOffset(ScrollOffset(0, 5400),
-                                                          kProgrammaticScroll);
+  GetDocument().View()->LayoutViewport()->SetScrollOffset(
+      ScrollOffset(0, 5400),
+      mojom::blink::ScrollIntoViewParams::Type::kProgrammatic);
   UpdateAllLifecyclePhasesForTest();
   EXPECT_EQ(IntRect(0, 1400, 800, 8600),
             RecomputeInterestRect(root_scrolling_layer));
   EXPECT_EQ(IntRect(0, 1400, 800, 8600),
             PreviousInterestRect(root_scrolling_layer));
 
-  GetDocument().View()->LayoutViewport()->SetScrollOffset(ScrollOffset(0, 9000),
-                                                          kProgrammaticScroll);
+  GetDocument().View()->LayoutViewport()->SetScrollOffset(
+      ScrollOffset(0, 9000),
+      mojom::blink::ScrollIntoViewParams::Type::kProgrammatic);
   UpdateAllLifecyclePhasesForTest();
   // Still use the previous interest rect because it contains the recomputed
   // interest rect.
@@ -657,8 +664,9 @@ TEST_F(CompositedLayerMappingTest, InterestRectChangeOnViewportScroll) {
   EXPECT_EQ(IntRect(0, 1400, 800, 8600),
             PreviousInterestRect(root_scrolling_layer));
 
-  GetDocument().View()->LayoutViewport()->SetScrollOffset(ScrollOffset(0, 2000),
-                                                          kProgrammaticScroll);
+  GetDocument().View()->LayoutViewport()->SetScrollOffset(
+      ScrollOffset(0, 2000),
+      mojom::blink::ScrollIntoViewParams::Type::kProgrammatic);
   // Use recomputed interest rect because it changed enough.
   UpdateAllLifecyclePhasesForTest();
   EXPECT_EQ(IntRect(0, 0, 800, 6600),
@@ -858,7 +866,8 @@ TEST_F(CompositedLayerMappingTest, InterestRectOfIframeInScrolledDiv) {
 
   // Scroll 8000 pixels down to move the iframe into view.
   GetDocument().View()->LayoutViewport()->SetScrollOffset(
-      ScrollOffset(0.0, 8000.0), kProgrammaticScroll);
+      ScrollOffset(0.0, 8000.0),
+      mojom::blink::ScrollIntoViewParams::Type::kProgrammatic);
   UpdateAllLifecyclePhasesForTest();
 
   Element* target = ChildDocument().getElementById("target");
@@ -889,7 +898,8 @@ TEST_F(CompositedLayerMappingTest, InterestRectOfScrolledIframe) {
 
   // Scroll 7500 pixels down to bring the scrollable area to the bottom.
   ChildDocument().View()->LayoutViewport()->SetScrollOffset(
-      ScrollOffset(0.0, 7500.0), kProgrammaticScroll);
+      ScrollOffset(0.0, 7500.0),
+      mojom::blink::ScrollIntoViewParams::Type::kProgrammatic);
   UpdateAllLifecyclePhasesForTest();
 
   ASSERT_TRUE(ChildDocument().View()->GetLayoutView()->HasLayer());
@@ -923,7 +933,8 @@ TEST_F(CompositedLayerMappingTest, InterestRectOfIframeWithContentBoxOffset) {
   // Scroll 3000 pixels down to bring the scrollable area to somewhere in the
   // middle.
   ChildDocument().View()->LayoutViewport()->SetScrollOffset(
-      ScrollOffset(0.0, 3000.0), kProgrammaticScroll);
+      ScrollOffset(0.0, 3000.0),
+      mojom::blink::ScrollIntoViewParams::Type::kProgrammatic);
   UpdateAllLifecyclePhasesForTest();
 
   ASSERT_TRUE(ChildDocument().View()->GetLayoutView()->HasLayer());
@@ -965,7 +976,8 @@ TEST_F(CompositedLayerMappingTest, InterestRectOfIframeWithFixedContents) {
   EXPECT_EQ(IntRect(1000, 0, 4400, 300), RecomputeInterestRect(graphics_layer));
 
   ChildDocument().View()->LayoutViewport()->SetScrollOffset(
-      ScrollOffset(0.0, 3000.0), kProgrammaticScroll);
+      ScrollOffset(0.0, 3000.0),
+      mojom::blink::ScrollIntoViewParams::Type::kProgrammatic);
   UpdateAllLifecyclePhasesForTest();
 
   // Because the fixed element does not scroll, the interest rect is unchanged.
@@ -991,7 +1003,8 @@ TEST_F(CompositedLayerMappingTest, ScrolledFixedPositionInterestRect) {
   EXPECT_EQ(IntRect(0, 500, 100, 4030), RecomputeInterestRect(graphics_layer));
 
   GetDocument().View()->LayoutViewport()->SetScrollOffset(
-      ScrollOffset(0.0, 200.0), kProgrammaticScroll);
+      ScrollOffset(0.0, 200.0),
+      mojom::blink::ScrollIntoViewParams::Type::kProgrammatic);
   UpdateAllLifecyclePhasesForTest();
 
   // Because the fixed element does not scroll, the interest rect is unchanged.
@@ -1536,8 +1549,8 @@ TEST_F(CompositedLayerMappingTest, SquashingScroll) {
       ToLayoutBoxModelObject(GetLayoutObjectByElementId("squashed"))->Layer();
   EXPECT_EQ(kPaintsIntoGroupedBacking, squashed->GetCompositingState());
 
-  GetDocument().View()->LayoutViewport()->ScrollBy(ScrollOffset(0, 25),
-                                                   kUserScroll);
+  GetDocument().View()->LayoutViewport()->ScrollBy(
+      ScrollOffset(0, 25), mojom::blink::ScrollIntoViewParams::Type::kUser);
   UpdateAllLifecyclePhasesForTest();
 }
 
@@ -1556,8 +1569,8 @@ TEST_F(CompositedLayerMappingTest, SquashingScrollInterestRect) {
       ToLayoutBoxModelObject(GetLayoutObjectByElementId("squashed"))->Layer();
   EXPECT_EQ(kPaintsIntoGroupedBacking, squashed->GetCompositingState());
 
-  GetDocument().View()->LayoutViewport()->ScrollBy(ScrollOffset(0, 5000),
-                                                   kUserScroll);
+  GetDocument().View()->LayoutViewport()->ScrollBy(
+      ScrollOffset(0, 5000), mojom::blink::ScrollIntoViewParams::Type::kUser);
   UpdateAllLifecyclePhasesForTest();
 
   EXPECT_EQ(IntRect(0, 1000, 200, 5000),

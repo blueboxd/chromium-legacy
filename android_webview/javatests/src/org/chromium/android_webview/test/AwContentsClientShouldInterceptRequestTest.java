@@ -30,6 +30,7 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.TestFileUtil;
 import org.chromium.content_public.browser.test.util.TestCallbackHelperContainer.OnReceivedErrorHelper;
 import org.chromium.net.test.util.TestWebServer;
+import org.chromium.net.test.util.WebServer;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -65,12 +66,19 @@ public class AwContentsClientShouldInterceptRequestTest {
                 CommonResources.ABOUT_HTML);
     }
 
-    private AwWebResourceResponse stringToAwWebResourceResponse(String input) throws Throwable {
+    private AwWebResourceResponse stringWithHeadersToAwWebResourceResponse(
+            String input, Map<String, String> responseHeaders) throws Throwable {
         final String mimeType = "text/html";
         final String encoding = "UTF-8";
+        final int statusCode = 200;
+        final String reasonPhrase = "OK";
+        return new AwWebResourceResponse(mimeType, encoding,
+                new ByteArrayInputStream(input.getBytes(encoding)), statusCode, reasonPhrase,
+                responseHeaders);
+    }
 
-        return new AwWebResourceResponse(
-                mimeType, encoding, new ByteArrayInputStream(input.getBytes(encoding)));
+    private AwWebResourceResponse stringToAwWebResourceResponse(String input) throws Throwable {
+        return stringWithHeadersToAwWebResourceResponse(input, null /* responseHeaders */);
     }
 
     private TestWebServer mWebServer;
@@ -985,7 +993,8 @@ public class AwContentsClientShouldInterceptRequestTest {
     private static final String BASE_URL = "http://some.origin.test/index.html";
     private static final String UNINTERESTING_HTML = "<html><head></head><body>some</body></html>";
 
-    private Future<String> loadPageAndFetchInternal(String stringArgs) throws Throwable {
+    private Future<String> loadPageAndFetchInternal(String url, String stringArgs)
+            throws Throwable {
         AwActivityTestRule.enableJavaScriptOnUiThread(mAwContents);
 
         final SettableFuture<String> future = SettableFuture.create();
@@ -1002,9 +1011,14 @@ public class AwContentsClientShouldInterceptRequestTest {
         };
         AwActivityTestRule.addJavascriptInterfaceOnUiThread(mAwContents, injectedObject, name);
 
-        mActivityTestRule.loadDataWithBaseUrlSync(mAwContents,
-                mContentsClient.getOnPageFinishedHelper(), UNINTERESTING_HTML, "text/html", false,
-                BASE_URL, null);
+        if (url != null) {
+            mActivityTestRule.loadUrlSync(
+                    mAwContents, mContentsClient.getOnPageFinishedHelper(), url);
+        } else {
+            mActivityTestRule.loadDataWithBaseUrlSync(mAwContents,
+                    mContentsClient.getOnPageFinishedHelper(), UNINTERESTING_HTML, "text/html",
+                    false, BASE_URL, null);
+        }
 
         String template = "Promise.resolve().then(() => fetch(%s))"
                 + ".then((res) => %s.success(res.type), () => %s.error())";
@@ -1012,11 +1026,19 @@ public class AwContentsClientShouldInterceptRequestTest {
                 mAwContents, mContentsClient, String.format(template, stringArgs, name, name));
         return future;
     }
-    private Future<String> loadPageAndFetch(String url, String method) throws Throwable {
-        return loadPageAndFetchInternal(String.format("'%s', {method: '%s'}", url, method));
+    private Future<String> loadDataAndFetch(String url, String method) throws Throwable {
+        return loadPageAndFetchInternal(null, String.format("'%s', {method: '%s'}", url, method));
     }
-    private Future<String> loadPageAndFetch(String url) throws Throwable {
-        return loadPageAndFetch(url, "GET");
+    private Future<String> loadDataAndFetch(String url) throws Throwable {
+        return loadDataAndFetch(url, "GET");
+    }
+    private Future<String> loadUrlAndFetch(String pageUrl, String fetchUrl, String method)
+            throws Throwable {
+        return loadPageAndFetchInternal(
+                pageUrl, String.format("'%s', {method: '%s'}", fetchUrl, method));
+    }
+    private Future<String> loadUrlAndFetch(String pageUrl, String fetchUrl) throws Throwable {
+        return loadUrlAndFetch(pageUrl, fetchUrl, "GET");
     }
 
     @Test
@@ -1027,7 +1049,7 @@ public class AwContentsClientShouldInterceptRequestTest {
         headers.add(new Pair("access-control-allow-origin", "http://some.origin.test"));
         final String destinationUrl = mWebServer.setResponse("/hello.txt", "", headers);
 
-        final Future<String> future = loadPageAndFetch(destinationUrl);
+        final Future<String> future = loadDataAndFetch(destinationUrl);
         Assert.assertEquals(
                 "fetch should succeed", "cors", future.get(WAIT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
         Assert.assertEquals(2, mShouldInterceptRequestHelper.getUrls().size());
@@ -1044,7 +1066,7 @@ public class AwContentsClientShouldInterceptRequestTest {
         headers.add(new Pair("access-control-allow-origin", "http://example.com"));
         final String destinationUrl = mWebServer.setResponse("/hello.txt", "", headers);
 
-        final Future<String> future = loadPageAndFetch(destinationUrl);
+        final Future<String> future = loadDataAndFetch(destinationUrl);
         // The request fails due to origin mismatch.
         Assert.assertEquals(
                 "fetch should fail", "error", future.get(WAIT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
@@ -1064,7 +1086,7 @@ public class AwContentsClientShouldInterceptRequestTest {
         final String destinationUrl = mWebServer.setResponse("/hello.txt", "", headers);
 
         // PUT is not a safelisted method and triggers a preflight.
-        final Future<String> future = loadPageAndFetch(destinationUrl, "PUT");
+        final Future<String> future = loadDataAndFetch(destinationUrl, "PUT");
         Assert.assertEquals(
                 "fetch should succeed", "cors", future.get(WAIT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
         Assert.assertEquals(3, mShouldInterceptRequestHelper.getUrls().size());
@@ -1085,7 +1107,7 @@ public class AwContentsClientShouldInterceptRequestTest {
         final String destinationUrl = mWebServer.setResponse("/hello.txt", "", headers);
 
         // PUT is not a safelisted method and triggers a preflight.
-        final Future<String> future = loadPageAndFetch(destinationUrl, "PUT");
+        final Future<String> future = loadDataAndFetch(destinationUrl, "PUT");
         // The request fails due to the lack of access-control-allow-methods.
         Assert.assertEquals(
                 "fetch should fail", "error", future.get(WAIT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
@@ -1113,7 +1135,7 @@ public class AwContentsClientShouldInterceptRequestTest {
                 "text/plain", "utf-8", null /* data */, 200, "OK", headersForInjectedResponse);
         mShouldInterceptRequestHelper.setReturnValueForUrl(destinationUrl, response);
 
-        final Future<String> future = loadPageAndFetch(destinationUrl);
+        final Future<String> future = loadDataAndFetch(destinationUrl);
         Assert.assertEquals(
                 "fetch should succeed", "cors", future.get(WAIT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
         Assert.assertEquals(2, mShouldInterceptRequestHelper.getUrls().size());
@@ -1140,7 +1162,7 @@ public class AwContentsClientShouldInterceptRequestTest {
                 "text/plain", "utf-8", null /* data */, 200, "OK", headersForInjectedResponse);
         mShouldInterceptRequestHelper.setReturnValueForUrl(destinationUrl, response);
 
-        final Future<String> future = loadPageAndFetch(destinationUrl);
+        final Future<String> future = loadDataAndFetch(destinationUrl);
         Assert.assertEquals(
                 "fetch should fail", "error", future.get(WAIT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
         Assert.assertEquals(2, mShouldInterceptRequestHelper.getUrls().size());
@@ -1170,7 +1192,7 @@ public class AwContentsClientShouldInterceptRequestTest {
         mShouldInterceptRequestHelper.setReturnValueForUrl(destinationUrl, response);
 
         // PUT is not a safelisted method and triggers a preflight.
-        final Future<String> future = loadPageAndFetch(destinationUrl, "PUT");
+        final Future<String> future = loadDataAndFetch(destinationUrl, "PUT");
         Assert.assertEquals(
                 "fetch should succeed", "cors", future.get(WAIT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
         Assert.assertEquals(3, mShouldInterceptRequestHelper.getUrls().size());
@@ -1202,7 +1224,7 @@ public class AwContentsClientShouldInterceptRequestTest {
         mShouldInterceptRequestHelper.setReturnValueForUrl(destinationUrl, response);
 
         // PUT is not a safelisted method and triggers a preflight.
-        final Future<String> future = loadPageAndFetch(destinationUrl, "PUT");
+        final Future<String> future = loadDataAndFetch(destinationUrl, "PUT");
         Assert.assertEquals(
                 "fetch should fail", "error", future.get(WAIT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
         Assert.assertEquals(2, mShouldInterceptRequestHelper.getUrls().size());
@@ -1210,5 +1232,150 @@ public class AwContentsClientShouldInterceptRequestTest {
                 destinationUrl, mShouldInterceptRequestHelper.getUrls().get(1));
 
         Assert.assertEquals(0, mWebServer.getRequestCount("/hello.txt"));
+    }
+
+    private void respondCorsFetchFromCustomSchemeWithAllowOrigin(
+            String customScheme, String allowOrigin, String fetchResult) throws Throwable {
+        final String pageUrl = customScheme + "main";
+        final String fetchPath = "/test";
+        final List<Pair<String, String>> responseHeaders = new ArrayList<Pair<String, String>>();
+        if (allowOrigin != null) {
+            responseHeaders.add(new Pair("Access-Control-Allow-Origin", allowOrigin));
+        }
+        final String fetchUrl = mWebServer.setResponse(fetchPath, "", responseHeaders);
+        mShouldInterceptRequestHelper.setReturnValueForUrl(
+                pageUrl, stringToAwWebResourceResponse("" /* input*/));
+
+        final Future<String> future = loadUrlAndFetch(pageUrl, fetchUrl);
+        Assert.assertEquals("fetch result check", fetchResult,
+                future.get(WAIT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+
+        Assert.assertEquals(2, mShouldInterceptRequestHelper.getUrls().size());
+        Assert.assertEquals(pageUrl, mShouldInterceptRequestHelper.getUrls().get(0));
+        Assert.assertEquals(fetchUrl, mShouldInterceptRequestHelper.getUrls().get(1));
+
+        // If a custom scheme is used, "<scheme>://" should be set to the Origin header for
+        // cross-origin requests. Hostname and port are not defined well, and can not be used
+        // though the proper origin requires a triple of scheme, hostname, and port.
+        final WebServer.HTTPRequest fetchRequest = mWebServer.getLastRequest(fetchPath);
+        Assert.assertEquals(customScheme, fetchRequest.headerValue("Origin"));
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"AndroidWebView"})
+    public void testCorsFetchFromCustomSchemeWithAllowAny() throws Throwable {
+        respondCorsFetchFromCustomSchemeWithAllowOrigin("foo://", "*", "cors");
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"AndroidWebView"})
+    public void testCorsFetchFromCustomSchemeWithAllowCustom() throws Throwable {
+        final String scheme = "foo://";
+        respondCorsFetchFromCustomSchemeWithAllowOrigin(scheme, scheme, "cors");
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"AndroidWebView"})
+    public void testCorsFetchFromCustomSchemeWithAllowDifferentOrigin() throws Throwable {
+        respondCorsFetchFromCustomSchemeWithAllowOrigin("foo://", "bar://", "error");
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"AndroidWebView"})
+    public void testCorsFetchFromCustomSchemeWithoutAllowOrigin() throws Throwable {
+        respondCorsFetchFromCustomSchemeWithAllowOrigin("foo://", null /* allowOrigin */, "error");
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"AndroidWebView"})
+    public void testCorsFetchFromCustomSchemeToCustomScheme() throws Throwable {
+        final String pageUrl = "foo://main";
+        final String fetchUrl = "bar://test";
+        mShouldInterceptRequestHelper.setReturnValueForUrl(
+                pageUrl, stringToAwWebResourceResponse("" /* input */));
+
+        // Prepare a response to allow CORS accesses just in case, but should not be reached as
+        // Blink rejects such non-http(s) requests before making actual request.
+        final Map<String, String> responseHeaders = new HashMap<String, String>();
+        responseHeaders.put("Access-Control-Allow-Origin", "*");
+        final AwWebResourceResponse response =
+                stringWithHeadersToAwWebResourceResponse("" /* input */, responseHeaders);
+        mShouldInterceptRequestHelper.setReturnValueForUrl(fetchUrl, response);
+
+        final Future<String> future = loadUrlAndFetch(pageUrl, fetchUrl);
+        Assert.assertEquals(
+                "fetch result check", "error", future.get(WAIT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+
+        // Only the main resource request reaches to the network stack.
+        Assert.assertEquals(1, mShouldInterceptRequestHelper.getUrls().size());
+        Assert.assertEquals(pageUrl, mShouldInterceptRequestHelper.getUrls().get(0));
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"AndroidWebView"})
+    public void testCorsPreflightFromCustomSchemeFail() throws Throwable {
+        final String customScheme = "foo://";
+        final String pageUrl = customScheme + "main";
+        mShouldInterceptRequestHelper.setReturnValueForUrl(
+                pageUrl, stringToAwWebResourceResponse("" /* input */));
+        final String fetchPathToFail = "/fail";
+        final String fetchUrlToFail = mWebServer.setEmptyResponse(fetchPathToFail);
+        final String preflightTriggeringMethod = "PUT";
+
+        // This CORS preflight triggering request should fail on the CORS preflight.
+        final Future<String> futureToFail =
+                loadUrlAndFetch(pageUrl, fetchUrlToFail, preflightTriggeringMethod);
+        Assert.assertEquals("fetch result check", "error",
+                futureToFail.get(WAIT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+
+        Assert.assertEquals(2, mShouldInterceptRequestHelper.getUrls().size());
+        Assert.assertEquals(pageUrl, mShouldInterceptRequestHelper.getUrls().get(0));
+        Assert.assertEquals(fetchUrlToFail, mShouldInterceptRequestHelper.getUrls().get(1));
+
+        // Check if the request was the CORS preflight.
+        final WebServer.HTTPRequest fetchRequestToFail = mWebServer.getLastRequest(fetchPathToFail);
+        Assert.assertEquals("OPTIONS", fetchRequestToFail.getMethod());
+        Assert.assertEquals(customScheme, fetchRequestToFail.headerValue("Origin"));
+        Assert.assertEquals(preflightTriggeringMethod,
+                fetchRequestToFail.headerValue("Access-Control-Request-Method"));
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"AndroidWebView"})
+    public void testCorsPreflightFromCustomSchemePass() throws Throwable {
+        final String customScheme = "foo://";
+        final String pageUrl = customScheme + "main";
+        mShouldInterceptRequestHelper.setReturnValueForUrl(
+                pageUrl, stringToAwWebResourceResponse("" /* input */));
+
+        // Craft the expected CORS responses to pass.
+        final String fetchPathToPass = "/pass";
+        final String preflightTriggeringMethod = "PUT";
+        final List<Pair<String, String>> responseHeaders = new ArrayList<Pair<String, String>>();
+        responseHeaders.add(new Pair("Access-Control-Allow-Origin", customScheme));
+        responseHeaders.add(new Pair("Access-Control-Allow-Methods", preflightTriggeringMethod));
+        final String fetchUrlToPass = mWebServer.setResponse(fetchPathToPass, "", responseHeaders);
+
+        final Future<String> futureToPass =
+                loadUrlAndFetch(pageUrl, fetchUrlToPass, preflightTriggeringMethod);
+        Assert.assertEquals("fetch result check", "cors",
+                futureToPass.get(WAIT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+
+        Assert.assertEquals(3, mShouldInterceptRequestHelper.getUrls().size());
+        Assert.assertEquals(pageUrl, mShouldInterceptRequestHelper.getUrls().get(0));
+        Assert.assertEquals(fetchUrlToPass, mShouldInterceptRequestHelper.getUrls().get(1));
+        Assert.assertEquals(fetchUrlToPass, mShouldInterceptRequestHelper.getUrls().get(2));
+
+        // Check if the last request was the actual request.
+        final WebServer.HTTPRequest fetchRequestToPass = mWebServer.getLastRequest(fetchPathToPass);
+        Assert.assertEquals(preflightTriggeringMethod, fetchRequestToPass.getMethod());
+        Assert.assertEquals(customScheme, fetchRequestToPass.headerValue("Origin"));
     }
 }

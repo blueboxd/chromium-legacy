@@ -7,6 +7,7 @@
 
 #include <atomic>
 
+#include "build/build_config.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/partitions.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/type_traits.h"
@@ -158,6 +159,59 @@ ALWAYS_INLINE std::atomic<T>* AsAtomicPtr(T* t) {
 template <typename T>
 ALWAYS_INLINE const std::atomic<T>* AsAtomicPtr(const T* t) {
   return reinterpret_cast<const std::atomic<T>*>(t);
+}
+
+// Load |bytes| bytes from |from| to |to| using atomic reads. Assumes |to| is
+// size_t-aligned and  points to a buffer of size at least |bytes|. Note that
+// atomicity is guaranteed only per word, not for the entire |bytes| bytes as
+// a whole.
+WTF_EXPORT void AtomicMemcpy(void* to, const void* from, size_t bytes);
+template <size_t bytes>
+ALWAYS_INLINE void AtomicMemcpy(void* to, const void* from) {
+  AtomicMemcpy(to, from, bytes);
+}
+
+// AtomicMemcpy specializations:
+
+#if defined(ARCH_CPU_X86_64)
+template <>
+ALWAYS_INLINE void AtomicMemcpy<sizeof(uint32_t)>(void* to, const void* from) {
+  *reinterpret_cast<uint32_t*>(to) =
+      AsAtomicPtr(reinterpret_cast<const uint32_t*>(from))
+          ->load(std::memory_order_relaxed);
+}
+#endif  // ARCH_CPU_X86_64
+
+template <>
+ALWAYS_INLINE void AtomicMemcpy<sizeof(size_t)>(void* to, const void* from) {
+  *reinterpret_cast<size_t*>(to) =
+      AsAtomicPtr(reinterpret_cast<const size_t*>(from))
+          ->load(std::memory_order_relaxed);
+}
+
+template <>
+ALWAYS_INLINE void AtomicMemcpy<2 * sizeof(size_t)>(void* to,
+                                                    const void* from) {
+  *reinterpret_cast<size_t*>(to) =
+      AsAtomicPtr(reinterpret_cast<const size_t*>(from))
+          ->load(std::memory_order_relaxed);
+  *(reinterpret_cast<size_t*>(to) + 1) =
+      AsAtomicPtr(reinterpret_cast<const size_t*>(from) + 1)
+          ->load(std::memory_order_relaxed);
+}
+
+template <>
+ALWAYS_INLINE void AtomicMemcpy<3 * sizeof(size_t)>(void* to,
+                                                    const void* from) {
+  *reinterpret_cast<size_t*>(to) =
+      AsAtomicPtr(reinterpret_cast<const size_t*>(from))
+          ->load(std::memory_order_relaxed);
+  *(reinterpret_cast<size_t*>(to) + 1) =
+      AsAtomicPtr(reinterpret_cast<const size_t*>(from) + 1)
+          ->load(std::memory_order_relaxed);
+  *(reinterpret_cast<size_t*>(to) + 2) =
+      AsAtomicPtr(reinterpret_cast<const size_t*>(from) + 2)
+          ->load(std::memory_order_relaxed);
 }
 
 }  // namespace WTF

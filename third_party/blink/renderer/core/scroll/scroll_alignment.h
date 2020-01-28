@@ -50,29 +50,22 @@
 
 namespace blink {
 
-enum ScrollAlignmentBehavior {
-  kScrollAlignmentNoScroll,
-  kScrollAlignmentCenter,
-  kScrollAlignmentTop,
-  kScrollAlignmentBottom,
-  kScrollAlignmentLeft,
-  kScrollAlignmentRight,
-  kScrollAlignmentClosestEdge
-};
-
 struct PhysicalRect;
 
 struct CORE_EXPORT ScrollAlignment {
   STACK_ALLOCATED();
 
  public:
-  static ScrollAlignmentBehavior GetVisibleBehavior(const ScrollAlignment& s) {
+  static mojom::blink::ScrollAlignment::Behavior GetVisibleBehavior(
+      const ScrollAlignment& s) {
     return s.rect_visible_;
   }
-  static ScrollAlignmentBehavior GetPartialBehavior(const ScrollAlignment& s) {
+  static mojom::blink::ScrollAlignment::Behavior GetPartialBehavior(
+      const ScrollAlignment& s) {
     return s.rect_partial_;
   }
-  static ScrollAlignmentBehavior GetHiddenBehavior(const ScrollAlignment& s) {
+  static mojom::blink::ScrollAlignment::Behavior GetHiddenBehavior(
+      const ScrollAlignment& s) {
     return s.rect_hidden_;
   }
 
@@ -100,9 +93,9 @@ struct CORE_EXPORT ScrollAlignment {
   static const ScrollAlignment kAlignLeftAlways;
   static const ScrollAlignment kAlignRightAlways;
 
-  ScrollAlignmentBehavior rect_visible_;
-  ScrollAlignmentBehavior rect_hidden_;
-  ScrollAlignmentBehavior rect_partial_;
+  mojom::blink::ScrollAlignment::Behavior rect_visible_;
+  mojom::blink::ScrollAlignment::Behavior rect_hidden_;
+  mojom::blink::ScrollAlignment::Behavior rect_partial_;
 };
 
 inline bool PLATFORM_EXPORT operator==(const ScrollAlignment& lhs,

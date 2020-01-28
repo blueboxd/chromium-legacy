@@ -15,7 +15,6 @@ import "ui/gfx/geometry/mojom/geometry.mojom";
 // A public wrapper around ScrollAlignment. The default value matches
 // kAlignCenterIfNeeded.
 struct ScrollAlignment {
-  // Public variant of ScrollAlignmentBehavior.
   enum Behavior {
     kNoScroll = 0,
     kCenter,
@@ -39,6 +38,9 @@ struct ScrollIntoViewParams {
     kClamping,
     kCompositor,
     kAnchoring,
+    // These are programmatic sequenced scrolls from SmoothScrollSequencer.
+    // SetScrollOffset called with kSequencedScroll should not abort the smooth
+    // scroll sequence.
     kSequenced,
   };
 

@@ -5456,7 +5456,7 @@ Event* Document::createEvent(ScriptState* script_state,
     if (event) {
       // createEvent for TouchEvent should throw DOM exception if touch event
       // feature detection is not enabled. See crbug.com/392584#c22
-      if (DeprecatedEqualIgnoringCase(event_type, "TouchEvent") &&
+      if (EqualIgnoringASCIICase(event_type, "TouchEvent") &&
           !RuntimeEnabledFeatures::TouchEventFeatureDetectionEnabled(
               execution_context))
         break;
@@ -6155,10 +6155,10 @@ String Document::designMode() const {
 
 void Document::setDesignMode(const String& value) {
   bool new_value = design_mode_;
-  if (DeprecatedEqualIgnoringCase(value, "on")) {
+  if (EqualIgnoringASCIICase(value, "on")) {
     new_value = true;
     UseCounter::Count(*this, WebFeature::kDocumentDesignModeEnabeld);
-  } else if (DeprecatedEqualIgnoringCase(value, "off")) {
+  } else if (EqualIgnoringASCIICase(value, "off")) {
     new_value = false;
   }
   if (new_value == design_mode_)
@@ -6839,7 +6839,7 @@ void Document::InitDNSPrefetch() {
 
 void Document::ParseDNSPrefetchControlHeader(
     const String& dns_prefetch_control) {
-  if (DeprecatedEqualIgnoringCase(dns_prefetch_control, "on") &&
+  if (EqualIgnoringASCIICase(dns_prefetch_control, "on") &&
       !have_explicitly_disabled_dns_prefetch_) {
     is_dns_prefetch_enabled_ = true;
     return;

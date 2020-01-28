@@ -92,8 +92,9 @@ class AvSettings {
 
     // This event shall be fired whenever the audio codecs supported by the
     // device (or HDMI sinks connected to the device) are changed.
-    // On this event, GetAudioCodecsSupported() and GetMaxAudioChannels() will
-    // be called on the thread where Initialize() was called.
+    // On this event, GetAudioCodecsSupported(), GetMaxAudioChannels(), and
+    // GetSpatialRenderingAudioCodecs() be called on the thread where
+    // Initialize() was called.
     AUDIO_CODECS_SUPPORTED_CHANGED = 2,
 
     // This event shall be fired whenever the screen information of the device
@@ -272,6 +273,11 @@ class AvSettings {
   // Gets audio codecs supported by the device (or HDMI sinks).
   // The result is an integer of OR'ed AudioCodec values.
   virtual int GetAudioCodecsSupported() = 0;
+
+  // Returns a bitmap of audio codecs that the device (or HDMI sinks) can
+  // render spatially.
+  static CHROMECAST_EXPORT int GetSpatialRenderingAudioCodecs()
+      __attribute__((weak));
 
   // Gets maximum number of channels for given audio codec, |codec|.
   virtual int GetMaxAudioChannels(AudioCodec codec) = 0;

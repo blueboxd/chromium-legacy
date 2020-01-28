@@ -410,8 +410,9 @@ TEST_P(PaintLayerPainterTest, CachedSubsequenceRetainsPreviousPaintResult) {
 
   // Scroll the view so that both |content1| and |content2| are in the interest
   // rect.
-  GetLayoutView().GetScrollableArea()->SetScrollOffset(ScrollOffset(0, 3000),
-                                                       kProgrammaticScroll);
+  GetLayoutView().GetScrollableArea()->SetScrollOffset(
+      ScrollOffset(0, 3000),
+      mojom::blink::ScrollIntoViewParams::Type::kProgrammatic);
   GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
   // Scrolling doesn't set SelfNeedsRepaint flag. Change of paint dirty rect of
   // a partially painted layer will trigger repaint.
@@ -1035,21 +1036,24 @@ TEST_P(PaintLayerPainterTestCAP, TallScrolledLayerCullRect) {
   EXPECT_EQ(IntRect(-4000, -4000, 8800, 8600),
             GetPaintLayerByElementId("target")->PreviousCullRect().Rect());
 
-  GetDocument().View()->LayoutViewport()->SetScrollOffset(ScrollOffset(0, 6000),
-                                                          kProgrammaticScroll);
+  GetDocument().View()->LayoutViewport()->SetScrollOffset(
+      ScrollOffset(0, 6000),
+      mojom::blink::ScrollIntoViewParams::Type::kProgrammatic);
   UpdateAllLifecyclePhasesForTest();
   EXPECT_EQ(IntRect(-4000, 2000, 8800, 8600),
             GetPaintLayerByElementId("target")->PreviousCullRect().Rect());
 
-  GetDocument().View()->LayoutViewport()->SetScrollOffset(ScrollOffset(0, 6500),
-                                                          kProgrammaticScroll);
+  GetDocument().View()->LayoutViewport()->SetScrollOffset(
+      ScrollOffset(0, 6500),
+      mojom::blink::ScrollIntoViewParams::Type::kProgrammatic);
   UpdateAllLifecyclePhasesForTest();
   // Used the previous cull rect because the scroll amount is small.
   EXPECT_EQ(IntRect(-4000, 2000, 8800, 8600),
             GetPaintLayerByElementId("target")->PreviousCullRect().Rect());
 
-  GetDocument().View()->LayoutViewport()->SetScrollOffset(ScrollOffset(0, 6600),
-                                                          kProgrammaticScroll);
+  GetDocument().View()->LayoutViewport()->SetScrollOffset(
+      ScrollOffset(0, 6600),
+      mojom::blink::ScrollIntoViewParams::Type::kProgrammatic);
   UpdateAllLifecyclePhasesForTest();
   // Used new cull rect.
   EXPECT_EQ(IntRect(-4000, 2600, 8800, 8600),
@@ -1124,7 +1128,8 @@ TEST_P(PaintLayerPainterTestCAP, VerticalRightLeftWritingModeDocument) {
   )HTML");
 
   GetDocument().View()->LayoutViewport()->SetScrollOffset(
-      ScrollOffset(-5000, 0), kProgrammaticScroll);
+      ScrollOffset(-5000, 0),
+      mojom::blink::ScrollIntoViewParams::Type::kProgrammatic);
   UpdateAllLifecyclePhasesForTest();
 
   // A scroll by -5000px is equivalent to a scroll by (10000 - 5000 - 800)px =

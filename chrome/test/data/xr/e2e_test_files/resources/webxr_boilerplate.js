@@ -76,6 +76,10 @@ sessionInfos[sessionTypes.AR] = new SessionInfo();
 sessionInfos[sessionTypes.MAGIC_WINDOW] = new SessionInfo();
 
 var immersiveSessionInit = {};
+// AR sessions will use the `immersiveSessionInit` and `immersiveArSessionInit`
+// to request a session. If they both contain the same keys, the one present in
+// `immersiveArSessionInit` will be chosen.
+var immersiveArSessionInit = { requiredFeatures: ['hit-test'] };
 var nonImmersiveSessionInit = {};
 
 function getSessionType(session) {
@@ -116,7 +120,8 @@ function onRequestSession() {
       break;
     case sessionTypes.AR:
       console.info('Requesting Immersive AR session');
-      navigator.xr.requestSession('immersive-ar', immersiveSessionInit)
+      navigator.xr.requestSession('immersive-ar',
+        Object.assign({}, immersiveSessionInit, immersiveArSessionInit))
       .then((session) => {
         session.mode = 'immersive-ar';
         console.info('Immersive AR session request succeeded');

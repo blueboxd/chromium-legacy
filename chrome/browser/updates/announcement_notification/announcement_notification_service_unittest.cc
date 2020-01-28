@@ -34,7 +34,7 @@ class MockDelegate : public AnnouncementNotificationService::Delegate {
  public:
   MockDelegate() = default;
   ~MockDelegate() override = default;
-  MOCK_METHOD1(ShowNotification, void(const std::string&));
+  MOCK_METHOD0(ShowNotification, void());
   MOCK_METHOD0(IsFirstRun, bool());
 
  private:
@@ -129,7 +129,7 @@ TEST_F(AnnouncementNotificationServiceTest, RequireSignOut) {
   Init(parameters, true, 1, false);
 
   ON_CALL(*delegate(), IsFirstRun()).WillByDefault(Return(false));
-  EXPECT_CALL(*delegate(), ShowNotification(_)).Times(0);
+  EXPECT_CALL(*delegate(), ShowNotification()).Times(0);
   service()->MaybeShowNotification();
   EXPECT_EQ(CurrentVersionPref(), 2);
 }
@@ -142,7 +142,7 @@ TEST_F(AnnouncementNotificationServiceTest, SkipNewProfile) {
   Init(parameters, true, 1, true /*new_profile*/);
 
   ON_CALL(*delegate(), IsFirstRun()).WillByDefault(Return(false));
-  EXPECT_CALL(*delegate(), ShowNotification(_)).Times(0);
+  EXPECT_CALL(*delegate(), ShowNotification()).Times(0);
   service()->MaybeShowNotification();
   EXPECT_EQ(CurrentVersionPref(), 2);
 }
@@ -157,7 +157,7 @@ TEST_F(AnnouncementNotificationServiceTest, RemoteUrl) {
   InitProfile(false);
   Init(parameters, true, 1, false);
   ON_CALL(*delegate(), IsFirstRun()).WillByDefault(Return(false));
-  EXPECT_CALL(*delegate(), ShowNotification(kRemoteUrl));
+  EXPECT_CALL(*delegate(), ShowNotification());
   service()->MaybeShowNotification();
   EXPECT_EQ(CurrentVersionPref(), 4);
 }
@@ -208,7 +208,7 @@ TEST_P(AnnouncementNotificationServiceVersionTest, VersionTest) {
   Init(param.enable_feature, param.skip_first_run, param.version,
        param.current_version);
   ON_CALL(*delegate(), IsFirstRun()).WillByDefault(Return(param.is_first_run));
-  EXPECT_CALL(*delegate(), ShowNotification(std::string()))
+  EXPECT_CALL(*delegate(), ShowNotification())
       .Times(param.show_notification_called ? 1 : 0);
   service()->MaybeShowNotification();
   EXPECT_EQ(CurrentVersionPref(), param.expected_version_pref);

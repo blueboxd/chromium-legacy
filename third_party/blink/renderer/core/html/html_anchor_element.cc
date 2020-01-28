@@ -277,7 +277,7 @@ bool HTMLAnchorElement::CanStartSelection() const {
 bool HTMLAnchorElement::draggable() const {
   // Should be draggable if we have an href attribute.
   const AtomicString& value = FastGetAttribute(html_names::kDraggableAttr);
-  if (DeprecatedEqualIgnoringCase(value, "true"))
+  if (EqualIgnoringASCIICase(value, "true"))
     return true;
   if (DeprecatedEqualIgnoringCase(value, "false"))
     return false;

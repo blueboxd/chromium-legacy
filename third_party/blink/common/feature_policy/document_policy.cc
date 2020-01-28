@@ -280,9 +280,10 @@ std::unique_ptr<DocumentPolicy> DocumentPolicy::CreateWithHeaderPolicy(
 // configuration json5 file.
 const DocumentPolicy::FeatureState& DocumentPolicy::GetFeatureDefaults() {
   static base::NoDestructor<FeatureState> default_feature_list(
-      {{mojom::FeaturePolicyFeature::kFontDisplay, PolicyValue(false)},
+      {{mojom::FeaturePolicyFeature::kFontDisplay, PolicyValue(true)},
        {mojom::FeaturePolicyFeature::kUnoptimizedLosslessImages,
-        PolicyValue(2.0f)}});
+        PolicyValue::CreateMaxPolicyValue(
+            mojom::PolicyValueType::kDecDouble)}});
   return *default_feature_list;
 }
 

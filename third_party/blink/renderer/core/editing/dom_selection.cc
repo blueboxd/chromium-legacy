@@ -411,43 +411,43 @@ void DOMSelection::modify(const String& alter_string,
     return;
 
   SelectionModifyAlteration alter;
-  if (DeprecatedEqualIgnoringCase(alter_string, "extend"))
+  if (EqualIgnoringASCIICase(alter_string, "extend"))
     alter = SelectionModifyAlteration::kExtend;
-  else if (DeprecatedEqualIgnoringCase(alter_string, "move"))
+  else if (EqualIgnoringASCIICase(alter_string, "move"))
     alter = SelectionModifyAlteration::kMove;
   else
     return;
 
   SelectionModifyDirection direction;
-  if (DeprecatedEqualIgnoringCase(direction_string, "forward"))
+  if (EqualIgnoringASCIICase(direction_string, "forward"))
     direction = SelectionModifyDirection::kForward;
   else if (DeprecatedEqualIgnoringCase(direction_string, "backward"))
     direction = SelectionModifyDirection::kBackward;
-  else if (DeprecatedEqualIgnoringCase(direction_string, "left"))
+  else if (EqualIgnoringASCIICase(direction_string, "left"))
     direction = SelectionModifyDirection::kLeft;
-  else if (DeprecatedEqualIgnoringCase(direction_string, "right"))
+  else if (EqualIgnoringASCIICase(direction_string, "right"))
     direction = SelectionModifyDirection::kRight;
   else
     return;
 
   TextGranularity granularity;
-  if (DeprecatedEqualIgnoringCase(granularity_string, "character"))
+  if (EqualIgnoringASCIICase(granularity_string, "character"))
     granularity = TextGranularity::kCharacter;
-  else if (DeprecatedEqualIgnoringCase(granularity_string, "word"))
+  else if (EqualIgnoringASCIICase(granularity_string, "word"))
     granularity = TextGranularity::kWord;
   else if (DeprecatedEqualIgnoringCase(granularity_string, "sentence"))
     granularity = TextGranularity::kSentence;
-  else if (DeprecatedEqualIgnoringCase(granularity_string, "line"))
+  else if (EqualIgnoringASCIICase(granularity_string, "line"))
     granularity = TextGranularity::kLine;
-  else if (DeprecatedEqualIgnoringCase(granularity_string, "paragraph"))
+  else if (EqualIgnoringASCIICase(granularity_string, "paragraph"))
     granularity = TextGranularity::kParagraph;
-  else if (DeprecatedEqualIgnoringCase(granularity_string, "lineboundary"))
+  else if (EqualIgnoringASCIICase(granularity_string, "lineboundary"))
     granularity = TextGranularity::kLineBoundary;
   else if (DeprecatedEqualIgnoringCase(granularity_string, "sentenceboundary"))
     granularity = TextGranularity::kSentenceBoundary;
-  else if (DeprecatedEqualIgnoringCase(granularity_string, "paragraphboundary"))
+  else if (EqualIgnoringASCIICase(granularity_string, "paragraphboundary"))
     granularity = TextGranularity::kParagraphBoundary;
-  else if (DeprecatedEqualIgnoringCase(granularity_string, "documentboundary"))
+  else if (EqualIgnoringASCIICase(granularity_string, "documentboundary"))
     granularity = TextGranularity::kDocumentBoundary;
   else
     return;

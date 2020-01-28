@@ -120,7 +120,7 @@ Refer to README.md for content description and update process.
  <item id="gaia_oauth_client_get_user_info" hash_code="83476155" type="0" content_hash_code="35159007" os_list="linux,windows" file_path="google_apis/gaia/gaia_oauth_client.cc"/>
  <item id="gaia_oauth_client_refresh_token" hash_code="82462683" type="0" content_hash_code="22305252" os_list="linux,windows" file_path="google_apis/gaia/gaia_oauth_client.cc"/>
  <item id="gcd_rest_client" hash_code="105985951" type="0" deprecated="2018-10-17" content_hash_code="70710803" file_path="remoting/host/gcd_rest_client.cc"/>
- <item id="gcm_channel_status_request" hash_code="18300705" type="0" content_hash_code="53862393" os_list="linux,windows" file_path="components/gcm_driver/gcm_channel_status_request.cc"/>
+ <item id="gcm_channel_status_request" hash_code="18300705" type="0" deprecated="2020-01-24" content_hash_code="53862393" file_path=""/>
  <item id="gcm_checkin" hash_code="65957842" type="0" content_hash_code="98259579" os_list="linux,windows" file_path="google_apis/gcm/engine/checkin_request.cc"/>
  <item id="gcm_connection_factory" hash_code="29057242" type="0" content_hash_code="75279835" os_list="linux,windows" file_path="google_apis/gcm/engine/connection_factory_impl.cc"/>
  <item id="gcm_registration" hash_code="61656965" type="0" content_hash_code="113670632" os_list="linux,windows" file_path="google_apis/gcm/engine/registration_request.cc"/>

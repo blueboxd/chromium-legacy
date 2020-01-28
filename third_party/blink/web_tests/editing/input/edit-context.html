@@ -188,6 +188,50 @@ test(function() {
 
   test.focus();
   editContext.focus();
+  textInputController.setComposition("f");
+  assert_equals(test.innerHTML, "f");
+  textInputController.setComposition("foo");
+  assert_equals(test.innerHTML, "foo");
+  textInputController.insertText("foobar");
+  assert_equals(test.innerHTML, "foobar");
+}, 'Testing EditContext Text updates');
+
+test(function() {
+  const editContext = new EditContext();
+  assert_not_equals(editContext, null);
+  const test = document.getElementById('test');
+  test.innerHTML = "";
+  // Add EditContext event listeners
+  editContext.addEventListener("textupdate", e => {
+    // Update the text in the div
+    const buffer = test.innerText;
+    test.innerHTML = buffer.substr(0, e.updateRangeStart) + e.updateText + buffer.substr(e.updateRangeEnd);
+  });
+
+  test.focus();
+  editContext.focus();
+  textInputController.setComposition("f");
+  assert_equals(test.innerHTML, "f");
+  textInputController.setComposition("");
+  assert_equals(test.innerHTML, "");
+  textInputController.insertText("foobar");
+  assert_equals(test.innerHTML, "foobar");
+}, 'Testing EditContext Text updates with empty text');
+
+test(function() {
+  const editContext = new EditContext();
+  assert_not_equals(editContext, null);
+  const test = document.getElementById('test');
+  test.innerHTML = "";
+  // Add EditContext event listeners
+  editContext.addEventListener("textupdate", e => {
+    // Update the text in the div
+    const buffer = test.innerText;
+    test.innerHTML = buffer.substr(0, e.updateRangeStart) + e.updateText + buffer.substr(e.updateRangeEnd);
+  });
+
+  test.focus();
+  editContext.focus();
   textInputController.setComposition("foo");
   assert_equals(test.innerHTML, "foo");
   editContext.updateText(0, 1, "h");

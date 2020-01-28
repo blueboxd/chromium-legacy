@@ -80,7 +80,8 @@ class CONTENT_EXPORT BrowserTaskTraitsExtension {
           base::trait_helpers::AreValidTraits<ValidTrait, ArgTypes...>::value>>
   constexpr BrowserTaskTraitsExtension(ArgTypes... args)
       : browser_thread_(
-            base::trait_helpers::GetEnum<BrowserThread::ID>(args...)),
+            base::trait_helpers::GetEnum<BrowserThread::ID,
+                                         BrowserThread::ID_COUNT>(args...)),
         task_type_(
             base::trait_helpers::GetEnum<BrowserTaskType,
                                          BrowserTaskType::kDefault>(args...)),
@@ -105,7 +106,13 @@ class CONTENT_EXPORT BrowserTaskTraitsExtension {
         static_cast<bool>(extension.data[2]));
   }
 
-  constexpr BrowserThread::ID browser_thread() const { return browser_thread_; }
+  constexpr BrowserThread::ID browser_thread() const {
+    // TODO(1026641): Migrate to BrowserTaskTraits under which BrowserThread is
+    // not a trait. Until then, only code that knows traits have explicitly set
+    // the BrowserThread trait should check this field.
+    DCHECK_NE(browser_thread_, BrowserThread::ID_COUNT);
+    return browser_thread_;
+  }
 
   constexpr BrowserTaskType task_type() const { return task_type_; }
 
@@ -134,6 +141,40 @@ constexpr base::TaskTraitsExtensionStorage MakeTaskTraitsExtension(
   return BrowserTaskTraitsExtension(std::forward<ArgTypes>(args)...)
       .Serialize();
 }
+
+class CONTENT_EXPORT BrowserTaskTraits : public base::TaskTraits {
+ public:
+  struct ValidTrait : public base::TaskTraits::ValidTrait {
+    ValidTrait(BrowserTaskType);
+    ValidTrait(NonNestable);
+
+    // TODO(1026641): Reconsider whether BrowserTaskTraits should really be
+    // supporting base::TaskPriority.
+    ValidTrait(base::TaskPriority);
+  };
+
+  // TODO(1026641): Get rid of BrowserTaskTraitsExtension and store its members
+  // (|task_type_| & |nestable_|) directly in BrowserTaskTraits.
+  template <
+      class... ArgTypes,
+      class CheckArgumentsAreValid = std::enable_if_t<
+          base::trait_helpers::AreValidTraits<ValidTrait, ArgTypes...>::value>>
+  constexpr BrowserTaskTraits(ArgTypes... args) : base::TaskTraits(args...) {}
+
+  BrowserTaskType task_type() {
+    return GetExtension<BrowserTaskTraitsExtension>().task_type();
+  }
+
+  // Returns true if tasks with these traits may run in a nested RunLoop.
+  bool nestable() const {
+    return GetExtension<BrowserTaskTraitsExtension>().nestable();
+  }
+};
+
+static_assert(sizeof(BrowserTaskTraits) == sizeof(base::TaskTraits),
+              "During the migration away from BrowserTasktraitsExtension, "
+              "BrowserTaskTraits must only use base::TaskTraits for storage "
+              "to prevent slicing.");
 
 }  // namespace content
 

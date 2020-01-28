@@ -537,6 +537,8 @@ const char* ToString(ax::mojom::Role role) {
       return "pane";
     case ax::mojom::Role::kParagraph:
       return "paragraph";
+    case ax::mojom::Role::kPdfActionableHighlight:
+      return "pdfActionableHighlight";
     case ax::mojom::Role::kPluginObject:
       return "pluginObject";
     case ax::mojom::Role::kPopUpButton:
@@ -839,6 +841,8 @@ ax::mojom::Role ParseRole(const char* role) {
     return ax::mojom::Role::kHeader;
   if (0 == strcmp(role, "headerAsNonLandmark"))
     return ax::mojom::Role::kHeaderAsNonLandmark;
+  if (0 == strcmp(role, "pdfActionableHighlight"))
+    return ax::mojom::Role::kPdfActionableHighlight;
   if (0 == strcmp(role, "iframe"))
     return ax::mojom::Role::kIframe;
   if (0 == strcmp(role, "iframePresentational"))

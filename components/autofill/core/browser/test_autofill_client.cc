@@ -211,7 +211,7 @@ void TestAutofillClient::UpdateAutofillPopupDataListValues(
     const std::vector<base::string16>& values,
     const std::vector<base::string16>& labels) {}
 
-void TestAutofillClient::HideAutofillPopup() {}
+void TestAutofillClient::HideAutofillPopup(PopupHidingReason reason) {}
 
 bool TestAutofillClient::IsAutocompleteEnabled() {
   return true;

@@ -79,6 +79,7 @@ class OpenXrApiWrapper {
   XrResult InitializeSystem();
   XrResult PickEnvironmentBlendMode(XrSystemId system);
   XrResult ProcessEvents();
+  void EnsureEventPolling();
 
   XrResult CreateSession(
       const Microsoft::WRL::ComPtr<ID3D11Device>& d3d_device);
@@ -104,6 +105,7 @@ class OpenXrApiWrapper {
   XrResult UpdateStageBounds();
 
   bool session_ended_;
+  base::TimeTicks last_process_events_time_;
 
   base::RepeatingCallback<void(XrResult*)>
       interaction_profile_changed_callback_;
@@ -140,6 +142,8 @@ class OpenXrApiWrapper {
   std::vector<XrView> origin_from_eye_views_;
   std::vector<XrView> head_from_eye_views_;
   std::vector<XrCompositionLayerProjectionView> layer_projection_views_;
+
+  base::WeakPtrFactory<OpenXrApiWrapper> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(OpenXrApiWrapper);
 };

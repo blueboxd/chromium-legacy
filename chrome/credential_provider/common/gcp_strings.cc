@@ -75,13 +75,13 @@ const char kGaiaIdSwitch[] = "gaia-id";
 // for GCPW.
 const char kGcpwEndpointPathSwitch[] = "gcpw-endpoint-path";
 
-// The show_tos parameter is used to specify whether tos screen needs to be
-// shown as part of the login process or not.
-const char kShowTosSwitch[] = "show_tos";
-
 // Allows specifying additional oauth scopes for the access token being passed
 // to GCPW.
 const char kGcpwAdditionalOauthScopes[] = "gcpw-additional-oauth-scopes";
+
+// The show_tos parameter is used to specify whether tos screen needs to be
+// shown as part of the login process or not.
+const char kShowTosSwitch[] = "show_tos";
 
 // Parameter appended to sign in URL to pass valid signin domains to the inline
 // login handler. These domains are separated by ','.

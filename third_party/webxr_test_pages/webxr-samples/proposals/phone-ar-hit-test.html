@@ -188,7 +188,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
       function onRequestSession() {
         let options = {
-          requiredFeatures: ['local-floor'],
+          requiredFeatures: ['local-floor', 'hit-test'],
         };
         if (useDomOverlay.checked) {
           options.optionalFeatures = ['dom-overlay'];

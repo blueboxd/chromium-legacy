@@ -33,7 +33,6 @@ class CORE_EXPORT LayoutNGListItem final : public LayoutNGBlockFlow {
   void OrdinalValueChanged();
   void WillCollectInlines() override;
 
-  LayoutObject* SymbolMarkerLayoutText() const;
   static const LayoutObject* FindSymbolMarkerLayoutText(const LayoutObject*);
 
   // Find the LayoutNGListItem from a marker.

@@ -167,6 +167,7 @@ RoleMap BuildRoleMap() {
       {ax::mojom::Role::kNone, NSAccessibilityGroupRole},
       {ax::mojom::Role::kNote, NSAccessibilityGroupRole},
       {ax::mojom::Role::kParagraph, NSAccessibilityGroupRole},
+      {ax::mojom::Role::kPdfActionableHighlight, NSAccessibilityButtonRole},
       {ax::mojom::Role::kPluginObject, NSAccessibilityGroupRole},
       {ax::mojom::Role::kPopUpButton, NSAccessibilityPopUpButtonRole},
       {ax::mojom::Role::kPortal, NSAccessibilityButtonRole},

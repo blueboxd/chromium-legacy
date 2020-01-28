@@ -95,15 +95,18 @@ PhysicalRect RootFrameViewport::RootContentsToLayoutViewportContents(
 void RootFrameViewport::RestoreToAnchor(const ScrollOffset& target_offset) {
   // Clamp the scroll offset of each viewport now so that we force any invalid
   // offsets to become valid so we can compute the correct deltas.
-  GetVisualViewport().SetScrollOffset(GetVisualViewport().GetScrollOffset(),
-                                      kProgrammaticScroll);
-  LayoutViewport().SetScrollOffset(LayoutViewport().GetScrollOffset(),
-                                   kProgrammaticScroll);
+  GetVisualViewport().SetScrollOffset(
+      GetVisualViewport().GetScrollOffset(),
+      mojom::blink::ScrollIntoViewParams::Type::kProgrammatic);
+  LayoutViewport().SetScrollOffset(
+      LayoutViewport().GetScrollOffset(),
+      mojom::blink::ScrollIntoViewParams::Type::kProgrammatic);
 
   ScrollOffset delta = target_offset - GetScrollOffset();
 
   GetVisualViewport().SetScrollOffset(
-      GetVisualViewport().GetScrollOffset() + delta, kProgrammaticScroll);
+      GetVisualViewport().GetScrollOffset() + delta,
+      mojom::blink::ScrollIntoViewParams::Type::kProgrammatic);
 
   delta = target_offset - GetScrollOffset();
 
@@ -118,11 +121,12 @@ void RootFrameViewport::RestoreToAnchor(const ScrollOffset& target_offset) {
 
   LayoutViewport().SetScrollOffset(
       ScrollOffset(LayoutViewport().ScrollOffsetInt() + layout_delta),
-      kProgrammaticScroll);
+      mojom::blink::ScrollIntoViewParams::Type::kProgrammatic);
 
   delta = target_offset - GetScrollOffset();
   GetVisualViewport().SetScrollOffset(
-      GetVisualViewport().GetScrollOffset() + delta, kProgrammaticScroll);
+      GetVisualViewport().GetScrollOffset() + delta,
+      mojom::blink::ScrollIntoViewParams::Type::kProgrammatic);
 }
 
 void RootFrameViewport::DidUpdateVisualViewport() {
@@ -257,8 +261,9 @@ void RootFrameViewport::ApplyPendingHistoryRestoreScrollOffset() {
                      pending_view_state_->scroll_anchor_data_.offset_.y()),
          pending_view_state_->scroll_anchor_data_.simhash_});
     if (!did_restore) {
-      LayoutViewport().SetScrollOffset(pending_view_state_->scroll_offset_,
-                                       kProgrammaticScroll);
+      LayoutViewport().SetScrollOffset(
+          pending_view_state_->scroll_offset_,
+          mojom::blink::ScrollIntoViewParams::Type::kProgrammatic);
     }
   }
 
@@ -294,7 +299,7 @@ void RootFrameViewport::ApplyPendingHistoryRestoreScrollOffset() {
 
 void RootFrameViewport::SetScrollOffset(
     const ScrollOffset& offset,
-    ScrollType scroll_type,
+    mojom::blink::ScrollIntoViewParams::Type scroll_type,
     mojom::blink::ScrollIntoViewParams::Behavior scroll_behavior,
     ScrollCallback on_finish) {
   UpdateScrollAnimator();
@@ -302,7 +307,7 @@ void RootFrameViewport::SetScrollOffset(
   if (scroll_behavior == mojom::blink::ScrollIntoViewParams::Behavior::kAuto)
     scroll_behavior = ScrollBehaviorStyle();
 
-  if (scroll_type == kAnchoringScroll) {
+  if (scroll_type == mojom::blink::ScrollIntoViewParams::Type::kAnchoring) {
     DistributeScrollBetweenViewports(offset, scroll_type, scroll_behavior,
                                      kLayoutViewport, std::move(on_finish));
     return;
@@ -355,8 +360,7 @@ PhysicalRect RootFrameViewport::ScrollIntoView(
           scroll_snapport_rect, rect_in_document,
           params->align_x.To<ScrollAlignment>(),
           params->align_y.To<ScrollAlignment>(), GetScrollOffset()));
-  auto type = mojo::ConvertTo<ScrollType>(params->type);
-  if (type == kUserScroll)
+  if (params->type == mojom::blink::ScrollIntoViewParams::Type::kUser)
     new_scroll_offset = ClampToUserScrollableOffset(new_scroll_offset);
 
   FloatPoint end_point = ScrollOffsetToPosition(new_scroll_offset);
@@ -370,14 +374,16 @@ PhysicalRect RootFrameViewport::ScrollIntoView(
 
   if (new_scroll_offset != GetScrollOffset()) {
     if (params->is_for_scroll_sequence) {
-      DCHECK(type == kProgrammaticScroll || type == kUserScroll);
+      DCHECK(params->type ==
+                 mojom::blink::ScrollIntoViewParams::Type::kProgrammatic ||
+             params->type == mojom::blink::ScrollIntoViewParams::Type::kUser);
       mojom::blink::ScrollIntoViewParams::Behavior behavior =
           DetermineScrollBehavior(params->behavior,
                                   GetLayoutBox()->StyleRef().ScrollBehavior());
       GetSmoothScrollSequencer()->QueueAnimation(this, new_scroll_offset,
                                                  behavior);
     } else {
-      ScrollableArea::SetScrollOffset(new_scroll_offset, type);
+      ScrollableArea::SetScrollOffset(new_scroll_offset, params->type);
     }
   }
 
@@ -389,8 +395,9 @@ PhysicalRect RootFrameViewport::ScrollIntoView(
   return rect_in_document;
 }
 
-void RootFrameViewport::UpdateScrollOffset(const ScrollOffset& offset,
-                                           ScrollType scroll_type) {
+void RootFrameViewport::UpdateScrollOffset(
+    const ScrollOffset& offset,
+    mojom::blink::ScrollIntoViewParams::Type scroll_type) {
   DistributeScrollBetweenViewports(
       offset, scroll_type,
       mojom::blink::ScrollIntoViewParams::Behavior::kInstant, kVisualViewport);
@@ -398,7 +405,7 @@ void RootFrameViewport::UpdateScrollOffset(const ScrollOffset& offset,
 
 void RootFrameViewport::DistributeScrollBetweenViewports(
     const ScrollOffset& offset,
-    ScrollType scroll_type,
+    mojom::blink::ScrollIntoViewParams::Type scroll_type,
     mojom::blink::ScrollIntoViewParams::Behavior behavior,
     ViewportToScrollFirst scroll_first,
     ScrollCallback on_finish) {

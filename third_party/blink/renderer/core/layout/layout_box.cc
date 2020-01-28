@@ -657,9 +657,9 @@ int LayoutBox::PixelSnappedScrollHeight() const {
 PhysicalRect LayoutBox::ScrollRectToVisibleRecursive(
     const PhysicalRect& absolute_rect,
     mojom::blink::ScrollIntoViewParamsPtr params) {
-  auto type = mojo::ConvertTo<ScrollType>(params->type);
-
-  DCHECK(type == kProgrammaticScroll || type == kUserScroll);
+  DCHECK(params->type ==
+             mojom::blink::ScrollIntoViewParams::Type::kProgrammatic ||
+         params->type == mojom::blink::ScrollIntoViewParams::Type::kUser);
 
   if (!GetFrameView())
     return absolute_rect;
@@ -1092,9 +1092,10 @@ void LayoutBox::Autoscroll(const PhysicalOffset& position_in_root_frame) {
   ScrollRectToVisibleRecursive(
       PhysicalRect(absolute_position,
                    PhysicalSize(LayoutUnit(1), LayoutUnit(1))),
-      CreateScrollIntoViewParams(ScrollAlignment::kAlignToEdgeIfNeeded,
-                                 ScrollAlignment::kAlignToEdgeIfNeeded,
-                                 kUserScroll));
+      CreateScrollIntoViewParams(
+          ScrollAlignment::kAlignToEdgeIfNeeded,
+          ScrollAlignment::kAlignToEdgeIfNeeded,
+          mojom::blink::ScrollIntoViewParams::Type::kUser));
 }
 
 bool LayoutBox::CanAutoscroll() const {
@@ -1177,7 +1178,9 @@ void LayoutBox::ScrollByRecursively(const ScrollOffset& delta) {
   DCHECK(scrollable_area);
 
   ScrollOffset new_scroll_offset = scrollable_area->GetScrollOffset() + delta;
-  scrollable_area->SetScrollOffset(new_scroll_offset, kProgrammaticScroll);
+  scrollable_area->SetScrollOffset(
+      new_scroll_offset,
+      mojom::blink::ScrollIntoViewParams::Type::kProgrammatic);
 
   // If this layer can't do the scroll we ask the next layer up that can
   // scroll to try.
@@ -6337,7 +6340,7 @@ bool LayoutBox::AllowedToPropagateRecursiveScrollToParentFrame(
   if (!GetFrameView()->SafeToPropagateScrollToParent())
     return false;
 
-  if (mojo::ConvertTo<ScrollType>(params->type) != kProgrammaticScroll)
+  if (params->type != mojom::blink::ScrollIntoViewParams::Type::kProgrammatic)
     return true;
 
   return !GetDocument().IsVerticalScrollEnforced();

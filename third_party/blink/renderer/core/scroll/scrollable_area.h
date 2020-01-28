@@ -101,22 +101,22 @@ class CORE_EXPORT ScrollableArea : public GarbageCollectedMixin {
                                   ScrollCallback on_finish);
 
   virtual void SetScrollOffset(const ScrollOffset&,
-                               ScrollType,
+                               mojom::blink::ScrollIntoViewParams::Type,
                                mojom::blink::ScrollIntoViewParams::Behavior,
                                ScrollCallback on_finish);
   virtual void SetScrollOffset(
       const ScrollOffset&,
-      ScrollType,
+      mojom::blink::ScrollIntoViewParams::Type,
       mojom::blink::ScrollIntoViewParams::Behavior =
           mojom::blink::ScrollIntoViewParams::Behavior::kInstant);
   void ScrollBy(const ScrollOffset&,
-                ScrollType,
+                mojom::blink::ScrollIntoViewParams::Type,
                 mojom::blink::ScrollIntoViewParams::Behavior =
                     mojom::blink::ScrollIntoViewParams::Behavior::kInstant);
   void SetScrollOffsetSingleAxis(
       ScrollbarOrientation,
       float,
-      ScrollType,
+      mojom::blink::ScrollIntoViewParams::Type,
       mojom::blink::ScrollIntoViewParams::Behavior =
           mojom::blink::ScrollIntoViewParams::Behavior::kInstant);
 
@@ -526,7 +526,8 @@ class CORE_EXPORT ScrollableArea : public GarbageCollectedMixin {
 
   // Needed to let the animators call scrollOffsetChanged.
   friend class ScrollAnimatorCompositorCoordinator;
-  void ScrollOffsetChanged(const ScrollOffset&, ScrollType);
+  void ScrollOffsetChanged(const ScrollOffset&,
+                           mojom::blink::ScrollIntoViewParams::Type);
 
   void ClearNeedsPaintInvalidationForScrollControls() {
     horizontal_scrollbar_needs_paint_invalidation_ = false;
@@ -558,9 +559,10 @@ class CORE_EXPORT ScrollableArea : public GarbageCollectedMixin {
 
   void FadeOverlayScrollbarsTimerFired(TimerBase*);
 
-  // This function should be overriden by subclasses to perform the actual
+  // This function should be overridden by subclasses to perform the actual
   // scroll of the content.
-  virtual void UpdateScrollOffset(const ScrollOffset&, ScrollType) = 0;
+  virtual void UpdateScrollOffset(const ScrollOffset&,
+                                  mojom::blink::ScrollIntoViewParams::Type) = 0;
 
   virtual int LineStep(ScrollbarOrientation) const;
   virtual int PageStep(ScrollbarOrientation) const;

@@ -524,6 +524,31 @@ class SSLServerSocketTest : public PlatformTest, public WithTaskEnvironment {
   scoped_refptr<X509Certificate> server_cert_;
 };
 
+class SSLServerSocketReadTest : public SSLServerSocketTest,
+                                public ::testing::WithParamInterface<bool> {
+ protected:
+  SSLServerSocketReadTest() : read_if_ready_enabled_(GetParam()) {}
+
+  int Read(StreamSocket* socket,
+           IOBuffer* buf,
+           int buf_len,
+           CompletionOnceCallback callback) {
+    if (read_if_ready_enabled()) {
+      return socket->ReadIfReady(buf, buf_len, std::move(callback));
+    }
+    return socket->Read(buf, buf_len, std::move(callback));
+  }
+
+  bool read_if_ready_enabled() const { return read_if_ready_enabled_; }
+
+ private:
+  const bool read_if_ready_enabled_;
+};
+
+INSTANTIATE_TEST_SUITE_P(/* no prefix */,
+                         SSLServerSocketReadTest,
+                         ::testing::Bool());
+
 // This test only executes creation of client and server sockets. This is to
 // test that creation of sockets doesn't crash and have minimal code to run
 // with memory leak/corruption checking tools.
@@ -972,7 +997,7 @@ TEST_F(SSLServerSocketTest, HandshakeWithWrongClientCertSuppliedCached) {
   EXPECT_EQ(ERR_BAD_SSL_CLIENT_AUTH_CERT, client_ret);
 }
 
-TEST_F(SSLServerSocketTest, DataTransfer) {
+TEST_P(SSLServerSocketReadTest, DataTransfer) {
   ASSERT_NO_FATAL_FAILURE(CreateContext());
   ASSERT_NO_FATAL_FAILURE(CreateSockets());
 
@@ -1028,25 +1053,31 @@ TEST_F(SSLServerSocketTest, DataTransfer) {
 
   // Read then write.
   write_buf = base::MakeRefCounted<StringIOBuffer>("hello123");
-  server_ret = server_socket_->Read(
-      read_buf.get(), read_buf->BytesRemaining(), read_callback.callback());
-  EXPECT_TRUE(server_ret > 0 || server_ret == ERR_IO_PENDING);
+  server_ret = Read(server_socket_.get(), read_buf.get(),
+                    read_buf->BytesRemaining(), read_callback.callback());
+  EXPECT_EQ(server_ret, ERR_IO_PENDING);
   client_ret = client_socket_->Write(write_buf.get(), write_buf->size(),
                                      write_callback.callback(),
                                      TRAFFIC_ANNOTATION_FOR_TESTS);
   EXPECT_TRUE(client_ret > 0 || client_ret == ERR_IO_PENDING);
 
   server_ret = read_callback.GetResult(server_ret);
-  ASSERT_GT(server_ret, 0);
+  if (read_if_ready_enabled()) {
+    // ReadIfReady signals the data is available but does not consume it.
+    // The data is consumed later below.
+    ASSERT_EQ(server_ret, OK);
+  } else {
+    ASSERT_GT(server_ret, 0);
+    read_buf->DidConsume(server_ret);
+  }
   client_ret = write_callback.GetResult(client_ret);
   EXPECT_GT(client_ret, 0);
 
-  read_buf->DidConsume(server_ret);
   while (read_buf->BytesConsumed() < write_buf->size()) {
-    server_ret = server_socket_->Read(
-        read_buf.get(), read_buf->BytesRemaining(), read_callback.callback());
-    EXPECT_TRUE(server_ret > 0 || server_ret == ERR_IO_PENDING);
-    server_ret = read_callback.GetResult(server_ret);
+    server_ret = Read(server_socket_.get(), read_buf.get(),
+                      read_buf->BytesRemaining(), read_callback.callback());
+    // All the data was written above, so the data should be synchronously
+    // available out of both Read() and ReadIfReady().
     ASSERT_GT(server_ret, 0);
     read_buf->DidConsume(server_ret);
   }

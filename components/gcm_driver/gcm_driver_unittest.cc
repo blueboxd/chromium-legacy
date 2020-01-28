@@ -20,8 +20,6 @@
 #include "components/gcm_driver/crypto/gcm_decryption_result.h"
 #include "components/gcm_driver/crypto/gcm_encryption_provider.h"
 #include "components/gcm_driver/fake_gcm_client_factory.h"
-#include "components/gcm_driver/gcm_channel_status_request.h"
-#include "components/gcm_driver/gcm_channel_status_syncer.h"
 #include "components/gcm_driver/gcm_client_factory.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
@@ -39,7 +37,6 @@ namespace gcm {
 
 namespace {
 
-const char kTestChannelStatusRequestURL[] = "http://channel.status.request.com";
 const char kTestAppID1[] = "TestApp1";
 
 // PKCS #8 encoded P-256 private key.
@@ -133,7 +130,6 @@ GCMDriverBaseTest::GCMDriverBaseTest() : io_thread_("IOThread") {}
 GCMDriverBaseTest::~GCMDriverBaseTest() = default;
 
 void GCMDriverBaseTest::SetUp() {
-  GCMChannelStatusSyncer::RegisterPrefs(prefs_.registry());
   io_thread_.Start();
   ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
 
@@ -170,8 +166,7 @@ void GCMDriverBaseTest::CreateDriver() {
   driver_ = std::make_unique<GCMDriverDesktop>(
       std::make_unique<FakeGCMClientFactory>(
           base::ThreadTaskRunnerHandle::Get(), io_thread_.task_runner()),
-      chrome_build_info, kTestChannelStatusRequestURL, "user-agent-string",
-      &prefs_, temp_dir_.GetPath(),
+      chrome_build_info, "user-agent-string", &prefs_, temp_dir_.GetPath(),
       /*remove_account_mappings_with_email_key=*/true, base::DoNothing(),
       base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
           &test_url_loader_factory_),

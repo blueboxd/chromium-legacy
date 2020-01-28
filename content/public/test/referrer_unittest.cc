@@ -68,6 +68,27 @@ TEST(ReferrerSanitizerTest, OnlyHTTPFamilyReferrer) {
   EXPECT_TRUE(result.url.is_empty());
 }
 
+TEST(ReferrerSanitizerTest, AboutBlankURLRequest) {
+  auto result = Referrer::SanitizeForRequest(
+      GURL("about:blank"),
+      Referrer(GURL("http://foo"), network::mojom::ReferrerPolicy::kAlways));
+  EXPECT_EQ(result.url, GURL("http://foo"));
+}
+
+TEST(ReferrerSanitizerTest, HTTPURLRequest) {
+  auto result = Referrer::SanitizeForRequest(
+      GURL("http://bar"),
+      Referrer(GURL("http://foo"), network::mojom::ReferrerPolicy::kAlways));
+  EXPECT_EQ(result.url, GURL("http://foo"));
+}
+
+TEST(ReferrerSanitizerTest, DataURLRequest) {
+  auto result = Referrer::SanitizeForRequest(
+      GURL("data:text/html,<div>foo</div>"),
+      Referrer(GURL("http://foo"), network::mojom::ReferrerPolicy::kAlways));
+  EXPECT_TRUE(result.url.is_empty());
+}
+
 TEST(ReferrerTest, BlinkNetRoundTripConversion) {
   const net::URLRequest::ReferrerPolicy policies[] = {
       net::URLRequest::CLEAR_REFERRER_ON_TRANSITION_FROM_SECURE_TO_INSECURE,

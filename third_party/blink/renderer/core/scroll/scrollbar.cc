@@ -142,7 +142,8 @@ int Scrollbar::Maximum() const {
                                               : max_offset.Height();
 }
 
-void Scrollbar::OffsetDidChange(ScrollType scroll_type) {
+void Scrollbar::OffsetDidChange(
+    mojom::blink::ScrollIntoViewParams::Type scroll_type) {
   DCHECK(scrollable_area_);
 
   float position = ScrollableAreaCurrentPos();
@@ -161,7 +162,7 @@ void Scrollbar::OffsetDidChange(ScrollType scroll_type) {
   // Don't update the pressed position if scroll anchoring takes place as
   // otherwise the next thumb movement will undo anchoring.
   if (pressed_part_ == kThumbPart &&
-      scroll_type != ScrollType::kAnchoringScroll) {
+      scroll_type != mojom::blink::ScrollIntoViewParams::Type::kAnchoring) {
     SetPressedPos(pressed_pos_ + GetTheme().ThumbPosition(*this) -
                   old_thumb_position);
   }

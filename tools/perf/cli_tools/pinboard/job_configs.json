@@ -15,14 +15,5 @@
     "benchmark": "speedometer2",
     "patch": "https://chromium-review.googlesource.com/c/v8/v8/+/1784285",
     "repository": "chromium"
-  },
-  {
-    "name": "Try job for scheduler: disable bootstrap prioritization",
-    "target": "performance_test_suite",
-    "configuration": "android-go-perf",
-    "benchmark": "startup.mobile",
-    "extra_test_args": "--story-filter=intent:coldish:bbc",
-    "patch": "https://chromium-review.googlesource.com/c/chromium/src/+/1731904",
-    "repository": "chromium"
   }
 ]

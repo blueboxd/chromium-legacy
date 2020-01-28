@@ -148,7 +148,7 @@
     </style>
     <template is="dom-if" if="[[isSpaceLow_(sizeStat_.spaceState)]]">
       <div class="settings-box first">
-        <div class="message-area">
+        <div id="lowMessage" class="message-area">
           <iron-icon icon="cr:warning"></iron-icon>
           <div class="message">
             <div class="message-title">$i18n{storageSpaceLowMessageTitle}</div>

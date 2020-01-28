@@ -11455,8 +11455,9 @@ TEST_F(WebFrameSimTest, HitTestWithIgnoreClippingAtNegativeOffset) {
 
   auto* frame_view = To<LocalFrame>(WebView().GetPage()->MainFrame())->View();
 
-  frame_view->GetScrollableArea()->SetScrollOffset(ScrollOffset(0, 600),
-                                                   kProgrammaticScroll);
+  frame_view->GetScrollableArea()->SetScrollOffset(
+      ScrollOffset(0, 600),
+      mojom::blink::ScrollIntoViewParams::Type::kProgrammatic);
   Compositor().BeginFrame();
 
   HitTestRequest request = HitTestRequest::kMove | HitTestRequest::kReadOnly |
@@ -11498,8 +11499,9 @@ TEST_F(WebFrameSimTest, TickmarksDocumentRelative) {
   auto* frame = To<WebLocalFrameImpl>(WebView().MainFrame());
   auto* frame_view = To<LocalFrame>(WebView().GetPage()->MainFrame())->View();
 
-  frame_view->GetScrollableArea()->SetScrollOffset(ScrollOffset(3000, 1000),
-                                                   kProgrammaticScroll);
+  frame_view->GetScrollableArea()->SetScrollOffset(
+      ScrollOffset(3000, 1000),
+      mojom::blink::ScrollIntoViewParams::Type::kProgrammatic);
   auto options = mojom::blink::FindOptions::New();
   options->run_synchronously_for_testing = true;
   WebString search_text = WebString::FromUTF8("test");
@@ -11561,8 +11563,9 @@ TEST_F(WebFrameSimTest, FindInPageSelectNextMatch) {
   IntRect box1_rect = box1->GetLayoutObject()->AbsoluteBoundingBoxRect();
   IntRect box2_rect = box2->GetLayoutObject()->AbsoluteBoundingBoxRect();
 
-  frame_view->GetScrollableArea()->SetScrollOffset(ScrollOffset(3000, 1000),
-                                                   kProgrammaticScroll);
+  frame_view->GetScrollableArea()->SetScrollOffset(
+      ScrollOffset(3000, 1000),
+      mojom::blink::ScrollIntoViewParams::Type::kProgrammatic);
   auto options = mojom::blink::FindOptions::New();
   options->run_synchronously_for_testing = true;
   WebString search_text = WebString::FromUTF8("test");
@@ -11700,8 +11703,9 @@ TEST_F(WebFrameSimTest, TestScrollFocusedEditableElementIntoView) {
   LocalFrameView* frame_view = frame->View();
   IntRect inputRect(200, 600, 100, 20);
 
-  frame_view->GetScrollableArea()->SetScrollOffset(ScrollOffset(0, 0),
-                                                   kProgrammaticScroll);
+  frame_view->GetScrollableArea()->SetScrollOffset(
+      ScrollOffset(0, 0),
+      mojom::blink::ScrollIntoViewParams::Type::kProgrammatic);
 
   ASSERT_EQ(FloatPoint(),
             frame_view->GetScrollableArea()->VisibleContentRect().Location());
@@ -11716,7 +11720,7 @@ TEST_F(WebFrameSimTest, TestScrollFocusedEditableElementIntoView) {
   frame_view->LayoutViewport()->SetScrollOffset(
       ToFloatSize(FloatPoint(
           WebView().FakePageScaleAnimationTargetPositionForTesting())),
-      kProgrammaticScroll);
+      mojom::blink::ScrollIntoViewParams::Type::kProgrammatic);
 
   EXPECT_TRUE(frame_view->GetScrollableArea()->VisibleContentRect().Contains(
       inputRect));
@@ -11747,7 +11751,7 @@ TEST_F(WebFrameSimTest, TestScrollFocusedEditableElementIntoView) {
   frame_view->GetScrollableArea()->SetScrollOffset(
       ToFloatSize(FloatPoint(
           WebView().FakePageScaleAnimationTargetPositionForTesting())),
-      kProgrammaticScroll);
+      mojom::blink::ScrollIntoViewParams::Type::kProgrammatic);
 
   EXPECT_TRUE(frame_view->GetScrollableArea()->VisibleContentRect().Contains(
       inputRect));
@@ -11811,8 +11815,9 @@ TEST_F(WebFrameSimTest, TestScrollFocusedEditableInRootScroller) {
 
   WebView().AdvanceFocus(false);
 
-  rs_controller.RootScrollerArea()->SetScrollOffset(ScrollOffset(0, 300),
-                                                    kProgrammaticScroll);
+  rs_controller.RootScrollerArea()->SetScrollOffset(
+      ScrollOffset(0, 300),
+      mojom::blink::ScrollIntoViewParams::Type::kProgrammatic);
 
   LocalFrameView* frame_view = frame->View();
   IntRect inputRect(200, 700, 100, 20);
@@ -11832,8 +11837,8 @@ TEST_F(WebFrameSimTest, TestScrollFocusedEditableInRootScroller) {
   ScrollOffset target_offset = ToFloatSize(
       FloatPoint(WebView().FakePageScaleAnimationTargetPositionForTesting()));
 
-  rs_controller.RootScrollerArea()->SetScrollOffset(target_offset,
-                                                    kProgrammaticScroll);
+  rs_controller.RootScrollerArea()->SetScrollOffset(
+      target_offset, mojom::blink::ScrollIntoViewParams::Type::kProgrammatic);
 
   EXPECT_TRUE(frame_view->GetScrollableArea()->VisibleContentRect().Contains(
       inputRect));
@@ -12034,7 +12039,8 @@ TEST_F(WebFrameSimTest, DoubleTapZoomWhileScrolled) {
 
   // Center the target in the screen.
   frame_view->GetScrollableArea()->SetScrollOffset(
-      ScrollOffset(2000 - 440, 3000 - 450), kProgrammaticScroll);
+      ScrollOffset(2000 - 440, 3000 - 450),
+      mojom::blink::ScrollIntoViewParams::Type::kProgrammatic);
   Element* target = GetDocument().QuerySelector("#target");
   DOMRect* rect = target->getBoundingClientRect();
   ASSERT_EQ(440, rect->left());
@@ -12051,8 +12057,8 @@ TEST_F(WebFrameSimTest, DoubleTapZoomWhileScrolled) {
         FloatPoint(WebView().FakePageScaleAnimationTargetPositionForTesting()));
     float new_scale = WebView().FakePageScaleAnimationPageScaleForTesting();
     visual_viewport.SetScale(new_scale);
-    frame_view->GetScrollableArea()->SetScrollOffset(new_offset,
-                                                     kProgrammaticScroll);
+    frame_view->GetScrollableArea()->SetScrollOffset(
+        new_offset, mojom::blink::ScrollIntoViewParams::Type::kProgrammatic);
 
     EXPECT_FLOAT_EQ(1, visual_viewport.Scale());
     EXPECT_TRUE(frame_view->GetScrollableArea()->VisibleContentRect().Contains(
@@ -12130,7 +12136,9 @@ TEST_F(WebFrameSimTest, ScrollFocusedEditableIntoViewNoLayoutObject) {
   input->focus();
 
   ScrollableArea* area = GetDocument().View()->LayoutViewport();
-  area->SetScrollOffset(ScrollOffset(0, 0), kProgrammaticScroll);
+  area->SetScrollOffset(
+      ScrollOffset(0, 0),
+      mojom::blink::ScrollIntoViewParams::Type::kProgrammatic);
 
   ASSERT_TRUE(input->GetLayoutObject());
   ASSERT_EQ(input, WebView().FocusedElement());

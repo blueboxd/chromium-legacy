@@ -20,6 +20,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
 #include "chrome/browser/browsing_data/chrome_browsing_data_remover_delegate.h"
+#include "chrome/browser/captive_portal/captive_portal_service_factory.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
@@ -56,7 +57,7 @@
 #endif
 
 #if BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION)
-#include "chrome/browser/captive_portal/captive_portal_tab_helper.h"
+#include "components/captive_portal/content/captive_portal_tab_helper.h"
 #endif
 
 using content::BrowsingDataFilterBuilder;
@@ -572,7 +573,9 @@ TEST_F(ChromeContentBrowserClientCaptivePortalBrowserTest,
   bool invoked_url_factory = false;
   cp_rph_factory_.SetupForTracking(&invoked_url_factory,
                                    true /* expected_disable_secure_dns */);
-  CaptivePortalTabHelper::CreateForWebContents(web_contents());
+  CaptivePortalTabHelper::CreateForWebContents(
+      web_contents(), CaptivePortalServiceFactory::GetForProfile(profile()),
+      base::Callback<void(void)>());
   CaptivePortalTabHelper::FromWebContents(web_contents())
       ->set_is_captive_portal_window();
   NavigateAndCommit(GURL("https://www.google.com"), ui::PAGE_TRANSITION_LINK);

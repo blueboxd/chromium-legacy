@@ -1,4 +1,22 @@
-# How to disable a failing benchmark or story in Telemetry
+# How to disable a failing test/story on the perf waterfall
+
+To disable a failing test/story, the first step is to figure
+out if the failing thing is gtest or Telemetry, then you can
+follow the below directions to disable the failing test/story.
+
+# How to tell if the thing that is failing is Gtest or Telemetry
+
+When a Telemetry benchmark story fails, the format of the output is
+`<benchmark name>/<story name>`
+
+When a gtest C++ executable fails, the format of the output is
+`<executable name>`
+
+Also, usually gtests executables are named something that ends
+with `tests` such as `components_perftests` or `browser_performance_tests`
+As of January 2020, no benchmarks are named in a similar fashion.
+
+# How to disable a failing Telemetry benchmark or story
 
 ## Modify [`tools/perf/expectations.config`](https://cs.chromium.org/chromium/src/tools/perf/expectations.config?q=expectations.config&sq=package:chromium&dr)
 
@@ -47,3 +65,11 @@ Once you've committed your changes locally, your CL can be submitted with:
 *Please make sure to CC the benchmark owner so that they're aware that they've lost coverage.*
 
 The `TBR` and `NOTRY` are permitted and recommended so long as the only file changed is `tools/perf/expectations.config`. If your change touches real code rather than just that configuration data, you'll need a real review before submitting it.
+
+# How to disable a failing gtest perf test
+
+See generic Chromium build sheriff directions for how to disable a gtest [here](https://www.chromium.org/developers/tree-sheriffs/sheriff-details-chromium#TOC-How-do-I-disable-a-flaky-test-)
+To find the logs of the failing test from Milo, click into the
+isolated output directory of the shard that the failing test
+was run on and the benchmark log for the failing test should be
+there.

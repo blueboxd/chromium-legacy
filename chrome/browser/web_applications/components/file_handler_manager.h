@@ -59,6 +59,12 @@ class FileHandlerManager : public AppRegistrarObserver {
   const std::vector<apps::FileHandlerInfo>* GetEnabledFileHandlers(
       const AppId& app_id);
 
+  // Determines whether file handling is allowed for |app_id|. This is true if
+  // the FileHandlingAPI flag is enabled.
+  // TODO(crbug.com/1028448): Also return true if there is a valid file handling
+  // origin trial token for |app_id|.
+  bool IsFileHandlingAPIAvailable(const AppId& app_id);
+
  protected:
   Profile* profile() const { return profile_; }
   AppRegistrar* registrar() { return registrar_; }

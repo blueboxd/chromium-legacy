@@ -580,7 +580,7 @@ void HTMLConstructionSite::SetCompatibilityModeFromDoctype(
           "-//WebTechs//DTD Mozilla HTML//") ||
       DeprecatedEqualIgnoringCase(public_id,
                                   "-/W3C/DTD HTML 4.0 Transitional/EN") ||
-      DeprecatedEqualIgnoringCase(public_id, "HTML") ||
+      EqualIgnoringASCIICase(public_id, "HTML") ||
       DeprecatedEqualIgnoringCase(
           system_id,
           "http://www.ibm.com/data/dtd/v11/ibmxhtml1-transitional.dtd") ||

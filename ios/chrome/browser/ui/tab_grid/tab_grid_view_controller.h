@@ -48,6 +48,11 @@
 @property(nonatomic, weak) id<GridImageDataSource> regularTabsImageDataSource;
 @property(nonatomic, weak) id<GridImageDataSource> incognitoTabsImageDataSource;
 
+// Readwrite override of the UIViewController property. This object will ignore
+// the value supplied by UIViewController.
+@property(nonatomic, weak, readwrite)
+    UIViewController* childViewControllerForStatusBarStyle;
+
 // The view controller for remote tabs.
 // TODO(crbug.com/845192) : This was only exposed in the public interface so
 // that TabGridViewController does not need to know about model objects. The

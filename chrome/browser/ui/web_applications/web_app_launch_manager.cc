@@ -110,7 +110,7 @@ content::WebContents* WebAppLaunchManager::OpenApplication(
   content::WebContents* web_contents = NavigateWebApplicationWindow(
       browser, params.app_id, url, WindowOpenDisposition::NEW_FOREGROUND_TAB);
 
-  if (base::FeatureList::IsEnabled(blink::features::kFileHandlingAPI)) {
+  if (file_handler_manager.IsFileHandlingAPIAvailable(params.app_id)) {
     web_launch::WebLaunchFilesHelper::SetLaunchPaths(web_contents, url,
                                                      params.launch_files);
   }

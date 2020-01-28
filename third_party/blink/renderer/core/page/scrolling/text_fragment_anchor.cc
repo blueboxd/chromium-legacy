@@ -182,7 +182,8 @@ bool TextFragmentAnchor::Invoke() {
 
 void TextFragmentAnchor::Installed() {}
 
-void TextFragmentAnchor::DidScroll(ScrollType type) {
+void TextFragmentAnchor::DidScroll(
+    mojom::blink::ScrollIntoViewParams::Type type) {
   if (!IsExplicitScrollType(type))
     return;
 
@@ -258,9 +259,10 @@ void TextFragmentAnchor::DidFindMatch(const EphemeralRangeInFlatTree& range) {
     PhysicalRect scrolled_bounding_box =
         node.GetLayoutObject()->ScrollRectToVisible(
             bounding_box,
-            CreateScrollIntoViewParams(ScrollAlignment::kAlignCenterAlways,
-                                       ScrollAlignment::kAlignCenterAlways,
-                                       kProgrammaticScroll));
+            CreateScrollIntoViewParams(
+                ScrollAlignment::kAlignCenterAlways,
+                ScrollAlignment::kAlignCenterAlways,
+                mojom::blink::ScrollIntoViewParams::Type::kProgrammatic));
     did_scroll_into_view_ = true;
 
     if (AXObjectCache* cache = frame_->GetDocument()->ExistingAXObjectCache())

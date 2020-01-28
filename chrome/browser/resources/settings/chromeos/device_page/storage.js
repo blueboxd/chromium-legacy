@@ -13,7 +13,6 @@ cr.define('settings', function() {
 
   /**
    * @typedef {{
-   *   totalSize: string,
    *   availableSize: string,
    *   usedSize: string,
    *   usedRatio: number,

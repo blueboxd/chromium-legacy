@@ -64,10 +64,8 @@ class GCMDriverAndroid : public GCMDriver,
                             ValidateRegistrationCallback callback) override;
   void OnSignedIn() override;
   void OnSignedOut() override;
-  void Enable() override;
   void AddConnectionObserver(GCMConnectionObserver* observer) override;
   void RemoveConnectionObserver(GCMConnectionObserver* observer) override;
-  void Disable() override;
   GCMClient* GetGCMClientForTesting() const override;
   bool IsStarted() const override;
   bool IsConnected() const override;

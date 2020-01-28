@@ -13,6 +13,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
+#include "base/test/bind_test_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/public/test/browser_task_environment.h"
 #include "net/http/http_util.h"
@@ -46,6 +47,23 @@ class WebApkIconHasherRunner {
     base::RunLoop run_loop;
     on_completed_callback_ = run_loop.QuitClosure();
     run_loop.Run();
+  }
+
+  std::map<std::string, std::string> RunMultiple(
+      network::mojom::URLLoaderFactory* url_loader_factory,
+      const std::set<GURL>& icon_urls) {
+    std::map<std::string, std::string> result;
+    base::RunLoop run_loop;
+    WebApkIconHasher::DownloadAndComputeMurmur2Hash(
+        url_loader_factory, url::Origin::Create(*icon_urls.begin()), icon_urls,
+        base::BindLambdaForTesting(
+            [&](base::Optional<std::map<std::string, std::string>> hashes) {
+              ASSERT_TRUE(hashes);
+              result = std::move(*hashes);
+              run_loop.Quit();
+            }));
+    run_loop.Run();
+    return result;
   }
 
   const std::string& murmur2_hash() { return murmur2_hash_; }
@@ -115,6 +133,43 @@ TEST_F(WebApkIconHasherTest, DataUri) {
   WebApkIconHasherRunner runner;
   runner.Run(test_url_loader_factory(), icon_url);
   EXPECT_EQ("536500236142107998", runner.murmur2_hash());
+}
+
+TEST_F(WebApkIconHasherTest, MultipleIconUrls) {
+  std::string icon_url1_string =
+      "http://www.google.com/chrome/test/data/android/google.png";
+  base::FilePath source_path;
+  base::FilePath icon_path;
+  ASSERT_TRUE(base::PathService::Get(base::DIR_SOURCE_ROOT, &source_path));
+  icon_path = source_path.AppendASCII("chrome")
+                  .AppendASCII("test")
+                  .AppendASCII("data")
+                  .AppendASCII("android")
+                  .AppendASCII("google.png");
+  std::string icon_data;
+  ASSERT_TRUE(base::ReadFileToString(icon_path, &icon_data));
+  test_url_loader_factory()->AddResponse(icon_url1_string, icon_data);
+
+  GURL icon_url1(icon_url1_string);
+  GURL icon_url2(
+      "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUA"
+      "AAAFCAYAAACNbyblAAAAHElEQVQI12P4//8/w38GIAXDIBKE0DHxgljNBAAO"
+      "9TXL0Y4OHwAAAABJRU5ErkJggg==");
+
+  WebApkIconHasherRunner runner;
+  {
+    auto result = runner.RunMultiple(test_url_loader_factory(), {icon_url1});
+    ASSERT_EQ(result.size(), 1u);
+    EXPECT_EQ(result[icon_url1.spec()], kIconMurmur2Hash);
+  }
+
+  {
+    auto result =
+        runner.RunMultiple(test_url_loader_factory(), {icon_url1, icon_url2});
+    ASSERT_EQ(result.size(), 2u);
+    EXPECT_EQ(result[icon_url1.spec()], kIconMurmur2Hash);
+    EXPECT_EQ(result[icon_url2.spec()], "536500236142107998");
+  }
 }
 
 TEST_F(WebApkIconHasherTest, DataUriInvalid) {

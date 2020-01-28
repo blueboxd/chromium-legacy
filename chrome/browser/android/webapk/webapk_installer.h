@@ -14,6 +14,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "base/strings/string16.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/android/shortcut_info.h"
@@ -184,15 +185,9 @@ class WebApkInstaller {
 
   void OnURLLoaderComplete(std::unique_ptr<std::string> response_body);
 
-  // Called with the computed Murmur2 hash for the primary icon.
-  void OnGotPrimaryIconMurmur2Hash(const std::string& primary_icon_hash);
-
-  // Called with the computed Murmur2 hash for the badge icon, and
-  // |did_fetch_badge_icon| to indicate whether there was an attempt to fetch
-  // badge icon.
-  void OnGotBadgeIconMurmur2Hash(bool did_fetch_badge_icon,
-                                 const std::string& primary_icon_hash,
-                                 const std::string& badge_icon_hash);
+  // Called with the computed Murmur2 hash for the icons.
+  void OnGotIconMurmur2Hashes(
+      base::Optional<std::map<std::string, std::string>> hashes);
 
   // Sends a request to WebAPK server to create/update WebAPK. During a
   // successful request the WebAPK server responds with a token to send to

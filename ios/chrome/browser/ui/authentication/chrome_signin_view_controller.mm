@@ -487,7 +487,7 @@ enum AuthenticationState {
   return _browser;
 }
 
-- (ios::ChromeBrowserState*)browserState {
+- (ChromeBrowserState*)browserState {
   return self.browser->GetBrowserState();
 }
 

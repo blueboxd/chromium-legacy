@@ -4,6 +4,7 @@
 
 #include "chrome/browser/android/webapk/webapk_installer.h"
 
+#include <set>
 #include <utility>
 #include <vector>
 
@@ -265,6 +266,10 @@ std::unique_ptr<std::string> BuildProtoInBackground(
   }
 
   for (const auto& entry : icon_url_to_murmur2_hash) {
+    if (entry.first != shortcut_info.best_primary_icon_url.spec() &&
+        entry.first != shortcut_info.best_badge_icon_url.spec()) {
+      continue;
+    }
     webapk::Image* image = web_app_manifest->add_icons();
     if (entry.first == shortcut_info.best_primary_icon_url.spec()) {
       SetImageData(image, primary_icon);
@@ -284,6 +289,24 @@ std::unique_ptr<std::string> BuildProtoInBackground(
     }
     image->set_src(entry.first);
     image->set_hash(entry.second);
+  }
+
+  for (const auto& manifest_shortcut_item : shortcut_info.shortcut_items) {
+    auto* shortcut_item = web_app_manifest->add_shortcuts();
+    shortcut_item->set_name(base::UTF16ToUTF8(manifest_shortcut_item.name));
+    shortcut_item->set_short_name(
+        base::UTF16ToUTF8(manifest_shortcut_item.short_name.string()));
+    shortcut_item->set_url(manifest_shortcut_item.url.spec());
+
+    for (const auto& manifest_icon : manifest_shortcut_item.icons) {
+      auto* shortcut_icon = shortcut_item->add_icons();
+      shortcut_icon->set_src(manifest_icon.src.spec());
+      auto shortcut_hash_it =
+          icon_url_to_murmur2_hash.find(shortcut_icon->src());
+      if (shortcut_hash_it != icon_url_to_murmur2_hash.end()) {
+        shortcut_icon->set_hash(shortcut_hash_it->second);
+      }
+    }
   }
 
   std::unique_ptr<std::string> serialized_proto =
@@ -631,61 +654,36 @@ void WebApkInstaller::OnHaveSufficientSpaceForInstall() {
   //
   // We redownload the icon in order to take the Murmur2 hash. The redownload
   // should be fast because the icon should be in the HTTP cache.
-  WebApkIconHasher::DownloadAndComputeMurmur2Hash(
-      GetURLLoaderFactory(browser_context_),
-      url::Origin::Create(install_shortcut_info_->url),
-      install_shortcut_info_->best_primary_icon_url,
-      base::BindOnce(&WebApkInstaller::OnGotPrimaryIconMurmur2Hash,
-                     weak_ptr_factory_.GetWeakPtr()));
-}
 
-void WebApkInstaller::OnGotPrimaryIconMurmur2Hash(
-    const std::string& primary_icon_hash) {
-  // An empty hash indicates an error during hash calculation.
-  if (primary_icon_hash.empty()) {
-    OnResult(WebApkInstallResult::FAILURE);
-    return;
-  }
-
+  std::set<GURL> icons{install_shortcut_info_->best_primary_icon_url};
   if (!install_shortcut_info_->best_badge_icon_url.is_empty() &&
       install_shortcut_info_->best_badge_icon_url !=
           install_shortcut_info_->best_primary_icon_url) {
-    WebApkIconHasher::DownloadAndComputeMurmur2Hash(
-        GetURLLoaderFactory(browser_context_),
-        url::Origin::Create(install_shortcut_info_->url),
-        install_shortcut_info_->best_badge_icon_url,
-        base::BindOnce(&WebApkInstaller::OnGotBadgeIconMurmur2Hash,
-                       weak_ptr_factory_.GetWeakPtr(), true,
-                       primary_icon_hash));
-  } else {
-    OnGotBadgeIconMurmur2Hash(false, primary_icon_hash, "");
+    icons.insert(install_shortcut_info_->best_badge_icon_url);
   }
+
+  for (const auto& shortcut_icon :
+       install_shortcut_info_->best_shortcut_icon_urls) {
+    icons.insert(shortcut_icon);
+  }
+
+  WebApkIconHasher::DownloadAndComputeMurmur2Hash(
+      GetURLLoaderFactory(browser_context_),
+      url::Origin::Create(install_shortcut_info_->url), icons,
+      base::BindOnce(&WebApkInstaller::OnGotIconMurmur2Hashes,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
-void WebApkInstaller::OnGotBadgeIconMurmur2Hash(
-    bool did_fetch_badge_icon,
-    const std::string& primary_icon_hash,
-    const std::string& badge_icon_hash) {
-  // An empty hash indicates an error during hash calculation.
-  if (did_fetch_badge_icon && badge_icon_hash.empty()) {
+void WebApkInstaller::OnGotIconMurmur2Hashes(
+    base::Optional<std::map<std::string, std::string>> hashes) {
+  if (!hashes) {
     OnResult(WebApkInstallResult::FAILURE);
     return;
-  }
-
-  // Maps icon URLs to Murmur2 hashes.
-  std::map<std::string, std::string> icon_url_to_murmur2_hash;
-  for (const std::string& icon_url : install_shortcut_info_->icon_urls) {
-    if (icon_url == install_shortcut_info_->best_primary_icon_url.spec())
-      icon_url_to_murmur2_hash[icon_url] = primary_icon_hash;
-    else if (icon_url == install_shortcut_info_->best_badge_icon_url.spec())
-      icon_url_to_murmur2_hash[icon_url] = badge_icon_hash;
-    else
-      icon_url_to_murmur2_hash[icon_url] = "";
   }
 
   BuildProto(*install_shortcut_info_, install_primary_icon_,
              is_primary_icon_maskable_, install_badge_icon_,
-             "" /* package_name */, "" /* version */, icon_url_to_murmur2_hash,
+             "" /* package_name */, "" /* version */, *hashes,
              false /* is_manifest_stale */,
              base::BindOnce(&WebApkInstaller::SendRequest,
                             weak_ptr_factory_.GetWeakPtr()));

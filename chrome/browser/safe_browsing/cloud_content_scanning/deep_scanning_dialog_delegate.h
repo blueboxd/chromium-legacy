@@ -14,7 +14,6 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/optional.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "chrome/browser/safe_browsing/cloud_content_scanning/binary_upload_service.h"
@@ -162,11 +161,10 @@ class DeepScanningDialogDelegate {
   // in the background.
   //
   // Whether the UI is enabled or not, verdicts of the scan will be reported.
-  static void ShowForWebContents(
-      content::WebContents* web_contents,
-      Data data,
-      CompletionCallback callback,
-      base::Optional<DeepScanAccessPoint> access_point = base::nullopt);
+  static void ShowForWebContents(content::WebContents* web_contents,
+                                 Data data,
+                                 CompletionCallback callback,
+                                 DeepScanAccessPoint access_point);
 
   // In tests, sets a factory function for creating fake
   // DeepScanningDialogDelegates.
@@ -177,11 +175,10 @@ class DeepScanningDialogDelegate {
   static bool ResultShouldAllowDataUse(BinaryUploadService::Result result);
 
  protected:
-  DeepScanningDialogDelegate(
-      content::WebContents* web_contents,
-      Data data,
-      CompletionCallback callback,
-      base::Optional<DeepScanAccessPoint> access_point = base::nullopt);
+  DeepScanningDialogDelegate(content::WebContents* web_contents,
+                             Data data,
+                             CompletionCallback callback,
+                             DeepScanAccessPoint access_point);
 
   // Callbacks from uploading data.  Protected so they can be called from
   // testing derived classes.
@@ -280,9 +277,8 @@ class DeepScanningDialogDelegate {
   // Pointer to UI when enabled.
   DeepScanningDialogViews* dialog_ = nullptr;
 
-  // Access point to use to record UMA metrics. base::nullopt implies no metrics
-  // are to be recorded.
-  base::Optional<DeepScanAccessPoint> access_point_;
+  // Access point to use to record UMA metrics.
+  DeepScanAccessPoint access_point_;
 
   base::TimeTicks upload_start_time_;
 

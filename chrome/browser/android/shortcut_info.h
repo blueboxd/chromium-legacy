@@ -130,6 +130,8 @@ struct ShortcutInfo {
   GURL best_badge_icon_url;
   std::vector<std::string> icon_urls;
   base::Optional<ShareTarget> share_target;
+  std::vector<blink::Manifest::ShortcutItem> shortcut_items;
+  std::vector<GURL> best_shortcut_icon_urls;
 };
 
 #endif  // CHROME_BROWSER_ANDROID_SHORTCUT_INFO_H_

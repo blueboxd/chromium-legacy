@@ -493,8 +493,8 @@
 #endif
 
 #if BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION)
-#include "chrome/browser/captive_portal/captive_portal_url_loader_throttle.h"
 #include "components/captive_portal/content/captive_portal_tab_helper.h"
+#include "components/captive_portal/content/captive_portal_url_loader_throttle.h"
 #endif
 
 #if BUILDFLAG(ENABLE_NACL)

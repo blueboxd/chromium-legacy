@@ -96,7 +96,7 @@ bool GcmApiFunction::IsGcmApiEnabled(std::string* error) const {
     return false;
   }
 
-  return gcm::GCMProfileService::IsGCMEnabled(profile->GetPrefs());
+  return true;
 }
 
 gcm::GCMDriver* GcmApiFunction::GetGCMDriver() const {

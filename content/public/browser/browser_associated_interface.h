@@ -11,7 +11,6 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/optional.h"
-#include "base/task/post_task.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/browser_message_filter.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -76,8 +75,8 @@ class BrowserAssociatedInterface {
 
     void ClearReceivers() {
       if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
-        base::PostTask(FROM_HERE, {BrowserThread::IO},
-                       base::BindOnce(&InternalState::ClearReceivers, this));
+        GetIOThreadTaskRunner({})->PostTask(
+            FROM_HERE, base::BindOnce(&InternalState::ClearReceivers, this));
         return;
       }
       receivers_.reset();

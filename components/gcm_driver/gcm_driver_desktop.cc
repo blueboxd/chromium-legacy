@@ -528,7 +528,6 @@ GCMDriverDesktop::GCMDriverDesktop(
     : GCMDriver(store_path, blocking_task_runner, url_loader_factory_for_ui),
       signed_in_(false),
       gcm_started_(false),
-      gcm_enabled_(true),
       connected_(false),
       account_mapper_(new GCMAccountMapper(this)),
       // Setting to max, to make sure it does not prompt for token reporting
@@ -650,26 +649,6 @@ void GCMDriverDesktop::AddConnectionObserver(GCMConnectionObserver* observer) {
 void GCMDriverDesktop::RemoveConnectionObserver(
     GCMConnectionObserver* observer) {
   connection_observer_list_.RemoveObserver(observer);
-}
-
-void GCMDriverDesktop::Enable() {
-  DCHECK(ui_thread_->RunsTasksInCurrentSequence());
-
-  if (gcm_enabled_)
-    return;
-  gcm_enabled_ = true;
-
-  EnsureStarted(GCMClient::DELAYED_START);
-}
-
-void GCMDriverDesktop::Disable() {
-  DCHECK(ui_thread_->RunsTasksInCurrentSequence());
-
-  if (!gcm_enabled_)
-    return;
-  gcm_enabled_ = false;
-
-  Stop();
 }
 
 void GCMDriverDesktop::Stop() {
@@ -1244,9 +1223,6 @@ GCMClient::Result GCMDriverDesktop::EnsureStarted(
   // Have any app requested the service?
   if (app_handlers().empty())
     return GCMClient::UNKNOWN_ERROR;
-
-  if (!gcm_enabled_)
-    return GCMClient::GCM_DISABLED;
 
   if (!delayed_task_controller_)
     delayed_task_controller_.reset(new GCMDelayedTaskController);

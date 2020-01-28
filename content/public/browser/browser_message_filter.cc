@@ -11,7 +11,6 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/process/process_handle.h"
-#include "base/task/post_task.h"
 #include "base/task_runner.h"
 #include "build/build_config.h"
 #include "content/browser/browser_child_process_host_impl.h"
@@ -59,24 +58,28 @@ class BrowserMessageFilter::Internal : public IPC::MessageFilter {
   }
 
   bool OnMessageReceived(const IPC::Message& message) override {
+    DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
     BrowserThread::ID thread = BrowserThread::IO;
     filter_->OverrideThreadForMessage(message, &thread);
 
-    if (thread == BrowserThread::IO) {
-      scoped_refptr<base::SequencedTaskRunner> runner =
-          filter_->OverrideTaskRunnerForMessage(message);
-      if (runner.get()) {
-        runner->PostTask(
-            FROM_HERE,
-            base::BindOnce(base::IgnoreResult(&Internal::DispatchMessage), this,
-                           message));
-        return true;
-      }
-      return DispatchMessage(message);
+    scoped_refptr<base::SequencedTaskRunner> destination;
+    if (thread == BrowserThread::UI) {
+      destination = GetUIThreadTaskRunner({});
+    } else {
+      DCHECK_EQ(thread, BrowserThread::IO);
+
+      destination = filter_->OverrideTaskRunnerForMessage(message);
+
+      // Neither override kicked in, dispatch the message immediately from the
+      // IO thread.
+      if (!destination)
+        return DispatchMessage(message);
     }
 
-    base::PostTask(
-        FROM_HERE, {thread},
+    DCHECK(destination);
+    destination->PostTask(
+        FROM_HERE,
         base::BindOnce(base::IgnoreResult(&Internal::DispatchMessage), this,
                        message));
     return true;
@@ -146,8 +149,8 @@ bool BrowserMessageFilter::Send(IPC::Message* message) {
   }
 
   if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
-    base::PostTask(
-        FROM_HERE, {BrowserThread::IO},
+    GetIOThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(base::IgnoreResult(&BrowserMessageFilter::Send), this,
                        message));
     return true;

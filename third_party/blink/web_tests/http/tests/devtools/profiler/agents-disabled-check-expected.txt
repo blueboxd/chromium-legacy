@@ -1,12 +1,12 @@
 Test that if a profiler is working all the agents are disabled.
 
 --> SDK.targetManager.suspendAllTargets();
-frontend: {"id":<number>,"method":"Debugger.disable"}
 frontend: {"id":<number>,"method":"Debugger.setAsyncCallStackDepth","params":{"maxDepth":0}}
 frontend: {"id":<number>,"method":"DOM.disable"}
 frontend: {"id":<number>,"method":"CSS.disable"}
 frontend: {"id":<number>,"method":"Overlay.disable"}
 frontend: {"id":<number>,"method":"Target.setAutoAttach","params":{"autoAttach":true,"waitForDebuggerOnStart":false,"flatten":true}}
+frontend: {"id":<number>,"method":"Debugger.disable"}
 
 --> SDK.targetManager.resumeAllTargets();
 frontend: {"id":<number>,"method":"Debugger.enable","params":{"maxScriptsCacheSize":100000000}}

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/captive_portal/captive_portal_url_loader_throttle.h"
+#include "components/captive_portal/content/captive_portal_url_loader_throttle.h"
 
 #include "components/captive_portal/content/captive_portal_tab_helper.h"
 

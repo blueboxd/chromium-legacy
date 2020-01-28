@@ -27,6 +27,7 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.components.payments.ErrorStrings;
+import org.chromium.components.url_formatter.SchemeDisplay;
 import org.chromium.components.url_formatter.UrlFormatter;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.payments.mojom.PaymentCurrencyAmount;
@@ -331,7 +332,7 @@ public class AndroidPaymentApp
     }
 
     private static String removeUrlScheme(String url) {
-        return UrlFormatter.formatUrlForSecurityDisplayOmitScheme(url);
+        return UrlFormatter.formatUrlForSecurityDisplay(url, SchemeDisplay.OMIT_HTTP_AND_HTTPS);
     }
 
     private void launchPaymentApp(String id, String merchantName, String origin,

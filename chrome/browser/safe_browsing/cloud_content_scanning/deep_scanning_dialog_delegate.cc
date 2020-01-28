@@ -241,11 +241,9 @@ void DeepScanningDialogDelegate::Cancel() {
   if (callback_.is_null())
     return;
 
-  if (access_point_.has_value()) {
-    RecordDeepScanMetrics(access_point_.value(),
-                          base::TimeTicks::Now() - upload_start_time_, 0,
-                          "CancelledByUser", false);
-  }
+  RecordDeepScanMetrics(access_point_,
+                        base::TimeTicks::Now() - upload_start_time_, 0,
+                        "CancelledByUser", false);
 
   // Make sure to reject everything.
   FillAllResultsWith(false);
@@ -337,7 +335,7 @@ void DeepScanningDialogDelegate::ShowForWebContents(
     content::WebContents* web_contents,
     Data data,
     CompletionCallback callback,
-    base::Optional<DeepScanAccessPoint> access_point) {
+    DeepScanAccessPoint access_point) {
   Factory* testing_factory = GetFactoryStorage();
   bool wait_for_verdict = WaitForVerdict();
 
@@ -392,7 +390,7 @@ DeepScanningDialogDelegate::DeepScanningDialogDelegate(
     content::WebContents* web_contents,
     Data data,
     CompletionCallback callback,
-    base::Optional<DeepScanAccessPoint> access_point)
+    DeepScanAccessPoint access_point)
     : web_contents_(web_contents),
       data_(std::move(data)),
       callback_(std::move(callback)),
@@ -409,11 +407,9 @@ void DeepScanningDialogDelegate::StringRequestCallback(
   int64_t content_size = 0;
   for (const base::string16& entry : data_.text)
     content_size += (entry.size() * sizeof(base::char16));
-  if (access_point_.has_value()) {
-    RecordDeepScanMetrics(access_point_.value(),
-                          base::TimeTicks::Now() - upload_start_time_,
-                          content_size, result, response);
-  }
+  RecordDeepScanMetrics(access_point_,
+                        base::TimeTicks::Now() - upload_start_time_,
+                        content_size, result, response);
 
   MaybeReportDeepScanningVerdict(
       Profile::FromBrowserContext(web_contents_->GetBrowserContext()),
@@ -471,11 +467,9 @@ void DeepScanningDialogDelegate::FileRequestCallback(
   DCHECK(it != data_.paths.end());
   size_t index = std::distance(data_.paths.begin(), it);
 
-  if (access_point_.has_value()) {
-    RecordDeepScanMetrics(access_point_.value(),
-                          base::TimeTicks::Now() - upload_start_time_,
-                          file_info_[index].size, result, response);
-  }
+  RecordDeepScanMetrics(access_point_,
+                        base::TimeTicks::Now() - upload_start_time_,
+                        file_info_[index].size, result, response);
 
   base::PostTaskAndReplyWithResult(
       FROM_HERE,

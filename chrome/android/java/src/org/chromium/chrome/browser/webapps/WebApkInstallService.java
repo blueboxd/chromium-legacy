@@ -19,6 +19,7 @@ import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.notifications.ChromeNotificationBuilder;
 import org.chromium.chrome.browser.notifications.NotificationBuilderFactory;
 import org.chromium.chrome.browser.notifications.channels.ChannelDefinitions;
+import org.chromium.components.url_formatter.SchemeDisplay;
 import org.chromium.components.url_formatter.UrlFormatter;
 import org.chromium.webapk.lib.client.WebApkNavigationClient;
 
@@ -75,7 +76,8 @@ public class WebApkInstallService {
                 .setSmallIcon(R.drawable.ic_chrome)
                 .setContentIntent(clickPendingIntent)
                 .setWhen(System.currentTimeMillis())
-                .setSubText(UrlFormatter.formatUrlForSecurityDisplayOmitScheme(url))
+                .setSubText(UrlFormatter.formatUrlForSecurityDisplay(
+                        url, SchemeDisplay.OMIT_HTTP_AND_HTTPS))
                 .setAutoCancel(true);
 
         NotificationManager notificationManager =

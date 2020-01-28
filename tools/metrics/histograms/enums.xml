@@ -58241,6 +58241,13 @@ Called by update_net_trust_anchors.py.-->
   <int value="2" label="Private key export failed"/>
 </enum>
 
+<enum name="SharingWebRtcTimeoutState">
+  <int value="0" label="Connecting"/>
+  <int value="1" label="Message received"/>
+  <int value="2" label="Message sent"/>
+  <int value="3" label="Disconnecting"/>
+</enum>
+
 <enum name="ShelfAlignmentValue">
   <summary>
     The alignment of the shelf area (see ash/launcher/launcher_view.cc).

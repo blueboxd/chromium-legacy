@@ -9,6 +9,7 @@ import android.text.TextUtils;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.components.offline_items_collection.OfflineItem;
+import org.chromium.components.url_formatter.SchemeDisplay;
 import org.chromium.components.url_formatter.UrlFormatter;
 
 import java.util.Locale;
@@ -57,6 +58,6 @@ public class SearchOfflineItemFilter extends OfflineItemFilter {
     /** Visible to allow tests to avoid calls to native. */
     @VisibleForTesting
     protected String formatUrl(String url) {
-        return UrlFormatter.formatUrlForSecurityDisplayOmitScheme(url);
+        return UrlFormatter.formatUrlForSecurityDisplay(url, SchemeDisplay.OMIT_HTTP_AND_HTTPS);
     }
 }

@@ -105,6 +105,8 @@ void ShortcutInfo::UpdateFromManifest(const blink::Manifest& manifest) {
       share_target->params.files.push_back(share_target_params_file);
     }
   }
+
+  shortcut_items = manifest.shortcuts;
 }
 
 void ShortcutInfo::UpdateSource(const Source new_source) {

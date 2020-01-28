@@ -108,17 +108,32 @@ public final class UrlFormatter {
      *         it fails to parse it.
      */
     public static String formatUrlForSecurityDisplay(String uri) {
-        return UrlFormatterJni.get().formatUrlForSecurityDisplay(uri);
+        return UrlFormatterJni.get().formatUrlForSecurityDisplay(uri, SchemeDisplay.SHOW);
     }
 
     /**
      * Builds a String that strips down |uri| to its host, and port.
      * @param uri The URI to break down.
+     * @param schemeDisplay Specifies how to display the scheme.
      * @return Stripped-down String containing the essential bits of the URL, or the original URL if
      *         it fails to parse it.
      */
+    public static String formatUrlForSecurityDisplay(String uri, @SchemeDisplay int schemeDisplay) {
+        return UrlFormatterJni.get().formatUrlForSecurityDisplay(uri, schemeDisplay);
+    }
+
+    /**
+     * @deprecated Use {@link #formatUrlForSecurityDisplay(String, int)} instead.
+     * TODO(crbug.com/596488): Remove this once internal usages are migrated.
+     * Builds a String that strips down |uri| to its host, and port.
+     * @param uri The URI to break down.
+     * @return Stripped-down String containing the essential bits of the URL, or the original URL if
+     *         it fails to parse it.
+     */
+    @Deprecated
     public static String formatUrlForSecurityDisplayOmitScheme(String uri) {
-        return UrlFormatterJni.get().formatUrlForSecurityDisplayOmitScheme(uri);
+        return UrlFormatterJni.get().formatUrlForSecurityDisplay(
+                uri, SchemeDisplay.OMIT_HTTP_AND_HTTPS);
     }
 
     @VisibleForTesting
@@ -129,7 +144,6 @@ public final class UrlFormatter {
         String formatUrlForDisplayOmitHTTPScheme(String url);
         String formatUrlForDisplayOmitSchemeOmitTrivialSubdomains(String url);
         String formatUrlForCopy(String url);
-        String formatUrlForSecurityDisplay(String url);
-        String formatUrlForSecurityDisplayOmitScheme(String url);
+        String formatUrlForSecurityDisplay(String url, @SchemeDisplay int schemeDisplay);
     }
 }

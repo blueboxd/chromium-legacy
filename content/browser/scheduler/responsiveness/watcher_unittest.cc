@@ -9,7 +9,6 @@
 #include "base/pending_task.h"
 #include "base/run_loop.h"
 #include "base/synchronization/lock.h"
-#include "base/task/post_task.h"
 #include "build/build_config.h"
 #include "content/browser/scheduler/responsiveness/calculator.h"
 #include "content/browser/scheduler/responsiveness/native_event_observer.h"
@@ -322,21 +321,21 @@ class ResponsivenessWatcherRealIOThreadTest : public testing::Test {
 
 TEST_F(ResponsivenessWatcherRealIOThreadTest, MessageLoopObserver) {
   // Post a do-nothing task onto the UI thread.
-  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                 base::BindOnce([]() {}));
+  content::GetUIThreadTaskRunner({})->PostTask(FROM_HERE,
+                                               base::BindOnce([]() {}));
 
   // Post a do-nothing task onto the IO thread.
-  base::PostTask(FROM_HERE, {content::BrowserThread::IO},
-                 base::BindOnce([]() {}));
+  content::GetIOThreadTaskRunner({})->PostTask(FROM_HERE,
+                                               base::BindOnce([]() {}));
 
   // Post a task onto the IO thread that hops back to the UI thread. This
   // guarantees that both of the do-nothing tasks have already been processed.
   base::RunLoop run_loop;
-  base::PostTask(FROM_HERE, {content::BrowserThread::IO},
-                 base::BindOnce(
+  content::GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(
                      [](base::OnceClosure quit_closure) {
-                       base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                                      std::move(quit_closure));
+                       content::GetUIThreadTaskRunner({})->PostTask(
+                           FROM_HERE, std::move(quit_closure));
                      },
                      run_loop.QuitClosure()));
   run_loop.Run();

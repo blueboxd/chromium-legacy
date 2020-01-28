@@ -19,7 +19,7 @@ TEST(PostJobTest, PostJobSimple) {
   test::TaskEnvironment task_environment;
   std::atomic_size_t num_tasks_to_run(4);
   auto handle = experimental::PostJob(
-      FROM_HERE, ThreadPool(),
+      FROM_HERE, {},
       BindLambdaForTesting(
           [&](experimental::JobDelegate* delegate) { --num_tasks_to_run; }),
       BindLambdaForTesting([&]() -> size_t { return num_tasks_to_run; }));

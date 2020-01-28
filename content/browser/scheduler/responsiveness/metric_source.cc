@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/pending_task.h"
-#include "base/task/post_task.h"
 #include "build/build_config.h"
 #include "content/browser/scheduler/responsiveness/message_loop_observer.h"
 #include "content/browser/scheduler/responsiveness/native_event_observer.h"
@@ -33,8 +32,8 @@ void MetricSource::SetUp() {
   RegisterMessageLoopObserverUI();
   native_event_observer_ui_ = CreateNativeEventObserver();
 
-  base::PostTask(
-      FROM_HERE, {content::BrowserThread::IO},
+  content::GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(&MetricSource::SetUpOnIOThread, base::Unretained(this)));
 }
 
@@ -47,8 +46,8 @@ void MetricSource::Destroy(base::ScopedClosureRunner on_finish_destroy) {
   message_loop_observer_ui_.reset();
   native_event_observer_ui_.reset();
 
-  base::PostTask(
-      FROM_HERE, {content::BrowserThread::IO},
+  content::GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(&MetricSource::TearDownOnIOThread, base::Unretained(this),
                      std::move(on_finish_destroy)));
 }
@@ -108,8 +107,8 @@ void MetricSource::TearDownOnIOThread(
 
   message_loop_observer_io_.reset();
 
-  base::PostTask(
-      FROM_HERE, {content::BrowserThread::UI},
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(&MetricSource::TearDownOnUIThread, base::Unretained(this),
                      std::move(on_finish_destroy)));
 }

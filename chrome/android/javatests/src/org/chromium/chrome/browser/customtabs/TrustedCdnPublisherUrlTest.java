@@ -52,6 +52,7 @@ import org.chromium.chrome.browser.test.ScreenShooter;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.components.offlinepages.SavePageResult;
+import org.chromium.components.url_formatter.SchemeDisplay;
 import org.chromium.components.url_formatter.UrlFormatter;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.browser.test.util.Criteria;
@@ -256,7 +257,8 @@ public class TrustedCdnPublisherUrlTest {
         String otherTestUrl = mWebServer.setResponse("/other.html", PAGE_WITH_TITLE, null);
         mCustomTabActivityTestRule.loadUrl(otherTestUrl);
 
-        verifyUrl(UrlFormatter.formatUrlForSecurityDisplayOmitScheme(otherTestUrl));
+        verifyUrl(UrlFormatter.formatUrlForSecurityDisplay(
+                otherTestUrl, SchemeDisplay.OMIT_HTTP_AND_HTTPS));
         // TODO(bauerb): The security icon is updated via an animation. Find a way to reliably
         // disable animations and verify the icon.
     }
@@ -365,7 +367,8 @@ public class TrustedCdnPublisherUrlTest {
         // succeed, but not show a publisher URL.
         String testUrl = mWebServer.getResponseUrl("/test.html");
         mCustomTabActivityTestRule.loadUrl(testUrl);
-        verifyUrl(UrlFormatter.formatUrlForSecurityDisplayOmitScheme(testUrl));
+        verifyUrl(UrlFormatter.formatUrlForSecurityDisplay(
+                testUrl, SchemeDisplay.OMIT_HTTP_AND_HTTPS));
         verifySecurityIcon(R.drawable.ic_offline_pin_24dp);
     }
 
@@ -392,7 +395,8 @@ public class TrustedCdnPublisherUrlTest {
 
         final String expectedUrl;
         if (expectedPublisher == null) {
-            expectedUrl = UrlFormatter.formatUrlForSecurityDisplayOmitScheme(testUrl);
+            expectedUrl = UrlFormatter.formatUrlForSecurityDisplay(
+                    testUrl, SchemeDisplay.OMIT_HTTP_AND_HTTPS);
         } else {
             expectedUrl =
                     String.format(Locale.US, "From %s – delivered by Google", expectedPublisher);

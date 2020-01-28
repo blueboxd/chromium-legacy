@@ -47,20 +47,24 @@ int g_ideal_splash_image_size = -1;
 int g_minimum_splash_image_size = -1;
 int g_ideal_badge_icon_size = -1;
 int g_ideal_adaptive_launcher_icon_size = -1;
+int g_ideal_shortcut_icon_size = -1;
 
 int g_default_rgb_icon_value = 145;
 
-// Retrieves and caches the ideal and minimum sizes of the Home screen icon
-// and the splash screen image.
-void GetHomescreenIconAndSplashImageSizes() {
+// Android allows 4 shortcuts at most, so we should cap the icon fetches.
+constexpr int kMaxShortcutIcons = 4;
+
+// Retrieves and caches the ideal and minimum sizes of the Home screen icon,
+// the splash screen image, and the shortcut icons.
+void GetIconSizes() {
   JNIEnv* env = base::android::AttachCurrentThread();
   ScopedJavaLocalRef<jintArray> java_size_array =
-      Java_ShortcutHelper_getHomeScreenIconAndSplashImageSizes(env);
+      Java_ShortcutHelper_getIconSizes(env);
   std::vector<int> sizes;
   base::android::JavaIntArrayToIntVector(env, java_size_array, &sizes);
 
   // Check that the size returned is what is expected.
-  DCHECK_EQ(6u, sizes.size());
+  DCHECK_EQ(7u, sizes.size());
 
   // This ordering must be kept up to date with the Java ShortcutHelper.
   g_ideal_homescreen_icon_size = sizes[0];
@@ -69,6 +73,7 @@ void GetHomescreenIconAndSplashImageSizes() {
   g_minimum_splash_image_size = sizes[3];
   g_ideal_badge_icon_size = sizes[4];
   g_ideal_adaptive_launcher_icon_size = sizes[5];
+  g_ideal_shortcut_icon_size = sizes[6];
 
   // Try to ensure that the data returned is sane.
   DCHECK(g_minimum_homescreen_icon_size <= g_ideal_homescreen_icon_size);
@@ -172,6 +177,19 @@ std::unique_ptr<ShortcutInfo> ShortcutHelper::CreateShortcutInfo(
           shortcut_info->minimum_splash_image_size_in_px,
           blink::Manifest::ImageResource::Purpose::ANY);
 
+  int ideal_shortcut_icons_size_px = GetIdealShortcutIconSizeInPx();
+  for (const auto& manifest_shortcut : manifest.shortcuts) {
+    GURL best_url = blink::ManifestIconSelector::FindBestMatchingSquareIcon(
+        manifest_shortcut.icons, ideal_shortcut_icons_size_px,
+        ideal_shortcut_icons_size_px,
+        blink::Manifest::ImageResource::Purpose::ANY);
+    if (!best_url.is_valid())
+      continue;
+    shortcut_info->best_shortcut_icon_urls.push_back(std::move(best_url));
+    if (shortcut_info->best_shortcut_icon_urls.size() == kMaxShortcutIcons)
+      break;
+  }
+
   return shortcut_info;
 }
 
@@ -204,38 +222,44 @@ void ShortcutHelper::ShowWebApkInstallInProgressToast() {
 
 int ShortcutHelper::GetIdealHomescreenIconSizeInPx() {
   if (g_ideal_homescreen_icon_size == -1)
-    GetHomescreenIconAndSplashImageSizes();
+    GetIconSizes();
   return g_ideal_homescreen_icon_size;
 }
 
 int ShortcutHelper::GetMinimumHomescreenIconSizeInPx() {
   if (g_minimum_homescreen_icon_size == -1)
-    GetHomescreenIconAndSplashImageSizes();
+    GetIconSizes();
   return g_minimum_homescreen_icon_size;
 }
 
 int ShortcutHelper::GetIdealSplashImageSizeInPx() {
   if (g_ideal_splash_image_size == -1)
-    GetHomescreenIconAndSplashImageSizes();
+    GetIconSizes();
   return g_ideal_splash_image_size;
 }
 
 int ShortcutHelper::GetMinimumSplashImageSizeInPx() {
   if (g_minimum_splash_image_size == -1)
-    GetHomescreenIconAndSplashImageSizes();
+    GetIconSizes();
   return g_minimum_splash_image_size;
 }
 
 int ShortcutHelper::GetIdealBadgeIconSizeInPx() {
   if (g_ideal_badge_icon_size == -1)
-    GetHomescreenIconAndSplashImageSizes();
+    GetIconSizes();
   return g_ideal_badge_icon_size;
 }
 
 int ShortcutHelper::GetIdealAdaptiveLauncherIconSizeInPx() {
   if (g_ideal_adaptive_launcher_icon_size == -1)
-    GetHomescreenIconAndSplashImageSizes();
+    GetIconSizes();
   return g_ideal_adaptive_launcher_icon_size;
+}
+
+int ShortcutHelper::GetIdealShortcutIconSizeInPx() {
+  if (g_ideal_shortcut_icon_size == -1)
+    GetIconSizes();
+  return g_ideal_shortcut_icon_size;
 }
 
 // static
@@ -348,6 +372,11 @@ bool ShortcutHelper::DoesAndroidSupportMaskableIcons() {
   return base::FeatureList::IsEnabled(chrome::android::kWebApkAdaptiveIcon) &&
          base::android::BuildInfo::GetInstance()->sdk_int() >=
              base::android::SDK_VERSION_OREO;
+}
+
+// static
+void ShortcutHelper::SetIdealShortcutSizeForTesting(int size) {
+  g_ideal_shortcut_icon_size = size;
 }
 
 // Callback used by Java when the shortcut has been created.

@@ -7,7 +7,7 @@
 #include <utility>
 
 #include "base/memory/ptr_util.h"
-#include "base/task/post_task.h"
+#include "base/task_runner_util.h"
 #include "content/browser/resource_context_impl.h"
 #include "content/browser/webui/url_data_manager.h"
 #include "content/browser/webui/url_data_manager_backend.h"
@@ -24,7 +24,7 @@ namespace {
 
 URLDataSource* GetSourceForURLHelper(ResourceContext* resource_context,
                                      const GURL& url) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   URLDataSourceImpl* source =
       GetURLDataManagerForResourceContext(resource_context)
@@ -46,7 +46,7 @@ void URLDataSource::GetSourceForURL(
     const GURL& url,
     base::OnceCallback<void(URLDataSource*)> callback) {
   base::PostTaskAndReplyWithResult(
-      FROM_HERE, {content::BrowserThread::IO},
+      GetIOThreadTaskRunner({}).get(), FROM_HERE,
       base::BindOnce(&GetSourceForURLHelper,
                      browser_context->GetResourceContext(), url),
       std::move(callback));
@@ -67,7 +67,7 @@ std::string URLDataSource::URLToRequestPath(const GURL& url) {
 
 scoped_refptr<base::SingleThreadTaskRunner>
 URLDataSource::TaskRunnerForRequestPath(const std::string& path) {
-  return base::CreateSingleThreadTaskRunner({BrowserThread::UI});
+  return GetUIThreadTaskRunner({});
 }
 
 bool URLDataSource::ShouldReplaceExistingSource() {

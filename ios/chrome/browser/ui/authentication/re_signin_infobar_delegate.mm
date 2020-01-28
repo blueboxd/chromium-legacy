@@ -28,7 +28,7 @@
 #endif
 
 // static
-bool ReSignInInfoBarDelegate::Create(ios::ChromeBrowserState* browser_state,
+bool ReSignInInfoBarDelegate::Create(ChromeBrowserState* browser_state,
                                      web::WebState* web_state,
                                      id<SigninPresenter> presenter) {
   DCHECK(web_state);
@@ -47,7 +47,7 @@ bool ReSignInInfoBarDelegate::Create(ios::ChromeBrowserState* browser_state,
 // static
 std::unique_ptr<infobars::InfoBar> ReSignInInfoBarDelegate::CreateInfoBar(
     infobars::InfoBarManager* infobar_manager,
-    ios::ChromeBrowserState* browser_state,
+    ChromeBrowserState* browser_state,
     id<SigninPresenter> presenter) {
   DCHECK(infobar_manager);
   std::unique_ptr<ReSignInInfoBarDelegate> delegate =
@@ -60,7 +60,7 @@ std::unique_ptr<infobars::InfoBar> ReSignInInfoBarDelegate::CreateInfoBar(
 // static
 std::unique_ptr<ReSignInInfoBarDelegate>
 ReSignInInfoBarDelegate::CreateInfoBarDelegate(
-    ios::ChromeBrowserState* browser_state,
+    ChromeBrowserState* browser_state,
     id<SigninPresenter> presenter) {
   DCHECK(browser_state);
   // Do not ask user to sign in if current profile is incognito.
@@ -84,7 +84,7 @@ ReSignInInfoBarDelegate::CreateInfoBarDelegate(
 }
 
 ReSignInInfoBarDelegate::ReSignInInfoBarDelegate(
-    ios::ChromeBrowserState* browser_state,
+    ChromeBrowserState* browser_state,
     id<SigninPresenter> presenter)
     : browser_state_(browser_state),
       icon_([UIImage imageNamed:@"infobar_warning"]),

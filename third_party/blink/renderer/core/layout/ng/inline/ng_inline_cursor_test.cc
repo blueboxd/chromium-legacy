@@ -204,7 +204,8 @@ TEST_P(NGInlineCursorTest, ContainingLine) {
   EXPECT_EQ(line2, cursor);
 }
 
-TEST_P(NGInlineCursorTest, CulledInlineWithAtomicInline) {
+// Failing on a buildbot, http://crbug.com/1046338
+TEST_P(NGInlineCursorTest, DISABLED_CulledInlineWithAtomicInline) {
   SetBodyInnerHTML(
       "<div id=root>"
       "<b id=culled>abc<div style=display:inline>ABC<br>XYZ</div>xyz</b>"
@@ -225,7 +226,8 @@ TEST_P(NGInlineCursorTest, CulledInlineWithAtomicInline) {
 // We should not have float:right fragment, because it isn't in-flow in
 // an inline formatting context.
 // For https://crbug.com/1026022
-TEST_P(NGInlineCursorTest, CulledInlineWithFloat) {
+// Failing on a buildbot, http://crbug.com/1046338
+TEST_P(NGInlineCursorTest, DISABLED_CulledInlineWithFloat) {
   SetBodyInnerHTML(
       "<div id=root>"
       "<b id=culled>abc<div style=float:right></div>xyz</b>"

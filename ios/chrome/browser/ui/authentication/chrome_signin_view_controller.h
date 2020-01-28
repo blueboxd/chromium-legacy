@@ -11,12 +11,12 @@
 
 #include "base/auto_reset.h"
 #include "base/timer/timer.h"
-#include "ios/chrome/browser/browser_state/chrome_browser_state_forward.h"
 #import "ios/chrome/browser/signin/constants.h"
 
 @protocol ApplicationCommands;
 @protocol BrowsingDataCommands;
 class Browser;
+class ChromeBrowserState;
 @class ChromeIdentity;
 @class ChromeSigninViewController;
 
@@ -105,7 +105,7 @@ using TimerGeneratorBlock = std::unique_ptr<base::OneShotTimer> (^)();
 @interface ChromeSigninViewController (Subclassing)
 
 @property(nonatomic, readonly) Browser* browser;
-@property(nonatomic, readonly) ios::ChromeBrowserState* browserState;
+@property(nonatomic, readonly) ChromeBrowserState* browserState;
 
 // Vertical padding used underneath buttons. Default value is 18.
 @property(nonatomic, assign) CGFloat buttonVerticalPadding;

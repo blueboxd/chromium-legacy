@@ -595,7 +595,7 @@ TEST_P(ThreadGroupTest, ScheduleJobTaskSource) {
       }),
       /* num_tasks_to_run */ kMaxTasks);
   scoped_refptr<JobTaskSource> task_source = job_task->GetJobTaskSource(
-      FROM_HERE, ThreadPool(), &mock_pooled_task_runner_delegate_);
+      FROM_HERE, {}, &mock_pooled_task_runner_delegate_);
 
   auto registered_task_source =
       task_tracker_.RegisterTaskSource(std::move(task_source));
@@ -627,7 +627,7 @@ TEST_P(ThreadGroupTest, ScheduleJobTaskSourceMultipleTime) {
           }),
       /* num_tasks_to_run */ 1);
   scoped_refptr<JobTaskSource> task_source = job_task->GetJobTaskSource(
-      FROM_HERE, ThreadPool(), &mock_pooled_task_runner_delegate_);
+      FROM_HERE, {}, &mock_pooled_task_runner_delegate_);
 
   thread_group_->PushTaskSourceAndWakeUpWorkers(
       TransactionWithRegisteredTaskSource::FromTaskSource(
@@ -676,7 +676,7 @@ TEST_P(ThreadGroupTest, CancelJobTaskSource) {
       }),
       /* num_tasks_to_run */ kTooManyTasks);
   scoped_refptr<JobTaskSource> task_source = job_task->GetJobTaskSource(
-      FROM_HERE, {ThreadPool()}, &mock_pooled_task_runner_delegate_);
+      FROM_HERE, {}, &mock_pooled_task_runner_delegate_);
 
   mock_pooled_task_runner_delegate_.EnqueueJobTaskSource(task_source);
   experimental::JobHandle job_handle =
@@ -717,7 +717,7 @@ TEST_P(ThreadGroupTest, JobTaskSourceConcurrencyIncrease) {
       }),
       /* num_tasks_to_run */ kMaxTasks / 2);
   auto task_source = job_state->GetJobTaskSource(
-      FROM_HERE, ThreadPool(), &mock_pooled_task_runner_delegate_);
+      FROM_HERE, {}, &mock_pooled_task_runner_delegate_);
 
   auto registered_task_source = task_tracker_.RegisterTaskSource(task_source);
   EXPECT_TRUE(registered_task_source);
@@ -756,7 +756,7 @@ TEST_P(ThreadGroupTest, ScheduleEmptyJobTaskSource) {
       BindRepeating([](experimental::JobDelegate*) { ShouldNotRun(); }),
       /* num_tasks_to_run */ 1);
   scoped_refptr<JobTaskSource> task_source = job_task->GetJobTaskSource(
-      FROM_HERE, ThreadPool(), &mock_pooled_task_runner_delegate_);
+      FROM_HERE, {}, &mock_pooled_task_runner_delegate_);
 
   auto registered_task_source =
       task_tracker_.RegisterTaskSource(std::move(task_source));
@@ -792,7 +792,7 @@ TEST_P(ThreadGroupTest, JoinJobTaskSource) {
       }),
       /* num_tasks_to_run */ kMaxTasks + 1);
   scoped_refptr<JobTaskSource> task_source = job_task->GetJobTaskSource(
-      FROM_HERE, {ThreadPool()}, &mock_pooled_task_runner_delegate_);
+      FROM_HERE, {}, &mock_pooled_task_runner_delegate_);
 
   mock_pooled_task_runner_delegate_.EnqueueJobTaskSource(task_source);
   experimental::JobHandle job_handle =
@@ -835,9 +835,9 @@ TEST_P(ThreadGroupTest, JobTaskSourceUpdatePriority) {
         }
       }),
       /* num_tasks_to_run */ kMaxTasks);
-  scoped_refptr<JobTaskSource> task_source = job_task->GetJobTaskSource(
-      FROM_HERE, {ThreadPool(), TaskPriority::BEST_EFFORT},
-      &mock_pooled_task_runner_delegate_);
+  scoped_refptr<JobTaskSource> task_source =
+      job_task->GetJobTaskSource(FROM_HERE, {TaskPriority::BEST_EFFORT},
+                                 &mock_pooled_task_runner_delegate_);
 
   auto registered_task_source = task_tracker_.RegisterTaskSource(task_source);
   EXPECT_TRUE(registered_task_source);

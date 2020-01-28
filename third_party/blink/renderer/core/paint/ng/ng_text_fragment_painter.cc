@@ -386,7 +386,6 @@ void NGTextFragmentPainter<Cursor>::Paint(const PaintInfo& paint_info,
       GetTextFragmentPaintInfo(cursor_);
   const LayoutObject* layout_object = text_item.GetLayoutObject();
   const ComputedStyle& style = text_item.Style();
-  PhysicalRect box_rect = AsDisplayItemClient(cursor_).Rect();
   const Document& document = layout_object->GetDocument();
   const bool is_printing = paint_info.IsPrinting();
 
@@ -424,6 +423,12 @@ void NGTextFragmentPainter<Cursor>::Paint(const PaintInfo& paint_info,
                      paint_info.phase);
   }
 
+  // We round the y-axis to ensure consistent line heights.
+  PhysicalRect box_rect = AsDisplayItemClient(cursor_).Rect();
+  PhysicalOffset adjusted_paint_offset(paint_offset.left,
+                                       LayoutUnit(paint_offset.top.Round()));
+  box_rect.offset += adjusted_paint_offset;
+
   if (UNLIKELY(text_item.IsSymbolMarker())) {
     // The NGInlineItem of marker might be Split(). To avoid calling PaintSymbol
     // multiple times, only call it the first time. For an outside marker, this
@@ -436,14 +441,9 @@ void NGTextFragmentPainter<Cursor>::Paint(const PaintInfo& paint_info,
         return;
     }
     PaintSymbol(layout_object, style, box_rect.size, paint_info,
-                paint_offset + box_rect.offset);
+                box_rect.offset);
     return;
   }
-
-  // We round the y-axis to ensure consistent line heights.
-  PhysicalOffset adjusted_paint_offset(paint_offset.left,
-                                       LayoutUnit(paint_offset.top.Round()));
-  box_rect.offset += adjusted_paint_offset;
 
   GraphicsContext& context = paint_info.context;
 

@@ -35,8 +35,6 @@ class SingleThreadTaskRunner;
 
 namespace viz {
 
-class CompositorFrameSinkSupport;
-class FrameSinkManagerImpl;
 class SurfaceInfo;
 
 enum class ReportFirstSurfaceActivation { kYes, kNo };
@@ -58,7 +56,7 @@ class VIZ_HOST_EXPORT HostFrameSinkManager
   }
 
   // Sets a local FrameSinkManagerImpl instance and connects directly to it.
-  void SetLocalManager(FrameSinkManagerImpl* frame_sink_manager_impl);
+  void SetLocalManager(mojom::FrameSinkManager* frame_sink_manager);
 
   // Binds |this| as a FrameSinkManagerClient for |receiver| on |task_runner|.
   // On Mac |task_runner| will be the resize helper task runner. May only be
@@ -189,12 +187,6 @@ class VIZ_HOST_EXPORT HostFrameSinkManager
   void AddHitTestRegionObserver(HitTestRegionObserver* observer);
   void RemoveHitTestRegionObserver(HitTestRegionObserver* observer);
 
-  // TODO(crbug.com/1033683): Remove test usage and delete function.
-  std::unique_ptr<CompositorFrameSinkSupport> CreateCompositorFrameSinkSupport(
-      mojom::CompositorFrameSinkClient* client,
-      const FrameSinkId& frame_sink_id,
-      bool is_root);
-
   void SetHitTestAsyncQueriedDebugRegions(
       const FrameSinkId& root_frame_sink_id,
       const std::vector<FrameSinkId>& hit_test_async_queried_debug_queue);
@@ -268,22 +260,14 @@ class VIZ_HOST_EXPORT HostFrameSinkManager
       const FrameSinkId& frame_sink_id,
       const std::vector<AggregatedHitTestRegion>& hit_test_data) override;
 
-  // This will point to |frame_sink_manager_remote_| if using Mojo or
-  // |frame_sink_manager_impl_| if directly connected. Use this to make function
+  // This will point to |frame_sink_manager_remote_| if using mojo or it may
+  // point directly at FrameSinkManagerImpl in tests. Use this to make function
   // calls.
   mojom::FrameSinkManager* frame_sink_manager_ = nullptr;
 
-  // Mojo connection to the FrameSinkManager. If this is bound then
-  // |frame_sink_manager_impl_| must be null.
+  // Connections to/from FrameSinkManagerImpl.
   mojo::Remote<mojom::FrameSinkManager> frame_sink_manager_remote_;
-
-  // Mojo connection back from the FrameSinkManager.
   mojo::Receiver<mojom::FrameSinkManagerClient> receiver_{this};
-
-  // A direct connection to FrameSinkManagerImpl. If this is set then
-  // |frame_sink_manager_remote_| must be unbound. For use in browser process
-  // only, viz process should not set this.
-  FrameSinkManagerImpl* frame_sink_manager_impl_ = nullptr;
 
   // Per CompositorFrameSink data.
   std::unordered_map<FrameSinkId, FrameSinkData, FrameSinkIdHash>

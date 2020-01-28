@@ -16,6 +16,7 @@ import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelTextViewInflater;
+import org.chromium.components.url_formatter.SchemeDisplay;
 import org.chromium.components.url_formatter.UrlFormatter;
 import org.chromium.ui.resources.dynamics.DynamicResourceLoader;
 
@@ -79,8 +80,8 @@ public class EphemeralTabCaptionControl extends OverlayPanelTextViewInflater {
                 // |mCaption| gets initialized synchronously in |onFinishInflate|.
                 inflate();
                 if (OverlayPanel.isNewLayout()) {
-                    mCaption.setText(
-                            UrlFormatter.formatUrlForSecurityDisplayOmitScheme(mUrl.get()));
+                    mCaption.setText(UrlFormatter.formatUrlForSecurityDisplay(
+                            mUrl.get(), SchemeDisplay.OMIT_HTTP_AND_HTTPS));
                 } else {
                     mCaption.setText(R.string.contextmenu_open_in_new_tab);
                 }

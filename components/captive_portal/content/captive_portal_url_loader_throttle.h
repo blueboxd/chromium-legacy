@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CAPTIVE_PORTAL_CAPTIVE_PORTAL_URL_LOADER_THROTTLE_H_
-#define CHROME_BROWSER_CAPTIVE_PORTAL_CAPTIVE_PORTAL_URL_LOADER_THROTTLE_H_
+#ifndef COMPONENTS_CAPTIVE_PORTAL_CONTENT_CAPTIVE_PORTAL_URL_LOADER_THROTTLE_H_
+#define COMPONENTS_CAPTIVE_PORTAL_CONTENT_CAPTIVE_PORTAL_URL_LOADER_THROTTLE_H_
 
 #include "content/public/browser/web_contents.h"
 #include "third_party/blink/public/common/loader/url_loader_throttle.h"
@@ -25,4 +25,4 @@ class CaptivePortalURLLoaderThrottle : public blink::URLLoaderThrottle {
   bool is_captive_portal_window_;
 };
 
-#endif  // CHROME_BROWSER_CAPTIVE_PORTAL_CAPTIVE_PORTAL_URL_LOADER_THROTTLE_H_
+#endif  // COMPONENTS_CAPTIVE_PORTAL_CONTENT_CAPTIVE_PORTAL_URL_LOADER_THROTTLE_H_

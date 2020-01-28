@@ -5526,7 +5526,7 @@ crbug.com/941471 external/wpt/css/css-transforms/transform-flattening-001.html [
 crbug.com/836242 [ Linux ] fast/loader/reload-zero-byte-plugin.html [ Pass Failure ]
 crbug.com/836242 [ Mac ] fast/loader/reload-zero-byte-plugin.html [ Pass Failure ]
 crbug.com/836242 [ Win ] fast/loader/reload-zero-byte-plugin.html [ Pass Failure ]
-crbug.com/806357 virtual/threaded/fast/events/pointerevents/pinch/pointerevent_touch-action-pinch_zoom_touch.html [ Pass Failure Crash ]
+crbug.com/806357 virtual/threaded/fast/events/pointerevents/pinch/pointerevent_touch-action-pinch_zoom_touch.html [ Pass Failure Crash Timeout ]
 crbug.com/941931 [ Linux ] http/tests/security/contentSecurityPolicy/1.1/plugintypes-affects-cross-site-child-disallowed.html [ Pass Failure ]
 crbug.com/941931 [ Win ] http/tests/security/contentSecurityPolicy/1.1/plugintypes-affects-cross-site-child-disallowed.html [ Pass Failure ]
 crbug.com/942134 [ Win ] virtual/exotic-color-space/images/feature-policy-oversized-images.html [ Pass Failure ]
@@ -6275,9 +6275,6 @@ crbug.com/1030746 http/tests/devtools/network/load-resource-for-frontend.js [ Pa
 # Disable for landing devtools changes
 crbug.com/1006759 http/tests/devtools/console/argument-hints.js [ Pass Failure ]
 
-# Disable for landing devtools changes
-crbug.com/1010534 http/tests/devtools/profiler/agents-disabled-check.js [ Pass Failure ]
-
 # Failing origin trial for css proeprties test
 crbug.com/1041993 http/tests/origin_trials/sample-api-script-added-after-css-declaration.html [ Failure ]
 virtual/omt-worker-fetch/http/tests/origin_trials/sample-api-script-added-after-css-declaration.html [ Failure ]
@@ -6302,7 +6299,6 @@ crbug.com/1043774 [ Linux ] virtual/web-components-v0-disabled/external/wpt/html
 # Sheriff 2020-01-22
 crbug.com/1044567 [ Mac10.10 ] media/video-colorspace-yuv420.html [ Pass Failure ]
 crbug.com/1044567 [ Mac10.10 ] virtual/audio-service/media/video-colorspace-yuv420.html [ Pass Failure ]
-crbug.com/1044568 [ Mac10.11 ] virtual/cascade/fast/forms/calendar-picker/calendar-picker-appearance-zoom125.html [ Pass Failure ]
 crbug.com/1044712 [ Win ] fast/forms/suggestion-picker/datetimelocal-suggestion-picker-appearance-with-scroll-bar.html [ Pass Failure ]
 crbug.com/1044712 [ Win ] fast/forms/suggestion-picker/month-suggestion-picker-appearance-with-scroll-bar.html [ Pass Failure ]
 crbug.com/1044712 [ Win ] fast/forms/suggestion-picker/time-suggestion-picker-appearance-locale-hebrew.html [ Pass Failure ]
@@ -6417,8 +6413,8 @@ crbug.com/1044418 [ Release Mac ] http/tests/devtools/elements/shadow/elements-p
 
 crbug.com/1045260 external/wpt/IndexedDB/keypath-exceptions.htm [ Pass Failure ]
 
-crbug.com/1045472 [ Win ] external/wpt/WebCryptoAPI/wrapKey_unwrapKey/test_wrapKey_unwrapKey.https.html [ Pass Failure ]
-crbug.com/1045472 [ Win ] external/wpt/WebCryptoAPI/wrapKey_unwrapKey/wrapKey_unwrapKey.https.worker.html [ Pass Failure ]
+crbug.com/1045472 external/wpt/WebCryptoAPI/wrapKey_unwrapKey/test_wrapKey_unwrapKey.https.html [ Pass Failure ]
+crbug.com/1045472 external/wpt/WebCryptoAPI/wrapKey_unwrapKey/wrapKey_unwrapKey.https.worker.html [ Pass Failure ]
 
 crbug.com/1045510 [ Win7 ] fast/forms/suggestion-picker/time-suggestion-picker-appearance.html [ Pass Failure ]
 crbug.com/1045510 [ Win7 ] fast/forms/suggestion-picker/week-suggestion-picker-appearance-with-scroll-bar.html [ Pass Failure ]
@@ -6446,3 +6442,10 @@ crbug.com/1043086 http/tests/devtools/elements/styles-1/add-new-rule-inline-styl
 crbug.com/1043085 http/tests/devtools/elements/accessibility/edit-aria-attributes.js [ Pass Failure ]
 crbug.com/1043044 http/tests/devtools/elements/styles-3/styles-disable-then-enable-overriden-ua.js [ Pass Failure ]
 crbug.com/1043043 http/tests/devtools/elements/styles-4/styles-inline-element-style-changes-should-not-force-style-recalc.js [ Pass Failure ]
+
+# Sheriff 2020-01-28
+crbug.com/1046201 [ Mac ] fast/forms/calendar-picker/calendar-picker-appearance-zoom125.html [ Pass Failure ]
+crbug.com/1046201 [ Mac ] virtual/cascade/fast/forms/calendar-picker/calendar-picker-appearance-zoom125.html [ Pass Failure ]
+crbug.com/1046201 [ Win10 ] virtual/cascade/fast/forms/calendar-picker/calendar-picker-appearance-zoom125.html [ Pass Failure ]
+crbug.com/1046256 fast/events/popup-blocking-timers6.html [ Pass Failure Timeout ]
+crbug.com/1046256 virtual/mouseevent_fractional/fast/events/popup-blocking-timers6.html [ Pass Failure Timeout ]

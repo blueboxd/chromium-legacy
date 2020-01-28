@@ -4481,8 +4481,6 @@ jumbo_static_library("browser") {
     sources += [
       "captive_portal/captive_portal_service_factory.cc",
       "captive_portal/captive_portal_service_factory.h",
-      "captive_portal/captive_portal_url_loader_throttle.cc",
-      "captive_portal/captive_portal_url_loader_throttle.h",
       "ssl/captive_portal_metrics_recorder.cc",
       "ssl/captive_portal_metrics_recorder.h",
     ]

@@ -70,10 +70,7 @@ ExtensionFunction::ResponseAction InstanceIDApiFunction::Run() {
 }
 
 bool InstanceIDApiFunction::IsEnabled() const {
-  Profile* profile = Profile::FromBrowserContext(browser_context());
-
-  return instance_id::InstanceIDProfileService::IsInstanceIDEnabled(
-      profile->GetPrefs());
+  return instance_id::InstanceIDProfileService::IsInstanceIDEnabled();
 }
 
 instance_id::InstanceID* InstanceIDApiFunction::GetInstanceID() const {

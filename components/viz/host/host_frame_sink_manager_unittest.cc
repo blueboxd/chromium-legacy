@@ -13,19 +13,18 @@
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "components/viz/common/surfaces/surface_id.h"
 #include "components/viz/common/surfaces/surface_info.h"
-#include "components/viz/service/display_embedder/server_shared_bitmap_manager.h"
-#include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
-#include "components/viz/service/surfaces/surface_manager.h"
 #include "components/viz/test/compositor_frame_helpers.h"
 #include "components/viz/test/fake_host_frame_sink_client.h"
 #include "components/viz/test/fake_surface_observer.h"
 #include "components/viz/test/mock_compositor_frame_sink_client.h"
 #include "components/viz/test/mock_display_client.h"
+#include "components/viz/test/test_frame_sink_manager.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/viz/privileged/mojom/compositing/frame_sink_manager.mojom.h"
+#include "services/viz/public/mojom/compositing/compositor_frame_sink.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -37,10 +36,6 @@ namespace {
 constexpr FrameSinkId kFrameSinkParent1(1, 1);
 constexpr FrameSinkId kFrameSinkParent2(2, 1);
 constexpr FrameSinkId kFrameSinkChild1(3, 1);
-
-ACTION_P(InvokeClosure, closure) {
-  closure.Run();
-}
 
 // Holds the four interface objects needed to create a RootCompositorFrameSink.
 struct RootCompositorFrameSinkData {
@@ -65,10 +60,9 @@ struct RootCompositorFrameSinkData {
 };
 
 // A mock implementation of mojom::FrameSinkManager.
-class MockFrameSinkManagerImpl : public FrameSinkManagerImpl {
+class MockFrameSinkManagerImpl : public TestFrameSinkManagerImpl {
  public:
-  explicit MockFrameSinkManagerImpl(SharedBitmapManager* shared_bitmap_manager)
-      : FrameSinkManagerImpl(shared_bitmap_manager) {}
+  MockFrameSinkManagerImpl() = default;
   ~MockFrameSinkManagerImpl() override = default;
 
   // mojom::FrameSinkManager:
@@ -78,15 +72,10 @@ class MockFrameSinkManagerImpl : public FrameSinkManagerImpl {
   MOCK_METHOD2(SetFrameSinkDebugLabel,
                void(const FrameSinkId& frame_sink_id,
                     const std::string& debug_label));
-  // Work around for gmock not supporting move-only types.
-  void CreateCompositorFrameSink(
-      const FrameSinkId& frame_sink_id,
-      mojo::PendingReceiver<mojom::CompositorFrameSink> receiver,
-      mojo::PendingRemote<mojom::CompositorFrameSinkClient> client) override {
-    MockCreateCompositorFrameSink(frame_sink_id);
-  }
-  MOCK_METHOD1(MockCreateCompositorFrameSink,
-               void(const FrameSinkId& frame_sink_id));
+  MOCK_METHOD3(CreateCompositorFrameSink,
+               void(const FrameSinkId&,
+                    mojo::PendingReceiver<mojom::CompositorFrameSink>,
+                    mojo::PendingRemote<mojom::CompositorFrameSinkClient>));
   void CreateRootCompositorFrameSink(
       mojom::RootCompositorFrameSinkParamsPtr params) override {
     MockCreateRootCompositorFrameSink(params->frame_sink_id);
@@ -105,9 +94,6 @@ class MockFrameSinkManagerImpl : public FrameSinkManagerImpl {
                void(const FrameSinkId& parent, const FrameSinkId& child));
   MOCK_METHOD2(UnregisterFrameSinkHierarchy,
                void(const FrameSinkId& parent, const FrameSinkId& child));
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockFrameSinkManagerImpl);
 };
 
 }  // namespace
@@ -151,8 +137,7 @@ class HostFrameSinkManagerTest : public testing::Test {
     DCHECK(!manager_impl_);
 
     manager_impl_ =
-        std::make_unique<testing::NiceMock<MockFrameSinkManagerImpl>>(
-            &shared_bitmap_manager_);
+        std::make_unique<testing::NiceMock<MockFrameSinkManagerImpl>>();
 
     mojo::PendingRemote<mojom::FrameSinkManager> frame_sink_manager;
     mojo::PendingReceiver<mojom::FrameSinkManager> frame_sink_manager_receiver =
@@ -166,13 +151,11 @@ class HostFrameSinkManagerTest : public testing::Test {
     host_manager_.BindAndSetManager(
         std::move(frame_sink_manager_client_receiver), nullptr,
         std::move(frame_sink_manager));
-    manager_impl_->BindAndSetClient(std::move(frame_sink_manager_receiver),
-                                    nullptr,
-                                    std::move(frame_sink_manager_client));
+    manager_impl_->BindReceiver(std::move(frame_sink_manager_receiver),
+                                std::move(frame_sink_manager_client));
   }
 
  protected:
-  ServerSharedBitmapManager shared_bitmap_manager_;
   HostFrameSinkManager host_manager_;
   std::unique_ptr<testing::NiceMock<MockFrameSinkManagerImpl>> manager_impl_;
 
@@ -194,7 +177,7 @@ TEST_F(HostFrameSinkManagerTest, CreateCompositorFrameSinks) {
 
   MockCompositorFrameSinkClient compositor_frame_sink_client;
   mojo::Remote<mojom::CompositorFrameSink> compositor_frame_sink;
-  EXPECT_CALL(impl(), MockCreateCompositorFrameSink(kFrameSinkChild1));
+  EXPECT_CALL(impl(), CreateCompositorFrameSink(kFrameSinkChild1, _, _));
   host().CreateCompositorFrameSink(
       kFrameSinkChild1, compositor_frame_sink.BindNewPipeAndPassReceiver(),
       compositor_frame_sink_client.BindInterfaceRemote());
@@ -373,7 +356,7 @@ TEST_F(HostFrameSinkManagerTest, RestartOnGpuCrash) {
 
   MockCompositorFrameSinkClient compositor_frame_sink_client;
   mojo::Remote<mojom::CompositorFrameSink> compositor_frame_sink;
-  EXPECT_CALL(impl(), MockCreateCompositorFrameSink(kFrameSinkChild1));
+  EXPECT_CALL(impl(), CreateCompositorFrameSink(kFrameSinkChild1, _, _));
   host().CreateCompositorFrameSink(
       kFrameSinkChild1, compositor_frame_sink.BindNewPipeAndPassReceiver(),
       compositor_frame_sink_client.BindInterfaceRemote());
@@ -481,7 +464,7 @@ TEST_F(HostFrameSinkManagerTest, ContextLossRecreateNonRoot) {
       compositor_frame_sink_client1.BindInterfaceRemote());
 
   // Verify CompositorFrameSink was created on other end of message pipe.
-  EXPECT_CALL(impl(), MockCreateCompositorFrameSink(kFrameSinkChild1));
+  EXPECT_CALL(impl(), CreateCompositorFrameSink(kFrameSinkChild1, _, _));
   FlushHostAndVerifyExpectations();
 
   // Create a new CompositorFrameSink and try to connect it with the same
@@ -494,7 +477,7 @@ TEST_F(HostFrameSinkManagerTest, ContextLossRecreateNonRoot) {
 
   // Verify CompositorFrameSink is destroyed and then recreated.
   EXPECT_CALL(impl(), MockDestroyCompositorFrameSink(kFrameSinkChild1));
-  EXPECT_CALL(impl(), MockCreateCompositorFrameSink(kFrameSinkChild1));
+  EXPECT_CALL(impl(), CreateCompositorFrameSink(kFrameSinkChild1, _, _));
   FlushHostAndVerifyExpectations();
 }
 

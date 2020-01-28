@@ -37,10 +37,8 @@ enum MessageType {
 }
 
 // Message for sending between devices in Sharing.
-// Next tag: 16
+// Next tag: 15
 message SharingMessage {
-  reserved 12;
-
   // Identifier of sender. required except for AckMessage.
   string sender_guid = 1;
 
@@ -64,9 +62,9 @@ message SharingMessage {
     // message. optional.
     FCMChannelConfiguration fcm_channel_configuration = 6;
 
-    // Opaque server channel configuration. Ack message will be delivered
-    // through server channel. optional.
-    bytes server_channel_configuration = 15;
+    // Server channel configuration. Ack message will be delivered through
+    // server channel. optional.
+    ServerChannelConfiguration server_channel_configuration = 12;
   }
 
   // The name of the device sending this message. optional.
@@ -119,6 +117,21 @@ message FCMChannelConfiguration {
 
   // Auth secret key required for RFC 8291 using sender ID.
   bytes sender_id_auth_secret = 6;
+}
+
+// Server channel configuration. Message will be delivered through server
+// channel.
+message ServerChannelConfiguration {
+  reserved 1, 2;
+
+  // Opaque server channel configuration. required.
+  bytes configuration = 3;
+
+  // Subscription public key required for RFC 8291 using VAPID key. required.
+  bytes p256dh = 4;
+
+  // Auth secret key required for RFC 8291 using VAPID key. required.
+  bytes auth_secret = 5;
 }
 
 // Request for Sharing Discovery.

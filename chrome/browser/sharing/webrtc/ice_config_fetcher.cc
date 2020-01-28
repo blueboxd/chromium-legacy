@@ -98,7 +98,7 @@ void IceConfigFetcher::OnIceServersResponse(
   if (IsLoaderSuccessful(url_loader_.get()) && response_body)
     ice_servers = ParseIceConfigJson(*response_body);
 
-  LogWebRtcIceConfigFetched(ice_servers.size());
+  sharing::LogWebRtcIceConfigFetched(ice_servers.size());
 
   if (ice_servers.empty())
     ice_servers = GetDefaultIceServers();

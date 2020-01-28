@@ -121,11 +121,6 @@ void GCMProfileService::IdentityObserver::StartAccountTracker(
 
 #endif  // !BUILDFLAG(USE_GCM_FROM_PLATFORM)
 
-// static
-bool GCMProfileService::IsGCMEnabled(PrefService* prefs) {
-  return true;
-}
-
 #if BUILDFLAG(USE_GCM_FROM_PLATFORM)
 GCMProfileService::GCMProfileService(
     base::FilePath path,

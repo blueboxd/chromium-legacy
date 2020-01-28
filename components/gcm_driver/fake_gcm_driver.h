@@ -34,8 +34,6 @@ class FakeGCMDriver : public GCMDriver {
   void OnSignedOut() override;
   void AddConnectionObserver(GCMConnectionObserver* observer) override;
   void RemoveConnectionObserver(GCMConnectionObserver* observer) override;
-  void Enable() override;
-  void Disable() override;
   GCMClient* GetGCMClientForTesting() const override;
   bool IsStarted() const override;
   bool IsConnected() const override;

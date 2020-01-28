@@ -6,9 +6,12 @@
 
 #include "base/bind_helpers.h"
 #include "base/test/bind_test_util.h"
+#include "base/test/metrics/histogram_tester.h"
+#include "base/time/time.h"
 #include "chrome/browser/sharing/fake_device_info.h"
 #include "chrome/browser/sharing/fake_sharing_handler_registry.h"
 #include "chrome/browser/sharing/proto/sharing_message.pb.h"
+#include "chrome/browser/sharing/sharing_constants.h"
 #include "chrome/browser/sharing/sharing_message_handler.h"
 #include "chrome/browser/sharing/webrtc/webrtc_signalling_host_fcm.h"
 #include "chrome/services/sharing/public/mojom/webrtc.mojom.h"
@@ -98,6 +101,9 @@ std::vector<uint8_t> SerializeMessage(
   return serialized_message;
 }
 
+// Metric names
+const char kWebRtcTimeout[] = "Sharing.WebRtc.Timeout";
+
 }  // namespace
 
 class SharingWebRtcConnectionHostTest : public testing::Test {
@@ -146,14 +152,30 @@ class SharingWebRtcConnectionHostTest : public testing::Test {
             }));
   }
 
+  void WaitForConnectionClosed() {
+    base::RunLoop run_loop;
+    EXPECT_CALL(*this, ConnectionClosed(testing::_))
+        .WillOnce(testing::InvokeWithoutArgs([&]() { run_loop.Quit(); }));
+    run_loop.Run();
+  }
+
+  void WaitForMojoDisconnect() {
+    base::RunLoop run_loop;
+    mock_service_.delegate.set_disconnect_handler(run_loop.QuitClosure());
+    run_loop.Run();
+    EXPECT_FALSE(mock_service_.delegate.is_connected());
+  }
+
  protected:
-  content::BrowserTaskEnvironment task_environment_;
+  content::BrowserTaskEnvironment task_environment_{
+      base::test::TaskEnvironment::TimeSource::MOCK_TIME};
   MockSharingMessageHandler message_handler_;
   MockSharingMessageHandler ack_message_handler_;
   MockSharingMojoService mock_service_;
   FakeSharingHandlerRegistry handler_registry_;
   MockSignallingHost* signalling_host_;
   std::unique_ptr<SharingWebRtcConnectionHost> host_;
+  base::HistogramTester histograms_;
 };
 
 TEST_F(SharingWebRtcConnectionHostTest, OnMessageReceived) {
@@ -247,4 +269,79 @@ TEST_F(SharingWebRtcConnectionHostTest, ConnectionClosed) {
   // lost. This also happens if the Sharing service closes the connection.
   mock_service_.socket_manager.reset();
   run_loop.Run();
+}
+
+TEST_F(SharingWebRtcConnectionHostTest, ConnectionTimeout) {
+  base::TimeTicks start_time = task_environment_.NowTicks();
+
+  // Simply wait for the connection to be force closed.
+  WaitForConnectionClosed();
+
+  base::TimeTicks end_time = task_environment_.NowTicks();
+  EXPECT_EQ(start_time + kSharingWebRtcTimeout, end_time);
+  histograms_.ExpectUniqueSample(kWebRtcTimeout,
+                                 sharing::WebRtcTimeoutState::kConnecting, 1);
+}
+
+TEST_F(SharingWebRtcConnectionHostTest, ConnectionTimeout_OnMessageReceived) {
+  // Wait for some time before receiving the first message.
+  task_environment_.FastForwardBy(kSharingWebRtcTimeout / 2);
+
+  base::TimeTicks start_time = task_environment_.NowTicks();
+
+  // Expect the message handler to be called but don't call the callback.
+  EXPECT_CALL(message_handler_, OnMessage(testing::_, testing::_));
+  host_->OnMessageReceived(SerializeMessage(CreateMessage()));
+
+  // The call to OnMessageReceived should have reset the timer.
+  WaitForConnectionClosed();
+  base::TimeTicks end_time = task_environment_.NowTicks();
+  EXPECT_EQ(start_time + kSharingWebRtcTimeout, end_time);
+  histograms_.ExpectUniqueSample(
+      kWebRtcTimeout, sharing::WebRtcTimeoutState::kMessageReceived, 1);
+}
+
+TEST_F(SharingWebRtcConnectionHostTest, ConnectionTimeout_OnConnectionClosing) {
+  // Wait for some time before receiving the first message.
+  task_environment_.FastForwardBy(kSharingWebRtcTimeout / 2);
+
+  // Receive an Ack message that will start closing the connection.
+  ExpectOnMessage(&ack_message_handler_);
+  host_->OnMessageReceived(SerializeMessage(CreateAckMessage()));
+
+  // The timer should reset when closing the connection.
+  base::TimeTicks start_time = task_environment_.NowTicks();
+  WaitForConnectionClosed();
+  base::TimeTicks end_time = task_environment_.NowTicks();
+  histograms_.ExpectUniqueSample(
+      kWebRtcTimeout, sharing::WebRtcTimeoutState::kDisconnecting, 1);
+
+  EXPECT_EQ(start_time + kSharingWebRtcTimeout, end_time);
+}
+
+TEST_F(SharingWebRtcConnectionHostTest, ConnectionTimeout_SendMessage) {
+  // Wait for some time before sending the first message.
+  task_environment_.FastForwardBy(kSharingWebRtcTimeout / 2);
+
+  base::TimeTicks start_time = task_environment_.NowTicks();
+
+  // Hold on to the SendMessageCallback without calling it.
+  sharing::mojom::SharingWebRtcConnection::SendMessageCallback send_callback;
+  EXPECT_CALL(mock_service_, SendMessage(testing::_, testing::_))
+      .WillOnce(testing::Invoke(
+          [&](const std::vector<uint8_t>& data,
+              sharing::mojom::SharingWebRtcConnection::SendMessageCallback
+                  callback) { send_callback = std::move(callback); }));
+
+  // The NullCallback will not be called.
+  host_->SendMessage(CreateMessage(), base::NullCallback());
+
+  // The call to SendMessage should have reset the timer.
+  WaitForConnectionClosed();
+  base::TimeTicks end_time = task_environment_.NowTicks();
+  EXPECT_EQ(start_time + kSharingWebRtcTimeout, end_time);
+  histograms_.ExpectUniqueSample(kWebRtcTimeout,
+                                 sharing::WebRtcTimeoutState::kMessageSent, 1);
+
+  WaitForMojoDisconnect();
 }

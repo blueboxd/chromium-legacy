@@ -63,7 +63,7 @@ BOOL gSignedInAccountsViewControllerIsShown = NO;
 
 @interface SignedInAccountsCollectionViewController
     : CollectionViewController<ChromeIdentityServiceObserver> {
-  ios::ChromeBrowserState* _browserState;  // Weak.
+  ChromeBrowserState* _browserState;  // Weak.
   std::unique_ptr<ChromeIdentityServiceObserverBridge> _identityServiceObserver;
   ResizedAvatarCache* _avatarCache;
 
@@ -74,7 +74,7 @@ BOOL gSignedInAccountsViewControllerIsShown = NO;
 
 @implementation SignedInAccountsCollectionViewController
 
-- (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState {
+- (instancetype)initWithBrowserState:(ChromeBrowserState*)browserState {
   UICollectionViewLayout* layout = [[MDCCollectionViewFlowLayout alloc] init];
   self =
       [super initWithLayout:layout style:CollectionViewControllerStyleDefault];
@@ -179,7 +179,7 @@ BOOL gSignedInAccountsViewControllerIsShown = NO;
 
 @interface SignedInAccountsViewController () <
     IdentityManagerObserverBridgeDelegate> {
-  ios::ChromeBrowserState* _browserState;  // Weak.
+  ChromeBrowserState* _browserState;  // Weak.
   std::unique_ptr<signin::IdentityManagerObserverBridge>
       _identityManagerObserver;
   MDCDialogTransitionController* _transitionController;
@@ -196,8 +196,7 @@ BOOL gSignedInAccountsViewControllerIsShown = NO;
 @implementation SignedInAccountsViewController
 @synthesize dispatcher = _dispatcher;
 
-+ (BOOL)shouldBePresentedForBrowserState:
-    (ios::ChromeBrowserState*)browserState {
++ (BOOL)shouldBePresentedForBrowserState:(ChromeBrowserState*)browserState {
   if (!browserState || browserState->IsOffTheRecord()) {
     return NO;
   }
@@ -227,7 +226,7 @@ BOOL gSignedInAccountsViewControllerIsShown = NO;
 
 #pragma mark Initialization
 
-- (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState
+- (instancetype)initWithBrowserState:(ChromeBrowserState*)browserState
                           dispatcher:
                               (id<ApplicationSettingsCommands>)dispatcher {
   self = [super initWithNibName:nil bundle:nil];

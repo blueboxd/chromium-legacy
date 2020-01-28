@@ -7,9 +7,9 @@
 
 #import <UIKit/UIKit.h>
 
-#include "ios/chrome/browser/browser_state/chrome_browser_state_forward.h"
 
 @protocol ApplicationSettingsCommands;
+class ChromeBrowserState;
 
 // View controller that presents the signed in accounts when they have changed
 // while the application was in background.
@@ -17,9 +17,9 @@
 
 // Returns whether the collection view should be presented for |browserState|,
 // which happens when the accounts have changed while in background.
-+ (BOOL)shouldBePresentedForBrowserState:(ios::ChromeBrowserState*)browserState;
++ (BOOL)shouldBePresentedForBrowserState:(ChromeBrowserState*)browserState;
 
-- (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState
+- (instancetype)initWithBrowserState:(ChromeBrowserState*)browserState
                           dispatcher:(id<ApplicationSettingsCommands>)dispatcher
     NS_DESIGNATED_INITIALIZER;
 

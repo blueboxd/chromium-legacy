@@ -1223,7 +1223,7 @@ TEST_P(ThreadPoolImplTest, ScheduleJobTaskSource) {
       }),
       /* num_tasks_to_run */ 1);
   scoped_refptr<JobTaskSource> task_source =
-      job_task->GetJobTaskSource(FROM_HERE, {ThreadPool()}, thread_pool_.get());
+      job_task->GetJobTaskSource(FROM_HERE, {}, thread_pool_.get());
 
   thread_pool_->EnqueueJobTaskSource(task_source);
   threads_running.Wait();
@@ -1251,8 +1251,7 @@ TEST_P(ThreadPoolImplTest, ThreadGroupChangeShouldYield) {
       }),
       /* num_tasks_to_run */ 1);
   scoped_refptr<JobTaskSource> task_source = job_task->GetJobTaskSource(
-      FROM_HERE, {ThreadPool(), TaskPriority::USER_VISIBLE},
-      thread_pool_.get());
+      FROM_HERE, {TaskPriority::USER_VISIBLE}, thread_pool_.get());
 
   thread_pool_->EnqueueJobTaskSource(task_source);
   threads_running.Wait();

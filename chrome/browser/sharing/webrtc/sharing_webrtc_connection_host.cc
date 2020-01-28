@@ -9,6 +9,7 @@
 #include "base/callback.h"
 #include "base/logging.h"
 #include "base/time/time.h"
+#include "chrome/browser/sharing/sharing_constants.h"
 #include "chrome/browser/sharing/sharing_handler_registry.h"
 #include "chrome/browser/sharing/sharing_message_handler.h"
 #include "chrome/browser/sharing/sharing_metrics.h"
@@ -45,8 +46,12 @@ SharingWebRtcConnectionHost::SharingWebRtcConnectionHost(
       delegate_(this, std::move(delegate)),
       connection_(std::move(connection)),
       socket_manager_client_(this, std::move(socket_manager_client)),
-      socket_manager_(std::move(socket_manager)) {
-  // TODO(crbug.com/1044926): start timer that force closes the connection?
+      socket_manager_(std::move(socket_manager)),
+      timeout_state_(sharing::WebRtcTimeoutState::kConnecting),
+      timeout_timer_(FROM_HERE,
+                     kSharingWebRtcTimeout,
+                     this,
+                     &SharingWebRtcConnectionHost::OnConnectionTimeout) {
   delegate_.set_disconnect_handler(
       base::BindOnce(&SharingWebRtcConnectionHost::OnConnectionClosing,
                      weak_ptr_factory_.GetWeakPtr()));
@@ -60,6 +65,7 @@ SharingWebRtcConnectionHost::SharingWebRtcConnectionHost(
   socket_manager_.set_disconnect_handler(
       base::BindOnce(&SharingWebRtcConnectionHost::OnConnectionClosed,
                      weak_ptr_factory_.GetWeakPtr()));
+  timeout_timer_.Reset();
 }
 
 SharingWebRtcConnectionHost::~SharingWebRtcConnectionHost() = default;
@@ -88,6 +94,9 @@ void SharingWebRtcConnectionHost::OnMessageReceived(
     LOG(ERROR) << "No sharing handler for payload_case " << payload_case;
     return;
   }
+
+  timeout_state_ = sharing::WebRtcTimeoutState::kMessageReceived;
+  timeout_timer_.Reset();
 
   std::string original_message_id = sharing_message.message_guid();
   chrome_browser_sharing::MessageType original_message_type =
@@ -128,6 +137,8 @@ void SharingWebRtcConnectionHost::OnAckSent(
 }
 
 void SharingWebRtcConnectionHost::OnConnectionClosing() {
+  timeout_state_ = sharing::WebRtcTimeoutState::kDisconnecting;
+  timeout_timer_.Reset();
   connection_.reset();
   delegate_.reset();
 }
@@ -135,6 +146,12 @@ void SharingWebRtcConnectionHost::OnConnectionClosing() {
 void SharingWebRtcConnectionHost::OnConnectionClosed() {
   if (on_closed_)
     std::move(on_closed_).Run(device_info_->guid());
+}
+
+void SharingWebRtcConnectionHost::OnConnectionTimeout() {
+  sharing::LogWebRtcTimeout(timeout_state_);
+  OnConnectionClosing();
+  OnConnectionClosed();
 }
 
 void SharingWebRtcConnectionHost::SendMessage(
@@ -146,6 +163,10 @@ void SharingWebRtcConnectionHost::SendMessage(
     std::move(callback).Run(sharing::mojom::SendMessageResult::kError);
     return;
   }
+
+  timeout_state_ = sharing::WebRtcTimeoutState::kMessageSent;
+  timeout_timer_.Reset();
+
   // TODO(crbug.com/1045406): encrypt |serialized_message|.
   connection_->SendMessage(serialized_message, std::move(callback));
 }

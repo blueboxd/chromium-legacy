@@ -10,6 +10,7 @@ import androidx.annotation.Nullable;
 
 import org.chromium.chrome.browser.util.UrlConstants;
 import org.chromium.chrome.browser.util.UrlUtilities;
+import org.chromium.components.url_formatter.SchemeDisplay;
 import org.chromium.components.url_formatter.UrlFormatter;
 
 import java.io.Serializable;
@@ -96,8 +97,8 @@ public class WebsiteAddress implements Comparable<WebsiteAddress>, Serializable 
 
     public String getTitle() {
         if (mOrigin == null) return mHost;
-        return mOmitProtocolAndPort ? UrlFormatter.formatUrlForSecurityDisplayOmitScheme(mOrigin)
-                                    : UrlFormatter.formatUrlForSecurityDisplay(mOrigin);
+        return UrlFormatter.formatUrlForSecurityDisplay(mOrigin,
+                mOmitProtocolAndPort ? SchemeDisplay.OMIT_HTTP_AND_HTTPS : SchemeDisplay.SHOW);
     }
 
     /**

@@ -11,6 +11,7 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.instantapps.InstantAppsBannerData;
 import org.chromium.components.browser_ui.widget.DualControlLayout;
+import org.chromium.components.url_formatter.SchemeDisplay;
 import org.chromium.components.url_formatter.UrlFormatter;
 
 /**
@@ -31,8 +32,8 @@ public class InstantAppsInfoBar extends ConfirmInfoBar {
 
         layout.setIsUsingBigIcon();
         layout.setMessage(mData.getAppName());
-        layout.getMessageLayout().addDescription(
-                UrlFormatter.formatUrlForSecurityDisplayOmitScheme(mData.getUrl()));
+        layout.getMessageLayout().addDescription(UrlFormatter.formatUrlForSecurityDisplay(
+                mData.getUrl(), SchemeDisplay.OMIT_HTTP_AND_HTTPS));
         layout.getPrimaryButton().setButtonColor(AppCompatResources.getColorStateList(
                 getContext(), R.color.app_banner_install_button_bg));
     }

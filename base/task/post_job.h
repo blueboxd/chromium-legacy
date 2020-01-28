@@ -121,7 +121,8 @@ class BASE_EXPORT JobHandle {
   DISALLOW_COPY_AND_ASSIGN(JobHandle);
 };
 
-// Posts a repeating |worker_task| with specific |traits| to run in parallel.
+// Posts a repeating |worker_task| with specific |traits| to run in parallel on
+// base::ThreadPool.
 // Returns a JobHandle associated with the Job, which can be joined, canceled or
 // detached.
 // To avoid scheduling overhead, |worker_task| should do as much work as
@@ -154,8 +155,6 @@ class BASE_EXPORT JobHandle {
 // could be destroyed.
 //
 // |traits| requirements:
-// - base::ThreadPool() must be specified.
-// - Extension traits (e.g. BrowserThread) cannot be specified.
 // - base::ThreadPolicy must be specified if the priority of the task runner
 //   will ever be increased from BEST_EFFORT.
 JobHandle BASE_EXPORT

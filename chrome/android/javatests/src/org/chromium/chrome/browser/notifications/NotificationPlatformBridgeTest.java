@@ -48,6 +48,7 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.browser.TabTitleObserver;
 import org.chromium.chrome.test.util.browser.notifications.MockNotificationManagerProxy.NotificationEntry;
+import org.chromium.components.url_formatter.SchemeDisplay;
 import org.chromium.components.url_formatter.UrlFormatter;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
@@ -206,8 +207,8 @@ public class NotificationPlatformBridgeTest {
 
         Notification notification = showAndGetNotification("MyNotification", "{body: 'Hello'}");
 
-        String expectedOrigin =
-                UrlFormatter.formatUrlForSecurityDisplayOmitScheme(mPermissionTestRule.getOrigin());
+        String expectedOrigin = UrlFormatter.formatUrlForSecurityDisplay(
+                mPermissionTestRule.getOrigin(), SchemeDisplay.OMIT_HTTP_AND_HTTPS);
 
         // Validate the contents of the notification.
         Assert.assertEquals("MyNotification", NotificationTestUtil.getExtraTitle(notification));

@@ -12,6 +12,8 @@ namespace {
 const char kMetricsPrefix[] = "Sharing.WebRtc.";
 }  // namespace
 
+namespace sharing {
+
 void LogWebRtcAddIceCandidate(bool success) {
   base::UmaHistogramBoolean(base::StrCat({kMetricsPrefix, "AddIceCandidate"}),
                             success);
@@ -22,3 +24,10 @@ void LogWebRtcIceConfigFetched(int count) {
       base::StrCat({kMetricsPrefix, "IceConfigFetched"}), count,
       /*value_max=*/10);
 }
+
+void LogWebRtcTimeout(WebRtcTimeoutState state) {
+  base::UmaHistogramEnumeration(base::StrCat({kMetricsPrefix, "Timeout"}),
+                                state);
+}
+
+}  // namespace sharing

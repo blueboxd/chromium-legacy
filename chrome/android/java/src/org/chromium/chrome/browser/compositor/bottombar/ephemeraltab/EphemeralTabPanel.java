@@ -33,6 +33,7 @@ import org.chromium.chrome.browser.tab.TabSelectionType;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabObserver;
+import org.chromium.components.url_formatter.SchemeDisplay;
 import org.chromium.components.url_formatter.UrlFormatter;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.WebContents;
@@ -271,7 +272,8 @@ public class EphemeralTabPanel extends OverlayPanel {
         if (mCaptionAnimation != null) mCaptionAnimation.cancel();
         int securityLevel = SecurityStateModel.getSecurityLevelForWebContents(getWebContents());
         EphemeralTabCaptionControl caption = getBarControl().getCaptionControl();
-        caption.setCaptionText(UrlFormatter.formatUrlForSecurityDisplayOmitScheme(mUrl));
+        caption.setCaptionText(
+                UrlFormatter.formatUrlForSecurityDisplay(mUrl, SchemeDisplay.OMIT_HTTP_AND_HTTPS));
         caption.setSecurityIcon(EphemeralTabCoordinator.getSecurityIconResource(securityLevel));
 
         mCaptionAnimation = new CompositorAnimator(getAnimationHandler());

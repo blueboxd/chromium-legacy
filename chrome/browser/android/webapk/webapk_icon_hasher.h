@@ -5,11 +5,14 @@
 #ifndef CHROME_BROWSER_ANDROID_WEBAPK_WEBAPK_ICON_HASHER_H_
 #define CHROME_BROWSER_ANDROID_WEBAPK_WEBAPK_ICON_HASHER_H_
 
+#include <map>
 #include <memory>
+#include <set>
 #include <string>
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "base/optional.h"
 #include "base/timer/timer.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -25,7 +28,9 @@ class URLLoaderFactory;
 class WebApkIconHasher {
  public:
   using Murmur2HashCallback =
-      base::OnceCallback<void(const std::string& /* icon_murmur2_hash */)>;
+      base::OnceCallback<void(const std::string& icon_murmur2_hash)>;
+  using Murmur2HashMultipleCallback = base::OnceCallback<void(
+      base::Optional<std::map<std::string, std::string>>)>;
 
   // Creates a self-owned WebApkIconHasher instance. The instance downloads
   // |icon_url| and calls |callback| with the Murmur2 hash of the downloaded
@@ -37,6 +42,15 @@ class WebApkIconHasher {
       const url::Origin& request_initiator,
       const GURL& icon_url,
       Murmur2HashCallback callback);
+
+  // Convenience wrapper for getting the hash for multiple urls.
+  // Returns a nullopt if any of the hashes were not successfully fetched, or a
+  // map from a GURL to its hash on success.
+  static void DownloadAndComputeMurmur2Hash(
+      network::mojom::URLLoaderFactory* url_loader_factory,
+      const url::Origin& request_initiator,
+      const std::set<GURL>& icon_urls,
+      Murmur2HashMultipleCallback callback);
 
   static void DownloadAndComputeMurmur2HashWithTimeout(
       network::mojom::URLLoaderFactory* url_loader_factory,

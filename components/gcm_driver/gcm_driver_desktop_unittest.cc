@@ -392,30 +392,6 @@ TEST_F(GCMDriverTest, Shutdown) {
   EXPECT_FALSE(gcm_connection_observer()->connected());
 }
 
-TEST_F(GCMDriverTest, DisableAndReenableGCM) {
-  CreateDriver();
-  AddAppHandlers();
-  PumpIOLoop();
-  PumpUILoop();
-  EXPECT_FALSE(driver()->IsStarted());
-
-  // The GCM registration will kick off the GCM.
-  Register(kTestAppID1, ToSenderList("sender"), GCMDriverTest::WAIT);
-  EXPECT_TRUE(driver()->IsStarted());
-
-  // Disables the GCM. GCM will be stopped.
-  driver()->Disable();
-  PumpIOLoop();
-  PumpUILoop();
-  EXPECT_FALSE(driver()->IsStarted());
-
-  // Enables the GCM. GCM will be started.
-  driver()->Enable();
-  PumpIOLoop();
-  PumpUILoop();
-  EXPECT_TRUE(driver()->IsStarted());
-}
-
 TEST_F(GCMDriverTest, StartOrStopGCMOnDemand) {
   CreateDriver();
   PumpIOLoop();
@@ -467,15 +443,6 @@ TEST_F(GCMDriverTest, RegisterFailed) {
   Register(kTestAppID1, sender_ids, GCMDriverTest::WAIT);
   EXPECT_TRUE(registration_id().empty());
   EXPECT_EQ(GCMClient::UNKNOWN_ERROR, registration_result());
-
-  ClearResults();
-
-  // Registration fails when GCM is disabled.
-  AddAppHandlers();
-  driver()->Disable();
-  Register(kTestAppID1, sender_ids, GCMDriverTest::WAIT);
-  EXPECT_TRUE(registration_id().empty());
-  EXPECT_EQ(GCMClient::GCM_DISABLED, registration_result());
 }
 
 TEST_F(GCMDriverTest, UnregisterFailed) {
@@ -484,14 +451,6 @@ TEST_F(GCMDriverTest, UnregisterFailed) {
   // Unregistration fails when the no app handler is added.
   Unregister(kTestAppID1, GCMDriverTest::WAIT);
   EXPECT_EQ(GCMClient::UNKNOWN_ERROR, unregistration_result());
-
-  ClearResults();
-
-  // Unregistration fails when GCM is disabled.
-  AddAppHandlers();
-  driver()->Disable();
-  Unregister(kTestAppID1, GCMDriverTest::WAIT);
-  EXPECT_EQ(GCMClient::GCM_DISABLED, unregistration_result());
 }
 
 TEST_F(GCMDriverTest, SendFailed) {
@@ -505,15 +464,6 @@ TEST_F(GCMDriverTest, SendFailed) {
   Send(kTestAppID1, kUserID1, message, GCMDriverTest::WAIT);
   EXPECT_TRUE(send_message_id().empty());
   EXPECT_EQ(GCMClient::UNKNOWN_ERROR, send_result());
-
-  ClearResults();
-
-  // Sending fails when GCM is disabled.
-  AddAppHandlers();
-  driver()->Disable();
-  Send(kTestAppID1, kUserID1, message, GCMDriverTest::WAIT);
-  EXPECT_TRUE(send_message_id().empty());
-  EXPECT_EQ(GCMClient::GCM_DISABLED, send_result());
 }
 
 TEST_F(GCMDriverTest, DISABLED_GCMClientNotReadyBeforeRegistration) {

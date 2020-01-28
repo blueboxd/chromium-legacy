@@ -23,7 +23,8 @@ FakeDeepScanningDialogDelegate::FakeDeepScanningDialogDelegate(
     CompletionCallback callback)
     : DeepScanningDialogDelegate(web_contents,
                                  std::move(data),
-                                 std::move(callback)),
+                                 std::move(callback),
+                                 DeepScanAccessPoint::UPLOAD),
       delete_closure_(delete_closure),
       status_callback_(status_callback),
       encryption_callback_(encryption_callback),

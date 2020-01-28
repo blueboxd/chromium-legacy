@@ -51,7 +51,7 @@
 }
 
 + (NSString*)primaryAccountGaiaID {
-  ios::ChromeBrowserState* browser_state =
+  ChromeBrowserState* browser_state =
       chrome_test_util::GetOriginalBrowserState();
   CoreAccountInfo info =
       IdentityManagerFactory::GetForBrowserState(browser_state)
@@ -61,7 +61,7 @@
 }
 
 + (BOOL)isSignedOut {
-  ios::ChromeBrowserState* browser_state =
+  ChromeBrowserState* browser_state =
       chrome_test_util::GetOriginalBrowserState();
 
   return !IdentityManagerFactory::GetForBrowserState(browser_state)
@@ -92,7 +92,7 @@
 }
 
 + (BOOL)isAuthenticated {
-  ios::ChromeBrowserState* browser_state =
+  ChromeBrowserState* browser_state =
       chrome_test_util::GetOriginalBrowserState();
   AuthenticationService* authentication_service =
       AuthenticationServiceFactory::GetForBrowserState(browser_state);
@@ -100,7 +100,7 @@
 }
 
 + (void)signOut {
-  ios::ChromeBrowserState* browser_state =
+  ChromeBrowserState* browser_state =
       chrome_test_util::GetOriginalBrowserState();
   AuthenticationService* authentication_service =
       AuthenticationServiceFactory::GetForBrowserState(browser_state);

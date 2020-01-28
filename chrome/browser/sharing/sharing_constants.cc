@@ -11,6 +11,9 @@ const char kSharingSenderID[] = "379932496580";
 const constexpr base::TimeDelta kRegistrationExpiration =
     base::TimeDelta::FromDays(1);
 
+const constexpr base::TimeDelta kSharingWebRtcTimeout =
+    base::TimeDelta::FromSeconds(30);
+
 const constexpr net::BackoffEntry::Policy kRetryBackoffPolicy = {
     // Number of initial errors (in sequence) to ignore before applying
     // exponential back-off rules.

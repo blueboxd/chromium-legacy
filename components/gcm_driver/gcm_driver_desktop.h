@@ -81,8 +81,6 @@ class GCMDriverDesktop : public GCMDriver,
   void RemoveAppHandler(const std::string& app_id) override;
   void AddConnectionObserver(GCMConnectionObserver* observer) override;
   void RemoveConnectionObserver(GCMConnectionObserver* observer) override;
-  void Enable() override;
-  void Disable() override;
   GCMClient* GetGCMClientForTesting() const override;
   bool IsStarted() const override;
   bool IsConnected() const override;
@@ -100,9 +98,6 @@ class GCMDriverDesktop : public GCMDriver,
   InstanceIDHandler* GetInstanceIDHandlerInternal() override;
   void AddHeartbeatInterval(const std::string& scope, int interval_ms) override;
   void RemoveHeartbeatInterval(const std::string& scope) override;
-
-  // Exposed for testing purpose.
-  bool gcm_enabled() const { return gcm_enabled_; }
 
  protected:
   // GCMDriver implementation:
@@ -208,9 +203,6 @@ class GCMDriverDesktop : public GCMDriver,
 
   // Flag to indicate if GCM is started.
   bool gcm_started_;
-
-  // Flag to indicate if GCM is enabled.
-  bool gcm_enabled_;
 
   // Flag to indicate the last known state of the GCM client. Because this
   // flag lives on the UI thread, while the GCM client lives on the IO thread,

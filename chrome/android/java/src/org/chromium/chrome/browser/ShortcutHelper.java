@@ -51,6 +51,7 @@ import org.chromium.chrome.browser.webapps.WebappInfo;
 import org.chromium.chrome.browser.webapps.WebappLauncherActivity;
 import org.chromium.chrome.browser.webapps.WebappRegistry;
 import org.chromium.content_public.common.ScreenOrientationConstants;
+import org.chromium.ui.base.ViewUtils;
 import org.chromium.ui.widget.Toast;
 import org.chromium.webapk.lib.client.WebApkValidator;
 
@@ -134,6 +135,8 @@ public class ShortcutHelper {
 
     private static final float MASKABLE_ICON_PADDING_RATIO =
             (MASKABLE_TO_ADAPTIVE_SCALING_FACTOR - 1.0f) / 2.0f;
+
+    private static final float SHORTCUT_ICON_IDEAL_SIZE_DP = 48;
 
     // True when Android O's ShortcutManager.requestPinShortcut() is supported.
     private static boolean sIsRequestPinShortcutSupported;
@@ -707,13 +710,14 @@ public class ShortcutHelper {
      * icon and the ideal and minimum sizes of the splash screen image in that order.
      */
     @CalledByNative
-    private static int[] getHomeScreenIconAndSplashImageSizes() {
+    private static int[] getIconSizes() {
         Context context = ContextUtils.getApplicationContext();
         // This ordering must be kept up to date with the C++ ShortcutHelper.
         return new int[] {getIdealHomescreenIconSizeInPx(context),
                 getMinimumHomescreenIconSizeInPx(context), getIdealSplashImageSizeInPx(context),
                 getMinimumSplashImageSizeInPx(context), getIdealBadgeIconSizeInPx(context),
-                getIdealAdaptiveLauncherIconSizeInPx(context)};
+                getIdealAdaptiveLauncherIconSizeInPx(context),
+                ViewUtils.dpToPx(context, SHORTCUT_ICON_IDEAL_SIZE_DP)};
     }
 
     /**

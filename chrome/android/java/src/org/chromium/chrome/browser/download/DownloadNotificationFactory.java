@@ -47,6 +47,7 @@ import org.chromium.components.offline_items_collection.ContentId;
 import org.chromium.components.offline_items_collection.LegacyHelpers;
 import org.chromium.components.offline_items_collection.OfflineItem;
 import org.chromium.components.offline_items_collection.PendingState;
+import org.chromium.components.url_formatter.SchemeDisplay;
 import org.chromium.components.url_formatter.UrlFormatter;
 
 /**
@@ -341,8 +342,8 @@ public final class DownloadNotificationFactory {
         } else if (downloadUpdate.getShouldPromoteOrigin()
                 && !TextUtils.isEmpty(downloadUpdate.getOriginalUrl())) {
             // Always show the origin URL if available (for normal profiles).
-            String formattedUrl = UrlFormatter.formatUrlForSecurityDisplayOmitScheme(
-                    downloadUpdate.getOriginalUrl());
+            String formattedUrl = UrlFormatter.formatUrlForSecurityDisplay(
+                    downloadUpdate.getOriginalUrl(), SchemeDisplay.OMIT_HTTP_AND_HTTPS);
 
             if (formattedUrl.length() > MAX_ORIGIN_LENGTH) {
                 // The origin is too long. Strip down to eTLD+1.

@@ -243,7 +243,7 @@ NSError* IdentityMissingError() {
 }
 
 - (void)continueSignin {
-  ios::ChromeBrowserState* browserState = _browser->GetBrowserState();
+  ChromeBrowserState* browserState = _browser->GetBrowserState();
   if (self.handlingError) {
     // The flow should not continue while the error is being handled, e.g. while
     // the user is being informed of an issue.

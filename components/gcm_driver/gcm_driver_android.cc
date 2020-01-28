@@ -148,12 +148,6 @@ void GCMDriverAndroid::RemoveConnectionObserver(
     GCMConnectionObserver* observer) {
 }
 
-void GCMDriverAndroid::Enable() {
-}
-
-void GCMDriverAndroid::Disable() {
-}
-
 GCMClient* GCMDriverAndroid::GetGCMClientForTesting() const {
   NOTIMPLEMENTED();
   return NULL;

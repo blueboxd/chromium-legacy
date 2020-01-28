@@ -70,6 +70,17 @@ struct ListHashSetNodeHashFunctions;
 template <typename HashArg>
 struct ListHashSetTranslator;
 
+template <typename Value, typename Allocator>
+struct ListHashSetTraits
+    : public HashTraits<ListHashSetNode<Value, Allocator>*> {
+  using Node = ListHashSetNode<Value, Allocator>;
+
+  static void ConstructDeletedValue(Node*& slot, bool) {
+    AsAtomicPtr(&slot)->store(reinterpret_cast<Node*>(-1),
+                              std::memory_order_relaxed);
+  }
+};
+
 // Note that for a ListHashSet you cannot specify the HashTraits as a template
 // argument. It uses the default hash traits for the ValueArg type.
 template <typename ValueArg,
@@ -85,7 +96,7 @@ class ListHashSet
   USE_ALLOCATOR(ListHashSet, Allocator);
 
   typedef ListHashSetNode<ValueArg, Allocator> Node;
-  typedef HashTraits<Node*> NodeTraits;
+  typedef ListHashSetTraits<ValueArg, Allocator> NodeTraits;
   typedef ListHashSetNodeHashFunctions<HashArg> NodeHash;
   typedef ListHashSetTranslator<HashArg> BaseTranslator;
 
@@ -309,10 +320,7 @@ class ListHashSetNodeBasePointer {
 
  private:
   void SetSafe(NodeType* node) {
-    if (Allocator::kIsGarbageCollected)
-      AsAtomicPtr(&node_)->store(node, std::memory_order_relaxed);
-    else
-      node_ = node;
+    AsAtomicPtr(&node_)->store(node, std::memory_order_relaxed);
   }
 
   NodeType* GetSafe() const {
@@ -522,7 +530,7 @@ class ListHashSetNode : public ListHashSetNodeBase<ValueArg, AllocatorArg> {
     // node from the ListHashSet while an iterator is positioned at that
     // node, so there should be no valid pointers from the stack to a
     // destructed node.
-    if (WasAlreadyDestructed())
+    if (WasAlreadyDestructedSafe())
       return;
     NodeAllocator::TraceValue(visitor, this);
     visitor->Trace(reinterpret_cast<ListHashSetNode*>(this->next_.GetSafe()));
@@ -545,6 +553,12 @@ class ListHashSetNode : public ListHashSetNodeBase<ValueArg, AllocatorArg> {
 
   template <typename HashArg>
   friend struct ListHashSetNodeHashFunctions;
+
+ private:
+  bool WasAlreadyDestructedSafe() const {
+    DCHECK(NodeAllocator::kIsGarbageCollected);
+    return this->prev_.GetSafe() == UnlinkedNodePointer();
+  }
 };
 
 template <typename HashArg>
@@ -818,7 +832,9 @@ struct ListHashSetTranslator {
   }
   template <typename T, typename U, typename V>
   static void Translate(T*& location, U&& key, const V& allocator) {
-    location = new (const_cast<V*>(&allocator)) T(std::forward<U>(key));
+    AsAtomicPtr(&location)->store(new (const_cast<V*>(&allocator))
+                                      T(std::forward<U>(key)),
+                                  std::memory_order_relaxed);
   }
 };
 

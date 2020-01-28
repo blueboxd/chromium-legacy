@@ -51,12 +51,6 @@ void FakeGCMDriver::AddConnectionObserver(GCMConnectionObserver* observer) {
 void FakeGCMDriver::RemoveConnectionObserver(GCMConnectionObserver* observer) {
 }
 
-void FakeGCMDriver::Enable() {
-}
-
-void FakeGCMDriver::Disable() {
-}
-
 GCMClient* FakeGCMDriver::GetGCMClientForTesting() const {
   return nullptr;
 }

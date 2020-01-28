@@ -16,6 +16,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabImpl;
+import org.chromium.components.url_formatter.SchemeDisplay;
 import org.chromium.components.url_formatter.UrlFormatter;
 import org.chromium.content_public.browser.NavigationHandle;
 import org.chromium.content_public.browser.WebContents;
@@ -86,7 +87,7 @@ public class VrConsentDialog
         Resources resources = activity.getResources();
 
         String dialogTitle = resources.getString(R.string.xr_consent_dialog_title,
-                UrlFormatter.formatUrlForSecurityDisplayOmitScheme(mUrl));
+                UrlFormatter.formatUrlForSecurityDisplay(mUrl, SchemeDisplay.OMIT_HTTP_AND_HTTPS));
 
         String dialogBody =
                 resources.getString(R.string.xr_consent_dialog_description_default) + "\n";

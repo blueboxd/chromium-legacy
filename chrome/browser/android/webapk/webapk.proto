@@ -93,6 +93,7 @@ message WebAppManifest {
   optional string theme_color = 11;
   optional string background_color = 12;
   repeated ShareTarget share_targets = 17;
+  repeated ShortcutItem shortcuts = 18;
 
   reserved 3, 7, 8, 13 to 16;
 }
@@ -168,4 +169,11 @@ message ShareTarget {
   optional string method = 4;
   optional string enctype = 5;
   reserved 1;
+}
+
+message ShortcutItem {
+  optional string name = 1;
+  optional string short_name = 2;
+  optional string url = 3;
+  repeated Image icons = 4;
 }

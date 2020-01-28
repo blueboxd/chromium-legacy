@@ -10,11 +10,11 @@
 #import <UIKit/UIKit.h>
 
 #import "base/ios/block_types.h"
-#include "ios/chrome/browser/browser_state/chrome_browser_state_forward.h"
 #import "ios/chrome/browser/ui/authentication/authentication_flow_performer_delegate.h"
 
 class Browser;
 @protocol BrowsingDataCommands;
+class ChromeBrowserState;
 @class ChromeIdentity;
 
 // Performs the sign-in steps and user interactions as part of the sign-in flow.
@@ -31,24 +31,23 @@ class Browser;
 - (void)cancelAndDismiss;
 
 // Starts sync for |browserState|.
-- (void)commitSyncForBrowserState:(ios::ChromeBrowserState*)browserState;
+- (void)commitSyncForBrowserState:(ChromeBrowserState*)browserState;
 
 // Fetches the managed status for |identity|.
-- (void)fetchManagedStatus:(ios::ChromeBrowserState*)browserState
+- (void)fetchManagedStatus:(ChromeBrowserState*)browserState
                forIdentity:(ChromeIdentity*)identity;
 
 // Signs |identity| with |hostedDomain| into |browserState|.
 - (void)signInIdentity:(ChromeIdentity*)identity
       withHostedDomain:(NSString*)hostedDomain
-        toBrowserState:(ios::ChromeBrowserState*)browserState;
+        toBrowserState:(ChromeBrowserState*)browserState;
 
 // Signs out of |browserState| and sends |didSignOut| to the delegate when
 // complete.
-- (void)signOutBrowserState:(ios::ChromeBrowserState*)browserState;
+- (void)signOutBrowserState:(ChromeBrowserState*)browserState;
 
 // Immediately signs out |browserState| without waiting for dependent services.
-- (void)signOutImmediatelyFromBrowserState:
-    (ios::ChromeBrowserState*)browserState;
+- (void)signOutImmediatelyFromBrowserState:(ChromeBrowserState*)browserState;
 
 // Asks the user whether to clear or merge their previous identity's data with
 // that of |identity| or cancel sign-in, sending |didChooseClearDataPolicy:|
@@ -67,7 +66,7 @@ class Browser;
 // Determines whether the user must decide what to do with |identity|'s browsing
 // data before signing into |browserState|.
 - (BOOL)shouldHandleMergeCaseForIdentity:(ChromeIdentity*)identity
-                            browserState:(ios::ChromeBrowserState*)browserState;
+                            browserState:(ChromeBrowserState*)browserState;
 
 // Shows a confirmation dialog for signing in to an account managed by
 // |hostedDomain|.

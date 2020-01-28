@@ -66,6 +66,9 @@ class ShortcutHelper {
   // Returns the ideal size for an adaptive launcher icon of a WebAPK
   static int GetIdealAdaptiveLauncherIconSizeInPx();
 
+  // Returns the ideal size for a shortcut icon of a WebAPK.
+  static int GetIdealShortcutIconSizeInPx();
+
   // Fetches the splash screen image and stores it inside the WebappDataStorage
   // of the webapp. The WebappDataStorage object *must* have been previously
   // created by AddToLauncherWithSkBitmap(); this method should be passed as a
@@ -107,6 +110,8 @@ class ShortcutHelper {
   // Returns if the Android version supports Adaptive Icon (i.e. API level >=
   // 26)
   static bool DoesAndroidSupportMaskableIcons();
+
+  static void SetIdealShortcutSizeForTesting(int size);
 
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(ShortcutHelper);

@@ -25,10 +25,6 @@ include_rules = [
 ]
 
 specific_include_rules = {
-  "host_frame_sink_manager*": [
-    "+components/viz/service/frame_sinks/compositor_frame_sink_support.h",
-    "+components/viz/service/frame_sinks/frame_sink_manager_impl.h",
-  ],
   "renderer_settings_creation\.cc": [
     "+components/viz/common/switches.h",
   ],

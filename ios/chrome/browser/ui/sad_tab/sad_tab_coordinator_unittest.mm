@@ -121,7 +121,7 @@ TEST_F(SadTabCoordinatorTest, FirstFailureInNonIncognito) {
 TEST_F(SadTabCoordinatorTest, FirstFailureInIncognito) {
   web::TestWebState web_state;
   web_state.WasShown();
-  ios::ChromeBrowserState* otr_browser_state =
+  ChromeBrowserState* otr_browser_state =
       browser_state_->GetOffTheRecordChromeBrowserState();
   SadTabCoordinator* coordinator = [[SadTabCoordinator alloc]
       initWithBaseViewController:base_view_controller_
@@ -144,7 +144,7 @@ TEST_F(SadTabCoordinatorTest, FirstFailureInIncognito) {
 
 // Tests SadTabViewController state for the repeated failure in incognito mode.
 TEST_F(SadTabCoordinatorTest, ShowFirstFailureInIncognito) {
-  ios::ChromeBrowserState* otr_browser_state =
+  ChromeBrowserState* otr_browser_state =
       browser_state_->GetOffTheRecordChromeBrowserState();
   SadTabCoordinator* coordinator = [[SadTabCoordinator alloc]
       initWithBaseViewController:base_view_controller_

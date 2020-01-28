@@ -8,7 +8,6 @@
 #include <memory>
 
 #include "base/memory/weak_ptr.h"
-#include "base/optional.h"
 #include "base/time/time.h"
 #include "chrome/browser/safe_browsing/cloud_content_scanning/deep_scanning_dialog_delegate.h"
 #include "chrome/browser/safe_browsing/cloud_content_scanning/deep_scanning_utils.h"
@@ -37,6 +36,22 @@ class DeepScanningTopImageView;
 // upload to the user.
 class DeepScanningDialogViews : public views::DialogDelegate {
  public:
+  // Enum used to represent what the dialog is currently showing.
+  enum class DeepScanningDialogStatus {
+    // The dialog is shown with an explanation that the scan is being performed
+    // and that the result is pending.
+    PENDING,
+
+    // The dialog is shown with a short message indicating that the scan was a
+    // success and that the user may proceed with their upload, drag-and-drop or
+    // paste.
+    SUCCESS,
+
+    // The dialog is shown with a message indicating that the scan was a failure
+    // and that the user may not proceed with their upload, drag-and-drop or
+    // paste.
+    FAILURE,
+  };
   DeepScanningDialogViews(std::unique_ptr<DeepScanningDialogDelegate> delegate,
                           content::WebContents* web_contents,
                           base::Optional<DeepScanAccessPoint> access_point,
@@ -54,8 +69,23 @@ class DeepScanningDialogViews : public views::DialogDelegate {
   // nothing should be shown.
   void ShowResult(bool success);
 
-  // Returns the appropriate top image depending on |scan_success_|.
+  // Returns the appropriate top image depending on |dialog_status_|.
   const gfx::ImageSkia* GetTopImage() const;
+
+  // Accessors to simplify |dialog_status_| checking.
+  inline bool is_success() const {
+    return dialog_status_ == DeepScanningDialogStatus::SUCCESS;
+  }
+
+  inline bool is_failure() const {
+    return dialog_status_ == DeepScanningDialogStatus::FAILURE;
+  }
+
+  inline bool is_result() const { return is_success() || is_failure(); }
+
+  inline bool is_pending() const {
+    return dialog_status_ == DeepScanningDialogStatus::PENDING;
+  }
 
  private:
   ~DeepScanningDialogViews() override;
@@ -63,31 +93,31 @@ class DeepScanningDialogViews : public views::DialogDelegate {
   // views::DialogDelegate:
   const views::Widget* GetWidgetImpl() const override;
 
-  // Update the UI depending on |scan_success_|.
+  // Update the UI depending on |dialog_status_|.
   void UpdateDialog();
 
   // Resizes the already shown dialog to accommodate changes in its content.
   void Resize(int height_to_add);
 
-  // Setup the appropriate buttons depending on |scan_success_|.
+  // Setup the appropriate buttons depending on |dialog_status_|.
   void SetupButtons();
 
   // Returns a newly created side icon.
   std::unique_ptr<views::View> CreateSideIcon();
 
-  // Returns the appropriate dialog message depending on |scan_success_|.
+  // Returns the appropriate dialog message depending on |dialog_status_|.
   base::string16 GetDialogMessage() const;
 
   // Returns the side image's background circle color.
   SkColor GetSideImageBackgroundColor() const;
 
-  // Returns the appropriate dialog message depending on |scan_success_|.
+  // Returns the appropriate dialog message depending on |dialog_status_|.
   base::string16 GetCancelButtonText() const;
 
-  // Returns the appropriate paste top image ID depending on |scan_success_|.
+  // Returns the appropriate paste top image ID depending on |dialog_status_|.
   int GetPasteImageId(bool use_dark) const;
 
-  // Returns the appropriate upload top image ID depending on |scan_success_|.
+  // Returns the appropriate upload top image ID depending on |dialog_status_|.
   int GetUploadImageId(bool use_dark) const;
 
   // Show the dialog. Sets |shown_| to true.
@@ -111,9 +141,7 @@ class DeepScanningDialogViews : public views::DialogDelegate {
   base::TimeTicks first_shown_timestamp_;
 
   // Used to show the appropriate dialog depending on the scan's status.
-  // base::nullopt represents a pending scan, true represents a scan with no
-  // malware or DLP violation and false represents a scan with such a violation.
-  base::Optional<bool> scan_success_ = base::nullopt;
+  DeepScanningDialogStatus dialog_status_ = DeepScanningDialogStatus::PENDING;
 
   // Used to animate dialog height changes.
   std::unique_ptr<views::BoundsAnimator> bounds_animator_;

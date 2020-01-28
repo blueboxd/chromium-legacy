@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/ui.gni")
 import("//components/viz/viz.gni")
 import("//testing/libfuzzer/fuzzer_test.gni")
 
@@ -48,10 +49,6 @@ viz_component("host") {
     "//services/viz/privileged/mojom",
     "//ui/base",
     "//ui/gfx",
-
-    # TODO(kylechar): This is temporary and will be removed when all host to
-    # service communication is over Mojo.
-    "//components/viz/service",
   ]
 
   public_deps = [
@@ -65,6 +62,10 @@ viz_component("host") {
 
   if (is_mac) {
     deps += [ "//ui/accelerated_widget_mac" ]
+  }
+
+  if (use_ozone) {
+    deps += [ "//ui/ozone" ]
   }
 }
 
@@ -89,11 +90,11 @@ viz_source_set("unit_tests") {
     "//services/viz/public/mojom",
     "//testing/gmock",
     "//testing/gtest",
-
-    # TODO(kylechar): This is temporary and will be removed when all host to
-    # service communication is over Mojo.
-    "//components/viz/service",
   ]
+
+  if (use_ozone) {
+    deps += [ "//ui/ozone" ]
+  }
 }
 
 fuzzer_test("hit_test_query_fuzzer") {

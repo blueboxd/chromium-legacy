@@ -22,6 +22,7 @@ import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.components.bookmarks.BookmarkId;
 import org.chromium.components.bookmarks.BookmarkType;
+import org.chromium.components.url_formatter.SchemeDisplay;
 import org.chromium.components.url_formatter.UrlFormatter;
 import org.chromium.content_public.browser.WebContents;
 
@@ -226,7 +227,8 @@ public class BookmarkBridge {
 
         /** @return The string to display for the item's url. */
         public String getUrlForDisplay() {
-            return UrlFormatter.formatUrlForSecurityDisplayOmitScheme(getUrl());
+            return UrlFormatter.formatUrlForSecurityDisplay(
+                    getUrl(), SchemeDisplay.OMIT_HTTP_AND_HTTPS);
         }
 
         /** @return Whether item is a folder or a bookmark. */

@@ -7,9 +7,29 @@
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/android/shortcut_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/manifest/manifest.h"
 #include "url/gurl.h"
+
+blink::Manifest::ImageResource CreateImage(const std::string& url,
+                                           const gfx::Size& size) {
+  blink::Manifest::ImageResource image;
+  image.src = GURL("https://example.com" + url);
+  image.sizes.push_back(size);
+  image.purpose.push_back(blink::Manifest::ImageResource::Purpose::ANY);
+  return image;
+}
+
+blink::Manifest::ShortcutItem CreateShortcut(
+    const std::string& name,
+    const std::vector<blink::Manifest::ImageResource>& icons) {
+  blink::Manifest::ShortcutItem shortcut;
+  shortcut.name = base::UTF8ToUTF16(name);
+  shortcut.url = GURL("https://example.com/");
+  shortcut.icons = icons;
+  return shortcut;
+}
 
 class ShortcutInfoTest : public testing::Test {
  public:
@@ -103,4 +123,30 @@ TEST_F(ShortcutInfoTest, IgnoreEmptyNameAndShortName) {
 
   ASSERT_EQ(initial_name, info_.name);
   ASSERT_EQ(initial_short_name, info_.short_name);
+}
+
+TEST(ShortcutInfoHelperTest, ShortcutItem) {
+  blink::Manifest manifest;
+
+  manifest.shortcuts.push_back(CreateShortcut(
+      "shortcut_1",
+      {CreateImage("/i1_1", {16, 16}), CreateImage("/i1_2", {64, 64}),
+       CreateImage("/i1_3", {192, 192}),  // best icon.
+       CreateImage("/i1_4", {256, 256})}));
+
+  manifest.shortcuts.push_back(CreateShortcut(
+      "shortcut_2", {CreateImage("/i2_1", {192, 194}),  // not square.
+                     CreateImage("/i2_2", {194, 194})}));
+
+  // Nothing chosen.
+  manifest.shortcuts.push_back(
+      CreateShortcut("shortcut_3", {CreateImage("/i3_1", {16, 16})}));
+
+  ShortcutHelper::SetIdealShortcutSizeForTesting(192);
+  auto info =
+      ShortcutHelper::CreateShortcutInfo(GURL(), manifest, GURL(), GURL());
+
+  ASSERT_EQ(info->best_shortcut_icon_urls.size(), 2u);
+  EXPECT_EQ(info->best_shortcut_icon_urls[0].path(), "/i1_3");
+  EXPECT_EQ(info->best_shortcut_icon_urls[1].path(), "/i2_2");
 }

@@ -74,20 +74,12 @@ static ScopedJavaLocalRef<jstring> JNI_UrlFormatter_FormatUrlForCopy(
 
 static ScopedJavaLocalRef<jstring> JNI_UrlFormatter_FormatUrlForSecurityDisplay(
     JNIEnv* env,
-    const JavaParamRef<jstring>& url) {
-  return base::android::ConvertUTF16ToJavaString(
-      env, url_formatter::FormatUrlForSecurityDisplay(
-               JNI_UrlFormatter_ConvertJavaStringToGURL(env, url)));
-}
-
-static ScopedJavaLocalRef<jstring>
-JNI_UrlFormatter_FormatUrlForSecurityDisplayOmitScheme(
-    JNIEnv* env,
-    const JavaParamRef<jstring>& url) {
+    const JavaParamRef<jstring>& url,
+    jint scheme_display) {
   return base::android::ConvertUTF16ToJavaString(
       env, url_formatter::FormatUrlForSecurityDisplay(
                JNI_UrlFormatter_ConvertJavaStringToGURL(env, url),
-               url_formatter::SchemeDisplay::OMIT_HTTP_AND_HTTPS));
+               static_cast<SchemeDisplay>(scheme_display)));
 }
 
 static ScopedJavaLocalRef<jstring>

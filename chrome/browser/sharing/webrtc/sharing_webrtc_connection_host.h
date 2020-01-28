@@ -12,9 +12,11 @@
 
 #include "base/callback_forward.h"
 #include "base/memory/weak_ptr.h"
+#include "base/timer/timer.h"
 #include "chrome/browser/sharing/proto/sharing_message.pb.h"
 #include "chrome/browser/sharing/sharing_message_sender.h"
 #include "chrome/browser/sharing/sharing_send_message_result.h"
+#include "chrome/services/sharing/public/cpp/sharing_webrtc_metrics.h"
 #include "chrome/services/sharing/public/mojom/webrtc.mojom.h"
 #include "components/sync_device_info/device_info.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -72,6 +74,7 @@ class SharingWebRtcConnectionHost
   void OnAckSent(sharing::mojom::SendMessageResult result);
   void OnConnectionClosing();
   void OnConnectionClosed();
+  void OnConnectionTimeout();
 
   // network::mojom::P2PTrustedSocketManagerClient:
   void InvalidSocketPortRangeRequested() override;
@@ -90,6 +93,11 @@ class SharingWebRtcConnectionHost
   mojo::Receiver<network::mojom::P2PTrustedSocketManagerClient>
       socket_manager_client_;
   mojo::Remote<network::mojom::P2PTrustedSocketManager> socket_manager_;
+
+  sharing::WebRtcTimeoutState timeout_state_;
+  // Closes the connection if it times out so we don't get stuck trying to
+  // connect to a remote device.
+  base::DelayTimer timeout_timer_;
 
   base::WeakPtrFactory<SharingWebRtcConnectionHost> weak_ptr_factory_{this};
 };

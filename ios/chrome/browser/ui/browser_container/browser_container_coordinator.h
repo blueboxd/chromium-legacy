@@ -18,8 +18,7 @@
 // The BrowserContainerCoordinator must be constructed with a Browser, so the
 // ChromeBrowserState initializer is unavailable.
 - (instancetype)initWithBaseViewController:(UIViewController*)viewController
-                              browserState:
-                                  (ios::ChromeBrowserState*)browserState
+                              browserState:(ChromeBrowserState*)browserState
     NS_UNAVAILABLE;
 
 // The view controller managing the container view.

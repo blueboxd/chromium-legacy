@@ -216,10 +216,6 @@ class GCMDriver {
   // Removes a connection state observer.
   virtual void RemoveConnectionObserver(GCMConnectionObserver* observer) = 0;
 
-  // Enables/disables GCM service.
-  virtual void Enable() = 0;
-  virtual void Disable() = 0;
-
   // For testing purpose. Always NULL on Android.
   virtual GCMClient* GetGCMClientForTesting() const = 0;
 

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/android/webapk/webapk_icon_hasher.h"
 
+#include "base/barrier_closure.h"
 #include "base/bind.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -34,6 +35,26 @@ std::string ComputeMurmur2Hash(const std::string& raw_image_data) {
   return base::NumberToString(hash);
 }
 
+void OnMurmur2Hash(std::string* result,
+                   base::OnceClosure done_closure,
+                   const std::string& hash) {
+  *result = hash;
+  std::move(done_closure).Run();
+}
+
+void OnAllMurmur2Hashes(
+    std::unique_ptr<std::map<std::string, std::string>> hashes,
+    WebApkIconHasher::Murmur2HashMultipleCallback callback) {
+  for (const auto& hash_pair : *hashes) {
+    if (hash_pair.second.empty()) {
+      std::move(callback).Run(base::nullopt);
+      return;
+    }
+  }
+
+  std::move(callback).Run(std::move(*hashes));
+}
+
 }  // anonymous namespace
 
 // static
@@ -45,6 +66,29 @@ void WebApkIconHasher::DownloadAndComputeMurmur2Hash(
   DownloadAndComputeMurmur2HashWithTimeout(
       url_loader_factory, request_initiator, icon_url,
       kDownloadTimeoutInMilliseconds, std::move(callback));
+}
+
+// static
+void WebApkIconHasher::DownloadAndComputeMurmur2Hash(
+    network::mojom::URLLoaderFactory* url_loader_factory,
+    const url::Origin& request_initiator,
+    const std::set<GURL>& icon_urls,
+    Murmur2HashMultipleCallback callback) {
+  auto hashes_ptr = std::make_unique<std::map<std::string, std::string>>();
+  auto& hashes = *hashes_ptr;
+
+  auto barrier_closure = base::BarrierClosure(
+      icon_urls.size(),
+      base::BindOnce(&OnAllMurmur2Hashes, std::move(hashes_ptr),
+                     std::move(callback)));
+
+  for (const auto& icon_url : icon_urls) {
+    // |hashes| is owned by |barrier_closure|.
+    DownloadAndComputeMurmur2Hash(
+        url_loader_factory, request_initiator, icon_url,
+        base::BindOnce(&OnMurmur2Hash, &hashes[icon_url.spec()],
+                       barrier_closure));
+  }
 }
 
 // static

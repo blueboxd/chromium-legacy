@@ -58,6 +58,12 @@ jumbo_static_library("url_formatter") {
   }
 }
 
+if (is_android) {
+  java_cpp_enum("url_formatter_java_enums_srcjar") {
+    sources = [ "elide_url.h" ]
+  }
+}
+
 jumbo_source_set("unit_tests") {
   testonly = true
   sources = [

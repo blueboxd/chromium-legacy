@@ -72,9 +72,6 @@ class GCMProfileService : public KeyedService {
 #endif
   ~GCMProfileService() override;
 
-  // Returns whether GCM is enabled.
-  static bool IsGCMEnabled(PrefService* prefs);
-
   // KeyedService:
   void Shutdown() override;
 

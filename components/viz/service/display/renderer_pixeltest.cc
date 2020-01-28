@@ -3008,6 +3008,114 @@ TYPED_TEST(RendererPixelTestWithBackdropFilter, InvertFilterWithMask) {
       cc::FuzzyPixelOffByOneComparator(false)));
 }
 
+class GLRendererPixelTestWithBackdropFilter
+    : public RendererPixelTest<GLRenderer> {
+ protected:
+  void SetUpRenderPassList() {
+    pass_list_.clear();
+    gfx::Rect device_viewport_rect(this->device_viewport_size_);
+
+    int root_id = 1;
+    std::unique_ptr<RenderPass> root_pass =
+        CreateTestRootRenderPass(root_id, device_viewport_rect);
+    root_pass->has_transparent_background = false;
+
+    gfx::Transform identity_quad_to_target_transform;
+
+    int filter_pass_id = 2;
+    gfx::Transform transform_to_root;
+    std::unique_ptr<RenderPass> filter_pass = CreateTestRenderPass(
+        filter_pass_id, filter_pass_layer_rect_, transform_to_root);
+    filter_pass->backdrop_filters = this->backdrop_filters_;
+    filter_pass->backdrop_filter_bounds = this->backdrop_filter_bounds_;
+
+    // A non-visible quad in the filtering render pass.
+    {
+      SharedQuadState* shared_state = CreateTestSharedQuadState(
+          identity_quad_to_target_transform, filter_pass_layer_rect_,
+          filter_pass.get(), gfx::RRectF());
+      auto* color_quad =
+          filter_pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
+      color_quad->SetNew(shared_state, filter_pass_layer_rect_,
+                         filter_pass_layer_rect_, SK_ColorTRANSPARENT, false);
+    }
+
+    {
+      SharedQuadState* shared_state = CreateTestSharedQuadState(
+          filter_pass_to_target_transform_, filter_pass_layer_rect_,
+          filter_pass.get(), gfx::RRectF());
+      auto* filter_pass_quad =
+          root_pass->CreateAndAppendDrawQuad<RenderPassDrawQuad>();
+      filter_pass_quad->SetNew(
+          shared_state, filter_pass_layer_rect_, filter_pass_layer_rect_,
+          filter_pass_id, 0, gfx::RectF(), gfx::Size(),
+          gfx::Vector2dF(1.0f, 1.0f),  // filters_scale
+          gfx::PointF(),               // filters_origin
+          gfx::RectF(),                // tex_coord_rect
+          false,                       // force_anti_aliasing_off
+          backdrop_filter_quality_);   // backdrop_filter_quality
+    }
+
+    const int kGridWidth = device_viewport_rect.width() / 3;
+    const int kGridHeight = device_viewport_rect.height() / 3;
+    gfx::Rect left_rect =
+        gfx::Rect(kGridWidth / 2, kGridHeight, kGridWidth, kGridHeight);
+
+    SharedQuadState* shared_state =
+        CreateTestSharedQuadState(identity_quad_to_target_transform, left_rect,
+                                  root_pass.get(), gfx::RRectF());
+    auto* color_quad = root_pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
+    color_quad->SetNew(shared_state, left_rect, left_rect, SK_ColorGREEN,
+                       false);
+
+    gfx::Rect right_rect =
+        gfx::Rect(kGridWidth * 3 / 2, kGridHeight, kGridWidth, kGridHeight);
+    shared_state =
+        CreateTestSharedQuadState(identity_quad_to_target_transform, right_rect,
+                                  root_pass.get(), gfx::RRectF());
+    color_quad = root_pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
+    color_quad->SetNew(shared_state, right_rect, right_rect, SK_ColorRED,
+                       false);
+
+    shared_state = CreateTestSharedQuadState(identity_quad_to_target_transform,
+                                             device_viewport_rect,
+                                             root_pass.get(), gfx::RRectF());
+    auto* background_quad =
+        root_pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
+    background_quad->SetNew(shared_state, device_viewport_rect,
+                            device_viewport_rect, SK_ColorWHITE, false);
+
+    pass_list_.push_back(std::move(filter_pass));
+    pass_list_.push_back(std::move(root_pass));
+  }
+
+  RenderPassList pass_list_;
+  cc::FilterOperations backdrop_filters_;
+  base::Optional<gfx::RRectF> backdrop_filter_bounds_;
+  float backdrop_filter_quality_ = 1.0f;
+  gfx::Transform filter_pass_to_target_transform_;
+  gfx::Rect filter_pass_layer_rect_;
+};
+
+TEST_F(GLRendererPixelTestWithBackdropFilter, FilterQuality) {
+  this->backdrop_filters_.Append(cc::FilterOperation::CreateBlurFilter(2.0f));
+  this->filter_pass_layer_rect_ = gfx::Rect(this->device_viewport_size_);
+  this->backdrop_filter_bounds_ =
+      gfx::RRectF(gfx::RectF(this->filter_pass_layer_rect_));
+  this->backdrop_filter_quality_ = 1.0f;
+  this->SetUpRenderPassList();
+  EXPECT_TRUE(this->RunPixelTest(
+      &this->pass_list_,
+      base::FilePath(FILE_PATH_LITERAL("backdrop_filter_quality_1.png")),
+      cc::FuzzyPixelOffByOneComparator(true)));
+  this->backdrop_filter_quality_ = 0.33f;
+  this->SetUpRenderPassList();
+  EXPECT_TRUE(this->RunPixelTest(
+      &this->pass_list_,
+      base::FilePath(FILE_PATH_LITERAL("backdrop_filter_quality_2.png")),
+      cc::FuzzyPixelOffByOneComparator(true)));
+}
+
 template <typename RendererType>
 class ExternalStencilPixelTest : public RendererPixelTest<RendererType> {
  protected:

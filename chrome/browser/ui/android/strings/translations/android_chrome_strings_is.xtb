@@ -134,6 +134,7 @@
 <translation id="1994173015038366702">Slóð vefsvæðis</translation>
 <translation id="2000419248597011803">Sendir sum fótspor og sumar leitir úr veffangastikunni og leitarreitnum í sjálfgefnu leitarvélina þína</translation>
 <translation id="2002537628803770967">Kreditkort og heimilisföng sem nota Google Pay</translation>
+<translation id="2012973609889389923">Hröð síða</translation>
 <translation id="2013642289801508067">{FILE_COUNT,plural, =1{# skrá}one{# skrá}other{# skrár}}</translation>
 <translation id="2017836877785168846">Hreinsar ferilinn og sjálfvirka útfyllingu í veffangastiku.</translation>
 <translation id="2021896219286479412">Stýringar vefsvæðis á öllum skjá</translation>
@@ -278,6 +279,7 @@
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> bókamerki}one{<ph name="BOOKMARKS_COUNT_MANY" /> bókamerki}other{<ph name="BOOKMARKS_COUNT_MANY" /> bókamerki}}</translation>
 <translation id="3089395242580810162">Opna í huliðsflipa</translation>
 <translation id="3123473560110926937">Útilokaðar á sumum vefsvæðum</translation>
+<translation id="3123734510202723619">Tilkynningar</translation>
 <translation id="3137521801621304719">Slökkva á huliðsstillingu</translation>
 <translation id="3143515551205905069">Hætta við samstillingu</translation>
 <translation id="3157842584138209013">Skoða hversu mikið af gagnamagni þú hefur sparað undir hnappinum „Fleiri valkostir“</translation>
@@ -306,6 +308,7 @@
 <translation id="3298243779924642547">Léttútgáfa</translation>
 <translation id="3303414029551471755">Viltu halda áfram og sækja efnið?</translation>
 <translation id="3306398118552023113">Þetta forrit keyrir í Chrome</translation>
+<translation id="3312292613668865961">Spyrja áður en vefsvæði fá aðgang að tækjum og gögnum sýndarveruleika (ráðlagt)</translation>
 <translation id="3315103659806849044">Þú ert að sérsníða stillingar samstillingar og þjónustu Google. Til að ljúka við að kveikja á samstillingu skaltu ýta á hnappinn „Staðfesta“ neðarlega á skjánum. Fara upp</translation>
 <translation id="3328801116991980348">Upplýsingar um vefsvæði</translation>
 <translation id="3333961966071413176">Allir tengiliðir</translation>
@@ -511,6 +514,7 @@ Til að breyta þessari stillingu skaltu <ph name="BEGIN_LINK" />endurstilla sam
 <translation id="4915549754973153784"><ph name="BEGIN_LINK" />Fáðu aðstoð<ph name="END_LINK" /> á meðan leitað er að tækjum…</translation>
 <translation id="4921180162323349895">{FILE_COUNT,plural, =1{# síða}one{# síða}other{# síður}}</translation>
 <translation id="4932247056774066048">Þar sem þú ert að skrá þig út af reikningi sem er stjórnað af <ph name="DOMAIN_NAME" /> verður Chrome gögnum þínum eytt úr þessu tæki. Þau verða áfram á Google reikningnum þínum.</translation>
+<translation id="4935305910887312910">Spyrja áður en vefsvæði fá leyfi til að fá staðsetningu myndavélar eða kortleggja herbergið þitt (ráðlagt)</translation>
 <translation id="4943703118917034429">Sýndarveruleiki</translation>
 <translation id="4943872375798546930">Engar niðurstöður</translation>
 <translation id="4958708863221495346"><ph name="URL_OF_THE_CURRENT_TAB" /> deilir skjánum þínum</translation>
@@ -687,7 +691,6 @@ Til að breyta þessari stillingu skaltu <ph name="BEGIN_LINK" />endurstilla sam
 <translation id="6201345951596836663">Tengill afritaður</translation>
 <translation id="6206551242102657620">Örugg tenging. Upplýsingar um vefsvæði</translation>
 <translation id="6210748933810148297">Ekki <ph name="EMAIL" />?</translation>
-<translation id="6216432067784365534">Valkostir fyrir <ph name="NAME_OF_LIST_ITEM" /></translation>
 <translation id="6221633008163990886">Opnaðu til að flytja aðgangsorðin þín út</translation>
 <translation id="6232535412751077445">Ef kveikt er á „Ekki rekja“ er beiðni látin fylgja með vefumferðinni þinni. Áhrifin velta á því hvort vefsvæði verður við beiðninni og hvernig beiðnin er túlkuð.
 
@@ -733,7 +736,6 @@ Sum vefsvæði kunna til dæmis að bregðast við beiðninni með því að bir
 <translation id="6534565668554028783">Google var of lengi að svara</translation>
 <translation id="6538442820324228105">Sótti <ph name="GBS" /> GB</translation>
 <translation id="6539092367496845964">Eitthvað fór úrskeiðis. Reyndu aftur síðar.</translation>
-<translation id="654446541061731451">Veldu flipa til að senda</translation>
 <translation id="6545017243486555795">Hreinsa öll gögn</translation>
 <translation id="6545864417968258051">Bluetooth-leit</translation>
 <translation id="6560414384669816528">Leita með Sogou</translation>
@@ -744,6 +746,7 @@ Sum vefsvæði kunna til dæmis að bregðast við beiðninni með því að bir
 <translation id="6573431926118603307">Flipar sem þú hefur opnað í Chrome í öðrum tækjum birtast hér.</translation>
 <translation id="6583199322650523874">Bókamerkja þessa síðu</translation>
 <translation id="6593061639179217415">Tölvuvefsvæði</translation>
+<translation id="6597891566292541626">Staðsettu QR-/strikamerkið innan rammans.</translation>
 <translation id="6600954340915313787">Afritað yfir í Chrome</translation>
 <translation id="6608650720463149374"><ph name="GIGABYTES" /> GB</translation>
 <translation id="6612358246767739896">Varið efni</translation>
@@ -953,6 +956,7 @@ Vefsvæðið fær EKKI aðgang að myndavélinni. Myndir frá myndavélinni eru 
 <translation id="8109613176066109935">Kveiktu á samstillingu til að fá aðgang að bókamerkjunum þínum í öllum tækjum</translation>
 <translation id="8110087112193408731">Viltu sjá það sem þú gerir í Chrome í stafrænni vellíðan?</translation>
 <translation id="8116925261070264013">Þögguð</translation>
+<translation id="8127542551745560481">Breyta heimasíðu</translation>
 <translation id="813082847718468539">Skoða upplýsingar um vefsvæði</translation>
 <translation id="8156139159503939589">Hvaða tungumál geturðu lesið?</translation>
 <translation id="8168435359814927499">Efni</translation>
@@ -1024,8 +1028,8 @@ Vefsvæðið fær EKKI aðgang að myndavélinni. Myndir frá myndavélinni eru 
 <translation id="8676374126336081632">Hreinsa innslátt</translation>
 <translation id="8687353297350450808">{N_BARS,plural, =1{Sendistyrkur: # stika}one{Sendistyrkur: # stika}other{Sendistyrkur: # stikur}}</translation>
 <translation id="868929229000858085">Leita í tengiliðum</translation>
+<translation id="8698438463325761328">Loka á að svæði fái aðgang að tækjum og gögnum sýndarveruleika</translation>
 <translation id="869891660844655955">Lokadagsetning</translation>
-<translation id="8719023831149562936">Ekki hægt að senda þennan flipa</translation>
 <translation id="8728487861892616501">Með því að nota þetta forrit samþykkirðu <ph name="BEGIN_LINK1" />þjónustuskilmála<ph name="END_LINK1" /> og <ph name="BEGIN_LINK2" />persónuverndartilkynningu<ph name="END_LINK2" /> Chrome og <ph name="BEGIN_LINK3" />persónuverndartilkynningu fyrir Google reikninga sem stjórnað er með Family Link<ph name="END_LINK3" />.</translation>
 <translation id="8748850008226585750">Innihald falið</translation>
 <translation id="8751914237388039244">Veldu mynd</translation>
@@ -1041,6 +1045,7 @@ Vefsvæðið fær EKKI aðgang að myndavélinni. Myndir frá myndavélinni eru 
 <translation id="883806473910249246">Villa kom upp við að sækja efnið.</translation>
 <translation id="8840953339110955557">Þessi síða gæti verið frábrugðin útgáfunni sem er á netinu.</translation>
 <translation id="8847988622838149491">USB</translation>
+<translation id="884828189055900810">Loka fyrir að vefsvæði geti fengið staðsetningu myndavélar eða kortlagt herbergið þitt</translation>
 <translation id="8853345339104747198"><ph name="TAB_TITLE" />, flipi</translation>
 <translation id="885701979325669005">Geymslurými</translation>
 <translation id="889338405075704026">Fara í stillingar Chrome</translation>
@@ -1048,6 +1053,7 @@ Vefsvæðið fær EKKI aðgang að myndavélinni. Myndir frá myndavélinni eru 
 <translation id="8909135823018751308">Deila…</translation>
 <translation id="8912362522468806198">Google reikningur</translation>
 <translation id="8920114477895755567">Bíður eftir upplýsingum um foreldra.</translation>
+<translation id="8921772741368021346"><ph name="POSITION" /> / <ph name="DURATION" /></translation>
 <translation id="8922289737868596582">Náðu í síður með hnappnum „Fleiri valkostir“ til að nota þær án nettengingar</translation>
 <translation id="8926666909099850184">Slökkt er á NFC fyrir þetta tæki. Kveiktu á því í <ph name="BEGIN_LINK" />stillingum Android<ph name="END_LINK" />.</translation>
 <translation id="8937772741022875483">Viltu fjarlægja það sem þú gerir í Chrome úr stafrænni vellíðan?</translation>

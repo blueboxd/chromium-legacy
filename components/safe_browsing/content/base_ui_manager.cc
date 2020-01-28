@@ -164,13 +164,15 @@ void BaseUIManager::OnBlockingPageDone(
     const std::vector<UnsafeResource>& resources,
     bool proceed,
     WebContents* web_contents,
-    const GURL& main_frame_url) {
+    const GURL& main_frame_url,
+    bool showed_interstitial) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   for (const auto& resource : resources) {
     if (!resource.callback.is_null()) {
       DCHECK(resource.callback_thread);
       resource.callback_thread->PostTask(
-          FROM_HERE, base::BindOnce(resource.callback, proceed));
+          FROM_HERE,
+          base::BindOnce(resource.callback, proceed, showed_interstitial));
     }
 
     GURL whitelist_url = GetWhitelistUrl(
@@ -204,7 +206,8 @@ void BaseUIManager::DisplayBlockingPage(
       if (!resource.callback.is_null()) {
         DCHECK(resource.callback_thread);
         resource.callback_thread->PostTask(
-            FROM_HERE, base::BindOnce(resource.callback, true));
+            FROM_HERE, base::BindOnce(resource.callback, true /* proceed */,
+                                      false /* showed_interstitial */));
       }
       return;
     }
@@ -215,9 +218,9 @@ void BaseUIManager::DisplayBlockingPage(
   WebContents* web_contents = resource.web_contents_getter.Run();
   if (!web_contents) {
     OnBlockingPageDone(std::vector<UnsafeResource>{resource},
-                       false /* proceed */,
-                       web_contents,
-                       GetMainFrameWhitelistUrlForResource(resource));
+                       false /* proceed */, web_contents,
+                       GetMainFrameWhitelistUrlForResource(resource),
+                       false /* showed_interstitial */);
     return;
   }
 
@@ -227,7 +230,8 @@ void BaseUIManager::DisplayBlockingPage(
     if (!resource.callback.is_null()) {
       DCHECK(resource.callback_thread);
       resource.callback_thread->PostTask(
-          FROM_HERE, base::BindOnce(resource.callback, true));
+          FROM_HERE, base::BindOnce(resource.callback, true /* proceed */,
+                                    false /* showed_interstitial */));
     }
 
     return;
@@ -253,8 +257,14 @@ void BaseUIManager::DisplayBlockingPage(
     // With committed interstitials we just cancel the load from here, the
     // actual interstitial will be shown from the
     // SafeBrowsingNavigationThrottle.
+    // showed_interstitial is set to false for subresources since this
+    // cancellation doesn't correspond to the navigation that triggers the error
+    // page (the call to LoadPostCommitErrorPage creates another navigation).
     resource.callback_thread->PostTask(
-        FROM_HERE, base::BindOnce(resource.callback, false));
+        FROM_HERE,
+        base::BindOnce(
+            resource.callback, false /* proceed */,
+            resource.IsMainPageLoadBlocked() /* showed_interstitial */));
     if (!resource.IsMainPageLoadBlocked() && !IsWhitelisted(resource)) {
       // For subresource triggered interstitials, we trigger the error page
       // navigation from here since there will be no navigation to intercept

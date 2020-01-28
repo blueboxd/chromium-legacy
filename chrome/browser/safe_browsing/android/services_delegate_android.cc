@@ -102,6 +102,11 @@ void ServicesDelegateAndroid::StopOnIOThread(bool shutdown) {
   database_manager_->StopOnIOThread(shutdown);
 }
 
+void ServicesDelegateAndroid::OnProfileWillBeDestroyedOnIOThread(
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory) {
+  database_manager_->OnProfileWillBeDestroyedOnIOThread(url_loader_factory);
+}
+
 void ServicesDelegateAndroid::CreateTelemetryService(Profile* profile) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(profile);

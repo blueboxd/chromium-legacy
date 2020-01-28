@@ -28,13 +28,24 @@ namespace base {
 
 // This is the interface to post tasks.
 //
+// Note: A migration is in-progress away from this API and in favor of explicit
+// API-as-a-destination. thread_pool.h is now preferred to the
+// base::ThreadPool() to post to the thread pool
+//
 // To post a simple one-off task with default traits:
 //     PostTask(FROM_HERE, BindOnce(...));
+// modern equivalent:
+//     ThreadPool::PostTask(FROM_HERE, BindOnce(...));
 //
 // To post a high priority one-off task to respond to a user interaction:
 //     PostTask(
 //         FROM_HERE,
 //         {ThreadPool(), TaskPriority::USER_BLOCKING},
+//         BindOnce(...));
+// modern equivalent:
+//     ThreadPool::PostTask(
+//         FROM_HERE,
+//         {TaskPriority::USER_BLOCKING},
 //         BindOnce(...));
 //
 // To post tasks that must run in sequence with default traits:
@@ -42,11 +53,22 @@ namespace base {
 //         CreateSequencedTaskRunner({ThreadPool()});
 //     task_runner->PostTask(FROM_HERE, BindOnce(...));
 //     task_runner->PostTask(FROM_HERE, BindOnce(...));
+// modern equivalent:
+//     scoped_refptr<SequencedTaskRunner> task_runner =
+//         ThreadPool::CreateSequencedTaskRunner({});
+//     task_runner->PostTask(FROM_HERE, BindOnce(...));
+//     task_runner->PostTask(FROM_HERE, BindOnce(...));
 //
 // To post tasks that may block, must run in sequence and can be skipped on
 // shutdown:
 //     scoped_refptr<SequencedTaskRunner> task_runner =
-//         CreateSequencedTaskRunner(
+//         CreateSequencedTaskRunner({ThreadPool(), MayBlock(),
+//                                   TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
+//     task_runner->PostTask(FROM_HERE, BindOnce(...));
+//     task_runner->PostTask(FROM_HERE, BindOnce(...));
+// modern equivalent:
+//     scoped_refptr<SequencedTaskRunner> task_runner =
+//         ThreadPool::CreateSequencedTaskRunner(
 //             {MayBlock(), TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
 //     task_runner->PostTask(FROM_HERE, BindOnce(...));
 //     task_runner->PostTask(FROM_HERE, BindOnce(...));
@@ -62,8 +84,7 @@ namespace base {
 // Tasks posted with only traits defined in base/task/task_traits.h run on
 // threads owned by the registered ThreadPoolInstance (i.e. not on the main
 // thread). An embedder (e.g. Chrome) can define additional traits to make tasks
-// run on threads of their choosing. TODO(https://crbug.com/863341): Make this a
-// reality.
+// run on threads of their choosing.
 //
 // Tasks posted with the same traits will be scheduled in the order they were
 // posted. IMPORTANT: Please note however that, unless the traits imply a
@@ -171,6 +192,8 @@ BASE_EXPORT scoped_refptr<SequencedTaskRunner> CreateSequencedTaskRunner(
 //
 // |traits| requirements:
 // - base::ThreadPool() must be specified.
+//     Note: Prefer the explicit (thread_pool.h) version of this API while we
+//     migrate this one to it.
 // - Extension traits (e.g. BrowserThread) cannot be specified.
 // - base::ThreadPolicy must be specified if the priority of the task runner
 //   will ever be increased from BEST_EFFORT.

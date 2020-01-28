@@ -22,12 +22,12 @@
 
 using chrome_test_util::BookmarksSaveEditFolderButton;
 using chrome_test_util::BookmarksDeleteSwipeButton;
+using chrome_test_util::BookmarksNavigationBarBackButton;
 using chrome_test_util::ButtonWithAccessibilityLabelId;
 using chrome_test_util::CancelButton;
 using chrome_test_util::ContextBarCenterButtonWithLabel;
 using chrome_test_util::ContextBarLeadingButtonWithLabel;
 using chrome_test_util::ContextBarTrailingButtonWithLabel;
-using chrome_test_util::NavigateBackButtonTo;
 using chrome_test_util::SearchIconButton;
 using chrome_test_util::TappableBookmarkNodeWithLabel;
 
@@ -735,13 +735,7 @@ using chrome_test_util::TappableBookmarkNodeWithLabel;
 }
 
 // Tests that you can search folders.
-// TODO(crbug.com/1034183): Enable for EG2 once NavigateBackButtonTo() is fixed.
-#if defined(CHROME_EARL_GREY_2)
-#define MAYBE_testSearchFolders DISABLED_testSearchFolders
-#else
-#define MAYBE_testSearchFolders testSearchFolders
-#endif
-- (void)MAYBE_testSearchFolders {
+- (void)testSearchFolders {
   [BookmarkEarlGrey setupStandardBookmarks];
   [BookmarkEarlGreyUI openBookmarks];
   [BookmarkEarlGreyUI openMobileBookmarks];
@@ -765,7 +759,7 @@ using chrome_test_util::TappableBookmarkNodeWithLabel;
       performAction:grey_tap()];
 
   // Go back and verify we are in MobileBooknarks. (i.e. not back to Folder 2)
-  [[EarlGrey selectElementWithMatcher:NavigateBackButtonTo(@"Mobile Bookmarks")]
+  [[EarlGrey selectElementWithMatcher:BookmarksNavigationBarBackButton()]
       performAction:grey_tap()];
 
   // Search and go to Folder 2.
@@ -776,7 +770,7 @@ using chrome_test_util::TappableBookmarkNodeWithLabel;
       performAction:grey_tap()];
 
   // Go back and verify we are in Folder 1. (i.e. not back to Mobile Bookmarks)
-  [[EarlGrey selectElementWithMatcher:NavigateBackButtonTo(@"Folder 1")]
+  [[EarlGrey selectElementWithMatcher:BookmarksNavigationBarBackButton()]
       performAction:grey_tap()];
 }
 

@@ -1,6 +1,7 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1 Tiny//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11-tiny.dtd">
-<svg onload="loaded()" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<svg xmlns="http://www.w3.org/2000/svg">
+  <title>Animation triggers on 'repeatEvent' iteration</title>
+  <script href="../../resources/testharness.js"/>
+  <script href="../../resources/testharnessreport.js"/>
   <g>
     <animate id="anim" attributeName="visibility" to="visible" begin="0s" dur="2s" repeatCount="4"/>
     <rect x="0" y="0" width="100" height="100" fill="green">
@@ -17,14 +18,31 @@
     </rect>
   </g>
   <script>
-    if (window.testRunner)
-      testRunner.waitUntilDone();
-
-    function loaded() {
-      document.documentElement.setCurrentTime(8);
-
-      if (window.testRunner)
-        setTimeout(function(){testRunner.notifyDone();}, 30);
-    }
+    promise_test(t => {
+        let svg = document.documentElement;
+        let anim = document.getElementById('anim');
+        let animWatcher = new EventWatcher(t, anim, ['beginEvent', 'repeatEvent']);
+        // Wait for #anims 'beginEvent' and then step through the
+        // 'repeatEvents' one at a time.
+        let stepsPromise = animWatcher.wait_for('beginEvent').then(() => {
+            svg.setCurrentTime(1.99);
+            return animWatcher.wait_for('repeatEvent');
+        }).then(() => {
+            svg.setCurrentTime(3.99);
+            return animWatcher.wait_for('repeatEvent');
+        }).then(() => {
+            svg.setCurrentTime(5.99);
+            return animWatcher.wait_for('repeatEvent');
+        });
+        let setElements = document.getElementsByTagName('set');
+        let setBeginWatchers = Array.from(setElements).map(element => {
+            return new EventWatcher(t, element, 'beginEvent');
+        });
+        // Expect 'beginEvent' to be dispatched for all but the first 'set' element.
+        let beginPromises = setBeginWatchers.slice(1).map(watcher => {
+            return watcher.wait_for('beginEvent');
+        })
+        return Promise.all([stepsPromise, ...beginPromises]);
+    });
   </script>
 </svg>

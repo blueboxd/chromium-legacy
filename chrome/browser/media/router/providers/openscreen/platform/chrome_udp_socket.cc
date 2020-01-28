@@ -8,8 +8,8 @@
 
 #include "base/bind.h"
 #include "base/containers/span.h"
-#include "chrome/browser/media/router/providers/openscreen/platform/network_util.h"
 #include "chrome/browser/net/system_network_context_manager.h"
+#include "components/openscreen_platform/network_util.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "net/base/address_family.h"
 #include "net/base/ip_endpoint.h"
@@ -112,7 +112,7 @@ IPEndpoint ChromeUdpSocket::GetLocalEndpoint() const {
 }
 
 void ChromeUdpSocket::Bind() {
-  udp_socket_->Bind(network_util::ToChromeNetEndpoint(local_endpoint_),
+  udp_socket_->Bind(openscreen_platform::ToNetEndPoint(local_endpoint_),
                     nullptr /* socket_options */,
                     base::BindOnce(&ChromeUdpSocket::BindCallback,
                                    weak_ptr_factory_.GetWeakPtr()));
@@ -128,7 +128,7 @@ void ChromeUdpSocket::SetMulticastOutboundInterface(
 void ChromeUdpSocket::JoinMulticastGroup(
     const IPAddress& address,
     openscreen::NetworkInterfaceIndex ifindex) {
-  const auto join_address = network_util::ToChromeNetAddress(address);
+  const auto join_address = openscreen_platform::ToNetAddress(address);
   udp_socket_->JoinGroup(join_address,
                          base::BindOnce(&ChromeUdpSocket::JoinGroupCallback,
                                         weak_ptr_factory_.GetWeakPtr()));
@@ -137,7 +137,7 @@ void ChromeUdpSocket::JoinMulticastGroup(
 void ChromeUdpSocket::SendMessage(const void* data,
                                   size_t length,
                                   const IPEndpoint& dest) {
-  const auto send_to_address = network_util::ToChromeNetEndpoint(dest);
+  const auto send_to_address = openscreen_platform::ToNetEndPoint(dest);
   base::span<const uint8_t> data_span(static_cast<const uint8_t*>(data),
                                       length);
 
@@ -166,7 +166,7 @@ void ChromeUdpSocket::OnReceived(
     packet.set_socket(this);
     if (source_endpoint) {
       packet.set_source(
-          network_util::ToOpenScreenEndpoint(source_endpoint.value()));
+          openscreen_platform::ToOpenScreenEndPoint(source_endpoint.value()));
     }
     client_->OnRead(this, std::move(packet));
   }
@@ -194,7 +194,8 @@ void ChromeUdpSocket::BindCallback(
   }
 
   if (address) {
-    local_endpoint_ = network_util::ToOpenScreenEndpoint(address.value());
+    local_endpoint_ =
+        openscreen_platform::ToOpenScreenEndPoint(address.value());
     if (pending_listener_.is_valid()) {
       listener_.Bind(std::move(pending_listener_));
     }

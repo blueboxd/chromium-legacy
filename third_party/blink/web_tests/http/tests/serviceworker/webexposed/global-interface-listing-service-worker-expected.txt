@@ -3762,7 +3762,9 @@ interface WorkerNavigator
     getter usb
     getter userAgent
     getter wakeLock
+    method clearExperimentalAppBadge
     method constructor
+    method setExperimentalAppBadge
 interface WritableStream
     attribute @@toStringTag
     getter locked

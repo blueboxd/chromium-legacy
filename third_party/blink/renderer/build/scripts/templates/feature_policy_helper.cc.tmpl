@@ -32,16 +32,16 @@ const FeatureNameMap& GetDefaultFeatureNameMap() {
   DEFINE_STATIC_LOCAL(FeatureNameMap, default_feature_name_map, ());
   if (default_feature_name_map.IsEmpty()) {
     {% for feature in feature_policy_features %}
-    {% if not feature.depends_on or feature.in_origin_trial %}
+    {% if not feature.depends_on or feature.name in origin_trial_dependency_map %}
     default_feature_name_map.Set(k{{feature.name}}PolicyName,
                                  mojom::FeaturePolicyFeature::k{{feature.name}});
     {% endif %}
     {% endfor %}
-    {% for runtime_feature_name, FP_features in runtime_to_feature_policy_map.items() %}
+    {% for runtime_feature_name, FP_features in runtime_to_feature_policy_map.items() | sort %}
     if (RuntimeEnabledFeatures::{{runtime_feature_name}}Enabled()) {
       {% for feature in FP_features %}
-      default_feature_name_map.Set(k{{feature.name}}PolicyName,
-                                   mojom::FeaturePolicyFeature::k{{feature.name}});
+      default_feature_name_map.Set(k{{feature}}PolicyName,
+                                   mojom::FeaturePolicyFeature::k{{feature}});
       {% endfor %}
     }
     {% endfor %}
@@ -49,14 +49,16 @@ const FeatureNameMap& GetDefaultFeatureNameMap() {
   return default_feature_name_map;
 }
 
+// If any of the origin trial runtime feature is enabled, returns false,
+// i.e. the feature is considered enabled by origin trial.
 bool DisabledByOriginTrial(const String& feature_name,
                            FeatureContext* feature_context) {
-  {% for feature_name, dependencies in origin_trial_dependency_map.items() %}
+  {% for feature_name, dependencies in origin_trial_dependency_map.items() | sort %}
   if (feature_name == k{{feature_name}}PolicyName) {
     return
     {%- for dependency in dependencies %}
     {%- if not loop.first %} &&{% endif %}
- !RuntimeEnabledFeatures::{{dependency.name}}Enabled(feature_context)
+ !RuntimeEnabledFeatures::{{dependency}}Enabled(feature_context)
     {%- endfor %};
   }
   {% endfor %}

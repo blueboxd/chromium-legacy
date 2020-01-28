@@ -11,6 +11,7 @@
 #include "ios/chrome/browser/chrome_url_constants.h"
 #import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/metrics/tab_usage_recorder.h"
+#import "ios/chrome/browser/sessions/session_restoration_browser_agent.h"
 #include "ios/chrome/browser/system_flags.h"
 #import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/chrome/browser/tabs/tab_title_util.h"
@@ -210,7 +211,9 @@ BOOL SimulateTabsBackgrounding() {
 }
 
 void SaveSessionImmediately() {
-  [GetCurrentTabModel() saveSessionImmediately:YES];
+  Browser* browser =
+      GetMainController().interfaceProvider.mainInterface.browser;
+  SessionRestorationBrowserAgent::FromBrowser(browser)->SaveSession(true);
 }
 
 void EvictOtherTabModelTabs() {

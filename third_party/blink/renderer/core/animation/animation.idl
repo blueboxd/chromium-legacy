@@ -58,6 +58,7 @@ enum ReplaceState { "active", "removed", "persisted" };
     [Measure] void cancel();
     [Measure] attribute EventHandler onfinish;
     [Measure] attribute EventHandler oncancel;
+    [RuntimeEnabled=WebAnimationsAPI, Measure] attribute EventHandler onremove;
     [RuntimeEnabled=WebAnimationsAPI, CallWith=ScriptState] readonly attribute Promise<Animation> finished;
     [RuntimeEnabled=WebAnimationsAPI, CallWith=ScriptState] readonly attribute Promise<Animation> ready;
 };

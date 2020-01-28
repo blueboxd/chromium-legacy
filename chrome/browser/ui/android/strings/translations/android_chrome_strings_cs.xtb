@@ -279,6 +279,7 @@
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> záložka}few{<ph name="BOOKMARKS_COUNT_MANY" /> záložky}many{<ph name="BOOKMARKS_COUNT_MANY" /> záložky}other{<ph name="BOOKMARKS_COUNT_MANY" /> záložek}}</translation>
 <translation id="3089395242580810162">Otevřít na anonymní kartě</translation>
 <translation id="3123473560110926937">Na některých webech blokováno</translation>
+<translation id="3123734510202723619">Oznámení</translation>
 <translation id="3137521801621304719">Ukončit anonymní režim</translation>
 <translation id="3143515551205905069">Zrušit synchronizaci</translation>
 <translation id="3157842584138209013">Informace o množství uspořených dat zobrazíte pomocí tlačítka Další možnosti</translation>
@@ -690,7 +691,6 @@ Chcete-toto nastavení změnit, <ph name="BEGIN_LINK" />resetujte synchronizaci<
 <translation id="6201345951596836663">Odkaz byl zkopírován</translation>
 <translation id="6206551242102657620">Připojení je zabezpečené. Informace o webu</translation>
 <translation id="6210748933810148297">Nejste <ph name="EMAIL" />?</translation>
-<translation id="6216432067784365534"><ph name="NAME_OF_LIST_ITEM" /> – možnosti</translation>
 <translation id="6221633008163990886">Chcete-li exportovat hesla, odemkněte zařízení</translation>
 <translation id="6232535412751077445">Pokud povolíte požadavek Do Not Track, bude připojován k datům provozu prohlížení. Účinek tohoto požadavku závisí na tom, zda na něj budou webové stránky reagovat a jak jej budou interpretovat.
 
@@ -736,7 +736,6 @@ Některé weby mohou například na tento požadavek reagovat tak, že vám zobr
 <translation id="6534565668554028783">Odpověď Googlu trvala příliš dlouho</translation>
 <translation id="6538442820324228105">Staženo: <ph name="GBS" /> GB</translation>
 <translation id="6539092367496845964">Něco se pokazilo. Zkuste to později.</translation>
-<translation id="654446541061731451">Vyberte kartu, kterou chcete přenést</translation>
 <translation id="6545017243486555795">Vymazat všechna data</translation>
 <translation id="6545864417968258051">Vyhledávání Bluetooth</translation>
 <translation id="6560414384669816528">Vyhledávat pomocí Sogou</translation>
@@ -1031,7 +1030,6 @@ Web NEZÍSKÁ přístup k fotoaparátu. Fotky z fotoaparátu uvidíte pouze vy
 <translation id="868929229000858085">Vyhledat v kontaktech</translation>
 <translation id="8698438463325761328">Blokovat webům přístup k zařízením a datům pro virtuální realitu</translation>
 <translation id="869891660844655955">Datum vypršení platnosti</translation>
-<translation id="8719023831149562936">Aktuální kartu nelze přenést</translation>
 <translation id="8728487861892616501">Používáním této aplikace vyjadřujete souhlas se <ph name="BEGIN_LINK1" />smluvními podmínkami<ph name="END_LINK1" /> a <ph name="BEGIN_LINK2" />upozorněním ve věci ochrany soukromí<ph name="END_LINK2" /> prohlížeče Chrome a <ph name="BEGIN_LINK3" />upozorněním ve věci ochrany soukromí pro účty Google spravované prostřednictvím služby Family Link<ph name="END_LINK3" />.</translation>
 <translation id="8748850008226585750">Skrytý obsah</translation>
 <translation id="8751914237388039244">Vybrat obrázek</translation>

@@ -192,6 +192,7 @@
 <translation id="3474649192738347024">Bete dira inprimakiak.</translation>
 <translation id="3478058380795961209">Iraungitze-hilabetea</translation>
 <translation id="3482959374254649722">Fitxak sinkronizatzen…</translation>
+<translation id="3484946776651937681">Ireki deskargen karpeta</translation>
 <translation id="3493531032208478708"><ph name="BEGIN_LINK" />Lortu informazio gehiago<ph name="END_LINK" /> iradokitako edukiari buruz</translation>
 <translation id="3494788280727468875">Berretsi arakatze-datuak garbitu nahi dituzula</translation>
 <translation id="35083190962747987">Ireki ${url}</translation>
@@ -537,6 +538,7 @@ Sinkronizatzeko pasaesaldiaren bidez enkriptatu dira datuak (<ph name="TIME" />)
 <translation id="8319076807703933069">Bilaketa berria</translation>
 <translation id="8323906514956095947">Eduki sakatuta fitxetako aukera gehiago ikusteko</translation>
 <translation id="8328777765163860529">Itxi guztiak</translation>
+<translation id="8386068868580335421">Berrezarri</translation>
 <translation id="8407669440184693619">Ez da aurkitu webgune honen pasahitzik</translation>
 <translation id="842017693807136194">Honekin hasi da saioa:</translation>
 <translation id="8428045167754449968">Hiria/Udalerria</translation>
@@ -553,6 +555,7 @@ Sinkronizatzeko pasaesaldiaren bidez enkriptatu dira datuak (<ph name="TIME" />)
 <translation id="8532105204136943229">Iraungitze-urtea</translation>
 <translation id="8534481786647257214">Google+eko mezua argitaratu da.</translation>
 <translation id="8548878600947630424">Bilatu orrian…</translation>
+<translation id="8574235780160508979">Chrome-ren Zerbitzu-baldintzak martxoaren 31n aldatuko dira. <ph name="BEGIN_LINK" />Irakur itzazu<ph name="END_LINK" />.</translation>
 <translation id="8588404856427128947">Itzalita</translation>
 <translation id="8605219856220328675">Itxi fitxa.</translation>
 <translation id="8620640915598389714">Editatu</translation>

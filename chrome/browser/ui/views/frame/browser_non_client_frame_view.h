@@ -177,9 +177,9 @@ class BrowserNonClientFrameView : public views::NonClientFrameView,
   int GetSystemMenuY() const override;
 #endif
 
-  // Gets a theme provider that should be non-null even before we're added to a
-  // view hierarchy.
-  const ui::ThemeProvider* GetThemeProviderForProfile() const;
+  // Get the |frame_| theme provider since it should be non-null even before
+  // we're added to the view hierarchy.
+  const ui::ThemeProvider* GetFrameThemeProvider() const;
 
   // Returns the color of the given |color_id| from the theme provider or the
   // default theme properties.

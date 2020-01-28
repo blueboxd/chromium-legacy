@@ -47,10 +47,12 @@ bool TestTabStripModelDelegate::CanDuplicateContentsAt(int index) {
 void TestTabStripModelDelegate::DuplicateContentsAt(int index) {
 }
 
-bool TestTabStripModelDelegate::CanMoveTabToWindow(int index) {
+bool TestTabStripModelDelegate::CanMoveTabsToWindow(
+    const std::vector<int>& indices) {
   return false;
 }
-void TestTabStripModelDelegate::MoveTabToNewWindow(int index) {}
+void TestTabStripModelDelegate::MoveTabsToNewWindow(
+    const std::vector<int>& indices) {}
 
 void TestTabStripModelDelegate::CreateHistoricalTab(
     content::WebContents* contents) {

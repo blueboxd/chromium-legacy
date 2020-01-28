@@ -139,7 +139,6 @@ void CredentialProviderSigninDialogWinDialogTest::ShowSigninDialog(
       base::BindOnce(
           &CredentialProviderSigninDialogWinDialogTest::HandleSignInComplete,
           base::Unretained(this)));
-
   web_contents_ = web_view_->web_contents();
 }
 
@@ -170,6 +169,27 @@ void CredentialProviderSigninDialogWinDialogTest::HandleSignInComplete(
 
   if (signin_complete_closure_)
     std::move(signin_complete_closure_).Run();
+}
+
+IN_PROC_BROWSER_TEST_F(CredentialProviderSigninDialogWinDialogTest,
+                       ShowTosInUrlParams) {
+  base::CommandLine command_line =
+      base::CommandLine(base::CommandLine::NoProgram::NO_PROGRAM);
+  // Append show_tos switch and verify if the tos is part of URL.
+  const std::string show_tos = "1";
+  command_line.AppendSwitchASCII(::credential_provider::kShowTosSwitch,
+                                 show_tos);
+  ShowSigninDialog(command_line);
+  WaitForDialogToLoad();
+
+  EXPECT_TRUE(web_view_->GetDialogContentURL().has_query());
+  std::string query_parameters = web_view_->GetDialogContentURL().query();
+  EXPECT_TRUE(query_parameters.find("show_tos=1") != std::string::npos);
+
+  web_view_->GetWidget()->CloseWithReason(
+      views::Widget::ClosedReason::kEscKeyPressed);
+  base::RunLoop run_loop;
+  run_loop.RunUntilIdle();
 }
 
 IN_PROC_BROWSER_TEST_F(CredentialProviderSigninDialogWinDialogTest,

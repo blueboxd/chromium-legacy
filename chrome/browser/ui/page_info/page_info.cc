@@ -37,7 +37,6 @@
 #include "chrome/browser/permissions/permission_decision_auto_blocker.h"
 #include "chrome/browser/permissions/permission_manager.h"
 #include "chrome/browser/permissions/permission_uma_util.h"
-#include "chrome/browser/permissions/permission_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/ssl/chrome_ssl_host_state_delegate.h"
@@ -58,6 +57,7 @@
 #include "components/content_settings/core/common/content_settings_utils.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/permissions/permission_result.h"
+#include "components/permissions/permission_util.h"
 #include "components/safe_browsing/buildflags.h"
 #include "components/safe_browsing/content/password_protection/metrics_util.h"
 #include "components/safe_browsing/core/proto/csd.pb.h"
@@ -548,7 +548,7 @@ void PageInfo::OnSitePermissionChanged(ContentSettingsType type,
     }
   }
 
-  PermissionUtil::ScopedRevocationReporter scoped_revocation_reporter(
+  PermissionUmaUtil::ScopedRevocationReporter scoped_revocation_reporter(
       profile_, site_url_, site_url_, type, PermissionSourceUI::OIB);
 
   // The permission may have been blocked due to being under embargo, so if it
@@ -968,7 +968,7 @@ void PageInfo::PresentSitePermissions() {
 
     // For permissions that are still prompting the user and haven't been
     // explicitly set by another source, check its embargo status.
-    if (PermissionUtil::IsPermission(permission_info.type) &&
+    if (permissions::PermissionUtil::IsPermission(permission_info.type) &&
         permission_info.setting == CONTENT_SETTING_DEFAULT &&
         permission_info.source ==
             content_settings::SettingSource::SETTING_SOURCE_USER) {

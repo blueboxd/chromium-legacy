@@ -430,7 +430,7 @@ SelectToSpeak.prototype = {
    */
   setFocusRings_(rects) {
     chrome.accessibilityPrivate.setFocusRings([{
-      rects: rects,
+      rects,
       type: chrome.accessibilityPrivate.FocusType.GLOW,
       color: this.prefsManager_.focusRingColor()
     }]);

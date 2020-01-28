@@ -43,28 +43,68 @@
         android:orientation="horizontal"
         android:gravity="start">
 
-        <TextView
+        <org.chromium.ui.widget.TextViewWithLeading
             android:id="@+id/new_tab_incognito_features"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textAppearance="@style/TextAppearance.WhiteBodyIncognito"
-            android:lineSpacingExtra="@dimen/md_incognito_ntp_line_spacing" />
+            app:leading="@dimen/text_size_medium_leading" />
 
-        <TextView
+        <org.chromium.ui.widget.TextViewWithLeading
             android:id="@+id/new_tab_incognito_warning"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textAppearance="@style/TextAppearance.WhiteBodyIncognito"
-            android:lineSpacingExtra="@dimen/md_incognito_ntp_line_spacing" />
+            app:leading="@dimen/text_size_medium_leading" />
 
     </LinearLayout>
 
-    <TextView
+    <org.chromium.ui.widget.TextViewWithLeading
         android:id="@+id/learn_more"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/learn_more"
         android:textAppearance="@style/TextAppearance.IncognitoNewTabLearnMoreLinkModern"
-        android:lineSpacingExtra="@dimen/md_incognito_ntp_line_spacing" />
+        app:leading="@dimen/text_size_medium_leading" />
+
+    <RelativeLayout
+        android:id="@+id/cookie_controls_card"
+        style="@style/CardTransparentForDark"
+        android:visibility="gone"
+        android:layout_gravity="center"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:padding="16dp">
+
+        <android.support.v7.widget.SwitchCompat
+            android:id="@+id/cookie_controls_card_toggle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:theme="@style/SwitchCompatDark"
+            android:layout_alignParentEnd="true"
+            app:showText="false" />
+
+        <org.chromium.ui.widget.TextViewWithLeading
+            android:id="@+id/cookie_controls_card_title"
+            android:text="@string/new_tab_otr_third_party_cookie"
+            android:textAppearance="@style/TextAppearance.WhiteTitle1"
+            android:layout_marginBottom="@dimen/md_incognito_ntp_line_spacing"
+            android:layout_alignParentStart="true"
+            android:layout_height="wrap_content"
+            android:layout_width="match_parent" />
+
+        <org.chromium.ui.widget.TextViewWithLeading
+            android:text="@string/new_tab_otr_third_party_cookie_sublabel"
+            android:textAppearance="@style/TextAppearance.WhiteBodyIncognito"
+            android:layout_alignParentStart="true"
+            android:layout_toStartOf="@id/cookie_controls_card_toggle"
+            android:layout_below="@id/cookie_controls_card_title"
+            app:leading="@dimen/text_size_medium_leading"
+            android:layout_height="wrap_content"
+            android:layout_width="match_parent" />
+
+    </RelativeLayout>
 
 </org.chromium.chrome.browser.ntp.IncognitoDescriptionView>

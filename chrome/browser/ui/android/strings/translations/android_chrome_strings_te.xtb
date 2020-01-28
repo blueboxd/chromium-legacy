@@ -278,6 +278,7 @@
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> బుక్‌మార్క్}other{<ph name="BOOKMARKS_COUNT_MANY" /> బుక్‌మార్క్‌లు}}</translation>
 <translation id="3089395242580810162">అజ్ఞాత ట్యాబ్‌లో తెరువు</translation>
 <translation id="3123473560110926937">కొన్ని సైట్‌లలో బ్లాక్ చేయబడింది</translation>
+<translation id="3123734510202723619">ప్రకటనలు</translation>
 <translation id="3137521801621304719">అజ్ఞాత మోడ్ నుండి నిష్క్రమించండి</translation>
 <translation id="3143515551205905069">సింక్‌ను రద్దు చేయి</translation>
 <translation id="3157842584138209013">'మరిన్ని ఎంపికలు' బటన్ నుండి మీరు ఎంత డేటాను సేవ్ చేసారో చూడండి</translation>
@@ -687,7 +688,6 @@
 <translation id="6201345951596836663">లింక్ కాపీ చేయబడింది</translation>
 <translation id="6206551242102657620">కనెక్షన్ సురక్షితం. సైట్ సమాచారం</translation>
 <translation id="6210748933810148297"><ph name="EMAIL" /> కాదా?</translation>
-<translation id="6216432067784365534"><ph name="NAME_OF_LIST_ITEM" /> ఎంపికలు</translation>
 <translation id="6221633008163990886">మీ పాస్‌వర్డ్‌లను ఎగుమతి చేయడానికి అన్‌లాక్ చేయండి</translation>
 <translation id="6232535412751077445">“ట్రాక్ చేయవద్దు”ను ప్రారంభించడం వ‌ల్ల‌ మీ బ్రౌజింగ్ ట్రాఫిక్‌తో పాటు ఒక అభ్యర్థన చేర్చబడుతుంది. ఆ అభ్యర్థనకు వెబ్‌సైట్ ప్రతిస్పందించిందా లేదా మరియు అభ్యర్థన ఎలా ప‌రిగ‌ణించ‌బ‌డింది అనే వాటిపై ఏ ప్రభావం అయినా ఆధారపడి ఉంటుంది. 
 
@@ -733,7 +733,6 @@
 <translation id="6534565668554028783">Google ప్రతిస్పందించడానికి చాలా ఎక్కువ సమయం తీసుకుంది</translation>
 <translation id="6538442820324228105"><ph name="GBS" /> GB డౌన్‌లోడ్ చేయబడింది</translation>
 <translation id="6539092367496845964">ఏదో తప్పు జరిగింది. తర్వాత మళ్లీ ప్రయత్నించండి.</translation>
-<translation id="654446541061731451">Beam చేయడానికి ట్యాబ్‌ను ఎంచుకోండి</translation>
 <translation id="6545017243486555795">మొత్తం డేటాను తీసివేయి</translation>
 <translation id="6545864417968258051">బ్లూటూత్ స్కానింగ్</translation>
 <translation id="6560414384669816528">Sogouతో వెతకండి</translation>
@@ -1025,7 +1024,6 @@
 <translation id="8687353297350450808">{N_BARS,plural, =1{సిగ్నల్ సామర్థ్యం స్థాయి: # బార్}other{సిగ్నల్ సామర్థ్యం స్థాయి: # బార్‌లు}}</translation>
 <translation id="868929229000858085">మీ పరిచయాలను వెతకండి</translation>
 <translation id="869891660844655955">గడువు తేదీ</translation>
-<translation id="8719023831149562936">ప్రస్తుత ట్యాబ్‌ను బీమ్ చేయడం సాధ్యపడదు</translation>
 <translation id="8728487861892616501">యాప్‌ని ఉపయోగించడం ద్వారా, మీరు Chrome యొక్క <ph name="BEGIN_LINK1" />సేవా నిబంధనలు<ph name="END_LINK1" />, <ph name="BEGIN_LINK2" />గోప్యతా నోటీసు<ph name="END_LINK2" /> మరియు <ph name="BEGIN_LINK3" />Google ఖాతాల కోసం Family Linkలో నిర్వహించే గోప్యతా నోటీసు<ph name="END_LINK3" />ను అంగీకరిస్తున్నారు.</translation>
 <translation id="8748850008226585750">కంటెంట్‌లు దాచబడ్డాయి</translation>
 <translation id="8751914237388039244">చిత్రాన్ని ఎంచుకోండి</translation>

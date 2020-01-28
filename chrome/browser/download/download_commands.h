@@ -30,11 +30,12 @@ class DownloadCommands {
     DISCARD,              // Discard the malicious download.
     KEEP,                 // Keep the malicious download.
     LEARN_MORE_SCANNING,  // Show information about download scanning.
-    LEARN_MORE_INTERRUPTED,  // Show information about interrupted downloads.
-    COPY_TO_CLIPBOARD,       // Copy the contents to the clipboard.
-    ANNOTATE,                // Open an app to annotate the image.
-    DEEP_SCAN,               // Send file to Safe Browsing for deep scanning.
-    BYPASS_DEEP_SCANNING,    // Bypass the prompt to deep scan.
+    LEARN_MORE_INTERRUPTED,    // Show information about interrupted downloads.
+    LEARN_MORE_MIXED_CONTENT,  // Show info about mixed content downloads.
+    COPY_TO_CLIPBOARD,         // Copy the contents to the clipboard.
+    ANNOTATE,                  // Open an app to annotate the image.
+    DEEP_SCAN,                 // Send file to Safe Browsing for deep scanning.
+    BYPASS_DEEP_SCANNING,      // Bypass the prompt to deep scan.
   };
 
   // |model| must outlive DownloadCommands.

@@ -9,9 +9,10 @@
 
 #include "base/callback_forward.h"
 #include "chrome/browser/installable/installable_metrics.h"
-#include "chrome/browser/web_applications/components/web_app_helpers.h"
+#include "chrome/browser/web_applications/components/web_app_id.h"
 
 struct WebApplicationInfo;
+class GURL;
 
 namespace content {
 class WebContents;

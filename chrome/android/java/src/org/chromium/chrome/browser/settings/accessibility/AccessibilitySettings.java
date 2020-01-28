@@ -13,7 +13,6 @@ import android.support.v7.preference.PreferenceFragmentCompat;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.accessibility.FontSizePrefs;
 import org.chromium.chrome.browser.accessibility.FontSizePrefs.FontSizePrefsObserver;
-import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
@@ -88,20 +87,16 @@ public class AccessibilitySettings
         }
 
         Preference captions = findPreference(PREF_CAPTIONS);
-        if (ChromeFeatureList.isEnabled(ChromeFeatureList.CAPTION_SETTINGS)) {
-            captions.setOnPreferenceClickListener(preference -> {
-                Intent intent = new Intent(Settings.ACTION_CAPTIONING_SETTINGS);
+        captions.setOnPreferenceClickListener(preference -> {
+            Intent intent = new Intent(Settings.ACTION_CAPTIONING_SETTINGS);
 
-                // Open the activity in a new task because the back button on the caption
-                // settings page navigates to the previous settings page instead of Chrome.
-                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                startActivity(intent);
+            // Open the activity in a new task because the back button on the caption
+            // settings page navigates to the previous settings page instead of Chrome.
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(intent);
 
-                return true;
-            });
-        } else {
-            getPreferenceScreen().removePreference(captions);
-        }
+            return true;
+        });
     }
 
     @Override

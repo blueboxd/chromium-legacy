@@ -112,6 +112,7 @@
 <translation id="2352467521400612932">Mga setting ng stylus</translation>
 <translation id="2354174487190027830">Ina-activate ang <ph name="NAME" /></translation>
 <translation id="2359808026110333948">Magpatuloy</translation>
+<translation id="2364154243880592194">Status tray, oras <ph name="TIME" />, <ph name="BATTERY" /> Pindutin ang maghanap + kaliwa para i-access ang notification center.</translation>
 <translation id="2365393535144473978">Kapag na-enable ang mobile data, mae-enable din ang Bluetooth.</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="2412593942846481727">May available na update</translation>
@@ -335,6 +336,7 @@
 <translation id="5669267381087807207">Ina-activate</translation>
 <translation id="5673434351075758678">Gagawing "<ph name="TO_LOCALE" />" mula "<ph name="FROM_LOCALE" />" pagkatapos i-sync ang iyong mga setting.</translation>
 <translation id="5682642926269496722">Hindi available ang Google Assistant para sa kasalukuyang user account.</translation>
+<translation id="5689633613396158040">Mas pinapadali ng Night Light na tumingin sa iyong screen o magbasa sa dilim. I-tap para baguhin kung anong oras mao-on ang Night Light o tuluyan itong i-off.</translation>
 <translation id="5691772641933328258">Hindi nakilala ang fingerprint</translation>
 <translation id="5710450975648804523">Naka-on ang Huwag Istorbohin</translation>
 <translation id="573413375004481890">Hindi masuportahan ng device na ito ang lahat ng iyong display kaya may isang nadiskonekta</translation>
@@ -514,6 +516,7 @@
 <translation id="8142441511840089262">I-double click</translation>
 <translation id="8142699993796781067">Pribadong network</translation>
 <translation id="8152092012181020186">Pindutin ang Ctrl + W para isara ito.</translation>
+<translation id="8155007568264258537"><ph name="FEATURE_NAME" /> Pinapamahalaan ng iyong administrator ang setting na ito.</translation>
 <translation id="8167567890448493835">Gamit ang <ph name="LOCALE_NAME" /></translation>
 <translation id="8190698733819146287">I-customize ang mga wika at input...</translation>
 <translation id="8192202700944119416">Nakatago ang mga notification.</translation>
@@ -595,7 +598,6 @@
 <translation id="9193626018745640770">Nagka-cast sa isang hindi pa natutukoy na tagatanggap</translation>
 <translation id="9194617393863864469">Mag-sign in ng isa pang user...</translation>
 <translation id="9201374708878217446"><ph name="CONNECTION_STATUS" />, Pinapamahalaan ng iyong Administrator</translation>
-<translation id="9205817095063786319">Pinapamahalaan ng <ph name="DOMAIN" /> ang device</translation>
 <translation id="9210037371811586452">Lumalabas sa unified desktop mode</translation>
 <translation id="9211681782751733685"><ph name="TIME_REMAINING" /> ang natitira bago ma-charge nang kumpleto ang baterya.</translation>
 <translation id="9215934040295798075">Magtakda ng wallpaper</translation>

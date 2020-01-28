@@ -49,10 +49,10 @@ PrivilegedHostDeviceSetterImpl::PrivilegedHostDeviceSetterImpl(
 PrivilegedHostDeviceSetterImpl::~PrivilegedHostDeviceSetterImpl() = default;
 
 void PrivilegedHostDeviceSetterImpl::SetHostDevice(
-    const std::string& host_device_id,
+    const std::string& host_instance_id_or_legacy_device_id,
     SetHostDeviceCallback callback) {
-  multidevice_setup_->SetHostDeviceWithoutAuthToken(host_device_id,
-                                                    std::move(callback));
+  multidevice_setup_->SetHostDeviceWithoutAuthToken(
+      host_instance_id_or_legacy_device_id, std::move(callback));
 }
 
 }  // namespace multidevice_setup

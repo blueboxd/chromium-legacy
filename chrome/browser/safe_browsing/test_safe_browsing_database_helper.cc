@@ -33,7 +33,8 @@ class FakeSafeBrowsingUIManager
 
   void DisplayBlockingPage(const UnsafeResource& resource) override {
     resource.callback_thread->PostTask(
-        FROM_HERE, base::BindOnce(resource.callback, true /* proceed */));
+        FROM_HERE, base::BindOnce(resource.callback, true /* proceed */,
+                                  true /* showed_interstitial */));
   }
 
  private:

@@ -44,6 +44,7 @@ class TestMetricsServiceClient : public MetricsServiceClient {
   bool IsReportingPolicyManaged() override;
   EnableMetricsDefault GetMetricsReportingDefaultState() override;
   std::string GetAppPackageName() override;
+  bool ShouldResetClientIdsOnClonedInstall() override;
 
   const std::string& get_client_id() const { return client_id_; }
   // Returns a weak ref to the last created uploader.
@@ -56,6 +57,9 @@ class TestMetricsServiceClient : public MetricsServiceClient {
   void set_enable_default(EnableMetricsDefault enable_default) {
     enable_default_ = enable_default;
   }
+  void set_should_reset_client_ids_on_cloned_install(bool state) {
+    should_reset_client_ids_on_cloned_install_ = state;
+  }
 
  private:
   std::string client_id_;
@@ -63,6 +67,7 @@ class TestMetricsServiceClient : public MetricsServiceClient {
   int32_t product_;
   bool reporting_is_managed_;
   EnableMetricsDefault enable_default_;
+  bool should_reset_client_ids_on_cloned_install_ = false;
 
   // A weak ref to the last created TestMetricsLogUploader.
   TestMetricsLogUploader* uploader_;

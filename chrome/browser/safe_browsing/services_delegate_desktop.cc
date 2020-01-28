@@ -123,6 +123,9 @@ void ServicesDelegateDesktop::ShutdownServices() {
   // Delete the ChromePasswordProtectionService instances.
   password_protection_service_map_.clear();
 
+  // Delete the BinaryUploadService instances.
+  binary_upload_service_map_.clear();
+
   // Must shut down last.
   download_service_.reset();
 }
@@ -203,6 +206,11 @@ void ServicesDelegateDesktop::StartOnIOThread(
 
 void ServicesDelegateDesktop::StopOnIOThread(bool shutdown) {
   database_manager_->StopOnIOThread(shutdown);
+}
+
+void ServicesDelegateDesktop::OnProfileWillBeDestroyedOnIOThread(
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory) {
+  database_manager_->OnProfileWillBeDestroyedOnIOThread(url_loader_factory);
 }
 
 void ServicesDelegateDesktop::CreateBinaryUploadService(Profile* profile) {

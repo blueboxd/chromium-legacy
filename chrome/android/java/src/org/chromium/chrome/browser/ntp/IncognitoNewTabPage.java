@@ -18,11 +18,14 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.compositor.layouts.content.InvalidationAwareThumbnailProvider;
 import org.chromium.chrome.browser.help.HelpAndFeedback;
 import org.chromium.chrome.browser.ntp.IncognitoNewTabPageView.IncognitoNewTabPageManager;
+import org.chromium.chrome.browser.preferences.Pref;
+import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.ui.native_page.BasicNativePage;
 import org.chromium.chrome.browser.ui.native_page.NativePageHost;
 import org.chromium.chrome.browser.util.UrlConstants;
 import org.chromium.chrome.browser.vr.VrModuleProvider;
+import org.chromium.components.content_settings.CookieControlsMode;
 
 /**
  * Provides functionality when the user interacts with the Incognito NTP.
@@ -70,6 +73,22 @@ public class IncognitoNewTabPage
                     return;
                 }
                 showIncognitoLearnMore();
+            }
+
+            @Override
+            public void setThirdPartyCookieBlocking(boolean enable) {
+                @CookieControlsMode
+                int new_mode = enable ? CookieControlsMode.INCOGNITO_ONLY : CookieControlsMode.OFF;
+                PrefServiceBridge.getInstance().setInteger(Pref.COOKIE_CONTROLS_MODE, new_mode);
+            }
+
+            @Override
+            public boolean shouldBlockThirdPartyCookies() {
+                // TODO(eokoyomon): add methods to CookieControlsBridge to implement this in order
+                // to be consistent with desktop cookie settings.
+                return PrefServiceBridge.getInstance().getBoolean(Pref.BLOCK_THIRD_PARTY_COOKIES)
+                        || (PrefServiceBridge.getInstance().getInteger(Pref.COOKIE_CONTROLS_MODE)
+                                != CookieControlsMode.OFF);
             }
 
             @Override

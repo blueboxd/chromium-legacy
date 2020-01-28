@@ -70,7 +70,8 @@ class POLICY_EXPORT DMServerJobConfiguration : public JobConfigurationBase {
   // JobConfiguration interface.
   std::string GetPayload() override;
   std::string GetUmaName() override;
-  void OnBeforeRetry() override {}
+  void OnBeforeRetry(int response_code,
+                     const std::string& response_body) override {}
   void OnURLLoadComplete(DeviceManagementService::Job* job,
                          int net_error,
                          int response_code,
@@ -102,7 +103,8 @@ class POLICY_EXPORT RegistrationJobConfiguration
 
  private:
   // JobConfiguration interface.
-  void OnBeforeRetry() override;
+  void OnBeforeRetry(int response_code,
+                     const std::string& response_body) override;
 
   DISALLOW_COPY_AND_ASSIGN(RegistrationJobConfiguration);
 };

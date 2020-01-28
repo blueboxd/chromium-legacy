@@ -30,14 +30,18 @@ Polymer({
     },
 
     /**
-     * Unique identifier for the currently selected host device.
+     * Unique identifier for the currently selected host device. This uses the
+     * device's Instance ID if it is available; otherwise, the device's legacy
+     * device ID is used.
+     * TODO(https://crbug.com/1019206): When v1 DeviceSync is turned off, only
+     * use Instance ID since all devices are guaranteed to have one.
      *
      * Undefined if the no list of potential hosts has been received from mojo
      * service.
      *
      * @type {string|undefined}
      */
-    selectedDeviceId: {
+    selectedInstanceIdOrLegacyDeviceId: {
       type: String,
       notify: true,
     },
@@ -155,16 +159,34 @@ Polymer({
         device.remoteDevice.deviceName;
   },
 
+  /**
+   * @param {!chromeos.multideviceSetup.mojom.HostDevice} device
+   * @return {string} Returns a unique identifier for the input device, using
+   *     the device's Instance ID if it is available; otherwise, the device's
+   *     legacy device ID is used.
+   *     TODO(https://crbug.com/1019206): When v1 DeviceSync is turned off, only
+   *     use Instance ID since all devices are guaranteed to have one.
+   * @private
+   */
+  getInstanceIdOrLegacyDeviceId_(device) {
+    if (device.remoteDevice.instanceId) {
+      return device.remoteDevice.instanceId;
+    }
+
+    return device.remoteDevice.deviceId;
+  },
+
   /** @private */
   devicesChanged_() {
     if (this.devices.length > 0) {
-      this.selectedDeviceId = this.devices[0].remoteDevice.deviceId;
+      this.selectedInstanceIdOrLegacyDeviceId =
+          this.getInstanceIdOrLegacyDeviceId_(this.devices[0]);
     }
   },
 
   /** @private */
   onDeviceDropdownSelectionChanged_() {
-    this.selectedDeviceId = this.$.deviceDropdown.value;
+    this.selectedInstanceIdOrLegacyDeviceId = this.$.deviceDropdown.value;
   },
 
   /**

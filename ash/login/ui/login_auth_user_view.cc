@@ -612,6 +612,11 @@ class LoginAuthUserView::ChallengeResponseView : public views::View,
     icon_->SetImage(GetImageForIcon());
     label_->SetText(GetTextForLabel());
 
+    if (state == State::kFailure) {
+      label_->NotifyAccessibilityEvent(ax::mojom::Event::kAlert,
+                                       /*send_native_event=*/true);
+    }
+
     Layout();
   }
 

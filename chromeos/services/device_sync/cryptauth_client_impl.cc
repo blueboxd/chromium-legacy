@@ -15,6 +15,7 @@
 #include "chromeos/services/device_sync/proto/cryptauth_proto_to_query_parameters_util.h"
 #include "chromeos/services/device_sync/switches.h"
 #include "components/signin/public/identity_manager/access_token_info.h"
+#include "components/signin/public/identity_manager/consent_level.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/signin/public/identity_manager/primary_account_access_token_fetcher.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -659,7 +660,8 @@ void CryptAuthClientImpl::MakeApiCall(
               &CryptAuthClientImpl::OnAccessTokenFetched<ResponseProto>,
               weak_ptr_factory_.GetWeakPtr(), request_type, serialized_request,
               request_as_query_parameters, response_callback),
-          signin::PrimaryAccountAccessTokenFetcher::Mode::kWaitUntilAvailable);
+          signin::PrimaryAccountAccessTokenFetcher::Mode::kWaitUntilAvailable,
+          signin::ConsentLevel::kNotRequired);
 }
 
 template <class ResponseProto>

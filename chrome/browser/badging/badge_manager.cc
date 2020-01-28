@@ -17,6 +17,8 @@
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
 #include "chrome/browser/web_applications/components/app_registrar.h"
 #include "chrome/browser/web_applications/components/web_app_provider_base.h"
+#include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -44,18 +46,42 @@ void BadgeManager::SetDelegate(std::unique_ptr<BadgeManagerDelegate> delegate) {
   delegate_ = std::move(delegate);
 }
 
-void BadgeManager::BindReceiver(
+void BadgeManager::BindFrameReceiver(
     content::RenderFrameHost* frame,
     mojo::PendingReceiver<blink::mojom::BadgeService> receiver) {
-  Profile* profile = Profile::FromBrowserContext(
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  auto* profile = Profile::FromBrowserContext(
       content::WebContents::FromRenderFrameHost(frame)->GetBrowserContext());
 
-  badging::BadgeManager* badge_manager =
+  auto* badge_manager =
       badging::BadgeManagerFactory::GetInstance()->GetForProfile(profile);
   if (!badge_manager)
     return;
 
-  BindingContext context(frame->GetProcess()->GetID(), frame->GetRoutingID());
+  auto context = std::make_unique<FrameBindingContext>(
+      frame->GetProcess()->GetID(), frame->GetRoutingID());
+  badge_manager->receivers_.Add(badge_manager, std::move(receiver),
+                                std::move(context));
+}
+
+void BadgeManager::BindServiceWorkerReceiver(
+    content::RenderProcessHost* service_worker_process_host,
+    const GURL& service_worker_scope,
+    mojo::PendingReceiver<blink::mojom::BadgeService> receiver) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  auto* profile = Profile::FromBrowserContext(
+      service_worker_process_host->GetBrowserContext());
+
+  auto* badge_manager =
+      badging::BadgeManagerFactory::GetInstance()->GetForProfile(profile);
+  if (!badge_manager)
+    return;
+
+  auto context = std::make_unique<BadgeManager::ServiceWorkerBindingContext>(
+      service_worker_process_host->GetID(), service_worker_scope);
+
   badge_manager->receivers_.Add(badge_manager, std::move(receiver),
                                 std::move(context));
 }
@@ -99,38 +125,39 @@ void BadgeManager::SetBadge(blink::mojom::BadgeValuePtr mojo_value) {
     return;
   }
 
-  const base::Optional<web_app::AppId> app_id =
-      GetAppIdForBadging(receivers_.current_context());
-  if (!app_id)
-    return;
+  const std::vector<web_app::AppId> app_ids =
+      receivers_.current_context()->GetAppIdsForBadging();
 
   // Convert the mojo badge representation into a BadgeManager::BadgeValue.
   BadgeValue value = mojo_value->is_flag()
                          ? base::nullopt
                          : base::make_optional(mojo_value->get_number());
-  UpdateBadge(app_id.value(), base::make_optional(value));
+
+  for (const auto& app_id : app_ids)
+    UpdateBadge(app_id, base::make_optional(value));
 }
 
 void BadgeManager::ClearBadge() {
-  const base::Optional<web_app::AppId> app_id =
-      GetAppIdForBadging(receivers_.current_context());
-  if (!app_id)
-    return;
+  const std::vector<web_app::AppId> app_ids =
+      receivers_.current_context()->GetAppIdsForBadging();
 
-  UpdateBadge(app_id.value(), base::nullopt);
+  for (const auto& app_id : app_ids)
+    UpdateBadge(app_id, base::nullopt);
 }
 
-base::Optional<web_app::AppId> BadgeManager::GetAppIdForBadging(
-    const BindingContext& context) {
+std::vector<web_app::AppId>
+BadgeManager::FrameBindingContext::GetAppIdsForBadging() const {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
   content::RenderFrameHost* frame =
-      content::RenderFrameHost::FromID(context.process_id, context.frame_id);
+      content::RenderFrameHost::FromID(process_id_, frame_id_);
   if (!frame)
-    return base::nullopt;
+    return std::vector<web_app::AppId>{};
 
   content::WebContents* contents =
       content::WebContents::FromRenderFrameHost(frame);
   if (!contents)
-    return base::nullopt;
+    return std::vector<web_app::AppId>{};
 
   const web_app::AppRegistrar& registrar =
       web_app::WebAppProviderBase::GetProviderBase(
@@ -139,7 +166,26 @@ base::Optional<web_app::AppId> BadgeManager::GetAppIdForBadging(
 
   const base::Optional<web_app::AppId> app_id =
       registrar.FindAppWithUrlInScope(frame->GetLastCommittedURL());
-  return app_id;
+  if (!app_id)
+    return std::vector<web_app::AppId>{};
+  return std::vector<web_app::AppId>{app_id.value()};
+}
+
+std::vector<web_app::AppId>
+BadgeManager::ServiceWorkerBindingContext::GetAppIdsForBadging() const {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  content::RenderProcessHost* render_process_host =
+      content::RenderProcessHost::FromID(process_id_);
+  if (!render_process_host)
+    return std::vector<web_app::AppId>{};
+
+  const web_app::AppRegistrar& registrar =
+      web_app::WebAppProviderBase::GetProviderBase(
+          Profile::FromBrowserContext(render_process_host->GetBrowserContext()))
+          ->registrar();
+
+  return registrar.FindAppsInScope(scope_);
 }
 
 std::string GetBadgeString(base::Optional<uint64_t> badge_content) {

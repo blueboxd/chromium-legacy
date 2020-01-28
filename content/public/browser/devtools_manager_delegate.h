@@ -16,7 +16,7 @@
 
 namespace content {
 
-class DevToolsAgentHostClient;
+class DevToolsAgentHostClientChannel;
 class RenderFrameHost;
 class WebContents;
 
@@ -62,16 +62,13 @@ class CONTENT_EXPORT DevToolsManagerDelegate {
                                      DisposeCallback callback);
 
   // Called when a new client is attached/detached.
-  virtual void ClientAttached(DevToolsAgentHost* agent_host,
-                              DevToolsAgentHostClient* client);
-  virtual void ClientDetached(DevToolsAgentHost* agent_host,
-                              DevToolsAgentHostClient* client);
+  virtual void ClientAttached(DevToolsAgentHostClientChannel* channel);
+  virtual void ClientDetached(DevToolsAgentHostClientChannel* channel);
 
   // Call callback if command was not handled.
   using NotHandledCallback =
       base::OnceCallback<void(base::span<const uint8_t>)>;
-  virtual void HandleCommand(DevToolsAgentHost* agent_host,
-                             DevToolsAgentHostClient* client,
+  virtual void HandleCommand(DevToolsAgentHostClientChannel* channel,
                              const std::string& method,
                              base::span<const uint8_t> message,
                              NotHandledCallback callback);

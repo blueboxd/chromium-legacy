@@ -4293,7 +4293,7 @@ IN_PROC_BROWSER_TEST_F(
       current_browser(),
       GURL(net::URLRequestSlowDownloadJob::kErrorDownloadUrl),
       WindowOpenDisposition::NEW_BACKGROUND_TAB,
-      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
 
   // Errors caught before filename determination are delayed until after
   // filename determination.

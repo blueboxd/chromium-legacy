@@ -690,7 +690,6 @@
 <translation id="6201345951596836663">링크 복사됨</translation>
 <translation id="6206551242102657620">이 사이트와의 연결은 안전합니다. 사이트 정보</translation>
 <translation id="6210748933810148297"><ph name="EMAIL" />이(가) 아닌가요?</translation>
-<translation id="6216432067784365534"><ph name="NAME_OF_LIST_ITEM" /> 옵션</translation>
 <translation id="6221633008163990886">비밀번호를 내보내려면 잠금 해제하세요</translation>
 <translation id="6232535412751077445">‘추적 안함’을 사용하도록 설정하면 요청이 사용자의 인터넷 사용 트래픽에 포함됩니다. 웹사이트가 요청에 응답하는지 여부와 요청이 해석되는 방법에 따라 결과가 결정됩니다.
 
@@ -736,7 +735,6 @@
 <translation id="6534565668554028783">Google에서 응답하는 데 시간이 너무 오래 걸립니다.</translation>
 <translation id="6538442820324228105"><ph name="GBS" />GB 다운로드됨</translation>
 <translation id="6539092367496845964">문제가 발생했습니다. 나중에 다시 시도해 보세요.</translation>
-<translation id="654446541061731451">공유할 탭을 선택하세요.</translation>
 <translation id="6545017243486555795">모든 데이터 삭제</translation>
 <translation id="6545864417968258051">블루투스 검색</translation>
 <translation id="6560414384669816528">Sogou로 검색</translation>
@@ -1031,7 +1029,6 @@
 <translation id="868929229000858085">연락처 검색</translation>
 <translation id="8698438463325761328">사이트에서 가상 현실 기기 및 데이터에 액세스하지 못하도록 차단</translation>
 <translation id="869891660844655955">유효기간</translation>
-<translation id="8719023831149562936">현재 탭을 공유할 수 없습니다.</translation>
 <translation id="8728487861892616501">이 애플리케이션을 사용하면 Chrome의 <ph name="BEGIN_LINK1" />서비스 약관<ph name="END_LINK1" />, <ph name="BEGIN_LINK2" />개인정보처리방침<ph name="END_LINK2" />, <ph name="BEGIN_LINK3" />Family Link로 관리되는 Google 계정용 개인정보처리방침<ph name="END_LINK3" />에 동의하게 됩니다.</translation>
 <translation id="8748850008226585750">숨겨진 콘텐츠</translation>
 <translation id="8751914237388039244">이미지 선택</translation>

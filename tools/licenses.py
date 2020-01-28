@@ -349,7 +349,6 @@ KNOWN_NON_IOS_LIBRARIES = set([
     os.path.join('third_party', 'qcms'),
     os.path.join('third_party', 're2'),
     os.path.join('third_party', 'safe_browsing'),
-    os.path.join('third_party', 'sfntly'),
     os.path.join('third_party', 'smhasher'),
     os.path.join('third_party', 'sudden_motion_sensor'),
     os.path.join('third_party', 'swiftshader'),

@@ -5,7 +5,7 @@
 #include "chrome/browser/ui/browser_dialogs.h"
 
 #include "base/metrics/histogram_macros.h"
-#include "chrome/browser/permissions/permission_util.h"
+#include "components/permissions/permission_util.h"
 
 namespace chrome {
 
@@ -31,11 +31,11 @@ void ShowNativeFileSystemPermissionDialog(
     const url::Origin& origin,
     const base::FilePath& path,
     bool is_directory,
-    base::OnceCallback<void(PermissionAction result)> callback,
+    base::OnceCallback<void(permissions::PermissionAction result)> callback,
     content::WebContents* web_contents) {
   // There's no dialog version of this available outside views, run callback as
   // if the dialog was instantly cancelled.
-  std::move(callback).Run(PermissionAction::DISMISSED);
+  std::move(callback).Run(permissions::PermissionAction::DISMISSED);
 }
 
 void ShowNativeFileSystemRestrictedDirectoryDialog(
@@ -55,11 +55,11 @@ void ShowNativeFileSystemRestrictedDirectoryDialog(
 void ShowNativeFileSystemDirectoryAccessConfirmationDialog(
     const url::Origin& origin,
     const base::FilePath& path,
-    base::OnceCallback<void(PermissionAction result)> callback,
+    base::OnceCallback<void(permissions::PermissionAction result)> callback,
     content::WebContents* web_contents) {
   // There's no dialog version of this available outside views, run callback as
   // if the dialog was instantly dismissed.
-  std::move(callback).Run(PermissionAction::DISMISSED);
+  std::move(callback).Run(permissions::PermissionAction::DISMISSED);
 }
 
 #endif  // !defined(TOOLKIT_VIEWS)

@@ -44,6 +44,9 @@ class ServicesDelegateAndroid : public ServicesDelegate {
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       const V4ProtocolConfig& v4_config) override;
   void StopOnIOThread(bool shutdown) override;
+  void OnProfileWillBeDestroyedOnIOThread(
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
+      override;
 
   void CreateTelemetryService(Profile* profile) override;
   void RemoveTelemetryService(Profile* profile) override;

@@ -30,7 +30,7 @@
 #include "chrome/browser/flags/android/chrome_feature_list.h"
 #include "chrome/browser/media/webrtc/screen_capture_infobar_delegate_android.h"
 #include "chrome/browser/permissions/permission_uma_util.h"
-#include "chrome/browser/permissions/permission_util.h"
+#include "components/permissions/permission_util.h"
 #endif  // defined(OS_ANDROID)
 
 #if defined(OS_MACOSX)

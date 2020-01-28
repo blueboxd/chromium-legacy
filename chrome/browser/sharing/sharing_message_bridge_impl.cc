@@ -7,7 +7,7 @@
 #include "base/guid.h"
 #include "components/sync/model/metadata_batch.h"
 #include "components/sync/model/mutable_data_batch.h"
-#include "components/sync/model_impl/in_memory_metadata_change_list.h"
+#include "components/sync/model_impl/dummy_metadata_change_list.h"
 
 namespace {
 
@@ -67,10 +67,7 @@ std::unique_ptr<syncer::MetadataChangeList>
 SharingMessageBridgeImpl::CreateMetadataChangeList() {
   // The data type intentionally doesn't persist the data on disk, so metadata
   // is just ignored.
-  // TODO(crbug.com/1034930): this metadata changelist stores data in memory, it
-  // would be better to create DummyMetadataChangeList to ignore any changes at
-  // all.
-  return std::make_unique<syncer::InMemoryMetadataChangeList>();
+  return std::make_unique<syncer::DummyMetadataChangeList>();
 }
 
 base::Optional<syncer::ModelError> SharingMessageBridgeImpl::MergeSyncData(

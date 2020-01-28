@@ -733,7 +733,10 @@
     <!-- Card for General Use -->
     <style name="Card">
         <item name="android:background">@drawable/hairline_border_card_background</item>
-      </style>
+    </style>
+    <style name="CardTransparentForDark">
+        <item name="android:background">@drawable/hairline_border_card_dark_transparent_bg</item>
+    </style>
     <!-- Content and Site Suggestions -->
     <style name="SuggestionCardModern" parent="Card">
         <item name="android:layout_marginBottom">@dimen/content_suggestions_card_modern_margin</item>

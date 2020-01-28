@@ -192,6 +192,7 @@
 <translation id="3474649192738347024">Маягтыг бөглөсөн.</translation>
 <translation id="3478058380795961209">Дуусах сар:</translation>
 <translation id="3482959374254649722">Таны цонхыг синхрончилж байна...</translation>
+<translation id="3484946776651937681">Татаж авсан файлын фолдерт нээх</translation>
 <translation id="3493531032208478708">Санал болгосон агуулгын талаар <ph name="BEGIN_LINK" />дэлгэрэнгүй үзэх<ph name="END_LINK" /></translation>
 <translation id="3494788280727468875">Хайлтын өгөгдөл цэвэрлэхийг зөвшөөрөх</translation>
 <translation id="35083190962747987">${url}-г нээх</translation>
@@ -536,6 +537,7 @@ Handoff-ыг Тохиргооны ерөнхий хэсэгт идэвхижүү
 <translation id="8319076807703933069">Шинэ хайлт</translation>
 <translation id="8323906514956095947">Табын бусад сонголтыг харахын тулд удаан дарна уу</translation>
 <translation id="8328777765163860529">Бүгдийг хаах</translation>
+<translation id="8386068868580335421">Шинэчлэх</translation>
 <translation id="8407669440184693619">Энэ сайтад нууц үг олдсонгүй</translation>
 <translation id="842017693807136194">Дараахаар нэвтэрсэн</translation>
 <translation id="8428045167754449968">Хот / Тосгон</translation>
@@ -552,6 +554,7 @@ Handoff-ыг Тохиргооны ерөнхий хэсэгт идэвхижүү
 <translation id="8532105204136943229">Дуусах он</translation>
 <translation id="8534481786647257214">Google+ пост дууссан.</translation>
 <translation id="8548878600947630424">Хуудаснаас олох...</translation>
+<translation id="8574235780160508979">Chrome-н Үйлчилгээний нөхцөлийг гуравдугаар сарын 31-ний өдөр өөрчлөх болно. <ph name="BEGIN_LINK" />Шалгаж үзнэ үү<ph name="END_LINK" /></translation>
 <translation id="8588404856427128947">Унтраах</translation>
 <translation id="8605219856220328675">Цонхыг хаах.</translation>
 <translation id="8620640915598389714">Засах</translation>

@@ -9,8 +9,6 @@
 #include "base/strings/string16.h"
 #include "ui/views/window/dialog_delegate.h"
 
-enum class PermissionAction;
-
 namespace base {
 class FilePath;
 }  // namespace base
@@ -18,6 +16,10 @@ class FilePath;
 namespace content {
 class WebContents;
 }  // namespace content
+
+namespace permissions {
+enum class PermissionAction;
+}
 
 namespace url {
 class Origin;
@@ -41,7 +43,7 @@ class NativeFileSystemPermissionView : public views::DialogDelegateView {
       const url::Origin& origin,
       const base::FilePath& path,
       bool is_directory,
-      base::OnceCallback<void(PermissionAction result)> callback,
+      base::OnceCallback<void(permissions::PermissionAction result)> callback,
       content::WebContents* web_contents);
 
   // views::DialogDelegateView:
@@ -58,10 +60,10 @@ class NativeFileSystemPermissionView : public views::DialogDelegateView {
       const url::Origin& origin,
       const base::FilePath& path,
       bool is_directory,
-      base::OnceCallback<void(PermissionAction result)> callback);
+      base::OnceCallback<void(permissions::PermissionAction result)> callback);
 
   const base::FilePath path_;
-  base::OnceCallback<void(PermissionAction result)> callback_;
+  base::OnceCallback<void(permissions::PermissionAction result)> callback_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeFileSystemPermissionView);
 };

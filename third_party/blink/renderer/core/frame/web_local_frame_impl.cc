@@ -2046,7 +2046,8 @@ bool WebLocalFrameImpl::ScrollTo(const gfx::Point& scrollPosition,
       FloatPoint(scrollPosition.x(), scrollPosition.y()));
   area->SetScrollOffset(
       offset, kProgrammaticScroll,
-      animate ? kScrollBehaviorSmooth : kScrollBehaviorInstant,
+      animate ? mojom::blink::ScrollIntoViewParams::Behavior::kSmooth
+              : mojom::blink::ScrollIntoViewParams::Behavior::kInstant,
       ScrollableArea::ScrollCallback(std::move(on_finish)));
   return true;
 }

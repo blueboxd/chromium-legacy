@@ -16,8 +16,10 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/app_list_client_impl.h"
 #include "chrome/browser/ui/app_list/app_service/app_service_app_item.h"
+#include "chrome/browser/ui/app_list/app_service/app_service_context_menu.h"
 #include "chrome/browser/ui/app_list/internal_app/internal_app_metadata.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/services/app_service/public/cpp/app_update.h"
 #include "chrome/services/app_service/public/mojom/types.mojom.h"
 #include "components/favicon/core/large_icon_service.h"
@@ -95,8 +97,13 @@ void AppServiceAppResult::GetContextMenuModel(GetMenuModelCallback callback) {
     return;
   }
 
-  context_menu_ = AppServiceAppItem::MakeAppContextMenu(
-      app_type_, this, profile(), app_id(), controller(), is_platform_app_);
+  if (base::FeatureList::IsEnabled(features::kAppServiceContextMenu)) {
+    context_menu_ = std::make_unique<AppServiceContextMenu>(
+        this, profile(), app_id(), controller());
+  } else {
+    context_menu_ = AppServiceAppItem::MakeAppContextMenu(
+        app_type_, this, profile(), app_id(), controller(), is_platform_app_);
+  }
   context_menu_->GetMenuModel(std::move(callback));
 }
 

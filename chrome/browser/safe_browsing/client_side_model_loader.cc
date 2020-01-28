@@ -90,7 +90,8 @@ ModelLoader::ModelLoader(
     : name_(FillInModelName(is_extended_reporting, GetModelNumber())),
       url_(kClientModelUrlPrefix + name_),
       update_renderers_callback_(update_renderers_callback),
-      url_loader_factory_(url_loader_factory) {
+      url_loader_factory_(url_loader_factory),
+      last_client_model_status_(ClientModelStatus::MODEL_NEVER_FETCHED) {
   DCHECK(url_.is_valid());
 }
 
@@ -102,7 +103,8 @@ ModelLoader::ModelLoader(
     : name_(model_name),
       url_(kClientModelUrlPrefix + name_),
       update_renderers_callback_(update_renderers_callback),
-      url_loader_factory_(url_loader_factory) {
+      url_loader_factory_(url_loader_factory),
+      last_client_model_status_(ClientModelStatus::MODEL_NEVER_FETCHED) {
   DCHECK(url_.is_valid());
 }
 
@@ -211,12 +213,12 @@ void ModelLoader::OnURLLoaderComplete(
 void ModelLoader::EndFetch(ClientModelStatus status, base::TimeDelta max_age) {
   DCHECK(fetch_sequence_checker_.CalledOnValidSequence());
   // We don't differentiate models in the UMA stats.
-  UMA_HISTOGRAM_ENUMERATION("SBClientPhishing.ClientModelStatus",
-                            status,
-                            MODEL_STATUS_MAX);
+  UMA_HISTOGRAM_ENUMERATION("SBClientPhishing.ClientModelStatus", status);
+
   if (status == MODEL_SUCCESS) {
     update_renderers_callback_.Run();
   }
+  last_client_model_status_ = status;
   int delay_ms = kClientModelFetchIntervalMs;
   // If the most recently fetched model had a valid max-age and the model was
   // valid we're scheduling the next model update for after the max-age expired.

@@ -198,6 +198,7 @@ void EnrollmentScreen::OnAuthCleared(const base::Closure& callback) {
 }
 
 void EnrollmentScreen::Show() {
+  VLOG(1) << "Show enrollment screen";
   UMA(policy::kMetricEnrollmentTriggered);
   if (enrollment_config_.mode ==
       policy::EnrollmentConfig::MODE_ENROLLED_ROLLBACK) {
@@ -316,6 +317,7 @@ void EnrollmentScreen::OnCancel() {
 }
 
 void EnrollmentScreen::OnConfirmationClosed() {
+  VLOG(1) << "Confirmation closed.";
   // The callback passed to ClearAuth is called either immediately or gets
   // wrapped in a callback bound to a weak pointer from |weak_factory_| - in
   // either case, passing exit_callback_ directly should be safe.
@@ -326,11 +328,13 @@ void EnrollmentScreen::OnConfirmationClosed() {
 }
 
 void EnrollmentScreen::OnAuthError(const GoogleServiceAuthError& error) {
+  LOG(ERROR) << "Auth error: " << error.state();
   RecordEnrollmentErrorMetrics();
   view_->ShowAuthError(error);
 }
 
 void EnrollmentScreen::OnEnrollmentError(policy::EnrollmentStatus status) {
+  LOG(ERROR) << "Enrollment error: " << status.status();
   RecordEnrollmentErrorMetrics();
   // If the DM server does not have a device pre-provisioned for attestation-
   // based enrollment and we have a fallback authentication, show it.
@@ -351,6 +355,7 @@ void EnrollmentScreen::OnEnrollmentError(policy::EnrollmentStatus status) {
 
 void EnrollmentScreen::OnOtherError(
     EnterpriseEnrollmentHelper::OtherError error) {
+  LOG(ERROR) << "Other enrollment error: " << error;
   RecordEnrollmentErrorMetrics();
   view_->ShowOtherError(error);
   if (WizardController::UsingHandsOffEnrollment())
@@ -358,6 +363,7 @@ void EnrollmentScreen::OnOtherError(
 }
 
 void EnrollmentScreen::OnDeviceEnrolled() {
+  VLOG(1) << "Device enrolled.";
   enrollment_succeeded_ = true;
   enrollment_helper_->GetDeviceAttributeUpdatePermission();
 
@@ -518,10 +524,12 @@ void EnrollmentScreen::OnActiveDirectoryJoined(
     authpolicy::ErrorType error,
     const std::string& machine_domain) {
   if (error == authpolicy::ERROR_NONE) {
+    VLOG(1) << "Joined active directory";
     view_->ShowEnrollmentSpinnerScreen();
     std::move(on_joined_callback_).Run(machine_domain);
     return;
   }
+  LOG(ERROR) << "Active directory join error: " << error;
   view_->ShowActiveDirectoryScreen(std::string() /* domain_join_config */,
                                    machine_name, username, error);
 }

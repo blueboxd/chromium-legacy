@@ -78,7 +78,7 @@ BrailleCaptionsBackground.setContent = function(
   }
   var groups = BrailleCaptionsBackground.groupBrailleAndText(
       brailleChars, text, brailleToText, offsetsForSlices);
-  var data = {groups: groups, rows: rows, cols: columns};
+  var data = {groups, rows, cols: columns};
   (new PanelCommand(PanelCommandType.UPDATE_BRAILLE, data)).send();
 };
 
@@ -99,7 +99,7 @@ BrailleCaptionsBackground.setImageContent = function(cells, rows, columns) {
   }
 
   var groups = [['Image', brailleChars]];
-  var data = {groups: groups, rows: rows, cols: columns};
+  var data = {groups, rows, cols: columns};
   (new PanelCommand(PanelCommandType.UPDATE_BRAILLE, data)).send();
 };
 

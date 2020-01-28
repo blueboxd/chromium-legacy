@@ -5,7 +5,9 @@
 #ifndef COMPONENTS_VIZ_SERVICE_DISPLAY_OVERLAY_PROCESSOR_ANDROID_H_
 #define COMPONENTS_VIZ_SERVICE_DISPLAY_OVERLAY_PROCESSOR_ANDROID_H_
 
+#include "base/containers/circular_deque.h"
 #include "base/synchronization/waitable_event.h"
+#include "components/viz/service/display/display_resource_provider.h"
 #include "components/viz/service/display/overlay_processor_using_strategy.h"
 
 namespace base {
@@ -39,6 +41,8 @@ class VIZ_SERVICE_EXPORT OverlayProcessorAndroid
 
   void ScheduleOverlays(
       DisplayResourceProvider* display_resource_provider) override;
+  void OverlayPresentationComplete() override;
+
   // Override OverlayProcessorUsingStrategy.
   void SetDisplayTransformHint(gfx::OverlayTransform transform) override {}
   void SetViewportSize(const gfx::Size& size) override {}
@@ -56,6 +60,7 @@ class VIZ_SERVICE_EXPORT OverlayProcessorAndroid
   void InitializeOverlayProcessorOnGpu(
       gpu::SharedImageManager* shared_image_manager);
   void DestroyOverlayProcessorOnGpu(base::WaitableEvent* event);
+  void TakeOverlayCandidates(CandidateList* candidate_list) override;
   void NotifyOverlayPromotion(
       DisplayResourceProvider* display_resource_provider,
       const OverlayCandidateList& candidate_list,
@@ -82,6 +87,15 @@ class VIZ_SERVICE_EXPORT OverlayProcessorAndroid
       base::WaitableEvent::InitialState::NOT_SIGNALED};
 
   OverlayCandidateList overlay_candidates_;
+
+  using OverlayResourceLock =
+      DisplayResourceProvider::ScopedReadLockSharedImage;
+
+  // Locks for overlays are pending for OverlayPresentationComplete.
+  base::circular_deque<std::vector<OverlayResourceLock>> pending_overlay_locks_;
+  // Locks for overlays have been committed. |pending_overlay_locks_| will
+  // be moved to |committed_overlay_locks_| after OverlayPresentationComplete.
+  std::vector<OverlayResourceLock> committed_overlay_locks_;
 };
 
 }  // namespace viz

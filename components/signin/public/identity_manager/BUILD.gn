@@ -18,6 +18,7 @@ source_set("identity_manager") {
     "accounts_in_cookie_jar_info.cc",
     "accounts_in_cookie_jar_info.h",
     "accounts_mutator.h",
+    "consent_level.h",
     "device_accounts_synchronizer.h",
     "diagnostics_provider.h",
     "identity_manager.cc",

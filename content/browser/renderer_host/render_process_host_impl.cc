@@ -1497,7 +1497,6 @@ RenderProcessHostImpl::RenderProcessHostImpl(
       is_unused_(true),
       delayed_cleanup_needed_(false),
       within_process_died_observer_(false),
-      permission_service_context_(new PermissionServiceContext(this)),
       indexed_db_factory_(
           new IndexedDBDispatcherHost(
               id_,
@@ -2014,6 +2013,10 @@ void RenderProcessHostImpl::CreatePermissionService(
     const url::Origin& origin,
     mojo::PendingReceiver<blink::mojom::PermissionService> receiver) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  if (!permission_service_context_)
+    permission_service_context_.reset(new PermissionServiceContext(this));
+
   permission_service_context_->CreateServiceForWorker(origin,
                                                       std::move(receiver));
 }

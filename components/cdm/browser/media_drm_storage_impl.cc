@@ -18,7 +18,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "content/public/browser/navigation_handle.h"
-#include "media/base/android/media_drm_key_type.h"
+#include "media/base/media_drm_key_type.h"
 #include "url/origin.h"
 #include "url/url_constants.h"
 

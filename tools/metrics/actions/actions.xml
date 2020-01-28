@@ -5740,6 +5740,14 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="DownloadNotification.Button_LearnMixedContent">
+  <owner>jdeblasio@chromium.org</owner>
+  <description>
+    User pushes &quot;Learn More&quot; button on a mixed-content download
+    notication.
+  </description>
+</action>
+
 <action name="DownloadNotification.Button_LearnScanning">
   <owner>yoshiki@chromium.org</owner>
   <description>

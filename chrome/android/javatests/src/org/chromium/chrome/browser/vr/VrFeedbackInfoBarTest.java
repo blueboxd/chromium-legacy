@@ -162,13 +162,13 @@ public class VrFeedbackInfoBarTest {
             @CommandLineFlags.Add({"enable-features=WebXR"})
             @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM)
             public void testExitPresentationInVr_WebXr() {
-        exitPresentationInVrImpl(TEST_PAGE_WEBXR_URL, mWebXrVrTestFramework);
-    }
+        // Enter VRBrowsing mode, as we only enter it after WebXr if we entered WebXr from it.
+        VrBrowserTransitionUtils.forceEnterVrBrowserOrFail(POLL_TIMEOUT_LONG_MS);
 
-    private void exitPresentationInVrImpl(String url, final WebXrVrTestFramework framework) {
         // Enter VR presentation mode.
-        framework.loadUrlAndAwaitInitialization(url, PAGE_LOAD_TIMEOUT_S);
-        framework.enterSessionWithUserGestureOrFail();
+        mWebXrVrTestFramework.loadUrlAndAwaitInitialization(
+                TEST_PAGE_WEBXR_URL, PAGE_LOAD_TIMEOUT_S);
+        mWebXrVrTestFramework.enterSessionWithUserGestureOrFail();
         assertState(true /* isInVr */, false /* isInfobarVisible  */);
         Assert.assertTrue("Did not enter WebVR presentation",
                 TestVrShellDelegate.getVrShellForTesting().getWebVrModeEnabled());
@@ -184,6 +184,6 @@ public class VrFeedbackInfoBarTest {
         // Exiting VR should prompt for feedback since 2D browsing was performed after.
         VrBrowserTransitionUtils.forceExitVr();
         assertState(false /* isInVr */, true /* isInfobarVisible  */);
-        framework.assertNoJavaScriptErrors();
+        mWebXrVrTestFramework.assertNoJavaScriptErrors();
     }
 }

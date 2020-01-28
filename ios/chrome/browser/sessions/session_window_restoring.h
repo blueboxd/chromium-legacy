@@ -21,10 +21,6 @@
 - (BOOL)restoreSessionWindow:(SessionWindowIOS*)window
            forInitialRestore:(BOOL)initialRestore;
 
-// Persists the current list of tabs to disk, either immediately or deferred
-// based on the value of |immediately|.
-- (void)saveSessionImmediately:(BOOL)immediately;
-
 @end
 
 #endif  // IOS_CHROME_BROWSER_SESSIONS_SESSION_WINDOW_RESTORING_H_

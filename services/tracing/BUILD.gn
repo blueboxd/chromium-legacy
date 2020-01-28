@@ -72,7 +72,7 @@ source_set("test_utils") {
       "perfetto/system_test_utils.h",
     ]
 
-    deps += [ "//third_party/perfetto/src/tracing:ipc" ]
+    deps += [ "//third_party/perfetto/src/tracing/ipc/service" ]
   }
 }
 

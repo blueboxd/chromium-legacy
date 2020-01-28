@@ -252,7 +252,7 @@ KeyMap = class {
       }
     }
     if (!bound) {
-      var binding = {'command': command, 'sequence': newKey};
+      var binding = {command, 'sequence': newKey};
       this.bindings_.push(binding);
       this.commandToKey_[binding.command] = binding.sequence;
     }

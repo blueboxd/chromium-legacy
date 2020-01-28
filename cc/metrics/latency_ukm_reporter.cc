@@ -10,14 +10,14 @@
 namespace cc {
 
 void LatencyUkmReporter::ReportLatencyUkm(
-    bool missed_frame,
+    CompositorFrameReporter::MissedFrameReportType report_type,
     const std::vector<CompositorFrameReporter::StageData>& stage_history,
     const base::flat_set<FrameSequenceTrackerType>* active_trackers,
     const viz::FrameTimingDetails& viz_breakdown) {
   if (!ukm_manager_)
     return;
   if (!frames_to_next_event_) {
-    ukm_manager_->RecordLatencyUKM(missed_frame, stage_history, active_trackers,
+    ukm_manager_->RecordLatencyUKM(report_type, stage_history, active_trackers,
                                    viz_breakdown);
     frames_to_next_event_ += SampleFramesToNextEvent();
   }

@@ -1069,9 +1069,8 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
   // Also simulate a DidChangeLoadProgress, but not a DidStopLoading.
   RenderFrameHostImpl* main_frame = static_cast<RenderFrameHostImpl*>(
       shell()->web_contents()->GetMainFrame());
-  FrameHostMsg_DidChangeLoadProgress progress_msg(main_frame->GetRoutingID(),
-                                                  1.0);
-  main_frame->OnMessageReceived(progress_msg);
+
+  main_frame->DidChangeLoadProgress(1.0);
   EXPECT_TRUE(delegate->did_start_loading);
   EXPECT_FALSE(delegate->did_stop_loading);
 

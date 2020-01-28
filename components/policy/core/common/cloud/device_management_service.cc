@@ -306,6 +306,13 @@ JobConfigurationBase::GetResourceRequest(bool bypass_proxy, int last_error) {
   return rr;
 }
 
+DeviceManagementService::Job::RetryMethod JobConfigurationBase::ShouldRetry(
+    int response_code,
+    const std::string& response_body) {
+  // By default, no need to retry based on the contents of the response.
+  return DeviceManagementService::Job::NO_RETRY;
+}
+
 // A device management service job implementation.
 class DeviceManagementService::JobImpl : public Job, public JobControl {
  public:
@@ -359,7 +366,7 @@ DeviceManagementService::JobImpl::CreateFetcher() {
   return fetcher;
 }
 
-DeviceManagementService::JobImpl::RetryMethod
+DeviceManagementService::Job::RetryMethod
 DeviceManagementService::JobImpl::OnURLLoadComplete(
     const std::string& response_body,
     const std::string& mime_type,
@@ -369,8 +376,14 @@ DeviceManagementService::JobImpl::OnURLLoadComplete(
     int* retry_delay) {
   RetryMethod retry_method =
       ShouldRetry(mime_type, response_code, net_error, was_fetched_via_proxy);
+
+  // Ask the config if this is a valid response
+  if (retry_method == RetryMethod::NO_RETRY) {
+    retry_method = config_->ShouldRetry(response_code, response_body);
+  }
+
   if (retry_method != RetryMethod::NO_RETRY) {
-    config_->OnBeforeRetry();
+    config_->OnBeforeRetry(response_code, response_body);
     *retry_delay = GetRetryDelay(retry_method);
     return retry_method;
   }
@@ -402,7 +415,7 @@ DeviceManagementService::JobImpl::OnURLLoadComplete(
   return NO_RETRY;
 }
 
-DeviceManagementService::JobImpl::RetryMethod
+DeviceManagementService::Job::RetryMethod
 DeviceManagementService::JobImpl::ShouldRetry(const std::string& mime_type,
                                               int response_code,
                                               int net_error,
@@ -572,10 +585,10 @@ void DeviceManagementService::OnURLLoaderCompleteInternal(
   pending_jobs_.erase(entry);
 
   int delay;
-  JobControl::RetryMethod retry_method =
+  Job::RetryMethod retry_method =
       job->OnURLLoadComplete(response_body, mime_type, net_error, response_code,
                              was_fetched_via_proxy, &delay);
-  if (retry_method != JobControl::NO_RETRY) {
+  if (retry_method != Job::NO_RETRY) {
     LOG(WARNING) << "Dmserver request failed, retrying in " << delay / 1000
                  << "s.";
     task_runner_->PostDelayedTask(

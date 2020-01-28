@@ -36,7 +36,7 @@ class FakeMultiDeviceSetupClient : public MultiDeviceSetupClient {
   void InvokePendingGetEligibleHostDevicesCallback(
       const multidevice::RemoteDeviceRefList& eligible_devices);
   void InvokePendingSetHostDeviceCallback(
-      const std::string& expected_device_id,
+      const std::string& expected_instance_id_or_legacy_device_id,
       const std::string& expected_auth_token,
       bool success);
   void InvokePendingSetFeatureEnabledStateCallback(
@@ -61,7 +61,7 @@ class FakeMultiDeviceSetupClient : public MultiDeviceSetupClient {
   // MultiDeviceSetupClient:
   void GetEligibleHostDevices(GetEligibleHostDevicesCallback callback) override;
   void SetHostDevice(
-      const std::string& host_device_id,
+      const std::string& host_instance_id_or_legacy_device_id,
       const std::string& auth_token,
       mojom::MultiDeviceSetup::SetHostDeviceCallback callback) override;
   void RemoveHostDevice() override;

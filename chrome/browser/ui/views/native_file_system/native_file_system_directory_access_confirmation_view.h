@@ -7,7 +7,7 @@
 
 #include "base/macros.h"
 #include "base/strings/string16.h"
-#include "chrome/browser/permissions/permission_util.h"
+#include "components/permissions/permission_util.h"
 #include "ui/views/window/dialog_delegate.h"
 
 namespace base {
@@ -39,7 +39,7 @@ class NativeFileSystemDirectoryAccessConfirmationView
   static views::Widget* ShowDialog(
       const url::Origin& origin,
       const base::FilePath& path,
-      base::OnceCallback<void(PermissionAction result)> callback,
+      base::OnceCallback<void(permissions::PermissionAction result)> callback,
       content::WebContents* web_contents);
 
   // views::DialogDelegateView:
@@ -58,9 +58,9 @@ class NativeFileSystemDirectoryAccessConfirmationView
   NativeFileSystemDirectoryAccessConfirmationView(
       const url::Origin& origin,
       const base::FilePath& path,
-      base::OnceCallback<void(PermissionAction result)> callback);
+      base::OnceCallback<void(permissions::PermissionAction result)> callback);
 
-  base::OnceCallback<void(PermissionAction result)> callback_;
+  base::OnceCallback<void(permissions::PermissionAction result)> callback_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeFileSystemDirectoryAccessConfirmationView);
 };

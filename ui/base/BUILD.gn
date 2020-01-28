@@ -281,8 +281,6 @@ jumbo_component("base") {
       "cocoa/text_services_context_menu.h",
       "cocoa/tool_tip_base_view.h",
       "cocoa/tool_tip_base_view.mm",
-      "cocoa/touch_bar_forward_declarations.h",
-      "cocoa/touch_bar_forward_declarations.mm",
       "cocoa/touch_bar_util.h",
       "cocoa/touch_bar_util.mm",
       "cocoa/tracking_area.h",

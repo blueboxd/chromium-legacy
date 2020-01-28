@@ -60,21 +60,19 @@ bool SharedImageBatchAccessManager::EndBatchReadAccess() {
   if (it == backings_.end())
     return false;
 
-  // If there are no registered backings, we dont need to create any fence and
-  // supply to any backings.
-  if (it->second.empty())
-    return true;
+  // If there are registered backings, create the egl fence and supply to the
+  // backings.
+  if (!it->second.empty()) {
+    // Create a shared egl fence.
+    auto shared_egl_fence = base::MakeRefCounted<gl::SharedGLFenceEGL>();
 
-  // Create a shared egl fence.
-  auto shared_egl_fence = base::MakeRefCounted<gl::SharedGLFenceEGL>();
-
-  // Pass it to all the registered backings.
-  for (auto* registered_backing : it->second) {
-    registered_backing->SetEndReadFence(shared_egl_fence);
+    // Pass it to all the registered backings.
+    for (auto* registered_backing : it->second) {
+      registered_backing->SetEndReadFence(shared_egl_fence);
+    }
   }
 
-  // Clean up all the registered backings for this context and remove this entry
-  // for map.
+  // Remove the entry for this context.
   backings_.erase(it);
   return true;
 }

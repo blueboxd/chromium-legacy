@@ -279,6 +279,7 @@
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> სანიშნე}other{<ph name="BOOKMARKS_COUNT_MANY" /> სანიშნე}}</translation>
 <translation id="3089395242580810162">ინკოგნიტო ჩანართში გახსნა</translation>
 <translation id="3123473560110926937">დაბლოკილია ზოგიერთ საიტზე</translation>
+<translation id="3123734510202723619">განცხადებები</translation>
 <translation id="3137521801621304719">ინკოგნიტო რეჟიმის დატოვება</translation>
 <translation id="3143515551205905069">სინქრონიზაციის გაუქმება</translation>
 <translation id="3157842584138209013">იხილეთ თქვენ მიერ დაზოგილი მონაცემების მოცულობა „დამატებითი ვარიანტების“ ღილაკის მეშვეობით</translation>
@@ -690,7 +691,6 @@
 <translation id="6201345951596836663">ბმული დაკოპირდა</translation>
 <translation id="6206551242102657620">კავშირი დაცულია. საიტის ინფორმაცია.</translation>
 <translation id="6210748933810148297">არ ხართ <ph name="EMAIL" />?</translation>
-<translation id="6216432067784365534"><ph name="NAME_OF_LIST_ITEM" /> — ვარიანტები</translation>
 <translation id="6221633008163990886">განბლოკეთ თქვენი პაროლის ექსპორტირებისთვის</translation>
 <translation id="6232535412751077445">ფუნქცია „არ ადევნო თვალი“-ს ჩართვის შემთხვევაში, ეს მოთხოვნა თქვენს ვების დათვალიერების ტრაფიკს დაერთვება. მისი ეფექტურობა დამოკიდებულია იმაზე, მოახდენს თუ არა კონკრეტული ვებსაიტი ამ მოთხოვნაზე რეაგირებას და როგორ იქნება ეს მოთხოვნა ინტერპრეტირებული.
 
@@ -736,7 +736,6 @@
 <translation id="6534565668554028783">Google-ს რეაგირებისთვის მეტისმეტად ბევრი დრო დასჭირდა</translation>
 <translation id="6538442820324228105">ჩამოტვირთულია <ph name="GBS" /> გბაიტი</translation>
 <translation id="6539092367496845964">წარმოიქმნა შეფერხება. ცადეთ მოგვიანებით.</translation>
-<translation id="654446541061731451">აირჩიეთ ტაბულაცია გადასაფურცლად</translation>
 <translation id="6545017243486555795">ყველა მონაცემის გასუფთავება</translation>
 <translation id="6545864417968258051">Bluetooth სკანირება</translation>
 <translation id="6560414384669816528">ძიების Sogou-ს მეშვეობით განხორციელება</translation>
@@ -1031,7 +1030,6 @@
 <translation id="868929229000858085">თქვენს კონტაქტებში ძიება</translation>
 <translation id="8698438463325761328">საიტებისთვის თქვენს ვირტუალური რეალობის მოწყობილობებზე/მონაცემებზე წვდომის დაბლოკვა</translation>
 <translation id="869891660844655955">ვადის გასვლის თარიღი</translation>
-<translation id="8719023831149562936">ტაბულაციის გააქტიურება არ განხორციელდა</translation>
 <translation id="8728487861892616501">ამ აპლიკაციის გამოყენებით თქვენ ეთანხმებით Chrome-ის <ph name="BEGIN_LINK1" />მომსახურების პირობებსა<ph name="END_LINK1" /> და <ph name="BEGIN_LINK2" />შეტყობინებას კონფიდენციალურობის შესახებ<ph name="END_LINK2" />, ასევე <ph name="BEGIN_LINK3" />შეტყობინებას მონაცემთა კონფიდენციალურობის წესების თაობაზე Family Link-ში მართული Google ანგარიშებისთვის<ph name="END_LINK3" />.</translation>
 <translation id="8748850008226585750">შიგთავსი დამალულია</translation>
 <translation id="8751914237388039244">აირჩიეთ სურათი</translation>

@@ -40,18 +40,18 @@
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "url/gurl.h"
 
-class FakePageImpl : public translate::mojom::Page {
+class FakePageImpl : public translate::mojom::TranslateAgent {
  public:
   FakePageImpl();
   ~FakePageImpl() override;
 
-  mojo::PendingRemote<translate::mojom::Page> BindToNewPageRemote();
+  mojo::PendingRemote<translate::mojom::TranslateAgent> BindToNewPageRemote();
 
-  // translate::mojom::Page implementation.
-  void Translate(const std::string& translate_script,
-                 const std::string& source_lang,
-                 const std::string& target_lang,
-                 TranslateCallback callback) override;
+  // translate::mojom::TranslateAgent implementation.
+  void TranslateFrame(const std::string& translate_script,
+                      const std::string& source_lang,
+                      const std::string& target_lang,
+                      TranslateFrameCallback callback) override;
 
   void RevertTranslation() override;
 
@@ -66,8 +66,8 @@ class FakePageImpl : public translate::mojom::Page {
   bool called_revert_translation_;
 
  private:
-  TranslateCallback translate_callback_pending_;
-  mojo::Receiver<translate::mojom::Page> receiver_{this};
+  TranslateFrameCallback translate_callback_pending_;
+  mojo::Receiver<translate::mojom::TranslateAgent> receiver_{this};
   DISALLOW_COPY_AND_ASSIGN(FakePageImpl);
 };
 

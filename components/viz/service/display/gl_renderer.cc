@@ -76,6 +76,7 @@
 #include "ui/gfx/color_space.h"
 #include "ui/gfx/color_transform.h"
 #include "ui/gfx/geometry/quad_f.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/geometry/size_conversions.h"
 #include "ui/gfx/rrect_f.h"
@@ -454,6 +455,11 @@ void GLRenderer::PrepareSurfaceForPass(
       SetScissorTestRect(render_pass_scissor);
       ClearFramebuffer();
       break;
+  }
+
+  if (OverdrawTracingEnabled()) {
+    gl_->GenQueriesEXT(1, &occlusion_query_);
+    gl_->BeginQueryEXT(GL_SAMPLES_PASSED_ARB, occlusion_query_);
   }
 }
 
@@ -923,7 +929,8 @@ sk_sp<SkImage> GLRenderer::ApplyBackdropFilters(
     const base::Optional<gfx::RRectF>& backdrop_filter_bounds,
     const gfx::Transform& backdrop_filter_bounds_transform) {
   DCHECK(ShouldApplyBackdropFilters(params));
-  DCHECK(params->backdrop_filter_quality);
+  DCHECK(params->backdrop_filter_quality > 0.0f &&
+         params->backdrop_filter_quality <= 1.0f);
   DCHECK(!params->filters)
       << "Filters should always be in a separate Effect node";
   const RenderPassDrawQuad* quad = params->quad;
@@ -933,8 +940,30 @@ sk_sp<SkImage> GLRenderer::ApplyBackdropFilters(
       (params->background_rect.top_right() - unclipped_rect.top_right()) +
       (params->background_rect.bottom_left() - unclipped_rect.bottom_left());
 
+  gfx::Rect quality_adjusted_rect = ScaleToEnclosingRect(
+      params->background_rect, params->backdrop_filter_quality);
+
+  // When backdrop_filter_quality is less than 1.0f, scale the blur amount
+  // accordingly.
+  cc::FilterOperations filter_operations;
+  if (params->backdrop_filter_quality < 1.0f) {
+    for (const cc::FilterOperation& op :
+         params->backdrop_filters->operations()) {
+      if (op.type() == cc::FilterOperation::BLUR) {
+        cc::FilterOperation blur_op(op);
+        blur_op.set_amount(op.amount() * params->backdrop_filter_quality);
+        filter_operations.Append(blur_op);
+      } else {
+        filter_operations.Append(op);
+      }
+    }
+  }
+  const cc::FilterOperations& filters = params->backdrop_filter_quality < 1.0f
+                                            ? filter_operations
+                                            : *params->backdrop_filters;
+
   auto paint_filter = cc::RenderSurfaceFilters::BuildImageFilter(
-      *params->backdrop_filters, gfx::SizeF(params->background_rect.size()),
+      filters, gfx::SizeF(quality_adjusted_rect.size()),
       gfx::Vector2dF(clipping_offset));
 
   // TODO(senorblanco): background filters should be moved to the
@@ -945,7 +974,7 @@ sk_sp<SkImage> GLRenderer::ApplyBackdropFilters(
 
   auto filter = paint_filter->cached_sk_filter_;
   sk_sp<SkImage> src_image = WrapTexture(
-      params->background_texture, GL_TEXTURE_2D, params->background_rect.size(),
+      params->background_texture, GL_TEXTURE_2D, quality_adjusted_rect.size(),
       use_gr_context->context(), /*flip_texture=*/true,
       GlFormatToSkFormat(params->background_texture_format),
       /*adopt_texture=*/false);
@@ -955,9 +984,6 @@ sk_sp<SkImage> GLRenderer::ApplyBackdropFilters(
                          TRACE_EVENT_SCOPE_THREAD);
     return nullptr;
   }
-
-  gfx::Rect quality_adjusted_rect = ScaleToEnclosingRect(
-      params->background_rect, params->backdrop_filter_quality);
 
   // Create surface to draw into.
   SkImageInfo dst_info = SkImageInfo::MakeN32Premul(
@@ -975,28 +1001,34 @@ sk_sp<SkImage> GLRenderer::ApplyBackdropFilters(
   // to disable subnormal floats for performance and security reasons.
   cc::ScopedSubnormalFloatDisabler disabler;
 
-  // First paint the backdrop at full opacity. The backdrop-filtered content
-  // will not be blended with the backdrop later, it will be rastered over the
-  // top. So we need to paint it here, unfiltered.
-  gfx::RectF src_image_rect = gfx::RectF(params->background_rect.width(),
-                                         params->background_rect.height());
+  gfx::RectF src_image_rect =
+      gfx::RectF(quality_adjusted_rect.width(), quality_adjusted_rect.height());
   SkRect dest_rect = RectToSkRect(gfx::Rect(quality_adjusted_rect.size()));
-  surface->getCanvas()->drawImageRect(src_image, RectFToSkRect(src_image_rect),
-                                      dest_rect, nullptr);
+
+  // If the content underneath the backdrop filter can be exposed because of
+  // blending or bounds, paint the backdrop at full opacity first. The
+  // backdrop-filtered content will not be blended with the backdrop later, it
+  // will be rastered over the top. So we need to paint it here, unfiltered.
+  if (backdrop_filter_bounds.has_value() || quad->ShouldDrawWithBlending()) {
+    surface->getCanvas()->drawImageRect(
+        src_image, RectFToSkRect(src_image_rect), dest_rect, nullptr);
+  }
 
   if (backdrop_filter_bounds.has_value()) {
     // Crop the source image to the backdrop_filter_bounds.
     gfx::Rect filter_clip = gfx::ToEnclosingRect(cc::MathUtil::MapClippedRect(
         backdrop_filter_bounds_transform, backdrop_filter_bounds->rect()));
-    gfx::Rect src_rect(src_image->width(), src_image->height());
+    gfx::Rect src_rect(params->background_rect.width(),
+                       params->background_rect.height());
     filter_clip.Intersect(src_rect);
     if (filter_clip.IsEmpty())
       return FinalizeImage(surface);
     if (filter_clip != src_rect) {
+      filter_clip = gfx::ScaleToEnclosingRect(filter_clip,
+                                              params->backdrop_filter_quality);
       src_image = src_image->makeSubset(RectToSkIRect(filter_clip));
       src_image_rect = gfx::RectF(filter_clip.width(), filter_clip.height());
-      dest_rect = RectToSkRect(
-          ScaleToEnclosingRect(filter_clip, params->backdrop_filter_quality));
+      dest_rect = RectToSkRect(filter_clip);
     }
   }
 
@@ -1011,7 +1043,6 @@ sk_sp<SkImage> GLRenderer::ApplyBackdropFilters(
   if (backdrop_filter_bounds.has_value()) {
     surface->getCanvas()->save();
     gfx::RRectF clip_rect(backdrop_filter_bounds.value());
-    clip_rect.Scale(params->backdrop_filter_quality);
     surface->getCanvas()->setMatrix(
         SkMatrix(backdrop_filter_bounds_transform.matrix()));
     surface->getCanvas()->clipRRect(SkRRect(clip_rect), SkClipOp::kIntersect,
@@ -2760,8 +2791,34 @@ void GLRenderer::FinishDrawingFrame() {
                  num_triangles_drawn_);
 }
 
+bool GLRenderer::OverdrawTracingEnabled() {
+  // Only collect trace data if we select viz.overdraw.
+  bool tracing_enabled;
+  TRACE_EVENT_CATEGORY_GROUP_ENABLED(TRACE_DISABLED_BY_DEFAULT("viz.overdraw"),
+                                     &tracing_enabled);
+  // ARB_occlusion_query is required for tracing.
+  // Trace only the root render pass.
+  return tracing_enabled && use_occlusion_query_ &&
+         current_frame()->current_render_pass ==
+             current_frame()->root_render_pass;
+}
+
 void GLRenderer::FinishDrawingQuadList() {
   FlushTextureQuadCache(SHARED_BINDING);
+  if (occlusion_query_) {
+    // Use the current surface area as max result. The effect is that overdraw
+    // is reported as a percentage of the output surface size. ie. 2x overdraw
+    // for the whole screen is reported as 200.
+    const int surface_area = current_surface_size_.GetArea();
+    DCHECK_GT(surface_area, 0);
+
+    gl_->EndQueryEXT(GL_SAMPLES_PASSED_ARB);
+    context_support_->SignalQuery(
+        occlusion_query_, base::BindOnce(&GLRenderer::ProcessOverdrawFeedback,
+                                         weak_ptr_factory_.GetWeakPtr(),
+                                         surface_area, occlusion_query_));
+    occlusion_query_ = 0;
+  }
 }
 
 void GLRenderer::GenerateMipmap() {
@@ -3868,75 +3925,24 @@ void GLRenderer::FlushOverdrawFeedback(const gfx::Rect& output_rect) {
       {4, GL_LESS, 4, 0x7fff0000},   // Red: Overdrawn four or more times.
   };
 
-  // Occlusion queries can be expensive, so only collect trace data if we select
-  // cc.debug.overdraw.
-  bool tracing_enabled;
-  TRACE_EVENT_CATEGORY_GROUP_ENABLED(TRACE_DISABLED_BY_DEFAULT("viz.overdraw"),
-                                     &tracing_enabled);
-
-  // Trace only the root render pass.
-  if (current_frame()->current_render_pass != current_frame()->root_render_pass)
-    tracing_enabled = false;
-
-  // ARB_occlusion_query is required for tracing.
-  if (!use_occlusion_query_)
-    tracing_enabled = false;
-
-  // Use the current surface area as max result. The effect is that overdraw
-  // is reported as a percentage of the output surface size. ie. 2x overdraw
-  // for the whole screen is reported as 200.
-  int max_result = current_surface_size_.GetArea();
-  DCHECK_GT(max_result, 0);
-
-  // Callback is repeating to allow sharing the owned vector<int>.
-  auto overdraw_feedback_callback = base::BindRepeating(
-      &GLRenderer::ProcessOverdrawFeedback, weak_ptr_factory_.GetWeakPtr(),
-      base::Owned(new std::vector<int>), base::size(stencil_tests), max_result);
-
   for (const auto& test : stencil_tests) {
-    GLuint query = 0;
-    if (tracing_enabled) {
-      gl_->GenQueriesEXT(1, &query);
-      gl_->BeginQueryEXT(GL_SAMPLES_PASSED_ARB, query);
-    }
-
     gl_->StencilFunc(test.func, test.ref, 0xffffffff);
     // Transparent color unless color-coding of overdraw is enabled.
     SetShaderColor(settings_->show_overdraw_feedback ? test.color : 0, 1.f);
     gl_->DrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, nullptr);
-
-    if (query) {
-      gl_->EndQueryEXT(GL_SAMPLES_PASSED_ARB);
-      context_support_->SignalQuery(
-          query,
-          base::BindOnce(overdraw_feedback_callback, query, test.multiplier));
-    }
   }
 }
 
-void GLRenderer::ProcessOverdrawFeedback(std::vector<int>* overdraw,
-                                         size_t num_expected_results,
-                                         int max_result,
-                                         unsigned query,
-                                         int multiplier) {
+void GLRenderer::ProcessOverdrawFeedback(int surface_area,
+                                         unsigned occlusion_query) {
   unsigned result = 0;
-  if (query) {
-    gl_->GetQueryObjectuivEXT(query, GL_QUERY_RESULT_EXT, &result);
-    gl_->DeleteQueriesEXT(1, &query);
-  }
+  DCHECK(occlusion_query);
+  gl_->GetQueryObjectuivEXT(occlusion_query, GL_QUERY_RESULT_EXT, &result);
+  gl_->DeleteQueriesEXT(1, &occlusion_query);
 
-  // Apply multiplier to get the amount of overdraw.
-  overdraw->push_back(result * multiplier);
-
-  // Return early if we are expecting more results.
-  if (overdraw->size() < num_expected_results)
-    return;
-
-  // Report GPU overdraw as a percentage of |max_result|.
-  TRACE_COUNTER1(
-      TRACE_DISABLED_BY_DEFAULT("viz.overdraw"), "GPU Overdraw",
-      (std::accumulate(overdraw->begin(), overdraw->end(), 0) * 100) /
-          max_result);
+  // Report GPU overdraw as a percentage of |surface_area|.
+  TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("viz.overdraw"), "GPU Overdraw",
+                 (result * 100.0 / surface_area));
 }
 
 void GLRenderer::UpdateRenderPassTextures(

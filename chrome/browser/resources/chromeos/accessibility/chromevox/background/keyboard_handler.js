@@ -99,8 +99,8 @@ BackgroundKeyboardHandler = class {
   static sendKeyPress(keyCode, modifiers) {
     var key = {
       type: chrome.accessibilityPrivate.SyntheticKeyboardEventType.KEYDOWN,
-      keyCode: keyCode,
-      modifiers: modifiers
+      keyCode,
+      modifiers
     };
     chrome.accessibilityPrivate.sendSyntheticKeyEvent(key);
     key['type'] = chrome.accessibilityPrivate.SyntheticKeyboardEventType.KEYUP;

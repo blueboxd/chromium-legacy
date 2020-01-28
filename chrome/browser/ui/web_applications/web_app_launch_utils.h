@@ -8,7 +8,7 @@
 #include <string>
 
 #include "base/optional.h"
-#include "chrome/browser/web_applications/components/web_app_helpers.h"
+#include "chrome/browser/web_applications/components/web_app_id.h"
 
 class Browser;
 class GURL;

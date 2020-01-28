@@ -1300,7 +1300,12 @@ void ExistingUserController::DeviceSettingsChanged() {
   if (!profile_prepared_ && GetLoginDisplay() &&
       !GetLoginDisplay()->is_signin_completed()) {
     // Signed settings or user list changed. Notify views and update them.
-    UpdateLoginDisplay(user_manager::UserManager::Get()->GetUsers());
+    const user_manager::UserList& users =
+        UserAddingScreen::Get()->IsRunning()
+            ? user_manager::UserManager::Get()->GetUsersAllowedForMultiProfile()
+            : user_manager::UserManager::Get()->GetUsers();
+
+    UpdateLoginDisplay(users);
     ConfigureAutoLogin();
   }
 }

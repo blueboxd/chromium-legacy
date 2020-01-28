@@ -56,8 +56,8 @@ SelectToSpeakPrefsTest.prototype = {
   },
 
   setStsRateAndPitch(rate, pitch) {
-    this.mockStorage_.sync.set({'rate': rate});
-    this.mockStorage_.sync.set({'pitch': pitch});
+    this.mockStorage_.sync.set({rate});
+    this.mockStorage_.sync.set({pitch});
   },
 
   ensurePrefsRemovedAndGlobalSetTo(rate, pitch) {

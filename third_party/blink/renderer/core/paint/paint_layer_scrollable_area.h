@@ -344,7 +344,8 @@ class CORE_EXPORT PaintLayerScrollableArea final
   bool UserInputScrollable(ScrollbarOrientation) const override;
   bool ShouldPlaceVerticalScrollbarOnLeft() const override;
   int PageStep(ScrollbarOrientation) const override;
-  ScrollBehavior ScrollBehaviorStyle() const override;
+  mojom::blink::ScrollIntoViewParams::Behavior ScrollBehaviorStyle()
+      const override;
   WebColorScheme UsedColorScheme() const override;
   cc::AnimationHost* GetCompositorAnimationHost() const override;
   CompositorAnimationTimeline* GetCompositorAnimationTimeline() const override;
@@ -359,7 +360,8 @@ class CORE_EXPORT PaintLayerScrollableArea final
 
   void ScrollToAbsolutePosition(
       const FloatPoint& position,
-      ScrollBehavior scroll_behavior = kScrollBehaviorInstant,
+      mojom::blink::ScrollIntoViewParams::Behavior scroll_behavior =
+          mojom::blink::ScrollIntoViewParams::Behavior::kInstant,
       ScrollType scroll_type = kProgrammaticScroll) {
     SetScrollOffset(position - ScrollOrigin(), scroll_type, scroll_behavior);
   }

@@ -2511,7 +2511,8 @@ LayoutUnit LayoutBlockFlow::FirstLineBoxBaseline() const {
         return *baseline;
     }
   }
-  return LayoutUnit(-1);
+  return EmptyLineBaseline(IsHorizontalWritingMode() ? kHorizontalLine
+                                                     : kVerticalLine);
 }
 
 LayoutUnit LayoutBlockFlow::InlineBlockBaseline(

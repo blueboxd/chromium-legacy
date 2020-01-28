@@ -194,9 +194,6 @@ extern const char kBundledConnectionHelpDescription[];
 extern const char kBypassAppBannerEngagementChecksName[];
 extern const char kBypassAppBannerEngagementChecksDescription[];
 
-extern const char kCaptionSettingsName[];
-extern const char kCaptionSettingsDescription[];
-
 extern const char kContextMenuSearchWithGoogleLensName[];
 extern const char kContextMenuSearchWithGoogleLensDescription[];
 
@@ -1513,6 +1510,9 @@ extern const char kContextualSearchRankerQueryDescription[];
 extern const char kContextualSearchSecondTapName[];
 extern const char kContextualSearchSecondTapDescription[];
 
+extern const char kContextualSearchTranslationsName[];
+extern const char kContextualSearchTranslationsDescription[];
+
 extern const char kDirectActionsName[];
 extern const char kDirectActionsDescription[];
 
@@ -1934,9 +1934,6 @@ extern const char kArcUsbHostDescription[];
 
 extern const char kArcUsbStorageUIName[];
 extern const char kArcUsbStorageUIDescription[];
-
-extern const char kArcVpnName[];
-extern const char kArcVpnDescription[];
 
 extern const char kAshDragWindowFromShelfName[];
 extern const char kAshDragWindowFromShelfDescription[];

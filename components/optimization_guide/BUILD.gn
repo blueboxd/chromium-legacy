@@ -17,6 +17,8 @@ static_library("optimization_guide") {
     "hints_component_util.h",
     "hints_fetcher.cc",
     "hints_fetcher.h",
+    "hints_fetcher_factory.cc",
+    "hints_fetcher_factory.h",
     "hints_processing_util.cc",
     "hints_processing_util.h",
     "memory_hint.cc",

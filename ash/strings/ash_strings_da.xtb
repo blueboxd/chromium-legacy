@@ -112,6 +112,7 @@
 <translation id="2352467521400612932">Indstillinger for styluspen</translation>
 <translation id="2354174487190027830">Aktiverer <ph name="NAME" /></translation>
 <translation id="2359808026110333948">Fortsæt</translation>
+<translation id="2364154243880592194">Statusbakke, tid <ph name="TIME" />, <ph name="BATTERY" /> Tryk på søgetasten + venstre pil for at få adgang til notifikationscenteret.</translation>
 <translation id="2365393535144473978">Bluetooth aktiveres, når du aktiverer mobildata.</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="2412593942846481727">Der er en tilgængelig opdatering</translation>
@@ -335,6 +336,7 @@
 <translation id="5669267381087807207">Aktiverer</translation>
 <translation id="5673434351075758678">Fra "<ph name="FROM_LOCALE" />" til "<ph name="TO_LOCALE" />", efter at du har synkroniseret dine indstillinger.</translation>
 <translation id="5682642926269496722">Google Assistent er ikke tilgængelig for den aktuelle brugerkonto.</translation>
+<translation id="5689633613396158040">Nattelys gør det mere behageligt at kigge på din skærm eller læse på den i svag belysning. Tryk for at ændre indstillingerne for, hvornår Nattelys aktiveres, eller for at deaktivere funktionen helt.</translation>
 <translation id="5691772641933328258">Fingeraftrykket kunne ikke genkendes</translation>
 <translation id="5710450975648804523">Forstyr ikke er aktiveret</translation>
 <translation id="573413375004481890">Denne enhed kunne ikke understøtte alle dine skærme, så tilslutningen af en af dem blev fjernet</translation>
@@ -515,6 +517,7 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="8142441511840089262">Dobbeltklik</translation>
 <translation id="8142699993796781067">Privat netværk</translation>
 <translation id="8152092012181020186">Tryk på Ctrl+W for at lukke.</translation>
+<translation id="8155007568264258537"><ph name="FEATURE_NAME" /> Denne indstilling administreres af din administrator.</translation>
 <translation id="8167567890448493835">Bruger <ph name="LOCALE_NAME" /></translation>
 <translation id="8190698733819146287">Tilpas sprog og indtastning...</translation>
 <translation id="8192202700944119416">Notifikationer er skjult.</translation>
@@ -596,7 +599,6 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="9193626018745640770">Caster på en ukendt modtager</translation>
 <translation id="9194617393863864469">Log ind med en anden bruger...</translation>
 <translation id="9201374708878217446"><ph name="CONNECTION_STATUS" />, administreret af din administrator</translation>
-<translation id="9205817095063786319">Enheden administreres af <ph name="DOMAIN" /></translation>
 <translation id="9210037371811586452">Lukker tilstanden Kombineret skrivebord</translation>
 <translation id="9211681782751733685"><ph name="TIME_REMAINING" /> til batteriet er fuldt opladet.</translation>
 <translation id="9215934040295798075">Vælg baggrund</translation>

@@ -112,6 +112,7 @@
 <translation id="2352467521400612932">Setelan stilus</translation>
 <translation id="2354174487190027830">Mengaktifkan <ph name="NAME" /></translation>
 <translation id="2359808026110333948">Lanjutkan</translation>
+<translation id="2364154243880592194">Menu status , waktu <ph name="TIME" />, <ph name="BATTERY" /> Tekan penelusuran + panah kiri untuk mengakses pusat notifikasi.</translation>
 <translation id="2365393535144473978">Mengaktifkan data seluler akan mengaktifkan Bluetooth.</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="2412593942846481727">Update tersedia</translation>
@@ -335,6 +336,7 @@
 <translation id="5669267381087807207">Mengaktifkan</translation>
 <translation id="5673434351075758678">Dari "<ph name="FROM_LOCALE" />" ke "<ph name="TO_LOCALE" />" setelah menyinkronkan setelan Anda.</translation>
 <translation id="5682642926269496722">Asisten Google tidak tersedia untuk akun pengguna saat ini.</translation>
+<translation id="5689633613396158040">Cahaya Malam memudahkan Anda melihat layar atau membaca saat cahaya redup. Ketuk untuk mengubah waktu pengaktifan Cahaya Malam atau menonaktifkannya sepenuhnya.</translation>
 <translation id="5691772641933328258">Sidik jari tidak dikenali</translation>
 <translation id="5710450975648804523">Mode Jangan Ganggu aktif</translation>
 <translation id="573413375004481890">Perangkat ini tidak dapat mendukung semua layar Anda, jadi salah satu telah diputuskan sambungannya</translation>
@@ -514,6 +516,7 @@
 <translation id="8142441511840089262">Klik dua kali</translation>
 <translation id="8142699993796781067">Jaringan pribadi</translation>
 <translation id="8152092012181020186">Tekan Ctrl + W untuk menutup.</translation>
+<translation id="8155007568264258537"><ph name="FEATURE_NAME" /> Setelan ini dikelola oleh administrator Anda.</translation>
 <translation id="8167567890448493835">Menggunakan <ph name="LOCALE_NAME" /></translation>
 <translation id="8190698733819146287">Sesuaikan bahasa dan masukan...</translation>
 <translation id="8192202700944119416">Notifikasi disembunyikan.</translation>
@@ -595,7 +598,6 @@
 <translation id="9193626018745640770">Mentransmisi pada penerima yang tidak dikenal</translation>
 <translation id="9194617393863864469">Masukkan pengguna lain...</translation>
 <translation id="9201374708878217446"><ph name="CONNECTION_STATUS" />, Dikelola oleh Administrator Anda</translation>
-<translation id="9205817095063786319">Perangkat dikelola oleh <ph name="DOMAIN" /></translation>
 <translation id="9210037371811586452">Keluar dari mode desktop terpadu</translation>
 <translation id="9211681782751733685">Kurang <ph name="TIME_REMAINING" /> lagi sampai baterai terisi penuh.</translation>
 <translation id="9215934040295798075">Setel wallpaper</translation>

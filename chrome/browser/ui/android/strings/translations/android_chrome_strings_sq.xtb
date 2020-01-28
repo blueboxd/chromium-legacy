@@ -134,6 +134,7 @@
 <translation id="1994173015038366702">URL-ja e sajtit</translation>
 <translation id="2000419248597011803">Dërgon disa kuki dhe kërkime nga shiriti i adresës dhe kutia e kërkimit te motori yt i parazgjedhur i kërkimit</translation>
 <translation id="2002537628803770967">Kartat e kreditit dhe adresat që përdorin Google Pay</translation>
+<translation id="2012973609889389923">Sajt i shpejtë</translation>
 <translation id="2013642289801508067">{FILE_COUNT,plural, =1{# skedar}other{# skedarë}}</translation>
 <translation id="2017836877785168846">Pastron historikun dhe plotësimet automatike në shiritin e adresës.</translation>
 <translation id="2021896219286479412">Kontrollet e sajtit në ekranin e plotë</translation>
@@ -278,6 +279,7 @@
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> faqeshënues}other{<ph name="BOOKMARKS_COUNT_MANY" /> faqeshënues}}</translation>
 <translation id="3089395242580810162">Hape në skedë "të fshehtë"</translation>
 <translation id="3123473560110926937">Bllokuar në disa sajte</translation>
+<translation id="3123734510202723619">Njoftime</translation>
 <translation id="3137521801621304719">Dil nga modaliteti "i fshehtë"</translation>
 <translation id="3143515551205905069">Anulo sinkronizimin</translation>
 <translation id="3157842584138209013">Shiko se sa të dhëna kurseve nga butoni "Më shumë opsione"</translation>
@@ -306,6 +308,7 @@
 <translation id="3298243779924642547">I lehtë</translation>
 <translation id="3303414029551471755">Të vazhdohet me shkarkimin e përmbajtjes?</translation>
 <translation id="3306398118552023113">Ky aplikacion po ekzekutohet në Chrome</translation>
+<translation id="3312292613668865961">Pyet përpara se sajtet të lejohen të kenë qasje te pajisja e realitetit virtual dhe të dhënat e tua (rekomandohet)</translation>
 <translation id="3315103659806849044">Aktualisht po personalizon cilësimet e shërbimit të "Sinkronizimit" dhe Google. Për të përfunduar aktivizimin e sinkronizimit, trokit butonin "Konfirmo" pranë fundit të ekranit. Ngjitu lart</translation>
 <translation id="3328801116991980348">Informacionet rreth sajtit</translation>
 <translation id="3333961966071413176">Të gjitha kontaktet</translation>
@@ -511,6 +514,7 @@ Për të ndryshuar këtë cilësim, <ph name="BEGIN_LINK" />rivendos sinkronizim
 <translation id="4915549754973153784"><ph name="BEGIN_LINK" />Kërko ndihmë<ph name="END_LINK" /> gjatë skanimit për pajisje…</translation>
 <translation id="4921180162323349895">{FILE_COUNT,plural, =1{# faqe}other{# faqe}}</translation>
 <translation id="4932247056774066048">Duke qenë se po del nga një llogari e menaxhuar nga <ph name="DOMAIN_NAME" />, të dhënat e tua të Chrome do të fshihen nga kjo pajisje. Ato do të mbeten në "Llogarinë tënde të Google".</translation>
+<translation id="4935305910887312910">Pyet përpara se sajtet të lejohen të marrin pozicionin e kamerës ose të krijojnë një hartë të dhomës sate (rekomandohet)</translation>
 <translation id="4943703118917034429">Realiteti virtual</translation>
 <translation id="4943872375798546930">Asnjë rezultat</translation>
 <translation id="4958708863221495346"><ph name="URL_OF_THE_CURRENT_TAB" /> po ndan ekranin tënd</translation>
@@ -687,7 +691,6 @@ Për të ndryshuar këtë cilësim, <ph name="BEGIN_LINK" />rivendos sinkronizim
 <translation id="6201345951596836663">Lidhja u kopjua</translation>
 <translation id="6206551242102657620">Lidhja është e sigurt. Informacioni i faqes</translation>
 <translation id="6210748933810148297">Nuk je <ph name="EMAIL" />?</translation>
-<translation id="6216432067784365534">Opsionet për <ph name="NAME_OF_LIST_ITEM" /></translation>
 <translation id="6221633008163990886">Shkyç për të eksportuar fjalëkalimet e tua</translation>
 <translation id="6232535412751077445">Aktivizimi i funksionit "Mos gjurmo" do të thotë se në trafikun e shfletimit do të përfshihet një kërkesë. Çdo efekt varet nëse një sajt uebi i përgjigjet kërkesës dhe se si interpretohet kërkesa.
 
@@ -733,7 +736,6 @@ Për shembull, disa sajte uebi mund t'i përgjigjen kësaj kërkese duke të tre
 <translation id="6534565668554028783">Google kërkoi shumë kohë për t'u përgjigjur</translation>
 <translation id="6538442820324228105">Janë shkarkuar <ph name="GBS" /> GB</translation>
 <translation id="6539092367496845964">Ndodhi një gabim. Provo përsëri më vonë.</translation>
-<translation id="654446541061731451">Zgjidh një skedë për ta dërguar me rreze</translation>
 <translation id="6545017243486555795">Pastro të gjitha të dhënat</translation>
 <translation id="6545864417968258051">Skanimi për Bluetooth</translation>
 <translation id="6560414384669816528">Kërko me Sogou</translation>
@@ -744,6 +746,7 @@ Për shembull, disa sajte uebi mund t'i përgjigjen kësaj kërkese duke të tre
 <translation id="6573431926118603307">Skedat që ke hapur në Chrome në pajisjet e tjera do të shfaqen këtu.</translation>
 <translation id="6583199322650523874">Shëno si faqeshënues faqen aktuale</translation>
 <translation id="6593061639179217415">Sajti për desktop</translation>
+<translation id="6597891566292541626">Pozicionoje kodin QR/barkodin në këtë kornizë.</translation>
 <translation id="6600954340915313787">Kopjuar në Chrome</translation>
 <translation id="6608650720463149374"><ph name="GIGABYTES" /> GB</translation>
 <translation id="6612358246767739896">Përmbajtje e mbrojtur</translation>
@@ -953,6 +956,7 @@ Sajti NUK fiton qasje në kamerë. Imazhet e kamerës mund t'i shikosh vetëm ti
 <translation id="8109613176066109935">Për të marrë faqeshënuesit e tu në të gjitha pajisjet e tua, aktivizo sinkronizimin</translation>
 <translation id="8110087112193408731">Dëshiron të shfaqësh aktivitetin tënd të Chrome te "Mirëqenia dixhitale"?</translation>
 <translation id="8116925261070264013">Zëri i çaktivizuar</translation>
+<translation id="8127542551745560481">Modifiko faqen bazë</translation>
 <translation id="813082847718468539">Shiko informacionin rreth faqes</translation>
 <translation id="8156139159503939589">Në çfarë gjuhësh lexon?</translation>
 <translation id="8168435359814927499">Përmbajtja</translation>
@@ -1024,8 +1028,8 @@ Sajti NUK fiton qasje në kamerë. Imazhet e kamerës mund t'i shikosh vetëm ti
 <translation id="8676374126336081632">Pastro hyrjen</translation>
 <translation id="8687353297350450808">{N_BARS,plural, =1{Niveli i forcës së sinjalit: # shirit}other{Niveli i forcës së sinjalit: # shirita}}</translation>
 <translation id="868929229000858085">Kërko te kontaktet e tua</translation>
+<translation id="8698438463325761328">Blloko sajtet që të mos kenë qasje te pajisja e realitetit virtual dhe të dhënat e tua</translation>
 <translation id="869891660844655955">Data e skadimit</translation>
-<translation id="8719023831149562936">Skeda aktuale nuk dërgohet me rreze</translation>
 <translation id="8728487861892616501">Duke përdorur këtë aplikacion, ti pranon <ph name="BEGIN_LINK1" />Kushtet e shërbimit<ph name="END_LINK1" /> dhe <ph name="BEGIN_LINK2" />Njoftimin e privatësisë<ph name="END_LINK2" /> të Chrome dhe <ph name="BEGIN_LINK3" />Njoftimin e privatësisë për llogaritë e Google të menaxhuara me Family Link<ph name="END_LINK3" />.</translation>
 <translation id="8748850008226585750">Përmbajtjet janë të fshehura</translation>
 <translation id="8751914237388039244">Zgjidh një imazh</translation>
@@ -1041,6 +1045,7 @@ Sajti NUK fiton qasje në kamerë. Imazhet e kamerës mund t'i shikosh vetëm ti
 <translation id="883806473910249246">Ndodhi një gabim gjatë shkarkimit të përmbajtjes.</translation>
 <translation id="8840953339110955557">Kjo faqe mund të ndryshojë nga versioni në linjë.</translation>
 <translation id="8847988622838149491">USB</translation>
+<translation id="884828189055900810">Blloko sajtet që të mos marrin pozicionin e kamerës ose të mos krijojnë një hartë të dhomës sate</translation>
 <translation id="8853345339104747198"><ph name="TAB_TITLE" />, skeda</translation>
 <translation id="885701979325669005">Hapësira ruajtëse</translation>
 <translation id="889338405075704026">Shko te "Cilësimet" e Chrome</translation>
@@ -1048,6 +1053,7 @@ Sajti NUK fiton qasje në kamerë. Imazhet e kamerës mund t'i shikosh vetëm ti
 <translation id="8909135823018751308">Ndaj…</translation>
 <translation id="8912362522468806198">Llogaria e Google</translation>
 <translation id="8920114477895755567">Po pret detajet e prindërve.</translation>
+<translation id="8921772741368021346"><ph name="POSITION" /> / <ph name="DURATION" /></translation>
 <translation id="8922289737868596582">Shkarko faqet nga butoni "Më shumë opsione" për t'i përdorur ato jashtë linje</translation>
 <translation id="8926666909099850184">Veçoria NFC është joaktive për këtë pajisje. Aktivizoje te <ph name="BEGIN_LINK" />Cilësimet e Android<ph name="END_LINK" />.</translation>
 <translation id="8937772741022875483">Dëshiron të heqësh aktivitetin tënd të Chrome nga "Mirëqenia dixhitale"?</translation>

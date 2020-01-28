@@ -362,8 +362,6 @@ void ToolbarView::UpdateForWebUITabStrip() {
 #if BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)
   if (browser_view_->webui_tab_strip() && app_menu_button_) {
     const int insertion_index = GetIndexOf(app_menu_button_);
-    AddChildViewAt(browser_view_->webui_tab_strip()->CreateNewTabButton(),
-                   insertion_index);
     AddChildViewAt(browser_view_->webui_tab_strip()->CreateTabCounter(),
                    insertion_index);
     LoadImages();

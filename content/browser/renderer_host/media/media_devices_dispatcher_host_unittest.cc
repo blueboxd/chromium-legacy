@@ -281,7 +281,8 @@ class MediaDevicesDispatcherHostTest
           enumerated_devices_[blink::MEDIA_DEVICE_TYPE_AUDIO_OUTPUT].empty());
 
     EXPECT_FALSE(DoesContainRawIds(enumerated_devices_));
-    EXPECT_TRUE(DoesEveryDeviceMapToRawId(enumerated_devices_, origin_));
+    EXPECT_EQ(DoesEveryDeviceMapToRawId(enumerated_devices_, origin_),
+              permission_override_value);
   }
 
   bool DoesContainRawIds(

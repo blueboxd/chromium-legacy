@@ -2,6 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// clang-format off
+// #import 'chrome://resources/cr_elements/policy/cr_policy_pref_indicator.m.js';
+// #import 'chrome://test/cr_elements/cr_policy_strings.js';
+// #import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+// clang-format on
+
 /** @fileoverview Suite of tests for cr_policy-pref-indicator. */
 suite('CrPolicyPrefIndicator', function() {
   /** @type {!CrPolicyPrefIndicatorElement|undefined} */

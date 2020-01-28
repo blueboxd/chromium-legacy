@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="../../../resources/testharness.js"></script>
+<script src="../../../resources/testharnessreport.js"></script>
+<script src="../../../fast/forms/resources/common.js"></script>
+<script src="../../../fast/forms/resources/picker-common.js"></script>
+<script src="../../../fast/forms/calendar-picker/resources/calendar-picker-common.js"></script>
+</head>
+<body>
+<input type="date" id="date0" value="2019-02-14">
+<input type="date" id="date1" value="2019-02-14" step="2">
+<input type="date" id="date2" value="2019-02-14" step="30">
+<input type="date" id="date3" value="2019-02-14" min="2019-02-13">
+<input type="date" id="date4" value="2019-02-14" max="2019-02-21">
+<input type="date" id="date5">
+<script>
+promise_test(() => {
+  let dateElement = document.getElementById("date0");
+  return openPickerWithPromise(dateElement)
+  .then(() => {
+    // Make the picker dismiss synchronously so we don't need to insert
+    // an artificial delay in the test
+    internals.pagePopupWindow.CalendarPicker.commitDelayMs = 0;
+
+    eventSender.keyDown('ArrowRight');
+    eventSender.keyDown('ArrowDown');
+    assert_equals(dateElement.value, "2019-02-14", "Using arrow keys to navigate date picker should not update in-page control without pressing Enter key.");
+
+    eventSender.keyDown('Enter');
+    assert_equals(internals.pagePopupWindow, null, "Enter key should dismiss popup.");
+    assert_equals(dateElement.value, "2019-02-22", "Enter key should submit newly selected date.");
+  });
+}, "Date picker: Arrow keys should allow user to chooser month");
+
+promise_test(() => {
+  let dateElement = document.getElementById("date1");
+  return openPickerWithPromise(dateElement)
+  .then(() => {
+    // Make the picker dismiss synchronously so we don't need to insert
+    // an artificial delay in the test
+    internals.pagePopupWindow.CalendarPicker.commitDelayMs = 0;
+
+    eventSender.keyDown('ArrowRight');
+    eventSender.keyDown('Enter');
+    assert_equals(internals.pagePopupWindow, null, "Enter key should dismiss popup.");
+    assert_equals(dateElement.value, "2019-02-16", "Right arrow key should skip over invalid date.");
+  });
+}, "Date picker: Picker with step should allow keyboard user to jump over invalid values -- right arrow");
+
+promise_test(() => {
+  let dateElement = document.getElementById("date1");
+  return openPickerWithPromise(dateElement)
+  .then(() => {
+    // Make the picker dismiss synchronously so we don't need to insert
+    // an artificial delay in the test
+    internals.pagePopupWindow.CalendarPicker.commitDelayMs = 0;
+
+    eventSender.keyDown('ArrowUp');
+    eventSender.keyDown('Enter');
+    assert_equals(internals.pagePopupWindow, null, "Enter key should dismiss popup.");
+    assert_equals(dateElement.value, "2019-02-08", "Up arrow key should skip over invalid date.");
+  });
+}, "Date picker: Picker with step should allow keyboard user to jump over invalid values -- up arrow");
+
+promise_test(() => {
+  let dateElement = document.getElementById("date2");
+  return openPickerWithPromise(dateElement)
+  .then(() => {
+    // Make the picker dismiss synchronously so we don't need to insert
+    // an artificial delay in the test
+    internals.pagePopupWindow.CalendarPicker.commitDelayMs = 0;
+
+    eventSender.keyDown('ArrowDown');
+    eventSender.keyDown('Enter');
+    assert_equals(internals.pagePopupWindow, null, "Enter key should dismiss popup.");
+    assert_equals(dateElement.value, "2019-03-16", "Arrow key should skip to next valid date even if it's in a different month.");
+  });
+}, "Date picker: Picker with step should allow keyboard user to skip to next month with valid date");
+
+promise_test(() => {
+  let dateElement = document.getElementById("date3");
+  return openPickerWithPromise(dateElement)
+  .then(() => {
+    // Make the picker dismiss synchronously so we don't need to insert
+    // an artificial delay in the test
+    internals.pagePopupWindow.CalendarPicker.commitDelayMs = 0;
+
+    eventSender.keyDown('ArrowLeft');
+    eventSender.keyDown('ArrowLeft');
+    eventSender.keyDown('ArrowUp');
+    eventSender.keyDown('Enter');
+    assert_equals(internals.pagePopupWindow, null, "Enter key should dismiss popup.");
+    assert_equals(dateElement.value, "2019-02-13", "Min attribute should prevent user from arrowing into invalid values");
+  });
+}, "Date picker: Picker with min value should prevent user from using arrow keys to get into invalid values");
+
+promise_test(() => {
+  let dateElement = document.getElementById("date4");
+  return openPickerWithPromise(dateElement)
+  .then(() => {
+    // Make the picker dismiss synchronously so we don't need to insert
+    // an artificial delay in the test
+    internals.pagePopupWindow.CalendarPicker.commitDelayMs = 0;
+
+    eventSender.keyDown('ArrowDown');
+    eventSender.keyDown('ArrowDown');
+    eventSender.keyDown('ArrowRight');
+    eventSender.keyDown('Enter');
+    assert_equals(internals.pagePopupWindow, null, "Enter key should dismiss popup.");
+    assert_equals(dateElement.value, "2019-02-21", "Max attribute should prevent user from arrowing into invalid values");
+  });
+}, "Date picker: Picker with max value should prevent user from using arrow keys to get into invalid values");
+
+promise_test(() => {
+  let dateElement = document.getElementById("date5");
+  return openPickerWithPromise(dateElement)
+  .then(() => {
+    // Make the picker dismiss synchronously so we don't need to insert
+    // an artificial delay in the test
+    internals.pagePopupWindow.CalendarPicker.commitDelayMs = 0;
+
+    eventSender.keyDown('ArrowRight');
+    eventSender.keyDown('Enter');
+    assert_equals(internals.pagePopupWindow, null, "Enter key should dismiss popup.");
+
+    let splitDate = dateElement.value.split('-');
+    let actualDateString = new Date(splitDate[0], splitDate[1] - 1, [splitDate[2]]).toDateString();
+    let expectedDate = new Date();
+    expectedDate.setDate(expectedDate.getMonth() === 1 ? 14 : 15);
+    let expectedDateString = expectedDate.toDateString();
+
+    assert_equals(actualDateString, expectedDateString, "Hitting arrow key when no value is selected should select day in middle of current month");
+  });
+}, "Date picker: Picker should select middle day of current month when starting with no selection");
+
+</script>
+</body>
+</html>

@@ -140,7 +140,7 @@ public class EntitySuggestionProcessor extends BaseSuggestionViewProcessor {
                     for (int i = 0; i < pendingModels.size(); i++) {
                         PropertyModel pendingModel = pendingModels.get(i);
                         setSuggestionDrawableState(pendingModel,
-                                SuggestionDrawableState.Builder.forBitmap(bitmap)
+                                SuggestionDrawableState.Builder.forBitmap(mContext, bitmap)
                                         .setUseRoundedCorners(true)
                                         .setLarge(true)
                                         .build());

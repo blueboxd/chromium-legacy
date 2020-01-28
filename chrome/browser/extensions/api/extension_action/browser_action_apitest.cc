@@ -33,6 +33,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/extensions/extension_action_test_helper.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/ui_features.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -72,7 +73,6 @@
 #include "ui/gfx/skia_util.h"
 
 using content::WebContents;
-using ContextType = extensions::ExtensionBrowserTest::ContextType;
 
 namespace extensions {
 namespace {
@@ -163,29 +163,41 @@ class BrowserActionApiCanvasTest : public BrowserActionApiTest {
   }
 };
 
-class BrowserActionApiLazyTest
-    : public BrowserActionApiTest,
-      public testing::WithParamInterface<ContextType> {
+enum TestFlags {
+  kNone = 0,
+  kUseServiceWorker = 1,
+  kUseExtensionsMenuUi = 1 << 1,
+};
+
+class BrowserActionApiLazyTest : public BrowserActionApiTest,
+                                 public testing::WithParamInterface<int> {
  public:
   void SetUp() override {
     BrowserActionApiTest::SetUp();
     // Service Workers are currently only available on certain channels, so set
     // the channel for those tests.
-    if (GetParam() == ContextType::kServiceWorker) {
+    if ((GetParam() & kUseServiceWorker) != 0) {
       current_channel_ =
           std::make_unique<extensions::ScopedWorkerBasedExtensionsChannel>();
+    }
+
+    if ((GetParam() & kUseExtensionsMenuUi) != 0) {
+      feature_list_.InitAndEnableFeature(features::kExtensionsToolbarMenu);
+    } else {
+      feature_list_.InitAndDisableFeature(features::kExtensionsToolbarMenu);
     }
   }
 
   const extensions::Extension* LoadExtensionWithParamFlags(
       const base::FilePath& path) {
     int flags = kFlagEnableFileAccess;
-    if (GetParam() == ContextType::kServiceWorker)
+    if ((GetParam() & kUseServiceWorker) != 0)
       flags |= ExtensionBrowserTest::kFlagRunAsServiceWorkerBasedExtension;
     return LoadExtensionWithFlags(path, flags);
   }
 
  private:
+  base::test::ScopedFeatureList feature_list_;
   std::unique_ptr<extensions::ScopedWorkerBasedExtensionsChannel>
       current_channel_;
 };
@@ -268,12 +280,19 @@ IN_PROC_BROWSER_TEST_P(BrowserActionApiLazyTest, Update) {
             action->GetBadgeBackgroundColor(ExtensionAction::kDefaultTabId));
 }
 
-INSTANTIATE_TEST_SUITE_P(EventPage,
+INSTANTIATE_TEST_SUITE_P(EventPageAndLegacyToolbar,
                          BrowserActionApiLazyTest,
-                         ::testing::Values(ContextType::kEventPage));
-INSTANTIATE_TEST_SUITE_P(ServiceWorker,
+                         ::testing::Values(kNone));
+INSTANTIATE_TEST_SUITE_P(EventPageAndExtensionsMenu,
                          BrowserActionApiLazyTest,
-                         ::testing::Values(ContextType::kServiceWorker));
+                         ::testing::Values(kUseExtensionsMenuUi));
+INSTANTIATE_TEST_SUITE_P(ServiceWorkerAndLegacyToolbar,
+                         BrowserActionApiLazyTest,
+                         ::testing::Values(kUseServiceWorker));
+INSTANTIATE_TEST_SUITE_P(ServiceWorkerAndExtensionsMenu,
+                         BrowserActionApiLazyTest,
+                         ::testing::Values(kUseServiceWorker |
+                                           kUseExtensionsMenuUi));
 
 IN_PROC_BROWSER_TEST_F(BrowserActionApiCanvasTest, DynamicBrowserAction) {
   ASSERT_TRUE(RunExtensionTest("browser_action/no_icon")) << message_;
@@ -731,7 +750,7 @@ IN_PROC_BROWSER_TEST_P(BrowserActionApiLazyTest, IncognitoBasic) {
 IN_PROC_BROWSER_TEST_P(BrowserActionApiLazyTest, IncognitoUpdate) {
   // TODO(crbug.com/1015136): Investigate flakiness WRT Service Workers and
   // incognito mode.
-  if (GetParam() == ContextType::kServiceWorker)
+  if ((GetParam() & kUseServiceWorker) != 0)
     return;
   ASSERT_TRUE(embedded_test_server()->Start());
   const Extension* extension = LoadExtensionWithParamFlags(

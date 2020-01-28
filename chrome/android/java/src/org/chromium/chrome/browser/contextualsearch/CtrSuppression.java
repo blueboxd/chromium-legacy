@@ -169,37 +169,12 @@ public class CtrSuppression extends ContextualSearchHeuristic {
     }
 
     private String getKeyForClicksWeek(int weekRemainder) {
-        switch (weekRemainder) {
-            case 0:
-                return ChromePreferenceKeys.CONTEXTUAL_SEARCH_CLICKS_WEEK_0;
-            case 1:
-                return ChromePreferenceKeys.CONTEXTUAL_SEARCH_CLICKS_WEEK_1;
-            case 2:
-                return ChromePreferenceKeys.CONTEXTUAL_SEARCH_CLICKS_WEEK_2;
-            case 3:
-                return ChromePreferenceKeys.CONTEXTUAL_SEARCH_CLICKS_WEEK_3;
-            case 4:
-                return ChromePreferenceKeys.CONTEXTUAL_SEARCH_CLICKS_WEEK_4;
-            default:
-                return null;
-        }
+        return ChromePreferenceKeys.CONTEXTUAL_SEARCH_CLICKS_WEEK_PREFIX.createKey(weekRemainder);
     }
 
     private String getKeyForImpressionsWeek(int weekRemainder) {
-        switch (weekRemainder) {
-            case 0:
-                return ChromePreferenceKeys.CONTEXTUAL_SEARCH_IMPRESSIONS_WEEK_0;
-            case 1:
-                return ChromePreferenceKeys.CONTEXTUAL_SEARCH_IMPRESSIONS_WEEK_1;
-            case 2:
-                return ChromePreferenceKeys.CONTEXTUAL_SEARCH_IMPRESSIONS_WEEK_2;
-            case 3:
-                return ChromePreferenceKeys.CONTEXTUAL_SEARCH_IMPRESSIONS_WEEK_3;
-            case 4:
-                return ChromePreferenceKeys.CONTEXTUAL_SEARCH_IMPRESSIONS_WEEK_4;
-            default:
-                return null;
-        }
+        return ChromePreferenceKeys.CONTEXTUAL_SEARCH_IMPRESSIONS_WEEK_PREFIX.createKey(
+                weekRemainder);
     }
 
     // ============================================================================================

@@ -186,6 +186,22 @@ TEST_F(UkmServiceTest, ClientIdMigration) {
   EXPECT_EQ(migrated_id, 18446744073709551615ULL);
 }
 
+TEST_F(UkmServiceTest, ClientIdClonedInstall) {
+  prefs_.SetInt64(prefs::kUkmClientId, 123);
+  UkmService service(&prefs_, &client_,
+                     true /* restrict_to_whitelisted_entries */,
+                     std::make_unique<MockDemographicMetricsProvider>());
+
+  EXPECT_FALSE(client_.ShouldResetClientIdsOnClonedInstall());
+  client_.set_should_reset_client_ids_on_cloned_install(true);
+  EXPECT_TRUE(client_.ShouldResetClientIdsOnClonedInstall());
+
+  uint64_t original_id = prefs_.GetUint64(prefs::kUkmClientId);
+  service.Initialize();
+  uint64_t new_id = prefs_.GetUint64(prefs::kUkmClientId);
+  EXPECT_NE(original_id, new_id);
+}
+
 TEST_F(UkmServiceTest, EnableDisableSchedule) {
   UkmService service(&prefs_, &client_,
                      true /* restrict_to_whitelisted_entries */,

@@ -58,9 +58,9 @@ SelectToSpeakKeystrokeSelectionTest.prototype = {
       let textNode = this.findTextNode(desktop, 'This is some text');
       chrome.automation.setDocumentSelection({
         anchorObject: textNode,
-        anchorOffset: anchorOffset,
+        anchorOffset,
         focusObject: textNode,
-        focusOffset: focusOffset
+        focusOffset
       });
     }, expected);
   },

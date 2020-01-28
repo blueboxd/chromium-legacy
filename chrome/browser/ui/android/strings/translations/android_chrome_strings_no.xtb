@@ -279,6 +279,7 @@
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> bokmerke}other{<ph name="BOOKMARKS_COUNT_MANY" /> bokmerker}}</translation>
 <translation id="3089395242580810162">Åpne i inkognitofane</translation>
 <translation id="3123473560110926937">Blokkert på enkelte nettsteder</translation>
+<translation id="3123734510202723619">Kunngjøringer</translation>
 <translation id="3137521801621304719">Avslutt inkognitomodus</translation>
 <translation id="3143515551205905069">Avbryt synkronisering</translation>
 <translation id="3157842584138209013">Se hvor mye data du har spart, via Flere alternativer-knappen</translation>
@@ -690,7 +691,6 @@ For å endre denne innstillingen, <ph name="BEGIN_LINK" />tilbakestill synkronis
 <translation id="6201345951596836663">Linken er kopiert</translation>
 <translation id="6206551242102657620">Tilkoblingen er sikker. Informasjon om nettstedet</translation>
 <translation id="6210748933810148297">Ikke <ph name="EMAIL" />?</translation>
-<translation id="6216432067784365534">Alternativer for <ph name="NAME_OF_LIST_ITEM" /></translation>
 <translation id="6221633008163990886">Lås opp for å eksportere passordene dine</translation>
 <translation id="6232535412751077445">Hvis du slår på «Deaktivering av sporing», blir det sendt en forespørsel sammen med nettrafikken din. Hvilke virkninger dette eventuelt får, avhenger av om det aktuelle nettstedet svarer på forespørselen eller ikke, samt hvordan forespørselen tolkes.
 
@@ -736,7 +736,6 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="6534565668554028783">Google brukte for lang tid på å svare</translation>
 <translation id="6538442820324228105"><ph name="GBS" /> GB er lastet ned</translation>
 <translation id="6539092367496845964">Noe gikk galt. Prøv på nytt senere.</translation>
-<translation id="654446541061731451">Velg en fane for beaming</translation>
 <translation id="6545017243486555795">Slett alle data</translation>
 <translation id="6545864417968258051">Bluetooth-skanning</translation>
 <translation id="6560414384669816528">Søk med Sogou</translation>
@@ -1031,7 +1030,6 @@ Nettstedet får IKKE tilgang til kameraet. Kamerabildene er kun synlige for deg.
 <translation id="868929229000858085">Søk i kontaktene dine</translation>
 <translation id="8698438463325761328">Blokkér nettsteder fra å få tilgang til virtuell virkelighet-enheten din og -dataene dine</translation>
 <translation id="869891660844655955">Utløpsdato</translation>
-<translation id="8719023831149562936">Kan ikke beame gjeldende fane</translation>
 <translation id="8728487861892616501">Når du bruker denne appen, godtar du <ph name="BEGIN_LINK1" />vilkårene for bruk<ph name="END_LINK1" /> av Chrome, <ph name="BEGIN_LINK2" />merknaden om personvern<ph name="END_LINK2" /> og <ph name="BEGIN_LINK3" />merknaden om personvern for Google-kontoer som administreres med Family Link<ph name="END_LINK3" />.</translation>
 <translation id="8748850008226585750">Innholdet er skjult</translation>
 <translation id="8751914237388039244">Velg et bilde</translation>

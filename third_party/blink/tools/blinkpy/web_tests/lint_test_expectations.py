@@ -106,6 +106,17 @@ def lint(host, options):
                 failures.append(error)
                 _log.error('')
 
+        # check for test expectations that start with leading spaces
+        for lineno, line in enumerate(exp_lines, 1):
+            if not line.strip() or line.strip().startswith('#'):
+                continue
+            if line.startswith(' '):
+                error = '%s:%d Line %d has a test expectation that has leading spaces.' % (
+                    host.filesystem.basename(path), lineno, lineno)
+                _log.error(error)
+                failures.append(error)
+                _log.error('')
+
         # check for expectations which have more than one mutually exclusive specifier
         for lineno, line in enumerate(exp_lines, 1):
             line = line.strip()

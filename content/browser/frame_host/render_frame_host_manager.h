@@ -585,7 +585,8 @@ class CONTENT_EXPORT RenderFrameHostManager
       SiteInstance* destination_site_instance,
       const GURL& destination_effective_url,
       bool destination_is_view_source_mode,
-      bool is_failure) const;
+      bool is_failure,
+      bool is_reload) const;
 
   // Returns the SiteInstance to use for the navigation.
   scoped_refptr<SiteInstance> GetSiteInstanceForNavigation(
@@ -595,6 +596,7 @@ class CONTENT_EXPORT RenderFrameHostManager
       SiteInstanceImpl* candidate_instance,
       ui::PageTransition transition,
       bool is_failure,
+      bool is_reload,
       bool dest_is_restore,
       bool dest_is_view_source_mode,
       bool was_server_redirect);

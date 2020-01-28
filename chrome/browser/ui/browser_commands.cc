@@ -757,22 +757,40 @@ bool CanDuplicateKeyboardFocusedTab(const Browser* browser) {
 }
 
 bool CanMoveActiveTabToNewWindow(Browser* browser) {
-  return CanMoveTabToNewWindow(browser,
-                               browser->tab_strip_model()->active_index());
+  return CanMoveTabsToNewWindow(browser,
+                                {browser->tab_strip_model()->active_index()});
 }
 
 void MoveActiveTabToNewWindow(Browser* browser) {
-  MoveTabToNewWindow(browser, browser->tab_strip_model()->active_index());
+  MoveTabsToNewWindow(browser, {browser->tab_strip_model()->active_index()});
 }
-bool CanMoveTabToNewWindow(Browser* browser, int tab_index) {
-  return browser->tab_strip_model()->count() > 1 &&
-         CanDuplicateTabAt(browser, tab_index);
+bool CanMoveTabsToNewWindow(Browser* browser,
+                            const std::vector<int>& tab_indices) {
+  return browser->tab_strip_model()->count() >
+         static_cast<int>(tab_indices.size());
 }
 
-void MoveTabToNewWindow(Browser* browser, int tab_index) {
-  auto contents = browser->tab_strip_model()->DetachWebContentsAt(tab_index);
-  CHECK(contents);
-  CreateAndShowNewWindowWithContents(std::move(contents), browser);
+void MoveTabsToNewWindow(Browser* browser,
+                         const std::vector<int>& tab_indices) {
+  if (tab_indices.empty())
+    return;
+
+  Browser* new_browser =
+      new Browser(Browser::CreateParams(browser->profile(), true));
+  int indices_size = tab_indices.size();
+  for (int i = 0; i < indices_size; i++) {
+    // Adjust tab index to account for tabs already moved.
+    int adjusted_index = tab_indices[i] - i;
+    bool pinned = browser->tab_strip_model()->IsTabPinned(adjusted_index);
+    std::unique_ptr<WebContents> contents_move =
+        browser->tab_strip_model()->DetachWebContentsAt(adjusted_index);
+    int add_types = TabStripModel::ADD_ACTIVE |
+                    TabStripModel::ADD_INHERIT_OPENER |
+                    (pinned ? TabStripModel::ADD_PINNED : 0);
+    new_browser->tab_strip_model()->AddWebContents(
+        std::move(contents_move), -1, ui::PAGE_TRANSITION_LINK, add_types);
+  }
+  new_browser->window()->Show();
 }
 
 bool CanCloseTabsToRight(const Browser* browser) {

@@ -6,11 +6,16 @@ import("//build/config/jumbo.gni")
 
 jumbo_source_set("browser") {
   sources = [
-    "cdm_message_filter_android.cc",
-    "cdm_message_filter_android.h",
     "media_drm_storage_impl.cc",
     "media_drm_storage_impl.h",
   ]
+
+  if (is_android) {
+    sources += [
+      "cdm_message_filter_android.cc",
+      "cdm_message_filter_android.h",
+    ]
+  }
 
   public_deps = [
     "//base",

@@ -11,7 +11,7 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "chrome/test/base/chrome_render_view_test.h"
 #include "components/translate/content/common/translate.mojom.h"
-#include "components/translate/content/renderer/translate_helper.h"
+#include "components/translate/content/renderer/translate_agent.h"
 #include "components/translate/core/common/translate_constants.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_view.h"
@@ -38,9 +38,10 @@ class FakeContentTranslateDriver
   }
 
   // translate::mojom::ContentTranslateDriver implementation.
-  void RegisterPage(mojo::PendingRemote<translate::mojom::Page> page,
-                    const translate::LanguageDetectionDetails& details,
-                    bool page_needs_translation) override {
+  void RegisterPage(
+      mojo::PendingRemote<translate::mojom::TranslateAgent> translate_agent,
+      const translate::LanguageDetectionDetails& details,
+      bool page_needs_translation) override {
     called_new_page_ = true;
     page_needs_translation_ = page_needs_translation;
   }

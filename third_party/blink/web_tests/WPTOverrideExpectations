@@ -1063,3 +1063,31 @@ external/wpt/referrer-policy/generic/unsupported-csp-referrer-directive.html [ F
 # speculative navigation in the browser, and committing the navigation in the
 # renderer.
 crbug.com/838348 external/wpt/portals/csp/frame-src.sub.html [ Pass Crash Timeout ]
+
+# ----
+# The following tests are ones that pass on the waterfall but fail on the CQ bot.
+# The primary difference between the two setups is that CQ has DCHECK on while
+# waterfall does not. So these tests usually fail because they hit a DCHECK
+# on the CQ.
+# We list both the waterfall and CQ status here so that the tests are accepted by
+# both systems.
+external/wpt/background-fetch/abort.https.window.html [ Pass Failure ]
+external/wpt/background-fetch/fetch-uploads.https.window.html [ Pass Failure ]
+external/wpt/background-fetch/fetch.https.window.html [ Pass Failure ]
+external/wpt/background-fetch/get-ids.https.window.html [ Pass Failure ]
+external/wpt/background-fetch/get.https.window.html [ Pass Failure ]
+external/wpt/background-fetch/match.https.window.html [ Pass Failure ]
+external/wpt/background-fetch/mixed-content-and-allowed-schemes.https.window.html [ Pass Failure ]
+external/wpt/background-fetch/port-blocking.https.window.html [ Pass Failure ]
+external/wpt/background-fetch/update-ui.https.window.html [ Pass Failure ]
+external/wpt/css/CSS2/floats/float-nowrap-3-ref.html [ Pass Crash Failure ]
+external/wpt/css/CSS2/floats/float-nowrap-4.html [ Pass Crash Failure ]
+external/wpt/fetch/cross-origin-resource-policy/fetch.any.html [ Pass Failure ]
+external/wpt/fetch/cross-origin-resource-policy/fetch.any.sharedworker.html [ Pass Failure ]
+external/wpt/fetch/cross-origin-resource-policy/fetch.any.worker.html [ Pass Failure ]
+external/wpt/fetch/cross-origin-resource-policy/fetch.https.any.html [ Pass Failure ]
+external/wpt/fetch/cross-origin-resource-policy/fetch.https.any.serviceworker.html [ Pass Failure ]
+external/wpt/fetch/cross-origin-resource-policy/fetch.https.any.sharedworker.html [ Pass Failure ]
+external/wpt/fetch/cross-origin-resource-policy/fetch.https.any.worker.html [ Pass Failure ]
+external/wpt/offscreen-canvas/fill-and-stroke-styles/2d.pattern.basic.nocontext.worker.html [ Pass Crash Failure ]
+# ---- End tests differing between CQ and Waterfall

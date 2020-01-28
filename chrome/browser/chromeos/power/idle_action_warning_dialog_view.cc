@@ -33,6 +33,8 @@ const int kCountdownUpdateIntervalMs = 1000;  // 1 second.
 IdleActionWarningDialogView::IdleActionWarningDialogView(
     base::TimeTicks idle_action_time)
     : idle_action_time_(idle_action_time) {
+  DialogDelegate::set_buttons(ui::DIALOG_BUTTON_NONE);
+
   SetBorder(views::CreateEmptyBorder(
       ChromeLayoutProvider::Get()->GetDialogInsetsForContentType(views::TEXT,
                                                                  views::TEXT)));
@@ -81,10 +83,6 @@ base::string16 IdleActionWarningDialogView::GetWindowTitle() const {
 
 bool IdleActionWarningDialogView::ShouldShowCloseButton() const {
   return false;
-}
-
-int IdleActionWarningDialogView::GetDialogButtons() const {
-  return ui::DIALOG_BUTTON_NONE;
 }
 
 bool IdleActionWarningDialogView::Cancel() {

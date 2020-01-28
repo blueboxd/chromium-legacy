@@ -12,8 +12,8 @@
 #include "base/sequenced_task_runner.h"
 #include "base/task/post_task.h"
 #include "base/test/task_environment.h"
-#include "chrome/browser/media/router/providers/openscreen/platform/chrome_task_runner.h"
 #include "chrome/browser/media/router/providers/openscreen/platform/chrome_tls_client_connection.h"
+#include "components/openscreen_platform/platform_task_runner.h"
 #include "net/base/net_errors.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/test/test_network_context.h"
@@ -91,13 +91,13 @@ class ChromeTlsConnectionFactoryTest : public ::testing::Test {
   void SetUp() override {
     task_environment_ = std::make_unique<base::test::TaskEnvironment>();
 
-    task_runner = std::make_unique<ChromeTaskRunner>(
+    task_runner = std::make_unique<openscreen_platform::PlatformTaskRunner>(
         task_environment_->GetMainThreadTaskRunner());
 
     mock_network_context = std::make_unique<FakeNetworkContext>();
   }
 
-  std::unique_ptr<ChromeTaskRunner> task_runner;
+  std::unique_ptr<openscreen_platform::PlatformTaskRunner> task_runner;
   std::unique_ptr<FakeNetworkContext> mock_network_context;
 
  private:

@@ -11,7 +11,9 @@
 
 #include "base/macros.h"
 #include "base/observer_list.h"
+#include "ios/chrome/browser/main/browser_observer.h"
 #include "ios/chrome/browser/main/browser_user_data.h"
+#include "ios/chrome/browser/web_state_list/web_state_list_observer.h"
 
 class ChromeBrowserState;
 @class SessionWindowIOS;
@@ -22,9 +24,12 @@ class WebStateList;
 
 // This class is responsible for handling requests of session restoration. It
 // can be observed via SeassonRestorationObserver which it uses to notify
-// observers of session restoration events.
+// observers of session restoration events. This class also automatically
+// save sessions when the active webState changes.
 class SessionRestorationBrowserAgent
-    : public BrowserUserData<SessionRestorationBrowserAgent> {
+    : BrowserObserver,
+      public BrowserUserData<SessionRestorationBrowserAgent>,
+      WebStateListObserver {
  public:
   // Creates an SessionRestorationBrowserAgent scoped to |browser|.
   static void CreateForBrowser(Browser* browser,
@@ -61,6 +66,16 @@ class SessionRestorationBrowserAgent
   // Returns true if the current session can be saved.
   bool CanSaveSession();
 
+  // BrowserObserver methods
+  void BrowserDestroyed(Browser* browser) override;
+
+  // WebStateListObserver methods
+  void WebStateActivatedAt(WebStateList* web_state_list,
+                           web::WebState* old_web_state,
+                           web::WebState* new_web_state,
+                           int active_index,
+                           int reason) override;
+
   // The service object which handles the actual saving of sessions.
   SessionServiceIOS* session_service_;
 
@@ -74,7 +89,7 @@ class SessionRestorationBrowserAgent
   // Session Factory used to create session data for saving.
   SessionIOSFactory* session_ios_factory_;
 
-  // true when session restoration is in progress.
+  // True when session restoration is in progress.
   bool restoring_session_ = false;
 };
 

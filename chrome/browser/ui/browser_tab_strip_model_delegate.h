@@ -36,8 +36,8 @@ class BrowserTabStripModelDelegate : public TabStripModelDelegate {
   int GetDragActions() const override;
   bool CanDuplicateContentsAt(int index) override;
   void DuplicateContentsAt(int index) override;
-  bool CanMoveTabToWindow(int index) override;
-  void MoveTabToNewWindow(int index) override;
+  bool CanMoveTabsToWindow(const std::vector<int>& indices) override;
+  void MoveTabsToNewWindow(const std::vector<int>& indices) override;
   void CreateHistoricalTab(content::WebContents* contents) override;
   bool RunUnloadListenerBeforeClosing(content::WebContents* contents) override;
   bool ShouldRunUnloadListenerBeforeClosing(

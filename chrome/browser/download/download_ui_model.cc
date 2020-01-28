@@ -11,6 +11,7 @@
 #include "chrome/browser/download/offline_item_utils.h"
 #include "chrome/browser/safe_browsing/advanced_protection_status_manager.h"
 #include "chrome/browser/safe_browsing/advanced_protection_status_manager_factory.h"
+#include "chrome/common/url_constants.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/download/public/common/download_danger_type.h"
@@ -252,8 +253,8 @@ base::string16 DownloadUIModel::GetTooltipText(const gfx::FontList& font_list,
 
 base::string16 DownloadUIModel::GetWarningText(const gfx::FontList& font_list,
                                                int base_width) const {
-  // Should only be called if IsDangerous().
-  DCHECK(IsDangerous());
+  // Should only be called if IsDangerous() or IsMixedContent().
+  DCHECK(IsDangerous() || IsMixedContent());
   base::string16 elided_filename =
       gfx::ElideFilename(GetFileNameToReportUser(), font_list, base_width);
 
@@ -324,13 +325,29 @@ base::string16 DownloadUIModel::GetWarningText(const gfx::FontList& font_list,
       break;
     }
   }
+
+  switch (GetMixedContentStatus()) {
+    case download::DownloadItem::MixedContentStatus::BLOCK:
+      return l10n_util::GetStringFUTF16(
+          IDS_PROMPT_DOWNLOAD_MIXED_CONTENT_BLOCKED, elided_filename);
+    case download::DownloadItem::MixedContentStatus::WARN:
+      return l10n_util::GetStringFUTF16(
+          IDS_PROMPT_DOWNLOAD_MIXED_CONTENT_WARNING, elided_filename);
+    case download::DownloadItem::MixedContentStatus::UNKNOWN:
+    case download::DownloadItem::MixedContentStatus::SAFE:
+    case download::DownloadItem::MixedContentStatus::VALIDATED:
+    case download::DownloadItem::MixedContentStatus::SILENT_BLOCK:
+      NOTREACHED();
+      break;
+  }
+
   NOTREACHED();
   return base::string16();
 }
 
 base::string16 DownloadUIModel::GetWarningConfirmButtonText() const {
-  // Should only be called if IsDangerous()
-  DCHECK(IsDangerous());
+  // Should only be called if IsDangerous() or IsMixedContent().
+  DCHECK(IsDangerous() || IsMixedContent());
   if (GetDangerType() == download::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE &&
       IsExtensionDownload()) {
     return l10n_util::GetStringUTF16(IDS_CONTINUE_EXTENSION_DOWNLOAD);
@@ -377,6 +394,10 @@ bool DownloadUIModel::IsMalicious() const {
   return false;
 }
 
+bool DownloadUIModel::IsMixedContent() const {
+  return false;
+}
+
 bool DownloadUIModel::ShouldAllowDownloadFeedback() const {
   return false;
 }
@@ -417,6 +438,11 @@ DownloadFileType::DangerLevel DownloadUIModel::GetDangerLevel() const {
 
 void DownloadUIModel::SetDangerLevel(
     DownloadFileType::DangerLevel danger_level) {}
+
+download::DownloadItem::MixedContentStatus
+DownloadUIModel::GetMixedContentStatus() const {
+  return download::DownloadItem::MixedContentStatus::UNKNOWN;
+}
 
 void DownloadUIModel::OpenUsingPlatformHandler() {}
 
@@ -539,6 +565,7 @@ bool DownloadUIModel::IsCommandEnabled(
     case DownloadCommands::KEEP:
     case DownloadCommands::LEARN_MORE_SCANNING:
     case DownloadCommands::LEARN_MORE_INTERRUPTED:
+    case DownloadCommands::LEARN_MORE_MIXED_CONTENT:
     case DownloadCommands::DEEP_SCAN:
     case DownloadCommands::BYPASS_DEEP_SCANNING:
       return true;
@@ -565,6 +592,7 @@ bool DownloadUIModel::IsCommandChecked(
     case DownloadCommands::KEEP:
     case DownloadCommands::LEARN_MORE_SCANNING:
     case DownloadCommands::LEARN_MORE_INTERRUPTED:
+    case DownloadCommands::LEARN_MORE_MIXED_CONTENT:
     case DownloadCommands::COPY_TO_CLIPBOARD:
     case DownloadCommands::ANNOTATE:
     case DownloadCommands::DEEP_SCAN:
@@ -598,6 +626,12 @@ void DownloadUIModel::ExecuteCommand(DownloadCommands* download_commands,
     case DownloadCommands::LEARN_MORE_INTERRUPTED:
       download_commands->GetBrowser()->OpenURL(content::OpenURLParams(
           download_commands->GetLearnMoreURLForInterruptedDownload(),
+          content::Referrer(), WindowOpenDisposition::NEW_FOREGROUND_TAB,
+          ui::PAGE_TRANSITION_LINK, false));
+      break;
+    case DownloadCommands::LEARN_MORE_MIXED_CONTENT:
+      download_commands->GetBrowser()->OpenURL(content::OpenURLParams(
+          GURL(chrome::kMixedContentDownloadBlockingLearnMoreUrl),
           content::Referrer(), WindowOpenDisposition::NEW_FOREGROUND_TAB,
           ui::PAGE_TRANSITION_LINK, false));
       break;

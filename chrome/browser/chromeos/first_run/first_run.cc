@@ -67,7 +67,16 @@ void LaunchHelpForProfile(Profile* profile) {
   profile->GetPrefs()->SetBoolean(prefs::kFirstRunTutorialShown, true);
 }
 
-void TryLaunchHelpApp(Profile* profile) {
+}  // namespace
+
+void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
+  // This preference used to be syncable, change it to non-syncable so new
+  // users will always see the welcome app on a new device.
+  // See crbug.com/752361
+  registry->RegisterBooleanPref(prefs::kFirstRunTutorialShown, false);
+}
+
+void MaybeLaunchHelpApp(Profile* profile) {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
 
   if (chromeos::switches::ShouldSkipOobePostLogin())
@@ -102,41 +111,6 @@ void TryLaunchHelpApp(Profile* profile) {
     return;
 
   LaunchHelpForProfile(profile);
-}
-
-// Object of this class waits for session start. Then it maybe launches the help
-// app depending on user prefs and flags. The object then deletes itself.
-class AppLauncher : public session_manager::SessionManagerObserver {
- public:
-  AppLauncher() { session_manager::SessionManager::Get()->AddObserver(this); }
-
-  ~AppLauncher() override {
-    session_manager::SessionManager::Get()->RemoveObserver(this);
-  }
-
-  // session_manager::SessionManagerObserver:
-  void OnUserSessionStarted(bool is_primary_user) override {
-    auto* profile = ProfileHelper::Get()->GetProfileByUser(
-        user_manager::UserManager::Get()->GetActiveUser());
-    TryLaunchHelpApp(profile);
-    delete this;
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(AppLauncher);
-};
-
-}  // namespace
-
-void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
-  // This preference used to be syncable, change it to non-syncable so new
-  // users will always see the welcome app on a new device.
-  // See crbug.com/752361
-  registry->RegisterBooleanPref(prefs::kFirstRunTutorialShown, false);
-}
-
-void MaybeLaunchHelpAppAfterSessionStart() {
-  new AppLauncher();
 }
 
 void LaunchTutorial() {

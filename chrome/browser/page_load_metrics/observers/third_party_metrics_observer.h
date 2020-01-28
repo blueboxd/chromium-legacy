@@ -10,7 +10,6 @@
 
 #include "base/macros.h"
 #include "components/page_load_metrics/browser/page_load_metrics_observer.h"
-#include "net/cookies/canonical_cookie.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -46,40 +45,36 @@ class ThirdPartyMetricsObserver
       const page_load_metrics::mojom::PageLoadTiming& timing) override;
 
  private:
-  enum class AccessType { kRead, kWrite };
-
-  struct CookieAccessTypes {
-    explicit CookieAccessTypes(AccessType access_type);
-    bool read = false;
-    bool write = false;
+  enum class AccessType {
+    kCookieRead,
+    kCookieWrite,
+    kLocalStorage,
+    kSessionStorage
   };
 
-  enum class StorageType { kLocalStorage, kSessionStorage };
-
-  struct StorageAccessTypes {
-    explicit StorageAccessTypes(StorageType storage_type);
+  struct AccessedTypes {
+    explicit AccessedTypes(AccessType access_type);
+    bool cookie_read = false;
+    bool cookie_write = false;
     bool local_storage = false;
     bool session_storage = false;
   };
 
-  void OnCookieAccess(const GURL& url,
-                      const GURL& first_party_url,
-                      bool blocked_by_policy,
-                      AccessType access_type);
+  void OnCookieOrStorageAccess(const GURL& url,
+                               const GURL& first_party_url,
+                               bool blocked_by_policy,
+                               AccessType access_type);
   void RecordMetrics();
 
-  // A map of third parties that have read or written cookies on this page. A
-  // third party document.cookie access happens when the context's registrable
-  // domain differs from the main frame's. A third party resource request
-  // happens when the URL request's registrable domain differs from the main
-  // frame's. For URLs which have no registrable domain, the hostname is used
-  // instead.
-  std::map<std::string, CookieAccessTypes> third_party_cookie_access_types_;
-
-  // A map of third parties that have accessed storage other than cookies. A
-  // third party access happens when the context's origin differs from the main
-  // frame's.
-  std::map<url::Origin, StorageAccessTypes> third_party_storage_access_types_;
+  // A map of third parties that have read or written cookies, or have accessed
+  // local storage or session storage on this page.
+  //
+  // A third party document.cookie / window.localStorage / window.sessionStorage
+  // happens when the context's scheme://eTLD+1 differs from the main frame's.
+  // A third party resource request happens when the URL request's
+  // scheme://eTLD+1 differs from the main frame's. For URLs which have no
+  // registrable domain, the hostname is used instead.
+  std::map<GURL, AccessedTypes> third_party_accessed_types_;
 
   // A set of RenderFrameHosts that we've recorded timing data for. The
   // RenderFrameHosts are later removed when they navigate again or are deleted.

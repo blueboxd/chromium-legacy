@@ -114,6 +114,12 @@ class IdentityTestEnvironment : public IdentityManager::DiagnosticsObserver {
   // Returns the AccountInfo of the newly-available account.
   AccountInfo MakePrimaryAccountAvailable(const std::string& email);
 
+#if defined(OS_CHROMEOS)
+  // As above, but adds an "unconsented" primary account. See ./README.md for
+  // the distinction between primary and unconsented primary accounts.
+  AccountInfo MakeUnconsentedPrimaryAccountAvailable(const std::string& email);
+#endif  // defined(OS_CHROMEOS)
+
   // Combination of MakeAccountAvailable() and SetCookieAccounts() for a single
   // account. It makes an account available for the given email address, and
   // GAIA ID, setting the cookies and the refresh token that correspond uniquely

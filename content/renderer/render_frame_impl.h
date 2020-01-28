@@ -321,7 +321,6 @@ class CONTENT_EXPORT RenderFrameImpl
   // logic in the browser side to balance starts/stops.
   void DidStartLoading() override;
   void DidStopLoading() override;
-  void DidChangeLoadProgress(double load_progress) override;
 
   ui::AXMode accessibility_mode() { return accessibility_mode_; }
 

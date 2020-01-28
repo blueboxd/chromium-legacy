@@ -195,9 +195,10 @@ void SafeBrowsingUIManager::OnBlockingPageDone(
     const std::vector<UnsafeResource>& resources,
     bool proceed,
     content::WebContents* web_contents,
-    const GURL& main_frame_url) {
+    const GURL& main_frame_url,
+    bool showed_interstitial) {
   BaseUIManager::OnBlockingPageDone(resources, proceed, web_contents,
-                                    main_frame_url);
+                                    main_frame_url, showed_interstitial);
   if (proceed && !resources.empty()) {
     MaybeTriggerSecurityInterstitialProceededEvent(
         web_contents, main_frame_url,

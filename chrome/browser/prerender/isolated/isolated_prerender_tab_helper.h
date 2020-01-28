@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/sequence_checker.h"
 #include "chrome/browser/navigation_predictor/navigation_predictor_keyed_service.h"
@@ -54,6 +55,10 @@ class IsolatedPrerenderTabHelper
   explicit IsolatedPrerenderTabHelper(content::WebContents* web_contents);
   friend class content::WebContentsUserData<IsolatedPrerenderTabHelper>;
 
+  // A helper method to make it easier to tell when prefetching is already
+  // active.
+  bool PrefetchingActive() const;
+
   // Prefetches the front of |urls_to_prefetch_|.
   void Prefetch();
 
@@ -73,6 +78,12 @@ class IsolatedPrerenderTabHelper
       const base::Optional<NavigationPredictorKeyedService::Prediction>&
           prediction) override;
 
+  // Callback for each eligible prediction URL when their cookie list is known.
+  // Only urls with no cookies will be prefetched.
+  void OnGotCookieList(const GURL& url,
+                       const net::CookieStatusList& cookie_with_status_list,
+                       const net::CookieStatusList& excluded_cookies);
+
   Profile* profile_;
 
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
@@ -91,6 +102,8 @@ class IsolatedPrerenderTabHelper
       prefetched_responses_;
 
   SEQUENCE_CHECKER(sequence_checker_);
+
+  base::WeakPtrFactory<IsolatedPrerenderTabHelper> weak_factory_{this};
 
   WEB_CONTENTS_USER_DATA_KEY_DECL();
 

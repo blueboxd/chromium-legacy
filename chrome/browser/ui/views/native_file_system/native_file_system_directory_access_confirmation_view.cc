@@ -33,7 +33,7 @@ NativeFileSystemDirectoryAccessConfirmationView::
 views::Widget* NativeFileSystemDirectoryAccessConfirmationView::ShowDialog(
     const url::Origin& origin,
     const base::FilePath& path,
-    base::OnceCallback<void(PermissionAction result)> callback,
+    base::OnceCallback<void(permissions::PermissionAction result)> callback,
     content::WebContents* web_contents) {
   auto delegate =
       base::WrapUnique(new NativeFileSystemDirectoryAccessConfirmationView(
@@ -54,12 +54,12 @@ bool NativeFileSystemDirectoryAccessConfirmationView::ShouldShowCloseButton()
 }
 
 bool NativeFileSystemDirectoryAccessConfirmationView::Accept() {
-  std::move(callback_).Run(PermissionAction::GRANTED);
+  std::move(callback_).Run(permissions::PermissionAction::GRANTED);
   return true;
 }
 
 bool NativeFileSystemDirectoryAccessConfirmationView::Cancel() {
-  std::move(callback_).Run(PermissionAction::DISMISSED);
+  std::move(callback_).Run(permissions::PermissionAction::DISMISSED);
   return true;
 }
 
@@ -86,7 +86,7 @@ NativeFileSystemDirectoryAccessConfirmationView::
     NativeFileSystemDirectoryAccessConfirmationView(
         const url::Origin& origin,
         const base::FilePath& path,
-        base::OnceCallback<void(PermissionAction result)> callback)
+        base::OnceCallback<void(permissions::PermissionAction result)> callback)
     : callback_(std::move(callback)) {
   DialogDelegate::set_button_label(
       ui::DIALOG_BUTTON_OK,
@@ -106,7 +106,7 @@ NativeFileSystemDirectoryAccessConfirmationView::
 void ShowNativeFileSystemDirectoryAccessConfirmationDialog(
     const url::Origin& origin,
     const base::FilePath& path,
-    base::OnceCallback<void(PermissionAction result)> callback,
+    base::OnceCallback<void(permissions::PermissionAction result)> callback,
     content::WebContents* web_contents) {
   NativeFileSystemDirectoryAccessConfirmationView::ShowDialog(
       origin, path, std::move(callback), web_contents);

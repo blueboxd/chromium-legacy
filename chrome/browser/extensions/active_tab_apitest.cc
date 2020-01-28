@@ -240,7 +240,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, FileURLs) {
     ExtensionTestMessageListener listener(false /*will_reply*/);
     ui_test_utils::NavigateToURLWithDisposition(
         browser(), page, WindowOpenDisposition::NEW_FOREGROUND_TAB,
-        ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+        ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
     EXPECT_TRUE(listener.WaitUntilSatisfied());
 
     EXPECT_TRUE(listener.message() == "allowed" ||
@@ -313,7 +313,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, FileURLs) {
       net::FilePathToFileURL(extension->path().AppendASCII("background.js"));
   ui_test_utils::NavigateToURLWithDisposition(
       browser(), file_url_2, WindowOpenDisposition::NEW_FOREGROUND_TAB,
-      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
   int active_tab_id = get_active_tab_id();
   EXPECT_NE(extension_misc::kUnknownTabId, active_tab_id);
 

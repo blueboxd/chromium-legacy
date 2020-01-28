@@ -321,7 +321,7 @@ void DecodeImageOnDecoderThread(
       SegmentReader::CreateFromSkData(
           SkData::MakeWithoutCopy(contents.Data(), contents.DataLength())),
       data_complete, alpha_option, ImageDecoder::kDefaultBitDepth,
-      color_behavior);
+      color_behavior, ImageDecoder::OverrideAllowDecodeToYuv::kDeny);
   sk_sp<SkImage> frame;
   if (decoder) {
     frame = ImageBitmap::GetSkImageFromDecoder(std::move(decoder));

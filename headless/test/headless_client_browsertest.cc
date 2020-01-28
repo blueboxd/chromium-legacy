@@ -62,7 +62,13 @@ class HeadlessClientBrowserTest : public HeadlessAsyncDevTooledBrowserTest,
   std::unique_ptr<HeadlessDevToolsClient> session_client_;
 };
 
-IN_PROC_BROWSER_TEST_F(HeadlessClientBrowserTest, FlatProtocolAccess) {
+#if defined(OS_WIN)
+// TODO(crbug.com/1045971): Disabled due to flakiness.
+#define MAYBE_FlatProtocolAccess DISABLED_FlatProtocolAccess
+#else
+#define MAYBE_FlatProtocolAccess FlatProtocolAccess
+#endif
+IN_PROC_BROWSER_TEST_F(HeadlessClientBrowserTest, MAYBE_FlatProtocolAccess) {
   RunTest();
 }
 

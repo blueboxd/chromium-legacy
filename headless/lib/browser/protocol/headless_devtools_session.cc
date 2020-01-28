@@ -7,22 +7,21 @@
 #include "base/command_line.h"
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/devtools_agent_host_client.h"
+#include "content/public/browser/devtools_agent_host_client_channel.h"
 #include "headless/lib/browser/protocol/browser_handler.h"
 #include "headless/lib/browser/protocol/headless_handler.h"
 #include "headless/lib/browser/protocol/page_handler.h"
 #include "headless/lib/browser/protocol/target_handler.h"
+#include "third_party/inspector_protocol/crdtp/cbor.h"
 #include "third_party/inspector_protocol/crdtp/json.h"
 
 namespace headless {
 namespace protocol {
 HeadlessDevToolsSession::HeadlessDevToolsSession(
     base::WeakPtr<HeadlessBrowserImpl> browser,
-    content::DevToolsAgentHost* agent_host,
-    content::DevToolsAgentHostClient* client)
-    : browser_(browser),
-      agent_host_(agent_host),
-      client_(client),
-      dispatcher_(this) {
+    content::DevToolsAgentHostClientChannel* channel)
+    : browser_(browser), dispatcher_(this), client_channel_(channel) {
+  content::DevToolsAgentHost* agent_host = channel->GetAgentHost();
   if (agent_host->GetWebContents() &&
       agent_host->GetType() == content::DevToolsAgentHost::kTypePage) {
     AddHandler(std::make_unique<HeadlessHandler>(browser_.get(),
@@ -30,7 +29,7 @@ HeadlessDevToolsSession::HeadlessDevToolsSession(
     AddHandler(std::make_unique<PageHandler>(agent_host,
                                              agent_host->GetWebContents()));
   }
-  if (client->MayAttachToBrowser()) {
+  if (channel->GetClient()->MayAttachToBrowser()) {
     AddHandler(
         std::make_unique<BrowserHandler>(browser_.get(), agent_host->GetId()));
   }
@@ -70,32 +69,20 @@ void HeadlessDevToolsSession::AddHandler(
 
 // The following methods handle responses or notifications coming from
 // the browser to the client.
-static void SendProtocolResponseOrNotification(
-    content::DevToolsAgentHostClient* client,
-    content::DevToolsAgentHost* agent_host,
-    std::unique_ptr<protocol::Serializable> message) {
-  std::vector<uint8_t> cbor = std::move(*message).TakeSerialized();
-  if (client->UsesBinaryProtocol()) {
-    client->DispatchProtocolMessage(agent_host, cbor);
-    return;
-  }
-  std::vector<uint8_t> json;
-  crdtp::Status status =
-      crdtp::json::ConvertCBORToJSON(crdtp::SpanFrom(cbor), &json);
-  LOG_IF(ERROR, !status.ok()) << status.ToASCIIString();
-  client->DispatchProtocolMessage(agent_host, json);
-}
 
 void HeadlessDevToolsSession::sendProtocolResponse(
     int call_id,
     std::unique_ptr<Serializable> message) {
   pending_commands_.erase(call_id);
-  SendProtocolResponseOrNotification(client_, agent_host_, std::move(message));
+
+  client_channel_->DispatchProtocolMessageToClient(
+      std::move(*message).TakeSerialized());
 }
 
 void HeadlessDevToolsSession::sendProtocolNotification(
     std::unique_ptr<Serializable> message) {
-  SendProtocolResponseOrNotification(client_, agent_host_, std::move(message));
+  client_channel_->DispatchProtocolMessageToClient(
+      std::move(*message).TakeSerialized());
 }
 
 void HeadlessDevToolsSession::flushProtocolNotifications() {}

@@ -93,8 +93,8 @@ ApiImplementation = class {
       'target': 'TTS',
       'action': 'speak',
       'text': textString,
-      'queueMode': queueMode,
-      'properties': properties
+      queueMode,
+      properties
     };
 
     ExtensionBridge.send(message);

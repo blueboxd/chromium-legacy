@@ -10,7 +10,6 @@
 namespace gfx {
 class ImageSkia;
 class Point;
-class Vector2d;
 }  // namespace gfx
 
 namespace views {
@@ -23,19 +22,6 @@ namespace ash {
 // shortcuts onto another host (the shelf).
 class ApplicationDragAndDropHost {
  public:
-  // Creates an OS dependent drag proxy icon which can escape the given view.
-  // The proxy should get created using the |icon| with a magnification of
-  // |scale_factor| at a center location of |location_in_screen_coordinates.
-  // Use |replaced_view| to find the screen which is used.
-  // The |cursor_offset_from_center| is the offset from the mouse cursor to
-  // the center of the item.
-  virtual void CreateDragIconProxy(
-      const gfx::Point& location_in_screen_coordinates,
-      const gfx::ImageSkia& icon,
-      views::View* replaced_view,
-      const gfx::Vector2d& cursor_offset_from_center,
-      float scale_factor) {}
-
   // Creates an OS dependent drag proxy icon which can escape the given view.
   // The proxy should get created using the |icon| with a magnification of
   // |scale_factor| with its origin at |origin_in_screen_coordinates|.

@@ -112,7 +112,7 @@ class ChromeRenderProcessHostTest : public extensions::ExtensionBrowserTest {
   WebContents* OpenBackgroundTab(const GURL& page) {
     ui_test_utils::NavigateToURLWithDisposition(
         browser(), page, WindowOpenDisposition::NEW_BACKGROUND_TAB,
-        ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+        ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
 
     TabStripModel* tab_strip = browser()->tab_strip_model();
     WebContents* wc =
@@ -320,7 +320,7 @@ IN_PROC_BROWSER_TEST_F(ChromeRenderProcessHostTest, ProcessPerTab) {
   // WebUI.
   ui_test_utils::NavigateToURLWithDisposition(
       browser(), omnibox, WindowOpenDisposition::NEW_FOREGROUND_TAB,
-      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
   tab_count++;
   EXPECT_EQ(tab_count, browser()->tab_strip_model()->count());
   EXPECT_EQ(host_count, RenderProcessHostCount());
@@ -329,7 +329,7 @@ IN_PROC_BROWSER_TEST_F(ChromeRenderProcessHostTest, ProcessPerTab) {
   // WebUI.
   ui_test_utils::NavigateToURLWithDisposition(
       browser(), omnibox, WindowOpenDisposition::NEW_FOREGROUND_TAB,
-      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
   tab_count++;
   EXPECT_EQ(tab_count, browser()->tab_strip_model()->count());
   EXPECT_EQ(host_count, RenderProcessHostCount());

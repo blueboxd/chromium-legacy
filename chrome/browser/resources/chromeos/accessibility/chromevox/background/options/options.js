@@ -162,9 +162,7 @@ OptionsPage = class {
       for (var i = 0; i < sizeOfDisplay; i++) {
         groups.push(['X', 'X']);
       }
-      (new PanelCommand(PanelCommandType.UPDATE_BRAILLE, {
-        groups: groups
-      })).send();
+      (new PanelCommand(PanelCommandType.UPDATE_BRAILLE, {groups})).send();
     };
 
     $('changeDisplayStyle').addEventListener('click', function(evt) {

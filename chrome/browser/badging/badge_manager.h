@@ -8,10 +8,11 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "base/macros.h"
 #include "base/optional.h"
-#include "chrome/browser/web_applications/components/web_app_helpers.h"
+#include "chrome/browser/web_applications/components/web_app_id.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "third_party/blink/public/mojom/badging/badging.mojom.h"
@@ -21,6 +22,7 @@ class Profile;
 
 namespace content {
 class RenderFrameHost;
+class RenderProcessHost;
 }  // namespace content
 
 namespace badging {
@@ -33,8 +35,9 @@ constexpr uint64_t kMaxBadgeContent = 99u;
 // delegate.
 class BadgeManager : public KeyedService, public blink::mojom::BadgeService {
  public:
-  // The badge being applied to a URL. If the optional is |base::nullopt| then
-  // the badge is "flag". Otherwise the badge is a non-zero integer.
+  // The badge being applied to a document URL or service worker scope. If the
+  // optional is |base::nullopt| then the badge is "flag". Otherwise the badge
+  // is a non-zero integer.
   using BadgeValue = base::Optional<uint64_t>;
 
   explicit BadgeManager(Profile* profile);
@@ -43,8 +46,12 @@ class BadgeManager : public KeyedService, public blink::mojom::BadgeService {
   // Sets the delegate used for setting/clearing badges.
   void SetDelegate(std::unique_ptr<BadgeManagerDelegate> delegate);
 
-  static void BindReceiver(
+  static void BindFrameReceiver(
       content::RenderFrameHost* frame,
+      mojo::PendingReceiver<blink::mojom::BadgeService> receiver);
+  static void BindServiceWorkerReceiver(
+      content::RenderProcessHost* service_worker_process_host,
+      const GURL& service_worker_scope,
       mojo::PendingReceiver<blink::mojom::BadgeService> receiver);
 
   // Gets the badge for |app_id|. This will be base::nullopt if the app is not
@@ -55,14 +62,50 @@ class BadgeManager : public KeyedService, public blink::mojom::BadgeService {
   void ClearBadgeForTesting(const web_app::AppId& app_id);
 
  private:
-  // The BindingContext of a mojo request. Allows mojo calls to be tied back to
-  // the |RenderFrameHost| they belong to without trusting the renderer for that
-  // information.
-  struct BindingContext {
-    BindingContext(int process_id, int frame_id)
-        : process_id(process_id), frame_id(frame_id) {}
-    int process_id;
-    int frame_id;
+  // The BindingContext of a mojo request. Allows mojo calls to be tied back
+  // to the execution context they belong to without trusting the renderer for
+  // that information.  This is an abstract base class that different types of
+  // execution contexts derive.
+  class BindingContext {
+   public:
+    virtual ~BindingContext() = default;
+
+    // Gets the list of app IDs to badge, based on the state of this
+    // BindingContext.  Returns an empty list when no apps exist for this
+    // BindingContext.
+    virtual std::vector<web_app::AppId> GetAppIdsForBadging() const = 0;
+  };
+
+  // The BindingContext for Window execution contexts.
+  class FrameBindingContext final : public BindingContext {
+   public:
+    FrameBindingContext(int process_id, int frame_id)
+        : process_id_(process_id), frame_id_(frame_id) {}
+    ~FrameBindingContext() override = default;
+
+    // Returns the AppId that matches the frame's URL.  Returns either 0 or 1
+    // AppIds.
+    std::vector<web_app::AppId> GetAppIdsForBadging() const override;
+
+   private:
+    int process_id_;
+    int frame_id_;
+  };
+
+  // The BindingContext for ServiceWorkerGlobalScope execution contexts.
+  class ServiceWorkerBindingContext final : public BindingContext {
+   public:
+    ServiceWorkerBindingContext(int process_id, const GURL& scope)
+        : process_id_(process_id), scope_(scope) {}
+    ~ServiceWorkerBindingContext() override = default;
+
+    // Returns the list of AppIds within the service worker's scope. Returns
+    // either 0, 1 or more AppIds.
+    std::vector<web_app::AppId> GetAppIdsForBadging() const override;
+
+   private:
+    int process_id_;
+    GURL scope_;
   };
 
   // Updates the badge for |app_id| to be |value|, if it is not base::nullopt.
@@ -76,15 +119,11 @@ class BadgeManager : public KeyedService, public blink::mojom::BadgeService {
   void SetBadge(blink::mojom::BadgeValuePtr value) override;
   void ClearBadge() override;
 
-  // Gets the app id to badge, based on the |context|. base::nullopt if
-  // |context| isn't inside an app.
-  base::Optional<web_app::AppId> GetAppIdForBadging(
-      const BindingContext& context);
-
   // All the mojo receivers for the BadgeManager. Keeps track of the
   // render_frame the binding is associated with, so as to not have to rely
   // on the renderer passing it in.
-  mojo::ReceiverSet<blink::mojom::BadgeService, BindingContext> receivers_;
+  mojo::ReceiverSet<blink::mojom::BadgeService, std::unique_ptr<BindingContext>>
+      receivers_;
 
   // Delegate which handles actual setting and clearing of the badge.
   // Note: This is currently only set on Windows and MacOS.

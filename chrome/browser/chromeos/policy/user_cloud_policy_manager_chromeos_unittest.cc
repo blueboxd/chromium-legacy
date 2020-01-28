@@ -765,7 +765,7 @@ TEST_P(UserCloudPolicyManagerChromeOSTest, NonBlockingFirstFetch) {
   EXPECT_FALSE(manager_->core()->client()->is_registered());
 
   AccountInfo account_info =
-      identity_test_env()->MakePrimaryAccountAvailable(kEmail);
+      identity_test_env()->MakeUnconsentedPrimaryAccountAvailable(kEmail);
   EXPECT_TRUE(
       identity_test_env()->identity_manager()->HasAccountWithRefreshToken(
           account_info.account_id));
@@ -1178,7 +1178,7 @@ class UserCloudPolicyManagerChromeOSChildTest
   // UserCloudPolicyManagerChromeOSTest:
   void SetUp() override {
     UserCloudPolicyManagerChromeOSTest::SetUp();
-    identity_test_env()->MakePrimaryAccountAvailable(kEmail);
+    identity_test_env()->MakeUnconsentedPrimaryAccountAvailable(kEmail);
   }
 
   // Sets the initially cached data and initializes the CloudPolicyService.

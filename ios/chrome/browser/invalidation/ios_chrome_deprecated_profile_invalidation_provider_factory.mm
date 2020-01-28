@@ -39,7 +39,7 @@ using invalidation::TiclInvalidationService;
 namespace {
 
 void RequestProxyResolvingSocketFactoryOnUIThread(
-    ios::ChromeBrowserState* browser_state,
+    ChromeBrowserState* browser_state,
     base::WeakPtr<TiclInvalidationService> service,
     mojo::PendingReceiver<network::mojom::ProxyResolvingSocketFactory>
         receiver) {
@@ -51,7 +51,7 @@ void RequestProxyResolvingSocketFactoryOnUIThread(
 // A thread-safe wrapper to request a
 // network::mojom::ProxyResolvingSocketFactory.
 void RequestProxyResolvingSocketFactory(
-    ios::ChromeBrowserState* browser_state,
+    ChromeBrowserState* browser_state,
     base::WeakPtr<TiclInvalidationService> service,
     mojo::PendingReceiver<network::mojom::ProxyResolvingSocketFactory>
         receiver) {
@@ -65,7 +65,7 @@ void RequestProxyResolvingSocketFactory(
 // static
 invalidation::ProfileInvalidationProvider*
 IOSChromeDeprecatedProfileInvalidationProviderFactory::GetForBrowserState(
-    ios::ChromeBrowserState* browser_state) {
+    ChromeBrowserState* browser_state) {
   return static_cast<ProfileInvalidationProvider*>(
       GetInstance()->GetServiceForBrowserState(browser_state, true));
 }
@@ -94,8 +94,8 @@ IOSChromeDeprecatedProfileInvalidationProviderFactory::
 std::unique_ptr<KeyedService>
 IOSChromeDeprecatedProfileInvalidationProviderFactory::BuildServiceInstanceFor(
     web::BrowserState* context) const {
-  ios::ChromeBrowserState* browser_state =
-      ios::ChromeBrowserState::FromBrowserState(context);
+  ChromeBrowserState* browser_state =
+      ChromeBrowserState::FromBrowserState(context);
 
   auto identity_provider =
       std::make_unique<invalidation::ProfileIdentityProvider>(

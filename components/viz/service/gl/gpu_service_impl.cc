@@ -200,7 +200,7 @@ GpuServiceImpl::GpuServiceImpl(
 
 #if BUILDFLAG(SKIA_USE_DAWN)
   if (gpu_preferences_.gr_context_type == gpu::GrContextType::kDawn) {
-    dawn_context_provider_ = DawnContextProvider::Create(context_options);
+    dawn_context_provider_ = DawnContextProvider::Create();
     if (dawn_context_provider_) {
       gpu_info_.oop_rasterization_supported = true;
       gpu_feature_info_.status_values[gpu::GPU_FEATURE_TYPE_OOP_RASTERIZATION] =

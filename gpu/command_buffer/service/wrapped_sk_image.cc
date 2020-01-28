@@ -174,8 +174,11 @@ class WrappedSkImage : public ClearTrackingSharedImageBacking {
 #endif
     }
 
-    if (!backend_texture_.isValid())
+    if (!backend_texture_.isValid()) {
+      DLOG(ERROR) << "createBackendTexture() failed with SkColorType:"
+                  << GetSkColorType();
       return false;
+    }
 
     promise_texture_ = SkPromiseImageTexture::Make(backend_texture_);
 

@@ -152,6 +152,9 @@ class MetricsServiceClient {
   // HMAC-SHA256 signature of an uploaded log.
   virtual std::string GetUploadSigningKey();
 
+  // Checks if the cloned install detector says that client ids should be reset.
+  virtual bool ShouldResetClientIdsOnClonedInstall();
+
   // Sets the callback to run MetricsServiceManager::UpdateRunningServices.
   void SetUpdateRunningServicesCallback(const base::RepeatingClosure& callback);
 

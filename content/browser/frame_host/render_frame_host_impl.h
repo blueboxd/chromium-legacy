@@ -1329,6 +1329,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
       const GURL& blocked_url,
       const GURL& initiator_url,
       blink::mojom::NavigationBlockedReason reason) override;
+  void DidChangeLoadProgress(double load_progress) override;
   void DispatchLoad() override;
   void GoToEntryAtOffset(int32_t offset, bool has_user_gesture) override;
   void RenderFallbackContentInParentProcess() override;
@@ -1523,7 +1524,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void OnAccessibilitySnapshotResponse(int callback_id,
                                        const AXContentTreeUpdate& snapshot);
   void OnDidStopLoading();
-  void OnDidChangeLoadProgress(double load_progress);
   void OnSelectionChanged(const base::string16& text,
                           uint32_t offset,
                           const gfx::Range& range);

@@ -7,7 +7,6 @@
 
 #import <Foundation/Foundation.h>
 
-#include "base/mac/availability.h"
 #include "build/build_config.h"
 #include "components/handoff/handoff_utility.h"
 #include "url/gurl.h"

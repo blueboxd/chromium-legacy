@@ -64,6 +64,7 @@ public class FeatureUtilities {
     private static Boolean sHasRecognitionIntentHandler;
     private static String sReachedCodeProfilerTrialGroup;
     private static Boolean sEnabledTabThumbnailApsectRatioForTesting;
+    private static final String ALLOW_TO_REFETCH = "allow_to_refetch";
 
     /**
      * Determines whether or not the {@link RecognizerIntent#ACTION_WEB_SEARCH} {@link Intent}
@@ -106,6 +107,7 @@ public class FeatureUtilities {
         cacheNativeTabSwitcherUiFlags();
         cacheHomepageLocationPolicyEnabled();
         cachePaintPreviewTestEnabled();
+        cacheAllowToRefetchTabThumbnail();
 
         // Propagate REACHED_CODE_PROFILER feature value to LibraryLoader. This can't be done in
         // LibraryLoader itself because it lives in //base and can't depend on ChromeFeatureList.
@@ -730,8 +732,23 @@ public class FeatureUtilities {
      * @return Whether to allow to refetch tab thumbnail if the aspect ratio is not matching.
      */
     public static boolean isAllowToRefetchTabThumbnail() {
-        return ChromeFeatureList.getFieldTrialParamByFeatureAsBoolean(
-                ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID, "allow_to_refetch", false);
+        return isFlagEnabled(getPrefForFieldTrialParam(
+                                     ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID, ALLOW_TO_REFETCH),
+                false);
+    }
+
+    /**
+     * Caches the feature flag for whether to allow refetch tab thumbnail if the aspect ratio is not
+     * matching.
+     */
+    private static void cacheAllowToRefetchTabThumbnail() {
+        boolean isAllowToRefetchTabThumbnail =
+                ChromeFeatureList.getFieldTrialParamByFeatureAsBoolean(
+                        ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID, ALLOW_TO_REFETCH, false);
+        SharedPreferencesManager.getInstance().writeBoolean(
+                getPrefForFieldTrialParam(
+                        ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID, ALLOW_TO_REFETCH),
+                isAllowToRefetchTabThumbnail);
     }
 
     public static void enableTabThumbnailAspectRatioForTesting(Boolean enabled) {
@@ -766,6 +783,11 @@ public class FeatureUtilities {
             sFlags.put(preferenceName, flag);
         }
         return flag;
+    }
+
+    private static String getPrefForFieldTrialParam(String featureName, String paramName) {
+        return ChromePreferenceKeys.FLAGS_FIELD_TRIAL_PARAM_CACHED.createKey(
+                featureName + ":" + paramName);
     }
 
     @VisibleForTesting

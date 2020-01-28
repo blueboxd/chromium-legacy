@@ -51,6 +51,9 @@ class ServicesDelegateDesktop : public ServicesDelegate {
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       const V4ProtocolConfig& v4_config) override;
   void StopOnIOThread(bool shutdown) override;
+  void OnProfileWillBeDestroyedOnIOThread(
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
+      override;
 
   // Reports the current extended reporting level. Note that this is an
   // estimation and may not always be correct. It is possible that the

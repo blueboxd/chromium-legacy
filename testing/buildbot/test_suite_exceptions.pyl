@@ -1443,6 +1443,11 @@
           '--shard-timeout=300',
         ],
       },
+      'android-marshmallow-x86-fyi-rel': {
+        'args': [
+          '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator.sandbox_linux_unittests.filter',
+        ]
+      },
     },
     'remove_from': [
       'android-asan',  # https://crbug.com/962650

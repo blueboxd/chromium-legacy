@@ -681,7 +681,7 @@ TEST_F(DeepLinkUtilTest, GetChromeSettingsUrl) {
       {base::Optional<std::string>("googleAssistant"),
        "chrome://os-settings/googleAssistant"},
       {base::Optional<std::string>("languages"),
-       "chrome://os-settings/languages"},
+       "chrome://os-settings/languages/details"},
 
       // FALLBACK: Allowed pages are case sensitive.
       {base::Optional<std::string>("GOOGLEASSISTANT"), "chrome://os-settings/"},

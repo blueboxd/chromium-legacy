@@ -192,6 +192,7 @@
 <translation id="3474649192738347024">フォームに入力されました。</translation>
 <translation id="3478058380795961209">有効期限（月）</translation>
 <translation id="3482959374254649722">タブを同期しています...</translation>
+<translation id="3484946776651937681">ダウンロード フォルダを開く</translation>
 <translation id="3493531032208478708">詳しくは、<ph name="BEGIN_LINK" />おすすめのコンテンツ<ph name="END_LINK" />についての説明をご覧ください</translation>
 <translation id="3494788280727468875">閲覧データの削除を確定</translation>
 <translation id="35083190962747987">${url} を開く</translation>
@@ -537,6 +538,7 @@
 <translation id="8319076807703933069">新しく検索</translation>
 <translation id="8323906514956095947">長押しすると、タブのオプションがさらに表示されます</translation>
 <translation id="8328777765163860529">すべて閉じる</translation>
+<translation id="8386068868580335421">リセット</translation>
 <translation id="8407669440184693619">このサイト用のパスワードが見つかりません</translation>
 <translation id="842017693807136194">ログインに使用した ID プロバイダ</translation>
 <translation id="8428045167754449968">市区町村</translation>
@@ -553,6 +555,7 @@
 <translation id="8532105204136943229">有効期限（年）</translation>
 <translation id="8534481786647257214">Google+への投稿が完了しました。</translation>
 <translation id="8548878600947630424">ページ内を検索...</translation>
+<translation id="8574235780160508979">Chrome の利用規約が 3 月 31 日に更新されます。<ph name="BEGIN_LINK" />お読みください<ph name="END_LINK" /></translation>
 <translation id="8588404856427128947">オフ</translation>
 <translation id="8605219856220328675">タブを閉じる。</translation>
 <translation id="8620640915598389714">編集</translation>

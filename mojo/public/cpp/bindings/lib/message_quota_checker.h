@@ -12,6 +12,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/optional.h"
 #include "base/synchronization/lock.h"
+#include "base/thread_annotations.h"
 #include "base/time/time.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 
@@ -113,8 +114,6 @@ class COMPONENT_EXPORT(MOJO_CPP_BINDINGS) MessageQuotaChecker
   // The time ticks when this instance was created.
   const base::TimeTicks creation_time_;
 
-  // Locks all local state.
-  base::Lock lock_;
 
   // Cumulative counts for the number of messages enqueued with
   // |BeforeMessagesEnqueued()| and dequeued with |BeforeMessagesDequeued()|.
@@ -122,16 +121,19 @@ class COMPONENT_EXPORT(MOJO_CPP_BINDINGS) MessageQuotaChecker
   std::atomic<uint64_t> messages_dequeued_{0};
   std::atomic<uint64_t> messages_written_{0};
 
+  // Guards all state below here.
+  base::Lock lock_;
+
   // A decaying average of the rate of call to BeforeWrite per second.
-  DecayingRateAverage write_rate_average_;
+  DecayingRateAverage write_rate_average_ GUARDED_BY(lock_);
 
   // The locally consumed quota, e.g. the difference between the counts passed
   // to |BeforeMessagesEnqueued()| and |BeforeMessagesDequeued()|.
-  size_t consumed_quota_ = 0u;
+  size_t consumed_quota_ GUARDED_BY(lock_) = 0u;
   // The high watermark consumed quota observed.
-  size_t max_consumed_quota_ = 0u;
+  size_t max_consumed_quota_ GUARDED_BY(lock_) = 0u;
   // The message pipe this instance observes, if any.
-  MessagePipeHandle message_pipe_;
+  MessagePipeHandle message_pipe_ GUARDED_BY(lock_);
 };
 
 struct MessageQuotaChecker::Configuration {

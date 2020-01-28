@@ -71,7 +71,7 @@ public class ChromeActivityCommonsModule {
     }
 
     @Provides
-    public ChromeActivity provideChromeActivity() {
+    public ChromeActivity<?> provideChromeActivity() {
         // Ideally providing Context or Activity should be enough, but currently a lot of code is
         // coupled specifically to ChromeActivity.
         return mActivity;
@@ -125,7 +125,7 @@ public class ChromeActivityCommonsModule {
 
     @Provides
     public TabCreatorManager provideTabCreatorManager() {
-        return (TabCreatorManager) mActivity;
+        return mActivity;
     }
 
     @Provides

@@ -22,6 +22,7 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_client.h"
+#include "content/public/common/content_features.h"
 #include "media/base/media_switches.h"
 #include "third_party/blink/public/common/mediastream/media_stream_request.h"
 
@@ -184,8 +185,12 @@ blink::WebMediaDeviceInfo TranslateMediaDeviceInfo(
     const MediaDeviceSaltAndOrigin& salt_and_origin,
     const blink::WebMediaDeviceInfo& device_info) {
   return blink::WebMediaDeviceInfo(
-      GetHMACForMediaDeviceID(salt_and_origin.device_id_salt,
-                              salt_and_origin.origin, device_info.device_id),
+      !base::FeatureList::IsEnabled(features::kEnumerateDevicesHideDeviceIDs) ||
+              has_permission
+          ? GetHMACForMediaDeviceID(salt_and_origin.device_id_salt,
+                                    salt_and_origin.origin,
+                                    device_info.device_id)
+          : std::string(),
       has_permission ? device_info.label : std::string(),
       device_info.group_id.empty()
           ? std::string()

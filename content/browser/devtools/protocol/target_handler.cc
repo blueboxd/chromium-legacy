@@ -278,7 +278,7 @@ class TargetHandler::Session : public DevToolsAgentHostClient {
     // We don't support or allow the non-flattened protocol when in binary mode.
     // So, we coerce the setting to true, as the non-flattened mode is
     // deprecated anyway.
-    if (handler->root_session_->client()->UsesBinaryProtocol())
+    if (handler->root_session_->GetClient()->UsesBinaryProtocol())
       flatten_protocol = true;
     Session* session = new Session(handler, agent_host, id, flatten_protocol);
     handler->attached_sessions_[id].reset(session);
@@ -354,8 +354,7 @@ class TargetHandler::Session : public DevToolsAgentHostClient {
   }
 
   bool UsesBinaryProtocol() override {
-    return flatten_protocol_ ||
-           handler_->root_session_->client()->UsesBinaryProtocol();
+    return handler_->root_session_->GetClient()->UsesBinaryProtocol();
   }
 
  private:
@@ -375,7 +374,13 @@ class TargetHandler::Session : public DevToolsAgentHostClient {
                                base::span<const uint8_t> message) override {
     DCHECK(agent_host == agent_host_.get());
     if (flatten_protocol_) {
-      handler_->root_session_->SendMessageFromChildSession(id_, message);
+      // TODO(johannes): It's not clear that this check is useful, but
+      // a similar check has been in the code ever since the flattened protocol
+      // was introduced. Try a DCHECK instead and possibly remove the check.
+      if (!handler_->root_session_->HasChildSession(id_))
+        return;
+      handler_->root_session_->GetClient()->DispatchProtocolMessage(
+          handler_->root_session_->GetAgentHost(), message);
       return;
     }
     // TODO(johannes): For now, We need to copy here because

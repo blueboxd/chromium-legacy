@@ -279,6 +279,7 @@
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{Alamisho <ph name="BOOKMARKS_COUNT_ONE" />}other{Alamisho <ph name="BOOKMARKS_COUNT_MANY" />}}</translation>
 <translation id="3089395242580810162">Fungua katika kichupo fiche</translation>
 <translation id="3123473560110926937">Yamezuiwa kwenye baadhi ya tovuti</translation>
+<translation id="3123734510202723619">Matangazo</translation>
 <translation id="3137521801621304719">Ondoka kwenye hali fiche</translation>
 <translation id="3143515551205905069">Ghairi usawazishaji</translation>
 <translation id="3157842584138209013">Ona kiasi cha data ulichookoa kwa kubofya kitufe cha Chaguo Zaidi</translation>
@@ -690,7 +691,6 @@ Ili ubadilishe mipangilio hii, <ph name="BEGIN_LINK" />fanya usawazishaji upya<p
 <translation id="6201345951596836663">Kiungo Kimenakiliwa</translation>
 <translation id="6206551242102657620">Muunganisho ni salama. Maelezo ya tovuti</translation>
 <translation id="6210748933810148297">Wewe si <ph name="EMAIL" />?</translation>
-<translation id="6216432067784365534">Chaguo za <ph name="NAME_OF_LIST_ITEM" /></translation>
 <translation id="6221633008163990886">Fungua ili uhamishe manenosiri yako</translation>
 <translation id="6232535412751077445">Kuwasha ‘Usifuatilie’ kunamaanisha kuwa ombi litajumuishwa pamoja na maelezo yako mengine ya kuvinjari. Athari yoyote itategemea ikiwa tovuti inajibu ombi, na namna ombi litakavyofasiriwa.
 
@@ -736,7 +736,6 @@ Kwa mfano, baadhi ya tovuti zinaweza kujibu ombi hili kwa kukuonyesha matangazo 
 <translation id="6534565668554028783">Google imechukua muda mrefu kujibu</translation>
 <translation id="6538442820324228105">Umepakua GB <ph name="GBS" /></translation>
 <translation id="6539092367496845964">Hitilafu fulani imetokea. Jaribu tena baadaye.</translation>
-<translation id="654446541061731451">Chagua kichupo cha kusambaza</translation>
 <translation id="6545017243486555795">Futa Data Yote</translation>
 <translation id="6545864417968258051">Kutafuta Bluetooth</translation>
 <translation id="6560414384669816528">Tafuta kwa kutumia Sogou</translation>
@@ -1030,7 +1029,6 @@ Tovuti hii HAIPATI idhini ya kufikia kamera. Ni wewe pekee utaona picha hizi za 
 <translation id="868929229000858085">Tafuta kwenye anwani zako</translation>
 <translation id="8698438463325761328">Zuia tovuti zisifikie data na vifaa vyako vya uhalisia pepe</translation>
 <translation id="869891660844655955">Muda wake unakwisha tarehe</translation>
-<translation id="8719023831149562936">Haiwezi kusambaza kichupo cha sasa</translation>
 <translation id="8728487861892616501">Kwa kutumia programu hii, unakubaliana na <ph name="BEGIN_LINK1" />Sheria na Masharti<ph name="END_LINK1" /> na <ph name="BEGIN_LINK2" />Ilani ya Faragha<ph name="END_LINK2" /> ya Chrome na <ph name="BEGIN_LINK3" />Ilani ya Faragha ya Akaunti za Google Zinazodhibitiwa na Family Link<ph name="END_LINK3" />.</translation>
 <translation id="8748850008226585750">Maudhui yamefichwa</translation>
 <translation id="8751914237388039244">Chagua picha</translation>

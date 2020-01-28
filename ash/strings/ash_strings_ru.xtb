@@ -112,6 +112,7 @@
 <translation id="2352467521400612932">Настройки стилуса</translation>
 <translation id="2354174487190027830">Активация <ph name="NAME" /></translation>
 <translation id="2359808026110333948">Продолжить</translation>
+<translation id="2364154243880592194">Строка состояния: время – <ph name="TIME" />, <ph name="BATTERY" /> Чтобы открыть центр уведомлений, нажмите Поиск + Стрелка влево.</translation>
 <translation id="2365393535144473978">Вместе с мобильным Интернетом включится Bluetooth.</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="2412593942846481727">Доступно обновление</translation>
@@ -335,6 +336,7 @@
 <translation id="5669267381087807207">Активация</translation>
 <translation id="5673434351075758678">В результате синхронизации настроек язык изменен. Теперь используется <ph name="TO_LOCALE" />, а не <ph name="FROM_LOCALE" />.</translation>
 <translation id="5682642926269496722">Google Ассистент недоступен в этом аккаунте.</translation>
+<translation id="5689633613396158040">Этот режим помогает снизить напряжение глаз при тусклом свете. Нажмите здесь, чтобы изменить расписание или полностью отключить ночной режим.</translation>
 <translation id="5691772641933328258">Не удалось распознать отпечаток</translation>
 <translation id="5710450975648804523">Режим "Не беспокоить" включен</translation>
 <translation id="573413375004481890">Вы подключили к устройству больше дисплеев, чем оно может поддерживать, поэтому один из них пришлось отключить</translation>
@@ -514,6 +516,7 @@
 <translation id="8142441511840089262">Двойное нажатие кнопкой мыши</translation>
 <translation id="8142699993796781067">Частные сети</translation>
 <translation id="8152092012181020186">Нажмите Ctrl + W, чтобы закрыть вкладку.</translation>
+<translation id="8155007568264258537">Функцией "<ph name="FEATURE_NAME" />" управляет администратор.</translation>
 <translation id="8167567890448493835">Используемый язык: <ph name="LOCALE_NAME" /></translation>
 <translation id="8190698733819146287">Настройки языков и ввода…</translation>
 <translation id="8192202700944119416">Уведомления скрыты</translation>
@@ -595,7 +598,6 @@
 <translation id="9193626018745640770">Трансляция на неизвестное устройство</translation>
 <translation id="9194617393863864469">Войти в другой аккаунт...</translation>
 <translation id="9201374708878217446">Статус подключения – "<ph name="CONNECTION_STATUS" />", под управлением администратора</translation>
-<translation id="9205817095063786319">Устройство находится под управлением домена <ph name="DOMAIN" />.</translation>
 <translation id="9210037371811586452">Выход из режима единого рабочего стола…</translation>
 <translation id="9211681782751733685">Оставшееся время до полной зарядки батареи: <ph name="TIME_REMAINING" />.</translation>
 <translation id="9215934040295798075">Выбрать обои</translation>

@@ -19,7 +19,6 @@
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/nacl/common/buildflags.h"
 #include "components/offline_pages/core/offline_page_model.h"
-#include "components/search_engines/template_url_service.h"
 #include "content/public/browser/browsing_data_remover.h"
 #include "content/public/browser/browsing_data_remover_delegate.h"
 #include "extensions/buildflags/buildflags.h"
@@ -253,11 +252,6 @@ class ChromeBrowsingDataRemoverDelegate
   // Records unfinished tasks from |pending_sub_tasks_| after a delay.
   void RecordUnfinishedSubTasks();
 
-  // Callback for when TemplateURLService has finished loading. Clears the data,
-  // clears the respective waiting flag, and invokes NotifyIfDone.
-  void OnKeywordsLoaded(base::RepeatingCallback<bool(const GURL&)> url_filter,
-                        base::OnceClosure done);
-
   // A helper method that checks if time period is for "all time".
   bool IsForAllTime() const;
 
@@ -318,8 +312,6 @@ class ChromeBrowsingDataRemoverDelegate
 
   // Used if we need to clear history.
   base::CancelableTaskTracker history_task_tracker_;
-
-  std::unique_ptr<TemplateURLService::Subscription> template_url_sub_;
 
 #if defined(OS_ANDROID)
   // WebappRegistry makes calls across the JNI. In unit tests, the Java side is

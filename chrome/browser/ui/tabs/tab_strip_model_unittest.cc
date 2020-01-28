@@ -3780,12 +3780,16 @@ TEST_F(TabStripModelTest, MoveWebContentsAtCorrectlySendsGroupClearedEvent) {
 
 class TabToWindowTestTabStripModelDelegate : public TestTabStripModelDelegate {
  public:
-  bool CanMoveTabToWindow(int index) override {
-    can_move_calls_.push_back(index);
+  bool CanMoveTabsToWindow(const std::vector<int>& indices) override {
+    for (int index : indices)
+      can_move_calls_.push_back(index);
     return true;
   }
 
-  void MoveTabToNewWindow(int index) override { move_calls_.push_back(index); }
+  void MoveTabsToNewWindow(const std::vector<int>& indices) override {
+    for (int index : indices)
+      move_calls_.push_back(index);
+  }
 
   std::vector<int> can_move_calls() { return can_move_calls_; }
   std::vector<int> move_calls() { return move_calls_; }
@@ -3795,9 +3799,9 @@ class TabToWindowTestTabStripModelDelegate : public TestTabStripModelDelegate {
   std::vector<int> move_calls_;
 };
 
-// Sanity check to ensure that the "Move Tab to Window" command talks to
+// Sanity check to ensure that the "Move Tabs to Window" command talks to
 // the delegate correctly.
-TEST_F(TabStripModelTest, MoveTabToNewWindow) {
+TEST_F(TabStripModelTest, MoveTabsToNewWindow) {
   TabToWindowTestTabStripModelDelegate delegate;
   TabStripModel strip(&delegate, profile());
   PrepareTabs(&strip, 3);
@@ -3806,14 +3810,14 @@ TEST_F(TabStripModelTest, MoveTabToNewWindow) {
   EXPECT_EQ(delegate.move_calls().size(), 0u);
 
   EXPECT_TRUE(strip.IsContextMenuCommandEnabled(
-      2, TabStripModel::CommandMoveTabToNewWindow));
+      2, TabStripModel::CommandMoveTabsToNewWindow));
 
   // ASSERT and not EXPECT since we're accessing back() later.
   ASSERT_EQ(delegate.can_move_calls().size(), 1u);
   EXPECT_EQ(delegate.move_calls().size(), 0u);
   EXPECT_EQ(delegate.can_move_calls().back(), 2);
 
-  strip.ExecuteContextMenuCommand(0, TabStripModel::CommandMoveTabToNewWindow);
+  strip.ExecuteContextMenuCommand(0, TabStripModel::CommandMoveTabsToNewWindow);
   // Whether ExecuteCommand checks if the command is valid or not is an
   // implementation detail, so let's not be brittle.
   EXPECT_GT(delegate.can_move_calls().size(), 0u);

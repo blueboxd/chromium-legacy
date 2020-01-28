@@ -264,6 +264,9 @@ Polymer({
           }
           break;
 
+        case States.MIXED_CONTENT:
+          return loadTimeData.getString('mixedContentDownloadDesc');
+
         case States.DANGEROUS:
           const fileName = data.fileName;
           switch (data.dangerType) {
@@ -351,7 +354,8 @@ Polymer({
      * @private
      */
     computeIsDangerous_() {
-      return this.data.state === States.DANGEROUS;
+      return this.data.state === States.DANGEROUS ||
+             this.data.state === States.MIXED_CONTENT;
     },
 
     /**

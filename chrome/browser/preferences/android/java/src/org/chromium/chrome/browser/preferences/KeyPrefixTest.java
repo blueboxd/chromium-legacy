@@ -29,9 +29,11 @@ public class KeyPrefixTest {
 
         assertEquals(prefix.createKey("DynamicKey"), "Chrome.Feature.KP.DynamicKey");
         assertEquals(prefix.createKey("Level.DynamicKey"), "Chrome.Feature.KP.Level.DynamicKey");
+        assertEquals(prefix.createKey(42), "Chrome.Feature.KP.42");
 
         assertTrue(prefix.hasGenerated("Chrome.Feature.KP.DynamicKey"));
         assertTrue(prefix.hasGenerated("Chrome.Feature.KP.Level.DynamicKey"));
+        assertTrue(prefix.hasGenerated("Chrome.Feature.KP.42"));
         assertFalse(prefix.hasGenerated("OtherKey"));
     }
 

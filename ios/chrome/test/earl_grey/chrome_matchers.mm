@@ -175,6 +175,10 @@ id<GREYMatcher> BookmarksNavigationBarDoneButton() {
   return [ChromeMatchersAppInterface bookmarksNavigationBarDoneButton];
 }
 
+id<GREYMatcher> BookmarksNavigationBarBackButton() {
+  return [ChromeMatchersAppInterface bookmarksNavigationBarBackButton];
+}
+
 id<GREYMatcher> AccountConsistencyConfirmationOkButton() {
   return [ChromeMatchersAppInterface accountConsistencyConfirmationOKButton];
 }

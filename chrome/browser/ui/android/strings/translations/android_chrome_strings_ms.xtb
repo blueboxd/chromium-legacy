@@ -279,6 +279,7 @@
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> penanda halaman}other{<ph name="BOOKMARKS_COUNT_MANY" /> penanda halaman}}</translation>
 <translation id="3089395242580810162">Buka dalam tab inkognito</translation>
 <translation id="3123473560110926937">Disekat di sesetengah tapak</translation>
+<translation id="3123734510202723619">Pengumuman</translation>
 <translation id="3137521801621304719">Tinggalkan mod inkognito</translation>
 <translation id="3143515551205905069">Batalkan penyegerakan</translation>
 <translation id="3157842584138209013">Lihat jumlah data yang dapat dijimatkan daripada butang Lagi Pilihan</translation>
@@ -690,7 +691,6 @@ Untuk menukar tetapan ini, <ph name="BEGIN_LINK" />tetapkan semula penyegerakan<
 <translation id="6201345951596836663">Pautan Disalin</translation>
 <translation id="6206551242102657620">Sambungan selamat. Maklumat tapak</translation>
 <translation id="6210748933810148297">Bukan <ph name="EMAIL" />?</translation>
-<translation id="6216432067784365534">Pilihan <ph name="NAME_OF_LIST_ITEM" /></translation>
 <translation id="6221633008163990886">Buka kunci untuk mengeksport kata laluan anda</translation>
 <translation id="6232535412751077445">Tindakan mendayakan "Jangan Kesan" bermaksud permintaan akan disertakan dengan trafik penyemakan imbas anda. Sebarang kesan bergantung pada sama ada tapak web memberi respons kepada permintaan dan cara permintaan ditafsirkan.
 
@@ -736,7 +736,6 @@ Sebagai contoh, sesetengah tapak web mungkin memberi respons kepada permintaan i
 <translation id="6534565668554028783">Google mengambil masa terlalu lama untuk bertindak balas</translation>
 <translation id="6538442820324228105">Dimuat turun <ph name="GBS" /> GB</translation>
 <translation id="6539092367496845964">Kesilapan telah berlaku. Cuba sebentar lagi.</translation>
-<translation id="654446541061731451">Pilih tab untuk dipancarkan</translation>
 <translation id="6545017243486555795">Hapuskan Semua Data</translation>
 <translation id="6545864417968258051">Pengimbasan Bluetooth</translation>
 <translation id="6560414384669816528">Cari dengan Sogou</translation>
@@ -1031,7 +1030,6 @@ Tapak TIDAK memperoleh akses kepada kamera. Hanya anda dapat melihat imej kamera
 <translation id="868929229000858085">Cari dalam kenalan anda</translation>
 <translation id="8698438463325761328">Sekat tapak daripada mengakses peranti dan data realiti maya anda</translation>
 <translation id="869891660844655955">Tarikh tamat tempoh</translation>
-<translation id="8719023831149562936">Tidak dapat memancarkan tab semasa</translation>
 <translation id="8728487861892616501">Apabila menggunakan aplikasi ini, anda bersetuju menerima <ph name="BEGIN_LINK1" />Syarat Perkhidmatan<ph name="END_LINK1" /> dan <ph name="BEGIN_LINK2" />Notis Privasi<ph name="END_LINK2" /> Chrome serta <ph name="BEGIN_LINK3" />Notis Privasi untuk Akaun Google yang Diurus dengan Family Link<ph name="END_LINK3" />.</translation>
 <translation id="8748850008226585750">Kandungan tersembunyi</translation>
 <translation id="8751914237388039244">Pilih imej</translation>

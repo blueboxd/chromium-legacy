@@ -87,8 +87,10 @@ static void ScrollToVisible(Range* match) {
   Settings* settings = first_node.GetDocument().GetSettings();
   bool smooth_find_enabled =
       settings ? settings->GetSmoothScrollForFindEnabled() : false;
-  ScrollBehavior scroll_behavior =
-      smooth_find_enabled ? kScrollBehaviorSmooth : kScrollBehaviorAuto;
+  mojom::blink::ScrollIntoViewParams::Behavior scroll_behavior =
+      smooth_find_enabled
+          ? mojom::blink::ScrollIntoViewParams::Behavior::kSmooth
+          : mojom::blink::ScrollIntoViewParams::Behavior::kAuto;
   first_node.GetLayoutObject()->ScrollRectToVisible(
       PhysicalRect(match->BoundingBox()),
       CreateScrollIntoViewParams(

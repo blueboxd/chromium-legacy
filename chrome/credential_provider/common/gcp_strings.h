@@ -87,6 +87,7 @@ extern const char kEmailDomainsSwitch[];
 extern const char kGaiaIdSwitch[];
 extern const char kGcpwEndpointPathSwitch[];
 extern const char kGcpwAdditionalOauthScopes[];
+extern const char kShowTosSwitch[];
 
 // Parameter appended to sign in URL to pass valid signin domains to the inline
 // login handler. These domains are separated by ','.

@@ -15,7 +15,7 @@
 #include "base/sequenced_task_runner.h"
 #include "base/task/post_task.h"
 #include "base/test/task_environment.h"
-#include "chrome/browser/media/router/providers/openscreen/platform/chrome_task_runner.h"
+#include "components/openscreen_platform/platform_task_runner.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -144,7 +144,7 @@ class ChromeTlsClientConnectionTest : public ::testing::Test {
   ~ChromeTlsClientConnectionTest() override = default;
 
   void SetUp() override {
-    task_runner_ = std::make_unique<ChromeTaskRunner>(
+    task_runner_ = std::make_unique<openscreen_platform::PlatformTaskRunner>(
         task_environment_.GetMainThreadTaskRunner());
     socket_streams_ = std::make_unique<FakeSocketStreams>();
     connection_ = std::make_unique<ChromeTlsClientConnection>(
@@ -165,7 +165,7 @@ class ChromeTlsClientConnectionTest : public ::testing::Test {
 
  private:
   base::test::TaskEnvironment task_environment_;
-  std::unique_ptr<ChromeTaskRunner> task_runner_;
+  std::unique_ptr<openscreen_platform::PlatformTaskRunner> task_runner_;
 
   std::unique_ptr<FakeSocketStreams> socket_streams_;
   std::unique_ptr<ChromeTlsClientConnection> connection_;

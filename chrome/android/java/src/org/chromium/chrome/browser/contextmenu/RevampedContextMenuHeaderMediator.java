@@ -28,6 +28,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.favicon.IconType;
 import org.chromium.chrome.browser.favicon.LargeIconBridge;
 import org.chromium.chrome.browser.favicon.RoundedIconGenerator;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.ui.modelutil.PropertyModel;
 
@@ -52,7 +53,8 @@ class RevampedContextMenuHeaderMediator implements View.OnClickListener {
         } else if (params.isVideo()) {
             setVideoIcon();
         }
-        if (params.isAnchor()) {
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.CONTEXT_MENU_PERFORMANCE_INFO)
+                && params.isAnchor()) {
             mModel.set(RevampedContextMenuHeaderProperties.URL_PERFORMANCE_CLASS,
                     params.getPerformanceClass());
         }

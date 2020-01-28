@@ -13,6 +13,7 @@
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "components/keyed_service/content/browser_context_keyed_service_shutdown_notifier_factory.h"
 #include "components/signin/public/identity_manager/access_token_info.h"
+#include "components/signin/public/identity_manager/consent_level.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/signin/public/identity_manager/primary_account_access_token_fetcher.h"
 #include "google_apis/gaia/gaia_constants.h"
@@ -58,7 +59,9 @@ void TokenHandleFetcher::BackfillToken(Profile* profile,
   callback_ = callback;
 
   identity_manager_ = IdentityManagerFactory::GetForProfile(profile);
-  if (!identity_manager_->HasPrimaryAccountWithRefreshToken()) {
+  // This class doesn't care about browser sync consent.
+  if (!identity_manager_->HasAccountWithRefreshToken(
+          identity_manager_->GetUnconsentedPrimaryAccountId())) {
     profile_shutdown_notification_ =
         TokenHandleFetcherShutdownNotifierFactory::GetInstance()
             ->Get(profile)
@@ -81,7 +84,8 @@ void TokenHandleFetcher::BackfillToken(Profile* profile,
           kAccessTokenFetchId, identity_manager_, scopes,
           base::BindOnce(&TokenHandleFetcher::OnAccessTokenFetchComplete,
                          base::Unretained(this)),
-          signin::PrimaryAccountAccessTokenFetcher::Mode::kWaitUntilAvailable);
+          signin::PrimaryAccountAccessTokenFetcher::Mode::kWaitUntilAvailable,
+          signin::ConsentLevel::kNotRequired);
 }
 
 void TokenHandleFetcher::OnAccessTokenFetchComplete(

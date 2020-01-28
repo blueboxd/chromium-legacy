@@ -69,11 +69,6 @@ bool ConfirmSignoutDialog::Accept() {
   return true;
 }
 
-int ConfirmSignoutDialog::GetDialogButtons() const {
-  return ui::DialogButton::DIALOG_BUTTON_OK |
-         ui::DialogButton::DIALOG_BUTTON_CANCEL;
-}
-
 // static
 views::Widget* ConfirmSignoutDialog::current_instance_ = nullptr;
 

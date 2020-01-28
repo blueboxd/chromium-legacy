@@ -237,7 +237,7 @@ IN_PROC_BROWSER_TEST_F(PortalBrowserTest, TaskManagerOrderingOfDependentRows) {
     ui_test_utils::NavigateToURLWithDispositionBlockUntilNavigationsComplete(
         browser(), embedded_test_server()->GetURL("/title2.html"), 1,
         WindowOpenDisposition::NEW_FOREGROUND_TAB,
-        ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+        ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
     WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
     tab_contents.push_back(tab);
   }

@@ -525,8 +525,6 @@ check_targets = [
   "//third_party/s2cellid/*",
   "//third_party/safe_browsing/*",
   "//third_party/scan-build/*",
-
-  # "//third_party/sfntly/*",  # 20ish errors
   "//third_party/shaderc/*",
   "//third_party/simplejson/*",
   "//third_party/sinonjs/*",

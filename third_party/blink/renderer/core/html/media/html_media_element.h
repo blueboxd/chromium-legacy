@@ -199,7 +199,6 @@ class CORE_EXPORT HTMLMediaElement
   TimeRanges* seekable() const;
   bool ended() const;
   bool Autoplay() const;
-  bool ShouldAutoplay();
   bool Loop() const;
   void SetLoop(bool);
   ScriptPromise playForBindings(ScriptState*);
@@ -244,11 +243,6 @@ class CORE_EXPORT HTMLMediaElement
 
   TextTrackList* textTracks();
   CueTimeline& GetCueTimeline();
-
-  void addTextTrack(TextTrack*);
-  void RemoveTextTrack(TextTrack*);
-  void TextTracksChanged();
-  void NotifyMediaPlayerOfTextTrackChanges();
 
   // Implements the "forget the media element's media-resource-specific tracks"
   // algorithm in the HTML5 spec.
@@ -468,7 +462,6 @@ class CORE_EXPORT HTMLMediaElement
 
   void Seek(double time);
   void FinishSeek();
-  void CheckIfSeekNeeded();
   void AddPlayedRange(double start, double end);
 
   // FIXME: Rename to scheduleNamedEvent for clarity.
@@ -515,7 +508,6 @@ class CORE_EXPORT HTMLMediaElement
   // This does not stop autoplay visibility observation.
   void PauseInternal();
 
-  void UpdateVolume();
   void UpdatePlayState();
   bool PotentiallyPlaying() const;
   bool StoppedDueToErrors() const;

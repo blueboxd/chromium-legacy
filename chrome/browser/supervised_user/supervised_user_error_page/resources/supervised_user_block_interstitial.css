@@ -10,6 +10,7 @@ body {
   --header-color:  #202124;
   --paragraph-color: #5f6368;
   font-family: "Roboto", sans-serif;
+  padding: 24px 24px 20px 24px;
 }
 
 button {

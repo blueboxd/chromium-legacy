@@ -28,7 +28,6 @@
 #include "chrome/browser/permissions/permission_decision_auto_blocker.h"
 #include "chrome/browser/permissions/permission_manager.h"
 #include "chrome/browser/permissions/permission_uma_util.h"
-#include "chrome/browser/permissions/permission_util.h"
 #include "chrome/browser/serial/serial_chooser_context.h"
 #include "chrome/browser/serial/serial_chooser_context_factory.h"
 #include "chrome/browser/ui/browser.h"
@@ -47,6 +46,7 @@
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/content_settings/core/common/content_settings_utils.h"
 #include "components/crx_file/id_util.h"
+#include "components/permissions/permission_util.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_thread.h"
@@ -709,7 +709,7 @@ void SiteSettingsHandler::HandleGetAllSites(const base::ListValue* args) {
   PermissionManager* permission_manager = PermissionManager::Get(profile);
   for (const ContentSettingPatternSource& e : embargo_settings) {
     for (ContentSettingsType content_type : content_types) {
-      if (PermissionUtil::IsPermission(content_type)) {
+      if (permissions::PermissionUtil::IsPermission(content_type)) {
         const GURL url(e.primary_pattern.ToString());
         // Add |url| to the set if there are any embargo settings.
         permissions::PermissionResult result =
@@ -950,7 +950,7 @@ void SiteSettingsHandler::HandleSetOriginPermissions(
     HostContentSettingsMap* map =
         HostContentSettingsMapFactory::GetForProfile(profile_);
 
-    PermissionUtil::ScopedRevocationReporter scoped_revocation_reporter(
+    PermissionUmaUtil::ScopedRevocationReporter scoped_revocation_reporter(
         profile_, origin, origin, content_type,
         PermissionSourceUI::SITE_SETTINGS);
 
@@ -1040,7 +1040,7 @@ void SiteSettingsHandler::HandleResetCategoryPermissionForPattern(
       secondary_pattern_string.empty()
           ? ContentSettingsPattern::Wildcard()
           : ContentSettingsPattern::FromString(secondary_pattern_string);
-  PermissionUtil::ScopedRevocationReporter scoped_revocation_reporter(
+  PermissionUmaUtil::ScopedRevocationReporter scoped_revocation_reporter(
       profile, primary_pattern, secondary_pattern, content_type,
       PermissionSourceUI::SITE_SETTINGS);
 
@@ -1100,7 +1100,7 @@ void SiteSettingsHandler::HandleSetCategoryPermissionForPattern(
           ? ContentSettingsPattern::Wildcard()
           : ContentSettingsPattern::FromString(secondary_pattern_string);
 
-  PermissionUtil::ScopedRevocationReporter scoped_revocation_reporter(
+  PermissionUmaUtil::ScopedRevocationReporter scoped_revocation_reporter(
       profile, primary_pattern, secondary_pattern, content_type,
       PermissionSourceUI::SITE_SETTINGS);
 

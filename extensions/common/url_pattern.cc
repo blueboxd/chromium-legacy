@@ -414,10 +414,6 @@ bool URLPattern::SetPort(base::StringPiece port) {
 }
 
 bool URLPattern::MatchesURL(const GURL& test) const {
-  // Invalid URLs can never match.
-  if (!test.is_valid())
-    return false;
-
   const GURL* test_url = &test;
   bool has_inner_url = test.inner_url() != nullptr;
 

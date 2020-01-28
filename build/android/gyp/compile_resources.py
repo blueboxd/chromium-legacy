@@ -38,6 +38,10 @@ from util import resource_utils
 sys.path.insert(1, os.path.join(build_utils.DIR_SOURCE_ROOT, 'third_party'))
 from jinja2 import Template # pylint: disable=F0401
 
+_JETIFY_SCRIPT_PATH = os.path.join(build_utils.DIR_SOURCE_ROOT, 'third_party',
+                                   'jetifier_standalone', 'bin',
+                                   'jetifier-standalone')
+
 # Pngs that we shouldn't convert to webp. Please add rationale when updating.
 _PNG_WEBP_BLACKLIST_PATTERN = re.compile('|'.join([
     # Crashes on Galaxy S5 running L (https://crbug.com/807059).
@@ -523,6 +527,29 @@ def _ConvertToWebP(webp_binary, png_files, path_info):
   pool.join()
 
 
+def _JetifyArchive(dep_path, output_path):
+  """Runs jetify script on a directory.
+
+  This converts resources to reference androidx over android support libraries.
+  Directories will be put in a zip file, jetified, then unzipped as jetify
+  only runs on archives.
+  """
+  # Jetify script only works on archives.
+  with tempfile.NamedTemporaryFile() as temp_archive:
+    build_utils.ZipDir(temp_archive.name, dep_path)
+
+    # Use -l error to avoid warnings when nothing is jetified.
+    jetify_cmd = [
+        _JETIFY_SCRIPT_PATH, '-i', temp_archive.name, '-o', temp_archive.name,
+        '-l', 'error'
+    ]
+    subprocess.check_call(jetify_cmd)
+    with zipfile.ZipFile(temp_archive.name) as zf:
+      zf.extractall(output_path)
+
+  return output_path
+
+
 def _RemoveImageExtensions(directory, path_info):
   """Remove extensions from image files in the passed directory.
 
@@ -556,6 +583,14 @@ def _CompileDeps(aapt2_path, dep_subdirs, temp_dir):
     basename = os.path.basename(dep_path)
     unique_name = '{}_{}'.format(index, basename)
     partial_path = os.path.join(partials_dir, '{}.zip'.format(unique_name))
+
+    jetify_dir = os.path.join(partials_dir, 'jetify')
+    build_utils.MakeDirectory(jetify_dir)
+    # TODO (bjoyce): Enable when androidx is ready.
+    # working_jetify_path = os.path.join(jetify_dir, 'jetify_' + partial_path)
+    # jetified_dep = _JetifyArchive(dep_path, working_jetify_path)
+    # dep_path = jetified_dep
+
     compile_command = (
         partial_compile_command + ['--dir', dep_path, '-o', partial_path])
 

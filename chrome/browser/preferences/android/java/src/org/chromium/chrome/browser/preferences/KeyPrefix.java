@@ -19,11 +19,18 @@ public class KeyPrefix {
     }
 
     /**
-     * @param suffix A non-empty string. The '*' character is reserved.
+     * @param stem A non-empty string. The '*' character is reserved.
      * @return The complete SharedPreferences key to be passed to {@link SharedPreferencesManager}.
      */
-    public String createKey(String suffix) {
-        return mPrefix + suffix;
+    public String createKey(String stem) {
+        return mPrefix + stem;
+    }
+    /**
+     * @param index An int to generate a unique key.
+     * @return The complete SharedPreferences key to be passed to {@link SharedPreferencesManager}.
+     */
+    public String createKey(int index) {
+        return mPrefix + index;
     }
 
     String pattern() {

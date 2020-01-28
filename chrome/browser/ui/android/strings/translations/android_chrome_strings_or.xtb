@@ -278,6 +278,7 @@
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" />ଟି ବୁକ୍‌ମାର୍କ}other{<ph name="BOOKMARKS_COUNT_MANY" />ଟି ବୁକ୍‌ମାର୍କ}}</translation>
 <translation id="3089395242580810162">ଇନ୍‌କଗ୍‌ନିଟୋ ଟାବ୍‌ରେ ଖୋଲନ୍ତୁ</translation>
 <translation id="3123473560110926937">କିଛି ସାଇଟ୍‍ଗୁଡ଼ିକରେ ଅବରୋଧ କରାଯାଇଛି</translation>
+<translation id="3123734510202723619">ଘୋଷଣାଗୁଡ଼ିକ</translation>
 <translation id="3137521801621304719">ଇନ୍‌କଗ୍ନିଟୋ ମୋଡ୍ ଛାଡ଼ନ୍ତୁ</translation>
 <translation id="3143515551205905069">ସିଙ୍କ୍‌ ବାତିଲ୍‍ କରନ୍ତୁ</translation>
 <translation id="3157842584138209013">ଅଧିକ ବିକଳ୍ପ ବଟନ୍‌ରୁ ଆପଣ କେତେ ଡାଟା ସେଭ୍ କରିଛନ୍ତି ଦେଖନ୍ତୁ</translation>
@@ -687,7 +688,6 @@
 <translation id="6201345951596836663">ଲିଙ୍କ୍ କପି କରାଯାଇଛି</translation>
 <translation id="6206551242102657620">ସଂଯୋଗ ସୁରକ୍ଷିତ ଅଟେ। ସାଇଟ୍ ସୂଚନା</translation>
 <translation id="6210748933810148297"><ph name="EMAIL" /> ନୁହେଁ?</translation>
-<translation id="6216432067784365534"><ph name="NAME_OF_LIST_ITEM" /> ବିକଳ୍ପ</translation>
 <translation id="6221633008163990886">ଆପଣଙ୍କର ପାସ୍‍ୱର୍ଡଗୁଡ଼ିକ ଏକ୍ସପୋର୍ଟ କରିବାକୁ ଅନ୍‌ଲକ୍ କରନ୍ତୁ</translation>
 <translation id="6232535412751077445">’ଟ୍ରାକ୍ କରନ୍ତୁ ନାହିଁ’ ସକ୍ଷମ କରିବାର ଅର୍ଥ ହେଉଛି, ଆପଣଙ୍କର ବ୍ରାଉଜିଂ ଟ୍ରାଫିକ୍ ସହିତ ଏକ ଅନୁରୋଧ ଅନ୍ତର୍ଭୁକ୍ତ କରାଯିବ। କୌଣସି ପ୍ରଭାବ ଏହା ଉପରେ ନିର୍ଭର କରେ ଯେ, କୌଣସି ୱେବ୍‍ସାଇଟ୍ ଅନୁରୋଧର ପ୍ରତିକ୍ରିୟା କରେ କି ନାହିଁ ଏବଂ ଅନୁରୋଧକୁ କିପରି ଭାବରେ ବ୍ୟାଖ୍ୟା କରାଯାଉଛି।
 
@@ -733,7 +733,6 @@
 <translation id="6534565668554028783">Google ପ୍ରତିକ୍ରିୟା ଦେବାକୁ ବହୁତ ସମୟ ନେଉଛି</translation>
 <translation id="6538442820324228105"><ph name="GBS" /> GBକୁ ଡାଉନ୍‍ଲୋଡ୍ କରାଯାଇଛି</translation>
 <translation id="6539092367496845964">କିଛି ଭୁଲ ହୋଇଗଲା। ପରେ ପୁଣି ଚେଷ୍ଟା କରନ୍ତୁ।</translation>
-<translation id="654446541061731451">ବିମ୍ କରିବାକୁ ଟାବ୍ ଚୟନ କରନ୍ତୁ</translation>
 <translation id="6545017243486555795">ସମସ୍ତ ଡାଟା ଖାଲି କରନ୍ତୁ</translation>
 <translation id="6545864417968258051">ବ୍ଲୁଟୁଥ୍ ସ୍କାନିଂ</translation>
 <translation id="6560414384669816528">Sogouରେ ସନ୍ଧାନ କରନ୍ତୁ</translation>
@@ -1024,7 +1023,6 @@
 <translation id="8687353297350450808">{N_BARS,plural, =1{ସିଗ୍‍ନାଲ୍‌ ଦକ୍ଷତାର ସ୍ତର: #ଟି ବାର୍‍}other{ସିଗ୍‍ନାଲ୍‌ ଦକ୍ଷତାର ସ୍ତର: #ଟି ବାର୍‍}}</translation>
 <translation id="868929229000858085">ଆପଣଙ୍କର ଯୋଗାଯୋଗ ସନ୍ଧାନ କରନ୍ତୁ</translation>
 <translation id="869891660844655955">ମିଆଦ ଶେଷ ହେଉଥିବା ତାରିଖ</translation>
-<translation id="8719023831149562936">ସାମ୍ପ୍ରତିକ ଟାବ୍‍କୁ ବିମ୍ କରିପାରିଲା ନାହିଁ</translation>
 <translation id="8728487861892616501">ଏହି ଆପ୍ଲିକେସନ୍ ବ୍ୟବହାର କରିବା ଦ୍ୱାରା, ଆପଣ Chrome’ର <ph name="BEGIN_LINK1" />ସେବାର ସର୍ତ୍ତାବଳୀ<ph name="END_LINK1" /> ଏବଂ <ph name="BEGIN_LINK2" />ଗୋପନୀୟତା ବିଜ୍ଞପ୍ତି<ph name="END_LINK2" /> ଏବଂ <ph name="BEGIN_LINK3" />ପରିବାର ଲିଙ୍କ୍ ସହ ପରିଚାଳିତ Google ଆକାଉଣ୍ଟ ପାଇଁ ଗୋପନୀୟତା ବିଜ୍ଞପ୍ତି<ph name="END_LINK3" />ରେ ସମ୍ମତ ଅଛନ୍ତି।</translation>
 <translation id="8748850008226585750">ଲୁଚାଯାଇଥିବା ବିଷୟବସ୍ତୁ</translation>
 <translation id="8751914237388039244">ଗୋଟିଏ ଛବି ଚୟନ କରନ୍ତୁ</translation>

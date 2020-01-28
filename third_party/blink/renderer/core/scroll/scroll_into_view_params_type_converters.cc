@@ -36,39 +36,6 @@ TypeConverter<blink::ScrollAlignment, blink::mojom::blink::ScrollAlignmentPtr>::
 }
 
 // static
-blink::mojom::blink::ScrollIntoViewParams::Behavior
-TypeConverter<blink::mojom::blink::ScrollIntoViewParams::Behavior,
-              blink::ScrollBehavior>::Convert(blink::ScrollBehavior behavior) {
-  switch (behavior) {
-    case blink::kScrollBehaviorAuto:
-      return blink::mojom::blink::ScrollIntoViewParams::Behavior::kAuto;
-    case blink::kScrollBehaviorInstant:
-      return blink::mojom::blink::ScrollIntoViewParams::Behavior::kInstant;
-    case blink::kScrollBehaviorSmooth:
-      return blink::mojom::blink::ScrollIntoViewParams::Behavior::kSmooth;
-  }
-  NOTREACHED();
-  return blink::mojom::blink::ScrollIntoViewParams::Behavior::kAuto;
-}
-
-// static
-blink::ScrollBehavior
-TypeConverter<blink::ScrollBehavior,
-              blink::mojom::blink::ScrollIntoViewParams::Behavior>::
-    Convert(blink::mojom::blink::ScrollIntoViewParams::Behavior behavior) {
-  switch (behavior) {
-    case blink::mojom::blink::ScrollIntoViewParams::Behavior::kAuto:
-      return blink::kScrollBehaviorAuto;
-    case blink::mojom::blink::ScrollIntoViewParams::Behavior::kInstant:
-      return blink::kScrollBehaviorInstant;
-    case blink::mojom::blink::ScrollIntoViewParams::Behavior::kSmooth:
-      return blink::kScrollBehaviorSmooth;
-  }
-  NOTREACHED();
-  return blink::kScrollBehaviorAuto;
-}
-
-// static
 blink::mojom::blink::ScrollIntoViewParams::Type
 TypeConverter<blink::mojom::blink::ScrollIntoViewParams::Type,
               blink::ScrollType>::Convert(blink::ScrollType type) {
@@ -172,7 +139,7 @@ mojom::blink::ScrollIntoViewParamsPtr CreateScrollIntoViewParams(
     ScrollAlignment align_y,
     ScrollType scroll_type,
     bool make_visible_in_visual_viewport,
-    ScrollBehavior scroll_behavior,
+    mojom::blink::ScrollIntoViewParams::Behavior scroll_behavior,
     bool is_for_scroll_sequence,
     bool zoom_into_rect) {
   auto params = mojom::blink::ScrollIntoViewParams::New();
@@ -181,9 +148,7 @@ mojom::blink::ScrollIntoViewParamsPtr CreateScrollIntoViewParams(
   params->type =
       mojo::ConvertTo<mojom::blink::ScrollIntoViewParams::Type>(scroll_type);
   params->make_visible_in_visual_viewport = make_visible_in_visual_viewport;
-  params->behavior =
-      mojo::ConvertTo<mojom::blink::ScrollIntoViewParams::Behavior>(
-          scroll_behavior);
+  params->behavior = scroll_behavior;
   params->is_for_scroll_sequence = is_for_scroll_sequence;
   params->zoom_into_rect = zoom_into_rect;
 

@@ -10,7 +10,8 @@
 #include "base/macros.h"
 #include "base/no_destructor.h"
 #include "components/keyed_service/ios/browser_state_keyed_service_factory.h"
-#include "ios/chrome/browser/browser_state/chrome_browser_state_forward.h"
+
+class ChromeBrowserState;
 
 namespace invalidation {
 class ProfileInvalidationProvider;
@@ -28,7 +29,7 @@ class IOSChromeDeprecatedProfileInvalidationProviderFactory
   // Returns the ProfileInvalidationProvider for the given |browser_state|,
   // lazily creating one first if required.
   static invalidation::ProfileInvalidationProvider* GetForBrowserState(
-      ios::ChromeBrowserState* browser_state);
+      ChromeBrowserState* browser_state);
 
   static IOSChromeDeprecatedProfileInvalidationProviderFactory* GetInstance();
 

@@ -51,7 +51,7 @@ public class CustomTabBottomBarDelegate implements FullscreenListener {
             new CachedMetrics.ActionEvent("CustomTabsRemoteViewsUpdated");
     private static final int SLIDE_ANIMATION_DURATION_MS = 400;
 
-    private final ChromeActivity mActivity;
+    private final ChromeActivity<?> mActivity;
     private final ChromeFullscreenManager mFullscreenManager;
     private final BrowserServicesIntentDataProvider mDataProvider;
     private final CustomTabNightModeStateController mNightModeStateController;
@@ -80,7 +80,7 @@ public class CustomTabBottomBarDelegate implements FullscreenListener {
     };
 
     @Inject
-    public CustomTabBottomBarDelegate(ChromeActivity activity,
+    public CustomTabBottomBarDelegate(ChromeActivity<?> activity,
             BrowserServicesIntentDataProvider dataProvider,
             ChromeFullscreenManager fullscreenManager,
             CustomTabNightModeStateController nightModeStateController,

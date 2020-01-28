@@ -266,7 +266,6 @@ to the classpath for downstream development. See "additional_entries" below.
     <classpathentry kind="src" path="third_party/protobuf/benchmarks/java/src"/>
     <classpathentry kind="src" path="third_party/robolectric/custom_asynctask/java/src"/>
     <classpathentry kind="src" path="third_party/robolectric/robolectric/junit/src"/>
-    <classpathentry kind="src" path="third_party/sfntly/src/java/src"/>
     <classpathentry kind="src" path="third_party/webrtc/examples/unityplugin/java/src"/>
     <classpathentry kind="src" path="third_party/webrtc/modules/audio_device/android/java/src"/>
     <classpathentry kind="src" path="third_party/webrtc/rtc_base/java/src"/>

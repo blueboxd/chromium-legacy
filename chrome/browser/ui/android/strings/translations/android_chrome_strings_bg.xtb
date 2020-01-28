@@ -134,6 +134,7 @@
 <translation id="1994173015038366702">URL адрес на сайт</translation>
 <translation id="2000419248597011803">Изпраща някои „бисквитки“ и заявките за търсене от адресната лента и полето за търсене до стандартната ви търсеща машина</translation>
 <translation id="2002537628803770967">Кредитни карти и адреси посредством Google Pay</translation>
+<translation id="2012973609889389923">Бърз сайт</translation>
 <translation id="2013642289801508067">{FILE_COUNT,plural, =1{# файл}other{# файла}}</translation>
 <translation id="2017836877785168846">Изчиства историята и автоматичните довършвания в адресната лента.</translation>
 <translation id="2021896219286479412">Контроли за сайтове на цял екран</translation>
@@ -306,6 +307,7 @@
 <translation id="3298243779924642547">Олекотена</translation>
 <translation id="3303414029551471755">Искате ли да продължите с изтеглянето на съдържанието?</translation>
 <translation id="3306398118552023113">Това приложение се изпълнява в Chrome</translation>
+<translation id="3312292613668865961">Извеждане на запитване, преди да се разреши на сайтовете да осъществят достъп до устройствата и данните ви за виртуална реалност (препоръчително)</translation>
 <translation id="3315103659806849044">Понастоящем персонализирате настройките си за синхронизиране и за услугите на Google. За да включите синхронизирането, докоснете бутона „Потвърждаване“ в долната част на екрана. Навигиране нагоре</translation>
 <translation id="3328801116991980348">Информация за сайта</translation>
 <translation id="3333961966071413176">Всички контакти</translation>
@@ -511,6 +513,7 @@
 <translation id="4915549754973153784"><ph name="BEGIN_LINK" />Получете помощ<ph name="END_LINK" />, докато се сканира за устройства…</translation>
 <translation id="4921180162323349895">{FILE_COUNT,plural, =1{# страница}other{# страници}}</translation>
 <translation id="4932247056774066048">Тъй като излизате от профил, управляван от <ph name="DOMAIN_NAME" />, данните ви в Chrome ще бъдат изтрити от това устройство. Те ще останат в профила ви в Google.</translation>
+<translation id="4935305910887312910">Извеждане на запитване, преди да се разреши на сайтовете да получат позицията на камерата или да картографират стаята ви (препоръчително)</translation>
 <translation id="4943703118917034429">Виртуална реалност</translation>
 <translation id="4943872375798546930">Няма резултати</translation>
 <translation id="4958708863221495346"><ph name="URL_OF_THE_CURRENT_TAB" /> споделя екрана ви</translation>
@@ -687,7 +690,6 @@
 <translation id="6201345951596836663">Връзката е копирана</translation>
 <translation id="6206551242102657620">Връзката е защитена. Информация за сайта</translation>
 <translation id="6210748933810148297">Не сте <ph name="EMAIL" />?</translation>
-<translation id="6216432067784365534">Опции за <ph name="NAME_OF_LIST_ITEM" /></translation>
 <translation id="6221633008163990886">Отключете, за да експортирате паролите си</translation>
 <translation id="6232535412751077445">Активирането на „Do Not Track“ означава, че с трафика ви на сърфиране ще се подава заявка. Ефектите зависят от това, дали уебсайтът ще отговори на нея и как ще я изтълкува.
 
@@ -733,7 +735,6 @@
 <translation id="6534565668554028783">Google не отговаря твърде дълго време</translation>
 <translation id="6538442820324228105">Изтеглено: <ph name="GBS" /> ГБ</translation>
 <translation id="6539092367496845964">Нещо се обърка. Опитайте пак по-късно.</translation>
-<translation id="654446541061731451">Изберете раздел за излъчване</translation>
 <translation id="6545017243486555795">Изчистване на всички данни</translation>
 <translation id="6545864417968258051">Сканиране за устройства с Bluetooth</translation>
 <translation id="6560414384669816528">Търсене със Sogou</translation>
@@ -744,6 +745,7 @@
 <translation id="6573431926118603307">Тук ще се показват разделите, които сте отворили в Chrome на другите си устройства.</translation>
 <translation id="6583199322650523874">Запазване на отметка към текущата страница</translation>
 <translation id="6593061639179217415">Настолен сайт</translation>
+<translation id="6597891566292541626">Поставете QR кода/баркода в тази рамка.</translation>
 <translation id="6600954340915313787">Копирано в Chrome</translation>
 <translation id="6608650720463149374"><ph name="GIGABYTES" /> ГБ</translation>
 <translation id="6612358246767739896">Защитено съдържание</translation>
@@ -953,6 +955,7 @@
 <translation id="8109613176066109935">Включете синхронизирането, за да получите отметките си на всичките си устройства</translation>
 <translation id="8110087112193408731">Искате ли активността ви в Chrome да се показва в „Дигитално благополучие“?</translation>
 <translation id="8116925261070264013">Заглушени</translation>
+<translation id="8127542551745560481">Редактиране на началната страница</translation>
 <translation id="813082847718468539">Преглед на информацията за сайта</translation>
 <translation id="8156139159503939589">Какви езици четете?</translation>
 <translation id="8168435359814927499">Съдържание</translation>
@@ -1024,8 +1027,8 @@
 <translation id="8676374126336081632">Изчистване на въведеното</translation>
 <translation id="8687353297350450808">{N_BARS,plural, =1{Сила на сигнала: # чертичка}other{Сила на сигнала: # чертички}}</translation>
 <translation id="868929229000858085">Търсене в контактите ви</translation>
+<translation id="8698438463325761328">Блокиране на сайтовете, така че да не осъществят достъп до устройствата и данните за виртуална реалност</translation>
 <translation id="869891660844655955">Дата на валидност</translation>
-<translation id="8719023831149562936">Текущият раздел не може да се излъчи</translation>
 <translation id="8728487861892616501">С използването на това приложение приемате <ph name="BEGIN_LINK1" />Общите условия<ph name="END_LINK1" /> и <ph name="BEGIN_LINK2" />Съобщението за поверителност<ph name="END_LINK2" /> на Chrome, както и <ph name="BEGIN_LINK3" />Съобщението за поверителност за профили в Google, управлявани чрез Family Link<ph name="END_LINK3" />.</translation>
 <translation id="8748850008226585750">Съдържанието е скрито</translation>
 <translation id="8751914237388039244">Изберете изображение</translation>
@@ -1041,6 +1044,7 @@
 <translation id="883806473910249246">При изтеглянето на съдържанието възникна грешка.</translation>
 <translation id="8840953339110955557">Тази страница може да се различава от онлайн версията.</translation>
 <translation id="8847988622838149491">USB</translation>
+<translation id="884828189055900810">Блокиране на сайтовете, така че да не получават позицията на камерата и да не картографират стаята ви</translation>
 <translation id="8853345339104747198">„<ph name="TAB_TITLE" />“ – раздел</translation>
 <translation id="885701979325669005">Хранилище</translation>
 <translation id="889338405075704026">Към настройките за Chrome</translation>
@@ -1048,6 +1052,7 @@
 <translation id="8909135823018751308">Споделяне…</translation>
 <translation id="8912362522468806198">Профил в Google</translation>
 <translation id="8920114477895755567">Изчакват се подробности за родителите.</translation>
+<translation id="8921772741368021346"><ph name="POSITION" />/<ph name="DURATION" /></translation>
 <translation id="8922289737868596582">Изтеглете страниците чрез бутона „Още опции“, за да ги използвате офлайн</translation>
 <translation id="8926666909099850184">Функцията за NFC е изключена на това устройство. Включете я от <ph name="BEGIN_LINK" />настройките на Android<ph name="END_LINK" />.</translation>
 <translation id="8937772741022875483">Искате ли активността ви в Chrome да се премахне от „Дигитално благополучие“?</translation>

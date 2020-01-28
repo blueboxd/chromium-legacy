@@ -64,7 +64,7 @@ void PasswordManagerInternalsWebUIBrowserTest::OpenInternalsPageWithBrowser(
   url_string += chrome::kChromeUIPasswordManagerInternalsHost;
   ui_test_utils::NavigateToURLWithDisposition(
       browser, GURL(url_string), disposition,
-      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
   controller_ = static_cast<PasswordManagerInternalsUI*>(
       GetWebContents()->GetWebUI()->GetController());
 }

@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/metrics/histogram_macros.h"
+#include "base/stl_util.h"
 #include "base/strings/strcat.h"
 #include "base/trace_event/trace_event.h"
 #include "cc/base/rolling_time_delta_history.h"
@@ -21,7 +22,7 @@ using BlinkBreakdown = CompositorFrameReporter::BlinkBreakdown;
 using VizBreakdown = CompositorFrameReporter::VizBreakdown;
 
 constexpr int kMissedFrameReportTypeCount =
-    static_cast<int>(CompositorFrameReporter::MissedFrameReportTypes::
+    static_cast<int>(CompositorFrameReporter::MissedFrameReportType::
                          kMissedFrameReportTypeCount);
 constexpr int kStageTypeCount = static_cast<int>(StageType::kStageTypeCount);
 constexpr int kAllBreakdownCount =
@@ -111,17 +112,15 @@ constexpr const char* GetStageName(int stage_type_index) {
   }
 }
 
-// Names for CompositorFrameReporter::MissedFrameReportTypes, which should be
+// Names for CompositorFrameReporter::MissedFrameReportType, which should be
 // updated in case of changes to the enum.
-constexpr const char* kReportTypeNames[]{"", "MissedFrame.",
-                                         "MissedFrameLatencyIncrease."};
+constexpr const char* kReportTypeNames[]{"", "MissedFrame."};
 
-static_assert(sizeof(kReportTypeNames) / sizeof(kReportTypeNames[0]) ==
-                  kMissedFrameReportTypeCount,
+static_assert(base::size(kReportTypeNames) == kMissedFrameReportTypeCount,
               "Compositor latency report types has changed.");
 
-// This value should be recalculate in case of changes to the number of values
-// in CompositorFrameReporter::MissedFrameReportTypes or in
+// This value should be recalculated in case of changes to the number of values
+// in CompositorFrameReporter::MissedFrameReportType or in
 // CompositorFrameReporter::StageType
 constexpr int kMaxHistogramIndex = kMissedFrameReportTypeCount *
                                    kFrameSequenceTrackerTypeCount *
@@ -212,7 +211,7 @@ void CompositorFrameReporter::EndCurrentStage(base::TimeTicks end_time) {
 }
 
 void CompositorFrameReporter::MissedSubmittedFrame() {
-  submitted_frame_missed_deadline_ = true;
+  report_type_ = MissedFrameReportType::kMissedFrame;
 }
 
 void CompositorFrameReporter::TerminateFrame(
@@ -291,7 +290,9 @@ void CompositorFrameReporter::TerminateReporter() {
   // event, so skip emitting the end event, too.
   if (!stage_history_.empty()) {
     const char* submission_status_str =
-        submitted_frame_missed_deadline_ ? "missed_frame" : "non_missed_frame";
+        report_type_ == MissedFrameReportType::kMissedFrame
+            ? "missed_frame"
+            : "non_missed_frame";
     TRACE_EVENT_NESTABLE_ASYNC_END_WITH_TIMESTAMP2(
         "cc,benchmark", "PipelineReporter", TRACE_ID_LOCAL(this),
         frame_termination_time_, "termination_status", termination_status_str,
@@ -304,58 +305,46 @@ void CompositorFrameReporter::TerminateReporter() {
     stage_history_.emplace_back(StageType::kTotalLatency,
                                 stage_history_.front().start_time,
                                 stage_history_.back().end_time);
-    ReportStageHistograms(submitted_frame_missed_deadline_);
+    ReportStageHistograms();
   }
 }
 
-void CompositorFrameReporter::ReportStageHistograms(bool missed_frame) const {
-  CompositorFrameReporter::MissedFrameReportTypes report_type =
-      missed_frame
-          ? CompositorFrameReporter::MissedFrameReportTypes::kMissedFrame
-          : CompositorFrameReporter::MissedFrameReportTypes::kNonMissedFrame;
-
+void CompositorFrameReporter::ReportStageHistograms() const {
   for (const StageData& stage : stage_history_) {
-    ReportStageHistogramWithBreakdown(report_type, stage);
+    ReportStageHistogramWithBreakdown(stage);
 
     for (const auto& frame_sequence_tracker_type : *active_trackers_) {
       // Report stage breakdowns.
-      ReportStageHistogramWithBreakdown(report_type, stage,
-                                        frame_sequence_tracker_type);
+      ReportStageHistogramWithBreakdown(stage, frame_sequence_tracker_type);
     }
   }
   if (latency_ukm_reporter_) {
-    latency_ukm_reporter_->ReportLatencyUkm(missed_frame, stage_history_,
+    latency_ukm_reporter_->ReportLatencyUkm(report_type_, stage_history_,
                                             active_trackers_, viz_breakdown_);
   }
 }
 
 void CompositorFrameReporter::ReportStageHistogramWithBreakdown(
-    CompositorFrameReporter::MissedFrameReportTypes report_type,
     const CompositorFrameReporter::StageData& stage,
     FrameSequenceTrackerType frame_sequence_tracker_type) const {
   if (!ShouldReportLatencyMetricsForSequenceType(frame_sequence_tracker_type))
     return;
   base::TimeDelta stage_delta = stage.end_time - stage.start_time;
-  ReportHistogram(report_type, frame_sequence_tracker_type,
+  ReportHistogram(frame_sequence_tracker_type,
                   static_cast<int>(stage.stage_type), stage_delta);
   switch (stage.stage_type) {
-    case StageType::kSendBeginMainFrameToCommit: {
-      ReportBlinkBreakdowns(report_type, stage.start_time,
-                            frame_sequence_tracker_type);
+    case StageType::kSendBeginMainFrameToCommit:
+      ReportBlinkBreakdowns(stage.start_time, frame_sequence_tracker_type);
       break;
-    }
-    case StageType::kSubmitCompositorFrameToPresentationCompositorFrame: {
-      ReportVizBreakdowns(report_type, stage.start_time,
-                          frame_sequence_tracker_type);
+    case StageType::kSubmitCompositorFrameToPresentationCompositorFrame:
+      ReportVizBreakdowns(stage.start_time, frame_sequence_tracker_type);
       break;
-    }
     default:
       break;
   }
 }
 
 void CompositorFrameReporter::ReportBlinkBreakdowns(
-    CompositorFrameReporter::MissedFrameReportTypes report_type,
     base::TimeTicks start_time,
     FrameSequenceTrackerType frame_sequence_tracker_type) const {
   std::vector<std::pair<BlinkBreakdown, base::TimeDelta>> breakdowns = {
@@ -375,14 +364,13 @@ void CompositorFrameReporter::ReportBlinkBreakdowns(
        begin_main_frame_start_ - start_time}};
 
   for (const auto& pair : breakdowns) {
-    ReportHistogram(report_type, frame_sequence_tracker_type,
+    ReportHistogram(frame_sequence_tracker_type,
                     kBlinkBreakdownInitialIndex + static_cast<int>(pair.first),
                     pair.second);
   }
 }
 
 void CompositorFrameReporter::ReportVizBreakdowns(
-    CompositorFrameReporter::MissedFrameReportTypes report_type,
     base::TimeTicks start_time,
     FrameSequenceTrackerType frame_sequence_tracker_type) const {
   // Check if viz_breakdown is set. Testing indicates that sometimes the
@@ -395,7 +383,7 @@ void CompositorFrameReporter::ReportVizBreakdowns(
   base::TimeDelta submit_to_receive_compositor_frame_delta =
       viz_breakdown_.received_compositor_frame_timestamp - start_time;
   ReportHistogram(
-      report_type, frame_sequence_tracker_type,
+      frame_sequence_tracker_type,
       kVizBreakdownInitialIndex +
           static_cast<int>(VizBreakdown::kSubmitToReceiveCompositorFrame),
       submit_to_receive_compositor_frame_delta);
@@ -406,7 +394,7 @@ void CompositorFrameReporter::ReportVizBreakdowns(
       viz_breakdown_.draw_start_timestamp -
       viz_breakdown_.received_compositor_frame_timestamp;
   ReportHistogram(
-      report_type, frame_sequence_tracker_type,
+      frame_sequence_tracker_type,
       kVizBreakdownInitialIndex +
           static_cast<int>(VizBreakdown::kReceivedCompositorFrameToStartDraw),
       received_compositor_frame_to_start_draw_delta);
@@ -417,7 +405,7 @@ void CompositorFrameReporter::ReportVizBreakdowns(
       viz_breakdown_.swap_timings.swap_end -
       viz_breakdown_.draw_start_timestamp;
 
-  ReportHistogram(report_type, frame_sequence_tracker_type,
+  ReportHistogram(frame_sequence_tracker_type,
                   kVizBreakdownInitialIndex +
                       static_cast<int>(VizBreakdown::kStartDrawToSwapEnd),
                   start_draw_to_swap_end_delta);
@@ -427,18 +415,17 @@ void CompositorFrameReporter::ReportVizBreakdowns(
       viz_breakdown_.swap_timings.swap_end;
 
   ReportHistogram(
-      report_type, frame_sequence_tracker_type,
+      frame_sequence_tracker_type,
       kVizBreakdownInitialIndex +
           static_cast<int>(VizBreakdown::kSwapEndToPresentationCompositorFrame),
       swap_end_to_presentation_compositor_frame_delta);
 }
 
 void CompositorFrameReporter::ReportHistogram(
-    CompositorFrameReporter::MissedFrameReportTypes report_type,
     FrameSequenceTrackerType frame_sequence_tracker_type,
     const int stage_type_index,
     base::TimeDelta time_delta) const {
-  const int report_type_index = static_cast<int>(report_type);
+  const int report_type_index = static_cast<int>(report_type_);
   const int frame_sequence_tracker_type_index =
       static_cast<int>(frame_sequence_tracker_type);
   const int histogram_index =

@@ -8,7 +8,6 @@ import static org.chromium.chrome.browser.util.ConversionUtils.BYTES_PER_MEGABYT
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.SysUtils;
-import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.ui.base.DeviceFormFactor;
 
 /** Provides the configuration params required by the download home UI. */
@@ -80,6 +79,8 @@ public class DownloadManagerUiConfig {
 
         private static final int IN_MEMORY_THUMBNAIL_CACHE_SIZE_BYTES = 15 * BYTES_PER_MEGABYTE;
 
+        private static final float MAX_THUMBNAIL_SCALE_FACTOR = 1.5f; /* hdpi scale factor. */
+
         private boolean mIsOffTheRecord;
         private boolean mIsSeparateActivity;
         private boolean mUseGenericViewTypes;
@@ -87,18 +88,15 @@ public class DownloadManagerUiConfig {
         private boolean mUseNewDownloadPath;
         private boolean mUseNewDownloadPathThumbnails;
         private int mInMemoryThumbnailCacheSizeBytes = IN_MEMORY_THUMBNAIL_CACHE_SIZE_BYTES;
-        private float mMaxThumbnailScaleFactor = 1.5f; /* hdpi scale factor. */
-        private long mJustNowThresholdSeconds;
+        private float mMaxThumbnailScaleFactor = MAX_THUMBNAIL_SCALE_FACTOR;
+        private long mJustNowThresholdSeconds = JUST_NOW_THRESHOLD_SECONDS;
         private boolean mSupportsGrouping;
         private boolean mShowPaginationHeaders;
 
         public Builder() {
-            readParamsFromFinch();
             mSupportFullWidthImages = !DeviceFormFactor.isNonMultiDisplayContextOnTablet(
                     ContextUtils.getApplicationContext());
             mUseGenericViewTypes = SysUtils.isLowEndDevice();
-            mUseNewDownloadPath = ChromeFeatureList.isEnabled(
-                    ChromeFeatureList.DOWNLOAD_OFFLINE_CONTENT_PROVIDER);
         }
 
         public Builder setIsOffTheRecord(boolean isOffTheRecord) {
@@ -146,14 +144,13 @@ public class DownloadManagerUiConfig {
             return this;
         }
 
-        public DownloadManagerUiConfig build() {
-            return new DownloadManagerUiConfig(this);
+        public Builder setSupportsGrouping(boolean supportsGrouping) {
+            mSupportsGrouping = supportsGrouping;
+            return this;
         }
 
-        private void readParamsFromFinch() {
-            mJustNowThresholdSeconds = JUST_NOW_THRESHOLD_SECONDS;
-            mSupportsGrouping =
-                    ChromeFeatureList.isEnabled(ChromeFeatureList.CONTENT_INDEXING_DOWNLOAD_HOME);
+        public DownloadManagerUiConfig build() {
+            return new DownloadManagerUiConfig(this);
         }
     }
 }

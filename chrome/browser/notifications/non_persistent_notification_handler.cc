@@ -11,8 +11,8 @@
 #include "chrome/browser/notifications/notification_common.h"
 #include "chrome/browser/notifications/notification_permission_context.h"
 #include "chrome/browser/permissions/permission_uma_util.h"
-#include "chrome/browser/permissions/permission_util.h"
 #include "chrome/browser/profiles/profile.h"
+#include "components/permissions/permission_util.h"
 #include "content/public/browser/notification_event_dispatcher.h"
 
 #if !defined(OS_ANDROID)
@@ -96,7 +96,7 @@ void NonPersistentNotificationHandler::DidDispatchClickEvent(
 void NonPersistentNotificationHandler::DisableNotifications(
     Profile* profile,
     const GURL& origin) {
-  PermissionUtil::ScopedRevocationReporter scoped_revocation_reporter(
+  PermissionUmaUtil::ScopedRevocationReporter scoped_revocation_reporter(
       profile, origin, origin, ContentSettingsType::NOTIFICATIONS,
       PermissionSourceUI::INLINE_SETTINGS);
   NotificationPermissionContext::UpdatePermission(profile, origin,

@@ -112,6 +112,7 @@
 <translation id="2352467521400612932">Налаштування стилуса</translation>
 <translation id="2354174487190027830">Активація <ph name="NAME" /></translation>
 <translation id="2359808026110333948">Продовжити</translation>
+<translation id="2364154243880592194">Панель статусу, час – <ph name="TIME" />, рівень заряду акумулятора – <ph name="BATTERY" />. Натисніть клавішу пошуку + стрілку ліворуч, щоб перейти в центр сповіщень.</translation>
 <translation id="2365393535144473978">Якщо ввімкнути мобільне передавання даних, увімкнеться Bluetooth.</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="2412593942846481727">Доступне оновлення</translation>
@@ -335,6 +336,7 @@
 <translation id="5669267381087807207">Активація</translation>
 <translation id="5673434351075758678">Після синхронізації налаштувань мову змінено. Попередня мова: <ph name="FROM_LOCALE" />, нова: <ph name="TO_LOCALE" />.</translation>
 <translation id="5682642926269496722">Google Асистент недоступний для поточного облікового запису користувача.</translation>
+<translation id="5689633613396158040">У нічному режимі зручніше переглядати або читати контент на екрані в умовах тьмяного освітлення. Торкніться, щоб змінити час увімкнення нічного режиму або вимкнути його повністю.</translation>
 <translation id="5691772641933328258">Відбиток не розпізнано</translation>
 <translation id="5710450975648804523">Режим "Не турбувати" ввімкнено</translation>
 <translation id="573413375004481890">Цей пристрій не може підтримувати всі екрани, тому один із них відключено</translation>
@@ -514,6 +516,7 @@
 <translation id="8142441511840089262">Двічі натиснути</translation>
 <translation id="8142699993796781067">Приватна мережа</translation>
 <translation id="8152092012181020186">Щоб закрити вкладку, натисніть Ctrl + W.</translation>
+<translation id="8155007568264258537"><ph name="FEATURE_NAME" /> Цим налаштуванням керує адміністратор.</translation>
 <translation id="8167567890448493835">Використовується: <ph name="LOCALE_NAME" /></translation>
 <translation id="8190698733819146287">Налаштувати мови та введення тексту...</translation>
 <translation id="8192202700944119416">Сповіщення сховано.</translation>
@@ -595,7 +598,6 @@
 <translation id="9193626018745640770">Трансляція на невідомий пристрій</translation>
 <translation id="9194617393863864469">Увійти як інший користувач…</translation>
 <translation id="9201374708878217446"><ph name="CONNECTION_STATUS" />. Мережею керує адміністратор</translation>
-<translation id="9205817095063786319">Пристроєм керує домен <ph name="DOMAIN" /></translation>
 <translation id="9210037371811586452">Вихід з уніфікованого режиму робочого стола</translation>
 <translation id="9211681782751733685">До повного зарядження акумулятора залишилося <ph name="TIME_REMAINING" />.</translation>
 <translation id="9215934040295798075">Вибрати фоновий малюнок</translation>

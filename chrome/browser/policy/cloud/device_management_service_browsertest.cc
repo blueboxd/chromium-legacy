@@ -142,7 +142,7 @@ class DeviceManagementServiceIntegrationTest
             oauth_token, GetFactory(),
             base::Bind(&DeviceManagementServiceIntegrationTest::OnJobDone,
                        base::Unretained(this)),
-            base::DoNothing());
+            base::DoNothing(), base::DoNothing());
     config->SetRequestPayload(payload);
     return service_->CreateJob(std::move(config));
   }

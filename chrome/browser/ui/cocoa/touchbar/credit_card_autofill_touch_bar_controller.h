@@ -7,8 +7,6 @@
 
 #import <Cocoa/Cocoa.h>
 
-#import "ui/base/cocoa/touch_bar_forward_declarations.h"
-
 namespace autofill {
 class AutofillPopupController;
 }

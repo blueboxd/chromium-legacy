@@ -56,10 +56,11 @@ void FakeMultiDeviceSetupClient::InvokePendingGetEligibleHostDevicesCallback(
 }
 
 void FakeMultiDeviceSetupClient::InvokePendingSetHostDeviceCallback(
-    const std::string& expected_device_id,
+    const std::string& expected_instance_id_or_legacy_device_id,
     const std::string& expected_auth_token,
     bool success) {
-  DCHECK_EQ(expected_device_id, std::get<0>(set_host_args_queue_.front()));
+  DCHECK_EQ(expected_instance_id_or_legacy_device_id,
+            std::get<0>(set_host_args_queue_.front()));
   DCHECK_EQ(expected_auth_token, std::get<1>(set_host_args_queue_.front()));
   std::move(std::get<2>(set_host_args_queue_.front())).Run(success);
   set_host_args_queue_.pop();
@@ -100,10 +101,11 @@ void FakeMultiDeviceSetupClient::GetEligibleHostDevices(
 }
 
 void FakeMultiDeviceSetupClient::SetHostDevice(
-    const std::string& host_device_id,
+    const std::string& host_instance_id_or_legacy_device_id,
     const std::string& auth_token,
     mojom::MultiDeviceSetup::SetHostDeviceCallback callback) {
-  set_host_args_queue_.emplace(host_device_id, auth_token, std::move(callback));
+  set_host_args_queue_.emplace(host_instance_id_or_legacy_device_id, auth_token,
+                               std::move(callback));
 }
 
 void FakeMultiDeviceSetupClient::RemoveHostDevice() {

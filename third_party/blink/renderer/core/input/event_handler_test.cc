@@ -1905,7 +1905,8 @@ TEST_F(EventHandlerSimTest, TestUpdateHoverAfterJSScrollAtBeginFrame) {
       GetDocument().GetLayoutView()->GetScrollableArea();
   bool finished = false;
   scrollable_area->SetScrollOffset(
-      ScrollOffset(0, 1000), kProgrammaticScroll, kScrollBehaviorSmooth,
+      ScrollOffset(0, 1000), kProgrammaticScroll,
+      mojom::blink::ScrollIntoViewParams::Behavior::kSmooth,
       ScrollableArea::ScrollCallback(
           base::BindOnce([](bool* finished) { *finished = true; }, &finished)));
   Compositor().BeginFrame();

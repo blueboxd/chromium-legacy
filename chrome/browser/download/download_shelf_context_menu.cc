@@ -17,9 +17,12 @@
 #include "chrome/browser/ui/pdf/adobe_reader_info_win.h"
 #endif
 
+using MixedContentStatus = download::DownloadItem::MixedContentStatus;
+
 bool DownloadShelfContextMenu::WantsContextMenu(
     DownloadUIModel* download_model) {
-  return !download_model->IsDangerous() || download_model->MightBeMalicious();
+  return !download_model->IsDangerous() || download_model->MightBeMalicious() ||
+         download_model->IsMixedContent();
 }
 
 DownloadShelfContextMenu::~DownloadShelfContextMenu() {
@@ -42,12 +45,14 @@ ui::SimpleMenuModel* DownloadShelfContextMenu::GetMenuModel() {
 
   bool is_download = download_->download() != nullptr;
 
-  if (download_->GetDangerType() ==
-          download::DOWNLOAD_DANGER_TYPE_BLOCKED_PASSWORD_PROTECTED ||
-      download_->GetDangerType() ==
-          download::DOWNLOAD_DANGER_TYPE_BLOCKED_TOO_LARGE ||
-      download_->GetDangerType() ==
-          download::DOWNLOAD_DANGER_TYPE_SENSITIVE_CONTENT_BLOCK) {
+  if (download_->IsMixedContent()) {
+    model = GetMixedContentDownloadMenuModel();
+  } else if (download_->GetDangerType() ==
+                 download::DOWNLOAD_DANGER_TYPE_BLOCKED_PASSWORD_PROTECTED ||
+             download_->GetDangerType() ==
+                 download::DOWNLOAD_DANGER_TYPE_BLOCKED_TOO_LARGE ||
+             download_->GetDangerType() ==
+                 download::DOWNLOAD_DANGER_TYPE_SENSITIVE_CONTENT_BLOCK) {
     model = GetInterruptedMenuModel(is_download);
   } else if (download_->GetDangerType() ==
              download::DOWNLOAD_DANGER_TYPE_PROMPT_FOR_SCANNING) {
@@ -163,6 +168,9 @@ base::string16 DownloadShelfContextMenu::GetLabelForCommandId(
       break;
     case DownloadCommands::LEARN_MORE_INTERRUPTED:
       id = IDS_DOWNLOAD_MENU_LEARN_MORE_INTERRUPTED;
+      break;
+    case DownloadCommands::LEARN_MORE_MIXED_CONTENT:
+      id = IDS_DOWNLOAD_MENU_LEARN_MORE_MIXED_CONTENT;
       break;
     case DownloadCommands::COPY_TO_CLIPBOARD:
     case DownloadCommands::ANNOTATE:
@@ -380,4 +388,28 @@ ui::SimpleMenuModel* DownloadShelfContextMenu::GetDeepScanningMenuModel(
       DownloadCommands::CANCEL, GetLabelForCommandId(DownloadCommands::CANCEL));
 
   return deep_scanning_menu_model_.get();
+}
+
+ui::SimpleMenuModel*
+DownloadShelfContextMenu::GetMixedContentDownloadMenuModel() {
+  if (mixed_content_download_menu_model_)
+    return mixed_content_download_menu_model_.get();
+
+  mixed_content_download_menu_model_.reset(new ui::SimpleMenuModel(this));
+
+  if (download_->GetMixedContentStatus() == MixedContentStatus::WARN) {
+    mixed_content_download_menu_model_->AddItem(
+        DownloadCommands::DISCARD,
+        GetLabelForCommandId(DownloadCommands::DISCARD));
+  } else {
+    mixed_content_download_menu_model_->AddItem(
+        DownloadCommands::KEEP, GetLabelForCommandId(DownloadCommands::KEEP));
+  }
+
+  mixed_content_download_menu_model_->AddSeparator(ui::NORMAL_SEPARATOR);
+  mixed_content_download_menu_model_->AddItem(
+      DownloadCommands::LEARN_MORE_MIXED_CONTENT,
+      GetLabelForCommandId(DownloadCommands::LEARN_MORE_MIXED_CONTENT));
+
+  return mixed_content_download_menu_model_.get();
 }

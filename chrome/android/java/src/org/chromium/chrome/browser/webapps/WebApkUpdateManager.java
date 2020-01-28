@@ -46,7 +46,7 @@ public class WebApkUpdateManager implements WebApkUpdateDataFetcher.Observer, De
     // Maximum wait time for WebAPK update to be scheduled.
     private static final long UPDATE_TIMEOUT_MILLISECONDS = DateUtils.SECOND_IN_MILLIS * 30;
 
-    private final ChromeActivity mActivity;
+    private final ChromeActivity<?> mActivity;
 
     /** Whether updates are enabled. Some tests disable updates. */
     private static boolean sUpdatesEnabled = true;
@@ -70,7 +70,7 @@ public class WebApkUpdateManager implements WebApkUpdateDataFetcher.Observer, De
 
     @Inject
     public WebApkUpdateManager(
-            ChromeActivity activity, ActivityLifecycleDispatcher lifecycleDispatcher) {
+            ChromeActivity<?> activity, ActivityLifecycleDispatcher lifecycleDispatcher) {
         mActivity = activity;
         lifecycleDispatcher.register(this);
     }

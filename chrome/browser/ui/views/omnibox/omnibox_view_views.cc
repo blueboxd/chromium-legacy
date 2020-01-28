@@ -405,8 +405,6 @@ void OmniboxViewViews::RevertAll() {
 }
 
 void OmniboxViewViews::SetFocus(bool is_user_initiated) {
-  const bool already_focused = HasFocus();
-
   // Temporarily reveal the top-of-window views (if not already revealed) so
   // that the location bar view is visible and is considered focusable. When it
   // actually receives focus, ImmersiveFocusWatcher will add another lock to
@@ -436,17 +434,6 @@ void OmniboxViewViews::SetFocus(bool is_user_initiated) {
   // re-pressed. This occurs even if the omnibox is already focused and we
   // re-request focus (e.g. pressing ctrl-l twice).
   model()->ConsumeCtrlKey();
-
-  if (already_focused)
-    model()->ClearKeyword();
-
-  if (is_user_initiated) {
-    SelectAll(true);
-
-    // Only exit Query in Omnibox mode on focus command if the location bar was
-    // already focused to begin with, i.e. user presses Ctrl+L twice.
-    model()->Unelide(/*exit_query_in_omnibox=*/already_focused);
-  }
 }
 
 int OmniboxViewViews::GetTextWidth() const {

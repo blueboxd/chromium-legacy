@@ -264,7 +264,8 @@ void HeadlessAsyncDevTooledBrowserTest::RenderProcessExited(
 
   FinishAsynchronousTest();
   render_process_exited_ = true;
-  FAIL() << "Abnormal renderer termination";
+  FAIL() << "Abnormal renderer termination "
+         << "(status=" << status << ", exit_code=" << exit_code << ")";
 }
 
 void HeadlessAsyncDevTooledBrowserTest::RunTest() {

@@ -4,7 +4,7 @@
 
 #include "base/test/bind_test_util.h"
 #include "chrome/browser/web_applications/components/app_shortcut_observer.h"
-#include "chrome/browser/web_applications/components/web_app_helpers.h"
+#include "chrome/browser/web_applications/components/web_app_id.h"
 #include "chrome/browser/web_applications/test/test_app_shortcut_manager.h"
 #include "chrome/browser/web_applications/test/web_app_test.h"
 #include "testing/gtest/include/gtest/gtest.h"

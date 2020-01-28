@@ -32,8 +32,6 @@ import java.lang.annotation.RetentionPolicy;
  */
 public class DownloadForegroundService extends Service {
     private static final String TAG = "DownloadFg";
-    // Deprecated, remove this after M75.
-    private static final String KEY_PERSISTED_NOTIFICATION_ID = "PersistedNotificationId";
     private final IBinder mBinder = new LocalBinder();
 
     private NotificationManager mNotificationManager;
@@ -52,7 +50,6 @@ public class DownloadForegroundService extends Service {
         mNotificationManager =
                 (NotificationManager) ContextUtils.getApplicationContext().getSystemService(
                         Context.NOTIFICATION_SERVICE);
-        clearPersistedNotificationId();
     }
 
     /**
@@ -222,15 +219,6 @@ public class DownloadForegroundService extends Service {
         DownloadForegroundService getService() {
             return DownloadForegroundService.this;
         }
-    }
-
-
-    /**
-     * Clear stored value for the id of the notification pinned to the service.
-     */
-    @VisibleForTesting
-    static void clearPersistedNotificationId() {
-        ContextUtils.getAppSharedPreferences().edit().remove(KEY_PERSISTED_NOTIFICATION_ID).apply();
     }
 
     /** Methods for testing. */

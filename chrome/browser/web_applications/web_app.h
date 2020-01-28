@@ -14,7 +14,7 @@
 #include "base/containers/flat_set.h"
 #include "base/optional.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
-#include "chrome/browser/web_applications/components/web_app_helpers.h"
+#include "chrome/browser/web_applications/components/web_app_id.h"
 #include "chrome/common/web_application_info.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "url/gurl.h"

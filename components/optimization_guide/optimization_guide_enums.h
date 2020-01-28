@@ -111,9 +111,11 @@ enum class RaceNavigationFetchAttemptStatus {
   kRaceNavigationFetchURL,
   // The race was attempted for the host and URL of the current navigation.
   kRaceNavigationFetchHostAndURL,
+  // A race for the current navigation's URL is already in progress.
+  kRaceNavigationFetchAlreadyInProgress,
 
   // Add new values above this line.
-  kMaxValue = kRaceNavigationFetchHostAndURL,
+  kMaxValue = kRaceNavigationFetchAlreadyInProgress,
 };
 
 // The statuses for a prediction model in the prediction manager when requested

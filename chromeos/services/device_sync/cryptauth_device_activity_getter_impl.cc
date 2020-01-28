@@ -9,14 +9,17 @@
 
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/no_destructor.h"
 #include "base/stl_util.h"
 #include "base/time/time.h"
 #include "chromeos/components/multidevice/logging/logging.h"
 #include "chromeos/components/multidevice/software_feature.h"
 #include "chromeos/components/multidevice/software_feature_state.h"
+#include "chromeos/services/device_sync/async_execution_time_metrics_logger.h"
 #include "chromeos/services/device_sync/cryptauth_client.h"
 #include "chromeos/services/device_sync/cryptauth_key_bundle.h"
+#include "chromeos/services/device_sync/cryptauth_task_metrics_logger.h"
 #include "chromeos/services/device_sync/device_sync_type_converters.h"
 
 namespace chromeos {
@@ -27,11 +30,38 @@ namespace {
 
 // Timeout values for the asynchronous operations of fetching client app
 // metadata and making the network request.
-// TODO(https://crbug.com/933656): Tune this value.
+// TODO(https://crbug.com/933656): Use async execution time metrics to tune
+// these timeout values.
 constexpr base::TimeDelta kWaitingForClientAppMetadataTimeout =
     base::TimeDelta::FromSeconds(60);
 constexpr base::TimeDelta kWaitingForGetDevicesActivityStatusResponseTimeout =
-    base::TimeDelta::FromSeconds(10);
+    kMaxAsyncExecutionTime;
+
+void RecordClientAppMetadataFetchMetrics(const base::TimeDelta& execution_time,
+                                         CryptAuthAsyncTaskResult result) {
+  base::UmaHistogramCustomTimes(
+      "CryptAuth.DeviceSyncV2.DeviceActivityGetter.ExecutionTime."
+      "ClientAppMetadataFetch",
+      execution_time, base::TimeDelta::FromSeconds(1) /* min */,
+      kWaitingForClientAppMetadataTimeout /* max */, 100 /* buckets */);
+  LogCryptAuthAsyncTaskSuccessMetric(
+      "CryptAuth.DeviceSyncV2.DeviceActivityGetter.AsyncTaskResult."
+      "ClientAppMetadataFetch",
+      result);
+}
+
+void RecordGetDevicesActivityStatusMetrics(
+    const base::TimeDelta& execution_time,
+    CryptAuthApiCallResult result) {
+  LogAsyncExecutionTimeMetric(
+      "CryptAuth.DeviceSyncV2.DeviceActivityGetter.ExecutionTime."
+      "GetDevicesActivityStatus",
+      execution_time);
+  LogCryptAuthApiCallSuccessMetric(
+      "CryptAuth.DeviceSyncV2.DeviceActivityGetter.ApiCallResult."
+      "GetDevicesActivityStatus",
+      result);
+}
 
 }  // namespace
 
@@ -97,13 +127,12 @@ void CryptAuthDeviceActivityGetterImpl::SetState(State state) {
 
   PA_LOG(INFO) << "Transitioning from " << state_ << " to " << state;
   state_ = state;
+  last_state_change_timestamp_ = base::TimeTicks::Now();
 
   base::Optional<base::TimeDelta> timeout_for_state = GetTimeoutForState(state);
   if (!timeout_for_state)
     return;
 
-  // TODO(https://crbug.com/936273): Add metrics to track failure rates due to
-  // async timeouts.
   timer_->Start(FROM_HERE, *timeout_for_state,
                 base::BindOnce(&CryptAuthDeviceActivityGetterImpl::OnTimeout,
                                base::Unretained(this)));
@@ -126,7 +155,12 @@ void CryptAuthDeviceActivityGetterImpl::OnClientAppMetadataFetched(
     const base::Optional<cryptauthv2::ClientAppMetadata>& client_app_metadata) {
   DCHECK(state_ == State::kWaitingForClientAppMetadata);
 
-  if (!client_app_metadata) {
+  bool success = client_app_metadata.has_value();
+  RecordClientAppMetadataFetchMetrics(
+      base::TimeTicks::Now() - last_state_change_timestamp_,
+      success ? CryptAuthAsyncTaskResult::kSuccess
+              : CryptAuthAsyncTaskResult::kError);
+  if (!success) {
     OnAttemptError(NetworkRequestError::kUnknown);
     return;
   }
@@ -162,6 +196,10 @@ void CryptAuthDeviceActivityGetterImpl::OnGetDevicesActivityStatusSuccess(
     const cryptauthv2::GetDevicesActivityStatusResponse& response) {
   DCHECK(state_ == State::kWaitingForGetDevicesActivityStatusResponse);
 
+  RecordGetDevicesActivityStatusMetrics(
+      base::TimeTicks::Now() - last_state_change_timestamp_,
+      CryptAuthApiCallResult::kSuccess);
+
   DeviceActivityStatusResult device_activity_statuses;
 
   for (const cryptauthv2::DeviceActivityStatus& device_activity_status :
@@ -180,10 +218,32 @@ void CryptAuthDeviceActivityGetterImpl::OnGetDevicesActivityStatusSuccess(
 void CryptAuthDeviceActivityGetterImpl::OnGetDevicesActivityStatusFailure(
     NetworkRequestError error) {
   DCHECK(state_ == State::kWaitingForGetDevicesActivityStatusResponse);
+
+  RecordGetDevicesActivityStatusMetrics(
+      base::TimeTicks::Now() - last_state_change_timestamp_,
+      CryptAuthApiCallResultFromNetworkRequestError(error));
+
   OnAttemptError(error);
 }
 
 void CryptAuthDeviceActivityGetterImpl::OnTimeout() {
+  base::TimeDelta execution_time =
+      base::TimeTicks::Now() - last_state_change_timestamp_;
+  switch (state_) {
+    case State::kWaitingForClientAppMetadata:
+      RecordClientAppMetadataFetchMetrics(execution_time,
+                                          CryptAuthAsyncTaskResult::kTimeout);
+      break;
+    case State::kWaitingForGetDevicesActivityStatusResponse:
+      RecordGetDevicesActivityStatusMetrics(execution_time,
+                                            CryptAuthApiCallResult::kTimeout);
+      break;
+    default:
+      NOTREACHED();
+  }
+
+  PA_LOG(ERROR) << "Timed out in state " << state_ << ".";
+
   OnAttemptError(NetworkRequestError::kUnknown);
 }
 

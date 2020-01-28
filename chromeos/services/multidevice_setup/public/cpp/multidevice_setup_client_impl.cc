@@ -74,11 +74,11 @@ void MultiDeviceSetupClientImpl::GetEligibleHostDevices(
 }
 
 void MultiDeviceSetupClientImpl::SetHostDevice(
-    const std::string& host_device_id,
+    const std::string& host_instance_id_or_legacy_device_id,
     const std::string& auth_token,
     mojom::MultiDeviceSetup::SetHostDeviceCallback callback) {
-  multidevice_setup_remote_->SetHostDevice(host_device_id, auth_token,
-                                           std::move(callback));
+  multidevice_setup_remote_->SetHostDevice(host_instance_id_or_legacy_device_id,
+                                           auth_token, std::move(callback));
 }
 
 void MultiDeviceSetupClientImpl::RemoveHostDevice() {

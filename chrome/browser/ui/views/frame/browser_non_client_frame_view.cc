@@ -150,7 +150,7 @@ SkColor BrowserNonClientFrameView::GetFrameColor(
                  : ThemeProperties::COLOR_FRAME_INACTIVE;
 
   if (frame_->ShouldUseTheme())
-    return GetThemeProviderForProfile()->GetColor(color_id);
+    return GetFrameThemeProvider()->GetColor(color_id);
 
   // Use app theme color if it is set, but not for apps with tabs.
   web_app::AppBrowserController* app_controller =
@@ -253,7 +253,7 @@ bool BrowserNonClientFrameView::ShouldPaintAsActive(
 
 gfx::ImageSkia BrowserNonClientFrameView::GetFrameImage(
     BrowserFrameActiveState active_state) const {
-  const ui::ThemeProvider* tp = GetThemeProviderForProfile();
+  const ui::ThemeProvider* tp = GetFrameThemeProvider();
   const int frame_image_id = ShouldPaintAsActive(active_state)
                                  ? IDR_THEME_FRAME
                                  : IDR_THEME_FRAME_INACTIVE;
@@ -268,7 +268,7 @@ gfx::ImageSkia BrowserNonClientFrameView::GetFrameOverlayImage(
   if (browser_view_->IsIncognito() || !browser_view_->IsBrowserTypeNormal())
     return gfx::ImageSkia();
 
-  const ui::ThemeProvider* tp = GetThemeProviderForProfile();
+  const ui::ThemeProvider* tp = GetFrameThemeProvider();
   const int frame_overlay_image_id = ShouldPaintAsActive(active_state)
                                          ? IDR_THEME_FRAME_OVERLAY
                                          : IDR_THEME_FRAME_OVERLAY_INACTIVE;
@@ -387,10 +387,11 @@ int BrowserNonClientFrameView::GetSystemMenuY() const {
 }
 #endif
 
-const ui::ThemeProvider*
-BrowserNonClientFrameView::GetThemeProviderForProfile() const {
-  // Because the frame's accessor reads the ThemeProvider from the profile and
-  // not the widget, it can be called even before we're in a view hierarchy.
+const ui::ThemeProvider* BrowserNonClientFrameView::GetFrameThemeProvider()
+    const {
+  // The |frame_| theme provider is obtained from the profile rather than the
+  // widget. This is done this way because it can happen prior to being inserted
+  // into the view hierarchy.
   return frame_->GetThemeProvider();
 }
 

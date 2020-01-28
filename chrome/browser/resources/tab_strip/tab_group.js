@@ -10,11 +10,26 @@ export class TabGroupElement extends CustomElement {
     return `{__html_template__}`;
   }
 
+  connectedCallback() {
+    this.setAttribute('draggable', 'true');
+  }
+
+  /** @return {!HTMLElement} */
+  getDragImage() {
+    // TODO(johntlee): Update drag image.
+    return this;
+  }
+
+  /** @param {boolean} isDragging */
+  setDragging(isDragging) {
+    // TODO(johntlee): Update UI when dragging.
+  }
+
   /**
    * @param {!TabGroupVisualData} visualData
    */
   updateVisuals(visualData) {
-    this.shadowRoot.querySelector('#title').innerText = visualData.title;
+    this.$('#title').innerText = visualData.title;
     this.style.setProperty('--tabstrip-tab-group-color-rgb', visualData.color);
     this.style.setProperty(
         '--tabstrip-tab-group-text-color-rgb', visualData.textColor);

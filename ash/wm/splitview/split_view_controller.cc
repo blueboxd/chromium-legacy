@@ -470,10 +470,7 @@ void SplitViewController::SnapWindow(aura::Window* window,
         ->OnSelectorItemDragEnded(/*snap=*/true);
   }
 
-  // Update the divider position and window bounds before snapping a new
-  // window. Since the minimum size of |window| maybe larger than currently
-  // bounds in |snap_position|.
-  if (InTabletSplitViewMode()) {
+  if (split_view_type_ == SplitViewType::kTabletType) {
     divider_position_ = GetClosestFixedDividerPosition();
     UpdateSnappedWindowsAndDividerBounds();
   }
@@ -1389,8 +1386,6 @@ void SplitViewController::UpdateBlackScrim(
 }
 
 void SplitViewController::UpdateSnappedWindowsAndDividerBounds() {
-  DCHECK(InSplitViewMode());
-
   // Update the snapped windows' bounds.
   if (IsSnapped(left_window_)) {
     const WMEvent left_window_event(WM_EVENT_SNAP_LEFT);
@@ -1468,8 +1463,6 @@ void SplitViewController::UpdateDividerPosition(
 }
 
 int SplitViewController::GetClosestFixedDividerPosition() {
-  DCHECK(InSplitViewMode());
-
   // The values in |kFixedPositionRatios| represent the fixed position of the
   // center of the divider while |divider_position_| represent the origin of the
   // divider rectangle. So, before calling FindClosestFixedPositionRatio,

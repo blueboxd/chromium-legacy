@@ -269,12 +269,14 @@ class CredentialProviderWebDialogDelegate : public ui::WebDialogDelegate {
       const std::string& email_domains,
       const std::string& gcpw_endpoint_path,
       const std::string& additional_mdm_oauth_scopes,
+      const std::string& show_tos,
       HandleGcpwSigninCompleteResult signin_callback)
       : reauth_email_(reauth_email),
         reauth_gaia_id_(reauth_gaia_id),
         email_domains_(email_domains),
         gcpw_endpoint_path_(gcpw_endpoint_path),
         additional_mdm_oauth_scopes(additional_mdm_oauth_scopes),
+        show_tos_(show_tos),
         signin_callback_(std::move(signin_callback)) {}
 
   GURL GetDialogContentURL() const override {
@@ -298,6 +300,11 @@ class CredentialProviderWebDialogDelegate : public ui::WebDialogDelegate {
       base_url = net::AppendQueryParameter(
           base_url, credential_provider::kGcpwEndpointPathPromoParameter,
           gcpw_endpoint_path_);
+    }
+
+    if (!show_tos_.empty()) {
+      base_url = net::AppendQueryParameter(
+          base_url, credential_provider::kShowTosSwitch, show_tos_);
     }
 
     if (email_domains_.empty())
@@ -387,6 +394,9 @@ class CredentialProviderWebDialogDelegate : public ui::WebDialogDelegate {
   // Additional mdm oauth scopes flag value.
   const std::string additional_mdm_oauth_scopes;
 
+  // Show tos page in the login path when this parameter is set to 1.
+  const std::string show_tos_;
+
   // Callback that will be called when a valid sign in has been completed
   // through the dialog.
   mutable HandleGcpwSigninCompleteResult signin_callback_;
@@ -467,12 +477,15 @@ views::WebDialogView* ShowCredentialProviderSigninDialog(
       credential_provider::kGcpwEndpointPathSwitch);
   std::string additional_mdm_oauth_scopes = command_line.GetSwitchValueASCII(
       credential_provider::kGcpwAdditionalOauthScopes);
+  std::string show_tos =
+      command_line.GetSwitchValueASCII(credential_provider::kShowTosSwitch);
 
   // Delegate to handle the result of the sign in request. This will
   // delete itself eventually when it receives the OnDialogClosed call.
   auto delegate = std::make_unique<CredentialProviderWebDialogDelegate>(
       reauth_email, reauth_gaia_id, email_domains, gcpw_endpoint_path,
-      additional_mdm_oauth_scopes, std::move(signin_complete_handler));
+      additional_mdm_oauth_scopes, show_tos,
+      std::move(signin_complete_handler));
 
   // The web dialog view that will contain the web ui for the login screen.
   // This view will be automatically deleted by the widget that owns it when it

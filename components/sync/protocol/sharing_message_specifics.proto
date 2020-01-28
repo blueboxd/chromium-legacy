@@ -21,13 +21,6 @@ message SharingMessageSpecifics {
   optional string message_id = 1;
 
   message ChannelConfiguration {
-    message ServerChannelConfiguration {
-      // Where to send the message to.
-      optional string channel_id = 1;
-      // Optional cookie set on the original request.
-      optional bytes session_cookie = 2;
-    }
-
     message FCMChannelConfiguration {
       // FCM registration token of target device.
       optional string token = 1;
@@ -44,9 +37,9 @@ message SharingMessageSpecifics {
       // FCM channel configuration. Message will be delivered as a FCM message.
       FCMChannelConfiguration fcm = 1;
 
-      // Server channel configuration. Message will be delivered through server
-      // channel.
-      ServerChannelConfiguration server = 2;
+      // Opaque server channel configuration. Message will be delivered through
+      // server channel.
+      bytes server = 2;
     }
   }
 

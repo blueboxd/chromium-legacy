@@ -22,9 +22,16 @@ namespace security_interstitials {
 // Structure that passes parameters between the IO and UI thread when
 // interacting with the safe browsing blocking page.
 struct UnsafeResource {
-  // Passed a boolean indicating whether or not it is OK to proceed with
-  // loading an URL.
-  using UrlCheckCallback = base::RepeatingCallback<void(bool /*proceed*/)>;
+  // Passed booleans indicating whether or not it is OK to proceed with
+  // loading an URL and whether or not an interstitial was shown as a result of
+  // the URL load, |showed_interstitial| should only be set to true if the
+  // interstitial was shown as a direct result of the navigation to the URL.
+  // (e.g. it should be set to true if the interstitial will be shown from a
+  // navigation throttle triggered by this navigation, but to false if it will
+  // be shown using LoadPostCommitErrorPage).
+  using UrlCheckCallback =
+      base::RepeatingCallback<void(bool /*proceed*/,
+                                   bool /*showed_interstitial*/)>;
 
   UnsafeResource();
   UnsafeResource(const UnsafeResource& other);

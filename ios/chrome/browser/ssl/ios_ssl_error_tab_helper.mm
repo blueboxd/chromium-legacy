@@ -95,8 +95,10 @@ void IOSSSLErrorTabHelper::OnBlockingPageCommand(
   if (!message.GetString("command", &command)) {
     DLOG(WARNING) << "JS message parameter not found: command";
   } else {
-    blocking_page_for_currently_committed_navigation_->HandleScriptCommand(
-        message, url, user_is_interacting, sender_frame);
+    if (blocking_page_for_currently_committed_navigation_) {
+      blocking_page_for_currently_committed_navigation_->HandleScriptCommand(
+          message, url, user_is_interacting, sender_frame);
+    }
   }
 }
 

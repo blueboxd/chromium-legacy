@@ -11,6 +11,7 @@
 #include "base/test/mock_callback.h"
 #include "base/test/task_environment.h"
 #include "components/signin/public/identity_manager/access_token_info.h"
+#include "components/signin/public/identity_manager/consent_level.h"
 #include "components/signin/public/identity_manager/identity_test_environment.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -37,8 +38,8 @@ void OnAccessTokenFetchComplete(
 
 }  // namespace
 
-class PrimaryAccountAccessTokenFetcherTest : public testing::Test,
-                                             public IdentityManager::Observer {
+class PrimaryAccountAccessTokenFetcherTest
+    : public testing::TestWithParam<ConsentLevel> {
  public:
   using TestTokenCallback =
       StrictMock<MockCallback<AccessTokenFetcher::TokenCallback>>;
@@ -48,15 +49,24 @@ class PrimaryAccountAccessTokenFetcherTest : public testing::Test,
                            base::Time::Now() + base::TimeDelta::FromHours(1),
                            "id_token") {}
 
-  ~PrimaryAccountAccessTokenFetcherTest() override {}
+  ~PrimaryAccountAccessTokenFetcherTest() override = default;
 
   std::unique_ptr<PrimaryAccountAccessTokenFetcher> CreateFetcher(
       AccessTokenFetcher::TokenCallback callback,
-      PrimaryAccountAccessTokenFetcher::Mode mode) {
+      PrimaryAccountAccessTokenFetcher::Mode mode,
+      ConsentLevel consent) {
     std::set<std::string> scopes{"scope"};
     return std::make_unique<PrimaryAccountAccessTokenFetcher>(
         "test_consumer", identity_test_env_.identity_manager(), scopes,
-        std::move(callback), mode);
+        std::move(callback), mode, consent);
+  }
+
+  // Creates a fetcher with sync consent based on the test param.
+  std::unique_ptr<PrimaryAccountAccessTokenFetcher> CreateFetcher(
+      AccessTokenFetcher::TokenCallback callback,
+      PrimaryAccountAccessTokenFetcher::Mode mode) {
+    ConsentLevel consent = GetParam();
+    return CreateFetcher(std::move(callback), mode, consent);
   }
 
   IdentityTestEnvironment* identity_test_env() { return &identity_test_env_; }
@@ -79,7 +89,7 @@ class PrimaryAccountAccessTokenFetcherTest : public testing::Test,
   AccessTokenInfo access_token_info_;
 };
 
-TEST_F(PrimaryAccountAccessTokenFetcherTest, OneShotShouldReturnAccessToken) {
+TEST_P(PrimaryAccountAccessTokenFetcherTest, OneShotShouldReturnAccessToken) {
   TestTokenCallback callback;
 
   CoreAccountId account_id = SignIn();
@@ -98,7 +108,7 @@ TEST_F(PrimaryAccountAccessTokenFetcherTest, OneShotShouldReturnAccessToken) {
       access_token_info().id_token);
 }
 
-TEST_F(PrimaryAccountAccessTokenFetcherTest,
+TEST_P(PrimaryAccountAccessTokenFetcherTest,
        WaitAndRetryShouldReturnAccessToken) {
   TestTokenCallback callback;
 
@@ -119,7 +129,7 @@ TEST_F(PrimaryAccountAccessTokenFetcherTest,
       access_token_info().id_token);
 }
 
-TEST_F(PrimaryAccountAccessTokenFetcherTest, ShouldNotReplyIfDestroyed) {
+TEST_P(PrimaryAccountAccessTokenFetcherTest, ShouldNotReplyIfDestroyed) {
   TestTokenCallback callback;
 
   CoreAccountId account_id = SignIn();
@@ -138,7 +148,7 @@ TEST_F(PrimaryAccountAccessTokenFetcherTest, ShouldNotReplyIfDestroyed) {
       access_token_info().id_token);
 }
 
-TEST_F(PrimaryAccountAccessTokenFetcherTest, OneShotCallsBackWhenSignedOut) {
+TEST_P(PrimaryAccountAccessTokenFetcherTest, OneShotCallsBackWhenSignedOut) {
   base::RunLoop run_loop;
 
   // Signed out -> we should get called back.
@@ -152,7 +162,7 @@ TEST_F(PrimaryAccountAccessTokenFetcherTest, OneShotCallsBackWhenSignedOut) {
   run_loop.Run();
 }
 
-TEST_F(PrimaryAccountAccessTokenFetcherTest,
+TEST_P(PrimaryAccountAccessTokenFetcherTest,
        OneShotCallsBackWhenNoRefreshToken) {
   base::RunLoop run_loop;
 
@@ -169,7 +179,7 @@ TEST_F(PrimaryAccountAccessTokenFetcherTest,
   run_loop.Run();
 }
 
-TEST_F(PrimaryAccountAccessTokenFetcherTest,
+TEST_P(PrimaryAccountAccessTokenFetcherTest,
        WaitAndRetryNoCallbackWhenSignedOut) {
   TestTokenCallback callback;
 
@@ -180,11 +190,7 @@ TEST_F(PrimaryAccountAccessTokenFetcherTest,
       PrimaryAccountAccessTokenFetcher::Mode::kWaitUntilAvailable);
 }
 
-// Tests related to waiting for sign-in don't apply on ChromeOS (it doesn't have
-// that concept).
-#if !defined(OS_CHROMEOS)
-
-TEST_F(PrimaryAccountAccessTokenFetcherTest, ShouldWaitForSignIn) {
+TEST_P(PrimaryAccountAccessTokenFetcherTest, ShouldWaitForSignIn) {
   TestTokenCallback callback;
 
   // Not signed in, so this should wait for a sign-in to complete.
@@ -206,9 +212,7 @@ TEST_F(PrimaryAccountAccessTokenFetcherTest, ShouldWaitForSignIn) {
   EXPECT_FALSE(fetcher->access_token_request_retried());
 }
 
-#endif  // !OS_CHROMEOS
-
-TEST_F(PrimaryAccountAccessTokenFetcherTest, ShouldWaitForRefreshToken) {
+TEST_P(PrimaryAccountAccessTokenFetcherTest, ShouldWaitForRefreshToken) {
   TestTokenCallback callback;
 
   CoreAccountId account_id =
@@ -235,7 +239,7 @@ TEST_F(PrimaryAccountAccessTokenFetcherTest, ShouldWaitForRefreshToken) {
   EXPECT_FALSE(fetcher->access_token_request_retried());
 }
 
-TEST_F(PrimaryAccountAccessTokenFetcherTest,
+TEST_P(PrimaryAccountAccessTokenFetcherTest,
        ShouldIgnoreRefreshTokensForOtherAccounts) {
   TestTokenCallback callback;
 
@@ -254,7 +258,7 @@ TEST_F(PrimaryAccountAccessTokenFetcherTest,
   identity_test_env()->MakeAccountAvailable(account_id.ToString() + "3");
 }
 
-TEST_F(PrimaryAccountAccessTokenFetcherTest,
+TEST_P(PrimaryAccountAccessTokenFetcherTest,
        OneShotCanceledAccessTokenRequest) {
   CoreAccountId account_id = SignIn();
 
@@ -274,7 +278,7 @@ TEST_F(PrimaryAccountAccessTokenFetcherTest,
       GoogleServiceAuthError(GoogleServiceAuthError::REQUEST_CANCELED));
 }
 
-TEST_F(PrimaryAccountAccessTokenFetcherTest,
+TEST_P(PrimaryAccountAccessTokenFetcherTest,
        WaitAndRetryCanceledAccessTokenRequest) {
   TestTokenCallback callback;
 
@@ -299,7 +303,7 @@ TEST_F(PrimaryAccountAccessTokenFetcherTest,
       access_token_info().id_token);
 }
 
-TEST_F(PrimaryAccountAccessTokenFetcherTest,
+TEST_P(PrimaryAccountAccessTokenFetcherTest,
        ShouldRetryCanceledAccessTokenRequestOnlyOnce) {
   TestTokenCallback callback;
 
@@ -327,7 +331,7 @@ TEST_F(PrimaryAccountAccessTokenFetcherTest,
 
 #if !defined(OS_CHROMEOS)
 
-TEST_F(PrimaryAccountAccessTokenFetcherTest,
+TEST_P(PrimaryAccountAccessTokenFetcherTest,
        ShouldNotRetryCanceledAccessTokenRequestIfSignedOut) {
   TestTokenCallback callback;
 
@@ -352,7 +356,7 @@ TEST_F(PrimaryAccountAccessTokenFetcherTest,
 
 #endif  // !OS_CHROMEOS
 
-TEST_F(PrimaryAccountAccessTokenFetcherTest,
+TEST_P(PrimaryAccountAccessTokenFetcherTest,
        ShouldNotRetryCanceledAccessTokenRequestIfRefreshTokenRevoked) {
   TestTokenCallback callback;
 
@@ -373,7 +377,7 @@ TEST_F(PrimaryAccountAccessTokenFetcherTest,
   identity_test_env()->RemoveRefreshTokenForPrimaryAccount();
 }
 
-TEST_F(PrimaryAccountAccessTokenFetcherTest,
+TEST_P(PrimaryAccountAccessTokenFetcherTest,
        ShouldNotRetryFailedAccessTokenRequest) {
   TestTokenCallback callback;
 
@@ -394,5 +398,75 @@ TEST_F(PrimaryAccountAccessTokenFetcherTest,
   identity_test_env()->WaitForAccessTokenRequestIfNecessaryAndRespondWithError(
       GoogleServiceAuthError(GoogleServiceAuthError::SERVICE_UNAVAILABLE));
 }
+
+// The above tests all use a consented primary account, so they should all work
+// whether or not sync consent is required.
+INSTANTIATE_TEST_SUITE_P(All,
+                         PrimaryAccountAccessTokenFetcherTest,
+                         testing::Values(ConsentLevel::kNotRequired,
+                                         ConsentLevel::kSync));
+
+#if defined(OS_CHROMEOS)
+// Chrome OS can directly set the unconsented primary account during login,
+// so it has additional tests.
+TEST_F(PrimaryAccountAccessTokenFetcherTest,
+       UnconsentedPrimaryAccountWithSyncConsentNotRequired) {
+  TestTokenCallback callback;
+
+  // Simulate login.
+  identity_test_env()->MakeUnconsentedPrimaryAccountAvailable("me@gmail.com");
+
+  // Perform an immediate fetch with consent not required.
+  auto fetcher = CreateFetcher(
+      callback.Get(), PrimaryAccountAccessTokenFetcher::Mode::kImmediate,
+      ConsentLevel::kNotRequired);
+
+  // We should get called back with the token.
+  EXPECT_CALL(callback, Run(GoogleServiceAuthError::AuthErrorNone(),
+                            access_token_info()));
+  identity_test_env()->WaitForAccessTokenRequestIfNecessaryAndRespondWithToken(
+      access_token_info().token, access_token_info().expiration_time,
+      access_token_info().id_token);
+}
+
+TEST_F(PrimaryAccountAccessTokenFetcherTest,
+       UnconsentedPrimaryAccountWithSyncConsentRequired) {
+  TestTokenCallback callback;
+
+  // Simulate login.
+  identity_test_env()->MakeUnconsentedPrimaryAccountAvailable("me@gmail.com");
+
+  // Try an immediate fetch with consent required.
+  auto fetcher = CreateFetcher(
+      callback.Get(), PrimaryAccountAccessTokenFetcher::Mode::kImmediate,
+      ConsentLevel::kSync);
+
+  // No token request generated because the account isn't consented.
+  EXPECT_FALSE(identity_test_env()->IsAccessTokenRequestPending());
+}
+
+TEST_F(PrimaryAccountAccessTokenFetcherTest,
+       ShouldWaitForUnconsentedAccountLogin) {
+  TestTokenCallback callback;
+
+  // Not logged in, so the fetcher waits for an account to become available.
+  auto fetcher =
+      CreateFetcher(callback.Get(),
+                    PrimaryAccountAccessTokenFetcher::Mode::kWaitUntilAvailable,
+                    ConsentLevel::kNotRequired);
+  EXPECT_FALSE(identity_test_env()->IsAccessTokenRequestPending());
+
+  // Simulate login.
+  identity_test_env()->MakeUnconsentedPrimaryAccountAvailable("me@gmail.com");
+
+  // Once the access token request is fulfilled, we should get called back with
+  // the access token.
+  EXPECT_CALL(callback, Run(GoogleServiceAuthError::AuthErrorNone(),
+                            access_token_info()));
+  identity_test_env()->WaitForAccessTokenRequestIfNecessaryAndRespondWithToken(
+      access_token_info().token, access_token_info().expiration_time,
+      access_token_info().id_token);
+}
+#endif  // defined(OS_CHROMEOS)
 
 }  // namespace signin

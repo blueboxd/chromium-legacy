@@ -1785,9 +1785,10 @@ TEST_P(VisualViewportTest, visualViewportIsInert) {
   EXPECT_EQ(200, html->clientWidth());
   EXPECT_EQ(300, html->clientHeight());
 
-  visual_viewport.SetScrollOffset(ScrollOffset(10, 15), kProgrammaticScroll,
-                                  kScrollBehaviorInstant,
-                                  ScrollableArea::ScrollCallback());
+  visual_viewport.SetScrollOffset(
+      ScrollOffset(10, 15), kProgrammaticScroll,
+      mojom::blink::ScrollIntoViewParams::Behavior::kInstant,
+      ScrollableArea::ScrollCallback());
 
   ASSERT_EQ(10, visual_viewport.GetScrollOffset().Width());
   ASSERT_EQ(15, visual_viewport.GetScrollOffset().Height());
@@ -2058,9 +2059,10 @@ TEST_P(VisualViewportTest, ResizeAnchoringWithRootScroller) {
                                                   kProgrammaticScroll);
 
   VisualViewport& visual_viewport = WebView()->GetPage()->GetVisualViewport();
-  visual_viewport.SetScrollOffset(ScrollOffset(0, 400), kProgrammaticScroll,
-                                  kScrollBehaviorInstant,
-                                  ScrollableArea::ScrollCallback());
+  visual_viewport.SetScrollOffset(
+      ScrollOffset(0, 400), kProgrammaticScroll,
+      mojom::blink::ScrollIntoViewParams::Behavior::kInstant,
+      ScrollableArea::ScrollCallback());
 
   WebView()->MainFrameWidget()->Resize(IntSize(800, 500));
 
@@ -2528,7 +2530,8 @@ class VisualViewportScrollIntoViewTest : public VisualViewportSimTest {
     auto scroll_params = CreateScrollIntoViewParams(
         ScrollAlignment::kAlignToEdgeIfNeeded,
         ScrollAlignment::kAlignToEdgeIfNeeded, kProgrammaticScroll,
-        /*make_visible_in_visual_viewport=*/true, kScrollBehaviorInstant,
+        /*make_visible_in_visual_viewport=*/true,
+        mojom::blink::ScrollIntoViewParams::Behavior::kInstant,
         is_for_scroll_sequence);
     WebView().GetPage()->GetVisualViewport().ScrollIntoView(
         bottom_element->BoundingBox(), scroll_params);

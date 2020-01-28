@@ -20,6 +20,7 @@
 #include "components/viz/common/frame_sinks/copy_output_util.h"
 #include "components/viz/common/resources/resource_format_utils.h"
 #include "components/viz/common/skia_helper.h"
+#include "components/viz/common/viz_utils.h"
 #include "components/viz/service/display/dc_layer_overlay.h"
 #include "components/viz/service/display/gl_renderer_copier.h"
 #include "components/viz/service/display/output_surface_frame.h"
@@ -1450,8 +1451,14 @@ bool SkiaOutputSurfaceImplOnGpu::InitializeForGL() {
   api_ = current_gl->Api;
   gl_version_info_ = context->GetVersionInfo();
 
+  gl::GLSurfaceFormat format;
+  if (PreferRGB565ResourcesForDisplay() &&
+      !renderer_settings_.requires_alpha_channel) {
+    format.SetRGB565();
+  }
+
   if (dependency_->IsOffscreen()) {
-    gl_surface_ = dependency_->CreateGLSurface(nullptr);
+    gl_surface_ = dependency_->CreateGLSurface(nullptr, format);
     if (!gl_surface_)
       return false;
 
@@ -1461,7 +1468,8 @@ bool SkiaOutputSurfaceImplOnGpu::InitializeForGL() {
         did_swap_buffer_complete_callback_);
     supports_alpha_ = renderer_settings_.requires_alpha_channel;
   } else {
-    gl_surface_ = dependency_->CreateGLSurface(weak_ptr_factory_.GetWeakPtr());
+    gl_surface_ =
+        dependency_->CreateGLSurface(weak_ptr_factory_.GetWeakPtr(), format);
 
     if (!gl_surface_)
       return false;

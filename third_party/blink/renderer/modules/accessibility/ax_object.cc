@@ -3294,10 +3294,11 @@ bool AXObject::OnNativeScrollToMakeVisibleAction() const {
     return false;
   PhysicalRect target_rect(layout_object->AbsoluteBoundingBoxRect());
   layout_object->ScrollRectToVisible(
-      target_rect, CreateScrollIntoViewParams(
-                       ScrollAlignment::kAlignCenterIfNeeded,
-                       ScrollAlignment::kAlignCenterIfNeeded,
-                       kProgrammaticScroll, false, kScrollBehaviorAuto));
+      target_rect,
+      CreateScrollIntoViewParams(
+          ScrollAlignment::kAlignCenterIfNeeded,
+          ScrollAlignment::kAlignCenterIfNeeded, kProgrammaticScroll, false,
+          mojom::blink::ScrollIntoViewParams::Behavior::kAuto));
   AXObjectCache().PostNotification(
       AXObjectCache().GetOrCreate(GetDocument()->GetLayoutView()),
       ax::mojom::Event::kLocationChanged);
@@ -3316,10 +3317,10 @@ bool AXObject::OnNativeScrollToMakeVisibleWithSubFocusAction(
       layout_object->LocalToAbsoluteRect(PhysicalRect(rect));
   layout_object->ScrollRectToVisible(
       target_rect,
-      CreateScrollIntoViewParams(horizontal_scroll_alignment,
-                                 vertical_scroll_alignment, kProgrammaticScroll,
-                                 false /* make_visible_in_visual_viewport */,
-                                 kScrollBehaviorAuto));
+      CreateScrollIntoViewParams(
+          horizontal_scroll_alignment, vertical_scroll_alignment,
+          kProgrammaticScroll, false /* make_visible_in_visual_viewport */,
+          mojom::blink::ScrollIntoViewParams::Behavior::kAuto));
   AXObjectCache().PostNotification(
       AXObjectCache().GetOrCreate(GetDocument()->GetLayoutView()),
       ax::mojom::Event::kLocationChanged);
@@ -3335,10 +3336,11 @@ bool AXObject::OnNativeScrollToGlobalPointAction(
   PhysicalRect target_rect(layout_object->AbsoluteBoundingBoxRect());
   target_rect.Move(-PhysicalOffset(global_point));
   layout_object->ScrollRectToVisible(
-      target_rect, CreateScrollIntoViewParams(ScrollAlignment::kAlignLeftAlways,
-                                              ScrollAlignment::kAlignTopAlways,
-                                              kProgrammaticScroll, false,
-                                              kScrollBehaviorAuto));
+      target_rect,
+      CreateScrollIntoViewParams(
+          ScrollAlignment::kAlignLeftAlways, ScrollAlignment::kAlignTopAlways,
+          kProgrammaticScroll, false,
+          mojom::blink::ScrollIntoViewParams::Behavior::kAuto));
   AXObjectCache().PostNotification(
       AXObjectCache().GetOrCreate(GetDocument()->GetLayoutView()),
       ax::mojom::Event::kLocationChanged);

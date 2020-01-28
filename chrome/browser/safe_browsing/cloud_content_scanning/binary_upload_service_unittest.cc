@@ -449,6 +449,7 @@ TEST_F(BinaryUploadServiceTest, ReturnsAsynchronouslyWithNoFCM) {
 }
 
 TEST_F(BinaryUploadServiceTest, IsAuthorizedValidTimer) {
+  ExpectInstanceID("valid id");
   // The 24 hours timer should be started on the first IsAuthorized call.
   ValidateAuthorizationTimerIdle();
   service_->IsAuthorized(base::DoNothing());

@@ -176,11 +176,13 @@ class CORE_EXPORT VisualViewport : public GarbageCollected<VisualViewport>,
   SmoothScrollSequencer* GetSmoothScrollSequencer() const override;
   void SetScrollOffset(const ScrollOffset&,
                        ScrollType,
-                       ScrollBehavior,
+                       mojom::blink::ScrollIntoViewParams::Behavior,
                        ScrollCallback on_finish) override;
-  void SetScrollOffset(const ScrollOffset&,
-                       ScrollType,
-                       ScrollBehavior = kScrollBehaviorInstant) override;
+  void SetScrollOffset(
+      const ScrollOffset&,
+      ScrollType,
+      mojom::blink::ScrollIntoViewParams::Behavior =
+          mojom::blink::ScrollIntoViewParams::Behavior::kInstant) override;
   PhysicalRect ScrollIntoView(
       const PhysicalRect&,
       const mojom::blink::ScrollIntoViewParamsPtr&) override;

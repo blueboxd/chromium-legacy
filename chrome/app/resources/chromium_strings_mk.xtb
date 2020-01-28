@@ -213,7 +213,6 @@ Chromium не може да ги обнови вашите поставки.</tr
 <translation id="8941642502866065432">Не може да се ажурира Chromium</translation>
 <translation id="8974095189086268230">Chromium OS е овозможен со дополнителен <ph name="BEGIN_LINK_CROS_OSS" />софтвер со отворен код<ph name="END_LINK_CROS_OSS" />.</translation>
 <translation id="9019929317751753759">За Chromium да биде побезбеден, ја оневозможивме следнава екстензија што не е наведена во <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> и може да е додадена без ваше знаење.</translation>
-<translation id="9022552996538154597">Најавете се на Chromium</translation>
 <translation id="9089354809943900324">Chromium е застарен</translation>
 <translation id="9093206154853821181">{0,plural, =1{Chromium ќе се рестартира по еден час}one{Chromium ќе се рестартира по # час}other{Chromium ќе се рестартира по # часа}}</translation>
 <translation id="91086099826398415">Отвори го линкот во нова &amp;картичка на Chromium</translation>

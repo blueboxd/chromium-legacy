@@ -34,6 +34,72 @@ proto_library("webprotect_proto") {
   sources = [ "proto/webprotect.proto" ]
 }
 
+static_library("ping_manager") {
+  sources = [
+    "ping_manager.cc",
+    "ping_manager.h",
+  ]
+
+  public_deps = [ "//google_apis:google_apis" ]
+
+  deps = [
+    "//base:base",
+    "//components/safe_browsing/core/db:hit_report",
+    "//components/safe_browsing/core/db:util",
+    "//net:net",
+    "//services/network/public/cpp",
+  ]
+}
+
+source_set("ping_manager_unittest") {
+  testonly = true
+  sources = [ "ping_manager_unittest.cc" ]
+
+  deps = [
+    ":ping_manager",
+    "//base:base",
+    "//components/safe_browsing/core/db:v4_test_util",
+    "//net:net",
+    "//net:test_support",
+    "//testing/gtest",
+  ]
+}
+
+source_set("verdict_cache_manager") {
+  sources = [
+    "verdict_cache_manager.cc",
+    "verdict_cache_manager.h",
+  ]
+
+  deps = [
+    ":csd_proto",
+    ":realtimeapi_proto",
+    "//base",
+    "//components/content_settings/core/browser",
+    "//components/history/core/browser",
+    "//components/password_manager/core/browser:browser",
+    "//components/safe_browsing/core/common:thread_utils",
+    "//components/safe_browsing/core/db:v4_protocol_manager_util",
+    "//url",
+  ]
+}
+
+source_set("verdict_cache_manager_unittest") {
+  testonly = true
+  sources = [ "verdict_cache_manager_unittest.cc" ]
+
+  deps = [
+    ":csd_proto",
+    ":realtimeapi_proto",
+    ":verdict_cache_manager",
+    "//base",
+    "//components/content_settings/core/browser",
+    "//components/safe_browsing/core/common:test_support",
+    "//components/sync_preferences:test_support",
+    "//testing/gtest",
+  ]
+}
+
 # safe_browsing/ pulls in content/, which doesn't work on iOS.
 # TODO(thakis): This should be `safe_browsing_mode != 0`, but chromecast builds
 # set safe_browsing_mode to 0 and build chrome/, and chrome/ currently
@@ -41,37 +107,6 @@ proto_library("webprotect_proto") {
 # conditional on safe_browsing_mode != 0 and then change the conditional here.
 if (!is_ios) {
   assert(!is_ios, "safe_browsing/ pulls in content/ which doesn't work on iOS")
-
-  static_library("ping_manager") {
-    sources = [
-      "ping_manager.cc",
-      "ping_manager.h",
-    ]
-
-    public_deps = [ "//google_apis:google_apis" ]
-
-    deps = [
-      "//base:base",
-      "//components/safe_browsing/core/db:hit_report",
-      "//components/safe_browsing/core/db:util",
-      "//content/public/browser:browser",
-      "//net:net",
-    ]
-  }
-
-  source_set("ping_manager_unittest") {
-    testonly = true
-    sources = [ "ping_manager_unittest.cc" ]
-
-    deps = [
-      ":ping_manager",
-      "//base:base",
-      "//components/safe_browsing/core/db:v4_test_util",
-      "//net:net",
-      "//net:test_support",
-      "//testing/gtest",
-    ]
-  }
 
   source_set("public") {
     sources = [
@@ -82,41 +117,6 @@ if (!is_ios) {
     deps = [
       "//base:base",
       "//content/public/browser",
-    ]
-  }
-
-  source_set("verdict_cache_manager") {
-    sources = [
-      "verdict_cache_manager.cc",
-      "verdict_cache_manager.h",
-    ]
-
-    deps = [
-      ":csd_proto",
-      ":realtimeapi_proto",
-      "//base",
-      "//components/content_settings/core/browser",
-      "//components/history/core/browser",
-      "//components/password_manager/core/browser:browser",
-      "//components/safe_browsing/core/common:thread_utils",
-      "//components/safe_browsing/core/db:v4_protocol_manager_util",
-      "//url",
-    ]
-  }
-
-  source_set("verdict_cache_manager_unittest") {
-    testonly = true
-    sources = [ "verdict_cache_manager_unittest.cc" ]
-
-    deps = [
-      ":csd_proto",
-      ":realtimeapi_proto",
-      ":verdict_cache_manager",
-      "//base",
-      "//components/content_settings/core/browser",
-      "//components/safe_browsing/core/common:test_support",
-      "//components/sync_preferences:test_support",
-      "//testing/gtest",
     ]
   }
 }

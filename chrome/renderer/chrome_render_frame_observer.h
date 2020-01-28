@@ -25,7 +25,7 @@ class PhishingClassifierDelegate;
 }
 
 namespace translate {
-class TranslateHelper;
+class TranslateAgent;
 }
 
 namespace web_cache {
@@ -104,7 +104,7 @@ class ChromeRenderFrameObserver : public content::RenderFrameObserver,
                             base::TimeDelta delay);
 
   // Have the same lifetime as us.
-  translate::TranslateHelper* translate_helper_;
+  translate::TranslateAgent* translate_agent_;
   safe_browsing::PhishingClassifierDelegate* phishing_classifier_;
 
   // Owned by ChromeContentRendererClient and outlive us.

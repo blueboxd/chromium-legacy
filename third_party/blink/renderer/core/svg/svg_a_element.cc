@@ -113,9 +113,7 @@ void SVGAElement::DefaultEventHandler(Event& event) {
       return;
     }
 
-    if (Event* click_event = GetClickEventOrNull(event)) {
-      click_event->SetDefaultHandled();
-      event.SetDefaultHandled();
+    if (IsLinkClick(event)) {
       String url = StripLeadingAndTrailingHTMLSpaces(HrefString());
 
       if (url[0] == '#') {
@@ -124,6 +122,7 @@ void SVGAElement::DefaultEventHandler(Event& event) {
         if (auto* svg_smil_element =
                 DynamicTo<SVGSMILElement>(target_element)) {
           svg_smil_element->BeginByLinkActivation();
+          event.SetDefaultHandled();
           return;
         }
       }
@@ -131,15 +130,17 @@ void SVGAElement::DefaultEventHandler(Event& event) {
       AtomicString target(svg_target_->CurrentValue()->Value());
       if (target.IsEmpty() && FastGetAttribute(xlink_names::kShowAttr) == "new")
         target = AtomicString("_blank");
+      event.SetDefaultHandled();
+
       if (!GetDocument().GetFrame())
         return;
 
       FrameLoadRequest frame_request(
           &GetDocument(), ResourceRequest(GetDocument().CompleteURL(url)));
-      frame_request.SetNavigationPolicy(NavigationPolicyFromEvent(click_event));
+      frame_request.SetNavigationPolicy(NavigationPolicyFromEvent(&event));
       frame_request.SetTriggeringEventInfo(
-          click_event->isTrusted() ? TriggeringEventInfo::kFromTrustedEvent
-                                   : TriggeringEventInfo::kFromUntrustedEvent);
+          event.isTrusted() ? TriggeringEventInfo::kFromTrustedEvent
+                            : TriggeringEventInfo::kFromUntrustedEvent);
       frame_request.GetResourceRequest().SetHasUserGesture(
           LocalFrame::HasTransientUserActivation(GetDocument().GetFrame()));
 

@@ -200,26 +200,26 @@ void MockDeviceManagementService::DoURLCompletionWithPayload(
     int net_error,
     int response_code,
     const std::string& payload) {
-  JobControl::RetryMethod retry_method =
+  Job::RetryMethod retry_method =
       DoURLCompletionInternal(*job, net_error, response_code, payload);
-  if (retry_method == JobControl::NO_RETRY)
+  if (retry_method == Job::NO_RETRY)
     *job = nullptr;
 }
 
-MockDeviceManagementService::JobControl::RetryMethod
+MockDeviceManagementService::Job::RetryMethod
 MockDeviceManagementService::DoURLCompletionInternal(
     JobControl* job,
     int net_error,
     int response_code,
     const std::string& payload) {
   if (!job)
-    return JobControl::NO_RETRY;
+    return Job::NO_RETRY;
 
   int retry_delay;
-  JobControl::RetryMethod retry_method =
+  Job::RetryMethod retry_method =
       job->OnURLLoadComplete(payload, "application/x-protobuffer", net_error,
                              response_code, false, &retry_delay);
-  if (retry_method != JobControl::NO_RETRY)
+  if (retry_method != Job::NO_RETRY)
     RequeueJobForTesting(job);
 
   return retry_method;
@@ -234,7 +234,8 @@ FakeJobConfiguration::FakeJobConfiguration(
     base::Optional<std::string> oauth_token,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     FakeCallback callback,
-    RetryCallback retry_callback)
+    RetryCallback retry_callback,
+    RetryCallback should_retry_callback)
     : DMServerJobConfiguration(service,
                                type,
                                client_id,
@@ -243,8 +244,10 @@ FakeJobConfiguration::FakeJobConfiguration(
                                oauth_token,
                                url_loader_factory,
                                base::DoNothing()),
+      should_retry_response_(DeviceManagementService::Job::NO_RETRY),
       callback_(std::move(callback)),
-      retry_callback_(retry_callback) {
+      retry_callback_(retry_callback),
+      should_retry_callback_(should_retry_callback) {
   DCHECK(!callback_.is_null());
   DCHECK(!retry_callback_.is_null());
 }
@@ -256,8 +259,21 @@ void FakeJobConfiguration::SetRequestPayload(
   request()->ParseFromString(request_payload);
 }
 
-void FakeJobConfiguration::OnBeforeRetry() {
-  retry_callback_.Run();
+void FakeJobConfiguration::SetShouldRetryResponse(
+    DeviceManagementService::Job::RetryMethod method) {
+  should_retry_response_ = method;
+}
+
+DeviceManagementService::Job::RetryMethod FakeJobConfiguration::ShouldRetry(
+    int response_code,
+    const std::string& response_body) {
+  should_retry_callback_.Run(response_code, response_body);
+  return should_retry_response_;
+}
+
+void FakeJobConfiguration::OnBeforeRetry(int response_code,
+                                         const std::string& response_body) {
+  retry_callback_.Run(response_code, response_body);
 }
 
 void FakeJobConfiguration::OnURLLoadComplete(DeviceManagementService::Job* job,

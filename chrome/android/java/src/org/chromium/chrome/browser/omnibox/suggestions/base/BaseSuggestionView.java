@@ -24,6 +24,8 @@ import org.chromium.components.browser_ui.widget.RoundedCornerImageView;
 /**
  * Base layout for common suggestion types. Includes support for a configurable suggestion content
  * and the common suggestion patterns shared across suggestion formats.
+ *
+ * @param <T> The type of View being wrapped by this container.
  */
 public class BaseSuggestionView<T extends View> extends SimpleHorizontalLayoutView {
     protected final ImageView mActionView;
@@ -34,7 +36,7 @@ public class BaseSuggestionView<T extends View> extends SimpleHorizontalLayoutVi
     /**
      * Constructs a new suggestion view.
      *
-     * @param context The context used to construct the suggestion view.
+     * @param view The view wrapped by the suggestion containers.
      */
     public BaseSuggestionView(T view) {
         super(view.getContext());
@@ -44,7 +46,7 @@ public class BaseSuggestionView<T extends View> extends SimpleHorizontalLayoutVi
         @DrawableRes
         int selectableBackgroundRes = themeRes.resourceId;
 
-        mDecoratedView = new DecoratedSuggestionView(getContext(), selectableBackgroundRes);
+        mDecoratedView = new DecoratedSuggestionView<>(getContext(), selectableBackgroundRes);
         mDecoratedView.setOnClickListener(v -> mDelegate.onSelection());
         mDecoratedView.setOnLongClickListener(v -> {
             mDelegate.onLongPress();
@@ -125,7 +127,7 @@ public class BaseSuggestionView<T extends View> extends SimpleHorizontalLayoutVi
     }
 
     /** @return Decorated suggestion view. */
-    DecoratedSuggestionView getDecoratedSuggestionView() {
+    DecoratedSuggestionView<T> getDecoratedSuggestionView() {
         return mDecoratedView;
     }
 

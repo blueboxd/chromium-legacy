@@ -231,7 +231,7 @@ bool ThreadPoolImpl::PostDelayedTask(const Location& from_here,
                                      OnceClosure task,
                                      TimeDelta delay) {
   // Post |task| as part of a one-off single-task Sequence.
-  const TaskTraits new_traits = SetUserBlockingPriorityIfNeeded(traits);
+  const TaskTraits new_traits = VerifyAndAjustIncomingTraits(traits);
   return PostTaskWithSequence(
       Task(from_here, std::move(task), delay),
       MakeRefCounted<Sequence>(new_traits, nullptr,
@@ -240,13 +240,13 @@ bool ThreadPoolImpl::PostDelayedTask(const Location& from_here,
 
 scoped_refptr<TaskRunner> ThreadPoolImpl::CreateTaskRunner(
     const TaskTraits& traits) {
-  const TaskTraits new_traits = SetUserBlockingPriorityIfNeeded(traits);
+  const TaskTraits new_traits = VerifyAndAjustIncomingTraits(traits);
   return MakeRefCounted<PooledParallelTaskRunner>(new_traits, this);
 }
 
 scoped_refptr<SequencedTaskRunner> ThreadPoolImpl::CreateSequencedTaskRunner(
     const TaskTraits& traits) {
-  const TaskTraits new_traits = SetUserBlockingPriorityIfNeeded(traits);
+  const TaskTraits new_traits = VerifyAndAjustIncomingTraits(traits);
   return MakeRefCounted<PooledSequencedTaskRunner>(new_traits, this);
 }
 
@@ -255,7 +255,7 @@ ThreadPoolImpl::CreateSingleThreadTaskRunner(
     const TaskTraits& traits,
     SingleThreadTaskRunnerThreadMode thread_mode) {
   return single_thread_task_runner_manager_.CreateSingleThreadTaskRunner(
-      SetUserBlockingPriorityIfNeeded(traits), thread_mode);
+      VerifyAndAjustIncomingTraits(traits), thread_mode);
 }
 
 #if defined(OS_WIN)
@@ -263,13 +263,13 @@ scoped_refptr<SingleThreadTaskRunner> ThreadPoolImpl::CreateCOMSTATaskRunner(
     const TaskTraits& traits,
     SingleThreadTaskRunnerThreadMode thread_mode) {
   return single_thread_task_runner_manager_.CreateCOMSTATaskRunner(
-      SetUserBlockingPriorityIfNeeded(traits), thread_mode);
+      VerifyAndAjustIncomingTraits(traits), thread_mode);
 }
 #endif  // defined(OS_WIN)
 
 scoped_refptr<UpdateableSequencedTaskRunner>
 ThreadPoolImpl::CreateUpdateableSequencedTaskRunner(const TaskTraits& traits) {
-  const TaskTraits new_traits = SetUserBlockingPriorityIfNeeded(traits);
+  const TaskTraits new_traits = VerifyAndAjustIncomingTraits(traits);
   return MakeRefCounted<PooledSequencedTaskRunner>(new_traits, this);
 }
 
@@ -526,8 +526,11 @@ void ThreadPoolImpl::UpdateCanRunPolicy() {
   single_thread_task_runner_manager_.DidUpdateCanRunPolicy();
 }
 
-TaskTraits ThreadPoolImpl::SetUserBlockingPriorityIfNeeded(
+TaskTraits ThreadPoolImpl::VerifyAndAjustIncomingTraits(
     TaskTraits traits) const {
+  DCHECK_EQ(traits.extension_id(),
+            TaskTraitsExtensionStorage::kInvalidExtensionId)
+      << "Extension traits cannot be used with the ThreadPool API.";
   if (all_tasks_user_blocking_.IsSet())
     traits.UpdatePriority(TaskPriority::USER_BLOCKING);
   return traits;

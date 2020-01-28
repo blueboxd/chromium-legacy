@@ -34,7 +34,6 @@
 #include "chrome/browser/permissions/permission_decision_auto_blocker.h"
 #include "chrome/browser/permissions/permission_manager.h"
 #include "chrome/browser/permissions/permission_uma_util.h"
-#include "chrome/browser/permissions/permission_util.h"
 #include "chrome/browser/permissions/quiet_notification_permission_ui_state.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_android.h"
@@ -45,6 +44,7 @@
 #include "chrome/common/pref_names.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
+#include "components/permissions/permission_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_partition.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
@@ -258,7 +258,7 @@ void JNI_WebsitePreferenceBridge_SetSettingForOrigin(
     return;
   }
 
-  PermissionUtil::ScopedRevocationReporter scoped_revocation_reporter(
+  PermissionUmaUtil::ScopedRevocationReporter scoped_revocation_reporter(
       profile, origin_url, embedder_url, content_type,
       PermissionSourceUI::SITE_SETTINGS);
   HostContentSettingsMapFactory::GetForProfile(profile)
@@ -520,7 +520,7 @@ static void JNI_WebsitePreferenceBridge_SetNotificationSettingForOrigin(
     return;
   }
 
-  PermissionUtil::ScopedRevocationReporter scoped_revocation_reporter(
+  PermissionUmaUtil::ScopedRevocationReporter scoped_revocation_reporter(
       profile, url, GURL(), ContentSettingsType::NOTIFICATIONS,
       PermissionSourceUI::SITE_SETTINGS);
 

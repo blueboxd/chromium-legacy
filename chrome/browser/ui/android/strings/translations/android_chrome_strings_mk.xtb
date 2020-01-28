@@ -279,6 +279,7 @@
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> обележувач}one{<ph name="BOOKMARKS_COUNT_MANY" /> обележувач}other{<ph name="BOOKMARKS_COUNT_MANY" /> обележувачи}}</translation>
 <translation id="3089395242580810162">Отвори во инкогнито картичка</translation>
 <translation id="3123473560110926937">Блокирано на некои сајтови</translation>
+<translation id="3123734510202723619">Соопштенија</translation>
 <translation id="3137521801621304719">Напушти го инкогнито-режимот</translation>
 <translation id="3143515551205905069">Откажи ја синхронизацијата</translation>
 <translation id="3157842584138209013">Видете колку мобилен интернет сте заштедиле преку копчето „Повеќе опции“</translation>
@@ -690,7 +691,6 @@
 <translation id="6201345951596836663">Линкот е копиран</translation>
 <translation id="6206551242102657620">Врската е безбедна. Информации за сајтот</translation>
 <translation id="6210748933810148297">Не сте <ph name="EMAIL" />?</translation>
-<translation id="6216432067784365534">Опции за <ph name="NAME_OF_LIST_ITEM" /></translation>
 <translation id="6221633008163990886">Отклучете за да ги извезете лозинките</translation>
 <translation id="6232535412751077445">Овозможувањето на функцијата „Не ме следи“ значи дека вашиот сообраќај на прелистување ќе вклучува и барање. Ефектите ќе зависат од тоа дали веб-сајтот ќе реагира на барањето и како тоа ќе се толкува.
 
@@ -736,7 +736,6 @@
 <translation id="6534565668554028783">На Google му требаше премногу време да одговори</translation>
 <translation id="6538442820324228105">Преземени <ph name="GBS" /> ГБ</translation>
 <translation id="6539092367496845964">Нешто тргна наопаку. Обидете се повторно подоцна.</translation>
-<translation id="654446541061731451">Изберете картичка за емитување</translation>
 <translation id="6545017243486555795">Избриши ги сите податоци</translation>
 <translation id="6545864417968258051">Скенирање за Bluetooth</translation>
 <translation id="6560414384669816528">Пребарување со Sogou</translation>
@@ -1031,7 +1030,6 @@
 <translation id="868929229000858085">Пребарајте ги контактите</translation>
 <translation id="8698438463325761328">Блокирајте го пристапувањето до уредот и податоците за виртуелна реалност за сајтовите</translation>
 <translation id="869891660844655955">Рок на важност</translation>
-<translation id="8719023831149562936">Тековната картичка не може да се емитува</translation>
 <translation id="8728487861892616501">Ако ја користите апликацијава, се согласувате со <ph name="BEGIN_LINK1" />Условите на користење<ph name="END_LINK1" /> и <ph name="BEGIN_LINK2" />Известувањето за приватност<ph name="END_LINK2" /> на Chrome, како и <ph name="BEGIN_LINK3" />Известувањето за приватност за сметките на Google управувани со Family Link<ph name="END_LINK3" />.</translation>
 <translation id="8748850008226585750">Содржината е скриена</translation>
 <translation id="8751914237388039244">Изберете слика</translation>

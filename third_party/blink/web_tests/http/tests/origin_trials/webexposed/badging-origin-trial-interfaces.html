@@ -9,6 +9,7 @@ generate_token.py http://127.0.0.1:8000 BadgingV2 --expire-timestamp=2000000000
 <script src="/resources/testharness.js"></script>
 <script src="/resources/testharnessreport.js"></script>
 <script src="/resources/origin-trials-helper.js"></script>
+<script src="/serviceworker/resources/test-helpers.js"></script>
 <script>
 
 function assert_function_on(object, function_name, explanation) {
@@ -19,4 +20,12 @@ test(t => {
   assert_function_on(navigator, 'setExperimentalAppBadge', 'setExperimentalAppBadge is not defined on navigator');
   assert_function_on(navigator, 'clearExperimentalAppBadge', 'clearExperimentalAppBadge is not defined on navigator');
 }, 'Badge API interfaces and properties in Origin-Trial enabled document.');
+
+// Only run "disabled" tests if the feature is not enabled via runtime flags.
+if (!self.internals.runtimeFlags.badgingEnabled) {
+  service_worker_test('resources/badging-serviceworker-disabled.js');
+}
+
+// ServiceWorkerGlobalScope must expose badging through origin trials.
+service_worker_test('resources/badging-serviceworker-enabled.php');
 </script>

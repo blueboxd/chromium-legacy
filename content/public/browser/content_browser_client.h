@@ -44,6 +44,7 @@
 #include "services/network/public/mojom/websocket.mojom-forward.h"
 #include "storage/browser/file_system/file_system_context.h"
 #include "third_party/blink/public/common/user_agent/user_agent_metadata.h"
+#include "third_party/blink/public/mojom/badging/badging.mojom-forward.h"
 #include "third_party/blink/public/mojom/credentialmanager/credential_manager.mojom-forward.h"
 #include "third_party/blink/public/mojom/web_feature/web_feature.mojom-forward.h"
 #include "ui/accessibility/ax_mode.h"
@@ -1017,6 +1018,17 @@ class CONTENT_EXPORT ContentBrowserClient {
       RenderFrameHost* render_frame_host,
       const std::string& interface_name,
       mojo::ScopedInterfaceEndpointHandle* handle);
+
+  // TODO(https://crbug.com/1045214): Generalize ContentBrowserClient support
+  // for service worker-scoped binders.
+  //
+  // Binds a remote ServiceWorkerGlobalScope to a badge service.  After
+  // receiving a badge update from a ServiceWorkerGlobalScope, the badge
+  // service must update the badge for each app under |service_worker_scope|.
+  virtual void BindBadgeServiceReceiverFromServiceWorker(
+      RenderProcessHost* service_worker_process_host,
+      const GURL& service_worker_scope,
+      mojo::PendingReceiver<blink::mojom::BadgeService> receiver) {}
 
   // Handles an unhandled incoming interface binding request from the GPU
   // process. Called on the IO thread.

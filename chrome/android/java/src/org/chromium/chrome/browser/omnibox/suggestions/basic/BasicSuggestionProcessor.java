@@ -243,8 +243,8 @@ public class BasicSuggestionProcessor extends BaseSuggestionViewProcessor {
                 (Bitmap icon, int fallbackColor, boolean isFallbackColorDefault, int iconType) -> {
                     if (icon == null) return;
 
-                    setSuggestionDrawableState(
-                            model, SuggestionDrawableState.Builder.forBitmap(icon).build());
+                    setSuggestionDrawableState(model,
+                            SuggestionDrawableState.Builder.forBitmap(mContext, icon).build());
                     model.set(
                             SuggestionViewProperties.SUGGESTION_ICON_TYPE, SuggestionIcon.FAVICON);
                 });

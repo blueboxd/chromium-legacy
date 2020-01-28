@@ -112,6 +112,7 @@
 <translation id="2352467521400612932">タッチペンの設定</translation>
 <translation id="2354174487190027830"><ph name="NAME" /> を有効にしています</translation>
 <translation id="2359808026110333948">続行</translation>
+<translation id="2364154243880592194">ステータス トレイ、時刻 <ph name="TIME" />、<ph name="BATTERY" /> 通知センターを開くには、検索+左方向キーを押します。</translation>
 <translation id="2365393535144473978">モバイルデータ通信を有効にすると、Bluetooth も有効になります。</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="2412593942846481727">アップデートが利用可能</translation>
@@ -335,6 +336,7 @@
 <translation id="5669267381087807207">有効にしています</translation>
 <translation id="5673434351075758678">設定の同期後に「<ph name="FROM_LOCALE" />」から「<ph name="TO_LOCALE" />」に変更されました。</translation>
 <translation id="5682642926269496722">Google アシスタントは、現在のユーザー アカウントではご利用いただけません。</translation>
+<translation id="5689633613396158040">夜間モードを利用すると、薄明かりの下でも画面が見やすくなります。タップして、夜間モードをオンにする時間を変更したり、完全にオフにしたりできます。</translation>
 <translation id="5691772641933328258">指紋を認識できません</translation>
 <translation id="5710450975648804523">サイレント モードがオンになっています</translation>
 <translation id="573413375004481890">このデバイスでサポートできるディスプレイの上限数を超えたため、ディスプレイが 1 台切断されました</translation>
@@ -515,6 +517,7 @@
 <translation id="8142441511840089262">ダブルクリック</translation>
 <translation id="8142699993796781067">プライベート ネットワーク</translation>
 <translation id="8152092012181020186">閉じるには Ctrl+W キーを押します。</translation>
+<translation id="8155007568264258537"><ph name="FEATURE_NAME" /> この設定は管理者によって管理されています。</translation>
 <translation id="8167567890448493835"><ph name="LOCALE_NAME" /> を使用しています</translation>
 <translation id="8190698733819146287">言語と入力方法をカスタマイズ...</translation>
 <translation id="8192202700944119416">通知は非表示になっています。</translation>
@@ -596,7 +599,6 @@
 <translation id="9193626018745640770">不明な受信デバイスにキャストしています</translation>
 <translation id="9194617393863864469">別のユーザーとしてログイン...</translation>
 <translation id="9201374708878217446"><ph name="CONNECTION_STATUS" />、管理者によって管理</translation>
-<translation id="9205817095063786319"><ph name="DOMAIN" /> で管理されているデバイス</translation>
 <translation id="9210037371811586452">デスクトップ統合モードの終了中</translation>
 <translation id="9211681782751733685">充電完了まであと <ph name="TIME_REMAINING" />です。</translation>
 <translation id="9215934040295798075">壁紙を設定</translation>

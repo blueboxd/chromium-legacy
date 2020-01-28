@@ -14,13 +14,9 @@ if (is_android) {
 # See //content/BUILD.gn for how this works.
 group("browser") {
   if (is_component_build) {
-    public_deps = [
-      "//content",
-    ]
+    public_deps = [ "//content" ]
   } else {
-    public_deps = [
-      ":browser_sources",
-    ]
+    public_deps = [ ":browser_sources" ]
   }
 }
 
@@ -139,6 +135,7 @@ jumbo_source_set("browser_sources") {
     "devtools_agent_host.h",
     "devtools_agent_host_client.cc",
     "devtools_agent_host_client.h",
+    "devtools_agent_host_client_channel.h",
     "devtools_agent_host_observer.cc",
     "devtools_agent_host_observer.h",
     "devtools_background_services_context.h",
@@ -211,7 +208,6 @@ jumbo_source_set("browser_sources") {
     "media_session_service.h",
     "media_stream_request.cc",
     "media_stream_request.h",
-    "message_port.h",
     "message_port_provider.h",
     "mhtml_extra_parts.h",
     "mhtml_generation_result.cc",
@@ -510,8 +506,6 @@ jumbo_source_set("browser_sources") {
 
 if (is_android) {
   java_cpp_enum("contacts_picker_properties_requested_javagen") {
-    sources = [
-      "contacts_picker_properties_requested.h",
-    ]
+    sources = [ "contacts_picker_properties_requested.h" ]
   }
 }

@@ -112,6 +112,7 @@
 <translation id="2352467521400612932">Staylus ayarları</translation>
 <translation id="2354174487190027830"><ph name="NAME" /> aktivləşdirilir</translation>
 <translation id="2359808026110333948">Davam edin</translation>
+<translation id="2364154243880592194">Status bölməsi, vaxt: <ph name="TIME" />, <ph name="BATTERY" /> Bildiriş mərkəzinə giriş üçün axtarış + sol seçiminə basın.</translation>
 <translation id="2365393535144473978">Mobil datanın aktiv edilməsi ilə Bluetooh da aktiv ediləcək.</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="2412593942846481727">Güncəlləmə əlçatandır</translation>
@@ -335,6 +336,7 @@
 <translation id="5669267381087807207">Aktivləşdirilir</translation>
 <translation id="5673434351075758678">Ayarları sinxronizasiya etdikdən sonra "<ph name="FROM_LOCALE" />" dilindən "<ph name="TO_LOCALE" />" dilinə.</translation>
 <translation id="5682642926269496722">Google Assistent cari istifadəçi hesabında əlçatan deyil.</translation>
+<translation id="5689633613396158040">Gecə İşığı zəif işıqda ekrana baxmağı və ya oxumağı asanlaşdırır. Gecə İşığının yandığı vaxtı dəyişmək və ya onu birdəfəlik söndürmək üçün toxunun.</translation>
 <translation id="5691772641933328258">Barmaq izi tanınmadı</translation>
 <translation id="5710450975648804523">Narahat Etməyin rejimi aktivdir</translation>
 <translation id="573413375004481890">Bu cihaz bütün displeyləri dəstəkləyə bilmədi və biri ayrıldı</translation>
@@ -514,6 +516,7 @@
 <translation id="8142441511840089262">2 dəfə klikləyin</translation>
 <translation id="8142699993796781067">Şəxsi şəbəkə</translation>
 <translation id="8152092012181020186">Bağlamaq üçün Ctrl + W düymələrinə basın.</translation>
+<translation id="8155007568264258537"><ph name="FEATURE_NAME" /> Bu ayar inzibatçınız tərəfindən idarə olunur.</translation>
 <translation id="8167567890448493835"><ph name="LOCALE_NAME" /> istifadə edilir</translation>
 <translation id="8190698733819146287">Dilləri və daxiletməni dəyişdirin...</translation>
 <translation id="8192202700944119416">Bildirişlər gizlədildi.</translation>
@@ -595,7 +598,6 @@
 <translation id="9193626018745640770">Naməlum alıcı yayımı</translation>
 <translation id="9194617393863864469">Digər istifadəçi hesabına daxil olun...</translation>
 <translation id="9201374708878217446"><ph name="CONNECTION_STATUS" />, Administratorunuz tərəfindən idarə olunur</translation>
-<translation id="9205817095063786319">Cihaz <ph name="DOMAIN" /> tərəfindən idarə olunur</translation>
 <translation id="9210037371811586452">Vahid masaüstü rejimindən çıxır</translation>
 <translation id="9211681782751733685">Batareyanın tam dolmağına <ph name="TIME_REMAINING" /> qalır.</translation>
 <translation id="9215934040295798075">Divar kağızı ayarlayın</translation>

@@ -1641,13 +1641,8 @@ return NO;
 
 - (BOOL)application:(NSApplication*)application
     continueUserActivity:(NSUserActivity*)userActivity
-#if !defined(MAC_OS_X_VERSION_10_14) || \
-    MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_14
-      restorationHandler:(void (^)(NSArray*))restorationHandler
-#else
       restorationHandler:
           (void (^)(NSArray<id<NSUserActivityRestoring>>*))restorationHandler
-#endif
 {
 //  if (![userActivity.activityType
 //          isEqualToString:NSUserActivityTypeBrowsingWeb]) {

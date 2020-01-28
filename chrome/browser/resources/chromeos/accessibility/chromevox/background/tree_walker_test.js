@@ -153,7 +153,7 @@ TEST_F('ChromeVoxAutomationTreeWalkerTest', 'RootLeafRestriction', function() {
         var visit = function(n) {
           visited += n.name;
         };
-        var restrictions = {leaf: leafP, root: rootP, visit: visit};
+        var restrictions = {leaf: leafP, root: rootP, visit};
         var walker = new AutomationTreeWalker(node2, 'forward', restrictions);
         while (walker.next().node) {
         }

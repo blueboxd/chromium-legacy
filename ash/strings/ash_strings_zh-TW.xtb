@@ -112,6 +112,7 @@
 <translation id="2352467521400612932">觸控筆設定</translation>
 <translation id="2354174487190027830">正在啟用 <ph name="NAME" /></translation>
 <translation id="2359808026110333948">繼續</translation>
+<translation id="2364154243880592194">狀態匣，時間 <ph name="TIME" />，<ph name="BATTERY" />。按下搜尋鍵 + 向左鍵即可存取通知中心。</translation>
 <translation id="2365393535144473978">如果啟用行動數據，藍牙功能也會一併開啟。</translation>
 <translation id="2391579633712104609">180 度</translation>
 <translation id="2412593942846481727">有可用的更新</translation>
@@ -335,6 +336,7 @@
 <translation id="5669267381087807207">啟用中</translation>
 <translation id="5673434351075758678">同步處理設定後，「<ph name="FROM_LOCALE" />」已變更為「<ph name="TO_LOCALE" />」。</translation>
 <translation id="5682642926269496722">Google 助理不支援目前的使用者帳戶。</translation>
+<translation id="5689633613396158040">夜燈功能可讓你在光線昏暗的環境下更容易看清畫面內容或閱讀文字。輕觸即可變更夜燈的開啟時間，或完全關閉夜燈功能。</translation>
 <translation id="5691772641933328258">指紋辨識失敗</translation>
 <translation id="5710450975648804523">「零打擾」模式已開啟</translation>
 <translation id="573413375004481890">這部裝置無法支援你的所有螢幕，因此其中一個畫面已中斷連線</translation>
@@ -514,6 +516,7 @@
 <translation id="8142441511840089262">按兩下</translation>
 <translation id="8142699993796781067">私人網路</translation>
 <translation id="8152092012181020186">按下 Ctrl + W 即可關閉。</translation>
+<translation id="8155007568264258537"><ph name="FEATURE_NAME" /> 這項設定是由系統管理員管理。</translation>
 <translation id="8167567890448493835">使用<ph name="LOCALE_NAME" /></translation>
 <translation id="8190698733819146287">自訂語言與輸入法...</translation>
 <translation id="8192202700944119416">已隱藏通知。</translation>
@@ -595,7 +598,6 @@
 <translation id="9193626018745640770">正在透過不明接收器投放</translation>
 <translation id="9194617393863864469">登入其他使用者帳戶...</translation>
 <translation id="9201374708878217446"><ph name="CONNECTION_STATUS" />，由系統管理員管理</translation>
-<translation id="9205817095063786319">由 <ph name="DOMAIN" /> 管理的裝置</translation>
 <translation id="9210037371811586452">退出整合桌面模式</translation>
 <translation id="9211681782751733685">電池剩餘充電時間：<ph name="TIME_REMAINING" />。</translation>
 <translation id="9215934040295798075">設定桌布</translation>

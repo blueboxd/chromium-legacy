@@ -59,6 +59,7 @@ class DownloadShelfContextMenu : public ui::SimpleMenuModel::Delegate,
   ui::SimpleMenuModel* GetMaybeMaliciousMenuModel(bool is_download);
   ui::SimpleMenuModel* GetMaliciousMenuModel(bool is_download);
   ui::SimpleMenuModel* GetDeepScanningMenuModel(bool is_download);
+  ui::SimpleMenuModel* GetMixedContentDownloadMenuModel();
 
   // We show slightly different menus if the download is in progress vs. if the
   // download has finished.
@@ -69,6 +70,7 @@ class DownloadShelfContextMenu : public ui::SimpleMenuModel::Delegate,
   std::unique_ptr<ui::SimpleMenuModel> maybe_malicious_download_menu_model_;
   std::unique_ptr<ui::SimpleMenuModel> malicious_download_menu_model_;
   std::unique_ptr<ui::SimpleMenuModel> deep_scanning_menu_model_;
+  std::unique_ptr<ui::SimpleMenuModel> mixed_content_download_menu_model_;
 
   // Information source.
   DownloadUIModel* download_;

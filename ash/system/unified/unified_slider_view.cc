@@ -89,6 +89,7 @@ UnifiedSliderButton::UnifiedSliderButton(views::ButtonListener* listener,
   SetVectorIcon(icon);
   SetBorder(views::CreateEmptyBorder(kUnifiedCircularButtonFocusPadding));
   views::InstallCircleHighlightPathGenerator(this);
+  focus_ring()->SetColor(UnifiedSystemTrayView::GetFocusRingColor());
 }
 
 UnifiedSliderButton::~UnifiedSliderButton() = default;

@@ -54,8 +54,11 @@ public class DateLabelAdder implements ListConsumer {
             if (!(listItem instanceof OfflineItemListItem)) continue;
 
             OfflineItem offlineItem = ((OfflineItemListItem) listItem).item;
-            if (startOfNewDay(offlineItem, previousItem)
-                    || justNowSectionsDiffer(offlineItem, previousItem)) {
+            boolean startOfNewDay = startOfNewDay(offlineItem, previousItem);
+            boolean isJustNow =
+                    mJustNowProvider != null && mJustNowProvider.isJustNowItem(offlineItem);
+            if (isJustNow) startOfNewDay = false;
+            if (startOfNewDay || justNowSectionsDiffer(offlineItem, previousItem)) {
                 addDateHeader(listItems, offlineItem, i);
             }
 

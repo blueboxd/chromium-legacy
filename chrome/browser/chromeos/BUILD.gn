@@ -206,6 +206,7 @@ source_set("chromeos") {
     "//components/ownership",
     "//components/password_manager/core/browser",
     "//components/password_manager/core/browser:hash_password_manager",
+    "//components/performance_manager",
     "//components/permissions",
     "//components/policy:generated",
     "//components/policy/core/browser",

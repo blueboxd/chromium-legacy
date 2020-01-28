@@ -133,7 +133,7 @@ public class AnswerSuggestionProcessor extends BaseSuggestionViewProcessor {
                     for (int i = 0; i < currentModels.size(); i++) {
                         PropertyModel currentModel = currentModels.get(i);
                         setSuggestionDrawableState(currentModel,
-                                SuggestionDrawableState.Builder.forBitmap(bitmap)
+                                SuggestionDrawableState.Builder.forBitmap(mContext, bitmap)
                                         .setLarge(true)
                                         .build());
                     }

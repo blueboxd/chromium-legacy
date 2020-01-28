@@ -684,10 +684,11 @@ SmoothScrollSequencer* VisualViewport::GetSmoothScrollSequencer() const {
   return &MainFrame()->GetSmoothScrollSequencer();
 }
 
-void VisualViewport::SetScrollOffset(const ScrollOffset& offset,
-                                     ScrollType scroll_type,
-                                     ScrollBehavior scroll_behavior,
-                                     ScrollCallback on_finish) {
+void VisualViewport::SetScrollOffset(
+    const ScrollOffset& offset,
+    ScrollType scroll_type,
+    mojom::blink::ScrollIntoViewParams::Behavior scroll_behavior,
+    ScrollCallback on_finish) {
   // We clamp the offset here, because the ScrollAnimator may otherwise be
   // set to a non-clamped offset by ScrollableArea::setScrollOffset,
   // which may lead to incorrect scrolling behavior in RootFrameViewport down
@@ -701,9 +702,10 @@ void VisualViewport::SetScrollOffset(const ScrollOffset& offset,
                                   scroll_behavior, std::move(on_finish));
 }
 
-void VisualViewport::SetScrollOffset(const ScrollOffset& offset,
-                                     ScrollType scroll_type,
-                                     ScrollBehavior scroll_behavior) {
+void VisualViewport::SetScrollOffset(
+    const ScrollOffset& offset,
+    ScrollType scroll_type,
+    mojom::blink::ScrollIntoViewParams::Behavior scroll_behavior) {
   SetScrollOffset(offset, scroll_type, scroll_behavior, ScrollCallback());
 }
 
@@ -719,15 +721,15 @@ PhysicalRect VisualViewport::ScrollIntoView(
           params->align_y.To<ScrollAlignment>(), GetScrollOffset()));
 
   if (new_scroll_offset != GetScrollOffset()) {
-    auto behavior = mojo::ConvertTo<ScrollBehavior>(params->behavior);
     auto type = mojo::ConvertTo<ScrollType>(params->type);
     if (params->is_for_scroll_sequence) {
       DCHECK(type == kProgrammaticScroll || type == kUserScroll);
       if (SmoothScrollSequencer* sequencer = GetSmoothScrollSequencer()) {
-        sequencer->QueueAnimation(this, new_scroll_offset, behavior);
+        sequencer->QueueAnimation(this, new_scroll_offset, params->behavior);
       }
     } else {
-      SetScrollOffset(new_scroll_offset, type, behavior, ScrollCallback());
+      SetScrollOffset(new_scroll_offset, type, params->behavior,
+                      ScrollCallback());
     }
   }
 

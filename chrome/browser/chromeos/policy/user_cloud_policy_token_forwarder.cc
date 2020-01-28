@@ -15,6 +15,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/policy/user_cloud_policy_manager_chromeos.h"
 #include "components/policy/core/common/cloud/cloud_policy_core.h"
+#include "components/signin/public/identity_manager/consent_level.h"
 #include "components/signin/public/identity_manager/primary_account_access_token_fetcher.h"
 #include "content/public/browser/notification_source.h"
 #include "google_apis/gaia/gaia_constants.h"
@@ -103,13 +104,16 @@ void UserCloudPolicyTokenForwarder::StartRequest() {
   identity::ScopeSet scopes;
   scopes.insert(GaiaConstants::kDeviceManagementServiceOAuth);
   scopes.insert(GaiaConstants::kOAuthWrapBridgeUserInfoScope);
+
+  // NOTE: The primary account may not be available yet.
   access_token_fetcher_ =
       std::make_unique<signin::PrimaryAccountAccessTokenFetcher>(
           "policy_token_forwarder", identity_manager_, scopes,
           base::BindOnce(
               &UserCloudPolicyTokenForwarder::OnAccessTokenFetchCompleted,
               base::Unretained(this)),
-          signin::PrimaryAccountAccessTokenFetcher::Mode::kWaitUntilAvailable);
+          signin::PrimaryAccountAccessTokenFetcher::Mode::kWaitUntilAvailable,
+          signin::ConsentLevel::kNotRequired);
 }
 
 void UserCloudPolicyTokenForwarder::OnAccessTokenFetchCompleted(

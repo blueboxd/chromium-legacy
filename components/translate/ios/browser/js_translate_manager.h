@@ -14,8 +14,8 @@
 @class NSString;
 
 // Manager for the injection of the Translate JavaScript.
-// Replicates functionality from TranslateHelper in
-// chrome/renderer/translate/translate_helper.cc.
+// Replicates functionality from TranslateAgent in
+// chrome/renderer/translate/translate_agent.cc.
 // JsTranslateManager injects the script in the page and calls it, but is not
 // responsible for loading it or caching it.
 @interface JsTranslateManager : CRWJSInjectionManager
@@ -25,7 +25,7 @@
 @property(nonatomic, copy) NSString* script;
 
 // Starts translation of the page from |source| language to |target| language.
-// Equivalent to TranslateHelper::StartTranslation().
+// Equivalent to TranslateAgent::StartTranslation().
 - (void)startTranslationFrom:(const std::string&)source
                           to:(const std::string&)target;
 

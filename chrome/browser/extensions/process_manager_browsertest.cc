@@ -53,7 +53,7 @@
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 
-#if defined(CHROMEOS)
+#if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chromeos/constants/chromeos_switches.h"
 #endif
@@ -465,7 +465,7 @@ IN_PROC_BROWSER_TEST_F(ProcessManagerBrowserTest, HttpHostMatchingExtensionId) {
   // Load a page from the test host in a new tab.
   ui_test_utils::NavigateToURLWithDisposition(
       browser(), url, WindowOpenDisposition::NEW_FOREGROUND_TAB,
-      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
 
   // Sanity check that there's no bleeding between the extension and the tab.
   content::WebContents* tab_web_contents =
@@ -510,7 +510,7 @@ IN_PROC_BROWSER_TEST_F(ProcessManagerBrowserTest, NoBackgroundPage) {
 
   ui_test_utils::NavigateToURLWithDisposition(
       browser(), extension_url, WindowOpenDisposition::NEW_FOREGROUND_TAB,
-      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
   EXPECT_EQ(1u, pm->GetRenderFrameHostsForExtension(extension->id()).size());
 }
 
@@ -654,7 +654,7 @@ IN_PROC_BROWSER_TEST_F(ProcessManagerBrowserTest,
   // Now load an extension page and a non-extension page...
   ui_test_utils::NavigateToURLWithDisposition(
       browser(), kExt1EmptyUrl, WindowOpenDisposition::NEW_BACKGROUND_TAB,
-      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
   NavigateToURL(embedded_test_server()->GetURL("/two_iframes.html"));
   EXPECT_EQ(1u, pm->GetAllFrames().size());
 

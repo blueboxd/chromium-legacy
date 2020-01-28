@@ -79,6 +79,7 @@
 <translation id="129553762522093515">Cerrado recientemente</translation>
 <translation id="1298536327547837046">Búsqueda de software malicioso</translation>
 <translation id="129863573139666797"><ph name="BEGIN_LINK" />Intenta borrar tus cookies<ph name="END_LINK" /></translation>
+<translation id="1301324364792935241">Revisa la configuración de DNS seguro</translation>
 <translation id="1307966114820526988">Funciones obsoletas</translation>
 <translation id="1314509827145471431">Encuadernado a la derecha</translation>
 <translation id="1320233736580025032">Prc1 (Envelope)</translation>
@@ -152,6 +153,7 @@
 <translation id="1569487616857761740">Ingresa una fecha de vencimiento</translation>
 <translation id="1581080074034554886">CVC</translation>
 <translation id="1583429793053364125">Se produjo un error cuando se mostraba la página web.</translation>
+<translation id="1586541204584340881">Las extensiones que instalaste</translation>
 <translation id="1588438908519853928">Normal</translation>
 <translation id="1592005682883173041">Acceso a datos locales</translation>
 <translation id="1594030484168838125">Seleccionar</translation>
@@ -362,6 +364,7 @@
 <translation id="2544644783021658368">Documento único</translation>
 <translation id="254947805923345898">El valor de la política no es válido.</translation>
 <translation id="255002559098805027"><ph name="HOST_NAME" /> envió una respuesta no válida.</translation>
+<translation id="2553853292994445426">Revisa la configuración de DNS seguro. Es posible que hayas configurado un servidor DNS seguro y que sus conexiones estén fallando.</translation>
 <translation id="2556876185419854533">&amp;Deshacer Editar</translation>
 <translation id="257674075312929031">Grupo</translation>
 <translation id="2586657967955657006">Portapapeles</translation>
@@ -482,6 +485,7 @@
 <translation id="3095940652251934233">Statement</translation>
 <translation id="3096100844101284527">Agregar dirección de retiro</translation>
 <translation id="3105172416063519923">ID de recurso:</translation>
+<translation id="3107591622054137333"><ph name="BEGIN_LINK" />Comprobar la configuración de DNS seguro<ph name="END_LINK" /></translation>
 <translation id="3109728660330352905">No tienes autorización para ver esta página.</translation>
 <translation id="3113284927548439113">Tercer turno</translation>
 <translation id="3116158981186517402">Laminado</translation>
@@ -785,6 +789,7 @@
 <translation id="4390472908992056574">Borde</translation>
 <translation id="4406896451731180161">resultados de búsqueda</translation>
 <translation id="4408413947728134509">Cookies <ph name="NUM_COOKIES" /></translation>
+<translation id="4414290883293381923">Ingresaste tu contraseña en un sitio engañoso. Chrome te recomienda cambiar esta contraseña ahora en <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, <ph name="WEBSITE_3" /> y otros sitios donde la uses.</translation>
 <translation id="4415426530740016218">Dirección de retiro</translation>
 <translation id="4424024547088906515">Este servidor no pudo probar que su dominio es <ph name="DOMAIN" />; Chrome no confía en el certificado de seguridad. Es posible que esto se deba a una configuración incorrecta o a que un atacante interceptó la conexión.</translation>
 <translation id="443121186588148776">Puerto en serie</translation>
@@ -1217,6 +1222,7 @@
 <translation id="6353505687280762741">{COUNT,plural, =0{Ninguna}=1{1 contraseña (para <ph name="DOMAIN_LIST" />, sincronizada)}=2{2 contraseñas (para <ph name="DOMAIN_LIST" />, sincronizadas)}other{# contraseñas (para <ph name="DOMAIN_LIST" />, sincronizadas)}}</translation>
 <translation id="6358450015545214790">¿Qué significa esto?</translation>
 <translation id="6361757823711327522">B7</translation>
+<translation id="6364095313648930329"><ph name="BEGIN_LINK" />Comprobar la configuración del proxy, firewall o DNS seguro<ph name="END_LINK" /></translation>
 <translation id="6366710531182496394">Grapas dobles a la izquierda</translation>
 <translation id="6377268785556383139">1 resultado para "<ph name="SEARCH_TEXT" />"</translation>
 <translation id="6380497234672085559">A0</translation>
@@ -1239,6 +1245,7 @@
 <translation id="6433595998831338502"><ph name="HOST_NAME" /> rechazó la conexión.</translation>
 <translation id="6434309073475700221">Rechazar</translation>
 <translation id="6440503408713884761">Ignorada</translation>
+<translation id="6443406338865242315">Las extensiones y complementos que instalaste</translation>
 <translation id="6446163441502663861">Kahu (Envelope)</translation>
 <translation id="6446608382365791566">Agregar más información</translation>
 <translation id="6447842834002726250">Cookies</translation>
@@ -1348,6 +1355,7 @@
 <translation id="7012363358306927923">China UnionPay</translation>
 <translation id="7016992613359344582">Estos cargos pueden ser únicos o recurrentes, y es posible que no sean evidentes.</translation>
 <translation id="7029809446516969842">Contraseñas</translation>
+<translation id="7031646650991750659">Las apps de Google Play que instalaste</translation>
 <translation id="7050187094878475250">Intentaste acceder a <ph name="DOMAIN" />, pero el certificado de servidor tenía un período de validez demasiado extenso para ser fiable.</translation>
 <translation id="705310974202322020">{NUM_CARDS,plural, =1{No se puede guardar esta tarjeta en este momento}other{No se pueden guardar estas tarjetas en este momento}}</translation>
 <translation id="7053983685419859001">Bloquear</translation>
@@ -1407,6 +1415,7 @@ Detalles adicionales:
 <translation id="7319430975418800333">A3</translation>
 <translation id="7320336641823683070">Ayuda con la conexión</translation>
 <translation id="733354035281974745">Se anuló la cuenta local del dispositivo</translation>
+<translation id="7333654844024768166">Ingresaste tu contraseña en un sitio engañoso. Chromium te recomienda cambiar esta contraseña ahora en <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, <ph name="WEBSITE_3" /> y otros sitios donde la uses.</translation>
 <translation id="7334320624316649418">&amp;Rehacer Reorganizar</translation>
 <translation id="7337706099755338005">No está disponible para tu plataforma.</translation>
 <translation id="733923710415886693">El certificado del servidor no se divulgó mediante el Certificado de transparencia.</translation>

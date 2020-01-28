@@ -302,15 +302,37 @@ TEST_F(TabStripUIHandlerTest, GroupTab) {
   tab_groups::TabGroupId group_id =
       browser()->tab_strip_model()->AddToNewGroup({0});
 
-  // Add another tab at index 1, and try to group it.
+  // Add another tab, and try to group it.
   AddTab(browser(), GURL("http://foo"));
   base::ListValue args;
   args.AppendInteger(extensions::ExtensionTabUtil::GetTabId(
-      browser()->tab_strip_model()->GetWebContentsAt(1)));
+      browser()->tab_strip_model()->GetWebContentsAt(0)));
   args.AppendString(group_id.ToString());
   handler()->HandleGroupTab(&args);
 
-  ASSERT_EQ(group_id, browser()->tab_strip_model()->GetTabGroupForTab(1));
+  ASSERT_EQ(group_id, browser()->tab_strip_model()->GetTabGroupForTab(0));
+}
+
+TEST_F(TabStripUIHandlerTest, MoveGroup) {
+  AddTab(browser(), GURL("http://foo/1"));
+  AddTab(browser(), GURL("http://foo/2"));
+  tab_groups::TabGroupId group_id =
+      browser()->tab_strip_model()->AddToNewGroup({0});
+
+  // Move the group to index 1.
+  int new_index = 1;
+  base::ListValue args;
+  args.AppendString(group_id.ToString());
+  args.AppendInteger(new_index);
+  handler()->HandleMoveGroup(&args);
+
+  std::vector<int> tabs_in_group = browser()
+                                       ->tab_strip_model()
+                                       ->group_model()
+                                       ->GetTabGroup(group_id)
+                                       ->ListTabs();
+  ASSERT_EQ(new_index, tabs_in_group.front());
+  ASSERT_EQ(new_index, tabs_in_group.back());
 }
 
 TEST_F(TabStripUIHandlerTest, UngroupTab) {

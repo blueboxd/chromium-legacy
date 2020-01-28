@@ -2123,7 +2123,7 @@ bool WebViewImpl::ScrollFocusedEditableElementIntoView() {
   auto params = CreateScrollIntoViewParams(
       ScrollAlignment::kAlignCenterIfNeeded,
       ScrollAlignment::kAlignCenterIfNeeded, kProgrammaticScroll, false,
-      kScrollBehaviorInstant);
+      mojom::blink::ScrollIntoViewParams::Behavior::kInstant);
   params->stop_at_main_frame_layout_viewport = true;
   layout_object->ScrollRectToVisible(
       PhysicalRect(layout_object->AbsoluteBoundingBoxRect()),

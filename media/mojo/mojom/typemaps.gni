@@ -13,7 +13,6 @@ typemaps = [
   "//media/mojo/mojom/demuxer_stream.typemap",
   "//media/mojo/mojom/encryption_pattern.typemap",
   "//media/mojo/mojom/hdr_metadata.typemap",
-  "//media/mojo/mojom/media_drm_storage.typemap",
   "//media/mojo/mojom/media_types.typemap",
   "//media/mojo/mojom/pipeline_status.typemap",
   "//media/mojo/mojom/video_color_space.typemap",
@@ -23,6 +22,10 @@ typemaps = [
   "//media/mojo/mojom/video_encoder_info.typemap",
   "//media/mojo/mojom/video_frame.typemap",
 ]
+
+if (enable_media_drm_storage) {
+  typemaps += [ "//media/mojo/mojom/media_drm_storage.typemap" ]
+}
 
 if (enable_cdm_proxy) {
   typemaps += [ "//media/mojo/mojom/cdm_proxy.typemap" ]

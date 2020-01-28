@@ -24,6 +24,7 @@ import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.task.PostTask;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.contextmenu.ContextMenuParams.PerformanceClass;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.share.ShareHelper;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
@@ -315,10 +316,18 @@ public class ContextMenuHelper implements OnCreateContextMenuListener {
     }
 
     private void recordTimeToTakeActionHistogram(boolean selectedItem) {
-        final String action = selectedItem ? "SelectedItem" : "Abandoned";
-        RecordHistogram.recordTimesHistogram("ContextMenu.TimeToTakeAction." + action,
+        final String histogramName =
+                "ContextMenu.TimeToTakeAction." + (selectedItem ? "SelectedItem" : "Abandoned");
+        final long timeToTakeActionMs =
                 TimeUnit.MICROSECONDS.toMillis(TimeUtilsJni.get().getTimeTicksNowUs())
-                        - mMenuShownTimeMs);
+                - mMenuShownTimeMs;
+        RecordHistogram.recordTimesHistogram(histogramName, timeToTakeActionMs);
+        if (mCurrentContextMenuParams.isAnchor()
+                && mCurrentContextMenuParams.getPerformanceClass()
+                        == PerformanceClass.PERFORMANCE_FAST) {
+            RecordHistogram.recordTimesHistogram(
+                    histogramName + ".PerformanceClassFast", timeToTakeActionMs);
+        }
     }
 
     /**

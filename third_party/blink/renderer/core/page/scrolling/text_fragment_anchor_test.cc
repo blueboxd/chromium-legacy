@@ -825,6 +825,8 @@ TEST_F(TextFragmentAnchorTest, OneContextTerm) {
 TEST_F(TextFragmentAnchorTest, ScrollCancelled) {
   SimRequest request("https://example.com/test.html#:~:text=test", "text/html");
   SimSubresourceRequest css_request("https://example.com/test.css", "text/css");
+  SimSubresourceRequest img_request("https://example.com/test.png",
+                                    "image/png");
   LoadURL("https://example.com/test.html#:~:text=test");
   request.Complete(R"HTML(
     <!DOCTYPE html>
@@ -840,15 +842,41 @@ TEST_F(TextFragmentAnchorTest, ScrollCancelled) {
     </style>
     <link rel=stylesheet href=test.css>
     <p id="text">This is a test page</p>
+    <img src="test.png">
   )HTML");
 
   Compositor().PaintFrame();
-  GetDocument().View()->LayoutViewport()->ScrollBy(ScrollOffset(0, 100),
-                                                   kUserScroll);
+  if (!RuntimeEnabledFeatures::BlockHTMLParserOnStyleSheetsEnabled()) {
+    GetDocument().View()->LayoutViewport()->ScrollBy(ScrollOffset(0, 100),
+                                                     kUserScroll);
+    // Set the target text to visible and change its position to cause a layout
+    // and invoke the fragment anchor in the next begin frame.
+    css_request.Complete("p { visibility: visible; top: 1001px; }");
+    img_request.Complete("");
+  } else {
+    // Set the target text to visible and change its position to cause a layout
+    // and invoke the fragment anchor in the next begin frame.
+    css_request.Complete("p { visibility: visible; top: 1001px; }");
+    RunPendingTasks();
+    Compositor().BeginFrame();
+    Element& p = *GetDocument().getElementById("text");
 
-  // Set the target text to visible and change its position to cause a layout
-  // and invoke the fragment anchor.
-  css_request.Complete("p { visibility: visible; top: 1001px; }");
+    // We should have invoked the fragment and scrolled the <p> into view, but
+    // load should not yet be complete due to the image.
+    EXPECT_TRUE(ViewportRect().Contains(BoundingRectInFrame(p)));
+    ASSERT_FALSE(GetDocument().IsLoadCompleted());
+
+    // Before invoking again, perform a user scroll. This should abort future
+    // scrolls during fragment invocation.
+    GetDocument().View()->LayoutViewport()->SetScrollOffset(ScrollOffset(0, 0),
+                                                            kUserScroll);
+    ASSERT_FALSE(ViewportRect().Contains(BoundingRectInFrame(p)));
+
+    img_request.Complete("");
+    RunPendingTasks();
+    ASSERT_TRUE(GetDocument().IsLoadCompleted());
+  }
+
   RunAsyncMatchingTasks();
 
   Compositor().BeginFrame();

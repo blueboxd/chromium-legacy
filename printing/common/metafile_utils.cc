@@ -139,10 +139,6 @@ sk_sp<SkDocument> MakePdfDocument(const std::string& creator,
                           ? SkString("Chromium")
                           : SkString(creator.c_str(), creator.size());
   metadata.fRasterDPI = 300.0f;
-  metadata.fSubsetter =
-      base::FeatureList::IsEnabled(printing::features::kHarfBuzzPDFSubsetter)
-          ? SkPDF::Metadata::kHarfbuzz_Subsetter
-          : SkPDF::Metadata::kSfntly_Subsetter;
 
   SkPDF::StructureElementNode tag_root = {};
   if (!accessibility_tree.nodes.empty()) {

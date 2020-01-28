@@ -8,14 +8,17 @@ import static org.chromium.ui.base.ViewUtils.dpToPx;
 
 import android.content.Context;
 import android.content.res.Configuration;
+import android.support.v7.widget.SwitchCompat;
 import android.text.SpannableString;
 import android.text.method.LinkMovementMethod;
 import android.text.style.ForegroundColorSpan;
 import android.util.AttributeSet;
 import android.view.Gravity;
 import android.view.View;
+import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import androidx.annotation.IdRes;
@@ -23,6 +26,7 @@ import androidx.annotation.StringRes;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.ui.text.NoUnderlineClickableSpan;
 import org.chromium.ui.text.SpanApplier;
 import org.chromium.ui.widget.ChromeBulletSpan;
@@ -40,6 +44,8 @@ public class IncognitoDescriptionView extends LinearLayout {
     private LinearLayout mBulletpointsContainer;
     private TextView mLearnMore;
     private TextView[] mParagraphs;
+    private RelativeLayout mCookieControlsCard;
+    private SwitchCompat mCookieControlsToggle;
 
     private static final int BULLETPOINTS_HORIZONTAL_SPACING_DP = 40;
     private static final int CONTENT_WIDTH_DP = 600;
@@ -56,6 +62,22 @@ public class IncognitoDescriptionView extends LinearLayout {
      */
     public void setLearnMoreOnclickListener(OnClickListener listener) {
         mLearnMore.setOnClickListener(listener);
+    }
+
+    /**
+     * Set cookie controls toggle on checked change listerner.
+     * @param listener The given listener.
+     */
+    public void setCookieControlsToggleOnCheckedChangeListener(OnCheckedChangeListener listener) {
+        mCookieControlsToggle.setOnCheckedChangeListener(listener);
+    }
+
+    /**
+     * Set cookie controls toggle's checked value.
+     * @param enabled The value to set the toggle to.
+     */
+    public void setCookieControlsToggle(boolean enabled) {
+        mCookieControlsToggle.setChecked(enabled);
     }
 
     @Override
@@ -75,6 +97,8 @@ public class IncognitoDescriptionView extends LinearLayout {
         mParagraphs = new TextView[] {mSubtitle, findViewById(R.id.new_tab_incognito_features),
                 findViewById(R.id.new_tab_incognito_warning), mLearnMore};
         mBulletpointsContainer = findViewById(R.id.new_tab_incognito_bulletpoints_container);
+        mCookieControlsCard = findViewById(R.id.cookie_controls_card);
+        mCookieControlsToggle = findViewById(R.id.cookie_controls_card_toggle);
 
         adjustView();
     }
@@ -97,6 +121,7 @@ public class IncognitoDescriptionView extends LinearLayout {
         adjustIcon();
         adjustLayout();
         adjustLearnMore();
+        adjustCookieControlsCard();
     }
 
     /**
@@ -264,5 +289,16 @@ public class IncognitoDescriptionView extends LinearLayout {
                 span, subtitleText.length() + 1, textWithLearnMoreLink.length(), 0 /* flags */);
         mSubtitle.setText(textWithLearnMoreLink);
         mSubtitle.setMovementMethod(LinkMovementMethod.getInstance());
+    }
+
+    /** Adjust the Cookie Controls Card. */
+    private void adjustCookieControlsCard() {
+        if (!ChromeFeatureList.isInitialized()
+                || !ChromeFeatureList.isEnabled(ChromeFeatureList.IMPROVED_COOKIE_CONTROLS)) {
+            mCookieControlsCard.setVisibility(View.GONE);
+            return;
+        }
+
+        mCookieControlsCard.setVisibility(View.VISIBLE);
     }
 }

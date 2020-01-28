@@ -31,17 +31,15 @@ public class ActivityDelegate implements StartStopWithNativeObserver,
 
     private boolean mModuleOnStartPending;
     private boolean mModuleOnResumePending;
-    private ChromeActivity mActivity;
+    private ChromeActivity<?> mActivity;
 
     private Bundle getSavedInstanceState() {
         return mActivity.getSavedInstanceState();
     }
 
     @Inject
-    public ActivityDelegate(
-            ChromeActivity chromeActivity,
+    public ActivityDelegate(ChromeActivity<?> chromeActivity,
             ActivityLifecycleDispatcher activityLifecycleDispatcher) {
-
         mActivity = chromeActivity;
         activityLifecycleDispatcher.register(this);
     }

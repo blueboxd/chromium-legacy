@@ -5,16 +5,16 @@
 #ifndef DEVICE_FIDO_MAC_UTIL_H_
 #define DEVICE_FIDO_MAC_UTIL_H_
 
+#import <Security/Security.h>
+#include <os/availability.h>
+
 #include <memory>
 #include <string>
 #include <vector>
 
-#import <Security/Security.h>
-
 #include "base/callback.h"
 #include "base/component_export.h"
 #include "base/containers/span.h"
-#include "base/mac/availability.h"
 #include "device/fido/attested_credential_data.h"
 #include "device/fido/authenticator_data.h"
 #include "device/fido/ec_public_key.h"

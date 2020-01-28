@@ -170,20 +170,21 @@ instead rely on the "current sequence" and no longer be thread-affine.
 
 A task that can run on any thread and doesn’t have ordering or mutual exclusion
 requirements with other tasks should be posted using one of the
-`base::PostTask*()` functions defined in
-[`base/task/post_task.h`](https://cs.chromium.org/chromium/src/base/task/post_task.h).
+`base::ThreadPool::PostTask*()` functions defined in
+[`base/task/thread_pool.h`](https://cs.chromium.org/chromium/src/base/task/thread_pool.h).
 
 ```cpp
-base::PostTask(FROM_HERE, base::BindOnce(&Task));
+base::ThreadPool::PostTask(FROM_HERE, base::BindOnce(&Task));
 ```
 
 This posts tasks with default traits.
 
-The `base::PostTask*()` functions allow the caller to provide additional details
-about the task via TaskTraits (ref. [Annotating Tasks with TaskTraits](#Annotating-Tasks-with-TaskTraits)).
+The `base::ThreadPool::PostTask*()` functions allow the caller to provide
+additional details about the task via TaskTraits (ref. [Annotating Tasks with
+TaskTraits](#Annotating-Tasks-with-TaskTraits)).
 
 ```cpp
-base::PostTask(
+base::ThreadPool::PostTask(
     FROM_HERE, {base::TaskPriority::BEST_EFFORT, MayBlock()},
     base::BindOnce(&Task));
 ```
@@ -192,9 +193,9 @@ base::PostTask(
 
 A parallel
 [`base::TaskRunner`](https://cs.chromium.org/chromium/src/base/task_runner.h) is
-an alternative to calling `base::PostTask*()` directly. This is mainly useful
-when it isn’t known in advance whether tasks will be posted in parallel, in
-sequence, or to a single-thread (ref. [Posting a Sequenced
+an alternative to calling `base::ThreadPool::PostTask*()` directly. This is
+mainly useful when it isn’t known in advance whether tasks will be posted in
+parallel, in sequence, or to a single-thread (ref. [Posting a Sequenced
 Task](#Posting-a-Sequenced-Task), [Posting Multiple Tasks to the Same
 Thread](#Posting-Multiple-Tasks-to-the-Same-Thread)). Since `base::TaskRunner`
 is the base class of `base::SequencedTaskRunner` and
@@ -207,18 +208,21 @@ class A {
  public:
   A() = default;
 
+  void PostSomething() {
+    task_runner_->PostTask(FROM_HERE, base::BindOnce(&A, &DoSomething));
+  }
+
   void DoSomething() {
-    task_runner_->PostTask(FROM_HERE, base::BindOnce(&A));
   }
 
  private:
   scoped_refptr<base::TaskRunner> task_runner_ =
-      base::CreateTaskRunner({base::TaskPriority::USER_VISIBLE});
+      base::ThreadPool::CreateTaskRunner({base::TaskPriority::USER_VISIBLE});
 };
 ```
 
 Unless a test needs to control precisely how tasks are executed, it is preferred
-to call `base::PostTask*()` directly (ref. [Testing](#Testing) for less invasive
+to call `base::ThreadPool::PostTask*()` directly (ref. [Testing](#Testing) for less invasive
 ways of controlling tasks in tests).
 
 ## Posting a Sequenced Task
@@ -230,11 +234,11 @@ necessarily on the same thread). To post tasks as part of a sequence, use a
 ### Posting to a New Sequence
 
 A `base::SequencedTaskRunner` can be created by
-`base::CreateSequencedTaskRunner()`.
+`base::ThreadPool::CreateSequencedTaskRunner()`.
 
 ```cpp
 scoped_refptr<SequencedTaskRunner> sequenced_task_runner =
-    base::CreateSequencedTaskRunner(...);
+    base::ThreadPool::CreateSequencedTaskRunner(...);
 
 // TaskB runs after TaskA completes.
 sequenced_task_runner->PostTask(FROM_HERE, base::BindOnce(&TaskA));
@@ -344,6 +348,9 @@ base::CreateSingleThreadTaskRunner({content::BrowserThread::IO})
     ->PostTask(FROM_HERE, ...);
 ```
 
+Note: This API will soon be updated to follow the API-as-a-destination design
+for [task APIs v3], stay tuned!
+
 The main thread and the IO thread are already super busy. Therefore, prefer
 posting to a general purpose thread when possible (ref.
 [Posting a Parallel Task](#Posting-a-Parallel-Task),
@@ -360,12 +367,12 @@ TODO
 ### Posting to a Custom SingleThreadTaskRunner
 
 If multiple tasks need to run on the same thread and that thread doesn’t have to
-be the main thread or the IO thread, post them to a `base::SingleThreadTaskRunner`
-created by `base::CreateSingleThreadTaskRunner`.
+be the main thread or the IO thread, post them to a
+`base::SingleThreadTaskRunner` created by `base::Threadpool::CreateSingleThreadTaskRunner`.
 
 ```cpp
 scoped_refptr<SingleThreadTaskRunner> single_thread_task_runner =
-    base::CreateSingleThreadTaskRunner(...);
+    base::Threadpool::CreateSingleThreadTaskRunner(...);
 
 // TaskB runs after TaskA completes. Both tasks run on the same thread.
 single_thread_task_runner->PostTask(FROM_HERE, base::BindOnce(&TaskA));
@@ -402,9 +409,10 @@ base::ThreadTaskRunnerHandle::Get()->PostTask(
 
 Tasks that need to run on a COM Single-Thread Apartment (STA) thread must be
 posted to a `base::SingleThreadTaskRunner` returned by
-`base::CreateCOMSTATaskRunner()`. As mentioned in [Posting Multiple Tasks to the
-Same Thread](#Posting-Multiple-Tasks-to-the-Same-Thread), all tasks posted to
-the same `base::SingleThreadTaskRunner` run on the same thread in posting order.
+`base::ThreadPool::CreateCOMSTATaskRunner()`. As mentioned in [Posting Multiple
+Tasks to the Same Thread](#Posting-Multiple-Tasks-to-the-Same-Thread), all tasks
+posted to the same `base::SingleThreadTaskRunner` run on the same thread in
+posting order.
 
 ```cpp
 // Task(A|B|C)UsingCOMSTA will run on the same COM STA thread.
@@ -422,7 +430,7 @@ void TaskAUsingCOMSTA() {
 void TaskBUsingCOMSTA() { }
 void TaskCUsingCOMSTA() { }
 
-auto com_sta_task_runner = base::CreateCOMSTATaskRunner(...);
+auto com_sta_task_runner = base::ThreadPool::CreateCOMSTATaskRunner(...);
 com_sta_task_runner->PostTask(FROM_HERE, base::BindOnce(&TaskAUsingCOMSTA));
 com_sta_task_runner->PostTask(FROM_HERE, base::BindOnce(&TaskBUsingCOMSTA));
 ```
@@ -433,11 +441,8 @@ com_sta_task_runner->PostTask(FROM_HERE, base::BindOnce(&TaskBUsingCOMSTA));
 encapsulate information about a task that helps the thread pool make better
 scheduling decisions.
 
-All `base::PostTask*()` functions in
-[`base/task/post_task.h`](https://cs.chromium.org/chromium/src/base/task/post_task.h)
-have an overload that takes `base::TaskTraits` as argument and one that doesn’t.
-The overload that doesn’t take `base::TaskTraits` as argument is appropriate for
-tasks that:
+Methods that take `base::TaskTraits` can be be passed `{}` when default traits
+are sufficient. Default traits are appropriate for tasks that:
 - Don’t block (ref. MayBlock and WithBaseSyncPrimitives).
 - Prefer inheriting the current priority to specifying their own.
 - Can either block shutdown or be skipped on shutdown (thread pool is free to
@@ -457,28 +462,28 @@ Below are some examples of how to specify `base::TaskTraits`.
 // is inherited from the calling context (e.g. if it is posted from
 // a BEST_EFFORT task, it will have a BEST_EFFORT priority). It will either
 // block shutdown or be skipped on shutdown.
-base::PostTask(FROM_HERE, base::BindOnce(...));
+base::ThreadPool::PostTask(FROM_HERE, base::BindOnce(...));
 
 // This task has the highest priority. The thread pool will try to
 // run it before USER_VISIBLE and BEST_EFFORT tasks.
-base::PostTask(
+base::ThreadPool::PostTask(
     FROM_HERE, {base::TaskPriority::USER_BLOCKING},
     base::BindOnce(...));
 
 // This task has the lowest priority and is allowed to block (e.g. it
 // can read a file from disk).
-base::PostTask(
+base::ThreadPool::PostTask(
     FROM_HERE, {base::TaskPriority::BEST_EFFORT, base::MayBlock()},
     base::BindOnce(...));
 
 // This task blocks shutdown. The process won't exit before its
 // execution is complete.
-base::PostTask(
+base::ThreadPool::PostTask(
     FROM_HERE, {base::TaskShutdownBehavior::BLOCK_SHUTDOWN},
     base::BindOnce(...));
 
 // This task will run on the Browser UI thread.
-base::PostTask(
+base::ThreadPool::PostTask(
     FROM_HERE, {content::BrowserThread::UI},
     base::BindOnce(...));
 ```
@@ -487,7 +492,7 @@ base::PostTask(
 
 Do not perform expensive work on the main thread, the IO thread or any sequence
 that is expected to run tasks with a low latency. Instead, perform expensive
-work asynchronously using `base::PostTaskAndReply*()` or
+work asynchronously using `base::ThreadPool::PostTaskAndReply*()` or
 `base::SequencedTaskRunner::PostTaskAndReply()`. Note that
 asynchronous/overlapped I/O on the IO thread are fine.
 
@@ -508,7 +513,7 @@ this case). The return value of the first call is automatically provided as
 argument to the second call.
 
 ```cpp
-base::PostTaskAndReplyWithResult(
+base::ThreadPool::PostTaskAndReplyWithResult(
     FROM_HERE, {base::MayBlock()},
     base::BindOnce(&GetHistoryItemsFromDisk, "keyword"),
     base::BindOnce(&AddHistoryItemsToOmniboxDropdown));
@@ -519,15 +524,16 @@ base::PostTaskAndReplyWithResult(
 ### Posting a One-Off Task with a Delay
 
 To post a task that must run once after a delay expires, use
-`base::PostDelayedTask*()` or `base::TaskRunner::PostDelayedTask()`.
+`base::ThreadPool::PostDelayedTask*()` or `base::TaskRunner::PostDelayedTask()`.
 
 ```cpp
-base::PostDelayedTask(
+base::ThreadPool::PostDelayedTask(
   FROM_HERE, {base::TaskPriority::BEST_EFFORT}, base::BindOnce(&Task),
   base::TimeDelta::FromHours(1));
 
 scoped_refptr<base::SequencedTaskRunner> task_runner =
-    base::CreateSequencedTaskRunner({base::TaskPriority::BEST_EFFORT});
+    base::ThreadPool::CreateSequencedTaskRunner(
+        {base::TaskPriority::BEST_EFFORT});
 task_runner->PostDelayedTask(
     FROM_HERE, base::BindOnce(&Task), base::TimeDelta::FromHours(1));
 ```
@@ -582,7 +588,7 @@ class A {
     // a call to A::Store() on the current sequence. The call to
     // A::Store() is canceled when |weak_ptr_factory_| is destroyed.
     // (guarantees that |this| will not be used-after-free).
-    base::PostTaskAndReplyWithResult(
+    base::ThreadPool::PostTaskAndReplyWithResult(
         FROM_HERE, base::BindOnce(&Compute),
         base::BindOnce(&A::Store, weak_ptr_factory_.GetWeakPtr()));
   }
@@ -606,7 +612,7 @@ tasks run. Keep in mind that `CancelableTaskTracker` cannot cancel tasks that
 have already started to run.
 
 ```cpp
-auto task_runner = base::CreateTaskRunner({base::ThreadPool()});
+auto task_runner = base::ThreadPool::CreateTaskRunner({});
 base::CancelableTaskTracker cancelable_task_tracker;
 cancelable_task_tracker.PostTask(task_runner.get(), FROM_HERE,
                                  base::DoNothing());
@@ -715,18 +721,17 @@ TEST(MyTest, MyTest) {
   // D and run_loop.QuitClosure() have been executed. E is still in the queue.
 
   // Tasks posted to thread pool run asynchronously as they are posted.
-  base::PostTask(FROM_HERE, {base::ThreadPool()}, base::BindOnce(&F));
+  base::ThreadPool::PostTask(FROM_HERE, {}, base::BindOnce(&F));
   auto task_runner =
-      base::CreateSequencedTaskRunner({base::ThreadPool()});
+      base::ThreadPool::CreateSequencedTaskRunner({});
   task_runner->PostTask(FROM_HERE, base::BindOnce(&G));
 
   // To block until all tasks posted to thread pool are done running:
   base::ThreadPoolInstance::Get()->FlushForTesting();
   // F and G have been executed.
 
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE, base::TaskTrait(),
-      base::BindOnce(&H), base::BindOnce(&I));
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, {}, base::BindOnce(&H), base::BindOnce(&I));
 
   // This runs the (Thread|Sequenced)TaskRunnerHandle queue until both the
   // (Thread|Sequenced)TaskRunnerHandle queue and the TaskSchedule queue are
@@ -800,7 +805,7 @@ class Foo {
 
  private:
   scoped_refptr<base::SequencedTaskRunner> background_task_runner_ =
-      base::CreateSequencedTaskRunner(
+      base::ThreadPool::CreateSequencedTaskRunner(
           {base::MayBlock(), base::TaskPriority::BEST_EFFORT});
 }
 ```
@@ -810,3 +815,5 @@ that component since unit tests will use the leaf layer directly.
 
 ## FAQ
 See [Threading and Tasks FAQ](threading_and_tasks_faq.md) for more examples.
+
+[task APIs v3]: https://docs.google.com/document/d/1tssusPykvx3g0gvbvU4HxGyn3MjJlIylnsH13-Tv6s4/edit?ts=5de99a52#heading=h.ss4tw38hvh3s

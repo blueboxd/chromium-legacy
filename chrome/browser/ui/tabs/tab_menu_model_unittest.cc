@@ -31,6 +31,15 @@ TEST_F(TabMenuModelTest, Basics) {
   EXPECT_EQ(item_count, delegate_.enable_count_);
 }
 
+TEST_F(TabMenuModelTest, MoveToNewWindow) {
+  chrome::NewTab(browser());
+  TabMenuModel model(&delegate_, browser()->tab_strip_model(), 0);
+
+  // Verify that CommandMoveTabsToNewWindow is in the menu.
+  EXPECT_GT(
+      model.GetIndexOfCommandId(TabStripModel::CommandMoveTabsToNewWindow), -1);
+}
+
 TEST_F(TabMenuModelTest, AddToExistingGroupSubmenu) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(features::kTabGroups);

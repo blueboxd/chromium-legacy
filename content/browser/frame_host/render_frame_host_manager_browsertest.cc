@@ -5366,6 +5366,15 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
         success_site_instance->IsRelatedSiteInstance(initial_instance.get()));
   }
 
+  // Install a client forcing every navigation to swap BrowsingInstances.
+  // TODO(https://crbug.com/1045524): Ensure for now that we are not swapping
+  // pages on reloads for now even when content client tells us to.
+  // Move client initialisation to a later point in the time after the
+  // problem is fixed.
+  BrowsingInstanceSwapContentBrowserClient content_browser_client;
+  ContentBrowserClient* old_client =
+      SetBrowserClientForTesting(&content_browser_client);
+
   // Reload of the error page that still results in an error should stay in
   // the same SiteInstance. Ensure this works for both browser-initiated
   // reloads and renderer-initiated ones.
@@ -5375,10 +5384,8 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
     reload_observer.Wait();
     EXPECT_FALSE(reload_observer.last_navigation_succeeded());
     EXPECT_EQ(2, nav_controller.GetEntryCount());
-    if (!IsProactivelySwapBrowsingInstanceEnabled()) {
-      EXPECT_EQ(initial_instance,
-                shell()->web_contents()->GetMainFrame()->GetSiteInstance());
-    }
+    EXPECT_EQ(initial_instance,
+              shell()->web_contents()->GetMainFrame()->GetSiteInstance());
     EXPECT_TRUE(
         IsMainFrameOriginOpaqueAndCompatibleWithURL(shell(), error_url));
   }
@@ -5388,20 +5395,11 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
     reload_observer.Wait();
     EXPECT_FALSE(reload_observer.last_navigation_succeeded());
     EXPECT_EQ(2, nav_controller.GetEntryCount());
-    if (!IsProactivelySwapBrowsingInstanceEnabled()) {
-      EXPECT_EQ(initial_instance,
-                shell()->web_contents()->GetMainFrame()->GetSiteInstance());
-    }
+    EXPECT_EQ(initial_instance,
+              shell()->web_contents()->GetMainFrame()->GetSiteInstance());
     EXPECT_TRUE(
         IsMainFrameOriginOpaqueAndCompatibleWithURL(shell(), error_url));
   }
-
-  // Install a client forcing every navigation to swap BrowsingInstances.
-  // Do not do it earlier to ensure that we don't force BrowsingInstance swap
-  // for the reloads above.
-  BrowsingInstanceSwapContentBrowserClient content_browser_client;
-  ContentBrowserClient* old_client =
-      SetBrowserClientForTesting(&content_browser_client);
 
   // Allow the navigation to succeed and ensure it swapped to a non-related
   // SiteInstance.

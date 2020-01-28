@@ -42,6 +42,8 @@ constexpr int kDialogTitleMarginEndDp = 0;
 ToastDialogView::ToastDialogView(const base::string16& app_name,
                                  base::OnceClosure dismissed_callback)
     : app_name_(app_name), dismissed_callback_(std::move(dismissed_callback)) {
+  DialogDelegate::set_buttons(ui::DIALOG_BUTTON_NONE);
+
   chrome::RecordDialogCreation(
       chrome::DialogIdentifier::LOCK_SCREEN_NOTE_APP_TOAST);
 
@@ -106,10 +108,6 @@ void ToastDialogView::AddedToWidget() {
   title->SetFontList(views::Label::GetDefaultFontList().Derive(
       3, gfx::Font::NORMAL, gfx::Font::Weight::MEDIUM));
   GetBubbleFrameView()->SetTitleView(std::move(title));
-}
-
-int ToastDialogView::GetDialogButtons() const {
-  return ui::DIALOG_BUTTON_NONE;
 }
 
 bool ToastDialogView::ShouldShowCloseButton() const {

@@ -35,8 +35,11 @@ struct LanguageDetectionDetails {
   mojo_base.mojom.String16 contents;
 };
 
-interface Page {
-  // Requests that the page be translated from |source_lang| to
+// Handles language translation. This is used by the browser process to
+// direct a renderer to translate the language of a frame (or revert a
+// previous translation of the contents of a frame).
+interface TranslateAgent {
+  // Requests that the frame be translated from |source_lang| to
   // |target_lang|.
   //
   // If a Translate request is already in progress with a matching
@@ -49,18 +52,22 @@ interface Page {
   //
   // If |cancelled| is |true| all other response values should be
   // ignored.
-  Translate(string translate_script, string source_lang, string target_lang)
+  TranslateFrame(string translate_script, string source_lang,
+                 string target_lang)
       => (bool cancelled, string original_lang, string translated_lang,
           TranslateError error);
 
-  // Requests that the page be reverted to its original language with
+  // Requests that the frame be reverted to its original language with
   // no translation applied.
   RevertTranslation();
 };
 
+// Reports when page is ready for translation. This is used by the
+// renderer of a main frame to report its detected language to the
+// browser process and provides the translation interface back to itself.
 interface ContentTranslateDriver {
   // Notification that a new page is ready to translate,
   // and the language for it has been determined.
-  RegisterPage(pending_remote<Page> page, LanguageDetectionDetails details,
-               bool page_needs_translation);
+  RegisterPage(pending_remote<TranslateAgent> translate_agent,
+               LanguageDetectionDetails details, bool page_needs_translation);
 };

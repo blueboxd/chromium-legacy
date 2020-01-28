@@ -76,6 +76,9 @@ class CC_ANIMATION_EXPORT WorkletAnimation final : public Animation {
   void PushPropertiesTo(Animation* animation_impl) override;
 
   void PromoteScrollTimelinePendingToActive() override;
+  void UpdateScrollTimeline(base::Optional<ElementId> scroller_id,
+                            base::Optional<double> start_scroll_offset,
+                            base::Optional<double> end_scroll_offset) override;
 
   // Called by Blink WorkletAnimation when its playback rate is updated.
   void UpdatePlaybackRate(double playback_rate);

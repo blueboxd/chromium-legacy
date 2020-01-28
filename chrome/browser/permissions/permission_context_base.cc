@@ -21,7 +21,6 @@
 #include "chrome/browser/permissions/permission_request_impl.h"
 #include "chrome/browser/permissions/permission_request_manager.h"
 #include "chrome/browser/permissions/permission_uma_util.h"
-#include "chrome/browser/permissions/permission_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
@@ -30,6 +29,7 @@
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/permissions/permission_request.h"
 #include "components/permissions/permission_request_id.h"
+#include "components/permissions/permission_util.h"
 #include "components/prefs/pref_service.h"
 #include "components/variations/variations_associated_data.h"
 #include "content/public/browser/back_forward_cache.h"
@@ -85,8 +85,9 @@ void LogPermissionBlockedMessage(content::WebContents* web_contents,
                                  ContentSettingsType type) {
   web_contents->GetMainFrame()->AddMessageToConsole(
       blink::mojom::ConsoleMessageLevel::kWarning,
-      base::StringPrintf(message,
-                         PermissionUtil::GetPermissionString(type).c_str()));
+      base::StringPrintf(
+          message,
+          permissions::PermissionUtil::GetPermissionString(type).c_str()));
 }
 
 }  // namespace
@@ -124,8 +125,8 @@ void PermissionContextBase::RequestPermission(
   GURL embedding_origin = web_contents->GetLastCommittedURL().GetOrigin();
 
   if (!requesting_origin.is_valid() || !embedding_origin.is_valid()) {
-    std::string type_name =
-        PermissionUtil::GetPermissionString(content_settings_type_);
+    std::string type_name = permissions::PermissionUtil::GetPermissionString(
+        content_settings_type_);
 
     DVLOG(1) << "Attempt to use " << type_name
              << " from an invalid URL: " << requesting_origin << ","
@@ -318,7 +319,7 @@ void PermissionContextBase::ResetPermission(const GURL& requesting_origin,
 bool PermissionContextBase::IsPermissionKillSwitchOn() const {
   const std::string param = variations::GetVariationParamValue(
       kPermissionsKillSwitchFieldStudy,
-      PermissionUtil::GetPermissionString(content_settings_type_));
+      permissions::PermissionUtil::GetPermissionString(content_settings_type_));
 
   return param == kPermissionsKillSwitchBlockedValue;
 }

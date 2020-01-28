@@ -5,9 +5,10 @@
 #ifndef DEVICE_FIDO_MAC_GET_ASSERTION_OPERATION_H_
 #define DEVICE_FIDO_MAC_GET_ASSERTION_OPERATION_H_
 
+#include <os/availability.h>
+
 #include "base/callback.h"
 #include "base/component_export.h"
-#include "base/mac/availability.h"
 #include "base/macros.h"
 #include "device/fido/authenticator_get_assertion_response.h"
 #include "device/fido/ctap_get_assertion_request.h"

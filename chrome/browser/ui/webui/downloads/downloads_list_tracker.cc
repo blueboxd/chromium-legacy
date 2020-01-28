@@ -273,6 +273,8 @@ downloads::mojom::DataPtr DownloadsListTracker::CreateDownloadData(
     case download::DownloadItem::IN_PROGRESS: {
       if (download_item->IsDangerous()) {
         state = "DANGEROUS";
+      } else if (download_item->IsMixedContent()) {
+        state = "MIXED_CONTENT";
       } else if (download_item->IsPaused()) {
         state = "PAUSED";
       } else {

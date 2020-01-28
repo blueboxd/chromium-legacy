@@ -32,7 +32,11 @@ source_set("browser") {
   }
 
   if (is_win) {
-    sources += [ "spellcheck_platform_win.cc" ]
+    sources += [
+      "spellcheck_platform_win.cc",
+      "windows_spell_checker.cc",
+      "windows_spell_checker.h",
+    ]
   }
 
   public_deps = [

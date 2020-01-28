@@ -400,7 +400,7 @@ IN_PROC_BROWSER_TEST_F(NotificationsTest, InlinePermissionRevokeUkm) {
   EXPECT_EQ(*ukm_recorder.GetEntryMetric(entry, "PermissionType"),
             static_cast<int64_t>(ContentSettingsType::NOTIFICATIONS));
   EXPECT_EQ(*ukm_recorder.GetEntryMetric(entry, "Action"),
-            static_cast<int64_t>(PermissionAction::REVOKED));
+            static_cast<int64_t>(permissions::PermissionAction::REVOKED));
 }
 
 IN_PROC_BROWSER_TEST_F(NotificationsTest, TestCreateDenyCloseNotifications) {

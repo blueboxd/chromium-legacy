@@ -9,6 +9,7 @@
 
 #include "ash/wm/window_state.h"
 #include "base/macros.h"
+#include "ui/gfx/geometry/rect.h"
 
 namespace ash {
 class TabletModeWindowManager;
@@ -51,6 +52,9 @@ class TabletModeWindowState : public WindowState::State {
                    WindowState::State* previous_state) override;
   void DetachState(WindowState* window_state) override;
 
+  gfx::Rect old_window_bounds_in_screen() const {
+    return old_window_bounds_in_screen_;
+  }
   WindowState::State* old_state() { return old_state_.get(); }
 
  private:
@@ -77,7 +81,8 @@ class TabletModeWindowState : public WindowState::State {
   // window state. If |animated| is set we animate the change.
   void UpdateBounds(WindowState* window_state, bool animated);
 
-  // The original state object of the window.
+  // The original bounds and state object of the window.
+  gfx::Rect old_window_bounds_in_screen_;
   std::unique_ptr<WindowState::State> old_state_;
 
   // The window whose WindowState owns this instance.

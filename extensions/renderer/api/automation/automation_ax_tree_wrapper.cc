@@ -8,6 +8,7 @@
 #include "ui/accessibility/ax_language_detection.h"
 #include "ui/accessibility/ax_node.h"
 #include "ui/accessibility/ax_node_position.h"
+#include "ui/accessibility/ax_tree_manager_map.h"
 
 namespace extensions {
 
@@ -244,12 +245,14 @@ AutomationAXTreeWrapper::AutomationAXTreeWrapper(
     AutomationInternalCustomBindings* owner)
     : tree_id_(tree_id), owner_(owner), event_generator_(&tree_) {
   tree_.AddObserver(this);
+  ui::AXTreeManagerMap::GetInstance().AddTreeManager(tree_id, this);
 }
 
 AutomationAXTreeWrapper::~AutomationAXTreeWrapper() {
   // Stop observing so we don't get a callback for every node being deleted.
   event_generator_.SetTree(nullptr);
   tree_.RemoveObserver(this);
+  ui::AXTreeManagerMap::GetInstance().RemoveTreeManager(tree_id());
 }
 
 // static
@@ -600,6 +603,39 @@ bool AutomationAXTreeWrapper::IsEventTypeHandledByAXEventGenerator(
 
   NOTREACHED();
   return false;
+}
+
+ui::AXNode* AutomationAXTreeWrapper::GetNodeFromTree(
+    const ui::AXTreeID tree_id,
+    const int32_t node_id) const {
+  AutomationAXTreeWrapper* tree_wrapper =
+      owner_->GetAutomationAXTreeWrapperFromTreeID(tree_id);
+  if (!tree_wrapper)
+    return nullptr;
+
+  return tree_wrapper->tree()->GetFromId(node_id);
+}
+
+ui::AXTreeID AutomationAXTreeWrapper::GetTreeID() const {
+  return tree_id();
+}
+
+ui::AXTreeID AutomationAXTreeWrapper::GetParentTreeID() const {
+  AutomationAXTreeWrapper* parent_tree = GetParentOfTreeId(tree_id());
+  if (!parent_tree)
+    return ui::AXTreeID();  // Unknown AXTreeID.
+
+  return parent_tree->tree_id();
+}
+
+ui::AXNode* AutomationAXTreeWrapper::GetRootAsAXNode() const {
+  return tree_.root();
+}
+
+ui::AXNode* AutomationAXTreeWrapper::GetParentNodeFromParentTreeAsAXNode()
+    const {
+  AutomationAXTreeWrapper* wrapper = const_cast<AutomationAXTreeWrapper*>(this);
+  return owner_->GetParent(tree_.root(), &wrapper);
 }
 
 }  // namespace extensions

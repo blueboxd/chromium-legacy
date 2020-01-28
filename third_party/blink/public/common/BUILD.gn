@@ -113,6 +113,7 @@ source_set("headers") {
     "messaging/message_port_channel.h",
     "messaging/message_port_descriptor.h",
     "messaging/message_port_descriptor_mojom_traits.h",
+    "messaging/simple_message_port.h",
     "messaging/string_message_codec.h",
     "messaging/transferable_message.h",
     "messaging/transferable_message_mojom_traits.h",

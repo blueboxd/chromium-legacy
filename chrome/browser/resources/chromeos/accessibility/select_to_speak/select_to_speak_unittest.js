@@ -20,7 +20,7 @@ SelectToSpeakUnitTest.prototype = {
 
 TEST_F('SelectToSpeakUnitTest', 'getGSuiteAppRoot', function() {
   let root = {url: 'https://docs.google.com/presentation/p/cats_r_awesome'};
-  let div1 = {root: root};
+  let div1 = {root};
   let frame1 = {url: 'about:blank', parent: div1};
   let div2 = {root: frame1};
   let frame2 = {url: 'about:blank', parent: div2};

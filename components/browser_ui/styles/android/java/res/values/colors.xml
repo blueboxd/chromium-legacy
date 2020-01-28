@@ -5,7 +5,7 @@
 
 <!-- TODO(crbug.com/1017190): Remove the UnusedResources workaround. -->
 <resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="UnusedResources">
-    <color name="light_active_color">@color/modern_blue_600</color>
+    <color name="light_active_color">@color/control_active_color_light</color>
 
     <!-- Text colors -->
     <color name="default_primary_color">#F2F2F2</color>
@@ -23,8 +23,8 @@
 
     <!-- Control colors for toggles, checkboxes, ratio buttons, list item highlight, and accent.
      Note that these should NOT be used for icon tint. -->
-    <color name="control_normal_color">@color/modern_grey_700</color>
+    <color name="control_normal_color">@color/control_normal_color_light</color>
     <color name="control_highlight_color" tools:ignore="UnusedResources">
-        @color/modern_grey_800_alpha_38
+        @color/control_highlight_color_light
     </color>
 </resources>

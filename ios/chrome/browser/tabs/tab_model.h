@@ -46,9 +46,6 @@ class Browser;
 // The WebStateList owned by the TabModel.
 @property(nonatomic, readonly) WebStateList* webStateList;
 
-// YES if there is a session restoration in progress.
-@property(nonatomic, readonly, getter=isRestoringSession) BOOL restoringSession;
-
 // Initializes tabs from existing browser object. |-setCurrentTab| needs to be
 // called in order to display the views associated with the tabs. Waits until
 // the views are ready.

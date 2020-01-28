@@ -67,8 +67,11 @@ DevToolsSession::PendingMessage::PendingMessage(int call_id,
 
 DevToolsSession::PendingMessage::~PendingMessage() = default;
 
-DevToolsSession::DevToolsSession(DevToolsAgentHostClient* client)
-    : client_(client), dispatcher_(new protocol::UberDispatcher(this)) {}
+DevToolsSession::DevToolsSession(DevToolsAgentHostClient* client,
+                                 const std::string& session_id)
+    : client_(client),
+      dispatcher_(new protocol::UberDispatcher(this)),
+      session_id_(session_id) {}
 
 DevToolsSession::~DevToolsSession() {
   if (proxy_delegate_)
@@ -140,7 +143,7 @@ void DevToolsSession::AttachToAgent(blink::mojom::DevToolsAgent* agent,
                                session_.BindNewEndpointAndPassReceiver(),
                                io_session_.BindNewPipeAndPassReceiver(),
                                session_state_cookie_.Clone(),
-                               client_->UsesBinaryProtocol());
+                               client_->UsesBinaryProtocol(), session_id_);
   session_.set_disconnect_handler(base::BindOnce(
       &DevToolsSession::MojoConnectionDestroyed, base::Unretained(this)));
 
@@ -247,7 +250,7 @@ bool DevToolsSession::DispatchProtocolMessageInternal(
       DevToolsManager::GetInstance()->delegate();
   if (delegate && has_method) {
     delegate->HandleCommand(
-        agent_host_, client_, method, message,
+        this, method, message,
         base::BindOnce(&DevToolsSession::HandleCommand,
                        weak_factory_.GetWeakPtr(), std::move(value)));
   } else {
@@ -288,6 +291,35 @@ void DevToolsSession::fallThrough(int call_id,
 
   DispatchToAgent(pending_messages_.back());
   waiting_for_response_[call_id] = it;
+}
+
+// This method implements DevtoolsAgentHostClientChannel and
+// sends messages coming from the browser to the client.
+void DevToolsSession::DispatchProtocolMessageToClient(
+    std::vector<uint8_t> message) {
+  DCHECK(crdtp::cbor::IsCBORMessage(crdtp::SpanFrom(message)));
+
+  if (!session_id_.empty()) {
+    crdtp::Status status = crdtp::cbor::AppendString8EntryToCBORMap(
+        crdtp::SpanFrom(kSessionId), crdtp::SpanFrom(session_id_), &message);
+    DCHECK(status.ok()) << status.ToASCIIString();
+  }
+  if (!client_->UsesBinaryProtocol()) {
+    std::vector<uint8_t> json;
+    crdtp::Status status =
+        crdtp::json::ConvertCBORToJSON(crdtp::SpanFrom(message), &json);
+    LOG_IF(ERROR, !status.ok()) << status.ToASCIIString();
+    message = std::move(json);
+  }
+  client_->DispatchProtocolMessage(agent_host_, message);
+}
+
+content::DevToolsAgentHost* DevToolsSession::GetAgentHost() {
+  return agent_host_;
+}
+
+content::DevToolsAgentHostClient* DevToolsSession::GetClient() {
+  return client_;
 }
 
 void DevToolsSession::DispatchToAgent(const PendingMessage& message) {
@@ -335,41 +367,27 @@ void DevToolsSession::ResumeSendingMessagesToAgent() {
 
 // The following methods handle responses or notifications coming from
 // the browser to the client.
-static void SendProtocolResponseOrNotification(
-    DevToolsAgentHostClient* client,
-    DevToolsAgentHostImpl* agent_host,
-    std::unique_ptr<protocol::Serializable> message) {
-  std::vector<uint8_t> cbor = std::move(*message).TakeSerialized();
-  DCHECK(crdtp::cbor::IsCBORMessage(crdtp::SpanFrom(cbor)));
-  if (client->UsesBinaryProtocol()) {
-    client->DispatchProtocolMessage(agent_host, cbor);
-    return;
-  }
-  std::vector<uint8_t> json;
-  crdtp::Status status =
-      crdtp::json::ConvertCBORToJSON(crdtp::SpanFrom(cbor), &json);
-  LOG_IF(ERROR, !status.ok()) << status.ToASCIIString();
-  client->DispatchProtocolMessage(agent_host, json);
-}
-
 void DevToolsSession::sendProtocolResponse(
     int call_id,
     std::unique_ptr<protocol::Serializable> message) {
-  SendProtocolResponseOrNotification(client_, agent_host_, std::move(message));
+  DispatchProtocolMessageToClient(std::move(*message).TakeSerialized());
   // |this| may be deleted at this point.
 }
 
 void DevToolsSession::sendProtocolNotification(
     std::unique_ptr<protocol::Serializable> message) {
-  SendProtocolResponseOrNotification(client_, agent_host_, std::move(message));
+  DispatchProtocolMessageToClient(std::move(*message).TakeSerialized());
   // |this| may be deleted at this point.
 }
 
 void DevToolsSession::flushProtocolNotifications() {
 }
 
-// The following methods handle responses or notifications coming from
-// the renderer (blink) to the client.
+// The following methods handle responses or notifications coming from the
+// renderer (blink) to the client. It is important that these messages not be
+// parsed and sent as is, since a renderer may be compromised; so therefore,
+// we're not sending them via the DevToolsAgentHostClientChannel interface
+// (::DispatchProtocolMessageToClient) but directly to the client instead.
 static void DispatchProtocolResponseOrNotification(
     DevToolsAgentHostClient* client,
     DevToolsAgentHostImpl* agent_host,
@@ -454,7 +472,7 @@ DevToolsSession* DevToolsSession::AttachChildSession(
     DevToolsAgentHostClient* client) {
   DCHECK(!agent_host->SessionByClient(client));
   DCHECK(!root_session_);
-  auto session = std::make_unique<DevToolsSession>(client);
+  auto session = std::make_unique<DevToolsSession>(client, session_id);
   session->root_session_ = this;
   DevToolsSession* session_ptr = session.get();
   // If attach did not succeed, |session| is already destroyed.
@@ -468,27 +486,8 @@ void DevToolsSession::DetachChildSession(const std::string& session_id) {
   child_sessions_.erase(session_id);
 }
 
-void DevToolsSession::SendMessageFromChildSession(
-    const std::string& session_id,
-    base::span<const uint8_t> message) {
-  if (child_sessions_.find(session_id) == child_sessions_.end())
-    return;
-  DCHECK(crdtp::cbor::IsCBORMessage(crdtp::SpanFrom(message)));
-  std::vector<uint8_t> patched(message.begin(), message.end());
-  crdtp::Status status = crdtp::cbor::AppendString8EntryToCBORMap(
-      crdtp::SpanFrom(kSessionId), crdtp::SpanFrom(session_id), &patched);
-  LOG_IF(ERROR, !status.ok()) << status.ToASCIIString();
-  if (!status.ok())
-    return;
-  if (client_->UsesBinaryProtocol()) {
-    client_->DispatchProtocolMessage(agent_host_, patched);
-    return;
-  }
-  std::vector<uint8_t> json;
-  status = crdtp::json::ConvertCBORToJSON(crdtp::SpanFrom(patched), &json);
-  LOG_IF(ERROR, !status.ok()) << status.ToASCIIString();
-  client_->DispatchProtocolMessage(agent_host_, json);
-  // |this| may be deleted at this point.
+bool DevToolsSession::HasChildSession(const std::string& session_id) {
+  return child_sessions_.find(session_id) != child_sessions_.end();
 }
 
 }  // namespace content

@@ -248,14 +248,6 @@ def sign_chrome(paths, config, sign_framework=False):
     """
     parts = get_parts(config)
 
-    # If the config permits optional parts, test if the part is missing on-disk
-    # and remove it from the set of parts to sign if it is.
-    optional_parts = config.optional_parts
-    for optional in optional_parts:
-        part = parts[optional]
-        if not commands.file_exists(os.path.join(paths.work, part.path)):
-            del parts[optional]
-
     _sanity_check_version_keys(paths, parts)
 
     if sign_framework:

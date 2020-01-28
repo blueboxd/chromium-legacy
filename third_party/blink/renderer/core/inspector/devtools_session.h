@@ -43,7 +43,8 @@ class CORE_EXPORT DevToolsSession : public GarbageCollected<DevToolsSession>,
           main_receiver,
       mojo::PendingReceiver<mojom::blink::DevToolsSession> io_receiver,
       mojom::blink::DevToolsSessionStatePtr reattach_session_state,
-      bool client_expects_binary_responses);
+      bool client_expects_binary_responses,
+      const String& session_id);
   ~DevToolsSession() override;
 
   void ConnectToV8(v8_inspector::V8Inspector*, int context_group_id);
@@ -110,6 +111,7 @@ class CORE_EXPORT DevToolsSession : public GarbageCollected<DevToolsSession>,
   const bool client_expects_binary_responses_;
   InspectorAgentState v8_session_state_;
   InspectorAgentState::Bytes v8_session_state_cbor_;
+  const String session_id_;
 
   DISALLOW_COPY_AND_ASSIGN(DevToolsSession);
 };

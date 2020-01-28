@@ -60,18 +60,18 @@ class MultiDeviceSetupInitializer
   // Used for both SetHostDevice() and SetHostDeviceWithoutAuthToken().
   struct SetHostDeviceArgs {
     // For SetHostDevice().
-    SetHostDeviceArgs(const std::string& host_device_id,
+    SetHostDeviceArgs(const std::string& host_instance_id_or_legacy_device_id,
                       const std::string& auth_token,
                       SetHostDeviceCallback callback);
 
     // For SetHostDeviceWithoutAuthToken().
     SetHostDeviceArgs(
-        const std::string& host_device_id,
+        const std::string& host_instance_id_or_legacy_device_id,
         mojom::PrivilegedHostDeviceSetter::SetHostDeviceCallback callback);
 
     ~SetHostDeviceArgs();
 
-    std::string host_device_id;
+    std::string host_instance_id_or_legacy_device_id;
     // Null for SetHostDeviceWithoutAuthToken().
     base::Optional<std::string> auth_token;
     base::OnceCallback<void(bool)> callback;
@@ -97,7 +97,7 @@ class MultiDeviceSetupInitializer
   void GetEligibleHostDevices(GetEligibleHostDevicesCallback callback) override;
   void GetEligibleActiveHostDevices(
       GetEligibleActiveHostDevicesCallback callback) override;
-  void SetHostDevice(const std::string& host_device_id,
+  void SetHostDevice(const std::string& host_instance_id_or_legacy_device_id,
                      const std::string& auth_token,
                      SetHostDeviceCallback callback) override;
   void RemoveHostDevice() override;
@@ -114,7 +114,7 @@ class MultiDeviceSetupInitializer
 
   // MultiDeviceSetupBase:
   void SetHostDeviceWithoutAuthToken(
-      const std::string& host_device_id,
+      const std::string& host_instance_id_or_legacy_device_id,
       mojom::PrivilegedHostDeviceSetter::SetHostDeviceCallback callback)
       override;
 

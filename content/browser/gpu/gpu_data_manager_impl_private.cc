@@ -34,6 +34,7 @@
 #include "base/trace_event/trace_event.h"
 #include "base/version.h"
 #include "build/build_config.h"
+#include "build/chromecast_buildflags.h"
 #include "cc/base/switches.h"
 #include "components/viz/common/features.h"
 #include "content/browser/gpu/gpu_memory_buffer_manager_singleton.h"
@@ -508,7 +509,14 @@ void GpuDataManagerImplPrivate::InitializeGpuModes() {
 #endif  // !OS_ANDROID && !OS_CHROMEOS
 
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  if (!command_line->HasSwitch(switches::kDisableGpu)) {
+  if (command_line->HasSwitch(switches::kDisableGpu)) {
+#if BUILDFLAG(IS_CHROMECAST)
+    fallback_modes_.clear();
+    fallback_modes_.push_back(gpu::GpuMode::DISABLED);
+#elif defined(OS_ANDROID) || defined(OS_CHROMEOS)
+    CHECK(false) << "GPU acceleration is required on certain platforms!";
+#endif  // IS_CHROMECAST
+  } else {
     // On Fuchsia Vulkan must be used when it's enabled by the WebEngine
     // embedder. Falling back to SW compositing in that case is not supported.
 #if defined(OS_FUCHSIA)
@@ -586,6 +594,13 @@ bool GpuDataManagerImplPrivate::GpuProcessStartAllowed() const {
   // TODO(kylechar/zmo): Remove special case for Windows here.
   return GpuAccessAllowed(nullptr);
 #else
+#if BUILDFLAG(IS_CHROMECAST)
+  // Chromecast with GPU disabled should not try to run in the GPU process.
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kDisableGpu)) {
+    return false;
+  }
+#endif  // IS_CHROMECAST
   // For all other platforms we either always run the display compositor in the
   // GPU process (Linux, Mac and Fuchsia) or GPU access is never disabled
   // (Android and Chrome OS).

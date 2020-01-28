@@ -48,6 +48,8 @@ public class TasksSurfaceCoordinator implements TasksSurface {
                     activity.getString(R.string.help_context_incognito_learn_more),
                     Profile.getLastUsedProfile(), null);
         };
+        // TODO(crbug.com/1040091): Add parameter for CookieSettingsBridge to control the cookie
+        // controls toggle on the IncognitoNTP.
         mMediator = new TasksSurfaceMediator(
                 propertyModel, fakeboxDelegate, incognitoLearnMoreClickListener, isTabCarousel);
 

@@ -1101,7 +1101,8 @@ void LocalDOMWindow::scrollBy(const ScrollToOptions* scroll_to_options) const {
       viewport->GetSnapPositionAndSetTarget(*strategy).value_or(
           new_scaled_position);
 
-  ScrollBehavior scroll_behavior = kScrollBehaviorAuto;
+  mojom::blink::ScrollIntoViewParams::Behavior scroll_behavior =
+      mojom::blink::ScrollIntoViewParams::Behavior::kAuto;
   ScrollableArea::ScrollBehaviorFromString(scroll_to_options->behavior(),
                                            scroll_behavior);
   viewport->SetScrollOffset(
@@ -1165,7 +1166,8 @@ void LocalDOMWindow::scrollTo(const ScrollToOptions* scroll_to_options) const {
   new_scaled_position =
       viewport->GetSnapPositionAndSetTarget(*strategy).value_or(
           new_scaled_position);
-  ScrollBehavior scroll_behavior = kScrollBehaviorAuto;
+  mojom::blink::ScrollIntoViewParams::Behavior scroll_behavior =
+      mojom::blink::ScrollIntoViewParams::Behavior::kAuto;
   ScrollableArea::ScrollBehaviorFromString(scroll_to_options->behavior(),
                                            scroll_behavior);
   viewport->SetScrollOffset(

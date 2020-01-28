@@ -79,6 +79,7 @@
 <translation id="129553762522093515">Наскоро затворени</translation>
 <translation id="1298536327547837046">Сканиране за злонамерен софтуер</translation>
 <translation id="129863573139666797"><ph name="BEGIN_LINK" />Опитайте да изчистите „бисквитките“ си<ph name="END_LINK" /></translation>
+<translation id="1301324364792935241">Проверете настройките си за защитен DNS</translation>
 <translation id="1307966114820526988">Оттеглени функции</translation>
 <translation id="1314509827145471431">Подвързване отдясно</translation>
 <translation id="1320233736580025032">Prc1 (плик)</translation>
@@ -152,6 +153,7 @@
 <translation id="1569487616857761740">Въведете дата на валидност</translation>
 <translation id="1581080074034554886">CVC</translation>
 <translation id="1583429793053364125">Възникна проблем при показването на тази уеб страница.</translation>
+<translation id="1586541204584340881">Кои разширения сте инсталирали</translation>
 <translation id="1588438908519853928">Нормално</translation>
 <translation id="1592005682883173041">Достъп до локални данни</translation>
 <translation id="1594030484168838125">Избор</translation>
@@ -362,6 +364,7 @@
 <translation id="2544644783021658368">Един документ</translation>
 <translation id="254947805923345898">Стойността на правилото не е валидна.</translation>
 <translation id="255002559098805027"><ph name="HOST_NAME" /> изпрати невалиден отговор.</translation>
+<translation id="2553853292994445426">Проверете настройките си за защитен DNS. Възможно е да сте конфигурирали защитен DNS сървър, с който не може да бъде установена връзка.</translation>
 <translation id="2556876185419854533">&amp;Отмяна на редактирането</translation>
 <translation id="257674075312929031">Група</translation>
 <translation id="2586657967955657006">Буферна памет</translation>
@@ -482,6 +485,7 @@
 <translation id="3095940652251934233">Statement</translation>
 <translation id="3096100844101284527">Добавяне на адрес за вземане</translation>
 <translation id="3105172416063519923">ID на актива:</translation>
+<translation id="3107591622054137333"><ph name="BEGIN_LINK" />Проверете конфигурацията за защитения DNS<ph name="END_LINK" /></translation>
 <translation id="3109728660330352905">Нямате пълномощия за преглед на тази страница.</translation>
 <translation id="3113284927548439113">Трета смяна</translation>
 <translation id="3116158981186517402">Ламиниране</translation>
@@ -784,6 +788,7 @@
 <translation id="4390472908992056574">Периферия</translation>
 <translation id="4406896451731180161">резултата от търсенето</translation>
 <translation id="4408413947728134509">„Бисквитки“ <ph name="NUM_COOKIES" /></translation>
+<translation id="4414290883293381923">Току-що въведохте паролата си в измамнически сайт. Chrome препоръчва да посетите <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, <ph name="WEBSITE_3" /> и другите сайтове, за които я използвате, и да я промените в тях сега.</translation>
 <translation id="4415426530740016218">Адрес за вземане</translation>
 <translation id="4424024547088906515">Сървърът не можа да докаже, че е <ph name="DOMAIN" />; Chrome няма доверие на сертификата му за сигурност. Това може да се дължи на неправилно конфигуриране или на прихващане на връзката ви от атакуващ.</translation>
 <translation id="443121186588148776">Сериен порт</translation>
@@ -1216,6 +1221,7 @@
 <translation id="6353505687280762741">{COUNT,plural, =0{Няма}=1{1 парола (за <ph name="DOMAIN_LIST" />, синхронизирана)}=2{2 пароли (за <ph name="DOMAIN_LIST" />, синхронизирани)}other{# пароли (за <ph name="DOMAIN_LIST" />, синхронизирани)}}</translation>
 <translation id="6358450015545214790">Какво означават тези неща?</translation>
 <translation id="6361757823711327522">B7</translation>
+<translation id="6364095313648930329"><ph name="BEGIN_LINK" />Проверете конфигурацията на прокси сървъра, защитната стена и защитения DNS<ph name="END_LINK" />.</translation>
 <translation id="6366710531182496394">Двуточково телбодиране отляво</translation>
 <translation id="6377268785556383139">1 резултат за „<ph name="SEARCH_TEXT" />“</translation>
 <translation id="6380497234672085559">A0</translation>
@@ -1238,6 +1244,7 @@
 <translation id="6433595998831338502"><ph name="HOST_NAME" /> отказа да установи връзка.</translation>
 <translation id="6434309073475700221">Отхвърляне</translation>
 <translation id="6440503408713884761">Пренебрегнато</translation>
+<translation id="6443406338865242315">Кои разширения и приставки сте инсталирали</translation>
 <translation id="6446163441502663861">Kahu (плик)</translation>
 <translation id="6446608382365791566">Добавяне на още информация</translation>
 <translation id="6447842834002726250">„Бисквитки“</translation>
@@ -1347,6 +1354,7 @@
 <translation id="7012363358306927923">China UnionPay</translation>
 <translation id="7016992613359344582">Тези таксувания може да са еднократни или повтарящи се и е възможно да не са явни.</translation>
 <translation id="7029809446516969842">Пароли</translation>
+<translation id="7031646650991750659">Кои приложения от Google Play сте инсталирали</translation>
 <translation id="7050187094878475250">Опитахте да се свържете с/ъс <ph name="DOMAIN" />, но сървърът предостави сертификат, чийто период на валидност е твърде дълъг, за да е надежден.</translation>
 <translation id="705310974202322020">{NUM_CARDS,plural, =1{Тази карта не може да бъде запазена в момента}other{Тези карти не могат да бъдат запазени в момента}}</translation>
 <translation id="7053983685419859001">Блокиране</translation>
@@ -1406,6 +1414,7 @@
 <translation id="7319430975418800333">A3</translation>
 <translation id="7320336641823683070">Помощ при проблеми с връзката</translation>
 <translation id="733354035281974745">Отменено от локалния профил на устройството</translation>
+<translation id="7333654844024768166">Току-що въведохте паролата си в измамнически сайт. Chromium препоръчва да посетите <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, <ph name="WEBSITE_3" /> и другите сайтове, за които я използвате, и да я промените в тях сега.</translation>
 <translation id="7334320624316649418">&amp;Възстановяване на пренареждането</translation>
 <translation id="7337706099755338005">Не е налице за платформата ви.</translation>
 <translation id="733923710415886693">Сертификатът на сървъра не е разкрит чрез Прозрачност на сертификатите.</translation>

@@ -448,7 +448,7 @@ class UserSessionManager
   void ActivateWizard(OobeScreenId screen);
 
   // Adds first-time login URLs.
-  void InitializeStartUrls() const;
+  void InitializeStartUrls(Profile* profile) const;
 
   // Perform session initialization and either move to additional login flows
   // such as TOS (public sessions), priority pref sync UI (new users) or

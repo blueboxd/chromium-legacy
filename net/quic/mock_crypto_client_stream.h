@@ -65,6 +65,7 @@ class MockCryptoClientStream : public quic::QuicCryptoClientStream,
   const quic::QuicCryptoNegotiatedParameters& crypto_negotiated_params()
       const override;
   quic::CryptoMessageParser* crypto_message_parser() override;
+  void OnOneRttPacketAcknowledged() override;
 
   // Invokes the sessions's CryptoHandshakeEvent method with the specified
   // event.

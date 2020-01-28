@@ -29,7 +29,7 @@ import javax.inject.Inject;
 public class CustomTabIncognitoManager implements NativeInitObserver, Destroyable {
     private static final String TAG = "CctIncognito";
 
-    private final ChromeActivity mChromeActivity;
+    private final ChromeActivity<?> mChromeActivity;
     private final CustomTabActivityNavigationController mNavigationController;
     private final BrowserServicesIntentDataProvider mIntentDataProvider;
 
@@ -37,7 +37,7 @@ public class CustomTabIncognitoManager implements NativeInitObserver, Destroyabl
     private IncognitoTabHost mIncognitoTabHost;
 
     @Inject
-    public CustomTabIncognitoManager(ChromeActivity customTabActivity,
+    public CustomTabIncognitoManager(ChromeActivity<?> customTabActivity,
             BrowserServicesIntentDataProvider intentDataProvider,
             CustomTabActivityNavigationController navigationController,
             ActivityLifecycleDispatcher lifecycleDispatcher) {

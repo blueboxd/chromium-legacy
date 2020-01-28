@@ -169,7 +169,6 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
   virtual void DispatchWillSendSubmitEvent(HTMLFormElement*) = 0;
 
   virtual void DidStartLoading() = 0;
-  virtual void ProgressEstimateChanged(double progress_estimate) = 0;
   virtual void DidStopLoading() = 0;
 
   virtual void DownloadURL(const ResourceRequest&,

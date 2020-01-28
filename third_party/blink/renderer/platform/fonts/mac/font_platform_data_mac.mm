@@ -148,7 +148,7 @@ std::unique_ptr<FontPlatformData> FontPlatformDataFromNSFont(
           : 0;
 
   // No variable font requested, return static font.
-  if (!valid_configured_axes)
+  if (!valid_configured_axes && optical_sizing == kNoneOpticalSizing)
     return make_typeface_fontplatformdata();
 
   int existing_axes = typeface->getVariationDesignPosition(nullptr, 0);
@@ -167,28 +167,28 @@ std::unique_ptr<FontPlatformData> FontPlatformDataFromNSFont(
 
   // Iterate over the font's axes and find a missing tag from variation
   // settings, special case opsz, track the number of axes reconfigured.
-  size_t reconfigured_axes = 0;
+  bool axes_reconfigured = false;
   for (auto& coordinate : coordinates_to_set) {
-    FontVariationAxis current_axis(AtomicString(), 0);
     // Set opsz to font size but allow having it overriden by
     // font-variation-settings in case it has 'opsz'.
-    if (coordinate.axis == kOpszTag) {
+    if (coordinate.axis == kOpszTag && optical_sizing == kAutoOpticalSizing) {
       if (coordinate.value != SkFloatToScalar(size)) {
         coordinate.value = SkFloatToScalar(size);
-        reconfigured_axes++;
+        axes_reconfigured = true;
       }
     }
-    if (variation_settings->FindPair(FourByteTagToAtomicString(coordinate.axis),
-                                     &current_axis)) {
-      if (coordinate.value != current_axis.Value() &&
-          coordinate.axis != kOpszTag) {
-        coordinate.value = current_axis.Value();
-        reconfigured_axes++;
+    FontVariationAxis found_variation_setting(AtomicString(), 0);
+    if (variation_settings &&
+        variation_settings->FindPair(FourByteTagToAtomicString(coordinate.axis),
+                                     &found_variation_setting)) {
+      if (coordinate.value != found_variation_setting.Value()) {
+        coordinate.value = found_variation_setting.Value();
+        axes_reconfigured = true;
       }
     }
   }
 
-  if (!reconfigured_axes) {
+  if (!axes_reconfigured) {
     // No variable axes touched, return the previous typeface.
     return make_typeface_fontplatformdata();
   }

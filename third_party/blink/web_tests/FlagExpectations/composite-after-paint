@@ -123,7 +123,6 @@ paint/invalidation/compositing/should-not-repaint-composited-descendants.html [ 
 # Subpixel or invisible color differences that look benign, but we can't rebaseline ref tests.
 compositing/overflow/ancestor-with-clip-path.html [ Failure ]
 css3/blending/svg-isolation-add-clipper-text.html [ Failure ]
-fast/multicol/mixed-opacity-fixed-test.html [ Failure ]
 fullscreen/rendering/backdrop-object.html [ Failure ]
 external/wpt/svg/render/reftests/blending-001.svg [ Failure ]
 external/wpt/svg/render/reftests/blending-002.svg [ Failure ]

@@ -421,7 +421,7 @@ BrailleIme.prototype = {
    * @private
    */
   sendInputContext_(context) {
-    this.sendToChromeVox_({type: 'inputContext', context: context});
+    this.sendToChromeVox_({type: 'inputContext', context});
   },
 
   /**
@@ -443,12 +443,12 @@ BrailleIme.prototype = {
    */
   replaceText_(contextID, deleteBefore, toInsert) {
     var addText = chrome.input.ime.commitText.bind(
-        null, {contextID: contextID, text: toInsert}, function() {});
+        null, {contextID, text: toInsert}, function() {});
     if (deleteBefore > 0) {
       var deleteText = chrome.input.ime.deleteSurroundingText.bind(
           null, {
             engineID: this.engineID_,
-            contextID: contextID,
+            contextID,
             offset: -deleteBefore,
             length: deleteBefore
           },
@@ -456,12 +456,7 @@ BrailleIme.prototype = {
       // Make sure there's no non-zero length selection so that
       // deleteSurroundingText works correctly.
       chrome.input.ime.deleteSurroundingText(
-          {
-            engineID: this.engineID_,
-            contextID: contextID,
-            offset: 0,
-            length: 0
-          },
+          {engineID: this.engineID_, contextID, offset: 0, length: 0},
           deleteText);
     } else {
       addText();
@@ -491,7 +486,7 @@ BrailleIme.prototype = {
    * @param {string} text to store.
    */
   setUncommitted_(contextID, text) {
-    this.uncommitted_ = {contextID: contextID, text: text};
+    this.uncommitted_ = {contextID, text};
   },
 
   /**

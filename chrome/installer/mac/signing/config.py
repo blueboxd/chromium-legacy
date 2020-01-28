@@ -130,14 +130,6 @@ class CodeSignConfig(object):
         raise ConfigError('base_bundle_id')
 
     @property
-    def optional_parts(self):
-        """Returns a set of part names that are allowed to be missing when
-        signing the contents of the bundle. The part names should reflect the
-        part short name keys in the dictionary returned by signing.get_parts().
-        """
-        raise ConfigError('optional_parts')
-
-    @property
     def codesign_requirements_basic(self):
         """Returns the codesign --requirements string that is combined with
         a designated identifier requirement string of a

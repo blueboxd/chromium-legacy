@@ -112,6 +112,7 @@
 <translation id="2352467521400612932">Настройки за писалката</translation>
 <translation id="2354174487190027830">„<ph name="NAME" />“ се активира</translation>
 <translation id="2359808026110333948">Напред</translation>
+<translation id="2364154243880592194">Област за състоянието, часът е <ph name="TIME" />, <ph name="BATTERY" /> За достъп до центъра за известия натиснете клавиша „търсене“ + стрелката наляво.</translation>
 <translation id="2365393535144473978">Активирането на мобилните данни ще включи Bluetooth.</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="2412593942846481727">Налице е актуализация</translation>
@@ -335,6 +336,7 @@
 <translation id="5669267381087807207">Активира се</translation>
 <translation id="5673434351075758678">От <ph name="FROM_LOCALE" /> към <ph name="TO_LOCALE" /> след синхронизиране на настройките ви.</translation>
 <translation id="5682642926269496722">Google Асистент не се поддържа за текущия профил на потребител.</translation>
+<translation id="5689633613396158040">Функцията „Нощно осветление“ облекчава гледането на екрана и улеснява четенето при слаба светлина. Докоснете, за да изберете кога да се включва функцията или да я изключите напълно.</translation>
 <translation id="5691772641933328258">Отпечатъкът не бе разпознат</translation>
 <translation id="5710450975648804523">Режимът „Не безпокойте“ е включен</translation>
 <translation id="573413375004481890">Това устройство не може да поддържа всичките ви екрани, затова връзката на един от тях бе прекратена</translation>
@@ -514,6 +516,7 @@
 <translation id="8142441511840089262">Двукратно кликване</translation>
 <translation id="8142699993796781067">Частна мрежа</translation>
 <translation id="8152092012181020186">Натиснете Ctrl + W за затваряне.</translation>
+<translation id="8155007568264258537"><ph name="FEATURE_NAME" /> Тази настройка се управлява от администратора ви.</translation>
 <translation id="8167567890448493835">Използвате <ph name="LOCALE_NAME" /></translation>
 <translation id="8190698733819146287">Персонализиране на езиците и въвеждането...</translation>
 <translation id="8192202700944119416">Известията са скрити.</translation>
@@ -595,7 +598,6 @@
 <translation id="9193626018745640770">Предава се към неизвестен приемник</translation>
 <translation id="9194617393863864469">Влизане в профила на друг потребител...</translation>
 <translation id="9201374708878217446"><ph name="CONNECTION_STATUS" />, управлява се от администратора ви</translation>
-<translation id="9205817095063786319">Устройството се управлява от <ph name="DOMAIN" /></translation>
 <translation id="9210037371811586452">Излиза се от режима на обединен работен плот</translation>
 <translation id="9211681782751733685">Оставащо време до пълното зареждане на батерията: <ph name="TIME_REMAINING" />.</translation>
 <translation id="9215934040295798075">Задаване на тапета</translation>

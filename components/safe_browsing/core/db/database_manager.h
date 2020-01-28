@@ -270,7 +270,20 @@ class SafeBrowsingDatabaseManager
   // method at the bottom of it.
   virtual void StopOnIOThread(bool shutdown);
 
-  virtual RealTimeUrlLookupService* GetRealTimeUrlLookupService();
+  // TODO(crbug.com/1041912): Add tests for this method.
+  // Called to notify operations on the io_thread. This is called when any
+  // profile will be destroyed.
+  void OnProfileWillBeDestroyedOnIOThread(
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
+
+  // Instantiates and initializes |rt_url_lookup_service_|.
+  void SetupRealTimeUrlLookupService(
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
+
+  // Reset |rt_url_lookup_service_|.
+  void ResetRealTimeUrlLookupService();
+
+  RealTimeUrlLookupService* GetRealTimeUrlLookupService();
 
  protected:
   // Bundled client info for an API abuse hash prefix check.
@@ -347,6 +360,11 @@ class SafeBrowsingDatabaseManager
  private:
   // Returns an iterator to the pending API check with the given |client|.
   ApiCheckSet::iterator FindClientApiCheck(Client* client);
+
+  // This object gets refreshed when any active profile is destroyed. The old
+  // object is release and will delete itself when there is no pending request
+  // left.
+  std::unique_ptr<RealTimeUrlLookupService> rt_url_lookup_service_;
 };  // class SafeBrowsingDatabaseManager
 
 }  // namespace safe_browsing

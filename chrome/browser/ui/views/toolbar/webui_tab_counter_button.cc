@@ -93,8 +93,10 @@ class TabCounterAnimator : public gfx::AnimationDelegate {
     AnimationProgressed(&label_animation_);
   }
 
-  // AnimationDelegate:
-  void AnimationProgressed(const gfx::Animation* animation) override {
+  void LayoutIfAnimating() {
+    if (!border_animation_.is_animating() && !label_animation_.is_animating())
+      return;
+
     // |border_view_| does a hop (if |increasing_| is false) or a dip (if true).
     int border_y_delta = 0;
     switch (border_animation_.current_part_index()) {
@@ -134,8 +136,13 @@ class TabCounterAnimator : public gfx::AnimationDelegate {
     disappearing_label_->SetY(disappearing_label_position - border_y_delta);
   }
 
+  // AnimationDelegate:
+  void AnimationProgressed(const gfx::Animation* animation) override {
+    LayoutIfAnimating();
+  }
+
   void AnimationEnded(const gfx::Animation* animation) override {
-    AnimationProgressed(animation);
+    LayoutIfAnimating();
   }
 
  private:
@@ -194,6 +201,7 @@ class WebUITabCounterButton : public views::Button,
   void AddLayerBeneathView(ui::Layer* new_layer) override;
   void RemoveLayerBeneathView(ui::Layer* old_layer) override;
   void OnThemeChanged() override;
+  void Layout() override;
 
   // TabStripModelObserver:
   void OnTabStripModelChanged(
@@ -208,6 +216,7 @@ class WebUITabCounterButton : public views::Button,
   std::unique_ptr<TabCounterAnimator> animator_;
 
   base::Optional<int> last_num_tabs_ = base::nullopt;
+  int num_tabs_ = 0;
 };
 
 WebUITabCounterButton::WebUITabCounterButton(views::ButtonListener* listener)
@@ -216,39 +225,30 @@ WebUITabCounterButton::WebUITabCounterButton(views::ButtonListener* listener)
 WebUITabCounterButton::~WebUITabCounterButton() = default;
 
 void WebUITabCounterButton::UpdateText(int num_tabs) {
+  num_tabs_ = num_tabs;
+  if (num_tabs_ == last_num_tabs_)
+    return;
+
+  // |disappearing_label_| should keep the text that was previously visible.
+  disappearing_label_->SetText(appearing_label_->GetText());
+
   SetTooltipText(base::i18n::MessageFormatter::FormatWithNumberedArgs(
       l10n_util::GetStringUTF16(IDS_TOOLTIP_WEBUI_TAB_STRIP_TAB_COUNTER),
-      num_tabs));
-  disappearing_label_->SetText(appearing_label_->GetText());
-  appearing_label_->SetText(base::FormatNumber(num_tabs));
-
-  const int button_height = GetLocalBounds().height();
-  const int inset_height = (button_height - kDesiredBorderHeight) / 2;
-  int inset_width = inset_height;
-  int border_width = kDesiredBorderHeight;
-  if (num_tabs < 10) {
-    inset_width = inset_height;
-    border_width = kDesiredBorderHeight;
-  } else if (num_tabs < 100) {
-    inset_width = (button_height - kDoubleDigitWidth) / 2;
-    border_width = kDoubleDigitWidth;
+      num_tabs_));
+  if (num_tabs_ < 100) {
+    appearing_label_->SetText(base::FormatNumber(num_tabs_));
   } else {
     // In the triple-digit case, fall back to ':D' to match Android.
     appearing_label_->SetText(base::string16(base::ASCIIToUTF16(":D")));
-    inset_width = inset_height;
-    border_width = kDesiredBorderHeight;
   }
-  border_view_->SetBounds(inset_width, inset_height, border_width,
-                          kDesiredBorderHeight);
-  appearing_label_->SetBounds(0, 0, border_width, kDesiredBorderHeight);
-  disappearing_label_->SetBounds(0, -kOffscreenLabelDistance, border_width,
-                                 kDesiredBorderHeight);
+
+  InvalidateLayout();
 
   if (last_num_tabs_) {
-    const bool increasing = last_num_tabs_.value() < num_tabs;
+    const bool increasing = last_num_tabs_.value() < num_tabs_;
     animator_->Animate(increasing);
   }
-  last_num_tabs_ = num_tabs;
+  last_num_tabs_ = num_tabs_;
 }
 
 void WebUITabCounterButton::UpdateColors() {
@@ -328,13 +328,27 @@ void WebUITabCounterButton::OnThemeChanged() {
   ConfigureInkDropForToolbar(this);
 }
 
+void WebUITabCounterButton::Layout() {
+  const int button_height = GetLocalBounds().height();
+  const int inset_height = (button_height - kDesiredBorderHeight) / 2;
+  const int border_width = (num_tabs_ >= 10 && num_tabs_ < 100)
+                               ? kDoubleDigitWidth
+                               : kDesiredBorderHeight;
+  const int inset_width = (button_height - border_width) / 2;
+  border_view_->SetBounds(inset_width, inset_height, border_width,
+                          kDesiredBorderHeight);
+  appearing_label_->SetBounds(0, 0, border_width, kDesiredBorderHeight);
+  disappearing_label_->SetBounds(0, -kOffscreenLabelDistance, border_width,
+                                 kDesiredBorderHeight);
+
+  animator_->LayoutIfAnimating();
+}
+
 void WebUITabCounterButton::OnTabStripModelChanged(
     TabStripModel* tab_strip_model,
     const TabStripModelChange& change,
     const TabStripSelectionChange& selection) {
-  int num_tabs = tab_strip_model->count();
-  if (num_tabs != last_num_tabs_)
-    UpdateText(num_tabs);
+  UpdateText(tab_strip_model->count());
 }
 
 }  // namespace

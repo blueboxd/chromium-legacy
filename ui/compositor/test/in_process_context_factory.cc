@@ -372,7 +372,8 @@ void InProcessContextFactory::DisableSwapUntilResize(
     ui::Compositor* compositor) {
   if (!per_compositor_data_.count(compositor))
     return;
-  per_compositor_data_[compositor]->display->Resize(gfx::Size());
+  per_compositor_data_[compositor]->display->DisableSwapUntilResize(
+      base::OnceClosure());
 }
 
 void InProcessContextFactory::SetDisplayColorMatrix(ui::Compositor* compositor,

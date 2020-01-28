@@ -73,11 +73,17 @@ interface DevToolsAgent {
   // |client_expects_binary_response| indicates that responses (and
   // notifications) sent from this session should use binary (CBOR)
   // encoding as opposed to JSON encoding.
+  //
+  // |session_id| is a string which, if provided, uniquely identifies the
+  // session. The renderer must send this back with each response. The current
+  // implementation uses the string serialization of an UnguessableToken, but
+  // that is subject to change.
   AttachDevToolsSession(pending_associated_remote<DevToolsSessionHost> host,
                         pending_associated_receiver<DevToolsSession> session,
                         pending_receiver<DevToolsSession> io_session,
                         DevToolsSessionState? reattach_session_state,
-                        bool client_expects_binary_responses);
+                        bool client_expects_binary_responses,
+                        string session_id);
 
   // Requests an element at specific position to be inspected in every
   // attached session (or the next attached one if none yet).

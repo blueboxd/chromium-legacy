@@ -133,4 +133,4 @@ Updating the file doesn't fix the error
 * Make sure you're building `monochrome_public_bundle`
 
 Otherwise, please file a bug at [crbug.com/new](https://crbug.com/new) and/or
-message estevenson@.
+message clank-build@google.com.

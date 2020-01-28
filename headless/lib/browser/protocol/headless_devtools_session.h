@@ -14,11 +14,6 @@
 #include "headless/lib/browser/protocol/forward.h"
 #include "headless/lib/browser/protocol/protocol.h"
 
-namespace content {
-class DevToolsAgentHost;
-class DevToolsAgentHostClient;
-}  // namespace content
-
 namespace headless {
 class HeadlessBrowserImpl;
 class UberDispatcher;
@@ -30,8 +25,7 @@ class DomainHandler;
 class HeadlessDevToolsSession : public FrontendChannel {
  public:
   HeadlessDevToolsSession(base::WeakPtr<HeadlessBrowserImpl> browser,
-                          content::DevToolsAgentHost* agent_host,
-                          content::DevToolsAgentHostClient* client);
+                          content::DevToolsAgentHostClientChannel* channel);
   ~HeadlessDevToolsSession() override;
 
   void HandleCommand(
@@ -52,13 +46,11 @@ class HeadlessDevToolsSession : public FrontendChannel {
                    crdtp::span<uint8_t> message) override;
 
   base::WeakPtr<HeadlessBrowserImpl> browser_;
-  content::DevToolsAgentHost* const agent_host_;
-  content::DevToolsAgentHostClient* const client_;
   UberDispatcher dispatcher_;
   std::vector<std::unique_ptr<DomainHandler>> handlers_;
   base::flat_map<int, content::DevToolsManagerDelegate::NotHandledCallback>
       pending_commands_;
-
+  content::DevToolsAgentHostClientChannel* client_channel_;
   DISALLOW_COPY_AND_ASSIGN(HeadlessDevToolsSession);
 };
 

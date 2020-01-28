@@ -14,8 +14,6 @@
 
 @implementation TestSessionService
 
-@synthesize performIO = _performIO;
-
 - (instancetype)init {
   return [super initWithTaskRunner:base::ThreadTaskRunnerHandle::Get()];
 }
@@ -28,9 +26,9 @@
       [NSKeyedArchiver archivedDataWithRootObject:[factory sessionForSaving]
                             requiringSecureCoding:NO
                                             error:nil];
-  if (self.performIO) {
+  if (self.performIO)
     [self performSaveSessionData:data sessionPath:sessionPath];
-  }
+  _saveSessionCallsCount++;
 }
 
 @end

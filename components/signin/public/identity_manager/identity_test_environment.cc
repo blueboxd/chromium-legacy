@@ -269,6 +269,16 @@ AccountInfo IdentityTestEnvironment::MakePrimaryAccountAvailable(
   return signin::MakePrimaryAccountAvailable(identity_manager(), email);
 }
 
+#if defined(OS_CHROMEOS)
+AccountInfo IdentityTestEnvironment::MakeUnconsentedPrimaryAccountAvailable(
+    const std::string& email) {
+  AccountInfo account_info = MakeAccountAvailable(email);
+  identity_manager()->GetPrimaryAccountMutator()->SetUnconsentedPrimaryAccount(
+      account_info.account_id);
+  return account_info;
+}
+#endif  // defined(OS_CHROMEOS)
+
 void IdentityTestEnvironment::ClearPrimaryAccount(
     ClearPrimaryAccountPolicy policy) {
   signin::ClearPrimaryAccount(identity_manager(), policy);

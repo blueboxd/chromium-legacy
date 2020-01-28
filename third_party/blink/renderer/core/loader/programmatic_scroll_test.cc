@@ -170,11 +170,11 @@ TEST_F(ProgrammaticScrollSimTest, NavigateToHash) {
   )HTML");
   main_resource.Finish();
   css_resource.Complete();
-  Compositor().BeginFrame();
 
   // Run pending tasks to fire the load event and close the document. This
   // should cause the document to scroll to the hash.
   test::RunPendingTasks();
+  Compositor().BeginFrame();
 
   ScrollableArea* layout_viewport = GetDocument().View()->LayoutViewport();
   EXPECT_EQ(3000, layout_viewport->GetScrollOffset().Height());

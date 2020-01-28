@@ -239,7 +239,7 @@ IN_PROC_BROWSER_TEST_F(EventsApiTest, DISABLED_NewlyIntroducedListener) {
     ui_test_utils::NavigateToURLWithDisposition(
         browser(), GURL(url::kAboutBlankURL),
         WindowOpenDisposition::NEW_BACKGROUND_TAB,
-        ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+        ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
     // Expect tabs.onCreated to fire.
     EXPECT_TRUE(catcher.GetNextResult());
   }

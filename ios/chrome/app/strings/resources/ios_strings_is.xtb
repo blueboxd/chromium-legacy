@@ -192,6 +192,7 @@
 <translation id="3474649192738347024">Eyðublöð fyllt út.</translation>
 <translation id="3478058380795961209">Gildir út mánuðinn</translation>
 <translation id="3482959374254649722">Samstillir flipa...</translation>
+<translation id="3484946776651937681">Opna í niðurhalsmöppu</translation>
 <translation id="3493531032208478708"><ph name="BEGIN_LINK" />Frekari upplýsingar<ph name="END_LINK" /> um uppástungur að efni</translation>
 <translation id="3494788280727468875">Staðfesta hreinsun vefskoðunargagna</translation>
 <translation id="35083190962747987">Opna ${url}</translation>
@@ -537,6 +538,7 @@ Gögnin þín voru dulkóðuð með aðgangsorði samstillingar <ph name="TIME" 
 <translation id="8319076807703933069">Ný leit</translation>
 <translation id="8323906514956095947">Haltu inni til að sjá fleiri valkosti fyrir flipa</translation>
 <translation id="8328777765163860529">Loka öllu</translation>
+<translation id="8386068868580335421">Endurstilla</translation>
 <translation id="8407669440184693619">Engin aðgangsorð fundust fyrir þetta vefsvæði</translation>
 <translation id="842017693807136194">Skráð inn með</translation>
 <translation id="8428045167754449968">Borg/bær</translation>
@@ -553,6 +555,7 @@ Gögnin þín voru dulkóðuð með aðgangsorði samstillingar <ph name="TIME" 
 <translation id="8532105204136943229">Gildir til ársins</translation>
 <translation id="8534481786647257214">Google+ færsla birt.</translation>
 <translation id="8548878600947630424">Finna á síðu...</translation>
+<translation id="8574235780160508979">Þjónustuskilmálar Chrome breytast 31. mars. <ph name="BEGIN_LINK" />Kynntu þér þá<ph name="END_LINK" /></translation>
 <translation id="8588404856427128947">Slökkt</translation>
 <translation id="8605219856220328675">Loka flipa.</translation>
 <translation id="8620640915598389714">Breyta</translation>

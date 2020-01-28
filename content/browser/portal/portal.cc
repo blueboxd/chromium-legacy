@@ -229,6 +229,26 @@ void FlushTouchEventQueues(RenderWidgetHostImpl* host) {
     FlushTouchEventQueues(static_cast<RenderWidgetHostImpl*>(child_widget));
 }
 
+void CreateRenderWidgetHostViewForUnattachedPredecessor(
+    WebContentsImpl* predecessor) {
+  if (RenderWidgetHostViewBase* view = static_cast<RenderWidgetHostViewBase*>(
+          predecessor->GetMainFrame()->GetView())) {
+    view->Destroy();
+  }
+  predecessor->CreateRenderWidgetHostViewForRenderManager(
+      predecessor->GetRenderViewHost());
+
+  if (RenderFrameHostImpl* speculative_rfh =
+          predecessor->GetPendingMainFrame()) {
+    if (RenderWidgetHostViewBase* view = static_cast<RenderWidgetHostViewBase*>(
+            speculative_rfh->GetView())) {
+      view->Destroy();
+    }
+    predecessor->CreateRenderWidgetHostViewForRenderManager(
+        speculative_rfh->render_view_host());
+  }
+}
+
 // Copies |predecessor_contents|'s navigation entries to
 // |activated_contents|. |activated_contents| will have its last committed entry
 // combined with the entries in |predecessor_contents|. |predecessor_contents|
@@ -340,12 +360,7 @@ void Portal::Activate(blink::TransferableMessage data,
     // attached to an outer WebContents, and may not have an outer frame tree
     // node created (i.e. CreateProxyAndAttachPortal isn't called). In this
     // case, we can skip a few of the detachment steps above.
-    if (RenderWidgetHostViewBase* view = static_cast<RenderWidgetHostViewBase*>(
-            portal_contents_->GetMainFrame()->GetView())) {
-      view->Destroy();
-    }
-    portal_contents_->CreateRenderWidgetHostViewForRenderManager(
-        portal_contents_->GetRenderViewHost());
+    CreateRenderWidgetHostViewForUnattachedPredecessor(portal_contents_.get());
     successor_contents = portal_contents_.ReleaseOwnership();
   }
   DCHECK(!portal_contents_.OwnsContents());

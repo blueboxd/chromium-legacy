@@ -104,7 +104,7 @@ public class CustomTabTabPersistencePolicy implements TabPersistencePolicy {
     private boolean mDestroyed;
 
     @Inject
-    public CustomTabTabPersistencePolicy(ChromeActivity activity) {
+    public CustomTabTabPersistencePolicy(ChromeActivity<?> activity) {
         mTaskId = activity.getTaskId();
         mShouldRestore = (activity.getSavedInstanceState() != null);
     }

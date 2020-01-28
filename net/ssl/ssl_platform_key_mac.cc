@@ -18,7 +18,6 @@
 #include "base/containers/span.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/mac/availability.h"
 #include "base/mac/foundation_util.h"
 #include "base/mac/mac_logging.h"
 #include "base/mac/mac_util.h"

@@ -23,9 +23,6 @@ void FakeMouseCursorMonitor::Init(
   DCHECK(!callback_);
   DCHECK(callback);
 
-  // Only shapes supported right now.
-  CHECK(mode == SHAPE_ONLY);
-
   callback_ = callback;
 }
 

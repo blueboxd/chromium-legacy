@@ -857,7 +857,7 @@
     },
     {
       name: "IntersectionObserverDocumentScrollingElementRoot",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "IntersectionObserverV2",
@@ -1832,6 +1832,7 @@
     },
     {
       name: "WebScheduler",
+      origin_trial_feature_name: "WebScheduler",
       status: "experimental",
     },
     // WebShare is enabled by default on Android.

@@ -278,6 +278,7 @@
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> بُک مارک}other{<ph name="BOOKMARKS_COUNT_MANY" /> بُک مارکس}}</translation>
 <translation id="3089395242580810162">پوشیدگی ٹیب میں کھولیں</translation>
 <translation id="3123473560110926937">بعض سائٹس پر مسدود ہے</translation>
+<translation id="3123734510202723619">اعلانات</translation>
 <translation id="3137521801621304719">پوشیدگی وضع ترک کریں</translation>
 <translation id="3143515551205905069">مطابقت پذیری منسوخ کریں</translation>
 <translation id="3157842584138209013">مزید اختیارات بٹن سے اپنا محفوظ کردہ ڈیٹا دیکھیں</translation>
@@ -687,7 +688,6 @@
 <translation id="6201345951596836663">لنک کاپی ہو گیا</translation>
 <translation id="6206551242102657620">کنیکشن محفوظ ہے۔ سائٹ کی معلومات</translation>
 <translation id="6210748933810148297"><ph name="EMAIL" /> نہیں؟</translation>
-<translation id="6216432067784365534"><ph name="NAME_OF_LIST_ITEM" /> اختیارات</translation>
 <translation id="6221633008163990886">اپنے پاس ورڈز برآمد کرنے کے لئے غیر مقفل کریں</translation>
 <translation id="6232535412751077445">ٹریک نہ کریں' کو فعال کرنے کا مطلب یہ ہے کہ آپ کی براؤزنگ ٹریفک کے ساتھ ایک درخواست شامل کر دی جائے گی۔ کسی بھی اثر کا انحصار اس بات پر ہوتا ہے کہ آیا ویب سائٹ درخواست کا جواب دیتی ہے اور درخواست کی ترجمانی کس طرح کی جاتی ہے۔
 
@@ -733,7 +733,6 @@
 <translation id="6534565668554028783">‏Google کو جواب دینے میں کافی وقت لگا</translation>
 <translation id="6538442820324228105">‏<ph name="GBS" /> GB ڈاؤن لوڈ ہو گیا</translation>
 <translation id="6539092367496845964">کچھ غلط ہو گیا۔ بعد میں دوبارہ کوشش کریں۔</translation>
-<translation id="654446541061731451">بیم کرنے کیلئے ایک ٹیب منتخب کریں</translation>
 <translation id="6545017243486555795">سبھی ڈیٹا صاف کریں</translation>
 <translation id="6545864417968258051">بلوٹوتھ اسکیننگ</translation>
 <translation id="6560414384669816528">‏Sogou کے ساتھ تلاش کریں</translation>
@@ -1025,7 +1024,6 @@
 <translation id="8687353297350450808">{N_BARS,plural, =1{سگنل کی مضبوطی کی سطح: # بار}other{سگنل کی مضبوطی کی سطح: # بارز}}</translation>
 <translation id="868929229000858085">اپنے رابطوں کو تلاش کریں</translation>
 <translation id="869891660844655955">میعاد ختم ہونے کی تاریخ</translation>
-<translation id="8719023831149562936">موجودہ ٹیب کو بیم نہیں کیا جا سکتا</translation>
 <translation id="8728487861892616501">‏اس ایپلیکیشن کا استعمال کر کے آپ Chrome کی <ph name="BEGIN_LINK1" />سروس کی شرائط<ph name="END_LINK1" /> اور <ph name="BEGIN_LINK2" />رازداری کے نوٹس<ph name="END_LINK2" />، اور <ph name="BEGIN_LINK3" />Family Link سے نظم کردہ Google اکاؤنٹس کیلئے رازداری کے نوٹس<ph name="END_LINK3" /> سے اتفاق کرتے ہیں۔</translation>
 <translation id="8748850008226585750">مواد مخفی ہیں</translation>
 <translation id="8751914237388039244">ایک تصویر منتخب کریں</translation>

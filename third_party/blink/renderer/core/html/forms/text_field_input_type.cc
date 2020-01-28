@@ -300,7 +300,8 @@ void TextFieldInputType::CreateShadowSubtree() {
     return;
   }
 
-  auto* container = MakeGarbageCollected<TextControlInnerContainer>(document);
+  auto* container = MakeGarbageCollected<HTMLDivElement>(document);
+  container->SetIdAttribute(shadow_element_names::TextFieldContainer());
   container->SetShadowPseudoId(
       AtomicString("-webkit-textfield-decoration-container"));
   shadow_root->AppendChild(container);
@@ -358,8 +359,8 @@ void TextFieldInputType::ListAttributeTargetChanged() {
       // FIXME: The following code is similar to createShadowSubtree(),
       // but they are different. We should simplify the code by making
       // containerElement mandatory.
-      auto* rp_container =
-          MakeGarbageCollected<TextControlInnerContainer>(document);
+      auto* rp_container = MakeGarbageCollected<HTMLDivElement>(document);
+      rp_container->SetIdAttribute(shadow_element_names::TextFieldContainer());
       rp_container->SetShadowPseudoId(
           AtomicString("-webkit-textfield-decoration-container"));
       Element* inner_editor = GetElement().InnerEditorElement();

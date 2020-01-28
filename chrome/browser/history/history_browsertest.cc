@@ -17,17 +17,20 @@
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/history/history_test_utils.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "chrome/test/base/search_test_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/history/core/browser/history_db_task.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/history/core/common/pref_names.h"
 #include "components/prefs/pref_service.h"
+#include "components/search_engines/template_url_service.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
@@ -383,10 +386,10 @@ IN_PROC_BROWSER_TEST_F(HistoryBrowserTest, MultiTabsWindowsHistory) {
   ui_test_utils::NavigateToURL(browser2, url2);
   ui_test_utils::NavigateToURLWithDisposition(
       browser2, url3, WindowOpenDisposition::NEW_FOREGROUND_TAB,
-      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
   ui_test_utils::NavigateToURLWithDisposition(
       browser2, url4, WindowOpenDisposition::NEW_FOREGROUND_TAB,
-      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
 
   std::vector<GURL> urls(GetHistoryContents());
   ASSERT_EQ(4u, urls.size());
@@ -403,6 +406,57 @@ IN_PROC_BROWSER_TEST_F(HistoryBrowserTest, DownloadNoHistory) {
       base::FilePath().AppendASCII("a_zip_file.zip"));
   ui_test_utils::DownloadURL(browser(), download_url);
   ExpectEmptyHistory();
+}
+
+IN_PROC_BROWSER_TEST_F(HistoryBrowserTest, HistoryRemovalRemovesTemplateURL) {
+  constexpr char origin[] = "foo.com";
+
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url(embedded_test_server()->GetURL(origin, "/title3.html"));
+
+  // Creating keyword shortcut manually.
+  TemplateURLData data;
+  data.SetShortName(base::ASCIIToUTF16(origin));
+  data.SetKeyword(base::ASCIIToUTF16("keyword"));
+  data.SetURL(url.spec());
+  data.safe_for_autoreplace = true;
+
+  // Adding url to the history.
+  ui_test_utils::NavigateToURL(browser(), url);
+  WaitForHistoryBackendToRun(GetProfile());
+
+  EXPECT_TRUE(HistoryContainsURL(url));
+
+  // Adding the keyword in the template URL.
+  TemplateURLService* model =
+      TemplateURLServiceFactory::GetForProfile(browser()->profile());
+
+  // Waiting for the model to load.
+  search_test_utils::WaitForTemplateURLServiceToLoad(model);
+
+  TemplateURL* t_url = model->Add(std::make_unique<TemplateURL>(data));
+
+  EXPECT_EQ(t_url, model->GetTemplateURLForHost(origin));
+
+  auto* history_service = HistoryServiceFactory::GetForProfile(
+      browser()->profile(), ServiceAccessType::EXPLICIT_ACCESS);
+
+  history_service->DeleteURLs({url});
+
+  // The DeleteURL method runs an asynchronous task
+  // internally that deletes the data from db. The test
+  // must wait for the async delete to be finished in order to
+  // check if the delete was indeed successful. We emulate
+  // the wait by calling another method |FlushForTest|
+  // in the history service. Since, we know that that
+  // history processeses tasks synchronously, so when the
+  // callback is run for |FlushForTest| we know the deletion
+  // should have finished.
+  base::RunLoop run_loop;
+  history_service->FlushForTest(run_loop.QuitClosure());
+  run_loop.Run();
+
+  EXPECT_FALSE(model->GetTemplateURLForHost(origin));
 }
 
 namespace {
@@ -542,7 +596,7 @@ IN_PROC_BROWSER_TEST_F(HistoryBrowserTest, ReloadBringPageToTop) {
   ui_test_utils::NavigateToURL(browser(), url1);
   ui_test_utils::NavigateToURLWithDisposition(
       browser(), url2, WindowOpenDisposition::NEW_BACKGROUND_TAB,
-      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
 
   std::vector<GURL> urls(GetHistoryContents());
   ASSERT_EQ(2u, urls.size());
@@ -718,7 +772,7 @@ IN_PROC_BROWSER_TEST_F(HistoryBrowserTest, OneHistoryTabPerWindow) {
   ui_test_utils::NavigateToURLWithDisposition(
       browser(), GURL(url::kAboutBlankURL),
       WindowOpenDisposition::NEW_FOREGROUND_TAB,
-      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
   chrome::ExecuteCommand(browser(), IDC_SHOW_HISTORY);
 
   content::WebContents* active_web_contents =

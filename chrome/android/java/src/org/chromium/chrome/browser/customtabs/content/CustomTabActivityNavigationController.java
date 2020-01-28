@@ -115,15 +115,11 @@ public class CustomTabActivityNavigationController implements StartStopWithNativ
     };
 
     @Inject
-    public CustomTabActivityNavigationController(
-            BrowserServicesActivityTabController tabController,
+    public CustomTabActivityNavigationController(BrowserServicesActivityTabController tabController,
             CustomTabActivityTabProvider tabProvider,
-            BrowserServicesIntentDataProvider intentDataProvider,
-            CustomTabsConnection connection,
-            Lazy<CustomTabObserver> customTabObserver,
-            CloseButtonNavigator closeButtonNavigator,
-            ChromeBrowserInitializer chromeBrowserInitializer,
-            ChromeActivity activity,
+            BrowserServicesIntentDataProvider intentDataProvider, CustomTabsConnection connection,
+            Lazy<CustomTabObserver> customTabObserver, CloseButtonNavigator closeButtonNavigator,
+            ChromeBrowserInitializer chromeBrowserInitializer, ChromeActivity<?> activity,
             ActivityLifecycleDispatcher lifecycleDispatcher,
             Lazy<ChromeFullscreenManager> fullscreenManager) {
         mTabController = tabController;

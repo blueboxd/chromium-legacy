@@ -205,7 +205,8 @@ id<GREYMatcher> NoBookmarksLabel() {
 
 // Tests that selecting sign-out and clear data from a non-managed user account
 // clears the user's synced data.
-- (void)testSignOutAndClearDataFromNonManagedAccountClearsData {
+// TODO(crbug.com/1045981): Fix and enable.
+- (void)DISABLED_testSignOutAndClearDataFromNonManagedAccountClearsData {
   FakeChromeIdentity* fakeIdentity = [SigninEarlGreyUtils fakeIdentity1];
 
   // Sign In |fakeIdentity|.

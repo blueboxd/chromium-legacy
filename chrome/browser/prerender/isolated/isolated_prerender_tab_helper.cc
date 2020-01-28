@@ -21,10 +21,12 @@
 #include "content/public/common/content_constants.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
+#include "net/cookies/cookie_store.h"
 #include "net/http/http_status_code.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/simple_url_loader.h"
+#include "services/network/public/mojom/cookie_manager.mojom.h"
 
 IsolatedPrerenderTabHelper::IsolatedPrerenderTabHelper(
     content::WebContents* web_contents)
@@ -82,6 +84,7 @@ void IsolatedPrerenderTabHelper::DidFinishNavigation(
     return;
   }
 
+  DCHECK(!PrefetchingActive());
   urls_to_prefetch_.clear();
   prefetched_responses_.clear();
 }
@@ -96,6 +99,10 @@ IsolatedPrerenderTabHelper::TakePrefetchResponse(const GURL& url) {
   std::unique_ptr<PrefetchedResponseContainer> response = std::move(it->second);
   prefetched_responses_.erase(it);
   return response;
+}
+
+bool IsolatedPrerenderTabHelper::PrefetchingActive() const {
+  return !!url_loader_;
 }
 
 void IsolatedPrerenderTabHelper::Prefetch() {
@@ -166,6 +173,7 @@ void IsolatedPrerenderTabHelper::OnPrefetchRedirect(
   // TODO(crbug/1023485): Support redirects.
   // Redirects are currently not supported. Calling |Prefetch| will reset the
   // current url loader and maybe start a new one.
+  DCHECK(PrefetchingActive());
   Prefetch();
 }
 
@@ -173,6 +181,7 @@ void IsolatedPrerenderTabHelper::OnPrefetchComplete(
     const GURL& url,
     std::unique_ptr<std::string> body) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(PrefetchingActive());
 
   if (url_loader_->NetError() == net::OK && body &&
       url_loader_->ResponseInfo()) {
@@ -188,6 +197,8 @@ void IsolatedPrerenderTabHelper::HandlePrefetchResponse(
     network::mojom::URLResponseHeadPtr head,
     std::unique_ptr<std::string> body) {
   DCHECK(!head->was_fetched_via_cache);
+  DCHECK(PrefetchingActive());
+
   int response_code = head->headers->response_code();
   if (response_code < 200 || response_code >= 300) {
     return;
@@ -239,10 +250,31 @@ void IsolatedPrerenderTabHelper::OnPredictionUpdated(
       continue;
     }
 
-    urls_to_prefetch_.push_back(url);
+    content::StoragePartition* storage_partition =
+        content::BrowserContext::GetStoragePartitionForSite(
+            profile_, url, /*can_create=*/false);
+    net::CookieOptions options = net::CookieOptions::MakeAllInclusive();
+    storage_partition->GetCookieManagerForBrowserProcess()->GetCookieList(
+        url, options,
+        base::BindOnce(&IsolatedPrerenderTabHelper::OnGotCookieList,
+                       weak_factory_.GetWeakPtr(), url));
   }
+}
 
-  Prefetch();
+void IsolatedPrerenderTabHelper::OnGotCookieList(
+    const GURL& url,
+    const net::CookieStatusList& cookie_with_status_list,
+    const net::CookieStatusList& excluded_cookies) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (!cookie_with_status_list.empty())
+    return;
+
+  urls_to_prefetch_.push_back(url);
+
+  if (!PrefetchingActive()) {
+    Prefetch();
+    DCHECK(PrefetchingActive());
+  }
 }
 
 WEB_CONTENTS_USER_DATA_KEY_IMPL(IsolatedPrerenderTabHelper)

@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.vr;
 
 import static org.chromium.chrome.browser.vr.XrTestFramework.PAGE_LOAD_TIMEOUT_S;
+import static org.chromium.chrome.browser.vr.XrTestFramework.POLL_TIMEOUT_LONG_MS;
 import static org.chromium.chrome.browser.vr.XrTestFramework.POLL_TIMEOUT_SHORT_MS;
 import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_VIEWER_DAYDREAM;
 
@@ -30,6 +31,7 @@ import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.vr.rules.XrActivityRestriction;
 import org.chromium.chrome.browser.vr.util.NativeUiUtils;
 import org.chromium.chrome.browser.vr.util.NfcSimUtils;
+import org.chromium.chrome.browser.vr.util.VrBrowserTransitionUtils;
 import org.chromium.chrome.browser.vr.util.VrTestRuleUtils;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4RunnerDelegate;
@@ -84,6 +86,7 @@ public class WebXrVrDeviceTest {
     /**
      * Tests that WebXR returns null poses while in VR browsing mode, and valid ones otherwise.
      * Specific steps:
+     *   * Enter VR Browser
      *   * Enter immersive mode by clicking on 'Enter VR' button displayed on a VR content page
      *   * Check for non-null poses
      *   * Enter inline VR mode by clicking the 'app' button on the controller
@@ -95,6 +98,7 @@ public class WebXrVrDeviceTest {
             @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM)
             @MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP) // WebXR is only supported on L+
             public void testForNullPosesInInlineVrPostImmersive() {
+        VrBrowserTransitionUtils.forceEnterVrBrowserOrFail(POLL_TIMEOUT_LONG_MS);
         mWebXrVrTestFramework.loadUrlAndAwaitInitialization(
                 WebXrVrTestFramework.getFileUrlForHtmlTestFile("test_inline_vr_poses"),
                 PAGE_LOAD_TIMEOUT_S);

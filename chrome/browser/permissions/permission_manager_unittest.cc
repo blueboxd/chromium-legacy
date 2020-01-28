@@ -653,7 +653,7 @@ TEST_F(PermissionManagerTest, KillSwitchOnIsNotOverridable) {
   // Turn on kill switch for GEOLOCATION.
   variations::testing::ClearAllVariationParams();
   std::map<std::string, std::string> params;
-  params[PermissionUtil::GetPermissionString(
+  params[permissions::PermissionUtil::GetPermissionString(
       ContentSettingsType::GEOLOCATION)] =
       PermissionContextBase::kPermissionsKillSwitchBlockedValue;
   variations::AssociateVariationParams(

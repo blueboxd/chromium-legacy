@@ -192,6 +192,7 @@
 <translation id="3474649192738347024">Nasagutan na ang mga form.</translation>
 <translation id="3478058380795961209">Buwan ng Pag-expire</translation>
 <translation id="3482959374254649722">Sini-sync ang iyong mga tab...</translation>
+<translation id="3484946776651937681">Buksan sa Mga Download</translation>
 <translation id="3493531032208478708"><ph name="BEGIN_LINK" />Matuto pa<ph name="END_LINK" /> tungkol sa iminumungkahing content</translation>
 <translation id="3494788280727468875">Kumpirmahin ang Pag-clear ng Data sa Pag-browse</translation>
 <translation id="35083190962747987">Buksan ang ${url}</translation>
@@ -537,6 +538,7 @@ Na-encrypt ang iyong data gamit ang iyong passphrase sa pag-sync noong <ph name=
 <translation id="8319076807703933069">Bagong Paghahanap</translation>
 <translation id="8323906514956095947">Pindutin nang matagal para sa higit pang opsyon sa tab</translation>
 <translation id="8328777765163860529">Isara Lahat</translation>
+<translation id="8386068868580335421">I-reset</translation>
 <translation id="8407669440184693619">Walang nahanap na password para sa site na ito</translation>
 <translation id="842017693807136194">Naka-sign In Gamit ang</translation>
 <translation id="8428045167754449968">Lungsod / Bayan</translation>
@@ -553,6 +555,7 @@ Na-encrypt ang iyong data gamit ang iyong passphrase sa pag-sync noong <ph name=
 <translation id="8532105204136943229">Taon ng Pag-expire</translation>
 <translation id="8534481786647257214">Kumpleto na ang pag-post sa Google+.</translation>
 <translation id="8548878600947630424">Hanapin sa page...</translation>
+<translation id="8574235780160508979">Magbabago ang Mga Tuntunin ng Serbisyo ng Chrome sa Marso 31. <ph name="BEGIN_LINK" />Pakisuri<ph name="END_LINK" /></translation>
 <translation id="8588404856427128947">Naka-off</translation>
 <translation id="8605219856220328675">Isara ang tab.</translation>
 <translation id="8620640915598389714">I-edit</translation>

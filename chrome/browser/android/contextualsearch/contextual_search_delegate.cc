@@ -280,6 +280,11 @@ std::string ContextualSearchDelegate::BuildRequestUrl(
     contextual_cards_version =
         contextual_search::kContextualCardsDefinitionsIntegration;
   }
+  if (base::FeatureList::IsEnabled(
+          chrome::android::kContextualSearchTranslations)) {
+    contextual_cards_version =
+        contextual_search::kContextualCardsTranslationsIntegration;
+  }
   // Let the field-trial override.
   if (field_trial_->GetContextualCardsVersion() != 0) {
     contextual_cards_version = field_trial_->GetContextualCardsVersion();

@@ -279,6 +279,7 @@
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" />টি বুকমার্ক}one{<ph name="BOOKMARKS_COUNT_MANY" />টি বুকমার্ক}other{<ph name="BOOKMARKS_COUNT_MANY" />টি বুকমার্ক}}</translation>
 <translation id="3089395242580810162">ছদ্মবেশী ট্যাবে খুলুন</translation>
 <translation id="3123473560110926937">কিছু সাইটে ব্লক করা হয়েছে</translation>
+<translation id="3123734510202723619">ঘোষণা</translation>
 <translation id="3137521801621304719">ছদ্মবেশী মোড ছেড়ে যান</translation>
 <translation id="3143515551205905069">সিঙ্ক বাতিল করুন</translation>
 <translation id="3157842584138209013">আরও বিকল্প বোতাম দিয়ে দেখুন আপনি কত ডেটা সাশ্রয় করেছেন</translation>
@@ -692,7 +693,6 @@
 <translation id="6201345951596836663">লিঙ্ক কপি করা হয়েছে</translation>
 <translation id="6206551242102657620">কানেকশনটি নিরাপদ। সাইট তথ্য</translation>
 <translation id="6210748933810148297"><ph name="EMAIL" /> না?</translation>
-<translation id="6216432067784365534"><ph name="NAME_OF_LIST_ITEM" /> এর বিকল্পগুলি</translation>
 <translation id="6221633008163990886">আপনার পাসওয়ার্ড এক্সপোর্ট করতে আনলক করুন</translation>
 <translation id="6232535412751077445">"ট্র্যাক করবেন না" চালু করার অর্থ হল আপনার ব্রাউজিং ট্র্যাফিকের সাথে একটি অনুরোধ অন্তর্ভুক্ত হবে৷ অনুরোধটিতে কোনো ওয়েবসাইট প্রতিক্রিয়া করে কি না এবং অনুরোধটিকে কীভাবে ব্যাখ্যা করা হয় তার উপর যেকোনো প্রভাব নির্ভর করে৷
 
@@ -738,7 +738,6 @@
 <translation id="6534565668554028783">Google সাড়া দিতে দেরী করছে</translation>
 <translation id="6538442820324228105"><ph name="GBS" /> GB ডাউনলোড হয়েছে</translation>
 <translation id="6539092367496845964">কোনও সমস্যা হয়েছে। পরে আবার চেষ্টা করুন।</translation>
-<translation id="654446541061731451">বিম করার জন্য একটি ট্যাব বেছে নিন</translation>
 <translation id="6545017243486555795">সমস্ত ডেটা সাফ করুন</translation>
 <translation id="6545864417968258051">ব্লুটুথ স্ক্যানিং</translation>
 <translation id="6560414384669816528">Sogou দিয়ে খুঁজুন</translation>
@@ -1033,7 +1032,6 @@
 <translation id="868929229000858085">আপনার পরিচিতি সার্চ করুন</translation>
 <translation id="8698438463325761328">আপনার ভার্চুয়াল রিয়েলিটি ডিভাইস ও ডেটা অ্যাক্সেস করা সাইটগুলিকে ব্লক করুন</translation>
 <translation id="869891660844655955">মেয়াদকাল সমাপ্তির তারিখ</translation>
-<translation id="8719023831149562936">বর্তমান ট্যাবকে বীম করা যাবে না</translation>
 <translation id="8728487861892616501">এই অ্য়াপটি ব্যবহার করার মাধ্যমে আপনি Chrome-এর <ph name="BEGIN_LINK1" />পরিষেবার শর্তাবলি<ph name="END_LINK1" /> এবং <ph name="BEGIN_LINK2" />গোপনীয়তা নীতি<ph name="END_LINK2" /> এবং <ph name="BEGIN_LINK3" />Family Link-এ তৈরি করা Google অ্যাকাউন্টগুলির জন্য গোপনীয়তার বিজ্ঞপ্তি<ph name="END_LINK3" />-এর সাথে সম্মত হন।</translation>
 <translation id="8748850008226585750">সামগ্রী লুকানো আছে</translation>
 <translation id="8751914237388039244">একটি ছবি বেছে নিন</translation>

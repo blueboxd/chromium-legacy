@@ -134,7 +134,7 @@ public class DownloadActivityV2Test extends DummyUiActivityTestCase {
 
     private void setUpUi() {
         FilterCoordinator.setPrefetchUserSettingValueForTesting(true);
-        DownloadManagerUiConfig config = new DownloadManagerUiConfig.Builder()
+        DownloadManagerUiConfig config = DownloadManagerUiConfigHelper.fromFlags()
                                                  .setIsOffTheRecord(false)
                                                  .setIsSeparateActivity(true)
                                                  .setUseNewDownloadPath(true)
@@ -148,7 +148,8 @@ public class DownloadActivityV2Test extends DummyUiActivityTestCase {
 
         FaviconProvider faviconProvider = (url, faviconSizePx, callback) -> {};
         mDownloadCoordinator = new DownloadManagerCoordinatorImpl(getActivity(), config,
-                mSnackbarManager, mModalDialogManager, mTracker, faviconProvider);
+                mSnackbarManager, mModalDialogManager, mTracker, faviconProvider,
+                /* LegacyDownloadProvider */ null);
         getActivity().setContentView(mDownloadCoordinator.getView());
 
         mDownloadCoordinator.updateForUrl(UrlConstants.DOWNLOADS_URL);

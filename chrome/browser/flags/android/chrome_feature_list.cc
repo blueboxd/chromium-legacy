@@ -74,7 +74,6 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &download::features::kDownloadAutoResumptionNative,
     &download::features::kUseDownloadOfflineContentProvider,
     &features::kAppNotificationStatusMessaging,
-    &features::kCaptionSettings,
     &features::kClearOldBrowsingData,
     &features::kDownloadsLocationChange,
     &features::kGenericSensorExtraClasses,
@@ -139,12 +138,14 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kContentIndexingNTP,
     &kContentSuggestionsScrollToLoad,
     &kContextMenuCopyImage,
+    &kContextMenuPerformanceInfo,
     &kContextMenuSearchWithGoogleLens,
     &kContextualSearchDefinitions,
     &kContextualSearchLongpressResolve,
     &kContextualSearchMlTapSuppression,
     &kContextualSearchSecondTap,
     &kContextualSearchTapDisableOverride,
+    &kContextualSearchTranslations,
     &kDirectActions,
     &kDownloadFileProvider,
     &kDownloadNotificationBadge,
@@ -403,6 +404,9 @@ const base::Feature kContentSuggestionsScrollToLoad{
 const base::Feature kContextMenuCopyImage{"ContextMenuCopyImage",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kContextMenuPerformanceInfo{
+    "ContextMenuPerformanceInfo", base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kContextMenuSearchWithGoogleLens{
     "ContextMenuSearchWithGoogleLens", base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -420,6 +424,9 @@ const base::Feature kContextualSearchSecondTap{
 
 const base::Feature kContextualSearchTapDisableOverride{
     "ContextualSearchTapDisableOverride", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kContextualSearchTranslations{
+    "ContextualSearchTranslations", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kDarkenWebsitesCheckboxInThemesSetting{
     "DarkenWebsitesCheckboxInThemesSetting", base::FEATURE_DISABLED_BY_DEFAULT};

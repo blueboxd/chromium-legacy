@@ -5,12 +5,12 @@
 #include "chrome/browser/ui/views/native_file_system/native_file_system_permission_view.h"
 
 #include "base/files/file_path.h"
-#include "chrome/browser/permissions/permission_util.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/chrome_typography.h"
 #include "chrome/browser/ui/views/native_file_system/native_file_system_ui_helpers.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/constrained_window/constrained_window_views.h"
+#include "components/permissions/permission_util.h"
 #include "components/vector_icons/vector_icons.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/paint_vector_icon.h"
@@ -23,7 +23,7 @@ NativeFileSystemPermissionView::NativeFileSystemPermissionView(
     const url::Origin& origin,
     const base::FilePath& path,
     bool is_directory,
-    base::OnceCallback<void(PermissionAction result)> callback)
+    base::OnceCallback<void(permissions::PermissionAction result)> callback)
     : path_(path), callback_(std::move(callback)) {
   DialogDelegate::set_button_label(
       ui::DIALOG_BUTTON_OK,
@@ -52,7 +52,7 @@ views::Widget* NativeFileSystemPermissionView::ShowDialog(
     const url::Origin& origin,
     const base::FilePath& path,
     bool is_directory,
-    base::OnceCallback<void(PermissionAction result)> callback,
+    base::OnceCallback<void(permissions::PermissionAction result)> callback,
     content::WebContents* web_contents) {
   auto delegate = base::WrapUnique(new NativeFileSystemPermissionView(
       origin, path, is_directory, std::move(callback)));
@@ -71,12 +71,12 @@ bool NativeFileSystemPermissionView::ShouldShowCloseButton() const {
 }
 
 bool NativeFileSystemPermissionView::Accept() {
-  std::move(callback_).Run(PermissionAction::GRANTED);
+  std::move(callback_).Run(permissions::PermissionAction::GRANTED);
   return true;
 }
 
 bool NativeFileSystemPermissionView::Cancel() {
-  std::move(callback_).Run(PermissionAction::DISMISSED);
+  std::move(callback_).Run(permissions::PermissionAction::DISMISSED);
   return true;
 }
 
@@ -99,7 +99,7 @@ void ShowNativeFileSystemPermissionDialog(
     const url::Origin& origin,
     const base::FilePath& path,
     bool is_directory,
-    base::OnceCallback<void(PermissionAction result)> callback,
+    base::OnceCallback<void(permissions::PermissionAction result)> callback,
     content::WebContents* web_contents) {
   NativeFileSystemPermissionView::ShowDialog(origin, path, is_directory,
                                              std::move(callback), web_contents);

@@ -127,6 +127,15 @@ class POLICY_EXPORT DeviceManagementService {
 
   class POLICY_EXPORT Job {
    public:
+    enum RetryMethod {
+      // No retry required for this request.
+      NO_RETRY,
+      // Should retry immediately (no delay).
+      RETRY_IMMEDIATELY,
+      // Should retry after a delay.
+      RETRY_WITH_DELAY
+    };
+
     virtual ~Job() {}
   };
 
@@ -197,8 +206,19 @@ class POLICY_EXPORT DeviceManagementService {
     // Returns the the UMA histogram to record stats about the network request.
     virtual std::string GetUmaName() = 0;
 
+    // Returns the RetryMethod the configuration considers appropriate given the
+    // response from the server. The response_code is the http response, and the
+    // response_body is the response returned by the server (it may be empty
+    // depending on the response_code).
+    // Note this method will not be called on a net_error, because the
+    // assumption is that this configuration is deciding to retry based on a
+    // server response, and there is no server response in that case.
+    virtual Job::RetryMethod ShouldRetry(int response_code,
+                                         const std::string& response_body) = 0;
+
     // Prepare this job for a network request retry.
-    virtual void OnBeforeRetry() = 0;
+    virtual void OnBeforeRetry(int response_code,
+                               const std::string& response_body) = 0;
 
     // Called when a result is available for the request (possibly after
     // retries). If |net_error| is net::OK, |response_code| will be set to the
@@ -211,15 +231,6 @@ class POLICY_EXPORT DeviceManagementService {
 
   class POLICY_EXPORT JobControl {
    public:
-    enum RetryMethod {
-      // No retry required for this request.
-      NO_RETRY,
-      // Should retry immediately (no delay).
-      RETRY_IMMEDIATELY,
-      // Should retry after a delay.
-      RETRY_WITH_DELAY
-    };
-
     virtual ~JobControl() {}
 
     // Returns the configuration that controls the parameters of network
@@ -235,12 +246,12 @@ class POLICY_EXPORT DeviceManagementService {
     // Handle the response of this job.  If the function returns anything other
     // than NO_RETRY, the the job did not complete and must be retried.  In this
     // case, *|retry_delay| contains the retry delay in ms.
-    virtual RetryMethod OnURLLoadComplete(const std::string& response_body,
-                                          const std::string& mime_type,
-                                          int net_error,
-                                          int response_code,
-                                          bool was_fetched_via_proxy,
-                                          int* retry_delay) = 0;
+    virtual Job::RetryMethod OnURLLoadComplete(const std::string& response_body,
+                                               const std::string& mime_type,
+                                               int net_error,
+                                               int response_code,
+                                               bool was_fetched_via_proxy,
+                                               int* retry_delay) = 0;
   };
 
   explicit DeviceManagementService(
@@ -365,6 +376,9 @@ class POLICY_EXPORT JobConfigurationBase
   std::unique_ptr<network::ResourceRequest> GetResourceRequest(
       bool bypass_proxy,
       int last_error) override;
+  DeviceManagementService::Job::RetryMethod ShouldRetry(
+      int response_code,
+      const std::string& response_body) override;
 
   // Derived classes should return the base URL for the request.
   virtual GURL GetURL(int last_error) = 0;

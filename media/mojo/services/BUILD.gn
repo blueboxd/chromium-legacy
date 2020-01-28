@@ -108,6 +108,11 @@ jumbo_component("services") {
       "android_mojo_media_client.h",
       "android_mojo_util.cc",
       "android_mojo_util.h",
+    ]
+  }
+
+  if (enable_media_drm_storage) {
+    sources += [
       "mojo_media_drm_storage.cc",
       "mojo_media_drm_storage.h",
     ]

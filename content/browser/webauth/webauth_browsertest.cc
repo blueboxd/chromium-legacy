@@ -385,9 +385,7 @@ class WebAuthBrowserTestBase : public content::ContentBrowserTest {
   WebAuthBrowserTestBase()
       : https_server_(net::EmbeddedTestServer::TYPE_HTTPS) {}
 
-  virtual std::vector<base::Feature> GetFeaturesToEnable() {
-    return {features::kWebAuth, features::kWebAuthBle};
-  }
+  virtual std::vector<base::Feature> GetFeaturesToEnable() { return {}; }
 
   void SetUpOnMainThread() override {
     ContentBrowserTest::SetUpOnMainThread();
@@ -781,7 +779,7 @@ class WebAuthJavascriptClientBrowserTest : public WebAuthBrowserTestBase {
 
  protected:
   std::vector<base::Feature> GetFeaturesToEnable() override {
-    return {features::kWebAuth, device::kWebAuthFeaturePolicy};
+    return {device::kWebAuthFeaturePolicy};
   }
 
  private:
@@ -1462,10 +1460,6 @@ class WebAuthBrowserBleDisabledTest : public WebAuthLocalClientBrowserTest {
   WebAuthBrowserBleDisabledTest() {}
 
  protected:
-  std::vector<base::Feature> GetFeaturesToEnable() override {
-    return {features::kWebAuth};
-  }
-
   device::test::FakeFidoDiscoveryFactory* discovery_factory;
 
  private:

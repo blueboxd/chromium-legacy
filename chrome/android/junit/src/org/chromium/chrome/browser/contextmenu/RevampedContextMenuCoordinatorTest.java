@@ -11,7 +11,9 @@ import android.app.Activity;
 import android.util.Pair;
 
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 
@@ -22,6 +24,8 @@ import org.chromium.chrome.browser.contextmenu.ChromeContextMenuItem.Item;
 import org.chromium.chrome.browser.contextmenu.ChromeContextMenuPopulator.ContextMenuGroup;
 import org.chromium.chrome.browser.contextmenu.ContextMenuParams.PerformanceClass;
 import org.chromium.chrome.browser.contextmenu.RevampedContextMenuCoordinator.ListItemType;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
+import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.ui.base.ActivityWindowAndroid;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.modelutil.MVCListAdapter.ModelList;
@@ -33,7 +37,11 @@ import java.util.List;
  * Unit tests for the Revamped context menu.
  */
 @RunWith(BaseRobolectricTestRunner.class)
+@Features.DisableFeatures(ChromeFeatureList.CONTEXT_MENU_PERFORMANCE_INFO)
 public class RevampedContextMenuCoordinatorTest {
+    @Rule
+    public TestRule mProcessor = new Features.JUnitProcessor();
+
     private RevampedContextMenuCoordinator mCoordinator;
     private Activity mActivity;
     private WindowAndroid mWindow;

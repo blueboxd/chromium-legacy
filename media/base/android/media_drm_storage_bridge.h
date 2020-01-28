@@ -14,7 +14,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "media/base/android/android_util.h"
-#include "media/base/android/media_drm_storage.h"
+#include "media/base/media_drm_storage.h"
 #include "url/origin.h"
 
 namespace base {

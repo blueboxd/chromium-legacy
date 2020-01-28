@@ -112,6 +112,7 @@
 <translation id="2352467521400612932">Eingabestift-Einstellungen</translation>
 <translation id="2354174487190027830"><ph name="NAME" /> wird aktiviert</translation>
 <translation id="2359808026110333948">Weiter</translation>
+<translation id="2364154243880592194">Statusleiste, Zeit: <ph name="TIME" />, <ph name="BATTERY" /> Drücken Sie Suchtaste + Linkspfeil, um das Benachrichtigungscenter zu öffnen.</translation>
 <translation id="2365393535144473978">Bei Aktivierung der mobilen Daten wird auch Bluetooth aktiviert.</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="2412593942846481727">Update verfügbar</translation>
@@ -335,6 +336,7 @@
 <translation id="5669267381087807207">Wird aktiviert...</translation>
 <translation id="5673434351075758678">Nach der Synchronisierung der Einstellungen von "<ph name="FROM_LOCALE" />" zu "<ph name="TO_LOCALE" />" geändert.</translation>
 <translation id="5682642926269496722">Google Assistant steht für das aktuelle Nutzerkonto nicht zur Verfügung.</translation>
+<translation id="5689633613396158040">Mit der Funktion "Nachtlicht" ist der Bildschirm bei schwachem Licht nicht störend hell und das Lesen fällt leichter. Wenn Sie hier tippen, können Sie einstellen, wann die Funktion eingeschaltet werden soll, oder sie ganz deaktivieren.</translation>
 <translation id="5691772641933328258">Fingerabdruck nicht erkannt</translation>
 <translation id="5710450975648804523">"Bitte nicht stören" ist aktiviert</translation>
 <translation id="573413375004481890">Dieses Gerät kann nicht alle Ihre Displays unterstützen. Daher wurde die Verbindung zu einem Display getrennt.</translation>
@@ -514,6 +516,7 @@
 <translation id="8142441511840089262">Doppelklick</translation>
 <translation id="8142699993796781067">Privates Netzwerk</translation>
 <translation id="8152092012181020186">Drücken Sie zum Schließen Strg + W.</translation>
+<translation id="8155007568264258537"><ph name="FEATURE_NAME" /> – Diese Einstellung wird von Ihrem Administrator verwaltet.</translation>
 <translation id="8167567890448493835">"<ph name="LOCALE_NAME" />" wird verwendet</translation>
 <translation id="8190698733819146287">Sprache und Eingabe anpassen...</translation>
 <translation id="8192202700944119416">Benachrichtigungen sind ausgeblendet.</translation>
@@ -595,7 +598,6 @@
 <translation id="9193626018745640770">Streaming an unbekannten Empfänger</translation>
 <translation id="9194617393863864469">Anderen Nutzer anmelden...</translation>
 <translation id="9201374708878217446"><ph name="CONNECTION_STATUS" />, von Ihrem Administrator verwaltet</translation>
-<translation id="9205817095063786319">Gerät verwaltet durch <ph name="DOMAIN" /></translation>
 <translation id="9210037371811586452">Unified Desktop-Modus wird beendet</translation>
 <translation id="9211681782751733685">Noch <ph name="TIME_REMAINING" />, bis der Akku vollständig geladen ist.</translation>
 <translation id="9215934040295798075">Hintergrund festlegen</translation>

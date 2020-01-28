@@ -173,6 +173,7 @@ class CORE_EXPORT Animation : public EventTargetWithInlineData,
 
   DEFINE_ATTRIBUTE_EVENT_LISTENER(finish, kFinish)
   DEFINE_ATTRIBUTE_EVENT_LISTENER(cancel, kCancel)
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(remove, kRemove)
 
   const AtomicString& InterfaceName() const override;
   ExecutionContext* GetExecutionContext() const override;

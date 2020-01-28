@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_WEB_APPLICATIONS_COMPONENTS_WEB_APP_PREFS_UTILS_H_
 
 #include "base/strings/string_piece.h"
-#include "chrome/browser/web_applications/components/web_app_helpers.h"
+#include "chrome/browser/web_applications/components/web_app_id.h"
 
 class PrefService;
 

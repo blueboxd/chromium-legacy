@@ -14,12 +14,13 @@ import android.os.Build;
 import android.os.Bundle;
 import android.support.graphics.drawable.VectorDrawableCompat;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.ListFragment;
 import android.support.v7.preference.Preference;
 import android.support.v7.preference.PreferenceFragmentCompat;
-import android.support.v7.widget.RecyclerView;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 
 import androidx.annotation.VisibleForTesting;
 
@@ -30,7 +31,6 @@ import org.chromium.chrome.browser.help.HelpAndFeedback;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.profiles.ProfileManagerUtils;
-import org.chromium.chrome.browser.settings.homepage.HomepageEditor;
 import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.ui.UiUtils;
 
@@ -42,8 +42,8 @@ import org.chromium.ui.UiUtils;
  * screen. Thus each fragment may freely modify its activity's action bar or title. This mimics the
  * behavior of {@link android.preference.PreferenceActivity}.
  *
- * If the main fragment is not an instance of {@link PreferenceFragmentCompat} (e.g. {@link
- * HomepageEditor}) or overrides {@link PreferenceFragmentCompat}'s layout, add the following:
+ * If the main fragment does not use the default layout for {@link PreferenceFragmentCompat} or
+ * {@link ListFragment}, add the following:
  * 1) settings_action_bar_shadow.xml to the custom XML hierarchy and
  * 2) an OnScrollChangedListener to the main content's view's view tree observer via
  *    {@link SettingsUtils#getShowShadowOnScrollListener(View, View)}.
@@ -143,23 +143,24 @@ public class SettingsActivity extends ChromeBaseAppCompatActivity
         super.onAttachedToWindow();
 
         Fragment fragment = getMainFragment();
-        if (!(fragment instanceof PreferenceFragmentCompat)) {
-            return;
+
+        ViewGroup listView = null;
+        if (fragment instanceof PreferenceFragmentCompat) {
+            listView = ((PreferenceFragmentCompat) fragment).getListView();
+        } else if (fragment instanceof ListFragment) {
+            listView = ((ListFragment) fragment).getListView();
         }
 
-        RecyclerView recyclerView = ((PreferenceFragmentCompat) fragment).getListView();
-        if (recyclerView == null) {
-            return;
-        }
+        if (listView == null) return;
 
         // Append action bar shadow to layout.
         View inflatedView = getLayoutInflater().inflate(
                 R.layout.settings_action_bar_shadow, findViewById(android.R.id.content));
 
         // Display shadow on scroll.
-        recyclerView.getViewTreeObserver().addOnScrollChangedListener(
+        listView.getViewTreeObserver().addOnScrollChangedListener(
                 SettingsUtils.getShowShadowOnScrollListener(
-                        recyclerView, inflatedView.findViewById(R.id.shadow)));
+                        listView, inflatedView.findViewById(R.id.shadow)));
     }
 
     @Override

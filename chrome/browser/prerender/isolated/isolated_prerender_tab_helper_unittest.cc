@@ -271,9 +271,9 @@ TEST_F(IsolatedPrerenderTabHelperTest, NoCookies) {
   ASSERT_TRUE(SetCookie(profile(), prediction_url, "testing"));
 
   MakeNavigationPrediction(web_contents(), doc_url, {prediction_url});
+  base::RunLoop().RunUntilIdle();
 
-  VerifyCommonRequestState(prediction_url);
-  EXPECT_EQ(RequestHeader("Cookie"), std::string());
+  EXPECT_EQ(RequestCount(), 0);
 }
 
 TEST_F(IsolatedPrerenderTabHelperTest, NoRedirects) {

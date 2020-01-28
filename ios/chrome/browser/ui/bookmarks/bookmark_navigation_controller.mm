@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/ui/bookmarks/bookmark_navigation_controller.h"
 
+#import "ios/chrome/browser/ui/bookmarks/bookmark_ui_constants.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_utils_ios.h"
 #import "ios/chrome/common/colors/UIColor+cr_semantic_colors.h"
 
@@ -16,6 +17,7 @@
 - (void)viewDidLoad {
   [super viewDidLoad];
   self.view.backgroundColor = UIColor.cr_systemBackgroundColor;
+  self.navigationBar.accessibilityIdentifier = kBookmarkNavigationBarIdentifier;
 }
 
 - (BOOL)disablesAutomaticKeyboardDismissal {

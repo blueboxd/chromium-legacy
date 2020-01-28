@@ -42,7 +42,7 @@ class NavigationEntryRemoverTest : public InProcessBrowserTest {
     for (const GURL& url : urls) {
       ui_test_utils::NavigateToURLWithDisposition(
           browser, url, WindowOpenDisposition::CURRENT_TAB,
-          ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+          ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
     }
   }
 
@@ -50,7 +50,7 @@ class NavigationEntryRemoverTest : public InProcessBrowserTest {
     ui_test_utils::NavigateToURLWithDisposition(
         browser, urls[0], WindowOpenDisposition::NEW_FOREGROUND_TAB,
         ui_test_utils::BROWSER_TEST_WAIT_FOR_TAB |
-            ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+            ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
     AddNavigations(browser, {urls.begin() + 1, urls.end()});
   }
 

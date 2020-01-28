@@ -117,10 +117,6 @@ const base::Feature kBlockRepeatedNotificationPermissionPrompts{
 const base::Feature kBundledConnectionHelpFeature{
     "BundledConnectionHelp", base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Enables the UI to configure caption settings.
-const base::Feature kCaptionSettings{"CaptionSettings",
-                                     base::FEATURE_ENABLED_BY_DEFAULT};
-
 #if !defined(OS_ANDROID)
 // Enables logging UKMs for background tab activity by TabActivityWatcher.
 const base::Feature kTabMetricsLogging{"TabMetricsLogging",

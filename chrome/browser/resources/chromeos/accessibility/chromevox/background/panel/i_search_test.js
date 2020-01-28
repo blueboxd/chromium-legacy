@@ -53,7 +53,7 @@ FakeISearchHandler.prototype = {
 
   /** @override */
   onSearchResultChanged(node, start, end) {
-    this.expect_.shift()({node: node, start: start, end: end});
+    this.expect_.shift()({node, start, end});
   },
 
   expect(str, opt_callback) {

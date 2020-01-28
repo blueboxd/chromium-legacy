@@ -14,11 +14,11 @@ import org.chromium.ui.modelutil.PropertyModel.WritableObjectPropertyKey;
 public class BaseSuggestionViewProperties {
     /** SuggestionDrawableState to show as a suggestion icon. */
     public static final WritableObjectPropertyKey<SuggestionDrawableState> ICON =
-            new WritableObjectPropertyKey();
+            new WritableObjectPropertyKey<>();
 
     /** SuggestionDrawableState to show as an action icon. */
     public static final WritableObjectPropertyKey<SuggestionDrawableState> ACTION_ICON =
-            new WritableObjectPropertyKey();
+            new WritableObjectPropertyKey<>();
 
     /** Delegate receiving user events. */
     public static final WritableObjectPropertyKey<SuggestionViewDelegate> SUGGESTION_DELEGATE =

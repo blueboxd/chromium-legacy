@@ -82,7 +82,8 @@ void AwSafeBrowsingUIManager::DisplayBlockingPage(
   if (!client || !client->CanShowInterstitial()) {
     RecordIsWebViewViewable(false);
     OnBlockingPageDone(std::vector<UnsafeResource>{resource}, false,
-                       web_contents, resource.url.GetWithEmptyPath());
+                       web_contents, resource.url.GetWithEmptyPath(),
+                       false /* showed_interstitial */);
     return;
   }
   RecordIsWebViewViewable(true);

@@ -326,8 +326,6 @@ class SingleClientWalletWithAccountStorageSyncTest
 // ChromeOS does not support late signin after profile creation, so the test
 // below does not apply, at least in the current form.
 #if !defined(OS_CHROMEOS)
-// The account storage requires USS, so we only test the USS implementation
-// here.
 IN_PROC_BROWSER_TEST_F(SingleClientWalletWithAccountStorageSyncTest,
                        DownloadAccountStorage_Card) {
   ASSERT_TRUE(SetupClients());
@@ -377,6 +375,67 @@ IN_PROC_BROWSER_TEST_F(SingleClientWalletWithAccountStorageSyncTest,
 
   // Check directly in the DB that the account storage is now cleared.
   EXPECT_EQ(0U, GetServerCards(account_data).size());
+}
+
+// Wallet data should get cleared from the database when the user signs out and
+// different data should get downstreamed when the user signs in with a
+// different account.
+IN_PROC_BROWSER_TEST_F(SingleClientWalletWithAccountStorageSyncTest,
+                       ClearOnSignOutAndDownstreamOnSignIn) {
+  ASSERT_TRUE(SetupClients());
+  autofill::PersonalDataManager* pdm = GetPersonalDataManager(0);
+  ASSERT_NE(nullptr, pdm);
+
+  GetFakeServer()->SetWalletData(
+      {CreateSyncWalletCard(/*name=*/"card-1", /*last_four=*/"0001",
+                            kDefaultBillingAddressID),
+       CreateSyncWalletAddress(/*name=*/"address-1", /*company=*/"Company-1"),
+       CreateDefaultSyncPaymentsCustomerData(),
+       CreateSyncCreditCardCloudTokenData(/*cloud_token_data_id=*/"data-1")});
+
+  ASSERT_TRUE(GetClient(0)->SignInPrimaryAccount());
+  ASSERT_TRUE(GetClient(0)->AwaitEngineInitialization());
+  ASSERT_TRUE(AwaitQuiescence());
+
+  // Make sure the data & metadata is in the DB.
+  ASSERT_EQ(1uL, pdm->GetServerProfiles().size());
+  ASSERT_EQ(1uL, pdm->GetCreditCards().size());
+  ASSERT_EQ(kDefaultCustomerID, pdm->GetPaymentsCustomerData()->customer_id);
+  ASSERT_EQ(1uL, pdm->GetCreditCardCloudTokenData().size());
+
+  // Signout, the data & metadata should be gone.
+  GetClient(0)->SignOutPrimaryAccount();
+  WaitForNumberOfCards(0, pdm);
+
+  EXPECT_EQ(0uL, pdm->GetServerProfiles().size());
+  EXPECT_EQ(0uL, pdm->GetCreditCards().size());
+  EXPECT_EQ(nullptr, pdm->GetPaymentsCustomerData());
+  EXPECT_EQ(0uL, pdm->GetCreditCardCloudTokenData().size());
+  EXPECT_EQ(0U, GetServerCardsMetadata(0).size());
+  EXPECT_EQ(0U, GetServerAddressesMetadata(0).size());
+
+  // Set a different set of cards on the server, then sign in again (this is a
+  // good enough approximation of signing in with a different Google account).
+  GetFakeServer()->SetWalletData(
+      {CreateSyncWalletCard(/*name=*/"new-card", /*last_four=*/"0002",
+                            kDefaultBillingAddressID),
+       CreateSyncWalletAddress(/*name=*/"new-address", /*company=*/"Company-2"),
+       CreateSyncPaymentsCustomerData(/*customer_id=*/"different"),
+       CreateSyncCreditCardCloudTokenData(/*cloud_token_data_id=*/"data-2")});
+  GetClient(0)->SignInPrimaryAccount();
+
+  WaitForNumberOfCards(1, pdm);
+
+  // Make sure the data is in the DB.
+  EXPECT_EQ(ASCIIToUTF16("0002"), pdm->GetCreditCards()[0]->LastFourDigits());
+  ASSERT_EQ(1uL, pdm->GetServerProfiles().size());
+  std::vector<AutofillProfile*> profiles = pdm->GetServerProfiles();
+  ASSERT_EQ(1uL, profiles.size());
+  EXPECT_EQ("Company-2", TruncateUTF8(base::UTF16ToUTF8(
+                             profiles[0]->GetRawInfo(autofill::COMPANY_NAME))));
+  ASSERT_EQ("different", pdm->GetPaymentsCustomerData()->customer_id);
+  ASSERT_EQ(1uL, pdm->GetCreditCardCloudTokenData().size());
+  EXPECT_EQ("data-2", pdm->GetCreditCardCloudTokenData()[0]->instrument_token);
 }
 #endif  // !defined(OS_CHROMEOS)
 

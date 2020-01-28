@@ -13,11 +13,11 @@
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
-#include "chrome/browser/permissions/permission_util.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_features.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
+#include "components/permissions/permission_util.h"
 #include "components/variations/variations_associated_data.h"
 #include "url/gurl.h"
 
@@ -88,7 +88,7 @@ int RecordActionInWebsiteSettings(const GURL& url,
       GetOriginAutoBlockerData(map, url);
 
   base::Value* permission_dict = GetOrCreatePermissionDict(
-      dict.get(), PermissionUtil::GetPermissionString(permission));
+      dict.get(), permissions::PermissionUtil::GetPermissionString(permission));
 
   base::Value* value =
       permission_dict->FindKeyOfType(key, base::Value::Type::INTEGER);
@@ -111,7 +111,7 @@ int GetActionCount(const GURL& url,
   std::unique_ptr<base::DictionaryValue> dict =
       GetOriginAutoBlockerData(map, url);
   base::Value* permission_dict = GetOrCreatePermissionDict(
-      dict.get(), PermissionUtil::GetPermissionString(permission));
+      dict.get(), permissions::PermissionUtil::GetPermissionString(permission));
 
   base::Value* value =
       permission_dict->FindKeyOfType(key, base::Value::Type::INTEGER);
@@ -234,7 +234,7 @@ permissions::PermissionResult PermissionDecisionAutoBlocker::GetEmbargoResult(
   std::unique_ptr<base::DictionaryValue> dict =
       GetOriginAutoBlockerData(settings_map, request_origin);
   base::Value* permission_dict = GetOrCreatePermissionDict(
-      dict.get(), PermissionUtil::GetPermissionString(permission));
+      dict.get(), permissions::PermissionUtil::GetPermissionString(permission));
 
   if (IsUnderEmbargo(permission_dict, features::kBlockPromptsIfDismissedOften,
                      kPermissionDismissalEmbargoKey, current_time,
@@ -314,7 +314,7 @@ base::Time PermissionDecisionAutoBlocker::GetEmbargoStartTime(
   std::unique_ptr<base::DictionaryValue> dict =
       GetOriginAutoBlockerData(settings_map, request_origin);
   base::Value* permission_dict = GetOrCreatePermissionDict(
-      dict.get(), PermissionUtil::GetPermissionString(permission));
+      dict.get(), permissions::PermissionUtil::GetPermissionString(permission));
 
   // A permission may have a record for both dismisal and ignore, return the
   // most recent. A permission will only actually be under one embargo, but
@@ -415,7 +415,7 @@ bool PermissionDecisionAutoBlocker::RecordIgnoreAndEmbargo(
 void PermissionDecisionAutoBlocker::RemoveEmbargoByUrl(
     const GURL& url,
     ContentSettingsType permission) {
-  if (!PermissionUtil::IsPermission(permission))
+  if (!permissions::PermissionUtil::IsPermission(permission))
     return;
 
   // Don't proceed if |permission| was not under embargo for |url|.
@@ -431,7 +431,7 @@ void PermissionDecisionAutoBlocker::RemoveEmbargoByUrl(
   std::unique_ptr<base::DictionaryValue> dict =
       GetOriginAutoBlockerData(map, url);
   base::Value* permission_dict = GetOrCreatePermissionDict(
-      dict.get(), PermissionUtil::GetPermissionString(permission));
+      dict.get(), permissions::PermissionUtil::GetPermissionString(permission));
 
   if (result.source ==
       permissions::PermissionStatusSource::MULTIPLE_DISMISSALS) {
@@ -486,7 +486,7 @@ void PermissionDecisionAutoBlocker::PlaceUnderEmbargo(
   std::unique_ptr<base::DictionaryValue> dict =
       GetOriginAutoBlockerData(map, request_origin);
   base::Value* permission_dict = GetOrCreatePermissionDict(
-      dict.get(), PermissionUtil::GetPermissionString(permission));
+      dict.get(), permissions::PermissionUtil::GetPermissionString(permission));
   permission_dict->SetKey(
       key, base::Value(static_cast<double>(clock_->Now().ToInternalValue())));
   map->SetWebsiteSettingDefaultScope(

@@ -33,17 +33,6 @@ base::Optional<webrtc::SdpVideoFormat> VEAToWebRTCFormat(
   }
   if (profile.profile >= media::H264PROFILE_MIN &&
       profile.profile <= media::H264PROFILE_MAX) {
-    // Enable H264 HW encode for WebRTC when SW fallback is available, which is
-    // checked by kWebRtcH264WithOpenH264FFmpeg flag. This check should be
-    // removed when SW implementation is fully enabled.
-    bool webrtc_h264_sw_enabled = false;
-#if BUILDFLAG(RTC_USE_H264) && BUILDFLAG(ENABLE_FFMPEG_VIDEO_DECODERS)
-    webrtc_h264_sw_enabled = base::FeatureList::IsEnabled(
-        blink::features::kWebRtcH264WithOpenH264FFmpeg);
-#endif  // BUILDFLAG(RTC_USE_H264) && BUILDFLAG(ENABLE_FFMPEG_VIDEO_DECODERS)
-    if (!webrtc_h264_sw_enabled)
-      return base::nullopt;
-
     webrtc::H264::Profile h264_profile;
     switch (profile.profile) {
       case media::H264PROFILE_BASELINE:

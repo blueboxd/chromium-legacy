@@ -341,7 +341,7 @@ public class CustomTabDelegateFactory implements TabDelegateFactory {
         }
     }
 
-    private final ChromeActivity mActivity;
+    private final ChromeActivity<?> mActivity;
     private final boolean mShouldHideBrowserControls;
     private final boolean mIsOpenedByChrome;
     private final @ActivityType int mActivityType;
@@ -372,7 +372,7 @@ public class CustomTabDelegateFactory implements TabDelegateFactory {
      * @param multiWindowUtils To use to determine which ChromeTabbedActivity to open new tabs in.
      * @param focusIntent A PendingIntent to launch to focus the client.
      */
-    private CustomTabDelegateFactory(ChromeActivity activity, boolean shouldHideBrowserControls,
+    private CustomTabDelegateFactory(ChromeActivity<?> activity, boolean shouldHideBrowserControls,
             boolean isOpenedByChrome, @Nullable String webappScopeUrl,
             @WebDisplayMode int displayMode, boolean shouldEnableEmbeddedMediaExperience,
             BrowserControlsVisibilityDelegate visibilityDelegate, ExternalAuthUtils authUtils,
@@ -393,7 +393,7 @@ public class CustomTabDelegateFactory implements TabDelegateFactory {
     }
 
     @Inject
-    public CustomTabDelegateFactory(ChromeActivity activity,
+    public CustomTabDelegateFactory(ChromeActivity<?> activity,
             BrowserServicesIntentDataProvider intentDataProvider,
             CustomTabBrowserControlsVisibilityDelegate visibilityDelegate,
             ExternalAuthUtils authUtils, MultiWindowUtils multiWindowUtils,

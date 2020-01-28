@@ -37,7 +37,7 @@ import dagger.Lazy;
 @ActivityScope
 public class WebappActivityTabController implements BrowserServicesActivityTabController {
     private final Lazy<CustomTabDelegateFactory> mTabDelegateFactory;
-    private final ChromeActivity mActivity;
+    private final ChromeActivity<?> mActivity;
     private final TabObserverRegistrar mTabObserverRegistrar;
     private final CustomTabTabPersistencePolicy mTabPersistencePolicy;
     private final CustomTabActivityTabFactory mTabFactory;
@@ -53,7 +53,7 @@ public class WebappActivityTabController implements BrowserServicesActivityTabCo
     };
 
     @Inject
-    public WebappActivityTabController(ChromeActivity activity,
+    public WebappActivityTabController(ChromeActivity<?> activity,
             Lazy<CustomTabDelegateFactory> tabDelegateFactory,
             ActivityTabProvider activityTabProvider, TabObserverRegistrar tabObserverRegistrar,
             CustomTabTabPersistencePolicy persistencePolicy, CustomTabActivityTabFactory tabFactory,

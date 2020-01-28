@@ -55,7 +55,7 @@ NavBraille = class {
    * @return {!NavBraille} Braille output without a cursor.
    */
   static fromText(text) {
-    return new NavBraille({'text': text});
+    return new NavBraille({text});
   }
 
   /**

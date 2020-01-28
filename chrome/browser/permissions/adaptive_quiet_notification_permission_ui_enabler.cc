@@ -19,13 +19,13 @@
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
-#include "chrome/browser/permissions/permission_util.h"
 #include "chrome/browser/permissions/quiet_notification_permission_ui_config.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
+#include "components/permissions/permission_util.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/scoped_user_pref_update.h"
@@ -109,7 +109,7 @@ AdaptiveQuietNotificationPermissionUiEnabler::GetForProfile(Profile* profile) {
 }
 
 void AdaptiveQuietNotificationPermissionUiEnabler::
-    RecordPermissionPromptOutcome(PermissionAction action) {
+    RecordPermissionPromptOutcome(permissions::PermissionAction action) {
   ListPrefUpdate update(profile_->GetPrefs(),
                         prefs::kNotificationPermissionActions);
   // Discard permission actions older than |kPermissionActionMaxAge|.
@@ -147,19 +147,19 @@ void AdaptiveQuietNotificationPermissionUiEnabler::
         action.FindIntKey(kPermissionActionEntryActionKey);
     DCHECK(past_action_as_int);
 
-    const PermissionAction past_action =
-        static_cast<PermissionAction>(*past_action_as_int);
+    const permissions::PermissionAction past_action =
+        static_cast<permissions::PermissionAction>(*past_action_as_int);
 
     switch (past_action) {
-      case PermissionAction::DENIED:
+      case permissions::PermissionAction::DENIED:
         ++rolling_denies_in_a_row;
         break;
-      case PermissionAction::GRANTED:
+      case permissions::PermissionAction::GRANTED:
         recently_accepted_prompt = true;
         break;
-      case PermissionAction::DISMISSED:
-      case PermissionAction::IGNORED:
-      case PermissionAction::REVOKED:
+      case permissions::PermissionAction::DISMISSED:
+      case permissions::PermissionAction::IGNORED:
+      case permissions::PermissionAction::REVOKED:
       default:
         // Ignored.
         break;

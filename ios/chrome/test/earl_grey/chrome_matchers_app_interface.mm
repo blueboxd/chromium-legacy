@@ -395,6 +395,16 @@ UIView* SubviewWithAccessibilityIdentifier(NSString* accessibility_id,
   return grey_accessibilityID(kBookmarkHomeNavigationBarDoneButtonIdentifier);
 }
 
++ (id<GREYMatcher>)bookmarksNavigationBarBackButton {
+  UINavigationBar* navBar = base::mac::ObjCCastStrict<UINavigationBar>(
+      SubviewWithAccessibilityIdentifier(
+          kBookmarkNavigationBarIdentifier,
+          [[UIApplication sharedApplication] keyWindow]));
+  return grey_allOf(grey_buttonTitle(navBar.backItem.title),
+                    grey_ancestor(grey_kindOfClass([UINavigationBar class])),
+                    nil);
+}
+
 + (id<GREYMatcher>)accountConsistencyConfirmationOKButton {
   int labelID = IDS_IOS_ACCOUNT_UNIFIED_CONSENT_OK_BUTTON;
   return [ChromeMatchersAppInterface buttonWithAccessibilityLabelID:labelID];

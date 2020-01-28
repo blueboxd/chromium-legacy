@@ -112,6 +112,7 @@
 <translation id="2352467521400612932">Стилус жөндөөлөрү</translation>
 <translation id="2354174487190027830"><ph name="NAME" /> жандыруу</translation>
 <translation id="2359808026110333948">Улантуу</translation>
+<translation id="2364154243880592194">Статус түпкүчү, убакыт <ph name="TIME" />, <ph name="BATTERY" /> Билдирмелер борборуна өтүү үчүн Издөө + сол баскычты басыңыз.</translation>
 <translation id="2365393535144473978">Мобилдик Интернет иштетилсе, Bluetooth да иштетилет.</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="2412593942846481727">Жаңы версия бар</translation>
@@ -335,6 +336,7 @@
 <translation id="5669267381087807207">Жандырылууда</translation>
 <translation id="5673434351075758678">Жөндөөлөр шайкештештирилгенден кийин тил "<ph name="FROM_LOCALE" />" тилинен "<ph name="TO_LOCALE" />" тилине өзгөртүлдү.</translation>
 <translation id="5682642926269496722">Google Жардамчы учурдагы колдонуучунун аккаунтунда жеткиликсиз.</translation>
+<translation id="5689633613396158040">Түнкү режим күңүрт жерде көзүңүзгө күч келтирбөөгө жардам берет. Түнкү режим күйгүзүлө турган убакытты өзгөртүү же биротоло өчүрүп салуу үчүн таптап коюңуз.</translation>
 <translation id="5691772641933328258">Манжа изи таанылган жок</translation>
 <translation id="5710450975648804523">"Тынчымды алба" режими күйүк</translation>
 <translation id="573413375004481890">Бул түзмөк дисплейлериңиздин баарын кошо алган жок, андыктан алардын бирөө ажыратылды</translation>
@@ -514,6 +516,7 @@
 <translation id="8142441511840089262">Эки жолу чыкылдатуу</translation>
 <translation id="8142699993796781067">Жеке тармак</translation>
 <translation id="8152092012181020186">Жабуу үчүн Ctrl + W баскычтарын басыңыз.</translation>
+<translation id="8155007568264258537"><ph name="FEATURE_NAME" /> Бул жөндөөнү администраторуңуз башкарат.</translation>
 <translation id="8167567890448493835"><ph name="LOCALE_NAME" /> колдонулууда</translation>
 <translation id="8190698733819146287">Тилдерди жана киргизүү ыкмаларын өзгөчөлөштүрүү…</translation>
 <translation id="8192202700944119416">Билдирмелер жашырылды.</translation>
@@ -595,7 +598,6 @@
 <translation id="9193626018745640770">Белгисиз алуучуга чыгарылууда</translation>
 <translation id="9194617393863864469">Башка колдонуучуну киргизүү…</translation>
 <translation id="9201374708878217446"><ph name="CONNECTION_STATUS" />, Администраторуңуз башкарат</translation>
-<translation id="9205817095063786319">Түзмөктү башкарган: <ph name="DOMAIN" /></translation>
 <translation id="9210037371811586452">Биргелешкен иш такта режиминен чыгууда</translation>
 <translation id="9211681782751733685">Батарея <ph name="TIME_REMAINING" /> кийин толот.</translation>
 <translation id="9215934040295798075">Тушкагаз коюу</translation>

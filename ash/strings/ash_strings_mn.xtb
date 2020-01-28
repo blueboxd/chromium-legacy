@@ -112,6 +112,7 @@
 <translation id="2352467521400612932">Мэдрэгч үзэгний тохиргоо</translation>
 <translation id="2354174487190027830"><ph name="NAME" /> идэвхжүүлж байна</translation>
 <translation id="2359808026110333948">Цааш</translation>
+<translation id="2364154243880592194">Статусын мэдээллийн хэсэг, цаг <ph name="TIME" />, <ph name="BATTERY" /> Мэдэгдлийн төвд хандахын тулд хайх + зүүн сумыг дарна уу.</translation>
 <translation id="2365393535144473978">Мобайл датаг идэвхжүүлснээр Bluetooth мөн идэвхжинэ.</translation>
 <translation id="2391579633712104609">180 °</translation>
 <translation id="2412593942846481727">Шинэчлэх боломжтой</translation>
@@ -336,6 +337,7 @@
 <translation id="5669267381087807207">Идэвхжүүлж байна</translation>
 <translation id="5673434351075758678">Тохиргоогоо синк хийсний дараа "<ph name="FROM_LOCALE" />"-с "<ph name="TO_LOCALE" />" руу шилжүүлнэ.</translation>
 <translation id="5682642926269496722">Одоогийн хэрэглэгчийн бүртгэл дээр Google Туслах боломжгүй байна.</translation>
+<translation id="5689633613396158040">Шөнийн гэрэл нь бүдэг гэрэлтэй үед дэлгэцээ харах эсвэл уншихад илүү хялбар болгодог. Аль цагт Шөнийн гэрлийг бүрмөсөн асааж эсвэл унтраахыг өөрчлөхийн тулд товшино уу.</translation>
 <translation id="5691772641933328258">Хурууны хээг таньсангүй</translation>
 <translation id="5710450975648804523">Бүү саад бол горим асаалттай байна</translation>
 <translation id="573413375004481890">Энэ төхөөрөмж нь таны бүх дэлгэцийг дэмжих боломжгүй байсан тул тэдний нэгийг нь салгасан</translation>
@@ -515,6 +517,7 @@
 <translation id="8142441511840089262">2 товших</translation>
 <translation id="8142699993796781067">Хувийн сүлжээ</translation>
 <translation id="8152092012181020186">Хаахын тулд Ctrl + W дээр дарна уу.</translation>
+<translation id="8155007568264258537"><ph name="FEATURE_NAME" /> Энэ тохиргоог таны администратор удирддаг.</translation>
 <translation id="8167567890448493835"><ph name="LOCALE_NAME" />-г ашиглаж байна</translation>
 <translation id="8190698733819146287">Хэл болон оролтыг гүйцэтгэх...</translation>
 <translation id="8192202700944119416">Мэдэгдлийг нуусан.</translation>
@@ -597,7 +600,6 @@
 <translation id="9193626018745640770">Үл мэдэгдэх хүлээн авагчид дамжуулж байна</translation>
 <translation id="9194617393863864469">Өөр дансаар нэвтрэх...</translation>
 <translation id="9201374708878217446"><ph name="CONNECTION_STATUS" />, таны администратор удирддаг</translation>
-<translation id="9205817095063786319"><ph name="DOMAIN" />-c удирддаг төхөөрөмж</translation>
 <translation id="9210037371811586452">Дэлгэцийн нэгдмэл горимоос гарч байна</translation>
 <translation id="9211681782751733685">Батарейг бүрэн цэнэглэхэд <ph name="TIME_REMAINING" /> үлдсэн байна.</translation>
 <translation id="9215934040295798075">Дэлгэцийн зураг тохируулах</translation>

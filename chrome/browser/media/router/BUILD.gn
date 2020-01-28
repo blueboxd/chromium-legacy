@@ -176,19 +176,12 @@ static_library("router") {
 if (enable_openscreen) {
   source_set("openscreen_platform_impl") {
     sources = [
-      "providers/openscreen/platform/chrome_task_runner.cc",
-      "providers/openscreen/platform/chrome_task_runner.h",
       "providers/openscreen/platform/chrome_tls_client_connection.cc",
       "providers/openscreen/platform/chrome_tls_client_connection.h",
       "providers/openscreen/platform/chrome_tls_connection_factory.cc",
       "providers/openscreen/platform/chrome_tls_connection_factory.h",
       "providers/openscreen/platform/chrome_udp_socket.cc",
       "providers/openscreen/platform/chrome_udp_socket.h",
-      "providers/openscreen/platform/logging.cc",
-      "providers/openscreen/platform/network_util.cc",
-      "providers/openscreen/platform/network_util.h",
-      "providers/openscreen/platform/time.cc",
-      "providers/openscreen/platform/trace_logging_platform.cc",
     ]
 
     public_configs =
@@ -196,6 +189,7 @@ if (enable_openscreen) {
 
     deps = [
       "//base",
+      "//components/openscreen_platform",
       "//net/traffic_annotation",
       "//services/network:network_service",
       "//services/network/public/mojom",

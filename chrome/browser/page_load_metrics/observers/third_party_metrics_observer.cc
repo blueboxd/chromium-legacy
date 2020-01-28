@@ -5,6 +5,7 @@
 #include "chrome/browser/page_load_metrics/observers/third_party_metrics_observer.h"
 
 #include "base/metrics/histogram_macros.h"
+#include "base/strings/strcat.h"
 #include "components/page_load_metrics/browser/page_load_metrics_util.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
@@ -18,25 +19,19 @@ const int kMaxRecordedFrames = 50;
 
 }  // namespace
 
-ThirdPartyMetricsObserver::CookieAccessTypes::CookieAccessTypes(
+ThirdPartyMetricsObserver::AccessedTypes::AccessedTypes(
     AccessType access_type) {
   switch (access_type) {
-    case AccessType::kRead:
-      read = true;
+    case AccessType::kCookieRead:
+      cookie_read = true;
       break;
-    case AccessType::kWrite:
-      write = true;
+    case AccessType::kCookieWrite:
+      cookie_write = true;
       break;
-  }
-}
-
-ThirdPartyMetricsObserver::StorageAccessTypes::StorageAccessTypes(
-    StorageType storage_type) {
-  switch (storage_type) {
-    case StorageType::kLocalStorage:
+    case AccessType::kLocalStorage:
       local_storage = true;
       break;
-    case StorageType::kSessionStorage:
+    case AccessType::kSessionStorage:
       session_storage = true;
       break;
   }
@@ -64,7 +59,8 @@ void ThirdPartyMetricsObserver::OnCookiesRead(
     const GURL& first_party_url,
     const net::CookieList& cookie_list,
     bool blocked_by_policy) {
-  OnCookieAccess(url, first_party_url, blocked_by_policy, AccessType::kRead);
+  OnCookieOrStorageAccess(url, first_party_url, blocked_by_policy,
+                          AccessType::kCookieRead);
 }
 
 void ThirdPartyMetricsObserver::OnCookieChange(
@@ -72,7 +68,8 @@ void ThirdPartyMetricsObserver::OnCookieChange(
     const GURL& first_party_url,
     const net::CanonicalCookie& cookie,
     bool blocked_by_policy) {
-  OnCookieAccess(url, first_party_url, blocked_by_policy, AccessType::kWrite);
+  OnCookieOrStorageAccess(url, first_party_url, blocked_by_policy,
+                          AccessType::kCookieWrite);
 }
 
 void ThirdPartyMetricsObserver::OnDomStorageAccessed(
@@ -80,34 +77,9 @@ void ThirdPartyMetricsObserver::OnDomStorageAccessed(
     const GURL& first_party_url,
     bool local,
     bool blocked_by_policy) {
-  if (blocked_by_policy) {
-    // When 3p DOM storage access is blocked, it must be that the "block third
-    // party cookies" setting is set. In this case we don't want to record any
-    // metrics for the page.
-    should_record_metrics_ = false;
-    return;
-  }
-  url::Origin origin = url::Origin::Create(url);
-  if (origin.IsSameOriginWith(url::Origin::Create(first_party_url)))
-    return;
-
-  auto it = third_party_storage_access_types_.find(origin);
-
-  if (it != third_party_storage_access_types_.end()) {
-    if (local)
-      it->second.local_storage = true;
-    else
-      it->second.session_storage = true;
-    return;
-  }
-
-  // Don't let the map grow unbounded.
-  if (third_party_storage_access_types_.size() >= 1000)
-    return;
-
-  third_party_storage_access_types_.emplace(
-      origin,
-      local ? StorageType::kLocalStorage : StorageType::kSessionStorage);
+  OnCookieOrStorageAccess(
+      url, first_party_url, blocked_by_policy,
+      local ? AccessType::kLocalStorage : AccessType::kSessionStorage);
 }
 
 void ThirdPartyMetricsObserver::OnDidFinishSubFrameNavigation(
@@ -150,10 +122,14 @@ void ThirdPartyMetricsObserver::OnTimingUpdate(
   // Filter out first-party frames.
   content::RenderFrameHost* top_frame =
       GetDelegate().GetWebContents()->GetMainFrame();
-  if (!top_frame ||
+  if (!top_frame)
+    return;
+
+  const url::Origin& top_frame_origin = top_frame->GetLastCommittedOrigin();
+  const url::Origin& subframe_origin = subframe_rfh->GetLastCommittedOrigin();
+  if (top_frame_origin.scheme() == subframe_origin.scheme() &&
       net::registry_controlled_domains::SameDomainOrHost(
-          top_frame->GetLastCommittedOrigin(),
-          subframe_rfh->GetLastCommittedOrigin(),
+          top_frame_origin, subframe_origin,
           net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES)) {
     return;
   }
@@ -161,27 +137,31 @@ void ThirdPartyMetricsObserver::OnTimingUpdate(
   if (page_load_metrics::WasStartedInForegroundOptionalEventInForeground(
           timing.paint_timing->first_contentful_paint, GetDelegate())) {
     PAGE_LOAD_HISTOGRAM(
-        "PageLoad.Clients.ThirdParty.Frames.NavigationToFirstContentfulPaint",
+        "PageLoad.Clients.ThirdParty.Frames.NavigationToFirstContentfulPaint3",
         timing.paint_timing->first_contentful_paint.value());
     recorded_frames_.insert(subframe_rfh);
   }
 }
 
-void ThirdPartyMetricsObserver::OnCookieAccess(const GURL& url,
-                                               const GURL& first_party_url,
-                                               bool blocked_by_policy,
-                                               AccessType access_type) {
+void ThirdPartyMetricsObserver::OnCookieOrStorageAccess(
+    const GURL& url,
+    const GURL& first_party_url,
+    bool blocked_by_policy,
+    AccessType access_type) {
   if (blocked_by_policy) {
     should_record_metrics_ = false;
     return;
   }
+
+  if (!url.is_valid())
+    return;
 
   // TODO(csharrison): Optimize the domain lookup.
   // Note: If either |url| or |first_party_url| is empty, SameDomainOrHost will
   // return false, and function execution will continue because it is considered
   // 3rd party. Since |first_party_url| is actually the |site_for_cookies|, this
   // will happen e.g. for a 3rd party iframe on document.cookie access.
-  if (!url.is_valid() ||
+  if (url.SchemeIs(first_party_url.scheme()) &&
       net::registry_controlled_domains::SameDomainOrHost(
           url, first_party_url,
           net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES)) {
@@ -204,25 +184,34 @@ void ThirdPartyMetricsObserver::OnCookieAccess(const GURL& url,
     }
   }
 
-  auto it = third_party_cookie_access_types_.find(registrable_domain);
+  GURL representative_url(
+      base::StrCat({url.scheme(), "://", registrable_domain, "/"}));
 
-  if (it != third_party_cookie_access_types_.end()) {
+  auto it = third_party_accessed_types_.find(representative_url);
+
+  if (it != third_party_accessed_types_.end()) {
     switch (access_type) {
-      case AccessType::kRead:
-        it->second.read = true;
+      case AccessType::kCookieRead:
+        it->second.cookie_read = true;
         break;
-      case AccessType::kWrite:
-        it->second.write = true;
+      case AccessType::kCookieWrite:
+        it->second.cookie_write = true;
+        break;
+      case AccessType::kLocalStorage:
+        it->second.local_storage = true;
+        break;
+      case AccessType::kSessionStorage:
+        it->second.session_storage = true;
         break;
     }
     return;
   }
 
   // Don't let the map grow unbounded.
-  if (third_party_cookie_access_types_.size() >= 1000)
+  if (third_party_accessed_types_.size() >= 1000)
     return;
 
-  third_party_cookie_access_types_.emplace(registrable_domain, access_type);
+  third_party_accessed_types_.emplace(representative_url, access_type);
 }
 
 void ThirdPartyMetricsObserver::RecordMetrics() {
@@ -234,24 +223,21 @@ void ThirdPartyMetricsObserver::RecordMetrics() {
   int local_storage_origin_access = 0;
   int session_storage_origin_access = 0;
 
-  for (auto it : third_party_cookie_access_types_) {
-    cookie_origin_reads += it.second.read;
-    cookie_origin_writes += it.second.write;
-  }
-
-  for (auto it : third_party_storage_access_types_) {
+  for (auto it : third_party_accessed_types_) {
+    cookie_origin_reads += it.second.cookie_read;
+    cookie_origin_writes += it.second.cookie_write;
     local_storage_origin_access += it.second.local_storage;
     session_storage_origin_access += it.second.session_storage;
   }
 
-  UMA_HISTOGRAM_COUNTS_1000("PageLoad.Clients.ThirdParty.Origins.CookieRead",
+  UMA_HISTOGRAM_COUNTS_1000("PageLoad.Clients.ThirdParty.Origins.CookieRead2",
                             cookie_origin_reads);
-  UMA_HISTOGRAM_COUNTS_1000("PageLoad.Clients.ThirdParty.Origins.CookieWrite",
+  UMA_HISTOGRAM_COUNTS_1000("PageLoad.Clients.ThirdParty.Origins.CookieWrite2",
                             cookie_origin_writes);
   UMA_HISTOGRAM_COUNTS_1000(
-      "PageLoad.Clients.ThirdParty.Origins.LocalStorageAccess",
+      "PageLoad.Clients.ThirdParty.Origins.LocalStorageAccess2",
       local_storage_origin_access);
   UMA_HISTOGRAM_COUNTS_1000(
-      "PageLoad.Clients.ThirdParty.Origins.SessionStorageAccess",
+      "PageLoad.Clients.ThirdParty.Origins.SessionStorageAccess2",
       session_storage_origin_access);
 }

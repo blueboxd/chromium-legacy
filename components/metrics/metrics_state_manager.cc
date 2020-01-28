@@ -277,6 +277,10 @@ void MetricsStateManager::CheckForClonedInstall() {
   cloned_install_detector_.CheckForClonedInstall(local_state_);
 }
 
+bool MetricsStateManager::ShouldResetClientIdsOnClonedInstall() {
+  return cloned_install_detector_.ShouldResetClientIds(local_state_);
+}
+
 std::unique_ptr<const base::FieldTrial::EntropyProvider>
 MetricsStateManager::CreateDefaultEntropyProvider() {
   if (enabled_state_provider_->IsConsentGiven() ||
@@ -374,7 +378,7 @@ void MetricsStateManager::UpdateEntropySourceReturnedValue(
 }
 
 void MetricsStateManager::ResetMetricsIDsIfNecessary() {
-  if (!cloned_install_detector_.ShouldResetClientIds(local_state_))
+  if (!ShouldResetClientIdsOnClonedInstall())
     return;
   metrics_ids_were_reset_ = true;
   previous_client_id_ = local_state_->GetString(prefs::kMetricsClientID);

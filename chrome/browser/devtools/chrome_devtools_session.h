@@ -15,9 +15,8 @@
 #include "content/public/browser/devtools_manager_delegate.h"
 
 namespace content {
-class DevToolsAgentHost;
-class DevToolsAgentHostClient;
-}
+class DevToolsAgentHostClientChannel;
+}  // namespace content
 
 class BrowserHandler;
 class CastHandler;
@@ -28,8 +27,8 @@ class WindowManagerHandler;
 
 class ChromeDevToolsSession : public protocol::FrontendChannel {
  public:
-  ChromeDevToolsSession(content::DevToolsAgentHost* agent_host,
-                        content::DevToolsAgentHostClient* client);
+  explicit ChromeDevToolsSession(
+      content::DevToolsAgentHostClientChannel* channel);
   ~ChromeDevToolsSession() override;
 
   void HandleCommand(
@@ -51,8 +50,6 @@ class ChromeDevToolsSession : public protocol::FrontendChannel {
                    const std::string& method,
                    crdtp::span<uint8_t> message) override;
 
-  content::DevToolsAgentHost* const agent_host_;
-  content::DevToolsAgentHostClient* const client_;
   base::flat_map<int, content::DevToolsManagerDelegate::NotHandledCallback>
       pending_commands_;
 
@@ -65,6 +62,7 @@ class ChromeDevToolsSession : public protocol::FrontendChannel {
 #if defined(OS_CHROMEOS)
   std::unique_ptr<WindowManagerHandler> window_manager_handler_;
 #endif
+  content::DevToolsAgentHostClientChannel* client_channel_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeDevToolsSession);
 };

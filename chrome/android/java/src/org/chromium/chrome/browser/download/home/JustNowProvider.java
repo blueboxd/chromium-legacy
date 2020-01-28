@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.download.home;
 
+import androidx.annotation.VisibleForTesting;
+
 import org.chromium.components.offline_items_collection.ContentId;
 import org.chromium.components.offline_items_collection.OfflineItem;
 import org.chromium.components.offline_items_collection.OfflineItemState;
@@ -24,7 +26,7 @@ public class JustNowProvider {
 
     /** Constructor. */
     public JustNowProvider(DownloadManagerUiConfig config) {
-        mThresholdDate = new Date(new Date().getTime() - config.justNowThresholdSeconds * 1000);
+        mThresholdDate = new Date(now().getTime() - config.justNowThresholdSeconds * 1000);
     }
 
     /**
@@ -40,5 +42,10 @@ public class JustNowProvider {
         return item.state == OfflineItemState.IN_PROGRESS || item.state == OfflineItemState.PAUSED
                 || (item.state == OfflineItemState.INTERRUPTED && item.isResumable)
                 || new Date(item.completionTimeMs).after(mThresholdDate);
+    }
+
+    @VisibleForTesting
+    protected Date now() {
+        return new Date();
     }
 }

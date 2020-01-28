@@ -130,6 +130,14 @@ export class TabsApiProxy {
   }
 
   /**
+   * @param {string} groupId
+   * @param {number} newIndex
+   */
+  moveGroup(groupId, newIndex) {
+    chrome.send('moveGroup', [groupId, newIndex]);
+  }
+
+  /**
    * @param {number} tabId
    * @param {number} newIndex
    * @return {!Promise<!ExtensionsApiTab>}

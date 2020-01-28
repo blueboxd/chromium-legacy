@@ -11,6 +11,9 @@
     <output filename="settings_resources.pak" type="data_package" />
   </outputs>
   <release seq="1">
+    <includes>
+      <part file="settings_resources_v3.grdp" />
+    </includes>
     <structures>
       <structure name="IDR_SETTINGS_A11Y_PAGE_JS"
                  file="a11y_page/a11y_page.js"

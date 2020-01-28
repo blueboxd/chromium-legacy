@@ -278,6 +278,7 @@
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> 个书签}other{<ph name="BOOKMARKS_COUNT_MANY" /> 个书签}}</translation>
 <translation id="3089395242580810162">在隐身标签页中打开</translation>
 <translation id="3123473560110926937">已禁止部分网站显示广告</translation>
+<translation id="3123734510202723619">通告</translation>
 <translation id="3137521801621304719">退出隐身模式</translation>
 <translation id="3143515551205905069">取消同步</translation>
 <translation id="3157842584138209013">通过“更多选项”按钮查看您已节省多少数据流量</translation>
@@ -687,7 +688,6 @@
 <translation id="6201345951596836663">已复制链接</translation>
 <translation id="6206551242102657620">连接是安全的。网站信息</translation>
 <translation id="6210748933810148297">不是 <ph name="EMAIL" />？</translation>
-<translation id="6216432067784365534"><ph name="NAME_OF_LIST_ITEM" />选项</translation>
 <translation id="6221633008163990886">需解锁才能导出您的密码</translation>
 <translation id="6232535412751077445">如果您启用了“不跟踪”，您的浏览流量中将会包含一项请求。具体影响取决于网站是否会回应该请求以及如何解读该请求。
 
@@ -733,7 +733,6 @@
 <translation id="6534565668554028783">Google 的响应速度太慢</translation>
 <translation id="6538442820324228105">已下载 <ph name="GBS" /> GB</translation>
 <translation id="6539092367496845964">出了点问题。请稍后重试。</translation>
-<translation id="654446541061731451">选择要传输的标签页</translation>
 <translation id="6545017243486555795">清除所有数据</translation>
 <translation id="6545864417968258051">蓝牙扫描</translation>
 <translation id="6560414384669816528">改用搜狗搜索</translation>
@@ -1025,7 +1024,6 @@
 <translation id="8687353297350450808">{N_BARS,plural, =1{信号强度：# 格}other{信号强度：# 格}}</translation>
 <translation id="868929229000858085">搜索联系人</translation>
 <translation id="869891660844655955">截止日期</translation>
-<translation id="8719023831149562936">无法传输当前的标签页</translation>
 <translation id="8728487861892616501">使用此应用即表示您同意 Chrome 的<ph name="BEGIN_LINK1" />服务条款<ph name="END_LINK1" />和<ph name="BEGIN_LINK2" />隐私权声明<ph name="END_LINK2" />，以及<ph name="BEGIN_LINK3" />针对通过 Family Link 管理的 Google 帐号的隐私权声明<ph name="END_LINK3" />。</translation>
 <translation id="8748850008226585750">内容已隐藏</translation>
 <translation id="8751914237388039244">选择图片</translation>

@@ -69,7 +69,7 @@ IN_PROC_BROWSER_TEST_F(TabSpinnerTest, DISABLED_LoadTabsOneByOne) {
                : WindowOpenDisposition::NEW_FOREGROUND_TAB;
     ui_test_utils::NavigateToURLWithDisposition(
         browser(), test_page_url(), disposition,
-        ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+        ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
   }
 }
 
@@ -79,7 +79,7 @@ IN_PROC_BROWSER_TEST_F(TabSpinnerTest, LoadTabsTogether) {
   // Open each tab in quick succession, all of which are simultaneously loading
   // the same custom page which takes 10 seconds to load. Wait for navigation
   // to finish on the last tab opened. We may assume the last tab opened is the
-  // last tab to finish executing BROWSER_TEST_WAIT_FOR_NAVIGATION because it
+  // last tab to finish executing BROWSER_TEST_WAIT_FOR_LOAD_STOP because it
   // is the last to navigate to the page.
 
   for (int i = 0; i < kNumTabs; ++i) {
@@ -88,7 +88,7 @@ IN_PROC_BROWSER_TEST_F(TabSpinnerTest, LoadTabsTogether) {
                : WindowOpenDisposition::NEW_FOREGROUND_TAB;
     ui_test_utils::BrowserTestWaitFlags flag =
         i < kNumTabs - 1 ? ui_test_utils::BROWSER_TEST_NONE
-                         : ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION;
+                         : ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP;
 
     ui_test_utils::NavigateToURLWithDisposition(browser(), test_page_url(),
                                                 disposition, flag);

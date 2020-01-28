@@ -165,6 +165,9 @@ class MetricsService : public base::HistogramFlattener {
   // should not be called more than once.
   void CheckForClonedInstall();
 
+  // Checks if the cloned install detector says that client ids should be reset.
+  bool ShouldResetClientIdsOnClonedInstall();
+
   // Clears the stability metrics that are saved in local state.
   void ClearSavedStabilityMetrics();
 

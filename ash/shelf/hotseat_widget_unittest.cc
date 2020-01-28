@@ -7,6 +7,7 @@
 #include "ash/focus_cycler.h"
 #include "ash/home_screen/drag_window_from_shelf_controller_test_api.h"
 #include "ash/public/cpp/ash_features.h"
+#include "ash/public/cpp/test/assistant_test_api.h"
 #include "ash/public/cpp/test/shell_test_api.h"
 #include "ash/shelf/home_button.h"
 #include "ash/shelf/shelf.h"
@@ -32,6 +33,7 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "chromeos/constants/chromeos_features.h"
+#include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/events/gesture_detection/gesture_configuration.h"
@@ -52,12 +54,63 @@ ShelfLayoutManager* GetShelfLayoutManager() {
 
 class HotseatWidgetTest
     : public ShelfLayoutManagerTestBase,
-      public testing::WithParamInterface<ShelfAutoHideBehavior> {
+      public testing::WithParamInterface<
+          std::tuple<ShelfAutoHideBehavior, /*is_assistant_enabled*/ bool>> {
  public:
-  HotseatWidgetTest() = default;
+  HotseatWidgetTest()
+      : ShelfLayoutManagerTestBase(
+            base::test::TaskEnvironment::TimeSource::MOCK_TIME),
+        shelf_auto_hide_behavior_(std::get<0>(GetParam())),
+        is_assistant_enabled_(std::get<1>(GetParam())) {
+    if (is_assistant_enabled_)
+      assistant_test_api_ = AssistantTestApi::Create();
+  }
+
+  // testing::Test:
+  void SetUp() override {
+    ShelfLayoutManagerTestBase::SetUp();
+
+    if (is_assistant_enabled_) {
+      assistant_test_api_->SetAssistantEnabled(true);
+      assistant_test_api_->GetAssistantState()->NotifyFeatureAllowed(
+          mojom::AssistantAllowedState::ALLOWED);
+      assistant_test_api_->GetAssistantState()->NotifyStatusChanged(
+          mojom::AssistantState::READY);
+
+      assistant_test_api_->WaitUntilIdle();
+    }
+  }
+
+  ShelfAutoHideBehavior shelf_auto_hide_behavior() const {
+    return shelf_auto_hide_behavior_;
+  }
+  bool is_assistant_enabled() const { return is_assistant_enabled_; }
+  AssistantTestApi* assistant_test_api() { return assistant_test_api_.get(); }
+
+  void ShowShelfAndLongPressHome() {
+    if (shelf_auto_hide_behavior() == ShelfAutoHideBehavior::kAlways)
+      SwipeUpOnShelf();
+
+    views::View* home_button =
+        GetPrimaryShelf()->shelf_widget()->navigation_widget()->GetHomeButton();
+    auto center_point = home_button->GetBoundsInScreen().CenterPoint();
+
+    GetEventGenerator()->set_current_screen_location(center_point);
+    GetEventGenerator()->PressTouch();
+    GetAppListTestHelper()->WaitUntilIdle();
+
+    // Advance clock to make sure long press gesture is triggered.
+    task_environment_->AdvanceClock(base::TimeDelta::FromSeconds(5));
+    GetAppListTestHelper()->WaitUntilIdle();
+
+    GetEventGenerator()->ReleaseTouch();
+    GetAppListTestHelper()->WaitUntilIdle();
+  }
 
  private:
-  base::test::ScopedFeatureList scoped_feature_list_;
+  const ShelfAutoHideBehavior shelf_auto_hide_behavior_;
+  const bool is_assistant_enabled_;
+  std::unique_ptr<AssistantTestApi> assistant_test_api_;
 };
 
 // Counts the number of times the work area changes.
@@ -101,15 +154,64 @@ class ShelfStateWatcher : public ShelfObserver {
 };
 
 // Used to test the Hotseat, ScrollabeShelf, and DenseShelf features.
-INSTANTIATE_TEST_SUITE_P(All,
-                         HotseatWidgetTest,
-                         testing::Values(ShelfAutoHideBehavior::kNever,
-                                         ShelfAutoHideBehavior::kAlways));
+INSTANTIATE_TEST_SUITE_P(
+    All,
+    HotseatWidgetTest,
+    testing::Combine(testing::Values(ShelfAutoHideBehavior::kNever,
+                                     ShelfAutoHideBehavior::kAlways),
+                     testing::Bool()));
+
+TEST_P(HotseatWidgetTest, LongPressHomeWithoutAppWindow) {
+  GetPrimaryShelf()->SetAutoHideBehavior(shelf_auto_hide_behavior());
+  TabletModeControllerTestApi().EnterTabletMode();
+  GetAppListTestHelper()->CheckVisibility(true);
+
+  HotseatStateWatcher watcher(GetShelfLayoutManager());
+
+  ShowShelfAndLongPressHome();
+  GetAppListTestHelper()->CheckVisibility(true);
+
+  EXPECT_EQ(
+      is_assistant_enabled(),
+      GetAppListTestHelper()->GetAppListView()->IsShowingEmbeddedAssistantUI());
+
+  // Hotseat should not change when showing Assistant.
+  watcher.CheckEqual({});
+}
+
+TEST_P(HotseatWidgetTest, LongPressHomeWithAppWindow) {
+  GetPrimaryShelf()->SetAutoHideBehavior(shelf_auto_hide_behavior());
+  TabletModeControllerTestApi().EnterTabletMode();
+  GetAppListTestHelper()->CheckVisibility(true);
+
+  std::unique_ptr<aura::Window> window =
+      AshTestBase::CreateTestWindow(gfx::Rect(0, 0, 400, 400));
+  wm::ActivateWindow(window.get());
+
+  GetAppListTestHelper()->CheckVisibility(false);
+
+  HotseatStateWatcher watcher(GetShelfLayoutManager());
+
+  ShowShelfAndLongPressHome();
+  GetAppListTestHelper()->CheckVisibility(false);
+
+  EXPECT_EQ(
+      is_assistant_enabled(),
+      GetAppListTestHelper()->GetAppListView()->IsShowingEmbeddedAssistantUI());
+
+  std::vector<HotseatState> expected_state;
+  if (shelf_auto_hide_behavior() == ShelfAutoHideBehavior::kAlways) {
+    // |ShowShelfAndLongPressHome()| will bring up shelf so it will trigger one
+    // hotseat state change.
+    expected_state.push_back(HotseatState::kExtended);
+  }
+  watcher.CheckEqual(expected_state);
+}
 
 // Tests that closing a window which was opened prior to entering tablet mode
 // results in a kShown hotseat.
 TEST_P(HotseatWidgetTest, ClosingLastWindowInTabletMode) {
-  GetPrimaryShelf()->SetAutoHideBehavior(GetParam());
+  GetPrimaryShelf()->SetAutoHideBehavior(shelf_auto_hide_behavior());
   std::unique_ptr<aura::Window> window =
       AshTestBase::CreateTestWindow(gfx::Rect(0, 0, 400, 400));
   // Activate the window and go to tablet mode.
@@ -126,7 +228,7 @@ TEST_P(HotseatWidgetTest, ClosingLastWindowInTabletMode) {
 
 // Tests that the hotseat is kShown when entering tablet mode with no windows.
 TEST_P(HotseatWidgetTest, GoingToTabletModeNoWindows) {
-  GetPrimaryShelf()->SetAutoHideBehavior(GetParam());
+  GetPrimaryShelf()->SetAutoHideBehavior(shelf_auto_hide_behavior());
   TabletModeControllerTestApi().EnterTabletMode();
 
   GetAppListTestHelper()->CheckVisibility(true);
@@ -135,7 +237,7 @@ TEST_P(HotseatWidgetTest, GoingToTabletModeNoWindows) {
 
 // Tests that the hotseat is kHidden when entering tablet mode with a window.
 TEST_P(HotseatWidgetTest, GoingToTabletModeWithWindows) {
-  GetPrimaryShelf()->SetAutoHideBehavior(GetParam());
+  GetPrimaryShelf()->SetAutoHideBehavior(shelf_auto_hide_behavior());
 
   std::unique_ptr<aura::Window> window =
       AshTestBase::CreateTestWindow(gfx::Rect(0, 0, 400, 400));
@@ -150,7 +252,7 @@ TEST_P(HotseatWidgetTest, GoingToTabletModeWithWindows) {
 // The in-app Hotseat should not be hidden automatically when the shelf context
 // menu shows (https://crbug.com/1020388).
 TEST_P(HotseatWidgetTest, InAppShelfShowingContextMenu) {
-  GetPrimaryShelf()->SetAutoHideBehavior(GetParam());
+  GetPrimaryShelf()->SetAutoHideBehavior(shelf_auto_hide_behavior());
   TabletModeControllerTestApi().EnterTabletMode();
   std::unique_ptr<aura::Window> window =
       AshTestBase::CreateTestWindow(gfx::Rect(0, 0, 400, 400));
@@ -196,7 +298,7 @@ TEST_P(HotseatWidgetTest, InAppShelfShowingContextMenu) {
 // Tests that a window that is created after going to tablet mode, then closed,
 // results in a kShown hotseat.
 TEST_P(HotseatWidgetTest, CloseLastWindowOpenedInTabletMode) {
-  GetPrimaryShelf()->SetAutoHideBehavior(GetParam());
+  GetPrimaryShelf()->SetAutoHideBehavior(shelf_auto_hide_behavior());
   TabletModeControllerTestApi().EnterTabletMode();
 
   std::unique_ptr<aura::Window> window =
@@ -217,7 +319,10 @@ TEST_P(HotseatWidgetTest, CloseLastWindowOpenedInTabletMode) {
 
 // Tests that swiping up on an autohidden shelf shows the hotseat, and swiping
 // down hides it.
-TEST_F(HotseatWidgetTest, ShowingAndHidingAutohiddenShelf) {
+TEST_P(HotseatWidgetTest, ShowingAndHidingAutohiddenShelf) {
+  if (shelf_auto_hide_behavior() != ShelfAutoHideBehavior::kAlways)
+    return;
+
   GetPrimaryShelf()->SetAutoHideBehavior(ShelfAutoHideBehavior::kAlways);
   TabletModeControllerTestApi().EnterTabletMode();
   std::unique_ptr<aura::Window> window =
@@ -243,7 +348,7 @@ TEST_F(HotseatWidgetTest, ShowingAndHidingAutohiddenShelf) {
 
 // Tests that swiping up on several places in the in-app shelf shows the
 // hotseat (crbug.com/1016931).
-TEST_F(HotseatWidgetTest, SwipeUpInAppShelfShowsHotseat) {
+TEST_P(HotseatWidgetTest, SwipeUpInAppShelfShowsHotseat) {
   TabletModeControllerTestApi().EnterTabletMode();
   std::unique_ptr<aura::Window> window =
       AshTestBase::CreateTestWindow(gfx::Rect(0, 0, 400, 400));
@@ -328,7 +433,7 @@ TEST_F(HotseatWidgetTest, SwipeUpInAppShelfShowsHotseat) {
 
 // Tests that swiping up on the hotseat does nothing.
 TEST_P(HotseatWidgetTest, SwipeUpOnHotseatBackgroundDoesNothing) {
-  GetPrimaryShelf()->SetAutoHideBehavior(GetParam());
+  GetPrimaryShelf()->SetAutoHideBehavior(shelf_auto_hide_behavior());
   TabletModeControllerTestApi().EnterTabletMode();
   std::unique_ptr<aura::Window> window =
       AshTestBase::CreateTestWindow(gfx::Rect(0, 0, 400, 400));
@@ -350,7 +455,7 @@ TEST_P(HotseatWidgetTest, SwipeUpOnHotseatBackgroundDoesNothing) {
                                      InAppShelfGestures::kSwipeDownToHide, 0);
   histogram_tester.ExpectBucketCount(kHotseatGestureHistogramName,
                                      InAppShelfGestures::kSwipeUpToShow, 1);
-  if (GetParam() == ShelfAutoHideBehavior::kAlways)
+  if (shelf_auto_hide_behavior() == ShelfAutoHideBehavior::kAlways)
     EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, GetPrimaryShelf()->GetAutoHideState());
 
   // Swipe up on the Hotseat (parent of ShelfView) does nothing.
@@ -367,7 +472,7 @@ TEST_P(HotseatWidgetTest, SwipeUpOnHotseatBackgroundDoesNothing) {
 
   EXPECT_FALSE(Shell::Get()->app_list_controller()->IsVisible());
   EXPECT_EQ(HotseatState::kExtended, GetShelfLayoutManager()->hotseat_state());
-  if (GetParam() == ShelfAutoHideBehavior::kAlways)
+  if (shelf_auto_hide_behavior() == ShelfAutoHideBehavior::kAlways)
     EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, GetPrimaryShelf()->GetAutoHideState());
   histogram_tester.ExpectBucketCount(kHotseatGestureHistogramName,
                                      InAppShelfGestures::kSwipeDownToHide, 0);
@@ -378,7 +483,7 @@ TEST_P(HotseatWidgetTest, SwipeUpOnHotseatBackgroundDoesNothing) {
 // Tests that tapping an active window with an extended hotseat results in a
 // hidden hotseat.
 TEST_P(HotseatWidgetTest, TappingActiveWindowHidesHotseat) {
-  GetPrimaryShelf()->SetAutoHideBehavior(GetParam());
+  GetPrimaryShelf()->SetAutoHideBehavior(shelf_auto_hide_behavior());
   TabletModeControllerTestApi().EnterTabletMode();
   std::unique_ptr<aura::Window> window =
       AshTestBase::CreateTestWindow(gfx::Rect(0, 0, 400, 400));
@@ -405,7 +510,7 @@ TEST_P(HotseatWidgetTest, TappingActiveWindowHidesHotseat) {
   GetEventGenerator()->GestureTapAt(tap_point);
 
   EXPECT_EQ(HotseatState::kExtended, GetShelfLayoutManager()->hotseat_state());
-  if (GetParam() == ShelfAutoHideBehavior::kAlways)
+  if (shelf_auto_hide_behavior() == ShelfAutoHideBehavior::kAlways)
     EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, GetPrimaryShelf()->GetAutoHideState());
 
   // Tap the active window, the hotseat should hide.
@@ -413,7 +518,7 @@ TEST_P(HotseatWidgetTest, TappingActiveWindowHidesHotseat) {
   GetEventGenerator()->GestureTapAt(tap_point);
 
   EXPECT_EQ(HotseatState::kHidden, GetShelfLayoutManager()->hotseat_state());
-  if (GetParam() == ShelfAutoHideBehavior::kAlways)
+  if (shelf_auto_hide_behavior() == ShelfAutoHideBehavior::kAlways)
     EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, GetPrimaryShelf()->GetAutoHideState());
 
   histogram_tester.ExpectBucketCount(kHotseatGestureHistogramName,
@@ -424,7 +529,7 @@ TEST_P(HotseatWidgetTest, TappingActiveWindowHidesHotseat) {
 
 // Tests that gesture dragging an active window hides the hotseat.
 TEST_P(HotseatWidgetTest, GestureDraggingActiveWindowHidesHotseat) {
-  GetPrimaryShelf()->SetAutoHideBehavior(GetParam());
+  GetPrimaryShelf()->SetAutoHideBehavior(shelf_auto_hide_behavior());
   TabletModeControllerTestApi().EnterTabletMode();
   std::unique_ptr<aura::Window> window =
       AshTestBase::CreateTestWindow(gfx::Rect(0, 0, 400, 400));
@@ -444,7 +549,7 @@ TEST_P(HotseatWidgetTest, GestureDraggingActiveWindowHidesHotseat) {
   histogram_tester.ExpectBucketCount(kHotseatGestureHistogramName,
                                      InAppShelfGestures::kSwipeUpToShow, 1);
 
-  if (GetParam() == ShelfAutoHideBehavior::kAlways)
+  if (shelf_auto_hide_behavior() == ShelfAutoHideBehavior::kAlways)
     EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, GetPrimaryShelf()->GetAutoHideState());
 
   // Gesture drag on the active window, the hotseat should hide.
@@ -458,7 +563,7 @@ TEST_P(HotseatWidgetTest, GestureDraggingActiveWindowHidesHotseat) {
       start, end, base::TimeDelta::FromMilliseconds(10), 4);
 
   EXPECT_EQ(HotseatState::kHidden, GetShelfLayoutManager()->hotseat_state());
-  if (GetParam() == ShelfAutoHideBehavior::kAlways)
+  if (shelf_auto_hide_behavior() == ShelfAutoHideBehavior::kAlways)
     EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, GetPrimaryShelf()->GetAutoHideState());
 
   histogram_tester.ExpectBucketCount(kHotseatGestureHistogramName,
@@ -468,7 +573,7 @@ TEST_P(HotseatWidgetTest, GestureDraggingActiveWindowHidesHotseat) {
 }
 
 // Tests that a swipe up on the shelf shows the hotseat while in split view.
-TEST_F(HotseatWidgetTest, SwipeUpOnShelfShowsHotseatInSplitView) {
+TEST_P(HotseatWidgetTest, SwipeUpOnShelfShowsHotseatInSplitView) {
   TabletModeControllerTestApi().EnterTabletMode();
   std::unique_ptr<aura::Window> window =
       AshTestBase::CreateTestWindow(gfx::Rect(0, 0, 400, 400));
@@ -500,7 +605,7 @@ TEST_F(HotseatWidgetTest, SwipeUpOnShelfShowsHotseatInSplitView) {
 
 // Tests that releasing the hotseat gesture below the threshold results in a
 // kHidden hotseat when the shelf is shown.
-TEST_F(HotseatWidgetTest, ReleasingSlowDragBelowThreshold) {
+TEST_P(HotseatWidgetTest, ReleasingSlowDragBelowThreshold) {
   GetPrimaryShelf()->SetAutoHideBehavior(ShelfAutoHideBehavior::kNever);
   TabletModeControllerTestApi().EnterTabletMode();
   std::unique_ptr<aura::Window> window =
@@ -537,7 +642,7 @@ TEST_F(HotseatWidgetTest, ReleasingSlowDragBelowThreshold) {
 // Tests that releasing the hotseat gesture above the threshold results in a
 // kExtended hotseat.
 TEST_P(HotseatWidgetTest, ReleasingSlowDragAboveThreshold) {
-  GetPrimaryShelf()->SetAutoHideBehavior(GetParam());
+  GetPrimaryShelf()->SetAutoHideBehavior(shelf_auto_hide_behavior());
   TabletModeControllerTestApi().EnterTabletMode();
   std::unique_ptr<aura::Window> window =
       AshTestBase::CreateTestWindow(gfx::Rect(0, 0, 400, 400));
@@ -564,7 +669,7 @@ TEST_P(HotseatWidgetTest, ReleasingSlowDragAboveThreshold) {
                                              kNumScrollSteps);
 
   EXPECT_EQ(HotseatState::kExtended, GetShelfLayoutManager()->hotseat_state());
-  if (GetParam() == ShelfAutoHideBehavior::kAlways)
+  if (shelf_auto_hide_behavior() == ShelfAutoHideBehavior::kAlways)
     EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, GetPrimaryShelf()->GetAutoHideState());
   histogram_tester.ExpectBucketCount(kHotseatGestureHistogramName,
                                      InAppShelfGestures::kSwipeDownToHide, 0);
@@ -575,7 +680,7 @@ TEST_P(HotseatWidgetTest, ReleasingSlowDragAboveThreshold) {
 // Tests that showing overview after showing the hotseat results in only one
 // animation, to |kExtended|.
 TEST_P(HotseatWidgetTest, ShowingOverviewFromShownAnimatesOnce) {
-  GetPrimaryShelf()->SetAutoHideBehavior(GetParam());
+  GetPrimaryShelf()->SetAutoHideBehavior(shelf_auto_hide_behavior());
   TabletModeControllerTestApi().EnterTabletMode();
   std::unique_ptr<aura::Window> window =
       AshTestBase::CreateTestWindow(gfx::Rect(0, 0, 400, 400));
@@ -600,7 +705,7 @@ TEST_P(HotseatWidgetTest, ShowingOverviewFromShownAnimatesOnce) {
 // Tests that the hotseat is not flush with the bottom of the screen when home
 // launcher is showing.
 TEST_P(HotseatWidgetTest, HotseatNotFlushWhenHomeLauncherShowing) {
-  GetPrimaryShelf()->SetAutoHideBehavior(GetParam());
+  GetPrimaryShelf()->SetAutoHideBehavior(shelf_auto_hide_behavior());
   TabletModeControllerTestApi().EnterTabletMode();
   const int display_height =
       display::Screen::GetScreen()->GetPrimaryDisplay().bounds().height();
@@ -614,7 +719,7 @@ TEST_P(HotseatWidgetTest, HotseatNotFlushWhenHomeLauncherShowing) {
 
 // Tests that home -> overview results in only one hotseat state change.
 TEST_P(HotseatWidgetTest, HomeToOverviewChangesStateOnce) {
-  GetPrimaryShelf()->SetAutoHideBehavior(GetParam());
+  GetPrimaryShelf()->SetAutoHideBehavior(shelf_auto_hide_behavior());
   TabletModeControllerTestApi().EnterTabletMode();
 
   // First, try with no windows open.
@@ -637,7 +742,7 @@ TEST_P(HotseatWidgetTest, HomeToOverviewChangesStateOnce) {
   std::unique_ptr<aura::Window> window =
       AshTestBase::CreateTestWindow(gfx::Rect(0, 0, 400, 400));
   wm::ActivateWindow(window.get());
-  if (GetParam() == ShelfAutoHideBehavior::kAlways)
+  if (shelf_auto_hide_behavior() == ShelfAutoHideBehavior::kAlways)
     SwipeUpOnShelf();
   views::View* home_button =
       GetPrimaryShelf()->shelf_widget()->navigation_widget()->GetHomeButton();
@@ -657,7 +762,7 @@ TEST_P(HotseatWidgetTest, HomeToOverviewChangesStateOnce) {
 
 // Tests that home -> in-app results in only one state change.
 TEST_P(HotseatWidgetTest, HomeToInAppChangesStateOnce) {
-  GetPrimaryShelf()->SetAutoHideBehavior(GetParam());
+  GetPrimaryShelf()->SetAutoHideBehavior(shelf_auto_hide_behavior());
   TabletModeControllerTestApi().EnterTabletMode();
 
   // Go to in-app, the hotseat should hide.
@@ -673,7 +778,7 @@ TEST_P(HotseatWidgetTest, HomeToInAppChangesStateOnce) {
 // bottom of the shelf, and tapping the home launcher button results in only one
 // state change.
 TEST_P(HotseatWidgetTest, InAppToHomeChangesStateOnce) {
-  GetPrimaryShelf()->SetAutoHideBehavior(GetParam());
+  GetPrimaryShelf()->SetAutoHideBehavior(shelf_auto_hide_behavior());
   TabletModeControllerTestApi().EnterTabletMode();
 
   // Go to in-app with an extended hotseat.
@@ -713,7 +818,7 @@ TEST_P(HotseatWidgetTest, InAppToHomeChangesStateOnce) {
   }
 
   // Nothing left to test for autohidden shelf.
-  if (GetParam() == ShelfAutoHideBehavior::kAlways)
+  if (shelf_auto_hide_behavior() == ShelfAutoHideBehavior::kAlways)
     return;
 
   // Go to in-app and do not extend the hotseat.
@@ -736,7 +841,7 @@ TEST_P(HotseatWidgetTest, InAppToHomeChangesStateOnce) {
 // to overview is still in progress ends up with hotseat in kShown state (and in
 // app shelf not visible).
 TEST_P(HotseatWidgetTest, HomeToOverviewAndBack) {
-  GetPrimaryShelf()->SetAutoHideBehavior(GetParam());
+  GetPrimaryShelf()->SetAutoHideBehavior(shelf_auto_hide_behavior());
   TabletModeControllerTestApi().EnterTabletMode();
 
   std::unique_ptr<aura::Window> window =
@@ -773,7 +878,7 @@ TEST_P(HotseatWidgetTest, HomeToOverviewAndBack) {
 }
 
 TEST_P(HotseatWidgetTest, InAppToOverviewAndBack) {
-  GetPrimaryShelf()->SetAutoHideBehavior(GetParam());
+  GetPrimaryShelf()->SetAutoHideBehavior(shelf_auto_hide_behavior());
   TabletModeControllerTestApi().EnterTabletMode();
 
   std::unique_ptr<aura::Window> window =
@@ -786,7 +891,7 @@ TEST_P(HotseatWidgetTest, InAppToOverviewAndBack) {
 
   // Make sure shelf (and overview button) are visible - this is moves the
   // hotseat into kExtended state.
-  if (GetParam() == ShelfAutoHideBehavior::kAlways)
+  if (shelf_auto_hide_behavior() == ShelfAutoHideBehavior::kAlways)
     SwipeUpOnShelf();
 
   gfx::Point overview_button_center = GetPrimaryShelf()
@@ -824,7 +929,7 @@ TEST_P(HotseatWidgetTest, InAppToOverviewAndBack) {
 // Tests transition to home screen initiated while transition from app window to
 // overview is in progress.
 TEST_P(HotseatWidgetTest, GoHomeDuringInAppToOverviewTransition) {
-  GetPrimaryShelf()->SetAutoHideBehavior(GetParam());
+  GetPrimaryShelf()->SetAutoHideBehavior(shelf_auto_hide_behavior());
   TabletModeControllerTestApi().EnterTabletMode();
 
   std::unique_ptr<aura::Window> window =
@@ -837,7 +942,7 @@ TEST_P(HotseatWidgetTest, GoHomeDuringInAppToOverviewTransition) {
 
   // Make sure shelf (and overview button) are visible - this is moves the
   // hotseat into kExtended state.
-  if (GetParam() == ShelfAutoHideBehavior::kAlways)
+  if (shelf_auto_hide_behavior() == ShelfAutoHideBehavior::kAlways)
     SwipeUpOnShelf();
 
   gfx::Point overview_button_center = GetPrimaryShelf()
@@ -878,7 +983,7 @@ TEST_P(HotseatWidgetTest, GoHomeDuringInAppToOverviewTransition) {
 
 // Tests that in-app -> overview results in only one state change with an
 // autohidden shelf.
-TEST_F(HotseatWidgetTest, InAppToOverviewChangesStateOnceAutohiddenShelf) {
+TEST_P(HotseatWidgetTest, InAppToOverviewChangesStateOnceAutohiddenShelf) {
   GetPrimaryShelf()->SetAutoHideBehavior(ShelfAutoHideBehavior::kAlways);
   TabletModeControllerTestApi().EnterTabletMode();
 
@@ -922,7 +1027,7 @@ TEST_F(HotseatWidgetTest, InAppToOverviewChangesStateOnceAutohiddenShelf) {
 
 // Tests that going between Applist and overview in tablet mode with no windows
 // results in no work area change.
-TEST_F(HotseatWidgetTest,
+TEST_P(HotseatWidgetTest,
        WorkAreaDoesNotUpdateAppListToFromOverviewWithNoWindow) {
   TabletModeControllerTestApi().EnterTabletMode();
   DisplayWorkAreaChangeCounter counter;
@@ -946,7 +1051,7 @@ TEST_F(HotseatWidgetTest,
 
 // Tests that switching between AppList and overview with a window results in no
 // work area change.
-TEST_F(HotseatWidgetTest,
+TEST_P(HotseatWidgetTest,
        WorkAreaDoesNotUpdateAppListToFromOverviewWithWindow) {
   DisplayWorkAreaChangeCounter counter;
   TabletModeControllerTestApi().EnterTabletMode();
@@ -991,7 +1096,7 @@ TEST_F(HotseatWidgetTest,
 
 // Tests that switching between AppList and an active window does not update the
 // work area.
-TEST_F(HotseatWidgetTest, WorkAreaDoesNotUpdateOpenWindowToFromAppList) {
+TEST_P(HotseatWidgetTest, WorkAreaDoesNotUpdateOpenWindowToFromAppList) {
   TabletModeControllerTestApi().EnterTabletMode();
   std::unique_ptr<aura::Window> window =
       AshTestBase::CreateTestWindow(gfx::Rect(0, 0, 400, 400));
@@ -1017,7 +1122,7 @@ TEST_F(HotseatWidgetTest, WorkAreaDoesNotUpdateOpenWindowToFromAppList) {
 
 // Tests that switching between overview and an active window does not update
 // the work area.
-TEST_F(HotseatWidgetTest, WorkAreaDoesNotUpdateOpenWindowToFromOverview) {
+TEST_P(HotseatWidgetTest, WorkAreaDoesNotUpdateOpenWindowToFromOverview) {
   TabletModeControllerTestApi().EnterTabletMode();
   std::unique_ptr<aura::Window> window =
       AshTestBase::CreateTestWindow(gfx::Rect(0, 0, 400, 400));
@@ -1049,7 +1154,7 @@ TEST_F(HotseatWidgetTest, WorkAreaDoesNotUpdateOpenWindowToFromOverview) {
 
 // Tests that the shelf opaque background is properly updated after a tablet
 // mode transition with no apps.
-TEST_F(HotseatWidgetTest, ShelfBackgroundNotVisibleInTabletModeNoApps) {
+TEST_P(HotseatWidgetTest, ShelfBackgroundNotVisibleInTabletModeNoApps) {
   TabletModeControllerTestApi().EnterTabletMode();
 
   EXPECT_FALSE(GetShelfWidget()->GetOpaqueBackground()->visible());
@@ -1057,7 +1162,7 @@ TEST_F(HotseatWidgetTest, ShelfBackgroundNotVisibleInTabletModeNoApps) {
 
 // Tests that the shelf opaque background is properly updated after a tablet
 // mode transition with no apps with dense shelf.
-TEST_F(HotseatWidgetTest, DenseShelfBackgroundNotVisibleInTabletModeNoApps) {
+TEST_P(HotseatWidgetTest, DenseShelfBackgroundNotVisibleInTabletModeNoApps) {
   UpdateDisplay("300x1000");
   TabletModeControllerTestApi().EnterTabletMode();
 
@@ -1065,7 +1170,7 @@ TEST_F(HotseatWidgetTest, DenseShelfBackgroundNotVisibleInTabletModeNoApps) {
 }
 
 // Tests that the hotseat is extended if focused with a keyboard.
-TEST_F(HotseatWidgetTest, ExtendHotseatIfFocusedWithKeyboard) {
+TEST_P(HotseatWidgetTest, ExtendHotseatIfFocusedWithKeyboard) {
   TabletModeControllerTestApi().EnterTabletMode();
   std::unique_ptr<aura::Window> window =
       AshTestBase::CreateTestWindow(gfx::Rect(0, 0, 400, 400));
@@ -1097,7 +1202,7 @@ TEST_F(HotseatWidgetTest, ExtendHotseatIfFocusedWithKeyboard) {
 
 // Tests that if the hotseat was hidden while being focused, doing a traversal
 // focus on the next element brings it up again.
-TEST_F(HotseatWidgetTest, SwipeDownOnFocusedHotseat) {
+TEST_P(HotseatWidgetTest, SwipeDownOnFocusedHotseat) {
   TabletModeControllerTestApi().EnterTabletMode();
   std::unique_ptr<aura::Window> window =
       AshTestBase::CreateTestWindow(gfx::Rect(0, 0, 400, 400));
@@ -1125,7 +1230,7 @@ TEST_F(HotseatWidgetTest, SwipeDownOnFocusedHotseat) {
 
 // Tests that in overview, we can still exit by clicking on the hotseat if the
 // point is not on the visible area.
-TEST_F(HotseatWidgetTest, ExitOverviewWithClickOnHotseat) {
+TEST_P(HotseatWidgetTest, ExitOverviewWithClickOnHotseat) {
   std::unique_ptr<aura::Window> window1 = AshTestBase::CreateTestWindow();
   ShelfTestUtil::AddAppShortcut("app_id_1", TYPE_APP);
 
@@ -1153,7 +1258,7 @@ TEST_F(HotseatWidgetTest, ExitOverviewWithClickOnHotseat) {
 
 // Hides the hotseat if the hotseat is in kExtendedMode and the system tray
 // is about to show (see https://crbug.com/1028321).
-TEST_F(HotseatWidgetTest, DismissHotseatWhenSystemTrayShows) {
+TEST_P(HotseatWidgetTest, DismissHotseatWhenSystemTrayShows) {
   TabletModeControllerTestApi().EnterTabletMode();
   std::unique_ptr<aura::Window> window =
       AshTestBase::CreateTestWindow(gfx::Rect(0, 0, 400, 400));
@@ -1175,7 +1280,7 @@ TEST_F(HotseatWidgetTest, DismissHotseatWhenSystemTrayShows) {
 
 // Tests that the work area updates once each when going to/from tablet mode
 // with no windows open.
-TEST_F(HotseatWidgetTest, WorkAreaUpdatesClamshellToFromHomeLauncherNoWindows) {
+TEST_P(HotseatWidgetTest, WorkAreaUpdatesClamshellToFromHomeLauncherNoWindows) {
   DisplayWorkAreaChangeCounter counter;
   TabletModeControllerTestApi().EnterTabletMode();
 
@@ -1188,7 +1293,7 @@ TEST_F(HotseatWidgetTest, WorkAreaUpdatesClamshellToFromHomeLauncherNoWindows) {
 
 // Tests that the work area changes just once when opening a window in tablet
 // mode.
-TEST_F(HotseatWidgetTest, OpenWindowInTabletModeChangesWorkArea) {
+TEST_P(HotseatWidgetTest, OpenWindowInTabletModeChangesWorkArea) {
   DisplayWorkAreaChangeCounter counter;
   TabletModeControllerTestApi().EnterTabletMode();
   ASSERT_EQ(1, counter.count());
@@ -1202,7 +1307,7 @@ TEST_F(HotseatWidgetTest, OpenWindowInTabletModeChangesWorkArea) {
 
 // Tests that going to and from tablet mode with an open window results in a
 // work area change.
-TEST_F(HotseatWidgetTest, ToFromTabletModeWithWindowChangesWorkArea) {
+TEST_P(HotseatWidgetTest, ToFromTabletModeWithWindowChangesWorkArea) {
   DisplayWorkAreaChangeCounter counter;
   std::unique_ptr<aura::Window> window =
       AshTestBase::CreateTestWindow(gfx::Rect(0, 0, 400, 400));
@@ -1218,7 +1323,7 @@ TEST_F(HotseatWidgetTest, ToFromTabletModeWithWindowChangesWorkArea) {
 // Tests that the hotseat is flush with the bottom of the screen when in
 // clamshell mode and the shelf is oriented on the bottom.
 TEST_P(HotseatWidgetTest, HotseatFlushWithScreenBottomInClamshell) {
-  GetPrimaryShelf()->SetAutoHideBehavior(GetParam());
+  GetPrimaryShelf()->SetAutoHideBehavior(shelf_auto_hide_behavior());
   const int display_height =
       display::Screen::GetScreen()->GetPrimaryDisplay().bounds().height();
   const int hotseat_bottom = GetPrimaryShelf()
@@ -1236,7 +1341,7 @@ TEST_P(HotseatWidgetTest, DragActiveWindowInTabletMode) {
   scoped_features.InitAndEnableFeature(
       features::kDragFromShelfToHomeOrOverview);
 
-  GetPrimaryShelf()->SetAutoHideBehavior(GetParam());
+  GetPrimaryShelf()->SetAutoHideBehavior(shelf_auto_hide_behavior());
   TabletModeControllerTestApi().EnterTabletMode();
   std::unique_ptr<aura::Window> window =
       AshTestBase::CreateTestWindow(gfx::Rect(0, 0, 400, 400));
@@ -1277,7 +1382,7 @@ TEST_P(HotseatWidgetTest, ExitingOvervieHidesHotseat) {
   scoped_features.InitAndEnableFeature(
       features::kDragFromShelfToHomeOrOverview);
 
-  const ShelfAutoHideBehavior auto_hide_behavior = GetParam();
+  const ShelfAutoHideBehavior auto_hide_behavior = shelf_auto_hide_behavior();
   GetPrimaryShelf()->SetAutoHideBehavior(auto_hide_behavior);
   TabletModeControllerTestApi().EnterTabletMode();
 
@@ -1331,7 +1436,7 @@ TEST_P(HotseatWidgetTest, FailingOverviewDragResultsInExtendedHotseat) {
   scoped_features.InitAndEnableFeature(
       features::kDragFromShelfToHomeOrOverview);
 
-  const ShelfAutoHideBehavior auto_hide_behavior = GetParam();
+  const ShelfAutoHideBehavior auto_hide_behavior = shelf_auto_hide_behavior();
   GetPrimaryShelf()->SetAutoHideBehavior(auto_hide_behavior);
   TabletModeControllerTestApi().EnterTabletMode();
 
@@ -1367,7 +1472,7 @@ TEST_P(HotseatWidgetTest, FailingOverviewDragResultsInExtendedHotseat) {
 // Tests that hotseat remains in extended state while in overview mode when
 // flinging the shelf up or down.
 TEST_P(HotseatWidgetTest, SwipeOnHotseatInOverview) {
-  GetPrimaryShelf()->SetAutoHideBehavior(GetParam());
+  GetPrimaryShelf()->SetAutoHideBehavior(shelf_auto_hide_behavior());
   TabletModeControllerTestApi().EnterTabletMode();
 
   std::unique_ptr<aura::Window> window =
@@ -1383,7 +1488,7 @@ TEST_P(HotseatWidgetTest, SwipeOnHotseatInOverview) {
 
   EXPECT_TRUE(overview_controller->InOverviewSession());
   EXPECT_EQ(HotseatState::kExtended, GetShelfLayoutManager()->hotseat_state());
-  if (GetParam() == ShelfAutoHideBehavior::kAlways) {
+  if (shelf_auto_hide_behavior() == ShelfAutoHideBehavior::kAlways) {
     EXPECT_EQ(SHELF_AUTO_HIDE, shelf->GetVisibilityState());
     EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->GetAutoHideState());
   } else {
@@ -1396,7 +1501,7 @@ TEST_P(HotseatWidgetTest, SwipeOnHotseatInOverview) {
 
   EXPECT_TRUE(overview_controller->InOverviewSession());
   EXPECT_EQ(HotseatState::kExtended, GetShelfLayoutManager()->hotseat_state());
-  if (GetParam() == ShelfAutoHideBehavior::kAlways) {
+  if (shelf_auto_hide_behavior() == ShelfAutoHideBehavior::kAlways) {
     EXPECT_EQ(SHELF_AUTO_HIDE, shelf->GetVisibilityState());
     EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->GetAutoHideState());
   } else {
@@ -1407,7 +1512,7 @@ TEST_P(HotseatWidgetTest, SwipeOnHotseatInOverview) {
 
   EXPECT_TRUE(overview_controller->InOverviewSession());
   EXPECT_EQ(HotseatState::kExtended, GetShelfLayoutManager()->hotseat_state());
-  if (GetParam() == ShelfAutoHideBehavior::kAlways) {
+  if (shelf_auto_hide_behavior() == ShelfAutoHideBehavior::kAlways) {
     EXPECT_EQ(SHELF_AUTO_HIDE, shelf->GetVisibilityState());
     EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->GetAutoHideState());
   } else {
@@ -1417,7 +1522,7 @@ TEST_P(HotseatWidgetTest, SwipeOnHotseatInOverview) {
 
 TEST_P(HotseatWidgetTest, SwipeOnHotseatInSplitViewWithOverview) {
   Shelf* const shelf = GetPrimaryShelf();
-  shelf->SetAutoHideBehavior(GetParam());
+  shelf->SetAutoHideBehavior(shelf_auto_hide_behavior());
   TabletModeControllerTestApi().EnterTabletMode();
 
   std::unique_ptr<aura::Window> window =
@@ -1436,7 +1541,7 @@ TEST_P(HotseatWidgetTest, SwipeOnHotseatInSplitViewWithOverview) {
   EXPECT_TRUE(split_view_controller->InSplitViewMode());
   EXPECT_TRUE(overview_controller->InOverviewSession());
   EXPECT_EQ(HotseatState::kExtended, GetShelfLayoutManager()->hotseat_state());
-  if (GetParam() == ShelfAutoHideBehavior::kAlways) {
+  if (shelf_auto_hide_behavior() == ShelfAutoHideBehavior::kAlways) {
     EXPECT_EQ(SHELF_AUTO_HIDE, shelf->GetVisibilityState());
     EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->GetAutoHideState());
   } else {
@@ -1448,7 +1553,7 @@ TEST_P(HotseatWidgetTest, SwipeOnHotseatInSplitViewWithOverview) {
   EXPECT_TRUE(split_view_controller->InSplitViewMode());
   EXPECT_TRUE(overview_controller->InOverviewSession());
   EXPECT_EQ(HotseatState::kHidden, GetShelfLayoutManager()->hotseat_state());
-  if (GetParam() == ShelfAutoHideBehavior::kAlways) {
+  if (shelf_auto_hide_behavior() == ShelfAutoHideBehavior::kAlways) {
     EXPECT_EQ(SHELF_AUTO_HIDE, shelf->GetVisibilityState());
     EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->GetAutoHideState());
   } else {
@@ -1460,7 +1565,7 @@ TEST_P(HotseatWidgetTest, SwipeOnHotseatInSplitViewWithOverview) {
   EXPECT_TRUE(split_view_controller->InSplitViewMode());
   EXPECT_TRUE(overview_controller->InOverviewSession());
   EXPECT_EQ(HotseatState::kExtended, GetShelfLayoutManager()->hotseat_state());
-  if (GetParam() == ShelfAutoHideBehavior::kAlways) {
+  if (shelf_auto_hide_behavior() == ShelfAutoHideBehavior::kAlways) {
     EXPECT_EQ(SHELF_AUTO_HIDE, shelf->GetVisibilityState());
     EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->GetAutoHideState());
   } else {
@@ -1470,7 +1575,7 @@ TEST_P(HotseatWidgetTest, SwipeOnHotseatInSplitViewWithOverview) {
 
 TEST_P(HotseatWidgetTest, SwipeOnHotseatInSplitView) {
   Shelf* const shelf = GetPrimaryShelf();
-  shelf->SetAutoHideBehavior(GetParam());
+  shelf->SetAutoHideBehavior(shelf_auto_hide_behavior());
   TabletModeControllerTestApi().EnterTabletMode();
 
   std::unique_ptr<aura::Window> window1 =
@@ -1489,7 +1594,7 @@ TEST_P(HotseatWidgetTest, SwipeOnHotseatInSplitView) {
 
   EXPECT_TRUE(split_view_controller->InSplitViewMode());
   EXPECT_EQ(HotseatState::kExtended, GetShelfLayoutManager()->hotseat_state());
-  if (GetParam() == ShelfAutoHideBehavior::kAlways) {
+  if (shelf_auto_hide_behavior() == ShelfAutoHideBehavior::kAlways) {
     EXPECT_EQ(SHELF_AUTO_HIDE, shelf->GetVisibilityState());
     EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->GetAutoHideState());
   } else {
@@ -1500,7 +1605,7 @@ TEST_P(HotseatWidgetTest, SwipeOnHotseatInSplitView) {
 
   EXPECT_TRUE(split_view_controller->InSplitViewMode());
   EXPECT_EQ(HotseatState::kHidden, GetShelfLayoutManager()->hotseat_state());
-  if (GetParam() == ShelfAutoHideBehavior::kAlways) {
+  if (shelf_auto_hide_behavior() == ShelfAutoHideBehavior::kAlways) {
     EXPECT_EQ(SHELF_AUTO_HIDE, shelf->GetVisibilityState());
     EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->GetAutoHideState());
   } else {
@@ -1511,7 +1616,7 @@ TEST_P(HotseatWidgetTest, SwipeOnHotseatInSplitView) {
 
   EXPECT_TRUE(split_view_controller->InSplitViewMode());
   EXPECT_EQ(HotseatState::kExtended, GetShelfLayoutManager()->hotseat_state());
-  if (GetParam() == ShelfAutoHideBehavior::kAlways) {
+  if (shelf_auto_hide_behavior() == ShelfAutoHideBehavior::kAlways) {
     EXPECT_EQ(SHELF_AUTO_HIDE, shelf->GetVisibilityState());
     EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->GetAutoHideState());
   } else {
@@ -1521,7 +1626,7 @@ TEST_P(HotseatWidgetTest, SwipeOnHotseatInSplitView) {
 
 // Tests that swiping downward, towards the bezel, from a variety of points
 // results in hiding the hotseat.
-TEST_F(HotseatWidgetTest, HotseatHidesWhenSwipedToBezel) {
+TEST_P(HotseatWidgetTest, HotseatHidesWhenSwipedToBezel) {
   // Go to in-app shelf and extend the hotseat.
   TabletModeControllerTestApi().EnterTabletMode();
   std::unique_ptr<aura::Window> window =
@@ -1592,7 +1697,7 @@ TEST_F(HotseatWidgetTest, HotseatHidesWhenSwipedToBezel) {
 }
 
 // Tests that flinging up the in-app shelf should show the hotseat.
-TEST_F(HotseatWidgetTest, FlingUpHotseatWithShortFling) {
+TEST_P(HotseatWidgetTest, FlingUpHotseatWithShortFling) {
   TabletModeControllerTestApi().EnterTabletMode();
   std::unique_ptr<aura::Window> window =
       AshTestBase::CreateTestWindow(gfx::Rect(0, 0, 400, 400));
@@ -1628,7 +1733,7 @@ TEST_F(HotseatWidgetTest, FlingUpHotseatWithShortFling) {
 
 // Tests that flinging up the in-app shelf should show the home launcher if the
 // gesture distance is long enough.
-TEST_F(HotseatWidgetTest, FlingUpHotseatWithLongFling) {
+TEST_P(HotseatWidgetTest, FlingUpHotseatWithLongFling) {
   TabletModeControllerTestApi().EnterTabletMode();
   std::unique_ptr<aura::Window> window =
       AshTestBase::CreateTestWindow(gfx::Rect(0, 0, 400, 400));
@@ -1666,7 +1771,7 @@ TEST_F(HotseatWidgetTest, FlingUpHotseatWithLongFling) {
 
 // Tests that UpdateVisibilityState is ignored during a shelf drag. This
 // prevents drag from getting interrupted.
-TEST_F(HotseatWidgetTest, NoVisibilityStateUpdateDuringDrag) {
+TEST_P(HotseatWidgetTest, NoVisibilityStateUpdateDuringDrag) {
   // Autohide the shelf, then start a shelf drag.
   GetPrimaryShelf()->SetAutoHideBehavior(ShelfAutoHideBehavior::kAlways);
   std::unique_ptr<aura::Window> window1 =
@@ -1691,7 +1796,7 @@ TEST_F(HotseatWidgetTest, NoVisibilityStateUpdateDuringDrag) {
 }
 
 // Tests that popups don't activate the hotseat. (crbug.com/1018266)
-TEST_F(HotseatWidgetTest, HotseatRemainsHiddenIfPopupLaunched) {
+TEST_P(HotseatWidgetTest, HotseatRemainsHiddenIfPopupLaunched) {
   // Go to in-app shelf and extend the hotseat.
   TabletModeControllerTestApi().EnterTabletMode();
   std::unique_ptr<aura::Window> window =

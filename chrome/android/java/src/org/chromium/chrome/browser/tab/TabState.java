@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.tab;
 
 import android.graphics.Color;
 import android.os.Build;
-import android.os.Bundle;
 import android.util.Pair;
 
 import androidx.annotation.Nullable;
@@ -63,24 +62,8 @@ public class TabState {
     /** Checks if the TabState header is loaded properly. */
     private static final long KEY_CHECKER = 0;
 
-    /**
-     * There's no official maximum size for a bundle, but if a Binder transaction fails and the
-     * parcel was bigger than 200kB, the platform blames it on the bundle being too large.
-     */
-    private static final int MAX_BUNDLE_SIZE = 200 * 1024;
-
     /** A theme color that indicates an unspecified state. */
     public static final int UNSPECIFIED_THEME_COLOR = Color.TRANSPARENT;
-
-    private static final String TAB_STATE_BUNDLE_PREFIX = "tab_";
-    private static final String TIMESTAMP_MILLIS = TAB_STATE_BUNDLE_PREFIX + "timestampMillis";
-    private static final String CONTENT_STATE_BYTES =
-            TAB_STATE_BUNDLE_PREFIX + "contentsStateBytes";
-    private static final String PARENT_ID = TAB_STATE_BUNDLE_PREFIX + "parentId";
-    private static final String OPENER_APP_ID = TAB_STATE_BUNDLE_PREFIX + "openerAppId";
-    private static final String VERSION = TAB_STATE_BUNDLE_PREFIX + "version";
-    private static final String THEME_COLOR = TAB_STATE_BUNDLE_PREFIX + "themeColor";
-    private static final String IS_INCOGNITO = TAB_STATE_BUNDLE_PREFIX + "isIncognito";
 
     /** Overrides the Chrome channel/package name to test a variant channel-specific behaviour. */
     private static String sChannelNameOverrideForTest;
@@ -201,26 +184,6 @@ public class TabState {
         } finally {
             StreamUtil.closeQuietly(stream);
         }
-        return tabState;
-    }
-
-    /**
-     * Restores a particular TabState file from the provided Bundle.
-     * @param bundle The Bundle to restore TabState from.
-     * @return TabState that has been restored.
-     */
-    public static TabState restoreTabState(Bundle bundle) {
-        TabState tabState = new TabState();
-        tabState.timestampMillis = bundle.getLong(TIMESTAMP_MILLIS);
-        byte[] bytes = bundle.getByteArray(CONTENT_STATE_BYTES);
-        tabState.contentsState = new WebContentsState(ByteBuffer.allocateDirect(bytes.length));
-        tabState.contentsState.buffer().put(bytes);
-        tabState.parentId = bundle.getInt(PARENT_ID);
-        tabState.openerAppId = bundle.getString(OPENER_APP_ID);
-        tabState.contentsState.setVersion(bundle.getInt(VERSION));
-        tabState.themeColor = bundle.getInt(THEME_COLOR);
-        tabState.mIsIncognito = bundle.getBoolean(IS_INCOGNITO);
-
         return tabState;
     }
 
@@ -452,34 +415,6 @@ public class TabState {
             StreamUtil.closeQuietly(dataOutputStream);
             StreamUtil.closeQuietly(fileOutputStream);
         }
-    }
-
-    /**
-     * Writes the TabState to a bundle. This method may be called on either the UI or background
-     * thread.
-     * @param bundle Bundle to write the tab's state to.
-     * @param state State object obtained from from {@link Tab#getState()}.
-     * @return Whether the tab state was successfully saved.
-     */
-    public static boolean saveState(Bundle bundle, TabState state) {
-        if (state == null || state.contentsState == null) return false;
-
-        byte[] contentsStateBytes = getContentStateByteArray(state.contentsState.buffer());
-
-        // Chrome Tab State only goes back 50 navigations, and the size of TabState typically caps
-        // out around 50kB.
-        // TODO(mthiesse): If this starts getting hit we'll need to reduce the history size or fall
-        // back to saving to disk.
-        assert contentsStateBytes.length < MAX_BUNDLE_SIZE;
-
-        bundle.putLong(TIMESTAMP_MILLIS, state.timestampMillis);
-        bundle.putByteArray(CONTENT_STATE_BYTES, contentsStateBytes);
-        bundle.putInt(PARENT_ID, state.parentId);
-        bundle.putString(OPENER_APP_ID, state.openerAppId);
-        bundle.putInt(VERSION, state.contentsState.version());
-        bundle.putInt(THEME_COLOR, state.themeColor);
-        bundle.putBoolean(IS_INCOGNITO, state.isIncognito());
-        return true;
     }
 
     /**

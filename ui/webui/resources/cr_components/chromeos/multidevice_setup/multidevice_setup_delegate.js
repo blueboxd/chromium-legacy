@@ -13,12 +13,14 @@ cr.define('multidevice_setup', function() {
     isPasswordRequiredToSetHost() {}
 
     /**
-     * @param {string} hostDeviceId The ID of the host to set.
+     * @param {string} hostInstanceIdOrLegacyDeviceId The ID of the host to set.
      * @param {string=} opt_authToken An auth token to authenticate the request;
      *     only necessary if isPasswordRequiredToSetHost() returns true.
      * @return {!Promise<{success: boolean}>}
+     * TODO(https://crbug.com/1019206): When v1 DeviceSync is turned off, only
+     * use Instance ID since all devices are guaranteed to have one.
      */
-    setHostDevice(hostDeviceId, opt_authToken) {}
+    setHostDevice(hostInstanceIdOrLegacyDeviceId, opt_authToken) {}
 
     /** @return {boolean} */
     shouldExitSetupFlowAfterSettingHost() {}

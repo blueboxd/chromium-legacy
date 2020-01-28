@@ -21,6 +21,7 @@ import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.compositor.bottombar.ephemeraltab.EphemeralTabPanel;
 import org.chromium.chrome.browser.contextmenu.ChromeContextMenuItem.Item;
+import org.chromium.chrome.browser.contextmenu.ContextMenuParams.PerformanceClass;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
 import org.chromium.chrome.browser.firstrun.FirstRunStatus;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
@@ -184,6 +185,11 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
                 histogramName = "ContextMenu.SelectedOptionAndroid.Link";
             }
             RecordHistogram.recordEnumeratedHistogram(histogramName, action, Action.NUM_ENTRIES);
+            if (params.isAnchor()
+                    && params.getPerformanceClass() == PerformanceClass.PERFORMANCE_FAST) {
+                RecordHistogram.recordEnumeratedHistogram(
+                        histogramName + ".PerformanceClassFast", action, Action.NUM_ENTRIES);
+            }
         }
 
         /**

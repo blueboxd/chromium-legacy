@@ -278,6 +278,7 @@
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> पुस्तक चिन्ह}other{<ph name="BOOKMARKS_COUNT_MANY" /> पुस्तक चिन्हहरू}}</translation>
 <translation id="3089395242580810162">इन्कोग्निटो ट्याबमा खोल्नुहोस्</translation>
 <translation id="3123473560110926937">केही साइटका हकमा रोक लगाइएको छ</translation>
+<translation id="3123734510202723619">घोषणाहरू</translation>
 <translation id="3137521801621304719">इनकगनिटो मोडलाई छोड्नुहोस्</translation>
 <translation id="3143515551205905069">सिंक रद्द गर्नुहोस्</translation>
 <translation id="3157842584138209013">थप विकल्पहरू नामक बटनमार्फत आफूले सुरक्षित गरेको डेटाको मात्रा हेर्नुहोस्</translation>
@@ -686,7 +687,6 @@
 <translation id="6201345951596836663">लिंक प्रतिलिपि गरियो</translation>
 <translation id="6206551242102657620">जडान सुरक्षित छ। साइटसम्बन्धी जानकारी</translation>
 <translation id="6210748933810148297"><ph name="EMAIL" /> होइन?</translation>
-<translation id="6216432067784365534"><ph name="NAME_OF_LIST_ITEM" /> विकल्पहरू</translation>
 <translation id="6221633008163990886">आफ्ना पासवर्डहरू निर्यात गर्न अनलक गर्नुहोस्</translation>
 <translation id="6232535412751077445">'ट्रयाक नगर्नुहोस्' सक्रिय गर्नुको अर्थ तपाईँको ब्राउजिङ ट्राफिकसँगै अनुरोध समावेश गरिनेछ भन्ने हो। कुनै पनि प्रभाव वेबसाइटले अनुरोधको जवाफ दिने नदिने, र अनुरोधलाई कसरी व्याख्या गरिन्छ भन्नेमा निर्भर गर्दछ।
 
@@ -732,7 +732,6 @@
 <translation id="6534565668554028783">Google ले प्रतिक्रिया जनाउन निकै लामो समय लियो</translation>
 <translation id="6538442820324228105"><ph name="GBS" /> जि.बि. डाउनलोड गरियो</translation>
 <translation id="6539092367496845964">केही चिज गडबड भयो। पछि फेरि प्रयास गर्नुहोस्।</translation>
-<translation id="654446541061731451">बिमका लागि ट्याब चयन गर्नुहोस्</translation>
 <translation id="6545017243486555795">सबै डेटा खाली गर्नुहोस्</translation>
 <translation id="6545864417968258051">ब्लुटुथ स्क्यान गर्दै</translation>
 <translation id="6560414384669816528">Sogou मार्फत खोजी गर्नुहोस्</translation>
@@ -1024,7 +1023,6 @@
 <translation id="8687353297350450808">{N_BARS,plural, =1{सङ्केतको क्षमता स्तर: # बार}other{सङ्केतको क्षमता स्तर: # बारहरू}}</translation>
 <translation id="868929229000858085">आफ्ना सम्पर्कहरू खोज्नुहोस्</translation>
 <translation id="869891660844655955">समाप्ति मिति</translation>
-<translation id="8719023831149562936">हालको ट्याबलाई बिम गर्न सकिंदैन</translation>
 <translation id="8728487861892616501">यो अनुप्रयोगको प्रयोग गरेर, तपाईं Chrome को <ph name="BEGIN_LINK1" />सेवाका सर्तहरू<ph name="END_LINK1" /> र <ph name="BEGIN_LINK2" />गोपनीयतासम्बन्धी सूचना<ph name="END_LINK2" /> तथा <ph name="BEGIN_LINK3" />Family Link बाट व्यवस्थापन गरिएको Google खाताका गोपनीयतासम्बन्धी सूचना<ph name="END_LINK3" /> मा सहमति जनाउनुहुन्छ।</translation>
 <translation id="8748850008226585750">सामग्रीहरू लुकाइएका छन्</translation>
 <translation id="8751914237388039244">कुनै छवि छनौट गर्नुहोस्‌</translation>

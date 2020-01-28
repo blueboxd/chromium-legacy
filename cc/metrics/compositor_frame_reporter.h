@@ -60,12 +60,9 @@ class CC_EXPORT CompositorFrameReporter {
     kUnknown
   };
 
-  // These values are persisted to logs. Entries should not be renumbered and
-  // numeric values should never be reused.
-  enum class MissedFrameReportTypes {
+  enum class MissedFrameReportType {
     kNonMissedFrame = 0,
     kMissedFrame = 1,
-    kDeprecatedMissedFrameLatencyIncrease = 2,
     kMissedFrameReportTypeCount
   };
 
@@ -155,22 +152,18 @@ class CC_EXPORT CompositorFrameReporter {
  private:
   void TerminateReporter();
   void EndCurrentStage(base::TimeTicks end_time);
-  void ReportStageHistograms(bool missed_frame) const;
+  void ReportStageHistograms() const;
   void ReportStageHistogramWithBreakdown(
-      MissedFrameReportTypes report_type,
       const StageData& stage,
       FrameSequenceTrackerType frame_sequence_tracker_type =
           FrameSequenceTrackerType::kMaxType) const;
   void ReportBlinkBreakdowns(
-      MissedFrameReportTypes report_type,
       const base::TimeTicks start_time,
       FrameSequenceTrackerType frame_sequence_tracker_type) const;
   void ReportVizBreakdowns(
-      MissedFrameReportTypes report_type,
       const base::TimeTicks start_time,
       FrameSequenceTrackerType frame_sequence_tracker_type) const;
-  void ReportHistogram(MissedFrameReportTypes report_type,
-                       FrameSequenceTrackerType intraction_type,
+  void ReportHistogram(FrameSequenceTrackerType intraction_type,
                        const int stage_type_index,
                        base::TimeDelta time_delta) const;
 
@@ -188,7 +181,7 @@ class CC_EXPORT CompositorFrameReporter {
   base::TimeDelta GetStateNormalUpperLimit(const StageData& stage) const;
 
   const bool is_single_threaded_;
-  bool submitted_frame_missed_deadline_ = false;
+  MissedFrameReportType report_type_ = MissedFrameReportType::kNonMissedFrame;
   base::TimeTicks frame_termination_time_;
   base::TimeTicks begin_main_frame_start_;
   FrameTerminationStatus frame_termination_status_ =

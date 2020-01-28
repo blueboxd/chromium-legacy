@@ -13,30 +13,30 @@
 #include "chrome/browser/devtools/protocol/target_handler.h"
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/devtools_agent_host_client.h"
+#include "content/public/browser/devtools_agent_host_client_channel.h"
 #include "content/public/browser/devtools_manager_delegate.h"
-#include "third_party/inspector_protocol/crdtp/json.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/devtools/protocol/window_manager_handler.h"
 #endif
 
 ChromeDevToolsSession::ChromeDevToolsSession(
-    content::DevToolsAgentHost* agent_host,
-    content::DevToolsAgentHostClient* client)
-    : agent_host_(agent_host), client_(client), dispatcher_(this) {
+    content::DevToolsAgentHostClientChannel* channel)
+    : dispatcher_(this), client_channel_(channel) {
+  content::DevToolsAgentHost* agent_host = channel->GetAgentHost();
   if (agent_host->GetWebContents() &&
       agent_host->GetType() == content::DevToolsAgentHost::kTypePage) {
     page_handler_ = std::make_unique<PageHandler>(agent_host->GetWebContents(),
                                                   &dispatcher_);
     security_handler_ = std::make_unique<SecurityHandler>(
         agent_host->GetWebContents(), &dispatcher_);
-    if (client->MayAttachToBrowser()) {
+    if (channel->GetClient()->MayAttachToBrowser()) {
       cast_handler_ = std::make_unique<CastHandler>(
           agent_host->GetWebContents(), &dispatcher_);
     }
   }
   target_handler_ = std::make_unique<TargetHandler>(&dispatcher_);
-  if (client->MayAttachToBrowser()) {
+  if (channel->GetClient()->MayAttachToBrowser()) {
     browser_handler_ =
         std::make_unique<BrowserHandler>(&dispatcher_, agent_host->GetId());
   }
@@ -71,32 +71,18 @@ void ChromeDevToolsSession::HandleCommand(
 
 // The following methods handle responses or notifications coming from
 // the browser to the client.
-static void SendProtocolResponseOrNotification(
-    content::DevToolsAgentHostClient* client,
-    content::DevToolsAgentHost* agent_host,
-    std::unique_ptr<protocol::Serializable> message) {
-  std::vector<uint8_t> cbor = std::move(*message).TakeSerialized();
-  if (client->UsesBinaryProtocol()) {
-    client->DispatchProtocolMessage(agent_host, cbor);
-    return;
-  }
-  std::vector<uint8_t> json;
-  crdtp::Status status =
-      crdtp::json::ConvertCBORToJSON(crdtp::SpanFrom(cbor), &json);
-  LOG_IF(ERROR, !status.ok()) << status.ToASCIIString();
-  client->DispatchProtocolMessage(agent_host, json);
-}
-
 void ChromeDevToolsSession::sendProtocolResponse(
     int call_id,
     std::unique_ptr<protocol::Serializable> message) {
   pending_commands_.erase(call_id);
-  SendProtocolResponseOrNotification(client_, agent_host_, std::move(message));
+  client_channel_->DispatchProtocolMessageToClient(
+      std::move(*message).TakeSerialized());
 }
 
 void ChromeDevToolsSession::sendProtocolNotification(
     std::unique_ptr<protocol::Serializable> message) {
-  SendProtocolResponseOrNotification(client_, agent_host_, std::move(message));
+  client_channel_->DispatchProtocolMessageToClient(
+      std::move(*message).TakeSerialized());
 }
 
 void ChromeDevToolsSession::flushProtocolNotifications() {}

@@ -53,6 +53,10 @@ class RealTimeUrlLookupService {
                    RTLookupRequestCallback request_callback,
                    RTLookupResponseCallback response_callback);
 
+  // Called by |database_manager| when any profile is destroyed. The current
+  // object will finish all pending requests and delete itself.
+  void WaitForPendingRequestsOrDelete();
+
   // Returns the SBThreatType for a given
   // RTLookupResponse::ThreatInfo::ThreatType
   static SBThreatType GetSBThreatTypeForRTThreatType(
@@ -112,6 +116,10 @@ class RealTimeUrlLookupService {
 
   // If this timer is running, backoff is in effect.
   base::OneShotTimer backoff_timer_;
+
+  // Indicates whether this object is self-owned or owned by |database_manager|.
+  // It is self-owned after any one of the profile is destroyed.
+  bool is_self_owned_ = false;
 
   // The URLLoaderFactory we use to issue network requests.
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;

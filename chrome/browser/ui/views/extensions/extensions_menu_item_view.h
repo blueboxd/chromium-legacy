@@ -53,6 +53,9 @@ class ExtensionsMenuItemView : public views::View,
   }
 
   ExtensionsMenuButton* primary_action_button_for_testing();
+  views::ImageButton* context_menu_button_for_testing() {
+    return context_menu_button_;
+  }
   views::ImageButton* pin_button_for_testing() { return pin_button_; }
 
  private:

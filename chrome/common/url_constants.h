@@ -164,6 +164,9 @@ extern const char kLegacySupervisedUserManagementURL[];
 // The URL for the Learn More page about policies and enterprise enrollment.
 extern const char kManagedUiLearnMoreUrl[];
 
+// The URL for the "Learn more" page for mixed content download blocking.
+extern const char kMixedContentDownloadBlockingLearnMoreUrl[];
+
 // "myactivity.google.com" URL for the history checkbox in ClearBrowsingData.
 extern const char kMyActivityUrlInClearBrowsingData[];
 

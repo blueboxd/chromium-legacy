@@ -123,6 +123,10 @@ class DownloadUIModel {
   // Implies IsDangerous() and MightBeMalicious().
   virtual bool IsMalicious() const;
 
+  // Is this download a mixed content download, but not something more severe?
+  // Implies IsDangerous() and !IsMalicious().
+  virtual bool IsMixedContent() const;
+
   // Is safe browsing download feedback feature available for this download?
   virtual bool ShouldAllowDownloadFeedback() const;
 
@@ -181,6 +185,11 @@ class DownloadUIModel {
   // Change what's returned by GetDangerLevel().
   virtual void SetDangerLevel(
       safe_browsing::DownloadFileType::DangerLevel danger_level);
+
+  // Return the mixed content status determined during download target
+  // determination.
+  virtual download::DownloadItem::MixedContentStatus GetMixedContentStatus()
+      const;
 
   // Open the download using the platform handler for the download. The behavior
   // of this method will be different from DownloadItem::OpenDownload() if

@@ -316,10 +316,6 @@ const char kBypassAppBannerEngagementChecksDescription[] =
     "eligibility requirements for showing app banners, such as having a "
     "manifest, are met.";
 
-const char kCaptionSettingsName[] = "Caption Settings";
-const char kCaptionSettingsDescription[] =
-    "Enable the ability to customize captions.";
-
 const char kContextMenuSearchWithGoogleLensName[] =
     "Google Lens powered image search in the context menu.";
 const char kContextMenuSearchWithGoogleLensDescription[] =
@@ -2544,6 +2540,12 @@ const char kContextualSearchSecondTapDescription[] =
     "Enables triggering on a second tap gesture even when Ranker would "
     "normally suppress that tap.";
 
+const char kContextualSearchTranslationsName[] =
+    "Contextual Search translations";
+const char kContextualSearchTranslationsDescription[] =
+    "Enables automatic translations of words on a page to be presented in the "
+    "caption of the bottom bar.";
+
 const char kDirectActionsName[] = "Direct actions";
 const char kDirectActionsDescription[] =
     "Enables direct actions (Android Q and more).";
@@ -2937,12 +2939,6 @@ const char kEnableReaderModeDescription[] =
     "Allows viewing of simplified web pages by selecting 'Customize and "
     "control Chrome'>'Distill page'";
 
-const char kEnableWebAuthenticationBleSupportName[] =
-    "Web Authentication API BLE support";
-const char kEnableWebAuthenticationBleSupportDescription[] =
-    "Enable support for using Web Authentication API via Bluetooth security "
-    "keys";
-
 const char kEnableWebAuthenticationTestingAPIName[] =
     "Web Authentication Testing API";
 const char kEnableWebAuthenticationTestingAPIDescription[] =
@@ -3263,10 +3259,6 @@ const char kArcUsbHostDescription[] =
 const char kArcUsbStorageUIName[] = "Enable ARC USB Storage UI";
 const char kArcUsbStorageUIDescription[] =
     "Enable experimental UI for controlling ARC access to USB storage devices.";
-
-const char kArcVpnName[] = "Enable ARC VPN integration";
-const char kArcVpnDescription[] =
-    "Allow Android VPN clients to tunnel Chrome traffic.";
 
 const char kAshDragWindowFromShelfName[] =
     "Enable dragging a window from shelf to overview or home screen.";

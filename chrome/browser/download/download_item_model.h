@@ -39,6 +39,7 @@ class DownloadItemModel : public DownloadUIModel,
   bool IsDangerous() const override;
   bool MightBeMalicious() const override;
   bool IsMalicious() const override;
+  bool IsMixedContent() const override;
   bool ShouldAllowDownloadFeedback() const override;
   bool ShouldRemoveFromShelfWhenComplete() const override;
   bool ShouldShowDownloadStartedAnimation() const override;
@@ -52,6 +53,8 @@ class DownloadItemModel : public DownloadUIModel,
   safe_browsing::DownloadFileType::DangerLevel GetDangerLevel() const override;
   void SetDangerLevel(
       safe_browsing::DownloadFileType::DangerLevel danger_level) override;
+  download::DownloadItem::MixedContentStatus GetMixedContentStatus()
+      const override;
   void OpenUsingPlatformHandler() override;
   bool IsBeingRevived() const override;
   void SetIsBeingRevived(bool is_being_revived) override;

@@ -9,6 +9,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_restrictions.h"
+#include "build/build_config.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test.h"
@@ -180,7 +181,13 @@ class HeadlessBrowserUserDataDirTest : public HeadlessBrowserTest {
   base::ScopedTempDir user_data_dir_;
 };
 
-IN_PROC_BROWSER_TEST_F(HeadlessBrowserUserDataDirTest, Do) {
+#if defined(OS_WIN)
+// TODO(crbug.com/1045971): Disabled due to flakiness.
+#define MAYBE_Do DISABLED_Do
+#else
+#define MAYBE_Do Do
+#endif
+IN_PROC_BROWSER_TEST_F(HeadlessBrowserUserDataDirTest, MAYBE_Do) {
   // Allow IO from the main thread.
   base::ThreadRestrictions::SetIOAllowed(true);
 
@@ -205,7 +212,13 @@ IN_PROC_BROWSER_TEST_F(HeadlessBrowserUserDataDirTest, Do) {
   EXPECT_FALSE(base::IsDirectoryEmpty(user_data_dir()));
 }
 
-IN_PROC_BROWSER_TEST_F(HeadlessBrowserTest, IncognitoMode) {
+#if defined(OS_WIN)
+// TODO(crbug.com/1045971): Disabled due to flakiness.
+#define MAYBE_IncognitoMode DISABLED_IncognitoMode
+#else
+#define MAYBE_IncognitoMode IncognitoMode
+#endif
+IN_PROC_BROWSER_TEST_F(HeadlessBrowserTest, MAYBE_IncognitoMode) {
   // We do not want to bother with posting tasks to create a temp dir.
   // Just allow IO from main thread for now.
   base::ThreadRestrictions::SetIOAllowed(true);

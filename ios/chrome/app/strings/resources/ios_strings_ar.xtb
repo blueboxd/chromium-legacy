@@ -192,6 +192,7 @@
 <translation id="3474649192738347024">تم ملء النماذج.</translation>
 <translation id="3478058380795961209">شهر انتهاء الصلاحية</translation>
 <translation id="3482959374254649722">جارٍ مزامنة علامات التبويب الخاصة بك ...</translation>
+<translation id="3484946776651937681">فتح في التنزيلات</translation>
 <translation id="3493531032208478708"><ph name="BEGIN_LINK" />مزيد من المعلومات<ph name="END_LINK" /> حول المحتوى المقترح</translation>
 <translation id="3494788280727468875">تأكيد محو بيانات التصفّح</translation>
 <translation id="35083190962747987">‏فتح عنوان ${url}</translation>
@@ -537,6 +538,7 @@
 <translation id="8319076807703933069">بحث جديد</translation>
 <translation id="8323906514956095947">النقر مع الاستمرار لعرض المزيد من خيارات علامات التبويب</translation>
 <translation id="8328777765163860529">إغلاق الكل</translation>
+<translation id="8386068868580335421">إعادة ضبط</translation>
 <translation id="8407669440184693619">لم يتم العثور على كلمات مرور لهذا الموقع الإلكتروني</translation>
 <translation id="842017693807136194">تم تسجيل الدخول باستخدام</translation>
 <translation id="8428045167754449968">المدينة/البلدة</translation>
@@ -553,6 +555,7 @@
 <translation id="8532105204136943229">عام انتهاء الصلاحية</translation>
 <translation id="8534481786647257214">‏اكتمل النشر على Google+‎.</translation>
 <translation id="8548878600947630424">بحث في الصفحة...</translation>
+<translation id="8574235780160508979">‏سيتم تغيير بنود خدمة Chrome في 31 آذار (مارس). <ph name="BEGIN_LINK" />يُرجى المراجعة<ph name="END_LINK" /></translation>
 <translation id="8588404856427128947">غير مفعَّل</translation>
 <translation id="8605219856220328675">إغلاق علامة التبويب.</translation>
 <translation id="8620640915598389714">تعديل</translation>

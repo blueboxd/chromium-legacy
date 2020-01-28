@@ -64,7 +64,7 @@ IN_PROC_BROWSER_TEST_F(MultiTabLoadingPageLoadMetricsBrowserTest,
   // Open a new foreground tab.
   ui_test_utils::NavigateToURLWithDispositionBlockUntilNavigationsComplete(
       browser(), GetTestURL(), 1, WindowOpenDisposition::NEW_FOREGROUND_TAB,
-      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
 
   // Navigate away to force the histogram recording.
   ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL));
@@ -86,7 +86,7 @@ IN_PROC_BROWSER_TEST_F(MultiTabLoadingPageLoadMetricsBrowserTest,
   // Open a tab in the background.
   ui_test_utils::NavigateToURLWithDispositionBlockUntilNavigationsComplete(
       browser(), GetTestURL(), 1, WindowOpenDisposition::NEW_BACKGROUND_TAB,
-      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
 
   // Close the foreground tab.
   TabStripModel* tab_strip_model = browser()->tab_strip_model();

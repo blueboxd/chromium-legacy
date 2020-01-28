@@ -50,7 +50,8 @@ class UkmDebugDataExtractor;
 enum class ResetReason {
   kOnUkmAllowedStateChanged = 0,
   kUpdatePermissions = 1,
-  kMaxValue = kUpdatePermissions,
+  kClonedInstall = 2,
+  kMaxValue = kClonedInstall,
 };
 
 // The URL-Keyed Metrics (UKM) service is responsible for gathering and

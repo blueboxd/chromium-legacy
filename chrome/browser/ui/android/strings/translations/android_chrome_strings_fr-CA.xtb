@@ -687,7 +687,6 @@ Pour modifier ce paramètre, <ph name="BEGIN_LINK" />réinitialisez la synchroni
 <translation id="6201345951596836663">Lien copié</translation>
 <translation id="6206551242102657620">La connexion est sécurisée. Renseignements sur le site</translation>
 <translation id="6210748933810148297">Pas <ph name="EMAIL" />?</translation>
-<translation id="6216432067784365534">Options de <ph name="NAME_OF_LIST_ITEM" /></translation>
 <translation id="6221633008163990886">Déverrouillez pour exporter vos mots de passe</translation>
 <translation id="6232535412751077445">Si vous activez la fonction « Ne pas faire le suivi », une demande sera incluse dans le trafic lié à votre navigation. Les résultats obtenus dépendent de la réponse du site (s'il répond ou non) et de la manière dont il interprète la demande.
 
@@ -733,7 +732,6 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="6534565668554028783">Google a pris trop de temps à répondre</translation>
 <translation id="6538442820324228105"><ph name="GBS" /> Go téléchargés</translation>
 <translation id="6539092367496845964">Une erreur s'est produite. Réessayez plus tard.</translation>
-<translation id="654446541061731451">Sélectionnez un onglet à partager</translation>
 <translation id="6545017243486555795">Effacer toutes les données</translation>
 <translation id="6545864417968258051">Recherche d'appareils Bluetooth</translation>
 <translation id="6560414384669816528">Utiliser Sogou pour les recherches</translation>
@@ -1025,7 +1023,6 @@ Le site n'obtient PAS l'accès à l'appareil photo. Vous seul pouvez visionner l
 <translation id="8687353297350450808">{N_BARS,plural, =1{Niveau du signal : # barre}one{Niveau du signal : # barre}other{Niveau du signal : # barres}}</translation>
 <translation id="868929229000858085">Effectuez une recherche dans vos contacts</translation>
 <translation id="869891660844655955">Date d'expiration</translation>
-<translation id="8719023831149562936">Impossible de partager l'onglet actuel</translation>
 <translation id="8728487861892616501">En utilisant cette application, vous acceptez les <ph name="BEGIN_LINK1" />conditions d'utilisation<ph name="END_LINK1" /> et l'<ph name="BEGIN_LINK2" />avis de confidentialité<ph name="END_LINK2" /> de Chrome ainsi que l'<ph name="BEGIN_LINK3" />avis de confidentialité relatif aux comptes Google gérés dans Family Link<ph name="END_LINK3" />.</translation>
 <translation id="8748850008226585750">Contenus masqués</translation>
 <translation id="8751914237388039244">Sélectionner une image</translation>

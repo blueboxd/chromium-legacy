@@ -12,7 +12,9 @@
 #include "content/public/browser/web_contents_user_data.h"
 #include "url/origin.h"
 
+namespace permissions {
 enum class PermissionAction;
+}
 
 // This class manages native file system permission requests for a particular
 // WebContents. It is very similar to the generic PermissionRequestManager
@@ -44,15 +46,17 @@ class NativeFileSystemPermissionRequestManager
     bool is_directory;
   };
 
-  void AddRequest(RequestData request,
-                  base::OnceCallback<void(PermissionAction result)> callback);
+  void AddRequest(
+      RequestData request,
+      base::OnceCallback<void(permissions::PermissionAction result)> callback);
 
   // Do NOT use this method in production code. Use this method in browser
   // tests that need to accept or deny permissions when requested in
   // JavaScript. Your test needs to call this before permission is requested,
   // and then the bubble will proceed as desired as soon as it would have been
   // shown.
-  void set_auto_response_for_test(base::Optional<PermissionAction> response) {
+  void set_auto_response_for_test(
+      base::Optional<permissions::PermissionAction> response) {
     auto_response_for_test_ = response;
   }
 
@@ -71,7 +75,7 @@ class NativeFileSystemPermissionRequestManager
   // WebContentsObserver
   void DocumentOnLoadCompletedInMainFrame() override;
 
-  void OnPermissionDialogResult(PermissionAction result);
+  void OnPermissionDialogResult(permissions::PermissionAction result);
 
   struct Request;
   // Request currently being shown in prompt.
@@ -82,7 +86,7 @@ class NativeFileSystemPermissionRequestManager
   // We only show new prompts when this is true.
   bool main_frame_has_fully_loaded_ = false;
 
-  base::Optional<PermissionAction> auto_response_for_test_;
+  base::Optional<permissions::PermissionAction> auto_response_for_test_;
 
   base::WeakPtrFactory<NativeFileSystemPermissionRequestManager> weak_factory_{
       this};

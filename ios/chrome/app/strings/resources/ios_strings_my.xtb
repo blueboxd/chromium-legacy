@@ -192,6 +192,7 @@
 <translation id="3474649192738347024">ပုံစံများကို ဖြည့်ပြီးပြီ။</translation>
 <translation id="3478058380795961209">သက်တမ်း ကုန်ဆုံးသည့် လ</translation>
 <translation id="3482959374254649722">သင်၏ တဲဘ်များကို စင့်က်လုပ်နေ...</translation>
+<translation id="3484946776651937681">'ဒေါင်းလုဒ်များ' တွင် ဖွင့်ရန်</translation>
 <translation id="3493531032208478708">အကြံပြုထားသည့် အကြောင်းအရာအကြောင်း <ph name="BEGIN_LINK" />ပိုမိုလေ့လာရန်<ph name="END_LINK" /></translation>
 <translation id="3494788280727468875">ဖွင့်ကြည့်ထားသည့်မှတ်တမ်းဒေတာများကို ရှင်းလင်းလိုကြောင်း အတည်ပြုရန်</translation>
 <translation id="35083190962747987">${url} ကို ဖွင့်ရန်</translation>
@@ -536,6 +537,7 @@ Handoff ကို ဆက်တင်များ၏ ယေဘူယျအပိ�
 <translation id="8319076807703933069">ရှာဖွေမှု အသစ်</translation>
 <translation id="8323906514956095947">နောက်ထပ် တဘ်ရွေးချယ်စရာများအတွက် တို့၍ဖိထားပါ</translation>
 <translation id="8328777765163860529">အားလုံး ပိတ်ရန်</translation>
+<translation id="8386068868580335421">ပြင်ဆင်သတ်မှတ်ရန်</translation>
 <translation id="8407669440184693619">ဤဝဘ်ဆိုက်အတွက် စကားဝှက်မရှိပါ</translation>
 <translation id="842017693807136194">လက်မှတ်ထိုးဝင်ထားသည့် အကောင့်</translation>
 <translation id="8428045167754449968">မြို့တော် / မြို့</translation>
@@ -552,6 +554,7 @@ Handoff ကို ဆက်တင်များ၏ ယေဘူယျအပိ�
 <translation id="8532105204136943229">သက်တမ်း ကုန်ဆုံးမှုနှစ်</translation>
 <translation id="8534481786647257214">Google+ မှာ တင်ပြခြင်း ပြီးစီးပါပြီ။</translation>
 <translation id="8548878600947630424">...စာမျက်နှာတွင်ရှာပါ</translation>
+<translation id="8574235780160508979">'Chrome ၏ ဝန်ဆောင်မှု စည်းမျဉ်းများ' ကို မတ် ၃၁ တွင် ပြောင်းပါမည်။ <ph name="BEGIN_LINK" />ပြန်ကြည့်ပေးပါ<ph name="END_LINK" /></translation>
 <translation id="8588404856427128947">ပိတ်ရန်</translation>
 <translation id="8605219856220328675">တဘ်ကိုပိတ်ပါ။</translation>
 <translation id="8620640915598389714">ပြင်ဆင်ရန်</translation>

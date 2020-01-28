@@ -85,7 +85,7 @@ public class CustomTabActivityTabController
     }
 
     private final Lazy<CustomTabDelegateFactory> mCustomTabDelegateFactory;
-    private final ChromeActivity mActivity;
+    private final ChromeActivity<?> mActivity;
     private final CustomTabsConnection mConnection;
     private final BrowserServicesIntentDataProvider mIntentDataProvider;
     private final TabObserverRegistrar mTabObserverRegistrar;
@@ -114,7 +114,7 @@ public class CustomTabActivityTabController
     };
 
     @Inject
-    public CustomTabActivityTabController(ChromeActivity activity,
+    public CustomTabActivityTabController(ChromeActivity<?> activity,
             Lazy<CustomTabDelegateFactory> customTabDelegateFactory,
             CustomTabsConnection connection, BrowserServicesIntentDataProvider intentDataProvider,
             ActivityTabProvider activityTabProvider, TabObserverRegistrar tabObserverRegistrar,

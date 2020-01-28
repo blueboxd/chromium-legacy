@@ -2910,7 +2910,7 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
   const GURL second_tab_url = get_url_for_host("nomatch.com");
   ui_test_utils::NavigateToURLWithDisposition(
       browser(), second_tab_url, WindowOpenDisposition::NEW_FOREGROUND_TAB,
-      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
 
   ASSERT_EQ(2, browser()->tab_strip_model()->count());
   ASSERT_TRUE(browser()->tab_strip_model()->IsTabSelected(1));
@@ -3616,7 +3616,7 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
 
   ui_test_utils::NavigateToURLWithDisposition(
       browser(), page_url, WindowOpenDisposition::NEW_FOREGROUND_TAB,
-      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
 
   ASSERT_EQ(2, browser()->tab_strip_model()->count());
   ASSERT_TRUE(browser()->tab_strip_model()->IsTabSelected(1));
@@ -3892,7 +3892,7 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
   // matched.
   ui_test_utils::NavigateToURLWithDisposition(
       browser(), page_url, WindowOpenDisposition::NEW_FOREGROUND_TAB,
-      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
 
   ASSERT_EQ(2, browser()->tab_strip_model()->count());
   ASSERT_TRUE(browser()->tab_strip_model()->IsTabSelected(1));

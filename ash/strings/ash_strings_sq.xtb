@@ -112,6 +112,7 @@
 <translation id="2352467521400612932">Cilësimet e stilolapsit</translation>
 <translation id="2354174487190027830">Po aktivizon <ph name="NAME" /></translation>
 <translation id="2359808026110333948">Vazhdo</translation>
+<translation id="2364154243880592194">Tabakaja e statusit, ora <ph name="TIME" />, <ph name="BATTERY" />. Shtyp "kërko" + tastin "majtas" për të pasur qasje te qendra e njoftimeve.</translation>
 <translation id="2365393535144473978">Aktivizimi i të dhënave celulare do të aktivizojë Bluetooth.</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="2412593942846481727">Ka përditësim</translation>
@@ -335,6 +336,7 @@
 <translation id="5669267381087807207">Po aktivizohet</translation>
 <translation id="5673434351075758678">Nga "<ph name="FROM_LOCALE" />" në "<ph name="TO_LOCALE" />" pas sinkronizimit të cilësimeve të tua.</translation>
 <translation id="5682642926269496722">"Asistenti i Google" nuk ofrohet për llogarinë aktuale të përdoruesit.</translation>
+<translation id="5689633613396158040">"Drita e natës" e bën më të lehtë shikimin e ekranit ose leximin në dritë të zbehtë. Trokit për të ndryshuar se kur aktivizohet ose çaktivizohet plotësisht "Drita e natës".</translation>
 <translation id="5691772641933328258">Gjurma e gishtit nuk njihet</translation>
 <translation id="5710450975648804523">"Mos shqetëso" është aktiv</translation>
 <translation id="573413375004481890">Kjo pajisje nuk mund t'i mbështeste të gjitha ekranet, kështu që një prej tyre është shkëputur</translation>
@@ -514,6 +516,7 @@
 <translation id="8142441511840089262">Kliko dy herë</translation>
 <translation id="8142699993796781067">Rrjet privat</translation>
 <translation id="8152092012181020186">Shtyp Ctrl + W për ta mbyllur</translation>
+<translation id="8155007568264258537"><ph name="FEATURE_NAME" /> Ky cilësim menaxhohet nga administratori yt.</translation>
 <translation id="8167567890448493835">Po përdor <ph name="LOCALE_NAME" /></translation>
 <translation id="8190698733819146287">Personalizo gjuhët dhe hyrjen...</translation>
 <translation id="8192202700944119416">Njoftimet janë të fshehura.</translation>
@@ -595,7 +598,6 @@
 <translation id="9193626018745640770">Po transmeton në një marrës të panjohur</translation>
 <translation id="9194617393863864469">Identifiko një përdorues tjetër...</translation>
 <translation id="9201374708878217446"><ph name="CONNECTION_STATUS" />, menaxhuar nga administratori yt</translation>
-<translation id="9205817095063786319">Pajisja menaxhohet nga <ph name="DOMAIN" /></translation>
 <translation id="9210037371811586452">Po del nga modaliteti i desktopit të unifikuar</translation>
 <translation id="9211681782751733685"><ph name="TIME_REMAINING" /> të mbetura deri sa bateria të karikohet plotësisht.</translation>
 <translation id="9215934040295798075">Cakto imazhin e sfondit</translation>

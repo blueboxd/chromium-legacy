@@ -83,6 +83,7 @@ NGPhysicalBoxFragment::NGPhysicalBoxFragment(
               ? kFragmentRenderedLegend
               : kFragmentBox,
           builder->BoxType()) {
+  DCHECK(layout_object_);
   DCHECK(layout_object_->IsBoxModelObject());
   if (NGFragmentItemsBuilder* items_builder = builder->ItemsBuilder()) {
     has_fragment_items_ = true;
@@ -108,10 +109,15 @@ NGPhysicalBoxFragment::NGPhysicalBoxFragment(
   is_painted_atomically_ =
       builder->space_ && builder->space_->IsPaintedAtomically();
   border_edge_ = builder->border_edges_.ToPhysical(builder->GetWritingMode());
-  children_inline_ =
-      builder->layout_object_ && builder->layout_object_->ChildrenInline();
-  has_baseline_ = builder->baseline_.has_value();
-  baseline_ = builder->baseline_.value_or(LayoutUnit::Min());
+  children_inline_ = layout_object_->ChildrenInline();
+  if (builder->baseline_.has_value() &&
+      !layout_object_->ShouldApplyLayoutContainment()) {
+    has_baseline_ = true;
+    baseline_ = *builder->baseline_;
+  } else {
+    has_baseline_ = false;
+    baseline_ = LayoutUnit::Min();
+  }
 }
 
 scoped_refptr<const NGLayoutResult>

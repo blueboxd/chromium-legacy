@@ -1120,7 +1120,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, MAYBE_PreferPreviousSearch) {
   // For some reason we can't use AddSelectedTabWithURL here on ChromeOS. It
   // could be some delicate assumption about the tab starting off unselected or
   // something relating to user gesture.
-  chrome::AddTabAt(browser(), GURL(), -1, true);
+  chrome::AddTabAt(browser(), GURL(url::kAboutBlankURL), -1, true);
   ui_test_utils::NavigateToURL(browser(), url);
   WebContents* web_contents_2 =
       browser()->tab_strip_model()->GetActiveWebContents();
@@ -1242,7 +1242,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, PrepopulatePreserveLast) {
       find_in_page::SelectionAction::kKeep, find_in_page::ResultAction::kKeep);
 
   // Now create a second tab and load the same page.
-  chrome::AddTabAt(browser(), GURL(), -1, true);
+  chrome::AddTabAt(browser(), GURL(url::kAboutBlankURL), -1, true);
   ui_test_utils::NavigateToURL(browser(), url);
   WebContents* web_contents_2 =
       browser()->tab_strip_model()->GetActiveWebContents();
@@ -1402,7 +1402,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest,
   GURL url = GetURL(kSimple);
   ui_test_utils::NavigateToURLWithDisposition(
       browser(), url, WindowOpenDisposition::NEW_FOREGROUND_TAB,
-      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
 
   // Close it.
   chrome::CloseTab(browser());
@@ -1420,7 +1420,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest,
 
   ui_test_utils::NavigateToURLWithDisposition(
       browser(), url, WindowOpenDisposition::NEW_FOREGROUND_TAB,
-      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
 
   EnsureFindBoxOpen();
   content::RunAllPendingInMessageLoop();  // Needed on Linux.
@@ -1428,7 +1428,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest,
 
   ui_test_utils::NavigateToURLWithDisposition(
       browser(), url, WindowOpenDisposition::NEW_FOREGROUND_TAB,
-      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
   chrome::CloseTab(browser());
   EXPECT_TRUE(GetFindBarWindowInfo(&position2, nullptr));
   EXPECT_EQ(position, position2);
@@ -1464,7 +1464,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest,
   EXPECT_EQ(ASCIIToUTF16("1/1"), GetMatchCountText());
 
   // Next, do a search in a second tab.
-  chrome::AddTabAt(browser(), GURL(), -1, true);
+  chrome::AddTabAt(browser(), GURL(url::kAboutBlankURL), -1, true);
   ui_test_utils::NavigateToURL(browser(), url);
   WebContents* web_contents_2 =
       browser()->tab_strip_model()->GetActiveWebContents();

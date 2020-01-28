@@ -88,22 +88,6 @@ void RecordActivationReason(DisplayLockActivationReason reason) {
                             ordered_reason, number_of_reasons);
 }
 
-// Helper function to convert a display locking state to a string. Used in
-// traces.
-const char* StateToString(DisplayLockContext::State state) {
-  switch (state) {
-    case DisplayLockContext::kLocked:
-      return "kLocked";
-    case DisplayLockContext::kUpdating:
-      return "kUpdating";
-    case DisplayLockContext::kCommitting:
-      return "kCommitting";
-    case DisplayLockContext::kUnlocked:
-      return "kUnlocked";
-  }
-  return "";
-}
-
 // Helper function that returns an immediately rejected promise.
 ScriptPromise GetRejectedPromise(ScriptState* script_state,
                                  const char* rejection_reason) {
@@ -255,7 +239,6 @@ void DisplayLockContext::StartAcquire() {
 }
 
 ScriptPromise DisplayLockContext::UpdateRendering(ScriptState* script_state) {
-  TRACE_EVENT0("blink", "DisplayLockContext::UpdateRendering");
   // Immediately resolve if we're unlocked or disconnected.
   if (state_ == kUnlocked || !ConnectedToView())
     return GetResolvedPromise(script_state);
@@ -516,6 +499,9 @@ DisplayLockContext::GetScopedForcedUpdate() {
 
   DCHECK(!update_forced_);
   update_forced_ = true;
+  TRACE_EVENT_ASYNC_BEGIN0(
+      TRACE_DISABLED_BY_DEFAULT("blink.debug.display_lock"), "LockForced",
+      TRACE_ID_LOCAL(this));
 
   // Now that the update is forced, we should ensure that style layout, and
   // prepaint code can reach it via dirty bits. Note that paint isn't a part of
@@ -530,6 +516,8 @@ DisplayLockContext::GetScopedForcedUpdate() {
 void DisplayLockContext::NotifyForcedUpdateScopeEnded() {
   DCHECK(update_forced_);
   update_forced_ = false;
+  TRACE_EVENT_ASYNC_END0(TRACE_DISABLED_BY_DEFAULT("blink.debug.display_lock"),
+                         "LockForced", TRACE_ID_LOCAL(this));
 }
 
 void DisplayLockContext::StartCommit() {
@@ -1017,31 +1005,11 @@ operator=(State new_state) {
   if (new_state == state_)
     return *this;
 
-  if (state_ == kUnlocked) {
-    TRACE_EVENT_NESTABLE_ASYNC_BEGIN0(
-        TRACE_DISABLED_BY_DEFAULT("blink.debug.display_lock"),
-        "LockedDisplayLock", TRACE_ID_LOCAL(this));
-  } else {
-    TRACE_EVENT_NESTABLE_ASYNC_END0(
-        TRACE_DISABLED_BY_DEFAULT("blink.debug.display_lock"),
-        StateToString(state_), TRACE_ID_LOCAL(this));
-  }
-
   bool was_activatable =
       context_->IsActivatable(DisplayLockActivationReason::kAny);
   bool was_locked = context_->IsLocked();
 
   state_ = new_state;
-
-  if (state_ == kUnlocked) {
-    TRACE_EVENT_NESTABLE_ASYNC_END0(
-        TRACE_DISABLED_BY_DEFAULT("blink.debug.display_lock"),
-        "LockedDisplayLock", TRACE_ID_LOCAL(this));
-  } else {
-    TRACE_EVENT_NESTABLE_ASYNC_BEGIN0(
-        TRACE_DISABLED_BY_DEFAULT("blink.debug.display_lock"),
-        StateToString(state_), TRACE_ID_LOCAL(this));
-  }
 
   if (!context_->document_)
     return *this;

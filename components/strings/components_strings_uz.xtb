@@ -79,6 +79,7 @@
 <translation id="129553762522093515">Yaqinda yopilganlar</translation>
 <translation id="1298536327547837046">Zararli dasturlarni qidirish</translation>
 <translation id="129863573139666797"><ph name="BEGIN_LINK" />Cookie-fayllarni tozalab ko‘ring<ph name="END_LINK" /></translation>
+<translation id="1301324364792935241">DNS sozlamalar himoyasini tekshiring</translation>
 <translation id="1307966114820526988">Eskirgan funksiyalar</translation>
 <translation id="1314509827145471431">Oʻng chekkasini belgilash</translation>
 <translation id="1320233736580025032">Prc1 (Envelope)</translation>
@@ -151,6 +152,7 @@
 <translation id="1569487616857761740">Amal qilish muddatini kiriting</translation>
 <translation id="1581080074034554886">CVC</translation>
 <translation id="1583429793053364125">Veb-sahifani ochish vaqtida kutilmagan xatolik yuz berdi.</translation>
+<translation id="1586541204584340881">Oʻrnatilgan kengaytmalar</translation>
 <translation id="1588438908519853928">Normal</translation>
 <translation id="1592005682883173041">Qurilmadagi mahalliy ma’lumotlarga ruxsat</translation>
 <translation id="1594030484168838125">Tanlang</translation>
@@ -361,6 +363,7 @@
 <translation id="2544644783021658368">Bitta hujjat</translation>
 <translation id="254947805923345898">Parametr qiymati yaroqsiz.</translation>
 <translation id="255002559098805027"><ph name="HOST_NAME" /> yaroqsiz javob qaytardi.</translation>
+<translation id="2553853292994445426">DNS sozlamalar himoyasini tekshiring. Siz sozlagan DNS serverga ulanilmayotgan boʻlishi mumkin.</translation>
 <translation id="2556876185419854533">&amp;Tahrirni bekor qilish</translation>
 <translation id="257674075312929031">Guruh</translation>
 <translation id="2586657967955657006">Klipbord</translation>
@@ -483,6 +486,7 @@
 <translation id="3095940652251934233">Statement</translation>
 <translation id="3096100844101284527">Olib ketish manzilini qo‘shing</translation>
 <translation id="3105172416063519923">Obyekt identifikatori:</translation>
+<translation id="3107591622054137333"><ph name="BEGIN_LINK" />DNS sozlamalar himoyasini tekshirish<ph name="END_LINK" /></translation>
 <translation id="3109728660330352905">Sizda bu sahifani ko‘rishga ruxsat yo‘q.</translation>
 <translation id="3113284927548439113">Uchinchi siljish</translation>
 <translation id="3116158981186517402">Laminatsiyalash</translation>
@@ -781,6 +785,7 @@
 <translation id="4390472908992056574">Maydonchalar</translation>
 <translation id="4406896451731180161">qidiruv natijalari</translation>
 <translation id="4408413947728134509"><ph name="NUM_COOKIES" /> cookie fayllari</translation>
+<translation id="4414290883293381923">Hozirgina shubhali saytda parol kiritdingiz. Chrome hoziroq <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, <ph name="WEBSITE_3" /> va boshqa saytlardagi shu parolingizni yangilashni tavsiya qiladi.</translation>
 <translation id="4415426530740016218">Olib ketish manzili</translation>
 <translation id="4424024547088906515">Bu <ph name="DOMAIN" /> serveri ekanligini tasdiqlab bo‘lmadi. Uning havfsizlik sertifikati Chrome‘ga ishonchli tuyulmayapti. Balki, server noto‘g‘ri sozlangan yoki kimdir ma’lumotlaringizni o‘g‘rilashga urinayotgan bo‘lishi mumkin.</translation>
 <translation id="443121186588148776">Ketma-ket port</translation>
@@ -1212,6 +1217,7 @@
 <translation id="6353505687280762741">{COUNT,plural, =0{Hech qanday}=1{1 ta parol (<ph name="DOMAIN_LIST" /> uchun, sinxronlandi)}=2{2 ta parol (<ph name="DOMAIN_LIST" /> uchun, sinxronlandi)}other{# ta parol (<ph name="DOMAIN_LIST" /> uchun, sinxronlandi)}}</translation>
 <translation id="6358450015545214790">Bu nima degani?</translation>
 <translation id="6361757823711327522">B7</translation>
+<translation id="6364095313648930329"><ph name="BEGIN_LINK" />Proksi-server, himoya devori va DNS sozlamalarini tekshirish<ph name="END_LINK" /></translation>
 <translation id="6366710531182496394">Chapdan ikki marta steplerlash</translation>
 <translation id="6377268785556383139">“<ph name="SEARCH_TEXT" />” uchun bitta natija</translation>
 <translation id="6380497234672085559">A0</translation>
@@ -1234,6 +1240,7 @@
 <translation id="6433595998831338502"><ph name="HOST_NAME" /> serveri ulanish so‘rovini rad etdi.</translation>
 <translation id="6434309073475700221">Bekor qilish</translation>
 <translation id="6440503408713884761">Rad etilgan</translation>
+<translation id="6443406338865242315">Oʻrnatilgan kengaytma va plaginlar</translation>
 <translation id="6446163441502663861">Kahu (Envelope)</translation>
 <translation id="6446608382365791566">Batafsil qo‘shing</translation>
 <translation id="6447842834002726250">Cookie fayllari</translation>
@@ -1343,6 +1350,7 @@
 <translation id="7012363358306927923">China UnionPay</translation>
 <translation id="7016992613359344582">To‘lov bir martalik, qayta bo‘lishi yoki umuman bo‘lmasligi ham mumkin.</translation>
 <translation id="7029809446516969842">Parollar</translation>
+<translation id="7031646650991750659">Google Play Marketdan oʻrnatilgan ilovalar</translation>
 <translation id="7050187094878475250">Siz <ph name="DOMAIN" /> domenini ochmoqchi bo‘ldingiz, lekin server taqdim qilgan sertifikat juda uzoq ishonchsiz muddatga ega.</translation>
 <translation id="705310974202322020">{NUM_CARDS,plural, =1{Bu karta saqlanmadi}other{Bu kartalar saqlanmadi}}</translation>
 <translation id="7053983685419859001">Taqiqlash</translation>
@@ -1402,6 +1410,7 @@ Batafsil axborot:
 <translation id="7319430975418800333">A3</translation>
 <translation id="7320336641823683070">Internetga ulanish yuzasidan yordam</translation>
 <translation id="733354035281974745">Qurilmadagi mahalliy hisob qayta tayinlanishi</translation>
+<translation id="7333654844024768166">Hozirgina shubhali saytda parol kiritdingiz. Chromium hoziroq <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, <ph name="WEBSITE_3" /> va boshqa saytlardagi shu parolingizni yangilashni tavsiya qiladi.</translation>
 <translation id="7334320624316649418">&amp;Qayta tartiblashni qayta bajarish</translation>
 <translation id="7337706099755338005">Sizdagi tizimda ishlamaydi.</translation>
 <translation id="733923710415886693">Sertifikatning ishonchlilik belgilari haqidagi ma’lumot server tomonidan taqdim etilmadi.</translation>

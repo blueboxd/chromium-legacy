@@ -21,11 +21,11 @@ namespace {
 // Some Vulkan drivers do not support kRGB_888x_SkColorType. Always use
 // kRGBA_8888_SkColorType instead and initialize surface to opaque as necessary.
 constexpr SkColorType kSurfaceColorType = kRGBA_8888_SkColorType;
-constexpr dawn::TextureFormat kSwapChainFormat =
-    dawn::TextureFormat::RGBA8Unorm;
+constexpr wgpu::TextureFormat kSwapChainFormat =
+    wgpu::TextureFormat::RGBA8Unorm;
 
-constexpr dawn::TextureUsage kUsage =
-    dawn::TextureUsage::OutputAttachment | dawn::TextureUsage::CopySrc;
+constexpr wgpu::TextureUsage kUsage =
+    wgpu::TextureUsage::OutputAttachment | wgpu::TextureUsage::CopySrc;
 
 }  // namespace
 
@@ -55,9 +55,11 @@ bool SkiaOutputDeviceDawn::Reshape(const gfx::Size& size,
   sk_color_space_ = color_space.ToSkColorSpace();
 
   CreateSwapChainImplementation();
-  dawn::SwapChainDescriptor desc;
+  wgpu::SwapChainDescriptor desc;
   desc.implementation = reinterpret_cast<int64_t>(&swap_chain_implementation_);
-  swap_chain_ = context_provider_->GetDevice().CreateSwapChain(&desc);
+  wgpu::Instance instance = context_provider_->GetInstance();
+  wgpu::Surface surface = instance.CreateSurface(nullptr);
+  swap_chain_ = context_provider_->GetDevice().CreateSwapChain(surface, &desc);
   if (!swap_chain_)
     return false;
   swap_chain_.Configure(kSwapChainFormat, kUsage, size_.width(),

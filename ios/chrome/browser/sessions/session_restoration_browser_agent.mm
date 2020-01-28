@@ -50,7 +50,10 @@ SessionRestorationBrowserAgent::SessionRestorationBrowserAgent(
       web_state_list_(browser->GetWebStateList()),
       browser_state_(browser->GetBrowserState()),
       session_ios_factory_(
-          [[SessionIOSFactory alloc] initWithWebStateList:web_state_list_]) {}
+          [[SessionIOSFactory alloc] initWithWebStateList:web_state_list_]) {
+  browser->AddObserver(this);
+  web_state_list_->AddObserver(this);
+}
 
 SessionRestorationBrowserAgent::~SessionRestorationBrowserAgent() {
   // Disconnect the session factory object as it's not granteed that it will be
@@ -179,4 +182,25 @@ bool SessionRestorationBrowserAgent::CanSaveSession() {
     return NO;
 
   return YES;
+}
+
+// Browser Observer methods:
+void SessionRestorationBrowserAgent::BrowserDestroyed(Browser* browser) {
+  DCHECK_EQ(browser->GetWebStateList(), web_state_list_);
+  browser->GetWebStateList()->RemoveObserver(this);
+  browser->RemoveObserver(this);
+}
+
+// WebStateList Observer methods:
+void SessionRestorationBrowserAgent::WebStateActivatedAt(
+    WebStateList* web_state_list,
+    web::WebState* old_web_state,
+    web::WebState* new_web_state,
+    int active_index,
+    int reason) {
+  if (new_web_state && new_web_state->IsLoading())
+    return;
+
+  // Persist the session state if the new web state is not loading.
+  SaveSession(/*immediately=*/false);
 }

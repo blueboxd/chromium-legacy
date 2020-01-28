@@ -97,12 +97,14 @@ class DevToolsAgent::IOAgent : public mojom::blink::DevToolsAgent {
           main_session,
       mojo::PendingReceiver<mojom::blink::DevToolsSession> io_session,
       mojom::blink::DevToolsSessionStatePtr reattach_session_state,
-      bool client_expects_binary_responses) override {
+      bool client_expects_binary_responses,
+      const WTF::String& session_id) override {
     DCHECK(receiver_.is_bound());
     inspector_task_runner_->AppendTask(CrossThreadBindOnce(
         &::blink::DevToolsAgent::AttachDevToolsSessionImpl, agent_,
         std::move(host), std::move(main_session), std::move(io_session),
-        std::move(reattach_session_state), client_expects_binary_responses));
+        std::move(reattach_session_state), client_expects_binary_responses,
+        session_id));
   }
 
   void InspectElement(const gfx::Point& point) override {
@@ -187,13 +189,14 @@ void DevToolsAgent::AttachDevToolsSessionImpl(
         session_receiver,
     mojo::PendingReceiver<mojom::blink::DevToolsSession> io_session_receiver,
     mojom::blink::DevToolsSessionStatePtr reattach_session_state,
-    bool client_expects_binary_responses) {
+    bool client_expects_binary_responses,
+    const WTF::String& session_id) {
   TRACE_EVENT0("devtools", "Agent::AttachDevToolsSessionImpl");
   client_->DebuggerTaskStarted();
   DevToolsSession* session = MakeGarbageCollected<DevToolsSession>(
       this, std::move(host), std::move(session_receiver),
       std::move(io_session_receiver), std::move(reattach_session_state),
-      client_expects_binary_responses);
+      client_expects_binary_responses, session_id);
   sessions_.insert(session);
   client_->DebuggerTaskFinished();
 }
@@ -204,18 +207,19 @@ void DevToolsAgent::AttachDevToolsSession(
         session_receiver,
     mojo::PendingReceiver<mojom::blink::DevToolsSession> io_session_receiver,
     mojom::blink::DevToolsSessionStatePtr reattach_session_state,
-    bool client_expects_binary_responses) {
+    bool client_expects_binary_responses,
+    const WTF::String& session_id) {
   TRACE_EVENT0("devtools", "Agent::AttachDevToolsSession");
   if (associated_receiver_.is_bound()) {
     AttachDevToolsSessionImpl(std::move(host), std::move(session_receiver),
                               std::move(io_session_receiver),
                               std::move(reattach_session_state),
-                              client_expects_binary_responses);
+                              client_expects_binary_responses, session_id);
   } else {
     io_agent_->AttachDevToolsSession(
         std::move(host), std::move(session_receiver),
         std::move(io_session_receiver), std::move(reattach_session_state),
-        client_expects_binary_responses);
+        client_expects_binary_responses, session_id);
   }
 }
 

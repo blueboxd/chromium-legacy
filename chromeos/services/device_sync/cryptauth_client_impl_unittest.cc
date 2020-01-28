@@ -158,7 +158,7 @@ class DeviceSyncCryptAuthClientTest : public testing::Test {
     device_classifier.set_device_software_package(kDeviceSoftwarePackage);
     device_classifier.set_device_type(DeviceTypeEnumToString(kDeviceType));
 
-    identity_test_environment_.MakePrimaryAccountAvailable(kEmail);
+    identity_test_environment_.MakeUnconsentedPrimaryAccountAvailable(kEmail);
 
     client_.reset(
         new CryptAuthClientImpl(base::WrapUnique(api_call_flow_),

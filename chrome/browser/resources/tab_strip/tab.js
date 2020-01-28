@@ -53,39 +53,32 @@ export class TabElement extends CustomElement {
     super();
 
     this.alertIndicatorsEl_ = /** @type {!AlertIndicatorsElement} */
-        (this.shadowRoot.querySelector('tabstrip-alert-indicators'));
+        (this.$('tabstrip-alert-indicators'));
     // Normally, custom elements will get upgraded automatically once added to
     // the DOM, but TabElement may need to update properties on
     // AlertIndicatorElement before this happens, so upgrade it manually.
     customElements.upgrade(this.alertIndicatorsEl_);
 
     /** @private {!HTMLElement} */
-    this.closeButtonEl_ =
-        /** @type {!HTMLElement} */ (this.shadowRoot.querySelector('#close'));
+    this.closeButtonEl_ = /** @type {!HTMLElement} */ (this.$('#close'));
     this.closeButtonEl_.setAttribute(
         'aria-label', loadTimeData.getString('closeTab'));
 
     /** @private {!HTMLElement} */
-    this.dragImageEl_ =
-        /** @type {!HTMLElement} */ (
-            this.shadowRoot.querySelector('#dragImage'));
+    this.dragImageEl_ = /** @type {!HTMLElement} */ (this.$('#dragImage'));
 
     /** @private {!HTMLElement} */
-    this.tabEl_ =
-        /** @type {!HTMLElement} */ (this.shadowRoot.querySelector('#tab'));
+    this.tabEl_ = /** @type {!HTMLElement} */ (this.$('#tab'));
 
     /** @private {!HTMLElement} */
-    this.faviconEl_ =
-        /** @type {!HTMLElement} */ (this.shadowRoot.querySelector('#favicon'));
+    this.faviconEl_ = /** @type {!HTMLElement} */ (this.$('#favicon'));
 
     /** @private {!HTMLElement} */
     this.thumbnailContainer_ =
-        /** @type {!HTMLElement} */ (
-            this.shadowRoot.querySelector('#thumbnail'));
+        /** @type {!HTMLElement} */ (this.$('#thumbnail'));
 
     /** @private {!Image} */
-    this.thumbnail_ =
-        /** @type {!Image} */ (this.shadowRoot.querySelector('#thumbnailImg'));
+    this.thumbnail_ = /** @type {!Image} */ (this.$('#thumbnailImg'));
 
     /** @private {!TabData} */
     this.tab_;
@@ -97,8 +90,7 @@ export class TabElement extends CustomElement {
     this.embedderApi_ = TabStripEmbedderProxy.getInstance();
 
     /** @private {!HTMLElement} */
-    this.titleTextEl_ = /** @type {!HTMLElement} */ (
-        this.shadowRoot.querySelector('#titleText'));
+    this.titleTextEl_ = /** @type {!HTMLElement} */ (this.$('#titleText'));
 
     this.tabEl_.addEventListener('click', () => this.onClick_());
     this.tabEl_.addEventListener('contextmenu', e => this.onContextMenu_(e));
@@ -260,10 +252,10 @@ export class TabElement extends CustomElement {
   }
 
   /**
-   * @param {boolean} dragging
+   * @param {boolean} isDragging
    */
-  setDragging(dragging) {
-    this.toggleAttribute('dragging_', dragging);
+  setDragging(isDragging) {
+    this.toggleAttribute('dragging_', isDragging);
   }
 
   /**

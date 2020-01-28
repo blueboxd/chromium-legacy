@@ -79,6 +79,7 @@
 <translation id="129553762522093515">Нядаўна закрытыя</translation>
 <translation id="1298536327547837046">Пошук шкодных праграм</translation>
 <translation id="129863573139666797"><ph name="BEGIN_LINK" />Паспрабуйце выдаліць файлы cookie<ph name="END_LINK" /></translation>
+<translation id="1301324364792935241">Праверце налады абароненай DNS</translation>
 <translation id="1307966114820526988">Састарэлыя функцыі</translation>
 <translation id="1314509827145471431">Пераплёт справа</translation>
 <translation id="1320233736580025032">Prc1 (канверт)</translation>
@@ -152,6 +153,7 @@
 <translation id="1569487616857761740">Увядзіце тэрмін дзеяння</translation>
 <translation id="1581080074034554886">CVC</translation>
 <translation id="1583429793053364125">Падчас паказу вэб-старонкі нешта пайшло не так.</translation>
+<translation id="1586541204584340881">Якія пашырэнні вы ўсталявалі.</translation>
 <translation id="1588438908519853928">Звычайны</translation>
 <translation id="1592005682883173041">Доступ да лакальных даных</translation>
 <translation id="1594030484168838125">Выбраць</translation>
@@ -362,6 +364,7 @@
 <translation id="2544644783021658368">Адзіны дакумент</translation>
 <translation id="254947805923345898">Значэнне палітыкі несапраўднае.</translation>
 <translation id="255002559098805027">Хост <ph name="HOST_NAME" /> адправіў няправільны адказ.</translation>
+<translation id="2553853292994445426">Праверце налады абароненай DNS. Магчыма, вы наладзілі абаронены сервер DNS, з якім не ўдаецца злучыцца.</translation>
 <translation id="2556876185419854533">&amp;Адрабіць змену</translation>
 <translation id="257674075312929031">Група</translation>
 <translation id="2586657967955657006">Буфер абмену</translation>
@@ -484,6 +487,7 @@
 <translation id="3095940652251934233">Statement</translation>
 <translation id="3096100844101284527">Дадаць адрас прыняцця</translation>
 <translation id="3105172416063519923">Ідэнтыфікатар аб'екта ўласнасці:</translation>
+<translation id="3107591622054137333"><ph name="BEGIN_LINK" />Праверыць канфігурацыю абароненай DNS<ph name="END_LINK" /></translation>
 <translation id="3109728660330352905">Вы не аўтарызаваны для прагляду гэтай старонкі.</translation>
 <translation id="3113284927548439113">Трэцяя змена</translation>
 <translation id="3116158981186517402">Ламінацыя</translation>
@@ -785,6 +789,7 @@
 <translation id="4390472908992056574">Мяжа</translation>
 <translation id="4406896451731180161">вынікі пошуку</translation>
 <translation id="4408413947728134509">Файлы cookie: <ph name="NUM_COOKIES" /></translation>
+<translation id="4414290883293381923">Вы толькі што ўвялі свой пароль на сайце, вядомым падманнымі паводзінамі. Chrome рэкамендуе неадкладна змяніць пароль на сайтах <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, <ph name="WEBSITE_3" /> і на іншых сайтах, дзе выкарыстоўваецца гэты пароль.</translation>
 <translation id="4415426530740016218">Адрас атрымання</translation>
 <translation id="4424024547088906515">Серверу не ўдалося даказаць, што гэта <ph name="DOMAIN" />; Chrome не давярае яго сертыфікату бяспекі. Прычынай могуць быць няправільныя налады або зламыснік, які спрабуе перахапіць падключэнне.</translation>
 <translation id="443121186588148776">Паслядоўны порт</translation>
@@ -1217,6 +1222,7 @@
 <translation id="6353505687280762741">{COUNT,plural, =0{Няма}=1{1 пароль (для даменаў <ph name="DOMAIN_LIST" />, сінхранізаваны)}=2{2 паролі (для даменаў <ph name="DOMAIN_LIST" />, сінхранізаваны)}one{# пароль (для даменаў <ph name="DOMAIN_LIST" />, сінхранізаваны)}few{# паролі (для даменаў <ph name="DOMAIN_LIST" />, сінхранізаваны)}many{# пароляў (для даменаў <ph name="DOMAIN_LIST" />, сінхранізаваны)}other{# пароля (для даменаў <ph name="DOMAIN_LIST" />, сінхранізаваны)}}</translation>
 <translation id="6358450015545214790">Што яны азначаюць?</translation>
 <translation id="6361757823711327522">B7</translation>
+<translation id="6364095313648930329"><ph name="BEGIN_LINK" />Праверыць канфігурацыю абароненай DNS, проксі-сервера і брандмаўэра.<ph name="END_LINK" /></translation>
 <translation id="6366710531182496394">Дзве скабы злева</translation>
 <translation id="6377268785556383139">1 вынік па запыце "<ph name="SEARCH_TEXT" />"</translation>
 <translation id="6380497234672085559">A0</translation>
@@ -1239,6 +1245,7 @@
 <translation id="6433595998831338502">Хост <ph name="HOST_NAME" /> адмовіўся ад падключэння.</translation>
 <translation id="6434309073475700221">Адхіліць</translation>
 <translation id="6440503408713884761">Ігнаруецца</translation>
+<translation id="6443406338865242315">Якія пашырэнні і ўбудовы вы ўсталявалі.</translation>
 <translation id="6446163441502663861">Kahu (канверт)</translation>
 <translation id="6446608382365791566">Дадаць болей звестак</translation>
 <translation id="6447842834002726250">Файлы cookie</translation>
@@ -1348,6 +1355,7 @@
 <translation id="7012363358306927923">China UnionPay</translation>
 <translation id="7016992613359344582">Плацяжы могуць быць аднаразовыя або рэгулярныя, і іх можа быць цяжка заўважыць.</translation>
 <translation id="7029809446516969842">Паролі</translation>
+<translation id="7031646650991750659">Якія праграмы Google Play вы ўсталявалі.</translation>
 <translation id="7050187094878475250">Вы спрабавалі трапіць звярнуцца да дамена <ph name="DOMAIN" />, але сервер выдаў сертыфікат, чый тэрмін дзеяння занадта доўгі, каб быць надзейным.</translation>
 <translation id="705310974202322020">{NUM_CARDS,plural, =1{Гэта картка не можа быць зараз захавана}one{Гэтыя карткі не могуць быць зараз захаваны}few{Гэтыя карткі не могуць быць зараз захаваны}many{Гэтыя карткі не могуць быць зараз захаваны}other{Гэтыя карткі не могуць быць зараз захаваны}}</translation>
 <translation id="7053983685419859001">Заблакіраваць</translation>
@@ -1407,6 +1415,7 @@
 <translation id="7319430975418800333">A3</translation>
 <translation id="7320336641823683070">Даведка па падключэнні</translation>
 <translation id="733354035281974745">Перавызначэнне лакальнага ўліковага запісу прылады</translation>
+<translation id="7333654844024768166">Вы толькі што ўвялі свой пароль на сайце, вядомым падманнымі паводзінамі. Chromium рэкамендуе неадкладна змяніць пароль на сайтах <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, <ph name="WEBSITE_3" /> і на іншых сайтах, дзе выкарыстоўваецца гэты пароль.</translation>
 <translation id="7334320624316649418">&amp;Паўтарыць змяненне парадку</translation>
 <translation id="7337706099755338005">Недаступна на вашай платформе.</translation>
 <translation id="733923710415886693">Сертыфікат сервера не быў раскрыты ў адпаведнасці са стандартам "Празрыстасць сертыфікатаў".</translation>

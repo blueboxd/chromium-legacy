@@ -23,7 +23,7 @@
 #endif
 
 using chrome_test_util::BookmarkHomeDoneButton;
-using chrome_test_util::NavigateBackButtonTo;
+using chrome_test_util::BookmarksNavigationBarBackButton;
 using chrome_test_util::PrimarySignInButton;
 using chrome_test_util::SecondarySignInButton;
 
@@ -51,15 +51,7 @@ using chrome_test_util::SecondarySignInButton;
 
 // Tests that the promo view is only seen at root level and not in any of the
 // child nodes.
-// TODO(crbug.com/1034183): Enable for EG2 once NavigateBackButtonTo() is fixed.
-#if defined(CHROME_EARL_GREY_2)
-#define MAYBE_testPromoViewIsSeenOnlyInRootNode \
-  DISABLED_testPromoViewIsSeenOnlyInRootNode
-#else
-#define MAYBE_testPromoViewIsSeenOnlyInRootNode \
-  testPromoViewIsSeenOnlyInRootNode
-#endif
-- (void)MAYBE_testPromoViewIsSeenOnlyInRootNode {
+- (void)testPromoViewIsSeenOnlyInRootNode {
   [BookmarkEarlGrey setupStandardBookmarks];
   [BookmarkEarlGreyUI openBookmarks];
 
@@ -83,7 +75,7 @@ using chrome_test_util::SecondarySignInButton;
   [BookmarkEarlGrey verifyPromoAlreadySeen:NO];
 
   // Come back to root node, and the promo view should appear.
-  [[EarlGrey selectElementWithMatcher:NavigateBackButtonTo(@"Bookmarks")]
+  [[EarlGrey selectElementWithMatcher:BookmarksNavigationBarBackButton()]
       performAction:grey_tap()];
 
   // Check promo view is still visible.

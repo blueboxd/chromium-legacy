@@ -245,6 +245,7 @@ TEST_F(DownloadFeedbackServiceTest, SingleFeedbackCompleteAndKeepDownload) {
   download::DownloadItem::AcquireFileCallback download_discarded_callback;
 
   download::MockDownloadItem item;
+  EXPECT_CALL(item, IsDangerous()).WillRepeatedly(Return(true));
   EXPECT_CALL(item, GetDangerType())
       .WillRepeatedly(Return(download::DOWNLOAD_DANGER_TYPE_UNCOMMON_CONTENT));
   EXPECT_CALL(item, GetReceivedBytes()).WillRepeatedly(Return(1000));

@@ -169,7 +169,6 @@ class ProfileSyncService : public SyncService,
       ModelTypeSet initial_types,
       const WeakHandle<JsBackend>& js_backend,
       const WeakHandle<DataTypeDebugInfoListener>& debug_info_listener,
-      const std::string& cache_guid,
       const std::string& birthday,
       const std::string& bag_of_chips,
       const std::string& last_keystore_key,
@@ -267,6 +266,8 @@ class ProfileSyncService : public SyncService,
   // Combines GAIA ID, sync birthday and keystore key with '|' sepearator to
   // generate a secret. Returns empty string if keystore key is not available.
   std::string GetExperimentalAuthenticationSecretForTest() const;
+
+  static std::string GenerateCacheGUIDForTest();
 
  private:
   // Passed as an argument to StopImpl to control whether or not the sync

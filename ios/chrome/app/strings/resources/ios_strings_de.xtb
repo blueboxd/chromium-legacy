@@ -192,6 +192,7 @@
 <translation id="3474649192738347024">Formulare ausgefüllt</translation>
 <translation id="3478058380795961209">Ablaufmonat</translation>
 <translation id="3482959374254649722">Tabs werden synchronisiert...</translation>
+<translation id="3484946776651937681">Downloadordner öffnen</translation>
 <translation id="3493531032208478708"><ph name="BEGIN_LINK" />Weitere Informationen<ph name="END_LINK" /> zu vorgeschlagenen Inhalten</translation>
 <translation id="3494788280727468875">Löschen der Browserdaten bestätigen</translation>
 <translation id="35083190962747987">${url} öffnen</translation>
@@ -537,6 +538,7 @@ Ihre Daten wurden am <ph name="TIME" /> mit Ihrer Synchronisierungspassphrase ve
 <translation id="8319076807703933069">Neue Suche</translation>
 <translation id="8323906514956095947">Für weitere Tab-Optionen berühren und halten</translation>
 <translation id="8328777765163860529">Alle schließen</translation>
+<translation id="8386068868580335421">Zurücksetzen</translation>
 <translation id="8407669440184693619">Keine Passwörter für diese Website gefunden</translation>
 <translation id="842017693807136194">Angemeldet mit</translation>
 <translation id="8428045167754449968">Stadt/Ort</translation>
@@ -553,6 +555,7 @@ Ihre Daten wurden am <ph name="TIME" /> mit Ihrer Synchronisierungspassphrase ve
 <translation id="8532105204136943229">Ablaufjahr</translation>
 <translation id="8534481786647257214">Google+ Beitrag gepostet</translation>
 <translation id="8548878600947630424">Auf Seite suchen...</translation>
+<translation id="8574235780160508979">Die Nutzungsbedingungen von Chrome ändern sich am 31. März. <ph name="BEGIN_LINK" />Bitte lesen Sie sich die neue Fassung durch.<ph name="END_LINK" /></translation>
 <translation id="8588404856427128947">Aus</translation>
 <translation id="8605219856220328675">Tab schließen.</translation>
 <translation id="8620640915598389714">Bearbeiten</translation>

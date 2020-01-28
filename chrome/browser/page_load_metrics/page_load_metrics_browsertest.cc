@@ -1758,7 +1758,7 @@ IN_PROC_BROWSER_TEST_F(SessionRestorePageLoadMetricsBrowserTest,
   ui_test_utils::NavigateToURL(browser(), GetTestURL());
   ui_test_utils::NavigateToURLWithDisposition(
       browser(), GetTestURL(), WindowOpenDisposition::NEW_BACKGROUND_TAB,
-      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
   histogram_tester_.ExpectTotalCount(
       page_load_metrics::internal::kPageLoadStartedInForeground, 2);
   histogram_tester_.ExpectBucketCount(
@@ -1801,7 +1801,7 @@ IN_PROC_BROWSER_TEST_F(SessionRestorePageLoadMetricsBrowserTest,
   ui_test_utils::NavigateToURL(browser(), GetTestURL());
   ui_test_utils::NavigateToURLWithDisposition(
       browser(), GetTestURL(), WindowOpenDisposition::NEW_BACKGROUND_TAB,
-      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
 
   SessionRestorePaintWaiter session_restore_paint_waiter;
   Browser* new_browser = QuitBrowserAndRestore(browser());
@@ -1866,7 +1866,7 @@ IN_PROC_BROWSER_TEST_F(SessionRestorePageLoadMetricsBrowserTest,
   ui_test_utils::NavigateToURL(browser(), GetTestURL());
   ui_test_utils::NavigateToURLWithDisposition(
       browser(), GetTestURL(), WindowOpenDisposition::NEW_BACKGROUND_TAB,
-      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
 
   SessionRestorePaintWaiter session_restore_paint_waiter;
   Browser* new_browser = QuitBrowserAndRestore(browser());

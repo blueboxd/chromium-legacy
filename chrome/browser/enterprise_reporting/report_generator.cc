@@ -20,7 +20,7 @@
 #include "base/win/wmi.h"
 #endif
 
-#if defined(CHROMEOS)
+#if defined(OS_CHROMEOS)
 #include "chrome/browser/enterprise_reporting/android_app_info_generator.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #endif

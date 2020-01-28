@@ -192,6 +192,7 @@
 <translation id="3474649192738347024">Shakllar to‘ldirildi.</translation>
 <translation id="3478058380795961209">Oy (muddat)</translation>
 <translation id="3482959374254649722">Tablar sinxronlanmoqda...</translation>
+<translation id="3484946776651937681">Yuklanmalar jildini ochish</translation>
 <translation id="3493531032208478708">Bildirgi takliflar haqida <ph name="BEGIN_LINK" />batafsil ma’lumot<ph name="END_LINK" /></translation>
 <translation id="3494788280727468875">Brauzer tarixini tozalashni tasdiqlash</translation>
 <translation id="35083190962747987">${url} sahifasini ochish</translation>
@@ -537,6 +538,7 @@ Ma’lumotlaringiz <ph name="TIME" /> sanasida kodli ibora bilan shifrlangan. Si
 <translation id="8319076807703933069">Yangi qidiruv</translation>
 <translation id="8323906514956095947">Varaqqa oid boshqa amallar uchun bosib turing</translation>
 <translation id="8328777765163860529">Hammasini yopish</translation>
+<translation id="8386068868580335421">Asliga qaytarish</translation>
 <translation id="8407669440184693619">Bu sayt uchun hech qanday parol topilmadi</translation>
 <translation id="842017693807136194">Kirilgan hisob:</translation>
 <translation id="8428045167754449968">Shahar / tuman</translation>
@@ -553,6 +555,7 @@ Ma’lumotlaringiz <ph name="TIME" /> sanasida kodli ibora bilan shifrlangan. Si
 <translation id="8532105204136943229">Yil (muddat)</translation>
 <translation id="8534481786647257214">Google+’ga joylandi.</translation>
 <translation id="8548878600947630424">Sahifadan qidirish...</translation>
+<translation id="8574235780160508979">Chrome xizmat shartlari 31-mart kuni yangilanadi. <ph name="BEGIN_LINK" />Tanishib chiqing<ph name="END_LINK" /></translation>
 <translation id="8588404856427128947">Yoqilmagan</translation>
 <translation id="8605219856220328675">Sahifani yopish</translation>
 <translation id="8620640915598389714">O‘zgartirish</translation>

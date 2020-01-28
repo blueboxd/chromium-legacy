@@ -56,17 +56,20 @@ MultiDeviceSetupInitializer::Factory::BuildInstance(
 }
 
 MultiDeviceSetupInitializer::SetHostDeviceArgs::SetHostDeviceArgs(
-    const std::string& host_device_id,
+    const std::string& host_instance_id_or_legacy_device_id,
     const std::string& auth_token,
     SetHostDeviceCallback callback)
-    : host_device_id(host_device_id),
+    : host_instance_id_or_legacy_device_id(
+          host_instance_id_or_legacy_device_id),
       auth_token(auth_token),
       callback(std::move(callback)) {}
 
 MultiDeviceSetupInitializer::SetHostDeviceArgs::SetHostDeviceArgs(
-    const std::string& host_device_id,
+    const std::string& host_instance_id_or_legacy_device_id,
     mojom::PrivilegedHostDeviceSetter::SetHostDeviceCallback callback)
-    : host_device_id(host_device_id), callback(std::move(callback)) {}
+    : host_instance_id_or_legacy_device_id(
+          host_instance_id_or_legacy_device_id),
+      callback(std::move(callback)) {}
 
 MultiDeviceSetupInitializer::SetHostDeviceArgs::~SetHostDeviceArgs() = default;
 
@@ -151,12 +154,12 @@ void MultiDeviceSetupInitializer::GetEligibleActiveHostDevices(
 }
 
 void MultiDeviceSetupInitializer::SetHostDevice(
-    const std::string& host_device_id,
+    const std::string& host_instance_id_or_legacy_device_id,
     const std::string& auth_token,
     SetHostDeviceCallback callback) {
   if (multidevice_setup_impl_) {
-    multidevice_setup_impl_->SetHostDevice(host_device_id, auth_token,
-                                           std::move(callback));
+    multidevice_setup_impl_->SetHostDevice(host_instance_id_or_legacy_device_id,
+                                           auth_token, std::move(callback));
     return;
   }
 
@@ -168,8 +171,8 @@ void MultiDeviceSetupInitializer::SetHostDevice(
   // If a pending request to remove the current device exists, cancel it.
   pending_should_remove_host_device_ = false;
 
-  pending_set_host_args_.emplace(host_device_id, auth_token,
-                                 std::move(callback));
+  pending_set_host_args_.emplace(host_instance_id_or_legacy_device_id,
+                                 auth_token, std::move(callback));
 }
 
 void MultiDeviceSetupInitializer::RemoveHostDevice() {
@@ -247,11 +250,11 @@ void MultiDeviceSetupInitializer::TriggerEventForDebugging(
 }
 
 void MultiDeviceSetupInitializer::SetHostDeviceWithoutAuthToken(
-    const std::string& host_device_id,
+    const std::string& host_instance_id_or_legacy_device_id,
     mojom::PrivilegedHostDeviceSetter::SetHostDeviceCallback callback) {
   if (multidevice_setup_impl_) {
-    multidevice_setup_impl_->SetHostDeviceWithoutAuthToken(host_device_id,
-                                                           std::move(callback));
+    multidevice_setup_impl_->SetHostDeviceWithoutAuthToken(
+        host_instance_id_or_legacy_device_id, std::move(callback));
     return;
   }
 
@@ -265,7 +268,8 @@ void MultiDeviceSetupInitializer::SetHostDeviceWithoutAuthToken(
   // If a pending request to remove the current device exists, cancel it.
   pending_should_remove_host_device_ = false;
 
-  pending_set_host_args_.emplace(host_device_id, std::move(callback));
+  pending_set_host_args_.emplace(host_instance_id_or_legacy_device_id,
+                                 std::move(callback));
 }
 
 void MultiDeviceSetupInitializer::OnReady() {
@@ -298,12 +302,12 @@ void MultiDeviceSetupInitializer::InitializeImplementation() {
     DCHECK(!pending_should_remove_host_device_);
     if (pending_set_host_args_->auth_token) {
       multidevice_setup_impl_->SetHostDevice(
-          pending_set_host_args_->host_device_id,
+          pending_set_host_args_->host_instance_id_or_legacy_device_id,
           *pending_set_host_args_->auth_token,
           std::move(pending_set_host_args_->callback));
     } else {
       multidevice_setup_impl_->SetHostDeviceWithoutAuthToken(
-          pending_set_host_args_->host_device_id,
+          pending_set_host_args_->host_instance_id_or_legacy_device_id,
           std::move(pending_set_host_args_->callback));
     }
     pending_set_host_args_.reset();

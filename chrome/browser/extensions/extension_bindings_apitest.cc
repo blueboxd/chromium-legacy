@@ -537,12 +537,12 @@ IN_PROC_BROWSER_TEST_F(
   const GURL page_url = extension->GetResourceURL("page.html");
   ui_test_utils::NavigateToURLWithDisposition(
       browser(), page_url, WindowOpenDisposition::NEW_FOREGROUND_TAB,
-      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
   content::WebContents* first_tab =
       browser()->tab_strip_model()->GetActiveWebContents();
   ui_test_utils::NavigateToURLWithDisposition(
       browser(), page_url, WindowOpenDisposition::NEW_FOREGROUND_TAB,
-      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
   content::WebContents* second_tab =
       browser()->tab_strip_model()->GetActiveWebContents();
 
@@ -574,7 +574,7 @@ IN_PROC_BROWSER_TEST_F(
   ui_test_utils::NavigateToURLWithDisposition(
       browser(), GURL("chrome://newtab"),
       WindowOpenDisposition::NEW_FOREGROUND_TAB,
-      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
   content::WebContents* new_tab =
       browser()->tab_strip_model()->GetActiveWebContents();
 

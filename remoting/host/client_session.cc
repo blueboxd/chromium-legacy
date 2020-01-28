@@ -59,7 +59,8 @@ ClientSession::ClientSession(
       input_tracker_(&host_input_filter_),
       remote_input_filter_(&input_tracker_),
       mouse_clamping_filter_(&remote_input_filter_),
-      disable_input_filter_(&mouse_clamping_filter_),
+      pointer_lock_detector_(&mouse_clamping_filter_, this),
+      disable_input_filter_(&pointer_lock_detector_),
       disable_clipboard_filter_(clipboard_echo_filter_.host_filter()),
       client_clipboard_factory_(clipboard_echo_filter_.client_filter()),
       max_duration_(max_duration),
@@ -333,8 +334,20 @@ void ClientSession::CreateMediaStreams() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // Create a VideoStream to pump frames from the capturer to the client.
+#if defined(OS_MACOSX)
+  // On macOS the capturer includes the mouse cursor.
   video_stream_ = connection_->StartVideoStream(
       desktop_environment_->CreateVideoCapturer());
+#else
+  // On other platforms the mouse cursor is not present in the captured video,
+  // so the capturer must be wrapped in a DesktopAndCursorComposer so that the
+  // cursor can be included when mouse lock is enabled at the client.
+  auto composer =
+      webrtc::DesktopAndCursorComposer::CreateWithoutMouseCursorMonitor(
+          desktop_environment_->CreateVideoCapturer());
+  desktop_and_cursor_composer_raw_ = composer.get();
+  video_stream_ = connection_->StartVideoStream(std::move(composer));
+#endif
 
   // Create a AudioStream to pump audio from the capturer to the client.
   std::unique_ptr<protocol::AudioSource> audio_capturer =
@@ -376,6 +389,7 @@ void ClientSession::OnConnectionChannelsConnected() {
   mouse_shape_pump_.reset(
       new MouseShapePump(desktop_environment_->CreateMouseCursorMonitor(),
                          connection_->client_stub()));
+  mouse_shape_pump_->SetMouseCursorMonitorCallback(this);
 
   // Create KeyboardLayoutMonitor to send keyboard layout.
   // Unretained is sound because callback will never be called after
@@ -412,10 +426,11 @@ void ClientSession::OnConnectionClosed(protocol::ErrorCode error) {
 
   // Stop components access the client, audio or video stubs, which are no
   // longer valid once ConnectionToClient calls OnConnectionClosed().
+  desktop_and_cursor_composer_raw_ = nullptr;
   audio_stream_.reset();
+  mouse_shape_pump_.reset();
   video_stream_.reset();
   keyboard_layout_monitor_.reset();
-  mouse_shape_pump_.reset();
   client_clipboard_factory_.InvalidateWeakPtrs();
   input_injector_.reset();
   screen_controls_.reset();
@@ -486,6 +501,33 @@ uint32_t ClientSession::desktop_session_id() const {
 ClientSessionControl* ClientSession::session_control() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return this;
+}
+
+void ClientSession::OnPointerLockChanged(bool active) {
+  if (active) {
+    if (mouse_cursor_ && desktop_and_cursor_composer_raw_)
+      desktop_and_cursor_composer_raw_->OnMouseCursor(
+          webrtc::MouseCursor::CopyOf(*mouse_cursor_));
+  } else if (desktop_and_cursor_composer_raw_) {
+    webrtc::MouseCursor* empty = new webrtc::MouseCursor(
+        new webrtc::BasicDesktopFrame(webrtc::DesktopSize(0, 0)),
+        webrtc::DesktopVector(0, 0));
+    desktop_and_cursor_composer_raw_->OnMouseCursor(empty);
+  }
+  pointer_lock_active_ = active;
+}
+
+void ClientSession::OnMouseCursor(webrtc::MouseCursor* mouse_cursor) {
+  mouse_cursor_.reset(mouse_cursor);
+  if (pointer_lock_active_ && desktop_and_cursor_composer_raw_)
+    desktop_and_cursor_composer_raw_->OnMouseCursor(
+        webrtc::MouseCursor::CopyOf(*mouse_cursor_));
+}
+
+void ClientSession::OnMouseCursorPosition(
+    const webrtc::DesktopVector& position) {
+  if (pointer_lock_active_ && desktop_and_cursor_composer_raw_)
+    desktop_and_cursor_composer_raw_->OnMouseCursorPosition(position);
 }
 
 void ClientSession::RegisterCreateHandlerCallbackForTesting(

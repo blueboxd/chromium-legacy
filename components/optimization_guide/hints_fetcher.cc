@@ -250,13 +250,6 @@ bool HintsFetcher::FetchOptimizationGuideServiceHints(
   return true;
 }
 
-bool HintsFetcher::IsHintForHostBeingFetched(const std::string& host) const {
-  SEQUENCE_CHECKER(sequence_checker_);
-
-  return std::find(hosts_fetched_.begin(), hosts_fetched_.end(), host) !=
-         hosts_fetched_.end();
-}
-
 void HintsFetcher::HandleResponse(const std::string& get_hints_response_data,
                                   int net_status,
                                   int response_code) {

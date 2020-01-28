@@ -13,7 +13,7 @@
 #include "base/logging.h"
 #include "build/build_config.h"
 
-#if !defined(OS_ANDROID)
+#if !defined(OS_ANDROID) && !defined(OS_FUCHSIA)
 #include "chromecast/external_mojo/external_service_support/crash_reporter_client.h"
 #endif
 
@@ -40,7 +40,7 @@ void CommonProcessInitialization(int argc, char** argv) {
       command_line->GetSwitchValueASCII(switches::kEnableFeatures),
       command_line->GetSwitchValueASCII(switches::kDisableFeatures));
 
-#if !defined(OS_ANDROID)
+#if !defined(OS_ANDROID) && !defined(OS_FUCHSIA)
   CrashReporterClient::InitCrashReporter();
 #endif
 

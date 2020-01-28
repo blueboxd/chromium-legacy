@@ -17,6 +17,7 @@ import org.chromium.chrome.browser.GlobalDiscardableReferencePool;
 import org.chromium.chrome.browser.download.home.DownloadManagerUiConfig;
 import org.chromium.chrome.browser.download.home.FaviconProvider;
 import org.chromium.chrome.browser.download.home.JustNowProvider;
+import org.chromium.chrome.browser.download.home.LegacyDownloadProvider;
 import org.chromium.chrome.browser.download.home.OfflineItemSource;
 import org.chromium.chrome.browser.download.home.filter.DeleteUndoOfflineItemFilter;
 import org.chromium.chrome.browser.download.home.filter.Filters.FilterType;
@@ -145,6 +146,7 @@ class DateOrderedListMediator {
      * Creates an instance of a DateOrderedListMediator that will push {@code provider} into
      * {@code model}.
      * @param provider                The {@link OfflineContentProvider} to visually represent.
+     * @param legacyProvider          A legacy version of a provider for downloads.
      * @param faviconProvider         The {@link FaviconProvider} to handle favicon requests.
      * @param deleteController        A class to manage whether or not items can be deleted.
      * @param shareController         A class responsible for sharing downloaded item {@link
@@ -154,7 +156,8 @@ class DateOrderedListMediator {
      * @param dateOrderedListObserver An observer of the list and recycler view.
      * @param model                   The {@link ListItemModel} to push {@code provider} into.
      */
-    public DateOrderedListMediator(OfflineContentProvider provider, FaviconProvider faviconProvider,
+    public DateOrderedListMediator(OfflineContentProvider provider,
+            LegacyDownloadProvider legacyProvider, FaviconProvider faviconProvider,
             ShareController shareController, DeleteController deleteController,
             RenameController renameController, SelectionDelegate<ListItem> selectionDelegate,
             DownloadManagerUiConfig config, DateOrderedListObserver dateOrderedListObserver,
@@ -172,7 +175,7 @@ class DateOrderedListMediator {
         // TODO(shaktisahu): Look into replacing mutator chain by
         // sorter -> label adder -> property setter -> paginator -> model
 
-        mProvider = new OfflineContentProviderGlue(provider, config);
+        mProvider = new OfflineContentProviderGlue(provider, legacyProvider, config);
         mFaviconProvider = faviconProvider;
         mShareController = shareController;
         mModel = model;

@@ -88,6 +88,7 @@ class ChromeMetricsServiceClient : public metrics::MetricsServiceClient,
   std::string GetUploadSigningKey() override;
   static void SetNotificationListenerSetupFailedForTesting(
       bool simulate_failure);
+  bool ShouldResetClientIdsOnClonedInstall() override;
 
   // ukm::HistoryDeleteObserver:
   void OnHistoryDeleted() override;

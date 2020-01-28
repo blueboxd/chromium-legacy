@@ -141,6 +141,10 @@ void DirectRenderer::Initialize() {
             .disable_non_empty_post_sub_buffers) {
       use_partial_swap_ = false;
     }
+#if DCHECK_IS_ON()
+    supports_occlusion_query_ =
+        context_provider->ContextCapabilities().occlusion_query;
+#endif
   } else {
     allow_empty_swap_ |=
         output_surface_->capabilities().supports_commit_overlay_planes;
@@ -256,11 +260,17 @@ void DirectRenderer::DrawFrame(RenderPassList* render_passes_in_draw_order,
   RenderPass* root_render_pass = render_passes_in_draw_order->back().get();
   DCHECK(root_render_pass);
 
+#if DCHECK_IS_ON()
   bool overdraw_tracing_enabled;
   TRACE_EVENT_CATEGORY_GROUP_ENABLED(TRACE_DISABLED_BY_DEFAULT("viz.overdraw"),
                                      &overdraw_tracing_enabled);
-  bool overdraw_feedback =
-      settings_->show_overdraw_feedback || overdraw_tracing_enabled;
+  DLOG_IF(WARNING, !overdraw_tracing_support_missing_logged_once_ &&
+                       overdraw_tracing_enabled && !supports_occlusion_query_)
+      << "Overdraw tracing enabled on platform without support.";
+  overdraw_tracing_support_missing_logged_once_ = true;
+#endif
+
+  bool overdraw_feedback = settings_->show_overdraw_feedback;
   if (overdraw_feedback && !output_surface_->capabilities().supports_stencil) {
 #if DCHECK_IS_ON()
     DLOG_IF(WARNING, !overdraw_feedback_support_missing_logged_once_)
@@ -414,7 +424,13 @@ void DirectRenderer::DrawFrame(RenderPassList* render_passes_in_draw_order,
     current_frame()->output_surface_plane->gpu_fence_id =
         output_surface_->UpdateGpuFence();
 
+  if (overlay_processor_)
+    overlay_processor_->TakeOverlayCandidates(&current_frame()->overlay_list);
+
   FinishDrawingFrame();
+
+  if (overlay_processor_)
+    overlay_processor_->ScheduleOverlays(resource_provider_);
 
   render_passes_in_draw_order->clear();
   render_pass_filters_.clear();

@@ -113,7 +113,7 @@ class IOSTranslateDriver
 
   // An ever-increasing sequence number of the current page, used to match up
   // translation requests with responses.
-  // This matches the similar field in TranslateHelper in the renderer on other
+  // This matches the similar field in TranslateAgent in the renderer on other
   // platforms.
   int page_seq_no_;
 

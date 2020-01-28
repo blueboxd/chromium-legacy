@@ -243,8 +243,8 @@ var AutomationEditableText = class extends ChromeVoxEditableTextBase {
     var startIndex = this.start - lineStart;
     var endIndex = this.end - lineStart;
     var spannable = new Spannable(lineText, new Output.NodeSpan(this.node_));
-    ChromeVox.braille.write(new NavBraille(
-        {text: spannable, startIndex: startIndex, endIndex: endIndex}));
+    ChromeVox.braille.write(
+        new NavBraille({text: spannable, startIndex, endIndex}));
   }
 
   /**

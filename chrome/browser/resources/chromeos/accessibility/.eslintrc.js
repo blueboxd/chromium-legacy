@@ -6,5 +6,6 @@ module.exports = {
   'rules': {
     'brace-style': ['error', '1tbs'],
     'curly': ['error', 'multi-line', 'consistent'],
+    'object-shorthand': ['error', 'always'],
   },
 };

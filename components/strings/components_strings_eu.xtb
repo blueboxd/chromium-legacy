@@ -79,6 +79,7 @@
 <translation id="129553762522093515">Itxitako azkenak</translation>
 <translation id="1298536327547837046">Malware-bilaketa</translation>
 <translation id="129863573139666797"><ph name="BEGIN_LINK" />Saiatu cookieak garbituta<ph name="END_LINK" /></translation>
+<translation id="1301324364792935241">Egiaztatu DNS ezarpen seguruak</translation>
 <translation id="1307966114820526988">Eginbide zaharkituak</translation>
 <translation id="1314509827145471431">Koadernatu eskuinetik</translation>
 <translation id="1320233736580025032">Prc1 (gutun-azala)</translation>
@@ -152,6 +153,7 @@
 <translation id="1569487616857761740">Adierazi iraungitze-data</translation>
 <translation id="1581080074034554886">CVC</translation>
 <translation id="1583429793053364125">Arazoren bat izan da web-orria bistaratzean.</translation>
+<translation id="1586541204584340881">Instalatuta dauzkazun luzapenak</translation>
 <translation id="1588438908519853928">Arrunta</translation>
 <translation id="1592005682883173041">Datu lokaletarako sarbidea</translation>
 <translation id="1594030484168838125">Aukeratu</translation>
@@ -362,6 +364,7 @@
 <translation id="2544644783021658368">Dokumentu bakarra</translation>
 <translation id="254947805923345898">Gidalerroaren balioak ez du balio.</translation>
 <translation id="255002559098805027">Ez du balio <ph name="HOST_NAME" /> webguneak bidali duen erantzunak.</translation>
+<translation id="2553853292994445426">Egiaztatu DNS ezarpen seguruak. Baliteke konfiguratu duzun DNS zerbitzari segururako konexioek huts egitea.</translation>
 <translation id="2556876185419854533">&amp;Desegin editatzea</translation>
 <translation id="257674075312929031">Taldea</translation>
 <translation id="2586657967955657006">Arbela</translation>
@@ -480,6 +483,7 @@
 <translation id="3095940652251934233">Statement</translation>
 <translation id="3096100844101284527">Gehitu jasotze-helbidea</translation>
 <translation id="3105172416063519923">Aktibo IDa:</translation>
+<translation id="3107591622054137333"><ph name="BEGIN_LINK" />DNS konfigurazio segurua egiaztatzen<ph name="END_LINK" /></translation>
 <translation id="3109728660330352905">Ez duzu baimenik orri hau ikusteko.</translation>
 <translation id="3113284927548439113">Hirugarren lanaldia</translation>
 <translation id="3116158981186517402">Laminatu</translation>
@@ -776,6 +780,7 @@
 <translation id="4390472908992056574">Markoa</translation>
 <translation id="4406896451731180161">bilaketa-emaitza</translation>
 <translation id="4408413947728134509">Cookieak: <ph name="NUM_COOKIES" /></translation>
+<translation id="4414290883293381923">Webgune engainagarri batean idatzi duzu pasahitza. <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> eta <ph name="WEBSITE_3" /> webguneetara eta pasahitz hori erabili duzun beste webgune batzuetara joatea gomendatzen dizu Chrome-k.</translation>
 <translation id="4415426530740016218">Jasotzeko helbidea</translation>
 <translation id="4424024547088906515">Zerbitzari honek ezin izan du egiaztatu <ph name="DOMAIN" /> domeinua denik. Chrome ez da bere segurtasun-ziurtagiriaz fidatzen. Baliteke gaizki konfiguratuta dagoelako izatea edo erasotzaile batek zure konexioa atzeman duelako izatea.</translation>
 <translation id="443121186588148776">Serie-ataka</translation>
@@ -1207,6 +1212,7 @@
 <translation id="6353505687280762741">{COUNT,plural, =0{Bat ere ez}=1{<ph name="DOMAIN_LIST" />: 1 pasahitz (sinkronizatuta)}=2{<ph name="DOMAIN_LIST" />: 2 pasahitz (sinkronizatuta)}other{<ph name="DOMAIN_LIST" />: # pasahitz (sinkronizatuta)}}</translation>
 <translation id="6358450015545214790">Zer esan nahi dute hauek?</translation>
 <translation id="6361757823711327522">B7</translation>
+<translation id="6364095313648930329"><ph name="BEGIN_LINK" />Proxya, suebakia eta DNS konfigurazioa egiaztatzen<ph name="END_LINK" /></translation>
 <translation id="6366710531182496394">Bi grapa ezkerrean</translation>
 <translation id="6377268785556383139">"<ph name="SEARCH_TEXT" />" bilaketak emaitza bat du</translation>
 <translation id="6380497234672085559">A0</translation>
@@ -1229,6 +1235,7 @@
 <translation id="6433595998831338502">Konexioa baztertu du <ph name="HOST_NAME" /> webguneak.</translation>
 <translation id="6434309073475700221">Baztertu</translation>
 <translation id="6440503408713884761">Ez ikusi egin zaio</translation>
+<translation id="6443406338865242315">Instalatuta dauzkazun luzapenak eta pluginak</translation>
 <translation id="6446163441502663861">Kahu (gutun-azala)</translation>
 <translation id="6446608382365791566">Gehitu informazio gehiago</translation>
 <translation id="6447842834002726250">Cookieak</translation>
@@ -1338,6 +1345,7 @@
 <translation id="7012363358306927923">China UnionPay</translation>
 <translation id="7016992613359344582">Behin edo gehiagotan kobratzen saia liteke, eta baliteke zordunketa horiek begien bistakoak ez izatea.</translation>
 <translation id="7029809446516969842">Pasahitzak</translation>
+<translation id="7031646650991750659">Instalatuta dauzkazun Google Play-ko aplikazioak</translation>
 <translation id="7050187094878475250"><ph name="DOMAIN" /> atzitzen saiatu zara, baina zerbitzariak balio-epe luzeegia duen ziurtagiri bat aurkeztu du eta ez da fidagarria.</translation>
 <translation id="705310974202322020">{NUM_CARDS,plural, =1{Ezin da gorde txartela une honetan}other{Ezin dira gorde txartelak une honetan}}</translation>
 <translation id="7053983685419859001">Blokeatu</translation>
@@ -1397,6 +1405,7 @@ Xehetasun gehiago:
 <translation id="7319430975418800333">A3</translation>
 <translation id="7320336641823683070">Konexioari buruzko laguntza</translation>
 <translation id="733354035281974745">Gailuko kontua ordeztea</translation>
+<translation id="7333654844024768166">Webgune engainagarri batean idatzi duzu pasahitza. <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> eta <ph name="WEBSITE_3" /> webguneetara eta pasahitz hori erabili duzun beste webgune batzuetara joatea eta pasahitza aldatzea gomendatzen dizu Chromium-ek.</translation>
 <translation id="7334320624316649418">&amp;Berregin berrantolatzea</translation>
 <translation id="7337706099755338005">Ez dago erabilgarri darabilzun plataforman.</translation>
 <translation id="733923710415886693">Zerbitzariaren ziurtagiria ez da ezagutarazi ziurtagirien gardentasun-gidalerroa erabilita.</translation>

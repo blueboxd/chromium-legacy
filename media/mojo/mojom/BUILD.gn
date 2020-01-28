@@ -42,11 +42,12 @@ mojom("mojom") {
     "watch_time_recorder.mojom",
   ]
 
+  if (enable_media_drm_storage) {
+    sources += [ "media_drm_storage.mojom" ]
+  }
+
   if (is_android) {
-    sources += [
-      "android_overlay.mojom",
-      "media_drm_storage.mojom",
-    ]
+    sources += [ "android_overlay.mojom" ]
   }
 
   if (is_chromecast) {

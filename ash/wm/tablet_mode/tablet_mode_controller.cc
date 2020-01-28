@@ -436,6 +436,25 @@ bool TabletModeController::InTabletMode() const {
   return state_ == State::kInTabletMode || state_ == State::kEnteringTabletMode;
 }
 
+void TabletModeController::ForceUiTabletModeState(
+    base::Optional<bool> enabled) {
+  if (!enabled.has_value()) {
+    tablet_mode_behavior_ = kDefault;
+    forced_ui_mode_ = UiMode::kNone;
+    if (!SetIsInTabletPhysicalState(CalculateIsInTabletPhysicalState()))
+      UpdateUiTabletState();
+    return;
+  }
+  if (*enabled) {
+    tablet_mode_behavior_ = kLockInTabletMode;
+    forced_ui_mode_ = UiMode::kTabletMode;
+  } else {
+    tablet_mode_behavior_ = kLockInClamshellMode;
+    forced_ui_mode_ = UiMode::kClamshell;
+  }
+  UpdateUiTabletState();
+}
+
 void TabletModeController::SetEnabledForTest(bool enabled) {
   tablet_mode_behavior_ = enabled ? kOnForTest : kDefault;
 
@@ -1111,9 +1130,9 @@ bool TabletModeController::ShouldUiBeInTabletMode() const {
   return is_in_tablet_physical_state_;
 }
 
-void TabletModeController::SetIsInTabletPhysicalState(bool new_state) {
+bool TabletModeController::SetIsInTabletPhysicalState(bool new_state) {
   if (new_state == is_in_tablet_physical_state_)
-    return;
+    return false;
 
   is_in_tablet_physical_state_ = new_state;
 
@@ -1123,9 +1142,10 @@ void TabletModeController::SetIsInTabletPhysicalState(bool new_state) {
   // InputDeviceBlocker must always be updated, but don't update it here if the
   // UI state has changed because it's already done.
   if (UpdateUiTabletState())
-    return;
+    return true;
 
   UpdateInternalInputDevicesEventBlocker();
+  return true;
 }
 
 bool TabletModeController::UpdateUiTabletState() {

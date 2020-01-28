@@ -62,6 +62,7 @@ source_set("test_support") {
     "//ios/chrome/browser/main",
     "//ios/chrome/browser/metrics",
     "//ios/chrome/browser/metrics:metrics_internal",
+    "//ios/chrome/browser/sessions:restoration_agent",
     "//ios/chrome/browser/signin",
     "//ios/chrome/browser/sync",
     "//ios/chrome/browser/tabs",

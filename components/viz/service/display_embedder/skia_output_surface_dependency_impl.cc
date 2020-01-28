@@ -97,12 +97,13 @@ gpu::SurfaceHandle SkiaOutputSurfaceDependencyImpl::GetSurfaceHandle() {
 }
 
 scoped_refptr<gl::GLSurface> SkiaOutputSurfaceDependencyImpl::CreateGLSurface(
-    base::WeakPtr<gpu::ImageTransportSurfaceDelegate> stub) {
+    base::WeakPtr<gpu::ImageTransportSurfaceDelegate> stub,
+    gl::GLSurfaceFormat format) {
   if (IsOffscreen()) {
-    return gl::init::CreateOffscreenGLSurface(gfx::Size());
+    return gl::init::CreateOffscreenGLSurfaceWithFormat(gfx::Size(), format);
   } else {
     return gpu::ImageTransportSurface::CreateNativeSurface(
-        stub, surface_handle_, gl::GLSurfaceFormat());
+        stub, surface_handle_, format);
   }
 }
 

@@ -67,10 +67,11 @@ class FakeMojoService {
   }
 
   /** @override */
-  setHostDevice(deviceId) {
+  setHostDevice(hostInstanceIdOrLegacyDeviceId) {
     if (this.shouldSetHostSucceed) {
       console.log(
-          'setHostDevice(' + deviceId + ') called; simulating ' +
+          'setHostDevice(' + hostInstanceIdOrLegacyDeviceId +
+          ') called; simulating ' +
           'success.');
     } else {
       console.warn('setHostDevice() called; simulating failure.');

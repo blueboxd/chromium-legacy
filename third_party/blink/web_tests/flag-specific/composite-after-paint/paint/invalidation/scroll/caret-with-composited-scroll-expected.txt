@@ -13,12 +13,12 @@
       "paintInvalidations": [
         {
           "object": "LayoutTextControl INPUT id='text'",
-          "rect": [0, 999, 205, 23],
+          "rect": [0, 998, 205, 24],
           "reason": "subtree"
         },
         {
           "object": "LayoutTextControl INPUT id='text'",
-          "rect": [0, 999, 205, 23],
+          "rect": [0, 998, 205, 24],
           "reason": "chunk appeared"
         },
         {

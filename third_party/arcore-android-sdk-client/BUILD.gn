@@ -8,4 +8,7 @@ android_aar_prebuilt("com_google_ar_core_java") {
   aar_path = "core-partner_chrome-1.10.0.aar"
   info_path = "core-partner_chrome-1.10.0.info"
   extract_native_libraries = true
+
+  ignore_proguard_configs = true
+  proguard_configs = [ "proguard.txt" ]
 }

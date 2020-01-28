@@ -1761,13 +1761,13 @@
       Unable to set up printer. Please check configuration and try again.
     </message>
     <message name="IDS_SETTINGS_PRINTING_CUPS_PRINT_SERVER_FOUND_ZERO_PRINTERS" desc="Message shown on a toast to indicate no printers were found from a print server.">
-      Did not find any printers from the print server.
+      Did not find any printers from the print server
     </message>
     <message name="IDS_SETTINGS_PRINTING_CUPS_PRINT_SERVER_FOUND_ONE_PRINTER" desc="Message shown on a toast to indicate that only one printer was found from a print server.">
-      Found 1 printer from the print server.
+      Found 1 printer from the print server
     </message>
     <message name="IDS_SETTINGS_PRINTING_CUPS_PRINT_SERVER_FOUND_MANY_PRINTERS" desc="Message shown on a toast to indicate the number of printers found on a print server.">
-      Found <ph name="NUM_PRINTERS">$1<ex>5</ex></ph> printers from the print server.
+      Found <ph name="NUM_PRINTERS">$1<ex>5</ex></ph> printers from the print server
     </message>
     <message name="IDS_SETTINGS_PRINTING_CUPS_PRINT_SERVER_INVALID_URL_ADDRESS" desc="Message shown on the address field of the print server dialog when attempting to connect to a print server with an invalid URL.">
       Invalid address. Please check the address and try again.

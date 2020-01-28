@@ -204,6 +204,7 @@ Polymer({
         loadTimeData.getBoolean('allowDeletingHistory') &&
         this.items_.some(
             ({state}) => state !== States.DANGEROUS &&
+                state !== States.MIXED_CONTENT &&
                 state !== States.IN_PROGRESS && state !== States.PAUSED);
 
     if (this.inSearchMode_) {

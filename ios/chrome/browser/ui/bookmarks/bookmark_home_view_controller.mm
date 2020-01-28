@@ -1177,8 +1177,9 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
 
 - (int)topMostVisibleIndexPathRow {
   // If on root node screen, return 0.
-  if (self.sharedState.tableViewDisplayedRootNode ==
-      self.sharedState.bookmarkModel->root_node()) {
+  if (self.sharedState.bookmarkModel &&
+      self.sharedState.tableViewDisplayedRootNode ==
+          self.sharedState.bookmarkModel->root_node()) {
     return 0;
   }
 

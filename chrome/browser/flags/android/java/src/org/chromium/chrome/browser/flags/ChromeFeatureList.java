@@ -187,7 +187,6 @@ public abstract class ChromeFeatureList {
             "BackgroundTaskSchedulerForBackgroundSync";
     public static final String BIOMETRIC_TOUCH_TO_FILL = "BiometricTouchToFill";
     public static final String BOOKMARKS_SHOW_IN_FOLDER = "BookmarksShowInFolder";
-    public static final String CAPTION_SETTINGS = "CaptionSettings";
     public static final String CAPTIVE_PORTAL_CERTIFICATE_LIST = "CaptivePortalCertificateList";
     public static final String CCT_BACKGROUND_TAB = "CCTBackgroundTab";
     public static final String CCT_INCOGNITO = "CCTIncognito";
@@ -221,6 +220,7 @@ public abstract class ChromeFeatureList {
     public static final String CONTENT_INDEXING_NTP = "ContentIndexingNTP";
     public static final String CONTENT_INDEXING_DOWNLOAD_HOME = "ContentIndexingDownloadHome";
     public static final String CONTEXT_MENU_COPY_IMAGE = "ContextMenuCopyImage";
+    public static final String CONTEXT_MENU_PERFORMANCE_INFO = "ContextMenuPerformanceInfo";
     public static final String CONTEXT_MENU_SEARCH_WITH_GOOGLE_LENS =
             "ContextMenuSearchWithGoogleLens";
     public static final String CONTEXTUAL_SEARCH_DEFINITIONS = "ContextualSearchDefinitions";
@@ -231,6 +231,7 @@ public abstract class ChromeFeatureList {
     public static final String CONTEXTUAL_SEARCH_SECOND_TAP = "ContextualSearchSecondTap";
     public static final String CONTEXTUAL_SEARCH_TAP_DISABLE_OVERRIDE =
             "ContextualSearchTapDisableOverride";
+    public static final String CONTEXTUAL_SEARCH_TRANSLATION = "ContextualSearchTranslation";
     public static final String COOKIES_WITHOUT_SAME_SITE_MUST_BE_SECURE =
             "CookiesWithoutSameSiteMustBeSecure";
     public static final String DARKEN_WEBSITES_CHECKBOX_IN_THEMES_SETTING =

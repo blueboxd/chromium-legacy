@@ -2259,7 +2259,7 @@ IN_PROC_BROWSER_TEST_P(LoginPromptExtensionBrowserTest,
       embedded_test_server()->GetURL(SlowAuthResponse::kSlowResponseHostName,
                                      SlowAuthResponse::kFinishSlowResponseUrl),
       WindowOpenDisposition::NEW_BACKGROUND_TAB,
-      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
 
   // If https://crbug.com/1034468 regresses, the test may hang here. In that
   // bug, extensions were getting notified of each auth request twice, and the

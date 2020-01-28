@@ -178,7 +178,7 @@ void PermissionRequestManager::AddRequest(
   // permission request.
   if (ShouldCurrentRequestUseQuietUI()) {
     // FinalizeBubble will call ScheduleDequeueRequest on its own.
-    FinalizeBubble(PermissionAction::IGNORED);
+    FinalizeBubble(permissions::PermissionAction::IGNORED);
   } else {
     ScheduleDequeueRequestIfNeeded();
   }
@@ -275,7 +275,7 @@ void PermissionRequestManager::OnVisibilityChanged(
           break;
         case PermissionPrompt::TabSwitchingBehavior::
             kDestroyPromptAndIgnoreRequest:
-          FinalizeBubble(PermissionAction::IGNORED);
+          FinalizeBubble(permissions::PermissionAction::IGNORED);
           break;
         case PermissionPrompt::TabSwitchingBehavior::kKeepPromptAlive:
           break;
@@ -335,7 +335,7 @@ void PermissionRequestManager::Accept() {
        requests_iter++) {
     PermissionGrantedIncludingDuplicates(*requests_iter);
   }
-  FinalizeBubble(PermissionAction::GRANTED);
+  FinalizeBubble(permissions::PermissionAction::GRANTED);
 }
 
 void PermissionRequestManager::Deny() {
@@ -360,7 +360,7 @@ void PermissionRequestManager::Deny() {
        requests_iter++) {
     PermissionDeniedIncludingDuplicates(*requests_iter);
   }
-  FinalizeBubble(PermissionAction::DENIED);
+  FinalizeBubble(permissions::PermissionAction::DENIED);
 }
 
 void PermissionRequestManager::Closing() {
@@ -371,7 +371,7 @@ void PermissionRequestManager::Closing() {
        requests_iter++) {
     CancelledIncludingDuplicates(*requests_iter);
   }
-  FinalizeBubble(PermissionAction::DISMISSED);
+  FinalizeBubble(permissions::PermissionAction::DISMISSED);
 }
 
 PermissionRequestManager::PermissionRequestManager(
@@ -469,7 +469,7 @@ void PermissionRequestManager::DeleteBubble() {
 }
 
 void PermissionRequestManager::FinalizeBubble(
-    PermissionAction permission_action) {
+    permissions::PermissionAction permission_action) {
   DCHECK(IsRequestInProgress());
 
   PermissionUmaUtil::PermissionPromptResolved(
@@ -498,13 +498,13 @@ void PermissionRequestManager::FinalizeBubble(
 
     PermissionEmbargoStatus embargo_status =
         PermissionEmbargoStatus::NOT_EMBARGOED;
-    if (permission_action == PermissionAction::DISMISSED) {
+    if (permission_action == permissions::PermissionAction::DISMISSED) {
       if (autoblocker->RecordDismissAndEmbargo(
               request->GetOrigin(), request->GetContentSettingsType(),
               ShouldCurrentRequestUseQuietUI())) {
         embargo_status = PermissionEmbargoStatus::REPEATED_DISMISSALS;
       }
-    } else if (permission_action == PermissionAction::IGNORED) {
+    } else if (permission_action == permissions::PermissionAction::IGNORED) {
       if (autoblocker->RecordIgnoreAndEmbargo(
               request->GetOrigin(), request->GetContentSettingsType(),
               ShouldCurrentRequestUseQuietUI())) {
@@ -539,7 +539,7 @@ void PermissionRequestManager::CleanUpRequests() {
   queued_requests_.clear();
 
   if (IsRequestInProgress())
-    FinalizeBubble(PermissionAction::IGNORED);
+    FinalizeBubble(permissions::PermissionAction::IGNORED);
 }
 
 permissions::PermissionRequest* PermissionRequestManager::GetExistingRequest(

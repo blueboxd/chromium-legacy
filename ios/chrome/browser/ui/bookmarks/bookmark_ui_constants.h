@@ -23,6 +23,8 @@ extern NSString* const kBookmarkFolderPickerViewContainerIdentifier;
 extern NSString* const kBookmarkHomeTableViewIdentifier;
 
 // UINavigationBar accessibility constants:
+// Accessibility identifier of the Bookmark navigation bar.
+extern NSString* const kBookmarkNavigationBarIdentifier;
 // Accessibility identifier of the BookmarkHome VC navigation bar done button.
 extern NSString* const kBookmarkHomeNavigationBarDoneButtonIdentifier;
 // Accessibility identifier of the BookmarkEdit VC navigation bar done button.

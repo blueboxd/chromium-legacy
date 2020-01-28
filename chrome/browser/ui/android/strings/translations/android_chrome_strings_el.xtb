@@ -279,6 +279,7 @@
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> σελιδοδείκτης}other{<ph name="BOOKMARKS_COUNT_MANY" /> σελιδοδείκτες}}</translation>
 <translation id="3089395242580810162">Άνοιγμα σε καρτ. ανών. περιήγ.</translation>
 <translation id="3123473560110926937">Αποκλεισμός σε ορισμένους ιστοτόπους</translation>
+<translation id="3123734510202723619">Ανακοινώσεις</translation>
 <translation id="3137521801621304719">Έξοδος από την κατάσταση ανώνυμης περιήγησης</translation>
 <translation id="3143515551205905069">Ακύρωση συγχρονισμού</translation>
 <translation id="3157842584138209013">Δείτε πόσα δεδομένα έχετε αποθηκεύσει από το κουμπί "Περισσότερες επιλογές"</translation>
@@ -690,7 +691,6 @@
 <translation id="6201345951596836663">Ο σύνδεσμος αντιγράφηκε</translation>
 <translation id="6206551242102657620">Η σύνδεση είναι ασφαλής. Πληροφορίες ιστοτόπου</translation>
 <translation id="6210748933810148297">Δεν είστε ο χρήστης <ph name="EMAIL" />;</translation>
-<translation id="6216432067784365534">Επιλογές <ph name="NAME_OF_LIST_ITEM" /></translation>
 <translation id="6221633008163990886">Ξεκλειδώστε για εξαγωγή των κωδικών πρόσβασής σας</translation>
 <translation id="6232535412751077445">Η ενεργοποίηση της επιλογής "Να μην γίνεται εντοπισμός" σημαίνει ότι θα συμπεριληφθεί ένα αίτημα με την επισκεψιμότητα της περιήγησής σας. Τυχόν αποτελέσματα εξαρτώνται από το κατά πόσο ένας ιστότοπος ανταποκρίνεται στο αίτημα, καθώς και από τον τρόπο με τον οποίο ερμηνεύεται το αίτημα.
 
@@ -736,7 +736,6 @@
 <translation id="6534565668554028783">Η απάντηση από το Google καθυστέρησε υπερβολικά</translation>
 <translation id="6538442820324228105">Έγινε λήψη <ph name="GBS" /> GB</translation>
 <translation id="6539092367496845964">Παρουσιάστηκε κάποιο πρόβλημα. Δοκιμάστε ξανά αργότερα.</translation>
-<translation id="654446541061731451">Επιλέξτε μια καρτέλα για ζεύξη</translation>
 <translation id="6545017243486555795">Διαγραφή όλων των δεδομένων</translation>
 <translation id="6545864417968258051">Σάρωση Bluetooth</translation>
 <translation id="6560414384669816528">Αναζήτηση με το Sogou</translation>
@@ -1031,7 +1030,6 @@
 <translation id="868929229000858085">Αναζήτηση στις επαφές σας</translation>
 <translation id="8698438463325761328">Αποκλείστε την πρόσβαση των ιστοτόπων στη συσκευή και τα δεδομένα εικονικής πραγματικότητας.</translation>
 <translation id="869891660844655955">Ημερομηνία λήξης</translation>
-<translation id="8719023831149562936">Δεν είναι δυνατή η ζεύξη της τρέχουσας καρτέλας</translation>
 <translation id="8728487861892616501">Χρησιμοποιώντας αυτήν την εφαρμογή, συμφωνείτε με τους <ph name="BEGIN_LINK1" />Όρους Παροχής Υπηρεσιών<ph name="END_LINK1" /> και τη <ph name="BEGIN_LINK2" />Σημείωση απορρήτου<ph name="END_LINK2" /> του Chrome, καθώς και με τη <ph name="BEGIN_LINK3" />Σημείωση απορρήτου για Λογαριασμούς Google, των οποίων η διαχείριση γίνεται μέσω του Family Link<ph name="END_LINK3" />.</translation>
 <translation id="8748850008226585750">Κρυφό περιεχόμενο</translation>
 <translation id="8751914237388039244">Επιλογή εικόνας</translation>

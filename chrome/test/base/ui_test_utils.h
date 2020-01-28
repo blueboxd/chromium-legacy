@@ -62,21 +62,29 @@ namespace ui_test_utils {
 //    Tab
 //    Navigation
 enum BrowserTestWaitFlags {
-  BROWSER_TEST_NONE = 0,                      // Don't wait for anything.
-  BROWSER_TEST_WAIT_FOR_BROWSER = 1 << 0,     // Wait for a new browser.
-  BROWSER_TEST_WAIT_FOR_TAB = 1 << 1,         // Wait for a new tab.
-  BROWSER_TEST_WAIT_FOR_NAVIGATION = 1 << 2,  // Wait for navigation to finish.
+  // Don't wait for anything.
+  BROWSER_TEST_NONE = 0,
+  // Wait for a new browser.
+  BROWSER_TEST_WAIT_FOR_BROWSER = 1 << 0,
+  // Wait for a new tab.
+  BROWSER_TEST_WAIT_FOR_TAB = 1 << 1,
+  // Wait for loading to stop. Loading stops when either
+  // a document and its subresources are completely loaded
+  // (i.e. the spinner has stopped) or no document can be
+  // loaded due to an e.g. an error or crash.
+  BROWSER_TEST_WAIT_FOR_LOAD_STOP = 1 << 2,
 
   BROWSER_TEST_MASK = BROWSER_TEST_WAIT_FOR_BROWSER |
                       BROWSER_TEST_WAIT_FOR_TAB |
-                      BROWSER_TEST_WAIT_FOR_NAVIGATION
+                      BROWSER_TEST_WAIT_FOR_LOAD_STOP
 };
 
 // Puts the current tab title in |title|. Returns true on success.
 bool GetCurrentTabTitle(const Browser* browser, base::string16* title);
 
-// Performs the provided navigation process, blocking until the navigation
-// finishes. May change the params in some cases (i.e. if the navigation
+// Performs the provided navigation process, blocking until loading stops.
+// See BROWSER_TEST_WAIT_FOR_LOAD_STOP.
+// May change the params in some cases (i.e. if the navigation
 // opens a new browser window). Uses chrome::Navigate.
 //
 // Note this does not return a RenderProcessHost for where the navigation
@@ -84,8 +92,9 @@ bool GetCurrentTabTitle(const Browser* browser, base::string16* title);
 // the RenderProcessHost when navigating again.
 void NavigateToURL(NavigateParams* params);
 
-// Navigates the selected tab of |browser| to |url|, blocking until the
-// navigation finishes. Simulates a POST and uses chrome::Navigate.
+// Navigates the selected tab of |browser| to |url|, blocking until
+// loading stops. See BROWSER_TEST_WAIT_FOR_LOAD_STOP. Simulates a
+// POST and uses chrome::Navigate.
 //
 // Note this does not return a RenderProcessHost for where the navigation
 // occurs, so tests using this will be unable to verify the destruction of
@@ -93,7 +102,8 @@ void NavigateToURL(NavigateParams* params);
 void NavigateToURLWithPost(Browser* browser, const GURL& url);
 
 // Navigates the selected tab of |browser| to |url|, blocking until the
-// navigation finishes. Uses Browser::OpenURL --> chrome::Navigate.
+// loading stops. See BROWSER_TEST_WAIT_FOR_LOAD_STOP. Uses
+// Browser::OpenURL --> chrome::Navigate.
 //
 // Returns a RenderProcessHost* for the renderer where the navigation
 // occured. Use this when navigating again, when the test wants to wait not
@@ -105,7 +115,7 @@ void NavigateToURLWithPost(Browser* browser, const GURL& url);
 content::RenderProcessHost* NavigateToURL(Browser* browser, const GURL& url);
 
 // Navigates the specified tab of |browser| to |url|, blocking until the
-// navigation finishes.
+// loading stops.
 // |disposition| indicates what tab the navigation occurs in, and
 // |browser_test_flags| controls what to wait for before continuing.
 //

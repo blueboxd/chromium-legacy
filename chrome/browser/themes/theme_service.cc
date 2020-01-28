@@ -623,12 +623,13 @@ SkColor ThemeService::GetDefaultColor(int id, bool incognito) const {
     case TP::COLOR_OMNIBOX_BACKGROUND: {
       constexpr float kMinOmniboxToolbarContrast = 1.3f;
       const SkColor toolbar_color = GetColor(TP::COLOR_TOOLBAR, incognito);
-      const SkColor darkest_color = color_utils::GetDarkestColor();
+      const SkColor endpoint_color =
+          color_utils::GetEndpointColorWithMinContrast(toolbar_color);
       const SkColor blend_target =
-          (color_utils::GetContrastRatio(toolbar_color, darkest_color) >=
+          (color_utils::GetContrastRatio(toolbar_color, endpoint_color) >=
            kMinOmniboxToolbarContrast)
-              ? darkest_color
-              : color_utils::GetColorWithMaxContrast(darkest_color);
+              ? endpoint_color
+              : color_utils::GetColorWithMaxContrast(endpoint_color);
       return color_utils::BlendForMinContrast(toolbar_color, toolbar_color,
                                               blend_target,
                                               kMinOmniboxToolbarContrast)

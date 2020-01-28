@@ -3954,7 +3954,8 @@
         "args": [
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
-          "--avd-config=../../tools/android/avd/proto/generic_android23.textpb"
+          "--avd-config=../../tools/android/avd/proto/generic_android23.textpb",
+          "--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator.sandbox_linux_unittests.filter"
         ],
         "merge": {
           "args": [

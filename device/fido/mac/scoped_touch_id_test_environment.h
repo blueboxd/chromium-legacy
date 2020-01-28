@@ -5,10 +5,11 @@
 #ifndef DEVICE_FIDO_MAC_SCOPED_TOUCH_ID_TEST_ENVIRONMENT_H_
 #define DEVICE_FIDO_MAC_SCOPED_TOUCH_ID_TEST_ENVIRONMENT_H_
 
+#include <os/availability.h>
+
 #include <memory>
 
 #include "base/component_export.h"
-#include "base/mac/availability.h"
 #include "base/macros.h"
 
 namespace device {

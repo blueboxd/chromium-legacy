@@ -130,7 +130,7 @@ class MetricsServiceBrowserTest : public InProcessBrowserTest {
   void OpenThreeTabs() {
     const int kBrowserTestFlags =
         ui_test_utils::BROWSER_TEST_WAIT_FOR_TAB |
-        ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION;
+        ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP;
 
     base::FilePath test_directory;
     ASSERT_TRUE(base::PathService::Get(chrome::DIR_TEST_DATA, &test_directory));

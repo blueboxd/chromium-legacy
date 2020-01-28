@@ -19,6 +19,7 @@
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/tabs/tab_group.h"
 #include "chrome/browser/ui/tabs/tab_group_model.h"
+#include "chrome/browser/ui/tabs/tab_menu_model.h"
 #include "chrome/browser/ui/tabs/tab_renderer_data.h"
 #include "chrome/browser/ui/tabs/tab_utils.h"
 #include "chrome/browser/ui/webui/tab_strip/tab_strip_ui_embedder.h"
@@ -113,41 +114,13 @@ class WebUIBackgroundContextMenu : public ui::SimpleMenuModel::Delegate,
   const ui::AcceleratorProvider* const accelerator_provider_;
 };
 
-class WebUITabMenuModel : public ui::SimpleMenuModel {
- public:
-  WebUITabMenuModel(ui::SimpleMenuModel::Delegate* delegate,
-                    TabStripModel* tab_strip_model,
-                    int tab_index)
-      : ui::SimpleMenuModel(delegate) {
-    AddItemWithStringId(IDC_NEW_TAB, IDS_NEW_TAB);
-    AddSeparator(ui::NORMAL_SEPARATOR);
-    AddItemWithStringId(TabStripModel::CommandReload, IDS_TAB_CXMENU_RELOAD);
-    AddItemWithStringId(TabStripModel::CommandDuplicate,
-                        IDS_TAB_CXMENU_DUPLICATE);
-    const int pin_str = tab_strip_model->WillContextMenuPin(tab_index)
-                            ? IDS_TAB_CXMENU_PIN_TAB
-                            : IDS_TAB_CXMENU_UNPIN_TAB;
-    AddItemWithStringId(TabStripModel::CommandTogglePinned, pin_str);
-    const int mute_str = chrome::IsSiteMuted(*tab_strip_model, tab_index)
-                             ? IDS_TAB_CXMENU_SOUND_UNMUTE_SITE
-                             : IDS_TAB_CXMENU_SOUND_MUTE_SITE;
-    AddItem(TabStripModel::CommandToggleSiteMuted,
-            l10n_util::GetPluralStringFUTF16(mute_str, 1));
-    AddSeparator(ui::NORMAL_SEPARATOR);
-    AddItemWithStringId(TabStripModel::CommandCloseTab,
-                        IDS_TAB_CXMENU_CLOSETAB);
-    AddItemWithStringId(TabStripModel::CommandCloseTabsToRight,
-                        IDS_TAB_CXMENU_CLOSETABSTORIGHT);
-  }
-};
-
 class WebUITabContextMenu : public ui::SimpleMenuModel::Delegate,
-                            public WebUITabMenuModel {
+                            public TabMenuModel {
  public:
   WebUITabContextMenu(Browser* browser,
                       const ui::AcceleratorProvider* accelerator_provider,
                       int tab_index)
-      : WebUITabMenuModel(this, browser->tab_strip_model(), tab_index),
+      : TabMenuModel(this, browser->tab_strip_model(), tab_index),
         browser_(browser),
         accelerator_provider_(accelerator_provider),
         tab_index_(tab_index) {}
@@ -155,13 +128,6 @@ class WebUITabContextMenu : public ui::SimpleMenuModel::Delegate,
 
   void ExecuteCommand(int command_id, int event_flags) override {
     DCHECK_LT(tab_index_, browser_->tab_strip_model()->count());
-    if (command_id == IDC_NEW_TAB) {
-      chrome::NewTab(browser_);
-      UMA_HISTOGRAM_ENUMERATION("Tab.NewTab",
-                                TabStripModel::NEW_TAB_CONTEXT_MENU,
-                                TabStripModel::NEW_TAB_ENUM_COUNT);
-      return;
-    }
     browser_->tab_strip_model()->ExecuteContextMenuCommand(
         tab_index_, static_cast<TabStripModel::ContextMenuCommand>(command_id));
   }
@@ -169,12 +135,8 @@ class WebUITabContextMenu : public ui::SimpleMenuModel::Delegate,
   bool GetAcceleratorForCommandId(int command_id,
                                   ui::Accelerator* accelerator) const override {
     int real_command = -1;
-    if (command_id == IDC_NEW_TAB) {
-      real_command = IDC_NEW_TAB;
-    } else {
-      TabStripModel::ContextMenuCommandToBrowserCommand(command_id,
-                                                        &real_command);
-    }
+    TabStripModel::ContextMenuCommandToBrowserCommand(command_id,
+                                                      &real_command);
 
     if (real_command != -1) {
       return accelerator_provider_->GetAcceleratorForCommandId(real_command,
@@ -239,6 +201,12 @@ void TabStripUIHandler::OnTabGroupChanged(const TabGroupChange& change) {
     }
 
     case TabGroupChange::kMoved: {
+      FireWebUIListener("tab-group-moved", base::Value(change.group.ToString()),
+                        base::Value(browser_->tab_strip_model()
+                                        ->group_model()
+                                        ->GetTabGroup(change.group)
+                                        ->ListTabs()
+                                        .front()));
       break;
     }
 
@@ -291,6 +259,8 @@ void TabStripUIHandler::OnTabStripModelChanged(
     case TabStripModelChange::kMoved: {
       auto* move = change.GetMove();
 
+      // TODO(johntlee): Investigate if this is still needed, when
+      // TabGroupChange::kMoved exists.
       base::Optional<tab_groups::TabGroupId> tab_group_id =
           tab_strip_model->GetTabGroupForTab(move->to_index);
       if (tab_group_id.has_value()) {
@@ -384,6 +354,9 @@ void TabStripUIHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "ungroupTab",
       base::Bind(&TabStripUIHandler::HandleUngroupTab, base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "moveGroup",
+      base::Bind(&TabStripUIHandler::HandleMoveGroup, base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "setThumbnailTracked",
       base::Bind(&TabStripUIHandler::HandleSetThumbnailTracked,
@@ -603,6 +576,18 @@ void TabStripUIHandler::HandleUngroupTab(const base::ListValue* args) {
   DCHECK(got_tab);
 
   browser_->tab_strip_model()->RemoveFromGroup({tab_index});
+}
+
+void TabStripUIHandler::HandleMoveGroup(const base::ListValue* args) {
+  const std::string group_id_string = args->GetList()[0].GetString();
+
+  for (tab_groups::TabGroupId group_id :
+       browser_->tab_strip_model()->group_model()->ListTabGroups()) {
+    if (group_id.ToString() == group_id_string) {
+      int to_index = args->GetList()[1].GetInt();
+      browser_->tab_strip_model()->MoveGroupTo(group_id, to_index);
+    }
+  }
 }
 
 void TabStripUIHandler::HandleCloseContainer(const base::ListValue* args) {

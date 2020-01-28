@@ -93,6 +93,8 @@ class CC_EXPORT CompositorFrameReportingController {
 
  private:
   void AdvanceReporterStage(PipelineStage start, PipelineStage target);
+  bool CanSubmitImplFrame(const viz::BeginFrameId& id) const;
+  bool CanSubmitMainFrame(const viz::BeginFrameId& id) const;
 
   viz::BeginFrameId last_submitted_frame_id_;
 

@@ -10,6 +10,8 @@ source_set("permissions") {
     "permission_request_id.h",
     "permission_result.cc",
     "permission_result.h",
+    "permission_util.cc",
+    "permission_util.h",
   ]
   deps = [
     "//base",

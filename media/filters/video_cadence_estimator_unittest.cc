@@ -4,6 +4,7 @@
 
 #include "media/filters/video_cadence_estimator.h"
 
+#include <math.h>
 #include <stddef.h>
 
 #include <memory>
@@ -333,7 +334,7 @@ void VerifyCadenceSequence(VideoCadenceEstimator* estimator,
   }
 }
 
-TEST(VideoCadenceEstimatorTest, BresenhamTest) {
+TEST(VideoCadenceEstimatorTest, BresenhamCadencePatterns) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(media::kBresenhamCadence);
   VideoCadenceEstimator estimator(base::TimeDelta::FromSeconds(1));
@@ -378,6 +379,35 @@ TEST(VideoCadenceEstimatorTest, BresenhamTest) {
   EXPECT_FALSE(estimator.UpdateCadenceEstimate(Interval(60 * 1.0001),
                                                Interval(30), base::TimeDelta(),
                                                base::TimeDelta()));
+}
+
+TEST(VideoCadenceEstimatorTest, BresenhamCadenceChange) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(media::kBresenhamCadence);
+  VideoCadenceEstimator estimator(base::TimeDelta::FromSeconds(1));
+  estimator.set_cadence_hysteresis_threshold_for_testing(base::TimeDelta());
+
+  base::TimeDelta render_interval = Interval(60);
+  base::TimeDelta frame_duration = Interval(24);
+  EXPECT_TRUE(estimator.UpdateCadenceEstimate(
+      render_interval, frame_duration, base::TimeDelta(), base::TimeDelta()));
+  EXPECT_FALSE(estimator.UpdateCadenceEstimate(
+      render_interval, frame_duration, base::TimeDelta(), base::TimeDelta()));
+
+  for (double t = 0.0; t < 10.0; t += 0.1) {
+    // +-100us drift of the rendering interval, a totally realistic thing.
+    base::TimeDelta new_render_interval =
+        render_interval + base::TimeDelta::FromMicrosecondsD(std::sin(t) * 100);
+
+    EXPECT_FALSE(
+        estimator.UpdateCadenceEstimate(new_render_interval, frame_duration,
+                                        base::TimeDelta(), base::TimeDelta()))
+        << "render interval: " << new_render_interval
+        << " hz: " << (1e6 / new_render_interval.InMicrosecondsF());
+  }
+
+  EXPECT_TRUE(estimator.UpdateCadenceEstimate(
+      Interval(59), frame_duration, base::TimeDelta(), base::TimeDelta()));
 }
 
 }  // namespace media

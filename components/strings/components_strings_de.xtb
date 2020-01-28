@@ -79,6 +79,7 @@
 <translation id="129553762522093515">Kürzlich geschlossen</translation>
 <translation id="1298536327547837046">Malware-Scan</translation>
 <translation id="129863573139666797"><ph name="BEGIN_LINK" />Löschen Sie Ihre Cookies<ph name="END_LINK" /></translation>
+<translation id="1301324364792935241">Prüfen Sie die Einstellungen für das sichere DNS</translation>
 <translation id="1307966114820526988">Eingestellte Funktionen</translation>
 <translation id="1314509827145471431">Bindung rechts</translation>
 <translation id="1320233736580025032">Prc1 (Umschlag)</translation>
@@ -152,6 +153,7 @@
 <translation id="1569487616857761740">Ablaufdatum eingeben</translation>
 <translation id="1581080074034554886">CVC</translation>
 <translation id="1583429793053364125">Fehler beim Anzeigen dieser Webseite.</translation>
+<translation id="1586541204584340881">Welche Erweiterungen Sie installiert haben</translation>
 <translation id="1588438908519853928">Normal</translation>
 <translation id="1592005682883173041">Zugriff auf lokale Daten</translation>
 <translation id="1594030484168838125">Auswählen</translation>
@@ -362,6 +364,7 @@
 <translation id="2544644783021658368">Einzelnes Dokument</translation>
 <translation id="254947805923345898">Der Richtlinienwert ist ungültig.</translation>
 <translation id="255002559098805027"><ph name="HOST_NAME" /> hat eine ungültige Antwort gesendet.</translation>
+<translation id="2553853292994445426">Prüfen Sie die Einstellungen für das sichere DNS. Sie haben möglicherweise einen Server mit einem sicheren DNS konfiguriert, zu dem keine Verbindung aufgebaut werden kann.</translation>
 <translation id="2556876185419854533">&amp;Bearbeiten rückgängig machen</translation>
 <translation id="257674075312929031">Gruppe</translation>
 <translation id="2586657967955657006">Zwischenablage</translation>
@@ -478,6 +481,7 @@
 <translation id="3095940652251934233">Statement</translation>
 <translation id="3096100844101284527">Abholadresse hinzufügen</translation>
 <translation id="3105172416063519923">Geräte-ID: </translation>
+<translation id="3107591622054137333"><ph name="BEGIN_LINK" />Konfiguration des sicheren DNS prüfen<ph name="END_LINK" /></translation>
 <translation id="3109728660330352905">Sie sind nicht zum Aufrufen dieser Seite autorisiert.</translation>
 <translation id="3113284927548439113">Dritte Schicht</translation>
 <translation id="3116158981186517402">Laminieren</translation>
@@ -775,6 +779,7 @@
 <translation id="4390472908992056574">Rand</translation>
 <translation id="4406896451731180161">Suchergebnisse</translation>
 <translation id="4408413947728134509">Cookies <ph name="NUM_COOKIES" /></translation>
+<translation id="4414290883293381923">Sie haben Ihr Passwort gerade auf einer verdächtigen Seite eingegeben. Chrome empfiehlt, Ihr Passwort auf <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, <ph name="WEBSITE_3" /> und allen anderen Websites, auf denen Sie es verwendet haben, zu ändern.</translation>
 <translation id="4415426530740016218">Abholadresse</translation>
 <translation id="4424024547088906515">Dieser Server konnte nicht beweisen, dass er <ph name="DOMAIN" /> ist. Sein Sicherheitszertifikat wird von Chrome als nicht vertrauenswürdig eingestuft. Mögliche Gründe sind eine fehlerhafte Konfiguration oder ein Angreifer, der Ihre Verbindung abfängt.</translation>
 <translation id="443121186588148776">Serieller Port</translation>
@@ -1207,6 +1212,7 @@
 <translation id="6353505687280762741">{COUNT,plural, =0{Keins}=1{1 Passwort (für <ph name="DOMAIN_LIST" />, synchronisiert)}=2{2 Passwörter (für <ph name="DOMAIN_LIST" />, synchronisiert)}other{# Passwörter (für <ph name="DOMAIN_LIST" />, synchronisiert)}}</translation>
 <translation id="6358450015545214790">Was bedeuten diese Hinweise?</translation>
 <translation id="6361757823711327522">B7</translation>
+<translation id="6364095313648930329"><ph name="BEGIN_LINK" />Proxy- und Firewallkonfiguration sowie Konfiguration des sicheren DNS überprüfen<ph name="END_LINK" /></translation>
 <translation id="6366710531182496394">Zwei Heftklammern links</translation>
 <translation id="6377268785556383139">1 Ergebnis für "<ph name="SEARCH_TEXT" />"</translation>
 <translation id="6380497234672085559">A0</translation>
@@ -1229,6 +1235,7 @@
 <translation id="6433595998831338502"><ph name="HOST_NAME" /> hat die Verbindung abgelehnt.</translation>
 <translation id="6434309073475700221">Verwerfen</translation>
 <translation id="6440503408713884761">Ignoriert</translation>
+<translation id="6443406338865242315">Welche Erweiterungen und Plug-ins Sie installiert haben</translation>
 <translation id="6446163441502663861">Kahu (Umschlag)</translation>
 <translation id="6446608382365791566">Weitere Informationen hinzufügen</translation>
 <translation id="6447842834002726250">Cookies</translation>
@@ -1338,6 +1345,7 @@
 <translation id="7012363358306927923">China UnionPay</translation>
 <translation id="7016992613359344582">Diese Belastungen können einmalig oder wiederkehrend sein und sind vielleicht nicht offensichtlich.</translation>
 <translation id="7029809446516969842">Passwörter</translation>
+<translation id="7031646650991750659">Welche Google Play-Apps Sie installiert haben</translation>
 <translation id="7050187094878475250">Sie haben versucht, <ph name="DOMAIN" /> zu erreichen. Der Server hat jedoch ein Zertifikat präsentiert, dessen Gültigkeitsdauer zu lang ist, um vertrauenswürdig zu sein.</translation>
 <translation id="705310974202322020">{NUM_CARDS,plural, =1{Diese Karte kann momentan nicht gespeichert werden}other{Diese Karten können momentan nicht gespeichert werden}}</translation>
 <translation id="7053983685419859001">Blockieren</translation>
@@ -1397,6 +1405,7 @@ Weitere Details:
 <translation id="7319430975418800333">A3</translation>
 <translation id="7320336641823683070">Hilfe bei der Verbindungsherstellung</translation>
 <translation id="733354035281974745">Durch Sitzung mit einem lokalen Gerätekonto überschrieben</translation>
+<translation id="7333654844024768166">Sie haben Ihr Passwort gerade auf einer verdächtigen Seite eingegeben. Chromium empfiehlt, Ihr Passwort auf <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, <ph name="WEBSITE_3" /> und allen anderen Websites, auf denen Sie es verwendet haben, zu ändern.</translation>
 <translation id="7334320624316649418">&amp;Neu anordnen wiederholen</translation>
 <translation id="7337706099755338005">Nicht auf Ihrer Plattform verfügbar.</translation>
 <translation id="733923710415886693">Das Serverzertifikat wurde nicht über die Zertifikatstransparenz offengelegt.</translation>

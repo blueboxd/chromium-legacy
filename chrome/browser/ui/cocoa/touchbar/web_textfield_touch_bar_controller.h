@@ -10,7 +10,6 @@
 #include <memory>
 
 #import "base/mac/scoped_nsobject.h"
-#import "ui/base/cocoa/touch_bar_forward_declarations.h"
 
 @class BrowserWindowTouchBarController;
 @class CreditCardAutofillTouchBarController;

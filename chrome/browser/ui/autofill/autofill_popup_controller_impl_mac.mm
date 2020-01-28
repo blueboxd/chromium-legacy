@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/autofill/autofill_popup_controller_impl_mac.h"
 
-#include "base/mac/availability.h"
 #import "chrome/browser/ui/cocoa/touchbar/web_textfield_touch_bar_controller.h"
 #include "components/autofill/core/browser/ui/autofill_popup_delegate.h"
 #include "components/autofill/core/browser/ui/popup_item_ids.h"

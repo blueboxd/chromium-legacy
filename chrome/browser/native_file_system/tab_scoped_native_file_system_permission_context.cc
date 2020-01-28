@@ -40,21 +40,21 @@ void ShowWritePermissionPromptOnUIThread(
     const base::FilePath& path,
     bool is_directory,
     base::OnceCallback<void(PermissionRequestOutcome outcome,
-                            PermissionAction result)> callback) {
+                            permissions::PermissionAction result)> callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   content::RenderFrameHost* rfh =
       content::RenderFrameHost::FromID(process_id, frame_id);
   if (!rfh || !rfh->IsCurrent()) {
     // Requested from a no longer valid render frame host.
     std::move(callback).Run(PermissionRequestOutcome::kInvalidFrame,
-                            PermissionAction::DISMISSED);
+                            permissions::PermissionAction::DISMISSED);
     return;
   }
 
   if (!rfh->HasTransientUserActivation()) {
     // No permission prompts without user activation.
     std::move(callback).Run(PermissionRequestOutcome::kNoUserActivation,
-                            PermissionAction::DISMISSED);
+                            permissions::PermissionAction::DISMISSED);
     return;
   }
 
@@ -63,7 +63,7 @@ void ShowWritePermissionPromptOnUIThread(
   if (!web_contents) {
     // Requested from a worker, or a no longer existing tab.
     std::move(callback).Run(PermissionRequestOutcome::kInvalidFrame,
-                            PermissionAction::DISMISSED);
+                            permissions::PermissionAction::DISMISSED);
     return;
   }
 
@@ -72,7 +72,7 @@ void ShowWritePermissionPromptOnUIThread(
   if (embedding_origin != origin) {
     // Third party iframes are not allowed to request more permissions.
     std::move(callback).Run(PermissionRequestOutcome::kThirdPartyContext,
-                            PermissionAction::DISMISSED);
+                            permissions::PermissionAction::DISMISSED);
     return;
   }
 
@@ -80,7 +80,7 @@ void ShowWritePermissionPromptOnUIThread(
       NativeFileSystemPermissionRequestManager::FromWebContents(web_contents);
   if (!request_manager) {
     std::move(callback).Run(PermissionRequestOutcome::kRequestAborted,
-                            PermissionAction::DISMISSED);
+                            permissions::PermissionAction::DISMISSED);
     return;
   }
 
@@ -91,24 +91,25 @@ void ShowWritePermissionPromptOnUIThread(
       {origin, path, is_directory},
       base::BindOnce(
           [](base::OnceCallback<void(PermissionRequestOutcome outcome,
-                                     PermissionAction result)> callback,
-             PermissionAction result) {
+                                     permissions::PermissionAction result)>
+                 callback,
+             permissions::PermissionAction result) {
             switch (result) {
-              case PermissionAction::GRANTED:
+              case permissions::PermissionAction::GRANTED:
                 std::move(callback).Run(PermissionRequestOutcome::kUserGranted,
                                         result);
                 break;
-              case PermissionAction::DENIED:
+              case permissions::PermissionAction::DENIED:
                 std::move(callback).Run(PermissionRequestOutcome::kUserDenied,
                                         result);
                 break;
-              case PermissionAction::DISMISSED:
-              case PermissionAction::IGNORED:
+              case permissions::PermissionAction::DISMISSED:
+              case permissions::PermissionAction::IGNORED:
                 std::move(callback).Run(
                     PermissionRequestOutcome::kUserDismissed, result);
                 break;
-              case PermissionAction::REVOKED:
-              case PermissionAction::NUM:
+              case permissions::PermissionAction::REVOKED:
+              case permissions::PermissionAction::NUM:
                 NOTREACHED();
                 break;
             }
@@ -214,7 +215,7 @@ void TabScopedNativeFileSystemPermissionContext::WritePermissionGrantImpl::
   if (!CanRequestPermission()) {
     OnPermissionRequestComplete(
         std::move(callback), PermissionRequestOutcome::kBlockedByContentSetting,
-        PermissionAction::DENIED);
+        permissions::PermissionAction::DENIED);
     return;
   }
 
@@ -252,20 +253,20 @@ void TabScopedNativeFileSystemPermissionContext::WritePermissionGrantImpl::
     OnPermissionRequestComplete(
         base::OnceCallback<void(PermissionRequestOutcome)> callback,
         PermissionRequestOutcome outcome,
-        PermissionAction result) {
+        permissions::PermissionAction result) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   switch (result) {
-    case PermissionAction::GRANTED:
+    case permissions::PermissionAction::GRANTED:
       SetStatus(PermissionStatus::GRANTED);
       break;
-    case PermissionAction::DENIED:
+    case permissions::PermissionAction::DENIED:
       SetStatus(PermissionStatus::DENIED);
       break;
-    case PermissionAction::DISMISSED:
-    case PermissionAction::IGNORED:
+    case permissions::PermissionAction::DISMISSED:
+    case permissions::PermissionAction::IGNORED:
       break;
-    case PermissionAction::REVOKED:
-    case PermissionAction::NUM:
+    case permissions::PermissionAction::REVOKED:
+    case permissions::PermissionAction::NUM:
       NOTREACHED();
       break;
   }

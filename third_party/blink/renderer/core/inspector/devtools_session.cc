@@ -31,6 +31,8 @@ namespace blink {
 
 namespace {
 const char kV8StateKey[] = "v8";
+const char kSessionId[] = "sessionId";
+
 bool ShouldInterruptForMethod(const String& method) {
   return method == "Debugger.pause" || method == "Debugger.setBreakpoint" ||
          method == "Debugger.setBreakpointByUrl" ||
@@ -123,15 +125,16 @@ DevToolsSession::DevToolsSession(
         main_receiver,
     mojo::PendingReceiver<mojom::blink::DevToolsSession> io_receiver,
     mojom::blink::DevToolsSessionStatePtr reattach_session_state,
-    bool client_expects_binary_responses)
+    bool client_expects_binary_responses,
+    const String& session_id)
     : agent_(agent),
       receiver_(this, std::move(main_receiver)),
       inspector_backend_dispatcher_(new protocol::UberDispatcher(this)),
       session_state_(std::move(reattach_session_state)),
       client_expects_binary_responses_(client_expects_binary_responses),
       v8_session_state_(kV8StateKey),
-      v8_session_state_cbor_(&v8_session_state_,
-                             /*default_value=*/{}) {
+      v8_session_state_cbor_(&v8_session_state_, /*default_value=*/{}),
+      session_id_(session_id) {
   io_session_ = new IOSession(
       agent_->io_task_runner_, agent_->inspector_task_runner_,
       WrapCrossThreadWeakPersistent(this), std::move(io_receiver));
@@ -347,6 +350,12 @@ void DevToolsSession::Trace(blink::Visitor* visitor) {
 blink::mojom::blink::DevToolsMessagePtr DevToolsSession::FinalizeMessage(
     std::vector<uint8_t> message) const {
   std::vector<uint8_t> message_to_send = std::move(message);
+  if (!session_id_.IsEmpty()) {
+    crdtp::Status status = crdtp::cbor::AppendString8EntryToCBORMap(
+        crdtp::SpanFrom(kSessionId), crdtp::SpanFrom(session_id_.Ascii()),
+        &message_to_send);
+    CHECK(status.ok()) << status.ToASCIIString();
+  }
   if (!client_expects_binary_responses_) {
     std::vector<uint8_t> json;
     crdtp::Status status =

@@ -79,6 +79,7 @@
 <translation id="129553762522093515">Վերջերս փակված</translation>
 <translation id="1298536327547837046">Վնասաբեր ծրագրերի որոնում</translation>
 <translation id="129863573139666797"><ph name="BEGIN_LINK" />Մաքրեք ձեր քուքիները<ph name="END_LINK" /></translation>
+<translation id="1301324364792935241">Ստուգեք ձեր ապահով DNS-ի կարգավորումները</translation>
 <translation id="1307966114820526988">Հնացած գործառույթներ</translation>
 <translation id="1314509827145471431">Ամրակար աջ կողմում</translation>
 <translation id="1320233736580025032">Prc1 (ծրար)</translation>
@@ -152,6 +153,7 @@
 <translation id="1569487616857761740">Մուտքագրեք գործողության ժամկետը</translation>
 <translation id="1581080074034554886">CVC</translation>
 <translation id="1583429793053364125">Չհաջողվեց բացել վեբէջը:</translation>
+<translation id="1586541204584340881">Ինչ ընդլայնումներ եք դուք տեղադրել</translation>
 <translation id="1588438908519853928">Սովորական</translation>
 <translation id="1592005682883173041">Տեղային տվյալների օգտագործում</translation>
 <translation id="1594030484168838125">Ընտրել</translation>
@@ -362,6 +364,7 @@
 <translation id="2544644783021658368">Մեկ փաստաթուղթ</translation>
 <translation id="254947805923345898">Կանոնում նշված արժեքն անվավեր է։</translation>
 <translation id="255002559098805027"><ph name="HOST_NAME" />-ը սխալ պատասխան է ուղարկել:</translation>
+<translation id="2553853292994445426">Ստուգեք ձեր ապահով DNS-ի կարգավորումները։ Հնարավոր է՝ դուք կարգավորել եք ապահով DNS-ի սերվեր, որին չի հաջողվում միանալ։</translation>
 <translation id="2556876185419854533">&amp;Հետարկել փոփոխումը</translation>
 <translation id="257674075312929031">Խումբ</translation>
 <translation id="2586657967955657006">Սեղմատախտակ</translation>
@@ -484,6 +487,7 @@
 <translation id="3095940652251934233">Statement</translation>
 <translation id="3096100844101284527">Ավելացրեք ստացման հասցեն</translation>
 <translation id="3105172416063519923">Ակտիվների ID՝</translation>
+<translation id="3107591622054137333"><ph name="BEGIN_LINK" />Ստուգել ապահով DNS-ի կազմաձևումը<ph name="END_LINK" /></translation>
 <translation id="3109728660330352905">Դուք այս էջը դիտելու թույլտվություն չունեք:</translation>
 <translation id="3113284927548439113">Մինչև երրորդ հերթափոխը</translation>
 <translation id="3116158981186517402">Լամինացիա</translation>
@@ -785,6 +789,7 @@
 <translation id="4390472908992056574">Լուսանցք</translation>
 <translation id="4406896451731180161">որոնման արդյունքներ</translation>
 <translation id="4408413947728134509">Քուքիներ՝ <ph name="NUM_COOKIES" /></translation>
+<translation id="4414290883293381923">Դուք հենց նոր մուտքագրեցիք ձեր գաղտնաբառը կասկածելի կայքում։ Խորհուրդ ենք տալիս փոխել ձեր գաղտնաբառը, որն օգտագործում եք <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, <ph name="WEBSITE_3" /> և այլ կայքերում։</translation>
 <translation id="4415426530740016218">Ստացման հասցեն</translation>
 <translation id="4424024547088906515">Այս սերվերը չի կարող ապացուցել, որ <ph name="DOMAIN" /> է: Chrome-ը չի վստահում դրա անվտանգության վկայականին: Պատճառը կարող է լինել սխալ կազմաձևումը կամ կապակցման խափանումը հարձակվողի կողմից:</translation>
 <translation id="443121186588148776">Սերիական միացք</translation>
@@ -1217,6 +1222,7 @@
 <translation id="6353505687280762741">{COUNT,plural, =0{Չկա}=1{1 գաղտնաբառ (հետևյալ տիրույթների համար՝ <ph name="DOMAIN_LIST" />, համաժամացված է)}=2{2 գաղտնաբառ (հետևյալ տիրույթների համար՝ <ph name="DOMAIN_LIST" />, համաժամացված են)}one{# գաղտնաբառ (հետևյալ տիրույթների համար՝ <ph name="DOMAIN_LIST" />, համաժամացված են)}other{# գաղտնաբառ (հետևյալ տիրույթների համար՝ <ph name="DOMAIN_LIST" />, համաժամացված են)}}</translation>
 <translation id="6358450015545214790">Ի՞նչ է սա նշանակում:</translation>
 <translation id="6361757823711327522">B7</translation>
+<translation id="6364095313648930329"><ph name="BEGIN_LINK" />Ստուգել պրոքսի-սերվերի, հրապատի և ապահով DNS-ի կազմաձևումը<ph name="END_LINK" /></translation>
 <translation id="6366710531182496394">Երկու ամրակ ձախ կողմում</translation>
 <translation id="6377268785556383139">«<ph name="SEARCH_TEXT" />»-ի որոնման 1 արդյունք</translation>
 <translation id="6380497234672085559">A0</translation>
@@ -1239,6 +1245,7 @@
 <translation id="6433595998831338502"><ph name="HOST_NAME" />-ը մերժեց կապակցումը:</translation>
 <translation id="6434309073475700221">Հրաժարվել</translation>
 <translation id="6440503408713884761">Անտեսված</translation>
+<translation id="6443406338865242315">Ինչ ընդլայնումներ և փլագիններ եք դուք տեղադրել</translation>
 <translation id="6446163441502663861">Kahu (ծրար)</translation>
 <translation id="6446608382365791566">Ավելացրեք լրացուցիչ տեղեկություններ</translation>
 <translation id="6447842834002726250">Cookie ֆայլեր</translation>
@@ -1348,6 +1355,7 @@
 <translation id="7012363358306927923">China UnionPay</translation>
 <translation id="7016992613359344582">Այս գանձումները կարող են մեկանգամյա կամ պարբերական լինել և հնարավոր է ակնհայտ չերևան:</translation>
 <translation id="7029809446516969842">Գաղտնաբառեր</translation>
+<translation id="7031646650991750659">Ինչ Google Play հավելվածներ եք դուք տեղադրել</translation>
 <translation id="7050187094878475250">Դուք փորձում էիք մտնել <ph name="DOMAIN" />, սակայն սերվերի կողմից ներկայացված վկայականի վավերականության ժամկետը չափազանց երկար է, ինչը վստահություն չի ներշնչում:</translation>
 <translation id="705310974202322020">{NUM_CARDS,plural, =1{Քարտն այս պահին չի կարող պահվել}one{Քարտն այս պահին չի կարող պահվել}other{Քարտերն այս պահին չեն կարող պահվել}}</translation>
 <translation id="7053983685419859001">Արգելափակել</translation>
@@ -1407,6 +1415,7 @@
 <translation id="7319430975418800333">A3</translation>
 <translation id="7320336641823683070">Օգնություն կապի խնդիրների դեպքում</translation>
 <translation id="733354035281974745">Լոկալ հաշվի փոփոխում սարքում</translation>
+<translation id="7333654844024768166">Դուք հենց նոր մուտքագրեցիք ձեր գաղտնաբառը կասկածելի կայքում։ Խորհուրդ ենք տալիս փոխել ձեր գաղտնաբառը, որն օգտագործում եք <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, <ph name="WEBSITE_3" /> և այլ կայքերում։</translation>
 <translation id="7334320624316649418">&amp;Վերարկել վերադասավորումը</translation>
 <translation id="7337706099755338005">Հասանելի չէ ձեր հարթակում:</translation>
 <translation id="733923710415886693">Սերվերի վկայագիրը չի բացահայտվել «Վկայագրերի թափանցիկություն» կանոնի միջոցով:</translation>

@@ -23,6 +23,9 @@ sys.path.insert(
     os.path.join(build_utils.DIR_SOURCE_ROOT, 'third_party', 'colorama', 'src'))
 import colorama
 
+_JAVAC_WRAPPER = os.path.join(build_utils.DIR_SOURCE_ROOT, 'build', 'android',
+                              'gyp', 'javac')
+
 # Full list of checks: https://errorprone.info/bugpatterns
 ERRORPRONE_WARNINGS_TO_TURN_OFF = [
     # This one should really be turned on.
@@ -197,6 +200,7 @@ def ProcessJavacOutput(output):
 
 def _ExtractClassFiles(jar_path, dest_dir, java_files):
   """Extracts all .class files not corresponding to |java_files|."""
+
   # Two challenges exist here:
   # 1. |java_files| have prefixes that are not represented in the the jar paths.
   # 2. A single .java file results in multiple .class files when it contains
@@ -266,7 +270,7 @@ class _InfoFileContext(object):
       self._srcjar_files[path] = '{}/{}'.format(
           srcjar_path, os.path.relpath(path, parent_dir))
 
-  def SubmitFiles(self, java_files):
+  def SubmitFiles(self, java_files, close=False):
     if self._pool is None:
       # Restrict to just one process to not slow down compiling. Compiling
       # is always slower.
@@ -274,7 +278,9 @@ class _InfoFileContext(object):
     logging.info('Submitting %d files for info', len(java_files))
     self._results.append(
         self._pool.imap_unordered(
-            _ProcessJavaFileForInfo, java_files, chunksize=1000))
+            _ProcessJavaFileForInfo, java_files, chunksize=10))
+    if close:
+      self._pool.close()
 
   def _CheckPathMatchesClassName(self, java_file, package_name, class_name):
     parts = package_name.split('.') + [class_name + '.java']
@@ -338,21 +344,14 @@ class _InfoFileContext(object):
     logging.info('Completed info file: %s', output_path)
 
 
-def _CreateJarFile(jar_path, provider_configurations, additional_jar_files,
-                   classes_dir):
-  logging.info('Start creating jar file: %s', jar_path)
-  with build_utils.AtomicOutput(jar_path) as f:
-    with zipfile.ZipFile(f.name, 'w') as z:
-      build_utils.ZipDir(z, classes_dir)
-      if provider_configurations:
-        for config in provider_configurations:
-          zip_path = 'META-INF/services/' + os.path.basename(config)
-          build_utils.AddToZipHermetic(z, zip_path, src_path=config)
+def _AddExtraJarFiles(jar_path, provider_configurations=None, file_tuples=None):
+  with zipfile.ZipFile(jar_path, 'a') as z:
+    for config in provider_configurations or []:
+      zip_path = 'META-INF/services/' + os.path.basename(config)
+      build_utils.AddToZipHermetic(z, zip_path, src_path=config)
 
-      if additional_jar_files:
-        for src_path, zip_path in additional_jar_files:
-          build_utils.AddToZipHermetic(z, zip_path, src_path=src_path)
-  logging.info('Completed jar file: %s', jar_path)
+    for src_path, zip_path in file_tuples or []:
+      build_utils.AddToZipHermetic(z, zip_path, src_path=src_path)
 
 
 def _OnStaleMd5(options, javac_cmd, java_files, classpath):
@@ -401,7 +400,8 @@ def _OnStaleMd5(options, javac_cmd, java_files, classpath):
     if java_files:
       # Don't include the output directory in the initial set of args since it
       # being in a temp dir makes it unstable (breaks md5 stamping).
-      cmd = list(javac_cmd)
+      cmd = [_JAVAC_WRAPPER]
+      cmd += javac_cmd
       cmd += ['-d', classes_dir]
       cmd += ['-s', annotation_processor_outputs_dir]
 
@@ -425,13 +425,26 @@ def _OnStaleMd5(options, javac_cmd, java_files, classpath):
       logging.info('Finished build command')
 
     if save_outputs:
-      annotation_processor_java_files = build_utils.FindInDirectory(
-          annotation_processor_outputs_dir)
-      if annotation_processor_java_files:
-        info_file_context.SubmitFiles(annotation_processor_java_files)
+      annotation_processor_srcjar = os.path.join(
+          annotation_processor_outputs_dir, 'output.srcjar')
+      if os.path.exists(annotation_processor_srcjar):
+        annotation_processor_java_files = build_utils.ExtractAll(
+            annotation_processor_srcjar,
+            no_clobber=True,
+            path=annotation_processor_outputs_dir)
+        os.unlink(annotation_processor_srcjar)
+        if annotation_processor_java_files:
+          info_file_context.SubmitFiles(
+              annotation_processor_java_files, close=True)
 
-      _CreateJarFile(options.jar_path, options.provider_configurations,
-                     options.additional_jar_files, classes_dir)
+      with build_utils.AtomicOutput(options.jar_path) as f:
+        if java_files:
+          shutil.move(os.path.join(classes_dir, 'classes.jar'), f.name)
+        else:
+          zipfile.ZipFile(f.name, 'w').close()
+        if options.provider_configurations or options.additional_jar_files:
+          _AddExtraJarFiles(f.name, options.provider_configurations,
+                            options.additional_jar_files)
 
       info_file_context.Commit(options.jar_path + '.info')
     else:

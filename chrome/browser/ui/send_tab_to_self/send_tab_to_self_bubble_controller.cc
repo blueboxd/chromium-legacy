@@ -13,6 +13,8 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/send_tab_to_self/send_tab_to_self_bubble_view.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/pref_registry/pref_registry_syncable.h"
+#include "components/send_tab_to_self/pref_names.h"
 #include "components/send_tab_to_self/send_tab_to_self_model.h"
 #include "components/send_tab_to_self/send_tab_to_self_sync_service.h"
 #include "components/send_tab_to_self/target_device_info.h"
@@ -84,6 +86,22 @@ void SendTabToSelfBubbleController::OnDeviceSelected(
 
 void SendTabToSelfBubbleController::OnBubbleClosed() {
   send_tab_to_self_bubble_view_ = nullptr;
+}
+
+bool SendTabToSelfBubbleController::InitialSendAnimationShown() const {
+  return GetProfile()->GetPrefs()->GetBoolean(
+      prefs::kInitialSendAnimationShown);
+}
+
+void SendTabToSelfBubbleController::SetInitialSendAnimationShown(bool shown) {
+  GetProfile()->GetPrefs()->SetBoolean(prefs::kInitialSendAnimationShown,
+                                       shown);
+}
+
+// Static:
+void SendTabToSelfBubbleController::RegisterProfilePrefs(
+    user_prefs::PrefRegistrySyncable* user_prefs) {
+  user_prefs->RegisterBooleanPref(prefs::kInitialSendAnimationShown, false);
 }
 
 SendTabToSelfBubbleController::SendTabToSelfBubbleController() = default;

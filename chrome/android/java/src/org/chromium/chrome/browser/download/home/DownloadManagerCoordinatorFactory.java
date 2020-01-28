@@ -26,9 +26,11 @@ public class DownloadManagerCoordinatorFactory {
     public static DownloadManagerCoordinator create(Activity activity,
             DownloadManagerUiConfig config, SnackbarManager snackbarManager,
             ComponentName parentComponent, ModalDialogManager modalDialogManager) {
-        Profile profile = Profile.getLastUsedProfile();
+        Profile profile = Profile.getMainProfile();
+        LegacyDownloadProvider legacyProvider =
+                config.useNewDownloadPath ? new LegacyDownloadProviderImpl() : null;
         return new DownloadManagerCoordinatorImpl(activity, config, snackbarManager,
                 modalDialogManager, TrackerFactory.getTrackerForProfile(profile),
-                new FaviconProviderImpl(profile));
+                new FaviconProviderImpl(profile), legacyProvider);
     }
 }

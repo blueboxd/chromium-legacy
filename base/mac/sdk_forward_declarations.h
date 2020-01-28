@@ -12,6 +12,7 @@
 #define BASE_MAC_SDK_FORWARD_DECLARATIONS_H_
 
 #import <AppKit/AppKit.h>
+#include <AvailabilityMacros.h>
 #import <CoreBluetooth/CoreBluetooth.h>
 #import <CoreWLAN/CoreWLAN.h>
 #import <IOBluetooth/IOBluetooth.h>
@@ -20,7 +21,6 @@
 #include <stdint.h>
 
 #include "base/base_export.h"
-#include "base/mac/availability.h"
 
 // ----------------------------------------------------------------------------
 // Define typedefs, enums, and protocols not available in the version of the

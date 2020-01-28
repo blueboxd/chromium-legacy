@@ -207,7 +207,7 @@ ChromeVoxBackground = class {
          */
         var executeScript = goog.bind(function(code) {
           chrome.tabs.executeScript(
-              tab.id, {'code': code, 'allFrames': true}, goog.bind(function() {
+              tab.id, {code, 'allFrames': true}, goog.bind(function() {
                 if (!chrome.extension.lastError) {
                   return;
                 }

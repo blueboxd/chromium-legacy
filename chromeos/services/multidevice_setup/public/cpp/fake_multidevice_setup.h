@@ -95,7 +95,7 @@ class FakeMultiDeviceSetup : public MultiDeviceSetupBase {
   void GetEligibleHostDevices(GetEligibleHostDevicesCallback callback) override;
   void GetEligibleActiveHostDevices(
       GetEligibleActiveHostDevicesCallback callback) override;
-  void SetHostDevice(const std::string& host_device_id,
+  void SetHostDevice(const std::string& host_instance_id_or_legacy_device_id,
                      const std::string& auth_token,
                      SetHostDeviceCallback callback) override;
   void RemoveHostDevice() override;
@@ -112,7 +112,7 @@ class FakeMultiDeviceSetup : public MultiDeviceSetupBase {
 
   // MultiDeviceSetupBase:
   void SetHostDeviceWithoutAuthToken(
-      const std::string& host_device_id,
+      const std::string& host_instance_id_or_legacy_device_id,
       mojom::PrivilegedHostDeviceSetter::SetHostDeviceCallback callback)
       override;
 

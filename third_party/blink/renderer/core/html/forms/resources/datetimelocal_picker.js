@@ -67,7 +67,11 @@ class DateTimeLocalPicker extends HTMLElement {
         break;
       case 'ArrowUp':
       case 'ArrowDown':
-        if (this.hasSelectedDate) {
+      case 'ArrowLeft':
+      case 'ArrowRight':
+      case 't':
+        if (event.target.matches('.calendar-table-view, .time-column') &&
+            this.hasSelectedDate) {
           window.pagePopupController.setValue(this.selectedValue);
         }
         break;

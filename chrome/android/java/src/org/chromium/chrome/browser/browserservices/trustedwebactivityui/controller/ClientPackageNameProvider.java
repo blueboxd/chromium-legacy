@@ -27,8 +27,7 @@ public class ClientPackageNameProvider implements SaveInstanceStateObserver {
     private final String mClientPackageName;
 
     @Inject
-    public ClientPackageNameProvider(
-            ChromeActivity activity,
+    public ClientPackageNameProvider(ChromeActivity<?> activity,
             ActivityLifecycleDispatcher lifecycleDispatcher,
             BrowserServicesIntentDataProvider intentDataProvider,
             CustomTabsConnection customTabsConnection) {

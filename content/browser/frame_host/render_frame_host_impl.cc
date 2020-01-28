@@ -1696,8 +1696,6 @@ bool RenderFrameHostImpl::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(AccessibilityHostMsg_SnapshotResponse,
                         OnAccessibilitySnapshotResponse)
     IPC_MESSAGE_HANDLER(FrameHostMsg_DidStopLoading, OnDidStopLoading)
-    IPC_MESSAGE_HANDLER(FrameHostMsg_DidChangeLoadProgress,
-                        OnDidChangeLoadProgress)
     IPC_MESSAGE_HANDLER(FrameHostMsg_SelectionChanged, OnSelectionChanged)
     IPC_MESSAGE_HANDLER(FrameHostMsg_FocusedNodeChanged, OnFocusedNodeChanged)
     IPC_MESSAGE_HANDLER(FrameHostMsg_UpdateUserActivationState,
@@ -3661,6 +3659,10 @@ void RenderFrameHostImpl::DidBlockNavigation(
   delegate_->OnDidBlockNavigation(blocked_url, initiator_url, reason);
 }
 
+void RenderFrameHostImpl::DidChangeLoadProgress(double load_progress) {
+  frame_tree_node_->DidChangeLoadProgress(load_progress);
+}
+
 void RenderFrameHostImpl::DispatchLoad() {
   TRACE_EVENT1("navigation", "RenderFrameHostImpl::DispatchLoad",
                "frame_tree_node", frame_tree_node_->frame_tree_node_id());
@@ -4144,10 +4146,6 @@ void RenderFrameHostImpl::OnDidStopLoading() {
   // of this RenderFrameHost is being tracked.
   if (is_active())
     frame_tree_node_->DidStopLoading();
-}
-
-void RenderFrameHostImpl::OnDidChangeLoadProgress(double load_progress) {
-  frame_tree_node_->DidChangeLoadProgress(load_progress);
 }
 
 void RenderFrameHostImpl::OnSelectionChanged(const base::string16& text,

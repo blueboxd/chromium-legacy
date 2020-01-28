@@ -34,10 +34,6 @@ class TestConfig(config.CodeSignConfig):
         return 'test.signing.bundle_id'
 
     @property
-    def optional_parts(self):
-        return set()
-
-    @property
     def provisioning_profile_basename(self):
         return 'provisiontest'
 

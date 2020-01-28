@@ -79,6 +79,7 @@
 <translation id="129553762522093515">Son qapadılan</translation>
 <translation id="1298536327547837046">Zərərli proqram təminatının skan edilməsi</translation>
 <translation id="129863573139666797"><ph name="BEGIN_LINK" />Kukiləriniz təmizlənir<ph name="END_LINK" /></translation>
+<translation id="1301324364792935241">Təhlükəsiz DNS ayarlarınızı yoxlayın</translation>
 <translation id="1307966114820526988">Ləğv edilmiş funksiya</translation>
 <translation id="1314509827145471431">Sağdan uclarını qovuşdurun</translation>
 <translation id="1320233736580025032">Prc1 (Zərf)</translation>
@@ -152,6 +153,7 @@
 <translation id="1569487616857761740">Bitmə vaxtını daxil edin</translation>
 <translation id="1581080074034554886">CVC</translation>
 <translation id="1583429793053364125">Bu veb səhifəni göstərərkən xəta baş verdi.</translation>
+<translation id="1586541204584340881">Quraşdırdığınız artırmalar</translation>
 <translation id="1588438908519853928">Normal</translation>
 <translation id="1592005682883173041">Yerli Data Girişi</translation>
 <translation id="1594030484168838125">Seçin</translation>
@@ -362,6 +364,7 @@
 <translation id="2544644783021658368">Tək sənəd</translation>
 <translation id="254947805923345898">Siyasət dəyəri düzgün deyil.</translation>
 <translation id="255002559098805027"><ph name="HOST_NAME" /> yalnış cavab göndərdi.</translation>
+<translation id="2553853292994445426">Təhlükəsiz DNS ayarlarınızı yoxlayın. Bağlanmaq mümkün olmayan təhlükəsiz DNS serveri konfiqurasiya etmiş ola bilərsiniz.</translation>
 <translation id="2556876185419854533">Düzəlişi ləğv edin</translation>
 <translation id="257674075312929031">Qrup</translation>
 <translation id="2586657967955657006">Mübadilə buferi</translation>
@@ -484,6 +487,7 @@
 <translation id="3095940652251934233">Bəyanat</translation>
 <translation id="3096100844101284527">Götürmə Ünvanı əlavə edin</translation>
 <translation id="3105172416063519923">Aktiv ID:</translation>
+<translation id="3107591622054137333"><ph name="BEGIN_LINK" />Təhlükəsiz DNS konfiqurasiyası yoxlanılır<ph name="END_LINK" /></translation>
 <translation id="3109728660330352905">Bu səhifəyə baxmaq üçün icazəniz yoxdur.</translation>
 <translation id="3113284927548439113">Üçüncü növbə</translation>
 <translation id="3116158981186517402">Laminat vurun</translation>
@@ -782,6 +786,7 @@
 <translation id="4390472908992056574">Xətlər</translation>
 <translation id="4406896451731180161">axtarış nəticələri</translation>
 <translation id="4408413947728134509">Kukilər <ph name="NUM_COOKIES" /></translation>
+<translation id="4414290883293381923">İndicə parolunuzu aldadıcı saytda daxil etdiniz. Chrome indi <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, <ph name="WEBSITE_3" /> və bu parolu istifadə etdiyiniz digər saytlara keçərək parolunuzu dəyişmənizi tövsiyə edir.</translation>
 <translation id="4415426530740016218">Götürmə Ünvanı</translation>
 <translation id="4424024547088906515">Bu server <ph name="DOMAIN" /> domenini təsdiqləyə bilmədi; onun təhlükəsizlik sertifikatı Chrome tərəfindən doğrulanmayıb. Buna səbəb yanlış konfiqurasiya və ya hücumçü tərəfindən bağlantınızın ələ keçirilməsi ola bilər.</translation>
 <translation id="443121186588148776">Ardıcıl port</translation>
@@ -1214,6 +1219,7 @@
 <translation id="6353505687280762741">{COUNT,plural, =0{Heç biri}=1{1 parol (<ph name="DOMAIN_LIST" /> üçün sinxronizasiya edilib)}=2{2 parol (<ph name="DOMAIN_LIST" />üçün sinxronizasiya edilib)}other{# parol (<ph name="DOMAIN_LIST" />üçün sinxronizasiya edilib)}}</translation>
 <translation id="6358450015545214790">Bunun mənası nədir?</translation>
 <translation id="6361757823711327522">B7</translation>
+<translation id="6364095313648930329"><ph name="BEGIN_LINK" />Proksi, qoruyucu divar və DNS konfiqurasiyası yoxlanılır<ph name="END_LINK" /></translation>
 <translation id="6366710531182496394">Soldan qoşa ştapel vurun</translation>
 <translation id="6377268785556383139">"<ph name="SEARCH_TEXT" />" üçün 1 nəticə</translation>
 <translation id="6380497234672085559">A0</translation>
@@ -1236,6 +1242,7 @@
 <translation id="6433595998831338502"><ph name="HOST_NAME" /> qoşulmaq istəmədi.</translation>
 <translation id="6434309073475700221">Ləğv edin</translation>
 <translation id="6440503408713884761">İqnor edilənlər</translation>
+<translation id="6443406338865242315">Quraşdırdığınız artırmalar və qoşmalar</translation>
 <translation id="6446163441502663861">Kahu (Zərf)</translation>
 <translation id="6446608382365791566">Ətraflı məlumat əlavə edin</translation>
 <translation id="6447842834002726250">Kukilər</translation>
@@ -1345,6 +1352,7 @@
 <translation id="7012363358306927923">Çin UnionPay</translation>
 <translation id="7016992613359344582">Bu ödənişlər birdəfəlik və ya təkrarlanan ola bilər. Onlar, eyni zamanda görünməyə bilər.</translation>
 <translation id="7029809446516969842">Parollar</translation>
+<translation id="7031646650991750659">Quraşdırdığınız Google Play tətbiqləri</translation>
 <translation id="7050187094878475250"><ph name="DOMAIN" /> domeninə girmək istədiniz, lakin server etibarlıq müddəti güvənmək üçün həddən uzun olan sertifikat təqdim edib.</translation>
 <translation id="705310974202322020">{NUM_CARDS,plural, =1{Hazırda bu kartı yadda saxlamaq mümkün deyil}other{Hazırda bu kartları yadda saxlamaq mümkün deyil}}</translation>
 <translation id="7053983685419859001">Bloklayın</translation>
@@ -1404,6 +1412,7 @@
 <translation id="7319430975418800333">A3</translation>
 <translation id="7320336641823683070">Bağlantı Yardımı</translation>
 <translation id="733354035281974745">Cihazın lokal hesabı əvəz edilib</translation>
+<translation id="7333654844024768166">İndicə parolunuzu aldadıcı saytda daxil etdiniz. Chromium indi <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, <ph name="WEBSITE_3" /> və bu parolu istifadə etdiyiniz digər saytlara keçərək parolunuzu dəyişmənizi tövsiyə edir.</translation>
 <translation id="7334320624316649418">&amp;Yenidən yerbəyer edin</translation>
 <translation id="7337706099755338005">Platformanızda əlçatan deyil.</translation>
 <translation id="733923710415886693">Serverin sertifikatı Sertifikat Şəffaflığı vasitəsi ilə aşkarlanmayıb.</translation>

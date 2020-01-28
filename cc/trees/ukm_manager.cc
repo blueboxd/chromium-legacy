@@ -170,14 +170,16 @@ void UkmManager::RecordThroughputUKM(
 }
 
 void UkmManager::RecordLatencyUKM(
-    bool missed_frame,
+    CompositorFrameReporter::MissedFrameReportType report_type,
     const std::vector<CompositorFrameReporter::StageData>& stage_history,
     const base::flat_set<FrameSequenceTrackerType>* active_trackers,
     const viz::FrameTimingDetails& viz_breakdown) const {
   ukm::builders::Graphics_Smoothness_Latency builder(source_id_);
 
-  if (missed_frame)
+  if (report_type ==
+      CompositorFrameReporter::MissedFrameReportType::kMissedFrame) {
     builder.SetMissedFrame(true);
+  }
 
   // Record each stage
   for (const CompositorFrameReporter::StageData& stage : stage_history) {

@@ -27,12 +27,12 @@
 #endif
 
 using chrome_test_util::BookmarkHomeDoneButton;
+using chrome_test_util::BookmarksNavigationBarBackButton;
 using chrome_test_util::BookmarksSaveEditDoneButton;
 using chrome_test_util::ButtonWithAccessibilityLabelId;
 using chrome_test_util::ContextBarCenterButtonWithLabel;
 using chrome_test_util::ContextBarLeadingButtonWithLabel;
 using chrome_test_util::ContextBarTrailingButtonWithLabel;
-using chrome_test_util::NavigateBackButtonTo;
 using chrome_test_util::OmniboxText;
 using chrome_test_util::StarButton;
 using chrome_test_util::TappableBookmarkNodeWithLabel;
@@ -153,6 +153,13 @@ using chrome_test_util::TappableBookmarkNodeWithLabel;
 // Tests that changes to the parent folder from the Single Bookmark Editor
 // are saved to the bookmark only when saving the results.
 - (void)testMoveDoesSaveOnSave {
+// TODO(crbug.com/1045966): fix for iphone-device and reenable.
+#if !TARGET_IPHONE_SIMULATOR
+  if (![ChromeEarlGrey isIPadIdiom]) {
+    EARL_GREY_TEST_DISABLED(@"Test disabled on iPhone devices.");
+  }
+#endif
+
   [BookmarkEarlGrey setupStandardBookmarks];
   [BookmarkEarlGreyUI openBookmarks];
   [BookmarkEarlGreyUI openMobileBookmarks];
@@ -212,6 +219,13 @@ using chrome_test_util::TappableBookmarkNodeWithLabel;
 // Tests that keyboard commands are not registered when a bookmark is edited, as
 // the edit screen is presented modally.
 - (void)testKeyboardCommandsNotRegistered_EditBookmark {
+// TODO(crbug.com/1045966): fix for iphone-device and reenable.
+#if !TARGET_IPHONE_SIMULATOR
+  if (![ChromeEarlGrey isIPadIdiom]) {
+    EARL_GREY_TEST_DISABLED(@"Test disabled on iPhone devices.");
+  }
+#endif
+
   [BookmarkEarlGrey setupStandardBookmarks];
   [BookmarkEarlGreyUI openBookmarks];
   [BookmarkEarlGreyUI openMobileBookmarks];
@@ -314,6 +328,13 @@ using chrome_test_util::TappableBookmarkNodeWithLabel;
 }
 
 - (void)testBookmarkContextBarInSingleSelectionModes {
+// TODO(crbug.com/1045966): fix for iphone-device and reenable.
+#if !TARGET_IPHONE_SIMULATOR
+  if (![ChromeEarlGrey isIPadIdiom]) {
+    EARL_GREY_TEST_DISABLED(@"Test disabled on iPhone devices.");
+  }
+#endif
+
   [BookmarkEarlGrey setupStandardBookmarks];
   [BookmarkEarlGreyUI openBookmarks];
   [BookmarkEarlGreyUI openMobileBookmarks];
@@ -448,6 +469,13 @@ using chrome_test_util::TappableBookmarkNodeWithLabel;
 }
 
 - (void)testBookmarkContextBarInMultipleSelectionModes {
+// TODO(crbug.com/1045966): fix for iphone-device and reenable.
+#if !TARGET_IPHONE_SIMULATOR
+  if (![ChromeEarlGrey isIPadIdiom]) {
+    EARL_GREY_TEST_DISABLED(@"Test disabled on iPhone devices.");
+  }
+#endif
+
   [BookmarkEarlGrey setupStandardBookmarks];
   [BookmarkEarlGreyUI openBookmarks];
   [BookmarkEarlGreyUI openMobileBookmarks];
@@ -615,15 +643,14 @@ using chrome_test_util::TappableBookmarkNodeWithLabel;
   [BookmarkEarlGreyUI verifyEmptyBackgroundAppears];
 }
 
-// TODO(crbug.com/1034183): Enable for EG2 once NavigateBackButtonTo() is fixed.
-#if defined(CHROME_EARL_GREY_2)
-#define MAYBE_testEmptyBackgroundAndSelectButton \
-  DISABLED_testEmptyBackgroundAndSelectButton
-#else
-#define MAYBE_testEmptyBackgroundAndSelectButton \
-  testEmptyBackgroundAndSelectButton
+- (void)testEmptyBackgroundAndSelectButton {
+// TODO(crbug.com/1045966): fix for iphone-device and reenable.
+#if !TARGET_IPHONE_SIMULATOR
+  if (![ChromeEarlGrey isIPadIdiom]) {
+    EARL_GREY_TEST_DISABLED(@"Test disabled on iPhone devices.");
+  }
 #endif
-- (void)MAYBE_testEmptyBackgroundAndSelectButton {
+
   [BookmarkEarlGrey setupStandardBookmarks];
   [BookmarkEarlGreyUI openBookmarks];
   [BookmarkEarlGreyUI openMobileBookmarks];
@@ -636,7 +663,7 @@ using chrome_test_util::TappableBookmarkNodeWithLabel;
   [BookmarkEarlGreyUI verifyEmptyBackgroundAppears];
 
   // Come back to Mobile Bookmarks.
-  [[EarlGrey selectElementWithMatcher:NavigateBackButtonTo(@"Mobile Bookmarks")]
+  [[EarlGrey selectElementWithMatcher:BookmarksNavigationBarBackButton()]
       performAction:grey_tap()];
 
   // Change to edit mode, using context menu.
@@ -763,15 +790,7 @@ using chrome_test_util::TappableBookmarkNodeWithLabel;
   [BookmarkEarlGreyUI verifyBookmarkFolderIsSeen:@"Mobile Bookmarks"];
 }
 
-// TODO(crbug.com/1034183): Enable for EG2 once NavigateBackButtonTo() is fixed.
-#if defined(CHROME_EARL_GREY_2)
-#define MAYBE_testCachePositionIsRecreatedWhenNodeIsMoved \
-  DISABLED_testCachePositionIsRecreatedWhenNodeIsMoved
-#else
-#define MAYBE_testCachePositionIsRecreatedWhenNodeIsMoved \
-  testCachePositionIsRecreatedWhenNodeIsMoved
-#endif
-- (void)MAYBE_testCachePositionIsRecreatedWhenNodeIsMoved {
+- (void)testCachePositionIsRecreatedWhenNodeIsMoved {
   [BookmarkEarlGrey setupStandardBookmarks];
   [BookmarkEarlGreyUI openBookmarks];
   [BookmarkEarlGreyUI openMobileBookmarks];
@@ -800,7 +819,7 @@ using chrome_test_util::TappableBookmarkNodeWithLabel;
   [BookmarkEarlGreyUI openBookmarks];
 
   // Go back 1 level to Folder 1.
-  [[EarlGrey selectElementWithMatcher:NavigateBackButtonTo(@"Folder 1")]
+  [[EarlGrey selectElementWithMatcher:BookmarksNavigationBarBackButton()]
       performAction:grey_tap()];
 
   // Ensure we are at Folder 1, by verifying folders at this level.

@@ -19,8 +19,7 @@
 #include "ios/chrome/browser/sessions/session_restoration_browser_agent.h"
 #import "ios/chrome/browser/sessions/test_session_service.h"
 #import "ios/chrome/browser/snapshots/snapshot_tab_helper.h"
-#import "ios/chrome/browser/tabs/tab_model.h"
-#import "ios/chrome/browser/tabs/tab_model_closing_web_state_observer.h"
+#import "ios/chrome/browser/tabs/closing_web_state_observer.h"
 #import "ios/chrome/browser/ui/tab_grid/grid/grid_commands.h"
 #import "ios/chrome/browser/ui/tab_grid/grid/grid_consumer.h"
 #import "ios/chrome/browser/ui/tab_grid/grid/grid_item.h"
@@ -220,20 +219,15 @@ class TabGridMediatorTest : public PlatformTest {
     web_state_list_ =
         std::make_unique<WebStateList>(web_state_list_delegate_.get());
     tab_restore_service_ = std::make_unique<FakeTabRestoreService>();
-    tab_model_ = OCMClassMock([TabModel class]);
-    OCMStub([tab_model_ webStateList]).andReturn(web_state_list_.get());
-    OCMStub([tab_model_ browserState]).andReturn(browser_state_.get());
-    tab_model_closing_web_state_observer_ =
-        [[TabModelClosingWebStateObserver alloc]
-            initWithTabModel:tab_model_
-              restoreService:tab_restore_service_.get()];
-    tab_model_closing_web_state_observer_bridge_ =
+    closing_web_state_observer_ = [[ClosingWebStateObserver alloc]
+        initWithRestoreService:tab_restore_service_.get()];
+    closing_web_state_observer_bridge_ =
         std::make_unique<WebStateListObserverBridge>(
-            tab_model_closing_web_state_observer_);
-    web_state_list_->AddObserver(
-        tab_model_closing_web_state_observer_bridge_.get());
+            closing_web_state_observer_);
+    web_state_list_->AddObserver(closing_web_state_observer_bridge_.get());
     NSMutableSet<NSString*>* identifiers = [[NSMutableSet alloc] init];
-    browser_ = std::make_unique<TestBrowser>(browser_state_.get(), tab_model_);
+    browser_ = std::make_unique<TestBrowser>(browser_state_.get(),
+                                             web_state_list_.get());
 
     // Insert some web states.
     for (int i = 0; i < 3; i++) {
@@ -276,8 +270,7 @@ class TabGridMediatorTest : public PlatformTest {
   }
 
   void TearDown() override {
-    web_state_list_->RemoveObserver(
-        tab_model_closing_web_state_observer_bridge_.get());
+    web_state_list_->RemoveObserver(closing_web_state_observer_bridge_.get());
     PlatformTest::TearDown();
   }
 
@@ -301,9 +294,9 @@ class TabGridMediatorTest : public PlatformTest {
   NSSet<NSString*>* original_identifiers_;
   NSString* original_selected_identifier_;
   std::unique_ptr<Browser> browser_;
-  TabModelClosingWebStateObserver* tab_model_closing_web_state_observer_;
+  ClosingWebStateObserver* closing_web_state_observer_;
   std::unique_ptr<WebStateListObserverBridge>
-      tab_model_closing_web_state_observer_bridge_;
+      closing_web_state_observer_bridge_;
 };
 
 #pragma mark - Consumer tests

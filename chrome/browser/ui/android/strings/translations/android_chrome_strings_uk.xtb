@@ -134,6 +134,7 @@
 <translation id="1994173015038366702">URL-адреса сайту</translation>
 <translation id="2000419248597011803">Надсилає деякі файли cookie й пошукові запити з адресного рядка та вікна пошуку в пошукову систему за умовчанням</translation>
 <translation id="2002537628803770967">Кредитні картки й адреси, додані в Google Pay</translation>
+<translation id="2012973609889389923">Швидке завантаження</translation>
 <translation id="2013642289801508067">{FILE_COUNT,plural, =1{# файл}one{# файл}few{# файли}many{# файлів}other{# файлу}}</translation>
 <translation id="2017836877785168846">Очищує історію й автозавершення в адресному рядку.</translation>
 <translation id="2021896219286479412">Керування повноекранним режимом</translation>
@@ -278,6 +279,7 @@
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> закладка}one{<ph name="BOOKMARKS_COUNT_MANY" /> закладка}few{<ph name="BOOKMARKS_COUNT_MANY" /> закладки}many{<ph name="BOOKMARKS_COUNT_MANY" /> закладок}other{<ph name="BOOKMARKS_COUNT_MANY" /> закладки}}</translation>
 <translation id="3089395242580810162">Відкрити в анонімній вкладці</translation>
 <translation id="3123473560110926937">Заблоковано на деяких сайтах</translation>
+<translation id="3123734510202723619">Оголошення</translation>
 <translation id="3137521801621304719">Вийти з режиму анонімного перегляду</translation>
 <translation id="3143515551205905069">Скасувати синхронізацію</translation>
 <translation id="3157842584138209013">Перевірте обсяг збережених даних за допомогою кнопки "Більше опцій"</translation>
@@ -306,6 +308,7 @@
 <translation id="3298243779924642547">Спрощена</translation>
 <translation id="3303414029551471755">Завантажити вміст?</translation>
 <translation id="3306398118552023113">Цей додаток запущено в Chrome</translation>
+<translation id="3312292613668865961">Запитувати, перш ніж дозволяти сайтам отримувати доступ до даних і пристроїв віртуальної реальності (рекомендовано)</translation>
 <translation id="3315103659806849044">Зараз ви налаштовуєте синхронізацію та сервіси Google. Щоб увімкнути синхронізацію, натисніть кнопку "Підтвердити" внизу екрана. Перейти вгору</translation>
 <translation id="3328801116991980348">Інформація про сайт</translation>
 <translation id="3333961966071413176">Усі контакти</translation>
@@ -511,6 +514,7 @@
 <translation id="4915549754973153784"><ph name="BEGIN_LINK" />Довідка<ph name="END_LINK" /> під час пошуку пристроїв…</translation>
 <translation id="4921180162323349895">{FILE_COUNT,plural, =1{# сторінка}one{# сторінка}few{# сторінки}many{# сторінок}other{# сторінки}}</translation>
 <translation id="4932247056774066048">Оскільки ви виходите з облікового запису, зареєстрованого в домені <ph name="DOMAIN_NAME" />, ваші дані Chrome буде видалено з цього пристрою. Вони залишаться у вашому обліковому записі Google.</translation>
+<translation id="4935305910887312910">Запитувати, перш ніж дозволяти сайтам отримувати доступ до положення камери чи відображати вашу кімнату (рекомендовано)</translation>
 <translation id="4943703118917034429">Віртуальна реальність</translation>
 <translation id="4943872375798546930">Не знайдено жодного результату</translation>
 <translation id="4958708863221495346">Сторінка <ph name="URL_OF_THE_CURRENT_TAB" /> показує ваш екран</translation>
@@ -687,7 +691,6 @@
 <translation id="6201345951596836663">Посилання скопійовано</translation>
 <translation id="6206551242102657620">З’єднання безпечне. Інформація про сайт</translation>
 <translation id="6210748933810148297">Не <ph name="EMAIL" />?</translation>
-<translation id="6216432067784365534"><ph name="NAME_OF_LIST_ITEM" />: опції</translation>
 <translation id="6221633008163990886">Розблокуйте, щоб експортувати паролі</translation>
 <translation id="6232535412751077445">Якщо ввімкнути параметр "Не відстежувати", запит додаватиметься в трафік веб-перегляду. Результат залежатиме від того, чи реагує веб-сайт на цей запит і як тлумачиться запит.
 
@@ -733,7 +736,6 @@
 <translation id="6534565668554028783">Google довго не відповідає</translation>
 <translation id="6538442820324228105">Завантажено <ph name="GBS" /> ГБ</translation>
 <translation id="6539092367496845964">Сталася помилка. Спробуйте пізніше.</translation>
-<translation id="654446541061731451">Виберіть вкладку для передавання даних</translation>
 <translation id="6545017243486555795">Видалити всі дані</translation>
 <translation id="6545864417968258051">Пошук пристроїв Bluetooth</translation>
 <translation id="6560414384669816528">Шукати за допомогою Sogou</translation>
@@ -744,6 +746,7 @@
 <translation id="6573431926118603307">Тут відображатимуться вкладки, відкриті в Chrome на інших ваших пристроях.</translation>
 <translation id="6583199322650523874">Зробити закладку поточної сторінки</translation>
 <translation id="6593061639179217415">Версія для комп’ютера</translation>
+<translation id="6597891566292541626">Вставте QR-код або штрих-код у цю рамку.</translation>
 <translation id="6600954340915313787">Скопійовано в Chrome</translation>
 <translation id="6608650720463149374"><ph name="GIGABYTES" /> ГБ</translation>
 <translation id="6612358246767739896">Захищений вміст</translation>
@@ -953,6 +956,7 @@
 <translation id="8109613176066109935">Щоб мати доступ до закладок на всіх своїх пристроях, увімкніть синхронізацію</translation>
 <translation id="8110087112193408731">Показувати активність у Chrome у Цифровому добробуті?</translation>
 <translation id="8116925261070264013">Звук вимкнено</translation>
+<translation id="8127542551745560481">Змінити головну сторінку</translation>
 <translation id="813082847718468539">Перегляд інформації про сайт</translation>
 <translation id="8156139159503939589">Якими мовами ви читаєте?</translation>
 <translation id="8168435359814927499">Вміст</translation>
@@ -1024,8 +1028,8 @@
 <translation id="8676374126336081632">Видалити введений текст</translation>
 <translation id="8687353297350450808">{N_BARS,plural, =1{Рівень сигналу: # поділка}one{Рівень сигналу: # поділка}few{Рівень сигналу: # поділки}many{Рівень сигналу: # поділок}other{Рівень сигналу: # поділки}}</translation>
 <translation id="868929229000858085">Пошук у контактах</translation>
+<translation id="8698438463325761328">Заборонити сайтам доступ до даних і пристроїв віртуальної реальності</translation>
 <translation id="869891660844655955">Діє до</translation>
-<translation id="8719023831149562936">Неможливо передати дані поточної вкладки</translation>
 <translation id="8728487861892616501">Користуючись цим додатком, ви приймаєте <ph name="BEGIN_LINK1" />Умови використання<ph name="END_LINK1" /> та <ph name="BEGIN_LINK2" />Примітку про конфіденційність<ph name="END_LINK2" /> Chrome, а також <ph name="BEGIN_LINK3" />Примітку про конфіденційність для облікових записів Google, якими можна керувати у Family Link<ph name="END_LINK3" />.</translation>
 <translation id="8748850008226585750">Вміст сховано</translation>
 <translation id="8751914237388039244">Виберіть зображення</translation>
@@ -1041,6 +1045,7 @@
 <translation id="883806473910249246">Не вдалося завантажити вміст.</translation>
 <translation id="8840953339110955557">Ця сторінка може відрізнятися від онлайн-версії.</translation>
 <translation id="8847988622838149491">USB</translation>
+<translation id="884828189055900810">Заборонити сайтам отримувати положення камери чи відображати вашу кімнату</translation>
 <translation id="8853345339104747198">Вкладка "<ph name="TAB_TITLE" />"</translation>
 <translation id="885701979325669005">Обсяг пам’яті</translation>
 <translation id="889338405075704026">Перейти в налаштування Chrome</translation>
@@ -1048,6 +1053,7 @@
 <translation id="8909135823018751308">Надіслати…</translation>
 <translation id="8912362522468806198">Обліковий запис Google</translation>
 <translation id="8920114477895755567">Очікування даних батьків.</translation>
+<translation id="8921772741368021346"><ph name="POSITION" />/<ph name="DURATION" /></translation>
 <translation id="8922289737868596582">Щоб переглядати сторінки офлайн, завантажуйте їх, натиснувши кнопку "Більше опцій"</translation>
 <translation id="8926666909099850184">NFC вимкнено на цьому пристрої. Увімкніть цю функцію в <ph name="BEGIN_LINK" />налаштуваннях Android<ph name="END_LINK" />.</translation>
 <translation id="8937772741022875483">Видалити активність у Chrome із Цифрового добробуту?</translation>

@@ -305,6 +305,17 @@ TEST_F(CardUnmaskPromptControllerImplTest,
       prefs::kAutofillCreditCardFidoAuthOfferCheckboxState));
 }
 
+TEST_F(CardUnmaskPromptControllerImplTest,
+       PopulateCheckboxToUserProvidedUnmaskDetails) {
+  scoped_feature_list_.InitAndEnableFeature(
+      features::kAutofillCreditCardAuthentication);
+  controller_->set_can_store_locally(false);
+  ShowPromptAndSimulateResponse(/*should_store_pan=*/false,
+                                /*enable_fido_auth=*/true);
+
+  EXPECT_TRUE(delegate_->details().enable_fido_auth);
+}
+
 TEST_F(CardUnmaskPromptControllerImplTest, LogDurationNoAttempts) {
   ShowPrompt();
   base::HistogramTester histogram_tester;

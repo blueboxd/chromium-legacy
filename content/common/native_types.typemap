@@ -5,11 +5,7 @@
 mojom = "//content/common/native_types.mojom"
 public_headers = [
   "//cc/input/touch_action.h",
-  "//content/common/content_security_policy/content_security_policy.h",
   "//content/common/content_security_policy/csp_context.h",
-  "//content/common/content_security_policy/csp_directive.h",
-  "//content/common/content_security_policy/csp_source.h",
-  "//content/common/content_security_policy/csp_source_list.h",
   "//content/common/cursors/webcursor.h",
   "//content/common/edit_command.h",
   "//content/common/frame_owner_properties.h",

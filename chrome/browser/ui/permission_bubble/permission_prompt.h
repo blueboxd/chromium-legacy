@@ -42,7 +42,7 @@ class PermissionPrompt {
     // revisits the tab, the permission prompt is re-displayed.
     kDestroyPromptButKeepRequestPending,
     // Destroy the prompt and treat the permission request as being resolved
-    // with the PermissionAction::IGNORED result.
+    // with the permissions::PermissionAction::IGNORED result.
     kDestroyPromptAndIgnoreRequest,
   };
 

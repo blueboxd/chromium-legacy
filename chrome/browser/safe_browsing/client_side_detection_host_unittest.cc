@@ -140,7 +140,7 @@ class MockSafeBrowsingUIManager : public SafeBrowsingUIManager {
     // Note: this will delete the client object in the case of the CsdClient
     // implementation.
     if (!callback.is_null())
-      callback.Run(false);
+      callback.Run(false /*proceed*/, true /*showed_interstitial*/);
   }
 
  protected:

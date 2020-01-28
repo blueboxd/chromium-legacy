@@ -106,13 +106,15 @@ void BrowserTabStripModelDelegate::DuplicateContentsAt(int index) {
   DuplicateTabAt(browser_, index);
 }
 
-bool BrowserTabStripModelDelegate::CanMoveTabToWindow(int index) {
-  return CanMoveTabToNewWindow(browser_, index);
+bool BrowserTabStripModelDelegate::CanMoveTabsToWindow(
+    const std::vector<int>& indices) {
+  return CanMoveTabsToNewWindow(browser_, indices);
 }
 
-void BrowserTabStripModelDelegate::MoveTabToNewWindow(int index) {
+void BrowserTabStripModelDelegate::MoveTabsToNewWindow(
+    const std::vector<int>& indices) {
   // chrome:: to disambiguate the free function from this method.
-  return chrome::MoveTabToNewWindow(browser_, index);
+  chrome::MoveTabsToNewWindow(browser_, indices);
 }
 
 void BrowserTabStripModelDelegate::CreateHistoricalTab(

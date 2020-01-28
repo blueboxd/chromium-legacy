@@ -107,12 +107,10 @@ cipd_archive("webrunner") {
 
   deps = [
     "//fuchsia/engine:web_engine",
-    "//fuchsia/engine:web_engine_deprecated",
     "//fuchsia/runners:web_runner_pkg",
   ]
 
   sources = [
-    "${root_gen_dir}/fuchsia/engine/chromium/chromium.far",
     "${root_gen_dir}/fuchsia/engine/web_engine/web_engine.far",
     "${root_gen_dir}/fuchsia/runners/web_runner/web_runner.far",
   ]

@@ -75,6 +75,7 @@
 #include "chrome/browser/ui/network_profile_bubble.h"
 #include "chrome/browser/ui/prefs/prefs_tab_helper.h"
 #include "chrome/browser/ui/search_engines/keyword_editor_controller.h"
+#include "chrome/browser/ui/send_tab_to_self/send_tab_to_self_bubble_controller.h"
 #include "chrome/browser/ui/tabs/pinned_tab_codec.h"
 #include "chrome/browser/ui/webui/flags_ui.h"
 #include "chrome/browser/ui/webui/ntp/new_tab_ui.h"
@@ -946,6 +947,8 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry,
   PromoService::RegisterProfilePrefs(registry);
   SearchSuggestService::RegisterProfilePrefs(registry);
   settings::SettingsUI::RegisterProfilePrefs(registry);
+  send_tab_to_self::SendTabToSelfBubbleController::RegisterProfilePrefs(
+      registry);
   signin::RegisterProfilePrefs(registry);
   StartupBrowserCreator::RegisterProfilePrefs(registry);
   UnifiedAutoplayConfig::RegisterProfilePrefs(registry);

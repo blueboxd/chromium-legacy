@@ -152,7 +152,7 @@ class SafeBrowsingUrlCheckerImpl : public mojom::SafeBrowsingUrlChecker,
   // NOTE: this method runs callbacks which could destroy this object.
   void BlockAndProcessUrls(bool showed_interstitial);
 
-  void OnBlockingPageComplete(bool proceed);
+  void OnBlockingPageComplete(bool proceed, bool showed_interstitial);
 
   // Helper method that checks whether |url|'s reputation can be checked using
   // real time lookups.

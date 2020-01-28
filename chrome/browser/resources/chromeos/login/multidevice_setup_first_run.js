@@ -25,7 +25,7 @@ cr.define('multidevice_setup', function() {
     }
 
     /** @override */
-    setHostDevice(hostDeviceId, opt_authToken) {
+    setHostDevice(hostInstanceIdOrLegacyDeviceId, opt_authToken) {
       // An authentication token is not expected since a password is not
       // required.
       assert(!opt_authToken);
@@ -37,7 +37,7 @@ cr.define('multidevice_setup', function() {
       }
 
       return /** @type {!Promise<{success: boolean}>} */ (
-          this.remote_.setHostDevice(hostDeviceId));
+          this.remote_.setHostDevice(hostInstanceIdOrLegacyDeviceId));
     }
 
     /** @override */

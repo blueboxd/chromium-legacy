@@ -1015,10 +1015,13 @@ TEST_F(RulesetMatcherTest, RegexSubstitution) {
   } rule_info[] = {
       // "\0" captures the complete matched string.
       {1, R"(^.*google\.com.*$)", R"(https://redirect.com?original=\0)"},
-      {2, R"(http://((?:abc|def)\.xyz.com.*))", R"(https://www.\1)"},
-      {3, R"((http|https)://example.com.*(\?|&)redirect=(.*?)(?:&|$))",
+      {2, R"(http://((?:abc|def)\.xyz.com.*)$)", R"(https://www.\1)"},
+      {3, R"(^(http|https)://example\.com.*(\?|&)redirect=(.*?)(?:&|$).*$)",
        R"(\1://\3)"},
-      {4, R"(reddit\.com)", "https://abc.com"}};
+      {4, R"(reddit\.com)", "abc.com"},
+      {5, R"(^http://www\.(pqr|rst)\.xyz\.com)", R"(https://\1.xyz.com)"},
+      {6, R"(\.in)", ".co.in"},
+  };
 
   std::vector<TestRule> rules;
   for (const auto& info : rule_info) {
@@ -1057,6 +1060,10 @@ TEST_F(RulesetMatcherTest, RegexSubstitution) {
       // The redirect url here would have been "http://" which is invalid.
       {"http://example.com/path?q1=1&redirect=&q2=2", base::nullopt},
       {"https://reddit.com", create_redirect_action(4, "https://abc.com")},
+      {"http://www.rst.xyz.com/path",
+       create_redirect_action(5, "https://rst.xyz.com/path")},
+      {"http://yahoo.in/path",
+       create_redirect_action(6, "http://yahoo.co.in/path")},
       // No match.
       {"http://example.com", base::nullopt}};
 

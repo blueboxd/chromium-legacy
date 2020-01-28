@@ -211,7 +211,6 @@
 <translation id="8941642502866065432">‏تعذّر تحديث Chromium</translation>
 <translation id="8974095189086268230">‏أصبح نظام التشغيل Chromium متاحًا من خلال المزيد من <ph name="BEGIN_LINK_CROS_OSS" />البرامج مفتوحة المصدر<ph name="END_LINK_CROS_OSS" />.</translation>
 <translation id="9019929317751753759">‏لجعل Chromium أكثر أمنًا، أوقفنا الإضافة التالية التي لم تُدرج في <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> وربما تكون قد أضيفت بدون علمك.</translation>
-<translation id="9022552996538154597">‏تسجيل الدخول إلى Chromium</translation>
 <translation id="9089354809943900324">‏إصدار Chromium قديم</translation>
 <translation id="9093206154853821181">{0,plural, =1{‏ستتم إعادة تشغيل Chromium في غضون ساعة واحدة}zero{‏ستتم إعادة تشغيل Chromium في غضون # ساعة}two{‏ستتم إعادة تشغيل Chromium في غضون ساعتين}few{‏ستتم إعادة تشغيل Chromium في غضون # ساعات}many{‏ستتم إعادة تشغيل Chromium في غضون # ساعةً}other{‏ستتم إعادة تشغيل Chromium في غضون # ساعة}}</translation>
 <translation id="91086099826398415">‏فتح الرابط في علامة تبويب جديدة في Chromium</translation>

@@ -148,7 +148,7 @@ IN_PROC_BROWSER_TEST_F(ZoomControllerBrowserTest,
 
   ui_test_utils::NavigateToURLWithDisposition(
       browser(), url, WindowOpenDisposition::NEW_FOREGROUND_TAB,
-      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
   {
     content::WebContents* web_contents = tab_strip->GetActiveWebContents();
 
@@ -254,7 +254,7 @@ IN_PROC_BROWSER_TEST_F(ZoomControllerBrowserTest,
   // ZoomController correctly detects this.
   ui_test_utils::NavigateToURLWithDisposition(
       browser(), signin_url, WindowOpenDisposition::NEW_FOREGROUND_TAB,
-      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
   login_ui_test_utils::WaitUntilUIReady(browser());
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();

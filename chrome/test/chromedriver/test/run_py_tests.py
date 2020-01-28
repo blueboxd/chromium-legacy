@@ -95,8 +95,6 @@ _OS_SPECIFIC_FILTER['win'] = [
     'ChromeDownloadDirTest.testFileDownloadAfterTabHeadless',
     'ChromeDownloadDirTest.testFileDownloadWithClickHeadless',
     'ChromeDownloadDirTest.testFileDownloadWithGetHeadless',
-    # https://bugs.chromium.org/p/chromium/issues/detail?id=946023
-    'ChromeDriverTest.testWindowFullScreen',
 ]
 _OS_SPECIFIC_FILTER['linux'] = [
     # https://crbug.com/1036055
@@ -110,8 +108,6 @@ _OS_SPECIFIC_FILTER['mac'] = [
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1927
     # https://crbug.com/1036636
     'MobileEmulationCapabilityTest.testTapElement',
-    # https://bugs.chromium.org/p/chromium/issues/detail?id=946023
-    'ChromeDriverTest.testWindowFullScreen',
     # https://bugs.chromium.org/p/chromium/issues/detail?id=1011225
     'ChromeDriverTest.testActionsMultiTouchPoint',
 ]

@@ -199,6 +199,8 @@ void SkiaOutputSurfaceImpl::Reshape(const gfx::Size& size,
                                     bool has_alpha,
                                     bool use_stencil) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK(!size.IsEmpty());
+
   if (initialize_waitable_event_) {
     initialize_waitable_event_->Wait();
     initialize_waitable_event_.reset();
@@ -818,7 +820,7 @@ GrBackendFormat SkiaOutputSurfaceImpl::GetGrBackendFormatForTexture(
 #endif
   } else if (dependency_->IsUsingDawn()) {
 #if BUILDFLAG(SKIA_USE_DAWN)
-    dawn::TextureFormat format = ToDawnFormat(resource_format);
+    wgpu::TextureFormat format = ToDawnFormat(resource_format);
     return GrBackendFormat::MakeDawn(format);
 #endif
   } else {

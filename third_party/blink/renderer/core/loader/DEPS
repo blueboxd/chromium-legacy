@@ -2,4 +2,7 @@ specific_include_rules = {
     "alternate_signed_exchange_resource_info.cc" : [
         "+net/http/http_request_headers.h"
     ],
+    "progress_tracker_test.cc" : [
+        "+base/run_loop.h"
+    ],
 }

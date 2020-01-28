@@ -307,16 +307,15 @@ base::Optional<RequestAction>
 RegexRulesMatcher::CreateRegexSubstitutionRedirectAction(
     const RequestParams& params,
     const RegexRuleInfo& info) const {
-  std::string redirect_str;
-
   // We could have extracted the captured strings during the matching stage
   // and directly used RE2::Rewrite here (which doesn't need to match the
   // regex again). However we prefer to capture the strings only when
   // necessary. Not capturing the strings should allow re2 to perform
   // additional optimizations during the matching stage.
-  bool success = RE2::Extract(
-      params.url->spec(), *info.regex,
-      ToRE2StringPiece(*info.regex_rule->regex_substitution()), &redirect_str);
+  std::string redirect_str = params.url->spec();
+  bool success =
+      RE2::Replace(&redirect_str, *info.regex,
+                   ToRE2StringPiece(*info.regex_rule->regex_substitution()));
   if (!success) {
     // This should generally not happen since we had already checked for a
     // match and during indexing, had verified that the substitution pattern

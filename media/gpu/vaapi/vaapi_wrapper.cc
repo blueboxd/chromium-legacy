@@ -95,9 +95,8 @@ using media_gpu_vaapi::StubPathMap;
     if ((va_error) != VA_STATUS_SUCCESS) {        \
       LOG_VA_ERROR_AND_REPORT(va_error, name);    \
       return (ret);                               \
-    } else {                                      \
-      VLOG(1) << name;                            \
     }                                             \
+    DVLOG(3) << name;                             \
   } while (0)
 
 namespace {

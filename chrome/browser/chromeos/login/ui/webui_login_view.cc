@@ -38,6 +38,7 @@
 #include "chromeos/network/network_state_handler.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "components/password_manager/core/browser/password_manager.h"
+#include "components/performance_manager/embedder/performance_manager_registry.h"
 #include "components/session_manager/core/session_manager.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "content/public/browser/notification_service.h"
@@ -219,6 +220,9 @@ void WebUILoginView::InitializeWebView(views::WebView* web_view,
       web_contents->GetMutableRendererPrefs();
   renderer_preferences_util::UpdateFromSystemSettings(
       prefs, ProfileHelper::GetSigninProfile());
+
+  performance_manager::PerformanceManagerRegistry::GetInstance()
+      ->CreatePageNodeForWebContents(web_contents);
 }
 
 void WebUILoginView::Init() {

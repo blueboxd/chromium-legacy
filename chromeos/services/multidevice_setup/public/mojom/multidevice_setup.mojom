@@ -168,16 +168,21 @@ interface MultiDeviceSetup {
   GetEligibleActiveHostDevices() =>
       (array<HostDevice> eligible_host_devices);
 
-  // Sets the host associated with the provided device ID as the host device
-  // for this account. The provided auth token must be valid in order to prove
-  // that the user is authenticated. If called when there is no current host or
-  // when the current host is a different device from the one passed, this
-  // function initiates a connection to the back-end and attempts to set the
-  // host. When called with the same device that is already the host, this
-  // function is a no-op. Returns a success boolean; this function will fail if
-  // the provided device ID does not correspond to an eligible host device on
-  // the account, or the provided auth token is invalid.
-  SetHostDevice(string device_id, string auth_token) => (bool success);
+  // Sets the host associated with the provided ID--Instance ID or legacy
+  // device ID, depending on whether the device is using v2 or v1 DeviceSync,
+  // respectively--as the host device for this account. The provided auth token
+  // must be valid in order to prove that the user is authenticated. If called
+  // when there is no current host or when the current host is a different
+  // device from the one passed, this function initiates a connection to the
+  // back-end and attempts to set the host. When called with the same device
+  // that is already the host, this function is a no-op. Returns a success
+  // boolean; this function will fail if the provided ID does not correspond to
+  // an eligible host device on the account, or the provided auth token is
+  // invalid.
+  // TODO(https://crbug.com/1019206): When v1 DeviceSync is turned off, only
+  // use Instance ID since all devices are guaranteed to have one.
+  SetHostDevice(string instance_id_or_legacy_device_id, string auth_token) =>
+      (bool success);
 
   // Removes the currently-set host as the multi-device host for this account.
   // If there was no host set to begin with, this function is a no-op.
@@ -229,5 +234,7 @@ interface MultiDeviceSetup {
 interface PrivilegedHostDeviceSetter {
   // Same functionality as MultiDeviceSetup's SetHostDevice() function above,
   // except that no auth token is required.
-  SetHostDevice(string device_id) => (bool success);
+  // TODO(https://crbug.com/1019206): When v1 DeviceSync is turned off, only
+  // use Instance ID since all devices are guaranteed to have one.
+  SetHostDevice(string instance_id_or_legacy_device_id) => (bool success);
 };

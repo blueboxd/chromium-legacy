@@ -133,7 +133,8 @@ void MessageQuotaChecker::SetMessagePipe(MessagePipeHandle message_pipe) {
   MojoResult rv =
       MojoSetQuota(message_pipe.value(), MOJO_QUOTA_TYPE_UNREAD_MESSAGE_COUNT,
                    config_->unread_message_count_quota, nullptr);
-  DCHECK_EQ(MOJO_RESULT_OK, rv);
+  // TODO(https://crbug.com/1011441): Revert this to a DCHECK.
+  CHECK_EQ(MOJO_RESULT_OK, rv);
 }
 
 size_t MessageQuotaChecker::GetCurrentQuotaStatusForTesting() {
@@ -203,6 +204,8 @@ base::Optional<size_t> MessageQuotaChecker::GetCurrentMessagePipeQuota() {
   MojoResult rv = MojoQueryQuota(message_pipe_.value(),
                                  MOJO_QUOTA_TYPE_UNREAD_MESSAGE_COUNT, nullptr,
                                  &limit, &usage);
+  // TODO(https://crbug.com/1011441): Change to a DCHECK.
+  CHECK_NE(MOJO_QUOTA_LIMIT_NONE, limit);
   return rv == MOJO_RESULT_OK ? usage : 0u;
 }
 

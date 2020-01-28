@@ -121,7 +121,7 @@ class VIZ_SERVICE_EXPORT VizProcessContextProvider
   std::unique_ptr<gpu::TransferBuffer> transfer_buffer_;
   std::unique_ptr<gpu::gles2::GLES2Implementation> gles2_implementation_;
   std::unique_ptr<ContextCacheController> cache_controller_;
-  gpu::ContextResult context_result_;
+  gpu::ContextResult context_result_ = gpu::ContextResult::kSuccess;
 
   std::unique_ptr<skia_bindings::GrContextForGLES2Interface> gr_context_;
 

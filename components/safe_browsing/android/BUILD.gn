@@ -45,7 +45,6 @@ static_library("remote_database_manager") {
     "//components/safe_browsing/core/db:database_manager",
     "//components/safe_browsing/core/db:v4_get_hash_protocol_manager",
     "//components/safe_browsing/core/db:v4_protocol_manager_util",
-    "//components/safe_browsing/core/realtime:url_lookup_service",
     "//components/variations",
     "//content/public/browser",
     "//net",

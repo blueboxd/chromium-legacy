@@ -16,6 +16,7 @@
 #include "base/optional.h"
 #include "base/values.h"
 #include "content/browser/devtools/protocol/forward.h"
+#include "content/public/browser/devtools_agent_host_client_channel.h"
 #include "content/public/browser/devtools_external_agent_proxy.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
@@ -34,16 +35,21 @@ class DevToolsDomainHandler;
 
 class DevToolsSession : public protocol::FrontendChannel,
                         public blink::mojom::DevToolsSessionHost,
-                        public DevToolsExternalAgentProxy {
+                        public DevToolsExternalAgentProxy,
+                        public content::DevToolsAgentHostClientChannel {
  public:
-  explicit DevToolsSession(DevToolsAgentHostClient* client);
+  DevToolsSession(DevToolsAgentHostClient* client,
+                  const std::string& session_id);
   ~DevToolsSession() override;
 
   void SetAgentHost(DevToolsAgentHostImpl* agent_host);
   void SetRuntimeResumeCallback(base::OnceClosure runtime_resume);
   void Dispose();
 
-  DevToolsAgentHostClient* client() { return client_; }
+  // content::DevToolsAgentHostClientChannel implementation.
+  content::DevToolsAgentHost* GetAgentHost() override;
+  content::DevToolsAgentHostClient* GetClient() override;
+
   DevToolsSession* GetRootSession();
 
   // Browser-only sessions do not talk to mojom::DevToolsAgent, but instead
@@ -67,8 +73,7 @@ class DevToolsSession : public protocol::FrontendChannel,
                                       DevToolsAgentHostImpl* agent_host,
                                       DevToolsAgentHostClient* client);
   void DetachChildSession(const std::string& session_id);
-  void SendMessageFromChildSession(const std::string& session_id,
-                                   base::span<const uint8_t> message);
+  bool HasChildSession(const std::string& session_id);
 
  private:
   struct PendingMessage {
@@ -105,6 +110,9 @@ class DevToolsSession : public protocol::FrontendChannel,
   void fallThrough(int call_id,
                    const std::string& method,
                    crdtp::span<uint8_t> message) override;
+
+  // content::DevToolsAgentHostClientChannel implementation.
+  void DispatchProtocolMessageToClient(std::vector<uint8_t> message) override;
 
   // blink::mojom::DevToolsSessionHost implementation.
   void DispatchProtocolResponse(
@@ -146,6 +154,7 @@ class DevToolsSession : public protocol::FrontendChannel,
   blink::mojom::DevToolsSessionStatePtr session_state_cookie_;
 
   DevToolsSession* root_session_ = nullptr;
+  std::string session_id_;  // empty if this is the root session.
   base::flat_map<std::string, DevToolsSession*> child_sessions_;
   base::OnceClosure runtime_resume_;
   DevToolsExternalAgentProxyDelegate* proxy_delegate_ = nullptr;

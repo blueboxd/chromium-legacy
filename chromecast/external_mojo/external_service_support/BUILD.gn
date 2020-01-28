@@ -22,17 +22,24 @@ source_set("external_service") {
 
 source_set("process_setup") {
   sources = [
-    "crash_reporter_client.cc",
-    "crash_reporter_client.h",
     "process_setup.cc",
     "process_setup.h",
   ]
   deps = [
     "//base",
     "//base:base_static",
-    "//chromecast/crash",
-    "//components/crash/content/app",
   ]
+
+  if (!is_fuchsia) {
+    sources += [
+      "crash_reporter_client.cc",
+      "crash_reporter_client.h",
+    ]
+    deps += [
+      "//chromecast/crash",
+      "//components/crash/content/app",
+    ]
+  }
 }
 
 source_set("service_process") {

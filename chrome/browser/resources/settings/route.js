@@ -166,14 +166,11 @@ cr.define('settings', function() {
       r.ACCESSIBILITY = r.ADVANCED.createSection('/accessibility', 'a11y');
 
       // <if expr="chromeos or is_linux">
-      if (loadTimeData.getBoolean('enableCaptionSettings')) {
-        r.CAPTIONS = r.ACCESSIBILITY.createChild('/captions');
-      }
+      r.CAPTIONS = r.ACCESSIBILITY.createChild('/captions');
       // </if>
 
       // <if expr="is_win">
-      if (loadTimeData.getBoolean('enableCaptionSettings') &&
-          !loadTimeData.getBoolean('isWindows10OrNewer')) {
+      if (!loadTimeData.getBoolean('isWindows10OrNewer')) {
         r.CAPTIONS = r.ACCESSIBILITY.createChild('/captions');
       }
       // </if>

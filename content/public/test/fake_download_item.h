@@ -89,6 +89,7 @@ class FakeDownloadItem : public download::DownloadItem {
   void DeleteFile(base::OnceCallback<void(bool)> callback) override;
   download::DownloadFile* GetDownloadFile() override;
   bool IsDangerous() const override;
+  bool IsMixedContent() const override;
   download::DownloadDangerType GetDangerType() const override;
   download::DownloadItem::MixedContentStatus GetMixedContentStatus()
       const override;
@@ -115,6 +116,7 @@ class FakeDownloadItem : public download::DownloadItem {
   void SimulateErrorForTesting(
       download::DownloadInterruptReason reason) override;
   void ValidateDangerousDownload() override;
+  void ValidateMixedContentDownload() override;
   void StealDangerousDownload(bool delete_file_afterward,
                               const AcquireFileCallback& callback) override;
   void Rename(const base::FilePath& name,

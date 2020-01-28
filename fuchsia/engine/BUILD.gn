@@ -201,27 +201,6 @@ executable("web_engine_exe") {
   visibility = [ ":*" ]
 }
 
-# Transitional package using old package/component names.
-# TODO(crbug.com/1029180): Remove this after CIPD consumers have transitioned
-#                          to using "web_engine.cmx" (from ":web_engine").
-fuchsia_package("web_engine_deprecated") {
-  binary = ":web_engine_exe"
-  package_name_override = "chromium"
-  manifest = "chromium.cmx"
-  excluded_files = [
-    "lib/libswiftshader_libEGL.so",
-    "lib/libswiftshader_libGLESv2.so",
-    "lib/libEGL.so",
-    "lib/libGLESv2.so",
-    "lib/libfuchsia_egl.so",
-  ]
-}
-fuchsia_package_runner("web_engine_deprecated_runner") {
-  package = ":web_engine_deprecated"
-  package_name_override = "chromium"
-  install_only = true
-}
-
 fuchsia_package("web_engine") {
   binary = ":web_engine_exe"
   manifest = "context_provider.cmx"

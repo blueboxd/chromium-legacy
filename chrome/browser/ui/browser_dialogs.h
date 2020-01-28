@@ -24,7 +24,6 @@ class Browser;
 class LoginHandler;
 class Profile;
 struct WebApplicationInfo;
-enum class PermissionAction;
 
 namespace base {
 class FilePath;
@@ -41,6 +40,10 @@ class Extension;
 
 namespace net {
 class AuthChallengeInfo;
+}
+
+namespace permissions {
+enum class PermissionAction;
 }
 
 namespace safe_browsing {
@@ -295,7 +298,7 @@ void ShowNativeFileSystemPermissionDialog(
     const url::Origin& origin,
     const base::FilePath& path,
     bool is_directory,
-    base::OnceCallback<void(PermissionAction result)> callback,
+    base::OnceCallback<void(permissions::PermissionAction result)> callback,
     content::WebContents* web_contents);
 
 // Displays a dialog to inform the user that the |path| they picked using the
@@ -317,7 +320,7 @@ void ShowNativeFileSystemRestrictedDirectoryDialog(
 void ShowNativeFileSystemDirectoryAccessConfirmationDialog(
     const url::Origin& origin,
     const base::FilePath& path,
-    base::OnceCallback<void(PermissionAction result)> callback,
+    base::OnceCallback<void(permissions::PermissionAction result)> callback,
     content::WebContents* web_contents);
 
 #endif  // CHROME_BROWSER_UI_BROWSER_DIALOGS_H_

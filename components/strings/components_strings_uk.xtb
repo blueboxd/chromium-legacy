@@ -79,6 +79,7 @@
 <translation id="129553762522093515">Нещодавно закриті</translation>
 <translation id="1298536327547837046">Пошук зловмисного програмного забезпечення</translation>
 <translation id="129863573139666797"><ph name="BEGIN_LINK" />Спробуйте видалити файли cookie<ph name="END_LINK" /></translation>
+<translation id="1301324364792935241">Перевірте налаштування безпеки DNS</translation>
 <translation id="1307966114820526988">Функції не підтримуються</translation>
 <translation id="1314509827145471431">Зшити праворуч</translation>
 <translation id="1320233736580025032">Prc1 (конверт)</translation>
@@ -152,6 +153,7 @@
 <translation id="1569487616857761740">Введіть дату закінчення терміну дії</translation>
 <translation id="1581080074034554886">CVC</translation>
 <translation id="1583429793053364125">Під час завантаженння цієї сторінки сталася помилка.</translation>
+<translation id="1586541204584340881">встановлені розширення;</translation>
 <translation id="1588438908519853928">Звичайний</translation>
 <translation id="1592005682883173041">Доступ до локальних даних</translation>
 <translation id="1594030484168838125">Вибрати</translation>
@@ -362,6 +364,7 @@
 <translation id="2544644783021658368">Один документ</translation>
 <translation id="254947805923345898">Недійсне значення правила.</translation>
 <translation id="255002559098805027">Хост <ph name="HOST_NAME" /> надіслав недійсну відповідь.</translation>
+<translation id="2553853292994445426">Перевірте налаштування безпеки DNS. Можливо, ви налаштували безпечний DNS-сервер, до якого не вдається підключитися.</translation>
 <translation id="2556876185419854533">&amp;Відмінити редагування</translation>
 <translation id="257674075312929031">Група</translation>
 <translation id="2586657967955657006">Буфер обміну</translation>
@@ -474,6 +477,7 @@
 <translation id="3095940652251934233">Statement</translation>
 <translation id="3096100844101284527">Додати адресу отримання</translation>
 <translation id="3105172416063519923">Ідентифікатор об’єкта:</translation>
+<translation id="3107591622054137333"><ph name="BEGIN_LINK" />перевірити конфігурацію безпеки DNS-сервера<ph name="END_LINK" /></translation>
 <translation id="3109728660330352905">У вас немає дозволу переглядати цю сторінку.</translation>
 <translation id="3113284927548439113">Третя зміна</translation>
 <translation id="3116158981186517402">Заламінувати</translation>
@@ -771,6 +775,7 @@
 <translation id="4390472908992056574">До полів</translation>
 <translation id="4406896451731180161">результати пошуку</translation>
 <translation id="4408413947728134509">Файли cookie: <ph name="NUM_COOKIES" /></translation>
+<translation id="4414290883293381923">Щойно ви ввели пароль на оманливому сайті. Chrome радить негайно перейти на <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, <ph name="WEBSITE_3" /> та інші сайти, де використовується цей пароль, і змінити його.</translation>
 <translation id="4415426530740016218">Адреса отримання</translation>
 <translation id="4424024547088906515">Цей сервер не зміг довести, що він – домен <ph name="DOMAIN" />. Chrome не вважає його сертифікат безпеки надійним. Імовірні причини: неправильна конфігурація або хтось намагається перехопити ваше з’єднання.</translation>
 <translation id="443121186588148776">Послідовний порт</translation>
@@ -1202,6 +1207,7 @@
 <translation id="6353505687280762741">{COUNT,plural, =0{Немає}=1{1 пароль (для <ph name="DOMAIN_LIST" />, синхронізовано)}=2{2 паролі (для <ph name="DOMAIN_LIST" />, синхронізовано)}one{# пароль (для <ph name="DOMAIN_LIST" />, синхронізовано)}few{# паролі (для <ph name="DOMAIN_LIST" />, синхронізовано)}many{# паролів (для <ph name="DOMAIN_LIST" />, синхронізовано)}other{# пароля (для <ph name="DOMAIN_LIST" />, синхронізовано)}}</translation>
 <translation id="6358450015545214790">Що це означає?</translation>
 <translation id="6361757823711327522">B7</translation>
+<translation id="6364095313648930329"><ph name="BEGIN_LINK" />перевірити конфігурацію проксі-сервера, брандмауера та DNS-сервера<ph name="END_LINK" /></translation>
 <translation id="6366710531182496394">Двічі скріпити ліворуч</translation>
 <translation id="6377268785556383139">1 результат для запиту "<ph name="SEARCH_TEXT" />"</translation>
 <translation id="6380497234672085559">A0</translation>
@@ -1224,6 +1230,7 @@
 <translation id="6433595998831338502">Хост <ph name="HOST_NAME" /> відхилив запит на з’єднання.</translation>
 <translation id="6434309073475700221">Скасувати</translation>
 <translation id="6440503408713884761">Ігнорується</translation>
+<translation id="6443406338865242315">встановлені розширення та плагіни;</translation>
 <translation id="6446163441502663861">Kahu (конверт)</translation>
 <translation id="6446608382365791566">Додати більше інформації</translation>
 <translation id="6447842834002726250">Cookie-файли</translation>
@@ -1333,6 +1340,7 @@
 <translation id="7012363358306927923">China UnionPay</translation>
 <translation id="7016992613359344582">Такі стягнення можуть бути одноразовими чи регулярними й неочевидними.</translation>
 <translation id="7029809446516969842">Паролі</translation>
+<translation id="7031646650991750659">встановлені додатки Google Play.</translation>
 <translation id="7050187094878475250">Ви намагалися зв’язатися з доменом <ph name="DOMAIN" />, але сервер надав сертифікат із задовгим терміном дії.</translation>
 <translation id="705310974202322020">{NUM_CARDS,plural, =1{Зараз не вдається зберегти цю картку}one{Зараз не вдається зберегти ці картки}few{Зараз не вдається зберегти ці картки}many{Зараз не вдається зберегти ці картки}other{Зараз не вдається зберегти ці картки}}</translation>
 <translation id="7053983685419859001">Блокувати</translation>
@@ -1392,6 +1400,7 @@
 <translation id="7319430975418800333">A3</translation>
 <translation id="7320336641823683070">Довідка щодо з’єднання</translation>
 <translation id="733354035281974745">Заміна локального облікового запису на пристрої</translation>
+<translation id="7333654844024768166">Щойно ви ввели пароль на оманливому сайті. Chromium радить негайно перейти на <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, <ph name="WEBSITE_3" /> та інші сайти, де використовується цей пароль, і змінити його.</translation>
 <translation id="7334320624316649418">&amp;Повторити перевпорядкування</translation>
 <translation id="7337706099755338005">Недоступний на вашій платформі.</translation>
 <translation id="733923710415886693">Сертифікат сервера не надав інформацію про перевірку.</translation>

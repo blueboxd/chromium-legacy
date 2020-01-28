@@ -5,9 +5,10 @@
 #ifndef DEVICE_FIDO_MAC_MAKE_CREDENTIAL_OPERATION_H_
 #define DEVICE_FIDO_MAC_MAKE_CREDENTIAL_OPERATION_H_
 
+#include <os/availability.h>
+
 #include "base/callback.h"
 #include "base/component_export.h"
-#include "base/mac/availability.h"
 #include "base/macros.h"
 #include "device/fido/authenticator_make_credential_response.h"
 #include "device/fido/ctap_make_credential_request.h"

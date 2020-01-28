@@ -248,6 +248,8 @@ static_library("common") {
     "pairing_registry_delegate_win.h",
     "pin_hash.cc",
     "pin_hash.h",
+    "pointer_lock_detector.cc",
+    "pointer_lock_detector.h",
     "policy_watcher.cc",
     "policy_watcher.h",
     "process_stats_agent.h",

@@ -226,6 +226,7 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadItemImpl
   void RemoveObserver(DownloadItem::Observer* observer) override;
   void UpdateObservers() override;
   void ValidateDangerousDownload() override;
+  void ValidateMixedContentDownload() override;
   void StealDangerousDownload(bool need_removal,
                               const AcquireFileCallback& callback) override;
   void Pause() override;
@@ -280,6 +281,7 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadItemImpl
   void DeleteFile(base::OnceCallback<void(bool)> callback) override;
   DownloadFile* GetDownloadFile() override;
   bool IsDangerous() const override;
+  bool IsMixedContent() const override;
   DownloadDangerType GetDangerType() const override;
   MixedContentStatus GetMixedContentStatus() const override;
   bool TimeRemaining(base::TimeDelta* remaining) const override;

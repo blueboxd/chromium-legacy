@@ -26,6 +26,7 @@
 <translation id="1031362278801463162">ກໍາລັງໂຫຼດການເບິ່ງຕົວຢ່າງກ່ອນ</translation>
 <translation id="1032605640136438169">ກະລຸນາກວດເບິ່ງຂໍ້ກຳນົດໃໝ່</translation>
 <translation id="103279545524624934">ຂະຫຍາຍພື້ນທີ່ດິສກ໌ເພື່ອເປີດໃຊ້ແອັບ Android.</translation>
+<translation id="1033343386521881354">ພົບເຄື່ອງພິມ 1 ລາຍການຈາກເຊີບເວີການພິມ.</translation>
 <translation id="1033780634303702874">ເຂົ້າ​ຫາອຸ​ປະ​ກອນ Serial ຂອງ​ທ່ານ</translation>
 <translation id="1034942643314881546">ເປີດນຳໃຊ້ ADB ເພື່ອສ້າງຮູບປະກອບແອັບ</translation>
 <translation id="1036348656032585052">ປິດ</translation>
@@ -152,6 +153,7 @@
 <translation id="1197979282329025000">ເກີດຄວາມຜິດພາດຂຶ້ນໃນຂະນະທີ່ກໍາລັງກູ້ຄືນຄວາມສາມາດຂອງເຄື່ອງພິມສໍາລັບເຄື່ອງພິມ <ph name="PRINTER_NAME" />. ເຄື່ອງພິມນີ້ບໍ່ສາມາດລົງທະບຽນໄດ້ກັບ <ph name="CLOUD_PRINT_NAME" />.</translation>
 <translation id="119944043368869598">ລຶບທັງ​ຫມົດ</translation>
 <translation id="1201402288615127009">ຕໍ່ໄປ</translation>
+<translation id="1202556750060561551">ລະບົບຈະລຶບລ້າງຂໍ້ມູນ ແລະ ຄຸກກີ້ທັງໝົດທີ່ເກັບໄວ້ໂດຍ <ph name="SITE_GROUP_NAME" />, ເວັບໄຊຕ່າງໆພາຍໃຕ້ມັນ ແລະ ແອັບທີ່ຕິດຕັ້ງຂອງມັນ.</translation>
 <translation id="1202596434010270079">ແອັບ Kiosk ໄດ້​ຮັບ​ການ​ອັບ​ເດດ​ແລ້ວ. ກະ​ລຸ​ນາ​ເອົາ USB ອອກ.</translation>
 <translation id="120368089816228251">ບັນທຶກເພງ</translation>
 <translation id="1205489148908752564">ອ່ານ ແລະປ່ຽນຜູ້ໃຊ້ທີ່ຢູ່ໃນບັນຊີຂາວ</translation>
@@ -279,8 +281,10 @@
 <translation id="138784436342154190">ກູ້ຄືນໜ້າເລີ່ມຕົ້ນຕາມຄ່າເລີ່ມຕົ້ນບໍ?</translation>
 <translation id="1390548061267426325">ເປີດເປັນແຖບທໍາມະດາ</translation>
 <translation id="1393283411312835250">ແສງແດດ ແລະ ເມກເຝື້ອ</translation>
+<translation id="1393787139683794508">ນີ້ຈະລຶບລ້າງຂໍ້ມູນ ແລະ ຄຸກກີ້ທັງໝົດທີ່ເກັບໄວ້ໂດຍ <ph name="ORIGIN_NAME" />.</translation>
 <translation id="1395730723686586365">ຕົວອັບເດດເລີ່ມຕົ້ນແລ້ວ</translation>
 <translation id="1396139853388185343">ຜິດພາດໃນການຕັ້ງຄ່າເຄື່ອງພິມ</translation>
+<translation id="1396259464226642517">ຜົນຮັບນີ້ຕ່າງຈາກທີ່ຄາດໄວ້ບໍ? <ph name="BEGIN_LINK" />ສົ່ງຄຳຕິຊົມ<ph name="END_LINK" /></translation>
 <translation id="1396963298126346194">ຊື່ຜູ້ໃຊ້ ແລະ ລະຫັດຜ່ານທີ່ທ່ານປ້ອນເຂົ້າບໍ່ກົງກັນ</translation>
 <translation id="1397500194120344683">ບໍ່ມີອຸປະກອນທີ່ມີສິດ. <ph name="LINK_BEGIN" />ສຶກສາເພີ່ມເຕີມ<ph name="LINK_END" /></translation>
 <translation id="1398853756734560583">ຂະຫຍາຍໃຫຍ່</translation>
@@ -552,6 +556,7 @@
 <translation id="1758018619400202187">EAP-TLS</translation>
 <translation id="17584710573359123">ເບິ່ງໃນ Chrome Web Store</translation>
 <translation id="176193854664720708">ເຊັນເຊີລາຍນິ້ວມືຢູ່ໃນປຸ່ມປິດເປີດເຄື່ອງ. ກະລຸນາແຕະມັນເບົາໆດ້ວຍນິ້ວມືໃດໆກໍໄດ້.</translation>
+<translation id="176273057789108760">ອົງການຂອງທ່ານກຳລັງສະແກນໄຟລ໌ທີ່ລາກມາເພື່ອອະນຸມັດຄວາມປອດໄພ.</translation>
 <translation id="1763046204212875858">ສ້າງ​ທາງ​ລັດ​ແອັບພລິເຄຊັນ</translation>
 <translation id="1763108912552529023">ສືບຕໍ່ກວດຫາ</translation>
 <translation id="1763808908432309942">ເປີດໃນແຖບໃໝ່</translation>
@@ -590,6 +595,7 @@
 <translation id="1805472176602625930">ກົດປຸ່ມໃນກະແຈຄວາມປອດໄພ</translation>
 <translation id="1805738995123446102">ແຖບໃນພື້ນຫຼັງກຳລັງໃຊ້ໄມໂຄຣໂຟນຂອງທ່ານຢູ່</translation>
 <translation id="1805822111539868586">ກວດເບິ່ງມຸມມອງ</translation>
+<translation id="1805888043020974594">ເຊີບເວີການພິມ</translation>
 <translation id="1805967612549112634">ຢືນຢັນ PIN</translation>
 <translation id="1809734401532861917">ເພີ່ມບຸກມາກ, ປະຫວັດ, ລະຫັດຜ່ານ ແລະ ການຕັ້ງຄ່າອື່ນຂອງຂ້ອຍໃສ່ <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="1813278315230285598">ການ​ບໍ​ລິ​ການ</translation>
@@ -738,6 +744,7 @@
 <translation id="202352106777823113">ການດາວໂຫຼດໃຊ້ເວລາດົນເກີນໄປ ແລະເຄືອຂ່າຍຢຸດໄວ້ແລ້ວ.</translation>
 <translation id="2025632980034333559"><ph name="APP_NAME" /> ​ໄດ້​ເກີດຂັດຂ້ອງ. ຄລິກປູມເປົ້ານີ້ເພື່ອໂຫຼດສ່ວນຂະຫຍາຍຄືນໃໝ່.</translation>
 <translation id="2025891858974379949">ເນື້ອຫາທີ່ບໍ່ປອດໄພ</translation>
+<translation id="202918510990975568">ປ້ອນລະຫັດຜ່ານຂອງທ່ານເພື່ອຕັ້ງຄ່າຄວາມປອດໄພ ແລະ ການເຂົ້າສູ່ລະບົບ</translation>
 <translation id="2034346955588403444">ເພີ່ມເຄືອຂ່າຍ WiFi ອື່ນ</translation>
 <translation id="203574396658008164">ເປີດນຳໃຊ້ການຈົດບັນທຶກຈາກໜ້າຈໍລັອກ</translation>
 <translation id="2037445849770872822">ມີການຕັ້ງຄ່າການຄວບຄຸມເບິ່ງແຍງສຳລັບບັນຊີ Google ນີ້. ເພື່ອຕັ້ງຄ່າການຄວບຄຸມຂອງພໍ່ແມ່ເພີ່ມເຕີມ, ກະລຸນາເລືອກ ສືບຕໍ່.
@@ -889,6 +896,7 @@
 <translation id="2224471211857467033">ເຫດການຊ່ວຍເຂົ້າເຖິງ</translation>
 <translation id="2224551243087462610">ແກ້ໄຂຊື່ໂຟລເດີ</translation>
 <translation id="2226449515541314767">ເວັບໄຊທ໌ນີ້ຖືກບລັອກຈາກການຄວບຄຸມອຸປະກອນ MIDI ເຕັມ.</translation>
+<translation id="222704500187107962">ລະບົບຈະລຶບຂໍ້ຍົກເວັ້ນນີ້ອອກໂດຍອັດຕະໂນມັດຫຼັງຈາກທີ່ທ່ານອອກຈາກເຊດຊັນທີ່ບໍ່ເປີດເຜີຍຕົວຕົນໃນປັດຈຸບັນ</translation>
 <translation id="2227179592712503583">ລຶບການແນະນຳອອກ</translation>
 <translation id="2229161054156947610">ຍັງເຫຼືອຫຼາຍ​ກ​່​ວາ 1 ຊົ່ວ​ໂມງ​</translation>
 <translation id="222931766245975952">ຕັດໄຟລ໌ໃຫ້ສັ້ນລົງແລ້ວ</translation>
@@ -942,6 +950,7 @@
 <translation id="2300383962156589922">ປັບແຕ່ງ ແລະ ຄວບຄຸມ <ph name="APP_NAME" /></translation>
 <translation id="2301382460326681002">ໄດເຣັກຕໍຣີພື້ນຖານສ່ວນຂະຫຍາຍໃຊ້ບໍ່ໄດ້.</translation>
 <translation id="23030561267973084">"<ph name="EXTENSION_NAME" />" ຂໍການອະນຸຍາດເພີ່ມເຕີມແລ້ວ.</translation>
+<translation id="23055578400314116">ເລືອກຊື່ຜູ້ໃຊ້</translation>
 <translation id="2307462900900812319">ປັບຕັ້ງຄ່າເຄືອຂ່າຍ</translation>
 <translation id="230927227160767054">ໜ້ານີ້ຕ້ອງການຕິດຕັ້ງຕົວຈັດການເລື່ອງການ​ບໍ​ລິ​ການ​.</translation>
 <translation id="2309620859903500144">ເວັບໄຊນີ້ໄດ້ຖືກບລັອກບໍ່ໃຫ້ເຂົ້າເຖິງເຊັນເຊີກວດຈັບການເຄື່ອນໄຫວ ຫຼື ແສງຂອງທ່ານ.</translation>
@@ -981,6 +990,7 @@
 <translation id="2353297238722298836">ອະນຸຍາດກ້ອງຖ່າຍຮູບ ແລະ ໄມໂຄຣໂຟນ</translation>
 <translation id="2356070529366658676">ຖາມ</translation>
 <translation id="2357330829548294574">ລຶບ <ph name="USER_NAME" /> ອອກ</translation>
+<translation id="235798134753548762">ລະບົບຈະຊິ້ງຂໍ້ມູນແອັບ, ການຕັ້ງຄ່າ ແລະ ການຕັ້ງຄ່າ Wi-Fi ຂອງທ່ານ. ເພື່ອປ່ຽນແປງ, ກະລຸນາໄປທີ່ການຕັ້ງຄ່າໄດ້ທຸກເວລາຫຼັງຈາກຕັ້ງຄ່າແລ້ວ.</translation>
 <translation id="2359345697448000899">ຈັດການສ່ວນຂະຫຍາຍຂອງທ່ານໂດຍການຄລິກສ່ວນຂະຫຍາຍຢູ່ໃນເມນູເຄື່ອງມື.</translation>
 <translation id="2359808026110333948">ສືບຕໍ່</translation>
 <translation id="236117173274098341">ປັບໃຫ້ເໝາະສົມ</translation>
@@ -1033,6 +1043,7 @@
 <translation id="2436720498717686157">ອົງການຈັດຕັ້ງຂອງທ່ານກຳນົດໃຫ້ອັບເດດອຸປະກອນນີ້ໃນທັນທີ</translation>
 <translation id="2439545803278355377">ປ້ອນ PIN ໃໝ່ຂອງທ່ານ PIN ຕ້ອງຍາວຢ່າງໜ້ອຍສີ່ຕົວອັກສອນ ແລະ ສາມາດປະກອບມີຕົວໜັງສື, ຕົວເລກ ແລະ ຕົວອັກສອນອື່ນໆ.</translation>
 <translation id="2440604414813129000">ເບິ່ງແຫຼ່ງທີ່ມາ</translation>
+<translation id="244231003699905658">ທີ່ຢູ່ບໍ່ຖືກຕ້ອງ. ກະລຸນາກວດເບິ່ງທີ່ຢູ່ ແລ້ວລອງໃໝ່.</translation>
 <translation id="2442916515643169563">ເງົາຂໍ້ຄວາມ</translation>
 <translation id="2445081178310039857">ຈໍາເປັນຕ້ອງມີໄດເຣັກຕໍຣີພື້ນຖານສ່ວນຂະຫຍາຍ.</translation>
 <translation id="2445484935443597917">ສ້າງໂປຣໄຟລ໌ໃໝ່</translation>
@@ -1087,6 +1098,7 @@
 <translation id="2501278716633472235">ກັບ​ຄືນ​ໄປ</translation>
 <translation id="2501797496290880632">ພິມທາງລັດ</translation>
 <translation id="2502441965851148920">ການອັບ​ເດດ​ອັດ​ຕະ​ໂນ​ມັດ​ເປີດ​ໃຊ້​ງານ​ແລ້ວ. ການ​ອັບ​ເດດ​ເອົາ​ເອງຖືກປິດໃຊ້ງານໂດຍຜູ້​ດູແລລະ​ບົບ​ຂອງ​ທ່ານ.</translation>
+<translation id="2502719318159902502">ສິດເຂົ້າເຖິງເຕັມຮູບແບບ</translation>
 <translation id="2505127913256479918">ລະບົບຈະລຶບບັນຊີທີ່ມີການຄວບຄຸມເບິ່ງແຍງນີ້ອອກໃນໄວໆນີ້</translation>
 <translation id="2505324914378689427">{SCREEN_INDEX,plural, =1{ໜ້າຈໍ #}other{ໜ້າຈໍ #}}</translation>
 <translation id="2505402373176859469"><ph name="RECEIVED_AMOUNT" /> ຈາກ <ph name="TOTAL_SIZE" /></translation>
@@ -1359,6 +1371,7 @@
 <translation id="2865919525181940183">ພາບໜ້າຈໍຂອງໂປຣແກຣມທີ່ປັດຈຸບັນຢູ່ໃນໜ້າຈໍ</translation>
 <translation id="286674810810214575">ກຳລັງກວດແຫຼ່ງພະລັງງານ...</translation>
 <translation id="2867768963760577682">ເປີດ​ເປັນ​ແຖບປັກໝຸດແລ້ວ</translation>
+<translation id="2868184003987917410">ບໍ່ອະນຸຍາດໃຫ້ເວັບໄຊເຂົ້າເຖິງອຸປະກອນ/ຂໍ້ມູນເວີຊົວ ຣິອາລິຕີຂອງທ່ານ</translation>
 <translation id="2868746137289129307">ສ່ວນ​ຂະ​ຫຍາຍ​ນີ້​ຫຼ້າ​ສະ​ໄໝ ແລະ​ຖືກ​ປິດ​ໃຊ້​ງານ​ຕາມ​ນະ​ໂຍ​ບາຍ​ວິ​ສາ​ຫະ​ກິດ​ແລ້ວ. ມັນ​ອາດ​ຈະ​ຖືກ​ເປີດ​ໃຊ້​ງານ​ອັດ​ຕະ​ໂນ​ມັດ ເມື່ອ​ມີ​ເວີ​ຊັນ​ໃໝ່​ກວ່າ​ໃຫ້.</translation>
 <translation id="2870560284913253234">ເວັບ​ໄຊທ໌</translation>
 <translation id="2870909136778269686">ກຳລັງອັບເດດ...</translation>
@@ -1404,6 +1417,7 @@
 <translation id="2916745397441987255">ສ່ວນຂະຫຍາຍການຊອກຫາ</translation>
 <translation id="2921081876747860777">ກະລຸນາສ້າງລະຫັດຜ່ານເພື່ອປົກປ້ອງຂໍ້ມູນພາຍໃນເຄື່ອງຂອງທ່ານ.</translation>
 <translation id="2923234477033317484">ລຶບບັນຊີນີ້ອອກ</translation>
+<translation id="2925054096976782003">ອົງການຂອງທ່ານກຳລັງສະແກນຂໍ້ມູນທີ່ວາງໃສ່ເພື່ອອະນຸມັດຄວາມປອດໄພ.</translation>
 <translation id="2926085873880284723">ກູ້ຄືນທາງລັດເລີ່ມຕົ້ນ</translation>
 <translation id="2927017729816812676">ແຄ​ຊ໌​ບ່ອນເກັບຂໍ້ມູນ</translation>
 <translation id="2931157624143513983">ພໍດີກັບພື້ນທີ່ພິມອອກໄດ້</translation>
@@ -1427,6 +1441,7 @@
 <translation id="2956070239128776395">ສ່ວນທີ່ຝັງຢູ່ໃນກຸ່ມ: <ph name="ERROR_LINE" /></translation>
 <translation id="2957117904572187936">ບໍ່ອະນຸຍາດໃຫ້ເວັບໄຊໃດແກ້ໄຂໄຟລ໌ ຫຼື ໂຟນເດີໃນອຸປະກອນຂອງທ່ານ</translation>
 <translation id="2958721676848865875">ຄຳເຕືອນກ່ຽວກັບສ່ວນຂະຫຍາຍແພັກ</translation>
+<translation id="2959127025785722291">ມີບາງຢ່າງຜິດພາດ. ບໍ່ສາມາດສຳເລັດການສະແກນໄດ້. ກະລຸນາລອງໃໝ່.</translation>
 <translation id="2959842337402130152">ບໍ່ສາມາດກູ້ຄືນໄດ້ເນື່ອງຈາກພື້ນທີ່ຈັດເກັບຂໍ້ມູນບໍ່ພຽງພໍ. ຂະຫຍາຍ <ph name="SPACE_REQUIRED" /> ຈາກອຸປະກອນ ແລ້ວລອງອີກຄັ້ງ.</translation>
 <translation id="296026337010986570">ຮຽບຮ້ອຍແລ້ວ! ລຶບຊອບແວອັນຕະລາຍອອກແລ້ວ. ເພື່ອເປີດສ່ວນຂະຫຍາຍຄືນໃໝ່, ກະລຸນາເຂົ້າໄປ &lt;a href="chrome://extensions"&gt;ສ່ວນຂະຫຍາຍ&lt;/a&gt;.</translation>
 <translation id="2961090598421146107"><ph name="CERTIFICATE_NAME" /> (ໃຫ້ສ່ວນຂະຫຍາຍແລ້ວ)</translation>
@@ -1684,6 +1699,7 @@
 <translation id="3348038390189153836">ກວດພົບອຸປະກອນທີ່​ສາມາດຖອດອອກໄດ້</translation>
 <translation id="3349933790966648062">ຮ່ອງຮອຍຄວາມຈຳ</translation>
 <translation id="3350117557200012647">ເຂົ້າສູ່ໂໝດການຈັບຄູ່</translation>
+<translation id="3350244554415289209">ຖາມເມື່ອເວັບໄຊຕ້ອງການເຂົ້າເຖິງຕຳແໜ່ງກ້ອງຂອງທ່ານ ຫຼື ສ້າງແຜນທີ່ຫ້ອງຂອງທ່ານ (ແນະນຳ)</translation>
 <translation id="3355936511340229503">ການເຊື່ອມຕໍ່ຜິດພາດ</translation>
 <translation id="3356580349448036450">ສຳ​ເລັດ</translation>
 <translation id="3359256513598016054">ຂໍ້ຈໍາກັດນະໂຍບາຍໃບຢັ້ງຢືນ</translation>
@@ -1747,6 +1763,7 @@
 <translation id="3448492834076427715">ອັບເດດບັນຊີ</translation>
 <translation id="3449839693241009168">ກົດ <ph name="SEARCH_KEY" /> ເພື່ອສົ່ງຄໍາສັ່ງຫາ <ph name="EXTENSION_NAME" /></translation>
 <translation id="3450157232394774192">ເປີເຊັນການຄອບຄອງສະພາວະຢູ່ຊື່ໆ</translation>
+<translation id="3451332697983754369">ຊິ້ງຂໍ້ມູນ <ph name="DEVICE_TYPE" /> ຂອງຂ້ອຍ</translation>
 <translation id="3453612417627951340">ຕ້ອງມີການໃຫ້ສິດ</translation>
 <translation id="3454157711543303649">ການເປີດໃຊ້ງານສໍາເລັດ</translation>
 <translation id="3454213325559396544">ນີ້ແມ່ນການອັບເດດຊອບແວ ແລະ ຄວາມປອດໄພອັດຕະໂນມັດສຸດທ້າຍສຳລັບ <ph name="DEVICE_TYPE" /> ນີ້. ເພື່ອຮັບການອັບເດດໃນອະນາຄົດ, ກະລຸນາອັບເກຣດເປັນຮຸ່ນໃໝ່ກວ່າ.</translation>
@@ -1769,6 +1786,7 @@
 <translation id="347785443197175480">ສືບຕໍ່ອະນຸຍາດໃຫ້ <ph name="HOST" /> ​​ເຂົ້າຫາ​ກ້ອງ​ຖ່າຍ​ຮູບ​ ແລະໄມໂຄຣໂຟນຂອງ​ທ່ານບໍ່</translation>
 <translation id="3478685642445675458">ກະລຸນາປົດລັອກໂປຣໄຟລ໌ຂອງທ່ານກ່ອນທີ່ຈະເອົາບຸກຄົນໃດໜຶ່ງອອກ.</translation>
 <translation id="3479552764303398839">ບໍ່ແມ່ນດຽວນີ້</translation>
+<translation id="3479685872808224578">ກວດບໍ່ພົບເຊີບເວີການພິມ. ກະລຸນາກວດເບິ່ງທີ່ຢູ່ ແລ້ວລອງໃໝ່.</translation>
 <translation id="3481268647794498892">ກຳລັງເປີດໃນ <ph name="ALTERNATIVE_BROWSER_NAME" /> ໃນ <ph name="COUNTDOWN_SECONDS" /> ວິນາທີ</translation>
 <translation id="3484273680291419129">ກຳລັງລຶບຊອບແວອັນຕະລາຍອອກ...</translation>
 <translation id="3484869148456018791">ເອົາໃບ​ຢັ້ງ​ຢືນ​ໃຫມ່</translation>
@@ -1884,6 +1902,7 @@
 <translation id="3630132874740063857">ໂທລະສັບຂອງທ່ານ</translation>
 <translation id="3630995161997703415">ເພີ່ມເວັບໄຊນີ້ໃສ່ຖ້ານຂອງທ່ານເພື່ອໃຊ້ມັນໄດ້ທຸກເວລາ</translation>
 <translation id="3634507049637220048">ເຄືອຂ່າຍທີ <ph name="NETWORK_INDEX" /> ຈາກທັງໝົດ <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, ຈັດການໂດຍຜູ້ເບິ່ງແຍງລະບົບຂອງທ່ານ, ລາຍລະອຽດ</translation>
+<translation id="3635241501480133979">ຂໍ້ມູນນີ້ລະເມີດນະໂຍບາຍຄວາມປອດໄພຂອງອົງການຂອງທ່ານ ແລະ ບໍ່ສາມາດວາງລົງໄດ້.</translation>
 <translation id="3635353578505343390">ສົ່ງຄຳຕິຊົມຫາ Google</translation>
 <translation id="3636096452488277381">ເປັນແນວໃດ​, <ph name="USER_GIVEN_NAME" /> .</translation>
 <translation id="3636766455281737684"><ph name="PERCENTAGE" />% - <ph name="TIME" /> ຊ້າຍ</translation>
@@ -1918,6 +1937,7 @@
 <translation id="3677657024345889897">ງຽບທີ່ສຸດ</translation>
 <translation id="3677911431265050325">ຮ້ອງຂໍເວັບໄຊມືຖື</translation>
 <translation id="3678156199662914018">ສ່ວນຂະ​ຫຍາຍ​: <ph name="EXTENSION_NAME" /></translation>
+<translation id="3678613690490567106">ຊິ້ງຂໍ້ມູນເພື່ອມີປະສົບການທີ່ປັບແຕ່ງເປັນແບບສ່ວນຕົວໃນທົ່ວອຸປະກອນ</translation>
 <translation id="3681311097828166361">ຂໍຂອບໃຈສຳລັບຄຳຕິຊົມຂອງທ່ານ. ທ່ານອອບລາຍຢູ່ຕອນນີ້ ແລະ ລາຍງານຂອງທ່ານຈະຖືກສົ່ງໃນພາຍຫຼັງ.</translation>
 <translation id="3682824389861648626">ຂີດຈຳກັດການເຄື່ອນຍ້າຍ</translation>
 <translation id="3683524264665795342"><ph name="APP_NAME" /> ຂໍ​ການແຊຣ໌ໜ້າຈໍ</translation>
@@ -2428,6 +2448,7 @@
 <translation id="4400632832271803360">ກົດປຸ່ມຕົວເປີດໃຊ້ຄ້າງໄວ້ເພື່ອປ່ຽນພຶດຕິກຳຂອງປຸ່ມແຖວເທິງ</translation>
 <translation id="4400963414856942668">ທ່ານສາມາດຄລິກໃສ່ຮູບດາວເພື່ອບຸກມາກແຖບໃດໜຶ່ງໄວ້</translation>
 <translation id="4403775189117163360">ເລືອກໂຟນເດີອື່ນ</translation>
+<translation id="4404136731284211429">ສະແກນອີກ</translation>
 <translation id="4405117686468554883">*.jpeg, *.jpg, *.png</translation>
 <translation id="4408599188496843485">ຊ່ວຍເຫຼືອ</translation>
 <translation id="4409697491990005945">ຂອບເຈ້ຍ</translation>
@@ -2446,6 +2467,7 @@
 <translation id="4421932782753506458">ຟູ</translation>
 <translation id="4423376891418188461">ກູ້ຄືນການຕັ້ງຄ່າ</translation>
 <translation id="442397852638519243"><ph name="USER_NAME" />, ຜູ້ເບິ່ງແຍງລະບົບຂອງທ່ານກຳນົດໃຫ້ທ່ານປ່ຽນລະຫັດຜ່ານຂອງທ່ານ.</translation>
+<translation id="4429030830601238961">ຂໍ້ມູນນີ້ລະເມີດນະໂຍບາຍຄວາມປອດໄພຂອງອົງການຂອງທ່ານ ແລະ ບໍ່ສາມາດວາງໃສ່ໄດ້.</translation>
 <translation id="4430019312045809116">ລະດັບສຽງ</translation>
 <translation id="4430369329743628066">ເພີ່ມບຸກມາກແລ້ວ</translation>
 <translation id="4434045419905280838">ປັອບອັບ ແລະ ການປ່ຽນເສັ້ນທາງ</translation>
@@ -2492,9 +2514,11 @@
 <translation id="4501530680793980440">ຢືນ​ຢັນ​ການ​ເອົາອອກ</translation>
 <translation id="4502423230170890588">ລຶບອອກຈາກອຸປະກອນນີ້</translation>
 <translation id="4504940961672722399">ໃຊ້ສ່ວນຂະຫຍາຍນີ້ໂດຍການຄລິກໃສ່ໄອຄອນນີ້ ຫຼືໂດຍການກົດ <ph name="EXTENSION_SHORTCUT" />.</translation>
+<translation id="4507164039066603071">ບໍ່ອະນຸຍາດໃຫ້ເວັບໄຊເຂົ້າເຖິງຕຳແໜ່ງກ້ອງຂອງທ່ານ ຫຼື ສ້າງແຜນທີ່ຫ້ອງ</translation>
 <translation id="4508051413094283164">ເປີດທັງໝົດໃນໜ້າຈໍ Incognito</translation>
 <translation id="4508265954913339219">ການເປີດໃຊ້ງານບໍ່ສໍາເລັດ</translation>
 <translation id="4508765956121923607">ເບິ່ງແຫຼ່ງທີ່ມາ</translation>
+<translation id="4510614391273086606">ລະບົບກຳລັງຄືນຄ່າໄຟລ໌ ແລະ ແອັບ Linux ເປັນສະຖານະທີ່ສຳຮອງໄວ້ຂອງພວກມັນຢູ່.</translation>
 <translation id="451407183922382411">ສະໜອງໃຫ້ໂດຍ <ph name="COMPANY_NAME" /></translation>
 <translation id="4514610446763173167">ເປີດປິດວິດີໂອເພື່ອຫຼິ້ນ ຫຼື ຢຸດໄວ້ຊົ່ວຄາວ</translation>
 <translation id="451515744433878153">ລຶບ</translation>
@@ -2692,6 +2716,7 @@
 <translation id="480990236307250886">ເປີດໜ້າຫຼັກ</translation>
 <translation id="4813136279048157860">ຮູບພາບຂອງຂ້ອຍ</translation>
 <translation id="4813512666221746211">ເຄືອຂ່າຍຜິດພາດ</translation>
+<translation id="4814378367953456825">ປ້ອນຊື່ສຳລັບລາຍນິ້ວມືນີ້</translation>
 <translation id="4820236583224459650">ຕັ້ງຄ່າເປັນປີ້ທີ່ນຳໃຊ້ຢູ່</translation>
 <translation id="4821935166599369261">ການສ້າງໂປຣໄຟລ໌ເປີດໃຊ້ງານແລ້ວ</translation>
 <translation id="4823484602432206655">ອ່ານ ​ແລະ​ປ່ຽນ​ການຕັ້ງຄ່າຜູ້​ໃຊ້ ແລະ​ອຸ​ປະ​ກອນ</translation>
@@ -2738,6 +2763,7 @@
 <translation id="4876895919560854374">ລັອກ ແລະປົດລັອກຫນ້າ​ຈໍ</translation>
 <translation id="4877276003880815204">ກວດກາອົງປະກອບ</translation>
 <translation id="4878653975845355462">ຜູ້ເບິ່ງແຍງລະບົບຂອງທ່ານໄດ້ປິດພາບພື້ນຫຼັງແບບກຳນົດເອງແລ້ວ</translation>
+<translation id="4878718769565915065">ການເພີ່ມລາຍນິ້ວມືໃສ່ກະແຈຄວາມປອດໄພບໍ່ສຳເລັດ</translation>
 <translation id="4879491255372875719">ອັດຕະໂນມັດ (ຄ່າເລີ່ມຕົ້ນ)</translation>
 <translation id="4880328057631981605">ຊື່​ຈຸດ​ເຂົ້າ​ເຖິງ</translation>
 <translation id="4880827082731008257">ຄົ້ນຫາປະຫວັດ</translation>
@@ -2868,6 +2894,7 @@
 <translation id="5065775832226780415">Smart Lock</translation>
 <translation id="5067399438976153555">ເປີດ​ສະ​ເໝີ​ໄປ</translation>
 <translation id="5067867186035333991">ຖາມ​ເບິ່ງວ່າ <ph name="HOST" /> ຕ້ອງ​ການ​​ເຂົ້າຫາໄມໂຄຣໂຟນຂອງ​ທ່ານບໍ່</translation>
+<translation id="5068377946749700758">ອົງການຂອງທ່ານກຳລັງສະແກນຂໍ້ມູນທີ່ລາກມາເພື່ອອະນຸມັດຄວາມປອດໄພ.</translation>
 <translation id="5068918910148307423">ອະນຸຍາດໃຫ້ເວັບໄຊທີ່ປິດເມື່ອບໍ່ດົນມານີ້ເຮັດສຳເລັດການສົ່ງ ແລະ ການຮັບຂໍ້ມູນ</translation>
 <translation id="5068919226082848014">ພິດຊ່າ</translation>
 <translation id="5072052264945641674">ປັບຂະໜາດເຄີເຊີ</translation>
@@ -3060,6 +3087,7 @@
 <translation id="5341793073192892252">ບລັອກຄຸກກີ້ຕໍ່ໄປນີ້ໄວ້ແລ້ວ (ຄຸກກີ້ພາກສ່ວນທີສາມຖືກບລັອກໄວ້ໂດຍບໍ່ມີຂໍ້ຍົກເວັ້ນ)</translation>
 <translation id="5341980496415249280">ກະລຸນາລໍຖ້າ, ກຳລັງເກັບຮວມກັນ...</translation>
 <translation id="5342091991439452114">PIN ຕ້ອງມີຢ່າງໜ້ອຍ <ph name="MINIMUM" /> ຕົວເລກ</translation>
+<translation id="5344036115151554031">ກຳລັງກູ້ຄືນ Linux</translation>
 <translation id="5352033265844765294">ການຕິດສະແຕັມເວລາ</translation>
 <translation id="5353252989841766347">ສົ່ງອອກລະຫັດຜ່ານຈາກ Chrome</translation>
 <translation id="5355099869024327351">ອະນຸຍາດໃຫ້ຜູ້ຊ່ວຍສະແດງການແຈ້ງເຕືອນໃຫ້ທ່ານເຫັນ</translation>
@@ -3113,6 +3141,7 @@
 <translation id="5427459444770871191">ໝຸນຕາມເຂັມໂມງ</translation>
 <translation id="542872847390508405">ທ່ານກໍາລັງທ່ອງເວັບໃນຖານະເປັນແຂກ</translation>
 <translation id="5428850089342283580"><ph name="ACCNAME_APP" /> (ມີອັບເດດໃຫ້ຢູ່)</translation>
+<translation id="542948651837270806">ຈຳເປັນຕ້ອງຕິດຕັ້ງການອັບເດດສຳລັບເຟີມແວໂມດູນແພລດຟອມທີ່ເຊື່ອຖືໄດ້. ເບິ່ງ <ph name="TPM_FIRMWARE_UPDATE_LINK" /></translation>
 <translation id="5430931332414098647">ການປ່ອຍສັນຍານທັນທີ</translation>
 <translation id="5431318178759467895">ສີ</translation>
 <translation id="5431825016875453137">OpenVPN / L2TP</translation>
@@ -3293,6 +3322,7 @@
 <translation id="5659593005791499971">ອີເມວ</translation>
 <translation id="5659833766619490117">ບໍ່ສາມາດແປໜ້ານີ້ໄດ້</translation>
 <translation id="5660204307954428567">ຈັບຄູ່ກັບ <ph name="DEVICE_NAME" /></translation>
+<translation id="5662513737565158057">ປ່ຽນວ່າຈະໃຫ້ແອັບ Linux ເຮັດວຽກແນວໃດ.</translation>
 <translation id="5667546120811588575">ກຳລັງຕັ້ງຄ່າ Google Play...</translation>
 <translation id="5669267381087807207">ກຳລັງເປີດນຳໃຊ້</translation>
 <translation id="5669691691057771421">ປ້ອນ PIN ໃໝ່</translation>
@@ -3700,6 +3730,7 @@
 <translation id="6238923052227198598">ຮັກສາບັນທຶກຫຼ້າສຸດໃນໜ້າຈໍລັອກ</translation>
 <translation id="6239558157302047471">ໂຫຼດ&amp;ເຟຣມພາບຄືນໃໝ່</translation>
 <translation id="6241530762627360640">ຂໍ້ມູນການ​ເຂົ້າໃຊ້​ກ່ຽວ​ກັບ​ອຸ​ປະ​ກອນ Bluetooth ທີ່ຈັບຄູ່​ກັບ​ລະ​ບົບ​ຂອງ​ທ່ານແລ້ວ ​ແລະ​ຄົ້ນ​ຫາ​ອຸ​ປະ​ກອນ Bluetooth ໃກ້​ຄຽງ​.</translation>
+<translation id="6241844896329831164">ບໍ່ຈຳເປັນຕ້ອງເຂົ້າເຖິງ</translation>
 <translation id="6242589501614145408">ຣີເຊັດກະແຈຄວາມປອດໄພຂອງທ່ານ</translation>
 <translation id="6242852299490624841">ໂຟກັສແຖບນີ້</translation>
 <translation id="6243280677745499710">ຕັ້ງຕອນນີ້ເລີຍ</translation>
@@ -3900,6 +3931,8 @@
 <translation id="6531282281159901044">ຮັກສາໄຟລ໌ອັນຕະລາຍໄວ້</translation>
 <translation id="6532101170117367231">ບັນທຶກໄວ້ໃນ Google Drive</translation>
 <translation id="6532106788206463496">ບັນທຶກການປ່ຽນແປງ</translation>
+<translation id="6532206849875187177">ຄວາມປອດໄພ ແລະ ການເຂົ້າສູ່ລະບົບ</translation>
+<translation id="6532527800157340614">ເຂົ້າສູ່ລະບົບບໍ່ສຳເລັດ ເພາະວ່າລະບົບກູ້ຄືນໂທເຄັນສິດເຂົ້າເຖິງຂອງທ່ານບໍ່ສຳເລັດ. ກະລຸນາກວດເບິ່ງການເຊື່ອມຕໍ່ເຄືອຂ່າຍຂອງທ່ານ ແລ້ວລອງອີກຄັ້ງ.</translation>
 <translation id="6532663472409656417">ວິສາຫະກິດທີ່ລົງທະບຽນແລ້ວ</translation>
 <translation id="654039047105555694"><ph name="BEGIN_BOLD" />ໝາຍເຫດ:<ph name="END_BOLD" /> ເປີດໃຊ້ງານພຽງແຕ່ຖ້າທ່ານຮູ້ສິ່ງທີ່ທ່ານກໍາລັງເຮັດ ຫຼືຖ້າທ່ານໄດ້ຮັບການຂໍຮ້ອງໃຫ້ເຮັດ, ເນື່ອງຈາກການເກັບກໍາຂໍ້ມູນອາດຈະຫຼຸດການປະຕິບັດງານລົງ.</translation>
 <translation id="6541638731489116978">ເວັບໄຊນີ້ໄດ້ຖືກບລັອກບໍ່ໃຫ້ເຂົ້າເຖິງເຊັນເຊີກວດຈັບການເຄື່ອນໄຫວຂອງທ່ານແລ້ວ.</translation>
@@ -3907,6 +3940,7 @@
 <translation id="6545864417968258051">ການສະແກນ Bluetooth</translation>
 <translation id="6545867563032584178">ໄມໂຄຣໂຟນຖືກປິດໄວ້ໃນການຕັ້ງຄ່າລະບົບ Mac</translation>
 <translation id="6547354035488017500">ຂະຫຍາຍພື້ນທີ່ຫວ່າງຢ່າງໜ້ອຍ 512 MB ຫຼື ອຸປະກອນຂອງທ່ານຈະບໍ່ຕອບສະໜອງ. ເພື່ອຂະຫຍາຍພື້ນທີ່ຫວ່າງ, ໃຫ້ລຶບໄຟລ໌ອອກຈາກບ່ອນເກັບຂໍ້ມູນ.</translation>
+<translation id="6549966385318247177">ສ່ວນຂະຫຍາຍນີ້ຖືກບລັອກໄວ້ເນື່ອງຈາກມີເນື້ອຫາສຳລັບຜູ້ໃຫຍ່.</translation>
 <translation id="6550675742724504774">ທາງ​ເລືອກ</translation>
 <translation id="6551508934388063976">ບໍ່ມີຄໍາສັ່ງຢູ່. ກົດຄອນໂທຣລ-N ເພື່ອເປີດໜ້າຕ່າງໃໝ່.</translation>
 <translation id="6551612971599078809">ເວັບໄຊກຳລັງໃຊ້ USB</translation>
@@ -3989,6 +4023,7 @@
 <translation id="6678717876183468697">URL ສອບ​ຖາມ</translation>
 <translation id="6680442031740878064">ມີໃຫ້: <ph name="AVAILABLE_SPACE" /></translation>
 <translation id="6680650203439190394">ໃຫ້ຄະແນນ</translation>
+<translation id="6681301928961274620">ຊອກບໍ່ເຫັນເຄື່ອງພິມໃດໆຈາກເຊີບເວີການພິມ.</translation>
 <translation id="6681668084120808868">ຖ່າຍຮູບ</translation>
 <translation id="6681964764822470072">"<ph name="APP_NAME" />" ຈະຖືກຖອນຕິດຕັ້ງ.</translation>
 <translation id="668599234725812620">ເປີດ Google Play</translation>
@@ -4238,6 +4273,7 @@
 <translation id="703001695939087067">ເຂົ້າສູ່ໂໝດພາບຮວມໜ້າຈໍແລ້ວ. ກົດແຖບເພື່ອນຳທາງ.</translation>
 <translation id="7031608529463141342"><ph name="WINDOW_TITLE" /> - ເຊື່ອມຕໍ່ຜອດອະນຸກຳແລ້ວ</translation>
 <translation id="7031962166228839643">ກໍາລັງກະກຽມ TPM ຢູ່, ກະລຸນາລໍຖ້າ (ອັນນີ້ອາດຈະໃຊ້ເວລາຫຼາຍນາທີ)...</translation>
+<translation id="7034615910652881882">ຖາມເມື່ອເວັບໄຊຕ້ອງການເຂົ້າເຖິງອຸປະກອນ/ຂໍ້ມູນເວີຊົວ ຣິອາລິຕີຂອງທ່ານ</translation>
 <translation id="7037509989619051237">ຂໍ້ຄວາມເພື່ອສະແດງຕົວຢ່າງ</translation>
 <translation id="7039326228527141150">ເຂົ້າ​ຫາ​ອຸ​ປະ​ກອນ USB ຈາກ <ph name="VENDOR_NAME" /></translation>
 <translation id="7039912931802252762">ລົງຊື່ເຂົ້າ​ໃຊ້ Microsoft Smart Card</translation>
@@ -4277,6 +4313,7 @@
 <translation id="7081952801286122383">ທ່ານຢູ່ໃນໂໝດບໍ່ເປີດເຜີຍຕົວຕົນ</translation>
 <translation id="708278670402572152">ຕັດເຊື່ອມຕໍ່ເພື່ອເປີດນຳໃຊ້ການສະແກນ</translation>
 <translation id="7085389578340536476">ອະນຸຍາດໃຫ້ Chrome ບັນທຶກສຽງບໍ?</translation>
+<translation id="7086467953285486445">ໄຟລ໌ເຫຼົ່ານີ້ລະເມີດນະໂຍບາຍຄວາມປອດໄພຂອງອົງການຂອງທ່ານ ແລະ ບໍ່ສາມາດວາງລົງໄດ້.</translation>
 <translation id="7088434364990739311">ການກວດອັບເດດເລີ່ມຕົ້ນບໍ່ໄດ້ (ລະຫັດຜິດພາດ <ph name="ERROR" />).</translation>
 <translation id="7088561041432335295">Zip Archiver - ເປີດ ແລະ ບັນຈຸໄຟລ໌ ZIP ໃສ່ໃນແອັບໄຟລ໌.</translation>
 <translation id="7088674813905715446">ຜູ້ຄວບຄຸມເອົາອຸປະກອນນີ້ໃສ່ໄວ້ໃນສະພາວະຖອນການຖືກຈັດໃຫ້. ເພື່ອເປີດໃຊ້ງານມັນໄປລົງທະບຽນ, ກະລຸນາໃຫ້ຜູ້ຄວບຄຸມຂອງທ່ານເອົາອຸປະກອນໄປໄວ້ໃນສະພາບຄ້າງຢູ່.</translation>
@@ -4390,6 +4427,7 @@
 <translation id="7241389281993241388">ກະ​ລຸ​ນາ​ລົງຊື່ເຂົ້າ​ໃຊ້<ph name="TOKEN_NAME" /> ເພື່ອນໍາໃບຢັ້ງຢືນລູກຂ່າຍເຂົ້າມາ.</translation>
 <translation id="7241443820034350811">ຖ້າກະແຈຄວາມປອດໄພຂອງທ່ານບໍ່ມີໃນລາຍການ, ກະລຸນາກົດປຸ່ມເປັນເວລາ 5 ວິນາທີ.</translation>
 <translation id="7243632151880336635">ລຶບລ້າງ ແລະ ອອກຈາກລະບົບ</translation>
+<translation id="7243784282103630670">ເກີດຄວາມຜິດພາດໃນຂະນະທີ່ອັບເກຣດ Linux. ພວກເຮົາຈະຄືນຄ່າກ່ອງບັນຈຸໂດຍໃຊ້ຂໍ້ມູນສຳຮອງຂອງທ່ານ.</translation>
 <translation id="7245628041916450754"><ph name="WIDTH" /> x <ph name="HEIGHT" /> (ດີທີ່ສຸດ)</translation>
 <translation id="7246230585855757313">ສຽບກະແຈຄວາມປອດໄພຂອງທ່ານຄືນໃໝ່ ແລ້ວລອງອີກຄັ້ງ</translation>
 <translation id="7246947237293279874">ພຣັອກຊີ FTP</translation>
@@ -4476,6 +4514,7 @@
 <translation id="7360233684753165754"><ph name="PAGE_NUMBER" /> ໜ້າໄປຫາ <ph name="PRINTER_NAME" /></translation>
 <translation id="7361297102842600584">ຄລິກຂວາເພື່ອເປີດໃຊ້ <ph name="PLUGIN_NAME" />.</translation>
 <translation id="7363117941401515667">ອັບເດດແລ້ວເມື່ອ <ph name="HOURS" /> ຊົ່ວໂມງກ່ອນ</translation>
+<translation id="7364591875953874521">ຂໍສິດເຂົ້າເຖິງແລ້ວ</translation>
 <translation id="7364796246159120393">ເລືອກ​ໄຟລ​໌</translation>
 <translation id="7366415735885268578">ເພີ່ມເວັບໄຊ</translation>
 <translation id="7366909168761621528">ຂໍ້ມູນການທ່ອງເວັບ</translation>
@@ -4501,6 +4540,7 @@
 <translation id="740624631517654988">ບລັອກປັອບອັບແລ້ວ</translation>
 <translation id="7407430846095439694">ນຳເຂົ້າ ແລະ ຜູກມັດ</translation>
 <translation id="7407504355934009739">ຄົນສ່ວນໃຫຍ່ບລັອກການແຈ້ງເຕືອນຈາກເວັບໄຊນີ້</translation>
+<translation id="740810853557944681">ເພີ່ມເຊີບເວີການພິມ</translation>
 <translation id="7409549334477097887">ໃຫຍ່ພິເສດ</translation>
 <translation id="7409836189476010449">ເປີດໃຊ້ Flash</translation>
 <translation id="7410344089573941623">ຖາມ​ເບິ່ງວ່າ <ph name="HOST" /> ຕ້ອງ​ການ​​ເຂົ້າຫາ​ກ້ອງ​ຖ່າຍ​ຮູບ​ ແລະໄມໂຄຣໂຟນຂອງ​ທ່ານບໍ່</translation>
@@ -4521,6 +4561,7 @@
 <translation id="7433692219247014412">{COUNT,plural, =0{ເປີດທັງໝົດໃນ&amp;ໜ້າຈໍໃໝ່}=1{ເປີດໃນ&amp;ໜ້າຈໍໃໝ່}other{ເປີດທັງໝົດ (#) ໃນ&amp;ໜ້າຈໍໃໝ່}}</translation>
 <translation id="7434509671034404296">ຜູ້ພັດ​ທະ​ນາ</translation>
 <translation id="7434635829372401939">ຊິ້ງຂໍ້ມູນການຕັ້ງຄ່າຂອງທ່ານ</translation>
+<translation id="7434969625063495310">ບໍ່ສາມາດເພີ່ມເຊີບເວີການພິມໄດ້. ກະລຸນາກວດເບິ່ງການຕັ້ງຄ່າເຊີບເວີ ແລ້ວລອງໃໝ່.</translation>
 <translation id="7436921188514130341">ໂອ໋ຍ, ໂຊກຮ້າຍແທ້! ເກີດຄວາມຜິດພາດຂຶ້ນໃນເວລາປ່ຽນຊື່.</translation>
 <translation id="7438976808740265764">ລະບົບຈະບໍ່ຮອງຮັບ Flash Player ຫຼັງຈາກເດືອນທັນວາ 2020.</translation>
 <translation id="7441736921018636843">ເພື່ອປ່ຽນການຕັ້ງຄ່ານີ້, ກະລຸນາ <ph name="BEGIN_LINK" />ຣີເຊັດການຊິ້ງຂໍ້ມູນ<ph name="END_LINK" /> ເພື່ອລຶບລະຫັດຜ່ານການຊິ້ງຂໍ້ມູນຂອງທ່ານອອກ</translation>
@@ -4530,8 +4571,10 @@
 <translation id="7443806024147773267">ເຂົ້າເຖິງລະຫັດຜ່ານຂອງທ່ານໄດ້ທຸກເມື່ອທີ່ທ່ານເຂົ້າສູ່ລະບົບບັນຊີ Google ຂອງທ່ານ</translation>
 <translation id="7444983668544353857">ປິດໃຊ້ງານ <ph name="NETWORKDEVICE" /></translation>
 <translation id="7448430327655618736">ຕິດຕັ້ງແອັບໂດຍອັດຕະໂນມັດ</translation>
+<translation id="7448625729116931228">ຖາມເມື່ອເວັບໄຊຕ້ອງການເຂົ້າເຖິງອຸປະກອນ/ຂໍ້ມູນເວີຊົວ ຣິອາລິຕີຂອງທ່ານ (ແນະນຳ)</translation>
 <translation id="7450761244949417357">ກຳລັງເປີດໃນ <ph name="ALTERNATIVE_BROWSER_NAME" /> ຕອນນີ້</translation>
 <translation id="7453008956351770337">ໂດຍການເລືອກເຄື່ອງພິມນີ້, ທ່ານກຳລັງໃຫ້ການອະນຸຍາດເຂົ້າເຖິງເຄື່ອງພິມຂອງທ່ານແກ່ສ່ວນຂະຫຍາຍຕໍ່ໄປນີ້:</translation>
+<translation id="7454548535253569100">ໜ້າເວັບ: <ph name="SUBFRAME_SITE" /></translation>
 <translation id="7456142309650173560">ການພັດທະນາ</translation>
 <translation id="7456847797759667638">ເປີດ​ສະ​ຖານ​ທີ່...</translation>
 <translation id="7458168200501453431">ໃຊ້ຕົວກວດການສະກົດຄໍາດຽວກັນກັບທີ່ໃຊ້ໃນ Google ຊອກຫາ. ລະບົບຈະສົ່ງຂໍ້ຄວາມທີ່ທ່ານພິມໃນໂປຣແກຣມທ່ອງເວັບໄປໃຫ້ Google.</translation>
@@ -4577,6 +4620,7 @@
 <translation id="7513029293694390567">ເຂົ້າສູ່ລະບົບເວັບໄຊໂດຍອັດຕະໂນມັດໂດຍໃຊ້ຂໍ້ມູນປະຈຳຕົວທີ່ເກັບຮັກສາໄວ້. ຖ້າປິດນຳໃຊ້, ທ່ານຈະຖືກຖາມເອົາການຢືນຢັນໃນທຸກຄັ້ງກ່ອນທີ່ຈະເຂົ້າສູ່ລະບົບເວັບໄຊ.</translation>
 <translation id="7514239104543605883">ສຳເນົາໄປໃສ່ອຸປະກອນຂອງທ່ານ</translation>
 <translation id="7514365320538308">ດາວ​ໂຫລດ</translation>
+<translation id="7520766081042531487">ໜ້າເວັບທີ່ບໍ່ເປີດເຜີຍຕົວຕົນ: <ph name="SUBFRAME_SITE" /></translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7522255036471229694">ເວົ້າ​ຄຳ​ວ່າ "Ok Google"</translation>
 <translation id="7525067979554623046">ສ້າງຂຶ້ນ</translation>
@@ -4665,6 +4709,7 @@
 <translation id="7652808307838961528">ແກ້ໄຂບຸກຄົນ, <ph name="PROFILE_NAME" /></translation>
 <translation id="765293928828334535">ບໍ່ສາມາດເພີ່ມແອັບ, ສ່ວນຂະຫຍາຍ, ແລະ ສະຄຣິບຜູ້ໃຊ້ຈາກເວັບໄຊນີ້ໄດ້</translation>
 <translation id="7652954539215530680">ສ້າງ PIN</translation>
+<translation id="7653295403398566475">ຖາມເມື່ອເວັບໄຊຕ້ອງການເຂົ້າເຖິງຕຳແໜ່ງກ້ອງຂອງທ່ານ ຫຼື ສ້າງແຜນທີ່ຫ້ອງຂອງທ່ານ</translation>
 <translation id="7654941827281939388">ບັນ​ຊີ​ນີ້ຖືກ​ນໍາ​ໃຊ້​ຢູ່ໃນຄອມພິວເຕີ​ນີ້ແລ້ວ​.</translation>
 <translation id="7658239707568436148">ຍົກ​ເລີກ​</translation>
 <translation id="7659584679870740384">ທ່ານບໍ່ໄດ້ຮັບສິດໃຫ້ໃຊ້ອຸປະກອນນີ້. ກະ​ລຸ​ນາຕິດຕໍ່ຜູ້​ຄວບ​ຄຸມສຳ​ລັບ​ການ​ອະ​ນຸ​ຍາດ​ເຂົ້າ​ສູ່ລະ​ບົບ.</translation>
@@ -4816,6 +4861,7 @@
 <translation id="783214144752121388">ບລັອກບໍ່ໃຫ້ເວັບໄຊເປີດ Flash (ແນະນຳ)</translation>
 <translation id="7833720883933317473">ຄຳສັບກຳນົດເອງທີ່ບັນທຶກໄວ້ຈະປາກົດຢູ່ບ່ອນນີ້</translation>
 <translation id="7835178595033117206">ລຶບບຸກມາກອອກແລ້ວ</translation>
+<translation id="7836850009646241041">ລອງແຕະກະແຈຄວາມປອດໄພຂອງທ່ານອີກຄັ້ງ</translation>
 <translation id="7837776265184002579">ໜ້າຫຼັກຂອງທ່ານໄດ້ຖືກປ່ຽນເປັນ <ph name="URL" /> ແລ້ວ.</translation>
 <translation id="7839051173341654115">ເບິ່ງ/ສໍາຮອງ​ມີ​ເດຍ</translation>
 <translation id="7839192898639727867">ID ປຸ່ມຫົວຂໍ້ໃບຢັ້ງຢືນ</translation>
@@ -5130,7 +5176,9 @@
 <translation id="8260864402787962391">ເມົາສ໌</translation>
 <translation id="8261378640211443080">ສ່ວນຂະຫຍາຍນີ້ບໍ່ມີລາຍຊື່ຢູ່ໃນ <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> ແລະອາດຈະຖືກເພີ່ມເຂົ້າໂດຍທີ່ທ່ານບໍ່ຮູ້ຈັກ.</translation>
 <translation id="8261506727792406068">ລຶບ</translation>
+<translation id="8263336784344783289">ຕັ້ງຊື່ໃຫ້ກຸ່ມນີ້</translation>
 <translation id="8263744495942430914"><ph name="FULLSCREEN_ORIGIN" /> ປິດໃຊ້ງານເຄີເຊີເມົາສ໌ຂອງທ່ານແລ້ວ.</translation>
+<translation id="8264024885325823677">ການຕັ້ງຄ່ານີ້ຈັດການໂດຍຜູ້ເບິ່ງແຍງລະບົບຂອງທ່ານ.</translation>
 <translation id="8264718194193514834">"<ph name="EXTENSION_NAME" />" ໄດ້ກະຕຸ້ນໜ້າຈໍເຕັມ.</translation>
 <translation id="8267961145111171918"><ph name="BEGIN_PARAGRAPH1" />ນີ້ແມ່ນຂໍ້ມູນທົ່ວໄປກ່ຽວກັບອຸປະກອນນີ້ ແລະ ມັນຖືກໃຊ້ມັນແນວໃດ (ເຊັ່ນ: ລະດັບແບັດເຕີຣີ, ການເຄື່ອນໄຫວໃນລະບົບ ແລະ ແອັບ ແລະ ຂໍ້ຜິດພາດຕ່າງໆ). ຂໍ້ມູນຈະຖືກໃຊ້ເພື່ອປັບປຸງ Android ແລະ ບາງຂໍ້ມູນແບບຮວມກັນຈະຊ່ວຍແອັບ ແລະ ບັນດາຮຸ້ນສ່ວນຂອງ Google ເຊັ່ນ ຜູ້ພັດທະນາ Android ເຮັດໃຫ້ແອັບ ແລະ ຜະລິດຕະພັນຂອງເຂົາເຈົ້າດີຂຶ້ນ.<ph name="END_PARAGRAPH1" />
     <ph name="BEGIN_PARAGRAPH2" />ການປິດຄຸນສົມບັດນີ້ບໍ່ມີຜົນຕໍ່ກັບຄວາມສາມາດຂອງອຸປະກອນນີ້ໃນການສົ່ງຂໍ້ມູນທີ່ຈຳເປັນເພື່ອໄດ້ຮັບການບໍລິການທີ່ສຳຄັນ ເຊັ່ນ: ການອັບເດດລະບົບ ແລະ ຄວາມປອດໄພ.<ph name="END_PARAGRAPH2" />
@@ -5386,6 +5434,7 @@
 <translation id="8650543407998814195">ເຖິງແມ່ນວ່າທ່ານບໍ່ສາມາດເຂົ້າເຖິງໂປຣໄຟລ໌ເກົ່າຂອງທ່ານໄດ້ອີກຕໍ່ໄປ, ແຕ່ທ່ານຍັງສາມາດລຶບມັນອອກໄດ້.</translation>
 <translation id="8651585100578802546">​ບັງຄັບໂຫຼດ​ຫນ້າ​ນີ້ຄືນອີກ</translation>
 <translation id="8652400352452647993">ສ່ວນຂະຫຍາຍແພັກຜິດພາດ</translation>
+<translation id="8653578191563425126">ພື້ນທີ່ດິສທີ່ສະຫງວນໄວ້ໃຫ້ Crostini (ທ່ານສາມາດປ່ຽນຕົວເລືອກນີ້ໃນພາຍຫຼັງໄດ້).</translation>
 <translation id="8654151524613148204">ໄຟລ໌ນີ້ໃຫຍ່ເກີນໄປທີ່ຄອມພິວເຕີຂອງທ່ານຈະຈັດການໄດ້. ຂໍອະໄພ.</translation>
 <translation id="8655295600908251630">ຊ່ອງ</translation>
 <translation id="8655319619291175901">ອຸ້ຍ, ມີບາງອັນຜິດພາດ.</translation>
@@ -5502,6 +5551,7 @@
 <translation id="8794025342371547160">IP ທີ່ຖືກຈໍາກັດ</translation>
 <translation id="879413103056696865">ໃນຂະນະທີ່ຮັອດສະປອດເປີດຢູ່, <ph name="PHONE_NAME" /> ຂອງທ່ານຈະ:</translation>
 <translation id="8795916974678578410">ໜ້າ​ຕ່າງໃຫມ່</translation>
+<translation id="8797086401386164142">ພົບເຄື່ອງພິມ <ph name="NUM_PRINTERS" /> ເຄື່ອງຈາກເຊີບເວີການພິມ.</translation>
 <translation id="8797459392481275117">ຢ່າແປເວັບໄຊນີ້</translation>
 <translation id="8798099450830957504">ຄ່າ​ມາດຕະຖານ</translation>
 <translation id="8798441408945964110">ຊື່ຜູ້ໃຫ້ບໍລິການ</translation>
@@ -5650,6 +5700,7 @@
 <translation id="8985264973231822211">ເປີດນຳໃຊ້ເມື່ອ <ph name="DEVICE_LAST_ACTIVATED_TIME" /> ກ່ອນ</translation>
 <translation id="8986362086234534611">ລືມ</translation>
 <translation id="8986494364107987395">ສົ່ງສະຖິຕິການໃຊ້ ແລະລາຍງານກາ​ນຂັດຂ້ອງໄປຫາ Google ໂດຍອັດຕະໂນມັດ</translation>
+<translation id="8986651757229422279">ນີ້ຈະລຶບລ້າງຂໍ້ມູນ ແລະ ຄຸກກີ້ທັງໝົດທີ່ເກັບໄວ້ໂດຍ <ph name="ORIGIN_NAME" /> ແລະ ແອັບທີ່ຕິດຕັ້ງຂອງມັນ.</translation>
 <translation id="8987927404178983737">ເດືອນ</translation>
 <translation id="8991520179165052608">ເວັບໄຊສາມາດໃຊ້ໄມໂຄຣໂຟນຂອງທ່ານໄດ້</translation>
 <translation id="899403249577094719">URL ຖານໃບຢັ້ງຢືນ Netscape</translation>
@@ -5801,6 +5852,7 @@
 <translation id="932508678520956232">ບໍ່ສາມາດລິເລີ່ມການພິມໄດ້.</translation>
 <translation id="93343527085570547">ໄປຫາ <ph name="BEGIN_LINK1" />ໜ້າຄວາມຊ່ວຍເຫຼືອທາງກົດໝາຍ<ph name="END_LINK1" /> ເພື່ອຂໍໃຫ້ປ່ຽນແປງເນື້ອຫາສຳລັບເຫດຜົນທາງກົດໝາຍ. ອາດຈະມີການສົ່ງບາງຂໍ້ມູນບັນຊີ ແລະ ລະບົບໃຫ້ Google. ພວກເຮົາຈະໃຊ້ຂໍ້ມູນທີ່ທ່ານໃຫ້ພວກເຮົາເພື່ອຊ່ວຍແກ້ໄຂບັນຫາດ້ານເທັກນິກ ແລະ ປັບປຸງການບໍລິການຂອງພວກເຮົາ ໂດຍປະຕິບັດຕາມ <ph name="BEGIN_LINK2" />ນະໂຍບາຍຄວາມເປັນສ່ວນຕົວ<ph name="END_LINK2" /> ແລະ <ph name="BEGIN_LINK3" />ຂໍ້ກຳນົດການບໍລິການ<ph name="END_LINK3" /> ຂອງພວກເຮົາ.</translation>
 <translation id="93393615658292258">ລະຫັດຜ່ານເທົ່ານັ້ນ</translation>
+<translation id="934244546219308557">ຕັ້ງຊື່ໃຫ້ກຸ່ມນີ້</translation>
 <translation id="934503638756687833">ລາຍການທີ່ບໍ່ລະບຸຢູ່ບ່ອນນີ້ຈະຖືກລຶບອອກເຊັ່ນກັນ ຖ້າຈຳເປັນ. ສຶກສາເພີ່ມເຕີມກ່ຽວກັບ &lt;a href="<ph name="URL" />"&gt;ການປົກປ້ອງຊອບແວທີ່ບໍ່ຕ້ອງການ&lt;/a&gt; ໃນເອກະສານຂາວວ່າດ້ວຍຄວາມເປັນສ່ວນຕົວຂອງ Chrome.</translation>
 <translation id="935490618240037774">ບຸກມາກ, ປະຫວັດ, ລະຫັດຜ່ານ ແລະ ການຕັ້ງຄ່າອື່ນຂອງທ່ານຈະຖືກຊິ້ງຂໍ້ມູນກັບບັນຊີ Google ຂອງທ່ານ ເພື່ອໃຫ້ທ່ານສາມາດໃຊ້ພວກມັນໄດ້ຢູ່ໃນທຸກອຸປະກອນຂອງທ່ານ.</translation>
 <translation id="935854577147268200">ປ່ຽນໂທລະສັບ Smart Lock ແລ້ວ ປ້ອນລະຫັດຜ່ານຂອງທ່ານເພື່ອອັບເດດ Smart Lock. ຄັ້ງຕໍ່ໄປ, ໂທລະສັບຂອງທ່ານຈະປົດລັອກ <ph name="DEVICE_TYPE" /> ຂອງທ່ານ. ທ່ານສາມາດປິດ Smart Lock ໄດ້ໃນການຕັ້ງຄ່າ</translation>

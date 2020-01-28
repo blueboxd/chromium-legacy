@@ -5,7 +5,6 @@
 #include "components/viz/service/display/overlay_processor_android.h"
 
 #include "components/viz/common/quads/stream_video_draw_quad.h"
-#include "components/viz/service/display/display_resource_provider.h"
 #include "components/viz/service/display/overlay_processor_on_gpu.h"
 #include "components/viz/service/display/overlay_strategy_underlay.h"
 #include "components/viz/service/display/skia_output_surface.h"
@@ -89,18 +88,13 @@ void OverlayProcessorAndroid::ScheduleOverlays(
   if (!gpu_task_scheduler_)
     return;
 
-  std::vector<
-      std::unique_ptr<DisplayResourceProvider::ScopedReadLockSharedImage>>
-      locks;
-  for (auto& candidate : overlay_candidates_) {
-    locks.emplace_back(
-        std::make_unique<DisplayResourceProvider::ScopedReadLockSharedImage>(
-            resource_provider, candidate.resource_id));
-  }
-
+  pending_overlay_locks_.emplace_back();
+  auto& locks = pending_overlay_locks_.back();
   std::vector<gpu::SyncToken> locks_sync_tokens;
-  for (auto& read_lock : locks)
-    locks_sync_tokens.push_back(read_lock->sync_token());
+  for (auto& candidate : overlay_candidates_) {
+    locks.emplace_back(resource_provider, candidate.resource_id);
+    locks_sync_tokens.push_back(locks.back().sync_token());
+  }
 
   // If we haven't finished creating processor_on_gpu_, wait for it.
   if (!processor_on_gpu_ && able_to_create_processor_on_gpu_)
@@ -111,6 +105,14 @@ void OverlayProcessorAndroid::ScheduleOverlays(
                              std::move(overlay_candidates_));
   gpu_task_scheduler_->ScheduleGpuTask(std::move(task), locks_sync_tokens);
   overlay_candidates_.clear();
+}
+
+void OverlayProcessorAndroid::OverlayPresentationComplete() {
+  // This is a signal from Display::DidReceiveSwapBuffersAck. We use this to
+  // help clear locks on resources from old frame.
+  committed_overlay_locks_.clear();
+  std::swap(committed_overlay_locks_, pending_overlay_locks_.front());
+  pending_overlay_locks_.pop_front();
 }
 
 void OverlayProcessorAndroid::CheckOverlaySupport(
@@ -156,6 +158,12 @@ void OverlayProcessorAndroid::CheckOverlaySupport(
 gfx::Rect OverlayProcessorAndroid::GetOverlayDamageRectForOutputSurface(
     const OverlayCandidate& overlay) const {
   return ToEnclosedRect(overlay.display_rect);
+}
+
+void OverlayProcessorAndroid::TakeOverlayCandidates(
+    OverlayCandidateList* candidate_list) {
+  overlay_candidates_.swap(*candidate_list);
+  candidate_list->clear();
 }
 
 void OverlayProcessorAndroid::NotifyOverlayPromotion(

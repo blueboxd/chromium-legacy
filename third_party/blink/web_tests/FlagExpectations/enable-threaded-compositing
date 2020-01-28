@@ -1,0 +1,7 @@
+# tags: [ Android Fuchsia IOS IOS12.2 IOS13.0 Linux Mac Mac10.10 Mac10.11 Mac10.12 Retina
+#         Mac10.13 Win Win7 Win10 ]
+# tags: [ Release Debug ]
+# results: [ Timeout Crash Pass Failure Slow Skip ]
+
+# Expectations for EnableThreadedCompositing
+[ Linux Debug ] virtual/threaded/external/wpt/web-animations/timing-model/animations/update-playback-rate-zero.html [ Failure ]

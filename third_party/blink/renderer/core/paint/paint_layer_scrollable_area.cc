@@ -1220,8 +1220,9 @@ PaintLayerScrollableArea::GetTimerTaskRunner() const {
   return GetLayoutBox()->GetFrame()->GetTaskRunner(TaskType::kInternalDefault);
 }
 
-ScrollBehavior PaintLayerScrollableArea::ScrollBehaviorStyle() const {
-  return GetLayoutBox()->StyleRef().GetScrollBehavior();
+mojom::blink::ScrollIntoViewParams::Behavior
+PaintLayerScrollableArea::ScrollBehaviorStyle() const {
+  return GetLayoutBox()->StyleRef().ScrollBehavior();
 }
 
 WebColorScheme PaintLayerScrollableArea::UsedColorScheme() const {
@@ -2244,13 +2245,14 @@ PhysicalRect PaintLayerScrollableArea::ScrollIntoView(
 
   if (params->is_for_scroll_sequence) {
     DCHECK(type == kProgrammaticScroll || type == kUserScroll);
-    ScrollBehavior behavior = DetermineScrollBehavior(
-        mojo::ConvertTo<ScrollBehavior>(params->behavior),
-        GetLayoutBox()->StyleRef().GetScrollBehavior());
+    mojom::blink::ScrollIntoViewParams::Behavior behavior =
+        DetermineScrollBehavior(params->behavior,
+                                GetLayoutBox()->StyleRef().ScrollBehavior());
     GetSmoothScrollSequencer()->QueueAnimation(this, new_scroll_offset,
                                                behavior);
   } else {
-    SetScrollOffset(new_scroll_offset, type, kScrollBehaviorInstant);
+    SetScrollOffset(new_scroll_offset, type,
+                    mojom::blink::ScrollIntoViewParams::Behavior::kInstant);
   }
 
   ScrollOffset scroll_offset_difference = new_scroll_offset - old_scroll_offset;

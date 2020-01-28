@@ -392,9 +392,10 @@ void CanvasRenderingContext2D::ScrollPathIntoViewInternal(const Path& path) {
     vertical_scroll_mode = ScrollAlignment::kAlignToEdgeIfNeeded;
   }
   renderer->ScrollRectToVisible(
-      path_rect, CreateScrollIntoViewParams(
-                     horizontal_scroll_mode, vertical_scroll_mode,
-                     kProgrammaticScroll, false, kScrollBehaviorAuto));
+      path_rect,
+      CreateScrollIntoViewParams(
+          horizontal_scroll_mode, vertical_scroll_mode, kProgrammaticScroll,
+          false, mojom::blink::ScrollIntoViewParams::Behavior::kAuto));
 }
 
 void CanvasRenderingContext2D::clearRect(double x,

@@ -111,7 +111,6 @@ jumbo_component("aura") {
     "//components/viz/client",
     "//components/viz/common",
     "//components/viz/host",
-    "//components/viz/service",
     "//gpu/ipc/client",
     "//mojo/public/cpp/system",
     "//services/service_manager/public/cpp",

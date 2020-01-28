@@ -22,7 +22,7 @@ function checkScroll() {
     target: target ? target.id : 'undefined'
   };
   let key = (new URL(document.location)).searchParams.get("key");
-  stashResults(key, results);
+  stashResultsThenClose(key, results);
 }
 </script>
 

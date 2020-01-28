@@ -6,6 +6,7 @@
 
 #include "build/build_config.h"
 #include "content/public/browser/devtools_agent_host.h"
+#include "content/public/browser/devtools_agent_host_client_channel.h"
 #include "content/public/browser/web_contents.h"
 #include "headless/grit/headless_lib_resources.h"
 #include "headless/lib/browser/headless_browser_context_impl.h"
@@ -23,13 +24,13 @@ HeadlessDevToolsManagerDelegate::HeadlessDevToolsManagerDelegate(
 HeadlessDevToolsManagerDelegate::~HeadlessDevToolsManagerDelegate() = default;
 
 void HeadlessDevToolsManagerDelegate::HandleCommand(
-    content::DevToolsAgentHost* agent_host,
-    content::DevToolsAgentHostClient* client,
+    content::DevToolsAgentHostClientChannel* channel,
     const std::string& method,
     base::span<const uint8_t> message,
     NotHandledCallback callback) {
-  DCHECK(sessions_.find(client) != sessions_.end());
-  sessions_[client]->HandleCommand(method, message, std::move(callback));
+  auto it = sessions_.find(channel);
+  DCHECK(it != sessions_.end());
+  it->second->HandleCommand(method, message, std::move(callback));
 }
 
 scoped_refptr<content::DevToolsAgentHost>
@@ -58,17 +59,16 @@ bool HeadlessDevToolsManagerDelegate::HasBundledFrontendResources() {
 }
 
 void HeadlessDevToolsManagerDelegate::ClientAttached(
-    content::DevToolsAgentHost* agent_host,
-    content::DevToolsAgentHostClient* client) {
-  DCHECK(sessions_.find(client) == sessions_.end());
-  sessions_[client] = std::make_unique<protocol::HeadlessDevToolsSession>(
-      browser_, agent_host, client);
+    content::DevToolsAgentHostClientChannel* channel) {
+  DCHECK(sessions_.find(channel) == sessions_.end());
+  sessions_.emplace(
+      channel,
+      std::make_unique<protocol::HeadlessDevToolsSession>(browser_, channel));
 }
 
 void HeadlessDevToolsManagerDelegate::ClientDetached(
-    content::DevToolsAgentHost* agent_host,
-    content::DevToolsAgentHostClient* client) {
-  sessions_.erase(client);
+    content::DevToolsAgentHostClientChannel* channel) {
+  sessions_.erase(channel);
 }
 
 std::vector<content::BrowserContext*>

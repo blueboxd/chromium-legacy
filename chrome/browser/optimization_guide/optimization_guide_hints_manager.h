@@ -46,6 +46,7 @@ class SharedURLLoaderFactory;
 
 namespace optimization_guide {
 class HintCache;
+class HintsFetcherFactory;
 enum class OptimizationGuideDecision;
 class OptimizationFilter;
 struct OptimizationMetadata;
@@ -122,14 +123,15 @@ class OptimizationGuideHintsManager
   // Clears fetched hints from |hint_cache_|.
   void ClearFetchedHints();
 
-  // Overrides |hints_fetcher_| for testing.
-  void SetHintsFetcherForTesting(
-      std::unique_ptr<optimization_guide::HintsFetcher> hints_fetcher);
-
-  // Returns the current hints fetcher.
-  optimization_guide::HintsFetcher* hints_fetcher() const {
-    return hints_fetcher_.get();
+  // Returns the current batch update hints fetcher.
+  optimization_guide::HintsFetcher* batch_update_hints_fetcher() const {
+    return batch_update_hints_fetcher_.get();
   }
+
+  // Overrides |hints_fetcher_factory| for testing.
+  void SetHintsFetcherFactoryForTesting(
+      std::unique_ptr<optimization_guide::HintsFetcherFactory>
+          hints_fetcher_factory);
 
   // Overrides |clock_| for testing.
   void SetClockForTesting(const base::Clock* clock);
@@ -220,9 +222,12 @@ class OptimizationGuideHintsManager
 
   // Called when the hints for a navigation have been fetched from the remote
   // Optimization Guide Service and are ready for parsing. This is used when
-  // fetching hints in real-time. |page_navigation_hosts_requested| contains the
-  // hosts that were requested to be fetched.
+  // fetching hints in real-time. |navigation_url| is the URL associated with
+  // the navigation handle that initiated the fetch.
+  // |page_navigation_hosts_requested| contains the hosts that were requested to
+  // be fetched.
   void OnPageNavigationHintsFetched(
+      const base::Optional<GURL>& navigation_url,
       const base::flat_set<std::string>& page_navigation_hosts_requested,
       base::Optional<
           std::unique_ptr<optimization_guide::proto::GetHintsResponse>>
@@ -234,10 +239,15 @@ class OptimizationGuideHintsManager
 
   // Called when the fetched hints have been stored in |hint_cache| and are
   // ready to be used. This is used when hints were fetched in real-time.
-  // |page_navigation_hosts_requested| contains the hosts whose hints should be
-  // loaded into memory when invoked.
+  // |navigation_url| is the URL associated with the navigation handle that
+  // initiated the fetch. |page_navigation_hosts_requested| contains the hosts
+  // whose hints should be loaded into memory when invoked.
   void OnFetchedPageNavigationHintsStored(
+      const base::Optional<GURL>& navigation_url,
       const base::flat_set<std::string>& page_navigation_hosts_requested);
+
+  // Returns true if there is a fetch currently in-flight for |navigation_url|.
+  bool IsHintBeingFetchedForNavigation(const GURL& navigation_url) const;
 
   // Returns the time when a hints fetch request was last attempted.
   base::Time GetLastHintsFetchAttemptTime() const;
@@ -323,16 +333,23 @@ class OptimizationGuideHintsManager
   // fetched from the remote Optimization Guide Service.
   std::unique_ptr<optimization_guide::HintCache> hint_cache_;
 
-  // The fetcher that handles making requests to update hints from the remote
-  // Optimization Guide Service.
-  std::unique_ptr<optimization_guide::HintsFetcher> hints_fetcher_;
+  // The fetcher that handles making requests for hints for multiple hosts from
+  // the remote Optimization Guide Service.
+  std::unique_ptr<optimization_guide::HintsFetcher> batch_update_hints_fetcher_;
+
+  // A map from the navigation URL to the fetcher making a request for a hint
+  // for that URL and/or host to the remote Optimization Guide Service.
+  base::flat_map<GURL, std::unique_ptr<optimization_guide::HintsFetcher>>
+      page_navigation_hints_fetchers_;
+
+  // The factory used to create hints fetchers. It is mostly used to create
+  // new fetchers for use under the page navigation context, but will also be
+  // used to create the initial fetcher for the batch update context.
+  std::unique_ptr<optimization_guide::HintsFetcherFactory>
+      hints_fetcher_factory_;
 
   // The top host provider that can be queried. Not owned.
   optimization_guide::TopHostProvider* top_host_provider_ = nullptr;
-
-  // The URL loader factory used for fetching hints from the remote Optimization
-  // Guide Service.
-  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
 
   // The timer used to schedule fetching hints from the remote Optimization
   // Guide Service.

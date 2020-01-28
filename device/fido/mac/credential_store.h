@@ -5,6 +5,8 @@
 #ifndef DEVICE_FIDO_MAC_CREDENTIAL_STORE_H_
 #define DEVICE_FIDO_MAC_CREDENTIAL_STORE_H_
 
+#include <os/availability.h>
+
 #include <list>
 #include <set>
 #include <string>
@@ -12,7 +14,6 @@
 #include <vector>
 
 #include "base/component_export.h"
-#include "base/mac/availability.h"
 #include "base/mac/foundation_util.h"
 #include "base/optional.h"
 #include "device/fido/mac/authenticator_config.h"

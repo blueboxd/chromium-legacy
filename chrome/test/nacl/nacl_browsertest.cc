@@ -396,15 +396,27 @@ IN_PROC_BROWSER_TEST_F(NaClBrowserTestPnaclSubzero, MAYBE_PnaclErrorHandling) {
   RunNaClIntegrationTest(FILE_PATH_LITERAL("pnacl_error_handling.html"));
 }
 
+#if defined(OS_WIN)
+// TODO(crbug.com/1046044) Test is flaky on Win 7.
+#define MAYBE_PnaclNMFOptionsO0 DISABLED_PnaclNMFOptionsO0
+#else
+#define MAYBE_PnaclNMFOptionsO0 PnaclNMFOptionsO0
+#endif
 IN_PROC_BROWSER_TEST_F(NaClBrowserTestPnacl,
-                       MAYBE_PNACL(PnaclNMFOptionsO0)) {
+                       MAYBE_PNACL(MAYBE_PnaclNMFOptionsO0)) {
   RunLoadTest(FILE_PATH_LITERAL("pnacl_options.html?use_nmf=o_0"));
 }
 
 // Test Subzero. Subzero is triggered by the O0 option so reuse
 // test harnesses that use "optlevel": 0.
+#if defined(OS_WIN)
+// TODO(crbug.com/1046044) Test is flaky on Win 7.
+#define MAYBE_SubZeroPnaclNMFOptionsO0 DISABLED_SubZeroPnaclNMFOptionsO0
+#else
+#define MAYBE_SubZeroPnaclNMFOptionsO0 PnaclNMFOptionsO0
+#endif
 IN_PROC_BROWSER_TEST_F(NaClBrowserTestPnaclSubzero,
-                       MAYBE_PNACL(PnaclNMFOptionsO0)) {
+                       MAYBE_PNACL(MAYBE_SubZeroPnaclNMFOptionsO0)) {
   RunLoadTest(FILE_PATH_LITERAL("pnacl_options.html?use_nmf=o_0"));
 }
 
@@ -413,8 +425,14 @@ IN_PROC_BROWSER_TEST_F(NaClBrowserTestPnacl,
   RunLoadTest(FILE_PATH_LITERAL("pnacl_options.html?use_nmf=o_2"));
 }
 
+#if defined(OS_WIN)
+// TODO(https://crbug.com/1046033): Flaky on Windows 7.
+#define MAYBE_PnaclNMFOptionsOlarge DISABLED_PnaclNMFOptionsOlarge
+#else
+#define MAYBE_PnaclNMFOptionsOlarge PnaclNMFOptionsOlarge
+#endif
 IN_PROC_BROWSER_TEST_F(NaClBrowserTestPnacl,
-                       MAYBE_PNACL(PnaclNMFOptionsOlarge)) {
+                       MAYBE_PNACL(MAYBE_PnaclNMFOptionsOlarge)) {
   RunLoadTest(FILE_PATH_LITERAL("pnacl_options.html?use_nmf=o_large"));
 }
 

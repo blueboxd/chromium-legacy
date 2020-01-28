@@ -266,7 +266,7 @@ void NavigateToURLWithPost(Browser* browser, const GURL& url) {
 content::RenderProcessHost* NavigateToURL(Browser* browser, const GURL& url) {
   return NavigateToURLWithDisposition(browser, url,
                                       WindowOpenDisposition::CURRENT_TAB,
-                                      BROWSER_TEST_WAIT_FOR_NAVIGATION);
+                                      BROWSER_TEST_WAIT_FOR_LOAD_STOP);
 }
 
 content::RenderProcessHost*
@@ -296,7 +296,7 @@ NavigateToURLWithDispositionBlockUntilNavigationsComplete(
     browser = WaitForBrowserNotInSet(initial_browsers);
   if (browser_test_flags & BROWSER_TEST_WAIT_FOR_TAB)
     tab_added_waiter.Wait();
-  if (!(browser_test_flags & BROWSER_TEST_WAIT_FOR_NAVIGATION)) {
+  if (!(browser_test_flags & BROWSER_TEST_WAIT_FOR_LOAD_STOP)) {
     // Some other flag caused the wait prior to this.
     return nullptr;
   }
@@ -347,7 +347,7 @@ content::RenderProcessHost* NavigateToURLBlockUntilNavigationsComplete(
     int number_of_navigations) {
   return NavigateToURLWithDispositionBlockUntilNavigationsComplete(
       browser, url, number_of_navigations, WindowOpenDisposition::CURRENT_TAB,
-      BROWSER_TEST_WAIT_FOR_NAVIGATION);
+      BROWSER_TEST_WAIT_FOR_LOAD_STOP);
 }
 
 base::FilePath GetTestFilePath(const base::FilePath& dir,

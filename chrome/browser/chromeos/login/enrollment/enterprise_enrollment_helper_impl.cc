@@ -235,6 +235,8 @@ void EnterpriseEnrollmentHelperImpl::DoEnroll(
              policy::EnrollmentConfig::MODE_OFFLINE_DEMO ||
          oauth_status_ == OAUTH_STARTED_WITH_AUTH_CODE ||
          oauth_status_ == OAUTH_STARTED_WITH_TOKEN);
+  VLOG(1) << "Enroll with token type: "
+          << static_cast<int>(auth_data->token_type());
   auth_data_ = std::move(auth_data);
   policy::BrowserPolicyConnectorChromeOS* connector =
       g_browser_process->platform_part()->browser_policy_connector_chromeos();
@@ -259,7 +261,7 @@ void EnterpriseEnrollmentHelperImpl::DoEnroll(
       enrollment_config_, auth_data_->Clone(),
       base::Bind(&EnterpriseEnrollmentHelperImpl::OnEnrollmentFinished,
                  weak_ptr_factory_.GetWeakPtr()));
-    dcp_initializer->StartEnrollment();
+  dcp_initializer->StartEnrollment();
 }
 
 void EnterpriseEnrollmentHelperImpl::GetDeviceAttributeUpdatePermission() {
@@ -314,6 +316,7 @@ void EnterpriseEnrollmentHelperImpl::OnTokenFetched(
 
 void EnterpriseEnrollmentHelperImpl::OnEnrollmentFinished(
     policy::EnrollmentStatus status) {
+  VLOG(1) << "Enrollment finished, status: " << status.status();
   ReportEnrollmentStatus(status);
   if (oauth_status_ != OAUTH_NOT_STARTED)
     oauth_status_ = OAUTH_FINISHED;

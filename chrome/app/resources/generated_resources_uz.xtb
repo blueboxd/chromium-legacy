@@ -24,8 +24,9 @@
 <translation id="1029317248976101138">Masshtab</translation>
 <translation id="1030706264415084469"><ph name="URL" /> saytidan katta hajmdagi ma’lumotlarni mobil qurilmangizda saqlashga ruxsat so‘rovi keldi</translation>
 <translation id="1031362278801463162">Ma’lumotlar oldindan ko‘rish uchun yuklanmoqda</translation>
-<translation id="1032605640136438169">Yangi Shartlar bilan tanishib chiqing</translation>
+<translation id="1032605640136438169">Yangi shartlar bilan tanishib chiqing</translation>
 <translation id="103279545524624934">Android ilovalarni ishga tushirish uchun diskda joy bo‘shating.</translation>
+<translation id="1033343386521881354">Bosma serverda 1 ta printer topildi.</translation>
 <translation id="1033780634303702874">Keyingi seriyali qurilmalaringizga ruxsat</translation>
 <translation id="1034942643314881546">Ilovalar illustratsiyalarini yaratish uchun ADB ishga tushirilmoqda</translation>
 <translation id="1036348656032585052">O‘chirib qo‘yish</translation>
@@ -153,6 +154,7 @@ xizmatlarini sizga moslashtirish maqsadlarida foydalanishi mumkin. Bu ruxsatni m
 <translation id="1197979282329025000"><ph name="PRINTER_NAME" /> printeri xususiyatlari haqidagi ma’lumotlarni qabul qilishda xatolik yuz berdi. Printerni <ph name="CLOUD_PRINT_NAME" /> yordamida ro‘yxatdan o‘tkazib bo‘lmadi.</translation>
 <translation id="119944043368869598">Barchasini tozalash</translation>
 <translation id="1201402288615127009">Keyingisi</translation>
+<translation id="1202556750060561551"><ph name="SITE_GROUP_NAME" /> va unga tegishli saytlardan saqlangan barcha maʼlumot, cookie fayllar va oʻrnatilgan ilovalar tozalab tashlanadi.</translation>
 <translation id="1202596434010270079">Kiosk-ilovasi yangilandi. USB-xotira qurilmasini chiqarib oling.</translation>
 <translation id="120368089816228251">Musiqa notasi</translation>
 <translation id="1205489148908752564">Ma’qullangan foydalanuvchilar ro‘yxatini ko‘rish va o‘zgartirish</translation>
@@ -280,8 +282,10 @@ xizmatlarini sizga moslashtirish maqsadlarida foydalanishi mumkin. Bu ruxsatni m
 <translation id="138784436342154190">Standart boshlang‘ich sahifa tiklansinmi?</translation>
 <translation id="1390548061267426325">Oddiy ichki oynada ochish</translation>
 <translation id="1393283411312835250">Quyosh va bulutlar</translation>
+<translation id="1393787139683794508">Bunda <ph name="ORIGIN_NAME" /> saytidan saqlangan barcha maʼlumotlar va cookie fayllar tozalab tashlanadi.</translation>
 <translation id="1395730723686586365">Yangilash vositasi ishga tushdi</translation>
 <translation id="1396139853388185343">Printer sozlanmadi</translation>
+<translation id="1396259464226642517">Xatolik yuz berdimi? <ph name="BEGIN_LINK" />Bizga xabar qiling<ph name="END_LINK" /></translation>
 <translation id="1396963298126346194">Siz kiritgan foydalanuvchi nomi va parol mos kelmadi</translation>
 <translation id="1397500194120344683">Mos telefon topilmadi. <ph name="LINK_BEGIN" />Batafsil axborot.<ph name="LINK_END" /></translation>
 <translation id="1398853756734560583">Yoyish</translation>
@@ -552,6 +556,7 @@ xizmatlarini sizga moslashtirish maqsadlarida foydalanishi mumkin. Bu ruxsatni m
 <translation id="1758018619400202187">EAP-TLS</translation>
 <translation id="17584710573359123">Chrome internet-do‘konida ochish</translation>
 <translation id="176193854664720708">Barmoq izi sensori quvvat tugmasida joylashgan. Istalgan barmoq bilan unga asta tegining.</translation>
+<translation id="176273057789108760">Tortib tashlangan fayllar tashkilotingiz xavfsizlik tizimi tomonidan tekshirilmoqda.</translation>
 <translation id="1763046204212875858">Ilova yorliqlarini yaratish</translation>
 <translation id="1763108912552529023">Qo‘shimcha ma’lumotlar</translation>
 <translation id="1763808908432309942">Yangi varaqda ochiladi</translation>
@@ -590,6 +595,7 @@ xizmatlarini sizga moslashtirish maqsadlarida foydalanishi mumkin. Bu ruxsatni m
 <translation id="1805472176602625930">Elektron kalitdagi tugmani bosing</translation>
 <translation id="1805738995123446102">Fondagi varaq mikrofoningizdan foydalanmoqda.</translation>
 <translation id="1805822111539868586">Sahifalar kodini ko‘rib chiqish</translation>
+<translation id="1805888043020974594">Bosma server</translation>
 <translation id="1805967612549112634">PIN kodni tasdiqlang</translation>
 <translation id="1809734401532861917">Xatcho‘plar, tarix, parollar va boshqa sozlamalarim <ph name="USER_EMAIL_ADDRESS" /> hisobida saqlansin.</translation>
 <translation id="1813278315230285598">Xizmatlar</translation>
@@ -738,6 +744,7 @@ xizmatlarini sizga moslashtirish maqsadlarida foydalanishi mumkin. Bu ruxsatni m
 <translation id="202352106777823113">Yuklab olish to‘xtatildi, chunki tarmoqdan kutish vaqti cho‘zilib ketdi.</translation>
 <translation id="2025632980034333559"><ph name="APP_NAME" /> kengaytmasi ishdan chiqdi. Kengaytmani qaytadan yuklash uchun bu yerga bosing.</translation>
 <translation id="2025891858974379949">Zararli kontent</translation>
+<translation id="202918510990975568">Xavfsizlik va kirish parametrlarini sozlash uchun parolingizni kiriting</translation>
 <translation id="2034346955588403444">Boshqa WiFi tarmoq qo‘shish</translation>
 <translation id="203574396658008164">Qulflangan ekrandan eslatmalar olishga ruxsat berish</translation>
 <translation id="2037445849770872822">Bu Google hisobi uchun nazorat sozlangan. Ota-ona nazoratini chuqurroq sozlash uchun Davom etish tugmasini bosing.
@@ -889,6 +896,7 @@ Oʻz qurilmangizda Family Link ilovasini oʻrnatib, bu hisob sozlamalarini boshq
 <translation id="2224471211857467033">Maxsus imkoniyatlarga oid harakatlar</translation>
 <translation id="2224551243087462610">Jild nomini o‘zgartirish</translation>
 <translation id="2226449515541314767">Bu saytda MIDI qurilmalari ustidan to‘liq boshqaruv taqiqlangan.</translation>
+<translation id="222704500187107962">Joriy inkognito seansi tugashi bilan bu istisno avtomatik olib tashlanadi</translation>
 <translation id="2227179592712503583">Taklifni olib tashlash</translation>
 <translation id="2229161054156947610">1 soatdan ko‘p vaqt qoldi</translation>
 <translation id="222931766245975952">Fayl shikastlangan</translation>
@@ -942,6 +950,7 @@ Oʻz qurilmangizda Family Link ilovasini oʻrnatib, bu hisob sozlamalarini boshq
 <translation id="2300383962156589922"><ph name="APP_NAME" /> ilovasini sozlash va boshqarish</translation>
 <translation id="2301382460326681002">Kengaytma tub katalogi noto‘g‘ri.</translation>
 <translation id="23030561267973084">“<ph name="EXTENSION_NAME" />” kengaytmasi qo‘shimcha ruxsatnomalar so‘radi.</translation>
+<translation id="23055578400314116">Foydalanuvchini tanlang</translation>
 <translation id="2307462900900812319">Tarmoqni sozlash</translation>
 <translation id="230927227160767054">Bu sahifa xizmatga ishlov beruvchi vosita o‘rnatishga urinmoqda.</translation>
 <translation id="2309620859903500144">Bu sahifa uchun harakat yoki yorug‘lik sensorlaridan foydalanish taqiqlandi</translation>
@@ -981,6 +990,7 @@ Oʻz qurilmangizda Family Link ilovasini oʻrnatib, bu hisob sozlamalarini boshq
 <translation id="2353297238722298836">Kamera va mikrofondan foydalanish mumkin</translation>
 <translation id="2356070529366658676">So‘ralsin</translation>
 <translation id="2357330829548294574">Olib tashlash: <ph name="USER_NAME" /></translation>
+<translation id="235798134753548762">Ilovalar, sozlamalar va Wi-Fi tarmoq parametrlari sinxronlanadi. Buni istalgan vaqtda Sozlamalar orqali oʻzgartirish mumkin.</translation>
 <translation id="2359345697448000899">Kengaytmalarni “Asbob va vositalar” menyusidagi “Kengaytmalar” bo‘limidan boshqarish mumkin.</translation>
 <translation id="2359808026110333948">Davom etish</translation>
 <translation id="236117173274098341">Takomillashtirish</translation>
@@ -1033,6 +1043,7 @@ Oʻz qurilmangizda Family Link ilovasini oʻrnatib, bu hisob sozlamalarini boshq
 <translation id="2436720498717686157">Tashkilotingiz bu qurilmani hoziroq oʻchirib-yoqishingizni talab qilmoqda</translation>
 <translation id="2439545803278355377">Yangi PIN kodni kiriting. PIN kod kamida 4 ta belgidan – harf, raqam va turli belgilardan iborat boʻlishi lozim.</translation>
 <translation id="2440604414813129000">Sahifa &amp;kodini ko‘rish</translation>
+<translation id="244231003699905658">Xato manzil. Manzilni tekshirib, qaytadan urining.</translation>
 <translation id="2442916515643169563">Matn soyasi</translation>
 <translation id="2445081178310039857">Kengaytma tub katalogi talab qilinadi.</translation>
 <translation id="2445484935443597917">Yangi profil yaratish</translation>
@@ -1087,6 +1098,7 @@ Oʻz qurilmangizda Family Link ilovasini oʻrnatib, bu hisob sozlamalarini boshq
 <translation id="2501278716633472235">Ortga qaytish</translation>
 <translation id="2501797496290880632">Tezkor tugmalarni ko‘rsating</translation>
 <translation id="2502441965851148920">Avtomatik yangilanishlar yoqilgan. Qo‘lda yangilash funksiyasi administrator o‘chirib qo‘ygan.</translation>
+<translation id="2502719318159902502">Toʻliq ruxsat</translation>
 <translation id="2505127913256479918">Tez orada bu boshqariluvchi hisob olib tashlanadi</translation>
 <translation id="2505324914378689427">{SCREEN_INDEX,plural, =1{Ekran #}other{Ekran #}}</translation>
 <translation id="2505402373176859469"><ph name="RECEIVED_AMOUNT" /> / <ph name="TOTAL_SIZE" /></translation>
@@ -1359,6 +1371,7 @@ Oʻz qurilmangizda Family Link ilovasini oʻrnatib, bu hisob sozlamalarini boshq
 <translation id="2865919525181940183">Joriy ekrandagi dasturlarning skrinshoti</translation>
 <translation id="286674810810214575">Quvvat manbalari tekshirilmoqda…</translation>
 <translation id="2867768963760577682">Qadalgan tab sifatida ochish</translation>
+<translation id="2868184003987917410">Saytlarga virtual reallik qurilmalari yoki maʼlumotlardan foydalanishni taqiqlash</translation>
 <translation id="2868746137289129307">Ushbu kengaytma eskirgan, shuning uchun u korporativ siyosat shartlariga ko‘ra o‘chirib qo‘yildi. Yangi versiyasi chiqishi bilan bu kengaytma avtomatik yoqilishi mumkin.</translation>
 <translation id="2870560284913253234">Sayt</translation>
 <translation id="2870909136778269686">Yangilanmoqda…</translation>
@@ -1404,6 +1417,7 @@ Oʻz qurilmangizda Family Link ilovasini oʻrnatib, bu hisob sozlamalarini boshq
 <translation id="2916745397441987255">Kengaytmalar ichidan qidirish</translation>
 <translation id="2921081876747860777">Mahalliy ma’lumotlarni himoyalash uchun parol kiriting.</translation>
 <translation id="2923234477033317484">Bu hisobni olib tashlash</translation>
+<translation id="2925054096976782003">Joylangan maʼlumotlar tashkilotingiz xavfsizlik tizimi tomonidan tekshirilmoqda.</translation>
 <translation id="2926085873880284723">Standart yorliqlarni tiklash</translation>
 <translation id="2927017729816812676">Kesh xotirasi</translation>
 <translation id="2931157624143513983">Bosma oʻlchamga moslash</translation>
@@ -1427,6 +1441,7 @@ Oʻz qurilmangizda Family Link ilovasini oʻrnatib, bu hisob sozlamalarini boshq
 <translation id="2956070239128776395">Boʻlim guruhlandi: <ph name="ERROR_LINE" /></translation>
 <translation id="2957117904572187936">Saytlarga qurilmadagi fayl va jildlarni tahrirlashni taqiqlash</translation>
 <translation id="2958721676848865875">Kengaytmani arxivlash ogohlantiruvi</translation>
+<translation id="2959127025785722291">Xatolik yuz berdi. Oxirigacha tekshirilmadi. Qaytadan urining.</translation>
 <translation id="2959842337402130152">Tiklash uchun xotirada joy yetarli emas. Qurilmada <ph name="SPACE_REQUIRED" /> joy ochib, keyin qayta urining.</translation>
 <translation id="296026337010986570">Tamom! Zararli dasturlar tozalandi. Kengaytmalarni qaytadan yoqish uchun &lt;a href="chrome://extensions"&gt;Kengaytmalar&lt;/a&gt; sahifasiga kiring.</translation>
 <translation id="2961090598421146107"><ph name="CERTIFICATE_NAME" /> (uzaytirish ko‘zda tutilgan)</translation>
@@ -1684,6 +1699,7 @@ Oʻz qurilmangizda Family Link ilovasini oʻrnatib, bu hisob sozlamalarini boshq
 <translation id="3348038390189153836">Xotira qurilmasi aniqlandi</translation>
 <translation id="3349933790966648062">Xotira sarfi</translation>
 <translation id="3350117557200012647">Ulanish rejimiga o‘tish</translation>
+<translation id="3350244554415289209">Sayt kamerangiz joylashuvini aniqlashi yoki xonangizni proyeksiyalashidan oldin ruxsat olsin (tavsiya etiladi)</translation>
 <translation id="3355936511340229503">Ulanish xatoligi</translation>
 <translation id="3356580349448036450">Tayyor</translation>
 <translation id="3359256513598016054">Sertifikatlar siyosati cheklovlari</translation>
@@ -1747,6 +1763,7 @@ Oʻz qurilmangizda Family Link ilovasini oʻrnatib, bu hisob sozlamalarini boshq
 <translation id="3448492834076427715">Hisobni yangilash</translation>
 <translation id="3449839693241009168"><ph name="EXTENSION_NAME" /> kengaytmasiga buyruq jo‘natish uchun <ph name="SEARCH_KEY" /> tugmasini bosing</translation>
 <translation id="3450157232394774192">Faolsizlik holati davomiyligi foizda</translation>
+<translation id="3451332697983754369"><ph name="DEVICE_TYPE" /> qurilmasini sinxronlash</translation>
 <translation id="3453612417627951340">Tasdiqlash tekshiruvi zarur</translation>
 <translation id="3454157711543303649">Aktivatsiya tugallandi</translation>
 <translation id="3454213325559396544">Bu <ph name="DEVICE_TYPE" /> qurilmasidagi DT va xavfsizlik sozlamalari uchun oxirgi avtomatik yangilanish. Keyingi chiqadigan yangilanishlar uchun qurilmaning yangiroq modeli kerak boʻladi.</translation>
@@ -1769,6 +1786,7 @@ Oʻz qurilmangizda Family Link ilovasini oʻrnatib, bu hisob sozlamalarini boshq
 <translation id="347785443197175480"><ph name="HOST" /> saytiga kamera va mikrofondan foydalanishga ruxsat berish</translation>
 <translation id="3478685642445675458">Foydalanuvchini olib tashlash uchun o‘z profilingizga kiring.</translation>
 <translation id="3479552764303398839">Hozir emas</translation>
+<translation id="3479685872808224578">Bosma server topilmadi. Manzilni tekshirib, qaytadan urining.</translation>
 <translation id="3481268647794498892"><ph name="COUNTDOWN_SECONDS" /> soniyadan keyin <ph name="ALTERNATIVE_BROWSER_NAME" /> orqali ochiladi</translation>
 <translation id="3484273680291419129">Zararli dastur o‘chirilmoqda...</translation>
 <translation id="3484869148456018791">Yangi sertifikat olish</translation>
@@ -1884,6 +1902,7 @@ Oʻz qurilmangizda Family Link ilovasini oʻrnatib, bu hisob sozlamalarini boshq
 <translation id="3630132874740063857">Telefoningiz</translation>
 <translation id="3630995161997703415">Bu saytdan xohlagan vaqtda foydalanish uchun javoningizga qo‘shing</translation>
 <translation id="3634507049637220048">Tarmoq: <ph name="NETWORK_INDEX" />/<ph name="NETWORK_COUNT" />, Nomi: <ph name="NETWORK_NAME" />, Ulanish:<ph name="CONNECTION_STATUS" />, Administrator boshqaruvida, Batafsil</translation>
+<translation id="3635241501480133979">Bu maʼlumotlar tashkilot xavfsizlik siyosatiga zid va tashlanmaydi.</translation>
 <translation id="3635353578505343390">Googlega fikr-mulohaza yuborish</translation>
 <translation id="3636096452488277381">Salom, <ph name="USER_GIVEN_NAME" />!</translation>
 <translation id="3636766455281737684"><ph name="PERCENTAGE" />% - <ph name="TIME" /> qoldi</translation>
@@ -1918,6 +1937,7 @@ Oʻz qurilmangizda Family Link ilovasini oʻrnatib, bu hisob sozlamalarini boshq
 <translation id="3677657024345889897">Eng sokin</translation>
 <translation id="3677911431265050325">Mobil versiya</translation>
 <translation id="3678156199662914018">Kengaytma: <ph name="EXTENSION_NAME" /></translation>
+<translation id="3678613690490567106">Qurilmalararo maʼlumotlar sinxronizatsiyasi</translation>
 <translation id="3681311097828166361">Fikr-mulohaza uchun rahmat! Hozir internet bilan aloqa yo‘qligi sababli xabaringiz keyinroq yuboriladi.</translation>
 <translation id="3682824389861648626">Harakat chegarasi</translation>
 <translation id="3683524264665795342"><ph name="APP_NAME" /> ekraningizga ulanmoqchi</translation>
@@ -2428,6 +2448,7 @@ Oʻz qurilmangizda Family Link ilovasini oʻrnatib, bu hisob sozlamalarini boshq
 <translation id="4400632832271803360">Yuqori qatordagi tugmalar rejimni almashtirish uchun qidiruv tugmasini bosib turing</translation>
 <translation id="4400963414856942668">Varaqni bukmarklash uchun yulduzchani bosing</translation>
 <translation id="4403775189117163360">Boshqa jildni tanlash</translation>
+<translation id="4404136731284211429">Yana qidirish</translation>
 <translation id="4405117686468554883">*.jpeg, *.jpg, *.png</translation>
 <translation id="4408599188496843485">&amp;Yordam</translation>
 <translation id="4409697491990005945">Maydonlar</translation>
@@ -2446,6 +2467,7 @@ Oʻz qurilmangizda Family Link ilovasini oʻrnatib, bu hisob sozlamalarini boshq
 <translation id="4421932782753506458">Momiqvoy</translation>
 <translation id="4423376891418188461">Dastlabki sozlamalarni tiklash</translation>
 <translation id="442397852638519243"><ph name="USER_NAME" />, administratoringiz parolingizni o‘zgartirishni so‘rayapti.</translation>
+<translation id="4429030830601238961">Bu maʼlumotlar tashkilot xavfsizlik siyosatiga zid va joylanmaydi.</translation>
 <translation id="4430019312045809116">Hajmi</translation>
 <translation id="4430369329743628066">Xatcho‘p qo‘shildi</translation>
 <translation id="4434045419905280838">Qalquvchi oyna va yo‘naltirishlar</translation>
@@ -2492,9 +2514,11 @@ Oʻz qurilmangizda Family Link ilovasini oʻrnatib, bu hisob sozlamalarini boshq
 <translation id="4501530680793980440">O‘chirishni tasdiqlash</translation>
 <translation id="4502423230170890588">Shu qurilmadan olib tashlash</translation>
 <translation id="4504940961672722399">Bu kengaytmani ikonkasi ustiga bosib yoki <ph name="EXTENSION_SHORTCUT" /> tugmalar birikmasini bosib faollashtiring.</translation>
+<translation id="4507164039066603071">Saytlarga kamerangiz joylashuvini aniqlash yoki xonangizni proyeksiyalashni taqiqlash</translation>
 <translation id="4508051413094283164">Barchasini inkognito oynalarda ochish</translation>
 <translation id="4508265954913339219">Faollashtirib bo‘lmadi</translation>
 <translation id="4508765956121923607">Sahifa &amp;kodini ko‘rish</translation>
+<translation id="4510614391273086606">Linux fayllari va ilovalari zaxiralangan nusxadan tiklanmoqda.</translation>
 <translation id="451407183922382411"><ph name="COMPANY_NAME" /> asosida ishlaydi</translation>
 <translation id="4514610446763173167">Videoni ijro yoki pauza qilish</translation>
 <translation id="451515744433878153">Olib tashlash</translation>
@@ -2692,6 +2716,7 @@ Oʻz qurilmangizda Family Link ilovasini oʻrnatib, bu hisob sozlamalarini boshq
 <translation id="480990236307250886">Bosh sahifani ochish</translation>
 <translation id="4813136279048157860">Rasmlarim</translation>
 <translation id="4813512666221746211">Tarmoq xatoligi</translation>
+<translation id="4814378367953456825">Bu barmoq izini nomlang</translation>
 <translation id="4820236583224459650">Faol chipta sifatida sozlash</translation>
 <translation id="4821935166599369261">&amp;Ma’lumotlarni yig‘ish yoniq</translation>
 <translation id="4823484602432206655">Foydalanuvchilar va qurilmalar sozlamalarini ko‘rish va o‘zgartirish</translation>
@@ -2738,6 +2763,7 @@ Oʻz qurilmangizda Family Link ilovasini oʻrnatib, bu hisob sozlamalarini boshq
 <translation id="4876895919560854374">Ekranni qulflash va qulfdan chiqarish</translation>
 <translation id="4877276003880815204">Elementlarni tekshirish</translation>
 <translation id="4878653975845355462">Fon rasmlarini oʻzgartirishni administrator taqiqlagan</translation>
+<translation id="4878718769565915065">Bu elektron kalitga barmoq izi kiritilmadi</translation>
 <translation id="4879491255372875719">Avtomatik (birlamchi)</translation>
 <translation id="4880328057631981605">Internetga ulanish nuqtasi (APN)</translation>
 <translation id="4880827082731008257">Qidiruv tarixi</translation>
@@ -2868,6 +2894,7 @@ Oʻz qurilmangizda Family Link ilovasini oʻrnatib, bu hisob sozlamalarini boshq
 <translation id="5065775832226780415">Smart Lock</translation>
 <translation id="5067399438976153555">Har doim yoniq</translation>
 <translation id="5067867186035333991"><ph name="HOST" /> mikrofonga kirmoqchi bo‘lsa, ruxsat so‘ralsin</translation>
+<translation id="5068377946749700758">Tortib tashlangan maʼlumotlar tashkilotingiz xavfsizlik tizimi tomonidan tekshirilmoqda.</translation>
 <translation id="5068918910148307423">Yaqinda yopilgan saytlarga ma’lumot yuborish va qabul qilish taqiqlansin</translation>
 <translation id="5068919226082848014">Pitsa</translation>
 <translation id="5072052264945641674">Kursor hajmini moslash</translation>
@@ -3037,7 +3064,7 @@ Oʻz qurilmangizda Family Link ilovasini oʻrnatib, bu hisob sozlamalarini boshq
 <translation id="5311304534597152726">Kirish:</translation>
 <translation id="53116743016968120"><ph name="ERROR_MESSAGE" /> Qaytadan urining.</translation>
 <translation id="5313628438272378649">Bu yuklama tashkilot xavfsizlik siyosatiga zid va bajarilmaydi.</translation>
-<translation id="5314381603623123224">Chrome xizmat shartlari 31-mart kuni oʻzgaradi</translation>
+<translation id="5314381603623123224">Chrome xizmat shartlari 31-mart kuni yangilanadi.</translation>
 <translation id="5315738755890845852">Oʻng figurali qavs ortiqcha: <ph name="ERROR_LINE" /></translation>
 <translation id="5315873049536339193">Alohida belgilari</translation>
 <translation id="5317780077021120954">Saqlash</translation>
@@ -3060,6 +3087,7 @@ Oʻz qurilmangizda Family Link ilovasini oʻrnatib, bu hisob sozlamalarini boshq
 <translation id="5341793073192892252">Quyidagi cookie fayllari bloklandi (tashqi cookie fayllari istisnolarsiz bloklanadi):</translation>
 <translation id="5341980496415249280">Arxivlanmoqda...</translation>
 <translation id="5342091991439452114">PIN kod kamida <ph name="MINIMUM" /> ta raqamdan iborat bo‘lishi lozim</translation>
+<translation id="5344036115151554031">Linux tiklanmoqda</translation>
 <translation id="5352033265844765294">Vaqt shtampi</translation>
 <translation id="5353252989841766347">Parollarni Chrome’dan eksport qilish</translation>
 <translation id="5355099869024327351">Sizga bildirishnomalar chiqishi uchun Assistentni ishga tushiradi.</translation>
@@ -3113,6 +3141,7 @@ Oʻz qurilmangizda Family Link ilovasini oʻrnatib, bu hisob sozlamalarini boshq
 <translation id="5427459444770871191">Soat mili yo‘nalishida burish</translation>
 <translation id="542872847390508405">Siz mehmon rejimida kirdingiz</translation>
 <translation id="5428850089342283580"><ph name="ACCNAME_APP" /> (yangilanish mavjud)</translation>
+<translation id="542948651837270806">Ishonchli platforma modulining (TPM) ichki dasturi yangilanishi zarur. Batafsil: <ph name="TPM_FIRMWARE_UPDATE_LINK" /></translation>
 <translation id="5430931332414098647">Tezkor modem rejimi</translation>
 <translation id="5431318178759467895">Rang</translation>
 <translation id="5431825016875453137">OpenVPN / L2TP</translation>
@@ -3293,6 +3322,7 @@ Oʻz qurilmangizda Family Link ilovasini oʻrnatib, bu hisob sozlamalarini boshq
 <translation id="5659593005791499971">Email</translation>
 <translation id="5659833766619490117">Bu sahifa tarjima qilinmadi</translation>
 <translation id="5660204307954428567"><ph name="DEVICE_NAME" /> qurilmasiga ulansinmi?</translation>
+<translation id="5662513737565158057">Linux ilovalari qanday ishlashini sozlash.</translation>
 <translation id="5667546120811588575">Google Play sozlanmoqda</translation>
 <translation id="5669267381087807207">Faollashtirilmoqda</translation>
 <translation id="5669691691057771421">Yangi PIN kodni kiriting</translation>
@@ -3700,6 +3730,7 @@ Ochiq eksponenta (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bit):
 <translation id="6238923052227198598">Oxirgi qaydni ekran qulfida qoldirish</translation>
 <translation id="6239558157302047471">&amp;Freymni qayta yuklash</translation>
 <translation id="6241530762627360640">Tizimingiz bilan bog‘liq va yaqin-atrofdagi Bluetooth qurilmalari ma’lumotlariga ruxsat.</translation>
+<translation id="6241844896329831164">Ruxsat talab qilmaydigan kengaytmalar</translation>
 <translation id="6242589501614145408">Elektron kalitni asliga qaytarish</translation>
 <translation id="6242852299490624841">Shu varaqni fokuslash</translation>
 <translation id="6243280677745499710">Hozirda o‘rnatilgan</translation>
@@ -3900,6 +3931,8 @@ Ochiq eksponenta (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bit):
 <translation id="6531282281159901044">Xavfli fayl yuklab olinsin</translation>
 <translation id="6532101170117367231">Google Drive omboriga saqlash</translation>
 <translation id="6532106788206463496">Oʻzgarishlarni saqlash</translation>
+<translation id="6532206849875187177">Xavfsizlik va kirish</translation>
+<translation id="6532527800157340614">Hisobga kirishda xatolik yuz berdi: ruxsat tokeni berilmadi. Tarmoq sozlamalarini tekshiring va qaytadan urining.</translation>
 <translation id="6532663472409656417">Korporativ domenda qayd qilingan</translation>
 <translation id="654039047105555694"><ph name="BEGIN_BOLD" />Eslatma:<ph name="END_BOLD" /> Ushbu funksiya faqat zarurligida yoqilsin, chunki ma’lumotlarni yig‘ish jarayoni unumdorlikni pasaytirishi mumkin.</translation>
 <translation id="6541638731489116978">Bu sayt uchun harakat sensorlaridan foydalanish taqiqlandi</translation>
@@ -3907,6 +3940,7 @@ Ochiq eksponenta (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bit):
 <translation id="6545864417968258051">Bluetooth qurilmalarni qidirish</translation>
 <translation id="6545867563032584178">Mikrofon Mac tizim sozlamalaridan faolsizlantirilgan</translation>
 <translation id="6547354035488017500">Qurilmangiz buzilib qolmasligi uchun xotirasidan kamida 512 MB bo‘shatilishi zarur. Joy ochish uchun qurilma xotirasidan fayllarni o‘chiring.</translation>
+<translation id="6549966385318247177">Nomaqbul kontenti borligi uchun bloklandi.</translation>
 <translation id="6550675742724504774">Parametrlar</translation>
 <translation id="6551508934388063976">Buyruq ish faoliyatida emas. Yangi oyna ochish uchun “Ctrl + N” tugmalarini bosing.</translation>
 <translation id="6551612971599078809">Saytda USB ishlatilmoqda</translation>
@@ -3989,6 +4023,7 @@ Ochiq eksponenta (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bit):
 <translation id="6678717876183468697">So‘rovning URL manzili</translation>
 <translation id="6680442031740878064">Bo‘sh: <ph name="AVAILABLE_SPACE" /></translation>
 <translation id="6680650203439190394">Nutq tezligi</translation>
+<translation id="6681301928961274620">Bosma serverda hech qanday printer topilmadi.</translation>
 <translation id="6681668084120808868">Suratga olish</translation>
 <translation id="6681964764822470072">“<ph name="APP_NAME" />” o‘chirib tashlanadi.</translation>
 <translation id="668599234725812620">Play Marketni ochish</translation>
@@ -4238,6 +4273,7 @@ Ochiq eksponenta (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bit):
 <translation id="703001695939087067">Umumiy nazar rejimi yoqildi. Oʻtish uchun Tab tugmasini bosing.</translation>
 <translation id="7031608529463141342"><ph name="WINDOW_TITLE" /> – Seriyali portga ulangan</translation>
 <translation id="7031962166228839643">Ishonchli platforma moduli tayyorlanmoqda (bir necha daqiqa vaqt olishi mumkin)...</translation>
+<translation id="7034615910652881882">Sayt virtual reallik qurilmalari yoki maʼlumotlaridan foydalanishi oldidan ruxsat olsin</translation>
 <translation id="7037509989619051237">Ovoz namunasi</translation>
 <translation id="7039326228527141150"><ph name="VENDOR_NAME" /> USB qurilmalariga kirish</translation>
 <translation id="7039912931802252762">Microsoft smart-kartasi orqali kirish</translation>
@@ -4277,6 +4313,7 @@ Ochiq eksponenta (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bit):
 <translation id="7081952801286122383">Siz inkognito rejimidasiz</translation>
 <translation id="708278670402572152">Tekshirish uchun tarmoqdan uzing</translation>
 <translation id="7085389578340536476">Chrome audio yozib olishiga ruxsat berilsinmi?</translation>
+<translation id="7086467953285486445">Bu fayllar tashkilot xavfsizlik siyosatiga zid va tashlanmaydi.</translation>
 <translation id="7088434364990739311">Yangilanish mavjudligini tekshirib bo‘lmadi (xatolik kodi: <ph name="ERROR" />).</translation>
 <translation id="7088561041432335295">Zip arxivlash vositasi – Fayllar dasturida ZIP fayllarni ochish va arxivlash.</translation>
 <translation id="7088674813905715446">Bu qurilma administrator tomonidan o‘chirib qo‘yilgan. Ro‘yxatdan o‘tkazish uchun qurilmani ulanishni kutish holatiga o‘tkazish kerak.</translation>
@@ -4390,6 +4427,7 @@ Ochiq eksponenta (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bit):
 <translation id="7241389281993241388">Mijoz sertifikatini import qilish uchun, <ph name="TOKEN_NAME" />’ga kiring.</translation>
 <translation id="7241443820034350811">Agar elektron kalit ekrandagi ro‘yxatda chiqmasa, tugmasini kamida 5 soniya bosib turing.</translation>
 <translation id="7243632151880336635">Tozalash va sinxronizatsiyadan chiqish</translation>
+<translation id="7243784282103630670">Linux tizimini yangilashda xatolik yuz berdi. Konteynerni zaxiralangan nusxadan tiklashga urinib koʻramiz.</translation>
 <translation id="7245628041916450754"><ph name="WIDTH" /> x <ph name="HEIGHT" /> (eng yaxshi)</translation>
 <translation id="7246230585855757313">Elektron kalitni yana suqing va qaytadan urining</translation>
 <translation id="7246947237293279874">FTP proksi-server</translation>
@@ -4476,6 +4514,7 @@ Ochiq eksponenta (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bit):
 <translation id="7360233684753165754"><ph name="PAGE_NUMBER" /> ta sahifa <ph name="PRINTER_NAME" /> printeriga yuborildi</translation>
 <translation id="7361297102842600584">“<ph name="PLUGIN_NAME" />” plaginini faollashtirish uchun sichqonchaning o‘ng tugmasini bosing</translation>
 <translation id="7363117941401515667"><ph name="HOURS" /> soat oldin yangilangan</translation>
+<translation id="7364591875953874521">Ruxsat talab qiladigan kengaytmalar</translation>
 <translation id="7364796246159120393">Fayl tanlang</translation>
 <translation id="7366415735885268578">Sayt qo‘shish</translation>
 <translation id="7366909168761621528">Brauzer tarixi</translation>
@@ -4501,6 +4540,7 @@ Ochiq eksponenta (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bit):
 <translation id="740624631517654988">Qalqib chiquvchi oyna bloklandi</translation>
 <translation id="7407430846095439694">Import qilish va bog‘lash</translation>
 <translation id="7407504355934009739">Aksariyat foydalanuvchilar bu saytdagi bildirishnomalarni bloklaydi</translation>
+<translation id="740810853557944681">Bosma server kiritish</translation>
 <translation id="7409549334477097887">Eng katta</translation>
 <translation id="7409836189476010449">Flash ishga tushirilsin</translation>
 <translation id="7410344089573941623"><ph name="HOST" /> saytida kamera va mikrofondan foydalanishga ruxsat so‘ralsin</translation>
@@ -4521,6 +4561,7 @@ Ochiq eksponenta (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bit):
 <translation id="7433692219247014412">{COUNT,plural, =0{Barchasini &amp;yangi oynada ochish}=1{&amp;Yangi oynada ochish}other{Barchasini (#) &amp;yangi oynada ochish}}</translation>
 <translation id="7434509671034404296">Dasturchilar uchun</translation>
 <translation id="7434635829372401939">Sozlamalarni sinxronlash</translation>
+<translation id="7434969625063495310">Bosma server kiritilmadi. Server sozlamalarini tekshiring va qaytadan urining.</translation>
 <translation id="7436921188514130341">Ana xolos! Nomni o‘zgartirishda xatolik yuz berdi.</translation>
 <translation id="7438976808740265764">Flash Player 2020-yil dekabrdan boshlab ishlamaydi.</translation>
 <translation id="7441736921018636843">Bu sozlamani o‘zgartirish uchun, avval, <ph name="BEGIN_LINK" />sinxronizatsiyani tiklang<ph name="END_LINK" /> va parolini olib tashlang</translation>
@@ -4530,8 +4571,10 @@ Ochiq eksponenta (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bit):
 <translation id="7443806024147773267">Istalgan qurilmadan Google hisobingizga kirsangiz, barcha parollaringizni doim ishlata olasiz.</translation>
 <translation id="7444983668544353857"><ph name="NETWORKDEVICE" /> qurilmasini o‘chirib qo‘yish</translation>
 <translation id="7448430327655618736">Ilovalarni avtomatik ravishda oʻrnatish</translation>
+<translation id="7448625729116931228">Sayt virtual reallik qurilmalari yoki maʼlumotlaridan foydalanishi oldidan ruxsat olsin (tavsiya etiladi)</translation>
 <translation id="7450761244949417357"><ph name="ALTERNATIVE_BROWSER_NAME" /> orqali ochilmoqda</translation>
 <translation id="7453008956351770337">Bu printerni tanlash orqali siz quyidagi kengaytmaga printeringizdan foydalanishga ruxsat berasiz:</translation>
+<translation id="7454548535253569100">Portal: <ph name="SUBFRAME_SITE" /></translation>
 <translation id="7456142309650173560">dev</translation>
 <translation id="7456847797759667638">Manzilni ochish...</translation>
 <translation id="7458168200501453431">Google qidiruvida ishlatiladigan imlo tekshiruvi vositasidan foydalanadi. Brauzerda kiritiladigan matn Google serverlariga yuboriladi.</translation>
@@ -4577,6 +4620,7 @@ Ochiq eksponenta (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bit):
 <translation id="7513029293694390567">Saqlangan hisob ma’lumotlaridan foydalanib veb-saytlarga avtomatik kirish. Bu funksiya o‘chirilsa, har safar veb-saytga kirishdan oldin to‘ldirish so‘raladi.</translation>
 <translation id="7514239104543605883">Qurilmaga nusxalash</translation>
 <translation id="7514365320538308">Yuklab olish</translation>
+<translation id="7520766081042531487">Inkognito rejimidagi portal: <ph name="SUBFRAME_SITE" /></translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7522255036471229694">“Ok Google” deb ayting</translation>
 <translation id="7525067979554623046">Yaratish</translation>
@@ -4665,6 +4709,7 @@ Ochiq eksponenta (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bit):
 <translation id="7652808307838961528">Foydalanuvchini tahrirlash, <ph name="PROFILE_NAME" /></translation>
 <translation id="765293928828334535">Bu saytdan ilova, kengaytma va foydalanuvchi skripti qo‘shib bo‘lmaydi</translation>
 <translation id="7652954539215530680">PIN kod yarating</translation>
+<translation id="7653295403398566475">Sayt kamerangiz joylashuvini aniqlashi yoki xonangizni proyeksiyalashidan oldin ruxsat olsin</translation>
 <translation id="7654941827281939388">Bu hisob allaqachon kompyuterda qo‘llanilmoqda.</translation>
 <translation id="7658239707568436148">Bekor qilish</translation>
 <translation id="7659584679870740384">Bu qurilmadan foydalanishga ruxsatingiz yo‘q. Qurilma administratori bilan bog‘laning.</translation>
@@ -4816,6 +4861,7 @@ Ochiq eksponenta (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bit):
 <translation id="783214144752121388">Saytlarga Flash kontentni ishga tushirishni taqiqlash (tavsiya etiladi)</translation>
 <translation id="7833720883933317473">Saqlangan so‘zlar shu yerda turadi</translation>
 <translation id="7835178595033117206">Xatcho‘p olib tashlandi</translation>
+<translation id="7836850009646241041">Elektron kalit tugmasini qayta bosib turing</translation>
 <translation id="7837776265184002579">Bosh sahifa <ph name="URL" /> manziliga o‘zgartirildi.</translation>
 <translation id="7839051173341654115">Mediani fayllarni ko‘rish/zaxiralash</translation>
 <translation id="7839192898639727867">Sertifikat subyekti kaliti identifikatori</translation>
@@ -5130,7 +5176,9 @@ Kalit faylini ishonchli joyda saqlang. U kengaytmaning yangi versiyalarini yarat
 <translation id="8260864402787962391">Sichqoncha</translation>
 <translation id="8261378640211443080"><ph name="IDS_EXTENSION_WEB_STORE_TITLE" />‘da bu kengaytma haqida ma’lumotlar yo‘q, kengaytma ruxsatingizsiz o‘rnatilgan bo‘lishi mumkin.</translation>
 <translation id="8261506727792406068">O‘chirish</translation>
+<translation id="8263336784344783289">Bu guruhni nomlang</translation>
 <translation id="8263744495942430914"><ph name="FULLSCREEN_ORIGIN" /> sichqon kursorini yashirib qo‘ydi.</translation>
+<translation id="8264024885325823677">Bu sozlama administrator tomonidan boshqariladi.</translation>
 <translation id="8264718194193514834">“<ph name="EXTENSION_NAME" />” kengaytmasi kiosk rejimida ishga tushdi.</translation>
 <translation id="8267961145111171918"><ph name="BEGIN_PARAGRAPH1" />Bunga qurilma va undan qanday foydalanish haqidagi umumiy axborot, masalan, batareya quvvati darajasi, tizim va ilovalardan qanday foydalanishingiz, ishdan chiqish hisobotlari kiradi. Ba’zi to‘plangan ma’lumotlar Android dasturchilar kabi hamkorlarimizga ham o‘z ilovalari va mahsulotlarini yanada yaxshilashga yordam beradi.<ph name="END_PARAGRAPH1" />
     <ph name="BEGIN_PARAGRAPH2" />Bu funksiyani faolsizlashtirish tizim yangilanishlari va xavfsizlik kabi asosiy xizmatlarni olish uchun zarur bo‘lgan ma’lumotlarni yuborishga to‘sqinlik qilmaydi.<ph name="END_PARAGRAPH2" />
@@ -5386,6 +5434,7 @@ Kalit faylini ishonchli joyda saqlang. U kengaytmaning yangi versiyalarini yarat
 <translation id="8650543407998814195">Eski profilga ruxsat berilmagan, lekin uni o‘chirib tashlashingiz mumkin.</translation>
 <translation id="8651585100578802546">Sahifani majburiy yangilash</translation>
 <translation id="8652400352452647993">Kengaytmani arxivlash xatoligi</translation>
+<translation id="8653578191563425126">Crostini uchun xotiradan ajratilgan joy (keyinroq oʻzgartirish mumkin).</translation>
 <translation id="8654151524613148204">Kechirasiz, kompyuteringizda bu faylni saqlash uchun yetarli joy yo‘q.</translation>
 <translation id="8655295600908251630">Kanal</translation>
 <translation id="8655319619291175901">Xatolik sodir bo‘ldi.</translation>
@@ -5502,6 +5551,7 @@ Kalit faylini ishonchli joyda saqlang. U kengaytmaning yangi versiyalarini yarat
 <translation id="8794025342371547160">Taqiqlangan IP</translation>
 <translation id="879413103056696865">Hotspot yoniq ekanligida, <ph name="PHONE_NAME" />:</translation>
 <translation id="8795916974678578410">Yangi oyna</translation>
+<translation id="8797086401386164142">Bosma serverda <ph name="NUM_PRINTERS" /> ta printer topildi.</translation>
 <translation id="8797459392481275117">Bu sayt hech qachon tarjima qilinmasin</translation>
 <translation id="8798099450830957504">Standart</translation>
 <translation id="8798441408945964110">Ta’minotchi nomi</translation>
@@ -5650,6 +5700,7 @@ Kalit faylini ishonchli joyda saqlang. U kengaytmaning yangi versiyalarini yarat
 <translation id="8985264973231822211"><ph name="DEVICE_LAST_ACTIVATED_TIME" /> kun oldin onlayn edi</translation>
 <translation id="8986362086234534611">Olib tashlash</translation>
 <translation id="8986494364107987395">Foydalanish statistikasi va ishdan chiqishlar hisobotini avtomatik ravishda Google‘ga jo‘natish</translation>
+<translation id="8986651757229422279">Bunda <ph name="ORIGIN_NAME" /> saytidan saqlangan barcha maʼlumotlar, cookie fayllar va oʻrnatilgan ilovalar tozalab tashlanadi.</translation>
 <translation id="8987927404178983737">Oy</translation>
 <translation id="8991520179165052608">Sayt mikrofondan foydalanishi mumkin</translation>
 <translation id="899403249577094719">Netscape sertifikatlar omborining URL manzili</translation>
@@ -5801,6 +5852,7 @@ Kalit faylini ishonchli joyda saqlang. U kengaytmaning yangi versiyalarini yarat
 <translation id="932508678520956232">Chop etishni boshlab bo‘lmadi.</translation>
 <translation id="93343527085570547">Huquqiy sabablar tufayli biror kontentni olib tashlash yoki tahrirlash talabini yuborish uchun <ph name="BEGIN_LINK1" />huquqiy yordam sahifasiga<ph name="END_LINK1" /> kiring. Ayrim hisob va tizimga oid axborotlar Google serverlariga yuboriladi. Siz taqdim etgan axborotdan texnik muammolarni bartaraf etishda va xizmatlarimizni yaxshilashda foydalanamiz. Ularga nisbatan <ph name="BEGIN_LINK2" />Maxfiylik siyosati<ph name="END_LINK2" /> va <ph name="BEGIN_LINK3" />Xizmat shartlari<ph name="END_LINK3" /> tatbiq qilinadi.</translation>
 <translation id="93393615658292258">Faqat parol</translation>
+<translation id="934244546219308557">Bu guruhni nomlang</translation>
 <translation id="934503638756687833">Ro‘yxatda keltirilmagan fayllar olib tashlangan bo‘lishi mumkin. &lt;a href="<ph name="URL" />"&gt;Keraksiz dasturlardan himoyalanish&lt;/a&gt; haqida batafsil axborot oling.</translation>
 <translation id="935490618240037774">Barcha qurilmalaringizda foydalana olishingiz uchun xatcho‘plar, tarix, 
 parollar va boshqa sozlamalaringiz Google hisobingizga sinxronlanadi.</translation>

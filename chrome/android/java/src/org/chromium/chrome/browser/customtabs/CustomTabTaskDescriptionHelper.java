@@ -43,7 +43,7 @@ import javax.inject.Inject;
  */
 @ActivityScope
 public class CustomTabTaskDescriptionHelper implements NativeInitObserver, Destroyable {
-    private final ChromeActivity mActivity;
+    private final ChromeActivity<?> mActivity;
     private final CustomTabActivityTabProvider mTabProvider;
     private final TabObserverRegistrar mTabObserverRegistrar;
     private final BrowserServicesIntentDataProvider mIntentDataProvider;
@@ -70,7 +70,7 @@ public class CustomTabTaskDescriptionHelper implements NativeInitObserver, Destr
     private Bitmap mLargestFavicon;
 
     @Inject
-    public CustomTabTaskDescriptionHelper(ChromeActivity activity,
+    public CustomTabTaskDescriptionHelper(ChromeActivity<?> activity,
             CustomTabActivityTabProvider tabProvider, TabObserverRegistrar tabObserverRegistrar,
             BrowserServicesIntentDataProvider intentDataProvider,
             ActivityLifecycleDispatcher activityLifecycleDispatcher) {

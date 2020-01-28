@@ -610,6 +610,9 @@ cr.define('cr.login', function() {
         // argument to show an email domain.
         url = appendParam(url, 'hd', data.emailDomain);
       }
+      if (data.showTos) {
+        url = appendParam(url, 'show_tos', data.showTos);
+      }
       if (data.ignoreCrOSIdpSetting === true) {
         url = appendParam(url, 'ignoreCrOSIdpSetting', 'true');
       }

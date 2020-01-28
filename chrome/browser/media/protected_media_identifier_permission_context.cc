@@ -10,10 +10,10 @@
 #include "base/strings/string_split.h"
 #include "build/build_config.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
-#include "chrome/browser/permissions/permission_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
+#include "components/permissions/permission_util.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
@@ -209,9 +209,9 @@ bool ProtectedMediaIdentifierPermissionContext::
 
 #if defined(OS_CHROMEOS)
 
-static void ReportPermissionActionUMA(PermissionAction action) {
+static void ReportPermissionActionUMA(permissions::PermissionAction action) {
   UMA_HISTOGRAM_ENUMERATION("Permissions.Action.ProtectedMedia", action,
-                            PermissionAction::NUM);
+                            permissions::PermissionAction::NUM);
 }
 
 void ProtectedMediaIdentifierPermissionContext::
@@ -227,7 +227,7 @@ void ProtectedMediaIdentifierPermissionContext::
   PendingRequestMap::iterator request = pending_requests_.find(web_contents);
   if (request == pending_requests_.end()) {
     VLOG(1) << "Platform verification ignored by user.";
-    ReportPermissionActionUMA(PermissionAction::IGNORED);
+    ReportPermissionActionUMA(permissions::PermissionAction::IGNORED);
     return;
   }
 
@@ -241,7 +241,7 @@ void ProtectedMediaIdentifierPermissionContext::
       // This can happen if user clicked "x", or pressed "Esc", or navigated
       // away without closing the tab.
       VLOG(1) << "Platform verification dismissed by user.";
-      ReportPermissionActionUMA(PermissionAction::DISMISSED);
+      ReportPermissionActionUMA(permissions::PermissionAction::DISMISSED);
       content_setting = CONTENT_SETTING_ASK;
       persist = false;
       break;
@@ -249,7 +249,7 @@ void ProtectedMediaIdentifierPermissionContext::
       VLOG(1) << "Platform verification accepted by user.";
       base::RecordAction(
           base::UserMetricsAction("PlatformVerificationAccepted"));
-      ReportPermissionActionUMA(PermissionAction::GRANTED);
+      ReportPermissionActionUMA(permissions::PermissionAction::GRANTED);
       content_setting = CONTENT_SETTING_ALLOW;
       persist = true;
       break;
@@ -257,7 +257,7 @@ void ProtectedMediaIdentifierPermissionContext::
       VLOG(1) << "Platform verification denied by user.";
       base::RecordAction(
           base::UserMetricsAction("PlatformVerificationRejected"));
-      ReportPermissionActionUMA(PermissionAction::DENIED);
+      ReportPermissionActionUMA(permissions::PermissionAction::DENIED);
       content_setting = CONTENT_SETTING_BLOCK;
       persist = true;
       break;

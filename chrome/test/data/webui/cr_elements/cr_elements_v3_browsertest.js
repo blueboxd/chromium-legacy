@@ -307,6 +307,20 @@ TEST_F('CrElementsPolicyIndicatorV3Test', 'All', function() {
 });
 
 // eslint-disable-next-line no-var
+var CrElementsPolicyPrefIndicatorV3Test =
+    class extends CrElementsV3BrowserTest {
+  /** @override */
+  get browsePreload() {
+    // Preload a settings URL, so that the test can access settingsPrivate.
+    return 'chrome://settings/test_loader.html?module=cr_elements/cr_policy_pref_indicator_tests.m.js';
+  }
+};
+
+TEST_F('CrElementsPolicyPrefIndicatorV3Test', 'All', function() {
+  mocha.run();
+});
+
+// eslint-disable-next-line no-var
 var CrElementsPolicyIndicatorBehaviorV3Test =
     class extends CrElementsV3BrowserTest {
   /** @override */

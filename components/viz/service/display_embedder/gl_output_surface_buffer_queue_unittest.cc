@@ -4,7 +4,6 @@
 
 #include "components/viz/service/display_embedder/gl_output_surface_buffer_queue.h"
 
-#include "build/build_config.h"
 #include "components/viz/service/display/output_surface_frame.h"
 #include "components/viz/service/display_embedder/buffer_queue.h"
 #include "components/viz/test/test_context_provider.h"
@@ -111,13 +110,7 @@ MATCHER_P(SharedImageEqualTo, expected_shared_image, "") {
 
 // Make sure that the surface uses the buffer queue and the GL context correctly
 // when we request it to bind the framebuffer twice and then swap the buffer.
-#if defined(OS_LINUX) && defined(MEMORY_SANITIZER)
-// TODO(http://crbug.com/1045602): fails on Linux MSAN.
-#define MAYBE_BindFramebufferAndSwap DISABLED_BindFramebufferAndSwap
-#else
-#define MAYBE_BindFramebufferAndSwap BindFramebufferAndSwap
-#endif
-TEST_F(GLOutputSurfaceBufferQueueTest, MAYBE_BindFramebufferAndSwap) {
+TEST_F(GLOutputSurfaceBufferQueueTest, BindFramebufferAndSwap) {
   const gpu::SyncToken fake_sync_token(
       gpu::CommandBufferNamespace::GPU_IO,
       gpu::CommandBufferId::FromUnsafeValue(567u),

@@ -50,20 +50,6 @@ id<GREYMatcher> BookmarksDeleteSwipeButton() {
   return ButtonWithAccessibilityLabelId(IDS_IOS_BOOKMARK_ACTION_DELETE);
 }
 
-id<GREYMatcher> NavigateBackButtonTo(NSString* previousViewControllerLabel) {
-  // When using the stock UINavigationBar back button item, the button's label
-  // may be truncated to the word "Back", or to nothing at all.  It is not
-  // possible to know which label will be used, as the OS makes that decision,
-  // so try to search for any of them.
-  id<GREYMatcher> buttonLabelMatcher =
-      grey_anyOf(grey_accessibilityLabel(previousViewControllerLabel),
-                 grey_accessibilityLabel(@"Back"), nil);
-
-  return grey_allOf(grey_kindOfClassName(@"UIButton"),
-                    grey_ancestor(grey_kindOfClassName(@"UINavigationBar")),
-                    buttonLabelMatcher, nil);
-}
-
 id<GREYMatcher> BookmarkHomeDoneButton() {
   return grey_accessibilityID(kBookmarkHomeNavigationBarDoneButtonIdentifier);
 }

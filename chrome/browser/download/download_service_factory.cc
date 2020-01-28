@@ -59,7 +59,7 @@ std::unique_ptr<download::Client> CreateBackgroundFetchDownloadClient(
   return std::make_unique<BackgroundFetchDownloadClient>(profile);
 }
 
-#if defined(CHROMEOS)
+#if defined(OS_CHROMEOS)
 std::unique_ptr<download::Client> CreatePluginVmImageDownloadClient(
     Profile* profile) {
   return std::make_unique<plugin_vm::PluginVmImageDownloadClient>(profile);
@@ -139,7 +139,7 @@ std::unique_ptr<KeyedService> DownloadServiceFactory::BuildServiceInstanceFor(
           download::DownloadClient::BACKGROUND_FETCH,
           base::BindOnce(&CreateBackgroundFetchDownloadClient), key)));
 
-#if defined(CHROMEOS)
+#if defined(OS_CHROMEOS)
   if (!key->IsOffTheRecord()) {
     clients->insert(std::make_pair(
         download::DownloadClient::PLUGIN_VM_IMAGE,

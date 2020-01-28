@@ -426,7 +426,7 @@ IN_PROC_BROWSER_TEST_F(ContentVerifierTest,
   GURL page_url = extension->GetResourceURL("page.html/");
   ui_test_utils::NavigateToURLWithDispositionBlockUntilNavigationsComplete(
       browser(), page_url, 1, WindowOpenDisposition::CURRENT_TAB,
-      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
   ExtensionPrefs* prefs = ExtensionPrefs::Get(profile());
   int reasons = prefs->GetDisableReasons(kExtensionId);
   EXPECT_FALSE(reasons);
@@ -446,7 +446,7 @@ IN_PROC_BROWSER_TEST_F(ContentVerifierTest,
   GURL page_url = extension->GetResourceURL("page.html.");
   ui_test_utils::NavigateToURLWithDispositionBlockUntilNavigationsComplete(
       browser(), page_url, 1, WindowOpenDisposition::CURRENT_TAB,
-      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
   ExtensionPrefs* prefs = ExtensionPrefs::Get(profile());
   int reasons = prefs->GetDisableReasons(kExtensionId);
   EXPECT_EQ(disable_reason::DISABLE_NONE, reasons);
@@ -472,7 +472,7 @@ IN_PROC_BROWSER_TEST_F(ContentVerifierTest,
   GURL page_url = extension->GetResourceURL(kIncorrectCasePath);
   ui_test_utils::NavigateToURLWithDispositionBlockUntilNavigationsComplete(
       browser(), page_url, 1, WindowOpenDisposition::CURRENT_TAB,
-      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
 
   // Ensure that ContentVerifyJob has finished checking the resource.
   EXPECT_EQ(ContentVerifyJob::NONE, job_observer.WaitForJobFinished());

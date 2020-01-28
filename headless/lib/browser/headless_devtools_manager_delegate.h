@@ -29,8 +29,7 @@ class HeadlessDevToolsManagerDelegate
   ~HeadlessDevToolsManagerDelegate() override;
 
   // DevToolsManagerDelegate implementation:
-  void HandleCommand(content::DevToolsAgentHost* agent_host,
-                     content::DevToolsAgentHostClient* client,
+  void HandleCommand(content::DevToolsAgentHostClientChannel* channel,
                      const std::string& method,
                      base::span<const uint8_t> message,
                      NotHandledCallback callback) override;
@@ -38,10 +37,10 @@ class HeadlessDevToolsManagerDelegate
       const GURL& url) override;
   std::string GetDiscoveryPageHTML() override;
   bool HasBundledFrontendResources() override;
-  void ClientAttached(content::DevToolsAgentHost* agent_host,
-                      content::DevToolsAgentHostClient* client) override;
-  void ClientDetached(content::DevToolsAgentHost* agent_host,
-                      content::DevToolsAgentHostClient* client) override;
+  void ClientAttached(
+      content::DevToolsAgentHostClientChannel* channel) override;
+  void ClientDetached(
+      content::DevToolsAgentHostClientChannel* channel) override;
 
   std::vector<content::BrowserContext*> GetBrowserContexts() override;
   content::BrowserContext* GetDefaultBrowserContext() override;
@@ -51,7 +50,7 @@ class HeadlessDevToolsManagerDelegate
 
  private:
   base::WeakPtr<HeadlessBrowserImpl> browser_;
-  std::map<content::DevToolsAgentHostClient*,
+  std::map<content::DevToolsAgentHostClientChannel*,
            std::unique_ptr<protocol::HeadlessDevToolsSession>>
       sessions_;
 };

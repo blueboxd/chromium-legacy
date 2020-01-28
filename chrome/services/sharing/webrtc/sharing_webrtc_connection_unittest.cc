@@ -5,10 +5,12 @@
 #include "chrome/services/sharing/webrtc/sharing_webrtc_connection.h"
 
 #include "base/test/bind_test_util.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/task_environment.h"
 #include "chrome/services/sharing/webrtc/test/mock_sharing_connection_host.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/webrtc/api/candidate.h"
 #include "third_party/webrtc/api/peer_connection_interface.h"
 #include "third_party/webrtc/api/test/mock_peerconnectioninterface.h"
 
@@ -68,6 +70,76 @@ class MockDataChannel
   MOCK_METHOD1(Send, bool(const webrtc::DataBuffer&));
 };
 
+class MockPeerConnection : public webrtc::MockPeerConnectionInterface {
+ public:
+  using webrtc::MockPeerConnectionInterface::AddIceCandidate;
+  MOCK_METHOD2(AddIceCandidate,
+               void(std::unique_ptr<webrtc::IceCandidateInterface> candidate,
+                    std::function<void(webrtc::RTCError)> callback));
+};
+
+class MockSessionDescriptionInterface
+    : public webrtc::SessionDescriptionInterface {
+ public:
+  MOCK_METHOD0(description, cricket::SessionDescription*());
+  MOCK_CONST_METHOD0(description, cricket::SessionDescription*());
+
+  MOCK_CONST_METHOD0(session_id, std::string());
+  MOCK_CONST_METHOD0(session_version, std::string());
+
+  MOCK_CONST_METHOD0(GetType, webrtc::SdpType());
+
+  MOCK_CONST_METHOD0(type, std::string());
+
+  MOCK_METHOD1(AddCandidate, bool(const webrtc::IceCandidateInterface*));
+
+  MOCK_METHOD1(RemoveCandidates,
+               size_t(const std::vector<cricket::Candidate>& candidates));
+
+  MOCK_CONST_METHOD0(number_of_mediasections, size_t());
+
+  MOCK_CONST_METHOD1(
+      candidates,
+      webrtc::IceCandidateCollection*(size_t mediasection_index));
+
+  MOCK_CONST_METHOD1(ToString, bool(std::string* out));
+};
+
+std::vector<sharing::mojom::IceCandidatePtr> GenerateIceCandidates(
+    int invalid_candidates,
+    int valid_candidates) {
+  std::vector<sharing::mojom::IceCandidatePtr> ice_candidates;
+  int port = 1234;
+
+  // Add invalid ice candidate first;
+  for (int i = 0; i < invalid_candidates; i++) {
+    sharing::mojom::IceCandidatePtr ice_candidate_ptr(
+        sharing::mojom::IceCandidate::New());
+    ice_candidate_ptr->candidate = "invalid_candidate";
+    ice_candidate_ptr->sdp_mid = "random_sdp_mid";
+    ice_candidate_ptr->sdp_mline_index = i;
+    ice_candidates.push_back(std::move(ice_candidate_ptr));
+  }
+
+  // Add valid ice candidates;
+  for (int i = 0; i < valid_candidates; i++) {
+    rtc::SocketAddress address("127.0.0.1", port++);
+    cricket::Candidate candidate(cricket::ICE_CANDIDATE_COMPONENT_RTP, "udp",
+                                 address, 1, "", "", "local", 0, "1");
+    std::unique_ptr<webrtc::IceCandidateInterface> ice_candidate =
+        webrtc::CreateIceCandidate("mid", i, candidate);
+
+    sharing::mojom::IceCandidatePtr ice_candidate_ptr(
+        sharing::mojom::IceCandidate::New());
+    ice_candidate->ToString(&ice_candidate_ptr->candidate);
+    ice_candidate_ptr->sdp_mid = ice_candidate->sdp_mid();
+    ice_candidate_ptr->sdp_mline_index = ice_candidate->sdp_mline_index();
+    ice_candidates.push_back(std::move(ice_candidate_ptr));
+  }
+
+  return ice_candidates;
+}
+
 }  // namespace
 
 namespace sharing {
@@ -77,7 +149,7 @@ class SharingWebRtcConnectionTest : public testing::Test {
  public:
   SharingWebRtcConnectionTest() {
     mock_webrtc_pc_factory_ = new MockPeerConnectionFactory();
-    mock_webrtc_pc_ = new webrtc::MockPeerConnectionInterface();
+    mock_webrtc_pc_ = new MockPeerConnection();
     mock_data_channel_ = new MockDataChannel();
 
     EXPECT_CALL(*mock_webrtc_pc_factory_,
@@ -138,10 +210,11 @@ class SharingWebRtcConnectionTest : public testing::Test {
  protected:
   base::test::SingleThreadTaskEnvironment task_environment_;
   rtc::scoped_refptr<MockPeerConnectionFactory> mock_webrtc_pc_factory_;
-  rtc::scoped_refptr<webrtc::MockPeerConnectionInterface> mock_webrtc_pc_;
+  rtc::scoped_refptr<MockPeerConnection> mock_webrtc_pc_;
   rtc::scoped_refptr<MockDataChannel> mock_data_channel_;
   std::unique_ptr<SharingWebRtcConnection> connection_;
   MockSharingConnectionHost connection_host_;
+  base::HistogramTester histograms_;
 };
 
 TEST_F(SharingWebRtcConnectionTest, SendMessage_Empty) {
@@ -159,6 +232,69 @@ TEST_F(SharingWebRtcConnectionTest, SendMessage_256kBLimit) {
   data.push_back(0);
   EXPECT_CALL(*mock_data_channel_, Close());
   EXPECT_EQ(mojom::SendMessageResult::kError, SendMessageBlocking(data));
+}
+
+TEST_F(SharingWebRtcConnectionTest, AddIceCandidates) {
+  EXPECT_CALL(*this, ConnectionClosed(testing::_));
+
+  const int valid_ice_candidates_count = 2;
+  const int invalid_ice_candidates_count = 3;
+  const std::string histogram_name = "Sharing.WebRtc.AddIceCandidate";
+
+  MockSessionDescriptionInterface local_description;
+  EXPECT_CALL(*mock_webrtc_pc_, local_description())
+      .WillOnce(testing::Return(&local_description));
+  EXPECT_CALL(*mock_webrtc_pc_, signaling_state())
+      .WillOnce(testing::Return(
+          webrtc::PeerConnectionInterface::SignalingState::kStable));
+  EXPECT_CALL(*mock_webrtc_pc_, AddIceCandidate)
+      .Times(valid_ice_candidates_count)
+      .WillRepeatedly(testing::InvokeArgument<1>(webrtc::RTCError()));
+
+  connection_->OnIceCandidatesReceived(GenerateIceCandidates(
+      invalid_ice_candidates_count, valid_ice_candidates_count));
+
+  histograms_.ExpectTotalCount(
+      histogram_name,
+      valid_ice_candidates_count + invalid_ice_candidates_count);
+  histograms_.ExpectBucketCount(histogram_name, 0,
+                                invalid_ice_candidates_count);
+  histograms_.ExpectBucketCount(histogram_name, 1, valid_ice_candidates_count);
+}
+
+TEST_F(SharingWebRtcConnectionTest, AddIceCandidates_RTCError) {
+  EXPECT_CALL(*this, ConnectionClosed(testing::_));
+
+  const std::string histogram_name = "Sharing.WebRtc.AddIceCandidate";
+  const int invalid_ice_candidates_count = 3;
+  const int valid_ice_candidates_count = 2;
+
+  // Count of ice candidates that will fail with internal error.
+  const int valid_ice_candidates_internal_error = 1;
+
+  MockSessionDescriptionInterface local_description;
+  EXPECT_CALL(*mock_webrtc_pc_, local_description())
+      .WillOnce(testing::Return(&local_description));
+  EXPECT_CALL(*mock_webrtc_pc_, signaling_state())
+      .WillOnce(testing::Return(
+          webrtc::PeerConnectionInterface::SignalingState::kStable));
+  EXPECT_CALL(*mock_webrtc_pc_, AddIceCandidate)
+      .WillOnce(testing::InvokeArgument<1>(webrtc::RTCError()))
+      .WillRepeatedly(testing::InvokeArgument<1>(
+          webrtc::RTCError(webrtc::RTCErrorType::INTERNAL_ERROR)));
+
+  connection_->OnIceCandidatesReceived(GenerateIceCandidates(
+      invalid_ice_candidates_count, valid_ice_candidates_count));
+
+  histograms_.ExpectTotalCount(
+      histogram_name,
+      valid_ice_candidates_count + invalid_ice_candidates_count);
+  histograms_.ExpectBucketCount(
+      histogram_name, 0,
+      invalid_ice_candidates_count + valid_ice_candidates_internal_error);
+  histograms_.ExpectBucketCount(
+      histogram_name, 1,
+      valid_ice_candidates_count - valid_ice_candidates_internal_error);
 }
 
 }  // namespace sharing

@@ -4,8 +4,6 @@
 
 package org.chromium.chrome.browser.tab;
 
-import android.graphics.Color;
-import android.os.Bundle;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
 
@@ -17,12 +15,10 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.BaseJUnit4ClassRunner;
-import org.chromium.chrome.browser.tab.TabState.WebContentsState;
 import org.chromium.chrome.browser.tabmodel.TestTabModelDirectory;
 import org.chromium.chrome.test.ChromeBrowserTestRule;
 
 import java.io.File;
-import java.nio.ByteBuffer;
 
 /**
  * Tests whether TabState can be saved and restored to disk properly. Also checks to see if
@@ -90,32 +86,4 @@ public class TabStateTest {
         loadAndCheckTabState(TestTabModelDirectory.V2_HAARETZ);
     }
 
-    @Test
-    @SmallTest
-    public void testSaveLoadThroughBundle() {
-        TabState tabState = new TabState();
-        byte[] bytes = {'A', 'B', 'C'};
-        tabState.contentsState = new WebContentsState(ByteBuffer.allocateDirect(bytes.length));
-        tabState.contentsState.buffer().put(bytes);
-        tabState.timestampMillis = 1234;
-        tabState.parentId = 2;
-        tabState.openerAppId = "app";
-        tabState.contentsState.setVersion(TabState.CONTENTS_STATE_CURRENT_VERSION);
-        tabState.themeColor = Color.BLACK;
-        tabState.mIsIncognito = true;
-
-        Bundle b = new Bundle();
-        TabState.saveState(b, tabState);
-        TabState restoredState = TabState.restoreTabState(b);
-
-        Assert.assertEquals(restoredState.contentsState.buffer(), tabState.contentsState.buffer());
-        Assert.assertEquals(tabState.timestampMillis, restoredState.timestampMillis);
-        Assert.assertEquals(tabState.parentId, restoredState.parentId);
-        Assert.assertEquals(tabState.openerAppId, restoredState.openerAppId);
-        Assert.assertEquals(tabState.timestampMillis, restoredState.timestampMillis);
-        Assert.assertEquals(
-                tabState.contentsState.version(), restoredState.contentsState.version());
-        Assert.assertEquals(tabState.themeColor, restoredState.themeColor);
-        Assert.assertEquals(tabState.mIsIncognito, restoredState.mIsIncognito);
-    }
 }

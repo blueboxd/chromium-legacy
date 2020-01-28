@@ -6,6 +6,7 @@
 #define CHROMEOS_SERVICES_MULTIDEVICE_SETUP_MULTIDEVICE_SETUP_IMPL_H_
 
 #include <memory>
+#include <string>
 
 #include "base/containers/flat_map.h"
 #include "chromeos/services/multidevice_setup/feature_state_manager.h"
@@ -89,7 +90,7 @@ class MultiDeviceSetupImpl : public MultiDeviceSetupBase,
   void GetEligibleHostDevices(GetEligibleHostDevicesCallback callback) override;
   void GetEligibleActiveHostDevices(
       GetEligibleActiveHostDevicesCallback callback) override;
-  void SetHostDevice(const std::string& host_device_id,
+  void SetHostDevice(const std::string& host_instance_id_or_legacy_device_id,
                      const std::string& auth_token,
                      SetHostDeviceCallback callback) override;
   void RemoveHostDevice() override;
@@ -106,7 +107,7 @@ class MultiDeviceSetupImpl : public MultiDeviceSetupBase,
 
   // MultiDeviceSetupBase:
   void SetHostDeviceWithoutAuthToken(
-      const std::string& host_device_id,
+      const std::string& host_instance_id_or_legacy_device_id,
       mojom::PrivilegedHostDeviceSetter::SetHostDeviceCallback callback)
       override;
 
@@ -120,7 +121,7 @@ class MultiDeviceSetupImpl : public MultiDeviceSetupBase,
 
   // Attempts to set the host device, returning a boolean of whether the attempt
   // was successful.
-  bool AttemptSetHost(const std::string& host_device_id);
+  bool AttemptSetHost(const std::string& host_instance_id_or_legacy_device_id);
   bool IsAuthTokenRequiredForFeatureStateChange(mojom::Feature feature,
                                                 bool enabled);
 

@@ -598,7 +598,6 @@
 <translation id="9193626018745640770">S'està emetent contingut en un receptor desconegut</translation>
 <translation id="9194617393863864469">Inicia la sessió amb un altre usuari...</translation>
 <translation id="9201374708878217446"><ph name="CONNECTION_STATUS" />, gestionada per l'administrador</translation>
-<translation id="9205817095063786319">Dispositiu gestionat per <ph name="DOMAIN" /></translation>
 <translation id="9210037371811586452">S'està sortint del mode d'escriptori unificat</translation>
 <translation id="9211681782751733685">Temps restant perquè es carregui totalment la bateria: <ph name="TIME_REMAINING" />.</translation>
 <translation id="9215934040295798075">Estableix el fons de pantalla</translation>

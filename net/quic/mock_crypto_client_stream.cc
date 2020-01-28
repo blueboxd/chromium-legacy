@@ -236,6 +236,11 @@ CryptoMessageParser* MockCryptoClientStream::crypto_message_parser() {
   return &crypto_framer_;
 }
 
+// Tests using MockCryptoClientStream() do not care about the handshaker's
+// state.  Intercept and ignore OnOneRttPacketAcknowledged() calls to prevent
+// DCHECKs within the handshaker from failing.
+void MockCryptoClientStream::OnOneRttPacketAcknowledged() {}
+
 void MockCryptoClientStream::SendOnCryptoHandshakeEvent(
     QuicSession::CryptoHandshakeEvent event) {
   encryption_established_ = true;

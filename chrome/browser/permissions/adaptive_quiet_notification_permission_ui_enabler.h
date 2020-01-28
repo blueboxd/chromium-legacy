@@ -9,9 +9,9 @@
 #include "base/macros.h"
 #include "base/memory/singleton.h"
 #include "base/optional.h"
-#include "chrome/browser/permissions/permission_util.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "components/permissions/permission_util.h"
 
 class PrefChangeRegistrar;
 class Profile;
@@ -51,7 +51,7 @@ class AdaptiveQuietNotificationPermissionUiEnabler : public KeyedService {
 
   // Records the outcome of a notification permission prompt, i.e. how the user
   // interacted with it, to be called once a permission request finishes.
-  void RecordPermissionPromptOutcome(PermissionAction action);
+  void RecordPermissionPromptOutcome(permissions::PermissionAction action);
 
   // Delete logs of past user interactions. To be called when clearing
   // browsing data.

@@ -79,6 +79,7 @@
 <translation id="129553762522093515">শেহতীয়াকৈ বন্ধ কৰা</translation>
 <translation id="1298536327547837046">মালৱেৰ স্কেন কৰা</translation>
 <translation id="129863573139666797"><ph name="BEGIN_LINK" />আপোনাৰ কুকিবোৰ মচি চাওক<ph name="END_LINK" /></translation>
+<translation id="1301324364792935241">আপোনাৰ সুৰক্ষিত DNS ছেটিংসমূহ পৰীক্ষা কৰক</translation>
 <translation id="1307966114820526988">অপ্ৰচলিত সুবিধাসমূহ</translation>
 <translation id="1314509827145471431">সোঁফালে সংযুক্ত কৰক</translation>
 <translation id="1320233736580025032">Prc1 (লেফাফা)</translation>
@@ -152,6 +153,7 @@
 <translation id="1569487616857761740">ম্যাদ উকলাৰ তাৰিখ দিয়ক</translation>
 <translation id="1581080074034554886">CVC</translation>
 <translation id="1583429793053364125">এই ৱেবপৃষ্ঠাটো প্ৰদর্শন কৰোঁতে কিবা আসোঁৱাহ হ’ল।</translation>
+<translation id="1586541204584340881">আপুনি ইনষ্টল কৰা এক্সটেনশ্বনসমূহ</translation>
 <translation id="1588438908519853928">সাধাৰণ</translation>
 <translation id="1592005682883173041">স্থানীয় ডেটাৰ এক্সেছ</translation>
 <translation id="1594030484168838125">বাছনি কৰক</translation>
@@ -362,6 +364,7 @@
 <translation id="2544644783021658368">একক নথি</translation>
 <translation id="254947805923345898">নীতিৰ মান মান্য নহয়।</translation>
 <translation id="255002559098805027"><ph name="HOST_NAME" />এ এটা অমান্য সঁহাৰি পঠিয়াইছে।</translation>
+<translation id="2553853292994445426">আপোনাৰ সুৰক্ষিত DNS ছেটিংসমূহ পৰীক্ষা কৰক। আপুনি চাগে এটা সুৰক্ষিত DNS ছার্ভাৰ কনফিগাৰ কৰিছে, যিটোলৈ সংযোগসমূহ কৰিব পৰা নাই।</translation>
 <translation id="2556876185419854533">&amp;সম্পাদনা আনডু কৰক</translation>
 <translation id="257674075312929031">গোট</translation>
 <translation id="2586657967955657006">ক্লিপব'ৰ্ড</translation>
@@ -484,6 +487,7 @@
 <translation id="3095940652251934233">ভাষ্য</translation>
 <translation id="3096100844101284527">পিক আপ কৰাৰ ঠিকনা যোগ কৰক</translation>
 <translation id="3105172416063519923">সম্পদৰ আইডি:</translation>
+<translation id="3107591622054137333"><ph name="BEGIN_LINK" />সুৰক্ষিত DNS কনফিগাৰেশ্বন পৰীক্ষা কৰি থকা হৈছে<ph name="END_LINK" /></translation>
 <translation id="3109728660330352905">আপোনাৰ এই পৃষ্ঠাটো চাবলৈ কর্তৃত্ব নাই।</translation>
 <translation id="3113284927548439113">তৃতীয় শ্বিফ্ট</translation>
 <translation id="3116158981186517402">লেমিনেট</translation>
@@ -781,6 +785,7 @@
 <translation id="4390472908992056574">ব্ৰিম</translation>
 <translation id="4406896451731180161">সন্ধানৰ ফলাফল</translation>
 <translation id="4408413947728134509">কুকী <ph name="NUM_COOKIES" /></translation>
+<translation id="4414290883293381923">আপুনি এটা প্ৰৱঞ্চনামূলক ছাইটত এইমাত্ৰ নিজৰ পাছৱৰ্ডটো দিছে। Chromeএ <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, <ph name="WEBSITE_3" /> আৰু আপুনি এই পাছৱৰ্ডটো ব্যৱহাৰ কৰা অন্য ছাইটসমূহলৈ গৈ এইটো এতিয়াই সলনি কৰাটো চুপাৰিছ কৰে।</translation>
 <translation id="4415426530740016218">পিকআপ কৰাৰ ঠিকনা</translation>
 <translation id="4424024547088906515">এই ছার্ভাৰটোৱে নিজকে <ph name="DOMAIN" />; বুলি প্ৰমাণ কৰিব নোৱাৰিলে আৰু Chromeএ ইয়াৰ সুৰক্ষাৰ প্ৰমাণপত্ৰ বিশ্বাস নকৰে। এয়া কোনো ভুল কনফিগাৰেশ্বনৰ বাবে বা কোনো আক্ৰমণকাৰীয়ে আপোনাৰ সংযোগ অৱৰোধ কৰাৰ বাবে হ’ব পাৰে।</translation>
 <translation id="443121186588148776">ছিৰিয়েল প'ৰ্ট</translation>
@@ -1211,6 +1216,7 @@
 <translation id="6353505687280762741">{COUNT,plural, =0{এটাও নাই}=1{১টা পাছৱৰ্ড (<ph name="DOMAIN_LIST" />ৰ বাবে, ছিংক কৰা আছে)}=2{২টা পাছৱৰ্ড (<ph name="DOMAIN_LIST" />ৰ বাবে, ছিংক কৰা আছে)}one{#টা পাছৱৰ্ড (<ph name="DOMAIN_LIST" />ৰ বাবে, ছিংক কৰা আছে)}other{#টা পাছৱৰ্ড (<ph name="DOMAIN_LIST" />ৰ বাবে, ছিংক কৰা আছে)}}</translation>
 <translation id="6358450015545214790">এইটোৱে কি বুজায়?</translation>
 <translation id="6361757823711327522">B7</translation>
+<translation id="6364095313648930329"><ph name="BEGIN_LINK" />প্ৰক্সি, ফায়াৰৱাল আৰু সুৰক্ষিত DNS কনফিগাৰেশ্বন পৰীক্ষা কৰি থকা হৈছে<ph name="END_LINK" /></translation>
 <translation id="6366710531182496394">বাওঁফালে দুবাৰ ষ্টে'পল কৰক</translation>
 <translation id="6377268785556383139">’<ph name="SEARCH_TEXT" />’ৰ বাবে পোৱা ১টা ফলাফল</translation>
 <translation id="6380497234672085559">A0</translation>
@@ -1233,6 +1239,7 @@
 <translation id="6433595998831338502"><ph name="HOST_NAME" />এ সংযোগ কৰিবলৈ অস্বীকাৰ কৰিছে।</translation>
 <translation id="6434309073475700221">প্ৰত্যাখ্যান কৰক</translation>
 <translation id="6440503408713884761">উপেক্ষিত কৰা হৈছে</translation>
+<translation id="6443406338865242315">আপুনি ইনষ্টল কৰা এক্সটেনশ্বন আৰু প্লাগইনসমূহ</translation>
 <translation id="6446163441502663861">কাহু (লেফাফা)</translation>
 <translation id="6446608382365791566">অধিক তথ্য যোগ দিয়ক</translation>
 <translation id="6447842834002726250">কুকীসমূহ</translation>
@@ -1342,6 +1349,7 @@
 <translation id="7012363358306927923">China Union Pay</translation>
 <translation id="7016992613359344582">এই মাচুলটো এবাৰেই বা বাৰে বাৰে দিবলগীয়া হ’ব পাৰে আৰু সেইটো সুনিৰ্দিষ্ট নহ’ব পাৰে।</translation>
 <translation id="7029809446516969842">পাছৱৰ্ডসমূহ</translation>
+<translation id="7031646650991750659">আপুনি কোনবোৰ Google Play এপ্‌ ইনষ্টল কৰিছে</translation>
 <translation id="7050187094878475250">আপুনি <ph name="DOMAIN" />লৈ যাবলৈ চেষ্টা কৰিছিল, কিন্তু ছাৰ্ভাৰটোৱে এখন প্ৰমাণপত্ৰ উপস্থাপন কৰিছে যাৰ ম্যাদ উকলাৰ সময় অৱধি যথেষ্ট দীঘল হোৱাৰ বাবে সেইখন বিশ্বাস কৰিব নোৱাৰি।</translation>
 <translation id="705310974202322020">{NUM_CARDS,plural, =1{এই মুহূৰ্তত এই কার্ডখন ছেভ কৰিব নোৱাৰি}one{এই মুহূৰ্তত এই কার্ডসমূহ ছেভ কৰিব নোৱাৰি}other{এই মুহূৰ্তত এই কার্ডসমূহ ছেভ কৰিব নোৱাৰি}}</translation>
 <translation id="7053983685419859001">অৱৰোধ কৰক</translation>
@@ -1399,6 +1407,7 @@
 <translation id="7319430975418800333">A3</translation>
 <translation id="7320336641823683070">সংযোগ সম্পৰ্কীয় সহায়</translation>
 <translation id="733354035281974745">ডিভাইচ ল’কেল একাউণ্ট অ’ভাৰৰাইড</translation>
+<translation id="7333654844024768166">আপুনি এটা প্ৰৱঞ্চনামূলক ছাইটত এইমাত্ৰ নিজৰ পাছৱৰ্ডটো দিছে। Chromiumএ <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, <ph name="WEBSITE_3" /> আৰু আপুনি এই পাছৱৰ্ডটো ব্যৱহাৰ কৰা অন্য ছাইটসমূহলৈ গৈ এইটো এতিয়াই সলনি কৰাটো চুপাৰিছ কৰে।</translation>
 <translation id="7334320624316649418">&amp;পুনৰ ক্ৰমবদ্ধ কৰাটো ৰিডু কৰক</translation>
 <translation id="7337706099755338005">আপোনাৰ প্লেটফ’ৰ্মত উপলব্ধ নহয়৷</translation>
 <translation id="733923710415886693">ছার্ভাৰৰ প্ৰমাণপত্ৰখন প্ৰমাণপত্ৰৰ স্বচ্ছতাৰ মাধ্যমেৰে ঘোষণা কৰা হোৱা নাছিল।</translation>

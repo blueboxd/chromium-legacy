@@ -1089,7 +1089,7 @@ void UserSessionManager::ChildAccountStatusReceivedCallback(Profile* profile) {
 void UserSessionManager::StopChildStatusObserving(Profile* profile) {
   if (waiting_for_child_account_status_ &&
       !SessionStartupPref::TypeIsManaged(profile->GetPrefs())) {
-    InitializeStartUrls();
+    InitializeStartUrls(profile);
   }
   waiting_for_child_account_status_ = false;
 }
@@ -1821,7 +1821,7 @@ void UserSessionManager::ActivateWizard(OobeScreenId screen) {
   host->StartWizard(screen);
 }
 
-void UserSessionManager::InitializeStartUrls() const {
+void UserSessionManager::InitializeStartUrls(Profile* profile) const {
   // Child account status should be known by the time of this call.
   std::vector<std::string> start_urls;
 
@@ -1839,7 +1839,7 @@ void UserSessionManager::InitializeStartUrls() const {
     // background.
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
         ::switches::kSilentLaunch);
-    first_run::MaybeLaunchHelpAppAfterSessionStart();
+    first_run::MaybeLaunchHelpApp(profile);
   } else {
     for (size_t i = 0; i < start_urls.size(); ++i) {
       base::CommandLine::ForCurrentProcess()->AppendArg(start_urls[i]);
@@ -1882,7 +1882,7 @@ bool UserSessionManager::InitializeUserSession(Profile* profile) {
       // URLs via policy.
       if (!SessionStartupPref::TypeIsManaged(profile->GetPrefs())) {
         if (child_service->IsChildAccountStatusKnown())
-          InitializeStartUrls();
+          InitializeStartUrls(profile);
         else
           waiting_for_child_account_status_ = true;
       }

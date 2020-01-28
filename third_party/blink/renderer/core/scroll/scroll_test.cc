@@ -67,7 +67,8 @@ TEST_F(FractionalScrollSimTest, GetBoundingClientRectAtFractional) {
 
   // Scroll on the layout viewport.
   GetDocument().View()->GetScrollableArea()->SetScrollOffset(
-      FloatSize(700.5f, 500.6f), kProgrammaticScroll, kScrollBehaviorInstant);
+      FloatSize(700.5f, 500.6f), kProgrammaticScroll,
+      mojom::blink::ScrollIntoViewParams::Behavior::kInstant);
 
   Compositor().BeginFrame();
 
@@ -129,7 +130,8 @@ TEST_F(FractionalScrollSimTest, NoRepaintOnScrollFromSubpixel) {
 
   // Scroll on the layout viewport.
   GetDocument().View()->GetScrollableArea()->SetScrollOffset(
-      FloatSize(0.f, 100.5f), kProgrammaticScroll, kScrollBehaviorInstant);
+      FloatSize(0.f, 100.5f), kProgrammaticScroll,
+      mojom::blink::ScrollIntoViewParams::Behavior::kInstant);
 
   Compositor().BeginFrame();
   EXPECT_FALSE(
@@ -179,7 +181,8 @@ TEST_F(FractionalScrollSimTest, StickyDoesntOscillate) {
   // This offset is specifically chosen since it doesn't land on a LayoutUnit
   // boundary and reproduced https://crbug.com/1010961.
   GetDocument().View()->GetScrollableArea()->SetScrollOffset(
-      FloatSize(0.f, 98.8675308f), kProgrammaticScroll, kScrollBehaviorInstant);
+      FloatSize(0.f, 98.8675308f), kProgrammaticScroll,
+      mojom::blink::ScrollIntoViewParams::Behavior::kInstant);
   Compositor().BeginFrame();
   EXPECT_EQ(0, sticky->getBoundingClientRect()->top());
 
@@ -437,7 +440,8 @@ TEST_F(ScrollAnimatorSimTest, TestRootFrameUserScrollCallBackCancelAnimation) {
   // Programmatic scroll will cancel the current user scroll animation and the
   // callback will be executed.
   GetDocument().View()->GetScrollableArea()->SetScrollOffset(
-      ScrollOffset(0, 300), kProgrammaticScroll, kScrollBehaviorSmooth,
+      ScrollOffset(0, 300), kProgrammaticScroll,
+      mojom::blink::ScrollIntoViewParams::Behavior::kSmooth,
       ScrollableArea::ScrollCallback());
   Compositor().BeginFrame();
   ASSERT_TRUE(finished);

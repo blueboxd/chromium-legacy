@@ -24,6 +24,7 @@
 <translation id="1029317248976101138">Zoom</translation>
 <translation id="1030706264415084469">L'URL <ph name="URL" /> veut stocker de façon permanente de grandes quantités de données sur votre appareil</translation>
 <translation id="1031362278801463162">Chargement de l'aperçu...</translation>
+<translation id="1032605640136438169">Veuillez consulter les nouvelles conditions</translation>
 <translation id="103279545524624934">Libérez de l'espace disque pour lancer les applications Android.</translation>
 <translation id="1033780634303702874">Accéder à vos périphériques en série</translation>
 <translation id="1034942643314881546">Illustration de l'activation du pont de débogage Android (PDA) pour créer des applications</translation>
@@ -3039,6 +3040,7 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="5311304534597152726">Se connecter en tant que</translation>
 <translation id="53116743016968120"><ph name="ERROR_MESSAGE" /> Veuillez réessayer.</translation>
 <translation id="5313628438272378649">Ce téléversement viole les politiques de votre organisation et ne peut pas être traité.</translation>
+<translation id="5314381603623123224">Les conditions d'utilisation de Chrome changeront le 31 mars</translation>
 <translation id="5315738755890845852">Accolade supplémentaire : <ph name="ERROR_LINE" /></translation>
 <translation id="5315873049536339193">Identité</translation>
 <translation id="5317780077021120954">Enregistrer</translation>

@@ -1201,9 +1201,9 @@ bool TabStripModel::IsContextMenuCommandEnabled(
     case CommandRemoveFromGroup:
       return true;
 
-    case CommandMoveTabToNewWindow:
-      // TODO(https://crbug.com/1036002): Handle multiple selection.
-      return delegate()->CanMoveTabToWindow(context_index);
+    case CommandMoveTabsToNewWindow:
+      return delegate()->CanMoveTabsToWindow(
+          GetIndicesForCommand(context_index));
 
     default:
       NOTREACHED();
@@ -1357,11 +1357,10 @@ void TabStripModel::ExecuteContextMenuCommand(int context_index,
       break;
     }
 
-    case CommandMoveTabToNewWindow: {
-      // TODO(https://crbug.com/1036002): Handle multiple selection.
+    case CommandMoveTabsToNewWindow: {
       base::RecordAction(
           UserMetricsAction("TabContextMenu_MoveTabToNewWindow"));
-      delegate()->MoveTabToNewWindow(context_index);
+      delegate()->MoveTabsToNewWindow(GetIndicesForCommand(context_index));
       break;
     }
 

@@ -306,7 +306,6 @@ class CORE_EXPORT EmptyLocalFrameClient : public LocalFrameClient {
   void DispatchWillSendSubmitEvent(HTMLFormElement*) override;
 
   void DidStartLoading() override {}
-  void ProgressEstimateChanged(double) override {}
   void DidStopLoading() override {}
 
   void DownloadURL(const ResourceRequest&,

@@ -27,7 +27,7 @@ class FakePrivilegedHostDeviceSetter : public PrivilegedHostDeviceSetterBase {
 
  private:
   // mojom::PrivilegedHostDeviceSetter:
-  void SetHostDevice(const std::string& host_device_id,
+  void SetHostDevice(const std::string& host_instance_id_or_legacy_device_id,
                      SetHostDeviceCallback callback) override;
 
   std::vector<std::pair<std::string, SetHostDeviceCallback>> set_host_args_;

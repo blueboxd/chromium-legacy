@@ -231,6 +231,10 @@ void FakeDownloadItem::ValidateDangerousDownload() {
   NOTREACHED();
 }
 
+void FakeDownloadItem::ValidateMixedContentDownload() {
+  NOTREACHED();
+}
+
 void FakeDownloadItem::StealDangerousDownload(
     bool delete_file_afterward,
     const AcquireFileCallback& callback) {
@@ -410,6 +414,11 @@ download::DownloadFile* FakeDownloadItem::GetDownloadFile() {
 }
 
 bool FakeDownloadItem::IsDangerous() const {
+  NOTREACHED();
+  return false;
+}
+
+bool FakeDownloadItem::IsMixedContent() const {
   NOTREACHED();
   return false;
 }

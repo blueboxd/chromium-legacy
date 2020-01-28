@@ -7,12 +7,11 @@
 
 #include <string>
 
+#include "chrome/browser/web_applications/components/web_app_id.h"
+
 class GURL;
 
 namespace web_app {
-
-// App ID matches Extension ID.
-using AppId = std::string;
 
 // Compute a deterministic name based on the URL. We use this pseudo name
 // as a key to store window location per application URLs in Browser and

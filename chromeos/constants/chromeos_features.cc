@@ -29,6 +29,10 @@ const base::Feature kArcAdbSideloadingFeature{
 const base::Feature kAutoScreenBrightness{"AutoScreenBrightness",
                                           base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Controls whether to enable assist personal information.
+const base::Feature kAssistPersonalInfo{"AssistPersonalInfo",
+                                        base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables or disables more aggressive filtering out of Bluetooth devices with
 // "appearances" that are less likely to be pairable or useful.
 const base::Feature kBluetoothAggressiveAppearanceFilter{

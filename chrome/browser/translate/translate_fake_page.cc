@@ -37,20 +37,21 @@
 
 FakePageImpl::FakePageImpl()
     : called_translate_(false), called_revert_translation_(false) {}
+
 FakePageImpl::~FakePageImpl() {}
 
-mojo::PendingRemote<translate::mojom::Page>
+mojo::PendingRemote<translate::mojom::TranslateAgent>
 FakePageImpl::BindToNewPageRemote() {
   receiver_.reset();
   translate_callback_pending_.Reset();
   return receiver_.BindNewPipeAndPassRemote();
 }
 
-// translate::mojom::Page implementation.
-void FakePageImpl::Translate(const std::string& translate_script,
-                             const std::string& source_lang,
-                             const std::string& target_lang,
-                             TranslateCallback callback) {
+// translate::mojom::TranslateAgent implementation.
+void FakePageImpl::TranslateFrame(const std::string& translate_script,
+                                  const std::string& source_lang,
+                                  const std::string& target_lang,
+                                  TranslateFrameCallback callback) {
   // Ensure pending callback gets called.
   if (translate_callback_pending_) {
     std::move(translate_callback_pending_)

@@ -112,6 +112,7 @@
 <translation id="2352467521400612932">إعدادات قلم الشاشة</translation>
 <translation id="2354174487190027830">تفعيل <ph name="NAME" /></translation>
 <translation id="2359808026110333948">متابعة</translation>
+<translation id="2364154243880592194">شريط الحالة والوقت <ph name="TIME" /> والبطارية <ph name="BATTERY" />. اضغط على مفتاح البحث + السهم المتجه لليسار، للوصول إلى مركز الإشعارات.</translation>
 <translation id="2365393535144473978">سيؤدي تفعيل ميزة بيانات الجوّال إلى تفعيل البلوتوث.</translation>
 <translation id="2391579633712104609">180 درجة</translation>
 <translation id="2412593942846481727">هناك تحديث جديد</translation>
@@ -335,6 +336,7 @@
 <translation id="5669267381087807207">تفعيل</translation>
 <translation id="5673434351075758678">من "<ph name="FROM_LOCALE" />" إلى "<ph name="TO_LOCALE" />" بعد مزامنة الإعدادات.</translation>
 <translation id="5682642926269496722">‏لا يتوفر "مساعد Google" لحساب المستخدم الحالي.</translation>
+<translation id="5689633613396158040">تسهّل ميزة "الإضاءة الليلية" النظر إلى الشاشة أو القراءة في الإضاءة الخافتة. انقر لتغيير وقت تفعيل "الإضاءة الليلية" أو إيقافها تمامًا.</translation>
 <translation id="5691772641933328258">لم يتمّ التعرُّف على البصمة</translation>
 <translation id="5710450975648804523">تمّ تفعيل وضع "عدم الإزعاج"</translation>
 <translation id="573413375004481890">لا يمكن لهذا الجهاز توفير جميع شاشات العرض، لذلك تم قطع الاتصال بأحدها</translation>
@@ -354,7 +356,7 @@
 <translation id="595202126637698455">تم تفعيل تتبع مستوى الأداء</translation>
 <translation id="5957083217255311415">تم إيقاف ميزة بيانات الجوّال.</translation>
 <translation id="5958529069007801266">مستخدم يخضع للإدارة</translation>
-<translation id="5977415296283489383">سماعة رأس</translation>
+<translation id="5977415296283489383">السمّاعة</translation>
 <translation id="5978382165065462689">مشاركة التحكم في شاشتك عن طريق المساعدة عن بُعد.</translation>
 <translation id="5980301590375426705">إنهاء جلسة الضيف</translation>
 <translation id="598882571027504733">‏للحصول على التحديث، يُرجى إعادة تشغيل جهاز Chromebook مع توصيل لوحة المفاتيح.</translation>
@@ -515,6 +517,7 @@
 <translation id="8142441511840089262">النقر مرّتين</translation>
 <translation id="8142699993796781067">الشبكة الخاصة</translation>
 <translation id="8152092012181020186">‏يُرجى الضغط على Ctrl + W للإغلاق.</translation>
+<translation id="8155007568264258537"><ph name="FEATURE_NAME" /> يتولى مشرفك إدارة هذا الإعداد.</translation>
 <translation id="8167567890448493835">استخدام <ph name="LOCALE_NAME" /></translation>
 <translation id="8190698733819146287">تخصيص اللغات والإدخال...</translation>
 <translation id="8192202700944119416">يتم إخفاء الإشعارات.</translation>
@@ -596,7 +599,6 @@
 <translation id="9193626018745640770">إرسال إلى مستلم غير معروف</translation>
 <translation id="9194617393863864469">تسجيل دخول مستخدم آخر...</translation>
 <translation id="9201374708878217446">حالة الاتصال <ph name="CONNECTION_STATUS" />، يديرها المشرف</translation>
-<translation id="9205817095063786319">جهاز مُدار من خلال <ph name="DOMAIN" /></translation>
 <translation id="9210037371811586452">جارٍ الخروج من وضع سطح المكتب الموحد</translation>
 <translation id="9211681782751733685">الوقت المتبقي حتى يتم شحن البطارية بالكامل<ph name="TIME_REMAINING" />.</translation>
 <translation id="9215934040295798075">تعيين خلفية</translation>

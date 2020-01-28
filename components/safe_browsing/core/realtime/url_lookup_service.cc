@@ -152,6 +152,12 @@ void RealTimeUrlLookupService::OnURLLoaderComplete(
   std::move(it->second).Run(std::move(response));
   delete it->first;
   pending_requests_.erase(it);
+
+  // If |database_manager| already released current object and there is no
+  // pending request left, delete itself.
+  if (pending_requests_.empty() && is_self_owned_) {
+    delete this;
+  }
 }
 
 bool RealTimeUrlLookupService::CanCheckUrl(const GURL& url) const {
@@ -243,6 +249,14 @@ void RealTimeUrlLookupService::ResetFailures() {
   DCHECK(CurrentlyOnThread(ThreadID::IO));
   consecutive_failures_ = 0;
   backoff_timer_.Stop();
+}
+
+void RealTimeUrlLookupService::WaitForPendingRequestsOrDelete() {
+  if (pending_requests_.empty()) {
+    delete this;
+    return;
+  }
+  is_self_owned_ = true;
 }
 
 // static

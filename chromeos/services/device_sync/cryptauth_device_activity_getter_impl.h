@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
+#include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "chromeos/services/device_sync/cryptauth_device_activity_getter.h"
 #include "chromeos/services/device_sync/cryptauth_gcm_manager.h"
@@ -93,6 +94,10 @@ class CryptAuthDeviceActivityGetterImpl : public CryptAuthDeviceActivityGetter {
   std::unique_ptr<CryptAuthClient> cryptauth_client_;
 
   State state_ = State::kNotStarted;
+
+  // The time of the last state change. Used for execution time metrics.
+  base::TimeTicks last_state_change_timestamp_;
+
   CryptAuthClientFactory* client_factory_ = nullptr;
   ClientAppMetadataProvider* client_app_metadata_provider_ = nullptr;
   CryptAuthGCMManager* gcm_manager_ = nullptr;

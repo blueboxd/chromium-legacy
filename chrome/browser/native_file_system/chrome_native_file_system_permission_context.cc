@@ -35,7 +35,7 @@ void ShowDirectoryAccessConfirmationPromptOnUIThread(
     int frame_id,
     const url::Origin& origin,
     const base::FilePath& path,
-    base::OnceCallback<void(PermissionAction result)> callback) {
+    base::OnceCallback<void(permissions::PermissionAction result)> callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   content::RenderFrameHost* rfh =
       content::RenderFrameHost::FromID(process_id, frame_id);
@@ -44,7 +44,7 @@ void ShowDirectoryAccessConfirmationPromptOnUIThread(
 
   if (!web_contents) {
     // Requested from a worker, or a no longer existing tab.
-    std::move(callback).Run(PermissionAction::DISMISSED);
+    std::move(callback).Run(permissions::PermissionAction::DISMISSED);
   }
 
   // Drop fullscreen mode so that the user sees the URL bar.
@@ -326,13 +326,14 @@ void ChromeNativeFileSystemPermissionContext::ConfirmDirectoryReadAccess(
           base::BindOnce(
               [](scoped_refptr<base::TaskRunner> task_runner,
                  base::OnceCallback<void(PermissionStatus result)> callback,
-                 PermissionAction result) {
+                 permissions::PermissionAction result) {
                 task_runner->PostTask(
                     FROM_HERE,
-                    base::BindOnce(std::move(callback),
-                                   result == PermissionAction::GRANTED
-                                       ? PermissionStatus::GRANTED
-                                       : PermissionStatus::DENIED));
+                    base::BindOnce(
+                        std::move(callback),
+                        result == permissions::PermissionAction::GRANTED
+                            ? PermissionStatus::GRANTED
+                            : PermissionStatus::DENIED));
               },
               base::SequencedTaskRunnerHandle::Get(), std::move(callback))));
 }

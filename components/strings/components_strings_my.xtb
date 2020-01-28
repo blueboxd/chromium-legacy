@@ -79,6 +79,7 @@
 <translation id="129553762522093515">မကြာသေးခင်က ပိတ်ထားခဲ့သည်</translation>
 <translation id="1298536327547837046">မဲလ်ဝဲ စစ်ဆေးခြင်း</translation>
 <translation id="129863573139666797"><ph name="BEGIN_LINK" />သင့်ကွတ်ကီးများကို ရှင်းလင်းကြည့်ပါ<ph name="END_LINK" /></translation>
+<translation id="1301324364792935241">သင်၏ 'လုံခြုံသော DNS' ဆက်တင်များကို စစ်ဆေးပါ</translation>
 <translation id="1307966114820526988">ရပ်ဆိုင်းထားသော ဝန်ဆောင်မှုများ</translation>
 <translation id="1314509827145471431">ညာဘက်တွင် တွဲချုပ်ရန်</translation>
 <translation id="1320233736580025032">Prc1 (စာအိတ်)</translation>
@@ -152,6 +153,7 @@
 <translation id="1569487616857761740">သက်တမ်းကုန်ဆုံးရက် ထည့်ပါ</translation>
 <translation id="1581080074034554886">CVC</translation>
 <translation id="1583429793053364125">ဤဝဘ်ဆိုက်အား ပြသစဉ် တစ်ခုခု မှားသွား၏။</translation>
+<translation id="1586541204584340881">သင်ထည့်သွင်းထားသည့် နောက်ဆက်တွဲများ</translation>
 <translation id="1588438908519853928">ပုံမှန်</translation>
 <translation id="1592005682883173041">စက်အတွင်းဒေတာ အသုံးပြုမှု</translation>
 <translation id="1594030484168838125">ရွေးချယ်ရန်</translation>
@@ -364,6 +366,7 @@
 <translation id="2544644783021658368">စာရွက်စာတမ်း တစ်ခုတည်း</translation>
 <translation id="254947805923345898">မူဝါဒတန်ဖိုး မမှန်ကန်ပါ။</translation>
 <translation id="255002559098805027"><ph name="HOST_NAME" /> သည်မမှန်ကန်သည့် တုံ့ပြန်မှုကို ပို့ခဲ့ပါသည်။</translation>
+<translation id="2553853292994445426">သင်၏ လုံခြုံသော DNS ဆက်တင်များကို စစ်ဆေးပါ။ ချိတ်ဆက်၍မရသည့် လုံခြုံသော DNS ဆာဗာကို သင်စီစဉ်သတ်မှတ်ထားခြင်း ဖြစ်နိုင်သည်။</translation>
 <translation id="2556876185419854533">&amp;တည်းဖြတ်မှုကို ပြန်လုပ်ရန်</translation>
 <translation id="257674075312929031">အုပ်စု</translation>
 <translation id="2586657967955657006">ကလစ်ဘုတ်</translation>
@@ -488,6 +491,7 @@
 <translation id="3095940652251934233">ထုတ်ပြန်ချက်</translation>
 <translation id="3096100844101284527">လာယူမည့်လိပ်စာ ထည့်ရန်</translation>
 <translation id="3105172416063519923">ပိုင်ဆိုင်မှုပြ ID-</translation>
+<translation id="3107591622054137333"><ph name="BEGIN_LINK" />လုံခြုံသည့် DNS စီစဉ်သတ်မှတ်ချက်ကို စစ်ဆေးနေသည်<ph name="END_LINK" /></translation>
 <translation id="3109728660330352905">သင်သည် ဤစာမျက်နှာကို ကြည့်ရှုခွင့် မရှိပါ။</translation>
 <translation id="3113284927548439113">တတိယ အရွှေ့</translation>
 <translation id="3116158981186517402">ပလတ်စတစ်လောင်းရန်</translation>
@@ -786,6 +790,7 @@
 <translation id="4390472908992056574">အစွန်အနား</translation>
 <translation id="4406896451731180161">ရှာဖွေမှု ရလဒ်များ</translation>
 <translation id="4408413947728134509">ကွတ်ကီးများ <ph name="NUM_COOKIES" /></translation>
+<translation id="4414290883293381923">လှည့်ဖြားတတ်သော ဝဘ်ဆိုက်တစ်ခုတွင် သင့်စကားဝှက်ကို ထည့်လိုက်ပါသည်။ <ph name="WEBSITE_1" />၊ <ph name="WEBSITE_2" />၊ <ph name="WEBSITE_3" /> နှင့် ဤစကားဝှက်အသုံးပြုသည့် အခြားဝဘ်ဆိုက်များသို့သွားပြီး ၎င်းကိုပြောင်းရန် Chrome က အကြံပြုပါသည်။</translation>
 <translation id="4415426530740016218">လာယူရန် လိပ်စာ</translation>
 <translation id="4424024547088906515">ဒီဆာဗာက <ph name="DOMAIN" /> ဖြစ်တာကို သက်သေထူ မပြနိုင်ခဲ့ပါ၊ ၎င်း၏ လုံခြုံရေး လက်မှတ်ကို Chrome ဘက်မှ မယုံကြည်ပါ။ ဖွဲ့စည်းစီစဉ်မှု အမှားကြောင့် သို့မဟုတ် တိုက်ခိုက်လိုသူက သင်၏ ချိတ်ဆက်မှုကို ကြားဖြတ်ယူနေ၍ ထိုသို့ ဖြစ်လာနိုင်ခဲ့ပါသည်။</translation>
 <translation id="443121186588148776">နံပါတ်စဉ်ပို့တ်</translation>
@@ -1217,6 +1222,7 @@
 <translation id="6353505687280762741">{COUNT,plural, =0{မရှိ}=1{စကားဝှက် ၁ ခု (<ph name="DOMAIN_LIST" /> အတွက်၊ စင့်ခ်လုပ်ထားသည်)}=2{စကားဝှက် ၂ ခု (<ph name="DOMAIN_LIST" /> အတွက်၊ စင့်ခ်လုပ်ထားသည်)}other{စကားဝှက် # ခု (<ph name="DOMAIN_LIST" /> အတွက်၊ စင့်ခ်လုပ်ထားသည်)}}</translation>
 <translation id="6358450015545214790">ဒါတွေက ဘာကို ဆိုလိုတာလဲ?</translation>
 <translation id="6361757823711327522">B7</translation>
+<translation id="6364095313648930329"><ph name="BEGIN_LINK" />ပရောက်စီ၊ firewall နှင့် လုံခြုံသော DNS စီစဉ်သတ်မှတ်မှုကို စစ်ဆေးနေသည်<ph name="END_LINK" /></translation>
 <translation id="6366710531182496394">ဘယ်ဘက်တွင် ချုပ်စက်ဖြင့် နှစ်ချက်ချုပ်ရန်</translation>
 <translation id="6377268785556383139">'<ph name="SEARCH_TEXT" />' အတွက် ရလဒ် ၁ ခု</translation>
 <translation id="6380497234672085559">A0</translation>
@@ -1239,6 +1245,7 @@
 <translation id="6433595998831338502"><ph name="HOST_NAME" /> သည်ချိတ်ဆက်ရန် ငြင်းပယ်ခဲ့သည်။</translation>
 <translation id="6434309073475700221">စွန့်ပစ်ရန်</translation>
 <translation id="6440503408713884761">လျစ်လျူရှုထားသည်</translation>
+<translation id="6443406338865242315">သင်ထည့်သွင်းထားသည့် နောက်ဆက်တွဲနှင့် ပလပ်အင်များ</translation>
 <translation id="6446163441502663861">Kahu (စာအိတ်)</translation>
 <translation id="6446608382365791566">နောက်ထပ် အချက်အလက်များကို ထည့်ပါ</translation>
 <translation id="6447842834002726250">ကူကီးများ</translation>
@@ -1348,6 +1355,7 @@
 <translation id="7012363358306927923">တရုတ် UnionPay</translation>
 <translation id="7016992613359344582">ဤငွေကောက်ခံမှုများသည် တစ်ချိန်တစ်ခါတည်း ဖြစ်နိုင်သလို ထပ်တလဲလဲကောက်ခံမှုလည်း ဖြစ်နိုင်ပြီး သိသာမှုမရှိနိုင်ပါ။</translation>
 <translation id="7029809446516969842">လျှို့ဝက်စကားလုံးများ</translation>
+<translation id="7031646650991750659">မည်သည့် Google Play အက်ပ်များကို သင်ထည့်သွင်းထားပါသလဲ</translation>
 <translation id="7050187094878475250">သင် <ph name="DOMAIN" /> သို့ ရောက်ရန် ကြိုးပမ်းခဲ့သော်လည်း၊ ယုံကြည်နိုင်ရန်အလို့ငှာ ကာလလွန်စွာကြာမြင့်သော ခွင့်ပြုကာလပါသည့် အသိအမှတ်ပြုလက်မှတ်တစ်ခုအား ဆာဗာမှ ပြသခဲ့သည်။</translation>
 <translation id="705310974202322020">{NUM_CARDS,plural, =1{ဤကတ်ကို ယခုသိမ်း၍ မရပါ}other{ဤကတ်များကို ယခုသိမ်း၍ မရပါ}}</translation>
 <translation id="7053983685419859001">ပိတ်ဆို့ရန်</translation>
@@ -1408,6 +1416,7 @@
 <translation id="7319430975418800333">A3</translation>
 <translation id="7320336641823683070">ချိတ်ဆက်မှု အကူအညီ</translation>
 <translation id="733354035281974745">ကိရိယာတွင်း အကောင့်ကို အစားထိုးရန်</translation>
+<translation id="7333654844024768166">လှည့်ဖြားတတ်သော ဝဘ်ဆိုက်တစ်ခုတွင် သင့်စကားဝှက်ကို ထည့်လိုက်ပါသည်။ <ph name="WEBSITE_1" />၊ <ph name="WEBSITE_2" />၊ <ph name="WEBSITE_3" /> နှင့် ဤစကားဝှက်အသုံးပြုသည့် အခြားဝဘ်ဆိုက်များသို့သွားပြီး ၎င်းကိုပြောင်းရန် Chromium က အကြံပြုပါသည်။</translation>
 <translation id="7334320624316649418">&amp;ပြန်စီမှုကို ပြန်လုပ်ရန်</translation>
 <translation id="7337706099755338005">သင်အသုံးပြုနေသည့်စနစ်အတွက် မရနိုင်ပါ။</translation>
 <translation id="733923710415886693">ဆာဗာ၏အသိအမှတ်ပြုလက်မှတ်ကို အသိအမှတ်ပြုလက်မှတ်ပွင့်လင်းမြင်သာရှိမှုမှတစ်ဆင့် ဖော်ပြထားခြင်း မရှိပါ။</translation>

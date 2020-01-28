@@ -17,7 +17,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "components/safe_browsing/core/db/database_manager.h"
-#include "components/safe_browsing/core/realtime/url_lookup_service.h"
 #include "url/gurl.h"
 
 namespace safe_browsing {
@@ -63,7 +62,6 @@ class RemoteSafeBrowsingDatabaseManager : public SafeBrowsingDatabaseManager {
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       const V4ProtocolConfig& config) override;
   void StopOnIOThread(bool shutdown) override;
-  RealTimeUrlLookupService* GetRealTimeUrlLookupService() override;
 
   //
   // RemoteSafeBrowsingDatabaseManager implementation
@@ -77,8 +75,6 @@ class RemoteSafeBrowsingDatabaseManager : public SafeBrowsingDatabaseManager {
   std::vector<ClientRequest*> current_requests_;
 
   base::flat_set<content::ResourceType> resource_types_to_check_;
-
-  std::unique_ptr<RealTimeUrlLookupService> rt_url_lookup_service_;
 
   friend class base::RefCountedThreadSafe<RemoteSafeBrowsingDatabaseManager>;
   DISALLOW_COPY_AND_ASSIGN(RemoteSafeBrowsingDatabaseManager);

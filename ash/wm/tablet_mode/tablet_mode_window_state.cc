@@ -196,6 +196,7 @@ TabletModeWindowState::TabletModeWindowState(aura::Window* window,
       window, entering_tablet_mode && !IsTopWindow(window)
                   ? WindowState::BoundsChangeAnimationType::STEP_END
                   : WindowState::BoundsChangeAnimationType::DEFAULT);
+  old_window_bounds_in_screen_ = window->GetBoundsInScreen();
   old_state_.reset(
       state->SetStateObject(std::unique_ptr<State>(this)).release());
 }

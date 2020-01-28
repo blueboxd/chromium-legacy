@@ -134,6 +134,7 @@
 <translation id="1994173015038366702">Sayt URL manzili</translation>
 <translation id="2000419248597011803">Manzillar qatori va qidiruv oynasida kiritilgan so‘rovlar va ba’zi cookie ma’lumotlarni standart qidiruv tizimiga yuboradi</translation>
 <translation id="2002537628803770967">Google Pay xizmatidagi kredit kartalar va manzillar</translation>
+<translation id="2012973609889389923">Tez ochiladi</translation>
 <translation id="2013642289801508067">{FILE_COUNT,plural, =1{# ta fayl}other{# ta fayl}}</translation>
 <translation id="2017836877785168846">Manzil qatoridan tarix va avtoto‘ldirishlarni tozalaydi.</translation>
 <translation id="2021896219286479412">To‘liq ekranli rejim sozlamalari</translation>
@@ -306,6 +307,7 @@
 <translation id="3298243779924642547">Lite</translation>
 <translation id="3303414029551471755">Yuklab olinsinmi?</translation>
 <translation id="3306398118552023113">Bu ilova Chrome brauzerida ishlayapti.</translation>
+<translation id="3312292613668865961">Saytlar virtual reallik qurilmalari yoki maʼlumotlaridan foydalanishi oldidan ruxsat olsin (tavsiya etiladi)</translation>
 <translation id="3315103659806849044">Siz hozir Sync va Google xizmati sozlamalaridasiz. Sinxronizatsiyani yoqish uchun ekranning quyi qismidagi Tasdiqlash tugmasini bosing. Tepaga</translation>
 <translation id="3328801116991980348">Sayt haqida ma’lumot</translation>
 <translation id="3333961966071413176">Barcha kontaktlar</translation>
@@ -511,6 +513,7 @@ Bu sozlamani almashtirish uchun <ph name="BEGIN_LINK" />sinxronizatsiyani tiklan
 <translation id="4915549754973153784">Qurilmalar qidirilayotganda <ph name="BEGIN_LINK" />yordam sahifasiga o‘ting<ph name="END_LINK" /></translation>
 <translation id="4921180162323349895">{FILE_COUNT,plural, =1{# ta sahifa}other{# ta sahifa}}</translation>
 <translation id="4932247056774066048">Chunki siz <ph name="DOMAIN_NAME" /> tomonidan boshqariladigan hisobingizdan chiqish arafasidasiz. Barcha axborotlar Google Chrome brauzeridan tozalab tashlanadi, lekin Google hisobingizda saqlanib qoladi.</translation>
+<translation id="4935305910887312910">Saytlar kamerangiz joylashuvini aniqlashi yoki xonangizni proyeksiyalashidan oldin ruxsat olsin (tavsiya etiladi)</translation>
 <translation id="4943703118917034429">Virtual reallik</translation>
 <translation id="4943872375798546930">Hech narsa topilmadi</translation>
 <translation id="4958708863221495346"><ph name="URL_OF_THE_CURRENT_TAB" /> ekraningizni namoyish qilmoqda</translation>
@@ -687,7 +690,6 @@ Bu sozlamani almashtirish uchun <ph name="BEGIN_LINK" />sinxronizatsiyani tiklan
 <translation id="6201345951596836663">Nusxalandi</translation>
 <translation id="6206551242102657620">Aloqa himoyalangan. Sayt axboroti</translation>
 <translation id="6210748933810148297"><ph name="EMAIL" /> emasmi?</translation>
-<translation id="6216432067784365534"><ph name="NAME_OF_LIST_ITEM" /> parametrlar</translation>
 <translation id="6221633008163990886">Parollarni eksport qilish uchun qulfni oching.</translation>
 <translation id="6232535412751077445">Agar “Kuzatilmasin” parametri yoniq bo‘lsa, brauzer so‘rovlariga maxsus buyruq qo‘shiladi. Natijasi sayt so‘rovga javob berishi va so‘rov qanday ma’noda tushunilganligiga bog‘liq bo‘ladi.
 
@@ -733,7 +735,6 @@ Masalan, qaysi sahifalarga kirganligingizdan qat’i nazar, ba’zi saytlarda re
 <translation id="6534565668554028783">Google serverlaridan javob vaqti judayam uzayib ketdi</translation>
 <translation id="6538442820324228105"><ph name="GBS" /> GB yuklab olindi</translation>
 <translation id="6539092367496845964">Xatolik yuz berdi. Keyinroq qaytadan urining.</translation>
-<translation id="654446541061731451">Uzatish uchun ichki oyna tanlang</translation>
 <translation id="6545017243486555795">Barcha ma’lumotlarni tozalash</translation>
 <translation id="6545864417968258051">Bluetooth qurilmalarni qidirish</translation>
 <translation id="6560414384669816528">Sogou orqali qidirib ko‘ring</translation>
@@ -744,6 +745,7 @@ Masalan, qaysi sahifalarga kirganligingizdan qat’i nazar, ba’zi saytlarda re
 <translation id="6573431926118603307">Boshqa qurilmalaringizda ochilgan Chrome sahifalari shu yerda ko‘rsatiladi.</translation>
 <translation id="6583199322650523874">Joriy sahifani xatcho‘plarga qo‘shish</translation>
 <translation id="6593061639179217415">Desktop versiya</translation>
+<translation id="6597891566292541626">Bu kadrga QR yoki shtrix kodni joylang.</translation>
 <translation id="6600954340915313787">Chrome’ga nusxalandi</translation>
 <translation id="6608650720463149374"><ph name="GIGABYTES" /> GB</translation>
 <translation id="6612358246767739896">Himoyalangan kontent</translation>
@@ -953,6 +955,7 @@ Sayt bu seansda kamerani ISHLATMAYDI. Kamera rasmlari faqat siz uchun chiqadi.</
 <translation id="8109613176066109935">Boshqa qurilmalardagi xatcho‘plaringizni ko‘rish uchun sinxronizatsiyani yoqing</translation>
 <translation id="8110087112193408731">Raqamli muvozanat xizmatida Chrome amallari chiqsinmi?</translation>
 <translation id="8116925261070264013">Ovozsiz</translation>
+<translation id="8127542551745560481">Bosh sahifani oʻzgartirish</translation>
 <translation id="813082847718468539">Sayt haqidagi ma’lumotlar</translation>
 <translation id="8156139159503939589">Qaysi tillardagi yozuvlarni tushunasiz?</translation>
 <translation id="8168435359814927499">Kontent</translation>
@@ -1024,8 +1027,8 @@ Sayt bu seansda kamerani ISHLATMAYDI. Kamera rasmlari faqat siz uchun chiqadi.</
 <translation id="8676374126336081632">Tozalash</translation>
 <translation id="8687353297350450808">{N_BARS,plural, =1{Signal darajasi: # chiziqda}other{Signal darajasi: # chiziqda}}</translation>
 <translation id="868929229000858085">Kontaktlarni qidirish</translation>
+<translation id="8698438463325761328">Saytlarga virtual reallik qurilmalari yoki maʼlumotlaridan foydalanishni taqiqlash</translation>
 <translation id="869891660844655955">Tugash muddati</translation>
-<translation id="8719023831149562936">Joriy ichki oynani uzatib bo‘lmadi</translation>
 <translation id="8728487861892616501">Bu dasturdan foydalanish orqali siz Chrome <ph name="BEGIN_LINK1" />xizmat shartlari<ph name="END_LINK1" />, <ph name="BEGIN_LINK2" />Maxfiylik eslatmasi<ph name="END_LINK2" /> va <ph name="BEGIN_LINK3" />Family Link orqali boshqariladigan Google hisoblari uchun Maxfiylik eslatmasiga<ph name="END_LINK3" /> rozilik bildirgan hisoblanasiz.</translation>
 <translation id="8748850008226585750">Kontent berkitildi</translation>
 <translation id="8751914237388039244">Rasmni tanlang</translation>
@@ -1041,6 +1044,7 @@ Sayt bu seansda kamerani ISHLATMAYDI. Kamera rasmlari faqat siz uchun chiqadi.</
 <translation id="883806473910249246">Kontentni yuklab olishda xatolik yuz berdi.</translation>
 <translation id="8840953339110955557">Bu sahifa onlayn versiyasidan farq qilishi mumkin.</translation>
 <translation id="8847988622838149491">USB</translation>
+<translation id="884828189055900810">Saytlarga kamera joylashuvini aniqlash yoki xonangizni proyeksiyalashni taqiqlash</translation>
 <translation id="8853345339104747198">“<ph name="TAB_TITLE" />” ichki oynasi</translation>
 <translation id="885701979325669005">Ombor</translation>
 <translation id="889338405075704026">Chrome sozlamalarini ochish</translation>
@@ -1048,6 +1052,7 @@ Sayt bu seansda kamerani ISHLATMAYDI. Kamera rasmlari faqat siz uchun chiqadi.</
 <translation id="8909135823018751308">Ulashish…</translation>
 <translation id="8912362522468806198">Google hisobi</translation>
 <translation id="8920114477895755567">Ota-ona haqidagi ma’lumotlar yetarli emas</translation>
+<translation id="8921772741368021346"><ph name="POSITION" /> / <ph name="DURATION" /></translation>
 <translation id="8922289737868596582">Saytlarni oflayn ko‘rish uchun “Boshqa parametrlar” tugmasidan foydalanib, yuklab oling</translation>
 <translation id="8926666909099850184">Telefonda NFC yoqilmagan. Uni <ph name="BEGIN_LINK" />Android sozlamalari<ph name="END_LINK" /> orqali yoqing.</translation>
 <translation id="8937772741022875483">Raqamli muvozanat xizmatidan Chrome amallari olib tashlansinmi?</translation>

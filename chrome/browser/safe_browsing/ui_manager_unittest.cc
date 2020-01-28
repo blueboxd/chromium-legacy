@@ -52,19 +52,19 @@ class SafeBrowsingCallbackWaiter {
    bool callback_called() const { return callback_called_; }
    bool proceed() const { return proceed_; }
 
-   void OnBlockingPageDone(bool proceed) {
+   void OnBlockingPageDone(bool proceed, bool showed_interstitial) {
      DCHECK_CURRENTLY_ON(BrowserThread::UI);
      callback_called_ = true;
      proceed_ = proceed;
      loop_.Quit();
    }
 
-   void OnBlockingPageDoneOnIO(bool proceed) {
+   void OnBlockingPageDoneOnIO(bool proceed, bool showed_interstitial) {
      DCHECK_CURRENTLY_ON(BrowserThread::IO);
      base::PostTask(
          FROM_HERE, {BrowserThread::UI},
          base::BindOnce(&SafeBrowsingCallbackWaiter::OnBlockingPageDone,
-                        base::Unretained(this), proceed));
+                        base::Unretained(this), proceed, showed_interstitial));
    }
 
    void WaitForCallback() {
@@ -163,7 +163,8 @@ class SafeBrowsingUIManagerTest : public ChromeRenderViewHostTestHarness {
       main_frame_url = entry->GetURL();
 
     ui_manager_->OnBlockingPageDone(resources, proceed, web_contents(),
-                                    main_frame_url);
+                                    main_frame_url,
+                                    true /* showed_interstitial */);
   }
 
  protected:

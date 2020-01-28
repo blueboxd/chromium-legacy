@@ -134,6 +134,7 @@
 <translation id="1994173015038366702">URL du site</translation>
 <translation id="2000419248597011803">Envoie des cookies et des recherches effectuées à partir de la barre d'adresse et du champ de recherche à votre moteur de recherche par défaut</translation>
 <translation id="2002537628803770967">Cartes de crédit et adresses utilisées dans Google Pay</translation>
+<translation id="2012973609889389923">Site chargeable rapidement</translation>
 <translation id="2013642289801508067">{FILE_COUNT,plural, =1{# fichier}one{# fichier}other{# fichiers}}</translation>
 <translation id="2017836877785168846">Efface l'historique et les saisies semi-automatiques dans la barre d'adresse.</translation>
 <translation id="2021896219286479412">Commandes du site en plein écran</translation>
@@ -278,6 +279,7 @@
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> favori}one{<ph name="BOOKMARKS_COUNT_MANY" /> favori}other{<ph name="BOOKMARKS_COUNT_MANY" /> favoris}}</translation>
 <translation id="3089395242580810162">Ouvrir onglet navig. privée</translation>
 <translation id="3123473560110926937">Bloqué sur certains sites</translation>
+<translation id="3123734510202723619">Annonces</translation>
 <translation id="3137521801621304719">Désactiver le mode navigation privée</translation>
 <translation id="3143515551205905069">Annuler la synchronisation</translation>
 <translation id="3157842584138209013">Découvrez la quantité de données économisées en cliquant sur le bouton "Plus d'options"</translation>
@@ -306,6 +308,7 @@
 <translation id="3298243779924642547">Simplifié</translation>
 <translation id="3303414029551471755">Poursuivre et télécharger le contenu ?</translation>
 <translation id="3306398118552023113">Cette application s'exécute dans Chrome</translation>
+<translation id="3312292613668865961">Vous demander votre avis avant d'autoriser les sites à accéder à vos données et à votre appareil de réalité virtuelle (recommandé)</translation>
 <translation id="3315103659806849044">Vous personnalisez actuellement les paramètres relatifs aux services Google et à la synchronisation. Pour valider l'activation de la synchronisation, appuyez sur le bouton "Confirmer" en bas de l'écran. Revenir en haut de la page</translation>
 <translation id="3328801116991980348">Informations sur le site</translation>
 <translation id="3333961966071413176">Tous les contacts</translation>
@@ -511,6 +514,7 @@ Pour modifier ce paramètre, <ph name="BEGIN_LINK" />réinitialisez la synchroni
 <translation id="4915549754973153784"><ph name="BEGIN_LINK" />Obtenir de l'aide<ph name="END_LINK" /> lors de la recherche d'appareils…</translation>
 <translation id="4921180162323349895">{FILE_COUNT,plural, =1{# page}one{# page}other{# pages}}</translation>
 <translation id="4932247056774066048">Vous vous déconnectez d'un compte géré par <ph name="DOMAIN_NAME" />. Vos données Chrome seront donc supprimées de cet appareil, mais elles seront conservées dans votre compte Google.</translation>
+<translation id="4935305910887312910">Vous demander votre avis avant d'autoriser les sites à recevoir la position de votre caméra ou à cartographier votre pièce (recommandé)</translation>
 <translation id="4943703118917034429">Réalité virtuelle</translation>
 <translation id="4943872375798546930">Aucun résultat</translation>
 <translation id="4958708863221495346"><ph name="URL_OF_THE_CURRENT_TAB" /> partage votre écran.</translation>
@@ -687,7 +691,6 @@ Pour modifier ce paramètre, <ph name="BEGIN_LINK" />réinitialisez la synchroni
 <translation id="6201345951596836663">Lien copié</translation>
 <translation id="6206551242102657620">La connexion est sécurisée. Informations sur le site</translation>
 <translation id="6210748933810148297"><ph name="EMAIL" /> n'est pas votre adresse e-mail ?</translation>
-<translation id="6216432067784365534">Options pour <ph name="NAME_OF_LIST_ITEM" /></translation>
 <translation id="6221633008163990886">Déverrouiller pour exporter vos mots de passe</translation>
 <translation id="6232535412751077445">Si vous interdisez le suivi, une demande sera incluse dans le trafic lié à votre navigation. Les résultats obtenus dépendent de la réponse du site (s'il répond ou non) et de la manière dont il interprète la demande.
 
@@ -733,7 +736,6 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="6534565668554028783">Google a mis trop de temps à répondre</translation>
 <translation id="6538442820324228105"><ph name="GBS" /> Go téléchargé(s)</translation>
 <translation id="6539092367496845964">Un problème est survenu. Réessayez plus tard.</translation>
-<translation id="654446541061731451">Sélectionnez un onglet à partager.</translation>
 <translation id="6545017243486555795">Supprimer toutes les données</translation>
 <translation id="6545864417968258051">Recherche Bluetooth</translation>
 <translation id="6560414384669816528">Rechercher avec Sogou</translation>
@@ -744,6 +746,7 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="6573431926118603307">Les onglets que vous avez ouverts dans Chrome sur vos autres appareils s'affichent ici.</translation>
 <translation id="6583199322650523874">Marquer la page actuelle en tant que favori</translation>
 <translation id="6593061639179217415">Version pour ordinateur</translation>
+<translation id="6597891566292541626">Positionnez le code-barres/code QR dans ce cadre.</translation>
 <translation id="6600954340915313787">Copiée dans Chrome</translation>
 <translation id="6608650720463149374"><ph name="GIGABYTES" /> Go</translation>
 <translation id="6612358246767739896">Contenu protégé</translation>
@@ -953,6 +956,7 @@ En revanche, le site n'a PAS accès à la caméra. Vous seul pouvez voir les ima
 <translation id="8109613176066109935">Activez la synchronisation pour accéder à vos favoris sur tous vos appareils</translation>
 <translation id="8110087112193408731">Afficher votre activité Chrome dans Bien-être numérique ?</translation>
 <translation id="8116925261070264013">Son coupé</translation>
+<translation id="8127542551745560481">Modifier la page d'accueil</translation>
 <translation id="813082847718468539">Afficher des informations à propos du site</translation>
 <translation id="8156139159503939589">Quelles langues comprenez-vous ?</translation>
 <translation id="8168435359814927499">Contenu</translation>
@@ -1024,8 +1028,8 @@ En revanche, le site n'a PAS accès à la caméra. Vous seul pouvez voir les ima
 <translation id="8676374126336081632">Effacer la saisie</translation>
 <translation id="8687353297350450808">{N_BARS,plural, =1{Intensité du signal : # barre}one{Intensité du signal : # barre}other{Intensité du signal : # barres}}</translation>
 <translation id="868929229000858085">Rechercher des contacts</translation>
+<translation id="8698438463325761328">Empêcher les sites d'accéder à vos données et à votre appareil de réalité virtuelle</translation>
 <translation id="869891660844655955">Date d'expiration</translation>
-<translation id="8719023831149562936">Impossible de partager l'onglet actuel.</translation>
 <translation id="8728487861892616501">En utilisant cette application, vous acceptez les <ph name="BEGIN_LINK1" />Conditions d'utilisation<ph name="END_LINK1" /> et l'<ph name="BEGIN_LINK2" />Avis de confidentialité<ph name="END_LINK2" /> de Chrome, ainsi que l'<ph name="BEGIN_LINK3" />Avis de confidentialité relatif aux comptes Google gérés dans Family Link<ph name="END_LINK3" />.</translation>
 <translation id="8748850008226585750">Contenu masqué</translation>
 <translation id="8751914237388039244">Sélectionner une image</translation>
@@ -1041,6 +1045,7 @@ En revanche, le site n'a PAS accès à la caméra. Vous seul pouvez voir les ima
 <translation id="883806473910249246">Une erreur s'est produite lors du téléchargement du contenu.</translation>
 <translation id="8840953339110955557">Cette page peut différer de la version en ligne.</translation>
 <translation id="8847988622838149491">USB</translation>
+<translation id="884828189055900810">Empêcher les sites de recevoir la position de votre caméra ou de cartographier votre pièce</translation>
 <translation id="8853345339104747198">"<ph name="TAB_TITLE" />", onglet</translation>
 <translation id="885701979325669005">Données stockées</translation>
 <translation id="889338405075704026">Accéder aux paramètres Chrome</translation>
@@ -1048,6 +1053,7 @@ En revanche, le site n'a PAS accès à la caméra. Vous seul pouvez voir les ima
 <translation id="8909135823018751308">Partager…</translation>
 <translation id="8912362522468806198">Compte Google</translation>
 <translation id="8920114477895755567">En attente des coordonnées des parents…</translation>
+<translation id="8921772741368021346"><ph name="POSITION" />/<ph name="DURATION" /></translation>
 <translation id="8922289737868596582">Téléchargez des pages pour y accéder hors connexion, à partir du bouton "Plus d'options"</translation>
 <translation id="8926666909099850184">La fonctionnalité NFC est désactivée pour cet appareil. Activez-la dans les <ph name="BEGIN_LINK" />paramètres Android<ph name="END_LINK" />.</translation>
 <translation id="8937772741022875483">Supprimer votre activité Chrome de Bien-être numérique ?</translation>

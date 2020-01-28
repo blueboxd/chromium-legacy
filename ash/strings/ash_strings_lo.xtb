@@ -112,6 +112,7 @@
 <translation id="2352467521400612932">ການຕັ້ງຄ່າປາຍປາກກາ</translation>
 <translation id="2354174487190027830">ກຳລັງເປີດນຳໃຊ້ <ph name="NAME" /></translation>
 <translation id="2359808026110333948">ສືບຕໍ່</translation>
+<translation id="2364154243880592194">ຖາດສະຖານະ, ເວລາ <ph name="TIME" />, <ph name="BATTERY" /> ກົດຊອກຫາ + ລູກສອນຊ້າຍເພື່ອເຂົ້າເຖິງສູນການແຈ້ງເຕືອນ.</translation>
 <translation id="2365393535144473978">ການເປີດນຳໃຊ້ຂໍ້ມູນມືຖືຈະເປີດນຳໃຊ້ Bluetooth.</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="2412593942846481727">ມີການອັບເດດໃໝ່</translation>
@@ -335,6 +336,7 @@
 <translation id="5669267381087807207">ກຳລັງເປີດນຳໃຊ້</translation>
 <translation id="5673434351075758678">ຈາກ "<ph name="FROM_LOCALE" />" ເປັນ "<ph name="TO_LOCALE" />" ຫຼັງຈາກຊິ້ງຂໍ້ມູນການຕັ້ງຄ່າຂອງທ່ານ.</translation>
 <translation id="5682642926269496722">ຜູ້ຊ່ວຍ Google ບໍ່ສາມາດໃຊ້ໄດ້ສຳລັບບັນຊີຜູ້ໃຊ້ປັດຈຸບັນ.</translation>
+<translation id="5689633613396158040">ແສງກາງຄືນເຮັດໃຫ້ມັນງ່າຍກວ່າໃນການເບິ່ງໜ້າຈໍຂອງທ່ານ ຫຼື ອ່ານໃນແສງທີ່ມືດ. ແຕະເພື່ອປ່ຽນວ່າຈະເປີດແສງກາງຄືນເວລາໃດ ຫຼື ປິດມັນໄປເລີຍກໍໄດ້.</translation>
 <translation id="5691772641933328258">ບໍ່ຮູ້ຈັກລາຍນິ້ວມື</translation>
 <translation id="5710450975648804523">ໂໝດຫ້າມລົບກວນເປີດຢູ່</translation>
 <translation id="573413375004481890">ອຸປະກອນນີ້ບໍ່ສາມາດຮອງຮັບຈໍສະແດງທັງໝົດຂອງທ່ານໄດ້, ສະນັ້ນລະບົບໄດ້ຕັດການເຊື່ອມຕໍ່ອັນໜຶ່ງອອກແລ້ວ</translation>
@@ -514,6 +516,7 @@
 <translation id="8142441511840089262">ຄລິກສອງຄັ້ງ</translation>
 <translation id="8142699993796781067">ເຄືອ​ຂ່າຍ​ສ່ວນຕົວ</translation>
 <translation id="8152092012181020186">ກົດ Ctrl + W ເພື່ອປິດ.</translation>
+<translation id="8155007568264258537"><ph name="FEATURE_NAME" /> ການຕັ້ງຄ່ານີ້ຈັດການໂດຍຜູ້ເບິ່ງແຍງລະບົບຂອງທ່ານ.</translation>
 <translation id="8167567890448493835">ກຳລັງໃຊ້ <ph name="LOCALE_NAME" /></translation>
 <translation id="8190698733819146287">ກໍານົດພາສາ ແລະການປ້ອນຄ່າເອງ...</translation>
 <translation id="8192202700944119416">ເຊື່ອງການແຈ້ງເຕືອນໄວ້ແລ້ວ.</translation>
@@ -595,7 +598,6 @@
 <translation id="9193626018745640770">ກຳລັງສົ່ງສັນຍານໃນເຄື່ອງຮັບທີ່ບໍ່ຮູ້ຈັກ</translation>
 <translation id="9194617393863864469">ລົງຊື່ເຂົ້າ​ໃຊ້ຜູ້​ໃຊ້ອື່ນ...</translation>
 <translation id="9201374708878217446"><ph name="CONNECTION_STATUS" />, ຈັດການໂດຍຜູ້ເບິ່ງແຍງລະບົບຂອງທ່ານ</translation>
-<translation id="9205817095063786319">ອຸປະກອນທີ່ຈັດການໂດຍ <ph name="DOMAIN" /></translation>
 <translation id="9210037371811586452">ກຳລັງອອກຈາກໂໝດເດັສທັອບທີ່ຖືກໂຮມເຂົ້າກັນ</translation>
 <translation id="9211681782751733685">ຍັງເຫຼືອ <ph name="TIME_REMAINING" /> ຈົນກວ່າແບັດເຕີຣີຈະສາກເຕັມ.</translation>
 <translation id="9215934040295798075">ຕັ້ງພາບພື້ນຫຼັງ</translation>

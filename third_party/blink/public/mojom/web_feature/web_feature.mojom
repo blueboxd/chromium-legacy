@@ -2508,6 +2508,8 @@ enum WebFeature {
   kTaskControllerSetPriority= 3143,
   kTaskSignalPriority = 3144,
   kSchedulerPostTask = 3145,
+  kV8Animation_Onremove_AttributeGetter = 3146,
+  kV8Animation_Onremove_AttributeSetter = 3147,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

@@ -32,15 +32,6 @@
 
 namespace blink {
 
-class TextControlInnerContainer final : public HTMLDivElement {
- public:
-  explicit TextControlInnerContainer(Document&);
-
- protected:
-  LayoutObject* CreateLayoutObject(const ComputedStyle&, LegacyLayout) override;
-  bool TypeShouldForceLegacyLayout() const final { return true; }
-};
-
 class EditingViewPortElement final : public HTMLDivElement {
  public:
   explicit EditingViewPortElement(Document&);

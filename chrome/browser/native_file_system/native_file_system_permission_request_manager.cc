@@ -6,9 +6,9 @@
 
 #include "base/command_line.h"
 #include "base/task/post_task.h"
-#include "chrome/browser/permissions/permission_util.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/common/chrome_switches.h"
+#include "components/permissions/permission_util.h"
 #include "content/public/browser/browser_task_traits.h"
 
 bool operator==(
@@ -19,14 +19,16 @@ bool operator==(
 }
 
 struct NativeFileSystemPermissionRequestManager::Request {
-  Request(RequestData data,
-          base::OnceCallback<void(PermissionAction result)> callback)
+  Request(
+      RequestData data,
+      base::OnceCallback<void(permissions::PermissionAction result)> callback)
       : data(std::move(data)) {
     callbacks.push_back(std::move(callback));
   }
 
   const RequestData data;
-  std::vector<base::OnceCallback<void(PermissionAction result)>> callbacks;
+  std::vector<base::OnceCallback<void(permissions::PermissionAction result)>>
+      callbacks;
 };
 
 NativeFileSystemPermissionRequestManager::
@@ -34,10 +36,10 @@ NativeFileSystemPermissionRequestManager::
 
 void NativeFileSystemPermissionRequestManager::AddRequest(
     RequestData data,
-    base::OnceCallback<void(PermissionAction result)> callback) {
+    base::OnceCallback<void(permissions::PermissionAction result)> callback) {
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDenyPermissionPrompts)) {
-    std::move(callback).Run(PermissionAction::DENIED);
+    std::move(callback).Run(permissions::PermissionAction::DENIED);
     return;
   }
 
@@ -115,7 +117,7 @@ void NativeFileSystemPermissionRequestManager::
 }
 
 void NativeFileSystemPermissionRequestManager::OnPermissionDialogResult(
-    PermissionAction result) {
+    permissions::PermissionAction result) {
   DCHECK(current_request_);
   for (auto& callback : current_request_->callbacks)
     std::move(callback).Run(result);

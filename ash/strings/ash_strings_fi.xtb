@@ -112,6 +112,7 @@
 <translation id="2352467521400612932">Näyttökynäasetukset</translation>
 <translation id="2354174487190027830">Aktivoidaan <ph name="NAME" /></translation>
 <translation id="2359808026110333948">Jatka</translation>
+<translation id="2364154243880592194">Tila-alue, aika <ph name="TIME" />, <ph name="BATTERY" /> Paina hakupainiketta ja vasenta nuolipainiketta siirtyäksesi ilmoituskeskukseen.</translation>
 <translation id="2365393535144473978">Mobiilidatan käyttöönotto ottaa käyttöön Bluetoothin.</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="2412593942846481727">Päivitys saatavilla</translation>
@@ -335,6 +336,7 @@
 <translation id="5669267381087807207">Aktivoidaan</translation>
 <translation id="5673434351075758678">Muutos asetusten synkronoinnin yhteydessä: <ph name="FROM_LOCALE" /> – <ph name="TO_LOCALE" /></translation>
 <translation id="5682642926269496722">Google Assistantia ei voi käyttää nykyisellä käyttäjätilillä.</translation>
+<translation id="5689633613396158040">Yövalo helpottaa näytön katsomista ja lukemista hämärässä. Kosketa muuttaaksesi Yövalon syttymisaikaa tai poista se kokonaan käytöstä.</translation>
 <translation id="5691772641933328258">Sormenjälkeä ei tunnistettu</translation>
 <translation id="5710450975648804523">Älä häiritse -tila on päällä</translation>
 <translation id="573413375004481890">Tämä laite ei voinut tukea kaikkia näyttöjäsi, joten yhden yhteys on katkaistu</translation>
@@ -516,6 +518,7 @@
 <translation id="8142441511840089262">Kaksoisklikkaus</translation>
 <translation id="8142699993796781067">Yksityinen verkko</translation>
 <translation id="8152092012181020186">Sulje painamalla Ctrl + W.</translation>
+<translation id="8155007568264258537"><ph name="FEATURE_NAME" /> Järjestelmänvalvojasi ylläpitää tätä asetusta.</translation>
 <translation id="8167567890448493835"><ph name="LOCALE_NAME" /> käytössä</translation>
 <translation id="8190698733819146287">Muokkaa kieliä ja syötettä...</translation>
 <translation id="8192202700944119416">Ilmoitukset on piilotettu.</translation>
@@ -597,7 +600,6 @@
 <translation id="9193626018745640770">Suoratoistetaan tuntemattomaan vastaanottimeen</translation>
 <translation id="9194617393863864469">Kirjaa sisään toinen käyttäjä…</translation>
 <translation id="9201374708878217446"><ph name="CONNECTION_STATUS" />, järjestelmänvalvojan hallinnoima</translation>
-<translation id="9205817095063786319">Laitteen ylläpitäjä: <ph name="DOMAIN" /></translation>
 <translation id="9210037371811586452">Poistutaan yhtenäisen työpöydän tilasta</translation>
 <translation id="9211681782751733685">Akku on ladattu täyteen <ph name="TIME_REMAINING" /> kuluttua.</translation>
 <translation id="9215934040295798075">Aseta taustakuva</translation>

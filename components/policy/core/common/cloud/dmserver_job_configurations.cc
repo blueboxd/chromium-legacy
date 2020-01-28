@@ -273,7 +273,9 @@ RegistrationJobConfiguration::RegistrationJobConfiguration(
                                oauth_token,
                                std::move(callback)) {}
 
-void RegistrationJobConfiguration::OnBeforeRetry() {
+void RegistrationJobConfiguration::OnBeforeRetry(
+    int response_code,
+    const std::string& response_body) {
   // If the initial request managed to get to the server but the response
   // didn't arrive at the client then retrying with the same client ID will
   // fail. Set the re-registration flag so that the server accepts it.

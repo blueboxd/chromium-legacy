@@ -18,7 +18,6 @@
 #include "chrome/browser/media/webrtc/webrtc_browsertest_base.h"
 #include "chrome/browser/permissions/permission_context_base.h"
 #include "chrome/browser/permissions/permission_request_manager.h"
-#include "chrome/browser/permissions/permission_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/permission_bubble/mock_permission_prompt_factory.h"
@@ -28,6 +27,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/permissions/permission_request.h"
+#include "components/permissions/permission_util.h"
 #include "components/prefs/pref_service.h"
 #include "components/variations/variations_associated_data.h"
 #include "content/public/browser/render_frame_host.h"
@@ -824,10 +824,10 @@ IN_PROC_BROWSER_TEST_F(MediaStreamDevicesControllerTest, WebContentsDestroyed) {
 IN_PROC_BROWSER_TEST_F(MediaStreamDevicesControllerTest,
                        RequestAndKillSwitchMicCam) {
   std::map<std::string, std::string> params;
-  params[PermissionUtil::GetPermissionString(
+  params[permissions::PermissionUtil::GetPermissionString(
       ContentSettingsType::MEDIASTREAM_MIC)] =
       PermissionContextBase::kPermissionsKillSwitchBlockedValue;
-  params[PermissionUtil::GetPermissionString(
+  params[permissions::PermissionUtil::GetPermissionString(
       ContentSettingsType::MEDIASTREAM_CAMERA)] =
       PermissionContextBase::kPermissionsKillSwitchBlockedValue;
   variations::AssociateVariationParams(

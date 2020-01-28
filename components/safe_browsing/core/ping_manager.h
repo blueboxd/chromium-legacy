@@ -18,7 +18,6 @@
 #include "base/memory/ref_counted.h"
 #include "components/safe_browsing/core/db/hit_report.h"
 #include "components/safe_browsing/core/db/util.h"
-#include "content/public/browser/permission_type.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "url/gurl.h"
 

@@ -279,6 +279,7 @@
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> boekmerk}other{<ph name="BOOKMARKS_COUNT_MANY" /> boekmerke}}</translation>
 <translation id="3089395242580810162">Maak in incognito-oortjie oop</translation>
 <translation id="3123473560110926937">Geblokkeer op sommige werwe</translation>
+<translation id="3123734510202723619">Aankondigings</translation>
 <translation id="3137521801621304719">Verlaat incognitomodus</translation>
 <translation id="3143515551205905069">Kanselleer sinkronisering</translation>
 <translation id="3157842584138209013">Sien deur die Meer Opsies-knoppie hoeveel data jy bespaar het</translation>
@@ -690,7 +691,6 @@ Jou Google-rekening het dalk ander vorme van blaaigeskiedenis, soos soektogte en
 <translation id="6201345951596836663">Skakel is gekopieer</translation>
 <translation id="6206551242102657620">Verbinding is veilig. Werfinligting</translation>
 <translation id="6210748933810148297">Nie <ph name="EMAIL" /> nie?</translation>
-<translation id="6216432067784365534"><ph name="NAME_OF_LIST_ITEM" />-opsies</translation>
 <translation id="6221633008163990886">Ontsluit om jou wagwoorde uit te voer</translation>
 <translation id="6232535412751077445">As “Moenie naspoor nie” geaktiveer word, beteken dit dat 'n versoek by jou blaaiverkeer ingesluit sal word. Enige uitwerking sal afhang van of 'n webwerf op die versoek reageer en hoe die versoek geïnterpreteer word.
 
@@ -736,7 +736,6 @@ Byvoorbeeld, sommige webwerwe kan op hierdie versoek reageer deur vir jou advert
 <translation id="6534565668554028783">Google het te lank gevat om te reageer</translation>
 <translation id="6538442820324228105">Het <ph name="GBS" /> GB afgelaai</translation>
 <translation id="6539092367496845964">Iets is fout. Probeer later weer.</translation>
-<translation id="654446541061731451">Kies 'n oortjie om te straal</translation>
 <translation id="6545017243486555795">Vee alle data uit</translation>
 <translation id="6545864417968258051">Bluetooth-opsporing</translation>
 <translation id="6560414384669816528">Soek met Sogou</translation>
@@ -1031,7 +1030,6 @@ Die werf kry NIE toegang tot die kamera nie. Net jy kan die kameraprente sien.</
 <translation id="868929229000858085">Deursoek jou kontakte</translation>
 <translation id="8698438463325761328">Blokkeer werwe om toegang tot jou virtuelerealiteit-toestel en -data te kry</translation>
 <translation id="869891660844655955">Vervaldatum</translation>
-<translation id="8719023831149562936">Kan nie huidige oortjie straal nie</translation>
 <translation id="8728487861892616501">Deur hierdie program te gebruik, stem jy in tot Chrome se <ph name="BEGIN_LINK1" />diensbepalings<ph name="END_LINK1" /> en <ph name="BEGIN_LINK2" />privaatheidkennisgewing<ph name="END_LINK2" />, en die <ph name="BEGIN_LINK3" />privaatheidkennisgewing vir Google-rekeninge wat met Family Link bestuur word<ph name="END_LINK3" />.</translation>
 <translation id="8748850008226585750">Inhoud word versteek</translation>
 <translation id="8751914237388039244">Kies 'n prent</translation>

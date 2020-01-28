@@ -159,6 +159,13 @@ const base::Feature kDesktopCaptureChangeSource{
 const base::Feature kDocumentPolicy{"DocumentPolicy",
                                     base::FEATURE_DISABLED_BY_DEFAULT};
 
+// If this feature is enabled and device permission is not granted by the user,
+// media-device enumeration will provide at most one device per type and the
+// device IDs will not be available.
+// TODO(crbug.com/1019176): remove the feature in M82.
+const base::Feature kEnumerateDevicesHideDeviceIDs{
+    "EnumerateDevicesHideDeviceIDs", base::FEATURE_ENABLED_BY_DEFAULT};
+
 // When a screen reader is detected, allow users the option of letting
 // Google provide descriptions for unlabeled images.
 const base::Feature kExperimentalAccessibilityLabels{
@@ -661,11 +668,6 @@ const base::Feature kWebContentsOcclusion {
 // https://w3c.github.io/webauthn
 const base::Feature kWebAuth{"WebAuthentication",
                              base::FEATURE_ENABLED_BY_DEFAULT};
-
-// Controls whether BLE authenticators can be used via the WebAuthentication
-// API. https://w3c.github.io/webauthn
-const base::Feature kWebAuthBle{"WebAuthenticationBle",
-                                base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Controls whether CTAP2 devices can communicate via the WebAuthentication API
 // using pairingless BLE protocol.

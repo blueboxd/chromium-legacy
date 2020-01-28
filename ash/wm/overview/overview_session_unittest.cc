@@ -6408,9 +6408,10 @@ TEST_P(SplitViewOverviewSessionInClamshellTestMultiDisplayOnly,
 }
 
 // Test that overview widgets are stacked in the correct order after an overview
-// window is dragged from one overview grid and dropped into another.
+// window is dragged from one overview grid and dropped into another. Also test
+// that the destination overview grid is arranged in the correct order.
 TEST_P(SplitViewOverviewSessionInClamshellTestMultiDisplayOnly,
-       OverviewWidgetStackingOrderWithMultiDisplayDragging) {
+       OverviewWidgetStackingOrderAndGridOrderWithMultiDisplayDragging) {
   UpdateDisplay("800x600,800x600");
   aura::Window::Windows root_windows = Shell::GetAllRootWindows();
   ASSERT_EQ(2u, root_windows.size());
@@ -6467,6 +6468,12 @@ TEST_P(SplitViewOverviewSessionInClamshellTestMultiDisplayOnly,
   // Verify that the item widget for the new |item2| is stacked below |window2|.
   EXPECT_LT(IndexOf(item2->item_widget()->GetNativeWindow(), parent_on_root2),
             IndexOf(window2.get(), parent_on_root2));
+
+  // Verify that the right grid is in MRU order.
+  const std::vector<aura::Window*> expected_order = {
+      window1.get(), window2.get(), window3.get()};
+  EXPECT_EQ(expected_order,
+            overview_controller()->GetWindowsListInOverviewGridsForTest());
 }
 
 // Test dragging from one display to another and then snapping.

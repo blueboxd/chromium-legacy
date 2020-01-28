@@ -72,6 +72,7 @@
 #include "content/renderer/render_widget_screen_metrics_emulator.h"
 #include "content/renderer/renderer_blink_platform_impl.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
+#include "gpu/config/gpu_finch_features.h"
 #include "ipc/ipc_message_start.h"
 #include "ipc/ipc_sync_message.h"
 #include "ipc/ipc_sync_message_filter.h"
@@ -3125,9 +3126,13 @@ cc::LayerTreeSettings RenderWidget::GenerateLayerTreeSettings(
     //  - If the user hasn't explicitly disabled them
     //  - If system ram is <= 512MB (1GB devices are sometimes low-end).
     //  - If we are not running in a WebView, where 4444 isn't supported.
+    //  - If we are not using vulkan, since some GPU drivers don't support
+    //    using RGBA4444 as color buffer.
+    // TODO(penghuang): query supported formats from GPU process.
     if (!cmd.HasSwitch(switches::kDisableRGBA4444Textures) &&
         base::SysInfo::AmountOfPhysicalMemoryMB() <= 512 &&
-        !using_synchronous_compositor) {
+        !using_synchronous_compositor &&
+        !base::FeatureList::IsEnabled(features::kVulkan)) {
       settings.use_rgba_4444 = viz::RGBA_4444;
 
       // If we are going to unpremultiply and dither these tiles, we need to

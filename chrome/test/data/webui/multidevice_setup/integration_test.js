@@ -30,7 +30,7 @@ cr.define('multidevice_setup', () => {
     }
 
     /** @override */
-    setHostDevice(hostDeviceId, opt_authToken) {
+    setHostDevice(hostInstanceIdOrLegacyDeviceId, opt_authToken) {
       return new Promise((resolve) => {
         this.numSetHostDeviceCalls++;
         resolve({success: this.shouldSetHostSucceed_});

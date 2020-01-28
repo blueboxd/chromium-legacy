@@ -354,18 +354,6 @@ ProfileSyncComponentsFactoryImpl::CreateCommonDataTypeControllers(
                     .get())));
   }
 
-#if !defined(OS_IOS)
-  if (!disabled_types.Has(syncer::SHARING_MESSAGE)) {
-    // Forward both full-sync and transport-only modes to the same delegate,
-    // since behavior for SHARING_MESSAGE does not differ. They both do not
-    // store data on persistent storage.
-    controllers.push_back(std::make_unique<ModelTypeController>(
-        syncer::SHARING_MESSAGE,
-        CreateForwardingControllerDelegate(syncer::SHARING_MESSAGE),
-        CreateForwardingControllerDelegate(syncer::SHARING_MESSAGE)));
-  }
-#endif  // !defined(OS_IOS)
-
   // Forward both full-sync and transport-only modes to the same delegate,
   // since behavior for USER_CONSENTS does not differ (they are always
   // persisted).

@@ -6,6 +6,7 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
@@ -14,6 +15,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/toolbar/toolbar_action_view_controller.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_bar.h"
+#include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/views/extensions/extension_context_menu_controller.h"
 #include "chrome/browser/ui/views/frame/app_menu_button_observer.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
@@ -185,6 +187,9 @@ class ToolbarActionViewInteractiveUITest
   // extensions::ExtensionBrowserTest:
   void SetUpCommandLine(base::CommandLine* command_line) override;
   void TearDownOnMainThread() override;
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
 };
 
 ToolbarActionViewInteractiveUITest::ToolbarActionViewInteractiveUITest() {}
@@ -193,6 +198,7 @@ ToolbarActionViewInteractiveUITest::~ToolbarActionViewInteractiveUITest() {}
 void ToolbarActionViewInteractiveUITest::SetUpCommandLine(
     base::CommandLine* command_line) {
   extensions::ExtensionBrowserTest::SetUpCommandLine(command_line);
+  feature_list_.InitAndDisableFeature(features::kExtensionsToolbarMenu);
   ToolbarActionsBar::disable_animations_for_testing_ = true;
 }
 
@@ -246,9 +252,10 @@ IN_PROC_BROWSER_TEST_F(ToolbarActionViewInteractiveUITest,
   EXPECT_TRUE(listener.WaitUntilSatisfied());
 }
 
-#if defined(OS_CHROMEOS)
-// TODO(pkasting): https://crbug.com/911374 Menu controller thinks the mouse is
-// already down when handling the left click.
+#if defined(OS_CHROMEOS) || defined(OS_WIN)
+// TODO(pkasting): https://crbug.com/911374 On ChromeOS, menu controller thinks
+// the mouse is already down when handling the left click.
+// TODO(https://crbug.com/1046028): Fails on Windows 7.
 #define MAYBE_TestContextMenuOnOverflowedAction \
   DISABLED_TestContextMenuOnOverflowedAction
 #else

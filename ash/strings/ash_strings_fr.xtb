@@ -112,6 +112,7 @@
 <translation id="2352467521400612932">Paramètres du stylet</translation>
 <translation id="2354174487190027830">Activation du réseau <ph name="NAME" /> en cours…</translation>
 <translation id="2359808026110333948">Continuer</translation>
+<translation id="2364154243880592194">Barre d'état, heure <ph name="TIME" />, <ph name="BATTERY" /> Appuyez sur la touche de recherche et sur celle vers la gauche pour accéder au centre de notifications.</translation>
 <translation id="2365393535144473978">L'activation des données mobiles active également le Bluetooth.</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="2412593942846481727">Mise à jour disponible</translation>
@@ -335,6 +336,7 @@
 <translation id="5669267381087807207">Activation</translation>
 <translation id="5673434351075758678">La langue utilisée est passée de "<ph name="FROM_LOCALE" />" à "<ph name="TO_LOCALE" />" après la synchronisation de vos paramètres.</translation>
 <translation id="5682642926269496722">L'Assistant Google n'est pas disponible pour le compte utilisateur actuel.</translation>
+<translation id="5689633613396158040">Cette fonctionnalité facilite la lecture à l'écran lorsque l'éclairage est faible. Appuyez ici pour redéfinir quand elle doit être activée ou désactivez-la complètement.</translation>
 <translation id="5691772641933328258">Empreinte digitale non reconnue</translation>
 <translation id="5710450975648804523">Mode "Ne pas déranger" activé</translation>
 <translation id="573413375004481890">Cet appareil ne peut pas prendre en charge tous vos écrans. L'un d'eux a été déconnecté</translation>
@@ -514,6 +516,7 @@
 <translation id="8142441511840089262">Double-clic</translation>
 <translation id="8142699993796781067">Réseau privé</translation>
 <translation id="8152092012181020186">Appuyez sur Ctrl+W pour fermer l'élément.</translation>
+<translation id="8155007568264258537"><ph name="FEATURE_NAME" /> Ce paramètre est géré par votre administrateur.</translation>
 <translation id="8167567890448493835"><ph name="LOCALE_NAME" /> en cours d'utilisation</translation>
 <translation id="8190698733819146287">Personnaliser les langues et la saisie...</translation>
 <translation id="8192202700944119416">Les notifications sont masquées.</translation>
@@ -595,7 +598,6 @@
 <translation id="9193626018745640770">Destinataire de la diffusion inconnu</translation>
 <translation id="9194617393863864469">Se connecter avec un autre compte utilisateur…</translation>
 <translation id="9201374708878217446"><ph name="CONNECTION_STATUS" />, géré par votre administrateur</translation>
-<translation id="9205817095063786319">Appareil géré par <ph name="DOMAIN" /></translation>
 <translation id="9210037371811586452">Sortie du mode Bureau unifié</translation>
 <translation id="9211681782751733685">Temps restant avant que la batterie soit entièrement rechargée : <ph name="TIME_REMAINING" />.</translation>
 <translation id="9215934040295798075">Définir le fond d'écran</translation>

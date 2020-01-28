@@ -19,6 +19,10 @@ class BrowserContext;
 class RenderFrameHost;
 }  // namespace content
 
+namespace features {
+extern const base::Feature kNavigationPredictorPreconnectHoldback;
+}
+
 class NavigationPredictorPreconnectClient
     : public content::WebContentsObserver,
       public content::WebContentsUserData<NavigationPredictorPreconnectClient> {

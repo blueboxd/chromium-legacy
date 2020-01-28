@@ -74,4 +74,13 @@
         <item name="android:popupBackground">@drawable/popup_bg_tinted</item>
         <item name="android:popupElevation" tools:targetApi="21">0dp</item>
     </style>
+
+    <!-- Switch styling for dark theme -->
+    <style name="SwitchCompatDark" >
+        <item name="colorAccent">@color/control_active_color_dark</item>
+        <item name="colorControlNormal">@color/control_normal_color_dark</item>
+        <item name="colorControlActivated">@color/control_active_color_dark</item>
+        <item name="colorControlHighlight">@color/control_highlight_color_dark</item>
+        <item name="android:colorForeground">@color/modern_grey_100</item>
+    </style>
 </resources>

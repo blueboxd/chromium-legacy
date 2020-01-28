@@ -65,6 +65,7 @@
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/appcache/appcache.mojom.h"
 #include "third_party/blink/public/mojom/background_fetch/background_fetch.mojom.h"
+#include "third_party/blink/public/mojom/badging/badging.mojom.h"
 #include "third_party/blink/public/mojom/bluetooth/web_bluetooth.mojom.h"
 #include "third_party/blink/public/mojom/cache_storage/cache_storage.mojom.h"
 #include "third_party/blink/public/mojom/choosers/color_chooser.mojom.h"
@@ -163,6 +164,33 @@ void BindFaceDetectionProvider(
 void BindTextDetection(
     mojo::PendingReceiver<shape_detection::mojom::TextDetection> receiver) {
   GetShapeDetectionService()->BindTextDetection(std::move(receiver));
+}
+
+void BindBadgeServiceForServiceWorkerOnUI(
+    int service_worker_process_id,
+    const GURL& service_worker_scope,
+    mojo::PendingReceiver<blink::mojom::BadgeService> receiver) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  content::RenderProcessHost* render_process_host =
+      content::RenderProcessHost::FromID(service_worker_process_id);
+  if (!render_process_host)
+    return;
+
+  GetContentClient()->browser()->BindBadgeServiceReceiverFromServiceWorker(
+      render_process_host, service_worker_scope, std::move(receiver));
+}
+
+void BindBadgeServiceForServiceWorker(
+    ServiceWorkerProviderHost* service_worker_host,
+    mojo::PendingReceiver<blink::mojom::BadgeService> receiver) {
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
+  content::RunOrPostTaskOnThread(
+      FROM_HERE, content::BrowserThread::UI,
+      base::BindOnce(&BindBadgeServiceForServiceWorkerOnUI,
+                     service_worker_host->worker_process_id(),
+                     service_worker_host->running_hosted_version()->scope(),
+                     std::move(receiver)));
 }
 
 void BindColorChooserFactoryForFrame(
@@ -863,6 +891,8 @@ void PopulateServiceWorkerBinders(ServiceWorkerProviderHost* host,
   map->Add<blink::mojom::QuicTransportConnector>(base::BindRepeating(
       &ServiceWorkerProviderHost::CreateQuicTransportConnector,
       base::Unretained(host)));
+  map->Add<blink::mojom::BadgeService>(
+      base::BindRepeating(&BindBadgeServiceForServiceWorker, host));
 
   // render process host binders
   map->Add<media::mojom::VideoDecodePerfHistory>(BindServiceWorkerReceiver(

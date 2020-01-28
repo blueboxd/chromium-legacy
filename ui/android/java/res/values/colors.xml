@@ -37,7 +37,9 @@
         @color/default_icon_color_blue_dark
     </color>
     <color name="default_icon_color_secondary" tools:ignore="UnusedResources">@color/default_icon_color_secondary_dark</color>
-    <color name="hairline_stroke_color">@color/modern_grey_300</color>
+    <color name="hairline_stroke_color_light">@color/modern_grey_300</color>
+    <color name="hairline_stroke_color_dark">@color/modern_grey_700</color>
+    <color name="hairline_stroke_color">@color/hairline_stroke_color_light</color>
 
     <!-- Common background and branding color. -->
     <!-- TODO(huayinz): Change primary and secondary color to default_bg_color*. -->

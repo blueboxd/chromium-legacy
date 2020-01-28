@@ -1365,15 +1365,15 @@ public class VrShellDelegate
     /* package */ void exitWebVRPresent() {
         if (!mInVr) return;
 
-        if (!isVrBrowsingEnabled()) {
-            if (isDaydreamCurrentViewerInternal()) {
-                getVrDaydreamApi().launchVrHomescreen();
-            } else {
-                shutdownVr(true /* disableVrMode */, true /* stayingInChrome */);
-            }
-        } else {
-            mVrBrowserUsed = true;
+        // If we have previously used the VRBrowser this session, go back to it.
+        // If not, and we're on Daydream go back to Daydream home.
+        // Otherwise, exit VR.
+        if (mVrBrowserUsed) {
             mVrShell.setWebVrModeEnabled(false);
+        } else if (isDaydreamCurrentViewerInternal()) {
+            getVrDaydreamApi().launchVrHomescreen();
+        } else {
+            shutdownVr(true /* disableVrMode */, true /* stayingInChrome */);
         }
     }
 

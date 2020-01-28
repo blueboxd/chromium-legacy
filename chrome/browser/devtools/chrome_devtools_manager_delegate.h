@@ -58,8 +58,7 @@ class ChromeDevToolsManagerDelegate : public content::DevToolsManagerDelegate {
 
   // content::DevToolsManagerDelegate implementation.
   void Inspect(content::DevToolsAgentHost* agent_host) override;
-  void HandleCommand(content::DevToolsAgentHost* agent_host,
-                     content::DevToolsAgentHostClient* client,
+  void HandleCommand(content::DevToolsAgentHostClientChannel* channel,
                      const std::string& method,
                      base::span<const uint8_t> message,
                      NotHandledCallback callback) override;
@@ -71,10 +70,10 @@ class ChromeDevToolsManagerDelegate : public content::DevToolsManagerDelegate {
                              DisposeCallback callback) override;
 
   bool AllowInspectingRenderFrameHost(content::RenderFrameHost* rfh) override;
-  void ClientAttached(content::DevToolsAgentHost* agent_host,
-                      content::DevToolsAgentHostClient* client) override;
-  void ClientDetached(content::DevToolsAgentHost* agent_host,
-                      content::DevToolsAgentHostClient* client) override;
+  void ClientAttached(
+      content::DevToolsAgentHostClientChannel* channel) override;
+  void ClientDetached(
+      content::DevToolsAgentHostClientChannel* channel) override;
   scoped_refptr<content::DevToolsAgentHost> CreateNewTarget(
       const GURL& url) override;
   std::string GetDiscoveryPageHTML() override;
@@ -83,7 +82,7 @@ class ChromeDevToolsManagerDelegate : public content::DevToolsManagerDelegate {
   void DevicesAvailable(
       const DevToolsDeviceDiscovery::CompleteDevices& devices);
 
-  std::map<content::DevToolsAgentHostClient*,
+  std::map<content::DevToolsAgentHostClientChannel*,
            std::unique_ptr<ChromeDevToolsSession>>
       sessions_;
 

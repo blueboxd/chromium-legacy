@@ -311,7 +311,8 @@ TEST_F(ScrollableAreaTest, ScrollAnimatorCallbackFiresOnAnimationCancel) {
       .WillRepeatedly(Return(true));
   bool finished = false;
   scrollable_area->SetScrollOffset(
-      ScrollOffset(0, 10000), kProgrammaticScroll, kScrollBehaviorSmooth,
+      ScrollOffset(0, 10000), kProgrammaticScroll,
+      mojom::blink::ScrollIntoViewParams::Behavior::kSmooth,
       ScrollableArea::ScrollCallback(
           base::BindOnce([](bool* finished) { *finished = true; }, &finished)));
   EXPECT_EQ(0.0, scrollable_area->GetScrollAnimator().CurrentOffset().Height());
@@ -331,7 +332,8 @@ TEST_F(ScrollableAreaTest, ScrollAnimatorCallbackFiresOnInstantScroll) {
       .WillRepeatedly(Return(true));
   bool finished = false;
   scrollable_area->SetScrollOffset(
-      ScrollOffset(0, 10000), kProgrammaticScroll, kScrollBehaviorInstant,
+      ScrollOffset(0, 10000), kProgrammaticScroll,
+      mojom::blink::ScrollIntoViewParams::Behavior::kInstant,
       ScrollableArea::ScrollCallback(
           base::BindOnce([](bool* finished) { *finished = true; }, &finished)));
   EXPECT_EQ(100, scrollable_area->GetScrollAnimator().CurrentOffset().Height());
@@ -348,7 +350,8 @@ TEST_F(ScrollableAreaTest, ScrollAnimatorCallbackFiresOnAnimationFinish) {
       .WillRepeatedly(Return(true));
   bool finished = false;
   scrollable_area->SetScrollOffset(
-      ScrollOffset(0, 9), kProgrammaticScroll, kScrollBehaviorSmooth,
+      ScrollOffset(0, 9), kProgrammaticScroll,
+      mojom::blink::ScrollIntoViewParams::Behavior::kSmooth,
       ScrollableArea::ScrollCallback(
           base::BindOnce([](bool* finished) { *finished = true; }, &finished)));
   EXPECT_EQ(0.0, scrollable_area->GetScrollAnimator().CurrentOffset().Height());

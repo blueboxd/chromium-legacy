@@ -124,7 +124,7 @@
                 <template is="dom-repeat" items="[[devices]]">
                   <option
                       class$="[[getDeviceOptionClass_(item.connectivityStatus)]]"
-                      value$="[[item.remoteDevice.deviceId]]">
+                      value$="[[getInstanceIdOrLegacyDeviceId_(item)]]">
                     [[getDeviceNameWithConnectivityStatus_(item)]]
                   </option>
                 </template>

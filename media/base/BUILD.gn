@@ -418,6 +418,14 @@ jumbo_source_set("base") {
   } else {
     sources += [ "demuxer_memory_limit_default.cc" ]
   }
+
+  if (enable_media_drm_storage) {
+    sources += [
+      "media_drm_key_type.h",
+      "media_drm_storage.cc",
+      "media_drm_storage.h",
+    ]
+  }
 }
 
 source_set("video_facing") {

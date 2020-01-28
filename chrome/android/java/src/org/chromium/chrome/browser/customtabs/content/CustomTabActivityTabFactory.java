@@ -37,7 +37,7 @@ import dagger.Lazy;
  */
 @ActivityScope
 public class CustomTabActivityTabFactory {
-    private final ChromeActivity mActivity;
+    private final ChromeActivity<?> mActivity;
     private final CustomTabTabPersistencePolicy mPersistencePolicy;
     private final Lazy<ActivityWindowAndroid> mActivityWindowAndroid;
     private final Lazy<CustomTabDelegateFactory> mCustomTabDelegateFactory;
@@ -50,7 +50,7 @@ public class CustomTabActivityTabFactory {
     private TabModelSelectorImpl mTabModelSelector;
 
     @Inject
-    public CustomTabActivityTabFactory(ChromeActivity activity,
+    public CustomTabActivityTabFactory(ChromeActivity<?> activity,
             CustomTabTabPersistencePolicy persistencePolicy,
             Lazy<ActivityWindowAndroid> activityWindowAndroid,
             Lazy<CustomTabDelegateFactory> customTabDelegateFactory,

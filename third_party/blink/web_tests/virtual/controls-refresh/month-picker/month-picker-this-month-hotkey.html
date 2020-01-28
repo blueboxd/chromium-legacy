@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="../../../resources/testharness.js"></script>
+<script src="../../../resources/testharnessreport.js"></script>
+<script src="../../../fast/forms/resources/common.js"></script>
+<script src="../../../fast/forms/resources/picker-common.js"></script>
+<script src="../../../fast/forms/calendar-picker/resources/calendar-picker-common.js"></script>
+</head>
+<body>
+<input type="month" id="month" value="2019-02">
+<script>
+
+promise_test(() => {
+  let monthElement = document.getElementById('month');
+  return openPickerWithPromise(monthElement)
+  .then(() => {
+    eventSender.keyDown('t');
+
+    let splitDate = monthElement.value.split('-');
+    let actualTodayDateString = new Date(splitDate[0], splitDate[1] - 1).toDateString();
+    let today = new Date();
+    today.setDate(1);
+    let expectedTodayDateString = today.toDateString();
+
+    assert_equals(actualTodayDateString, expectedTodayDateString, "Today hotkey should have updated in-page control to current month");
+    assert_equals(internals.pagePopupWindow, null, "'t' key should close popup.");
+  });
+}, "Month picker: 't' key should select this month and close popup");
+
+</script>
+</body>
+</html>

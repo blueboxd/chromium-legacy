@@ -50,7 +50,7 @@ public class CustomTabToolbarColorController {
     public interface BooleanFunction { boolean get(); }
 
     private final BrowserServicesIntentDataProvider mIntentDataProvider;
-    private final ChromeActivity mActivity;
+    private final ChromeActivity<?> mActivity;
     private final TabObserverRegistrar mTabObserverRegistrar;
     private final CustomTabActivityTabProvider mTabProvider;
 
@@ -59,7 +59,7 @@ public class CustomTabToolbarColorController {
 
     @Inject
     public CustomTabToolbarColorController(BrowserServicesIntentDataProvider intentDataProvider,
-            ChromeActivity activity, CustomTabActivityTabProvider tabProvider,
+            ChromeActivity<?> activity, CustomTabActivityTabProvider tabProvider,
             TabObserverRegistrar tabObserverRegistrar) {
         mIntentDataProvider = intentDataProvider;
         mActivity = activity;

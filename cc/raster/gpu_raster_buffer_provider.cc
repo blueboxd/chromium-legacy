@@ -541,20 +541,6 @@ gpu::SyncToken GpuRasterBufferProvider::PlaybackOnWorkerThreadInternal(
   DCHECK(!playback_rect.IsEmpty())
       << "Why are we rastering a tile that's not dirty?";
 
-  // Log a histogram of the percentage of pixels that were saved due to
-  // partial raster.
-  const char* client_name = GetClientNameForMetrics();
-  float full_rect_size = raster_full_rect.size().GetArea();
-  if (full_rect_size > 0 && client_name) {
-    float fraction_partial_rastered =
-        static_cast<float>(playback_rect.size().GetArea()) / full_rect_size;
-    float fraction_saved = 1.0f - fraction_partial_rastered;
-    UMA_HISTOGRAM_PERCENTAGE(
-        base::StringPrintf("Renderer4.%s.PartialRasterPercentageSaved.Gpu",
-                           client_name),
-        100.0f * fraction_saved);
-  }
-
   if (measure_raster_metric) {
 #if defined(OS_CHROMEOS)
     // Use a query to detect when the GPU side is ready to start issuing raster

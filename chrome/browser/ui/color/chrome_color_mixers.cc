@@ -19,11 +19,12 @@ ui::ColorTransform ChooseOmniboxBgBlendTarget() {
   return base::BindRepeating(
       [](SkColor input_color, const ui::ColorMixer& mixer) {
         const SkColor toolbar_color = mixer.GetResultColor(kColorToolbar);
-        const SkColor darkest_color = color_utils::GetDarkestColor();
-        return (color_utils::GetContrastRatio(toolbar_color, darkest_color) >=
+        const SkColor endpoint_color =
+            color_utils::GetEndpointColorWithMinContrast(toolbar_color);
+        return (color_utils::GetContrastRatio(toolbar_color, endpoint_color) >=
                 kMinOmniboxToolbarContrast)
-                   ? darkest_color
-                   : color_utils::GetColorWithMaxContrast(darkest_color);
+                   ? endpoint_color
+                   : color_utils::GetColorWithMaxContrast(endpoint_color);
       });
 }
 

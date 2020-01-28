@@ -6,8 +6,8 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
-#include "chrome/browser/permissions/permission_util.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/permissions/permission_util.h"
 #include "components/url_formatter/elide_url.h"
 #include "net/base/escape.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -286,12 +286,12 @@ void PermissionRequestImpl::RequestFinished() {
 
 permissions::PermissionRequestType
 PermissionRequestImpl::GetPermissionRequestType() const {
-  return PermissionUtil::GetRequestType(content_settings_type_);
+  return permissions::PermissionUtil::GetRequestType(content_settings_type_);
 }
 
 permissions::PermissionRequestGestureType
 PermissionRequestImpl::GetGestureType() const {
-  return PermissionUtil::GetGestureType(has_gesture_);
+  return permissions::PermissionUtil::GetGestureType(has_gesture_);
 }
 
 ContentSettingsType PermissionRequestImpl::GetContentSettingsType() const {

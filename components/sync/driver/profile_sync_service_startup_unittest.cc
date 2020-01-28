@@ -642,8 +642,7 @@ TEST_F(ProfileSyncServiceStartupTest, FullStartupSequenceFirstTime) {
   ON_CALL(*sync_engine, IsInitialized()).WillByDefault(Return(true));
   sync_service()->OnEngineInitialized(ModelTypeSet(), WeakHandle<JsBackend>(),
                                       WeakHandle<DataTypeDebugInfoListener>(),
-                                      "test-guid", "test-birthday",
-                                      "test-bag-of-chips",
+                                      "test-birthday", "test-bag-of-chips",
                                       /*last_keystore_key=*/std::string(),
                                       /*success=*/true);
   ASSERT_TRUE(sync_service()->IsEngineInitialized());
@@ -725,8 +724,7 @@ TEST_F(ProfileSyncServiceStartupTest, FullStartupSequenceNthTime) {
   ON_CALL(*sync_engine, IsInitialized()).WillByDefault(Return(true));
   sync_service()->OnEngineInitialized(ModelTypeSet(), WeakHandle<JsBackend>(),
                                       WeakHandle<DataTypeDebugInfoListener>(),
-                                      "test-guid", "test-birthday",
-                                      "test-bag-of-chips",
+                                      "test-birthday", "test-bag-of-chips",
                                       /*last_keystore_key=*/std::string(),
                                       /*success=*/true);
   ON_CALL(*data_type_manager, state())

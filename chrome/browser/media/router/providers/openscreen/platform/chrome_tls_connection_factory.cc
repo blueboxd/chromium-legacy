@@ -8,8 +8,8 @@
 
 #include "base/logging.h"
 #include "chrome/browser/media/router/providers/openscreen/platform/chrome_tls_client_connection.h"
-#include "chrome/browser/media/router/providers/openscreen/platform/network_util.h"
 #include "chrome/browser/net/system_network_context_manager.h"
+#include "components/openscreen_platform/network_util.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/net_errors.h"
 #include "net/ssl/ssl_info.h"
@@ -85,7 +85,7 @@ void ChromeTlsConnectionFactory::Connect(const IPEndpoint& remote_address,
                             mojo::Remote<network::mojom::TCPConnectedSocket>{});
 
   const net::AddressList address_list(
-      media_router::network_util::ToChromeNetEndpoint(remote_address));
+      openscreen_platform::ToNetEndPoint(remote_address));
 
   network_context->CreateTCPConnectedSocket(
       base::nullopt /* local_addr */, address_list,
@@ -162,7 +162,7 @@ void ChromeTlsConnectionFactory::OnTcpConnect(
   }
 
   net::HostPortPair host_port_pair = net::HostPortPair::FromIPEndPoint(
-      network_util::ToChromeNetEndpoint(request.remote_address));
+      openscreen_platform::ToNetEndPoint(request.remote_address));
   network::mojom::TLSClientSocketOptionsPtr options =
       network::mojom::TLSClientSocketOptions::New();
   options->unsafely_skip_cert_verification =
@@ -170,7 +170,8 @@ void ChromeTlsConnectionFactory::OnTcpConnect(
 
   openscreen::IPEndpoint local_endpoint{};
   if (local_address) {
-    local_endpoint = network_util::ToOpenScreenEndpoint(local_address.value());
+    local_endpoint =
+        openscreen_platform::ToOpenScreenEndPoint(local_address.value());
   }
 
   TlsUpgradeRequest upgrade_request(

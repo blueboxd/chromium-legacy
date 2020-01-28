@@ -79,6 +79,7 @@
 <translation id="129553762522093515">Жакында жабылган</translation>
 <translation id="1298536327547837046">Кесепеттүү программаны издөө</translation>
 <translation id="129863573139666797"><ph name="BEGIN_LINK" />Кукилериңизди тазалап көрүңүз<ph name="END_LINK" /></translation>
+<translation id="1301324364792935241">Коопсуз DNS жөндөөлөрүңүздү текшериңиз</translation>
 <translation id="1307966114820526988">Жоюлган функциялар</translation>
 <translation id="1314509827145471431">Оң жагын байлоо</translation>
 <translation id="1320233736580025032">Prc1 (Конверт)</translation>
@@ -152,6 +153,7 @@
 <translation id="1569487616857761740">Насыя картасынын жарамдуулук мөөнөтүн киргизиңиз</translation>
 <translation id="1581080074034554886">CVC</translation>
 <translation id="1583429793053364125">Бул веб-баракча жүктөлүп жатканда бир жерден ката кетти.</translation>
+<translation id="1586541204584340881">Кайсы кеңейтүүлөрдү орнотуп алдыңыз</translation>
 <translation id="1588438908519853928">Кадыресе</translation>
 <translation id="1592005682883173041">Жергиликтүү дайындарга мүмкүнчүлүк алуу</translation>
 <translation id="1594030484168838125">Тандоо</translation>
@@ -362,6 +364,7 @@
 <translation id="2544644783021658368">Жалгыз документ</translation>
 <translation id="254947805923345898">Саясаттын мааниси туура эмес көрсөтүлдү.</translation>
 <translation id="255002559098805027"><ph name="HOST_NAME" /> сайты жараксыз жооп жөнөттү.</translation>
+<translation id="2553853292994445426">Коопсуз DNS жөндөөлөрүңүздү текшериңиз. Коопсуз DNS серверин жөндөп койсоңуз керек, андыктан туташуу аткарылбай жатат.</translation>
 <translation id="2556876185419854533">Түзөтүүнү &amp;жасабоо</translation>
 <translation id="257674075312929031">Топ</translation>
 <translation id="2586657967955657006">Алмашуу буфери</translation>
@@ -484,6 +487,7 @@
 <translation id="3095940652251934233">Билдирүү</translation>
 <translation id="3096100844101284527">Алып кете турган жердин дарегин кошуу</translation>
 <translation id="3105172416063519923">Менчик объектисинин ID:</translation>
+<translation id="3107591622054137333"><ph name="BEGIN_LINK" />Коопсуз DNS конфигурациясын текшерүү<ph name="END_LINK" /></translation>
 <translation id="3109728660330352905">Бул баракты көрүүгө уруксатыңыз жок.</translation>
 <translation id="3113284927548439113">Үчүнчү смена</translation>
 <translation id="3116158981186517402">Ламинациялоо</translation>
@@ -785,6 +789,7 @@
 <translation id="4390472908992056574">Кыр</translation>
 <translation id="4406896451731180161">издөө натыйжалары</translation>
 <translation id="4408413947728134509"><ph name="NUM_COOKIES" /> куки</translation>
+<translation id="4414290883293381923">Сырсөзүңүздү жаңы эле адаштыруучу сайтта киргиздиңиз. Chrome ушул сырсөздү колдонгон <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, <ph name="WEBSITE_3" /> жана башка сайттарга өтүп, аны азыр өзгөртүүнү сунуштайт.</translation>
 <translation id="4415426530740016218">Алып кете турган жердин дарегин тандоо</translation>
 <translation id="4424024547088906515">Бул сервер <ph name="DOMAIN" /> экендигин далилдей алган жок; себеби Chrome анын коопсуздук тастыктамасына ишенбейт. Мындай көйгөй туура эмес конфигурация менен шартталышы мүмкүн же туташууңузга чабуулчу кийлигишип жатат.</translation>
 <translation id="443121186588148776">Сериялык порт</translation>
@@ -1217,6 +1222,7 @@
 <translation id="6353505687280762741">{COUNT,plural, =0{Жок}=1{1 сырсөз (<ph name="DOMAIN_LIST" /> доменде, шайкештирилген)}=2{2 сырсөз (<ph name="DOMAIN_LIST" /> доменде, шайкештирилген)}other{# сырсөз (<ph name="DOMAIN_LIST" /> доменде, шайкештирилген)}}</translation>
 <translation id="6358450015545214790">Бул эмнени билдирет?</translation>
 <translation id="6361757823711327522">B7</translation>
+<translation id="6364095313648930329"><ph name="BEGIN_LINK" />Прокси, брандауэр жана DNS конфигурациясын текшерип көрүңүз<ph name="END_LINK" /></translation>
 <translation id="6366710531182496394">Сол жагын эки жолу илмек менен бекитүү</translation>
 <translation id="6377268785556383139">"<ph name="SEARCH_TEXT" />" сурамы боюнча 1 жыйынтык табылды</translation>
 <translation id="6380497234672085559">A0</translation>
@@ -1239,6 +1245,7 @@
 <translation id="6433595998831338502"><ph name="HOST_NAME" /> сайты туташуудан баш тартты.</translation>
 <translation id="6434309073475700221">Жарактан чыгаруу</translation>
 <translation id="6440503408713884761">Этибарга алынган жок</translation>
+<translation id="6443406338865242315">Кайсы кеңейтүүлөрдү жана плагиндерди орнотуп алдыңыз</translation>
 <translation id="6446163441502663861">Kahu (Конверт)</translation>
 <translation id="6446608382365791566">Көбүрөөк маалымат кошуу</translation>
 <translation id="6447842834002726250">Кукилер</translation>
@@ -1348,6 +1355,7 @@
 <translation id="7012363358306927923">China UnionPay</translation>
 <translation id="7016992613359344582">Алар бир жолу төлөнүүчү же кайталануучу төлөмдөр болушу мүмкүн, бирок алар ачык көрүнбөйт.</translation>
 <translation id="7029809446516969842">Сырсөздөр</translation>
+<translation id="7031646650991750659">Кайсы Google Play колдонмолорун орнотуп алдыңыз</translation>
 <translation id="7050187094878475250"><ph name="DOMAIN" /> доменине кирүүгө аракет кылдыңыз, бирок сервер ишенимдүү болушу үчүн жарактуу мөөнөтү өтө узун уруксаттама берди.</translation>
 <translation id="705310974202322020">{NUM_CARDS,plural, =1{Бул картаны азыр сактап коюуга болбойт}other{Бул карталарды азыр сактап коюуга болбойт}}</translation>
 <translation id="7053983685419859001">Бөгөттөө</translation>
@@ -1407,6 +1415,7 @@
 <translation id="7319430975418800333">A3</translation>
 <translation id="7320336641823683070">Туташуу боюнча жардам алуу</translation>
 <translation id="733354035281974745">Түзмөктөгү аккаунтту өзгөртүү</translation>
+<translation id="7333654844024768166">Сырсөзүңүздү жаңы эле адаштыруучу сайтта киргиздиңиз. Chromium ушул сырсөздү колдонгон <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, <ph name="WEBSITE_3" /> жана башка сайттарга өтүп, аны азыр өзгөртүүнү сунуштайт.</translation>
 <translation id="7334320624316649418">Иреттештирүүнү &amp;кайталоо</translation>
 <translation id="7337706099755338005">Сиздин платформада жеткиликсиз.</translation>
 <translation id="733923710415886693">Сервердин тастыктамасы "Тастыктаманын тунуктук саясаты" аркылуу ачыкка чыгарылган эмес.</translation>

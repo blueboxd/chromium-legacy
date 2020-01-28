@@ -17,10 +17,11 @@ IN_PROC_BROWSER_TEST_F(DeferredMediaBrowserTest, BackgroundMediaIsDeferred) {
   // Navigate to a video file, which would autoplay in the foreground, but won't
   // in the background due to deferred media loading for hidden tabs.
   ui_test_utils::NavigateToURLWithDisposition(
-      browser(), content::GetFileUrlWithQuery(
-                     media::GetTestDataFilePath("bear-640x360.webm"), ""),
+      browser(),
+      content::GetFileUrlWithQuery(
+          media::GetTestDataFilePath("bear-640x360.webm"), ""),
       WindowOpenDisposition::NEW_BACKGROUND_TAB,
-      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
 
   ASSERT_EQ(2, browser()->tab_strip_model()->count());
   content::WebContents* background_contents =

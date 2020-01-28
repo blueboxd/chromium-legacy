@@ -50,14 +50,16 @@ class SequenceManagerThreadDelegate : public Thread::Delegate {
  public:
   explicit SequenceManagerThreadDelegate(
       MessagePumpType message_pump_type,
-      OnceCallback<std::unique_ptr<MessagePump>()> message_pump_factory)
+      OnceCallback<std::unique_ptr<MessagePump>()> message_pump_factory,
+      sequence_manager::TimeDomain* time_domain)
       : sequence_manager_(
             sequence_manager::internal::SequenceManagerImpl::CreateUnbound(
                 sequence_manager::SequenceManager::Settings::Builder()
                     .SetMessagePumpType(message_pump_type)
                     .Build())),
         default_task_queue_(sequence_manager_->CreateTaskQueue(
-            sequence_manager::TaskQueue::Spec("default_tq"))),
+            sequence_manager::TaskQueue::Spec("default_tq")
+                .SetTimeDomain(time_domain))),
         message_pump_factory_(std::move(message_pump_factory)) {
     sequence_manager_->SetDefaultTaskRunner(default_task_queue_->task_runner());
   }
@@ -158,15 +160,18 @@ bool Thread::StartWithOptions(const Options& options) {
 
   if (options.delegate) {
     DCHECK(!options.message_pump_factory);
+    DCHECK(!options.task_queue_time_domain_);
     delegate_ = WrapUnique(options.delegate);
   } else if (options.message_pump_factory) {
     delegate_ = std::make_unique<SequenceManagerThreadDelegate>(
-        MessagePumpType::CUSTOM, options.message_pump_factory);
+        MessagePumpType::CUSTOM, options.message_pump_factory,
+        options.task_queue_time_domain_);
   } else {
     delegate_ = std::make_unique<SequenceManagerThreadDelegate>(
         options.message_pump_type,
         BindOnce([](MessagePumpType type) { return MessagePump::Create(type); },
-                 options.message_pump_type));
+                 options.message_pump_type),
+        options.task_queue_time_domain_);
   }
 
   start_event_.Reset();

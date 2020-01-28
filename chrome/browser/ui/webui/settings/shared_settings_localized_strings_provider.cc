@@ -39,10 +39,6 @@ void AddA11yStrings(content::WebUIDataSource* html_source) {
       "showExperimentalA11yLabels",
       base::FeatureList::IsEnabled(features::kExperimentalAccessibilityLabels));
 
-  html_source->AddBoolean(
-      "enableCaptionSettings",
-      base::FeatureList::IsEnabled(features::kCaptionSettings));
-
   html_source->AddBoolean("enableLiveCaption",
                           base::FeatureList::IsEnabled(media::kLiveCaption));
 }

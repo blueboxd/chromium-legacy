@@ -145,7 +145,7 @@ IN_PROC_BROWSER_TEST_F(LazyLoadBrowserTest, CSSBackgroundImageDeferred) {
       browser(),
       embedded_test_server()->GetURL("/lazyload/css-background-image.html"),
       WindowOpenDisposition::NEW_FOREGROUND_TAB,
-      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
 
   base::RunLoop().RunUntilIdle();
   // Navigate away to finish the histogram recording.

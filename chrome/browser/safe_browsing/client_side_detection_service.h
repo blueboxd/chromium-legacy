@@ -122,6 +122,10 @@ class ClientSideDetectionService : public content::NotificationObserver {
 
   base::WeakPtr<ClientSideDetectionService> GetWeakPtr();
 
+  // Get the model status for the given client-side model (extended reporting or
+  // regular).
+  ModelLoader::ClientModelStatus GetLastModelStatus(bool is_extended_reporting);
+
  protected:
   // Use Create() method to create an instance of this object.
   explicit ClientSideDetectionService(

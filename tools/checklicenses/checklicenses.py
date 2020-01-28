@@ -485,9 +485,6 @@ PATH_SPECIFIC_WHITELISTED_LICENSES = {
     'third_party/scons-2.0.1/engine/SCons': [  # http://crbug.com/98462
         'UNKNOWN',
     ],
-    'third_party/sfntly/src/java': [  # Apache 2.0, not shipped.
-        'UNKNOWN',
-    ],
     'third_party/simplejson': [
         'UNKNOWN',
     ],

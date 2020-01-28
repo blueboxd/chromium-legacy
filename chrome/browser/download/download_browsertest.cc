@@ -741,7 +741,7 @@ class DownloadTest : public InProcessBrowserTest {
                        const GURL& url) {
     DownloadAndWaitWithDisposition(
         browser, url, WindowOpenDisposition::CURRENT_TAB,
-        ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+        ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
   }
 
   // Should only be called when the download is known to have finished
@@ -881,7 +881,7 @@ class DownloadTest : public InProcessBrowserTest {
 
     ui_test_utils::NavigateToURLWithDisposition(
         browser, finish_url, WindowOpenDisposition::NEW_FOREGROUND_TAB,
-        ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+        ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
     observer->WaitForFinished();
     EXPECT_EQ(1u, observer->NumDownloadsSeenInState(DownloadItem::COMPLETE));
     CheckDownloadStatesForBrowser(browser, 1, DownloadItem::COMPLETE);
@@ -1813,7 +1813,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DontCloseNewTab1) {
   // Open a web page and wait.
   ui_test_utils::NavigateToURLWithDisposition(
       browser(), url, WindowOpenDisposition::NEW_BACKGROUND_TAB,
-      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
 
   // We should have two tabs now.
   EXPECT_EQ(2, browser()->tab_strip_model()->count());

@@ -200,7 +200,7 @@ CommandHandler.onCommand = function(command) {
       for (var key in description) {
         url += key + ':%20' + description[key] + '%0a';
       }
-      chrome.tabs.create({url: url});
+      chrome.tabs.create({url});
       return false;
     case 'toggleBrailleCaptions':
       BrailleCaptionsBackground.setActive(
@@ -735,7 +735,7 @@ CommandHandler.onCommand = function(command) {
     // Table commands.
     case 'previousRow':
       dir = Dir.BACKWARD;
-      var tableOpts = {row: true, dir: dir};
+      var tableOpts = {row: true, dir};
       pred = AutomationPredicate.makeTableCellPredicate(
           current.start.node, tableOpts);
       predErrorMsg = 'no_cell_above';
@@ -744,7 +744,7 @@ CommandHandler.onCommand = function(command) {
       break;
     case 'previousCol':
       dir = Dir.BACKWARD;
-      var tableOpts = {col: true, dir: dir};
+      var tableOpts = {col: true, dir};
       pred = AutomationPredicate.makeTableCellPredicate(
           current.start.node, tableOpts);
       predErrorMsg = 'no_cell_left';
@@ -752,7 +752,7 @@ CommandHandler.onCommand = function(command) {
       shouldWrap = false;
       break;
     case 'nextRow':
-      var tableOpts = {row: true, dir: dir};
+      var tableOpts = {row: true, dir};
       pred = AutomationPredicate.makeTableCellPredicate(
           current.start.node, tableOpts);
       predErrorMsg = 'no_cell_below';
@@ -760,7 +760,7 @@ CommandHandler.onCommand = function(command) {
       shouldWrap = false;
       break;
     case 'nextCol':
-      var tableOpts = {col: true, dir: dir};
+      var tableOpts = {col: true, dir};
       pred = AutomationPredicate.makeTableCellPredicate(
           current.start.node, tableOpts);
       predErrorMsg = 'no_cell_right';
@@ -791,7 +791,7 @@ CommandHandler.onCommand = function(command) {
       if (!node || !node.firstChild) {
         return false;
       }
-      var tableOpts = {col: true, dir: dir, end: true};
+      var tableOpts = {col: true, dir, end: true};
       pred = AutomationPredicate.makeTableCellPredicate(
           current.start.node, tableOpts);
       current = cursors.Range.fromNode(node.firstChild);
@@ -809,7 +809,7 @@ CommandHandler.onCommand = function(command) {
       if (!node || !node.lastChild) {
         return false;
       }
-      var tableOpts = {col: true, dir: dir, end: true};
+      var tableOpts = {col: true, dir, end: true};
       pred = AutomationPredicate.makeTableCellPredicate(
           current.start.node, tableOpts);
 
@@ -1041,8 +1041,7 @@ CommandHandler.onCommand = function(command) {
 
       if (!node) {
         node = AutomationUtil.findNextNode(
-            bound, dir, pred,
-            {skipInitialAncestry: skipInitialAncestry, root: rootPred});
+            bound, dir, pred, {skipInitialAncestry, root: rootPred});
       }
 
       if (node && !skipSync) {

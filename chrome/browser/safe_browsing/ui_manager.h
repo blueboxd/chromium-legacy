@@ -73,7 +73,8 @@ class SafeBrowsingUIManager : public BaseUIManager {
   void OnBlockingPageDone(const std::vector<UnsafeResource>& resources,
                           bool proceed,
                           content::WebContents* web_contents,
-                          const GURL& main_frame_url) override;
+                          const GURL& main_frame_url,
+                          bool showed_interstitial) override;
 
   // Report hits to unsafe contents (malware, phishing, unsafe download URL)
   // to the server. Can only be called on UI thread.  The hit report will

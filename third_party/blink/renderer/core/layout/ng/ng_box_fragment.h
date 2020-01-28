@@ -31,7 +31,6 @@ class CORE_EXPORT NGBoxFragment final : public NGFragment {
     if (GetWritingMode() != physical_fragment_.Style().GetWritingMode())
       return base::nullopt;
 
-    // TODO containment?
     return To<NGPhysicalBoxFragment>(physical_fragment_).Baseline();
   }
 

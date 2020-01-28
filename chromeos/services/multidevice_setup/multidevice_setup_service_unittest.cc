@@ -294,11 +294,11 @@ TEST_F(MultiDeviceSetupServiceTest, CallFunctionsBeforeInitialization) {
 }
 
 TEST_F(MultiDeviceSetupServiceTest, SetThenRemoveBeforeInitialization) {
-  multidevice_setup_remote()->SetHostDevice("deviceId1", "authToken",
+  multidevice_setup_remote()->SetHostDevice("id1", "authToken",
                                             base::DoNothing());
   multidevice_setup_remote().FlushForTesting();
 
-  privileged_host_device_setter_remote()->SetHostDevice("deviceId2",
+  privileged_host_device_setter_remote()->SetHostDevice("id2",
                                                         base::DoNothing());
   privileged_host_device_setter_remote().FlushForTesting();
 
@@ -320,15 +320,15 @@ TEST_F(MultiDeviceSetupServiceTest, RemoveThenSetThenSetBeforeInitialization) {
   multidevice_setup_remote()->RemoveHostDevice();
   multidevice_setup_remote().FlushForTesting();
 
-  privileged_host_device_setter_remote()->SetHostDevice("deviceId1",
+  privileged_host_device_setter_remote()->SetHostDevice("id1",
                                                         base::DoNothing());
   privileged_host_device_setter_remote().FlushForTesting();
 
-  multidevice_setup_remote()->SetHostDevice("deviceId2", "authToken2",
+  multidevice_setup_remote()->SetHostDevice("id2", "authToken2",
                                             base::DoNothing());
   multidevice_setup_remote().FlushForTesting();
 
-  multidevice_setup_remote()->SetHostDevice("deviceId3", "authToken3",
+  multidevice_setup_remote()->SetHostDevice("id3", "authToken3",
                                             base::DoNothing());
   multidevice_setup_remote().FlushForTesting();
 
@@ -340,8 +340,7 @@ TEST_F(MultiDeviceSetupServiceTest, RemoveThenSetThenSetBeforeInitialization) {
   EXPECT_EQ(0u, fake_multidevice_setup()->num_remove_host_calls());
   EXPECT_TRUE(fake_multidevice_setup()->set_host_without_auth_args().empty());
   EXPECT_EQ(1u, fake_multidevice_setup()->set_host_args().size());
-  EXPECT_EQ("deviceId3",
-            std::get<0>(fake_multidevice_setup()->set_host_args()[0]));
+  EXPECT_EQ("id3", std::get<0>(fake_multidevice_setup()->set_host_args()[0]));
   EXPECT_EQ("authToken3",
             std::get<1>(fake_multidevice_setup()->set_host_args()[0]));
 }
@@ -351,15 +350,15 @@ TEST_F(MultiDeviceSetupServiceTest,
   multidevice_setup_remote()->RemoveHostDevice();
   multidevice_setup_remote().FlushForTesting();
 
-  multidevice_setup_remote()->SetHostDevice("deviceId1", "authToken1",
+  multidevice_setup_remote()->SetHostDevice("id1", "authToken1",
                                             base::DoNothing());
   multidevice_setup_remote().FlushForTesting();
 
-  multidevice_setup_remote()->SetHostDevice("deviceId2", "authToken2",
+  multidevice_setup_remote()->SetHostDevice("id2", "authToken2",
                                             base::DoNothing());
   multidevice_setup_remote().FlushForTesting();
 
-  privileged_host_device_setter_remote()->SetHostDevice("deviceId3",
+  privileged_host_device_setter_remote()->SetHostDevice("id3",
                                                         base::DoNothing());
   privileged_host_device_setter_remote().FlushForTesting();
 
@@ -371,7 +370,7 @@ TEST_F(MultiDeviceSetupServiceTest,
   EXPECT_EQ(0u, fake_multidevice_setup()->num_remove_host_calls());
   EXPECT_TRUE(fake_multidevice_setup()->set_host_args().empty());
   EXPECT_EQ(1u, fake_multidevice_setup()->set_host_without_auth_args().size());
-  EXPECT_EQ("deviceId3",
+  EXPECT_EQ("id3",
             fake_multidevice_setup()->set_host_without_auth_args()[0].first);
 }
 
@@ -409,7 +408,7 @@ TEST_F(MultiDeviceSetupServiceTest, FinishInitializationFirst) {
   EXPECT_EQ(1u, fake_multidevice_setup()->get_eligible_hosts_args().size());
 
   // SetHostDevice().
-  multidevice_setup_remote()->SetHostDevice("deviceId", "authToken",
+  multidevice_setup_remote()->SetHostDevice("id", "authToken",
                                             base::DoNothing());
   multidevice_setup_remote().FlushForTesting();
   EXPECT_EQ(1u, fake_multidevice_setup()->set_host_args().size());
@@ -442,7 +441,7 @@ TEST_F(MultiDeviceSetupServiceTest, FinishInitializationFirst) {
   EXPECT_EQ(1u, fake_multidevice_setup()->retry_set_host_now_args().size());
 
   // SetHostDevice(), without an auth token.
-  privileged_host_device_setter_remote()->SetHostDevice("deviceId",
+  privileged_host_device_setter_remote()->SetHostDevice("id",
                                                         base::DoNothing());
   privileged_host_device_setter_remote().FlushForTesting();
   EXPECT_EQ(1u, fake_multidevice_setup()->set_host_without_auth_args().size());

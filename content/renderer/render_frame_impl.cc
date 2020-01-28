@@ -5702,10 +5702,6 @@ void RenderFrameImpl::DidStopLoading() {
   Send(new FrameHostMsg_DidStopLoading(routing_id_));
 }
 
-void RenderFrameImpl::DidChangeLoadProgress(double load_progress) {
-  Send(new FrameHostMsg_DidChangeLoadProgress(routing_id_, load_progress));
-}
-
 void RenderFrameImpl::FocusedElementChanged(const WebElement& element) {
   has_scrolled_focused_editable_node_into_rect_ = false;
   bool is_editable = false;

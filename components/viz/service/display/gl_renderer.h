@@ -350,11 +350,8 @@ class VIZ_SERVICE_EXPORT GLRenderer : public DirectRenderer {
   void SetupOverdrawFeedback();
 
   // Process overdraw feedback from query.
-  void ProcessOverdrawFeedback(std::vector<int>* overdraw,
-                               size_t num_expected_results,
-                               int max_result,
-                               unsigned query,
-                               int multiplier);
+  void ProcessOverdrawFeedback(int surface_area, unsigned query);
+  bool OverdrawTracingEnabled();
 
   ResourceFormat BackbufferFormat() const;
 
@@ -383,6 +380,10 @@ class VIZ_SERVICE_EXPORT GLRenderer : public DirectRenderer {
   // Resources that the GPU process has finished swapping. The key is the
   // texture id of the resource.
   std::map<unsigned, OverlayResourceLock> swapped_and_acked_overlay_resources_;
+
+  // Query object, used to determine the number of sample drawn during a render
+  // pass.
+  unsigned occlusion_query_ = 0u;
 
   unsigned offscreen_framebuffer_id_ = 0u;
 

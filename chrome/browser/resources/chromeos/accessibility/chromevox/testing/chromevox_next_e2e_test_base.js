@@ -78,7 +78,7 @@ ChromeVoxNextE2ETest.prototype = {
       };
       r.addEventListener('focus', listener, true);
       r.addEventListener('loadComplete', listener, true);
-      var createParams = {active: true, url: url};
+      var createParams = {active: true, url};
       chrome.tabs.create(createParams);
     }.bind(this));
   },

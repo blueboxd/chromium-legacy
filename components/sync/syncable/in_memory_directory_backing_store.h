@@ -24,9 +24,8 @@ namespace syncable {
 // TestDirectoryBackingStore.
 class InMemoryDirectoryBackingStore : public DirectoryBackingStore {
  public:
-  explicit InMemoryDirectoryBackingStore(
-      const std::string& dir_name,
-      const base::RepeatingCallback<std::string()>& cache_guid_generator);
+  InMemoryDirectoryBackingStore(const std::string& dir_name,
+                                const std::string& cache_guid);
   DirOpenResult Load(Directory::MetahandlesMap* handles_map,
                      MetahandleSet* metahandles_to_purge,
                      Directory::KernelLoadInfo* kernel_load_info) override;

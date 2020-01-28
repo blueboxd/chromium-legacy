@@ -440,16 +440,18 @@ TEST_F(GeolocationPermissionContextTests, GeolocationEnabledDisabled) {
   histograms.ExpectTotalCount("Permissions.Action.Geolocation", 0);
 
   content::NavigationSimulator::Reload(web_contents());
-  histograms.ExpectUniqueSample("Permissions.Action.Geolocation",
-                                static_cast<int>(PermissionAction::IGNORED), 1);
+  histograms.ExpectUniqueSample(
+      "Permissions.Action.Geolocation",
+      static_cast<int>(permissions::PermissionAction::IGNORED), 1);
   MockLocationSettings::SetLocationStatus(false /* android */,
                                           true /* system */);
   MockLocationSettings::SetCanPromptForAndroidPermission(false);
   EXPECT_FALSE(HasActivePrompt());
   RequestGeolocationPermission(
       web_contents(), RequestID(0), requesting_frame, true);
-  histograms.ExpectUniqueSample("Permissions.Action.Geolocation",
-                                static_cast<int>(PermissionAction::IGNORED), 1);
+  histograms.ExpectUniqueSample(
+      "Permissions.Action.Geolocation",
+      static_cast<int>(permissions::PermissionAction::IGNORED), 1);
   EXPECT_FALSE(HasActivePrompt());
 }
 

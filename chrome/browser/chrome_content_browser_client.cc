@@ -3352,7 +3352,7 @@ void ChromeContentBrowserClient::OverrideWebkitPrefs(
   }
 
   // Apply caption style from preferences if system caption style is undefined.
-  if (!style && base::FeatureList::IsEnabled(features::kCaptionSettings)) {
+  if (!style) {
     style = pref_names_util::GetCaptionStyleFromPrefs(prefs);
 
     base::UmaHistogramBoolean("Accessibility.CaptionSettingsLoadedFromPrefs",

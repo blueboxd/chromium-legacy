@@ -592,8 +592,6 @@ component("skia") {
   if (skia_support_pdf) {
     deps += [
       "//third_party:freetype_harfbuzz",
-      "//third_party/sfntly",
-      "//third_party/sfntly:sfntly_chromium",
       "//third_party/zlib",
     ]
     sources += skia_pdf_sources

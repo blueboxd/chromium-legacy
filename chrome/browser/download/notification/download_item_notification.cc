@@ -160,6 +160,10 @@ void RecordButtonClickAction(DownloadCommands::Command command) {
       base::RecordAction(
           UserMetricsAction("DownloadNotification.Button_LearnInterrupted"));
       break;
+    case DownloadCommands::LEARN_MORE_MIXED_CONTENT:
+      base::RecordAction(
+          UserMetricsAction("DownloadNotification.Button_LearnMixedContent"));
+      break;
     case DownloadCommands::PAUSE:
       base::RecordAction(
           UserMetricsAction("DownloadNotification.Button_Pause"));
@@ -691,6 +695,7 @@ base::string16 DownloadItemNotification::GetCommandLabel(
     case DownloadCommands::ALWAYS_OPEN_TYPE:
     case DownloadCommands::PLATFORM_OPEN:
     case DownloadCommands::LEARN_MORE_INTERRUPTED:
+    case DownloadCommands::LEARN_MORE_MIXED_CONTENT:
     case DownloadCommands::DEEP_SCAN:
     case DownloadCommands::BYPASS_DEEP_SCANNING:
       // Only for menu.
@@ -702,10 +707,15 @@ base::string16 DownloadItemNotification::GetCommandLabel(
 }
 
 base::string16 DownloadItemNotification::GetWarningStatusString() const {
-  // Should only be called if IsDangerous().
-  DCHECK(item_->IsDangerous());
+  // Should only be called if IsDangerous() or IsMixedContent().
+  DCHECK(item_->IsDangerous() || item_->IsMixedContent());
   base::string16 elided_filename =
       item_->GetFileNameToReportUser().LossyDisplayName();
+  // If mixed content, that warning is shown first.
+  if (item_->IsMixedContent()) {
+    return l10n_util::GetStringFUTF16(IDS_PROMPT_DOWNLOAD_MIXED_CONTENT_BLOCKED,
+                                      elided_filename);
+  }
   switch (item_->GetDangerType()) {
     case download::DOWNLOAD_DANGER_TYPE_DANGEROUS_URL: {
       return l10n_util::GetStringUTF16(IDS_PROMPT_MALICIOUS_DOWNLOAD_URL);
@@ -798,7 +808,7 @@ base::string16 DownloadItemNotification::GetInProgressSubStatusString() const {
 }
 
 base::string16 DownloadItemNotification::GetSubStatusString() const {
-  if (item_->IsDangerous())
+  if (item_->IsMixedContent() || item_->IsDangerous())
     return GetWarningStatusString();
 
   switch (item_->GetState()) {

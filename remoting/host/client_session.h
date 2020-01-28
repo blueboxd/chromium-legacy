@@ -22,6 +22,7 @@
 #include "remoting/host/desktop_environment_options.h"
 #include "remoting/host/host_experiment_session_plugin.h"
 #include "remoting/host/host_extension_session_manager.h"
+#include "remoting/host/pointer_lock_detector.h"
 #include "remoting/host/remote_input_filter.h"
 #include "remoting/proto/action.pb.h"
 #include "remoting/protocol/clipboard_echo_filter.h"
@@ -37,8 +38,11 @@
 #include "remoting/protocol/mouse_input_filter.h"
 #include "remoting/protocol/pairing_registry.h"
 #include "remoting/protocol/video_stream.h"
+#include "third_party/webrtc/modules/desktop_capture/desktop_and_cursor_composer.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_capture_types.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_geometry.h"
+#include "third_party/webrtc/modules/desktop_capture/mouse_cursor.h"
+#include "third_party/webrtc/modules/desktop_capture/mouse_cursor_monitor.h"
 #include "ui/events/event.h"
 
 namespace remoting {
@@ -61,7 +65,9 @@ class ClientSession : public protocol::HostStub,
                       public protocol::ConnectionToClient::EventHandler,
                       public protocol::VideoStream::Observer,
                       public ClientSessionControl,
-                      public ClientSessionDetails {
+                      public ClientSessionDetails,
+                      public PointerLockDetector::EventHandler,
+                      public webrtc::MouseCursorMonitor::Callback {
  public:
   // Callback interface for passing events to the ChromotingHost.
   class EventHandler {
@@ -147,6 +153,13 @@ class ClientSession : public protocol::HostStub,
   uint32_t desktop_session_id() const override;
   ClientSessionControl* session_control() override;
 
+  // PointerLockDetector::EventHandler interface
+  void OnPointerLockChanged(bool active) override;
+
+  // webrtc::MouseCursorMonitor::Callback implementation.
+  void OnMouseCursor(webrtc::MouseCursor* mouse_cursor) override;
+  void OnMouseCursorPosition(const webrtc::DesktopVector& position) override;
+
   protocol::ConnectionToClient* connection() const { return connection_.get(); }
 
   bool is_authenticated() { return is_authenticated_; }
@@ -209,6 +222,9 @@ class ClientSession : public protocol::HostStub,
 
   // Filter used to clamp mouse events to the current display dimensions.
   protocol::MouseInputFilter mouse_clamping_filter_;
+
+  // Filter used to detect transitions into and out of client-side pointer lock.
+  PointerLockDetector pointer_lock_detector_;
 
   // Filter to used to stop clipboard items sent from the client being echoed
   // back to it.  It is the final element in the clipboard (client -> host)
@@ -299,6 +315,14 @@ class ClientSession : public protocol::HostStub,
   // Objects to monitor and send updates for mouse shape and keyboard layout.
   std::unique_ptr<MouseShapePump> mouse_shape_pump_;
   std::unique_ptr<KeyboardLayoutMonitor> keyboard_layout_monitor_;
+
+  // Raw pointer to the DesktopAndCursorComposer, owned by |video_stream_|.
+  // TODO(crbug.com/1043325): Replace this with something more robust if the
+  // relative pointer experiment is a success.
+  webrtc::DesktopAndCursorComposer* desktop_and_cursor_composer_raw_ = nullptr;
+
+  std::unique_ptr<webrtc::MouseCursor> mouse_cursor_;
+  bool pointer_lock_active_ = false;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

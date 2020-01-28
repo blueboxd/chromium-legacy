@@ -9,9 +9,9 @@
 #include <vector>
 
 #include "base/sequence_checker.h"
-#include "chrome/browser/permissions/permission_util.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "components/permissions/permission_util.h"
 #include "content/public/browser/native_file_system_permission_context.h"
 #include "third_party/blink/public/mojom/permissions/permission_status.mojom.h"
 

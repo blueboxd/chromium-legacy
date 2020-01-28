@@ -231,6 +231,11 @@ class SafeBrowsingService : public SafeBrowsingServiceInterface,
   // permanently and cannot be restarted.
   void StopOnIOThread(bool shutdown);
 
+  // Called on the IO thread when any active profile is destroyed.
+  void OnProfileWillBeDestroyedOnIOThread(
+      std::unique_ptr<network::PendingSharedURLLoaderFactory>
+          url_loader_factory);
+
   // Start up SafeBrowsing objects. This can be called at browser start, or when
   // the user checks the "Enable SafeBrowsing" option in the Advanced options
   // UI.

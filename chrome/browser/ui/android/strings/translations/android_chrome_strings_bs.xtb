@@ -279,6 +279,7 @@
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> oznaka}one{<ph name="BOOKMARKS_COUNT_MANY" /> oznaka}few{<ph name="BOOKMARKS_COUNT_MANY" /> oznake}other{<ph name="BOOKMARKS_COUNT_MANY" /> oznaka}}</translation>
 <translation id="3089395242580810162">Otvori u anonimnoj kartici</translation>
 <translation id="3123473560110926937">Blokirano na nekim web lokacijama</translation>
+<translation id="3123734510202723619">Najave</translation>
 <translation id="3137521801621304719">Napusti anonimni načina rada</translation>
 <translation id="3143515551205905069">Otkaži sinhronizaciju</translation>
 <translation id="3157842584138209013">Pogledajte količinu podataka koju ste uštedjeli koristeći dugme Više opcija</translation>
@@ -690,7 +691,6 @@ Da biste promijenili tu postavku, <ph name="BEGIN_LINK" />poništite sinkronizac
 <translation id="6201345951596836663">Link je kopiran</translation>
 <translation id="6206551242102657620">Veza je sigurna. Informacije o web lokaciji</translation>
 <translation id="6210748933810148297">Vi niste <ph name="EMAIL" />?</translation>
-<translation id="6216432067784365534"><ph name="NAME_OF_LIST_ITEM" /> opcije</translation>
 <translation id="6221633008163990886">Otključajte da izvezete lozinke</translation>
 <translation id="6232535412751077445">Ako omogućite "Bez praćenja", taj će se zahtjev slati uz vaš saobraćaj pregledanja. Efikasnost zavisi od toga reagira li web lokacija na zahtjev i na koji način se taj zahtjev tumači.
 
@@ -736,7 +736,6 @@ Naprimjer, neke web lokacije mogu reagirati na ovaj zahtjev prikazivanjem oglasa
 <translation id="6534565668554028783">Googleu treba previše vremena da odgovori</translation>
 <translation id="6538442820324228105">Preuzeto je <ph name="GBS" /> GB</translation>
 <translation id="6539092367496845964">Nešto nije uredu. Pokušajte ponovo kasnije.</translation>
-<translation id="654446541061731451">Odaberite karticu za emitiranje</translation>
 <translation id="6545017243486555795">Obriši sve podatke</translation>
 <translation id="6545864417968258051">Skeniranje Bluetootha</translation>
 <translation id="6560414384669816528">Pretražite pomoću usluge Sogou</translation>
@@ -1031,7 +1030,6 @@ Web lokacija NEĆE dobiti pristup kameri. Slike kamere ćete moći vidjeti samo 
 <translation id="868929229000858085">Pretražite kontakte</translation>
 <translation id="8698438463325761328">Ne dozvoljava da web lokacije pristupaju uređaju i podacima virtuelne realnosti</translation>
 <translation id="869891660844655955">Datum isteka</translation>
-<translation id="8719023831149562936">Trenutačnu karticu nije moguće emitirati</translation>
 <translation id="8728487861892616501">Korištenjem ove aplikacije pristajete na Chromeove <ph name="BEGIN_LINK1" />Uslove korištenja usluge<ph name="END_LINK1" /> i <ph name="BEGIN_LINK2" />Obavještenje o privatnosti<ph name="END_LINK2" />, kao i na <ph name="BEGIN_LINK3" />Obavještenje o privatnosti za Google račune kojima se upravlja preko Family Linka<ph name="END_LINK3" />.</translation>
 <translation id="8748850008226585750">Sadržaj je sakriven</translation>
 <translation id="8751914237388039244">Odaberite sliku</translation>

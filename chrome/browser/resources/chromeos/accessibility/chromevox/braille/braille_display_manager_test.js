@@ -243,7 +243,7 @@ TEST_F(
     'ChromeVoxBrailleDisplayManagerUnitTest', 'CursorAndPanning', function() {
       var text = 'This is a test string';
       function createNavBrailleWithCursor(start, end) {
-        return new NavBraille({text: text, startIndex: start, endIndex: end});
+        return new NavBraille({text, startIndex: start, endIndex: end});
       }
 
       var translatedSize = Math.floor(text.length + text.length / 2);

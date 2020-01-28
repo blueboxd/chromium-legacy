@@ -1685,6 +1685,10 @@ are declared in tools/grit/grit_rule.gni.
         desc="Message shown in the download shelf when a download is being scanned">
         <ph name="FILE_NAME">$1<ex>bla.exe</ex></ph> is being scanned.
       </message>
+      <message name="IDS_PROMPT_CONFIRM_MIXED_CONTENT_DOWNLOAD"
+        desc="Message shown to the user to validate the download when the download content is a mixed-content download.">
+        <ph name="FILE_NAME">$1<ex>bla.exe</ex></ph> can't be downloaded securely.
+      </message>
       <message name="IDS_PROMPT_DOWNLOAD_BLOCKED_TOO_LARGE"
         desc="Message shown in the download shelf when a download is blocked for being too large">
         <ph name="FILE_NAME">$1<ex>bla.exe</ex></ph> is too large for cloud scanning and has been blocked from opening.
@@ -1709,9 +1713,17 @@ are declared in tools/grit/grit_rule.gni.
         desc="Message shown in the download shelf when a download is finished being scanned, and issues were found">
         Download contains malware.
       </message>
+      <message name="IDS_PROMPT_DOWNLOAD_MIXED_CONTENT_WARNING"
+        desc="Message shown in the download shelf when a download is mixed content, and Chrome needs to show a warning.">
+        <ph name="FILE_NAME">$1<ex>bla.exe</ex></ph> can't be downloaded securely.
+      </message>
+      <message name="IDS_PROMPT_DOWNLOAD_MIXED_CONTENT_BLOCKED"
+        desc="Message shown in the download shelf when a download is mixed content, and Chrome has blocked it.">
+        <ph name="FILE_NAME">$1<ex>bla.exe</ex></ph> can't be downloaded securely.
+      </message>
       <message name="IDS_PROMPT_APP_DEEP_SCANNING"
         desc="Message shown in the download shelf when Chrome recommends uploading the file for additional scanning">
-        <ph name="FILE_NAME">$1<ex>bla.exe</ex></ph> is unknown. Scan file to minimize risk.
+        Advanced Protection recommends sending <ph name="FILE_NAME">$1<ex>bla.exe</ex></ph> to Google to check for malware.
       </message>
       <message name="IDS_BLOCK_REASON_UNCOMMON_DOWNLOAD"
          desc="Message shown to the user on chrome://downloads page to explain that this download is blocked because it is uncommon.">
@@ -1724,6 +1736,10 @@ are declared in tools/grit/grit_rule.gni.
       <message name="IDS_BLOCK_REASON_GENERIC_DOWNLOAD"
          desc="Message shown to the user on chrome://downloads page to explain that this download is blocked because it may be dangerous.">
         This type of file may harm your computer.
+      </message>
+      <message name="IDS_BLOCK_REASON_MIXED_CONTENT"
+         desc="Message shown to the user on chrome://downloads page to explain that this download is blocked because it is mixed-content.">
+        This file can't be downloaded securely.
       </message>
       <message name="IDS_DEEP_SCANNED_SAFE_DESCRIPTION"
         desc="Message shown to the user on chrome://downloads page to explain this this download was deep scanned, and found to be safe.">
@@ -2038,6 +2054,10 @@ are declared in tools/grit/grit_rule.gni.
                    desc="Download context menu: Show information about interrupted downloads">
             &amp;More information
           </message>
+          <message name="IDS_DOWNLOAD_MENU_LEARN_MORE_MIXED_CONTENT"
+                   desc="Download context menu: Show information about mixed content downloads">
+            &amp;Learn more
+          </message>
         </if>
         <if expr="use_titlecase">
            <if expr="is_macosx">
@@ -2101,6 +2121,10 @@ are declared in tools/grit/grit_rule.gni.
           <message name="IDS_DOWNLOAD_MENU_LEARN_MORE_INTERRUPTED"
                    desc="In Title Case: Download context menu: Show information about interrupted downloads">
             &amp;More Information
+          </message>
+          <message name="IDS_DOWNLOAD_MENU_LEARN_MORE_MIXED_CONTENT"
+                   desc="In Title Case: Download context menu: Show information about mixed content downloads">
+            &amp;Learn More
           </message>
         </if>  <!-- not use_titlecase -->
         <if expr="is_win">
@@ -6372,6 +6396,11 @@ the Bookmarks menu.">
         <message name="IDS_TAB_CXMENU_PLACEHOLDER_GROUP_TITLE" desc="The descriptive placeholder title of a group used when the user has not explicitly named a group. The plural value refers to the number of tabs in the group other than the one explicitly named. [ICU Syntax]">
           {NUM_OTHER_TABS, plural, =0 {"<ph name="TAB_TITLE">$1<ex>Google News</ex></ph>"} =1 {"<ph name="TAB_TITLE">$1<ex>Google News</ex></ph>" and 1 other tab} other {"<ph name="TAB_TITLE">$1<ex>Google News</ex></ph>" and # other tabs}}
         </message>
+        <message name="IDS_TAB_CXMENU_MOVE_TABS_TO_NEW_WINDOW" desc="The label of the 'Move Tabs to New Window' Tab context menu item. NOTE: If having no explicit # makes the phrasing awkward, feel free to add a # as necessary. [ICU Syntax]">
+          {NUM_TABS, plural,
+          =1 {Move tab to new window}
+          other {Move tabs to new window}}
+        </message>
       </if>
       <if expr="use_titlecase">
         <message name="IDS_TAB_CXMENU_NEWTABTORIGHT" desc="In Title Case: The label of the 'New Tab to the Right' Tab context menu item.">
@@ -6418,6 +6447,11 @@ the Bookmarks menu.">
         </message>
         <message name="IDS_TAB_CXMENU_PLACEHOLDER_GROUP_TITLE" desc="The descriptive placeholder title of a group used when the user has not explicitly named a group. The plural value refers to the number of tabs in the group other than the one explicitly named. [ICU Syntax]">
           {NUM_OTHER_TABS, plural, =0 {"<ph name="TAB_TITLE">$1<ex>Google News</ex></ph>"} =1 {"<ph name="TAB_TITLE">$1<ex>Google News</ex></ph>" and 1 Other Tab} other {"<ph name="TAB_TITLE">$1<ex>Google News</ex></ph>" and # Other Tabs}}
+        </message>
+        <message name="IDS_TAB_CXMENU_MOVE_TABS_TO_NEW_WINDOW" desc="In Title Case: The label of the 'Move Tabs to New Window' Tab context menu item. NOTE: If having no explicit # makes the phrasing awkward, feel free to add a # as necessary. [ICU Syntax]">
+          {NUM_TABS, plural,
+          =1 {Move Tab to New Window}
+          other {Move Tabs to New Window}}
         </message>
       </if>
 
@@ -10513,7 +10547,7 @@ Please help our engineers fix this problem. Tell us what happened right before y
       Scan before opening?
     </message>
     <message name="IDS_DEEP_SCANNING_INFO_DIALOG_MESSAGE" desc="Message shown in tab modal dialog when the user opens a download that recommends deep scanning">
-      The selected file is unknown and may be dangerous. Consider scanning before opening this file.
+      The selected file is unknown and may be dangerous. Advanced Protection recommends sending this file to Google to check for malware.
     </message>
     <message name="IDS_DEEP_SCANNING_INFO_DIALOG_ACCEPT_BUTTON" desc="The text on the accept button in tab modal dialog when the user opens a download that recommends deep scanning">
       Scan

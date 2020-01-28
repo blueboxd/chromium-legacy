@@ -174,6 +174,7 @@
     "includes": [1780],
   },
   "chrome/browser/resources/settings/settings_resources.grd": {
+    "includes": [1790],
     "structures": [1800],
   },
   "chrome/browser/resources/tab_strip/tab_strip_resources.grd": {

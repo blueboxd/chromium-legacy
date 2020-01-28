@@ -1319,7 +1319,8 @@ public class PaymentRequestImpl
     public void onPaymentHandlerUiClosed() {
         mPaymentUisShowStateReconciler.onPaymentHandlerUiClosed();
         mPaymentHandlerUi = null;
-        ChromeActivity.fromWebContents(mWebContents).getScrim().hideScrim(true);
+        ChromeActivity activity = ChromeActivity.fromWebContents(mWebContents);
+        if (activity != null) activity.getScrim().hideScrim(true);
     }
 
     @Override

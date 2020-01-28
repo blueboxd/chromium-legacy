@@ -9,6 +9,7 @@
 #include "base/run_loop.h"
 #include "base/strings/strcat.h"
 #include "base/test/bind_test_util.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/task_environment.h"
 #include "chrome/common/chrome_paths.h"
 #include "google_apis/google_api_keys.h"
@@ -62,6 +63,7 @@ class IceConfigFetcherTest : public testing::Test {
   network::TestURLLoaderFactory test_url_loader_factory_;
   scoped_refptr<network::SharedURLLoaderFactory> test_shared_loader_factory_;
   IceConfigFetcher ice_config_fetcher_;
+  base::HistogramTester histogram_tester_;
 };
 
 TEST_F(IceConfigFetcherTest, ResponseSuccessful) {
@@ -81,6 +83,10 @@ TEST_F(IceConfigFetcherTest, ResponseSuccessful) {
   test_url_loader_factory_.AddResponse(expected_api_url, response,
                                        net::HTTP_OK);
   run_loop.Run();
+
+  const std::string metric_name = "Sharing.WebRtc.IceConfigFetched";
+  histogram_tester_.ExpectTotalCount(metric_name, 1);
+  histogram_tester_.ExpectBucketCount(metric_name, 2, 1);
 }
 
 TEST_F(IceConfigFetcherTest, ResponseError) {
@@ -99,4 +105,8 @@ TEST_F(IceConfigFetcherTest, ResponseError) {
   test_url_loader_factory_.AddResponse(expected_api_url, "",
                                        net::HTTP_INTERNAL_SERVER_ERROR);
   run_loop.Run();
+
+  const std::string metric_name = "Sharing.WebRtc.IceConfigFetched";
+  histogram_tester_.ExpectTotalCount(metric_name, 1);
+  histogram_tester_.ExpectBucketCount(metric_name, 0, 1);
 }

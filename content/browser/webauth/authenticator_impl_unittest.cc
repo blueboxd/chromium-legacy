@@ -2668,14 +2668,10 @@ class AuthenticatorImplRequestDelegateTest : public AuthenticatorImplTest {
     timer->SetTaskRunner(task_runner);
     return ConnectToFakeAuthenticator(std::move(delegate), std::move(timer));
   }
-
- protected:
-  std::unique_ptr<AuthenticatorImpl> authenticator_impl_;
 };
 
 TEST_F(AuthenticatorImplRequestDelegateTest,
        TestRequestDelegateObservesFidoRequestHandler) {
-  EnableFeature(features::kWebAuthBle);
   auto bluetooth_values = SetUpMockBluetooth();
 
   EXPECT_CALL(*mock_adapter_, IsPresent())
@@ -2699,6 +2695,7 @@ TEST_F(AuthenticatorImplRequestDelegateTest,
   auto* const mock_delegate_ptr = mock_delegate.get();
   auto authenticator = ConstructFakeAuthenticatorWithTimer(
       std::move(mock_delegate), task_runner);
+  SetTransports(device::GetAllTransportProtocols());
 
   auto mock_ble_device = device::MockFidoDevice::MakeCtap();
   mock_ble_device->StubGetId();

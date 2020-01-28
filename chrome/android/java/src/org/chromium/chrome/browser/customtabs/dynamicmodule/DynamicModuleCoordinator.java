@@ -70,7 +70,7 @@ public class DynamicModuleCoordinator implements NativeInitObserver, Destroyable
     private final CustomTabActivityTabProvider mTabProvider;
     private final CustomTabActivityNavigationController mNavigationController;
 
-    private final ChromeActivity mActivity;
+    private final ChromeActivity<?> mActivity;
 
     private final Lazy<CustomTabTopBarDelegate> mTopBarDelegate;
     private final Lazy<CustomTabBottomBarDelegate> mBottomBarDelegate;
@@ -163,18 +163,15 @@ public class DynamicModuleCoordinator implements NativeInitObserver, Destroyable
 
     @Inject
     public DynamicModuleCoordinator(BrowserServicesIntentDataProvider intentDataProvider,
-                                    CloseButtonNavigator closeButtonNavigator,
-                                    TabObserverRegistrar tabObserverRegistrar,
-                                    ActivityLifecycleDispatcher activityLifecycleDispatcher,
-                                    CustomTabActivityNavigationController navigationController,
-                                    ActivityDelegate activityDelegate,
-                                    Lazy<CustomTabTopBarDelegate> topBarDelegate,
-                                    Lazy<CustomTabBottomBarDelegate> bottomBarDelegate,
-                                    Lazy<ChromeFullscreenManager> fullscreenManager,
-                                    Lazy<DynamicModuleToolbarController> toolbarController,
-                                    CustomTabsConnection connection, ChromeActivity activity,
-                                    CustomTabActivityTabProvider tabProvider,
-                                    DynamicModulePageLoadObserver pageLoadObserver) {
+            CloseButtonNavigator closeButtonNavigator, TabObserverRegistrar tabObserverRegistrar,
+            ActivityLifecycleDispatcher activityLifecycleDispatcher,
+            CustomTabActivityNavigationController navigationController,
+            ActivityDelegate activityDelegate, Lazy<CustomTabTopBarDelegate> topBarDelegate,
+            Lazy<CustomTabBottomBarDelegate> bottomBarDelegate,
+            Lazy<ChromeFullscreenManager> fullscreenManager,
+            Lazy<DynamicModuleToolbarController> toolbarController, CustomTabsConnection connection,
+            ChromeActivity<?> activity, CustomTabActivityTabProvider tabProvider,
+            DynamicModulePageLoadObserver pageLoadObserver) {
         mIntentDataProvider = intentDataProvider;
         mTabObserverRegistrar = tabObserverRegistrar;
         mNavigationController = navigationController;

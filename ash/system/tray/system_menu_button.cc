@@ -4,6 +4,7 @@
 
 #include "ash/system/tray/system_menu_button.h"
 
+#include "ash/public/cpp/shelf_config.h"
 #include "ash/style/ash_color_provider.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_popup_ink_drop_style.h"
@@ -36,6 +37,7 @@ SystemMenuButton::SystemMenuButton(views::ButtonListener* listener,
   TrayPopupUtils::ConfigureTrayPopupButton(this);
   TrayPopupUtils::InstallHighlightPathGenerator(
       this, TrayPopupInkDropStyle::HOST_CENTERED);
+  focus_ring()->SetColor(ShelfConfig::Get()->shelf_focus_border_color());
 }
 
 SystemMenuButton::SystemMenuButton(views::ButtonListener* listener,

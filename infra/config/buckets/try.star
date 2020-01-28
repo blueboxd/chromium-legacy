@@ -164,9 +164,13 @@ android_builder(
     name = 'android-pie-arm64-dbg',
     tryjob = tryjob(
         location_regexp = [
+            '.+/[+]/chrome/android/features/vr/.+',
             '.+/[+]/chrome/android/java/src/org/chromium/chrome/browser/vr/.+',
+            '.+/[+]/chrome/android/javatests/src/org/chromium/chrome/browser/vr/.+',
             '.+/[+]/chrome/browser/vr/.+',
             '.+/[+]/third_party/gvr-android-sdk/.+',
+            '.+/[+]/third_party/arcore-android-sdk/.+',
+            '.+/[+]/third_party/arcore-android-sdk-client/.+',
         ],
     ),
 )
@@ -463,7 +467,7 @@ blink_mac_builder(
 # Used for listing chrome trybots in chromium's commit-queue.cfg without also
 # adding them to chromium's cr-buildbucket.cfg. Note that the recipe these
 # builders run allow only known roller accounts when triggered via the CQ.
-def chrome_internal_verififer(
+def chrome_internal_verifier(
     *,
     builder):
   luci.cq_tryjob_verifier(
@@ -472,20 +476,24 @@ def chrome_internal_verififer(
       includable_only = True,
   )
 
-chrome_internal_verififer(
+chrome_internal_verifier(
     builder = 'chromeos-betty-chrome',
 )
 
-chrome_internal_verififer(
+chrome_internal_verifier(
     builder = 'chromeos-betty-pi-arc-chrome',
 )
 
-chrome_internal_verififer(
+chrome_internal_verifier(
     builder = 'chromeos-eve-compile-chrome',
 )
 
-chrome_internal_verififer(
+chrome_internal_verifier(
     builder = 'chromeos-kevin-compile-chrome',
+)
+
+chrome_internal_verifier(
+    builder = 'linux-chromeos-chrome',
 )
 
 
@@ -1375,6 +1383,7 @@ win_builder(
     os = os.WINDOWS_10,
     use_clang_coverage = True,
     goma_jobs = goma.jobs.J150,
+    ssd = True,
     tryjob = tryjob(experiment_percentage = 3),
 )
 

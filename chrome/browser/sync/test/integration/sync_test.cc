@@ -165,9 +165,15 @@ CreatePerUserTopicSubscriptionManager(
 }
 
 syncer::FCMNetworkHandler* GetFCMNetworkHandler(
-    const Profile* profile,
+    Profile* profile,
     std::map<const Profile*, syncer::FCMNetworkHandler*>*
         profile_to_fcm_network_handler_map) {
+  // Delivering FCM notifications does not work if explicitly signed-out.
+  signin::IdentityManager* identity_manager =
+      IdentityManagerFactory::GetForProfile(profile);
+  if (!identity_manager || !identity_manager->HasUnconsentedPrimaryAccount())
+    return nullptr;
+
   auto it = profile_to_fcm_network_handler_map->find(profile);
   return it != profile_to_fcm_network_handler_map->end() ? it->second : nullptr;
 }

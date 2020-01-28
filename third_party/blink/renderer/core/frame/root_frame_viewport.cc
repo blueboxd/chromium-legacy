@@ -292,13 +292,14 @@ void RootFrameViewport::ApplyPendingHistoryRestoreScrollOffset() {
   pending_view_state_.reset();
 }
 
-void RootFrameViewport::SetScrollOffset(const ScrollOffset& offset,
-                                        ScrollType scroll_type,
-                                        ScrollBehavior scroll_behavior,
-                                        ScrollCallback on_finish) {
+void RootFrameViewport::SetScrollOffset(
+    const ScrollOffset& offset,
+    ScrollType scroll_type,
+    mojom::blink::ScrollIntoViewParams::Behavior scroll_behavior,
+    ScrollCallback on_finish) {
   UpdateScrollAnimator();
 
-  if (scroll_behavior == kScrollBehaviorAuto)
+  if (scroll_behavior == mojom::blink::ScrollIntoViewParams::Behavior::kAuto)
     scroll_behavior = ScrollBehaviorStyle();
 
   if (scroll_type == kAnchoringScroll) {
@@ -307,7 +308,8 @@ void RootFrameViewport::SetScrollOffset(const ScrollOffset& offset,
     return;
   }
 
-  if (scroll_behavior == kScrollBehaviorSmooth) {
+  if (scroll_behavior ==
+      mojom::blink::ScrollIntoViewParams::Behavior::kSmooth) {
     DistributeScrollBetweenViewports(offset, scroll_type, scroll_behavior,
                                      kVisualViewport, std::move(on_finish));
     return;
@@ -318,7 +320,8 @@ void RootFrameViewport::SetScrollOffset(const ScrollOffset& offset,
                                   std::move(on_finish));
 }
 
-ScrollBehavior RootFrameViewport::ScrollBehaviorStyle() const {
+mojom::blink::ScrollIntoViewParams::Behavior
+RootFrameViewport::ScrollBehaviorStyle() const {
   return LayoutViewport().ScrollBehaviorStyle();
 }
 
@@ -368,9 +371,9 @@ PhysicalRect RootFrameViewport::ScrollIntoView(
   if (new_scroll_offset != GetScrollOffset()) {
     if (params->is_for_scroll_sequence) {
       DCHECK(type == kProgrammaticScroll || type == kUserScroll);
-      ScrollBehavior behavior = DetermineScrollBehavior(
-          mojo::ConvertTo<ScrollBehavior>(params->behavior),
-          GetLayoutBox()->StyleRef().GetScrollBehavior());
+      mojom::blink::ScrollIntoViewParams::Behavior behavior =
+          DetermineScrollBehavior(params->behavior,
+                                  GetLayoutBox()->StyleRef().ScrollBehavior());
       GetSmoothScrollSequencer()->QueueAnimation(this, new_scroll_offset,
                                                  behavior);
     } else {
@@ -388,14 +391,15 @@ PhysicalRect RootFrameViewport::ScrollIntoView(
 
 void RootFrameViewport::UpdateScrollOffset(const ScrollOffset& offset,
                                            ScrollType scroll_type) {
-  DistributeScrollBetweenViewports(offset, scroll_type, kScrollBehaviorInstant,
-                                   kVisualViewport);
+  DistributeScrollBetweenViewports(
+      offset, scroll_type,
+      mojom::blink::ScrollIntoViewParams::Behavior::kInstant, kVisualViewport);
 }
 
 void RootFrameViewport::DistributeScrollBetweenViewports(
     const ScrollOffset& offset,
     ScrollType scroll_type,
-    ScrollBehavior behavior,
+    mojom::blink::ScrollIntoViewParams::Behavior behavior,
     ViewportToScrollFirst scroll_first,
     ScrollCallback on_finish) {
   // Make sure we use the scroll offsets as reported by each viewport's

@@ -423,13 +423,12 @@ def _GetDesiredVsToolchainHashes():
   * //docs/windows_build_instructions.md mentions of VS or Windows SDK.
     Keeps the document consistent with the toolchain version.
   """
-  # VS 2019 version 16.4.3 (16.4.29709.97) with 10.0.18362 SDK,
-  # 10.0.17763 version of Debuggers,
-  # and 10.0.17134 version of d3dcompiler_47.dll,
-  # with ARM64 libraries and UWP support.
+  # VS 2019 Update 9 (16.3.29324.140) with 10.0.18362 SDK, 10.0.17763 version of
+  # Debuggers, and 10.0.17134 version of d3dcompiler_47.dll, with ARM64
+  # libraries.
   # See go/chromium-msvc-toolchain for instructions about how to update the
   # toolchain.
-  toolchain_hash = 'b92fff97f2e0323e99803f37f4b77b843bdbf69d'
+  toolchain_hash = '8f58c55897a3282ed617055775a77ec3db771b88'
   # Third parties that do not have access to the canonical toolchain can map
   # canonical toolchain version to their own toolchain versions.
   toolchain_hash_mapping_key = 'GYP_MSVS_HASH_%s' % toolchain_hash

@@ -91,11 +91,6 @@ void RemoteSafeBrowsingDatabaseManager::ClientRequest::OnRequestDone(
   db_manager_->CancelCheck(client_);
 }
 
-RealTimeUrlLookupService*
-RemoteSafeBrowsingDatabaseManager::GetRealTimeUrlLookupService() {
-  return rt_url_lookup_service_.get();
-}
-
 //
 // RemoteSafeBrowsingDatabaseManager methods
 //
@@ -344,8 +339,7 @@ void RemoteSafeBrowsingDatabaseManager::StartOnIOThread(
   VLOG(1) << "RemoteSafeBrowsingDatabaseManager starting";
   SafeBrowsingDatabaseManager::StartOnIOThread(url_loader_factory, config);
 
-  rt_url_lookup_service_ =
-      std::make_unique<RealTimeUrlLookupService>(url_loader_factory);
+  SetupRealTimeUrlLookupService(url_loader_factory);
 
   enabled_ = true;
 }
@@ -364,7 +358,7 @@ void RemoteSafeBrowsingDatabaseManager::StopOnIOThread(bool shutdown) {
   }
   enabled_ = false;
 
-  rt_url_lookup_service_.reset();
+  ResetRealTimeUrlLookupService();
 
   SafeBrowsingDatabaseManager::StopOnIOThread(shutdown);
 }

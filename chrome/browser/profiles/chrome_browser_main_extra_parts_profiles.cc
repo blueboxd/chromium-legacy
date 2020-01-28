@@ -32,6 +32,7 @@
 #include "chrome/browser/favicon/history_ui_favicon_request_handler_factory.h"
 #include "chrome/browser/feature_engagement/tracker_factory.h"
 #include "chrome/browser/google/google_search_domain_mixing_metrics_emitter_factory.h"
+#include "chrome/browser/history/domain_diversity_reporter_factory.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/history/top_sites_factory.h"
 #include "chrome/browser/invalidation/deprecated_profile_invalidation_provider_factory.h"
@@ -236,6 +237,7 @@ void ChromeBrowserMainExtraPartsProfiles::
   ContentSuggestionsServiceFactory::GetInstance();
   CookieSettingsFactory::GetInstance();
   NotifierStateTrackerFactory::GetInstance();
+  DomainDiversityReporterFactory::GetInstance();
   dom_distiller::DomDistillerServiceFactory::GetInstance();
   DownloadCoreServiceFactory::GetInstance();
   DownloadServiceFactory::GetInstance();

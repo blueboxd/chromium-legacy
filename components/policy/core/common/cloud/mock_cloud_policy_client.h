@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/policy/core/common/cloud/cloud_policy_client.h"
+#include "components/policy/core/common/cloud/device_management_service.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace network {
@@ -30,6 +31,10 @@ class MockCloudPolicyClient : public CloudPolicyClient {
   MockCloudPolicyClient();
   explicit MockCloudPolicyClient(
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
+  explicit MockCloudPolicyClient(DeviceManagementService* service);
+  MockCloudPolicyClient(
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+      DeviceManagementService* service);
   ~MockCloudPolicyClient() override;
 
   MOCK_METHOD3(SetupRegistration,

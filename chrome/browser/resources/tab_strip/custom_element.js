@@ -14,4 +14,20 @@ export class CustomElement extends HTMLElement {
     template.innerHTML = this.constructor.template || '';
     this.shadowRoot.appendChild(template.content.cloneNode(true));
   }
+
+  /**
+   * @param {string} query
+   * @return {?Element}
+   */
+  $(query) {
+    return this.shadowRoot.querySelector(query);
+  }
+
+  /**
+   * @param {string} query
+   * @return {!NodeList<!Element>}
+   */
+  $all(query) {
+    return this.shadowRoot.querySelectorAll(query);
+  }
 }

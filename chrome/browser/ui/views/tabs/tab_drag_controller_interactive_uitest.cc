@@ -1243,6 +1243,35 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTestWithTabGroupsEnabled,
               testing::ElementsAre(0, 1));
 }
 
+// Creates a browser with four tabs. The first tab is pinned, and the last
+// three belong in the same Tab Group. Dragging the pinned tab to the middle
+// of the group will not result in the pinned tab getting grouped or moving
+// into the group.
+IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTestWithTabGroupsEnabled,
+                       DragPinnedTabDoesNotGroup) {
+  TabStrip* tab_strip = GetTabStripForBrowser(browser());
+  TabStripModel* model = browser()->tab_strip_model();
+
+  AddTabsAndResetBrowser(browser(), 3);
+  model->SetTabPinned(0, true);
+  tab_groups::TabGroupId group = model->AddToNewGroup({1, 2, 3});
+  StopAnimating(tab_strip);
+
+  ASSERT_EQ(4, model->count());
+  ASSERT_EQ(3u, model->group_model()->GetTabGroup(group)->ListTabs().size());
+
+  ASSERT_TRUE(PressInput(GetCenterInScreenCoordinates(tab_strip->tab_at(0))));
+  ASSERT_TRUE(DragInputTo(GetCenterInScreenCoordinates(tab_strip->tab_at(2))));
+  ASSERT_TRUE(ReleaseInput());
+  StopAnimating(tab_strip);
+
+  // The pinned tab should not have moved or joined the group.
+  EXPECT_EQ("0 1 2 3", IDString(model));
+  EXPECT_THAT(model->group_model()->GetTabGroup(group)->ListTabs(),
+              testing::ElementsAre(1, 2, 3));
+  EXPECT_EQ(base::nullopt, model->GetTabGroupForTab(0));
+}
+
 // Drags a tab within the window (without dragging the whole window) then
 // pressing a key ends the drag.
 IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
@@ -1820,8 +1849,14 @@ void CloseTabsWhileDetachedStep2(const BrowserList* browser_list) {
 
 // Selects 2 tabs out of 4, drags them out and closes the new browser window
 // while dragging tabs.
+#if (defined(OS_WIN) || defined(OS_MACOSX))
+// TODO(crbug.com/1031801) Test is flaky on Windows and Mac.
+#define MAYBE_DeleteTabsWhileDetached DISABLED_DeleteTabsWhileDetached
+#else
+#define MAYBE_DeleteTabsWhileDetached DeleteTabsWhileDetached
+#endif
 IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
-                       DeleteTabsWhileDetached) {
+                       MAYBE_DeleteTabsWhileDetached) {
   AddTabsAndResetBrowser(browser(), 3);
   TabStrip* tab_strip = GetTabStripForBrowser(browser());
   EXPECT_EQ("0 1 2 3", IDString(browser()->tab_strip_model()));

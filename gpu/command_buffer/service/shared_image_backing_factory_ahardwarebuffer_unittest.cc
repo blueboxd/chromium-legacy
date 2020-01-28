@@ -65,7 +65,7 @@ class SharedImageBackingFactoryAHBTest : public testing::Test {
     context_state_->InitializeGL(GpuPreferences(), std::move(feature_info));
 
     backing_factory_ = std::make_unique<SharedImageBackingFactoryAHB>(
-        workarounds, GpuFeatureInfo());
+        workarounds, GpuFeatureInfo(), context_state_.get());
 
     memory_type_tracker_ = std::make_unique<MemoryTypeTracker>(nullptr);
     shared_image_representation_factory_ =

@@ -18,7 +18,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
-#include "chrome/browser/web_applications/components/web_app_helpers.h"
+#include "chrome/browser/web_applications/components/web_app_id.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/services/app_service/public/cpp/instance_update.h"
 #include "chrome/services/app_service/public/mojom/types.mojom.h"

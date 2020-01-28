@@ -37,7 +37,7 @@ class PrivilegedHostDeviceSetterImpl : public PrivilegedHostDeviceSetterBase {
       MultiDeviceSetupBase* multidevice_setup);
 
   // mojom::PrivilegedHostDeviceSetter:
-  void SetHostDevice(const std::string& host_device_id,
+  void SetHostDevice(const std::string& host_instance_id_or_legacy_device_id,
                      SetHostDeviceCallback callback) override;
 
   MultiDeviceSetupBase* multidevice_setup_;

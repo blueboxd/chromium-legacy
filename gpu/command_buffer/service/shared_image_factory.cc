@@ -98,7 +98,7 @@ SharedImageFactory::SharedImageFactory(
 #elif defined(OS_ANDROID) && BUILDFLAG(ENABLE_VULKAN)
   // For Android
   interop_backing_factory_ = std::make_unique<SharedImageBackingFactoryAHB>(
-      workarounds, gpu_feature_info);
+      workarounds, gpu_feature_info, context_state);
 #elif defined(OS_MACOSX)
   // OSX
   DCHECK(!using_vulkan_);

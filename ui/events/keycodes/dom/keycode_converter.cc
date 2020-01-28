@@ -33,12 +33,10 @@ namespace {
 #define DOM_CODE(usb, evdev, xkb, win, mac, code, id) \
   { usb, 0, code }
 #endif
-#define DOM_CODE_DECLARATION const KeycodeMapEntry usb_keycode_map[] =
+#define DOM_CODE_DECLARATION const KeycodeMapEntry kDomCodeMappings[] =
 #include "ui/events/keycodes/dom/dom_code_data.inc"
 #undef DOM_CODE
 #undef DOM_CODE_DECLARATION
-
-const size_t kKeycodeMapEntries = base::size(usb_keycode_map);
 
 // Table of DomKey enum values and DOM Level 3 |key| strings.
 struct DomKeyMapEntry {
@@ -46,7 +44,7 @@ struct DomKeyMapEntry {
   const char* string;
 };
 
-#define DOM_KEY_MAP_DECLARATION const DomKeyMapEntry dom_key_map[] =
+#define DOM_KEY_MAP_DECLARATION const DomKeyMapEntry kDomKeyMappings[] =
 #define DOM_KEY_UNI(key, id, value) {DomKey::id, key}
 #define DOM_KEY_MAP(key, id, value) {DomKey::id, key}
 #include "ui/events/keycodes/dom/dom_key_data.inc"
@@ -54,30 +52,28 @@ struct DomKeyMapEntry {
 #undef DOM_KEY_MAP
 #undef DOM_KEY_UNI
 
-const size_t kDomKeyMapEntries = base::size(dom_key_map);
-
 }  // namespace
 
 // static
 size_t KeycodeConverter::NumKeycodeMapEntriesForTest() {
-  return kKeycodeMapEntries;
+  return base::size(kDomCodeMappings);
 }
 
 // static
 const KeycodeMapEntry* KeycodeConverter::GetKeycodeMapForTest() {
-  return &usb_keycode_map[0];
+  return &kDomCodeMappings[0];
 }
 
 // static
 const char* KeycodeConverter::DomKeyStringForTest(size_t index) {
-  if (index >= kDomKeyMapEntries)
+  if (index >= base::size(kDomKeyMappings))
     return nullptr;
-  return dom_key_map[index].string;
+  return kDomKeyMappings[index].string;
 }
 
 // static
 int KeycodeConverter::InvalidNativeKeycode() {
-  return usb_keycode_map[0].native_keycode;
+  return kDomCodeMappings[0].native_keycode;
 }
 
 // TODO(zijiehe): Most of the following functions can be optimized by using
@@ -85,11 +81,10 @@ int KeycodeConverter::InvalidNativeKeycode() {
 
 // static
 DomCode KeycodeConverter::NativeKeycodeToDomCode(int native_keycode) {
-  for (size_t i = 0; i < kKeycodeMapEntries; ++i) {
-    if (usb_keycode_map[i].native_keycode == native_keycode) {
-      if (usb_keycode_map[i].code != NULL)
-        return static_cast<DomCode>(usb_keycode_map[i].usb_keycode);
-      break;
+  for (auto& mapping : kDomCodeMappings) {
+    if (mapping.native_keycode == native_keycode) {
+      if (mapping.code != nullptr)
+        return static_cast<DomCode>(mapping.usb_keycode);
     }
   }
   return DomCode::NONE;
@@ -104,9 +99,9 @@ int KeycodeConverter::DomCodeToNativeKeycode(DomCode code) {
 DomCode KeycodeConverter::CodeStringToDomCode(const std::string& code) {
   if (code.empty())
     return DomCode::NONE;
-  for (size_t i = 0; i < kKeycodeMapEntries; ++i) {
-    if (usb_keycode_map[i].code && code == usb_keycode_map[i].code) {
-      return static_cast<DomCode>(usb_keycode_map[i].usb_keycode);
+  for (auto& mapping : kDomCodeMappings) {
+    if (mapping.code && code == mapping.code) {
+      return static_cast<DomCode>(mapping.usb_keycode);
     }
   }
   LOG(WARNING) << "unrecognized code string '" << code << "'";
@@ -115,10 +110,10 @@ DomCode KeycodeConverter::CodeStringToDomCode(const std::string& code) {
 
 // static
 const char* KeycodeConverter::DomCodeToCodeString(DomCode dom_code) {
-  for (size_t i = 0; i < kKeycodeMapEntries; ++i) {
-    if (usb_keycode_map[i].usb_keycode == static_cast<uint32_t>(dom_code)) {
-      if (usb_keycode_map[i].code)
-        return usb_keycode_map[i].code;
+  for (auto& mapping : kDomCodeMappings) {
+    if (mapping.usb_keycode == static_cast<uint32_t>(dom_code)) {
+      if (mapping.code)
+        return mapping.code;
       break;
     }
   }
@@ -179,9 +174,9 @@ DomKey KeycodeConverter::KeyStringToDomKey(const std::string& key) {
   if (key.empty())
     return DomKey::NONE;
   // Check for standard key names.
-  for (size_t i = 0; i < kDomKeyMapEntries; ++i) {
-    if (dom_key_map[i].string && key == dom_key_map[i].string) {
-      return dom_key_map[i].dom_key;
+  for (auto& mapping : kDomKeyMappings) {
+    if (mapping.string && key == mapping.string) {
+      return mapping.dom_key;
     }
   }
   if (key == "Dead") {
@@ -211,10 +206,10 @@ std::string KeycodeConverter::DomKeyToKeyString(DomKey dom_key) {
     // KeyboardEvent represents the combining character separately.
     return "Dead";
   }
-  for (size_t i = 0; i < kDomKeyMapEntries; ++i) {
-    if (dom_key_map[i].dom_key == dom_key) {
-      if (dom_key_map[i].string)
-        return dom_key_map[i].string;
+  for (auto& mapping : kDomKeyMappings) {
+    if (mapping.dom_key == dom_key) {
+      if (mapping.string)
+        return mapping.string;
       break;
     }
   }
@@ -257,7 +252,7 @@ bool KeycodeConverter::IsDomKeyForModifier(DomKey dom_key) {
 
 // static
 uint32_t KeycodeConverter::InvalidUsbKeycode() {
-  return usb_keycode_map[0].usb_keycode;
+  return kDomCodeMappings[0].usb_keycode;
 }
 
 // static
@@ -270,26 +265,26 @@ int KeycodeConverter::UsbKeycodeToNativeKeycode(uint32_t usb_keycode) {
     usb_keycode = 0x070068; // F13.
 #endif
 
-  for (size_t i = 0; i < kKeycodeMapEntries; ++i) {
-    if (usb_keycode_map[i].usb_keycode == usb_keycode)
-      return usb_keycode_map[i].native_keycode;
+  for (auto& mapping : kDomCodeMappings) {
+    if (mapping.usb_keycode == usb_keycode)
+      return mapping.native_keycode;
   }
   return InvalidNativeKeycode();
 }
 
 // static
 uint32_t KeycodeConverter::NativeKeycodeToUsbKeycode(int native_keycode) {
-  for (size_t i = 0; i < kKeycodeMapEntries; ++i) {
-    if (usb_keycode_map[i].native_keycode == native_keycode)
-      return usb_keycode_map[i].usb_keycode;
+  for (auto& mapping : kDomCodeMappings) {
+    if (mapping.native_keycode == native_keycode)
+      return mapping.usb_keycode;
   }
   return InvalidUsbKeycode();
 }
 
 // static
 DomCode KeycodeConverter::UsbKeycodeToDomCode(uint32_t usb_keycode) {
-  for (size_t i = 0; i < kKeycodeMapEntries; ++i) {
-    if (usb_keycode_map[i].usb_keycode == usb_keycode)
+  for (auto& mapping : kDomCodeMappings) {
+    if (mapping.usb_keycode == usb_keycode)
       return static_cast<DomCode>(usb_keycode);
   }
   return DomCode::NONE;
@@ -297,9 +292,9 @@ DomCode KeycodeConverter::UsbKeycodeToDomCode(uint32_t usb_keycode) {
 
 // static
 uint32_t KeycodeConverter::DomCodeToUsbKeycode(DomCode dom_code) {
-  for (size_t i = 0; i < kKeycodeMapEntries; ++i) {
-    if (usb_keycode_map[i].usb_keycode == static_cast<uint32_t>(dom_code))
-      return usb_keycode_map[i].usb_keycode;
+  for (auto& mapping : kDomCodeMappings) {
+    if (mapping.usb_keycode == static_cast<uint32_t>(dom_code))
+      return mapping.usb_keycode;
   }
   return InvalidUsbKeycode();
 }
@@ -309,9 +304,9 @@ uint32_t KeycodeConverter::CodeStringToUsbKeycode(const std::string& code) {
   if (code.empty())
     return InvalidUsbKeycode();
 
-  for (size_t i = 0; i < kKeycodeMapEntries; ++i) {
-    if (usb_keycode_map[i].code && code == usb_keycode_map[i].code) {
-      return usb_keycode_map[i].usb_keycode;
+  for (auto& mapping : kDomCodeMappings) {
+    if (mapping.code && code == mapping.code) {
+      return mapping.usb_keycode;
     }
   }
   return InvalidUsbKeycode();

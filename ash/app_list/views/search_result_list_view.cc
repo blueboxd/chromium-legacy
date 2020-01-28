@@ -145,24 +145,6 @@ void LogFileImpressions(SearchResultType result_type) {
                             result_type, SEARCH_RESULT_TYPE_BOUNDARY);
 }
 
-void LogDriveQuickAccessResultsPresent(
-    const std::vector<SearchResult*>& results) {
-  DriveQuickAccessResultPresence value =
-      DriveQuickAccessResultPresence::kAbsent;
-  for (size_t i = 0; i < results.size(); ++i) {
-    if (!IsDriveQuickAccess(*results[i]))
-      continue;
-    if (i < AppListConfig::instance().max_search_result_list_items()) {
-      value = DriveQuickAccessResultPresence::kPresentAndShown;
-    } else {
-      value = DriveQuickAccessResultPresence::kPresentAndNotShown;
-    }
-    break;
-  }
-
-  UMA_HISTOGRAM_ENUMERATION(kDriveQuickAccessResultPresence, value);
-}
-
 }  // namespace
 
 SearchResultListView::SearchResultListView(AppListMainView* main_view,
@@ -228,19 +210,6 @@ int SearchResultListView::DoUpdate() {
       SearchModel::FilterSearchResultsByDisplayType(
           results(), SearchResultDisplayType::kList, /*excludes=*/{},
           results_container_->children().size());
-
-  // TODO(crbug.com/1011221): This must be removed before M80 stable, as it is
-  // expensive and may introduce UI jank.
-  if (view_delegate_->GetSearchModel()->search_box()->text().empty()) {
-    // We need to get more items than are displayed here in order to see whether
-    // there are Drive QuickAccess results present in the list but not
-    // displayed. 20 items is the maximum number that can exist for zero state:
-    // 5 recent queries, 5 Driive QuickAccess files, and 10 local files. This is
-    // too expensive to run on stable, as it may introduce UI jank.
-    LogDriveQuickAccessResultsPresent(
-        SearchModel::FilterSearchResultsByDisplayType(
-            results(), SearchResultDisplayType::kList, /*excludes=*/{}, 20));
-  }
 
   const size_t display_size = display_results.size();
   std::vector<const gfx::VectorIcon*> assistant_item_icons(display_size,

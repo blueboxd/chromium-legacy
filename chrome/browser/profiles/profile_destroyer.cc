@@ -161,13 +161,11 @@ ProfileDestroyer::ProfileDestroyer(Profile* const profile, HostSet* hosts)
 }
 
 ProfileDestroyer::~ProfileDestroyer() {
-#ifdef NDEBUG
   // Don't wait for pending registrations, if any, these hosts are buggy.
   // Note: this can happen, but if so, it's better to crash here than wait
   // for the host to dereference a deleted Profile. http://crbug.com/248625
   CHECK_EQ(0U, num_hosts_) << "Some render process hosts were not "
                            << "destroyed early enough!";
-#endif  // NDEBUG
   DCHECK(pending_destroyers_ != NULL);
   auto iter = pending_destroyers_->find(this);
   DCHECK(iter != pending_destroyers_->end());

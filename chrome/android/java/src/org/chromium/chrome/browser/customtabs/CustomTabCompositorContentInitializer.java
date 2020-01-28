@@ -26,17 +26,15 @@ import dagger.Lazy;
 public class CustomTabCompositorContentInitializer implements NativeInitObserver {
     private final ActivityLifecycleDispatcher mLifecycleDispatcher;
 
-    private final ChromeActivity mActivity;
+    private final ChromeActivity<?> mActivity;
     private final Lazy<CompositorViewHolder> mCompositorViewHolder;
 
     private final List<Callback<LayoutManager>> mListeners = new ArrayList<>();
     private boolean mInitialized;
 
     @Inject
-    public CustomTabCompositorContentInitializer(
-            ActivityLifecycleDispatcher lifecycleDispatcher,
-            ChromeActivity activity,
-            Lazy<CompositorViewHolder> compositorViewHolder) {
+    public CustomTabCompositorContentInitializer(ActivityLifecycleDispatcher lifecycleDispatcher,
+            ChromeActivity<?> activity, Lazy<CompositorViewHolder> compositorViewHolder) {
         mLifecycleDispatcher = lifecycleDispatcher;
         mActivity = activity;
         mCompositorViewHolder = compositorViewHolder;

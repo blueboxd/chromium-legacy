@@ -9,7 +9,6 @@ import static android.app.Service.STOP_FOREGROUND_REMOVE;
 
 import static junit.framework.Assert.assertEquals;
 
-import static org.chromium.chrome.browser.download.DownloadForegroundService.clearPersistedNotificationId;
 import static org.chromium.chrome.browser.download.DownloadSnackbarController.INVALID_NOTIFICATION_ID;
 
 import android.app.Notification;
@@ -18,7 +17,6 @@ import android.support.v4.app.ServiceCompat;
 
 import androidx.annotation.IntDef;
 
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -106,7 +104,6 @@ public class DownloadForegroundServiceTest {
     @Before
     public void setUp() {
         mForegroundService = new MockDownloadForegroundService();
-        clearPersistedNotificationId();
         mNotification =
                 NotificationBuilderFactory
                         .createChromeNotificationBuilder(
@@ -115,11 +112,6 @@ public class DownloadForegroundServiceTest {
                         .setContentTitle("fakeContentTitle")
                         .setContentText("fakeContentText")
                         .build();
-    }
-
-    @After
-    public void tearDown() {
-        clearPersistedNotificationId();
     }
 
     /**

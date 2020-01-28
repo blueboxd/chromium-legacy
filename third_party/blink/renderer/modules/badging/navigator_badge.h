@@ -7,12 +7,14 @@
 
 #include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/mojom/badging/badging.mojom-blink.h"
-#include "third_party/blink/renderer/core/frame/navigator.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/platform/supplementable.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
+class Navigator;
 class ScriptPromise;
+class WorkerNavigator;
 
 class NavigatorBadge final : public GarbageCollected<NavigatorBadge>,
                              public Supplement<ExecutionContext> {
@@ -26,12 +28,24 @@ class NavigatorBadge final : public GarbageCollected<NavigatorBadge>,
 
   // Badge IDL interface.
   static ScriptPromise setAppBadge(ScriptState*, Navigator&);
+  static ScriptPromise setAppBadge(ScriptState*, WorkerNavigator&);
+
   static ScriptPromise setAppBadge(ScriptState*, Navigator&, uint64_t content);
+  static ScriptPromise setAppBadge(ScriptState*,
+                                   WorkerNavigator&,
+                                   uint64_t content);
+
   static ScriptPromise clearAppBadge(ScriptState*, Navigator&);
+  static ScriptPromise clearAppBadge(ScriptState*, WorkerNavigator&);
 
   void Trace(blink::Visitor*) override;
 
  private:
+  static ScriptPromise SetAppBadgeHelper(
+      ScriptState* script_state,
+      mojom::blink::BadgeValuePtr badge_value);
+  static ScriptPromise ClearAppBadgeHelper(ScriptState* script_state);
+
   mojo::Remote<blink::mojom::blink::BadgeService> badge_service_;
 };
 

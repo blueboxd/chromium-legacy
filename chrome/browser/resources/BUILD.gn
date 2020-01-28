@@ -202,6 +202,11 @@ if (!is_android) {
   }
 
   grit("settings_resources") {
+    grit_flags = [
+      "-E",
+      "root_gen_dir=" + rebase_path(root_gen_dir, root_build_dir),
+    ]
+
     if (optimize_webui) {
       source = "settings/settings_resources_vulcanized.grd"
 
@@ -209,10 +214,6 @@ if (!is_android) {
       source_is_generated = true
 
       deps = [ "//chrome/browser/resources/settings:build" ]
-      grit_flags = [
-        "-E",
-        "root_gen_dir=" + rebase_path(root_gen_dir, root_build_dir),
-      ]
     } else {
       source = "settings/settings_resources.grd"
     }

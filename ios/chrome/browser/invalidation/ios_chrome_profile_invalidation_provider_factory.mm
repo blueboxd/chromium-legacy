@@ -39,7 +39,7 @@ using invalidation::ProfileInvalidationProvider;
 // static
 invalidation::ProfileInvalidationProvider*
 IOSChromeProfileInvalidationProviderFactory::GetForBrowserState(
-    ios::ChromeBrowserState* browser_state) {
+    ChromeBrowserState* browser_state) {
   return static_cast<ProfileInvalidationProvider*>(
       GetInstance()->GetServiceForBrowserState(browser_state, true));
 }
@@ -68,8 +68,8 @@ IOSChromeProfileInvalidationProviderFactory::
 std::unique_ptr<KeyedService>
 IOSChromeProfileInvalidationProviderFactory::BuildServiceInstanceFor(
     web::BrowserState* context) const {
-  ios::ChromeBrowserState* browser_state =
-      ios::ChromeBrowserState::FromBrowserState(context);
+  ChromeBrowserState* browser_state =
+      ChromeBrowserState::FromBrowserState(context);
 
   auto identity_provider =
       std::make_unique<invalidation::ProfileIdentityProvider>(

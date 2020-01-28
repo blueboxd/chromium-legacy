@@ -211,7 +211,6 @@
 <translation id="8941642502866065432">Δεν είναι δυνατή η ενημέρωση του Chromium</translation>
 <translation id="8974095189086268230">Το Chromium OS υλοποιήθηκε με τη βοήθεια επιπλέον <ph name="BEGIN_LINK_CROS_OSS" />λογισμικού ανοιχτού κώδικα<ph name="END_LINK_CROS_OSS" />.</translation>
 <translation id="9019929317751753759">Για να κάνουμε το Chromium πιο ασφαλές, απενεργοποιήσαμε τις ακόλουθες επεκτάσεις που δεν αναφέρονται στο <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> και ενδέχεται να έχουν προστεθεί εν αγνοία σας.</translation>
-<translation id="9022552996538154597">Σύνδεση στο Chromium</translation>
 <translation id="9089354809943900324">Το Chromium δεν είναι ενημερωμένο</translation>
 <translation id="9093206154853821181">{0,plural, =1{Η επανεκκίνηση του Chromium θα γίνει σε μία ώρα}other{Η επανεκκίνηση του Chromium θα γίνει σε # ώρες}}</translation>
 <translation id="91086099826398415">Άνοιγμα Συνδέσμου σε Νέα καρτέ&amp;λα Chromium</translation>

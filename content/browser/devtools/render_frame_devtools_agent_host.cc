@@ -285,7 +285,7 @@ bool RenderFrameDevToolsAgentHost::AttachSession(DevToolsSession* session) {
   session->AddHandler(std::make_unique<protocol::BackgroundServiceHandler>());
   session->AddHandler(std::make_unique<protocol::BrowserHandler>());
   session->AddHandler(std::make_unique<protocol::DOMHandler>(
-      session->client()->MayReadLocalFiles()));
+      session->GetClient()->MayReadLocalFiles()));
   session->AddHandler(std::move(emulation_handler));
   auto input_handler = std::make_unique<protocol::InputHandler>();
   input_handler->OnPageScaleFactorChanged(page_scale_factor_);
@@ -315,13 +315,13 @@ bool RenderFrameDevToolsAgentHost::AttachSession(DevToolsSession* session) {
   session->AddHandler(std::make_unique<protocol::ServiceWorkerHandler>());
   session->AddHandler(std::make_unique<protocol::StorageHandler>());
   session->AddHandler(std::make_unique<protocol::TargetHandler>(
-      session->client()->MayAttachToBrowser()
+      session->GetClient()->MayAttachToBrowser()
           ? protocol::TargetHandler::AccessMode::kRegular
           : protocol::TargetHandler::AccessMode::kAutoAttachOnly,
       GetId(), GetRendererChannel(), session->GetRootSession()));
   session->AddHandler(std::make_unique<protocol::PageHandler>(
-      emulation_handler_ptr, session->client()->MayWriteLocalFiles(),
-      session->client()->MayReadLocalFiles()));
+      emulation_handler_ptr, session->GetClient()->MayWriteLocalFiles(),
+      session->GetClient()->MayReadLocalFiles()));
   session->AddHandler(std::make_unique<protocol::SecurityHandler>());
   if (!frame_tree_node_ || !frame_tree_node_->parent()) {
     session->AddHandler(std::make_unique<protocol::TracingHandler>(
@@ -608,7 +608,7 @@ void RenderFrameDevToolsAgentHost::OnNavigationRequestWillBeSent(
   std::vector<DevToolsSession*> restricted_sessions;
   bool is_webui = frame_host_ && frame_host_->web_ui();
   for (DevToolsSession* session : sessions()) {
-    if (!session->client()->MayAttachToURL(url, is_webui))
+    if (!session->GetClient()->MayAttachToURL(url, is_webui))
       restricted_sessions.push_back(session);
   }
   if (!restricted_sessions.empty())
@@ -815,7 +815,7 @@ bool RenderFrameDevToolsAgentHost::ShouldAllowSession(
     return false;
   }
   // Note this may be called before navigation is committed.
-  return session->client()->MayAttachToURL(
+  return session->GetClient()->MayAttachToURL(
       frame_host_->GetSiteInstance()->GetSiteURL(), frame_host_->web_ui());
 }
 

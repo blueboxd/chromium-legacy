@@ -106,7 +106,7 @@ ColorTransform ContrastInvert(ColorTransform transform) {
     const SkColor far_endpoint =
         color_utils::GetColorWithMaxContrast(foreground);
     const SkColor near_endpoint =
-        color_utils::GetColorWithMaxContrast(far_endpoint);
+        color_utils::GetEndpointColorWithMinContrast(foreground);
     const float contrast_ratio =
         color_utils::GetContrastRatio(foreground, far_endpoint);
     return color_utils::BlendForMinContrast(foreground, near_endpoint,

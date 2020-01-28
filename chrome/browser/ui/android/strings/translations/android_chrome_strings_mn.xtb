@@ -134,6 +134,7 @@
 <translation id="1994173015038366702">Сайтын URL</translation>
 <translation id="2000419248597011803">Таны өгөгдмөл хайлтын системд хаяг оруулах хэсэг, хайх хэсгийн зарим күүки болон хайлтыг илгээдэг</translation>
 <translation id="2002537628803770967">Google Pay-г ашиглан кредит карт болон хаягийг импортлох</translation>
+<translation id="2012973609889389923">Хурдан ачаалах сайт</translation>
 <translation id="2013642289801508067">{FILE_COUNT,plural, =1{# Файл}other{# Файл}}</translation>
 <translation id="2017836877785168846">Түүх, хаяг оруулах хэсгийн автомат гүйцээлтийг устгана.</translation>
 <translation id="2021896219286479412">Бүтэн дэлгэцийн сайтын хяналт</translation>
@@ -306,6 +307,7 @@
 <translation id="3298243779924642547">Энгийн</translation>
 <translation id="3303414029551471755">Контентыг татаж авах үйлдлийг эхлүүлэх үү?</translation>
 <translation id="3306398118552023113">Энэ апп Chrome-д ажиллаж байна</translation>
+<translation id="3312292613668865961">Сайтуудад таны виртуал бодит байдлын төхөөрөмж болон өгөгдөлд хандахыг зөвшөөрөхийн өмнө асуух (санал болгосон)</translation>
 <translation id="3315103659806849044">Та одоогоор Синк болон Google-н үйлчилгээний тохиргоогоо өөрчилж байна. Синкийг асааж дуусгахын тулд дэлгэцийн доод хэсгийн ойролцоо байгаа Зөвшөөрөх товчлуурыг товшино уу. Дээш шилжих</translation>
 <translation id="3328801116991980348">Сайтын мэдээлэл</translation>
 <translation id="3333961966071413176">Бүх харилцагч</translation>
@@ -510,6 +512,7 @@ Tаны Google бүртгэл <ph name="BEGIN_LINK" />history.google.com<ph name
 <translation id="4915549754973153784">Төхөөрөмж хайх үед <ph name="BEGIN_LINK" />тусламж авах<ph name="END_LINK" />...</translation>
 <translation id="4921180162323349895">{FILE_COUNT,plural, =1{# Хуудас}other{# Хуудас}}</translation>
 <translation id="4932247056774066048">Та <ph name="DOMAIN_NAME" />-с удирдаж буй бүртгэлээс гарч байгаа тул таны Chrome-н өгөгдлийг энэ төхөөрөмжөөс устгана. Энэ нь таны Google бүртгэлд үлдэнэ.</translation>
+<translation id="4935305910887312910">Сайтуудад камерын байршлыг хүлээн авах эсвэл таны өрөөний төлөвлөгөөг буулгахыг зөвшөөрөхийн өмнө асуух (санал болгосон)</translation>
 <translation id="4943703118917034429">Виртуал бодит байдал</translation>
 <translation id="4943872375798546930">Илэрц байхгүй байна</translation>
 <translation id="4958708863221495346"><ph name="URL_OF_THE_CURRENT_TAB" /> таны дэлгэцийг хуваалцаж байна</translation>
@@ -686,7 +689,6 @@ Tаны Google бүртгэл <ph name="BEGIN_LINK" />history.google.com<ph name
 <translation id="6201345951596836663">Холбоосыг хууллаа</translation>
 <translation id="6206551242102657620">Холболт аюулгүй байна. Сайтын мэдээлэл</translation>
 <translation id="6210748933810148297"><ph name="EMAIL" /> биш үү?</translation>
-<translation id="6216432067784365534"><ph name="NAME_OF_LIST_ITEM" /> Сонголт</translation>
 <translation id="6221633008163990886">Нууц үгээ экспортлох бол түгжээг тайлна уу</translation>
 <translation id="6232535412751077445">"Бүү дага" тохиргоог идэвхжүүлснээр тухайн хүсэлтийг таны хайлтын хэсэгт хадгална. Гарах үр дүн нь вэб хуудаснаас тухайн хүсэлтэд хариу өгч байгаа эсэх, тухайн хүсэлтийг хэрхэн тайлбарлаж байна гэдгээс хамаарна.
 
@@ -732,7 +734,6 @@ Tаны Google бүртгэл <ph name="BEGIN_LINK" />history.google.com<ph name
 <translation id="6534565668554028783">Google хариу өгөхгүй хэтэрхий удсан</translation>
 <translation id="6538442820324228105"><ph name="GBS" /> ГБ татсан</translation>
 <translation id="6539092367496845964">Алдаа гарлаа. Дараа дахин оролдоно уу.</translation>
-<translation id="654446541061731451">Дамжуулах цонхыг сонгох</translation>
 <translation id="6545017243486555795">Бүх өгөгдлийг устгах</translation>
 <translation id="6545864417968258051">Bluetooth скан хийх</translation>
 <translation id="6560414384669816528">Sogou-р хайх</translation>
@@ -743,6 +744,7 @@ Tаны Google бүртгэл <ph name="BEGIN_LINK" />history.google.com<ph name
 <translation id="6573431926118603307">Таны бусад төхөөрөмжөөрөө Chrome-д нээсэн чихтэй хуудас энд харагдах болно.</translation>
 <translation id="6583199322650523874">Одоогийн хуудсыг тэмдэглэх</translation>
 <translation id="6593061639179217415">Дэлгэцийн сайт</translation>
+<translation id="6597891566292541626">QR/бар кодыг энэ хүрээнд байрлуулна уу.</translation>
 <translation id="6600954340915313787">Chrome руу хуулсан</translation>
 <translation id="6608650720463149374"><ph name="GIGABYTES" /> гигабайт</translation>
 <translation id="6612358246767739896">Хамгаалагдсан агуулга</translation>
@@ -952,6 +954,7 @@ Tаны Google бүртгэл <ph name="BEGIN_LINK" />history.google.com<ph name
 <translation id="8109613176066109935">Хавчуургаа бүх төхөөрөмждөө авахын тулд синкийг асаана уу</translation>
 <translation id="8110087112193408731">Chrome-н үйл ажиллагаагаа Дижитал хэрэглээнд харуулах уу?</translation>
 <translation id="8116925261070264013">Дууг хаасан</translation>
+<translation id="8127542551745560481">Нүүр хуудсыг засах</translation>
 <translation id="813082847718468539">Сайтын мэдээллийг үзэх</translation>
 <translation id="8156139159503939589">Та ямар хэлээр уншдаг вэ?</translation>
 <translation id="8168435359814927499">Агуулга</translation>
@@ -1023,8 +1026,8 @@ Tаны Google бүртгэл <ph name="BEGIN_LINK" />history.google.com<ph name
 <translation id="8676374126336081632">Оролтыг цэвэрлэх</translation>
 <translation id="8687353297350450808">{N_BARS,plural, =1{Дохионы хүчний түвшин: # мөр}other{Дохионы хүчний түвшин: # мөр}}</translation>
 <translation id="868929229000858085">Харилцагчдаа хайх</translation>
+<translation id="8698438463325761328">Сайтуудад таны виртуал бодит байдлын төхөөрөмж болон өгөгдөлд хандахыг хориглох</translation>
 <translation id="869891660844655955">Дуусах хугацаа</translation>
-<translation id="8719023831149562936">Энэ цонхыг илгээж чадахгүй байна</translation>
 <translation id="8728487861892616501">Энэ аппыг ашигласнаар та Chrome-н <ph name="BEGIN_LINK1" />Үйлчилгээний нөхцөл<ph name="END_LINK1" />, <ph name="BEGIN_LINK2" />Нууцлалын мэдэгдэл<ph name="END_LINK2" /> болон <ph name="BEGIN_LINK3" />Гэр бүлийн холбоосоор удирддаг Google бүртгэлийн Нууцлалын мэдэгдлийг<ph name="END_LINK3" /> зөвшөөрнө.</translation>
 <translation id="8748850008226585750">Агуулгыг нуусан</translation>
 <translation id="8751914237388039244">Зураг сонгох</translation>
@@ -1040,6 +1043,7 @@ Tаны Google бүртгэл <ph name="BEGIN_LINK" />history.google.com<ph name
 <translation id="883806473910249246">Агуулгыг татаж байх үед алдаа гарлаа.</translation>
 <translation id="8840953339110955557">Энэ хуудас онлайн хувилбараас өөр байж болзошгүй.</translation>
 <translation id="8847988622838149491">USB</translation>
+<translation id="884828189055900810">Сайтуудад камерын байршлыг хүлээн авах эсвэл таны өрөөний төлөвлөгөөг буулгахыг хориглох</translation>
 <translation id="8853345339104747198"><ph name="TAB_TITLE" />, цонх</translation>
 <translation id="885701979325669005">Хадгалалт</translation>
 <translation id="889338405075704026">Chrome-н тохиргоо хэсэгт очих</translation>
@@ -1047,6 +1051,7 @@ Tаны Google бүртгэл <ph name="BEGIN_LINK" />history.google.com<ph name
 <translation id="8909135823018751308">Мэдээллийг хуваалцах ...</translation>
 <translation id="8912362522468806198">Google Бүртгэл</translation>
 <translation id="8920114477895755567">Эцэг, эхийн мэдээллийг хүлээж байна.</translation>
+<translation id="8921772741368021346"><ph name="POSITION" /> / <ph name="DURATION" /></translation>
 <translation id="8922289737868596582">Хуудсыг офлайн үед ашиглахын тулд Бусад сонголт товчлуураас татна уу</translation>
 <translation id="8926666909099850184">Энэ төхөөрөмж дээр NFC унтраалттай байна. Үүнийг <ph name="BEGIN_LINK" />Android-н тохиргоо<ph name="END_LINK" /> хэсэгт асаана уу.</translation>
 <translation id="8937772741022875483">Chrome-н үйл ажиллагаагаа Дижитал хэрэглээнээс устгах уу?</translation>

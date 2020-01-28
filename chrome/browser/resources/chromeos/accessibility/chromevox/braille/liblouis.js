@@ -233,7 +233,7 @@ LibLouis.Translator = class {
     }
     var message = {
       'table_names': this.tableNames_,
-      'text': text,
+      text,
       form_type_map: formTypeMap
     };
     this.instance_.rpc_('Translate', message, function(reply) {

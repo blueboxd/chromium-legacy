@@ -141,7 +141,7 @@ DownloadHandler.init = function() {
  * @param {number} id The ID of the file we are providing an update for.
  */
 DownloadHandler.notifyProgress = function(id) {
-  chrome.downloads.search({id: id}, function(results) {
+  chrome.downloads.search({id}, function(results) {
     if (!results || (results.length != 1)) {
       return;
     }
@@ -228,12 +228,8 @@ DownloadHandler.startTrackingDownload = function(item) {
     percentComplete = Math.round((item.bytesReceived / item.totalBytes) * 100);
   }
 
-  DownloadHandler.downloadItemData_[id] = {
-    fileName: fileName,
-    notifyProgressId: notifyProgressId,
-    time: Date.now(),
-    percentComplete: percentComplete
-  };
+  DownloadHandler.downloadItemData_[id] =
+      {fileName, notifyProgressId, time: Date.now(), percentComplete};
 };
 
 /**

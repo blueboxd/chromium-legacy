@@ -73,7 +73,8 @@ void StartDisplayingBlockingPage(
 
   // Tab is gone or it's being prerendered.
   base::PostTask(FROM_HERE, {content::BrowserThread::IO},
-                 base::BindOnce(resource.callback, false));
+                 base::BindOnce(resource.callback, false /*proceed*/,
+                                false /*showed_interstitial*/));
 }
 
 }  // namespace

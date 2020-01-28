@@ -6,9 +6,9 @@
 
 #include "base/files/file_path.h"
 #include "base/test/bind_test_util.h"
-#include "chrome/browser/permissions/permission_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/test/test_browser_dialog.h"
+#include "components/permissions/permission_util.h"
 #include "ui/views/controls/button/label_button.h"
 
 class NativeFileSystemPermissionViewTest : public DialogBrowserTest {
@@ -44,7 +44,7 @@ class NativeFileSystemPermissionViewTest : public DialogBrowserTest {
     }
     widget_ = NativeFileSystemPermissionView::ShowDialog(
         origin, path, is_directory,
-        base::BindLambdaForTesting([&](PermissionAction result) {
+        base::BindLambdaForTesting([&](permissions::PermissionAction result) {
           callback_called_ = true;
           callback_result_ = result;
         }),
@@ -58,7 +58,8 @@ class NativeFileSystemPermissionViewTest : public DialogBrowserTest {
   views::Widget* widget_ = nullptr;
 
   bool callback_called_ = false;
-  PermissionAction callback_result_ = PermissionAction::IGNORED;
+  permissions::PermissionAction callback_result_ =
+      permissions::PermissionAction::IGNORED;
 };
 
 IN_PROC_BROWSER_TEST_F(NativeFileSystemPermissionViewTest,
@@ -74,7 +75,7 @@ IN_PROC_BROWSER_TEST_F(NativeFileSystemPermissionViewTest, AcceptRunsCallback) {
   ShowUi("default");
   widget_->widget_delegate()->AsDialogDelegate()->AcceptDialog();
   EXPECT_TRUE(callback_called_);
-  EXPECT_EQ(PermissionAction::GRANTED, callback_result_);
+  EXPECT_EQ(permissions::PermissionAction::GRANTED, callback_result_);
   base::RunLoop().RunUntilIdle();
 }
 
@@ -82,7 +83,7 @@ IN_PROC_BROWSER_TEST_F(NativeFileSystemPermissionViewTest, CancelRunsCallback) {
   ShowUi("default");
   widget_->widget_delegate()->AsDialogDelegate()->CancelDialog();
   EXPECT_TRUE(callback_called_);
-  EXPECT_EQ(PermissionAction::DISMISSED, callback_result_);
+  EXPECT_EQ(permissions::PermissionAction::DISMISSED, callback_result_);
   base::RunLoop().RunUntilIdle();
 }
 
@@ -90,7 +91,7 @@ IN_PROC_BROWSER_TEST_F(NativeFileSystemPermissionViewTest, CancelsWhenClosed) {
   ShowUi("default");
   widget_->Close();
   EXPECT_TRUE(callback_called_);
-  EXPECT_EQ(PermissionAction::DISMISSED, callback_result_);
+  EXPECT_EQ(permissions::PermissionAction::DISMISSED, callback_result_);
   base::RunLoop().RunUntilIdle();
 }
 

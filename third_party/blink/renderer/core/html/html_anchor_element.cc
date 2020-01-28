@@ -180,10 +180,9 @@ void HTMLAnchorElement::DefaultEventHandler(Event& event) {
       DispatchSimulatedClick(&event);
       return;
     }
-    Event* click_event = GetClickEventOrNull(event);
-    if (click_event && IsLiveLink()) {
-      HandleClick(*click_event);
-      event.SetDefaultHandled();
+
+    if (IsLinkClick(event) && IsLiveLink()) {
+      HandleClick(event);
       return;
     }
   }
@@ -465,26 +464,17 @@ bool IsEnterKeyKeydownEvent(Event& event) {
          !ToKeyboardEvent(event).repeat();
 }
 
-Event* GetClickEventOrNull(Event& event) {
-  // HTMLElement embedded in anchor tag dispatches a DOMActivate event when
-  // clicked on. The original click event is set as underlying event.
-  bool use_underlying_event = event.type() == event_type_names::kDOMActivate &&
-                              event.UnderlyingEvent() &&
-                              !event.UnderlyingEvent()->DefaultHandled() &&
-                              event.UnderlyingEvent()->target();
-  Event* process_event =
-      use_underlying_event ? event.UnderlyingEvent() : &event;
-  if ((process_event->type() != event_type_names::kClick &&
-       process_event->type() != event_type_names::kAuxclick) ||
-      !process_event->IsMouseEvent()) {
-    return nullptr;
+bool IsLinkClick(Event& event) {
+  if ((event.type() != event_type_names::kClick &&
+       event.type() != event_type_names::kAuxclick) ||
+      !event.IsMouseEvent()) {
+    return false;
   }
-  auto& mouse_event = ToMouseEvent(*process_event);
+  auto& mouse_event = ToMouseEvent(event);
   int16_t button = mouse_event.button();
   return (button == static_cast<int16_t>(WebPointerProperties::Button::kLeft) ||
-          button == static_cast<int16_t>(WebPointerProperties::Button::kMiddle))
-             ? process_event
-             : nullptr;
+          button ==
+              static_cast<int16_t>(WebPointerProperties::Button::kMiddle));
 }
 
 bool HTMLAnchorElement::WillRespondToMouseClickEvents() {

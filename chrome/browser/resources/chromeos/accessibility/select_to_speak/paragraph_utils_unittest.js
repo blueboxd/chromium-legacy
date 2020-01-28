@@ -20,18 +20,13 @@ SelectToSpeakParagraphUnitTest.prototype = {
 
 TEST_F('SelectToSpeakParagraphUnitTest', 'GetFirstBlockAncestor', function() {
   let root = {role: 'rootWebArea'};
-  let paragraph = {role: 'paragraph', parent: root, root: root};
-  let text1 =
-      {role: 'staticText', parent: paragraph, display: 'block', root: root};
-  let text2 = {role: 'staticText', parent: root, root: root};
-  let text3 = {role: 'inlineTextBox', parent: text1, root: root};
-  let div = {
-    role: 'genericContainer',
-    parent: paragraph,
-    display: 'block',
-    root: root
-  };
-  let text4 = {role: 'staticText', parent: div, root: root};
+  let paragraph = {role: 'paragraph', parent: root, root};
+  let text1 = {role: 'staticText', parent: paragraph, display: 'block', root};
+  let text2 = {role: 'staticText', parent: root, root};
+  let text3 = {role: 'inlineTextBox', parent: text1, root};
+  let div =
+      {role: 'genericContainer', parent: paragraph, display: 'block', root};
+  let text4 = {role: 'staticText', parent: div, root};
   assertEquals(paragraph, ParagraphUtils.getFirstBlockAncestor(text1));
   assertEquals(root, ParagraphUtils.getFirstBlockAncestor(text2));
   assertEquals(paragraph, ParagraphUtils.getFirstBlockAncestor(text3));
@@ -40,11 +35,11 @@ TEST_F('SelectToSpeakParagraphUnitTest', 'GetFirstBlockAncestor', function() {
 
 TEST_F('SelectToSpeakParagraphUnitTest', 'SVGRootIsBlockAncestor', function() {
   let root = {role: 'rootWebArea'};
-  let svgRoot = {role: 'svgRoot', parent: root, root: root};
-  let text1 = {role: 'staticText', parent: svgRoot, root: root};
-  let inline1 = {role: 'inlineTextBox', parent: text1, root: root};
-  let text2 = {role: 'staticText', parent: svgRoot, root: root};
-  let inline2 = {role: 'inlineTextBox', parent: text2, root: root};
+  let svgRoot = {role: 'svgRoot', parent: root, root};
+  let text1 = {role: 'staticText', parent: svgRoot, root};
+  let inline1 = {role: 'inlineTextBox', parent: text1, root};
+  let text2 = {role: 'staticText', parent: svgRoot, root};
+  let inline2 = {role: 'inlineTextBox', parent: text2, root};
   assertEquals(svgRoot, ParagraphUtils.getFirstBlockAncestor(text1));
   assertEquals(svgRoot, ParagraphUtils.getFirstBlockAncestor(inline1));
   assertEquals(svgRoot, ParagraphUtils.getFirstBlockAncestor(inline2));
@@ -55,12 +50,12 @@ TEST_F('SelectToSpeakParagraphUnitTest', 'SVGRootIsBlockAncestor', function() {
 TEST_F('SelectToSpeakParagraphUnitTest', 'InSameParagraph', function() {
   let root = {role: 'rootWebArea'};
   let paragraph1 =
-      {role: 'paragraph', display: 'block', parent: 'rootWebArea', root: root};
-  let text1 = {role: 'staticText', parent: paragraph1, root: root};
-  let text2 = {role: 'staticText', parent: paragraph1, root: root};
+      {role: 'paragraph', display: 'block', parent: 'rootWebArea', root};
+  let text1 = {role: 'staticText', parent: paragraph1, root};
+  let text2 = {role: 'staticText', parent: paragraph1, root};
   let paragraph2 =
-      {role: 'paragraph', display: 'block', parent: 'rootWebArea', root: root};
-  let text3 = {role: 'staticText', parent: paragraph2, root: root};
+      {role: 'paragraph', display: 'block', parent: 'rootWebArea', root};
+  let text3 = {role: 'staticText', parent: paragraph2, root};
   assertTrue(ParagraphUtils.inSameParagraph(text1, text2));
   assertFalse(ParagraphUtils.inSameParagraph(text1, text3));
 });
@@ -69,18 +64,12 @@ TEST_F(
     'SelectToSpeakParagraphUnitTest', 'BlockDivBreaksSameParagraph',
     function() {
       let root = {role: 'rootWebArea'};
-      let paragraph1 = {
-        role: 'paragraph',
-        display: 'block',
-        parent: 'rootWebArea',
-        root: root
-      };
-      let text1 = {role: 'staticText', parent: paragraph1, root: root};
-      let text2 =
-          {role: 'image', parent: paragraph1, display: 'block', root: root};
-      let text3 =
-          {role: 'image', parent: paragraph1, display: 'inline', root: root};
-      let text4 = {role: 'staticText', parent: paragraph1, root: root};
+      let paragraph1 =
+          {role: 'paragraph', display: 'block', parent: 'rootWebArea', root};
+      let text1 = {role: 'staticText', parent: paragraph1, root};
+      let text2 = {role: 'image', parent: paragraph1, display: 'block', root};
+      let text3 = {role: 'image', parent: paragraph1, display: 'inline', root};
+      let text4 = {role: 'staticText', parent: paragraph1, root};
       assertFalse(ParagraphUtils.inSameParagraph(text1, text2));
       assertFalse(ParagraphUtils.inSameParagraph(text2, text3));
       assertTrue(ParagraphUtils.inSameParagraph(text3, text4));
@@ -201,15 +190,12 @@ TEST_F(
     function() {
       let root = {role: 'rootWebArea'};
       let paragraph1 =
-          {role: 'paragraph', display: 'block', parent: root, root: root};
-      let text1 =
-          {role: 'staticText', parent: paragraph1, name: 'text1', root: root};
-      let text2 =
-          {role: 'staticText', parent: paragraph1, name: 'text2', root: root};
+          {role: 'paragraph', display: 'block', parent: root, root};
+      let text1 = {role: 'staticText', parent: paragraph1, name: 'text1', root};
+      let text2 = {role: 'staticText', parent: paragraph1, name: 'text2', root};
       let paragraph2 =
-          {role: 'paragraph', display: 'block', parent: root, root: root};
-      let text3 =
-          {role: 'staticText', parent: paragraph2, name: 'text3', root: root};
+          {role: 'paragraph', display: 'block', parent: root, root};
+      let text3 = {role: 'staticText', parent: paragraph2, name: 'text3', root};
       let result = ParagraphUtils.buildNodeGroup(
           [text1, text2, text3], 0, false /* do not split on language */);
       assertEquals('text1 text2 ', result.text);
@@ -234,21 +220,21 @@ TEST_F(
         role: 'staticText',
         parent: root,
         name: 'text1',
-        root: root,
+        root,
         detectedLanguage: 'en-US'
       };
       let text2 = {
         role: 'staticText',
         parent: root,
         name: 'text2',
-        root: root,
+        root,
         detectedLanguage: 'en-US'
       };
       let text3 = {
         role: 'staticText',
         parent: root,
         name: 'text3',
-        root: root,
+        root,
         detectedLanguage: 'fr-FR'
       };
 
@@ -280,9 +266,9 @@ TEST_F(
 
       // If no detectedLanguage is defined then we should not split at all....
       let root = {role: 'rootWebArea'};
-      let text1 = {role: 'staticText', parent: root, name: 'text1', root: root};
-      let text2 = {role: 'staticText', parent: root, name: 'text2', root: root};
-      let text3 = {role: 'staticText', parent: root, name: 'text3', root: root};
+      let text1 = {role: 'staticText', parent: root, name: 'text1', root};
+      let text2 = {role: 'staticText', parent: root, name: 'text2', root};
+      let text3 = {role: 'staticText', parent: root, name: 'text3', root};
       let result = ParagraphUtils.buildNodeGroup(
           [text1, text2, text3], 0, splitOnLanguage);
       assertEquals('text1 text2 text3 ', result.text);
@@ -304,13 +290,13 @@ TEST_F(
 
       // our NodeGroup should get the first defined detectedLanguage
       let root = {role: 'rootWebArea'};
-      let text1 = {role: 'staticText', parent: root, name: 'text1', root: root};
-      let text2 = {role: 'staticText', parent: root, name: 'text2', root: root};
+      let text1 = {role: 'staticText', parent: root, name: 'text1', root};
+      let text2 = {role: 'staticText', parent: root, name: 'text2', root};
       let text3 = {
         role: 'staticText',
         parent: root,
         name: 'text3',
-        root: root,
+        root,
         detectedLanguage: 'fr-FR'
       };
       let result = ParagraphUtils.buildNodeGroup(
@@ -335,20 +321,20 @@ TEST_F(
       let splitOnLanguage = false;
 
       let root = {role: 'rootWebArea'};
-      let text1 = {role: 'staticText', parent: root, name: 'text1', root: root};
+      let text1 = {role: 'staticText', parent: root, name: 'text1', root};
       let text2 = {
         role: 'staticText',
         parent: root,
         name: 'text2',
-        root: root,
+        root,
         detectedLanguage: 'en-US'
       };
-      let text3 = {role: 'staticText', parent: root, name: 'text3', root: root};
+      let text3 = {role: 'staticText', parent: root, name: 'text3', root};
       let text4 = {
         role: 'staticText',
         parent: root,
         name: 'text4',
-        root: root,
+        root,
         detectedLanguage: 'fr-FR'
       };
       let result = ParagraphUtils.buildNodeGroup(
@@ -371,20 +357,20 @@ TEST_F(
       // match any other language. The language for the NodeGroup will be
       // determined by the first defined detectedLanguage.
       let root = {role: 'rootWebArea'};
-      let text1 = {role: 'staticText', parent: root, name: 'text1', root: root};
+      let text1 = {role: 'staticText', parent: root, name: 'text1', root};
       let text2 = {
         role: 'staticText',
         parent: root,
         name: 'text2',
-        root: root,
+        root,
         detectedLanguage: 'en-US'
       };
-      let text3 = {role: 'staticText', parent: root, name: 'text3', root: root};
+      let text3 = {role: 'staticText', parent: root, name: 'text3', root};
       let text4 = {
         role: 'staticText',
         parent: root,
         name: 'text4',
-        root: root,
+        root,
         detectedLanguage: 'fr-FR'
       };
       let result = ParagraphUtils.buildNodeGroup(
@@ -406,15 +392,12 @@ TEST_F(
     function() {
       let root = {role: 'rootWebArea'};
       let paragraph1 =
-          {role: 'paragraph', display: 'block', parent: root, root: root};
-      let text1 =
-          {role: 'staticText', parent: paragraph1, name: 'text1', root: root};
+          {role: 'paragraph', display: 'block', parent: root, root};
+      let text1 = {role: 'staticText', parent: paragraph1, name: 'text1', root};
       // Whitespace-only nodes should be ignored.
-      let text2 =
-          {role: 'staticText', parent: paragraph1, name: '\n', root: root};
-      let link = {role: 'link', parent: paragraph1, root: root};
-      let linkText =
-          {role: 'staticText', parent: link, name: 'linkText', root: root};
+      let text2 = {role: 'staticText', parent: paragraph1, name: '\n', root};
+      let link = {role: 'link', parent: paragraph1, root};
+      let linkText = {role: 'staticText', parent: link, name: 'linkText', root};
       let result = ParagraphUtils.buildNodeGroup(
           [text1, text2, linkText], 0, false /* do not split on language */);
       assertEquals('text1 linkText ', result.text);
@@ -431,7 +414,7 @@ TEST_F(
     'SelectToSpeakParagraphUnitTest', 'BuildNodeGroupNativeTextBox',
     function() {
       let root = {role: 'desktop'};
-      let parent = {role: 'pane', parent: root, root: root};
+      let parent = {role: 'pane', parent: root, root};
       let searchBar = {
         role: 'textField',
         name: 'Address and search bar',
@@ -450,13 +433,11 @@ TEST_F(
 
 TEST_F('SelectToSpeakParagraphUnitTest', 'BuildNodeGroupWithSvg', function() {
   let root = {role: 'rootWebArea'};
-  let svgRoot = {role: 'svgRoot', parent: root, root: root};
-  let text1 = {role: 'staticText', parent: svgRoot, root: root, name: 'Hello,'};
-  let inline1 =
-      {role: 'inlineTextBox', parent: text1, root: root, name: 'Hello,'};
-  let text2 = {role: 'staticText', parent: svgRoot, root: root, name: 'world!'};
-  let inline2 =
-      {role: 'inlineTextBox', parent: text2, root: root, name: 'world!'};
+  let svgRoot = {role: 'svgRoot', parent: root, root};
+  let text1 = {role: 'staticText', parent: svgRoot, root, name: 'Hello,'};
+  let inline1 = {role: 'inlineTextBox', parent: text1, root, name: 'Hello,'};
+  let text2 = {role: 'staticText', parent: svgRoot, root, name: 'world!'};
+  let inline2 = {role: 'inlineTextBox', parent: text2, root, name: 'world!'};
 
   let result = ParagraphUtils.buildNodeGroup(
       [inline1, inline2], 0, false /* do not split on language */);

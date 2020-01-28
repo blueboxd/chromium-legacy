@@ -176,6 +176,7 @@ interface Animation : EventTarget
     getter id
     getter oncancel
     getter onfinish
+    getter onremove
     getter pending
     getter playState
     getter playbackRate
@@ -196,6 +197,7 @@ interface Animation : EventTarget
     setter id
     setter oncancel
     setter onfinish
+    setter onremove
     setter playbackRate
     setter startTime
 interface AnimationEffect

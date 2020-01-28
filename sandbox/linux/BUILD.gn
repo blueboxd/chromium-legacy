@@ -194,6 +194,7 @@ action("bpf_dsl_golden") {
 
 test("sandbox_linux_unittests") {
   deps = [ ":sandbox_linux_unittests_sources" ]
+  data_deps = [ "//testing/buildbot/filters:sandbox_linux_unittests_filters" ]
   if (is_android) {
     use_raw_android_executable = true
   }

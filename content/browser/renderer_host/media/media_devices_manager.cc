@@ -709,6 +709,11 @@ void MediaDevicesManager::OnDevicesEnumerated(
       continue;
 
     for (const auto& device_info : enumeration[i]) {
+      if (base::FeatureList::IsEnabled(
+              features::kEnumerateDevicesHideDeviceIDs) &&
+          !has_permissions[i] && !translation[i].empty())
+        break;
+
       translation[i].push_back(TranslateMediaDeviceInfo(
           has_permissions[i], salt_and_origin, device_info));
     }

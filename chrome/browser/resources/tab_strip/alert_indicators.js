@@ -15,8 +15,7 @@ export class AlertIndicatorsElement extends CustomElement {
     super();
 
     /** @private {!HTMLElement} */
-    this.containerEl_ = /** @type {!HTMLElement} */ (
-        this.shadowRoot.querySelector('#container'));
+    this.containerEl_ = /** @type {!HTMLElement} */ (this.$('#container'));
 
     const audioIndicator = new AlertIndicatorElement();
     const recordingIndicator = new AlertIndicatorElement();

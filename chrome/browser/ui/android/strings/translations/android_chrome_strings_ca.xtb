@@ -279,6 +279,7 @@
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> adreça d'interès}other{<ph name="BOOKMARKS_COUNT_MANY" /> adreces d'interès}}</translation>
 <translation id="3089395242580810162">Obre en pestanya d'incògnit</translation>
 <translation id="3123473560110926937">Bloquejat en alguns llocs web</translation>
+<translation id="3123734510202723619">Anuncis</translation>
 <translation id="3137521801621304719">Surt del mode d'incògnit</translation>
 <translation id="3143515551205905069">Cancel·la la sincronització</translation>
 <translation id="3157842584138209013">Consulta la quantitat de dades que has estalviat des del botó Més opcions</translation>
@@ -690,7 +691,6 @@ Per canviar aquesta opció, <ph name="BEGIN_LINK" />restableix la sincronitzaci�
 <translation id="6201345951596836663">S'ha copiat l'enllaç</translation>
 <translation id="6206551242102657620">La connexió és segura. Informació del lloc web</translation>
 <translation id="6210748933810148297">No ets <ph name="EMAIL" />?</translation>
-<translation id="6216432067784365534">Opcions per a <ph name="NAME_OF_LIST_ITEM" /></translation>
 <translation id="6221633008163990886">Desbloqueja per exportar les contrasenyes</translation>
 <translation id="6232535412751077445">Si actives l'opció No segueixis, s'inclourà una sol·licitud al trànsit de navegació. Que s'apliqui o no dependrà de si algun lloc web respon a la sol·licitud i de com s'interpreta.
 
@@ -736,7 +736,6 @@ Per exemple, és possible que alguns llocs web responguin a aquesta sol·licitud
 <translation id="6534565668554028783">Google ha tardat massa a respondre</translation>
 <translation id="6538442820324228105">S'han baixat <ph name="GBS" /> GB</translation>
 <translation id="6539092367496845964">S'ha produït un error. Torna-ho a provar més tard.</translation>
-<translation id="654446541061731451">Trieu una pestanya per compartir-la.</translation>
 <translation id="6545017243486555795">Esborra totes les dades</translation>
 <translation id="6545864417968258051">Cerca de dispositius Bluetooth</translation>
 <translation id="6560414384669816528">Cerca amb Sogou</translation>
@@ -1031,7 +1030,6 @@ El lloc web NO obté accés a la càmera. Només tu pots veure les imatges de la
 <translation id="868929229000858085">Cerca als contactes</translation>
 <translation id="8698438463325761328">Impedeix que els llocs web accedeixin al teu dispositiu i a les teves dades de realitat virtual</translation>
 <translation id="869891660844655955">Data de caducitat</translation>
-<translation id="8719023831149562936">La pestanya actual no es pot compartir.</translation>
 <translation id="8728487861892616501">En utilitzar aquesta aplicació, acceptes les <ph name="BEGIN_LINK1" />condicions del servei<ph name="END_LINK1" /> i l'<ph name="BEGIN_LINK2" />avís de privadesa<ph name="END_LINK2" /> de Chrome, així com l'<ph name="BEGIN_LINK3" />avís de privadesa per a comptes de Google gestionats amb Family Link<ph name="END_LINK3" />.</translation>
 <translation id="8748850008226585750">Contingut amagat</translation>
 <translation id="8751914237388039244">Selecciona una imatge</translation>

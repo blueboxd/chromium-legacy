@@ -14,7 +14,7 @@
 #include "base/threading/thread_checker.h"
 #include "base/unguessable_token.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "media/base/android/media_drm_storage.h"
+#include "media/base/media_drm_storage.h"
 
 class MediaDrmOriginIdManagerFactory;
 class PrefRegistrySimple;

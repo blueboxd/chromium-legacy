@@ -13,6 +13,7 @@ export class TestTabsApiProxy extends TestBrowserProxy {
       'getGroupVisualData',
       'getTabs',
       'groupTab',
+      'moveGroup',
       'moveTab',
       'setThumbnailTracked',
       'ungroupTab',
@@ -48,6 +49,10 @@ export class TestTabsApiProxy extends TestBrowserProxy {
 
   groupTab(tabId, groupId) {
     this.methodCalled('groupTab', [tabId, groupId]);
+  }
+
+  moveGroup(groupId, newIndex) {
+    this.methodCalled('moveGroup', [groupId, newIndex]);
   }
 
   moveTab(tabId, newIndex) {

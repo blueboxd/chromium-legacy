@@ -1,4 +1,5 @@
 include_rules = [
+  "+components/openscreen_platform",
   "+services/network",
   "+third_party/openscreen/src/cast/common/certificate/proto",
   "+third_party/openscreen/src/cast/common/channel/proto",

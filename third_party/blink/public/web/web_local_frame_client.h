@@ -192,6 +192,7 @@ class BLINK_EXPORT WebLocalFrameClient {
   // Returns a blame context for attributing work belonging to this frame.
   virtual BlameContext* GetFrameBlameContext() { return nullptr; }
 
+  // DEPRECATED. Please use GetBrowserInterfaceBroker() instead.
   // Returns an InterfaceProvider the frame can use to request interfaces from
   // the browser. This method may not return nullptr.
   virtual service_manager::InterfaceProvider* GetInterfaceProvider();
@@ -357,11 +358,6 @@ class BLINK_EXPORT WebLocalFrameClient {
   // These notifications bracket any loading that occurs in the WebFrame.
   virtual void DidStartLoading() {}
   virtual void DidStopLoading() {}
-
-  // Notification that some progress was made loading the current frame.
-  // loadProgress is a value between 0 (nothing loaded) and 1.0 (frame fully
-  // loaded).
-  virtual void DidChangeLoadProgress(double load_progress) {}
 
   // A form submission has been requested, but the page's submit event handler
   // hasn't yet had a chance to run (and possibly alter/interrupt the submit.)

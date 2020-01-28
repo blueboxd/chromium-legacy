@@ -142,7 +142,8 @@ void BaseBlockingPage::OnProceed() {
       controller()->metrics_helper()->NumVisits());
 
   ui_manager_->OnBlockingPageDone(unsafe_resources_, true /* proceed */,
-                                  web_contents(), main_frame_url_);
+                                  web_contents(), main_frame_url_,
+                                  true /* showed_interstitial */);
 
   HandleSubresourcesAfterProceed();
 }
@@ -192,7 +193,8 @@ void BaseBlockingPage::CommandReceived(const std::string& page_cmd) {
     // adding to the allow list here.
     set_proceeded(true);
     ui_manager()->OnBlockingPageDone(unsafe_resources(), true /* proceed */,
-                                     web_contents(), main_frame_url());
+                                     web_contents(), main_frame_url(),
+                                     true /* showed_interstitial */);
   }
 
   sb_error_ui_->HandleCommand(interstitial_command);
@@ -384,7 +386,8 @@ void BaseBlockingPage::OnDontProceedDone() {
   }
 
   ui_manager_->OnBlockingPageDone(unsafe_resources_, false /* proceed */,
-                                  web_contents(), main_frame_url_);
+                                  web_contents(), main_frame_url_,
+                                  true /* showed_interstitial */);
 
   // The user does not want to proceed, clear the queued unsafe resources
   // notifications we received while the interstitial was showing.
@@ -392,7 +395,8 @@ void BaseBlockingPage::OnDontProceedDone() {
   auto iter = unsafe_resource_map->find(web_contents());
   if (iter != unsafe_resource_map->end() && !iter->second.empty()) {
     ui_manager_->OnBlockingPageDone(iter->second, false, web_contents(),
-                                    main_frame_url_);
+                                    main_frame_url_,
+                                    true /* showed_interstitial */);
     unsafe_resource_map->erase(iter);
   }
 

@@ -192,6 +192,7 @@
 <translation id="3474649192738347024">Формы заполнены</translation>
 <translation id="3478058380795961209">Месяц</translation>
 <translation id="3482959374254649722">Синхронизация вкладок...</translation>
+<translation id="3484946776651937681">Открыть папку "Загрузки"</translation>
 <translation id="3493531032208478708">Подробнее <ph name="BEGIN_LINK" />о рекомендованном контенте<ph name="END_LINK" />…</translation>
 <translation id="3494788280727468875">Подтвердить удаление данных о работе в браузере</translation>
 <translation id="35083190962747987">Открыть URL ${url}</translation>
@@ -537,6 +538,7 @@
 <translation id="8319076807703933069">Новый поиск</translation>
 <translation id="8323906514956095947">Нажмите и удерживайте, чтобы открыть список дополнительных действий с вкладками</translation>
 <translation id="8328777765163860529">Закрыть все</translation>
+<translation id="8386068868580335421">Сбросить</translation>
 <translation id="8407669440184693619">Паролей для этого сайта не найдено</translation>
 <translation id="842017693807136194">Выполнен вход через</translation>
 <translation id="8428045167754449968">Город</translation>
@@ -553,6 +555,7 @@
 <translation id="8532105204136943229">Год</translation>
 <translation id="8534481786647257214">Опубликовано в Google+.</translation>
 <translation id="8548878600947630424">Найти на странице…</translation>
+<translation id="8574235780160508979">Условия использования Chrome будут обновлены 31 марта. Просим вас <ph name="BEGIN_LINK" />ознакомиться с изменениями<ph name="END_LINK" />.</translation>
 <translation id="8588404856427128947">Выключено</translation>
 <translation id="8605219856220328675">Закрыть вкладку.</translation>
 <translation id="8620640915598389714">Изменить</translation>

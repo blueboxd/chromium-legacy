@@ -111,10 +111,10 @@ base::string16 GetExpectedAppId(const base::CommandLine& command_line,
   base::FilePath user_data_dir;
   if (command_line.HasSwitch(switches::kUserDataDir))
     user_data_dir = command_line.GetSwitchValuePath(switches::kUserDataDir);
-  else
-    chrome::GetDefaultUserDataDirectory(&user_data_dir);
   // Adjust with any policy that overrides any other way to set the path.
   policy::path_parser::CheckUserDataDirPolicy(&user_data_dir);
+  if (user_data_dir.empty())
+    chrome::GetDefaultUserDataDirectory(&user_data_dir);
   DCHECK(!user_data_dir.empty());
 
   base::FilePath profile_subdir;

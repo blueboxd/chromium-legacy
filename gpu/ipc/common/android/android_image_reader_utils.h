@@ -12,6 +12,10 @@
 #include "gpu/gpu_export.h"
 #include "ui/gl/gl_bindings.h"
 
+namespace gl {
+class GLFence;
+}
+
 namespace gpu {
 
 // Create and inserts an egl fence and exports a ScopedFD from it.
@@ -21,8 +25,13 @@ GPU_EXPORT base::ScopedFD CreateEglFenceAndExportFd();
 bool DeleteAImageAsync(AImage* image,
                        base::android::AndroidImageReader* loader);
 
-// Create and insert an EGL fence and imports the provided fence fd.
+// Create and insert an EGL fence and imports the provided fence fd and issues
+// ServerWait on it.
 GPU_EXPORT bool InsertEglFenceAndWait(base::ScopedFD acquire_fence_fd);
+
+// Create and insert an EGL fence and imports the provided fence fd.
+GPU_EXPORT std::unique_ptr<gl::GLFence> CreateEglFence(
+    base::ScopedFD acquire_fence_fd);
 
 // Create an EGL image from the AImage via AHardwarebuffer. Bind this EGL image
 // to the texture target target_id. This changes the texture binding on the

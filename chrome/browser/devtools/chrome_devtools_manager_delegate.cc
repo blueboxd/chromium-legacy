@@ -26,6 +26,7 @@
 #include "chrome/grit/browser_resources.h"
 #include "components/guest_view/browser/guest_view_base.h"
 #include "content/public/browser/devtools_agent_host.h"
+#include "content/public/browser/devtools_agent_host_client_channel.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
@@ -100,19 +101,19 @@ void ChromeDevToolsManagerDelegate::Inspect(
 }
 
 void ChromeDevToolsManagerDelegate::HandleCommand(
-    DevToolsAgentHost* agent_host,
-    content::DevToolsAgentHostClient* client,
+    content::DevToolsAgentHostClientChannel* channel,
     const std::string& method,
     base::span<const uint8_t> message,
     NotHandledCallback callback) {
-  if (sessions_.find(client) == sessions_.end()) {
+  auto it = sessions_.find(channel);
+  if (it == sessions_.end()) {
     std::move(callback).Run(message);
     // This should not happen, but happens. NOTREACHED tries to get
     // a repro in some test.
     NOTREACHED();
     return;
   }
-  sessions_[client]->HandleCommand(method, message, std::move(callback));
+  it->second->HandleCommand(method, message, std::move(callback));
 }
 
 std::string ChromeDevToolsManagerDelegate::GetTargetType(
@@ -201,17 +202,14 @@ bool ChromeDevToolsManagerDelegate::AllowInspection(
 }
 
 void ChromeDevToolsManagerDelegate::ClientAttached(
-    content::DevToolsAgentHost* agent_host,
-    content::DevToolsAgentHostClient* client) {
-  DCHECK(sessions_.find(client) == sessions_.end());
-  sessions_[client] =
-      std::make_unique<ChromeDevToolsSession>(agent_host, client);
+    content::DevToolsAgentHostClientChannel* channel) {
+  DCHECK(sessions_.find(channel) == sessions_.end());
+  sessions_.emplace(channel, std::make_unique<ChromeDevToolsSession>(channel));
 }
 
 void ChromeDevToolsManagerDelegate::ClientDetached(
-    content::DevToolsAgentHost* agent_host,
-    content::DevToolsAgentHostClient* client) {
-  sessions_.erase(client);
+    content::DevToolsAgentHostClientChannel* channel) {
+  sessions_.erase(channel);
 }
 
 scoped_refptr<DevToolsAgentHost>

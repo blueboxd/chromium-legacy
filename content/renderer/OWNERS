@@ -26,6 +26,10 @@ per-file child_frame_compositor*=jonross@chromium.org
 per-file child_frame_compositing_helper*=jonross@chromium.org
 per-file render_frame_metadata*=jonross@chromium.org
 
+# For WebGL
+per-file webgraphicscontext3d_provider_impl*=kainino@chromium.org
+per-file webgraphicscontext3d_provider_impl*=kbr@chromium.org
+
 # Dependency for storage APIs.
 per-file storage_util*=file://storage/OWNERS
 

@@ -599,7 +599,7 @@ void DeviceInfoSyncBridge::SendLocalDataWithBatch(
   StoreSpecifics(std::move(specifics), batch.get());
   CommitAndNotify(std::move(batch), /*should_notify=*/true);
 
-  pulse_timer_.Start(FROM_HERE, DeviceInfoUtil::kPulseInterval,
+  pulse_timer_.Start(FROM_HERE, DeviceInfoUtil::GetPulseInterval(),
                      base::BindOnce(&DeviceInfoSyncBridge::SendLocalData,
                                     base::Unretained(this)));
 }

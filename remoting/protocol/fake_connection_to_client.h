@@ -89,6 +89,10 @@ class FakeConnectionToClient : public ConnectionToClient {
   ErrorCode disconnect_error() { return disconnect_error_; }
 
  private:
+  // TODO(crbug.com/1043325): Remove the requirement that ConnectionToClient
+  // retains a pointer to the capturer if the relative pointer experiment is
+  // a success.
+  std::unique_ptr<webrtc::DesktopCapturer> desktop_capturer_;
   std::unique_ptr<Session> session_;
   EventHandler* event_handler_ = nullptr;
 

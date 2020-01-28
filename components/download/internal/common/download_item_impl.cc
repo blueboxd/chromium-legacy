@@ -512,6 +512,24 @@ void DownloadItemImpl::ValidateDangerousDownload() {
   MaybeCompleteDownload();
 }
 
+void DownloadItemImpl::ValidateMixedContentDownload() {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK(!IsDone());
+  DCHECK(IsMixedContent());
+
+  DVLOG(20) << __func__ << "() download=" << DebugString(true);
+
+  mixed_content_status_ = MixedContentStatus::VALIDATED;
+
+  UpdateObservers();  // TODO(asanka): This is potentially unsafe. The download
+                      // may not be in a consistent state or around at all after
+                      // invoking observers, but we keep it here because it is
+                      // used in ValidateDangerousDownload(), too.
+                      // http://crbug.com/586610
+
+  MaybeCompleteDownload();
+}
+
 void DownloadItemImpl::StealDangerousDownload(
     bool delete_file_afterward,
     const AcquireFileCallback& callback) {
@@ -971,6 +989,12 @@ bool DownloadItemImpl::IsDangerous() const {
           danger_type_ == DOWNLOAD_DANGER_TYPE_SENSITIVE_CONTENT_BLOCK ||
           danger_type_ == DOWNLOAD_DANGER_TYPE_SENSITIVE_CONTENT_WARNING ||
           danger_type_ == DOWNLOAD_DANGER_TYPE_PROMPT_FOR_SCANNING);
+}
+
+bool DownloadItemImpl::IsMixedContent() const {
+  return mixed_content_status_ == MixedContentStatus::WARN ||
+         mixed_content_status_ == MixedContentStatus::BLOCK ||
+         mixed_content_status_ == MixedContentStatus::SILENT_BLOCK;
 }
 
 DownloadDangerType DownloadItemImpl::GetDangerType() const {
@@ -2206,6 +2230,11 @@ bool DownloadItemImpl::IsDownloadReadyForCompletion(
   // If the download is dangerous, but not yet validated, it's not ready for
   // completion.
   if (IsDangerous())
+    return false;
+
+  // If the download is mixed content, but not yet validated, it's not ready for
+  // completion.
+  if (IsMixedContent())
     return false;
 
   // Check for consistency before invoking delegate. Since there are no pending

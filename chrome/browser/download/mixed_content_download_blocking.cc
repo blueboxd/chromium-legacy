@@ -266,5 +266,16 @@ MixedContentStatus GetMixedContentStatusForDownload(
             (is_redirect_chain_secure ? "loaded over" : "redirected through")));
   }
 
+  // In the future, we will be more selective based on extension, and will want
+  // to never use SILENT_BLOCK when the download is explicitly requested. We can
+  // filter those out with something like this:
+  /*
+  if (download_source == DownloadSource::CONTEXT_MENU ||
+      download_source == DownloadSource::WEB_CONTENTS_API) {
+    return MixedContentStatus::BLOCK;
+  }
+  return MixedContentStatus::WARN;
+  */
+
   return MixedContentStatus::SILENT_BLOCK;
 }

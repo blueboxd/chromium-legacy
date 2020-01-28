@@ -11,6 +11,7 @@
 #include "base/test/task_environment.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "build/chromecast_buildflags.h"
 #include "content/browser/gpu/gpu_data_manager_impl_private.h"
 #include "content/browser/gpu/gpu_data_manager_testing_autogen.h"
 #include "content/browser/gpu/gpu_data_manager_testing_entry_enums_autogen.h"
@@ -294,7 +295,12 @@ TEST_F(GpuDataManagerImplPrivateTest, FallbackWithSwiftShaderDisabled) {
 TEST_F(GpuDataManagerImplPrivateTest, GpuStartsWithGpuDisabled) {
   base::CommandLine::ForCurrentProcess()->AppendSwitch(switches::kDisableGpu);
   ScopedGpuDataManagerImplPrivate manager;
+#if BUILDFLAG(IS_CHROMECAST)
+  // GPU should not start if disabled.
+  EXPECT_EQ(gpu::GpuMode::DISABLED, manager->GetGpuMode());
+#else
   EXPECT_EQ(gpu::GpuMode::SWIFTSHADER, manager->GetGpuMode());
+#endif  // IS_CHROMECAST
 }
 #endif  // !OS_ANDROID && !OS_CHROMEOS
 

@@ -28,6 +28,7 @@
 
 #include "third_party/blink/public/common/input/web_gesture_event.h"
 #include "third_party/blink/public/mojom/input/scroll_direction.mojom-blink.h"
+#include "third_party/blink/public/mojom/scroll/scroll_into_view_params.mojom-blink.h"
 #include "third_party/blink/renderer/platform/geometry/float_point.h"
 #include "third_party/blink/renderer/platform/geometry/float_size.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
@@ -197,12 +198,6 @@ enum ScrollbarPart {
 enum ScrollbarOverlayColorTheme {
   kScrollbarOverlayColorThemeDark,
   kScrollbarOverlayColorThemeLight
-};
-
-enum ScrollBehavior {
-  kScrollBehaviorAuto,
-  kScrollBehaviorInstant,
-  kScrollBehaviorSmooth,
 };
 
 // The result of an attempt to scroll. If didScroll is true, then

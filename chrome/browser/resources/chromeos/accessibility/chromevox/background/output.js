@@ -403,7 +403,7 @@ Output = class {
 
     this.formatOptions_ = {speech: true, braille: false, auralStyle: false};
     this.format_({
-      node: node,
+      node,
       outputFormat: formatStr,
       outputBuffer: this.speechBuffer_,
       outputRuleString: this.speechRulesStr_
@@ -425,7 +425,7 @@ Output = class {
 
     this.formatOptions_ = {speech: false, braille: true, auralStyle: false};
     this.format_({
-      node: node,
+      node,
       outputFormat: formatStr,
       outputBuffer: this.brailleBuffer_,
       outputRuleString: this.brailleRulesStr_
@@ -536,8 +536,7 @@ Output = class {
         }
       }
 
-      var output = new NavBraille(
-          {text: buff, startIndex: startIndex, endIndex: endIndex});
+      var output = new NavBraille({text: buff, startIndex, endIndex});
 
       ChromeVox.braille.write(output);
       if (this.brailleRulesStr_.str) {
@@ -821,7 +820,7 @@ Output = class {
             } else {
               ruleStr.writeToken(token);
               this.format_({
-                node: node,
+                node,
                 outputFormat: '$descendants',
                 outputBuffer: buff,
                 outputRuleString: ruleStr
@@ -855,7 +854,7 @@ Output = class {
             if (msg) {
               ruleStr.writeToken(token);
               this.format_({
-                node: node,
+                node,
                 outputFormat: '@' + msg,
                 outputBuffer: buff,
                 outputRuleString: ruleStr
@@ -866,7 +865,7 @@ Output = class {
             if (msg) {
               ruleStr.writeToken(token);
               this.format_({
-                node: node,
+                node,
                 outputFormat: '@' + msg,
                 outputBuffer: buff,
                 outputRuleString: ruleStr
@@ -877,7 +876,7 @@ Output = class {
             if (msg) {
               ruleStr.writeToken(token);
               this.format_({
-                node: node,
+                node,
                 outputFormat: '@' + msg,
                 outputBuffer: buff,
                 outputRuleString: ruleStr
@@ -890,7 +889,7 @@ Output = class {
                 if (stateInfo && !stateInfo.isRoleSpecific && stateInfo.on) {
                   ruleStr.writeToken(token);
                   this.format_({
-                    node: node,
+                    node,
                     outputFormat: '$' + s,
                     outputBuffer: buff,
                     outputRuleString: ruleStr
@@ -909,7 +908,7 @@ Output = class {
               if (node) {
                 ruleStr.writeToken(token);
                 this.format_({
-                  node: node,
+                  node,
                   outputFormat: formatString,
                   outputBuffer: buff,
                   outputRuleString: ruleStr
@@ -958,7 +957,7 @@ Output = class {
             var unjoined = [];
             ruleStr.write('joinedDescendants {');
             this.format_({
-              node: node,
+              node,
               outputFormat: '$descendants',
               outputBuffer: unjoined,
               outputRuleString: ruleStr
@@ -1032,7 +1031,7 @@ Output = class {
             } else {
               ruleStr.write(token);
               this.format_({
-                node: node,
+                node,
                 outputFormat: ` @cell_summary($if($tableCellAriaRowIndex,
                         $tableCellAriaRowIndex, $tableCellRowIndex),
                       $if($tableCellAriaColumnIndex, $tableCellAriaColumnIndex,
@@ -1087,7 +1086,7 @@ Output = class {
             if (node.name) {
               ruleStr.writeToken(token);
               this.format_({
-                node: node,
+                node,
                 outputFormat: '$name',
                 outputBuffer: buff,
                 outputRuleString: ruleStr
@@ -1152,7 +1151,7 @@ Output = class {
             } else {
               ruleStr.writeToken(token);
               this.format_({
-                node: node,
+                node,
                 outputFormat: '$indexInParent',
                 outputBuffer: buff,
                 outputRuleString: ruleStr
@@ -1171,7 +1170,7 @@ Output = class {
               if (Output.isTruthy(node, attrib)) {
                 ruleStr.write(attrib + '==true => ');
                 this.format_({
-                  node: node,
+                  node,
                   outputFormat: cond.nextSibling,
                   outputBuffer: buff,
                   outputRuleString: ruleStr
@@ -1179,7 +1178,7 @@ Output = class {
               } else if (Output.isFalsey(node, attrib)) {
                 ruleStr.write(attrib + '==false => ');
                 this.format_({
-                  node: node,
+                  node,
                   outputFormat: cond.nextSibling.nextSibling,
                   outputBuffer: buff,
                   outputRuleString: ruleStr
@@ -1192,7 +1191,7 @@ Output = class {
               if (Output.isFalsey(node, attrib)) {
                 ruleStr.write(attrib + '==false => ');
                 this.format_({
-                  node: node,
+                  node,
                   outputFormat: cond.nextSibling,
                   outputBuffer: buff,
                   outputRuleString: ruleStr
@@ -1200,7 +1199,7 @@ Output = class {
               } else if (Output.isTruthy(node, attrib)) {
                 ruleStr.write(attrib + '==true => ');
                 this.format_({
-                  node: node,
+                  node,
                   outputFormat: cond.nextSibling.nextSibling,
                   outputBuffer: buff,
                   outputRuleString: ruleStr
@@ -1253,7 +1252,7 @@ Output = class {
               }
               var msgBuff = [];
               this.format_({
-                node: node,
+                node,
                 outputFormat: curArg,
                 outputBuffer: msgBuff,
                 outputRuleString: ruleStr
@@ -1297,7 +1296,7 @@ Output = class {
             }
             var argBuff = [];
             this.format_({
-              node: node,
+              node,
               outputFormat: arg,
               outputBuffer: argBuff,
               outputRuleString: ruleStr
@@ -1609,7 +1608,7 @@ Output = class {
       }
       ruleStr.writeRule(rule);
       this.format_({
-        node: node,
+        node,
         outputFormat: eventBlock[rule.role][rule.output],
         outputBuffer: buff,
         outputRuleString: ruleStr,
@@ -1751,7 +1750,7 @@ Output = class {
       // Undelayed hints.
       if (node.errorMessage) {
         this.format_({
-          node: node,
+          node,
           outputFormat: '$node(errorMessage)',
           outputBuffer: buff,
           outputRuleString: ruleStr
@@ -1766,7 +1765,7 @@ Output = class {
       if (EventSourceState.get() == EventSourceType.TOUCH_GESTURE) {
         if (node.state[StateType.EDITABLE]) {
           this.format_({
-            node: node,
+            node,
             outputFormat: node.state[StateType.FOCUSED] ?
                 '@hint_is_editing' :
                 '@hint_double_tap_to_edit',
@@ -1781,7 +1780,7 @@ Output = class {
             (n) => n.role == RoleType.KEYBOARD);
         if (node.defaultActionVerb != 'none' && !isWithinVirtualKeyboard) {
           this.format_({
-            node: node,
+            node,
             outputFormat: '@hint_double_tap',
             outputBuffer: buff,
             outputRuleString: ruleStr,
@@ -1793,7 +1792,7 @@ Output = class {
             uniqueAncestors.find((n) => n.role == RoleType.KEYBOARD);
         if (enteredVirtualKeyboard) {
           this.format_({
-            node: node,
+            node,
             outputFormat: '@hint_touch_type',
             outputBuffer: buff,
             outputRuleString: ruleStr,
@@ -1806,7 +1805,7 @@ Output = class {
 
       if (node.state[StateType.EDITABLE] && ChromeVox.isStickyPrefOn) {
         this.format_({
-          node: node,
+          node,
           outputFormat: '@sticky_mode_enabled',
           outputBuffer: buff,
           outputRuleString: ruleStr,
@@ -1819,7 +1818,7 @@ Output = class {
         if (node.state[StateType.MULTILINE] ||
             node.state[StateType.RICHLY_EDITABLE]) {
           this.format_({
-            node: node,
+            node,
             outputFormat: '@hint_search_within_text_field',
             outputBuffer: buff,
             outputRuleString: ruleStr,
@@ -1841,7 +1840,7 @@ Output = class {
 
       if (AutomationPredicate.checkable(node)) {
         this.format_({
-          node: node,
+          node,
           outputFormat: '@hint_checkable',
           outputBuffer: buff,
           outputRuleString: ruleStr,
@@ -1849,7 +1848,7 @@ Output = class {
         });
       } else if (AutomationPredicate.clickable(node)) {
         this.format_({
-          node: node,
+          node,
           outputFormat: '@hint_clickable',
           outputBuffer: buff,
           outputRuleString: ruleStr,
@@ -1860,7 +1859,7 @@ Output = class {
       if (node.autoComplete == 'list' || node.autoComplete == 'both' ||
           node.state[StateType.AUTOFILL_AVAILABLE]) {
         this.format_({
-          node: node,
+          node,
           outputFormat: '@hint_autocomplete_list',
           outputBuffer: buff,
           outputRuleString: ruleStr,
@@ -1869,7 +1868,7 @@ Output = class {
       }
       if (node.autoComplete == 'inline' || node.autoComplete == 'both') {
         this.format_({
-          node: node,
+          node,
           outputFormat: '@hint_autocomplete_inline',
           outputBuffer: buff,
           outputRuleString: ruleStr,
@@ -1886,7 +1885,7 @@ Output = class {
               /** @type {function(?) : boolean} */ (
                   AutomationPredicate.table))) {
         this.format_({
-          node: node,
+          node,
           outputFormat: '@hint_table',
           outputBuffer: buff,
           outputRuleString: ruleStr,
@@ -1896,7 +1895,7 @@ Output = class {
       if (uniqueAncestors.find(/** @type {function(?) : boolean} */ (
               AutomationPredicate.roles([RoleType.MENU, RoleType.MENU_BAR])))) {
         this.format_({
-          node: node,
+          node,
           outputFormat: '@hint_menu',
           outputBuffer: buff,
           outputRuleString: ruleStr,
@@ -1908,7 +1907,7 @@ Output = class {
                 return !!n.details;
               }))) {
         this.format_({
-          node: node,
+          node,
           outputFormat: '@hint_details',
           outputBuffer: buff,
           outputRuleString: ruleStr,

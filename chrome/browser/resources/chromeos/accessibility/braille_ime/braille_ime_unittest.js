@@ -128,11 +128,7 @@ BrailleImeUnitTest.prototype = {
   },
 
   sendKeyEvent_(type, code, extra) {
-    var event = {
-      type: type,
-      code: code,
-      requestId: (++this.lastSentKeyRequestId_) + ''
-    };
+    var event = {type, code, requestId: (++this.lastSentKeyRequestId_) + ''};
     for (var key in extra) {
       event[key] = extra[key];
     }
@@ -265,12 +261,8 @@ TEST_F('BrailleImeUnitTest', 'ReplaceText', function() {
     callback();
   };
   var sendReplaceText = function(deleteBefore, newText) {
-    this.port.onMessage.dispatch({
-      type: 'replaceText',
-      contextID: CONTEXT_ID,
-      deleteBefore: deleteBefore,
-      newText: newText
-    });
+    this.port.onMessage.dispatch(
+        {type: 'replaceText', contextID: CONTEXT_ID, deleteBefore, newText});
   }.bind(this);
   this.activateIme();
   sendReplaceText(0, 'hello!');
@@ -290,11 +282,10 @@ TEST_F('BrailleImeUnitTest', 'Uncommitted', function() {
   };
   var sendSetUncommitted = function(text) {
     this.port.onMessage.dispatch(
-        {type: 'setUncommitted', contextID: CONTEXT_ID, text: text});
+        {type: 'setUncommitted', contextID: CONTEXT_ID, text});
   }.bind(this);
   var sendCommitUncommitted = function(contextID) {
-    this.port.onMessage.dispatch(
-        {type: 'commitUncommitted', contextID: contextID});
+    this.port.onMessage.dispatch({type: 'commitUncommitted', contextID});
   }.bind(this);
 
   this.activateIme();

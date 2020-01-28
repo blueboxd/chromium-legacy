@@ -70,6 +70,12 @@ class DesktopCommonSystemHealth(_CommonSystemHealthBenchmark):
   def Name(cls):
     return 'system_health.common_desktop'
 
+  def CreateCoreTimelineBasedMeasurementOptions(self):
+    options = super(DesktopCommonSystemHealth,
+                    self).CreateCoreTimelineBasedMeasurementOptions()
+    options.config.chrome_trace_config.SetTraceBufferSizeInKb(300 * 1024)
+    return options
+
 
 @benchmark.Info(emails=['charliea@chromium.org', 'sullivan@chromium.org',
                         'tdresser@chromium.org',

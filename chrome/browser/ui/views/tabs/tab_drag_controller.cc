@@ -2128,8 +2128,20 @@ void TabDragController::UpdateGroupForDraggedTabs() {
 
   const ui::ListSelectionModel::SelectedIndices& selected =
       attached_model->selection_model().selected_indices();
+
+  // Pinned tabs cannot be grouped, so we only change the group membership of
+  // unpinned tabs.
+  std::vector<int> selected_unpinned;
+  for (const int& selected_index : selected) {
+    if (!attached_model->IsTabPinned(selected_index))
+      selected_unpinned.push_back(selected_index);
+  }
+
+  if (selected_unpinned.empty())
+    return;
+
   const base::Optional<tab_groups::TabGroupId> updated_group =
-      GetTabGroupForTargetIndex(selected);
+      GetTabGroupForTargetIndex(selected_unpinned);
 
   // Removing a tab from a group could change the index of the selected tabs.
   // Store this to move the tab back to the proper position.
@@ -2138,19 +2150,18 @@ void TabDragController::UpdateGroupForDraggedTabs() {
   // All selected tabs should all be in the same group unless it is the initial
   // move.
   if (initial_move_) {
-    attached_model->RemoveFromGroup(selected);
+    attached_model->RemoveFromGroup(selected_unpinned);
     attached_model->MoveSelectedTabsTo(to_index);
   }
 
-  if (updated_group == attached_model->GetTabGroupForTab(selected[0])) {
+  if (updated_group == attached_model->GetTabGroupForTab(selected_unpinned[0]))
     return;
-  }
 
   if (updated_group.has_value()) {
-    attached_model->MoveTabsAndSetGroup(selected, selected[0],
+    attached_model->MoveTabsAndSetGroup(selected_unpinned, selected_unpinned[0],
                                         updated_group.value());
   } else {
-    attached_model->RemoveFromGroup(selected);
+    attached_model->RemoveFromGroup(selected_unpinned);
     attached_model->MoveSelectedTabsTo(to_index);
   }
 }

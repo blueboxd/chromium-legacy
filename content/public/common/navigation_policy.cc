@@ -56,8 +56,7 @@ bool IsBackForwardCacheEnabled() {
 
 bool IsProactivelySwapBrowsingInstanceEnabled() {
   return base::FeatureList::IsEnabled(
-             features::kProactivelySwapBrowsingInstance) ||
-         IsBackForwardCacheEnabled();
+      features::kProactivelySwapBrowsingInstance);
 }
 
 NavigationDownloadPolicy::NavigationDownloadPolicy() = default;

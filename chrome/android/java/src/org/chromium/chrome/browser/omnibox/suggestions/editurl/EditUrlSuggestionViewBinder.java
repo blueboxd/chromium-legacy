@@ -4,23 +4,24 @@
 
 package org.chromium.chrome.browser.omnibox.suggestions.editurl;
 
+import android.content.res.ColorStateList;
 import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
-import android.support.v4.graphics.drawable.DrawableCompat;
 import android.support.v7.content.res.AppCompatResources;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.omnibox.suggestions.SuggestionCommonProperties;
+import org.chromium.components.browser_ui.styles.ChromeColors;
 import org.chromium.ui.modelutil.PropertyKey;
 import org.chromium.ui.modelutil.PropertyModel;
 
 /** A mechanism for binding the {@link EditUrlSuggestionProperties} to its view. */
 public class EditUrlSuggestionViewBinder {
-    public static void bind(PropertyModel model, ViewGroup view, PropertyKey propertyKey) {
+    public static void bind(PropertyModel model, View view, PropertyKey propertyKey) {
         if (EditUrlSuggestionProperties.TITLE_TEXT == propertyKey) {
             TextView titleView = view.findViewById(R.id.title_text_view);
             titleView.setText(model.get(EditUrlSuggestionProperties.TITLE_TEXT));
@@ -59,15 +60,15 @@ public class EditUrlSuggestionViewBinder {
         Bitmap bitmap = model.get(EditUrlSuggestionProperties.SITE_FAVICON);
         if (bitmap != null) {
             view.setImageBitmap(bitmap);
+            ApiCompatibilityUtils.setImageTintList(view, null);
         } else {
             boolean useDarkColors = model.get(SuggestionCommonProperties.USE_DARK_COLORS);
             Drawable icon =
                     AppCompatResources.getDrawable(view.getContext(), R.drawable.ic_globe_24dp);
-            int color = view.getContext().getResources().getColor(useDarkColors
-                            ? R.color.default_icon_color_secondary_list
-                            : R.color.white_mode_tint);
-            DrawableCompat.setTint(icon, color);
+            ColorStateList tint = AppCompatResources.getColorStateList(
+                    view.getContext(), ChromeColors.getIconTintRes(!useDarkColors));
             view.setImageDrawable(icon);
+            ApiCompatibilityUtils.setImageTintList(view, tint);
         }
     }
 }

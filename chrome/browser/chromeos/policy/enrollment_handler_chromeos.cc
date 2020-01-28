@@ -248,6 +248,7 @@ void EnrollmentHandlerChromeOS::StartEnrollment() {
     return;
   }
 
+  VLOG(1) << "Requesting state keys.";
   state_keys_broker_->RequestStateKeys(
       base::Bind(&EnrollmentHandlerChromeOS::HandleStateKeysResult,
                  weak_ptr_factory_.GetWeakPtr()));
@@ -381,12 +382,14 @@ void EnrollmentHandlerChromeOS::HandleStateKeysResult(
     register_params_->current_state_key =
         state_keys_broker_->current_state_key();
     if (state_keys.empty() || register_params_->current_state_key.empty()) {
+      LOG(ERROR) << "State keys empty.";
       ReportResult(
           EnrollmentStatus::ForStatus(EnrollmentStatus::NO_STATE_KEYS));
       return;
     }
   }
 
+  VLOG(1) << "State keys generated.";
   SetStep(STEP_LOADING_STORE);
   StartRegistration();
 }
@@ -398,6 +401,7 @@ void EnrollmentHandlerChromeOS::StartRegistration() {
     // after the CloudPolicyStore has initialized.
     return;
   }
+  VLOG(1) << "Start registration, config mode = " << enrollment_config_.mode;
   SetStep(STEP_REGISTRATION);
   if (enrollment_config_.is_mode_attestation()) {
     StartAttestationBasedEnrollmentFlow();

@@ -5,7 +5,8 @@
 #ifndef SERVICES_SHAPE_DETECTION_TEXT_DETECTION_IMPL_MAC_H_
 #define SERVICES_SHAPE_DETECTION_TEXT_DETECTION_IMPL_MAC_H_
 
-#include "base/mac/availability.h"
+#import <os/availability.h>
+
 #include "base/mac/scoped_nsobject.h"
 #include "services/shape_detection/public/mojom/textdetection.mojom.h"
 

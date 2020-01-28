@@ -92,9 +92,4 @@ const base::Feature kUsbStorageUIFeature{"ArcUsbStorageUI",
 const base::Feature kVideoDecoder{"ArcVideoDecoder",
                                   base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Controls ARC VPN integration.
-// When enabled, Chrome traffic will be routed through VPNs connected in
-// Android apps.
-const base::Feature kVpnFeature{"ArcVpn", base::FEATURE_ENABLED_BY_DEFAULT};
-
 }  // namespace arc

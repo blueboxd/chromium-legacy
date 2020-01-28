@@ -86,7 +86,8 @@ class CORE_EXPORT DevToolsAgent : public GarbageCollected<DevToolsAgent>,
           main_session,
       mojo::PendingReceiver<mojom::blink::DevToolsSession> io_session,
       mojom::blink::DevToolsSessionStatePtr reattach_session_state,
-      bool client_expects_binary_responses) override;
+      bool client_expects_binary_responses,
+      const WTF::String& session_id) override;
   void InspectElement(const gfx::Point& point) override;
   void ReportChildWorkers(bool report,
                           bool wait_for_debugger,
@@ -114,7 +115,8 @@ class CORE_EXPORT DevToolsAgent : public GarbageCollected<DevToolsAgent>,
           main_session,
       mojo::PendingReceiver<mojom::blink::DevToolsSession> io_session,
       mojom::blink::DevToolsSessionStatePtr reattach_session_state,
-      bool client_expects_binary_responses);
+      bool client_expects_binary_responses,
+      const WTF::String& session_id);
   void InspectElementImpl(const gfx::Point& point);
   void ReportChildWorkersImpl(bool report,
                               bool wait_for_debugger,

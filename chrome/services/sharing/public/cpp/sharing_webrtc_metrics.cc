@@ -16,3 +16,9 @@ void LogWebRtcAddIceCandidate(bool success) {
   base::UmaHistogramBoolean(base::StrCat({kMetricsPrefix, "AddIceCandidate"}),
                             success);
 }
+
+void LogWebRtcIceConfigFetched(int count) {
+  base::UmaHistogramExactLinear(
+      base::StrCat({kMetricsPrefix, "IceConfigFetched"}), count,
+      /*value_max=*/10);
+}

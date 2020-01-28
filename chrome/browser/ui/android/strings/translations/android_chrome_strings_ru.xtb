@@ -134,6 +134,7 @@
 <translation id="1994173015038366702">Адрес сайта</translation>
 <translation id="2000419248597011803">Отправлять некоторые файлы cookie и поисковые запросы из адресной строки в поисковую систему по умолчанию</translation>
 <translation id="2002537628803770967">Кредитные карты и адреса из Google Pay</translation>
+<translation id="2012973609889389923">Быстрая загрузка</translation>
 <translation id="2013642289801508067">{FILE_COUNT,plural, =1{# файл}one{# файл}few{# файла}many{# файлов}other{# файла}}</translation>
 <translation id="2017836877785168846">Удаление истории и вариантов автозаполнения в адресной строке</translation>
 <translation id="2021896219286479412">Настройки полноэкранного режима</translation>
@@ -306,6 +307,7 @@
 <translation id="3298243779924642547">Lite</translation>
 <translation id="3303414029551471755">Скачать?</translation>
 <translation id="3306398118552023113">Это приложение запущено в Chrome.</translation>
+<translation id="3312292613668865961">Запрашивать для сайтов разрешение на доступ к устройствам и данным виртуальной реальности (рекомендуется)</translation>
 <translation id="3315103659806849044">Сейчас вы находитесь на странице настроек сервисов Google и синхронизации. Чтобы включить синхронизацию, нажмите кнопку "Подтвердить" в нижней части экрана. Перейти вверх</translation>
 <translation id="3328801116991980348">Информация о сайте</translation>
 <translation id="3333961966071413176">Все контакты</translation>
@@ -511,6 +513,7 @@
 <translation id="4915549754973153784">Поиск устройств… <ph name="BEGIN_LINK" />Справка<ph name="END_LINK" /></translation>
 <translation id="4921180162323349895">{FILE_COUNT,plural, =1{# страница}one{# страница}few{# страницы}many{# страниц}other{# страницы}}</translation>
 <translation id="4932247056774066048">Вы выходите из аккаунта, которым управляет администратор домена <ph name="DOMAIN_NAME" />. Все данные Chrome будут удалены с этого устройства, но сохранятся в аккаунте Google.</translation>
+<translation id="4935305910887312910">Запрашивать для сайтов разрешение на составление плана комнаты и отслеживание положения камеры (рекомендуется)</translation>
 <translation id="4943703118917034429">Виртуальная реальность</translation>
 <translation id="4943872375798546930">Нет результатов</translation>
 <translation id="4958708863221495346">Сайту <ph name="URL_OF_THE_CURRENT_TAB" /> предоставлен доступ к вашему экрану</translation>
@@ -687,7 +690,6 @@
 <translation id="6201345951596836663">Ссылка скопирована.</translation>
 <translation id="6206551242102657620">Подключение защищено. Информация о сайте</translation>
 <translation id="6210748933810148297"><ph name="EMAIL" /> не ваш аккаунт?</translation>
-<translation id="6216432067784365534"><ph name="NAME_OF_LIST_ITEM" />: параметры</translation>
 <translation id="6221633008163990886">Чтобы экспортировать пароли, разблокируйте экран</translation>
 <translation id="6232535412751077445">Если вы запретите отслеживание, в запросы браузера будет включена специальная команда. Сайты могут интерпретировать ее и отвечать на нее по-разному.
 
@@ -733,7 +735,6 @@
 <translation id="6534565668554028783">Превышено время ожидания ответа от Google</translation>
 <translation id="6538442820324228105">Скачано <ph name="GBS" /> ГБ</translation>
 <translation id="6539092367496845964">Произошла ошибка. Повторите попытку позже.</translation>
-<translation id="654446541061731451">Выберите вкладку для передачи</translation>
 <translation id="6545017243486555795">Удалить все данные</translation>
 <translation id="6545864417968258051">Поиск Bluetooth-устройств</translation>
 <translation id="6560414384669816528">Поиск в Sogou</translation>
@@ -744,6 +745,7 @@
 <translation id="6573431926118603307">Здесь появятся вкладки, открытые в Chrome на других устройствах.</translation>
 <translation id="6583199322650523874">Добавить страницу в закладки</translation>
 <translation id="6593061639179217415">Версия для ПК</translation>
+<translation id="6597891566292541626">Поместите QR-код или штрихкод в эту рамку.</translation>
 <translation id="6600954340915313787">Скопировано в Chrome</translation>
 <translation id="6608650720463149374"><ph name="GIGABYTES" /> ГБ</translation>
 <translation id="6612358246767739896">Защищенный контент</translation>
@@ -953,6 +955,7 @@
 <translation id="8109613176066109935">Чтобы получить доступ к закладкам на всех устройствах, включите синхронизацию.</translation>
 <translation id="8110087112193408731">Показать данные о ваших действиях в Chrome в сервисе "Цифровое благополучие"?</translation>
 <translation id="8116925261070264013">Сайты с отключенным звуком</translation>
+<translation id="8127542551745560481">Изменить главную страницу</translation>
 <translation id="813082847718468539">Сведения о сайте</translation>
 <translation id="8156139159503939589">На каких языках вы читаете?</translation>
 <translation id="8168435359814927499">Контент</translation>
@@ -1024,8 +1027,8 @@
 <translation id="8676374126336081632">Очистить</translation>
 <translation id="8687353297350450808">{N_BARS,plural, =1{Уровень сигнала: # линия}one{Уровень сигнала: # линия}few{Уровень сигнала: # линии}many{Уровень сигнала: # линий}other{Уровень сигнала: # линии}}</translation>
 <translation id="868929229000858085">Поиск контактов</translation>
+<translation id="8698438463325761328">Закрыть сайтам доступ к устройствам и данным виртуальной реальности</translation>
 <translation id="869891660844655955">Срок действия</translation>
-<translation id="8719023831149562936">Не удалось передать текущую вкладку</translation>
 <translation id="8728487861892616501">Используя это приложение, вы соглашаетесь с <ph name="BEGIN_LINK1" />Условиями использования<ph name="END_LINK1" /> и <ph name="BEGIN_LINK2" />Примечанием о конфиденциальности<ph name="END_LINK2" /> Chrome, а также с <ph name="BEGIN_LINK3" />Примечанием о конфиденциальности для аккаунтов Google, управляемых с помощью Family Link<ph name="END_LINK3" />.</translation>
 <translation id="8748850008226585750">Содержимое скрыто</translation>
 <translation id="8751914237388039244">Выберите фото</translation>
@@ -1041,6 +1044,7 @@
 <translation id="883806473910249246">При скачивании контента произошла ошибка.</translation>
 <translation id="8840953339110955557">Страница может отличаться от онлайн-версии.</translation>
 <translation id="8847988622838149491">USB</translation>
+<translation id="884828189055900810">Закрыть сайтам доступ к составлению плана комнаты и отслеживанию положения камеры</translation>
 <translation id="8853345339104747198">Вкладка "<ph name="TAB_TITLE" />"</translation>
 <translation id="885701979325669005">Хранилище</translation>
 <translation id="889338405075704026">Открыть настройки Chrome</translation>
@@ -1048,6 +1052,7 @@
 <translation id="8909135823018751308">Поделиться...</translation>
 <translation id="8912362522468806198">Аккаунт Google</translation>
 <translation id="8920114477895755567">Недостаточно данных о родителях.</translation>
+<translation id="8921772741368021346"><ph name="POSITION" />/<ph name="DURATION" /></translation>
 <translation id="8922289737868596582">Скачивайте страницы через меню кнопки "Ещё" и открывайте их без подключения к Интернету</translation>
 <translation id="8926666909099850184">Функция NFC на этом устройстве отключена. Включите ее в <ph name="BEGIN_LINK" />настройках Android<ph name="END_LINK" />.</translation>
 <translation id="8937772741022875483">Удалить данные о ваших действиях в Chrome из сервиса "Цифровое благополучие"?</translation>

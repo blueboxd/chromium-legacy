@@ -120,7 +120,7 @@ target(tracing_lib_type, "cpp") {
         "perfetto/android_system_producer.cc",
         "perfetto/android_system_producer.h",
       ]
-      deps += [ "//third_party/perfetto/src/tracing:ipc" ]
+      deps += [ "//third_party/perfetto/src/tracing/ipc/producer" ]
     }
 
     if (is_android && can_unwind_with_cfi_table && is_official_build) {

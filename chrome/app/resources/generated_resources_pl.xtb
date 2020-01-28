@@ -1904,7 +1904,7 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="3630132874740063857">Twój telefon</translation>
 <translation id="3630995161997703415">Dodaj tę stronę do półki, by używać jej w dowolnym czasie</translation>
 <translation id="3634507049637220048">Sieć <ph name="NETWORK_INDEX" /> z <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, zarządzana przez administratora, szczegóły</translation>
-<translation id="3635241501480133979">Tych danych nie można przeciągnąć, ponieważ naruszają zasady bezpieczeństwa obowiązujące w Twojej organizacji.</translation>
+<translation id="3635241501480133979">Tych danych nie można przeciągnąć, ponieważ naruszają one zasady bezpieczeństwa obowiązujące w Twojej organizacji.</translation>
 <translation id="3635353578505343390">Prześlij opinię do Google</translation>
 <translation id="3636096452488277381">Cześć <ph name="USER_GIVEN_NAME" />.</translation>
 <translation id="3636766455281737684"><ph name="PERCENTAGE" />% – pozostało <ph name="TIME" /></translation>
@@ -2469,7 +2469,7 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="4421932782753506458">Puszysty</translation>
 <translation id="4423376891418188461">Przywróć ustawienia</translation>
 <translation id="442397852638519243">Twój administrator (<ph name="USER_NAME" />) prosi Cię o zmianę Twojego hasła.</translation>
-<translation id="4429030830601238961">Tych danych nie można wkleić, ponieważ naruszają zasady bezpieczeństwa obowiązujące w Twojej organizacji.</translation>
+<translation id="4429030830601238961">Tych danych nie można wkleić, ponieważ naruszają one zasady bezpieczeństwa obowiązujące w Twojej organizacji.</translation>
 <translation id="4430019312045809116">Głośność</translation>
 <translation id="4430369329743628066">Dodano zakładkę</translation>
 <translation id="4434045419905280838">Pop-upy i przekierowania</translation>
@@ -4315,7 +4315,7 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="7081952801286122383">Korzystasz z trybu incognito</translation>
 <translation id="708278670402572152">Rozłącz, by włączyć skanowanie</translation>
 <translation id="7085389578340536476">Zezwolić Chrome na nagrywanie dźwięku?</translation>
-<translation id="7086467953285486445">Tych plików nie można przeciągnąć, ponieważ naruszają zasady bezpieczeństwa obowiązujące w Twojej organizacji.</translation>
+<translation id="7086467953285486445">Tych plików nie można przeciągnąć, ponieważ naruszają one zasady bezpieczeństwa obowiązujące w Twojej organizacji.</translation>
 <translation id="7088434364990739311">Nie udało się uruchomić sprawdzania aktualizacji (kod błędu <ph name="ERROR" />).</translation>
 <translation id="7088561041432335295">Zip Archiver – otwieraj i pakuj pliki ZIP w aplikacji Pliki.</translation>
 <translation id="7088674813905715446">Administrator ustawił to urządzenie jako nieobsługiwane. Aby umożliwić jego rejestrację, poproś administratora, by ustawił je jako oczekujące.</translation>

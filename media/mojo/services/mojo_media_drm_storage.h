@@ -10,7 +10,7 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "media/base/android/media_drm_storage.h"
+#include "media/base/media_drm_storage.h"
 #include "media/mojo/mojom/media_drm_storage.mojom.h"
 #include "media/mojo/services/media_mojo_export.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"

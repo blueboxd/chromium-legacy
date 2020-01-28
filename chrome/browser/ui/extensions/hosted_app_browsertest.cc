@@ -50,7 +50,7 @@
 #include "chrome/browser/ui/web_applications/web_app_menu_model.h"
 #include "chrome/browser/web_applications/components/app_registry_controller.h"
 #include "chrome/browser/web_applications/components/external_install_options.h"
-#include "chrome/browser/web_applications/components/web_app_helpers.h"
+#include "chrome/browser/web_applications/components/web_app_id.h"
 #include "chrome/browser/web_applications/components/web_app_provider_base.h"
 #include "chrome/browser/web_applications/test/web_app_install_observer.h"
 #include "chrome/common/chrome_features.h"
@@ -2714,7 +2714,7 @@ IN_PROC_BROWSER_TEST_P(HostedAppProcessModelTest,
   GURL bar_app_url(embedded_test_server()->GetURL("bar.com", "/title2.html"));
   ui_test_utils::NavigateToURLWithDisposition(
       browser(), bar_app_url, WindowOpenDisposition::NEW_FOREGROUND_TAB,
-      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
   content::WebContents* bar_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   EXPECT_EQ(bar_app_url, bar_contents->GetLastCommittedURL());
@@ -2723,7 +2723,7 @@ IN_PROC_BROWSER_TEST_P(HostedAppProcessModelTest,
   GURL foo_app_url2(embedded_test_server()->GetURL("foo.com", "/title3.html"));
   ui_test_utils::NavigateToURLWithDisposition(
       browser(), foo_app_url2, WindowOpenDisposition::NEW_FOREGROUND_TAB,
-      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
   content::WebContents* foo_contents2 =
       browser()->tab_strip_model()->GetActiveWebContents();
   EXPECT_EQ(foo_app_url2, foo_contents2->GetLastCommittedURL());
@@ -2788,7 +2788,7 @@ IN_PROC_BROWSER_TEST_P(HostedAppProcessModelTest,
   GURL bar_app_url2(embedded_test_server()->GetURL("bar.com", "/title3.html"));
   ui_test_utils::NavigateToURLWithDisposition(
       browser(), bar_app_url2, WindowOpenDisposition::NEW_FOREGROUND_TAB,
-      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
   content::WebContents* bar_contents2 =
       browser()->tab_strip_model()->GetActiveWebContents();
   EXPECT_EQ(bar_app_url2, bar_contents2->GetLastCommittedURL());

@@ -2844,14 +2844,6 @@ TEST_F(SyncManagerTest, PurgeUnappliedTypes) {
   }
 }
 
-TEST(SyncManagerImplTest, GenerateCacheGUID) {
-  const std::string guid1 = SyncManagerImpl::GenerateCacheGUIDForTest();
-  const std::string guid2 = SyncManagerImpl::GenerateCacheGUIDForTest();
-  EXPECT_EQ(24U, guid1.size());
-  EXPECT_EQ(24U, guid2.size());
-  EXPECT_NE(guid1, guid2);
-}
-
 // A test harness to exercise the code that processes and passes changes from
 // the "SYNCER"-WriteTransaction destructor, through the SyncManager, to the
 // ChangeProcessor.

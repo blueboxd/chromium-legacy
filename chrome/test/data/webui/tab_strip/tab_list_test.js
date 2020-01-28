@@ -554,7 +554,7 @@ suite('TabList', () => {
     assertEquals(newIndex, dragOverIndex);
   });
 
-  test('DragOverTabGroup', async () => {
+  test('DragTabOverTabGroup', async () => {
     const tabElements = getUnpinnedTabs();
 
     // Group the first tab.
@@ -586,7 +586,7 @@ suite('TabList', () => {
     assertEquals('group0', groupId);
   });
 
-  test('DragOutOfTabGroup', async () => {
+  test('DragTabOutOfTabGroup', async () => {
     const tabElements = getUnpinnedTabs();
 
     // Group the first tab.
@@ -606,7 +606,6 @@ suite('TabList', () => {
     draggedTab.dispatchEvent(dragStartEvent);
 
     // Drag the first tab out.
-    const dragOverTabGroup = getTabGroups()[0];
     const dragOverEvent = new DragEvent('dragover', {
       bubbles: true,
       composed: true,
@@ -615,6 +614,72 @@ suite('TabList', () => {
     tabList.dispatchEvent(dragOverEvent);
     const [tabId] = await testTabsApiProxy.whenCalled('ungroupTab');
     assertEquals(draggedTab.tab.id, tabId);
+  });
+
+  test('DragGroupOverTab', async () => {
+    const tabElements = getUnpinnedTabs();
+
+    // Group the first tab.
+    webUIListenerCallback(
+        'tab-group-state-changed', tabElements[0].tab.id, 0, 'group0');
+
+    // Start dragging the group.
+    const draggedGroup = getTabGroups()[0];
+    const mockDataTransfer = new MockDataTransfer();
+    const dragStartEvent = new DragEvent('dragstart', {
+      bubbles: true,
+      composed: true,
+      clientX: 100,
+      clientY: 150,
+      dataTransfer: mockDataTransfer,
+    });
+    draggedGroup.dispatchEvent(dragStartEvent);
+
+    // Drag the group over the second tab.
+    const dragOverTab = tabElements[1];
+    const dragOverEvent = new DragEvent('dragover', {
+      bubbles: true,
+      composed: true,
+      dataTransfer: mockDataTransfer,
+    });
+    dragOverTab.dispatchEvent(dragOverEvent);
+    const [groupId, index] = await testTabsApiProxy.whenCalled('moveGroup');
+    assertEquals('group0', groupId);
+    assertEquals(1, index);
+  });
+
+  test('DragGroupOverGroup', async () => {
+    const tabElements = getUnpinnedTabs();
+
+    // Group the first tab and second tab separately.
+    webUIListenerCallback(
+        'tab-group-state-changed', tabElements[0].tab.id, 0, 'group0');
+    webUIListenerCallback(
+        'tab-group-state-changed', tabElements[1].tab.id, 1, 'group1');
+
+    // Start dragging the first group.
+    const draggedGroup = getTabGroups()[0];
+    const mockDataTransfer = new MockDataTransfer();
+    const dragStartEvent = new DragEvent('dragstart', {
+      bubbles: true,
+      composed: true,
+      clientX: 100,
+      clientY: 150,
+      dataTransfer: mockDataTransfer,
+    });
+    draggedGroup.dispatchEvent(dragStartEvent);
+
+    // Drag the group over the second tab.
+    const dragOverGroup = getTabGroups()[1];
+    const dragOverEvent = new DragEvent('dragover', {
+      bubbles: true,
+      composed: true,
+      dataTransfer: mockDataTransfer,
+    });
+    dragOverGroup.dispatchEvent(dragOverEvent);
+    const [groupId, index] = await testTabsApiProxy.whenCalled('moveGroup');
+    assertEquals('group0', groupId);
+    assertEquals(1, index);
   });
 
   test('tracks and untracks thumbnails based on viewport', async () => {

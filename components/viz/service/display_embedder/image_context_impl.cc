@@ -82,6 +82,7 @@ void ImageContextImpl::CreateFallbackImage(
           GrMipMapped::kNo, GrRenderable::kYes);
 
   if (!fallback_texture_.isValid()) {
+    fallback_context_state_ = nullptr;
     DLOG(ERROR) << "Could not create backend texture.";
     return;
   }

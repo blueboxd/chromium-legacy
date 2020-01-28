@@ -103,7 +103,7 @@ ContentInfo NavigateAndGetInfo(Browser* browser,
                                WindowOpenDisposition disposition) {
   ui_test_utils::NavigateToURLWithDisposition(
       browser, url, disposition,
-      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
   content::WebContents* contents =
       browser->tab_strip_model()->GetActiveWebContents();
   content::RenderProcessHost* process = contents->GetMainFrame()->GetProcess();
@@ -878,11 +878,11 @@ class HtmlRequestTracker {
         }
       }
 
-      if (query_params_match)
-        return true;
+      if (!query_params_match)
+        return false;
     }
 
-    return false;
+    return true;
   }
 
  private:
@@ -935,6 +935,11 @@ IN_PROC_BROWSER_TEST_F(InlineLoginCorrectGaiaUrlBrowserTest,
   signin_metrics::Reason reason = signin_metrics::Reason::REASON_FETCH_LST_ONLY;
 
   auto signin_url = signin::GetEmbeddedPromoURL(access_point, reason, false);
+  // Set the show_tos parameter so that we can verify if that was passed in
+  // while loading the signin page.
+  signin_url = net::AppendQueryParameter(
+      signin_url, credential_provider::kShowTosSwitch, "1");
+
   ui_test_utils::NavigateToURL(browser(), signin_url);
 
   WaitUntilUIReady(browser());
@@ -942,7 +947,8 @@ IN_PROC_BROWSER_TEST_F(InlineLoginCorrectGaiaUrlBrowserTest,
   // Expected gaia endpoint to load.
   GURL gaia_url = GaiaUrls::GetInstance()->embedded_setup_windows_url();
 
-  EXPECT_TRUE(tracker_.PageRequested(gaia_url, {{"flow", "signin"}}));
+  EXPECT_TRUE(tracker_.PageRequested(gaia_url,
+                                     {{"flow", "signin"}, {"show_tos", "1"}}));
 }
 
 IN_PROC_BROWSER_TEST_F(InlineLoginCorrectGaiaUrlBrowserTest,
@@ -960,6 +966,10 @@ IN_PROC_BROWSER_TEST_F(InlineLoginCorrectGaiaUrlBrowserTest,
   signin_url = net::AppendQueryParameter(
       signin_url, credential_provider::kValidateGaiaIdSigninPromoParameter,
       "gaia_id");
+  // Set the show_tos parameter so that we can verify if that was passed in
+  // while loading the signin page.
+  signin_url = net::AppendQueryParameter(
+      signin_url, credential_provider::kShowTosSwitch, "1");
 
   ui_test_utils::NavigateToURL(browser(), signin_url);
   WaitUntilUIReady(browser());
@@ -967,7 +977,7 @@ IN_PROC_BROWSER_TEST_F(InlineLoginCorrectGaiaUrlBrowserTest,
   // Expected gaia endpoint to load.
   GURL gaia_url = GaiaUrls::GetInstance()->embedded_setup_windows_url();
 
-  EXPECT_TRUE(
-      tracker_.PageRequested(gaia_url, {{"flow", "reauth"}, {"email", email}}));
+  EXPECT_TRUE(tracker_.PageRequested(
+      gaia_url, {{"flow", "reauth"}, {"email", email}, {"show_tos", "1"}}));
 }
 #endif

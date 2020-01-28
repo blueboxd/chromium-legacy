@@ -812,6 +812,10 @@ void MetricsService::CheckForClonedInstall() {
   state_manager_->CheckForClonedInstall();
 }
 
+bool MetricsService::ShouldResetClientIdsOnClonedInstall() {
+  return state_manager_->ShouldResetClientIdsOnClonedInstall();
+}
+
 std::unique_ptr<MetricsLog> MetricsService::CreateLog(
     MetricsLog::LogType log_type) {
   return std::make_unique<MetricsLog>(state_manager_->client_id(), session_id_,

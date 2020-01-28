@@ -24,7 +24,6 @@
 #include "chrome/browser/permissions/permission_manager.h"
 #include "chrome/browser/permissions/permission_request_manager.h"
 #include "chrome/browser/permissions/permission_uma_util.h"
-#include "chrome/browser/permissions/permission_util.h"
 #include "chrome/browser/ui/permission_bubble/mock_permission_prompt_factory.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
@@ -34,6 +33,7 @@
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/permissions/permission_request_id.h"
+#include "components/permissions/permission_util.h"
 #include "components/ukm/content/source_url_recorder.h"
 #include "components/ukm/test_ukm_recorder.h"
 #include "components/variations/variations_associated_data.h"
@@ -225,26 +225,28 @@ class PermissionContextBaseTests : public ChromeRenderViewHostTestHarness {
     EXPECT_TRUE(permission_context.tab_context_updated());
 
     std::string decision_string;
-    base::Optional<PermissionAction> action;
+    base::Optional<permissions::PermissionAction> action;
     if (decision == CONTENT_SETTING_ALLOW) {
       decision_string = "Accepted";
-      action = PermissionAction::GRANTED;
+      action = permissions::PermissionAction::GRANTED;
     } else if (decision == CONTENT_SETTING_BLOCK) {
       decision_string = "Denied";
-      action = PermissionAction::DENIED;
+      action = permissions::PermissionAction::DENIED;
     } else if (decision == CONTENT_SETTING_ASK) {
       decision_string = "Dismissed";
-      action = PermissionAction::DISMISSED;
+      action = permissions::PermissionAction::DISMISSED;
     }
 
     if (!decision_string.empty()) {
       histograms.ExpectUniqueSample(
           "Permissions.Prompt." + decision_string + ".PriorDismissCount." +
-              PermissionUtil::GetPermissionString(content_settings_type),
+              permissions::PermissionUtil::GetPermissionString(
+                  content_settings_type),
           0, 1);
       histograms.ExpectUniqueSample(
           "Permissions.Prompt." + decision_string + ".PriorIgnoreCount." +
-              PermissionUtil::GetPermissionString(content_settings_type),
+              permissions::PermissionUtil::GetPermissionString(
+                  content_settings_type),
           0, 1);
 #if defined(OS_ANDROID)
       histograms.ExpectUniqueSample(
@@ -317,11 +319,13 @@ class PermissionContextBaseTests : public ChromeRenderViewHostTestHarness {
                      base::Unretained(&permission_context)));
       histograms.ExpectTotalCount(
           "Permissions.Prompt.Dismissed.PriorDismissCount." +
-              PermissionUtil::GetPermissionString(content_settings_type),
+              permissions::PermissionUtil::GetPermissionString(
+                  content_settings_type),
           i + 1);
       histograms.ExpectBucketCount(
           "Permissions.Prompt.Dismissed.PriorDismissCount." +
-              PermissionUtil::GetPermissionString(content_settings_type),
+              permissions::PermissionUtil::GetPermissionString(
+                  content_settings_type),
           i, 1);
 
       histograms.ExpectTotalCount("Permissions.AutoBlocker.EmbargoStatus",
@@ -597,8 +601,8 @@ class PermissionContextBaseTests : public ChromeRenderViewHostTestHarness {
 
     EXPECT_FALSE(permission_context.IsPermissionKillSwitchOn());
     std::map<std::string, std::string> params;
-    params[PermissionUtil::GetPermissionString(content_settings_type)] =
-        kPermissionsKillSwitchBlockedValue;
+    params[permissions::PermissionUtil::GetPermissionString(
+        content_settings_type)] = kPermissionsKillSwitchBlockedValue;
     variations::AssociateVariationParams(kPermissionsKillSwitchFieldStudy,
                                          kPermissionsKillSwitchTestGroup,
                                          params);

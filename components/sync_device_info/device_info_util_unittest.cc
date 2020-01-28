@@ -22,9 +22,9 @@ class DeviceInfoUtilTest : public testing::Test {
     // respectively,
     // than both constants.
     EXPECT_LT(small_, DeviceInfoUtil::kActiveThreshold);
-    EXPECT_LT(small_, DeviceInfoUtil::kPulseInterval);
+    EXPECT_LT(small_, DeviceInfoUtil::GetPulseInterval());
     EXPECT_GT(big_, DeviceInfoUtil::kActiveThreshold);
-    EXPECT_GT(big_, DeviceInfoUtil::kPulseInterval);
+    EXPECT_GT(big_, DeviceInfoUtil::GetPulseInterval());
   }
 
   const Time now_ = Time::Now();
@@ -35,44 +35,45 @@ class DeviceInfoUtilTest : public testing::Test {
 }  // namespace
 
 TEST_F(DeviceInfoUtilTest, CalculatePulseDelaySame) {
-  EXPECT_EQ(DeviceInfoUtil::kPulseInterval,
+  EXPECT_EQ(DeviceInfoUtil::GetPulseInterval(),
             DeviceInfoUtil::CalculatePulseDelay(Time(), Time()));
-  EXPECT_EQ(DeviceInfoUtil::kPulseInterval,
+  EXPECT_EQ(DeviceInfoUtil::GetPulseInterval(),
             DeviceInfoUtil::CalculatePulseDelay(now_, now_));
-  EXPECT_EQ(DeviceInfoUtil::kPulseInterval,
+  EXPECT_EQ(DeviceInfoUtil::GetPulseInterval(),
             DeviceInfoUtil::CalculatePulseDelay(now_ + big_, now_ + big_));
 }
 
 TEST_F(DeviceInfoUtilTest, CalculatePulseDelayMiddle) {
-  EXPECT_EQ(DeviceInfoUtil::kPulseInterval - small_,
+  EXPECT_EQ(DeviceInfoUtil::GetPulseInterval() - small_,
             DeviceInfoUtil::CalculatePulseDelay(Time(), Time() + small_));
   EXPECT_EQ(small_,
             DeviceInfoUtil::CalculatePulseDelay(
-                Time(), Time() + DeviceInfoUtil::kPulseInterval - small_));
+                Time(), Time() + DeviceInfoUtil::GetPulseInterval() - small_));
 }
 
 TEST_F(DeviceInfoUtilTest, CalculatePulseDelayStale) {
-  EXPECT_EQ(TimeDelta(), DeviceInfoUtil::CalculatePulseDelay(
-                             Time(), Time() + DeviceInfoUtil::kPulseInterval));
   EXPECT_EQ(TimeDelta(),
             DeviceInfoUtil::CalculatePulseDelay(
-                Time(), Time() + DeviceInfoUtil::kPulseInterval + small_));
+                Time(), Time() + DeviceInfoUtil::GetPulseInterval()));
   EXPECT_EQ(TimeDelta(),
             DeviceInfoUtil::CalculatePulseDelay(
-                Time(), Time() + DeviceInfoUtil::kPulseInterval + small_));
+                Time(), Time() + DeviceInfoUtil::GetPulseInterval() + small_));
+  EXPECT_EQ(TimeDelta(),
+            DeviceInfoUtil::CalculatePulseDelay(
+                Time(), Time() + DeviceInfoUtil::GetPulseInterval() + small_));
   EXPECT_EQ(TimeDelta(), DeviceInfoUtil::CalculatePulseDelay(
-                             now_, now_ + DeviceInfoUtil::kPulseInterval));
+                             now_, now_ + DeviceInfoUtil::GetPulseInterval()));
 }
 
 TEST_F(DeviceInfoUtilTest, CalculatePulseDelayFuture) {
-  EXPECT_EQ(DeviceInfoUtil::kPulseInterval,
+  EXPECT_EQ(DeviceInfoUtil::GetPulseInterval(),
             DeviceInfoUtil::CalculatePulseDelay(Time() + small_, Time()));
-  EXPECT_EQ(DeviceInfoUtil::kPulseInterval,
+  EXPECT_EQ(DeviceInfoUtil::GetPulseInterval(),
             DeviceInfoUtil::CalculatePulseDelay(
-                Time() + DeviceInfoUtil::kPulseInterval, Time()));
-  EXPECT_EQ(DeviceInfoUtil::kPulseInterval,
+                Time() + DeviceInfoUtil::GetPulseInterval(), Time()));
+  EXPECT_EQ(DeviceInfoUtil::GetPulseInterval(),
             DeviceInfoUtil::CalculatePulseDelay(Time() + big_, Time()));
-  EXPECT_EQ(DeviceInfoUtil::kPulseInterval,
+  EXPECT_EQ(DeviceInfoUtil::GetPulseInterval(),
             DeviceInfoUtil::CalculatePulseDelay(now_ + big_, now_));
 }
 

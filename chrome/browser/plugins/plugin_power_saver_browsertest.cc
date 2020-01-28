@@ -287,7 +287,7 @@ class PluginPowerSaverBrowserTest : public InProcessBrowserTest {
     ui_test_utils::NavigateToURLWithDisposition(
         browser(), embedded_test_server()->GetURL(file),
         WindowOpenDisposition::NEW_BACKGROUND_TAB,
-        ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+        ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
 
     int index = browser()->tab_strip_model()->GetIndexOfLastWebContentsOpenedBy(
         GetActiveWebContents(), 0 /* start_index */);

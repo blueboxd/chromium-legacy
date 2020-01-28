@@ -11,7 +11,7 @@
 
 #include "base/macros.h"
 #include "chrome/browser/web_applications/components/file_handler_manager.h"
-#include "chrome/browser/web_applications/components/web_app_helpers.h"
+#include "chrome/browser/web_applications/components/web_app_id.h"
 #include "components/services/app_service/public/cpp/file_handler_info.h"
 #include "url/gurl.h"
 

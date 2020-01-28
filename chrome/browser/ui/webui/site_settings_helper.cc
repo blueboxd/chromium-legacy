@@ -550,7 +550,7 @@ ContentSetting GetContentSettingForOrigin(
   permissions::PermissionResult result(
       CONTENT_SETTING_DEFAULT,
       permissions::PermissionStatusSource::UNSPECIFIED);
-  if (PermissionUtil::IsPermission(content_type)) {
+  if (permissions::PermissionUtil::IsPermission(content_type)) {
     result = PermissionManager::Get(profile)->GetPermissionStatus(
         content_type, origin, origin);
   } else {

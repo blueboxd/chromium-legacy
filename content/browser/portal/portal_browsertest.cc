@@ -1663,6 +1663,63 @@ IN_PROC_BROWSER_TEST_F(PortalBrowserTest,
             portal_frame->browser_accessibility_manager());
 }
 
+IN_PROC_BROWSER_TEST_F(PortalBrowserTest,
+                       CrossSitePortalNavCommitsAfterActivation) {
+  ASSERT_TRUE(NavigateToURL(
+      shell(), embedded_test_server()->GetURL("portal.test", "/title1.html")));
+  WebContentsImpl* web_contents_impl =
+      static_cast<WebContentsImpl*>(shell()->web_contents());
+  RenderFrameHostImpl* main_frame = web_contents_impl->GetMainFrame();
+
+  GURL a_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  Portal* portal = CreatePortalToUrl(web_contents_impl, a_url);
+
+  TestNavigationObserver nav_observer(portal->GetPortalContents());
+  GURL b_url(embedded_test_server()->GetURL("b.com", "/title1.html"));
+  // Start a cross site navigation in the portal contents and immediately
+  // activate the portal. The navigation starts in a child frame but commits
+  // after the frame becomes the root frame.
+  ExecuteScriptAsync(main_frame,
+                     JsReplace("let portal = document.querySelector('portal');"
+                               "portal.src = $1;"
+                               "portal.activate();",
+                               b_url));
+  nav_observer.Wait();
+}
+
+// This is similar to CrossSitePortalNavCommitsAfterActivation, but we navigate
+// an adopted predecessor that hasn't been attached and the navigation commits
+// after the predecessor is reactivated.
+IN_PROC_BROWSER_TEST_F(
+    PortalBrowserTest,
+    CrossSitePortalNavInUnattachedPredecessorCommitsAfterActivation) {
+  ASSERT_TRUE(NavigateToURL(
+      shell(), embedded_test_server()->GetURL("portal.test", "/title1.html")));
+  WebContentsImpl* web_contents_impl =
+      static_cast<WebContentsImpl*>(shell()->web_contents());
+  RenderFrameHostImpl* main_frame = web_contents_impl->GetMainFrame();
+
+  GURL a_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  Portal* portal = CreatePortalToUrl(web_contents_impl, a_url);
+  WebContentsImpl* portal_contents = portal->GetPortalContents();
+  RenderFrameHostImpl* portal_frame = portal_contents->GetMainFrame();
+
+  GURL b_url(embedded_test_server()->GetURL("b.com", "/title1.html"));
+  EXPECT_TRUE(
+      ExecJs(portal_frame,
+             JsReplace("window.addEventListener('portalactivate', (e) => {"
+                       "  let predecessor = e.adoptPredecessor();"
+                       "  predecessor.src = $1;"
+                       "  predecessor.activate();"
+                       "});",
+                       b_url)));
+
+  TestNavigationObserver nav_observer(web_contents_impl);
+  ExecuteScriptAsync(main_frame,
+                     "document.querySelector('portal').activate();");
+  nav_observer.Wait();
+}
+
 class PortalOOPIFBrowserTest : public PortalBrowserTest {
  protected:
   PortalOOPIFBrowserTest() {}

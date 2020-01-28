@@ -279,6 +279,7 @@
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> bookmark}other{<ph name="BOOKMARKS_COUNT_MANY" /> bookmarks}}</translation>
 <translation id="3089395242580810162">Open in incognito tab</translation>
 <translation id="3123473560110926937">Blocked on some sites</translation>
+<translation id="3123734510202723619">Announcements</translation>
 <translation id="3137521801621304719">Leave incognito mode</translation>
 <translation id="3143515551205905069">Cancel sync</translation>
 <translation id="3157842584138209013">See how much data you've saved from the More Options button</translation>
@@ -690,7 +691,6 @@ To change this setting, <ph name="BEGIN_LINK" />reset sync<ph name="END_LINK" />
 <translation id="6201345951596836663">Link copied</translation>
 <translation id="6206551242102657620">Connection is secure. Site information</translation>
 <translation id="6210748933810148297">Not <ph name="EMAIL" />?</translation>
-<translation id="6216432067784365534"><ph name="NAME_OF_LIST_ITEM" /> Options</translation>
 <translation id="6221633008163990886">Unlock to export your passwords</translation>
 <translation id="6232535412751077445">Enabling ‘Do Not Track’ means that a request will be included with your browsing traffic. Any effect depends on whether a website responds to the request and how the request is interpreted.
 
@@ -736,7 +736,6 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="6534565668554028783">Google took too long to respond</translation>
 <translation id="6538442820324228105">Downloaded <ph name="GBS" /> GB</translation>
 <translation id="6539092367496845964">Something went wrong. Try again later.</translation>
-<translation id="654446541061731451">Select a tab to beam</translation>
 <translation id="6545017243486555795">Clear All Data</translation>
 <translation id="6545864417968258051">Bluetooth scanning</translation>
 <translation id="6560414384669816528">Search with Sogou</translation>
@@ -1031,7 +1030,6 @@ The site does NOT gain access to the camera. The camera images are only visible 
 <translation id="868929229000858085">Search your contacts</translation>
 <translation id="8698438463325761328">Block sites from accessing your virtual reality device and data</translation>
 <translation id="869891660844655955">Expiry date</translation>
-<translation id="8719023831149562936">Can’t beam current tab</translation>
 <translation id="8728487861892616501">By using this application, you agree to Chrome’s <ph name="BEGIN_LINK1" />Terms of Service<ph name="END_LINK1" /> and <ph name="BEGIN_LINK2" />Privacy Notice<ph name="END_LINK2" />, and the <ph name="BEGIN_LINK3" />Privacy Notice for Google Accounts Managed with Family Link<ph name="END_LINK3" />.</translation>
 <translation id="8748850008226585750">Contents hidden</translation>
 <translation id="8751914237388039244">Select an image</translation>

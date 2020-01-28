@@ -59,7 +59,13 @@ using testing::UnorderedElementsAreArray;
 namespace headless {
 class HeadlessWebContentsTest : public HeadlessBrowserTest {};
 
-IN_PROC_BROWSER_TEST_F(HeadlessWebContentsTest, Navigation) {
+#if defined(OS_WIN)
+// TODO(crbug.com/1045980): Disabled due to flakiness.
+#define MAYBE_Navigation DISABLED_Navigation
+#else
+#define MAYBE_Navigation Navigation
+#endif
+IN_PROC_BROWSER_TEST_F(HeadlessWebContentsTest, MAYBE_Navigation) {
   EXPECT_TRUE(embedded_test_server()->Start());
 
   HeadlessBrowserContext* browser_context =
@@ -75,7 +81,13 @@ IN_PROC_BROWSER_TEST_F(HeadlessWebContentsTest, Navigation) {
               UnorderedElementsAre(web_contents));
 }
 
-IN_PROC_BROWSER_TEST_F(HeadlessWebContentsTest, WindowOpen) {
+#if defined(OS_WIN)
+// TODO(crbug.com/1045980): Disabled due to flakiness.
+#define MAYBE_WindowOpen DISABLED_WindowOpen
+#else
+#define MAYBE_WindowOpen WindowOpen
+#endif
+IN_PROC_BROWSER_TEST_F(HeadlessWebContentsTest, MAYBE_WindowOpen) {
   EXPECT_TRUE(embedded_test_server()->Start());
 
   HeadlessBrowserContext* browser_context =
@@ -118,8 +130,16 @@ IN_PROC_BROWSER_TEST_F(HeadlessWebContentsTest, WindowOpen) {
 #endif  // !defined(OS_MACOSX)
 }
 
+#if defined(OS_WIN)
+// TODO(crbug.com/1045980): Disabled due to flakiness.
+#define MAYBE_FocusOfHeadlessWebContents_IsIndependent \
+  DISABLED_FocusOfHeadlessWebContents_IsIndependent
+#else
+#define MAYBE_FocusOfHeadlessWebContents_IsIndependent \
+  FocusOfHeadlessWebContents_IsIndependent
+#endif
 IN_PROC_BROWSER_TEST_F(HeadlessWebContentsTest,
-                       FocusOfHeadlessWebContents_IsIndependent) {
+                       MAYBE_FocusOfHeadlessWebContents_IsIndependent) {
   EXPECT_TRUE(embedded_test_server()->Start());
 
   HeadlessBrowserContext* browser_context =
@@ -149,7 +169,13 @@ IN_PROC_BROWSER_TEST_F(HeadlessWebContentsTest,
   EXPECT_TRUE(has_focus->GetResult()->GetValue()->GetBool());
 }
 
-IN_PROC_BROWSER_TEST_F(HeadlessWebContentsTest, HandleSSLError) {
+#if defined(OS_WIN)
+// TODO(crbug.com/1045980): Disabled due to flakiness.
+#define MAYBE_HandleSSLError DISABLED_HandleSSLError
+#else
+#define MAYBE_HandleSSLError HandleSSLError
+#endif
+IN_PROC_BROWSER_TEST_F(HeadlessWebContentsTest, MAYBE_HandleSSLError) {
   net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
   https_server.SetSSLConfig(net::EmbeddedTestServer::CERT_EXPIRED);
   ASSERT_TRUE(https_server.Start());
@@ -223,9 +249,12 @@ class HeadlessWebContentsScreenshotTest
 HEADLESS_ASYNC_DEVTOOLED_TEST_P(HeadlessWebContentsScreenshotTest);
 
 // Instantiate test case for both software and gpu compositing modes.
+#if !defined(OS_WIN)
+// TODO(crbug.com/1045980): Disabled on Windows due to flakiness.
 INSTANTIATE_TEST_SUITE_P(HeadlessWebContentsScreenshotTests,
                          HeadlessWebContentsScreenshotTest,
                          ::testing::Bool());
+#endif
 
 // Regression test for crbug.com/832138.
 class HeadlessWebContentsScreenshotWindowPositionTest
@@ -259,9 +288,12 @@ HEADLESS_ASYNC_DEVTOOLED_TEST_P(
     HeadlessWebContentsScreenshotWindowPositionTest);
 
 // Instantiate test case for both software and gpu compositing modes.
+#if !defined(OS_WIN)
+// TODO(crbug.com/1045980): Disabled on Windows due to flakiness.
 INSTANTIATE_TEST_SUITE_P(HeadlessWebContentsScreenshotWindowPositionTests,
                          HeadlessWebContentsScreenshotWindowPositionTest,
                          ::testing::Bool());
+#endif
 
 #if BUILDFLAG(ENABLE_PRINTING)
 class HeadlessWebContentsPDFTest : public HeadlessAsyncDevTooledBrowserTest {
@@ -338,7 +370,12 @@ class HeadlessWebContentsPDFTest : public HeadlessAsyncDevTooledBrowserTest {
   }
 };
 
+#if defined(OS_WIN)
+// TODO(crbug.com/1045980): Disabled due to flakiness.
+DISABLED_HEADLESS_ASYNC_DEVTOOLED_TEST_F(HeadlessWebContentsPDFTest);
+#else
 HEADLESS_ASYNC_DEVTOOLED_TEST_F(HeadlessWebContentsPDFTest);
+#endif
 
 class HeadlessWebContentsPDFStreamTest
     : public HeadlessAsyncDevTooledBrowserTest {
@@ -420,7 +457,12 @@ class HeadlessWebContentsPDFStreamTest
   std::string base64_data_;
 };
 
+#if defined(OS_WIN)
+// TODO(crbug.com/1045980): Disabled due to flakiness.
+DISABLED_HEADLESS_ASYNC_DEVTOOLED_TEST_F(HeadlessWebContentsPDFStreamTest);
+#else
 HEADLESS_ASYNC_DEVTOOLED_TEST_F(HeadlessWebContentsPDFStreamTest);
+#endif
 
 class HeadlessWebContentsPDFPageSizeRoundingTest
     : public HeadlessAsyncDevTooledBrowserTest,
@@ -515,9 +557,21 @@ class HeadlessWebContentsRequestStorageQuotaTest
   }
 };
 
+#if defined(OS_WIN)
+// TODO(crbug.com/1045980): Disabled due to flakiness.
+DISABLED_HEADLESS_ASYNC_DEVTOOLED_TEST_F(
+    HeadlessWebContentsRequestStorageQuotaTest);
+#else
 HEADLESS_ASYNC_DEVTOOLED_TEST_F(HeadlessWebContentsRequestStorageQuotaTest);
+#endif
 
-IN_PROC_BROWSER_TEST_F(HeadlessWebContentsTest, BrowserTabChangeContent) {
+#if defined(OS_WIN)
+// TODO(crbug.com/1045980): Disabled due to flakiness.
+#define MAYBE_BrowserTabChangeContent DISABLED_BrowserTabChangeContent
+#else
+#define MAYBE_BrowserTabChangeContent BrowserTabChangeContent
+#endif
+IN_PROC_BROWSER_TEST_F(HeadlessWebContentsTest, MAYBE_BrowserTabChangeContent) {
   EXPECT_TRUE(embedded_test_server()->Start());
 
   HeadlessBrowserContext* browser_context =
@@ -536,7 +590,13 @@ IN_PROC_BROWSER_TEST_F(HeadlessWebContentsTest, BrowserTabChangeContent) {
   EXPECT_TRUE(WaitForLoad(web_contents));
 }
 
-IN_PROC_BROWSER_TEST_F(HeadlessWebContentsTest, BrowserOpenInTab) {
+#if defined(OS_WIN)
+// TODO(crbug.com/1045980): Disabled due to flakiness.
+#define MAYBE_BrowserOpenInTab DISABLED_BrowserOpenInTab
+#else
+#define MAYBE_BrowserOpenInTab BrowserOpenInTab
+#endif
+IN_PROC_BROWSER_TEST_F(HeadlessWebContentsTest, MAYBE_BrowserOpenInTab) {
   EXPECT_TRUE(embedded_test_server()->Start());
 
   HeadlessBrowserContext* browser_context =
@@ -793,7 +853,13 @@ class HeadlessWebContentsBeginFrameControlBasicTest
   }
 };
 
+#if defined(OS_WIN)
+// TODO(crbug.com/1045980): Disabled due to flakiness.
+DISABLED_HEADLESS_ASYNC_DEVTOOLED_TEST_F(
+    HeadlessWebContentsBeginFrameControlBasicTest);
+#else
 HEADLESS_ASYNC_DEVTOOLED_TEST_F(HeadlessWebContentsBeginFrameControlBasicTest);
+#endif
 
 class HeadlessWebContentsBeginFrameControlViewportTest
     : public HeadlessWebContentsBeginFrameControlTest {
@@ -876,8 +942,14 @@ class HeadlessWebContentsBeginFrameControlViewportTest
   }
 };
 
+#if defined(OS_WIN)
+// TODO(crbug.com/1045980): Disabled due to flakiness.
+DISABLED_HEADLESS_ASYNC_DEVTOOLED_TEST_F(
+    HeadlessWebContentsBeginFrameControlViewportTest);
+#else
 HEADLESS_ASYNC_DEVTOOLED_TEST_F(
     HeadlessWebContentsBeginFrameControlViewportTest);
+#endif
 
 #endif  // !defined(OS_MACOSX)
 
@@ -909,7 +981,12 @@ class CookiesEnabled : public HeadlessAsyncDevTooledBrowserTest,
   }
 };
 
+#if defined(OS_WIN)
+// TODO(crbug.com/1045980): Disabled due to flakiness.
+DISABLED_HEADLESS_ASYNC_DEVTOOLED_TEST_F(CookiesEnabled);
+#else
 HEADLESS_ASYNC_DEVTOOLED_TEST_F(CookiesEnabled);
+#endif
 
 namespace {
 const char* kPageWhichOpensAWindow = R"(
@@ -964,7 +1041,12 @@ class DontBlockWebContentsOpenTest : public WebContentsOpenTest {
   }
 };
 
+#if defined(OS_WIN)
+// TODO(crbug.com/1045980): Disabled due to flakiness.
+DISABLED_HEADLESS_ASYNC_DEVTOOLED_TEST_F(DontBlockWebContentsOpenTest);
+#else
 HEADLESS_ASYNC_DEVTOOLED_TEST_F(DontBlockWebContentsOpenTest);
+#endif
 
 class BlockWebContentsOpenTest : public WebContentsOpenTest {
  public:
@@ -980,6 +1062,11 @@ class BlockWebContentsOpenTest : public WebContentsOpenTest {
   }
 };
 
+#if defined(OS_WIN)
+// TODO(crbug.com/1045980): Disabled due to flakiness.
+DISABLED_HEADLESS_ASYNC_DEVTOOLED_TEST_F(BlockWebContentsOpenTest);
+#else
 HEADLESS_ASYNC_DEVTOOLED_TEST_F(BlockWebContentsOpenTest);
+#endif
 
 }  // namespace headless

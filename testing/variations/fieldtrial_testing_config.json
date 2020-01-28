@@ -1324,21 +1324,6 @@
             ]
         }
     ],
-    "BlockedMediaSystemPermissionUI": [
-        {
-            "platforms": [
-                "mac"
-            ],
-            "experiments": [
-                {
-                    "name": "MacSystemMediaPermissionsInfoUI",
-                    "enable_features": [
-                        "MacSystemMediaPermissionsInfoUI"
-                    ]
-                }
-            ]
-        }
-    ],
     "BookmarkInProductHelp": [
         {
             "platforms": [
@@ -3550,6 +3535,21 @@
             ]
         }
     ],
+    "MacSystemMediaPermissionsInfoUI": [
+        {
+            "platforms": [
+                "mac"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "MacSystemMediaPermissionsInfoUI"
+                    ]
+                }
+            ]
+        }
+    ],
     "MacV2GPUSandbox": [
         {
             "platforms": [
@@ -4298,6 +4298,7 @@
                 {
                     "name": "Enabled",
                     "params": {
+                        "fetch_random_max_delay_secs": "60",
                         "max_effective_connection_type_for_navigation_hints_fetch": "4G"
                     },
                     "enable_features": [
@@ -4893,6 +4894,30 @@
                     },
                     "enable_features": [
                         "PreconnectOnDidFinishNavigation"
+                    ]
+                }
+            ]
+        }
+    ],
+    "PreconnectSameOriginDesktop": [
+        {
+            "platforms": [
+                "windows",
+                "chromeos",
+                "mac",
+                "linux"
+            ],
+            "experiments": [
+                {
+                    "name": "EnabledWithExtendedSocket",
+                    "params": {
+                        "unused_idle_socket_timeout_seconds": "60"
+                    },
+                    "enable_features": [
+                        "NetUnusedIdleSocketTimeout"
+                    ],
+                    "disable_features": [
+                        "NavigationPredictorPreconnectHoldback"
                     ]
                 }
             ]
@@ -5620,6 +5645,22 @@
                     "name": "Enabled",
                     "enable_features": [
                         "SafeBrowsingPasswordProtectionForSavedPasswords"
+                    ]
+                }
+            ]
+        }
+    ],
+    "SafeBrowsingPasswordProtectionForSavedPasswordsAndroid": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "SafeBrowsingPasswordProtectionForSavedPasswords",
+                        "SafeBrowsingPasswordProtectionShowDomainsForSavedPasswords"
                     ]
                 }
             ]

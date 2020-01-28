@@ -112,6 +112,7 @@
 <translation id="2352467521400612932">Ստիլուսի կարգավորումներ</translation>
 <translation id="2354174487190027830"><ph name="NAME" />-ի ակտիվացում</translation>
 <translation id="2359808026110333948">Շարունակել</translation>
+<translation id="2364154243880592194">Կարգավիճակի տող, ժամը՝ <ph name="TIME" />, <ph name="BATTERY" /> Սեղմեք Search+ձախ սլաքը՝ ծանուցումների կենտրոն մտնելու համար։</translation>
 <translation id="2365393535144473978">Բջջային ինտերնետը միացնելու դեպքում Bluetooth-ը ևս կակտիվանա:</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="2412593942846481727">Հասանելի է նոր տարբերակը</translation>
@@ -335,6 +336,7 @@
 <translation id="5669267381087807207">Ակտիվացում</translation>
 <translation id="5673434351075758678">Կարգավորումների համաժամացման արդյունքում լեզուն փոխվել է: Ընթացիկ լեզուն՝ <ph name="TO_LOCALE" /> (նախկինում՝ <ph name="FROM_LOCALE" />):</translation>
 <translation id="5682642926269496722">Google Օգնականը հասանելի չէ տվյալ օգտատիրոջ հաշվի համար:</translation>
+<translation id="5689633613396158040">Գիշերային լույսը թույլ է տալիս ավելի հանգիստ նայել էկրանին և կարդալ թույլ լուսավորության պայմաններում։ Հպեք՝ գիշերային լույսի միացման ժամը փոխելու կամ այն ամբողջությամբ անջատելու համար։</translation>
 <translation id="5691772641933328258">Չհաջողվեց ճանաչել մատնահետքը</translation>
 <translation id="5710450975648804523">«Չանհանգստացնել» ռեժիմն ակտիվ է</translation>
 <translation id="573413375004481890">Այս սարքը չի կարող աջակցել բոլոր էկրանները, այդ պատճառով դրանցից մեկն անջատվել է:</translation>
@@ -514,6 +516,7 @@
 <translation id="8142441511840089262">Կրկնակի սեղմում</translation>
 <translation id="8142699993796781067">Մասնավոր ցանց</translation>
 <translation id="8152092012181020186">Փակելու համար սեղմեք Ctrl+W։</translation>
+<translation id="8155007568264258537"><ph name="FEATURE_NAME" /> Այս կարգավորումը կառավարվում է ձեր ադմինիստրատորի կողմից։</translation>
 <translation id="8167567890448493835">Օգտագործվում է՝ <ph name="LOCALE_NAME" /></translation>
 <translation id="8190698733819146287">Լեզուների և ներածման կարգավորում…</translation>
 <translation id="8192202700944119416">Ծանուցումները թաքցված են:</translation>
@@ -595,7 +598,6 @@
 <translation id="9193626018745640770">Հեռարձակվում է անհայտ ստացողի</translation>
 <translation id="9194617393863864469">Մուտք գործել այլ հաշիվ...</translation>
 <translation id="9201374708878217446"><ph name="CONNECTION_STATUS" />, կառավարվում է ձեր ադմինիստրատորի կողմից</translation>
-<translation id="9205817095063786319">Սարքը կառավարվում է <ph name="DOMAIN" /> տիրույթի կողմից</translation>
 <translation id="9210037371811586452">Ելք միասնական աշխատասեղանի ռեժիմից</translation>
 <translation id="9211681782751733685">Մարտկոցի լրիվ լիցքավորման համար մնացել է <ph name="TIME_REMAINING" />։</translation>
 <translation id="9215934040295798075">Ընտրել պաստառ</translation>

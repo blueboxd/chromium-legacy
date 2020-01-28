@@ -5,6 +5,7 @@
 #include "chromeos/services/device_sync/cryptauth_v2_device_manager_impl.h"
 
 #include "base/optional.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/timer/mock_timer.h"
 #include "chromeos/services/device_sync/cryptauth_device_registry_impl.h"
 #include "chromeos/services/device_sync/cryptauth_device_syncer_impl.h"
@@ -214,12 +215,14 @@ class DeviceSyncCryptAuthV2DeviceManagerImplTest
  private:
   // Adds the ClientMetadata from the latest DeviceSync request to a list of
   // expected ClientMetadata from all DeviceSync requests. Verifies that this
-  // ClientMetadata is communicated to the device manager's observers.
+  // ClientMetadata is communicated to the device manager's observers and to
+  // the metrics loggers.
   void ProcessAndVerifyNewDeviceSyncRequest(
       const cryptauthv2::ClientMetadata& expected_client_metadata) {
     expected_client_metadata_list_.push_back(expected_client_metadata);
 
     VerifyDeviceManagerObserversNotifiedOfStart(expected_client_metadata_list_);
+    VerifyInvocationReasonHistogram(expected_client_metadata_list_);
   }
 
   void VerifyDeviceManagerObserversNotifiedOfStart(
@@ -230,6 +233,27 @@ class DeviceSyncCryptAuthV2DeviceManagerImplTest
     for (size_t i = 0; i < expected_client_metadata_list.size(); ++i) {
       EXPECT_EQ(expected_client_metadata_list[i].SerializeAsString(),
                 client_metadata_sent_to_observer_[i].SerializeAsString());
+    }
+  }
+
+  void VerifyInvocationReasonHistogram(
+      const std::vector<cryptauthv2::ClientMetadata>&
+          expected_client_metadata_list) {
+    histogram_tester_.ExpectTotalCount(
+        "CryptAuth.DeviceSyncV2.InvocationReason",
+        expected_client_metadata_list.size());
+
+    std::unordered_map<cryptauthv2::ClientMetadata::InvocationReason, size_t>
+        reason_to_count_map;
+    for (const cryptauthv2::ClientMetadata& metadata :
+         expected_client_metadata_list) {
+      ++reason_to_count_map[metadata.invocation_reason()];
+    }
+
+    for (const auto& reason_count_pair : reason_to_count_map) {
+      histogram_tester_.ExpectBucketCount(
+          "CryptAuth.DeviceSyncV2.InvocationReason", reason_count_pair.first,
+          reason_count_pair.second);
     }
   }
 
@@ -247,7 +271,7 @@ class DeviceSyncCryptAuthV2DeviceManagerImplTest
 
   // Adds the result of the latest DeviceSync attempt to a list of all expected
   // DeviceSync results. Verifies that the results are communicated to the
-  // device manager's observers and the scheduler.
+  // device manager's observers, the scheduler, and the metrics loggers.
   void ProcessAndVerifyNewDeviceSyncResult(
       const CryptAuthDeviceSyncResult& device_sync_result) {
     expected_device_sync_results_.push_back(device_sync_result);
@@ -256,6 +280,49 @@ class DeviceSyncCryptAuthV2DeviceManagerImplTest
               device_sync_results_sent_to_observer_);
     EXPECT_EQ(expected_device_sync_results_,
               fake_scheduler_.handled_device_sync_results());
+    VerifyDeviceSyncResultHistograms(expected_device_sync_results_);
+  }
+
+  void VerifyDeviceSyncResultHistograms(
+      const std::vector<CryptAuthDeviceSyncResult>
+          expected_device_sync_results) {
+    histogram_tester_.ExpectTotalCount(
+        "CryptAuth.DeviceSyncV2.Result.ResultCode",
+        expected_device_sync_results.size());
+    histogram_tester_.ExpectTotalCount(
+        "CryptAuth.DeviceSyncV2.Result.ResultType",
+        expected_device_sync_results.size());
+    histogram_tester_.ExpectTotalCount(
+        "CryptAuth.DeviceSyncV2.Result.DidDeviceRegistryChange",
+        expected_device_sync_results.size());
+
+    std::unordered_map<CryptAuthDeviceSyncResult::ResultCode, size_t>
+        result_code_to_count_map;
+    std::unordered_map<CryptAuthDeviceSyncResult::ResultType, size_t>
+        result_type_to_count_map;
+    size_t device_registry_changed_count = 0;
+    for (const auto& result : expected_device_sync_results) {
+      ++result_code_to_count_map[result.result_code()];
+      ++result_type_to_count_map[result.GetResultType()];
+      if (result.did_device_registry_change())
+        ++device_registry_changed_count;
+    }
+
+    for (const auto& result_count_pair : result_code_to_count_map) {
+      histogram_tester_.ExpectBucketCount(
+          "CryptAuth.DeviceSyncV2.Result.ResultCode", result_count_pair.first,
+          result_count_pair.second);
+    }
+
+    for (const auto& type_count_pair : result_type_to_count_map) {
+      histogram_tester_.ExpectBucketCount(
+          "CryptAuth.DeviceSyncV2.Result.ResultType", type_count_pair.first,
+          type_count_pair.second);
+    }
+
+    histogram_tester_.ExpectBucketCount(
+        "CryptAuth.DeviceSyncV2.Result.DidDeviceRegistryChange", true,
+        device_registry_changed_count);
   }
 
   std::vector<cryptauthv2::ClientMetadata> expected_client_metadata_list_;
@@ -270,6 +337,7 @@ class DeviceSyncCryptAuthV2DeviceManagerImplTest
   FakeCryptAuthSchedulerUpdatedByDeviceSyncResults fake_scheduler_;
   base::MockOneShotTimer* mock_timer_ = nullptr;
   MockCryptAuthClientFactory mock_client_factory_;
+  base::HistogramTester histogram_tester_;
   std::unique_ptr<CryptAuthDeviceRegistry> device_registry_;
   std::unique_ptr<CryptAuthKeyRegistry> key_registry_;
   std::unique_ptr<FakeCryptAuthDeviceSyncerFactory> fake_device_syncer_factory_;

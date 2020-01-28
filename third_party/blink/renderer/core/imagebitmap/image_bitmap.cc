@@ -607,7 +607,8 @@ ImageBitmap::ImageBitmap(ImageElementBase* image,
                                          : ImageDecoder::kAlphaNotPremultiplied,
         ImageDecoder::kDefaultBitDepth,
         parsed_options.has_color_space_conversion ? ColorBehavior::Tag()
-                                                  : ColorBehavior::Ignore()));
+                                                  : ColorBehavior::Ignore(),
+        ImageDecoder::OverrideAllowDecodeToYuv::kDeny));
     if (!decoder)
       return;
     skia_image = ImageBitmap::GetSkImageFromDecoder(std::move(decoder));

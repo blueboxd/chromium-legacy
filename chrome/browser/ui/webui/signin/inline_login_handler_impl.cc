@@ -519,6 +519,13 @@ void InlineLoginHandlerImpl::SetExtraInitParams(base::DictionaryValue& params) {
         params.SetString("emailDomain", all_email_domains[0]);
     }
 
+    std::string show_tos;
+    if (net::GetValueForKeyInQuery(
+            current_url, credential_provider::kShowTosSwitch, &show_tos)) {
+      if (!show_tos.empty())
+        params.SetString("showTos", show_tos);
+    }
+
     // Prevent opening a new window if the embedded page fails to load.
     // This will keep the user from being able to access a fully functional
     // Chrome window in incognito mode.

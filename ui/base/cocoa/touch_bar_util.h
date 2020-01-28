@@ -6,8 +6,8 @@
 #define UI_BASE_COCOA_TOUCH_BAR_UTIL_H
 
 #import <Cocoa/Cocoa.h>
+#include <os/availability.h>
 
-#include "base/mac/availability.h"
 #include "ui/base/ui_base_export.h"
 
 namespace ui {

@@ -61,6 +61,7 @@ void ExternalProtocolHandler::RunExternalProtocolDialog(
 ExternalProtocolDialog::ExternalProtocolDialog(WebContents* web_contents,
                                                const GURL& url)
     : creation_time_(base::TimeTicks::Now()), scheme_(url.scheme()) {
+  views::DialogDelegate::set_buttons(ui::DIALOG_BUTTON_OK);
   views::DialogDelegate::set_button_label(
       ui::DIALOG_BUTTON_OK,
       l10n_util::GetStringUTF16(IDS_EXTERNAL_PROTOCOL_OK_BUTTON_TEXT));
@@ -83,10 +84,6 @@ ExternalProtocolDialog::ExternalProtocolDialog(WebContents* web_contents,
 }
 
 ExternalProtocolDialog::~ExternalProtocolDialog() = default;
-
-int ExternalProtocolDialog::GetDialogButtons() const {
-  return ui::DIALOG_BUTTON_OK;
-}
 
 base::string16 ExternalProtocolDialog::GetWindowTitle() const {
   // If click to call feature is available, we display a message to the user on

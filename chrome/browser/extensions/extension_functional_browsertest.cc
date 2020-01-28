@@ -109,7 +109,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionFunctionalTest,
   ui_test_utils::NavigateToURL(browser(), extension_url);
   ui_test_utils::NavigateToURLWithDisposition(
       browser(), extension_url, WindowOpenDisposition::NEW_FOREGROUND_TAB,
-      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
 
   // Sanity-check test setup: 2 frames share a renderer process, but are not in
   // a related browsing instance.

@@ -768,7 +768,7 @@ Month.prototype.firstDay = function() {
  * @return {!Day}
  */
 Month.prototype.middleDay = function() {
-  return new Day(this.year, this.month, this.month === 2 ? 14 : 15);
+  return new Day(this.year, this.month, this.month === 1 ? 14 : 15);
 };
 
 /**
@@ -2814,9 +2814,14 @@ YearListView.prototype._moveHighlightTo = function(month) {
 YearListView.prototype.onKeyDown = function(event) {
   var key = event.key;
   var eventHandled = false;
-  if (key == 't')
+  if (key == 't') {
     eventHandled = this._moveHighlightTo(Month.createFromToday());
-  else if (this.highlightedMonth) {
+    if (global.params.isFormControlsRefreshEnabled) {
+      this.dispatchEvent(
+          YearListView.EventTypeYearListViewDidSelectMonth, this,
+          this.highlightedMonth);
+    }
+  } else if (this.highlightedMonth) {
     if (global.params.isLocaleRTL ? key == 'ArrowRight' : key == 'ArrowLeft')
       eventHandled = this._moveHighlightTo(this.highlightedMonth.previous());
     else if (key == 'ArrowUp')
@@ -4054,13 +4059,22 @@ function CalendarPicker(type, config) {
    * @protected
    */
   this._selection = null;
+
   /**
    * @type {?DateType}
    * @protected
+   * TODO(crbug.com/1046054) Once pre-FormControlsRefresh code is deleted,
+   * remove _highlight and the code to manage it; replace with a :hover
+   * style.
    */
   this._highlight = null;
+
   this.calendarTableView.element.addEventListener(
-      'keydown', this.onCalendarTableKeyDown, false);
+      'keydown',
+      global.params.isFormControlsRefreshEnabled ?
+          this.onCalendarTableKeyDownRefresh :
+          this.onCalendarTableKeyDown,
+      false);
   document.body.addEventListener('keydown', this.onBodyKeyDown, false);
 
   window.addEventListener('resize', this.onWindowResize, false);
@@ -4082,10 +4096,13 @@ function CalendarPicker(type, config) {
         Month.createFromToday(), CalendarPicker.NavigationBehavior.None);
     if (global.params.isFormControlsRefreshEnabled &&
         this.type == 'datetime-local') {
-      // When used with datetime-local, ensure that today's date is selected to start with
-      // so that if the user only edits the time, they can still submit the popup without
-      // also needing to edit the calendar view.
-      this.setSelection(Day.createFromToday());
+      // When used with datetime-local, ensure that today's date (if valid) is selected
+      // to start with so that if the user only edits the time, they can still submit
+      // the popup without also needing to edit the calendar view.
+      var today = Day.createFromToday();
+      if (this.isValid(today)) {
+        this.setSelection(Day.createFromToday());
+      }
     }
   }
 
@@ -4315,6 +4332,63 @@ CalendarPicker.prototype.highlightRangeContainingDay = function(day) {
 };
 
 /**
+ * @param {!DayOrWeekOrMonth} dayOrWeekOrMonth
+ * @return {!boolean}
+ */
+CalendarPicker.prototype.selectNearestValidRangeLookingForward = function(
+    dayOrWeekOrMonth) {
+  while (!this.isValid(dayOrWeekOrMonth) &&
+         dayOrWeekOrMonth < this.config.maximumValue) {
+    dayOrWeekOrMonth = dayOrWeekOrMonth.next();
+  }
+
+  if (this.isValid(dayOrWeekOrMonth)) {
+    this.setSelection(dayOrWeekOrMonth);
+    return true;
+  } else {
+    return false;
+  }
+};
+
+/**
+ * @param {!DayOrWeekOrMonth} dayOrWeekOrMonth
+ * @return {!boolean}
+ */
+CalendarPicker.prototype.selectNearestValidRangeLookingBackward = function(
+    dayOrWeekOrMonth) {
+  while (!this.isValid(dayOrWeekOrMonth) &&
+         dayOrWeekOrMonth > this.config.minimumValue) {
+    dayOrWeekOrMonth = dayOrWeekOrMonth.previous();
+  }
+
+  if (this.isValid(dayOrWeekOrMonth)) {
+    this.setSelection(dayOrWeekOrMonth);
+    return true;
+  } else {
+    return false;
+  }
+};
+
+/**
+ * @param {!DayOrWeekOrMonth} dayOrWeekOrMonth
+ * @param {!boolean} lookForwardFirst
+ */
+CalendarPicker.prototype.selectValidRangeNearestToDay = function(
+    day, lookForwardFirst) {
+  var dayOrWeekOrMonth = this._dateTypeConstructor.createFromDay(day);
+
+  if (lookForwardFirst) {
+    if (!this.selectNearestValidRangeLookingForward(dayOrWeekOrMonth)) {
+      this.selectNearestValidRangeLookingBackward(dayOrWeekOrMonth);
+    }
+  } else {
+    if (!this.selectNearestValidRangeLookingBackward(dayOrWeekOrMonth)) {
+      this.selectNearestValidRangeLookingForward(dayOrWeekOrMonth);
+    }
+  }
+};
+
+/**
  * Select the specified date.
  * @param {?DateType} dayOrWeekOrMonth
  */
@@ -4474,9 +4548,63 @@ CalendarPicker.prototype._moveHighlight = function(dateRange) {
 /**
  * @param {?Event} event
  */
+CalendarPicker.prototype.onCalendarTableKeyDownRefresh = function(event) {
+  var key = event.key;
+
+  if (!event.target.matches('.today-button-refresh')) {
+    if (key == 't') {
+      this.selectRangeContainingDay(Day.createFromToday());
+    } else if (key == 'PageUp') {
+      var previousMonth = this.currentMonth().previous();
+      if (previousMonth && previousMonth >= this.config.minimumValue) {
+        this.setCurrentMonth(
+            previousMonth, CalendarPicker.NavigationBehavior.WithAnimation);
+      }
+    } else if (key == 'PageDown') {
+      var nextMonth = this.currentMonth().next();
+      if (nextMonth && nextMonth >= this.config.minimumValue) {
+        this.setCurrentMonth(
+            nextMonth, CalendarPicker.NavigationBehavior.WithAnimation);
+      }
+    } else if (this._selection) {
+      var upOrDownArrowStepSize =
+          this.type === 'date' || this.type === 'datetime-local' ? DaysPerWeek :
+                                                                   1;
+      if (global.params.isLocaleRTL ? key == 'ArrowRight' :
+                                      key == 'ArrowLeft') {
+        this.selectNearestValidRangeLookingBackward(this._selection.previous());
+      } else if (key == 'ArrowUp') {
+        this.selectNearestValidRangeLookingBackward(
+            this._selection.previous(upOrDownArrowStepSize));
+      } else if (
+          global.params.isLocaleRTL ? key == 'ArrowLeft' :
+                                      key == 'ArrowRight') {
+        this.selectNearestValidRangeLookingForward(this._selection.next());
+      } else if (key == 'ArrowDown') {
+        this.selectNearestValidRangeLookingForward(
+            this._selection.next(upOrDownArrowStepSize));
+      } else if (key == 'Enter') {
+        this.setSelectionAndCommit(this._highlight);
+      }
+    } else if (
+        key == 'ArrowLeft' || key == 'ArrowUp' || key == 'ArrowRight' ||
+        key == 'ArrowDown') {
+      // Select range near the middle.  Try looking for a valid range first in the direction that
+      // the user has indicated.
+      var lookForwardFirst = (key == 'ArrowRight' || key == 'ArrowDown');
+      this.selectValidRangeNearestToDay(
+          this.currentMonth().middleDay(), lookForwardFirst);
+    }
+  }
+};
+
+/**
+ * @param {?Event} event
+ */
 CalendarPicker.prototype.onCalendarTableKeyDown = function(event) {
   var key = event.key;
   var eventHandled = false;
+
   if (key == 't') {
     this.selectRangeContainingDay(Day.createFromToday());
     eventHandled = true;
@@ -4495,19 +4623,20 @@ CalendarPicker.prototype.onCalendarTableKeyDown = function(event) {
       eventHandled = true;
     }
   } else if (this._highlight) {
+    var upOrDownArrowStepSize =
+        this.type === 'date' || this.type === 'datetime-local' ? DaysPerWeek :
+                                                                 1;
     if (global.params.isLocaleRTL ? key == 'ArrowRight' : key == 'ArrowLeft') {
       eventHandled = this._moveHighlight(this._highlight.previous());
     } else if (key == 'ArrowUp') {
-      eventHandled = this._moveHighlight(this._highlight.previous(
-          this.type === 'date' || this.type === 'datetime-local' ? DaysPerWeek :
-                                                                   1));
+      eventHandled =
+          this._moveHighlight(this._highlight.previous(upOrDownArrowStepSize));
     } else if (
         global.params.isLocaleRTL ? key == 'ArrowLeft' : key == 'ArrowRight') {
       eventHandled = this._moveHighlight(this._highlight.next());
     } else if (key == 'ArrowDown') {
-      eventHandled = this._moveHighlight(this._highlight.next(
-          this.type === 'date' || this.type === 'datetime-local' ? DaysPerWeek :
-                                                                   1));
+      eventHandled =
+          this._moveHighlight(this._highlight.next(upOrDownArrowStepSize));
     } else if (key == 'Enter') {
       this.setSelectionAndCommit(this._highlight);
     }

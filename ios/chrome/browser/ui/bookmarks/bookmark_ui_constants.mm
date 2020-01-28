@@ -22,6 +22,8 @@ NSString* const kBookmarkFolderPickerViewContainerIdentifier =
 NSString* const kBookmarkHomeTableViewIdentifier =
     @"kBookmarkHomeTableViewIdentifier";
 
+NSString* const kBookmarkNavigationBarIdentifier =
+    @"kBookmarkNavigationBarIdentifier";
 NSString* const kBookmarkHomeNavigationBarDoneButtonIdentifier =
     @"kBookmarkHomeNavigationBarDoneButtonIdentifier";
 NSString* const kBookmarkEditNavigationBarDoneButtonIdentifier =

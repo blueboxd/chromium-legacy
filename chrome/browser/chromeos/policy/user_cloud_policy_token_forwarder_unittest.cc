@@ -137,7 +137,7 @@ class UserCloudPolicyTokenForwarderTest : public testing::Test {
     identity_test_env_profile_adaptor_ =
         std::make_unique<IdentityTestEnvironmentProfileAdaptor>(profile);
     identity_test_env_profile_adaptor_->identity_test_env()
-        ->MakePrimaryAccountAvailable(kEmail);
+        ->MakeUnconsentedPrimaryAccountAvailable(kEmail);
 
     chromeos::FakeChromeUserManager* user_manager = GetFakeUserManager();
     user_manager->AddUser(account_id);

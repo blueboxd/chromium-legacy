@@ -129,7 +129,7 @@ IN_PROC_BROWSER_TEST_F(ResourceMetricsObserverBrowserTest,
   ui_test_utils::NavigateToURLWithDisposition(
       browser(), GURL("about:blank"), WindowOpenDisposition::NEW_FOREGROUND_TAB,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_TAB |
-          ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+          ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
   waiter = CreatePageLoadMetricsTestWaiter();
   ui_test_utils::NavigateToURL(
       browser(), embedded_test_server()->GetURL("foo.com", "/cachetime"));

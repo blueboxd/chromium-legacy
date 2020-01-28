@@ -85,7 +85,7 @@ AutoclickE2ETest.prototype = {
   runWithLoadedTree(url, callback) {
     callback = this.newCallback(callback);
     chrome.automation.getDesktop(function(desktopRootNode) {
-      var createParams = {active: true, url: url};
+      var createParams = {active: true, url};
       chrome.tabs.create(createParams, function(unused_tab) {
         chrome.automation.getTree(function(returnedRootNode) {
           rootNode = returnedRootNode;

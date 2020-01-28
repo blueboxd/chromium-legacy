@@ -60,7 +60,7 @@ public class CustomTabToolbarCoordinator {
     private final @Nullable CustomTabUmaRecorder mUmaRecorder;
     private final CustomTabActivityTabProvider mTabProvider;
     private final CustomTabsConnection mConnection;
-    private final ChromeActivity mActivity;
+    private final ChromeActivity<?> mActivity;
     private final Context mAppContext;
     private final BrowserServicesActivityTabController mTabController;
     private final Lazy<ChromeFullscreenManager> mFullscreenManager;
@@ -81,7 +81,7 @@ public class CustomTabToolbarCoordinator {
     @Inject
     public CustomTabToolbarCoordinator(BrowserServicesIntentDataProvider intentDataProvider,
             @Nullable CustomTabUmaRecorder umaRecorder, CustomTabActivityTabProvider tabProvider,
-            CustomTabsConnection connection, ChromeActivity activity,
+            CustomTabsConnection connection, ChromeActivity<?> activity,
             @Named(APP_CONTEXT) Context appContext,
             BrowserServicesActivityTabController tabController,
             Lazy<ChromeFullscreenManager> fullscreenManager,

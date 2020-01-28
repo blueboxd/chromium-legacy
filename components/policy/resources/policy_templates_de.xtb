@@ -570,7 +570,7 @@ Wenn die Richtlinie "EnableMediaRouter" auf "false" gesetzt ist, hat der Wert di
 <translation id="186719019195685253">Auszuführende Aktion beim Erreichen der Leerlaufverzögerung während des Wechselstrombetriebs</translation>
 <translation id="1875371246345730828">Mit dieser Richtlinie wird festgelegt, welche URLs während des SAML-Flows auf dem Anmeldebildschirm die Remote-Attestierung der Geräteidentität verwenden dürfen.
 
-      Eine URL darf HTTP-Header mit einer Antwort auf eine Remote-Nachweisabfrage zur Identitätsbestätigung empfangen, wenn sie mit einem der in dieser Richtlinie festgelegten Muster übereinstimmt. Dadurch werden die Geräteidentität und der Gerätestatus bestätigt.
+      Wenn eine URL mit einem der in dieser Richtlinie festgelegten Muster übereinstimmt, kann der HTTP-Header eine Antwort auf eine Remote-Nachweisabfrage zur Identitätsbestätigung enthalten. Dadurch werden die Geräteidentität und der Gerätestatus bestätigt.
 
       Wenn diese Richtlinie nicht konfiguriert oder eine leere Liste festgelegt ist, darf keine URL die Remote-Attestierung auf dem Anmeldebildschirm verwenden.
 
@@ -2769,7 +2769,7 @@ Alle drei Richtlinien (VirtualMachinesAllowed, CrostiniAllowed und DeviceUnaffil
 Wenn diese Richtlinie zu "false" geändert wird, wirkt sich dies auf den Start neuer Crostini-Container aus. Container, die bereits laufen, werden aber nicht beendet.</translation>
 <translation id="5278367296164377827">Diese Unternehmensrichtlinie kann nur übergangsweise verwendet werden und wird in M82 entfernt.
 
-      Die standardmäßige Verweisrichtlinie in Chrome wird verstärkt. Hierzu wird der Standardwert von "no-referrer-when-downgrade" zum sichereren Wert "strict-origin-when-cross-origin" geändert. Die Umstellung erfolgt graduell und soll mit M80 (stabil) abgeschlossen sein.
+      Die standardmäßige Verweisrichtlinie in Chrome wird verschärft. Hierzu wird der Standardwert von "no-referrer-when-downgrade" zum sichereren Wert "strict-origin-when-cross-origin" geändert. Die Umstellung erfolgt graduell und soll mit M80 (stabil) abgeschlossen sein.
 
       Bis zur Einführung hat diese Unternehmensrichtlinie keine Auswirkungen. Wird diese Unternehmensrichtlinie nach der Einführung aktiviert, wird die standardmäßige Verweisrichtlinie in Chrome wieder auf den Wert aus den Versionen vor M80 zurückgesetzt, also auf "no-referrer-when-downgrade".
 
@@ -4483,7 +4483,7 @@ Auf nicht verwalteten Geräten dürfen virtuelle Maschinen ausgeführt werden.</
 <translation id="8186911565834244165">Nutzerfeedback zulassen</translation>
 <translation id="8214600119442850823">Konfiguriert den Passwortmanager.</translation>
 <translation id="8217516105848565518">Diese Richtlinie wurde eingestellt. Bitte verwenden Sie stattdessen "RemoteAccessHostDomainList".</translation>
-<translation id="8236323460664833038">Mit dieser Richtlinie können Sie eine Liste von URL-Mustern festlegen, die Websites angeben, auf denen blockierbare (aktive) gemischte Inhalte (HTTP-Inhalte auf HTTPS-Websites) angezeigt werden dürfen und optional blockierbare gemischte Inhalte nicht auf HTTPS geändert werden.
+<translation id="8236323460664833038">Mit dieser Richtlinie können Sie eine Liste von URL-Mustern festlegen, die zu Websites führen, auf denen blockierbare (aktive) gemischte Inhalte (HTTP-Inhalte auf HTTPS-Websites) angezeigt werden dürfen und optional blockierbare gemischte Inhalte nicht auf HTTPS geändert werden.
 
           Ist diese Richtlinie nicht konfiguriert, werden blockierbare gemischte Inhalte gesperrt und optional blockierbare gemischte Inhalte auf HTTPS geändert. Nutzer können Ausnahmen für bestimmte Websites festlegen.</translation>
 <translation id="8244171102276095471">RC4-Verschlüsselungssammlungen in TLS aktivieren</translation>

@@ -290,6 +290,8 @@ jumbo_static_library("rest_of_sync") {
     "model_impl/client_tag_based_model_type_processor.h",
     "model_impl/client_tag_based_remote_update_handler.cc",
     "model_impl/client_tag_based_remote_update_handler.h",
+    "model_impl/dummy_metadata_change_list.cc",
+    "model_impl/dummy_metadata_change_list.h",
     "model_impl/forwarding_model_type_controller_delegate.cc",
     "model_impl/forwarding_model_type_controller_delegate.h",
     "model_impl/in_memory_metadata_change_list.cc",

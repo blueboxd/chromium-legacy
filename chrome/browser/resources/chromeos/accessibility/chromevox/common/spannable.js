@@ -72,7 +72,7 @@ Spannable = class {
     if (0 <= start && start <= end && end <= this.string_.length) {
       // Zero-length spans are explicitly allowed, because it is possible to
       // query for position by annotation as well as the reverse.
-      this.spans_.push({value: value, start: start, end: end});
+      this.spans_.push({value, start, end});
       this.spans_.sort(function(a, b) {
         var ret = a.start - b.start;
         if (ret == 0) {
@@ -359,7 +359,7 @@ Spannable = class {
       }
       var serializeInfo = serializableSpansByName.get(span.type);
       var value = serializeInfo.fromJson(span.value);
-      return {value: value, start: span.start, end: span.end};
+      return {value, start: span.start, end: span.end};
     });
     return result;
   }
@@ -375,7 +375,7 @@ Spannable = class {
    *     |this| set to the object to convert.
    */
   static registerSerializableSpan(constructor, name, fromJson, toJson) {
-    var obj = {name: name, fromJson: fromJson, toJson: toJson};
+    var obj = {name, fromJson, toJson};
     serializableSpansByName.set(name, obj);
     serializableSpansByConstructor.set(constructor, obj);
   }
@@ -390,7 +390,7 @@ Spannable = class {
    * @param {string} name Name of the type used in the serializable object.
    */
   static registerStatelessSerializableSpan(constructor, name) {
-    var obj = {name: name, toJson: undefined};
+    var obj = {name, toJson: undefined};
     /**
      * @param {!Object} obj
      * @return {!Object}

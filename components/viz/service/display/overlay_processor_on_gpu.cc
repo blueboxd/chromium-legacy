@@ -5,6 +5,7 @@
 #include "components/viz/service/display/overlay_processor_on_gpu.h"
 #include "gpu/command_buffer/service/shared_image_factory.h"
 #include "gpu/command_buffer/service/shared_image_manager.h"
+#include "ui/gfx/geometry/rect_conversions.h"
 
 namespace viz {
 
@@ -24,7 +25,28 @@ OverlayProcessorOnGpu::~OverlayProcessorOnGpu() {
 void OverlayProcessorOnGpu::ScheduleOverlays(
     CandidateList&& overlay_candidates) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  // TODO(weiliangc): Use shared image to schedule overlays.
+#if defined(OS_ANDROID)
+  // TODO(weiliangc): Currently only implemented for Android Classic code path.
+  for (auto& overlay : overlay_candidates) {
+    auto shared_image_overlay =
+        shared_image_representation_factory_->ProduceOverlay(overlay.mailbox);
+    // When display is re-opened, the first few frames might not have video
+    // resource ready. Possible investigation crbug.com/1023971.
+    if (!shared_image_overlay)
+      continue;
+    // In current implementation, the BeginReadAccess will ends up calling
+    // CodecImage::RenderToOverlay. Currently this code path is only used for
+    // Android Classic video overlay, where update of the overlay plane is
+    // within media code. Since we are not actually passing an overlay plane to
+    // the display controller here, we are able to call EndReadAccess directly
+    // after BeginReadAccess.
+    shared_image_overlay->NotifyOverlayPromotion(
+        true, ToNearestRect(overlay.display_rect));
+    std::unique_ptr<gpu::SharedImageRepresentationOverlay::ScopedReadAccess>
+        scoped_access = shared_image_overlay->BeginScopedReadAccess(
+            false /* needs_gl_image */);
+  }
+#endif
 }
 
 #if defined(OS_ANDROID)

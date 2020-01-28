@@ -124,9 +124,10 @@ class BASE_EXPORT ThreadPoolImpl : public ThreadPoolInstance,
   // the CanRunPolicy in TaskTracker and wakes up workers as appropriate.
   void UpdateCanRunPolicy();
 
-  // Returns |traits|, with priority set to TaskPriority::USER_BLOCKING if
+  // Verifies that |traits| do not have properties that are banned in ThreadPool
+  // and returns |traits|, with priority set to TaskPriority::USER_BLOCKING if
   // |all_tasks_user_blocking_| is set.
-  TaskTraits SetUserBlockingPriorityIfNeeded(TaskTraits traits) const;
+  TaskTraits VerifyAndAjustIncomingTraits(TaskTraits traits) const;
 
   void ReportHeartbeatMetrics() const;
 

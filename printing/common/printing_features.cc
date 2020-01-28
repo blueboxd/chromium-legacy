@@ -7,9 +7,6 @@
 namespace printing {
 namespace features {
 
-const base::Feature kHarfBuzzPDFSubsetter{"HarfBuzzPDFSubsetter",
-                                          base::FEATURE_ENABLED_BY_DEFAULT};
-
 #if defined(OS_WIN)
 // Use XPS for printing instead of GDI.
 const base::Feature kUseXpsForPrinting{"UseXpsForPrinting",

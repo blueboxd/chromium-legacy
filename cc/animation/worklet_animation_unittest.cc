@@ -540,6 +540,18 @@ TEST_F(WorkletAnimationTest, SkipLockedAnimations) {
   EXPECT_EQ(input->updated_animations.size(), 1u);
 }
 
+TEST_F(WorkletAnimationTest, UpdateScrollTimelineScrollerId) {
+  auto scroll_timeline = base::WrapRefCounted(new MockScrollTimeline());
+  EXPECT_EQ(scroll_timeline->GetPendingIdForTest(), ElementId());
+
+  scoped_refptr<WorkletAnimation> worklet_animation = WorkletAnimation::Create(
+      worklet_animation_id_, "test_name", 1, scroll_timeline, nullptr, nullptr);
+  ElementId scroller_id = ElementId(1);
+  worklet_animation->UpdateScrollTimeline(scroller_id, base::nullopt,
+                                          base::nullopt);
+  EXPECT_EQ(scroll_timeline->GetPendingIdForTest(), scroller_id);
+}
+
 }  // namespace
 
 }  // namespace cc

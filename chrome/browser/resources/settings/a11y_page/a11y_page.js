@@ -51,17 +51,6 @@ Polymer({
     },
 
     /**
-     * Whether to show the link to caption settings.
-     * @private {boolean}
-     */
-    showCaptionSettings_: {
-      type: Boolean,
-      value() {
-        return loadTimeData.getBoolean('enableCaptionSettings');
-      },
-    },
-
-    /**
      * Whether the caption settings link opens externally.
      * @private {boolean}
      */

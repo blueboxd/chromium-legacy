@@ -91,8 +91,8 @@ class TabListElement extends CustomElement {
         this.onDocumentVisibilityChange_();
 
     /**
-     * The TabElement that is currently being dragged.
-     * @private {!TabElement|undefined}
+     * The element that is currently being dragged.
+     * @private {!TabElement|!TabGroupElement|undefined}
      */
     this.draggedItem_;
 
@@ -126,12 +126,10 @@ class TabListElement extends CustomElement {
 
     /** @private {!Element} */
     this.newTabButtonElement_ =
-        /** @type {!Element} */ (
-            this.shadowRoot.querySelector('#newTabButton'));
+        /** @type {!Element} */ (this.$('#newTabButton'));
 
     /** @private {!Element} */
-    this.pinnedTabsElement_ =
-        /** @type {!Element} */ (this.shadowRoot.querySelector('#pinnedTabs'));
+    this.pinnedTabsElement_ = /** @type {!Element} */ (this.$('#pinnedTabs'));
 
     /** @private {!TabStripEmbedderProxy} */
     this.tabStripEmbedderProxy_ = TabStripEmbedderProxy.getInstance();
@@ -141,8 +139,7 @@ class TabListElement extends CustomElement {
 
     /** @private {!Element} */
     this.unpinnedTabsElement_ =
-        /** @type {!Element} */ (
-            this.shadowRoot.querySelector('#unpinnedTabs'));
+        /** @type {!Element} */ (this.$('#unpinnedTabs'));
 
     /** @private {!Array<!WebUIListener>} */
     this.webUIListeners_ = [];
@@ -183,10 +180,9 @@ class TabListElement extends CustomElement {
     });
 
     if (loadTimeData.getBoolean('showDemoOptions')) {
-      this.shadowRoot.querySelector('#demoOptions').style.display = 'block';
+      this.$('#demoOptions').style.display = 'block';
 
-      const autoCloseCheckbox =
-          this.shadowRoot.querySelector('#autoCloseCheckbox');
+      const autoCloseCheckbox = this.$('#autoCloseCheckbox');
       autoCloseCheckbox.checked = tabStripOptions.autoCloseEnabled;
       autoCloseCheckbox.addEventListener('change', () => {
         tabStripOptions.autoCloseEnabled = autoCloseCheckbox.checked;
@@ -335,7 +331,7 @@ class TabListElement extends CustomElement {
    */
   findTabElement_(tabId) {
     return /** @type {?TabElement} */ (
-        this.shadowRoot.querySelector(`tabstrip-tab[data-tab-id="${tabId}"]`));
+        this.$(`tabstrip-tab[data-tab-id="${tabId}"]`));
   }
 
   /**
@@ -344,8 +340,8 @@ class TabListElement extends CustomElement {
    * @private
    */
   findTabGroupElement_(groupId) {
-    return /** @type {?TabGroupElement} */ (this.shadowRoot.querySelector(
-        `tabstrip-tab-group[data-group-id="${groupId}"]`));
+    return /** @type {?TabGroupElement} */ (
+        this.$(`tabstrip-tab-group[data-group-id="${groupId}"]`));
   }
 
   /** @private */
@@ -356,8 +352,7 @@ class TabListElement extends CustomElement {
 
   /** @private */
   fetchAndUpdateGroupData_() {
-    const tabGroupElements =
-        this.shadowRoot.querySelectorAll('tabstrip-tab-group');
+    const tabGroupElements = this.$all('tabstrip-tab-group');
     this.tabsApi_.getGroupVisualData().then(data => {
       tabGroupElements.forEach(tabGroupElement => {
         tabGroupElement.updateVisuals(
@@ -371,8 +366,7 @@ class TabListElement extends CustomElement {
    * @private
    */
   getActiveTab_() {
-    return /** @type {?TabElement} */ (
-        this.shadowRoot.querySelector('tabstrip-tab[active]'));
+    return /** @type {?TabElement} */ (this.$('tabstrip-tab[active]'));
   }
 
   /**
@@ -399,8 +393,7 @@ class TabListElement extends CustomElement {
           tabElement, this.pinnedTabsElement_.childNodes[modelIndex]);
     } else {
       let elementToInsert = tabElement;
-      let elementAtIndex =
-          this.shadowRoot.querySelectorAll('tabstrip-tab').item(modelIndex);
+      let elementAtIndex = this.$all('tabstrip-tab').item(modelIndex);
       let parentElement = this.unpinnedTabsElement_;
 
       if (tabElement.tab.groupId) {
@@ -497,18 +490,56 @@ class TabListElement extends CustomElement {
     }
 
     event.dataTransfer.dropEffect = 'move';
+    if (isTabGroupElement(this.draggedItem_)) {
+      this.onDragOverWithGroupElement_(event);
+      return;
+    }
+    this.onDragOverWithTabElement_(event);
+  }
 
-    const composedPath = event.composedPath();
-    const dragOverTabElement =
-        composedPath.find(item => isTabElement(/** @type {!Element} */ (item)));
+  /**
+   * @param {!DragEvent} event
+   * @private
+   */
+  onDragOverWithGroupElement_(event) {
+    const composedPath = /** @type {!Array<!Element>} */ (event.composedPath());
+    if (composedPath.includes(assert(this.draggedItem_))) {
+      // Dragging over itself or a child of itself.
+      return;
+    }
+
+    const allTabElements =
+        Array.from(this.shadowRoot.querySelectorAll('tabstrip-tab'));
+
+    const dragOverTabElement = composedPath.find(isTabElement);
+    if (dragOverTabElement && !dragOverTabElement.tab.pinned) {
+      const dragOverIndex = allTabElements.indexOf(dragOverTabElement);
+      this.tabsApi_.moveGroup(this.draggedItem_.dataset.groupId, dragOverIndex);
+      return;
+    }
+
+    const dragOverGroupElement = composedPath.find(isTabGroupElement);
+    if (dragOverGroupElement) {
+      const dragOverIndex =
+          allTabElements.indexOf(dragOverGroupElement.firstElementChild);
+      this.tabsApi_.moveGroup(this.draggedItem_.dataset.groupId, dragOverIndex);
+    }
+  }
+
+  /**
+   * @param {!DragEvent} event
+   * @private
+   */
+  onDragOverWithTabElement_(event) {
+    const composedPath = /** @type {!Array<!Element>} */ (event.composedPath());
+    const dragOverTabElement = composedPath.find(isTabElement);
     if (dragOverTabElement &&
         dragOverTabElement.tab.pinned !== this.draggedItem_.tab.pinned) {
       // Can only drag between the same pinned states.
       return;
     }
 
-    const dragOverTabGroup = composedPath.find(
-        item => isTabGroupElement(/** @type {!Element} */ (item)));
+    const dragOverTabGroup = composedPath.find(isTabGroupElement);
     if (dragOverTabGroup &&
         dragOverTabGroup.dataset.groupId !== this.draggedItem_.tab.groupId) {
       this.tabsApi_.groupTab(
@@ -526,8 +557,7 @@ class TabListElement extends CustomElement {
     }
 
     const dragOverIndex =
-        Array.from(this.shadowRoot.querySelectorAll('tabstrip-tab'))
-            .indexOf(dragOverTabElement);
+        Array.from(this.$all('tabstrip-tab')).indexOf(dragOverTabElement);
     this.tabsApi_.moveTab(this.draggedItem_.tab.id, dragOverIndex);
   }
 
@@ -537,7 +567,7 @@ class TabListElement extends CustomElement {
    */
   onDragStart_(event) {
     const draggedItem = event.path[0];
-    if (!isTabElement(draggedItem)) {
+    if (!isTabElement(draggedItem) && !isTabGroupElement(draggedItem)) {
       return;
     }
 
@@ -556,7 +586,7 @@ class TabListElement extends CustomElement {
     // document. When the tab strip first gains keyboard focus, no such event
     // exists yet, so the outline needs to be explicitly set to visible.
     this.focusOutlineManager_.visible = true;
-    this.shadowRoot.querySelector('tabstrip-tab').focus();
+    this.$('tabstrip-tab').focus();
   }
 
   /**
@@ -575,13 +605,12 @@ class TabListElement extends CustomElement {
     // have updated a Tab to have an active state. For example, if a
     // tab is created with an already active state, there may be 2 active
     // TabElements: the newly created tab and the previously active tab.
-    this.shadowRoot.querySelectorAll('tabstrip-tab[active]')
-        .forEach((previouslyActiveTab) => {
-          if (previouslyActiveTab.tab.id !== tabId) {
-            previouslyActiveTab.tab = /** @type {!TabData} */ (
-                Object.assign({}, previouslyActiveTab.tab, {active: false}));
-          }
-        });
+    this.$all('tabstrip-tab[active]').forEach((previouslyActiveTab) => {
+      if (previouslyActiveTab.tab.id !== tabId) {
+        previouslyActiveTab.tab = /** @type {!TabData} */ (
+            Object.assign({}, previouslyActiveTab.tab, {active: false}));
+      }
+    });
 
     const newlyActiveTab = this.findTabElement_(tabId);
     if (newlyActiveTab) {
@@ -644,8 +673,7 @@ class TabListElement extends CustomElement {
     }
     tabGroupElement.remove();
 
-    let elementAtIndex =
-        this.shadowRoot.querySelectorAll('tabstrip-tab')[index];
+    let elementAtIndex = this.$all('tabstrip-tab')[index];
     if (elementAtIndex && elementAtIndex.parentElement &&
         isTabGroupElement(elementAtIndex.parentElement)) {
       elementAtIndex = elementAtIndex.parentElement;

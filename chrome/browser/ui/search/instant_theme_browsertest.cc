@@ -153,7 +153,7 @@ IN_PROC_BROWSER_TEST_F(InstantThemeTest, ThemeBackgroundAccess) {
       browser(), GURL(chrome::kChromeUINewTabURL),
       WindowOpenDisposition::NEW_FOREGROUND_TAB,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_TAB |
-          ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+          ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
 
   // The "Instant" New Tab should have access to chrome-search: scheme but not
   // chrome: scheme.

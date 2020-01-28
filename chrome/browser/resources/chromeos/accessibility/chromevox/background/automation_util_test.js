@@ -39,22 +39,19 @@ ChromeVoxAutomationUtilE2ETest.prototype = {
     };
   },
 
-  basicDoc:
-      function() { /*!
+  basicDoc() { /*!
 <p><a href='#'></a>hello</p>
 <h1><ul><li>a</ul><div role="group"><button></button></div></h1>
 */ },
 
-  secondDoc:
-      function() { /*!
+  secondDoc() { /*!
 <html>
 <head><title>Second doc</title></head>
 <body><div>Second</div></body>
 </html>
 */ },
 
-  iframeDoc:
-      function() { /*!
+  iframeDoc() { /*!
 <html>
 <head><title>Second doc</title></head>
 <body>

@@ -22,7 +22,7 @@ RectUtils.rectFromPoints = function(x1, y1, x2, y2) {
   var right = Math.max(x1, x2);
   var top = Math.min(y1, y2);
   var bottom = Math.max(y1, y2);
-  return {left: left, top: top, width: right - left, height: bottom - top};
+  return {left, top, width: right - left, height: bottom - top};
 };
 
 /**

@@ -9,6 +9,7 @@
 #include "base/path_service.h"
 #include "base/task/post_task.h"
 #include "base/test/scoped_feature_list.h"
+#include "build/build_config.h"
 #include "chrome/browser/extensions/chrome_test_extension_loader.h"
 #include "chrome/browser/extensions/extension_action_runner.h"
 #include "chrome/browser/extensions/scripting_permissions_modifier.h"
@@ -378,8 +379,14 @@ IN_PROC_BROWSER_TEST_F(ExtensionsMenuViewBrowserTest,
   EXPECT_FALSE(ExtensionsMenuView::IsShowing());
 }
 
+#if defined(OS_WIN)
+#define MAYBE_CreatesOneMenuItemPerExtension \
+  DISABLED_CreatesOneMenuItemPerExtension
+#else
+#define MAYBE_CreatesOneMenuItemPerExtension CreatesOneMenuItemPerExtension
+#endif
 IN_PROC_BROWSER_TEST_F(ExtensionsMenuViewBrowserTest,
-                       CreatesOneMenuItemPerExtension) {
+                       MAYBE_CreatesOneMenuItemPerExtension) {
   LoadTestExtension("extensions/uitest/long_name");
   LoadTestExtension("extensions/uitest/window_open");
   ShowUi("");
@@ -433,6 +440,31 @@ IN_PROC_BROWSER_TEST_F(ExtensionsMenuViewBrowserTest,
   EXPECT_EQ(
       chrome::kChromeUIExtensionsURL,
       browser()->tab_strip_model()->GetActiveWebContents()->GetVisibleURL());
+}
+
+// Tests that clicking on the context menu button of an extension item opens the
+// context menu.
+IN_PROC_BROWSER_TEST_F(ExtensionsMenuViewBrowserTest,
+                       ClickingContextMenuButton) {
+  LoadTestExtension("extensions/uitest/window_open");
+  ClickExtensionsMenuButton();
+
+  auto menu_items = GetExtensionsMenuItemViews();
+  ASSERT_EQ(1u, menu_items.size());
+  ExtensionsMenuItemView* item_view = menu_items[0];
+  EXPECT_FALSE(item_view->IsContextMenuRunning());
+
+  views::ImageButton* context_menu_button =
+      menu_items[0]->context_menu_button_for_testing();
+  ui::MouseEvent press_event(ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
+                             base::TimeTicks(), ui::EF_LEFT_MOUSE_BUTTON, 0);
+  context_menu_button->OnMousePressed(press_event);
+  ui::MouseEvent release_event(ui::ET_MOUSE_RELEASED, gfx::Point(),
+                               gfx::Point(), base::TimeTicks(),
+                               ui::EF_LEFT_MOUSE_BUTTON, 0);
+  context_menu_button->OnMouseReleased(release_event);
+
+  EXPECT_TRUE(item_view->IsContextMenuRunning());
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionsMenuViewBrowserTest, InvokeUi_InstallDialog) {

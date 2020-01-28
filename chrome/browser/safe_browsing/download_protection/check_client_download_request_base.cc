@@ -196,6 +196,11 @@ void CheckClientDownloadRequestBase::FinishRequest(
                               reason, REASON_MAX);
   }
 
+  if (ShouldPromptForDeepScanning(reason)) {
+    result = DownloadCheckResult::PROMPT_FOR_SCANNING;
+    reason = DownloadCheckResultReason::REASON_ADVANCED_PROTECTION_PROMPT;
+  }
+
   if (ShouldUploadBinary(reason)) {
     UploadBinary();
   } else {

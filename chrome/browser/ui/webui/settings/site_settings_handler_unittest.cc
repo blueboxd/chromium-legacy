@@ -947,7 +947,7 @@ TEST_F(SiteSettingsHandlerTest, NotificationPermissionRevokeUkm) {
   EXPECT_EQ(*ukm_recorder.GetEntryMetric(entry, "PermissionType"),
             static_cast<int64_t>(ContentSettingsType::NOTIFICATIONS));
   EXPECT_EQ(*ukm_recorder.GetEntryMetric(entry, "Action"),
-            static_cast<int64_t>(PermissionAction::REVOKED));
+            static_cast<int64_t>(permissions::PermissionAction::REVOKED));
 }
 
 TEST_F(SiteSettingsHandlerTest, DefaultSettingSource) {

@@ -8,7 +8,6 @@
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/native_file_system/native_file_system_permission_request_manager.h"
-#include "chrome/browser/permissions/permission_util.h"
 #include "chrome/browser/safe_browsing/download_protection/download_protection_service.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
@@ -16,6 +15,7 @@
 #include "chrome/browser/ui/views/page_action/page_action_icon_view.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/permissions/permission_util.h"
 #include "content/public/test/browser_test_utils.h"
 #include "third_party/blink/public/common/features.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
@@ -184,7 +184,7 @@ IN_PROC_BROWSER_TEST_F(NativeFileSystemBrowserTest, OpenFile) {
       browser()->tab_strip_model()->GetActiveWebContents();
 
   NativeFileSystemPermissionRequestManager::FromWebContents(web_contents)
-      ->set_auto_response_for_test(PermissionAction::GRANTED);
+      ->set_auto_response_for_test(permissions::PermissionAction::GRANTED);
 
   EXPECT_FALSE(IsUsageIndicatorVisible());
 
@@ -235,7 +235,7 @@ IN_PROC_BROWSER_TEST_F(NativeFileSystemBrowserTest, FullscreenOpenFile) {
       browser()->tab_strip_model()->GetActiveWebContents();
 
   NativeFileSystemPermissionRequestManager::FromWebContents(web_contents)
-      ->set_auto_response_for_test(PermissionAction::GRANTED);
+      ->set_auto_response_for_test(permissions::PermissionAction::GRANTED);
 
   EXPECT_EQ(test_file.BaseName().AsUTF8Unsafe(),
             content::EvalJs(web_contents,

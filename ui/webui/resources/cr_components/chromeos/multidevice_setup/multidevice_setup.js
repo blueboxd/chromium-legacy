@@ -96,14 +96,18 @@ cr.define('multidevice_setup', function() {
       devices_: Array,
 
       /**
-       * Unique identifier for the currently selected host device.
+       * Unique identifier for the currently selected host device. This uses the
+       * device's Instance ID if it is available; otherwise, the device's legacy
+       * device ID is used.
+       * TODO(https://crbug.com/1019206): When v1 DeviceSync is turned off, only
+       * use Instance ID since all devices are guaranteed to have one.
        *
        * Undefined if the no list of potential hosts has been received from mojo
        * service.
        *
        * @private {string|undefined}
        */
-      selectedDeviceId_: String,
+      selectedInstanceIdOrLegacyDeviceId_: String,
 
       /**
        * Whether the password page reports that the forward button should be
@@ -261,11 +265,14 @@ cr.define('multidevice_setup', function() {
       // An authentication token must be set if a password is required.
       assert(this.delegate.isPasswordRequiredToSetHost() === !!this.authToken_);
 
-      const deviceId = /** @type {string} */ (this.selectedDeviceId_);
-      this.delegate.setHostDevice(deviceId, this.authToken_)
+      const instanceIdOrLegacyDeviceId =
+          /** @type {string} */ (this.selectedInstanceIdOrLegacyDeviceId_);
+      this.delegate.setHostDevice(instanceIdOrLegacyDeviceId, this.authToken_)
           .then((responseParams) => {
             if (!responseParams.success) {
-              console.warn('Failure setting host with device ID: ' + deviceId);
+              console.warn(
+                  'Failure setting host with ID: ' +
+                  instanceIdOrLegacyDeviceId);
               return;
             }
 

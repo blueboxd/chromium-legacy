@@ -201,13 +201,6 @@ class ASH_EXPORT ShelfView : public views::AccessiblePaneView,
   // AccessiblePaneView:
   views::View* GetDefaultFocusableChild() override;
 
-  // ApplicationDragAndDropHost:
-  void CreateDragIconProxy(const gfx::Point& location_in_screen_coordinates,
-                           const gfx::ImageSkia& icon,
-                           views::View* replaced_view,
-                           const gfx::Vector2d& cursor_offset_from_center,
-                           float scale_factor) override;
-
   // Overridden from views::ContextMenuController:
   void ShowContextMenuForViewImpl(views::View* source,
                                   const gfx::Point& point,
@@ -225,6 +218,7 @@ class ASH_EXPORT ShelfView : public views::AccessiblePaneView,
   // drop should be shown or not.
   bool ShouldEventActivateButton(views::View* view, const ui::Event& event);
 
+  // ApplicationDragAndDropHost:
   void CreateDragIconProxyByLocationWithNoAnimation(
       const gfx::Point& origin_in_screen_coordinates,
       const gfx::ImageSkia& icon,
@@ -456,6 +450,21 @@ class ASH_EXPORT ShelfView : public views::AccessiblePaneView,
   // the overflow shelf). Invoked when a shelf item is being dragged from one
   // shelf to the other.
   void EndDragOnOtherShelf(bool cancel);
+
+  // Creates a drag proxy icon which can escape the given view.
+  // The proxy should get created using the |icon| with a magnification of
+  // |scale_factor| at a center location of |location_in_screen_coordinates.
+  // Use |replaced_view| to find the screen which is used.
+  // The |cursor_offset_from_center| is the offset from the mouse cursor to
+  // the center of the item.
+  // |animate_visibility| indicates whether the icon visibility changes should
+  // be animated.
+  void CreateDragIconProxy(const gfx::Point& location_in_screen_coordinates,
+                           const gfx::ImageSkia& icon,
+                           views::View* replaced_view,
+                           const gfx::Vector2d& cursor_offset_from_center,
+                           float scale_factor,
+                           bool animate_visibility);
 
   // Handles ripping off an item from the shelf. Returns true when the item got
   // removed.

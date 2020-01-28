@@ -1605,13 +1605,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kContextualSearchDefinitionsName,
      flag_descriptions::kContextualSearchDefinitionsDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kContextualSearchDefinitions)},
-
     {"contextual-search-longpress-resolve",
      flag_descriptions::kContextualSearchLongpressResolveName,
      flag_descriptions::kContextualSearchLongpressResolveDescription,
      kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kContextualSearchLongpressResolve)},
-
     {"contextual-search-ml-tap-suppression",
      flag_descriptions::kContextualSearchMlTapSuppressionName,
      flag_descriptions::kContextualSearchMlTapSuppressionDescription,
@@ -1625,6 +1623,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kContextualSearchSecondTapName,
      flag_descriptions::kContextualSearchSecondTapDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kContextualSearchSecondTap)},
+    {"contextual-search-translations",
+     flag_descriptions::kContextualSearchTranslationsName,
+     flag_descriptions::kContextualSearchTranslationsDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kContextualSearchTranslations)},
+
     {"direct-actions", flag_descriptions::kDirectActionsName,
      flag_descriptions::kDirectActionsDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kDirectActions)},
@@ -2687,9 +2690,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"arc-usb-storage-ui", flag_descriptions::kArcUsbStorageUIName,
      flag_descriptions::kArcUsbStorageUIDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(arc::kUsbStorageUIFeature)},
-    {"arc-vpn", flag_descriptions::kArcVpnName,
-     flag_descriptions::kArcVpnDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(arc::kVpnFeature)},
 #endif  // OS_CHROMEOS
 #if defined(OS_WIN)
     {"enable-winrt-sensor-implementation",
@@ -3260,13 +3260,6 @@ const FeatureEntry kFeatureEntries[] = {
 #endif  // !defined(OS_ANDROID)
 
 #if !defined(OS_ANDROID)
-    {"enable-web-authentication-ble-support",
-     flag_descriptions::kEnableWebAuthenticationBleSupportName,
-     flag_descriptions::kEnableWebAuthenticationBleSupportDescription,
-     kOsDesktop, FEATURE_VALUE_TYPE(features::kWebAuthBle)},
-#endif  // !defined(OS_ANDROID)
-
-#if !defined(OS_ANDROID)
     {"enable-web-authentication-cable-v2-support",
      flag_descriptions::kEnableWebAuthenticationCableV2SupportName,
      flag_descriptions::kEnableWebAuthenticationCableV2SupportDescription,
@@ -3311,10 +3304,6 @@ const FeatureEntry kFeatureEntries[] = {
 #endif  // BUILDFLAG(ENABLE_PDF)
 
 #if BUILDFLAG(ENABLE_PRINTING)
-    {"harfbuzz-pdf-subsetter", flag_descriptions::kHarfBuzzPDFSubsetterName,
-     flag_descriptions::kHarfBuzzPDFSubsetterDescription, kOsAll,
-     FEATURE_VALUE_TYPE(printing::features::kHarfBuzzPDFSubsetter)},
-
 #if defined(OS_WIN)
     {"use-xps-for-printing", flag_descriptions::kUseXpsForPrintingName,
      flag_descriptions::kUseXpsForPrintingDescription, kOsWin,
@@ -4339,10 +4328,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kCookieDeprecationMessagesName,
      flag_descriptions::kCookieDeprecationMessagesDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kCookieDeprecationMessages)},
-
-    {"enable-caption-settings", flag_descriptions::kCaptionSettingsName,
-     flag_descriptions::kCaptionSettingsDescription, kOsAll,
-     FEATURE_VALUE_TYPE(features::kCaptionSettings)},
 
     {"ev-details-in-page-info", flag_descriptions::kEvDetailsInPageInfoName,
      flag_descriptions::kEvDetailsInPageInfoDescription, kOsDesktop,

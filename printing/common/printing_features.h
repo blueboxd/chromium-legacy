@@ -12,8 +12,6 @@
 namespace printing {
 namespace features {
 
-PRINTING_EXPORT extern const base::Feature kHarfBuzzPDFSubsetter;
-
 #if defined(OS_WIN)
 PRINTING_EXPORT extern const base::Feature kUseXpsForPrinting;
 PRINTING_EXPORT extern const base::Feature kUseXpsForPrintingFromPdf;

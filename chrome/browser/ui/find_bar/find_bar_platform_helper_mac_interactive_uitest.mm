@@ -151,7 +151,7 @@ IN_PROC_BROWSER_TEST_F(FindBarPlatformHelperMacInteractiveUITest,
                                            ->GetFindBarTesting()
                                            ->GetMatchCountText());
 
-  chrome::AddTabAt(browser(), GURL(), -1, true);
+  chrome::AddTabAt(browser(), GURL(url::kAboutBlankURL), -1, true);
   ui_test_utils::NavigateToURL(browser(), url);
   chrome::Find(browser());
 
@@ -236,7 +236,7 @@ IN_PROC_BROWSER_TEST_F(FindBarPlatformHelperMacInteractiveUITest,
   ASSERT_TRUE(ui_test_utils::SendKeyPressSync(browser(), ui::VKEY_T, false,
                                               false, false, false));
 
-  chrome::AddTabAt(browser(), GURL(), -1, true);
+  chrome::AddTabAt(browser(), GURL(url::kAboutBlankURL), -1, true);
   ui_test_utils::NavigateToURL(browser(), url);
   ASSERT_NE(first_active_web_contents,
             browser()->tab_strip_model()->GetActiveWebContents());

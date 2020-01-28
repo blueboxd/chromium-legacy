@@ -395,16 +395,18 @@ bool SafeBrowsingUrlCheckerImpl::CanPerformFullURLLookup(const GURL& url) {
   return !in_backoff;
 }
 
-void SafeBrowsingUrlCheckerImpl::OnBlockingPageComplete(bool proceed) {
+void SafeBrowsingUrlCheckerImpl::OnBlockingPageComplete(
+    bool proceed,
+    bool showed_interstitial) {
   DCHECK_EQ(STATE_DISPLAYING_BLOCKING_PAGE, state_);
 
   if (proceed) {
     state_ = STATE_NONE;
-    if (!RunNextCallback(true, true))
+    if (!RunNextCallback(true, showed_interstitial))
       return;
     ProcessUrls();
   } else {
-    BlockAndProcessUrls(true);
+    BlockAndProcessUrls(showed_interstitial);
   }
 }
 

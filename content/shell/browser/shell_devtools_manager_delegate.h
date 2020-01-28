@@ -28,10 +28,10 @@ class ShellDevToolsManagerDelegate : public DevToolsManagerDelegate {
   scoped_refptr<DevToolsAgentHost> CreateNewTarget(const GURL& url) override;
   std::string GetDiscoveryPageHTML() override;
   bool HasBundledFrontendResources() override;
-  void ClientAttached(content::DevToolsAgentHost* agent_host,
-                      content::DevToolsAgentHostClient* client) override;
-  void ClientDetached(content::DevToolsAgentHost* agent_host,
-                      content::DevToolsAgentHostClient* client) override;
+  void ClientAttached(
+      content::DevToolsAgentHostClientChannel* channel) override;
+  void ClientDetached(
+      content::DevToolsAgentHostClientChannel* channel) override;
 
  private:
   BrowserContext* browser_context_;

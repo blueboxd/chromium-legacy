@@ -23,12 +23,12 @@
 #endif
 
 using chrome_test_util::BookmarksDeleteSwipeButton;
+using chrome_test_util::BookmarksNavigationBarBackButton;
 using chrome_test_util::BookmarksSaveEditFolderButton;
 using chrome_test_util::ButtonWithAccessibilityLabelId;
 using chrome_test_util::ContextBarCenterButtonWithLabel;
 using chrome_test_util::ContextBarLeadingButtonWithLabel;
 using chrome_test_util::ContextMenuCopyButton;
-using chrome_test_util::NavigateBackButtonTo;
 using chrome_test_util::OmniboxText;
 using chrome_test_util::TappableBookmarkNodeWithLabel;
 
@@ -288,14 +288,8 @@ using chrome_test_util::TappableBookmarkNodeWithLabel;
                                                      newFolderEnabled:YES];
 }
 
-// TODO(crbug.com/1034183): Enable for EG2 once NavigateBackButtonTo() is fixed.
-#if defined(CHROME_EARL_GREY_2)
-#define MAYBE_testMoveOnSingleURL DISABLED_testMoveOnSingleURL
-#else
-#define MAYBE_testMoveOnSingleURL testMoveOnSingleURL
-#endif
 // Verify Move functionality on single URL selection.
-- (void)MAYBE_testMoveOnSingleURL {
+- (void)testMoveOnSingleURL {
 #if defined(CHROME_EARL_GREY_1)
   // TODO(crbug.com/1035764): EG1 Test fails on iOS 12.
   if (!base::ios::IsRunningOnIOS13OrLater()) {
@@ -342,7 +336,7 @@ using chrome_test_util::TappableBookmarkNodeWithLabel;
   // 2. Test the cancel button at edit page.
 
   // Come back to the Mobile Bookmarks.
-  [[EarlGrey selectElementWithMatcher:NavigateBackButtonTo(@"Mobile Bookmarks")]
+  [[EarlGrey selectElementWithMatcher:BookmarksNavigationBarBackButton()]
       performAction:grey_tap()];
 
   // Change to edit mode
@@ -677,6 +671,13 @@ using chrome_test_util::TappableBookmarkNodeWithLabel;
 }
 
 - (void)testContextMenuForMixedSelection {
+// TODO(crbug.com/1045966): fix for iphone-device and reenable.
+#if !TARGET_IPHONE_SIMULATOR
+  if (![ChromeEarlGrey isIPadIdiom]) {
+    EARL_GREY_TEST_DISABLED(@"Test disabled on iPhone devices.");
+  }
+#endif
+
   [BookmarkEarlGrey setupStandardBookmarks];
   [BookmarkEarlGreyUI openBookmarks];
   [BookmarkEarlGreyUI openMobileBookmarks];

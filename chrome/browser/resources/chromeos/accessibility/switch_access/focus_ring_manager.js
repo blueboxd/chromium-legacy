@@ -44,21 +44,21 @@ class FocusRingManager {
       id: SAConstants.Focus.ID.PRIMARY,
       rects: [],
       type: chrome.accessibilityPrivate.FocusType.SOLID,
-      color: color,
+      color,
       secondaryColor: SAConstants.Focus.SECONDARY_COLOR
     });
     this.rings_.set(SAConstants.Focus.ID.NEXT, {
       id: SAConstants.Focus.ID.NEXT,
       rects: [],
       type: chrome.accessibilityPrivate.FocusType.DASHED,
-      color: color,
+      color,
       secondaryColor: SAConstants.Focus.SECONDARY_COLOR
     });
     this.rings_.set(SAConstants.Focus.ID.TEXT, {
       id: SAConstants.Focus.ID.TEXT,
       rects: [],
       type: chrome.accessibilityPrivate.FocusType.DASHED,
-      color: color,
+      color,
       secondaryColor: SAConstants.Focus.SECONDARY_COLOR
     });
   }

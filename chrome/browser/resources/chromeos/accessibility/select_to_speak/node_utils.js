@@ -219,7 +219,7 @@ NodeUtils.Position;
  */
 NodeUtils.getDeepEquivalentForSelection = function(parent, offset, isStart) {
   if (parent.children.length == 0) {
-    return {node: parent, offset: offset};
+    return {node: parent, offset};
   }
 
   // Non-text nodes with children.
@@ -320,7 +320,7 @@ NodeUtils.getDeepEquivalentForSelection = function(parent, offset, isStart) {
         }
       }
       let result = offset - index + NodeUtils.nameLength(node);
-      return {node: node, offset: result > 0 ? result : 0};
+      return {node, offset: result > 0 ? result : 0};
     }
   }
   // We are at the end of the last node.
@@ -336,5 +336,5 @@ NodeUtils.getDeepEquivalentForSelection = function(parent, offset, isStart) {
       };
     }
   }
-  return {node: node, offset: NodeUtils.nameLength(node)};
+  return {node, offset: NodeUtils.nameLength(node)};
 };

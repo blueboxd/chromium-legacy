@@ -45,6 +45,22 @@ class ModelLoader {
   static const char kClientModelUrlPrefix[];
   static const char kClientModelNamePattern[];
 
+  // Enum used to keep stats about why we fail to get the client model. This
+  // must be kept in sync with the ClientSideModelStatus in enums.xml.
+  enum ClientModelStatus {
+    MODEL_SUCCESS,
+    MODEL_NOT_CHANGED,
+    MODEL_FETCH_FAILED,
+    MODEL_EMPTY,
+    MODEL_TOO_LARGE,
+    MODEL_PARSE_ERROR,
+    MODEL_MISSING_FIELDS,
+    MODEL_INVALID_VERSION_NUMBER,
+    MODEL_BAD_HASH_IDS,
+    MODEL_NEVER_FETCHED,
+    kMaxValue = MODEL_NEVER_FETCHED,
+  };
+
   // Constructs a model loader to fetch a model using |url_loader_factory|.
   // When ScheduleFetch is called, |update_renderers| will be called on the
   // same sequence if the fetch is successful.
@@ -65,21 +81,11 @@ class ModelLoader {
   const std::string& model_str() const { return model_str_; }
   const std::string& name() const { return name_; }
 
- protected:
-  // Enum used to keep stats about why we fail to get the client model.
-  enum ClientModelStatus {
-    MODEL_SUCCESS,
-    MODEL_NOT_CHANGED,
-    MODEL_FETCH_FAILED,
-    MODEL_EMPTY,
-    MODEL_TOO_LARGE,
-    MODEL_PARSE_ERROR,
-    MODEL_MISSING_FIELDS,
-    MODEL_INVALID_VERSION_NUMBER,
-    MODEL_BAD_HASH_IDS,
-    MODEL_STATUS_MAX  // Always add new values before this one.
-  };
+  ClientModelStatus last_client_model_status() {
+    return last_client_model_status_;
+  }
 
+ protected:
   // For testing only.
   ModelLoader(base::Closure update_renderers,
               scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
@@ -125,6 +131,9 @@ class ModelLoader {
   // Used to check that ScheduleFetch and CancelFetcher are called on the same
   // sequence.
   base::SequenceChecker fetch_sequence_checker_;
+
+  // Record the most recent ClientModelStatus received.
+  ClientModelStatus last_client_model_status_;
 
   // Used to protect the delayed callback to StartFetchModel()
   base::WeakPtrFactory<ModelLoader> weak_factory_{this};

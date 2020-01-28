@@ -79,6 +79,7 @@
 <translation id="129553762522093515">最近閉じたタブ</translation>
 <translation id="1298536327547837046">マルウェア スキャン</translation>
 <translation id="129863573139666797"><ph name="BEGIN_LINK" />Cookie を消去してみてください<ph name="END_LINK" /></translation>
+<translation id="1301324364792935241">セキュア DNS の設定を確認してください</translation>
 <translation id="1307966114820526988">サポート終了の機能</translation>
 <translation id="1314509827145471431">製本（右綴じ）</translation>
 <translation id="1320233736580025032">Prc1（封筒）</translation>
@@ -152,6 +153,7 @@
 <translation id="1569487616857761740">有効期限の入力</translation>
 <translation id="1581080074034554886">CVC</translation>
 <translation id="1583429793053364125">このウェブページの表示中に問題が発生しました。</translation>
+<translation id="1586541204584340881">インストールした拡張機能</translation>
 <translation id="1588438908519853928">ノーマル</translation>
 <translation id="1592005682883173041">ローカルデータへのアクセス</translation>
 <translation id="1594030484168838125">選択</translation>
@@ -362,6 +364,7 @@
 <translation id="2544644783021658368">1 つのドキュメント</translation>
 <translation id="254947805923345898">ポリシーの値が無効です。</translation>
 <translation id="255002559098805027"><ph name="HOST_NAME" /> から無効な応答が送信されました。</translation>
+<translation id="2553853292994445426">セキュア DNS の設定を確認してください。接続できないセキュア DNS サーバーを設定している可能性があります。</translation>
 <translation id="2556876185419854533">編集の取り消し（&amp;U）</translation>
 <translation id="257674075312929031">グループ</translation>
 <translation id="2586657967955657006">クリップボード</translation>
@@ -474,6 +477,7 @@
 <translation id="3095940652251934233">Statement</translation>
 <translation id="3096100844101284527">集荷先住所を追加</translation>
 <translation id="3105172416063519923">アセット ID:</translation>
+<translation id="3107591622054137333"><ph name="BEGIN_LINK" />セキュア DNS の設定を確認する<ph name="END_LINK" /></translation>
 <translation id="3109728660330352905">このページを表示する権限がありません。</translation>
 <translation id="3113284927548439113">3 番目のシフト</translation>
 <translation id="3116158981186517402">ラミネート</translation>
@@ -771,6 +775,7 @@
 <translation id="4390472908992056574">ブリム</translation>
 <translation id="4406896451731180161">検索結果</translation>
 <translation id="4408413947728134509">Cookie <ph name="NUM_COOKIES" /></translation>
+<translation id="4414290883293381923">偽のサイトでパスワードを入力しました。<ph name="WEBSITE_1" />、<ph name="WEBSITE_2" />、<ph name="WEBSITE_3" /> のほか、このパスワードを使用しているサイトで、パスワードを今すぐ変更することをおすすめします。</translation>
 <translation id="4415426530740016218">集荷先住所</translation>
 <translation id="4424024547088906515">このサーバーが <ph name="DOMAIN" /> であることを確認できませんでした。このサーバーのセキュリティ証明書は Chrome によって信頼されているものではありません。原因としては、不適切な設定や、悪意のあるユーザーによる接続妨害が考えられます。</translation>
 <translation id="443121186588148776">シリアルポート</translation>
@@ -845,7 +850,7 @@
 <translation id="4796594887379589189">ジョブ管理 ID</translation>
 <translation id="4798078619018708837">カード情報を更新するには <ph name="CREDIT_CARD" /> の有効期限と CVC を入力します。確認後、Google アカウントのカード情報がこのサイトと共有されます。</translation>
 <translation id="4800132727771399293">有効期限と CVC を確認してからもう一度お試しください</translation>
-<translation id="480334179571489655">元のポリシーエラー</translation>
+<translation id="480334179571489655">オリジン ポリシーエラー</translation>
 <translation id="4803924862070940586"><ph name="CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
 <translation id="4807049035289105102"><ph name="SITE" /> から、Google Chrome で処理できない暗号化された認証情報が返されたため、現在このウェブサイトにはアクセスできません。通常、ネットワーク エラーや不正な操作は一時的なものです。少し時間をおくと、ページにアクセスできるようになる可能性があります。</translation>
 <translation id="4813512666221746211">ネットワーク エラー</translation>
@@ -1202,6 +1207,7 @@
 <translation id="6353505687280762741">{COUNT,plural, =0{なし}=1{<ph name="DOMAIN_LIST" /> のパスワード 1 件（同期）}=2{<ph name="DOMAIN_LIST" /> のパスワード 2 件（同期）}other{<ph name="DOMAIN_LIST" /> のパスワード # 件（同期）}}</translation>
 <translation id="6358450015545214790">ヘルプ</translation>
 <translation id="6361757823711327522">B7</translation>
+<translation id="6364095313648930329"><ph name="BEGIN_LINK" />プロキシ、ファイアウォール、セキュア DNS の設定を確認する<ph name="END_LINK" /></translation>
 <translation id="6366710531182496394">2 か所のステープル（左）</translation>
 <translation id="6377268785556383139">「<ph name="SEARCH_TEXT" />」に対する 1 件の検索結果</translation>
 <translation id="6380497234672085559">A0</translation>
@@ -1224,6 +1230,7 @@
 <translation id="6433595998831338502"><ph name="HOST_NAME" /> で接続が拒否されました。</translation>
 <translation id="6434309073475700221">破棄</translation>
 <translation id="6440503408713884761">除外されました</translation>
+<translation id="6443406338865242315">インストールした拡張機能とプラグイン</translation>
 <translation id="6446163441502663861">Kahu（封筒）</translation>
 <translation id="6446608382365791566">他の情報を追加</translation>
 <translation id="6447842834002726250">Cookie</translation>
@@ -1333,6 +1340,7 @@
 <translation id="7012363358306927923">中国銀聯</translation>
 <translation id="7016992613359344582">料金の請求は 1 回限りの場合も繰り返し行われる場合もあり、課金されたかどうかわからないこともあります。</translation>
 <translation id="7029809446516969842">パスワード</translation>
+<translation id="7031646650991750659">インストールした Google Play アプリ</translation>
 <translation id="7050187094878475250"><ph name="DOMAIN" /> にアクセスしようとしましたが、サーバーに提示された証明書の有効期限が長すぎて信頼性を確認できませんでした。</translation>
 <translation id="705310974202322020">{NUM_CARDS,plural, =1{現在、このカードは保存できません}other{現在、これらのカードは保存できません}}</translation>
 <translation id="7053983685419859001">ブロック</translation>
@@ -1392,6 +1400,7 @@
 <translation id="7319430975418800333">A3</translation>
 <translation id="7320336641823683070">接続に関するヘルプ</translation>
 <translation id="733354035281974745">デバイスのローカル アカウントのオーバーライド</translation>
+<translation id="7333654844024768166">偽のサイトでパスワードを入力しました。<ph name="WEBSITE_1" />、<ph name="WEBSITE_2" />、<ph name="WEBSITE_3" /> のほか、このパスワードを使用しているサイトで、パスワードを今すぐ変更することをおすすめします。</translation>
 <translation id="7334320624316649418">順序変更のやり直し（&amp;R）</translation>
 <translation id="7337706099755338005">現在のプラットフォームではご利用いただけません。</translation>
 <translation id="733923710415886693">サーバーの証明書は、証明書の透明性ポリシーを介して公開されていません。</translation>

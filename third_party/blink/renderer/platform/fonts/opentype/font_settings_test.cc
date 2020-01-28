@@ -80,4 +80,11 @@ TEST(FontSettingsTest, FindTest) {
   }
 }
 
+TEST(FontSettingsTest, FindTestEmpty) {
+  scoped_refptr<FontVariationSettings> settings =
+      MakeSettings<FontVariationSettings, FontVariationAxis>({});
+  FontVariationAxis found_axis(AtomicString(), 0);
+  ASSERT_FALSE(settings->FindPair("a", &found_axis));
+}
+
 }  // namespace blink

@@ -2089,8 +2089,6 @@ if (enable_java_templates) {
   #     use this target as a static library. Common Java code from the targets
   #     listed in static_library_dependent_targets will be moved into this
   #     target. Scope members are name and is_resource_ids_provider.
-  #     TODO(estevenson): Add a README for static library targets and document
-  #                       additions to "deps_info" in write_build_config.py.
   #   static_library_provider: Specifies a single target that this target will
   #     use as a static library APK.
   #   static_library_synchronized_proguard: When proguard is enabled, the

@@ -2275,8 +2275,8 @@ void Document::PropagateStyleToViewport() {
   {
     PROPAGATE_FROM(document_element_style, GetEffectiveTouchAction,
                    SetEffectiveTouchAction, TouchAction::kAuto);
-    PROPAGATE_FROM(document_element_style, GetScrollBehavior, SetScrollBehavior,
-                   kScrollBehaviorAuto);
+    PROPAGATE_FROM(document_element_style, ScrollBehavior, SetScrollBehavior,
+                   mojom::blink::ScrollIntoViewParams::Behavior::kAuto);
     PROPAGATE_FROM(document_element_style, DarkColorScheme, SetDarkColorScheme,
                    false);
   }
@@ -8099,11 +8099,17 @@ int Document::DisplayLockBlockingAllActivationCount() const {
 
 void Document::AddLockedDisplayLock() {
   ++locked_display_lock_count_;
+  TRACE_COUNTER_ID1(TRACE_DISABLED_BY_DEFAULT("blink.debug.display_lock"),
+                    "LockedDisplayLockCount", TRACE_ID_LOCAL(this),
+                    locked_display_lock_count_);
 }
 
 void Document::RemoveLockedDisplayLock() {
   DCHECK_GT(locked_display_lock_count_, 0);
   --locked_display_lock_count_;
+  TRACE_COUNTER_ID1(TRACE_DISABLED_BY_DEFAULT("blink.debug.display_lock"),
+                    "LockedDisplayLockCount", TRACE_ID_LOCAL(this),
+                    locked_display_lock_count_);
 }
 
 int Document::LockedDisplayLockCount() const {

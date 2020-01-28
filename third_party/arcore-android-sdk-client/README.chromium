@@ -19,8 +19,17 @@ Local Modifications:
 Added files required for consumption in Chrome (LICENSE, OWNERS, BUILD.gn,
 cipd.yaml, *.info).
 
+Added override for proguard configs brought by ARCore SDK's .aar.
+The override should be removed once ARCore SDK includes the change upstream and
+the version of SDK gets rolled.
+
 The LICENSE file is taken from
  * https://www.apache.org/licenses/LICENSE-2.0.txt
 
 Changes:
+2020-01-23 - Added override for proguard configs brought by ARCore SDK's .aar.
+             This was achieved by extracting proguard.txt from
+             core-partner_chrome-1.10.0.aar and commenting out offending
+             lines that would prevent proguard from optimizing unused public
+             classes away.
 2019-07-01 - Initial version.

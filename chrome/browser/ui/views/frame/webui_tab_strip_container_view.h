@@ -123,6 +123,7 @@ class WebUITabStripContainerView : public TabStripUIEmbedder,
   Browser* const browser_;
   views::WebView* const web_view_;
   views::View* tab_contents_container_;
+  // TODO(1045669): Remove this, or run an experiment on bringing it back.
   ToolbarButton* new_tab_button_ = nullptr;
   views::View* tab_counter_ = nullptr;
 

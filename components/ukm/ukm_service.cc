@@ -211,8 +211,13 @@ void UkmService::Initialize() {
   initialize_started_ = true;
 
   DCHECK_EQ(0, report_count_);
-  client_id_ = LoadOrGenerateAndStoreClientId(pref_service_);
-  session_id_ = LoadAndIncrementSessionId(pref_service_);
+  if (client_->ShouldResetClientIdsOnClonedInstall()) {
+    ResetClientState(ResetReason::kClonedInstall);
+  } else {
+    client_id_ = LoadOrGenerateAndStoreClientId(pref_service_);
+    session_id_ = LoadAndIncrementSessionId(pref_service_);
+  }
+
   metrics_providers_.Init();
 
   StartInitTask();

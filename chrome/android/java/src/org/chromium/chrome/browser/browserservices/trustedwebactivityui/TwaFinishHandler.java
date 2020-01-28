@@ -24,14 +24,14 @@ public class TwaFinishHandler {
     private static final String FINISH_TASK_COMMAND_NAME = "finishAndRemoveTask";
     private static final String SUCCESS_KEY = "success";
 
-    private final ChromeActivity mActivity;
+    private final ChromeActivity<?> mActivity;
     private final BrowserServicesIntentDataProvider mIntentDataProvider;
     private final CustomTabsConnection mConnection;
 
     private boolean mShouldAttemptFinishingTask;
 
     @Inject
-    public TwaFinishHandler(ChromeActivity activity,
+    public TwaFinishHandler(ChromeActivity<?> activity,
             BrowserServicesIntentDataProvider intentDataProvider, CustomTabsConnection connection) {
         mActivity = activity;
         mIntentDataProvider = intentDataProvider;

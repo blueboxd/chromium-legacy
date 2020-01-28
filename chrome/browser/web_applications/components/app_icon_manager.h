@@ -11,7 +11,7 @@
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
-#include "chrome/browser/web_applications/components/web_app_helpers.h"
+#include "chrome/browser/web_applications/components/web_app_id.h"
 #include "chrome/common/web_application_info.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 

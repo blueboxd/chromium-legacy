@@ -205,6 +205,7 @@ jumbo_static_library("weblayer_lib") {
     "//components/crash/content/app",
     "//components/crash/content/browser",
     "//components/embedder_support",
+    "//components/find_in_page",
     "//components/network_time",
     "//components/prefs",
     "//components/safe_browsing/core:features",

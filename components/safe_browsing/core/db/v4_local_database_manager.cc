@@ -543,7 +543,7 @@ void V4LocalDatabaseManager::StopOnIOThread(bool shutdown) {
   // and doesn't block the IO thread.
   V4Database::Destroy(std::move(v4_database_));
 
-  rt_url_lookup_service_.reset();
+  ResetRealTimeUrlLookupService();
 
   // Delete the V4UpdateProtocolManager.
   // This cancels any in-flight update request.
@@ -675,11 +675,6 @@ bool V4LocalDatabaseManager::GetPrefixMatches(
   }
 
   return !check->full_hash_to_store_and_hash_prefixes.empty();
-}
-
-RealTimeUrlLookupService*
-V4LocalDatabaseManager::GetRealTimeUrlLookupService() {
-  return rt_url_lookup_service_.get();
 }
 
 void V4LocalDatabaseManager::GetSeverestThreatTypeAndMetadata(
@@ -996,14 +991,6 @@ void V4LocalDatabaseManager::SetupDatabase() {
                      weak_factory_.GetWeakPtr());
   V4Database::Create(task_runner_, base_path_, list_infos_,
                      std::move(db_ready_callback));
-}
-
-void V4LocalDatabaseManager::SetupRealTimeUrlLookupService(
-    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory) {
-  DCHECK(CurrentlyOnThread(ThreadID::IO));
-
-  rt_url_lookup_service_ =
-      std::make_unique<RealTimeUrlLookupService>(url_loader_factory);
 }
 
 void V4LocalDatabaseManager::SetupUpdateProtocolManager(

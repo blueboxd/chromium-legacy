@@ -12,8 +12,8 @@
 #include "base/macros.h"
 #include "chrome/browser/media/webrtc/media_stream_devices_controller.h"
 #include "chrome/browser/permissions/permission_prompt_android.h"
-#include "chrome/browser/permissions/permission_util.h"
 #include "components/content_settings/core/common/content_settings_types.h"
+#include "components/permissions/permission_util.h"
 #include "content/public/browser/web_contents_observer.h"
 
 using base::android::JavaParamRef;
@@ -28,7 +28,8 @@ class TabAndroid;
 // decision.
 class PermissionDialogDelegate : public content::WebContentsObserver {
  public:
-  using PermissionSetCallback = base::Callback<void(bool, PermissionAction)>;
+  using PermissionSetCallback =
+      base::Callback<void(bool, permissions::PermissionAction)>;
 
   // The interface for creating a modal dialog when the PermissionRequestManager
   // is enabled.

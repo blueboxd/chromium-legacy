@@ -13,6 +13,7 @@ import org.chromium.chrome.browser.SnackbarActivity;
 import org.chromium.chrome.browser.download.home.DownloadManagerCoordinator;
 import org.chromium.chrome.browser.download.home.DownloadManagerCoordinatorFactory;
 import org.chromium.chrome.browser.download.home.DownloadManagerUiConfig;
+import org.chromium.chrome.browser.download.home.DownloadManagerUiConfigHelper;
 import org.chromium.chrome.browser.download.home.filter.Filters;
 import org.chromium.chrome.browser.download.items.OfflineContentAggregatorNotificationBridgeUiFactory;
 import org.chromium.chrome.browser.util.IntentUtils;
@@ -58,8 +59,9 @@ public class DownloadActivity extends SnackbarActivity implements ModalDialogMan
                 getIntent(), IntentHandler.EXTRA_PARENT_COMPONENT);
         mPermissionDelegate =
                 new ActivityAndroidPermissionDelegate(new WeakReference<Activity>(this));
+
         DownloadManagerUiConfig config =
-                new DownloadManagerUiConfig.Builder()
+                DownloadManagerUiConfigHelper.fromFlags()
                         .setIsOffTheRecord(isOffTheRecord)
                         .setIsSeparateActivity(true)
                         .setShowPaginationHeaders(DownloadUtils.shouldShowPaginationHeaders())

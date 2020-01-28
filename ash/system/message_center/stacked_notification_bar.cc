@@ -243,7 +243,6 @@ StackedNotificationBar::StackedNotificationBar(
       views::BoxLayout::CrossAxisAlignment::kStretch);
 
   if (features::IsUnifiedMessageCenterRefactorEnabled()) {
-    message_center::MessageCenter::Get()->AddObserver(this);
     notification_icons_container_ = new views::View();
     notification_icons_container_->SetLayoutManager(
         std::make_unique<views::BoxLayout>(
@@ -251,6 +250,7 @@ StackedNotificationBar::StackedNotificationBar(
             kStackedNotificationIconsContainerPadding,
             kStackedNotificationBarIconSpacing));
     AddChildView(notification_icons_container_);
+    message_center::MessageCenter::Get()->AddObserver(this);
   }
 
   count_label_->SetEnabledColor(AshColorProvider::Get()->GetContentLayerColor(

@@ -86,4 +86,8 @@ std::string TestMetricsServiceClient::GetAppPackageName() {
   return "test app";
 }
 
+bool TestMetricsServiceClient::ShouldResetClientIdsOnClonedInstall() {
+  return should_reset_client_ids_on_cloned_install_;
+}
+
 }  // namespace metrics

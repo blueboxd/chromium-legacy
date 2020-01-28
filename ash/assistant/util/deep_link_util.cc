@@ -4,7 +4,6 @@
 
 #include "ash/assistant/util/deep_link_util.h"
 
-#include <array>
 #include <set>
 
 #include "ash/assistant/util/i18n_util.h"
@@ -351,15 +350,16 @@ GURL GetChromeSettingsUrl(const base::Optional<std::string>& page) {
   static constexpr char kChromeOsSettingsUrl[] = "chrome://os-settings/";
 
   // Note that we only allow deep linking to a subset of pages. If a deep link
-  // requests a page not contained in this array, we fallback gracefully to
+  // requests a page not contained in this map, we fallback gracefully to
   // top-level Chrome OS Settings. We may wish to allow deep linking into
   // Browser Settings at some point in the future at which point we will define
   // an analogous collection of |kAllowedBrowserPages|.
-  static constexpr std::array<char[16], 2> kAllowedOsPages = {"googleAssistant",
-                                                              "languages"};
+  static const std::map<std::string, std::string> kAllowedOsPages = {
+      {/*page=*/"googleAssistant", /*os_page=*/"googleAssistant"},
+      {/*page=*/"languages", /*os_page=*/"languages/details"}};
 
   return page && base::Contains(kAllowedOsPages, page.value())
-             ? GURL(kChromeOsSettingsUrl + page.value())
+             ? GURL(kChromeOsSettingsUrl + kAllowedOsPages.at(page.value()))
              : GURL(kChromeOsSettingsUrl);
 }
 

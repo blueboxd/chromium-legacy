@@ -19,7 +19,7 @@ struct SequencedScroll final : public GarbageCollected<SequencedScroll> {
 
   SequencedScroll(ScrollableArea* area,
                   ScrollOffset offset,
-                  ScrollBehavior behavior)
+                  mojom::blink::ScrollIntoViewParams::Behavior behavior)
       : scrollable_area(area),
         scroll_offset(offset),
         scroll_behavior(behavior) {}
@@ -31,7 +31,7 @@ struct SequencedScroll final : public GarbageCollected<SequencedScroll> {
 
   Member<ScrollableArea> scrollable_area;
   ScrollOffset scroll_offset;
-  ScrollBehavior scroll_behavior;
+  mojom::blink::ScrollIntoViewParams::Behavior scroll_behavior;
 
   void Trace(blink::Visitor*);
 };
@@ -46,7 +46,9 @@ class CORE_EXPORT SmoothScrollSequencer final
   void SetScrollType(ScrollType type) { scroll_type_ = type; }
 
   // Add a scroll offset animation to the back of a queue.
-  void QueueAnimation(ScrollableArea*, ScrollOffset, ScrollBehavior);
+  void QueueAnimation(ScrollableArea*,
+                      ScrollOffset,
+                      mojom::blink::ScrollIntoViewParams::Behavior);
 
   // Run the animation at the back of the queue.
   void RunQueuedAnimations();

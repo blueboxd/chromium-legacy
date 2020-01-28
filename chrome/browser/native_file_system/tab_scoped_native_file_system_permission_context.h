@@ -84,7 +84,7 @@ class TabScopedNativeFileSystemPermissionContext
     void OnPermissionRequestComplete(
         base::OnceCallback<void(PermissionRequestOutcome)> callback,
         PermissionRequestOutcome outcome,
-        PermissionAction result);
+        permissions::PermissionAction result);
 
     SEQUENCE_CHECKER(sequence_checker_);
 

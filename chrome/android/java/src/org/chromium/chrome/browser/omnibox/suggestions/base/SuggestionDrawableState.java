@@ -15,6 +15,8 @@ import android.support.annotation.DrawableRes;
 import android.support.v4.util.ObjectsCompat;
 import android.support.v7.content.res.AppCompatResources;
 
+import org.chromium.base.ApiCompatibilityUtils;
+
 /** Represents graphical decoration for the suggestion components. */
 public class SuggestionDrawableState {
     /** Embedded drawable object. */
@@ -26,6 +28,7 @@ public class SuggestionDrawableState {
     /** Whether drawable should be displayed as large. */
     public final boolean isLarge;
 
+    /** Helper to construct SuggestionDrawableState objects.  */
     public static final class Builder {
         private Drawable mDrawable;
         private boolean mAllowTint;
@@ -35,7 +38,7 @@ public class SuggestionDrawableState {
         /**
          * Create new Builder object.
          *
-         * @param cxt Current context.
+         * @param drawable Drawable object to use.
          */
         private Builder(Drawable drawable) {
             assert drawable != null : "SuggestionDrawableState needs a Drawable object";
@@ -44,11 +47,11 @@ public class SuggestionDrawableState {
 
         /**
          * Associate Bitmap with built SuggestionDrawableState object.
-         *
+         * @param ctx Current context.
          * @param bitmap Bitmap to use.
          */
-        public static Builder forBitmap(Bitmap bitmap) {
-            return new Builder(new BitmapDrawable(bitmap));
+        public static Builder forBitmap(Context ctx, Bitmap bitmap) {
+            return new Builder(new BitmapDrawable(ctx.getResources(), bitmap));
         }
 
         /**
@@ -67,7 +70,8 @@ public class SuggestionDrawableState {
          * @param colorRes Color resource to use.
          */
         public static Builder forColorRes(Context ctx, @ColorRes int colorRes) {
-            return new Builder(new ColorDrawable(ctx.getResources().getColor(colorRes)));
+            return new Builder(new ColorDrawable(
+                    ApiCompatibilityUtils.getColor(ctx.getResources(), colorRes)));
         }
 
         /**
@@ -83,7 +87,7 @@ public class SuggestionDrawableState {
         /**
          * Create new SuggestionDrawableState representing a supplied Drawable object.
          *
-         * @param drawable Drawable object to use.
+         * @param d Drawable object to use.
          */
         public static Builder forDrawable(Drawable d) {
             return new Builder(d);
@@ -125,7 +129,7 @@ public class SuggestionDrawableState {
         public SuggestionDrawableState build() {
             return new SuggestionDrawableState(mDrawable, mUseRoundedCorners, mIsLarge, mAllowTint);
         }
-    };
+    }
 
     private SuggestionDrawableState(
             Drawable drawable, boolean useRoundedCorners, boolean isLarge, boolean allowTint) {

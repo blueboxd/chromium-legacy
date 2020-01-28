@@ -8,6 +8,8 @@
 #include "base/scoped_observer.h"
 #include "base/test/bind_test_util.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/time/time.h"
+#include "base/timer/timer.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/account_consistency_mode_manager.h"
@@ -59,10 +61,23 @@ class SignInObserver : public signin::IdentityManager::Observer {
     if (seen_)
       return;
 
+    base::OneShotTimer timer;
+    timer.Start(FROM_HERE, base::TimeDelta::FromSeconds(30),
+                base::BindRepeating(&SignInObserver::OnTimeout,
+                                    base::Unretained(this)));
     running_ = true;
     message_loop_runner_ = new MessageLoopRunner;
     message_loop_runner_->Run();
     EXPECT_TRUE(seen_);
+  }
+
+  void OnTimeout() {
+    seen_ = false;
+    if (!running_)
+      return;
+    message_loop_runner_->Quit();
+    running_ = false;
+    FAIL() << "Sign in observer timed out!";
   }
 
   void OnPrimaryAccountSet(

@@ -1,2 +1,4 @@
-file://third_party/blink/renderer/modules/badging/OWNERS
+harrisjay@chromium.org
+mgiuca@chromium.org
+
 # COMPONENT: UI>Browser>WebAppInstalls

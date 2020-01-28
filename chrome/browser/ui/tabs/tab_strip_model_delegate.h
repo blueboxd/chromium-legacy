@@ -92,13 +92,13 @@ class TabStripModelDelegate {
   // Duplicates the contents at the provided index and places it into a new tab.
   virtual void DuplicateContentsAt(int index) = 0;
 
-  // Returns whether the contents at |index| can be moved from the current
+  // Returns whether the contents at |indices| can be moved from the current
   // tabstrip to a different window.
-  virtual bool CanMoveTabToWindow(int index) = 0;
+  virtual bool CanMoveTabsToWindow(const std::vector<int>& indices) = 0;
 
-  // Removes the contents at |index| from this tab strip and places it into a
+  // Removes the contents at |indices| from this tab strip and places it into a
   // new window.
-  virtual void MoveTabToNewWindow(int index) = 0;
+  virtual void MoveTabsToNewWindow(const std::vector<int>& indices) = 0;
 
   // Creates an entry in the historical tab database for the specified
   // WebContents.

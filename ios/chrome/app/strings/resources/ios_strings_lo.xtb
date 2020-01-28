@@ -192,6 +192,7 @@
 <translation id="3474649192738347024">ປະ​ກອບ​ແບບ​ຟອມ​ສຳ​ເລັດ​ແລ້ວ.</translation>
 <translation id="3478058380795961209">ເດືອນ​ໝົດອາຍຸ</translation>
 <translation id="3482959374254649722">ກຳ​ລັງ​ຊິງ​ຄ໌​ແຖບ​ຂອງ​ທ່ານ...</translation>
+<translation id="3484946776651937681">ເປີດໃນການດາວໂຫຼດ</translation>
 <translation id="3493531032208478708"><ph name="BEGIN_LINK" />ສຶກສາເພີ່ມເຕີມ<ph name="END_LINK" /> ກ່ຽວກັບເນື້ອຫາທີ່ແນະນຳ</translation>
 <translation id="3494788280727468875">ຢືນຢັນລຶບລ້າງຂໍ້ມູນການທ່ອງເວັບ</translation>
 <translation id="35083190962747987">ເປີດ ${url}</translation>
@@ -537,6 +538,7 @@ Handoff ຍັງ​ຕ້ອງ​ໄດ້​ເປີດ​ໃຊ້​ງາ
 <translation id="8319076807703933069">ຊອກຫາໃໝ່</translation>
 <translation id="8323906514956095947">ແຕະຄ້າງໄວ້ສຳລັບຕົວເລືອກເພີ່ມເຕີມຂອງແຖບ</translation>
 <translation id="8328777765163860529">ປິດທັງໝົດ</translation>
+<translation id="8386068868580335421">ຣີເຊັດ</translation>
 <translation id="8407669440184693619">ບໍ່ເຫັນລະຫັດຜ່ານສຳລັບເວັບໄຊນີ້</translation>
 <translation id="842017693807136194">ເຂົ້າສູ່ລະບົບດ້ວຍ</translation>
 <translation id="8428045167754449968">ເມືອງ</translation>
@@ -553,6 +555,7 @@ Handoff ຍັງ​ຕ້ອງ​ໄດ້​ເປີດ​ໃຊ້​ງາ
 <translation id="8532105204136943229">ປີ​ຫມົດ​ອາ​ຍຸ​</translation>
 <translation id="8534481786647257214">ການ​ໂພ​ສ​ທ໌ Google+ ສຳ​ເລັດ.</translation>
 <translation id="8548878600947630424">ຊອກ​ຫາ​ຢູ່​ໃນ​ຫນ້າ​...</translation>
+<translation id="8574235780160508979">ຂໍ້ກຳນົດການບໍລິການຂອງ Chrome ຈະປ່ຽນແປງໃນວັນທີ 31 ເດືອນມີນາ. <ph name="BEGIN_LINK" />ກະລຸນາກວດເບິ່ງ<ph name="END_LINK" /></translation>
 <translation id="8588404856427128947">ປິດ</translation>
 <translation id="8605219856220328675">ປິດແຖບ.</translation>
 <translation id="8620640915598389714">ແກ້ໄຂ</translation>

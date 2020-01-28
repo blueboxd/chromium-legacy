@@ -55,7 +55,7 @@ class ValidationFunction : public ExtensionFunction {
 
 using ChromeExtensionFunctionUnitTest = ExtensionServiceTestBase;
 
-#if defined(OS_WIN) || defined(CHROMEOS)
+#if defined(OS_WIN) || defined(OS_CHROMEOS)
 #define MAYBE_SimpleFunctionTest DISABLED_SimpleFunctionTest
 #else
 #define MAYBE_SimpleFunctionTest SimpleFunctionTest

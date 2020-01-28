@@ -64,7 +64,7 @@ IN_PROC_BROWSER_TEST_F(ExpandablePaymentHandlerBrowserTest, ConfirmPayment) {
   EXPECT_EQ("success", content::EvalJs(GetActiveWebContents(), "getResult()"));
 }
 
-IN_PROC_BROWSER_TEST_F(ExpandablePaymentHandlerBrowserTest, DISABLED_CancelPayment) {
+IN_PROC_BROWSER_TEST_F(ExpandablePaymentHandlerBrowserTest, CancelPayment) {
   std::string expected = "success";
   EXPECT_EQ(expected, content::EvalJs(GetActiveWebContents(), "install()"));
   EXPECT_EQ("app_is_ready", content::EvalJs(GetActiveWebContents(),

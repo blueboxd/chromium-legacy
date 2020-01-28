@@ -14,6 +14,7 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeSwitches;
@@ -110,6 +111,7 @@ public class PaymentRequestMultiplePaymentInstrumentsTest implements MainActivit
      */
     @Test
     @MediumTest
+    @DisabledTest(message = "https://crbug.com/1045923")
     @Feature({"Payments"})
     public void testCreditCardSuggestionOrdering() throws TimeoutException {
         mCreditCardsToAdd = new CreditCard[] {CREDIT_CARDS[0], CREDIT_CARDS[3], CREDIT_CARDS[2],

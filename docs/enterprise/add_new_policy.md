@@ -91,7 +91,9 @@ Usually you need a policy when
     -   We strongly encourage developers to make their policies support this
         attribute. It means admin can change the policy value and Chrome will
         honor the change at run-time wihtout requiring a restart of the browser.
-    -   Chrome OS does not support non-dynamic user policies.
+    -   Chrome OS does not always support non-dynamic profile policies. Please
+        verify with Chrome OS policy owner if your profile policy does not
+        support dynamic refresh on Chrome OS.
     -   Most of time, this requires a
         [PrefChangeRegistrar](https://cs.chromium.org/chromium/src/components/prefs/pref_change_registrar.h)
         to listen to the preference change notification. And update UI or

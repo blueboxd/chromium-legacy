@@ -388,6 +388,7 @@ source_set("unit_tests") {
       "cloud/component_cloud_policy_updater_unittest.cc",
       "cloud/external_policy_data_fetcher_unittest.cc",
       "cloud/external_policy_data_updater_unittest.cc",
+      "cloud/realtime_reporting_job_configuration_unittest.cc",
       "cloud/resource_cache_unittest.cc",
       "config_dir_policy_loader_unittest.cc",
     ]

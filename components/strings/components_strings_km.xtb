@@ -80,6 +80,7 @@
 <translation id="129553762522093515">បានបិទកន្លងទៅថ្មីៗ</translation>
 <translation id="1298536327547837046">ការស្កេន​កម្មវិធីគ្រោះថ្នាក់</translation>
 <translation id="129863573139666797"><ph name="BEGIN_LINK" />សាកល្បងជម្រះខុកឃីរបស់អ្នក<ph name="END_LINK" /></translation>
+<translation id="1301324364792935241">ពិនិត្យ​ការកំណត់ DNS សុវត្ថិភាពរបស់អ្នក</translation>
 <translation id="1307966114820526988">មុខងារ​ដែលបាន​បញ្ឈប់</translation>
 <translation id="1314509827145471431">ភ្ជាប់​ខាងស្ដាំ</translation>
 <translation id="1320233736580025032">Prc1 (ស្រោម​សំបុត្រ)</translation>
@@ -153,6 +154,7 @@
 <translation id="1569487616857761740">បញ្ចូលកាល​បរិច្ឆេទ​ផុត​កំណត់</translation>
 <translation id="1581080074034554886">CVC</translation>
 <translation id="1583429793053364125">មានបញ្ហាអ្វីមួយកើតឡើង ខណៈពេលកំពុងបង្ហាញគេហទំព័រនេះ</translation>
+<translation id="1586541204584340881">ថាតើកម្មវិធីបន្ថែមណាខ្លះដែលអ្នកបានដំឡើង</translation>
 <translation id="1588438908519853928">ធម្មតា</translation>
 <translation id="1592005682883173041">ការចូលប្រើទិន្នន័យមូលដ្ឋាន</translation>
 <translation id="1594030484168838125">ជ្រើសរើស</translation>
@@ -365,6 +367,7 @@
 <translation id="2544644783021658368">ឯកសារ​តែមួយ</translation>
 <translation id="254947805923345898">តម្លៃ​របស់គោលការណ៍​គ្មានសុពលភាពទេ។</translation>
 <translation id="255002559098805027"><ph name="HOST_NAME" /> បានផ្ញើការឆ្លើយតបដែលមិនត្រឹមត្រូវ</translation>
+<translation id="2553853292994445426">ពិនិត្យការកំណត់ DNS សុវត្ថិភាពរបស់អ្នក។ អ្នកប្រហែលជាបាន​កំណត់រចនាសម្ព័ន្ធម៉ាស៊ីនមេ DNS សុវត្ថិភាព ដែលមានបញ្ហាក្នុងការតភ្ជាប់។</translation>
 <translation id="2556876185419854533">បកក្រោយការកែប្រែ</translation>
 <translation id="257674075312929031">ក្រុម</translation>
 <translation id="2586657967955657006">អង្គ​ចងចាំ</translation>
@@ -487,6 +490,7 @@
 <translation id="3095940652251934233">Statement</translation>
 <translation id="3096100844101284527">បញ្ចូល​អាសយដ្ឋាន​ទទួល</translation>
 <translation id="3105172416063519923">ID ទ្រព្យសកម្ម៖</translation>
+<translation id="3107591622054137333"><ph name="BEGIN_LINK" />ពិនិត្យ​ការកំណត់រចនាសម្ព័ន្ធ DNS សុវត្ថិភាព<ph name="END_LINK" /></translation>
 <translation id="3109728660330352905">អ្នកមិនមានសិទ្ធិក្នុងការមើលទំព័រនេះទេ</translation>
 <translation id="3113284927548439113">ការប្ដូរ​លើកទីបី</translation>
 <translation id="3116158981186517402">អ៊ុត​ប្លាស្ទិច</translation>
@@ -789,6 +793,7 @@
 <translation id="4390472908992056574">គែមខាងលើ</translation>
 <translation id="4406896451731180161">លទ្ធផលស្វែងរក</translation>
 <translation id="4408413947728134509">ខូគី <ph name="NUM_COOKIES" /></translation>
+<translation id="4414290883293381923">អ្នកទើបតែ​បានបញ្ចូល​ពាក្យសម្ងាត់​របស់អ្នក​នៅលើ​គេហទំព័របញ្ឆោត។ Chrome សូមណែនាំឱ្យ​ចូលទៅកាន់ <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, <ph name="WEBSITE_3" /> និងគេហទំព័រ​ផ្សេងទៀត ​ដែល​អ្នកប្រើ​ពាក្យសម្ងាត់​នេះ រួច​ប្ដូរ​វាឥឡូវនេះ។</translation>
 <translation id="4415426530740016218">អាសយដ្ឋាន​ទទួល</translation>
 <translation id="4424024547088906515">ម៉ាស៊ីនមេនេះមិនអាចបង្ហាញថាវាជា <ph name="DOMAIN" /> ទេ វិញ្ញាបនប័ត្រសុវត្ថិភាពរបស់វា
 មិនត្រូវបានជឿ៌ជាក់ដោយ Chrome ទេ។ នេះអាចបណ្តាលមកពីការកំណត់មិនត្រឹមត្រូវ ឬមានការស្ទាក់ការភ្ជាប់របស់អ្នកពីអ្នកវាយប្រហារ។</translation>
@@ -1222,6 +1227,7 @@
 <translation id="6353505687280762741">{COUNT,plural, =0{គ្មាន}=1{ពាក្យសម្ងាត់ 1 (សម្រាប់ <ph name="DOMAIN_LIST" />, បាន​ធ្វើសមកាលកម្ម)}=2{ពាក្យសម្ងាត់ 2 (សម្រាប់ <ph name="DOMAIN_LIST" />, បាន​ធ្វើសមកាលកម្ម)}other{ពាក្យសម្ងាត់ # (សម្រាប់ <ph name="DOMAIN_LIST" />, បាន​ធ្វើសមកាលកម្ម)}}</translation>
 <translation id="6358450015545214790">តើវាមានន័យដូចម្តេច?</translation>
 <translation id="6361757823711327522">B7</translation>
+<translation id="6364095313648930329"><ph name="BEGIN_LINK" />ពិនិត្យប្រូកស៊ី ជញ្ជាំងភ្លើង និងការកំណត់រចនាសម្ព័ន្ធ DNS សុវត្ថិភាព<ph name="END_LINK" /></translation>
 <translation id="6366710531182496394">កិបពីរ​គ្រាប់​ខាងឆ្វេង</translation>
 <translation id="6377268785556383139">លទ្ធផល 1 សម្រាប់ '<ph name="SEARCH_TEXT" />'</translation>
 <translation id="6380497234672085559">A0</translation>
@@ -1244,6 +1250,7 @@
 <translation id="6433595998831338502"><ph name="HOST_NAME" /> បានបដិសេធក្នុងការតភ្ជាប់</translation>
 <translation id="6434309073475700221">កម្ចាត់</translation>
 <translation id="6440503408713884761">មិនត្រូវបាន​អើពើ</translation>
+<translation id="6443406338865242315">ថាតើ​កម្មវិធីបន្ថែម និងកម្មវិធី​ជំនួយណាខ្លះដែលអ្នកបានដំឡើង</translation>
 <translation id="6446163441502663861">Kahu (ស្រោម​សំបុត្រ)</translation>
 <translation id="6446608382365791566">បញ្ចូលព័ត៌មានបន្ថែម</translation>
 <translation id="6447842834002726250">ខុកឃី</translation>
@@ -1353,6 +1360,7 @@
 <translation id="7012363358306927923">China UnionPay</translation>
 <translation id="7016992613359344582">ការគិតប្រាក់ទាំងនេះអាចធ្វើឡើងម្ដង ឬច្រើន​ដង ហើយអាចនឹងមិនមាន​ការបញ្ជាក់ច្បាស់លាស់នោះទេ។</translation>
 <translation id="7029809446516969842">ពាក្យសម្ងាត់</translation>
+<translation id="7031646650991750659">ថាតើកម្មវិធី Google Play ណាខ្លះដែលអ្នកបានដំឡើង</translation>
 <translation id="7050187094878475250">អ្នកបានព្យាយាមចូលទៅ <ph name="DOMAIN" />, ប៉ុន្តែវិញ្ញាបនបត្រនៃម៉ាស៊ីនមេនេះមានសុពលភាពយូរពេកដែលមិនគួរឲ្យទុកចិត្ត។</translation>
 <translation id="705310974202322020">{NUM_CARDS,plural, =1{មិនអាចរក្សាទុកបណ្ណនេះបានទេនៅពេលនេះ}other{មិនអាចរក្សាទុកបណ្ណទាំងនេះបានទេនៅពេលនេះ}}</translation>
 <translation id="7053983685419859001">ទប់ស្កាត់</translation>
@@ -1412,6 +1420,7 @@
 <translation id="7319430975418800333">A3</translation>
 <translation id="7320336641823683070">ជំនួយ​ការតភ្ជាប់</translation>
 <translation id="733354035281974745">ការលុបពីលើ​គណនី​មូលដ្ឋាន​ក្នុង​ឧបករណ៍</translation>
+<translation id="7333654844024768166">អ្នកទើបតែ​បានបញ្ចូល​ពាក្យសម្ងាត់​របស់អ្នក​នៅលើ​គេហទំព័របញ្ឆោត។ Chromium សូមណែនាំឱ្យ​ចូលទៅកាន់ <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, <ph name="WEBSITE_3" /> និងគេហទំព័រ​ផ្សេងទៀត ​ដែលអ្នកប្រើ​ពាក្យសម្ងាត់​នេះ រួច​ប្ដូរ​វាឥឡូវនេះ។</translation>
 <translation id="7334320624316649418">ធ្វើការតម្រៀបឡើងវិញ</translation>
 <translation id="7337706099755338005">មិនមាន​នៅលើ​ប្រព័ន្ធ​របស់អ្នក​ទេ។</translation>
 <translation id="733923710415886693">វិញ្ញាបនបត្រម៉ាស៊ីនមេមិនត្រូវបានបង្ហាញឲ្យដឹងតាមរយៈគោលការណ៍តម្លាភាពវិញ្ញាបនបត្រ។</translation>

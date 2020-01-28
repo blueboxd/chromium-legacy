@@ -113,9 +113,25 @@ class ASH_EXPORT TabletModeWindowManager : public aura::WindowObserver,
  private:
   using WindowToState = std::map<aura::Window*, TabletModeWindowState*>;
 
-  // Returns the state type that |window| had before tablet mode started. If
-  // |window| is not yet tracked, returns the current state type of |window|.
-  WindowStateType GetDesktopWindowStateType(aura::Window* window) const;
+  // If |from_clamshell| is true, returns the bounds or state type that |window|
+  // had before tablet mode started. If |from_clamshell| is false, returns the
+  // current bounds or state type of |window|.
+  gfx::Rect GetWindowBoundsInScreen(aura::Window* window,
+                                    bool from_clamshell) const;
+  WindowStateType GetWindowStateType(aura::Window* window,
+                                     bool from_clamshell) const;
+
+  // Returns the windows that are going to be carried over to split view during
+  // clamshell <-> tablet transition or multi-user switch transition.
+  base::flat_map<aura::Window*, WindowStateType> GetCarryOverWindowsInSplitView(
+      bool clamshell_to_tablet) const;
+
+  // Calculates the split view divider position that will best preserve the
+  // bounds of the windows.
+  int CalculateCarryOverDividerPosition(
+      const base::flat_map<aura::Window*, WindowStateType>&
+          windows_in_splitview,
+      bool clamshell_to_tablet) const;
 
   // Maximizes all windows, except that snapped windows shall carry over to
   // split view as determined by GetCarryOverWindowsInSplitView().

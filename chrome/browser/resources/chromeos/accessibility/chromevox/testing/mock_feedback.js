@@ -169,8 +169,7 @@ MockFeedback.prototype = {
    * @return {MockFeedback} |this| for chaining
    */
   expectSpeechWithQueueMode(text, queueMode) {
-    return this.expectSpeechWithProperties.apply(
-        this, [{queueMode: queueMode}, text]);
+    return this.expectSpeechWithProperties.apply(this, [{queueMode}, text]);
   },
 
   /**
@@ -394,12 +393,7 @@ MockFeedback.prototype = {
     }
     // Make a copy of all properties in a single object to be used in
     // matchAndConsume.
-    var allProperties = {
-      text: textString,
-      queueMode: queueMode,
-      properties: properties,
-      callback: callback
-    };
+    var allProperties = {text: textString, queueMode, properties, callback};
     this.pendingUtterances_.push(allProperties);
     this.process_();
   },

@@ -1147,3 +1147,7 @@ std::string ChromeMetricsServiceClient::GetUploadSigningKey() {
   base::Base64Decode(google_apis::GetMetricsKey(), &decoded_key);
   return decoded_key;
 }
+
+bool ChromeMetricsServiceClient::ShouldResetClientIdsOnClonedInstall() {
+  return metrics_service_->ShouldResetClientIdsOnClonedInstall();
+}

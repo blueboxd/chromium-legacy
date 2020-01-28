@@ -321,7 +321,6 @@ void SyncEngineImpl::HandleInitializationSuccessOnFrontendLoop(
     const WeakHandle<JsBackend> js_backend,
     const WeakHandle<DataTypeDebugInfoListener> debug_info_listener,
     std::unique_ptr<ModelTypeConnector> model_type_connector,
-    const std::string& cache_guid,
     const std::string& birthday,
     const std::string& bag_of_chips,
     const std::string& last_keystore_key) {
@@ -341,15 +340,14 @@ void SyncEngineImpl::HandleInitializationSuccessOnFrontendLoop(
   }
 
   host_->OnEngineInitialized(initial_types, js_backend, debug_info_listener,
-                             cache_guid, birthday, bag_of_chips,
-                             last_keystore_key, /*success=*/true);
+                             birthday, bag_of_chips, last_keystore_key,
+                             /*success=*/true);
 }
 
 void SyncEngineImpl::HandleInitializationFailureOnFrontendLoop() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   host_->OnEngineInitialized(ModelTypeSet(), WeakHandle<JsBackend>(),
                              WeakHandle<DataTypeDebugInfoListener>(),
-                             /*cache_guid=*/"",
                              /*birthday=*/"", /*bag_of_chips=*/"",
                              /*last_keystore_key=*/"",
                              /*success=*/false);

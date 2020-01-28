@@ -4,18 +4,11 @@
 
 #include "components/sync/syncable/invalid_directory_backing_store.h"
 
-#include <string>
-
-#include "base/bind.h"
-
 namespace syncer {
 namespace syncable {
 
 InvalidDirectoryBackingStore::InvalidDirectoryBackingStore()
-    : DirectoryBackingStore("some_fake_user",
-                            base::BindRepeating([]() -> std::string {
-                              return "some_fake_cache_guid";
-                            })) {}
+    : DirectoryBackingStore("some_fake_user", "some_fake_cache_guid") {}
 
 InvalidDirectoryBackingStore::~InvalidDirectoryBackingStore() {}
 

@@ -12,6 +12,7 @@
 #include "base/task/post_task.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
+#include "build/build_config.h"
 #include "chrome/browser/prerender/isolated/isolated_prerender_features.h"
 #include "chrome/browser/prerender/isolated/isolated_prerender_url_loader_interceptor.h"
 #include "chrome/browser/prerender/prerender_final_status.h"
@@ -40,6 +41,13 @@ namespace {
 constexpr gfx::Size kSize(640, 480);
 
 }  // namespace
+
+// Occasional flakes on Windows (https://crbug.com/1045971).
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
+#define DISABLE_ON_WIN_MAC_CHROMEOS(x) DISABLED_##x
+#else
+#define DISABLE_ON_WIN_MAC_CHROMEOS(x) x
+#endif
 
 class IsolatedPrerenderBrowserTest
     : public InProcessBrowserTest,
@@ -136,7 +144,8 @@ class IsolatedPrerenderBrowserTest
   size_t origin_server_request_with_cookies_ = 0;
 };
 
-IN_PROC_BROWSER_TEST_F(IsolatedPrerenderBrowserTest, PrerenderIsIsolated) {
+IN_PROC_BROWSER_TEST_F(IsolatedPrerenderBrowserTest,
+                       DISABLE_ON_WIN_MAC_CHROMEOS(PrerenderIsIsolated)) {
   base::HistogramTester histogram_tester;
 
   ASSERT_TRUE(content::SetCookie(browser()->profile(), GetOriginServerURL("/"),

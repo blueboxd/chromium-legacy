@@ -29,6 +29,7 @@
 #include "chrome/browser/security_events/security_event_recorder_factory.h"
 #include "chrome/browser/sharing/sharing_message_bridge.h"
 #include "chrome/browser/sharing/sharing_message_bridge_factory.h"
+#include "chrome/browser/sharing/sharing_message_model_type_controller.h"
 #include "chrome/browser/sync/bookmark_sync_service_factory.h"
 #include "chrome/browser/sync/device_info_sync_service_factory.h"
 #include "chrome/browser/sync/model_type_store_service_factory.h"
@@ -329,6 +330,22 @@ ChromeSyncClient::CreateDataTypeControllers(syncer::SyncService* sync_service) {
     // since behavior for SECURITY_EVENTS does not differ.
     controllers.push_back(std::make_unique<syncer::ModelTypeController>(
         syncer::SECURITY_EVENTS,
+        /*delegate_for_full_sync_mode=*/
+        std::make_unique<syncer::ForwardingModelTypeControllerDelegate>(
+            delegate),
+        /*delegate_for_transport_mode=*/
+        std::make_unique<syncer::ForwardingModelTypeControllerDelegate>(
+            delegate)));
+  }
+
+  if (!disabled_types.Has(syncer::SHARING_MESSAGE)) {
+    // Forward both full-sync and transport-only modes to the same delegate,
+    // since behavior for SHARING_MESSAGE does not differ. They both do not
+    // store data on persistent storage.
+    syncer::ModelTypeControllerDelegate* delegate =
+        GetControllerDelegateForModelType(syncer::SHARING_MESSAGE).get();
+    controllers.push_back(std::make_unique<SharingMessageModelTypeController>(
+        sync_service,
         /*delegate_for_full_sync_mode=*/
         std::make_unique<syncer::ForwardingModelTypeControllerDelegate>(
             delegate),

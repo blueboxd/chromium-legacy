@@ -31,7 +31,6 @@
 #include "chrome/browser/media/webrtc/system_media_capture_permissions_mac.h"
 #include "chrome/browser/permissions/permission_request_manager.h"
 #include "chrome/browser/permissions/permission_uma_util.h"
-#include "chrome/browser/permissions/permission_util.h"
 #include "chrome/browser/permissions/quiet_notification_permission_ui_config.h"
 #include "chrome/browser/plugins/chrome_plugin_service_filter.h"
 #include "chrome/browser/plugins/plugin_utils.h"
@@ -51,6 +50,7 @@
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_utils.h"
+#include "components/permissions/permission_util.h"
 #include "components/prefs/pref_service.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/subresource_filter/core/browser/subresource_filter_constants.h"
@@ -563,7 +563,7 @@ void ContentSettingMidiSysExBubbleModel::OnCustomLinkClicked() {
   HostContentSettingsMap* map =
       HostContentSettingsMapFactory::GetForProfile(GetProfile());
   for (const std::pair<GURL, ContentSetting>& map_entry : state_map) {
-    PermissionUtil::ScopedRevocationReporter(
+    PermissionUmaUtil::ScopedRevocationReporter(
         GetProfile(), map_entry.first, embedder_url,
         ContentSettingsType::MIDI_SYSEX, PermissionSourceUI::PAGE_ACTION);
     map->SetContentSettingDefaultScope(map_entry.first, embedder_url,
@@ -651,7 +651,7 @@ void ContentSettingDomainListBubbleModel::OnCustomLinkClicked() {
   HostContentSettingsMap* map =
       HostContentSettingsMapFactory::GetForProfile(GetProfile());
   for (const std::pair<GURL, ContentSetting>& map_entry : state_map) {
-    PermissionUtil::ScopedRevocationReporter(
+    PermissionUmaUtil::ScopedRevocationReporter(
         GetProfile(), map_entry.first, embedder_url,
         ContentSettingsType::GEOLOCATION, PermissionSourceUI::PAGE_ACTION);
     map->SetContentSettingDefaultScope(map_entry.first, embedder_url,
@@ -1234,7 +1234,7 @@ void ContentSettingMediaStreamBubbleModel::UpdateSettings(
   HostContentSettingsMap* map =
       HostContentSettingsMapFactory::GetForProfile(GetProfile());
   if (MicrophoneAccessed()) {
-    PermissionUtil::ScopedRevocationReporter scoped_revocation_reporter(
+    PermissionUmaUtil::ScopedRevocationReporter scoped_revocation_reporter(
         GetProfile(), tab_content_settings->media_stream_access_origin(),
         GURL(), ContentSettingsType::MEDIASTREAM_MIC,
         PermissionSourceUI::PAGE_ACTION);
@@ -1243,7 +1243,7 @@ void ContentSettingMediaStreamBubbleModel::UpdateSettings(
         ContentSettingsType::MEDIASTREAM_MIC, std::string(), setting);
   }
   if (CameraAccessed()) {
-    PermissionUtil::ScopedRevocationReporter scoped_revocation_reporter(
+    PermissionUmaUtil::ScopedRevocationReporter scoped_revocation_reporter(
         GetProfile(), tab_content_settings->media_stream_access_origin(),
         GURL(), ContentSettingsType::MEDIASTREAM_CAMERA,
         PermissionSourceUI::PAGE_ACTION);

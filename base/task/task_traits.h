@@ -18,6 +18,11 @@
 #include "base/traits_bag.h"
 #include "build/build_config.h"
 
+// TODO(gab): This is backwards, thread_pool.h should include task_traits.h
+// but it this is necessary to have it in this direction during the migration
+// from old code that used base::ThreadPool as a trait.
+#include "base/task/thread_pool.h"
+
 namespace base {
 
 class PostTaskAndroid;
@@ -180,11 +185,6 @@ struct MayBlock {};
 // In doubt, consult with //base/task/OWNERS.
 struct WithBaseSyncPrimitives {};
 
-// Tasks and task runners with this trait will run in the thread pool,
-// concurrently with tasks on other task runners. If you need mutual exclusion
-// between tasks, see base::PostTask::CreateSequencedTaskRunner.
-struct ThreadPool {};
-
 // Describes metadata for a single task or a group of tasks.
 class BASE_EXPORT TaskTraits {
  public:
@@ -212,14 +212,14 @@ class BASE_EXPORT TaskTraits {
   // WithBaseSyncPrimitives in any order to the constructor.
   //
   // E.g.
-  // constexpr base::TaskTraits default_traits = {base::ThreadPool()};
+  // constexpr base::TaskTraits default_traits = {};
   // constexpr base::TaskTraits user_visible_traits = {
-  //     base::ThreadPool(), base::TaskPriority::USER_VISIBLE};
+  //     base::TaskPriority::USER_VISIBLE};
   // constexpr base::TaskTraits user_visible_may_block_traits = {
-  //     base::ThreadPool(), base::TaskPriority::USER_VISIBLE, base::MayBlock()
+  //     base::TaskPriority::USER_VISIBLE, base::MayBlock()
   // };
   // constexpr base::TaskTraits other_user_visible_may_block_traits = {
-  //     base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_VISIBLE
+  //     base::MayBlock(), base::TaskPriority::USER_VISIBLE
   // };
   template <class... ArgTypes,
             class CheckArgumentsAreValid = std::enable_if_t<

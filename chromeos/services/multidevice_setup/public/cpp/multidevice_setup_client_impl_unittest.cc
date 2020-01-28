@@ -216,13 +216,14 @@ class MultiDeviceSetupClientImplTest : public testing::Test {
         *eligible_host_devices_, expected_eligible_host_devices);
   }
 
-  void CallSetHostDevice(const std::string& public_key,
-                         const std::string& auth_token,
-                         bool expect_success) {
+  void CallSetHostDevice(
+      const std::string& host_instance_id_or_legacy_device_id,
+      const std::string& auth_token,
+      bool expect_success) {
     base::RunLoop run_loop;
 
     client_->SetHostDevice(
-        public_key, auth_token,
+        host_instance_id_or_legacy_device_id, auth_token,
         base::BindOnce(
             &MultiDeviceSetupClientImplTest::OnSetHostDeviceCompleted,
             base::Unretained(this), run_loop.QuitClosure()));
@@ -233,7 +234,7 @@ class MultiDeviceSetupClientImplTest : public testing::Test {
                            mojom::MultiDeviceSetup::SetHostDeviceCallback>>&
         callbacks = fake_multidevice_setup_->set_host_args();
     EXPECT_EQ(1u, callbacks.size());
-    EXPECT_EQ(public_key, std::get<0>(callbacks[0]));
+    EXPECT_EQ(host_instance_id_or_legacy_device_id, std::get<0>(callbacks[0]));
     EXPECT_EQ(auth_token, std::get<1>(callbacks[0]));
     std::move(std::get<2>(callbacks[0])).Run(expect_success);
 
@@ -447,14 +448,12 @@ TEST_F(MultiDeviceSetupClientImplTest, TestGetEligibleHostDevices) {
 
 TEST_F(MultiDeviceSetupClientImplTest, TestSetHostDevice_Success) {
   InitializeClient();
-  CallSetHostDevice(test_remote_device_list_[0].public_key, "authToken",
-                    true /* expect_success */);
+  CallSetHostDevice("hostId", "authToken", true /* expect_success */);
 }
 
 TEST_F(MultiDeviceSetupClientImplTest, TestSetHostDevice_Failure) {
   InitializeClient();
-  CallSetHostDevice(test_remote_device_list_[0].public_key, "authToken",
-                    false /* expect_success */);
+  CallSetHostDevice("hostId", "authToken", false /* expect_success */);
 }
 
 TEST_F(MultiDeviceSetupClientImplTest, TestRemoveHostDevice) {

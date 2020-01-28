@@ -347,8 +347,7 @@ Background = class extends ChromeVoxState {
         if (action == 'getIsClassicEnabled') {
           var url = msg['url'];
           var isClassicEnabled = false;
-          port.postMessage(
-              {target: 'next', isClassicEnabled: isClassicEnabled});
+          port.postMessage({target: 'next', isClassicEnabled});
         } else if (action == 'onCommand') {
           CommandHandler.onCommand(msg['command']);
         } else if (action == 'flushNextUtterance') {

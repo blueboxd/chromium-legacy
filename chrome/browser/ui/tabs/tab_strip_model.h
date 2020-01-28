@@ -485,7 +485,7 @@ class TabStripModel : public TabGroupController {
     CommandAddToNewGroup,
     CommandAddToExistingGroup,
     CommandRemoveFromGroup,
-    CommandMoveTabToNewWindow,
+    CommandMoveTabsToNewWindow,
     CommandLast
   };
 

@@ -20,12 +20,12 @@ ChromeVoxNodeIdentifierTest.prototype = {
   /**
    * Returns the start node of the current ChromeVox range.
    */
-  getRangeStart: function() {
+  getRangeStart() {
     return ChromeVoxState.instance.getCurrentRange().start.node;
   },
 
   /** @override */
-  setUp: function() {
+  setUp() {
     window.RoleType = chrome.automation.RoleType;
   },
 

@@ -102,31 +102,6 @@ class CORE_EXPORT LayoutTextControl : public LayoutBlockFlow {
 
 DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutTextControl, IsTextControl());
 
-// LayoutObject for our inner container, for <search> and others.
-// We can't use LayoutFlexibleBox directly, because flexboxes have a different
-// baseline definition, and then inputs of different types wouldn't line up
-// anymore.
-class LayoutTextControlInnerContainer final : public LayoutFlexibleBox {
- public:
-  explicit LayoutTextControlInnerContainer(Element* element)
-      : LayoutFlexibleBox(element) {}
-  ~LayoutTextControlInnerContainer() override = default;
-
-  LayoutUnit BaselinePosition(FontBaseline baseline,
-                              bool first_line,
-                              LineDirectionMode direction,
-                              LinePositionMode position) const override {
-    return LayoutBlock::BaselinePosition(baseline, first_line, direction,
-                                         position);
-  }
-  LayoutUnit FirstLineBoxBaseline() const override {
-    return LayoutBlock::FirstLineBoxBaseline();
-  }
-  LayoutUnit InlineBlockBaseline(LineDirectionMode direction) const override {
-    return LayoutBlock::InlineBlockBaseline(direction);
-  }
-};
-
 }  // namespace blink
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_TEXT_CONTROL_H_

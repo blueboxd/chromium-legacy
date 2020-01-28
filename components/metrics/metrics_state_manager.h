@@ -73,6 +73,9 @@ class MetricsStateManager final {
   // should not be called more than once.
   void CheckForClonedInstall();
 
+  // Checks if the cloned install detector says that client ids should be reset.
+  bool ShouldResetClientIdsOnClonedInstall();
+
   // Returns the preferred entropy provider used to seed persistent activities
   // based on whether or not metrics reporting is permitted on this client.
   //

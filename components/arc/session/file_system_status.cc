@@ -16,7 +16,7 @@
 #include "base/threading/scoped_blocking_call.h"
 #include "base/values.h"
 #include "build/build_config.h"
-#include "components/arc/session/arc_vm_client_adapter_util.h"
+#include "components/arc/session/arc_property_util.h"
 
 namespace arc {
 namespace {

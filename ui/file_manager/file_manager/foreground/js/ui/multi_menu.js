@@ -586,29 +586,24 @@ cr.define('cr.ui', () => {
      * @private
      */
     positionMenu_() {
+      const style = this.menu.style;
+      // Clear any maxHeight we've set from previous calls into here.
+      style.maxHeight = 'none';
       cr.ui.positionPopupAroundElement(
           this, this.menu, this.anchorType, this.invertLeftRight);
-      // Check if menu is larger than the viewport and adjust its height
-      // and enable scrolling if so. Note: style.bottom would have been set to
-      // 0.
+      // Check if menu is larger than the viewport and adjust its height to
+      // enable scrolling if so. Note: style.bottom would have been set to 0.
       const viewportHeight = window.innerHeight;
       const menuRect = this.menu.getBoundingClientRect();
-      const style = this.menu.style;
-      // Make sure the top of the menu is in the viewport.
-      let top = menuRect.top;
-      if (top < 0) {
-        top = 0;
-      }
       // Limit the height to fit in the viewport.
-      style.maxHeight = (viewportHeight - top - this.menuEndGap_) + 'px';
-      // Make the menu scrollable if needed.
-      if ((top + menuRect.height + this.menuEndGap_) > viewportHeight) {
-        style.overflowY = 'scroll';
-        style.top = '0';
-        style.bottom = 'auto';
-      } else {
-        style.overflowY = 'auto';
+      style.maxHeight = (viewportHeight - this.menuEndGap_) + 'px';
+      // If the menu is too tall, position 2px from the bottom of the viewport
+      // so users can see the end of the menu (helps when scroll is needed).
+      if ((menuRect.height + this.menuEndGap_) > viewportHeight) {
+        style.bottom = '2px';
       }
+      // Let the browser deal with scroll bar generation.
+      style.overflowY = 'auto';
     }
 
     /**

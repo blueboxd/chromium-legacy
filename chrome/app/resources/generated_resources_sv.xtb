@@ -746,7 +746,7 @@
 <translation id="202352106777823113">Nedladdningen tog för lång tid och avbröts av nätverket.</translation>
 <translation id="2025632980034333559"><ph name="APP_NAME" /> har kraschat. Klicka på ballongen för att ladda om tillägget.</translation>
 <translation id="2025891858974379949">Osäkert innehåll</translation>
-<translation id="202918510990975568">Ange lösenordet om du vill konfigurera säkerhet och logga in</translation>
+<translation id="202918510990975568">Ange lösenordet om du vill konfigurera säkerhet och inloggning</translation>
 <translation id="2034346955588403444">Lägg till ett annat Wi-Fi-nätverk</translation>
 <translation id="203574396658008164">Aktivera anteckningar på låsskärmen</translation>
 <translation id="2037445849770872822">Kontroll har konfigurerats för det här Google-kontot. Välj Fortsätt om du vill konfigurera fler föräldrakontroller.
@@ -4429,7 +4429,7 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="7241389281993241388">Logga in på <ph name="TOKEN_NAME" /> om du vill importera klientcertifikatet.</translation>
 <translation id="7241443820034350811">Om din säkerhetsnyckel inte anges trycker du på dess knapp i minst fem sekunder.</translation>
 <translation id="7243632151880336635">Rensa och logga ut</translation>
-<translation id="7243784282103630670">Det gick inteatt uppgrader Linux. Vi återställer behållaren med hjälp av säkerhetskopian.</translation>
+<translation id="7243784282103630670">Det gick inte att uppgradera Linux. Vi återställer behållaren med hjälp av säkerhetskopian.</translation>
 <translation id="7245628041916450754"><ph name="WIDTH" /> x <ph name="HEIGHT" /> (bäst)</translation>
 <translation id="7246230585855757313">Sätt i säkerhetsnyckeln en gång till och försök igen</translation>
 <translation id="7246947237293279874">FTP-proxy</translation>
@@ -4542,7 +4542,7 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="740624631517654988">Blockering av popup-fönster</translation>
 <translation id="7407430846095439694">Importera och bind</translation>
 <translation id="7407504355934009739">De flesta användarna blockerar aviseringar från den här webbplatsen</translation>
-<translation id="740810853557944681">Lägga till en utskriftsserver</translation>
+<translation id="740810853557944681">Lägg till en utskriftsserver</translation>
 <translation id="7409549334477097887">Extra stor</translation>
 <translation id="7409836189476010449">Kör Flash</translation>
 <translation id="7410344089573941623">Fråga om <ph name="HOST" /> vill använda kameran och mikrofonen</translation>
@@ -4864,7 +4864,7 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="783214144752121388">Blockera webbplatser från att köra Flash (rekommenderas)</translation>
 <translation id="7833720883933317473">Sparade anpassade ord visas här</translation>
 <translation id="7835178595033117206">Bokmärket har tagits bort</translation>
-<translation id="7836850009646241041">Test att trycka på säkerhetsnyckeln igen</translation>
+<translation id="7836850009646241041">Testa att trycka på säkerhetsnyckeln igen</translation>
 <translation id="7837776265184002579">Startsidan har ändrats till <ph name="URL" />.</translation>
 <translation id="7839051173341654115">Visa/säkerhetskopiera media</translation>
 <translation id="7839192898639727867">Certifikatämnets nyckel-ID</translation>

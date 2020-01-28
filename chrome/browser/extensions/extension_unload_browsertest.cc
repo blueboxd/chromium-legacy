@@ -88,7 +88,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionUnloadBrowserTest, TestUnload) {
   ui_test_utils::NavigateToURLWithDisposition(
       browser(), extension->GetResourceURL("page.html"),
       WindowOpenDisposition::NEW_FOREGROUND_TAB,
-      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
   EXPECT_EQ(2, browser()->tab_strip_model()->count());
   DisableExtension(id);
   // There should only be one remaining web contents - the initial one.
@@ -212,7 +212,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionUnloadBrowserTest, MAYBE_CrashedTabs) {
   const GURL page_url = extension->GetResourceURL("page.html");
   ui_test_utils::NavigateToURLWithDisposition(
       browser(), page_url, WindowOpenDisposition::NEW_FOREGROUND_TAB,
-      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
 
   EXPECT_EQ(2, browser()->tab_strip_model()->count());
 
@@ -225,7 +225,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionUnloadBrowserTest, MAYBE_CrashedTabs) {
         active_tab->GetMainFrame()->GetProcess());
     ui_test_utils::NavigateToURLWithDisposition(
         browser(), GURL("chrome://crash"), WindowOpenDisposition::CURRENT_TAB,
-        ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+        ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
   }
 
   // There should still be two open tabs, but the active one is crashed.

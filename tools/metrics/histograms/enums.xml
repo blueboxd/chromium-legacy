@@ -4946,6 +4946,7 @@ Unknown properties are collapsed to zero. -->
   <int value="8" label="Error page"/>
   <int value="9" label="Already has matching browsing instance"/>
   <int value="10" label="Renderer debug URL"/>
+  <int value="11" label="Not enabled and not needed for back-forward cache"/>
 </enum>
 
 <enum name="BackForwardCacheDisabledForRenderFrameHostReason">
@@ -12666,23 +12667,77 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
   <int value="8" label="SMS_CONNECT_CLIENT"/>
 </enum>
 
-<enum name="CryptAuthV2EnrollmentInvocationReason">
-  <int value="0" label="Invocation reason unspecified"/>
-  <int value="1" label="Initialization"/>
-  <int value="2" label="Periodic"/>
-  <int value="3" label="Slow periodic"/>
-  <int value="4" label="Fast periodic"/>
-  <int value="5" label="Expiration"/>
-  <int value="6" label="Failure recovery"/>
-  <int value="7" label="New account"/>
-  <int value="8" label="Changed account"/>
-  <int value="9" label="Feature toggled"/>
-  <int value="10" label="Server initiated"/>
-  <int value="11" label="Address change"/>
-  <int value="12" label="Software update"/>
-  <int value="13" label="Manual"/>
-  <int value="14" label="Custom key invalidation"/>
-  <int value="15" label="Proximity periodic"/>
+<enum name="CryptAuthV2DeviceSyncResultCode">
+  <int value="0" label="Success"/>
+  <int value="1" label="Finished with non-fatal errors"/>
+  <int value="2" label="Error: ClientAppMetadata fetch failed"/>
+  <int value="3" label="Error: Missing user key pair"/>
+  <int value="4" label="Error: Could not create group key"/>
+  <int value="5" label="Error: Could not encrypt device metadata"/>
+  <int value="6" label="Error: Could not establish group public key"/>
+  <int value="7" label="Error: No metadata in response"/>
+  <int value="8" label="Error: All metadata in response invalid"/>
+  <int value="9" label="Error: No local device metadata in response"/>
+  <int value="10" label="Error: Missing local device feature statuses"/>
+  <int value="11"
+      label="Error: Missing local device DeviceSyncBetterTogether key"/>
+  <int value="12" label="Error: Could not decrypt group private key"/>
+  <int value="13" label="Error: Could not encrypt group private key"/>
+  <int value="14" label="Error (SyncMetadata API call): Offline"/>
+  <int value="15" label="Error (SyncMetadata API call): Endpoint not found"/>
+  <int value="16" label="Error (SyncMetadata API call): Authentication error"/>
+  <int value="17" label="Error (SyncMetadata API call): Bad request"/>
+  <int value="18" label="Error (SyncMetadata API call): Response malformed"/>
+  <int value="19" label="Error (SyncMetadata API call): Internal server error"/>
+  <int value="20" label="Error (SyncMetadata API call): Unknown error"/>
+  <int value="21" label="Error (BatchGetFeatureStatuses API call): Offline"/>
+  <int value="22"
+      label="Error (BatchGetFeatureStatuses API call): Endpoint not found"/>
+  <int value="23"
+      label="Error (BatchGetFeatureStatuses API call): Authentication error"/>
+  <int value="24"
+      label="Error (BatchGetFeatureStatuses API call): Bad request"/>
+  <int value="25"
+      label="Error (BatchGetFeatureStatuses API call): Response malformed"/>
+  <int value="26"
+      label="Error (BatchGetFeatureStatuses API call): Internal server error"/>
+  <int value="27"
+      label="Error (BatchGetFeatureStatuses API call): Unknown error"/>
+  <int value="28" label="Error (ShareGroupPrivateKey API call): Offline"/>
+  <int value="29"
+      label="Error (ShareGroupPrivateKey API call): Endpoint not found"/>
+  <int value="30"
+      label="Error (ShareGroupPrivateKey API call): Authentication error"/>
+  <int value="31" label="Error (ShareGroupPrivateKey API call): Bad request"/>
+  <int value="32"
+      label="Error (ShareGroupPrivateKey API call): Response malformed"/>
+  <int value="33"
+      label="Error (ShareGroupPrivateKey API call): Internal server error"/>
+  <int value="34" label="Error (ShareGroupPrivateKey API call): Unknown error"/>
+  <int value="35" label="Error: Timeout waiting for group key creation"/>
+  <int value="36" label="Error: Timeout waiting for ClientAppMetadata"/>
+  <int value="37"
+      label="Error: Timeout waiting for local device metadata encryption"/>
+  <int value="38"
+      label="Error: Timeout waiting for first SyncMetadata response"/>
+  <int value="39"
+      label="Error: Timeout waiting for second SyncMetadata response"/>
+  <int value="40"
+      label="Error: Timeout waiting for group private key decryption"/>
+  <int value="41"
+      label="Error: Timeout waiting for device metadata decryption"/>
+  <int value="42"
+      label="Error: Timeout waiting for BatchGetFeatureStatuses response"/>
+  <int value="43"
+      label="Error: Timeout waiting for group private key encryption"/>
+  <int value="44"
+      label="Error: Timeout waiting for ShareGroupPrivateKey response"/>
+</enum>
+
+<enum name="CryptAuthV2DeviceSyncResultType">
+  <int value="0" label="Success"/>
+  <int value="1" label="Non-fatal error"/>
+  <int value="2" label="Fatal error"/>
 </enum>
 
 <enum name="CryptAuthV2EnrollmentResult">
@@ -12734,6 +12789,25 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
   <int value="2" label="v2 exists but not v1"/>
   <int value="3" label="v1 and v2 exist and agree"/>
   <int value="4" label="v1 and v2 exist and disagree"/>
+</enum>
+
+<enum name="CryptAuthV2InvocationReason">
+  <int value="0" label="Invocation reason unspecified"/>
+  <int value="1" label="Initialization"/>
+  <int value="2" label="Periodic"/>
+  <int value="3" label="Slow periodic"/>
+  <int value="4" label="Fast periodic"/>
+  <int value="5" label="Expiration"/>
+  <int value="6" label="Failure recovery"/>
+  <int value="7" label="New account"/>
+  <int value="8" label="Changed account"/>
+  <int value="9" label="Feature toggled"/>
+  <int value="10" label="Server initiated"/>
+  <int value="11" label="Address change"/>
+  <int value="12" label="Software update"/>
+  <int value="13" label="Manual"/>
+  <int value="14" label="Custom key invalidation"/>
+  <int value="15" label="Proximity periodic"/>
 </enum>
 
 <enum name="CryptohomeChecksumStatus">
@@ -26054,6 +26128,8 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
   <int value="3143" label="TaskControllerSetPriority"/>
   <int value="3144" label="TaskSignalPriority"/>
   <int value="3145" label="SchedulerPostTask"/>
+  <int value="3146" label="V8Animation_Onremove_AttributeGetter"/>
+  <int value="3147" label="V8Animation_Onremove_AttributeSetter"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -36749,7 +36825,6 @@ from previous Chrome versions.
   <int value="-1696619241" label="OmniboxWrapPopupPosition:disabled"/>
   <int value="-1696366449" label="disable-permissions-bubbles"/>
   <int value="-1695774453" label="skip-extra-ash-window-positioning"/>
-  <int value="-1694353093" label="ArcVpn:disabled"/>
   <int value="-1692384483" label="disambiguate-autofill-server-name-types"/>
   <int value="-1691892152" label="SafeSearchUrlReporting:disabled"/>
   <int value="-1691668194" label="enable-new-bookmark-apps"/>
@@ -37332,6 +37407,7 @@ from previous Chrome versions.
   <int value="-1011390415" label="AutofillRejectCompanyBirthyear:enabled"/>
   <int value="-1010588306" label="SlideTopChromeWithPageScrolls:disabled"/>
   <int value="-1008511612" label="EnableCustomMacPaperSizes:disabled"/>
+  <int value="-1005164075" label="ContextualSearchTranslations:enabled"/>
   <int value="-1001837588" label="EnableAppReinstallZeroState:enabled"/>
   <int value="-1000671573" label="TemporaryUnexpireFlagsM80:enabled"/>
   <int value="-998731974" label="WinUseBrowserSpellChecker:enabled"/>
@@ -37873,7 +37949,6 @@ from previous Chrome versions.
   <int value="-326083626" label="AppBanners:disabled"/>
   <int value="-324786035"
       label="EnableAmbientAuthenticationInGuestSession:enabled"/>
-  <int value="-323964300" label="ArcVpn:enabled"/>
   <int value="-323831744" label="token-binding:enabled"/>
   <int value="-323508281" label="VrWebInputEditing:disabled"/>
   <int value="-322937746" label="disable-desktop-capture-picker-new-ui"/>
@@ -39492,6 +39567,7 @@ from previous Chrome versions.
   <int value="1702090999" label="ClearOldBrowsingData:disabled"/>
   <int value="1703927420" label="PiexWasm:enabled"/>
   <int value="1705724232" label="use-android-midi-api"/>
+  <int value="1706682238" label="ContextualSearchTranslations:disabled"/>
   <int value="1707283026" label="SyncPseudoUSSExtensions:disabled"/>
   <int value="1708118086" label="TextFragmentAnchor:disabled"/>
   <int value="1711286384" label="ContextMenuCopyImage:disabled"/>
@@ -47789,6 +47865,10 @@ Called by update_net_trust_anchors.py.-->
   </int>
   <int value="4" label="Fetch race for navigation host and URL">
     The fetch race was attempted for the host and URL of the current navigation.
+  </int>
+  <int value="5" label="Fetch race already in progress">
+    A fetch race for the host and URL of the current navigation is already in
+    progress.
   </int>
 </enum>
 
@@ -56744,6 +56824,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="6" label="MODEL_MISSING_FIELDS"/>
   <int value="7" label="MODEL_INVALID_VERSION_NUMBER"/>
   <int value="8" label="BAD_HASH_IDS"/>
+  <int value="9" label="MODEL_NEVER_FETCHED"/>
 </enum>
 
 <enum name="SBClientPhishingScorerCreationStatus">
@@ -63800,6 +63881,7 @@ Full version information for the fingerprint enum values:
 <enum name="UkmResetReason">
   <int value="0" label="OnUkmAllowedStateChanged"/>
   <int value="1" label="UpdatePermissions"/>
+  <int value="2" label="ClonedInstall"/>
 </enum>
 
 <enum name="UkmSyncDisableInfo">

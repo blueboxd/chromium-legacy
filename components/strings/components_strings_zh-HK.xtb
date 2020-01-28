@@ -79,6 +79,7 @@
 <translation id="129553762522093515">最近關閉的分頁</translation>
 <translation id="1298536327547837046">惡意軟件掃瞄</translation>
 <translation id="129863573139666797"><ph name="BEGIN_LINK" />嘗試清除 Cookie<ph name="END_LINK" /></translation>
+<translation id="1301324364792935241">請檢查你的安全 DNS 設定</translation>
 <translation id="1307966114820526988">這些功能已被淘汰</translation>
 <translation id="1314509827145471431">釘裝 (右側)</translation>
 <translation id="1320233736580025032">Prc1 (信封)</translation>
@@ -152,6 +153,7 @@
 <translation id="1569487616857761740">輸入到期日</translation>
 <translation id="1581080074034554886">信用卡驗證碼 (CVC)</translation>
 <translation id="1583429793053364125">顯示此網頁時發生錯誤。</translation>
+<translation id="1586541204584340881">你安裝的擴充功能</translation>
 <translation id="1588438908519853928">一般</translation>
 <translation id="1592005682883173041">本地資料存取</translation>
 <translation id="1594030484168838125">選擇</translation>
@@ -362,6 +364,7 @@
 <translation id="2544644783021658368">單一文件</translation>
 <translation id="254947805923345898">政策值無效。</translation>
 <translation id="255002559098805027"><ph name="HOST_NAME" /> 傳送的回應無效。</translation>
+<translation id="2553853292994445426">請檢查你的安全 DNS 設定。可能是因為已設定的安全 DNS 伺服器導致連線失敗。</translation>
 <translation id="2556876185419854533">復原編輯(&amp;U)</translation>
 <translation id="257674075312929031">群組</translation>
 <translation id="2586657967955657006">剪貼簿</translation>
@@ -474,6 +477,7 @@
 <translation id="3095940652251934233">Statement</translation>
 <translation id="3096100844101284527">新增取貨地址</translation>
 <translation id="3105172416063519923">資產識別碼：</translation>
+<translation id="3107591622054137333"><ph name="BEGIN_LINK" />檢查安全 DNS 設定<ph name="END_LINK" /></translation>
 <translation id="3109728660330352905">您並未獲授權查看此網頁。</translation>
 <translation id="3113284927548439113">第三批</translation>
 <translation id="3116158981186517402">粘合</translation>
@@ -770,6 +774,7 @@
 <translation id="4390472908992056574">圍邊</translation>
 <translation id="4406896451731180161">搜尋結果</translation>
 <translation id="4408413947728134509">Cookie <ph name="NUM_COOKIES" /></translation>
+<translation id="4414290883293381923">你剛才在詐騙網站上輸入了密碼。Chrome 建議你立即前往 <ph name="WEBSITE_1" />、<ph name="WEBSITE_2" />、<ph name="WEBSITE_3" />，以及也使用這個密碼的其他網站變更密碼。</translation>
 <translation id="4415426530740016218">取貨地址</translation>
 <translation id="4424024547088906515">伺服器無法證明其屬於 <ph name="DOMAIN" /> 網域；其安全性憑證未取得 Chrome 的信任。這可能是因為設定錯誤，或有攻擊者攔截您的連線。</translation>
 <translation id="443121186588148776">序列連接埠</translation>
@@ -1201,6 +1206,7 @@
 <translation id="6353505687280762741">{COUNT,plural, =0{無}=1{有 1 個密碼 (<ph name="DOMAIN_LIST" />，已同步)}=2{有 2 個密碼 (<ph name="DOMAIN_LIST" />，已同步)}other{有 # 個密碼 (<ph name="DOMAIN_LIST" />，已同步)}}</translation>
 <translation id="6358450015545214790">我需要進一步資料</translation>
 <translation id="6361757823711327522">B7</translation>
+<translation id="6364095313648930329"><ph name="BEGIN_LINK" />檢查 Proxy、防火牆和安全 DNS 設定<ph name="END_LINK" /></translation>
 <translation id="6366710531182496394">雙釘 (左側)</translation>
 <translation id="6377268785556383139">有 1 個同「<ph name="SEARCH_TEXT" />」相關嘅搜尋結果</translation>
 <translation id="6380497234672085559">A0</translation>
@@ -1223,6 +1229,7 @@
 <translation id="6433595998831338502"><ph name="HOST_NAME" /> 已拒絕連線。</translation>
 <translation id="6434309073475700221">捨棄</translation>
 <translation id="6440503408713884761">已略過</translation>
+<translation id="6443406338865242315">你安裝的擴充功能和外掛程式</translation>
 <translation id="6446163441502663861">Kahu (信封)</translation>
 <translation id="6446608382365791566">新增更多資料</translation>
 <translation id="6447842834002726250">Cookie</translation>
@@ -1332,6 +1339,7 @@
 <translation id="7012363358306927923">中國銀聯</translation>
 <translation id="7016992613359344582">這些費用可能是一次性或會重複收取，而收費時亦可能難以察覺。</translation>
 <translation id="7029809446516969842">密碼</translation>
+<translation id="7031646650991750659">你安裝的 Google Play 應用程式</translation>
 <translation id="7050187094878475250">您曾嘗試前往 <ph name="DOMAIN" />，但其伺服器憑證有效期過長，並不值得信任。</translation>
 <translation id="705310974202322020">{NUM_CARDS,plural, =1{目前無法儲存此卡}other{目前無法儲存這些卡}}</translation>
 <translation id="7053983685419859001">封鎖</translation>
@@ -1391,6 +1399,7 @@
 <translation id="7319430975418800333">A3</translation>
 <translation id="7320336641823683070">連線說明</translation>
 <translation id="733354035281974745">裝置本機帳戶覆寫</translation>
+<translation id="7333654844024768166">你剛才在詐騙網站上輸入了密碼。Chromium 建議你立即前往 <ph name="WEBSITE_1" />、<ph name="WEBSITE_2" />、<ph name="WEBSITE_3" />，以及也使用這個密碼的其他網站變更密碼。</translation>
 <translation id="7334320624316649418">重做重新排序(&amp;R)</translation>
 <translation id="7337706099755338005">無法在您的平台上使用。</translation>
 <translation id="733923710415886693">伺服器憑證並未透過憑證透明度政策披露。</translation>

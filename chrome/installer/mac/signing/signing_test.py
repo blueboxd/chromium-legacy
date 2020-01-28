@@ -325,41 +325,6 @@ class TestSignChrome(unittest.TestCase):
         self.assertEqual(0, kwargs['copy_files'].call_count)
 
     @mock.patch('signing.signing._sanity_check_version_keys')
-    def test_sign_chrome_optional_parts(self, *args, **kwargs):
-        # The optional library must be an actual library from the dylibs list in
-        # "signing.py".
-        optional_library = 'libEGL.dylib'
-        optional_identifier = 'libEGL'
-
-        def _fail_to_sign(*args):
-            if args[2].identifier == optional_identifier:
-                raise FileNotFoundError(args[2].path)
-
-        def _file_exists(*args):
-            return not args[0].endswith(optional_library)
-
-        kwargs['sign_part'].side_effect = _fail_to_sign
-
-        with mock.patch(
-                'signing.commands.file_exists', side_effect=_file_exists):
-            # If the file is missing, signing should fail since TestConfig has
-            # no optional parts.
-            config = model.Distribution().to_config(test_config.TestConfig())
-            self.assertRaises(
-                FileNotFoundError,
-                lambda: signing.sign_chrome(self.paths, config, sign_framework=True))
-
-            class Config(test_config.TestConfig):
-
-                @property
-                def optional_parts(self):
-                    return set((optional_library,))
-
-            # With the part marked as optional, it should succeed.
-            config = model.Distribution().to_config(Config())
-            signing.sign_chrome(self.paths, config, sign_framework=True)
-
-    @mock.patch('signing.signing._sanity_check_version_keys')
     def test_sign_chrome_no_framework(self, *args, **kwargs):
         manager = mock.Mock()
         for kwarg in kwargs:

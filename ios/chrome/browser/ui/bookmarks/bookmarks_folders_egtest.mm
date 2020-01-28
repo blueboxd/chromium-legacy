@@ -29,12 +29,12 @@
 
 using chrome_test_util::BookmarksDeleteSwipeButton;
 using chrome_test_util::BookmarkHomeDoneButton;
+using chrome_test_util::BookmarksNavigationBarBackButton;
 using chrome_test_util::BookmarksSaveEditDoneButton;
 using chrome_test_util::BookmarksSaveEditFolderButton;
 using chrome_test_util::ContextBarCenterButtonWithLabel;
 using chrome_test_util::ButtonWithAccessibilityLabelId;
 using chrome_test_util::ContextBarLeadingButtonWithLabel;
-using chrome_test_util::NavigateBackButtonTo;
 using chrome_test_util::OmniboxText;
 using chrome_test_util::ScrollToTop;
 using chrome_test_util::TappableBookmarkNodeWithLabel;
@@ -310,15 +310,7 @@ using chrome_test_util::TappableBookmarkNodeWithLabel;
 
 // Test when current navigating folder is deleted in background, empty
 // background should be shown with context bar buttons disabled.
-// TODO(crbug.com/1034183): Enable for EG2 once NavigateBackButtonTo() is fixed.
-#if defined(CHROME_EARL_GREY_2)
-#define MAYBE_testWhenCurrentFolderDeletedInBackground \
-  DISABLED_testWhenCurrentFolderDeletedInBackground
-#else
-#define MAYBE_testWhenCurrentFolderDeletedInBackground \
-  testWhenCurrentFolderDeletedInBackground
-#endif
-- (void)MAYBE_testWhenCurrentFolderDeletedInBackground {
+- (void)testWhenCurrentFolderDeletedInBackground {
   [BookmarkEarlGrey setupStandardBookmarks];
   [BookmarkEarlGreyUI openBookmarks];
   [BookmarkEarlGreyUI openMobileBookmarks];
@@ -350,7 +342,7 @@ using chrome_test_util::TappableBookmarkNodeWithLabel;
   [BookmarkEarlGreyUI verifyEmptyBackgroundAppears];
 
   // Come back to Folder 1 (which is also deleted).
-  [[EarlGrey selectElementWithMatcher:NavigateBackButtonTo(@"Folder 1")]
+  [[EarlGrey selectElementWithMatcher:BookmarksNavigationBarBackButton()]
       performAction:grey_tap()];
 
   // Verify both select and new folder button are disabled.
@@ -361,7 +353,7 @@ using chrome_test_util::TappableBookmarkNodeWithLabel;
   [BookmarkEarlGreyUI verifyEmptyBackgroundAppears];
 
   // Come back to Mobile Bookmarks.
-  [[EarlGrey selectElementWithMatcher:NavigateBackButtonTo(@"Mobile Bookmarks")]
+  [[EarlGrey selectElementWithMatcher:BookmarksNavigationBarBackButton()]
       performAction:grey_tap()];
 
   // Ensure Folder 1.1 is seen, that means it successfully comes back to Mobile
@@ -369,13 +361,7 @@ using chrome_test_util::TappableBookmarkNodeWithLabel;
   [BookmarkEarlGreyUI verifyBookmarkFolderIsSeen:@"Folder 1.1"];
 }
 
-// TODO(crbug.com/1034183): Enable for EG2 once NavigateBackButtonTo() is fixed.
-#if defined(CHROME_EARL_GREY_2)
-#define MAYBE_testLongPressOnSingleFolder DISABLED_testLongPressOnSingleFolder
-#else
-#define MAYBE_testLongPressOnSingleFolder testLongPressOnSingleFolder
-#endif
-- (void)MAYBE_testLongPressOnSingleFolder {
+- (void)testLongPressOnSingleFolder {
   [BookmarkEarlGrey setupStandardBookmarks];
   [BookmarkEarlGreyUI openBookmarks];
   [BookmarkEarlGreyUI openMobileBookmarks];
@@ -412,7 +398,7 @@ using chrome_test_util::TappableBookmarkNodeWithLabel;
   }
 
   // Come back to the root.
-  [[EarlGrey selectElementWithMatcher:NavigateBackButtonTo(@"Bookmarks")]
+  [[EarlGrey selectElementWithMatcher:BookmarksNavigationBarBackButton()]
       performAction:grey_tap()];
 
   // Long press on Mobile Bookmarks.
@@ -910,15 +896,7 @@ using chrome_test_util::TappableBookmarkNodeWithLabel;
 
 // Tests the new folder name is committed when name editing is interrupted by
 // navigating away.
-// TODO(crbug.com/1034183): Enable for EG2 once NavigateBackButtonTo() is fixed.
-#if defined(CHROME_EARL_GREY_2)
-#define MAYBE_testNewFolderNameCommittedOnNavigatingAway \
-  DISABLED_testNewFolderNameCommittedOnNavigatingAway
-#else
-#define MAYBE_testNewFolderNameCommittedOnNavigatingAway \
-  testNewFolderNameCommittedOnNavigatingAway
-#endif
-- (void)MAYBE_testNewFolderNameCommittedOnNavigatingAway {
+- (void)testNewFolderNameCommittedOnNavigatingAway {
 #if defined(CHROME_EARL_GREY_1)
   // TODO(crbug.com/1035764): EG1 Test fails on iOS 12.
   if (!base::ios::IsRunningOnIOS13OrLater()) {
@@ -935,7 +913,7 @@ using chrome_test_util::TappableBookmarkNodeWithLabel;
                                                  pressReturn:NO];
 
   // Interrupt the folder name editing by tapping on back.
-  [[EarlGrey selectElementWithMatcher:NavigateBackButtonTo(@"Bookmarks")]
+  [[EarlGrey selectElementWithMatcher:BookmarksNavigationBarBackButton()]
       performAction:grey_tap()];
 
   // Come back to Mobile Bookmarks.
@@ -971,7 +949,7 @@ using chrome_test_util::TappableBookmarkNodeWithLabel;
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Folder 1")]
       performAction:grey_tap()];
   // Come back to Mobile Bookmarks.
-  [[EarlGrey selectElementWithMatcher:NavigateBackButtonTo(@"Mobile Bookmarks")]
+  [[EarlGrey selectElementWithMatcher:BookmarksNavigationBarBackButton()]
       performAction:grey_tap()];
 
   // Verify folder name "New Folder 3" was committed.

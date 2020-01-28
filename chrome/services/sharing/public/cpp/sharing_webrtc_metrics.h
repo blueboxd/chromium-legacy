@@ -8,4 +8,7 @@
 // Logs whether adding ice candidate was successful.
 void LogWebRtcAddIceCandidate(bool success);
 
+// Logs number of ice servers fetched from network traversal api call.
+void LogWebRtcIceConfigFetched(int count);
+
 #endif  // CHROME_SERVICES_SHARING_PUBLIC_CPP_SHARING_WEBRTC_METRICS_H_

@@ -145,10 +145,10 @@ class MockDeviceManagementService : public DeviceManagementService {
                                   const std::string& payload);
 
  private:
-  JobControl::RetryMethod DoURLCompletionInternal(JobControl* job,
-                                                  int net_error,
-                                                  int response_code,
-                                                  const std::string& payload);
+  Job::RetryMethod DoURLCompletionInternal(JobControl* job,
+                                           int net_error,
+                                           int response_code,
+                                           const std::string& payload);
 
   DISALLOW_COPY_AND_ASSIGN(MockDeviceManagementService);
 };
@@ -163,7 +163,9 @@ class FakeJobConfiguration : public DMServerJobConfiguration {
                                   const std::string&)>
       FakeCallback;
 
-  typedef base::RepeatingCallback<void()> RetryCallback;
+  typedef base::RepeatingCallback<void(int response_code,
+                                       const std::string& response_body)>
+      RetryCallback;
 
   FakeJobConfiguration(
       DeviceManagementService* service,
@@ -174,20 +176,28 @@ class FakeJobConfiguration : public DMServerJobConfiguration {
       base::Optional<std::string> oauth_token,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       FakeCallback callback,
-      RetryCallback retry_callback);
+      RetryCallback retry_callback,
+      RetryCallback should_retry_callback);
   ~FakeJobConfiguration() override;
 
   void SetRequestPayload(const std::string& request_payload);
+  void SetShouldRetryResponse(DeviceManagementService::Job::RetryMethod method);
 
  private:
-  void OnBeforeRetry() override;
+  DeviceManagementService::Job::RetryMethod ShouldRetry(
+      int response_code,
+      const std::string& response_body) override;
+  void OnBeforeRetry(int response_code,
+                     const std::string& response_body) override;
   void OnURLLoadComplete(DeviceManagementService::Job* job,
                          int net_error,
                          int response_code,
                          const std::string& response_body) override;
 
+  DeviceManagementService::Job::RetryMethod should_retry_response_;
   FakeCallback callback_;
   RetryCallback retry_callback_;
+  RetryCallback should_retry_callback_;
 };
 
 }  // namespace policy

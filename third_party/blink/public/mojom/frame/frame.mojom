@@ -167,6 +167,9 @@ interface LocalFrameHost {
   DidBlockNavigation(url.mojom.Url blocked_url, url.mojom.Url initiator_url,
                        blink.mojom.NavigationBlockedReason reason);
 
+  // Sent when the renderer changed the progress of a load.
+  DidChangeLoadProgress(double load_progress);
+
   // Dispatch a load event for this frame in the iframe element of an
   // out-of-process parent frame. Once handled, the browser process should
   // call RemoteFrame::DispatchLoadEventForFrameOwner() in the renderer.

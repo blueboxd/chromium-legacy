@@ -2270,6 +2270,7 @@ TEST_F(DesktopWidgetTest, CloseDestroys) {
   Widget::InitParams params =
       CreateParams(views::Widget::InitParams::TYPE_MENU);
   params.opacity = Widget::InitParams::WindowOpacity::kOpaque;
+  params.bounds = gfx::Rect(50, 50, 250, 250);
   widget->Init(std::move(params));
   widget->Show();
   widget->Hide();

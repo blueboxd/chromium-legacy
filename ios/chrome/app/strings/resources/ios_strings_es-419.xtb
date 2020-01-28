@@ -192,6 +192,7 @@
 <translation id="3474649192738347024">Formularios completos</translation>
 <translation id="3478058380795961209">Mes vencimiento</translation>
 <translation id="3482959374254649722">Sincronizando las pestañas...</translation>
+<translation id="3484946776651937681">Abrir en Descargas</translation>
 <translation id="3493531032208478708"><ph name="BEGIN_LINK" />Más información<ph name="END_LINK" /> sobre el contenido sugerido</translation>
 <translation id="3494788280727468875">Confirmar el borrado de los datos de navegación</translation>
 <translation id="35083190962747987">Abrir ${url}</translation>
@@ -537,6 +538,7 @@ Tus datos se encriptaron con tu frase de contraseña para sincronización el <ph
 <translation id="8319076807703933069">Nueva búsqueda</translation>
 <translation id="8323906514956095947">Mantén presionado el botón para ver más opciones de pestañas</translation>
 <translation id="8328777765163860529">Cerrar todas</translation>
+<translation id="8386068868580335421">Restablecer</translation>
 <translation id="8407669440184693619">No se encontraron contraseñas para este sitio</translation>
 <translation id="842017693807136194">Accediste con</translation>
 <translation id="8428045167754449968">Ciudad/pueblo</translation>
@@ -553,6 +555,7 @@ Tus datos se encriptaron con tu frase de contraseña para sincronización el <ph
 <translation id="8532105204136943229">Año vencimiento</translation>
 <translation id="8534481786647257214">Entrada de Google+ publicada</translation>
 <translation id="8548878600947630424">Buscar en la página...</translation>
+<translation id="8574235780160508979">El 31 de marzo, cambiarán las Condiciones del Servicio de Chrome. <ph name="BEGIN_LINK" />Revísalas<ph name="END_LINK" /></translation>
 <translation id="8588404856427128947">Apagada</translation>
 <translation id="8605219856220328675">Cierra la pestaña.</translation>
 <translation id="8620640915598389714">Editar</translation>

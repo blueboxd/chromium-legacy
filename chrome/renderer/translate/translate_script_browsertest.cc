@@ -114,7 +114,7 @@ class TranslateScriptBrowserTest : public ChromeRenderViewTest {
     if (result.IsEmpty() || !result->IsNumber()) {
       NOTREACHED();
       // TODO(toyoshim): Return NaN here and the real implementation in
-      // TranslateHelper::ExecuteScriptAndGetDoubleResult().
+      // TranslateAgent::ExecuteScriptAndGetDoubleResult().
       return 0.0;
     }
     return result.As<v8::Number>()->Value();

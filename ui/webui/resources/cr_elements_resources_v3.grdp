@@ -195,6 +195,16 @@
          use_base_dir="false"
          type="BINDATA"
          compress="gzip" />
+  <include name="IDR_CR_ELEMENTS_POLICY_CR_POLICY_PREF_INDICATOR_M_JS"
+         file="${root_gen_dir}/ui/webui/resources/cr_elements/policy/cr_policy_pref_indicator.m.js"
+         use_base_dir="false"
+         type="BINDATA"
+         compress="gzip" />
+  <include name="IDR_CR_ELEMENTS_POLICY_CR_POLICY_PREF_BEHAVIOR_M_JS"
+         file="${root_gen_dir}/ui/webui/resources/cr_elements/policy/cr_policy_pref_behavior.m.js"
+         use_base_dir="false"
+         type="BINDATA"
+         compress="gzip" />
   <include name="IDR_CR_ELEMENTS_CR_VIEW_MANAGER_M_JS"
          file="${root_gen_dir}/ui/webui/resources/cr_elements/cr_view_manager/cr_view_manager.m.js"
          use_base_dir="false"

@@ -34,7 +34,6 @@ js_library("cr_policy_indicator_behavior") {
 }
 
 js_library("cr_policy_pref_behavior") {
-  deps = [ ":cr_policy_indicator_behavior" ]
   externs_list = [ "$externs_path/settings_private.js" ]
 }
 
@@ -73,6 +72,8 @@ js_type_check("closure_compile_module") {
   deps = [
     ":cr_policy_indicator.m",
     ":cr_policy_indicator_behavior.m",
+    ":cr_policy_pref_behavior.m",
+    ":cr_policy_pref_indicator.m",
     ":cr_tooltip_icon.m",
   ]
 }
@@ -92,6 +93,22 @@ js_library("cr_policy_indicator_behavior.m") {
   extra_deps = [ ":modulize" ]
 }
 
+js_library("cr_policy_pref_behavior.m") {
+  sources = [ "$root_gen_dir/ui/webui/resources/cr_elements/policy/cr_policy_pref_behavior.m.js" ]
+  externs_list = [ "$externs_path/settings_private.js" ]
+  extra_deps = [ ":modulize" ]
+}
+
+js_library("cr_policy_pref_indicator.m") {
+  sources = [ "$root_gen_dir/ui/webui/resources/cr_elements/policy/cr_policy_pref_indicator.m.js" ]
+  deps = [
+    ":cr_policy_indicator_behavior.m",
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+  ]
+  externs_list = [ "$externs_path/settings_private.js" ]
+  extra_deps = [ ":cr_policy_pref_indicator_module" ]
+}
+
 js_library("cr_tooltip_icon.m") {
   sources = [
     "$root_gen_dir/ui/webui/resources/cr_elements/policy/cr_tooltip_icon.m.js",
@@ -105,6 +122,7 @@ js_library("cr_tooltip_icon.m") {
 group("polymer3_elements") {
   deps = [
     ":cr_policy_indicator_module",
+    ":cr_policy_pref_indicator_module",
     ":cr_tooltip_icon_module",
     ":modulize",
   ]
@@ -117,6 +135,13 @@ polymer_modulizer("cr_policy_indicator") {
   auto_imports = [ "ui/webui/resources/cr_elements/policy/cr_policy_indicator_behavior.html|CrPolicyIndicatorBehavior,CrPolicyIndicatorType" ]
 }
 
+polymer_modulizer("cr_policy_pref_indicator") {
+  js_file = "cr_policy_pref_indicator.js"
+  html_file = "cr_policy_pref_indicator.html"
+  html_type = "dom-module"
+  auto_imports = [ "ui/webui/resources/cr_elements/policy/cr_policy_indicator_behavior.html|CrPolicyIndicatorBehavior,CrPolicyIndicatorType" ]
+}
+
 polymer_modulizer("cr_tooltip_icon") {
   js_file = "cr_tooltip_icon.js"
   html_file = "cr_tooltip_icon.html"
@@ -124,5 +149,8 @@ polymer_modulizer("cr_tooltip_icon") {
 }
 
 js_modulizer("modulize") {
-  input_files = [ "cr_policy_indicator_behavior.js" ]
+  input_files = [
+    "cr_policy_indicator_behavior.js",
+    "cr_policy_pref_behavior.js",
+  ]
 }

@@ -132,7 +132,7 @@ inline LinkHash HTMLAnchorElement::VisitedLinkHash() const {
 // Functions shared with the other anchor elements (i.e., SVG).
 
 bool IsEnterKeyKeydownEvent(Event&);
-Event* GetClickEventOrNull(Event&);
+bool IsLinkClick(Event&);
 
 }  // namespace blink
 

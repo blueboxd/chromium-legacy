@@ -21,7 +21,7 @@ import javax.inject.Inject;
  */
 @ActivityScope
 public class CustomTabTopBarDelegate {
-    private final ChromeActivity mActivity;
+    private final ChromeActivity<?> mActivity;
     private ViewGroup mTopBarView;
     @Nullable
     private View mTopBarContentView;
@@ -29,7 +29,7 @@ public class CustomTabTopBarDelegate {
     private Integer mTopBarHeight;
 
     @Inject
-    public CustomTabTopBarDelegate(ChromeActivity activity) {
+    public CustomTabTopBarDelegate(ChromeActivity<?> activity) {
         mActivity = activity;
     }
 

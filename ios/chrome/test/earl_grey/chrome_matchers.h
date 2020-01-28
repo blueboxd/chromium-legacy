@@ -134,6 +134,9 @@ id<GREYMatcher> NavigationBarDoneButton();
 // Matcher for the done button on the Bookmarks navigation bar.
 id<GREYMatcher> BookmarksNavigationBarDoneButton();
 
+// Matcher for the back button on the Bookmarks navigation bar.
+id<GREYMatcher> BookmarksNavigationBarBackButton();
+
 // Returns matcher for the account consistency confirmation button.
 id<GREYMatcher> AccountConsistencyConfirmationOkButton();
 

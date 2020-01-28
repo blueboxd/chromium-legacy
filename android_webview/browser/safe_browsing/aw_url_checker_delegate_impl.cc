@@ -246,7 +246,7 @@ void AwUrlCheckerDelegateImpl::DoApplicationResponse(
   GURL main_frame_url = entry ? entry->GetURL() : GURL();
   ui_manager->OnBlockingPageDone(
       std::vector<security_interstitials::UnsafeResource>{resource}, proceed,
-      web_contents, main_frame_url);
+      web_contents, main_frame_url, false /* showed_interstitial */);
 }
 
 // static
@@ -261,7 +261,8 @@ void AwUrlCheckerDelegateImpl::StartDisplayingDefaultBlockingPage(
 
   // Reporting back that it is not okay to proceed with loading the URL.
   base::PostTask(FROM_HERE, {content::BrowserThread::IO},
-                 base::BindOnce(resource.callback, false));
+                 base::BindOnce(resource.callback, false /* proceed */,
+                                false /* showed_interstitial */));
 }
 
 }  // namespace android_webview

@@ -279,6 +279,7 @@
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> järjehoidja}other{<ph name="BOOKMARKS_COUNT_MANY" /> järjehoidjat}}</translation>
 <translation id="3089395242580810162">Ava inkognito vahelehel</translation>
 <translation id="3123473560110926937">Blokeeritud teatud saitidel</translation>
+<translation id="3123734510202723619">Teadaanded</translation>
 <translation id="3137521801621304719">Inkognito režiimist väljumine</translation>
 <translation id="3143515551205905069">Tühista sünkroonimine</translation>
 <translation id="3157842584138209013">Nupu Rohkem valikuid abil saate vaadata, kui palju andmemahtu olete säästnud</translation>
@@ -690,7 +691,6 @@ Seade muutmiseks <ph name="BEGIN_LINK" />lähtestage sünkroonimine<ph name="END
 <translation id="6201345951596836663">Link on kopeeritud</translation>
 <translation id="6206551242102657620">Ühendus on turvaline. Saidi teave</translation>
 <translation id="6210748933810148297">Kas pole <ph name="EMAIL" />?</translation>
-<translation id="6216432067784365534">Üksuse <ph name="NAME_OF_LIST_ITEM" /> valikud</translation>
 <translation id="6221633008163990886">Paroolide eksportimiseks avage seade</translation>
 <translation id="6232535412751077445">Kui lubate funktsiooni „Ära jälgi”, kaasatakse see taotlus teie sirvimisliiklusesse. Mõju oleneb sellest, kas veebisait reageerib taotlusele ja kuidas seda tõlgendatakse.
 
@@ -736,7 +736,6 @@ Näiteks võivad mõned veebisaidid taotlusele reageerida nii, et näitavad teil
 <translation id="6534565668554028783">Google'il kulus reageerimiseks liiga kaua aega</translation>
 <translation id="6538442820324228105">Alla on laaditud <ph name="GBS" /> GB</translation>
 <translation id="6539092367496845964">Midagi läks valesti. Proovige hiljem uuesti.</translation>
-<translation id="654446541061731451">Valige kiirega edastatav vaheleht</translation>
 <translation id="6545017243486555795">Kustuta kõik andmed</translation>
 <translation id="6545864417968258051">Bluetoothi otsimine</translation>
 <translation id="6560414384669816528">Otsi teenusega Sogou</translation>
@@ -1031,7 +1030,6 @@ Sait EI saa juurdepääsu kaamerale. Kaamera jäädvustatud pildid on nähtavad 
 <translation id="868929229000858085">Otsige kontaktide hulgast</translation>
 <translation id="8698438463325761328">Blokeeri saitide juurdepääs virtuaalreaalsuse seadmetele ja andmetele</translation>
 <translation id="869891660844655955">Aegumiskuupäev</translation>
-<translation id="8719023831149562936">Seda vahelehte ei saa kiirega edastada</translation>
 <translation id="8728487861892616501">Rakendust kasutades nõustute Chrome’i <ph name="BEGIN_LINK1" />teenusetingimuste<ph name="END_LINK1" /> ja <ph name="BEGIN_LINK2" />privaatsusteatisega<ph name="END_LINK2" /> ning <ph name="BEGIN_LINK3" />Family Linkiga hallatavate Google'i kontode privaatsusteatisega<ph name="END_LINK3" />.</translation>
 <translation id="8748850008226585750">Sisu on peidetud</translation>
 <translation id="8751914237388039244">Kujutise valimine</translation>

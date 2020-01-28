@@ -12,7 +12,6 @@
 #include "components/autofill/core/browser/ui/popup_item_ids.h"
 #include "components/autofill/core/browser/ui/suggestion.h"
 #include "components/grit/components_scaled_resources.h"
-#import "ui/base/cocoa/touch_bar_forward_declarations.h"
 #import "ui/base/cocoa/touch_bar_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image_skia_util_mac.h"

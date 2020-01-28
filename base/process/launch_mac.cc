@@ -6,6 +6,7 @@
 
 #include <crt_externs.h>
 #include <mach/mach.h>
+#include <os/availability.h>
 #include <spawn.h>
 #include <string.h>
 #include <sys/syscall.h>
@@ -14,7 +15,6 @@
 #include "base/command_line.h"
 #include "base/files/scoped_file.h"
 #include "base/logging.h"
-#include "base/mac/availability.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/process/environment_internal.h"
 #include "base/threading/scoped_blocking_call.h"

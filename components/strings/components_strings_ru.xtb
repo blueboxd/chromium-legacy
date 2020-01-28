@@ -79,6 +79,7 @@
 <translation id="129553762522093515">Недавно закрытые</translation>
 <translation id="1298536327547837046">Проверка на вредоносное ПО</translation>
 <translation id="129863573139666797"><ph name="BEGIN_LINK" />Удалите файлы cookie<ph name="END_LINK" />.</translation>
+<translation id="1301324364792935241">Проверьте настройки безопасного DNS-сервера</translation>
 <translation id="1307966114820526988">Устаревшие функции</translation>
 <translation id="1314509827145471431">Скрепление справа</translation>
 <translation id="1320233736580025032">Prc1 (конверт)</translation>
@@ -152,6 +153,7 @@
 <translation id="1569487616857761740">Укажите дату окончания срока действия</translation>
 <translation id="1581080074034554886">CVC</translation>
 <translation id="1583429793053364125">При загрузке этой страницы возникли неполадки.</translation>
+<translation id="1586541204584340881">Установленные расширения.</translation>
 <translation id="1588438908519853928">Обычный</translation>
 <translation id="1592005682883173041">Доступ к данным на устройстве</translation>
 <translation id="1594030484168838125">Выбрать</translation>
@@ -362,6 +364,7 @@
 <translation id="2544644783021658368">Один документ</translation>
 <translation id="254947805923345898">Недопустимое значение правила.</translation>
 <translation id="255002559098805027">Сайт <ph name="HOST_NAME" /> отправил недействительный ответ.</translation>
+<translation id="2553853292994445426">Проверьте параметры безопасных DNS-серверов. Возможно, к настроенному вами DNS-серверу невозможно подключиться.</translation>
 <translation id="2556876185419854533">&amp;Отменить изменения</translation>
 <translation id="257674075312929031">Группа.</translation>
 <translation id="2586657967955657006">Буфер обмена</translation>
@@ -474,6 +477,7 @@
 <translation id="3095940652251934233">Statement</translation>
 <translation id="3096100844101284527">Добавить адрес получения</translation>
 <translation id="3105172416063519923">Идентификатор объекта:</translation>
+<translation id="3107591622054137333"><ph name="BEGIN_LINK" />Проверить настройки безопасного DNS-сервера<ph name="END_LINK" /></translation>
 <translation id="3109728660330352905">У вас нет прав для просмотра этой страницы.</translation>
 <translation id="3113284927548439113">До третьей смены</translation>
 <translation id="3116158981186517402">Ламинация</translation>
@@ -770,6 +774,7 @@
 <translation id="4390472908992056574">Поля</translation>
 <translation id="4406896451731180161">Результаты поиска</translation>
 <translation id="4408413947728134509">Настройки файлов cookie <ph name="NUM_COOKIES" /></translation>
+<translation id="4414290883293381923">Вы только что ввели пароль на поддельном сайте. Рекомендуем немедленно сменить пароль для следующих ресурсов: <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, <ph name="WEBSITE_3" /> и других сайтов, на которых вы используете введенный пароль.</translation>
 <translation id="4415426530740016218">Адрес получения</translation>
 <translation id="4424024547088906515">Не удалось подтвердить, что это сервер <ph name="DOMAIN" />. Chrome не доверяет его сертификату безопасности. Возможно, сервер настроен неправильно или кто-то пытается перехватить ваши данные.</translation>
 <translation id="443121186588148776">Последовательный порт</translation>
@@ -1201,6 +1206,7 @@
 <translation id="6353505687280762741">{COUNT,plural, =0{Нет}=1{1 пароль (для <ph name="DOMAIN_LIST" />, синхронизировано)}=2{2 пароля (для <ph name="DOMAIN_LIST" />, синхронизировано)}one{# пароль (для <ph name="DOMAIN_LIST" />, синхронизировано)}few{# пароля (для <ph name="DOMAIN_LIST" />, синхронизировано)}many{# паролей (для <ph name="DOMAIN_LIST" />, синхронизировано)}other{# пароля (для <ph name="DOMAIN_LIST" />, синхронизировано)}}</translation>
 <translation id="6358450015545214790">Что это значит?</translation>
 <translation id="6361757823711327522">B7</translation>
+<translation id="6364095313648930329"><ph name="BEGIN_LINK" />Проверить настройки прокси-сервера, брандмауэра и безопасного DNS-сервера<ph name="END_LINK" /></translation>
 <translation id="6366710531182496394">Две скобы слева</translation>
 <translation id="6377268785556383139">1 результат поиска по запросу "<ph name="SEARCH_TEXT" />"</translation>
 <translation id="6380497234672085559">A0</translation>
@@ -1223,6 +1229,7 @@
 <translation id="6433595998831338502">Сайт <ph name="HOST_NAME" /> не позволяет установить соединение.</translation>
 <translation id="6434309073475700221">Отменить передачу</translation>
 <translation id="6440503408713884761">Пропускается</translation>
+<translation id="6443406338865242315">Установленные расширения и плагины.</translation>
 <translation id="6446163441502663861">Kahu (конверт)</translation>
 <translation id="6446608382365791566">Укажите дополнительную информацию</translation>
 <translation id="6447842834002726250">Файлы сookie</translation>
@@ -1332,6 +1339,7 @@
 <translation id="7012363358306927923">China UnionPay</translation>
 <translation id="7016992613359344582">Списание может быть разовым или повторяющимся без каких-либо уведомлений.</translation>
 <translation id="7029809446516969842">Пароли</translation>
+<translation id="7031646650991750659">Приложения, установленные из Google Play.</translation>
 <translation id="7050187094878475250">Вы попытались перейти на сайт <ph name="DOMAIN" />, но сервер предоставил не заслуживающий доверия сертификат со слишком долгим сроком действия.</translation>
 <translation id="705310974202322020">{NUM_CARDS,plural, =1{Сейчас сохранить эту карту нельзя.}one{Сейчас сохранить эти карты нельзя.}few{Сейчас сохранить эти карты нельзя.}many{Сейчас сохранить эти карты нельзя.}other{Сейчас сохранить эти карты нельзя.}}</translation>
 <translation id="7053983685419859001">Блокировать</translation>
@@ -1391,6 +1399,7 @@
 <translation id="7319430975418800333">A3</translation>
 <translation id="7320336641823683070">Устранение ошибок при подключении к Интернету</translation>
 <translation id="733354035281974745">Приоритет локального аккаунта на устройстве</translation>
+<translation id="7333654844024768166">Вы только что ввели пароль на поддельном сайте. Рекомендуем немедленно сменить пароль для следующих ресурсов: <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, <ph name="WEBSITE_3" /> и других сайтов, на которых вы используете введенный пароль.</translation>
 <translation id="7334320624316649418">&amp;Повторить изменение порядка</translation>
 <translation id="7337706099755338005">Недоступно на вашей платформе.</translation>
 <translation id="733923710415886693">Сертификат сервера не проходил проверку.</translation>

@@ -53,8 +53,6 @@ const uint32_t kUsbNonExistentKeycode = 0xffffff;
 const uint32_t kUsbUsBackslash =        0x070031;
 const uint32_t kUsbNonUsHash =          0x070032;
 
-// TODO(crbug.com/956756)
-#if !defined(NOTOUCH_BUILD)
 TEST(UsbKeycodeMap, KeycodeConverterData) {
   // This test looks at all kinds of supported native codes.
   // Verify that there are no duplicate entries in the mapping.
@@ -110,7 +108,6 @@ TEST(UsbKeycodeMap, EvdevXkb) {
     }
   }
 }
-#endif
 
 TEST(UsbKeycodeMap, Basic) {
   // Verify that the first element in the table is the "invalid" code.

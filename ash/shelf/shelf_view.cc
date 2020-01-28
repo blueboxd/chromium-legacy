@@ -838,29 +838,6 @@ views::View* ShelfView::GetDefaultFocusableChild() {
                                        : FindFirstFocusableChild();
 }
 
-void ShelfView::CreateDragIconProxy(
-    const gfx::Point& location_in_screen_coordinates,
-    const gfx::ImageSkia& icon,
-    views::View* replaced_view,
-    const gfx::Vector2d& cursor_offset_from_center,
-    float scale_factor) {
-  drag_replaced_view_ = replaced_view;
-  aura::Window* root_window =
-      drag_replaced_view_->GetWidget()->GetNativeWindow()->GetRootWindow();
-  drag_image_ = std::make_unique<DragImageView>(
-      root_window, ui::DragDropTypes::DRAG_EVENT_SOURCE_MOUSE);
-  drag_image_->SetImage(icon);
-  gfx::Size size = drag_image_->GetPreferredSize();
-  size.set_width(size.width() * scale_factor);
-  size.set_height(size.height() * scale_factor);
-  drag_image_offset_ = gfx::Vector2d(size.width() / 2, size.height() / 2) +
-                       cursor_offset_from_center;
-  gfx::Rect drag_image_bounds(
-      location_in_screen_coordinates - drag_image_offset_, size);
-  drag_image_->SetBoundsInScreen(drag_image_bounds);
-  drag_image_->SetWidgetVisible(true);
-}
-
 void ShelfView::ShowContextMenuForViewImpl(views::View* source,
                                            const gfx::Point& point,
                                            ui::MenuSourceType source_type) {
@@ -1773,6 +1750,34 @@ void ShelfView::EndDragOnOtherShelf(bool cancel) {
   }
 }
 
+void ShelfView::CreateDragIconProxy(
+    const gfx::Point& location_in_screen_coordinates,
+    const gfx::ImageSkia& icon,
+    views::View* replaced_view,
+    const gfx::Vector2d& cursor_offset_from_center,
+    float scale_factor,
+    bool animate_visibility) {
+  drag_replaced_view_ = replaced_view;
+  aura::Window* root_window =
+      drag_replaced_view_->GetWidget()->GetNativeWindow()->GetRootWindow();
+  drag_image_ = std::make_unique<DragImageView>(
+      root_window, ui::DragDropTypes::DRAG_EVENT_SOURCE_MOUSE);
+  drag_image_->SetImage(icon);
+  gfx::Size size = drag_image_->GetPreferredSize();
+  size.set_width(std::round(size.width() * scale_factor));
+  size.set_height(std::round(size.height() * scale_factor));
+  drag_image_offset_ = gfx::Vector2d(size.width() / 2, size.height() / 2) +
+                       cursor_offset_from_center;
+  gfx::Rect drag_image_bounds(
+      location_in_screen_coordinates - drag_image_offset_, size);
+  drag_image_->SetBoundsInScreen(drag_image_bounds);
+  if (!animate_visibility) {
+    drag_image_->GetWidget()->SetVisibilityAnimationTransition(
+        views::Widget::ANIMATE_NONE);
+  }
+  drag_image_->SetWidgetVisible(true);
+}
+
 bool ShelfView::HandleRipOffDrag(const ui::LocatedEvent& event) {
   int current_index = view_model_->GetIndexOfView(drag_view_);
   DCHECK_NE(-1, current_index);
@@ -1801,29 +1806,21 @@ bool ShelfView::HandleRipOffDrag(const ui::LocatedEvent& event) {
         drag_view_->SetBoundsRect(view_model_->ideal_bounds(drag_view_index));
         dragged_to_another_shelf_ = false;
       }
+
+      if (chromeos::switches::ShouldShowScrollableShelf()) {
+        drag_and_drop_host_->CreateDragIconProxyByLocationWithNoAnimation(
+            event.root_location(), drag_view_->GetImage(), drag_image_.get(),
+            /*scale_factor=*/1.0f, /*blur_radius=*/0);
+      }
+
       // Destroy our proxy view item.
       DestroyDragIconProxy();
       // Re-insert the item and return simply false since the caller will handle
       // the move as in any normal case.
       dragged_off_shelf_ = false;
 
-      if (chromeos::switches::ShouldShowScrollableShelf()) {
-        // |drag_view_| is moved to the end of the view model when the app icon
-        // is dragged off the shelf. So updates the location of |drag_view_|
-        // before creating a proxy icon to ensure that the proxy icon has the
-        // correct bounds.
-        gfx::Point drag_point(event.location());
-        ConvertPointToTarget(drag_view_, this, &drag_point);
-        MoveDragViewTo(
-            shelf_->PrimaryAxisValue(drag_point.x() - drag_origin_.x(),
-                                     drag_point.y() - drag_origin_.y()));
-
-        drag_and_drop_host_->CreateDragIconProxyByLocationWithNoAnimation(
-            event.root_location(), drag_view_->GetImage(), drag_view_,
-            /*scale_factor=*/1.0f, /*blur_radius=*/0);
-      } else {
+      if (!chromeos::switches::ShouldShowScrollableShelf())
         drag_view_->layer()->SetOpacity(1.0f);
-      }
 
       // The size of Overflow bubble should be updated immediately when an item
       // is re-inserted.
@@ -1894,10 +1891,20 @@ bool ShelfView::HandleRipOffDrag(const ui::LocatedEvent& event) {
                             .Contains(screen_location));
 
   if (dragged_off_shelf) {
+    // When scrollable shelf is enabled, replaces a proxy icon provided by
+    // drag_and_drop_host_ - keep cursor position consistent with the host
+    // provided icon, and disable visibility animations (to prevent the proxy
+    // icon from lingering on when replaced with the icon provided by host).
+    const bool animate_proxy_visibility =
+        !chromeos::switches::ShouldShowScrollableShelf();
+    const gfx::Point center = drag_view_->GetLocalBounds().CenterPoint();
+    const gfx::Vector2d cursor_offset_from_center =
+        chromeos::switches::ShouldShowScrollableShelf() ? drag_origin_ - center
+                                                        : gfx::Vector2d();
     // Create a proxy view item which can be moved anywhere.
     CreateDragIconProxy(event.root_location(), drag_view_->GetImage(),
-                        drag_view_, gfx::Vector2d(0, 0),
-                        kDragAndDropProxyScale);
+                        drag_view_, cursor_offset_from_center,
+                        kDragAndDropProxyScale, animate_proxy_visibility);
 
     dragged_off_shelf_ = true;
 

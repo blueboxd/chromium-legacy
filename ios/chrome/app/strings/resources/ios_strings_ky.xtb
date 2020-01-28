@@ -192,6 +192,7 @@
 <translation id="3474649192738347024">Формалар толтурулду.</translation>
 <translation id="3478058380795961209">Мөөнтү аяктг ай</translation>
 <translation id="3482959374254649722">Өтмөктөрүңүз шайкештирилүүдө…</translation>
+<translation id="3484946776651937681">Жүктөлүп алынгандарда ачуу</translation>
 <translation id="3493531032208478708">Сунушталган мазмун жөнүндө <ph name="BEGIN_LINK" />көбүрөөк билүү<ph name="END_LINK" /></translation>
 <translation id="3494788280727468875">Серептөө дайындарын тазалоону ырастоо</translation>
 <translation id="35083190962747987">${url} ачуу</translation>
@@ -537,6 +538,7 @@ Handoff Жөндөөлөрдүн жалпы бөлүмүндө да иштети
 <translation id="8319076807703933069">Жаңы издөө</translation>
 <translation id="8323906514956095947">Өтмөктөгү башка параметрлерди көрүү үчүн коё бербей басып туруңуз</translation>
 <translation id="8328777765163860529">Баарын жабуу</translation>
+<translation id="8386068868580335421">Кайра коюу</translation>
 <translation id="8407669440184693619">Бул сайт үчүн бир да сырсөз табылган жок</translation>
 <translation id="842017693807136194">Төмөнкү дайындар менен кирүү:</translation>
 <translation id="8428045167754449968">Шаар/Шаарча</translation>
@@ -553,6 +555,7 @@ Handoff Жөндөөлөрдүн жалпы бөлүмүндө да иштети
 <translation id="8532105204136943229">Мөөнт аяктг жыл</translation>
 <translation id="8534481786647257214">Google+ жайгаштырылды.</translation>
 <translation id="8548878600947630424">Беттен табуу…</translation>
+<translation id="8574235780160508979">Chrome’дун Тейлөө шарттары 31-марттан кийин өзгөргөнү жатат. <ph name="BEGIN_LINK" />Карап чыгыңыз<ph name="END_LINK" /></translation>
 <translation id="8588404856427128947">Өчүк</translation>
 <translation id="8605219856220328675">Өтмөктү жабуу.</translation>
 <translation id="8620640915598389714">Түзөтүү</translation>

@@ -246,7 +246,7 @@ class ChromeBrowserCloudManagementServiceIntegrationTest
             base::BindOnce(
                 &ChromeBrowserCloudManagementServiceIntegrationTest::OnJobDone,
                 base::Unretained(this)),
-            base::DoNothing());
+            base::DoNothing(), base::DoNothing());
 
     em::DeviceManagementRequest request;
     request.mutable_register_browser_request();
@@ -283,7 +283,8 @@ class ChromeBrowserCloudManagementServiceIntegrationTest
         base::BindOnce(
             &ChromeBrowserCloudManagementServiceIntegrationTest::OnJobDone,
             base::Unretained(this)),
-        base::DoNothing());
+        /* retry_callback */ base::DoNothing(),
+        /* should_retry_callback */ base::DoNothing());
 
     std::unique_ptr<DeviceManagementService::Job> job =
         service_->CreateJob(std::move(config));

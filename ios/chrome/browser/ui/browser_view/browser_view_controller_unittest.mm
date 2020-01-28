@@ -19,6 +19,8 @@
 #import "ios/chrome/browser/main/test_browser.h"
 #include "ios/chrome/browser/search_engines/template_url_service_factory.h"
 #include "ios/chrome/browser/sessions/ios_chrome_tab_restore_service_factory.h"
+#import "ios/chrome/browser/sessions/session_restoration_browser_agent.h"
+#import "ios/chrome/browser/sessions/test_session_service.h"
 #import "ios/chrome/browser/tabs/tab_helper_util.h"
 #import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/chrome/browser/ui/browser_container/browser_container_view_controller.h"
@@ -126,11 +128,13 @@ class BrowserViewControllerTest : public BlockCleanupTest {
                                       forProtocol:@protocol(PageInfoCommands)];
     id mockApplicationCommandHandler =
         OCMProtocolMock(@protocol(ApplicationCommands));
-    [[tabModel stub] saveSessionImmediately:NO];
+
     [[tabModel stub] closeAllTabs];
 
     browser_ =
         std::make_unique<TestBrowser>(chrome_browser_state_.get(), tabModel_);
+    SessionRestorationBrowserAgent::CreateForBrowser(
+        browser_.get(), [[TestSessionService alloc] init]);
 
     // Create three web states.
     for (int i = 0; i < 3; i++) {

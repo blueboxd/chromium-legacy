@@ -568,12 +568,12 @@ public class ChromeTabbedActivity extends ChromeActivity {
                     }
 
                     // TODO(960196) : remove this when the associated bug fix. This is a band-aid
-                    // fix for Tabgroups and closing tabs with TabGroupUi.
-                    // If one of the following is true, then exit Chrome when TabGroupsAndroid is
-                    // enabled, and tab switcher is not shown:
+                    //  fix for TabGrid and closing tabs with TabGroupUi.
+                    //  If one of the following is true, then exit Chrome when TabGroupsAndroid is
+                    //  enabled, and tab switcher is not shown:
                     //   1. If the very last tab is closed.
                     //   2. If normal tab model is selected and no normal tabs.
-                    if (FeatureUtilities.isTabGroupsAndroidEnabled()
+                    if (FeatureUtilities.isGridTabSwitcherEnabled()
                             && !mOverviewModeController.overviewVisible()) {
                         if (getTabModelSelector().getTotalTabCount() == 0
                                 || (!getTabModelSelector().isIncognitoSelected()

@@ -59,6 +59,7 @@
 #include "ios/chrome/browser/search_engines/template_url_service_factory.h"
 #import "ios/chrome/browser/send_tab_to_self/send_tab_to_self_util.h"
 #include "ios/chrome/browser/sessions/ios_chrome_tab_restore_service_factory.h"
+#import "ios/chrome/browser/sessions/session_restoration_browser_agent.h"
 #import "ios/chrome/browser/signin/account_consistency_service_factory.h"
 #include "ios/chrome/browser/signin/account_reconcilor_factory.h"
 #import "ios/chrome/browser/snapshots/snapshot_tab_helper.h"
@@ -3420,7 +3421,9 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 
 - (void)webState:(web::WebState*)webState
     didFinishNavigation:(web::NavigationContext*)navigation {
-  [self.tabModel saveSessionImmediately:NO];
+  SessionRestorationBrowserAgent::FromBrowser(self.browser)
+      ->SaveSession(
+          /*immediately=*/false);
 }
 
 - (void)webState:(web::WebState*)webState didLoadPageWithSuccess:(BOOL)success {
@@ -4313,9 +4316,10 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 
   // Don't initiate Tab animation while session restoration is in progress
   // (see crbug.com/763964).
-  if ([self.tabModel isRestoringSession])
+  if (SessionRestorationBrowserAgent::FromBrowser(self.browser)
+          ->IsRestoringSession()) {
     return;
-
+  }
   // When adding new tabs, check what kind of reminder infobar should
   // be added to the new tab. Try to add only one of them.
   // This check is done when a new tab is added either through the Tools Menu

@@ -125,10 +125,12 @@ void FakeMultiDeviceSetup::GetEligibleActiveHostDevices(
   get_eligible_active_hosts_args_.push_back(std::move(callback));
 }
 
-void FakeMultiDeviceSetup::SetHostDevice(const std::string& host_device_id,
-                                         const std::string& auth_token,
-                                         SetHostDeviceCallback callback) {
-  set_host_args_.emplace_back(host_device_id, auth_token, std::move(callback));
+void FakeMultiDeviceSetup::SetHostDevice(
+    const std::string& host_instance_id_or_legacy_device_id,
+    const std::string& auth_token,
+    SetHostDeviceCallback callback) {
+  set_host_args_.emplace_back(host_instance_id_or_legacy_device_id, auth_token,
+                              std::move(callback));
 }
 
 void FakeMultiDeviceSetup::RemoveHostDevice() {
@@ -163,9 +165,10 @@ void FakeMultiDeviceSetup::TriggerEventForDebugging(
 }
 
 void FakeMultiDeviceSetup::SetHostDeviceWithoutAuthToken(
-    const std::string& host_device_id,
+    const std::string& host_instance_id_or_legacy_device_id,
     mojom::PrivilegedHostDeviceSetter::SetHostDeviceCallback callback) {
-  set_host_without_auth_args_.emplace_back(host_device_id, std::move(callback));
+  set_host_without_auth_args_.emplace_back(host_instance_id_or_legacy_device_id,
+                                           std::move(callback));
 }
 
 }  // namespace multidevice_setup

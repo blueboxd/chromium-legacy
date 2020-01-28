@@ -1829,7 +1829,15 @@ std::unique_ptr<WebContents> WebContentsImpl::DetachFromOuterWebContents() {
   RecursivelyUnregisterFrameSinkIds();
   if (RenderWidgetHostViewBase* view =
           static_cast<RenderWidgetHostViewBase*>(GetMainFrame()->GetView())) {
+    DCHECK(view->IsRenderWidgetHostViewChildFrame());
     view->Destroy();
+  }
+  if (GetPendingMainFrame()) {
+    if (RenderWidgetHostViewBase* view = static_cast<RenderWidgetHostViewBase*>(
+            GetPendingMainFrame()->GetView())) {
+      DCHECK(view->IsRenderWidgetHostViewChildFrame());
+      view->Destroy();
+    }
   }
   GetRenderManager()->DeleteOuterDelegateProxy(
       node_.OuterContentsFrameTreeNode()
@@ -1844,6 +1852,10 @@ std::unique_ptr<WebContents> WebContentsImpl::DetachFromOuterWebContents() {
   DCHECK_EQ(web_contents.get(), this);
   node_.SetFocusedWebContents(this);
   CreateRenderWidgetHostViewForRenderManager(GetRenderViewHost());
+  if (GetPendingMainFrame()) {
+    CreateRenderWidgetHostViewForRenderManager(
+        GetPendingMainFrame()->render_view_host());
+  }
   RecursivelyRegisterFrameSinkIds();
   // TODO(adithyas): |browser_plugin_embedder_ax_tree_id| should either not be
   // used for portals, or it should get a different name.

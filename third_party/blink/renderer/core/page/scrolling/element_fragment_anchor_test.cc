@@ -53,43 +53,54 @@ TEST_F(ElementFragmentAnchorTest, FocusHandlerRunBeforeRaf) {
           background-color: red;
         }
       </style>
-      <link rel="stylesheet" type="text/css" href="sheet.css">
       <a id="anchorlink" href="#bottom">Link to bottom of the page</a>
       <div style="height: 1000px;"></div>
+      <link rel="stylesheet" type="text/css" href="sheet.css">
       <input id="bottom">Bottom of the page</input>
+      <script>
+        document.getElementById("bottom").addEventListener('focus', () => {
+          requestAnimationFrame(() => {
+            document.body.style.backgroundColor = '#00FF00';
+          });
+        });
+      </script>
     )HTML");
 
-  MainFrame().ExecuteScript(WebScriptSource(R"HTML(
-      document.getElementById("bottom").addEventListener('focus', () => {
-        requestAnimationFrame(() => {
-          document.body.style.backgroundColor = '#00FF00';
-        });
-      });
-  )HTML"));
-
   // We're still waiting on the stylesheet to load so the load event shouldn't
-  // yet dispatch and rendering is deferred.
-  ASSERT_FALSE(GetDocument().HaveRenderBlockingResourcesLoaded());
+  // yet dispatch.
   ASSERT_FALSE(GetDocument().IsLoadCompleted());
 
   // Click on the anchor element. This will cause a synchronous same-document
-  // navigation.
+  // navigation. The fragment shouldn't activate yet as parsing will be blocked
+  // due to the unloaded stylesheet.
   auto* anchor =
       To<HTMLAnchorElement>(GetDocument().getElementById("anchorlink"));
   anchor->click();
   ASSERT_EQ(GetDocument().body(), GetDocument().ActiveElement())
       << "Active element changed while rendering is blocked";
 
-  // Complete the CSS stylesheet load so the document can finish loading. The
-  // fragment should be activated at that point.
+  // Complete the CSS stylesheet load so the document can finish parsing.
   css_resource.Complete("");
+  test::RunPendingTasks();
+
+  // Now that the document has fully parsed the anchor should invoke at this
+  // point.
+  ASSERT_EQ(GetDocument().getElementById("bottom"),
+            GetDocument().ActiveElement());
+
+  // The background color shouldn't yet be updated.
+  ASSERT_EQ(GetDocument()
+                .body()
+                ->GetLayoutObject()
+                ->Style()
+                ->VisitedDependentColor(GetCSSPropertyBackgroundColor())
+                .NameForLayoutTreeAsText(),
+            Color(255, 0, 0).NameForLayoutTreeAsText());
+
   Compositor().BeginFrame();
 
-  ASSERT_FALSE(GetDocument().IsLoadCompleted());
-  ASSERT_TRUE(GetDocument().HaveRenderBlockingResourcesLoaded());
-  ASSERT_EQ(GetDocument().getElementById("bottom"),
-            GetDocument().ActiveElement())
-      << "Active element wasn't changed after rendering was unblocked.";
+  // Make sure the background color is updated from the rAF without requiring a
+  // second BeginFrame.
   EXPECT_EQ(GetDocument()
                 .body()
                 ->GetLayoutObject()
@@ -220,23 +231,34 @@ TEST_F(ElementFragmentAnchorTest, AnchorRemovedBeforeBeginFrameCrash) {
                                      "text/css");
   LoadURL("https://example.com/test.html#anchor");
 
-  main_resource.Complete(R"HTML(
-      <!DOCTYPE html>
-      <link rel="stylesheet" type="text/css" href="sheet.css">
-      <div style="height: 1000px;"></div>
-      <input id="anchor">Bottom of the page</input>
-    )HTML");
+  if (!RuntimeEnabledFeatures::BlockHTMLParserOnStyleSheetsEnabled()) {
+    main_resource.Complete(R"HTML(
+        <!DOCTYPE html>
+        <link rel="stylesheet" type="text/css" href="sheet.css">
+        <div style="height: 1000px;"></div>
+        <input id="anchor">Bottom of the page</input>
+      )HTML");
 
-  // We're still waiting on the stylesheet to load so the load event shouldn't
-  // yet dispatch and rendering is deferred. This will avoid invoking or
-  // focusing the fragment when it's first installed.
-  ASSERT_FALSE(GetDocument().HaveRenderBlockingResourcesLoaded());
-  ASSERT_FALSE(GetDocument().IsLoadCompleted());
+    // We're still waiting on the stylesheet to load so the load event shouldn't
+    // yet dispatch and parsing is deferred. This will install the anchor.
+    ASSERT_FALSE(GetDocument().IsLoadCompleted());
+    ASSERT_TRUE(GetDocument().View()->GetFragmentAnchor());
+    ASSERT_TRUE(static_cast<ElementFragmentAnchor*>(
+                    GetDocument().View()->GetFragmentAnchor())
+                    ->anchor_node_);
+  } else {
+    main_resource.Complete(R"HTML(
+        <!DOCTYPE html>
+        <div style="height: 1000px;"></div>
+        <input id="anchor">Bottom of the page</input>
+        <link rel="stylesheet" type="text/css" href="sheet.css">
+      )HTML");
 
-  ASSERT_TRUE(GetDocument().View()->GetFragmentAnchor());
-  ASSERT_TRUE(static_cast<ElementFragmentAnchor*>(
-                  GetDocument().View()->GetFragmentAnchor())
-                  ->anchor_node_);
+    // We're still waiting on the stylesheet to load so the load event shouldn't
+    // yet dispatch and parsing is deferred. This will install the anchor.
+    ASSERT_FALSE(GetDocument().IsLoadCompleted());
+    ASSERT_FALSE(GetDocument().View()->GetFragmentAnchor());
+  }
 
   // Remove the fragment anchor from the DOM and perform GC.
   GetDocument().getElementById("anchor")->remove();
@@ -244,18 +266,23 @@ TEST_F(ElementFragmentAnchorTest, AnchorRemovedBeforeBeginFrameCrash) {
   isolate->RequestGarbageCollectionForTesting(
       v8::Isolate::kFullGarbageCollection);
 
-  // Now that the element has been removed and GC'd, unblock rendering so we can
-  // produce a frame.
+  // Now that the element has been removed and GC'd, unblock parsing. The
+  // anchor should be installed at this point.
   css_resource.Complete("");
+  test::RunPendingTasks();
 
-  ASSERT_TRUE(GetDocument().HaveRenderBlockingResourcesLoaded());
-
-  // We should still have a fragment anchor but its node pointer shoulld be
-  // gone since it's a WeakMember.
-  ASSERT_TRUE(GetDocument().View()->GetFragmentAnchor());
-  ASSERT_FALSE(static_cast<ElementFragmentAnchor*>(
-                   GetDocument().View()->GetFragmentAnchor())
-                   ->anchor_node_);
+  if (!RuntimeEnabledFeatures::BlockHTMLParserOnStyleSheetsEnabled()) {
+    // We should still have a fragment anchor but its node pointer should be
+    // gone since it's a WeakMember.
+    ASSERT_TRUE(GetDocument().View()->GetFragmentAnchor());
+    ASSERT_FALSE(static_cast<ElementFragmentAnchor*>(
+                     GetDocument().View()->GetFragmentAnchor())
+                     ->anchor_node_);
+  } else {
+    // The fragment shouldn't have installed since the targeted element was
+    // removed.
+    ASSERT_FALSE(GetDocument().View()->GetFragmentAnchor());
+  }
 
   // We'd normally focus the fragment during BeginFrame. Make sure we don't
   // crash since it's been GC'd.

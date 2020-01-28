@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 143 tests; 137 PASS, 6 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 143 tests; 139 PASS, 4 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS idl_test setup
 PASS idl_test validation
 PASS Partial interface Document: original interface defined
@@ -57,7 +57,7 @@ PASS Animation interface: attribute ready
 PASS Animation interface: attribute finished
 PASS Animation interface: attribute onfinish
 PASS Animation interface: attribute oncancel
-FAIL Animation interface: attribute onremove assert_true: The prototype object must have a property "onremove" expected true got false
+PASS Animation interface: attribute onremove
 PASS Animation interface: operation cancel()
 PASS Animation interface: operation finish()
 PASS Animation interface: operation play()
@@ -81,7 +81,7 @@ PASS Animation interface: new Animation() must inherit property "ready" with the
 PASS Animation interface: new Animation() must inherit property "finished" with the proper type
 PASS Animation interface: new Animation() must inherit property "onfinish" with the proper type
 PASS Animation interface: new Animation() must inherit property "oncancel" with the proper type
-FAIL Animation interface: new Animation() must inherit property "onremove" with the proper type assert_inherits: property "onremove" not found in prototype chain
+PASS Animation interface: new Animation() must inherit property "onremove" with the proper type
 PASS Animation interface: new Animation() must inherit property "cancel()" with the proper type
 PASS Animation interface: new Animation() must inherit property "finish()" with the proper type
 PASS Animation interface: new Animation() must inherit property "play()" with the proper type

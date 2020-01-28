@@ -53,14 +53,14 @@ class DownloadManagerCoordinatorImpl
     /** Builds a {@link DownloadManagerCoordinatorImpl} instance. */
     public DownloadManagerCoordinatorImpl(Activity activity, DownloadManagerUiConfig config,
             SnackbarManager snackbarManager, ModalDialogManager modalDialogManager, Tracker tracker,
-            FaviconProvider faviconProvider) {
+            FaviconProvider faviconProvider, LegacyDownloadProvider legacyProvider) {
         mActivity = activity;
         mDeleteCoordinator = new DeleteUndoCoordinator(snackbarManager);
         mSelectionDelegate = new SelectionDelegate<ListItem>();
         mListCoordinator = new DateOrderedListCoordinator(mActivity, config,
-                OfflineContentAggregatorFactory.get(), mDeleteCoordinator::showSnackbar,
-                mSelectionDelegate, this::notifyFilterChanged, createDateOrderedListObserver(),
-                modalDialogManager, faviconProvider);
+                OfflineContentAggregatorFactory.get(), legacyProvider,
+                mDeleteCoordinator::showSnackbar, mSelectionDelegate, this::notifyFilterChanged,
+                createDateOrderedListObserver(), modalDialogManager, faviconProvider);
         mToolbarCoordinator = new ToolbarCoordinator(mActivity, this, mListCoordinator,
                 mSelectionDelegate, config.isSeparateActivity, tracker);
 

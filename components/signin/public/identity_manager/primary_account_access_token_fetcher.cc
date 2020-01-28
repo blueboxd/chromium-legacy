@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "components/signin/public/identity_manager/access_token_info.h"
+#include "google_apis/gaia/core_account_id.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 
 namespace signin {
@@ -18,13 +19,15 @@ PrimaryAccountAccessTokenFetcher::PrimaryAccountAccessTokenFetcher(
     IdentityManager* identity_manager,
     const identity::ScopeSet& scopes,
     AccessTokenFetcher::TokenCallback callback,
-    Mode mode)
+    Mode mode,
+    ConsentLevel consent)
     : oauth_consumer_name_(oauth_consumer_name),
       identity_manager_(identity_manager),
       scopes_(scopes),
       callback_(std::move(callback)),
       access_token_retried_(false),
-      mode_(mode) {
+      mode_(mode),
+      consent_(consent) {
   if (mode_ == Mode::kImmediate || AreCredentialsAvailable()) {
     StartAccessTokenRequest();
     return;
@@ -36,12 +39,18 @@ PrimaryAccountAccessTokenFetcher::PrimaryAccountAccessTokenFetcher(
   identity_manager_observer_.Add(identity_manager_);
 }
 
-PrimaryAccountAccessTokenFetcher::~PrimaryAccountAccessTokenFetcher() {}
+PrimaryAccountAccessTokenFetcher::~PrimaryAccountAccessTokenFetcher() = default;
+
+CoreAccountId PrimaryAccountAccessTokenFetcher::GetAccountId() const {
+  return consent_ == ConsentLevel::kSync
+             ? identity_manager_->GetPrimaryAccountId()
+             : identity_manager_->GetUnconsentedPrimaryAccountId();
+}
 
 bool PrimaryAccountAccessTokenFetcher::AreCredentialsAvailable() const {
   DCHECK_EQ(Mode::kWaitUntilAvailable, mode_);
 
-  return identity_manager_->HasPrimaryAccountWithRefreshToken();
+  return identity_manager_->HasAccountWithRefreshToken(GetAccountId());
 }
 
 void PrimaryAccountAccessTokenFetcher::StartAccessTokenRequest() {
@@ -63,7 +72,7 @@ void PrimaryAccountAccessTokenFetcher::StartAccessTokenRequest() {
   // token available. AccessTokenFetcher used in
   // |kWaitUntilRefreshTokenAvailable| mode would guarantee only the latter.
   access_token_fetcher_ = identity_manager_->CreateAccessTokenFetcherForAccount(
-      identity_manager_->GetPrimaryAccountId(), oauth_consumer_name_, scopes_,
+      GetAccountId(), oauth_consumer_name_, scopes_,
       base::BindOnce(
           &PrimaryAccountAccessTokenFetcher::OnAccessTokenFetchComplete,
           base::Unretained(this)),
@@ -72,6 +81,23 @@ void PrimaryAccountAccessTokenFetcher::StartAccessTokenRequest() {
 
 void PrimaryAccountAccessTokenFetcher::OnPrimaryAccountSet(
     const CoreAccountInfo& primary_account_info) {
+  // When sync consent is not required the signin is handled in
+  // OnUnconsentedPrimaryAccountChanged() below.
+  if (consent_ == ConsentLevel::kNotRequired)
+    return;
+  DCHECK(!primary_account_info.account_id.empty());
+  ProcessSigninStateChange();
+}
+
+void PrimaryAccountAccessTokenFetcher::OnUnconsentedPrimaryAccountChanged(
+    const CoreAccountInfo& primary_account_info) {
+  // This method is called after both SetPrimaryAccount and
+  // SetUnconsentedPrimaryAccount.
+  if (consent_ == ConsentLevel::kSync)
+    return;
+  // We're only interested when the account is set.
+  if (primary_account_info.account_id.empty())
+    return;
   ProcessSigninStateChange();
 }
 

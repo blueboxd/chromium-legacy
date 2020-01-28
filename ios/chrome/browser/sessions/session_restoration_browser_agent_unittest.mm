@@ -258,4 +258,41 @@ TEST_F(SessionRestorationBrowserAgentTest, ObserverCalledWithRestore) {
   session_restoration_agent_->RemoveObserver(&observer);
 }
 
+// Tests that SessionRestorationAgent saves session when the active webState
+// changes.
+TEST_F(SessionRestorationBrowserAgentTest,
+       SaveSessionWithActiveWebStateChange) {
+  InsertNewWebState(GURL(kURL1), /*parent=*/nullptr, /*index=*/0,
+                    /*background=*/true);
+  InsertNewWebState(GURL(kURL2), /*parent=*/nullptr, /*index=*/1,
+                    /*background=*/true);
+  EXPECT_EQ(test_session_service_.saveSessionCallsCount, 0);
+
+  // Inserting new active webState.
+  InsertNewWebState(GURL(kURL2), /*parent=*/nullptr, /*index=*/2,
+                    /*background=*/false);
+  EXPECT_EQ(test_session_service_.saveSessionCallsCount, 1);
+
+  // Removing the active webstate.
+  web_state_list_->CloseWebStateAt(/*index=*/2,
+                                   WebStateList::CLOSE_USER_ACTION);
+  EXPECT_EQ(test_session_service_.saveSessionCallsCount, 2);
+
+  EXPECT_EQ(web_state_list_->active_index(), 1);
+
+  // Activating another webState without removing or inserting.
+  web_state_list_->ActivateWebStateAt(/*index=*/0);
+  EXPECT_EQ(test_session_service_.saveSessionCallsCount, 3);
+
+  // Removing a non active webState.
+  web_state_list_->CloseWebStateAt(/*index=*/1,
+                                   WebStateList::CLOSE_USER_ACTION);
+  EXPECT_EQ(test_session_service_.saveSessionCallsCount, 3);
+
+  // Removing the last active webState.
+  web_state_list_->CloseWebStateAt(/*index=*/0,
+                                   WebStateList::CLOSE_USER_ACTION);
+  EXPECT_EQ(test_session_service_.saveSessionCallsCount, 4);
+}
+
 }  // anonymous namespace

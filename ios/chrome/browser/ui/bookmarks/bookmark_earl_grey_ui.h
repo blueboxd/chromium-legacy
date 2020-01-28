@@ -34,10 +34,6 @@ id<GREYMatcher> StarButton();
 // Matcher for the Delete button on the bookmarks UI.
 id<GREYMatcher> BookmarksDeleteSwipeButton();
 
-// Matcher for the Back button to |previousViewControllerLabel| on the bookmarks
-// UI.
-id<GREYMatcher> NavigateBackButtonTo(NSString* previousViewControllerLabel);
-
 // Matcher for the DONE button on the bookmarks UI.
 id<GREYMatcher> BookmarkHomeDoneButton();
 

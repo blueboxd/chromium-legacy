@@ -191,7 +191,8 @@ class SharedImageBackingAHB : public ClearTrackingSharedImageBacking {
                         base::android::ScopedHardwareBufferHandle handle,
                         size_t estimated_size,
                         bool is_thread_safe,
-                        base::ScopedFD initial_upload_fd);
+                        base::ScopedFD initial_upload_fd,
+                        bool using_gl);
 
   ~SharedImageBackingAHB() override;
 
@@ -213,6 +214,7 @@ class SharedImageBackingAHB : public ClearTrackingSharedImageBacking {
                base::ScopedFD end_read_fd);
   gl::GLImage* BeginOverlayAccess();
   void EndOverlayAccess();
+  std::unique_ptr<gl::GLFence> TakeReadGLFence();
 
  protected:
   std::unique_ptr<SharedImageRepresentationGLTexture> ProduceGLTexture(
@@ -245,8 +247,11 @@ class SharedImageBackingAHB : public ClearTrackingSharedImageBacking {
   base::flat_set<const SharedImageRepresentation*> active_readers_
       GUARDED_BY(lock_);
 
+  std::unique_ptr<gl::GLFence> read_gl_fence_ GUARDED_BY(lock_);
+
   scoped_refptr<OverlayImage> overlay_image_ GUARDED_BY(lock_);
   bool is_overlay_accessing_ GUARDED_BY(lock_) = false;
+  const bool using_gl_;
 
   DISALLOW_COPY_AND_ASSIGN(SharedImageBackingAHB);
 };
@@ -283,8 +288,15 @@ class SharedImageRepresentationGLTextureAHB
       if (!ahb_backing()->BeginWrite(&sync_fd))
         return false;
 
-      if (!InsertEglFenceAndWait(std::move(sync_fd)))
-        return false;
+      auto gl_fence = ahb_backing()->TakeReadGLFence();
+      if (gl_fence) {
+        gl_fence->ServerWait();
+      }
+
+      if (sync_fd.is_valid()) {
+        if (!InsertEglFenceAndWait(std::move(sync_fd)))
+          return false;
+      }
     }
 
     if (mode == GL_SHARED_IMAGE_ACCESS_MODE_READ_CHROMIUM) {
@@ -548,7 +560,8 @@ SharedImageBackingAHB::SharedImageBackingAHB(
     base::android::ScopedHardwareBufferHandle handle,
     size_t estimated_size,
     bool is_thread_safe,
-    base::ScopedFD initial_upload_fd)
+    base::ScopedFD initial_upload_fd,
+    bool using_gl)
     : ClearTrackingSharedImageBacking(mailbox,
                                       format,
                                       size,
@@ -557,7 +570,8 @@ SharedImageBackingAHB::SharedImageBackingAHB(
                                       estimated_size,
                                       is_thread_safe),
       hardware_buffer_handle_(std::move(handle)),
-      write_sync_fd_(std::move(initial_upload_fd)) {
+      write_sync_fd_(std::move(initial_upload_fd)),
+      using_gl_(using_gl) {
   DCHECK(hardware_buffer_handle_.is_valid());
 }
 
@@ -782,6 +796,15 @@ void SharedImageBackingAHB::EndOverlayAccess() {
 
   auto fence_fd = overlay_image_->TakeEndFence();
   read_sync_fd_ = gl::MergeFDs(std::move(read_sync_fd_), std::move(fence_fd));
+
+  if (using_gl_ && read_sync_fd_.is_valid()) {
+    read_gl_fence_ = CreateEglFence(std::move(read_sync_fd_));
+  }
+}
+
+std::unique_ptr<gl::GLFence> SharedImageBackingAHB::TakeReadGLFence() {
+  AutoLock auto_lock(this);
+  return std::move(read_gl_fence_);
 }
 
 gles2::Texture* SharedImageBackingAHB::GenGLTexture() {
@@ -843,7 +866,9 @@ gles2::Texture* SharedImageBackingAHB::GenGLTexture() {
 
 SharedImageBackingFactoryAHB::SharedImageBackingFactoryAHB(
     const GpuDriverBugWorkarounds& workarounds,
-    const GpuFeatureInfo& gpu_feature_info) {
+    const GpuFeatureInfo& gpu_feature_info,
+    SharedContextState* context_state)
+    : context_state_(context_state) {
   scoped_refptr<gles2::FeatureInfo> feature_info =
       new gles2::FeatureInfo(workarounds, gpu_feature_info);
   feature_info->Initialize(ContextType::CONTEXT_TYPE_OPENGLES2, false,
@@ -1057,9 +1082,11 @@ std::unique_ptr<SharedImageBacking> SharedImageBackingFactoryAHB::MakeBacking(
     initial_upload_fd = base::ScopedFD(fence);
   }
 
+  bool using_gl = context_state_ && context_state_->GrContextIsGL();
+
   auto backing = std::make_unique<SharedImageBackingAHB>(
       mailbox, format, size, color_space, usage, std::move(handle),
-      estimated_size, is_thread_safe, std::move(initial_upload_fd));
+      estimated_size, is_thread_safe, std::move(initial_upload_fd), using_gl);
 
   // If we uploaded initial data, set the backing as cleared.
   if (!pixel_data.empty())
@@ -1132,10 +1159,12 @@ SharedImageBackingFactoryAHB::CreateSharedImage(
     return nullptr;
   }
 
+  bool using_gl = context_state_ && context_state_->GrContextIsGL();
+
   return std::make_unique<SharedImageBackingAHB>(
       mailbox, resource_format, size, color_space, usage,
       std::move(handle.android_hardware_buffer), estimated_size, false,
-      base::ScopedFD());
+      base::ScopedFD(), using_gl);
 }
 
 }  // namespace gpu

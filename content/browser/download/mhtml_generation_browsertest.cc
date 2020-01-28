@@ -941,5 +941,8 @@ IN_PROC_BROWSER_TEST_F(MHTMLGenerationTest, GenerateMHTMLButDelayResponse) {
 INSTANTIATE_TEST_SUITE_P(MHTMLGenerationTest,
                          MHTMLGenerationTest,
                          testing::Combine(testing::Bool(), testing::Bool()));
+INSTANTIATE_TEST_SUITE_P(MHTMLGenerationSitePerProcessTest,
+                         MHTMLGenerationSitePerProcessTest,
+                         testing::Combine(testing::Bool(), testing::Bool()));
 
 }  // namespace content

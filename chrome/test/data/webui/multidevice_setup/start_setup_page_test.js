@@ -31,21 +31,34 @@ cr.define('multidevice_setup', () => {
       let startSetupPageElement;
 
       const START = 'start-setup-page';
+
+      // TODO(https://crbug.com/1019206): When v1 DeviceSync is turned off, all
+      // devices should have an Instance ID.
       const DEVICES = [
         {
-          remoteDevice: {deviceName: 'Pixel XL', deviceId: 'abcdxl'},
+          remoteDevice: {deviceName: 'Pixel XL', deviceId: 'legacy-id-1'},
           connectivityStatus:
               chromeos.deviceSync.mojom.ConnectivityStatus.kOnline
         },
         {
-          remoteDevice: {deviceName: 'Nexus 6P', deviceId: 'PpPpPp'},
+          remoteDevice: {deviceName: 'Nexus 6P', instanceId: 'iid-2'},
           connectivityStatus:
               chromeos.deviceSync.mojom.ConnectivityStatus.kOffline
         },
         {
-          remoteDevice: {deviceName: 'Nexus 5', deviceId: '12345'},
+          remoteDevice: {
+            deviceName: 'Nexus 5',
+            deviceId: 'legacy-id-3',
+            instanceId: 'iid-3'
+          },
           connectivityStatus:
               chromeos.deviceSync.mojom.ConnectivityStatus.kUnknownConnectivity
+        },
+        {
+          remoteDevice:
+              {deviceName: 'Pixel 4', deviceId: 'legacy-id-4', instanceId: ''},
+          connectivityStatus:
+              chromeos.deviceSync.mojom.ConnectivityStatus.kOnline
         },
       ];
 
@@ -68,6 +81,8 @@ cr.define('multidevice_setup', () => {
         }
       };
 
+      // TODO(https://crbug.com/1019206): When v1 DeviceSync is turned off, all
+      // selected IDs will be Instance IDs.
       test(
           'Finding devices populates dropdown and defines selected device',
           () => {
@@ -76,18 +91,29 @@ cr.define('multidevice_setup', () => {
                     .querySelectorAll('option')
                     .length,
                 DEVICES.length);
-            assertEquals(startSetupPageElement.selectedDeviceId, 'abcdxl');
+            assertEquals(
+                startSetupPageElement.selectedInstanceIdOrLegacyDeviceId,
+                'legacy-id-1');
           });
 
-      test(
-          'selectedDeviceId changes when dropdown options are selected', () => {
-            selectOptionByTextContent('Nexus 6P (offline)');
-            assertEquals(startSetupPageElement.selectedDeviceId, 'PpPpPp');
-            selectOptionByTextContent('Nexus 5');
-            assertEquals(startSetupPageElement.selectedDeviceId, '12345');
-            selectOptionByTextContent('Pixel XL');
-            assertEquals(startSetupPageElement.selectedDeviceId, 'abcdxl');
-          });
+      // TODO(https://crbug.com/1019206): When v1 DeviceSync is turned off, all
+      // selected IDs will be Instance IDs.
+      test('Selected ID changes when dropdown options are selected', () => {
+        selectOptionByTextContent('Nexus 6P (offline)');
+        assertEquals(
+            startSetupPageElement.selectedInstanceIdOrLegacyDeviceId, 'iid-2');
+        selectOptionByTextContent('Nexus 5');
+        assertEquals(
+            startSetupPageElement.selectedInstanceIdOrLegacyDeviceId, 'iid-3');
+        selectOptionByTextContent('Pixel 4');
+        assertEquals(
+            startSetupPageElement.selectedInstanceIdOrLegacyDeviceId,
+            'legacy-id-4');
+        selectOptionByTextContent('Pixel XL');
+        assertEquals(
+            startSetupPageElement.selectedInstanceIdOrLegacyDeviceId,
+            'legacy-id-1');
+      });
     });
   }
   return {registerStartSetupPageTests: registerStartSetupPageTests};

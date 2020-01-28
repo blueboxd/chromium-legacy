@@ -137,10 +137,6 @@ class HintsFetcherTest : public testing::Test {
                                                GetMockClock());
   }
 
-  bool IsHintForHostBeingFetched(const std::string& host) {
-    return hints_fetcher_->IsHintForHostBeingFetched(host);
-  }
-
  private:
   void RunUntilIdle() {
     task_environment_.RunUntilIdle();
@@ -292,10 +288,8 @@ TEST_F(HintsFetcherTest, FetchReturnBadResponse) {
   std::string response_content = "not proto";
   EXPECT_TRUE(FetchHints({"foo.com"}, {} /* urls */));
   VerifyHasPendingFetchRequests();
-  EXPECT_TRUE(IsHintForHostBeingFetched("foo.com"));
   EXPECT_TRUE(SimulateResponse(response_content, net::HTTP_OK));
   EXPECT_FALSE(hints_fetched());
-  EXPECT_FALSE(IsHintForHostBeingFetched("foo.com"));
 
   // Make sure histograms are recorded correctly on bad response.
   histogram_tester.ExpectTotalCount(
@@ -313,7 +307,6 @@ TEST_F(HintsFetcherTest, FetchAttemptWhenNetworkOffline) {
   std::string response_content;
   EXPECT_FALSE(FetchHints({"foo.com"}, {} /* urls */));
   EXPECT_FALSE(hints_fetched());
-  EXPECT_FALSE(IsHintForHostBeingFetched("foo.com"));
 
   // Make sure histograms are recorded correctly on bad response.
   histogram_tester.ExpectTotalCount(
@@ -342,12 +335,8 @@ TEST_F(HintsFetcherTest, HintsFetchSuccessfulHostsRecorded) {
 
   EXPECT_TRUE(FetchHints(hosts, {} /* urls */));
   VerifyHasPendingFetchRequests();
-  EXPECT_TRUE(IsHintForHostBeingFetched("host1.com"));
-  EXPECT_TRUE(IsHintForHostBeingFetched("host2.com"));
   EXPECT_TRUE(SimulateResponse(response_content, net::HTTP_OK));
   EXPECT_TRUE(hints_fetched());
-  EXPECT_FALSE(IsHintForHostBeingFetched("host1.com"));
-  EXPECT_FALSE(IsHintForHostBeingFetched("host2.com"));
 
   const base::DictionaryValue* hosts_fetched = pref_service()->GetDictionary(
       prefs::kHintsFetcherHostsSuccessfullyFetched);

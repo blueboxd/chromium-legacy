@@ -10,7 +10,6 @@ import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.view.ViewGroup;
 
 import androidx.annotation.IntDef;
 
@@ -141,10 +140,13 @@ public class EditUrlSuggestionProcessor implements OnClickListener, SuggestionPr
      * @param context An Android context.
      * @return An edit-URL suggestion view.
      */
-    public static ViewGroup createView(Context context) {
-        LayoutInflater inflater =
-                (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        return (ViewGroup) inflater.inflate(R.layout.edit_url_suggestion_layout, null);
+    public static View createView(Context context) {
+        View view = LayoutInflater.from(context).inflate(R.layout.edit_url_suggestion_layout, null);
+        // Note: ImageView does not support android:enabled attribute, and the (disabled) state is
+        // used to drive tint color selection.
+        view.findViewById(R.id.edit_url_favicon).setEnabled(false);
+
+        return view;
     }
 
     @Override

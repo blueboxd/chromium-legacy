@@ -15,7 +15,6 @@
 #include <memory>
 #include <utility>
 
-#include "base/mac/availability.h"
 #include "base/mac/foundation_util.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/optional.h"

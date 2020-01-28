@@ -134,6 +134,7 @@
 <translation id="1994173015038366702">Sayt URL-i</translation>
 <translation id="2000419248597011803">Ünvan paneli və axtarış qutusundakı bəzi kuki və axtarışları defolt axtarış mühərrikinizə göndərin</translation>
 <translation id="2002537628803770967">Google Pay istifadə edən kredit kartları və ünvanlar</translation>
+<translation id="2012973609889389923">Sürətli sayt</translation>
 <translation id="2013642289801508067">{FILE_COUNT,plural, =1{# Fayl}other{# Fayl}}</translation>
 <translation id="2017836877785168846">Ünvan panelində tarixçə və avtomatik tamamlamaları silir.</translation>
 <translation id="2021896219286479412">Tam ekran sayt nəzarətləri</translation>
@@ -306,6 +307,7 @@
 <translation id="3298243779924642547">Xəbərdarlıq</translation>
 <translation id="3303414029551471755">Kontentin endirilməsinə davam etmək istəyirsiniz?</translation>
 <translation id="3306398118552023113">Bu tətbiq Chrome'da işləyir</translation>
+<translation id="3312292613668865961">Saytlar virtual reallıq cihazınıza və datanıza giriş etməzdən əvvəl icazə istəsin (tövsiyə edilir)</translation>
 <translation id="3315103659806849044">Hazırda Sinxronizasiya və Google xidmət ayarlarını fərdiləşdirirsiniz. Sinxronizasiyanı aktiv etməyi tamamlamaq üçün ekranın aşağısına yaxın "Təsdiq edin" düyməsinə klikləyin. Yuxarı gedin</translation>
 <translation id="3328801116991980348">Sayt haqqında</translation>
 <translation id="3333961966071413176">Bütün kontaktar</translation>
@@ -511,6 +513,7 @@ Ayarı dəyişmək üçün <ph name="BEGIN_LINK" />sinxronizasiyanı sıfırlay�
 <translation id="4915549754973153784">Cihaz axtararkın <ph name="BEGIN_LINK" />yardım alın<ph name="END_LINK" />…</translation>
 <translation id="4921180162323349895">{FILE_COUNT,plural, =1{# Səhifə}other{# Səhifə}}</translation>
 <translation id="4932247056774066048"><ph name="DOMAIN_NAME" /> tərəfindən idarə edilən hesabdan çıxdığınıza görə Chrome datanız bu cihazdan silinəcək. Bu, Google Hesabında qalacaq.</translation>
+<translation id="4935305910887312910">Saytlar kameranın mövqe məlumatını əldə etmədən və ya otağınızın xəritəsini çəkmədən əvvəl icazə istəsin (tövsiyə edilir)</translation>
 <translation id="4943703118917034429">Virtual Reallıq</translation>
 <translation id="4943872375798546930">Nəticə yoxdur</translation>
 <translation id="4958708863221495346"><ph name="URL_OF_THE_CURRENT_TAB" /> ekranınızı paylaşır</translation>
@@ -687,7 +690,6 @@ Ayarı dəyişmək üçün <ph name="BEGIN_LINK" />sinxronizasiyanı sıfırlay�
 <translation id="6201345951596836663">Keçid kopyalandı</translation>
 <translation id="6206551242102657620">Bağlantınız güvənlidir. Sayt barədə məlumat</translation>
 <translation id="6210748933810148297"><ph name="EMAIL" /> deyil?</translation>
-<translation id="6216432067784365534"><ph name="NAME_OF_LIST_ITEM" /> Seçimləri</translation>
 <translation id="6221633008163990886">Parolları eksport etmək üçün kiliddən çıxarın</translation>
 <translation id="6232535412751077445">İzlənilməyin qadağan edilməsi o deməkdir ki, sorğu brauzer trafikinizə daxil ediləcək. İstənilən effekt saytın sorğuya cavab verməsindən və sorğunun necə anlaşılmasından asılıdır.  Məsələn, bəzi saytlar bu sorğuya ziyarət etdiyiniz saytlarda olmayan reklamları göstərməklə cavab verə bilər. Bir çox saytlar hələ də brauzinq datanızı toplayacaq və istifadə edəcək. Məqsədləri güvənliyin artırılması, kontent, xidmət, reklam, tövsiyə təqdim edilməsi və raport statistikasının yaradılması ola bilər.</translation>
 <translation id="624789221780392884">Yükləmə hazırdır</translation>
@@ -731,7 +733,6 @@ Ayarı dəyişmək üçün <ph name="BEGIN_LINK" />sinxronizasiyanı sıfırlay�
 <translation id="6534565668554028783">Google cavab üçün çox vaxt aldı</translation>
 <translation id="6538442820324228105"><ph name="GBS" /> GB endirildi</translation>
 <translation id="6539092367496845964">Xəta baş verdi. Sonra cəhd edin.</translation>
-<translation id="654446541061731451">Şüalandırmaq üçün tab seçin</translation>
 <translation id="6545017243486555795">Bütün Datanı Silin</translation>
 <translation id="6545864417968258051">Bluetooth skanı</translation>
 <translation id="6560414384669816528">Sogou ilə axtarış</translation>
@@ -742,6 +743,7 @@ Ayarı dəyişmək üçün <ph name="BEGIN_LINK" />sinxronizasiyanı sıfırlay�
 <translation id="6573431926118603307">Başqa cihaz ilə Chrome'da açdığınız panellər burada görünəcək.</translation>
 <translation id="6583199322650523874">Cari səhifəni əlfəcin olaraq qeyd edin</translation>
 <translation id="6593061639179217415">Masaüstü saytı</translation>
+<translation id="6597891566292541626">QR/ştrix-kodu bu çərçivəyə yerləşdirin.</translation>
 <translation id="6600954340915313787">Chrome'a kopYanlışır</translation>
 <translation id="6608650720463149374"><ph name="GIGABYTES" /> GB</translation>
 <translation id="6612358246767739896">Qorunan kontent</translation>
@@ -951,6 +953,7 @@ Bu sayt kameraya daxil olmur. Kamera şəkillərini yalnız Siz görürsünüz.<
 <translation id="8109613176066109935">Bütün cihazlarınızda əlfəcinləri əldə etmək üçün sinxronizasiyanı aktiv edin</translation>
 <translation id="8110087112193408731">Digital Sağlamlıqda Chrome fəaliyyəti göstərilsin?</translation>
 <translation id="8116925261070264013">Səssiz</translation>
+<translation id="8127542551745560481">Əsas səhifəni redaktə edin</translation>
 <translation id="813082847718468539">Sayt məlumatına baxın</translation>
 <translation id="8156139159503939589">Hansı dilləri oxuyursunuz?</translation>
 <translation id="8168435359814927499">Kontent</translation>
@@ -1022,8 +1025,8 @@ Bu sayt kameraya daxil olmur. Kamera şəkillərini yalnız Siz görürsünüz.<
 <translation id="8676374126336081632">Daxiletməni silin</translation>
 <translation id="8687353297350450808">{N_BARS,plural, =1{Siqnal Gücü Səviyyəsi: # panel}other{Siqnal Gücü Səviyyəsi: # panel}}</translation>
 <translation id="868929229000858085">Kontaktlarda axtarın</translation>
+<translation id="8698438463325761328">Saytların virtual reallıq cihazınıza və datanıza girişini bloklayın</translation>
 <translation id="869891660844655955">Bitmə tarixi</translation>
-<translation id="8719023831149562936">Cari tab şülana bilmir</translation>
 <translation id="8728487861892616501">Bu tətbiqi istifadə etməklə Chrome <ph name="BEGIN_LINK1" />Xidmət Şərtləri<ph name="END_LINK1" />,<ph name="BEGIN_LINK2" />Məxfilik Bildirişi<ph name="END_LINK2" /> və <ph name="BEGIN_LINK3" />Ailə Linkində Yaradılmış Google Hesabları üçün Məxfilik Bildirişi<ph name="END_LINK3" /> ilə razılaşırsınız.</translation>
 <translation id="8748850008226585750">Məzmun gizlidir</translation>
 <translation id="8751914237388039244">Şəkil seçin</translation>
@@ -1039,6 +1042,7 @@ Bu sayt kameraya daxil olmur. Kamera şəkillərini yalnız Siz görürsünüz.<
 <translation id="883806473910249246">Kontent endirilən zaman xəta baş verdi.</translation>
 <translation id="8840953339110955557">Bu səhifə onlayn versiyadan fərqli ola bilər.</translation>
 <translation id="8847988622838149491">USB</translation>
+<translation id="884828189055900810">Saytların kameranın mövqe məlumatını əldə etməsini və ya otağınızın xəritəsini çəkməsini bloklayın</translation>
 <translation id="8853345339104747198"><ph name="TAB_TITLE" />, tab</translation>
 <translation id="885701979325669005">Yaddaş</translation>
 <translation id="889338405075704026">Chrome ayarlarına keçin</translation>
@@ -1046,6 +1050,7 @@ Bu sayt kameraya daxil olmur. Kamera şəkillərini yalnız Siz görürsünüz.<
 <translation id="8909135823018751308">Paylaşın...</translation>
 <translation id="8912362522468806198">Google Hesabı</translation>
 <translation id="8920114477895755567">Valideynlərin məlumatları gözlənilir.</translation>
+<translation id="8921772741368021346"><ph name="POSITION" /> / <ph name="DURATION" /></translation>
 <translation id="8922289737868596582">Oflayn istifadə etmək üçün səhifələri Digər seçimlər düyməsindən endirin</translation>
 <translation id="8926666909099850184">NFC bu cihazda deaktivdir. <ph name="BEGIN_LINK" />Android Ayarlarında<ph name="END_LINK" /> onu aktiv edin.</translation>
 <translation id="8937772741022875483">Chrome fəaliyyəti Rəqəmsal Sağlamlıqdan silinsin?</translation>

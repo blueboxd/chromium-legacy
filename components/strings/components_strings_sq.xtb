@@ -79,6 +79,7 @@
 <translation id="129553762522093515">Të mbyllura së fundi</translation>
 <translation id="1298536327547837046">Skanimi për softuerë keqdashës</translation>
 <translation id="129863573139666797"><ph name="BEGIN_LINK" />Provo të pastrosh kukit<ph name="END_LINK" /></translation>
+<translation id="1301324364792935241">Kontrollo cilësimet e DNS-së së sigurt</translation>
 <translation id="1307966114820526988">Veçori të vjetruara</translation>
 <translation id="1314509827145471431">Lidhje djathtas</translation>
 <translation id="1320233736580025032">Prc1 (Zarf)</translation>
@@ -152,6 +153,7 @@
 <translation id="1569487616857761740">Fut datën e skadimit</translation>
 <translation id="1581080074034554886">CVC</translation>
 <translation id="1583429793053364125">Shkoi diçka keq kur po shfaqej faqja e uebit.</translation>
+<translation id="1586541204584340881">Cilat shtesa ke instaluar</translation>
 <translation id="1588438908519853928">Normal</translation>
 <translation id="1592005682883173041">Qasja te të dhënat lokale</translation>
 <translation id="1594030484168838125">Zgjidh</translation>
@@ -362,6 +364,7 @@
 <translation id="2544644783021658368">Një dokument i vetëm</translation>
 <translation id="254947805923345898">Vlera e politikës nuk është e vlefshme.</translation>
 <translation id="255002559098805027"><ph name="HOST_NAME" /> dërgoi një përgjigje të pavlefshme.</translation>
+<translation id="2553853292994445426">Kontrollo cilësimet e DNS-së së sigurt. Mund të kesh konfiguruar një server të sigurt të DNS-së me të cilin ka pasur dështime të lidhjeve.</translation>
 <translation id="2556876185419854533">&amp;Zhbëje redaktimin</translation>
 <translation id="257674075312929031">Grup</translation>
 <translation id="2586657967955657006">Kujtesa e fragmenteve</translation>
@@ -474,6 +477,7 @@
 <translation id="3095940652251934233">Statement</translation>
 <translation id="3096100844101284527">Shto adresën e marrjes</translation>
 <translation id="3105172416063519923">ID-ja e elementit:</translation>
+<translation id="3107591622054137333"><ph name="BEGIN_LINK" />Po kontrollon konfigurimin e DNS-së së sigurt<ph name="END_LINK" /></translation>
 <translation id="3109728660330352905">Nuk ke autorizim për të parë këtë faqe.</translation>
 <translation id="3113284927548439113">Turni i tretë</translation>
 <translation id="3116158981186517402">Laminim</translation>
@@ -771,6 +775,7 @@
 <translation id="4390472908992056574">Buza</translation>
 <translation id="4406896451731180161">rezultatet e kërkimit</translation>
 <translation id="4408413947728134509">Kukit <ph name="NUM_COOKIES" /></translation>
+<translation id="4414290883293381923">Sapo fute fjalëkalimin tënd në një sajt mashtrues. Chrome rekomandon që të shkosh te <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, <ph name="WEBSITE_3" /> dhe sajte të tjera ku e përdor këtë fjalëkalim dhe ta ndryshosh atë tani.</translation>
 <translation id="4415426530740016218">Adresa e marrjes</translation>
 <translation id="4424024547088906515">Ky server nuk mundi të dëshmonte se ky është <ph name="DOMAIN" />; certifikata e tij e sigurisë nuk është e besueshme nga Chrome. Kjo mund të shkaktohet nga keqkonfigurimi ose ndonjë sulmues që po ndërhyn në lidhjen tënde.</translation>
 <translation id="443121186588148776">Porta seriale</translation>
@@ -1201,6 +1206,7 @@
 <translation id="6353505687280762741">{COUNT,plural, =0{Asnjë}=1{1 fjalëkalim (për <ph name="DOMAIN_LIST" />, sinkronizuar)}=2{2 fjalëkalime (për <ph name="DOMAIN_LIST" />, sinkronizuar)}other{# fjalëkalime (për <ph name="DOMAIN_LIST" />, sinkronizuar)}}</translation>
 <translation id="6358450015545214790">Çfarë kuptimi kanë këto?</translation>
 <translation id="6361757823711327522">B7</translation>
+<translation id="6364095313648930329"><ph name="BEGIN_LINK" />Të kontrollosh përfaqësuesin, murin mbrojtës dhe konfigurimin e DNS-së së sigurt<ph name="END_LINK" /></translation>
 <translation id="6366710531182496394">Dy kapje me tel majtas</translation>
 <translation id="6377268785556383139">1 rezultat për "<ph name="SEARCH_TEXT" />"</translation>
 <translation id="6380497234672085559">A0</translation>
@@ -1223,6 +1229,7 @@
 <translation id="6433595998831338502"><ph name="HOST_NAME" /> e refuzoi lidhjen.</translation>
 <translation id="6434309073475700221">Hidhe</translation>
 <translation id="6440503408713884761">Shpërfillur</translation>
+<translation id="6443406338865242315">Cilat shtesa dhe përbërës shtesë ke instaluar</translation>
 <translation id="6446163441502663861">Kahu (Zarf)</translation>
 <translation id="6446608382365791566">Shto më shumë informacion</translation>
 <translation id="6447842834002726250">Kukit</translation>
@@ -1332,6 +1339,7 @@
 <translation id="7012363358306927923">China UnionPay</translation>
 <translation id="7016992613359344582">Këto tarifa mund të jenë vetëm për një rast ose dhe të përsëritura, gjë që mund të mos jetë menjëherë e qartë.</translation>
 <translation id="7029809446516969842">Fjalëkalimet</translation>
+<translation id="7031646650991750659">Cilat aplikacione të Google Play ke instaluar</translation>
 <translation id="7050187094878475250">Tentove të arrije <ph name="DOMAIN" />, por serveri paraqiti një certifikatë, periudha e vlefshmërisë së të cilës është tepër e gjatë dhe nuk mund të jetë e besueshme.</translation>
 <translation id="705310974202322020">{NUM_CARDS,plural, =1{Kjo kartë nuk mund të ruhet për momentin}other{Këto karta nuk mund të ruhen për momentin}}</translation>
 <translation id="7053983685419859001">Bllokoje</translation>
@@ -1391,6 +1399,7 @@ Detaje shtesë:
 <translation id="7319430975418800333">A3</translation>
 <translation id="7320336641823683070">Ndihma e lidhjes</translation>
 <translation id="733354035281974745">Anulimi i llogarisë lokale të pajisjes</translation>
+<translation id="7333654844024768166">Sapo fute fjalëkalimin tënd në një sajt mashtrues. Chromium rekomandon që të shkosh te <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, <ph name="WEBSITE_3" /> dhe sajte të tjera ku e përdor këtë fjalëkalim dhe ta ndryshosh atë tani.</translation>
 <translation id="7334320624316649418">&amp;Ribëj renditjen</translation>
 <translation id="7337706099755338005">Nuk ofrohet në këtë platformë.</translation>
 <translation id="733923710415886693">Certifikata e serverit nuk është zbuluar përmes "Transparencës së certifikatave".</translation>

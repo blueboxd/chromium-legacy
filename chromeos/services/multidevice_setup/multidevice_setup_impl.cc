@@ -12,6 +12,7 @@
 #include "base/no_destructor.h"
 #include "base/time/default_clock.h"
 #include "chromeos/components/multidevice/logging/logging.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/services/multidevice_setup/account_status_change_delegate_notifier_impl.h"
 #include "chromeos/services/multidevice_setup/android_sms_app_installing_status_observer.h"
 #include "chromeos/services/multidevice_setup/device_reenroller.h"
@@ -198,15 +199,16 @@ void MultiDeviceSetupImpl::GetEligibleActiveHostDevices(
   std::move(callback).Run(std::move(eligible_active_hosts));
 }
 
-void MultiDeviceSetupImpl::SetHostDevice(const std::string& host_device_id,
-                                         const std::string& auth_token,
-                                         SetHostDeviceCallback callback) {
+void MultiDeviceSetupImpl::SetHostDevice(
+    const std::string& host_instance_id_or_legacy_device_id,
+    const std::string& auth_token,
+    SetHostDeviceCallback callback) {
   if (!auth_token_validator_->IsAuthTokenValid(auth_token)) {
     std::move(callback).Run(false /* success */);
     return;
   }
 
-  std::move(callback).Run(AttemptSetHost(host_device_id));
+  std::move(callback).Run(AttemptSetHost(host_instance_id_or_legacy_device_id));
 }
 
 void MultiDeviceSetupImpl::RemoveHostDevice() {
@@ -313,9 +315,9 @@ void MultiDeviceSetupImpl::TriggerEventForDebugging(
 }
 
 void MultiDeviceSetupImpl::SetHostDeviceWithoutAuthToken(
-    const std::string& host_device_id,
+    const std::string& host_instance_id_or_legacy_device_id,
     mojom::PrivilegedHostDeviceSetter::SetHostDeviceCallback callback) {
-  std::move(callback).Run(AttemptSetHost(host_device_id));
+  std::move(callback).Run(AttemptSetHost(host_instance_id_or_legacy_device_id));
 }
 
 void MultiDeviceSetupImpl::OnHostStatusChange(
@@ -340,14 +342,28 @@ void MultiDeviceSetupImpl::OnFeatureStatesChange(
     observer->OnFeatureStatesChanged(feature_states_map);
 }
 
-bool MultiDeviceSetupImpl::AttemptSetHost(const std::string& host_device_id) {
+bool MultiDeviceSetupImpl::AttemptSetHost(
+    const std::string& host_instance_id_or_legacy_device_id) {
+  DCHECK(!host_instance_id_or_legacy_device_id.empty());
+
   multidevice::RemoteDeviceRefList eligible_devices =
       eligible_host_devices_provider_->GetEligibleHostDevices();
-  auto it =
-      std::find_if(eligible_devices.begin(), eligible_devices.end(),
-                   [&host_device_id](const auto& eligible_device) {
-                     return eligible_device.GetDeviceId() == host_device_id;
-                   });
+
+  // TODO(https://crbug.com/1019206): When v1 DeviceSync is turned off, only use
+  // Instance ID since all devices are guaranteed to have one.
+  auto it = std::find_if(
+      eligible_devices.begin(), eligible_devices.end(),
+      [&host_instance_id_or_legacy_device_id](const auto& eligible_device) {
+        if (features::ShouldUseV1DeviceSync()) {
+          return eligible_device.instance_id() ==
+                     host_instance_id_or_legacy_device_id ||
+                 eligible_device.GetDeviceId() ==
+                     host_instance_id_or_legacy_device_id;
+        }
+
+        return eligible_device.instance_id() ==
+               host_instance_id_or_legacy_device_id;
+      });
 
   if (it == eligible_devices.end())
     return false;

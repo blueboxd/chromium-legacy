@@ -129,11 +129,13 @@ class DownloadItemView : public views::View,
   enum State { NORMAL = 0, HOT, PUSHED };
 
   enum Mode {
-    NORMAL_MODE = 0,    // Showing download item.
-    DANGEROUS_MODE,     // Displaying the dangerous download warning.
-    MALICIOUS_MODE,     // Displaying the malicious download warning.
-    DEEP_SCANNING_MODE  // Displaying information about in progress deep
-                        // scanning.
+    NORMAL_MODE = 0,      // Showing download item.
+    DANGEROUS_MODE,       // Displaying the dangerous download warning.
+    MALICIOUS_MODE,       // Displaying the malicious download warning.
+    DEEP_SCANNING_MODE,   // Displaying information about in progress deep
+                          // scanning.
+    MIX_DL_WARNING_MODE,  // Displaying the mixed-content download warning.
+    MIX_DL_BLOCK_MODE,    // Displaying the mixed-content download block error.
   };
 
   static constexpr int kTextWidth = 140;
@@ -203,11 +205,25 @@ class DownloadItemView : public views::View,
     return mode_ == DANGEROUS_MODE || mode_ == MALICIOUS_MODE;
   }
 
+  // Whether we are in the mixed content mode.
+  bool IsShowingMixedContentDialog() const {
+    return mode_ == MIX_DL_WARNING_MODE || mode_ == MIX_DL_BLOCK_MODE;
+  }
+
   // Whether we are in the deep scanning mode.
   bool IsShowingDeepScanning() const { return mode_ == DEEP_SCANNING_MODE; }
 
   // Starts showing the normal mode dialog, clearing the existing dialog.
   void TransitionToNormalMode();
+
+  // Starts showing the mixed content dialog, clearing the existing dialog.
+  void TransitionToMixedContentDialog();
+
+  // Reverts from mixed content modes to normal download mode.
+  void ClearMixedContentDialog();
+
+  // Starts displaying the mixed content download warning.
+  void ShowMixedContentDialog();
 
   // Starts showing the warning dialog, clearing the existing dialog.
   void TransitionToWarningDialog();
@@ -362,7 +378,7 @@ class DownloadItemView : public views::View,
   // Progress animation
   base::RepeatingTimer progress_timer_;
 
-  // Dangerous mode buttons.
+  // Dangerous mode and mixed content mode buttons.
   views::MdTextButton* save_button_;
   views::MdTextButton* discard_button_;
 
@@ -383,7 +399,7 @@ class DownloadItemView : public views::View,
   // The drop down button.
   views::ImageButton* dropdown_button_ = nullptr;
 
-  // Dangerous mode label.
+  // Dangerous mode label. Also used by mixed content warning.
   views::StyledLabel* dangerous_download_label_;
 
   // Whether the dangerous mode label has been sized yet.

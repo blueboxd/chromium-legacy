@@ -432,6 +432,14 @@ void ClientSideDetectionHost::PhishingDetectionDone(
   DCHECK(browse_info_.get());
 
   UMA_HISTOGRAM_ENUMERATION("SBClientPhishing.PhishingDetectorResult", result);
+  if (result == mojom::PhishingDetectorResult::CLASSIFIER_NOT_READY) {
+    Profile* profile =
+        Profile::FromBrowserContext(web_contents()->GetBrowserContext());
+    UMA_HISTOGRAM_ENUMERATION(
+        "SBClientPhishing.ClassifierNotReadyReason",
+        csd_service_->GetLastModelStatus(
+            IsExtendedReportingEnabled(*profile->GetPrefs())));
+  }
   if (result != mojom::PhishingDetectorResult::SUCCESS)
     return;
 

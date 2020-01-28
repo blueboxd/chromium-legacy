@@ -199,7 +199,7 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreObserverTest,
   // A new foreground tab should not be created by session restore.
   ui_test_utils::NavigateToURLWithDisposition(
       new_browser, GetTestURL(), WindowOpenDisposition::NEW_FOREGROUND_TAB,
-      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
   resource_coordinator::TabManager* tab_manager =
       g_browser_process->GetTabManager();
   WebContents* contents = new_browser->tab_strip_model()->GetWebContentsAt(1);
@@ -212,7 +212,7 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreObserverTest, MultipleTabSessionRestore) {
   ui_test_utils::NavigateToURL(browser(), GetTestURL());
   ui_test_utils::NavigateToURLWithDisposition(
       browser(), GetTestURL(), WindowOpenDisposition::NEW_BACKGROUND_TAB,
-      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
   Browser* new_browser = QuitBrowserAndRestore(browser());
 
   // The restored browser should have 2 tabs.

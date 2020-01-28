@@ -81,6 +81,7 @@
 #include "content/public/common/page_type.h"
 #include "content/public/common/referrer.h"
 #include "content/public/test/browser_test_utils.h"
+#include "content/public/test/signed_exchange_browser_test_helper.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/url_loader_interceptor.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -2486,5 +2487,144 @@ IN_PROC_BROWSER_TEST_F(MixedContentStrictTreatmentOptOutPolicyTest,
       helper->GetVisibleSecurityState();
   EXPECT_EQ(security_state::NONE, helper->GetSecurityLevel());
 }
+
+class SignedExchangeSecurityStateTest
+    : public CertVerifierBrowserTest,
+      public testing::WithParamInterface<
+          bool /* sxg_prefetch_cache_for_navigations_enabled */> {
+ public:
+  SignedExchangeSecurityStateTest() = default;
+  ~SignedExchangeSecurityStateTest() override = default;
+  SignedExchangeSecurityStateTest(const SignedExchangeSecurityStateTest&) =
+      delete;
+  SignedExchangeSecurityStateTest& operator=(
+      const SignedExchangeSecurityStateTest&) = delete;
+
+ protected:
+  void PreRunTestOnMainThread() override {
+    CertVerifierBrowserTest::PreRunTestOnMainThread();
+
+    sxg_test_helper_.InstallMockCert(mock_cert_verifier());
+    sxg_test_helper_.InstallMockCertChainInterceptor();
+  }
+
+ private:
+  void SetUp() override {
+    const bool sxg_prefetch_cache_for_navigations_enabled = GetParam();
+    std::vector<base::Feature> enabled_features;
+    std::vector<base::Feature> disabled_features;
+    if (sxg_prefetch_cache_for_navigations_enabled) {
+      enabled_features.push_back(
+          features::kSignedExchangePrefetchCacheForNavigations);
+    } else {
+      disabled_features.push_back(
+          features::kSignedExchangePrefetchCacheForNavigations);
+    }
+    feature_list_.InitWithFeatures(enabled_features, disabled_features);
+
+    sxg_test_helper_.SetUp();
+
+    CertVerifierBrowserTest::SetUp();
+  }
+
+  void TearDownOnMainThread() override {
+    sxg_test_helper_.TearDownOnMainThread();
+    CertVerifierBrowserTest::TearDownOnMainThread();
+  }
+
+  content::SignedExchangeBrowserTestHelper sxg_test_helper_;
+  base::test::ScopedFeatureList feature_list_;
+};
+
+IN_PROC_BROWSER_TEST_P(SignedExchangeSecurityStateTest, SecurityLevelIsSecure) {
+  // Initialize an empty config for the legacy TLS experiment. Without a config,
+  // all sites are treated as control. This test specifically enables the legacy
+  // TLS experiment as a regression test for https://crbug.com/1041773, in which
+  // the legacy TLS experiment code incorrectly labeled SXGs as using a
+  // deprecated TLS version.
+  auto config =
+      std::make_unique<chrome_browser_ssl::LegacyTLSExperimentConfig>();
+  SetRemoteTLSDeprecationConfigProto(std::move(config));
+
+  embedded_test_server()->ServeFilesFromSourceDirectory("content/test/data");
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  content::WebContents* contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  const GURL inner_url("https://test.example.org/test/");
+  const GURL sxg_url =
+      embedded_test_server()->GetURL("/sxg/test.example.org_test.sxg");
+  base::string16 expected_title = base::ASCIIToUTF16(inner_url.spec());
+  content::TitleWatcher title_watcher(contents, expected_title);
+  ui_test_utils::NavigateToURL(browser(), sxg_url);
+  // The inner content of test.example.org_test.sxg has
+  // "<script> document.title = document.location.href; </script>".
+  EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
+  ASSERT_EQ(inner_url, contents->GetURL());
+
+  CheckSecurityInfoForSecure(
+      browser()->tab_strip_model()->GetActiveWebContents(),
+      security_state::SECURE, false /* expect_sha1_in_chain */,
+      false /* expect_displayed_mixed_content */,
+      false /* expect_ran_mixed_content */, false /* expect_cert_error */);
+}
+
+IN_PROC_BROWSER_TEST_P(SignedExchangeSecurityStateTest,
+                       SecurityLevelIsSecureAfterPrefetch) {
+  // Initialize an empty config for the legacy TLS experiment. Without a config,
+  // all sites are treated as control. This test specifically enables the legacy
+  // TLS experiment as a regression test for https://crbug.com/1041773, in which
+  // the legacy TLS experiment code incorrectly labeled SXGs as using a
+  // deprecated TLS version.
+  auto config =
+      std::make_unique<chrome_browser_ssl::LegacyTLSExperimentConfig>();
+  SetRemoteTLSDeprecationConfigProto(std::move(config));
+
+  embedded_test_server()->ServeFilesFromSourceDirectory("content/test/data");
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  content::WebContents* contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  const GURL inner_url("https://test.example.org/test/");
+  const GURL sxg_url =
+      embedded_test_server()->GetURL("/sxg/test.example.org_test.sxg");
+
+  // prefetch.html prefetches the signed exchange. And the signed exchange will
+  // be served from HTTPCache (when SignedExchangePrefetchCacheForNavigations is
+  // not enabled), or from PrefetchedSignedExchangeCache (when
+  // SignedExchangePrefetchCacheForNavigations is enabled).
+  const GURL prefetch_html_url = embedded_test_server()->GetURL(
+      std::string("/sxg/prefetch.html#") + sxg_url.spec());
+  {
+    base::string16 expected_title = base::ASCIIToUTF16("OK");
+    content::TitleWatcher title_watcher(contents, expected_title);
+    ui_test_utils::NavigateToURL(browser(), prefetch_html_url);
+    EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
+  }
+
+  {
+    base::string16 expected_title = base::ASCIIToUTF16(inner_url.spec());
+    content::TitleWatcher title_watcher(contents, expected_title);
+    // Execute the JavaScript code to trigger the followup navigation from the
+    // current page.
+    EXPECT_TRUE(content::ExecuteScript(
+        contents,
+        base::StringPrintf("location.href = '%s';", sxg_url.spec().c_str())));
+    // The inner content of test.example.org_test.sxg has
+    // "<script> document.title = document.location.href; </script>".
+    EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
+    ASSERT_EQ(inner_url, contents->GetURL());
+  }
+
+  CheckSecurityInfoForSecure(
+      browser()->tab_strip_model()->GetActiveWebContents(),
+      security_state::SECURE, false /* expect_sha1_in_chain */,
+      false /* expect_displayed_mixed_content */,
+      false /* expect_ran_mixed_content */, false /* expect_cert_error */);
+}
+
+INSTANTIATE_TEST_SUITE_P(, SignedExchangeSecurityStateTest, testing::Bool());
 
 }  // namespace

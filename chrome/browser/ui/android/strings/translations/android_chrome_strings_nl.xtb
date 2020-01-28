@@ -279,6 +279,7 @@
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> bladwijzer}other{<ph name="BOOKMARKS_COUNT_MANY" /> bladwijzers}}</translation>
 <translation id="3089395242580810162">Openen op incognitotabblad</translation>
 <translation id="3123473560110926937">Geblokkeerd op bepaalde sites</translation>
+<translation id="3123734510202723619">Aankondigingen</translation>
 <translation id="3137521801621304719">Incognitomodus verlaten</translation>
 <translation id="3143515551205905069">Synchronisatie annuleren</translation>
 <translation id="3157842584138209013">Via de knop 'Meer opties' kun je zien hoeveel data je hebt bespaard</translation>
@@ -690,7 +691,6 @@ Voor je Google-account kunnen andere vormen van browsegeschiedenis (zoals zoekop
 <translation id="6201345951596836663">Link gekopieerd</translation>
 <translation id="6206551242102657620">De verbinding is beveiligd. Site-informatie</translation>
 <translation id="6210748933810148297">Niet <ph name="EMAIL" />?</translation>
-<translation id="6216432067784365534">Opties voor <ph name="NAME_OF_LIST_ITEM" /></translation>
 <translation id="6221633008163990886">Ontgrendel het apparaat om je wachtwoorden te exporteren</translation>
 <translation id="6232535412751077445">Als je 'Niet bijhouden' inschakelt, wordt hiervoor een verzoek opgenomen in je browseverkeer. Het resultaat daarvan hangt af van of een website reageert op het verzoek en hoe het verzoek wordt geïnterpreteerd.
 
@@ -736,7 +736,6 @@ Zo kunnen sommige websites op dit verzoek reageren door advertenties weer te gev
 <translation id="6534565668554028783">Het duurt te lang voordat Google reageert</translation>
 <translation id="6538442820324228105"><ph name="GBS" /> GB gedownload</translation>
 <translation id="6539092367496845964">Er is iets misgegaan. Probeer het later opnieuw.</translation>
-<translation id="654446541061731451">Selecteer een tabblad om te beamen</translation>
 <translation id="6545017243486555795">Alle gegevens wissen</translation>
 <translation id="6545864417968258051">Bluetooth-scannen</translation>
 <translation id="6560414384669816528">Zoeken met Sogou</translation>
@@ -1031,7 +1030,6 @@ De site krijgt GEEN toegang tot de camera. De camerabeelden zijn alleen zichtbaa
 <translation id="868929229000858085">Zoek in je contacten</translation>
 <translation id="8698438463325761328">Voorkomen dat sites toegang krijgen tot je VR-apparaat en -gegevens</translation>
 <translation id="869891660844655955">Vervaldatum</translation>
-<translation id="8719023831149562936">Kan huidig tabblad niet beamen</translation>
 <translation id="8728487861892616501">Door deze app te gebruiken, ga je akkoord met de <ph name="BEGIN_LINK1" />Servicevoorwaarden<ph name="END_LINK1" /> en het <ph name="BEGIN_LINK2" />Privacybeleid<ph name="END_LINK2" /> van Chrome en het <ph name="BEGIN_LINK3" />Privacyverklaring voor Google-accounts die worden beheerd met Family Link<ph name="END_LINK3" />.</translation>
 <translation id="8748850008226585750">Content verborgen</translation>
 <translation id="8751914237388039244">Een afbeelding selecteren</translation>

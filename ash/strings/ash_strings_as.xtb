@@ -112,6 +112,7 @@
 <translation id="2352467521400612932">ষ্টাইলাছৰ ছেটিংসমূহ</translation>
 <translation id="2354174487190027830"><ph name="NAME" /> সক্ৰিয় কৰি থকা হৈছে</translation>
 <translation id="2359808026110333948">অব্যাহত ৰাখক</translation>
+<translation id="2364154243880592194">স্থিতি ট্ৰে’, সময় <ph name="TIME" />, <ph name="BATTERY" /> জাননী কেন্দ্ৰ এক্সেছ কৰিবলৈ search + left টিপক।</translation>
 <translation id="2365393535144473978">ম’বাইল ডেটা সক্ষম কৰিলে ব্লুটুথ সক্ষম হ’ব।</translation>
 <translation id="2391579633712104609">১৮০°</translation>
 <translation id="2412593942846481727">আপডে’ট উপলব্ধ</translation>
@@ -335,6 +336,7 @@
 <translation id="5669267381087807207">সক্ৰিয় কৰি থকা হৈছে</translation>
 <translation id="5673434351075758678">আপোনাৰ ছেটিংসমূহ ছিংক কৰাৰ পিছত "<ph name="FROM_LOCALE" />"ৰ পৰা "<ph name="TO_LOCALE" />"লৈ।</translation>
 <translation id="5682642926269496722">Google Assistant বৰ্তমানৰ ব্যৱহাৰকাৰী একাউণ্টৰ বাবে উপলব্ধ নহয়।</translation>
+<translation id="5689633613396158040">ৰাতিৰ পোহৰে আপোনাৰ স্ক্ৰীনখনলৈ চোৱা অথবা কম পোহৰত পঢ়া সহজ কৰি তোলে। ৰাতিৰ পোহৰ কোন সময়ত অন হয় সেয়া সলনি কৰিবলৈ অথবা এইটো সম্পূর্ণকৈ অফ কৰিবলৈ টিপক।</translation>
 <translation id="5691772641933328258">ফিংগাৰপ্ৰিণ্ট চিনাক্ত কৰিব পৰা নগ’ল</translation>
 <translation id="5710450975648804523">অসুবিধা নিদিব ম’ড অন হৈ আছে</translation>
 <translation id="573413375004481890">আপোনাৰ সকলো ডিছপ্লে’ এই ডিভাইচটোৱে সমৰ্থন কৰিব নোৱাৰিলে, সেয়েহে এটাৰ সংযোগ বিচ্ছিন্ন কৰা হৈছে</translation>
@@ -511,6 +513,7 @@
 <translation id="8142441511840089262">দুবাৰ ক্লিক</translation>
 <translation id="8142699993796781067">ব্যক্তিগত নেটৱর্ক</translation>
 <translation id="8152092012181020186">বন্ধ কৰিবলৈ Ctrl + W টিপক৷</translation>
+<translation id="8155007568264258537"><ph name="FEATURE_NAME" /> এই ছেটিংটো আপোনাৰ প্ৰশাসকে পৰিচালনা কৰে।</translation>
 <translation id="8167567890448493835"><ph name="LOCALE_NAME" /> ব্যৱহাৰ কৰি থকা হৈছে</translation>
 <translation id="8190698733819146287">ভাষা আৰু ইনপুট কাষ্টমাইজ কৰক...</translation>
 <translation id="8192202700944119416">জাননীবোৰ লুকুৱাই ৰখা হৈছে।</translation>
@@ -592,7 +595,6 @@
 <translation id="9193626018745640770">কোনো অজ্ঞাত ৰিচিভাৰ কাষ্ট কৰি থকা হৈছে</translation>
 <translation id="9194617393863864469">অন্য ব্যৱহাৰকাৰীক ছাইন ইন কৰাওক...</translation>
 <translation id="9201374708878217446"><ph name="CONNECTION_STATUS" />, আপোনাৰ প্ৰশাসকে পৰিচালনা কৰে</translation>
-<translation id="9205817095063786319">ডিভাইচ <ph name="DOMAIN" />এ পৰিচালনা কৰে</translation>
 <translation id="9210037371811586452">সমন্বিত ডেস্কটপ ম’ড বন্ধ কৰি আছে</translation>
 <translation id="9211681782751733685">বেটাৰী সম্পূৰ্ণ চ্চাৰ্জ হ’বলৈ <ph name="TIME_REMAINING" /> বাকী আছে।</translation>
 <translation id="9215934040295798075">ৱালপেপাৰ ছেট কৰক</translation>

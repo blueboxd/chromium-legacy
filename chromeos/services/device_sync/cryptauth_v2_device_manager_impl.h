@@ -115,6 +115,9 @@ class CryptAuthV2DeviceManagerImpl
 
   State state_ = State::kIdle;
 
+  // The time of the last state change. Used for execution time metrics.
+  base::TimeTicks last_state_change_timestamp_;
+
   base::Optional<cryptauthv2::ClientMetadata> current_client_metadata_;
   base::Optional<cryptauthv2::ClientAppMetadata> client_app_metadata_;
   std::unique_ptr<CryptAuthDeviceSyncer> device_syncer_;

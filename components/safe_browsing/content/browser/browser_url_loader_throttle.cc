@@ -282,7 +282,11 @@ void BrowserURLLoaderThrottle::OnCompleteCheck(bool slow_check,
     DeleteCheckerOnIO();
     pending_checks_ = 0;
     pending_slow_checks_ = 0;
-    delegate_->CancelWithError(GetNetErrorCodeForSafeBrowsing(),
+    // If we didn't show an interstitial, we cancel with ERR_ABORTED to not show
+    // an error page either.
+    delegate_->CancelWithError(showed_interstitial
+                                   ? GetNetErrorCodeForSafeBrowsing()
+                                   : net::ERR_ABORTED,
                                kCustomCancelReasonForURLLoader);
   }
 }

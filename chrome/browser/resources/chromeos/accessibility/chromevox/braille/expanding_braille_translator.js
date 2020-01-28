@@ -87,7 +87,7 @@ ExpandingBrailleTranslator = class {
     var chunks = [];
     function maybeAddChunkToTranslate(translator, start, end) {
       if (start < end) {
-        chunks.push({translator: translator, start: start, end: end});
+        chunks.push({translator, start, end});
       }
     }
     function addExtraCellsChunk(pos, cells) {
@@ -95,7 +95,7 @@ ExpandingBrailleTranslator = class {
         translator: null,
         start: pos,
         end: pos,
-        cells: cells,
+        cells,
         textToBraille: [],
         brailleToText: new Array(cells.byteLength)
       };
@@ -200,7 +200,7 @@ ExpandingBrailleTranslator = class {
     // they are the same kind (either whitespace or not) as the
     // characters starting at start.
     end = pos + /^(\s+|\S+)/.exec(str.substring(pos, end))[0].length;
-    return {start: start, end: end};
+    return {start, end};
   }
 
   /**

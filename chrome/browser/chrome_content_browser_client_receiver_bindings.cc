@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/task/post_task.h"
 #include "build/build_config.h"
+#include "chrome/browser/badging/badge_manager.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/cache_stats_recorder.h"
 #include "chrome/browser/chrome_browser_interface_binders.h"
@@ -296,6 +297,16 @@ bool ChromeContentBrowserClient::BindAssociatedReceiverFromFrame(
   }
 
   return false;
+}
+
+void ChromeContentBrowserClient::BindBadgeServiceReceiverFromServiceWorker(
+    content::RenderProcessHost* service_worker_process_host,
+    const GURL& service_worker_scope,
+    mojo::PendingReceiver<blink::mojom::BadgeService> receiver) {
+#if !defined(OS_ANDROID)
+  badging::BadgeManager::BindServiceWorkerReceiver(
+      service_worker_process_host, service_worker_scope, std::move(receiver));
+#endif
 }
 
 void ChromeContentBrowserClient::BindGpuHostReceiver(

@@ -1298,7 +1298,7 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, RefocusFilterLaunch) {
   ui_test_utils::NavigateToURLWithDisposition(
       browser(), GURL("http://www.example2.com/path2/bar.html"),
       WindowOpenDisposition::NEW_FOREGROUND_TAB,
-      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
   EXPECT_EQ(++tab_count, tab_strip->count());
   WebContents* first_tab = tab_strip->GetActiveWebContents();
   // Confirm app is not active.
@@ -1330,7 +1330,7 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, AsyncActivationStateCheck) {
   ui_test_utils::NavigateToURLWithDisposition(
       browser(), GURL("http://www.example.com/path1/bar.html"),
       WindowOpenDisposition::NEW_FOREGROUND_TAB,
-      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
 
   EXPECT_EQ(ash::STATUS_RUNNING, shelf_model()->ItemByID(shortcut_id)->status);
   // To address the issue of crbug.com/174050, the tab we are about to close
@@ -1451,7 +1451,7 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, AltNumberTabsTabbing) {
   // Create an application handled browser tab.
   ui_test_utils::NavigateToURLWithDisposition(
       browser(), GURL(url), WindowOpenDisposition::NEW_FOREGROUND_TAB,
-      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
 
   content::WebContents* content1 = tab_strip->GetActiveWebContents();
 
@@ -1459,7 +1459,7 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, AltNumberTabsTabbing) {
   ui_test_utils::NavigateToURLWithDisposition(
       browser(), GURL("http://www.test.com"),
       WindowOpenDisposition::NEW_FOREGROUND_TAB,
-      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
   content::WebContents* content1a = tab_strip->GetActiveWebContents();
 
   // Make sure that the active tab is now our handled tab.
@@ -1475,7 +1475,7 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, AltNumberTabsTabbing) {
 
   ui_test_utils::NavigateToURLWithDisposition(
       browser(), GURL(url), WindowOpenDisposition::NEW_FOREGROUND_TAB,
-      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
   content::WebContents* content2 = tab_strip->GetActiveWebContents();
 
   EXPECT_EQ(content2, browser()->tab_strip_model()->GetActiveWebContents());
@@ -1771,7 +1771,7 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, ActivateAfterSessionRestore) {
   std::string url = "http://www.example.com/path/bla";
   ui_test_utils::NavigateToURLWithDisposition(
       browser2, GURL(url), WindowOpenDisposition::NEW_FOREGROUND_TAB,
-      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
 
   // Remember the number of tabs for each browser.
   TabStripModel* tab_strip = browser()->tab_strip_model();

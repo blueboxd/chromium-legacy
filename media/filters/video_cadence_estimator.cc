@@ -235,10 +235,12 @@ bool VideoCadenceEstimator::UpdateBresenhamCadenceEstimate(
   double cadence_relative_diff = std::abs(current_cadence - new_cadence) /
                                  std::max(current_cadence, new_cadence);
 
-  // Ignore tiny changes in cadence, as they are most likely just noise.
-  // Let's use a threshold of 0.08%, which is slightly less than NTSC frame
-  // rate adjustment coefficient.
-  constexpr double kCadenceRoundingError = 0.0008;
+  // Ignore small changes in cadence, as they are most likely just noise,
+  // caused by render_interval flickering on devices having difficulty to decode
+  // and render the video in real time.
+  // TODO(ezemtsov): Consider calculating and using avg. render_interval,
+  // the same way avg. frame duration is used now.
+  constexpr double kCadenceRoundingError = 0.008;
   if (cadence_relative_diff <= kCadenceRoundingError)
     return false;
 

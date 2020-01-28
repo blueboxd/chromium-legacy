@@ -51,6 +51,7 @@ class TabStripUIHandler : public content::WebUIMessageHandler,
  private:
   FRIEND_TEST_ALL_PREFIXES(TabStripUIHandlerTest, GetGroupVisualData);
   FRIEND_TEST_ALL_PREFIXES(TabStripUIHandlerTest, GroupTab);
+  FRIEND_TEST_ALL_PREFIXES(TabStripUIHandlerTest, MoveGroup);
   FRIEND_TEST_ALL_PREFIXES(TabStripUIHandlerTest, UngroupTab);
 
   void HandleCreateNewTab(const base::ListValue* args);
@@ -65,6 +66,7 @@ class TabStripUIHandler : public content::WebUIMessageHandler,
   void HandleGetLayout(const base::ListValue* args);
   void HandleGroupTab(const base::ListValue* args);
   void HandleUngroupTab(const base::ListValue* args);
+  void HandleMoveGroup(const base::ListValue* args);
   void HandleSetThumbnailTracked(const base::ListValue* args);
   void HandleReportTabActivationDuration(const base::ListValue* args);
   void HandleReportTabDataReceivedDuration(const base::ListValue* args);

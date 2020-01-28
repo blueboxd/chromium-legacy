@@ -5,9 +5,10 @@
 #ifndef SERVICES_SHAPE_DETECTION_BARCODE_DETECTION_IMPL_MAC_H_
 #define SERVICES_SHAPE_DETECTION_BARCODE_DETECTION_IMPL_MAC_H_
 
+#include <os/availability.h>
+
 #include <vector>
 
-#include "base/mac/availability.h"
 #include "base/mac/scoped_nsobject.h"
 #include "services/shape_detection/public/mojom/barcodedetection.mojom.h"
 #include "services/shape_detection/public/mojom/barcodedetection_provider.mojom.h"

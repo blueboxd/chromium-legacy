@@ -344,7 +344,7 @@ class SafeBrowsingBlockingPageTestBase
     ChromeRenderViewHostTestHarness::TearDown();
   }
 
-  void OnBlockingPageComplete(bool proceed) {
+  void OnBlockingPageComplete(bool proceed, bool showed_interstitial) {
     if (proceed)
       user_response_ = OK;
     else
@@ -1144,7 +1144,7 @@ class SafeBrowsingBlockingQuietPageTest
     ChromeRenderViewHostTestHarness::TearDown();
   }
 
-  void OnBlockingPageComplete(bool proceed) {
+  void OnBlockingPageComplete(bool proceed, bool showed_interstitial) {
     if (proceed)
       user_response_ = OK;
     else

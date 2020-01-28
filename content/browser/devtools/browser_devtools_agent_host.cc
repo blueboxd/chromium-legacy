@@ -68,7 +68,7 @@ BrowserDevToolsAgentHost::~BrowserDevToolsAgentHost() {
 }
 
 bool BrowserDevToolsAgentHost::AttachSession(DevToolsSession* session) {
-  if (!session->client()->MayAttachToBrowser())
+  if (!session->GetClient()->MayAttachToBrowser())
     return false;
 
   session->SetBrowserOnly(true);

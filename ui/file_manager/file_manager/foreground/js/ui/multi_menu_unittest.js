@@ -272,7 +272,7 @@ function testGrowWindowSizesSubMenu() {
   // Test that the height of the sub-menu is the same as
   // the height at the start of this test (before we
   // deliberately shrank it).
-  assertTrue(grownPosition.bottom === subMenuPosition.bottom);
+  assertTrue(grownPosition.height === subMenuPosition.height);
 }
 
 /**
@@ -359,12 +359,12 @@ function testShrinkWindowSizesTopMenu() {
   menubutton.showMenu(true);
   const menuPosition = topMenu.getBoundingClientRect();
   // Reduce window innerHeight so the menu won't fit.
-  window.innerHeight = menuPosition.bottom - 10;
+  window.innerHeight = menuPosition.height - 10;
   // Call showMenu() which will first hide it, then re-open
   // it to force the resizing behavior.
   menubutton.showMenu(true);
   const shrunkPosition = topMenu.getBoundingClientRect();
-  assertTrue(shrunkPosition.bottom < window.innerHeight);
+  assertTrue(shrunkPosition.height == (window.innerHeight - 2));
 }
 
 /**

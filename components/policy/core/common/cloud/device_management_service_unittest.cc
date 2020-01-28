@@ -116,7 +116,9 @@ class DeviceManagementServiceTestBase : public testing::Test {
       bool critical,
       std::unique_ptr<DMAuth> auth_data,
       base::Optional<std::string> oauth_token,
-      const std::string& payload = std::string()) {
+      const std::string& payload = std::string(),
+      DeviceManagementService::Job::RetryMethod method =
+          DeviceManagementService::Job::NO_RETRY) {
     last_job_type_ =
         DeviceManagementService::JobConfiguration::GetJobTypeAsString(type);
     std::unique_ptr<FakeJobConfiguration> config =
@@ -126,76 +128,98 @@ class DeviceManagementServiceTestBase : public testing::Test {
             base::BindOnce(&DeviceManagementServiceTestBase::OnJobDone,
                            base::Unretained(this)),
             base::BindRepeating(&DeviceManagementServiceTestBase::OnJobRetry,
-                                base::Unretained(this)));
+                                base::Unretained(this)),
+            base::BindRepeating(
+                &DeviceManagementServiceTestBase::OnShouldJobRetry,
+                base::Unretained(this)));
     config->SetRequestPayload(payload);
+    config->SetShouldRetryResponse(method);
     return service_->CreateJob(std::move(config));
   }
 
   std::unique_ptr<DeviceManagementService::Job> StartRegistrationJob(
-      const std::string& payload = std::string()) {
+      const std::string& payload = std::string(),
+      DeviceManagementService::Job::RetryMethod method =
+          DeviceManagementService::Job::NO_RETRY) {
     return StartJob(
         DeviceManagementService::JobConfiguration::TYPE_REGISTRATION,
-        /*critical=*/false, DMAuth::NoAuth(), kOAuthToken, payload);
+        /*critical=*/false, DMAuth::NoAuth(), kOAuthToken, payload, method);
   }
 
   std::unique_ptr<DeviceManagementService::Job> StartCertBasedRegistrationJob(
-      const std::string& payload = std::string()) {
+      const std::string& payload = std::string(),
+      DeviceManagementService::Job::RetryMethod method =
+          DeviceManagementService::Job::NO_RETRY) {
     return StartJob(
         DeviceManagementService::JobConfiguration::TYPE_CERT_BASED_REGISTRATION,
         /*critical=*/false, DMAuth::FromGaiaToken(kGaiaAuthToken),
-        std::string(), payload);
+        std::string(), payload, method);
   }
 
   std::unique_ptr<DeviceManagementService::Job> StartTokenEnrollmentJob(
-      const std::string& payload = std::string()) {
+      const std::string& payload = std::string(),
+      DeviceManagementService::Job::RetryMethod method =
+          DeviceManagementService::Job::NO_RETRY) {
     return StartJob(
         DeviceManagementService::JobConfiguration::TYPE_TOKEN_ENROLLMENT,
         /*critical=*/false, DMAuth::FromEnrollmentToken(kEnrollmentToken),
-        std::string(), payload);
+        std::string(), payload, method);
   }
 
   std::unique_ptr<DeviceManagementService::Job> StartApiAuthCodeFetchJob(
-      const std::string& payload = std::string()) {
+      const std::string& payload = std::string(),
+      DeviceManagementService::Job::RetryMethod method =
+          DeviceManagementService::Job::NO_RETRY) {
     return StartJob(
         DeviceManagementService::JobConfiguration::TYPE_API_AUTH_CODE_FETCH,
-        /*critical=*/false, DMAuth::NoAuth(), kOAuthToken, payload);
+        /*critical=*/false, DMAuth::NoAuth(), kOAuthToken, payload, method);
   }
 
   std::unique_ptr<DeviceManagementService::Job> StartUnregistrationJob(
-      const std::string& payload = std::string()) {
+      const std::string& payload = std::string(),
+      DeviceManagementService::Job::RetryMethod method =
+          DeviceManagementService::Job::NO_RETRY) {
     return StartJob(
         DeviceManagementService::JobConfiguration::TYPE_UNREGISTRATION,
         /*critical=*/false, DMAuth::FromDMToken(kDMToken), std::string(),
-        payload);
+        payload, method);
   }
 
   std::unique_ptr<DeviceManagementService::Job> StartPolicyFetchJob(
-      const std::string& payload = std::string()) {
+      const std::string& payload = std::string(),
+      DeviceManagementService::Job::RetryMethod method =
+          DeviceManagementService::Job::NO_RETRY) {
     return StartJob(
         DeviceManagementService::JobConfiguration::TYPE_POLICY_FETCH,
-        /*critical=*/false, DMAuth::NoAuth(), kOAuthToken, payload);
+        /*critical=*/false, DMAuth::NoAuth(), kOAuthToken, payload, method);
   }
 
   std::unique_ptr<DeviceManagementService::Job> StartCriticalPolicyFetchJob(
-      const std::string& payload = std::string()) {
+      const std::string& payload = std::string(),
+      DeviceManagementService::Job::RetryMethod method =
+          DeviceManagementService::Job::NO_RETRY) {
     return StartJob(
         DeviceManagementService::JobConfiguration::TYPE_POLICY_FETCH,
-        /*critical=*/true, DMAuth::NoAuth(), kOAuthToken, payload);
+        /*critical=*/true, DMAuth::NoAuth(), kOAuthToken, payload, method);
   }
 
   std::unique_ptr<DeviceManagementService::Job> StartAutoEnrollmentJob(
-      const std::string& payload = std::string()) {
+      const std::string& payload = std::string(),
+      DeviceManagementService::Job::RetryMethod method =
+          DeviceManagementService::Job::NO_RETRY) {
     return StartJob(
         DeviceManagementService::JobConfiguration::TYPE_AUTO_ENROLLMENT,
-        /*critical=*/false, DMAuth::NoAuth(), std::string(), payload);
+        /*critical=*/false, DMAuth::NoAuth(), std::string(), payload, method);
   }
 
   std::unique_ptr<DeviceManagementService::Job> StartAppInstallReportJob(
-      const std::string& payload = std::string()) {
+      const std::string& payload = std::string(),
+      DeviceManagementService::Job::RetryMethod method =
+          DeviceManagementService::Job::NO_RETRY) {
     return StartJob(DeviceManagementService::JobConfiguration::
                         TYPE_UPLOAD_APP_INSTALL_REPORT,
                     /*critical=*/false, DMAuth::FromDMToken(kDMToken),
-                    std::string(), payload);
+                    std::string(), payload, method);
   }
 
   void SendResponse(net::Error error,
@@ -240,7 +264,11 @@ class DeviceManagementServiceTestBase : public testing::Test {
                     int,
                     const std::string&));
 
-  MOCK_METHOD0(OnJobRetry, void());
+  MOCK_METHOD2(OnJobRetry,
+               void(int response_code, const std::string& response_body));
+
+  MOCK_METHOD2(OnShouldJobRetry,
+               void(int response_code, const std::string& response_body));
 
   base::test::SingleThreadTaskEnvironment task_environment_;
   network::TestURLLoaderFactory url_loader_factory_;
@@ -286,7 +314,9 @@ class DeviceManagementServiceFailedRequestTest
 
 TEST_P(DeviceManagementServiceFailedRequestTest, RegisterRequest) {
   EXPECT_CALL(*this, OnJobDone(_, GetParam().expected_status_, _, _));
-  EXPECT_CALL(*this, OnJobRetry()).Times(0);
+  EXPECT_CALL(*this, OnJobRetry(_, _)).Times(0);
+  EXPECT_CALL(*this,
+              OnShouldJobRetry(GetParam().http_status_, GetParam().response_));
   std::unique_ptr<DeviceManagementService::Job> request_job(
       StartRegistrationJob());
   auto* request = GetPendingRequest();
@@ -298,7 +328,9 @@ TEST_P(DeviceManagementServiceFailedRequestTest, RegisterRequest) {
 
 TEST_P(DeviceManagementServiceFailedRequestTest, CertBasedRegisterRequest) {
   EXPECT_CALL(*this, OnJobDone(_, GetParam().expected_status_, _, _));
-  EXPECT_CALL(*this, OnJobRetry()).Times(0);
+  EXPECT_CALL(*this, OnJobRetry(_, _)).Times(0);
+  EXPECT_CALL(*this,
+              OnShouldJobRetry(GetParam().http_status_, GetParam().response_));
   std::unique_ptr<DeviceManagementService::Job> request_job(
       StartCertBasedRegistrationJob());
   auto* request = GetPendingRequest();
@@ -310,7 +342,9 @@ TEST_P(DeviceManagementServiceFailedRequestTest, CertBasedRegisterRequest) {
 
 TEST_P(DeviceManagementServiceFailedRequestTest, TokenEnrollmentRequest) {
   EXPECT_CALL(*this, OnJobDone(_, GetParam().expected_status_, _, _));
-  EXPECT_CALL(*this, OnJobRetry()).Times(0);
+  EXPECT_CALL(*this, OnJobRetry(_, _)).Times(0);
+  EXPECT_CALL(*this,
+              OnShouldJobRetry(GetParam().http_status_, GetParam().response_));
   std::unique_ptr<DeviceManagementService::Job> request_job(
       StartTokenEnrollmentJob());
   auto* request = GetPendingRequest();
@@ -322,7 +356,9 @@ TEST_P(DeviceManagementServiceFailedRequestTest, TokenEnrollmentRequest) {
 
 TEST_P(DeviceManagementServiceFailedRequestTest, ApiAuthCodeFetchRequest) {
   EXPECT_CALL(*this, OnJobDone(_, GetParam().expected_status_, _, _));
-  EXPECT_CALL(*this, OnJobRetry()).Times(0);
+  EXPECT_CALL(*this, OnJobRetry(_, _)).Times(0);
+  EXPECT_CALL(*this,
+              OnShouldJobRetry(GetParam().http_status_, GetParam().response_));
   std::unique_ptr<DeviceManagementService::Job> request_job(
       StartApiAuthCodeFetchJob());
   auto* request = GetPendingRequest();
@@ -334,7 +370,9 @@ TEST_P(DeviceManagementServiceFailedRequestTest, ApiAuthCodeFetchRequest) {
 
 TEST_P(DeviceManagementServiceFailedRequestTest, UnregisterRequest) {
   EXPECT_CALL(*this, OnJobDone(_, GetParam().expected_status_, _, _));
-  EXPECT_CALL(*this, OnJobRetry()).Times(0);
+  EXPECT_CALL(*this, OnJobRetry(_, _)).Times(0);
+  EXPECT_CALL(*this,
+              OnShouldJobRetry(GetParam().http_status_, GetParam().response_));
   std::unique_ptr<DeviceManagementService::Job> request_job(
       StartUnregistrationJob());
   auto* request = GetPendingRequest();
@@ -346,7 +384,9 @@ TEST_P(DeviceManagementServiceFailedRequestTest, UnregisterRequest) {
 
 TEST_P(DeviceManagementServiceFailedRequestTest, PolicyRequest) {
   EXPECT_CALL(*this, OnJobDone(_, GetParam().expected_status_, _, _));
-  EXPECT_CALL(*this, OnJobRetry()).Times(0);
+  EXPECT_CALL(*this, OnJobRetry(_, _)).Times(0);
+  EXPECT_CALL(*this,
+              OnShouldJobRetry(GetParam().http_status_, GetParam().response_));
   std::unique_ptr<DeviceManagementService::Job> request_job(
       StartPolicyFetchJob());
   auto* request = GetPendingRequest();
@@ -358,7 +398,9 @@ TEST_P(DeviceManagementServiceFailedRequestTest, PolicyRequest) {
 
 TEST_P(DeviceManagementServiceFailedRequestTest, AutoEnrollmentRequest) {
   EXPECT_CALL(*this, OnJobDone(_, GetParam().expected_status_, _, _));
-  EXPECT_CALL(*this, OnJobRetry()).Times(0);
+  EXPECT_CALL(*this, OnJobRetry(_, _)).Times(0);
+  EXPECT_CALL(*this,
+              OnShouldJobRetry(GetParam().http_status_, GetParam().response_));
   std::unique_ptr<DeviceManagementService::Job> request_job(
       StartAutoEnrollmentJob());
   auto* request = GetPendingRequest();
@@ -370,7 +412,9 @@ TEST_P(DeviceManagementServiceFailedRequestTest, AutoEnrollmentRequest) {
 
 TEST_P(DeviceManagementServiceFailedRequestTest, AppInstallReportRequest) {
   EXPECT_CALL(*this, OnJobDone(_, GetParam().expected_status_, _, _));
-  EXPECT_CALL(*this, OnJobRetry()).Times(0);
+  EXPECT_CALL(*this, OnJobRetry(_, _)).Times(0);
+  EXPECT_CALL(*this,
+              OnShouldJobRetry(GetParam().http_status_, GetParam().response_));
   std::unique_ptr<DeviceManagementService::Job> request_job(
       StartAppInstallReportJob());
   auto* request = GetPendingRequest();
@@ -514,7 +558,8 @@ TEST_F(DeviceManagementServiceTest, RegisterRequest) {
   ASSERT_TRUE(expected_response.SerializeToString(&expected_data));
 
   EXPECT_CALL(*this, OnJobDone(_, DM_STATUS_SUCCESS, _, expected_data));
-  EXPECT_CALL(*this, OnJobRetry()).Times(0);
+  EXPECT_CALL(*this, OnJobRetry(_, _)).Times(0);
+  EXPECT_CALL(*this, OnShouldJobRetry(200, expected_data));
   std::unique_ptr<DeviceManagementService::Job> request_job(
       StartRegistrationJob(expected_data));
   auto* request = GetPendingRequest();
@@ -547,7 +592,8 @@ TEST_F(DeviceManagementServiceTest, CertBasedRegisterRequest) {
   ASSERT_TRUE(expected_response.SerializeToString(&expected_data));
 
   EXPECT_CALL(*this, OnJobDone(_, DM_STATUS_SUCCESS, _, expected_data));
-  EXPECT_CALL(*this, OnJobRetry()).Times(0);
+  EXPECT_CALL(*this, OnJobRetry(_, _)).Times(0);
+  EXPECT_CALL(*this, OnShouldJobRetry(200, expected_data));
   std::unique_ptr<DeviceManagementService::Job> request_job(
       StartCertBasedRegistrationJob(expected_data));
   auto* request = GetPendingRequest();
@@ -570,7 +616,8 @@ TEST_F(DeviceManagementServiceTest, TokenEnrollmentRequest) {
   ASSERT_TRUE(expected_response.SerializeToString(&expected_data));
 
   EXPECT_CALL(*this, OnJobDone(_, DM_STATUS_SUCCESS, _, expected_data));
-  EXPECT_CALL(*this, OnJobRetry()).Times(0);
+  EXPECT_CALL(*this, OnJobRetry(_, _)).Times(0);
+  EXPECT_CALL(*this, OnShouldJobRetry(200, expected_data));
   std::unique_ptr<DeviceManagementService::Job> request_job(
       StartTokenEnrollmentJob(expected_data));
   auto* request = GetPendingRequest();
@@ -598,7 +645,8 @@ TEST_F(DeviceManagementServiceTest, ApiAuthCodeFetchRequest) {
   ASSERT_TRUE(expected_response.SerializeToString(&expected_data));
 
   EXPECT_CALL(*this, OnJobDone(_, DM_STATUS_SUCCESS, _, expected_data));
-  EXPECT_CALL(*this, OnJobRetry()).Times(0);
+  EXPECT_CALL(*this, OnJobRetry(_, _)).Times(0);
+  EXPECT_CALL(*this, OnShouldJobRetry(200, expected_data));
   std::unique_ptr<DeviceManagementService::Job> request_job(
       StartApiAuthCodeFetchJob(expected_data));
   auto* request = GetPendingRequest();
@@ -620,7 +668,8 @@ TEST_F(DeviceManagementServiceTest, UnregisterRequest) {
   ASSERT_TRUE(expected_response.SerializeToString(&expected_data));
 
   EXPECT_CALL(*this, OnJobDone(_, DM_STATUS_SUCCESS, _, expected_data));
-  EXPECT_CALL(*this, OnJobRetry()).Times(0);
+  EXPECT_CALL(*this, OnJobRetry(_, _)).Times(0);
+  EXPECT_CALL(*this, OnShouldJobRetry(200, expected_data));
   std::unique_ptr<DeviceManagementService::Job> request_job(
       StartUnregistrationJob(expected_data));
   auto* request = GetPendingRequest();
@@ -650,7 +699,8 @@ TEST_F(DeviceManagementServiceTest, AppInstallReportRequest) {
   ASSERT_TRUE(expected_response.SerializeToString(&expected_data));
 
   EXPECT_CALL(*this, OnJobDone(_, DM_STATUS_SUCCESS, _, expected_data));
-  EXPECT_CALL(*this, OnJobRetry()).Times(0);
+  EXPECT_CALL(*this, OnJobRetry(_, _)).Times(0);
+  EXPECT_CALL(*this, OnShouldJobRetry(200, expected_data));
   std::unique_ptr<DeviceManagementService::Job> request_job(
       StartAppInstallReportJob(expected_data));
   auto* request = GetPendingRequest();
@@ -667,7 +717,8 @@ TEST_F(DeviceManagementServiceTest, AppInstallReportRequest) {
 
 TEST_F(DeviceManagementServiceTest, CancelRegisterRequest) {
   EXPECT_CALL(*this, OnJobDone(_, _, _, _)).Times(0);
-  EXPECT_CALL(*this, OnJobRetry()).Times(0);
+  EXPECT_CALL(*this, OnJobRetry(_, _)).Times(0);
+  EXPECT_CALL(*this, OnShouldJobRetry(_, _)).Times(0);
   std::unique_ptr<DeviceManagementService::Job> request_job(
       StartRegistrationJob());
   auto* request = GetPendingRequest();
@@ -679,7 +730,8 @@ TEST_F(DeviceManagementServiceTest, CancelRegisterRequest) {
 
 TEST_F(DeviceManagementServiceTest, CancelCertBasedRegisterRequest) {
   EXPECT_CALL(*this, OnJobDone(_, _, _, _)).Times(0);
-  EXPECT_CALL(*this, OnJobRetry()).Times(0);
+  EXPECT_CALL(*this, OnJobRetry(_, _)).Times(0);
+  EXPECT_CALL(*this, OnShouldJobRetry(_, _)).Times(0);
   std::unique_ptr<DeviceManagementService::Job> request_job(
       StartCertBasedRegistrationJob());
   auto* request = GetPendingRequest();
@@ -691,7 +743,8 @@ TEST_F(DeviceManagementServiceTest, CancelCertBasedRegisterRequest) {
 
 TEST_F(DeviceManagementServiceTest, CancelTokenEnrollmentRequest) {
   EXPECT_CALL(*this, OnJobDone(_, _, _, _)).Times(0);
-  EXPECT_CALL(*this, OnJobRetry()).Times(0);
+  EXPECT_CALL(*this, OnJobRetry(_, _)).Times(0);
+  EXPECT_CALL(*this, OnShouldJobRetry(_, _)).Times(0);
   std::unique_ptr<DeviceManagementService::Job> request_job(
       StartTokenEnrollmentJob());
   auto* request = GetPendingRequest();
@@ -703,7 +756,8 @@ TEST_F(DeviceManagementServiceTest, CancelTokenEnrollmentRequest) {
 
 TEST_F(DeviceManagementServiceTest, CancelApiAuthCodeFetch) {
   EXPECT_CALL(*this, OnJobDone(_, _, _, _)).Times(0);
-  EXPECT_CALL(*this, OnJobRetry()).Times(0);
+  EXPECT_CALL(*this, OnJobRetry(_, _)).Times(0);
+  EXPECT_CALL(*this, OnShouldJobRetry(_, _)).Times(0);
   std::unique_ptr<DeviceManagementService::Job> request_job(
       StartApiAuthCodeFetchJob());
   auto* request = GetPendingRequest();
@@ -715,7 +769,8 @@ TEST_F(DeviceManagementServiceTest, CancelApiAuthCodeFetch) {
 
 TEST_F(DeviceManagementServiceTest, CancelUnregisterRequest) {
   EXPECT_CALL(*this, OnJobDone(_, _, _, _)).Times(0);
-  EXPECT_CALL(*this, OnJobRetry()).Times(0);
+  EXPECT_CALL(*this, OnJobRetry(_, _)).Times(0);
+  EXPECT_CALL(*this, OnShouldJobRetry(_, _)).Times(0);
   std::unique_ptr<DeviceManagementService::Job> request_job(
       StartUnregistrationJob());
   auto* request = GetPendingRequest();
@@ -727,7 +782,8 @@ TEST_F(DeviceManagementServiceTest, CancelUnregisterRequest) {
 
 TEST_F(DeviceManagementServiceTest, CancelPolicyRequest) {
   EXPECT_CALL(*this, OnJobDone(_, _, _, _)).Times(0);
-  EXPECT_CALL(*this, OnJobRetry()).Times(0);
+  EXPECT_CALL(*this, OnJobRetry(_, _)).Times(0);
+  EXPECT_CALL(*this, OnShouldJobRetry(_, _)).Times(0);
   std::unique_ptr<DeviceManagementService::Job> request_job(
       StartPolicyFetchJob());
   auto* request = GetPendingRequest();
@@ -739,7 +795,8 @@ TEST_F(DeviceManagementServiceTest, CancelPolicyRequest) {
 
 TEST_F(DeviceManagementServiceTest, CancelAppInstallReportRequest) {
   EXPECT_CALL(*this, OnJobDone(_, _, _, _)).Times(0);
-  EXPECT_CALL(*this, OnJobRetry()).Times(0);
+  EXPECT_CALL(*this, OnJobRetry(_, _)).Times(0);
+  EXPECT_CALL(*this, OnShouldJobRetry(_, _)).Times(0);
   std::unique_ptr<DeviceManagementService::Job> request_job(
       StartAppInstallReportJob());
   auto* request = GetPendingRequest();
@@ -760,7 +817,8 @@ TEST_F(DeviceManagementServiceTest, JobQueueing) {
   ASSERT_TRUE(expected_response.SerializeToString(&expected_data));
 
   EXPECT_CALL(*this, OnJobDone(_, DM_STATUS_SUCCESS, _, expected_data));
-  EXPECT_CALL(*this, OnJobRetry()).Times(0);
+  EXPECT_CALL(*this, OnJobRetry(_, _)).Times(0);
+  EXPECT_CALL(*this, OnShouldJobRetry(200, expected_data));
 
   // Make a request. We should not see any fetchers being created.
   std::unique_ptr<DeviceManagementService::Job> request_job(
@@ -779,7 +837,8 @@ TEST_F(DeviceManagementServiceTest, JobQueueing) {
 
 TEST_F(DeviceManagementServiceTest, CancelRequestAfterShutdown) {
   EXPECT_CALL(*this, OnJobDone(_, _, _, _)).Times(0);
-  EXPECT_CALL(*this, OnJobRetry()).Times(0);
+  EXPECT_CALL(*this, OnJobRetry(_, _)).Times(0);
+  EXPECT_CALL(*this, OnShouldJobRetry(_, _)).Times(0);
   std::unique_ptr<DeviceManagementService::Job> request_job(
       StartPolicyFetchJob());
   auto* request = GetPendingRequest();
@@ -808,7 +867,8 @@ TEST_F(DeviceManagementServiceTest, CancelDuringCallback) {
                                     int net_error, const std::string&) {
                         VerifyMetrics(status, net_error);
                       })));
-  EXPECT_CALL(*this, OnJobRetry()).Times(0);
+  EXPECT_CALL(*this, OnJobRetry(_, _)).Times(0);
+  EXPECT_CALL(*this, OnShouldJobRetry(500, std::string()));
 
   // Generate a callback.
   SendResponse(net::OK, 500, std::string());
@@ -820,7 +880,8 @@ TEST_F(DeviceManagementServiceTest, CancelDuringCallback) {
 TEST_F(DeviceManagementServiceTest, RetryOnProxyError) {
   // Make a request.
   EXPECT_CALL(*this, OnJobDone(_, _, _, _)).Times(0);
-  EXPECT_CALL(*this, OnJobRetry());
+  EXPECT_CALL(*this, OnJobRetry(200, std::string()));
+  EXPECT_CALL(*this, OnShouldJobRetry(_, _)).Times(0);
 
   std::unique_ptr<DeviceManagementService::Job> request_job(
       StartRegistrationJob());
@@ -848,7 +909,8 @@ TEST_F(DeviceManagementServiceTest, RetryOnProxyError) {
 TEST_F(DeviceManagementServiceTest, RetryOnBadResponseFromProxy) {
   // Make a request and expect that it will not succeed.
   EXPECT_CALL(*this, OnJobDone(_, _, _, _)).Times(0);
-  EXPECT_CALL(*this, OnJobRetry());
+  EXPECT_CALL(*this, OnJobRetry(200, std::string()));
+  EXPECT_CALL(*this, OnShouldJobRetry(_, _)).Times(0);
 
   std::unique_ptr<DeviceManagementService::Job> request_job(
       StartRegistrationJob());
@@ -874,6 +936,8 @@ TEST_F(DeviceManagementServiceTest, RetryOnBadResponseFromProxy) {
 TEST_F(DeviceManagementServiceTest, AcceptMimeTypeFromProxy) {
   // Make a request and expect that it will succeed.
   EXPECT_CALL(*this, OnJobDone(_, _, _, _)).Times(1);
+  EXPECT_CALL(*this, OnJobRetry(_, _)).Times(0);
+  EXPECT_CALL(*this, OnShouldJobRetry(200, std::string()));
 
   std::unique_ptr<DeviceManagementService::Job> request_job(
       StartRegistrationJob());
@@ -892,7 +956,8 @@ TEST_F(DeviceManagementServiceTest, AcceptMimeTypeFromProxy) {
 TEST_F(DeviceManagementServiceTest, RetryOnNetworkChanges) {
   // Make a request.
   EXPECT_CALL(*this, OnJobDone(_, _, _, _)).Times(0);
-  EXPECT_CALL(*this, OnJobRetry());
+  EXPECT_CALL(*this, OnJobRetry(0, std::string()));
+  EXPECT_CALL(*this, OnShouldJobRetry(_, _)).Times(0);
 
   std::unique_ptr<DeviceManagementService::Job> request_job(
       StartRegistrationJob());
@@ -924,7 +989,8 @@ TEST_F(DeviceManagementServiceTest, PolicyFetchRetryImmediately) {
 
   // Make a request.
   EXPECT_CALL(*this, OnJobDone(_, _, _, _)).Times(0);
-  EXPECT_CALL(*this, OnJobRetry());
+  EXPECT_CALL(*this, OnJobRetry(0, std::string()));
+  EXPECT_CALL(*this, OnShouldJobRetry(_, _)).Times(0);
 
   std::unique_ptr<DeviceManagementService::Job> request_job(
       StartPolicyFetchJob());
@@ -951,7 +1017,7 @@ TEST_F(DeviceManagementServiceTest, PolicyFetchRetryImmediately) {
 
   // Request is succeeded with retry.
   EXPECT_CALL(*this, OnJobDone(_, DM_STATUS_SUCCESS, _, _));
-  EXPECT_CALL(*this, OnJobRetry()).Times(0);
+  EXPECT_CALL(*this, OnJobRetry(_, _)).Times(0);
   expected_retry_count_ = 1;
   SendResponse(net::OK, 200, std::string());
   base::RunLoop().RunUntilIdle();
@@ -967,7 +1033,8 @@ TEST_F(DeviceManagementServiceTest, RetryLimit) {
     // Make the current fetcher fail with ERR_NETWORK_CHANGED.
     auto* request = GetPendingRequest(i);
     EXPECT_CALL(*this, OnJobDone(_, _, _, _)).Times(0);
-    EXPECT_CALL(*this, OnJobRetry());
+    EXPECT_CALL(*this, OnJobRetry(0, std::string()));
+    EXPECT_CALL(*this, OnShouldJobRetry(_, _)).Times(0);
     if (i == 0) {
       // Not a retry.
       CheckURLAndQueryParams(request, dm_protocol::kValueRequestRegister,
@@ -986,7 +1053,7 @@ TEST_F(DeviceManagementServiceTest, RetryLimit) {
   // At the next failure the DeviceManagementService should give up retrying and
   // pass the error code to the job's owner.
   EXPECT_CALL(*this, OnJobDone(_, DM_STATUS_REQUEST_FAILED, _, _));
-  EXPECT_CALL(*this, OnJobRetry()).Times(0);
+  EXPECT_CALL(*this, OnJobRetry(_, _)).Times(0);
   SendResponse(net::ERR_NETWORK_CHANGED, 0, std::string());
   base::RunLoop().RunUntilIdle();
   Mock::VerifyAndClearExpectations(this);
@@ -995,7 +1062,8 @@ TEST_F(DeviceManagementServiceTest, RetryLimit) {
 TEST_F(DeviceManagementServiceTest, CancelDuringRetry) {
   // Make a request.
   EXPECT_CALL(*this, OnJobDone(_, _, _, _)).Times(0);
-  EXPECT_CALL(*this, OnJobRetry());
+  EXPECT_CALL(*this, OnJobRetry(0, std::string()));
+  EXPECT_CALL(*this, OnShouldJobRetry(_, _)).Times(0);
 
   std::unique_ptr<DeviceManagementService::Job> request_job(
       StartRegistrationJob());
@@ -1020,7 +1088,7 @@ class DeviceManagementRequestAuthTest : public DeviceManagementServiceTestBase {
       std::unique_ptr<DMAuth> auth,
       base::Optional<std::string> oauth_token) {
     EXPECT_CALL(*this, OnJobDone(_, DM_STATUS_SUCCESS, _, _));
-    EXPECT_CALL(*this, OnJobRetry()).Times(0);
+    EXPECT_CALL(*this, OnJobRetry(_, _)).Times(0);
 
     // Job type is not really relevant for the test.
     std::unique_ptr<DeviceManagementService::Job> job =
@@ -1053,6 +1121,7 @@ class DeviceManagementRequestAuthTest : public DeviceManagementServiceTestBase {
 TEST_F(DeviceManagementRequestAuthTest, OnlyOAuthToken) {
   std::unique_ptr<DeviceManagementService::Job> request_job(
       StartJobWithAuthData(nullptr /* auth */, kOAuthToken));
+  EXPECT_CALL(*this, OnShouldJobRetry(200, std::string()));
 
   const network::TestURLLoaderFactory::PendingRequest* request =
       GetPendingRequest();
@@ -1070,6 +1139,7 @@ TEST_F(DeviceManagementRequestAuthTest, OnlyDMToken) {
   std::unique_ptr<DeviceManagementService::Job> request_job(
       StartJobWithAuthData(DMAuth::FromDMToken(kDMToken),
                            base::nullopt /* oauth_token */));
+  EXPECT_CALL(*this, OnShouldJobRetry(200, std::string()));
 
   const network::TestURLLoaderFactory::PendingRequest* request =
       GetPendingRequest();
@@ -1087,6 +1157,7 @@ TEST_F(DeviceManagementRequestAuthTest, OnlyEnrollmentToken) {
   std::unique_ptr<DeviceManagementService::Job> request_job(
       StartJobWithAuthData(DMAuth::FromEnrollmentToken(kEnrollmentToken),
                            base::nullopt /* oauth_token */));
+  EXPECT_CALL(*this, OnShouldJobRetry(200, std::string()));
 
   const network::TestURLLoaderFactory::PendingRequest* request =
       GetPendingRequest();
@@ -1105,6 +1176,7 @@ TEST_F(DeviceManagementRequestAuthTest, OnlyGaiaToken) {
   std::unique_ptr<DeviceManagementService::Job> request_job(
       StartJobWithAuthData(DMAuth::FromGaiaToken(kGaiaAuthToken),
                            base::nullopt /* oauth_token */));
+  EXPECT_CALL(*this, OnShouldJobRetry(200, std::string()));
 
   const network::TestURLLoaderFactory::PendingRequest* request =
       GetPendingRequest();
@@ -1122,6 +1194,7 @@ TEST_F(DeviceManagementRequestAuthTest, OnlyGaiaToken) {
 TEST_F(DeviceManagementRequestAuthTest, OAuthAndDMToken) {
   std::unique_ptr<DeviceManagementService::Job> request_job(
       StartJobWithAuthData(DMAuth::FromDMToken(kDMToken), kOAuthToken));
+  EXPECT_CALL(*this, OnShouldJobRetry(200, std::string()));
 
   const network::TestURLLoaderFactory::PendingRequest* request =
       GetPendingRequest();
@@ -1140,6 +1213,7 @@ TEST_F(DeviceManagementRequestAuthTest, OAuthAndEnrollmentToken) {
   std::unique_ptr<DeviceManagementService::Job> request_job(
       StartJobWithAuthData(DMAuth::FromEnrollmentToken(kEnrollmentToken),
                            kOAuthToken));
+  EXPECT_CALL(*this, OnShouldJobRetry(200, std::string()));
 
   const network::TestURLLoaderFactory::PendingRequest* request =
       GetPendingRequest();
@@ -1158,6 +1232,7 @@ TEST_F(DeviceManagementRequestAuthTest, OAuthAndEnrollmentToken) {
 TEST_F(DeviceManagementRequestAuthTest, OAuthAndGaiaToken) {
   std::unique_ptr<DeviceManagementService::Job> request_job(
       StartJobWithAuthData(DMAuth::FromGaiaToken(kGaiaAuthToken), kOAuthToken));
+  EXPECT_CALL(*this, OnShouldJobRetry(200, std::string()));
 
   const network::TestURLLoaderFactory::PendingRequest* request =
       GetPendingRequest();

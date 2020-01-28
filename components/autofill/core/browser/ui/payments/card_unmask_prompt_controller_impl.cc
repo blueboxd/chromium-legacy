@@ -140,6 +140,7 @@ void CardUnmaskPromptControllerImpl::OnUnmaskPromptAccepted(
   if (base::FeatureList::IsEnabled(
           features::kAutofillCreditCardAuthentication) &&
       !CanStoreLocally()) {
+    pending_details_.enable_fido_auth = enable_fido_auth;
     pref_service_->SetBoolean(
         prefs::kAutofillCreditCardFidoAuthOfferCheckboxState, enable_fido_auth);
   }

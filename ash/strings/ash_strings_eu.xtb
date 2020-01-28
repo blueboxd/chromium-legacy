@@ -112,6 +112,7 @@
 <translation id="2352467521400612932">Arkatzaren ezarpenak</translation>
 <translation id="2354174487190027830"><ph name="NAME" /> aktibatzen</translation>
 <translation id="2359808026110333948">Jarraitu</translation>
+<translation id="2364154243880592194">Egoera-erretilua. Ordua: <ph name="TIME" />. Bateria: <ph name="BATTERY" />. Jakinarazpen-zentroa atzitzeko, sakatu Bilatu + ezkerrera gezia.</translation>
 <translation id="2365393535144473978">Datu-konexioa aktibatzen baduzu, Bluetooth konexioa ere aktibatuko da.</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="2412593942846481727">Eguneratu egin daiteke</translation>
@@ -336,6 +337,7 @@ Jarraitu ahal izateko, erabiltzaile guztiek saioa amaitu behar dute.</translatio
 <translation id="5669267381087807207">Aktibatzen</translation>
 <translation id="5673434351075758678">Ezarpenak sinkronizatu ondoren, "<ph name="FROM_LOCALE" />" ordez, "<ph name="TO_LOCALE" />" ezarri da hizkuntza gisa.</translation>
 <translation id="5682642926269496722">Google-ren Laguntzailea ez dago erabilgarri uneko erabiltzaile-kontuan.</translation>
+<translation id="5689633613396158040">Gaueko argia eginbideari esker, ez zaizu egingo horren nekagarria argi gutxiko inguruetan pantailari begira egotea. Sakatu hau Gaueko argia aktibatzeko ordua aldatzeko, edo aukera hori erabat desaktibatzeko.</translation>
 <translation id="5691772641933328258">Ez da ezagutu hatz-marka</translation>
 <translation id="5710450975648804523">Aktibatuta dago ez molestatzeko modua</translation>
 <translation id="573413375004481890">Ezin dira zure pantaila guztiak konektatu gailu honetara; beraz, haietako bat deskonektatu da</translation>
@@ -515,6 +517,7 @@ Jarraitu ahal izateko, erabiltzaile guztiek saioa amaitu behar dute.</translatio
 <translation id="8142441511840089262">Egin klik bikoitza</translation>
 <translation id="8142699993796781067">Sare pribatua</translation>
 <translation id="8152092012181020186">Ixteko, sakatu Ktrl + W.</translation>
+<translation id="8155007568264258537"><ph name="FEATURE_NAME" /> Administratzaileak kudeatzen du ezarpen hau.</translation>
 <translation id="8167567890448493835"><ph name="LOCALE_NAME" /> erabiltzen</translation>
 <translation id="8190698733819146287">Pertsonalizatu hizkuntzak eta idazketa…</translation>
 <translation id="8192202700944119416">Jakinarazpenak ezkutatuta daude.</translation>
@@ -596,7 +599,6 @@ Jarraitu ahal izateko, erabiltzaile guztiek saioa amaitu behar dute.</translatio
 <translation id="9193626018745640770">Hargailu ezezagun batera igortzen</translation>
 <translation id="9194617393863864469">Hasi saioa beste erabiltzaile batekin…</translation>
 <translation id="9201374708878217446"><ph name="CONNECTION_STATUS" />. Administratzaileak kudeatua.</translation>
-<translation id="9205817095063786319"><ph name="DOMAIN" /> domeinuak kudeatzen du gailua</translation>
 <translation id="9210037371811586452">Mahaigain bateratuko modutik irteten</translation>
 <translation id="9211681782751733685"><ph name="TIME_REMAINING" /> bateria guztiz kargatu arte.</translation>
 <translation id="9215934040295798075">Ezarri horma-papera</translation>

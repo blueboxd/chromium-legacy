@@ -112,6 +112,7 @@
 <translation id="2352467521400612932">تنظیمات قلم</translation>
 <translation id="2354174487190027830">فعال‌سازی <ph name="NAME" /></translation>
 <translation id="2359808026110333948">ادامه</translation>
+<translation id="2364154243880592194">سینی وضعیت، زمان <ph name="TIME" />،‏ <ph name="BATTERY" /> برای دسترسی به مرکز اعلان، «جستجو + چپ» را فشار دهید.</translation>
 <translation id="2365393535144473978">فعال کردن داده تلفن همراه، بلوتوث را فعال می‌کند.</translation>
 <translation id="2391579633712104609">۱۸۰°</translation>
 <translation id="2412593942846481727">به‌روزرسانی دردسترس است</translation>
@@ -335,6 +336,7 @@
 <translation id="5669267381087807207">فعالسازی</translation>
 <translation id="5673434351075758678">از «<ph name="FROM_LOCALE" />» به «<ph name="TO_LOCALE" />» بعد از همگام‌سازی تنظیمات.</translation>
 <translation id="5682642926269496722">‏«دستیار Google» برای حساب کاربری فعلی دردسترس نیست.</translation>
+<translation id="5689633613396158040">بااستفاده از «نور شب»، نگاه کردن به صفحه‌نمایش یا خواندن در نور کم آسان‌تر می‌شود. برای تغییر زمان روشن شدن «نور شب»، یا خاموش کردن آن به‌طور کامل، ضربه بزنید.</translation>
 <translation id="5691772641933328258">اثر انگشت تشخیص داده نشد</translation>
 <translation id="5710450975648804523">«مزاحم نشوید» روشن است</translation>
 <translation id="573413375004481890">این دستگاه از همه نمایشگرهایتان پشتیبانی نمی‌کند، بنابراین ارتباط یک نمایشگر قطع شده است</translation>
@@ -514,6 +516,7 @@
 <translation id="8142441511840089262">دوبار کلیک کردن</translation>
 <translation id="8142699993796781067">شبکه‌های خصوصی</translation>
 <translation id="8152092012181020186">‏برای بستن برگه، Ctrl + W را فشار دهید.</translation>
+<translation id="8155007568264258537"><ph name="FEATURE_NAME" /> این تنظیم را سرپرست شما مدیریت می‌کند.</translation>
 <translation id="8167567890448493835">درحال استفاده از <ph name="LOCALE_NAME" /></translation>
 <translation id="8190698733819146287">سفارشی کردن زبان‌ها و ورودی...</translation>
 <translation id="8192202700944119416">اعلان‌ها پنهان شده است.</translation>
@@ -595,7 +598,6 @@
 <translation id="9193626018745640770">درحال ارسال محتوا به گیرنده ناشناس</translation>
 <translation id="9194617393863864469">ورود به سیستم حسابی دیگر...</translation>
 <translation id="9201374708878217446"><ph name="CONNECTION_STATUS" />، تحت‌مدیریت سرپرست</translation>
-<translation id="9205817095063786319">دستگاه تحت‌مدیریت <ph name="DOMAIN" /></translation>
 <translation id="9210037371811586452">خروج از حالت میزکار یکپارچه</translation>
 <translation id="9211681782751733685"><ph name="TIME_REMAINING" /> زمان تا شارژ کامل باتری باقی‌مانده است.</translation>
 <translation id="9215934040295798075">تنظیم کاغذدیواری</translation>

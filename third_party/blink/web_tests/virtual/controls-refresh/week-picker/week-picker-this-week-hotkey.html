@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="../../../resources/testharness.js"></script>
+<script src="../../../resources/testharnessreport.js"></script>
+<script src="../../../fast/forms/resources/common.js"></script>
+<script src="../../../fast/forms/resources/picker-common.js"></script>
+<script src="../../../fast/forms/calendar-picker/resources/calendar-picker-common.js"></script>
+</head>
+<body>
+<input type="week" id="week" value="2019-W02">
+<script>
+
+promise_test(() => {
+  let weekElement = document.getElementById('week');
+  return openPickerWithPromise(weekElement)
+  .then(() => {
+    // Make the picker dismiss synchronously so we don't need to insert
+    // an artificial delay in the test
+    internals.pagePopupWindow.CalendarPicker.commitDelayMs = 0;
+
+    eventSender.keyDown('t');
+
+    let weekRegExp = new RegExp(`${new Date().getFullYear()}-W\\d{2}`);
+    assert_true(weekRegExp.test(weekElement.value), "'This week' hotkey should have updated in-page control to current week");
+    assert_equals(internals.pagePopupWindow, null, "'t' key should close popup.");
+  });
+}, "Week picker: 't' key should select this week and close popup");
+
+</script>
+</body>
+</html>

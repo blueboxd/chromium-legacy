@@ -74,9 +74,12 @@ class CC_ANIMATION_EXPORT Animation : public base::RefCounted<Animation> {
   virtual void PromoteScrollTimelinePendingToActive();
   // Should be called when the ScrollTimeline attached to this animation has a
   // change, such as when the scroll source changes ElementId.
-  void UpdateScrollTimeline(base::Optional<ElementId> scroller_id,
-                            base::Optional<double> start_scroll_offset,
-                            base::Optional<double> end_scroll_offset);
+  // TODO(yigu): This is currently virtual because WorkletAnimation has a
+  // separate ScrollTimeline member and the update should be applied to it
+  // instead of the AnimationTimeline object in this class.
+  virtual void UpdateScrollTimeline(base::Optional<ElementId> scroller_id,
+                                    base::Optional<double> start_scroll_offset,
+                                    base::Optional<double> end_scroll_offset);
 
   scoped_refptr<ElementAnimations> element_animations() const;
 

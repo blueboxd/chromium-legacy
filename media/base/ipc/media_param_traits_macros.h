@@ -43,9 +43,9 @@
 #include "media/video/supported_video_decoder_config.h"
 #include "ui/gfx/ipc/color/gfx_param_traits_macros.h"
 
-#if defined(OS_ANDROID)
-#include "media/base/android/media_drm_key_type.h"
-#endif  // defined(OS_ANDROID)
+#if BUILDFLAG(ENABLE_MEDIA_DRM_STORAGE)
+#include "media/base/media_drm_key_type.h"
+#endif  // BUILDFLAG(ENABLE_MEDIA_DRM_STORAGE)
 
 // Enum traits.
 
@@ -147,11 +147,11 @@ IPC_ENUM_TRAITS_MAX_VALUE(media::VideoRotation, media::VIDEO_ROTATION_MAX)
 IPC_ENUM_TRAITS_MAX_VALUE(media::container_names::MediaContainerName,
                           media::container_names::CONTAINER_MAX)
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(ENABLE_MEDIA_DRM_STORAGE)
 IPC_ENUM_TRAITS_MIN_MAX_VALUE(media::MediaDrmKeyType,
                               media::MediaDrmKeyType::MIN,
                               media::MediaDrmKeyType::MAX)
-#endif  // defined(OS_ANDROID)
+#endif  // BUILDFLAG(ENABLE_MEDIA_DRM_STORAGE)
 
 IPC_ENUM_TRAITS_VALIDATE(
     media::VideoColorSpace::PrimaryID,

@@ -54,16 +54,16 @@ void DevToolsManagerDelegate::DisposeBrowserContext(BrowserContext*,
   std::move(callback).Run(false, "Browser Context disposal is not supported");
 }
 
-void DevToolsManagerDelegate::ClientAttached(DevToolsAgentHost* agent_host,
-                                             DevToolsAgentHostClient* client) {}
-void DevToolsManagerDelegate::ClientDetached(DevToolsAgentHost* agent_host,
-                                             DevToolsAgentHostClient* client) {}
+void DevToolsManagerDelegate::ClientAttached(
+    DevToolsAgentHostClientChannel* channel) {}
+void DevToolsManagerDelegate::ClientDetached(
+    DevToolsAgentHostClientChannel* channel) {}
 
-void DevToolsManagerDelegate::HandleCommand(DevToolsAgentHost* agent_host,
-                                            DevToolsAgentHostClient* client,
-                                            const std::string& method,
-                                            base::span<const uint8_t> message,
-                                            NotHandledCallback callback) {
+void DevToolsManagerDelegate::HandleCommand(
+    DevToolsAgentHostClientChannel* channel,
+    const std::string& method,
+    base::span<const uint8_t> message,
+    NotHandledCallback callback) {
   std::move(callback).Run(message);
 }
 

@@ -53,7 +53,8 @@ void UrlCheckerDelegateImpl::StartDisplayingDefaultBlockingPage(
 
   // Report back that it is not ok to proceed with loading the URL.
   base::PostTask(FROM_HERE, {content::BrowserThread::IO},
-                 base::BindOnce(resource.callback, false));
+                 base::BindOnce(resource.callback, false /* proceed */,
+                                false /* showed_interstitial */));
 }
 
 bool UrlCheckerDelegateImpl::IsUrlWhitelisted(const GURL& url) {

@@ -425,4 +425,12 @@ GURL ClientSideDetectionService::GetClientReportUrl(
   return url;
 }
 
+ModelLoader::ClientModelStatus ClientSideDetectionService::GetLastModelStatus(
+    bool is_extended_reporting) {
+  ModelLoader* model_loader = is_extended_reporting
+                                  ? model_loader_extended_.get()
+                                  : model_loader_standard_.get();
+  return model_loader->last_client_model_status();
+}
+
 }  // namespace safe_browsing

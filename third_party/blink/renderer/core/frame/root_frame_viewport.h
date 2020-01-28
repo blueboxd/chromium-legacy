@@ -59,7 +59,7 @@ class CORE_EXPORT RootFrameViewport final
   bool IsRootFrameViewport() const override { return true; }
   void SetScrollOffset(const ScrollOffset&,
                        ScrollType,
-                       ScrollBehavior,
+                       mojom::blink::ScrollIntoViewParams::Behavior,
                        ScrollCallback on_finish) override;
   PhysicalRect ScrollIntoView(
       const PhysicalRect&,
@@ -114,7 +114,8 @@ class CORE_EXPORT RootFrameViewport final
   void ServiceScrollAnimations(double) override;
   void UpdateCompositorScrollAnimations() override;
   void CancelProgrammaticScrollAnimation() override;
-  ScrollBehavior ScrollBehaviorStyle() const override;
+  mojom::blink::ScrollIntoViewParams::Behavior ScrollBehaviorStyle()
+      const override;
   WebColorScheme UsedColorScheme() const override;
   void ClearScrollableArea() override;
   LayoutBox* GetLayoutBox() const override;
@@ -155,7 +156,7 @@ class CORE_EXPORT RootFrameViewport final
   void DistributeScrollBetweenViewports(
       const ScrollOffset&,
       ScrollType,
-      ScrollBehavior,
+      mojom::blink::ScrollIntoViewParams::Behavior,
       ViewportToScrollFirst,
       ScrollCallback on_finish = ScrollCallback());
 

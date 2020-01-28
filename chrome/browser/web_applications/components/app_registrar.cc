@@ -10,6 +10,7 @@
 #include "chrome/browser/web_applications/components/app_registrar_observer.h"
 #include "chrome/browser/web_applications/components/externally_installed_web_app_prefs.h"
 #include "chrome/browser/web_applications/components/install_bounce_metric.h"
+#include "chrome/browser/web_applications/components/web_app_helpers.h"
 
 namespace web_app {
 

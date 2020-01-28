@@ -276,6 +276,14 @@ void WorkletAnimation::PromoteScrollTimelinePendingToActive() {
   ReleasePendingTreeLock();
 }
 
+void WorkletAnimation::UpdateScrollTimeline(
+    base::Optional<ElementId> scroller_id,
+    base::Optional<double> start_scroll_offset,
+    base::Optional<double> end_scroll_offset) {
+  scroll_timeline_->UpdateScrollerIdAndScrollOffsets(
+      scroller_id, start_scroll_offset, end_scroll_offset);
+}
+
 void WorkletAnimation::RemoveKeyframeModel(int keyframe_model_id) {
   state_ = State::REMOVED;
   Animation::RemoveKeyframeModel(keyframe_model_id);

@@ -187,6 +187,7 @@ class CONTENT_EXPORT RenderFrame : public IPC::Listener,
       const std::string& interface_name,
       mojo::ScopedMessagePipeHandle interface_pipe) = 0;
 
+  // DEPRECATED. Please use GetBrowserInterfaceBroker() instead.
   // Returns the InterfaceProvider that this process can use to bind
   // interfaces exposed to it by the application running in this frame.
   virtual service_manager::InterfaceProvider* GetRemoteInterfaces() = 0;

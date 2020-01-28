@@ -134,6 +134,7 @@
 <translation id="1994173015038366702">Webgunearen URLa</translation>
 <translation id="2000419248597011803">Helbide-barrako zein bilaketa-koadroko bilaketak eta cookie batzuk bidaltzen ditu bilatzaile lehenetsira</translation>
 <translation id="2002537628803770967">Google Pay-n erabiltzen dituzun kreditu-txartelak eta helbideak</translation>
+<translation id="2012973609889389923">Webgune bizkorra</translation>
 <translation id="2013642289801508067">{FILE_COUNT,plural, =1{# fitxategi}other{# fitxategi}}</translation>
 <translation id="2017836877785168846">Helbide-barrako historia eta osatze automatikoak garbitzen ditu.</translation>
 <translation id="2021896219286479412">Webgunearen pantaila osoko aukerak</translation>
@@ -278,6 +279,7 @@
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> laster-marka}other{<ph name="BOOKMARKS_COUNT_MANY" /> laster-marka}}</translation>
 <translation id="3089395242580810162">Ireki ezkutuko fitxa batean</translation>
 <translation id="3123473560110926937">Webgune batzuetan blokeatu dira iragarkiak</translation>
+<translation id="3123734510202723619">Iragarpenak</translation>
 <translation id="3137521801621304719">Irten ezkutuko modutik</translation>
 <translation id="3143515551205905069">Utzi sinkronizazioa bertan behera</translation>
 <translation id="3157842584138209013">Sakatu "Aukera gehiago" botoia zenbat datu aurreztu dituzun ikusteko</translation>
@@ -306,6 +308,7 @@
 <translation id="3298243779924642547">Oinarrizkoa</translation>
 <translation id="3303414029551471755">Aurrera egin eta edukia deskargatu nahi duzu?</translation>
 <translation id="3306398118552023113">Chrome-n da abian aplikazioa</translation>
+<translation id="3312292613668865961">Eskatu zure baimena webguneren batek errealitate birtualeko gailuak eta datuak atzitu nahi dituenean (gomendatua)</translation>
 <translation id="3315103659806849044">Sinkronizazioaren eta Google zerbitzuaren ezarpenak pertsonalizatzen ari zara. Sinkronizazioa aktibatzeko, sakatu pantailaren behealdean dagoen Berretsi botoia. Joan gora</translation>
 <translation id="3328801116991980348">Webgunearen informazioa</translation>
 <translation id="3333961966071413176">Kontaktu guztiak</translation>
@@ -511,6 +514,7 @@ Ezarpena aldatzeko, <ph name="BEGIN_LINK" />berrezarri sinkronizazioa<ph name="E
 <translation id="4915549754973153784"><ph name="BEGIN_LINK" />Lortu laguntza<ph name="END_LINK" /> gailurik dagoen egiaztatu bitartean…</translation>
 <translation id="4921180162323349895">{FILE_COUNT,plural, =1{# orri}other{# orri}}</translation>
 <translation id="4932247056774066048"><ph name="DOMAIN_NAME" /> domeinuak kudeatutako kontu batean saioa amaitzera zoazenez, Chrome-ko datuak ezabatu egingo dira gailu honetatik. Datuek Google-ko kontuan gordeta jarraituko dute.</translation>
+<translation id="4935305910887312910">Eskatu zure baimena webguneren batek kameraren posizioa jaso edo gelaren mapa egin nahi duenean (gomendatua)</translation>
 <translation id="4943703118917034429">Errealitate birtuala</translation>
 <translation id="4943872375798546930">Ez dago emaitzarik</translation>
 <translation id="4958708863221495346"><ph name="URL_OF_THE_CURRENT_TAB" /> zure pantaila partekatzen ari da</translation>
@@ -687,7 +691,6 @@ Ezarpena aldatzeko, <ph name="BEGIN_LINK" />berrezarri sinkronizazioa<ph name="E
 <translation id="6201345951596836663">Kopiatu da esteka</translation>
 <translation id="6206551242102657620">Konexioa segurua da. Webguneari buruzko informazioa</translation>
 <translation id="6210748933810148297">Ez al zara <ph name="EMAIL" />?</translation>
-<translation id="6216432067784365534"><ph name="NAME_OF_LIST_ITEM" /> - Aukerak</translation>
 <translation id="6221633008163990886">Desblokeatu gailua pasahitzak esportatzeko</translation>
 <translation id="6232535412751077445">"Ez jarraitu" eginbidea gaitzen baduzu, arakatze-trafikoan gehituko da horretarako eskaera. Aukeraren eragina faktore hauen araberakoa da: webguneek eskaerari erantzuten dioten ala ez eta eskaera nola interpretatzen den.
 
@@ -733,7 +736,6 @@ Esaterako, bisitatu dituzun webguneetan oinarritzen ez diren iragarkiak bidalita
 <translation id="6534565668554028783">Google-k ez du erantzun garaiz</translation>
 <translation id="6538442820324228105"><ph name="GBS" /> GB deskargatu dira</translation>
 <translation id="6539092367496845964">Arazoren bat izan da. Saiatu berriro geroago.</translation>
-<translation id="654446541061731451">Hautatu NFC bidez igorri nahi duzun fitxa</translation>
 <translation id="6545017243486555795">Garbitu datu guztiak</translation>
 <translation id="6545864417968258051">Bluetooth bidezko gailuak bilatzea</translation>
 <translation id="6560414384669816528">Erabili Sogou bilatzaile gisa</translation>
@@ -744,6 +746,7 @@ Esaterako, bisitatu dituzun webguneetan oinarritzen ez diren iragarkiak bidalita
 <translation id="6573431926118603307">Beste gailuetan Chrome-n ireki dituzun fitxak hemen agertuko dira.</translation>
 <translation id="6583199322650523874">Egin uneko orriaren laster-marka</translation>
 <translation id="6593061639179217415">Ordenagailuetarako webgunea</translation>
+<translation id="6597891566292541626">Ezarri QR kodea edo barra-kodea markoan.</translation>
 <translation id="6600954340915313787">Chrome-n kopiatu da</translation>
 <translation id="6608650720463149374"><ph name="GIGABYTES" /> GB</translation>
 <translation id="6612358246767739896">Eduki babestua</translation>
@@ -953,6 +956,7 @@ Webguneak EZ du izango kamera atzitzeko baimenik. Zeuk soilik ikus ditzakezu kam
 <translation id="8109613176066109935">Laster-markak gailu guztietan eskura izateko, aktibatu sinkronizazioa</translation>
 <translation id="8110087112193408731">Chrome-ko jarduerak Ongizate digitala programan agertzea nahi duzu?</translation>
 <translation id="8116925261070264013">Audioa desaktibatuta</translation>
+<translation id="8127542551745560481">Editatu hasierako pantaila</translation>
 <translation id="813082847718468539">Ikusi webgunearen informazioa</translation>
 <translation id="8156139159503939589">Zein hizkuntza irakur ditzakezu?</translation>
 <translation id="8168435359814927499">Edukia</translation>
@@ -1024,8 +1028,8 @@ Webguneak EZ du izango kamera atzitzeko baimenik. Zeuk soilik ikus ditzakezu kam
 <translation id="8676374126336081632">Garbitu idatzitakoa</translation>
 <translation id="8687353297350450808">{N_BARS,plural, =1{Seinalearen indarra: # barra}other{Seinalearen indarra: # barra}}</translation>
 <translation id="868929229000858085">Bilatu kontaktuak</translation>
+<translation id="8698438463325761328">Ez utzi webguneei errealitate birtualeko gailuak eta datuak atzitzen</translation>
 <translation id="869891660844655955">Iraungitze-data</translation>
-<translation id="8719023831149562936">Ezin da igorri uneko fitxa</translation>
 <translation id="8728487861892616501">Aplikazio hau erabiltzen baduzu, onartu egingo dituzu Chrome-ren <ph name="BEGIN_LINK1" />Zerbitzu-baldintzak<ph name="END_LINK1" /> eta <ph name="BEGIN_LINK2" />Pribatutasun-oharra<ph name="END_LINK2" />, baita <ph name="BEGIN_LINK3" />Family Link zerbitzuaren bidez kudeatutako Google-ko kontuen Pribatutasun-oharra<ph name="END_LINK3" /> ere.</translation>
 <translation id="8748850008226585750">Ezkutatuta dago edukia</translation>
 <translation id="8751914237388039244">Hautatu irudi bat</translation>
@@ -1041,6 +1045,7 @@ Webguneak EZ du izango kamera atzitzeko baimenik. Zeuk soilik ikus ditzakezu kam
 <translation id="883806473910249246">Errore bat gertatu da edukia deskargatzen.</translation>
 <translation id="8840953339110955557">Baliteke orri hau sareko bertsioarekin bat ez etortzea.</translation>
 <translation id="8847988622838149491">USB</translation>
+<translation id="884828189055900810">Ez utzi webguneei kameraren posizioa jasotzen edo gelaren mapa egiten</translation>
 <translation id="8853345339104747198"><ph name="TAB_TITLE" /> fitxa</translation>
 <translation id="885701979325669005">Biltegia</translation>
 <translation id="889338405075704026">Joan Chrome-ren ezarpenetara</translation>
@@ -1048,6 +1053,7 @@ Webguneak EZ du izango kamera atzitzeko baimenik. Zeuk soilik ikus ditzakezu kam
 <translation id="8909135823018751308">Partekatu…</translation>
 <translation id="8912362522468806198">Google-ko kontua</translation>
 <translation id="8920114477895755567">Gurasoen xehetasunen zain.</translation>
+<translation id="8921772741368021346"><ph name="POSITION" />/<ph name="DURATION" /></translation>
 <translation id="8922289737868596582">Sakatu Aukera gehiago botoia orriak deskargatu eta konexiorik gabe erabiltzeko</translation>
 <translation id="8926666909099850184">NFC aukera desaktibatuta dago gailu honetan. Aktiba ezazu <ph name="BEGIN_LINK" />Android-en ezarpenetan<ph name="END_LINK" />.</translation>
 <translation id="8937772741022875483">Chrome-ko jarduerak Ongizate digitala programatik kendu nahi dituzu?</translation>

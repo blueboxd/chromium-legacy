@@ -67,6 +67,39 @@ IN_PROC_BROWSER_TEST_F(BrowserCommandsTest, ReloadSelectedTabs) {
   EXPECT_EQ(kTabCount, load_sum);
 }
 
+IN_PROC_BROWSER_TEST_F(BrowserCommandsTest, MoveTabsToNewWindow) {
+  auto AddTabs = [](Browser* browser, unsigned int num_tabs) {
+    for (unsigned int i = 0; i < num_tabs; ++i)
+      chrome::NewTab(browser);
+  };
+
+  // Single Tab Move to New Window.
+  // 1 (Current) + 1 (Added) = 2
+  AddTabs(browser(), 1);
+  std::vector<int> indices = {0};
+  // 2 (Current) - 1 (Moved) = 1
+  chrome::MoveTabsToNewWindow(browser(), indices);
+  ASSERT_TRUE(browser()->tab_strip_model()->count() == 1);
+
+  // Multi-Tab Move to New Window.
+  // 1 (Current) + 3 (Added) = 4
+  AddTabs(browser(), 3);
+  indices = {0, 1};
+  // 4 (Current) - 2 (Moved) = 2
+  chrome::MoveTabsToNewWindow(browser(), indices);
+  ASSERT_TRUE(browser()->tab_strip_model()->count() == 2);
+
+  // Check that the two additional windows have been created.
+  BrowserList* active_browser_list = BrowserList::GetInstance();
+  EXPECT_EQ(3u, active_browser_list->size());
+
+  // Check that the tabs made it to other windows.
+  Browser* browser = active_browser_list->get(1);
+  EXPECT_EQ(1, browser->tab_strip_model()->count());
+  browser = active_browser_list->get(2);
+  EXPECT_EQ(2, browser->tab_strip_model()->count());
+}
+
 // Tests IDC_MOVE_TAB_TO_NEW_WINDOW. This is a browser test and not a unit test
 // since it needs to create a new browser window, which doesn't work with a
 // TestingProfile.

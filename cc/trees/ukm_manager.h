@@ -45,7 +45,7 @@ class CC_EXPORT UkmManager {
                            FrameSequenceMetrics::ThreadType thread_type,
                            int64_t throughput) const;
   void RecordLatencyUKM(
-      bool missed_frame,
+      CompositorFrameReporter::MissedFrameReportType report_type,
       const std::vector<CompositorFrameReporter::StageData>& stage_history,
       const base::flat_set<FrameSequenceTrackerType>* active_trackers,
       const viz::FrameTimingDetails& viz_breakdown) const;

@@ -79,6 +79,7 @@
 <translation id="129553762522093515">Pechado recentemente</translation>
 <translation id="1298536327547837046">Busca de software malicioso</translation>
 <translation id="129863573139666797"><ph name="BEGIN_LINK" />Proba a borrar as cookies<ph name="END_LINK" /></translation>
+<translation id="1301324364792935241">Comproba a configuración do teu DNS seguro</translation>
 <translation id="1307966114820526988">Funcións obsoletas</translation>
 <translation id="1314509827145471431">Encadernación na parte dereita</translation>
 <translation id="1320233736580025032">Prc1 (sobre)</translation>
@@ -152,6 +153,7 @@
 <translation id="1569487616857761740">Introduce unha data de vencemento</translation>
 <translation id="1581080074034554886">CVC</translation>
 <translation id="1583429793053364125">Produciuse un erro ao mostrar esta páxina web.</translation>
+<translation id="1586541204584340881">As extensións que teñas instaladas</translation>
 <translation id="1588438908519853928">Normal</translation>
 <translation id="1592005682883173041">Acceso aos datos locais</translation>
 <translation id="1594030484168838125">Escoller</translation>
@@ -362,6 +364,7 @@
 <translation id="2544644783021658368">Documento individual</translation>
 <translation id="254947805923345898">O valor da política non é válido.</translation>
 <translation id="255002559098805027"><ph name="HOST_NAME" /> enviou unha resposta non válida.</translation>
+<translation id="2553853292994445426">Comproba a configuración do DNS seguro. Poden producirse erros ao conectar co DNS seguro que configurases.</translation>
 <translation id="2556876185419854533">&amp;Desfacer modificación</translation>
 <translation id="257674075312929031">Grupo</translation>
 <translation id="2586657967955657006">Portapapeis</translation>
@@ -482,6 +485,7 @@
 <translation id="3095940652251934233">Statement</translation>
 <translation id="3096100844101284527">Engadir enderezo de recollida</translation>
 <translation id="3105172416063519923">Código de identificación do recurso:</translation>
+<translation id="3107591622054137333"><ph name="BEGIN_LINK" />Comprobar a configuración do DNS seguro<ph name="END_LINK" /></translation>
 <translation id="3109728660330352905">Non tes autorización para ver esta páxina.</translation>
 <translation id="3113284927548439113">Terceira quenda</translation>
 <translation id="3116158981186517402">Laminación</translation>
@@ -784,6 +788,7 @@
 <translation id="4390472908992056574">Bordo</translation>
 <translation id="4406896451731180161">Resultados da busca</translation>
 <translation id="4408413947728134509">Cookies: <ph name="NUM_COOKIES" /></translation>
+<translation id="4414290883293381923">Acabas de escribir o teu contrasinal nun sitio enganoso. Chrome recoméndache que vaias a <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, <ph name="WEBSITE_3" /> e outros sitios nos que utilices este contrasinal para cambialo agora.</translation>
 <translation id="4415426530740016218">Enderezo de recollida</translation>
 <translation id="4424024547088906515">Este servidor non puido demostrar que é <ph name="DOMAIN" /> porque Chrome non confía no seu certificado de seguranza. É posible que isto se deba a un erro de configuración ou a que un atacante interceptase a túa conexión.</translation>
 <translation id="443121186588148776">Porto en serie</translation>
@@ -1216,6 +1221,7 @@
 <translation id="6353505687280762741">{COUNT,plural, =0{Ningún}=1{1 contrasinal (para <ph name="DOMAIN_LIST" />, sincronizado)}=2{2 contrasinais (para <ph name="DOMAIN_LIST" />, sincronizados)}other{# contrasinais (para <ph name="DOMAIN_LIST" />, sincronizados)}}</translation>
 <translation id="6358450015545214790">Que significan estas seccións?</translation>
 <translation id="6361757823711327522">B7</translation>
+<translation id="6364095313648930329"><ph name="BEGIN_LINK" />Comprobar o proxy, o firewall e a configuración do DNS seguro<ph name="END_LINK" /></translation>
 <translation id="6366710531182496394">Dúas grampas na parte esquerda</translation>
 <translation id="6377268785556383139">1 resultado para "<ph name="SEARCH_TEXT" />"</translation>
 <translation id="6380497234672085559">A0</translation>
@@ -1238,6 +1244,7 @@
 <translation id="6433595998831338502"><ph name="HOST_NAME" /> rexeitou a conexión.</translation>
 <translation id="6434309073475700221">Descartar</translation>
 <translation id="6440503408713884761">Política ignorada</translation>
+<translation id="6443406338865242315">As extensións e os complementos que teñas instalados</translation>
 <translation id="6446163441502663861">Kahu (sobre)</translation>
 <translation id="6446608382365791566">Engadir máis información</translation>
 <translation id="6447842834002726250">Cookies</translation>
@@ -1347,6 +1354,7 @@
 <translation id="7012363358306927923">China UnionPay</translation>
 <translation id="7016992613359344582">Ten en conta que estes cargos poden ser únicos ou periódicos e que quizais non se indiquen de forma evidente.</translation>
 <translation id="7029809446516969842">Contrasinais</translation>
+<translation id="7031646650991750659">As aplicacións de Google Play que teñas instaladas</translation>
 <translation id="7050187094878475250">Tentaches acceder a <ph name="DOMAIN" />, pero o servidor presentou un certificado cun período de validez demasiado longo para ser fiable.</translation>
 <translation id="705310974202322020">{NUM_CARDS,plural, =1{Esta tarxeta non se pode gardar neste momento}other{Estas tarxetas non se poden gardar neste momento}}</translation>
 <translation id="7053983685419859001">Bloquear</translation>
@@ -1406,6 +1414,7 @@ Detalles adicionais:
 <translation id="7319430975418800333">A3</translation>
 <translation id="7320336641823683070">Axuda de conexión</translation>
 <translation id="733354035281974745">Anulación da conta local do dispositivo</translation>
+<translation id="7333654844024768166">Acabas de escribir o teu contrasinal nun sitio enganoso. Chromium recoméndache que vaias a <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, <ph name="WEBSITE_3" /> e outros sitios nos que utilices este contrasinal para cambialo agora.</translation>
 <translation id="7334320624316649418">&amp;Refacer de cambio de orde</translation>
 <translation id="7337706099755338005">Non está dispoñible na túa plataforma.</translation>
 <translation id="733923710415886693">O certificado do servidor non se indicou mediante Certificate Transparency.</translation>

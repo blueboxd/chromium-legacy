@@ -39,19 +39,6 @@
 
 namespace blink {
 
-TextControlInnerContainer::TextControlInnerContainer(Document& document)
-    : HTMLDivElement(document) {
-  setAttribute(html_names::kIdAttr, shadow_element_names::TextFieldContainer());
-}
-
-LayoutObject* TextControlInnerContainer::CreateLayoutObject(
-    const ComputedStyle&,
-    LegacyLayout) {
-  return new LayoutTextControlInnerContainer(this);
-}
-
-// ---------------------------
-
 EditingViewPortElement::EditingViewPortElement(Document& document)
     : HTMLDivElement(document) {
   SetHasCustomStyleCallbacks();

@@ -734,10 +734,6 @@ IPC_MESSAGE_ROUTED0(FrameHostMsg_DidStopLoading)
 // Notifies the browser that this frame has new session history information.
 IPC_MESSAGE_ROUTED1(FrameHostMsg_UpdateState, content::PageState /* state */)
 
-// Sent when the renderer changed the progress of a load.
-IPC_MESSAGE_ROUTED1(FrameHostMsg_DidChangeLoadProgress,
-                    double /* load_progress */)
-
 // Requests that the given URL be opened in the specified manner.
 IPC_MESSAGE_ROUTED1(FrameHostMsg_OpenURL, FrameHostMsg_OpenURL_Params)
 

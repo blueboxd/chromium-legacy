@@ -23,8 +23,8 @@ class DefaultDelegateImpl : public ArcInstanceThrottle::Delegate {
  public:
   DefaultDelegateImpl() = default;
   ~DefaultDelegateImpl() override = default;
-  void SetCpuRestriction(bool restrict) override {
-    SetArcCpuRestriction(restrict);
+  void SetCpuRestriction(CpuRestrictionState cpu_restriction_state) override {
+    SetArcCpuRestriction(cpu_restriction_state);
   }
 
   void RecordCpuRestrictionDisabledUMA(const std::string& observer_name,
@@ -97,11 +97,13 @@ void ArcInstanceThrottle::ThrottleInstance(
     case chromeos::ThrottleObserver::PriorityLevel::CRITICAL:
     case chromeos::ThrottleObserver::PriorityLevel::IMPORTANT:
     case chromeos::ThrottleObserver::PriorityLevel::NORMAL:
-      delegate_->SetCpuRestriction(false);
+      delegate_->SetCpuRestriction(
+          CpuRestrictionState::CPU_RESTRICTION_FOREGROUND);
       break;
     case chromeos::ThrottleObserver::PriorityLevel::LOW:
     case chromeos::ThrottleObserver::PriorityLevel::UNKNOWN:
-      delegate_->SetCpuRestriction(true);
+      delegate_->SetCpuRestriction(
+          CpuRestrictionState::CPU_RESTRICTION_BACKGROUND);
       break;
   }
 }

@@ -137,6 +137,7 @@ All changes to this list should go through Blink's feature review process: http:
     color-interpolation
     color-interpolation-filters
     color-rendering
+    color-scheme
     column-count
     column-fill
     column-gap

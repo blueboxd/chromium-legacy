@@ -12,6 +12,7 @@
 #include "ash/public/cpp/window_backdrop.h"
 #include "ash/root_window_controller.h"
 #include "ash/shelf/shelf.h"
+#include "ash/shelf/shelf_metrics.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wallpaper/wallpaper_view.h"
@@ -25,6 +26,7 @@
 #include "ash/wm/tablet_mode/tablet_mode_controller_test_api.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/gfx/geometry/point_f.h"
 #include "ui/wm/core/window_util.h"
@@ -593,7 +595,14 @@ TEST_F(DragWindowFromShelfControllerTest, CancelDragIfWindowDestroyed) {
       window_drag_controller());
   EXPECT_EQ(window_drag_controller()->dragged_window(), window.get());
   EXPECT_TRUE(window_drag_controller()->drag_started());
+  base::HistogramTester histogram_tester;
+  histogram_tester.ExpectBucketCount(kHandleDragWindowFromShelfHistogramName,
+                                     ShelfWindowDragResult::kDragCanceled, 0);
+
   window.reset();
+  histogram_tester.ExpectBucketCount(kHandleDragWindowFromShelfHistogramName,
+                                     ShelfWindowDragResult::kDragCanceled, 1);
+
   EXPECT_EQ(window_drag_controller()->dragged_window(), nullptr);
   EXPECT_FALSE(window_drag_controller()->drag_started());
   // No crash should happen if Drag() call still comes in.
@@ -602,6 +611,11 @@ TEST_F(DragWindowFromShelfControllerTest, CancelDragIfWindowDestroyed) {
 }
 
 TEST_F(DragWindowFromShelfControllerTest, FlingWithHiddenHotseat) {
+  base::HistogramTester histogram_tester;
+  histogram_tester.ExpectBucketCount(
+      kHandleDragWindowFromShelfHistogramName,
+      ShelfWindowDragResult::kRestoreToOriginalBounds, 0);
+
   const gfx::Rect shelf_bounds =
       Shelf::ForWindow(Shell::GetPrimaryRootWindow())->GetIdealBounds();
   auto window = CreateTestWindow();
@@ -615,6 +629,13 @@ TEST_F(DragWindowFromShelfControllerTest, FlingWithHiddenHotseat) {
   // The window should restore back to its original position.
   EXPECT_TRUE(WindowState::Get(window.get())->IsMaximized());
 
+  histogram_tester.ExpectBucketCount(
+      kHandleDragWindowFromShelfHistogramName,
+      ShelfWindowDragResult::kRestoreToOriginalBounds, 1);
+
+  histogram_tester.ExpectBucketCount(kHandleDragWindowFromShelfHistogramName,
+                                     ShelfWindowDragResult::kGoToHomeScreen, 0);
+
   // Now a bigger distance to fling.
   StartDrag(window.get(), start, HotseatState::kHidden);
   Drag(gfx::Point(start.x(), start.y() - 200), 0.5f, 0.5f);
@@ -623,6 +644,9 @@ TEST_F(DragWindowFromShelfControllerTest, FlingWithHiddenHotseat) {
               -DragWindowFromShelfController::kVelocityToHomeScreenThreshold));
   // The window should be minimized.
   EXPECT_TRUE(WindowState::Get(window.get())->IsMinimized());
+
+  histogram_tester.ExpectBucketCount(kHandleDragWindowFromShelfHistogramName,
+                                     ShelfWindowDragResult::kGoToHomeScreen, 1);
 }
 
 TEST_F(DragWindowFromShelfControllerTest, DragToSnapMinDistance) {
@@ -639,6 +663,14 @@ TEST_F(DragWindowFromShelfControllerTest, DragToSnapMinDistance) {
   int snap_edge_inset =
       display_bounds.width() * kHighlightScreenPrimaryAxisRatio +
       kHighlightScreenEdgePaddingDp;
+
+  base::HistogramTester histogram_tester;
+  histogram_tester.ExpectBucketCount(kHandleDragWindowFromShelfHistogramName,
+                                     ShelfWindowDragResult::kGoToOverviewMode,
+                                     0);
+  histogram_tester.ExpectBucketCount(kHandleDragWindowFromShelfHistogramName,
+                                     ShelfWindowDragResult::kGoToSplitviewMode,
+                                     0);
 
   // If the drag starts outside of the snap region and then into snap region,
   // but the drag distance is not long enough.
@@ -657,6 +689,13 @@ TEST_F(DragWindowFromShelfControllerTest, DragToSnapMinDistance) {
   OverviewController* overview_controller = Shell::Get()->overview_controller();
   EXPECT_TRUE(overview_controller->InOverviewSession());
   EXPECT_FALSE(split_view_controller()->InSplitViewMode());
+
+  histogram_tester.ExpectBucketCount(kHandleDragWindowFromShelfHistogramName,
+                                     ShelfWindowDragResult::kGoToOverviewMode,
+                                     1);
+  histogram_tester.ExpectBucketCount(kHandleDragWindowFromShelfHistogramName,
+                                     ShelfWindowDragResult::kGoToSplitviewMode,
+                                     0);
 
   wm::ActivateWindow(window1.get());
   EXPECT_FALSE(overview_controller->InOverviewSession());
@@ -679,6 +718,13 @@ TEST_F(DragWindowFromShelfControllerTest, DragToSnapMinDistance) {
   EXPECT_TRUE(split_view_controller()->InSplitViewMode());
   EXPECT_TRUE(split_view_controller()->IsWindowInSplitView(window1.get()));
 
+  histogram_tester.ExpectBucketCount(kHandleDragWindowFromShelfHistogramName,
+                                     ShelfWindowDragResult::kGoToOverviewMode,
+                                     1);
+  histogram_tester.ExpectBucketCount(kHandleDragWindowFromShelfHistogramName,
+                                     ShelfWindowDragResult::kGoToSplitviewMode,
+                                     1);
+
   WindowState::Get(window1.get())->Maximize();
   EXPECT_FALSE(overview_controller->InOverviewSession());
   EXPECT_FALSE(split_view_controller()->InSplitViewMode());
@@ -698,6 +744,13 @@ TEST_F(DragWindowFromShelfControllerTest, DragToSnapMinDistance) {
   EXPECT_TRUE(overview_controller->InOverviewSession());
   EXPECT_FALSE(split_view_controller()->InSplitViewMode());
 
+  histogram_tester.ExpectBucketCount(kHandleDragWindowFromShelfHistogramName,
+                                     ShelfWindowDragResult::kGoToOverviewMode,
+                                     2);
+  histogram_tester.ExpectBucketCount(kHandleDragWindowFromShelfHistogramName,
+                                     ShelfWindowDragResult::kGoToSplitviewMode,
+                                     1);
+
   wm::ActivateWindow(window1.get());
   EXPECT_FALSE(overview_controller->InOverviewSession());
   EXPECT_FALSE(split_view_controller()->InSplitViewMode());
@@ -715,6 +768,13 @@ TEST_F(DragWindowFromShelfControllerTest, DragToSnapMinDistance) {
   EXPECT_TRUE(overview_controller->InOverviewSession());
   EXPECT_TRUE(split_view_controller()->InSplitViewMode());
   EXPECT_TRUE(split_view_controller()->IsWindowInSplitView(window1.get()));
+
+  histogram_tester.ExpectBucketCount(kHandleDragWindowFromShelfHistogramName,
+                                     ShelfWindowDragResult::kGoToOverviewMode,
+                                     2);
+  histogram_tester.ExpectBucketCount(kHandleDragWindowFromShelfHistogramName,
+                                     ShelfWindowDragResult::kGoToSplitviewMode,
+                                     2);
 }
 
 // Test that if overview is invisible when drag ends, the window will be taken

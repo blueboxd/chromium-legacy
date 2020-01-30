@@ -269,21 +269,27 @@ HRESULT EncryptUserPasswordUsingEscrowService(
   base::Value request_dict(base::Value::Type::DICTIONARY);
   request_dict.SetStringKey(kGenerateKeyPairRequestDeviceIdParameterName,
                             device_id);
+  base::Optional<base::Value> request_result;
 
   // Fetch the results and extract the |resource_id| for the key and the
   // |public_key| to be used for encryption.
   HRESULT hr = WinHttpUrlFetcher::BuildRequestAndFetchResultFromHttpService(
       PasswordRecoveryManager::Get()->GetEscrowServiceGenerateKeyPairUrl(),
-      access_token, {}, request_dict,
-      {
-          {kGenerateKeyPairResponseResourceIdParameterName, &resource_id},
-          {kGenerateKeyPairResponsePublicKeyParameterName, &public_key},
-      },
-      request_timeout);
+      access_token, {}, request_dict, request_timeout, &request_result);
 
   if (FAILED(hr)) {
     LOGFN(ERROR) << "BuildRequestAndFetchResultFromHttpService hr="
                  << putHR(hr);
+    return E_FAIL;
+  }
+
+  if (!request_result.has_value() ||
+      !ExtractKeysFromDict(
+          *request_result,
+          {
+              {kGenerateKeyPairResponseResourceIdParameterName, &resource_id},
+              {kGenerateKeyPairResponsePublicKeyParameterName, &public_key},
+          })) {
     return E_FAIL;
   }
 
@@ -351,20 +357,26 @@ HRESULT DecryptUserPasswordUsingEscrowService(
   }
 
   std::string private_key;
+  base::Optional<base::Value> request_result;
 
   // Fetch the results and extract the |private_key| to be used for decryption.
   HRESULT hr = WinHttpUrlFetcher::BuildRequestAndFetchResultFromHttpService(
       PasswordRecoveryManager::Get()->GetEscrowServiceGetPrivateKeyUrl(
           *resource_id),
-      access_token, {}, {},
-      {
-          {kGetPrivateKeyResponsePrivateKeyParameterName, &private_key},
-      },
-      request_timeout);
+      access_token, {}, {}, request_timeout, &request_result);
 
   if (FAILED(hr)) {
     LOGFN(ERROR) << "BuildRequestAndFetchResultFromHttpService hr="
                  << putHR(hr);
+    return E_FAIL;
+  }
+
+  if (!request_result.has_value() ||
+      !ExtractKeysFromDict(
+          *request_result,
+          {
+              {kGetPrivateKeyResponsePrivateKeyParameterName, &private_key},
+          })) {
     return E_FAIL;
   }
 

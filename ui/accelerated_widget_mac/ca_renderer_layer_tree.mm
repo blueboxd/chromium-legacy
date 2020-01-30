@@ -12,7 +12,6 @@
 #include <utility>
 
 #include "base/command_line.h"
-#include "base/mac/sdk_forward_declarations.h"
 #include "base/trace_event/trace_event.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/cocoa/animation_utils.h"

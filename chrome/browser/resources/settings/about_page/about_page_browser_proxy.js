@@ -350,6 +350,7 @@ cr.define('settings', function() {
 
   cr.addSingletonGetter(AboutPageBrowserProxyImpl);
 
+  // #cr_define_end
   return {
     AboutPageBrowserProxy: AboutPageBrowserProxy,
     AboutPageBrowserProxyImpl: AboutPageBrowserProxyImpl,

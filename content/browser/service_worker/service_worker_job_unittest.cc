@@ -94,7 +94,7 @@ ServiceWorkerRegisterJob::RegistrationCallback SaveRegistration(
                         registration, std::move(quit_closure));
 }
 
-ServiceWorkerStorage::FindRegistrationCallback SaveFoundRegistration(
+ServiceWorkerRegistry::FindRegistrationCallback SaveFoundRegistration(
     blink::ServiceWorkerStatusCode expected_status,
     scoped_refptr<ServiceWorkerRegistration>* registration,
     base::OnceClosure quit_closure) {

@@ -51,59 +51,59 @@ PASS new RTCPeerConnection(config) - with relative url should throw SyntaxError
 PASS setConfiguration(config) - with relative url should throw SyntaxError
 PASS new RTCPeerConnection(config) - with http url should throw SyntaxError
 PASS setConfiguration(config) - with http url should throw SyntaxError
-FAIL new RTCPeerConnection(config) - with invalid turn url should throw SyntaxError assert_throws: function "() =>
+FAIL new RTCPeerConnection(config) - with invalid turn url should throw SyntaxError assert_throws_dom: function "() =>
       makePc({ iceServers: [{
         urls: 'turn://example.org/foo?x=y'
-      }] })" threw object "InvalidAccessError: Failed to construct 'RTCPeerConnection': Both username and credential are required when the URL scheme is "turn" or "turns"." ("InvalidAccessError") expected object "SyntaxError" ("SyntaxError")
-FAIL setConfiguration(config) - with invalid turn url should throw SyntaxError assert_throws: function "() =>
+      }] })" threw object "InvalidAccessError: Failed to construct 'RTCPeerConnection': Both username and credential are required when the URL scheme is "turn" or "turns"." that is not a DOMException SyntaxError: property "code" is equal to 15, expected 12
+FAIL setConfiguration(config) - with invalid turn url should throw SyntaxError assert_throws_dom: function "() =>
       makePc({ iceServers: [{
         urls: 'turn://example.org/foo?x=y'
-      }] })" threw object "InvalidAccessError: Failed to execute 'setConfiguration' on 'RTCPeerConnection': Both username and credential are required when the URL scheme is "turn" or "turns"." ("InvalidAccessError") expected object "SyntaxError" ("SyntaxError")
-FAIL new RTCPeerConnection(config) - with invalid stun url should throw SyntaxError assert_throws: function "() =>
+      }] })" threw object "InvalidAccessError: Failed to execute 'setConfiguration' on 'RTCPeerConnection': Both username and credential are required when the URL scheme is "turn" or "turns"." that is not a DOMException SyntaxError: property "code" is equal to 15, expected 12
+FAIL new RTCPeerConnection(config) - with invalid stun url should throw SyntaxError assert_throws_dom: function "() =>
       makePc({ iceServers: [{
         urls: 'stun://example.org/foo?x=y'
-      }] })" threw object "NotSupportedError: Failed to construct 'RTCPeerConnection': Failed to initialize native PeerConnection." ("NotSupportedError") expected object "SyntaxError" ("SyntaxError")
-FAIL setConfiguration(config) - with invalid stun url should throw SyntaxError assert_throws: function "() =>
+      }] })" threw object "NotSupportedError: Failed to construct 'RTCPeerConnection': Failed to initialize native PeerConnection." that is not a DOMException SyntaxError: property "code" is equal to 9, expected 12
+FAIL setConfiguration(config) - with invalid stun url should throw SyntaxError assert_throws_dom: function "() =>
       makePc({ iceServers: [{
         urls: 'stun://example.org/foo?x=y'
-      }] })" threw object "OperationError: Failed to execute 'setConfiguration' on 'RTCPeerConnection': Could not update the PeerConnection with the given configuration." ("OperationError") expected object "SyntaxError" ("SyntaxError")
-FAIL new RTCPeerConnection(config) - with empty urls should throw SyntaxError assert_throws: function "() =>
+      }] })" threw object "OperationError: Failed to execute 'setConfiguration' on 'RTCPeerConnection': Could not update the PeerConnection with the given configuration." that is not a DOMException SyntaxError: property "code" is equal to 0, expected 12
+FAIL new RTCPeerConnection(config) - with empty urls should throw SyntaxError assert_throws_dom: function "() =>
       makePc({ iceServers: [{
         urls: []
       }] })" did not throw
-FAIL setConfiguration(config) - with empty urls should throw SyntaxError assert_throws: function "() =>
+FAIL setConfiguration(config) - with empty urls should throw SyntaxError assert_throws_dom: function "() =>
       makePc({ iceServers: [{
         urls: []
       }] })" did not throw
-FAIL new RTCPeerConnection(config) - with invalid credentialType should throw TypeError assert_throws: function "() =>
+FAIL new RTCPeerConnection(config) - with invalid credentialType should throw TypeError assert_throws_js: function "() =>
       makePc({ iceServers: [{
         urls: [],
         credentialType: 'invalid'
       }] })" did not throw
-FAIL setConfiguration(config) - with invalid credentialType should throw TypeError assert_throws: function "() =>
+FAIL setConfiguration(config) - with invalid credentialType should throw TypeError assert_throws_js: function "() =>
       makePc({ iceServers: [{
         urls: [],
         credentialType: 'invalid'
       }] })" did not throw
-FAIL new RTCPeerConnection(config) - with credentialType token should throw TypeError assert_throws: function "() =>
+FAIL new RTCPeerConnection(config) - with credentialType token should throw TypeError assert_throws_js: function "() =>
       makePc({ iceServers: [{
         urls: [],
         credentialType: 'token'
       }] })" did not throw
-FAIL setConfiguration(config) - with credentialType token should throw TypeError assert_throws: function "() =>
+FAIL setConfiguration(config) - with credentialType token should throw TypeError assert_throws_js: function "() =>
       makePc({ iceServers: [{
         urls: [],
         credentialType: 'token'
       }] })" did not throw
-FAIL new RTCPeerConnection(config) - with url field should throw TypeError assert_throws: function "() =>
+FAIL new RTCPeerConnection(config) - with url field should throw TypeError assert_throws_js: function "() =>
       makePc({ iceServers: [{
         url: 'stun:stun1.example.net'
       }] })" did not throw
-FAIL setConfiguration(config) - with url field should throw TypeError assert_throws: function "() =>
+FAIL setConfiguration(config) - with url field should throw TypeError assert_throws_js: function "() =>
       makePc({ iceServers: [{
         url: 'stun:stun1.example.net'
       }] })" did not throw
-FAIL new RTCPeerConnection(config) - with turns server, credentialType password, and RTCOauthCredential credential should throw InvalidAccessError assert_throws: function "() =>
+FAIL new RTCPeerConnection(config) - with turns server, credentialType password, and RTCOauthCredential credential should throw InvalidAccessError assert_throws_dom: function "() =>
       makePc({ iceServers: [{
         urls: 'turns:turn.example.org',
         credentialType: 'password',
@@ -113,7 +113,7 @@ FAIL new RTCPeerConnection(config) - with turns server, credentialType password,
           accessToken: ''
         }
       }] })" did not throw
-FAIL setConfiguration(config) - with turns server, credentialType password, and RTCOauthCredential credential should throw InvalidAccessError assert_throws: function "() =>
+FAIL setConfiguration(config) - with turns server, credentialType password, and RTCOauthCredential credential should throw InvalidAccessError assert_throws_dom: function "() =>
       makePc({ iceServers: [{
         urls: 'turns:turn.example.org',
         credentialType: 'password',
@@ -123,14 +123,14 @@ FAIL setConfiguration(config) - with turns server, credentialType password, and 
           accessToken: ''
         }
       }] })" did not throw
-FAIL new RTCPeerConnection(config) - with turns server, credentialType oauth, and string credential should throw InvalidAccessError assert_throws: function "() =>
+FAIL new RTCPeerConnection(config) - with turns server, credentialType oauth, and string credential should throw InvalidAccessError assert_throws_dom: function "() =>
       makePc({ iceServers: [{
         urls: 'turns:turn.example.org',
         credentialType: 'oauth',
         username: 'user',
         credential: 'cred'
       }] })" did not throw
-FAIL setConfiguration(config) - with turns server, credentialType oauth, and string credential should throw InvalidAccessError assert_throws: function "() =>
+FAIL setConfiguration(config) - with turns server, credentialType oauth, and string credential should throw InvalidAccessError assert_throws_dom: function "() =>
       makePc({ iceServers: [{
         urls: 'turns:turn.example.org',
         credentialType: 'oauth',

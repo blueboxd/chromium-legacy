@@ -30,6 +30,7 @@
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/paint_vector_icon.h"
+#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/animation/ink_drop_highlight.h"
 #include "ui/views/animation/ink_drop_impl.h"
 #include "ui/views/animation/ink_drop_ripple.h"
@@ -154,6 +155,7 @@ class BatteryView : public views::View, public PowerStatus::Observer {
   ~BatteryView() override;
 
   // views::View:
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   void ChildPreferredSizeChanged(views::View* child) override;
   void ChildVisibilityChanged(views::View* child) override;
   const char* GetClassName() const override { return "BatteryView"; }
@@ -200,6 +202,11 @@ BatteryView::~BatteryView() {
   PowerStatus::Get()->RemoveObserver(this);
 }
 
+void BatteryView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
+  node_data->role = ax::mojom::Role::kLabelText;
+  node_data->SetName(PowerStatus::Get()->GetAccessibleNameString(true));
+}
+
 void BatteryView::ChildPreferredSizeChanged(views::View* child) {
   PreferredSizeChanged();
 }
@@ -234,6 +241,7 @@ void BatteryView::ConfigureLabel(views::Label* label) {
   label->SetSubpixelRenderingEnabled(false);
   label->SetEnabledColor(AshColorProvider::Get()->GetContentLayerColor(
       ContentLayerType::kTextSecondary, AshColorMode::kDark));
+  label->GetViewAccessibility().OverrideIsIgnored(true);
 }
 
 // A base class of the views showing device management state.

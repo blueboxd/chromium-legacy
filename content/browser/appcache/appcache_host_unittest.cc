@@ -188,6 +188,8 @@ TEST_F(AppCacheHostTest, Basic) {
   host.set_frontend_for_testing(&mock_frontend_);
   EXPECT_EQ(kHostIdForTest, host.host_id());
   EXPECT_EQ(kProcessIdForTest, host.process_id());
+  EXPECT_TRUE(host.security_policy_handle());
+  EXPECT_TRUE(host.security_policy_handle()->is_valid());
   EXPECT_EQ(&service_, host.service());
   EXPECT_EQ(nullptr, host.associated_cache());
   EXPECT_FALSE(host.is_selection_pending());
@@ -752,9 +754,11 @@ TEST_F(AppCacheHostTest, SelectCacheAfterProcessCleanup) {
   web_contents_.reset();
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_FALSE(
+  // Since |host| for kProcessIdForTest is still alive, the corresponding
+  // SecurityState in ChildProcessSecurityPolicy should also be kept alive,
+  // allowing access for kDocumentURL.
+  EXPECT_TRUE(
       security_policy->CanAccessDataForOrigin(kProcessIdForTest, kDocumentURL));
-  EXPECT_FALSE(security_policy->HasSecurityState(kProcessIdForTest));
 
   // Verify that the document and manifest URLs do not trigger a bad message.
   {
@@ -803,9 +807,11 @@ TEST_F(AppCacheHostTest, ForeignEntryAfterProcessCleanup) {
   web_contents_.reset();
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_FALSE(
+  // Since |host| for kProcessIdForTest is still alive, the corresponding
+  // SecurityState in ChildProcessSecurityPolicy should also be kept alive,
+  // allowing access for kDocumentURL.
+  EXPECT_TRUE(
       security_policy->CanAccessDataForOrigin(kProcessIdForTest, kDocumentURL));
-  EXPECT_FALSE(security_policy->HasSecurityState(kProcessIdForTest));
 
   // Verify that a document URL does not trigger a bad message.
   {

@@ -54,11 +54,11 @@ base::string16 GetArrowName(BubbleBorder::Arrow arrow) {
 class ExampleBubble : public BubbleDialogDelegateView {
  public:
   ExampleBubble(View* anchor, BubbleBorder::Arrow arrow)
-      : BubbleDialogDelegateView(anchor, arrow) {}
+      : BubbleDialogDelegateView(anchor, arrow) {
+    DialogDelegate::set_buttons(ui::DIALOG_BUTTON_NONE);
+  }
 
  protected:
-  int GetDialogButtons() const override { return ui::DIALOG_BUTTON_NONE; }
-
   void Init() override {
     SetLayoutManager(std::make_unique<BoxLayout>(
         BoxLayout::Orientation::kVertical, gfx::Insets(50)));

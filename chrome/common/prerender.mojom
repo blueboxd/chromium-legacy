@@ -27,12 +27,6 @@ interface PrerenderDispatcher {
   // Signals to launcher that a prerender has had it's 'domcontentloaded' event.
   PrerenderDomContentLoaded(int32 prerender_id);
 
-  // Signals to a launcher that a new alias has been added to a prerender.
-  PrerenderAddAlias(url.mojom.Url alias);
-
-  // Signals to a launcher that a new alias has been added to a prerender.
-  PrerenderRemoveAliases(array<url.mojom.Url> aliases);
-
   // Signals to a launcher that a prerender is no longer running.
   PrerenderStop(int32 prerender_id);
 };

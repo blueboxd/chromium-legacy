@@ -244,6 +244,12 @@ struct GPU_EXPORT GpuPreferences {
   base::MessagePumpType message_pump_type = base::MessagePumpType::DEFAULT;
 #endif
 
+  // ===================================
+  // Settings from //ui/gfx/switches.h
+
+  // Enable native CPU-mappable GPU memory buffer support on Linux.
+  bool enable_native_gpu_memory_buffers = false;
+
   // Please update gpu_preferences_unittest.cc when making additions or
   // changes to this struct.
 };

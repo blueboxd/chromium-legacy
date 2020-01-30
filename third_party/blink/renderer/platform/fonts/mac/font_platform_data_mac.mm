@@ -106,7 +106,7 @@ static sk_sp<SkTypeface> LoadFromBrowserProcess(NSFont* ns_font,
           loaded_data_descriptor, CascadeToLastResortFontAttributes()));
   base::ScopedCFTypeRef<CTFontRef> ct_font(CTFontCreateWithFontDescriptor(
       data_descriptor_with_cascade.get(), text_size, 0));
-  sk_sp<SkTypeface> return_font(SkCreateTypefaceFromCTFont(ct_font));
+  sk_sp<SkTypeface> return_font = SkMakeTypefaceFromCTFont(ct_font);
 
   if (!return_font.get())
     // TODO crbug.com/461279: Make this appear in the inspector console?
@@ -127,7 +127,7 @@ std::unique_ptr<FontPlatformData> FontPlatformDataFromNSFont(
   DCHECK(ns_font);
   sk_sp<SkTypeface> typeface;
   if (CanLoadInProcess(ns_font)) {
-    typeface.reset(SkCreateTypefaceFromCTFont(base::mac::NSToCFCast(ns_font)));
+    typeface = SkMakeTypefaceFromCTFont(base::mac::NSToCFCast(ns_font));
   } else {
     // In process loading fails for cases where third party font manager
     // software registers fonts in non system locations such as /Library/Fonts

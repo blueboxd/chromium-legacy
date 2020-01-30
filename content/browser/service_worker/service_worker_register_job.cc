@@ -125,7 +125,7 @@ void ServiceWorkerRegisterJob::Start() {
 
 void ServiceWorkerRegisterJob::StartImpl() {
   SetPhase(START);
-  ServiceWorkerStorage::FindRegistrationCallback next_step;
+  ServiceWorkerRegistry::FindRegistrationCallback next_step;
   if (job_type_ == REGISTRATION_JOB) {
     next_step =
         base::BindOnce(&ServiceWorkerRegisterJob::ContinueWithRegistration,
@@ -190,10 +190,11 @@ ServiceWorkerRegistration* ServiceWorkerRegisterJob::registration() const {
   return internal_.registration.get();
 }
 
-void ServiceWorkerRegisterJob::set_new_version(ServiceWorkerVersion* version) {
+void ServiceWorkerRegisterJob::set_new_version(
+    scoped_refptr<ServiceWorkerVersion> version) {
   DCHECK(phase_ == UPDATE) << phase_;
   DCHECK(!internal_.new_version.get());
-  internal_.new_version = version;
+  internal_.new_version = std::move(version);
 }
 
 ServiceWorkerVersion* ServiceWorkerRegisterJob::new_version() {
@@ -480,11 +481,15 @@ void ServiceWorkerRegisterJob::ContinueWithRegistrationForSameScriptUrl(
 void ServiceWorkerRegisterJob::StartWorkerForUpdate() {
   context_->registry()->NotifyInstallingRegistration(registration());
 
-  int64_t version_id = context_->storage()->NewVersionId();
-  if (version_id == blink::mojom::kInvalidServiceWorkerVersionId) {
+  scoped_refptr<ServiceWorkerVersion> version =
+      context_->registry()->CreateNewVersion(registration(), script_url_,
+                                             worker_script_type_);
+  if (!version) {
     Complete(blink::ServiceWorkerStatusCode::kErrorAbort);
     return;
   }
+  DCHECK_NE(version->version_id(),
+            blink::mojom::kInvalidServiceWorkerVersionId);
 
   // PauseAfterDownload is used for an update check during start worker.
   bool need_to_pause_after_download =
@@ -499,9 +504,7 @@ void ServiceWorkerRegisterJob::StartWorkerForUpdate() {
   }
 
   // "Let worker be a new ServiceWorker object..." and start the worker.
-  set_new_version(new ServiceWorkerVersion(registration(), script_url_,
-                                           worker_script_type_, version_id,
-                                           context_->AsWeakPtr()));
+  set_new_version(std::move(version));
   new_version()->set_force_bypass_cache_for_scripts(force_bypass_cache_);
 
   if (need_to_pause_after_download) {

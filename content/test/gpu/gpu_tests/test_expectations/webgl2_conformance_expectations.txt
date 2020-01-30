@@ -112,6 +112,7 @@ crbug.com/912579 [ opengl win passthrough intel ] conformance2/rendering/out-of-
 # Intel failed issues
 crbug.com/795030 [ opengl win passthrough intel ] deqp/functional/gles3/shadercommonfunction.html [ Failure ]
 crbug.com/angleproject/2994 [ opengl win passthrough intel ] conformance2/textures/misc/copy-texture-image-same-texture.html [ Failure ]
+crbug.com/1042246 [ opengl win passthrough intel ] conformance2/extensions/ext-texture-norm16.html [ Skip ]
 
 # Intel driver issues
 crbug.com/602688 [ opengl win passthrough intel ] conformance2/glsl3/vector-dynamic-indexing.html [ Failure ]
@@ -142,6 +143,9 @@ crbug.com/953243 [ opengl win passthrough intel intel_lt_25.20.100.6444 ] confor
 # WEBGL_video_texture implementation.
 crbug.com/907195 [ opengl win passthrough intel intel_lt_25.20.100.6444 ] conformance/ogles/GL/biuDepthRange/biuDepthRange_001_to_002.html [ Skip ]
 crbug.com/907195 [ opengl win passthrough intel intel_lt_25.20.100.6444 ] conformance/uniforms/no-over-optimization-on-uniform-array-09.html [ Skip ]
+
+# TODO(crbug.com/1000354): Remove when angle workaround is applied to win opengles
+crbug.com/1000354 [ win opengles ] conformance2/extensions/ext-texture-norm16.html [ Skip ]
 
 # Flaky failure in IDirect3D9Ex::CreateDeviceEx
 # during DXVAVideoDecodeAccelerator::Initialize on 26.20.100.7323 driver

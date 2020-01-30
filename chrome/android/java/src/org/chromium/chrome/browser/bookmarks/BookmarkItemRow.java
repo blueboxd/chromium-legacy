@@ -41,13 +41,9 @@ public class BookmarkItemRow extends BookmarkRow implements LargeIconCallback {
 
     @Override
     public void onClick() {
-        int launchLocation = -1;
         switch (mDelegate.getCurrentState()) {
             case BookmarkUIState.STATE_FOLDER:
-                launchLocation = BookmarkLaunchLocation.FOLDER;
-                break;
             case BookmarkUIState.STATE_SEARCHING:
-                launchLocation = BookmarkLaunchLocation.SEARCH;
                 break;
             case BookmarkUIState.STATE_LOADING:
                 assert false :
@@ -57,14 +53,14 @@ public class BookmarkItemRow extends BookmarkRow implements LargeIconCallback {
                 assert false : "State not valid";
                 break;
         }
-        mDelegate.openBookmark(mBookmarkId, launchLocation);
+        mDelegate.openBookmark(mBookmarkId);
     }
 
     @Override
     BookmarkItem setBookmarkId(BookmarkId bookmarkId) {
         BookmarkItem item = super.setBookmarkId(bookmarkId);
         mUrl = item.getUrl();
-        mIconView.setImageDrawable(null);
+        mStartIconView.setImageDrawable(null);
         mTitleView.setText(item.getTitle());
         mDescriptionView.setText(item.getUrlForDisplay());
         mDelegate.getLargeIconBridge().getLargeIconForUrl(mUrl, mMinIconSize, this);
@@ -78,6 +74,6 @@ public class BookmarkItemRow extends BookmarkRow implements LargeIconCallback {
             @IconType int iconType) {
         Drawable iconDrawable = FaviconUtils.getIconDrawableWithoutFilter(
                 icon, mUrl, fallbackColor, mIconGenerator, getResources(), mDisplayedIconSize);
-        setIconDrawable(iconDrawable);
+        setStartIconDrawable(iconDrawable);
     }
 }

@@ -116,8 +116,7 @@ void GLVersionInfo::ParseVersionString(const char* version_str) {
       pieces[0].remove_suffix(1);
     }
   }
-  std::string gl_version;
-  pieces[0].CopyToString(&gl_version);
+  std::string gl_version(pieces[0]);
   base::Version version(gl_version);
   if (version.IsValid()) {
     if (version.components().size() >= 1) {
@@ -142,9 +141,9 @@ void GLVersionInfo::ParseVersionString(const char* version_str) {
   for (size_t ii = 1; ii < pieces.size(); ++ii) {
     for (auto vendor : kVendors) {
       if (pieces[ii] == vendor) {
-        vendor.CopyToString(&driver_vendor);
+        driver_vendor.assign(vendor.data(), vendor.size());
         if (ii + 1 < pieces.size())
-          pieces[ii + 1].CopyToString(&driver_version);
+          driver_version.assign(pieces[ii + 1].data(), pieces[ii + 1].size());
         return;
       }
     }
@@ -152,7 +151,7 @@ void GLVersionInfo::ParseVersionString(const char* version_str) {
   if (pieces.size() == 2) {
     if (pieces[1][0] == 'V')
       pieces[1].remove_prefix(1);
-    pieces[1].CopyToString(&driver_version);
+    driver_version.assign(pieces[1].data(), pieces[1].size());
     return;
   }
   constexpr base::StringPiece kMaliPrefix = "v1.r";
@@ -168,7 +167,7 @@ void GLVersionInfo::ParseVersionString(const char* version_str) {
     if (parts.size() != 2)
       return;
     driver_vendor = "ARM";
-    numbers[0].CopyToString(&driver_version);
+    driver_version.assign(numbers[0].data(), numbers[0].size());
     driver_version += ".";
     numbers[1].AppendToString(&driver_version);
     driver_version += ".";
@@ -177,7 +176,7 @@ void GLVersionInfo::ParseVersionString(const char* version_str) {
   }
   for (size_t ii = 1; ii < pieces.size(); ++ii) {
     if (pieces[ii].find('.') != std::string::npos) {
-      pieces[ii].CopyToString(&driver_version);
+      driver_version.assign(pieces[ii].data(), pieces[ii].size());
       return;
     }
   }

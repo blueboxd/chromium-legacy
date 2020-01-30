@@ -10,6 +10,7 @@
 #include "base/time/time.h"
 #include "components/safe_browsing/core/common/thread_utils.h"
 #include "components/safe_browsing/core/db/v4_protocol_manager_util.h"
+#include "components/signin/public/identity_manager/identity_manager.h"
 #include "net/base/ip_address.h"
 #include "net/base/load_flags.h"
 #include "net/base/url_util.h"
@@ -52,7 +53,8 @@ RealTimeUrlLookupService::RealTimeUrlLookupService(
 void RealTimeUrlLookupService::StartLookup(
     const GURL& url,
     RTLookupRequestCallback request_callback,
-    RTLookupResponseCallback response_callback) {
+    RTLookupResponseCallback response_callback,
+    signin::IdentityManager* identity_manager) {
   DCHECK(CurrentlyOnThread(ThreadID::IO));
   DCHECK(url.is_valid());
 

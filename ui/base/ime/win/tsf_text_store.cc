@@ -1104,7 +1104,8 @@ void TSFTextStore::CalculateTextandSelectionDiffAndNotifyIfNeeded() {
                                            &latest_buffer_from_client) &&
       text_input_client_->GetEditableSelectionRange(
           &latest_selection_from_client) &&
-      latest_buffer_range_from_client.Contains(latest_selection_from_client)) {
+      latest_selection_from_client.IsBoundedBy(
+          latest_buffer_range_from_client)) {
     // if the text and selection from text input client is the same as the text
     // and buffer we got last time, either the state hasn't changed since last
     // time we synced or the change hasn't completed yet. Either case we don't

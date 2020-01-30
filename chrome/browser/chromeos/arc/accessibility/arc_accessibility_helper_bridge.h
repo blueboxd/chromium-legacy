@@ -103,6 +103,8 @@ class ArcAccessibilityHelperBridge
   void OnNotificationSurfaceRemoved(
       ash::ArcNotificationSurface* surface) override {}
 
+  void InvokeUpdateEnabledFeatureForTesting();
+
   enum class TreeKeyType {
     kTaskId,
     kNotificationKey,
@@ -116,12 +118,12 @@ class ArcAccessibilityHelperBridge
 
   const TreeMap& trees_for_test() const { return trees_; }
 
-  void set_filter_type_all_for_test() { use_filter_type_all_for_test_ = true; }
-
  private:
   // virtual for testing.
   virtual aura::Window* GetActiveWindow();
   virtual extensions::EventRouter* GetEventRouter() const;
+  virtual arc::mojom::AccessibilityFilterType GetFilterTypeForProfile(
+      Profile* profile);
 
   std::unique_ptr<PrefChangeRegistrar> pref_change_registrar_;
   void UpdateCaptionSettings() const;
@@ -141,7 +143,6 @@ class ArcAccessibilityHelperBridge
 
   void OnAccessibilityStatusChanged(
       const chromeos::AccessibilityStatusEventDetails& event_details);
-  arc::mojom::AccessibilityFilterType GetFilterTypeForProfile(Profile* profile);
   void UpdateEnabledFeature();
   void UpdateWindowProperties(aura::Window* window);
   void SetExploreByTouchEnabled(bool enabled);
@@ -162,7 +163,9 @@ class ArcAccessibilityHelperBridge
 
   std::unique_ptr<chromeos::AccessibilityStatusSubscription>
       accessibility_status_subscription_;
-  bool use_filter_type_all_for_test_ = false;
+
+  arc::mojom::AccessibilityFilterType filter_type_ =
+      arc::mojom::AccessibilityFilterType::OFF;
 
   DISALLOW_COPY_AND_ASSIGN(ArcAccessibilityHelperBridge);
 };

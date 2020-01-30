@@ -20,22 +20,26 @@ class TabSharingUI;
 // "Sharing this tab to |app_name_|  [Stop]"
 // Layout for all other tabs:
 // "Sharing |shared_tab_name_| to |app_name_| [Stop] [Share this tab instead]"
+// or if |shared_tab_name_| is empty:
+// "Sharing a tab to |app_name_| [Stop] [Share this tab instead]"
 class TabSharingInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
-  // Creates a tab sharing infobar. If |shared_tab_name| is empty, it creates an
+  // Creates a tab sharing infobar. If |shared_tab| is true, it creates an
   // infobar with "currently shared tab" layout (see class comment). If
-  // |is_sharing_allowed| is false, [Share this tab] button is not displayed.
+  // |can_share| is false, [Share this tab] button is not displayed.
   static infobars::InfoBar* Create(InfoBarService* infobar_service,
                                    const base::string16& shared_tab_name,
                                    const base::string16& app_name,
-                                   bool is_sharing_allowed,
+                                   bool shared_tab,
+                                   bool can_share,
                                    TabSharingUI* ui);
   ~TabSharingInfoBarDelegate() override = default;
 
  private:
   TabSharingInfoBarDelegate(base::string16 shared_tab_name,
                             base::string16 app_name,
-                            bool is_sharing_allowed,
+                            bool shared_tab,
+                            bool can_share,
                             TabSharingUI* ui);
 
   // ConfirmInfoBarDelegate:
@@ -52,7 +56,8 @@ class TabSharingInfoBarDelegate : public ConfirmInfoBarDelegate {
 
   const base::string16 shared_tab_name_;
   const base::string16 app_name_;
-  bool is_sharing_allowed_;
+  bool shared_tab_;
+  bool can_share_;
 
   // Creates and removes delegate's infobar; outlives delegate.
   TabSharingUI* ui_;

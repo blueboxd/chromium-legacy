@@ -428,7 +428,6 @@
 <translation id="2799223571221894425">Vnovičen zagon</translation>
 <translation id="2803306138276472711">Googlova funkcija varnega brskanja je na spletnem mestu <ph name="SITE" /> nedavno <ph name="BEGIN_LINK" />zaznala zlonamerno programsko opremo<ph name="END_LINK" />. Spletna mesta, ki so običajno varna, so včasih okužena z zlonamerno programsko opremo.</translation>
 <translation id="2807052079800581569">Položaj Y slike</translation>
-<translation id="2809804249696361569">Oba lista</translation>
 <translation id="2824775600643448204">Naslovna in iskalna vrstica</translation>
 <translation id="2826760142808435982">Za šifriranje in preverjanje pristnosti povezave se uporablja <ph name="CIPHER" />, kot mehanizem za izmenjavo ključev pa <ph name="KX" />.</translation>
 <translation id="2835170189407361413">Počisti obrazec</translation>
@@ -937,7 +936,6 @@
 <translation id="5112422516732747637">A5</translation>
 <translation id="5115216390227830982">European-Edp</translation>
 <translation id="5115563688576182185">(64-bitno)</translation>
-<translation id="5121469660360593280">Skrbniku posredujte podatke o varnostnih dogodkih, ki jih je označila Chromova funkcija zaščite uporabnikov različice za podjetja. To morda vključuje URL-je strani, ki jih obiščete, imena ali metapodatke datotek in uporabniško ime, s katerim se prijavite v napravo in Chrome.</translation>
 <translation id="5123063207673082822">Konec tedna</translation>
 <translation id="5125394840236832993">B-Plus</translation>
 <translation id="5126510351761255129">Preverjanje kartice</translation>
@@ -952,7 +950,6 @@
 <translation id="5161506081086828129">Zlagalnik 9</translation>
 <translation id="516920405563544094">Vnesite CVC za kreditno kartico <ph name="CREDIT_CARD" />. Ko potrdite, bodo temu spletnemu mestu razkriti podatki o kreditni kartici iz Google Računa.</translation>
 <translation id="5169827969064885044">Izgubite lahko dostop do računa za organizacijo ali postanete žrtev kraje identitete. Chrome priporoča, da spremenite geslo.</translation>
-<translation id="5170017743895942767">Chromova zaščita uporabnikov različice za podjetja</translation>
 <translation id="5171045022955879922">Poiščite ali vnesite URL</translation>
 <translation id="5171689220826475070">Fanfold-European</translation>
 <translation id="5172758083709347301">Računalnik</translation>
@@ -1085,7 +1082,6 @@
 <translation id="5737183892635480227">{NUM_CARDS,plural, =1{Shranjevanje kartice v Google Računu}one{Shranjevanje kartic v Google Računu}two{Shranjevanje kartic v Google Računu}few{Shranjevanje kartic v Google Računu}other{Shranjevanje kartic v Google Računu}}</translation>
 <translation id="5745980000221562234">{NUM_CARDS,plural, =1{Za to kartico uporabite navidezno številko}one{Izbira kartice}two{Izbira kartice}few{Izbira kartice}other{Izbira kartice}}</translation>
 <translation id="5763042198335101085">Vnesite veljaven e-poštni naslov</translation>
-<translation id="5763703224595565476">Skrbnik je v brskalniku omogočil Chromovo funkcijo zaščite uporabnikov različice za podjetja. Chromova funkcija zaščite uporabnikov različice za podjetja ima dostop do nekaterih vaših podatkov.</translation>
 <translation id="5765072501007116331">Če si želite ogledati načine dostave in zahteve, izberite naslov</translation>
 <translation id="5776313857861697733">Prednost</translation>
 <translation id="5778550464785688721">Popolni nadzor naprav MIDI</translation>
@@ -1422,7 +1418,6 @@ Dodatne podrobnosti:
 <translation id="733923710415886693">Potrdilo strežnika ni bilo razkrito na podlagi pravilnika o preglednosti potrdila.</translation>
 <translation id="734600844861828519">11x15</translation>
 <translation id="7346048084945669753">Je povezan:</translation>
-<translation id="73479065977517481">Domena <ph name="ENROLLMENT_DOMAIN" /> je v brskalniku omogočila Chromovo funkcijo zaščite uporabnikov različice za podjetja. Chromova funkcija zaščite uporabnikov različice za podjetja ima dostop do nekaterih vaših podatkov.</translation>
 <translation id="7349430561505560861">A4-Extra</translation>
 <translation id="7353601530677266744">Ukazna vrstica</translation>
 <translation id="7372973238305370288">rezultat iskanja</translation>

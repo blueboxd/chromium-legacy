@@ -5,8 +5,8 @@
 #include "chrome/browser/signin/header_modification_delegate_impl.h"
 
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
+#include "chrome/browser/extensions/api/identity/web_auth_flow.h"
 #include "chrome/browser/profiles/profile_io_data.h"
-#include "chrome/browser/renderer_host/chrome_navigation_ui_data.h"
 #include "chrome/browser/signin/account_consistency_mode_manager.h"
 #include "chrome/browser/signin/chrome_signin_helper.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
@@ -17,7 +17,9 @@
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/sync/base/pref_names.h"
 #include "components/sync/driver/sync_service.h"
-#include "extensions/browser/extension_navigation_ui_data.h"
+#include "content/public/browser/render_process_host.h"
+#include "content/public/browser/site_instance.h"
+#include "extensions/browser/guest_view/web_view/web_view_renderer_state.h"
 
 namespace signin {
 
@@ -28,23 +30,13 @@ HeaderModificationDelegateImpl::HeaderModificationDelegateImpl(Profile* profile)
 HeaderModificationDelegateImpl::~HeaderModificationDelegateImpl() = default;
 
 bool HeaderModificationDelegateImpl::ShouldInterceptNavigation(
-    content::NavigationUIData* navigation_ui_data) {
+    content::WebContents* contents) {
   if (profile_->IsOffTheRecord())
     return false;
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-  // Note: InlineLoginUI uses an isolated request context and thus should
-  // bypass the account consistency flow. See http://crbug.com/428396
-  ChromeNavigationUIData* chrome_navigation_ui_data =
-      static_cast<ChromeNavigationUIData*>(navigation_ui_data);
-  if (chrome_navigation_ui_data) {
-    extensions::ExtensionNavigationUIData* extension_navigation_ui_data =
-        chrome_navigation_ui_data->GetExtensionNavigationUIData();
-    if (extension_navigation_ui_data &&
-        extension_navigation_ui_data->is_web_view()) {
-      return false;
-    }
-  }
+  if (ShouldIgnoreGuestWebViewRequest(contents))
+    return false;
 #endif
 
   return true;
@@ -83,5 +75,22 @@ void HeaderModificationDelegateImpl::ProcessResponse(
   ProcessAccountConsistencyResponseHeaders(response_adapter, redirect_url,
                                            profile_->IsOffTheRecord());
 }
+
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+// static
+bool HeaderModificationDelegateImpl::ShouldIgnoreGuestWebViewRequest(
+    content::WebContents* contents) {
+  if (!contents)
+    return true;
+
+  if (extensions::WebViewRendererState::GetInstance()->IsGuest(
+          contents->GetMainFrame()->GetProcess()->GetID())) {
+    GURL identity_api_site = extensions::WebAuthFlow::GetWebViewSiteURL();
+    if (contents->GetSiteInstance()->GetSiteURL() != identity_api_site)
+      return true;
+  }
+  return false;
+}
+#endif
 
 }  // namespace signin

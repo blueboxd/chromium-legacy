@@ -28,14 +28,8 @@ source_set("feed_core") {
     "feed_networking_host.h",
     "feed_scheduler_host.cc",
     "feed_scheduler_host.h",
-    "pref_names.cc",
-    "pref_names.h",
-    "refresh_throttler.cc",
-    "refresh_throttler.h",
     "time_serialization.cc",
     "time_serialization.h",
-    "user_classifier.cc",
-    "user_classifier.h",
   ]
 
   public_deps = [
@@ -78,14 +72,13 @@ source_set("core_unit_tests") {
     "feed_logging_metrics_unittest.cc",
     "feed_networking_host_unittest.cc",
     "feed_scheduler_host_unittest.cc",
-    "refresh_throttler_unittest.cc",
-    "user_classifier_unittest.cc",
   ]
 
   deps = [
     ":feed_core",
     "//base",
     "//base/test:test_support",
+    "//components/feed/core/common:feed_core_common",
     "//components/leveldb_proto:test_support",
     "//components/prefs:test_support",
     "//components/signin/public/identity_manager:test_support",

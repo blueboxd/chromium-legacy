@@ -15,13 +15,39 @@
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_enums.h"
 #include "ui/gl/gl_image_native_pixmap.h"
+#include "ui/gl/gl_implementation.h"
 
 #if defined(USE_OZONE)
 #include "ui/ozone/public/ozone_platform.h"
 #include "ui/ozone/public/surface_factory_ozone.h"
 #endif
 
+#if defined(USE_X11)
+#include "ui/gfx/linux/gbm_buffer.h"                     // nogncheck
+#include "ui/gfx/linux/gpu_memory_buffer_support_x11.h"  // nogncheck
+#include "ui/gl/gl_image_glx_native_pixmap.h"            // nogncheck
+#endif
+
 namespace gpu {
+
+namespace {
+
+// The boilerplate code to initialize each GLImage that we need is the same, but
+// the Initialize() methods are not virtual, so a template is needed.
+template <class Image, class Pixmap>
+scoped_refptr<Image> CreateImageFromPixmap(const gfx::Size& size,
+                                           gfx::BufferFormat format,
+                                           scoped_refptr<Pixmap> pixmap) {
+  auto image = base::MakeRefCounted<Image>(size, format);
+  if (!image->Initialize(std::move(pixmap))) {
+    LOG(ERROR) << "Failed to create GLImage " << size.ToString() << ", "
+               << gfx::BufferFormatToString(format);
+    return nullptr;
+  }
+  return image;
+}
+
+}  // namespace
 
 GpuMemoryBufferFactoryNativePixmap::GpuMemoryBufferFactoryNativePixmap()
     : GpuMemoryBufferFactoryNativePixmap(nullptr) {}
@@ -49,6 +75,18 @@ GpuMemoryBufferFactoryNativePixmap::CreateGpuMemoryBuffer(
                                usage);
   return CreateGpuMemoryBufferFromNativePixmap(id, size, format, usage,
                                                client_id, std::move(pixmap));
+#elif defined(USE_X11)
+  std::unique_ptr<ui::GbmBuffer> buffer =
+      ui::GpuMemoryBufferSupportX11::GetInstance()->CreateBuffer(format, size,
+                                                                 usage);
+  if (!buffer)
+    return gfx::GpuMemoryBufferHandle();
+  gfx::NativePixmapHandle handle = buffer->ExportHandle();
+  scoped_refptr<gfx::NativePixmapDmaBuf> pixmap =
+      base::MakeRefCounted<gfx::NativePixmapDmaBuf>(size, format,
+                                                    std::move(handle));
+  return CreateGpuMemoryBufferFromNativePixmap(id, size, format, usage,
+                                               client_id, std::move(pixmap));
 #else
   NOTIMPLEMENTED();
   return gfx::GpuMemoryBufferHandle();
@@ -72,6 +110,9 @@ void GpuMemoryBufferFactoryNativePixmap::CreateGpuMemoryBufferAsync(
               &GpuMemoryBufferFactoryNativePixmap::OnNativePixmapCreated, id,
               size, format, usage, client_id, std::move(callback),
               weak_factory_.GetWeakPtr()));
+#elif defined(USE_X11)
+  std::move(callback).Run(CreateGpuMemoryBuffer(id, size, format, usage,
+                                                client_id, surface_handle));
 #else
   NOTIMPLEMENTED();
   std::move(callback).Run(gfx::GpuMemoryBufferHandle());
@@ -131,13 +172,22 @@ GpuMemoryBufferFactoryNativePixmap::CreateImageForGpuMemoryBuffer(
     }
   }
 
-  auto image = base::MakeRefCounted<gl::GLImageNativePixmap>(size, format);
-  if (!image->Initialize(std::move(pixmap))) {
-    LOG(ERROR) << "Failed to create GLImage " << size.ToString() << ", "
-               << gfx::BufferFormatToString(format);
-    return nullptr;
+  switch (gl::GetGLImplementation()) {
+    case gl::kGLImplementationEGLGLES2:
+    case gl::kGLImplementationEGLANGLE:
+      // EGL
+      return CreateImageFromPixmap<gl::GLImageNativePixmap>(size, format,
+                                                            pixmap);
+#if defined(USE_X11)
+    case gl::kGLImplementationDesktopGL:
+      // GLX
+      return CreateImageFromPixmap<gl::GLImageGLXNativePixmap>(size, format,
+                                                               pixmap);
+#endif
+    default:
+      NOTREACHED();
+      return nullptr;
   }
-  return image;
 }
 
 bool GpuMemoryBufferFactoryNativePixmap::SupportsCreateAnonymousImage() const {

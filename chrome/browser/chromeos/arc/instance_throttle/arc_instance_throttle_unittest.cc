@@ -70,11 +70,15 @@ class ArcInstanceThrottleTest : public testing::Test {
     explicit TestDelegateImpl(ArcInstanceThrottleTest* test) : test_(test) {}
     ~TestDelegateImpl() override = default;
 
-    void SetCpuRestriction(bool restrict) override {
-      if (!restrict)
-        ++(test_->disable_cpu_restriction_counter_);
-      else
-        ++(test_->enable_cpu_restriction_counter_);
+    void SetCpuRestriction(CpuRestrictionState cpu_restriction_state) override {
+      switch (cpu_restriction_state) {
+        case CpuRestrictionState::CPU_RESTRICTION_FOREGROUND:
+          ++(test_->disable_cpu_restriction_counter_);
+          break;
+        case CpuRestrictionState::CPU_RESTRICTION_BACKGROUND:
+          ++(test_->enable_cpu_restriction_counter_);
+          break;
+      }
     }
 
     void RecordCpuRestrictionDisabledUMA(const std::string& observer_name,

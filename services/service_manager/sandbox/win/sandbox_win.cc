@@ -659,7 +659,7 @@ sandbox::ResultCode SetupAppContainerProfile(
 
   // Enable LPAC for GPU process, but not for XRCompositor service.
   if (sandbox_type == SandboxType::kGpu &&
-      !command_line.HasSwitch(service_manager::switches::kDisableGpuLpac)) {
+      base::FeatureList::IsEnabled(service_manager::features::kGpuLPAC)) {
     profile->SetEnableLowPrivilegeAppContainer(true);
   }
 
@@ -786,14 +786,8 @@ bool SandboxWin::IsAppContainerEnabledForSandbox(
     return false;
   if (base::win::GetVersion() < base::win::Version::WIN10_RS1)
     return false;
-  const std::string appcontainer_group_name =
-      base::FieldTrialList::FindFullName("EnableGpuAppContainer");
-  if (command_line.HasSwitch(switches::kDisableGpuAppContainer))
-    return false;
-  if (command_line.HasSwitch(switches::kEnableGpuAppContainer))
-    return true;
-  return base::StartsWith(appcontainer_group_name, "Enabled",
-                          base::CompareCase::INSENSITIVE_ASCII);
+  return base::FeatureList::IsEnabled(
+      service_manager::features::kGpuAppContainer);
 }
 
 // static

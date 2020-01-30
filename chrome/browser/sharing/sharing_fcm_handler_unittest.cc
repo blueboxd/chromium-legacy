@@ -42,10 +42,12 @@ const char kAuthSecret[] = "test_auth_secret";
 class MockSharingFCMSender : public SharingFCMSender {
  public:
   MockSharingFCMSender()
-      : SharingFCMSender(/*gcm_driver=*/nullptr,
-                         /*sync_preference=*/nullptr,
-                         /*vapid_key_manager=*/nullptr,
-                         /*local_device_info_provider=*/nullptr) {}
+      : SharingFCMSender(
+            /*web_push_sender=*/nullptr,
+            /*sync_preference=*/nullptr,
+            /*vapid_key_manager=*/nullptr,
+            /*gcm_driver=*/nullptr,
+            /*local_device_info_provider=*/nullptr) {}
   ~MockSharingFCMSender() override = default;
 
   MOCK_METHOD4(SendMessageToTargetInfo,

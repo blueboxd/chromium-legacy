@@ -2308,10 +2308,10 @@ void ServiceWorkerGlobalScope::Ping(PingCallback callback) {
   std::move(callback).Run();
 }
 
-void ServiceWorkerGlobalScope::SetIdleTimerDelayToZero() {
+void ServiceWorkerGlobalScope::SetIdleDelay(base::TimeDelta delay) {
   DCHECK(IsContextThread());
   DCHECK(event_queue_);
-  event_queue_->SetIdleDelay(base::TimeDelta::FromSeconds(0));
+  event_queue_->SetIdleDelay(delay);
 }
 
 void ServiceWorkerGlobalScope::AddMessageToConsole(

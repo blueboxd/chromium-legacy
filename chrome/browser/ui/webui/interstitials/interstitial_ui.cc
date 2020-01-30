@@ -27,6 +27,7 @@
 #include "components/safe_browsing/core/db/database_manager.h"
 #include "components/security_interstitials/content/bad_clock_blocking_page.h"
 #include "components/security_interstitials/content/blocked_interception_blocking_page.h"
+#include "components/security_interstitials/content/legacy_tls_blocking_page.h"
 #include "components/security_interstitials/content/mitm_software_blocking_page.h"
 #include "components/security_interstitials/content/origin_policy_ui.h"
 #include "components/security_interstitials/content/unsafe_resource_util.h"
@@ -194,6 +195,18 @@ BlockedInterceptionBlockingPage* CreateBlockedInterceptionBlockingPage(
   ssl_info.cert = ssl_info.unverified_cert = CreateFakeCert();
   ChromeSecurityBlockingPageFactory blocking_page_factory;
   return blocking_page_factory.CreateBlockedInterceptionBlockingPage(
+      web_contents, cert_error, request_url, nullptr, ssl_info);
+}
+
+LegacyTLSBlockingPage* CreateLegacyTLSBlockingPage(
+    content::WebContents* web_contents) {
+  const int cert_error = net::ERR_SSL_OBSOLETE_VERSION;
+  const GURL request_url("https://example.com");
+
+  net::SSLInfo ssl_info;
+  ssl_info.cert = ssl_info.unverified_cert = CreateFakeCert();
+  ChromeSecurityBlockingPageFactory blocking_page_factory;
+  return blocking_page_factory.CreateLegacyTLSBlockingPage(
       web_contents, cert_error, request_url, nullptr, ssl_info);
 }
 
@@ -482,6 +495,8 @@ void InterstitialHTMLSource::StartDataRequest(
   } else if (path_without_query == "/blocked-interception") {
     interstitial_delegate.reset(
         CreateBlockedInterceptionBlockingPage(web_contents));
+  } else if (path_without_query == "/legacy-tls") {
+    interstitial_delegate.reset(CreateLegacyTLSBlockingPage(web_contents));
   } else if (path_without_query == "/safebrowsing") {
     interstitial_delegate.reset(CreateSafeBrowsingBlockingPage(web_contents));
   } else if (path_without_query == "/clock") {

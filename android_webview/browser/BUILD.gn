@@ -206,6 +206,7 @@ source_set("browser") {
     "//components/crash/content/app",
     "//components/crash/content/browser",
     "//components/embedder_support/android:web_contents_delegate",
+    "//components/embedder_support/android/metrics",
     "//components/google/core/common",
     "//components/heap_profiling",
     "//components/metrics",

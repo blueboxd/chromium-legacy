@@ -9,18 +9,21 @@
 #include "chrome/browser/sharing/sharing_constants.h"
 #include "chrome/browser/sharing/sharing_sync_preference.h"
 #include "chrome/browser/sharing/vapid_key_manager.h"
-#include "components/gcm_driver/common/gcm_message.h"
+#include "chrome/browser/sharing/web_push/web_push_sender.h"
+#include "components/gcm_driver/crypto/gcm_encryption_result.h"
 #include "components/gcm_driver/gcm_driver.h"
 #include "components/sync_device_info/local_device_info_provider.h"
 
 SharingFCMSender::SharingFCMSender(
-    gcm::GCMDriver* gcm_driver,
+    std::unique_ptr<WebPushSender> web_push_sender,
     SharingSyncPreference* sync_preference,
     VapidKeyManager* vapid_key_manager,
+    gcm::GCMDriver* gcm_driver,
     syncer::LocalDeviceInfoProvider* local_device_info_provider)
-    : gcm_driver_(gcm_driver),
+    : web_push_sender_(std::move(web_push_sender)),
       sync_preference_(sync_preference),
       vapid_key_manager_(vapid_key_manager),
+      gcm_driver_(gcm_driver),
       local_device_info_provider_(local_device_info_provider) {}
 
 SharingFCMSender::~SharingFCMSender() = default;
@@ -41,6 +44,28 @@ void SharingFCMSender::SendMessageToTargetInfo(
     return;
   }
 
+  std::string payload;
+  message.SerializeToString(&payload);
+  gcm_driver_->EncryptMessage(
+      kSharingFCMAppID, fcm_registration->authorized_entity, target.p256dh,
+      target.auth_secret, payload,
+      base::BindOnce(
+          &SharingFCMSender::OnMessageEncrypted, weak_ptr_factory_.GetWeakPtr(),
+          std::move(target.fcm_token), time_to_live, std::move(callback)));
+}
+
+void SharingFCMSender::OnMessageEncrypted(std::string fcm_token,
+                                          base::TimeDelta time_to_live,
+                                          SendMessageCallback callback,
+                                          gcm::GCMEncryptionResult result,
+                                          std::string message) {
+  if (result != gcm::GCMEncryptionResult::ENCRYPTED_DRAFT_08) {
+    LOG(ERROR) << "Unable to encrypt message";
+    std::move(callback).Run(SharingSendMessageResult::kEncryptionError,
+                            base::nullopt);
+    return;
+  }
+
   auto* vapid_key = vapid_key_manager_->GetOrCreateKey();
   if (!vapid_key) {
     LOG(ERROR) << "Unable to retrieve VAPID key";
@@ -49,15 +74,13 @@ void SharingFCMSender::SendMessageToTargetInfo(
     return;
   }
 
-  gcm::WebPushMessage web_push_message;
+  WebPushMessage web_push_message;
   web_push_message.time_to_live = time_to_live.InSeconds();
-  web_push_message.urgency = gcm::WebPushMessage::Urgency::kHigh;
-  message.SerializeToString(&web_push_message.payload);
+  web_push_message.urgency = WebPushMessage::Urgency::kHigh;
+  web_push_message.payload = std::move(message);
 
-  gcm_driver_->SendWebPushMessage(
-      kSharingFCMAppID, fcm_registration->authorized_entity, target.p256dh,
-      target.auth_secret, target.fcm_token, vapid_key,
-      std::move(web_push_message),
+  web_push_sender_->SendMessage(
+      fcm_token, vapid_key, std::move(web_push_message),
       base::BindOnce(&SharingFCMSender::OnMessageSent,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
@@ -120,32 +143,37 @@ bool SharingFCMSender::SetMessageSenderInfo(SharingMessage* message) {
 }
 
 void SharingFCMSender::OnMessageSent(SendMessageCallback callback,
-                                     gcm::SendWebPushMessageResult result,
+                                     SendWebPushMessageResult result,
                                      base::Optional<std::string> message_id) {
   TRACE_EVENT1("sharing", "SharingFCMSender::OnMessageSent", "result", result);
 
   SharingSendMessageResult send_message_result;
   switch (result) {
-    case gcm::SendWebPushMessageResult::kSuccessful:
+    case SendWebPushMessageResult::kSuccessful:
       send_message_result = SharingSendMessageResult::kSuccessful;
       break;
-    case gcm::SendWebPushMessageResult::kDeviceGone:
+    case SendWebPushMessageResult::kDeviceGone:
       send_message_result = SharingSendMessageResult::kDeviceNotFound;
       break;
-    case gcm::SendWebPushMessageResult::kNetworkError:
+    case SendWebPushMessageResult::kNetworkError:
       send_message_result = SharingSendMessageResult::kNetworkError;
       break;
-    case gcm::SendWebPushMessageResult::kPayloadTooLarge:
+    case SendWebPushMessageResult::kPayloadTooLarge:
       send_message_result = SharingSendMessageResult::kPayloadTooLarge;
       break;
-    case gcm::SendWebPushMessageResult::kEncryptionFailed:
-    case gcm::SendWebPushMessageResult::kCreateJWTFailed:
-    case gcm::SendWebPushMessageResult::kServerError:
-    case gcm::SendWebPushMessageResult::kParseResponseFailed:
-    case gcm::SendWebPushMessageResult::kVapidKeyInvalid:
+    case SendWebPushMessageResult::kEncryptionFailed:
+    case SendWebPushMessageResult::kCreateJWTFailed:
+    case SendWebPushMessageResult::kServerError:
+    case SendWebPushMessageResult::kParseResponseFailed:
+    case SendWebPushMessageResult::kVapidKeyInvalid:
       send_message_result = SharingSendMessageResult::kInternalError;
       break;
   }
 
   std::move(callback).Run(send_message_result, message_id);
+}
+
+void SharingFCMSender::SetWebPushSenderForTesting(
+    std::unique_ptr<WebPushSender> web_push_sender) {
+  web_push_sender_ = std::move(web_push_sender);
 }

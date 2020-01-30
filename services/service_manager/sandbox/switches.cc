@@ -86,15 +86,6 @@ const char kAllowThirdPartyModules[] = "allow-third-party-modules";
 // Add additional capabilities to the AppContainer sandbox on the GPU process.
 const char kAddGpuAppContainerCaps[] = "add-gpu-appcontainer-caps";
 
-// Disables AppContainer sandbox on the GPU process.
-const char kDisableGpuAppContainer[] = "disable-gpu-appcontainer";
-
-// Disables low-privilege AppContainer sandbox on the GPU process.
-const char kDisableGpuLpac[] = "disable-gpu-lpac";
-
-// Enables AppContainer sandbox on the GPU process.
-const char kEnableGpuAppContainer[] = "enable-gpu-appcontainer";
-
 // Disables the sandbox and gives the process elevated privileges.
 const char kNoSandboxAndElevatedPrivileges[] = "no-sandbox-and-elevated";
 

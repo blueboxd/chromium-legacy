@@ -937,12 +937,15 @@ void FrameLoader::CommitNavigation(
   DCHECK(!StateMachine()->CreatingInitialEmptyDocument());
   HistoryItem* previous_history_item = GetDocumentLoader()->GetHistoryItem();
 
+  bool loading_url_as_empty_document =
+      !navigation_params->is_static_data &&
+      DocumentLoader::WillLoadUrlAsEmpty(navigation_params->url);
+
   // Check if the CSP of the response allow should block the new document from
   // committing before unloading the current document. This will allow to report
   // violations and display console messages properly.
-  base::Optional<ContentSecurityPolicy*> content_security_policy;
-  if (navigation_params->is_static_data ||
-      !DocumentLoader::WillLoadUrlAsEmpty(navigation_params->url)) {
+  ContentSecurityPolicy* content_security_policy;
+  if (!loading_url_as_empty_document) {
     content_security_policy =
         CreateCSP(navigation_params->url,
                   navigation_params->response.ToResourceResponse(),
@@ -1160,6 +1163,11 @@ void FrameLoader::CommitDocumentLoader(
     }
     // TODO(dgozman): make DidCreateScriptContext notification call currently
     // triggered by installing new document happen here, after commit.
+  }
+  if (!is_initialization) {
+    // Note: this must be called after DispatchDidCommitLoad() for
+    // metrics to be correctly sent to the browser process.
+    document_loader_->GetUseCounterHelper().DidCommitLoad(frame_);
   }
   if (document_loader_->LoadType() == WebFrameLoadType::kBackForward) {
     if (Page* page = frame_->GetPage())
@@ -1454,6 +1462,19 @@ void FrameLoader::CancelClientNavigation() {
 
 void FrameLoader::DispatchDocumentElementAvailable() {
   ScriptForbiddenScope forbid_scripts;
+
+  // Notify the browser about non-blank documents loading in the top frame.
+  KURL url = frame_->GetDocument()->Url();
+  if (url.IsValid() && !url.IsAboutBlankURL()) {
+    if (frame_->IsMainFrame()) {
+      // For now, don't remember plugin zoom values.  We don't want to mix them
+      // with normal web content (i.e. a fixed layout plugin would usually want
+      // them different).
+      frame_->GetLocalFrameHostRemote().DocumentAvailableInMainFrame(
+          frame_->GetDocument()->IsPluginDocument());
+    }
+  }
+
   Client()->DocumentElementAvailable();
 }
 

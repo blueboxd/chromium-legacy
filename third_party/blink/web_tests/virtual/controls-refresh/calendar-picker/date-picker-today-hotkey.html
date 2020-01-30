@@ -15,10 +15,6 @@ promise_test(() => {
   let dateElement = document.getElementById('date');
   return openPickerWithPromise(dateElement)
   .then(() => {
-    // Make the picker dismiss synchronously so we don't need to insert
-    // an artificial delay in the test
-    internals.pagePopupWindow.CalendarPicker.commitDelayMs = 0;
-
     eventSender.keyDown('t');
 
     let splitDate = dateElement.value.split('-');

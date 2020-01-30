@@ -24,6 +24,7 @@
 #include "content/public/common/use_zoom_for_dsf_policy.h"
 #include "gpu/ipc/common/gpu_messages.h"
 #include "third_party/blink/public/common/input/web_input_event.h"
+#include "third_party/blink/public/mojom/frame/intrinsic_sizing_info.mojom.h"
 #include "ui/base/ui_base_switches_util.h"
 #include "ui/gfx/geometry/dip_util.h"
 
@@ -158,9 +159,20 @@ void CrossProcessFrameConnector::RenderProcessGone() {
 
 void CrossProcessFrameConnector::SendIntrinsicSizingInfoToParent(
     const blink::WebIntrinsicSizingInfo& sizing_info) {
-  frame_proxy_in_parent_renderer_->Send(
-      new FrameMsg_IntrinsicSizingInfoOfChildChanged(
-          frame_proxy_in_parent_renderer_->GetRoutingID(), sizing_info));
+  // The width/height should not be negative since gfx::SizeF will clamp
+  // negative values to zero.
+  DCHECK((sizing_info.size.width >= 0.f) && (sizing_info.size.height >= 0.f));
+  DCHECK((sizing_info.aspect_ratio.width >= 0.f) &&
+         (sizing_info.aspect_ratio.height >= 0.f));
+
+  auto info = blink::mojom::IntrinsicSizingInfo::New(
+      gfx::SizeF(sizing_info.size.width, sizing_info.size.height),
+      gfx::SizeF(sizing_info.aspect_ratio.width,
+                 sizing_info.aspect_ratio.height),
+      sizing_info.has_width, sizing_info.has_height);
+
+  frame_proxy_in_parent_renderer_->GetAssociatedRemoteFrame()
+      ->IntrinsicSizingInfoOfChildChanged(std::move(info));
 }
 
 void CrossProcessFrameConnector::UpdateCursor(const WebCursor& cursor) {

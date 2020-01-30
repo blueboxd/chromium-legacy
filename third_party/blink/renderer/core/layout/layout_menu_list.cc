@@ -45,7 +45,6 @@ LayoutMenuList::LayoutMenuList(Element* element)
     : LayoutFlexibleBox(element),
       button_text_(nullptr),
       inner_block_(nullptr),
-      is_empty_(false),
       inner_block_height_(LayoutUnit()),
       options_width_(0) {
   DCHECK(IsA<HTMLSelectElement>(element));
@@ -66,7 +65,7 @@ scoped_refptr<ComputedStyle> LayoutMenuList::CreateInnerStyle() {
       ComputedStyle::CreateAnonymousStyleWithDisplay(StyleRef(),
                                                      EDisplay::kBlock);
 
-  AdjustInnerStyle(*inner_style);
+  AdjustInnerStyle(StyleRef(), *inner_style);
   return inner_style;
 }
 
@@ -74,7 +73,7 @@ void LayoutMenuList::UpdateInnerStyle() {
   DCHECK(inner_block_);
   scoped_refptr<ComputedStyle> inner_style =
       ComputedStyle::Clone(inner_block_->StyleRef());
-  AdjustInnerStyle(*inner_style);
+  AdjustInnerStyle(StyleRef(), *inner_style);
   inner_block_->SetModifiedStyleOutsideStyleRecalc(std::move(inner_style),
                                                    ApplyStyleChanges::kNo);
   // LayoutMenuList::ControlClipRect() depends on inner_block_->ContentsSize().
@@ -119,39 +118,42 @@ bool LayoutMenuList::HasOptionStyleChanged(
            option_style->GetUnicodeBidi() != inner_style.GetUnicodeBidi()));
 }
 
-void LayoutMenuList::AdjustInnerStyle(ComputedStyle& inner_style) const {
+void LayoutMenuList::AdjustInnerStyle(const ComputedStyle& parent_style,
+                                      ComputedStyle& inner_style) const {
   inner_style.SetFlexGrow(1);
   inner_style.SetFlexShrink(1);
   // min-width: 0; is needed for correct shrinking.
   inner_style.SetMinWidth(Length::Fixed(0));
+  inner_style.SetHasLineIfEmpty(true);
 
   // Use margin:auto instead of align-items:center to get safe centering, i.e.
   // when the content overflows, treat it the same as align-items: flex-start.
   // But we only do that for the cases where html.css would otherwise use
   // center.
-  if (StyleRef().AlignItemsPosition() == ItemPosition::kCenter) {
+  if (parent_style.AlignItemsPosition() == ItemPosition::kCenter) {
     inner_style.SetMarginTop(Length());
     inner_style.SetMarginBottom(Length());
     inner_style.SetAlignSelfPosition(ItemPosition::kFlexStart);
   }
 
-  Length padding_start = Length::Fixed(
-      LayoutTheme::GetTheme().PopupInternalPaddingStart(StyleRef()));
-  Length padding_end = Length::Fixed(
-      LayoutTheme::GetTheme().PopupInternalPaddingEnd(GetFrame(), StyleRef()));
-  inner_style.SetPaddingLeft(StyleRef().Direction() == TextDirection::kLtr
-                                 ? padding_start
-                                 : padding_end);
-  inner_style.SetPaddingRight(StyleRef().Direction() == TextDirection::kLtr
-                                  ? padding_end
-                                  : padding_start);
-  inner_style.SetPaddingTop(Length::Fixed(
-      LayoutTheme::GetTheme().PopupInternalPaddingTop(StyleRef())));
-  inner_style.SetPaddingBottom(Length::Fixed(
-      LayoutTheme::GetTheme().PopupInternalPaddingBottom(StyleRef())));
-  inner_style.SetTextAlign(StyleRef().IsLeftToRightDirection()
-                               ? ETextAlign::kLeft
-                               : ETextAlign::kRight);
+  LayoutTheme& theme = LayoutTheme::GetTheme();
+  Length padding_start =
+      Length::Fixed(theme.PopupInternalPaddingStart(parent_style));
+  Length padding_end =
+      Length::Fixed(theme.PopupInternalPaddingEnd(GetFrame(), parent_style));
+  if (parent_style.IsLeftToRightDirection()) {
+    inner_style.SetTextAlign(ETextAlign::kLeft);
+    inner_style.SetPaddingLeft(padding_start);
+    inner_style.SetPaddingRight(padding_end);
+  } else {
+    inner_style.SetTextAlign(ETextAlign::kRight);
+    inner_style.SetPaddingLeft(padding_end);
+    inner_style.SetPaddingRight(padding_start);
+  }
+  inner_style.SetPaddingTop(
+      Length::Fixed(theme.PopupInternalPaddingTop(parent_style)));
+  inner_style.SetPaddingBottom(
+      Length::Fixed(theme.PopupInternalPaddingBottom(parent_style)));
 
   if (HasOptionStyleChanged(inner_style)) {
     inner_block_->SetNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(
@@ -237,20 +239,7 @@ void LayoutMenuList::UpdateFromElement() {
 }
 
 void LayoutMenuList::SetText(const String& s) {
-  if (s.IsEmpty()) {
-    // FIXME: This is a hack. We need the select to have the same baseline
-    // positioning as any surrounding text. Wihtout any content, we align the
-    // bottom of the select to the bottom of the text. With content (In this
-    // case the faked " ") we correctly align the middle of the select to the
-    // middle of the text. It should be possible to remove this, just set
-    // s.impl() into the text and have things align correctly...
-    // crbug.com/485982
-    is_empty_ = true;
-    button_text_->ForceSetText(StringImpl::Create(" ", 1));
-  } else {
-    is_empty_ = false;
-    button_text_->ForceSetText(s.Impl());
-  }
+  button_text_->ForceSetText(s.Impl());
   // LayoutMenuList::ControlClipRect() depends on inner_block_->ContentsSize().
   SetNeedsPaintPropertyUpdate();
   if (Layer())
@@ -258,7 +247,7 @@ void LayoutMenuList::SetText(const String& s) {
 }
 
 String LayoutMenuList::GetText() const {
-  return button_text_ && !is_empty_ ? button_text_->GetText() : String();
+  return button_text_ ? button_text_->GetText() : String();
 }
 
 PhysicalRect LayoutMenuList::ControlClipRect(

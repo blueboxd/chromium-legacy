@@ -122,6 +122,7 @@ void GetAccessibilityHighlightInfo(
     pp::PDF::PrivateAccessibilityHighlightInfo highlight_info;
     highlight_info.index_in_page = i;
     highlight_info.bounds = std::move(cur_highlight_info.bounds);
+    highlight_info.color = cur_highlight_info.color;
 
     if (!GetEnclosingTextRunRangeForCharRange(
             text_runs, cur_highlight_info.start_char_index,

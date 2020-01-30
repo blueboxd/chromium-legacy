@@ -309,12 +309,11 @@ static webrtc::PeerConnectionInterface::IceServer ConvertIceServer(
   return converted_ice_server;
 }
 
-static cricket::IceParameters ConvertIceParameters(
-    const RTCIceParameters* ice_parameters) {
-  cricket::IceParameters converted_ice_parameters;
-  converted_ice_parameters.ufrag = ice_parameters->usernameFragment().Utf8();
-  converted_ice_parameters.pwd = ice_parameters->password().Utf8();
-  return converted_ice_parameters;
+static webrtc::RTCErrorOr<cricket::IceParameters> ConvertIceParameters(
+    const RTCIceParameters* raw_ice_parameters) {
+  std::string raw_ufrag = raw_ice_parameters->usernameFragment().Utf8();
+  std::string raw_pwd = raw_ice_parameters->password().Utf8();
+  return cricket::IceParameters::Parse(raw_ufrag, raw_pwd);
 }
 
 static WebVector<webrtc::PeerConnectionInterface::IceServer> ConvertIceServers(
@@ -364,8 +363,8 @@ void RTCIceTransport::gather(RTCIceGatherOptions* options,
     return;
   }
   gathering_state_ = cricket::kIceGatheringGathering;
-  proxy_->StartGathering(ConvertIceParameters(local_parameters_), stun_servers,
-                         turn_servers,
+  proxy_->StartGathering(ConvertIceParameters(local_parameters_).value(),
+                         stun_servers, turn_servers,
                          IceTransportPolicyFromString(options->gatherPolicy()));
 }
 
@@ -386,18 +385,27 @@ static bool RTCIceParametersAreEqual(const RTCIceParameters* a,
          a->password() == b->password();
 }
 
-void RTCIceTransport::start(RTCIceParameters* remote_parameters,
+void RTCIceTransport::start(RTCIceParameters* raw_remote_parameters,
                             const String& role_string,
                             ExceptionState& exception_state) {
   if (RaiseExceptionIfClosed(exception_state)) {
     return;
   }
-  if (!remote_parameters->hasUsernameFragment() ||
-      !remote_parameters->hasPassword()) {
+  if (!raw_remote_parameters->hasUsernameFragment() ||
+      !raw_remote_parameters->hasPassword()) {
     exception_state.ThrowTypeError(
         "remoteParameters must have usernameFragment and password fields set.");
     return;
   }
+  webrtc::RTCErrorOr<cricket::IceParameters> maybe_remote_parameters =
+      ConvertIceParameters(raw_remote_parameters);
+  if (!maybe_remote_parameters.ok()) {
+    ThrowExceptionFromRTCError(maybe_remote_parameters.error(),
+                               exception_state);
+    return;
+  }
+  cricket::IceParameters remote_parameters =
+      maybe_remote_parameters.MoveValue();
   cricket::IceRole role = IceRoleFromString(role_string);
   if (role_ != cricket::ICEROLE_UNKNOWN && role != role_) {
     exception_state.ThrowDOMException(
@@ -406,7 +414,7 @@ void RTCIceTransport::start(RTCIceParameters* remote_parameters,
     return;
   }
   if (remote_parameters_ &&
-      RTCIceParametersAreEqual(remote_parameters_, remote_parameters)) {
+      RTCIceParametersAreEqual(remote_parameters_, raw_remote_parameters)) {
     // No change to remote parameters: do nothing.
     return;
   }
@@ -423,18 +431,17 @@ void RTCIceTransport::start(RTCIceParameters* remote_parameters,
       initial_remote_candidates.push_back(
           *ConvertToCricketIceCandidate(*remote_candidate));
     }
-    proxy_->Start(ConvertIceParameters(remote_parameters), role,
-                  initial_remote_candidates);
+    proxy_->Start(remote_parameters, role, initial_remote_candidates);
     if (consumer_) {
       consumer_->OnIceTransportStarted();
     }
   } else {
     remote_candidates_.clear();
     state_ = webrtc::IceTransportState::kNew;
-    proxy_->HandleRemoteRestart(ConvertIceParameters(remote_parameters));
+    proxy_->HandleRemoteRestart(remote_parameters);
   }
 
-  remote_parameters_ = remote_parameters;
+  remote_parameters_ = raw_remote_parameters;
 }
 
 void RTCIceTransport::stop() {

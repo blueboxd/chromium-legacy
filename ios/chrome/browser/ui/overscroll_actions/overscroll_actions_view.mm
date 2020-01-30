@@ -166,12 +166,6 @@ const CGFloat kActionViewBackgroundColorBrightnessIncognito = 80.0 / 256.0;
 @property(nonatomic, strong) UIImageView* reloadActionImageView;
 @property(nonatomic, strong) UIImageView* closeTabActionImageView;
 
-@property(nonatomic, strong) CALayer* highlightMaskLayer;
-
-@property(nonatomic, strong) UIImageView* addTabActionImageViewHighlighted;
-@property(nonatomic, strong) UIImageView* reloadActionImageViewHighlighted;
-@property(nonatomic, strong) UIImageView* closeTabActionImageViewHighlighted;
-
 // Action labels.
 @property(nonatomic, strong) UILabel* addTabLabel;
 @property(nonatomic, strong) UILabel* reloadLabel;
@@ -179,9 +173,6 @@ const CGFloat kActionViewBackgroundColorBrightnessIncognito = 80.0 / 256.0;
 
 // The layer displaying the selection circle.
 @property(nonatomic, strong) CAShapeLayer* selectionCircleLayer;
-// Mask layer used to display highlighted states when the selection circle is
-// above them.
-@property(nonatomic, strong) CAShapeLayer* selectionCircleMaskLayer;
 
 // The current vertical offset.
 @property(nonatomic, assign) CGFloat verticalOffset;
@@ -258,8 +249,6 @@ const CGFloat kActionViewBackgroundColorBrightnessIncognito = 80.0 / 256.0;
         UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
     self.clipsToBounds = YES;
     _selectionCircleLayer = [self newSelectionCircleLayer];
-    _selectionCircleMaskLayer = [self newSelectionCircleLayer];
-    _selectionCircleMaskLayer.contentsGravity = kCAGravityCenter;
     _selectionCircleCroppingLayer = [[CALayer alloc] init];
     _selectionCircleCroppingLayer.frame = self.bounds;
     [_selectionCircleCroppingLayer setMasksToBounds:YES];
@@ -288,27 +277,6 @@ const CGFloat kActionViewBackgroundColorBrightnessIncognito = 80.0 / 256.0;
         [UIColor colorNamed:kToolbarButtonColor];
     [_closeTabActionImageView sizeToFit];
     [self addSubview:_closeTabActionImageView];
-
-    _highlightMaskLayer = [[CALayer alloc] init];
-    _highlightMaskLayer.frame = self.bounds;
-    _highlightMaskLayer.contentsGravity = kCAGravityCenter;
-    // Disable the entire highlight mask.
-    // TODO(crbug.com/986804): Remove the highlight mask after dark mode
-    // launches and this design is permanent.
-    _selectionCircleMaskLayer.fillColor = UIColor.clearColor.CGColor;
-    [_highlightMaskLayer setMask:_selectionCircleMaskLayer];
-    [self.layer addSublayer:_highlightMaskLayer];
-
-    _addTabActionImageViewHighlighted = [[UIImageView alloc] init];
-    _reloadActionImageViewHighlighted = [[UIImageView alloc] init];
-    if (UseRTLLayout()) {
-      [_reloadActionImageViewHighlighted
-          setTransform:CGAffineTransformMakeScale(-1, 1)];
-    }
-    _closeTabActionImageViewHighlighted = [[UIImageView alloc] init];
-    [_highlightMaskLayer addSublayer:_addTabActionImageViewHighlighted.layer];
-    [_highlightMaskLayer addSublayer:_reloadActionImageViewHighlighted.layer];
-    [_highlightMaskLayer addSublayer:_closeTabActionImageViewHighlighted.layer];
 
     _addTabLabel = [[UILabel alloc] init];
     _addTabLabel.numberOfLines = 0;
@@ -476,7 +444,6 @@ const CGFloat kActionViewBackgroundColorBrightnessIncognito = 80.0 / 256.0;
   if (self.snapshotView)
     self.backgroundView.frame = self.snapshotView.bounds;
   _selectionCircleCroppingLayer.frame = self.bounds;
-  _highlightMaskLayer.frame = self.bounds;
 
   [CATransaction commit];
 
@@ -523,7 +490,6 @@ const CGFloat kActionViewBackgroundColorBrightnessIncognito = 80.0 / 256.0;
   [UIView beginAnimations:@"position" context:NULL];
   [UIView setAnimationDuration:0.1];
   SetLayerPositionX(self.reloadActionImageView.layer, centerX);
-  SetLayerPositionX(self.reloadActionImageViewHighlighted.layer, centerX);
 
   const CGFloat addTabPositionX =
       MapValueToRange({kRefreshThreshold, kFullThreshold},
@@ -531,8 +497,6 @@ const CGFloat kActionViewBackgroundColorBrightnessIncognito = 80.0 / 256.0;
                        centerX - actionsPositionMargin},
                       self.verticalOffset);
   SetLayerPositionX(self.addTabActionImageView.layer, addTabPositionX);
-  SetLayerPositionX(self.addTabActionImageViewHighlighted.layer,
-                    addTabPositionX);
 
   const CGFloat closeTabPositionX =
       MapValueToRange({kRefreshThreshold, kFullThreshold},
@@ -540,8 +504,6 @@ const CGFloat kActionViewBackgroundColorBrightnessIncognito = 80.0 / 256.0;
                        centerX + actionsPositionMargin},
                       self.verticalOffset);
   SetLayerPositionX(self.closeTabActionImageView.layer, closeTabPositionX);
-  SetLayerPositionX(self.closeTabActionImageViewHighlighted.layer,
-                    closeTabPositionX);
 
   [UIView commitAnimations];
 
@@ -549,16 +511,10 @@ const CGFloat kActionViewBackgroundColorBrightnessIncognito = 80.0 / 256.0;
   [UIView setAnimationDuration:0.1];
   self.reloadActionImageView.layer.opacity = MapValueToRange(
       {kFullThreshold / 2.0, kFullThreshold}, {0, 1}, self.verticalOffset);
-  self.reloadActionImageViewHighlighted.layer.opacity =
-      self.reloadActionImageView.layer.opacity;
   self.addTabActionImageView.layer.opacity = MapValueToRange(
       {kRefreshThreshold, kFullThreshold}, {0, 1}, self.verticalOffset);
-  self.addTabActionImageViewHighlighted.layer.opacity =
-      self.addTabActionImageView.layer.opacity;
   self.closeTabActionImageView.layer.opacity = MapValueToRange(
       {kRefreshThreshold, kFullThreshold}, {0, 1}, self.verticalOffset);
-  self.closeTabActionImageViewHighlighted.layer.opacity =
-      self.closeTabActionImageView.layer.opacity;
   [UIView commitAnimations];
 
   [UIView beginAnimations:@"transform" context:NULL];
@@ -569,7 +525,6 @@ const CGFloat kActionViewBackgroundColorBrightnessIncognito = 80.0 / 256.0;
                       self.verticalOffset),
       0, 0, 1);
   self.reloadActionImageView.layer.transform = rotation;
-  self.reloadActionImageViewHighlighted.layer.transform = rotation;
   [UIView commitAnimations];
 }
 
@@ -647,7 +602,6 @@ const CGFloat kActionViewBackgroundColorBrightnessIncognito = 80.0 / 256.0;
     [CATransaction begin];
     [CATransaction setDisableActions:YES];
     self.selectionCircleLayer.position = [self selectionCirclePosition];
-    self.selectionCircleMaskLayer.position = self.selectionCircleLayer.position;
     [CATransaction commit];
   }
 }
@@ -666,9 +620,7 @@ const CGFloat kActionViewBackgroundColorBrightnessIncognito = 80.0 / 256.0;
     }
 
     [self.selectionCircleLayer removeAnimationForKey:@"path"];
-    [self.selectionCircleMaskLayer removeAnimationForKey:@"path"];
     self.selectionCircleLayer.path = [self circlePath:snapDistance].CGPath;
-    self.selectionCircleMaskLayer.path = self.selectionCircleLayer.path;
 
     if (fabs(snapDistance) > kSelectionSnappingOffsetFromCenter) {
       animate = YES;
@@ -683,8 +635,6 @@ const CGFloat kActionViewBackgroundColorBrightnessIncognito = 80.0 / 256.0;
       [CATransaction setCompletionBlock:^{
         self.selectionCircleLayer.path = finalPath.CGPath;
         [self.selectionCircleLayer removeAnimationForKey:@"path"];
-        self.selectionCircleMaskLayer.path = finalPath.CGPath;
-        [self.selectionCircleMaskLayer removeAnimationForKey:@"path"];
       }];
       CABasicAnimation* (^pathAnimation)(void) = ^{
         CABasicAnimation* pathAnim =
@@ -696,8 +646,6 @@ const CGFloat kActionViewBackgroundColorBrightnessIncognito = 80.0 / 256.0;
         return pathAnim;
       };
       [self.selectionCircleLayer addAnimation:pathAnimation() forKey:@"path"];
-      [self.selectionCircleMaskLayer addAnimation:pathAnimation()
-                                           forKey:@"path"];
       [CATransaction commit];
     }
     [CATransaction begin];
@@ -706,7 +654,6 @@ const CGFloat kActionViewBackgroundColorBrightnessIncognito = 80.0 / 256.0;
     else
       [CATransaction setAnimationDuration:kSelectionSnappingAnimationDuration];
     self.selectionCircleLayer.position = [self selectionCirclePosition];
-    self.selectionCircleMaskLayer.position = self.selectionCircleLayer.position;
     [CATransaction commit];
   }
 }
@@ -781,14 +728,10 @@ const CGFloat kActionViewBackgroundColorBrightnessIncognito = 80.0 / 256.0;
       // Scale selection down.
       self.selectionCircleLayer.transform =
           CATransform3DMakeScale(kSelectionDownScale, kSelectionDownScale, 1);
-      self.selectionCircleMaskLayer.transform =
-          self.selectionCircleLayer.transform;
     }
   } else {
     // Scale selection up.
     self.selectionCircleLayer.transform = CATransform3DMakeScale(1, 1, 1);
-    self.selectionCircleMaskLayer.transform =
-        self.selectionCircleLayer.transform;
   }
   [UIView commitAnimations];
 
@@ -799,11 +742,9 @@ const CGFloat kActionViewBackgroundColorBrightnessIncognito = 80.0 / 256.0;
 - (NSArray*)layersToCenterVertically {
   if (!_layersToCenterVertically) {
     _layersToCenterVertically = @[
-      _selectionCircleLayer, _selectionCircleMaskLayer,
-      _addTabActionImageView.layer, _reloadActionImageView.layer,
-      _closeTabActionImageView.layer, _addTabActionImageViewHighlighted.layer,
-      _reloadActionImageViewHighlighted.layer,
-      _closeTabActionImageViewHighlighted.layer, _backgroundView.layer
+      _selectionCircleLayer, _addTabActionImageView.layer,
+      _reloadActionImageView.layer, _closeTabActionImageView.layer,
+      _backgroundView.layer
     ];
   }
   return _layersToCenterVertically;
@@ -859,7 +800,6 @@ const CGFloat kActionViewBackgroundColorBrightnessIncognito = 80.0 / 256.0;
     [UIView setAnimationDuration:kSelectionSnappingAnimationDuration];
     self.selectionCircleLayer.opacity =
         self.overscrollState == OverscrollViewState::READY ? 1.0 : 0.0;
-    self.selectionCircleMaskLayer.opacity = self.selectionCircleLayer.opacity;
     [UIView commitAnimations];
     if (self.overscrollState == OverscrollViewState::PREPARE) {
       [UIView beginAnimations:@"transform" context:NULL];
@@ -884,7 +824,6 @@ const CGFloat kActionViewBackgroundColorBrightnessIncognito = 80.0 / 256.0;
   _horizontalOffsetOnAnimationStart = 0;
   self.selectionCircleLayer.transform = CATransform3DMakeScale(
       kSelectionInitialDownScale, kSelectionInitialDownScale, 1);
-  self.selectionCircleMaskLayer.transform = self.selectionCircleLayer.transform;
   [self updateSelectedAction];
 }
 

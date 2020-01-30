@@ -42,7 +42,7 @@
         android:layout_alignTop="@id/thumbnail"
         android:maxLines="2"
         android:ellipsize="end"
-        android:textAppearance="@style/TextAppearance.BlackTitle1"
+        android:textAppearance="@style/TextAppearance.TextLarge.Primary"
         android:textAlignment="viewStart"
         app:leading="@dimen/text_size_large_leading"
         app:layout_gravity="fill_horizontal"/>
@@ -56,7 +56,7 @@
         android:layout_marginTop="10dp"
         android:maxLines="1"
         android:ellipsize="end"
-        android:textAppearance="@style/TextAppearance.BlackCaption"
+        android:textAppearance="@style/TextAppearance.TextSmall.Secondary"
         android:textAlignment="viewStart" />
 
     <org.chromium.ui.widget.ChromeImageView

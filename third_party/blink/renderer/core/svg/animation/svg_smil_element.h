@@ -88,13 +88,18 @@ class CORE_EXPORT SVGSMILElement : public SVGElement, public SVGTests {
     kDispatchRepeatEvent = 1u << 1,
     kDispatchEndEvent = 1u << 2,
   };
-  EventDispatchMask UpdateActiveState(SMILTime elapsed);
+  EventDispatchMask UpdateActiveState(SMILTime presentation_time,
+                                      bool skip_repeat);
+  EventDispatchMask ComputeSeekEvents(
+      const SMILInterval& starting_interval) const;
   void DispatchEvents(EventDispatchMask);
   void UpdateProgressState(SMILTime presentation_time);
   bool IsHigherPriorityThan(const SVGSMILElement* other,
                             SMILTime presentation_time) const;
 
-  SMILTime ComputeNextIntervalTime(SMILTime presentation_time) const;
+  enum IncludeRepeats { kIncludeRepeats, kExcludeRepeats };
+  SMILTime ComputeNextIntervalTime(SMILTime presentation_time,
+                                   IncludeRepeats) const;
   SMILTime NextProgressTime(SMILTime elapsed) const;
 
   void Reset();
@@ -103,6 +108,7 @@ class CORE_EXPORT SVGSMILElement : public SVGElement, public SVGTests {
   static SMILTime ParseOffsetValue(const String&);
 
   bool IsContributing(SMILTime elapsed) const;
+  const SMILInterval& GetActiveInterval(SMILTime presentation_time) const;
 
   unsigned DocumentOrderIndex() const { return document_order_index_; }
   void SetDocumentOrderIndex(unsigned index) { document_order_index_ = index; }
@@ -151,7 +157,6 @@ class CORE_EXPORT SVGSMILElement : public SVGElement, public SVGTests {
   void DiscardOrRevalidateCurrentInterval(SMILTime presentation_time);
   SMILTime ResolveActiveEnd(SMILTime resolved_begin) const;
   SMILTime RepeatingDuration() const;
-  const SMILInterval& GetActiveInterval(SMILTime elapsed) const;
   void SetNewInterval(const SMILInterval&);
   void SetNewIntervalEnd(SMILTime new_end);
 
@@ -231,6 +236,8 @@ class CORE_EXPORT SVGSMILElement : public SVGElement, public SVGTests {
                                    SMILTime elapsed) const;
 
   ProgressState CalculateProgressState(SMILTime presentation_time) const;
+
+  SMILTime LastIntervalEndTime() const;
 
   Member<SVGElement> target_element_;
   Member<IdTargetObserver> target_id_observer_;

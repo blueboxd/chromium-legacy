@@ -1767,6 +1767,44 @@ TEST_F(AnimatingLayoutManagerTest,
   EXPECT_TRUE(child(2)->GetVisible());
 }
 
+// Regression test for issue 1046393 (crash/use-after-free when removing view
+// during animation).
+TEST_F(AnimatingLayoutManagerTest, RemoveDuringAnimationDoesntCrash) {
+  const ProposedLayout initial_layout{{35, 20},
+                                      {{child(0), true, {5, 5, 10, 10}},
+                                       {child(1), true, {20, 5, 10, 10}},
+                                       {child(2), false}}};
+  const ProposedLayout final_layout{
+      {20, 20},
+      {{child(0), true, {5, 5, 10, 10}}, {child(1), false}, {child(2), false}}};
+  layout()->SetShouldAnimateBounds(true);
+  layout()->SetDefaultFadeMode(
+      AnimatingLayoutManager::FadeInOutMode::kSlideFromLeadingEdge);
+  layout()->SetOrientation(LayoutOrientation::kHorizontal);
+  auto* const test_layout =
+      layout()->SetTargetLayoutManager(std::make_unique<TestLayoutManager>());
+  test_layout->SetLayout(initial_layout);
+  layout()->ResetLayout();
+  SizeAndLayout();
+
+  // Hide the second view.
+  test_layout->SetLayout(final_layout);
+
+  // Advance the animation. Second view should still be visible, third view
+  // should be hidden.
+  animation_api()->IncrementTime(base::TimeDelta::FromMilliseconds(500));
+
+  // Remove third view.
+  View* const child2 = child(2);
+  view()->RemoveChildView(child2);
+  delete child2;
+
+  // There is still layout data for the third view; the target hasn't changed;
+  // it's critical that during the removal the current layout has had the third
+  // view excised or there will be a DCHECK() here.
+  view()->Layout();
+}
+
 TEST_F(AnimatingLayoutManagerTest, FlexLayout_FadeInOnAdded) {
   constexpr gfx::Insets kChildMargins(5);
   layout()->SetShouldAnimateBounds(false);
@@ -4186,7 +4224,7 @@ TEST_F(AnimatingLayoutManagerRealtimeTest, TestAnimateStretch) {
 
 TEST_F(AnimatingLayoutManagerRealtimeTest, TestConstrainedSpaceStopsAnimation) {
   constexpr gfx::Insets kChildMargins(5);
-  static const SizeBounds kSizeBounds(45, base::nullopt);
+  constexpr SizeBounds kSizeBounds(45, base::nullopt);
   layout()->SetShouldAnimateBounds(true);
   layout()->SetAnimationDuration(kMinimumAnimationTime);
   auto* const flex_layout =
@@ -4230,7 +4268,7 @@ TEST_F(AnimatingLayoutManagerRealtimeTest, TestConstrainedSpaceStopsAnimation) {
 
 TEST_F(AnimatingLayoutManagerRealtimeTest, TestConstrainedSpaceDoesNotRestart) {
   constexpr gfx::Insets kChildMargins(5);
-  static const SizeBounds kSizeBounds(45, base::nullopt);
+  constexpr SizeBounds kSizeBounds(45, base::nullopt);
   layout()->SetShouldAnimateBounds(true);
   layout()->SetAnimationDuration(kMinimumAnimationTime);
   auto* const flex_layout =
@@ -4278,7 +4316,7 @@ TEST_F(AnimatingLayoutManagerRealtimeTest, TestConstrainedSpaceDoesNotRestart) {
 TEST_F(AnimatingLayoutManagerRealtimeTest,
        TestConstrainedSpaceRestartedAnimationSucceeds) {
   constexpr gfx::Insets kChildMargins(5);
-  static const SizeBounds kSizeBounds(45, base::nullopt);
+  constexpr SizeBounds kSizeBounds(45, base::nullopt);
   layout()->SetShouldAnimateBounds(true);
   layout()->SetAnimationDuration(kMinimumAnimationTime);
   auto* const flex_layout =
@@ -4287,7 +4325,7 @@ TEST_F(AnimatingLayoutManagerRealtimeTest,
   flex_layout->SetCollapseMargins(true);
   flex_layout->SetCrossAxisAlignment(LayoutAlignment::kStart);
   flex_layout->SetDefault(kMarginsKey, kChildMargins);
-  InitRootView(std::move(kSizeBounds));
+  InitRootView(kSizeBounds);
   child(0)->SetProperty(kFlexBehaviorKey, FlexSpecification::ForSizeRule(
                                               MinimumFlexSizeRule::kScaleToZero,
                                               MaximumFlexSizeRule::kPreferred));

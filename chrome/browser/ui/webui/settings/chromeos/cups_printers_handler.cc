@@ -39,7 +39,6 @@
 #include "chrome/browser/ui/chrome_select_file_policy.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/common/webui_url_constants.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/debug_daemon/debug_daemon_client.h"
 #include "chromeos/printing/ppd_line_reader.h"
@@ -1240,7 +1239,7 @@ void CupsPrintersHandler::OnGetEulaUrl(const std::string& callback_id,
     return;
   }
 
-  GURL eula_url(chrome::kChromeUIOSCreditsURL + license);
+  GURL eula_url = PrinterConfigurer::GeneratePrinterEulaUrl(license);
   ResolveJavascriptCallback(
       base::Value(callback_id),
       eula_url.is_valid() ? base::Value(eula_url.spec()) : base::Value());

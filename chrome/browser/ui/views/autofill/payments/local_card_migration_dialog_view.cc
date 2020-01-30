@@ -354,6 +354,11 @@ LocalCardMigrationDialogView::LocalCardMigrationDialogView(
   DialogDelegate::set_button_label(ui::DIALOG_BUTTON_OK, GetOkButtonLabel());
   DialogDelegate::set_button_label(ui::DIALOG_BUTTON_CANCEL,
                                    GetCancelButtonLabel());
+  DialogDelegate::set_cancel_callback(
+      base::BindOnce(&LocalCardMigrationDialogView::OnDialogCancelled,
+                     base::Unretained(this)));
+  DialogDelegate::set_accept_callback(base::BindOnce(
+      &LocalCardMigrationDialogView::OnDialogAccepted, base::Unretained(this)));
   set_close_on_deactivate(false);
   set_margins(gfx::Insets());
 }
@@ -410,34 +415,29 @@ bool LocalCardMigrationDialogView::IsDialogButtonEnabled(
   return true;
 }
 
-bool LocalCardMigrationDialogView::Accept() {
+void LocalCardMigrationDialogView::OnDialogAccepted() {
   switch (controller_->GetViewState()) {
     case LocalCardMigrationDialogState::kOffered:
       DCHECK(offer_view_);
       controller_->OnSaveButtonClicked(offer_view_->GetSelectedCardGuids());
-      return true;
+      break;
     case LocalCardMigrationDialogState::kFinished:
     case LocalCardMigrationDialogState::kActionRequired:
       controller_->OnDoneButtonClicked();
-      return true;
+      break;
   }
 }
 
-bool LocalCardMigrationDialogView::Cancel() {
+void LocalCardMigrationDialogView::OnDialogCancelled() {
   switch (controller_->GetViewState()) {
     case LocalCardMigrationDialogState::kOffered:
       controller_->OnCancelButtonClicked();
-      return true;
+      break;
     case LocalCardMigrationDialogState::kFinished:
     case LocalCardMigrationDialogState::kActionRequired:
       controller_->OnViewCardsButtonClicked();
-      return true;
+      break;
   }
-}
-
-bool LocalCardMigrationDialogView::Close() {
-  // Close the dialog if the user exits the browser when dialog is visible.
-  return true;
 }
 
 void LocalCardMigrationDialogView::WindowClosing() {

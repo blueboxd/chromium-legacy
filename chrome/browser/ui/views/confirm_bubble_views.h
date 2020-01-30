@@ -35,9 +35,6 @@ class ConfirmBubbleViews : public views::DialogDelegateView,
  protected:
   ~ConfirmBubbleViews() override;
 
-  // views::DialogDelegate implementation.
-  bool IsDialogButtonEnabled(ui::DialogButton button) const override;
-
   // views::WidgetDelegate implementation.
   ui::ModalType GetModalType() const override;
   base::string16 GetWindowTitle() const override;
@@ -46,8 +43,8 @@ class ConfirmBubbleViews : public views::DialogDelegateView,
   // views::ButtonListener implementation.
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
-  // views::View implementation.
-  void AddedToWidget() override;
+  // views::DialogDelegateView implementation.
+  void OnDialogInitialized() override;
 
  private:
   // The model to customize this bubble view.

@@ -68,6 +68,8 @@ BrailleDisplayManager = class {
      * @private
      */
     this.realDisplayState_ = this.displayState_;
+    /** @private {number|undefined} */
+    this.blinkerId_;
 
     translatorManager.addChangeListener(function() {
       this.translateContent_(this.content_, this.expansionType_);

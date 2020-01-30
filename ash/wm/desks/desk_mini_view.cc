@@ -61,14 +61,13 @@ gfx::Rect GetDeskPreviewBounds(aura::Window* root_window, int preview_height) {
 
 DeskMiniView::DeskMiniView(DesksBarView* owner_bar,
                            aura::Window* root_window,
-                           Desk* desk,
-                           const base::string16& title)
+                           Desk* desk)
     : views::Button(owner_bar),
       owner_bar_(owner_bar),
       root_window_(root_window),
       desk_(desk),
       desk_preview_(CreateDeskPreviewView(this)),
-      label_(new views::Label(title)),
+      label_(new views::Label()),
       close_desk_button_(new CloseDeskButton(this)) {
   desk_->AddObserver(this);
 
@@ -83,7 +82,7 @@ DeskMiniView::DeskMiniView(DesksBarView* owner_bar,
 
   close_desk_button_->SetVisible(false);
 
-  // TODO(afakhry): Tooltips and accessible names.
+  // TODO(afakhry): Tooltips.
 
   AddChildView(desk_preview_.get());
   AddChildView(label_);
@@ -93,7 +92,7 @@ DeskMiniView::DeskMiniView(DesksBarView* owner_bar,
   SetInkDropMode(InkDropMode::OFF);
 
   UpdateBorderColor();
-  SetAccessibleName(title);
+  OnDeskNameChanged(desk_->name());
 }
 
 DeskMiniView::~DeskMiniView() {
@@ -101,11 +100,6 @@ DeskMiniView::~DeskMiniView() {
   // before the desk.
   if (desk_)
     desk_->RemoveObserver(this);
-}
-
-void DeskMiniView::SetTitle(const base::string16& title) {
-  label_->SetText(title);
-  SetAccessibleName(title);
 }
 
 aura::Window* DeskMiniView::GetDeskContainer() const {
@@ -249,6 +243,11 @@ void DeskMiniView::OnDeskDestroyed(const Desk* desk) {
   desk_ = nullptr;
 
   // No need to remove `this` as an observer; it's done automatically.
+}
+
+void DeskMiniView::OnDeskNameChanged(const base::string16& new_name) {
+  label_->SetText(new_name);
+  SetAccessibleName(new_name);
 }
 
 views::View* DeskMiniView::GetView() {

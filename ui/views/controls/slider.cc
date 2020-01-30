@@ -83,6 +83,11 @@ void Slider::SetEnableAccessibilityEvents(bool enabled) {
   OnPropertyChanged(&accessibility_events_enabled_, kPropertyEffectsNone);
 }
 
+void Slider::SetRenderingStyle(RenderingStyle style) {
+  style_ = style;
+  SchedulePaint();
+}
+
 float Slider::GetAnimatingValue() const{
   return move_animation_ && move_animation_->is_animating()
              ? move_animation_->CurrentValueBetween(initial_animating_value_,

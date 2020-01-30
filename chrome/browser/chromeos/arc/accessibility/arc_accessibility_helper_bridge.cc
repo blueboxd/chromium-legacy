@@ -339,10 +339,8 @@ void ArcAccessibilityHelperBridge::OnConnectionClosed() {
 
 void ArcAccessibilityHelperBridge::OnAccessibilityEvent(
     mojom::AccessibilityEventDataPtr event_data) {
-  arc::mojom::AccessibilityFilterType filter_type =
-      GetFilterTypeForProfile(profile_);
-
-  switch (filter_type) {
+  filter_type_ = GetFilterTypeForProfile(profile_);
+  switch (filter_type_) {
     case arc::mojom::AccessibilityFilterType::ALL:
       HandleFilterTypeAllEvent(std::move(event_data));
       break;
@@ -483,6 +481,10 @@ void ArcAccessibilityHelperBridge::OnNotificationSurfaceAdded(
   }
 }
 
+void ArcAccessibilityHelperBridge::InvokeUpdateEnabledFeatureForTesting() {
+  UpdateEnabledFeature();
+}
+
 aura::Window* ArcAccessibilityHelperBridge::GetActiveWindow() {
   exo::WMHelper* wm_helper = exo::WMHelper::GetInstance();
   if (!wm_helper)
@@ -493,6 +495,28 @@ aura::Window* ArcAccessibilityHelperBridge::GetActiveWindow() {
 
 extensions::EventRouter* ArcAccessibilityHelperBridge::GetEventRouter() const {
   return extensions::EventRouter::Get(profile_);
+}
+
+arc::mojom::AccessibilityFilterType
+ArcAccessibilityHelperBridge::GetFilterTypeForProfile(Profile* profile) {
+  chromeos::AccessibilityManager* accessibility_manager =
+      chromeos::AccessibilityManager::Get();
+  if (!accessibility_manager)
+    return arc::mojom::AccessibilityFilterType::OFF;
+
+  // TODO(yawano): Support the case where primary user is in background.
+  if (accessibility_manager->profile() != profile)
+    return arc::mojom::AccessibilityFilterType::OFF;
+
+  if (accessibility_manager->IsSelectToSpeakEnabled() ||
+      accessibility_manager->IsSwitchAccessEnabled() ||
+      accessibility_manager->IsSpokenFeedbackEnabled()) {
+    return arc::mojom::AccessibilityFilterType::ALL;
+  }
+
+  if (accessibility_manager->IsFocusHighlightEnabled())
+    return arc::mojom::AccessibilityFilterType::FOCUS;
+  return arc::mojom::AccessibilityFilterType::OFF;
 }
 
 void ArcAccessibilityHelperBridge::UpdateCaptionSettings() const {
@@ -584,54 +608,36 @@ void ArcAccessibilityHelperBridge::OnAccessibilityStatusChanged(
   }
 }
 
-arc::mojom::AccessibilityFilterType
-ArcAccessibilityHelperBridge::GetFilterTypeForProfile(Profile* profile) {
-  if (use_filter_type_all_for_test_)
-    return arc::mojom::AccessibilityFilterType::ALL;
-
-  chromeos::AccessibilityManager* accessibility_manager =
-      chromeos::AccessibilityManager::Get();
-  if (!accessibility_manager)
-    return arc::mojom::AccessibilityFilterType::OFF;
-
-  // TODO(yawano): Support the case where primary user is in background.
-  if (accessibility_manager->profile() != profile)
-    return arc::mojom::AccessibilityFilterType::OFF;
-
-  if (accessibility_manager->IsSelectToSpeakEnabled() ||
-      accessibility_manager->IsSwitchAccessEnabled() ||
-      accessibility_manager->IsSpokenFeedbackEnabled()) {
-    return arc::mojom::AccessibilityFilterType::ALL;
-  }
-
-  if (accessibility_manager->IsFocusHighlightEnabled())
-    return arc::mojom::AccessibilityFilterType::FOCUS;
-
-  return arc::mojom::AccessibilityFilterType::OFF;
-}
-
 void ArcAccessibilityHelperBridge::UpdateEnabledFeature() {
-  arc::mojom::AccessibilityFilterType filter_type =
+  arc::mojom::AccessibilityFilterType new_filter_type_ =
       GetFilterTypeForProfile(profile_);
+  // Clear trees when filter type is changed to non-ALL.
+  if (filter_type_ != new_filter_type_ &&
+      new_filter_type_ != arc::mojom::AccessibilityFilterType::ALL) {
+    trees_.clear();
+  }
+  filter_type_ = new_filter_type_;
 
   auto* instance = ARC_GET_INSTANCE_FOR_METHOD(
       arc_bridge_service_->accessibility_helper(), SetFilter);
   if (instance)
-    instance->SetFilter(filter_type);
+    instance->SetFilter(filter_type_);
 
+  if (!chromeos::AccessibilityManager::Get())
+    return;
   is_focus_highlight_enabled_ =
-      filter_type != arc::mojom::AccessibilityFilterType::OFF &&
+      filter_type_ != arc::mojom::AccessibilityFilterType::OFF &&
       chromeos::AccessibilityManager::Get()->IsFocusHighlightEnabled();
 
   bool add_activation_observer =
-      filter_type == arc::mojom::AccessibilityFilterType::ALL;
+      filter_type_ == arc::mojom::AccessibilityFilterType::ALL;
   if (add_activation_observer == activation_observer_added_)
     return;
 
-  exo::WMHelper* wm_helper = exo::WMHelper::GetInstance();
-  if (!wm_helper)
+  if (!exo::WMHelper::HasInstance())
     return;
 
+  exo::WMHelper* wm_helper = exo::WMHelper::GetInstance();
   if (add_activation_observer) {
     wm_helper->AddActivationObserver(this);
     activation_observer_added_ = true;

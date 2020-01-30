@@ -23,6 +23,7 @@ MarkingVisitorCommon::MarkingVisitorCommon(ThreadState* state,
                                            int task_id)
     : Visitor(state),
       marking_worklist_(Heap().GetMarkingWorklist(), task_id),
+      write_barrier_worklist_(Heap().GetWriteBarrierWorklist(), task_id),
       not_fully_constructed_worklist_(Heap().GetNotFullyConstructedWorklist(),
                                       task_id),
       weak_callback_worklist_(Heap().GetWeakCallbackWorklist(), task_id),
@@ -195,9 +196,7 @@ void MarkingVisitor::TraceMarkedBackingStoreSlow(void* value) {
 }
 
 MarkingVisitor::MarkingVisitor(ThreadState* state, MarkingMode marking_mode)
-    : MarkingVisitorBase(state, marking_mode, WorklistTaskId::MutatorThread),
-      write_barrier_worklist_(Heap().GetWriteBarrierWorklist(),
-                              WorklistTaskId::MutatorThread) {
+    : MarkingVisitorBase(state, marking_mode, WorklistTaskId::MutatorThread) {
   DCHECK(state->InAtomicMarkingPause());
   DCHECK(state->CheckThread());
 }
@@ -299,6 +298,7 @@ ConcurrentMarkingVisitor::ConcurrentMarkingVisitor(ThreadState* state,
 void ConcurrentMarkingVisitor::FlushWorklists() {
   // Flush marking worklists for further marking on the mutator thread.
   marking_worklist_.FlushToGlobal();
+  write_barrier_worklist_.FlushToGlobal();
   not_fully_constructed_worklist_.FlushToGlobal();
   weak_callback_worklist_.FlushToGlobal();
   weak_table_worklist_.FlushToGlobal();

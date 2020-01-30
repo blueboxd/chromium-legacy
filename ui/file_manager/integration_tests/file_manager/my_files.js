@@ -50,7 +50,7 @@ testcase.showMyFiles = async () => {
 
   // Check tree elements for the correct order and label/element type.
   const visibleElements = [];
-  for (let element of elements) {
+  for (const element of elements) {
     if (!element.hidden) {  // Ignore hidden elements.
       visibleElements.push(
           element.attributes['entry-label'] + ': ' +
@@ -266,13 +266,13 @@ testcase.myFilesAutoExpandOnce = async () => {
   // Collapse MyFiles.
   const myFiles = '#directory-tree [entry-label="My files"]';
   let expandIcon = myFiles + '[expanded] > .tree-row[has-children=true]' +
-      '> .expand-icon';
+      ' .expand-icon';
   await remoteCall.waitAndClickElement(appId, expandIcon);
   await remoteCall.waitForElement(appId, myFiles + ':not([expanded])');
 
   // Expand Google Drive.
   const driveGrandRoot = '#directory-tree [entry-label="Google Drive"]';
-  expandIcon = driveGrandRoot + ' > .tree-row > .expand-icon';
+  expandIcon = driveGrandRoot + ' > .tree-row .expand-icon';
   await remoteCall.waitAndClickElement(appId, expandIcon);
 
   // Wait for its subtree to expand and display its children.

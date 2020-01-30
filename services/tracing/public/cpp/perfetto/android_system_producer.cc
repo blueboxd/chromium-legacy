@@ -324,10 +324,6 @@ void AndroidSystemProducer::CommitData(
   service_->CommitData(commit, std::move(callback));
 }
 
-perfetto::SharedMemoryArbiter* AndroidSystemProducer::GetSharedMemoryArbiter() {
-  return shared_memory_arbiter_.get();
-}
-
 perfetto::SharedMemory* AndroidSystemProducer::shared_memory() const {
   return shared_memory_;
 }
@@ -341,7 +337,8 @@ void AndroidSystemProducer::NotifyFlushComplete(perfetto::FlushRequestID id) {
 
   DCHECK_NE(pending_replies_for_latest_flush_.second, 0u);
   if (--pending_replies_for_latest_flush_.second == 0) {
-    shared_memory_arbiter_->NotifyFlushComplete(id);
+    DCHECK(MaybeSharedMemoryArbiter());
+    MaybeSharedMemoryArbiter()->NotifyFlushComplete(id);
   }
 }
 
@@ -388,10 +385,8 @@ size_t AndroidSystemProducer::shared_buffer_page_size_kb() const {
 }
 
 perfetto::SharedMemoryArbiter*
-AndroidSystemProducer::GetInProcessShmemArbiter() {
-  // Never called by SharedMemoryArbiter/TraceWriter.
-  NOTREACHED();
-  return GetSharedMemoryArbiter();
+AndroidSystemProducer::MaybeSharedMemoryArbiter() {
+  return service_->MaybeSharedMemoryArbiter();
 }
 
 void AndroidSystemProducer::ActivateTriggers(

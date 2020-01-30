@@ -16,6 +16,8 @@
     <!-- Accessibility tab switcher -->
     <dimen name="accessibility_tab_height">65dp</dimen>
     <dimen name="accessibility_tab_switcher_top_padding">8dp</dimen>
+    <dimen name="accessibility_tab_switcher_item_close_button_padding_start">23dp</dimen>
+    <dimen name="accessibility_tab_switcher_item_close_button_padding_end">13dp</dimen>
 
     <!-- TabSwitcher - The minimum distance from the edge to commit a side swap. -->
     <dimen name="swipe_commit_distance">120dp</dimen>
@@ -613,6 +615,8 @@
     <dimen name="sync_promo_view_padding">16dp</dimen>
     <dimen name="open_new_tab_animation_y_translation">-20dp</dimen>
     <dimen name="sync_passphrase_type_instructions_padding">25dp</dimen>
+    <!-- 18dp padding is added to each side of the remove button to limit the image width to 20dp (56dp - 2 * 18dp). -->
+    <dimen name="history_item_remove_button_lateral_padding">18dp</dimen>
 
     <!-- Revamped Context Menu Dimensions -->
     <dimen name="context_menu_max_width">500dp</dimen>

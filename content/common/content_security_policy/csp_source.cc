@@ -17,6 +17,14 @@ namespace content {
 
 namespace {
 
+bool HasHost(const network::mojom::CSPSourcePtr& source) {
+  return !source->host.empty() || source->is_host_wildcard;
+}
+
+bool IsSchemeOnly(const network::mojom::CSPSourcePtr& source) {
+  return !HasHost(source);
+}
+
 bool DecodePath(const base::StringPiece& path, std::string* output) {
   url::RawCanonOutputT<base::char16> unescaped;
   url::DecodeURLEscapeSequences(path.data(), path.size(),
@@ -39,17 +47,18 @@ enum class PortMatchingResult {
 };
 enum class SchemeMatchingResult { NotMatching, MatchingUpgrade, MatchingExact };
 
-SchemeMatchingResult SourceAllowScheme(const CSPSource& source,
-                                       const GURL& url,
-                                       CSPContext* context) {
+SchemeMatchingResult SourceAllowScheme(
+    const network::mojom::CSPSourcePtr& source,
+    const GURL& url,
+    CSPContext* context) {
   // The source doesn't specify a scheme and the current origin is unique. In
   // this case, the url doesn't match regardless of its scheme.
-  if (source.scheme.empty() && !context->self_source())
+  if (source->scheme.empty() && !context->self_source())
     return SchemeMatchingResult::NotMatching;
 
   // |allowed_scheme| is guaranteed to be non-empty.
   const std::string& allowed_scheme =
-      source.scheme.empty() ? context->self_source()->scheme : source.scheme;
+      source->scheme.empty() ? context->self_source()->scheme : source->scheme;
 
   if (url.SchemeIs(allowed_scheme))
     return SchemeMatchingResult::MatchingExact;
@@ -63,43 +72,45 @@ SchemeMatchingResult SourceAllowScheme(const CSPSource& source,
   return SchemeMatchingResult::NotMatching;
 }
 
-bool SourceAllowHost(const CSPSource& source, const GURL& url) {
-  if (source.is_host_wildcard) {
-    if (source.host.empty())
+bool SourceAllowHost(const network::mojom::CSPSourcePtr& source,
+                     const GURL& url) {
+  if (source->is_host_wildcard) {
+    if (source->host.empty())
       return true;
     // TODO(arthursonzogni): Chrome used to, incorrectly, match *.x.y to x.y.
     // The renderer version of this function counts how many times it happens.
     // It might be useful to do it outside of blink too.
     // See third_party/blink/renderer/core/frame/csp/csp_source.cc
-    return base::EndsWith(url.host(), '.' + source.host,
+    return base::EndsWith(url.host(), '.' + source->host,
                           base::CompareCase::INSENSITIVE_ASCII);
   } else {
-    return base::EqualsCaseInsensitiveASCII(url.host(), source.host);
+    return base::EqualsCaseInsensitiveASCII(url.host(), source->host);
   }
 }
 
-PortMatchingResult SourceAllowPort(const CSPSource& source, const GURL& url) {
+PortMatchingResult SourceAllowPort(const network::mojom::CSPSourcePtr& source,
+                                   const GURL& url) {
   int url_port = url.EffectiveIntPort();
 
-  if (source.is_port_wildcard)
+  if (source->is_port_wildcard)
     return PortMatchingResult::MatchingWildcard;
 
-  if (source.port == url_port) {
-    if (source.port == url::PORT_UNSPECIFIED)
+  if (source->port == url_port) {
+    if (source->port == url::PORT_UNSPECIFIED)
       return PortMatchingResult::MatchingWildcard;
     return PortMatchingResult::MatchingExact;
   }
 
-  if (source.port == url::PORT_UNSPECIFIED) {
+  if (source->port == url::PORT_UNSPECIFIED) {
     if (DefaultPortForScheme(url.scheme()) == url_port) {
       return PortMatchingResult::MatchingWildcard;
     }
     return PortMatchingResult::NotMatching;
   }
 
-  int source_port = source.port;
+  int source_port = source->port;
   if (source_port == url::PORT_UNSPECIFIED)
-    source_port = DefaultPortForScheme(source.scheme);
+    source_port = DefaultPortForScheme(source->scheme);
 
   if (source_port == 80 && url_port == 443)
     return PortMatchingResult::MatchingUpgrade;
@@ -107,13 +118,13 @@ PortMatchingResult SourceAllowPort(const CSPSource& source, const GURL& url) {
   return PortMatchingResult::NotMatching;
 }
 
-bool SourceAllowPath(const CSPSource& source,
+bool SourceAllowPath(const network::mojom::CSPSourcePtr& source,
                      const GURL& url,
                      bool has_followed_redirect) {
   if (has_followed_redirect)
     return true;
 
-  if (source.path.empty() || url.path().empty())
+  if (source->path.empty() || url.path().empty())
     return true;
 
   std::string url_path;
@@ -124,134 +135,82 @@ bool SourceAllowPath(const CSPSource& source,
   }
 
   // If the path represents a directory.
-  if (base::EndsWith(source.path, "/", base::CompareCase::SENSITIVE))
-    return base::StartsWith(url_path, source.path,
+  if (base::EndsWith(source->path, "/", base::CompareCase::SENSITIVE))
+    return base::StartsWith(url_path, source->path,
                             base::CompareCase::SENSITIVE);
 
   // The path represents a file.
-  return source.path == url_path;
+  return source->path == url_path;
 }
 
-bool inline requiresUpgrade(const PortMatchingResult result) {
+bool requiresUpgrade(const PortMatchingResult result) {
   return result == PortMatchingResult::MatchingUpgrade;
 }
-bool inline requiresUpgrade(const SchemeMatchingResult result) {
+
+bool requiresUpgrade(const SchemeMatchingResult result) {
   return result == SchemeMatchingResult::MatchingUpgrade;
 }
-bool inline canUpgrade(const PortMatchingResult result) {
+
+bool canUpgrade(const PortMatchingResult result) {
   return result == PortMatchingResult::MatchingUpgrade ||
          result == PortMatchingResult::MatchingWildcard;
 }
-bool inline canUpgrade(const SchemeMatchingResult result) {
+
+bool canUpgrade(const SchemeMatchingResult result) {
   return result == SchemeMatchingResult::MatchingUpgrade;
 }
 
 }  // namespace
 
-CSPSource::CSPSource()
-    : scheme(),
-      host(),
-      is_host_wildcard(false),
-      port(url::PORT_UNSPECIFIED),
-      is_port_wildcard(false),
-      path() {}
-
-CSPSource::CSPSource(const std::string& scheme,
-                     const std::string& host,
-                     bool is_host_wildcard,
-                     int port,
-                     bool is_port_wildcard,
-                     const std::string& path)
-    : scheme(scheme),
-      host(host),
-      is_host_wildcard(is_host_wildcard),
-      port(port),
-      is_port_wildcard(is_port_wildcard),
-      path(path) {
-  DCHECK(!HasPort() || HasHost());  // port => host
-  DCHECK(!HasPath() || HasHost());  // path => host
-  DCHECK(!is_port_wildcard || port == url::PORT_UNSPECIFIED);
-}
-
-CSPSource::CSPSource(network::mojom::CSPSourcePtr csp_source)
-    : CSPSource(csp_source->scheme,
-                csp_source->host,
-                csp_source->is_host_wildcard,
-                csp_source->port,
-                csp_source->is_port_wildcard,
-                csp_source->path) {}
-
-CSPSource::CSPSource(const CSPSource& source) = default;
-CSPSource::~CSPSource() = default;
-
-// static
-bool CSPSource::Allow(const CSPSource& source,
-                      const GURL& url,
-                      CSPContext* context,
-                      bool has_followed_redirect) {
-  if (source.IsSchemeOnly())
+bool CheckCSPSource(const network::mojom::CSPSourcePtr& source,
+                    const GURL& url,
+                    CSPContext* context,
+                    bool has_followed_redirect) {
+  if (IsSchemeOnly(source)) {
     return SourceAllowScheme(source, url, context) !=
            SchemeMatchingResult::NotMatching;
-
+  }
   PortMatchingResult portResult = SourceAllowPort(source, url);
   SchemeMatchingResult schemeResult = SourceAllowScheme(source, url, context);
-
   if (requiresUpgrade(schemeResult) && !canUpgrade(portResult))
     return false;
   if (requiresUpgrade(portResult) && !canUpgrade(schemeResult))
     return false;
-
   return schemeResult != SchemeMatchingResult::NotMatching &&
          SourceAllowHost(source, url) &&
          portResult != PortMatchingResult::NotMatching &&
          SourceAllowPath(source, url, has_followed_redirect);
 }
 
-std::string CSPSource::ToString() const {
+std::string ToString(const network::mojom::CSPSourcePtr& source) {
   // scheme
-  if (IsSchemeOnly())
-    return scheme + ":";
+  if (IsSchemeOnly(source))
+    return source->scheme + ":";
 
   std::stringstream text;
-  if (!scheme.empty())
-    text << scheme << "://";
+  if (!source->scheme.empty())
+    text << source->scheme << "://";
 
   // host
-  if (is_host_wildcard) {
-    if (host.empty())
+  if (source->is_host_wildcard) {
+    if (source->host.empty())
       text << "*";
     else
-      text << "*." << host;
+      text << "*." << source->host;
   } else {
-    text << host;
+    text << source->host;
   }
 
   // port
-  if (is_port_wildcard)
+  if (source->is_port_wildcard)
     text << ":*";
-  if (port != url::PORT_UNSPECIFIED)
-    text << ":" << port;
+  if (source->port != url::PORT_UNSPECIFIED)
+    text << ":" << source->port;
 
   // path
-  text << path;
+  text << source->path;
 
   return text.str();
-}
-
-bool CSPSource::IsSchemeOnly() const {
-  return !HasHost();
-}
-
-bool CSPSource::HasPort() const {
-  return port != url::PORT_UNSPECIFIED || is_port_wildcard;
-}
-
-bool CSPSource::HasHost() const {
-  return !host.empty() || is_host_wildcard;
-}
-
-bool CSPSource::HasPath() const {
-  return !path.empty();
 }
 
 }  // namespace content

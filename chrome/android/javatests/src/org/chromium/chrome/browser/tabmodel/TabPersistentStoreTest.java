@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.tabmodel;
 
 import android.app.Activity;
-import android.content.SharedPreferences;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
 import android.util.Pair;
@@ -33,6 +32,8 @@ import org.chromium.chrome.browser.accessibility_tab_switcher.OverviewListLayout
 import org.chromium.chrome.browser.compositor.overlays.strip.StripLayoutHelper;
 import org.chromium.chrome.browser.flags.ActivityType;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
+import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
+import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.tab.MockTab;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabLaunchType;
@@ -287,7 +288,7 @@ public class TabPersistentStoreTest {
     /** Class for mocking out the directory containing all of the TabState files. */
     private TestTabModelDirectory mMockDirectory;
     private AdvancedMockContext mAppContext;
-    private SharedPreferences mPreferences;
+    private SharedPreferencesManager mPreferences;
 
     @Before
     public void setUp() {
@@ -326,7 +327,7 @@ public class TabPersistentStoreTest {
                                                       .getTargetContext()
                                                       .getApplicationContext());
         ContextUtils.initApplicationContextForTests(mAppContext);
-        mPreferences = ContextUtils.getAppSharedPreferences();
+        mPreferences = SharedPreferencesManager.getInstance();
         mMockDirectory = new TestTabModelDirectory(
                 mAppContext, "TabPersistentStoreTest", Integer.toString(SELECTOR_INDEX));
         TabPersistentStore.setBaseStateDirectoryForTests(mMockDirectory.getBaseDirectory());
@@ -571,8 +572,7 @@ public class TabPersistentStoreTest {
         mMockDirectory.writeTabModelFiles(info, true);
 
         // Set to pre-fetch
-        mPreferences.edit().putInt(
-                TabPersistentStore.PREF_ACTIVE_TAB_ID, info.selectedTabId).apply();
+        mPreferences.writeInt(ChromePreferenceKeys.TABMODEL_ACTIVE_TAB_ID, info.selectedTabId);
 
         // Initialize the classes.
         MockTabModelSelector mockSelector = new MockTabModelSelector(0, 0, null);
@@ -595,13 +595,13 @@ public class TabPersistentStoreTest {
                     AsyncTask.Status.FINISHED, store.mPrefetchActiveTabTask.getStatus());
 
             // Confirm that the correct active tab ID is updated when saving state.
-            mPreferences.edit().putInt(TabPersistentStore.PREF_ACTIVE_TAB_ID, -1).apply();
+            mPreferences.writeInt(ChromePreferenceKeys.TABMODEL_ACTIVE_TAB_ID, -1);
 
             store.saveState();
         });
 
-        Assert.assertEquals(
-                info.selectedTabId, mPreferences.getInt(TabPersistentStore.PREF_ACTIVE_TAB_ID, -1));
+        Assert.assertEquals(info.selectedTabId,
+                mPreferences.readInt(ChromePreferenceKeys.TABMODEL_ACTIVE_TAB_ID, -1));
     }
 
     /**

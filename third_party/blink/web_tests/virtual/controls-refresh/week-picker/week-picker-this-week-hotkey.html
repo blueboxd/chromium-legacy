@@ -15,10 +15,6 @@ promise_test(() => {
   let weekElement = document.getElementById('week');
   return openPickerWithPromise(weekElement)
   .then(() => {
-    // Make the picker dismiss synchronously so we don't need to insert
-    // an artificial delay in the test
-    internals.pagePopupWindow.CalendarPicker.commitDelayMs = 0;
-
     eventSender.keyDown('t');
 
     let weekRegExp = new RegExp(`${new Date().getFullYear()}-W\\d{2}`);

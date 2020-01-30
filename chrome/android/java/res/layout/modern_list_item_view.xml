@@ -3,11 +3,13 @@
      Use of this source code is governed by a BSD-style license that can be
      found in the LICENSE file. -->
 
-<merge
-    xmlns:android="http://schemas.android.com/apk/res/android">
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/content"
+    style="@style/ListItemContainer" >
 
     <org.chromium.ui.widget.ChromeImageView
-        android:id="@+id/icon_view"
+        android:id="@+id/start_icon"
         style="@style/ListItemStartIcon" />
 
     <LinearLayout
@@ -23,7 +25,7 @@
             android:layout_height="wrap_content"
             android:maxLines="1"
             android:ellipsize="end"
-            android:textAppearance="@style/TextAppearance.BlackTitle1" />
+            android:textAppearance="@style/TextAppearance.TextLarge.Primary" />
 
         <TextView
             android:id="@+id/description"
@@ -31,7 +33,12 @@
             android:layout_height="wrap_content"
             android:maxLines="1"
             android:ellipsize="end"
-            android:textAppearance="@style/TextAppearance.BlackBody" />
+            android:textAppearance="@style/TextAppearance.TextMedium.Secondary" />
     </LinearLayout>
 
-</merge>
+    <org.chromium.ui.widget.ChromeImageButton
+        android:id="@+id/end_button"
+        android:visibility="gone"
+        style="@style/ListItemEndIcon" />
+
+</LinearLayout>

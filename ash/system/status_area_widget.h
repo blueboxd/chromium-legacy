@@ -9,6 +9,7 @@
 #include "ash/login_status.h"
 #include "ash/public/cpp/shelf_config.h"
 #include "ash/public/cpp/shelf_types.h"
+#include "ash/shelf/shelf_component.h"
 #include "base/macros.h"
 #include "ui/views/widget/widget.h"
 
@@ -34,8 +35,9 @@ class VirtualKeyboardTray;
 // the bottom-right of the screen. Exists separately from ShelfView/ShelfWidget
 // so that it can be shown in cases where the rest of the shelf is hidden (e.g.
 // on secondary monitors at the login screen).
-class ASH_EXPORT StatusAreaWidget : public views::Widget,
-                                    public ShelfConfig::Observer {
+class ASH_EXPORT StatusAreaWidget : public ShelfComponent,
+                                    public ShelfConfig::Observer,
+                                    public views::Widget {
  public:
   // Whether the status area is collapsed or expanded. Currently, this is only
   // applicable in in-app tablet mode. Otherwise the state is NOT_COLLAPSIBLE.
@@ -61,8 +63,9 @@ class ASH_EXPORT StatusAreaWidget : public views::Widget,
   // changes.
   void UpdateCollapseState();
 
-  // Updates this widget's bounds according to current conditions.
-  void UpdateLayout(bool animate);
+  // ShelfComponent:
+  void CalculateTargetBounds() override;
+  void UpdateLayout(bool animate) override;
 
   // Sets system tray visibility. Shows or hides widget if needed.
   void SetSystemTrayVisibility(bool visible);

@@ -19,8 +19,6 @@
 #include "components/sessions/core/session_id.h"
 #include "components/sessions/core/session_types.h"
 #include "content/public/browser/browser_context.h"
-#include "content/public/browser/browser_url_handler.h"
-#include "content/public/browser/dom_storage_context.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/restore_type.h"
@@ -28,6 +26,7 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "weblayer/browser/browser_impl.h"
+#include "weblayer/browser/persistence/browser_persistence_common.h"
 #include "weblayer/browser/profile_impl.h"
 #include "weblayer/browser/tab_impl.h"
 
@@ -36,14 +35,6 @@ using sessions::SerializedNavigationEntry;
 
 namespace weblayer {
 namespace {
-
-const SessionID& GetSessionIDForTab(Tab* tab) {
-  sessions::SessionTabHelper* session_tab_helper =
-      sessions::SessionTabHelper::FromWebContents(
-          static_cast<TabImpl*>(tab)->web_contents());
-  DCHECK(session_tab_helper);
-  return session_tab_helper->session_id();
-}
 
 int GetIndexOfTab(BrowserImpl* browser, Tab* tab) {
   const std::vector<Tab*>& tabs = browser->GetTabs();
@@ -270,27 +261,15 @@ void SessionService::OnGotCurrentSessionCommands(
     std::vector<std::unique_ptr<sessions::SessionCommand>> commands) {
   ScheduleRebuildOnNextSave();
 
-  std::vector<std::unique_ptr<sessions::SessionWindow>> windows;
-  SessionID active_window_id = SessionID::InvalidValue();
-  sessions::RestoreSessionFromCommands(commands, &windows, &active_window_id);
-  ProcessRestoreCommands(windows);
-
-  if (browser_->GetTabs().empty()) {
-    // Nothing to restore, or restore failed. Create a default tab.
-    browser_->SetActiveTab(browser_->CreateTabForSessionRestore(nullptr));
-  }
+  RestoreBrowserState(browser_, std::move(commands));
 }
 
 void SessionService::BuildCommandsForTab(TabImpl* tab, int index_in_browser) {
-  DCHECK(tab);
+  command_storage_manager_->AppendRebuildCommands(
+      BuildCommandsForTabConfiguration(browser_session_id_, tab,
+                                       index_in_browser));
 
-  sessions::SessionTabHelper* session_tab_helper =
-      sessions::SessionTabHelper::FromWebContents(tab->web_contents());
-  DCHECK(session_tab_helper);
-  const SessionID& session_id(session_tab_helper->session_id());
-  command_storage_manager_->AppendRebuildCommand(
-      sessions::CreateSetTabWindowCommand(browser_session_id_, session_id));
-
+  const SessionID& session_id = GetSessionIDForTab(tab);
   content::NavigationController& controller =
       tab->web_contents()->GetController();
   const int current_index = controller.GetCurrentEntryIndex();
@@ -302,17 +281,6 @@ void SessionService::BuildCommandsForTab(TabImpl* tab, int index_in_browser) {
   const int pending_index = controller.GetPendingEntryIndex();
   tab_to_available_range_[session_id] =
       std::pair<int, int>(min_index, max_index);
-
-  command_storage_manager_->AppendRebuildCommand(
-      sessions::CreateLastActiveTimeCommand(
-          session_id, tab->web_contents()->GetLastActiveTime()));
-
-  const std::string& ua_override = tab->web_contents()->GetUserAgentOverride();
-  if (!ua_override.empty()) {
-    command_storage_manager_->AppendRebuildCommand(
-        sessions::CreateSetTabUserAgentOverrideCommand(session_id,
-                                                       ua_override));
-  }
 
   for (int i = min_index; i < max_index; ++i) {
     content::NavigationEntry* entry = (i == pending_index)
@@ -328,17 +296,11 @@ void SessionService::BuildCommandsForTab(TabImpl* tab, int index_in_browser) {
       sessions::CreateSetSelectedNavigationIndexCommand(session_id,
                                                         current_index));
 
-  if (index_in_browser != -1) {
-    command_storage_manager_->AppendRebuildCommand(
-        sessions::CreateSetTabIndexInWindowCommand(session_id,
-                                                   index_in_browser));
-  }
-
   // Record the association between the sessionStorage namespace and the tab.
   content::SessionStorageNamespace* session_storage_namespace =
       controller.GetDefaultSessionStorageNamespace();
   ScheduleCommand(sessions::CreateSessionStorageAssociatedCommand(
-      session_tab_helper->session_id(), session_storage_namespace->id()));
+      session_id, session_storage_namespace->id()));
 }
 
 void SessionService::BuildCommandsForBrowser() {
@@ -371,70 +333,6 @@ void SessionService::ScheduleCommand(
   command_storage_manager_->ScheduleCommand(std::move(command));
   if (command_storage_manager_->commands_since_reset() >= kWritesPerReset)
     ScheduleRebuildOnNextSave();
-}
-
-void SessionService::ProcessRestoreCommands(
-    const std::vector<std::unique_ptr<sessions::SessionWindow>>& windows) {
-  if (windows.empty() || windows[0]->tabs.empty())
-    return;
-
-  const bool had_tabs = !browser_->GetTabs().empty();
-  content::BrowserContext* browser_context =
-      browser_->profile()->GetBrowserContext();
-  for (int i = 0; i < static_cast<int>(windows[0]->tabs.size()); ++i) {
-    const sessions::SessionTab& session_tab = *(windows[0]->tabs[i]);
-    if (session_tab.navigations.empty())
-      continue;
-
-    // Associate sessionStorage (if any) to the restored tab.
-    scoped_refptr<content::SessionStorageNamespace> session_storage_namespace;
-    if (!session_tab.session_storage_persistent_id.empty()) {
-      session_storage_namespace =
-          content::BrowserContext::GetDefaultStoragePartition(browser_context)
-              ->GetDOMStorageContext()
-              ->RecreateSessionStorage(
-                  session_tab.session_storage_persistent_id);
-    }
-
-    const int selected_navigation_index =
-        session_tab.normalized_navigation_index();
-
-    GURL restore_url =
-        session_tab.navigations[selected_navigation_index].virtual_url();
-    content::SessionStorageNamespaceMap session_storage_namespace_map;
-    session_storage_namespace_map[std::string()] = session_storage_namespace;
-    content::BrowserURLHandler::GetInstance()->RewriteURLIfNecessary(
-        &restore_url, browser_context);
-    content::WebContents::CreateParams create_params(
-        browser_context,
-        content::SiteInstance::ShouldAssignSiteForURL(restore_url)
-            ? content::SiteInstance::CreateForURL(browser_context, restore_url)
-            : nullptr);
-    create_params.initially_hidden = true;
-    create_params.desired_renderer_state =
-        content::WebContents::CreateParams::kNoRendererProcess;
-    create_params.last_active_time = session_tab.last_active_time;
-    std::unique_ptr<content::WebContents> web_contents =
-        content::WebContents::CreateWithSessionStorage(
-            create_params, session_storage_namespace_map);
-    std::vector<std::unique_ptr<content::NavigationEntry>> entries =
-        ContentSerializedNavigationBuilder::ToNavigationEntries(
-            session_tab.navigations, browser_context);
-    web_contents->SetUserAgentOverride(session_tab.user_agent_override, false);
-    // CURRENT_SESSION matches what clank does. On the desktop, we should
-    // use a different type.
-    web_contents->GetController().Restore(selected_navigation_index,
-                                          content::RestoreType::CURRENT_SESSION,
-                                          &entries);
-    DCHECK_EQ(0u, entries.size());
-    TabImpl* tab =
-        browser_->CreateTabForSessionRestore(std::move(web_contents));
-
-    if (!had_tabs && i == (windows[0])->selected_tab_index)
-      browser_->SetActiveTab(tab);
-  }
-  if (!had_tabs && !browser_->GetTabs().empty() && !browser_->GetActiveTab())
-    browser_->SetActiveTab(browser_->GetTabs().back());
 }
 
 }  // namespace weblayer

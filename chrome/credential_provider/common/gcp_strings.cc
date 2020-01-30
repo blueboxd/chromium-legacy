@@ -92,6 +92,12 @@ const char kGcpwEndpointPathPromoParameter[] = "gcpw_endpoint_path";
 
 const wchar_t kRunAsCrashpadHandlerEntryPoint[] = L"RunAsCrashpadHandler";
 
+// Flags to manipulate behavior of Chrome when importing credentials for the
+// account signs in through GCPW.
+const wchar_t kAllowImportOnlyOnFirstRun[] = L"allow_import_only_on_first_run";
+const wchar_t kAllowImportWhenPrimaryAccountExists[] =
+    L"allow_import_when_primary_exists";
+
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
 const wchar_t kRegHkcuAccountsPath[] = L"Software\\Google\\Accounts";
 #else

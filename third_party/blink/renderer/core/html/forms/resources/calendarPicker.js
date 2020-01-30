@@ -4085,24 +4085,30 @@ function CalendarPicker(type, config) {
    */
   this._height = -1;
 
+  this._hadValidValueWhenOpened = false;
+
   var initialSelection = parseDateString(config.currentValue);
   if (initialSelection) {
     this.setCurrentMonth(
         Month.createFromDay(initialSelection.middleDay()),
         CalendarPicker.NavigationBehavior.None);
-    this.setSelection(initialSelection);
+
+    if (global.params.isFormControlsRefreshEnabled) {
+      this._hadValidValueWhenOpened = this.isValid(initialSelection);
+      this.selectNearestValidRange(initialSelection, /*lookForwardFirst*/ true);
+    } else {
+      this.setSelection(initialSelection);
+    }
   } else {
     this.setCurrentMonth(
         Month.createFromToday(), CalendarPicker.NavigationBehavior.None);
-    if (global.params.isFormControlsRefreshEnabled &&
-        this.type == 'datetime-local') {
-      // When used with datetime-local, ensure that today's date (if valid) is selected
-      // to start with so that if the user only edits the time, they can still submit
-      // the popup without also needing to edit the calendar view.
-      var today = Day.createFromToday();
-      if (this.isValid(today)) {
-        this.setSelection(Day.createFromToday());
-      }
+
+    if (global.params.isFormControlsRefreshEnabled) {
+      // Ensure that the next date closest to today is selected to start with so that
+      // the user can simply submit the popup to choose it.
+      this.selectValidRangeNearestToDay(
+          this._dateTypeConstructor.createFromToday(),
+          /*lookForwardFirst*/ true);
     }
   }
 
@@ -4337,6 +4343,13 @@ CalendarPicker.prototype.highlightRangeContainingDay = function(day) {
  */
 CalendarPicker.prototype.selectNearestValidRangeLookingForward = function(
     dayOrWeekOrMonth) {
+  if (dayOrWeekOrMonth < this.config.minimumValue) {
+    // Performance optimization: avoid wasting lots of time in the below
+    // loop if dayOrWeekOrMonth is significantly less than the min.
+    dayOrWeekOrMonth =
+        this._dateTypeConstructor.createFromValue(this.config.minimumValue);
+  }
+
   while (!this.isValid(dayOrWeekOrMonth) &&
          dayOrWeekOrMonth < this.config.maximumValue) {
     dayOrWeekOrMonth = dayOrWeekOrMonth.next();
@@ -4356,6 +4369,13 @@ CalendarPicker.prototype.selectNearestValidRangeLookingForward = function(
  */
 CalendarPicker.prototype.selectNearestValidRangeLookingBackward = function(
     dayOrWeekOrMonth) {
+  if (dayOrWeekOrMonth > this.config.maximumValue) {
+    // Performance optimization: avoid wasting lots of time in the below
+    // loop if dayOrWeekOrMonth is significantly greater than the max.
+    dayOrWeekOrMonth =
+        this._dateTypeConstructor.createFromValue(this.config.maximumValue);
+  }
+
   while (!this.isValid(dayOrWeekOrMonth) &&
          dayOrWeekOrMonth > this.config.minimumValue) {
     dayOrWeekOrMonth = dayOrWeekOrMonth.previous();
@@ -4373,10 +4393,8 @@ CalendarPicker.prototype.selectNearestValidRangeLookingBackward = function(
  * @param {!DayOrWeekOrMonth} dayOrWeekOrMonth
  * @param {!boolean} lookForwardFirst
  */
-CalendarPicker.prototype.selectValidRangeNearestToDay = function(
-    day, lookForwardFirst) {
-  var dayOrWeekOrMonth = this._dateTypeConstructor.createFromDay(day);
-
+CalendarPicker.prototype.selectNearestValidRange = function(
+    dayOrWeekOrMonth, lookForwardFirst) {
   if (lookForwardFirst) {
     if (!this.selectNearestValidRangeLookingForward(dayOrWeekOrMonth)) {
       this.selectNearestValidRangeLookingBackward(dayOrWeekOrMonth);
@@ -4386,6 +4404,16 @@ CalendarPicker.prototype.selectValidRangeNearestToDay = function(
       this.selectNearestValidRangeLookingForward(dayOrWeekOrMonth);
     }
   }
+};
+
+/**
+ * @param {!Day} day
+ * @param {!boolean} lookForwardFirst
+ */
+CalendarPicker.prototype.selectValidRangeNearestToDay = function(
+    day, lookForwardFirst) {
+  var dayOrWeekOrMonth = this._dateTypeConstructor.createFromDay(day);
+  this.selectNearestValidRange(dayOrWeekOrMonth, lookForwardFirst);
 };
 
 /**
@@ -4553,7 +4581,8 @@ CalendarPicker.prototype.onCalendarTableKeyDownRefresh = function(event) {
 
   if (!event.target.matches('.today-button-refresh')) {
     if (key == 't') {
-      this.selectRangeContainingDay(Day.createFromToday());
+      this.selectValidRangeNearestToDay(
+          Day.createFromToday(), /*lookForwardFirst*/ true);
     } else if (key == 'PageUp') {
       var previousMonth = this.currentMonth().previous();
       if (previousMonth && previousMonth >= this.config.minimumValue) {
@@ -4583,18 +4612,11 @@ CalendarPicker.prototype.onCalendarTableKeyDownRefresh = function(event) {
       } else if (key == 'ArrowDown') {
         this.selectNearestValidRangeLookingForward(
             this._selection.next(upOrDownArrowStepSize));
-      } else if (key == 'Enter') {
-        this.setSelectionAndCommit(this._highlight);
       }
-    } else if (
-        key == 'ArrowLeft' || key == 'ArrowUp' || key == 'ArrowRight' ||
-        key == 'ArrowDown') {
-      // Select range near the middle.  Try looking for a valid range first in the direction that
-      // the user has indicated.
-      var lookForwardFirst = (key == 'ArrowRight' || key == 'ArrowDown');
-      this.selectValidRangeNearestToDay(
-          this.currentMonth().middleDay(), lookForwardFirst);
     }
+    // else if there is no selection it must be the case that there are no
+    // valid values (because min >= max).  Otherwise we would have set the selection
+    // during initialization.  In this case there's nothing to do.
   }
 };
 
@@ -4696,11 +4718,60 @@ CalendarPicker.prototype.onBodyKeyDown = function(event) {
     case 'Escape':
       // The datetime-local control handles submission/cancellation at
       // the top level, so if we're in a datetime-local let event bubble
-      // up instead of handling it here and closing the popup.
-      if (!(global.params.isFormControlsRefreshEnabled &&
-            this.type == 'datetime-local')) {
+      // up instead of handling it here.
+      if (global.params.isFormControlsRefreshEnabled) {
+        if (this.type !== 'datetime-local') {
+          if (!this._selection ||
+              (this._selection.equals(this._initialSelection))) {
+            window.pagePopupController.closePopup();
+          } else {
+            this.resetToInitialValue();
+            window.pagePopupController.setValue(
+                this._hadValidValueWhenOpened ?
+                    this._initialSelection.toString() :
+                    '');
+          }
+        }
+      } else {
         window.pagePopupController.closePopup();
         eventHandled = true;
+      }
+      break;
+    case 'ArrowUp':
+    case 'ArrowDown':
+    case 'ArrowLeft':
+    case 'ArrowRight':
+      if (global.params.isFormControlsRefreshEnabled &&
+          this.type !== 'datetime-local' &&
+          event.target.matches('.calendar-table-view') && this._selection) {
+        window.pagePopupController.setValue(this.getSelectedValue());
+      }
+      break;
+    case 't':
+      if (global.params.isFormControlsRefreshEnabled &&
+          event.target.matches('.calendar-table-view') &&
+          this.type !== 'datetime-local' && this._selection) {
+        window.pagePopupController.setValueAndClosePopup(
+            0, this.getSelectedValue());
+      }
+      break;
+    case 'Enter':
+      // Submit the popup for an Enter keypress except when the user is
+      // hitting Enter to activate the month switcher button, Today button,
+      // or previous/next month arrows.
+      if (global.params.isFormControlsRefreshEnabled &&
+          this.type !== 'datetime-local' &&
+          !event.target.matches(
+              '.calendar-navigation-button, .month-popup-button')) {
+        if (this._selection) {
+          window.pagePopupController.setValueAndClosePopup(
+              0, this.getSelectedValue());
+        } else {
+          // If there is no selection it must be the case that there are no
+          // valid values (because min >= max).  There's nothing useful to do
+          // with the popup in this case so just close on Enter.
+          window.pagePopupController.closePopup();
+        }
       }
       break;
     case 'm':

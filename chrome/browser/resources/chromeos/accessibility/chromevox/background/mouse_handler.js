@@ -18,14 +18,26 @@ const INTERVAL_MS_BETWEEN_HIT_TESTS = 50;
 BackgroundMouseHandler = class extends BaseAutomationHandler {
   constructor() {
     super(null);
+    /** @private {chrome.automation.AutomationNode} */
+    this.node_;
+    /**
+     *
+     * The desktop node.
+     *
+     * @private {!chrome.automation.AutomationNode}
+     */
+    this.desktop_;
+    /** @private {boolean|undefined} */
+    this.isWaitingBeforeHitTest_;
+    /** @private {boolean|undefined} */
+    this.hasPendingEvents_;
+    /** @private {number|undefined} */
+    this.mouseX_;
+    /** @private {number|undefined} */
+    this.mouseY_;
+
     chrome.automation.getDesktop((desktop) => {
       this.node_ = desktop;
-      /**
-       *
-       * The desktop node.
-       *
-       * @private {!chrome.automation.AutomationNode}
-       */
       this.desktop_ = desktop;
       this.addListener_(EventType.MOUSE_MOVED, this.onMouseMove);
 
@@ -62,6 +74,9 @@ BackgroundMouseHandler = class extends BaseAutomationHandler {
    * false and |hasPendingEvents| is true.
    */
   runHitTest() {
+    if (this.mouseX_ === undefined || this.mouseY_ === undefined) {
+      return;
+    }
     this.desktop_.hitTest(this.mouseX_, this.mouseY_, EventType.HOVER);
     this.hasPendingEvents_ = false;
     this.startTimer();

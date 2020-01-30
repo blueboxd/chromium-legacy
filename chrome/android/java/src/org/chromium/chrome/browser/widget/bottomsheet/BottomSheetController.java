@@ -226,8 +226,8 @@ public class BottomSheetController implements Destroyable {
 
         mFullscreenListener = new ChromeFullscreenManager.FullscreenListener() {
             @Override
-            public void onControlsOffsetChanged(
-                    int topOffset, int bottomOffset, boolean needsAnimate) {
+            public void onControlsOffsetChanged(int topOffset, int topControlsMinHeightOffset,
+                    int bottomOffset, int bottomControlsMinHeightOffset, boolean needsAnimate) {
                 if (mBottomSheet != null) {
                     mBottomSheet.setBrowserControlsHiddenRatio(
                             mFullscreenManager.getBrowserControlHiddenRatio());

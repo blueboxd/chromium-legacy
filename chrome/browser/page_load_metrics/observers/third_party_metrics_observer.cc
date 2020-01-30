@@ -9,6 +9,7 @@
 #include "components/page_load_metrics/browser/page_load_metrics_util.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/resource_type.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 
 namespace {
@@ -16,6 +17,20 @@ namespace {
 // The maximum number of subframes that we've recorded timings for that we can
 // keep track of in memory.
 const int kMaxRecordedFrames = 50;
+
+bool IsSameSite(const url::Origin& origin1, const url::Origin& origin2) {
+  return origin1.scheme() == origin2.scheme() &&
+         net::registry_controlled_domains::SameDomainOrHost(
+             origin1, origin2,
+             net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
+}
+
+bool IsSameSite(const GURL& url1, const GURL& url2) {
+  return url1.SchemeIs(url2.scheme()) &&
+         net::registry_controlled_domains::SameDomainOrHost(
+             url1, url2,
+             net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
+}
 
 }  // namespace
 
@@ -45,13 +60,26 @@ ThirdPartyMetricsObserver::FlushMetricsOnAppEnterBackground(
     const page_load_metrics::mojom::PageLoadTiming& timing) {
   // The browser may come back, but there is no guarantee. To be safe, record
   // what we have now and ignore future changes to this navigation.
-  RecordMetrics();
+  RecordMetrics(timing);
   return STOP_OBSERVING;
 }
 
 void ThirdPartyMetricsObserver::OnComplete(
     const page_load_metrics::mojom::PageLoadTiming& timing) {
-  RecordMetrics();
+  RecordMetrics(timing);
+}
+
+void ThirdPartyMetricsObserver::OnLoadedResource(
+    const page_load_metrics::ExtraRequestCompleteInfo&
+        extra_request_complete_info) {
+  if (third_party_font_loaded_ || extra_request_complete_info.resource_type !=
+                                      content::ResourceType::kFontResource) {
+    return;
+  }
+
+  third_party_font_loaded_ =
+      !IsSameSite(GetDelegate().GetUrl(),
+                  extra_request_complete_info.origin_of_final_url.GetURL());
 }
 
 void ThirdPartyMetricsObserver::OnCookiesRead(
@@ -84,6 +112,8 @@ void ThirdPartyMetricsObserver::OnDomStorageAccessed(
 
 void ThirdPartyMetricsObserver::OnDidFinishSubFrameNavigation(
     content::NavigationHandle* navigation_handle) {
+  largest_contentful_paint_handler_.OnDidFinishSubFrameNavigation(
+      navigation_handle, GetDelegate());
   DCHECK(navigation_handle->GetNetworkIsolationKey().GetTopFrameOrigin());
 
   if (!navigation_handle->HasCommitted())
@@ -104,6 +134,8 @@ void ThirdPartyMetricsObserver::OnFrameDeleted(
 void ThirdPartyMetricsObserver::OnTimingUpdate(
     content::RenderFrameHost* subframe_rfh,
     const page_load_metrics::mojom::PageLoadTiming& timing) {
+  largest_contentful_paint_handler_.RecordTiming(timing.paint_timing,
+                                                 subframe_rfh);
   if (!timing.paint_timing->first_contentful_paint)
     return;
 
@@ -127,12 +159,8 @@ void ThirdPartyMetricsObserver::OnTimingUpdate(
 
   const url::Origin& top_frame_origin = top_frame->GetLastCommittedOrigin();
   const url::Origin& subframe_origin = subframe_rfh->GetLastCommittedOrigin();
-  if (top_frame_origin.scheme() == subframe_origin.scheme() &&
-      net::registry_controlled_domains::SameDomainOrHost(
-          top_frame_origin, subframe_origin,
-          net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES)) {
+  if (IsSameSite(top_frame_origin, subframe_origin))
     return;
-  }
 
   if (page_load_metrics::WasStartedInForegroundOptionalEventInForeground(
           timing.paint_timing->first_contentful_paint, GetDelegate())) {
@@ -161,12 +189,8 @@ void ThirdPartyMetricsObserver::OnCookieOrStorageAccess(
   // return false, and function execution will continue because it is considered
   // 3rd party. Since |first_party_url| is actually the |site_for_cookies|, this
   // will happen e.g. for a 3rd party iframe on document.cookie access.
-  if (url.SchemeIs(first_party_url.scheme()) &&
-      net::registry_controlled_domains::SameDomainOrHost(
-          url, first_party_url,
-          net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES)) {
+  if (IsSameSite(url, first_party_url))
     return;
-  }
 
   std::string registrable_domain =
       net::registry_controlled_domains::GetDomainAndRegistry(
@@ -214,7 +238,8 @@ void ThirdPartyMetricsObserver::OnCookieOrStorageAccess(
   third_party_accessed_types_.emplace(representative_url, access_type);
 }
 
-void ThirdPartyMetricsObserver::RecordMetrics() {
+void ThirdPartyMetricsObserver::RecordMetrics(
+    const page_load_metrics::mojom::PageLoadTiming& main_frame_timing) {
   if (!should_record_metrics_)
     return;
 
@@ -240,4 +265,18 @@ void ThirdPartyMetricsObserver::RecordMetrics() {
   UMA_HISTOGRAM_COUNTS_1000(
       "PageLoad.Clients.ThirdParty.Origins.SessionStorageAccess2",
       session_storage_origin_access);
+
+  const page_load_metrics::ContentfulPaintTimingInfo&
+      all_frames_largest_contentful_paint =
+          largest_contentful_paint_handler_.MergeMainFrameAndSubframes();
+  if (third_party_font_loaded_ &&
+      all_frames_largest_contentful_paint.ContainsValidTime() &&
+      all_frames_largest_contentful_paint.Type() == LargestContentType::kText &&
+      WasStartedInForegroundOptionalEventInForeground(
+          all_frames_largest_contentful_paint.Time(), GetDelegate())) {
+    PAGE_LOAD_HISTOGRAM(
+        "PageLoad.Clients.ThirdParty.PaintTiming."
+        "NavigationToLargestContentfulPaint.HasThirdPartyFont",
+        all_frames_largest_contentful_paint.Time().value());
+  }
 }

@@ -1400,6 +1400,16 @@
     "note": "This policy has no pref as it is only directly read by the policy system."
   },
 
+  "BlockUnsupportedFiletypes": {
+    "os": ["win", "linux", "mac", "chromeos"],
+    "policy_pref_mapping_test": [
+      {
+        "policies": { "BlockUnsupportedFiletypes": 0 },
+        "prefs": { "safebrowsing.block_unsupported_filetypes": { "local_state": true } }
+      }
+    ]
+  },
+
   "BlockExternalExtensions": {
     "os": ["win", "linux", "mac"],
     "policy_pref_mapping_test": [
@@ -6325,13 +6335,13 @@
   },
 
   "CloudReportingEnabled": {
-    "os": ["win", "linux", "mac"],
+    "os": ["win", "linux", "mac", "chromeos"],
     "policy_pref_mapping_test": [
       {
         "policies": {
           "CloudReportingEnabled": true
         },
-        "prefs": { "enterprise_reporting.chrome_cloud_reporting": {} }
+        "prefs": { "enterprise_reporting.chrome_cloud_reporting": { "local_state": true } }
       }
     ]
   },
@@ -6702,6 +6712,17 @@
         "policies": { "StricterMixedContentTreatmentEnabled": false },
         "prefs": {
 	  "security_state.stricter_mixed_content_treatment_enabled": {}
+	}
+      }
+    ]
+  },
+  "AdvancedProtectionDeepScanningEnabled": {
+    "os": ["win", "linux", "mac"],
+    "policy_pref_mapping_test": [
+      {
+        "policies": { "AdvancedProtectionDeepScanningEnabled": true },
+	"prefs": {
+	  "safebrowsing.advanced_protection_deep_scanning_enabled": {}
 	}
       }
     ]

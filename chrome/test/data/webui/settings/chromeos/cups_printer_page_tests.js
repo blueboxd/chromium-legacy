@@ -382,10 +382,7 @@ suite('CupsAddPrinterDialogTests', function() {
     addDialog.$$('.action-button').click();
     Polymer.dom.flush();
 
-    const eulaLink = 'google';
-    const path = window.location.pathname;
-    const expectedEulaLink = window.location.origin +
-        path.slice(0, path.lastIndexOf('/') + 1) + eulaLink;
+    const expectedEulaLink = 'chrome://os-credits/#google';
     const expectedManufacturer = 'Google';
     const expectedModel = 'printer';
     const expectedModel2 = 'newPrinter';
@@ -405,7 +402,7 @@ suite('CupsAddPrinterDialogTests', function() {
           // Check that the EULA text is not shown.
           assertTrue(urlElement.hidden);
 
-          cupsPrintersBrowserProxy.setEulaUrl(eulaLink);
+          cupsPrintersBrowserProxy.setEulaUrl(expectedEulaLink);
 
           modelDialog.$$('#manufacturerDropdown').value = expectedManufacturer;
           modelDropdown = modelDialog.$$('#modelDropdown');
@@ -429,7 +426,7 @@ suite('CupsAddPrinterDialogTests', function() {
           // Check that the EULA text is hidden.
           assertTrue(urlElement.hidden);
 
-          resetGetEulaUrl(cupsPrintersBrowserProxy, eulaLink);
+          resetGetEulaUrl(cupsPrintersBrowserProxy, expectedEulaLink);
 
           // Change ppdModel and expect |getEulaUrl| to be called again.
           modelDropdown.value = expectedModel3;

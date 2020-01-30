@@ -1642,17 +1642,25 @@ void BrowserView::UserChangedTheme(BrowserThemeChangeType theme_change_type) {
   // always needs to be regenerated on Linux.
   must_regenerate_frame = true;
 #else
-  must_regenerate_frame =
-      theme_change_type == BrowserThemeChangeType::kBrowserTheme ||
-      using_native_frame_ != should_use_native_frame;
+  must_regenerate_frame = using_native_frame_ != should_use_native_frame;
 #endif
 
 #if defined(OS_WIN)
+  // On Windows, DWM transtion does not performed for a frame regeneration in
+  // fullscreen mode, so do a lighweight theme change to refresh a bookmark bar
+  // on new tab. (see crbug/1002480)
+  must_regenerate_frame |=
+      theme_change_type == BrowserThemeChangeType::kBrowserTheme &&
+      !IsFullscreen();
+
   // TODO(https://crbug.com/953982): Remove the need to regenerate the frame
   const bool should_use_custom_titlebar = ShouldCustomDrawSystemTitlebar();
 
   must_regenerate_frame |=
       (using_custom_titlebar_ != should_use_custom_titlebar);
+#else
+  must_regenerate_frame |=
+      theme_change_type == BrowserThemeChangeType::kBrowserTheme;
 #endif
 
   if (must_regenerate_frame) {
@@ -2037,6 +2045,19 @@ base::string16 BrowserView::GetAccessibleTabLabel(bool include_app_name,
                                                   int index) const {
   base::string16 title =
       browser_->GetWindowTitleForTab(include_app_name, index);
+
+  base::Optional<tab_groups::TabGroupId> group =
+      tabstrip_->tab_at(index)->group();
+  if (group.has_value()) {
+    base::string16 group_title = tabstrip_->GetGroupTitle(group.value());
+    if (group_title.empty()) {
+      title = l10n_util::GetStringFUTF16(IDS_TAB_AX_LABEL_UNNAMED_GROUP_FORMAT,
+                                         title);
+    } else {
+      title = l10n_util::GetStringFUTF16(IDS_TAB_AX_LABEL_NAMED_GROUP_FORMAT,
+                                         title, group_title);
+    }
+  }
 
   // Tab has crashed.
   if (tabstrip_->IsTabCrashed(index))

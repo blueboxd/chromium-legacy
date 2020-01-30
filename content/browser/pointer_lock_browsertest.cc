@@ -673,8 +673,8 @@ IN_PROC_BROWSER_TEST_F(PointerLockBrowserTestWithOptions,
 }
 
 #if defined(USE_AURA)
-#if defined(OS_WIN)
-// https://crbug.com/1043985#c9: Flaky on Windows
+#if defined(OS_WIN) || defined(OS_LINUX)
+// https://crbug.com/1043985#c9: Flaky on Windows and Linux.
 #define MAYBE_UnadjustedMovement DISABLED_UnadjustedMovement
 #else
 #define MAYBE_UnadjustedMovement UnadjustedMovement

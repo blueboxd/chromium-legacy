@@ -62,7 +62,7 @@
                         android:layout_marginBottom="@dimen/fre_vertical_spacing"
                         android:gravity="center"
                         android:lineSpacingMultiplier="1.4"
-                        android:textAppearance="@style/TextAppearance.BlackBodyDefault" />
+                        android:textAppearance="@style/TextAppearance.TextMedium.Primary" />
 
                     <CheckBox
                         android:id="@+id/send_report_checkbox"
@@ -70,7 +70,7 @@
                         android:layout_height="wrap_content"
                         android:lineSpacingMultiplier="1.4"
                         android:text="@string/fre_send_report_check"
-                        android:textAppearance="@style/TextAppearance.BlackBodyDefault" />
+                        android:textAppearance="@style/TextAppearance.TextMedium.Primary" />
                     </LinearLayout>
             </LinearLayout>
         </LinearLayout>

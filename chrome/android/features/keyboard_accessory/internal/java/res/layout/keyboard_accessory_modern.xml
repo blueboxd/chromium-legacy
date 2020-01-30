@@ -52,7 +52,7 @@
             android:id="@+id/sheet_title"
             android:minHeight="48dp"
             android:gravity="center_vertical|start"
-            android:textAppearance="@style/TextAppearance.BlackTitle1"
+            android:textAppearance="@style/TextAppearance.TextLarge.Primary"
             android:layout_height="wrap_content"
             android:layout_width="match_parent"
             android:background="?android:attr/selectableItemBackground"

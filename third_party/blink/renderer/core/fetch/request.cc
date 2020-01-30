@@ -19,6 +19,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_array_buffer_view.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_blob.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_form_data.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_readable_stream.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_request_init.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_url_search_params.h"
 #include "third_party/blink/renderer/core/dom/abort_signal.h"
@@ -551,8 +552,17 @@ Request* Request::CreateRequestWithRequestOrString(
 
   // "If |init|’s body member is present and is non-null, then:"
   if (!init_body.IsEmpty() && !init_body->IsNull()) {
-    // TODO(yhirano): Throw if keepalive flag is set and body is a
-    // ReadableStream. We don't support body stream setting for Request yet.
+    // - If |init|["keepalive"] exists and is true, then set |body| and
+    //   |Content-Type| to the result of extracting |init|["body"], with the
+    //   |keepalive| flag set.
+    // From "extract a body":
+    // - If the keepalive flag is set, then throw a TypeError.
+    if (init->hasKeepalive() && init->keepalive() &&
+        V8ReadableStream::HasInstance(init_body, script_state->GetIsolate())) {
+      exception_state.ThrowTypeError(
+          "Keepalive request cannot have a ReadableStream body.");
+      return nullptr;
+    }
 
     // Perform the following steps:
     // - "Let |stream| and |Content-Type| be the result of extracting

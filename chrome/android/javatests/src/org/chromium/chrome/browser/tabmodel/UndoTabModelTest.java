@@ -1341,6 +1341,7 @@ public class UndoTabModelTest {
     @Test
     @MediumTest
     @RetryOnFailure
+    @DisabledTest(message = "crbug.com/1042168")
     public void testUndoNotSupported() throws TimeoutException {
         TabModel model = mActivityTestRule.getActivity().getTabModelSelector().getModel(true);
         ChromeTabCreator tabCreator = mActivityTestRule.getActivity().getTabCreator(true);

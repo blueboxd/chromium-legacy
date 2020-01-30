@@ -55,7 +55,6 @@
 #include "ui/views/widget/desktop_aura/desktop_drag_drop_client_aurax11.h"
 #include "ui/views/widget/desktop_aura/desktop_native_cursor_manager.h"
 #include "ui/views/widget/desktop_aura/desktop_native_widget_aura.h"
-#include "ui/views/widget/desktop_aura/desktop_window_tree_host_observer_x11.h"
 #include "ui/views/widget/desktop_aura/x11_desktop_handler.h"
 #include "ui/views/widget/desktop_aura/x11_desktop_window_move_client.h"
 #include "ui/views/window/native_frame_view.h"
@@ -77,16 +76,6 @@ DesktopWindowTreeHostX11::~DesktopWindowTreeHostX11() {
 
   // ~DWTHPlatform notifies the DestkopNativeWidgetAura about destruction and
   // also destroyes the dispatcher.
-}
-
-void DesktopWindowTreeHostX11::AddObserver(
-    DesktopWindowTreeHostObserverX11* observer) {
-  observer_list_.AddObserver(observer);
-}
-
-void DesktopWindowTreeHostX11::RemoveObserver(
-    DesktopWindowTreeHostObserverX11* observer) {
-  observer_list_.RemoveObserver(observer);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -147,16 +136,6 @@ void DesktopWindowTreeHostX11::EndMoveLoop() {
 
 ////////////////////////////////////////////////////////////////////////////////
 // DesktopWindowTreeHostX11 implementation:
-
-void DesktopWindowTreeHostX11::OnXWindowMapped() {
-  for (DesktopWindowTreeHostObserverX11& observer : observer_list_)
-    observer.OnWindowMapped(GetXWindow()->window());
-}
-
-void DesktopWindowTreeHostX11::OnXWindowUnmapped() {
-  for (DesktopWindowTreeHostObserverX11& observer : observer_list_)
-    observer.OnWindowUnmapped(GetXWindow()->window());
-}
 
 void DesktopWindowTreeHostX11::OnXWindowSelectionEvent(XEvent* xev) {
   DCHECK(xev);

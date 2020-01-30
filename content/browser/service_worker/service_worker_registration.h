@@ -90,6 +90,13 @@ class CONTENT_EXPORT ServiceWorkerRegistration
   Status status() const { return status_; }
   void SetStatus(Status status);
 
+  // Returns true when this registration is stored in storage and corresponding
+  // ServiceWorkerContextCore is valid. The context becomes invalid when
+  // ServiceWorkerContextCore::DeleteAndStartOver() is called.
+  bool IsStored() const;
+  void SetStored();
+  void UnsetStored();
+
   int64_t resources_total_size_bytes() const {
     return resources_total_size_bytes_;
   }
@@ -238,10 +245,18 @@ class CONTENT_EXPORT ServiceWorkerRegistration
                          scoped_refptr<ServiceWorkerVersion> version,
                          blink::ServiceWorkerStatusCode status);
 
+  enum class StoreState {
+    // This registration is not stored yet in storage.
+    kNotStored,
+    // This registration is stored in storage.
+    kStored,
+  };
+
   const GURL scope_;
   blink::mojom::ServiceWorkerUpdateViaCache update_via_cache_;
   const int64_t registration_id_;
   Status status_;
+  StoreState store_state_;
   bool should_activate_when_ready_;
   blink::mojom::NavigationPreloadState navigation_preload_state_;
   base::Time last_update_check_;

@@ -218,7 +218,7 @@ struct PasswordGenerationUIData {
   uint32 generation_element_id;
   bool is_generation_element_password_type;
   mojo_base.mojom.TextDirection text_direction;
-  PasswordForm password_form;
+  FormData form_data;
 };
 
 // autofill::ValueElementPair

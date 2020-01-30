@@ -25,6 +25,6 @@
         android:layout_gravity="center_vertical"
         android:layout_marginStart="24dp"
         android:text="@string/signin_gms_updating"
-        android:textAppearance="@style/TextAppearance.BlackBodyDefault"
+        android:textAppearance="@style/TextAppearance.TextMedium.Primary"
         app:leading="@dimen/text_size_medium_leading" />
 </org.chromium.components.browser_ui.widget.BoundedLinearLayout>

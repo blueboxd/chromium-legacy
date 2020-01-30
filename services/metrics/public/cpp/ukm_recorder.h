@@ -68,6 +68,10 @@ class METRICS_EXPORT UkmRecorder {
   void RecordOtherURL(base::UkmSourceId source_id, const GURL& url);
   void RecordAppURL(base::UkmSourceId source_id, const GURL& url);
 
+  // Gets new source Id for WEBAPK_ID type and updates the manifest url. This
+  // method should only be called by WebApkUkmRecorder class.
+  static SourceId GetSourceIdForWebApkManifestUrl(const GURL& manifest_url);
+
  private:
   friend DelegatingUkmRecorder;
   friend TestRecordingHelper;
@@ -79,8 +83,8 @@ class METRICS_EXPORT UkmRecorder {
   // WebApkUkmRecorder records metrics about installed Webapps. Instead of using
   // the current main frame URL, we want to record the URL of the Webapp
   // manifest which identifies the current app. Therefore, WebApkUkmRecorder
-  // needs to be a friend so that it can access the private UpdateSourceURL()
-  // method.
+  // needs to be a friend so that it can access the private
+  // GetSourceIdForWebApkManifestUrl() method.
   friend WebApkUkmRecorder;
 
   // Associates the SourceId with a URL. Most UKM recording code should prefer

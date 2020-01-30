@@ -426,7 +426,6 @@
 <translation id="2799223571221894425">Újraindítás</translation>
 <translation id="2803306138276472711">A Google – Biztonságos böngészés nemrég <ph name="BEGIN_LINK" />rosszindulatú programot<ph name="END_LINK" /> észlelt a(z) <ph name="SITE" /> webhelyen. A rendes esetben biztonságos webhelyek néha rosszindulatú programokkal fertőzöttek.</translation>
 <translation id="2807052079800581569">Kép Y-pozíciója</translation>
-<translation id="2809804249696361569">Mindkét lap</translation>
 <translation id="2824775600643448204">Cím- és keresősáv</translation>
 <translation id="2826760142808435982">A kapcsolat <ph name="KX" /> algoritmust használ kulcscserélő mechanizmusként, kódolása pedig <ph name="CIPHER" /> használatával történt.</translation>
 <translation id="2835170189407361413">Űrlap törlése</translation>
@@ -933,7 +932,6 @@
 <translation id="5112422516732747637">A5</translation>
 <translation id="5115216390227830982">European-Edp</translation>
 <translation id="5115563688576182185">(64 bites)</translation>
-<translation id="5121469660360593280">A Chrome Enterprise felhasználóvédelmi funkciója által megjelölt biztonsági események adatait megoszthatja az adminisztrátorral. Ez tartalmazhatja a felkeresett oldalak URL-jeit, a fájlneveket és metaadatokat, valamint az eszközre és a Chrome-ba való bejelentkezéshez használt felhasználónevet.</translation>
 <translation id="5123063207673082822">Hétvége</translation>
 <translation id="5125394840236832993">B-Plus</translation>
 <translation id="5126510351761255129">Kártya ellenőrzése</translation>
@@ -948,7 +946,6 @@
 <translation id="5161506081086828129">9. kötegelő</translation>
 <translation id="516920405563544094">Adja meg a(z) <ph name="CREDIT_CARD" /> kártya CVC-kódját. A megerősítést követően a böngésző megosztja majd az Ön Google-fiókjából származó kártyaadatokat ezzel a webhellyel.</translation>
 <translation id="5169827969064885044">Elveszítheti a hozzáférést szervezete fiókjához, vagy visszaélhetnek személyes adataival. A Chrome azt javasolja, hogy azonnal módosítsa jelszavát.</translation>
-<translation id="5170017743895942767">A Chrome Enterprise felhasználóvédelmi funkciója</translation>
 <translation id="5171045022955879922">Keressen vagy írjon be egy URL-t</translation>
 <translation id="5171689220826475070">Fanfold-European</translation>
 <translation id="5172758083709347301">Számítógép</translation>
@@ -1081,7 +1078,6 @@
 <translation id="5737183892635480227">{NUM_CARDS,plural, =1{Kártya mentése a Google-fiókba}other{Kártyák mentése a Google-fiókba}}</translation>
 <translation id="5745980000221562234">{NUM_CARDS,plural, =1{Virtuális szám használata ehhez a kártyához}other{Kártya kiválasztása}}</translation>
 <translation id="5763042198335101085">Érvényes e-mail-címet adjon meg</translation>
-<translation id="5763703224595565476">Az adminisztrátor engedélyezte a Chrome Enterprise felhasználóvédelmi funkcióját a böngészőben. A Chrome Enterprise felhasználóvédelmi funkciója hozzáfér az Ön bizonyos adataihoz.</translation>
 <translation id="5765072501007116331">A kézbesítési módok és követelmények megtekintéséhez válassza ki a címet</translation>
 <translation id="5776313857861697733">Prioritás</translation>
 <translation id="5778550464785688721">MIDI eszközök – teljes hozzáférés</translation>
@@ -1418,7 +1414,6 @@ További részletek:
 <translation id="733923710415886693">A szerver tanúsítványát nem A tanúsítványok átláthatósága keretrendszeren keresztül hozták nyilvánosságra.</translation>
 <translation id="734600844861828519">11x15</translation>
 <translation id="7346048084945669753">Társult felhasználó:</translation>
-<translation id="73479065977517481">A(z) <ph name="ENROLLMENT_DOMAIN" /> engedélyezte a Chrome Enterprise felhasználóvédelmi funkcióját az Ön böngészőjében. A Chrome Enterprise felhasználóvédelmi funkciója hozzáfér az Ön bizonyos adataihoz.</translation>
 <translation id="7349430561505560861">A4-Extra</translation>
 <translation id="7353601530677266744">Parancssor</translation>
 <translation id="7372973238305370288">keresési találat</translation>

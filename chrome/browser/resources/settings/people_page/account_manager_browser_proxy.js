@@ -95,6 +95,7 @@ cr.define('settings', function() {
 
   cr.addSingletonGetter(AccountManagerBrowserProxyImpl);
 
+  // #cr_define_end
   return {
     Account,
     AccountManagerBrowserProxy,

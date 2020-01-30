@@ -112,6 +112,10 @@ SharingFCMHandler* SharingService::GetFCMHandlerForTesting() const {
   return fcm_handler_.get();
 }
 
+SharingMessageSender* SharingService::GetMessageSenderForTesting() const {
+  return message_sender_.get();
+}
+
 void SharingService::OnSyncShutdown(syncer::SyncService* sync) {
   if (sync_service_ && sync_service_->HasObserver(this))
     sync_service_->RemoveObserver(this);

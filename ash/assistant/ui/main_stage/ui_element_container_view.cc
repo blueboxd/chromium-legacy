@@ -20,7 +20,9 @@
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "base/callback.h"
 #include "base/time/time.h"
+#include "cc/base/math_util.h"
 #include "ui/aura/window.h"
+#include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/layout/box_layout.h"
 
@@ -33,6 +35,7 @@ constexpr int kEmbeddedUiFirstCardMarginTopDip = 8;
 constexpr int kEmbeddedUiPaddingBottomDip = 8;
 constexpr int kMainUiFirstCardMarginTopDip = 40;
 constexpr int kMainUiPaddingBottomDip = 24;
+constexpr int kScrollIndicatorHeightDip = 1;
 
 // Helpers ---------------------------------------------------------------------
 
@@ -86,6 +89,14 @@ gfx::Size UiElementContainerView::GetMinimumSize() const {
   return gfx::Size(INT_MAX, 1);
 }
 
+void UiElementContainerView::Layout() {
+  AnimatedContainerView::Layout();
+
+  // Scroll indicator.
+  scroll_indicator_->SetBounds(0, height() - kScrollIndicatorHeightDip, width(),
+                               kScrollIndicatorHeightDip);
+}
+
 void UiElementContainerView::OnContentsPreferredSizeChanged(
     views::View* content_view) {
   const int preferred_height = content_view->GetHeightForWidth(width());
@@ -93,11 +104,33 @@ void UiElementContainerView::OnContentsPreferredSizeChanged(
 }
 
 void UiElementContainerView::InitLayout() {
+  // Content.
   content_view()->SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kVertical,
       gfx::Insets(0, kUiElementHorizontalMarginDip, GetPaddingBottomDip(),
                   kUiElementHorizontalMarginDip),
       kSpacingDip));
+
+  // Scroll indicator.
+  scroll_indicator_ = AddChildView(std::make_unique<views::View>());
+  scroll_indicator_->SetBackground(
+      views::CreateSolidBackground(gfx::kGoogleGrey300));
+
+  // The scroll indicator paints to its own layer which is animated in/out using
+  // implicit animation settings.
+  scroll_indicator_->SetPaintToLayer();
+  scroll_indicator_->layer()->SetAnimator(
+      ui::LayerAnimator::CreateImplicitAnimator());
+  scroll_indicator_->layer()->SetFillsBoundsOpaquely(false);
+  scroll_indicator_->layer()->SetOpacity(0.f);
+
+  // We cannot draw |scroll_indicator_| over Assistant cards due to issues w/
+  // layer ordering. Because |kScrollIndicatorHeightDip| is sufficiently small,
+  // we'll use an empty bottom border to reserve space for |scroll_indicator_|.
+  // When |scroll_indicator_| is not visible, this just adds a negligible amount
+  // of margin to the bottom of the content. Otherwise, |scroll_indicator_| will
+  // occupy this space.
+  SetBorder(views::CreateEmptyBorder(0, 0, kScrollIndicatorHeightDip, 0));
 }
 
 void UiElementContainerView::OnCommittedQueryChanged(
@@ -174,6 +207,36 @@ void UiElementContainerView::OnAllViewsAnimatedIn() {
   DCHECK(response);
   if (!response->has_tts())
     NotifyAccessibilityEvent(ax::mojom::Event::kAlert, true);
+}
+
+void UiElementContainerView::OnScrollBarUpdated(views::ScrollBar* scroll_bar,
+                                                int viewport_size,
+                                                int content_size,
+                                                int content_scroll_offset) {
+  if (scroll_bar != vertical_scroll_bar())
+    return;
+
+  // When the vertical scroll bar is updated, we update our |scroll_indicator_|.
+  bool can_scroll = content_size > (content_scroll_offset + viewport_size);
+  UpdateScrollIndicator(can_scroll);
+}
+
+void UiElementContainerView::OnScrollBarVisibilityChanged(
+    views::ScrollBar* scroll_bar,
+    bool is_visible) {
+  // When the vertical scroll bar is hidden, we need to update our
+  // |scroll_indicator_|. This may occur during a layout pass when the new
+  // content no longer requires a vertical scroll bar while the old content did.
+  if (scroll_bar == vertical_scroll_bar() && !is_visible)
+    UpdateScrollIndicator(/*can_scroll=*/false);
+}
+
+void UiElementContainerView::UpdateScrollIndicator(bool can_scroll) {
+  const float target_opacity = can_scroll ? 1.f : 0.f;
+
+  ui::Layer* layer = scroll_indicator_->layer();
+  if (!cc::MathUtil::IsWithinEpsilon(layer->GetTargetOpacity(), target_opacity))
+    layer->SetOpacity(target_opacity);
 }
 
 }  // namespace ash

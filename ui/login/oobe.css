@@ -55,6 +55,8 @@ html {
   --oobe-dialog-min-height: 384px;
 
   --oobe-dialog-side-margin: 48px;
+
+  --oobe-dialog-adaptable-flex-direction: column;
 }
 
 html[screen=gaia-signin] {
@@ -68,6 +70,21 @@ html[screen=gaia-signin] {
     --oobe-dialog-footer-height: 80px;
     --oobe-dialog-footer-padding: 24px;
     --oobe-dialog-content-padding: 32px;
+  }
+}
+
+/* Adapt for horizontal screen */
+@media screen and (min-width: 768px) and (max-height: 768px) {
+  html[screen=oobe] {
+    --oobe-dialog-adaptable-flex-direction: row;
+  }
+}
+
+/* Adapt for horizontal screen. 616px - corresponding height of the OOBE dialog
+ * for gaia-signin flow when screen height is 768px */
+@media screen and (min-width: 616px) and (max-height: 616px) {
+  html[screen=gaia-signin] {
+    --oobe-dialog-adaptable-flex-direction: row;
   }
 }
 

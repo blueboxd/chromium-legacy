@@ -303,7 +303,6 @@
 <translation id="3282568296779691940">Iniciar sesión en Chrome</translation>
 <translation id="3288003805934695103">Volver a cargar la página</translation>
 <translation id="32895400574683172">Las notificaciones están permitidas</translation>
-<translation id="3290926146403723641">Para completar tareas que se realizan en la Web a través del Asistente de Google, Chrome envía a Google la URL y el contenido de los sitios web, así como información personal pertinente.</translation>
 <translation id="3295530008794733555">Navega más rápido. Usa menos datos.</translation>
 <translation id="3298243779924642547">Básico</translation>
 <translation id="3303414029551471755">¿Quieres continuar para descargar el contenido?</translation>
@@ -1028,7 +1027,7 @@ El sitio web no obtendrá acceso a la cámara. Solo tú puedes ver las imágenes
 <translation id="8676374126336081632">Borrar entrada</translation>
 <translation id="8687353297350450808">{N_BARS,plural, =1{Nivel de intensidad de la señal: # barra}other{Nivel de intensidad de la señal: # barras}}</translation>
 <translation id="868929229000858085">Buscar en tus contactos</translation>
-<translation id="8698438463325761328">Impedir que los sitios web accedan a tu dispositivo o tus datos de realidad virtual</translation>
+<translation id="8698438463325761328">Impedir que los sitios web accedan a tu dispositivo y tus datos de realidad virtual</translation>
 <translation id="869891660844655955">Fecha de caducidad</translation>
 <translation id="8728487861892616501">Si utilizas esta aplicación, aceptas las <ph name="BEGIN_LINK1" />condiciones de servicio<ph name="END_LINK1" /> y el <ph name="BEGIN_LINK2" />aviso de privacidad<ph name="END_LINK2" /> de Chrome, así como el <ph name="BEGIN_LINK3" />aviso de privacidad para cuentas de Google gestionadas con Family Link<ph name="END_LINK3" />.</translation>
 <translation id="8748850008226585750">Contenidos ocultos</translation>

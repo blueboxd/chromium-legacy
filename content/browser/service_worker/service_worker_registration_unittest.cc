@@ -347,17 +347,15 @@ TEST_F(ServiceWorkerRegistrationTest, NavigationPreload) {
   scoped_refptr<ServiceWorkerRegistration> registration =
       context()->registry()->CreateNewRegistration(options);
   scoped_refptr<ServiceWorkerVersion> version_1 =
-      base::MakeRefCounted<ServiceWorkerVersion>(
-          registration.get(), kScript, blink::mojom::ScriptType::kClassic,
-          storage()->NewVersionId(), context()->AsWeakPtr());
+      context()->registry()->CreateNewVersion(
+          registration.get(), kScript, blink::mojom::ScriptType::kClassic);
   version_1->set_fetch_handler_existence(
       ServiceWorkerVersion::FetchHandlerExistence::EXISTS);
   registration->SetActiveVersion(version_1);
   version_1->SetStatus(ServiceWorkerVersion::ACTIVATED);
   scoped_refptr<ServiceWorkerVersion> version_2 =
-      base::MakeRefCounted<ServiceWorkerVersion>(
-          registration.get(), kScript, blink::mojom::ScriptType::kClassic,
-          storage()->NewVersionId(), context()->AsWeakPtr());
+      context()->registry()->CreateNewVersion(
+          registration.get(), kScript, blink::mojom::ScriptType::kClassic);
   version_2->set_fetch_handler_existence(
       ServiceWorkerVersion::FetchHandlerExistence::EXISTS);
   registration->SetWaitingVersion(version_2);
@@ -397,9 +395,8 @@ class ServiceWorkerActivationTest : public ServiceWorkerRegistrationTest,
 
     // Create an active version.
     scoped_refptr<ServiceWorkerVersion> version_1 =
-        base::MakeRefCounted<ServiceWorkerVersion>(
-            registration_.get(), kScript, blink::mojom::ScriptType::kClassic,
-            storage()->NewVersionId(), context()->AsWeakPtr());
+        context()->registry()->CreateNewVersion(
+            registration_.get(), kScript, blink::mojom::ScriptType::kClassic);
     version_1->set_fetch_handler_existence(
         ServiceWorkerVersion::FetchHandlerExistence::EXISTS);
     registration_->SetActiveVersion(version_1);
@@ -446,9 +443,8 @@ class ServiceWorkerActivationTest : public ServiceWorkerRegistrationTest,
 
     // Create a waiting version.
     scoped_refptr<ServiceWorkerVersion> version_2 =
-        base::MakeRefCounted<ServiceWorkerVersion>(
-            registration_.get(), kScript, blink::mojom::ScriptType::kClassic,
-            storage()->NewVersionId(), context()->AsWeakPtr());
+        context()->registry()->CreateNewVersion(
+            registration_.get(), kScript, blink::mojom::ScriptType::kClassic);
     std::vector<ServiceWorkerDatabase::ResourceRecord> records_2;
     records_2.push_back(WriteToDiskCacheSync(
         helper_->context()->storage(), version_2->script_url(),
@@ -581,7 +577,8 @@ TEST_P(ServiceWorkerActivationTest, NoInflightRequest) {
   EXPECT_EQ(version_1.get(), reg->active_version());
   // The idle timer living in the renderer is requested to notify the idle state
   // to the browser ASAP.
-  EXPECT_TRUE(version_1_service_worker()->is_zero_idle_timer_delay());
+  EXPECT_EQ(base::TimeDelta::FromSeconds(0),
+            version_1_service_worker()->idle_delay().value());
 
   // Finish the request. Activation should happen.
   version_1->FinishRequest(inflight_request_id(), true /* was_handled */);
@@ -607,7 +604,8 @@ TEST_P(ServiceWorkerActivationTest, SkipWaitingWithInflightRequest) {
                                   skip_waiting_loop.QuitClosure());
   EXPECT_FALSE(result.has_value());
   EXPECT_EQ(version_1.get(), reg->active_version());
-  EXPECT_TRUE(version_1_service_worker()->is_zero_idle_timer_delay());
+  EXPECT_EQ(base::TimeDelta::FromSeconds(0),
+            version_1_service_worker()->idle_delay().value());
 
   // Finish the request. FinishRequest() doesn't immediately make the worker
   // reach the "no work" state. It needs to be notfied of the idle state by
@@ -643,7 +641,8 @@ TEST_P(ServiceWorkerActivationTest, SkipWaiting) {
   SimulateSkipWaitingWithCallback(version_2.get(), &result,
                                   skip_waiting_loop.QuitClosure());
 
-  EXPECT_TRUE(version_1_service_worker()->is_zero_idle_timer_delay());
+  EXPECT_EQ(base::TimeDelta::FromSeconds(0),
+            version_1_service_worker()->idle_delay().value());
   EXPECT_FALSE(result.has_value());
   EXPECT_EQ(version_1.get(), reg->active_version());
   RequestTermination(&version_1_client()->host());
@@ -890,9 +889,8 @@ class ServiceWorkerRegistrationObjectHostTest
       ServiceWorkerRegistration* registration,
       const GURL& script_url) {
     scoped_refptr<ServiceWorkerVersion> version =
-        base::MakeRefCounted<ServiceWorkerVersion>(
-            registration, script_url, blink::mojom::ScriptType::kClassic,
-            storage()->NewVersionId(), context()->AsWeakPtr());
+        context()->registry()->CreateNewVersion(
+            registration, script_url, blink::mojom::ScriptType::kClassic);
     std::vector<ServiceWorkerDatabase::ResourceRecord> records;
     records.push_back(WriteToDiskCacheSync(
         storage(), version->script_url(), storage()->NewResourceId(),

@@ -46,6 +46,8 @@ class BrowserImpl : public Browser {
 
   ProfileImpl* profile() { return profile_; }
 
+  // Creates and adds a Tab from session restore. The returned tab is owned by
+  // this Browser.
   TabImpl* CreateTabForSessionRestore(
       std::unique_ptr<content::WebContents> web_contents);
 
@@ -76,21 +78,28 @@ class BrowserImpl : public Browser {
   base::android::ScopedJavaLocalRef<jbyteArray> GetSessionServiceCryptoKey(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& caller);
+  base::android::ScopedJavaLocalRef<jbyteArray> GetMinimalPersistenceState(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& caller);
 #endif
 
+  // Used in tests to specify a non-default max (0 means use the default).
+  std::vector<uint8_t> GetMinimalPersistenceState(int max_size_in_bytes);
+
   // Browser:
-  void AddTab(Tab* tab) override;
-  void RemoveTab(Tab* tab) override;
+  Tab* AddTab(std::unique_ptr<Tab> tab) override;
+  std::unique_ptr<Tab> RemoveTab(Tab* tab) override;
   void SetActiveTab(Tab* tab) override;
   Tab* GetActiveTab() override;
-  const std::vector<Tab*>& GetTabs() override;
+  std::vector<Tab*> GetTabs() override;
   void PrepareForShutdown() override;
   std::string GetPersistenceId() override;
+  std::vector<uint8_t> GetMinimalPersistenceState() override;
   void AddObserver(BrowserObserver* observer) override;
   void RemoveObserver(BrowserObserver* observer) override;
 
  private:
-  void CreateSessionServiceAndRestore(const PersistenceInfo& persistence_info);
+  void RestoreStateIfNecessary(const PersistenceInfo& persistence_info);
 
   // Returns the path used by |session_service_|.
   base::FilePath GetSessionServiceDataPath();
@@ -100,7 +109,7 @@ class BrowserImpl : public Browser {
 #endif
   base::ObserverList<BrowserObserver> browser_observers_;
   ProfileImpl* profile_;
-  std::vector<Tab*> tabs_;
+  std::vector<std::unique_ptr<Tab>> tabs_;
   TabImpl* active_tab_ = nullptr;
   const std::string persistence_id_;
   std::unique_ptr<SessionService> session_service_;

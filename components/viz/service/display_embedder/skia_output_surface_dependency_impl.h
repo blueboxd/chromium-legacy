@@ -46,6 +46,7 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceDependencyImpl
   base::ScopedClosureRunner CacheGLSurface(gl::GLSurface* surface) override;
   void PostTaskToClientThread(base::OnceClosure closure) override;
   void ScheduleGrContextCleanup() override;
+  void ScheduleDelayedGPUTaskFromGPUThread(base::OnceClosure task) override;
 
 #if defined(OS_WIN)
   void DidCreateAcceleratedSurfaceChildWindow(

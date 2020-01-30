@@ -218,12 +218,15 @@ void CheckClientDownloadRequest::MaybeStorePingsForDownload(
 
 bool CheckClientDownloadRequest::ShouldUploadBinary(
     DownloadCheckResultReason reason) {
-  bool upload_for_dlp = ShouldUploadForDlpScan();
-  bool upload_for_malware = ShouldUploadForMalwareScan(reason);
-  if (!upload_for_dlp && !upload_for_malware)
+  // If the download was destroyed, we can't upload it.
+  if (reason == REASON_DOWNLOAD_DESTROYED)
     return false;
 
-  return !!Profile::FromBrowserContext(GetBrowserContext());
+  // If the download is known to be dangerous, we don't need to upload it.
+  if (reason == REASON_DOWNLOAD_DANGEROUS)
+    return false;
+
+  return DeepScanningRequest::ShouldUploadItemByPolicy(item_);
 }
 
 void CheckClientDownloadRequest::UploadBinary() {
@@ -248,71 +251,16 @@ bool CheckClientDownloadRequest::ShouldPromptForDeepScanning(
   if (reason != REASON_DOWNLOAD_UNCOMMON)
     return false;
 
+#if defined(OS_CHROMEOS)
+  return false;
+#else
   Profile* profile = Profile::FromBrowserContext(GetBrowserContext());
   return base::FeatureList::IsEnabled(kPromptAppForDeepScanning) &&
+         profile->GetPrefs()->GetBoolean(
+             prefs::kAdvancedProtectionDeepScanningEnabled) &&
          AdvancedProtectionStatusManagerFactory::GetForProfile(profile)
              ->IsUnderAdvancedProtection();
-}
-
-bool CheckClientDownloadRequest::ShouldUploadForDlpScan() {
-  if (!base::FeatureList::IsEnabled(kContentComplianceEnabled))
-    return false;
-
-  int check_content_compliance = g_browser_process->local_state()->GetInteger(
-      prefs::kCheckContentCompliance);
-  if (check_content_compliance !=
-          CheckContentComplianceValues::CHECK_DOWNLOADS &&
-      check_content_compliance !=
-          CheckContentComplianceValues::CHECK_UPLOADS_AND_DOWNLOADS)
-    return false;
-
-  // TODO(crbug/1013584): Call FileTypeSupported from DeepScanningUtils around
-  // here and handle both supported and unsupported types appropriately.
-
-  Profile* profile = Profile::FromBrowserContext(GetBrowserContext());
-  // If there's no valid DM token, the upload will fail, so we can skip
-  // uploading now.
-  if (!GetDMToken(profile).is_valid())
-    return false;
-
-  const base::ListValue* domains = g_browser_process->local_state()->GetList(
-      prefs::kURLsToCheckComplianceOfDownloadedContent);
-  url_matcher::URLMatcher matcher;
-  policy::url_util::AddAllowFilters(&matcher, domains);
-  return !matcher.MatchURL(item_->GetURL()).empty();
-}
-
-bool CheckClientDownloadRequest::ShouldUploadForMalwareScan(
-    DownloadCheckResultReason reason) {
-  if (!base::FeatureList::IsEnabled(kMalwareScanEnabled))
-    return false;
-
-  // If we know the file is malicious, we don't need to upload it.
-  if (reason != DownloadCheckResultReason::REASON_DOWNLOAD_SAFE &&
-      reason != DownloadCheckResultReason::REASON_DOWNLOAD_UNCOMMON &&
-      reason != DownloadCheckResultReason::REASON_VERDICT_UNKNOWN)
-    return false;
-
-  content::BrowserContext* browser_context =
-      content::DownloadItemUtils::GetBrowserContext(item_);
-  if (!browser_context)
-    return false;
-
-  Profile* profile = Profile::FromBrowserContext(browser_context);
-  if (!profile)
-    return false;
-
-  int send_files_for_malware_check = profile->GetPrefs()->GetInteger(
-      prefs::kSafeBrowsingSendFilesForMalwareCheck);
-  if (send_files_for_malware_check !=
-          SendFilesForMalwareCheckValues::SEND_DOWNLOADS &&
-      send_files_for_malware_check !=
-          SendFilesForMalwareCheckValues::SEND_UPLOADS_AND_DOWNLOADS)
-    return false;
-
-  // If there's no valid DM token, the upload will fail, so we can skip
-  // uploading now.
-  return GetDMToken(profile).is_valid();
+#endif
 }
 
 }  // namespace safe_browsing

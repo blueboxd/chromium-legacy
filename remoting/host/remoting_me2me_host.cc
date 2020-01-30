@@ -445,10 +445,6 @@ class HostProcess : public ConfigWatcher::Delegate,
   ShutdownWatchdog* shutdown_watchdog_;
 
 #if defined(OS_MACOSX)
-  // A basic decktop capturer that captures a single screen in order to trigger
-  // the native OS permission check.
-  std::unique_ptr<DesktopCapturerChecker> capture_checker_;
-
   // When using the command line option to check the Accessibility or Screen
   // Recording permission, these track the permission state and indicate that
   // the host should exit immediately with the result.
@@ -512,8 +508,7 @@ bool HostProcess::InitWithCommandLine(const base::CommandLine* cmd_line) {
     // important to add the host bundle to the list of apps under
     // Security & Privacy -> Screen Recording.
     if (base::mac::IsAtLeastOS10_15()) {
-      capture_checker_ = std::make_unique<DesktopCapturerChecker>();
-      capture_checker_->TriggerSingleCapture();
+      DesktopCapturerChecker().TriggerSingleCapture();
     }
     checking_permission_state_ = true;
     permission_granted_ = mac::CanRecordScreen();
@@ -1566,8 +1561,7 @@ void HostProcess::StartHost() {
     // add our binary to the list of apps that can be granted permission. This
     // is only needed for OS X 10.15 and later.
     if (base::mac::IsAtLeastOS10_15()) {
-      capture_checker_.reset(new DesktopCapturerChecker());
-      capture_checker_->TriggerSingleCapture();
+      DesktopCapturerChecker().TriggerSingleCapture();
     }
 
     mac::PromptUserToChangeTrustStateIfNeeded(context_->ui_task_runner());

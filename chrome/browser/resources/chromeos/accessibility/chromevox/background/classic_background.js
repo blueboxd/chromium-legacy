@@ -35,74 +35,7 @@ goog.require('TtsBackground');
  * interprets them.
  */
 ChromeVoxBackground = class {
-  constructor() {}
-
-  /**
-   * @param {string} pref
-   * @param {*} value
-   * @param {boolean} announce
-   */
-  static setPref(pref, value, announce) {
-    if (pref == 'earcons') {
-      AbstractEarcons.enabled = !!value;
-    } else if (pref == 'sticky' && announce) {
-      if (value) {
-        ChromeVox.tts.speak(
-            Msgs.getMsg('sticky_mode_enabled'), QueueMode.FLUSH);
-      } else {
-        ChromeVox.tts.speak(
-            Msgs.getMsg('sticky_mode_disabled'), QueueMode.FLUSH);
-      }
-    } else if (pref == 'typingEcho' && announce) {
-      var announceStr = '';
-      switch (value) {
-        case TypingEcho.CHARACTER:
-          announceStr = Msgs.getMsg('character_echo');
-          break;
-        case TypingEcho.WORD:
-          announceStr = Msgs.getMsg('word_echo');
-          break;
-        case TypingEcho.CHARACTER_AND_WORD:
-          announceStr = Msgs.getMsg('character_and_word_echo');
-          break;
-        case TypingEcho.NONE:
-          announceStr = Msgs.getMsg('none_echo');
-          break;
-        default:
-          break;
-      }
-      if (announceStr) {
-        ChromeVox.tts.speak(announceStr, QueueMode.QUEUE);
-      }
-    } else if (pref == 'brailleCaptions') {
-      BrailleCaptionsBackground.setActive(!!value);
-    } else if (pref == 'position') {
-      ChromeVox.position =
-          /** @type {Object<string, constants.Point>} */ (JSON.parse(
-              /** @type {string} */ (value)));
-    }
-    window['prefs'].setPref(pref, value);
-    ChromeVoxBackground.readPrefs();
-  }
-
-  /**
-   * Read and apply preferences that affect the background context.
-   */
-  static readPrefs() {
-    if (!window['prefs']) {
-      return;
-    }
-
-    var prefs = window['prefs'].getPrefs();
-    ChromeVoxEditableTextBase.useIBeamCursor =
-        (prefs['useIBeamCursor'] == 'true');
-    ChromeVox.isStickyPrefOn = (prefs['sticky'] == 'true');
-  }
-
-  /**
-   * Initialize the background page: set up TTS and bridge listeners.
-   */
-  init() {
+  constructor() {
     this.prefs = new ChromeVoxPrefs();
     ChromeVoxBackground.readPrefs();
 
@@ -175,6 +108,68 @@ ChromeVoxBackground = class {
         this.injectChromeVoxIntoTabs(tabs);
       }
     });
+  }
+
+  /**
+   * @param {string} pref
+   * @param {*} value
+   * @param {boolean} announce
+   */
+  static setPref(pref, value, announce) {
+    if (pref == 'earcons') {
+      AbstractEarcons.enabled = !!value;
+    } else if (pref == 'sticky' && announce) {
+      if (value) {
+        ChromeVox.tts.speak(
+            Msgs.getMsg('sticky_mode_enabled'), QueueMode.FLUSH);
+      } else {
+        ChromeVox.tts.speak(
+            Msgs.getMsg('sticky_mode_disabled'), QueueMode.FLUSH);
+      }
+    } else if (pref == 'typingEcho' && announce) {
+      var announceStr = '';
+      switch (value) {
+        case TypingEcho.CHARACTER:
+          announceStr = Msgs.getMsg('character_echo');
+          break;
+        case TypingEcho.WORD:
+          announceStr = Msgs.getMsg('word_echo');
+          break;
+        case TypingEcho.CHARACTER_AND_WORD:
+          announceStr = Msgs.getMsg('character_and_word_echo');
+          break;
+        case TypingEcho.NONE:
+          announceStr = Msgs.getMsg('none_echo');
+          break;
+        default:
+          break;
+      }
+      if (announceStr) {
+        ChromeVox.tts.speak(announceStr, QueueMode.QUEUE);
+      }
+    } else if (pref == 'brailleCaptions') {
+      BrailleCaptionsBackground.setActive(!!value);
+    } else if (pref == 'position') {
+      ChromeVox.position =
+          /** @type {Object<string, constants.Point>} */ (JSON.parse(
+              /** @type {string} */ (value)));
+    }
+    window['prefs'].setPref(pref, value);
+    ChromeVoxBackground.readPrefs();
+  }
+
+  /**
+   * Read and apply preferences that affect the background context.
+   */
+  static readPrefs() {
+    if (!window['prefs']) {
+      return;
+    }
+
+    var prefs = window['prefs'].getPrefs();
+    ChromeVoxEditableTextBase.useIBeamCursor =
+        (prefs['useIBeamCursor'] == 'true');
+    ChromeVox.isStickyPrefOn = (prefs['sticky'] == 'true');
   }
 
   /**
@@ -363,7 +358,6 @@ ChromeVoxBackground = class {
 // so that other background pages can access it. Also export the prefs object
 // for access by the options page.
 let background = new ChromeVoxBackground();
-background.init();
 
 // TODO: this needs to be cleaned up (move to init?).
 window['speak'] = goog.bind(background.tts.speak, background.tts);

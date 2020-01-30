@@ -192,6 +192,7 @@ TEST_F(RemotePlaybackTest, StateChangeEvents) {
   remote_playback.addEventListener(event_type_names::kDisconnect,
                                    disconnect_handler);
 
+  // Verify a state changes when a route is connected and closed.
   EXPECT_CALL(*connecting_handler, Invoke(testing::_, testing::_)).Times(1);
   EXPECT_CALL(*connect_handler, Invoke(testing::_, testing::_)).Times(1);
   EXPECT_CALL(*disconnect_handler, Invoke(testing::_, testing::_)).Times(1);
@@ -212,6 +213,30 @@ TEST_F(RemotePlaybackTest, StateChangeEvents) {
   testing::Mock::VerifyAndClear(connecting_handler);
   testing::Mock::VerifyAndClear(connect_handler);
   testing::Mock::VerifyAndClear(disconnect_handler);
+
+  // Verify a state changes when a route is connected and terminated.
+  EXPECT_CALL(*connecting_handler, Invoke(testing::_, testing::_)).Times(1);
+  EXPECT_CALL(*connect_handler, Invoke(testing::_, testing::_)).Times(1);
+  EXPECT_CALL(*disconnect_handler, Invoke(testing::_, testing::_)).Times(1);
+
+  SetState(remote_playback,
+           mojom::blink::PresentationConnectionState::CONNECTING);
+  SetState(remote_playback,
+           mojom::blink::PresentationConnectionState::CONNECTED);
+  SetState(remote_playback,
+           mojom::blink::PresentationConnectionState::TERMINATED);
+
+  // Verify mock expectations explicitly as the mock objects are garbage
+  // collected.
+  testing::Mock::VerifyAndClear(connecting_handler);
+  testing::Mock::VerifyAndClear(connect_handler);
+  testing::Mock::VerifyAndClear(disconnect_handler);
+
+  // Verify we can connect after a route termination.
+  EXPECT_CALL(*connecting_handler, Invoke(testing::_, testing::_)).Times(1);
+  SetState(remote_playback,
+           mojom::blink::PresentationConnectionState::CONNECTING);
+  testing::Mock::VerifyAndClear(connecting_handler);
 }
 
 TEST_F(RemotePlaybackTest,

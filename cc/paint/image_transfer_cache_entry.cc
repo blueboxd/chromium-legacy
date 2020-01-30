@@ -559,6 +559,8 @@ sk_sp<SkImage> ServiceImageTransferCacheEntry::MakeSkImage(
     image = MakeTextureImage(context_, std::move(image), target_color_space,
                              has_mips_ ? GrMipMapped::kYes : GrMipMapped::kNo);
   } else {
+    // If the image is on the CPU, no work is needed to generate mips.
+    has_mips_ = true;
     sk_sp<SkImage> original =
         SkImage::MakeFromRaster(pixmap, [](const void*, void*) {}, nullptr);
     if (!original)
@@ -593,6 +595,7 @@ void ServiceImageTransferCacheEntry::EnsureMips() {
   if (has_mips_)
     return;
 
+  DCHECK(fits_on_gpu_);
   if (is_yuv()) {
     DCHECK(image_);
     DCHECK(yuv_color_space_.has_value());

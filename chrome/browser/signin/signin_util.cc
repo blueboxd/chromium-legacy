@@ -88,8 +88,7 @@ class DeleteProfileDialogManager : public BrowserListObserver {
             IDS_PROFILE_WILL_BE_DELETED_DIALOG_DESCRIPTION,
             base::ASCIIToUTF16(primary_account_email_),
             base::ASCIIToUTF16(
-                gaia::ExtractDomainName(primary_account_email_))),
-        /*can_close=*/false);
+                gaia::ExtractDomainName(primary_account_email_))));
 
     webui::DeleteProfileAtPath(
         profile_->GetPath(),

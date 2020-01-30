@@ -62,13 +62,22 @@ class DeclarativeNetRequestGetMatchedRulesFunction : public ExtensionFunction {
   DECLARE_EXTENSION_FUNCTION("declarativeNetRequest.getMatchedRules",
                              DECLARATIVENETREQUEST_GETMATCHEDRULES)
 
+  static void set_disable_throttling_for_tests(
+      bool disable_throttling_for_test) {
+    disable_throttling_for_test_ = disable_throttling_for_test;
+  }
+
  protected:
   ~DeclarativeNetRequestGetMatchedRulesFunction() override;
 
   // ExtensionFunction override:
   ExtensionFunction::ResponseAction Run() override;
+  void GetQuotaLimitHeuristics(QuotaLimitHeuristics* heuristics) const override;
+  bool ShouldSkipQuotaLimiting() const override;
 
  private:
+  static bool disable_throttling_for_test_;
+
   DISALLOW_COPY_AND_ASSIGN(DeclarativeNetRequestGetMatchedRulesFunction);
 };
 

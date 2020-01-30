@@ -120,9 +120,10 @@ IN_PROC_BROWSER_TEST_F(BrowserNonClientFrameViewBrowserTest,
   app_theme_color_.reset();
   InstallAndLaunchBookmarkApp();
   // Bookmark apps are not affected by browser themes.
-  EXPECT_EQ(
-      ThemeProperties::GetDefaultColor(ThemeProperties::COLOR_FRAME, false),
-      app_frame_view_->GetFrameColor(BrowserFrameActiveState::kActive));
+  EXPECT_EQ(ThemeProperties::GetDefaultColor(
+                ThemeProperties::COLOR_FRAME, false,
+                app_frame_view_->GetNativeTheme()->ShouldUseDarkColors()),
+            app_frame_view_->GetFrameColor(BrowserFrameActiveState::kActive));
 }
 
 // Tests the frame color for a bookmark app when the system theme is applied.

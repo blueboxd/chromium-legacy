@@ -349,10 +349,6 @@ void DesktopWindowTreeHostLinux::DestroyNonClientEventFilter() {
   non_client_window_event_filter_.reset();
 }
 
-void DesktopWindowTreeHostLinux::OnXWindowMapped() {}
-
-void DesktopWindowTreeHostLinux::OnXWindowUnmapped() {}
-
 void DesktopWindowTreeHostLinux::GetWindowMask(const gfx::Size& size,
                                                SkPath* window_mask) {
   DCHECK(window_mask);

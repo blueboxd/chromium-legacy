@@ -1401,11 +1401,6 @@
     "expiry_milestone": 76
   },
   {
-    "name": "enable-gpu-appcontainer",
-    "owners": [ "forshaw", "wfh" ],
-    "expiry_milestone": 82
-  },
-  {
     "name": "enable-gpu-rasterization",
     "owners": [ "enne", "vmiura", "ericrk" ],
     // A debugging flag intended for end-users where there may not be any other
@@ -1658,6 +1653,11 @@
   },
   {
     "name": "enable-portals",
+    "owners": [ "jbroman", "//third_party/blink/renderer/core/html/portal/OWNERS" ],
+    "expiry_milestone": 90
+  },
+  {
+    "name": "enable-portals-cross-origin",
     "owners": [ "jbroman", "//third_party/blink/renderer/core/html/portal/OWNERS" ],
     "expiry_milestone": 90
   },
@@ -2117,6 +2117,21 @@
     "expiry_milestone": 85
   },
   {
+    "name": "enable-webrtc-hw-h264-encoding",
+    "owners": [ "hiroh", "chromeos-video-eng@google.com" ],
+    "expiry_milestone": 83
+  },
+  {
+    "name": "enable-webrtc-hw-vp8-encoding",
+    "owners": [ "hiroh", "chromeos-video-eng@google.com" ],
+    "expiry_milestone": 83
+  },
+  {
+    "name": "enable-webrtc-hw-vp9-encoding",
+    "owners": [ "hiroh", "chromeos-video-eng@google.com" ],
+    "expiry_milestone": 83
+  },
+  {
     "name": "enable-webrtc-hybrid-agc",
     "owners": [ "aleloi" ],
     "expiry_milestone": 83
@@ -2147,11 +2162,6 @@
     "expiry_milestone": 78
   },
   {
-    "name": "enable-webrtc-use-min-max-vea-dimensions",
-    "owners": [ "mcasas", "chromeos-gfx-video@google.com" ],
-    "expiry_milestone": 88
-  },
-  {
     "name": "enable-winrt-geolocation-implementation",
     "owners": [ "pelavall@microsoft.com" ],
     "expiry_milestone": 81
@@ -2180,7 +2190,7 @@
   {
     "name": "enterprise-reporting-in-browser",
     "owners": [ "pastarmovj", "zmin" ],
-    "expiry_milestone": 81
+    "expiry_milestone": 83
   },
   {
     "name": "enterprise-reporting-in-chromeos",
@@ -2403,6 +2413,11 @@
     "name": "heavy-ad-privacy-mitigations-opt-out",
     "owners": [ "johnidel", "jkarlin" ],
     "expiry_milestone": 82
+  },
+  {
+    "name": "help-app",
+    "owners": [ "//chromeos/components/help_app_ui/OWNERS" ],
+    "expiry_milestone": 90
   },
   {
     "name": "homepage-settings-ui-conversion",
@@ -2874,6 +2889,11 @@
     "name": "omnibox-spare-renderer",
     "owners": [ "chrome-omnibox-team@google.com" ],
     "expiry_milestone": 76
+  },
+  {
+    "name": "omnibox-suggestion-button-row",
+    "owners": [ "orinj", "chrome-omnibox-team@google.com" ],
+    "expiry_milestone": 89
   },
   {
     "name": "omnibox-suggestion-transparency-options",

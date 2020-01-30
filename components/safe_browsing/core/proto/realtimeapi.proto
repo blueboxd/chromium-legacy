@@ -29,6 +29,9 @@ message RTLookupRequest {
   // Mechanism to have different detection methods for different user
   // population later.
   optional ChromeUserPopulation population = 3;
+
+  // Scoped OAuth token for throttling and validation.
+  optional string scoped_oauth_token = 4;
 }
 
 message RTLookupResponse {

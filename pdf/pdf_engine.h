@@ -301,6 +301,7 @@ class PDFEngine {
     int start_char_index = -1;
     int char_count;
     pp::FloatRect bounds;
+    uint32_t color;
   };
 
   // Factory method to create an instance of the PDF Engine.

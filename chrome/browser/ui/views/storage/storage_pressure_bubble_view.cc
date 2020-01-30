@@ -63,6 +63,8 @@ StoragePressureBubbleView::StoragePressureBubbleView(
       ui::DIALOG_BUTTON_OK,
       l10n_util::GetStringUTF16(
           IDS_SETTINGS_STORAGE_PRESSURE_BUBBLE_VIEW_BUTTON_LABEL));
+  DialogDelegate::set_accept_callback(base::BindOnce(
+      &StoragePressureBubbleView::OnDialogAccepted, base::Unretained(this)));
 }
 
 base::string16 StoragePressureBubbleView::GetWindowTitle() const {
@@ -70,18 +72,15 @@ base::string16 StoragePressureBubbleView::GetWindowTitle() const {
       IDS_SETTINGS_STORAGE_PRESSURE_BUBBLE_VIEW_TITLE);
 }
 
-bool StoragePressureBubbleView::Accept() {
+void StoragePressureBubbleView::OnDialogAccepted() {
+  // TODO(ellyjones): What is this doing here? The widget's about to close
+  // anyway?
   GetWidget()->Close();
   const GURL all_sites_gurl(kAllSitesContentSettingsUrl);
   NavigateParams params(browser_, all_sites_gurl,
                         ui::PAGE_TRANSITION_AUTO_TOPLEVEL);
   params.disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
   Navigate(&params);
-  return true;
-}
-
-bool StoragePressureBubbleView::Close() {
-  return true;
 }
 
 void StoragePressureBubbleView::Init() {

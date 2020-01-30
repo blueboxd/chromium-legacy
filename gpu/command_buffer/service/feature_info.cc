@@ -1415,19 +1415,55 @@ void FeatureInfo::InitializeFeatures() {
       (gl_version_info_->IsAtLeastGL(2, 1) &&
        gfx::HasExtension(extensions, "GL_ARB_texture_rg")) ||
       gfx::HasExtension(extensions, "GL_EXT_texture_norm16")) {
-    // TODO(hubbe): Rename ext_texture_norm16 to texture_r16
+    AddExtensionString("GL_EXT_texture_norm16");
     feature_flags_.ext_texture_norm16 = true;
     g_r16_is_present = true;
 
-    // Note: EXT_texture_norm16 is not exposed through WebGL API so we validate
-    // only the combinations used internally.
     validators_.pixel_type.AddValue(GL_UNSIGNED_SHORT);
-    validators_.texture_format.AddValue(GL_RED_EXT);
-    validators_.texture_internal_format.AddValue(GL_R16_EXT);
-    validators_.texture_internal_format.AddValue(GL_RED_EXT);
-    validators_.texture_unsized_internal_format.AddValue(GL_RED_EXT);
-    validators_.texture_internal_format_storage.AddValue(GL_R16_EXT);
+    validators_.pixel_type.AddValue(GL_SHORT);
 
+    validators_.texture_format.AddValue(GL_RED_EXT);
+    validators_.texture_format.AddValue(GL_RG_EXT);
+
+    validators_.texture_internal_format.AddValue(GL_R16_EXT);
+    validators_.texture_internal_format.AddValue(GL_RG16_EXT);
+    validators_.texture_internal_format.AddValue(GL_RGB16_EXT);
+    validators_.texture_internal_format.AddValue(GL_RGBA16_EXT);
+    validators_.texture_internal_format.AddValue(GL_R16_SNORM_EXT);
+    validators_.texture_internal_format.AddValue(GL_RG16_SNORM_EXT);
+    validators_.texture_internal_format.AddValue(GL_RGB16_SNORM_EXT);
+    validators_.texture_internal_format.AddValue(GL_RGBA16_SNORM_EXT);
+    validators_.texture_internal_format.AddValue(GL_RED_EXT);
+
+    validators_.read_pixel_format.AddValue(GL_R16_EXT);
+    validators_.read_pixel_format.AddValue(GL_RG16_EXT);
+    validators_.read_pixel_format.AddValue(GL_RGBA16_EXT);
+
+    validators_.render_buffer_format.AddValue(GL_R16_EXT);
+    validators_.render_buffer_format.AddValue(GL_RG16_EXT);
+    validators_.render_buffer_format.AddValue(GL_RGBA16_EXT);
+
+    validators_.texture_unsized_internal_format.AddValue(GL_RED_EXT);
+    validators_.texture_unsized_internal_format.AddValue(GL_RG_EXT);
+
+    validators_.texture_internal_format_storage.AddValue(GL_R16_EXT);
+    validators_.texture_internal_format_storage.AddValue(GL_RG16_EXT);
+    validators_.texture_internal_format_storage.AddValue(GL_RGB16_EXT);
+    validators_.texture_internal_format_storage.AddValue(GL_RGBA16_EXT);
+    validators_.texture_internal_format_storage.AddValue(GL_R16_SNORM_EXT);
+    validators_.texture_internal_format_storage.AddValue(GL_RG16_SNORM_EXT);
+    validators_.texture_internal_format_storage.AddValue(GL_RGB16_SNORM_EXT);
+    validators_.texture_internal_format_storage.AddValue(GL_RGBA16_SNORM_EXT);
+
+    validators_.texture_sized_color_renderable_internal_format.AddValue(
+        GL_R16_EXT);
+    validators_.texture_sized_color_renderable_internal_format.AddValue(
+        GL_RG16_EXT);
+    validators_.texture_sized_color_renderable_internal_format.AddValue(
+        GL_RGBA16_EXT);
+
+    // TODO(shrekshao): gpu_memory_buffer_formats is not used by WebGL
+    // So didn't expose all buffer formats here.
     feature_flags_.gpu_memory_buffer_formats.Add(gfx::BufferFormat::R_16);
   }
 

@@ -86,6 +86,9 @@ const int kMinimumNonFullScreenBadgesForOverflow = 2;
     // Set up the WebStateList and its observer.
     _webStateList = browser->GetWebStateList();
     _webState = _webStateList->GetActiveWebState();
+    if (_webState) {
+      InfobarBadgeTabHelper::FromWebState(_webState)->SetDelegate(self);
+    }
     _webStateListObserver = std::make_unique<WebStateListObserverBridge>(self);
     _webStateList->AddObserver(_webStateListObserver.get());
   }

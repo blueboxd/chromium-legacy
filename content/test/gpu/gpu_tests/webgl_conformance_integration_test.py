@@ -176,6 +176,7 @@ class WebGLConformanceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
         'EXT_disjoint_timer_query_webgl2',
         'EXT_float_blend',
         'EXT_texture_filter_anisotropic',
+        'EXT_texture_norm16',
         'KHR_parallel_shader_compile',
         'OES_texture_float_linear',
         'OVR_multiview2',

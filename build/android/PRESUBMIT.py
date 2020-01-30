@@ -48,6 +48,9 @@ def CommonChecks(input_api, output_api):
           input_api,
           output_api,
           white_list=build_pys,
+          black_list=[
+              r'.*_pb2\.py',
+          ],
           extra_paths_list=[J('gyp'), J('gn')]))
 
   # Disabled due to http://crbug.com/410936

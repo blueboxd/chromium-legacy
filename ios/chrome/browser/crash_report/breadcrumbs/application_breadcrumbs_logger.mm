@@ -38,8 +38,7 @@ void ApplicationBreadcrumbsLogger::OnUserAction(const std::string& action) {
     return;
   }
 
-  std::string event = base::StringPrintf("UserAction: %s", action.c_str());
-  breadcrumb_manager_->AddEvent(event);
+  breadcrumb_manager_->AddEvent(action.c_str());
 }
 
 void ApplicationBreadcrumbsLogger::OnMemoryPressure(

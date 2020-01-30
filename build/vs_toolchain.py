@@ -425,10 +425,10 @@ def _GetDesiredVsToolchainHashes():
   """
   # VS 2019 Update 9 (16.3.29324.140) with 10.0.18362 SDK, 10.0.17763 version of
   # Debuggers, and 10.0.17134 version of d3dcompiler_47.dll, with ARM64
-  # libraries.
+  # libraries and UWP support.
   # See go/chromium-msvc-toolchain for instructions about how to update the
   # toolchain.
-  toolchain_hash = '8f58c55897a3282ed617055775a77ec3db771b88'
+  toolchain_hash = '9ff60e43ba91947baca460d0ca3b1b980c3a2c23'
   # Third parties that do not have access to the canonical toolchain can map
   # canonical toolchain version to their own toolchain versions.
   toolchain_hash_mapping_key = 'GYP_MSVS_HASH_%s' % toolchain_hash

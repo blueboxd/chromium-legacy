@@ -92,6 +92,10 @@ class WebHistoryService : public KeyedService {
   using QueryWebAndAppActivityCallback = base::OnceCallback<void(
       const base::Optional<bool>& history_recording_enabled)>;
 
+  using QueryWebAndAppActivityWithRequestCallback = base::OnceCallback<void(
+      WebHistoryService::Request* request,
+      const base::Optional<bool>& history_recording_enabled)>;
+
   using QueryOtherFormsOfBrowsingHistoryCallback =
       base::OnceCallback<void(bool success)>;
 
@@ -150,6 +154,18 @@ class WebHistoryService : public KeyedService {
   // Queries whether web and app activity is enabled on the server.
   virtual void QueryWebAndAppActivity(
       QueryWebAndAppActivityCallback callback,
+      const net::PartialNetworkTrafficAnnotationTag&
+          partial_traffic_annotation);
+
+  // Returns a request to query whether web and app activity is enabled on the
+  // server. The request can be made independently from sync state. The caller
+  // must make sure that the |identity_manager| outlives the returned request
+  // object.
+  static std::unique_ptr<history::WebHistoryService::Request>
+  CreateQueryWebAndAppActivityRequest(
+      signin::IdentityManager* identity_manager,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+      QueryWebAndAppActivityWithRequestCallback callback,
       const net::PartialNetworkTrafficAnnotationTag&
           partial_traffic_annotation);
 
@@ -218,6 +234,11 @@ class WebHistoryService : public KeyedService {
 
  private:
   friend class WebHistoryServiceTest;
+
+  // Extracts from the request's response if history recording is enabled.
+  static base::Optional<bool> ReportQueryWebAndAppActivity(
+      WebHistoryService::Request* request,
+      bool success);
 
   // Stores pointer to IdentityManager instance. It must outlive the
   // WebHistoryService and can be null during tests.

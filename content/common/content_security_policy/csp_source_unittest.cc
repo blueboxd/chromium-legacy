@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "content/common/content_security_policy/csp_source.h"
 #include "content/common/content_security_policy/csp_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -9,13 +10,13 @@ namespace content {
 
 namespace {
 
-// Allow() is an abbreviation of CSPSource::Allow(). Useful for writting test
+// Allow() is an abbreviation of CSPSource::Allow(). Useful for writing test
 // expectations on one line.
-bool Allow(const CSPSource& source,
+bool Allow(const network::mojom::CSPSourcePtr& source,
            const GURL& url,
            CSPContext* context,
            bool is_redirect = false) {
-  return CSPSource::Allow(source, url, context, is_redirect);
+  return CheckCSPSource(source, url, context, is_redirect);
 }
 
 }  // namespace
@@ -23,7 +24,8 @@ bool Allow(const CSPSource& source,
 TEST(CSPSourceTest, BasicMatching) {
   CSPContext context;
 
-  CSPSource source("http", "example.com", false, 8000, false, "/foo/");
+  auto source = network::mojom::CSPSource::New("http", "example.com", 8000,
+                                               "/foo/", false, false);
 
   EXPECT_TRUE(Allow(source, GURL("http://example.com:8000/foo/"), &context));
   EXPECT_TRUE(Allow(source, GURL("http://example.com:8000/foo/bar"), &context));
@@ -43,7 +45,8 @@ TEST(CSPSourceTest, AllowScheme) {
 
   // http -> {http, https}.
   {
-    CSPSource source("http", "", false, url::PORT_UNSPECIFIED, false, "");
+    auto source = network::mojom::CSPSource::New(
+        "http", "", url::PORT_UNSPECIFIED, "", false, false);
     EXPECT_TRUE(Allow(source, GURL("http://a.com"), &context));
     EXPECT_TRUE(Allow(source, GURL("https://a.com"), &context));
     // This passes because the source is "scheme only" so the upgrade is
@@ -56,7 +59,8 @@ TEST(CSPSourceTest, AllowScheme) {
 
   // ws -> {ws, wss}.
   {
-    CSPSource source("ws", "", false, url::PORT_UNSPECIFIED, false, "");
+    auto source = network::mojom::CSPSource::New(
+        "ws", "", url::PORT_UNSPECIFIED, "", false, false);
     EXPECT_FALSE(Allow(source, GURL("http://a.com"), &context));
     EXPECT_FALSE(Allow(source, GURL("https://a.com"), &context));
     EXPECT_FALSE(Allow(source, GURL("ftp://a.com"), &context));
@@ -66,28 +70,32 @@ TEST(CSPSourceTest, AllowScheme) {
 
   // Exact matches required (ftp)
   {
-    CSPSource source("ftp", "", false, url::PORT_UNSPECIFIED, false, "");
+    auto source = network::mojom::CSPSource::New(
+        "ftp", "", url::PORT_UNSPECIFIED, "", false, false);
     EXPECT_TRUE(Allow(source, GURL("ftp://a.com"), &context));
     EXPECT_FALSE(Allow(source, GURL("http://a.com"), &context));
   }
 
   // Exact matches required (https)
   {
-    CSPSource source("https", "", false, url::PORT_UNSPECIFIED, false, "");
+    auto source = network::mojom::CSPSource::New(
+        "https", "", url::PORT_UNSPECIFIED, "", false, false);
     EXPECT_TRUE(Allow(source, GURL("https://a.com"), &context));
     EXPECT_FALSE(Allow(source, GURL("http://a.com"), &context));
   }
 
   // Exact matches required (wss)
   {
-    CSPSource source("wss", "", false, url::PORT_UNSPECIFIED, false, "");
+    auto source = network::mojom::CSPSource::New(
+        "wss", "", url::PORT_UNSPECIFIED, "", false, false);
     EXPECT_TRUE(Allow(source, GURL("wss://a.com"), &context));
     EXPECT_FALSE(Allow(source, GURL("ws://a.com"), &context));
   }
 
   // Scheme is empty (ProtocolMatchesSelf).
   {
-    CSPSource source("", "a.com", false, url::PORT_UNSPECIFIED, false, "");
+    auto source = network::mojom::CSPSource::New(
+        "", "a.com", url::PORT_UNSPECIFIED, "", false, false);
     EXPECT_FALSE(Allow(source, GURL("http://a.com"), &context));
 
     // Self's scheme is http.
@@ -126,14 +134,16 @@ TEST(CSPSourceTest, AllowHost) {
 
   // Host is * (source-expression = "http://*")
   {
-    CSPSource source("http", "", true, url::PORT_UNSPECIFIED, false, "");
+    auto source = network::mojom::CSPSource::New(
+        "http", "", url::PORT_UNSPECIFIED, "", true, false);
     EXPECT_TRUE(Allow(source, GURL("http://a.com"), &context));
     EXPECT_TRUE(Allow(source, GURL("http://."), &context));
   }
 
   // Host is *.foo.bar
   {
-    CSPSource source("", "foo.bar", true, url::PORT_UNSPECIFIED, false, "");
+    auto source = network::mojom::CSPSource::New(
+        "", "foo.bar", url::PORT_UNSPECIFIED, "", true, false);
     EXPECT_FALSE(Allow(source, GURL("http://a.com"), &context));
     EXPECT_FALSE(Allow(source, GURL("http://bar"), &context));
     EXPECT_FALSE(Allow(source, GURL("http://foo.bar"), &context));
@@ -147,7 +157,8 @@ TEST(CSPSourceTest, AllowHost) {
 
   // Host is exact.
   {
-    CSPSource source("", "foo.bar", false, url::PORT_UNSPECIFIED, false, "");
+    auto source = network::mojom::CSPSource::New(
+        "", "foo.bar", url::PORT_UNSPECIFIED, "", false, false);
     EXPECT_TRUE(Allow(source, GURL("http://foo.bar"), &context));
     EXPECT_FALSE(Allow(source, GURL("http://sub.foo.bar"), &context));
     EXPECT_FALSE(Allow(source, GURL("http://bar"), &context));
@@ -162,7 +173,8 @@ TEST(CSPSourceTest, AllowPort) {
 
   // Source's port unspecified.
   {
-    CSPSource source("", "a.com", false, url::PORT_UNSPECIFIED, false, "");
+    auto source = network::mojom::CSPSource::New(
+        "", "a.com", url::PORT_UNSPECIFIED, "", false, false);
     EXPECT_TRUE(Allow(source, GURL("http://a.com:80"), &context));
     EXPECT_FALSE(Allow(source, GURL("http://a.com:8080"), &context));
     EXPECT_FALSE(Allow(source, GURL("http://a.com:443"), &context));
@@ -177,7 +189,8 @@ TEST(CSPSourceTest, AllowPort) {
 
   // Source's port is "*".
   {
-    CSPSource source("", "a.com", false, url::PORT_UNSPECIFIED, true, "");
+    auto source = network::mojom::CSPSource::New(
+        "", "a.com", url::PORT_UNSPECIFIED, "", false, true);
     EXPECT_TRUE(Allow(source, GURL("http://a.com"), &context));
     EXPECT_TRUE(Allow(source, GURL("http://a.com:80"), &context));
     EXPECT_TRUE(Allow(source, GURL("http://a.com:8080"), &context));
@@ -188,7 +201,8 @@ TEST(CSPSourceTest, AllowPort) {
 
   // Source has a port.
   {
-    CSPSource source("", "a.com", false, 80, false, "");
+    auto source =
+        network::mojom::CSPSource::New("", "a.com", 80, "", false, false);
     EXPECT_TRUE(Allow(source, GURL("http://a.com:80"), &context));
     EXPECT_TRUE(Allow(source, GURL("http://a.com"), &context));
     EXPECT_FALSE(Allow(source, GURL("http://a.com:8080"), &context));
@@ -197,7 +211,8 @@ TEST(CSPSourceTest, AllowPort) {
 
   // Allow upgrade from :80 to :443
   {
-    CSPSource source("", "a.com", false, 80, false, "");
+    auto source =
+        network::mojom::CSPSource::New("", "a.com", 80, "", false, false);
     EXPECT_TRUE(Allow(source, GURL("https://a.com:443"), &context));
     // Should not allow scheme upgrades unless both port and scheme are
     // upgraded.
@@ -206,7 +221,8 @@ TEST(CSPSourceTest, AllowPort) {
 
   // Host is * but port is specified
   {
-    CSPSource source("http", "", true, 111, false, "");
+    auto source =
+        network::mojom::CSPSource::New("http", "", 111, "", true, false);
     EXPECT_TRUE(Allow(source, GURL("http://a.com:111"), &context));
     EXPECT_FALSE(Allow(source, GURL("http://a.com:222"), &context));
   }
@@ -218,8 +234,8 @@ TEST(CSPSourceTest, AllowPath) {
 
   // Path to a file
   {
-    CSPSource source("", "a.com", false, url::PORT_UNSPECIFIED, false,
-                     "/path/to/file");
+    auto source = network::mojom::CSPSource::New(
+        "", "a.com", url::PORT_UNSPECIFIED, "/path/to/file", false, false);
     EXPECT_TRUE(Allow(source, GURL("http://a.com/path/to/file"), &context));
     EXPECT_FALSE(Allow(source, GURL("http://a.com/path/to/"), &context));
     EXPECT_FALSE(
@@ -230,8 +246,8 @@ TEST(CSPSourceTest, AllowPath) {
 
   // Path to a directory
   {
-    CSPSource source("", "a.com", false, url::PORT_UNSPECIFIED, false,
-                     "/path/to/");
+    auto source = network::mojom::CSPSource::New(
+        "", "a.com", url::PORT_UNSPECIFIED, "/path/to/", false, false);
     EXPECT_TRUE(Allow(source, GURL("http://a.com/path/to/file"), &context));
     EXPECT_TRUE(Allow(source, GURL("http://a.com/path/to/"), &context));
     EXPECT_FALSE(Allow(source, GURL("http://a.com/path/"), &context));
@@ -241,7 +257,8 @@ TEST(CSPSourceTest, AllowPath) {
 
   // Empty path
   {
-    CSPSource source("", "a.com", false, url::PORT_UNSPECIFIED, false, "");
+    auto source = network::mojom::CSPSource::New(
+        "", "a.com", url::PORT_UNSPECIFIED, "", false, false);
     EXPECT_TRUE(Allow(source, GURL("http://a.com/path/to/file"), &context));
     EXPECT_TRUE(Allow(source, GURL("http://a.com/path/to/"), &context));
     EXPECT_TRUE(Allow(source, GURL("http://a.com/"), &context));
@@ -250,7 +267,8 @@ TEST(CSPSourceTest, AllowPath) {
 
   // Almost empty path
   {
-    CSPSource source("", "a.com", false, url::PORT_UNSPECIFIED, false, "/");
+    auto source = network::mojom::CSPSource::New(
+        "", "a.com", url::PORT_UNSPECIFIED, "/", false, false);
     EXPECT_TRUE(Allow(source, GURL("http://a.com/path/to/file"), &context));
     EXPECT_TRUE(Allow(source, GURL("http://a.com/path/to/"), &context));
     EXPECT_TRUE(Allow(source, GURL("http://a.com/"), &context));
@@ -259,8 +277,8 @@ TEST(CSPSourceTest, AllowPath) {
 
   // Path encoded.
   {
-    CSPSource source("http", "a.com", false, url::PORT_UNSPECIFIED, false,
-                     "/Hello Günter");
+    auto source = network::mojom::CSPSource::New(
+        "http", "a.com", url::PORT_UNSPECIFIED, "/Hello Günter", false, false);
     EXPECT_TRUE(
         Allow(source, GURL("http://a.com/Hello%20G%C3%BCnter"), &context));
     EXPECT_TRUE(Allow(source, GURL("http://a.com/Hello Günter"), &context));
@@ -268,8 +286,8 @@ TEST(CSPSourceTest, AllowPath) {
 
   // Host is * but path is specified.
   {
-    CSPSource source("http", "", true, url::PORT_UNSPECIFIED, false,
-                     "/allowed-path");
+    auto source = network::mojom::CSPSource::New(
+        "http", "", url::PORT_UNSPECIFIED, "/allowed-path", true, false);
     EXPECT_TRUE(Allow(source, GURL("http://a.com/allowed-path"), &context));
     EXPECT_FALSE(Allow(source, GURL("http://a.com/disallowed-path"), &context));
   }
@@ -277,7 +295,8 @@ TEST(CSPSourceTest, AllowPath) {
 
 TEST(CSPSourceTest, RedirectMatching) {
   CSPContext context;
-  CSPSource source("http", "a.com", false, 8000, false, "/bar/");
+  auto source = network::mojom::CSPSource::New("http", "a.com", 8000, "/bar/",
+                                               false, false);
   EXPECT_TRUE(Allow(source, GURL("http://a.com:8000/"), &context, true));
   EXPECT_TRUE(Allow(source, GURL("http://a.com:8000/foo"), &context, true));
   EXPECT_FALSE(Allow(source, GURL("https://a.com:8000/foo"), &context, true));
@@ -288,42 +307,51 @@ TEST(CSPSourceTest, RedirectMatching) {
 
 TEST(CSPSourceTest, ToString) {
   {
-    CSPSource source("http", "", false, url::PORT_UNSPECIFIED, false, "");
-    EXPECT_EQ("http:", source.ToString());
+    auto source = network::mojom::CSPSource::New(
+        "http", "", url::PORT_UNSPECIFIED, "", false, false);
+    EXPECT_EQ("http:", ToString(source));
   }
   {
-    CSPSource source("http", "a.com", false, url::PORT_UNSPECIFIED, false, "");
-    EXPECT_EQ("http://a.com", source.ToString());
+    auto source = network::mojom::CSPSource::New(
+        "http", "a.com", url::PORT_UNSPECIFIED, "", false, false);
+    EXPECT_EQ("http://a.com", ToString(source));
   }
   {
-    CSPSource source("", "a.com", false, url::PORT_UNSPECIFIED, false, "");
-    EXPECT_EQ("a.com", source.ToString());
+    auto source = network::mojom::CSPSource::New(
+        "", "a.com", url::PORT_UNSPECIFIED, "", false, false);
+    EXPECT_EQ("a.com", ToString(source));
   }
   {
-    CSPSource source("", "a.com", true, url::PORT_UNSPECIFIED, false, "");
-    EXPECT_EQ("*.a.com", source.ToString());
+    auto source = network::mojom::CSPSource::New(
+        "", "a.com", url::PORT_UNSPECIFIED, "", true, false);
+    EXPECT_EQ("*.a.com", ToString(source));
   }
   {
-    CSPSource source("", "", true, url::PORT_UNSPECIFIED, false, "");
-    EXPECT_EQ("*", source.ToString());
+    auto source = network::mojom::CSPSource::New("", "", url::PORT_UNSPECIFIED,
+                                                 "", true, false);
+    EXPECT_EQ("*", ToString(source));
   }
   {
-    CSPSource source("", "a.com", false, 80, false, "");
-    EXPECT_EQ("a.com:80", source.ToString());
+    auto source =
+        network::mojom::CSPSource::New("", "a.com", 80, "", false, false);
+    EXPECT_EQ("a.com:80", ToString(source));
   }
   {
-    CSPSource source("", "a.com", false, url::PORT_UNSPECIFIED, true, "");
-    EXPECT_EQ("a.com:*", source.ToString());
+    auto source = network::mojom::CSPSource::New(
+        "", "a.com", url::PORT_UNSPECIFIED, "", false, true);
+    EXPECT_EQ("a.com:*", ToString(source));
   }
   {
-    CSPSource source("", "a.com", false, url::PORT_UNSPECIFIED, false, "/path");
-    EXPECT_EQ("a.com/path", source.ToString());
+    auto source = network::mojom::CSPSource::New(
+        "", "a.com", url::PORT_UNSPECIFIED, "/path", false, false);
+    EXPECT_EQ("a.com/path", ToString(source));
   }
 }
 
 TEST(CSPSourceTest, UpgradeRequests) {
   CSPContext context;
-  CSPSource source("http", "a.com", false, 80, false, "");
+  auto source =
+      network::mojom::CSPSource::New("http", "a.com", 80, "", false, false);
   EXPECT_TRUE(Allow(source, GURL("http://a.com:80"), &context, true));
   EXPECT_FALSE(Allow(source, GURL("https://a.com:80"), &context, true));
   EXPECT_FALSE(Allow(source, GURL("http://a.com:443"), &context, true));

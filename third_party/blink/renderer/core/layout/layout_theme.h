@@ -175,10 +175,6 @@ class CORE_EXPORT LayoutTheme : public RefCounted<LayoutTheme> {
   void SetCustomFocusRingColor(const Color&);
   static Color TapHighlightColor();
 
-  // Root element text color. It can be different from the initial color in
-  // other color schemes than the light theme.
-  Color RootElementColor(WebColorScheme) const;
-
   virtual Color PlatformTapHighlightColor() const {
     return LayoutTheme::kDefaultTapHighlightColor;
   }

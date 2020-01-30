@@ -28,12 +28,12 @@
             android:id="@+id/name"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textAppearance="@style/TextAppearance.BlackTitle1" />
+            android:textAppearance="@style/TextAppearance.TextLarge.Primary" />
         <TextView
             android:id="@+id/url"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textAppearance="@style/TextAppearance.BlackBody" />
+            android:textAppearance="@style/TextAppearance.TextMedium.Secondary" />
         <TextView
             android:id="@+id/location_permission"
             android:layout_width="wrap_content"

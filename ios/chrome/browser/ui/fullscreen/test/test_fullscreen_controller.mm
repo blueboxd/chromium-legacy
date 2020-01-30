@@ -18,7 +18,11 @@ TestFullscreenController::TestFullscreenController(FullscreenModel* model)
       model_(model),
       broadcaster_([[ChromeBroadcaster alloc] init]) {}
 
-TestFullscreenController::~TestFullscreenController() = default;
+TestFullscreenController::~TestFullscreenController() {
+  for (auto& observer : observers_) {
+    observer.FullscreenControllerWillShutDown(this);
+  }
+}
 
 ChromeBroadcaster* TestFullscreenController::broadcaster() {
   return broadcaster_;
@@ -89,12 +93,6 @@ void TestFullscreenController::EnterFullscreen() {}
 void TestFullscreenController::ExitFullscreen() {
   if (model_)
     model_->ResetForNavigation();
-}
-
-void TestFullscreenController::Shutdown() {
-  for (auto& observer : observers_) {
-    observer.FullscreenControllerWillShutDown(this);
-  }
 }
 
 void TestFullscreenController::OnFullscreenViewportInsetRangeChanged(

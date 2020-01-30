@@ -918,6 +918,7 @@ LocalizedError::PageState LocalizedError::GetPageState(
     bool is_incognito,
     bool offline_content_feature_enabled,
     bool auto_fetch_feature_enabled,
+    bool is_kiosk_mode,
     const std::string& locale,
     std::unique_ptr<error_page::ErrorPageParams> params) {
   LocalizedError::PageState result;
@@ -950,6 +951,12 @@ LocalizedError::PageState LocalizedError::GetPageState(
     options.summary_resource_id = IDS_ERRORPAGES_SUMMARY_FILE_ACCESS_DENIED;
     options.suggestions = SUGGEST_NONE;
     options.buttons = SHOW_BUTTON_RELOAD;
+  }
+
+  // Do not show any suggestions with links while in kiosk mode.
+  if (is_kiosk_mode) {
+    options.suggestions &= ~SUGGEST_DIAGNOSE_TOOL;
+    options.suggestions &= ~SUGGEST_LEARNMORE;
   }
 
   base::string16 failed_url_string(url_formatter::FormatUrl(

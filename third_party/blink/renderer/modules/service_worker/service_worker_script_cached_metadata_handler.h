@@ -27,8 +27,7 @@ class ServiceWorkerScriptCachedMetadataHandler
   void Trace(blink::Visitor*) override;
   void SetCachedMetadata(uint32_t data_type_id,
                          const uint8_t*,
-                         size_t,
-                         CacheType) override;
+                         size_t) override;
   void ClearCachedMetadata(CacheType) override;
   scoped_refptr<CachedMetadata> GetCachedMetadata(
       uint32_t data_type_id) const override;

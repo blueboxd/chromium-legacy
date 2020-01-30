@@ -59,7 +59,8 @@ TEST(WebURLRequestTest, ExtraData) {
     url_request.SetExtraData(std::move(extra_data));
     EXPECT_EQ(raw_extra_data_pointer, url_request.GetExtraData());
     {
-      WebURLRequest other_url_request = url_request;
+      WebURLRequest other_url_request;
+      other_url_request.CopyFrom(url_request);
       EXPECT_TRUE(alive);
       EXPECT_EQ(raw_extra_data_pointer, other_url_request.GetExtraData());
       EXPECT_EQ(raw_extra_data_pointer, url_request.GetExtraData());

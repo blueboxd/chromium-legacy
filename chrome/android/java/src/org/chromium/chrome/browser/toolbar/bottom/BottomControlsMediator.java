@@ -164,7 +164,8 @@ class BottomControlsMediator implements ChromeFullscreenManager.FullscreenListen
     public void onContentOffsetChanged(int offset) {}
 
     @Override
-    public void onControlsOffsetChanged(int topOffset, int bottomOffset, boolean needsAnimate) {
+    public void onControlsOffsetChanged(int topOffset, int topControlsMinHeightOffset,
+            int bottomOffset, int bottomControlsMinHeightOffset, boolean needsAnimate) {
         mModel.set(BottomControlsProperties.Y_OFFSET, bottomOffset);
         updateAndroidViewVisibility();
     }

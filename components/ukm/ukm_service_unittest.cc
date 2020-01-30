@@ -55,6 +55,10 @@ std::string Entry1And2Whitelist() {
   return std::string(TestEvent1::kEntryName) + ',' + TestEvent2::kEntryName;
 }
 
+SourceId ConvertSourceIdToWhitelistedType(SourceId id, SourceIdType type) {
+  return base::UkmSourceId::FromOtherId(id, type).ToInt64();
+}
+
 // A small shim exposing UkmRecorder methods to tests.
 class TestRecordingHelper {
  public:
@@ -1087,6 +1091,58 @@ TEST_F(UkmServiceTest, NonWhitelistedUrls) {
   }
 }
 
+TEST_F(UkmServiceTest, WhitelistIdType) {
+  ScopedUkmFeatureParams params({{"WhitelistEntries", Entry1And2Whitelist()}});
+
+  std::map<SourceIdType, bool> source_id_type_whitelisted = {
+      {SourceIdType::UKM, false},      {SourceIdType::NAVIGATION_ID, true},
+      {SourceIdType::APP_ID, true},    {SourceIdType::HISTORY_ID, true},
+      {SourceIdType::WEBAPK_ID, true},
+  };
+
+  for (std::pair<SourceIdType, bool> type : source_id_type_whitelisted) {
+    ClearPrefs();
+    UkmService service(&prefs_, &client_,
+                       true /* restrict_to_whitelisted_entries */,
+                       std::make_unique<MockDemographicMetricsProvider>());
+    TestRecordingHelper recorder(&service);
+    EXPECT_EQ(0, GetPersistedLogCount());
+    service.Initialize();
+    task_runner_->RunUntilIdle();
+    service.EnableRecording(/*extensions=*/false);
+    service.EnableReporting();
+
+    SourceId id = ConvertSourceIdToWhitelistedType(
+        1, static_cast<SourceIdType>(type.first));
+    ASSERT_EQ(GetSourceIdType(id), type.first);
+
+    recorder.UpdateSourceURL(id, GURL("https://google.com/foobar1"));
+
+    TestEvent1(id).Record(&service);
+
+    service.Flush();
+    EXPECT_EQ(1, GetPersistedLogCount());
+    Report proto_report = GetPersistedReport();
+
+    if (type.second) {
+      // Verify we've added one source.
+      EXPECT_EQ(1, proto_report.sources_size());
+      EXPECT_EQ(GURL("https://google.com/foobar1").spec(),
+                proto_report.sources(0).urls(0).url());
+    } else {
+      // No source added when id is not whitelisted type.
+      EXPECT_EQ(0, proto_report.sources_size());
+    }
+
+    // We've added the entry whether source is added or not.
+    ASSERT_EQ(1, proto_report.entries_size());
+    const Entry& proto_entry_a = proto_report.entries(0);
+    EXPECT_EQ(id, proto_entry_a.source_id());
+    EXPECT_EQ(base::HashMetricName(TestEvent1::kEntryName),
+              proto_entry_a.event_hash());
+  }
+}
+
 TEST_F(UkmServiceTest, SupportedSchemes) {
   struct {
     const char* url;
@@ -1334,12 +1390,15 @@ TEST_F(UkmServiceTest, PurgeNonNavigationSources) {
   // Seed some dummy sources.
   SourceId id0 = ConvertToSourceId(0, SourceIdType::UKM);
   recorder.UpdateSourceURL(id0, GURL("https://www.example0.com/"));
-  SourceId id1 = ConvertToSourceId(1, SourceIdType::NAVIGATION_ID);
+  SourceId id1 =
+      ConvertSourceIdToWhitelistedType(1, SourceIdType::NAVIGATION_ID);
   recorder.UpdateSourceURL(id1, GURL("https://www.example1.com/"));
-  SourceId id2 = ConvertToSourceId(2, SourceIdType::APP_ID);
+  SourceId id2 = ConvertSourceIdToWhitelistedType(2, SourceIdType::APP_ID);
   recorder.UpdateSourceURL(id2, GURL("https://www.example2.com/"));
-  SourceId id3 = ConvertToSourceId(3, SourceIdType::HISTORY_ID);
+  SourceId id3 = ConvertSourceIdToWhitelistedType(3, SourceIdType::HISTORY_ID);
   recorder.UpdateSourceURL(id3, GURL("https://www.example3.com/"));
+  SourceId id4 = ConvertSourceIdToWhitelistedType(4, SourceIdType::WEBAPK_ID);
+  recorder.UpdateSourceURL(id4, GURL("https://www.example3.com/"));
 
   service.Flush();
   int logs_count = 0;
@@ -1347,16 +1406,17 @@ TEST_F(UkmServiceTest, PurgeNonNavigationSources) {
 
   // All sources are present except id0 of non-whitelisted UKM type.
   Report proto_report = GetPersistedReport();
-  ASSERT_EQ(3, proto_report.sources_size());
+  ASSERT_EQ(4, proto_report.sources_size());
   EXPECT_EQ(id1, proto_report.sources(0).id());
   EXPECT_EQ(id2, proto_report.sources(1).id());
   EXPECT_EQ(id3, proto_report.sources(2).id());
+  EXPECT_EQ(id4, proto_report.sources(3).id());
 
   service.Flush();
   EXPECT_EQ(++logs_count, GetPersistedLogCount());
 
-  // Sources of APP_ID and HISTORY_ID types are not kept between reporting
-  // cycles, thus only 1 navigation type source remains.
+  // Sources of APP_ID, HISTORY_ID and WEBAPK_ID types are not kept between
+  // reporting cycles, thus only 1 navigation type source remains.
   proto_report = GetPersistedReport();
   ASSERT_EQ(1, proto_report.sources_size());
   EXPECT_EQ(id1, proto_report.sources(0).id());

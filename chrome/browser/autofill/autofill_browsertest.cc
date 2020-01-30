@@ -139,6 +139,13 @@ class AutofillTest : public InProcessBrowserTest {
     return js;
   }
 
+  void InputDataFromFormMap(const FormMap& data) {
+    for (const auto& entry : data) {
+      content::FocusElementByID(web_contents(), entry.first);
+      content::SimulateUserInput(web_contents(), entry.second);
+    }
+  }
+
   // Navigate to the form, input values into the fields, and submit the form.
   // The function returns after the PersonalDataManager is updated.
   void FillFormAndSubmit(const std::string& filename, const FormMap& data) {
@@ -159,8 +166,9 @@ class AutofillTest : public InProcessBrowserTest {
 
     WindowedPersonalDataManagerObserver observer(browser());
 
-    std::string js = GetJSToFillForm(data) + submit_js;
-    ASSERT_TRUE(content::ExecuteScript(web_contents(), js));
+    InputDataFromFormMap(data);
+    ASSERT_TRUE(content::ExecuteScript(web_contents(), submit_js));
+
     if (simulate_click) {
       // Simulate a mouse click to submit the form because form submissions not
       // triggered by user gestures are ignored.

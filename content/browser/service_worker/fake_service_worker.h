@@ -42,7 +42,9 @@ class FakeServiceWorker : public blink::mojom::ServiceWorker {
   // Returns after InitializeGlobalScope() is called.
   void RunUntilInitializeGlobalScope();
 
-  bool is_zero_idle_timer_delay() const { return is_zero_idle_timer_delay_; }
+  const base::Optional<base::TimeDelta>& idle_delay() const {
+    return idle_delay_;
+  }
 
   FetchHandlerExistence fetch_handler_existence() const {
     return fetch_handler_existence_;
@@ -123,7 +125,7 @@ class FakeServiceWorker : public blink::mojom::ServiceWorker {
       const std::string& id,
       DispatchContentDeleteEventCallback callback) override;
   void Ping(PingCallback callback) override;
-  void SetIdleTimerDelayToZero() override;
+  void SetIdleDelay(base::TimeDelta delay) override;
   void AddMessageToConsole(blink::mojom::ConsoleMessageLevel level,
                            const std::string& message) override;
 
@@ -144,7 +146,8 @@ class FakeServiceWorker : public blink::mojom::ServiceWorker {
 
   mojo::Receiver<blink::mojom::ServiceWorker> receiver_{this};
 
-  bool is_zero_idle_timer_delay_ = false;
+  // base::nullopt means SetIdleDelay() is not called.
+  base::Optional<base::TimeDelta> idle_delay_;
 };
 
 }  // namespace content

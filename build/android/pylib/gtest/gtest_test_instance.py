@@ -83,8 +83,14 @@ _RE_TEST_STATUS = re.compile(
     r'\[ +((?:RUN)|(?:FAILED)|(?:OK)|(?:CRASHED)) +\] ?'
     # Test name.
     r'([^ ]+)?'
-    # Optional test parameter.
-    r'(?:, where GetParam\(\) = [^()]*)?'
+    # Optional parameters.
+    r'(?:, where'
+    #   Type parameter
+    r'(?: TypeParam = [^()]*(?: and)?)?'
+    #   Value parameter
+    r'(?: GetParam\(\) = [^()]*)?'
+    # End of optional parameters.
+    ')?'
     # Optional test execution time.
     r'(?: \((\d+) ms\))?$')
 # Crash detection constants.

@@ -352,6 +352,19 @@ void AccessibilityNodeInfoDataWrapper::Serialize(
     ComputeNameFromContents(this, &names);
     if (!names.empty())
       out_data->SetName(base::JoinString(names, " "));
+  } else if (is_node_tree_root) {
+    AccessibilityInfoDataWrapper* parent =
+        tree_source_->GetParent(tree_source_->GetFromId(node_ptr_->id));
+    if (parent && parent->GetWindow()) {
+      std::string title;
+      if (arc::GetProperty(parent->GetWindow()->string_properties,
+                           mojom::AccessibilityWindowStringProperty::TITLE,
+                           &title) &&
+          !title.empty()) {
+        out_data->SetName(title);
+        out_data->SetNameFrom(ax::mojom::NameFrom::kTitle);
+      }
+    }
   }
 
   std::string role_description;

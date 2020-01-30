@@ -495,16 +495,25 @@ HRESULT EventLogsUploadManager::MakeUploadLogChunkRequest(
   base::Value log_entries =
       base::Value::FromUniquePtrValue(std::move(log_entries_value_list));
   request_dict.SetKey(kRequestLogEntriesParameterName, std::move(log_entries));
+  base::Optional<base::Value> request_result;
 
   // Make the upload HTTP request.
   hr = WinHttpUrlFetcher::BuildRequestAndFetchResultFromHttpService(
       EventLogsUploadManager::Get()->GetGcpwServiceUploadEventViewerLogsUrl(),
-      access_token, {}, request_dict, {}, kDefaultUploadLogsRequestTimeout);
+      access_token, {}, request_dict, kDefaultUploadLogsRequestTimeout,
+      &request_result);
 
   if (FAILED(hr)) {
     LOGFN(ERROR) << "BuildRequestAndFetchResultFromHttpService hr="
                  << putHR(hr);
     return hr;
+  }
+
+  if (!request_result.has_value() ||
+      request_result->FindDictKey(kErrorKeyInRequestResult)) {
+    LOGFN(ERROR) << "error="
+                 << *request_result->FindDictKey(kErrorKeyInRequestResult);
+    return E_FAIL;
   }
 
   // Store the chunk id which is the last uploaded event log id

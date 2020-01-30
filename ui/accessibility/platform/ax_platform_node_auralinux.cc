@@ -2153,19 +2153,19 @@ ImplementedAtkInterfaces AXPlatformNodeAuraLinux::GetGTypeInterfaceMask(
   ImplementedAtkInterfaces interface_mask;
 
   if (!IsImageOrVideo(data.role)) {
-    interface_mask.Add(ImplementedAtkInterfaces::kText);
+    interface_mask.Add(ImplementedAtkInterfaces::Value::kText);
     if (!data.IsPlainTextField())
-      interface_mask.Add(ImplementedAtkInterfaces::kHypertext);
+      interface_mask.Add(ImplementedAtkInterfaces::Value::kHypertext);
   }
 
   if (data.IsRangeValueSupported())
-    interface_mask.Add(ImplementedAtkInterfaces::kValue);
+    interface_mask.Add(ImplementedAtkInterfaces::Value::kValue);
 
   if (ui::IsDocument(data.role))
-    interface_mask.Add(ImplementedAtkInterfaces::kDocument);
+    interface_mask.Add(ImplementedAtkInterfaces::Value::kDocument);
 
   if (IsImage(data.role))
-    interface_mask.Add(ImplementedAtkInterfaces::kImage);
+    interface_mask.Add(ImplementedAtkInterfaces::Value::kImage);
 
   // The AtkHyperlinkImpl interface allows getting a AtkHyperlink from an
   // AtkObject. It is indeed implemented by actual web hyperlinks, but also by
@@ -2173,17 +2173,17 @@ ImplementedAtkInterfaces AXPlatformNodeAuraLinux::GetGTypeInterfaceMask(
   // a bit of a misnomer from the ATK API.
   if (IsLink(data.role) || data.role == ax::mojom::Role::kAnchor ||
       !ui::IsText(data.role)) {
-    interface_mask.Add(ImplementedAtkInterfaces::kHyperlink);
+    interface_mask.Add(ImplementedAtkInterfaces::Value::kHyperlink);
   }
 
   if (data.role == ax::mojom::Role::kWindow)
-    interface_mask.Add(ImplementedAtkInterfaces::kWindow);
+    interface_mask.Add(ImplementedAtkInterfaces::Value::kWindow);
 
   if (IsContainerWithSelectableChildren(data.role))
-    interface_mask.Add(ImplementedAtkInterfaces::kSelection);
+    interface_mask.Add(ImplementedAtkInterfaces::Value::kSelection);
 
   if (IsTableLike(data.role))
-    interface_mask.Add(ImplementedAtkInterfaces::kTable);
+    interface_mask.Add(ImplementedAtkInterfaces::Value::kTable);
 
   // Because the TableCell Interface is only supported in ATK version 2.12 and
   // later, GetAccessibilityGType has a runtime check to verify we have a recent
@@ -2191,7 +2191,7 @@ ImplementedAtkInterfaces AXPlatformNodeAuraLinux::GetGTypeInterfaceMask(
   // AtkTableCell from the supported interfaces and none of its methods or
   // properties will be exposed to assistive technologies.
   if (IsCellOrTableHeader(data.role))
-    interface_mask.Add(ImplementedAtkInterfaces::kTableCell);
+    interface_mask.Add(ImplementedAtkInterfaces::Value::kTableCell);
 
   return interface_mask;
 }
@@ -2222,28 +2222,28 @@ GType AXPlatformNodeAuraLinux::GetAccessibilityGType() {
   g_type_add_interface_static(type, ATK_TYPE_COMPONENT, &atk_component::Info);
   g_type_add_interface_static(type, ATK_TYPE_ACTION, &atk_action::Info);
 
-  if (interface_mask_.Implements(ImplementedAtkInterfaces::kDocument))
+  if (interface_mask_.Implements(ImplementedAtkInterfaces::Value::kDocument))
     g_type_add_interface_static(type, ATK_TYPE_DOCUMENT, &atk_document::Info);
-  if (interface_mask_.Implements(ImplementedAtkInterfaces::kImage))
+  if (interface_mask_.Implements(ImplementedAtkInterfaces::Value::kImage))
     g_type_add_interface_static(type, ATK_TYPE_IMAGE, &atk_image::Info);
-  if (interface_mask_.Implements(ImplementedAtkInterfaces::kValue))
+  if (interface_mask_.Implements(ImplementedAtkInterfaces::Value::kValue))
     g_type_add_interface_static(type, ATK_TYPE_VALUE, &atk_value::Info);
-  if (interface_mask_.Implements(ImplementedAtkInterfaces::kHyperlink)) {
+  if (interface_mask_.Implements(ImplementedAtkInterfaces::Value::kHyperlink)) {
     g_type_add_interface_static(type, ATK_TYPE_HYPERLINK_IMPL,
                                 &atk_hyperlink::Info);
   }
-  if (interface_mask_.Implements(ImplementedAtkInterfaces::kHypertext))
+  if (interface_mask_.Implements(ImplementedAtkInterfaces::Value::kHypertext))
     g_type_add_interface_static(type, ATK_TYPE_HYPERTEXT, &atk_hypertext::Info);
-  if (interface_mask_.Implements(ImplementedAtkInterfaces::kText))
+  if (interface_mask_.Implements(ImplementedAtkInterfaces::Value::kText))
     g_type_add_interface_static(type, ATK_TYPE_TEXT, &atk_text::Info);
-  if (interface_mask_.Implements(ImplementedAtkInterfaces::kWindow))
+  if (interface_mask_.Implements(ImplementedAtkInterfaces::Value::kWindow))
     g_type_add_interface_static(type, ATK_TYPE_WINDOW, &atk_window::Info);
-  if (interface_mask_.Implements(ImplementedAtkInterfaces::kSelection))
+  if (interface_mask_.Implements(ImplementedAtkInterfaces::Value::kSelection))
     g_type_add_interface_static(type, ATK_TYPE_SELECTION, &atk_selection::Info);
-  if (interface_mask_.Implements(ImplementedAtkInterfaces::kTable))
+  if (interface_mask_.Implements(ImplementedAtkInterfaces::Value::kTable))
     g_type_add_interface_static(type, ATK_TYPE_TABLE, &atk_table::Info);
 
-  if (interface_mask_.Implements(ImplementedAtkInterfaces::kTableCell)) {
+  if (interface_mask_.Implements(ImplementedAtkInterfaces::Value::kTableCell)) {
     // Run-time check to ensure AtkTableCell is supported (requires ATK 2.12).
     if (AtkTableCellInterface::Exists()) {
       g_type_add_interface_static(type, AtkTableCellInterface::GetType(),

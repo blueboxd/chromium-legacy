@@ -835,6 +835,25 @@ base::Version GetMinimumSupportedChromeVersion() {
   return base::Version(kMinimumSupportedChromeVersionStr);
 }
 
+bool ExtractKeysFromDict(
+    const base::Value& dict,
+    const std::vector<std::pair<std::string, std::string*>>& needed_outputs) {
+  if (!dict.is_dict())
+    return false;
+
+  for (const std::pair<std::string, std::string*>& output : needed_outputs) {
+    const std::string* output_value = dict.FindStringKey(output.first);
+    if (!output_value) {
+      LOGFN(ERROR) << "Could not extract value '" << output.first
+                   << "' from server response";
+      return false;
+    }
+    DCHECK(output.second);
+    *output.second = *output_value;
+  }
+  return true;
+}
+
 FakesForTesting::FakesForTesting() {}
 
 FakesForTesting::~FakesForTesting() {}

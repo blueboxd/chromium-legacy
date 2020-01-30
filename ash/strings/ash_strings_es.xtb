@@ -112,7 +112,7 @@
 <translation id="2352467521400612932">Configuración del lápiz óptico</translation>
 <translation id="2354174487190027830">Activación de <ph name="NAME" /></translation>
 <translation id="2359808026110333948">Continuar</translation>
-<translation id="2364154243880592194">Bandeja de estado, hora <ph name="TIME" /> y <ph name="BATTERY" />. Pulsa la tecla de búsqueda + flecha izquierda para acceder al centro de notificaciones.</translation>
+<translation id="2364154243880592194">Bandeja de estado: <ph name="TIME" /> horas; <ph name="BATTERY" />. Pulsa la tecla de búsqueda + flecha izquierda para acceder al centro de notificaciones.</translation>
 <translation id="2365393535144473978">La conexión Bluetooth se activará al habilitar los datos móviles.</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="2412593942846481727">Actualización disponible</translation>
@@ -517,7 +517,7 @@ Todos los usuarios deben cerrar sesión para continuar.</translation>
 <translation id="8142441511840089262">Doble clic</translation>
 <translation id="8142699993796781067">Red privada</translation>
 <translation id="8152092012181020186">Pulsa Ctrl + W para cerrar.</translation>
-<translation id="8155007568264258537"><ph name="FEATURE_NAME" /> Este ajuste está gestionado por tu administrador.</translation>
+<translation id="8155007568264258537"><ph name="FEATURE_NAME" /> Este ajuste lo gestiona tu administrador.</translation>
 <translation id="8167567890448493835">Idioma: <ph name="LOCALE_NAME" /></translation>
 <translation id="8190698733819146287">Personalizar idiomas...</translation>
 <translation id="8192202700944119416">Las notificaciones están ocultas.</translation>
@@ -594,6 +594,7 @@ Todos los usuarios deben cerrar sesión para continuar.</translation>
 <translation id="9089416786594320554">Métodos de entrada</translation>
 <translation id="9091626656156419976">Se ha quitado la pantalla <ph name="DISPLAY_NAME" /></translation>
 <translation id="9151726767154816831">Reinicia y aplica la función Powerwash para actualizar el sistema</translation>
+<translation id="9168436347345867845">En otro momento</translation>
 <translation id="9179259655489829027">Esta función te permite acceder rápidamente a cualquier usuario que haya iniciado sesión sin tener que introducir una contraseña. Solo debes usar esta función con las cuentas de confianza.</translation>
 <translation id="9183456764293710005">Lupa de pantalla completa</translation>
 <translation id="9193626018745640770">Se está enviando contenido a un receptor desconocido</translation>

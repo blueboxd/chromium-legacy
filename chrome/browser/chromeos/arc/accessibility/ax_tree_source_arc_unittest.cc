@@ -513,6 +513,15 @@ TEST_F(AXTreeSourceArcTest, AccessibleNameComputation) {
   CallSerializeNode(root, &data);
   ASSERT_FALSE(
       data->GetStringAttribute(ax::mojom::StringAttribute::kName, &name));
+
+  // Root window title propagates to the name of the root node of the window if
+  // it isn't specified.
+  SetProperty(root_window, AXWindowStringProperty::TITLE, "Window Title");
+  CallNotifyAccessibilityEvent(event.get());
+  CallSerializeNode(root, &data);
+  ASSERT_TRUE(
+      data->GetStringAttribute(ax::mojom::StringAttribute::kName, &name));
+  ASSERT_EQ("Window Title", name);
 }
 
 TEST_F(AXTreeSourceArcTest, AccessibleNameComputationTextField) {

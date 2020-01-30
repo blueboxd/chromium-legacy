@@ -10,6 +10,7 @@
 #include "components/autofill/content/browser/content_autofill_driver_factory.h"
 #include "components/autofill/core/browser/autofill_manager.h"
 #include "components/autofill/core/browser/autofill_provider.h"
+#include "components/captive_portal/core/buildflags.h"
 #include "components/find_in_page/find_tab_helper.h"
 #include "components/find_in_page/find_types.h"
 #include "components/sessions/content/session_tab_helper.h"
@@ -48,6 +49,11 @@
 #include "components/embedder_support/android/delegate/color_chooser_android.h"
 #include "weblayer/browser/java/jni/TabImpl_jni.h"
 #include "weblayer/browser/top_controls_container_view.h"
+#endif
+
+#if BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION)
+#include "components/captive_portal/content/captive_portal_tab_helper.h"
+#include "weblayer/browser/captive_portal_service_factory.h"
 #endif
 
 namespace weblayer {
@@ -91,6 +97,25 @@ NewTabType NewTabTypeFromWindowDisposition(WindowOpenDisposition disposition) {
       return NewTabType::kForeground;
   }
 }
+
+#if BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION)
+// Opens a captive portal login page in |web_contents|.
+void OpenCaptivePortalLoginTabInWebContents(
+    content::WebContents* web_contents) {
+  // In Chrome this opens in a new tab, but WebLayer's TabImpl has no support
+  // for opening new tabs (its OpenURLFromTab() method DCHECKs if the
+  // disposition is not |CURRENT_TAB|).
+  // TODO(crbug.com/1047130): Revisit if TabImpl gets support for opening URLs
+  // in new tabs.
+  content::OpenURLParams params(
+      CaptivePortalServiceFactory::GetForBrowserContext(
+          web_contents->GetBrowserContext())
+          ->test_url(),
+      content::Referrer(), WindowOpenDisposition::CURRENT_TAB,
+      ui::PAGE_TRANSITION_LINK, false);
+  web_contents->OpenURL(params);
+}
+#endif
 
 // Pointer value of this is used as a key in base::SupportsUserData for
 // WebContents. Value of the key is an instance of |UserData|.
@@ -160,11 +185,19 @@ TabImpl::TabImpl(ProfileImpl* profile,
       web_contents_.get(),
       base::BindRepeating(&TabImpl::GetSessionServiceTabHelperDelegate,
                           base::Unretained(this)));
+
+#if BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION)
+  CaptivePortalTabHelper::CreateForWebContents(
+      web_contents_.get(),
+      CaptivePortalServiceFactory::GetForBrowserContext(
+          web_contents_->GetBrowserContext()),
+      base::BindRepeating(&OpenCaptivePortalLoginTabInWebContents,
+                          web_contents_.get()));
+#endif
 }
 
 TabImpl::~TabImpl() {
-  if (browser_)
-    browser_->RemoveTab(this);
+  DCHECK(!browser_);
 
   GetFindTabHelper()->RemoveObserver(this);
 
@@ -268,7 +301,13 @@ static jlong JNI_TabImpl_CreateTab(
 }
 
 static void JNI_TabImpl_DeleteTab(JNIEnv* env, jlong tab) {
-  delete reinterpret_cast<TabImpl*>(tab);
+  std::unique_ptr<Tab> owned_tab;
+  TabImpl* tab_impl = reinterpret_cast<TabImpl*>(tab);
+  DCHECK(tab_impl);
+  if (tab_impl->browser())
+    owned_tab = tab_impl->browser()->RemoveTab(tab_impl);
+  else
+    owned_tab.reset(tab_impl);
 }
 
 base::android::ScopedJavaLocalRef<jobject> TabImpl::GetWebContents(

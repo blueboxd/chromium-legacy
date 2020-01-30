@@ -1318,7 +1318,7 @@ void StoragePartitionImpl::Initialize() {
       relative_partition_path_, browser_context_->GetSpecialStoragePolicy());
 
   idle_manager_ = std::make_unique<IdleManager>();
-  lock_manager_ = new LockManager();
+  lock_manager_ = std::make_unique<LockManager>();
 
   base::FilePath path = is_in_memory_ ? base::FilePath() : partition_path_;
   indexed_db_context_ = new IndexedDBContextImpl(
@@ -1343,8 +1343,8 @@ void StoragePartitionImpl::Initialize() {
   shared_worker_service_ = std::make_unique<SharedWorkerServiceImpl>(
       this, service_worker_context_, appcache_service_);
 
-  push_messaging_context_ =
-      new PushMessagingContext(browser_context_, service_worker_context_);
+  push_messaging_context_ = std::make_unique<PushMessagingContext>(
+      browser_context_, service_worker_context_);
 
 #if !defined(OS_ANDROID)
   host_zoom_level_context_ = new HostZoomLevelContext(
@@ -1373,7 +1373,7 @@ void StoragePartitionImpl::Initialize() {
   payment_app_context_ = new PaymentAppContextImpl();
   payment_app_context_->Init(service_worker_context_);
 
-  broadcast_channel_provider_ = new BroadcastChannelProvider();
+  broadcast_channel_provider_ = std::make_unique<BroadcastChannelProvider>();
 
   bluetooth_allowed_devices_map_ = new BluetoothAllowedDevicesMap();
 

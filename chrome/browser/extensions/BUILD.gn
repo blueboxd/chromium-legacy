@@ -1069,6 +1069,9 @@ jumbo_static_library("extensions") {
     if (is_posix) {
       sources += [ "api/messaging/native_process_launcher_posix.cc" ]
     }
+    if (use_gio) {
+      configs += [ "//build/linux:gio_config" ]
+    }
   }
 
   if (use_x11) {

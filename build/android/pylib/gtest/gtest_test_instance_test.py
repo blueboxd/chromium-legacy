@@ -177,11 +177,34 @@ class GtestTestInstanceTests(unittest.TestCase):
     self.assertEquals(1, actual[0].GetDuration())
     self.assertEquals(base_test_result.ResultType.PASS, actual[0].GetType())
 
-  def testParseGTestOutput_parameterized(self):
+  def testParseGTestOutput_typeParameterized(self):
+    raw_output = [
+        '[ RUN      ] Baz/FooTest.Bar/0',
+        '[   FAILED ] Baz/FooTest.Bar/0, where TypeParam =  (1 ms)',
+    ]
+    actual = gtest_test_instance.ParseGTestOutput(raw_output, None, None)
+    self.assertEquals(1, len(actual))
+    self.assertEquals('Baz/FooTest.Bar/0', actual[0].GetName())
+    self.assertEquals(1, actual[0].GetDuration())
+    self.assertEquals(base_test_result.ResultType.FAIL, actual[0].GetType())
+
+  def testParseGTestOutput_valueParameterized(self):
     raw_output = [
         '[ RUN      ] Baz/FooTest.Bar/0',
         '[   FAILED ] Baz/FooTest.Bar/0,' +
         ' where GetParam() = 4-byte object <00-00 00-00> (1 ms)',
+    ]
+    actual = gtest_test_instance.ParseGTestOutput(raw_output, None, None)
+    self.assertEquals(1, len(actual))
+    self.assertEquals('Baz/FooTest.Bar/0', actual[0].GetName())
+    self.assertEquals(1, actual[0].GetDuration())
+    self.assertEquals(base_test_result.ResultType.FAIL, actual[0].GetType())
+
+  def testParseGTestOutput_typeAndValueParameterized(self):
+    raw_output = [
+        '[ RUN      ] Baz/FooTest.Bar/0',
+        '[   FAILED ] Baz/FooTest.Bar/0,' +
+        ' where TypeParam =  and GetParam() =  (1 ms)',
     ]
     actual = gtest_test_instance.ParseGTestOutput(raw_output, None, None)
     self.assertEquals(1, len(actual))

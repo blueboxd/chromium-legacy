@@ -54,6 +54,7 @@ cr.define('settings', function() {
 
   cr.addSingletonGetter(LifetimeBrowserProxyImpl);
 
+  // #cr_define_end
   return {
     LifetimeBrowserProxy: LifetimeBrowserProxy,
     LifetimeBrowserProxyImpl: LifetimeBrowserProxyImpl,

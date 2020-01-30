@@ -74,7 +74,7 @@ RootFrameSinkProxy::~RootFrameSinkProxy() {
 
 void RootFrameSinkProxy::DestroyOnViz() {
   DCHECK_CALLED_ON_VALID_THREAD(viz_thread_checker_);
-  DCHECK(without_gpu_->HasOneRef());
+  without_gpu_->DettachClient();
   without_gpu_.reset();
   weak_ptr_factory_on_viz_.InvalidateWeakPtrs();
   root_frame_sink_client_.reset();

@@ -15,6 +15,11 @@ SourceId AssignNewSourceId() {
 }
 
 SourceId ConvertToSourceId(int64_t other_id, SourceIdType id_type) {
+  // DCHECK is to restrict the usage of WEBAPK_ID, WebApk should use
+  // |UkmRecorder::GetSourceIdForWebApkManifestUrl()| instead.
+  // TODO(crbug.com/1046964): Ideally we should restrict
+  // UkmSourceId::FromOtherId() as well.
+  DCHECK(id_type != SourceIdType::WEBAPK_ID);
   return base::UkmSourceId::FromOtherId(other_id, id_type).ToInt64();
 }
 

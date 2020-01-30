@@ -184,7 +184,15 @@ GetMaxEffectiveConnectionTypeForNavigationHintsFetch() {
 }
 
 base::TimeDelta GetHintsFetchRefreshDuration() {
-  return base::TimeDelta::FromHours(72);
+  return base::TimeDelta::FromHours(GetFieldTrialParamByFeatureAsInt(
+      kRemoteOptimizationGuideFetching, "hints_fetch_refresh_duration_in_hours",
+      72));
+}
+
+size_t MaxConcurrentPageNavigationFetches() {
+  return GetFieldTrialParamByFeatureAsInt(
+      kRemoteOptimizationGuideFetching,
+      "max_concurrent_page_navigation_fetches", 20);
 }
 
 base::TimeDelta StoredHostModelFeaturesFreshnessDuration() {

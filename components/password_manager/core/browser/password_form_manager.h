@@ -159,7 +159,8 @@ class PasswordFormManager : public PasswordFormManagerForUI,
   bool IsNewLogin() const;
   FormFetcher* GetFormFetcher();
   bool IsPendingCredentialsPublicSuffixMatch() const;
-  void PresaveGeneratedPassword(const autofill::PasswordForm& form);
+  void PresaveGeneratedPassword(const autofill::FormData& form_data,
+                                const base::string16& generated_password);
   void PasswordNoLongerGenerated();
   bool HasGeneratedPassword() const;
   void SetGenerationPopupWasShown(bool is_manual_generation);
@@ -317,8 +318,8 @@ class PasswordFormManager : public PasswordFormManagerForUI,
 
   VotesUploader votes_uploader_;
 
-  // |is_submitted_| = true means that a submission of the managed form was seen
-  // and then |submitted_form_| contains the submitted form.
+  // |is_submitted_| = true means that |*this| is ready for saving.
+  // TODO(https://crubg.com/875768): Come up with a better name.
   bool is_submitted_ = false;
   autofill::FormData submitted_form_;
   std::unique_ptr<autofill::PasswordForm> parsed_submitted_form_;

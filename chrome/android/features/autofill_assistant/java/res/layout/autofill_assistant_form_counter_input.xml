@@ -18,7 +18,7 @@
         android:layout_height="wrap_content"
         android:layout_marginEnd="@dimen/autofill_assistant_form_counter_button_padding"
         android:layout_marginBottom="4dp"
-        android:textAppearance="@style/TextAppearance.BlackButtonText"/>
+        android:textAppearance="@style/TextAppearance.TextAccentMediumThick.Secondary"/>
     <LinearLayout
         android:id="@+id/expand_label_container"
         android:layout_width="match_parent"

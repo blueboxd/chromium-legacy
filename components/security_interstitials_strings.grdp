@@ -505,4 +505,15 @@
       OK
     </message>
   </if>
+
+  <!-- Legacy TLS interstitial -->
+  <message name="IDS_LEGACY_TLS_HEADING" desc="Large heading of the legacy TLS interstitial.">
+    Your connection is not fully secure
+  </message>
+  <message name="IDS_LEGACY_TLS_PRIMARY_PARAGRAPH" desc="Main paragraph of the legacy TLS interstitial. A user visits a website that uses an obsolete version of TLS and they are shown this error. Page title and additional description of the error are shown above.">
+    This site uses an outdated security configuration, which may expose your information (for example, passwords, messages, or credit cards) when it is sent to this site.
+  </message>
+  <message name="IDS_LEGACY_TLS_EXPLANATION" desc="Part of an extended description hidden behind an 'Advanced' button on an error page. A user visits a website that uses an obsolete version of TLS and they are shown this error. Page title and additional description of the error are shown above.">
+    The connection used to load this site used TLS 1.0 or TLS 1.1, which are deprecated and will be disabled in the future. Once disabled, users will be prevented from loading this site. The server should enable TLS 1.2 or later.
+  </message>
 </grit-part>

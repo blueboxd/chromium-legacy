@@ -1349,6 +1349,58 @@
     }
   },
   {
+    'name': 'chromium.dev',
+    'machines': {
+      'android-kitkat-arm-rel-swarming': {
+        'mixins': [
+          'kitkat',
+          'hammerhead',
+        ],
+        'test_suites': {
+           'gtest_tests': 'chromium_swarm_android_gtests',
+        },
+        'swarming': {
+          'expiration': 10800,
+        },
+        'os_type': 'android',
+      },
+      'android-marshmallow-arm64-rel-swarming': {
+        'test_suites': {
+           'gtest_tests': 'chromium_swarm_android_gtests',
+        },
+        'swarming': {
+          'dimension_sets': [
+            {
+              'device_os': 'MMB29Q',
+              'device_type': 'bullhead',
+              'os': 'Android',
+            },
+          ],
+          'expiration': 10800,
+        },
+        'os_type': 'android',
+      },
+      'linux-rel-swarming': {
+        'mixins': [
+          'linux-xenial',
+        ],
+        'test_suites': {
+           'gtest_tests': 'chromium_swarm_linux_gtests',
+        },
+      },
+      'mac-rel-swarming': {
+        'test_suites': {
+           'gtest_tests': 'chromium_swarm_desktop_gtests',
+        },
+      },
+      'win-rel-swarming': {
+        'test_suites': {
+           'gtest_tests': 'chromium_swarm_desktop_gtests',
+        },
+      },
+    },
+  },
+  {
     'name': 'chromium.devtools-frontend',
     'machines': {
       'DevTools Linux (chromium)': {
@@ -3976,58 +4028,6 @@
       'win-swangle-tot-swiftshader-x86' : {},
       'win-swangle-x64' : {},
       'win-swangle-x86' : {},
-    },
-  },
-  {
-    'name': 'chromium.swarm',
-    'machines': {
-      'Android N5 Swarm': {
-        'mixins': [
-          'kitkat',
-          'hammerhead',
-        ],
-        'test_suites': {
-           'gtest_tests': 'chromium_swarm_android_gtests',
-        },
-        'swarming': {
-          'expiration': 10800,
-        },
-        'os_type': 'android',
-      },
-      'Android N5X Swarm': {
-        'test_suites': {
-           'gtest_tests': 'chromium_swarm_android_gtests',
-        },
-        'swarming': {
-          'dimension_sets': [
-            {
-              'device_os': 'MMB29Q',
-              'device_type': 'bullhead',
-              'os': 'Android',
-            },
-          ],
-          'expiration': 10800,
-        },
-        'os_type': 'android',
-      },
-      'Linux Swarm': {
-        'mixins': [
-          'linux-xenial',
-        ],
-        'test_suites': {
-           'gtest_tests': 'chromium_swarm_linux_gtests',
-        },
-      },
-      'Mac Swarm': {
-        'test_suites': {
-           'gtest_tests': 'chromium_swarm_desktop_gtests',
-        },
-      },
-      'Windows Swarm': {
-        'test_suites': {
-           'gtest_tests': 'chromium_swarm_desktop_gtests',
-        },
-      },
     },
   },
   {

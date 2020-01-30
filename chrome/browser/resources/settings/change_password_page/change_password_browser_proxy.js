@@ -33,6 +33,7 @@ cr.define('settings', function() {
 
   cr.addSingletonGetter(ChangePasswordBrowserProxyImpl);
 
+  // #cr_define_end
   return {
     ChangePasswordBrowserProxy: ChangePasswordBrowserProxy,
     ChangePasswordBrowserProxyImpl: ChangePasswordBrowserProxyImpl,

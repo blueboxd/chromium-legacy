@@ -14,7 +14,7 @@
   border: 1px solid green;
 }
 #container {
-  intrinsic-size: 123px 456px;
+  contain-intrinsic-size: 123px 456px;
   min-width: 157px;
 }
 #child {
@@ -23,7 +23,7 @@
   background: red;
 }
 div:not([rendersubtree~="invisible"]) {
-  intrinsic-size: legacy !important;
+  contain-intrinsic-size: legacy !important;
 }
 </style>
 

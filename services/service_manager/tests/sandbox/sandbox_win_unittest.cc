@@ -20,11 +20,13 @@
 #include "base/scoped_native_library.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string16.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/win/windows_version.h"
 #include "build/build_config.h"
 #include "sandbox/win/src/app_container_profile_base.h"
 #include "sandbox/win/src/sandbox_policy.h"
 #include "sandbox/win/src/sid.h"
+#include "services/service_manager/sandbox/features.h"
 #include "services/service_manager/sandbox/sandbox_type.h"
 #include "services/service_manager/sandbox/switches.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -286,14 +288,12 @@ TEST_F(SandboxWinTest, IsGpuAppContainerEnabled) {
   base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
   EXPECT_FALSE(service_manager::SandboxWin::IsAppContainerEnabledForSandbox(
       command_line, SandboxType::kGpu));
-  command_line.AppendSwitch(switches::kEnableGpuAppContainer);
+  base::test::ScopedFeatureList features;
+  features.InitAndEnableFeature(service_manager::features::kGpuAppContainer);
   EXPECT_TRUE(service_manager::SandboxWin::IsAppContainerEnabledForSandbox(
       command_line, SandboxType::kGpu));
   EXPECT_FALSE(service_manager::SandboxWin::IsAppContainerEnabledForSandbox(
       command_line, SandboxType::kNoSandbox));
-  command_line.AppendSwitch(switches::kDisableGpuAppContainer);
-  EXPECT_FALSE(service_manager::SandboxWin::IsAppContainerEnabledForSandbox(
-      command_line, SandboxType::kGpu));
 }
 
 TEST_F(SandboxWinTest, AppContainerAccessCheckFail) {
@@ -329,7 +329,8 @@ TEST_F(SandboxWinTest, AppContainerCheckProfileDisableLpac) {
   if (base::win::GetVersion() < base::win::Version::WIN10_RS1)
     return;
   base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
-  command_line.AppendSwitch(switches::kDisableGpuLpac);
+  base::test::ScopedFeatureList features;
+  features.InitAndDisableFeature(service_manager::features::kGpuLPAC);
   scoped_refptr<sandbox::AppContainerProfileBase> profile;
   sandbox::ResultCode result = CreateAppContainerProfile(
       command_line, false, SandboxType::kGpu, &profile);

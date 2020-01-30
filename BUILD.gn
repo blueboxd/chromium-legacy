@@ -13,6 +13,7 @@ import("//build/config/features.gni")
 import("//build/config/sanitizers/sanitizers.gni")
 import("//build/config/ui.gni")
 import("//build/util/generate_wrapper.gni")
+import("//chrome/browser/buildflags.gni")
 import("//chrome/browser/media/router/features.gni")
 import("//components/nacl/features.gni")
 import("//device/vr/buildflags/buildflags.gni")
@@ -814,7 +815,7 @@ group("gn_all") {
     ]
   }
 
-  if (use_dawn) {
+  if (build_dawn_tests) {
     deps += [
       "//third_party/dawn:dawn_end2end_tests_temp_group",
       "//third_party/dawn:dawn_unittests_temp_group",
@@ -1329,6 +1330,10 @@ if (closure_compile) {
     }
     if (is_android) {
       data_deps += [ "components/offline_pages/resources:closure_compile" ]
+    }
+    if (enable_kaleidoscope) {
+      data_deps +=
+          [ "chrome/browser/media/kaleidoscope/internal:closure_compile" ]
     }
   }
 }

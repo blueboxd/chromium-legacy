@@ -283,10 +283,6 @@ class CONTENT_EXPORT RenderFrameHostManager
   // SiteInstance.
   void CreateProxiesForChildFrame(FrameTreeNode* child);
 
-  // Returns the swapped out RenderViewHost for the given SiteInstance, if any.
-  // This method is *deprecated* and GetRenderFrameProxyHost should be used.
-  RenderViewHostImpl* GetSwappedOutRenderViewHost(SiteInstance* instance) const;
-
   // Returns the RenderFrameProxyHost for the given SiteInstance, if any.
   RenderFrameProxyHost* GetRenderFrameProxyHost(SiteInstance* instance) const;
 
@@ -385,7 +381,7 @@ class CONTENT_EXPORT RenderFrameHostManager
   void EnsureRenderViewInitialized(RenderViewHostImpl* render_view_host,
                                    SiteInstance* instance);
 
-  // Creates swapped out RenderViews and RenderFrameProxies for this frame's
+  // Creates RenderFrameProxies and inactive RenderViewHosts for this frame's
   // FrameTree and for its opener chain in the given SiteInstance. This allows
   // other tabs to send cross-process JavaScript calls to their opener(s) and
   // to any other frames in the opener's FrameTree (e.g., supporting calls like
@@ -412,8 +408,8 @@ class CONTENT_EXPORT RenderFrameHostManager
   // RenderFrameProxyHost in its outer WebContents's SiteInstance,
   // |outer_contents_site_instance|. The frame in outer WebContents that is
   // hosting the inner WebContents is |render_frame_host|, and the frame will
-  // be swapped out with the proxy. Note that this method must only be called
-  // for an OOPIF-based inner WebContents.
+  // be swapped with the proxy. Note that this method must only be called for an
+  // OOPIF-based inner WebContents.
   RenderFrameProxyHost* CreateOuterDelegateProxy(
       SiteInstance* outer_contents_site_instance);
 
@@ -473,8 +469,8 @@ class CONTENT_EXPORT RenderFrameHostManager
 
   // Sets up the necessary state for a new RenderViewHost.  If |proxy| is not
   // null, it creates a RenderFrameProxy in the target renderer process which is
-  // used to route IPC messages when in swapped out state.  Returns early if the
-  // RenderViewHost has already been initialized for another RenderFrameHost.
+  // used to route IPC messages.  Returns early if the RenderViewHost has
+  // already been initialized for another RenderFrameHost.
   bool InitRenderView(RenderViewHostImpl* render_view_host,
                       RenderFrameProxyHost* proxy);
 
@@ -590,7 +586,8 @@ class CONTENT_EXPORT RenderFrameHostManager
       const GURL& destination_effective_url,
       bool destination_is_view_source_mode,
       bool is_failure,
-      bool is_reload) const;
+      bool is_reload,
+      bool cross_origin_opener_policy_mismatch) const;
 
   // Returns the SiteInstance to use for the navigation.
   scoped_refptr<SiteInstance> GetSiteInstanceForNavigation(
@@ -603,7 +600,8 @@ class CONTENT_EXPORT RenderFrameHostManager
       bool is_reload,
       bool dest_is_restore,
       bool dest_is_view_source_mode,
-      bool was_server_redirect);
+      bool was_server_redirect,
+      bool cross_origin_opener_policy_mismatch);
 
   // Returns a descriptor of the appropriate SiteInstance object for the given
   // |dest_url|, possibly reusing the current, source or destination
@@ -682,7 +680,7 @@ class CONTENT_EXPORT RenderFrameHostManager
       std::vector<FrameTree*>* opener_frame_trees,
       std::unordered_set<FrameTreeNode*>* nodes_with_back_links);
 
-  // Create swapped out RenderViews and RenderFrameProxies in the given
+  // Create RenderFrameProxies and inactive RenderViewHosts in the given
   // SiteInstance for the current node's FrameTree.  Used as a helper function
   // in CreateOpenerProxies for creating proxies in each FrameTree on the
   // opener chain.  Don't create proxies for the subtree rooted at

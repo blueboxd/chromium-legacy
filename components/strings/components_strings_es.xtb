@@ -79,7 +79,7 @@
 <translation id="129553762522093515">Cerrado recientemente</translation>
 <translation id="1298536327547837046">Análisis de software malicioso</translation>
 <translation id="129863573139666797"><ph name="BEGIN_LINK" />Borrar las cookies<ph name="END_LINK" /></translation>
-<translation id="1301324364792935241">Revisa tu configuración de DNS seguro.</translation>
+<translation id="1301324364792935241">Revisa tu configuración de DNS seguro</translation>
 <translation id="1307966114820526988">Funciones obsoletas</translation>
 <translation id="1314509827145471431">Encuadernar por la derecha</translation>
 <translation id="1320233736580025032">Prc1 (sobre)</translation>
@@ -428,7 +428,6 @@
 <translation id="2799223571221894425">Reiniciar</translation>
 <translation id="2803306138276472711">Recientemente, la función de Navegación Segura de Google <ph name="BEGIN_LINK" />ha detectado software malicioso<ph name="END_LINK" /> en <ph name="SITE" />. En ocasiones, los sitios web que normalmente son seguros contienen software malicioso.</translation>
 <translation id="2807052079800581569">Posición de la imagen en el eje Y</translation>
-<translation id="2809804249696361569">Ambas hojas</translation>
 <translation id="2824775600643448204">Barra de direcciones y de búsqueda </translation>
 <translation id="2826760142808435982">La conexión se ha encriptado y autenticado con <ph name="CIPHER" />, y utiliza <ph name="KX" /> como el mecanismo de intercambio clave.</translation>
 <translation id="2835170189407361413">Eliminar formulario</translation>
@@ -937,7 +936,6 @@
 <translation id="5112422516732747637">A5</translation>
 <translation id="5115216390227830982">European-Edp</translation>
 <translation id="5115563688576182185">(64 bits)</translation>
-<translation id="5121469660360593280">Compartir con tu administrador los datos de actividades relacionadas con la seguridad que marque la protección de usuarios de Chrome Enterprise. Estos datos pueden incluir las URL de las páginas que visitas, los nombres y metadatos de los archivos, y el nombre de usuario que utilizas para iniciar sesión en tu dispositivo y en Chrome.</translation>
 <translation id="5123063207673082822">Fin de semana</translation>
 <translation id="5125394840236832993">B-Plus</translation>
 <translation id="5126510351761255129">Verifica tu tarjeta</translation>
@@ -952,7 +950,6 @@
 <translation id="5161506081086828129">Apilador 9</translation>
 <translation id="516920405563544094">Introduce el CVC de <ph name="CREDIT_CARD" />. Una vez que confirmes esta acción, la información de la tarjeta de tu cuenta de Google se compartirá con este sitio web.</translation>
 <translation id="5169827969064885044">Podrías perder el acceso a la cuenta de tu organización o tener problemas de suplantación de identidad. Chrome te recomienda que cambies tu contraseña ahora.</translation>
-<translation id="5170017743895942767">Protección de usuarios de Chrome Enterprise</translation>
 <translation id="5171045022955879922">Busca o escribe una URL</translation>
 <translation id="5171689220826475070">Fanfold-European</translation>
 <translation id="5172758083709347301">Equipo</translation>
@@ -1085,7 +1082,6 @@
 <translation id="5737183892635480227">{NUM_CARDS,plural, =1{Guarda la tarjeta en tu cuenta de Google}other{Guarda las tarjetas en tu cuenta de Google}}</translation>
 <translation id="5745980000221562234">{NUM_CARDS,plural, =1{Usar un número virtual para esta tarjeta}other{Seleccionar tarjetas}}</translation>
 <translation id="5763042198335101085">Introduce una dirección de correo electrónico válida</translation>
-<translation id="5763703224595565476">El administrador ha habilitado en tu navegador la protección de usuarios de Chrome Enterprise, que puede acceder a algunos de tus datos.</translation>
 <translation id="5765072501007116331">Selecciona una dirección para ver los métodos de entrega y los requisitos</translation>
 <translation id="5776313857861697733">Prioridad</translation>
 <translation id="5778550464785688721">Control total de dispositivos MIDI</translation>
@@ -1422,7 +1418,6 @@ Más información:
 <translation id="733923710415886693">El certificado del servidor no se ha revelado a través de la Transparencia en los Certificados.</translation>
 <translation id="734600844861828519">11x15</translation>
 <translation id="7346048084945669753">Se ha afiliado:</translation>
-<translation id="73479065977517481"><ph name="ENROLLMENT_DOMAIN" /> ha habilitado en tu navegador la protección de usuarios de Chrome Enterprise, que puede acceder a algunos de tus datos.</translation>
 <translation id="7349430561505560861">A4-Extra</translation>
 <translation id="7353601530677266744">Línea de comandos</translation>
 <translation id="7372973238305370288">resultado de búsqueda</translation>

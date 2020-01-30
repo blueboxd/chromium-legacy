@@ -9,7 +9,6 @@
 #include <string>
 
 #include "base/callback.h"
-#include "base/memory/ref_counted.h"
 #include "base/sequence_checker.h"
 #include "content/public/browser/browser_context.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
@@ -21,10 +20,10 @@ namespace content {
 // One instance of this exists per StoragePartition, and services multiple
 // child processes/origins. An instance must only be used on the sequence
 // it was created on.
-class LockManager : public base::RefCountedThreadSafe<LockManager>,
-                    public blink::mojom::LockManager {
+class LockManager : public blink::mojom::LockManager {
  public:
   LockManager();
+  ~LockManager() override;
 
   // Binds |receiver| to this LockManager. |receiver| belongs to a frame or
   // worker at |origin| hosted by |render_process_id|. If it belongs to a frame,
@@ -47,10 +46,6 @@ class LockManager : public base::RefCountedThreadSafe<LockManager>,
 
   // Called to request a snapshot of the current lock state for an origin.
   void QueryState(QueryStateCallback callback) override;
-
- protected:
-  friend class base::RefCountedThreadSafe<LockManager>;
-  ~LockManager() override;
 
  private:
   // Internal representation of a lock request or held lock.

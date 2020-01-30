@@ -149,8 +149,8 @@ const char kReloadSharedWorkerTestWorker[] =
     "files/workers/debug_shared_worker_initialization.js";
 const char kEmulateNetworkConditionsPage[] =
     "files/devtools/emulate_network_conditions.html";
-const char kDispatchKeyEventShowsAutoFill[] =
-    "files/devtools/dispatch_key_event_shows_auto_fill.html";
+const char kAutoFillFormWithName[] =
+    "files/devtools/autofill_form_with_name.html";
 const char kDOMWarningsTestPage[] = "files/devtools/dom_warnings_page.html";
 const char kEmptyTestPage[] = "files/devtools/empty.html";
 
@@ -1657,7 +1657,16 @@ class AutofillManagerTestDelegateDevtoolsImpl
 #endif
 IN_PROC_BROWSER_TEST_F(DevToolsSanityTest,
                        MAYBE_TestDispatchKeyEventShowsAutoFill) {
-  OpenDevToolsWindow(kDispatchKeyEventShowsAutoFill, false);
+  OpenDevToolsWindow(kAutoFillFormWithName, false);
+  // To check how Devtools will handle Autofill suggestions, some value needs
+  // to be typed in and saved on submission at first. It's necessary to
+  // imitate the user interaction to meet the Autofill saving criteria.
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  content::FocusElementByID(web_contents, "name");
+  content::SimulateUserInput(web_contents, "Abbf");
+  content::SimulateMouseClick(web_contents, 0,
+                              blink::WebMouseEvent::Button::kLeft);
 
   autofill::ContentAutofillDriver* autofill_driver =
       autofill::ContentAutofillDriverFactory::FromWebContents(GetInspectedTab())

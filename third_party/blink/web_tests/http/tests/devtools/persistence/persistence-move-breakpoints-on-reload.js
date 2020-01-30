@@ -42,7 +42,7 @@
     },
 
     async function reloadPageAndDumpBreakpoints(next) {
-      testMapping.removeBinding('foo.js');
+      await testMapping.removeBinding('foo.js');
       await Promise.all([SourcesTestRunner.waitBreakpointSidebarPane(), TestRunner.reloadPagePromise()]);
       testMapping.addBinding('foo.js');
       dumpBreakpointSidebarPane();

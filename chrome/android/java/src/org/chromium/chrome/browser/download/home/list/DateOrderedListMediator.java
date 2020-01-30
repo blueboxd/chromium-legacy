@@ -13,7 +13,7 @@ import androidx.annotation.Nullable;
 
 import org.chromium.base.Callback;
 import org.chromium.base.CollectionUtil;
-import org.chromium.chrome.browser.GlobalDiscardableReferencePool;
+import org.chromium.base.DiscardableReferencePool;
 import org.chromium.chrome.browser.download.home.DownloadManagerUiConfig;
 import org.chromium.chrome.browser.download.home.FaviconProvider;
 import org.chromium.chrome.browser.download.home.JustNowProvider;
@@ -145,23 +145,26 @@ class DateOrderedListMediator {
     /**
      * Creates an instance of a DateOrderedListMediator that will push {@code provider} into
      * {@code model}.
-     * @param provider                The {@link OfflineContentProvider} to visually represent.
-     * @param legacyProvider          A legacy version of a provider for downloads.
-     * @param faviconProvider         The {@link FaviconProvider} to handle favicon requests.
-     * @param deleteController        A class to manage whether or not items can be deleted.
-     * @param shareController         A class responsible for sharing downloaded item {@link
-     *                                Intent}s.
-     * @param selectionDelegate       A class responsible for handling list item selection.
-     * @param config                  A {@link DownloadManagerUiConfig} to provide UI config params.
-     * @param dateOrderedListObserver An observer of the list and recycler view.
-     * @param model                   The {@link ListItemModel} to push {@code provider} into.
+     * @param provider                 The {@link OfflineContentProvider} to visually represent.
+     * @param legacyProvider           A legacy version of a provider for downloads.
+     * @param faviconProvider          The {@link FaviconProvider} to handle favicon requests.
+     * @param deleteController         A class to manage whether or not items can be deleted.
+     * @param shareController          A class responsible for sharing downloaded item {@link
+     *                                 Intent}s.
+     * @param selectionDelegate        A class responsible for handling list item selection.
+     * @param config                   A {@link DownloadManagerUiConfig} to provide UI config
+     *                                 params.
+     * @param dateOrderedListObserver  An observer of the list and recycler view.
+     * @param model                    The {@link ListItemModel} to push {@code provider} into.
+     * @param discardableReferencePool A {@linK DiscardableReferencePool} reference to use for large
+     *                                 objects (e.g. bitmaps) in the UI.
      */
     public DateOrderedListMediator(OfflineContentProvider provider,
             LegacyDownloadProvider legacyProvider, FaviconProvider faviconProvider,
             ShareController shareController, DeleteController deleteController,
             RenameController renameController, SelectionDelegate<ListItem> selectionDelegate,
             DownloadManagerUiConfig config, DateOrderedListObserver dateOrderedListObserver,
-            ListItemModel model) {
+            ListItemModel model, DiscardableReferencePool discardableReferencePool) {
         // Build a chain from the data source to the model.  The chain will look like:
         // [OfflineContentProvider] ->
         //     [OfflineItemSource] ->
@@ -199,10 +202,9 @@ class DateOrderedListMediator {
         new OfflineItemStartupLogger(config, mInvalidStateFilter);
 
         mSearchFilter.addObserver(new EmptyStateObserver(mSearchFilter, dateOrderedListObserver));
-        mThumbnailProvider =
-                new ThumbnailProviderImpl(GlobalDiscardableReferencePool.getReferencePool(),
-                        config.inMemoryThumbnailCacheSizeBytes,
-                        ThumbnailProviderImpl.ClientType.DOWNLOAD_HOME);
+        mThumbnailProvider = new ThumbnailProviderImpl(discardableReferencePool,
+                config.inMemoryThumbnailCacheSizeBytes,
+                ThumbnailProviderImpl.ClientType.DOWNLOAD_HOME);
         mSelectionObserver = new MediatorSelectionObserver(selectionDelegate);
 
         mModel.getProperties().set(ListProperties.ENABLE_ITEM_ANIMATIONS, true);

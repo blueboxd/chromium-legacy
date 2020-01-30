@@ -328,7 +328,7 @@ class HistogramRule : public BackgroundTracingRule,
                          histogram_name, "value", actual_value);
 
     TRACE_EVENT(
-        TRACE_DISABLED_BY_DEFAULT("histogram_samples"),
+        "toplevel",
         "HistogramSampleTrigger", [&](perfetto::EventContext ctx) {
           perfetto::protos::pbzero::ChromeHistogramSample* new_sample =
               ctx.event()->set_chrome_histogram_sample();

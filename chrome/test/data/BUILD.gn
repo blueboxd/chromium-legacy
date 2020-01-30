@@ -25,7 +25,10 @@ grit("webui_test_resources") {
 }
 
 mojom("web_ui_test_bindings") {
-  sources = [ "webui/web_ui_test.mojom" ]
+  sources = [
+    "webui/mojo/foobar.mojom",
+    "webui/web_ui_test.mojom",
+  ]
 }
 
 js_type_check("closure_compile") {

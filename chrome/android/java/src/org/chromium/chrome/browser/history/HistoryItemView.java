@@ -13,6 +13,7 @@ import android.support.v7.content.res.AppCompatResources;
 import android.util.AttributeSet;
 import android.view.View;
 import android.widget.ImageButton;
+import android.widget.ImageView.ScaleType;
 
 import androidx.annotation.VisibleForTesting;
 
@@ -33,7 +34,6 @@ import org.chromium.chrome.browser.widget.selection.SelectableItemView;
 public class HistoryItemView extends SelectableItemView<HistoryItem> implements LargeIconCallback {
     private ImageButton mRemoveButton;
     private VectorDrawableCompat mBlockedVisitDrawable;
-    private View mContentView;
 
     private HistoryManager mHistoryManager;
     private final RoundedIconGenerator mIconGenerator;
@@ -55,22 +55,30 @@ public class HistoryItemView extends SelectableItemView<HistoryItem> implements 
         mEndPadding = context.getResources().getDimensionPixelSize(
                 R.dimen.selectable_list_layout_row_padding);
 
-        mIconColorList =
+        mStartIconSelectedColorList =
                 AppCompatResources.getColorStateList(context, R.color.default_icon_color_inverse);
     }
 
     @Override
     protected void onFinishInflate() {
         super.onFinishInflate();
-        mIconView.setImageResource(R.drawable.default_favicon);
-        mContentView = findViewById(R.id.content);
-        mRemoveButton = findViewById(R.id.remove);
-        mRemoveButton.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                remove();
-            }
-        });
+        mStartIconView.setImageResource(R.drawable.default_favicon);
+
+        mRemoveButton = mEndButtonView;
+        mRemoveButton.setImageResource(R.drawable.btn_delete_24dp);
+        mRemoveButton.setContentDescription(getContext().getString((R.string.remove)));
+        ApiCompatibilityUtils.setImageTintList(mRemoveButton,
+                AppCompatResources.getColorStateList(
+                        getContext(), R.color.default_icon_color_secondary));
+        mRemoveButton.setOnClickListener(v -> remove());
+        mRemoveButton.setScaleType(ScaleType.CENTER_INSIDE);
+        mRemoveButton.setPaddingRelative(
+                getResources().getDimensionPixelSize(
+                        R.dimen.history_item_remove_button_lateral_padding),
+                getPaddingTop(),
+                getResources().getDimensionPixelSize(
+                        R.dimen.history_item_remove_button_lateral_padding),
+                getPaddingBottom());
 
         updateRemoveButtonVisibility();
     }
@@ -91,11 +99,11 @@ public class HistoryItemView extends SelectableItemView<HistoryItem> implements 
                         getContext().getResources(), R.drawable.ic_block_red,
                         getContext().getTheme());
             }
-            setIconDrawable(mBlockedVisitDrawable);
+            setStartIconDrawable(mBlockedVisitDrawable);
             mTitleView.setTextColor(
                     ApiCompatibilityUtils.getColor(getResources(), R.color.default_red));
         } else {
-            setIconDrawable(mFaviconHelper.getDefaultFaviconDrawable(
+            setStartIconDrawable(mFaviconHelper.getDefaultFaviconDrawable(
                     getContext().getResources(), item.getUrl(), true));
             if (mHistoryManager != null) requestIcon();
 
@@ -165,7 +173,7 @@ public class HistoryItemView extends SelectableItemView<HistoryItem> implements 
             @IconType int iconType) {
         Drawable drawable = FaviconUtils.getIconDrawableWithoutFilter(icon, getItem().getUrl(),
                 fallbackColor, mIconGenerator, getResources(), mDisplayedIconSize);
-        setIconDrawable(drawable);
+        setStartIconDrawable(drawable);
     }
 
     private void requestIcon() {
@@ -185,5 +193,10 @@ public class HistoryItemView extends SelectableItemView<HistoryItem> implements 
         int endPadding = removeButtonVisibility == View.GONE ? mEndPadding : 0;
         ViewCompat.setPaddingRelative(mContentView, ViewCompat.getPaddingStart(mContentView),
                 mContentView.getPaddingTop(), endPadding, mContentView.getPaddingBottom());
+    }
+
+    @VisibleForTesting
+    View getRemoveButtonForTests() {
+        return mRemoveButton;
     }
 }

@@ -46,7 +46,7 @@
         android:minHeight="40dp"
         android:maxLines="2"
         android:ellipsize="end"
-        android:textAppearance="@style/TextAppearance.BlackTitle1"
+        android:textAppearance="@style/TextAppearance.TextLarge.Primary"
         android:textAlignment="viewStart"
         app:layout_gravity="fill_horizontal" />
 
@@ -59,7 +59,7 @@
         android:layout_marginStart="16dp"
         android:maxLines="1"
         android:ellipsize="end"
-        android:textAppearance="@style/TextAppearance.BlackCaption"
+        android:textAppearance="@style/TextAppearance.TextSmall.Secondary"
         android:textAlignment="viewStart" />
 
     <org.chromium.ui.widget.ChromeImageView
@@ -78,7 +78,7 @@
         android:layout_marginStart="16dp"
         android:maxLines="1"
         android:ellipsize="end"
-        android:textAppearance="@style/TextAppearance.BlackCaption"
+        android:textAppearance="@style/TextAppearance.TextSmall.Secondary"
         android:textAlignment="viewStart" />
 
     <!-- Wrap this in a FrameLayout so that if the thumbnail is hidden this view

@@ -23,16 +23,13 @@ Test breakpoint in each worker
 Script execution paused.
 Call stack:
     0) onmessage (worker.js:2)
-Paused on breakpoint
 Script execution resumed.
 Script execution paused.
 Call stack:
     0) onmessage (worker.js:2)
-Paused on breakpoint
 Script execution resumed.
 Script execution paused.
 Call stack:
     0) onmessage (worker.js:2)
-Paused on breakpoint
 Script execution resumed.
 

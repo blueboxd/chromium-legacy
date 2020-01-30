@@ -346,6 +346,15 @@ mojom("interfaces") {
   export_header = "content/common/content_export.h"
 }
 
+mojom("web_preferences_mojom") {
+  sources = [ "web_preferences.mojom" ]
+
+  public_deps = [ "//third_party/blink/public/mojom:mojom_platform" ]
+
+  overridden_deps = [ "//third_party/blink/public/mojom:mojom_platform" ]
+  component_deps = [ "//third_party/blink/public/common" ]
+}
+
 mojom("client_hints_mojom") {
   sources = [ "client_hints.mojom" ]
 

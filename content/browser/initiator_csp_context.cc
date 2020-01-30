@@ -7,19 +7,18 @@
 namespace content {
 
 InitiatorCSPContext::InitiatorCSPContext(
-    const std::vector<ContentSecurityPolicy>& policies,
-    base::Optional<CSPSource>& self_source,
+    std::vector<ContentSecurityPolicy> policies,
+    network::mojom::CSPSourcePtr self_source,
     mojo::PendingRemote<blink::mojom::NavigationInitiator> navigation_initiator)
     : reporting_render_frame_host_impl_(nullptr),
       initiator(std::move(navigation_initiator)) {
-  for (const auto& policy : policies)
-    AddContentSecurityPolicy(policy);
+  for (auto& policy : policies)
+    AddContentSecurityPolicy(std::move(policy));
 
-  if (self_source.has_value())
-    SetSelf(self_source.value());
+  SetSelf(std::move(self_source));
 }
 
-InitiatorCSPContext::~InitiatorCSPContext() {}
+InitiatorCSPContext::~InitiatorCSPContext() = default;
 
 void InitiatorCSPContext::SetReportingRenderFrameHost(
     RenderFrameHostImpl* rfh) {

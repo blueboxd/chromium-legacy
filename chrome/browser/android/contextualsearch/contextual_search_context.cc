@@ -10,14 +10,7 @@
 #include "components/translate/core/language_detection/language_detection_util.h"
 #include "content/public/browser/browser_thread.h"
 
-ContextualSearchContext::ContextualSearchContext(JNIEnv* env, jobject obj)
-    : can_resolve(false),
-      can_send_base_page_url(false),
-      home_country(std::string()),
-      base_page_url(GURL()),
-      surrounding_text(base::string16()),
-      start_offset(0),
-      end_offset(0) {
+ContextualSearchContext::ContextualSearchContext(JNIEnv* env, jobject obj) {
   java_object_.Reset(env, obj);
 }
 
@@ -25,7 +18,9 @@ ContextualSearchContext::ContextualSearchContext(
     const std::string& home_country,
     const GURL& page_url,
     const std::string& encoding)
-    : home_country(home_country),
+    : can_resolve(true),
+      can_send_base_page_url(true),
+      home_country(home_country),
       base_page_url(page_url),
       base_page_encoding(encoding) {
   java_object_ = nullptr;
@@ -147,15 +142,14 @@ int ContextualSearchContext::GetEndOffset() const {
   return end_offset;
 }
 
-void ContextualSearchContext::RestrictResolve(
+void ContextualSearchContext::SetExactResolve(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& obj) {
-  // TODO(donnd): improve on this cheap implementation by sending this bit to
-  // the server instead of destroying our valuable context!
-  int start = this->start_offset;
-  int end = this->end_offset;
-  SetSelectionSurroundings(0, end - start,
-                           this->surrounding_text.substr(start, end - start));
+  is_exact_resolve = true;
+}
+
+bool ContextualSearchContext::GetExactResolve() {
+  return is_exact_resolve;
 }
 
 base::android::ScopedJavaLocalRef<jstring>

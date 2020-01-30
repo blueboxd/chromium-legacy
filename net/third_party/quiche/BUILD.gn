@@ -490,7 +490,6 @@ source_set("quiche") {
       "src/quic/core/uber_received_packet_manager.cc",
       "src/quic/core/uber_received_packet_manager.h",
       "src/quic/platform/api/quic_aligned.h",
-      "src/quic/platform/api/quic_bbr2_sender.h",
       "src/quic/platform/api/quic_bug_tracker.h",
       "src/quic/platform/api/quic_cert_utils.h",
       "src/quic/platform/api/quic_client_stats.h",

@@ -22,7 +22,7 @@
         android:layout_marginTop="12dp"
         android:paddingStart="16dp"
         android:paddingEnd="16dp"
-        android:textAppearance="@style/TextAppearance.BlackBody" />
+        android:textAppearance="@style/TextAppearance.TextMedium.Secondary" />
 
     <!-- Button row. -->
     <org.chromium.ui.widget.ButtonCompat

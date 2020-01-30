@@ -15,6 +15,7 @@
 #include "chrome/browser/ui/webui/tab_strip/tab_strip_ui_embedder.h"
 #include "chrome/browser/ui/webui/tab_strip/tab_strip_ui_layout.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
+#include "chrome/test/base/testing_profile_manager.h"
 #include "components/tab_groups/tab_group_color.h"
 #include "components/tab_groups/tab_group_id.h"
 #include "components/tab_groups/tab_group_visual_data.h"
@@ -333,6 +334,88 @@ TEST_F(TabStripUIHandlerTest, MoveGroup) {
                                        ->ListTabs();
   ASSERT_EQ(new_index, tabs_in_group.front());
   ASSERT_EQ(new_index, tabs_in_group.back());
+}
+
+TEST_F(TabStripUIHandlerTest, MoveGroupAcrossWindows) {
+  AddTab(browser(), GURL("http://foo"));
+
+  // Create a new window with the same profile, and add a group to it.
+  std::unique_ptr<BrowserWindow> new_window(CreateBrowserWindow());
+  std::unique_ptr<Browser> new_browser =
+      CreateBrowser(profile(), browser()->type(), false, new_window.get());
+  AddTab(new_browser.get(), GURL("http://foo"));
+  AddTab(new_browser.get(), GURL("http://foo"));
+  tab_groups::TabGroupId group_id =
+      new_browser.get()->tab_strip_model()->AddToNewGroup({0, 1});
+
+  // Create some visual data to make sure it gets transferred.
+  const tab_groups::TabGroupVisualData visual_data(
+      base::ASCIIToUTF16("My group"), tab_groups::TabGroupColorId::kGreen);
+  new_browser.get()
+      ->tab_strip_model()
+      ->group_model()
+      ->GetTabGroup(group_id)
+      ->SetVisualData(visual_data);
+
+  content::WebContents* moved_contents1 =
+      new_browser.get()->tab_strip_model()->GetWebContentsAt(0);
+  content::WebContents* moved_contents2 =
+      new_browser.get()->tab_strip_model()->GetWebContentsAt(1);
+
+  int new_index = -1;
+  base::ListValue args;
+  args.AppendString(group_id.ToString());
+  args.AppendInteger(new_index);
+  handler()->HandleMoveGroup(&args);
+
+  ASSERT_EQ(0U, new_browser.get()
+                    ->tab_strip_model()
+                    ->group_model()
+                    ->ListTabGroups()
+                    .size());
+  ASSERT_EQ(moved_contents1, browser()->tab_strip_model()->GetWebContentsAt(1));
+  ASSERT_EQ(moved_contents2, browser()->tab_strip_model()->GetWebContentsAt(2));
+
+  base::Optional<tab_groups::TabGroupId> new_group_id =
+      browser()->tab_strip_model()->GetTabGroupForTab(1);
+  ASSERT_TRUE(new_group_id.has_value());
+  ASSERT_EQ(browser()->tab_strip_model()->GetTabGroupForTab(1),
+            browser()->tab_strip_model()->GetTabGroupForTab(2));
+
+  const tab_groups::TabGroupVisualData* new_visual_data =
+      browser()
+          ->tab_strip_model()
+          ->group_model()
+          ->GetTabGroup(new_group_id.value())
+          ->visual_data();
+  ASSERT_EQ(visual_data.title(), new_visual_data->title());
+  ASSERT_EQ(visual_data.color(), new_visual_data->color());
+}
+
+TEST_F(TabStripUIHandlerTest, MoveGroupAcrossProfiles) {
+  AddTab(browser(), GURL("http://foo"));
+
+  TestingProfile* different_profile =
+      profile_manager()->CreateTestingProfile("different_profile");
+  std::unique_ptr<BrowserWindow> new_window(CreateBrowserWindow());
+  std::unique_ptr<Browser> new_browser = CreateBrowser(
+      different_profile, browser()->type(), false, new_window.get());
+  AddTab(new_browser.get(), GURL("http://foo"));
+  tab_groups::TabGroupId group_id =
+      new_browser.get()->tab_strip_model()->AddToNewGroup({0});
+
+  int new_index = -1;
+  base::ListValue args;
+  args.AppendString(group_id.ToString());
+  args.AppendInteger(new_index);
+  handler()->HandleMoveGroup(&args);
+
+  ASSERT_TRUE(
+      new_browser.get()->tab_strip_model()->group_model()->ContainsTabGroup(
+          group_id));
+
+  // Close all tabs before destructing.
+  new_browser.get()->tab_strip_model()->CloseAllTabs();
 }
 
 TEST_F(TabStripUIHandlerTest, UngroupTab) {

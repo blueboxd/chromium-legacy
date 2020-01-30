@@ -16,7 +16,6 @@
 #include "base/strings/stringprintf.h"
 #include "components/sync/base/hash_util.h"
 #include "components/sync/base/unique_position.h"
-#include "components/sync/engine_impl/syncer_proto_util.h"
 #include "components/sync/model/entity_data.h"
 #include "components/sync/protocol/sync.pb.h"
 
@@ -109,6 +108,18 @@ std::string InferGuidForLegacyBookmark(
 void AdaptUniquePositionForBookmark(const sync_pb::SyncEntity& update_entity,
                                     EntityData* data) {
   DCHECK(data);
+
+  // Tombstones don't need positioning information.
+  if (update_entity.deleted()) {
+    return;
+  }
+
+  // Permanent folders don't need positioning information.
+  if (update_entity.folder() &&
+      !update_entity.server_defined_unique_tag().empty()) {
+    return;
+  }
+
   bool has_position_scheme = false;
   SyncPositioningScheme sync_positioning_scheme;
   if (update_entity.has_unique_position()) {
@@ -143,9 +154,9 @@ void AdaptUniquePositionForBookmark(const sync_pb::SyncEntity& update_entity,
       has_position_scheme = true;
       sync_positioning_scheme = SyncPositioningScheme::kInsertAfterItemId;
     }
-  } else if (SyncerProtoUtil::ShouldMaintainPosition(update_entity) &&
-             !update_entity.deleted()) {
-    DLOG(ERROR) << "Missing required position information in update.";
+  } else {
+    DLOG(ERROR) << "Missing required position information in update: "
+                << update_entity.id_string();
     has_position_scheme = true;
     sync_positioning_scheme = SyncPositioningScheme::kMissing;
   }

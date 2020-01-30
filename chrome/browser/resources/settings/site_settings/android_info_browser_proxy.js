@@ -53,6 +53,7 @@ cr.define('settings', function() {
 
   cr.addSingletonGetter(AndroidInfoBrowserProxyImpl);
 
+  // #cr_define_end
   return {
     AndroidInfoBrowserProxy: AndroidInfoBrowserProxy,
     AndroidInfoBrowserProxyImpl: AndroidInfoBrowserProxyImpl,

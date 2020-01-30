@@ -31,6 +31,7 @@ class SystemNotificationController {
 
  private:
   friend class AutoConnectNotifierTest;
+  friend class UpdateNotificationControllerTest;
   const std::unique_ptr<AutoConnectNotifier> auto_connect_;
   const std::unique_ptr<CapsLockNotificationController> caps_lock_;
   const std::unique_ptr<CastNotificationController> cast_;

@@ -56,13 +56,7 @@ class StartSurfaceToolbarView extends RelativeLayout {
         mIncognitoSwitch = findViewById(R.id.incognito_switch);
         mMenuButton = findViewById(R.id.menu_button_wrapper);
         mLogo = findViewById(R.id.logo);
-        mIdentityDiscButton = findViewById(R.id.experimental_toolbar_button_start);
-
-        // Change padding in layout file programmatically, since padding in layout file can not be
-        // changed in ViewStub.
-        final int buttonPadding = getContext().getResources().getDimensionPixelOffset(
-                R.dimen.start_surface_toolbar_button_padding_to_button);
-        mIdentityDiscButton.setPadding(buttonPadding, 0, buttonPadding, 0);
+        mIdentityDiscButton = findViewById(R.id.identity_disc_button);
         updatePrimaryColorAndTint(false);
     }
 

@@ -39,6 +39,7 @@
 #include "content/browser/webui/web_ui_controller_factory_registry.h"
 #include "content/browser/webui/web_ui_impl.h"
 #include "content/common/content_constants_internal.h"
+#include "content/common/content_navigation_policy.h"
 #include "content/public/browser/browser_child_process_host.h"
 #include "content/public/browser/child_process_launcher_utils.h"
 #include "content/public/browser/navigation_controller.h"
@@ -52,7 +53,6 @@
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/common/navigation_policy.h"
 #include "content/public/common/page_state.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/common/web_preferences.h"
@@ -1040,13 +1040,11 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
   RenderFrameHostManager* new_manager =
       static_cast<WebContentsImpl*>(new_contents)->GetRenderManagerForTesting();
 
-  // We now have three windows.  The opener should have a swapped out RVH
+  // We now have three windows.  The opener should have a RenderFrameProxyHost
   // for the new SiteInstance, but the _blank window should not.
   EXPECT_EQ(3u, Shell::windows().size());
-  EXPECT_TRUE(
-      opener_manager->GetSwappedOutRenderViewHost(foo_site_instance.get()));
-  EXPECT_FALSE(
-      new_manager->GetSwappedOutRenderViewHost(foo_site_instance.get()));
+  EXPECT_TRUE(opener_manager->GetRenderFrameProxyHost(foo_site_instance.get()));
+  EXPECT_FALSE(new_manager->GetRenderFrameProxyHost(foo_site_instance.get()));
 
   // 2) Fail to post a message from the foo window to the opener if the target
   // origin is wrong.  We won't see an error, but we can check for the right
@@ -1058,7 +1056,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
       &success));
   EXPECT_TRUE(success);
   ASSERT_FALSE(
-      opener_manager->GetSwappedOutRenderViewHost(orig_site_instance.get()));
+      opener_manager->GetRenderFrameProxyHost(orig_site_instance.get()));
 
   // 3) Post a message from the foo window to the opener.  The opener will
   // reply, causing the foo window to update its own title.
@@ -1070,7 +1068,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
       &success));
   EXPECT_TRUE(success);
   ASSERT_FALSE(
-      opener_manager->GetSwappedOutRenderViewHost(orig_site_instance.get()));
+      opener_manager->GetRenderFrameProxyHost(orig_site_instance.get()));
   ASSERT_EQ(expected_title, title_watcher.WaitAndGetTitle());
 
   // We should have received only 1 message in the opener and "foo" tabs,
@@ -1099,10 +1097,9 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
   EXPECT_TRUE(success);
   ASSERT_EQ(expected_title, title_watcher2.WaitAndGetTitle());
 
-  // This postMessage should have created a swapped out RVH for the new
+  // This postMessage should have created a RenderFrameProxyHost for the new
   // SiteInstance in the target=_blank window.
-  EXPECT_TRUE(
-      new_manager->GetSwappedOutRenderViewHost(foo_site_instance.get()));
+  EXPECT_TRUE(new_manager->GetRenderFrameProxyHost(foo_site_instance.get()));
 
   // TODO(nasko): Test subframe targeting of postMessage once
   // http://crbug.com/153701 is fixed.
@@ -1162,11 +1159,10 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
       foo_contents->GetSiteInstance());
   EXPECT_NE(orig_site_instance, foo_site_instance);
 
-  // We now have two windows. The opener should have a swapped out RVH
+  // We now have two windows. The opener should have a RenderFrameProxyHost
   // for the new SiteInstance.
   EXPECT_EQ(2u, Shell::windows().size());
-  EXPECT_TRUE(
-      opener_manager->GetSwappedOutRenderViewHost(foo_site_instance.get()));
+  EXPECT_TRUE(opener_manager->GetRenderFrameProxyHost(foo_site_instance.get()));
 
   // 2) Post a message containing a MessagePort from opener to the the foo
   // window. The foo window will reply via the passed port, causing the opener
@@ -1178,7 +1174,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
       "window.domAutomationController.send(postWithPortToFoo());", &success));
   EXPECT_TRUE(success);
   ASSERT_FALSE(
-      opener_manager->GetSwappedOutRenderViewHost(orig_site_instance.get()));
+      opener_manager->GetRenderFrameProxyHost(orig_site_instance.get()));
   ASSERT_EQ(expected_title, title_observer.WaitAndGetTitle());
 
   // Check message counts.
@@ -1268,7 +1264,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
 }
 
 // Test that subframes do not crash when sending a postMessage to the top frame
-// from an unload handler while the top frame is being swapped out as part of
+// from an unload handler while the top frame is being replaced as part of
 // navigating cross-process.  https://crbug.com/475651.
 IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
                        PostMessageFromSubframeUnloadHandler) {
@@ -1295,8 +1291,8 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
   EXPECT_TRUE(ExecuteScript(root->child_at(0), "registerUnload();"));
 
   // Navigate the top frame cross-site.  This will cause the top frame to be
-  // swapped out and run unload handlers, and the original renderer process
-  // should then terminate since it's not rendering any other frames.
+  // unloaded, and the original renderer process should then terminate since
+  // it's not rendering any other frames.
   RenderProcessHostWatcher exit_observer(
       root->current_frame_host()->GetProcess(),
       RenderProcessHostWatcher::WATCH_FOR_HOST_DESTRUCTION);
@@ -1366,7 +1362,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
   EXPECT_TRUE(orig_process->IsInitializedAndNotDead());
 
   // Navigate the first window to a different site as well.  The original
-  // process should exit, since all of its views are now swapped out.
+  // process should exit, since all of its active frames are gone.
   RenderProcessHostWatcher exit_observer(
       orig_process, RenderProcessHostWatcher::WATCH_FOR_HOST_DESTRUCTION);
   EXPECT_TRUE(NavigateToURLInSameBrowsingInstance(shell(), cross_site_url));
@@ -2299,7 +2295,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
 // Specifically:
 // 1) Open 2 tabs in an HTTP SiteInstance, with a subframe in the opener.
 // 2) Send the second tab to a different foo.com SiteInstance.
-//    This created a swapped out opener for the first tab in the foo process.
+//    This created an opener proxy for the first tab in the foo process.
 // 3) Navigate the first tab to the foo.com SiteInstance, and have the first
 //    tab's unload handler remove its frame.
 // In older versions of Chrome, this caused an update to the frame tree that
@@ -2507,10 +2503,10 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest, WebUIGetsBindings) {
   EXPECT_NE(site_instance2, site_instance1);
   EXPECT_TRUE(site_instance2->IsRelatedSiteInstance(site_instance1));
 
-  RenderViewHost* initial_rvh =
-      new_web_contents->GetRenderManagerForTesting()
-          ->GetSwappedOutRenderViewHost(site_instance1);
-  ASSERT_TRUE(initial_rvh);
+  RenderFrameProxyHost* initial_rfph =
+      new_web_contents->GetRenderManagerForTesting()->GetRenderFrameProxyHost(
+          site_instance1);
+  ASSERT_TRUE(initial_rfph);
 
   // Navigate to url1 and check bindings.
   EXPECT_TRUE(NavigateToURLInSameBrowsingInstance(new_shell, url1));
@@ -3054,20 +3050,19 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
   EXPECT_FALSE(
       popup_root->current_frame_host()->render_view_host()->IsRenderViewLive());
 
-  // The swapped-out RVH and proxy for the opener page in the foo.com
-  // SiteInstance should not be live.
+  // The proxy and RVH for the opener page in the foo.com SiteInstance should
+  // not be live.
   RenderFrameHostManager* opener_manager = root->render_manager();
-  RenderViewHostImpl* opener_rvh =
-      opener_manager->GetSwappedOutRenderViewHost(foo_site_instance.get());
-  EXPECT_TRUE(opener_rvh);
-  EXPECT_FALSE(opener_rvh->IsRenderViewLive());
   RenderFrameProxyHost* opener_rfph =
       opener_manager->GetRenderFrameProxyHost(foo_site_instance.get());
   EXPECT_TRUE(opener_rfph);
   EXPECT_FALSE(opener_rfph->is_render_frame_proxy_live());
+  RenderViewHostImpl* opener_rvh = opener_rfph->GetRenderViewHost();
+  EXPECT_TRUE(opener_rvh);
+  EXPECT_FALSE(opener_rvh->IsRenderViewLive());
 
   // Re-navigate the popup to the same URL and check that this recreates the
-  // opener's swapped out RVH and proxy in the foo.com SiteInstance.
+  // opener's RVH and proxy in the foo.com SiteInstance.
   EXPECT_TRUE(NavigateToURL(new_shell, cross_site_url));
   EXPECT_TRUE(opener_rvh->IsRenderViewLive());
   EXPECT_TRUE(opener_rfph->is_render_frame_proxy_live());
@@ -3245,52 +3240,6 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
   TestNavigationObserver back_nav_load_observer(new_shell->web_contents());
   new_shell->web_contents()->GetController().GoBack();
   back_nav_load_observer.Wait();
-}
-
-// Tests that InputMsg type IPCs are ignored by swapped out RenderViews. It
-// uses the SetFocus IPC, as RenderView has a CHECK to ensure that condition
-// never happens.
-IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
-                       InputMsgToSwappedOutRVHIsIgnored) {
-  StartEmbeddedServer();
-  EXPECT_TRUE(NavigateToURL(
-      shell(), embedded_test_server()->GetURL("a.com", "/title1.html")));
-
-  // Open a popup to navigate cross-process.
-  Shell* new_shell = OpenPopup(shell(), GURL(url::kAboutBlankURL), "foo");
-  EXPECT_EQ(shell()->web_contents()->GetSiteInstance(),
-            new_shell->web_contents()->GetSiteInstance());
-
-  // Keep a pointer to the RenderViewHost, which will be in swapped out
-  // state after navigating cross-process. This is how this test is causing
-  // a swapped out RenderView to receive InputMsg IPC message.
-  WebContentsImpl* new_web_contents =
-      static_cast<WebContentsImpl*>(new_shell->web_contents());
-  FrameTreeNode* new_root = new_web_contents->GetFrameTree()->root();
-  RenderViewHostImpl* rvh = new_web_contents->GetRenderViewHost();
-
-  // Navigate the popup to a different site, so the |rvh| is swapped out.
-  EXPECT_TRUE(NavigateToURL(
-      new_shell, embedded_test_server()->GetURL("b.com", "/title2.html")));
-  EXPECT_NE(shell()->web_contents()->GetSiteInstance(),
-            new_shell->web_contents()->GetSiteInstance());
-  EXPECT_EQ(rvh, new_root->render_manager()->GetSwappedOutRenderViewHost(
-                     shell()->web_contents()->GetSiteInstance()));
-
-  // Setup a process observer to ensure there is no crash and send the IPC
-  // message.
-  RenderProcessHostWatcher watcher(
-      rvh->GetProcess(), RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
-  rvh->GetWidget()->GetWidgetInputHandler()->SetFocus(true);
-
-  // The test must wait for a process to exit, but if the IPC message is
-  // properly ignored, there will be no crash. Therefore, navigate the
-  // original window to the same site as the popup, which will just exit the
-  // process cleanly.
-  EXPECT_TRUE(NavigateToURL(
-      shell(), embedded_test_server()->GetURL("b.com", "/title3.html")));
-  watcher.Wait();
-  EXPECT_TRUE(watcher.did_exit_normally());
 }
 
 // Tests that navigating cross-process and reusing an existing RenderViewHost

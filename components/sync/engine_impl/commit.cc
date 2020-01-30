@@ -140,11 +140,13 @@ SyncerError Commit::PostAndProcessResponse(
 
   if (post_result.value() != SyncerError::SYNCER_OK) {
     LOG(WARNING) << "Post commit failed";
+    ReportFullCommitFailure();
     return post_result;
   }
 
   if (!response.has_commit()) {
     LOG(WARNING) << "Commit response has no commit body!";
+    ReportFullCommitFailure();
     return SyncerError(SyncerError::SERVER_RESPONSE_VALIDATION_FAILED);
   }
 
@@ -154,6 +156,7 @@ SyncerError Commit::PostAndProcessResponse(
     LOG(ERROR) << "Commit response has wrong number of entries! "
                << "Expected: " << message_entries << ", "
                << "Got: " << response_entries;
+    ReportFullCommitFailure();
     return SyncerError(SyncerError::SERVER_RESPONSE_VALIDATION_FAILED);
   }
 
@@ -197,6 +200,12 @@ void Commit::CleanUp() {
     it->second->CleanUp();
   }
   cleaned_up_ = true;
+}
+
+void Commit::ReportFullCommitFailure() {
+  for (auto& model_type_and_contribution : contributions_) {
+    model_type_and_contribution.second->ProcessCommitFailure();
+  }
 }
 
 }  // namespace syncer

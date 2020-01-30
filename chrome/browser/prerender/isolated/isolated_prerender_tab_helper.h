@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_PRERENDER_ISOLATED_ISOLATED_PRERENDER_TAB_HELPER_H_
 #define CHROME_BROWSER_PRERENDER_ISOLATED_ISOLATED_PRERENDER_TAB_HELPER_H_
 
+#include <stdint.h>
 #include <map>
 #include <memory>
 #include <vector>
@@ -95,6 +96,9 @@ class IsolatedPrerenderTabHelper
 
   // An ordered list of the URLs to prefetch.
   std::vector<GURL> urls_to_prefetch_;
+
+  // The number of prefetches that have been attempted on this page.
+  size_t num_prefetches_attempted_ = 0;
 
   // All prefetched responses by URL. This is cleared every time a mainframe
   // navigation commits.

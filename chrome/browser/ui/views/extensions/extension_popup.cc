@@ -8,6 +8,7 @@
 #include "chrome/browser/devtools/devtools_window.h"
 #include "chrome/browser/extensions/extension_view_host.h"
 #include "chrome/browser/ui/browser.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
@@ -123,6 +124,16 @@ void ExtensionPopup::OnExtensionSizeChanged(ExtensionViewViews* view) {
   SizeToContents();
 }
 
+void ExtensionPopup::OnExtensionUnloaded(
+    content::BrowserContext* browser_context,
+    const extensions::Extension* extension,
+    extensions::UnloadedExtensionReason reason) {
+  if (extension->id() == host()->extension_id()) {
+    host_.reset();
+    GetWidget()->Close();
+  }
+}
+
 void ExtensionPopup::Observe(int type,
                              const content::NotificationSource& source,
                              const content::NotificationDetails& details) {
@@ -169,6 +180,7 @@ ExtensionPopup::ExtensionPopup(
                                arrow,
                                views::BubbleBorder::SMALL_SHADOW),
       host_(std::move(host)),
+      extension_registry_observer_(this),
       show_action_(show_action) {
   DialogDelegate::set_buttons(ui::DIALOG_BUTTON_NONE);
   DialogDelegate::set_use_round_corners(false);
@@ -187,6 +199,9 @@ ExtensionPopup::ExtensionPopup(
       content::Source<content::BrowserContext>(host_->browser_context()));
   content::DevToolsAgentHost::AddObserver(this);
   host_->browser()->tab_strip_model()->AddObserver(this);
+
+  extension_registry_observer_.Add(
+      extensions::ExtensionRegistry::Get(host_->browser_context()));
 
   // If the host had somehow finished loading, then we'd miss the notification
   // and not show.  This seems to happen in single-process mode.

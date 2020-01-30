@@ -646,8 +646,8 @@ class MockCertificateReportSender
             const base::Callback<void(const GURL&, int, int)>& error_callback)
       override {
     latest_report_uri_ = report_uri;
-    report.CopyToString(&latest_report_);
-    content_type.CopyToString(&latest_content_type_);
+    latest_report_.assign(report.data(), report.size());
+    latest_content_type_.assign(content_type.data(), content_type.size());
   }
   const GURL& latest_report_uri() { return latest_report_uri_; }
   const std::string& latest_report() { return latest_report_; }
@@ -11747,13 +11747,14 @@ class HTTPSEarlyDataTest : public TestWithTaskEnvironment {
   EmbeddedTestServer test_server_;
 };
 
-// Flaky on iOS, crbug.com/1021021
-#if defined(OS_IOS)
+// Flaky on iOS, CrOS and Linux ASAN and TSAN, crbug.com/1021021
+#if defined(OS_IOS) || defined(OS_CHROMEOS) || \
+    (defined(OS_LINUX) &&                      \
+     (defined(ADDRESS_SANITIZER) || defined(THREAD_SANITIZER)))
 #define MAYBE_TLSEarlyDataTest DISABLED_TLSEarlyDataTest
 #else
 #define MAYBE_TLSEarlyDataTest TLSEarlyDataTest
 #endif
-
 // TLSEarlyDataTest tests that we handle early data correctly.
 TEST_F(HTTPSEarlyDataTest, MAYBE_TLSEarlyDataTest) {
   ASSERT_TRUE(test_server_.Start());

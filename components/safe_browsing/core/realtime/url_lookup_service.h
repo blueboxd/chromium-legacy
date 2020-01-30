@@ -22,6 +22,10 @@ class SimpleURLLoader;
 class SharedURLLoaderFactory;
 }  // namespace network
 
+namespace signin {
+class IdentityManager;
+}
+
 namespace safe_browsing {
 
 using RTLookupRequestCallback =
@@ -46,12 +50,15 @@ class RealTimeUrlLookupService {
   // local hash-based method.
   bool IsInBackoffMode() const;
 
+  // TODO(crbug.com/1041912): |identity_manager_on_ui| is unused. It will
+  // be used to obtain access token in a follow up CL.
   // Start the full URL lookup for |url|, call |request_callback| on the same
   // thread when request is sent, call |response_callback| on the same thread
   // when response is received.
   void StartLookup(const GURL& url,
                    RTLookupRequestCallback request_callback,
-                   RTLookupResponseCallback response_callback);
+                   RTLookupResponseCallback response_callback,
+                   signin::IdentityManager* identity_manager_on_ui);
 
   // Called by |database_manager| when any profile is destroyed. The current
   // object will finish all pending requests and delete itself.

@@ -95,9 +95,6 @@ std::ostream& operator<<(std::ostream& out,
     case ActionProto::ActionInfoCase::kShowDetails:
       out << "ShowDetails";
       break;
-    case ActionProto::ActionInfoCase::kReset:
-      out << "Reset";
-      break;
     case ActionProto::ActionInfoCase::kStop:
       out << "Stop";
       break;

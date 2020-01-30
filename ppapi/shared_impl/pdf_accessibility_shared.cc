@@ -70,7 +70,8 @@ PdfAccessibilityHighlightInfo::PdfAccessibilityHighlightInfo(
       index_in_page(highlight.index_in_page),
       text_run_index(highlight.text_run_index),
       text_run_count(highlight.text_run_count),
-      bounds(highlight.bounds) {}
+      bounds(highlight.bounds),
+      color(highlight.color) {}
 
 PdfAccessibilityPageObjects::PdfAccessibilityPageObjects() = default;
 

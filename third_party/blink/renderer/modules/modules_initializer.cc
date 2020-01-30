@@ -44,7 +44,7 @@
 #include "third_party/blink/renderer/modules/device_orientation/device_orientation_absolute_controller.h"
 #include "third_party/blink/renderer/modules/device_orientation/device_orientation_controller.h"
 #include "third_party/blink/renderer/modules/device_orientation/device_orientation_inspector_agent.h"
-#include "third_party/blink/renderer/modules/document_metadata/copyless_paste_server.h"
+#include "third_party/blink/renderer/modules/document_metadata/document_metadata_server.h"
 #include "third_party/blink/renderer/modules/encryptedmedia/html_media_element_encrypted_media.h"
 #include "third_party/blink/renderer/modules/encryptedmedia/media_keys_controller.h"
 #include "third_party/blink/renderer/modules/event_interface_modules_names.h"
@@ -160,7 +160,7 @@ void ModulesInitializer::Initialize() {
 void ModulesInitializer::InitLocalFrame(LocalFrame& frame) const {
   if (frame.IsMainFrame()) {
     frame.GetInterfaceRegistry()->AddInterface(WTF::BindRepeating(
-        &CopylessPasteServer::BindMojoReceiver, WrapWeakPersistent(&frame)));
+        &DocumentMetadataServer::BindMojoReceiver, WrapWeakPersistent(&frame)));
   }
   if (RuntimeEnabledFeatures::FileHandlingEnabled(frame.GetDocument())) {
     frame.GetInterfaceRegistry()->AddAssociatedInterface(WTF::BindRepeating(

@@ -249,18 +249,15 @@ public class BookmarkUtils {
      * @param model Bookmarks model to manage the bookmark.
      * @param activity Activity requesting to open the bookmark.
      * @param bookmarkId ID of the bookmark to be opened.
-     * @param launchLocation Location from which the bookmark is being opened.
      * @return Whether the bookmark was successfully opened.
      */
-    public static boolean openBookmark(BookmarkModel model, Activity activity,
-            BookmarkId bookmarkId, int launchLocation) {
+    public static boolean openBookmark(
+            BookmarkModel model, Activity activity, BookmarkId bookmarkId) {
         if (model.getBookmarkById(bookmarkId) == null) return false;
 
         String url = model.getBookmarkById(bookmarkId).getUrl();
 
         RecordUserAction.record("MobileBookmarkManagerEntryOpened");
-        RecordHistogram.recordEnumeratedHistogram(
-                "Stars.LaunchLocation", launchLocation, BookmarkLaunchLocation.COUNT);
         RecordHistogram.recordEnumeratedHistogram(
                 "Bookmarks.OpenBookmarkType", bookmarkId.getType(), BookmarkType.LAST + 1);
 

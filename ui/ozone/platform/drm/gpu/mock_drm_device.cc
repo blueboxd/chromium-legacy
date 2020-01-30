@@ -70,11 +70,6 @@ MockDrmDevice::CrtcProperties::CrtcProperties() = default;
 MockDrmDevice::CrtcProperties::CrtcProperties(const CrtcProperties&) = default;
 MockDrmDevice::CrtcProperties::~CrtcProperties() = default;
 
-MockDrmDevice::ConnectorProperties::ConnectorProperties() = default;
-MockDrmDevice::ConnectorProperties::ConnectorProperties(
-    const ConnectorProperties&) = default;
-MockDrmDevice::ConnectorProperties::~ConnectorProperties() = default;
-
 MockDrmDevice::PlaneProperties::PlaneProperties() = default;
 MockDrmDevice::PlaneProperties::PlaneProperties(const PlaneProperties&) =
     default;
@@ -131,23 +126,19 @@ ScopedDrmPropertyBlobPtr MockDrmDevice::AllocateInFormatsBlob(
 
 void MockDrmDevice::InitializeState(
     const std::vector<CrtcProperties>& crtc_properties,
-    const std::vector<ConnectorProperties>& connector_properties,
     const std::vector<PlaneProperties>& plane_properties,
     const std::map<uint32_t, std::string>& property_names,
     bool use_atomic) {
-  CHECK(InitializeStateWithResult(crtc_properties, connector_properties,
-                                  plane_properties, property_names,
-                                  use_atomic));
+  CHECK(InitializeStateWithResult(crtc_properties, plane_properties,
+                                  property_names, use_atomic));
 }
 
 bool MockDrmDevice::InitializeStateWithResult(
     const std::vector<CrtcProperties>& crtc_properties,
-    const std::vector<ConnectorProperties>& connector_properties,
     const std::vector<PlaneProperties>& plane_properties,
     const std::map<uint32_t, std::string>& property_names,
     bool use_atomic) {
   crtc_properties_ = crtc_properties;
-  connector_properties_ = connector_properties;
   plane_properties_ = plane_properties;
   property_names_ = property_names;
   if (use_atomic) {
@@ -159,7 +150,7 @@ bool MockDrmDevice::InitializeStateWithResult(
   return plane_manager_->Initialize();
 }
 
-MockDrmDevice::~MockDrmDevice() = default;
+MockDrmDevice::~MockDrmDevice() {}
 
 ScopedDrmResourcesPtr MockDrmDevice::GetResources() {
   ScopedDrmResourcesPtr resources(DrmAllocator<drmModeRes>());
@@ -168,12 +159,6 @@ ScopedDrmResourcesPtr MockDrmDevice::GetResources() {
       drmMalloc(sizeof(uint32_t) * resources->count_crtcs));
   for (size_t i = 0; i < crtc_properties_.size(); ++i)
     resources->crtcs[i] = crtc_properties_[i].id;
-
-  resources->count_connectors = connector_properties_.size();
-  resources->connectors = static_cast<uint32_t*>(
-      drmMalloc(sizeof(uint32_t) * resources->count_connectors));
-  for (size_t i = 0; i < connector_properties_.size(); ++i)
-    resources->connectors[i] = connector_properties_[i].id;
 
   return resources;
 }
@@ -200,11 +185,6 @@ ScopedDrmObjectPropertyPtr MockDrmDevice::GetObjectProperties(
     CrtcProperties* properties = FindObjectById(object_id, crtc_properties_);
     if (properties)
       return CreatePropertyObject(properties->properties);
-  } else if (object_type == DRM_MODE_OBJECT_CONNECTOR) {
-    ConnectorProperties* properties =
-        FindObjectById(object_id, connector_properties_);
-    if (properties)
-      return CreatePropertyObject(properties->properties);
   }
 
   return nullptr;
@@ -218,11 +198,17 @@ ScopedDrmCrtcPtr MockDrmDevice::GetCrtc(uint32_t crtc_id) {
 bool MockDrmDevice::SetCrtc(uint32_t crtc_id,
                             uint32_t framebuffer,
                             std::vector<uint32_t> connectors,
-                            drmModeModeInfo mode) {
+                            drmModeModeInfo* mode) {
   crtc_fb_[crtc_id] = framebuffer;
   current_framebuffer_ = framebuffer;
   set_crtc_call_count_++;
   return set_crtc_expectation_;
+}
+
+bool MockDrmDevice::SetCrtc(drmModeCrtc* crtc,
+                            std::vector<uint32_t> connectors) {
+  restore_crtc_call_count_++;
+  return true;
 }
 
 bool MockDrmDevice::DisableCrtc(uint32_t crtc_id) {
@@ -318,7 +304,7 @@ bool MockDrmDevice::SetProperty(uint32_t connector_id,
   return true;
 }
 
-ScopedDrmPropertyBlob MockDrmDevice::CreatePropertyBlob(const void* blob,
+ScopedDrmPropertyBlob MockDrmDevice::CreatePropertyBlob(void* blob,
                                                         size_t size) {
   uint32_t id = ++property_id_generator_;
   allocated_property_blobs_.insert(id);
@@ -497,12 +483,6 @@ bool MockDrmDevice::UpdateProperty(uint32_t object_id,
   CrtcProperties* crtc_properties = FindObjectById(object_id, crtc_properties_);
   if (crtc_properties)
     return UpdateProperty(property_id, value, &crtc_properties->properties);
-
-  ConnectorProperties* connector_properties =
-      FindObjectById(object_id, connector_properties_);
-  if (connector_properties)
-    return UpdateProperty(property_id, value,
-                          &connector_properties->properties);
 
   return false;
 }

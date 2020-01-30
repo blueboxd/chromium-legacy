@@ -288,22 +288,6 @@ TEST_F(ScriptExecutorTest, StopAfterEnd) {
   executor_->Run(&user_data_, executor_callback_.Get());
 }
 
-TEST_F(ScriptExecutorTest, ResetAfterEnd) {
-  ActionsResponseProto actions_response;
-  actions_response.add_actions()->mutable_reset();
-
-  EXPECT_CALL(mock_service_, OnGetActions(_, _, _, _, _, _))
-      .WillOnce(RunOnceCallback<5>(true, Serialize(actions_response)));
-
-  EXPECT_CALL(mock_service_, OnGetNextActions(_, _, _, _, _))
-      .WillOnce(RunOnceCallback<4>(true, ""));
-  EXPECT_CALL(executor_callback_,
-              Run(AllOf(Field(&ScriptExecutor::Result::success, true),
-                        Field(&ScriptExecutor::Result::at_end,
-                              ScriptExecutor::RESTART))));
-  executor_->Run(&user_data_, executor_callback_.Get());
-}
-
 TEST_F(ScriptExecutorTest, InterruptActionListOnError) {
   ActionsResponseProto initial_actions_response;
   initial_actions_response.add_actions()->mutable_tell()->set_message(

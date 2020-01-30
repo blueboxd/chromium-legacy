@@ -73,9 +73,13 @@ class ExtensionRequestObserverTest : public BrowserWithTestWindowTest {
     BrowserWithTestWindowTest::SetUp();
     display_service_tester_ =
         std::make_unique<NotificationDisplayServiceTester>(profile());
+    ToggleExtensionRequest(true);
+  }
+
+  void ToggleExtensionRequest(bool enable) {
     profile()->GetTestingPrefService()->SetManagedPref(
         prefs::kCloudExtensionRequestEnabled,
-        std::make_unique<base::Value>(true));
+        std::make_unique<base::Value>(enable));
   }
 
   // Creates fake pending request in pref.
@@ -222,6 +226,34 @@ TEST_F(ExtensionRequestObserverTest, NotificationUpdate) {
 
   SetExtensionSettings(kExtensionSettingsUpdate);
   VerifyNotification(true);
+}
+
+TEST_F(ExtensionRequestObserverTest, ExtensionRequestPolicyToggle) {
+  std::vector<std::string> pending_list = {kExtensionId1, kExtensionId2,
+                                           kExtensionId3, kExtensionId4,
+                                           kExtensionId5, kExtensionId6};
+  SetPendingList(pending_list);
+  SetExtensionSettings(kExtensionSettings);
+  ToggleExtensionRequest(false);
+
+  // No notification without the policy.
+  ExtensionRequestObserver observer(profile());
+  VerifyNotification(false);
+
+  // Show notification when the policy is turned on.
+  ToggleExtensionRequest(true);
+  VerifyNotification(true);
+
+  // Close all notifictions when the policy is off again.
+  ToggleExtensionRequest(false);
+  VerifyNotification(false);
+
+  // And no pending requests are removed.
+  EXPECT_EQ(pending_list.size(),
+            profile()
+                ->GetPrefs()
+                ->GetDictionary(prefs::kCloudExtensionRequestIds)
+                ->DictSize());
 }
 
 }  // namespace enterprise_reporting

@@ -212,6 +212,10 @@ class ModelTypeWorker : public UpdateHandler,
       const CommitResponseDataList& committed_response_list,
       const FailedCommitResponseDataList& error_response_list);
 
+  // Callback when there is no response or server returns an error without
+  // response body.
+  void OnFullCommitFailure();
+
   ModelType type_;
   DataTypeDebugInfoEmitter* debug_info_emitter_;
 

@@ -267,7 +267,7 @@ bool V4L2SliceVideoDecodeAccelerator::Initialize(const Config& config,
     // integration.
     int media_fd = open("/dev/media-dec0", O_RDWR, 0);
     if (media_fd < 0) {
-      VPLOGF(1) << "Failed to open media device: ";
+      PLOG(ERROR) << "Failed to open media device";
       NOTIFY_ERROR(PLATFORM_FAILURE);
     }
     media_fd_ = base::ScopedFD(media_fd);
@@ -357,13 +357,16 @@ void V4L2SliceVideoDecodeAccelerator::InitializeTask() {
   input_queue_ = device_->GetQueue(V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE);
   output_queue_ = device_->GetQueue(V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE);
   if (!input_queue_ || !output_queue_) {
+    LOG(ERROR) << "Failed creating V4L2Queues";
     NOTIFY_ERROR(PLATFORM_FAILURE);
     return;
   }
 
-  if (!CreateInputBuffers())
+  if (!CreateInputBuffers()) {
+    LOG(ERROR) << "Failed CreateInputBuffers()";
     NOTIFY_ERROR(PLATFORM_FAILURE);
-
+    return;
+  }
   // Output buffers will be created once decoder gives us information
   // about their size and required count.
   state_ = kDecoding;
@@ -598,7 +601,7 @@ bool V4L2SliceVideoDecodeAccelerator::CreateImageProcessor() {
                           base::Unretained(this)));
 
   if (!image_processor_) {
-    VLOGF(1) << "Error creating image processor";
+    LOG(ERROR) << "Error creating image processor";
     NOTIFY_ERROR(PLATFORM_FAILURE);
     return false;
   }
@@ -614,6 +617,7 @@ bool V4L2SliceVideoDecodeAccelerator::CreateInputBuffers() {
 
   if (input_queue_->AllocateBuffers(kNumInputBuffers, V4L2_MEMORY_MMAP) <
       kNumInputBuffers) {
+    LOG(ERROR) << "Failed AllocateBuffers";
     NOTIFY_ERROR(PLATFORM_FAILURE);
     return false;
   }
@@ -649,7 +653,7 @@ bool V4L2SliceVideoDecodeAccelerator::CreateOutputBuffers() {
   format.type = V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE;
 
   if (device_->Ioctl(VIDIOC_G_FMT, &format) != 0) {
-    VPLOGF(1) << "Failed getting OUTPUT format";
+    PLOG(ERROR) << "Failed getting OUTPUT format";
     NOTIFY_ERROR(PLATFORM_FAILURE);
     return false;
   }
@@ -658,7 +662,7 @@ bool V4L2SliceVideoDecodeAccelerator::CreateOutputBuffers() {
   format.fmt.pix_mp.height = pic_size.height();
 
   if (device_->Ioctl(VIDIOC_S_FMT, &format) != 0) {
-    VPLOGF(1) << "Failed setting OUTPUT format to: " << input_format_fourcc_;
+    PLOG(ERROR) << "Failed setting OUTPUT format to: " << input_format_fourcc_;
     NOTIFY_ERROR(PLATFORM_FAILURE);
     return false;
   }
@@ -667,7 +671,7 @@ bool V4L2SliceVideoDecodeAccelerator::CreateOutputBuffers() {
   memset(&format, 0, sizeof(format));
   format.type = V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE;
   if (device_->Ioctl(VIDIOC_G_FMT, &format) != 0) {
-    VPLOGF(1) << "Failed getting CAPTURE format";
+    PLOG(ERROR) << "Failed getting CAPTURE format";
     NOTIFY_ERROR(PLATFORM_FAILURE);
     return false;
   }
@@ -787,6 +791,7 @@ void V4L2SliceVideoDecodeAccelerator::Dequeue() {
     auto ret = input_queue_->DequeueBuffer();
 
     if (ret.first == false) {
+      LOG(ERROR) << "Error in DequeueBuffer() on input queue";
       NOTIFY_ERROR(PLATFORM_FAILURE);
       return;
     } else if (!ret.second) {
@@ -802,6 +807,7 @@ void V4L2SliceVideoDecodeAccelerator::Dequeue() {
     DCHECK(output_queue_->IsStreaming());
     auto ret = output_queue_->DequeueBuffer();
     if (ret.first == false) {
+      LOG(ERROR) << "Error in DequeueBuffer() on output queue";
       NOTIFY_ERROR(PLATFORM_FAILURE);
       return;
     } else if (!ret.second) {
@@ -823,7 +829,7 @@ void V4L2SliceVideoDecodeAccelerator::Dequeue() {
     // decoded.
     if (image_processor_) {
       if (!ProcessFrame(std::move(ret.second), std::move(surface))) {
-        VLOGF(1) << "Processing frame failed";
+        LOG(ERROR) << "Processing frame failed";
         NOTIFY_ERROR(PLATFORM_FAILURE);
       }
     } else {
@@ -917,6 +923,7 @@ bool V4L2SliceVideoDecodeAccelerator::StartDevicePoll() {
 }
 
 void V4L2SliceVideoDecodeAccelerator::OnPollError() {
+  LOG(ERROR) << "Error on Polling";
   NOTIFY_ERROR(PLATFORM_FAILURE);
 }
 
@@ -969,7 +976,7 @@ void V4L2SliceVideoDecodeAccelerator::Decode(
   DCHECK(decode_task_runner_->BelongsToCurrentThread());
 
   if (bitstream_id < 0) {
-    VLOGF(1) << "Invalid bitstream buffer, id: " << bitstream_id;
+    LOG(ERROR) << "Invalid bitstream buffer, id: " << bitstream_id;
     NOTIFY_ERROR(INVALID_ARGUMENT);
     return;
   }
@@ -1056,7 +1063,7 @@ void V4L2SliceVideoDecodeAccelerator::DecodeBufferTask() {
     switch (res) {
       case AcceleratedVideoDecoder::kConfigChange:
         if (!IsSupportedProfile(decoder_->GetProfile())) {
-          VLOGF(2) << "Unsupported profile: " << decoder_->GetProfile();
+          LOG(ERROR) << "Unsupported profile: " << decoder_->GetProfile();
           NOTIFY_ERROR(PLATFORM_FAILURE);
           return;
         }
@@ -1081,14 +1088,14 @@ void V4L2SliceVideoDecodeAccelerator::DecodeBufferTask() {
         return;
 
       case AcceleratedVideoDecoder::kDecodeError:
-        VLOGF(1) << "Error decoding stream";
+        LOG(ERROR) << "Error decoding stream";
         NOTIFY_ERROR(PLATFORM_FAILURE);
         return;
 
       case AcceleratedVideoDecoder::kTryAgain:
         NOTREACHED() << "Should not reach here unless this class accepts "
                         "encrypted streams.";
-        DVLOGF(4) << "No key for decoding stream.";
+        LOG(ERROR) << "No key for decoding stream.";
         NOTIFY_ERROR(PLATFORM_FAILURE);
         return;
     }
@@ -1128,6 +1135,7 @@ bool V4L2SliceVideoDecodeAccelerator::FinishSurfaceSetChange() {
             output_buffer_map_.size());
 
   if (!StopDevicePoll()) {
+    LOG(ERROR) << "Failed StopDevicePoll()";
     NOTIFY_ERROR(PLATFORM_FAILURE);
     return false;
   }
@@ -1145,11 +1153,13 @@ bool V4L2SliceVideoDecodeAccelerator::FinishSurfaceSetChange() {
   // references to the buffers bound to textures and will release them
   // after displaying.
   if (!DestroyOutputs(true)) {
+    LOG(ERROR) << "Failed DestroyOutputs()";
     NOTIFY_ERROR(PLATFORM_FAILURE);
     return false;
   }
 
   if (!CreateOutputBuffers()) {
+    LOG(ERROR) << "Failed CreateOutputBuffers()";
     NOTIFY_ERROR(PLATFORM_FAILURE);
     return false;
   }
@@ -1247,9 +1257,9 @@ void V4L2SliceVideoDecodeAccelerator::AssignPictureBuffersTask(
   const uint32_t req_buffer_count = decoder_->GetRequiredNumOfPictures();
 
   if (buffers.size() < req_buffer_count) {
-    VLOGF(1) << "Failed to provide requested picture buffers. "
-             << "(Got " << buffers.size() << ", requested " << req_buffer_count
-             << ")";
+    LOG(ERROR) << "Failed to provide requested picture buffers. "
+               << "(Got " << buffers.size() << ", requested "
+               << req_buffer_count << ")";
     NOTIFY_ERROR(INVALID_ARGUMENT);
     return;
   }
@@ -1265,8 +1275,8 @@ void V4L2SliceVideoDecodeAccelerator::AssignPictureBuffersTask(
     format.fmt.pix_mp.pixelformat = output_format_fourcc_->ToV4L2PixFmt();
     format.fmt.pix_mp.num_planes = output_planes_count_;
     if (device_->Ioctl(VIDIOC_S_FMT, &format) != 0) {
-      VPLOGF(1) << "Failed with frame size adjusted by client: "
-                << new_frame_size.ToString();
+      PLOG(ERROR) << "Failed with frame size adjusted by client"
+                  << new_frame_size.ToString();
       NOTIFY_ERROR(PLATFORM_FAILURE);
       return;
     }
@@ -1275,15 +1285,17 @@ void V4L2SliceVideoDecodeAccelerator::AssignPictureBuffersTask(
     // If size specified by ProvidePictureBuffers() is adjusted by the client,
     // the size must not be adjusted by a v4l2 driver again.
     if (coded_size_ != new_frame_size) {
-      VLOGF(1) << "The size of PictureBuffer is invalid."
-               << " size adjusted by the client = " << new_frame_size.ToString()
-               << " size adjusted by a driver = " << coded_size_.ToString();
+      LOG(ERROR) << "The size of PictureBuffer is invalid."
+                 << " size adjusted by the client = "
+                 << new_frame_size.ToString()
+                 << " size adjusted by a driver = " << coded_size_.ToString();
       NOTIFY_ERROR(INVALID_ARGUMENT);
       return;
     }
 
     if (!gfx::Rect(coded_size_).Contains(gfx::Rect(decoder_->GetPicSize()))) {
-      VLOGF(1) << "Got invalid adjusted coded size: " << coded_size_.ToString();
+      LOG(ERROR) << "Got invalid adjusted coded size: "
+                 << coded_size_.ToString();
       NOTIFY_ERROR(INVALID_ARGUMENT);
       return;
     }
@@ -1297,7 +1309,7 @@ void V4L2SliceVideoDecodeAccelerator::AssignPictureBuffersTask(
            : V4L2_MEMORY_DMABUF);
   if (output_queue_->AllocateBuffers(buffers.size(), memory) !=
       buffers.size()) {
-    VLOGF(1) << "Could not allocate enough output buffers";
+    LOG(ERROR) << "Could not allocate enough output buffers";
     NOTIFY_ERROR(PLATFORM_FAILURE);
     return;
   }
@@ -1309,6 +1321,7 @@ void V4L2SliceVideoDecodeAccelerator::AssignPictureBuffersTask(
   // In import mode we will create the IP when importing the first buffer.
   if (image_processor_device_ && output_mode_ == Config::OutputMode::ALLOCATE) {
     if (!CreateImageProcessor()) {
+      LOG(ERROR) << "Failed CreateImageProcessor()";
       NOTIFY_ERROR(PLATFORM_FAILURE);
       return;
     }
@@ -1370,6 +1383,7 @@ void V4L2SliceVideoDecodeAccelerator::AssignPictureBuffersTask(
   }
 
   if (!StartDevicePoll()) {
+    LOG(ERROR) << "Failed StartDevicePoll()";
     NOTIFY_ERROR(PLATFORM_FAILURE);
     return;
   }
@@ -1381,6 +1395,7 @@ void V4L2SliceVideoDecodeAccelerator::CreateGLImageFor(
     gfx::NativePixmapHandle handle,
     GLuint client_texture_id,
     GLuint texture_id,
+    const gfx::Size& visible_size,
     const Fourcc fourcc) {
   DVLOGF(3) << "index=" << buffer_index;
   DCHECK(child_task_runner_->BelongsToCurrentThread());
@@ -1389,23 +1404,23 @@ void V4L2SliceVideoDecodeAccelerator::CreateGLImageFor(
                picture_buffer_id);
 
   if (!make_context_current_cb_) {
-    VLOGF(1) << "GL callbacks required for binding to GLImages";
+    LOG(ERROR) << "GL callbacks required for binding to GLImages";
     NOTIFY_ERROR(INVALID_ARGUMENT);
     return;
   }
   if (!make_context_current_cb_.Run()) {
-    VLOGF(1) << "No GL context";
+    LOG(ERROR) << "No GL context";
     NOTIFY_ERROR(INVALID_ARGUMENT);
     return;
   }
 
   V4L2Device* gl_device =
       image_processor_device_ ? image_processor_device_.get() : device_.get();
-  scoped_refptr<gl::GLImage> gl_image = gl_device->CreateGLImage(
-      decoder_->GetVisibleRect().size(), fourcc, std::move(handle));
+  scoped_refptr<gl::GLImage> gl_image =
+      gl_device->CreateGLImage(visible_size, fourcc, std::move(handle));
   if (!gl_image) {
-    VLOGF(1) << "Could not create GLImage,"
-             << " index=" << buffer_index << " texture_id=" << texture_id;
+    LOG(ERROR) << "Could not create GLImage,"
+               << " index=" << buffer_index << " texture_id=" << texture_id;
     NOTIFY_ERROR(PLATFORM_FAILURE);
     return;
   }
@@ -1425,7 +1440,7 @@ void V4L2SliceVideoDecodeAccelerator::ImportBufferForPicture(
   DCHECK(child_task_runner_->BelongsToCurrentThread());
 
   if (output_mode_ != Config::OutputMode::IMPORT) {
-    VLOGF(1) << "Cannot import in non-import mode";
+    LOG(ERROR) << "Cannot import in non-import mode";
     NOTIFY_ERROR(INVALID_ARGUMENT);
     return;
   }
@@ -1445,8 +1460,8 @@ void V4L2SliceVideoDecodeAccelerator::ImportBufferForPictureForImportTask(
   DCHECK(decoder_thread_.task_runner()->BelongsToCurrentThread());
 
   if (pixel_format != gl_image_format_fourcc_->ToVideoPixelFormat()) {
-    VLOGF(1) << "Unsupported import format: "
-             << VideoPixelFormatToString(pixel_format);
+    LOG(ERROR) << "Unsupported import format: "
+               << VideoPixelFormatToString(pixel_format);
     NOTIFY_ERROR(INVALID_ARGUMENT);
     return;
   }
@@ -1479,7 +1494,7 @@ void V4L2SliceVideoDecodeAccelerator::ImportBufferForPictureTask(
   }
 
   if (!output_wait_map_.count(iter->picture_id)) {
-    VLOGF(1) << "Passed buffer is not waiting to be imported";
+    LOG(ERROR) << "Passed buffer is not waiting to be imported";
     NOTIFY_ERROR(INVALID_ARGUMENT);
     return;
   }
@@ -1540,7 +1555,7 @@ void V4L2SliceVideoDecodeAccelerator::ImportBufferForPictureTask(
     for (const gfx::NativePixmapPlane& plane : handle.planes) {
       duped_fds.emplace_back(HANDLE_EINTR(dup(plane.fd.get())));
       if (!duped_fds.back().is_valid()) {
-        VPLOG(1) << "Failed to duplicate plane FD!";
+        PLOG(ERROR) << "Failed to duplicate plane FD!";
         NOTIFY_ERROR(PLATFORM_FAILURE);
         return;
       }
@@ -1548,7 +1563,7 @@ void V4L2SliceVideoDecodeAccelerator::ImportBufferForPictureTask(
     auto layout = VideoFrameLayout::Create(
         gl_image_format_fourcc_->ToVideoPixelFormat(), gl_image_size_);
     if (!layout) {
-      VLOGF(1) << "Cannot create layout!";
+      LOG(ERROR) << "Cannot create layout!";
       NOTIFY_ERROR(INVALID_ARGUMENT);
       return;
     }
@@ -1570,7 +1585,7 @@ void V4L2SliceVideoDecodeAccelerator::ImportBufferForPictureTask(
         base::BindOnce(&V4L2SliceVideoDecodeAccelerator::CreateGLImageFor,
                        weak_this_, index, picture_buffer_id, std::move(handle),
                        iter->client_texture_id, iter->texture_id,
-                       *gl_image_format_fourcc_));
+                       decoder_->GetPicSize(), *gl_image_format_fourcc_));
   }
 
   // Buffer is now ready to be used.
@@ -1588,14 +1603,14 @@ void V4L2SliceVideoDecodeAccelerator::ReusePictureBuffer(
 
   if (make_context_current_cb_) {
     if (!make_context_current_cb_.Run()) {
-      VLOGF(1) << "could not make context current";
+      LOG(ERROR) << "could not make context current";
       NOTIFY_ERROR(PLATFORM_FAILURE);
       return;
     }
 
     egl_fence = gl::GLFenceEGL::Create();
     if (!egl_fence) {
-      VLOGF(1) << "gl::GLFenceEGL::Create() failed";
+      LOG(ERROR) << "gl::GLFenceEGL::Create() failed";
       NOTIFY_ERROR(PLATFORM_FAILURE);
       return;
     }
@@ -1636,7 +1651,7 @@ void V4L2SliceVideoDecodeAccelerator::ReusePictureBufferTask(
   DCHECK_LT(output_map_index, output_buffer_map_.size());
   OutputRecord& output_record = output_buffer_map_[output_map_index];
   if (!output_record.at_client()) {
-    VLOGF(1) << "picture_buffer_id not reusable";
+    LOG(ERROR) << "picture_buffer_id not reusable";
     NOTIFY_ERROR(INVALID_ARGUMENT);
     return;
   }
@@ -1686,7 +1701,7 @@ void V4L2SliceVideoDecodeAccelerator::InitiateFlush() {
   // However, not all of them may be decoded yet (they would be queued
   // in hardware then).
   if (!decoder_->Flush()) {
-    DVLOGF(1) << "Failed flushing the decoder.";
+    LOG(ERROR) << "Failed flushing the decoder.";
     NOTIFY_ERROR(PLATFORM_FAILURE);
     return;
   }
@@ -1793,7 +1808,7 @@ bool V4L2SliceVideoDecodeAccelerator::FinishReset() {
 
   // Drop all buffers in image processor.
   if (image_processor_ && !ResetImageProcessor()) {
-    VLOGF(1) << "Fail to reset image processor";
+    LOG(ERROR) << "Fail to reset image processor";
     NOTIFY_ERROR(PLATFORM_FAILURE);
     return false;
   }
@@ -1879,7 +1894,7 @@ void V4L2SliceVideoDecodeAccelerator::DecodeSurface(
 
   DVLOGF(3) << "Submitting decode for surface: " << dec_surface->ToString();
   if (!dec_surface->Submit()) {
-    VLOGF(1) << "Error while submitting frame for decoding!";
+    LOG(ERROR) << "Error while submitting frame for decoding!";
     NOTIFY_ERROR(PLATFORM_FAILURE);
   }
 
@@ -2021,6 +2036,7 @@ V4L2SliceVideoDecodeAccelerator::CreateSurface() {
     base::Optional<V4L2RequestRef> request_ref =
         requests_queue_->GetFreeRequest();
     if (!request_ref) {
+      LOG(ERROR) << "Failed getting a request";
       NOTIFY_ERROR(PLATFORM_FAILURE);
       return nullptr;
     }
@@ -2138,7 +2154,7 @@ size_t V4L2SliceVideoDecodeAccelerator::GetNumOfOutputRecordsAtClient() const {
 
 void V4L2SliceVideoDecodeAccelerator::ImageProcessorError() {
   DCHECK(decoder_thread_.task_runner()->BelongsToCurrentThread());
-  VLOGF(1) << "Image processor error";
+  LOG(ERROR) << "Image processor error";
   NOTIFY_ERROR(PLATFORM_FAILURE);
 }
 
@@ -2231,7 +2247,7 @@ void V4L2SliceVideoDecodeAccelerator::FrameProcessed(
             ip_buffer_index, ip_output_record.picture_id,
             CreateGpuMemoryBufferHandle(frame.get()).native_pixmap_handle,
             ip_output_record.client_texture_id, ip_output_record.texture_id,
-            *gl_image_format_fourcc_));
+            decoder_->GetPicSize(), *gl_image_format_fourcc_));
   }
 
   DCHECK(!surfaces_at_ip_.empty());

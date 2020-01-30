@@ -78,7 +78,6 @@
 <translation id="1108600514891325577">停止(&amp;S)</translation>
 <translation id="1110155001042129815">等待</translation>
 <translation id="1112420131909513020">背景标签页正在使用蓝牙</translation>
-<translation id="1113042067630273625">这会清除共计 <ph name="TOTAL_USAGE" /> 的已存网站数据。</translation>
 <translation id="1114102982691049955"><ph name="PRINTER_MANUFACTURER" /> <ph name="PRINTER_MODEL" /> (USB)</translation>
 <translation id="1114202307280046356">菱形</translation>
 <translation id="1114335938027186412">您的计算机包含可信平台模块 (TPM) 安全装置，该装置可用于在 Chrome 操作系统中实施许多关键的安全功能。要了解详情，请访问 Chromebook 帮助中心：https://support.google.com/chromebook/?p=tpm</translation>
@@ -151,7 +150,6 @@
 <translation id="1197979282329025000">检索打印机“<ph name="PRINTER_NAME" />”的打印功能时发生错误。此打印机无法使用“<ph name="CLOUD_PRINT_NAME" />”进行注册。</translation>
 <translation id="119944043368869598">全部清除</translation>
 <translation id="1201402288615127009">下一步</translation>
-<translation id="1202556750060561551"><ph name="SITE_GROUP_NAME" />、其名下所有网站及其中安装的应用存储的所有数据和 Cookie 都会被清除。</translation>
 <translation id="1202596434010270079">自助服务终端应用已更新完毕。请拔下 U 盘。</translation>
 <translation id="120368089816228251">乐谱</translation>
 <translation id="1205489148908752564">读取和更改已列入白名单的用户</translation>
@@ -994,7 +992,6 @@
 <translation id="2365507699358342471">此页面可以查看复制到剪贴板的文字和图片。</translation>
 <translation id="2366260648632264559">用这种语言显示系统文字</translation>
 <translation id="2367972762794486313">显示应用</translation>
-<translation id="2369105924912929484">切换已提取的网页内容</translation>
 <translation id="2371076942591664043">完成时打开(&amp;D)</translation>
 <translation id="2373666622366160481">适合纸张大小</translation>
 <translation id="2375406435414127095">连接到您的手机</translation>
@@ -1873,6 +1870,7 @@
 <translation id="3603177256297531067">无法翻译此网页</translation>
 <translation id="3603622770190368340">获取网络证书</translation>
 <translation id="3605780360466892872">男性商务人士</translation>
+<translation id="3608436266458100337">阅读器模式</translation>
 <translation id="3608576286259426129">用户图片预览</translation>
 <translation id="3610369246614755442">基座风扇需要维修</translation>
 <translation id="361106536627977100">闪存数据</translation>
@@ -2622,7 +2620,6 @@
 <translation id="4665014895760275686">制造商</translation>
 <translation id="4665446389743427678">即将删除 <ph name="SITE" /> 存储的所有数据。</translation>
 <translation id="4668721319092543482">点击即可启用 <ph name="PLUGIN_NAME" /></translation>
-<translation id="4672657274720418656">提取页面</translation>
 <translation id="46733273239502219">已安装应用中的离线数据也会被清除</translation>
 <translation id="4673442866648850031">取出触控笔时打开触控笔工具</translation>
 <translation id="4677585247300749148"><ph name="URL" /> 想对无障碍事件做出响应</translation>
@@ -3332,7 +3329,6 @@
 <translation id="5687326903064479980">时区</translation>
 <translation id="5689516760719285838">位置信息</translation>
 <translation id="56907980372820799">关联数据</translation>
-<translation id="5691180005790455277"><ph name="SITE_GROUP_NAME" /> 及其中所有网站存储的所有数据和 Cookie 都会被清除。</translation>
 <translation id="5691511426247308406">家用</translation>
 <translation id="5692183275898619210">打印完成</translation>
 <translation id="5696143504434933566">举报“<ph name="EXTENSION_NAME" />”的滥用行为</translation>

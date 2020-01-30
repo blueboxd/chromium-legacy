@@ -106,11 +106,15 @@ class CORE_EXPORT ScriptedAnimationController
 
   Document* GetDocument() const { return To<Document>(GetExecutionContext()); }
 
+  ALWAYS_INLINE bool InsertToPerFrameEventsMap(const Event* event);
+  ALWAYS_INLINE void EraseFromPerFrameEventsMap(const Event* event);
+
   FrameRequestCallbackCollection callback_collection_;
   Vector<base::OnceClosure> task_queue_;
   HeapVector<Member<Event>> event_queue_;
-  HeapListHashSet<std::pair<Member<const EventTarget>, const StringImpl*>>
-      per_frame_events_;
+  using PerFrameEventsMap =
+      HeapHashMap<Member<const EventTarget>, HashSet<const StringImpl*>>;
+  PerFrameEventsMap per_frame_events_;
   using MediaQueryListListeners =
       HeapListHashSet<Member<MediaQueryListListener>>;
   MediaQueryListListeners media_query_list_listeners_;

@@ -12,6 +12,7 @@
 
 #include "base/bind.h"
 #include "base/format_macros.h"
+#include "base/guid.h"
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_restrictions.h"
@@ -399,6 +400,8 @@ std::unique_ptr<CommitContribution> ModelTypeWorker::GetContribution(
       GetModelType(), model_type_state_.type_context(), std::move(response),
       base::BindOnce(&ModelTypeWorker::OnCommitResponse,
                      weak_ptr_factory_.GetWeakPtr()),
+      base::BindOnce(&ModelTypeWorker::OnFullCommitFailure,
+                     weak_ptr_factory_.GetWeakPtr()),
       cryptographer_.get(), passphrase_type_, debug_info_emitter_,
       CommitOnlyTypes().Has(GetModelType()));
 }
@@ -417,6 +420,12 @@ void ModelTypeWorker::OnCommitResponse(
   // permanent storage) and which failed (it can e.g. notify the user).
   model_type_processor_->OnCommitCompleted(
       model_type_state_, committed_response_list, error_response_list);
+}
+
+void ModelTypeWorker::OnFullCommitFailure() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  model_type_processor_->OnCommitFailed();
 }
 
 void ModelTypeWorker::AbortMigration() {
@@ -559,9 +568,11 @@ void ModelTypeWorker::DeduplicatePendingUpdatesBasedOnOriginatorClientItemId() {
 
   std::map<std::string, size_t> id_to_index;
   for (UpdateResponseData& candidate : candidates) {
-    // Items with empty item ID just get passed through (which is the case for
-    // all datatypes except bookmarks).
-    if (candidate.entity.originator_client_item_id.empty()) {
+    // Entities with an item ID that is not a GUID just get passed through
+    // without deduplication, which is the case for all datatypes except
+    // bookmarks, as well as bookmarks created before 2015, when the item ID was
+    // not globally unique across clients.
+    if (!base::IsValidGUID(candidate.entity.originator_client_item_id)) {
       pending_updates_.push_back(std::move(candidate));
       continue;
     }

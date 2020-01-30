@@ -153,13 +153,6 @@ using chrome_test_util::TappableBookmarkNodeWithLabel;
 // Tests that changes to the parent folder from the Single Bookmark Editor
 // are saved to the bookmark only when saving the results.
 - (void)testMoveDoesSaveOnSave {
-// TODO(crbug.com/1045966): fix for iphone-device and reenable.
-#if !TARGET_IPHONE_SIMULATOR
-  if (![ChromeEarlGrey isIPadIdiom]) {
-    EARL_GREY_TEST_DISABLED(@"Test disabled on iPhone devices.");
-  }
-#endif
-
   [BookmarkEarlGrey setupStandardBookmarks];
   [BookmarkEarlGreyUI openBookmarks];
   [BookmarkEarlGreyUI openMobileBookmarks];
@@ -219,13 +212,6 @@ using chrome_test_util::TappableBookmarkNodeWithLabel;
 // Tests that keyboard commands are not registered when a bookmark is edited, as
 // the edit screen is presented modally.
 - (void)testKeyboardCommandsNotRegistered_EditBookmark {
-// TODO(crbug.com/1045966): fix for iphone-device and reenable.
-#if !TARGET_IPHONE_SIMULATOR
-  if (![ChromeEarlGrey isIPadIdiom]) {
-    EARL_GREY_TEST_DISABLED(@"Test disabled on iPhone devices.");
-  }
-#endif
-
   [BookmarkEarlGrey setupStandardBookmarks];
   [BookmarkEarlGreyUI openBookmarks];
   [BookmarkEarlGreyUI openMobileBookmarks];
@@ -328,13 +314,6 @@ using chrome_test_util::TappableBookmarkNodeWithLabel;
 }
 
 - (void)testBookmarkContextBarInSingleSelectionModes {
-// TODO(crbug.com/1045966): fix for iphone-device and reenable.
-#if !TARGET_IPHONE_SIMULATOR
-  if (![ChromeEarlGrey isIPadIdiom]) {
-    EARL_GREY_TEST_DISABLED(@"Test disabled on iPhone devices.");
-  }
-#endif
-
   [BookmarkEarlGrey setupStandardBookmarks];
   [BookmarkEarlGreyUI openBookmarks];
   [BookmarkEarlGreyUI openMobileBookmarks];
@@ -469,13 +448,6 @@ using chrome_test_util::TappableBookmarkNodeWithLabel;
 }
 
 - (void)testBookmarkContextBarInMultipleSelectionModes {
-// TODO(crbug.com/1045966): fix for iphone-device and reenable.
-#if !TARGET_IPHONE_SIMULATOR
-  if (![ChromeEarlGrey isIPadIdiom]) {
-    EARL_GREY_TEST_DISABLED(@"Test disabled on iPhone devices.");
-  }
-#endif
-
   [BookmarkEarlGrey setupStandardBookmarks];
   [BookmarkEarlGreyUI openBookmarks];
   [BookmarkEarlGreyUI openMobileBookmarks];
@@ -644,13 +616,6 @@ using chrome_test_util::TappableBookmarkNodeWithLabel;
 }
 
 - (void)testEmptyBackgroundAndSelectButton {
-// TODO(crbug.com/1045966): fix for iphone-device and reenable.
-#if !TARGET_IPHONE_SIMULATOR
-  if (![ChromeEarlGrey isIPadIdiom]) {
-    EARL_GREY_TEST_DISABLED(@"Test disabled on iPhone devices.");
-  }
-#endif
-
   [BookmarkEarlGrey setupStandardBookmarks];
   [BookmarkEarlGreyUI openBookmarks];
   [BookmarkEarlGreyUI openMobileBookmarks];

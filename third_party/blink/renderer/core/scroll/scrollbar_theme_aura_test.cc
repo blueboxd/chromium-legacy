@@ -140,6 +140,8 @@ TEST_F(ScrollbarThemeAuraTest, ScrollbarPartsInvalidationTest) {
   ScrollbarThemeAuraButtonOverride theme;
   Scrollbar* scrollbar = Scrollbar::CreateForTesting(
       mock_scrollable_area, kVerticalScrollbar, kRegularScrollbar, &theme);
+  ON_CALL(*mock_scrollable_area, VerticalScrollbar())
+      .WillByDefault(Return(scrollbar));
 
   IntRect vertical_rect(1010, 0, 14, 768);
   scrollbar->SetFrameRect(vertical_rect);
@@ -156,10 +158,39 @@ TEST_F(ScrollbarThemeAuraTest, ScrollbarPartsInvalidationTest) {
   SendEvent(scrollbar, blink::WebInputEvent::kMouseUp, gfx::PointF(10, 20));
   EXPECT_TRUE(scrollbar->ThumbNeedsRepaint());
 
-  // Tests that mousedown on the arrow causes an invalidation. Note that, to
-  // check if the arrow was invalidated, TrackNeedsRepaint is used.
-  // TrackNeedsRepaint here means "everything except the thumb needs to be
-  // repainted".
+  // Note that, since these tests run with the assumption that the compositor
+  // thread has already handled scrolling, a "scroll" will be simulated by
+  // calling SetScrollOffset. To check if the arrow was invalidated,
+  // TrackNeedsRepaint needs to be used. TrackNeedsRepaint here means
+  // "everything except the thumb needs to be repainted". The following verifies
+  // that when the offset changes from 0 to a value > 0, an invalidation gets
+  // triggered. At (0, 0) there is no upwards scroll available, so the arrow is
+  // disabled. When we change the offset, it must be repainted to show available
+  // scroll extent.
+  EXPECT_FALSE(scrollbar->TrackNeedsRepaint());
+  mock_scrollable_area->SetScrollOffset(
+      ScrollOffset(0, 10),
+      mojom::blink::ScrollIntoViewParams::Type::kCompositor);
+  EXPECT_TRUE(scrollbar->TrackNeedsRepaint());
+
+  // Tests that when the scroll offset changes from a value greater than 0 to a
+  // value less than the max scroll offset, a track invalidation is *not*
+  // triggered.
+  scrollbar->ClearTrackNeedsRepaint();
+  mock_scrollable_area->SetScrollOffset(
+      ScrollOffset(0, 20),
+      mojom::blink::ScrollIntoViewParams::Type::kCompositor);
+  EXPECT_FALSE(scrollbar->TrackNeedsRepaint());
+
+  // Tests that when the scroll offset changes to 0, a track invalidation is
+  // gets triggered (for the arrow).
+  scrollbar->ClearTrackNeedsRepaint();
+  mock_scrollable_area->SetScrollOffset(
+      ScrollOffset(0, 0),
+      mojom::blink::ScrollIntoViewParams::Type::kCompositor);
+  EXPECT_TRUE(scrollbar->TrackNeedsRepaint());
+
+  // Tests that mousedown on the arrow causes an invalidation.
   scrollbar->ClearTrackNeedsRepaint();
   SendEvent(scrollbar, blink::WebInputEvent::kMouseMove, gfx::PointF(10, 760));
   SendEvent(scrollbar, blink::WebInputEvent::kMouseDown, gfx::PointF(10, 760));
@@ -172,8 +203,5 @@ TEST_F(ScrollbarThemeAuraTest, ScrollbarPartsInvalidationTest) {
 
   ThreadState::Current()->CollectAllGarbageForTesting();
 }
-
-// TODO(arakeri): Add more comprehensive tests for scrollbar invalidation
-// (tracked in crbug.com/1045808).
 
 }  // namespace blink

@@ -22,11 +22,6 @@ namespace ui {
 
 class COMPONENT_EXPORT(EXTENSIONS) X11ExtensionDelegate {
  public:
-  // Notifies the delegate that the window got mapped in the X server. Wayland
-  // does not support this interface.
-  virtual void OnXWindowMapped() = 0;
-  virtual void OnXWindowUnmapped() = 0;
-
   // Notifies if the PlatformWindow looses a mouse grab. This can be useful
   // for Wayland or X11. Both of them provide pointer enter and leave
   // notifications, which non-ozone X11 (just an example) use to be using to

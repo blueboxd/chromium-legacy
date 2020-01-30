@@ -35,7 +35,6 @@ class WebauthnDialogViewImpl : public WebauthnDialogView,
   gfx::Size CalculatePreferredSize() const override;
   bool Accept() override;
   bool Cancel() override;
-  int GetDialogButtons() const override;
   bool IsDialogButtonEnabled(ui::DialogButton button) const override;
   ui::ModalType GetModalType() const override;
   base::string16 GetWindowTitle() const override;

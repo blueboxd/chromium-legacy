@@ -25,6 +25,7 @@
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 #include "third_party/blink/renderer/platform/wtf/thread_specific.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 namespace blink {
 
@@ -247,8 +248,9 @@ base::Optional<network::CorsErrorStatus> EnsurePreflightResultAndCacheOnSuccess(
   if (status)
     return status;
 
-  GetPerThreadPreflightCache().AppendEntry(origin.Ascii(), request_url,
-                                           std::move(result));
+  GetPerThreadPreflightCache().AppendEntry(
+      url::Origin::Create(GURL(origin.Ascii())), request_url,
+      net::NetworkIsolationKey(), std::move(result));
   return base::nullopt;
 }
 
@@ -264,7 +266,8 @@ bool CheckIfRequestCanSkipPreflight(
   // |is_revalidating| is not needed for blink-side CORS.
   constexpr bool is_revalidating = false;
   return GetPerThreadPreflightCache().CheckIfRequestCanSkipPreflight(
-      origin.Ascii(), url, credentials_mode, method.Ascii(),
+      url::Origin::Create(GURL(origin.Ascii())), url,
+      net::NetworkIsolationKey(), credentials_mode, method.Ascii(),
       *CreateNetHttpRequestHeaders(request_header_map), is_revalidating);
 }
 

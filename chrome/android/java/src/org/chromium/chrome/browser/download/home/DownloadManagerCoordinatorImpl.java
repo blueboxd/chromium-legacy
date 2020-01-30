@@ -13,6 +13,7 @@ import android.widget.FrameLayout;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Callback;
+import org.chromium.base.DiscardableReferencePool;
 import org.chromium.base.ObserverList;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.supplier.ObservableSupplier;
@@ -57,7 +58,8 @@ class DownloadManagerCoordinatorImpl
             ObservableSupplier<Boolean> isPrefetchEnabledSupplier,
             Callback<Context> settingsLauncher, SnackbarManager snackbarManager,
             ModalDialogManager modalDialogManager, Tracker tracker, FaviconProvider faviconProvider,
-            OfflineContentProvider provider, LegacyDownloadProvider legacyProvider) {
+            OfflineContentProvider provider, LegacyDownloadProvider legacyProvider,
+            DiscardableReferencePool discardableReferencePool) {
         mActivity = activity;
         mSettingsLauncher = settingsLauncher;
         mDeleteCoordinator = new DeleteUndoCoordinator(snackbarManager);
@@ -65,7 +67,8 @@ class DownloadManagerCoordinatorImpl
         mListCoordinator = new DateOrderedListCoordinator(mActivity, config,
                 isPrefetchEnabledSupplier, provider, legacyProvider,
                 mDeleteCoordinator::showSnackbar, mSelectionDelegate, this::notifyFilterChanged,
-                createDateOrderedListObserver(), modalDialogManager, faviconProvider);
+                createDateOrderedListObserver(), modalDialogManager, faviconProvider,
+                discardableReferencePool);
         mToolbarCoordinator = new ToolbarCoordinator(mActivity, this, mListCoordinator,
                 mSelectionDelegate, config.isSeparateActivity, tracker);
 

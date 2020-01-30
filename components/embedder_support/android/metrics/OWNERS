@@ -1,0 +1,6 @@
+file://base/metrics/OWNERS
+
+ntfschr@chromium.org
+
+# COMPONENT: Internals>Metrics
+# TEAM: chromium-dev@chromium.org

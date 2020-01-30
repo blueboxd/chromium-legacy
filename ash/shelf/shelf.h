@@ -141,6 +141,8 @@ class ASH_EXPORT Shelf : public ShelfLayoutManagerObserver {
 
   ShelfVisibilityState GetVisibilityState() const;
 
+  gfx::Rect GetShelfBoundsInScreen() const;
+
   // Returns the ideal bounds of the shelf assuming it is visible.
   gfx::Rect GetIdealBounds() const;
 

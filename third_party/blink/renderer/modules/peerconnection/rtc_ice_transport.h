@@ -129,7 +129,7 @@ class MODULES_EXPORT RTCIceTransport final
   RTCIceParameters* getLocalParameters() const;
   RTCIceParameters* getRemoteParameters() const;
   void gather(RTCIceGatherOptions* options, ExceptionState& exception_state);
-  void start(RTCIceParameters* remote_parameters,
+  void start(RTCIceParameters* raw_remote_parameters,
              const String& role,
              ExceptionState& exception_state);
   void stop();

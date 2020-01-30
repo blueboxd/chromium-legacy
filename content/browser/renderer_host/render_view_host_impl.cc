@@ -808,8 +808,6 @@ bool RenderViewHostImpl::OnMessageReceived(const IPC::Message& msg) {
                         OnShowFullscreenWidget)
     IPC_MESSAGE_HANDLER(ViewHostMsg_RouteCloseEvent, OnRouteCloseEvent)
     IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateTargetURL, OnUpdateTargetURL)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_DocumentAvailableInMainFrame,
-                        OnDocumentAvailableInMainFrame)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DidContentsPreferredSizeChange,
                         OnDidContentsPreferredSizeChange)
     IPC_MESSAGE_HANDLER(ViewHostMsg_TakeFocus, OnTakeFocus)
@@ -875,22 +873,6 @@ void RenderViewHostImpl::OnUpdateTargetURL(const GURL& url) {
   // Send a notification back to the renderer that we are ready to
   // receive more target urls.
   Send(new ViewMsg_UpdateTargetURL_ACK(GetRoutingID()));
-}
-
-void RenderViewHostImpl::OnDocumentAvailableInMainFrame(
-    bool uses_temporary_zoom_level) {
-  delegate_->DocumentAvailableInMainFrame(this);
-
-  if (!uses_temporary_zoom_level)
-    return;
-
-#if !defined(OS_ANDROID)
-  HostZoomMapImpl* host_zoom_map =
-      static_cast<HostZoomMapImpl*>(HostZoomMap::Get(GetSiteInstance()));
-  host_zoom_map->SetTemporaryZoomLevel(GetProcess()->GetID(),
-                                       GetRoutingID(),
-                                       host_zoom_map->GetDefaultZoomLevel());
-#endif  // !defined(OS_ANDROID)
 }
 
 void RenderViewHostImpl::OnDidContentsPreferredSizeChange(

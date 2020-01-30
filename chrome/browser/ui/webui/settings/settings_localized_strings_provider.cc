@@ -140,10 +140,6 @@ void AddCommonStrings(content::WebUIDataSource* html_source, Profile* profile) {
     {"continue", IDS_SETTINGS_CONTINUE},
     {"controlledByExtension", IDS_SETTINGS_CONTROLLED_BY_EXTENSION},
     {"delete", IDS_SETTINGS_DELETE},
-#if defined(OS_CHROMEOS)
-    {"deviceOff", IDS_SETTINGS_DEVICE_OFF},
-    {"deviceOn", IDS_SETTINGS_DEVICE_ON},
-#endif
     {"disable", IDS_DISABLE},
     {"done", IDS_DONE},
     {"edit", IDS_SETTINGS_EDIT},
@@ -186,19 +182,35 @@ void AddCommonStrings(content::WebUIDataSource* html_source, Profile* profile) {
 void AddA11yStrings(content::WebUIDataSource* html_source) {
   static constexpr webui::LocalizedString kLocalizedStrings[] = {
     {"moreFeaturesLink", IDS_SETTINGS_MORE_FEATURES_LINK},
+    {"a11yPageTitle", IDS_SETTINGS_ACCESSIBILITY},
+    {"a11yWebStore", IDS_SETTINGS_ACCESSIBILITY_WEB_STORE},
+    {"moreFeaturesLinkDescription",
+     IDS_SETTINGS_MORE_FEATURES_LINK_DESCRIPTION},
+    {"accessibleImageLabelsTitle", IDS_SETTINGS_ACCESSIBLE_IMAGE_LABELS_TITLE},
+    {"accessibleImageLabelsSubtitle",
+     IDS_SETTINGS_ACCESSIBLE_IMAGE_LABELS_SUBTITLE},
+    {"settingsSliderRoleDescription",
+     IDS_SETTINGS_SLIDER_MIN_MAX_ARIA_ROLE_DESCRIPTION},
 #if defined(OS_CHROMEOS)
+    {"manageAccessibilityFeatures",
+     IDS_SETTINGS_ACCESSIBILITY_MANAGE_ACCESSIBILITY_FEATURES},
     {"androidAppsManageAppLinks", IDS_SETTINGS_ANDROID_APPS_MANAGE_APP_LINKS},
 #endif
   };
   AddLocalizedStringsBulk(html_source, kLocalizedStrings);
 
-#if !defined(OS_CHROMEOS)
-  AddSharedA11yStrings(html_source);
-#endif
 #if defined(OS_WIN)
   html_source->AddBoolean("isWindows10OrNewer",
                           base::win::GetVersion() >= base::win::Version::WIN10);
 #endif
+  html_source->AddBoolean(
+      "showExperimentalA11yLabels",
+      base::FeatureList::IsEnabled(features::kExperimentalAccessibilityLabels));
+
+  html_source->AddBoolean("enableLiveCaption",
+                          base::FeatureList::IsEnabled(media::kLiveCaption));
+
+  AddCaptionSubpageStrings(html_source);
 }
 
 void AddAboutStrings(content::WebUIDataSource* html_source) {
@@ -1459,141 +1471,7 @@ void AddPrintingStrings(content::WebUIDataSource* html_source) {
     {"printingManageCloudPrintDevices",
      IDS_SETTINGS_PRINTING_MANAGE_CLOUD_PRINT_DEVICES},
     {"cloudPrintersTitle", IDS_SETTINGS_PRINTING_CLOUD_PRINTERS},
-#if defined(OS_CHROMEOS)
-    {"cupsPrintersTitle", IDS_SETTINGS_PRINTING_CUPS_PRINTERS},
-    {"cupsPrintersLearnMoreLabel",
-     IDS_SETTINGS_PRINTING_CUPS_PRINTERS_LEARN_MORE_LABEL},
-    {"addCupsPrinter", IDS_SETTINGS_PRINTING_CUPS_PRINTERS_ADD_PRINTER},
-    {"editPrinter", IDS_SETTINGS_PRINTING_CUPS_PRINTERS_EDIT},
-    {"removePrinter", IDS_SETTINGS_PRINTING_CUPS_PRINTERS_REMOVE},
-    {"setupPrinter", IDS_SETTINGS_PRINTING_CUPS_PRINTER_SETUP_BUTTON},
-    {"setupPrinterAria", IDS_SETTINGS_PRINTING_CUPS_PRINTER_SETUP_BUTTON_ARIA},
-    {"savePrinter", IDS_SETTINGS_PRINTING_CUPS_PRINTER_SAVE_BUTTON},
-    {"savePrinterAria", IDS_SETTINGS_PRINTING_CUPS_PRINTER_SAVE_BUTTON_ARIA},
-    {"searchLabel", IDS_SETTINGS_PRINTING_CUPS_SEARCH_LABEL},
-    {"noSearchResults", IDS_SEARCH_NO_RESULTS},
-    {"printerDetailsTitle", IDS_SETTINGS_PRINTING_CUPS_PRINTER_DETAILS_TITLE},
-    {"printerName", IDS_SETTINGS_PRINTING_CUPS_PRINTER_DETAILS_NAME},
-    {"printerModel", IDS_SETTINGS_PRINTING_CUPS_PRINTER_DETAILS_MODEL},
-    {"printerQueue", IDS_SETTINGS_PRINTING_CUPS_PRINTER_DETAILS_QUEUE},
-    {"savedPrintersTitle", IDS_SETTINGS_PRINTING_CUPS_SAVED_PRINTERS_TITLE},
-    {"savedPrintersCountMany",
-     IDS_SETTINGS_PRINTING_CUPS_PRINTERS_SAVED_PRINTERS_COUNT_MANY},
-    {"savedPrintersCountOne",
-     IDS_SETTINGS_PRINTING_CUPS_PRINTERS_SAVED_PRINTERS_COUNT_ONE},
-    {"savedPrintersCountNone",
-     IDS_SETTINGS_PRINTING_CUPS_PRINTERS_SAVED_PRINTERS_COUNT_NONE},
-    {"showMorePrinters", IDS_SETTINGS_PRINTING_CUPS_SHOW_MORE},
-    {"addPrintersNearbyTitle",
-     IDS_SETTINGS_PRINTING_CUPS_ADD_PRINTERS_NEARBY_TITLE},
-    {"addPrintersManuallyTitle",
-     IDS_SETTINGS_PRINTING_CUPS_ADD_PRINTERS_MANUALLY_TITLE},
-    {"manufacturerAndModelDialogTitle",
-     IDS_SETTINGS_PRINTING_CUPS_SELECT_MANUFACTURER_AND_MODEL_TITLE},
-    {"nearbyPrintersListTitle",
-     IDS_SETTINGS_PRINTING_CUPS_PRINTERS_AVAILABLE_PRINTERS},
-    {"nearbyPrintersCountMany",
-     IDS_SETTINGS_PRINTING_CUPS_PRINTERS_AVAILABLE_PRINTERS_COUNT_MANY},
-    {"nearbyPrintersCountOne",
-     IDS_SETTINGS_PRINTING_CUPS_PRINTERS_AVAILABLE_PRINTER_COUNT_ONE},
-    {"nearbyPrintersCountNone",
-     IDS_SETTINGS_PRINTING_CUPS_PRINTERS_AVAILABLE_PRINTER_COUNT_NONE},
-    {"nearbyPrintersListDescription",
-     IDS_SETTINGS_PRINTING_CUPS_PRINTERS_ADD_DETECTED_OR_NEW_PRINTER},
-    {"manufacturerAndModelAdditionalInformation",
-     IDS_SETTINGS_PRINTING_CUPS_MANUFACTURER_MODEL_ADDITIONAL_INFORMATION},
-    {"addPrinterButtonText", IDS_SETTINGS_PRINTING_CUPS_ADD_PRINTER_BUTTON_ADD},
-    {"printerDetailsAdvanced", IDS_SETTINGS_PRINTING_CUPS_PRINTER_ADVANCED},
-    {"printerDetailsA11yLabel",
-     IDS_SETTINGS_PRINTING_CUPS_PRINTER_ADVANCED_ACCESSIBILITY_LABEL},
-    {"printerAddress", IDS_SETTINGS_PRINTING_CUPS_PRINTER_ADVANCED_ADDRESS},
-    {"printerProtocol", IDS_SETTINGS_PRINTING_CUPS_PRINTER_ADVANCED_PROTOCOL},
-    {"printerURI", IDS_SETTINGS_PRINTING_CUPS_PRINTER_ADVANCED_URI},
-    {"manuallyAddPrinterButtonText",
-     IDS_SETTINGS_PRINTING_CUPS_ADD_PRINTER_BUTTON_MANUAL_ADD},
-    {"discoverPrintersButtonText",
-     IDS_SETTINGS_PRINTING_CUPS_ADD_PRINTER_BUTTON_DISCOVER_PRINTERS},
-    {"printerProtocolIpp", IDS_SETTINGS_PRINTING_CUPS_PRINTER_PROTOCOL_IPP},
-    {"printerProtocolIpps", IDS_SETTINGS_PRINTING_CUPS_PRINTER_PROTOCOL_IPPS},
-    {"printerProtocolHttp", IDS_SETTINGS_PRINTING_CUPS_PRINTER_PROTOCOL_HTTP},
-    {"printerProtocolHttps", IDS_SETTINGS_PRINTING_CUPS_PRINTER_PROTOCOL_HTTPS},
-    {"printerProtocolAppSocket",
-     IDS_SETTINGS_PRINTING_CUPS_PRINTER_PROTOCOL_APP_SOCKET},
-    {"printerProtocolLpd", IDS_SETTINGS_PRINTING_CUPS_PRINTER_PROTOCOL_LPD},
-    {"printerProtocolUsb", IDS_SETTINGS_PRINTING_CUPS_PRINTER_PROTOCOL_USB},
-    {"printerProtocolIppUsb",
-     IDS_SETTINGS_PRINTING_CUPS_PRINTER_PROTOCOL_IPPUSB},
-    {"printerConfiguringMessage",
-     IDS_SETTINGS_PRINTING_CUPS_PRINTER_CONFIGURING_MESSAGE},
-    {"printerManufacturer", IDS_SETTINGS_PRINTING_CUPS_PRINTER_MANUFACTURER},
-    {"selectDriver", IDS_SETTINGS_PRINTING_CUPS_PRINTER_SELECT_DRIVER},
-    {"selectDriverButtonText",
-     IDS_SETTINGS_PRINTING_CUPS_PRINTER_BUTTON_SELECT_DRIVER},
-    {"selectDriverButtonAriaLabel",
-     IDS_SETTINGS_PRINTING_CUPS_PRINTER_BUTTON_SELECT_DRIVER_ARIA_LABEL},
-    {"selectDriverErrorMessage",
-     IDS_SETTINGS_PRINTING_CUPS_PRINTER_INVALID_DRIVER},
-    {"printerAddedSuccessfulMessage",
-     IDS_SETTINGS_PRINTING_CUPS_PRINTER_ADDED_PRINTER_DONE_MESSAGE},
-    {"printerEditedSuccessfulMessage",
-     IDS_SETTINGS_PRINTING_CUPS_PRINTER_EDITED_PRINTER_DONE_MESSAGE},
-    {"printerUnavailableMessage",
-     IDS_SETTINGS_PRINTING_CUPS_PRINTER_UNAVAILABLE_MESSAGE},
-    {"noPrinterNearbyMessage",
-     IDS_SETTINGS_PRINTING_CUPS_PRINTER_NO_PRINTER_NEARBY},
-    {"searchingNearbyPrinters",
-     IDS_SETTINGS_PRINTING_CUPS_PRINTER_SEARCHING_NEARBY_PRINTER},
-    {"printerAddedFailedMessage",
-     IDS_SETTINGS_PRINTING_CUPS_PRINTER_ADDED_PRINTER_ERROR_MESSAGE},
-    {"printerAddedFatalErrorMessage",
-     IDS_SETTINGS_PRINTING_CUPS_PRINTER_ADDED_PRINTER_FATAL_ERROR_MESSAGE},
-    {"printerAddedUnreachableMessage",
-     IDS_SETTINGS_PRINTING_CUPS_PRINTER_ADDED_PRINTER_PRINTER_UNREACHABLE_MESSAGE},
-    {"printerAddedPpdTooLargeMessage",
-     IDS_SETTINGS_PRINTING_CUPS_PRINTER_ADDED_PRINTER_PPD_TOO_LARGE_MESSAGE},
-    {"printerAddedInvalidPpdMessage",
-     IDS_SETTINGS_PRINTING_CUPS_PRINTER_ADDED_PRINTER_INVALID_PPD_MESSAGE},
-    {"printerAddedPpdNotFoundMessage",
-     IDS_SETTINGS_PRINTING_CUPS_PRINTER_ADDED_PRINTER_PPD_NOT_FOUND},
-    {"printerAddedPpdUnretrievableMessage",
-     IDS_SETTINGS_PRINTING_CUPS_PRINTER_ADDED_PRINTER_PPD_UNRETRIEVABLE},
-    {"printerAddedNativePrintersNotAllowedMessage",
-     IDS_SETTINGS_PRINTING_CUPS_PRINTER_ADDED_NATIVE_PRINTERS_NOT_ALLOWED_MESSAGE},
-    {"editPrinterInvalidPrinterUpdate",
-     IDS_SETTINGS_PRINTING_CUPS_EDIT_PRINTER_INVALID_PRINTER_UPDATE},
-    {"requireNetworkMessage",
-     IDS_SETTINGS_PRINTING_CUPS_PRINTER_REQUIRE_INTERNET_MESSAGE},
-    {"checkNetworkMessage",
-     IDS_SETTINGS_PRINTING_CUPS_PRINTER_CHECK_CONNECTION_MESSAGE},
-    {"noInternetConnection",
-     IDS_SETTINGS_PRINTING_CUPS_PRINTER_NO_INTERNET_CONNECTION},
-    {"checkNetworkAndTryAgain",
-     IDS_SETTINGS_PRINTING_CUPS_PRINTER_CONNECT_TO_NETWORK_SUBTEXT},
-    {"editPrinterDialogTitle",
-     IDS_SETTINGS_PRINTING_CUPS_EDIT_PRINTER_DIALOG_TITLE},
-    {"editPrinterButtonText", IDS_SETTINGS_PRINTING_CUPS_EDIT_PRINTER_BUTTON},
-    {"currentPpdMessage",
-     IDS_SETTINGS_PRINTING_CUPS_EDIT_PRINTER_CURRENT_PPD_MESSAGE},
-    {"printerEulaNotice", IDS_SETTINGS_PRINTING_CUPS_EULA_NOTICE},
-    {"ippPrinterUnreachable", IDS_SETTINGS_PRINTING_CUPS_IPP_URI_UNREACHABLE},
-    {"generalPrinterDialogError",
-     IDS_SETTINGS_PRINTING_CUPS_DIALOG_GENERAL_ERROR},
-    {"printServerButtonText", IDS_SETTINGS_PRINTING_CUPS_PRINT_SERVER},
-    {"addPrintServerTitle", IDS_SETTINGS_PRINTING_CUPS_ADD_PRINT_SERVER_TITLE},
-    {"printServerAddress", IDS_SETTINGS_PRINTING_CUPS_PRINT_SERVER_ADDRESS},
-    {"printServerFoundZeroPrinters",
-     IDS_SETTINGS_PRINTING_CUPS_PRINT_SERVER_FOUND_ZERO_PRINTERS},
-    {"printServerFoundOnePrinter",
-     IDS_SETTINGS_PRINTING_CUPS_PRINT_SERVER_FOUND_ONE_PRINTER},
-    {"printServerFoundManyPrinters",
-     IDS_SETTINGS_PRINTING_CUPS_PRINT_SERVER_FOUND_MANY_PRINTERS},
-    {"printServerInvalidUrlAddress",
-     IDS_SETTINGS_PRINTING_CUPS_PRINT_SERVER_INVALID_URL_ADDRESS},
-    {"printServerConnectionError",
-     IDS_SETTINGS_PRINTING_CUPS_PRINT_SERVER_CONNECTION_ERROR},
-    {"printServerConfigurationErrorMessage",
-     IDS_SETTINGS_PRINTING_CUPS_PRINT_SERVER_REACHABLE_BUT_CANNOT_ADD},
-#else
+#if !defined(OS_CHROMEOS)
     {"localPrintersTitle", IDS_SETTINGS_PRINTING_LOCAL_PRINTERS_TITLE},
 #endif
   };
@@ -1602,17 +1480,6 @@ void AddPrintingStrings(content::WebUIDataSource* html_source) {
   html_source->AddString("devicesUrl", chrome::kChromeUIDevicesURL);
   html_source->AddString("printingCloudPrintLearnMoreUrl",
                          chrome::kCloudPrintLearnMoreURL);
-
-#if defined(OS_CHROMEOS)
-  html_source->AddString("printingCUPSPrintLearnMoreUrl",
-                         GetHelpUrlWithBoard(chrome::kCupsPrintLearnMoreURL));
-  html_source->AddString(
-      "printingCUPSPrintPpdLearnMoreUrl",
-      GetHelpUrlWithBoard(chrome::kCupsPrintPPDLearnMoreURL));
-  html_source->AddBoolean(
-      "consumerPrintServerUiEnabled",
-      base::FeatureList::IsEnabled(features::kPrintServerUi));
-#endif
 }
 
 void AddPrivacyStrings(content::WebUIDataSource* html_source,
@@ -2102,12 +1969,16 @@ void AddSiteSettingsStrings(content::WebUIDataSource* html_source,
      IDS_SETTINGS_SITE_SETTINGS_CLEAR_ALL_STORAGE_LABEL},
     {"siteSettingsClearAllStorageConfirmation",
      IDS_SETTINGS_SITE_SETTINGS_CLEAR_ALL_STORAGE_CONFIRMATION},
+    {"siteSettingsClearAllStorageConfirmationInstalled",
+     IDS_SETTINGS_SITE_SETTINGS_CLEAR_ALL_STORAGE_CONFIRMATION_INSTALLED},
     {"siteSettingsClearAllStorageSignOut",
      IDS_SETTINGS_SITE_SETTINGS_CLEAR_ALL_STORAGE_SIGN_OUT},
     {"siteSettingsOriginDeleteConfirmation",
      IDS_SETTINGS_SITE_SETTINGS_ORIGIN_DELETE_CONFIRMATION},
     {"siteSettingsOriginDeleteConfirmationInstalled",
      IDS_SETTINGS_SITE_SETTINGS_ORIGIN_DELETE_CONFIRMATION_INSTALLED},
+    {"siteSettingsSiteGroupDeleteConfirmationInstalledPlural",
+     IDS_SETTINGS_SITE_SETTINGS_SITE_GROUP_DELETE_CONFIRMATION_INSTALLED_PLURAL},
     {"siteSettingsSiteClearStorage",
      IDS_SETTINGS_SITE_SETTINGS_SITE_CLEAR_STORAGE},
     {"siteSettingsSiteClearStorageConfirmation",

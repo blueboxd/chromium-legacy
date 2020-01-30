@@ -91,7 +91,9 @@ class VIZ_SERVICE_EXPORT OverlayProcessorAndroid
   using OverlayResourceLock =
       DisplayResourceProvider::ScopedReadLockSharedImage;
 
-  // Locks for overlays are pending for OverlayPresentationComplete.
+  // Keep locks on overlay resources to keep them alive. Since we don't have
+  // an exact signal on when the overlays are done presenting, use
+  // OverlayPresentationComplete as a signal to clear locks from the older frames.
   base::circular_deque<std::vector<OverlayResourceLock>> pending_overlay_locks_;
   // Locks for overlays have been committed. |pending_overlay_locks_| will
   // be moved to |committed_overlay_locks_| after OverlayPresentationComplete.

@@ -348,7 +348,10 @@ void FidoBleConnection::ConnectToFidoService() {
       service_revision_bitfield_id_ = characteristic->GetIdentifier();
       FIDO_LOG(DEBUG) << "Got Fido Service Revision Bitfield: "
                       << *service_revision_bitfield_id_;
+      continue;
     }
+
+    FIDO_LOG(DEBUG) << "Unknown FIDO service characteristic: " << uuid;
   }
 
   if (!control_point_length_id_ || !control_point_id_ || !status_id_ ||

@@ -91,8 +91,8 @@ static jint Java_TestJni_testFoo(JNIEnv* env, const base::android::JavaRef<jobje
   return ret;
 }
 
-static std::atomic<jmethodID> g_org_chromium_TestJni_testOtherFoo(nullptr);
-static void Java_TestJni_testOtherFoo(JNIEnv* env, const base::android::JavaRef<jobject>& obj) {
+static std::atomic<jmethodID> g_org_chromium_TestJni_testFeatures(nullptr);
+static void Java_TestJni_testFeatures(JNIEnv* env, const base::android::JavaRef<jobject>& obj) {
   jclass clazz = org_chromium_TestJni_clazz(env);
   CHECK_CLAZZ(env, obj.obj(),
       org_chromium_TestJni_clazz(env));
@@ -102,9 +102,29 @@ static void Java_TestJni_testOtherFoo(JNIEnv* env, const base::android::JavaRef<
       base::android::MethodID::TYPE_INSTANCE>(
           env,
           clazz,
-          "testOtherFoo",
+          "testFeatures",
           "()V",
-          &g_org_chromium_TestJni_testOtherFoo);
+          &g_org_chromium_TestJni_testFeatures);
+
+     env->CallVoidMethod(obj.obj(),
+          call_context.base.method_id);
+}
+
+static std::atomic<jmethodID> g_org_chromium_TestJni_testOtherFeatures(nullptr);
+static void Java_TestJni_testOtherFeatures(JNIEnv* env, const base::android::JavaRef<jobject>& obj)
+    {
+  jclass clazz = org_chromium_TestJni_clazz(env);
+  CHECK_CLAZZ(env, obj.obj(),
+      org_chromium_TestJni_clazz(env));
+
+  jni_generator::JniJavaCallContextChecked call_context;
+  call_context.Init<
+      base::android::MethodID::TYPE_INSTANCE>(
+          env,
+          clazz,
+          "testOtherFeatures",
+          "()V",
+          &g_org_chromium_TestJni_testOtherFeatures);
 
      env->CallVoidMethod(obj.obj(),
           call_context.base.method_id);
@@ -171,6 +191,25 @@ static void Java_MyInnerClass_testInnerFoo(JNIEnv* env, const base::android::Jav
           call_context.base.method_id);
 }
 
+static std::atomic<jmethodID> g_org_chromium_TestJni_testOneLine(nullptr);
+static void Java_TestJni_testOneLine(JNIEnv* env, const base::android::JavaRef<jobject>& obj) {
+  jclass clazz = org_chromium_TestJni_clazz(env);
+  CHECK_CLAZZ(env, obj.obj(),
+      org_chromium_TestJni_clazz(env));
+
+  jni_generator::JniJavaCallContextChecked call_context;
+  call_context.Init<
+      base::android::MethodID::TYPE_INSTANCE>(
+          env,
+          clazz,
+          "testOneLine",
+          "()V",
+          &g_org_chromium_TestJni_testOneLine);
+
+     env->CallVoidMethod(obj.obj(),
+          call_context.base.method_id);
+}
+
 // Step 4: Generated test functions (optional).
 #define JAVA_TESTS(test_fixture, java_test_object)\
   TEST_F(test_fixture, TestFoo) { \
@@ -178,9 +217,17 @@ static void Java_MyInnerClass_testInnerFoo(JNIEnv* env, const base::android::Jav
     Java_TestJni_testFoo(\
         env, java_test_object); \
   }\
-  TEST_F(test_fixture, TestOtherFoo) { \
+  TEST_F(test_fixture, TestFeatures) { \
+    base::test::ScopedFeatureList feature_list; \
+    feature_list.InitFromCommandLine( \
+        "MyFeature,MyFeatureWithAReallyReallyAbsurdlyLongName", "BadFeature"); \
     JNIEnv* env = base::android::AttachCurrentThread(); \
-    Java_TestJni_testOtherFoo(\
+    Java_TestJni_testFeatures(\
+        env, java_test_object); \
+  }\
+  TEST_F(test_fixture, TestOtherFeatures) { \
+    JNIEnv* env = base::android::AttachCurrentThread(); \
+    Java_TestJni_testOtherFeatures(\
         env, java_test_object); \
   }\
   TEST_F(test_fixture, DISABLED_TestDisabledFoo) { \
@@ -196,6 +243,14 @@ static void Java_MyInnerClass_testInnerFoo(JNIEnv* env, const base::android::Jav
   TEST_F(test_fixture, TestInnerFoo) { \
     JNIEnv* env = base::android::AttachCurrentThread(); \
     Java_MyInnerClass_testInnerFoo(\
+        env, java_test_object); \
+  }\
+  TEST_F(test_fixture, TestOneLine) { \
+    base::test::ScopedFeatureList feature_list; \
+    feature_list.InitFromCommandLine( \
+        "MyFeature", ""); \
+    JNIEnv* env = base::android::AttachCurrentThread(); \
+    Java_TestJni_testOneLine(\
         env, java_test_object); \
   }
 

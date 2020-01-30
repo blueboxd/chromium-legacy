@@ -418,7 +418,6 @@
 <translation id="2799223571221894425">Перезапустить</translation>
 <translation id="2803306138276472711">Система Google по проверке безопасности сайтов недавно обнаружила на <ph name="SITE" /> <ph name="BEGIN_LINK" />вредоносное ПО<ph name="END_LINK" />. Будьте внимательны, иногда даже на безопасных сайтах появляются вирусы.</translation>
 <translation id="2807052079800581569">Положение изображения по оси Y</translation>
-<translation id="2809804249696361569">Оба листа</translation>
 <translation id="2824775600643448204">Адресная строка и строка поиска</translation>
 <translation id="2826760142808435982">Соединение зашифровано и проверено с помощью <ph name="CIPHER" />. В качестве механизма обмена ключами используется <ph name="KX" />.</translation>
 <translation id="2835170189407361413">Очистить форму</translation>
@@ -920,7 +919,6 @@
 <translation id="5112422516732747637">A5</translation>
 <translation id="5115216390227830982">European-Edp</translation>
 <translation id="5115563688576182185">(64 бит)</translation>
-<translation id="5121469660360593280">Отправлять администратору данные о событиях безопасности, которые были помечены системой защиты пользователей Chrome Enterprise как потенциально опасные. Это могут быть URL страниц, которые вы посещаете, названия файлов и метаданные, а также ваше имя пользователя для входа в систему на устройстве и в браузер Chrome.</translation>
 <translation id="5123063207673082822">До выходных</translation>
 <translation id="5125394840236832993">B-Plus</translation>
 <translation id="5126510351761255129">Подтвердите данные карты</translation>
@@ -935,7 +933,6 @@
 <translation id="5161506081086828129">Укладчик 9</translation>
 <translation id="516920405563544094">Введите CVC-код карты <ph name="CREDIT_CARD" />. После этого ее реквизиты из аккаунта Google будут переданы сайту.</translation>
 <translation id="5169827969064885044">Возможно, кто-то пытается получить доступ к вашим личным данным или корпоративному аккаунту. Рекомендуем немедленно сменить пароль.</translation>
-<translation id="5170017743895942767">Система защиты пользователей Chrome Enterprise</translation>
 <translation id="5171045022955879922">Введите запрос или URL</translation>
 <translation id="5171689220826475070">Fanfold-European</translation>
 <translation id="5172758083709347301">Локальный компьютер</translation>
@@ -1068,7 +1065,6 @@
 <translation id="5737183892635480227">{NUM_CARDS,plural, =1{Сохраните карту в аккаунте Google}one{Сохраните карты в аккаунте Google}few{Сохраните карты в аккаунте Google}many{Сохраните карты в аккаунте Google}other{Сохраните карты в аккаунте Google}}</translation>
 <translation id="5745980000221562234">{NUM_CARDS,plural, =1{Используйте для карты виртуальный номер}one{Выберите карту}few{Выберите карту}many{Выберите карту}other{Выберите карту}}</translation>
 <translation id="5763042198335101085">Укажите действительный адрес электронной почты.</translation>
-<translation id="5763703224595565476">Администратор включил в браузере систему защиты пользователей Chrome Enterprise, у которой есть доступ к некоторым вашим данным.</translation>
 <translation id="5765072501007116331">Выберите адрес, чтобы посмотреть способы и условия доставки.</translation>
 <translation id="5776313857861697733">Приоритет</translation>
 <translation id="5778550464785688721">Полный контроль над MIDI-устройствами</translation>
@@ -1405,7 +1401,6 @@
 <translation id="733923710415886693">Сертификат сервера не проходил проверку.</translation>
 <translation id="734600844861828519">11x15</translation>
 <translation id="7346048084945669753">Аффилированный пользователь:</translation>
-<translation id="73479065977517481">Администратор домена <ph name="ENROLLMENT_DOMAIN" /> включил в вашем браузере систему защиты пользователей Chrome Enterprise, у которой есть доступ к некоторым вашим данным.</translation>
 <translation id="7349430561505560861">A4-Extra</translation>
 <translation id="7353601530677266744">Командная строка</translation>
 <translation id="7372973238305370288">результат поиска</translation>

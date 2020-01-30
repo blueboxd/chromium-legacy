@@ -96,8 +96,13 @@ extern const char kEmailDomainsSeparator[];
 extern const char kValidateGaiaIdSigninPromoParameter[];
 extern const char kGcpwEndpointPathPromoParameter[];
 
-// Crashpad related constants
+// Crashpad related constants.
 extern const wchar_t kRunAsCrashpadHandlerEntryPoint[];
+
+// Flags to manipulate behavior of Chrome when importing credentials for the
+// account signs in through GCPW.
+extern const wchar_t kAllowImportOnlyOnFirstRun[];
+extern const wchar_t kAllowImportWhenPrimaryAccountExists[];
 
 // HKCU account information path in the hive of the OS user.
 extern const wchar_t kRegHkcuAccountsPath[];

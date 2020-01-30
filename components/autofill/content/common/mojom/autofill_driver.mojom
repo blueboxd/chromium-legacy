@@ -153,10 +153,6 @@ interface PasswordManagerDriver {
 // There is one instance of this interface per web contents in the browser
 // process.
 interface PasswordGenerationDriver {
-  // Instructs the browser that generation is available for this particular
-  // form. This is used for UMA stats.
-  GenerationAvailableForForm(PasswordForm password_form);
-
   // Notifies the browser when automatic generation becomes available
   // and provides data needed by the UI.
   AutomaticGenerationAvailable(
@@ -166,8 +162,8 @@ interface PasswordGenerationDriver {
   // The location should be specified in the renderers coordinate system. Form
   // is the form associated with the password field. |field_renderer_id| is the
   // ID of the password field triggering generation.
-  ShowPasswordEditingPopup(gfx.mojom.RectF bounds, PasswordForm password_form,
-      uint32 field_renderer_id);
+  ShowPasswordEditingPopup(gfx.mojom.RectF bounds, FormData form_data,
+      uint32 field_renderer_id, mojo_base.mojom.String16 password_value);
 
   // Informs the browser that the password generation option was rejected
   // by the user typing more characters than the maximum offer size into the
@@ -175,11 +171,12 @@ interface PasswordGenerationDriver {
   PasswordGenerationRejectedByTyping();
 
   // Instructs the browser to presave the form with generated password.
-  PresaveGeneratedPassword(PasswordForm password_form);
+  PresaveGeneratedPassword(FormData form_data,
+                          mojo_base.mojom.String16 password_value);
 
   // Instructs the browser that form no longer contains a generated password and
   // the presaved form should be removed.
-  PasswordNoLongerGenerated(PasswordForm password_form);
+  PasswordNoLongerGenerated(FormData form_data);
 
   // Communicates to the browser that a scroll event happened on the frame. This
   // event affects the password generation popup position.

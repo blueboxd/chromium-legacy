@@ -444,6 +444,7 @@ jumbo_component("views") {
     "widget/widget_aura_utils.cc",
     "widget/widget_delegate.cc",
     "widget/widget_deletion_observer.cc",
+    "widget/widget_getter.cc",
     "widget/widget_utils.cc",
     "window/caption_button_layout_constants.cc",
     "window/client_view.cc",
@@ -756,7 +757,6 @@ jumbo_component("views") {
         public += [
           "widget/desktop_aura/desktop_drag_drop_client_aurax11.h",
           "widget/desktop_aura/desktop_screen_x11.h",
-          "widget/desktop_aura/desktop_window_tree_host_observer_x11.h",
           "widget/desktop_aura/desktop_window_tree_host_x11.h",
           "widget/desktop_aura/x11_desktop_handler.h",
           "widget/desktop_aura/x11_desktop_handler_observer.h",

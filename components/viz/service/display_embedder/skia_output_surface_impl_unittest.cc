@@ -188,9 +188,9 @@ TEST_P(SkiaOutputSurfaceImplTest, SubmitPaint) {
   request->set_result_task_runner(
       gpu_service_holder_->gpu_thread_task_runner());
   copy_output::RenderPassGeometry geometry;
-  geometry.result_bounds = kSurfaceRect;
+  geometry.result_bounds = output_rect;
   geometry.result_selection = output_rect;
-  geometry.sampling_bounds = kSurfaceRect;
+  geometry.sampling_bounds = output_rect;
   geometry.readback_offset = gfx::Vector2d(0, 0);
 
   output_surface_->CopyOutput(0, geometry, color_space, std::move(request));

@@ -71,10 +71,6 @@ void SendTabToSelfBubbleViewImpl::WindowClosing() {
   }
 }
 
-bool SendTabToSelfBubbleViewImpl::Close() {
-  return Cancel();
-}
-
 void SendTabToSelfBubbleViewImpl::ButtonPressed(views::Button* sender,
                                                 const ui::Event& event) {
   DevicePressed(sender->tag());

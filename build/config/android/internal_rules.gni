@@ -10,6 +10,7 @@ import("//build/config/coverage/coverage.gni")
 import("//build/config/dcheck_always_on.gni")
 import("//build/config/python.gni")
 import("//build/config/sanitizers/sanitizers.gni")
+import("//build/toolchain/goma.gni")
 import("//build/util/generate_wrapper.gni")
 import("//build_overrides/build.gni")
 assert(is_android)
@@ -828,7 +829,6 @@ template("test_runner_script") {
 
 if (enable_java_templates) {
   android_sdk_jar = "$android_sdk/android.jar"
-  android_default_aapt_path = "$android_sdk_build_tools/aapt"
 
   template("android_lint") {
     _min_sdk_version = 19
@@ -1349,6 +1349,9 @@ if (enable_java_templates) {
             deps += [ ":${_main_dex_list_target_name}" ]
             inputs += [ _main_dex_list_path ]
           }
+        } else if (defined(invoker.enable_library_multidex) &&
+                   invoker.enable_library_multidex) {
+          args += [ "--multi-dex" ]
         }
 
         if (defined(invoker.input_dex_filearg)) {
@@ -1754,8 +1757,9 @@ if (enable_java_templates) {
       args = [
         "--depfile",
         rebase_path(depfile, root_build_dir),
-        "--build-vars",
-        rebase_path(android_build_vars, root_build_dir),
+        "--android-sdk-root",
+        rebase_path(manifest_merger_sdk_root, root_build_dir),
+        "--android-sdk-tools-version-suffix=${manifest_merger_sdk_version}",
         "--root-manifest",
         rebase_path(invoker.input_manifest, root_build_dir),
         "--output",
@@ -1838,11 +1842,8 @@ if (enable_java_templates) {
         invoker.r_text_out_path,
       ]
 
-      _android_aapt_path = android_default_aapt_path
-
       inputs = [
         invoker.build_config,
-        _android_aapt_path,
         invoker.res_sources_path,
       ]
 
@@ -1854,8 +1855,6 @@ if (enable_java_templates) {
         "--depfile",
         rebase_path(depfile, root_build_dir),
         "--include-resources=@FileArg($_rebased_build_config:android:sdk_jars)",
-        "--aapt-path",
-        rebase_path(_android_aapt_path, root_build_dir),
         "--dependencies-res-zips=@FileArg($_rebased_build_config:deps_info:dependency_zips)",
         "--extra-res-packages=@FileArg($_rebased_build_config:deps_info:extra_package_names)",
         "--extra-r-text-files=@FileArg($_rebased_build_config:deps_info:extra_r_text_files)",
@@ -2726,6 +2725,9 @@ if (enable_java_templates) {
         "--processorpath=@FileArg($_rebased_build_config:javac:processor_classpath)",
         "--processors=@FileArg($_rebased_build_config:javac:processor_classes)",
       ]
+      if (use_java_goma) {
+        args += [ "--gomacc-path=$goma_dir/gomacc" ]
+      }
       if (defined(invoker.srcjar_filearg)) {
         args += [ "--java-srcjars=${invoker.srcjar_filearg}" ]
       }
@@ -3400,9 +3402,10 @@ if (enable_java_templates) {
             output = _dex_path
             deps = [ ":$_process_prebuilt_target_name" ]
 
-            # Should never need multidex when compiling individual libraries.
-            # Disabling multidex saves on having to create a main_dex_list.
+            # For library targets, we do not need a proper main dex list, but do
+            # need to allow multiple dex files.
             enable_multidex = false
+            enable_library_multidex = true
           }
           _accumulated_public_deps += [ ":${target_name}__dex" ]
         }

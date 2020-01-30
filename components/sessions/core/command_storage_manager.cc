@@ -79,8 +79,16 @@ void CommandStorageManager::ScheduleCommand(
 
 void CommandStorageManager::AppendRebuildCommand(
     std::unique_ptr<SessionCommand> command) {
-  DCHECK(command);
-  pending_commands_.push_back(std::move(command));
+  std::vector<std::unique_ptr<SessionCommand>> commands;
+  commands.push_back(std::move(command));
+  AppendRebuildCommands(std::move(commands));
+}
+
+void CommandStorageManager::AppendRebuildCommands(
+    std::vector<std::unique_ptr<SessionCommand>> commands) {
+  pending_commands_.insert(pending_commands_.end(),
+                           std::make_move_iterator(commands.begin()),
+                           std::make_move_iterator(commands.end()));
 }
 
 void CommandStorageManager::EraseCommand(SessionCommand* old_command) {

@@ -67,6 +67,7 @@ cr.define('settings', function() {
   // during testing.
   cr.addSingletonGetter(LanguagesBrowserProxyImpl);
 
+  // #cr_define_end
   return {
     LanguagesBrowserProxy: LanguagesBrowserProxy,
     LanguagesBrowserProxyImpl: LanguagesBrowserProxyImpl,

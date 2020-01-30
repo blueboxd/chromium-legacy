@@ -11,6 +11,7 @@ public class ConversionUtils {
     public static final int BYTES_PER_KILOBYTE = 1024;
     public static final int BYTES_PER_MEGABYTE = 1024 * 1024;
     public static final int BYTES_PER_GIGABYTE = 1024 * 1024 * 1024;
+    public static final int KILOBYTES_PER_MEGABYTE = 1024;
     public static final int KILOBYTES_PER_GIGABYTE = 1024 * 1024;
 
     public static long bytesToKilobytes(long bytes) {
@@ -23,5 +24,9 @@ public class ConversionUtils {
 
     public static long bytesToGigabytes(long bytes) {
         return bytes / BYTES_PER_GIGABYTE;
+    }
+
+    public static long kilobytesToMegabytes(long kilobytes) {
+        return kilobytes / KILOBYTES_PER_MEGABYTE;
     }
 }

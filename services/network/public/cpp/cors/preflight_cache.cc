@@ -42,8 +42,9 @@ PreflightCache::PreflightCache() = default;
 PreflightCache::~PreflightCache() = default;
 
 void PreflightCache::AppendEntry(
-    const std::string& origin,
+    const url::Origin& origin,
     const GURL& url,
+    const net::NetworkIsolationKey& network_isolation_key,
     std::unique_ptr<PreflightResult> preflight_result) {
   DCHECK(preflight_result);
 
@@ -52,7 +53,11 @@ void PreflightCache::AppendEntry(
   if (url_spec.length() >= kMaxKeyLength)
     return;
 
-  auto key = std::make_pair(origin, url_spec);
+  DCHECK(
+      !network_isolation_key.GetFrameOrigin().has_value() ||
+      (origin.opaque() && network_isolation_key.GetFrameOrigin()->opaque()) ||
+      network_isolation_key.GetFrameOrigin()->IsSameOriginWith(origin));
+  auto key = std::make_tuple(origin, url_spec, network_isolation_key);
   const auto existing_entry = cache_.find(key);
   if (existing_entry == cache_.end()) {
     // Since one new entry is always added below, let's purge one cache entry
@@ -67,14 +72,19 @@ void PreflightCache::AppendEntry(
 }
 
 bool PreflightCache::CheckIfRequestCanSkipPreflight(
-    const std::string& origin,
+    const url::Origin& origin,
     const GURL& url,
+    const net::NetworkIsolationKey& network_isolation_key,
     mojom::CredentialsMode credentials_mode,
     const std::string& method,
     const net::HttpRequestHeaders& request_headers,
     bool is_revalidating) {
   // Check if the entry exists in the cache.
-  auto key = std::make_pair(origin, url.spec());
+  DCHECK(
+      !network_isolation_key.GetFrameOrigin().has_value() ||
+      (origin.opaque() && network_isolation_key.GetFrameOrigin()->opaque()) ||
+      network_isolation_key.GetFrameOrigin()->IsSameOriginWith(origin));
+  auto key = std::make_tuple(origin, url.spec(), network_isolation_key);
   auto cache_entry = cache_.find(key);
   if (cache_entry == cache_.end()) {
     ReportCacheMetric(CacheMetric::kMiss);

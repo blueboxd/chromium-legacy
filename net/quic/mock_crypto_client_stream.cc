@@ -278,6 +278,7 @@ void MockCryptoClientStream::SendOnCryptoHandshakeEvent(
     if (session()->use_handshake_delegate()) {
       session()->SetDefaultEncryptionLevel(ENCRYPTION_FORWARD_SECURE);
       session()->DiscardOldEncryptionKey(ENCRYPTION_INITIAL);
+      session()->NeuterHandshakeData();
     } else {
       session()->connection()->SetDefaultEncryptionLevel(
           ENCRYPTION_FORWARD_SECURE);

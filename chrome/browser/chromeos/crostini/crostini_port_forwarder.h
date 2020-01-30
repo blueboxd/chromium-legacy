@@ -46,11 +46,21 @@ class CrostiniPortForwarder : public KeyedService {
   };
 
   using ResultCallback = base::OnceCallback<void(bool)>;
-  void ActivatePort(uint16_t port_number, ResultCallback result_callback);
+  void ActivatePort(uint16_t port_number,
+                    const Protocol& protocol_type,
+                    ResultCallback result_callback);
   void AddPort(uint16_t port_number,
                const Protocol& protocol_type,
                const std::string& label,
                ResultCallback result_callback);
+  void DeactivatePort(uint16_t port_number,
+                      const Protocol& protocol_type,
+                      ResultCallback result_callback);
+  void RemovePort(uint16_t port_number,
+                  const Protocol& protocol_type,
+                  ResultCallback result_callback);
+
+  size_t GetNumberOfForwardedPortsForTesting();
 
   static CrostiniPortForwarder* GetForProfile(Profile* profile);
 
@@ -58,9 +68,6 @@ class CrostiniPortForwarder : public KeyedService {
   ~CrostiniPortForwarder() override;
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(CrostiniPortForwarderTest, AddPortDuplicateFail);
-  FRIEND_TEST_ALL_PREFIXES(CrostiniPortForwarderTest, AddPortMultipleSuccess);
-  FRIEND_TEST_ALL_PREFIXES(CrostiniPortForwarderTest, AddPortUdpAndTcpSuccess);
   FRIEND_TEST_ALL_PREFIXES(CrostiniPortForwarderTest,
                            TryActivatePortPermissionBrokerClientFail);
   void OnActivatePortCompleted(ResultCallback result_callback,
@@ -70,6 +77,14 @@ class CrostiniPortForwarder : public KeyedService {
                           std::string label,
                           PortRuleKey key,
                           bool success);
+  void OnDeactivatePortCompleted(ResultCallback result_callback,
+                                 PortRuleKey key,
+                                 bool success);
+  void OnRemovePortCompleted(ResultCallback result_callback,
+                             PortRuleKey key,
+                             bool success);
+  void TryDeactivatePort(const PortRuleKey& key,
+                         base::OnceCallback<void(bool)> result_callback);
   void TryActivatePort(uint16_t port_number,
                        const Protocol& protocol_type,
                        const std::string& ipv4_addr,

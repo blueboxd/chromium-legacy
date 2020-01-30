@@ -79,35 +79,6 @@ class HardwareRendererViz::OnViz : public viz::DisplayClient {
       const viz::FrameSinkId& id) override;
 
  private:
-  class CompositorFrameSinkClient
-      : public viz::mojom::CompositorFrameSinkClient {
-   public:
-    CompositorFrameSinkClient(OnViz* owner,
-                              uint32_t layer_tree_frame_sink_id,
-                              viz::FrameSinkId frame_sink_id)
-        : owner_(owner),
-          layer_tree_frame_sink_id_(layer_tree_frame_sink_id),
-          frame_sink_id_(frame_sink_id) {}
-
-    void DidReceiveCompositorFrameAck(
-        const std::vector<viz::ReturnedResource>& resources) override {
-      ReclaimResources(resources);
-    }
-    void OnBeginFrame(const viz::BeginFrameArgs& args,
-                      const viz::FrameTimingDetailsMap& feedbacks) override {}
-    void OnBeginFramePausedChanged(bool paused) override {}
-    void ReclaimResources(
-        const std::vector<viz::ReturnedResource>& resources) override {
-      owner_->without_gpu_->ReturnResources(
-          frame_sink_id_, layer_tree_frame_sink_id_, resources);
-    }
-
-   private:
-    OnViz* const owner_;
-    const uint32_t layer_tree_frame_sink_id_;
-    const viz::FrameSinkId frame_sink_id_;
-  };
-
   viz::FrameSinkManagerImpl* GetFrameSinkManager();
 
   scoped_refptr<RootFrameSink> without_gpu_;
@@ -117,9 +88,6 @@ class HardwareRendererViz::OnViz : public viz::DisplayClient {
   viz::ParentLocalSurfaceIdAllocator parent_local_surface_id_allocator_;
   std::unique_ptr<viz::BeginFrameSource> stub_begin_frame_source_;
   std::unique_ptr<viz::Display> display_;
-
-  std::unique_ptr<CompositorFrameSinkClient> child_sink_client_;
-  std::unique_ptr<viz::CompositorFrameSinkSupport> child_sink_support_;
 
   std::unique_ptr<viz::HitTestAggregator> hit_test_aggregator_;
   viz::SurfaceId child_surface_id_;
@@ -181,33 +149,7 @@ void HardwareRendererViz::OnViz::DrawAndSwapOnViz(
 
   if (child_frame->frame) {
     DCHECK(!viz_frame_submission_);
-    if (!child_sink_support_ ||
-        child_sink_support_->frame_sink_id() != child_frame->frame_sink_id) {
-      child_sink_support_.reset();
-      child_sink_client_.reset();
-
-      child_sink_client_ = std::make_unique<CompositorFrameSinkClient>(
-          this, child_frame->layer_tree_frame_sink_id,
-          child_frame->frame_sink_id);
-
-      child_sink_support_ = std::make_unique<viz::CompositorFrameSinkSupport>(
-          child_sink_client_.get(), GetFrameSinkManager(),
-          child_frame->frame_sink_id, false);
-
-      child_sink_support_->SetBeginFrameSource(nullptr);
-    }
-
-    child_sink_support_->SubmitCompositorFrame(
-        child_frame->local_surface_id, std::move(*child_frame->frame),
-        std::move(child_frame->hit_test_region_list));
-    child_frame->frame.reset();
-
-    CopyOutputRequestQueue requests;
-    requests.swap(child_frame->copy_requests);
-    for (auto& copy_request : requests) {
-      child_sink_support_->RequestCopyOfOutput(child_frame->local_surface_id,
-                                               std::move(copy_request));
-    }
+    without_gpu_->SubmitChildCompositorFrame(child_frame);
   }
 
   gfx::DisplayColorSpaces display_color_spaces(
@@ -278,9 +220,7 @@ void HardwareRendererViz::OnViz::DrawAndSwapOnViz(
 
 void HardwareRendererViz::OnViz::PostDrawOnViz(
     viz::FrameTimingDetailsMap* timing_details) {
-  if (child_sink_support_) {
-    *timing_details = child_sink_support_->TakeFrameTimingDetailsMap();
-  }
+  *timing_details = without_gpu_->TakeChildFrameTimingDetailsMap();
 }
 
 viz::FrameSinkManagerImpl* HardwareRendererViz::OnViz::GetFrameSinkManager() {

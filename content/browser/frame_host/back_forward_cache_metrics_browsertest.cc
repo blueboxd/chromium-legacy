@@ -2,7 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/test/metrics/histogram_tester.h"
+#include "base/test/scoped_feature_list.h"
 #include "components/ukm/test_ukm_recorder.h"
+#include "content/browser/frame_host/back_forward_cache_impl.h"
+#include "content/browser/frame_host/back_forward_cache_metrics.h"
 #include "content/browser/frame_host/navigation_controller_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/navigation_handle.h"
@@ -18,6 +22,9 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/scheduler/web_scheduler_tracked_feature.h"
+
+using base::Bucket;
+using testing::ElementsAre;
 
 namespace content {
 
@@ -67,6 +74,10 @@ class BackForwardCacheMetricsBrowserTest : public ContentBrowserTest,
     content::SetupCrossSiteRedirector(embedded_test_server());
     ASSERT_TRUE(embedded_test_server()->Start());
     WebContentsObserver::Observe(shell()->web_contents());
+  }
+
+  WebContentsImpl* web_contents() const {
+    return static_cast<WebContentsImpl*>(shell()->web_contents());
   }
 
   void DidStartNavigation(NavigationHandle* navigation_handle) override {
@@ -614,6 +625,224 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheMetricsBrowserTest, Geolocation) {
   )"));
   EXPECT_TRUE(main_frame->scheduler_tracked_features() &
               (1 << kRequestedGeolocationPermissionFeature));
+}
+
+class RecordBackForwardCacheMetricsWithoutEnabling
+    : public BackForwardCacheMetricsBrowserTest {
+ public:
+  RecordBackForwardCacheMetricsWithoutEnabling() {
+    // Sets the allowed websites for testing.
+    std::string allowed_websites =
+        "https://a.allowed/back_forward_cache/, "
+        "https://b.allowed/";
+    scoped_feature_list_.InitWithFeaturesAndParameters(
+        {{kRecordBackForwardCacheMetricsWithoutEnabling,
+          {{"allowed_websites", allowed_websites}}}},
+        {features::kBackForwardCache});
+  }
+
+  ~RecordBackForwardCacheMetricsWithoutEnabling() override = default;
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+IN_PROC_BROWSER_TEST_F(RecordBackForwardCacheMetricsWithoutEnabling,
+                       ReloadsAndHistoryNavigations) {
+  base::HistogramTester histogram_tester;
+  using ReloadsAndHistoryNavigations =
+      BackForwardCacheMetrics::ReloadsAndHistoryNavigations;
+  using ReloadsAfterHistoryNavigation =
+      BackForwardCacheMetrics::ReloadsAfterHistoryNavigation;
+
+  const char kReloadsAndHistoryNavigationsHistogram[] =
+      "BackForwardCache.ReloadsAndHistoryNavigations";
+  const char kReloadsAfterHistoryNavigationHistogram[] =
+      "BackForwardCache.ReloadsAfterHistoryNavigation";
+
+  EXPECT_THAT(
+      histogram_tester.GetAllSamples(kReloadsAndHistoryNavigationsHistogram),
+      testing::IsEmpty());
+  EXPECT_THAT(
+      histogram_tester.GetAllSamples(kReloadsAfterHistoryNavigationHistogram),
+      testing::IsEmpty());
+
+  GURL url1(embedded_test_server()->GetURL(
+      "a.allowed", "/back_forward_cache/allowed_path.html"));
+  GURL url2(embedded_test_server()->GetURL(
+      "b.disallowed", "/back_forward_cache/disallowed_path.html"));
+
+  // 1) Navigate to url1.
+  EXPECT_TRUE(NavigateToURL(shell(), url1));
+  // 2) Navigate to url2.
+  EXPECT_TRUE(NavigateToURL(shell(), url2));
+
+  // 3) Go back to url1 and reload.
+  web_contents()->GetController().GoBack();
+  EXPECT_TRUE(WaitForLoadStop(web_contents()));
+  web_contents()->GetController().Reload(content::ReloadType::NORMAL, false);
+  EXPECT_TRUE(WaitForLoadStop(web_contents()));
+
+  // Bucket count both "kHistoryNavigation" and
+  // "kReloadAfterHistoryNavigation" should be 1 after one history
+  // navigation and one reload.
+  EXPECT_THAT(
+      histogram_tester.GetAllSamples(kReloadsAndHistoryNavigationsHistogram),
+      ElementsAre(
+          Bucket(static_cast<int>(
+                     ReloadsAndHistoryNavigations::kHistoryNavigation),
+                 1),
+          Bucket(
+              static_cast<int>(
+                  ReloadsAndHistoryNavigations::kReloadAfterHistoryNavigation),
+              1)));
+
+  // BackForwardCache is disabled here, the navigation is not served from
+  // back-forward cache.
+  EXPECT_THAT(
+      histogram_tester.GetAllSamples(kReloadsAfterHistoryNavigationHistogram),
+      ElementsAre(Bucket(
+          static_cast<int>(
+              ReloadsAfterHistoryNavigation::kNotServedFromBackForwardCache),
+          1)));
+
+  // 4) Go forward to url2 and reload.
+  web_contents()->GetController().GoForward();
+  EXPECT_TRUE(WaitForLoadStop(web_contents()));
+  web_contents()->GetController().Reload(content::ReloadType::NORMAL, false);
+  EXPECT_TRUE(WaitForLoadStop(web_contents()));
+
+  // Bucket count both "kHistoryNavigation" and
+  // "kReloadAfterHistoryNavigation" should still be 1 since the url2 is
+  // not in the list of allowed_websties by
+  // "kRecordBackForwardCacheMetricsWithoutEnabling" feature.
+  EXPECT_THAT(
+      histogram_tester.GetAllSamples(kReloadsAndHistoryNavigationsHistogram),
+      ElementsAre(
+          Bucket(static_cast<int>(
+                     ReloadsAndHistoryNavigations::kHistoryNavigation),
+                 1),
+          Bucket(
+              static_cast<int>(
+                  ReloadsAndHistoryNavigations::kReloadAfterHistoryNavigation),
+              1)));
+
+  EXPECT_THAT(
+      histogram_tester.GetAllSamples(kReloadsAfterHistoryNavigationHistogram),
+      ElementsAre(Bucket(
+          static_cast<int>(
+              ReloadsAfterHistoryNavigation::kNotServedFromBackForwardCache),
+          1)));
+}
+
+class BackForwardCacheEnabledMetricsBrowserTest
+    : public BackForwardCacheMetricsBrowserTest {
+ protected:
+  BackForwardCacheEnabledMetricsBrowserTest() {
+    scoped_feature_list_.InitAndEnableFeatureWithParameters(
+        features::kBackForwardCache,
+        {
+            // Set a very long TTL before expiration (longer than the test
+            // timeout) so tests that are expecting deletion don't pass when
+            // they shouldn't.
+            {"TimeToLiveInBackForwardCacheInSeconds", "3600"},
+        });
+  }
+
+  ~BackForwardCacheEnabledMetricsBrowserTest() override = default;
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+IN_PROC_BROWSER_TEST_F(BackForwardCacheEnabledMetricsBrowserTest,
+                       RecordReloadsAfterHistoryNavigation) {
+  base::HistogramTester histogram_tester;
+  using ReloadsAfterHistoryNavigation =
+      BackForwardCacheMetrics::ReloadsAfterHistoryNavigation;
+  const char kReloadsAfterHistoryNavigationHistogram[] =
+      "BackForwardCache.ReloadsAfterHistoryNavigation";
+
+  GURL url1(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  GURL url2(embedded_test_server()->GetURL("b.com", "/title2.html"));
+  GURL url3(embedded_test_server()->GetURL("c.com", "/title3.html"));
+
+  // 1) Navigate to url1 and reload.
+  EXPECT_TRUE(NavigateToURL(shell(), url1));
+  web_contents()->GetController().Reload(content::ReloadType::NORMAL, false);
+  EXPECT_TRUE(WaitForLoadStop(web_contents()));
+
+  // No reloads should be recorded since it is not a history navigation.
+  EXPECT_THAT(
+      histogram_tester.GetAllSamples(kReloadsAfterHistoryNavigationHistogram),
+      testing::IsEmpty());
+
+  // 2) Navigate to url2.
+  EXPECT_TRUE(NavigateToURL(shell(), url2));
+
+  // 3) Go back to url1 and reload.
+  web_contents()->GetController().GoBack();
+  EXPECT_TRUE(WaitForLoadStop(web_contents()));
+  web_contents()->GetController().Reload(content::ReloadType::NORMAL, false);
+  EXPECT_TRUE(WaitForLoadStop(web_contents()));
+
+  // Bucket with "kServedFromBackForwardCache" should be 1 as url1 is served
+  // from cache.
+  EXPECT_THAT(
+      histogram_tester.GetAllSamples(kReloadsAfterHistoryNavigationHistogram),
+      ElementsAre(Bucket(
+          static_cast<int>(
+              ReloadsAfterHistoryNavigation::kServedFromBackForwardCache),
+          1)));
+
+  // 4) Go forward to url2 and reload twice.
+  web_contents()->GetController().GoForward();
+  EXPECT_TRUE(WaitForLoadStop(web_contents()));
+  web_contents()->GetController().Reload(content::ReloadType::NORMAL, false);
+  EXPECT_TRUE(WaitForLoadStop(web_contents()));
+  web_contents()->GetController().Reload(content::ReloadType::NORMAL, false);
+  EXPECT_TRUE(WaitForLoadStop(web_contents()));
+
+  // Bucket with "kServedFromBackForwardCache" should be 2 as only the first
+  // reload after history navigation is recorded.
+  EXPECT_THAT(
+      histogram_tester.GetAllSamples(kReloadsAfterHistoryNavigationHistogram),
+      ElementsAre(Bucket(
+          static_cast<int>(
+              ReloadsAfterHistoryNavigation::kServedFromBackForwardCache),
+          2)));
+
+  // 5) Go back and navigate to url3.
+  web_contents()->GetController().GoBack();
+  EXPECT_TRUE(WaitForLoadStop(web_contents()));
+  RenderFrameHostImpl* rfh_url1 =
+      web_contents()->GetFrameTree()->root()->current_frame_host();
+
+  // Make url1 ineligible for caching so that when we navigate back it doesn't
+  // fetch the RenderFrameHost from the back-forward cache.
+  content::BackForwardCache::DisableForRenderFrameHost(
+      rfh_url1, "BackForwardCacheMetricsBrowserTest");
+  EXPECT_TRUE(NavigateToURL(shell(), url3));
+
+  // 6) Go back and reload.
+  // Ensure that "not served" is recorded.
+  web_contents()->GetController().GoBack();
+  EXPECT_TRUE(WaitForLoadStop(web_contents()));
+  web_contents()->GetController().Reload(content::ReloadType::NORMAL, false);
+  EXPECT_TRUE(WaitForLoadStop(web_contents()));
+
+  // Bucket with "kNotServedFromBackForwardCache" should be 1 as url3 is not
+  // served from BackForwardCache.
+  EXPECT_THAT(
+      histogram_tester.GetAllSamples(kReloadsAfterHistoryNavigationHistogram),
+      ElementsAre(
+          Bucket(static_cast<int>(ReloadsAfterHistoryNavigation::
+                                      kNotServedFromBackForwardCache),
+                 1),
+          Bucket(
+              static_cast<int>(
+                  ReloadsAfterHistoryNavigation::kServedFromBackForwardCache),
+              2)));
 }
 
 }  // namespace content

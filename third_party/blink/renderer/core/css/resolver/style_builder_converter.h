@@ -275,6 +275,9 @@ class StyleBuilderConverter {
   static IntrinsicLength ConvertIntrinsicLength(StyleResolverState&,
                                                 const CSSValue&);
 
+  static bool ConvertInternalEmptyLineHeight(StyleResolverState& state,
+                                             const CSSValue& value);
+
  private:
   static const CSSToLengthConversionData& CssToLengthConversionData(
       StyleResolverState&);

@@ -6,6 +6,7 @@
 #define CONTENT_SHELL_BROWSER_WEB_TEST_WEB_TEST_BLINK_TEST_CLIENT_H_
 
 #include "base/macros.h"
+#include "content/public/common/web_preferences.h"
 #include "content/shell/common/web_test.mojom.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "url/gurl.h"
@@ -24,6 +25,8 @@ class WebTestBlinkTestClient : public mojom::WebTestClient {
   void InitiateLayoutDump() override;
   void PrintMessageToStderr(const std::string& message) override;
   void Reload() override;
+  void OverridePreferences(
+      const content::WebPreferences& web_preferences) override;
   void CloseRemainingWindows() override;
   void GoToOffset(int offset) override;
   void SendBluetoothManualChooserEvent(const std::string& event,

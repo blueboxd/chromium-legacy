@@ -22,14 +22,14 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginBottom="8dp"
-            android:textAppearance="@style/TextAppearance.BlackTitle1" />
+            android:textAppearance="@style/TextAppearance.TextLarge.Primary" />
 
         <TextView
             android:id="@+id/description"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center"
-            android:textAppearance="@style/TextAppearance.BlackBody"
+            android:textAppearance="@style/TextAppearance.TextMedium.Secondary"
             android:lineSpacingExtra="6sp" />
 
         <LinearLayout

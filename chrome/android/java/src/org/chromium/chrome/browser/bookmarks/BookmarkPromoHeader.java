@@ -178,9 +178,20 @@ class BookmarkPromoHeader implements AndroidSyncSettingsObserver, SignInStateObs
     /**
      * @return Whether the user declined the personalized signin promo.
      */
-    private boolean wasPersonalizedSigninPromoDeclined() {
+    @VisibleForTesting
+    static boolean wasPersonalizedSigninPromoDeclined() {
         return SharedPreferencesManager.getInstance().readBoolean(
                 ChromePreferenceKeys.SIGNIN_PROMO_PERSONALIZED_DECLINED, false);
+    }
+
+    /**
+     * @return Whether the personalized signin promo should be shown to user.
+     */
+    private boolean shouldShowBookmarkSigninPromo() {
+        return mSignInManager.isSignInAllowed()
+                && SigninPromoController.hasNotReachedImpressionLimit(
+                        SigninAccessPoint.BOOKMARK_MANAGER)
+                && !wasPersonalizedSigninPromoDeclined();
     }
 
     private @PromoState int calculatePromoState() {
@@ -193,13 +204,8 @@ class BookmarkPromoHeader implements AndroidSyncSettingsObserver, SignInStateObs
         }
 
         if (!ChromeSigninController.get().isSignedIn()) {
-            boolean impressionLimitReached = !SigninPromoController.hasNotReachedImpressionLimit(
-                    SigninAccessPoint.BOOKMARK_MANAGER);
-            if (!mSignInManager.isSignInAllowed() || impressionLimitReached
-                    || wasPersonalizedSigninPromoDeclined()) {
-                return PromoState.PROMO_NONE;
-            }
-            return PromoState.PROMO_SIGNIN_PERSONALIZED;
+            return shouldShowBookmarkSigninPromo() ? PromoState.PROMO_SIGNIN_PERSONALIZED
+                                                   : PromoState.PROMO_NONE;
         }
 
         boolean impressionLimitNotReached =

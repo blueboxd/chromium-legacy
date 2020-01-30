@@ -23,13 +23,13 @@ struct StringTraits<base::StringPiece> {
 
   static void SetToNull(base::StringPiece* output) {
     // Convert null to an "empty" base::StringPiece.
-    output->set(nullptr, 0);
+    *output = base::StringPiece();
   }
 
   static base::StringPiece GetUTF8(base::StringPiece input) { return input; }
 
   static bool Read(StringDataView input, base::StringPiece* output) {
-    output->set(input.storage(), input.size());
+    *output = base::StringPiece(input.storage(), input.size());
     return true;
   }
 };

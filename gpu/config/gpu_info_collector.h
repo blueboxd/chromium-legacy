@@ -10,6 +10,7 @@
 #include "build/build_config.h"
 #include "gpu/config/gpu_extra_info.h"
 #include "gpu/config/gpu_info.h"
+#include "gpu/config/gpu_preferences.h"
 #include "gpu/gpu_export.h"
 
 namespace angle {
@@ -61,7 +62,8 @@ void FillGPUInfoFromSystemInfo(GPUInfo* gpu_info,
 GPU_EXPORT void CollectGraphicsInfoForTesting(GPUInfo* gpu_info);
 
 // Collect Graphics info related to the current process
-GPU_EXPORT bool CollectGpuExtraInfo(GpuExtraInfo* gpu_extra_info);
+GPU_EXPORT bool CollectGpuExtraInfo(GpuExtraInfo* gpu_extra_info,
+                                    const GpuPreferences& prefs);
 
 }  // namespace gpu
 

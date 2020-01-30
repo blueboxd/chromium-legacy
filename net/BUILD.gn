@@ -478,6 +478,9 @@ component("net") {
       "base/proxy_server.h",
       "base/request_priority.cc",
       "base/request_priority.h",
+      "base/scheme_host_port_matcher_result.h",
+      "base/scheme_host_port_matcher_rule.cc",
+      "base/scheme_host_port_matcher_rule.h",
       "base/static_cookie_policy.cc",
       "base/static_cookie_policy.h",
       "base/test_data_stream.cc",
@@ -850,7 +853,6 @@ component("net") {
       "quic/network_connection.cc",
       "quic/network_connection.h",
       "quic/platform/impl/quic_aligned_impl.h",
-      "quic/platform/impl/quic_bbr2_sender_impl.h",
       "quic/platform/impl/quic_bug_tracker_impl.h",
       "quic/platform/impl/quic_cert_utils_impl.h",
       "quic/platform/impl/quic_chromium_clock.cc",
@@ -4130,6 +4132,7 @@ test("net_unittests") {
     "base/prioritized_task_runner_unittest.cc",
     "base/priority_queue_unittest.cc",
     "base/registry_controlled_domains/registry_controlled_domain_unittest.cc",
+    "base/scheme_host_port_matcher_rule_unittest.cc",
     "base/static_cookie_policy_unittest.cc",
     "base/test_completion_callback_unittest.cc",
     "base/test_proxy_delegate.cc",
@@ -4550,7 +4553,10 @@ test("net_unittests") {
   }
 
   data = []
-  data_deps = [ "third_party/nist-pkits/" ]
+  data_deps = [
+    "third_party/nist-pkits/",
+    "//testing/buildbot/filters:net_unittests_filters",
+  ]
 
   if (is_linux || is_mac || is_win || is_fuchsia) {
     deps += [

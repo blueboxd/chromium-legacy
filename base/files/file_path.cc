@@ -190,8 +190,7 @@ FilePath::FilePath() = default;
 FilePath::FilePath(const FilePath& that) = default;
 FilePath::FilePath(FilePath&& that) noexcept = default;
 
-FilePath::FilePath(StringPieceType path) {
-  path.CopyToString(&path_);
+FilePath::FilePath(StringPieceType path) : path_(path) {
   StringType::size_type nul_pos = path_.find(kStringTerminator);
   if (nul_pos != StringType::npos)
     path_.erase(nul_pos, StringType::npos);
@@ -507,7 +506,7 @@ FilePath FilePath::Append(StringPieceType component) const {
 
   StringType::size_type nul_pos = component.find(kStringTerminator);
   if (nul_pos != StringPieceType::npos) {
-    component.substr(0, nul_pos).CopyToString(&without_nuls);
+    without_nuls = StringType(component.substr(0, nul_pos));
     appended = StringPieceType(without_nuls);
   }
 

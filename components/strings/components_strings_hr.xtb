@@ -428,7 +428,6 @@
 <translation id="2799223571221894425">Pokreni ponovo</translation>
 <translation id="2803306138276472711">Google sigurno pregledavanje nedavno je <ph name="BEGIN_LINK" />otkrilo zlonamjerni softver<ph name="END_LINK" /> na <ph name="SITE" />. Web-lokacije koje su inače sigurne ponekad mogu biti zaražene zlonamjernim softverom.</translation>
 <translation id="2807052079800581569">Y-položaj slike</translation>
-<translation id="2809804249696361569">Oba lista</translation>
 <translation id="2824775600643448204">Adresna traka i traka za pretraživanje</translation>
 <translation id="2826760142808435982">Veza je kriptirana i autentificirana šifrom <ph name="CIPHER" />, a <ph name="KX" /> služi za mehanizam razmjene ključeva.</translation>
 <translation id="2835170189407361413">Obriši obrazac</translation>
@@ -936,7 +935,6 @@
 <translation id="5112422516732747637">A5</translation>
 <translation id="5115216390227830982">European-Edp</translation>
 <translation id="5115563688576182185">(64-bitni)</translation>
-<translation id="5121469660360593280">Podijelite podatke sa svojim administratorom o sigurnosnim događajima koje je označila zaštita za Chrome za poslovne korisnike. To može uključivati URL-ove stranica koje posjetite, nazive ili metapodatke datoteka i korisničko ime koje koristite za prijavu na svoj uređaj i Chrome.</translation>
 <translation id="5123063207673082822">Vikend</translation>
 <translation id="5125394840236832993">B-Plus</translation>
 <translation id="5126510351761255129">Potvrdite svoju karticu</translation>
@@ -951,7 +949,6 @@
 <translation id="5161506081086828129">Spremnik za slaganje u snopove 9</translation>
 <translation id="516920405563544094">Unesite CVC za karticu <ph name="CREDIT_CARD" />. Nakon što ga potvrdite, podaci o kartici s vašeg Google računa podijelit će se s ovom web-lokacijom.</translation>
 <translation id="5169827969064885044">Mogli biste izgubiti pristup računu svoje organizacije ili bi netko mogao ukrasti vaš identitet. Chrome preporučuje da odmah promijenite zaporku.</translation>
-<translation id="5170017743895942767">Zaštita za Chrome za poslovne korisnike</translation>
 <translation id="5171045022955879922">Pretražite ili upišite URL</translation>
 <translation id="5171689220826475070">Fanfold-European</translation>
 <translation id="5172758083709347301">Strojno</translation>
@@ -1084,7 +1081,6 @@
 <translation id="5737183892635480227">{NUM_CARDS,plural, =1{Spremite karticu na svoj Google račun}one{Spremite kartice na svoj Google račun}few{Spremite kartice na svoj Google račun}other{Spremite kartice na svoj Google račun}}</translation>
 <translation id="5745980000221562234">{NUM_CARDS,plural, =1{Upotrijebite virtualni broj za ovu karticu}one{Odaberite karticu}few{Odaberite karticu}other{Odaberite karticu}}</translation>
 <translation id="5763042198335101085">Unesite važeću e-adresu</translation>
-<translation id="5763703224595565476">Administrator je omogućio značajku zaštita za Chrome za poslovne korisnike u vašem pregledniku. Zaštita za Chrome za poslovne korisnike ima pristup nekim vašim podacima.</translation>
 <translation id="5765072501007116331">Odaberite adresu za prikaz načina dostave i zahtjeva za dostavu.</translation>
 <translation id="5776313857861697733">Prioritet</translation>
 <translation id="5778550464785688721">Potpuni nadzor nad MIDI uređajima</translation>
@@ -1421,7 +1417,6 @@ Dodatne pojedinosti:
 <translation id="733923710415886693">Certifikat poslužitelja nije otkriven putem Transparentnosti certifikata.</translation>
 <translation id="734600844861828519">11x15</translation>
 <translation id="7346048084945669753">Korisnik je povezan:</translation>
-<translation id="73479065977517481"><ph name="ENROLLMENT_DOMAIN" /> omogućio je zaštitu za Chrome za poslovne korisnike u vašem pregledniku. Zaštita za Chrome za poslovne korisnike ima pristup nekim vašim podacima.</translation>
 <translation id="7349430561505560861">A4-Extra</translation>
 <translation id="7353601530677266744">Naredbeni redak</translation>
 <translation id="7372973238305370288">rezultat pretraživanja</translation>

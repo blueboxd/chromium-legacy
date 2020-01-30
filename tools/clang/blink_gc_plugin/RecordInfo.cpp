@@ -140,8 +140,7 @@ bool RecordInfo::IsGCDirectlyDerived() {
     if (!base)
       continue;
 
-    const std::string& name = base->getName();
-    if (Config::IsGCSimpleBase(name)) {
+    if (Config::IsGCSimpleBase(base->getName())) {
       directly_derived_gc_base_ = &it;
       break;
     }
@@ -184,9 +183,9 @@ void RecordInfo::walkBases() {
       if (!base)
         continue;
 
-      const std::string& name = base->getName();
+      llvm::StringRef name = base->getName();
       if (Config::IsGCBase(name)) {
-        gc_base_names_.push_back(name);
+        gc_base_names_.push_back(std::string(name));
         is_gc_derived_ = true;
       }
     }

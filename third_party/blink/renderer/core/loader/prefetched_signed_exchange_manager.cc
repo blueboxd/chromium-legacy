@@ -42,7 +42,9 @@ class PrefetchedSignedExchangeManager::PrefetchedSignedExchangeLoader
   PrefetchedSignedExchangeLoader(
       const WebURLRequest& request,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner)
-      : request_(request), task_runner_(std::move(task_runner)) {}
+      : task_runner_(std::move(task_runner)) {
+    request_.CopyFrom(request);
+  }
 
   ~PrefetchedSignedExchangeLoader() override {}
 
@@ -78,9 +80,15 @@ class PrefetchedSignedExchangeManager::PrefetchedSignedExchangeLoader
     // It is safe to use Unretained(client), because |client| is a
     // ResourceLoader which owns |this|, and we are binding with weak ptr of
     // |this| here.
-    pending_method_calls_.push(
-        WTF::Bind(&PrefetchedSignedExchangeLoader::LoadAsynchronously,
-                  GetWeakPtr(), request, WTF::Unretained(client)));
+    WebURLRequest new_request;
+    new_request.CopyFrom(request);
+    pending_method_calls_.push(WTF::Bind(
+        &PrefetchedSignedExchangeLoader::LoadAsynchronouslyWithValue,
+        GetWeakPtr(), std::move(new_request), WTF::Unretained(client)));
+  }
+  void LoadAsynchronouslyWithValue(WebURLRequest request,
+                                   WebURLLoaderClient* client) {
+    LoadAsynchronously(request, client);
   }
   void SetDefersLoading(bool value) override {
     if (url_loader_) {
@@ -115,7 +123,7 @@ class PrefetchedSignedExchangeManager::PrefetchedSignedExchangeLoader
     }
   }
 
-  const WebURLRequest request_;
+  WebURLRequest request_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   std::unique_ptr<WebURLLoader> url_loader_;
   std::queue<base::OnceClosure> pending_method_calls_;

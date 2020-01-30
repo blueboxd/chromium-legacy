@@ -1,6 +1,7 @@
 # Copyright 2019 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
+import("//components/captive_portal/core/features.gni")
 
 import("//build/config/features.gni")
 import("//build/config/locales.gni")
@@ -108,6 +109,8 @@ jumbo_static_library("weblayer_lib") {
     "browser/download_manager_delegate_impl.h",
     "browser/fake_permission_controller_delegate.cc",
     "browser/fake_permission_controller_delegate.h",
+    "browser/feature_list_creator.cc",
+    "browser/feature_list_creator.h",
     "browser/file_select_helper.cc",
     "browser/file_select_helper.h",
     "browser/i18n_util.cc",
@@ -117,6 +120,10 @@ jumbo_static_library("weblayer_lib") {
     "browser/navigation_controller_impl.h",
     "browser/navigation_impl.cc",
     "browser/navigation_impl.h",
+    "browser/persistence/browser_persistence_common.cc",
+    "browser/persistence/browser_persistence_common.h",
+    "browser/persistence/minimal_browser_persister.cc",
+    "browser/persistence/minimal_browser_persister.h",
     "browser/profile_impl.cc",
     "browser/profile_impl.h",
     "browser/session_service.cc",
@@ -176,6 +183,8 @@ jumbo_static_library("weblayer_lib") {
     sources += [
       "browser/android/metrics/uma_utils.cc",
       "browser/android/metrics/uma_utils.h",
+      "browser/android/metrics/weblayer_metrics_service_client.cc",
+      "browser/android/metrics/weblayer_metrics_service_client.h",
       "browser/devtools_manager_delegate_android.cc",
       "browser/devtools_manager_delegate_android.h",
       "browser/devtools_server_android.cc",
@@ -183,6 +192,13 @@ jumbo_static_library("weblayer_lib") {
       "browser/weblayer_impl_android.cc",
       "renderer/url_loader_throttle_provider.cc",
       "renderer/url_loader_throttle_provider.h",
+    ]
+  }
+
+  if (enable_captive_portal_detection) {
+    sources += [
+      "browser/captive_portal_service_factory.cc",
+      "browser/captive_portal_service_factory.h",
     ]
   }
 
@@ -203,11 +219,16 @@ jumbo_static_library("weblayer_lib") {
     "//components/autofill/content/renderer",
     "//components/autofill/core/browser",
     "//components/base32",
+    "//components/captive_portal/core:buildflags",
     "//components/crash/content/app",
     "//components/crash/content/browser",
     "//components/embedder_support",
     "//components/find_in_page",
+    "//components/keyed_service/content",
+    "//components/metrics",
     "//components/network_time",
+    "//components/policy/core/browser",
+    "//components/pref_registry:pref_registry",
     "//components/prefs",
     "//components/safe_browsing/core:features",
     "//components/security_interstitials/content:security_interstitial_page",
@@ -218,6 +239,8 @@ jumbo_static_library("weblayer_lib") {
     "//components/ssl_errors",
     "//components/startup_metric_utils/browser",
     "//components/user_prefs",
+    "//components/variations",
+    "//components/variations/service",
     "//components/version_info",
     "//components/web_cache/browser",
     "//content:content_resources",
@@ -234,6 +257,7 @@ jumbo_static_library("weblayer_lib") {
     "//net:net_resources",
     "//sandbox",
     "//services/network/public/mojom",
+    "//services/preferences/tracked",
     "//services/service_manager/embedder:embedder_result_codes",
     "//skia",
     "//third_party/blink/public/common",
@@ -259,6 +283,10 @@ jumbo_static_library("weblayer_lib") {
     "//weblayer/browser/webui:mojo_bindings",
   ]
 
+  if (enable_captive_portal_detection) {
+    deps += [ "//components/captive_portal/content" ]
+  }
+
   if (use_browser_spellchecker) {
     deps += [
       "//components/spellcheck/browser",
@@ -279,6 +307,7 @@ jumbo_static_library("weblayer_lib") {
       "//components/android_system_error_page",
       "//components/autofill/android:provider",
       "//components/crash/android:crashpad_main",
+      "//components/embedder_support/android/metrics",
       "//components/metrics",
       "//components/minidump_uploader",
       "//components/safe_browsing/content/renderer:throttles",
@@ -312,7 +341,11 @@ jumbo_static_library("weblayer_lib") {
   if (is_android) {
     deps += [
       "//components/embedder_support/android:web_contents_delegate",
+      "//components/metrics:gpu",
+      "//components/metrics:net",
+      "//components/metrics:ui",
       "//components/version_info",
+      "//services/resource_coordinator/public/cpp/memory_instrumentation:browser",
       "//ui/android",
       "//weblayer/browser/java:jni",
     ]

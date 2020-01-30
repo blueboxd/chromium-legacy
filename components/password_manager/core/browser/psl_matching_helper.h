@@ -14,17 +14,6 @@ class GURL;
 
 namespace password_manager {
 
-// Enum used for histogram tracking PSL Domain triggering.
-// New entries should only be added to the end of the enum (before *_COUNT) so
-// as to not disrupt existing data.
-enum PSLDomainMatchMetric {
-  PSL_DOMAIN_MATCH_NOT_USED = 0,
-  PSL_DOMAIN_MATCH_NONE,
-  PSL_DOMAIN_MATCH_FOUND,
-  PSL_DOMAIN_MATCH_FOUND_FEDERATED,
-  PSL_DOMAIN_MATCH_COUNT
-};
-
 enum class MatchResult {
   NO_MATCH,
   EXACT_MATCH,

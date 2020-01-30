@@ -426,7 +426,6 @@
 <translation id="2799223571221894425">Restartēt</translation>
 <translation id="2803306138276472711">Google drošās pārlūkošanas tehnoloģija vietnē <ph name="SITE" /> nesen <ph name="BEGIN_LINK" />konstatēja ļaunprātīgu programmatūru<ph name="END_LINK" />. Vietnes, kuras parasti ir drošas, dažkārt tiek inficētas ar ļaunprātīgu programmatūru.</translation>
 <translation id="2807052079800581569">Attēla pozīcija uz Y ass</translation>
-<translation id="2809804249696361569">Abas lapas</translation>
 <translation id="2824775600643448204">Adreses un meklēšanas josla</translation>
 <translation id="2826760142808435982">Savienojums ir šifrēts un autentificēts, izmantojot <ph name="CIPHER" />, un tajā tiek izmantots <ph name="KX" /> kā atslēgu apmaiņas mehānisms.</translation>
 <translation id="2835170189407361413">Notīrīt veidlapu</translation>
@@ -934,7 +933,6 @@
 <translation id="5112422516732747637">A5</translation>
 <translation id="5115216390227830982">European-Edp</translation>
 <translation id="5115563688576182185">(64 bitu)</translation>
-<translation id="5121469660360593280">Kopīgot ar jūsu administratoru datus par notikumiem, kuri ir saistīti ar drošību un ir atzīmēti funkcijā “Chrome aizsardzība uzņēmuma versijas lietotājiem”. Šajos datos var būt ietverti jūsu apmeklēto lapu URL, failu nosaukumi vai metadati un lietotājvārds, ar kuru pierakstāties ierīcē un pārlūkā Chrome.</translation>
 <translation id="5123063207673082822">Nedēļas nogale</translation>
 <translation id="5125394840236832993">B-Plus</translation>
 <translation id="5126510351761255129">Kartes verificēšana</translation>
@@ -949,7 +947,6 @@
 <translation id="5161506081086828129">9. izvades vieta</translation>
 <translation id="516920405563544094">Ievadiet kredītkartes <ph name="CREDIT_CARD" /> CVC kodu. Pēc apstiprināšanas kartes informācija no Google konta tiks kopīgota ar šo vietni.</translation>
 <translation id="5169827969064885044">Varat zaudēt piekļuvi savam organizācijas kontam, vai jūsu identitāte var tikt nozagta. Chrome iesaka nekavējoties nomainīt paroli.</translation>
-<translation id="5170017743895942767">Chrome aizsardzība uzņēmuma versijas lietotājiem</translation>
 <translation id="5171045022955879922">Meklējiet vai ievadiet URL.</translation>
 <translation id="5171689220826475070">Fanfold-European</translation>
 <translation id="5172758083709347301">Ierīce</translation>
@@ -1082,7 +1079,6 @@
 <translation id="5737183892635480227">{NUM_CARDS,plural, =1{Kartes datu saglabāšana Google kontā}zero{Karšu datu saglabāšana Google kontā}one{Karšu datu saglabāšana Google kontā}other{Karšu datu saglabāšana Google kontā}}</translation>
 <translation id="5745980000221562234">{NUM_CARDS,plural, =1{Izmantojiet šai kartei virtuālu numuru}zero{Atlasiet karti}one{Atlasiet karti}other{Atlasiet karti}}</translation>
 <translation id="5763042198335101085">Ievadiet derīgu e-pasta adresi</translation>
-<translation id="5763703224595565476">Jūsu administrators pārlūkā ir iespējojis funkciju “Chrome aizsardzība uzņēmuma versijas lietotājiem”. Funkcijai “Chrome aizsardzība uzņēmuma versijas lietotājiem” ir piekļuve daļai jūsu datu.</translation>
 <translation id="5765072501007116331">Lai skatītu piegādes veidus un prasības, atlasiet adresi.</translation>
 <translation id="5776313857861697733">Prioritārs</translation>
 <translation id="5778550464785688721">Pilnīga MIDI ierīču pārvaldība</translation>
@@ -1419,7 +1415,6 @@ Papildu informācija:
 <translation id="733923710415886693">Servera sertifikāts netika atklāts, izmantojot Certificate Transparency.</translation>
 <translation id="734600844861828519">11x15</translation>
 <translation id="7346048084945669753">Ir saistīts:</translation>
-<translation id="73479065977517481"><ph name="ENROLLMENT_DOMAIN" /> jūsu pārlūkā ir iespējojis funkciju “Chrome aizsardzība uzņēmuma versijas lietotājiem”. Funkcijai “Chrome aizsardzība uzņēmuma versijas lietotājiem” ir piekļuve daļai jūsu datu.</translation>
 <translation id="7349430561505560861">A4-Extra</translation>
 <translation id="7353601530677266744">Komandrinda</translation>
 <translation id="7372973238305370288">meklēšanas rezultāts</translation>

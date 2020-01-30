@@ -99,6 +99,7 @@ color
 colorInterpolation
 colorInterpolationFilters
 colorRendering
+colorScheme
 columnCount
 columnFill
 columnGap

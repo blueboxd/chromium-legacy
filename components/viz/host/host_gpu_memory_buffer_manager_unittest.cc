@@ -229,6 +229,10 @@ class HostGpuMemoryBufferManagerTest : public ::testing::Test {
         std::move(gpu_service_provider), 1,
         std::move(gpu_memory_buffer_support),
         base::ThreadTaskRunnerHandle::Get());
+#if defined(USE_X11)
+    // X11 requires GPU process initialization to determine GMB support.
+    gpu_memory_buffer_manager_->native_configurations_initialized_.Signal();
+#endif
   }
 
   // Not all platforms support native configurations (currently only Windows,

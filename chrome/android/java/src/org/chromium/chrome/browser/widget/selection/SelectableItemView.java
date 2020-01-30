@@ -9,8 +9,11 @@ import android.content.res.ColorStateList;
 import android.graphics.drawable.Drawable;
 import android.support.graphics.drawable.AnimatedVectorDrawableCompat;
 import android.support.v7.content.res.AppCompatResources;
+import android.support.v7.widget.AppCompatImageButton;
 import android.util.AttributeSet;
+import android.view.LayoutInflater;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.Nullable;
@@ -21,7 +24,8 @@ import org.chromium.chrome.R;
 import org.chromium.components.browser_ui.widget.TintedDrawable;
 
 /**
- * Default implementation of SelectableItemViewBase.
+ * Default implementation of SelectableItemViewBase. Contains a start icon, title, description, and
+ * optional end icon (GONE by default). Views may be accessed through protected member variables.
  *
  * @param <E> The type of the item associated with this SelectableItemViewBase.
  */
@@ -30,18 +34,44 @@ public abstract class SelectableItemView<E> extends SelectableItemViewBase<E> {
     protected final int mSelectedLevel;
     protected final AnimatedVectorDrawableCompat mCheckDrawable;
 
-    protected ImageView mIconView;
+    /**
+     * The LinearLayout containing the rest of the views for the selectable item.
+     */
+    protected LinearLayout mContentView;
+
+    /**
+     * An icon displayed at the start of the item row.
+     */
+    protected ImageView mStartIconView;
+
+    /**
+     * An optional button displayed at the end of the item row, GONE by default.
+     */
+    protected AppCompatImageButton mEndButtonView;
+
+    /**
+     * A title line displayed between the start and (optional) end icon.
+     */
     protected TextView mTitleView;
+
+    /**
+     * A description line displayed below the title line.
+     */
     protected TextView mDescriptionView;
-    protected ColorStateList mIconColorList;
-    private Drawable mIconDrawable;
+
+    /**
+     * The color state list for the start icon view when the item is selected.
+     */
+    protected ColorStateList mStartIconSelectedColorList;
+
+    private Drawable mStartIconDrawable;
 
     /**
      * Constructor for inflating from XML.
      */
     public SelectableItemView(Context context, AttributeSet attrs) {
         super(context, attrs);
-        mIconColorList = AppCompatResources.getColorStateList(
+        mStartIconSelectedColorList = AppCompatResources.getColorStateList(
                 getContext(), R.color.default_icon_color_inverse);
         mDefaultLevel = getResources().getInteger(R.integer.list_item_level_default);
         mSelectedLevel = getResources().getInteger(R.integer.list_item_level_selected);
@@ -53,58 +83,61 @@ public abstract class SelectableItemView<E> extends SelectableItemViewBase<E> {
     @Override
     protected void onFinishInflate() {
         super.onFinishInflate();
+        LayoutInflater.from(getContext()).inflate(R.layout.modern_list_item_view, this);
 
-        mIconView = findViewById(R.id.icon_view);
+        mContentView = findViewById(R.id.content);
+        mStartIconView = findViewById(R.id.start_icon);
+        mEndButtonView = findViewById(R.id.end_button);
         mTitleView = findViewById(R.id.title);
         mDescriptionView = findViewById(R.id.description);
 
-        if (mIconView != null) {
-            mIconView.setBackgroundResource(R.drawable.list_item_icon_modern_bg);
-            ApiCompatibilityUtils.setImageTintList(mIconView, getDefaultIconTint());
+        if (mStartIconView != null) {
+            mStartIconView.setBackgroundResource(R.drawable.list_item_icon_modern_bg);
+            ApiCompatibilityUtils.setImageTintList(mStartIconView, getDefaultStartIconTint());
         }
     }
 
     /**
-     * Set drawable for the icon view. Note that you may need to use this method instead of
+     * Set drawable for the start icon view. Note that you may need to use this method instead of
      * mIconView#setImageDrawable to ensure icon view is correctly set in selection mode.
      */
-    protected void setIconDrawable(Drawable iconDrawable) {
-        mIconDrawable = iconDrawable;
+    protected void setStartIconDrawable(Drawable iconDrawable) {
+        mStartIconDrawable = iconDrawable;
         updateView(false);
     }
 
     /**
-     * Returns the drawable set for the icon view, if any.
+     * Returns the drawable set for the start icon view, if any.
      */
-    protected Drawable getIconDrawable() {
-        return mIconDrawable;
+    protected Drawable getStartIconDrawable() {
+        return mStartIconDrawable;
     }
 
     /**
-     * Update icon image and background based on whether this item is selected.
+     * Update start icon image and background based on whether this item is selected.
      */
     @Override
     protected void updateView(boolean animate) {
         // TODO(huayinz): Refactor this method so that mIconView is not exposed to subclass.
-        if (mIconView == null) return;
+        if (mStartIconView == null) return;
 
         if (isChecked()) {
-            mIconView.getBackground().setLevel(mSelectedLevel);
-            mIconView.setImageDrawable(mCheckDrawable);
-            ApiCompatibilityUtils.setImageTintList(mIconView, mIconColorList);
+            mStartIconView.getBackground().setLevel(mSelectedLevel);
+            mStartIconView.setImageDrawable(mCheckDrawable);
+            ApiCompatibilityUtils.setImageTintList(mStartIconView, mStartIconSelectedColorList);
             if (animate) mCheckDrawable.start();
         } else {
-            mIconView.getBackground().setLevel(mDefaultLevel);
-            mIconView.setImageDrawable(mIconDrawable);
-            ApiCompatibilityUtils.setImageTintList(mIconView, getDefaultIconTint());
+            mStartIconView.getBackground().setLevel(mDefaultLevel);
+            mStartIconView.setImageDrawable(mStartIconDrawable);
+            ApiCompatibilityUtils.setImageTintList(mStartIconView, getDefaultStartIconTint());
         }
     }
 
     /**
-     * @return The {@link ColorStateList} used to tint the icon drawable set via
-     *         {@link #setIconDrawable(Drawable)} when the item is not selected.
+     * @return The {@link ColorStateList} used to tint the start icon drawable set via
+     *         {@link #setStartIconDrawable(Drawable)} when the item is not selected.
      */
-    protected @Nullable ColorStateList getDefaultIconTint() {
+    protected @Nullable ColorStateList getDefaultStartIconTint() {
         return null;
     }
 

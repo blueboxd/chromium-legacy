@@ -98,10 +98,10 @@ SupervisedUserWhitelistService::GetWhitelistsFromCommandLine() {
     std::string name;
     size_t separator = whitelist.find(':');
     if (separator != base::StringPiece::npos) {
-      whitelist.substr(0, separator).CopyToString(&id);
-      whitelist.substr(separator + 1).CopyToString(&name);
+      id = std::string(whitelist.substr(0, separator));
+      name = std::string(whitelist.substr(separator + 1));
     } else {
-      whitelist.CopyToString(&id);
+      id = std::string(whitelist);
     }
 
     const bool result = whitelists.insert(std::make_pair(id, name)).second;

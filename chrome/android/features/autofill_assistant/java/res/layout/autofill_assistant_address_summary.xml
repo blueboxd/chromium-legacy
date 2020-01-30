@@ -15,14 +15,14 @@
               android:layout_height="wrap_content"
               android:ellipsize="end"
               android:singleLine="true"
-              android:textAppearance="@style/TextAppearance.BlackBody"/>
+              android:textAppearance="@style/TextAppearance.TextMedium.Secondary"/>
 
     <TextView android:id="@+id/short_address"
               android:layout_width="wrap_content"
               android:layout_height="wrap_content"
               android:ellipsize="end"
               android:singleLine="true"
-              android:textAppearance="@style/TextAppearance.BlackBody"/>
+              android:textAppearance="@style/TextAppearance.TextMedium.Secondary"/>
 
     <TextView
         android:id="@+id/incomplete_error"

@@ -17,26 +17,18 @@
 #include "components/gcm_driver/common/gcm_message.h"
 #include "components/gcm_driver/crypto/gcm_encryption_provider.h"
 #include "components/gcm_driver/gcm_client.h"
-#include "components/gcm_driver/web_push_sender.h"
 
 namespace base {
 class FilePath;
 class SequencedTaskRunner;
-}
-
-namespace crypto {
-class ECPrivateKey;
-}
-
-namespace network {
-class SharedURLLoaderFactory;
-}
+}  // namespace base
 
 namespace gcm {
 
 class GCMAppHandler;
 class GCMConnectionObserver;
 enum class GCMDecryptionResult;
+enum class GCMEncryptionResult;
 struct AccountMapping;
 
 // Provides the InstanceID support via GCMDriver.
@@ -77,9 +69,8 @@ class InstanceIDHandler {
                                  const std::string& instance_id,
                                  const std::string& extra_data) = 0;
   virtual void RemoveInstanceIDData(const std::string& app_id) = 0;
-  virtual void GetInstanceIDData(
-      const std::string& app_id,
-      const GetInstanceIDDataCallback& callback) = 0;
+  virtual void GetInstanceIDData(const std::string& app_id,
+                                 const GetInstanceIDDataCallback& callback) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(InstanceIDHandler);
@@ -101,20 +92,21 @@ class GCMDriver {
                                            GCMClient::Result result)>;
   using GetEncryptionInfoCallback =
       base::OnceCallback<void(std::string p256dh, std::string auth_secret)>;
+  using EncryptMessageCallback =
+      base::OnceCallback<void(GCMEncryptionResult result, std::string message)>;
+  using DecryptMessageCallback =
+      base::OnceCallback<void(GCMDecryptionResult result, std::string message)>;
+
   using GetGCMStatisticsCallback =
       base::Callback<void(const GCMClient::GCMStatistics& stats)>;
 
   // Enumeration to be used with GetGCMStatistics() for indicating whether the
   // existing logs should be cleared or kept.
-  enum ClearActivityLogs {
-    CLEAR_LOGS,
-    KEEP_LOGS
-  };
+  enum ClearActivityLogs { CLEAR_LOGS, KEEP_LOGS };
 
   GCMDriver(
       const base::FilePath& store_path,
-      const scoped_refptr<base::SequencedTaskRunner>& blocking_task_runner,
-      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
+      const scoped_refptr<base::SequencedTaskRunner>& blocking_task_runner);
   virtual ~GCMDriver();
 
   // Registers |sender_ids| for an app. A registration ID will be returned by
@@ -162,33 +154,37 @@ class GCMDriver {
             const OutgoingMessage& message,
             const SendCallback& callback);
 
-  // Sends a WebPushMessage via Firebase Cloud Messaging (FCM) Web Push with
-  // end-to-end encryption.
-  // |app_id|: application ID.
-  // |authorized_entity|: authorization entity.
-  // |p256dh|: public encryption key of receiver device.
-  // |auth_secret|: authentcaition secret of receiver device.
-  // |fcm_token|: FCM registration token for receiving end.
-  // |vapid_key|: Private key to sign Voluntary Application Server
-  // Identification for Web Push header.
-  // |message|: WebPushMessage to be sent.
-  // |callback|: To be invoked with message_id if asynchronous operation
-  // succeeded, or base::nullopt if operation failed.
-  virtual void SendWebPushMessage(const std::string& app_id,
-                                  const std::string& authorized_entity,
-                                  const std::string& p256dh,
-                                  const std::string& auth_secret,
-                                  const std::string& fcm_token,
-                                  crypto::ECPrivateKey* vapid_key,
-                                  WebPushMessage message,
-                                  WebPushCallback callback);
-
   // Get the public encryption key and the authentication secret associated with
   // |app_id|. If none have been associated with |app_id| yet, they will be
   // created. The |callback| will be invoked when it is available. Only use with
   // GCM registrations; use InstanceID::GetEncryptionInfo for InstanceID tokens.
   virtual void GetEncryptionInfo(const std::string& app_id,
                                  GetEncryptionInfoCallback callback);
+
+  // Attempts to encrypt the |message| using draft-ietf-webpush-encryption-08
+  // scheme using keys from internal key store. Either GetEncryptionInfo or
+  // InstanceID::GetEncryptionInfo must be called once for keys to be available.
+  // |callback| will be called asynchronously when |message| has been encrypted.
+  // A dispatchable message will be used in case of success, an empty message in
+  // case of failure.
+  virtual void EncryptMessage(const std::string& app_id,
+                              const std::string& authorized_entity,
+                              const std::string& p256dh,
+                              const std::string& auth_secret,
+                              const std::string& message,
+                              EncryptMessageCallback callback);
+
+  // Attempts to decrypt the |message|using draft-ietf-webpush-encryption-08
+  // scheme using keys from internal key store. Either GetEncryptionInfo or
+  // InstanceID::GetEncryptionInfo must be called once for keys to be available.
+  // |callback| will be called asynchronously when |message| has been decrypted.
+  // A dispatchable message will be used in case of success, an empty message in
+  // case of failure.
+  // TODO(crbug/1045907): Decouple this from GCMDriver.
+  virtual void DecryptMessage(const std::string& app_id,
+                              const std::string& authorized_entity,
+                              const std::string& message,
+                              DecryptMessageCallback callback);
 
   const GCMAppHandlerMap& app_handlers() const { return app_handlers_; }
 
@@ -350,7 +346,7 @@ class GCMDriver {
   // failure for the |app_id| otherwise.
   void DispatchMessageInternal(const std::string& app_id,
                                GCMDecryptionResult result,
-                               const IncomingMessage& message);
+                               IncomingMessage message);
 
   // Called after unregistration completes in order to trigger the pending
   // registration.
@@ -360,13 +356,13 @@ class GCMDriver {
       UnregisterCallback unregister_callback,
       GCMClient::Result result);
 
-  // Called after webpush message is encrypted.
-  void OnMessageEncrypted(const std::string& fcm_token,
-                          crypto::ECPrivateKey* vapid_key,
-                          WebPushMessage message,
-                          WebPushCallback callback,
+  void OnMessageEncrypted(EncryptMessageCallback callback,
                           GCMEncryptionResult result,
-                          std::string payload);
+                          std::string message);
+
+  void OnMessageDecrypted(DecryptMessageCallback callback,
+                          GCMDecryptionResult result,
+                          IncomingMessage message);
 
   // Callback map (from app_id to callback) for Register.
   std::map<std::string, RegisterCallback> register_callbacks_;
@@ -383,9 +379,6 @@ class GCMDriver {
 
   // App handler map (from app_id to handler pointer). The handler is not owned.
   GCMAppHandlerMap app_handlers_;
-
-  // Sender for Web Push messages.
-  WebPushSender web_push_sender_;
 
   base::WeakPtrFactory<GCMDriver> weak_ptr_factory_{this};
 

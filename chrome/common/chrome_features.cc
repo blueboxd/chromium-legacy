@@ -385,7 +385,7 @@ const base::Feature kWindowsMixedReality{"WindowsMixedReality",
 
 #if BUILDFLAG(ENABLE_OPENXR)
 // Controls OpenXR support.
-const base::Feature kOpenXR{"OpenXR", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kOpenXR{"OpenXR", base::FEATURE_ENABLED_BY_DEFAULT};
 #endif  // ENABLE_OPENXR
 
 #endif  // BUILDFLAG(ENABLE_VR)

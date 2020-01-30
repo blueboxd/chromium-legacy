@@ -18,7 +18,6 @@ t.step(() => {
     const popupDocument = popupWindow.document;
     const hexValueContainer = popupDocument.getElementById('hexValueContainer');
     assert_equals(hexValueContainer.value, '#80d9ff');
-    eventSender.keyDown('Tab');
     const colorWellSelectionRing = popupDocument.querySelector('color-well > color-selection-ring');
     assert_equals(popupDocument.activeElement, colorWellSelectionRing);
     for (let i = 0; i < 10; i++) {

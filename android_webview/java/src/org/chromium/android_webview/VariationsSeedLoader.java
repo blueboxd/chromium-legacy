@@ -284,7 +284,10 @@ public class VariationsSeedLoader {
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
             try {
-                IVariationsSeedServer.Stub.asInterface(service).getSeed(mNewSeedFd, mOldSeedDate);
+                if (mNewSeedFd.getFd() >= 0) {
+                    IVariationsSeedServer.Stub.asInterface(service).getSeed(
+                            mNewSeedFd, mOldSeedDate);
+                }
             } catch (RemoteException e) {
                 Log.e(TAG, "Faild requesting seed", e);
             } finally {

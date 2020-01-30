@@ -6,6 +6,7 @@ module content.mojom;
 
 import "content/common/document_scoped_interface_bundle.mojom";
 import "content/common/native_types.mojom";
+import "content/public/common/web_preferences.mojom";
 import "ipc/constants.mojom";
 import "mojo/public/mojom/base/generic_pending_receiver.mojom";
 import "mojo/public/mojom/base/time.mojom";

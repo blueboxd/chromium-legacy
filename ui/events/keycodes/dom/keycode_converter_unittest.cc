@@ -50,6 +50,8 @@ struct KeycodeConverterData {
 #undef DOM_CODE_DECLARATION
 
 const uint32_t kUsbNonExistentKeycode = 0xffffff;
+const uint32_t kUsbUsBackslash = 0x070031;
+const uint32_t kUsbNonUsHash = 0x070032;
 
 TEST(UsbKeycodeMap, KeycodeConverterData) {
   // This test looks at all kinds of supported native codes.
@@ -145,6 +147,13 @@ TEST(UsbKeycodeMap, NonExistent) {
   EXPECT_EQ(
       ui::KeycodeConverter::InvalidNativeKeycode(),
       ui::KeycodeConverter::UsbKeycodeToNativeKeycode(kUsbNonExistentKeycode));
+}
+
+TEST(UsbKeycodeMap, UsBackslashIsNonUsHash) {
+  // Verify that UsbKeycodeToNativeKeycode treats the non-US "hash" key
+  // as equivalent to the US "backslash" key.
+  EXPECT_EQ(ui::KeycodeConverter::UsbKeycodeToNativeKeycode(kUsbUsBackslash),
+            ui::KeycodeConverter::UsbKeycodeToNativeKeycode(kUsbNonUsHash));
 }
 
 TEST(KeycodeConverter, DomCode) {

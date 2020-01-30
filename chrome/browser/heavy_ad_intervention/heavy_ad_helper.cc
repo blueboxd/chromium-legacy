@@ -47,9 +47,6 @@ std::string PrepareHeavyAdPage() {
   load_time_data.SetBoolean("overridable", false);
   load_time_data.SetBoolean("is_giant", false);
 
-  security_interstitials::common_string_util::PopulateDarkModeDisplaySetting(
-      &load_time_data);
-
   webui::SetLoadTimeDataDefaults(g_browser_process->GetApplicationLocale(),
                                  &load_time_data);
 

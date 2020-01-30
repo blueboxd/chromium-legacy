@@ -17,12 +17,12 @@
 #include "base/macros.h"
 #include "base/path_service.h"
 #include "base/test/task_environment.h"
+#include "fuchsia/base/context_provider_test_connector.h"
 #include "fuchsia/base/fit_adapter.h"
 #include "fuchsia/base/frame_test_util.h"
 #include "fuchsia/base/result_receiver.h"
 #include "fuchsia/base/test_devtools_list_fetcher.h"
 #include "fuchsia/base/test_navigation_listener.h"
-#include "fuchsia/engine/test/context_provider_test_connector.h"
 #include "net/http/http_request_headers.h"
 #include "net/test/embedded_test_server/default_handlers.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -51,7 +51,7 @@ class WebEngineIntegrationTest : public testing::Test {
 
   void StartWebEngine() {
     web_context_provider_ =
-        StartWebEngineForTests(web_engine_controller_.NewRequest());
+        cr_fuchsia::ConnectContextProvider(web_engine_controller_.NewRequest());
     web_context_provider_.set_error_handler(
         [](zx_status_t status) { ADD_FAILURE(); });
   }

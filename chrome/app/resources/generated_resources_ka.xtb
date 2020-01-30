@@ -78,7 +78,6 @@
 <translation id="1108600514891325577">შ&amp;ეწყვეტა</translation>
 <translation id="1110155001042129815">დაელოდეთ</translation>
 <translation id="1112420131909513020">ფონური ჩანართი იყენებს Bluetooth-კავშირს</translation>
-<translation id="1113042067630273625">ამ მოქმედებით გასუფთავდება საიტის შენახული მონაცემების <ph name="TOTAL_USAGE" />.</translation>
 <translation id="1114102982691049955"><ph name="PRINTER_MANUFACTURER" /> <ph name="PRINTER_MODEL" /> (USB)</translation>
 <translation id="1114202307280046356">ბრილიანტი</translation>
 <translation id="1114335938027186412">თქვენი კომპიუტერი შეიცავს სანდო პლატფორმის მოდულის (TPM) უსაფრთხოების მოწყობილობას, რომელიც Chrome OS-ში უსაფრთხოებასთან დაკავშირებული მრავალი კრიტიკული ფუნქციის შესასრულებლად გამოიყენება. მეტის გასაგებად, მოინახულეთ Chromebook-ის დახმარების ცენტრი: https://support.google.com/chromebook/?p=tpm</translation>
@@ -151,7 +150,6 @@
 <translation id="1197979282329025000">პრინტერისთვის <ph name="PRINTER_NAME" /> პრინტერის შესაძლებლობების მიღებისას შეცდომა მოხდა. პრინტერის რეგისტრაცია <ph name="CLOUD_PRINT_NAME" />-ით ვერ მოხერხდა.</translation>
 <translation id="119944043368869598">ყველაფრის გასუფთავება</translation>
 <translation id="1201402288615127009">შემდეგი</translation>
-<translation id="1202556750060561551">გასუფთავდება <ph name="SITE_GROUP_NAME" />-ის, მისი ქვესაიტების და დაინსტალირებული აპების მიერ შენახული ყველა მონაცემი და ქუქი-ჩანაწერი.</translation>
 <translation id="1202596434010270079">Kiosk აპი განახლდა. ამოიღეთ USB დისკი.</translation>
 <translation id="120368089816228251">მუსიკალური ნოტი</translation>
 <translation id="1205489148908752564">უფლებამოსილი მომხმარებლების წაკითხვა და შეცვლა</translation>
@@ -997,7 +995,6 @@
 <translation id="2365507699358342471">ამ საიტს შეუძლია გაცვლის ბუფერში კოპირებული ტექსტისა და სურათების ნახვა.</translation>
 <translation id="2366260648632264559">სისტემის ტექსტის ჩვენება ამ ენაზე</translation>
 <translation id="2367972762794486313">პროგრამების ჩვენება</translation>
-<translation id="2369105924912929484">გასუფთავებული გვერდის კონტენტის გადართვა</translation>
 <translation id="2371076942591664043">გახსენით როდესაც &amp;შესრულებულია</translation>
 <translation id="2373666622366160481">გვერდზე მორგება</translation>
 <translation id="2375406435414127095">დაუკავშირდით თქვენს ტელეფონს</translation>
@@ -1876,6 +1873,7 @@
 <translation id="3603177256297531067">ეს გვერდი ვერ ითარგმნა</translation>
 <translation id="3603622770190368340">მიიღეთ ქსელის სერთიფიკატი</translation>
 <translation id="3605780360466892872">ღილაკის დაჭერა</translation>
+<translation id="3608436266458100337">წამკითხველის რეჟიმი</translation>
 <translation id="3608576286259426129">მომხმარებლის გამოსახულების გადახედვა</translation>
 <translation id="3610369246614755442">სამაგრის ვენტილატორი საჭიროებს ტექნიკურ მომსახურებას</translation>
 <translation id="361106536627977100">ფლეშ მონაცემები</translation>
@@ -2626,7 +2624,6 @@
 <translation id="4665014895760275686">მწარმოებელი</translation>
 <translation id="4665446389743427678"><ph name="SITE" />-ის მიერ შენახული ყველა მონაცემი ამოიშლება.</translation>
 <translation id="4668721319092543482">დააწკაპუნეთ, რათა ჩართოთ <ph name="PLUGIN_NAME" /></translation>
-<translation id="4672657274720418656">გვერდის გასუფთავება</translation>
 <translation id="46733273239502219">გასუფთავდება დაინსტალირებულ აპებში არსებული ხაზგარეშე მონაცემებიც</translation>
 <translation id="4673442866648850031">სტილუსის ამოღებისას სტილუსის ხელსაწყოების გახსნა</translation>
 <translation id="4677585247300749148"><ph name="URL" /> ითხოვს მარტივ წვდომასთან დაკავშირებულ მოვლენებზე რეაგირების ნებართვა</translation>
@@ -3336,7 +3333,6 @@
 <translation id="5687326903064479980">დროის სარტყელი</translation>
 <translation id="5689516760719285838">მდებარეობა</translation>
 <translation id="56907980372820799">მონაცემების მიბმა</translation>
-<translation id="5691180005790455277">გასუფთავდება <ph name="SITE_GROUP_NAME" />-ისა და მისი ქვესაიტების მიერ შენახული ყველა მონაცემი და ქუქი-ჩანაწერი.</translation>
 <translation id="5691511426247308406">ოჯახი</translation>
 <translation id="5692183275898619210">ბეჭდვა დასრულდა</translation>
 <translation id="5696143504434933566">„<ph name="EXTENSION_NAME" />“-ის მხრიდან დარღვევის შესახებ შეტყობინება</translation>

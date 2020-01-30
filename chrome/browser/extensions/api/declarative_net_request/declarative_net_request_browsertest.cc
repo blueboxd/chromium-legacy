@@ -69,6 +69,7 @@
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/api/declarative_net_request/action_tracker.h"
 #include "extensions/browser/api/declarative_net_request/constants.h"
+#include "extensions/browser/api/declarative_net_request/declarative_net_request_api.h"
 #include "extensions/browser/api/declarative_net_request/rules_monitor_service.h"
 #include "extensions/browser/api/declarative_net_request/ruleset_manager.h"
 #include "extensions/browser/api/declarative_net_request/ruleset_matcher.h"
@@ -112,6 +113,8 @@
 namespace extensions {
 namespace declarative_net_request {
 namespace {
+
+namespace dnr_api = api::declarative_net_request;
 
 constexpr char kJSONRulesFilename[] = "rules_file.json";
 const base::FilePath::CharType kJSONRulesetFilepath[] =
@@ -530,17 +533,22 @@ class DeclarativeNetRequestBrowserTest
         tab_id ? base::StringPrintf("tabId: %d", *tab_id) : "";
     return ExecuteScriptInBackgroundPage(
         extension_id,
-        base::StringPrintf(kGetMatchedRulesScript, tab_id_param.c_str()));
+        base::StringPrintf(kGetMatchedRulesScript, tab_id_param.c_str()),
+        browsertest_util::ScriptUserActivation::kDontActivate);
   }
 
   // Calls getMatchedRules for |extension_id| and optionally, |tab_id| and
   // |timestamp|. Returns the matched rule count for rules more recent than
   // |timestamp| if specified, and are associated with the tab specified by
-  // |tab_id| or all tabs if |tab_id| is not specified. Returns any API error if
-  // the call fails.
-  std::string GetMatchedRuleCount(const ExtensionId& extension_id,
-                                  base::Optional<int> tab_id,
-                                  base::Optional<base::Time> timestamp) {
+  // |tab_id| or all tabs if |tab_id| is not specified. |script_user_activation|
+  // specifies if the call should be treated as a user gesture. Returns any API
+  // error if the call fails.
+  std::string GetMatchedRuleCount(
+      const ExtensionId& extension_id,
+      base::Optional<int> tab_id,
+      base::Optional<base::Time> timestamp,
+      browsertest_util::ScriptUserActivation script_user_activation =
+          browsertest_util::ScriptUserActivation::kDontActivate) {
     const char kGetMatchedRulesScript[] = R"(
       chrome.declarativeNetRequest.getMatchedRules(%s, (rules) => {
         if (chrome.runtime.lastError) {
@@ -564,7 +572,8 @@ class DeclarativeNetRequestBrowserTest
 
     return ExecuteScriptInBackgroundPage(
         extension_id,
-        base::StringPrintf(kGetMatchedRulesScript, param_string.c_str()));
+        base::StringPrintf(kGetMatchedRulesScript, param_string.c_str()),
+        script_user_activation);
   }
 
   std::set<GURL> GetAndResetRequestsToServer() {
@@ -2643,8 +2652,12 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
 
     return ExecuteScriptInBackgroundPage(
         last_loaded_extension_id(),
-        base::StringPrintf(kGetMatchedRulesScript, tab_id));
+        base::StringPrintf(kGetMatchedRulesScript, tab_id),
+        browsertest_util::ScriptUserActivation::kDontActivate);
   };
+
+  DeclarativeNetRequestGetMatchedRulesFunction::
+      set_disable_throttling_for_tests(true);
 
   // Four rules should be matched on the tab with |first_tab_id|:
   //   - the block rule for abc.com (ruleId = 1)
@@ -3279,6 +3292,9 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
   // getMatchedRules API function.
   set_has_feedback_permission(true);
 
+  DeclarativeNetRequestGetMatchedRulesFunction::
+      set_disable_throttling_for_tests(true);
+
   // Sub-frames are used for navigations instead of the main-frame to allow
   // multiple requests to be made without triggering a main-frame navigation,
   // which would move rules attributed to the previous main-frame to the unknown
@@ -3421,6 +3437,9 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
   // getMatchedRules API function.
   set_has_feedback_permission(true);
 
+  DeclarativeNetRequestGetMatchedRulesFunction::
+      set_disable_throttling_for_tests(true);
+
   const std::string test_host = "abc.com";
   GURL page_url = embedded_test_server()->GetURL(
       test_host, "/pages_with_script/index.html");
@@ -3495,6 +3514,9 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
   // getMatchedRules API function.
   set_has_feedback_permission(true);
 
+  DeclarativeNetRequestGetMatchedRulesFunction::
+      set_disable_throttling_for_tests(true);
+
   const std::string kFrameName1 = "frame1";
   const GURL page_url = embedded_test_server()->GetURL(
       "nomatch.com", "/page_with_two_frames.html");
@@ -3529,7 +3551,8 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
   )";
 
   std::string timestamp_string = ExecuteScriptInBackgroundPage(
-      extension_id, getMatchedRuleTimestampScript);
+      extension_id, getMatchedRuleTimestampScript,
+      browsertest_util::ScriptUserActivation::kDontActivate);
 
   double matched_rule_timestamp;
   ASSERT_TRUE(base::StringToDouble(timestamp_string, &matched_rule_timestamp));
@@ -3579,6 +3602,9 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
 
   // Turn activeTab on.
   set_has_active_tab_permission(true);
+
+  DeclarativeNetRequestGetMatchedRulesFunction::
+      set_disable_throttling_for_tests(true);
 
   const std::string test_host = "abc.com";
   GURL page_url = embedded_test_server()->GetURL(
@@ -3639,6 +3665,55 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
   // should return the rules matched for that tab.
   EXPECT_EQ("1", GetMatchedRuleCount(extension_id, second_tab_id,
                                      base::nullopt /* timestamp */));
+}
+
+// Test that getMatchedRules will not be throttled if the call is associated
+// with a user gesture.
+IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
+                       GetMatchedRulesNoThrottlingIfUserGesture) {
+  // Load the extension with a background script so scripts can be run from its
+  // generated background page.
+  set_has_background_script(true);
+
+  // Grant the feedback permission for the extension so it has access to the
+  // getMatchedRules API function.
+  set_has_feedback_permission(true);
+
+  // Ensure that GetMatchedRules is being throttled.
+  DeclarativeNetRequestGetMatchedRulesFunction::
+      set_disable_throttling_for_tests(false);
+
+  ASSERT_NO_FATAL_FAILURE(LoadExtensionWithRules({}));
+  const ExtensionId& extension_id = last_loaded_extension_id();
+
+  auto get_matched_rules_count = [this, &extension_id](bool user_gesture) {
+    auto user_gesture_setting =
+        user_gesture ? browsertest_util::ScriptUserActivation::kActivate
+                     : browsertest_util::ScriptUserActivation::kDontActivate;
+
+    return GetMatchedRuleCount(extension_id, base::nullopt /* tab_id */,
+                               base::nullopt /* timestamp */,
+                               user_gesture_setting);
+  };
+
+  // Call getMatchedRules without a user gesture, until the quota is reached.
+  // None of these calls should return an error.
+  for (int i = 1; i <= dnr_api::MAX_GETMATCHEDRULES_CALLS_PER_INTERVAL; ++i) {
+    SCOPED_TRACE(base::StringPrintf(
+        "Testing getMatchedRules call without user gesture %d of %d", i,
+        dnr_api::MAX_GETMATCHEDRULES_CALLS_PER_INTERVAL));
+    EXPECT_EQ("0", get_matched_rules_count(false));
+  }
+
+  // Calling getMatchedRules without a user gesture should return an error after
+  // the quota has been reached.
+  EXPECT_EQ(
+      "This request exceeds the MAX_GETMATCHEDRULES_CALLS_PER_INTERVAL quota.",
+      get_matched_rules_count(false));
+
+  // Calling getMatchedRules with a user gesture should not return an error even
+  // after the quota has been reached.
+  EXPECT_EQ("0", get_matched_rules_count(true));
 }
 
 // Tests the allowAllRequests action.

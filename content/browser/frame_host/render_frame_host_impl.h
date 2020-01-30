@@ -168,7 +168,7 @@ class ResourceRequestBody;
 }  // namespace network
 
 namespace ui {
-struct ClipboardFormatType;
+class ClipboardFormatType;
 }
 
 namespace content {
@@ -1305,6 +1305,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
                                  bool user_gesture) override;
   void DidDisplayInsecureContent() override;
   void DidContainInsecureFormAction() override;
+  void DocumentAvailableInMainFrame(bool uses_temporary_zoom_level) override;
   void SetNeedsOcclusionTracking(bool needs_tracking) override;
   void LifecycleStateChanged(blink::mojom::FrameLifecycleState state) override;
   void EvictFromBackForwardCache() override;
@@ -1423,6 +1424,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
                            SubframeShowsDialogWhenMainFrameNavigates);
   FRIEND_TEST_ALL_PREFIXES(RenderFrameHostImplBeforeUnloadBrowserTest,
                            TimerNotRestartedBySecondDialog);
+  FRIEND_TEST_ALL_PREFIXES(RenderFrameHostImplBrowserTest,
+                           ComputeSiteForCookiesParentNavigatedAway);
   FRIEND_TEST_ALL_PREFIXES(RenderFrameHostManagerTest,
                            CreateRenderViewAfterProcessKillAndClosedProxy);
   FRIEND_TEST_ALL_PREFIXES(RenderFrameHostManagerTest, DontSelectInvalidFiles);

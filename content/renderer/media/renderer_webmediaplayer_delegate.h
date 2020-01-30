@@ -68,6 +68,8 @@ class CONTENT_EXPORT RendererWebMediaPlayerDelegate
   void DidPlayerMediaPositionStateChange(
       int delegate_id,
       const media_session::MediaPosition& position) override;
+  void DidPictureInPictureAvailabilityChange(int delegate_id,
+                                             bool available) override;
 
   // content::RenderFrameObserver overrides.
   void WasHidden() override;

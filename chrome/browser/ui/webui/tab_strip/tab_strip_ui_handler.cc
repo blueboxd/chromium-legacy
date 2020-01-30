@@ -8,6 +8,7 @@
 #include "base/base64.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/optional.h"
 #include "base/values.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
@@ -17,6 +18,7 @@
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/tabs/tab_group.h"
 #include "chrome/browser/ui/tabs/tab_group_model.h"
 #include "chrome/browser/ui/tabs/tab_menu_model.h"
@@ -27,6 +29,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/tab_groups/tab_group_color.h"
 #include "components/tab_groups/tab_group_id.h"
+#include "components/tab_groups/tab_group_visual_data.h"
 #include "third_party/skia/include/core/SkStream.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/simple_menu_model.h"
@@ -151,6 +154,18 @@ class WebUITabContextMenu : public ui::SimpleMenuModel::Delegate,
   const ui::AcceleratorProvider* const accelerator_provider_;
   const int tab_index_;
 };
+
+base::Optional<tab_groups::TabGroupId> GetTabGroupIdFromString(
+    TabGroupModel* tab_group_model,
+    std::string group_id) {
+  for (tab_groups::TabGroupId candidate : tab_group_model->ListTabGroups()) {
+    if (candidate.ToString() == group_id) {
+      return base::Optional<tab_groups::TabGroupId>{candidate};
+    }
+  }
+
+  return base::nullopt;
+}
 
 }  // namespace
 
@@ -567,13 +582,11 @@ void TabStripUIHandler::HandleGroupTab(const base::ListValue* args) {
   DCHECK(got_tab);
 
   const std::string group_id_string = args->GetList()[1].GetString();
-
-  for (tab_groups::TabGroupId group_id :
-       browser_->tab_strip_model()->group_model()->ListTabGroups()) {
-    if (group_id.ToString() == group_id_string) {
-      browser_->tab_strip_model()->AddToExistingGroup({tab_index}, group_id);
-      break;
-    }
+  base::Optional<tab_groups::TabGroupId> group_id = GetTabGroupIdFromString(
+      browser_->tab_strip_model()->group_model(), group_id_string);
+  if (group_id.has_value()) {
+    browser_->tab_strip_model()->AddToExistingGroup({tab_index},
+                                                    group_id.value());
   }
 }
 
@@ -592,12 +605,79 @@ void TabStripUIHandler::HandleUngroupTab(const base::ListValue* args) {
 void TabStripUIHandler::HandleMoveGroup(const base::ListValue* args) {
   const std::string group_id_string = args->GetList()[0].GetString();
 
-  for (tab_groups::TabGroupId group_id :
-       browser_->tab_strip_model()->group_model()->ListTabGroups()) {
-    if (group_id.ToString() == group_id_string) {
-      int to_index = args->GetList()[1].GetInt();
-      browser_->tab_strip_model()->MoveGroupTo(group_id, to_index);
+  int to_index = args->GetList()[1].GetInt();
+  if (to_index == -1) {
+    to_index = browser_->tab_strip_model()->count();
+  }
+
+  auto* target_browser = browser_;
+  Browser* source_browser = nullptr;
+  base::Optional<tab_groups::TabGroupId> group_id = base::nullopt;
+
+  for (auto* browser : *BrowserList::GetInstance()) {
+    if (browser->profile() != target_browser->profile()) {
+      // Source and target browsers are different profiles or one of them is
+      // incognito.
+      continue;
     }
+
+    group_id = GetTabGroupIdFromString(
+        browser->tab_strip_model()->group_model(), group_id_string);
+    if (!group_id.has_value()) {
+      // No group with the ID found in this browser.
+      continue;
+    }
+
+    source_browser = browser;
+    break;
+  }
+
+  if (!source_browser) {
+    return;
+  }
+
+  TabGroup* group =
+      source_browser->tab_strip_model()->group_model()->GetTabGroup(
+          group_id.value());
+
+  if (source_browser == target_browser) {
+    if (group->ListTabs().front() == to_index) {
+      // If the group is already in place, don't move it. This may happen
+      // if multiple drag events happen while the tab group is still
+      // being moved.
+      return;
+    }
+
+    // If moving within the same browser, just do a simple move.
+    target_browser->tab_strip_model()->MoveGroupTo(group_id.value(), to_index);
+    return;
+  }
+
+  // Create a new group and copy the visuals to it.
+  tab_groups::TabGroupId new_group_id = tab_groups::TabGroupId::GenerateNew();
+  browser_->tab_strip_model()->group_model()->AddTabGroup(
+      new_group_id,
+      base::Optional<tab_groups::TabGroupVisualData>{*group->visual_data()});
+
+  content::WebContents* active_web_contents =
+      source_browser->tab_strip_model()->GetActiveWebContents();
+
+  std::vector<int> source_tab_indices = group->ListTabs();
+  int tab_count = source_tab_indices.size();
+  for (int i = 0; i < tab_count; i++) {
+    // The index needs to account for the tabs being detached, as they will
+    // cause the indices to shift.
+    int index = source_tab_indices[i] - i;
+    std::unique_ptr<content::WebContents> detached_contents =
+        source_browser->tab_strip_model()->DetachWebContentsAt(index);
+
+    int add_types = TabStripModel::ADD_NONE;
+    if (detached_contents.get() == active_web_contents) {
+      add_types |= TabStripModel::ADD_ACTIVE;
+    }
+
+    target_browser->tab_strip_model()->InsertWebContentsAt(
+        to_index + i, std::move(detached_contents), add_types, new_group_id);
   }
 }
 

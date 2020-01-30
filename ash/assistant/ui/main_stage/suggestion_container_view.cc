@@ -178,6 +178,13 @@ void SuggestionContainerView::InitLayout() {
 
 void SuggestionContainerView::OnConversationStartersChanged(
     const std::map<int, const AssistantSuggestion*>& conversation_starters) {
+  // If we've received a response we should ignore changes to the cache of
+  // conversation starters as we are past the state in which they should be
+  // presented. To present them now would incorrectly associate the conversation
+  // starters with a response.
+  if (has_received_response_)
+    return;
+
   RemoveAllViews();
   OnSuggestionsChanged(conversation_starters);
   AnimateIn();

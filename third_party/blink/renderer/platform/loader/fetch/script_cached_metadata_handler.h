@@ -34,7 +34,7 @@ class PLATFORM_EXPORT ScriptCachedMetadataHandler final
                               std::unique_ptr<CachedMetadataSender>);
   ~ScriptCachedMetadataHandler() override = default;
   void Trace(blink::Visitor*) override;
-  void SetCachedMetadata(uint32_t, const uint8_t*, size_t, CacheType) override;
+  void SetCachedMetadata(uint32_t, const uint8_t*, size_t) override;
   void ClearCachedMetadata(CacheType) override;
   scoped_refptr<CachedMetadata> GetCachedMetadata(uint32_t) const override;
 

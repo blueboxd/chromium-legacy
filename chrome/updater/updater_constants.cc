@@ -31,7 +31,7 @@ const char kCrashStagingUploadURL[] =
     "https://clients2.google.com/cr/staging_report";
 
 // Path names.
-extern const char kAppsDir[] = "apps";
-extern const char kUninstallScript[] = "uninstall.cmd";
+const char kAppsDir[] = "apps";
+const char kUninstallScript[] = "uninstall.cmd";
 
 }  // namespace updater

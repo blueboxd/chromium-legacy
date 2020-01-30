@@ -88,16 +88,24 @@ HRESULT GemDeviceDetailsManager::UploadDeviceDetails(
       base::UTF16ToUTF8(serial_number));
   request_dict.SetStringKey(kUploadDeviceDetailsRequestMachineGuidParameterName,
                             base::UTF16ToUTF8(machine_guid));
+  base::Optional<base::Value> request_result;
 
   hr = WinHttpUrlFetcher::BuildRequestAndFetchResultFromHttpService(
       GemDeviceDetailsManager::Get()->GetGemServiceUploadDeviceDetailsUrl(),
-      access_token, {}, request_dict, {},
-      upload_device_details_request_timeout_);
+      access_token, {}, request_dict, upload_device_details_request_timeout_,
+      &request_result);
 
   if (FAILED(hr)) {
     LOGFN(ERROR) << "BuildRequestAndFetchResultFromHttpService hr="
                  << putHR(hr);
     return E_FAIL;
+  }
+
+  base::Value* error_detail =
+      request_result->FindDictKey(kErrorKeyInRequestResult);
+  if (error_detail) {
+    LOGFN(ERROR) << "error=" << *error_detail;
+    hr = E_FAIL;
   }
 
   return hr;

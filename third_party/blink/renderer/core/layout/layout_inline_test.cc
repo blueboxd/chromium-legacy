@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/layout/layout_inline.h"
 
+#include "build/build_config.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/core/layout/layout_block_flow.h"
@@ -674,6 +675,96 @@ TEST_P(ParameterizedLayoutInlineTest, AddAnnotatedRegionsVerticalRL) {
   Vector<AnnotatedRegionValue> regions3;
   GetLayoutObjectByElementId("target3")->AddAnnotatedRegions(regions3);
   EXPECT_TRUE(regions3.IsEmpty());
+}
+
+TEST_P(ParameterizedLayoutInlineTest, VisualOverflowRecalcLegacyLayout) {
+  // "contenteditable" forces us to use legacy layout, other options could be
+  // using "display: -webkit-box", ruby, etc.
+  LoadAhem();
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      body {
+        margin: 0;
+        font: 20px/20px Ahem;
+      }
+      target {
+        outline: 50px solid red;
+      }
+    </style>
+    <div contenteditable>
+      <span id="span">SPAN1</span>
+      <span id="span2">SPAN2</span>
+    </div>
+  )HTML");
+
+  auto* span = ToLayoutInline(GetLayoutObjectByElementId("span"));
+  auto* span_element = GetDocument().getElementById("span");
+  auto* span2_element = GetDocument().getElementById("span2");
+
+  span_element->setAttribute(html_names::kStyleAttr, "outline: 50px solid red");
+  UpdateAllLifecyclePhasesForTest();
+  EXPECT_EQ(PhysicalRect(-50, -50, 200, 120),
+            span->PhysicalVisualOverflowRect());
+
+  span_element->setAttribute(html_names::kStyleAttr, "");
+  span2_element->setAttribute(html_names::kStyleAttr,
+                              "outline: 50px solid red");
+  UpdateAllLifecyclePhasesForTest();
+  EXPECT_EQ(PhysicalRect(0, 0, 100, 20), span->PhysicalVisualOverflowRect());
+
+  span2_element->setAttribute(html_names::kStyleAttr, "");
+  span_element->setAttribute(html_names::kStyleAttr, "outline: 50px solid red");
+  UpdateAllLifecyclePhasesForTest();
+  EXPECT_EQ(PhysicalRect(-50, -50, 200, 120),
+            span->PhysicalVisualOverflowRect());
+
+  span_element->setAttribute(html_names::kStyleAttr, "");
+  UpdateAllLifecyclePhasesForTest();
+  EXPECT_EQ(PhysicalRect(0, 0, 100, 20), span->PhysicalVisualOverflowRect());
+}
+
+TEST_P(ParameterizedLayoutInlineTest, VisualOverflowRecalcLayoutNG) {
+  LoadAhem();
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      body {
+        margin: 0;
+        font: 20px/20px Ahem;
+      }
+      target {
+        outline: 50px solid red;
+      }
+    </style>
+    <div>
+      <span id="span">SPAN1</span>
+      <span id="span2">SPAN2</span>
+    </div>
+  )HTML");
+
+  auto* span = ToLayoutInline(GetLayoutObjectByElementId("span"));
+  auto* span_element = GetDocument().getElementById("span");
+  auto* span2_element = GetDocument().getElementById("span2");
+
+  span_element->setAttribute(html_names::kStyleAttr, "outline: 50px solid red");
+  UpdateAllLifecyclePhasesForTest();
+  EXPECT_EQ(PhysicalRect(-50, -50, 200, 120),
+            span->PhysicalVisualOverflowRect());
+
+  span_element->setAttribute(html_names::kStyleAttr, "");
+  span2_element->setAttribute(html_names::kStyleAttr,
+                              "outline: 50px solid red");
+  UpdateAllLifecyclePhasesForTest();
+  EXPECT_EQ(PhysicalRect(0, 0, 100, 20), span->PhysicalVisualOverflowRect());
+
+  span2_element->setAttribute(html_names::kStyleAttr, "");
+  span_element->setAttribute(html_names::kStyleAttr, "outline: 50px solid red");
+  UpdateAllLifecyclePhasesForTest();
+  EXPECT_EQ(PhysicalRect(-50, -50, 200, 120),
+            span->PhysicalVisualOverflowRect());
+
+  span_element->setAttribute(html_names::kStyleAttr, "");
+  UpdateAllLifecyclePhasesForTest();
+  EXPECT_EQ(PhysicalRect(0, 0, 100, 20), span->PhysicalVisualOverflowRect());
 }
 
 }  // namespace blink

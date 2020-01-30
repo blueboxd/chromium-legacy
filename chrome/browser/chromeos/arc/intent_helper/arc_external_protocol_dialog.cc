@@ -493,8 +493,8 @@ void OnIntentPickerClosed(
     DCHECK_EQ(apps::IntentPickerCloseReason::OPEN_APP, reason);
     DCHECK(!should_persist);
     HandleDeviceSelection(web_contents, devices, selected_app_package, url);
-    RecordUmaDialogAction(Scheme::TEL, entry_type, /*accepted=*/true,
-                          should_persist);
+    apps::IntentHandlingMetrics::RecordExternalProtocolMetrics(
+        Scheme::TEL, entry_type, /*accepted=*/true, should_persist);
     apps::IntentHandlingMetrics::RecordIntentPickerUserInteractionMetrics(
         selected_app_package, entry_type, reason,
         apps::Source::kExternalProtocol, should_persist);
@@ -588,8 +588,8 @@ void OnIntentPickerClosed(
   auto scheme_it = string_to_scheme.find(scheme);
   if (scheme_it != string_to_scheme.end())
     url_scheme = scheme_it->second;
-  RecordUmaDialogAction(url_scheme, entry_type, protocol_accepted,
-                        should_persist);
+  apps::IntentHandlingMetrics::RecordExternalProtocolMetrics(
+      url_scheme, entry_type, protocol_accepted, should_persist);
 
   apps::IntentHandlingMetrics::RecordIntentPickerUserInteractionMetrics(
       selected_app_package, entry_type, reason, apps::Source::kExternalProtocol,
@@ -822,22 +822,6 @@ void OnIntentPickerClosedForTesting(
                        safe_to_bypass_ui, std::move(handlers),
                        std::move(devices), selected_app_package, entry_type,
                        reason, should_persist);
-}
-
-// TODO(crbug.com/1044710): convert this to new scheme.
-void RecordUmaDialogAction(Scheme scheme,
-                           apps::PickerEntryType entry_type,
-                           bool accepted,
-                           bool persisted) {
-  ProtocolAction action =
-      GetProtocolAction(scheme, entry_type, accepted, persisted);
-  if (accepted) {
-    base::UmaHistogramEnumeration(
-        "ChromeOS.Apps.ExternalProtocolDialog.Accepted", action);
-  } else {
-    base::UmaHistogramEnumeration(
-        "ChromeOS.Apps.ExternalProtocolDialog.Rejected", action);
-  }
 }
 
 ProtocolAction GetProtocolAction(Scheme scheme,

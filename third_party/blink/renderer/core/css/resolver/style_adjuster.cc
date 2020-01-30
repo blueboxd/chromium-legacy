@@ -701,11 +701,6 @@ void StyleAdjuster::AdjustComputedStyle(StyleResolverState& state,
   if (RuntimeEnabledFeatures::CSSRenderSubtreeEnabled())
     AdjustStateForRenderSubtree(style, element);
 
-  if (style.IsColorInternalText()) {
-    style.ResolveInternalTextColor(LayoutTheme::GetTheme().RootElementColor(
-        style.UsedColorSchemeForInitialColors()));
-  }
-
   // Make sure our z-index value is only applied if the object is positioned.
   if (style.GetPosition() == EPosition::kStatic &&
       !LayoutParentStyleForcesZIndexToCreateStackingContext(

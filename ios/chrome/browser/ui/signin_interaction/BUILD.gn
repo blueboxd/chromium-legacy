@@ -21,6 +21,7 @@ source_set("signin_interaction") {
     "//ios/chrome/browser/signin",
     "//ios/chrome/browser/ui/alert_coordinator",
     "//ios/chrome/browser/ui/authentication",
+    "//ios/chrome/browser/ui/authentication/signin",
     "//ios/chrome/browser/ui/commands",
     "//ios/chrome/browser/ui/coordinators:chrome_coordinators",
     "//ios/public/provider/chrome/browser",

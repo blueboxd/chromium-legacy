@@ -50,7 +50,6 @@ class ChromeOmniboxClientIOS : public OmniboxClient {
       bool default_match_changed,
       const base::Callback<void(int result_index, const SkBitmap& bitmap)>&
           on_bitmap_fetched) override;
-  void OnBookmarkLaunched() override;
   void DiscardNonCommittedNavigations() override;
   const base::string16& GetTitle() const override;
   gfx::Image GetFavicon() const override;

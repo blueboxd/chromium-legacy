@@ -107,6 +107,7 @@ color
 colorInterpolation
 colorInterpolationFilters
 colorRendering
+colorScheme
 columnCount
 columnFill
 columnGap
@@ -118,6 +119,11 @@ columnSpan
 columnWidth
 columns
 contain
+containIntrinsicBlockSize
+containIntrinsicHeight
+containIntrinsicInlineSize
+containIntrinsicSize
+containIntrinsicWidth
 content
 counterIncrement
 counterReset
@@ -195,11 +201,6 @@ insetBlockStart
 insetInline
 insetInlineEnd
 insetInlineStart
-intrinsicBlockSize
-intrinsicHeight
-intrinsicInlineSize
-intrinsicSize
-intrinsicWidth
 isolation
 item
 justifyContent

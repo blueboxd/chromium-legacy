@@ -793,8 +793,7 @@ std::vector<gfx::Size> ConvertToFaviconSizes(
 void RecordSuffixedMemoryMBHistogram(base::StringPiece name,
                                      base::StringPiece suffix,
                                      int sample_mb) {
-  std::string name_with_suffix;
-  name.CopyToString(&name_with_suffix);
+  std::string name_with_suffix(name);
   suffix.AppendToString(&name_with_suffix);
   base::UmaHistogramMemoryMB(name_with_suffix, sample_mb);
 }
@@ -4516,22 +4515,6 @@ void RenderFrameImpl::DidClearWindowObject() {
 }
 
 void RenderFrameImpl::DidCreateDocumentElement() {
-  // Notify the browser about non-blank documents loading in the top frame.
-  GURL url = frame_->GetDocument().Url();
-  if (url.is_valid() && url.spec() != url::kAboutBlankURL) {
-    // TODO(nasko): Check if webview()->mainFrame() is the same as the
-    // frame_->tree()->top().
-    blink::WebFrame* main_frame = render_view_->webview()->MainFrame();
-    if (frame_ == main_frame) {
-      // For now, don't remember plugin zoom values.  We don't want to mix them
-      // with normal web content (i.e. a fixed layout plugin would usually want
-      // them different).
-      render_view_->Send(new ViewHostMsg_DocumentAvailableInMainFrame(
-          render_view_->GetRoutingID(),
-          frame_->GetDocument().IsPluginDocument()));
-    }
-  }
-
   for (auto& observer : observers_)
     observer.DidCreateDocumentElement();
 }

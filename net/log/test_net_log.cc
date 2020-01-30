@@ -67,11 +67,10 @@ void RecordingTestNetLog::Clear() {
 
 void RecordingTestNetLog::OnAddEntry(const NetLogEntry& entry) {
   base::Value params = entry.params.Clone();
-  auto time = base::TimeTicks::Now();
 
   // Only need to acquire the lock when accessing class variables.
   base::AutoLock lock(lock_);
-  entry_list_.emplace_back(entry.type, entry.source, entry.phase, time,
+  entry_list_.emplace_back(entry.type, entry.source, entry.phase, entry.time,
                            std::move(params));
 }
 

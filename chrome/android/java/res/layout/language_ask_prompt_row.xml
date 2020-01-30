@@ -24,7 +24,7 @@
             android:id="@+id/ui_language_representation"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textAppearance="@style/TextAppearance.BlackTitle1"
+            android:textAppearance="@style/TextAppearance.TextLarge.Primary"
             android:ellipsize="end"
             android:singleLine="true"
             android:layout_toEndOf="@+id/language_ask_checkbox" />
@@ -33,7 +33,7 @@
         android:id="@+id/native_language_representation"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textAppearance="@style/TextAppearance.BlackBody"
+        android:textAppearance="@style/TextAppearance.TextMedium.Secondary"
         android:ellipsize="end"
         android:singleLine="true"
         android:layout_alignStart="@+id/ui_language_representation"

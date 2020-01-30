@@ -108,6 +108,7 @@ cr.define('settings', function() {
 
   cr.addSingletonGetter(IncompatibleApplicationsBrowserProxyImpl);
 
+  // #cr_define_end
   return {
     ActionTypes,
     IncompatibleApplication,

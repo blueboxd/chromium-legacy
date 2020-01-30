@@ -204,10 +204,6 @@ LanguageSettingsPrivateGetLanguageListFunction::Run() {
   translate::TranslatePrefs::GetLanguageInfoList(
       app_locale, translate_prefs->IsTranslateAllowedByPolicy(), &languages);
 
-  // Get the list of available locales (display languages) and convert to a set.
-  const base::flat_set<std::string> locale_set(
-      l10n_util::GetAvailableLocales());
-
   // Get the list of spell check languages and convert to a set.
   std::vector<std::string> spellcheck_languages =
       spellcheck::SpellCheckLanguages();

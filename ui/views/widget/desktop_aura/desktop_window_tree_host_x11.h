@@ -8,7 +8,6 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "base/observer_list.h"
 #include "ui/gfx/x/x11_types.h"
 #include "ui/platform_window/platform_window_delegate.h"
 #include "ui/platform_window/x11/x11_window.h"
@@ -22,7 +21,6 @@ class X11Window;
 
 namespace views {
 class DesktopDragDropClientAuraX11;
-class DesktopWindowTreeHostObserverX11;
 class X11DesktopWindowMoveClient;
 
 class VIEWS_EXPORT DesktopWindowTreeHostX11 : public DesktopWindowTreeHostLinux,
@@ -32,9 +30,6 @@ class VIEWS_EXPORT DesktopWindowTreeHostX11 : public DesktopWindowTreeHostLinux,
       internal::NativeWidgetDelegate* native_widget_delegate,
       DesktopNativeWidgetAura* desktop_native_widget_aura);
   ~DesktopWindowTreeHostX11() override;
-
-  void AddObserver(DesktopWindowTreeHostObserverX11* observer);
-  void RemoveObserver(DesktopWindowTreeHostObserverX11* observer);
 
  protected:
   // Overridden from DesktopWindowTreeHost:
@@ -51,14 +46,6 @@ class VIEWS_EXPORT DesktopWindowTreeHostX11 : public DesktopWindowTreeHostLinux,
  private:
   friend class DesktopWindowTreeHostX11HighDPITest;
 
-  // X11ExtensionDelegate overrides:
-  //
-  // DWTHX11 temporarily overrides the X11ExtensionDelegate
-  // methods instead of underlying DWTHPlatform and WTHPlatform. Eventually,
-  // these will be removed from here as we progress in https://crbug.com/990756.
-  void OnXWindowMapped() override;
-  void OnXWindowUnmapped() override;
-
   // Overridden from ui::XEventDelegate.
   void OnXWindowSelectionEvent(XEvent* xev) override;
   void OnXWindowDragDropEvent(XEvent* xev) override;
@@ -72,9 +59,6 @@ class VIEWS_EXPORT DesktopWindowTreeHostX11 : public DesktopWindowTreeHostLinux,
   DesktopDragDropClientAuraX11* drag_drop_client_ = nullptr;
 
   std::unique_ptr<X11DesktopWindowMoveClient> x11_window_move_client_;
-
-  base::ObserverList<DesktopWindowTreeHostObserverX11>::Unchecked
-      observer_list_;
 
   DISALLOW_COPY_AND_ASSIGN(DesktopWindowTreeHostX11);
 };

@@ -426,7 +426,6 @@
 <translation id="2799223571221894425">Repornește</translation>
 <translation id="2803306138276472711">Navigarea sigură Google <ph name="BEGIN_LINK" />a detectat recent programe malware<ph name="END_LINK" /> pe <ph name="SITE" />. Site-urile care sunt de obicei sigure sunt uneori infectate cu programe malware.</translation>
 <translation id="2807052079800581569">Poziția Y a imaginii</translation>
-<translation id="2809804249696361569">Ambele foi</translation>
 <translation id="2824775600643448204">Bara de adrese și de căutare</translation>
 <translation id="2826760142808435982">Conexiunea este criptată și autentificată utilizând <ph name="CIPHER" /> și folosește <ph name="KX" /> ca mecanism de schimb al cheii.</translation>
 <translation id="2835170189407361413">Golește formularul</translation>
@@ -935,7 +934,6 @@
 <translation id="5112422516732747637">A5</translation>
 <translation id="5115216390227830982">European-Edp</translation>
 <translation id="5115563688576182185">(64 de biți)</translation>
-<translation id="5121469660360593280">Permite-i administratorului accesul la datele despre evenimentele de securitate semnalate de Protecția utilizatorilor Chrome Enterprise. Aici pot fi incluse adresele URL ale paginilor pe care le accesezi, numele de fișiere sau metadate și numele de utilizator cu care te conectezi pe dispozitiv și la Chrome.</translation>
 <translation id="5123063207673082822">Weekend</translation>
 <translation id="5125394840236832993">B-Plus</translation>
 <translation id="5126510351761255129">Confirmă cardul</translation>
@@ -950,7 +948,6 @@
 <translation id="5161506081086828129">Receptorul de hârtie 9</translation>
 <translation id="516920405563544094">Introdu codul CVC pentru <ph name="CREDIT_CARD" />. După ce confirmi, acest site va avea acces la detaliile cardului tău din Contul Google.</translation>
 <translation id="5169827969064885044">Este posibil să pierzi accesul la contul organizației sau să fii victima unui furt de identitate. Chrome îți recomandă să îți schimbi acum parola.</translation>
-<translation id="5170017743895942767">Protecția utilizatorilor Chrome Enterprise</translation>
 <translation id="5171045022955879922">Caută sau introdu adresa URL</translation>
 <translation id="5171689220826475070">Fanfold-European</translation>
 <translation id="5172758083709347301">Computer</translation>
@@ -1083,7 +1080,6 @@
 <translation id="5737183892635480227">{NUM_CARDS,plural, =1{Salvează cardul în Contul Google}few{Salvează cardurile în Contul Google}other{Salvează cardurile în Contul Google}}</translation>
 <translation id="5745980000221562234">{NUM_CARDS,plural, =1{Folosește un număr virtual pentru acest card}few{Selectează un card}other{Selectează un card}}</translation>
 <translation id="5763042198335101085">Introdu o adresă de e-mail validă</translation>
-<translation id="5763703224595565476">Administratorul a activat în browser Protecția utilizatorilor Chrome Enterprise. Protecția utilizatorilor Chrome Enterprise are acces la o parte din datele tale.</translation>
 <translation id="5765072501007116331">Pentru a vedea metodele de livrare și cerințele, selectează o adresă</translation>
 <translation id="5776313857861697733">Prioritară</translation>
 <translation id="5778550464785688721">Control complet asupra dispozitivelor MIDI</translation>
@@ -1420,7 +1416,6 @@ Detalii suplimentare:
 <translation id="733923710415886693">Certificatul serverului nu a fost dezvăluit folosind Transparența certificatului.</translation>
 <translation id="734600844861828519">11x15</translation>
 <translation id="7346048084945669753">Este afiliat:</translation>
-<translation id="73479065977517481"><ph name="ENROLLMENT_DOMAIN" /> a activat în browser Protecția utilizatorilor Chrome Enterprise. Protecția utilizatorilor Chrome Enterprise are acces la o parte din datele tale.</translation>
 <translation id="7349430561505560861">A4-Extra</translation>
 <translation id="7353601530677266744">Linie de comandă</translation>
 <translation id="7372973238305370288">rezultat al căutării</translation>

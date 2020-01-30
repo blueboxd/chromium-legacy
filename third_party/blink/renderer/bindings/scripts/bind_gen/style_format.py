@@ -4,30 +4,43 @@
 
 import os.path
 import subprocess
-
-import gclient_paths
+import sys
 
 _clang_format_command_path = None
 _gn_command_path = None
 
 
-def init():
+def init(root_src_dir):
     global _clang_format_command_path
     global _gn_command_path
 
+    assert _clang_format_command_path is None
+    assert _gn_command_path is None
+
+    root_src_dir = os.path.abspath(root_src_dir)
+
+    # Determine //buildtools/<platform>/ directory
+    if sys.platform.startswith("linux"):
+        platform = "linux64"
+        exe_suffix = ""
+    elif sys.platform.startswith("darwin"):
+        platform = "mac"
+        exe_suffix = ""
+    elif sys.platform.startswith(("cygwin", "win")):
+        platform = "win"
+        exe_suffix = ".exe"
+    else:
+        assert False, "Unknown platform: {}".format(sys.platform)
+    buildtools_platform_dir = os.path.join(root_src_dir, "buildtools",
+                                           platform)
+
     # //buildtools/<platform>/clang-format
-    command_name = "clang-format{}".format(gclient_paths.GetExeSuffix())
-    command_path = os.path.abspath(
-        os.path.join(gclient_paths.GetBuildtoolsPlatformBinaryPath(),
-                     command_name))
-    _clang_format_command_path = command_path
+    _clang_format_command_path = os.path.join(
+        buildtools_platform_dir, "clang-format{}".format(exe_suffix))
 
     # //buildtools/<platform>/gn
-    command_name = "gn{}".format(gclient_paths.GetExeSuffix())
-    command_path = os.path.abspath(
-        os.path.join(gclient_paths.GetBuildtoolsPlatformBinaryPath(),
-                     command_name))
-    _gn_command_path = command_path
+    _gn_command_path = os.path.join(buildtools_platform_dir,
+                                    "gn{}".format(exe_suffix))
 
 
 def auto_format(contents, filename):

@@ -27,12 +27,19 @@ class COMPONENT_EXPORT(ASSISTANT_UI) AssistantScrollView
 
   virtual void OnContentsPreferredSizeChanged(views::View* content_view) = 0;
 
+  virtual void OnScrollBarUpdated(views::ScrollBar* scroll_bar,
+                                  int viewport_size,
+                                  int content_size,
+                                  int content_scroll_offset) {}
+
+  virtual void OnScrollBarVisibilityChanged(views::ScrollBar* scroll_bar,
+                                            bool is_visible) {}
+
  protected:
   views::View* content_view() { return content_view_; }
   const views::View* content_view() const { return content_view_; }
 
   views::ScrollBar* horizontal_scroll_bar() { return horizontal_scroll_bar_; }
-
   views::ScrollBar* vertical_scroll_bar() { return vertical_scroll_bar_; }
 
  private:

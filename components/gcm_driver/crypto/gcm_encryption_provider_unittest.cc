@@ -101,8 +101,8 @@ class GCMEncryptionProviderTest : public ::testing::Test {
   void Decrypt(const IncomingMessage& message) {
     encryption_provider_->DecryptMessage(
         kExampleAppId, message,
-        base::Bind(&GCMEncryptionProviderTest::DidDecryptMessage,
-                   base::Unretained(this)));
+        base::BindOnce(&GCMEncryptionProviderTest::DidDecryptMessage,
+                       base::Unretained(this)));
 
     // The encryption keys will be read asynchronously.
     base::RunLoop().RunUntilIdle();
@@ -180,10 +180,9 @@ class GCMEncryptionProviderTest : public ::testing::Test {
                             const std::string& authorized_entity);
 
  private:
-  void DidDecryptMessage(GCMDecryptionResult result,
-                         const IncomingMessage& message) {
+  void DidDecryptMessage(GCMDecryptionResult result, IncomingMessage message) {
     decryption_result_ = result;
-    decrypted_message_ = message;
+    decrypted_message_ = std::move(message);
   }
 
   void DidEncryptMessage(GCMEncryptionResult result, std::string message) {

@@ -54,7 +54,6 @@ namespace blink {
 struct CharacterRange;
 class FloatPoint;
 class FloatRect;
-class FontData;
 class FontSelector;
 class ShapeCache;
 class TextRun;
@@ -203,7 +202,6 @@ class PLATFORM_EXPORT Font {
   // loaded. This *should* not happen but in reality it does ever now and then
   // when, for whatever reason, the last resort font cannot be loaded.
   const SimpleFontData* PrimaryFont() const;
-  const FontData* FontDataAt(unsigned) const;
 
   // Access the shape cache associated with this particular font object.
   // Should *not* be retained across layout calls as it may become invalid.
@@ -215,8 +213,8 @@ class PLATFORM_EXPORT Font {
   bool CanShapeWordByWord() const;
 
   void SetCanShapeWordByWordForTesting(bool b) {
-    can_shape_word_by_word_ = b;
-    shape_word_by_word_computed_ = true;
+    if (font_fallback_list_)
+      font_fallback_list_->SetCanShapeWordByWordForTesting(b);
   }
 
   void ReportNotDefGlyph() const;
@@ -225,8 +223,6 @@ class PLATFORM_EXPORT Font {
   enum ForTextEmphasisOrNot { kNotForTextEmphasis, kForTextEmphasis };
 
   GlyphData GetEmphasisMarkGlyphData(const AtomicString&) const;
-
-  bool ComputeCanShapeWordByWord() const;
 
  public:
   FontSelector* GetFontSelector() const;
@@ -248,8 +244,6 @@ class PLATFORM_EXPORT Font {
  private:
   FontDescription font_description_;
   mutable scoped_refptr<FontFallbackList> font_fallback_list_;
-  mutable unsigned can_shape_word_by_word_ : 1;
-  mutable unsigned shape_word_by_word_computed_ : 1;
 
   // For m_fontDescription & m_fontFallbackList access.
   friend class CachingWordShaper;
@@ -260,11 +254,6 @@ inline Font::~Font() = default;
 inline const SimpleFontData* Font::PrimaryFont() const {
   DCHECK(font_fallback_list_);
   return font_fallback_list_->PrimarySimpleFontData(font_description_);
-}
-
-inline const FontData* Font::FontDataAt(unsigned index) const {
-  DCHECK(font_fallback_list_);
-  return font_fallback_list_->FontDataAt(font_description_, index);
 }
 
 inline FontSelector* Font::GetFontSelector() const {

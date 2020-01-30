@@ -64,6 +64,29 @@ inline const NGPaintFragment& AsDisplayItemClient(
   return cursor.PaintFragment();
 }
 
+inline PhysicalRect ComputeBoxRect(const NGInlineCursor& cursor,
+                                   const PhysicalOffset& paint_offset,
+                                   const PhysicalOffset& parent_offset) {
+  PhysicalRect box_rect = cursor.CurrentItem()->RectInContainerBlock();
+  box_rect.offset.left += paint_offset.left;
+  // We round the y-axis to ensure consistent line heights.
+  box_rect.offset.top =
+      LayoutUnit((paint_offset.top + parent_offset.top).Round()) +
+      (box_rect.offset.top - parent_offset.top);
+  return box_rect;
+}
+
+inline PhysicalRect ComputeBoxRect(const NGTextPainterCursor& cursor,
+                                   const PhysicalOffset& paint_offset,
+                                   const PhysicalOffset& parent_offset) {
+  PhysicalRect box_rect = cursor.PaintFragment().Rect();
+  // We round the y-axis to ensure consistent line heights.
+  PhysicalOffset adjusted_paint_offset(paint_offset.left,
+                                       LayoutUnit(paint_offset.top.Round()));
+  box_rect.offset += adjusted_paint_offset;
+  return box_rect;
+}
+
 inline const NGInlineCursor& InlineCursorForBlockFlow(
     const NGInlineCursor& cursor,
     base::Optional<NGInlineCursor>* storage) {
@@ -327,10 +350,6 @@ const NGPaintFragment& NGTextPainterCursor::RootPaintFragment() const {
   return *root_paint_fragment_;
 }
 
-template <typename Cursor>
-NGTextFragmentPainter<Cursor>::NGTextFragmentPainter(const Cursor& cursor)
-    : cursor_(cursor) {}
-
 // Logic is copied from InlineTextBoxPainter::PaintSelection.
 // |selection_start| and |selection_end| should be between
 // [text_fragment.StartOffset(), text_fragment.EndOffset()].
@@ -423,11 +442,7 @@ void NGTextFragmentPainter<Cursor>::Paint(const PaintInfo& paint_info,
                      paint_info.phase);
   }
 
-  // We round the y-axis to ensure consistent line heights.
-  PhysicalRect box_rect = AsDisplayItemClient(cursor_).Rect();
-  PhysicalOffset adjusted_paint_offset(paint_offset.left,
-                                       LayoutUnit(paint_offset.top.Round()));
-  box_rect.offset += adjusted_paint_offset;
+  PhysicalRect box_rect = ComputeBoxRect(cursor_, paint_offset, parent_offset_);
 
   if (UNLIKELY(text_item.IsSymbolMarker())) {
     // The NGInlineItem of marker might be Split(). To avoid calling PaintSymbol

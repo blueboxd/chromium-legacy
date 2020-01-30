@@ -60,9 +60,12 @@ class ManagePasswordsTest : public InProcessBrowserTest {
                void(const password_manager::CredentialInfo&));
 
  private:
+  std::unique_ptr<password_manager::PasswordFormManager> CreateFormManager();
+
   autofill::PasswordForm password_form_;
   autofill::PasswordForm federated_form_;
   autofill::FormData observed_form_;
+  autofill::FormData submitted_form_;
   base::HistogramTester histogram_tester_;
   password_manager::StubPasswordManagerClient client_;
   password_manager::StubPasswordManagerDriver driver_;

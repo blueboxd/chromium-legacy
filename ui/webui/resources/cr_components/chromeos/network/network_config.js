@@ -190,8 +190,9 @@ Polymer({
 
     /**
      * Security value, used for Ethernet and Wifi and to detect when Security
-     * changes.
-     * @private {!chromeos.networkConfig.mojom.SecurityType|undefined}
+     * changes. NOTE: the <select> element might set this to a string, see
+     * crbug.com/1046149.
+     * @private {!chromeos.networkConfig.mojom.SecurityType|string|undefined}
      */
     securityType_: Number,
 
@@ -375,7 +376,8 @@ Polymer({
       // Allow securityType_ to be set externally (e.g. in tests).
       if (mojoType === mojom.NetworkType.kWiFi &&
           this.securityType_ !== undefined) {
-        managedProperties.typeProperties.wifi.security = this.securityType_;
+        managedProperties.typeProperties.wifi.security =
+            /**@type{!mojom.SecurityType}*/ (this.securityType_);
       }
       this.managedProperties_ = managedProperties;
       this.mojoType_ = mojoType;
@@ -832,6 +834,13 @@ Polymer({
       return;
     }
     const type = this.mojoType_;
+    // Force |securityType_| to an enum value when the <select> element sets it
+    // to a string. See crbug.com/1046149 for details.
+    if (typeof (this.securityType_) === 'string') {
+      this.securityType_ =
+          /** @type{!chromeos.networkConfig.mojom.SecurityType}*/ (
+              Number.parseInt(/** @type{string}*/ (this.securityType_), 10));
+    }
     const security = this.securityType_;
     if (type === mojom.NetworkType.kWiFi) {
       this.configProperties_.typeConfig.wifi.security = security;

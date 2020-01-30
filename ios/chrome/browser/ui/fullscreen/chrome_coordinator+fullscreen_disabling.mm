@@ -10,7 +10,6 @@
 
 #include "base/logging.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_controller.h"
-#import "ios/chrome/browser/ui/fullscreen/fullscreen_controller_factory.h"
 #import "ios/chrome/browser/ui/fullscreen/scoped_fullscreen_disabler.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -63,8 +62,7 @@ const void* const kFullscreenDisablerKey = &kFullscreenDisablerKey;
       objc_getAssociatedObject(coordinator, kFullscreenDisablerKey);
   if (!wrapper) {
     FullscreenController* controller =
-        FullscreenControllerFactory::GetInstance()->GetForBrowserState(
-            browserState);
+        FullscreenController::FromBrowserState(browserState);
     wrapper = [[ScopedFullscreenDisablerWrapper alloc]
         initWithFullscreenController:controller];
     objc_setAssociatedObject(coordinator, kFullscreenDisablerKey, wrapper,

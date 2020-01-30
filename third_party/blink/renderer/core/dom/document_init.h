@@ -49,6 +49,7 @@ class DocumentLoader;
 class LocalFrame;
 class HTMLImportsController;
 class Settings;
+class UseCounter;
 class WindowAgentFactory;
 
 class CORE_EXPORT DocumentInit final {
@@ -102,6 +103,7 @@ class CORE_EXPORT DocumentInit final {
 
   DocumentInit& WithDocumentLoader(DocumentLoader*);
   LocalFrame* GetFrame() const;
+  UseCounter* GetUseCounter() const;
 
   DocumentInit& WithTypeFrom(const String& type);
   Type GetType() const { return type_; }

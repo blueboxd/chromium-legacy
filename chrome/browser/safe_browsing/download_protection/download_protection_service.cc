@@ -4,6 +4,7 @@
 
 #include "chrome/browser/safe_browsing/download_protection/download_protection_service.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
@@ -22,12 +23,16 @@
 #include "chrome/browser/safe_browsing/download_protection/check_native_file_system_write_request.h"
 #include "chrome/browser/safe_browsing/download_protection/deep_scanning_request.h"
 #include "chrome/browser/safe_browsing/download_protection/download_feedback_service.h"
+#include "chrome/browser/safe_browsing/download_protection/download_protection_util.h"
 #include "chrome/browser/safe_browsing/download_protection/download_url_sb_client.h"
 #include "chrome/browser/safe_browsing/download_protection/ppapi_download_request.h"
 #include "chrome/browser/safe_browsing/services_delegate.h"
 #include "chrome/common/safe_browsing/binary_feature_extractor.h"
 #include "chrome/common/url_constants.h"
+#include "components/download/public/common/download_item.h"
 #include "components/google/core/common/google_util.h"
+#include "components/prefs/pref_service.h"
+#include "components/safe_browsing/core/common/safe_browsing_prefs.h"
 #include "components/safe_browsing/core/common/safebrowsing_switches.h"
 #include "components/sessions/content/session_tab_helper.h"
 #include "content/public/browser/browser_context.h"
@@ -120,7 +125,8 @@ DownloadProtectionService::DownloadProtectionService(
           base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock(),
                                            base::TaskPriority::BEST_EFFORT})
               .get())),
-      whitelist_sample_rate_(kWhitelistDownloadSampleRate) {
+      whitelist_sample_rate_(kWhitelistDownloadSampleRate),
+      weak_ptr_factory_(this) {
   if (sb_service) {
     ui_manager_ = sb_service->ui_manager();
     database_manager_ = sb_service->database_manager();
@@ -186,6 +192,30 @@ void DownloadProtectionService::CheckClientDownload(
   request_copy->Start();
 }
 
+bool DownloadProtectionService::MaybeCheckClientDownload(
+    download::DownloadItem* item,
+    CheckDownloadRepeatingCallback callback) {
+  Profile* profile = Profile::FromBrowserContext(
+      content::DownloadItemUtils::GetBrowserContext(item));
+  bool safe_browsing_enabled =
+      profile && profile->GetPrefs()->GetBoolean(prefs::kSafeBrowsingEnabled);
+  bool deep_scanning_enabled =
+      DeepScanningRequest::ShouldUploadItemByPolicy(item);
+
+  if (safe_browsing_enabled) {
+    CheckClientDownload(item, std::move(callback));
+    return true;
+  }
+
+  if (deep_scanning_enabled) {
+    UploadForDeepScanning(item, std::move(callback),
+                          DeepScanningRequest::DeepScanTrigger::TRIGGER_POLICY);
+    return true;
+  }
+
+  return false;
+}
+
 void DownloadProtectionService::CheckDownloadUrl(
     download::DownloadItem* item,
     CheckDownloadCallback callback) {
@@ -207,6 +237,19 @@ void DownloadProtectionService::CheckDownloadUrl(
   // The client will release itself once it is done.
   base::PostTask(FROM_HERE, {BrowserThread::IO},
                  base::BindOnce(&DownloadUrlSBClient::StartCheck, client));
+}
+
+bool DownloadProtectionService::MaybeCheckDownloadUrl(
+    download::DownloadItem* item,
+    CheckDownloadCallback callback) {
+  Profile* profile = Profile::FromBrowserContext(
+      content::DownloadItemUtils::GetBrowserContext(item));
+  if (profile && profile->GetPrefs()->GetBoolean(prefs::kSafeBrowsingEnabled)) {
+    CheckDownloadUrl(item, std::move(callback));
+    return true;
+  }
+
+  return false;
 }
 
 bool DownloadProtectionService::IsSupportedDownload(
@@ -366,12 +409,15 @@ void DownloadProtectionService::MaybeSendDangerousDownloadOpenedReport(
   std::string token = GetDownloadPingToken(item);
   content::BrowserContext* browser_context =
       content::DownloadItemUtils::GetBrowserContext(item);
+  Profile* profile = Profile::FromBrowserContext(browser_context);
+  if (!profile || !profile->GetPrefs()->GetBoolean(prefs::kSafeBrowsingEnabled))
+    return;
+
   // When users are in incognito mode, no report will be sent and no
   // |onDangerousDownloadOpened| extension API will be called.
   if (browser_context->IsOffTheRecord())
     return;
 
-  Profile* profile = Profile::FromBrowserContext(browser_context);
   OnDangerousDownloadOpened(item, profile);
   if (sb_service_ &&
       !token.empty() &&  // Only dangerous downloads have token stored.

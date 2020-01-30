@@ -104,7 +104,7 @@ bool Reader::MapFile() {
     return false;
   }
   const char* data = reinterpret_cast<const char*>(mapped_file_.data());
-  file_data_.set(data, mapped_file_.length());
+  file_data_ = base::StringPiece(data, mapped_file_.length());
   return true;
 }
 

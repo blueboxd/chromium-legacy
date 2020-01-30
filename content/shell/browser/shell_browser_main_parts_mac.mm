@@ -8,7 +8,6 @@
 
 #include "base/mac/bundle_locations.h"
 #include "base/mac/scoped_nsobject.h"
-#include "base/mac/sdk_forward_declarations.h"
 #include "content/browser/sandbox_parameters_mac.h"  // nogncheck
 #include "net/test/test_data_directory.h"
 

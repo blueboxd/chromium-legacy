@@ -65,7 +65,7 @@ class AbstractLineBox {
     }
     if (cursor_.IsEmptyLineBox())
       return false;
-    const PhysicalSize physical_size = cursor_.CurrentSize();
+    const PhysicalSize physical_size = cursor_.Current().Size();
     const LogicalSize logical_size =
         physical_size.ConvertToLogical(cursor_.CurrentStyle().GetWritingMode());
     if (!logical_size.block_size)
@@ -127,7 +127,8 @@ class AbstractLineBox {
       return GetRootInlineBox().ClosestLeafChildForPoint(
           GetBlock().FlipForWritingMode(point), only_editable_leaves);
     }
-    const PhysicalOffset local_physical_point = point - cursor_.CurrentOffset();
+    const PhysicalOffset local_physical_point =
+        point - cursor_.Current().OffsetInContainerBlock();
     return ClosestLeafChildForPoint(cursor_, local_physical_point,
                                     only_editable_leaves);
   }
@@ -156,7 +157,8 @@ class AbstractLineBox {
       return GetBlock().FlipForWritingMode(
           GetRootInlineBox().BlockDirectionPointInLine());
     }
-    const PhysicalOffset physical_offset = cursor_.CurrentOffset();
+    const PhysicalOffset physical_offset =
+        cursor_.Current().OffsetInContainerBlock();
     return cursor_.CurrentStyle().IsHorizontalWritingMode()
                ? physical_offset.top
                : physical_offset.left;
@@ -184,7 +186,7 @@ class AbstractLineBox {
     const PhysicalSize unit_square(LayoutUnit(1), LayoutUnit(1));
     const LogicalOffset logical_point = point.ConvertToLogical(
         line.CurrentStyle().GetWritingMode(), line.CurrentBaseDirection(),
-        line.CurrentSize(), unit_square);
+        line.Current().Size(), unit_square);
     const LayoutUnit inline_offset = logical_point.inline_offset;
     const LayoutObject* closest_leaf_child = nullptr;
     LayoutUnit closest_leaf_distance;
@@ -198,9 +200,9 @@ class AbstractLineBox {
         continue;
 
       const LogicalRect fragment_logical_rect =
-          cursor.CurrentRect().ConvertToLogical(
+          cursor.Current().RectInContainerBlock().ConvertToLogical(
               line.CurrentStyle().GetWritingMode(), line.CurrentBaseDirection(),
-              line.CurrentSize(), cursor.CurrentSize());
+              line.Current().Size(), cursor.Current().Size());
       const LayoutUnit inline_min = fragment_logical_rect.offset.inline_offset;
       const LayoutUnit inline_max = fragment_logical_rect.offset.inline_offset +
                                     fragment_logical_rect.size.inline_size;

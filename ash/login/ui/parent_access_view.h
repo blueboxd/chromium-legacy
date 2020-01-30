@@ -152,6 +152,9 @@ class ASH_EXPORT ParentAccessView : public views::DialogDelegateView,
   void OnTabletModeEnded() override;
   void OnTabletControllerDestroyed() override;
 
+  // Sets whether the user can enter a PIN.
+  void SetInputEnabled(bool input_enabled);
+
  private:
   class FocusableLabelButton;
   class AccessCodeInput;

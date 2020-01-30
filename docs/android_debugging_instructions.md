@@ -25,6 +25,9 @@ with:
 out/Default/bin/chrome_public_apk logcat [-v]  # Use -v to show logs for other processes
 ```
 
+If this doesn't display the logs you're looking for, try `adb logcat` with your system `adb`
+or the one in `//third_party/android_sdk/`.
+
 ### Warnings for Blink developers
 *   **Do not use fprintf or printf debugging!** This does not
     redirect to logcat.
@@ -213,8 +216,8 @@ file as follows:
    test.
 4. Download the `.mapping` file for the APK used by the test (e.g.,
    `ChromePublic.apk.mapping`). Note that you may need to use the
-   `tools/swarming_client/isolateserver.py` script to download the mapping
-   file if it's too big. The viewer will provide instructions for this.
+   `tools/luci-go/isolated` to download the mapping file if it's too big. The
+   viewer will provide instructions for this.
 
 **Googlers Only**: For official build mapping files, see
 [go/chromejavadeobfuscation](https://goto.google.com/chromejavadeobfuscation).

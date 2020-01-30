@@ -636,6 +636,9 @@ scoped_refptr<const NGLayoutResult> NGOutOfFlowLayoutPart::Layout(
         GenerateFragment(node, container_content_size_in_candidate_writing_mode,
                          block_estimate, node_position);
 
+    // TODO(layout-dev): Handle abortions caused by block fragmentation.
+    DCHECK(layout_result->Status() != NGLayoutResult::kOutOfFragmentainerSpace);
+
     NGFragment fragment(candidate_writing_mode,
                         layout_result->PhysicalFragment());
 
@@ -722,6 +725,9 @@ scoped_refptr<const NGLayoutResult> NGOutOfFlowLayoutPart::Layout(
         GenerateFragment(node, container_content_size_in_candidate_writing_mode,
                          block_estimate, node_position);
   }
+
+  // TODO(layout-dev): Handle abortions caused by block fragmentation.
+  DCHECK_EQ(layout_result->Status(), NGLayoutResult::kSuccess);
 
   // TODO(mstensho): Move the rest of this method back into LayoutCandidate().
 

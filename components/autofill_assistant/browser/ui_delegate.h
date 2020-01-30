@@ -131,21 +131,21 @@ class UiDelegate {
   // Called when the user clicks a link in the form action.
   virtual void OnFormActionLinkClicked(int link) = 0;
 
-  // Sets the start of the date/time range.
-  virtual void SetDateTimeRangeStart(int year,
-                                     int month,
-                                     int day,
-                                     int hour,
-                                     int minute,
-                                     int second) = 0;
+  // Sets the start date of the date/time range.
+  virtual void SetDateTimeRangeStartDate(
+      const base::Optional<DateProto>& date) = 0;
 
-  // Sets the end of the date/time range.
-  virtual void SetDateTimeRangeEnd(int year,
-                                   int month,
-                                   int day,
-                                   int hour,
-                                   int minute,
-                                   int second) = 0;
+  // Sets the start timeslot of the date/time range.
+  virtual void SetDateTimeRangeStartTimeSlot(
+      const base::Optional<int>& timeslot_index) = 0;
+
+  // Sets the end date of the date/time range.
+  virtual void SetDateTimeRangeEndDate(
+      const base::Optional<DateProto>& date) = 0;
+
+  // Sets the end timeslot of the date/time range.
+  virtual void SetDateTimeRangeEndTimeSlot(
+      const base::Optional<int>& timeslot_index) = 0;
 
   // Sets an additional value.
   virtual void SetAdditionalValue(const std::string& client_memory_key,

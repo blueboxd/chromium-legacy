@@ -48,32 +48,6 @@ struct GCM_DRIVER_EXPORT IncomingMessage {
   bool decrypted = false;
 };
 
-// Message to be delivered to the other party via Web Push.
-struct GCM_DRIVER_EXPORT WebPushMessage {
-  WebPushMessage();
-  WebPushMessage(WebPushMessage&& other);
-  ~WebPushMessage();
-  WebPushMessage& operator=(WebPushMessage&& other);
-
-  // Urgency of a WebPushMessage as defined in RFC 8030 section 5.3.
-  // https://tools.ietf.org/html/rfc8030#section-5.3
-  enum class Urgency {
-    kVeryLow,
-    kLow,
-    kNormal,
-    kHigh,
-  };
-
-  // In seconds.
-  int time_to_live = kMaximumTTL;
-  std::string payload;
-  Urgency urgency = Urgency::kNormal;
-
-  static const int kMaximumTTL;
-
-  DISALLOW_COPY_AND_ASSIGN(WebPushMessage);
-};
-
 }  // namespace gcm
 
 #endif  // COMPONENTS_GCM_DRIVER_COMMON_GCM_MESSAGE_H_

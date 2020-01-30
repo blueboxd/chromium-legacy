@@ -354,7 +354,8 @@ void TabLoader::OnStopTracking(WebContents* web_contents,
 void TabLoader::OnMemoryPressure(
     base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level) {
   ReentrancyHelper lifetime_helper(this);
-  TRACE_EVENT0("browser", "TabLoader::OnMemoryPressure");
+  TRACE_EVENT1("browser", "TabLoader::OnMemoryPressure", "Level",
+               memory_pressure_level);
 
   switch (memory_pressure_level) {
     case base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_NONE:

@@ -84,7 +84,7 @@ class CustomThemeSupplier
 
   void set_extension_id(base::StringPiece id) {
     DCHECK_EQ(theme_type_, EXTENSION);
-    id.CopyToString(&extension_id_);
+    extension_id_.assign(id.data(), id.size());
   }
 
  private:

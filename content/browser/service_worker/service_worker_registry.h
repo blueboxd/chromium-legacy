@@ -10,6 +10,7 @@
 #include "base/files/file_path.h"
 #include "base/memory/scoped_refptr.h"
 #include "content/browser/service_worker/service_worker_database.h"
+#include "content/browser/service_worker/service_worker_registration.h"
 #include "content/browser/service_worker/service_worker_storage.h"
 #include "content/common/content_export.h"
 
@@ -25,7 +26,6 @@ class SpecialStoragePolicy;
 namespace content {
 
 class ServiceWorkerContextCore;
-class ServiceWorkerRegistration;
 class ServiceWorkerVersion;
 
 // This class manages in-memory representation of service worker registrations
@@ -41,8 +41,9 @@ class CONTENT_EXPORT ServiceWorkerRegistry {
  public:
   using ResourceList = ServiceWorkerStorage::ResourceList;
   using RegistrationList = ServiceWorkerStorage::RegistrationList;
-  using FindRegistrationCallback =
-      ServiceWorkerStorage::FindRegistrationCallback;
+  using FindRegistrationCallback = base::OnceCallback<void(
+      blink::ServiceWorkerStatusCode status,
+      scoped_refptr<ServiceWorkerRegistration> registration)>;
   using GetRegistrationsCallback = base::OnceCallback<void(
       blink::ServiceWorkerStatusCode status,
       const std::vector<scoped_refptr<ServiceWorkerRegistration>>&
@@ -80,15 +81,40 @@ class CONTENT_EXPORT ServiceWorkerRegistry {
   scoped_refptr<ServiceWorkerRegistration> CreateNewRegistration(
       blink::mojom::ServiceWorkerRegistrationOptions options);
 
-  // TODO(crbug.com/1039200): Move corresponding comments from
-  // ServiceWorkerStorage.
+  // Create a new instance of ServiceWorkerVersion which is associated with the
+  // given |registration|. Can be null when storage is disabled. This method
+  // must be called after storage is initialized.
+  scoped_refptr<ServiceWorkerVersion> CreateNewVersion(
+      ServiceWorkerRegistration* registration,
+      const GURL& script_url,
+      blink::mojom::ScriptType script_type);
+
+  // Finds registration for |client_url| or |scope| or |registration_id|.
+  // The Find methods will find stored and initially installing registrations.
+  // Returns blink::ServiceWorkerStatusCode::kOk with non-null
+  // registration if registration is found, or returns
+  // blink::ServiceWorkerStatusCode::kErrorNotFound if no
+  // matching registration is found.  The FindRegistrationForScope method is
+  // guaranteed to return asynchronously. However, the methods to find
+  // for |client_url| or |registration_id| may complete immediately
+  // (the callback may be called prior to the method returning) or
+  // asynchronously.
   void FindRegistrationForClientUrl(const GURL& client_url,
                                     FindRegistrationCallback callback);
   void FindRegistrationForScope(const GURL& scope,
                                 FindRegistrationCallback callback);
+  // These FindRegistrationForId() methods look up live registrations and may
+  // return a "findable" registration without looking up storage. A registration
+  // is considered as "findable" when the registration is stored or in the
+  // installing state.
   void FindRegistrationForId(int64_t registration_id,
                              const GURL& origin,
                              FindRegistrationCallback callback);
+  // Generally |FindRegistrationForId| should be used to look up a registration
+  // by |registration_id| since it's more efficient. But if a |registration_id|
+  // is all that is available this method can be used instead.
+  // Like |FindRegistrationForId| this method may complete immediately (the
+  // callback may be called prior to the method returning) or asynchronously.
   void FindRegistrationForIdOnly(int64_t registration_id,
                                  FindRegistrationCallback callback);
 
@@ -160,22 +186,30 @@ class CONTENT_EXPORT ServiceWorkerRegistry {
   ServiceWorkerRegistration* FindInstallingRegistrationForId(
       int64_t registration_id);
 
+  // Looks up live registrations and returns an optional value which may contain
+  // a "findable" registration. See the implementation of this method for
+  // what "findable" means and when a registration is returned.
+  base::Optional<scoped_refptr<ServiceWorkerRegistration>>
+  FindFromLiveRegistrationsForId(int64_t registration_id);
+
   void DidFindRegistrationForClientUrl(
       const GURL& client_url,
       int64_t trace_event_id,
       FindRegistrationCallback callback,
       blink::ServiceWorkerStatusCode status,
-      scoped_refptr<ServiceWorkerRegistration> registration);
+      std::unique_ptr<ServiceWorkerDatabase::RegistrationData> data,
+      std::unique_ptr<ResourceList> resources);
   void DidFindRegistrationForScope(
-      const GURL& scope,
       FindRegistrationCallback callback,
       blink::ServiceWorkerStatusCode status,
-      scoped_refptr<ServiceWorkerRegistration> registration);
+      std::unique_ptr<ServiceWorkerDatabase::RegistrationData> data,
+      std::unique_ptr<ResourceList> resources);
   void DidFindRegistrationForId(
       int64_t registration_id,
       FindRegistrationCallback callback,
       blink::ServiceWorkerStatusCode status,
-      scoped_refptr<ServiceWorkerRegistration> registration);
+      std::unique_ptr<ServiceWorkerDatabase::RegistrationData> data,
+      std::unique_ptr<ResourceList> resources);
 
   void DidGetRegistrationsForOrigin(
       GetRegistrationsCallback callback,
@@ -195,6 +229,7 @@ class CONTENT_EXPORT ServiceWorkerRegistry {
       int64_t deleted_version_id,
       const std::vector<int64_t>& newly_purgeable_resources);
   void DidDeleteRegistration(
+      int64_t registration_id,
       StatusCallback callback,
       blink::ServiceWorkerStatusCode status,
       int64_t deleted_version_id,

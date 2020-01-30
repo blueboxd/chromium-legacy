@@ -130,4 +130,8 @@ void SkiaOutputDevice::SwapInfo::CallFeedback() {
   }
 }
 
+std::vector<GrBackendSemaphore> SkiaOutputDevice::TakeEndPaintSemaphores() {
+  return std::vector<GrBackendSemaphore>();
+}
+
 }  // namespace viz

@@ -58,6 +58,10 @@ SaveCardBubbleViews::SaveCardBubbleViews(views::View* anchor_view,
                                    controller->GetAcceptButtonText());
   DialogDelegate::set_button_label(ui::DIALOG_BUTTON_CANCEL,
                                    controller->GetDeclineButtonText());
+  DialogDelegate::set_cancel_callback(base::BindOnce(
+      &SaveCardBubbleViews::OnDialogCancelled, base::Unretained(this)));
+  DialogDelegate::set_accept_callback(base::BindOnce(
+      &SaveCardBubbleViews::OnDialogAccepted, base::Unretained(this)));
   DCHECK(controller);
   chrome::RecordDialogCreation(chrome::DialogIdentifier::SAVE_CARD);
 }
@@ -78,30 +82,16 @@ void SaveCardBubbleViews::Hide() {
   CloseBubble();
 }
 
-bool SaveCardBubbleViews::Accept() {
+void SaveCardBubbleViews::OnDialogAccepted() {
+  // TODO(https://crbug.com/1046793): Maybe delete this.
   if (controller_)
     controller_->OnSaveButton({});
-  return true;
 }
 
-bool SaveCardBubbleViews::Cancel() {
+void SaveCardBubbleViews::OnDialogCancelled() {
+  // TODO(https://crbug.com/1046793): Maybe delete this.
   if (controller_)
     controller_->OnCancelButton();
-  return true;
-}
-
-bool SaveCardBubbleViews::Close() {
-  // If there is a cancel button (non-Material UI), Cancel is logged as a
-  // different user action than closing, so override Close() to prevent the
-  // superclass' implementation from calling Cancel().
-  //
-  // Clicking the top-right [X] close button and/or focusing then unfocusing the
-  // bubble count as a close action only (without calling Cancel), which means
-  // we can't tell the controller to permanently hide the bubble on close,
-  // because the user simply dismissed/ignored the bubble; they might want to
-  // access the bubble again from the location bar icon. Return true to indicate
-  // that the bubble can be closed.
-  return true;
 }
 
 gfx::Size SaveCardBubbleViews::CalculatePreferredSize() const {

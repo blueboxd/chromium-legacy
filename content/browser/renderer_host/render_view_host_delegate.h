@@ -102,10 +102,6 @@ class CONTENT_EXPORT RenderViewHostDelegate {
   // The page is trying to move the RenderView's representation in the client.
   virtual void RequestSetBounds(const gfx::Rect& new_bounds) {}
 
-  // The RenderView's main frame document element is ready. This happens when
-  // the document has finished parsing.
-  virtual void DocumentAvailableInMainFrame(RenderViewHost* render_view_host) {}
-
   // The page wants to close the active view in this tab.
   virtual void RouteCloseEvent(RenderViewHost* rvh) {}
 

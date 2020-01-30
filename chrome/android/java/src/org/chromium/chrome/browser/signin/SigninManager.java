@@ -22,6 +22,7 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.task.PostTask;
 import org.chromium.chrome.browser.externalauth.ExternalAuthUtils;
+import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.AccountTrackerService;
 import org.chromium.components.signin.ChromeSigninController;
 import org.chromium.components.signin.base.CoreAccountInfo;
@@ -363,23 +364,44 @@ public class SigninManager
     /**
      * Starts the sign-in flow, and executes the callback when finished.
      *
-     * If an activity is provided, it is considered an "interactive" sign-in and the user can be
-     * prompted to confirm various aspects of sign-in using dialogs inside the activity.
      * The sign-in flow goes through the following steps:
      *
      *   - Wait for AccountTrackerService to be seeded.
-     *   - If interactive, confirm the account change with the user.
      *   - Wait for policy to be checked for the account.
-     *   - If interactive and the account is managed, warn the user.
      *   - If managed, wait for the policy to be fetched.
-     *   - Complete sign-in with the native SigninManager and kick off token requests.
+     *   - Complete sign-in with the native IdentityManager.
+     *   - Call the callback if provided.
+     *
+     * @param accessPoint {@link SigninAccessPoint} that initiated the sign-in flow.
+     * @param accountInfo The account to sign in to.
+     * @param callback Optional callback for when the sign-in process is finished.
+     */
+    public void signIn(@SigninAccessPoint int accessPoint, CoreAccountInfo accountInfo,
+            @Nullable SignInCallback callback) {
+        assert accountInfo != null;
+        signIn(accessPoint, AccountManagerFacade.createAccountFromName(accountInfo.getName()),
+                callback);
+    }
+
+    /**
+     * @deprecated use {@link #signIn(int, CoreAccountInfo, SignInCallback)} instead.
+     * TODO(crbug.com/1002056): Remove this version after migrating all callers to CoreAccountInfo.
+     *
+     * Starts the sign-in flow, and executes the callback when finished.
+     *
+     * The sign-in flow goes through the following steps:
+     *
+     *   - Wait for AccountTrackerService to be seeded.
+     *   - Wait for policy to be checked for the account.
+     *   - If managed, wait for the policy to be fetched.
+     *   - Complete sign-in with the native IdentityManager.
      *   - Call the callback if provided.
      *
      * @param accessPoint {@link SigninAccessPoint} that initiated the sign-in flow.
      * @param account The account to sign in to.
      * @param callback Optional callback for when the sign-in process is finished.
      */
-    // TODO(crbug.com/1002056) SigninManager.Signin should use CoreAccountInfo as a parameter.
+    @Deprecated
     public void signIn(@SigninAccessPoint int accessPoint, Account account,
             @Nullable SignInCallback callback) {
         assert isSignInAllowed() : "Sign-in isn't allowed!";
@@ -459,7 +481,7 @@ public class SigninManager
         // sync tries to start without being signed in natively and crashes.
         ChromeSigninController.get().setSignedInAccountName(
                 mSignInState.mCoreAccountInfo.getName());
-        enableSync(mSignInState.mCoreAccountInfo.getAccount());
+        enableSync(mSignInState.mCoreAccountInfo);
 
         if (mSignInState.mCallback != null) {
             mSignInState.mCallback.onSignInComplete();
@@ -681,10 +703,11 @@ public class SigninManager
         SigninManagerJni.get().stopApplyingCloudPolicy(mNativeSigninManagerAndroid);
     }
 
-    private void enableSync(Account account) {
+    private void enableSync(CoreAccountInfo accountInfo) {
         // Cache the signed-in account name. This must be done after the native call, otherwise
         // sync tries to start without being signed in the native code and crashes.
-        mAndroidSyncSettings.updateAccount(account);
+        mAndroidSyncSettings.updateAccount(
+                AccountManagerFacade.createAccountFromName(accountInfo.getName()));
         mAndroidSyncSettings.enableChromeSync();
     }
 

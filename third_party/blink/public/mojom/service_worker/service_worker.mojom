@@ -137,6 +137,12 @@ enum FetchHandlerExistence {
 // implementation, but this makes the timeout for push events shorter.
 const int32 kPushEventTimeoutSeconds = 90;
 
+// The default number of seconds for idle timeouts. A service worker requests
+// termination when no event is running on the thread with a delay. This is the
+// default value for the delay, and the delay can be updated by SetIdleDelay()
+// in blink.mojom.ServiceWorker interface.
+const int32 kServiceWorkerDefaultIdleDelayInSeconds = 30;
+
 // An interface for talking to a running service worker thread. The browser
 // process uses this interface to request the renderer to do things like
 // dispatch events to the service worker. This interface is bound on the
@@ -272,9 +278,9 @@ interface ServiceWorker {
   // worker.
   Ping() => ();
 
-  // Lets the idle timer request termination immediately after all inflight
-  // events are handled without delay.
-  SetIdleTimerDelayToZero();
+  // Changes the delay until the idle timer requests termination after all
+  // events are handled.
+  SetIdleDelay(mojo_base.mojom.TimeDelta delay);
 
   // Adds a message to DevTools console which is associated with this worker.
   AddMessageToConsole(ConsoleMessageLevel level, string message);

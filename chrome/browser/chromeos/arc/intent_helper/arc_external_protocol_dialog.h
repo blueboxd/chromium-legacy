@@ -149,11 +149,6 @@ bool GetAndResetSafeToRedirectToArcWithoutUserConfirmationFlagForTesting(
 bool IsChromeAnAppCandidateForTesting(
     const std::vector<mojom::IntentHandlerInfoPtr>& handlers);
 
-void RecordUmaDialogAction(Scheme scheme,
-                           apps::PickerEntryType entry_type,
-                           bool accepted,
-                           bool persisted);
-
 ProtocolAction GetProtocolAction(Scheme scheme,
                                  apps::PickerEntryType entry_type,
                                  bool accepted,

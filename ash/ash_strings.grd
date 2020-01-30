@@ -423,6 +423,15 @@ This file contains the strings for ash.
       <message name="IDS_UPDATE_NOTIFICATION_MESSAGE_ROLLBACK" desc="The notification message used in the system notification update when the device is rolled back and data will be deleted.">
         Your administrator is rolling back your device. All data will be deleted when the device is restarted.
       </message>
+      <message name="IDS_UPDATE_NOTIFICATION_MESSAGE_SLOW_BOOT" desc="The additional body of the notification to notify the user that the next reboot is slow.">
+        <ph name="UPDATE_TEXT">$1<ex>Learn more about the latest Chromium OS update</ex></ph>. This Chromebook needs to restart to apply an update. This can take up to 1 minute.
+      </message>
+      <message name="IDS_DIALOG_TITLE_SLOW_BOOT" desc="The title of the Slow Boot Shutdown Confirmation Dialog.">
+	Restart may take awhile
+      </message>
+      <message name="IDS_DIALOG_MESSAGE_SLOW_BOOT" desc="The body of the Slow Boot Shutdown Confirmation Dialog.">
+        Your screen will go blank for longer than usual (up to a minute) during this update. Please don't press the power button while the update is in progress.
+      </message>
 
       <message name="IDS_ASH_STATUS_TRAY_VOLUME" desc="The accessible text for the toggle volume muted button in the tray.">
         Toggle Volume. <ph name="STATE_TEXT">$1<ex>Volume is muted</ex></ph>
@@ -1571,6 +1580,12 @@ This file contains the strings for ash.
       </message>
       <message name="IDS_ASH_YES_BUTTON" desc="The text for the button on a dialog OK button that agrees to the contents of the dialog.">
         Yes
+      </message>
+      <message name="IDS_ASH_SHUTDOWN_CONFIRMATION_OK_BUTTON" desc="The text for the OK button in the shutdown confirmation dialog.">
+        Restart
+      </message>
+      <message name="IDS_ASH_SHUTDOWN_CONFIRMATION_CANCEL_BUTTON" desc="The text for the Cancel button in the shutdown confirmation dialog.">
+        Do it later
       </message>
 
       <message name="IDS_ASH_AUTO_NIGHT_LIGHT_NOTIFY_TITLE" desc="The title of the notification shown when Night Light turns on automatically when the auto-night-light feature is enabled.">

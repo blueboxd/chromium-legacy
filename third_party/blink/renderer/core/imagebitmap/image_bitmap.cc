@@ -265,6 +265,8 @@ scoped_refptr<StaticBitmapImage> FlipImageVertically(
     scoped_refptr<StaticBitmapImage> input,
     const ImageBitmap::ParsedOptions& parsed_options) {
   sk_sp<SkImage> image = input->PaintImageForCurrentFrame().GetSkImage();
+  if (!image)
+    return nullptr;
 
   if (ShouldAvoidPremul(parsed_options)) {
     // Unpremul code path results in a GPU readback if |input| is texture

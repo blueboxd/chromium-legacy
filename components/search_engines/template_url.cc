@@ -128,7 +128,7 @@ class SearchTermLocation {
               TryMatchSearchParam(value_string,
                                   kGoogleUnescapedSearchTermsParameterFull)) {
             found_ = true;
-            url_component.substr(key.begin, key.len).CopyToString(&key_);
+            key_ = std::string(url_component.substr(key.begin, key.len));
             break;
           }
         }
@@ -149,8 +149,8 @@ class SearchTermLocation {
     size_t pos = value.find(pattern);
     if (pos == base::StringPiece::npos)
       return false;
-    value.substr(0, pos).CopyToString(&value_prefix_);
-    value.substr(pos + pattern.length()).CopyToString(&value_suffix_);
+    value_prefix_ = std::string(value.substr(0, pos));
+    value_suffix_ = std::string(value.substr(pos + pattern.size()));
     return true;
   }
 

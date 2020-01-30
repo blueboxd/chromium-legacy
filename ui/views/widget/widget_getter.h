@@ -5,6 +5,9 @@
 #ifndef UI_VIEWS_WIDGET_WIDGET_GETTER_H_
 #define UI_VIEWS_WIDGET_WIDGET_GETTER_H_
 
+#include "base/compiler_specific.h"
+#include "ui/views/views_export.h"
+
 namespace views {
 class Widget;
 
@@ -17,13 +20,10 @@ class Widget;
 // this as a virtual base avoids the need to explicitly qualify GetWidget()
 // calls with a base class name when multiple bases expose it, as in e.g.
 // View + WidgetDelegate.
-class WidgetGetter {
+class VIEWS_EXPORT WidgetGetter {
  public:
-  Widget* GetWidget() {
-    return const_cast<Widget*>(
-        static_cast<const WidgetGetter*>(this)->GetWidget());
-  }
-  const Widget* GetWidget() const { return GetWidgetImpl(); }
+  NOINLINE Widget* GetWidget();
+  NOINLINE const Widget* GetWidget() const;
 
  private:
   virtual const Widget* GetWidgetImpl() const = 0;

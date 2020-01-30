@@ -114,7 +114,7 @@ public class AutofillAssistantGenericUiTest {
     private ViewProto createTextView(String text, String identifier) {
         return (ViewProto) ViewProto.newBuilder()
                 .setTextView(TextViewProto.newBuilder().setText(text).setTextAppearance(
-                        "TextAppearance.BlackBody"))
+                        "TextAppearance.TextMedium.Secondary"))
                 .setAttributes(ViewAttributesProto.newBuilder().setPaddingStart(24))
                 .setLayoutParams(
                         ViewLayoutParamsProto.newBuilder()

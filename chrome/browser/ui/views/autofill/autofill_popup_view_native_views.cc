@@ -14,7 +14,6 @@
 #include "chrome/browser/ui/autofill/autofill_popup_controller.h"
 #include "chrome/browser/ui/autofill/autofill_popup_layout_model.h"
 #include "chrome/browser/ui/autofill/popup_view_common.h"
-#include "chrome/browser/ui/views/autofill/view_util.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/chrome_typography.h"
 #include "chrome/browser/ui/views/chrome_typography_provider.h"
@@ -138,6 +137,10 @@ class AutofillPopupItemView : public AutofillPopupRowView {
   void OnGestureEvent(ui::GestureEvent* event) override;
 
  protected:
+  // Holds a view and a label that is stored inside the view. It can be the
+  // same object.
+  using ViewWithLabel = std::pair<std::unique_ptr<views::View>, views::Label*>;
+
   AutofillPopupItemView(AutofillPopupViewNativeViews* popup_view,
                         int line_number,
                         int frontend_id)
@@ -146,16 +149,19 @@ class AutofillPopupItemView : public AutofillPopupRowView {
 
   // AutofillPopupRowView:
   void CreateContent() override;
-  void RefreshStyle() override;
+  void RefreshStyle() final;
+  std::unique_ptr<views::Background> CreateBackground() final;
 
   int frontend_id() const { return frontend_id_; }
 
   virtual int GetPrimaryTextStyle() = 0;
-  virtual std::unique_ptr<views::View> CreateValueLabel();
+  // Returns a value view. The label part is optional but allow caller to keep
+  // track of all the labels for background color update.
+  virtual ViewWithLabel CreateValueLabel();
   // Creates an optional label below the value.
-  virtual std::unique_ptr<views::View> CreateSubtextLabel();
+  virtual ViewWithLabel CreateSubtextLabel();
   // The description view can be nullptr.
-  virtual std::unique_ptr<views::View> CreateDescriptionLabel();
+  virtual ViewWithLabel CreateDescriptionLabel();
 
   // Creates a label matching the style of the description label.
   std::unique_ptr<views::Label> CreateSecondaryLabel(
@@ -174,10 +180,16 @@ class AutofillPopupItemView : public AutofillPopupRowView {
                          bool resize,
                          views::BoxLayout* layout);
 
+  void KeepLabel(views::Label* label) {
+    if (label)
+      inner_labels_.push_back(label);
+  }
+
  private:
   const int frontend_id_;
 
-  DISALLOW_COPY_AND_ASSIGN(AutofillPopupItemView);
+  // All the labels inside this view.
+  std::vector<views::Label*> inner_labels_;
 };
 
 // This represents a suggestion, i.e., a row containing data that will be filled
@@ -193,10 +205,9 @@ class AutofillPopupSuggestionView : public AutofillPopupItemView {
 
  protected:
   // AutofillPopupItemView:
-  std::unique_ptr<views::Background> CreateBackground() override;
   int GetPrimaryTextStyle() override;
   gfx::Font::Weight GetPrimaryTextWeight() const override;
-  std::unique_ptr<views::View> CreateSubtextLabel() override;
+  ViewWithLabel CreateSubtextLabel() override;
   AutofillPopupSuggestionView(AutofillPopupViewNativeViews* popup_view,
                               int line_number,
                               int frontend_id);
@@ -216,9 +227,9 @@ class PasswordPopupSuggestionView : public AutofillPopupSuggestionView {
 
  protected:
   // AutofillPopupItemView:
-  std::unique_ptr<views::View> CreateValueLabel() override;
-  std::unique_ptr<views::View> CreateSubtextLabel() override;
-  std::unique_ptr<views::View> CreateDescriptionLabel() override;
+  ViewWithLabel CreateValueLabel() override;
+  ViewWithLabel CreateSubtextLabel() override;
+  ViewWithLabel CreateDescriptionLabel() override;
   gfx::Font::Weight GetPrimaryTextWeight() const override;
 
  private:
@@ -245,7 +256,6 @@ class AutofillPopupFooterView : public AutofillPopupItemView {
  protected:
   // AutofillPopupItemView:
   void CreateContent() override;
-  std::unique_ptr<views::Background> CreateBackground() override;
   int GetPrimaryTextStyle() override;
   gfx::Font::Weight GetPrimaryTextWeight() const override;
 
@@ -253,8 +263,6 @@ class AutofillPopupFooterView : public AutofillPopupItemView {
   AutofillPopupFooterView(AutofillPopupViewNativeViews* popup_view,
                           int line_number,
                           int frontend_id);
-
-  DISALLOW_COPY_AND_ASSIGN(AutofillPopupFooterView);
 };
 
 // Draws a separator between sections of the dropdown, namely between datalist
@@ -417,28 +425,32 @@ void AutofillPopupItemView::CreateContent() {
                       /*resize=*/false, layout_manager);
   }
 
-  auto lower_value_label = CreateSubtextLabel();
-  auto value_label = CreateValueLabel();
-  auto description_label = CreateDescriptionLabel();
+  ViewWithLabel lower_value_label = CreateSubtextLabel();
+  ViewWithLabel value_label = CreateValueLabel();
+  ViewWithLabel description_label = CreateDescriptionLabel();
 
   std::unique_ptr<views::View> all_labels = std::make_unique<views::View>();
   views::GridLayout* grid_layout =
       all_labels->SetLayoutManager(std::make_unique<views::GridLayout>());
   BuildColumnSet(grid_layout);
   grid_layout->StartRow(0, 0);
-  grid_layout->AddView(std::move(value_label));
-  if (description_label)
-    grid_layout->AddView(std::move(description_label));
-  else
+  grid_layout->AddView(std::move(value_label.first));
+  KeepLabel(value_label.second);
+  if (description_label.first) {
+    grid_layout->AddView(std::move(description_label.first));
+    KeepLabel(description_label.second);
+  } else {
     grid_layout->SkipColumns(1);
+  }
 
   const int kStandardRowHeight =
       views::MenuConfig::instance().touchable_menu_height;
-  if (lower_value_label) {
+  if (lower_value_label.first) {
     layout_manager->set_minimum_cross_axis_size(
         kStandardRowHeight + kAutofillPopupAdditionalDoubleRowHeight);
     grid_layout->StartRowWithPadding(0, 0, 0, kAdjacentLabelsVerticalSpacing);
-    grid_layout->AddView(std::move(lower_value_label));
+    grid_layout->AddView(std::move(lower_value_label.first));
+    KeepLabel(lower_value_label.second);
     grid_layout->SkipColumns(1);
   } else {
     layout_manager->set_minimum_cross_axis_size(kStandardRowHeight);
@@ -456,18 +468,33 @@ void AutofillPopupItemView::CreateContent() {
 
 void AutofillPopupItemView::RefreshStyle() {
   SetBackground(CreateBackground());
+  SkColor bk_color = is_selected() ? popup_view()->GetSelectedBackgroundColor()
+                                   : popup_view()->GetBackgroundColor();
+  for (views::Label* label : inner_labels_) {
+    label->SetBackgroundColor(bk_color);
+  }
   SchedulePaint();
 }
 
-std::unique_ptr<views::View> AutofillPopupItemView::CreateValueLabel() {
+std::unique_ptr<views::Background> AutofillPopupItemView::CreateBackground() {
+  return is_selected() ? views::CreateSolidBackground(
+                             popup_view()->GetSelectedBackgroundColor())
+                       : nullptr;
+}
+
+AutofillPopupItemView::ViewWithLabel AutofillPopupItemView::CreateValueLabel() {
   // TODO(crbug.com/831603): Remove elision responsibilities from controller.
+  ViewWithLabel view_and_label;
   base::string16 text =
       popup_view()->controller()->GetElidedValueAt(line_number());
   if (popup_view()
           ->controller()
           ->GetSuggestionAt(line_number())
           .is_value_secondary) {
-    return CreateSecondaryLabel(text);
+    std::unique_ptr<views::Label> label = CreateSecondaryLabel(text);
+    view_and_label.second = label.get();
+    view_and_label.first = std::move(label);
+    return view_and_label;
   }
 
   auto text_label = CreateLabelWithStyleAndContext(
@@ -480,15 +507,19 @@ std::unique_ptr<views::View> AutofillPopupItemView::CreateValueLabel() {
         text_label->font_list().DeriveWithWeight(font_weight));
   }
 
-  return text_label;
+  view_and_label.second = text_label.get();
+  view_and_label.first = std::move(text_label);
+  return view_and_label;
 }
 
-std::unique_ptr<views::View> AutofillPopupItemView::CreateSubtextLabel() {
-  return nullptr;
+AutofillPopupItemView::ViewWithLabel
+AutofillPopupItemView::CreateSubtextLabel() {
+  return ViewWithLabel();
 }
 
-std::unique_ptr<views::View> AutofillPopupItemView::CreateDescriptionLabel() {
-  return nullptr;
+AutofillPopupItemView::ViewWithLabel
+AutofillPopupItemView::CreateDescriptionLabel() {
+  return ViewWithLabel();
 }
 
 std::unique_ptr<views::Label> AutofillPopupItemView::CreateSecondaryLabel(
@@ -503,8 +534,7 @@ AutofillPopupItemView::CreateLabelWithStyleAndContext(
     const base::string16& text,
     int text_context,
     int text_style) const {
-  auto label =
-      CreateLabelWithColorReadabilityDisabled(text, text_context, text_style);
+  auto label = std::make_unique<views::Label>(text, text_context, text_style);
   label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
 
   return label;
@@ -539,13 +569,6 @@ AutofillPopupSuggestionView* AutofillPopupSuggestionView::Create(
   return result;
 }
 
-std::unique_ptr<views::Background>
-AutofillPopupSuggestionView::CreateBackground() {
-  return is_selected() ? views::CreateSolidBackground(
-                             popup_view()->GetSelectedBackgroundColor())
-                       : nullptr;
-}
-
 int AutofillPopupSuggestionView::GetPrimaryTextStyle() {
   return views::style::TextStyle::STYLE_PRIMARY;
 }
@@ -562,16 +585,20 @@ AutofillPopupSuggestionView::AutofillPopupSuggestionView(
   SetFocusBehavior(FocusBehavior::ALWAYS);
 }
 
-std::unique_ptr<views::View> AutofillPopupSuggestionView::CreateSubtextLabel() {
+AutofillPopupItemView::ViewWithLabel
+AutofillPopupSuggestionView::CreateSubtextLabel() {
   base::string16 label_text =
       popup_view()->controller()->GetSuggestionAt(line_number()).label;
   if (label_text.empty())
-    return nullptr;
+    return ViewWithLabel();
 
   auto label = CreateLabelWithStyleAndContext(
       label_text, ChromeTextContext::CONTEXT_BODY_TEXT_SMALL,
       views::style::STYLE_SECONDARY);
-  return label;
+  ViewWithLabel result;
+  result.second = label.get();
+  result.first = std::move(label);
+  return result;
 }
 
 /************** PasswordPopupSuggestionView **************/
@@ -586,28 +613,37 @@ PasswordPopupSuggestionView* PasswordPopupSuggestionView::Create(
   return result;
 }
 
-std::unique_ptr<views::View> PasswordPopupSuggestionView::CreateValueLabel() {
-  auto label = AutofillPopupSuggestionView::CreateValueLabel();
-  return std::make_unique<ConstrainedWidthView>(std::move(label),
-                                                kAutofillPopupUsernameMaxWidth);
+AutofillPopupItemView::ViewWithLabel
+PasswordPopupSuggestionView::CreateValueLabel() {
+  ViewWithLabel label = AutofillPopupSuggestionView::CreateValueLabel();
+  label.first = std::make_unique<ConstrainedWidthView>(
+      std::move(label.first), kAutofillPopupUsernameMaxWidth);
+  return label;
 }
 
-std::unique_ptr<views::View> PasswordPopupSuggestionView::CreateSubtextLabel() {
+AutofillPopupItemView::ViewWithLabel
+PasswordPopupSuggestionView::CreateSubtextLabel() {
   auto label = CreateSecondaryLabel(masked_password_);
   label->SetElideBehavior(gfx::TRUNCATE);
-  return std::make_unique<ConstrainedWidthView>(std::move(label),
-                                                kAutofillPopupPasswordMaxWidth);
+  ViewWithLabel result;
+  result.second = label.get();
+  result.first = std::make_unique<ConstrainedWidthView>(
+      std::move(label), kAutofillPopupPasswordMaxWidth);
+  return result;
 }
 
-std::unique_ptr<views::View>
+AutofillPopupItemView::ViewWithLabel
 PasswordPopupSuggestionView::CreateDescriptionLabel() {
   if (origin_.empty())
-    return nullptr;
+    return ViewWithLabel();
 
   auto label = CreateSecondaryLabel(origin_);
   label->SetElideBehavior(gfx::ELIDE_HEAD);
-  return std::make_unique<ConstrainedWidthView>(std::move(label),
-                                                kAutofillPopupUsernameMaxWidth);
+  ViewWithLabel result;
+  result.second = label.get();
+  result.first = std::make_unique<ConstrainedWidthView>(
+      std::move(label), kAutofillPopupUsernameMaxWidth);
+  return result;
 }
 
 gfx::Font::Weight PasswordPopupSuggestionView::GetPrimaryTextWeight() const {
@@ -675,8 +711,9 @@ void AutofillPopupFooterView::CreateContent() {
       views::MenuConfig::instance().touchable_menu_height +
       AutofillPopupBaseView::GetCornerRadius());
 
-  auto value_label = CreateValueLabel();
-  AddChildView(std::move(value_label));
+  ViewWithLabel value_label = CreateValueLabel();
+  AddChildView(std::move(value_label.first));
+  KeepLabel(value_label.second);
   AddSpacerWithSize(
       ChromeLayoutProvider::Get()->GetDistanceMetric(
           DISTANCE_BETWEEN_PRIMARY_AND_SECONDARY_LABELS_HORIZONTAL),
@@ -686,12 +723,6 @@ void AutofillPopupFooterView::CreateContent() {
     AddSpacerWithSize(GetHorizontalMargin(), /*resize=*/false, layout_manager);
     AddIcon(icon);
   }
-}
-
-std::unique_ptr<views::Background> AutofillPopupFooterView::CreateBackground() {
-  return is_selected() ? views::CreateSolidBackground(
-                             popup_view()->GetSelectedBackgroundColor())
-                       : nullptr;
 }
 
 int AutofillPopupFooterView::GetPrimaryTextStyle() {
@@ -792,7 +823,7 @@ void AutofillPopupWarningView::CreateContent() {
   SetBorder(views::CreateEmptyBorder(
       gfx::Insets(vertical_margin, horizontal_margin)));
 
-  auto text_label = CreateLabelWithColorReadabilityDisabled(
+  auto text_label = std::make_unique<views::Label>(
       controller->GetElidedValueAt(line_number()),
       ChromeTextContext::CONTEXT_BODY_TEXT_LARGE, ChromeTextStyle::STYLE_RED);
   text_label->SetEnabledColor(popup_view()->GetWarningColor());
@@ -871,7 +902,6 @@ AutofillPopupViewNativeViews::AutofillPopupViewNativeViews(
   layout_->set_main_axis_alignment(views::BoxLayout::MainAxisAlignment::kStart);
 
   CreateChildViews();
-  SetBackground(views::CreateSolidBackground(GetBackgroundColor()));
 }
 
 AutofillPopupViewNativeViews::~AutofillPopupViewNativeViews() {}

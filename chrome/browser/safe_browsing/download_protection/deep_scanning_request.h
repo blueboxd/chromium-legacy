@@ -35,6 +35,10 @@ class DeepScanningRequest : public download::DownloadItem::Observer {
     TRIGGER_POLICY,
   };
 
+  // Checks the current policies to determine whether files must be uploaded by
+  // policy.
+  static bool ShouldUploadItemByPolicy(download::DownloadItem* item);
+
   // Scan the given |item|, with the given |trigger|. The result of the scanning
   // will be provided through |callback|. Take references to the owning
   // |download_service| and the |binary_upload_service| to upload to.

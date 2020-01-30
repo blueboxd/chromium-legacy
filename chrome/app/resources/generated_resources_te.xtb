@@ -78,7 +78,6 @@
 <translation id="1108600514891325577">&amp;ఆపు</translation>
 <translation id="1110155001042129815">వేచి ఉండండి</translation>
 <translation id="1112420131909513020">బ్యాక్‌గ్రౌండ్‌ ట్యాబ్ బ్లూటూత్‌ను ఉపయోగిస్తోంది</translation>
-<translation id="1113042067630273625">ఇది, నిల్వ చేసిన సైట్ డేటాలో నుండి <ph name="TOTAL_USAGE" /> తీసివేస్తుంది.</translation>
 <translation id="1114102982691049955"><ph name="PRINTER_MANUFACTURER" /> <ph name="PRINTER_MODEL" /> (USB)</translation>
 <translation id="1114202307280046356">చతుర్భుజం</translation>
 <translation id="1114335938027186412">మీ కంప్యూటర్ ట్రస్టెడ్ ప్లాట్‌ఫారమ్ మాడ్యూల్ (TPM) భద్రతా పరికరాన్ని కలిగి ఉంది, ఇది Chrome OSలో అనేక కీలకమైన భద్రతా ఫీచర్‌లను అమలు చేయడానికి ఉపయోగించబడుతుంది. మరింత తెలుసుకోవడానికి Chromebook సహాయ కేంద్రాన్ని సందర్శించండి: https://support.google.com/chromebook/?p=tpm</translation>
@@ -151,7 +150,6 @@
 <translation id="1197979282329025000">ప్రింటర్ <ph name="PRINTER_NAME" />కు సంబంధించిన ప్రింటర్ సామర్థ్యాలను తిరిగి పొందడంలో ఎర్రర్ ఏర్పడింది. ఈ ప్రింటర్‌ను <ph name="CLOUD_PRINT_NAME" />తో నమోదు చేయడం సాధ్యం కాలేదు.</translation>
 <translation id="119944043368869598">అన్ని క్లియర్ చెయ్యి</translation>
 <translation id="1201402288615127009">తరువాత</translation>
-<translation id="1202556750060561551"><ph name="SITE_GROUP_NAME" /> ద్వారా స్టోర్ చేయబడిన డేటా మరియు కుక్కీలు, అలాగే దీని ఆధీనంలో ఉన్న సైట్‌లు మరియు దాని ఇన్‌స్టాల్ చేసిన యాప్‌లు తొలగించబడతాయి.</translation>
 <translation id="1202596434010270079">కియోస్క్ యాప్ అప్‌డేట్ చేయ‌బ‌డింది. దయచేసి USB స్టిక్‌ను తీసివేయండి.</translation>
 <translation id="120368089816228251">సంగీత స్వరం</translation>
 <translation id="1205489148908752564">అనుమతి జాబితాలోని వినియోగదారులను చదవండి మరియు మార్చండి</translation>
@@ -996,7 +994,6 @@
 <translation id="2365507699358342471">క్లిప్‌బోర్డ్‌కు కాపీ చేసిన వచనం మరియు చిత్రాలను ఈ సైట్ చూడగలదు.</translation>
 <translation id="2366260648632264559">సిస్టమ్ వచనాన్ని ఈ భాషలో చూపు</translation>
 <translation id="2367972762794486313">అనువర్తనాలను చూపు</translation>
-<translation id="2369105924912929484">వర్గీకృత పేజీ కంటెంట్‌లను టోగుల్ చేయండి</translation>
 <translation id="2371076942591664043">&amp;పూర్తవగానే తెరువు</translation>
 <translation id="2373666622366160481">కాగితానికి తగినట్లుగా అమర్చు</translation>
 <translation id="2375406435414127095">మీ ఫోన్‌కి కనెక్ట్ చేయండి</translation>
@@ -1876,6 +1873,7 @@
 <translation id="3603177256297531067">ఈ పేజీని అనువదించడం సాధ్యపడలేదు</translation>
 <translation id="3603622770190368340">నెట్‌వర్క్ ప్రమాణపత్రాన్ని పొందండి</translation>
 <translation id="3605780360466892872">బటన్‌డౌన్</translation>
+<translation id="3608436266458100337">రీడర్ మోడ్</translation>
 <translation id="3608576286259426129">వినియోగదారు చిత్ర ప్రివ్యూ</translation>
 <translation id="3610369246614755442">డాక్ ఫ్యాన్‌కు సర్వీస్ అవసరం</translation>
 <translation id="361106536627977100">ఫ్లాష్ డేటా</translation>
@@ -2626,7 +2624,6 @@
 <translation id="4665014895760275686">తయారీదారు</translation>
 <translation id="4665446389743427678"><ph name="SITE" /> ద్వారా నిల్వ చేయబడిన మొత్తం డేటా తొలగించబడుతుంది.</translation>
 <translation id="4668721319092543482"><ph name="PLUGIN_NAME" />ను ప్రారంభించడానికి క్లిక్ చేయండి</translation>
-<translation id="4672657274720418656">పేజీని డిస్టిల్ చేయి</translation>
 <translation id="46733273239502219">ఇన్‌స్టాల్ చేసిన యాప్‌లలో ఆఫ్‌లైన్ డేటా కూడా తీసివేయబడుతుంది</translation>
 <translation id="4673442866648850031">స్టైలస్‌ను బయటకు తీసినప్పుడు స్టైలస్ సాధనాలను తెరుస్తుంది</translation>
 <translation id="4677585247300749148">యాక్సెసిబిలిటీ ఈవెంట్‌లకు <ph name="URL" /> ప్రతిస్పందించాలని అనుకుంటోంది</translation>
@@ -3336,7 +3333,6 @@
 <translation id="5687326903064479980">సమయ మండలి</translation>
 <translation id="5689516760719285838">స్థానం</translation>
 <translation id="56907980372820799">డేటాను జోడించు</translation>
-<translation id="5691180005790455277"><ph name="SITE_GROUP_NAME" /> ద్వారా లేదా దానిలో ఉండే ఏవైనా సైట్‌ల ద్వారా నిల్వ చేయబడిన డేటాతో పాటు కుక్కీలన్నీ తొలగించబడతాయి.</translation>
 <translation id="5691511426247308406">కుటుంబం</translation>
 <translation id="5692183275898619210">ముద్రణ పూర్తయింది</translation>
 <translation id="5696143504434933566">"<ph name="EXTENSION_NAME" />" నుండి దుర్వినియోగాన్ని నివేదించు</translation>

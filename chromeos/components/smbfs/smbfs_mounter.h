@@ -13,6 +13,7 @@
 #include "base/files/scoped_file.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "base/timer/timer.h"
 #include "base/unguessable_token.h"
 #include "chromeos/components/smbfs/mojom/smbfs.mojom.h"
@@ -32,6 +33,18 @@ class COMPONENT_EXPORT(SMBFS) SmbFsMounter {
   using DoneCallback =
       base::OnceCallback<void(mojom::MountError, std::unique_ptr<SmbFsHost>)>;
 
+  struct KerberosOptions {
+    using Source = mojom::KerberosConfig::Source;
+    KerberosOptions(Source source, const std::string& identity);
+    ~KerberosOptions();
+
+    // Don't allow an invalid options struct to be created.
+    KerberosOptions() = delete;
+
+    Source source;
+    std::string identity;
+  };
+
   struct MountOptions {
     MountOptions();
     MountOptions(const MountOptions&);
@@ -41,6 +54,7 @@ class COMPONENT_EXPORT(SMBFS) SmbFsMounter {
     std::string username;
     std::string workgroup;
     std::string password;
+    base::Optional<KerberosOptions> kerberos_options;
 
     // Allow NTLM authentication to be used.
     bool allow_ntlm = false;

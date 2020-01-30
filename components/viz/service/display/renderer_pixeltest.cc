@@ -2020,7 +2020,8 @@ TYPED_TEST(VideoRendererPixelTest, TwoColorY16Rect) {
       cc::FuzzyPixelOffByOneComparator(true)));
 }
 
-TYPED_TEST(RendererPixelTest, FastPassColorFilterAlpha) {
+// TODO(https://crbug.com/1044841): Flaky, especially on Linux/TSAN and Fuchsia.
+TYPED_TEST(RendererPixelTest, DISABLED_FastPassColorFilterAlpha) {
   gfx::Rect viewport_rect(this->device_viewport_size_);
 
   int root_pass_id = 1;
@@ -2098,13 +2099,8 @@ TYPED_TEST(RendererPixelTest, FastPassColorFilterAlpha) {
       FuzzyForSoftwareOnlyPixelComparator<TypeParam>(false)));
 }
 
-// Crashes on Linux only. http://crbug.com/1044841
-#if defined(OS_LINUX)
-#define MAYBE_FastPassSaturateFilter DISABLED_FastPassSaturateFilter
-#else
-#define MAYBE_FastPassSaturateFilter FastPassSaturateFilter
-#endif
-TYPED_TEST(RendererPixelTest, MAYBE_FastPassSaturateFilter) {
+// TODO(https://crbug.com/1044841): Flaky, especially on Linux/TSAN and Fuchsia.
+TYPED_TEST(RendererPixelTest, DISABLED_FastPassSaturateFilter) {
   gfx::Rect viewport_rect(this->device_viewport_size_);
 
   int root_pass_id = 1;
@@ -2226,15 +2222,8 @@ TYPED_TEST(RendererPixelTest, FastPassFilterChain) {
       FuzzyForSoftwareOnlyPixelComparator<TypeParam>(false)));
 }
 
-// Crashes on Linux only. http://crbug.com/1044841
-#if defined(OS_LINUX)
-#define MAYBE_FastPassColorFilterAlphaTranslation \
-  DISABLED_FastPassColorFilterAlphaTranslation
-#else
-#define MAYBE_FastPassColorFilterAlphaTranslation \
-  FastPassColorFilterAlphaTranslation
-#endif
-TYPED_TEST(RendererPixelTest, MAYBE_FastPassColorFilterAlphaTranslation) {
+// TODO(https://crbug.com/1044841): Flaky, especially on Linux/TSAN and Fuchsia.
+TYPED_TEST(RendererPixelTest, DISABLED_FastPassColorFilterAlphaTranslation) {
   gfx::Rect viewport_rect(this->device_viewport_size_);
 
   int root_pass_id = 1;
@@ -3538,14 +3527,9 @@ TYPED_TEST(GPURendererPixelTest, BlendingWithoutAntiAliasing) {
       cc::ExactPixelComparator(/*discard_alpha=*/true)));
 }
 
-// Test is flaky on Linux TSAN. crbug.com/1044587.
-#if defined(OS_LINUX) && defined(THREAD_SANITIZER)
-#define MAYBE_TrilinearFiltering DISABLED_TrilinearFiltering
-#else
-#define MAYBE_TrilinearFiltering TrilinearFiltering
-#endif
 // Trilinear filtering is only supported in the gl renderer.
-TYPED_TEST(GPURendererPixelTest, MAYBE_TrilinearFiltering) {
+// TODO(https://crbug.com/1044841): Flaky, especially on Linux/TSAN and Fuchsia.
+TYPED_TEST(GPURendererPixelTest, DISABLED_TrilinearFiltering) {
   gfx::Rect viewport_rect(this->device_viewport_size_);
 
   int root_pass_id = 1;
@@ -4664,15 +4648,8 @@ TYPED_TEST(GPURendererPixelTest, RoundedCornerSimpleTextureDrawQuad) {
   }
 }
 
-// This draws a render pass with 2 solid color quads one of which has a rounded
-// corner. The render pass itself also has a rounded corner.
-// Crashes on Linux only. http://crbug.com/1044841
-#if defined(OS_LINUX)
-#define MAYBE_RoundedCornerOnRenderPass DISABLED_RoundedCornerOnRenderPass
-#else
-#define MAYBE_RoundedCornerOnRenderPass RoundedCornerOnRenderPass
-#endif
-TYPED_TEST(RendererPixelTest, MAYBE_RoundedCornerOnRenderPass) {
+// TODO(https://crbug.com/1044841): Flaky, especially on Linux/TSAN and Fuchsia.
+TYPED_TEST(RendererPixelTest, DISABLED_RoundedCornerOnRenderPass) {
   gfx::Rect viewport_rect(this->device_viewport_size_);
   constexpr int kInset = 20;
   constexpr int kCornerRadius = 20;
@@ -4733,7 +4710,8 @@ TYPED_TEST(RendererPixelTest, MAYBE_RoundedCornerOnRenderPass) {
                                  cc::FuzzyPixelOffByOneComparator(true)));
 }
 
-TYPED_TEST(RendererPixelTest, RoundedCornerMultiRadii) {
+// TODO(https://crbug.com/1044841): Flaky, especially on Linux/TSAN and Fuchsia.
+TYPED_TEST(RendererPixelTest, DISABLED_RoundedCornerMultiRadii) {
   gfx::Rect viewport_rect(this->device_viewport_size_);
   constexpr gfx::RoundedCornersF kCornerRadii(5, 15, 25, 35);
   constexpr int kInset = 20;
@@ -4789,7 +4767,8 @@ TYPED_TEST(RendererPixelTest, RoundedCornerMultiRadii) {
   }
 }
 
-TYPED_TEST(RendererPixelTest, RoundedCornerMultipleQads) {
+// TODO(https://crbug.com/1044841): Flaky, especially on Linux/TSAN and Fuchsia.
+TYPED_TEST(RendererPixelTest, DISABLED_RoundedCornerMultipleQads) {
   const gfx::Rect viewport_rect(this->device_viewport_size_);
   constexpr gfx::RoundedCornersF kCornerRadiiUL(5, 0, 0, 0);
   constexpr gfx::RoundedCornersF kCornerRadiiUR(0, 15, 0, 0);

@@ -31,7 +31,7 @@ namespace {
 // Time during which non visible pages are protected from urgent discarding
 // (not on ChromeOS).
 constexpr base::TimeDelta kNonVisiblePagesUrgentProtectionTime =
-    base::TimeDelta::FromSeconds(10);
+    base::TimeDelta::FromMinutes(10);
 #endif
 
 // Time during which a tab cannot be discarded after having played audio.

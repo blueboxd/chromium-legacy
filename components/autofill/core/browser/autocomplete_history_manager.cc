@@ -13,6 +13,7 @@
 #include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "components/autofill/core/browser/autofill_experiments.h"
 #include "components/autofill/core/browser/autofill_metrics.h"
 #include "components/autofill/core/browser/ui/suggestion.h"
@@ -360,7 +361,7 @@ void AutocompleteHistoryManager::CleanupEntries(
 //  - value is not a SSN
 //  - field was not identified as a CVC field (this is handled in
 //    AutofillManager)
-//  - field is focusable
+//  - field has user typed input
 //  - not a presentation field
 bool AutocompleteHistoryManager::IsFieldValueSaveable(
     const FormFieldData& field) {
@@ -374,10 +375,19 @@ bool AutocompleteHistoryManager::IsFieldValueSaveable(
     }
   }
 
-  return is_value_valid && !field.name.empty() && IsTextField(field) &&
-         field.should_autocomplete && !IsValidCreditCardNumber(field.value) &&
-         !IsSSN(field.value) && field.is_focusable &&
-         field.role != FormFieldData::RoleAttribute::kPresentation;
+  bool is_saveable = is_value_valid && !field.name.empty() &&
+                     IsTextField(field) && field.should_autocomplete &&
+                     !IsValidCreditCardNumber(field.value) &&
+                     !IsSSN(field.value) &&
+                     field.role != FormFieldData::RoleAttribute::kPresentation;
+
+// There is no way to track whether the field has user typed input on iOS
+// thus checking |is_focusable| is the best what can be done.
+#if !defined(OS_IOS)
+  return is_saveable && (field.properties_mask & USER_TYPED);
+#else
+  return is_saveable && field.is_focusable;
+#endif
 }
 
 }  // namespace autofill

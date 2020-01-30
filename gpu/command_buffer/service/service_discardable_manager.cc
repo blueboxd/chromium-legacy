@@ -57,8 +57,6 @@ size_t DiscardableCacheSizeLimitForPressure(
     base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level) {
   switch (memory_pressure_level) {
     case base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_NONE:
-      // This function is only called with moderate or critical pressure.
-      NOTREACHED();
       return base_cache_limit;
     case base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_MODERATE:
       // With moderate pressure, shrink to 1/4 our normal size.

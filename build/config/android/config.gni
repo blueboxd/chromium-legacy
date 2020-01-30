@@ -86,6 +86,13 @@ if (is_android || is_chromeos) {
     default_lint_android_sdk_version = 26
   }
 
+  if (!defined(manifest_merger_sdk_root)) {
+    # Purposefully repeated so that downstream can change
+    # default_android_sdk_root without changing manifest merger version.
+    manifest_merger_sdk_root = "//third_party/android_sdk/public"
+    manifest_merger_sdk_version = "-26.0.0-dev"
+  }
+
   if (!defined(default_extras_android_sdk_root)) {
     # Purposefully repeated so that downstream can change
     # default_android_sdk_root without changing where we load the SDK extras
@@ -201,10 +208,6 @@ if (is_android || is_chromeos) {
 
     # Enable the chrome build for devices without touchscreens.
     notouch_build = false
-  }
-
-  if (notouch_build && defined(extra_keymappings)) {
-    keycode_conversion_data_android_path = extra_keymappings
   }
 
   assert(!(check_android_configuration && is_java_debug),

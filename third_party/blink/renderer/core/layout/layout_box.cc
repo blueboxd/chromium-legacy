@@ -782,7 +782,7 @@ void LayoutBox::UpdateAfterLayout() {
 
 bool LayoutBox::HasOverrideIntrinsicContentWidth() const {
   const auto& style = StyleRef();
-  const IntrinsicLength& intrinsic_length = style.IntrinsicWidth();
+  const IntrinsicLength& intrinsic_length = style.ContainIntrinsicWidth();
   if (intrinsic_length.IsLegacy())
     return false;
 
@@ -798,7 +798,7 @@ bool LayoutBox::HasOverrideIntrinsicContentWidth() const {
 
 bool LayoutBox::HasOverrideIntrinsicContentHeight() const {
   const auto& style = StyleRef();
-  const IntrinsicLength& intrinsic_length = style.IntrinsicHeight();
+  const IntrinsicLength& intrinsic_length = style.ContainIntrinsicHeight();
   if (intrinsic_length.IsLegacy())
     return false;
 
@@ -815,7 +815,7 @@ bool LayoutBox::HasOverrideIntrinsicContentHeight() const {
 LayoutUnit LayoutBox::OverrideIntrinsicContentWidth() const {
   DCHECK(HasOverrideIntrinsicContentWidth());
   const auto& style = StyleRef();
-  const IntrinsicLength& intrinsic_length = style.IntrinsicWidth();
+  const IntrinsicLength& intrinsic_length = style.ContainIntrinsicWidth();
   DCHECK(!intrinsic_length.IsLegacy());
   if (intrinsic_length.IsAuto()) {
     DCHECK(style.OverflowX() != EOverflow::kVisible);
@@ -829,7 +829,7 @@ LayoutUnit LayoutBox::OverrideIntrinsicContentWidth() const {
 LayoutUnit LayoutBox::OverrideIntrinsicContentHeight() const {
   DCHECK(HasOverrideIntrinsicContentHeight());
   const auto& style = StyleRef();
-  const IntrinsicLength& intrinsic_length = style.IntrinsicHeight();
+  const IntrinsicLength& intrinsic_length = style.ContainIntrinsicHeight();
   DCHECK(!intrinsic_length.IsLegacy());
   if (intrinsic_length.IsAuto()) {
     DCHECK(style.OverflowY() != EOverflow::kVisible);

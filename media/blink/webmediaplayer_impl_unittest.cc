@@ -270,6 +270,8 @@ class MockWebMediaPlayerDelegate : public blink::WebMediaPlayerDelegate {
   MOCK_METHOD2(DidPlayerMediaPositionStateChange,
                void(int, const media_session::MediaPosition&));
 
+  MOCK_METHOD2(DidPictureInPictureAvailabilityChange, void(int, bool));
+
  private:
   Observer* observer_ = nullptr;
   int player_id_ = 1234;

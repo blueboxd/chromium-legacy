@@ -342,7 +342,6 @@ void CSSGradientValue::AddComputedStops(
       case CSSValueID::kWebkitLink:
       case CSSValueID::kWebkitActivelink:
       case CSSValueID::kWebkitFocusRingColor:
-      case CSSValueID::kInternalRootColor:
         break;
       case CSSValueID::kCurrentcolor:
         if (allow_visited_style) {

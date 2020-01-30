@@ -460,7 +460,7 @@ void ActivityUserData::Set(StringPiece name,
 
   // The storage of a name is limited so use that limit during lookup.
   if (name.length() > kMaxUserDataNameLength)
-    name.set(name.data(), kMaxUserDataNameLength);
+    name = StringPiece(name.data(), kMaxUserDataNameLength);
 
   ValueInfo* info;
   auto existing = values_.find(name);

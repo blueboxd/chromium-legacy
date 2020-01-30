@@ -19,8 +19,9 @@ bool MofDataParser::ReadString(base::StringPiece* value) {
     return false;
   size_t string_length = str_scan - scan_;
   bool has_trailing_newline = (string_length > 0 && str_scan[-1] == '\n');
-  value->set(reinterpret_cast<const char*>(scan_),
-    has_trailing_newline ? string_length - 1 : string_length);
+  *value = base::StringPiece(
+      reinterpret_cast<const char*>(scan_),
+      has_trailing_newline ? string_length - 1 : string_length);
   Advance(string_length + 1);
   return true;
 }

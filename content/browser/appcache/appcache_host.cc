@@ -57,18 +57,16 @@ blink::mojom::AppCacheInfoPtr CreateCacheInfo(
   return info;
 }
 
-bool CanAccessDocumentURL(int process_id, const GURL& document_url) {
-  DCHECK_NE(process_id, ChildProcessHost::kInvalidUniqueID);
-  auto* security_policy = ChildProcessSecurityPolicyImpl::GetInstance();
+bool CanAccessDocumentURL(ChildProcessSecurityPolicyImpl::Handle* handle,
+                          const GURL& document_url) {
+  DCHECK(handle->is_valid());
   return document_url.is_empty() ||       // window.open("javascript:''") case.
          document_url.IsAboutSrcdoc() ||  // <iframe srcdoc= ...> case.
          document_url.IsAboutBlank() ||   // <iframe src="javascript:''"> case.
          document_url == GURL("data:,") ||  // CSP blocked_urls.
          (document_url.SchemeIsBlob() &&    // <iframe src="blob:null/xx"> case.
           url::Origin::Create(document_url).opaque()) ||
-         security_policy->CanAccessDataForOrigin(process_id,
-                                                 document_url) ||
-         !security_policy->HasSecurityState(process_id);  // process shutdown.
+         handle->CanAccessDataForOrigin(document_url);
 }
 
 base::debug::CrashKeyString* GetDocumentUrlCrashKey() {
@@ -100,6 +98,11 @@ AppCacheHost::AppCacheHost(
       main_resource_blocked_(false),
       associated_cache_info_pending_(false) {
   service_->AddObserver(this);
+  if (process_id_ != ChildProcessHost::kInvalidUniqueID) {
+    security_policy_handle_ =
+        ChildProcessSecurityPolicyImpl::GetInstance()->CreateHandle(
+            process_id_);
+  }
 }
 
 AppCacheHost::~AppCacheHost() {
@@ -154,18 +157,16 @@ void AppCacheHost::SelectCache(const GURL& document_url,
     return;
   }
 
-  DCHECK_NE(process_id_, ChildProcessHost::kInvalidUniqueID);
-  if (!CanAccessDocumentURL(process_id_, document_url)) {
+  DCHECK(security_policy_handle_.is_valid());
+  if (!CanAccessDocumentURL(security_policy_handle(), document_url)) {
     base::debug::SetCrashKeyString(GetDocumentUrlCrashKey(),
                                    document_url.spec());
     mojo::ReportBadMessage("ACH_SELECT_CACHE_DOCUMENT_URL_ACCESS_NOT_ALLOWED");
     return;
   }
 
-  auto* security_policy = ChildProcessSecurityPolicyImpl::GetInstance();
   if (!manifest_url.is_empty() &&
-      !security_policy->CanAccessDataForOrigin(process_id_, manifest_url) &&
-      security_policy->HasSecurityState(process_id_)) {
+      !security_policy_handle()->CanAccessDataForOrigin(manifest_url)) {
     mojo::ReportBadMessage("ACH_SELECT_CACHE_MANIFEST_URL_ACCESS_NOT_ALLOWED");
     return;
   }
@@ -263,7 +264,7 @@ void AppCacheHost::MarkAsForeignEntry(const GURL& document_url,
     return;
   }
 
-  if (!CanAccessDocumentURL(process_id_, document_url)) {
+  if (!CanAccessDocumentURL(security_policy_handle(), document_url)) {
     base::debug::SetCrashKeyString(GetDocumentUrlCrashKey(),
                                    document_url.spec());
     mojo::ReportBadMessage(
@@ -622,8 +623,11 @@ void AppCacheHost::NotifyMainResourceBlocked(const GURL& manifest_url) {
 
 void AppCacheHost::SetProcessId(int process_id) {
   DCHECK_EQ(process_id_, ChildProcessHost::kInvalidUniqueID);
+  DCHECK(!security_policy_handle_.is_valid());
   DCHECK_NE(process_id, ChildProcessHost::kInvalidUniqueID);
   process_id_ = process_id;
+  security_policy_handle_ =
+      ChildProcessSecurityPolicyImpl::GetInstance()->CreateHandle(process_id_);
 }
 
 base::WeakPtr<AppCacheHost> AppCacheHost::GetWeakPtr() {

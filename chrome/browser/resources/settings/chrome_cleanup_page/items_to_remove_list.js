@@ -151,5 +151,6 @@ cr.define('settings', function() {
     },
   });
 
+  // #cr_define_end
   return {ChromeCleanupRemovalListItem, CHROME_CLEANUP_DEFAULT_ITEMS_TO_SHOW};
 });

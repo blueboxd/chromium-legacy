@@ -158,7 +158,7 @@ void DecompressIfNeeded(base::StringPiece data, std::string* output) {
     DCHECK(success);
   } else {
     // Assume the raw data is not compressed.
-    data.CopyToString(output);
+    output->assign(data.data(), data.size());
   }
 }
 

@@ -20,6 +20,7 @@
 #include "base/test/task_environment.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "fuchsia/base/agent_impl.h"
+#include "fuchsia/base/context_provider_test_connector.h"
 #include "fuchsia/base/fake_component_context.h"
 #include "fuchsia/base/fit_adapter.h"
 #include "fuchsia/base/frame_test_util.h"
@@ -246,6 +247,9 @@ class CastRunnerIntegrationTest : public testing::Test {
     cast_runner_ = std::make_unique<CastRunner>(
         std::move(create_context_params), &outgoing_directory_);
 
+    cast_runner_->SetContextProviderForTest(cr_fuchsia::ConnectContextProvider(
+        context_provider_controller_.NewRequest()));
+
     // Connect to the CastRunner's fuchsia.sys.Runner interface.
     fidl::InterfaceHandle<fuchsia::io::Directory> directory;
     outgoing_directory_.GetOrCreateDirectory("svc")->Serve(
@@ -299,6 +303,7 @@ class CastRunnerIntegrationTest : public testing::Test {
 
   std::unique_ptr<CastRunner> cast_runner_;
   fuchsia::sys::RunnerPtr cast_runner_ptr_;
+  fuchsia::sys::ComponentControllerPtr context_provider_controller_;
 };
 
 // A basic integration test ensuring a basic cast request launches the right

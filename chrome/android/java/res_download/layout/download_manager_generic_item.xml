@@ -43,7 +43,7 @@
         android:id="@+id/title"
         style="@style/DownloadItemText"
         android:layout_marginTop="11dp"
-        android:textAppearance="@style/TextAppearance.BlackTitle1"
+        android:textAppearance="@style/TextAppearance.TextLarge.Primary"
         app:layout_column="1"
         app:layout_row="0"
         app:layout_gravity="fill_horizontal" />
@@ -51,7 +51,7 @@
     <TextView
         android:id="@+id/caption"
         style="@style/DownloadItemText"
-        android:textAppearance="@style/TextAppearance.BlackHint2"
+        android:textAppearance="@style/TextAppearance.TextMedium.Secondary"
         app:layout_column="1"
         app:layout_row="1"
         app:layout_gravity="fill_horizontal" />

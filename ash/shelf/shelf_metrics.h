@@ -15,6 +15,11 @@ constexpr char kHotseatGestureHistogramName[] = "Ash.HotseatGesture";
 // overview mode from home screen.
 constexpr char kEnterOverviewHistogramName[] = "Ash.SwipeHomeToOverviewGesture";
 
+// The name of the histogram which records the result of handling the drag on
+// window from shelf.
+constexpr char kHandleDragWindowFromShelfHistogramName[] =
+    "Ash.WindowDragFromShelfResult";
+
 // Types of gestures supported by the in-app hotseat. These values are persisted
 // to logs. Entries should not be renumbered and numeric values should never be
 // reused.
@@ -51,6 +56,28 @@ enum class EnterOverviewFromHomeLauncher {
   kMaxState = 2,
 
   kMaxValue = kMaxState
+};
+
+// Results of handling the drag on window from shelf. These values are
+// persisted to logs. Entries should not be renumbered and numeric values should
+// never be reused.
+enum class ShelfWindowDragResult {
+  // Goes to home screen after drag.
+  kGoToHomeScreen = 0,
+
+  // Dragged window restored to its original bounds after drag.
+  kRestoreToOriginalBounds = 1,
+
+  // Dragged window is dropped to overview after drag.
+  kGoToOverviewMode = 2,
+
+  // Enter splitview mode after drag.
+  kGoToSplitviewMode = 3,
+
+  // Drag is canceled instead of ending normally.
+  kDragCanceled = 4,
+
+  kMaxValue = kDragCanceled
 };
 
 }  // namespace ash

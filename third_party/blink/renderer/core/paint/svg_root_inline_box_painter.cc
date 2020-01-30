@@ -36,11 +36,11 @@ void SVGRootInlineBoxPainter::Paint(const PaintInfo& paint_info,
                              paint_info_before_filtering.phase);
     for (InlineBox* child = svg_root_inline_box_.FirstChild(); child;
          child = child->NextOnLine()) {
-      if (child->IsSVGInlineTextBox())
-        SVGInlineTextBoxPainter(*ToSVGInlineTextBox(child))
+      if (auto* svg_inline_text_box = DynamicTo<SVGInlineTextBox>(child))
+        SVGInlineTextBoxPainter(*svg_inline_text_box)
             .PaintSelectionBackground(paint_info_before_filtering);
-      else if (child->IsSVGInlineFlowBox())
-        SVGInlineFlowBoxPainter(*ToSVGInlineFlowBox(child))
+      else if (auto* svg_inline_flow_box = DynamicTo<SVGInlineFlowBox>(child))
+        SVGInlineFlowBoxPainter(*svg_inline_flow_box)
             .PaintSelectionBackground(paint_info_before_filtering);
     }
   }

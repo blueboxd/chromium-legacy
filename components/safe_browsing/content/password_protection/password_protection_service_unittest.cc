@@ -82,6 +82,8 @@ class MockSafeBrowsingDatabaseManager : public TestSafeBrowsingDatabaseManager {
   DISALLOW_COPY_AND_ASSIGN(MockSafeBrowsingDatabaseManager);
 };
 
+// PhishingDetector is not supported on Android.
+#if !defined(OS_ANDROID)
 class TestPhishingDetector : public mojom::PhishingDetector {
  public:
   TestPhishingDetector() : should_timeout_(false) {}
@@ -119,6 +121,7 @@ class TestPhishingDetector : public mojom::PhishingDetector {
 
   DISALLOW_COPY_AND_ASSIGN(TestPhishingDetector);
 };
+#endif
 
 class TestPasswordProtectionService : public MockPasswordProtectionService {
  public:
@@ -156,6 +159,7 @@ class TestPasswordProtectionService : public MockPasswordProtectionService {
     return latest_request_ ? latest_request_->request_proto() : nullptr;
   }
 
+#if !defined(OS_ANDROID)
   void GetPhishingDetector(
       service_manager::InterfaceProvider* provider,
       mojo::Remote<mojom::PhishingDetector>* phishing_detector) override {
@@ -167,6 +171,7 @@ class TestPasswordProtectionService : public MockPasswordProtectionService {
     provider->GetInterface(phishing_detector->BindNewPipeAndPassReceiver());
     test_api.ClearBinderForName(mojom::PhishingDetector::Name_);
   }
+#endif
 
   void CacheVerdict(const GURL& url,
                     LoginReputationClientRequest::TriggerType trigger_type,
@@ -197,15 +202,19 @@ class TestPasswordProtectionService : public MockPasswordProtectionService {
     return cache_manager_->GetStoredPhishGuardVerdictCount(trigger_type);
   }
 
+#if !defined(OS_ANDROID)
   void SetDomFeatureCollectionTimeout(bool should_timeout) {
     test_phishing_detector_.set_should_timeout(should_timeout);
   }
+#endif
 
  private:
   PasswordProtectionRequest* latest_request_;
   base::RunLoop run_loop_;
   std::unique_ptr<LoginReputationClientResponse> latest_response_;
+#if !defined(OS_ANDROID)
   TestPhishingDetector test_phishing_detector_;
+#endif
 
   // The TestPasswordProtectionService manages its own cache, rather than using
   // the global one.
@@ -364,6 +373,8 @@ class PasswordProtectionServiceTest : public ::testing::TestWithParam<bool> {
         content::WebContents::CreateParams(&browser_context_)));
   }
 
+// Visual features are not supported on Android.
+#if !defined(OS_ANDROID)
   void VerifyContentAreaSizeCollection(
       const LoginReputationClientRequest& request) {
     bool should_report_content_size =
@@ -372,6 +383,7 @@ class PasswordProtectionServiceTest : public ::testing::TestWithParam<bool> {
     EXPECT_EQ(should_report_content_size, request.has_content_area_height());
     EXPECT_EQ(should_report_content_size, request.has_content_area_width());
   }
+#endif
 
   size_t GetNumberOfNavigationThrottles() {
     return request_ ? request_->throttles_.size() : 0u;
@@ -1022,7 +1034,9 @@ TEST_P(PasswordProtectionServiceTest, VerifyPasswordOnFocusRequestProto) {
   EXPECT_EQ(true, actual_request->frames(1).has_password_field());
   ASSERT_EQ(1, actual_request->frames(1).forms_size());
   EXPECT_EQ(kFormActionUrl, actual_request->frames(1).forms(0).action_url());
+#if !defined(OS_ANDROID)
   VerifyContentAreaSizeCollection(*actual_request);
+#endif
 }
 
 TEST_P(PasswordProtectionServiceTest,
@@ -1077,7 +1091,9 @@ TEST_P(PasswordProtectionServiceTest,
   const auto& reuse_event = actual_request->password_reuse_event();
   EXPECT_TRUE(reuse_event.is_chrome_signin_password());
   EXPECT_EQ(0, reuse_event.domains_matching_password_size());
+#if !defined(OS_ANDROID)
   VerifyContentAreaSizeCollection(*actual_request);
+#endif
 }
 
 TEST_P(PasswordProtectionServiceTest,
@@ -1111,7 +1127,9 @@ TEST_P(PasswordProtectionServiceTest,
   } else {
     EXPECT_EQ(0, reuse_event.domains_matching_password_size());
   }
+#if !defined(OS_ANDROID)
   VerifyContentAreaSizeCollection(*actual_request);
+#endif
 }
 
 TEST_P(PasswordProtectionServiceTest, VerifyShouldShowModalWarning) {
@@ -1138,10 +1156,20 @@ TEST_P(PasswordProtectionServiceTest, VerifyShouldShowModalWarning) {
 
   reused_password_account_type.set_account_type(
       ReusedPasswordAccountType::SAVED_PASSWORD);
+// kPasswordProtectionForSignedInUsers is disabled by default on Android.
+#if defined(OS_ANDROID)
+  EXPECT_FALSE(password_protection_service_->ShouldShowModalWarning(
+#else
   EXPECT_TRUE(password_protection_service_->ShouldShowModalWarning(
+#endif
       LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
       reused_password_account_type, LoginReputationClientResponse::PHISHING));
+// kPasswordProtectionForSignedInUsers is disabled by default on Android.
+#if defined(OS_ANDROID)
+  EXPECT_FALSE(password_protection_service_->ShouldShowModalWarning(
+#else
   EXPECT_TRUE(password_protection_service_->ShouldShowModalWarning(
+#endif
       LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
       reused_password_account_type,
       LoginReputationClientResponse::LOW_REPUTATION));
@@ -1275,7 +1303,12 @@ TEST_P(PasswordProtectionServiceTest, VerifyIsSupportedPasswordTypeForPinging) {
       PasswordType::SAVED_PASSWORD));
   EXPECT_TRUE(password_protection_service_->IsSupportedPasswordTypeForPinging(
       PasswordType::PRIMARY_ACCOUNT_PASSWORD));
+// kPasswordProtectionForSignedInUsers is disabled by default on Android.
+#if defined(OS_ANDROID)
+  EXPECT_FALSE(password_protection_service_->IsSupportedPasswordTypeForPinging(
+#else
   EXPECT_TRUE(password_protection_service_->IsSupportedPasswordTypeForPinging(
+#endif
       PasswordType::OTHER_GAIA_PASSWORD));
   EXPECT_TRUE(password_protection_service_->IsSupportedPasswordTypeForPinging(
       PasswordType::ENTERPRISE_PASSWORD));
@@ -1318,6 +1351,8 @@ TEST_P(PasswordProtectionServiceTest, TestPingsForAboutBlank) {
   histograms_.ExpectTotalCount(kPasswordOnFocusRequestOutcomeHistogram, 1);
 }
 
+// DOM features and visual features are not supported on Android.
+#if !defined(OS_ANDROID)
 TEST_P(PasswordProtectionServiceTest,
        TestVisualFeaturesPopulatedInOnFocusPing) {
   LoginReputationClientResponse expected_response =
@@ -1388,6 +1423,7 @@ TEST_P(PasswordProtectionServiceTest, TestDomFeaturesTimeout) {
   EXPECT_FALSE(password_protection_service_->GetLatestRequestProto()
                    ->has_dom_features());
 }
+#endif
 
 TEST_P(PasswordProtectionServiceTest, TestRequestCancelOnTimeout) {
   std::unique_ptr<content::WebContents> web_contents = GetWebContents();

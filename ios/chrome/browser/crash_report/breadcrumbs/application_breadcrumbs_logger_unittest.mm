@@ -47,8 +47,6 @@ TEST_F(ApplicationBreadcrumbsLoggerTest, UserAction) {
   std::list<std::string> events = breadcrumb_manager_.GetEvents(0);
   ASSERT_EQ(2ul, events.size());
   EXPECT_NE(std::string::npos, events.front().find(kUserAction1Name));
-  // Ensure UserAction events are labeled as such.
-  EXPECT_NE(std::string::npos, events.front().find("UserAction: "));
   events.pop_front();
   EXPECT_NE(std::string::npos, events.front().find(kUserAction2Name));
 }

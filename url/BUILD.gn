@@ -8,6 +8,7 @@ import("//testing/test.gni")
 import("features.gni")
 
 if (is_android) {
+  import("//build/config/android/config.gni")
   import("//build/config/android/rules.gni")
 }
 
@@ -97,6 +98,21 @@ component("url") {
 }
 
 if (is_android) {
+  source_set("gurl_android") {
+    sources = [
+      "android/gurl_android.cc",
+      "android/gurl_android.h",
+      "android/parsed_android.cc",
+      "android/parsed_android.h",
+    ]
+
+    deps = [
+      ":gurl_jni_headers",
+      ":url",
+      "//base:base",
+    ]
+  }
+
   static_library("origin_android") {
     sources = [ "android/origin_android.cc" ]
 
@@ -113,6 +129,19 @@ if (is_android) {
     deps = [ "//base:base_java" ]
   }
 
+  android_library("gurl_java") {
+    sources = [
+      "android/java/src/org/chromium/url/GURL.java",
+      "android/java/src/org/chromium/url/Parsed.java",
+      "android/java/src/org/chromium/url/URI.java",
+    ]
+    deps = [
+      "//base:base_java",
+      "//base:jni_java",
+    ]
+    annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
+  }
+
   android_library("origin_java") {
     sources = [ "android/java/src/org/chromium/url/Origin.java" ]
     deps = [
@@ -125,6 +154,13 @@ if (is_android) {
     sources = [
       "android/java/src/org/chromium/url/IDNStringUtil.java",
       "android/java/src/org/chromium/url/Origin.java",
+    ]
+  }
+
+  generate_jni("gurl_jni_headers") {
+    sources = [
+      "android/java/src/org/chromium/url/GURL.java",
+      "android/java/src/org/chromium/url/Parsed.java",
     ]
   }
 }
@@ -183,6 +219,15 @@ test("url_unittests") {
       "//url/mojom:test_url_mojom_gurl",
     ]
   }
+  if (is_android) {
+    sources += [ "android/gurl_android_unittest.cc" ]
+    deps += [
+      ":gurl_android",
+      ":gurl_java",
+      ":gurl_javatests",
+      ":native_j_unittests_jni_headers",
+    ]
+  }
 }
 
 test("url_perftests") {
@@ -207,4 +252,33 @@ fuzzer_test("gurl_fuzzer") {
     "//base:i18n",
   ]
   dict = "gurl_fuzzer.dict"
+}
+
+if (is_android) {
+  android_library("gurl_javatests") {
+    testonly = true
+    sources = [
+      "android/native_java_unittests/src/org/chromium/url/GURLJavaTest.java",
+    ]
+    deps = [
+      ":gurl_java",
+      ":gurl_jni_headers",
+      "//base:base_java",
+      "//base:base_java_test_support",
+      "//third_party/android_support_test_runner:rules_java",
+      "//third_party/android_support_test_runner:runner_java",
+      "//third_party/junit",
+      "//third_party/mockito:mockito_java",
+    ]
+    annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
+  }
+
+  # See https://bugs.chromium.org/p/chromium/issues/detail?id=908819 for why we
+  # can't put 'java' in the name here.
+  generate_jni("native_j_unittests_jni_headers") {
+    testonly = true
+    sources = [
+      "android/native_java_unittests/src/org/chromium/url/GURLJavaTest.java",
+    ]
+  }
 }

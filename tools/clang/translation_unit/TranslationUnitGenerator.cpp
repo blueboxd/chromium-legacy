@@ -130,9 +130,9 @@ void IncludeFinderPPCallbacks::FileChanged(
     if (!last_inclusion_directive_.empty()) {
       current_files_.push(last_inclusion_directive_);
     } else {
-      current_files_.push(
+      current_files_.push(std::string(
           source_manager_->getFileEntryForID(source_manager_->getMainFileID())
-              ->getName());
+              ->getName()));
     }
   } else if (reason == ExitFile) {
     current_files_.pop();
@@ -225,7 +225,7 @@ void IncludeFinderPPCallbacks::EndOfMainFile() {
   assert(!real_path(main_file->getName(), main_file_name_real_path));
   assert(main_source_file_real_path == main_file_name_real_path);
 
-  AddFile(main_file->getName());
+  AddFile(std::string(main_file->getName()));
 }
 
 class CompilationIndexerAction : public clang::PreprocessorFrontendAction {
@@ -250,7 +250,7 @@ class CompilationIndexerAction : public clang::PreprocessorFrontendAction {
 void CompilationIndexerAction::ExecuteAction() {
   auto inputs = getCompilerInstance().getFrontendOpts().Inputs;
   assert(inputs.size() == 1);
-  main_source_file_ = inputs[0].getFile();
+  main_source_file_ = std::string(inputs[0].getFile());
 
   Preprocess();
 }

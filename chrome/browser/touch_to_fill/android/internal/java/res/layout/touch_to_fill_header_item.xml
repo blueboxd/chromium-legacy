@@ -25,12 +25,12 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
-        android:textAppearance="@style/TextAppearance.BlackHeadline" />
+        android:textAppearance="@style/TextAppearance.Headline.Primary" />
 
     <org.chromium.ui.widget.TextViewWithLeading
         android:id="@+id/touch_to_fill_sheet_subtitle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
-        android:textAppearance="@style/TextAppearance.BlackBody" />
+        android:textAppearance="@style/TextAppearance.TextMedium.Secondary" />
 </LinearLayout>

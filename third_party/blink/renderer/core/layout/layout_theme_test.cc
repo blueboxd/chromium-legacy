@@ -81,55 +81,6 @@ TEST_F(LayoutThemeTest, ChangeFocusRingColor) {
   EXPECT_EQ(custom_color, OutlineColor(span));
 }
 
-TEST_F(LayoutThemeTest, RootElementColor) {
-  EXPECT_EQ(Color::kBlack,
-            LayoutTheme::GetTheme().RootElementColor(WebColorScheme::kLight));
-  EXPECT_EQ(Color::kWhite,
-            LayoutTheme::GetTheme().RootElementColor(WebColorScheme::kDark));
-}
-
-TEST_F(LayoutThemeTest, RootElementColorChange) {
-  SetHtmlInnerHTML(R"HTML(
-    <style>
-      :root { color-scheme: light dark }
-      #initial { color: initial }
-    </style>
-    <div id="initial"></div>
-  )HTML");
-
-  Element* initial = GetDocument().getElementById("initial");
-  ASSERT_TRUE(initial);
-  ASSERT_TRUE(GetDocument().documentElement());
-  const ComputedStyle* document_element_style =
-      GetDocument().documentElement()->GetComputedStyle();
-  ASSERT_TRUE(document_element_style);
-  EXPECT_EQ(Color::kBlack, document_element_style->VisitedDependentColor(
-                               GetCSSPropertyColor()));
-
-  const ComputedStyle* initial_style = initial->GetComputedStyle();
-  ASSERT_TRUE(initial_style);
-  EXPECT_EQ(Color::kBlack,
-            initial_style->VisitedDependentColor(GetCSSPropertyColor()));
-
-  // Change color scheme to dark.
-  ColorSchemeHelper color_scheme_helper;
-  color_scheme_helper.SetPreferredColorScheme(GetDocument(),
-                                              PreferredColorScheme::kDark);
-  UpdateAllLifecyclePhasesForTest();
-
-  document_element_style = GetDocument().documentElement()->GetComputedStyle();
-  ASSERT_TRUE(document_element_style);
-  EXPECT_EQ(Color::kWhite, document_element_style->VisitedDependentColor(
-                               GetCSSPropertyColor()));
-
-  initial_style = initial->GetComputedStyle();
-  ASSERT_TRUE(initial_style);
-  // Theming does not change the initial value for color, only the UA style for
-  // the root element.
-  EXPECT_EQ(Color::kBlack,
-            initial_style->VisitedDependentColor(GetCSSPropertyColor()));
-}
-
 // The expectations are based on LayoutThemeDefault::SystemColor.
 // LayoutThemeMac doesn't use that code path.
 #if !defined(OS_MACOSX)

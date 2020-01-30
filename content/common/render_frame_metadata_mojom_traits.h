@@ -87,6 +87,16 @@ struct StructTraits<content::mojom::RenderFrameMetadataDataView,
     return metadata.bottom_controls_shown_ratio;
   }
 
+  static float top_controls_min_height_offset(
+      const cc::RenderFrameMetadata& metadata) {
+    return metadata.top_controls_min_height_offset;
+  }
+
+  static float bottom_controls_min_height_offset(
+      const cc::RenderFrameMetadata& metadata) {
+    return metadata.bottom_controls_min_height_offset;
+  }
+
   static float min_page_scale_factor(const cc::RenderFrameMetadata& metadata) {
     return metadata.min_page_scale_factor;
   }

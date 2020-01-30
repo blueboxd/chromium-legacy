@@ -31,7 +31,7 @@
 
 #include "base/optional.h"
 #include "base/unguessable_token.h"
-#include "third_party/blink/public/common/frame/frame_policy.h"
+#include "third_party/blink/public/common/feature_policy/document_policy.h"
 #include "third_party/blink/public/common/frame/user_activation_state.h"
 #include "third_party/blink/public/common/frame/user_activation_update_source.h"
 #include "third_party/blink/public/mojom/ad_tagging/ad_frame.mojom-blink.h"
@@ -244,10 +244,13 @@ class CORE_EXPORT Frame : public GarbageCollected<Frame> {
     opener_feature_state_ = state;
   }
 
-  const FramePolicy& GetFramePolicy() const { return frame_policy_; }
+  const DocumentPolicy::FeatureState& GetRequiredDocumentPolicy() const {
+    return required_document_policy_;
+  }
 
-  void SetFramePolicy(const FramePolicy& frame_policy) {
-    frame_policy_ = frame_policy;
+  void SetRequiredDocumentPolicy(
+      const DocumentPolicy::FeatureState& required_document_policy) {
+    required_document_policy_ = required_document_policy;
   }
 
   WindowAgentFactory& window_agent_factory() const {
@@ -328,10 +331,12 @@ class CORE_EXPORT Frame : public GarbageCollected<Frame> {
   // frames.
   FeaturePolicy::FeatureState opener_feature_state_;
 
-  // Frame policy of current frame. This can be different to
-  // Owner()->GetFramePolicy(), as the document hosted in the frame can also
-  // further specify frame policy.
-  FramePolicy frame_policy_;
+  // The required document policy for any subframes of this frame.
+  // Note: current frame's document policy might not conform to
+  // |required_document_policy_| here, as the Require-Document-Policy HTTP
+  // header can specify required document policy which only takes effect for
+  // subtree frames.
+  DocumentPolicy::FeatureState required_document_policy_;
 
   Member<WindowAgentFactory> window_agent_factory_;
 

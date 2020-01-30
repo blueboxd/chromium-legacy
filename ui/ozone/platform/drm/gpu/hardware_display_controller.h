@@ -95,7 +95,7 @@ class HardwareDisplayController {
 
   // Performs the initial CRTC configuration. If successful, it will display the
   // framebuffer for |primary| with |mode|.
-  bool Modeset(const DrmOverlayPlane& primary, const drmModeModeInfo& mode);
+  bool Modeset(const DrmOverlayPlane& primary, drmModeModeInfo mode);
 
   // Performs a CRTC configuration re-using the modes from the CRTCs.
   bool Enable(const DrmOverlayPlane& primary);
@@ -169,10 +169,6 @@ class HardwareDisplayController {
       const gfx::PresentationFeedback& presentation_feedback);
 
  private:
-  bool ModesetCrtc(const DrmOverlayPlane& primary,
-                   bool use_current_mode,
-                   const drmModeModeInfo& mode);
-
   void OnModesetComplete(const DrmOverlayPlane& primary);
   bool ScheduleOrTestPageFlip(const DrmOverlayPlaneList& plane_list,
                               scoped_refptr<PageFlipRequest> page_flip_request,
@@ -183,7 +179,8 @@ class HardwareDisplayController {
   void UpdateCursorLocation();
   void ResetCursor();
   void DisableCursor();
-  std::vector<HardwareDisplayPlane*> GetAllOwnedPlanes();
+
+  HardwareDisplayPlaneList owned_hardware_planes_;
 
   // Stores the CRTC configuration. This is used to identify monitors and
   // configure them.

@@ -84,6 +84,22 @@ void ReportDangerousDownloadWarningBypassed(
   }
 }
 
+void ReportSensitiveDataWarningBypassed(download::DownloadItem* download) {
+  content::BrowserContext* browser_context =
+      content::DownloadItemUtils::GetBrowserContext(download);
+  Profile* profile = Profile::FromBrowserContext(browser_context);
+  if (profile) {
+    std::string raw_digest_sha256 = download->GetHash();
+    extensions::SafeBrowsingPrivateEventRouterFactory::GetForProfile(profile)
+        ->OnSensitiveDataWarningBypassed(
+            download->GetURL(), download->GetTargetFilePath().AsUTF8Unsafe(),
+            base::HexEncode(raw_digest_sha256.data(), raw_digest_sha256.size()),
+            download->GetMimeType(),
+            extensions::SafeBrowsingPrivateEventRouter::kTriggerFileDownload,
+            download->GetTotalBytes());
+  }
+}
+
 }  // namespace
 
 DownloadReporter::DownloadReporter() {
@@ -142,6 +158,12 @@ void DownloadReporter::OnDownloadUpdated(download::DownloadItem* download) {
   if (DangerTypeIsDangerous(old_danger_type) &&
       current_danger_type == download::DOWNLOAD_DANGER_TYPE_USER_VALIDATED) {
     ReportDangerousDownloadWarningBypassed(download, old_danger_type);
+  }
+
+  if (old_danger_type ==
+          download::DOWNLOAD_DANGER_TYPE_SENSITIVE_CONTENT_WARNING &&
+      current_danger_type == download::DOWNLOAD_DANGER_TYPE_USER_VALIDATED) {
+    ReportSensitiveDataWarningBypassed(download);
   }
 
   danger_types_[download] = current_danger_type;

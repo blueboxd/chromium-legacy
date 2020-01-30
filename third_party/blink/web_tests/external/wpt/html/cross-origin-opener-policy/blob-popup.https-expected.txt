@@ -1,0 +1,4 @@
+This is a testharness.js-based test.
+FAIL Cross-Origin-Opener-Policy and a blob URL popup assert_equals: expected "" but got "65df0e4c-0b76-43b3-ab1d-a9d31fa4273d"
+Harness: the test ran to completion.
+

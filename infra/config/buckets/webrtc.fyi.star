@@ -18,14 +18,11 @@ luci.bucket(
     ],
 )
 
-luci.recipe.defaults.cipd_package.set(
-    'infra/recipe_bundles/chromium.googlesource.com/chromium/tools/build')
-
 defaults.bucket.set('webrtc.fyi')
 defaults.builderless.set(None)
 defaults.build_numbers.set(True)
 defaults.cpu.set(cpu.X86_64)
-defaults.executable.set(luci.recipe(name = 'chromium'))
+defaults.executable.set('recipe:chromium')
 defaults.execution_timeout.set(2 * time.hour)
 defaults.mastername.set('chromium.webrtc.fyi')
 defaults.os.set(os.LINUX_DEFAULT)
@@ -155,7 +152,7 @@ builder(
             path = 'xcode_ios_11a1027.app',
         ),
     ],
-    executable = luci.recipe(name = 'webrtc/chromium_ios'),
+    executable = 'recipe:webrtc/chromium_ios',
     os = os.MAC_ANY,
 )
 
@@ -167,6 +164,6 @@ builder(
             path = 'xcode_ios_11a1027.app',
         ),
     ],
-    executable = luci.recipe(name = 'webrtc/chromium_ios'),
+    executable = 'recipe:webrtc/chromium_ios',
     os = os.MAC_ANY,
 )

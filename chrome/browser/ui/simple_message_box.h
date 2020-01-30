@@ -42,8 +42,7 @@ enum MessageBoxType {
 // infobars; consult the UI leads for a recommendation.
 void ShowWarningMessageBox(gfx::NativeWindow parent,
                            const base::string16& title,
-                           const base::string16& message,
-                           bool can_close = true);
+                           const base::string16& message);
 
 // As above, but shows the dialog box asynchronously with a checkbox.
 // |callback| will be invoked after the dialog is dismissed. It is invoked with

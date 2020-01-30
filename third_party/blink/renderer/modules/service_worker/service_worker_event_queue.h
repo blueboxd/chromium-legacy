@@ -11,6 +11,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
+#include "third_party/blink/public/mojom/service_worker/service_worker.mojom-blink.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_event_status.mojom-blink-forward.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cancellable_task.h"
@@ -119,9 +120,6 @@ class MODULES_EXPORT ServiceWorkerEventQueue {
   // false again when StartEvent() is called.
   bool did_idle_timeout() const { return did_idle_timeout_; }
 
-  // Idle timeout duration since the last event has finished.
-  static constexpr base::TimeDelta kDefaultIdleDelay =
-      base::TimeDelta::FromSeconds(30);
   // Duration of the long standing event timeout since StartEvent() has been
   // called.
   static constexpr base::TimeDelta kEventTimeout =
@@ -239,7 +237,8 @@ class MODULES_EXPORT ServiceWorkerEventQueue {
 
   // For idle timeouts. The delay until the worker is identified as idle after
   // all inflight events are completed.
-  base::TimeDelta idle_delay_ = kDefaultIdleDelay;
+  base::TimeDelta idle_delay_ = base::TimeDelta::FromSeconds(
+      mojom::blink::kServiceWorkerDefaultIdleDelayInSeconds);
 
   // Set to true once |idle_callback_| has been invoked. Set to false when
   // StartEvent() is called.

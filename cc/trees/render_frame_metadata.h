@@ -90,6 +90,11 @@ class CC_EXPORT RenderFrameMetadata {
   float bottom_controls_height = 0.f;
   float bottom_controls_shown_ratio = 0.f;
 
+  // Used to offset views that need to be positioned according to the current
+  // min-height. These offsets follow the min-height change animations.
+  float top_controls_min_height_offset = 0.f;
+  float bottom_controls_min_height_offset = 0.f;
+
   // These limits can be used together with the scroll/scale fields above to
   // determine if scrolling/scaling in a particular direction is possible.
   float min_page_scale_factor = 0.f;

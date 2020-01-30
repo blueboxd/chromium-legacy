@@ -88,6 +88,9 @@ bool ShouldUploadForDlpScanByPolicy(download::DownloadItem* item) {
           CheckContentComplianceValues::CHECK_UPLOADS_AND_DOWNLOADS)
     return false;
 
+  // TODO(crbug/1013584): Call FileTypeSupported from DeepScanningUtils around
+  // here and handle both supported and unsupported types appropriately.
+
   const base::ListValue* domains = g_browser_process->local_state()->GetList(
       prefs::kURLsToCheckComplianceOfDownloadedContent);
   url_matcher::URLMatcher matcher;
@@ -120,6 +123,13 @@ bool ShouldUploadForMalwareScanByPolicy(download::DownloadItem* item) {
 }
 
 }  // namespace
+
+/* static */
+bool DeepScanningRequest::ShouldUploadItemByPolicy(
+    download::DownloadItem* item) {
+  return ShouldUploadForDlpScanByPolicy(item) ||
+         ShouldUploadForMalwareScanByPolicy(item);
+}
 
 DeepScanningRequest::DeepScanningRequest(
     download::DownloadItem* item,

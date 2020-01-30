@@ -26,8 +26,7 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/referrer.h"
-#include "mojo/public/cpp/bindings/pending_receiver.h"
-#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 #include "ui/gfx/geometry/rect.h"
 #include "url/origin.h"
 
@@ -233,7 +232,7 @@ class PrerenderContents : public content::NotificationObserver,
   // Running byte count. Increased when each resource completes loading.
   int64_t network_bytes() { return network_bytes_; }
 
-  void OnPrerenderCancelerReceiver(
+  void AddPrerenderCancelerReceiver(
       mojo::PendingReceiver<chrome::mojom::PrerenderCanceler> receiver);
 
  protected:
@@ -295,8 +294,8 @@ class PrerenderContents : public content::NotificationObserver,
   void CancelPrerenderForUnsupportedMethod() override;
   void CancelPrerenderForUnsupportedScheme(const GURL& url) override;
 
-  mojo::Receiver<chrome::mojom::PrerenderCanceler> prerender_canceler_receiver_{
-      this};
+  mojo::ReceiverSet<chrome::mojom::PrerenderCanceler>
+      prerender_canceler_receiver_set_;
 
   base::ObserverList<Observer>::Unchecked observer_list_;
 

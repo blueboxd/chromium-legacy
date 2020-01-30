@@ -439,9 +439,8 @@ bool OptRecordRdata::ContainsOptCode(uint16_t opt_code) const {
       [=](const OptRecordRdata::Opt& opt) { return opt.code() == opt_code; });
 }
 
-OptRecordRdata::Opt::Opt(uint16_t code, base::StringPiece data) : code_(code) {
-  data.CopyToString(&data_);
-}
+OptRecordRdata::Opt::Opt(uint16_t code, base::StringPiece data)
+    : code_(code), data_(data) {}
 
 bool OptRecordRdata::Opt::operator==(const OptRecordRdata::Opt& other) const {
   return code_ == other.code_ && data_ == other.data_;

@@ -2,7 +2,7 @@ specific_include_rules = {
   "layout_theme\.cc": [
     "+ui/native_theme/native_theme.h",
   ],
-  "(layout_theme|layout_theme_default)\.cc": [
+  "(layout_theme|layout_theme_default|layout_text_control_single_line_test)\.cc": [
     "+ui/base/ui_base_features.h",
   ],
   "layout_theme_mac.mm": [

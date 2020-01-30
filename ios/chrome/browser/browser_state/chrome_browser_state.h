@@ -131,9 +131,4 @@ class ChromeBrowserState : public web::BrowserState {
   DISALLOW_COPY_AND_ASSIGN(ChromeBrowserState);
 };
 
-namespace ios {
-using ::ChromeBrowserState;
-using ::ChromeBrowserStateType;
-}  // namespace ios
-
 #endif  // IOS_CHROME_BROWSER_BROWSER_STATE_CHROME_BROWSER_STATE_H_

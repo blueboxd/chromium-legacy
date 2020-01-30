@@ -39,6 +39,7 @@
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/site_instance_impl.h"
 #include "content/browser/webui/web_ui_controller_factory_registry.h"
+#include "content/common/content_navigation_policy.h"
 #include "content/common/frame_messages.h"
 #include "content/common/frame_owner_properties.h"
 #include "content/common/page_messages.h"
@@ -54,10 +55,10 @@
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/common/navigation_policy.h"
 #include "content/public/common/referrer.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/common/url_utils.h"
+#include "services/network/public/cpp/features.h"
 #include "third_party/blink/public/mojom/frame/user_activation_update_types.mojom.h"
 
 #if defined(OS_MACOSX)
@@ -173,6 +174,73 @@ ShouldSwapBrowsingInstance ShouldProactivelySwapBrowsingInstance(
   } else {
     return ShouldSwapBrowsingInstance::kNo_NotNeededForBackForwardCache;
   }
+}
+
+// This function implements the COOP matching algorithm as detailed in [1].
+// Note that COEP is also provided since the COOP enum does not have a
+// "same-origin + COEP" value.
+// [1] https://gist.github.com/annevk/6f2dd8c79c77123f39797f6bdac43f3e
+bool CrossOriginOpenerPolicyMatch(
+    network::mojom::CrossOriginOpenerPolicy initiator_coop,
+    network::mojom::CrossOriginEmbedderPolicy initiator_coep,
+    const url::Origin& initiator_origin,
+    network::mojom::CrossOriginOpenerPolicy destination_coop,
+    network::mojom::CrossOriginEmbedderPolicy destination_coep,
+    const url::Origin& destination_origin) {
+  if (initiator_coop != destination_coop)
+    return false;
+  if (initiator_coop == network::mojom::CrossOriginOpenerPolicy::kUnsafeNone)
+    return true;
+  if (initiator_coop == network::mojom::CrossOriginOpenerPolicy::kSameOrigin &&
+      initiator_coep != destination_coep)
+    return false;
+  if (!initiator_origin.IsSameOriginWith(destination_origin))
+    return false;
+  return true;
+}
+
+// This function returns whether the BrowsingInstance should change following
+// COOP rules defined in:
+// https://gist.github.com/annevk/6f2dd8c79c77123f39797f6bdac43f3e#changes-to-navigation
+bool ShouldSwapBrowsingInstanceForCrossOriginOpenerPolicy(
+    network::mojom::CrossOriginOpenerPolicy initiator_coop,
+    network::mojom::CrossOriginEmbedderPolicy initiator_coep,
+    const url::Origin& initiator_origin,
+    bool is_initiator_aboutblank,
+    network::mojom::CrossOriginOpenerPolicy destination_coop,
+    network::mojom::CrossOriginEmbedderPolicy destination_coep,
+    const url::Origin& destination_origin) {
+  using network::mojom::CrossOriginEmbedderPolicy;
+  using network::mojom::CrossOriginOpenerPolicy;
+
+  if (!base::FeatureList::IsEnabled(network::features::kCrossOriginIsolation))
+    return false;
+
+  // If policies match there is no reason to switch BrowsingInstances.
+  if (CrossOriginOpenerPolicyMatch(initiator_coop, initiator_coep,
+                                   initiator_origin, destination_coop,
+                                   destination_coep, destination_origin)) {
+    return false;
+  }
+
+  // "same-origin-allow-popups" is used to stay in the same BrowsingInstance
+  // despite COOP mismatch. This case is defined in the spec [1] as follow.
+  // ```
+  // If the result of matching currentCOOP, currentOrigin, potentialCOOP, and
+  // potentialOrigin is false and one of the following is false:
+  //  - doc is the initial about:blank document
+  //  - currentCOOP is "same-origin-allow-popups"
+  //  - potentialCOOP is "unsafe-none"
+  // Then create a new browsing context group.
+  // ```
+  // [1]
+  // https://gist.github.com/annevk/6f2dd8c79c77123f39797f6bdac43f3e#changes-to-navigation
+  if (is_initiator_aboutblank &&
+      initiator_coop == CrossOriginOpenerPolicy::kSameOriginAllowPopups &&
+      destination_coop == CrossOriginOpenerPolicy::kUnsafeNone) {
+    return false;
+  }
+  return true;
 }
 
 }  // namespace
@@ -1130,7 +1198,8 @@ RenderFrameHostManager::ShouldSwapBrowsingInstancesForNavigation(
     const GURL& destination_effective_url,
     bool destination_is_view_source_mode,
     bool is_failure,
-    bool is_reload) const {
+    bool is_reload,
+    bool cross_origin_opener_policy_mismatch) const {
   // A subframe must stay in the same BrowsingInstance as its parent.
   if (!frame_tree_node_->IsMainFrame())
     return ShouldSwapBrowsingInstance::kNo_NotMainFrame;
@@ -1171,6 +1240,9 @@ RenderFrameHostManager::ShouldSwapBrowsingInstancesForNavigation(
   // renderer process, like javascript: or debug URLs like chrome://crash.
   if (IsRendererDebugURL(destination_effective_url))
     return ShouldSwapBrowsingInstance::kNo_RendererDebugURL;
+
+  if (cross_origin_opener_policy_mismatch)
+    return ShouldSwapBrowsingInstance::kYes;
 
   // Transitions across BrowserContexts should always require a
   // BrowsingInstance swap. For example, this can happen if an extension in a
@@ -1261,7 +1333,8 @@ RenderFrameHostManager::GetSiteInstanceForNavigation(
     bool is_reload,
     bool dest_is_restore,
     bool dest_is_view_source_mode,
-    bool was_server_redirect) {
+    bool was_server_redirect,
+    bool cross_origin_opener_policy_mismatch) {
   // On renderer-initiated navigations, when the frame initiating the navigation
   // and the frame being navigated differ, |source_instance| is set to the
   // SiteInstance of the initiating frame. |dest_instance| is present on session
@@ -1312,7 +1385,8 @@ RenderFrameHostManager::GetSiteInstanceForNavigation(
       ShouldSwapBrowsingInstancesForNavigation(
           current_effective_url, current_is_view_source_mode, dest_instance,
           SiteInstanceImpl::GetEffectiveURL(browser_context, dest_url),
-          dest_is_view_source_mode, is_failure, is_reload);
+          dest_is_view_source_mode, is_failure, is_reload,
+          cross_origin_opener_policy_mismatch);
   bool force_swap = force_swap_result == ShouldSwapBrowsingInstance::kYes;
   if (!force_swap) {
     render_frame_host_->set_browsing_instance_not_swapped_reason(
@@ -2207,13 +2281,24 @@ RenderFrameHostManager::GetSiteInstanceForNavigationRequest(
                    request->common_params().navigation_type ==
                        mojom::NavigationType::RELOAD_ORIGINAL_REQUEST_URL;
 
+  bool cross_origin_policy_swap =
+      request->response() &&
+      ShouldSwapBrowsingInstanceForCrossOriginOpenerPolicy(
+          render_frame_host_->cross_origin_opener_policy(),
+          render_frame_host_->cross_origin_embedder_policy(),
+          render_frame_host_->GetLastCommittedOrigin(),
+          !render_frame_host_->has_committed_any_navigation(),
+          request->response()->cross_origin_opener_policy,
+          request->response()->cross_origin_embedder_policy,
+          url::Origin::Create(request->common_params().url));
+
   scoped_refptr<SiteInstance> dest_site_instance = GetSiteInstanceForNavigation(
       request->common_params().url, request->GetSourceSiteInstance(),
       request->dest_site_instance(), candidate_site_instance,
       request->common_params().transition,
       request->state() >= NavigationRequest::CANCELING, is_reload,
       request->GetRestoreType() != RestoreType::NONE, request->is_view_source(),
-      request->WasServerRedirect());
+      request->WasServerRedirect(), cross_origin_policy_swap);
 
   return dest_site_instance;
 }
@@ -2286,8 +2371,8 @@ bool RenderFrameHostManager::ReinitializeRenderFrame(
   // Main frames need both the RenderView and RenderFrame reinitialized, so
   // use InitRenderView.  For cross-process subframes, InitRenderView won't
   // recreate the RenderFrame, so use InitRenderFrame instead.  Note that for
-  // subframe RenderFrameHosts, the swapped out RenderView in their
-  // SiteInstance will be recreated as part of CreateOpenerProxies above.
+  // subframe RenderFrameHosts, the inactive RenderView in their SiteInstance
+  // will be recreated as part of CreateOpenerProxies above.
   if (!frame_tree_node_->parent()) {
     DCHECK(!GetRenderFrameProxyHost(render_frame_host->GetSiteInstance()));
     if (!InitRenderView(render_frame_host->render_view_host(), nullptr))
@@ -2599,14 +2684,6 @@ std::unique_ptr<RenderFrameHostImpl> RenderFrameHostManager::SetRenderFrameHost(
   return old_render_frame_host;
 }
 
-RenderViewHostImpl* RenderFrameHostManager::GetSwappedOutRenderViewHost(
-    SiteInstance* instance) const {
-  RenderFrameProxyHost* proxy = GetRenderFrameProxyHost(instance);
-  if (proxy)
-    return proxy->GetRenderViewHost();
-  return nullptr;
-}
-
 RenderFrameProxyHost* RenderFrameHostManager::GetRenderFrameProxyHost(
     SiteInstance* instance) const {
   auto it = proxy_hosts_.find(instance->GetId());
@@ -2839,7 +2916,7 @@ void RenderFrameHostManager::CreateNewFrameForInnerDelegateAttachIfNecessary() {
     NotifyPrepareForInnerDelegateAttachComplete(false /* success */);
     return;
   }
-  // Swap in the speculative frame. It will later on be swapped out when the
+  // Swap in the speculative frame. It will later be replaced when
   // WebContents::AttachToOuterWebContentsFrame is called.
   speculative_render_frame_host_->Send(
       new FrameMsg_SwapIn(speculative_render_frame_host_->GetRoutingID()));

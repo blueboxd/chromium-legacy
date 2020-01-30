@@ -352,6 +352,10 @@ id ExecuteJavaScript(NSString* javascript, NSError* __autoreleasing* out_error);
 // not met within a timeout a GREYAssert is induced.
 - (void)waitForWebStateContainingText:(const std::string&)UTF8Text;
 
+// Waits for the main frame or an iframe to contain |UTF8Text|. If the condition
+// is not met within a timeout a GREYAssert is induced.
+- (void)waitForWebStateFrameContainingText:(const std::string&)UTF8Text;
+
 // Waits for the current web state to contain |UTF8Text|. If the condition is
 // not met within the given |timeout| a GREYAssert is induced.
 - (void)waitForWebStateContainingText:(const std::string&)UTF8Text

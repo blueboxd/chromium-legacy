@@ -967,14 +967,12 @@ bool URLHasExtensionBackgroundPermission(
 
 #endif
 
-chrome::mojom::PrerenderCanceler* GetPrerenderCanceller(
+mojo::PendingRemote<chrome::mojom::PrerenderCanceler> GetPrerenderCanceler(
     const base::Callback<content::WebContents*()>& wc_getter) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  auto* web_contents = wc_getter.Run();
-  if (!web_contents)
-    return nullptr;
-
-  return prerender::PrerenderContents::FromWebContents(web_contents);
+  mojo::PendingRemote<chrome::mojom::PrerenderCanceler> canceler;
+  prerender::PrerenderContents::FromWebContents(wc_getter.Run())
+      ->AddPrerenderCancelerReceiver(canceler.InitWithNewPipeAndPassReceiver());
+  return canceler;
 }
 
 void LaunchURL(const GURL& url,
@@ -2218,6 +2216,9 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
       switches::kEnableNaClNonSfiMode,
 #endif
       switches::kEnableNetBenchmarking,
+#if defined(OS_CHROMEOS)
+      switches::kForceAppMode,
+#endif
 #if BUILDFLAG(ENABLE_NACL)
       switches::kForcePNaClSubzero,
 #endif
@@ -4287,12 +4288,20 @@ ChromeContentBrowserClient::CreateURLLoaderThrottles(
             ? safe_browsing_service_->GetVerdictCacheManagerWeakPtr(profile)
             : nullptr;
 
+    // |identity_manager| is used when real time url check with token is
+    // enabled.
+    signin::IdentityManager* identity_manager =
+        safe_browsing::RealTimePolicyEngine::CanPerformFullURLLookupWithToken(
+            profile)
+            ? IdentityManagerFactory::GetForProfile(profile)
+            : nullptr;
+
     result.push_back(safe_browsing::BrowserURLLoaderThrottle::Create(
         base::BindOnce(
             &ChromeContentBrowserClient::GetSafeBrowsingUrlCheckerDelegate,
             base::Unretained(this),
             profile->GetPrefs()->GetBoolean(prefs::kSafeBrowsingEnabled)),
-        wc_getter, frame_tree_node_id, cache_manager));
+        wc_getter, frame_tree_node_id, cache_manager, identity_manager));
   }
 #endif
 
@@ -4306,8 +4315,7 @@ ChromeContentBrowserClient::CreateURLLoaderThrottles(
     result.push_back(std::make_unique<prerender::PrerenderURLLoaderThrottle>(
         chrome_navigation_ui_data->prerender_mode(),
         chrome_navigation_ui_data->prerender_histogram_prefix(),
-        base::BindOnce(GetPrerenderCanceller, wc_getter),
-        base::CreateSingleThreadTaskRunner({BrowserThread::UI})));
+        GetPrerenderCanceler(wc_getter)));
   }
 
   signin::IdentityManager* identity_manager =
@@ -4333,8 +4341,8 @@ ChromeContentBrowserClient::CreateURLLoaderThrottles(
 
   auto delegate =
       std::make_unique<signin::HeaderModificationDelegateImpl>(profile);
-  auto signin_throttle = signin::URLLoaderThrottle::MaybeCreate(
-      std::move(delegate), navigation_ui_data, wc_getter);
+  auto signin_throttle =
+      signin::URLLoaderThrottle::MaybeCreate(std::move(delegate), wc_getter);
   if (signin_throttle)
     result.push_back(std::move(signin_throttle));
 

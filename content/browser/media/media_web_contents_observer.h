@@ -136,6 +136,9 @@ class CONTENT_EXPORT MediaWebContentsObserver : public WebContentsObserver {
       RenderFrameHost* render_frame_host,
       int delegate_id,
       const media_session::MediaPosition& position);
+  void OnPictureInPictureAvailabilityChanged(RenderFrameHost* render_frame_host,
+                                             int delegate_id,
+                                             bool available);
 
   // Clear |render_frame_host|'s tracking entry for its WakeLocks.
   void ClearWakeLocks(RenderFrameHost* render_frame_host);

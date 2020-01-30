@@ -10,11 +10,11 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
-#include "ui/base/ui_base_export.h"
 #include "ui/base/x/selection_utils.h"
 #include "ui/gfx/x/x11_types.h"
 
@@ -22,16 +22,16 @@ namespace ui {
 
 class XScopedEventSelector;
 
-UI_BASE_EXPORT extern const char kIncr[];
-UI_BASE_EXPORT extern const char kSaveTargets[];
-UI_BASE_EXPORT extern const char kTargets[];
+COMPONENT_EXPORT(UI_BASE_X) extern const char kIncr[];
+COMPONENT_EXPORT(UI_BASE_X) extern const char kSaveTargets[];
+COMPONENT_EXPORT(UI_BASE_X) extern const char kTargets[];
 
 // Owns a specific X11 selection on an X window.
 //
 // The selection owner object keeps track of which xwindow is the current
 // owner, and when its |xwindow_|, offers different data types to other
 // processes.
-class UI_BASE_EXPORT SelectionOwner {
+class COMPONENT_EXPORT(UI_BASE_X) SelectionOwner {
  public:
   SelectionOwner(XDisplay* xdisplay,
                  XID xwindow,

@@ -17,27 +17,31 @@ namespace ash {
 class ASH_PUBLIC_EXPORT ConversationStarter {
  public:
   // Enumeration of possible permissions which a conversation starter may
-  // require in order to be presented to the user.
-  enum class Permission : uint32_t { kRelatedInfo = 1u };
+  // require in order to be presented to the user. Note that |kUnknown| is used
+  // to specify permissions that were requested but not recognized by the client
+  // which indicates that it is unsafe to show the associated starter.
+  enum Permission : uint32_t { kUnknown = 1u, kRelatedInfo = 2u };
 
   ConversationStarter(const std::string& label,
                       const base::Optional<GURL>& action_url,
                       const base::Optional<GURL>& icon_url,
                       uint32_t required_permissions);
-  ConversationStarter(const ConversationStarter& copy) = delete;
-  ConversationStarter& operator=(ConversationStarter& assign) = delete;
+  ConversationStarter(const ConversationStarter& copy);
   ~ConversationStarter();
+
+  // Whether or not this conversation starter requires |permission|.
+  bool RequiresPermission(Permission permission) const;
 
   const std::string& label() const { return label_; }
   const base::Optional<GURL>& action_url() const { return action_url_; }
   const base::Optional<GURL>& icon_url() const { return icon_url_; }
-  const uint32_t& required_permissions() const { return required_permissions_; }
+  uint32_t required_permissions() const { return required_permissions_; }
 
  private:
-  const std::string label_;
-  const base::Optional<GURL> action_url_;
-  const base::Optional<GURL> icon_url_;
-  const uint32_t required_permissions_;
+  std::string label_;
+  base::Optional<GURL> action_url_;
+  base::Optional<GURL> icon_url_;
+  uint32_t required_permissions_;
 };
 
 }  // namespace ash

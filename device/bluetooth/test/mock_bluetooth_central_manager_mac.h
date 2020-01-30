@@ -7,7 +7,6 @@
 
 #import <CoreBluetooth/CoreBluetooth.h>
 
-#import "base/mac/sdk_forward_declarations.h"
 #include "build/build_config.h"
 #import "device/bluetooth/bluetooth_adapter_mac.h"
 #import "device/bluetooth/test/bluetooth_test_mac.h"

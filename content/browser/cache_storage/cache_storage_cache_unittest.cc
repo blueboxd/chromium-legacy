@@ -548,7 +548,7 @@ class CacheStorageCacheTest : public testing::Test {
     return callback_error_;
   }
 
-  void CheckOpHistograms(base::HistogramTester& histogram_tester,
+  void CheckOpHistograms(const base::HistogramTester& histogram_tester,
                          const char* op_name) {
     std::string base("ServiceWorkerCache.Cache.Scheduler.");
     histogram_tester.ExpectTotalCount(base + "IsOperationSlow." + op_name, 1);

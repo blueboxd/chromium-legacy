@@ -3154,7 +3154,13 @@ TEST_F(SimpleURLLoaderMockTimeTest, TimeoutAfterRetryTriggered) {
   EXPECT_EQ(net::ERR_TIMED_OUT, test_helper->simple_url_loader()->NetError());
 }
 
-TEST_P(SimpleURLLoaderTest, OnUploadProgressCallback) {
+// The test crashes on Windows. crbug.com/1035127.
+#if defined(OS_WIN)
+#define MAYBE_OnUploadProgressCallback DISABLED_OnUploadProgressCallback
+#else
+#define MAYBE_OnUploadProgressCallback OnUploadProgressCallback
+#endif
+TEST_P(SimpleURLLoaderTest, MAYBE_OnUploadProgressCallback) {
   // The size of the payload cannot be bigger than
   // net::test_server::<anonymous>::kRequestSizeLimit which is
   // 64Mb. We set a pretty large value in order to ensure multiple

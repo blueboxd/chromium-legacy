@@ -14,7 +14,6 @@
 #include "content/browser/appcache/appcache_request.h"
 #include "content/browser/appcache/appcache_request_handler.h"
 #include "content/browser/appcache/appcache_url_loader_job.h"
-#include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/loader/navigation_url_loader_impl.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/public/browser/browser_thread.h"
@@ -371,18 +370,9 @@ void AppCacheSubresourceURLFactory::CreateLoaderAndStart(
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  // TODO(943887): Replace HasSecurityState() call with something that can
-  // preserve security state after process shutdown. The security state check
-  // is a temporary solution to avoid crashes when this method is run after the
-  // process associated with |appcache_host_->process_id()| has been destroyed.
-  // It temporarily restores the old behavior of always allowing access if the
-  // process is gone.
-  // See https://crbug.com/910287 for details.
-  auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
   if (request.request_initiator.has_value() && appcache_host_ &&
-      !policy->CanAccessDataForOrigin(appcache_host_->process_id(),
-                                      request.request_initiator.value()) &&
-      policy->HasSecurityState(appcache_host_->process_id())) {
+      !appcache_host_->security_policy_handle()->CanAccessDataForOrigin(
+          request.request_initiator.value())) {
     static auto* initiator_origin_key = base::debug::AllocateCrashKeyString(
         "initiator_origin", base::debug::CrashKeySize::Size64);
     base::debug::SetCrashKeyString(

@@ -1,67 +1,26 @@
 load('//lib/builders.star', 'builder', 'cpu', 'defaults', 'goma', 'os')
+load('//lib/try.star', 'try_')
 
-luci.recipe.defaults.cipd_package.set('infra/recipe_bundles/chromium.googlesource.com/chromium/tools/build')
+try_.defaults.bucket.set('try')
+try_.defaults.build_numbers.set(True)
+try_.defaults.configure_kitchen.set(True)
+try_.defaults.cores.set(8)
+try_.defaults.cpu.set(cpu.X86_64)
+try_.defaults.cq_group.set('cq')
+try_.defaults.executable.set('recipe:chromium_trybot')
+try_.defaults.execution_timeout.set(6 * time.hour)
+try_.defaults.expiration_timeout.set(2 * time.hour)
+try_.defaults.os.set(os.LINUX_DEFAULT)
+try_.defaults.service_account.set('chromium-try-gpu-builder@chops-service-accounts.iam.gserviceaccount.com')
+try_.defaults.swarming_tags.set(['vpython:native-python-wrapper'])
+try_.defaults.task_template_canary_percentage.set(5)
 
-defaults.bucket.set('try')
-defaults.build_numbers.set(True)
-defaults.configure_kitchen.set(True)
-defaults.cores.set(8)
-defaults.cpu.set(cpu.X86_64)
-defaults.executable.set(luci.recipe(name = 'chromium_trybot'))
-defaults.execution_timeout.set(6 * time.hour)
-defaults.expiration_timeout.set(2 * time.hour)
-defaults.os.set(os.LINUX_DEFAULT)
-defaults.service_account.set('chromium-try-gpu-builder@chops-service-accounts.iam.gserviceaccount.com')
-defaults.swarming_tags.set(['vpython:native-python-wrapper'])
-defaults.task_template_canary_percentage.set(5)
-
-defaults.caches.set([
+try_.defaults.caches.set([
     swarming.cache(
         name = 'win_toolchain',
         path = 'win_toolchain',
     ),
 ])
-
-
-def tryjob(
-    *,
-    disable_reuse=None,
-    experiment_percentage=None,
-    location_regexp=None,
-    location_regexp_exclude=None):
-  return struct(
-      disable_reuse = disable_reuse,
-      experiment_percentage = experiment_percentage,
-      location_regexp = location_regexp,
-      location_regexp_exclude = location_regexp_exclude,
-  )
-
-def try_builder(
-    *,
-    name,
-    tryjob=None,
-    **kwargs):
-  if tryjob != None:
-    luci.cq_tryjob_verifier(
-        builder = 'try/' + name,
-        cq_group = 'cq',
-        disable_reuse = tryjob.disable_reuse,
-        experiment_percentage = tryjob.experiment_percentage,
-        location_regexp = tryjob.location_regexp,
-        location_regexp_exclude = tryjob.location_regexp_exclude,
-    )
-  else:
-    # Allow CQ to trigger this builder if user opts in via CQ-Include-Trybots.
-    luci.cq_tryjob_verifier(
-        builder = 'try/' + name,
-        cq_group = 'cq',
-        includable_only = True,
-    )
-
-  return builder(
-      name = name,
-      **kwargs
-  )
 
 
 # Builders appear after the function used to define them, with all builders
@@ -77,7 +36,7 @@ def try_builder(
 # after the last dot in the mastername and YYY is the OS
 
 def gpu_android_builder(*, name, **kwargs):
-  return try_builder(
+  return try_.builder(
       name = name,
       builderless = True,
       goma_backend = goma.backend.RBE_PROD,
@@ -163,7 +122,7 @@ gpu_android_builder(
 
 
 def gpu_linux_builder(*, name, **kwargs):
-  return try_builder(
+  return try_.builder(
       name = name,
       builderless = True,
       goma_backend = goma.backend.RBE_PROD,
@@ -239,7 +198,7 @@ gpu_linux_builder(
 
 
 def gpu_mac_builder(*, name, **kwargs):
-  return try_builder(
+  return try_.builder(
       name = name,
       builderless = True,
       cores = None,
@@ -333,7 +292,7 @@ gpu_mac_builder(
 
 
 def gpu_win_builder(*, name, **kwargs):
-  return try_builder(
+  return try_.builder(
       name = name,
       builderless = True,
       goma_backend = goma.backend.RBE_PROD,
@@ -432,4 +391,3 @@ gpu_win_builder(
     name = 'gpu-try-win10-nvidia-rel',
     pool = 'luci.chromium.gpu.win10.nvidia.try',
 )
-

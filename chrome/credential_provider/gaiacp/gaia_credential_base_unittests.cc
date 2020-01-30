@@ -854,6 +854,7 @@ TEST_F(GcpGaiaCredentialBaseTest, DenySigninBlockedDuringSignin) {
   ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegMdmSupportsMultiUser, 1));
   ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegMdmAllowConsumerAccounts, 1));
   GoogleMdmEnrolledStatusForTesting force_success(true);
+  GoogleUploadDeviceDetailsNeededForTesting upload_device_details_needed(false);
 
   // Create a fake user that has the same gaia id as the test gaia id.
   CComBSTR first_sid;
@@ -937,6 +938,7 @@ TEST_F(GcpGaiaCredentialBaseTest,
   ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegMdmUrl, L"https://mdm.com"));
   ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegMdmSupportsMultiUser, 1));
   ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegMdmAllowConsumerAccounts, 1));
+  GoogleUploadDeviceDetailsNeededForTesting upload_device_details_needed(false);
 
   // Create a fake user that has the same gaia id as the test gaia id.
   CComBSTR first_sid;

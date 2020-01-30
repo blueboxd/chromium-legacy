@@ -55,6 +55,7 @@ NSString* GetErrorPage(const GURL& url,
           /*can_show_network_diagnostics_dialog=*/false, is_off_the_record,
           /*offline_content_feature_enabled=*/false,
           /*auto_fetch_feature_enabled=*/false,
+          /*is_kiosk_mode=*/false,
           GetApplicationContext()->GetApplicationLocale(),
           /*params=*/nullptr);
 

@@ -44,3 +44,23 @@ source_set("gbm") {
     "//ui/gfx/geometry:geometry",
   ]
 }
+
+if (use_x11) {
+  component("gpu_memory_buffer_support_x11") {
+    configs += [ "//build/config/linux:x11" ]
+    sources = [
+      "gpu_memory_buffer_support_x11.cc",
+      "gpu_memory_buffer_support_x11.h",
+    ]
+    deps = [
+      ":drm",
+      ":gbm",
+      "//base",
+      "//skia",
+      "//ui/gfx:buffer_types",
+      "//ui/gfx:memory_buffer",
+      "//ui/gfx/x",
+    ]
+    defines = [ "IS_GBM_SUPPORT_X11_IMPL" ]
+  }
+}

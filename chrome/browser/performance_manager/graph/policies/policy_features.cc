@@ -74,7 +74,7 @@ const base::FeatureParam<int> kDynamicTuningTimeSec = {
 
 // The time a frame must be invisible before being additionally scaled. -1 will
 // disable invisible scaling.
-extern const base::FeatureParam<int> kDynamicTuningScaleInvisibleTimeSec = {
+const base::FeatureParam<int> kDynamicTuningScaleInvisibleTimeSec = {
     &kDynamicTcmallocTuning, "DynamicTcmallocScaleInvisibleTimeSec", -1};
 #endif  // BUILDFLAG(USE_TCMALLOC)
 

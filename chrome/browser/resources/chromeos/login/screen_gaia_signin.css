@@ -2,6 +2,11 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
+#saml-close-button {
+  --cr-icon-button-margin-end: 0;
+  --cr-icon-button-margin-start: 0;
+}
+
 .signin-link {
   color: rgb(37, 79, 155);
   cursor: pointer;
@@ -12,12 +17,6 @@
   /* Note: May use 1px solid here. */
   outline-color: rgb(77, 144, 254);
   transition: outline-color 200ms;
-}
-
-#gaia-signin-form-container {
-  height: 100%;
-  position: relative;
-  width: 100%;
 }
 
 /* Use the opacity CSS property in order to make the element invisible without
@@ -33,12 +32,6 @@ element during loading, without affecting its loading events. */
 
 [animated-transparency]:not([transparent]) {
   transition: opacity 500ms ease-out;
-}
-
-#signin-frame,
-#signin-frame-container {
-  height: 100%;
-  width: 100%;
 }
 
 #signin-frame {
@@ -58,15 +51,11 @@ element during loading, without affecting its loading events. */
 
 #saml-notice-container {
   align-items: center;
+  background: rgb(241, 243, 244); /* #F1F3F4 */
   box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.17);
   display: flex;
   height: 44px;
-  justify-content: center;
-  left: 0;
   min-height: 0;
-  position: absolute;
-  right: 0;
-  top: 0;
 }
 
 #saml-notice-recording-indicator {
@@ -100,6 +89,6 @@ element during loading, without affecting its loading events. */
   top: 0;
 }
 
-:host(.saml) #signin-frame-container {
-  padding-top: 44px;
+#signin-frame-container {
+  z-index: 10;
 }

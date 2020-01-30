@@ -8,12 +8,15 @@
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
+#include "base/scoped_observer.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "chrome/browser/ui/views/extensions/extension_view_views.h"
 #include "content/public/browser/devtools_agent_host_observer.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "extensions/browser/extension_registry.h"
+#include "extensions/browser/extension_registry_observer.h"
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
 #include "url/gurl.h"
 
@@ -24,11 +27,14 @@
 class ExtensionViewViews;
 
 namespace content {
+class BrowserContext;
 class DevToolsAgentHost;
 }
 
 namespace extensions {
+class Extension;
 class ExtensionViewHost;
+enum class UnloadedExtensionReason;
 }
 
 // The bubble used for hosting a browser-action popup provided by an extension.
@@ -37,6 +43,7 @@ class ExtensionPopup : public views::BubbleDialogDelegateView,
                        public wm::ActivationChangeObserver,
 #endif
                        public ExtensionViewViews::Container,
+                       public extensions::ExtensionRegistryObserver,
                        public content::NotificationObserver,
                        public TabStripModelObserver,
                        public content::DevToolsAgentHostObserver {
@@ -87,6 +94,11 @@ class ExtensionPopup : public views::BubbleDialogDelegateView,
   // ExtensionViewViews::Container:
   void OnExtensionSizeChanged(ExtensionViewViews* view) override;
 
+  // extensions::ExtensionRegistryObserver:
+  void OnExtensionUnloaded(content::BrowserContext* browser_context,
+                           const extensions::Extension* extension,
+                           extensions::UnloadedExtensionReason reason) override;
+
   // content::NotificationObserver:
   void Observe(int type,
                const content::NotificationSource& source,
@@ -120,6 +132,10 @@ class ExtensionPopup : public views::BubbleDialogDelegateView,
 
   // The contained host for the view.
   std::unique_ptr<extensions::ExtensionViewHost> host_;
+
+  ScopedObserver<extensions::ExtensionRegistry,
+                 extensions::ExtensionRegistryObserver>
+      extension_registry_observer_;
 
   ShowAction show_action_;
 

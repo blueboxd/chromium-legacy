@@ -9,7 +9,7 @@
 
 #ifdef __OBJC__
 
-#include <CoreFoundation/CoreFoundation.h>
+#import <Foundation/Foundation.h>
 
 #include "base/mac/scoped_nsobject.h"
 

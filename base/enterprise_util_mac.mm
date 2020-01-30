@@ -11,7 +11,6 @@
 
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
-#include "base/mac/sdk_forward_declarations.h"
 #include "base/process/launch.h"
 #include "base/stl_util.h"
 #include "base/strings/string_split.h"

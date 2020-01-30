@@ -8,11 +8,10 @@ import static org.chromium.chrome.browser.autofill_assistant.AssistantTagsForTes
 import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUiTestUtil.findViewsWithTag;
 import static org.chromium.chrome.browser.autofill_assistant.user_data.AssistantCollectUserDataCoordinator.DIVIDER_TAG;
 
+import android.support.annotation.Nullable;
 import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-
-import androidx.annotation.Nullable;
 
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.chrome.browser.autofill.PersonalDataManager;
@@ -50,8 +49,8 @@ public class AutofillAssistantCollectUserDataTestHelper {
         final AssistantVerticalExpander mPaymentSection;
         final AssistantVerticalExpander mShippingSection;
         final AssistantVerticalExpander mLoginsSection;
-        final AssistantVerticalExpander mDateRangeStartSection;
-        final AssistantVerticalExpander mDateRangeEndSection;
+        final LinearLayout mDateRangeStartSection;
+        final LinearLayout mDateRangeEndSection;
         final LinearLayout mTermsSection;
         final TextView mInfoSection;
         final AssistantChoiceList mContactList;
@@ -105,8 +104,15 @@ public class AutofillAssistantCollectUserDataTestHelper {
         AutofillAddress mAddress;
         AutofillPaymentInstrument mPaymentMethod;
         AssistantLoginChoice mLoginChoice;
-        AssistantDateTime mDateRangeStart;
-        AssistantDateTime mDateRangeEnd;
+        @Nullable
+        AssistantDateTime mDateRangeStartDate;
+        @Nullable
+        AssistantDateTime mDateRangeEndDate;
+        @Nullable
+        Integer mDateRangeStartTimeSlot;
+        @Nullable
+        Integer mDateRangeEndTimeSlot;
+
         @AssistantTermsAndConditionsState
         int mTermsStatus;
         @Nullable
@@ -144,15 +150,23 @@ public class AutofillAssistantCollectUserDataTestHelper {
         }
 
         @Override
-        public void onDateTimeRangeStartChanged(
-                int year, int month, int day, int hour, int minute, int second) {
-            mDateRangeStart = new AssistantDateTime(year, month, day, hour, minute, second);
+        public void onDateTimeRangeStartDateChanged(@Nullable AssistantDateTime date) {
+            mDateRangeStartDate = date;
         }
 
         @Override
-        public void onDateTimeRangeEndChanged(
-                int year, int month, int day, int hour, int minute, int second) {
-            mDateRangeEnd = new AssistantDateTime(year, month, day, hour, minute, second);
+        public void onDateTimeRangeStartTimeSlotChanged(@Nullable Integer index) {
+            mDateRangeStartTimeSlot = index;
+        }
+
+        @Override
+        public void onDateTimeRangeEndDateChanged(@Nullable AssistantDateTime date) {
+            mDateRangeEndDate = date;
+        }
+
+        @Override
+        public void onDateTimeRangeEndTimeSlotChanged(@Nullable Integer index) {
+            mDateRangeEndTimeSlot = index;
         }
 
         @Override

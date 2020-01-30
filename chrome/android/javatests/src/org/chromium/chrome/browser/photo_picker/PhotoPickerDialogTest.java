@@ -22,7 +22,6 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.R;
@@ -329,7 +328,6 @@ public class PhotoPickerDialogTest implements PhotoPickerListener, SelectionObse
     @Test
     @LargeTest
     //@DisableIf.Build(sdk_is_less_than = Build.VERSION_CODES.N) // Video is only supported on N+.
-    @DisabledTest(message = "crbug.com/1046347")
     public void testVideoPlayerPlayAndRestart() throws Throwable {
         // Requesting to play a video is not a case of an accidental disk read on the UI thread.
         StrictMode.ThreadPolicy oldPolicy = TestThreadUtils.runOnUiThreadBlocking(
@@ -345,8 +343,8 @@ public class PhotoPickerDialogTest implements PhotoPickerListener, SelectionObse
             View container = categoryView.findViewById(R.id.playback_container);
             Assert.assertTrue(container.getVisibility() == View.GONE);
 
-            // This test video takes less than a second to play.
-            String fileName = "chrome/test/data/android/photo_picker/noogler.mp4";
+            // This test video takes one second to play.
+            String fileName = "chrome/test/data/android/photo_picker/noogler_1sec.mp4";
             File file = new File(UrlUtils.getIsolatedTestFilePath(fileName));
 
             int callCount = onVideoEndedCallback.getCallCount();

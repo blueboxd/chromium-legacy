@@ -54,7 +54,8 @@ public class BottomContainer
 
     // FullscreenListener methods
     @Override
-    public void onControlsOffsetChanged(int topOffset, int bottomOffset, boolean needsAnimate) {
+    public void onControlsOffsetChanged(int topOffset, int topControlsMinHeightOffset,
+            int bottomOffset, int bottomControlsMinHeightOffset, boolean needsAnimate) {
         setTranslationY(mBaseYOffset);
     }
 

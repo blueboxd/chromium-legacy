@@ -4,6 +4,7 @@
 
 #include "content/browser/cache_storage/cache_storage_blob_to_disk_cache.h"
 
+#include <algorithm>
 #include <utility>
 
 #include "base/bind.h"

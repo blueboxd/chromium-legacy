@@ -63,6 +63,78 @@ TEST(FontDescriptionTest, TestHashCollision) {
   }
 }
 
+TEST(FontDescriptionTest, VariationSettingsIdentical) {
+  FontDescription a;
+  FontDescription b(a);
+
+  scoped_refptr<FontVariationSettings> settings_a =
+      FontVariationSettings::Create();
+  settings_a->Append(FontVariationAxis("test", 1));
+
+  scoped_refptr<FontVariationSettings> settings_b =
+      FontVariationSettings::Create();
+  settings_b->Append(FontVariationAxis("test", 1));
+
+  ASSERT_EQ(*settings_a, *settings_b);
+
+  a.SetVariationSettings(settings_a);
+  b.SetVariationSettings(settings_b);
+
+  ASSERT_EQ(a, b);
+
+  FontFaceCreationParams test_creation_params;
+  FontCacheKey cache_key_a = a.CacheKey(test_creation_params, false);
+  FontCacheKey cache_key_b = b.CacheKey(test_creation_params, false);
+
+  ASSERT_EQ(cache_key_a, cache_key_b);
+}
+
+TEST(FontDescriptionTest, VariationSettingsDifferent) {
+  FontDescription a;
+  FontDescription b(a);
+
+  scoped_refptr<FontVariationSettings> settings_a =
+      FontVariationSettings::Create();
+  settings_a->Append(FontVariationAxis("test", 1));
+
+  scoped_refptr<FontVariationSettings> settings_b =
+      FontVariationSettings::Create();
+  settings_b->Append(FontVariationAxis("0000", 1));
+
+  ASSERT_NE(*settings_a, *settings_b);
+
+  a.SetVariationSettings(settings_a);
+  b.SetVariationSettings(settings_b);
+
+  ASSERT_NE(a, b);
+
+  FontFaceCreationParams test_creation_params;
+
+  FontCacheKey cache_key_a = a.CacheKey(test_creation_params, false);
+  FontCacheKey cache_key_b = b.CacheKey(test_creation_params, false);
+
+  ASSERT_NE(cache_key_a, cache_key_b);
+
+  scoped_refptr<FontVariationSettings> second_settings_a =
+      FontVariationSettings::Create();
+  second_settings_a->Append(FontVariationAxis("test", 1));
+
+  scoped_refptr<FontVariationSettings> second_settings_b =
+      FontVariationSettings::Create();
+
+  ASSERT_NE(*second_settings_a, *second_settings_b);
+
+  a.SetVariationSettings(second_settings_a);
+  b.SetVariationSettings(second_settings_b);
+
+  ASSERT_NE(a, b);
+
+  FontCacheKey second_cache_key_a = a.CacheKey(test_creation_params, false);
+  FontCacheKey second_cache_key_b = b.CacheKey(test_creation_params, false);
+
+  ASSERT_NE(second_cache_key_a, second_cache_key_b);
+}
+
 TEST(FontDescriptionTest, ToString) {
   FontDescription description;
 

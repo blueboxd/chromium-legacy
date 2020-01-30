@@ -246,8 +246,8 @@ class ListHashSet
   ValueType Take(ValuePeekInType);
   ValueType TakeFirst();
 
-  template <typename VisitorDispatcher>
-  void Trace(VisitorDispatcher);
+  template <typename VisitorDispatcher, typename A = AllocatorArg>
+  std::enable_if_t<A::kIsGarbageCollected> Trace(VisitorDispatcher);
 
  protected:
   typename ImplType::ValueType** GetBufferSlot() {
@@ -1203,8 +1203,9 @@ void ListHashSet<T, inlineCapacity, U, V>::DeleteAllNodes() {
 }
 
 template <typename T, size_t inlineCapacity, typename U, typename V>
-template <typename VisitorDispatcher>
-void ListHashSet<T, inlineCapacity, U, V>::Trace(VisitorDispatcher visitor) {
+template <typename VisitorDispatcher, typename A>
+std::enable_if_t<A::kIsGarbageCollected>
+ListHashSet<T, inlineCapacity, U, V>::Trace(VisitorDispatcher visitor) {
   if (visitor->ConcurrentTracingBailOut(
           {this, [](blink::Visitor* visitor, void* object) {
              reinterpret_cast<ListHashSet<T, inlineCapacity, U, V>*>(object)

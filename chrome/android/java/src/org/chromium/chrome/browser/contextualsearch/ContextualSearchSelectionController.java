@@ -16,7 +16,6 @@ import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchFieldTrial.ContextualSearchSetting;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchFieldTrial.ContextualSearchSwitch;
-import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.content_public.browser.GestureStateListener;
 import org.chromium.content_public.browser.SelectionPopupController;
@@ -66,6 +65,8 @@ public class ContextualSearchSelectionController {
     private final ContextualSearchSelectionHandler mHandler;
     private final float mPxToDp;
     private final Pattern mContainsWordPattern;
+
+    private ContextualSearchPolicy mPolicy;
 
     private String mSelectedText;
     private @SelectionType int mSelectionType;
@@ -150,6 +151,14 @@ public class ContextualSearchSelectionController {
         Log.i(TAG, "Tap suppression enabled: %s",
                 ContextualSearchFieldTrial.getSwitch(
                         ContextualSearchSwitch.IS_CONTEXTUAL_SEARCH_ML_TAP_SUPPRESSION_ENABLED));
+    }
+
+    /**
+     * Sets the policy handler so we can delegate policy decisions.
+     * @param policy A {@link ContextualSearchPolicy} for policy decisions.
+     */
+    public void setPolicy(ContextualSearchPolicy policy) {
+        mPolicy = policy;
     }
 
     /**
@@ -309,10 +318,8 @@ public class ContextualSearchSelectionController {
             case SelectionEventType.SELECTION_HANDLES_SHOWN:
                 mAreSelectionHandlesShown = true;
                 mWasTapGestureDetected = false;
-                mSelectionType = ChromeFeatureList.isEnabled(
-                                         ChromeFeatureList.CONTEXTUAL_SEARCH_LONGPRESS_RESOLVE)
-                        ? SelectionType.RESOLVING_LONG_PRESS
-                        : SelectionType.LONG_PRESS;
+                mSelectionType = mPolicy.canResolveLongpress() ? SelectionType.RESOLVING_LONG_PRESS
+                                                               : SelectionType.LONG_PRESS;
                 shouldHandleSelection = true;
                 SelectionPopupController controller = getSelectionPopupController();
                 if (controller != null) mSelectedText = controller.getSelectedText();

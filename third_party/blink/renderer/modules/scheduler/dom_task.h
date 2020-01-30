@@ -7,6 +7,7 @@
 
 #include "base/time/time.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
+#include "third_party/blink/renderer/core/probe/async_task_id.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cancellable_task.h"
 
@@ -45,6 +46,7 @@ class DOMTask final : public GarbageCollected<DOMTask> {
   Member<V8Function> callback_;
   HeapVector<ScriptValue> arguments_;
   Member<ScriptPromiseResolver> resolver_;
+  probe::AsyncTaskId async_task_id_;
 };
 
 }  // namespace blink

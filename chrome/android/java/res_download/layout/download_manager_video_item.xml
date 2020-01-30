@@ -65,14 +65,14 @@
                 style="@style/DownloadItemText"
                 android:layout_width="match_parent"
                 android:layout_marginTop="11dp"
-                android:textAppearance="@style/TextAppearance.BlackTitle1" />
+                android:textAppearance="@style/TextAppearance.TextLarge.Primary" />
 
             <TextView
                 android:id="@+id/caption"
                 style="@style/DownloadItemText"
                 android:layout_width="match_parent"
                 android:layout_marginBottom="11dp"
-                android:textAppearance="@style/TextAppearance.BlackHint2" />
+                android:textAppearance="@style/TextAppearance.TextMedium.Secondary" />
         </LinearLayout>
 
         <include layout="@layout/list_menu_button"

@@ -20,6 +20,7 @@
 #include "content/browser/appcache/appcache_group.h"
 #include "content/browser/appcache/appcache_service_impl.h"
 #include "content/browser/appcache/appcache_storage.h"
+#include "content/browser/child_process_security_policy_impl.h"
 #include "content/common/appcache_interfaces.h"
 #include "content/common/content_export.h"
 #include "content/public/common/child_process_host.h"
@@ -177,6 +178,12 @@ class CONTENT_EXPORT AppCacheHost : public blink::mojom::AppCacheHost,
     DCHECK_NE(process_id_, ChildProcessHost::kInvalidUniqueID);
     return process_id_;
   }
+
+  using SecurityPolicyHandle = ChildProcessSecurityPolicyImpl::Handle;
+  SecurityPolicyHandle* security_policy_handle() {
+    return &security_policy_handle_;
+  }
+
   // SetProcessId may only be called once, and only if kInvalidUniqueID was
   // passed to the AppCacheHost's constructor (e.g. in a scenario where
   // NavigationRequest needs to delay specifying the |process_id| until
@@ -275,8 +282,19 @@ class CONTENT_EXPORT AppCacheHost : public blink::mojom::AppCacheHost,
   const base::UnguessableToken host_id_;
 
   // Identifies the renderer process associated with the AppCacheHost.  Used for
-  // security checks via ChildProcessSecurityPolicyImpl::CanAccessDataForOrigin.
+  // selecting the appropriate AppCacheBackend and creating
+  // |security_policy_handle_|.
   int process_id_;
+
+  // Security policy handle for the renderer process associated with this
+  // AppCacheHost.  Used for performing CanAccessDataForOrigin() security
+  // checks.
+  //
+  // Using this handle allows these checks to work even after the corresponding
+  // RenderProcessHost has been destroyed, in the case where there are still
+  // in-flight appcache requests that need to be processed. See
+  // https://crbug.com/943887.
+  SecurityPolicyHandle security_policy_handle_;
 
   // Information about the host that created this one; the manifest
   // preferred by our creator influences which cache our main resource

@@ -222,8 +222,8 @@ void FakeServiceWorker::Ping(PingCallback callback) {
   std::move(callback).Run();
 }
 
-void FakeServiceWorker::SetIdleTimerDelayToZero() {
-  is_zero_idle_timer_delay_ = true;
+void FakeServiceWorker::SetIdleDelay(base::TimeDelta delay) {
+  idle_delay_ = delay;
 }
 
 void FakeServiceWorker::AddMessageToConsole(

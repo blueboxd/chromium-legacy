@@ -233,7 +233,7 @@ class AccessibilityManager
   // Register a callback to be notified when the status of an accessibility
   // option changes.
   std::unique_ptr<AccessibilityStatusSubscription> RegisterCallback(
-      const AccessibilityStatusCallback& cb);
+      const AccessibilityStatusCallback& cb) WARN_UNUSED_RESULT;
 
   // Notify registered callbacks of a status change in an accessibility setting.
   void NotifyAccessibilityStatusChanged(

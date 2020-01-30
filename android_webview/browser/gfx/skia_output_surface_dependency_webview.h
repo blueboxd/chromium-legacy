@@ -40,6 +40,7 @@ class SkiaOutputSurfaceDependencyWebView
   gpu::MailboxManager* GetMailboxManager() override;
   gpu::ImageFactory* GetGpuImageFactory() override;
   void ScheduleGrContextCleanup() override;
+  void ScheduleDelayedGPUTaskFromGPUThread(base::OnceClosure task) override;
   void PostTaskToClientThread(base::OnceClosure closure) override;
   bool IsOffscreen() override;
   gpu::SurfaceHandle GetSurfaceHandle() override;

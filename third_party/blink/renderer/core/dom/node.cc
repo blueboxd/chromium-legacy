@@ -573,16 +573,16 @@ void Node::NativeApplyScroll(ScrollState& scroll_state) {
     return;
   }
 
-  ScrollResult result = scrollable_area->UserScroll(
-      ScrollGranularity(static_cast<int>(scroll_state.deltaGranularity())),
-      delta, ScrollableArea::ScrollCallback());
+  ScrollResult result =
+      scrollable_area->UserScroll(scroll_state.delta_granularity(), delta,
+                                  ScrollableArea::ScrollCallback());
 
   // Also try scrolling the visual viewport if we're at the end of the scroll
   // chain.
   if (!result.DidScroll() && also_scroll_visual_viewport) {
     result = GetDocument().GetPage()->GetVisualViewport().UserScroll(
-        ScrollGranularity(static_cast<int>(scroll_state.deltaGranularity())),
-        delta, ScrollableArea::ScrollCallback());
+        scroll_state.delta_granularity(), delta,
+        ScrollableArea::ScrollCallback());
   }
 
   if (!result.DidScroll())

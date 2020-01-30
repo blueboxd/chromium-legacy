@@ -473,9 +473,16 @@ void RetrieveDeviceData(
     return;
   }
   data_file = data_file.AppendASCII(id);
-  // TODO(pastarmovj): Make sure the resulting path is still a direct file or
-  // subdir+file of the EV folder.
+  // If the file does not exist don't treat this as an error rather return an
+  // empty string.
+  if (!base::PathExists(data_file)) {
+    std::move(callback).Run("", true);
+    return;
+  }
   std::string data;
+  // ReadFileToString does not permit traversal with .. so this is guaranteed to
+  // be a descendant of the data directory up to links created outside of
+  // Chrome.
   bool result = base::ReadFileToString(data_file, &data);
 
   std::move(callback).Run(data, result);

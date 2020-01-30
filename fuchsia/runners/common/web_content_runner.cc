@@ -38,19 +38,14 @@ WebContentRunner::WebContentRunner(fuchsia::web::ContextPtr context,
 
 WebContentRunner::~WebContentRunner() = default;
 
-// static
 fuchsia::web::ContextPtr WebContentRunner::CreateWebContext(
     fuchsia::web::CreateContextParams create_params) {
-  auto web_context_provider = base::fuchsia::ComponentContextForCurrentProcess()
-                                  ->svc()
-                                  ->Connect<fuchsia::web::ContextProvider>();
-
   fuchsia::web::ContextPtr web_context;
-  web_context_provider->Create(std::move(create_params),
+  GetContextProvider()->Create(std::move(create_params),
                                web_context.NewRequest());
   web_context.set_error_handler([](zx_status_t status) {
-    // If the browser instance died, then exit everything and do not attempt
-    // to recover. appmgr will relaunch the runner when it is needed again.
+    // If the browser instance died, then exit everything and do not attempt to
+    // recover. appmgr will relaunch the runner when it is needed again.
     ZX_LOG(ERROR, status) << "Connection to Context lost.";
   });
 
@@ -102,4 +97,19 @@ void WebContentRunner::RegisterComponent(
     web_component_created_callback_for_test_.Run(component.get());
 
   components_.insert(std::move(component));
+}
+
+void WebContentRunner::SetContextProviderForTest(
+    fuchsia::web::ContextProviderPtr context_provider) {
+  DCHECK(context_provider);
+  context_provider_ = std::move(context_provider);
+}
+
+fuchsia::web::ContextProvider* WebContentRunner::GetContextProvider() {
+  if (!context_provider_) {
+    context_provider_ = base::fuchsia::ComponentContextForCurrentProcess()
+                            ->svc()
+                            ->Connect<fuchsia::web::ContextProvider>();
+  }
+  return context_provider_.get();
 }

@@ -7,7 +7,9 @@
 
 #include <vector>
 
+#include "base/containers/flat_map.h"
 #include "base/macros.h"
+#include "ui/gfx/buffer_types.h"
 #include "ui/gfx/x/x11.h"
 #include "ui/gfx/x/x11_types.h"
 #include "ui/gl/gl_export.h"
@@ -30,9 +32,11 @@ class GL_EXPORT GLVisualPickerGLX {
 
   ~GLVisualPickerGLX();
 
-  const XVisualInfo& system_visual() { return system_visual_; }
+  const XVisualInfo& system_visual() const { return system_visual_; }
 
-  const XVisualInfo& rgba_visual() { return rgba_visual_; }
+  const XVisualInfo& rgba_visual() const { return rgba_visual_; }
+
+  GLXFBConfig GetFbConfigForFormat(gfx::BufferFormat format) const;
 
  private:
   friend struct base::DefaultSingletonTraits<GLVisualPickerGLX>;
@@ -45,6 +49,8 @@ class GL_EXPORT GLVisualPickerGLX {
 
   XVisualInfo PickBestRgbaVisual(const std::vector<XVisualInfo>& visuals) const;
 
+  void FillConfigMap();
+
   XDisplay* display_;
 
   bool has_glx_visual_rating_;
@@ -52,6 +58,8 @@ class GL_EXPORT GLVisualPickerGLX {
 
   XVisualInfo system_visual_;
   XVisualInfo rgba_visual_;
+
+  base::flat_map<gfx::BufferFormat, GLXFBConfig> config_map_;
 
   GLVisualPickerGLX();
 

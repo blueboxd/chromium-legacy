@@ -26,13 +26,14 @@ class ExtensionRequestObserver
   // extensions::ExtensionManagement::Observer
   void OnExtensionManagementSettingsChanged() override;
 
+  void ShowNotification(ExtensionRequestNotification::NotifyType type);
+  void CloseAllNotifications();
+
   void OnNotificationClosed(std::vector<std::string>&& extension_ids,
                             bool by_user);
 
   void RemoveExtensionsFromPendingList(
       const std::vector<std::string>& extension_ids);
-
-  void ShowNotification(ExtensionRequestNotification::NotifyType type);
 
   std::unique_ptr<ExtensionRequestNotification>
       notifications_[ExtensionRequestNotification::kNumberOfTypes];

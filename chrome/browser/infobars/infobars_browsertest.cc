@@ -377,7 +377,7 @@ void InfoBarUiTest::ShowUi(const std::string& name) {
     case IBD::TAB_SHARING_INFOBAR_DELEGATE:
       TabSharingInfoBarDelegate::Create(
           GetInfoBarService(), base::ASCIIToUTF16("example.com"),
-          base::ASCIIToUTF16("application.com"), true, nullptr);
+          base::ASCIIToUTF16("application.com"), false, true, nullptr);
       break;
 
     default:

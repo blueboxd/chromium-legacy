@@ -26,7 +26,7 @@
     </style>
 
     <style name="PreferenceSummary">
-        <item name="android:textAppearance">@style/TextAppearance.BlackBody</item>
+        <item name="android:textAppearance">@style/TextAppearance.TextMedium.Secondary</item>
     </style>
 
     <style name="PreferenceLayoutBase">

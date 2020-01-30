@@ -49,6 +49,7 @@ class MockModelTypeProcessor : public ModelTypeProcessor {
       const sync_pb::ModelTypeState& type_state,
       const CommitResponseDataList& committed_response_list,
       const FailedCommitResponseDataList& error_response_list) override;
+  void OnCommitFailed() override;
   void OnUpdateReceived(const sync_pb::ModelTypeState& type_state,
                         UpdateResponseDataList response_list) override;
 
@@ -75,6 +76,9 @@ class MockModelTypeProcessor : public ModelTypeProcessor {
       const sync_pb::EntitySpecifics& specifics);
   std::unique_ptr<CommitRequestData> DeleteRequest(
       const ClientTagHash& tag_hash);
+
+  // Getters to access the log of commit failures.
+  size_t GetNumCommitFailures() const;
 
   // Getters to access the log of received update responses.
   //
@@ -146,6 +150,7 @@ class MockModelTypeProcessor : public ModelTypeProcessor {
   std::vector<UpdateResponseDataList> received_update_responses_;
   std::vector<sync_pb::ModelTypeState> type_states_received_on_update_;
   std::vector<sync_pb::ModelTypeState> type_states_received_on_commit_;
+  size_t commit_failures_count_ = 0;
 
   // Latest responses received, indexed by tag_hash.
   std::map<ClientTagHash, CommitResponseData> commit_response_items_;

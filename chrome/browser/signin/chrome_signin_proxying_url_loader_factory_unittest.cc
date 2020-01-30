@@ -31,11 +31,10 @@ namespace {
 
 class MockDelegate : public HeaderModificationDelegate {
  public:
-  MockDelegate() {}
-  ~MockDelegate() override {}
+  MockDelegate() = default;
+  ~MockDelegate() override = default;
 
-  MOCK_METHOD1(ShouldInterceptNavigation,
-               bool(content::NavigationUIData* navigation_ui_data));
+  MOCK_METHOD1(ShouldInterceptNavigation, bool(content::WebContents* contents));
   MOCK_METHOD2(ProcessRequest,
                void(ChromeRequestAdapter* request_adapter,
                     const GURL& redirect_url));

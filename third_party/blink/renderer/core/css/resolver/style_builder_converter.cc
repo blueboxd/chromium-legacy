@@ -1874,4 +1874,12 @@ IntrinsicLength StyleBuilderConverter::ConvertIntrinsicLength(
   return IntrinsicLength::Make(ConvertLength(state, value));
 }
 
+bool StyleBuilderConverter::ConvertInternalEmptyLineHeight(
+    StyleResolverState&,
+    const CSSValue& value) {
+  auto* identifier_value = DynamicTo<CSSIdentifierValue>(value);
+  return identifier_value &&
+         identifier_value->GetValueID() == CSSValueID::kFabricated;
+}
+
 }  // namespace blink

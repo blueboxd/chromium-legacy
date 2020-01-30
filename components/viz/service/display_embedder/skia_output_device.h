@@ -31,7 +31,6 @@ class Size;
 struct PresentationFeedback;
 }  // namespace gfx
 
-
 namespace gpu {
 class MemoryTracker;
 class MemoryTypeTracker;
@@ -54,6 +53,10 @@ class SkiaOutputDevice {
     void set_semaphore(const GrBackendSemaphore& semaphore) {
       DCHECK(!semaphore_.isInitialized());
       semaphore_ = semaphore;
+    }
+
+    std::vector<GrBackendSemaphore> GetEndPaintSemaphores(void) {
+      return device_->TakeEndPaintSemaphores();
     }
 
    private:
@@ -143,6 +146,9 @@ class SkiaOutputDevice {
 
   // End paint the back buffer.
   virtual void EndPaint(const GrBackendSemaphore& semaphore) = 0;
+
+  // Get End paint semaphore buffer.
+  virtual std::vector<GrBackendSemaphore> TakeEndPaintSemaphores();
 
   // Helper method for SwapBuffers() and PostSubBuffer(). It should be called
   // at the beginning of SwapBuffers() and PostSubBuffer() implementations

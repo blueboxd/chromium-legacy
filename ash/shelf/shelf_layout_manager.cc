@@ -77,9 +77,6 @@
 namespace ash {
 namespace {
 
-using ShelfWindowDragResult =
-    DragWindowFromShelfController::ShelfWindowDragResult;
-
 // Default Target Dim Opacity for floating shelf.
 constexpr float kFloatingShelfDimOpacity = 0.74f;
 
@@ -1074,6 +1071,10 @@ void ShelfLayoutManager::OnDeskSwitchAnimationFinished() {
     UpdateVisibilityState();
 }
 
+gfx::Rect ShelfLayoutManager::GetShelfBoundsInScreen() const {
+  return target_bounds_.shelf_bounds;
+}
+
 gfx::Rect ShelfLayoutManager::GetNavigationBounds() const {
   gfx::Vector2d nav_offset = target_bounds_.shelf_bounds.OffsetFromOrigin();
   gfx::Rect nav_bounds = target_bounds_.nav_bounds_in_shelf;
@@ -1088,11 +1089,8 @@ gfx::Rect ShelfLayoutManager::GetHotseatBounds() const {
   return hotseat_bounds;
 }
 
-gfx::Rect ShelfLayoutManager::GetStatusAreaBounds() const {
-  gfx::Vector2d offset = target_bounds_.shelf_bounds.OffsetFromOrigin();
-  gfx::Rect status_bounds = target_bounds_.status_bounds_in_shelf;
-  status_bounds.Offset(offset);
-  return status_bounds;
+gfx::Rect ShelfLayoutManager::GetStatusAreaBoundsInScreen() const {
+  return target_bounds_.status_bounds_in_screen;
 }
 
 float ShelfLayoutManager::GetOpacity() const {
@@ -1634,7 +1632,9 @@ void ShelfLayoutManager::CalculateTargetBounds(
       gfx::Point(0, shelf_height - status_size.height()));
   if (shelf_->IsHorizontalAlignment() && !base::i18n::IsRTL())
     status_origin.set_x(shelf_width - status_size.width());
-  target_bounds_.status_bounds_in_shelf = gfx::Rect(status_origin, status_size);
+  status_origin.Offset(shelf_origin.x(), shelf_origin.y());
+  target_bounds_.status_bounds_in_screen =
+      gfx::Rect(status_origin, status_size);
 
   gfx::Point nav_origin = gfx::Point();
   gfx::Size nav_size = shelf_widget_->navigation_widget()->GetIdealSize();
@@ -1799,11 +1799,12 @@ void ShelfLayoutManager::UpdateTargetBoundsForGesture(
 
   if (horizontal) {
     if (!IsHotseatEnabled()) {
-      target_bounds_.shelf_bounds.set_y(baseline + translate);
+      const int shelf_y = baseline + translate;
+      target_bounds_.shelf_bounds.set_y(shelf_y);
       target_bounds_.nav_bounds_in_shelf.set_y(
           ShelfConfig::Get()->button_spacing());
       target_bounds_.hotseat_bounds_in_shelf.set_y(0);
-      target_bounds_.status_bounds_in_shelf.set_y(0);
+      target_bounds_.status_bounds_in_screen.set_y(shelf_y);
       return;
     }
 
@@ -1848,11 +1849,12 @@ void ShelfLayoutManager::UpdateTargetBoundsForGesture(
     return;
   }
 
+  const int shelf_x = baseline + translate;
   target_bounds_.shelf_bounds.set_x(baseline + translate);
   target_bounds_.nav_bounds_in_shelf.set_x(
       ShelfConfig::Get()->button_spacing());
   target_bounds_.hotseat_bounds_in_shelf.set_x(0);
-  target_bounds_.status_bounds_in_shelf.set_x(0);
+  target_bounds_.status_bounds_in_screen.set_x(shelf_x);
 }
 
 void ShelfLayoutManager::UpdateAutoHideStateNow() {
@@ -2461,8 +2463,8 @@ void ShelfLayoutManager::UpdateDrag(const ui::LocatedEvent& event_in_screen,
 
 void ShelfLayoutManager::CompleteDrag(const ui::LocatedEvent& event_in_screen) {
   // End the possible window drag before checking the shelf visibility.
-  base::Optional<DragWindowFromShelfController::ShelfWindowDragResult>
-      window_drag_result = MaybeEndWindowDrag(event_in_screen);
+  base::Optional<ShelfWindowDragResult> window_drag_result =
+      MaybeEndWindowDrag(event_in_screen);
   HotseatState old_hotseat_state = hotseat_state();
 
   const bool transitioned_from_overview_to_home =
@@ -2532,8 +2534,7 @@ void ShelfLayoutManager::CompleteAppListDrag(
 }
 
 void ShelfLayoutManager::CancelDrag(
-    base::Optional<DragWindowFromShelfController::ShelfWindowDragResult>
-        window_drag_result) {
+    base::Optional<ShelfWindowDragResult> window_drag_result) {
   if (drag_status_ == kDragAppListInProgress ||
       drag_status_ == kDragHomeToOverviewInProgress) {
     HomeLauncherGestureHandler* home_launcher_handler =
@@ -2560,8 +2561,7 @@ void ShelfLayoutManager::CancelDrag(
         (!Shell::Get()->overview_controller()->InOverviewSession() ||
          (window_drag_result.has_value() &&
           window_drag_result.value() ==
-              DragWindowFromShelfController::ShelfWindowDragResult::
-                  kRestoreToOriginalBounds)));
+              ShelfWindowDragResult::kRestoreToOriginalBounds)));
 
     hotseat_presentation_time_recorder_.reset();
   }

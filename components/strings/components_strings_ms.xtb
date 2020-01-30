@@ -428,7 +428,6 @@
 <translation id="2799223571221894425">Lancarkan semula</translation>
 <translation id="2803306138276472711">Penyemakan Selamat Google <ph name="BEGIN_LINK" />mengesan perisian hasad<ph name="END_LINK" /> pada <ph name="SITE" /> baru-baru ini. Tapak web yang biasanya selamat kadangkala dijangkiti oleh perisian hasad.</translation>
 <translation id="2807052079800581569">Kedudukan Y imej</translation>
-<translation id="2809804249696361569">Kedua-dua helaian</translation>
 <translation id="2824775600643448204">Bar alamat dan carian</translation>
 <translation id="2826760142808435982">Sambungan disulitkan dan disahkan menggunakan <ph name="CIPHER" /> dan menggunakan <ph name="KX" /> sebagai mekanisme pertukaran kunci.</translation>
 <translation id="2835170189407361413">Kosongkan borang</translation>
@@ -938,7 +937,6 @@
 <translation id="5112422516732747637">A5</translation>
 <translation id="5115216390227830982">Edp-Eropah</translation>
 <translation id="5115563688576182185">(64-bit)</translation>
-<translation id="5121469660360593280">Kongsi data tentang acara keselamatan yang telah dibenderakan oleh Perlindungan Pengguna Chrome Enterprise dengan Pentadbir anda. Data ini boleh termasuk URL halaman yang anda lawati, nama fail atau metadata dan nama pengguna yang anda gunakan untuk mengelog masuk ke peranti serta Chrome anda.</translation>
 <translation id="5123063207673082822">Hujung minggu</translation>
 <translation id="5125394840236832993">B-Plus</translation>
 <translation id="5126510351761255129">Sahkan kad anda</translation>
@@ -953,7 +951,6 @@
 <translation id="5161506081086828129">Petak 9</translation>
 <translation id="516920405563544094">Masukkan CVC untuk <ph name="CREDIT_CARD" />. Setelah anda mengesahkan maklumat, butiran kad daripada Akaun Google anda akan dikongsi dengan tapak ini.</translation>
 <translation id="5169827969064885044">Anda boleh kehilangan akses kepada akaun organisasi anda atau mengalami kecurian identiti. Chrome mengesyorkan supaya kata laluan anda ditukar sekarang.</translation>
-<translation id="5170017743895942767">Perlindungan Pengguna Chrome Enterprise</translation>
 <translation id="5171045022955879922">Buat carian atau taipkan URL</translation>
 <translation id="5171689220826475070">Fanfold-Eropah</translation>
 <translation id="5172758083709347301">Mesin</translation>
@@ -1086,7 +1083,6 @@
 <translation id="5737183892635480227">{NUM_CARDS,plural, =1{Simpan kad ke Akaun Google anda}other{Simpan kad ke Akaun Google anda}}</translation>
 <translation id="5745980000221562234">{NUM_CARDS,plural, =1{Gunakan nombor maya untuk kad ini}other{Pilih kad}}</translation>
 <translation id="5763042198335101085">Masukkan alamat e-mel yang sah</translation>
-<translation id="5763703224595565476">Pentadbir telah mendayakan Perlindungan Pengguna Chrome Enterprise pada penyemak imbas anda. Perlindungan Pengguna Chrome Enterprise mempunyai akses kepada sesetengah data anda.</translation>
 <translation id="5765072501007116331">Pilih alamat untuk melihat kaedah dan syarat penghantaran</translation>
 <translation id="5776313857861697733">Keutamaan</translation>
 <translation id="5778550464785688721">Kawalan penuh peranti MIDI</translation>
@@ -1423,7 +1419,6 @@ Butiran tambahan:
 <translation id="733923710415886693">Sijil pelayan tidak didedahkan melalui Ketelusan Sijil.</translation>
 <translation id="734600844861828519">11x15</translation>
 <translation id="7346048084945669753">Ialah ahli gabungan:</translation>
-<translation id="73479065977517481"><ph name="ENROLLMENT_DOMAIN" /> telah mendayakan Perlindungan Pengguna Chrome Enterprise pada penyemak imbas anda. Perlindungan Pengguna Chrome Enterprise mempunyai akses kepada sesetengah data anda.</translation>
 <translation id="7349430561505560861">A4-Ekstra</translation>
 <translation id="7353601530677266744">Baris Perintah</translation>
 <translation id="7372973238305370288">hasil carian</translation>

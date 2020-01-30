@@ -24,7 +24,7 @@
         android:imeOptions="flagNoExtractUi|actionSearch"
         android:inputType="text"
         android:singleLine="true"
-        android:textAppearance="@style/TextAppearance.BlackTitle1"
+        android:textAppearance="@style/TextAppearance.TextLarge.Primary"
         android:textColorHint="@color/search_box_hint"/>
 
     <org.chromium.ui.widget.ChromeImageButton

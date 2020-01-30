@@ -14,7 +14,6 @@
 #import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_controller.h"
-#import "ios/chrome/browser/ui/fullscreen/fullscreen_controller_factory.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_ui_updater.h"
 #import "ios/chrome/browser/ui/location_bar/location_bar_coordinator.h"
 #import "ios/chrome/browser/ui/ntp/ntp_util.h"
@@ -88,7 +87,7 @@
       [self.locationBarCoordinator editViewAnimatee];
 
   _fullscreenUIUpdater = std::make_unique<FullscreenUIUpdater>(
-      FullscreenControllerFactory::GetForBrowserState(self.browserState),
+      FullscreenController::FromBrowserState(self.browserState),
       self.viewController);
 
   [super start];
@@ -151,9 +150,7 @@
 }
 
 - (void)exitFullscreen {
-  FullscreenControllerFactory::GetInstance()
-      ->GetForBrowserState(self.browserState)
-      ->ExitFullscreen();
+  FullscreenController::FromBrowserState(self.browserState)->ExitFullscreen();
 }
 
 #pragma mark - FakeboxFocuser

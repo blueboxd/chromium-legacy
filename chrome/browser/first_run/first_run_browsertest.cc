@@ -294,7 +294,7 @@ INSTANTIATE_TEST_SUITE_P(
 constexpr char kCompressedSeedTestValue[] = COMPRESSED_SEED_TEST_VALUE;
 constexpr char kSignatureValue[] = SEED_SIGNATURE_TEST_VALUE;
 
-extern const char kWithVariationsPrefs[] =
+const char kWithVariationsPrefs[] =
     "{\n"
     "  \"variations_compressed_seed\": \"" COMPRESSED_SEED_TEST_VALUE
     "\",\n"

@@ -126,10 +126,8 @@ class MockPasswordGenerationDialogView
 PasswordGenerationUIData GetTestGenerationUIData1() {
   PasswordGenerationUIData data;
 
-  PasswordForm& form = data.password_form;
-  form.form_data = autofill::FormData();
-  form.form_data.action = GURL("http://www.example1.com/accounts/Login");
-  form.form_data.url = GURL("http://www.example1.com/accounts/LoginAuth");
+  data.form_data.action = GURL("http://www.example1.com/accounts/Login");
+  data.form_data.url = GURL("http://www.example1.com/accounts/LoginAuth");
 
   data.generation_element = ASCIIToUTF16("testelement1");
   data.max_length = 10;
@@ -140,10 +138,8 @@ PasswordGenerationUIData GetTestGenerationUIData1() {
 PasswordGenerationUIData GetTestGenerationUIData2() {
   PasswordGenerationUIData data;
 
-  PasswordForm& form = data.password_form;
-  form.form_data = autofill::FormData();
-  form.form_data.action = GURL("http://www.example2.com/accounts/Login");
-  form.form_data.url = GURL("http://www.example2.com/accounts/LoginAuth");
+  data.form_data.action = GURL("http://www.example2.com/accounts/Login");
+  data.form_data.url = GURL("http://www.example2.com/accounts/LoginAuth");
 
   data.generation_element = ASCIIToUTF16("testelement2");
   data.max_length = 10;
@@ -294,7 +290,7 @@ TEST_F(PasswordGenerationControllerTest,
       mock_password_manager_driver_.get(), new_ui_data, gfx::RectF(100, 20));
 
   autofill::FormSignature form_signature =
-      autofill::CalculateFormSignature(new_ui_data.password_form.form_data);
+      autofill::CalculateFormSignature(new_ui_data.form_data);
   autofill::FieldSignature field_signature =
       autofill::CalculateFieldSignatureByNameAndType(
           new_ui_data.generation_element, "password");

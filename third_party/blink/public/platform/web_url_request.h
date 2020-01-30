@@ -174,9 +174,12 @@ class WebURLRequest {
 
   BLINK_PLATFORM_EXPORT ~WebURLRequest();
   BLINK_PLATFORM_EXPORT WebURLRequest();
-  BLINK_PLATFORM_EXPORT WebURLRequest(const WebURLRequest&);
+  WebURLRequest(const WebURLRequest&) = delete;
+  BLINK_PLATFORM_EXPORT WebURLRequest(WebURLRequest&&);
   BLINK_PLATFORM_EXPORT explicit WebURLRequest(const WebURL&);
-  BLINK_PLATFORM_EXPORT WebURLRequest& operator=(const WebURLRequest&);
+  WebURLRequest& operator=(const WebURLRequest&) = delete;
+  BLINK_PLATFORM_EXPORT WebURLRequest& operator=(WebURLRequest&&);
+  BLINK_PLATFORM_EXPORT void CopyFrom(const WebURLRequest&);
 
   BLINK_PLATFORM_EXPORT bool IsNull() const;
 
@@ -400,12 +403,10 @@ class WebURLRequest {
 #endif
 
  private:
-  struct ResourceRequestContainer;
-
   // If this instance owns a ResourceRequest then |owned_resource_request_|
   // is non-null and |resource_request_| points to the ResourceRequest
   // instance it contains.
-  std::unique_ptr<ResourceRequestContainer> owned_resource_request_;
+  std::unique_ptr<ResourceRequest> owned_resource_request_;
 
   // Should never be null.
   ResourceRequest* resource_request_;

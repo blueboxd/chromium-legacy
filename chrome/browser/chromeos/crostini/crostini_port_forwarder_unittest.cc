@@ -61,7 +61,7 @@ TEST_F(CrostiniPortForwarderTest, AddPortTcpSuccess) {
 
   bool success = false;
   crostini_port_forwarder_->AddPort(5000, CrostiniPortForwarder::Protocol::TCP,
-                                    "label0",
+                                    "tcp-port",
                                     base::BindOnce(&TestingCallback, &success));
   EXPECT_TRUE(success);
   EXPECT_TRUE(chromeos::FakePermissionBrokerClient::Get()->HasTcpPortForward(
@@ -78,7 +78,7 @@ TEST_F(CrostiniPortForwarderTest, AddPortUdpSuccess) {
 
   bool success = false;
   crostini_port_forwarder_->AddPort(5000, CrostiniPortForwarder::Protocol::UDP,
-                                    "label0",
+                                    "udp-port",
                                     base::BindOnce(&TestingCallback, &success));
   EXPECT_TRUE(success);
   EXPECT_TRUE(chromeos::FakePermissionBrokerClient::Get()->HasUdpPortForward(
@@ -95,23 +95,25 @@ TEST_F(CrostiniPortForwarderTest, AddPortDuplicateFail) {
 
   bool success = false;
   crostini_port_forwarder_->AddPort(5000, CrostiniPortForwarder::Protocol::UDP,
-                                    "label0",
+                                    "udp-port",
                                     base::BindOnce(&TestingCallback, &success));
   EXPECT_TRUE(success);
   EXPECT_TRUE(chromeos::FakePermissionBrokerClient::Get()->HasUdpPortForward(
       5000, "wlan0"));
-  EXPECT_EQ(crostini_port_forwarder_->forwarded_ports_.size(), 1U);
+  EXPECT_EQ(crostini_port_forwarder_->GetNumberOfForwardedPortsForTesting(),
+            1U);
 
   // Leave success as == true.
   crostini_port_forwarder_->AddPort(5000, CrostiniPortForwarder::Protocol::UDP,
-                                    "label1",
+                                    "udp-port-duplicate",
                                     base::BindOnce(&TestingCallback, &success));
   EXPECT_FALSE(success);
   EXPECT_FALSE(chromeos::FakePermissionBrokerClient::Get()->HasTcpPortForward(
       5000, "wlan0"));
   EXPECT_TRUE(chromeos::FakePermissionBrokerClient::Get()->HasUdpPortForward(
       5000, "wlan0"));
-  EXPECT_EQ(crostini_port_forwarder_->forwarded_ports_.size(), 1U);
+  EXPECT_EQ(crostini_port_forwarder_->GetNumberOfForwardedPortsForTesting(),
+            1U);
 }
 
 TEST_F(CrostiniPortForwarderTest, AddPortUdpAndTcpSuccess) {
@@ -122,30 +124,33 @@ TEST_F(CrostiniPortForwarderTest, AddPortUdpAndTcpSuccess) {
 
   bool success = false;
   crostini_port_forwarder_->AddPort(5000, CrostiniPortForwarder::Protocol::UDP,
-                                    "label0",
+                                    "udp-port",
                                     base::BindOnce(&TestingCallback, &success));
   EXPECT_TRUE(success);
 
   success = false;
   crostini_port_forwarder_->AddPort(5000, CrostiniPortForwarder::Protocol::TCP,
-                                    "label0",
+                                    "tcp-port",
                                     base::BindOnce(&TestingCallback, &success));
   EXPECT_TRUE(success);
-  EXPECT_EQ(crostini_port_forwarder_->forwarded_ports_.size(), 2U);
+  EXPECT_EQ(crostini_port_forwarder_->GetNumberOfForwardedPortsForTesting(),
+            2U);
 }
 
 TEST_F(CrostiniPortForwarderTest, AddPortMultipleSuccess) {
-  EXPECT_EQ(crostini_port_forwarder_->forwarded_ports_.size(), 0U);
+  EXPECT_EQ(crostini_port_forwarder_->GetNumberOfForwardedPortsForTesting(),
+            0U);
   crostini_port_forwarder_->AddPort(5000, CrostiniPortForwarder::Protocol::UDP,
-                                    "label0", base::DoNothing());
+                                    "udp-port", base::DoNothing());
   crostini_port_forwarder_->AddPort(5001, CrostiniPortForwarder::Protocol::TCP,
-                                    "label1", base::DoNothing());
+                                    "tcp-port", base::DoNothing());
   crostini_port_forwarder_->AddPort(5002, CrostiniPortForwarder::Protocol::UDP,
-                                    "label2", base::DoNothing());
-  EXPECT_EQ(crostini_port_forwarder_->forwarded_ports_.size(), 3U);
+                                    "udp-port", base::DoNothing());
+  EXPECT_EQ(crostini_port_forwarder_->GetNumberOfForwardedPortsForTesting(),
+            3U);
 }
 
-TEST_F(CrostiniPortForwarderTest, ActivatePortTcpSuccess) {
+TEST_F(CrostiniPortForwarderTest, ActivateTcpPortSuccess) {
   EXPECT_FALSE(chromeos::FakePermissionBrokerClient::Get()->HasTcpPortForward(
       5000, "wlan0"));
   EXPECT_FALSE(chromeos::FakePermissionBrokerClient::Get()->HasUdpPortForward(
@@ -153,31 +158,153 @@ TEST_F(CrostiniPortForwarderTest, ActivatePortTcpSuccess) {
 
   bool success = false;
   crostini_port_forwarder_->ActivatePort(
-      5000, base::BindOnce(&TestingCallback, &success));
+      5000, CrostiniPortForwarder::Protocol::TCP,
+      base::BindOnce(&TestingCallback, &success));
   EXPECT_TRUE(success);
   EXPECT_TRUE(chromeos::FakePermissionBrokerClient::Get()->HasTcpPortForward(
-      5000, "wlan0"));
-  EXPECT_FALSE(chromeos::FakePermissionBrokerClient::Get()->HasUdpPortForward(
       5000, "wlan0"));
 }
 
 TEST_F(CrostiniPortForwarderTest, TryActivatePortPermissionBrokerClientFail) {
   bool success = false;
   crostini_port_forwarder_->TryActivatePort(
-      5000, CrostiniPortForwarder::Protocol::TCP, "label0",
+      5000, CrostiniPortForwarder::Protocol::TCP, "tcp-port",
       base::BindOnce(&TestingCallback, &success));
   EXPECT_TRUE(success);
-  EXPECT_EQ(crostini_port_forwarder_->forwarded_ports_.size(), 1U);
+  EXPECT_EQ(crostini_port_forwarder_->GetNumberOfForwardedPortsForTesting(),
+            1U);
   chromeos::PermissionBrokerClient::Shutdown();
 
   // Leave success as == true.
   crostini_port_forwarder_->TryActivatePort(
-      5001, CrostiniPortForwarder::Protocol::TCP, "label1",
+      5001, CrostiniPortForwarder::Protocol::TCP, "tcp-port",
       base::BindOnce(&TestingCallback, &success));
   EXPECT_FALSE(success);
-  EXPECT_EQ(crostini_port_forwarder_->forwarded_ports_.size(), 1U);
+  EXPECT_EQ(crostini_port_forwarder_->GetNumberOfForwardedPortsForTesting(),
+            1U);
   // Re-initialize otherwise Shutdown in TearDown phase will break.
   chromeos::PermissionBrokerClient::InitializeFake();
 }
+
+TEST_F(CrostiniPortForwarderTest, DeactivatePortTcpSuccess) {
+  crostini_port_forwarder_->AddPort(5000, CrostiniPortForwarder::Protocol::TCP,
+                                    "tcp-port", base::DoNothing());
+  EXPECT_TRUE(chromeos::FakePermissionBrokerClient::Get()->HasTcpPortForward(
+      5000, "wlan0"));
+
+  bool success = false;
+  crostini_port_forwarder_->DeactivatePort(
+      5000, CrostiniPortForwarder::Protocol::TCP,
+      base::BindOnce(&TestingCallback, &success));
+  EXPECT_TRUE(success);
+  EXPECT_FALSE(chromeos::FakePermissionBrokerClient::Get()->HasTcpPortForward(
+      5000, "wlan0"));
+  EXPECT_EQ(crostini_port_forwarder_->GetNumberOfForwardedPortsForTesting(),
+            0U);
+}
+
+TEST_F(CrostiniPortForwarderTest, DeactivatePortUdpSuccess) {
+  crostini_port_forwarder_->AddPort(5000, CrostiniPortForwarder::Protocol::UDP,
+                                    "udp-port", base::DoNothing());
+  EXPECT_TRUE(chromeos::FakePermissionBrokerClient::Get()->HasUdpPortForward(
+      5000, "wlan0"));
+
+  bool success = false;
+  crostini_port_forwarder_->DeactivatePort(
+      5000, CrostiniPortForwarder::Protocol::UDP,
+      base::BindOnce(&TestingCallback, &success));
+  EXPECT_TRUE(success);
+  EXPECT_FALSE(chromeos::FakePermissionBrokerClient::Get()->HasUdpPortForward(
+      5000, "wlan0"));
+  EXPECT_EQ(crostini_port_forwarder_->GetNumberOfForwardedPortsForTesting(),
+            0U);
+}
+
+TEST_F(CrostiniPortForwarderTest, DeactivateNonExistentPortFail) {
+  EXPECT_EQ(crostini_port_forwarder_->GetNumberOfForwardedPortsForTesting(),
+            0U);
+  EXPECT_FALSE(chromeos::FakePermissionBrokerClient::Get()->HasUdpPortForward(
+      5000, "wlan0"));
+
+  bool success = false;
+  crostini_port_forwarder_->DeactivatePort(
+      5000, CrostiniPortForwarder::Protocol::TCP,
+      base::BindOnce(&TestingCallback, &success));
+  EXPECT_FALSE(success);
+
+  crostini_port_forwarder_->DeactivatePort(
+      5000, CrostiniPortForwarder::Protocol::UDP,
+      base::BindOnce(&TestingCallback, &success));
+  EXPECT_FALSE(success);
+  EXPECT_EQ(crostini_port_forwarder_->GetNumberOfForwardedPortsForTesting(),
+            0U);
+}
+
+TEST_F(CrostiniPortForwarderTest, DeactivateWrongProtocolFail) {
+  crostini_port_forwarder_->AddPort(5000, CrostiniPortForwarder::Protocol::UDP,
+                                    "udp-port", base::DoNothing());
+  EXPECT_TRUE(chromeos::FakePermissionBrokerClient::Get()->HasUdpPortForward(
+      5000, "wlan0"));
+
+  bool success = false;
+  crostini_port_forwarder_->DeactivatePort(
+      5000, CrostiniPortForwarder::Protocol::TCP,
+      base::BindOnce(&TestingCallback, &success));
+  EXPECT_FALSE(success);
+  EXPECT_TRUE(chromeos::FakePermissionBrokerClient::Get()->HasUdpPortForward(
+      5000, "wlan0"));
+  EXPECT_EQ(crostini_port_forwarder_->GetNumberOfForwardedPortsForTesting(),
+            1U);
+}
+
+TEST_F(CrostiniPortForwarderTest, DeactivatePortTwiceFail) {
+  crostini_port_forwarder_->AddPort(5000, CrostiniPortForwarder::Protocol::TCP,
+                                    "tcp-port", base::DoNothing());
+  EXPECT_TRUE(chromeos::FakePermissionBrokerClient::Get()->HasTcpPortForward(
+      5000, "wlan0"));
+
+  bool success = false;
+  crostini_port_forwarder_->DeactivatePort(
+      5000, CrostiniPortForwarder::Protocol::TCP,
+      base::BindOnce(&TestingCallback, &success));
+  EXPECT_TRUE(success);
+  EXPECT_FALSE(chromeos::FakePermissionBrokerClient::Get()->HasTcpPortForward(
+      5000, "wlan0"));
+  EXPECT_EQ(crostini_port_forwarder_->GetNumberOfForwardedPortsForTesting(),
+            0U);
+
+  success = false;
+  crostini_port_forwarder_->DeactivatePort(
+      5000, CrostiniPortForwarder::Protocol::TCP,
+      base::BindOnce(&TestingCallback, &success));
+  EXPECT_FALSE(success);
+}
+
+TEST_F(CrostiniPortForwarderTest, DeactivateMultiplePortsSameProtocolSuccess) {
+  crostini_port_forwarder_->AddPort(5000, CrostiniPortForwarder::Protocol::TCP,
+                                    "tcp-port", base::DoNothing());
+  crostini_port_forwarder_->AddPort(5000, CrostiniPortForwarder::Protocol::UDP,
+                                    "udp-port", base::DoNothing());
+  EXPECT_EQ(crostini_port_forwarder_->GetNumberOfForwardedPortsForTesting(),
+            2U);
+
+  bool success = false;
+  crostini_port_forwarder_->DeactivatePort(
+      5000, CrostiniPortForwarder::Protocol::TCP,
+      base::BindOnce(&TestingCallback, &success));
+  EXPECT_TRUE(success);
+
+  success = false;
+  crostini_port_forwarder_->DeactivatePort(
+      5000, CrostiniPortForwarder::Protocol::UDP,
+      base::BindOnce(&TestingCallback, &success));
+  EXPECT_TRUE(success);
+  EXPECT_EQ(crostini_port_forwarder_->GetNumberOfForwardedPortsForTesting(),
+            0U);
+}
+
+// TODO(matterchen): At this point in time, remove port and deactivate port are
+// identical. Implement unit tests for remove port when port forwarding
+// profile preferences tracking is implemented.
 
 }  // namespace crostini

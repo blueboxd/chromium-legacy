@@ -178,14 +178,18 @@ void FakePermissionBrokerClient::ReleaseTcpPortForward(
     uint16_t in_port,
     const std::string& in_interface,
     ResultCallback callback) {
-  std::move(callback).Run(false);
+  auto rule = std::make_pair(in_port, in_interface);
+  tcp_forwarding_set_.erase(rule);
+  std::move(callback).Run(true);
 }
 
 void FakePermissionBrokerClient::ReleaseUdpPortForward(
     uint16_t in_port,
     const std::string& in_interface,
     ResultCallback callback) {
-  std::move(callback).Run(false);
+  auto rule = std::make_pair(in_port, in_interface);
+  udp_forwarding_set_.erase(rule);
+  std::move(callback).Run(true);
 }
 
 bool FakePermissionBrokerClient::RequestPortImpl(uint16_t port,

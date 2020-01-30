@@ -63,7 +63,7 @@
                     android:maxLines="1"
                     android:singleLine="true"
                     android:ellipsize="end"
-                    android:textAppearance="@style/TextAppearance.BlackCaption"
+                    android:textAppearance="@style/TextAppearance.TextSmall.Secondary"
                     android:textDirection="locale"
                     tools:text="chromium.org"/>
                 <TextView
@@ -71,7 +71,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:maxLines="1"
-                    android:textAppearance="@style/TextAppearance.BlackCaption"
+                    android:textAppearance="@style/TextAppearance.TextSmall.Secondary"
                     android:textDirection="locale"
                     tools:text=" - 3 hours ago" />
 

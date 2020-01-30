@@ -20,16 +20,19 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
 #include "third_party/blink/renderer/bindings/core/v8/to_v8_for_core.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_dom_exception.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_gc_controller.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_iterator_result_value.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_uint8_array.h"
-#include "third_party/blink/renderer/bindings/modules/v8/v8_web_transport_close_info.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_send_stream.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/streams/readable_stream.h"
 #include "third_party/blink/renderer/core/streams/readable_stream_default_reader.h"
 #include "third_party/blink/renderer/core/streams/writable_stream.h"
 #include "third_party/blink/renderer/core/streams/writable_stream_default_writer.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_typed_array.h"
+#include "third_party/blink/renderer/modules/webtransport/send_stream.h"
+#include "third_party/blink/renderer/modules/webtransport/web_transport_close_info.h"
 #include "third_party/blink/renderer/platform/bindings/exception_code.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
@@ -46,6 +49,7 @@ using ::testing::Invoke;
 using ::testing::Mock;
 using ::testing::StrictMock;
 using ::testing::Truly;
+using ::testing::Unused;
 
 class QuicTransportConnector final
     : public mojom::blink::QuicTransportConnector {
@@ -170,6 +174,28 @@ class QuicTransportTest : public ::testing::Test {
     return quic_transport;
   }
 
+  SendStream* CreateSendStreamSuccessfully(const V8TestingScope& scope,
+                                           QuicTransport* quic_transport) {
+    EXPECT_CALL(*mock_quic_transport_, CreateStream(_, _, _))
+        .WillOnce([this](Unused, Unused,
+                         base::OnceCallback<void(bool, uint32_t)> callback) {
+          std::move(callback).Run(true, next_stream_id_++);
+        });
+
+    auto* script_state = scope.GetScriptState();
+    ScriptPromise send_stream_promise =
+        quic_transport->createSendStream(script_state, ASSERT_NO_EXCEPTION);
+    ScriptPromiseTester tester(script_state, send_stream_promise);
+
+    tester.WaitUntilSettled();
+
+    EXPECT_TRUE(tester.IsFulfilled());
+    auto* send_stream = V8SendStream::ToImplWithTypeCheck(
+        scope.GetIsolate(), tester.Value().V8Value());
+    EXPECT_TRUE(send_stream);
+    return send_stream;
+  }
+
   void BindConnector(mojo::ScopedMessagePipeHandle handle) {
     connector_.Bind(mojo::PendingReceiver<mojom::blink::QuicTransportConnector>(
         std::move(handle)));
@@ -186,6 +212,7 @@ class QuicTransportTest : public ::testing::Test {
   QuicTransportConnector connector_;
   std::unique_ptr<MockQuicTransport> mock_quic_transport_;
   mojo::Remote<network::mojom::blink::QuicTransportClient> client_remote_;
+  uint32_t next_stream_id_ = 0;
 
   base::WeakPtrFactory<QuicTransportTest> weak_ptr_factory_{this};
 };
@@ -640,6 +667,144 @@ TEST_F(QuicTransportTest, DatagramsAreDropped) {
 
   EXPECT_THAT(GetValueAsVector(script_state, tester2.Value()),
               ElementsAre('C'));
+}
+
+bool ValidProducerHandle(const mojo::ScopedDataPipeProducerHandle& handle) {
+  return handle.is_valid();
+}
+
+bool ValidConsumerHandle(const mojo::ScopedDataPipeConsumerHandle& handle) {
+  return handle.is_valid();
+}
+
+TEST_F(QuicTransportTest, CreateSendStream) {
+  V8TestingScope scope;
+  auto* quic_transport =
+      CreateAndConnectSuccessfully(scope, "quic-transport://example.com");
+
+  EXPECT_CALL(*mock_quic_transport_,
+              CreateStream(Truly(ValidConsumerHandle),
+                           Not(Truly(ValidProducerHandle)), _))
+      .WillOnce([](Unused, Unused,
+                   base::OnceCallback<void(bool, uint32_t)> callback) {
+        std::move(callback).Run(true, 0);
+      });
+
+  auto* script_state = scope.GetScriptState();
+  ScriptPromise send_stream_promise =
+      quic_transport->createSendStream(script_state, ASSERT_NO_EXCEPTION);
+  ScriptPromiseTester tester(script_state, send_stream_promise);
+
+  tester.WaitUntilSettled();
+
+  EXPECT_TRUE(tester.IsFulfilled());
+  auto* send_stream = V8SendStream::ToImplWithTypeCheck(
+      scope.GetIsolate(), tester.Value().V8Value());
+  EXPECT_TRUE(send_stream);
+}
+
+TEST_F(QuicTransportTest, CreateSendStreamBeforeConnect) {
+  V8TestingScope scope;
+
+  auto* script_state = scope.GetScriptState();
+  auto* quic_transport = QuicTransport::Create(
+      script_state, "quic-transport://example.com", ASSERT_NO_EXCEPTION);
+  auto& exception_state = scope.GetExceptionState();
+  ScriptPromise send_stream_promise =
+      quic_transport->createSendStream(script_state, exception_state);
+  EXPECT_TRUE(send_stream_promise.IsEmpty());
+  EXPECT_TRUE(exception_state.HadException());
+  EXPECT_EQ(static_cast<int>(DOMExceptionCode::kNetworkError),
+            exception_state.Code());
+}
+
+TEST_F(QuicTransportTest, CreateSendStreamFailure) {
+  V8TestingScope scope;
+  auto* quic_transport =
+      CreateAndConnectSuccessfully(scope, "quic-transport://example.com");
+
+  EXPECT_CALL(*mock_quic_transport_, CreateStream(_, _, _))
+      .WillOnce([](Unused, Unused,
+                   base::OnceCallback<void(bool, uint32_t)> callback) {
+        std::move(callback).Run(false, 0);
+      });
+
+  auto* script_state = scope.GetScriptState();
+  ScriptPromise send_stream_promise =
+      quic_transport->createSendStream(script_state, ASSERT_NO_EXCEPTION);
+  ScriptPromiseTester tester(script_state, send_stream_promise);
+
+  tester.WaitUntilSettled();
+
+  EXPECT_TRUE(tester.IsRejected());
+  DOMException* exception = V8DOMException::ToImplWithTypeCheck(
+      scope.GetIsolate(), tester.Value().V8Value());
+  EXPECT_EQ(exception->name(), "NetworkError");
+  EXPECT_EQ(exception->message(), "Failed to create send stream.");
+}
+
+// Every active stream is kept alive by the QuicTransport object.
+TEST_F(QuicTransportTest, SendStreamGarbageCollection) {
+  V8TestingScope scope;
+
+  WeakPersistent<QuicTransport> quic_transport;
+  WeakPersistent<SendStream> send_stream;
+
+  {
+    // The streams created when creating a QuicTransport or SendStream create
+    // some v8 handles. To ensure these are collected, we need to create a
+    // handle scope. This is not a problem for garbage collection in normal
+    // operation.
+    v8::HandleScope handle_scope(scope.GetIsolate());
+
+    quic_transport =
+        CreateAndConnectSuccessfully(scope, "quic-transport://example.com");
+    send_stream = CreateSendStreamSuccessfully(scope, quic_transport);
+  }
+
+  V8GCController::CollectAllGarbageForTesting(
+      scope.GetIsolate(), v8::EmbedderHeapTracer::EmbedderStackState::kEmpty);
+
+  EXPECT_TRUE(quic_transport);
+  EXPECT_TRUE(send_stream);
+
+  quic_transport->close(nullptr);
+
+  test::RunPendingTasks();
+
+  V8GCController::CollectAllGarbageForTesting(
+      scope.GetIsolate(), v8::EmbedderHeapTracer::EmbedderStackState::kEmpty);
+
+  EXPECT_FALSE(quic_transport);
+  EXPECT_FALSE(send_stream);
+}
+
+TEST_F(QuicTransportTest, CreateSendStreamAbortedByClose) {
+  V8TestingScope scope;
+
+  auto* script_state = scope.GetScriptState();
+  auto* quic_transport =
+      CreateAndConnectSuccessfully(scope, "quic-transport://example.com");
+
+  base::OnceCallback<void(bool, uint32_t)> create_stream_callback;
+  EXPECT_CALL(*mock_quic_transport_, CreateStream(_, _, _))
+      .WillOnce([&](Unused, Unused,
+                    base::OnceCallback<void(bool, uint32_t)> callback) {
+        create_stream_callback = std::move(callback);
+      });
+
+  ScriptPromise send_stream_promise =
+      quic_transport->createSendStream(script_state, ASSERT_NO_EXCEPTION);
+  ScriptPromiseTester tester(script_state, send_stream_promise);
+
+  test::RunPendingTasks();
+
+  quic_transport->close(nullptr);
+  std::move(create_stream_callback).Run(true, 0);
+
+  tester.WaitUntilSettled();
+
+  EXPECT_TRUE(tester.IsRejected());
 }
 
 }  // namespace

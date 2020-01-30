@@ -16,7 +16,7 @@
         android:layout_marginStart="24dp"
         android:gravity="center"
         android:lineSpacingMultiplier="1.25"
-        android:textAppearance="@style/TextAppearance.BlackBodyDefault"
+        android:textAppearance="@style/TextAppearance.TextMedium.Primary"
         tools:text="@string/signin_promo_description_settings"/>
 
     <org.chromium.ui.widget.ButtonCompat

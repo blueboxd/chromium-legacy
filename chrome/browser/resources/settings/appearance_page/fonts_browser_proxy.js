@@ -49,6 +49,7 @@ cr.define('settings', function() {
 
   cr.addSingletonGetter(FontsBrowserProxyImpl);
 
+  // #cr_define_end
   return {
     FontsBrowserProxy: FontsBrowserProxy,
     FontsBrowserProxyImpl: FontsBrowserProxyImpl,

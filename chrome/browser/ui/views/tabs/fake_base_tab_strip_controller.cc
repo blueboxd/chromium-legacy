@@ -72,6 +72,11 @@ base::string16 FakeBaseTabStripController::GetGroupTitle(
   return fake_group_data_.title();
 }
 
+base::string16 FakeBaseTabStripController::GetGroupContentString(
+    const tab_groups::TabGroupId& group_id) const {
+  return base::string16();
+}
+
 tab_groups::TabGroupColorId FakeBaseTabStripController::GetGroupColorId(
     const tab_groups::TabGroupId& group_id) const {
   return fake_group_data_.color();

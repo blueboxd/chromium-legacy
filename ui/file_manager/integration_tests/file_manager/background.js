@@ -538,7 +538,7 @@ async function createShortcut(appId, directoryName) {
  * @return {Promise} Promise fulfilled on success.
  */
 async function expandTreeItem(appId, treeItem) {
-  const expandIcon = treeItem + '> .tree-row[has-children=true] > .expand-icon';
+  const expandIcon = treeItem + '> .tree-row[has-children=true] .expand-icon';
   await remoteCall.waitForElement(appId, expandIcon);
   chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(
       'fakeMouseClick', appId, [expandIcon]));

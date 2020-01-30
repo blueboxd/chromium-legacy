@@ -112,7 +112,8 @@ public final class TabImpl extends ITab.Stub {
         mWebContents = TabImplJni.get().getWebContents(mNativeTab, TabImpl.this);
         mViewAndroidDelegate = new ViewAndroidDelegate(null) {
             @Override
-            public void onTopControlsChanged(int topControlsOffsetY, int topContentOffsetY) {
+            public void onTopControlsChanged(int topControlsOffsetY, int topContentOffsetY,
+                    int topControlsMinHeightOffsetY) {
                 BrowserViewController viewController = getViewController();
                 if (viewController != null) {
                     viewController.onTopControlsChanged(topControlsOffsetY, topContentOffsetY);

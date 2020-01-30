@@ -19,7 +19,7 @@
         android:paddingEnd="@dimen/microtransaction_spacing"
         android:paddingStart="@dimen/microtransaction_spacing"
         android:paddingTop="@dimen/microtransaction_content_top_spacing"
-        android:textAppearance="@style/TextAppearance.BlackBody"
+        android:textAppearance="@style/TextAppearance.TextMedium.Secondary"
         android:text="@string/payment_request_payment_method_section_name"/>
 
     <!-- Currency label, e.g., "USD". -->
@@ -29,7 +29,7 @@
         android:layout_toStartOf="@+id/payment_amount"
         android:layout_width="wrap_content"
         android:paddingTop="@dimen/microtransaction_content_top_spacing"
-        android:textAppearance="@style/TextAppearance.BlackBodyDefault"/>
+        android:textAppearance="@style/TextAppearance.TextMedium.Primary"/>
 
     <!-- Bold formatted amount, e.g., "$1.00". -->
     <TextView
@@ -40,7 +40,7 @@
         android:paddingEnd="@dimen/microtransaction_spacing"
         android:paddingStart="@dimen/microtransaction_amount_currency_spacing"
         android:paddingTop="@dimen/microtransaction_content_top_spacing"
-        android:textAppearance="@style/TextAppearance.BlackTitle2"/>
+        android:textAppearance="@style/TextAppearance.TextMediumThick.Primary"/>
 
     <!-- Line item separator. -->
     <View
@@ -64,7 +64,7 @@
         android:paddingEnd="@dimen/microtransaction_spacing"
         android:paddingStart="@dimen/microtransaction_spacing"
         android:paddingTop="@dimen/microtransaction_large_text_vertical_spacing"
-        android:textAppearance="@style/TextAppearance.BlackBody"
+        android:textAppearance="@style/TextAppearance.TextMedium.Secondary"
         android:text="@string/payment_account_balance"/>
 
     <!-- Currency label, e.g., "USD". -->
@@ -75,7 +75,7 @@
         android:layout_toStartOf="@+id/account_balance"
         android:layout_width="wrap_content"
         android:paddingTop="@dimen/microtransaction_large_text_vertical_spacing"
-        android:textAppearance="@style/TextAppearance.BlackBodyDefault"/>
+        android:textAppearance="@style/TextAppearance.TextMedium.Primary"/>
 
     <!-- Bold formatted account balance, e.g., "$18.00". -->
     <TextView
@@ -87,7 +87,7 @@
         android:paddingEnd="@dimen/microtransaction_spacing"
         android:paddingStart="@dimen/microtransaction_amount_currency_spacing"
         android:paddingTop="@dimen/microtransaction_large_text_vertical_spacing"
-        android:textAppearance="@style/TextAppearance.BlackTitle2"/>
+        android:textAppearance="@style/TextAppearance.TextMediumThick.Primary"/>
 
     <!-- Status icon, e.g., the fingerprint icon. -->
     <ImageView
@@ -117,7 +117,7 @@
         android:layout_height="wrap_content"
         android:layout_width="wrap_content"
         android:paddingBottom="@dimen/microtransaction_content_bottom_spacing"
-        android:textAppearance="@style/TextAppearance.BlackCaption"/>
+        android:textAppearance="@style/TextAppearance.TextSmall.Secondary"/>
 
     <!-- "Pay" button. -->
     <org.chromium.ui.widget.ButtonCompat

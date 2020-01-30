@@ -180,6 +180,12 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaManager
                              blink::mojom::StorageType type,
                              int64_t delta);
 
+  // Called by clients via proxy.
+  // Client storage must call this method whenever they run into disk
+  // write errors. Used as a hint to determine if the storage partition is out
+  // of space, and trigger actions if deemed appropriate.
+  void NotifyWriteFailed(const url::Origin& origin);
+
   // Used to avoid evicting origins with open pages.
   // A call to NotifyOriginInUse must be balanced by a later call
   // to NotifyOriginNoLongerInUse.
@@ -252,7 +258,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaManager
   // Called when StoragePartition is initialized if embedder has an
   // implementation of StorageNotificationService.
   void SetStoragePressureCallback(
-      base::RepeatingCallback<void(url::Origin)> send_notification_function);
+      base::RepeatingCallback<void(url::Origin)> storage_pressure_callback);
 
   static const int64_t kPerHostPersistentQuotaLimit;
   static const char kDatabaseName[];
@@ -416,7 +422,9 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaManager
 
   void DeleteOnCorrectThread() const;
 
-  void SendStoragePressureNotification(const url::Origin origin);
+  void MaybeRunStoragePressureCallback(const url::Origin& origin,
+                                       int64_t total_space,
+                                       int64_t available_space);
 
   void PostTaskAndReplyWithResultForDBThread(
       const base::Location& from_here,
@@ -435,7 +443,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaManager
   const scoped_refptr<QuotaManagerProxy> proxy_;
   bool db_disabled_;
   bool eviction_disabled_;
-  base::Optional<url::Origin> origin_with_pending_notification_;
+  base::Optional<url::Origin> origin_for_pending_storage_pressure_callback_;
   scoped_refptr<base::SingleThreadTaskRunner> io_thread_;
   scoped_refptr<base::SequencedTaskRunner> db_runner_;
   mutable std::unique_ptr<QuotaDatabase> database_;
@@ -443,10 +451,11 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaManager
 
   GetQuotaSettingsFunc get_settings_function_;
   scoped_refptr<base::TaskRunner> get_settings_task_runner_;
-  base::RepeatingCallback<void(url::Origin)> send_notification_function_;
+  base::RepeatingCallback<void(url::Origin)> storage_pressure_callback_;
   QuotaSettings settings_;
   base::TimeTicks settings_timestamp_;
-  base::TimeTicks disk_pressure_notification_timestamp_;
+  std::tuple<base::TimeTicks, int64_t, int64_t>
+      cached_disk_stats_for_storage_pressure_;
   CallbackQueue<QuotaSettingsCallback, const QuotaSettings&>
       settings_callbacks_;
   CallbackQueue<StorageCapacityCallback, int64_t, int64_t>

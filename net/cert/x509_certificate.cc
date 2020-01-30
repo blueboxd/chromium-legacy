@@ -70,7 +70,7 @@ void SplitOnChar(const base::StringPiece& src,
   size_t pos = src.find(c);
   if (pos == base::StringPiece::npos) {
     *left = src;
-    right->clear();
+    *right = base::StringPiece();
   } else {
     *left = src.substr(0, pos);
     *right = src.substr(pos);

@@ -33,10 +33,10 @@ using testing::Mock;
 using testing::StrEq;
 using testing::StrNe;
 
-constexpr char kRemoteUsernameFragment1[] = "usernameFragment";
-constexpr char kRemotePassword1[] = "password";
-constexpr char kRemoteUsernameFragment2[] = "secondUsernameFragment";
-constexpr char kRemotePassword2[] = "secondPassword";
+constexpr char kRemoteUsernameFragment1[] = "user";
+constexpr char kRemotePassword1[] = "passwordpasswordpassword";
+constexpr char kRemoteUsernameFragment2[] = "second+user";
+constexpr char kRemotePassword2[] = "password2password2password2";
 
 RTCIceParameters* CreateRemoteRTCIceParameters2() {
   RTCIceParameters* ice_parameters = RTCIceParameters::Create();

@@ -40,6 +40,15 @@ enum TermsAndConditionsState {
 // GENERATED_JAVA_CLASS_NAME_OVERRIDE: AssistantTextInputType
 enum TextInputType { INPUT_TEXT = 0, INPUT_ALPHANUMERIC = 1 };
 
+// GENERATED_JAVA_ENUM_PACKAGE: (
+// org.chromium.chrome.browser.autofill_assistant.user_data)
+// GENERATED_JAVA_CLASS_NAME_OVERRIDE: AssistantContactField
+enum AutofillContactField {
+  NAME_FULL = 7,
+  EMAIL_ADDRESS = 9,
+  PHONE_HOME_WHOLE_NUMBER = 14,
+};
+
 // Represents a concrete login choice in the UI, e.g., 'Guest checkout' or
 // a particular Chrome PWM login account.
 struct LoginChoice {
@@ -103,8 +112,10 @@ class UserData {
   std::unique_ptr<autofill::CreditCard> selected_card_;
   std::string login_choice_identifier_;
   TermsAndConditionsState terms_and_conditions_ = NOT_SELECTED;
-  DateTimeProto date_time_range_start_;
-  DateTimeProto date_time_range_end_;
+  base::Optional<DateProto> date_time_range_start_date_;
+  base::Optional<DateProto> date_time_range_end_date_;
+  base::Optional<int> date_time_range_start_timeslot_;
+  base::Optional<int> date_time_range_end_timeslot_;
 
   // A set of additional key/value pairs to be stored in client_memory.
   std::map<std::string, std::string> additional_values_;
@@ -150,6 +161,10 @@ struct CollectUserDataOptions {
   bool request_payment_method = false;
   bool request_login_choice = false;
   bool request_date_time_range = false;
+  std::vector<AutofillContactField> contact_summary_fields;
+  int contact_summary_max_lines;
+  std::vector<AutofillContactField> contact_full_fields;
+  int contact_full_max_lines;
 
   bool require_billing_postal_code = false;
   std::string billing_postal_code_missing_text;

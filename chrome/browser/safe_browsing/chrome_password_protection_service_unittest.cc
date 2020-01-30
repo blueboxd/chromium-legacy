@@ -12,15 +12,13 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/scoped_feature_list.h"
-#include "chrome/browser/extensions/api/safe_browsing_private/safe_browsing_private_event_router_factory.h"
+#include "build/build_config.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
-#include "chrome/browser/safe_browsing/test_extension_event_observer.h"
 #include "chrome/browser/safe_browsing/ui_manager.h"
 #include "chrome/browser/signin/chrome_signin_client_factory.h"
 #include "chrome/browser/signin/identity_test_environment_profile_adaptor.h"
 #include "chrome/browser/signin/test_signin_client_builder.h"
 #include "chrome/browser/sync/user_event_service_factory.h"
-#include "chrome/common/extensions/api/safe_browsing_private.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
@@ -46,11 +44,19 @@
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/mock_navigation_handle.h"
-#include "extensions/browser/test_event_router.h"
 #include "net/http/http_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
+
+// All tests related to extension is disabled on Android, because enterprise
+// reporting extension is not supported.
+#if !defined(OS_ANDROID)
+#include "chrome/browser/extensions/api/safe_browsing_private/safe_browsing_private_event_router_factory.h"
+#include "chrome/browser/safe_browsing/test_extension_event_observer.h"
+#include "chrome/common/extensions/api/safe_browsing_private.h"
+#include "extensions/browser/test_event_router.h"
+#endif
 
 using sync_pb::UserEventSpecifics;
 using GaiaPasswordReuse = sync_pb::GaiaPasswordReuse;
@@ -64,10 +70,12 @@ using ::testing::_;
 using ::testing::Return;
 using ::testing::WithArg;
 
+#if !defined(OS_ANDROID)
 namespace OnPolicySpecifiedPasswordReuseDetected = extensions::api::
     safe_browsing_private::OnPolicySpecifiedPasswordReuseDetected;
 namespace OnPolicySpecifiedPasswordChanged =
     extensions::api::safe_browsing_private::OnPolicySpecifiedPasswordChanged;
+#endif
 
 class MockSecurityEventRecorder : public SecurityEventRecorder {
  public:
@@ -91,11 +99,13 @@ namespace safe_browsing {
 namespace {
 
 const char kPhishingURL[] = "http://phishing.com/";
-const char kPasswordReuseURL[] = "http://login.example.com/";
 const char kTestEmail[] = "foo@example.com";
+const char kUserName[] = "username";
+#if !defined(OS_ANDROID)
+const char kPasswordReuseURL[] = "http://login.example.com/";
 const char kTestGmail[] = "foo@gmail.com";
 const char kRedirectURL[] = "http://redirect.com";
-const char kUserName[] = "username";
+#endif
 
 BrowserContextKeyedServiceFactory::TestingFactory
 GetFakeUserEventServiceFactory() {
@@ -238,12 +248,14 @@ class ChromePasswordProtectionServiceTest
         browser_sync::UserEventServiceFactory::GetInstance()
             ->SetTestingFactoryAndUse(browser_context(),
                                       GetFakeUserEventServiceFactory()));
+#if !defined(OS_ANDROID)
     test_event_router_ =
         extensions::CreateAndUseTestEventRouter(browser_context());
     extensions::SafeBrowsingPrivateEventRouterFactory::GetInstance()
         ->SetTestingFactory(
             browser_context(),
             base::BindRepeating(&BuildSafeBrowsingPrivateEventRouter));
+#endif
 
     identity_test_env_profile_adaptor_ =
         std::make_unique<IdentityTestEnvironmentProfileAdaptor>(profile());
@@ -374,7 +386,9 @@ class ChromePasswordProtectionServiceTest
   scoped_refptr<password_manager::MockPasswordStore> password_store_;
   // Owned by KeyedServiceFactory.
   syncer::FakeUserEventService* fake_user_event_service_;
+#if !defined(OS_ANDROID)
   extensions::TestEventRouter* test_event_router_;
+#endif
   std::unique_ptr<VerdictCacheManager> cache_manager_;
 };
 
@@ -421,7 +435,12 @@ TEST_F(ChromePasswordProtectionServiceTest,
 
   RequestOutcome reason;
   service_->ConfigService(false /*incognito*/, false /*SBER*/);
+// kPasswordProtectionForSavedPasswords is disabled by default on Android.
+#if defined(OS_ANDROID)
+  EXPECT_FALSE(service_->IsPingingEnabled(
+#else
   EXPECT_TRUE(service_->IsPingingEnabled(
+#endif
       LoginReputationClientRequest::PASSWORD_REUSE_EVENT, reused_password_type,
       &reason));
 
@@ -431,7 +450,12 @@ TEST_F(ChromePasswordProtectionServiceTest,
       &reason));
 
   service_->ConfigService(true /*incognito*/, false /*SBER*/);
+// kPasswordProtectionForSavedPasswords is disabled by default on Android.
+#if defined(OS_ANDROID)
+  EXPECT_FALSE(service_->IsPingingEnabled(
+#else
   EXPECT_TRUE(service_->IsPingingEnabled(
+#endif
       LoginReputationClientRequest::PASSWORD_REUSE_EVENT, reused_password_type,
       &reason));
 
@@ -731,7 +755,10 @@ TEST_F(ChromePasswordProtectionServiceTest,
       "verdict_token");
 }
 
-// Check that the PaswordCapturedEvent timer is set for 1 min if password
+// TODO(crbug.com/1046910): Figure out why these tests crash and enable them on
+// Android.
+#if !defined(OS_ANDROID)
+// Check that the PasswordCapturedEvent timer is set for 1 min if password
 // hash is saved and no timer pref is set yet.
 TEST_F(ChromePasswordProtectionServiceTest,
        VerifyPasswordCaptureEventScheduledOnStartup) {
@@ -1036,6 +1063,7 @@ TEST_F(ChromePasswordProtectionServiceTest,
   SimulateRequestFinished(LoginReputationClientResponse::SAFE);
   base::RunLoop().RunUntilIdle();
 }
+#endif
 
 TEST_F(ChromePasswordProtectionServiceTest,
        VerifyUnhandledSyncPasswordReuseUponClearHistoryDeletion) {
@@ -1068,6 +1096,9 @@ TEST_F(ChromePasswordProtectionServiceTest,
   EXPECT_EQ(0, GetSizeofUnhandledSyncPasswordReuses());
 }
 
+// The following tests are disabled on Android, because enterprise reporting
+// extension is not supported.
+#if !defined(OS_ANDROID)
 TEST_F(ChromePasswordProtectionServiceTest,
        VerifyOnPolicySpecifiedPasswordChangedEvent) {
   TestExtensionEventObserver event_observer(test_event_router_);
@@ -1183,6 +1214,7 @@ TEST_F(ChromePasswordProtectionServiceTest,
   EXPECT_EQ(1, test_event_router_->GetEventCount(
                    OnPolicySpecifiedPasswordReuseDetected::kEventName));
 }
+#endif
 
 TEST_F(ChromePasswordProtectionServiceTest, VerifyGetWarningDetailTextSaved) {
   base::string16 warning_text =

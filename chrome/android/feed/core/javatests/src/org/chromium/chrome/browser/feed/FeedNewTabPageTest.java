@@ -177,6 +177,7 @@ import java.util.List;
     @Test
     @MediumTest
     @Feature({"FeedNewTabPage"})
+    @DisabledTest(message = "https://crbug.com/1046822")
     public void testSignInPromo_DismissBySwipe() {
         boolean dismissed = SharedPreferencesManager.getInstance().readBoolean(
                 ChromePreferenceKeys.SIGNIN_PROMO_NTP_PROMO_DISMISSED, false);

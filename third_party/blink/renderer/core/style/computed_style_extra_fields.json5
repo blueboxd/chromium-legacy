@@ -978,14 +978,6 @@
       inherited: true,
     },
     {
-      name: "IsColorInternalText",
-      inherited: true,
-      field_template: "primitive",
-      type_name: "bool",
-      field_group: "inherited",
-      default_value: "false",
-    },
-    {
       name: "IsInBlockifyingDisplay",
       field_template: "monotonic_flag",
       default_value: "false",

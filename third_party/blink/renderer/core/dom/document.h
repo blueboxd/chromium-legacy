@@ -1815,6 +1815,12 @@ class CORE_EXPORT Document : public ContainerNode,
   Member<LocalDOMWindow> dom_window_;
   Member<HTMLImportsController> imports_controller_;
 
+  // Document::CountUse() attributes the feature counts to the DocumentLoader
+  // which is returned by Loader(). During construction Loader() returns null,
+  // so we use this UseCounter instead.
+  // TODO(dgozman): we should probably explicitly set and clear loader instead.
+  Member<UseCounter> use_counter_during_construction_;
+
   // The document of creator browsing context for frame-less documents such as
   // documents created by DOMParser and DOMImplementation.
   WeakMember<Document> context_document_;

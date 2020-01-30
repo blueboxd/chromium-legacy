@@ -46,7 +46,7 @@
                 android:inputType="none"
                 android:maxLines="1"
                 android:paddingEnd="@dimen/toolbar_edge_padding"
-                style="@style/TextAppearance.BlackTitle1"
+                style="@style/TextAppearance.TextLarge.Primary"
                 android:visibility="gone" />
             <LinearLayout
                 android:layout_width="wrap_content"
@@ -61,7 +61,7 @@
                     android:ellipsize="end"
                     android:maxLines="1"
                     android:text="@string/location_bar_preview_lite_page_status"
-                    style="@style/TextAppearance.BlackCaptionDefault"
+                    style="@style/TextAppearance.TextSmall.Primary"
                     android:visibility="gone" />
 
                 <!-- This separator is in line with text and is used in lieu
@@ -84,7 +84,7 @@
                     android:inputType="none"
                     android:singleLine="true"
                     android:paddingEnd="@dimen/toolbar_edge_padding"
-                    style="@style/TextAppearance.BlackCaptionDefault" />
+                    style="@style/TextAppearance.TextSmall.Primary" />
             </LinearLayout>
         </view>
     </FrameLayout>

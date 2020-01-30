@@ -88,15 +88,12 @@ class COMPONENT_EXPORT(TRACING_CPP) ProducerClient
   void NotifyDataSourceStarted(perfetto::DataSourceInstanceID) override;
   void ActivateTriggers(const std::vector<std::string>&) override;
   size_t shared_buffer_page_size_kb() const override;
-  perfetto::SharedMemoryArbiter* GetInProcessShmemArbiter() override;
+  perfetto::SharedMemoryArbiter* MaybeSharedMemoryArbiter() override;
 
   void BindClientAndHostPipesForTesting(
       mojo::PendingReceiver<mojom::ProducerClient>,
       mojo::PendingRemote<mojom::ProducerHost>);
   void ResetSequenceForTesting();
-
- protected:
-  perfetto::SharedMemoryArbiter* GetSharedMemoryArbiter() override;
 
  private:
   friend class base::NoDestructor<ProducerClient>;

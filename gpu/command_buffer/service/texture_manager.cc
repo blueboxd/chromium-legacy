@@ -222,6 +222,13 @@ class FormatTypeValidator {
 
         // Exposed by GL_EXT_texture_norm16
         {GL_R16_EXT, GL_RED, GL_UNSIGNED_SHORT},
+        {GL_RG16_EXT, GL_RG, GL_UNSIGNED_SHORT},
+        {GL_RGB16_EXT, GL_RGB, GL_UNSIGNED_SHORT},
+        {GL_RGBA16_EXT, GL_RGBA, GL_UNSIGNED_SHORT},
+        {GL_R16_SNORM_EXT, GL_RED, GL_SHORT},
+        {GL_RG16_SNORM_EXT, GL_RG, GL_SHORT},
+        {GL_RGB16_SNORM_EXT, GL_RGB, GL_SHORT},
+        {GL_RGBA16_SNORM_EXT, GL_RGBA, GL_SHORT},
     };
 
     static const FormatType kSupportedFormatTypesES2Only[] = {
@@ -3828,6 +3835,7 @@ GLenum TextureManager::ExtractFormatFromStorageFormat(GLenum internalformat) {
     case GL_R16F:
     case GL_R32F:
     case GL_R16_EXT:
+    case GL_R16_SNORM_EXT:
       return GL_RED;
     case GL_R8UI:
     case GL_R8I:
@@ -3841,6 +3849,8 @@ GLenum TextureManager::ExtractFormatFromStorageFormat(GLenum internalformat) {
     case GL_RG:
     case GL_RG8:
     case GL_RG8_SNORM:
+    case GL_RG16:
+    case GL_RG16_SNORM:
     case GL_RG16F:
     case GL_RG32F:
       return GL_RG;
@@ -3862,9 +3872,11 @@ GLenum TextureManager::ExtractFormatFromStorageFormat(GLenum internalformat) {
     case GL_RGB:
     case GL_RGB8:
     case GL_SRGB8:
+    case GL_RGB16:
     case GL_R11F_G11F_B10F:
     case GL_RGB565:
     case GL_RGB8_SNORM:
+    case GL_RGB16_SNORM:
     case GL_RGB9_E5:
     case GL_RGB16F:
     case GL_RGB32F:
@@ -3897,8 +3909,10 @@ GLenum TextureManager::ExtractFormatFromStorageFormat(GLenum internalformat) {
     case GL_COMPRESSED_SRGB8_PUNCHTHROUGH_ALPHA1_ETC2:
     case GL_RGBA:
     case GL_RGBA8:
+    case GL_RGBA16:
     case GL_SRGB8_ALPHA8:
     case GL_RGBA8_SNORM:
+    case GL_RGBA16_SNORM:
     case GL_RGBA4:
     case GL_RGB5_A1:
     case GL_RGB10_A2:
@@ -3981,6 +3995,8 @@ GLenum TextureManager::ExtractTypeFromStorageFormat(GLenum internalformat) {
       return GL_SHORT;
     case GL_R16_EXT:
       return GL_UNSIGNED_SHORT;
+    case GL_R16_SNORM_EXT:
+      return GL_SHORT;
     case GL_R32UI:
       return GL_UNSIGNED_INT;
     case GL_R32I:
@@ -4000,6 +4016,10 @@ GLenum TextureManager::ExtractTypeFromStorageFormat(GLenum internalformat) {
     case GL_RG16UI:
       return GL_UNSIGNED_SHORT;
     case GL_RG16I:
+      return GL_SHORT;
+    case GL_RG16_EXT:
+      return GL_UNSIGNED_SHORT;
+    case GL_RG16_SNORM_EXT:
       return GL_SHORT;
     case GL_RG32UI:
       return GL_UNSIGNED_INT;
@@ -4027,6 +4047,10 @@ GLenum TextureManager::ExtractTypeFromStorageFormat(GLenum internalformat) {
     case GL_RGB16UI:
       return GL_UNSIGNED_SHORT;
     case GL_RGB16I:
+      return GL_SHORT;
+    case GL_RGB16_EXT:
+      return GL_UNSIGNED_SHORT;
+    case GL_RGB16_SNORM_EXT:
       return GL_SHORT;
     case GL_RGB32UI:
       return GL_UNSIGNED_INT;
@@ -4057,6 +4081,10 @@ GLenum TextureManager::ExtractTypeFromStorageFormat(GLenum internalformat) {
     case GL_RGBA16UI:
       return GL_UNSIGNED_SHORT;
     case GL_RGBA16I:
+      return GL_SHORT;
+    case GL_RGBA16_EXT:
+      return GL_UNSIGNED_SHORT;
+    case GL_RGBA16_SNORM_EXT:
       return GL_SHORT;
     case GL_RGBA32I:
       return GL_INT;

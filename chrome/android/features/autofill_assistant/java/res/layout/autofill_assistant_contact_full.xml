@@ -12,7 +12,7 @@
         android:id="@+id/contact_full"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textAppearance="@style/TextAppearance.BlackBody"/>
+        android:textAppearance="@style/TextAppearance.TextMedium.Secondary"/>
 
     <TextView
         android:id="@+id/incomplete_error"

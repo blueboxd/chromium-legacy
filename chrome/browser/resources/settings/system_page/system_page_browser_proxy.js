@@ -34,6 +34,7 @@ cr.define('settings', function() {
 
   cr.addSingletonGetter(SystemPageBrowserProxyImpl);
 
+  // #cr_define_end
   return {
     SystemPageBrowserProxy: SystemPageBrowserProxy,
     SystemPageBrowserProxyImpl: SystemPageBrowserProxyImpl,

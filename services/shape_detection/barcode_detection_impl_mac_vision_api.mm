@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 #include "services/shape_detection/barcode_detection_impl_mac_vision_api.h"
+
 #include "base/logging.h"
-#include "base/mac/sdk_forward_declarations.h"
 
 namespace shape_detection {
 

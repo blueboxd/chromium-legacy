@@ -21,9 +21,9 @@ using StageType = CompositorFrameReporter::StageType;
 using BlinkBreakdown = CompositorFrameReporter::BlinkBreakdown;
 using VizBreakdown = CompositorFrameReporter::VizBreakdown;
 
-constexpr int kMissedFrameReportTypeCount =
-    static_cast<int>(CompositorFrameReporter::MissedFrameReportType::
-                         kMissedFrameReportTypeCount);
+constexpr int kDroppedFrameReportTypeCount =
+    static_cast<int>(CompositorFrameReporter::DroppedFrameReportType::
+                         kDroppedFrameReportTypeCount);
 constexpr int kStageTypeCount = static_cast<int>(StageType::kStageTypeCount);
 constexpr int kAllBreakdownCount =
     static_cast<int>(VizBreakdown::kBreakdownCount) +
@@ -112,17 +112,17 @@ constexpr const char* GetStageName(int stage_type_index) {
   }
 }
 
-// Names for CompositorFrameReporter::MissedFrameReportType, which should be
+// Names for CompositorFrameReporter::DroppedFrameReportType, which should be
 // updated in case of changes to the enum.
-constexpr const char* kReportTypeNames[]{"", "MissedFrame."};
+constexpr const char* kReportTypeNames[]{"", "DroppedFrame."};
 
-static_assert(base::size(kReportTypeNames) == kMissedFrameReportTypeCount,
+static_assert(base::size(kReportTypeNames) == kDroppedFrameReportTypeCount,
               "Compositor latency report types has changed.");
 
 // This value should be recalculated in case of changes to the number of values
-// in CompositorFrameReporter::MissedFrameReportType or in
+// in CompositorFrameReporter::DroppedFrameReportType or in
 // CompositorFrameReporter::StageType
-constexpr int kMaxHistogramIndex = kMissedFrameReportTypeCount *
+constexpr int kMaxHistogramIndex = kDroppedFrameReportTypeCount *
                                    kFrameSequenceTrackerTypeCount *
                                    (kStageTypeCount + kAllBreakdownCount);
 constexpr int kHistogramMin = 1;
@@ -210,8 +210,8 @@ void CompositorFrameReporter::EndCurrentStage(base::TimeTicks end_time) {
   current_stage_.start_time = base::TimeTicks();
 }
 
-void CompositorFrameReporter::MissedSubmittedFrame() {
-  report_type_ = MissedFrameReportType::kMissedFrame;
+void CompositorFrameReporter::DroppedFrame() {
+  report_type_ = DroppedFrameReportType::kDroppedFrame;
 }
 
 void CompositorFrameReporter::TerminateFrame(
@@ -270,12 +270,12 @@ void CompositorFrameReporter::TerminateReporter() {
       break;
     case FrameTerminationStatus::kDidNotPresentFrame:
       report_latency = true;
-      MissedSubmittedFrame();
+      DroppedFrame();
       termination_status_str = "did_not_present_frame";
       break;
     case FrameTerminationStatus::kReplacedByNewReporter:
       report_latency = true;
-      MissedSubmittedFrame();
+      DroppedFrame();
       termination_status_str = "replaced_by_new_reporter_at_same_stage";
       break;
     case FrameTerminationStatus::kDidNotProduceFrame:
@@ -290,9 +290,9 @@ void CompositorFrameReporter::TerminateReporter() {
   // event, so skip emitting the end event, too.
   if (!stage_history_.empty()) {
     const char* submission_status_str =
-        report_type_ == MissedFrameReportType::kMissedFrame
-            ? "missed_frame"
-            : "non_missed_frame";
+        report_type_ == DroppedFrameReportType::kDroppedFrame
+            ? "dropped_frame"
+            : "non_dropped_frame";
     TRACE_EVENT_NESTABLE_ASYNC_END_WITH_TIMESTAMP2(
         "cc,benchmark", "PipelineReporter", TRACE_ID_LOCAL(this),
         frame_termination_time_, "termination_status", termination_status_str,
@@ -431,12 +431,12 @@ void CompositorFrameReporter::ReportHistogram(
   const int histogram_index =
       (stage_type_index * kFrameSequenceTrackerTypeCount +
        frame_sequence_tracker_type_index) *
-          kMissedFrameReportTypeCount +
+          kDroppedFrameReportTypeCount +
       report_type_index;
 
   CHECK_LT(stage_type_index, kStageTypeCount + kAllBreakdownCount);
   CHECK_GE(stage_type_index, 0);
-  CHECK_LT(report_type_index, kMissedFrameReportTypeCount);
+  CHECK_LT(report_type_index, kDroppedFrameReportTypeCount);
   CHECK_GE(report_type_index, 0);
   CHECK_LT(histogram_index, kMaxHistogramIndex);
   CHECK_GE(histogram_index, 0);

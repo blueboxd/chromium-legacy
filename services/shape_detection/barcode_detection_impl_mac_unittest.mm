@@ -15,7 +15,6 @@
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/mac/scoped_nsobject.h"
-#include "base/mac/sdk_forward_declarations.h"
 #include "base/run_loop.h"
 #include "base/test/task_environment.h"
 #include "services/shape_detection/barcode_detection_impl_mac_vision.h"

@@ -36,3 +36,18 @@ bool IsolatedPrerenderShouldReplaceDataReductionCustomProxy() {
   DCHECK(!replace);
   return replace;
 }
+
+base::Optional<size_t> IsolatedPrerenderMaximumNumberOfPrefetches() {
+  if (!base::FeatureList::IsEnabled(
+          features::kPrefetchSRPNavigationPredictions_HTMLOnly)) {
+    return 0;
+  }
+
+  int max = base::GetFieldTrialParamByFeatureAsInt(
+      features::kPrefetchSRPNavigationPredictions_HTMLOnly,
+      "max_srp_prefetches", 1);
+  if (max < 0) {
+    return base::nullopt;
+  }
+  return max;
+}

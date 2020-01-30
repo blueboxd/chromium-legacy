@@ -285,7 +285,6 @@ class CONTENT_EXPORT RenderViewHostImpl
   void OnShowFullscreenWidget(int widget_route_id);
   void OnRouteCloseEvent();
   void OnUpdateTargetURL(const GURL& url);
-  void OnDocumentAvailableInMainFrame(bool uses_temporary_zoom_level);
   void OnDidContentsPreferredSizeChange(const gfx::Size& new_size);
   void OnPasteFromSelectionClipboard();
   void OnTakeFocus(bool reverse);

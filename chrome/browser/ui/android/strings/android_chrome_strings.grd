@@ -109,6 +109,7 @@ CHAR-LIMIT guidelines:
     <output filename="values-uz/android_chrome_strings.xml" lang="uz" type="android" />
     <output filename="values-vi/android_chrome_strings.xml" lang="vi" type="android" />
     <output filename="values-zh-rCN/android_chrome_strings.xml" lang="zh-CN" type="android" />
+    <output filename="values-zh-rHK/android_chrome_strings.xml" lang="zh-HK" type="android" />
     <output filename="values-zh-rTW/android_chrome_strings.xml" lang="zh-TW" type="android" />
     <output filename="values-zu/android_chrome_strings.xml" lang="zu" type="android" />
   </outputs>
@@ -3906,7 +3907,7 @@ The site does NOT gain access to the camera. The camera images are only visible 
         Assistant Triggered Checkout
       </message>
       <message name="IDS_PREFS_AUTOFILL_ASSISTANT_SUMMARY" desc="Description for the Autofill Assistant toggle.">
-       To complete tasks on the web via Google Assistant, Chrome sends a site's URL, site content, and relevant personal information to Google
+        To help you complete tasks, Google will receive the URLs and contents of sites on which you use Assistant, as well as information you submit through Assistant
       </message>
       <!-- Usage Stats strings -->
       <message name="IDS_USAGE_STATS_CONSENT_TITLE" desc="Title for activity authorizing Digital Wellbeing to access Chrome usage data">

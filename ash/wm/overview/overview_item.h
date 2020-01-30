@@ -158,11 +158,9 @@ class ASH_EXPORT OverviewItem : public views::ButtonListener,
   // Checks if this item is current being dragged.
   bool IsDragItem();
 
-  // Called after a positioning transform animation ends. Checks to see if the
-  // animation was triggered by a drag end event. If so, inserts the window back
-  // to its original stacking order so that the order of windows is the same as
-  // when entering overview.
-  void OnDragAnimationCompleted();
+  // Inserts the window back to its original stacking order so that the order of
+  // windows is the same as when entering overview.
+  void Restack();
 
   // Updates |phantoms_for_dragging_|. If |phantoms_for_dragging_| is null, then
   // a new object is created for it.

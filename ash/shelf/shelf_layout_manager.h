@@ -15,6 +15,7 @@
 #include "ash/public/cpp/wallpaper_controller_observer.h"
 #include "ash/session/session_observer.h"
 #include "ash/shelf/shelf.h"
+#include "ash/shelf/shelf_metrics.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell_observer.h"
 #include "ash/system/locale/locale_update_controller_impl.h"
@@ -249,9 +250,10 @@ class ASH_EXPORT ShelfLayoutManager
   int CalculateHotseatYInShelf(HotseatState hotseat_target_state) const;
 
   // Getters for bounds and opacity of the various sub-components.
+  gfx::Rect GetShelfBoundsInScreen() const;
   gfx::Rect GetNavigationBounds() const;
   gfx::Rect GetHotseatBounds() const;
-  gfx::Rect GetStatusAreaBounds() const;
+  gfx::Rect GetStatusAreaBoundsInScreen() const;
   float GetOpacity() const;
 
   bool updating_bounds() const { return updating_bounds_; }
@@ -287,7 +289,7 @@ class ASH_EXPORT ShelfLayoutManager
     gfx::Rect shelf_bounds_in_shelf;    // Bounds of the shelf minus status area
     gfx::Rect nav_bounds_in_shelf;      // Bounds of nav widget within shelf
     gfx::Rect hotseat_bounds_in_shelf;  // Bounds of the hotseat within shelf
-    gfx::Rect status_bounds_in_shelf;   // Bounds of status area within shelf
+    gfx::Rect status_bounds_in_screen;  // Bounds of status area within screen
     gfx::Insets shelf_insets;           // Shelf insets within the screen
 
     bool operator==(const TargetBounds& other) {
@@ -295,7 +297,7 @@ class ASH_EXPORT ShelfLayoutManager
              shelf_bounds_in_shelf == other.shelf_bounds_in_shelf &&
              nav_bounds_in_shelf == other.nav_bounds_in_shelf &&
              hotseat_bounds_in_shelf == other.hotseat_bounds_in_shelf &&
-             status_bounds_in_shelf == other.status_bounds_in_shelf &&
+             status_bounds_in_screen == other.status_bounds_in_screen &&
              shelf_insets == other.shelf_insets;
     }
 
@@ -324,9 +326,10 @@ class ASH_EXPORT ShelfLayoutManager
                 hotseat_bounds_in_shelf.ToString() + " vs " +
                 other.hotseat_bounds_in_shelf.ToString();
       }
-      if (status_bounds_in_shelf != other.status_bounds_in_shelf) {
-        diff += " status_bounds_in_shelf " + status_bounds_in_shelf.ToString() +
-                " vs " + other.status_bounds_in_shelf.ToString();
+      if (status_bounds_in_screen != other.status_bounds_in_screen) {
+        diff += " status_bounds_in_screen " +
+                status_bounds_in_screen.ToString() + " vs " +
+                other.status_bounds_in_screen.ToString();
       }
       if (shelf_insets != other.shelf_insets) {
         diff += " shelf_insets " + shelf_insets.ToString() + " vs " +
@@ -492,9 +495,7 @@ class ASH_EXPORT ShelfLayoutManager
                   float scroll_y);
   void CompleteDrag(const ui::LocatedEvent& event_in_screen);
   void CompleteAppListDrag(const ui::LocatedEvent& event_in_screen);
-  void CancelDrag(
-      base::Optional<DragWindowFromShelfController::ShelfWindowDragResult>
-          window_drag_result);
+  void CancelDrag(base::Optional<ShelfWindowDragResult> window_drag_result);
   void CompleteDragWithChangedVisibility();
 
   float GetAppListBackgroundOpacityOnShelfOpacity();
@@ -522,8 +523,8 @@ class ASH_EXPORT ShelfLayoutManager
                                      const gfx::Vector2dF& scroll);
   void MaybeUpdateWindowDrag(const ui::LocatedEvent& event_in_screen,
                              const gfx::Vector2dF& scroll);
-  base::Optional<DragWindowFromShelfController::ShelfWindowDragResult>
-  MaybeEndWindowDrag(const ui::LocatedEvent& event_in_screen);
+  base::Optional<ShelfWindowDragResult> MaybeEndWindowDrag(
+      const ui::LocatedEvent& event_in_screen);
   // If overview session is active, goes to home screen if the gesture should
   // initiate transition to home. It handles the gesture only if the
   // |window_drag_controller_| is not handling a window drag (for example, in

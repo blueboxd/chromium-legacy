@@ -7,6 +7,7 @@
 #include "base/files/file_path.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
+#include "build/build_config.h"
 #include "components/sessions/core/command_storage_manager_test_helper.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/url_loader_interceptor.h"
@@ -178,12 +179,11 @@ IN_PROC_BROWSER_TEST_F(SessionServiceTest, SingleTab) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   std::unique_ptr<BrowserImpl> browser = CreateBrowser(GetProfile(), "x");
-  std::unique_ptr<Tab> tab = Tab::Create(GetProfile());
-  browser->AddTab(tab.get());
+  Tab* tab = browser->AddTab(Tab::Create(GetProfile()));
   const GURL url = embedded_test_server()->GetURL("/simple_page.html");
-  NavigateAndWaitForCompletion(url, tab.get());
+  NavigateAndWaitForCompletion(url, tab);
   ShutdownSessionServiceAndWait(browser.get());
-  tab.reset();
+  tab = nullptr;
   browser.reset();
 
   browser = CreateBrowser(GetProfile(), "x");
@@ -204,25 +204,23 @@ IN_PROC_BROWSER_TEST_F(SessionServiceTest, TwoTabs) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   std::unique_ptr<BrowserImpl> browser = CreateBrowser(GetProfile(), "x");
-  std::unique_ptr<Tab> tab1 = Tab::Create(GetProfile());
-  browser->AddTab(tab1.get());
+  Tab* tab1 = browser->AddTab(Tab::Create(GetProfile()));
   const GURL url1 = embedded_test_server()->GetURL("/simple_page.html");
-  NavigateAndWaitForCompletion(url1, tab1.get());
+  NavigateAndWaitForCompletion(url1, tab1);
 
-  std::unique_ptr<Tab> tab2 = Tab::Create(GetProfile());
-  browser->AddTab(tab2.get());
+  Tab* tab2 = browser->AddTab(Tab::Create(GetProfile()));
   const GURL url2 = embedded_test_server()->GetURL("/simple_page2.html");
-  NavigateAndWaitForCompletion(url2, tab2.get());
-  browser->SetActiveTab(tab2.get());
+  NavigateAndWaitForCompletion(url2, tab2);
+  browser->SetActiveTab(tab2);
 
-  // Shutdown the service and run the assertions twice to ensure we handle
+  // Shut down the service.
+  ShutdownSessionServiceAndWait(browser.get());
+  tab1 = tab2 = nullptr;
+  browser.reset();
+
+  // Recreate the browser and run the assertions twice to ensure we handle
   // correctly storing state of tabs that need to be reloaded.
   for (int i = 0; i < 2; ++i) {
-    ShutdownSessionServiceAndWait(browser.get());
-    tab1.reset();
-    tab2.reset();
-    browser.reset();
-
     browser = CreateBrowser(GetProfile(), "x");
     // Should be no tabs while waiting for restore.
     EXPECT_TRUE(browser->GetTabs().empty()) << "iteration " << i;
@@ -244,6 +242,8 @@ IN_PROC_BROWSER_TEST_F(SessionServiceTest, TwoTabs) {
                      ->GetNavigationController()
                      ->GetNavigationListSize())
         << "iteration " << i;
+
+    ShutdownSessionServiceAndWait(browser.get());
   }
 }
 
@@ -252,35 +252,31 @@ IN_PROC_BROWSER_TEST_F(SessionServiceTest, MoveBetweenBrowsers) {
 
   // Create a browser with two tabs.
   std::unique_ptr<BrowserImpl> browser1 = CreateBrowser(GetProfile(), "x");
-  std::unique_ptr<Tab> tab1 = Tab::Create(GetProfile());
-  browser1->AddTab(tab1.get());
+  Tab* tab1 = browser1->AddTab(Tab::Create(GetProfile()));
   const GURL url1 = embedded_test_server()->GetURL("/simple_page.html");
-  NavigateAndWaitForCompletion(url1, tab1.get());
+  NavigateAndWaitForCompletion(url1, tab1);
 
-  std::unique_ptr<Tab> tab2 = Tab::Create(GetProfile());
-  browser1->AddTab(tab2.get());
+  Tab* tab2 = browser1->AddTab(Tab::Create(GetProfile()));
   const GURL url2 = embedded_test_server()->GetURL("/simple_page2.html");
-  NavigateAndWaitForCompletion(url2, tab2.get());
-  browser1->SetActiveTab(tab2.get());
+  NavigateAndWaitForCompletion(url2, tab2);
+  browser1->SetActiveTab(tab2);
 
   // Create another browser with a single tab.
   std::unique_ptr<BrowserImpl> browser2 = CreateBrowser(GetProfile(), "y");
-  std::unique_ptr<Tab> tab3 = Tab::Create(GetProfile());
-  browser2->AddTab(tab3.get());
+  Tab* tab3 = browser2->AddTab(Tab::Create(GetProfile()));
   const GURL url3 = embedded_test_server()->GetURL("/simple_page3.html");
-  NavigateAndWaitForCompletion(url3, tab3.get());
+  NavigateAndWaitForCompletion(url3, tab3);
 
   // Move |tab2| to |browser2|.
-  browser2->AddTab(tab2.get());
-  browser2->SetActiveTab(tab2.get());
+  browser2->AddTab(browser1->RemoveTab(tab2));
+  browser2->SetActiveTab(tab2);
 
   ShutdownSessionServiceAndWait(browser1.get());
   ShutdownSessionServiceAndWait(browser2.get());
-  tab1.reset();
+  tab1 = nullptr;
   browser1.reset();
 
-  tab2.reset();
-  tab3.reset();
+  tab2 = tab3 = nullptr;
   browser2.reset();
 
   // Restore the browsers.

@@ -271,9 +271,18 @@ PanelNodeMenu = class extends PanelMenu {
    */
   constructor(menuMsg, node, pred, async) {
     super(menuMsg);
+    /** @private {AutomationNode} */
     this.node_ = node;
+    /** @private {AutomationPredicate.Unary} */
     this.pred_ = pred;
+    /** @private {boolean} */
     this.async_ = async;
+    /** @private {AutomationTreeWalker|undefined} */
+    this.walker_;
+    /** @private {number} */
+    this.nodeCount_ = 0;
+    /** @private {boolean} */
+    this.selectNext_ = false;
     this.populate_();
   }
 

@@ -59,10 +59,8 @@ interface BookmarkDelegate {
     /**
      * Closes the Bookmark UI (if on phone) and opens the given bookmark.
      * @param bookmark       bookmark to open.
-     * @param launchLocation The UI location where user tried to open bookmark. It is one of
-     *                       {@link BookmarkLaunchLocation} values
      */
-    void openBookmark(BookmarkId bookmark, int launchLocation);
+    void openBookmark(BookmarkId bookmark);
 
     /**
      * Shows the search UI.

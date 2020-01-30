@@ -190,7 +190,6 @@ class ServiceWorkerMetrics {
 
   // Counts the number of page loads controlled by a Service Worker.
   static void CountControlledPageLoad(Site site,
-                                      const GURL& url,
                                       bool is_main_frame_load);
 
   // Records the result of trying to start an installed worker.

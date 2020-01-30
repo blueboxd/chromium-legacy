@@ -350,7 +350,7 @@ namespace declarativeNetRequest {
     // raised in case of transient internal errors.
     static void getDynamicRules(GetRulesCallback callback);
 
-    // TODO(crbug.com/967942): Add documentation once implementation is
+    // TODO(crbug.com/1044702): Add documentation once implementation is
     // complete.
     [nodoc]
     static void getMatchedRules(optional MatchedRulesFilter filter,
@@ -370,6 +370,15 @@ namespace declarativeNetRequest {
 
     // The maximum number of dynamic rules that an extension can add.
     [value=5000] static long MAX_NUMBER_OF_DYNAMIC_RULES();
+
+    // Time interval within which <code>MAX_GETMATCHEDRULES_CALLS_PER_INTERVAL
+    // getMatchedRules</code> calls can be made, specified in minutes.
+    // Additional calls will fail immediately and set $(ref:runtime.lastError).
+    [value=10, nodoc] static long GETMATCHEDRULES_QUOTA_INTERVAL();
+
+    // The number of times <code>getMatchedRules</code> can be called within a
+    // period of <code>GETMATCHEDRULES_QUOTA_INTERVAL</code>.
+    [value=20, nodoc] static long MAX_GETMATCHEDRULES_CALLS_PER_INTERVAL();
   };
 
   interface Events {

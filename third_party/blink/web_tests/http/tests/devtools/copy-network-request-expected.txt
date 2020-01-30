@@ -527,6 +527,39 @@ fetch("http://example.org/path", {
 
 
 cURL Windows:
+curl "http://example.org/path" ^
+  -X "^|evilcommand^|" ^
+  --compressed
+
+
+cURL Unix:
+curl 'http://example.org/path' \
+  -X '|evilcommand|' \
+  --compressed
+
+
+Powershell:
+Invoke-WebRequest -Uri "http://example.org/path" -Method "|evilcommand|"
+
+
+fetch (for browser):
+fetch("http://example.org/path", {
+  "body": null,
+  "method": "|evilcommand|",
+  "mode": "cors",
+  "credentials": "omit"
+});
+
+
+fetch (for nodejs):
+fetch("http://example.org/path", {
+  "body": null,
+  "method": "|evilcommand|",
+  "mode": "cors"
+});
+
+
+cURL Windows:
 
 
 

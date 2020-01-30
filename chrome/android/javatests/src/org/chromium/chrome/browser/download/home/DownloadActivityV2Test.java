@@ -39,6 +39,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import org.chromium.base.Callback;
+import org.chromium.base.DiscardableReferencePool;
 import org.chromium.base.supplier.ObservableSupplierImpl;
 import org.chromium.base.task.PostTask;
 import org.chromium.base.test.util.DisabledTest;
@@ -93,6 +94,8 @@ public class DownloadActivityV2Test extends DummyUiActivityTestCase {
 
     private StubbedOfflineContentProvider mStubbedOfflineContentProvider;
 
+    private DiscardableReferencePool mDiscardableReferencePool;
+
     @Override
     public void setUpTest() throws Exception {
         super.setUpTest();
@@ -134,6 +137,8 @@ public class DownloadActivityV2Test extends DummyUiActivityTestCase {
         mStubbedOfflineContentProvider.addItem(item1);
         mStubbedOfflineContentProvider.addItem(item2);
         mStubbedOfflineContentProvider.addItem(item3);
+
+        mDiscardableReferencePool = new DiscardableReferencePool();
     }
 
     private void setUpUi() {
@@ -157,7 +162,7 @@ public class DownloadActivityV2Test extends DummyUiActivityTestCase {
         mDownloadCoordinator = new DownloadManagerCoordinatorImpl(getActivity(), config,
                 isPrefetchEnabledSupplier, settingsLauncher, mSnackbarManager, mModalDialogManager,
                 mTracker, faviconProvider, OfflineContentAggregatorFactory.get(),
-                /* LegacyDownloadProvider */ null);
+                /* LegacyDownloadProvider */ null, mDiscardableReferencePool);
         getActivity().setContentView(mDownloadCoordinator.getView());
 
         mDownloadCoordinator.updateForUrl(UrlConstants.DOWNLOADS_URL);

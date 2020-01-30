@@ -19,16 +19,9 @@ from util import build_utils
 from util import jar_info_utils
 from util import manifest_utils
 from util import md5_check
+from util import resources_parser
 from util import resource_utils
 
-_AAPT_IGNORE_PATTERN = ':'.join([
-    '*OWNERS',  # Allow OWNERS files within res/
-    '*.py',  # PRESUBMIT.py sometimes exist.
-    '*.pyc',
-    '*~',  # Some editors create these as temp files.
-    '.*',  # Never makes sense to include dot(files/dirs).
-    '*.d.stamp', # Ignore stamp files
-    ])
 
 def _ParseArgs(args):
   """Parses command line options.
@@ -37,9 +30,6 @@ def _ParseArgs(args):
     An options object as from argparse.ArgumentParser.parse_args()
   """
   parser, input_opts, output_opts = resource_utils.ResourceArgsParser()
-
-  input_opts.add_argument(
-      '--aapt-path', required=True, help='Path to the Android aapt tool')
 
   input_opts.add_argument(
       '--res-sources-path',
@@ -150,32 +140,9 @@ def _GenerateRTxt(options, dep_subdirs, gen_dir):
     gen_dir: Locates where the aapt-generated files will go. In particular
       the output file is always generated as |{gen_dir}/R.txt|.
   """
-  # NOTE: This uses aapt rather than aapt2 because 'aapt2 compile' does not
-  # support the --output-text-symbols option yet (https://crbug.com/820460).
-  package_command = [
-      options.aapt_path,
-      'package',
-      '-m',
-      '-M',
-      manifest_utils.EMPTY_ANDROID_MANIFEST_PATH,
-      '--no-crunch',
-      '--auto-add-overlay',
-      '--no-version-vectors',
-  ]
-  for j in options.include_resources:
-    package_command += ['-I', j]
-
   ignore_pattern = resource_utils.AAPT_IGNORE_PATTERN
   if options.strip_drawables:
     ignore_pattern += ':*drawable*'
-  package_command += [
-      '--output-text-symbols',
-      gen_dir,
-      '-J',
-      gen_dir,  # Required for R.txt generation.
-      '--ignore-assets',
-      ignore_pattern
-  ]
 
   # Adding all dependencies as sources is necessary for @type/foo references
   # to symbols within dependencies to resolve. However, it has the side-effect
@@ -183,15 +150,10 @@ def _GenerateRTxt(options, dep_subdirs, gen_dir):
   # E.g.: It enables an arguably incorrect usage of
   # "mypackage.R.id.lib_symbol" where "libpackage.R.id.lib_symbol" would be
   # more correct. This is just how Android works.
-  for d in dep_subdirs:
-    package_command += ['-S', d]
+  resource_dirs = dep_subdirs + options.resource_dirs
 
-  for d in options.resource_dirs:
-    package_command += ['-S', d]
-
-  # Only creates an R.txt
-  build_utils.CheckOutput(
-      package_command, print_stdout=False, print_stderr=False)
+  resources_parser.RTxtGenerator(resource_dirs, ignore_pattern).WriteRTxtFile(
+      os.path.join(gen_dir, 'R.txt'))
 
 
 def _OnStaleMd5(options):
@@ -208,10 +170,6 @@ def _OnStaleMd5(options):
 
       _GenerateRTxt(options, dep_subdirs, build.gen_dir)
       r_txt_path = build.r_txt_path
-
-      # 'aapt' doesn't generate any R.txt file if res/ was empty.
-      if not os.path.exists(r_txt_path):
-        build_utils.Touch(r_txt_path)
 
     if options.r_text_out:
       shutil.copyfile(r_txt_path, options.r_text_out)
@@ -273,7 +231,6 @@ def main(args):
   ]
 
   possible_input_paths = [
-    options.aapt_path,
     options.android_manifest,
   ]
   possible_input_paths += options.include_resources

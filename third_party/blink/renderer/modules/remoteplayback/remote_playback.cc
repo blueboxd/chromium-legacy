@@ -38,15 +38,18 @@ const AtomicString& RemotePlaybackStateToString(
   DEFINE_STATIC_LOCAL(const AtomicString, connected_value, ("connected"));
   DEFINE_STATIC_LOCAL(const AtomicString, disconnected_value, ("disconnected"));
 
-  if (state == mojom::blink::PresentationConnectionState::CONNECTING)
-    return connecting_value;
-  if (state == mojom::blink::PresentationConnectionState::CONNECTED)
-    return connected_value;
-  if (state == mojom::blink::PresentationConnectionState::CLOSED)
-    return disconnected_value;
-
-  NOTREACHED();
-  return disconnected_value;
+  switch (state) {
+    case mojom::blink::PresentationConnectionState::CONNECTING:
+      return connecting_value;
+    case mojom::blink::PresentationConnectionState::CONNECTED:
+      return connected_value;
+    case mojom::blink::PresentationConnectionState::CLOSED:
+    case mojom::blink::PresentationConnectionState::TERMINATED:
+      return disconnected_value;
+    default:
+      NOTREACHED();
+      return disconnected_value;
+  }
 }
 
 void RunRemotePlaybackTask(ExecutionContext* context,
@@ -366,7 +369,8 @@ void RemotePlayback::StateChanged(
     media_element_->FlingingStarted();
   } else if (state_ == mojom::blink::PresentationConnectionState::CONNECTED) {
     DispatchEvent(*Event::Create(event_type_names::kConnect));
-  } else if (state_ == mojom::blink::PresentationConnectionState::CLOSED) {
+  } else if (state_ == mojom::blink::PresentationConnectionState::CLOSED ||
+             state_ == mojom::blink::PresentationConnectionState::TERMINATED) {
     DispatchEvent(*Event::Create(event_type_names::kDisconnect));
     if (auto* video_element =
             DynamicTo<HTMLVideoElement>(media_element_.Get())) {
@@ -462,8 +466,10 @@ void RemotePlayback::RemotePlaybackDisabled() {
   availability_callbacks_.clear();
   StopListeningForAvailability();
 
-  if (state_ == mojom::blink::PresentationConnectionState::CLOSED)
+  if (state_ == mojom::blink::PresentationConnectionState::CLOSED ||
+      state_ == mojom::blink::PresentationConnectionState::TERMINATED) {
     return;
+  }
 
   auto* controller = PresentationController::FromContext(GetExecutionContext());
   if (controller) {

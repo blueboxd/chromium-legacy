@@ -8,7 +8,6 @@ namespace gcm {
 
 // static
 const int OutgoingMessage::kMaximumTTL = 24 * 60 * 60;  // 1 day.
-const int WebPushMessage::kMaximumTTL = 24 * 60 * 60;   // 1 day.
 
 OutgoingMessage::OutgoingMessage() = default;
 
@@ -21,13 +20,5 @@ IncomingMessage::IncomingMessage() = default;
 IncomingMessage::IncomingMessage(const IncomingMessage& other) = default;
 
 IncomingMessage::~IncomingMessage() = default;
-
-WebPushMessage::WebPushMessage() = default;
-
-WebPushMessage::WebPushMessage(WebPushMessage&& other) = default;
-
-WebPushMessage::~WebPushMessage() = default;
-
-WebPushMessage& WebPushMessage::operator=(WebPushMessage&& other) = default;
 
 }  // namespace gcm

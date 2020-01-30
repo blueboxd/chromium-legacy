@@ -3200,8 +3200,11 @@ class AXPosition {
                                         const AXPosition& move_to,
                                         const AXMoveType move_type,
                                         const AXMoveDirection direction) {
-    if (move_from.IsNullPosition() || move_to.IsNullPosition())
+    if (move_from.IsNullPosition() || move_to.IsNullPosition() ||
+        move_from.IsEmptyObjectReplacedByCharacter() ||
+        move_to.IsEmptyObjectReplacedByCharacter()) {
       return true;
+    }
 
     // Treat moving into or out of nodes with certain roles as a format break.
     ax::mojom::Role from_role = move_from.GetRole();

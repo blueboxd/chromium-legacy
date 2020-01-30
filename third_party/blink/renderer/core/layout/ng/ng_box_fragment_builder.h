@@ -67,9 +67,8 @@ class CORE_EXPORT NGBoxFragmentBuilder final
     return *initial_fragment_geometry_;
   }
 
-  void SetUnconstrainedIntrinsicBlockSize(
-      LayoutUnit unconstrained_intrinsic_block_size) {
-    unconstrained_intrinsic_block_size_ = unconstrained_intrinsic_block_size;
+  void SetOverflowBlockSize(LayoutUnit overflow_block_size) {
+    overflow_block_size_ = overflow_block_size;
   }
   void SetIntrinsicBlockSize(LayoutUnit intrinsic_block_size) {
     intrinsic_block_size_ = intrinsic_block_size;
@@ -297,7 +296,7 @@ class CORE_EXPORT NGBoxFragmentBuilder final
   scoped_refptr<const NGLayoutResult> ToBoxFragment(WritingMode);
 
   const NGFragmentGeometry* initial_fragment_geometry_ = nullptr;
-  LayoutUnit unconstrained_intrinsic_block_size_ = kIndefiniteSize;
+  LayoutUnit overflow_block_size_ = kIndefiniteSize;
   LayoutUnit intrinsic_block_size_;
 
   NGFragmentItemsBuilder* items_builder_ = nullptr;

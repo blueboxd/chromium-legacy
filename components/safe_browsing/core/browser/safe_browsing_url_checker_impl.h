@@ -23,6 +23,10 @@ namespace content {
 class WebContents;
 }
 
+namespace signin {
+class IdentityManager;
+}
+
 namespace safe_browsing {
 
 class UrlCheckerDelegate;
@@ -73,7 +77,8 @@ class SafeBrowsingUrlCheckerImpl : public mojom::SafeBrowsingUrlChecker,
       const base::RepeatingCallback<content::WebContents*()>&
           web_contents_getter,
       bool real_time_lookup_enabled,
-      base::WeakPtr<VerdictCacheManager> cache_manager_on_ui);
+      base::WeakPtr<VerdictCacheManager> cache_manager_on_ui,
+      signin::IdentityManager* identity_manager_on_ui);
 
   ~SafeBrowsingUrlCheckerImpl() override;
 
@@ -225,6 +230,10 @@ class SafeBrowsingUrlCheckerImpl : public mojom::SafeBrowsingUrlChecker,
   // Must be NOT nullptr when real time url check is enabled and profile is not
   // delete. Can only be accessed in UI thread.
   base::WeakPtr<VerdictCacheManager> cache_manager_on_ui_;
+
+  // This object is used to obtain access token when real time url check with
+  // token is enabled. Can only be accessed in UI thread.
+  signin::IdentityManager* identity_manager_on_ui_;
 
   base::WeakPtrFactory<SafeBrowsingUrlCheckerImpl> weak_factory_{this};
 

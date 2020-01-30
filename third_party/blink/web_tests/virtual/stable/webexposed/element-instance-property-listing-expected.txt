@@ -29,6 +29,42 @@ namespace http://www.w3.org/1999/xhtml
     property animate
     property append
     property appendChild
+    property ariaAtomic
+    property ariaAutoComplete
+    property ariaBusy
+    property ariaChecked
+    property ariaColCount
+    property ariaColIndex
+    property ariaColSpan
+    property ariaCurrent
+    property ariaDisabled
+    property ariaExpanded
+    property ariaHasPopup
+    property ariaHidden
+    property ariaKeyShortcuts
+    property ariaLabel
+    property ariaLevel
+    property ariaLive
+    property ariaModal
+    property ariaMultiLine
+    property ariaMultiSelectable
+    property ariaOrientation
+    property ariaPlaceholder
+    property ariaPosInSet
+    property ariaPressed
+    property ariaReadOnly
+    property ariaRelevant
+    property ariaRequired
+    property ariaRoleDescription
+    property ariaRowCount
+    property ariaRowIndex
+    property ariaRowSpan
+    property ariaSelected
+    property ariaSort
+    property ariaValueMax
+    property ariaValueMin
+    property ariaValueNow
+    property ariaValueText
     property assignedSlot
     property attachInternals
     property attachShadow
@@ -1148,6 +1184,42 @@ namespace http://www.w3.org/2000/svg
     property animate
     property append
     property appendChild
+    property ariaAtomic
+    property ariaAutoComplete
+    property ariaBusy
+    property ariaChecked
+    property ariaColCount
+    property ariaColIndex
+    property ariaColSpan
+    property ariaCurrent
+    property ariaDisabled
+    property ariaExpanded
+    property ariaHasPopup
+    property ariaHidden
+    property ariaKeyShortcuts
+    property ariaLabel
+    property ariaLevel
+    property ariaLive
+    property ariaModal
+    property ariaMultiLine
+    property ariaMultiSelectable
+    property ariaOrientation
+    property ariaPlaceholder
+    property ariaPosInSet
+    property ariaPressed
+    property ariaReadOnly
+    property ariaRelevant
+    property ariaRequired
+    property ariaRoleDescription
+    property ariaRowCount
+    property ariaRowIndex
+    property ariaRowSpan
+    property ariaSelected
+    property ariaSort
+    property ariaValueMax
+    property ariaValueMin
+    property ariaValueNow
+    property ariaValueText
     property assignedSlot
     property attachShadow
     property attributeStyleMap

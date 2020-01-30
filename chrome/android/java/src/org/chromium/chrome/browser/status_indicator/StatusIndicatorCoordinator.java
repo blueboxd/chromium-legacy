@@ -10,6 +10,7 @@ import android.view.View;
 import android.view.ViewStub;
 
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.components.browser_ui.widget.ViewResourceFrameLayout;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
@@ -31,25 +32,29 @@ public class StatusIndicatorCoordinator {
         void onStatusIndicatorHeightChanged(int newHeight);
     }
 
+    private StatusIndicatorMediator mMediator;
     private PropertyModel mModel;
     private View mView;
     private StatusIndicatorSceneLayer mSceneLayer;
     private HashSet<StatusIndicatorObserver> mObservers = new HashSet<>();
 
-    public StatusIndicatorCoordinator(Activity activity, ResourceManager resourceManager) {
+    public StatusIndicatorCoordinator(Activity activity, ResourceManager resourceManager,
+            ChromeFullscreenManager fullscreenManager) {
         // TODO(crbug.com/1005843): Create this view lazily if/when we need it. This is a task for
         // when we have the public API figured out.
         final ViewStub stub = activity.findViewById(R.id.status_indicator_stub);
         ViewResourceFrameLayout root = (ViewResourceFrameLayout) stub.inflate();
         mView = root;
-        mSceneLayer = new StatusIndicatorSceneLayer(root);
+        mSceneLayer = new StatusIndicatorSceneLayer(root, () -> fullscreenManager);
         mModel = new PropertyModel.Builder(StatusIndicatorProperties.ALL_KEYS)
-                         .with(StatusIndicatorProperties.ANDROID_VIEW_VISIBLE, false)
+                         .with(StatusIndicatorProperties.ANDROID_VIEW_VISIBILITY, View.GONE)
                          .with(StatusIndicatorProperties.COMPOSITED_VIEW_VISIBLE, false)
                          .build();
         PropertyModelChangeProcessor.create(mModel,
                 new StatusIndicatorViewBinder.ViewHolder(root, mSceneLayer),
                 StatusIndicatorViewBinder::bind);
+        mMediator = new StatusIndicatorMediator(mModel, fullscreenManager);
+        mObservers.add(mMediator);
         resourceManager.getDynamicResourceLoader().registerResource(
                 root.getId(), root.getResourceAdapter());
     }
@@ -74,8 +79,7 @@ public class StatusIndicatorCoordinator {
     // TODO(sinansahin): Destroy the view when not needed.
     /** Show the status indicator. */
     public void show() {
-        mModel.set(StatusIndicatorProperties.COMPOSITED_VIEW_VISIBLE, true);
-        mModel.set(StatusIndicatorProperties.ANDROID_VIEW_VISIBLE, true);
+        mModel.set(StatusIndicatorProperties.ANDROID_VIEW_VISIBILITY, View.INVISIBLE);
         // TODO(crbug.com/1005843): We will need a measure pass before we can get the real height of
         // this view. We should keep this in mind when inflating the view lazily.
         mView.addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
@@ -94,9 +98,7 @@ public class StatusIndicatorCoordinator {
     // TODO(sinansahin): With animation as well.
     /** Hide the status indicator. */
     public void hide() {
-        mModel.set(StatusIndicatorProperties.COMPOSITED_VIEW_VISIBLE, false);
-        mModel.set(StatusIndicatorProperties.ANDROID_VIEW_VISIBLE, false);
-
+        mModel.set(StatusIndicatorProperties.ANDROID_VIEW_VISIBILITY, View.GONE);
         for (StatusIndicatorObserver observer : mObservers) {
             observer.onStatusIndicatorHeightChanged(0);
         }

@@ -75,7 +75,7 @@ PpdCache::FindResult FindImpl(const base::FilePath& cache_dir,
           if (file.GetInfo(&info)) {
             result.success = true;
             result.age = base::Time::Now() - info.last_modified;
-            contents.CopyToString(&result.contents);
+            result.contents = std::string(contents);
           }
         } else {
           LOG(ERROR) << "Bad checksum for cache key " << key;

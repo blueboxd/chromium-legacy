@@ -194,15 +194,15 @@ class AssistantDetailsViewBinder
         setTextStyle(viewHolder.mTitleView, details.getUserApprovalRequired(),
                 details.getHighlightTitle(), R.style.TextAppearance_AssistantDetailsTitle);
         setTextStyle(viewHolder.mDescriptionLine1View, details.getUserApprovalRequired(),
-                details.getHighlightLine1(), R.style.TextAppearance_BlackBody);
+                details.getHighlightLine1(), R.style.TextAppearance_TextMedium_Secondary);
         setTextStyle(viewHolder.mDescriptionLine2View, details.getUserApprovalRequired(),
-                details.getHighlightLine2(), R.style.TextAppearance_BlackBody);
+                details.getHighlightLine2(), R.style.TextAppearance_TextMedium_Secondary);
         setTextStyle(viewHolder.mDescriptionLine3View, details.getUserApprovalRequired(),
-                details.getHighlightLine3(), R.style.TextAppearance_BlackDisabledText2);
+                details.getHighlightLine3(), R.style.TextAppearance_TextSmall_Tertiary);
         setTextStyle(viewHolder.mPriceAttributionView, details.getUserApprovalRequired(),
-                details.getHighlightLine3(), R.style.TextAppearance_BlackDisabledText2);
+                details.getHighlightLine3(), R.style.TextAppearance_TextSmall_Tertiary);
         setTextStyle(viewHolder.mTotalPriceLabelView, details.getUserApprovalRequired(),
-                /* highlight= */ false, R.style.TextAppearance_BlackBody);
+                /* highlight= */ false, R.style.TextAppearance_TextMedium_Secondary);
         setTextStyle(viewHolder.mTotalPriceView, details.getUserApprovalRequired(),
                 /* highlight= */ false, R.style.TextAppearance_AssistantDetailsPrice);
 

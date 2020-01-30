@@ -331,11 +331,6 @@ bool TtsExtensionEngine::LoadBuiltInTtsEngine(
     content::BrowserContext* browser_context) {
 #if defined(OS_CHROMEOS)
   Profile* profile = Profile::FromBrowserContext(browser_context);
-  // Check to see if one of the engines was previously loaded.
-  if (TtsEngineExtensionObserver::GetInstance(profile)->SawExtensionLoad(
-          extension_misc::kGoogleSpeechSynthesisExtensionId, true)) {
-    return false;
-  }
 
   // Load the component extensions into this profile.
   extensions::ExtensionService* extension_service =

@@ -134,7 +134,7 @@
 <translation id="1994173015038366702">साइट URL</translation>
 <translation id="2000419248597011803">यसले ठेगाना पट्टी र खोज बाकसका केही कुकी र खोजहरूलाई तपाईंको पूर्वनिर्धारित खोज इन्जिनमा पठाउँछ</translation>
 <translation id="2002537628803770967">Google Pay को प्रयोग गर्ने क्रेडिट कार्ड र ठेगानाहरू</translation>
-<translation id="2012973609889389923">छिटो लोष हुने साइट</translation>
+<translation id="2012973609889389923">छिटो लोड हुने साइट</translation>
 <translation id="2013642289801508067">{FILE_COUNT,plural, =1{# फाइल}other{# फाइलहरू}}</translation>
 <translation id="2017836877785168846">ठेगाना पट्टीबाट इतिहास र स्वतः पूर्णतासम्बन्धी सुविधाहरूलाई खाली गर्दछ।</translation>
 <translation id="2021896219286479412">पूर्ण स्क्रिनको साइटका नियन्त्रणहरू</translation>
@@ -303,7 +303,6 @@
 <translation id="3282568296779691940">Chrome मा साइन इन गर्नुहोस्</translation>
 <translation id="3288003805934695103">पृष्ठलाई पुनः लोड गर्नुहोस्</translation>
 <translation id="32895400574683172">यस कार्यका लागि सूचनाहरूलाई अनुमति दिइएको छ</translation>
-<translation id="3290926146403723641">Google सहायकमार्फत वेबमा कार्यहरू पूरा गर्न Chrome ले Google लाई साइटको URL, साइटको सामग्री र आवश्यक व्यक्तिगत जानकारी पठाउँछ।</translation>
 <translation id="3295530008794733555">अझ छिटो ब्राउज गर्नुहोस्। कम डेटा प्रयोग गर्नुहोस्।</translation>
 <translation id="3298243779924642547">लाइट</translation>
 <translation id="3303414029551471755">सामग्री डाउनलोड गर्न अगाडि बढ्ने हो?</translation>

@@ -257,7 +257,7 @@ PhysicalRect NGPhysicalBoxFragment::ScrollableOverflowFromChildren() const {
       DCHECK_EQ(&child, cursor.CurrentItem());
       DCHECK_EQ(child.Type(), NGFragmentItem::kLine);
       if (padding_strut)
-        AddLineBoxRect(child.Rect());
+        AddLineBoxRect(child.RectInContainerBlock());
       const NGPhysicalLineBoxFragment* line_box = child.LineBoxFragment();
       DCHECK(line_box);
       PhysicalRect child_scrollable_overflow =
@@ -303,8 +303,8 @@ PhysicalRect NGPhysicalBoxFragment::ScrollableOverflowFromChildren() const {
 
       if (const NGPhysicalBoxFragment* child_box = item->BoxFragment()) {
         if (child_box->IsFloatingOrOutOfFlowPositioned()) {
-          context.AddFloatingOrOutOfFlowPositionedChild(*child_box,
-                                                        item->Offset());
+          context.AddFloatingOrOutOfFlowPositionedChild(
+              *child_box, item->OffsetInContainerBlock());
         }
       }
     }

@@ -9,9 +9,6 @@
 
 namespace security_interstitials {
 
-// Controls whether dark mode themes are applied to security interstitials.
-extern const base::Feature kSecurityInterstitialsDarkMode;
-
 }  // namespace security_interstitials
 
 #endif  // COMPONENTS_SECURITY_INTERSTITIALS_CORE_FEATURES_H_

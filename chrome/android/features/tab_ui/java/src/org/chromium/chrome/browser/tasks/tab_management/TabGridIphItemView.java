@@ -241,7 +241,7 @@ public class TabGridIphItemView extends FrameLayout {
                             : R.style.TextAppearance_BlueTitle2);
         mIphIntroduction.setTextAppearance(mIphIntroduction.getContext(),
                 isIncognito ? R.style.TextAppearance_WhiteBody
-                            : R.style.TextAppearance_BlackBodyDefault);
+                            : R.style.TextAppearance_TextMedium_Primary);
 
         ApiCompatibilityUtils.setImageTintList(mCloseIPHEntranceButton,
                 TabUiColorProvider.getActionButtonTintList(

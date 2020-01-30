@@ -50,5 +50,6 @@ public class NativeUnitTest extends NativeTest {
             System.loadLibrary(library);
             Log.i(TAG, "loaded: %s", library);
         }
+        LibraryLoader.getInstance().setLibrariesLoadedForNativeTests();
     }
 }

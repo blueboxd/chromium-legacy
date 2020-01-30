@@ -136,6 +136,60 @@ TEST_F(AlternativeBrowserDriverTest, GetBrowserName) {
   EXPECT_EQ("Opera", actual);
 }
 
+TEST_F(AlternativeBrowserDriverTest, GetBrowserType) {
+#if defined(OS_WIN)
+  BrowserType expected = BrowserType::kIE;
+#elif defined(OS_MACOSX)
+  BrowserType expected = BrowserType::kSafari;
+#else
+  BrowserType expected = BrowserType::kUnknown;
+#endif
+  auto actual = driver()->GetBrowserType();
+  EXPECT_EQ(expected, actual);
+
+  SetBrowserPath("bogus.exe");
+  actual = driver()->GetBrowserType();
+  EXPECT_EQ(BrowserType::kUnknown, actual);
+
+#if defined(OS_WIN)
+  SetBrowserPath("${ie}");
+  actual = driver()->GetBrowserType();
+  EXPECT_EQ(BrowserType::kIE, actual);
+
+  SetBrowserPath("C:\\Program Files (x86)\\Internet Explorer\\IExplore.exe");
+  actual = driver()->GetBrowserType();
+  EXPECT_EQ(BrowserType::kIE, actual);
+
+  SetBrowserPath("C:\\Program Files\\Mozilla Firefox\\firefox.exe");
+  actual = driver()->GetBrowserType();
+  EXPECT_EQ(BrowserType::kFirefox, actual);
+
+  SetBrowserPath(
+      "C:\\users\\HongGilDong\\AppData\\Local\\Programs\\Opera\\launcher.exe");
+  actual = driver()->GetBrowserType();
+  EXPECT_EQ(BrowserType::kOpera, actual);
+
+  SetBrowserPath(
+      "C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe");
+  actual = driver()->GetBrowserType();
+  EXPECT_EQ(BrowserType::kChrome, actual);
+#endif
+
+#if defined(OS_WIN) || defined(OS_MACOSX)
+  SetBrowserPath("${safari}");
+  actual = driver()->GetBrowserType();
+  EXPECT_EQ(BrowserType::kSafari, actual);
+#endif
+
+  SetBrowserPath("${firefox}");
+  actual = driver()->GetBrowserType();
+  EXPECT_EQ(BrowserType::kFirefox, actual);
+
+  SetBrowserPath("${opera}");
+  actual = driver()->GetBrowserType();
+  EXPECT_EQ(BrowserType::kOpera, actual);
+}
+
 #if defined(OS_WIN)
 TEST_F(AlternativeBrowserDriverTest, CreateCommandLineExpandsEnvVars) {
   _putenv("A=AAA");

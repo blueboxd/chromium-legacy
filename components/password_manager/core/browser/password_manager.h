@@ -59,8 +59,6 @@ class PasswordManager : public FormSubmissionObserver {
   explicit PasswordManager(PasswordManagerClient* client);
   ~PasswordManager() override;
 
-  void GenerationAvailableForForm(const autofill::PasswordForm& form);
-
   // Notifies the renderer to start the generation flow or pops up additional UI
   // in case there is a danger to overwrite an existing password.
   void OnGeneratedPasswordAccepted(PasswordManagerDriver* driver,
@@ -71,18 +69,19 @@ class PasswordManager : public FormSubmissionObserver {
   // Presaves the form with generated password. |driver| is needed to find the
   // matched form manager.
   void OnPresaveGeneratedPassword(PasswordManagerDriver* driver,
-                                  const autofill::PasswordForm& form);
+                                  const autofill::FormData& form,
+                                  const base::string16& generated_password);
 
   // Stops treating a password as generated. |driver| is needed to find the
   // matched form manager.
   void OnPasswordNoLongerGenerated(PasswordManagerDriver* driver,
-                                   const autofill::PasswordForm& form);
+                                   const autofill::FormData& form_data);
 
   // Update the generation element and whether generation was triggered
   // manually.
   void SetGenerationElementAndReasonForForm(
       PasswordManagerDriver* driver,
-      const autofill::PasswordForm& form,
+      const autofill::FormData& form_data,
       const base::string16& generation_element,
       bool is_manually_triggered);
 
@@ -283,11 +282,6 @@ class PasswordManager : public FormSubmissionObserver {
       PasswordManagerMetricsRecorder::ProvisionalSaveFailure failure,
       const GURL& form_origin,
       BrowserSavePasswordProgressLogger* logger);
-
-  // Returns the manager which manages |form|. |driver| is needed to determine
-  // the match. Returns nullptr when no matched manager is found.
-  PasswordFormManager* GetMatchedManager(const PasswordManagerDriver* driver,
-                                         const autofill::PasswordForm& form);
 
   // Returns the manager which manages |form|. |driver| is needed to determine
   // the match. Returns nullptr when no matched manager is found.

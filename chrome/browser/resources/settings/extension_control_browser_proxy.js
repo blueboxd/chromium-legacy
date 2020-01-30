@@ -31,6 +31,7 @@ cr.define('settings', function() {
 
   cr.addSingletonGetter(ExtensionControlBrowserProxyImpl);
 
+  // #cr_define_end
   return {
     ExtensionControlBrowserProxy: ExtensionControlBrowserProxy,
     ExtensionControlBrowserProxyImpl: ExtensionControlBrowserProxyImpl,

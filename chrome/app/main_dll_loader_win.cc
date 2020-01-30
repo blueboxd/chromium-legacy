@@ -197,6 +197,15 @@ int MainDllLoader::Launch(HINSTANCE instance,
   if (!dll_)
     return chrome::RESULT_CODE_MISSING_DATA;
 
+  if (!is_browser) {
+    // Set non-browser processes up to be killed by the system after the
+    // browser goes away. The browser uses the default shutdown order, which
+    // is 0x280. Note that lower numbers here denote "kill later" and higher
+    // numbers mean "kill sooner". This gets rid of most of those unsightly
+    // sad tabs on logout and shutdown.
+    ::SetProcessShutdownParameters(0x280 - 1, SHUTDOWN_NORETRY);
+  }
+
   OnBeforeLaunch(cmd_line, process_type_, file);
   DLL_MAIN chrome_main =
       reinterpret_cast<DLL_MAIN>(::GetProcAddress(dll_, "ChromeMain"));
@@ -251,13 +260,6 @@ void ChromeDllLoader::OnBeforeLaunch(const base::CommandLine& cmd_line,
           base::Bind(&GenerateChromeWatcherCommandLine, exe_path)));
       chrome_watcher_client_->LaunchWatcher();
     }
-  } else {
-    // Set non-browser processes up to be killed by the system after the browser
-    // goes away. The browser uses the default shutdown order, which is 0x280.
-    // Note that lower numbers here denote "kill later" and higher numbers mean
-    // "kill sooner".
-    // This gets rid of most of those unsighly sad tabs on logout and shutdown.
-    ::SetProcessShutdownParameters(0x280 - 1, SHUTDOWN_NORETRY);
   }
 }
 

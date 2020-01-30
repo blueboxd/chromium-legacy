@@ -5,7 +5,6 @@
 #import "chrome/browser/ui/cocoa/fullscreen/immersive_fullscreen_controller.h"
 
 #import "base/mac/mac_util.h"
-#include "base/mac/sdk_forward_declarations.h"
 #import "chrome/browser/ui/cocoa/fullscreen/fullscreen_toolbar_controller.h"
 #import "ui/base/cocoa/tracking_area.h"
 

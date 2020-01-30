@@ -14,7 +14,7 @@
 #include "base/time/tick_clock.h"
 #include "base/time/time.h"
 #include "base/values.h"
-#include "components/feed/core/pref_names.h"
+#include "components/feed/core/common/pref_names.h"
 #include "components/feed/feed_feature_list.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/public/identity_manager/access_token_info.h"

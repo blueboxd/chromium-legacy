@@ -93,8 +93,8 @@ static void CollectTextBoxesInFlowBox(InlineFlowBox* flow_box,
       continue;
     }
 
-    if (child->IsSVGInlineTextBox())
-      text_boxes.push_back(ToSVGInlineTextBox(child));
+    if (auto* svg_inline_text_box = DynamicTo<SVGInlineTextBox>(child))
+      text_boxes.push_back(svg_inline_text_box);
   }
 }
 
@@ -139,7 +139,7 @@ static void CollectTextBoxesInLogicalOrder(
   text_boxes.Shrink(0);
   for (InlineTextBox* text_box = text_line_layout.FirstTextBox(); text_box;
        text_box = text_box->NextForSameLayoutObject())
-    text_boxes.push_back(ToSVGInlineTextBox(text_box));
+    text_boxes.push_back(To<SVGInlineTextBox>(text_box));
   std::sort(text_boxes.begin(), text_boxes.end(),
             InlineTextBox::CompareByStart);
 }

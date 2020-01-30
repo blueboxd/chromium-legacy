@@ -50,7 +50,7 @@ def merge_shard_results(summary_json, jsons_to_merge):
   except (IOError, ValueError):
     emit_warning(
         'summary.json is missing or can not be read',
-        'Something is seriously wrong with swarming_client/ or the bot.')
+        'Something is seriously wrong with swarming client or the bot.')
     return None
 
   # Merge all JSON files together. Keep track of missing shards.

@@ -11,6 +11,7 @@
 #include "base/base64.h"
 #include "base/bind_helpers.h"
 #include "base/hash/sha1.h"
+#include "base/test/mock_callback.h"
 #include "components/sync/base/client_tag_hash.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/base/unique_position.h"
@@ -175,7 +176,8 @@ TEST(NonBlockingTypeCommitContributionTest,
   requests_data.push_back(std::move(request_data));
   NonBlockingTypeCommitContribution contribution(
       PASSWORDS, sync_pb::DataTypeContext(), std::move(requests_data),
-      /*on_commit_response_callback=*/base::NullCallback(), &cryptographer,
+      /*on_commit_response_callback=*/base::NullCallback(),
+      /*on_full_commit_failure_callback=*/base::NullCallback(), &cryptographer,
       PassphraseType::kImplicitPassphrase, &debug_info_emitter,
       /*only_commit_specifics=*/false);
 
@@ -236,7 +238,8 @@ TEST(NonBlockingTypeCommitContributionTest,
   requests_data.push_back(std::move(request_data));
   NonBlockingTypeCommitContribution contribution(
       PASSWORDS, sync_pb::DataTypeContext(), std::move(requests_data),
-      /*on_commit_response_callback=*/base::NullCallback(), &cryptographer,
+      /*on_commit_response_callback=*/base::NullCallback(),
+      /*on_full_commit_failure_callback=*/base::NullCallback(), &cryptographer,
       PassphraseType::kCustomPassphrase, &debug_info_emitter,
       /*only_commit_specifics=*/false);
 
@@ -290,7 +293,8 @@ TEST(NonBlockingTypeCommitContributionTest,
 
   NonBlockingTypeCommitContribution contribution(
       PASSWORDS, sync_pb::DataTypeContext(), std::move(requests_data),
-      std::move(on_commit_response_callback), &cryptographer,
+      std::move(on_commit_response_callback),
+      /*on_full_commit_failure_callback=*/base::NullCallback(), &cryptographer,
       PassphraseType::kCustomPassphrase, &debug_info_emitter,
       /*only_commit_specifics=*/false);
 
@@ -322,6 +326,25 @@ TEST(NonBlockingTypeCommitContributionTest,
   EXPECT_EQ(
       SharingMessageCommitError::INVALID_ARGUMENT,
       failed_item.datatype_specific_error.sharing_message_error().error_code());
+}
+
+TEST(NonBlockingTypeCommitContributionTest, ShouldPropagateFullCommitFailure) {
+  DirectoryCryptographer cryptographer;
+  base::ObserverList<TypeDebugInfoObserver>::Unchecked observers;
+  DataTypeDebugInfoEmitter debug_info_emitter(PASSWORDS, &observers);
+
+  base::MockOnceCallback<void()> on_commit_failure_callback;
+  EXPECT_CALL(on_commit_failure_callback, Run);
+
+  NonBlockingTypeCommitContribution contribution(
+      PASSWORDS, sync_pb::DataTypeContext(), CommitRequestDataList(),
+      /*on_commit_response_callback=*/base::NullCallback(),
+      on_commit_failure_callback.Get(), &cryptographer,
+      PassphraseType::kCustomPassphrase, &debug_info_emitter,
+      /*only_commit_specifics=*/false);
+
+  contribution.ProcessCommitFailure();
+  contribution.CleanUp();
 }
 
 }  // namespace

@@ -41,9 +41,6 @@ class TestFullscreenController : public FullscreenController {
   void EnterFullscreen() override;
   void ExitFullscreen() override;
 
-  // KeyedService:
-  void Shutdown() override;
-
   // Calls FullscreenViewportInsetRangeChanged() on observers.
   void OnFullscreenViewportInsetRangeChanged(UIEdgeInsets min_viewport_insets,
                                              UIEdgeInsets max_viewport_insets);

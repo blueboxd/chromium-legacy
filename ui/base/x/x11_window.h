@@ -235,8 +235,6 @@ class COMPONENT_EXPORT(UI_BASE_X) XWindow {
   virtual void OnXWindowBoundsChanged(const gfx::Rect& size) = 0;
   virtual void OnXWindowCloseRequested() = 0;
   virtual void OnXWindowIsActiveChanged(bool active) = 0;
-  virtual void OnXWindowMapped() = 0;
-  virtual void OnXWindowUnmapped() = 0;
   virtual void OnXWindowWorkspaceChanged() = 0;
   virtual void OnXWindowLostPointerGrab() = 0;
   virtual void OnXWindowLostCapture() = 0;

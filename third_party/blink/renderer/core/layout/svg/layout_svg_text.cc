@@ -365,8 +365,8 @@ PositionWithAffinity LayoutSVGText::PositionForPoint(
   DCHECK(!root_box->NextRootBox());
   DCHECK(ChildrenInline());
 
-  InlineBox* closest_box =
-      ToSVGRootInlineBox(root_box)->ClosestLeafChildForPosition(
+  auto* closest_box =
+      To<SVGRootInlineBox>(root_box)->ClosestLeafChildForPosition(
           clipped_point_in_contents);
   if (!closest_box)
     return CreatePositionWithAffinity(0);

@@ -10,6 +10,22 @@ Android image.
 To build WebView, or [run WebView's automated tests](./test-instructions.md),
 you'll need to set up either an emulator or a physical device.
 
+## I have a device or emulator. Will it work for development?
+
+You can check which Android image you have on your device with the following:
+
+```sh
+# If you don't have `adb` in your path, you can source this file to use
+# the copy from chromium's Android SDK.
+$ source build/android/envsetup.sh
+
+# If this outputs "userdebug" or "eng" then you're OK! If this outputs "user"
+# then you must reflash your physical device or configure a new emulator
+# following this guide.
+$ adb shell getprop ro.build.type
+userdebug
+```
+
 ## Emulator (easy way)
 
 *** promo

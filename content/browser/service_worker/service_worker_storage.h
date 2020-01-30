@@ -23,7 +23,6 @@
 #include "base/memory/weak_ptr.h"
 #include "content/browser/service_worker/service_worker_database.h"
 #include "content/browser/service_worker/service_worker_metrics.h"
-#include "content/browser/service_worker/service_worker_registration.h"
 #include "content/common/content_export.h"
 #include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
 #include "url/gurl.h"
@@ -71,9 +70,10 @@ class CONTENT_EXPORT ServiceWorkerStorage {
   using ResourceList = std::vector<ServiceWorkerDatabase::ResourceRecord>;
   using StatusCallback =
       base::OnceCallback<void(blink::ServiceWorkerStatusCode status)>;
-  using FindRegistrationCallback = base::OnceCallback<void(
+  using FindRegistrationDataCallback = base::OnceCallback<void(
       blink::ServiceWorkerStatusCode status,
-      scoped_refptr<ServiceWorkerRegistration> registration)>;
+      std::unique_ptr<ServiceWorkerDatabase::RegistrationData> data,
+      std::unique_ptr<ResourceList> resources)>;
   using GetRegistrationsDataCallback = base::OnceCallback<void(
       blink::ServiceWorkerStatusCode status,
       std::unique_ptr<RegistrationList> registrations,
@@ -121,37 +121,20 @@ class CONTENT_EXPORT ServiceWorkerStorage {
       ServiceWorkerStorage* old_storage,
       ServiceWorkerRegistry* registry);
 
-  // Finds registration for |client_url| or |scope| or |registration_id|.
-  // The Find methods will find stored and initially installing registrations.
-  // Returns blink::ServiceWorkerStatusCode::kOk with non-null
-  // registration if registration is found, or returns
-  // blink::ServiceWorkerStatusCode::kErrorNotFound if no
-  // matching registration is found.  The FindRegistrationForScope method is
-  // guaranteed to return asynchronously. However, the methods to find
-  // for |client_url| or |registration_id| may complete immediately
-  // (the callback may be called prior to the method returning) or
-  // asynchronously.
-  // NOTE: Do not call these methods directly. These methods will be moved
-  // to ServiceWorkerRegistry.
-  // TODO(crbug.com/1039200): Move these methods to ServiceWorkerRegistry.
+  // Reads stored registrations for |client_url| or |scope| or
+  // |registration_id|. Returns blink::ServiceWorkerStatusCode::kOk with
+  // non-null RegistrationData and ResourceList if registration is found, or
+  // returns blink::ServiceWorkerStatusCode::kErrorNotFound if no matching
+  // registration is found.
   void FindRegistrationForClientUrl(const GURL& client_url,
-                                    FindRegistrationCallback callback);
+                                    FindRegistrationDataCallback callback);
   void FindRegistrationForScope(const GURL& scope,
-                                FindRegistrationCallback callback);
+                                FindRegistrationDataCallback callback);
   void FindRegistrationForId(int64_t registration_id,
                              const GURL& origin,
-                             FindRegistrationCallback callback);
-
-  // Generally |FindRegistrationForId| should be used to look up a registration
-  // by |registration_id| since it's more efficient. But if a |registration_id|
-  // is all that is available this method can be used instead.
-  // Like |FindRegistrationForId| this method may complete immediately (the
-  // callback may be called prior to the method returning) or asynchronously.
-  // NOTE: Do not call this method directly. This method will be moved
-  // to ServiceWorkerRegistry.
-  // TODO(crbug.com/1039200): Move this method to ServiceWorkerRegistry.
+                             FindRegistrationDataCallback callback);
   void FindRegistrationForIdOnly(int64_t registration_id,
-                                 FindRegistrationCallback callback);
+                                 FindRegistrationDataCallback callback);
 
   // Returns all stored registrations for a given origin.
   void GetRegistrationsForOrigin(const GURL& origin,
@@ -358,8 +341,8 @@ class CONTENT_EXPORT ServiceWorkerStorage {
       const std::vector<int64_t>& newly_purgeable_resources,
       ServiceWorkerDatabase::Status status)>;
   using FindInDBCallback = base::OnceCallback<void(
-      const ServiceWorkerDatabase::RegistrationData& data,
-      const ResourceList& resources,
+      std::unique_ptr<ServiceWorkerDatabase::RegistrationData> data,
+      std::unique_ptr<ResourceList> resources,
       ServiceWorkerDatabase::Status status)>;
   using GetUserDataForAllRegistrationsInDBCallback = base::OnceCallback<void(
       const std::vector<std::pair<int64_t, std::string>>& user_data,
@@ -382,10 +365,11 @@ class CONTENT_EXPORT ServiceWorkerStorage {
   void LazyInitialize(base::OnceClosure callback);
   void DidReadInitialData(std::unique_ptr<InitialData> data,
                           ServiceWorkerDatabase::Status status);
-  void DidFindRegistration(FindRegistrationCallback callback,
-                           const ServiceWorkerDatabase::RegistrationData& data,
-                           const ResourceList& resources,
-                           ServiceWorkerDatabase::Status status);
+  void DidFindRegistration(
+      FindRegistrationDataCallback callback,
+      std::unique_ptr<ServiceWorkerDatabase::RegistrationData> data,
+      std::unique_ptr<ResourceList> resources,
+      ServiceWorkerDatabase::Status status);
   void DidGetRegistrationsForOrigin(
       GetRegistrationsDataCallback callback,
       std::unique_ptr<RegistrationList> registrations,
@@ -421,10 +405,6 @@ class CONTENT_EXPORT ServiceWorkerStorage {
       GetUserDataForAllRegistrationsCallback callback,
       const std::vector<std::pair<int64_t, std::string>>& user_data,
       ServiceWorkerDatabase::Status status);
-  void ReturnFoundRegistration(
-      FindRegistrationCallback callback,
-      const ServiceWorkerDatabase::RegistrationData& data,
-      const ResourceList& resources);
 
   // Lazy disk_cache getter.
   ServiceWorkerDiskCache* disk_cache();

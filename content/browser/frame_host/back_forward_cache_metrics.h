@@ -95,6 +95,24 @@ class BackForwardCacheMetrics
     kMaxValue = kByJavaScript,
   };
 
+  // Please keep in sync with BackForwardCacheReloadsAndHistoryNavigations
+  // in tools/metrics/histograms/enums.xml. These values should not be
+  // renumbered.
+  enum class ReloadsAndHistoryNavigations {
+    kHistoryNavigation = 0,
+    kReloadAfterHistoryNavigation = 1,
+    kMaxValue = kReloadAfterHistoryNavigation,
+  };
+
+  // Please keep in sync with BackForwardCacheReloadsAfterHistoryNavigation
+  // in tools/metrics/histograms/enums.xml. These values should not be
+  // renumbered.
+  enum class ReloadsAfterHistoryNavigation {
+    kNotServedFromBackForwardCache = 0,
+    kServedFromBackForwardCache = 1,
+    kMaxValue = kServedFromBackForwardCache,
+  };
+
   // Creates a potential new metrics object for the navigation.
   // Note that this object will not be used if the entry we are navigating to
   // already has the BackForwardCacheMetrics object (which happens for history
@@ -174,6 +192,14 @@ class BackForwardCacheMetrics
       NavigationRequest* navigation,
       bool back_forward_cache_allowed) const;
 
+  // Record metrics for the number of reloads after history navigation. In
+  // particular we are interested in number of reloads after a restore from
+  // the back-forward cache as a proxy for detecting whether the page was
+  // broken or not.
+  void RecordHistogramForReloadsAndHistoryNavigations(
+      bool is_reload,
+      bool back_forward_cache_allowed) const;
+
   // Record additional reason why navigation was not served from bfcache which
   // are known only at the commit time.
   void UpdateNotRestoredReasonsForNavigation(NavigationRequest* navigation);
@@ -211,6 +237,11 @@ class BackForwardCacheMetrics
   // The reasons given at BackForwardCache::DisableForRenderFrameHost. These are
   // a further breakdown of NotRestoredReason::kDisableForRenderFrameHostCalled.
   std::set<std::string> disabled_reasons_;
+
+  // This value is updated only for navigations which are not same-document and
+  // main-frame navigations.
+  bool previous_navigation_is_history_ = false;
+  bool previous_navigation_is_served_from_bfcache_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(BackForwardCacheMetrics);
 };

@@ -571,6 +571,26 @@ HRESULT ScopedUserProfile::SaveAccountInfo(const base::Value& properties) {
       LOGFN(ERROR) << "key.WriteValue(" << sid << ", RT) hr=" << putHR(hr);
       return hr;
     }
+
+    // Set both of the settings to stricter defaults.
+    sts = key.WriteValue(kAllowImportOnlyOnFirstRun,
+                         GetGlobalFlagOrDefault(kAllowImportOnlyOnFirstRun, 1));
+    if (sts != ERROR_SUCCESS) {
+      HRESULT hr = HRESULT_FROM_WIN32(sts);
+      LOGFN(ERROR) << "key.WriteValue(" << sid
+                   << ", import_on_first_run) hr=" << putHR(hr);
+      return hr;
+    }
+
+    sts = key.WriteValue(
+        kAllowImportWhenPrimaryAccountExists,
+        GetGlobalFlagOrDefault(kAllowImportWhenPrimaryAccountExists, 0));
+    if (sts != ERROR_SUCCESS) {
+      HRESULT hr = HRESULT_FROM_WIN32(sts);
+      LOGFN(ERROR) << "key.WriteValue(" << sid
+                   << ", import_on_no_primary_account) hr=" << putHR(hr);
+      return hr;
+    }
   }
 
   // This code for setting profile pictures is specific for windows 8+.

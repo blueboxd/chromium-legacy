@@ -76,14 +76,6 @@ class CheckClientDownloadRequest : public CheckClientDownloadRequestBase,
   bool ShouldPromptForDeepScanning(
       DownloadCheckResultReason reason) const override;
 
-  // Returns true when the file should be uploaded for a DLP compliance scan.
-  // This consults the CheckContentCompliance enterprise policy.
-  bool ShouldUploadForDlpScan();
-
-  // Returns true when the file should be uploaded for a malware scan. This
-  // consults the SendFilesForMalwareCheck enterprise policy.
-  bool ShouldUploadForMalwareScan(DownloadCheckResultReason reason);
-
   // The DownloadItem we are checking. Will be NULL if the request has been
   // canceled. Must be accessed only on UI thread.
   download::DownloadItem* item_;

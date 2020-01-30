@@ -448,12 +448,9 @@ bool ProxyingURLLoaderFactory::MaybeProxyRequest(
     return false;
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-  // Account consistency requires the AccountReconcilor, which is only
-  // attached to the main request context.
-  // Note: InlineLoginUI uses an isolated request context and thus bypasses
-  // the account consistency flow here. See http://crbug.com/428396
-  if (extensions::WebViewRendererState::GetInstance()->IsGuest(
-          render_frame_host->GetProcess()->GetID())) {
+  // Most requests from guest web views are ignored.
+  if (HeaderModificationDelegateImpl::ShouldIgnoreGuestWebViewRequest(
+          web_contents)) {
     return false;
   }
 #endif

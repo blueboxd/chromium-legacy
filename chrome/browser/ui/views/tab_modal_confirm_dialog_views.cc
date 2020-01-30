@@ -38,6 +38,16 @@ TabModalConfirmDialogViews::TabModalConfirmDialogViews(
   DialogDelegate::set_button_label(ui::DIALOG_BUTTON_CANCEL,
                                    delegate_->GetCancelButtonTitle());
 
+  DialogDelegate::set_accept_callback(
+      base::BindOnce(&TabModalConfirmDialogDelegate::Accept,
+                     base::Unretained(delegate_.get())));
+  DialogDelegate::set_cancel_callback(
+      base::BindOnce(&TabModalConfirmDialogDelegate::Cancel,
+                     base::Unretained(delegate_.get())));
+  DialogDelegate::set_close_callback(
+      base::BindOnce(&TabModalConfirmDialogDelegate::Close,
+                     base::Unretained(delegate_.get())));
+
   base::Optional<int> default_button = delegate_->GetDefaultDialogButton();
   if (bool(default_button))
     DialogDelegate::set_default_button(*default_button);
@@ -62,21 +72,6 @@ TabModalConfirmDialogViews::TabModalConfirmDialogViews(
 
 base::string16 TabModalConfirmDialogViews::GetWindowTitle() const {
   return delegate_->GetTitle();
-}
-
-bool TabModalConfirmDialogViews::Cancel() {
-  delegate_->Cancel();
-  return true;
-}
-
-bool TabModalConfirmDialogViews::Accept() {
-  delegate_->Accept();
-  return true;
-}
-
-bool TabModalConfirmDialogViews::Close() {
-  delegate_->Close();
-  return true;
 }
 
 // Tab-modal confirmation dialogs should not show an "X" close button in the top

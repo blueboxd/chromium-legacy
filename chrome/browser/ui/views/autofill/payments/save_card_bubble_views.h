@@ -38,11 +38,6 @@ class SaveCardBubbleViews : public SaveCardBubbleView,
   // SaveCardBubbleView:
   void Hide() override;
 
-  // views::BubbleDialogDelegateView:
-  bool Accept() override;
-  bool Cancel() override;
-  bool Close() override;
-
   // views::View:
   gfx::Size CalculatePreferredSize() const override;
   void AddedToWidget() override;
@@ -90,6 +85,9 @@ class SaveCardBubbleViews : public SaveCardBubbleView,
 
   // views::BubbleDialogDelegateView:
   void Init() override;
+
+  void OnDialogAccepted();
+  void OnDialogCancelled();
 
   std::unique_ptr<SyncPromoDelegate> sync_promo_delegate_;
 

@@ -52,4 +52,30 @@ def _validate_scheduler(ctx):
       msg.append('\n  ]')
     fail(''.join(msg))
 
+  noop_jobs = {}
+
+  for job in scheduler_cfg.job:
+    if not job.buildbucket.builder:
+      noop_jobs[job.id] = True
+
+  triggers_with_noop_jobs = {}
+
+  for trigger in scheduler_cfg.trigger:
+    for job in trigger.triggers:
+      if job in noop_jobs:
+        triggers_with_noop_jobs.setdefault(trigger.id, []).append(job)
+
+  if triggers_with_noop_jobs:
+    msg = ['The following triggers refer to no-op jobs']
+    for trigger, jobs in triggers_with_noop_jobs.items():
+      msg.append('\n  ')
+      msg.append(repr(trigger))
+      msg.append(' -> [')
+      for job in jobs:
+        msg.append('\n    ')
+        msg.append(repr(job))
+        msg.append(',')
+      msg.append('\n  ]')
+    fail(''.join(msg))
+
 lucicfg.generator(_validate_scheduler)

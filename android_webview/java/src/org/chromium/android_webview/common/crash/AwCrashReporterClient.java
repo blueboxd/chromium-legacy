@@ -39,7 +39,7 @@ public class AwCrashReporterClient {
             if (frame.getClassName().startsWith("android.webkit.")) {
                 return true;
             }
-            if (frame.getFileName().startsWith(DYNAMITE_PREFIX)) {
+            if (frame.getFileName() != null && frame.getFileName().startsWith(DYNAMITE_PREFIX)) {
                 continue;
             }
             try {

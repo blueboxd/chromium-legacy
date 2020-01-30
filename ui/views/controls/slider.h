@@ -59,7 +59,12 @@ class VIEWS_EXPORT Slider : public View, public gfx::AnimationDelegate {
     kDefaultStyle,
     kMinimalStyle,
   };
-  void SetRenderingStyle(RenderingStyle style) { style_ = style; }
+
+  // Set rendering style and schedule paint since the colors for the slider
+  // may change.
+  void SetRenderingStyle(RenderingStyle style);
+
+  RenderingStyle style() const { return style_; }
 
  protected:
   // Returns the current position of the thumb on the slider.

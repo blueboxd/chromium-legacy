@@ -4,8 +4,6 @@
 
 """Test runner for running tests using xcodebuild."""
 
-import sys
-
 import collections
 import distutils.version
 import logging
@@ -13,7 +11,6 @@ import multiprocessing
 import os
 import plistlib
 import subprocess
-import threading
 import time
 
 import iossim_util
@@ -297,48 +294,22 @@ class LaunchCommand(object):
                 and index == len(self.test_results['attempts']) - 1)):
           self.logs[test_status] += len(test_attempt_results[test_status])
 
-  def launch_attempt(self, cmd, out_dir):
+  def launch_attempt(self, cmd):
     """Launch a process and do logging simultaneously.
 
     Args:
       cmd: (list[str]) A command to run.
-      out_dir: (str) Output directory given to the command. Used in tests only.
 
     Returns:
-      returncode - return code of command run.
       output - command output as list of strings.
     """
-    LOGGER.info('Launching %s with env %s' % (cmd, self.env))
-    output = []
     proc = subprocess.Popen(
         cmd,
         env=self.env,
         stdout=subprocess.PIPE,
         stderr=subprocess.STDOUT,
     )
-
-    while True:
-      # It seems that subprocess.stdout.readline() is stuck from time to time
-      # and tests fail because of TIMEOUT.
-      # Try to fix the issue by adding timer-thread for 3 mins
-      # that will kill `frozen` running process if no new line is read
-      # and will finish test attempt.
-      # If new line appears in 3 mins, just cancel timer.
-      timer = threading.Timer(test_runner.READLINE_TIMEOUT,
-                              terminate_process, [proc])
-      timer.start()
-      line = proc.stdout.readline()
-      timer.cancel()
-      if not line:
-        break
-      line = line.rstrip()
-      LOGGER.info(line)
-      output.append(line)
-      sys.stdout.flush()
-
-    proc.wait()
-    LOGGER.info('Command %s finished with %d' % (cmd, proc.returncode))
-    return proc.returncode, output
+    return test_runner.print_process_output(proc)
 
   def launch(self):
     """Launches tests using xcodebuild."""
@@ -364,7 +335,7 @@ class LaunchCommand(object):
       # TODO(crbug.com/914878): add heartbeat logging to xcodebuild_runner.
       LOGGER.info('Start test attempt #%d for command [%s]' % (
           attempt, ' '.join(cmd_list)))
-      _, output = self.launch_attempt(cmd_list, outdir_attempt)
+      output = self.launch_attempt(cmd_list)
       self.test_results['attempts'].append(
           self._log_parser.collect_test_results(outdir_attempt, output))
       if self.retries == attempt or not self.test_results[

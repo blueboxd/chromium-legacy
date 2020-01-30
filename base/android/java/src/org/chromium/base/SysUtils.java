@@ -231,6 +231,11 @@ public class SysUtils {
         return false;
     }
 
+    @VisibleForTesting
+    public static void setAmountOfPhysicalMemoryKBForTesting(int physicalMemoryKB) {
+        sAmountOfPhysicalMemoryKB = physicalMemoryKB;
+    }
+
     @NativeMethods
     interface Natives {
         void logPageFaultCountToTracing();

@@ -180,7 +180,9 @@ SupervisedUserInterstitial::~SupervisedUserInterstitial() {}
 // static
 std::string SupervisedUserInterstitial::GetHTMLContents(
     Profile* profile,
-    supervised_user_error_page::FilteringBehaviorReason reason) {
+    supervised_user_error_page::FilteringBehaviorReason reason,
+    bool already_sent_request,
+    bool is_main_frame) {
   bool is_child_account = profile->IsChild();
 
   bool is_deprecated = !is_child_account;
@@ -206,7 +208,8 @@ std::string SupervisedUserInterstitial::GetHTMLContents(
       allow_access_requests, profile_image_url, profile_image_url2, custodian,
       custodian_email, second_custodian, second_custodian_email,
       is_child_account, is_deprecated, reason,
-      g_browser_process->GetApplicationLocale());
+      g_browser_process->GetApplicationLocale(), already_sent_request,
+      is_main_frame);
 }
 
 void SupervisedUserInterstitial::GoBack() {

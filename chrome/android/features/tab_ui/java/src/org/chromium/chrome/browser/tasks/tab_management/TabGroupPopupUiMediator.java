@@ -63,8 +63,8 @@ public class TabGroupPopupUiMediator {
 
         mFullscreenListener = new ChromeFullscreenManager.FullscreenListener() {
             @Override
-            public void onControlsOffsetChanged(
-                    int topOffset, int bottomOffset, boolean needsAnimate) {
+            public void onControlsOffsetChanged(int topOffset, int topControlsMinHeightOffset,
+                    int bottomOffset, int bottomControlsMinHeightOffset, boolean needsAnimate) {
                 // Modify the alpha the strip container view base on bottomOffset. The range of
                 // bottomOffset is within 0 to mIconSize.
                 mModel.set(TabGroupPopupUiProperties.CONTENT_VIEW_ALPHA,

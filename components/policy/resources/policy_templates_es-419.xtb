@@ -2535,10 +2535,6 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 <translation id="4970855112942626932">Inhabilitar el acceso en el navegador</translation>
 <translation id="4978405676361550165">Si se establece la política "OffHours", se ignorarán las políticas de dispositivo especificadas (se usará la configuración predeterminada de estas políticas) durante los intervalos definidos. Chrome vuelve a aplicar las políticas de dispositivo en todos los eventos cuando comienza y finaliza el período de "OffHours". Se le notificará al usuario y se lo obligará a salir de su cuenta cuando finalice el tiempo de "OffHours" y se modifique la configuración de las políticas de dispositivo (p. ej., cuando el usuario accede con una cuenta no habilitada).</translation>
 <translation id="4980635395568992380">Tipo de datos:</translation>
-<translation id="4980794848194997251">Esta política controla el tratamiento del contenido mixto (contenido HTTP en sitios HTTPS) en el navegador.
-       Si se establece la política como verdadera o no se establece, se actualizará de forma automática el contenido mixto de audio y video a HTTPS (p. ej., se reescribirá la URL como HTTPS, sin un resguardo si el recurso no está disponible en HTTPS) y se mostrará la advertencia "No seguro" en la barra de URL para el contenido mixto con imágenes.
-       Si se establece la política como falsa, se inhabilitarán las actualizaciones automáticas para el audio y el video y no se mostrarán advertencias para las imágenes.
-       Esta política no afecta otros tipos de contenido mixto que no sean imágenes, audio y video.</translation>
 <translation id="4983201894483989687">Permitir la ejecución de complementos desactualizados</translation>
 <translation id="4986560318567565414">Ruta a Chrome para el cambio desde el navegador alternativo</translation>
 <translation id="4988291787868618635">Acción que se realiza cuando se alcanza la demora de inactividad</translation>

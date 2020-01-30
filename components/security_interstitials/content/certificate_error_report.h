@@ -48,6 +48,7 @@ class CertificateErrorReport {
     INTERSTITIAL_SUPERFISH = 4,
     INTERSTITIAL_MITM_SOFTWARE = 5,
     INTERSTITIAL_BLOCKED_INTERCEPTION = 6,
+    INTERSTITIAL_LEGACY_TLS = 7,
   };
 
   // Whether the user clicked through the interstitial or not.

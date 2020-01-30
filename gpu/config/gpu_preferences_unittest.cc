@@ -80,6 +80,8 @@ void CheckGpuPreferencesEqual(GpuPreferences left, GpuPreferences right) {
 #if defined(USE_OZONE)
   EXPECT_EQ(left.message_pump_type, right.message_pump_type);
 #endif
+  EXPECT_EQ(left.enable_native_gpu_memory_buffers,
+            right.enable_native_gpu_memory_buffers);
 }
 
 }  // namespace
@@ -170,6 +172,7 @@ TEST(GpuPreferencesTest, EncodeDecode) {
     GPU_PREFERENCES_FIELD_ENUM(message_pump_type, base::MessagePumpType::UI,
                                base::MessagePumpType::UI)
 #endif
+    GPU_PREFERENCES_FIELD(enable_native_gpu_memory_buffers, true);
 
     input_prefs.texture_target_exception_list.emplace_back(
         gfx::BufferUsage::SCANOUT, gfx::BufferFormat::RGBA_8888);

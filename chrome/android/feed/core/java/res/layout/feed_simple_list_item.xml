@@ -11,6 +11,6 @@ found in the LICENSE file.
     android:layout_height="wrap_content"
     android:gravity="center_vertical"
     android:minHeight="?android:attr/listPreferredItemHeightSmall"
-    android:textAppearance="@style/TextAppearance.BlackTitle1"
+    android:textAppearance="@style/TextAppearance.TextLarge.Primary"
     style="@style/FeedMenuTextPaddingStyle"
 />

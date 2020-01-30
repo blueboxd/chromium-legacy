@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.download.home;
 import android.app.Activity;
 import android.content.Context;
 
+import org.chromium.chrome.browser.GlobalDiscardableReferencePool;
 import org.chromium.chrome.browser.download.items.OfflineContentAggregatorFactory;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -35,7 +36,7 @@ public class DownloadManagerCoordinatorFactory {
                 DownloadManagerCoordinatorFactory::settingsLaunchHelper, snackbarManager,
                 modalDialogManager, TrackerFactory.getTrackerForProfile(profile),
                 new FaviconProviderImpl(profile), OfflineContentAggregatorFactory.get(),
-                legacyProvider);
+                legacyProvider, GlobalDiscardableReferencePool.getReferencePool());
     }
 
     private static void settingsLaunchHelper(Context context) {

@@ -30,6 +30,7 @@
       <output filename="components_locale_settings_sq.pak" type="data_package" lang="sq" />
       <output filename="components_locale_settings_ur.pak" type="data_package" lang="ur" />
       <output filename="components_locale_settings_uz.pak" type="data_package" lang="uz" />
+      <output filename="components_locale_settings_zh-HK.pak" type="data_package" lang="zh-HK" />
       <output filename="components_locale_settings_zu.pak" type="data_package" lang="zu" />
     </if>
     <output filename="components_locale_settings_am.pak" type="data_package" lang="am" />
@@ -181,6 +182,7 @@
       <output filename="java/res/values-uz/components_locale_settings.xml" lang="uz" type="android" context="android_java" />
       <output filename="java/res/values-vi/components_locale_settings.xml" lang="vi" type="android" context="android_java" />
       <output filename="java/res/values-zh-rCN/components_locale_settings.xml" lang="zh-CN" type="android" context="android_java" />
+      <output filename="java/res/values-zh-rHK/components_locale_settings.xml" lang="zh-HK" type="android" context="android_java" />
       <output filename="java/res/values-zh-rTW/components_locale_settings.xml" lang="zh-TW" type="android" context="android_java" />
       <output filename="java/res/values-zu/components_locale_settings.xml" lang="zu" type="android" context="android_java" />
     </if>

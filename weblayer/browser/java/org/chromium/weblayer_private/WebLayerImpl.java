@@ -44,6 +44,7 @@ import org.chromium.weblayer_private.interfaces.IRemoteFragmentClient;
 import org.chromium.weblayer_private.interfaces.IWebLayer;
 import org.chromium.weblayer_private.interfaces.ObjectWrapper;
 import org.chromium.weblayer_private.interfaces.StrictModeWorkaround;
+import org.chromium.weblayer_private.metrics.MetricsServiceClient;
 import org.chromium.weblayer_private.metrics.UmaUtils;
 
 import java.io.File;
@@ -103,9 +104,6 @@ public final class WebLayerImpl extends IWebLayer.Stub {
         StrictModeWorkaround.apply();
         init(appContextWrapper, remoteContextWrapper);
 
-        NetworkChangeNotifier.init();
-        WebLayerNetworkChangeNotifierRegistrationPolicy registrationPolicy =
-                new WebLayerNetworkChangeNotifierRegistrationPolicy();
         final ValueCallback<Boolean> loadedCallback = (ValueCallback<Boolean>) ObjectWrapper.unwrap(
                 loadedCallbackWrapper, ValueCallback.class);
         BrowserStartupController.get(LibraryProcessType.PROCESS_WEBLAYER)
@@ -114,8 +112,7 @@ public final class WebLayerImpl extends IWebLayer.Stub {
                         new BrowserStartupController.StartupCallback() {
                             @Override
                             public void onSuccess() {
-                                CrashReporterControllerImpl.getInstance().notifyNativeInitialized();
-                                configureNetworkChangeNotifier(registrationPolicy);
+                                onNativeLoaded(appContextWrapper);
                                 loadedCallback.onReceiveValue(true);
                             }
                             @Override
@@ -138,9 +135,17 @@ public final class WebLayerImpl extends IWebLayer.Stub {
         BrowserStartupController.get(LibraryProcessType.PROCESS_WEBLAYER)
                 .startBrowserProcessesSync(
                         /* singleProcess*/ false);
+
+        onNativeLoaded(appContextWrapper);
+    }
+
+    private void onNativeLoaded(IObjectWrapper appContextWrapper) {
         CrashReporterControllerImpl.getInstance().notifyNativeInitialized();
         NetworkChangeNotifier.init();
         configureNetworkChangeNotifier(new WebLayerNetworkChangeNotifierRegistrationPolicy());
+
+        // This issues JNI calls which require native code to be loaded.
+        MetricsServiceClient.init();
     }
 
     // Configure NetworkChangeNotifier to auto detect changes in network
@@ -171,6 +176,9 @@ public final class WebLayerImpl extends IWebLayer.Stub {
 
         BuildInfo.setBrowserPackageInfo(packageInfo);
         int resourcesPackageId = getPackageId(appContext, packageInfo.packageName);
+        if (resourcesPackageId < 0x7f && resourcesPackageId != 2) {
+            throw new AndroidRuntimeException("WebLayer can't be used with another shared library");
+        }
         // TODO: The call to onResourcesLoaded() can be slow, we may need to parallelize this with
         // other expensive startup tasks.
         R.onResourcesLoaded(resourcesPackageId);

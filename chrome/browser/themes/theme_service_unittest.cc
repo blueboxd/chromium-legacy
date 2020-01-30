@@ -146,10 +146,6 @@ class ThemeServiceTest : public extensions::ExtensionServiceTestBase {
     base::RunLoop().RunUntilIdle();
   }
 
-  const CustomThemeSupplier* get_theme_supplier(ThemeService* theme_service) {
-    return theme_service->get_theme_supplier();
-  }
-
   void set_theme_supplier(ThemeService* theme_service,
                           scoped_refptr<CustomThemeSupplier> theme_supplier) {
     theme_service->theme_supplier_ = theme_supplier;
@@ -160,7 +156,9 @@ class ThemeServiceTest : public extensions::ExtensionServiceTestBase {
                           bool incognito) const {
     bool has_custom_color;
     base::Optional<SkColor> color =
-        theme_service->GetOmniboxColor(id, incognito, &has_custom_color);
+        theme_service->theme_helper_.GetOmniboxColor(
+            id, incognito, theme_service->GetThemeSupplier(),
+            &has_custom_color);
     EXPECT_TRUE(color);
     return color.value_or(gfx::kPlaceholderColor);
   }
@@ -182,7 +180,7 @@ class ThemeServiceTest : public extensions::ExtensionServiceTestBase {
   // separator with the tab and frame colors).
   static SkColor GetSeparatorColor(SkColor tab_color, SkColor frame_color) {
     return color_utils::GetResultingPaintColor(
-        ThemeService::GetSeparatorColor(tab_color, frame_color), frame_color);
+        ThemeHelper::GetSeparatorColor(tab_color, frame_color), frame_color);
   }
 
  protected:

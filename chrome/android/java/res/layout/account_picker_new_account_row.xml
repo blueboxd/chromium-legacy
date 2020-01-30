@@ -10,4 +10,4 @@
     android:gravity="center_vertical"
     android:padding="8dp"
     android:text="@string/signin_add_account"
-    android:textAppearance="@style/TextAppearance.BlackBodyDefault" />
+    android:textAppearance="@style/TextAppearance.TextMedium.Primary" />

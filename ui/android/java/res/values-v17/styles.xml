@@ -100,61 +100,88 @@
     <!-- This style is overridden downstream to set accent_font_medium as the font family. -->
     <style name="TextAppearance.AccentMediumStyle" parent="TextAppearance.RobotoMediumStyle" />
 
-    <!-- Black Text Styles -->
-    <!-- TODO(huayinz): remove tools:ignore once these text styles are all used in ui/android -->
-    <style name="TextAppearance.BlackHeadline" tools:ignore="UnusedResources">
-        <item name="android:textColor">@color/default_text_color_list</item>
-        <item name="android:textSize">@dimen/headline_size</item>
+    <!-- Base Text Styles -->
+    <!--
+      Define incomplete base text styles. The styles in this section are used
+      to create other text styles below and should not be used directly to style
+      text as they are missing textColor attributes
+    -->
+    <style name="TextAppearance.Headline">
         <item name="android:fontFamily">@font/accent_font</item>
+        <item name="android:textSize">@dimen/headline_size</item>
     </style>
-    <style name="TextAppearance.BlackTitle1" tools:ignore="UnusedResources">
-        <item name="android:textColor">@color/default_text_color_list</item>
+    <style name="TextAppearance.TextLarge">
         <item name="android:textSize">@dimen/text_size_large</item>
     </style>
-    <style name="TextAppearance.BlackTitle2" parent="TextAppearance.RobotoMediumStyle" tools:ignore="UnusedResources">
-        <item name="android:textColor">@color/default_text_color_list</item>
+    <style name="TextAppearance.TextMediumThick" parent="TextAppearance.RobotoMediumStyle">
         <item name="android:textSize">@dimen/text_size_medium</item>
     </style>
-    <style name="TextAppearance.BlackHint1" tools:ignore="UnusedResources">
-        <item name="android:textColor">@color/default_text_color_secondary_list</item>
-        <item name="android:textSize">@dimen/text_size_large</item>
-    </style>
-    <style name="TextAppearance.BlackHint2" tools:ignore="UnusedResources">
-        <item name="android:textColor">@color/default_text_color_secondary_list</item>
+    <style name="TextAppearance.TextAccentMediumThick" parent="TextAppearance.AccentMediumStyle">
         <item name="android:textSize">@dimen/text_size_medium</item>
     </style>
-    <style name="TextAppearance.BlackDisabledText1" tools:ignore="UnusedResources">
-        <item name="android:textColor">@color/default_text_color_tertiary</item>
-        <item name="android:textSize">@dimen/text_size_large</item>
+
+    <style name="TextAppearance.TextMedium">
+        <item name="android:textSize">@dimen/text_size_medium</item>
     </style>
-    <style name="TextAppearance.BlackDisabledText2" tools:ignore="UnusedResources">
-        <item name="android:textColor">@color/default_text_color_tertiary</item>
+
+    <style name="TextAppearance.TextSmall">
         <item name="android:textSize">@dimen/text_size_small</item>
     </style>
-    <style name="TextAppearance.BlackDisabledText3" tools:ignore="UnusedResources">
+
+    <!-- Adaptive Text Styles -->
+    <!--
+      Adaptive text styles are dark when the app is in light theme (for display
+      on a light background) and light when the app is in dark theme (for
+      display on a dark background).
+    -->
+    <style name="TextAppearance.Headline.Primary" tools:ignore="UnusedResources">
+        <item name="android:textColor">@color/default_text_color_list</item>
+    </style>
+
+    <style name="TextAppearance.TextLarge.Primary" tools:ignore="UnusedResources">
+        <item name="android:textColor">@color/default_text_color_list</item>
+    </style>
+
+    <style name="TextAppearance.TextLarge.Secondary" tools:ignore="UnusedResources">
+        <item name="android:textColor">@color/default_text_color_secondary_list</item>
+    </style>
+
+    <style name="TextAppearance.TextLarge.Tertiary" tools:ignore="UnusedResources">
         <item name="android:textColor">@color/default_text_color_tertiary</item>
-        <item name="android:textSize">@dimen/text_size_medium</item>
     </style>
-    <style name="TextAppearance.BlackBodyDefault" tools:ignore="UnusedResources">
+
+    <style name="TextAppearance.TextMediumThick.Primary" tools:ignore="UnusedResources">
         <item name="android:textColor">@color/default_text_color_list</item>
-        <item name="android:textSize">@dimen/text_size_medium</item>
     </style>
-    <style name="TextAppearance.BlackBody" tools:ignore="UnusedResources">
+
+    <style name="TextAppearance.TextAccentMediumThick.Secondary" tools:ignore="UnusedResources">
         <item name="android:textColor">@color/default_text_color_secondary_list</item>
-        <item name="android:textSize">@dimen/text_size_medium</item>
     </style>
-    <style name="TextAppearance.BlackCaptionDefault" tools:ignore="UnusedResources">
+
+    <style name="TextAppearance.TextMedium.Primary" tools:ignore="UnusedResources">
         <item name="android:textColor">@color/default_text_color_list</item>
-        <item name="android:textSize">@dimen/text_size_small</item>
     </style>
-    <style name="TextAppearance.BlackCaption" tools:ignore="UnusedResources">
+
+    <style name="TextAppearance.TextMedium.Secondary" tools:ignore="UnusedResources">
         <item name="android:textColor">@color/default_text_color_secondary_list</item>
-        <item name="android:textSize">@dimen/text_size_small</item>
     </style>
-    <style name="TextAppearance.BlackButtonText" parent="TextAppearance.AccentMediumStyle" tools:ignore="UnusedResources">
+
+    <style name="TextAppearance.TextMedium.Tertiary" tools:ignore="UnusedResources">
+        <item name="android:textColor">@color/default_text_color_tertiary</item>
+    </style>
+
+    <style name="TextAppearance.TextSmall.Primary" tools:ignore="UnusedResources">
+        <item name="android:textColor">@color/default_text_color_list</item>
+    </style>
+
+    <style name="TextAppearance.TextSmall.Secondary" tools:ignore="UnusedResources">
         <item name="android:textColor">@color/default_text_color_secondary_list</item>
-        <item name="android:textSize">@dimen/text_size_medium</item>
     </style>
+
+    <style name="TextAppearance.TextSmall.Tertiary" tools:ignore="UnusedResources">
+        <item name="android:textColor">@color/default_text_color_tertiary</item>
+    </style>
+
     <style name="TextAppearance.BlackLink" tools:ignore="UnusedResources">
         <item name="android:textColor">@color/default_text_color_secondary_list</item>
         <item name="android:textSize">@dimen/text_size_medium</item>

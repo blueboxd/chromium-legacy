@@ -4,7 +4,6 @@
 
 #import "ui/views/controls/menu/menu_runner_impl_cocoa.h"
 
-#include "base/mac/sdk_forward_declarations.h"
 #import "base/message_loop/message_pump_mac.h"
 #import "ui/base/cocoa/cocoa_base_utils.h"
 #import "ui/base/cocoa/menu_controller.h"

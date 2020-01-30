@@ -428,7 +428,6 @@
 <translation id="2799223571221894425">Begin weer</translation>
 <translation id="2803306138276472711">Google Veiligblaai het onlangs <ph name="BEGIN_LINK" />wanware bespeur<ph name="END_LINK" /> op <ph name="SITE" />. Webwerwe wat gewoonlik veilig is, word soms met wanware besmet.</translation>
 <translation id="2807052079800581569">Prent se posisie op Y-as</translation>
-<translation id="2809804249696361569">Albei bladsye</translation>
 <translation id="2824775600643448204">Adres- en soekbalk</translation>
 <translation id="2826760142808435982">Die verbinding is geënkripteer en gestaaf deur <ph name="CIPHER" /> te gebruik, en gebruik <ph name="KX" /> as die sleuteluitruilmeganisme.</translation>
 <translation id="2835170189407361413">Maak vorm skoon</translation>
@@ -937,7 +936,6 @@
 <translation id="5112422516732747637">A5</translation>
 <translation id="5115216390227830982">European-Edp</translation>
 <translation id="5115563688576182185">(64 bis)</translation>
-<translation id="5121469660360593280">Deel data oor sekuriteitsvoorvalle wat Chrome Enterprise se gebruikerbeskerming by jou administrateur gevlag het. Dit kan insluit: URL'e van bladsye wat jy besoek, lêername of metadata, en die gebruikernaam wat jy gebruik om op jou toestel en by Chrome aan te meld.</translation>
 <translation id="5123063207673082822">Naweek</translation>
 <translation id="5125394840236832993">B-Plus</translation>
 <translation id="5126510351761255129">Verifieer jou kaart</translation>
@@ -952,7 +950,6 @@
 <translation id="5161506081086828129">Stapelaar 9</translation>
 <translation id="516920405563544094">Voer die CVC vir <ph name="CREDIT_CARD" /> in. Nadat jy bevestig het, sal kaartbesonderhede vanaf jou Google-rekening met hierdie werf gedeel word.</translation>
 <translation id="5169827969064885044">Jy kan toegang tot jou organisasie se rekening verloor of identiteitdiefstal ervaar. Chrome beveel aan dat jy jou wagwoord nou verander.</translation>
-<translation id="5170017743895942767">Chrome Enterprise se gebruikerbeskerming</translation>
 <translation id="5171045022955879922">Soek of tik URL in</translation>
 <translation id="5171689220826475070">Fanfold-European</translation>
 <translation id="5172758083709347301">Masjien</translation>
@@ -1085,7 +1082,6 @@
 <translation id="5737183892635480227">{NUM_CARDS,plural, =1{Stoor kaart in jou Google-rekening}other{Stoor kaarte in jou Google-rekening}}</translation>
 <translation id="5745980000221562234">{NUM_CARDS,plural, =1{Gebruik 'n virtuele nommer vir hierdie kaart}other{Kies 'n kaart}}</translation>
 <translation id="5763042198335101085">Voer 'n geldige e-posadres in</translation>
-<translation id="5763703224595565476">Jou administrateur het Chrome Enterprise se gebruikerbeskerming op jou blaaier geaktiveer. Chrome Enterprise se gebruikerbeskerming het toegang tot van jou data.</translation>
 <translation id="5765072501007116331">Kies 'n adres om afleweringmetodes en -vereistes te sien</translation>
 <translation id="5776313857861697733">Prioriteit</translation>
 <translation id="5778550464785688721">MIDI-toestelle volle beheer</translation>
@@ -1422,7 +1418,6 @@ Bykomende besonderhede:
 <translation id="733923710415886693">Hierdie bediener se sertifikaat is nie via sertifikaatdeursigtigheid openbaar gemaak nie.</translation>
 <translation id="734600844861828519">11x15</translation>
 <translation id="7346048084945669753">Is geaffilieer:</translation>
-<translation id="73479065977517481"><ph name="ENROLLMENT_DOMAIN" /> het Chrome Enterprise se gebruikerbeskerming op jou blaaier geaktiveer. Chrome Enterprise se gebruikerbeskerming het toegang tot van jou data.</translation>
 <translation id="7349430561505560861">A4-Extra</translation>
 <translation id="7353601530677266744">Bevellyn</translation>
 <translation id="7372973238305370288">soekresultaat</translation>

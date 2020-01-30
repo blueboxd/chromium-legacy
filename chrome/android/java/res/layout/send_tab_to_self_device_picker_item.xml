@@ -35,7 +35,7 @@
                 android:paddingEnd="2dp"
                 android:maxLines="2"
                 android:ellipsize="end"
-                android:textAppearance="@style/TextAppearance.BlackTitle1" />
+                android:textAppearance="@style/TextAppearance.TextLarge.Primary" />
             <TextView
                 android:id="@+id/last_active"
                 android:layout_width="match_parent"
@@ -44,6 +44,6 @@
                 android:paddingEnd="2dp"
                 android:maxLines="2"
                 android:ellipsize="end"
-                android:textAppearance="@style/TextAppearance.BlackBody" />
+                android:textAppearance="@style/TextAppearance.TextMedium.Secondary" />
     </LinearLayout>
 </LinearLayout>

@@ -974,6 +974,10 @@
       'filepath': 'third_party/blink/renderer/platform/feature_policy/|' \
                   'third_party/blink/renderer/bindings/core/v8/origin_trial_features',
     },
+    'feed': {
+      'filepath': 'chrome/browser/android/feed/|' \
+                  'components/feed/'
+    },
     'feedback': {
       'filepath': 'chrome/browser/extensions/api/feedback_private/|' \
                   'chrome/browser/feedback/|' \
@@ -1942,6 +1946,12 @@
     'weblayer': {
         'filepath': 'weblayer/',
     },
+    'weblayer_safe_browsing': {
+        'filepath': 'weblayer/browser/safe_browsing/',
+    },
+    'weblayer_ssl': {
+        'filepath': 'weblayer/browser/ssl*',
+    },
     'webrtc_browser_tests': {
       'filepath': 'chrome/browser/media/.*webrtc.*browsertest|'\
                   'content/browser/media/.*webrtc.*browsertest',
@@ -2404,6 +2414,7 @@
     'feature_policy': ['loonybear@chromium.org',
                        'iclelland+watch@chromium.org',
                        'jmedley+watch@chromium.org'],
+    'feed': ['petewil+watch@chromium.org'],
     'feedback': ['cros-monitoring-forensics+feedback@google.com'],
     'fileapi': ['kinuko+fileapi@chromium.org',
                 'nhiroki@chromium.org'],
@@ -2744,7 +2755,8 @@
                          'ericwilligers+watch-bmo@chromium.org',
                          'loyso+watch@chromium.org',
                          'mgiuca+watch@chromium.org'],
-    'web_package': ['twifkak+watch@chromium.org'],
+    'web_package': ['twifkak+watch@chromium.org',
+                    'hayato+watch@chromium.org'],
     'web_share': ['mgiuca+watch@chromium.org'],
     'webauthn': ['webauthn-reviews@chromium.org'],
     'webcodecs': ['feature-media-reviews@chromium.org'],
@@ -2752,6 +2764,8 @@
                'kainino+watch@chromium.org'],
     'weblayer': ['cricke+watch@chromium.org',
                  'darin+watch@chromium.org'],
+    'weblayer_safe_browsing' : ['carlosil+watch@chromium.org'],
+    'weblayer_ssl' : ['carlosil+watch@chromium.org'],
     'webrtc_browser_tests': ['phoglund+watch@chromium.org'],
     'website_settings': ['dullweber+watch@chromium.org',
                          'msramek+watch@chromium.org'],

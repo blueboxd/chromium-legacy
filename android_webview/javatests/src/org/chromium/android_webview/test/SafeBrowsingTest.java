@@ -239,6 +239,11 @@ public class SafeBrowsingTest {
         public void didDetachInterstitialPage() {
             mDidDetachInterstitialPageHelper.notifyCalled();
         }
+
+        // This method needs to be overridden to prevent the parent method from being called, which
+        // results in duplicate OnPageFinished notifications.
+        @Override
+        public void didStopLoading(String url) {}
     }
 
     private static class MockAwContents extends TestAwContents {
@@ -440,6 +445,20 @@ public class SafeBrowsingTest {
         final String responseUrl = mTestServer.getURL(path);
         mActivityTestRule.loadUrlAsync(mAwContents, responseUrl);
         if (AwFeatureList.isEnabled(AwFeatures.SAFE_BROWSING_COMMITTED_INTERSTITIALS)) {
+            // Subresource triggered interstitials will trigger after the page containing the
+            // subresource has loaded (and displayed), so we first wait for the interstitial to be
+            // attached to the web contents, then for a visual state callback to allow the
+            // interstitial to render.
+            CriteriaHelper.pollUiThread(new Criteria() {
+                @Override
+                public boolean isSatisfied() {
+                    try {
+                        return mAwContents.isDisplayingInterstitialForTesting();
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+            });
             // Wait for the interstitial to actually render.
             mActivityTestRule.waitForVisualStateCallback(mAwContents);
         } else {
@@ -691,7 +710,13 @@ public class SafeBrowsingTest {
         loadPathAndWaitForInterstitial(IFRAME_HTML_PATH);
         waitForInterstitialDomToLoad();
         clickVisitUnsafePage();
-        mContentsClient.getOnPageFinishedHelper().waitForCallback(pageFinishedCount);
+        // For subresources, the initial site finishes loading before the interstitial is shown,
+        // causing an extra onPageFinished call if committed interstitials are enabled (since the
+        // proceed action triggers a reload).
+        int numNavigations =
+                AwFeatureList.isEnabled(AwFeatures.SAFE_BROWSING_COMMITTED_INTERSTITIALS) ? 2 : 1;
+        mContentsClient.getOnPageFinishedHelper().waitForCallback(
+                pageFinishedCount, numNavigations);
         assertTargetPageHasLoaded(IFRAME_EMBEDDER_BACKGROUND_COLOR);
     }
 
@@ -1222,7 +1247,16 @@ public class SafeBrowsingTest {
         int pageFinishedCount = mContentsClient.getOnPageFinishedHelper().getCallCount();
         clickLinkById(linkId);
         mContentsClient.getOnPageFinishedHelper().waitForCallback(pageFinishedCount);
-        Assert.assertEquals(linkUrl, mAwContents.getUrl());
+        if (AwFeatureList.isEnabled(AwFeatures.SAFE_BROWSING_COMMITTED_INTERSTITIALS)) {
+            // Some click tests involve URLs that redirect and mAwContents.getUrl() sometimes
+            // returns the post-redirect URL, so we instead check with ShouldInterceptRequest.
+            AwContentsClient.AwWebResourceRequest requestsForUrl =
+                    mContentsClient.getShouldInterceptRequestHelper().getRequestsForUrl(linkUrl);
+            // Make sure the URL was seen for a main frame navigation.
+            Assert.assertTrue(requestsForUrl.isMainFrame);
+        } else {
+            Assert.assertEquals(linkUrl, mAwContents.getUrl());
+        }
     }
 
     @Test

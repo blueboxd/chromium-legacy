@@ -293,8 +293,8 @@ TEST(SourceKeyedCachedMetadataHandlerTest, Serialize_SetWithNoSendDoesNotSend) {
       handler->HandlerForSource(source2);
 
   Vector<uint8_t> data1 = {1, 2, 3};
-  source1_handler->SetCachedMetadata(0xbeef, data1.data(), data1.size(),
-                                     CachedMetadataHandler::kCacheLocally);
+  source1_handler->DisableSendToPlatformForTesting();
+  source1_handler->SetCachedMetadata(0xbeef, data1.data(), data1.size());
 
   Vector<uint8_t> data2 = {3, 4, 5, 6};
   source2_handler->SetCachedMetadata(0x5eed, data2.data(), data2.size());

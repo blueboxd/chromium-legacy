@@ -404,5 +404,57 @@ INSTANTIATE_TEST_SUITE_P(All,
                                            YUVDecodeFormat::kYUV2),
                          TestParamToString);
 
+TEST(ImageTransferCacheEntryTestNoYUV, CPUImageWithMips) {
+  GrMockOptions options;
+  auto gr_context = GrContext::MakeMock(&options);
+
+  SkBitmap bitmap;
+  bitmap.allocPixels(
+      SkImageInfo::MakeN32Premul(gr_context->maxTextureSize() + 1, 10));
+  ClientImageTransferCacheEntry client_entry(&bitmap.pixmap(), nullptr, true);
+  std::vector<uint8_t> storage(client_entry.SerializedSize());
+  client_entry.Serialize(base::make_span(storage.data(), storage.size()));
+
+  ServiceImageTransferCacheEntry service_entry;
+  service_entry.Deserialize(gr_context.get(),
+                            base::make_span(storage.data(), storage.size()));
+  ASSERT_TRUE(service_entry.image());
+  auto pre_mip_image = service_entry.image();
+  EXPECT_FALSE(pre_mip_image->isTextureBacked());
+  EXPECT_TRUE(service_entry.has_mips());
+
+  service_entry.EnsureMips();
+  ASSERT_TRUE(service_entry.image());
+  EXPECT_FALSE(service_entry.image()->isTextureBacked());
+  EXPECT_TRUE(service_entry.has_mips());
+  EXPECT_EQ(pre_mip_image, service_entry.image());
+}
+
+TEST(ImageTransferCacheEntryTestNoYUV, CPUImageAddMipsLater) {
+  GrMockOptions options;
+  auto gr_context = GrContext::MakeMock(&options);
+
+  SkBitmap bitmap;
+  bitmap.allocPixels(
+      SkImageInfo::MakeN32Premul(gr_context->maxTextureSize() + 1, 10));
+  ClientImageTransferCacheEntry client_entry(&bitmap.pixmap(), nullptr, false);
+  std::vector<uint8_t> storage(client_entry.SerializedSize());
+  client_entry.Serialize(base::make_span(storage.data(), storage.size()));
+
+  ServiceImageTransferCacheEntry service_entry;
+  service_entry.Deserialize(gr_context.get(),
+                            base::make_span(storage.data(), storage.size()));
+  ASSERT_TRUE(service_entry.image());
+  auto pre_mip_image = service_entry.image();
+  EXPECT_FALSE(pre_mip_image->isTextureBacked());
+  EXPECT_TRUE(service_entry.has_mips());
+
+  service_entry.EnsureMips();
+  ASSERT_TRUE(service_entry.image());
+  EXPECT_FALSE(service_entry.image()->isTextureBacked());
+  EXPECT_TRUE(service_entry.has_mips());
+  EXPECT_EQ(pre_mip_image, service_entry.image());
+}
+
 }  // namespace
 }  // namespace cc

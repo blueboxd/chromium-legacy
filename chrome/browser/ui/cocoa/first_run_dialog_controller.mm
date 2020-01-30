@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/cocoa/first_run_dialog_controller.h"
 
 #include "base/mac/scoped_nsobject.h"
-#include "base/mac/sdk_forward_declarations.h"
 #include "chrome/browser/ui/cocoa/key_equivalent_constants.h"
 #include "chrome/browser/ui/cocoa/l10n_util.h"
 #include "chrome/grit/chromium_strings.h"

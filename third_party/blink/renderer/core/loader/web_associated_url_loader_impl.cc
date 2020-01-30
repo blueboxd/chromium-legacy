@@ -361,7 +361,8 @@ void WebAssociatedURLLoaderImpl::LoadAsynchronously(
   DCHECK(client);
 
   bool allow_load = true;
-  WebURLRequest new_request(request);
+  WebURLRequest new_request;
+  new_request.CopyFrom(request);
   if (options_.untrusted_http) {
     WebString method = new_request.HttpMethod();
     allow_load = observer_ && IsValidHTTPToken(method) &&

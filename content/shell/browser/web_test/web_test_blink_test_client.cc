@@ -33,6 +33,11 @@ void WebTestBlinkTestClient::Reload() {
   BlinkTestController::Get()->OnReload();
 }
 
+void WebTestBlinkTestClient::OverridePreferences(
+    const content::WebPreferences& web_preferences) {
+  BlinkTestController::Get()->OnOverridePreferences(web_preferences);
+}
+
 void WebTestBlinkTestClient::CloseRemainingWindows() {
   BlinkTestController::Get()->OnCloseRemainingWindows();
 }

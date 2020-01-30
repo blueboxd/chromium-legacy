@@ -45,7 +45,9 @@ FontFallbackList::FontFallbackList()
       font_selector_version_(0),
       family_index_(0),
       generation_(FontCache::GetFontCache()->Generation()),
-      has_loading_fallback_(false) {}
+      has_loading_fallback_(false),
+      can_shape_word_by_word_(false),
+      can_shape_word_by_word_computed_(false) {}
 
 void FontFallbackList::Invalidate(FontSelector* font_selector) {
   ReleaseFontData();
@@ -53,6 +55,8 @@ void FontFallbackList::Invalidate(FontSelector* font_selector) {
   cached_primary_simple_font_data_ = nullptr;
   family_index_ = 0;
   has_loading_fallback_ = false;
+  can_shape_word_by_word_ = false;
+  can_shape_word_by_word_computed_ = false;
   if (font_selector_ != font_selector)
     font_selector_ = font_selector;
   font_selector_version_ = font_selector_ ? font_selector_->Version() : 0;
@@ -248,6 +252,29 @@ const FontData* FontFallbackList::FontDataAt(
       has_loading_fallback_ = true;
   }
   return result.get();
+}
+
+bool FontFallbackList::ComputeCanShapeWordByWord(
+    const FontDescription& font_description) const {
+  if (!font_description.GetTypesettingFeatures())
+    return true;
+
+  const SimpleFontData* primary_font = PrimarySimpleFontData(font_description);
+  if (!primary_font)
+    return false;
+
+  const FontPlatformData& platform_data = primary_font->PlatformData();
+  TypesettingFeatures features = font_description.GetTypesettingFeatures();
+  return !platform_data.HasSpaceInLigaturesOrKerning(features);
+}
+
+bool FontFallbackList::CanShapeWordByWord(
+    const FontDescription& font_description) const {
+  if (!can_shape_word_by_word_computed_) {
+    can_shape_word_by_word_ = ComputeCanShapeWordByWord(font_description);
+    can_shape_word_by_word_computed_ = true;
+  }
+  return can_shape_word_by_word_;
 }
 
 bool FontFallbackList::IsValid() const {

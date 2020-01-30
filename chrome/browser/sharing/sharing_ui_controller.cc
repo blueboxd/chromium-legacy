@@ -67,6 +67,7 @@ base::string16 SharingUiController::GetTitle(SharingDialogType dialog_type) {
 
     case SharingSendMessageResult::kPayloadTooLarge:
     case SharingSendMessageResult::kInternalError:
+    case SharingSendMessageResult::kEncryptionError:
       return l10n_util::GetStringFUTF16(
           IDS_BROWSER_SHARING_ERROR_DIALOG_TITLE_INTERNAL_ERROR,
           base::ToLowerASCII(GetContentType()));
@@ -94,6 +95,7 @@ base::string16 SharingUiController::GetErrorDialogText() const {
 
     case SharingSendMessageResult::kPayloadTooLarge:
     case SharingSendMessageResult::kInternalError:
+    case SharingSendMessageResult::kEncryptionError:
       return l10n_util::GetStringUTF16(
           IDS_BROWSER_SHARING_ERROR_DIALOG_TEXT_INTERNAL_ERROR);
   }

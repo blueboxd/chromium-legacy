@@ -178,10 +178,10 @@ PositionWithAffinity LayoutSVGInlineText::PositionForPoint(
   SVGInlineTextBox* closest_distance_box = nullptr;
 
   for (InlineTextBox* box : TextBoxes()) {
-    if (!box->IsSVGInlineTextBox())
+    auto* text_box = DynamicTo<SVGInlineTextBox>(box);
+    if (!text_box)
       continue;
 
-    SVGInlineTextBox* text_box = ToSVGInlineTextBox(box);
     for (const SVGTextFragment& fragment : text_box->TextFragments()) {
       FloatRect fragment_rect = fragment.BoundingBox(baseline);
 

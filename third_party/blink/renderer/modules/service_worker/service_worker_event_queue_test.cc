@@ -128,8 +128,8 @@ class ServiceWorkerEventQueueTest : public testing::Test {
 };
 
 TEST_F(ServiceWorkerEventQueueTest, IdleTimer) {
-  const base::TimeDelta kIdleInterval =
-      ServiceWorkerEventQueue::kDefaultIdleDelay;
+  const base::TimeDelta kIdleInterval = base::TimeDelta::FromSeconds(
+      mojom::blink::kServiceWorkerDefaultIdleDelayInSeconds);
 
   bool is_idle = false;
   ServiceWorkerEventQueue event_queue(
@@ -189,8 +189,8 @@ TEST_F(ServiceWorkerEventQueueTest, IdleTimer) {
 }
 
 TEST_F(ServiceWorkerEventQueueTest, InflightEventBeforeStart) {
-  const base::TimeDelta kIdleInterval =
-      ServiceWorkerEventQueue::kDefaultIdleDelay;
+  const base::TimeDelta kIdleInterval = base::TimeDelta::FromSeconds(
+      mojom::blink::kServiceWorkerDefaultIdleDelayInSeconds);
 
   bool is_idle = false;
   ServiceWorkerEventQueue event_queue(
@@ -227,8 +227,10 @@ TEST_F(ServiceWorkerEventQueueTest, EventFinishedBeforeStart) {
 
   // Move the time ticks to almost before |idle_time_| so that |idle_callback|
   // will get called at the first update check.
-  task_runner()->FastForwardBy(ServiceWorkerEventQueue::kDefaultIdleDelay -
-                               base::TimeDelta::FromSeconds(1));
+  task_runner()->FastForwardBy(
+      base::TimeDelta::FromSeconds(
+          mojom::blink::kServiceWorkerDefaultIdleDelayInSeconds) -
+      base::TimeDelta::FromSeconds(1));
 
   event_queue.Start();
 
@@ -341,7 +343,8 @@ TEST_F(ServiceWorkerEventQueueTest, PushPendingTask) {
                                       task_runner(),
                                       task_runner()->GetMockTickClock());
   event_queue.Start();
-  task_runner()->FastForwardBy(ServiceWorkerEventQueue::kDefaultIdleDelay);
+  task_runner()->FastForwardBy(base::TimeDelta::FromSeconds(
+      mojom::blink::kServiceWorkerDefaultIdleDelayInSeconds));
   EXPECT_TRUE(event_queue.did_idle_timeout());
 
   MockEvent pending_event;
@@ -561,8 +564,8 @@ TEST_F(ServiceWorkerEventQueueTest, EnqueuOffline) {
 }
 
 TEST_F(ServiceWorkerEventQueueTest, IdleTimerWithOfflineEvents) {
-  const base::TimeDelta kIdleInterval =
-      ServiceWorkerEventQueue::kDefaultIdleDelay;
+  const base::TimeDelta kIdleInterval = base::TimeDelta::FromSeconds(
+      mojom::blink::kServiceWorkerDefaultIdleDelayInSeconds);
 
   bool is_idle = false;
   ServiceWorkerEventQueue event_queue(

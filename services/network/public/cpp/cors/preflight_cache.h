@@ -8,12 +8,15 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <tuple>
 
 #include "base/component_export.h"
 #include "base/macros.h"
+#include "net/base/network_isolation_key.h"
 #include "net/http/http_request_headers.h"
 #include "services/network/public/cpp/cors/preflight_result.h"
 #include "services/network/public/mojom/fetch_api.mojom-shared.h"
+#include "url/origin.h"
 
 class GURL;
 
@@ -32,18 +35,21 @@ class COMPONENT_EXPORT(NETWORK_CPP) PreflightCache final {
 
   // Appends new |preflight_result| entry to the cache for a specified |origin|
   // and |url|.
-  void AppendEntry(const std::string& origin,
+  void AppendEntry(const url::Origin& origin,
                    const GURL& url,
+                   const net::NetworkIsolationKey& network_isolation_key,
                    std::unique_ptr<PreflightResult> preflight_result);
 
   // Consults with cached results, and decides if we can skip CORS-preflight or
   // not.
-  bool CheckIfRequestCanSkipPreflight(const std::string& origin,
-                                      const GURL& url,
-                                      mojom::CredentialsMode credentials_mode,
-                                      const std::string& method,
-                                      const net::HttpRequestHeaders& headers,
-                                      bool is_revalidating);
+  bool CheckIfRequestCanSkipPreflight(
+      const url::Origin& origin,
+      const GURL& url,
+      const net::NetworkIsolationKey& network_isolation_key,
+      mojom::CredentialsMode credentials_mode,
+      const std::string& method,
+      const net::HttpRequestHeaders& headers,
+      bool is_revalidating);
 
   // Counts cached entries for testing.
   size_t CountEntriesForTesting() const;
@@ -55,9 +61,11 @@ class COMPONENT_EXPORT(NETWORK_CPP) PreflightCache final {
  private:
   void MayPurge(size_t max_entries, size_t purge_unit);
 
-  // A map for caching. This is accessed by a pair of origin and url strings
-  // to find a cached entry.
-  std::map<std::pair<std::string /* origin */, std::string /* url */>,
+  // A map for caching. This is accessed by a tuple of origin,
+  // url string, and NetworkIsolationKey to find a cached entry.
+  std::map<std::tuple<url::Origin /* origin */,
+                      std::string /* url */,
+                      net::NetworkIsolationKey /* NIK */>,
            std::unique_ptr<PreflightResult>>
       cache_;
 

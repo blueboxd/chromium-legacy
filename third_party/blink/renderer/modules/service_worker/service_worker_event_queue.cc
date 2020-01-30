@@ -28,7 +28,6 @@ int NextEventId() {
 }  // namespace
 
 // static
-constexpr base::TimeDelta ServiceWorkerEventQueue::kDefaultIdleDelay;
 constexpr base::TimeDelta ServiceWorkerEventQueue::kEventTimeout;
 constexpr base::TimeDelta ServiceWorkerEventQueue::kUpdateInterval;
 

@@ -35,10 +35,6 @@ void ProfileReportGenerator::set_policies_enabled(bool enabled) {
   policies_enabled_ = enabled;
 }
 
-void ProfileReportGenerator::set_extension_request_enabled(bool enabled) {
-  extension_request_enabled_ = enabled;
-}
-
 std::unique_ptr<em::ChromeUserProfileInfo>
 ProfileReportGenerator::MaybeGenerate(const base::FilePath& path,
                                       const std::string& name) {
@@ -101,7 +97,7 @@ void ProfileReportGenerator::GetPolicyFetchTimestampInfo() {
 }
 
 void ProfileReportGenerator::GetExtensionRequest() {
-  if (!extension_request_enabled_)
+  if (!profile_->GetPrefs()->GetBoolean(prefs::kCloudExtensionRequestEnabled))
     return;
   const base::DictionaryValue* pending_requests =
       profile_->GetPrefs()->GetDictionary(prefs::kCloudExtensionRequestIds);

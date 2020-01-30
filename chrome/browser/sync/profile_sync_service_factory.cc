@@ -81,6 +81,7 @@
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/printing/synced_printers_manager_factory.h"
 #include "chrome/browser/sync/wifi_configuration_sync_service_factory.h"
+#include "chromeos/constants/chromeos_features.h"
 #endif  // defined(OS_CHROMEOS)
 
 #if defined(OS_WIN)
@@ -273,10 +274,7 @@ KeyedService* ProfileSyncServiceFactory::BuildServiceInstanceFor(
     // those two cases. Bug 88109.
     bool is_auto_start = browser_defaults::kSyncAutoStarts;
 #if defined(OS_CHROMEOS)
-    // TODO(https://crbug.com/1013466): Replace this with kSplitSettingsSync
-    // when the browser sync consent dialog is working on Chrome OS. This is
-    // here temporarily for manual testing of the OS sync consent flow.
-    if (base::FeatureList::IsEnabled(switches::kSyncManualStartChromeOS))
+    if (chromeos::features::IsSplitSettingsSyncEnabled())
       is_auto_start = false;
 #endif
     init_params.start_behavior = is_auto_start

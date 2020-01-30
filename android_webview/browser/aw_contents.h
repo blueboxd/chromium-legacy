@@ -157,6 +157,9 @@ class AwContents : public FindHelper::Listener,
   void OnDetachedFromWindow(JNIEnv* env,
                             const base::android::JavaParamRef<jobject>& obj);
   bool IsVisible(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
+  bool IsDisplayingInterstitialForTesting(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj);
   base::android::ScopedJavaLocalRef<jbyteArray> GetOpaqueState(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj);

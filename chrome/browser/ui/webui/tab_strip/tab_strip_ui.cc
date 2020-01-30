@@ -35,7 +35,9 @@
 #include "ui/gfx/color_utils.h"
 #include "ui/resources/grit/webui_resources.h"
 
+// These data types must be in all lowercase.
 const char kWebUITabIdDataType[] = "application/vnd.chromium.tab";
+const char kWebUITabGroupIdDataType[] = "application/vnd.chromium.tabgroup";
 
 TabStripUI::TabStripUI(content::WebUI* web_ui)
     : content::WebUIController(web_ui) {
@@ -53,6 +55,7 @@ TabStripUI::TabStripUI(content::WebUI* web_ui)
       generated_path, IDR_TAB_STRIP_HTML);
 
   html_source->AddString("tabIdDataType", kWebUITabIdDataType);
+  html_source->AddString("tabGroupIdDataType", kWebUITabGroupIdDataType);
 
   // Add a load time string for the frame color to allow the tab strip to paint
   // a background color that matches the frame before any content loads

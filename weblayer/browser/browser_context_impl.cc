@@ -5,6 +5,8 @@
 #include "weblayer/browser/browser_context_impl.h"
 
 #include "components/download/public/common/in_progress_download_manager.h"
+#include "components/embedder_support/pref_names.h"
+#include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/prefs/in_memory_pref_store.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
@@ -62,10 +64,16 @@ BrowserContextImpl::BrowserContextImpl(ProfileImpl* profile_impl,
   content::BrowserContext::Initialize(this, path_);
 
   CreateUserPrefService();
+
+  BrowserContextDependencyManager::GetInstance()->CreateBrowserContextServices(
+      this);
 }
 
 BrowserContextImpl::~BrowserContextImpl() {
   NotifyWillBeDestroyed(this);
+
+  BrowserContextDependencyManager::GetInstance()->DestroyBrowserContextServices(
+      this);
 }
 
 base::FilePath BrowserContextImpl::GetDefaultDownloadDirectory() {
@@ -200,6 +208,11 @@ void BrowserContextImpl::CreateUserPrefService() {
 }
 
 void BrowserContextImpl::RegisterPrefs(PrefRegistrySimple* pref_registry) {
+  // This pref is used by CaptivePortalService (as well as other potential use
+  // cases in the future, as it is used for various purposes through //chrome).
+  pref_registry->RegisterBooleanPref(
+      embedder_support::kAlternateErrorPagesEnabled, true);
+
   safe_browsing::RegisterProfilePrefs(pref_registry);
 }
 

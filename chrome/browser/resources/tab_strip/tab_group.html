@@ -2,7 +2,9 @@
 :host {
   --tabstrip-tab-group-title-height: 22px;
   --tabstrip-tab-group-title-margin: var(--tabstrip-tab-spacing);
+}
 
+#tabGroup {
   border-radius: 8px;
   box-shadow: 0 0 0 1px rgba(var(--tabstrip-tab-group-color-rgb), .24);
   padding: var(--tabstrip-tab-spacing);
@@ -55,11 +57,93 @@
                               var(--tabstrip-tab-thumbnail-height));
   --tabstrip-tab-width: var(--tabstrip-tab-thumbnail-width);
 }
+
+:host([getting-drag-image_]) #dragImage {
+  /* Enough padding for the drop shadow on #tabGroup. The position of the
+     drag image is translated with the same value as the padding, to ensure
+     that the drag image stays in the same position as it would be without
+     padding. This is to ensure drag events do not get canceled as drag targets
+     move around. */
+  --drag-image-padding: 25px;
+  padding: var(--drag-image-padding);
+  transform: translate(
+      calc(-1 * var(--drag-image-padding)),
+      calc(-1 * var(--drag-image-padding)));
+}
+
+:host([getting-drag-image_]) #tabGroup {
+  background: var(--tabstrip-background-color);
+  border-radius: var(--tabstrip-tab-border-radius);
+  box-shadow: var(--tabstrip-tab-dragging-shadow);
+  height: var(--tabstrip-tab-height);
+  overflow: hidden;
+}
+
+:host([getting-drag-image_]) ::slotted(tabstrip-tab) {
+  --tabstrip-tab-active-border-color: var(--tabstrip-tab-separator-color);
+}
+
+:host([getting-drag-image_]) ::slotted(tabstrip-tab:first-child) {
+  /* Make sure the first tab is always above the other tabs. */
+  z-index: 4;
+}
+
+:host([getting-drag-image_]) ::slotted(tabstrip-tab:nth-child(2)),
+:host([getting-drag-image_]) ::slotted(tabstrip-tab:nth-child(3)),
+:host([getting-drag-image_]) ::slotted(tabstrip-tab:nth-child(4)),
+:host([getting-drag-image_]) ::slotted(tabstrip-tab:nth-child(5)) {
+  /* Add a negative margin to the 2nd - 5th tab to move them behind the first
+     tab to give an impression that they are a stacked group of tabs.
+     Transform cannot be used here since we also want the space the tabs
+     take up to be moved. */
+  margin-inline-start: calc(-1 * var(--tabstrip-tab-width));
+}
+
+:host([getting-drag-image_]) ::slotted(tabstrip-tab:nth-child(2)) {
+  z-index: 3;
+}
+
+:host([getting-drag-image_]) ::slotted(tabstrip-tab:nth-child(3)) {
+  z-index: 2;
+}
+
+:host([getting-drag-image_]) ::slotted(tabstrip-tab:nth-child(4)) {
+  z-index: 1;
+}
+
+:host([getting-drag-image_]) ::slotted(tabstrip-tab:nth-child(5)) {
+  padding: 0;
+  z-index: 0;
+}
+
+:host([getting-drag-image_]) ::slotted(tabstrip-tab:nth-child(n + 6)) {
+  display: none;
+}
+
+:host([dragging]) #dragPlaceholder {
+  background: var(--tabstrip-tab-background-color);
+  border-radius: var(--tabstrip-tab-border-radius);
+  height: var(--tabstrip-tab-height);
+  opacity: 0.5;
+  width: var(--tabstrip-tab-width);
+}
+
+:host([dragging]) #dragImage {
+  /* Position the actual drag image out of view so it is not visible. */
+  position: absolute;
+  top: 100vh;
+}
 </style>
 
-<div id="chip">
-  <div id="title"></div>
-</div>
-<div id="tabs">
-  <slot></slot>
+<div id="dragPlaceholder"></div>
+
+<div id="dragImage">
+  <div id="tabGroup">
+    <div id="chip" draggable="true">
+      <div id="title"></div>
+    </div>
+    <div id="tabs">
+      <slot></slot>
+    </div>
+  </div>
 </div>

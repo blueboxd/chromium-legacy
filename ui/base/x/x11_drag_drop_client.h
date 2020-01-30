@@ -18,16 +18,55 @@
 
 namespace ui {
 
-// Converts a bitfield of actions into an Atom that represents what action
-// we're most likely to take on drop.
-COMPONENT_EXPORT(UI_BASE_X) Atom DragOperationToAtom(int drag_operation);
+class OSExchangeData;
+class XOSExchangeDataProvider;
 
-// Converts a single action atom to a drag operation.
-COMPONENT_EXPORT(UI_BASE_X)
-DragDropTypes::DragOperation AtomToDragOperation(Atom atom);
+// Converts the current set of X masks into the set of ui::EventFlags.
+COMPONENT_EXPORT(UI_BASE_X) int XGetMaskAsEventFlags();
 
+// Handles XDND (X11 drag and drop protocol) for the given window.
+//
+// Doesn't fetch XDND events from the event source; those should be taken by
+// the client and fed to |OnXdnd...| and |OnSelectionNotify| methods.
 class COMPONENT_EXPORT(UI_BASE_X) XDragDropClient {
  public:
+  // Handlers and callbacks that should be implemented at the consumer side.
+  class Delegate {
+   public:
+    // Creates the window finder.
+    virtual std::unique_ptr<XTopmostWindowFinder> CreateWindowFinder() = 0;
+
+    // Updates the drag status by the new position.  Returns the drag operation
+    // possible at that position.
+    //
+    // Handling XdndPosition can be paused while waiting for more data; this is
+    // called either synchronously from OnXdndPosition, or asynchronously after
+    // we've received data requested from the other window.
+    virtual int UpdateDrag(const gfx::Point& screen_point) = 0;
+
+    // Updates the mouse cursor shape.
+    virtual void UpdateCursor(
+        DragDropTypes::DragOperation negotiated_operation) = 0;
+
+    // Called when data from another application enters the window.
+    virtual void OnBeginForeignDrag(XID window) = 0;
+
+    // Called when data from another application is about to leave the window.
+    virtual void OnEndForeignDrag() = 0;
+
+    // Called just before the drag leaves the window.
+    virtual void OnBeforeDragLeave() = 0;
+
+    // Drops data at the current location and returns the resulting operation.
+    virtual int PerformDrop() = 0;
+
+    // Called to end the move loop that is maintained by the subclass.
+    virtual void EndMoveLoop() = 0;
+
+   protected:
+    virtual ~Delegate() {}
+  };
+
   // Handling XdndPosition can be paused while waiting for more data; this is
   // called either synchronously from OnXdndPosition, or asynchronously after
   // we've received data requested from the other window.
@@ -36,6 +75,9 @@ class COMPONENT_EXPORT(UI_BASE_X) XDragDropClient {
   void ProcessMouseMove(const gfx::Point& screen_point,
                         unsigned long event_time);
 
+  const XOSExchangeDataProvider* source_provider() const {
+    return source_provider_;
+  }
   int current_modifier_state() const { return current_modifier_state_; }
 
   // During the blocking StartDragAndDrop() call, this converts the views-style
@@ -70,69 +112,30 @@ class COMPONENT_EXPORT(UI_BASE_X) XDragDropClient {
     kOther,
   };
 
-  XDragDropClient(Display* xdisplay, XID xwindow);
+  XDragDropClient(Delegate* delegate, Display* xdisplay, XID xwindow);
   virtual ~XDragDropClient();
 
   XDragDropClient(const XDragDropClient&) = delete;
   XDragDropClient& operator=(const XDragDropClient&) = delete;
 
-  // Handlers and callbacks that the subclass should implement.
-
-  // Creates the window finder.
-  virtual std::unique_ptr<XTopmostWindowFinder> CreateWindowFinder() = 0;
-
-  // Handling XdndPosition can be paused while waiting for more data; this is
-  // called either synchronously from OnXdndPosition, or asynchronously after
-  // we've received data requested from the other window.
-  virtual int GetDragOperation(const gfx::Point& screen_point) = 0;
-
-  // Updates the mouse cursor shape.
-  virtual void UpdateCursor(
-      DragDropTypes::DragOperation negotiated_operation) = 0;
-
-  // Returns a representation of the data we're offering in this drag.  This is
-  // done to bypass an asynchronous roundtrip with the X11 server.
-  virtual SelectionFormatMap GetFormatMap() const = 0;
-
-  // Extracts available targets from the data provider.
-  virtual void RetrieveTargets(std::vector<Atom>* targets) const = 0;
-
-  // Called when data from another application enters the window.
-  virtual void OnBeginForeignDrag(XID window) = 0;
-
-  // Called when data from another application is about to leave the window.
-  virtual void OnEndForeignDrag() = 0;
-
-  // Called just before the drag leaves the window.
-  virtual void OnBeforeDragLeave() = 0;
-
-  // Drops data at the current location and returns the resulting operation.
-  virtual int PerformDrop() = 0;
-
-  // Called to end the move loop that is maintained by the subclass.
-  virtual void EndMoveLoop() = 0;
-
-  Display* xdisplay() const { return xdisplay_; }
   XID xwindow() const { return xwindow_; }
-  XID source_current_window() const { return source_current_window_; }
-  void set_source_current_window(XID window) {
-    source_current_window_ = window;
-  }
   XDragContext* target_current_context() {
     return target_current_context_.get();
   }
-  SourceState source_state() const { return source_state_; }
-  bool waiting_on_status() const { return waiting_on_status_; }
-  int drag_operation() const { return drag_operation_; }
   DragDropTypes::DragOperation negotiated_operation() const {
     return negotiated_operation_;
   }
-  bool status_received_since_enter() const {
-    return status_received_since_enter_;
-  }
 
-  // Resets the drag state so the object is ready to handle the drag.
-  void InitDrag(int operation);
+  // Resets the drag state so the object is ready to handle the drag.  Sets
+  // X window properties so that the desktop environment is aware of available
+  // actions.  Sets |source_provider_| so properties of dragged data can be
+  // queried afterwards.  Should be called before entering the main drag loop.
+  void InitDrag(int operation, OSExchangeData* data);
+
+  // Cleans up the drag state after the drag is done.  Removes the X window
+  // properties related to the drag operation.  Should be called after exiting
+  // the main drag loop.
+  void CleanupDrag();
 
   // Updates |current_modifier_state_| with the given set of flags.
   void UpdateModifierState(int flags);
@@ -147,8 +150,15 @@ class COMPONENT_EXPORT(UI_BASE_X) XDragDropClient {
   void StartEndMoveLoopTimer();
   void StopEndMoveLoopTimer();
 
+  // These |Handle...| methods essentially implement the
+  // views::X11MoveLoopDelegate interface.
+  void HandleMouseMovement(const gfx::Point& screen_point,
+                           int flags,
+                           base::TimeTicks event_time);
   void HandleMouseReleased();
+  void HandleMoveLoopEnded();
 
+ private:
   // Creates an XEvent and fills it in with values typical for XDND messages:
   // the type of event is set to ClientMessage, the format is set to 32 (longs),
   // and the zero member of data payload is set to |xwindow_|.  All other data
@@ -162,6 +172,7 @@ class COMPONENT_EXPORT(UI_BASE_X) XDragDropClient {
 
   // Sends |xev| to |xid|, optionally short circuiting the round trip to the X
   // server.
+  // Virtual for testing.
   virtual void SendXClientEvent(XID xid, XEvent* xev);
 
   void SendXdndEnter(XID dest_window, const std::vector<Atom>& targets);
@@ -171,11 +182,14 @@ class COMPONENT_EXPORT(UI_BASE_X) XDragDropClient {
   void SendXdndLeave(XID dest_window);
   void SendXdndDrop(XID dest_window);
 
- private:
   // We maintain a mapping of live XDragDropClient objects to their X11 windows,
   // so that we'd able to short circuit sending X11 messages to windows in our
   // process.
   static XDragDropClient* GetForWindow(XID window);
+
+  void EndMoveLoop();
+
+  Delegate* const delegate_;
 
   Display* const xdisplay_;
   const XID xwindow_;
@@ -186,6 +200,7 @@ class COMPONENT_EXPORT(UI_BASE_X) XDragDropClient {
   // Source side information.
   XID source_current_window_ = x11::None;
   SourceState source_state_ = SourceState::kOther;
+  const XOSExchangeDataProvider* source_provider_ = nullptr;
 
   // The operation bitfield as requested by StartDragAndDrop.
   int drag_operation_ = 0;

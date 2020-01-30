@@ -303,12 +303,11 @@
 <translation id="3282568296779691940">Connexion à Chrome</translation>
 <translation id="3288003805934695103">D'actualiser la page</translation>
 <translation id="32895400574683172">Les notifications sont autorisées</translation>
-<translation id="3290926146403723641">Pour effectuer des tâches sur le Web à l'aide de l'Assistant Google, Chrome envoie l'URL et le contenu du site ainsi que les renseignements personnels pertinents à Google</translation>
 <translation id="3295530008794733555">Naviguez plus vite. Utilisez moins de données.</translation>
 <translation id="3298243779924642547">Simplifié</translation>
 <translation id="3303414029551471755">Lancer le téléchargement du contenu?</translation>
 <translation id="3306398118552023113">Cette application s'exécute dans Google Chrome</translation>
-<translation id="3312292613668865961">Demander avant d'autoriser les sites à accéder à votre appareil et vos données de réalité virtuelle (recommandé)</translation>
+<translation id="3312292613668865961">Demander avant d'autoriser les sites à accéder à votre appareil et à vos données de réalité virtuelle (recommandé)</translation>
 <translation id="3315103659806849044">Vous personnalisez actuellement les paramètres relatifs aux services Google et à la synchronisation. Pour valider l'activation de la synchronisation, touchez le bouton Confirmer dans le bas de l'écran. Revenir au haut de la page</translation>
 <translation id="3328801116991980348">Information sur le site</translation>
 <translation id="3333961966071413176">Tous les contacts</translation>
@@ -514,7 +513,7 @@ Pour modifier ce paramètre, <ph name="BEGIN_LINK" />réinitialisez la synchroni
 <translation id="4915549754973153784"><ph name="BEGIN_LINK" />Obtenir de l'aide<ph name="END_LINK" /> pendant la recherche d'appareils…</translation>
 <translation id="4921180162323349895">{FILE_COUNT,plural, =1{# page}one{# page}other{# pages}}</translation>
 <translation id="4932247056774066048">Comme vous vous déconnectez d'un compte géré par <ph name="DOMAIN_NAME" />, vos données Chrome seront supprimées de cet appareil. Elles resteront toutefois dans votre compte Google.</translation>
-<translation id="4935305910887312910">Demander avant d'autoriser les sites à accéder à la position de votre appareil photo ou de cartographier votre pièce (recommandé)</translation>
+<translation id="4935305910887312910">Demander avant d'autoriser les sites à accéder à la position de votre appareil photo ou à cartographier votre pièce (recommandé)</translation>
 <translation id="4943703118917034429">Réalité virtuelle</translation>
 <translation id="4943872375798546930">Aucun résultat</translation>
 <translation id="4958708863221495346"><ph name="URL_OF_THE_CURRENT_TAB" /> partage votre écran</translation>
@@ -1028,7 +1027,7 @@ Le site n'obtient PAS l'accès à l'appareil photo. Vous seul pouvez visionner l
 <translation id="8676374126336081632">Effacer l'entrée</translation>
 <translation id="8687353297350450808">{N_BARS,plural, =1{Niveau du signal : # barre}one{Niveau du signal : # barre}other{Niveau du signal : # barres}}</translation>
 <translation id="868929229000858085">Effectuez une recherche dans vos contacts</translation>
-<translation id="8698438463325761328">Empêcher les sites d'accéder à vos appareils et vos données de réalité virtuelle</translation>
+<translation id="8698438463325761328">Empêcher les sites d'accéder à vos appareils et à vos données de réalité virtuelle</translation>
 <translation id="869891660844655955">Date d'expiration</translation>
 <translation id="8728487861892616501">En utilisant cette application, vous acceptez les <ph name="BEGIN_LINK1" />conditions d'utilisation<ph name="END_LINK1" /> et l'<ph name="BEGIN_LINK2" />avis de confidentialité<ph name="END_LINK2" /> de Chrome ainsi que l'<ph name="BEGIN_LINK3" />avis de confidentialité relatif aux comptes Google gérés dans Family Link<ph name="END_LINK3" />.</translation>
 <translation id="8748850008226585750">Contenus masqués</translation>

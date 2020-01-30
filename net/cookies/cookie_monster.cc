@@ -1656,7 +1656,7 @@ std::string CookieMonster::GetKey(base::StringPiece domain) {
       registry_controlled_domains::GetDomainAndRegistry(
           domain, registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES));
   if (effective_domain.empty())
-    domain.CopyToString(&effective_domain);
+    effective_domain = std::string(domain);
 
   if (!effective_domain.empty() && effective_domain[0] == '.')
     return effective_domain.substr(1);

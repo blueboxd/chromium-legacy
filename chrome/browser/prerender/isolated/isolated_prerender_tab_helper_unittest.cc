@@ -394,3 +394,67 @@ TEST_F(IsolatedPrerenderTabHelperTest, SuccessCase) {
   network::mojom::URLResponseHeadPtr head = resp->TakeHead();
   EXPECT_TRUE(head->headers->HasHeaderValue("X-Testing", "Hello World"));
 }
+
+TEST_F(IsolatedPrerenderTabHelperTest, LimitedNumberOfPrefetches_Zero) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeatureWithParameters(
+      features::kPrefetchSRPNavigationPredictions_HTMLOnly,
+      {{"max_srp_prefetches", "0"}});
+
+  GURL doc_url("https://www.google.com/search?q=cats");
+  GURL prediction_url("https://www.cat-food.com/");
+  MakeNavigationPrediction(web_contents(), doc_url, {prediction_url});
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(RequestCount(), 0);
+}
+
+TEST_F(IsolatedPrerenderTabHelperTest, LimitedNumberOfPrefetches_Unlimited) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeatureWithParameters(
+      features::kPrefetchSRPNavigationPredictions_HTMLOnly,
+      {{"max_srp_prefetches", "-1"}});
+
+  GURL doc_url("https://www.google.com/search?q=cats");
+  GURL prediction_url_1("https://www.cat-food.com/");
+  GURL prediction_url_2("https://www.dogs-r-dumb.com/");
+  GURL prediction_url_3("https://www.catz-rule.com/");
+  MakeNavigationPrediction(
+      web_contents(), doc_url,
+      {prediction_url_1, prediction_url_2, prediction_url_3});
+
+  VerifyCommonRequestState(prediction_url_1);
+  MakeResponseAndWait(net::HTTP_OK, net::OK, kHTMLMimeType, {}, kHTMLBody);
+  VerifyCommonRequestState(prediction_url_2);
+  // Failed responses do not retry or attempt more requests in the list.
+  MakeResponseAndWait(net::HTTP_OK, net::ERR_FAILED, kHTMLMimeType, {},
+                      kHTMLBody);
+  VerifyCommonRequestState(prediction_url_3);
+  MakeResponseAndWait(net::HTTP_OK, net::OK, kHTMLMimeType, {}, kHTMLBody);
+
+  EXPECT_EQ(RequestCount(), 0);
+}
+
+TEST_F(IsolatedPrerenderTabHelperTest, LimitedNumberOfPrefetches) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeatureWithParameters(
+      features::kPrefetchSRPNavigationPredictions_HTMLOnly,
+      {{"max_srp_prefetches", "2"}});
+
+  GURL doc_url("https://www.google.com/search?q=cats");
+  GURL prediction_url_1("https://www.cat-food.com/");
+  GURL prediction_url_2("https://www.dogs-r-dumb.com/");
+  GURL prediction_url_3("https://www.catz-rule.com/");
+  MakeNavigationPrediction(
+      web_contents(), doc_url,
+      {prediction_url_1, prediction_url_2, prediction_url_3});
+
+  VerifyCommonRequestState(prediction_url_1);
+  // Failed responses do not retry or attempt more requests in the list.
+  MakeResponseAndWait(net::HTTP_OK, net::ERR_FAILED, kHTMLMimeType, {},
+                      kHTMLBody);
+  VerifyCommonRequestState(prediction_url_2);
+  MakeResponseAndWait(net::HTTP_OK, net::OK, kHTMLMimeType, {}, kHTMLBody);
+
+  EXPECT_EQ(RequestCount(), 0);
+}

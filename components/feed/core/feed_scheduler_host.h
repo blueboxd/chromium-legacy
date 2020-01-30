@@ -14,8 +14,8 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "components/feed/core/common/enums.h"
-#include "components/feed/core/refresh_throttler.h"
-#include "components/feed/core/user_classifier.h"
+#include "components/feed/core/common/refresh_throttler.h"
+#include "components/feed/core/common/user_classifier.h"
 #include "components/web_resource/eula_accepted_notifier.h"
 
 class PrefService;

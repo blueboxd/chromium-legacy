@@ -1,4 +1,5 @@
-load('//lib/builders.star', 'builder', 'cpu', 'defaults', 'goma', 'os')
+load('//lib/builders.star', 'cpu', 'goma', 'os')
+load('//lib/try.star', 'try_')
 load('//versioned/vars/try.star', 'vars')
 # Load this using relative path so that the load statement doesn't
 # need to be changed when making a new milestone
@@ -53,114 +54,49 @@ luci.cq_group(
     ],
 )
 
-defaults.bucket.set(vars.bucket.get())
-defaults.bucketed_triggers.set(True)
+try_.defaults.bucket.set(vars.bucket.get())
+try_.defaults.bucketed_triggers.set(True)
+try_.defaults.cq_group.set(vars.cq_group.get())
 
 
-def tryjob(
-    *,
-    disable_reuse=None,
-    experiment_percentage=None,
-    location_regexp=None,
-    location_regexp_exclude=None):
-  return struct(
-      disable_reuse = disable_reuse,
-      experiment_percentage = experiment_percentage,
-      location_regexp = location_regexp,
-      location_regexp_exclude = location_regexp_exclude,
-  )
-
-def try_builder(
-    *,
-    name,
-    tryjob=None,
-    **kwargs):
-  if tryjob != None:
-    luci.cq_tryjob_verifier(
-        builder = vars.bucket.builder(name),
-        cq_group = vars.cq_group.get(),
-        disable_reuse = tryjob.disable_reuse,
-        experiment_percentage = tryjob.experiment_percentage,
-        location_regexp = tryjob.location_regexp,
-        location_regexp_exclude = tryjob.location_regexp_exclude,
-    )
-  else:
-    # Allow CQ to trigger this builder if user opts in via CQ-Include-Trybots.
-    luci.cq_tryjob_verifier(
-        builder = vars.bucket.builder(name),
-        cq_group = vars.cq_group.get(),
-        includable_only = True,
-    )
-
-  return builder(
-      name = name,
-      **kwargs
-  )
+# Builders are sorted first lexicographically by the function used to define
+# them, then lexicographically by their name
 
 
-# Builders appear after the function used to define them, with all builders
-# defined using the same function ordered lexicographically by name
-# Builder functions are defined in lexicographic order by name ignoring the
-# '_builder' suffix
-
-# Builder functions are defined for GPU builders on each master where they
-# appear: gpu_XXX_builder where XXX is the part after the last dot in the
-# mastername
-# Builder functions are defined for each master, with additional functions
-# for specializing on OS: XXX_builder and XXX_YYY_builder where XXX is the part
-# after the last dot in the mastername and YYY is the OS
-
-
-def android_builder(*, name, **kwargs):
-  return try_builder(
-      name = name,
-      goma_backend = goma.backend.RBE_PROD,
-      mastername = 'tryserver.chromium.android',
-      **kwargs
-  )
-
-android_builder(
+try_.chromium_android_builder(
     name = 'android-kitkat-arm-rel',
     goma_jobs = goma.jobs.J150,
-    tryjob = tryjob(
+    tryjob = try_.job(
         # TODO(https://crbug.com/1024641) Make non-experimental
         experiment_percentage = 1,
     ),
 )
 
-android_builder(
+try_.chromium_android_builder(
     name = 'android-marshmallow-arm64-rel',
     cores = 16,
     goma_jobs = goma.jobs.J300,
     ssd = True,
     use_java_coverage = True,
-    tryjob = tryjob(
+    tryjob = try_.job(
         # TODO(https://crbug.com/1024641) Make non-experimental
         experiment_percentage = 1,
     ),
 )
 
 
-def chromiumos_builder(*, name, **kwargs):
-  return try_builder(
-      name = name,
-      mastername = 'tryserver.chromium.chromiumos',
-      goma_backend = goma.backend.RBE_PROD,
-      **kwargs
-  )
-
-chromiumos_builder(
+try_.chromium_chromiumos_builder(
     name = 'chromeos-amd64-generic-rel',
-    tryjob = tryjob(
+    tryjob = try_.job(
         # TODO(https://crbug.com/1024641) Make non-experimental
         experiment_percentage = 1,
     ),
 )
 
-chromiumos_builder(
+try_.chromium_chromiumos_builder(
     name = 'linux-chromeos-rel',
     goma_jobs = goma.jobs.J150,
-    tryjob = tryjob(
+    tryjob = try_.job(
         # TODO(https://crbug.com/1024641) Make non-experimental
         experiment_percentage = 1,
     ),
@@ -168,16 +104,10 @@ chromiumos_builder(
 )
 
 
-def linux_builder(*, name, **kwargs):
-  return try_builder(
-      name = name,
-      mastername = 'tryserver.chromium.linux',
-      **kwargs
-  )
-
-linux_builder(
+try_.chromium_linux_builder(
     name = 'chromium_presubmit',
-    executable = luci.recipe(name = 'presubmit'),
+    executable = 'recipe:presubmit',
+    goma_backend = None,
     properties = {
         '$depot_tools/presubmit': {
             'runhooks': True,
@@ -185,18 +115,17 @@ linux_builder(
         },
         'repo_name': 'chromium',
     },
-    tryjob = tryjob(
+    tryjob = try_.job(
         disable_reuse = True,
         # TODO(https://crbug.com/1024637) Make non-experimental
         experiment_percentage = 100,
     ),
 )
 
-linux_builder(
+try_.chromium_linux_builder(
     name = 'linux-rel',
-    goma_backend = goma.backend.RBE_PROD,
     goma_jobs = goma.jobs.J150,
-    tryjob = tryjob(
+    tryjob = try_.job(
         # TODO(https://crbug.com/1024637) Make non-experimental
         experiment_percentage = 1,
     ),
@@ -204,74 +133,31 @@ linux_builder(
 )
 
 
-def mac_builder(
-    *,
-    name,
-    cores=None,
-    goma_backend = goma.backend.RBE_PROD,
-    os=os.MAC_ANY,
-    **kwargs):
-  return try_builder(
-      name = name,
-      cores = cores,
-      goma_backend = goma_backend,
-      mastername = 'tryserver.chromium.mac',
-      os = os,
-      builderless = True,
-      ssd = True,
-      **kwargs
-  )
-
-mac_builder(
+try_.chromium_mac_builder(
     name = 'mac-rel',
     goma_jobs = goma.jobs.J150,
-    tryjob = tryjob(
+    tryjob = try_.job(
         # TODO(https://crbug.com/1024641) Make non-experimental
         experiment_percentage = 1,
     ),
 )
 
-def mac_ios_builder(*, name, executable=luci.recipe(name = 'ios/try'), **kwargs):
-  return try_builder(
-      name = name,
-      caches = [
-          swarming.cache(
-              name = 'xcode_ios_11a1027',
-              path = 'xcode_ios_11a1027.app',
-          ),
-      ],
-      cores = None,
-      executable = executable,
-      mastername = 'tryserver.chromium.mac',
-      os = os.MAC_ANY,
-      **kwargs
-  )
 
-mac_ios_builder(
+try_.chromium_mac_ios_builder(
     name = 'ios-simulator',
-    tryjob = tryjob(
+    tryjob = try_.job(
         # TODO(https://crbug.com/1024641) Make non-experimental
         experiment_percentage = 1,
     ),
 )
 
 
-def win_builder(*, name, builderless=True, os=os.WINDOWS_DEFAULT, **kwargs):
-  return try_builder(
-      name = name,
-      builderless = builderless,
-      goma_backend = goma.backend.RBE_PROD,
-      mastername = 'tryserver.chromium.win',
-      os = os,
-      **kwargs
-  )
-
-win_builder(
+try_.chromium_win_builder(
     name = 'win10_chromium_x64_rel_ng',
     goma_jobs = goma.jobs.J150,
     os = os.WINDOWS_10,
     ssd = True,
-    tryjob = tryjob(
+    tryjob = try_.job(
         # TODO(https://crbug.com/1024641) Make non-experimental
         experiment_percentage = 1,
     ),

@@ -578,7 +578,8 @@ public class ChildProcessConnection {
             return;
         }
         mServiceDisconnected = true;
-        Log.w(TAG, "onServiceDisconnected (crash or killed by oom): pid=%d", mPid);
+        Log.w(TAG, "onServiceDisconnected (crash or killed by oom): pid=%d %s", mPid,
+                buildDebugStateString());
         stop(); // We don't want to auto-restart on crash. Let the browser do that.
 
         // If we have a pending connection callback, we need to communicate the failure to
@@ -587,6 +588,23 @@ public class ChildProcessConnection {
             mConnectionCallback.onConnected(null);
             mConnectionCallback = null;
         }
+    }
+
+    private String buildDebugStateString() {
+        StringBuilder s = new StringBuilder();
+        s.append("bindings:");
+        s.append(mWaivedBinding.isBound() ? "W" : " ");
+        s.append(mModerateBinding.isBound() ? "M" : " ");
+        s.append(mStrongBinding.isBound() ? "S" : " ");
+
+        synchronized (sBindingStateLock) {
+            s.append(" state:").append(mBindingState);
+            s.append(" counts:");
+            for (int i = 0; i < NUM_BINDING_STATES; ++i) {
+                s.append(sAllBindingStateCounts[i]).append(",");
+            }
+        }
+        return s.toString();
     }
 
     private void onSetupConnectionResult(int pid) {

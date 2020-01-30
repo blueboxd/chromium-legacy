@@ -116,6 +116,11 @@ bool IsAutoFetchFeatureEnabled() {
 }
 #endif  // OS_ANDROID
 
+bool IsRunningInForcedAppMode() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kForceAppMode);
+}
+
 const net::NetworkTrafficAnnotationTag& GetNetworkTrafficAnnotationTag() {
   static const net::NetworkTrafficAnnotationTag network_traffic_annotation_tag =
       net::DefineNetworkTrafficAnnotation("net_error_helper", R"(
@@ -339,7 +344,8 @@ LocalizedError::PageState NetErrorHelper::GenerateLocalizedErrorPage(
       error.stale_copy_in_cache(), can_show_network_diagnostics_dialog,
       ChromeRenderThreadObserver::is_incognito_process(),
       IsOfflineContentOnNetErrorFeatureEnabled(), IsAutoFetchFeatureEnabled(),
-      RenderThread::Get()->GetLocale(), std::move(params));
+      IsRunningInForcedAppMode(), RenderThread::Get()->GetLocale(),
+      std::move(params));
   DCHECK(!template_html.empty()) << "unable to load template.";
   // "t" is the id of the template's root node.
   *error_html =
@@ -371,7 +377,8 @@ LocalizedError::PageState NetErrorHelper::UpdateErrorPage(
       error.stale_copy_in_cache(), can_show_network_diagnostics_dialog,
       ChromeRenderThreadObserver::is_incognito_process(),
       IsOfflineContentOnNetErrorFeatureEnabled(), IsAutoFetchFeatureEnabled(),
-      RenderThread::Get()->GetLocale(), std::unique_ptr<ErrorPageParams>());
+      IsRunningInForcedAppMode(), RenderThread::Get()->GetLocale(),
+      std::unique_ptr<ErrorPageParams>());
 
   std::string json;
   JSONWriter::Write(page_state.strings, &json);

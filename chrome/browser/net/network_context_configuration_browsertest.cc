@@ -1121,7 +1121,7 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest, DiskCache) {
 
 // Make sure that NetworkContexts have separate DNS caches.
 IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest,
-                       DnsCacheIsolation) {
+                       DISABLED_DnsCacheIsolation) {
   net::NetworkIsolationKey network_isolation_key =
       net::NetworkIsolationKey::CreateTransient();
   net::HostPortPair host_port_pair(kHostname, 0);

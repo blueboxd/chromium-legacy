@@ -101,7 +101,7 @@ bool Encryptor::Init(const SymmetricKey* key, Mode mode, base::StringPiece iv) {
 
   key_ = key;
   mode_ = mode;
-  iv.CopyToString(&iv_);
+  iv_ = std::string(iv);
   return true;
 }
 

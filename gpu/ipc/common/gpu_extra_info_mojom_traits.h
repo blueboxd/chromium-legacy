@@ -50,6 +50,21 @@ struct StructTraits<gpu::mojom::GpuExtraInfoDataView, gpu::GpuExtraInfo> {
       const gpu::GpuExtraInfo& input) {
     return input.angle_features;
   }
+
+#if defined(USE_X11)
+  static uint64_t system_visual(const gpu::GpuExtraInfo& input) {
+    return input.system_visual;
+  }
+
+  static uint64_t rgba_visual(const gpu::GpuExtraInfo& input) {
+    return input.rgba_visual;
+  }
+
+  static const std::vector<gfx::BufferUsageAndFormat>&
+  gpu_memory_buffer_support_x11(const gpu::GpuExtraInfo& input) {
+    return input.gpu_memory_buffer_support_x11;
+  }
+#endif
 };
 
 }  // namespace mojo

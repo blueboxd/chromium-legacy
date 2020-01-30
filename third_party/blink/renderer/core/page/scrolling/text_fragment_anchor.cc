@@ -222,27 +222,34 @@ void TextFragmentAnchor::DidFindMatch(const EphemeralRangeInFlatTree& range) {
     return;
   }
 
+  bool needs_style_and_layout = false;
+
   // Apply :target to the first match
-  if (!did_find_match_)
+  if (!did_find_match_) {
     ApplyTargetToCommonAncestor(range);
+    needs_style_and_layout = true;
+  }
+
+  // Activate any find-in-page activatable display-locks in the ancestor
+  // chain.
+  if (DisplayLockUtilities::ActivateFindInPageMatchRangeIfNeeded(range)) {
+    // Since activating a lock dirties layout, we need to make sure it's clean
+    // before computing the text rect below.
+    needs_style_and_layout = true;
+    // TODO(crbug.com/1041942): It is possible and likely that activation
+    // signal causes script to resize something on the page. This code here
+    // should really yield until the next frame to give script an opportunity
+    // to run.
+  }
+
+  if (needs_style_and_layout)
+    frame_->GetDocument()->UpdateStyleAndLayout();
 
   metrics_->DidFindMatch(PlainText(range));
   did_find_match_ = true;
 
   if (first_match_needs_scroll_) {
     first_match_needs_scroll_ = false;
-
-    // Activate any find-in-page activatable display-locks in the ancestor
-    // chain.
-    if (DisplayLockUtilities::ActivateFindInPageMatchRangeIfNeeded(range)) {
-      // Since activating a lock dirties layout, we need to make sure it's clean
-      // before computing the text rect below.
-      frame_->GetDocument()->UpdateStyleAndLayout();
-      // TODO(crbug.com/1041942): It is possible and likely that activation
-      // signal causes script to resize something on the page. This code here
-      // should really yield until the next frame to give script an opportunity
-      // to run.
-    }
 
     PhysicalRect bounding_box(ComputeTextRect(range));
 

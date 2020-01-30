@@ -46,7 +46,7 @@ PasswordAutoSignInView::PasswordAutoSignInView(
   CredentialsItemView* credential = new CredentialsItemView(
       this,
       l10n_util::GetStringUTF16(IDS_MANAGE_PASSWORDS_AUTO_SIGNIN_TITLE_MD),
-      form.username_value, kButtonHoverColor, &form,
+      form.username_value, &form,
       content::BrowserContext::GetDefaultStoragePartition(
           controller_.GetProfile())
           ->GetURLLoaderFactoryForBrowserProcess()

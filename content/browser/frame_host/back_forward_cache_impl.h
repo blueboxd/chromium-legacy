@@ -20,6 +20,7 @@
 #include "content/common/content_export.h"
 #include "content/public/browser/back_forward_cache.h"
 #include "content/public/browser/global_routing_id.h"
+#include "content/public/common/content_features.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -28,6 +29,14 @@ class RenderFrameHostImpl;
 class RenderFrameProxyHost;
 class RenderViewHostImpl;
 class SiteInstance;
+
+// This feature is used to limit the scope of back-forward cache experiment
+// without enabling it. To control the URLs list by using this feature by
+// generating the metrics only for "allowed_websites" param. Mainly, to ensure
+// that metrics from the control and experiment groups are consistent.
+constexpr base::Feature kRecordBackForwardCacheMetricsWithoutEnabling{
+    "RecordBackForwardCacheMetricsWithoutEnabling",
+    base::FEATURE_DISABLED_BY_DEFAULT};
 
 // BackForwardCache:
 //
@@ -125,9 +134,16 @@ class CONTENT_EXPORT BackForwardCacheImpl : public BackForwardCache {
   // via experiment.
   static base::TimeDelta GetTimeToLiveInBackForwardCache();
 
-  // Checks if the url's host and path matches with the |allowed_urls_| host and
-  // path. This is controlled by "allowed_websites" param on BackForwardCache
-  // feature and if the param is not set, it will allow all websites by default.
+  // The back-forward cache is experimented on a limited set of URLs. This
+  // method returns true if the |url| matches one of those. URL not matching
+  // this won't enter the back-forward cache.
+  // This is controlled by GetAllowedURLs method which depends on the
+  // following:
+  //  - feature::kBackForwardCache param -> allowed_websites.
+  //  - kRecordBackForwardCacheMetricsWithoutEnabling param -> allowed_websites.
+
+  // If no param is set all websites are allowed by default. This can still
+  // return true even when BackForwardCache is disabled for metrics purposes.
   bool IsAllowed(const GURL& current_url);
 
   // Returns the task runner that should be used by the eviction timer.

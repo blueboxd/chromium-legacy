@@ -14,6 +14,8 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/sharing/sharing_device_registration_result.h"
 #include "chrome/browser/sharing/sharing_device_source_sync.h"
+#include "chrome/browser/sharing/sharing_fcm_sender.h"
+#include "chrome/browser/sharing/sharing_message_sender.h"
 #include "chrome/browser/sharing/sharing_service_factory.h"
 #include "chrome/browser/sharing/sharing_sync_preference.h"
 #include "chrome/browser/sync/device_info_sync_service_factory.h"
@@ -22,6 +24,7 @@
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/toolbar_button_provider.h"
 #include "chrome/browser/ui/views/page_action/page_action_icon_view.h"
+#include "components/gcm_driver/fake_gcm_profile_service.h"
 #include "components/sync/driver/profile_sync_service.h"
 #include "components/sync/model_impl/client_tag_based_model_type_processor.h"
 #include "components/sync_device_info/device_info.h"
@@ -29,10 +32,21 @@
 #include "net/dns/mock_host_resolver.h"
 #include "third_party/blink/public/common/context_menu_data/media_type.h"
 
+void FakeWebPushSender::SendMessage(const std::string& fcm_token,
+                                    crypto::ECPrivateKey* vapid_key,
+                                    WebPushMessage message,
+                                    WebPushCallback callback) {
+  fcm_token_ = fcm_token;
+  message_ = std::move(message);
+  std::move(callback).Run(SendWebPushMessageResult::kSuccessful, "message_id");
+}
+
 SharingBrowserTest::SharingBrowserTest()
     : SyncTest(TWO_CLIENT),
       scoped_testing_factory_installer_(
-          base::BindRepeating(&gcm::FakeGCMProfileService::Build)) {}
+          base::BindRepeating(&gcm::FakeGCMProfileService::Build)),
+      sharing_service_(nullptr),
+      fake_web_push_sender_(nullptr) {}
 
 SharingBrowserTest::~SharingBrowserTest() = default;
 
@@ -54,11 +68,12 @@ void SharingBrowserTest::Init(
   web_contents_ = GetBrowser(0)->tab_strip_model()->GetWebContentsAt(0);
   ASSERT_TRUE(NavigateToURL(web_contents_, url));
 
-  gcm_service_ = static_cast<gcm::FakeGCMProfileService*>(
-      gcm::GCMProfileServiceFactory::GetForProfile(GetProfile(0)));
-  gcm_service_->set_collect(true);
-
   sharing_service_ = SharingServiceFactory::GetForBrowserContext(GetProfile(0));
+
+  fake_web_push_sender_ = new FakeWebPushSender();
+  sharing_service_->GetMessageSenderForTesting()
+      ->GetFCMSenderForTesting()
+      ->SetWebPushSenderForTesting(base::WrapUnique(fake_web_push_sender_));
 
   SetUpDevices(first_device_feature, second_device_feature);
 }
@@ -159,14 +174,13 @@ void SharingBrowserTest::CheckLastReceiver(
       sharing_service_->GetSyncPreferencesForTesting()->GetTargetInfo(
           device_guid);
   ASSERT_TRUE(target_info);
-  EXPECT_EQ(target_info->fcm_token, gcm_service_->last_receiver_id());
+  EXPECT_EQ(target_info->fcm_token, fake_web_push_sender_->fcm_token());
 }
 
 chrome_browser_sharing::SharingMessage
 SharingBrowserTest::GetLastSharingMessageSent() const {
   chrome_browser_sharing::SharingMessage sharing_message;
-  sharing_message.ParseFromString(
-      gcm_service_->last_web_push_message().payload);
+  sharing_message.ParseFromString(fake_web_push_sender_->message().payload);
   return sharing_message;
 }
 

@@ -411,8 +411,6 @@ bool RenderFrameProxy::OnMessageReceived(const IPC::Message& msg) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(RenderFrameProxy, msg)
     IPC_MESSAGE_HANDLER(FrameMsg_ChildFrameProcessGone, OnChildFrameProcessGone)
-    IPC_MESSAGE_HANDLER(FrameMsg_IntrinsicSizingInfoOfChildChanged,
-                        OnIntrinsicSizingInfoOfChildChanged)
     IPC_MESSAGE_HANDLER(FrameMsg_UpdateOpener, OnUpdateOpener)
     IPC_MESSAGE_HANDLER(FrameMsg_ViewChanged, OnViewChanged)
     IPC_MESSAGE_HANDLER(FrameMsg_DidUpdateFramePolicy, OnDidUpdateFramePolicy)
@@ -456,11 +454,6 @@ void RenderFrameProxy::OnChildFrameProcessGone() {
   crashed_ = true;
   compositing_helper_->ChildFrameGone(local_frame_size(),
                                       screen_info().device_scale_factor);
-}
-
-void RenderFrameProxy::OnIntrinsicSizingInfoOfChildChanged(
-    blink::WebIntrinsicSizingInfo sizing_info) {
-  web_frame()->IntrinsicSizingInfoChanged(sizing_info);
 }
 
 void RenderFrameProxy::OnUpdateOpener(int opener_routing_id) {

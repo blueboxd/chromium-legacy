@@ -12,6 +12,10 @@
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_registry_observer.h"
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
+#endif
+
 class Profile;
 
 // Profile-keyed class that observes the extension registry to determine load of
@@ -23,12 +27,10 @@ class TtsEngineExtensionObserver
  public:
   static TtsEngineExtensionObserver* GetInstance(Profile* profile);
 
-  // Returns if this observer saw the given extension load. Adds |extension_id|
-  // as loaded immediately if |update| is set to true.
-  bool SawExtensionLoad(const std::string& extension_id, bool update);
-
   // Gets the currently loaded TTS extension ids.
   const std::set<std::string> GetTtsExtensions();
+
+  Profile* profile() { return profile_; }
 
   // Implementation of KeyedService.
   void Shutdown() override;
@@ -37,6 +39,8 @@ class TtsEngineExtensionObserver
   void OnListenerAdded(const extensions::EventListenerInfo& details) override;
 
   // extensions::ExtensionRegistryObserver overrides.
+  void OnExtensionLoaded(content::BrowserContext* browser_context,
+                         const extensions::Extension* extension) override;
   void OnExtensionUnloaded(content::BrowserContext* browser_context,
                            const extensions::Extension* extension,
                            extensions::UnloadedExtensionReason reason) override;
@@ -47,6 +51,11 @@ class TtsEngineExtensionObserver
 
   bool IsLoadedTtsEngine(const std::string& extension_id);
 
+#if defined(OS_CHROMEOS)
+  void OnAccessibilityStatusChanged(
+      const chromeos::AccessibilityStatusEventDetails& details);
+#endif
+
   ScopedObserver<extensions::ExtensionRegistry,
                  extensions::ExtensionRegistryObserver>
       extension_registry_observer_;
@@ -54,6 +63,11 @@ class TtsEngineExtensionObserver
   Profile* profile_;
 
   std::set<std::string> engine_extension_ids_;
+
+#if defined(OS_CHROMEOS)
+  std::unique_ptr<chromeos::AccessibilityStatusSubscription>
+      accessibility_status_subscription_;
+#endif
 
   friend class TtsEngineExtensionObserverFactory;
 

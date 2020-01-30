@@ -480,17 +480,19 @@ Output = class {
         continue;
       }
 
-      var speechProps = /** @type {Object} */ (
+      var speechProps = {};
+      var speechPropsInstance = /** @type {Output.SpeechProperties} */ (
           buff.getSpanInstanceOf(Output.SpeechProperties));
 
-      if (!speechProps) {
+      if (!speechPropsInstance) {
         speechProps = this.initialSpeechProps_;
       } else {
         for (var [key, value] of Object.entries(this.initialSpeechProps_)) {
-          if (speechProps[key] === undefined) {
-            speechProps[key] = value;
+          if (speechPropsInstance.properties[key] === undefined) {
+            speechPropsInstance.properties[key] = value;
           }
         }
+        speechProps = speechPropsInstance.properties;
       }
 
       speechProps.category = this.speechCategory_;
@@ -753,7 +755,7 @@ Output = class {
                   buff, options, newLanguage, outputString) {
                 var speechProps = new Output.SpeechProperties();
                 // Set output language.
-                speechProps['lang'] = newLanguage;
+                speechProps.properties['lang'] = newLanguage;
                 // Append outputString to buff.
                 this.append_(buff, outputString, options);
                 // Attach associated SpeechProperties if the buffer is
@@ -973,7 +975,7 @@ Output = class {
 
             if (this.formatOptions_.auralStyle) {
               speechProps = new Output.SpeechProperties();
-              speechProps['relativePitch'] = -0.3;
+              speechProps.properties['relativePitch'] = -0.3;
             }
             options.annotation.push(token);
             var msg = node.role;
@@ -1223,7 +1225,7 @@ Output = class {
             if (!speechProps) {
               speechProps = new Output.SpeechProperties();
             }
-            speechProps['relativePitch'] = -0.2;
+            speechProps.properties['relativePitch'] = -0.2;
           }
           var isPluralized = (token[0] == '@');
           if (isPluralized) {
@@ -1311,7 +1313,7 @@ Output = class {
         } else if (prefix == '!') {
           ruleStr.write(' ! ' + token + '\n');
           speechProps = new Output.SpeechProperties();
-          speechProps[token] = true;
+          speechProps.properties[token] = true;
           if (tree.firstChild) {
             if (!this.formatOptions_.auralStyle) {
               speechProps = undefined;
@@ -1327,7 +1329,7 @@ Output = class {
             } else {
               value = parseFloat(node[value]) / -10.0;
             }
-            speechProps[token] = value;
+            speechProps.properties[token] = value;
             return;
           }
         }
@@ -1759,7 +1761,7 @@ Output = class {
 
       // Hints should be delayed.
       var hintProperties = new Output.SpeechProperties();
-      hintProperties['delay'] = true;
+      hintProperties.properties['delay'] = true;
 
       ruleStr.write('hint_: ');
       if (EventSourceState.get() == EventSourceType.TOUCH_GESTURE) {
@@ -2656,7 +2658,26 @@ Output.RULES = {
  * Used to annotate utterances with speech properties.
  */
 Output.SpeechProperties = class {
-  constructor() {}
+  constructor() {
+    /** @private {!Object} */
+    this.properties_ = {};
+  }
+
+  /** @return {!Object} */
+  get properties() {
+    return this.properties_;
+  }
+
+  /** @override */
+  toJSON() {
+    // Make a copy of our properties since the caller really shouldn't be
+    // modifying our local state.
+    var clone = {};
+    for (var key in this.properties_) {
+      clone[key] = this.properties_[key];
+    }
+    return clone;
+  }
 };
 
 /**

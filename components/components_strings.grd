@@ -32,6 +32,7 @@
       <output filename="components_strings_sq.pak" type="data_package" lang="sq" />
       <output filename="components_strings_ur.pak" type="data_package" lang="ur" />
       <output filename="components_strings_uz.pak" type="data_package" lang="uz" />
+      <output filename="components_strings_zh-HK.pak" type="data_package" lang="zh-HK" />
       <output filename="components_strings_zu.pak" type="data_package" lang="zu" />
     </if>
     <output filename="components_strings_am.pak" type="data_package" lang="am" />
@@ -183,6 +184,7 @@
       <output filename="java/res/values-uz/components_strings.xml" lang="uz" type="android" context="android_java" />
       <output filename="java/res/values-vi/components_strings.xml" lang="vi" type="android" context="android_java" />
       <output filename="java/res/values-zh-rCN/components_strings.xml" lang="zh-CN" type="android" context="android_java" />
+      <output filename="java/res/values-zh-rHK/components_strings.xml" lang="zh-HK" type="android" context="android_java" />
       <output filename="java/res/values-zh-rTW/components_strings.xml" lang="zh-TW" type="android" context="android_java" />
       <output filename="java/res/values-zu/components_strings.xml" lang="zu" type="android" context="android_java" />
     </if>

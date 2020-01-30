@@ -79,10 +79,6 @@ void BreadcrumbManagerTabHelper::DidChangeBackForwardState(
   LogEvent("DidChangeBackForwardState");
 }
 
-void BreadcrumbManagerTabHelper::TitleWasSet(web::WebState* web_state) {
-  LogEvent("TitleWasSet");
-}
-
 void BreadcrumbManagerTabHelper::DidChangeVisibleSecurityState(
     web::WebState* web_state) {
   LogEvent("DidChangeVisibleSecurityState");

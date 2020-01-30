@@ -7,4 +7,7 @@ package org.chromium.weblayer_private.test_interfaces;
 interface ITestWebLayer {
   // Force network connectivity state.
   boolean isNetworkChangeAutoDetectOn() = 1;
+  // set mock location provider
+  void setMockLocationProvider(in boolean enable) = 2;
+  boolean isMockLocationProviderRunning() = 3;
 }

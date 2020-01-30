@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.tabmodel;
 
-import android.content.SharedPreferences;
 import android.os.StrictMode;
 import android.util.Pair;
 import android.util.SparseBooleanArray;
@@ -24,6 +23,8 @@ import org.chromium.base.task.BackgroundOnlyAsyncTask;
 import org.chromium.base.task.TaskRunner;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.flags.FeatureUtilities;
+import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
+import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.tab.TabState;
 
 import java.io.BufferedInputStream;
@@ -46,15 +47,6 @@ public class TabbedModeTabPersistencePolicy implements TabPersistencePolicy {
     @VisibleForTesting
     static final String LEGACY_SAVED_STATE_FILE = "tab_state";
 
-    @VisibleForTesting
-    static final String PREF_HAS_RUN_FILE_MIGRATION =
-            "org.chromium.chrome.browser.tabmodel.TabPersistentStore.HAS_RUN_FILE_MIGRATION";
-
-    @VisibleForTesting
-    static final String PREF_HAS_RUN_MULTI_INSTANCE_FILE_MIGRATION =
-            "org.chromium.chrome.browser.tabmodel.TabPersistentStore."
-            + "HAS_RUN_MULTI_INSTANCE_FILE_MIGRATION";
-
     /** The name of the directory where the state is saved. */
     @VisibleForTesting
     static final String SAVED_STATE_DIRECTORY = "0";
@@ -76,7 +68,6 @@ public class TabbedModeTabPersistencePolicy implements TabPersistencePolicy {
 
     private static File sStateDirectory;
 
-    private final SharedPreferences mPreferences;
     private final int mSelectorIndex;
     private final int mOtherSelectorIndex;
     private final boolean mMergeTabs;
@@ -92,7 +83,6 @@ public class TabbedModeTabPersistencePolicy implements TabPersistencePolicy {
      *                      tabbed mode files.
      */
     public TabbedModeTabPersistencePolicy(int selectorIndex, boolean mergeTabs) {
-        mPreferences = ContextUtils.getAppSharedPreferences();
         mSelectorIndex = selectorIndex;
         mOtherSelectorIndex = selectorIndex == 0 ? 1 : 0;
         mMergeTabs = mergeTabs;
@@ -158,10 +148,11 @@ public class TabbedModeTabPersistencePolicy implements TabPersistencePolicy {
     public boolean performInitialization(TaskRunner taskRunner) {
         ThreadUtils.assertOnUiThread();
 
-        final boolean hasRunLegacyMigration =
-                mPreferences.getBoolean(PREF_HAS_RUN_FILE_MIGRATION, false);
+        final boolean hasRunLegacyMigration = SharedPreferencesManager.getInstance().readBoolean(
+                ChromePreferenceKeys.TABMODEL_HAS_RUN_FILE_MIGRATION, false);
         final boolean hasRunMultiInstanceMigration =
-                mPreferences.getBoolean(PREF_HAS_RUN_MULTI_INSTANCE_FILE_MIGRATION, false);
+                SharedPreferencesManager.getInstance().readBoolean(
+                        ChromePreferenceKeys.TABMODEL_HAS_RUN_MULTI_INSTANCE_FILE_MIGRATION, false);
 
         if (hasRunLegacyMigration && hasRunMultiInstanceMigration) return false;
 
@@ -304,11 +295,13 @@ public class TabbedModeTabPersistencePolicy implements TabPersistencePolicy {
     }
 
     private void setLegacyFileMigrationPref() {
-        mPreferences.edit().putBoolean(PREF_HAS_RUN_FILE_MIGRATION, true).apply();
+        SharedPreferencesManager.getInstance().writeBoolean(
+                ChromePreferenceKeys.TABMODEL_HAS_RUN_FILE_MIGRATION, true);
     }
 
     private void setMultiInstanceFileMigrationPref() {
-        mPreferences.edit().putBoolean(PREF_HAS_RUN_MULTI_INSTANCE_FILE_MIGRATION, true).apply();
+        SharedPreferencesManager.getInstance().writeBoolean(
+                ChromePreferenceKeys.TABMODEL_HAS_RUN_MULTI_INSTANCE_FILE_MIGRATION, true);
     }
 
     @Override

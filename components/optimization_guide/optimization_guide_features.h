@@ -92,6 +92,10 @@ GetMaxEffectiveConnectionTypeForNavigationHintsFetch();
 // GetHintsFetchRefreshDuration().
 base::TimeDelta GetHintsFetchRefreshDuration();
 
+// Returns the max number of concurrent fetches to the remote Optimization Guide
+// Service that should be allowed.
+size_t MaxConcurrentPageNavigationFetches();
+
 // Returns true if optimization target prediction is enabled.
 bool IsOptimizationTargetPredictionEnabled();
 

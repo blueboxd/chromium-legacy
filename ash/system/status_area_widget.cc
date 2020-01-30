@@ -185,6 +185,11 @@ void StatusAreaWidget::UpdateCollapseState() {
       collapse_state_);
 }
 
+void StatusAreaWidget::CalculateTargetBounds() {
+  // TODO(manucornet): Move target bounds calculations from the shelf layout
+  // manager.
+}
+
 void StatusAreaWidget::UpdateLayout(bool animate) {
   const ShelfLayoutManager* layout_manager = shelf_->shelf_layout_manager();
   ui::Layer* layer = GetNativeView()->layer();
@@ -197,7 +202,7 @@ void StatusAreaWidget::UpdateLayout(bool animate) {
   animation_setter.SetTweenType(gfx::Tween::EASE_OUT);
   animation_setter.SetPreemptionStrategy(
       ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
-  SetBounds(layout_manager->GetStatusAreaBounds());
+  SetBounds(layout_manager->GetStatusAreaBoundsInScreen());
 }
 
 void StatusAreaWidget::CalculateButtonVisibilityForCollapsedState() {

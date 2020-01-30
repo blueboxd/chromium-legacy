@@ -166,14 +166,12 @@ js_library("route") {
 }
 
 js_library("router") {
-  deps = [
-    ":settings_routes",
-    "//ui/webui/resources/js:cr",
-  ]
+  deps = [ "//ui/webui/resources/js:cr" ]
   externs_list = [ "$externs_path/metrics_private.js" ]
 }
 
 js_library("settings_routes") {
+  deps = [ ":router" ]
 }
 
 js_library("page_visibility") {

@@ -28,7 +28,7 @@
         android:layout_marginTop="16dp"
         android:layout_marginBottom="16dp"
         android:text="@string/iph_drag_and_drop_title"
-        android:textAppearance="@style/TextAppearance.BlackHeadline" />
+        android:textAppearance="@style/TextAppearance.Headline.Primary" />
     <TextView
         android:id="@+id/description"
         android:layout_width="match_parent"
@@ -37,7 +37,7 @@
         android:layout_marginEnd="32dp"
         android:layout_marginBottom="16dp"
         android:text="@string/iph_drag_and_drop_content"
-        android:textAppearance="@style/TextAppearance.BlackBodyDefault"
+        android:textAppearance="@style/TextAppearance.TextMedium.Primary"
         android:gravity="start" />
     <TextView
         android:id="@+id/close_button"

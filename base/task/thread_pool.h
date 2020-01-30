@@ -172,10 +172,11 @@ class BASE_EXPORT ThreadPool {
             typename TaskReturnType,
             typename ReplyArgType,
             typename = EnableIfIsBaseCallback<CallbackType>>
-  bool PostTaskAndReplyWithResult(const Location& from_here,
-                                  const TaskTraits& traits,
-                                  CallbackType<TaskReturnType()> task,
-                                  CallbackType<void(ReplyArgType)> reply) {
+  static bool PostTaskAndReplyWithResult(
+      const Location& from_here,
+      const TaskTraits& traits,
+      CallbackType<TaskReturnType()> task,
+      CallbackType<void(ReplyArgType)> reply) {
     auto* result = new std::unique_ptr<TaskReturnType>();
     return PostTaskAndReply(
         from_here, traits,

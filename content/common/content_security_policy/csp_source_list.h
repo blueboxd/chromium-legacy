@@ -7,7 +7,7 @@
 
 #include <vector>
 
-#include "content/common/content_security_policy/csp_source.h"
+#include "content/common/content_export.h"
 #include "services/network/public/mojom/content_security_policy.mojom-forward.h"
 #include "url/gurl.h"
 
@@ -15,35 +15,17 @@ namespace content {
 
 class CSPContext;
 
-struct CONTENT_EXPORT CSPSourceList {
-  CSPSourceList();
-  CSPSourceList(bool allow_self,
-                bool allow_star,
-                bool allow_response_redirects,
-                std::vector<CSPSource> source_list);
-  explicit CSPSourceList(network::mojom::CSPSourceListPtr csp_source_list);
-  CSPSourceList(const CSPSourceList&);
-  ~CSPSourceList();
+std::string CONTENT_EXPORT
+ToString(const network::mojom::CSPSourceListPtr& source_list);
 
-  // Wildcard hosts and 'self' aren't stored in source_list, but as attributes
-  // on the source list itself.
-  bool allow_self;
-  bool allow_star;
-  bool allow_response_redirects;
-  std::vector<CSPSource> sources;
-
-  std::string ToString() const;
-
-  bool IsNone() const;
-
-  // Return true when at least one source in the |source_list| matches the
-  // |url| for a given |context|.
-  static bool Allow(const CSPSourceList& source_list,
-                    const GURL& url,
-                    CSPContext* context,
-                    bool has_followed_redirect = false,
-                    bool is_response_check = false);
-};
+// Return true when at least one source in the |source_list| matches the
+// |url| for a given |context|.
+bool CONTENT_EXPORT
+CheckCSPSourceList(const network::mojom::CSPSourceListPtr& source_list,
+                   const GURL& url,
+                   CSPContext* context,
+                   bool has_followed_redirect = false,
+                   bool is_response_check = false);
 
 }  // namespace content
 #endif  // CONTENT_COMMON_CONTENT_SECURITY_POLICY_CSP_SOURCE_LIST_H_

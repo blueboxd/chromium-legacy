@@ -35,7 +35,9 @@ class WebContentRunner : public fuchsia::sys::Runner {
 
   ~WebContentRunner() override;
 
-  static fuchsia::web::ContextPtr CreateWebContext(
+  // TODO(crbug.com/1046615): Make this static when the injected ContextProvider
+  // goes away.
+  fuchsia::web::ContextPtr CreateWebContext(
       fuchsia::web::CreateContextParams create_params);
 
   // Gets a pointer to this runner's Context, creating one if needed.
@@ -61,6 +63,11 @@ class WebContentRunner : public fuchsia::sys::Runner {
   // Registers a WebComponent, or specialization, with this Runner.
   void RegisterComponent(std::unique_ptr<WebComponent> component);
 
+  // Overrides the environment's the ContextProvider to use.
+  // TODO(crbug.com/1046615): Use test manifests for package specification.
+  void SetContextProviderForTest(
+      fuchsia::web::ContextProviderPtr context_provider);
+
  protected:
   base::RepeatingCallback<void(WebComponent*)>
   web_component_created_callback_for_test() const {
@@ -70,10 +77,13 @@ class WebContentRunner : public fuchsia::sys::Runner {
   fuchsia::web::CreateContextParams create_params_;
 
  private:
+  fuchsia::web::ContextProvider* GetContextProvider();
+
   // If set, invoked whenever a WebComponent is created.
   base::RepeatingCallback<void(WebComponent*)>
       web_component_created_callback_for_test_;
 
+  fuchsia::web::ContextProviderPtr context_provider_;
   fuchsia::web::ContextPtr context_;
   std::set<std::unique_ptr<WebComponent>, base::UniquePtrComparator>
       components_;

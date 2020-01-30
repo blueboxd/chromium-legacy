@@ -16,18 +16,19 @@
 #include "chrome/browser/sharing/proto/sharing_message.pb.h"
 #include "chrome/browser/sharing/sharing_message_sender.h"
 #include "chrome/browser/sharing/sharing_send_message_result.h"
-#include "components/gcm_driver/web_push_common.h"
+#include "chrome/browser/sharing/web_push/web_push_sender.h"
 #include "components/sync_device_info/device_info.h"
 
 namespace gcm {
 class GCMDriver;
-enum class SendWebPushMessageResult;
+enum class GCMEncryptionResult;
 }  // namespace gcm
 
 namespace syncer {
 class LocalDeviceInfoProvider;
 }  // namespace syncer
 
+enum class SendWebPushMessageResult;
 class SharingSyncPreference;
 class VapidKeyManager;
 
@@ -39,9 +40,10 @@ class SharingFCMSender : public SharingMessageSender::SendMessageDelegate {
       base::OnceCallback<void(SharingSendMessageResult,
                               base::Optional<std::string>)>;
 
-  SharingFCMSender(gcm::GCMDriver* gcm_driver,
+  SharingFCMSender(std::unique_ptr<WebPushSender> web_push_sender,
                    SharingSyncPreference* sync_preference,
                    VapidKeyManager* vapid_key_manager,
+                   gcm::GCMDriver* gcm_driver,
                    syncer::LocalDeviceInfoProvider* local_device_info_provider);
   SharingFCMSender(const SharingFCMSender&) = delete;
   SharingFCMSender& operator=(const SharingFCMSender&) = delete;
@@ -56,6 +58,10 @@ class SharingFCMSender : public SharingMessageSender::SendMessageDelegate {
       SharingMessage message,
       SendMessageCallback callback);
 
+  // Used to inject fake WebPushSender in integration tests.
+  void SetWebPushSenderForTesting(
+      std::unique_ptr<WebPushSender> web_push_sender);
+
  protected:
   // SharingMessageSender::SendMessageDelegate:
   void DoSendMessageToDevice(const syncer::DeviceInfo& device,
@@ -64,18 +70,25 @@ class SharingFCMSender : public SharingMessageSender::SendMessageDelegate {
                              SendMessageCallback callback) override;
 
  private:
+  void OnMessageEncrypted(std::string fcm_token,
+                          base::TimeDelta time_to_live,
+                          SendMessageCallback callback,
+                          gcm::GCMEncryptionResult result,
+                          std::string message);
+
   base::Optional<syncer::DeviceInfo::SharingTargetInfo> GetTargetInfo(
       const syncer::DeviceInfo& device);
 
   bool SetMessageSenderInfo(SharingMessage* message);
 
   void OnMessageSent(SendMessageCallback callback,
-                     gcm::SendWebPushMessageResult result,
+                     SendWebPushMessageResult result,
                      base::Optional<std::string> message_id);
 
-  gcm::GCMDriver* gcm_driver_;
+  std::unique_ptr<WebPushSender> web_push_sender_;
   SharingSyncPreference* sync_preference_;
   VapidKeyManager* vapid_key_manager_;
+  gcm::GCMDriver* gcm_driver_;
   syncer::LocalDeviceInfoProvider* local_device_info_provider_;
 
   base::WeakPtrFactory<SharingFCMSender> weak_ptr_factory_{this};

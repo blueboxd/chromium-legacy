@@ -8,9 +8,11 @@
 #include <memory>
 #include <vector>
 
+#include "base/auto_reset.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
+#include "base/sequence_checker.h"
 #include "url/gurl.h"
 
 class WebStateListDelegate;
@@ -23,6 +25,13 @@ class WebState;
 }
 
 // Manages a list of WebStates.
+//
+// This class supports mutating the list and to observe the mutations via the
+// WebStateListObserver interface. However, the class is not re-entrant, thus
+// it is an error to mutate the list from an observer (either directly by the
+// observer, or indirectly via code invoked from the observer).
+//
+// The WebStateList takes ownership of the WebStates that it manages.
 class WebStateList {
  public:
   // Constants used when inserting WebStates.
@@ -171,6 +180,59 @@ class WebStateList {
  private:
   class WebStateWrapper;
 
+  // Locks the WebStateList for mutation. This methods checks that the list is
+  // not currently mutated (as the class is not re-entrant it would lead to
+  // corruption of the internal state and ultimately to indefined behaviour).
+  base::AutoReset<bool> LockForMutation();
+
+  // Inserts the specified WebState at the best position in the WebStateList
+  // given the specified opener, recommended index, insertion flags, ... The
+  // |insertion_flags| is a bitwise combination of InsertionFlags values.
+  // Returns the effective insertion index.
+  //
+  // Assumes that the WebStateList is locked.
+  int InsertWebStateImpl(int index,
+                         std::unique_ptr<web::WebState> web_state,
+                         int insertion_flags,
+                         WebStateOpener opener);
+
+  // Moves the WebState at the specified index to another index.
+  //
+  // Assumes that the WebStateList is locked.
+  void MoveWebStateAtImpl(int from_index, int to_index);
+
+  // Replaces the WebState at the specified index with new WebState. Returns
+  // the old WebState at that index to the caller (abandon ownership of the
+  // returned WebState).
+  //
+  // Assumes that the WebStateList is locked.
+  std::unique_ptr<web::WebState> ReplaceWebStateAtImpl(
+      int index,
+      std::unique_ptr<web::WebState> web_state);
+
+  // Detaches the WebState at the specified index. Returns the detached WebState
+  // to the caller (abandon ownership of the returned WebState).
+  //
+  // Assumes that the WebStateList is locked.
+  std::unique_ptr<web::WebState> DetachWebStateAtImpl(int index);
+
+  // Closes and destroys the WebState at the specified index. The |close_flags|
+  // is a bitwise combination of ClosingFlags values.
+  //
+  // Assumes that the WebStateList is locked.
+  void CloseWebStateAtImpl(int index, int close_flags);
+
+  // Closes and destroys all WebStates. The |close_flags| is a bitwise
+  // combination of ClosingFlags values.
+  //
+  // Assumes that the WebStateList is locked.
+  void CloseAllWebStatesImpl(int close_flags);
+
+  // Makes the WebState at the specified index the active WebState.
+  //
+  // Assumes that the WebStateList is locked.
+  void ActivateWebStateAtImpl(int index);
+
   // Sets the opener of any WebState that reference the WebState at the
   // specified index to null.
   void ClearOpenersReferencing(int index);
@@ -190,7 +252,7 @@ class WebStateList {
                                     int n) const;
 
   // The WebStateList delegate.
-  WebStateListDelegate* delegate_;
+  WebStateListDelegate* delegate_ = nullptr;
 
   // Wrappers to the WebStates hosted by the WebStateList.
   std::vector<std::unique_ptr<WebStateWrapper>> web_state_wrappers_;
@@ -206,10 +268,11 @@ class WebStateList {
   int active_index_ = kInvalidIndex;
 
   // Lock to prevent observers from mutating or deleting the list while it is
-  // mutating.
-  // TODO(crbug.com/834263): Remove this lock and the code that uses it once
-  // the source of the crash is identified.
+  // mutating. The lock is managed by LockForMutation() method (and released
+  // by the returned base::AutoReset<bool>).
   bool locked_ = false;
+
+  SEQUENCE_CHECKER(sequence_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(WebStateList);
 };

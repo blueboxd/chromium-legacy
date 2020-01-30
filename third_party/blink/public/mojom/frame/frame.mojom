@@ -14,6 +14,7 @@ import "third_party/blink/public/mojom/ad_tagging/ad_frame.mojom";
 import "third_party/blink/public/mojom/devtools/console_message.mojom";
 import "third_party/blink/public/mojom/frame/blocked_navigation_types.mojom";
 import "third_party/blink/public/mojom/frame/fullscreen.mojom";
+import "third_party/blink/public/mojom/frame/intrinsic_sizing_info.mojom";
 import "third_party/blink/public/mojom/frame/lifecycle.mojom";
 import "third_party/blink/public/mojom/frame/media_player_action.mojom";
 import "third_party/blink/public/mojom/frame/sudden_termination_disabler_type.mojom";
@@ -90,6 +91,11 @@ interface LocalFrameHost {
   // Indication that the associated frame contains a form that submits to an
   // insecure target url.
   DidContainInsecureFormAction();
+
+  // Indicates that the document element is available for the top-level frame.
+  // This happens after the page starts loading, but before all resources are
+  // finished.
+  DocumentAvailableInMainFrame(bool uses_temporary_zoom_level);
 
   // Indicates that a child frame requires its parent frame to send it
   // information about whether it is occluded or has visual effects applied,
@@ -449,4 +455,9 @@ interface RemoteFrame {
   // Notifies this remote frame that its corresponding document has completed
   // loading.
   DidStopLoading();
+
+  // Sent to the remote frame placeholder in the parent process indicating the
+  // intrinsic sizing parameters of the content frame have changed. Generated
+  // when the browser receives a WidgetHostMsg_IntrinsicSizingInfoChanged.
+  IntrinsicSizingInfoOfChildChanged(IntrinsicSizingInfo sizing_info);
 };

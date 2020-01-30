@@ -2161,54 +2161,6 @@ TEST_F(StyleEngineTest, ColorSchemeOverride) {
       GetDocument().documentElement()->GetComputedStyle()->UsedColorScheme());
 }
 
-TEST_F(StyleEngineTest, InternalRootColor) {
-  ScopedCSSColorSchemeForTest enable_color_scheme(true);
-  ColorSchemeHelper color_scheme_helper;
-  color_scheme_helper.SetPreferredColorScheme(GetDocument(),
-                                              PreferredColorScheme::kDark);
-
-  GetDocument().body()->SetInnerHTMLFromString(R"HTML(
-    <style>
-      #container { color-scheme: dark }
-      #light { color-scheme: light }
-    </style>
-    <div id="container">
-      <span id="dark">Text</span>
-      <span id="light">Text</span>
-    </div>
-  )HTML");
-
-  UpdateAllLifecyclePhases();
-
-  auto* container = GetDocument().getElementById("container");
-  auto* light = GetDocument().getElementById("light");
-  auto* dark = GetDocument().getElementById("dark");
-
-  // Initial value of color-scheme is 'light'.
-  EXPECT_EQ(WebColorScheme::kLight, GetDocument()
-                                        .documentElement()
-                                        ->GetComputedStyle()
-                                        ->UsedColorSchemeForInitialColors());
-  EXPECT_EQ(WebColorScheme::kDark,
-            container->GetComputedStyle()->UsedColorSchemeForInitialColors());
-  // color-scheme:dark inherited from #container.
-  EXPECT_EQ(WebColorScheme::kDark,
-            dark->GetComputedStyle()->UsedColorSchemeForInitialColors());
-  EXPECT_EQ(WebColorScheme::kLight,
-            light->GetComputedStyle()->UsedColorSchemeForInitialColors());
-
-  EXPECT_EQ(Color::kBlack, GetDocument()
-                               .documentElement()
-                               ->GetComputedStyle()
-                               ->VisitedDependentColor(GetCSSPropertyColor()));
-  EXPECT_EQ(Color::kWhite, container->GetComputedStyle()->VisitedDependentColor(
-                               GetCSSPropertyColor()));
-  EXPECT_EQ(Color::kWhite, dark->GetComputedStyle()->VisitedDependentColor(
-                               GetCSSPropertyColor()));
-  EXPECT_EQ(Color::kBlack, light->GetComputedStyle()->VisitedDependentColor(
-                               GetCSSPropertyColor()));
-}
-
 TEST_F(StyleEngineTest, PseudoElementBaseComputedStyle) {
   GetDocument().body()->SetInnerHTMLFromString(R"HTML(
     <style>
@@ -2560,6 +2512,47 @@ TEST_F(StyleEngineTest, ForceReattachRecalcRootAttachShadow) {
   // of the host. The style recalc root should still be #reattach.
   host->AttachShadowRootInternal(ShadowRootType::kOpen);
   EXPECT_EQ(reattach, GetStyleRecalcRoot());
+}
+
+TEST_F(StyleEngineTest, InitialColorChange) {
+  GetDocument().body()->SetInnerHTMLFromString(R"HTML(
+    <style>
+      :root { color-scheme: light dark }
+      #initial { color: initial }
+    </style>
+    <div id="initial"></div>
+  )HTML");
+  UpdateAllLifecyclePhases();
+
+  Element* initial = GetDocument().getElementById("initial");
+  ASSERT_TRUE(initial);
+  ASSERT_TRUE(GetDocument().documentElement());
+  const ComputedStyle* document_element_style =
+      GetDocument().documentElement()->GetComputedStyle();
+  ASSERT_TRUE(document_element_style);
+  EXPECT_EQ(Color::kBlack, document_element_style->VisitedDependentColor(
+                               GetCSSPropertyColor()));
+
+  const ComputedStyle* initial_style = initial->GetComputedStyle();
+  ASSERT_TRUE(initial_style);
+  EXPECT_EQ(Color::kBlack,
+            initial_style->VisitedDependentColor(GetCSSPropertyColor()));
+
+  // Change color scheme to dark.
+  ColorSchemeHelper color_scheme_helper;
+  color_scheme_helper.SetPreferredColorScheme(GetDocument(),
+                                              PreferredColorScheme::kDark);
+  UpdateAllLifecyclePhases();
+
+  document_element_style = GetDocument().documentElement()->GetComputedStyle();
+  ASSERT_TRUE(document_element_style);
+  EXPECT_EQ(Color::kWhite, document_element_style->VisitedDependentColor(
+                               GetCSSPropertyColor()));
+
+  initial_style = initial->GetComputedStyle();
+  ASSERT_TRUE(initial_style);
+  EXPECT_EQ(Color::kWhite,
+            initial_style->VisitedDependentColor(GetCSSPropertyColor()));
 }
 
 }  // namespace blink

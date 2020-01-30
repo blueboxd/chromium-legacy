@@ -1323,7 +1323,7 @@ void AppListControllerImpl::GetNavigableContentsFactory(
 
 int AppListControllerImpl::GetTargetYForAppListHide(aura::Window* root_window) {
   DCHECK(Shell::HasInstance());
-  return Shelf::ForWindow(root_window)->GetIdealBounds().y();
+  return Shelf::ForWindow(root_window)->GetShelfBoundsInScreen().y();
 }
 
 AssistantViewDelegate* AppListControllerImpl::GetAssistantViewDelegate() {

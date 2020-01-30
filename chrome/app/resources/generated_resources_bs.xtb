@@ -78,7 +78,6 @@
 <translation id="1108600514891325577">&amp;Zaustavi</translation>
 <translation id="1110155001042129815">Sačekaj</translation>
 <translation id="1112420131909513020">Kartica u pozadini koristi bluetooth</translation>
-<translation id="1113042067630273625">Ovim ćete izbrisati ukupno <ph name="TOTAL_USAGE" /> pohranjenih podataka web lokacije.</translation>
 <translation id="1114102982691049955"><ph name="PRINTER_MANUFACTURER" /> <ph name="PRINTER_MODEL" /> (USB)</translation>
 <translation id="1114202307280046356">Dijamant</translation>
 <translation id="1114335938027186412">Vaš računar sadrži sigurnosni uređaj s modulom pouzdane platforme (TPM) koji se koristi za primjenu mnogih važnih sigurnosnih funkcija u Chrome OS-u. Posjetite Chromebook centar za pomoć da saznate više: https://support.google.com/chromebook/?p=tpm</translation>
@@ -151,7 +150,6 @@
 <translation id="1197979282329025000">Došlo je do greške prilikom preuzimanja mogućnosti štampača za štampač <ph name="PRINTER_NAME" />. Ovaj štampač nije moguće registrirati na <ph name="CLOUD_PRINT_NAME" />.</translation>
 <translation id="119944043368869598">Očisti sve</translation>
 <translation id="1201402288615127009">Naprijed</translation>
-<translation id="1202556750060561551">Obrisat će se svi podaci koje je pohranila web lokacija <ph name="SITE_GROUP_NAME" />, sve povezane web lokacije i njene instalirane aplikacije.</translation>
 <translation id="1202596434010270079">Aplikacija za kiosk je ažurirana. Uklonite USB disk.</translation>
 <translation id="120368089816228251">Muzička nota</translation>
 <translation id="1205489148908752564">Čitanje i izmjena dozvoljenih korisnika</translation>
@@ -997,7 +995,6 @@ Postavkama ovog računa možete upravljati instaliranjem aplikacije Family Link 
 <translation id="2365507699358342471">Ova web lokacija može vidjeti tekst i slike kopirane u međumemoriju.</translation>
 <translation id="2366260648632264559">Prikaži tekst na ovom jeziku</translation>
 <translation id="2367972762794486313">Prikaži aplikacije</translation>
-<translation id="2369105924912929484">Uključi/isključi sažeti sadržaj stranice</translation>
 <translation id="2371076942591664043">Otvori kad bude &amp;gotovo</translation>
 <translation id="2373666622366160481">Prilagodi veličini papira</translation>
 <translation id="2375406435414127095">Povežite na telefon</translation>
@@ -1877,6 +1874,7 @@ Postavkama ovog računa možete upravljati instaliranjem aplikacije Family Link 
 <translation id="3603177256297531067">Ovu stranicu nije moguće prevesti</translation>
 <translation id="3603622770190368340">Nabavite novu potvrdu</translation>
 <translation id="3605780360466892872">Biznismen</translation>
+<translation id="3608436266458100337">Način čitača</translation>
 <translation id="3608576286259426129">Pregled korisnikove slike</translation>
 <translation id="3610369246614755442">Ventilator priključne stanice treba servisirati</translation>
 <translation id="361106536627977100">Podaci Flasha</translation>
@@ -2627,7 +2625,6 @@ Postavkama ovog računa možete upravljati instaliranjem aplikacije Family Link 
 <translation id="4665014895760275686">Proizvođač</translation>
 <translation id="4665446389743427678">Svi podaci koje pohrani web lokacija <ph name="SITE" /> će biti izbrisani.</translation>
 <translation id="4668721319092543482">Kliknite da omogućite dodatak <ph name="PLUGIN_NAME" /></translation>
-<translation id="4672657274720418656">Sažmi stranicu</translation>
 <translation id="46733273239502219">Obrisat će se i offline podaci u instaliranim aplikacijama</translation>
 <translation id="4673442866648850031">Otvorite alate za stilos kada je stilos uklonjen</translation>
 <translation id="4677585247300749148"><ph name="URL" /> želi odgovoriti na događaje pristupačnosti</translation>
@@ -3337,7 +3334,6 @@ Postavkama ovog računa možete upravljati instaliranjem aplikacije Family Link 
 <translation id="5687326903064479980">Vremenska zona</translation>
 <translation id="5689516760719285838">Lokacija</translation>
 <translation id="56907980372820799">Poveži podatke</translation>
-<translation id="5691180005790455277">Obrisat će se svi podaci i kolačići koje je pohranila grupa web lokacija <ph name="SITE_GROUP_NAME" /> te sve web lokacije povezane s njom.</translation>
 <translation id="5691511426247308406">Porodica</translation>
 <translation id="5692183275898619210">Štampanje je završeno</translation>
 <translation id="5696143504434933566">Prijavi zloupotrebu s ekstenzije "<ph name="EXTENSION_NAME" />"</translation>

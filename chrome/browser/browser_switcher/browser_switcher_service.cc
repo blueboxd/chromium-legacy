@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/syslog_logging.h"
 #include "chrome/browser/browser_switcher/alternative_browser_driver.h"
 #include "chrome/browser/browser_switcher/browser_switcher_prefs.h"
@@ -220,19 +221,21 @@ BrowserSwitcherService::BrowserSwitcherService(Profile* profile)
       prefs_(profile),
       driver_(new AlternativeBrowserDriverImpl(&prefs_)),
       sitelist_(new BrowserSwitcherSitelistImpl(&prefs_)) {
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(&BrowserSwitcherService::Init,
-                                weak_ptr_factory_.GetWeakPtr()));
-
   prefs_subscription_ =
       prefs().RegisterPrefsChangedCallback(base::BindRepeating(
           &BrowserSwitcherService::OnBrowserSwitcherPrefsChanged,
           base::Unretained(this)));
+
+  if (prefs_.IsEnabled()) {
+    UMA_HISTOGRAM_ENUMERATION("BrowserSwitcher.AlternativeBrowser",
+                              driver_->GetBrowserType());
+  }
 }
 
 BrowserSwitcherService::~BrowserSwitcherService() = default;
 
 void BrowserSwitcherService::Init() {
+  LOG(ERROR) << "XXX Init()";
   LoadRulesFromPrefs();
   StartDownload(fetch_delay());
 }
@@ -328,6 +331,20 @@ BrowserSwitcherService::RegisterAllRulesetsParsedCallback(
 void BrowserSwitcherService::OnBrowserSwitcherPrefsChanged(
     BrowserSwitcherPrefs* prefs,
     const std::vector<std::string>& changed_prefs) {
+  // Record |BrowserSwitcher.AlternativeBrowser| when the
+  // |BrowserSwitcherEnabled| or |AlternativeBrowserPath| policies change.
+  bool should_record_metrics =
+      changed_prefs.end() !=
+      std::find_if(changed_prefs.begin(), changed_prefs.end(),
+                   [](const std::string& pref) {
+                     return pref == prefs::kEnabled ||
+                            pref == prefs::kAlternativeBrowserPath;
+                   });
+  if (should_record_metrics && prefs_.IsEnabled()) {
+    UMA_HISTOGRAM_ENUMERATION("BrowserSwitcher.AlternativeBrowser",
+                              driver_->GetBrowserType());
+  }
+
   auto sources = GetRulesetSources();
 
   // Re-download if one of the URLs changed. O(n^2), with n <= 3.

@@ -8,7 +8,7 @@ namespace updater {
 
 const base::char16 kGlobalPrefix[] = L"Global\\G";
 
-extern const base::char16 kRegistryValuePV[] = L"pv";
-extern const base::char16 kRegistryValueName[] = L"name";
+const base::char16 kRegistryValuePV[] = L"pv";
+const base::char16 kRegistryValueName[] = L"name";
 
 }  // namespace updater

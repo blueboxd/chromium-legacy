@@ -87,6 +87,7 @@ struct PPAPI_SHARED_EXPORT PdfAccessibilityHighlightInfo {
   uint32_t text_run_index;
   uint32_t text_run_count;
   PP_FloatRect bounds;
+  uint32_t color;
 };
 
 // Needs to stay in sync with PP_PrivateAccessibilityPageObjects.

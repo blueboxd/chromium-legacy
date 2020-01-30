@@ -119,6 +119,7 @@
 #include "content/common/accessibility_messages.h"
 #include "content/common/associated_interfaces.mojom.h"
 #include "content/common/content_constants_internal.h"
+#include "content/common/content_navigation_policy.h"
 #include "content/common/content_security_policy/content_security_policy.h"
 #include "content/common/frame.mojom.h"
 #include "content/common/frame_messages.h"
@@ -225,6 +226,7 @@
 #include "content/public/browser/android/java_interfaces.h"
 #else
 #include "content/browser/hid/hid_service.h"
+#include "content/browser/host_zoom_map_impl.h"
 #include "content/browser/serial/serial_service.h"
 #endif
 
@@ -1278,6 +1280,8 @@ void RenderFrameHostImpl::OnPortalActivated(
                 break;
               case blink::mojom::PortalActivateResult::
                   kRejectedDueToPredecessorNavigation:
+              case blink::mojom::PortalActivateResult::
+                  kRejectedDueToPortalNotReady:
               case blink::mojom::PortalActivateResult::kDisconnected:
               case blink::mojom::PortalActivateResult::kAbortedDueToBug:
                 // The renderer is misbehaving.
@@ -2342,6 +2346,10 @@ const url::Origin& RenderFrameHostImpl::ComputeTopFrameOrigin(
   }
 
   DCHECK(parent_);
+  // It's important to go through parent_ rather than via
+  // frame_free_->root() here in case we're in process of being deleted, as the
+  // latter might point to what our ancestor is being replaced with rather than
+  // the actual ancestor.
   RenderFrameHostImpl* host = parent_;
   while (host->parent_) {
     host = host->parent_;
@@ -2384,7 +2392,7 @@ net::SiteForCookies RenderFrameHostImpl::ComputeSiteForCookiesInternal(
 #endif
 
   const url::Origin& top_document_origin =
-      frame_tree_->root()->current_frame_host()->GetLastCommittedOrigin();
+      ComputeTopFrameOrigin(render_frame_host->last_committed_origin_);
   net::SiteForCookies candidate =
       net::SiteForCookies::FromOrigin(top_document_origin);
 
@@ -3603,6 +3611,27 @@ void RenderFrameHostImpl::DidDisplayInsecureContent() {
 
 void RenderFrameHostImpl::DidContainInsecureFormAction() {
   delegate_->DidContainInsecureFormAction();
+}
+
+void RenderFrameHostImpl::DocumentAvailableInMainFrame(
+    bool uses_temporary_zoom_level) {
+  if (!frame_tree_node_->IsMainFrame()) {
+    bad_message::ReceivedBadMessage(
+        GetProcess(), bad_message::RFH_INVALID_CALL_FROM_NOT_MAIN_FRAME);
+    return;
+  }
+  delegate_->DocumentAvailableInMainFrame();
+
+  if (!uses_temporary_zoom_level)
+    return;
+
+#if !defined(OS_ANDROID)
+  HostZoomMapImpl* host_zoom_map =
+      static_cast<HostZoomMapImpl*>(HostZoomMap::Get(GetSiteInstance()));
+  host_zoom_map->SetTemporaryZoomLevel(GetProcess()->GetID(),
+                                       render_view_host()->GetRoutingID(),
+                                       host_zoom_map->GetDefaultZoomLevel());
+#endif  // !defined(OS_ANDROID)
 }
 
 void RenderFrameHostImpl::SetNeedsOcclusionTracking(bool needs_tracking) {

@@ -251,7 +251,9 @@ void SupervisedUserNavigationThrottle::OnCheckDone(
 }
 
 void SupervisedUserNavigationThrottle::OnInterstitialResult(
-    CallbackActions action) {
+    CallbackActions action,
+    bool already_sent_request,
+    bool is_main_frame) {
   switch (action) {
     case kCancelNavigation: {
       CancelDeferredNavigation(CANCEL);
@@ -262,7 +264,7 @@ void SupervisedUserNavigationThrottle::OnInterstitialResult(
           SupervisedUserInterstitial::GetHTMLContents(
               Profile::FromBrowserContext(
                   navigation_handle()->GetWebContents()->GetBrowserContext()),
-              reason_);
+              reason_, already_sent_request, is_main_frame);
       CancelDeferredNavigation(content::NavigationThrottle::ThrottleCheckResult(
           CANCEL, net::ERR_BLOCKED_BY_CLIENT, interstitial_html));
     }

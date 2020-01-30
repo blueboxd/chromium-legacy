@@ -103,6 +103,18 @@ ui::Compositor* GetSelectedCompositorForAnimationSmoothness() {
   return selected_root->layer()->GetCompositor();
 }
 
+base::string16 GetDeskDefaultName(size_t desk_index) {
+  DCHECK_LT(desk_index, desks_util::kMaxNumberOfDesks);
+  constexpr int kStringIds[] = {IDS_ASH_DESKS_DESK_1_MINI_VIEW_TITLE,
+                                IDS_ASH_DESKS_DESK_2_MINI_VIEW_TITLE,
+                                IDS_ASH_DESKS_DESK_3_MINI_VIEW_TITLE,
+                                IDS_ASH_DESKS_DESK_4_MINI_VIEW_TITLE};
+  static_assert(desks_util::kMaxNumberOfDesks == base::size(kStringIds),
+                "Wrong default desks' names.");
+
+  return l10n_util::GetStringUTF16(kStringIds[desk_index]);
+}
+
 }  // namespace
 
 // -----------------------------------------------------------------------------
@@ -453,8 +465,10 @@ void DesksController::NewDesk(DesksCreationRemovalSource source) {
 
   base::AutoReset<bool> in_progress(&are_desks_being_modified_, true);
 
-  desks_.emplace_back(std::make_unique<Desk>(available_container_ids_.front()));
+  desks_.push_back(std::make_unique<Desk>(available_container_ids_.front()));
   available_container_ids_.pop();
+  Desk* new_desk = desks_.back().get();
+  new_desk->SetName(GetDeskDefaultName(desks_.size() - 1));
 
   UMA_HISTOGRAM_ENUMERATION(kNewDeskHistogramName, source);
   ReportDesksCountHistogram();
@@ -465,7 +479,7 @@ void DesksController::NewDesk(DesksCreationRemovalSource source) {
           base::NumberToString16(desks_.size())));
 
   for (auto& observer : observers_)
-    observer.OnDeskAdded(desks_.back().get());
+    observer.OnDeskAdded(new_desk);
 }
 
 void DesksController::RemoveDesk(const Desk* desk,
@@ -821,6 +835,8 @@ void DesksController::RemoveDeskInternal(const Desk* desk,
   if (!removed_desk_windows.empty())
     active_desk_->NotifyContentChanged(/*force_update_backdrops=*/true);
 
+  UpdateDesksDefaultNames();
+
   for (auto& observer : observers_)
     observer.OnDeskRemoved(removed_desk.get());
 
@@ -901,6 +917,13 @@ void DesksController::ReportDesksCountHistogram() const {
   DCHECK_LE(desks_.size(), desks_util::kMaxNumberOfDesks);
   UMA_HISTOGRAM_EXACT_LINEAR(kDesksCountHistogramName, desks_.size(),
                              desks_util::kMaxNumberOfDesks);
+}
+
+void DesksController::UpdateDesksDefaultNames() {
+  // TODO(afakhry): Don't do this for user-modified desk labels.
+  size_t i = 0;
+  for (auto& desk : desks_)
+    desk->SetName(GetDeskDefaultName(i++));
 }
 
 }  // namespace ash

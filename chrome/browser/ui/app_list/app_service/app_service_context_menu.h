@@ -46,8 +46,6 @@ class AppServiceContextMenu : public app_list::AppContextMenu {
   void OnGetMenuModel(GetMenuModelCallback callback,
                       apps::mojom::MenuItemsPtr menu_items);
 
-  const gfx::VectorIcon& GetVectorIcon(int command_id, int string_id);
-
   // Build additional extension app menu items.
   void BuildExtensionAppShortcutsMenu(ui::SimpleMenuModel* menu_model);
 

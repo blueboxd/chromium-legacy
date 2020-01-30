@@ -285,6 +285,7 @@ class SupervisedUserIframeFilterTest
   std::vector<int> GetBlockedFrames();
   const GURL& GetBlockedFrameURL(int frame_id);
   bool IsInterstitialBeingShownInFrame(int frame_id);
+  bool IsAskPermissionButtonBeingShown(int frame_id);
   void RequestPermissionFromFrame(int frame_id);
   void WaitForNavigationFinished(int frame_id, const GURL& url);
 
@@ -295,6 +296,9 @@ class SupervisedUserIframeFilterTest
   RenderFrameTracker* tracker() { return tracker_.get(); }
 
  private:
+  bool RunCommandAndGetBooleanFromFrame(int frame_id,
+                                        const std::string& command);
+
   std::unique_ptr<RenderFrameTracker> tracker_;
   PermissionRequestCreatorMock* permission_creator_;
 
@@ -354,30 +358,20 @@ const GURL& SupervisedUserIframeFilterTest::GetBlockedFrameURL(int frame_id) {
 
 bool SupervisedUserIframeFilterTest::IsInterstitialBeingShownInFrame(
     int frame_id) {
-  // First check that SupervisedUserNavigationObserver believes that there is
-  // an error page in the frame hosted by |rfh|.
-  WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
-  auto* navigation_observer =
-      SupervisedUserNavigationObserver::FromWebContents(tab);
-  auto& interstitials = navigation_observer->interstitials_for_test();
-
-  if (!base::Contains(interstitials, frame_id))
-    return false;
-
-  // Then check that an error page has actually been loaded in the frame.
   std::string command =
       "domAutomationController.send("
       "(document.getElementsByClassName('supervised-user-block') != null) "
       "? (true) : (false));";
+  return RunCommandAndGetBooleanFromFrame(frame_id, command);
+}
 
-  auto* render_frame_host = tracker()->GetHost(frame_id);
-  DCHECK(render_frame_host->IsRenderFrameLive());
-
-  bool value = false;
-  auto target = content::ToRenderFrameHost(render_frame_host);
-  EXPECT_TRUE(content::ExecuteScriptWithoutUserGestureAndExtractBool(
-      target, command, &value));
-  return value;
+bool SupervisedUserIframeFilterTest::IsAskPermissionButtonBeingShown(
+    int frame_id) {
+  std::string command =
+      "domAutomationController.send("
+      "(document.getElementById('request-access-button').hidden"
+      "? (false) : (true)));";
+  return RunCommandAndGetBooleanFromFrame(frame_id, command);
 }
 
 void SupervisedUserIframeFilterTest::RequestPermissionFromFrame(int frame_id) {
@@ -395,6 +389,29 @@ void SupervisedUserIframeFilterTest::WaitForNavigationFinished(
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
   NavigationFinishedWaiter waiter(tab, frame_id, url);
   waiter.Wait();
+}
+
+bool SupervisedUserIframeFilterTest::RunCommandAndGetBooleanFromFrame(
+    int frame_id,
+    const std::string& command) {
+  // First check that SupervisedUserNavigationObserver believes that there is
+  // an error page in the frame with frame tree node id |frame_id|.
+  WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
+  auto* navigation_observer =
+      SupervisedUserNavigationObserver::FromWebContents(tab);
+  auto& interstitials = navigation_observer->interstitials_for_test();
+
+  if (!base::Contains(interstitials, frame_id))
+    return false;
+
+  auto* render_frame_host = tracker()->GetHost(frame_id);
+  DCHECK(render_frame_host->IsRenderFrameLive());
+
+  bool value = false;
+  auto target = content::ToRenderFrameHost(render_frame_host);
+  EXPECT_TRUE(content::ExecuteScriptWithoutUserGestureAndExtractBool(
+      target, command, &value));
+  return value;
 }
 
 IN_PROC_BROWSER_TEST_F(SupervisedUserIframeFilterTest, BlockSubFrame) {
@@ -546,6 +563,64 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserIframeFilterTest,
   auto blocked = GetBlockedFrames();
   EXPECT_EQ(blocked.size(), 1u);
   EXPECT_EQ(kIframeHost1, GetBlockedFrameURL(blocked[0]).host());
+}
+
+IN_PROC_BROWSER_TEST_F(SupervisedUserIframeFilterTest,
+                       RememberAlreadyRequestedHosts) {
+  BlockHost(kExampleHost);
+
+  GURL blocked_url = embedded_test_server()->GetURL(
+      kExampleHost, "/supervised_user/with_frames.html");
+  ui_test_utils::NavigateToURL(browser(), blocked_url);
+  EXPECT_TRUE(IsInterstitialBeingShownInMainFrame(browser()));
+
+  auto blocked_frames = GetBlockedFrames();
+  EXPECT_EQ(blocked_frames.size(), 1u);
+
+  // Expect that request permission button is shown.
+  EXPECT_TRUE(IsAskPermissionButtonBeingShown(blocked_frames[0]));
+
+  // Delay approval/denial by parent.
+  permission_creator()->SetPermissionResult(true);
+  permission_creator()->DelayHandlingForNextRequests();
+
+  // Request permission.
+  RequestPermissionFromFrame(blocked_frames[0]);
+
+  // Navigate to another allowed url.
+  GURL allowed_url = embedded_test_server()->GetURL(
+      kExampleHost2, "/supervised_user/with_frames.html");
+  ui_test_utils::NavigateToURL(browser(), allowed_url);
+  EXPECT_FALSE(IsInterstitialBeingShownInMainFrame(browser()));
+
+  ui_test_utils::NavigateToURL(browser(), blocked_url);
+  EXPECT_TRUE(IsInterstitialBeingShownInMainFrame(browser()));
+
+  // Navigate back to the blocked url.
+  EXPECT_TRUE(IsInterstitialBeingShownInMainFrame(browser()));
+
+  // Error page is being shown, but "Ask Permission" button is not being shown.
+  EXPECT_FALSE(IsAskPermissionButtonBeingShown(blocked_frames[0]));
+
+  content::WebContents* active_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  SupervisedUserNavigationObserver* navigation_observer =
+      SupervisedUserNavigationObserver::FromWebContents(active_contents);
+  ASSERT_NE(navigation_observer, nullptr);
+
+  EXPECT_TRUE(base::Contains(navigation_observer->requested_hosts_for_test(),
+                             kExampleHost));
+
+  NavigationFinishedWaiter waiter(
+      active_contents, active_contents->GetMainFrame()->GetFrameTreeNodeId(),
+      blocked_url);
+  permission_creator()->HandleDelayedRequests();
+  waiter.Wait();
+
+  EXPECT_FALSE(base::Contains(navigation_observer->requested_hosts_for_test(),
+                              kExampleHost));
+
+  EXPECT_FALSE(IsInterstitialBeingShownInMainFrame(browser()));
 }
 
 class SupervisedUserNavigationThrottleNotSupervisedTest

@@ -487,7 +487,8 @@ void V4ProtocolManagerUtil::CanonicalizeUrl(const GURL& url,
   // 3. In hostname, remove all leading and trailing dots.
   base::StringPiece host;
   if (parsed.host.len > 0)
-    host.set(url_unescaped_str.data() + parsed.host.begin, parsed.host.len);
+    host = base::StringPiece(url_unescaped_str.data() + parsed.host.begin,
+                             parsed.host.len);
 
   base::StringPiece host_without_end_dots =
       base::TrimString(host, ".", base::TrimPositions::TRIM_ALL);
@@ -499,7 +500,8 @@ void V4ProtocolManagerUtil::CanonicalizeUrl(const GURL& url,
   // 5. In path, replace runs of consecutive slashes with a single slash.
   base::StringPiece path;
   if (parsed.path.len > 0)
-    path.set(url_unescaped_str.data() + parsed.path.begin, parsed.path.len);
+    path = base::StringPiece(url_unescaped_str.data() + parsed.path.begin,
+                             parsed.path.len);
   std::string path_without_consecutive_slash(RemoveConsecutiveChars(path, '/'));
 
   url::Replacements<char> hp_replacements;

@@ -186,7 +186,7 @@ void UrgentPageDiscardingPolicyTest::MakePageNodeDiscardable(
   page_node->OnMainFrameNavigationCommitted(false, base::TimeTicks::Now(), 42,
                                             kUrl, "text/html");
   (*page_node->main_frame_nodes().begin())->OnNavigationCommitted(kUrl, false);
-  AdvanceClock(base::TimeDelta::FromMinutes(1));
+  AdvanceClock(base::TimeDelta::FromMinutes(10));
   EXPECT_TRUE(policy()->CanUrgentlyDiscardForTesting(page_node));
 }
 

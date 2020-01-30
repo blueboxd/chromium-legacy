@@ -32,7 +32,8 @@ void AddRadioItem(uint32_t command_id,
 
 // Adds a LAUNCH_NEW menu item to |menu_items|, and create radio items for the
 // submenu.
-void CreateOpenNewSubmenu(uint32_t string_id,
+void CreateOpenNewSubmenu(apps::mojom::MenuType menu_type,
+                          uint32_t string_id,
                           apps::mojom::MenuItemsPtr* menu_items);
 
 // Returns true if the open menu item can be added, when |menu_type| is Shelf,

@@ -188,6 +188,7 @@ class BlinkTestController : public WebContentsObserver,
   void OnResetDone();
   void OnPrintMessageToStderr(const std::string& message);
   void OnReload();
+  void OnOverridePreferences(const WebPreferences& prefs);
   void OnCloseRemainingWindows();
   void OnGoToOffset(int offset);
   void OnSetBluetoothManualChooser(bool enable);
@@ -228,7 +229,6 @@ class BlinkTestController : public WebContentsObserver,
   void OnDumpFrameLayoutResponse(int frame_tree_node_id,
                                  const std::string& dump);
   void OnPrintMessage(const std::string& message);
-  void OnOverridePreferences(const WebPreferences& prefs);
   void OnTestFinished();
   void OnCaptureSessionHistory();
   void OnLeakDetectionDone(const LeakDetector::LeakDetectionReport& report);

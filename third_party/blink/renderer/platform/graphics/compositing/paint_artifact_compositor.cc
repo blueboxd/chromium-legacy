@@ -1520,6 +1520,8 @@ void PaintArtifactCompositor::UpdateLayerDebugInfo(
 
   debug_info.compositing_reasons =
       CompositingReason::Descriptions(compositing_reasons);
+  debug_info.compositing_reason_ids =
+      CompositingReason::ShortNames(compositing_reasons);
   debug_info.owner_node_id = id.client.OwnerNodeId();
 
   if (RasterInvalidationTracking::IsTracingRasterInvalidations() &&

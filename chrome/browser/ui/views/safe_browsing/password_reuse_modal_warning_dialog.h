@@ -47,9 +47,6 @@ class PasswordReuseModalWarningDialog
   bool ShouldShowCloseButton() const override;
   gfx::ImageSkia GetWindowIcon() override;
   bool ShouldShowWindowIcon() const override;
-  bool Cancel() override;
-  bool Accept() override;
-  bool Close() override;
 
   // ChromePasswordProtectionService::Observer:
   void OnGaiaPasswordChanged() override;

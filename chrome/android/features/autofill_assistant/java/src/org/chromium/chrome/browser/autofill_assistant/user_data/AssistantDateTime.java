@@ -31,12 +31,6 @@ public class AssistantDateTime {
     /** Second in [0-59]. */
     private int mSecond;
 
-    public AssistantDateTime(Calendar calendar) {
-        this(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH),
-                calendar.get(Calendar.DAY_OF_MONTH), calendar.get(Calendar.HOUR_OF_DAY),
-                calendar.get(Calendar.MINUTE), calendar.get(Calendar.SECOND));
-    }
-
     public AssistantDateTime(int year, int month, int day, int hour, int minute, int second) {
         set(year, month, day, hour, minute, second);
     }

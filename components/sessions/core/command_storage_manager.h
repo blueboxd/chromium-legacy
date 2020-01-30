@@ -71,6 +71,8 @@ class SESSIONS_EXPORT CommandStorageManager {
   // Appends a command as part of a general rebuild. This will neither count
   // against a rebuild, nor will it trigger a save of commands.
   void AppendRebuildCommand(std::unique_ptr<SessionCommand> command);
+  void AppendRebuildCommands(
+      std::vector<std::unique_ptr<SessionCommand>> commands);
 
   // Erase the |old_command| from the list of commands.
   // The passed command will automatically be deleted.

@@ -34,9 +34,8 @@ void WebApkUkmRecorder::RecordInstall(const GURL& manifest_url,
   if (!manifest_url.is_valid())
     return;
 
-  ukm::SourceId source_id = ukm::UkmRecorder::GetNewSourceID();
-  ukm::UkmRecorder* ukm_recorder = ukm::UkmRecorder::Get();
-  ukm_recorder->UpdateSourceURL(source_id, manifest_url);
+  ukm::SourceId source_id =
+      ukm::UkmRecorder::GetSourceIdForWebApkManifestUrl(manifest_url);
 
   // All installs through this method are browser-installs (ie, they should all
   // use the "browser" distributor).
@@ -44,7 +43,7 @@ void WebApkUkmRecorder::RecordInstall(const GURL& manifest_url,
       .SetDistributor(static_cast<int64_t>(WebApkDistributor::BROWSER))
       .SetAppVersion(version_code)
       .SetInstall(1)
-      .Record(ukm_recorder);
+      .Record(ukm::UkmRecorder::Get());
 }
 
 // static
@@ -55,14 +54,13 @@ void WebApkUkmRecorder::RecordSessionDuration(const GURL& manifest_url,
   if (!manifest_url.is_valid())
     return;
 
-  ukm::SourceId source_id = ukm::UkmRecorder::GetNewSourceID();
-  ukm::UkmRecorder* ukm_recorder = ukm::UkmRecorder::Get();
-  ukm_recorder->UpdateSourceURL(source_id, manifest_url);
+  ukm::SourceId source_id =
+      ukm::UkmRecorder::GetSourceIdForWebApkManifestUrl(manifest_url);
   ukm::builders::WebAPK_SessionEnd(source_id)
       .SetDistributor(distributor)
       .SetAppVersion(version_code)
       .SetSessionDuration(ukm::GetExponentialBucketMinForUserTiming(duration))
-      .Record(ukm_recorder);
+      .Record(ukm::UkmRecorder::Get());
 }
 
 // static
@@ -73,15 +71,14 @@ void WebApkUkmRecorder::RecordVisit(const GURL& manifest_url,
   if (!manifest_url.is_valid())
     return;
 
-  ukm::SourceId source_id = ukm::UkmRecorder::GetNewSourceID();
-  ukm::UkmRecorder* ukm_recorder = ukm::UkmRecorder::Get();
-  ukm_recorder->UpdateSourceURL(source_id, manifest_url);
+  ukm::SourceId source_id =
+      ukm::UkmRecorder::GetSourceIdForWebApkManifestUrl(manifest_url);
   ukm::builders::WebAPK_Visit(source_id)
       .SetDistributor(distributor)
       .SetAppVersion(version_code)
       .SetLaunchSource(source)
       .SetLaunch(1)
-      .Record(ukm_recorder);
+      .Record(ukm::UkmRecorder::Get());
 }
 
 // static
@@ -92,9 +89,8 @@ void WebApkUkmRecorder::RecordUninstall(const GURL& manifest_url,
                                         int64_t installed_duration_ms) {
   // UKM metric |launch_count| parameter is enum. '2' indicates >= 2 launches.
   launch_count = base::ClampToRange<int64_t>(launch_count, 0, 2);
-  ukm::SourceId source_id = ukm::UkmRecorder::GetNewSourceID();
-  ukm::UkmRecorder* ukm_recorder = ukm::UkmRecorder::Get();
-  ukm_recorder->UpdateSourceURL(source_id, manifest_url);
+  ukm::SourceId source_id =
+      ukm::UkmRecorder::GetSourceIdForWebApkManifestUrl(manifest_url);
   ukm::builders::WebAPK_Uninstall(source_id)
       .SetDistributor(distributor)
       .SetAppVersion(version_code)
@@ -102,7 +98,7 @@ void WebApkUkmRecorder::RecordUninstall(const GURL& manifest_url,
       .SetInstalledDuration(
           ukm::GetExponentialBucketMinForUserTiming(installed_duration_ms))
       .SetUninstall(1)
-      .Record(ukm_recorder);
+      .Record(ukm::UkmRecorder::Get());
 }
 
 // Called by the Java counterpart to record the Session Duration UKM metric.

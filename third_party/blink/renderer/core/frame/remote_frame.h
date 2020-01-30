@@ -123,6 +123,8 @@ class CORE_EXPORT RemoteFrame final : public Frame,
       mojom::blink::ScrollIntoViewParamsPtr params) override;
   void DidStartLoading() override;
   void DidStopLoading() override;
+  void IntrinsicSizingInfoOfChildChanged(
+      mojom::blink::IntrinsicSizingInfoPtr sizing_info) override;
 
  private:
   // Frame protected overrides:

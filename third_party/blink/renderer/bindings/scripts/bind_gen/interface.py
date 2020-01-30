@@ -678,8 +678,7 @@ def make_cooperative_scheduling_safepoint(cg_context):
                     "->Safepoint();")
     node.accumulate(
         CodeGenAccumulator.require_include_headers([
-            "third_party/blink/renderer/platform/scheduler/public/"
-            "cooperative_scheduling_manager.h"
+            "third_party/blink/renderer/platform/scheduler/public/cooperative_scheduling_manager.h"
         ]))
     return node
 
@@ -726,10 +725,8 @@ def make_log_activity(cg_context):
     node = TextNode(_format(pattern, _1=cond, _2=body))
     node.accumulate(
         CodeGenAccumulator.require_include_headers([
-            "third_party/blink/renderer/"
-            "platform/bindings/v8_dom_activity_logger.h",
-            "third_party/blink/renderer/"
-            "platform/bindings/v8_per_context_data.h",
+            "third_party/blink/renderer/platform/bindings/v8_dom_activity_logger.h",
+            "third_party/blink/renderer/platform/bindings/v8_per_context_data.h",
         ]))
     return node
 
@@ -1168,8 +1165,7 @@ def make_steps_of_ce_reactions(cg_context):
     nodes.accumulate(
         CodeGenAccumulator.require_include_headers([
             "third_party/blink/renderer/core/html/custom/ce_reactions_scope.h",
-            "third_party/blink/renderer/core/html/custom/"
-            "v0_custom_element_processing_stack.h"
+            "third_party/blink/renderer/core/html/custom/v0_custom_element_processing_stack.h"
         ]))
     return nodes
 
@@ -3069,11 +3065,9 @@ def generate_interface(interface):
             component_export_header(impl_component),
         ])
     impl_source_node.accumulator.add_include_headers([
-        "third_party/blink/renderer/bindings/core/v8/"
-        "native_value_traits_impl.h",
+        "third_party/blink/renderer/bindings/core/v8/native_value_traits_impl.h",
         "third_party/blink/renderer/bindings/core/v8/v8_dom_configuration.h",
-        "third_party/blink/renderer/bindings/core/v8/"
-        "v8_set_return_value_for_core.h",
+        "third_party/blink/renderer/bindings/core/v8/v8_set_return_value_for_core.h",
         "third_party/blink/renderer/platform/bindings/exception_messages.h",
         "third_party/blink/renderer/platform/bindings/runtime_call_stats.h",
         "third_party/blink/renderer/platform/bindings/v8_binding.h",

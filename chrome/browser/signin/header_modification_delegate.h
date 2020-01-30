@@ -10,7 +10,7 @@
 class GURL;
 
 namespace content {
-class NavigationUIData;
+class WebContents;
 }
 
 namespace signin {
@@ -23,8 +23,7 @@ class HeaderModificationDelegate {
   HeaderModificationDelegate() = default;
   virtual ~HeaderModificationDelegate() = default;
 
-  virtual bool ShouldInterceptNavigation(
-      content::NavigationUIData* navigation_ui_data) = 0;
+  virtual bool ShouldInterceptNavigation(content::WebContents* contents) = 0;
   virtual void ProcessRequest(ChromeRequestAdapter* request_adapter,
                               const GURL& redirect_url) = 0;
   virtual void ProcessResponse(ResponseAdapter* response_adapter,

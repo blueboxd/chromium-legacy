@@ -13,6 +13,7 @@
 
 #include "base/strings/string16.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/task/cancelable_task_tracker.h"
 #include "build/build_config.h"
 #include "components/autofill/core/browser/autofill_client.h"
 #include "components/autofill/core/browser/autofill_driver.h"
@@ -240,6 +241,10 @@ class CreditCardAccessManager : public CreditCardCVCAuthenticator::Requester,
   // Signaled when OnDidGetUnmaskDetails() is called or after timeout.
   // Authenticate() is called when signaled.
   base::WaitableEvent ready_to_start_authentication_;
+
+  // Tracks the Authenticate() task that is signaled by
+  // |ready_to_start_authentication_|, allowing it to be canceled if necessary.
+  base::CancelableTaskTracker cancelable_authenticate_task_tracker_;
 
   // Required to avoid any unnecessary preflight calls to Payments servers.
   // Initial state is signaled. Resets when PrepareToFetchCreditCard() is

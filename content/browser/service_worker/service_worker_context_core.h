@@ -366,6 +366,9 @@ class CONTENT_EXPORT ServiceWorkerContextCore
 
   std::unique_ptr<ServiceWorkerRegistry> registry_;
   std::unique_ptr<ServiceWorkerJobCoordinator> job_coordinator_;
+  // TODO(bashi): Move |live_registrations_| to ServiceWorkerRegistry as
+  // ServiceWorkerRegistry is a better place to manage in-memory representation
+  // of registrations.
   std::map<int64_t, ServiceWorkerRegistration*> live_registrations_;
   std::map<int64_t, ServiceWorkerVersion*> live_versions_;
   std::map<int64_t, scoped_refptr<ServiceWorkerVersion>> protected_versions_;

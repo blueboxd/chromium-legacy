@@ -120,8 +120,8 @@ class MockCertificateReportSender
             const base::Callback<void(const GURL&, int, int)>& error_callback)
       override {
     latest_report_uri_ = report_uri;
-    report.CopyToString(&latest_report_);
-    content_type.CopyToString(&latest_content_type_);
+    latest_report_.assign(report.data(), report.size());
+    latest_content_type_.assign(content_type.data(), content_type.size());
   }
 
   void Clear() {

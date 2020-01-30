@@ -221,6 +221,8 @@ class CORE_EXPORT HTMLVideoElement final
 
   void OnWebMediaPlayerCreated() final;
 
+  void AttributeChanged(const AttributeModificationParams& params) override;
+
  private:
   friend class MediaCustomControlsFullscreenDetectorTest;
   friend class HTMLMediaElementEventListenersTest;
@@ -248,6 +250,8 @@ class CORE_EXPORT HTMLVideoElement final
   void OnLoadFinished() final;
   void DidMoveToNewDocument(Document& old_document) override;
   void SetDisplayMode(DisplayMode) override;
+
+  void UpdatePictureInPictureAvailability();
 
   void OnViewportIntersectionChanged(
       const HeapVector<Member<IntersectionObserverEntry>>& entries);
@@ -283,6 +287,8 @@ class CORE_EXPORT HTMLVideoElement final
 
   IntSize overridden_intrinsic_size_;
   bool is_default_overridden_intrinsic_size_;
+
+  bool video_has_played_ = false;
 
   // The following is always false unless viewport intersection monitoring is
   // turned on via ActivateViewportIntersectionMonitoring().

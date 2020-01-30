@@ -105,10 +105,6 @@ class ASH_EXPORT DesksBarView : public views::View,
   // has been created for it yet.
   DeskMiniView* FindMiniViewForDesk(const Desk* desk) const;
 
-  // Updates the text labels of the existing mini_views. This is called after a
-  // mini_view has been removed.
-  void UpdateMiniViewsLabels();
-
   // Returns the X offset of the first mini_view on the left (if there's one),
   // or the X offset of this view's center point when there are no mini_views.
   // This offset is used to calculate the amount by which the mini_views should

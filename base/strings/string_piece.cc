@@ -53,22 +53,6 @@ std::ostream& operator<<(std::ostream& o, const StringPiece16& piece) {
 namespace internal {
 
 template<typename STR>
-void CopyToStringT(const BasicStringPiece<STR>& self, STR* target) {
-  if (self.empty())
-    target->clear();
-  else
-    target->assign(self.data(), self.size());
-}
-
-void CopyToString(const StringPiece& self, std::string* target) {
-  CopyToStringT(self, target);
-}
-
-void CopyToString(const StringPiece16& self, string16* target) {
-  CopyToStringT(self, target);
-}
-
-template<typename STR>
 void AppendToStringT(const BasicStringPiece<STR>& self, STR* target) {
   if (!self.empty())
     target->append(self.data(), self.size());

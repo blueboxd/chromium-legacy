@@ -16,48 +16,49 @@ cr.define('settings', function() {
    */
   const EDIT_STARTUP_URL_EVENT = 'edit-startup-url';
 
-  return {EDIT_STARTUP_URL_EVENT};
-});
+  Polymer({
+    is: 'settings-startup-url-entry',
 
-Polymer({
-  is: 'settings-startup-url-entry',
+    behaviors: [cr.ui.FocusRowBehavior],
 
-  behaviors: [cr.ui.FocusRowBehavior],
+    properties: {
+      editable: {
+        type: Boolean,
+        reflectToAttribute: true,
+      },
 
-  properties: {
-    editable: {
-      type: Boolean,
-      reflectToAttribute: true,
+      /** @type {!StartupPageInfo} */
+      model: Object,
     },
 
-    /** @type {!StartupPageInfo} */
-    model: Object,
-  },
+    /** @private */
+    onRemoveTap_() {
+      this.$$('cr-action-menu').close();
+      settings.StartupUrlsPageBrowserProxyImpl.getInstance().removeStartupPage(
+          this.model.modelIndex);
+    },
 
-  /** @private */
-  onRemoveTap_() {
-    this.$$('cr-action-menu').close();
-    settings.StartupUrlsPageBrowserProxyImpl.getInstance().removeStartupPage(
-        this.model.modelIndex);
-  },
+    /**
+     * @param {!Event} e
+     * @private
+     */
+    onEditTap_(e) {
+      e.preventDefault();
+      this.$$('cr-action-menu').close();
+      this.fire(settings.EDIT_STARTUP_URL_EVENT, {
+        model: this.model,
+        anchor: this.$$('#dots'),
+      });
+    },
 
-  /**
-   * @param {!Event} e
-   * @private
-   */
-  onEditTap_(e) {
-    e.preventDefault();
-    this.$$('cr-action-menu').close();
-    this.fire(settings.EDIT_STARTUP_URL_EVENT, {
-      model: this.model,
-      anchor: this.$$('#dots'),
-    });
-  },
+    /** @private */
+    onDotsTap_() {
+      const actionMenu =
+          /** @type {!CrActionMenuElement} */ (this.$$('#menu').get());
+      actionMenu.showAt(assert(this.$$('#dots')));
+    },
+  });
 
-  /** @private */
-  onDotsTap_() {
-    const actionMenu =
-        /** @type {!CrActionMenuElement} */ (this.$$('#menu').get());
-    actionMenu.showAt(assert(this.$$('#dots')));
-  },
+  // #cr_define_end
+  return {EDIT_STARTUP_URL_EVENT};
 });

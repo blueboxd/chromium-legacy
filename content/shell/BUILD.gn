@@ -893,6 +893,7 @@ mojom("mojo_bindings") {
     "common/web_test/web_test_bluetooth_fake_adapter_setter.mojom",
   ]
   public_deps = [
+    "//content/public/common:web_preferences_mojom",
     "//mojo/public/mojom/base",
     "//skia/public/mojom",
     "//ui/gfx/geometry/mojom",

@@ -15,6 +15,7 @@ namespace weblayer {
 class MainDelegateImpl : public MainDelegate {
  public:
   void PreMainMessageLoopRun() override {}
+  void PostMainMessageLoopRun() override {}
   void SetMainMessageLoopQuitClosure(base::OnceClosure quit_closure) override {}
 };
 

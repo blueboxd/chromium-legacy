@@ -94,6 +94,10 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceDependency {
   virtual void PostTaskToClientThread(base::OnceClosure closure) = 0;
   virtual void ScheduleGrContextCleanup() = 0;
 
+  // This function schedules delayed task to be run on GPUThread. It can be
+  // called only from GPU Thread.
+  virtual void ScheduleDelayedGPUTaskFromGPUThread(base::OnceClosure task) = 0;
+
 #if defined(OS_WIN)
   virtual void DidCreateAcceleratedSurfaceChildWindow(
       gpu::SurfaceHandle parent_window,

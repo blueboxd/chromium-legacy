@@ -252,10 +252,10 @@ public class SuggestionSpannableUnitTest {
         SuggestionSpannable c1 = new SuggestionSpannable("test string");
         SuggestionSpannable c2 = new SuggestionSpannable("test string");
 
-        c1.setSpan(new TextAppearanceSpan(mActivity, R.style.TextAppearance_BlackTitle1), 3, 5,
-                Spanned.SPAN_INCLUSIVE_EXCLUSIVE);
-        c2.setSpan(new TextAppearanceSpan(mActivity, R.style.TextAppearance_BlackTitle1), 3, 5,
-                Spanned.SPAN_INCLUSIVE_EXCLUSIVE);
+        c1.setSpan(new TextAppearanceSpan(mActivity, R.style.TextAppearance_TextLarge_Primary), 3,
+                5, Spanned.SPAN_INCLUSIVE_EXCLUSIVE);
+        c2.setSpan(new TextAppearanceSpan(mActivity, R.style.TextAppearance_TextLarge_Primary), 3,
+                5, Spanned.SPAN_INCLUSIVE_EXCLUSIVE);
 
         assertTrue(c1.equals(c2));
     }
@@ -265,10 +265,10 @@ public class SuggestionSpannableUnitTest {
         SuggestionSpannable c1 = new SuggestionSpannable("test string");
         SuggestionSpannable c2 = new SuggestionSpannable("test string");
 
-        c1.setSpan(new TextAppearanceSpan(mActivity, R.style.TextAppearance_BlackDisabledText2), 3,
+        c1.setSpan(new TextAppearanceSpan(mActivity, R.style.TextAppearance_TextSmall_Tertiary), 3,
                 5, Spanned.SPAN_INCLUSIVE_EXCLUSIVE);
-        c2.setSpan(new TextAppearanceSpan(mActivity, R.style.TextAppearance_BlackHint2), 3, 5,
-                Spanned.SPAN_INCLUSIVE_EXCLUSIVE);
+        c2.setSpan(new TextAppearanceSpan(mActivity, R.style.TextAppearance_TextMedium_Secondary),
+                3, 5, Spanned.SPAN_INCLUSIVE_EXCLUSIVE);
 
         assertFalse(c1.equals(c2));
     }

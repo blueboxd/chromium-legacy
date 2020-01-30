@@ -142,6 +142,19 @@ std::unique_ptr<ChromeMetricsHelper> CreateBadClockMetricsHelper(
   return metrics_helper;
 }
 
+std::unique_ptr<ChromeMetricsHelper> CreateLegacyTLSMetricsHelper(
+    content::WebContents* web_contents,
+    const GURL& request_url) {
+  // Set up the metrics helper for the LegacyTLSUI.
+  security_interstitials::MetricsHelper::ReportDetails reporting_info;
+  reporting_info.metric_prefix = "legacy_tls";
+  std::unique_ptr<ChromeMetricsHelper> metrics_helper =
+      std::make_unique<ChromeMetricsHelper>(web_contents, request_url,
+                                            reporting_info);
+  metrics_helper.get()->StartRecordingCaptivePortalMetrics(false);
+  return metrics_helper;
+}
+
 std::unique_ptr<ChromeMetricsHelper> CreateMitmSoftwareMetricsHelper(
     content::WebContents* web_contents,
     const GURL& request_url) {
@@ -269,6 +282,24 @@ ChromeSecurityBlockingPageFactory::CreateBadClockBlockingPage(
           CreateBadClockMetricsHelper(web_contents, request_url)));
 
   ChromeSecurityBlockingPageFactory::DoChromeSpecificSetup(page.get());
+  return page.release();
+}
+
+LegacyTLSBlockingPage*
+ChromeSecurityBlockingPageFactory::CreateLegacyTLSBlockingPage(
+    content::WebContents* web_contents,
+    int cert_error,
+    const GURL& request_url,
+    std::unique_ptr<SSLCertReporter> ssl_cert_reporter,
+    const net::SSLInfo& ssl_info) {
+  auto page = std::make_unique<LegacyTLSBlockingPage>(
+      web_contents, cert_error, request_url, std::move(ssl_cert_reporter),
+      ssl_info,
+      std::make_unique<SSLErrorControllerClient>(
+          web_contents, ssl_info, cert_error, request_url,
+          CreateLegacyTLSMetricsHelper(web_contents, request_url)));
+
+  DoChromeSpecificSetup(page.get());
   return page.release();
 }
 

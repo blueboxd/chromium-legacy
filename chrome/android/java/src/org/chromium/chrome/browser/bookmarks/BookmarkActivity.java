@@ -52,7 +52,7 @@ public class BookmarkActivity extends SnackbarActivity {
         if (requestCode == EDIT_BOOKMARK_REQUEST_CODE && resultCode == RESULT_OK) {
             BookmarkId bookmarkId = BookmarkId.getBookmarkIdFromString(data.getStringExtra(
                     INTENT_VISIT_BOOKMARK_ID));
-            mBookmarkManager.openBookmark(bookmarkId, BookmarkLaunchLocation.BOOKMARK_EDITOR);
+            mBookmarkManager.openBookmark(bookmarkId);
         }
     }
 

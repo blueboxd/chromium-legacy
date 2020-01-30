@@ -104,7 +104,7 @@ class QuicTransportTest : public ContentBrowserTest {
         base::StringPrintf("localhost:%d", server_.server_address().port()));
     command_line->AppendSwitch(switches::kEnableQuic);
     command_line->AppendSwitchASCII(switches::kQuicVersion,
-                                    base::StringPrintf("h3-24"));
+                                    base::StringPrintf("h3-25"));
     // The value is calculated from net/data/ssl/certificates/quic-chain.pem.
     command_line->AppendSwitchASCII(
         network::switches::kIgnoreCertificateErrorsSPKIList,
@@ -193,6 +193,34 @@ IN_PROC_BROWSER_TEST_F(QuicTransportTest, ClientIndicationFailure) {
         return;
       }
       throw Error('closed should be rejected');
+    }
+
+    run().then(() => { document.title = 'PASS'; },
+               (e) => { console.log(e); document.title = 'FAIL'; });
+)JS",
+                                  server_.server_address().port())));
+
+  ASSERT_TRUE(WaitForTitle(ASCIIToUTF16("PASS"), {ASCIIToUTF16("FAIL")}));
+}
+
+IN_PROC_BROWSER_TEST_F(QuicTransportTest, CreateSendStream) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  ASSERT_TRUE(
+      NavigateToURL(shell(), embedded_test_server()->GetURL("/title2.html")));
+
+  ASSERT_TRUE(WaitForTitle(ASCIIToUTF16("Title Of Awesomeness")));
+
+  ASSERT_TRUE(ExecuteScript(
+      shell(), base::StringPrintf(R"JS(
+    async function run() {
+      const transport = new QuicTransport('quic-transport://localhost:%d/echo');
+
+      await transport.ready;
+
+      const sendStream = await transport.createSendStream();
+      const writer = sendStream.writable.getWriter();
+      await writer.write(new Uint8Array([65, 66, 67]));
+      await writer.close();
     }
 
     run().then(() => { document.title = 'PASS'; },

@@ -12,6 +12,7 @@
 #include "base/i18n/rtl.h"
 #include "base/macros.h"
 #include "base/task/cancelable_task_tracker.h"
+#include "base/util/type_safety/strong_alias.h"
 #include "components/autofill/core/browser/autofill_client.h"
 #include "components/autofill/core/browser/ui/autofill_popup_delegate.h"
 #include "components/autofill/core/common/password_form_fill_data.h"
@@ -105,6 +106,32 @@ class PasswordAutofillManager : public autofill::AutofillPopupDelegate {
 #endif  // defined(UNIT_TEST)
 
  private:
+  using ForPasswordField = util::StrongAlias<class ForPasswordFieldTag, bool>;
+  using OffersGeneration = util::StrongAlias<class OffersGenerationTag, bool>;
+  using ShowAllPasswords = util::StrongAlias<class ShowAllPasswordsTag, bool>;
+  using ShowPasswordSuggestions =
+      util::StrongAlias<class ShowPasswordSuggestionsTag, bool>;
+
+  // Builds the suggestions used to show or update the autofill popup.
+  std::vector<autofill::Suggestion> BuildSuggestions(
+      ShowAllPasswords show_all_passwords,
+      ForPasswordField for_password_field,
+      const base::string16& typed_username,
+      OffersGeneration for_generation,
+      ShowPasswordSuggestions show_password_suggestions);
+
+  // Called just before showing a popup to log which |suggestions| were shown.
+  void LogMetricsForSuggestions(
+      const std::vector<autofill::Suggestion>& suggestions) const;
+
+  // Validates and forwards the given objects to the autofill client.
+  bool ShowPopup(const gfx::RectF& bounds,
+                 base::i18n::TextDirection text_direction,
+                 const std::vector<autofill::Suggestion>& suggestions);
+
+  // Validates and forwards the given objects to the autofill client.
+  void UpdatePopup(const std::vector<autofill::Suggestion>& suggestions);
+
   // Attempts to fill the password associated with user name |username|, and
   // returns true if it was successful.
   bool FillSuggestion(const base::string16& username);

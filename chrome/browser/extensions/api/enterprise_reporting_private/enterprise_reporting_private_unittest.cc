@@ -211,6 +211,32 @@ TEST_F(EnterpriseReportingPrivateDeviceDataFunctionsTest, DeviceDataMissing) {
                                              browser(),
                                              extensions::api_test_utils::NONE);
   ASSERT_TRUE(function->GetResultList());
+  EXPECT_EQ(1u, function->GetResultList()->GetSize());
+  EXPECT_TRUE(function->GetError().empty());
+}
+
+TEST_F(EnterpriseReportingPrivateDeviceDataFunctionsTest, DeviceBadId) {
+  auto set_function =
+      base::MakeRefCounted<EnterpriseReportingPrivateSetDeviceDataFunction>();
+  std::unique_ptr<base::ListValue> set_values =
+      std::make_unique<base::ListValue>();
+  set_values->AppendString("a/b");
+  set_values->Append(
+      std::make_unique<base::Value>(base::Value::BlobStorage({1, 2, 3})));
+  extension_function_test_utils::RunFunction(set_function.get(),
+                                             std::move(set_values), browser(),
+                                             extensions::api_test_utils::NONE);
+  ASSERT_TRUE(set_function->GetError().empty());
+
+  // Try to read the directory as a file and should fail.
+  auto function =
+      base::MakeRefCounted<EnterpriseReportingPrivateGetDeviceDataFunction>();
+  std::unique_ptr<base::ListValue> values = std::make_unique<base::ListValue>();
+  values->AppendString("a");
+  extension_function_test_utils::RunFunction(function.get(), std::move(values),
+                                             browser(),
+                                             extensions::api_test_utils::NONE);
+  ASSERT_TRUE(function->GetResultList());
   EXPECT_EQ(0u, function->GetResultList()->GetSize());
   EXPECT_FALSE(function->GetError().empty());
 }
@@ -263,8 +289,11 @@ TEST_F(EnterpriseReportingPrivateDeviceDataFunctionsTest, RetrieveDeviceData) {
                                              std::move(values2), browser(),
                                              extensions::api_test_utils::NONE);
   ASSERT_TRUE(get_function2->GetResultList());
-  EXPECT_EQ(0u, get_function2->GetResultList()->GetSize());
-  EXPECT_FALSE(get_function2->GetError().empty());
+  EXPECT_TRUE(get_function2->GetResultList()->Get(0, &single_result));
+  EXPECT_TRUE(get_function2->GetError().empty());
+  ASSERT_TRUE(single_result);
+  ASSERT_TRUE(single_result->is_blob());
+  EXPECT_EQ(base::Value::BlobStorage(), single_result->GetBlob());
 }
 
 // TODO(pastarmovj): Remove once implementation for the other platform exists.
@@ -332,6 +361,8 @@ TEST_F(EnterpriseReportingPrivateGetDeviceInfoTest, GetDeviceInfo) {
 #elif defined(OS_WIN)
   EXPECT_EQ("windows", info.os_name);
 #elif defined(OS_LINUX)
+  std::unique_ptr<base::Environment> env(base::Environment::Create());
+  env->SetVar("XDG_CURRENT_DESKTOP", "XFCE");
   EXPECT_EQ("linux", info.os_name);
 #else
   // Verify a stub implementation.

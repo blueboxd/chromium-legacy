@@ -53,8 +53,7 @@ views::ScrollView* CreateCredentialsView(
         GetCredentialLabelsForAccountChooser(*form);
     CredentialsItemView* credential_view =
         new CredentialsItemView(button_listener, titles.first, titles.second,
-                                kButtonHoverColor, form.get(), loader_factory);
-    credential_view->SetLowerLabelColor(kAutoSigninTextColor);
+                                form.get(), loader_factory);
     ChromeLayoutProvider* layout_provider = ChromeLayoutProvider::Get();
     gfx::Insets insets =
         layout_provider->GetInsetsMetric(views::INSETS_DIALOG_SUBSECTION);

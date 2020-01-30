@@ -59,7 +59,7 @@ void NGInlineBoxFragmentPainter::Paint(const PaintInfo& paint_info,
   const PhysicalOffset adjusted_paint_offset =
       paint_offset + (inline_box_paint_fragment_
                           ? inline_box_paint_fragment_->Offset()
-                          : inline_box_item_->Offset());
+                          : inline_box_item_->OffsetInContainerBlock());
   if (paint_info.phase == PaintPhase::kForeground)
     PaintBackgroundBorderShadow(paint_info, adjusted_paint_offset);
 
@@ -345,7 +345,7 @@ void NGInlineBoxFragmentPainter::PaintAllFragments(
 
     for (const NGPaintFragment* fragment : fragments) {
       PhysicalOffset child_offset = paint_offset +
-                                    fragment->InlineOffsetToContainerBox() -
+                                    fragment->OffsetInContainerBlock() -
                                     fragment->Offset();
       DCHECK(fragment->PhysicalFragment().IsBox());
       NGInlineBoxFragmentPainter(*fragment).Paint(paint_info, child_offset);

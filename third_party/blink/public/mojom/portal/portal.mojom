@@ -19,6 +19,10 @@ enum PortalActivateResult {
   // The predecessor was adopted by its successor.
   kPredecessorWasAdopted,
 
+  // The activation could not proceed because the portal had not yet begun
+  // to load a document, or its load was canceled.
+  kRejectedDueToPortalNotReady,
+
   // The activation could not proceed since the predecessor main frame was
   // navigating and the navigation could not be cancelled.
   kRejectedDueToPredecessorNavigation,

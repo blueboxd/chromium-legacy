@@ -10,13 +10,6 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content" >
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        style="@style/ListItemContainer" >
-
-        <include layout="@layout/modern_list_item_view" />
-
-    </LinearLayout>
+    <include layout="@layout/modern_list_item_view" />
 
 </FrameLayout>

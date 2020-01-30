@@ -134,6 +134,7 @@ constexpr struct {
     {&kPasswordProtectionForSignedInUsers, true},
     {&kPromptAppForDeepScanning, true},
     {&kRealTimeUrlLookupEnabled, true},
+    {&kRealTimeUrlLookupEnabledWithToken, true},
     {&kSendOnFocusPing, true},
     {&kSendPasswordReusePing, true},
     {&kSendSampledPingsForAllowlistDomains, false},

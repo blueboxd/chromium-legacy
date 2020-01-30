@@ -2005,6 +2005,9 @@ HRESULT CGaiaCredentialBase::SaveAccountInfo(const base::Value& properties) {
     hr = GemDeviceDetailsManager::Get()->UploadDeviceDetails(access_token);
     if (FAILED(hr) && hr != E_NOTIMPL)
       LOGFN(ERROR) << "UploadDeviceDetails hr=" << putHR(hr);
+
+    SetUserProperty(sid, kRegDeviceDetailsUploadStatus, SUCCEEDED(hr) ? 1 : 0);
+
     // Below setter is only used for unit testing.
     GemDeviceDetailsManager::Get()->SetUploadStatusForTesting(hr);
   } else {

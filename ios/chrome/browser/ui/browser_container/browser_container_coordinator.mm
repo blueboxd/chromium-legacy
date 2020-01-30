@@ -10,7 +10,7 @@
 #import "ios/chrome/browser/overlays/public/overlay_presenter_observer.h"
 #import "ios/chrome/browser/ui/browser_container/browser_container_view_controller.h"
 #import "ios/chrome/browser/ui/fullscreen/animated_scoped_fullscreen_disabler.h"
-#import "ios/chrome/browser/ui/fullscreen/fullscreen_controller_factory.h"
+#import "ios/chrome/browser/ui/fullscreen/fullscreen_controller.h"
 #import "ios/chrome/browser/ui/overlays/overlay_container_coordinator.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -83,7 +83,7 @@ class WebContentAreaOverlayFullscreenDisabler
 
   _overlayFullscreenDisabler =
       std::make_unique<WebContentAreaOverlayFullscreenDisabler>(
-          FullscreenControllerFactory::GetForBrowserState(
+          FullscreenController::FromBrowserState(
               self.browser->GetBrowserState()));
   OverlayPresenter::FromBrowser(self.browser, OverlayModality::kWebContentArea)
       ->AddObserver(_overlayFullscreenDisabler.get());

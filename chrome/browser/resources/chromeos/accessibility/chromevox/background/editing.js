@@ -49,6 +49,9 @@ editing.TextEditHandler = class {
       throw '|node| must be editable.';
     }
 
+    /** @private {AutomationEditableText} */
+    this.editableText_;
+
     chrome.automation.getDesktop(function(desktop) {
       // A rich text field is one where selection gets placed on a DOM
       // descendant to a root text field. This is one of:
@@ -59,7 +62,6 @@ editing.TextEditHandler = class {
       // from ARC++).
       var useRichText = node.state[StateType.RICHLY_EDITABLE];
 
-      /** @private {!AutomationEditableText} */
       this.editableText_ = useRichText ? new AutomationRichEditableText(node) :
                                          new AutomationEditableText(node);
     }.bind(this));
@@ -76,7 +78,7 @@ editing.TextEditHandler = class {
    * |valueChanged|.
    * An implementation of this method should emit the appropriate braille and
    * spoken feedback for the event.
-   * @param {!(AutomationEvent|CustomAutomationEvent)} evt
+   * @param {!ChromeVoxEvent} evt
    */
   onEvent(evt) {
     if (evt.type !== EventType.TEXT_CHANGED &&
@@ -259,7 +261,7 @@ var AutomationEditableText = class extends ChromeVoxEditableTextBase {
 
   /**
    * @param {string} value
-   * @return {!Array<string>}
+   * @return {!Array<number>}
    * @private
    */
   static getLineBreaks_(value) {
@@ -953,6 +955,9 @@ editing.EditableLine = class {
     /** @private {!Cursor} */
     this.end_ = new Cursor(endNode, endIndex);
     this.end_ = this.end_.deepEquivalent || this.end_;
+
+    /** @private {AutomationNode|undefined} */
+    this.endContainer_;
 
     // Update |startIndex| and |endIndex| if the calls above to
     // cursors.Cursor.deepEquivalent results in cursors to different container

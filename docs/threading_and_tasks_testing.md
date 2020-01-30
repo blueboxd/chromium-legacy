@@ -106,9 +106,8 @@ class FooService {
  public:
   FooService()
       : backend_task_runner_(
-            base::CreateSequencedTaskRunnerWithTraits(
-                base::MayBlock(), base::ThreadPool(),
-                base::TaskPriority::BEST_EFFORT))),
+            base::ThreadPool::CreateSequencedTaskRunner(
+                {base::MayBlock(), base::TaskPriority::BEST_EFFORT})),
         backend_(new FooBackend,
                  base::OnTaskRunnerDeleter(backend_task_runner_)) {}
 
@@ -117,7 +116,7 @@ class FooService {
     DCHECK(owning_sequence_->RunsTasksInCurrentSequence());
     backend_task_runner_->PostTaskAndReply(
         base::BindOnce(&FooBackend::Flush, Unretained(backend_.get()),
-        std::move(on_done));
+        std::move(on_done)));
   }
 
  private:
@@ -254,12 +253,12 @@ TEST(FooTest, TimeoutExceeded)
       base::test::TaskEnvironment::TimeSource::MOCK_TIME};
   base::WaitableEvent event;
   base::RunLoop run_loop;
-  base::PostTaskAndReply(
-      FROM_HERE, {base::ThreadPool(), base::MayBlock()},
+  base::ThreadPool::PostTaskAndReply(
+      FROM_HERE, {base::MayBlock()},
       base::BindOnce(&BlocksOnEvent, base::Unretained(&event)),
       run_loop.QuitClosure());
-  base::PostDelayedTask(
-      FROM_HERE, {base::ThreadPool()},
+  base::ThreadPool::PostDelayedTask(
+      FROM_HERE, {},
       base::BindOnce(&WaitableEvent::Signal, base::Unretained(&event)),
       kTimeout);
   // Can't use task_environment.FastForwardBy() since BlocksOnEvent blocks

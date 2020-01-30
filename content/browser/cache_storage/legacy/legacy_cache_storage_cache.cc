@@ -515,7 +515,7 @@ void LegacyCacheStorageCache::AddHandleRef() {
 
 void LegacyCacheStorageCache::DropHandleRef() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(handle_ref_count_ > 0);
+  DCHECK_GT(handle_ref_count_, 0U);
   handle_ref_count_ -= 1;
   // Dropping the last reference may result in the parent CacheStorage
   // deleting itself or this Cache object.  Be careful not to touch the
@@ -1045,7 +1045,7 @@ void LegacyCacheStorageCache::QueryCacheOpenNextEntry(
         LegacyCacheStorageCache* self = From(handle);
         if (!self)
           return;
-        DCHECK(self->query_cache_recursive_depth_ > 0);
+        DCHECK_GT(self->query_cache_recursive_depth_, 0);
         self->query_cache_recursive_depth_ -= 1;
       },
       CreateHandle()));

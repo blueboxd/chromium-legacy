@@ -1417,6 +1417,106 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
 }
 
 TEST_F(AXPlatformNodeTextRangeProviderTest,
+       TestITextRangeProviderExpandToEnclosingFormatWithEmptyObjects) {
+  // This test updates the tree structure to test a specific edge case.
+  //
+  // When using heading navigation, the empty objects (see
+  // AXPosition::IsEmptyObjectReplacedByCharacter for information about empty
+  // objects) sometimes cause a problem with
+  // AXPlatformNodeTextRangeProviderWin::ExpandToEnlosingUnit.
+  // With some specific AXTree (like the one used below), the empty object
+  // causes ExpandToEnclosingUnit to move the range back on the heading that it
+  // previously was instead of moving it forward/backward to the next heading.
+  // To avoid this, empty objects are always marked as format boundaries.
+  //
+  // The issue normally occurs when a heading is directly followed by an ignored
+  // empty object, itself followed by an unignored empty object.
+  //
+  // ++1 kRootWebArea
+  // ++++2 kHeading
+  // ++++++3 kStaticText
+  // ++++++++4 kInlineTextBox
+  // ++++5 kGenericContainer ignored
+  // ++++6 kGenericContainer
+  ui::AXNodeData root_1;
+  ui::AXNodeData heading_2;
+  ui::AXNodeData static_text_3;
+  ui::AXNodeData inline_box_4;
+  ui::AXNodeData generic_container_5;
+  ui::AXNodeData generic_container_6;
+
+  root_1.id = 1;
+  heading_2.id = 2;
+  static_text_3.id = 3;
+  inline_box_4.id = 4;
+  generic_container_5.id = 5;
+  generic_container_6.id = 6;
+
+  root_1.role = ax::mojom::Role::kRootWebArea;
+  root_1.child_ids = {heading_2.id, generic_container_5.id,
+                      generic_container_6.id};
+
+  heading_2.role = ax::mojom::Role::kHeading;
+  heading_2.child_ids = {static_text_3.id};
+
+  static_text_3.role = ax::mojom::Role::kStaticText;
+  static_text_3.child_ids = {inline_box_4.id};
+  static_text_3.SetName("3.14");
+
+  inline_box_4.role = ax::mojom::Role::kInlineTextBox;
+  inline_box_4.SetName("3.14");
+
+  generic_container_5.role = ax::mojom::Role::kGenericContainer;
+  generic_container_5.AddBoolAttribute(
+      ax::mojom::BoolAttribute::kIsLineBreakingObject, true);
+  generic_container_5.AddState(ax::mojom::State::kIgnored);
+
+  generic_container_6.role = ax::mojom::Role::kGenericContainer;
+  generic_container_6.AddBoolAttribute(
+      ax::mojom::BoolAttribute::kIsLineBreakingObject, true);
+
+  ui::AXTreeUpdate update;
+  ui::AXTreeData tree_data;
+  tree_data.tree_id = ui::AXTreeID::CreateNewAXTreeID();
+  update.tree_data = tree_data;
+  update.has_tree_data = true;
+  update.root_id = root_1.id;
+  update.nodes.push_back(root_1);
+  update.nodes.push_back(heading_2);
+  update.nodes.push_back(static_text_3);
+  update.nodes.push_back(inline_box_4);
+  update.nodes.push_back(generic_container_5);
+  update.nodes.push_back(generic_container_6);
+
+  Init(update);
+  AXNodePosition::SetTree(tree_.get());
+  AXTreeManagerMap::GetInstance().AddTreeManager(tree_data.tree_id, this);
+
+  AXNode* root_node = GetRootNode();
+  ComPtr<ITextRangeProvider> text_range_provider;
+  GetTextRangeProviderFromTextNode(text_range_provider, root_node);
+
+  EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"3.14\n\xFFFC");
+
+  // Create a degenerate range positioned at the boundary between nodes 4 and 6,
+  // e.g., "3.14<>" and "<\xFFFC>" (because node 5 is ignored).
+  int count;
+  ASSERT_HRESULT_SUCCEEDED(text_range_provider->MoveEndpointByUnit(
+      TextPatternRangeEndpoint_Start, TextUnit_Character, /*count*/ 5, &count));
+  ASSERT_EQ(5, count);
+  ASSERT_HRESULT_SUCCEEDED(text_range_provider->MoveEndpointByUnit(
+      TextPatternRangeEndpoint_End, TextUnit_Character, /*count*/ -1, &count));
+  ASSERT_EQ(-1, count);
+  EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"");
+
+  // ExpandToEnclosingUnit should move the range to the next non-ignored empty
+  // object (i.e, node 6), and not at the beginning of node 4.
+  ASSERT_HRESULT_SUCCEEDED(
+      text_range_provider->ExpandToEnclosingUnit(TextUnit_Format));
+  EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"\xFFFC");
+}
+
+TEST_F(AXPlatformNodeTextRangeProviderTest,
        TestITextRangeProviderExpandToEnclosingDocument) {
   Init(BuildTextDocument({"some text", "more text", "even more text"}));
   AXNodePosition::SetTree(tree_.get());

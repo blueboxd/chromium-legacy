@@ -51,6 +51,8 @@ cr.define('Settings.PrefUtil', function() {
         assertNotReached('No conversion from ' + pref.type + ' pref to string');
     }
   }
+
+  // #cr_define_end
   return {
     stringToPrefValue: stringToPrefValue,
     prefToString: prefToString,

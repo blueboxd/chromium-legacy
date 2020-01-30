@@ -34,6 +34,7 @@ class FakeLocalFrameHost : public mojom::blink::LocalFrameHost {
                                  bool user_gesture) override;
   void DidDisplayInsecureContent() override;
   void DidContainInsecureFormAction() override;
+  void DocumentAvailableInMainFrame(bool uses_temporary_zoom_level) override;
   void SetNeedsOcclusionTracking(bool needs_tracking) override;
   void LifecycleStateChanged(mojom::blink::FrameLifecycleState state) override;
   void EvictFromBackForwardCache() override;

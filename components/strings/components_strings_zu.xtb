@@ -428,7 +428,6 @@
 <translation id="2799223571221894425">Qalisa kabusha</translation>
 <translation id="2803306138276472711">Kamuva nje Ukuphequlula Okuphephile kwe-Google <ph name="BEGIN_LINK" />kuthole i-malware<ph name="END_LINK" /> ku-<ph name="SITE" />. Ngokujwayelekile amawebhusayithi aphephile ngezinye izikhathi afakwa i-malware.</translation>
 <translation id="2807052079800581569">Indawo yesithombe engu-Y</translation>
-<translation id="2809804249696361569">Womabili amashidi</translation>
 <translation id="2824775600643448204">Ikheli nebha yosesho</translation>
 <translation id="2826760142808435982">Ukuxhumeka kubetheliwe kwaphinde kwaqinisekiswa kusetshenziswa i-<ph name="CIPHER" /> futhi kusebenzisa i-<ph name="KX" /> njengendlela yokushintshanisa ukhiye.</translation>
 <translation id="2835170189407361413">Sula ifomu</translation>
@@ -934,7 +933,6 @@
 <translation id="5112422516732747637">A5</translation>
 <translation id="5115216390227830982">European-Edp</translation>
 <translation id="5115563688576182185">(64-bhithi)</translation>
-<translation id="5121469660360593280">Yabelana ngedatha mayelana nemicimbi yokuphepha ezimakiwe nge-Chrome Enterprise User Protect ngomlawuli wakho. Lokhu kungafaka ama-URL amakhasi owavakashele, amagama amafayela noma ethemathada, kanye negama lomsebenzisi olisebenzisela ukungena ngemvume kudivayisi yakho naku-Chrome.</translation>
 <translation id="5123063207673082822">Impelasonto</translation>
 <translation id="5125394840236832993">B-Plus</translation>
 <translation id="5126510351761255129">Qinisekisa ikhadi lakho</translation>
@@ -949,7 +947,6 @@
 <translation id="5161506081086828129">Isitaki esingu-9</translation>
 <translation id="516920405563544094">Faka i-CVC ye-<ph name="CREDIT_CARD" />. Ngemuva kokuqinisekisa, imininingwane yekhadi kusuka ku-akhawunti yakho ye-Google izokwabiwa naleli sayithi.</translation>
 <translation id="5169827969064885044">Ungalahlekelwa ukufinyelela ku-akhawunti yenhlangano yakho noma uzwe ukuntshontshwa kobunikazi. I-Chrome incoma ukushintsha iphasiwedi yakho manje.</translation>
-<translation id="5170017743895942767">I-Chrome Enterprise User Protect</translation>
 <translation id="5171045022955879922">Sesha noma thayipha i-URL</translation>
 <translation id="5171689220826475070">Fanfold-European</translation>
 <translation id="5172758083709347301">Umshini</translation>
@@ -1082,7 +1079,6 @@
 <translation id="5737183892635480227">{NUM_CARDS,plural, =1{Londoloza ikhadi ku-akhawunti yakho ye-Google}one{Londoloza amakhadi ku-akhawunti yakho ye-Google}other{Londoloza amakhadi ku-akhawunti yakho ye-Google}}</translation>
 <translation id="5745980000221562234">{NUM_CARDS,plural, =1{Sebenzisa inombolo yokubuka yaleli khadi}one{Khetha ikhadi}other{Khetha ikhadi}}</translation>
 <translation id="5763042198335101085">Faka ikheli le-imeyili elivumelekile</translation>
-<translation id="5763703224595565476">Umlawuli wakho unikwe amandla ku-Chrome Enterprise User Protect kusiphequluli sakho. I-Chrome Enterprise User Protect inokufinyelela kwenye idatha yakho.</translation>
 <translation id="5765072501007116331">Ukuze ubone izindlela zokulethwa nezidingo, khetha ikheli</translation>
 <translation id="5776313857861697733">Okubalulekile</translation>
 <translation id="5778550464785688721">Ukulawula okugcwele kwamadivayisi we-MIDI</translation>
@@ -1419,7 +1415,6 @@ Imininingwane engeziwe:
 <translation id="733923710415886693">Isitifiketi seseva asizange sidalulwe ngokubonisa ngale kwesitifiketi.</translation>
 <translation id="734600844861828519">11x15</translation>
 <translation id="7346048084945669753">Iyinxusa:</translation>
-<translation id="73479065977517481"><ph name="ENROLLMENT_DOMAIN" /> inike amandla i-Chrome Enterprise User Protect kusiphequluli sakho. I-Chrome Enterprise User Protect inokufinyelela kwenye idatha yakho.</translation>
 <translation id="7349430561505560861">A4-Extra</translation>
 <translation id="7353601530677266744">Umugqa womyalo</translation>
 <translation id="7372973238305370288">umphumela wosesho</translation>

@@ -487,8 +487,7 @@ static void WriteTextFragment(WTF::TextStream& ts,
     const NGTextFragment fragment(paint_fragment->Style().GetWritingMode(),
                                   *physical_text_fragment);
     WriteTextFragment(ts, paint_fragment->GetLayoutObject(),
-                      PhysicalRect(paint_fragment->InlineOffsetToContainerBox(),
-                                   paint_fragment->Size()),
+                      paint_fragment->RectInContainerBlock(),
                       paint_fragment->Style(), physical_text_fragment->Text(),
                       fragment.InlineSize());
     return;
@@ -499,8 +498,8 @@ static void WriteTextFragment(WTF::TextStream& ts,
          item.Type() == NGFragmentItem::kGeneratedText);
   const LayoutUnit inline_size =
       item.IsHorizontal() ? item.Size().width : item.Size().height;
-  WriteTextFragment(ts, item.GetLayoutObject(), item.Rect(), item.Style(),
-                    item.Text(cursor.Items()), inline_size);
+  WriteTextFragment(ts, item.GetLayoutObject(), item.RectInContainerBlock(),
+                    item.Style(), item.Text(cursor.Items()), inline_size);
 }
 
 static void WritePaintProperties(WTF::TextStream& ts,

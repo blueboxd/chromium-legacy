@@ -973,12 +973,6 @@ void LayoutTheme::AdjustRadioStyleUsingFallbackTheme(
   style.ResetBorder();
 }
 
-Color LayoutTheme::RootElementColor(WebColorScheme color_scheme) const {
-  if (color_scheme == WebColorScheme::kDark)
-    return Color::kWhite;
-  return ComputedStyleInitialValues::InitialColor();
-}
-
 LengthBox LayoutTheme::ControlPadding(ControlPart part,
                                       const FontDescription&,
                                       const Length& zoomed_box_top,

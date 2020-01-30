@@ -24,6 +24,7 @@ namespace smb_client {
 // Destroying will unmount and deregister the filesystem.
 class SmbFsShare : public smbfs::SmbFsHost::Delegate {
  public:
+  using KerberosOptions = smbfs::SmbFsMounter::KerberosOptions;
   using MountOptions = smbfs::SmbFsMounter::MountOptions;
   using MountCallback = base::OnceCallback<void(SmbMountResult)>;
   using MounterCreationCallback =

@@ -209,7 +209,7 @@ public class SelectableListToolbar<E>
         mLightIconColorList = AppCompatResources.getColorStateList(
                 getContext(), R.color.default_icon_color_inverse);
 
-        setTitleTextAppearance(getContext(), R.style.TextAppearance_BlackHeadline);
+        setTitleTextAppearance(getContext(), R.style.TextAppearance_Headline_Primary);
         if (mTitleResId != 0) setTitle(mTitleResId);
 
         // TODO(twellington): add the concept of normal & selected tint to apply to all toolbar

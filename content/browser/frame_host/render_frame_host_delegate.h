@@ -73,7 +73,7 @@ class FullscreenOptions;
 }  // namespace blink
 
 namespace ui {
-struct ClipboardFormatType;
+class ClipboardFormatType;
 }
 
 namespace content {
@@ -405,6 +405,9 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
   // Notifies that mixed content was displayed or ran.
   virtual void DidDisplayInsecureContent() {}
   virtual void DidContainInsecureFormAction() {}
+  // The main frame document element is ready. This happens when the document
+  // has finished parsing.
+  virtual void DocumentAvailableInMainFrame() {}
   virtual void DidRunInsecureContent(const GURL& security_origin,
                                      const GURL& target_url) {}
 

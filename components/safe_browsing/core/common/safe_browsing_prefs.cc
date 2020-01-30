@@ -119,12 +119,16 @@ const char kDelayDeliveryUntilVerdict[] =
 const char kAllowPasswordProtectedFiles[] =
     "safebrowsing.allow_password_protected_files";
 const char kCheckContentCompliance[] = "safebrowsing.check_content_compliance";
+const char kBlockUnsupportedFiletypes[] =
+    "safebrowsing.block_unsupported_filetypes";
 const char kURLsToCheckComplianceOfDownloadedContent[] =
     "safebrowsing.urls_to_check_compliance_of_downloaded_content";
 const char kURLsToCheckForMalwareOfUploadedContent[] =
     "safebrowsing.urls_to_check_for_malware_of_uploaded_content";
 const char kURLsToNotCheckComplianceOfUploadedContent[] =
     "policy.urls_to_not_check_compliance_of_uploaded_content";
+const char kAdvancedProtectionDeepScanningEnabled[] =
+    "safebrowsing.advanced_protection_deep_scanning_enabled";
 
 }  // namespace prefs
 
@@ -191,6 +195,8 @@ void RegisterProfilePrefs(PrefRegistrySimple* registry) {
                                 false);
   registry->RegisterIntegerPref(prefs::kSafeBrowsingSendFilesForMalwareCheck,
                                 DO_NOT_SCAN);
+  registry->RegisterBooleanPref(prefs::kAdvancedProtectionDeepScanningEnabled,
+                                true);
 }
 
 void RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
@@ -202,6 +208,8 @@ void RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
       prefs::kAllowPasswordProtectedFiles,
       AllowPasswordProtectedFilesValues::ALLOW_UPLOADS_AND_DOWNLOADS);
   registry->RegisterIntegerPref(prefs::kCheckContentCompliance, CHECK_NONE);
+  registry->RegisterIntegerPref(prefs::kBlockUnsupportedFiletypes,
+                                BLOCK_UNSUPPORTED_FILETYPES_NONE);
   registry->RegisterListPref(prefs::kURLsToCheckComplianceOfDownloadedContent);
   registry->RegisterListPref(prefs::kURLsToNotCheckComplianceOfUploadedContent);
   registry->RegisterListPref(prefs::kURLsToCheckForMalwareOfUploadedContent);

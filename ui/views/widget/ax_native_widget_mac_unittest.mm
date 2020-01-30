@@ -7,7 +7,6 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/mac/mac_util.h"
-#import "base/mac/sdk_forward_declarations.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"

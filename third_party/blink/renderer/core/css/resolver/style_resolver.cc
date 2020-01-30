@@ -2330,16 +2330,10 @@ void StyleResolver::ApplyCascadedColorValue(StyleResolverState& state) {
           // As per the spec, 'color: currentColor' is treated as 'color:
           // inherit'
         case CSSValueID::kInherit:
-          if (state.ParentStyle()->IsColorInternalText())
-            state.Style()->SetIsColorInternalText(true);
-          else
-            state.Style()->SetColor(state.ParentStyle()->GetColor());
+          state.Style()->SetColor(state.ParentStyle()->GetColor());
           break;
         case CSSValueID::kInitial:
-          state.Style()->SetColor(ComputedStyleInitialValues::InitialColor());
-          break;
-        case CSSValueID::kInternalRootColor:
-          state.Style()->SetIsColorInternalText(true);
+          state.Style()->SetColor(state.Style()->InitialColorForColorScheme());
           break;
         default:
           identifier_value = nullptr;
@@ -2350,6 +2344,8 @@ void StyleResolver::ApplyCascadedColorValue(StyleResolverState& state) {
       state.Style()->SetColor(
           StyleBuilderConverter::ConvertColor(state, *color_value));
     }
+  } else if (state.GetElement() == GetDocument().documentElement()) {
+    state.Style()->SetColor(state.Style()->InitialColorForColorScheme());
   }
 
   if (const CSSValue* visited_color_value =
@@ -2368,7 +2364,7 @@ void StyleResolver::ApplyCascadedColorValue(StyleResolverState& state) {
           break;
         case CSSValueID::kInitial:
           state.Style()->SetInternalVisitedColor(
-              ComputedStyleInitialValues::InitialColor());
+              state.Style()->InitialColorForColorScheme());
           break;
         default:
           identifier_value = nullptr;

@@ -78,7 +78,6 @@
 <translation id="1108600514891325577">නවත්වන්න</translation>
 <translation id="1110155001042129815">රැඳී සිටින්න</translation>
 <translation id="1112420131909513020">පසුබිම් පටිත්ත බ්ලූටූත් භාවිතා කරයි</translation>
-<translation id="1113042067630273625">මෙය ගබඩා කළ වෙබ් අඩවි දත්තවලින් <ph name="TOTAL_USAGE" /> ක් ඉවත් කරයි.</translation>
 <translation id="1114102982691049955"><ph name="PRINTER_MANUFACTURER" /> <ph name="PRINTER_MODEL" /> (USB)</translation>
 <translation id="1114202307280046356">දියමන්ති</translation>
 <translation id="1114335938027186412">ඔබේ පරිගණකයේ විශ්වාසවන්ත වේදිකා මොඩියුල (TPM) අාරක්ෂණ උපාංගයක් අඩංගු වන අතර, එය Chrome OS වල බාෙහෝ තීරණාත්මක අාරක්ෂණ විශේෂාංග ක්‍රියාත්මක කිරීමට භාවිත වේ. තව දැන ගැනීමට Chromebook උදවු මධ්‍යස්ථානය වෙත යන්න: https://support.google.com/chromebook/?p=tpm</translation>
@@ -88,7 +87,7 @@
 <translation id="111844081046043029">ඔබට මෙම පිටුව හැරයෑමට ඇවැසි බව විශ්වාසද?</translation>
 <translation id="1118738876271697201">පද්ධතියට උපාංගයේ මාදිලිය හෝ අනුක්‍රමික අංකය තීරණ කළ නොහැකි විය.</translation>
 <translation id="1119447706177454957">අභ්‍යන්තර දෝෂය</translation>
-<translation id="1122198203221319518">මෙවලම් (&amp;T)</translation>
+<translation id="1122198203221319518">&amp;මෙවලම්</translation>
 <translation id="1122242684574577509">සත්‍යාපනය අසාර්ථක විය. ඔබ භාවිත කරන Wi-Fi ජාලය (<ph name="NETWORK_ID" />) සඳහා ඇතුළු වීමේ පිටුව වෙත පිවිසෙන්න.</translation>
 <translation id="1122960773616686544">නම පිටු සලකුණු කරන්න</translation>
 <translation id="1124772482545689468">පරිශීලක</translation>
@@ -151,7 +150,6 @@
 <translation id="1197979282329025000"><ph name="PRINTER_NAME" /> මුද්‍රණ යන්ත්‍රය සඳහා මුද්‍රණ ධාරිතාවයන් නැවත ලබා ගන්නා අතරතුර දෝෂයක් හට ගැනුණි. මෙම මුද්‍රණ යන්ත්‍රය <ph name="CLOUD_PRINT_NAME" /> හා ලියාපදිංචි කළ නොහැකි විය.</translation>
 <translation id="119944043368869598">සියල්ල පිරිසිදු කරන්න</translation>
 <translation id="1201402288615127009">ඊළඟ</translation>
-<translation id="1202556750060561551"><ph name="SITE_GROUP_NAME" /> විසින් ගබඩා කරනු ලැබ ඇති සියලුම දත්ත සහ කුකී සහ එහි යටතේ ඇති ඕනෑම වෙබ් අඩවියක්, සහ එහි ස්ථාපිත යෙදුම් හිස් කෙරේ.</translation>
 <translation id="1202596434010270079">Kiosk යෙදුම යාවත්කාලීන කර ඇත. කරුණාකර USB දණ්ඩ ඉවත් කරන්න.</translation>
 <translation id="120368089816228251">සංගීත සටහන</translation>
 <translation id="1205489148908752564">සුදු ලැයිස්තු ගත පරිශීලකයන් කියවා වෙනස් කරන්න</translation>
@@ -994,7 +992,6 @@
 <translation id="2365507699358342471">මෙම අඩවියට පසුරු පුවරුවට පිටපත් කර ඇති පෙළ සහ රූප බැලීමට හැක.</translation>
 <translation id="2366260648632264559">පද්ධති පාඨය මෙම භාෂාවෙන් පෙන්වන්න</translation>
 <translation id="2367972762794486313">යෙදුම් පෙන්වන්න</translation>
-<translation id="2369105924912929484">පෙරන ලද පිටු අන්තර්ගත ටොගල් කරන්න</translation>
 <translation id="2371076942591664043">නිම කළ විට විවෘත කරන්න (&amp;d)</translation>
 <translation id="2373666622366160481">කඩදාසියට ගළපන්න</translation>
 <translation id="2375406435414127095">ඔබේ දුරකථනයට සම්බන්ධ කරන්න</translation>
@@ -1530,7 +1527,7 @@
 <translation id="3101709781009526431">දිනය හා වේලාව</translation>
 <translation id="3103941660000130485">ලිනක්ස් උත්ශ්‍රේණි කිරීමේ දෝෂයයි</translation>
 <translation id="310671807099593501">අඩවිය බ්ලූටූත් භාවිත කරයි</translation>
-<translation id="3115147772012638511">කෑශ් සඳහා රැඳෙමින්...</translation>
+<translation id="3115147772012638511">කෑෂය සඳහා රැඳෙමින්...</translation>
 <translation id="3115580024857770654">සියල්ල හකුළන්න</translation>
 <translation id="3117362587799608430">ඩොක් එක සම්පූර්ණයෙන් ගැළපෙන්නේ නැත</translation>
 <translation id="3118319026408854581"><ph name="PRODUCT_NAME" /> උදව්</translation>
@@ -1874,6 +1871,7 @@
 <translation id="3603177256297531067">මෙම පිටුව පරිවර්තනය කළ නොහැකි විය</translation>
 <translation id="3603622770190368340">නව ජාලකරණ සහතිකයක් ලබා ගන්න</translation>
 <translation id="3605780360466892872">බොත්තමපහළට</translation>
+<translation id="3608436266458100337">කියවීමේ ආකාරය</translation>
 <translation id="3608576286259426129">පරිශීලක රූප පෙරදසුන</translation>
 <translation id="3610369246614755442">ඩොක් විදුලි පංකාව පිළිවෙළ කිරීම අවශ්‍යයි</translation>
 <translation id="361106536627977100">ෆ්ලෑෂ් දත්ත</translation>
@@ -2263,7 +2261,7 @@ Linux ස්ථාපනය කිරීම දත්තවලින් <ph name
 <translation id="409579654357498729">ක්ලවුඩ් ප්‍රින්ට් වෙත එක් කරන්න</translation>
 <translation id="4096508467498758490">සංවර්ධක ප්‍රකාර දිගු අබල කරන්න</translation>
 <translation id="4096824249111507322">සුරක්ෂිත මොඩියුලය සූදානම් කෙරෙමින් පවතී, මඳක් සිටින්න (මෙයට විනාඩි කිහිපයක් ගත වනු ඇත)...</translation>
-<translation id="4097560579602855702">Google හි සොයන්න</translation>
+<translation id="4097560579602855702">Google සොයන්න</translation>
 <translation id="4099060993766194518">පෙරනිමි සෙවුම් එන්ජිම ප්‍රතිසාධනය කරනවා ද?</translation>
 <translation id="4099874310852108874">ජාල දෝෂය සිදු විය.</translation>
 <translation id="4100733287846229632">උපාංගයේ ඉඩ බරපතළ ලෙස අඩුය</translation>
@@ -2625,7 +2623,6 @@ Linux ස්ථාපනය කිරීම දත්තවලින් <ph name
 <translation id="4665014895760275686">නිෂ්පාදකයා</translation>
 <translation id="4665446389743427678"><ph name="SITE" /> විසින් ගබඩා කර ඇති සියලු දත්ත මකනු ඇත.</translation>
 <translation id="4668721319092543482"><ph name="PLUGIN_NAME" /> සබල කිරීමට ක්ලික් කරන්න</translation>
-<translation id="4672657274720418656">පෙරා ගත් පිටුව</translation>
 <translation id="46733273239502219">ස්ථාපිත යෙදුම්වල නොබැඳි දත්ත ද හිස් කෙරේ</translation>
 <translation id="4673442866648850031">පන්හිඳ ඉවත් කළ විට පන්හිඳ මෙවලම් විවෘත කරන්න</translation>
 <translation id="4677585247300749148"><ph name="URL" /> හට ප්‍රවේශ්‍යතා සිදුවීම්වලට ප්‍රතිචාර දැක්වීමට අවශ්‍යයි</translation>
@@ -3144,7 +3141,7 @@ Linux ස්ථාපනය කිරීම දත්තවලින් <ph name
 <translation id="5431825016875453137">OpenVPN / L2TP</translation>
 <translation id="5432996274932278848">ඔබගේ උපාංගය, යෙදුම් සහ වෙබය සොයන්න. ඔබගේ යෙදුම් සංචාලනය කිරීමට ඊතල යතුරු භාවිත කරන්න.</translation>
 <translation id="5434065355175441495">PKCS #1 RSA ගුප්තකේතනය</translation>
-<translation id="5436492226391861498">ප්‍රොක්සි ...</translation>
+<translation id="5436492226391861498">ප්‍රොක්සි උමඟ සඳහා රැඳෙමින්...</translation>
 <translation id="5436510242972373446">සොයන්න <ph name="SITE_NAME" />:</translation>
 <translation id="543806387003274181">ඔබේ ගොනු සුරැකී දැන් නව ගිණුමක් සාදන්න.</translation>
 <translation id="544083962418256601">කෙටිමං තනන්න...</translation>
@@ -3268,7 +3265,7 @@ Linux ස්ථාපනය කිරීම දත්තවලින් <ph name
 <translation id="5592595402373377407">තවම ප්‍රමාණවත් දත්ත නොමැත.</translation>
 <translation id="5593357315997824387">මාගේ ගොනු සමමුහුර්ත කරන්න</translation>
 <translation id="5595152862129936745">බොහෝ දුරින්</translation>
-<translation id="5595485650161345191">ලිපිනය සකසන්න</translation>
+<translation id="5595485650161345191">ලිපිනය සංස්කරණය</translation>
 <translation id="5596627076506792578">තවත් විකල්ප</translation>
 <translation id="5600706100022181951">යාවත්කාලීනය <ph name="UPDATE_SIZE_MB" /> MB ජංගම දත්ත භාවිත කර බාගනු ඇත. ඔබ දිගටම කරගෙන යාමට කැමතිද?</translation>
 <translation id="5601503069213153581">PIN</translation>
@@ -3336,7 +3333,6 @@ Linux ස්ථාපනය කිරීම දත්තවලින් <ph name
 <translation id="5687326903064479980">වේලා කලාපය</translation>
 <translation id="5689516760719285838">ස්ථානය</translation>
 <translation id="56907980372820799">සබැඳි දත්ත</translation>
-<translation id="5691180005790455277"><ph name="SITE_GROUP_NAME" /> විසින් ගබඩා කරනු ලැබ ඇති සියලුම දත්ත සහ කුකී සහ එහි යටතේ ඇති ඕනෑම වෙබ් අඩවියක් හිස් කෙරේ.</translation>
 <translation id="5691511426247308406">පවුල</translation>
 <translation id="5692183275898619210">මුද්‍රණ කිරීම සම්පූර්ණයි</translation>
 <translation id="5696143504434933566">"<ph name="EXTENSION_NAME" />" වෙතින් අයථා පරිහරණය වාර්තා කරන්න</translation>
@@ -3837,7 +3833,7 @@ Linux ස්ථාපනය කිරීම දත්තවලින් <ph name
 <translation id="6399774419735315745">ඔත්තු බැලීම</translation>
 <translation id="6404511346730675251">පිටු සලකුණ සංස්කරණය කරන්න</translation>
 <translation id="6406303162637086258">ව්‍යාජ බ්‍රව්සර් නැවත අැරඹීම</translation>
-<translation id="6406506848690869874">සම්මුහුර්ත</translation>
+<translation id="6406506848690869874">සමමුහුව</translation>
 <translation id="6406708970972405507">සැකසීම් - <ph name="SECTION_TITLE" /></translation>
 <translation id="6408118934673775994"><ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, සහ <ph name="WEBSITE_3" /> හි ඔබගේ දත්ත කියවා වෙනස් කරන්න</translation>
 <translation id="6410257289063177456">පින්තූර ගොනු</translation>
@@ -4918,7 +4914,7 @@ Linux ස්ථාපනය කිරීම දත්තවලින් <ph name
 <translation id="7919210519031517829">ත<ph name="DURATION" /></translation>
 <translation id="792514962475806987">ඈඳන ලද විශාලන මට්ටම:</translation>
 <translation id="7925247922861151263">AAA පරීක්ෂණ අසමත්</translation>
-<translation id="7925285046818567682"><ph name="HOST_NAME" /> සඳහා අපෙක්ෂාවෙන්...</translation>
+<translation id="7925285046818567682"><ph name="HOST_NAME" /> සඳහා රැඳෙමින්...</translation>
 <translation id="7926423016278357561">මේ මෙම නොවේ.</translation>
 <translation id="7928836894214140642"><ph name="ENROLLMENT_DOMAIN" /> විසින් කළමනා කෙරේ</translation>
 <translation id="7930294771522048157">සුරැකි ගෙවීම් ක්‍රම මෙහි දිස් වනු ඇත</translation>

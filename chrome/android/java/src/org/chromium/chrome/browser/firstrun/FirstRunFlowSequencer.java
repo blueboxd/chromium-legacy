@@ -19,6 +19,7 @@ import org.chromium.base.CommandLine;
 import org.chromium.base.Log;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.IntentHandler;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.FeatureUtilities;
 import org.chromium.chrome.browser.locale.LocaleManager;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
@@ -33,6 +34,7 @@ import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.ChildAccountStatus;
 import org.chromium.components.signin.ChromeSigninController;
 
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -212,7 +214,8 @@ public abstract class FirstRunFlowSequencer  {
         // Cache the flag for the bottom toolbar. If the flag is not cached here, Users, who are in
         // bottom toolbar experiment group, will see toolbar on the top in first run, and then
         // toolbar will appear to the bottom on the second run.
-        FeatureUtilities.cacheBottomToolbarEnabled();
+        FeatureUtilities.cacheNativeFlags(Collections.singletonList(ChromeFeatureList.CHROME_DUET));
+        FeatureUtilities.cacheBottomToolbarVariation();
     }
 
     /**

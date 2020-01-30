@@ -269,6 +269,8 @@ uint32_t KeycodeConverter::InvalidUsbKeycode() {
 // static
 int KeycodeConverter::UsbKeycodeToNativeKeycode(uint32_t usb_keycode) {
   // Deal with some special-cases that don't fit the 1:1 mapping.
+  if (usb_keycode == 0x070032)  // non-US hash.
+    usb_keycode = 0x070031;     // US backslash.
 #if defined(OS_MACOSX)
   if (usb_keycode == 0x070046) // PrintScreen.
     usb_keycode = 0x070068; // F13.

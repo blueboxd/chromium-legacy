@@ -211,6 +211,9 @@ class ParentAccessView::AccessCodeInput : public views::View,
 
   // Sets the color of the input text.
   virtual void SetInputColor(SkColor color) = 0;
+
+  // Enables/disables input.
+  virtual void SetInputEnabled(bool input_enabled) = 0;
 };
 
 class ParentAccessView::FlexCodeInput : public AccessCodeInput {
@@ -265,10 +268,11 @@ class ParentAccessView::FlexCodeInput : public AccessCodeInput {
   void InsertDigit(int value) override {
     DCHECK_LE(0, value);
     DCHECK_GE(9, value);
-
-    code_field_->SetText(code_field_->GetText() +
-                         base::NumberToString16(value));
-    on_input_change_.Run(true);
+    if (code_field_->GetEnabled()) {
+      code_field_->SetText(code_field_->GetText() +
+                           base::NumberToString16(value));
+      on_input_change_.Run(true);
+    }
   }
 
   // Deletes the last character or the selected text.
@@ -299,6 +303,10 @@ class ParentAccessView::FlexCodeInput : public AccessCodeInput {
     code_field_->SetTextColor(color);
   }
 
+  void SetInputEnabled(bool input_enabled) override {
+    code_field_->SetEnabled(input_enabled);
+  }
+
   void RequestFocus() override { code_field_->RequestFocus(); }
 
   // views::TextfieldController
@@ -311,6 +319,10 @@ class ParentAccessView::FlexCodeInput : public AccessCodeInput {
   // views::TextfieldController
   bool HandleKeyEvent(views::Textfield* sender,
                       const ui::KeyEvent& key_event) override {
+    // Only handle keys.
+    if (key_event.type() != ui::ET_KEY_PRESSED)
+      return false;
+
     // Default handling for events with Alt modifier like spoken feedback.
     if (key_event.IsAltDown())
       return false;
@@ -318,6 +330,11 @@ class ParentAccessView::FlexCodeInput : public AccessCodeInput {
     // FlexCodeInput class responds to a limited subset of key press events.
     // All events not handled below are sent to |code_field_|.
     const ui::KeyboardCode key_code = key_event.key_code();
+
+    // Allow using tab for keyboard navigation.
+    if (key_code == ui::VKEY_TAB || key_code == ui::VKEY_BACKTAB)
+      return false;
+
     if (key_code == ui::VKEY_RETURN) {
       if (GetCode().has_value()) {
         on_enter_.Run();
@@ -330,10 +347,9 @@ class ParentAccessView::FlexCodeInput : public AccessCodeInput {
       return true;
     }
 
-    if (key_code >= ui::VKEY_A && key_code <= ui::VKEY_Z) {
-      // We only expect digits in the PIN, so we swallow all letters.
+    // We only expect digits in the PIN, so we swallow all letters.
+    if (key_code >= ui::VKEY_A && key_code <= ui::VKEY_Z)
       return true;
-    }
 
     return false;
   }
@@ -634,6 +650,10 @@ class ParentAccessView::FixedLengthCodeInput : public AccessCodeInput {
 
     return true;
   }
+
+  // Enables/disables input. Currently, there is no use-case the uses this with
+  // fixed length PINs.
+  void SetInputEnabled(bool input_enabled) override { NOTIMPLEMENTED(); }
 
  private:
   // Moves focus to the previous input field if it exists.
@@ -1071,6 +1091,10 @@ void ParentAccessView::UpdateState(State state) {
       return;
     }
   }
+}
+
+void ParentAccessView::SetInputEnabled(bool input_enabled) {
+  access_code_view_->SetInputEnabled(input_enabled);
 }
 
 void ParentAccessView::UpdatePreferredSize() {

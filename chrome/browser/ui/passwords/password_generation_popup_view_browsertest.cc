@@ -32,7 +32,7 @@ class TestPasswordGenerationPopupController
                 /*generation_element_renderer_id=*/100,
                 /*is_generation_element_password_type=*/true,
                 /*text_direction=*/base::i18n::TextDirection(),
-                PasswordForm()),
+                FormData()),
             password_manager::ContentPasswordManagerDriverFactory::
                 FromWebContents(web_contents)
                     ->GetDriverForFrame(web_contents->GetMainFrame())

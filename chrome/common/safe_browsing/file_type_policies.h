@@ -106,7 +106,7 @@ class FileTypePolicies {
   virtual UpdateResult PopulateFromBinaryPb(const std::string& binary_pb);
 
   // Fetch the blob from the main resource bundle.
-  virtual void ReadResourceBundle(std::string* binary_pb);
+  virtual std::string ReadResourceBundle();
 
   // Record the result of an update attempt.
   virtual void RecordUpdateMetrics(UpdateResult result,

@@ -126,7 +126,7 @@ void CreatePasswordGenerationUIData(
   data->generation_element = base::ASCIIToUTF16("generation_element");
   data->text_direction = base::i18n::RIGHT_TO_LEFT;
   data->is_generation_element_password_type = false;
-  CreateTestPasswordForm(&data->password_form);
+  test::CreateTestAddressFormData(&data->form_data);
 }
 
 void CheckEqualPasswordFormFillData(const PasswordFormFillData& expected,
@@ -169,7 +169,7 @@ void CheckEqualPassPasswordGenerationUIData(
   EXPECT_EQ(expected.is_generation_element_password_type,
             actual.is_generation_element_password_type);
   EXPECT_EQ(expected.text_direction, actual.text_direction);
-  EXPECT_EQ(expected.password_form, actual.password_form);
+  EXPECT_TRUE(expected.form_data.SameFormAs(actual.form_data));
 }
 
 }  // namespace

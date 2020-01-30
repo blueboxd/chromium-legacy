@@ -369,7 +369,8 @@ class AssistantOverlayDrawable extends Drawable implements FullscreenListener {
     }
 
     @Override
-    public void onControlsOffsetChanged(int topOffset, int bottomOffset, boolean needsAnimate) {
+    public void onControlsOffsetChanged(int topOffset, int topControlsMinHeightOffset,
+            int bottomOffset, int bottomControlsMinHeightOffset, boolean needsAnimate) {
         invalidateSelf();
     }
 

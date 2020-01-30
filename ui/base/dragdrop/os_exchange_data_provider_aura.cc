@@ -9,7 +9,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "net/base/filename_util.h"
 #include "ui/base/clipboard/clipboard_format_type.h"
-#include "ui/base/dragdrop/file_info.h"
+#include "ui/base/dragdrop/file_info/file_info.h"
 
 namespace ui {
 

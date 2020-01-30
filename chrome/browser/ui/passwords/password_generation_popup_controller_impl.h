@@ -37,7 +37,7 @@ class PasswordManagerDriver;
 }  // namespace password_manager
 
 namespace autofill {
-struct PasswordForm;
+struct FormData;
 struct Suggestion;
 namespace password_generation {
 struct PasswordGenerationUIData;
@@ -161,7 +161,7 @@ class PasswordGenerationPopupControllerImpl
   // Accept password if it's selected.
   bool PossiblyAcceptPassword();
 
-  const autofill::PasswordForm form_;
+  const autofill::FormData form_data_;
 
   base::WeakPtr<password_manager::PasswordManagerDriver> const driver_;
 

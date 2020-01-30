@@ -137,6 +137,7 @@ All changes to this list should go through Blink's feature review process: http:
     color-interpolation
     color-interpolation-filters
     color-rendering
+    color-scheme
     column-count
     column-fill
     column-gap
@@ -146,6 +147,10 @@ All changes to this list should go through Blink's feature review process: http:
     column-span
     column-width
     contain
+    contain-intrinsic-block-size
+    contain-intrinsic-height
+    contain-intrinsic-inline-size
+    contain-intrinsic-width
     content
     counter-increment
     counter-reset
@@ -202,10 +207,6 @@ All changes to this list should go through Blink's feature review process: http:
     inset-block-start
     inset-inline-end
     inset-inline-start
-    intrinsic-block-size
-    intrinsic-height
-    intrinsic-inline-size
-    intrinsic-width
     isolation
     justify-content
     justify-items
@@ -551,6 +552,9 @@ All changes to this list should go through Blink's feature review process: http:
     columns
         column-count
         column-width
+    contain-intrinsic-size
+        contain-intrinsic-height
+        contain-intrinsic-width
     flex
         flex-basis
         flex-grow
@@ -617,9 +621,6 @@ All changes to this list should go through Blink's feature review process: http:
     inset-inline
         inset-inline-end
         inset-inline-start
-    intrinsic-size
-        intrinsic-height
-        intrinsic-width
     list-style
         list-style-image
         list-style-position

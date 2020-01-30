@@ -17,7 +17,7 @@
 
 namespace ui {
 
-struct ClipboardFormatType;
+class ClipboardFormatType;
 
 // OSExchangeData::Provider implementation for aura on linux.
 class UI_BASE_EXPORT OSExchangeDataProviderAura

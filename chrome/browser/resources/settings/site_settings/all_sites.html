@@ -177,10 +177,6 @@
                 <iron-icon icon="all-sites:offline"></iron-icon>
                 $i18n{siteSettingsSiteGroupDeleteOfflineData}
               </div>
-              <div class="detail">
-                <iron-icon icon="all-sites:apps"></iron-icon>
-                $i18n{siteSettingsSiteGroupDeleteApps}
-              </div>
             </div>
           </div>
           <div slot="button-container">
@@ -204,7 +200,7 @@
             $i18n{siteSettingsClearAllStorageDialogTitle}
           </div>
           <div slot="body">
-            [[i18n('siteSettingsClearAllStorageConfirmation', totalUsage_)]]
+            [[getClearAllDataLabel_(totalUsage_)]]
             <div class="detail-list">
               <div class="detail">
                 <iron-icon icon="all-sites:logout"></iron-icon>
@@ -213,10 +209,6 @@
               <div class="detail">
                 <iron-icon icon="all-sites:offline"></iron-icon>
                 $i18n{siteSettingsSiteGroupDeleteOfflineData}
-              </div>
-              <div class="detail">
-                <iron-icon icon="all-sites:apps"></iron-icon>
-                $i18n{siteSettingsSiteGroupDeleteApps}
               </div>
             </div>
           </div>

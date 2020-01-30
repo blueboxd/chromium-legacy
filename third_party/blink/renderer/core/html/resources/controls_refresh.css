@@ -16,6 +16,17 @@ textarea {
   border-color: #767676;
 }
 
+input,
+input[type="email" i],
+input[type="number" i],
+input[type="password" i],
+input[type="search" i],
+input[type="tel" i],
+input[type="text" i],
+input[type="url" i] {
+  padding: 1px 2px;
+}
+
 input:disabled,
 select:disabled,
 textarea:disabled {

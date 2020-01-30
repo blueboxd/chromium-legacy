@@ -81,6 +81,26 @@ std::string BuildHtml(bool allow_access_requests,
                       bool is_deprecated,
                       FilteringBehaviorReason reason,
                       const std::string& app_locale) {
+  return BuildHtml(allow_access_requests, profile_image_url, profile_image_url2,
+                   custodian, custodian_email, second_custodian,
+                   second_custodian_email, is_child_account, is_deprecated,
+                   reason, app_locale, /* already_sent_request */ false,
+                   /* is_main_frame */ true);
+}
+
+std::string BuildHtml(bool allow_access_requests,
+                      const std::string& profile_image_url,
+                      const std::string& profile_image_url2,
+                      const std::string& custodian,
+                      const std::string& custodian_email,
+                      const std::string& second_custodian,
+                      const std::string& second_custodian_email,
+                      bool is_child_account,
+                      bool is_deprecated,
+                      FilteringBehaviorReason reason,
+                      const std::string& app_locale,
+                      bool already_sent_request,
+                      bool is_main_frame) {
   base::DictionaryValue strings;
   strings.SetString("blockPageTitle",
                     l10n_util::GetStringUTF16(IDS_BLOCK_INTERSTITIAL_TITLE));
@@ -97,6 +117,8 @@ std::string BuildHtml(bool allow_access_requests,
   strings.SetString("custodianEmail", custodian_email);
   strings.SetString("secondCustodianName", second_custodian);
   strings.SetString("secondCustodianEmail", second_custodian_email);
+  strings.SetBoolean("alreadySentRequest", already_sent_request);
+  strings.SetBoolean("isMainFrame", is_main_frame);
 
   base::string16 custodian16 = base::UTF8ToUTF16(custodian);
   base::string16 block_header;

@@ -16,6 +16,7 @@ enum CSSSampleId {
     // These internal properties exist but are mapped to 0 to ensure they don't get
     // reported in use counter.
     kInternalEffectiveZoom = 0,
+    kInternalEmptyLineHeight = 0,
     kInternalUaBackgroundAttachment = 0,
     kInternalUaBackgroundBlendMode = 0,
     kInternalUaBackgroundClip = 0,
@@ -720,11 +721,11 @@ enum CSSSampleId {
     kOverscrollBehaviorBlock = 645,
     // kContentSize = 646,
     kFontOpticalSizing = 647,
-    kIntrinsicBlockSize = 648,
-    kIntrinsicHeight = 649,
-    kIntrinsicInlineSize = 650,
-    kIntrinsicSize = 651,
-    kIntrinsicWidth = 652,
+    kContainIntrinsicBlockSize = 648,
+    kContainIntrinsicHeight = 649,
+    kContainIntrinsicInlineSize = 650,
+    kContainIntrinsicSize = 651,
+    kContainIntrinsicWidth = 652,
     kRenderSubtree = 653,
     kOriginTrialTestProperty = 654,
     // 1. Add new features above this line (don't change the assigned numbers of

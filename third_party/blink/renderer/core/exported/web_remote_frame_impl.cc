@@ -317,24 +317,6 @@ void WebRemoteFrameImpl::TransferUserActivationFrom(
       To<WebRemoteFrameImpl>(source_frame)->GetFrame());
 }
 
-void WebRemoteFrameImpl::IntrinsicSizingInfoChanged(
-    const WebIntrinsicSizingInfo& web_sizing_info) {
-  FrameOwner* owner = GetFrame()->Owner();
-  // Only communication from HTMLPluginElement-owned subframes is allowed
-  // at present. This includes <embed> and <object> tags.
-  if (!owner || !owner->IsPlugin())
-    return;
-
-  IntrinsicSizingInfo sizing_info;
-  sizing_info.size = web_sizing_info.size;
-  sizing_info.aspect_ratio = web_sizing_info.aspect_ratio;
-  sizing_info.has_width = web_sizing_info.has_width;
-  sizing_info.has_height = web_sizing_info.has_height;
-  frame_->View()->SetIntrinsicSizeInfo(sizing_info);
-
-  owner->IntrinsicSizingInfoChanged();
-}
-
 void WebRemoteFrameImpl::SetHadStickyUserActivationBeforeNavigation(
     bool value) {
   GetFrame()->SetHadStickyUserActivationBeforeNavigation(value);

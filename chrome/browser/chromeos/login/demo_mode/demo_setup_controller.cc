@@ -462,11 +462,14 @@ bool DemoSetupController::IsOobeDemoSetupFlowInProgress() {
 std::string DemoSetupController::GetSubOrganizationEmail() {
   const std::string country =
       g_browser_process->local_state()->GetString(prefs::kDemoModeCountry);
-  const base::flat_set<std::string> kCountriesWithCustomization(
-      {"be", "ca", "de", "dk", "es", "fi", "fr", "gb", "ie", "it", "jp", "lu",
-       "nl", "no", "se"});
-  if (kCountriesWithCustomization.contains(country))
+
+  // Exclude US as it is the default country.
+  if (country != "us" &&
+      std::find(std::begin(DemoSession::kSupportedCountries),
+                std::end(DemoSession::kSupportedCountries),
+                country) != std::end(DemoSession::kSupportedCountries)) {
     return "admin-" + country + "@" + policy::kDemoModeDomain;
+  }
   return std::string();
 }
 

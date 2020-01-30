@@ -1169,8 +1169,8 @@ IN_PROC_BROWSER_TEST_F(KioskTest, KioskEnableCancel) {
             GetConsumerKioskModeStatus());
 }
 
-// crbug.com/1029965
-#if defined(MEMORY_SANITIZER)
+// Flaky on MSAN (crbug.com/1029965) and CrOS (crbug.com/1043887).
+#if defined(MEMORY_SANITIZER) || defined(OS_CHROMEOS)
 #define MAYBE_KioskEnableConfirmed DISABLED_KioskEnableConfirmed
 #else
 #define MAYBE_KioskEnableConfirmed KioskEnableConfirmed

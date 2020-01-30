@@ -42,6 +42,7 @@ const char* const kTopLevelIpcRunTaskAllowedArgs[] = {"ipc_hash", nullptr};
 const char* const kLifecyclesTaskPostedAllowedArgs[] = {
     "task_queue_name", "time_since_disabled_ms", "ipc_hash", "location",
     nullptr};
+const char* const kMemoryPressureEventsAllowedArgs[] = {"Level", nullptr};
 
 const WhitelistEntry kEventArgsWhitelist[] = {
     {"__metadata", "thread_name", nullptr},
@@ -55,7 +56,11 @@ const WhitelistEntry kEventArgsWhitelist[] = {
     {"base", "ScopedMayLoadLibraryAtBackgroundPriority",
      kScopedBlockingCallAllowedArgs},
     {"benchmark", "TestWhitelist*", nullptr},
+    {"blink", "MemoryPressureListenerRegistry::onMemoryPressure",
+     kMemoryPressureEventsAllowedArgs},
     {"browser", "KeyedServiceFactory::GetServiceForContext", nullptr},
+    {"browser", "TabLoader::OnMemoryPressure",
+     kMemoryPressureEventsAllowedArgs},
     {"fonts", "CachedFontLinkSettings::GetLinkedFonts", nullptr},
     {"fonts", "QueryLinkedFontsFromRegistry", nullptr},
     {"fonts", "RenderTextHarfBuzz::ItemizeTextToRuns::Runs", nullptr},
@@ -63,6 +68,8 @@ const WhitelistEntry kEventArgsWhitelist[] = {
     {"ipc", "GpuChannelHost::Send", nullptr},
     {"ipc", "SyncChannel::Send", nullptr},
     {"latencyInfo", "*", kInputLatencyAllowedArgs},
+    {"memory", "RenderThreadImpl::OnMemoryPressure",
+     kMemoryPressureEventsAllowedArgs},
     {"renderer_host", "*", kRendererHostAllowedArgs},
     {"shutdown", "*", nullptr},
     {"startup", "PrefProvider::PrefProvider", nullptr},

@@ -24,7 +24,10 @@ static_library("feature_list") {
 
 source_set("unit_tests") {
   testonly = true
-  deps = [ "core:core_unit_tests" ]
+  deps = [
+    "core:core_unit_tests",
+    "//components/feed/core/common:core_common_unit_tests",
+  ]
 
   if (!is_ios) {
     deps += [ "content:content_unit_tests" ]

@@ -28,5 +28,5 @@
         android:layout_toEndOf="@id/favicon"
         android:gravity="center_vertical"
         android:layout_marginStart="12dp"
-        android:textAppearance="@style/TextAppearance.BlackCaption" />
+        android:textAppearance="@style/TextAppearance.TextSmall.Secondary" />
 </RelativeLayout>

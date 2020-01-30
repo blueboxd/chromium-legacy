@@ -198,6 +198,69 @@ TEST_F(IndexedDBTransactionTest, Timeout) {
   EXPECT_EQ(1, transaction->diagnostics().tasks_completed);
 }
 
+TEST_F(IndexedDBTransactionTest, TimeoutPreemptive) {
+  const int64_t id = 0;
+  const std::set<int64_t> scope;
+  const leveldb::Status commit_success = leveldb::Status::OK();
+  std::unique_ptr<IndexedDBConnection> connection = CreateConnection();
+  IndexedDBTransaction* transaction = connection->CreateTransaction(
+      id, scope, blink::mojom::IDBTransactionMode::ReadWrite,
+      new IndexedDBFakeBackingStore::FakeTransaction(commit_success));
+  db_->RegisterAndScheduleTransaction(transaction);
+
+  // No conflicting transactions, so coordinator will start it immediately:
+  EXPECT_EQ(IndexedDBTransaction::STARTED, transaction->state());
+  EXPECT_FALSE(transaction->IsTimeoutTimerRunning());
+  EXPECT_EQ(0, transaction->diagnostics().tasks_scheduled);
+  EXPECT_EQ(0, transaction->diagnostics().tasks_completed);
+
+  // Add a preemptive task.
+  transaction->ScheduleTask(
+      blink::mojom::IDBTaskType::Preemptive,
+      base::BindOnce(&IndexedDBTransactionTest::DummyOperation,
+                     base::Unretained(this), leveldb::Status::OK()));
+  transaction->AddPreemptiveEvent();
+
+  EXPECT_TRUE(transaction->HasPendingTasks());
+  EXPECT_FALSE(transaction->IsTimeoutTimerRunning());
+  EXPECT_TRUE(transaction->task_queue_.empty());
+  EXPECT_FALSE(transaction->preemptive_task_queue_.empty());
+
+  // Pump the message loop so that the transaction completes all pending tasks,
+  // otherwise it will defer the commit.
+  RunPostedTasks();
+  EXPECT_TRUE(transaction->HasPendingTasks());
+  EXPECT_FALSE(transaction->IsTimeoutTimerRunning());
+  EXPECT_TRUE(transaction->task_queue_.empty());
+  EXPECT_TRUE(transaction->preemptive_task_queue_.empty());
+
+  // Schedule a task - timer won't be started until preemptive tasks are done.
+  transaction->ScheduleTask(
+      base::BindOnce(&IndexedDBTransactionTest::DummyOperation,
+                     base::Unretained(this), leveldb::Status::OK()));
+  EXPECT_FALSE(transaction->IsTimeoutTimerRunning());
+  EXPECT_EQ(1, transaction->diagnostics().tasks_scheduled);
+  EXPECT_EQ(0, transaction->diagnostics().tasks_completed);
+
+  // This shouldn't do anything - the preemptive task is still lurking.
+  RunPostedTasks();
+  EXPECT_TRUE(transaction->HasPendingTasks());
+  EXPECT_FALSE(transaction->IsTimeoutTimerRunning());
+  EXPECT_EQ(1, transaction->diagnostics().tasks_scheduled);
+  EXPECT_EQ(0, transaction->diagnostics().tasks_completed);
+
+  // Finish the preemptive task, which unblocks regular tasks.
+  transaction->DidCompletePreemptiveEvent();
+  // TODO(dmurph): Should this explicit call be necessary?
+  transaction->RunTasks();
+
+  // The task's completion should start the timer.
+  EXPECT_FALSE(transaction->HasPendingTasks());
+  EXPECT_TRUE(transaction->IsTimeoutTimerRunning());
+  EXPECT_EQ(1, transaction->diagnostics().tasks_scheduled);
+  EXPECT_EQ(1, transaction->diagnostics().tasks_completed);
+}
+
 TEST_F(IndexedDBTransactionTest, NoTimeoutReadOnly) {
   const int64_t id = 0;
   const std::set<int64_t> scope;

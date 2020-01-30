@@ -37,8 +37,6 @@ class LocalCardMigrationErrorDialogView
   gfx::Size CalculatePreferredSize() const override;
   ui::ModalType GetModalType() const override;
   bool ShouldShowCloseButton() const override;
-  bool Cancel() override;
-  bool Close() override;
   void Init() override;
   void WindowClosing() override;
 

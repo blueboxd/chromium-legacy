@@ -98,7 +98,6 @@
 #import "ios/chrome/browser/ui/first_run/welcome_to_chrome_view_controller.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_animator.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_controller.h"
-#import "ios/chrome/browser/ui/fullscreen/fullscreen_controller_factory.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_features.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_ui_element.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_ui_updater.h"
@@ -921,8 +920,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   // TODO(crbug.com/790886): Use the Browser's broadcaster once Browsers are
   // supported.
   FullscreenController* fullscreenController =
-      FullscreenControllerFactory::GetInstance()->GetForBrowserState(
-          self.browserState);
+      FullscreenController::FromBrowserState(self.browserState);
   ChromeBroadcaster* broadcaster = fullscreenController->broadcaster();
   if (_broadcasting) {
     _toolbarUIUpdater = [[LegacyToolbarUIUpdater alloc]
@@ -1323,9 +1321,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   } else {
     self.inNewTabAnimation = YES;
     // Exit fullscreen if needed.
-    FullscreenControllerFactory::GetInstance()
-        ->GetForBrowserState(self.browserState)
-        ->ExitFullscreen();
+    FullscreenController::FromBrowserState(self.browserState)->ExitFullscreen();
     const CGFloat kAnimatedViewSize = 50;
     BackgroundTabAnimationView* animatedView =
         [[BackgroundTabAnimationView alloc]
@@ -1637,8 +1633,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   if (!self.browserState || _isShutdown)
     return;
 
-  FullscreenControllerFactory::GetInstance()
-      ->GetForBrowserState(self.browserState)
+  FullscreenController::FromBrowserState(self.browserState)
       ->BrowserTraitCollectionChangedBegin();
 
   // TODO(crbug.com/527092): - traitCollectionDidChange: is not always forwarded
@@ -1686,8 +1681,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 
   [self setNeedsStatusBarAppearanceUpdate];
 
-  FullscreenControllerFactory::GetInstance()
-      ->GetForBrowserState(self.browserState)
+  FullscreenController::FromBrowserState(self.browserState)
       ->BrowserTraitCollectionChangedEnd();
 }
 
@@ -2370,7 +2364,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
       // the provider is not initialized, viewport insets resize the webview, so
       // they should be accounted for here to prevent animation jitter.
       UIEdgeInsets viewportInsets =
-          FullscreenControllerFactory::GetForBrowserState(self.browserState)
+          FullscreenController::FromBrowserState(self.browserState)
               ->GetCurrentViewportInsets();
       webStateViewFrame =
           UIEdgeInsetsInsetRect(webStateViewFrame, viewportInsets);
@@ -2816,7 +2810,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   DCHECK(webState);
 
   FullscreenController* fullscreenController =
-      FullscreenControllerFactory::GetForBrowserState(self.browserState);
+      FullscreenController::FromBrowserState(self.browserState);
   UIEdgeInsets maxViewportInsets = fullscreenController->GetMaxViewportInsets();
 
   NewTabPageTabHelper* NTPHelper = NewTabPageTabHelper::FromWebState(webState);
@@ -3626,7 +3620,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 - (void)updateForFullscreenMinViewportInsets:(UIEdgeInsets)minViewportInsets
                            maxViewportInsets:(UIEdgeInsets)maxViewportInsets {
   FullscreenController* controller =
-      FullscreenControllerFactory::GetForBrowserState(self.browserState);
+      FullscreenController::FromBrowserState(self.browserState);
   [self updateForFullscreenProgress:controller->GetProgress()];
 }
 
@@ -3636,7 +3630,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 // primary toolbar.
 - (CGFloat)primaryToolbarHeightDelta {
   FullscreenController* controller =
-      FullscreenControllerFactory::GetForBrowserState(self.browserState);
+      FullscreenController::FromBrowserState(self.browserState);
   CGFloat fullyExpandedHeight = controller->GetMaxViewportInsets().top;
   CGFloat fullyCollapsedHeight = controller->GetMinViewportInsets().top;
   return std::max(0.0, fullyExpandedHeight - fullyCollapsedHeight);
@@ -3760,9 +3754,9 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 // Returns the insets into |view| that result in the visible viewport.
 - (UIEdgeInsets)viewportInsetsForView:(UIView*)view {
   DCHECK(view);
-  UIEdgeInsets viewportInsets = FullscreenControllerFactory::GetInstance()
-                                    ->GetForBrowserState(self.browserState)
-                                    ->GetCurrentViewportInsets();
+  UIEdgeInsets viewportInsets =
+      FullscreenController::FromBrowserState(self.browserState)
+          ->GetCurrentViewportInsets();
   // TODO(crbug.com/917548): Use BVC for viewport inset coordinate space rather
   // than the content area.
   CGRect viewportFrame = [view

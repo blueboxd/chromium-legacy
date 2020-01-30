@@ -316,8 +316,7 @@ void HTMLFrameOwnerElement::UpdateRequiredPolicy() {
   DCHECK(frame);
   frame_policy_.required_document_policy = DocumentPolicy::MergeFeatureState(
       self_required_policy,
-      frame->GetFramePolicy()
-          .required_document_policy /* parent required policy */);
+      frame->GetRequiredDocumentPolicy() /* parent required policy */);
   if (ContentFrame()) {
     frame->Client()->DidChangeFramePolicy(ContentFrame(), frame_policy_);
   }

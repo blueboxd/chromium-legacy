@@ -79,7 +79,8 @@ TEST(JwkSerializerTest, ConvertSpkiFromDerToJwkEc) {
   EXPECT_TRUE(public_key_jwk.empty());
 
   // Test the result of a "normal" point on this curve.
-  spki.set(reinterpret_cast<const char*>(kSpkiEc), sizeof(kSpkiEc));
+  spki = base::StringPiece(reinterpret_cast<const char*>(kSpkiEc),
+                           sizeof(kSpkiEc));
   EXPECT_TRUE(JwkSerializer::ConvertSpkiFromDerToJwk(spki, &public_key_jwk));
 
   std::string string_value;
@@ -113,8 +114,8 @@ TEST(JwkSerializerTest, ConvertSpkiFromDerToJwkEc) {
 
   // Test the result of a corner case: leading 0s in the x, y coordinates are
   // not trimmed, but the point is fixed-length encoded.
-  spki.set(reinterpret_cast<const char*>(kSpkiEcWithLeadingZero),
-           sizeof(kSpkiEcWithLeadingZero));
+  spki = {reinterpret_cast<const char*>(kSpkiEcWithLeadingZero),
+          sizeof(kSpkiEcWithLeadingZero)};
   EXPECT_TRUE(JwkSerializer::ConvertSpkiFromDerToJwk(spki, &public_key_jwk));
 
   EXPECT_TRUE(public_key_jwk.GetString("kty", &string_value));

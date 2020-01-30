@@ -427,9 +427,9 @@ struct StructTraits<autofill::mojom::PasswordGenerationUIDataDataView,
     return r.text_direction;
   }
 
-  static const autofill::PasswordForm& password_form(
+  static const autofill::FormData& form_data(
       const autofill::password_generation::PasswordGenerationUIData& r) {
-    return r.password_form;
+    return r.form_data;
   }
 
   static bool Read(

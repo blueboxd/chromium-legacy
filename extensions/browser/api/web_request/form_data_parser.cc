@@ -492,7 +492,7 @@ bool FormDataParserMultipart::FinishReadingPart(base::StringPiece* data) {
       return false;
     }
     // Subtract 2 for the trailing "\r\n".
-    data->set(data_start, source_.data() - data_start - 2);
+    *data = base::StringPiece(data_start, source_.data() - data_start - 2);
   }
 
   // Finally, read the dash-boundary and either skip to the next body part, or
@@ -626,12 +626,12 @@ bool FormDataParserMultipart::TryReadHeader(base::StringPiece* name,
     state_ = STATE_ERROR;
     return true;  // See (*) for why true.
   }
-  name->set(groups[1].data(), groups[1].size());
+  *name = base::StringPiece(groups[1].data(), groups[1].size());
 
   if (value_pattern().Match(header,
                             kContentDispositionLength, header.size(),
                             RE2::UNANCHORED, groups, 2)) {
-    value->set(groups[1].data(), groups[1].size());
+    *value = base::StringPiece(groups[1].data(), groups[1].size());
     *value_assigned = true;
   }
   return true;

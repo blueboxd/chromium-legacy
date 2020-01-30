@@ -24,6 +24,17 @@ namespace device_sync {
 
 namespace {
 
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused. If entries are added, kMaxValue should
+// be updated.
+enum class TargetServiceForMetrics {
+  kUnknown = 0,
+  kEnrollment = 1,
+  kDeviceSync = 2,
+  // Used for UMA logs.
+  kMaxValue = kDeviceSync
+};
+
 // The 'registrationTickleType' key-value pair is present in GCM push
 // messages. The values correspond to a server-side enum.
 const char kRegistrationTickleTypeKey[] = "registrationTickleType";
@@ -65,41 +76,61 @@ base::Optional<cryptauthv2::TargetService> TargetServiceFromMessage(
 
   auto it = message.data.find(kRegistrationTickleTypeKey);
   if (it != message.data.end()) {
+    TargetServiceForMetrics target_service_for_metrics;
     if (it->second == kRegistrationTickleTypeForceEnrollment ||
         it->second == kRegistrationTickleTypeUpdateEnrollment) {
+      target_service_for_metrics = TargetServiceForMetrics::kEnrollment;
       target_from_registration_tickle_type =
           cryptauthv2::TargetService::ENROLLMENT;
     } else if (it->second == kRegistrationTickleTypeDevicesSync) {
+      target_service_for_metrics = TargetServiceForMetrics::kDeviceSync;
       target_from_registration_tickle_type =
           cryptauthv2::TargetService::DEVICE_SYNC;
     } else {
-      // TODO(https://crbug.com/956592): Add metrics.
+      target_service_for_metrics = TargetServiceForMetrics::kUnknown;
       PA_LOG(WARNING) << "Unknown tickle type in GCM message: " << it->second;
     }
+    base::UmaHistogramEnumeration(
+        "CryptAuth.Gcm.Message.TargetService.FromRegistrationTickleType",
+        target_service_for_metrics);
   }
 
   it = message.data.find(kTargetServiceKey);
   if (it != message.data.end()) {
+    TargetServiceForMetrics target_service_for_metrics;
     if (it->second ==
         base::NumberToString(cryptauthv2::TargetService::ENROLLMENT)) {
+      target_service_for_metrics = TargetServiceForMetrics::kEnrollment;
       target_from_target_service = cryptauthv2::TargetService::ENROLLMENT;
     } else if (it->second ==
                base::NumberToString(cryptauthv2::TargetService::DEVICE_SYNC)) {
+      target_service_for_metrics = TargetServiceForMetrics::kDeviceSync;
       target_from_target_service = cryptauthv2::TargetService::DEVICE_SYNC;
     } else {
-      // TODO(https://crbug.com/956592): Add metrics.
+      target_service_for_metrics = TargetServiceForMetrics::kUnknown;
       PA_LOG(WARNING) << "Invalid TargetService in GCM message: " << it->second;
     }
+    base::UmaHistogramEnumeration(
+        "CryptAuth.Gcm.Message.TargetService.FromTargetServiceValue",
+        target_service_for_metrics);
   }
 
-  if (target_from_registration_tickle_type && target_from_target_service) {
-    // TODO(https://crbug.com/956592): Add metrics.
+  bool are_tickle_type_and_target_service_both_specified =
+      target_from_registration_tickle_type && target_from_target_service;
+  base::UmaHistogramBoolean(
+      "CryptAuth.Gcm.Message.TargetService."
+      "AreTickleTypeAndTargetServiceBothSpecified",
+      are_tickle_type_and_target_service_both_specified);
+  if (are_tickle_type_and_target_service_both_specified) {
     PA_LOG(WARNING) << "Registration tickle type, "
                     << *target_from_registration_tickle_type
                     << ", and target service, " << *target_from_target_service
                     << ", are both set in the same GCM message";
   }
 
+  // If the target service is specified via both the CryptAuth v1 registration
+  // tickle type field and the v2 target service field, prefer the v2 value.
+  // That said, we do not expect both to be used in the same GCM message.
   return target_from_target_service ? target_from_target_service
                                     : target_from_registration_tickle_type;
 }
@@ -127,9 +158,12 @@ base::Optional<CryptAuthFeatureType> FeatureTypeFromMessage(
 
   base::Optional<CryptAuthFeatureType> feature_type =
       CryptAuthFeatureTypeFromGcmHash(*feature_type_hash);
-
-  if (!feature_type) {
-    // TODO(https://crbug.com/956592): Add metrics.
+  base::UmaHistogramBoolean("CryptAuth.Gcm.Message.IsKnownFeatureType",
+                            feature_type.has_value());
+  if (feature_type) {
+    base::UmaHistogramEnumeration("CryptAuth.Gcm.Message.FeatureType",
+                                  *feature_type);
+  } else {
     PA_LOG(WARNING) << "GCM message contains unknown feature type hash: "
                     << *feature_type_hash;
   }
@@ -143,10 +177,16 @@ base::Optional<CryptAuthFeatureType> FeatureTypeFromMessage(
 bool IsDeviceSyncGroupNameValid(const gcm::IncomingMessage& message) {
   base::Optional<std::string> group_name =
       StringValueFromMessage(kDeviceSyncGroupNameKey, message);
-  return !group_name ||
-         *group_name ==
-             CryptAuthKeyBundle::KeyBundleNameEnumToString(
-                 CryptAuthKeyBundle::Name::kDeviceSyncBetterTogether);
+  if (!group_name)
+    return true;
+
+  bool is_device_sync_group_name_valid =
+      *group_name == CryptAuthKeyBundle::KeyBundleNameEnumToString(
+                         CryptAuthKeyBundle::Name::kDeviceSyncBetterTogether);
+  base::UmaHistogramBoolean("CryptAuth.Gcm.Message.IsDeviceSyncGroupNameValid",
+                            is_device_sync_group_name_valid);
+
+  return is_device_sync_group_name_valid;
 }
 
 void RecordGCMRegistrationMetrics(gcm::GCMClient::Result result,
@@ -260,13 +300,11 @@ void CryptAuthGCMManagerImpl::OnMessage(const std::string& app_id,
   base::Optional<cryptauthv2::TargetService> target_service =
       TargetServiceFromMessage(message);
   if (!target_service) {
-    // TODO(https://crbug.com/956592): Add metrics.
     PA_LOG(ERROR) << "GCM message does not specify a valid target service.";
     return;
   }
 
   if (!IsDeviceSyncGroupNameValid(message)) {
-    // TODO(https://crbug.com/956592): Add metrics.
     PA_LOG(ERROR) << "GCM message contains unexpected DeviceSync group name: "
                   << *StringValueFromMessage(kDeviceSyncGroupNameKey, message);
     return;

@@ -51,6 +51,7 @@ using autofill::NEW_PASSWORD;
 using autofill::NOT_USERNAME;
 using autofill::PasswordForm;
 using autofill::SINGLE_USERNAME;
+using autofill::USERNAME;
 using autofill::mojom::PasswordFormFieldPredictionType;
 #if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
 using password_manager::metrics_util::GaiaPasswordHashChange;
@@ -166,9 +167,15 @@ void AddLocallySavedPredictions(FieldInfoManager* field_info_manager,
   for (PasswordFieldPrediction& field : predictions->fields) {
     auto local_prediction = field_info_manager->GetFieldType(
         predictions->form_signature, field.signature);
-    if (local_prediction != SINGLE_USERNAME && local_prediction != NOT_USERNAME)
-      continue;
-    field.type = local_prediction;
+    if (local_prediction == SINGLE_USERNAME) {
+      field.type = SINGLE_USERNAME;
+    } else if (local_prediction == NOT_USERNAME) {
+      // Now local prediction NOT_USERNAME is based on the weak signal (the user
+      // ignored or rejected the prompt) so use it only if the server does not
+      // have data.
+      if (field.type != SINGLE_USERNAME && field.type != USERNAME)
+        field.type = NOT_USERNAME;
+    }
   }
 }
 
@@ -247,33 +254,35 @@ void PasswordManager::OnGeneratedPasswordAccepted(
   }
 }
 
-void PasswordManager::OnPresaveGeneratedPassword(PasswordManagerDriver* driver,
-                                                 const PasswordForm& form) {
-  DCHECK(client_->IsSavingAndFillingEnabled(form.origin));
-  PasswordFormManager* form_manager = GetMatchedManager(driver, form);
+void PasswordManager::OnPresaveGeneratedPassword(
+    PasswordManagerDriver* driver,
+    const FormData& form_data,
+    const base::string16& generated_password) {
+  DCHECK(client_->IsSavingAndFillingEnabled(form_data.url));
+  PasswordFormManager* form_manager = GetMatchedManager(driver, form_data);
   UMA_HISTOGRAM_BOOLEAN("PasswordManager.GeneratedFormHasNoFormManager",
                         !form_manager);
   if (form_manager)
-    form_manager->PresaveGeneratedPassword(form);
+    form_manager->PresaveGeneratedPassword(form_data, generated_password);
 }
 
 void PasswordManager::OnPasswordNoLongerGenerated(PasswordManagerDriver* driver,
-                                                  const PasswordForm& form) {
-  DCHECK(client_->IsSavingAndFillingEnabled(form.origin));
+                                                  const FormData& form_data) {
+  DCHECK(client_->IsSavingAndFillingEnabled(form_data.url));
 
-  PasswordFormManager* form_manager = GetMatchedManager(driver, form);
+  PasswordFormManager* form_manager = GetMatchedManager(driver, form_data);
   if (form_manager)
     form_manager->PasswordNoLongerGenerated();
 }
 
 void PasswordManager::SetGenerationElementAndReasonForForm(
     password_manager::PasswordManagerDriver* driver,
-    const PasswordForm& form,
+    const FormData& form_data,
     const base::string16& generation_element,
     bool is_manually_triggered) {
-  DCHECK(client_->IsSavingAndFillingEnabled(form.origin));
+  DCHECK(client_->IsSavingAndFillingEnabled(form_data.url));
 
-  PasswordFormManager* form_manager = GetMatchedManager(driver, form);
+  PasswordFormManager* form_manager = GetMatchedManager(driver, form_data);
   if (form_manager) {
     form_manager->SetGenerationElement(generation_element);
     form_manager->SetGenerationPopupWasShown(is_manually_triggered);
@@ -293,9 +302,9 @@ void PasswordManager::DidNavigateMainFrame(bool form_may_be_submitted) {
     if (logger)
       logger->LogMessage(Logger::STRING_NAVIGATION_NTP);
     // On a successful Chrome sign-in the page navigates to the new tab page
-    // (ntp). OnPasswordFormsRendered is not called on ntp. That is why the
-    // standard flow for saving hash does not work. Save a password hash now
-    // since a navigation to ntp is the sign of successful sign-in.
+    // (ntp). OnPasswordFormsRendered is not called on ntp. That is
+    // why the standard flow for saving hash does not work. Save a password hash
+    // now since a navigation to ntp is the sign of successful sign-in.
     PasswordFormManager* manager = GetSubmittedManager();
     if (manager && manager->GetSubmittedForm()
                        ->form_data.is_gaia_with_skip_save_password_form) {
@@ -1061,12 +1070,6 @@ void PasswordManager::RecordProvisionalSaveFailure(
 
 // TODO(https://crbug.com/831123): Implement creating missing
 // PasswordFormManager when PasswordFormManager is gone.
-PasswordFormManager* PasswordManager::GetMatchedManager(
-    const PasswordManagerDriver* driver,
-    const PasswordForm& form) {
-  return GetMatchedManager(driver, form.form_data);
-}
-
 PasswordFormManager* PasswordManager::GetMatchedManager(
     const PasswordManagerDriver* driver,
     const FormData& form) {

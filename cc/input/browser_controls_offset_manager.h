@@ -48,6 +48,11 @@ class CC_EXPORT BrowserControlsOffsetManager {
   float TopControlsMinHeight() const;
   // The minimum shown ratio top controls can have.
   float TopControlsMinShownRatio() const;
+  // The current top controls min-height. If the min-height is changing with an
+  // animation, this will return a value between the old min-height and the new
+  // min-height, which is equal to the current visible min-height. Otherwise,
+  // this will return the same value as |TopControlsMinHeight()|.
+  float TopControlsMinHeightOffset() const;
 
   // The amount of offset of the web content area, calculating from the bottom.
   // Same as the current shown height of the bottom controls.
@@ -59,6 +64,11 @@ class CC_EXPORT BrowserControlsOffsetManager {
   float BottomControlsShownRatio() const;
   // The minimum shown ratio bottom controls can have.
   float BottomControlsMinShownRatio() const;
+  // The current bottom controls min-height. If the min-height is changing with
+  // an animation, this will return a value between the old min-height and the
+  // new min-height, which is equal to the current visible min-height.
+  // Otherwise, this will return the same value as |BottomControlsMinHeight()|.
+  float BottomControlsMinHeightOffset() const;
 
   // Valid shown ratio range for the top controls. The values will be (0, 1) if
   // there is no animation running.
@@ -137,6 +147,14 @@ class CC_EXPORT BrowserControlsOffsetManager {
   // The old browser controls params that are used to figure out how to animate
   // the height and min-height changes.
   BrowserControlsParams old_browser_controls_params_;
+
+  // Whether a min-height change animation is in progress.
+  bool top_min_height_change_in_progress_;
+  bool bottom_min_height_change_in_progress_;
+
+  // Current top/bottom controls min-height.
+  float top_controls_min_height_offset_;
+  float bottom_controls_min_height_offset_;
 
   // Class that holds and manages the state of the controls animations.
   class Animation {

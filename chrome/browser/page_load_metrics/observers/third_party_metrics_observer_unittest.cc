@@ -7,12 +7,13 @@
 #include "chrome/browser/page_load_metrics/observers/page_load_metrics_observer_test_harness.h"
 #include "components/page_load_metrics/browser/page_load_tracker.h"
 #include "components/page_load_metrics/common/page_load_metrics.mojom.h"
+#include "components/page_load_metrics/common/test/page_load_metrics_test_util.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/navigation_simulator.h"
 #include "content/public/test/test_renderer_host.h"
 #include "net/cookies/canonical_cookie.h"
-#include "testing/gtest/include/gtest/gtest.h"
+#include "testing/gmock/include/gmock/gmock.h"
 
 const char kReadCookieHistogram[] =
     "PageLoad.Clients.ThirdParty.Origins.CookieRead2";
@@ -436,6 +437,111 @@ TEST_F(ThirdPartyMetricsObserverTest,
                                                   1, 1);
   tester()->histogram_tester().ExpectUniqueSample(
       kAccessSessionStorageHistogram, 1, 1);
+}
+
+TEST_F(ThirdPartyMetricsObserverTest,
+       LargestContentfulPaint_HasThirdPartyFont) {
+  page_load_metrics::mojom::PageLoadTiming timing;
+  page_load_metrics::InitPageLoadTimingForTest(&timing);
+  timing.navigation_start = base::Time::FromDoubleT(1);
+  timing.paint_timing->largest_image_paint = base::TimeDelta();
+  timing.paint_timing->largest_image_paint_size = 100u;
+
+  timing.paint_timing->largest_text_paint =
+      base::TimeDelta::FromMilliseconds(4780);
+  timing.paint_timing->largest_text_paint_size = 120u;
+
+  PopulateRequiredTimingFields(&timing);
+
+  NavigateAndCommit(GURL("https://foo.test"));
+  tester()->SimulateTimingUpdate(timing);
+
+  int frame_tree_node_id = main_rfh()->GetFrameTreeNodeId();
+  tester()->SimulateLoadedResource(
+      {url::Origin::Create(GURL("https://bar.test")), net::IPEndPoint(),
+       frame_tree_node_id, false /* was_cached */,
+       1024 * 20 /* raw_body_bytes */, 0 /* original_network_content_length */,
+       nullptr /* data_reduction_proxy_data */,
+       content::ResourceType::kFontResource, 0, nullptr /* load_timing_info */},
+      content::GlobalRequestID());
+
+  // Navigate again to force histogram recording.
+  NavigateAndCommit(GURL("https://foo.test"));
+
+  EXPECT_THAT(tester()->histogram_tester().GetAllSamples(
+                  "PageLoad.Clients.ThirdParty.PaintTiming."
+                  "NavigationToLargestContentfulPaint.HasThirdPartyFont"),
+              testing::ElementsAre(base::Bucket(4780, 1)));
+}
+
+TEST_F(ThirdPartyMetricsObserverTest,
+       NoLargestContentfulPaint_HasThirdPartyFont) {
+  page_load_metrics::mojom::PageLoadTiming timing;
+  page_load_metrics::InitPageLoadTimingForTest(&timing);
+  timing.navigation_start = base::Time::FromDoubleT(1);
+  timing.paint_timing->largest_image_paint = base::TimeDelta();
+  timing.paint_timing->largest_image_paint_size = 100u;
+
+  timing.paint_timing->largest_text_paint =
+      base::TimeDelta::FromMilliseconds(4780);
+  timing.paint_timing->largest_text_paint_size = 120u;
+
+  PopulateRequiredTimingFields(&timing);
+
+  NavigateAndCommit(GURL("http://a.foo.test"));
+  tester()->SimulateTimingUpdate(timing);
+
+  // Load a same-site font, the histogram should not be recorded.
+  int frame_tree_node_id = main_rfh()->GetFrameTreeNodeId();
+  tester()->SimulateLoadedResource(
+      {url::Origin::Create(GURL("http://b.foo.test")), net::IPEndPoint(),
+       frame_tree_node_id, false /* was_cached */,
+       1024 * 20 /* raw_body_bytes */, 0 /* original_network_content_length */,
+       nullptr /* data_reduction_proxy_data */,
+       content::ResourceType::kFontResource, 0, nullptr /* load_timing_info */},
+      content::GlobalRequestID());
+
+  // Navigate again to force histogram recording.
+  NavigateAndCommit(GURL("https://foo.test"));
+
+  tester()->histogram_tester().ExpectTotalCount(
+      "PageLoad.Clients.ThirdParty.PaintTiming."
+      "NavigationToLargestContentfulPaint.HasThirdPartyFont",
+      0);
+}
+
+TEST_F(ThirdPartyMetricsObserverTest,
+       NoTextLargestContentfulPaint_HasThirdPartyFont) {
+  page_load_metrics::mojom::PageLoadTiming timing;
+  page_load_metrics::InitPageLoadTimingForTest(&timing);
+  timing.navigation_start = base::Time::FromDoubleT(1);
+  timing.paint_timing->largest_image_paint =
+      base::TimeDelta::FromMilliseconds(4780);
+  timing.paint_timing->largest_image_paint_size = 120u;
+
+  PopulateRequiredTimingFields(&timing);
+
+  NavigateAndCommit(GURL("https://foo.test"));
+  tester()->SimulateTimingUpdate(timing);
+
+  int frame_tree_node_id = main_rfh()->GetFrameTreeNodeId();
+  tester()->SimulateLoadedResource(
+      {url::Origin::Create(GURL("https://bar.test")), net::IPEndPoint(),
+       frame_tree_node_id, false /* was_cached */,
+       1024 * 20 /* raw_body_bytes */, 0 /* original_network_content_length */,
+       nullptr /* data_reduction_proxy_data */,
+       content::ResourceType::kFontResource, 0, nullptr /* load_timing_info */},
+      content::GlobalRequestID());
+
+  // Navigate again to force histogram recording.
+  NavigateAndCommit(GURL("https://foo.test"));
+
+  // Since largest contentful paint is of type image, the histogram will not be
+  // recorded.
+  tester()->histogram_tester().ExpectTotalCount(
+      "PageLoad.Clients.ThirdParty.PaintTiming."
+      "NavigationToLargestContentfulPaint.HasThirdPartyFont",
+      0);
 }
 
 class ThirdPartyDomStorageAccessMetricsObserverTest

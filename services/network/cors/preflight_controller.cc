@@ -12,6 +12,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "net/base/load_flags.h"
+#include "net/base/network_isolation_key.h"
 #include "net/http/http_request_headers.h"
 #include "services/network/loader_util.h"
 #include "services/network/public/cpp/cors/cors.h"
@@ -338,9 +339,9 @@ void PreflightController::PerformPreflightCheck(
 
   if (!RetrieveCacheFlags(request.load_flags) && !request.is_external_request &&
       cache_.CheckIfRequestCanSkipPreflight(
-          request.request_initiator->Serialize(), request.url,
-          request.credentials_mode, request.method, request.headers,
-          request.is_revalidating)) {
+          request.request_initiator.value(), request.url,
+          net::NetworkIsolationKey::Todo(), request.credentials_mode,
+          request.method, request.headers, request.is_revalidating)) {
     std::move(callback).Run(net::OK, base::nullopt);
     return;
   }
@@ -361,7 +362,8 @@ void PreflightController::AppendToCache(
     const url::Origin& origin,
     const GURL& url,
     std::unique_ptr<PreflightResult> result) {
-  cache_.AppendEntry(origin.Serialize(), url, std::move(result));
+  cache_.AppendEntry(origin, url, net::NetworkIsolationKey::Todo(),
+                     std::move(result));
 }
 
 }  // namespace cors

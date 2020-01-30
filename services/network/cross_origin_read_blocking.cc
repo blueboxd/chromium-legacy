@@ -78,7 +78,7 @@ void AdvancePastWhitespace(StringPiece* data) {
   size_t offset = data->find_first_not_of(" \t\r\n");
   if (offset == base::StringPiece::npos) {
     // |data| was entirely whitespace.
-    data->clear();
+    *data = StringPiece();
   } else {
     data->remove_prefix(offset);
   }

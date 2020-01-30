@@ -128,7 +128,7 @@ public class TabGroupUiToolbarView extends FrameLayout {
         params.setMarginStart(topicMargin);
         mTitleTextView.setGravity(Gravity.START | Gravity.CENTER_VERTICAL);
         TextViewCompat.setTextAppearance(
-                mTitleTextView, org.chromium.chrome.R.style.TextAppearance_BlackHeadline);
+                mTitleTextView, org.chromium.chrome.R.style.TextAppearance_Headline_Primary);
     }
 
     /**

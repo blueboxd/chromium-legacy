@@ -126,7 +126,8 @@ public class AssistantTextInputSection implements AssistantAdditionalSection {
                 R.dimen.autofill_assistant_bottombar_horizontal_spacing);
         for (TextInputFactory input : inputs) {
             TextView summaryView = new TextView(context);
-            ApiCompatibilityUtils.setTextAppearance(summaryView, R.style.TextAppearance_BlackBody);
+            ApiCompatibilityUtils.setTextAppearance(
+                    summaryView, R.style.TextAppearance_TextMedium_Secondary);
             EditorTextField inputView = input.createView(context, result -> {
                 if (mDelegate == null) {
                     return;

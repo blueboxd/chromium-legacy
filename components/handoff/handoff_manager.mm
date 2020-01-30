@@ -16,7 +16,6 @@
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
 #include "base/mac/mac_util.h"
-#include "base/mac/sdk_forward_declarations.h"
 #endif
 
 @interface HandoffManager ()

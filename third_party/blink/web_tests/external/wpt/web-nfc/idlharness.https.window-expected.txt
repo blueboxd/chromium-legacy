@@ -30,7 +30,7 @@ PASS Stringification of new NDEFRecord({"recordType":"text","data":"Hello World"
 PASS NDEFRecord interface: new NDEFRecord({"recordType":"text","data":"Hello World","id":"/custom/path"}); must inherit property "recordType" with the proper type
 PASS NDEFRecord interface: new NDEFRecord({"recordType":"text","data":"Hello World","id":"/custom/path"}); must inherit property "mediaType" with the proper type
 PASS NDEFRecord interface: new NDEFRecord({"recordType":"text","data":"Hello World","id":"/custom/path"}); must inherit property "id" with the proper type
-FAIL NDEFRecord interface: new NDEFRecord({"recordType":"text","data":"Hello World","id":"/custom/path"}); must inherit property "data" with the proper type Unrecognized type DataView
+FAIL NDEFRecord interface: new NDEFRecord({"recordType":"text","data":"Hello World","id":"/custom/path"}); must inherit property "data" with the proper type assert_equals: expected "DataView" but got "object"
 PASS NDEFRecord interface: new NDEFRecord({"recordType":"text","data":"Hello World","id":"/custom/path"}); must inherit property "encoding" with the proper type
 PASS NDEFRecord interface: new NDEFRecord({"recordType":"text","data":"Hello World","id":"/custom/path"}); must inherit property "lang" with the proper type
 PASS NDEFRecord interface: new NDEFRecord({"recordType":"text","data":"Hello World","id":"/custom/path"}); must inherit property "toRecords()" with the proper type

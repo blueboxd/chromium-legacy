@@ -28,12 +28,6 @@
 #include "third_party/blink/public/mojom/service_worker/service_worker_provider.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom.h"
 
-namespace net {
-
-class HttpResponseInfo;
-
-}  // namespace net
-
 namespace content {
 
 class EmbeddedWorkerTestHelper;
@@ -165,19 +159,6 @@ ServiceWorkerDatabase::ResourceRecord WriteToDiskCacheSync(
     const std::string& body,
     const std::string& meta_data);
 
-// Writes the script with custom net::HttpResponseInfo down to |storage|
-// synchronously. This should not be used in base::RunLoop since base::RunLoop
-// is used internally to wait for completing all of tasks. If it's in another
-// base::RunLoop, consider to use WriteToDiskCacheWithCustomResponseInfoAsync().
-ServiceWorkerDatabase::ResourceRecord
-WriteToDiskCacheWithCustomResponseInfoSync(
-    ServiceWorkerStorage* storage,
-    const GURL& script_url,
-    int64_t resource_id,
-    std::unique_ptr<net::HttpResponseInfo> http_info,
-    const std::string& body,
-    const std::string& meta_data);
-
 // Writes the script down to |storage| asynchronously. When completing tasks,
 // |callback| will be called. You must wait for |callback| instead of
 // base::RunUntilIdle because wiriting to the storage might happen on another
@@ -187,21 +168,6 @@ ServiceWorkerDatabase::ResourceRecord WriteToDiskCacheAsync(
     const GURL& script_url,
     int64_t resource_id,
     const std::vector<std::pair<std::string, std::string>>& headers,
-    const std::string& body,
-    const std::string& meta_data,
-    base::OnceClosure callback);
-
-// Writes the script with custom net::HttpResponseInfo down to |storage|
-// asynchronously. When completing tasks, |callback| will be called. You must
-// wait for |callback| instead of base::RunUntilIdle because wiriting to the
-// storage might happen on another thread and base::RunLoop could get idle
-// before writes has not finished yet.
-ServiceWorkerDatabase::ResourceRecord
-WriteToDiskCacheWithCustomResponseInfoAsync(
-    ServiceWorkerStorage* storage,
-    const GURL& script_url,
-    int64_t resource_id,
-    std::unique_ptr<net::HttpResponseInfo> http_info,
     const std::string& body,
     const std::string& meta_data,
     base::OnceClosure callback);

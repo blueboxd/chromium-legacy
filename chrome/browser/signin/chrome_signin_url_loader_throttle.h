@@ -11,10 +11,6 @@
 #include "content/public/common/resource_type.h"
 #include "third_party/blink/public/common/loader/url_loader_throttle.h"
 
-namespace content {
-class NavigationUIData;
-}  // namespace content
-
 namespace signin {
 
 class HeaderModificationDelegate;
@@ -28,7 +24,6 @@ class URLLoaderThrottle : public blink::URLLoaderThrottle,
   // intercepted.
   static std::unique_ptr<URLLoaderThrottle> MaybeCreate(
       std::unique_ptr<HeaderModificationDelegate> delegate,
-      content::NavigationUIData* navigation_ui_data,
       content::WebContents::Getter web_contents_getter);
 
   ~URLLoaderThrottle() override;

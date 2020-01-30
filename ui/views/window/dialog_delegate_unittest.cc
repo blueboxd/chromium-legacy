@@ -69,7 +69,6 @@ class TestDialog : public DialogDelegateView {
   }
   base::string16 GetWindowTitle() const override { return title_; }
   View* GetInitiallyFocusedView() override { return input_; }
-  int GetDialogButtons() const override { return dialog_buttons_; }
 
   void CheckAndResetStates(bool canceled,
                            bool accepted,
@@ -94,9 +93,6 @@ class TestDialog : public DialogDelegateView {
   void set_should_handle_escape(bool should_handle_escape) {
     should_handle_escape_ = should_handle_escape;
   }
-  void set_dialog_buttons(int dialog_buttons) {
-    dialog_buttons_ = dialog_buttons;
-  }
 
   views::Textfield* input() { return input_; }
 
@@ -110,7 +106,6 @@ class TestDialog : public DialogDelegateView {
   base::string16 title_;
   bool show_close_button_ = true;
   bool should_handle_escape_ = false;
-  int dialog_buttons_ = ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL;
 
   DISALLOW_COPY_AND_ASSIGN(TestDialog);
 };
@@ -369,11 +364,10 @@ TEST_F(DialogTest, InitialFocus) {
 // A dialog for testing initial focus with only an OK button.
 class InitialFocusTestDialog : public DialogDelegateView {
  public:
-  InitialFocusTestDialog() = default;
+  InitialFocusTestDialog() {
+    DialogDelegate::set_buttons(ui::DIALOG_BUTTON_OK);
+  }
   ~InitialFocusTestDialog() override = default;
-
-  // DialogDelegateView overrides:
-  int GetDialogButtons() const override { return ui::DIALOG_BUTTON_OK; }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(InitialFocusTestDialog);

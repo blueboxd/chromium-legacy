@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "base/strings/string16.h"
+#include "ui/base/ui_base_types.h"
 #include "url/gurl.h"
 
 // An interface implemented by objects wishing to control an ConfirmBubbleView.
@@ -15,12 +16,6 @@
 // 2. Call chrome::ShowConfirmBubble() with the class implemented in 1.
 class ConfirmBubbleModel {
  public:
-  enum BubbleButton {
-    BUTTON_NONE = 0,
-    BUTTON_OK = 1 << 0,
-    BUTTON_CANCEL = 1 << 1,
-  };
-
   ConfirmBubbleModel();
   virtual ~ConfirmBubbleModel();
 
@@ -29,15 +24,9 @@ class ConfirmBubbleModel {
   virtual base::string16 GetTitle() const = 0;
   virtual base::string16 GetMessageText() const = 0;
 
-  // Return the buttons to be shown for this bubble menu. This function returns
-  // a combination of BubbleButton values, e.g. when we show both an OK button
-  // and a cancel button, it should return (BUTTON_OK | BUTTON_CANCEL). (This is
-  // the default implementation.)
-  virtual int GetButtons() const;
-
   // Return the label for the specified button. The default implementation
   // returns "OK" for the OK button and "Cancel" for the Cancel button.
-  virtual base::string16 GetButtonLabel(BubbleButton button) const;
+  virtual base::string16 GetButtonLabel(ui::DialogButton button) const;
 
   // Called when the OK button is pressed.
   virtual void Accept();

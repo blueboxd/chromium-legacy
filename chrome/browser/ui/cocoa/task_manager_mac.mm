@@ -11,7 +11,6 @@
 
 #include "base/feature_list.h"
 #include "base/mac/bundle_locations.h"
-#import "base/mac/sdk_forward_declarations.h"
 #include "base/macros.h"
 #include "base/strings/sys_string_conversions.h"
 #include "build/buildflag.h"

@@ -118,38 +118,38 @@ class StartSurfaceToolbarCoordinator {
     }
 
     /**
-     * Enable the experimental toolbar button.
+     * Show the identity dics button.
      * @param onClickListener The {@link OnClickListener} to be called when the button is clicked.
      * @param image The drawable to display for the button.
      * @param contentDescriptionResId The resource id of the content description for the button.
      */
-    void enableExperimentalButton(View.OnClickListener onClickListener, Drawable image,
+    void showIdentityDiscButton(View.OnClickListener onClickListener, Drawable image,
             @StringRes int contentDescriptionResId) {
-        mToolbarMediator.enableIdentityDisc(onClickListener, image, contentDescriptionResId);
+        mToolbarMediator.showIdentityDisc(onClickListener, image, contentDescriptionResId);
     }
 
     /**
-     * Updates image displayed on experimental button.
+     * Updates image displayed on identity disc button.
      * @param image The new image for the button.
      */
-    void updateExperimentalButtonImage(Drawable image) {
+    void updateIdentityDiscButtonImage(Drawable image) {
         mToolbarMediator.updateIdentityDiscImage(image);
     }
 
     /**
-     * Disable the experimental toolbar button.
+     * Hide the identity disc button.
      */
-    void disableExperimentalButton() {
-        mToolbarMediator.disableIdentityDisc();
+    void hideIdentityDiscButton() {
+        mToolbarMediator.hideIdentityDisc();
     }
 
     /**
-     * Displays in-product help for experimental button.
+     * Displays in-product help for identity disc button.
      * @param stringId The id of the string resource for the text that should be shown.
      * @param accessibilityStringId The id of the string resource of the accessibility text.
      * @param dismissedCallback The callback that will be called when in-product help is dismissed.
      */
-    void showIPHOnExperimentalButton(@StringRes int stringId, @StringRes int accessibilityStringId,
+    void showIPHOnIdentityDiscButton(@StringRes int stringId, @StringRes int accessibilityStringId,
             Runnable dismissedCallback) {
         mToolbarMediator.showIPHOnIdentityDisc(stringId, accessibilityStringId, dismissedCallback);
     }

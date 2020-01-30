@@ -10,6 +10,7 @@
 #include "base/feature_list.h"
 #include "chrome/browser/navigation_predictor/navigation_predictor_keyed_service_factory.h"
 #include "chrome/browser/prerender/isolated/isolated_prerender_features.h"
+#include "chrome/browser/prerender/isolated/isolated_prerender_params.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
 #include "components/google/core/common/google_util.h"
@@ -88,6 +89,7 @@ void IsolatedPrerenderTabHelper::DidFinishNavigation(
   DCHECK(!PrefetchingActive());
   urls_to_prefetch_.clear();
   prefetched_responses_.clear();
+  num_prefetches_attempted_ = 0;
 }
 
 std::unique_ptr<PrefetchedResponseContainer>
@@ -114,6 +116,13 @@ void IsolatedPrerenderTabHelper::Prefetch() {
   url_loader_.reset();
   if (urls_to_prefetch_.empty())
     return;
+
+  if (IsolatedPrerenderMaximumNumberOfPrefetches().has_value() &&
+      num_prefetches_attempted_ >=
+          IsolatedPrerenderMaximumNumberOfPrefetches().value()) {
+    return;
+  }
+  num_prefetches_attempted_++;
 
   GURL url = urls_to_prefetch_[0];
   urls_to_prefetch_.erase(urls_to_prefetch_.begin());
@@ -227,6 +236,15 @@ void IsolatedPrerenderTabHelper::OnPredictionUpdated(
   if (!data_reduction_proxy::DataReductionProxySettings::
           IsDataSaverEnabledByUser(profile_->IsOffTheRecord(),
                                    profile_->GetPrefs())) {
+    return;
+  }
+
+  // This is also checked before prefetching from the network, but checking
+  // again here allows us to skip querying for cookies if we won't be
+  // prefetching the url anyways.
+  if (IsolatedPrerenderMaximumNumberOfPrefetches().has_value() &&
+      num_prefetches_attempted_ >=
+          IsolatedPrerenderMaximumNumberOfPrefetches().value()) {
     return;
   }
 

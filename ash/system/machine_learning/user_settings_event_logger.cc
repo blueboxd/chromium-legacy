@@ -7,7 +7,11 @@
 #include "ash/shell.h"
 #include "ash/system/night_light/night_light_controller_impl.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_macros.h"
 #include "chromeos/services/network_config/public/mojom/cros_network_config.mojom.h"
+#include "services/metrics/public/cpp/ukm_builders.h"
+#include "services/metrics/public/cpp/ukm_recorder.h"
+#include "services/metrics/public/cpp/ukm_source_id.h"
 
 namespace ash {
 namespace ml {
@@ -51,6 +55,7 @@ UserSettingsEventLogger::~UserSettingsEventLogger() {
   chromeos::CrasAudioHandler::Get()->RemoveAudioObserver(this);
 }
 
+// TODO(crbug/1014839): Write unit tests for the LogUkmEvent methods.
 void UserSettingsEventLogger::LogNetworkUkmEvent(
     const NetworkStateProperties& network) {
   UserSettingsEvent settings_event;
@@ -89,6 +94,8 @@ void UserSettingsEventLogger::LogBluetoothUkmEvent(
 
   const auto& devices =
       Shell::Get()->tray_bluetooth_helper()->GetAvailableBluetoothDevices();
+  UMA_HISTOGRAM_COUNTS_100("Ash.Shelf.UkmLogger.NumAvailableBluetoothDevices",
+                           devices.size());
   for (const auto& device : devices) {
     if (device->address == device_address) {
       settings_event.mutable_features()->set_is_paired_bluetooth_device(
@@ -115,8 +122,11 @@ void UserSettingsEventLogger::LogNightLightUkmEvent(const bool enabled) {
 
   const auto& schedule_type =
       Shell::Get()->night_light_controller()->GetScheduleType();
-  features->set_has_night_light_schedule(
-      schedule_type != NightLightController::ScheduleType::kNone);
+  const bool has_night_light_schedule =
+      schedule_type != NightLightController::ScheduleType::kNone;
+  UMA_HISTOGRAM_BOOLEAN("Ash.Shelf.UkmLogger.HasNightLightSchedule",
+                        has_night_light_schedule);
+  features->set_has_night_light_schedule(has_night_light_schedule);
   // TODO(crbug/1014839): Set the |is_after_sunset| feature field.
 
   PopulateSharedFeatures(&settings_event);
@@ -226,8 +236,46 @@ void UserSettingsEventLogger::PopulateSharedFeatures(UserSettingsEvent* event) {
   // TODO(crbug/1014839): Populate the shared contextual features.
 }
 
-void UserSettingsEventLogger::SendToUkm(const UserSettingsEvent& event) {
-  // TODO(crbug/1014839): Implement UKM logging.
+void UserSettingsEventLogger::SendToUkm(
+    const UserSettingsEvent& settings_event) {
+  const ukm::SourceId source_id = ukm::UkmRecorder::GetNewSourceID();
+  ukm::builders::UserSettingsEvent ukm_event(source_id);
+
+  const UserSettingsEvent::Event& event = settings_event.event();
+  const UserSettingsEvent::Features& features = settings_event.features();
+
+  if (event.has_event_id())
+    ukm_event.SetEventId(event.event_id());
+  if (event.has_setting_id())
+    ukm_event.SetSettingId(event.setting_id());
+  if (event.has_setting_type())
+    ukm_event.SetSettingType(event.setting_type());
+  if (event.has_previous_value())
+    ukm_event.SetPreviousValue(event.previous_value());
+  if (event.has_current_value())
+    ukm_event.SetCurrentValue(event.current_value());
+
+  if (features.has_is_playing_audio())
+    ukm_event.SetIsPlayingAudio(features.is_playing_audio());
+  if (features.has_is_recently_presenting())
+    ukm_event.SetIsRecentlyPresenting(features.is_recently_presenting());
+  if (features.has_is_recently_fullscreen())
+    ukm_event.SetIsRecentlyFullscreen(features.is_recently_fullscreen());
+  if (features.has_signal_strength())
+    ukm_event.SetSignalStrength(features.signal_strength());
+  if (features.has_has_wifi_security())
+    ukm_event.SetHasWifiSecurity(features.has_wifi_security());
+  if (features.has_used_cellular_in_session())
+    ukm_event.SetUsedCellularInSession(features.used_cellular_in_session());
+  if (features.has_is_paired_bluetooth_device())
+    ukm_event.SetIsPairedBluetoothDevice(features.is_paired_bluetooth_device());
+  if (features.has_has_night_light_schedule())
+    ukm_event.SetHasNightLightSchedule(features.has_night_light_schedule());
+  if (features.has_is_after_sunset())
+    ukm_event.SetIsAfterSunset(features.is_after_sunset());
+
+  ukm::UkmRecorder* const ukm_recorder = ukm::UkmRecorder::Get();
+  ukm_event.Record(ukm_recorder);
 }
 
 }  // namespace ml

@@ -145,9 +145,14 @@ cast_source_set("audio_socket_service") {
     "audio_socket_service.h",
   ]
 
+  if (use_unix_sockets) {
+    sources += [ "audio_socket_service_uds.cc" ]
+  } else {
+    sources += [ "audio_socket_service_tcp.cc" ]
+  }
+
   deps = [
     "//base",
-    "//chromecast/media/audio:audio_buildflags",
     "//net",
   ]
 }

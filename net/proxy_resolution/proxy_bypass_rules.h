@@ -11,6 +11,7 @@
 
 #include "base/macros.h"
 #include "net/base/net_export.h"
+#include "net/base/scheme_host_port_matcher_rule.h"
 #include "url/gurl.h"
 
 namespace net {
@@ -31,37 +32,6 @@ namespace net {
 // MatchesImplicitRules() for details.
 class NET_EXPORT ProxyBypassRules {
  public:
-  // Interface for an individual proxy bypass rule.
-  class NET_EXPORT Rule {
-   public:
-    // Describes the result of calling Rule::Evaluate() for a particular URL.
-    enum class Result {
-      // The URL does not match this rule.
-      kNoMatch,
-
-      // The URL matches this rule, and should bypass the proxy.
-      kBypass,
-
-      // The URL matches this rule, and should NOT bypass the proxy.
-      kDontBypass,
-    };
-
-    Rule();
-    virtual ~Rule();
-
-    // Evaluates the rule against |url|.
-    virtual Result Evaluate(const GURL& url) const = 0;
-
-    // Returns a string representation of this rule (using
-    // ParseFormat::kDefault).
-    virtual std::string ToString() const = 0;
-
-    bool Equals(const Rule& rule) const;
-
-   private:
-    DISALLOW_COPY_AND_ASSIGN(Rule);
-  };
-
   // The input format to use when parsing proxy bypass rules. This format
   // only applies when parsing, since once parsed any serialization will be in
   // terms of ParseFormat::kDefault.
@@ -78,7 +48,7 @@ class NET_EXPORT ProxyBypassRules {
     kHostnameSuffixMatching,
   };
 
-  typedef std::vector<std::unique_ptr<Rule>> RuleList;
+  typedef std::vector<std::unique_ptr<SchemeHostPortMatcherRule>> RuleList;
 
   // Note: This class supports copy constructor and assignment.
   ProxyBypassRules();

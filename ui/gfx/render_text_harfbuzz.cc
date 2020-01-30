@@ -792,8 +792,8 @@ sk_sp<SkTypeface> CreateSkiaTypeface(const Font& font,
   if (!font_with_style.GetNativeFont())
     return nullptr;
 
-  return sk_sp<SkTypeface>(SkCreateTypefaceFromCTFont(
-      base::mac::NSToCFCast(font_with_style.GetNativeFont())));
+  return SkMakeTypefaceFromCTFont(
+      base::mac::NSToCFCast(font_with_style.GetNativeFont()));
 #else
   SkFontStyle skia_style(
       static_cast<int>(weight), SkFontStyle::kNormal_Width,

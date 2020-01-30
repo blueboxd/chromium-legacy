@@ -24,10 +24,6 @@
    min-height: 0;
  }
 
-.oobe-display #outer-container {
-  perspective: 600px;
-}
-
 #scroll-container {
   bottom: var(--shelf-area-height);  /* Leave space for the shelf */
   left: 0;

@@ -7,6 +7,7 @@
 #include "cc/layers/surface_layer.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/common/features.h"
+#include "third_party/blink/public/mojom/frame/intrinsic_sizing_info.mojom-blink.h"
 #include "third_party/blink/public/platform/interface_registry.h"
 #include "third_party/blink/public/web/web_frame.h"
 #include "third_party/blink/public/web/web_view.h"
@@ -23,6 +24,7 @@
 #include "third_party/blink/renderer/core/html/html_frame_owner_element.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/layout/geometry/physical_rect.h"
+#include "third_party/blink/renderer/core/layout/intrinsic_sizing_info.h"
 #include "third_party/blink/renderer/core/layout/layout_embedded_content.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/loader/frame_load_request.h"
@@ -512,6 +514,28 @@ void RemoteFrame::ScrollRectToVisible(
   // This is handled by main frame's WebView.
   WebFrame::FromFrame(this)->View()->ZoomAndScrollToFocusedEditableElementRect(
       element_bounds_in_document, caret_bounds_in_document, true);
+}
+
+void RemoteFrame::IntrinsicSizingInfoOfChildChanged(
+    mojom::blink::IntrinsicSizingInfoPtr info) {
+  FrameOwner* owner = Owner();
+  // Only communication from HTMLPluginElement-owned subframes is allowed
+  // at present. This includes <embed> and <object> tags.
+  if (!owner || !owner->IsPlugin())
+    return;
+
+  // TODO(https://crbug.com/1044304): Should either remove the native
+  // C++ Blink type and use the Mojo type everywhere or typemap the
+  // Mojo type to the pre-existing native C++ Blink type.
+  IntrinsicSizingInfo sizing_info;
+  sizing_info.size = FloatSize(info->size->width, info->size->height);
+  sizing_info.aspect_ratio =
+      FloatSize(info->aspect_ratio->width, info->aspect_ratio->height);
+  sizing_info.has_width = info->has_width;
+  sizing_info.has_height = info->has_height;
+  View()->SetIntrinsicSizeInfo(sizing_info);
+
+  owner->IntrinsicSizingInfoChanged();
 }
 
 bool RemoteFrame::IsIgnoredForHitTest() const {

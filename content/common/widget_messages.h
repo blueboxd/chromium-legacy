@@ -216,7 +216,7 @@ IPC_MESSAGE_ROUTED0(WidgetHostMsg_UpdateScreenRects_ACK)
 // browser can then notify a containing frame that the frame may need to
 // trigger a new layout.
 //
-// Also see FrameMsg_IntrinsicSizingInfoOfChildChanged.
+// Also see blink::mojom::RemoteFrame::IntrinsicSizingInfoOfChildChanged.
 IPC_MESSAGE_ROUTED1(WidgetHostMsg_IntrinsicSizingInfoChanged,
                     blink::WebIntrinsicSizingInfo)
 

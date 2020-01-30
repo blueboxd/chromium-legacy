@@ -2211,10 +2211,12 @@ internal::GraphemeIterator RenderText::GetGraphemeIteratorAtIndex(
 }
 
 void RenderText::DrawSelection(Canvas* canvas, const Range& selection) {
-  for (Rect s : GetSubstringBounds(selection)) {
-    if (symmetric_selection_visual_bounds() && !multiline())
-      s = ExpandToBeVerticallySymmetric(s, display_rect());
-    canvas->FillRect(s, selection_background_focused_color_);
+  if (!selection.is_empty()) {
+    for (Rect s : GetSubstringBounds(selection)) {
+      if (symmetric_selection_visual_bounds() && !multiline())
+        s = ExpandToBeVerticallySymmetric(s, display_rect());
+      canvas->FillRect(s, selection_background_focused_color_);
+    }
   }
 }
 

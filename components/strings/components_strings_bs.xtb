@@ -137,7 +137,7 @@
 <translation id="1521655867290435174">Google Tabele</translation>
 <translation id="1527263332363067270">Čekanje na uspostavu veze…</translation>
 <translation id="1529521330346880926">10x15 (koverta)</translation>
-<translation id="1529789484829130889">Traka 8</translation>
+<translation id="1529789484829130889">Ladica 8</translation>
 <translation id="1530707389502320859">Izgleda da je web lokacija koju ste upravo htjeli posjetiti lažna. Napadači ponekad oponašaju web lokacije tako što naprave male, teško primjetne izmjene URL-a.</translation>
 <translation id="1531205177818805254">Exec</translation>
 <translation id="1532118530259321453">Na ovoj stranici piše</translation>
@@ -428,7 +428,6 @@
 <translation id="2799223571221894425">Ponovo pokreni</translation>
 <translation id="2803306138276472711">Sigurno pretraživanje na Googleu je nedavno <ph name="BEGIN_LINK" />otkrilo zlonamjerni softver<ph name="END_LINK" /> na <ph name="SITE" />. Web lokacije koje su inače sigurne, ponekad se zaraze zlonamjernim softverom.</translation>
 <translation id="2807052079800581569">Y položaj slike</translation>
-<translation id="2809804249696361569">Obje tabele</translation>
 <translation id="2824775600643448204">Traka za adresu i pretraživanje</translation>
 <translation id="2826760142808435982">Veza je šifrirana i autentificirana koristeći <ph name="CIPHER" /> i koristi <ph name="KX" /> kao glavni mehanizam za razmjenu.</translation>
 <translation id="2835170189407361413">Obriši polja obrasca</translation>
@@ -937,7 +936,6 @@
 <translation id="5112422516732747637">A5</translation>
 <translation id="5115216390227830982">European-Edp</translation>
 <translation id="5115563688576182185">(64-bitno)</translation>
-<translation id="5121469660360593280">Dijeljenje podataka o sigurnosnim događajima koje je prijavila Chrome zaštita poslovnih korisnika s administratorom. To može obuhvatati URL-ove stranica koje posjetite, nazive fajlova ili metapodatke te korisničko ime koje koristite za prijavu na uređaj i Chrome.</translation>
 <translation id="5123063207673082822">Vikend</translation>
 <translation id="5125394840236832993">B-Plus</translation>
 <translation id="5126510351761255129">Potvrdite karticu</translation>
@@ -952,7 +950,6 @@
 <translation id="5161506081086828129">Slagač 9</translation>
 <translation id="516920405563544094">Unesite CVC za karticu <ph name="CREDIT_CARD" />. Nakon što potvrdite, detalji s vašeg Google računa će se podijeliti s ovom web lokacijom.</translation>
 <translation id="5169827969064885044">Mogli biste izgubiti pristup računu svoje organizacije ili bi netko mogao ukrasti vaš identitet. Chrome preporučuje da odmah promijenite zaporku.</translation>
-<translation id="5170017743895942767">Chrome zaštita poslovnih korisnika</translation>
 <translation id="5171045022955879922">Pretražite ili upišite URL</translation>
 <translation id="5171689220826475070">Fanfold-European</translation>
 <translation id="5172758083709347301">Mašina</translation>
@@ -1085,7 +1082,6 @@
 <translation id="5737183892635480227">{NUM_CARDS,plural, =1{Sačuvajte karticu na Google računu}one{Sačuvajte kartice na Google računu}few{Sačuvajte kartice na Google računu}other{Sačuvajte kartice na Google računu}}</translation>
 <translation id="5745980000221562234">{NUM_CARDS,plural, =1{Koristite virtuelni broj za ovu karticu}one{Odaberite karticu}few{Odaberite karticu}other{Odaberite karticu}}</translation>
 <translation id="5763042198335101085">Upišite važeću adresu e-pošte</translation>
-<translation id="5763703224595565476">Administrator je na vašem pregledniku omogućio Chrome zaštitu poslovnih korisnika. Chrome zaštita poslovnih korisnika ima pristup nekim vašim podacima.</translation>
 <translation id="5765072501007116331">Za prikaz načina i uslova isporuke, izaberite adresu</translation>
 <translation id="5776313857861697733">Prioritet</translation>
 <translation id="5778550464785688721">Potpuni nadzor nad MIDI uređajima</translation>
@@ -1422,7 +1418,6 @@ Dodatni detalji:
 <translation id="733923710415886693">Potvrda servera nije otkrivena korištenjem pravila o transparentnosti potvrde.</translation>
 <translation id="734600844861828519">11 x 15</translation>
 <translation id="7346048084945669753">Korisnik je povezan:</translation>
-<translation id="73479065977517481">Domena <ph name="ENROLLMENT_DOMAIN" /> je na vašem pregledniku omogućila Chrome zaštitu poslovnih korisnika. Chrome zaštita poslovnih korisnika ima pristup nekim vašim podacima.</translation>
 <translation id="7349430561505560861">A4-Extra</translation>
 <translation id="7353601530677266744">Komandna linija</translation>
 <translation id="7372973238305370288">rezultat pretraživanja</translation>

@@ -132,8 +132,7 @@ async function createNewFolder(appId, initialEntrySet, selector) {
  * @return {Promise} Promise fulfilled on success.
  */
 async function expandRoot(appId, selector) {
-  const expandIcon =
-      selector + ' > .tree-row[has-children=true] > .expand-icon';
+  const expandIcon = selector + ' > .tree-row[has-children=true] .expand-icon';
 
   // Wait for the subtree expand icon to appear.
   await remoteCall.waitForElement(appId, expandIcon);

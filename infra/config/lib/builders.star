@@ -5,7 +5,7 @@ dimensions and many of the properties used for chromium builders by providing
 direct arguments for them rather than requiring them to appear as part of a
 dict. This simplifies creating wrapper functions that need to fix or override
 the default value of specific dimensions or property fields without having to
-handle merging dictionaries.
+handle merging dictionaries. Can also be accessed through `builders.builder`.
 
 The `defaults` struct provides module-level defaults for the arguments to
 `builder`. Each parameter of `builder` besides `name` and `kwargs` have a
@@ -14,10 +14,14 @@ to set the default value. Additionally, the module-level defaults defined for
 use with `luci.builder` can be accessed through `defaults`. Finally module-level
 defaults are provided for the `bucket` and `executable` arguments, removing the
 need to create a wrapper function just to set those default values for a bucket.
+Can also be accessed through `builders.defaults`.
 
 The `cpu`, `os`, and `goma` module members are structs that provide constants
-for use with the corresponding arguments to `builder`.
+for use with the corresponding arguments to `builder`. Can also be accessed
+through `builders.cpu`, `builders.os` and `builders.goma` respectively.
 """
+
+load('./args.star', 'args')
 
 
 ################################################################################
@@ -123,21 +127,10 @@ goma = struct(
 _DEFAULT_BUILDERLESS_OS_CATEGORIES = [os_category.LINUX]
 
 
-def _sentinel(tag):
-  return struct(**{tag: tag})
-
-_DEFAULT = _sentinel('__default__')
-_COMPUTE = _sentinel('__compute__')
-
-
-def _default(name, value):
-  return getattr(defaults, name).get() if value == _DEFAULT else value
-
-
 def _chromium_tests_property(*, bucketed_triggers):
   chromium_tests = {}
 
-  bucketed_triggers = _default('bucketed_triggers', bucketed_triggers)
+  bucketed_triggers = defaults.get_value('bucketed_triggers', bucketed_triggers)
   if bucketed_triggers:
     chromium_tests['bucketed_triggers'] = True
 
@@ -147,25 +140,25 @@ def _chromium_tests_property(*, bucketed_triggers):
 def _goma_property(*, goma_backend, goma_debug, goma_enable_ats, goma_jobs, os):
   goma_properties = {}
 
-  goma_backend = _default('goma_backend', goma_backend)
+  goma_backend = defaults.get_value('goma_backend', goma_backend)
   if goma_backend != None:
     goma_properties.update(goma_backend)
 
-  goma_debug = _default('goma_debug', goma_debug)
+  goma_debug = defaults.get_value('goma_debug', goma_debug)
   if goma_debug:
     goma_properties['debug'] = True
 
-  goma_enable_ats = _default('goma_enable_ats', goma_enable_ats)
+  goma_enable_ats = defaults.get_value('goma_enable_ats', goma_enable_ats)
   # TODO(crbug.com/1040754): Remove this flag.
-  if (goma_backend in (goma.backend.RBE_TOT, goma.backend.RBE_STAGING,
-                       goma.backend.RBE_PROD) and
-      os and os.category in (os_category.LINUX, os_category.WINDOWS)):
-    if goma_enable_ats != None:
-      goma_properties['enable_ats'] = goma_enable_ats
-    else:
-      goma_properties['enable_ats'] = True
+  if goma_enable_ats == args.COMPUTE:
+    goma_enable_ats = (
+        os and os.category in (os_category.LINUX, os_category.WINDOWS) and
+        goma_backend in (goma.backend.RBE_TOT, goma.backend.RBE_STAGING,
+                         goma.backend.RBE_PROD))
+  if goma_enable_ats:
+    goma_properties['enable_ats'] = True
 
-  goma_jobs = _default('goma_jobs', goma_jobs)
+  goma_jobs = defaults.get_value('goma_jobs', goma_jobs)
   if goma_jobs != None:
     goma_properties['jobs'] = goma_jobs
 
@@ -175,11 +168,12 @@ def _goma_property(*, goma_backend, goma_debug, goma_enable_ats, goma_jobs, os):
 def _code_coverage_property(*, use_clang_coverage, use_java_coverage):
   code_coverage = {}
 
-  use_clang_coverage = _default('use_clang_coverage', use_clang_coverage)
+  use_clang_coverage = defaults.get_value(
+      'use_clang_coverage', use_clang_coverage)
   if use_clang_coverage:
     code_coverage['use_clang_coverage'] = True
 
-  use_java_coverage = _default('use_java_coverage', use_java_coverage)
+  use_java_coverage = defaults.get_value('use_java_coverage', use_java_coverage)
   if use_java_coverage:
     code_coverage['use_java_coverage'] = True
 
@@ -191,30 +185,32 @@ def _code_coverage_property(*, use_clang_coverage, use_java_coverage):
 ################################################################################
 
 # The module-level defaults to use with the builder function
-defaults = struct(
+defaults = args.defaults(
+    luci.builder.defaults,
+
     # Our custom arguments
-    auto_builder_dimension = lucicfg.var(default = _COMPUTE),
-    builderless = lucicfg.var(default = _COMPUTE),
-    bucketed_triggers = lucicfg.var(default = False),
-    configure_kitchen = lucicfg.var(default = False),
-    cores = lucicfg.var(),
-    cpu = lucicfg.var(),
-    goma_backend = lucicfg.var(),
-    goma_debug = lucicfg.var(default = False),
-    goma_enable_ats = lucicfg.var(),
-    goma_jobs = lucicfg.var(),
-    mastername = lucicfg.var(),
-    os = lucicfg.var(),
-    pool = lucicfg.var(),
-    ssd = lucicfg.var(default = _COMPUTE),
-    use_clang_coverage = lucicfg.var(default = False),
-    use_java_coverage = lucicfg.var(default = False),
-    should_exonerate_flaky_failures = lucicfg.var(default = False),
+    auto_builder_dimension = args.COMPUTE,
+    builderless = args.COMPUTE,
+    bucketed_triggers = False,
+    configure_kitchen = False,
+    cores = None,
+    cpu = None,
+    goma_backend = None,
+    goma_debug = False,
+    goma_enable_ats = args.COMPUTE,
+    goma_jobs = None,
+    mastername = None,
+    os = None,
+    pool = None,
+    ssd = args.COMPUTE,
+    use_clang_coverage = False,
+    use_java_coverage = False,
+    should_exonerate_flaky_failures = False,
 
     # Provide vars for bucket and executable so users don't have to
     # unnecessarily make wrapper functions
-    bucket = lucicfg.var(default = _COMPUTE),
-    executable = lucicfg.var(default = _COMPUTE),
+    bucket = args.COMPUTE,
+    executable = args.COMPUTE,
 
     # Forward on luci.builder.defaults so users have a consistent interface
     **{a: getattr(luci.builder.defaults, a) for a in dir(luci.builder.defaults)}
@@ -223,25 +219,25 @@ defaults = struct(
 def builder(
     *,
     name,
-    bucket=_DEFAULT,
-    executable=_DEFAULT,
-    os=_DEFAULT,
-    builderless=_DEFAULT,
-    auto_builder_dimension=_DEFAULT,
-    cores=_DEFAULT,
-    cpu=_DEFAULT,
-    mastername=_DEFAULT,
-    pool=_DEFAULT,
-    ssd=_DEFAULT,
-    bucketed_triggers=_DEFAULT,
-    configure_kitchen=_DEFAULT,
-    goma_backend=_DEFAULT,
-    goma_debug=_DEFAULT,
-    goma_enable_ats=_DEFAULT,
-    goma_jobs=_DEFAULT,
-    use_clang_coverage=_DEFAULT,
-    use_java_coverage=_DEFAULT,
-    should_exonerate_flaky_failures=_DEFAULT,
+    bucket=args.DEFAULT,
+    executable=args.DEFAULT,
+    os=args.DEFAULT,
+    builderless=args.DEFAULT,
+    auto_builder_dimension=args.DEFAULT,
+    cores=args.DEFAULT,
+    cpu=args.DEFAULT,
+    mastername=args.DEFAULT,
+    pool=args.DEFAULT,
+    ssd=args.DEFAULT,
+    bucketed_triggers=args.DEFAULT,
+    configure_kitchen=args.DEFAULT,
+    goma_backend=args.DEFAULT,
+    goma_debug=args.DEFAULT,
+    goma_enable_ats=args.DEFAULT,
+    goma_jobs=args.DEFAULT,
+    use_clang_coverage=args.DEFAULT,
+    use_java_coverage=args.DEFAULT,
+    should_exonerate_flaky_failures=args.DEFAULT,
     **kwargs):
   """Define a builder.
 
@@ -339,45 +335,46 @@ def builder(
          + 'use use_clang_coverage and use_java_coverage instead')
   properties = dict(properties)
 
-  os = _default('os', os)
+  os = defaults.get_value('os', os)
   if os:
     dimensions['os'] = os.dimension
 
-  builderless = _default('builderless', builderless)
-  if builderless == _COMPUTE:
+  builderless = defaults.get_value('builderless', builderless)
+  if builderless == args.COMPUTE:
     builderless = os != None and os.category in _DEFAULT_BUILDERLESS_OS_CATEGORIES
   if builderless:
     dimensions['builderless'] = '1'
 
-  auto_builder_dimension = _default('auto_builder_dimension', auto_builder_dimension)
-  if auto_builder_dimension == _COMPUTE:
+  auto_builder_dimension = defaults.get_value(
+      'auto_builder_dimension', auto_builder_dimension)
+  if auto_builder_dimension == args.COMPUTE:
     auto_builder_dimension = builderless == False
   if auto_builder_dimension:
     dimensions['builder'] = name
 
-  cores = _default('cores', cores)
+  cores = defaults.get_value('cores', cores)
   if cores != None:
     dimensions['cores'] = str(cores)
 
-  cpu = _default('cpu', cpu)
+  cpu = defaults.get_value('cpu', cpu)
   if cpu != None:
     dimensions['cpu'] = cpu
 
-  mastername = _default('mastername', mastername)
+  mastername = defaults.get_value('mastername', mastername)
   if mastername != None:
     properties['mastername'] = mastername
 
-  pool = _default('pool', pool)
+  pool = defaults.get_value('pool', pool)
   if pool:
     dimensions['pool'] = pool
 
-  ssd = _default('ssd', ssd)
-  if ssd == _COMPUTE:
+  ssd = defaults.get_value('ssd', ssd)
+  if ssd == args.COMPUTE:
     ssd = False if builderless else None
   if ssd != None:
     dimensions['ssd'] = str(int(ssd))
 
-  configure_kitchen = _default('configure_kitchen', configure_kitchen)
+  configure_kitchen = defaults.get_value('configure_kitchen', configure_kitchen)
   if configure_kitchen:
     properties['$kitchen'] = {
         'devshell': True,
@@ -407,19 +404,19 @@ def builder(
   if code_coverage != None:
     properties['$build/code_coverage'] = code_coverage
 
-  should_exonerate_flaky_failures = _default('should_exonerate_flaky_failures',
-                                             should_exonerate_flaky_failures)
+  should_exonerate_flaky_failures = defaults.get_value(
+      'should_exonerate_flaky_failures', should_exonerate_flaky_failures)
   if should_exonerate_flaky_failures:
     properties['$build/test_utils'] = {
       'should_exonerate_flaky_failures': True,
     }
 
   kwargs = dict(kwargs)
-  bucket = _default('bucket', bucket)
-  if bucket != _COMPUTE:
+  bucket = defaults.get_value('bucket', bucket)
+  if bucket != args.COMPUTE:
     kwargs['bucket'] = bucket
-  executable = _default('executable', executable)
-  if executable != _COMPUTE:
+  executable = defaults.get_value('executable', executable)
+  if executable != args.COMPUTE:
     kwargs['executable'] = executable
 
   return luci.builder(
@@ -428,3 +425,12 @@ def builder(
       properties = properties,
       **kwargs
   )
+
+
+builders = struct(
+    builder = builder,
+    cpu = cpu,
+    defaults = defaults,
+    goma = goma,
+    os = os,
+)

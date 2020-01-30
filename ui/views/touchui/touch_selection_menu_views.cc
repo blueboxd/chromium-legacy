@@ -41,6 +41,7 @@ TouchSelectionMenuViews::TouchSelectionMenuViews(
   DCHECK(owner_);
   DCHECK(client_);
 
+  DialogDelegate::set_buttons(ui::DIALOG_BUTTON_NONE);
   set_shadow(BubbleBorder::SMALL_SHADOW);
   set_parent_window(context);
   constexpr gfx::Insets kMenuMargins = gfx::Insets(1);
@@ -165,10 +166,6 @@ void TouchSelectionMenuViews::WindowClosing() {
   BubbleDialogDelegateView::WindowClosing();
   if (owner_)
     DisconnectOwner();
-}
-
-int TouchSelectionMenuViews::GetDialogButtons() const {
-  return ui::DIALOG_BUTTON_NONE;
 }
 
 void TouchSelectionMenuViews::ButtonPressed(Button* sender,

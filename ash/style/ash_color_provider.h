@@ -93,6 +93,10 @@ class ASH_EXPORT AshColorProvider {
     // FeaturePodIconButton
     kIconSystemMenu,
     kIconSystemMenuToggled,
+
+    // Color for sliders (volume, brightness etc.)
+    kSliderThumbEnabled,
+    kSliderThumbDisabled,
   };
 
   // Attributes of ripple, includes the base color, opacity of inkdrop and

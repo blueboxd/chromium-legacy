@@ -17,6 +17,7 @@ class CanvasContextCreationAttributesCore;
 class EXTColorBufferFloat;
 class EXTFloatBlend;
 class EXTTextureFilterAnisotropic;
+class EXTTextureNorm16;
 class OESTextureFloatLinear;
 class OVRMultiview2;
 class WebGLDebugRendererInfo;
@@ -70,6 +71,7 @@ class WebGL2RenderingContext : public WebGL2RenderingContextBase {
   Member<EXTDisjointTimerQueryWebGL2> ext_disjoint_timer_query_web_gl2_;
   Member<EXTFloatBlend> ext_float_blend_;
   Member<EXTTextureFilterAnisotropic> ext_texture_filter_anisotropic_;
+  Member<EXTTextureNorm16> ext_texture_norm16_;
   Member<KHRParallelShaderCompile> khr_parallel_shader_compile_;
   Member<OESTextureFloatLinear> oes_texture_float_linear_;
   Member<OVRMultiview2> ovr_multiview2_;

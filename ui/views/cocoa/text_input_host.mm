@@ -44,8 +44,9 @@ gfx::Rect GetFirstRectForRangeHelper(const ui::TextInputClient* client,
   gfx::Range composition_range;
   if (!client->HasCompositionText() ||
       !client->GetCompositionTextRange(&composition_range) ||
-      !composition_range.Contains(requested_range))
+      !requested_range.IsBoundedBy(composition_range)) {
     return default_rect;
+  }
 
   DCHECK(!composition_range.is_reversed());
 

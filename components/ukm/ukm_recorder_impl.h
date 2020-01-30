@@ -135,6 +135,7 @@ class UkmRecorderImpl : public UkmRecorder {
   friend ::ukm::UkmUtilsForTest;
   FRIEND_TEST_ALL_PREFIXES(UkmRecorderImplTest, IsSampledIn);
   FRIEND_TEST_ALL_PREFIXES(UkmRecorderImplTest, PurgeExtensionRecordings);
+  FRIEND_TEST_ALL_PREFIXES(UkmRecorderImplTest, WebApkSourceUrl);
 
   struct MetricAggregate {
     uint64_t total_count = 0;

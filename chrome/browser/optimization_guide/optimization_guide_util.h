@@ -7,6 +7,8 @@
 
 #include <string>
 
+#include "components/optimization_guide/optimization_guide_decider.h"
+#include "components/optimization_guide/optimization_guide_enums.h"
 #include "components/optimization_guide/proto/models.pb.h"
 
 // Returns the string than can be used to record histograms for the optimization
@@ -19,5 +21,10 @@ std::string GetStringNameForOptimizationTarget(
 // Returns false if the host is an IP address, localhosts, or an invalid
 // host that is not supported by the remote optimization guide.
 bool IsHostValidToFetchFromRemoteOptimizationGuide(const std::string& host);
+
+// Returns the OptimizationGuideDecision from |optimization_type_decision|.
+optimization_guide::OptimizationGuideDecision
+GetOptimizationGuideDecisionFromOptimizationTypeDecision(
+    optimization_guide::OptimizationTypeDecision optimization_type_decision);
 
 #endif  // CHROME_BROWSER_OPTIMIZATION_GUIDE_OPTIMIZATION_GUIDE_UTIL_H_

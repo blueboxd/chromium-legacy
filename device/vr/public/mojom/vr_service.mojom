@@ -578,7 +578,8 @@ enum RequestSessionError {
   INVALID_CLIENT = 3,
   USER_DENIED_CONSENT = 4,
   NO_RUNTIME_FOUND = 5,
-  UNKNOWN_RUNTIME_ERROR = 6
+  UNKNOWN_RUNTIME_ERROR = 6,
+  RUNTIME_INSTALL_FAILURE = 7,
 };
 
 struct RequestSessionSuccess {

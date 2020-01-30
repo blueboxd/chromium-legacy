@@ -255,6 +255,151 @@ TEST(RangeTest, RangeFConverterTest) {
   EXPECT_EQ(0U, range.end());
 }
 
+TEST(RangeTest, RangeOperations) {
+  constexpr gfx::Range invalid_range = gfx::Range::InvalidRange();
+  constexpr gfx::Range ranges[] = {{0, 0}, {0, 1}, {0, 2}, {1, 0}, {1, 1},
+                                   {1, 2}, {2, 0}, {2, 1}, {2, 2}};
+
+  // Ensures valid behavior over same range.
+  for (const auto& range : ranges) {
+    SCOPED_TRACE(range.ToString());
+    // A range should contain itself.
+    EXPECT_TRUE(range.Contains(range));
+    // A ranges should intersect with itself.
+    EXPECT_TRUE(range.Intersects(range));
+  }
+
+  // Ensures valid behavior with an invalid range.
+  for (const auto& range : ranges) {
+    SCOPED_TRACE(range.ToString());
+    EXPECT_FALSE(invalid_range.Contains(range));
+    EXPECT_FALSE(invalid_range.Intersects(range));
+    EXPECT_FALSE(range.Contains(invalid_range));
+    EXPECT_FALSE(range.Intersects(invalid_range));
+  }
+  EXPECT_FALSE(invalid_range.Contains(invalid_range));
+  EXPECT_FALSE(invalid_range.Intersects(invalid_range));
+
+  // Ensures consistent operations between Contains(...) and Intersects(...).
+  for (const auto& range1 : ranges) {
+    for (const auto& range2 : ranges) {
+      SCOPED_TRACE(testing::Message()
+                   << "range1=" << range1 << " range2=" << range2);
+      if (range1.Contains(range2)) {
+        EXPECT_TRUE(range1.Intersects(range2));
+        EXPECT_EQ(range2.Contains(range1),
+                  range1.EqualsIgnoringDirection(range2));
+      }
+      EXPECT_EQ(range2.Intersects(range1), range1.Intersects(range2));
+
+      EXPECT_EQ(range1.Intersect(range2) != invalid_range,
+                range1.Intersects(range2));
+    }
+  }
+
+  // Ranges should behave the same way no matter the direction.
+  for (const auto& range1 : ranges) {
+    for (const auto& range2 : ranges) {
+      SCOPED_TRACE(testing::Message()
+                   << "range1=" << range1 << " range2=" << range2);
+      EXPECT_EQ(range1.Contains(range2),
+                range1.Contains(gfx::Range(range2.GetMax(), range2.GetMin())));
+      EXPECT_EQ(
+          range1.Intersects(range2),
+          range1.Intersects(gfx::Range(range2.GetMax(), range2.GetMin())));
+    }
+  }
+}
+
+TEST(RangeTest, ContainsAndIntersects) {
+  constexpr gfx::Range r1(0, 0);
+  constexpr gfx::Range r2(0, 1);
+  constexpr gfx::Range r3(1, 2);
+  constexpr gfx::Range r4(1, 0);
+  constexpr gfx::Range r5(2, 1);
+  constexpr gfx::Range r6(0, 2);
+  constexpr gfx::Range r7(2, 0);
+  constexpr gfx::Range r8(1, 1);
+
+  // Ensures Contains(...) handle the open range.
+  EXPECT_TRUE(r2.Contains(r1));
+  EXPECT_TRUE(r4.Contains(r1));
+  EXPECT_TRUE(r3.Contains(r5));
+  EXPECT_TRUE(r5.Contains(r3));
+
+  // Ensures larger ranges contains smaller ranges.
+  EXPECT_TRUE(r6.Contains(r1));
+  EXPECT_TRUE(r6.Contains(r2));
+  EXPECT_TRUE(r6.Contains(r3));
+  EXPECT_TRUE(r6.Contains(r4));
+  EXPECT_TRUE(r6.Contains(r5));
+
+  EXPECT_TRUE(r7.Contains(r1));
+  EXPECT_TRUE(r7.Contains(r2));
+  EXPECT_TRUE(r7.Contains(r3));
+  EXPECT_TRUE(r7.Contains(r4));
+  EXPECT_TRUE(r7.Contains(r5));
+
+  // Ensures Intersects(...) handle the open range.
+  EXPECT_TRUE(r2.Intersects(r1));
+  EXPECT_TRUE(r4.Intersects(r1));
+
+  // Ensures larger ranges intersects smaller ranges.
+  EXPECT_TRUE(r6.Intersects(r1));
+  EXPECT_TRUE(r6.Intersects(r2));
+  EXPECT_TRUE(r6.Intersects(r3));
+  EXPECT_TRUE(r6.Intersects(r4));
+  EXPECT_TRUE(r6.Intersects(r5));
+
+  EXPECT_TRUE(r7.Intersects(r1));
+  EXPECT_TRUE(r7.Intersects(r2));
+  EXPECT_TRUE(r7.Intersects(r3));
+  EXPECT_TRUE(r7.Intersects(r4));
+  EXPECT_TRUE(r7.Intersects(r5));
+
+  // Ensures adjacent ranges don't overlap.
+  EXPECT_FALSE(r2.Intersects(r3));
+  EXPECT_FALSE(r5.Intersects(r4));
+
+  // Ensures empty ranges are handled correctly.
+  EXPECT_FALSE(r1.Contains(r8));
+  EXPECT_FALSE(r2.Contains(r8));
+  EXPECT_TRUE(r3.Contains(r8));
+  EXPECT_TRUE(r8.Contains(r8));
+
+  EXPECT_FALSE(r1.Intersects(r8));
+  EXPECT_FALSE(r2.Intersects(r8));
+  EXPECT_TRUE(r3.Intersects(r8));
+  EXPECT_TRUE(r8.Intersects(r8));
+}
+
+TEST(RangeTest, Intersect) {
+  EXPECT_EQ(gfx::Range(0, 1).Intersect({0, 1}), gfx::Range(0, 1));
+  EXPECT_EQ(gfx::Range(0, 1).Intersect({0, 0}), gfx::Range(0, 0));
+  EXPECT_EQ(gfx::Range(0, 0).Intersect({1, 0}), gfx::Range(0, 0));
+  EXPECT_EQ(gfx::Range(0, 4).Intersect({2, 3}), gfx::Range(2, 3));
+  EXPECT_EQ(gfx::Range(0, 4).Intersect({2, 7}), gfx::Range(2, 4));
+  EXPECT_EQ(gfx::Range(0, 4).Intersect({3, 4}), gfx::Range(3, 4));
+
+  EXPECT_EQ(gfx::Range(0, 1).Intersect({1, 1}), gfx::Range::InvalidRange());
+  EXPECT_EQ(gfx::Range(1, 1).Intersect({1, 0}), gfx::Range::InvalidRange());
+  EXPECT_EQ(gfx::Range(0, 1).Intersect({1, 2}), gfx::Range::InvalidRange());
+  EXPECT_EQ(gfx::Range(0, 1).Intersect({2, 1}), gfx::Range::InvalidRange());
+  EXPECT_EQ(gfx::Range(2, 1).Intersect({1, 0}), gfx::Range::InvalidRange());
+}
+
+TEST(RangeTest, IsBoundedBy) {
+  constexpr gfx::Range r1(0, 0);
+  constexpr gfx::Range r2(0, 1);
+  EXPECT_TRUE(r1.IsBoundedBy(r1));
+  EXPECT_FALSE(r2.IsBoundedBy(r1));
+
+  constexpr gfx::Range r3(0, 2);
+  constexpr gfx::Range r4(2, 2);
+  EXPECT_TRUE(r4.IsBoundedBy(r3));
+  EXPECT_FALSE(r3.IsBoundedBy(r4));
+}
+
 TEST(RangeTest, ToString) {
   gfx::Range range(4, 7);
   EXPECT_EQ("{4,7}", range.ToString());

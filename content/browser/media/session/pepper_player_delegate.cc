@@ -79,6 +79,11 @@ base::Optional<media_session::MediaPosition> PepperPlayerDelegate::GetPosition(
   return base::nullopt;
 }
 
+bool PepperPlayerDelegate::IsPictureInPictureAvailable(int player_id) const {
+  DCHECK_EQ(player_id, kPlayerId);
+  return false;
+}
+
 RenderFrameHost* PepperPlayerDelegate::render_frame_host() const {
   return render_frame_host_;
 }

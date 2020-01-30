@@ -11,6 +11,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "cc/base/switches.h"
+#include "components/captive_portal/core/buildflags.h"
 #include "components/startup_metric_utils/browser/startup_metric_utils.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/devtools_agent_host.h"
@@ -43,9 +44,22 @@
 #include "ui/base/ime/init/input_method_initializer.h"
 #endif
 
+#if BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION)
+#include "weblayer/browser/captive_portal_service_factory.h"
+#endif
+
 namespace weblayer {
 
 namespace {
+
+// Instantiates all weblayer KeyedService factories, which is
+// especially important for services that should be created at profile
+// creation time as compared to lazily on first access.
+static void EnsureBrowserContextKeyedServiceFactoriesBuilt() {
+#if BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION)
+  CaptivePortalServiceFactory::GetInstance();
+#endif
+}
 
 void StopMessageLoop(base::OnceClosure quit_closure) {
   for (auto it = content::RenderProcessHost::AllHostsIterator(); !it.IsAtEnd();
@@ -102,8 +116,21 @@ int BrowserMainPartsImpl::PreEarlyInitialization() {
   return service_manager::RESULT_CODE_NORMAL_EXIT;
 }
 
+void BrowserMainPartsImpl::PostEarlyInitialization() {
+#if defined(OS_ANDROID)
+  CreateLocalState();
+#endif
+}
+
 void BrowserMainPartsImpl::PreMainMessageLoopRun() {
   ui::MaterialDesignController::Initialize();
+  // It's necessary to have a complete dependency graph of
+  // BrowserContextKeyedServices before calling out to the delegate (which
+  // will potentially create a profile), so that a profile creation message is
+  // properly dispatched to the factories that want to create their services
+  // at profile creation time.
+  EnsureBrowserContextKeyedServiceFactoriesBuilt();
+
   params_->delegate->PreMainMessageLoopRun();
 
   content::WebUIControllerFactory::RegisterFactory(
@@ -119,11 +146,16 @@ void BrowserMainPartsImpl::PreMainMessageLoopRun() {
   // Record collected startup metrics.
   startup_metric_utils::RecordBrowserMainMessageLoopStart(
       base::TimeTicks::Now(), /* is_first_run */ false);
+  memory_metrics_logger_ = std::make_unique<metrics::MemoryMetricsLogger>();
 #endif
 }
 
 bool BrowserMainPartsImpl::MainMessageLoopRun(int* result_code) {
   return !run_message_loop_;
+}
+
+void BrowserMainPartsImpl::PostMainMessageLoopRun() {
+  params_->delegate->PostMainMessageLoopRun();
 }
 
 void BrowserMainPartsImpl::PreDefaultMainMessageLoopRun(
@@ -132,6 +164,14 @@ void BrowserMainPartsImpl::PreDefaultMainMessageLoopRun(
   // cleanup inside content.
   params_->delegate->SetMainMessageLoopQuitClosure(
       base::BindOnce(StopMessageLoop, std::move(quit_closure)));
+}
+
+void BrowserMainPartsImpl::CreateLocalState() {
+  DCHECK(!local_state_);
+  feature_list_creator_ = std::make_unique<FeatureListCreator>();
+  feature_list_creator_->CreateLocalState();
+  local_state_ = feature_list_creator_->TakePrefService();
+  CHECK(local_state_);
 }
 
 }  // namespace weblayer

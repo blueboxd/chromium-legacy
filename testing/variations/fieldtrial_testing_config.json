@@ -1520,7 +1520,7 @@
                 {
                     "name": "Enabled",
                     "params": {
-                        "start_surface_variation": "tasksonly",
+                        "start_surface_variation": "single",
                         "tab_switcher_on_return_time_ms": "3600000"
                     },
                     "enable_features": [
@@ -3016,8 +3016,8 @@
             ],
             "experiments": [
                 {
-                    "name": "Enabled",
-                    "enable_features": [
+                    "name": "Disabled",
+                    "disable_features": [
                         "UseWKWebViewLoading"
                     ]
                 }
@@ -6030,27 +6030,6 @@
             ]
         }
     ],
-    "SecurityInterstitialsDarkMode": [
-        {
-            "platforms": [
-                "android",
-                "android_webview",
-                "chromeos",
-                "ios",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "SecurityInterstitialsDarkMode"
-                    ]
-                }
-            ]
-        }
-    ],
     "ServiceGroupImportance": [
         {
             "platforms": [
@@ -7149,26 +7128,6 @@
             ]
         }
     ],
-    "VerifyHTMLFetchedFromAppCacheBeforeDelay": [
-        {
-            "platforms": [
-                "windows",
-                "mac",
-                "chromeos",
-                "linux",
-                "ios",
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "VerifyHTMLFetchedFromAppCacheBeforeDelay"
-                    ]
-                }
-            ]
-        }
-    ],
     "VideoCaptureService": [
         {
             "platforms": [
@@ -7782,6 +7741,24 @@
                     "name": "libvpx_for_vp8",
                     "disable_features": [
                         "FFmpegDecodeOpaqueVP8"
+                    ]
+                }
+            ]
+        }
+    ],
+    "low-priority-ad-processes": [
+        {
+            "platforms": [
+                "chromeos",
+                "ios",
+                "linux",
+                "mac"
+            ],
+            "experiments": [
+                {
+                    "name": "LowPriorityAdProcesses",
+                    "enable_features": [
+                        "UseFramePriorityInRenderProcessHost"
                     ]
                 }
             ]

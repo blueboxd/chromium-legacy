@@ -875,6 +875,18 @@ static const GLenum kSupportedInternalFormatsTexImageES3[] = {
     GL_DEPTH32F_STENCIL8,
 };
 
+// Exposed by EXT_texture_norm16
+static constexpr GLenum kSupportedInternalFormatsEXTTextureNorm16ES3[] = {
+    GL_R16_EXT,         GL_RG16_EXT,        GL_RGB16_EXT,
+    GL_RGBA16_EXT,      GL_R16_SNORM_EXT,   GL_RG16_SNORM_EXT,
+    GL_RGB16_SNORM_EXT, GL_RGBA16_SNORM_EXT};
+
+static constexpr GLenum kSupportedFormatsEXTTextureNorm16ES3[] = {GL_RED,
+                                                                  GL_RG};
+
+static constexpr GLenum kSupportedTypesEXTTextureNorm16ES3[] = {
+    GL_SHORT, GL_UNSIGNED_SHORT};
+
 // Exposed by EXT_color_buffer_float
 static const GLenum kSupportedInternalFormatsCopyTexImageFloatES3[] = {
     GL_R16F,   GL_R32F,    GL_RG16F,   GL_RG32F,         GL_RGB16F,
@@ -1234,6 +1246,7 @@ void WebGLRenderingContextBase::InitializeNewContext() {
   is_web_gl_depth_texture_formats_types_added_ = false;
   is_ext_srgb_formats_types_added_ = false;
   is_ext_color_buffer_float_formats_added_ = false;
+  is_ext_texture_norm16_added_ = false;
 
   supported_internal_formats_.clear();
   ADD_VALUES_TO_SET(supported_internal_formats_, kSupportedFormatsES2);
@@ -7144,6 +7157,19 @@ void WebGLRenderingContextBase::AddExtensionSupportedFormatsTypes() {
   }
 }
 
+void WebGLRenderingContextBase::AddExtensionSupportedFormatsTypesWebGL2() {
+  if (!is_ext_texture_norm16_added_ &&
+      ExtensionEnabled(kEXTTextureNorm16Name)) {
+    ADD_VALUES_TO_SET(supported_internal_formats_,
+                      kSupportedInternalFormatsEXTTextureNorm16ES3);
+    ADD_VALUES_TO_SET(supported_tex_image_source_internal_formats_,
+                      kSupportedInternalFormatsEXTTextureNorm16ES3);
+    ADD_VALUES_TO_SET(supported_formats_, kSupportedFormatsEXTTextureNorm16ES3);
+    ADD_VALUES_TO_SET(supported_types_, kSupportedTypesEXTTextureNorm16ES3);
+    is_ext_texture_norm16_added_ = true;
+  }
+}
+
 bool WebGLRenderingContextBase::ValidateTexImageSourceFormatAndType(
     const char* function_name,
     TexImageFunctionType function_type,
@@ -7162,6 +7188,8 @@ bool WebGLRenderingContextBase::ValidateTexImageSourceFormatAndType(
 
   if (!IsWebGL2OrHigher()) {
     AddExtensionSupportedFormatsTypes();
+  } else {
+    AddExtensionSupportedFormatsTypesWebGL2();
   }
 
   if (internalformat != 0 &&
@@ -7209,6 +7237,8 @@ bool WebGLRenderingContextBase::ValidateTexFuncFormatAndType(
 
   if (!IsWebGL2OrHigher()) {
     AddExtensionSupportedFormatsTypes();
+  } else {
+    AddExtensionSupportedFormatsTypesWebGL2();
   }
 
   if (internalformat != 0 && supported_internal_formats_.find(internalformat) ==

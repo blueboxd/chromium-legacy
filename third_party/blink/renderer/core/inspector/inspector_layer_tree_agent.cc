@@ -373,16 +373,25 @@ Response InspectorLayerTreeAgent::LayerById(const String& layer_id,
 
 Response InspectorLayerTreeAgent::compositingReasons(
     const String& layer_id,
-    std::unique_ptr<Array<String>>* reason_strings) {
+    std::unique_ptr<Array<String>>* compositing_reasons,
+    std::unique_ptr<Array<String>>* compositing_reason_ids) {
   const cc::Layer* layer = nullptr;
   Response response = LayerById(layer_id, layer);
   if (!response.isSuccess())
     return response;
-  *reason_strings = std::make_unique<protocol::Array<String>>();
+  *compositing_reasons = std::make_unique<protocol::Array<String>>();
+  *compositing_reason_ids = std::make_unique<protocol::Array<String>>();
   if (layer->debug_info()) {
-    for (const char* name : layer->debug_info()->compositing_reasons)
-      (*reason_strings)->emplace_back(name);
+    for (const char* compositing_reason :
+         layer->debug_info()->compositing_reasons) {
+      (*compositing_reasons)->emplace_back(compositing_reason);
+    }
+    for (const char* compositing_reason_id :
+         layer->debug_info()->compositing_reason_ids) {
+      (*compositing_reason_ids)->emplace_back(compositing_reason_id);
+    }
   }
+
   return Response::OK();
 }
 

@@ -276,6 +276,10 @@ void CertificateErrorReport::SetInterstitialInfo(
           chrome_browser_ssl::CertLoggerInterstitialInfo::
               INTERSTITIAL_BLOCKED_INTERCEPTION);
       break;
+    case INTERSTITIAL_LEGACY_TLS:
+      interstitial_info->set_interstitial_reason(
+          chrome_browser_ssl::CertLoggerInterstitialInfo::
+              INTERSTITIAL_LEGACY_TLS);
   }
 
   interstitial_info->set_user_proceeded(proceed_decision == USER_PROCEEDED);

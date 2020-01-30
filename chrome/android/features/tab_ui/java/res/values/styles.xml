@@ -11,8 +11,8 @@
     <style name="TextAppearance.BlueTitle2Incognito" parent="TextAppearance.BlueTitle2">
         <item name="android:textColor">@color/modern_blue_300</item>
     </style>
-
-    <style name="TextAppearance.BlackHeadline.Black" parent="TextAppearance.WhiteHeadline">
+    <!-- TODO(crbug.com/775198) replaced with headline.primary.dark -->
+    <style name="TextAppearance.Headline.Primary.Black" parent="TextAppearance.WhiteHeadline">
         <item name="android:textColor">@color/default_text_color_dark</item>
     </style>
 

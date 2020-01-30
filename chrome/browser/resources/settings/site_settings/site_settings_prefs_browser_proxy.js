@@ -539,6 +539,7 @@ cr.define('settings', function() {
   // during testing.
   cr.addSingletonGetter(SiteSettingsPrefsBrowserProxyImpl);
 
+  // #cr_define_end
   return {
     SiteSettingsPrefsBrowserProxy: SiteSettingsPrefsBrowserProxy,
     SiteSettingsPrefsBrowserProxyImpl: SiteSettingsPrefsBrowserProxyImpl,

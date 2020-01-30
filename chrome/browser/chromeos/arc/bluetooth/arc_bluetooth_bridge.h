@@ -400,6 +400,12 @@ class ArcBluetoothBridge
                                 AdapterStateCallback callback);
   void DequeueRemotePowerChange(AdapterPowerState powered);
 
+  // Sends properties of cached devices to Android. The list of cached devices
+  // is got by BluetoothAdapter::GetDevices(), which includes all devices have
+  // been discovered (not necessarily paired or connected) but not yet expired.
+  // This function should be called when Bluetooth service in Android is ready.
+  void SendCachedDevices() const;
+
   std::vector<mojom::BluetoothPropertyPtr> GetDeviceProperties(
       mojom::BluetoothPropertyType type,
       const device::BluetoothDevice* device) const;

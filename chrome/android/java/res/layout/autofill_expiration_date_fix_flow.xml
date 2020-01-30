@@ -20,7 +20,7 @@
         android:id="@+id/cc_details_masked"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textAppearance="@style/TextAppearance.BlackBodyDefault"
+        android:textAppearance="@style/TextAppearance.TextMedium.Primary"
         android:layout_marginBottom="10dp"/>
 
     <LinearLayout

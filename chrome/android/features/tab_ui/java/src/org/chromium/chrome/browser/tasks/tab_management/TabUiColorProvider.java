@@ -66,7 +66,7 @@ public class TabUiColorProvider {
      */
     public static int getTitleTextAppearance(boolean isIncognito) {
         return isIncognito ? R.style.TextAppearance_WhiteTitle2
-                           : R.style.TextAppearance_BlackTitle2;
+                           : R.style.TextAppearance_TextMediumThick_Primary;
     }
 
     /**

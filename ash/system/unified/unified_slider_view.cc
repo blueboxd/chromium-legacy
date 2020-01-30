@@ -42,15 +42,15 @@ SystemSlider::SystemSlider(views::SliderListener* listener)
     : views::Slider(listener) {}
 
 SkColor SystemSlider::GetThumbColor() const {
-  return AshColorProvider::Get()->GetControlsLayerColor(
-      AshColorProvider::ControlsLayerType::kActiveControlBackground,
+  using Type = AshColorProvider::ContentLayerType;
+  return AshColorProvider::Get()->GetContentLayerColor(
+      (style() == RenderingStyle::kMinimalStyle) ? Type::kSliderThumbDisabled
+                                                 : Type::kSliderThumbEnabled,
       AshColorProvider::AshColorMode::kDark);
 }
 
 SkColor SystemSlider::GetTroughColor() const {
-  return AshColorProvider::Get()->GetControlsLayerColor(
-      AshColorProvider::ControlsLayerType::kInactiveControlBackground,
-      AshColorProvider::AshColorMode::kDark);
+  return AshColorProvider::Get()->GetDisabledColor(GetThumbColor());
 }
 
 ReadOnlySlider::ReadOnlySlider() : SystemSlider(nullptr) {}

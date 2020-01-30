@@ -78,7 +78,6 @@
 <translation id="1108600514891325577">&amp;Stopp</translation>
 <translation id="1110155001042129815">Vänta</translation>
 <translation id="1112420131909513020">En flik i bakgrunden använder Bluetooth</translation>
-<translation id="1113042067630273625"><ph name="TOTAL_USAGE" /> av lagrad webbplatsdata rensas.</translation>
 <translation id="1114102982691049955"><ph name="PRINTER_MANUFACTURER" /> <ph name="PRINTER_MODEL" /> (USB)</translation>
 <translation id="1114202307280046356">Diamant</translation>
 <translation id="1114335938027186412">Datorn innehåller säkerhetsenheten TPM (Trusted Platform Module), som används för att implementera flera viktiga säkerhetsfunktioner i Chrome OS. Besök hjälpcentret för Chromebook om du vill läsa mer: https://support.google.com/chromebook/?p=tpm</translation>
@@ -151,7 +150,6 @@
 <translation id="1197979282329025000">Ett fel inträffade när skrivaregenskaper skulle hämtas för skrivaren <ph name="PRINTER_NAME" />. Skrivaren kunde inte registreras med <ph name="CLOUD_PRINT_NAME" />.</translation>
 <translation id="119944043368869598">Ta bort alla</translation>
 <translation id="1201402288615127009">Nästa</translation>
-<translation id="1202556750060561551">All data och alla cookies som har sparats av <ph name="SITE_GROUP_NAME" />, eventuella underordnade webbplatser och tillhörande installerade appar rensas.</translation>
 <translation id="1202596434010270079">Kioskappen har uppdaterats. Ta bort USB-minnet.</translation>
 <translation id="120368089816228251">Musiknot</translation>
 <translation id="1205489148908752564">Läs och ändra tillåtna användare</translation>
@@ -997,7 +995,6 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="2365507699358342471">Den här webbplatsen får tillgång till text och bilder som kopierats till Urklipp.</translation>
 <translation id="2366260648632264559">Visa systemtext på det här språket</translation>
 <translation id="2367972762794486313">Visa appar</translation>
-<translation id="2369105924912929484">Aktivera/inaktivera destillerat sidinnehåll</translation>
 <translation id="2371076942591664043">Öppna när nedladdning är &amp;klar</translation>
 <translation id="2373666622366160481">Anpassa till papperets storlek</translation>
 <translation id="2375406435414127095">Anslut till mobilen</translation>
@@ -1877,6 +1874,7 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="3603177256297531067">Det gick inte att översätta sidan</translation>
 <translation id="3603622770190368340">Skaffa nätverkscertifikat</translation>
 <translation id="3605780360466892872">Proper</translation>
+<translation id="3608436266458100337">Läsläge</translation>
 <translation id="3608576286259426129">Förhandsgranskning av användarens bild</translation>
 <translation id="3610369246614755442">Dockningsstationens fläkt behöver repareras</translation>
 <translation id="361106536627977100">Flash-data</translation>
@@ -2627,7 +2625,6 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="4665014895760275686">Tillverkare</translation>
 <translation id="4665446389743427678">All data som lagrats av <ph name="SITE" /> raderas.</translation>
 <translation id="4668721319092543482">Klicka för att aktivera <ph name="PLUGIN_NAME" /></translation>
-<translation id="4672657274720418656">Skapa Distiller-sida</translation>
 <translation id="46733273239502219">Offlinedata i installerade appar raderas också</translation>
 <translation id="4673442866648850031">Öppna verktyg för e-penna när e-pennan tas bort</translation>
 <translation id="4677585247300749148"><ph name="URL" /> vill svara på tillgänglighetshändelser</translation>
@@ -3337,7 +3334,6 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="5687326903064479980">Tidszon</translation>
 <translation id="5689516760719285838">Plats</translation>
 <translation id="56907980372820799">Koppla data</translation>
-<translation id="5691180005790455277">All data och alla cookies som sparats av <ph name="SITE_GROUP_NAME" /> och eventuella underordnade webbplatser raderas.</translation>
 <translation id="5691511426247308406">Familj</translation>
 <translation id="5692183275898619210">Utskriften har slutförts</translation>
 <translation id="5696143504434933566">Rapportera otillåten användning från <ph name="EXTENSION_NAME" /></translation>

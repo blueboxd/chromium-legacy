@@ -38,6 +38,13 @@ from util import resource_utils
 sys.path.insert(1, os.path.join(build_utils.DIR_SOURCE_ROOT, 'third_party'))
 from jinja2 import Template # pylint: disable=F0401
 
+# Make sure the pb2 files are able to import google.protobuf
+sys.path.insert(
+    1,
+    os.path.join(build_utils.DIR_SOURCE_ROOT, 'third_party', 'protobuf',
+                 'python'))
+from proto import Resources_pb2
+
 _JETIFY_SCRIPT_PATH = os.path.join(build_utils.DIR_SOURCE_ROOT, 'third_party',
                                    'jetifier_standalone', 'bin',
                                    'jetifier-standalone')
@@ -610,6 +617,86 @@ def _CompileDeps(aapt2_path, dep_subdirs, temp_dir):
   return partials
 
 
+def _ProcessProtoItem(item):
+  if not item.HasField('ref'):
+    return
+
+  # If this is a dynamic attribute (type ATTRIBUTE, package ID 0), hardcode
+  # the package to 0x02.
+  if item.ref.type == Resources_pb2.Reference.ATTRIBUTE and not (
+      item.ref.id & 0xff000000):
+    item.ref.id |= 0x02000000
+    item.ref.ClearField('is_dynamic')
+
+
+def _ProcessProtoValue(value):
+  if value.HasField('item'):
+    _ProcessProtoItem(value.item)
+  else:
+    compound_value = value.compound_value
+    if compound_value.HasField('style'):
+      for entry in compound_value.style.entry:
+        _ProcessProtoItem(entry.item)
+    elif compound_value.HasField('array'):
+      for element in compound_value.array.element:
+        _ProcessProtoItem(element.item)
+    elif compound_value.HasField('plural'):
+      for entry in compound_value.plural.entry:
+        _ProcessProtoItem(entry.item)
+
+
+def _ProcessProtoXmlNode(xml_node):
+  if not xml_node.HasField('element'):
+    return
+
+  for attribute in xml_node.element.attribute:
+    _ProcessProtoItem(attribute.compiled_item)
+
+  for child in xml_node.element.child:
+    _ProcessProtoXmlNode(child)
+
+
+def _HardcodeSharedLibraryDynamicAttributes(zip_path):
+  """Hardcodes the package IDs of dynamic attributes to 0x02.
+
+  This is a workaround for b/147674078, which affects Android versions pre-N.
+
+  Args:
+    zip_path: Path to proto APK file.
+  """
+  with build_utils.TempDir() as tmp_dir:
+    build_utils.ExtractAll(zip_path, path=tmp_dir)
+
+    # First process the resources file.
+    table = Resources_pb2.ResourceTable()
+    with open(os.path.join(tmp_dir, 'resources.pb')) as f:
+      table.ParseFromString(f.read())
+
+    for package in table.package:
+      for _type in package.type:
+        for entry in _type.entry:
+          for config_value in entry.config_value:
+            _ProcessProtoValue(config_value.value)
+
+    with open(os.path.join(tmp_dir, 'resources.pb'), 'w') as f:
+      f.write(table.SerializeToString())
+
+    # Next process all the XML files.
+    xml_files = build_utils.FindInDirectory(tmp_dir, '*.xml')
+    for xml_file in xml_files:
+      xml_node = Resources_pb2.XmlNode()
+      with open(xml_file) as f:
+        xml_node.ParseFromString(f.read())
+
+      _ProcessProtoXmlNode(xml_node)
+
+      with open(xml_file, 'w') as f:
+        f.write(xml_node.SerializeToString())
+
+    # Overwrite the original zip file.
+    build_utils.ZipDir(zip_path, tmp_dir)
+
+
 def _CreateResourceInfoFile(path_info, info_path, dependencies_res_zips):
   for zip_file in dependencies_res_zips:
     zip_info_file_path = zip_file + '.info'
@@ -697,7 +784,8 @@ def _PackageApk(options, build):
                                            build.deps_dir)
   logging.debug('Applying locale transformations')
   path_info = resource_utils.ResourceInfoFile()
-  _DuplicateZhResources(dep_subdirs, path_info)
+  if options.support_zh_hk:
+    _DuplicateZhResources(dep_subdirs, path_info)
   _RenameLocaleResourceDirs(dep_subdirs, path_info)
 
   _RemoveUnwantedLocalizedStrings(dep_subdirs, options)
@@ -831,6 +919,16 @@ def _PackageApk(options, build):
       options.aapt2_path, 'convert', '--output-format', 'proto', '-o',
       build.proto_path, build.arsc_path
   ])
+
+  # Workaround for b/147674078. This is only needed for WebLayer and does not
+  # affect WebView usage, since WebView does not used dynamic attributes.
+  if options.shared_resources:
+    logging.debug('Hardcoding dynamic attributes')
+    _HardcodeSharedLibraryDynamicAttributes(build.proto_path)
+    build_utils.CheckOutput([
+        options.aapt2_path, 'convert', '--output-format', 'binary', '-o',
+        build.arsc_path, build.proto_path
+    ])
 
   if build.arsc_path is None:
     os.remove(arsc_path)

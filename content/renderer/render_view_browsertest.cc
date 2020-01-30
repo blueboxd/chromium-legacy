@@ -844,7 +844,7 @@ TEST_F(RenderViewImplTest, BeginNavigation) {
   request.SetRequestContext(blink::mojom::RequestContextType::INTERNAL);
   request.SetRequestorOrigin(requestor_origin);
   auto navigation_info = std::make_unique<blink::WebNavigationInfo>();
-  navigation_info->url_request = request;
+  navigation_info->url_request = std::move(request);
   navigation_info->frame_type =
       blink::mojom::RequestContextFrameType::kTopLevel;
   navigation_info->navigation_type = blink::kWebNavigationTypeLinkClicked;
@@ -990,7 +990,7 @@ TEST_F(RenderViewImplTest, BeginNavigationForWebUI) {
       blink::AllocateSessionStorageNamespaceId());
   RenderViewImpl* new_view = RenderViewImpl::FromWebView(new_web_view);
   auto popup_navigation_info = std::make_unique<blink::WebNavigationInfo>();
-  popup_navigation_info->url_request = popup_request;
+  popup_navigation_info->url_request = std::move(popup_request);
   popup_navigation_info->frame_type =
       blink::mojom::RequestContextFrameType::kAuxiliary;
   popup_navigation_info->navigation_type = blink::kWebNavigationTypeLinkClicked;

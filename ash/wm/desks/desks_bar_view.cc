@@ -10,7 +10,6 @@
 
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shell.h"
-#include "ash/strings/grit/ash_strings.h"
 #include "ash/style/ash_color_provider.h"
 #include "ash/wm/desks/desk_mini_view.h"
 #include "ash/wm/desks/desk_mini_view_animations.h"
@@ -22,7 +21,6 @@
 #include "base/stl_util.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/aura/window.h"
-#include "ui/base/l10n/l10n_util.h"
 #include "ui/events/event_observer.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/geometry/insets.h"
@@ -45,17 +43,6 @@ constexpr int kIconAndTextVerticalPadding = 8;
 
 // Spacing between mini views.
 constexpr int kMiniViewsSpacing = 12;
-
-base::string16 GetMiniViewTitle(int mini_view_index) {
-  DCHECK_GE(mini_view_index, 0);
-  DCHECK_LT(mini_view_index, 4);
-  constexpr int kStringIds[] = {IDS_ASH_DESKS_DESK_1_MINI_VIEW_TITLE,
-                                IDS_ASH_DESKS_DESK_2_MINI_VIEW_TITLE,
-                                IDS_ASH_DESKS_DESK_3_MINI_VIEW_TITLE,
-                                IDS_ASH_DESKS_DESK_4_MINI_VIEW_TITLE};
-
-  return l10n_util::GetStringUTF16(kStringIds[mini_view_index]);
-}
 
 gfx::Rect GetGestureEventScreenRect(const ui::Event& event) {
   DCHECK(event.IsGestureEvent());
@@ -308,8 +295,6 @@ void DesksBarView::OnDeskRemoved(const Desk* desk) {
 
   UpdateMinimumWidthToFitContents();
   overview_grid_->OnDesksChanged();
-
-  UpdateMiniViewsLabels();
   new_desk_button_->UpdateButtonState();
 
   std::vector<DeskMiniView*> mini_views_before;
@@ -368,8 +353,8 @@ void DesksBarView::UpdateNewMiniViews(bool animate) {
   DCHECK(root_window);
   for (const auto& desk : desks) {
     if (!FindMiniViewForDesk(desk.get())) {
-      mini_views_.emplace_back(std::make_unique<DeskMiniView>(
-          this, root_window, desk.get(), GetMiniViewTitle(mini_views_.size())));
+      mini_views_.push_back(
+          std::make_unique<DeskMiniView>(this, root_window, desk.get()));
       DeskMiniView* mini_view = mini_views_.back().get();
       mini_view->set_owned_by_client();
       new_mini_views.emplace_back(mini_view);
@@ -395,13 +380,6 @@ DeskMiniView* DesksBarView::FindMiniViewForDesk(const Desk* desk) const {
   }
 
   return nullptr;
-}
-
-void DesksBarView::UpdateMiniViewsLabels() {
-  // TODO(afakhry): Don't do this for user-modified desk labels.
-  size_t i = 0;
-  for (auto& mini_view : mini_views_)
-    mini_view->SetTitle(GetMiniViewTitle(i++));
 }
 
 int DesksBarView::GetFirstMiniViewXOffset() const {

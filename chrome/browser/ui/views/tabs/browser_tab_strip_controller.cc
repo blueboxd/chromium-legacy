@@ -458,6 +458,11 @@ base::string16 BrowserTabStripController::GetGroupTitle(
   return model_->group_model()->GetTabGroup(group)->visual_data()->title();
 }
 
+base::string16 BrowserTabStripController::GetGroupContentString(
+    const tab_groups::TabGroupId& group) const {
+  return model_->group_model()->GetTabGroup(group)->GetContentString();
+}
+
 tab_groups::TabGroupColorId BrowserTabStripController::GetGroupColorId(
     const tab_groups::TabGroupId& group) const {
   return model_->group_model()->GetTabGroup(group)->visual_data()->color();

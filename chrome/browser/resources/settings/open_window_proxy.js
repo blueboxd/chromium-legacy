@@ -27,5 +27,6 @@ cr.define('settings', function() {
 
   cr.addSingletonGetter(OpenWindowProxyImpl);
 
+  // #cr_define_end
   return {OpenWindowProxy, OpenWindowProxyImpl};
 });

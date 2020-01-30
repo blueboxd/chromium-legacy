@@ -7,11 +7,13 @@
 #include <utility>
 
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/signin/reauth_result.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/signin_view_controller_delegate.h"
 #include "components/signin/public/base/signin_buildflags.h"
 #include "content/public/browser/web_contents.h"
+#include "google_apis/gaia/core_account_id.h"
 
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
 #include "chrome/browser/search/search.h"
@@ -153,6 +155,14 @@ void SigninViewController::ShowModalSigninErrorDialog(Browser* browser) {
   delegate_ =
       SigninViewControllerDelegate::CreateSigninErrorDelegate(this, browser);
   chrome::RecordDialogCreation(chrome::DialogIdentifier::SIGN_IN_ERROR);
+}
+
+void SigninViewController::ShowReauthPrompt(
+    Browser* browser,
+    const CoreAccountId& account_id,
+    base::OnceCallback<void(signin::ReauthResult)> reauth_callback) {
+  // TODO(crbug.com/1045515): implement this.
+  std::move(reauth_callback).Run(signin::ReauthResult::kSuccess);
 }
 
 bool SigninViewController::ShowsModalDialog() {

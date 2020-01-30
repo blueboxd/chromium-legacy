@@ -55,6 +55,8 @@ class LocalizedError {
       bool is_incognito,
       bool offline_content_feature_enabled,
       bool auto_fetch_feature_enabled,
+      bool is_kiosk_mode,  // whether device is currently in single app (kiosk)
+                           // mode
       const std::string& locale,
       std::unique_ptr<error_page::ErrorPageParams> params);
 

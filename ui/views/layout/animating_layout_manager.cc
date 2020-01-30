@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/auto_reset.h"
+#include "base/stl_util.h"
 #include "ui/gfx/animation/animation_container.h"
 #include "ui/gfx/animation/slide_animation.h"
 #include "ui/views/animation/animation_delegate_views.h"
@@ -394,11 +395,16 @@ std::vector<View*> AnimatingLayoutManager::GetChildViewsInPaintOrder(
 
 bool AnimatingLayoutManager::OnViewRemoved(View* host, View* view) {
   // Remove any fade infos corresponding to the removed view.
-  fade_infos_.erase(std::remove_if(fade_infos_.begin(), fade_infos_.end(),
-                                   [view](const LayoutFadeInfo& fade_info) {
-                                     return fade_info.child_view == view;
-                                   }),
-                    fade_infos_.end());
+  base::EraseIf(fade_infos_, [view](const LayoutFadeInfo& fade_info) {
+    return fade_info.child_view == view;
+  });
+
+  // Remove any elements in the current layout corresponding to the removed
+  // view.
+  base::EraseIf(current_layout_.child_layouts,
+                [view](const ChildLayout& child_layout) {
+                  return child_layout.child_view == view;
+                });
 
   return LayoutManagerBase::OnViewRemoved(host, view);
 }

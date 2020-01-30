@@ -31,9 +31,9 @@ namespace {
 syncer::ModelTypeSet AllowedTypesInStandaloneTransportMode() {
   // Only some special whitelisted types (and control types) are allowed in
   // standalone transport mode.
-  syncer::ModelTypeSet allowed_types(syncer::USER_CONSENTS,
-                                     syncer::SECURITY_EVENTS,
-                                     syncer::AUTOFILL_WALLET_DATA);
+  syncer::ModelTypeSet allowed_types(
+      syncer::USER_CONSENTS, syncer::SECURITY_EVENTS,
+      syncer::AUTOFILL_WALLET_DATA, syncer::SHARING_MESSAGE);
   allowed_types.PutAll(syncer::ControlTypes());
   if (base::FeatureList::IsEnabled(switches::kSyncDeviceInfoInTransportMode)) {
     allowed_types.Put(syncer::DEVICE_INFO);
@@ -298,9 +298,8 @@ IN_PROC_BROWSER_TEST_F(SingleClientStandaloneTransportSyncTest,
 class SingleClientStandaloneTransportOsSyncTest : public OsSyncTest {
  public:
   SingleClientStandaloneTransportOsSyncTest() : OsSyncTest(SINGLE_CLIENT) {
-    // Don't auto-start browser sync. Enable in-development types.
-    scoped_features_.InitWithFeatures({switches::kSyncManualStartChromeOS,
-                                       features::kDesktopPWAsWithoutExtensions,
+    // Enable in-development types.
+    scoped_features_.InitWithFeatures({features::kDesktopPWAsWithoutExtensions,
                                        switches::kSyncWifiConfigurations},
                                       {});
   }

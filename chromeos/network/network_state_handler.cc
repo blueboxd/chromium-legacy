@@ -1373,10 +1373,9 @@ void NetworkStateHandler::UpdateNetworkServiceProperty(
   if (!changed)
     return;
 
-  // If added to a Profile, request a full update so that a NetworkState
-  // gets created.
-  bool request_update =
-      prev_profile_path.empty() && !network->profile_path().empty();
+  // If added or removed from a Profile, request a full update so that a
+  // NetworkState gets created.
+  bool request_update = prev_profile_path != network->profile_path();
   bool sort_networks = false;
   bool notify_default = network->path() == default_network_path_;
   bool notify_connection_state = false;

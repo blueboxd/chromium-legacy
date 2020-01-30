@@ -533,7 +533,7 @@ void Tab::OnMouseReleased(const ui::MouseEvent& event) {
   // Close tab on middle click, but only if the button is released over the tab
   // (normal windows behavior is to discard presses of a UI element where the
   // releases happen off the element).
-  if (event.IsMiddleMouseButton()) {
+  if (event.IsOnlyMiddleMouseButton()) {
     if (HitTestPoint(event.location())) {
       controller_->CloseTab(this, CLOSE_TAB_FROM_MOUSE);
     } else if (closing_) {

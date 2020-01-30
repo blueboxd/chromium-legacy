@@ -25,8 +25,6 @@
 #include "chrome/browser/ui/app_list/search/search_result_ranker/recurrence_ranker.pb.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/recurrence_ranker_config.pb.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/recurrence_ranker_util.h"
-#include "chrome/common/channel_info.h"
-#include "components/version_info/channel.h"
 
 namespace app_list {
 namespace {
@@ -73,14 +71,6 @@ std::unique_ptr<RecurrenceRankerProto> LoadProtoFromDisk(
     const std::string& model_identifier) {
   base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
                                                 base::BlockingType::MAY_BLOCK);
-  // TODO(crbug.com/955893): for debugging, this prevents loading models for
-  // zero-state files ranking on dev channel. To be removed when no longer
-  // necessary.
-  if (model_identifier == "ZeroStateGroups" &&
-      chrome::GetChannel() == version_info::Channel::DEV) {
-    return nullptr;
-  }
-
   std::string proto_str;
   if (!base::ReadFileToString(filepath, &proto_str)) {
     LogSerializationStatus(model_identifier,

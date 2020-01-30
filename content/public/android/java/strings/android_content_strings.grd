@@ -78,6 +78,7 @@
     <output filename="values-uz/android_content_strings.xml" lang="uz" type="android" />
     <output filename="values-vi/android_content_strings.xml" lang="vi" type="android" />
     <output filename="values-zh-rCN/android_content_strings.xml" lang="zh-CN" type="android" />
+    <output filename="values-zh-rHK/android_content_strings.xml" lang="zh-HK" type="android" />
     <output filename="values-zh-rTW/android_content_strings.xml" lang="zh-TW" type="android" />
     <output filename="values-zu/android_content_strings.xml" lang="zu" type="android" />
   </outputs>

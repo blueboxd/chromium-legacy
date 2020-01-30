@@ -165,24 +165,28 @@ PairwiseInterpolationValue ListInterpolationFunctions::MaybeMergeSingles(
   auto& start_interpolable_list =
       To<InterpolableList>(*start.interpolable_value);
   auto& end_interpolable_list = To<InterpolableList>(*end.interpolable_value);
-  const auto& start_non_interpolable_list =
-      To<NonInterpolableList>(*start.non_interpolable_value);
-  const auto& end_non_interpolable_list =
-      To<NonInterpolableList>(*end.non_interpolable_value);
+  const auto* start_non_interpolable_list =
+      To<NonInterpolableList>(start.non_interpolable_value.get());
+  const auto* end_non_interpolable_list =
+      To<NonInterpolableList>(end.non_interpolable_value.get());
   const wtf_size_t start_non_interpolable_length =
-      To<NonInterpolableList>(*start.non_interpolable_value).length();
+      start_non_interpolable_list ? start_non_interpolable_list->length() : 0;
   const wtf_size_t end_non_interpolable_length =
-      To<NonInterpolableList>(*end.non_interpolable_value).length();
+      end_non_interpolable_list ? end_non_interpolable_list->length() : 0;
   for (wtf_size_t i = 0; i < final_length; i++) {
     if (length_matching_strategy ==
             LengthMatchingStrategy::kLowestCommonMultiple ||
         (i < start_length && i < end_length)) {
       InterpolationValue start_merge(
           start_interpolable_list.Get(i % start_length)->Clone(),
-          start_non_interpolable_list.Get(i % start_non_interpolable_length));
+          start_non_interpolable_list ? start_non_interpolable_list->Get(
+                                            i % start_non_interpolable_length)
+                                      : nullptr);
       InterpolationValue end_merge(
           end_interpolable_list.Get(i % end_length)->Clone(),
-          end_non_interpolable_list.Get(i % end_non_interpolable_length));
+          end_non_interpolable_list
+              ? end_non_interpolable_list->Get(i % end_non_interpolable_length)
+              : nullptr);
       PairwiseInterpolationValue result = merge_single_item_conversions.Run(
           std::move(start_merge), std::move(end_merge));
       if (!result)
@@ -203,7 +207,7 @@ PairwiseInterpolationValue ListInterpolationFunctions::MaybeMergeSingles(
             i, start_interpolable_list.Get(i)->CloneAndZero());
         result_non_interpolable_values[i] =
             (i < start_non_interpolable_length)
-                ? start_non_interpolable_list.Get(i)
+                ? start_non_interpolable_list->Get(i)
                 : nullptr;
       } else {
         DCHECK_LT(i, end_length);
@@ -212,8 +216,9 @@ PairwiseInterpolationValue ListInterpolationFunctions::MaybeMergeSingles(
         result_end_interpolable_list->Set(
             i, end_interpolable_list.Get(i)->Clone());
         result_non_interpolable_values[i] =
-            (i < end_non_interpolable_length) ? end_non_interpolable_list.Get(i)
-                                              : nullptr;
+            (i < end_non_interpolable_length)
+                ? end_non_interpolable_list->Get(i)
+                : nullptr;
       }
     }
   }

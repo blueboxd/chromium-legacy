@@ -607,16 +607,6 @@ void X11Window::OnXWindowIsActiveChanged(bool active) {
   platform_window_delegate_->OnActivationChanged(active);
 }
 
-void X11Window::OnXWindowMapped() {
-  if (x11_extension_delegate_)
-    x11_extension_delegate_->OnXWindowMapped();
-}
-
-void X11Window::OnXWindowUnmapped() {
-  if (x11_extension_delegate_)
-    x11_extension_delegate_->OnXWindowUnmapped();
-}
-
 void X11Window::OnXWindowWorkspaceChanged() {
   if (workspace_extension_delegate_)
     workspace_extension_delegate_->OnWorkspaceChanged();

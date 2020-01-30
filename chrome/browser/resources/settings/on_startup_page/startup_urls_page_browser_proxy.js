@@ -80,6 +80,7 @@ cr.define('settings', function() {
 
   cr.addSingletonGetter(StartupUrlsPageBrowserProxyImpl);
 
+  // #cr_define_end
   return {
     StartupUrlsPageBrowserProxy: StartupUrlsPageBrowserProxy,
     StartupUrlsPageBrowserProxyImpl: StartupUrlsPageBrowserProxyImpl,

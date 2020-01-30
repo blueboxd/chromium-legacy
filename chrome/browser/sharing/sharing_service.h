@@ -17,7 +17,6 @@
 #include "chrome/browser/sharing/sharing_device_registration.h"
 #include "chrome/browser/sharing/sharing_message_sender.h"
 #include "chrome/browser/sharing/sharing_send_message_result.h"
-#include "components/gcm_driver/web_push_common.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/sync/driver/sync_service_observer.h"
 #include "components/sync/protocol/device_info_specifics.pb.h"
@@ -116,6 +115,9 @@ class SharingService : public KeyedService, public syncer::SyncServiceObserver {
 
   // Returns SharingFCMHandler for testing.
   SharingFCMHandler* GetFCMHandlerForTesting() const;
+
+  // Returns SharingMessageSender for testing.
+  SharingMessageSender* GetMessageSenderForTesting() const;
 
  private:
   // Overrides for syncer::SyncServiceObserver.

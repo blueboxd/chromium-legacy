@@ -520,9 +520,9 @@ void RenderWidgetInputHandler::HandleInputEvent(
 // virtual keyboard.
 #if !defined(OS_ANDROID)
   // Virtual keyboard is not supported, so react to focus change immediately.
-  if (processed != WebInputEventResult::kNotHandled &&
-      (input_event.GetType() == WebInputEvent::kTouchEnd ||
-       input_event.GetType() == WebInputEvent::kMouseDown)) {
+  if ((processed != WebInputEventResult::kNotHandled &&
+       input_event.GetType() == WebInputEvent::kMouseDown) ||
+      input_event.GetType() == WebInputEvent::kGestureTap) {
     delegate_->FocusChangeComplete();
   }
 #endif

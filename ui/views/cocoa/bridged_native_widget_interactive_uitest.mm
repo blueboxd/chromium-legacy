@@ -7,7 +7,6 @@
 #import <Cocoa/Cocoa.h>
 
 #import "base/mac/mac_util.h"
-#import "base/mac/sdk_forward_declarations.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "ui/base/hit_test.h"

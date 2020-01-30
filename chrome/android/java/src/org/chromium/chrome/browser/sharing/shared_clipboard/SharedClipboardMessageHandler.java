@@ -154,6 +154,7 @@ public class SharedClipboardMessageHandler {
                         R.string.browser_sharing_shared_clipboard_error_dialog_title_payload_too_large);
 
             case SharingSendMessageResult.INTERNAL_ERROR:
+            case SharingSendMessageResult.ENCRYPTION_ERROR:
                 return resources.getString(
                         R.string.browser_sharing_error_dialog_title_internal_error, contentType);
 
@@ -196,6 +197,7 @@ public class SharedClipboardMessageHandler {
                         R.string.browser_sharing_error_dialog_text_device_ack_timeout, name);
 
             case SharingSendMessageResult.INTERNAL_ERROR:
+            case SharingSendMessageResult.ENCRYPTION_ERROR:
                 return resources.getString(
                         R.string.browser_sharing_error_dialog_text_internal_error);
 

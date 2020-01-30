@@ -70,6 +70,7 @@ void ConvertPrivateAccessibilityHighlightInfo(
   info->text_run_index = highlight.text_run_index;
   info->text_run_count = highlight.text_run_count;
   info->bounds = highlight.bounds;
+  info->color = highlight.color;
 }
 
 }  // namespace

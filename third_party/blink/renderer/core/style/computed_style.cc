@@ -1320,10 +1320,6 @@ Color ComputedStyle::GetColor() const {
   return ColorInternal();
 }
 void ComputedStyle::SetColor(const Color& v) {
-  SetIsColorInternalText(false);
-  SetColorInternal(v);
-}
-void ComputedStyle::ResolveInternalTextColor(const Color& v) {
   SetColorInternal(v);
 }
 

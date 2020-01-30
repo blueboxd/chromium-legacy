@@ -1487,8 +1487,8 @@ TEST(AmbientTemperature, AmbientTemperatureToRGBScaleFactors) {
             allowed_difference);
   // Warm
   vec =
-      NightLightControllerImpl::ColorScalesFromRemappedTemperatureInKevin(5800);
-  EXPECT_LT((vec - gfx::Vector3dF(1.0f, 0.968f, 0.924f)).Length(),
+      NightLightControllerImpl::ColorScalesFromRemappedTemperatureInKevin(4500);
+  EXPECT_LT((vec - gfx::Vector3dF(1.0f, 0.8816f, 0.7313f)).Length(),
             allowed_difference);
   // Daylight
   vec =

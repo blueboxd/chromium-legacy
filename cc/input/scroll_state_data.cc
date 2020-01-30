@@ -22,7 +22,8 @@ ScrollStateData::ScrollStateData()
       from_user_input(false),
       delta_consumed_for_scroll_sequence(false),
       is_direct_manipulation(false),
-      delta_granularity(0),
+      delta_granularity(
+          ui::input_types::ScrollGranularity::kScrollByPrecisePixel),
       caused_scroll_x(false),
       caused_scroll_y(false),
       is_scroll_chain_cut(false) {}

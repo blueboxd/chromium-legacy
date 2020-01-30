@@ -43,6 +43,7 @@ class FullscreenControllerObserver {
                                      FullscreenAnimator* animator) {}
 
   // Invoked before the FullscreenController service is shut down.
+  // TODO(crbug.com/1046022): Rename to FullscreenControllerDestroyed.
   virtual void FullscreenControllerWillShutDown(
       FullscreenController* controller) {}
 

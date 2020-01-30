@@ -29,6 +29,9 @@ bool StructTraits<content::mojom::RenderFrameMetadataDataView,
 #if defined(OS_ANDROID)
   out->bottom_controls_height = data.bottom_controls_height();
   out->bottom_controls_shown_ratio = data.bottom_controls_shown_ratio();
+  out->top_controls_min_height_offset = data.top_controls_min_height_offset();
+  out->bottom_controls_min_height_offset =
+      data.bottom_controls_min_height_offset();
   out->min_page_scale_factor = data.min_page_scale_factor();
   out->max_page_scale_factor = data.max_page_scale_factor();
   out->root_overflow_y_hidden = data.root_overflow_y_hidden();

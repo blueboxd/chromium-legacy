@@ -36,6 +36,10 @@ class BASE_EXPORT UkmSourceId {
     // same report interval; it will not be kept in memory between different
     // reports.
     HISTORY_ID = 3,
+    // Source ID used by WebApkUkmRecorder. A new source of this type and
+    // associated events are expected to be recorded within the same report
+    // interval; it will not be kept in memory between different reports.
+    WEBAPK_ID = 4,
   };
 
   // Default constructor has the invalid value.

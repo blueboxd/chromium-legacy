@@ -21,7 +21,7 @@
             android:layout_weight="4"
             android:layout_marginStart="@dimen/tab_grid_iph_card_text_inset"
             android:text="@string/iph_drag_and_drop_introduction"
-            android:textAppearance="@style/TextAppearance.BlackBodyDefault"
+            android:textAppearance="@style/TextAppearance.TextMedium.Primary"
             android:layout_gravity="center"
             android:gravity="center_vertical"/>
         <TextView

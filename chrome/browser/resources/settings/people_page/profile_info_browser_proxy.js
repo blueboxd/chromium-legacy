@@ -44,5 +44,6 @@ cr.define('settings', function() {
 
   cr.addSingletonGetter(ProfileInfoBrowserProxyImpl);
 
+  // #cr_define_end
   return {ProfileInfo, ProfileInfoBrowserProxyImpl};
 });

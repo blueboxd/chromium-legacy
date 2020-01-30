@@ -418,7 +418,6 @@
 <translation id="2799223571221894425">Redémarrer</translation>
 <translation id="2803306138276472711">La fonctionnalité de navigation sécurisée Google a récemment permis de <ph name="BEGIN_LINK" />détecter des logiciels malveillants<ph name="END_LINK" /> sur le site <ph name="SITE" />. Un site Web qui est normalement inoffensif peut parfois être infecté par des logiciels malveillants.</translation>
 <translation id="2807052079800581569">Position Y de l'image</translation>
-<translation id="2809804249696361569">Les deux feuilles</translation>
 <translation id="2824775600643448204">Barre d'adresse et de recherche</translation>
 <translation id="2826760142808435982">La connexion est chiffrée et authentifiée avec la clé <ph name="CIPHER" />. La méthode d'échange de clés utilisée est <ph name="KX" />.</translation>
 <translation id="2835170189407361413">Effacer le contenu du formulaire</translation>
@@ -477,7 +476,7 @@
 <translation id="3095940652251934233">Relevé</translation>
 <translation id="3096100844101284527">Ajouter une adresse de ramassage</translation>
 <translation id="3105172416063519923">Identifiant de ressource :</translation>
-<translation id="3107591622054137333"><ph name="BEGIN_LINK" />De vérifier la configuration du serveur DNS sécurisé<ph name="END_LINK" /></translation>
+<translation id="3107591622054137333"><ph name="BEGIN_LINK" />Vérifier la configuration du serveur DNS sécurisé<ph name="END_LINK" /></translation>
 <translation id="3109728660330352905">Vous ne disposez pas de l'autorisation nécessaire pour afficher cette page.</translation>
 <translation id="3113284927548439113">Troisième quart</translation>
 <translation id="3116158981186517402">Plastifier</translation>
@@ -921,7 +920,6 @@
 <translation id="5112422516732747637">A5</translation>
 <translation id="5115216390227830982">EDP, Europe</translation>
 <translation id="5115563688576182185">(64 bits)</translation>
-<translation id="5121469660360593280">Partagez avec votre administrateur les données sur les événements relatifs à la sécurité qui ont été signalés par la fonctionnalité de protection pour les utilisateurs de Chrome Enterprise. Ces données pourraient comprendre les URL des pages que vous visitez, les noms ou les métadonnées des fichiers ainsi que le nom d'utilisateur que vous utilisez pour vous connecter à votre appareil et à Chrome.</translation>
 <translation id="5123063207673082822">Fin de semaine</translation>
 <translation id="5125394840236832993">B plus</translation>
 <translation id="5126510351761255129">Vérifier votre carte</translation>
@@ -936,7 +934,6 @@
 <translation id="5161506081086828129">Empileur 9</translation>
 <translation id="516920405563544094">Entrez le code de vérification de carte (CVC) de votre carte <ph name="CREDIT_CARD" />. Après votre confirmation, les détails de la carte provenant de votre compte Google seront partagés avec ce site.</translation>
 <translation id="5169827969064885044">Vous risquez de perdre l'accès au compte de votre organisation ou d'être victime d'un vol d'identité. Chrome recommande de modifier votre mot de passe maintenant.</translation>
-<translation id="5170017743895942767">Protection pour les utilisateurs de Chrome Enterprise</translation>
 <translation id="5171045022955879922">Effectuez une recherche ou entrez une adresse URL</translation>
 <translation id="5171689220826475070">Pli en éventail, Europe</translation>
 <translation id="5172758083709347301">Machine</translation>
@@ -1069,7 +1066,6 @@
 <translation id="5737183892635480227">{NUM_CARDS,plural, =1{Enregistrer la carte dans votre compte Google}one{Enregistrer la carte dans votre compte Google}other{Enregistrer les cartes dans votre compte Google}}</translation>
 <translation id="5745980000221562234">{NUM_CARDS,plural, =1{Utiliser un numéro virtuel pour cette carte}one{Sélectionner une carte}other{Sélectionner des cartes}}</translation>
 <translation id="5763042198335101085">Entrez une adresse de courriel valide</translation>
-<translation id="5763703224595565476">Votre administrateur a activé la protection pour les utilisateurs de Chrome Enterprise pour votre navigateur. La protection pour les utilisateurs de Chrome Enterprise a accès à certaines de vos données.</translation>
 <translation id="5765072501007116331">Pour voir les exigences et les modes de livraison, sélectionnez une adresse</translation>
 <translation id="5776313857861697733">Priorité</translation>
 <translation id="5778550464785688721">Contrôle d'appareils MIDI total</translation>
@@ -1207,7 +1203,7 @@
 <translation id="6353505687280762741">{COUNT,plural, =0{Aucun}=1{1 mot de passe (pour <ph name="DOMAIN_LIST" />, synchronisé)}=2{2 mots de passe (pour <ph name="DOMAIN_LIST" />, synchronisés)}one{# mot de passe (pour <ph name="DOMAIN_LIST" />, synchronisé)}other{# mots de passe (pour <ph name="DOMAIN_LIST" />, synchronisés)}}</translation>
 <translation id="6358450015545214790">Qu'est-ce que c'est?</translation>
 <translation id="6361757823711327522">B7</translation>
-<translation id="6364095313648930329"><ph name="BEGIN_LINK" />De vérifier la configuration du mandataire, du pare-feu et du DNS sécurisé<ph name="END_LINK" /></translation>
+<translation id="6364095313648930329"><ph name="BEGIN_LINK" />Vérifier la configuration du mandataire, du pare-feu et du DNS sécurisé<ph name="END_LINK" /></translation>
 <translation id="6366710531182496394">Double agrafe à gauche</translation>
 <translation id="6377268785556383139">1 résultat trouvé pour « <ph name="SEARCH_TEXT" /> »</translation>
 <translation id="6380497234672085559">A0</translation>
@@ -1340,7 +1336,7 @@
 <translation id="7012363358306927923">China UnionPay</translation>
 <translation id="7016992613359344582">Ces frais peuvent être ponctuels ou récurrents, et peuvent ne pas être évidents.</translation>
 <translation id="7029809446516969842">Mots de passe</translation>
-<translation id="7031646650991750659">Quelles applications Google Play vous avez installées</translation>
+<translation id="7031646650991750659">Les applications Google Play que vous avez installées</translation>
 <translation id="7050187094878475250">Vous avez essayé d’atteindre <ph name="DOMAIN" />, mais le serveur a présenté un certificat dont la période de validité est trop longue pour être sûre.</translation>
 <translation id="705310974202322020">{NUM_CARDS,plural, =1{Cette carte ne peut pas être enregistrée pour le moment}one{Cette carte ne peut pas être enregistrée pour le moment}other{Ces cartes ne peuvent pas être enregistrées pour le moment}}</translation>
 <translation id="7053983685419859001">Bloquer</translation>
@@ -1406,7 +1402,6 @@ Détails supplémentaires :
 <translation id="733923710415886693">Le certificat du serveur n'a pas été divulgué par l'intermédiaire de l'outil Certificate Transparency.</translation>
 <translation id="734600844861828519">11 po x 15 po</translation>
 <translation id="7346048084945669753">Affilié :</translation>
-<translation id="73479065977517481"><ph name="ENROLLMENT_DOMAIN" /> a activé la protection pour les utilisateurs de Chrome Enterprise pour votre navigateur. La protection pour les utilisateurs de Chrome Enterprise a accès à certaines de vos données.</translation>
 <translation id="7349430561505560861">A4 Extra</translation>
 <translation id="7353601530677266744">Ligne de commande</translation>
 <translation id="7372973238305370288">résultat de la recherche</translation>

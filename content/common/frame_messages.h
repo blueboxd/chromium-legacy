@@ -549,12 +549,6 @@ IPC_STRUCT_TRAITS_END()
 // -----------------------------------------------------------------------------
 // Messages sent from the browser to the renderer.
 
-// Notifies the embedding frame that the intrinsic sizing info parameters
-// of a child frame have changed. Generated when the browser receives a
-// WidgetHostMsg_IntrinsicSizingInfoChanged.
-IPC_MESSAGE_ROUTED1(FrameMsg_IntrinsicSizingInfoOfChildChanged,
-                    blink::WebIntrinsicSizingInfo)
-
 // Notifies the embedding frame that the process rendering the child frame's
 // contents has terminated.
 IPC_MESSAGE_ROUTED0(FrameMsg_ChildFrameProcessGone)

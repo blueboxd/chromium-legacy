@@ -929,6 +929,7 @@ gpu::ContextResult GLES2DecoderPassthroughImpl::Initialize(
       "GL_ANGLE_memory_size",
       "GL_ANGLE_native_id",
       "GL_ANGLE_texture_storage_external",
+      "GL_ANGLE_texture_usage",
       "GL_CHROMIUM_bind_uniform_location",
       "GL_CHROMIUM_sync_query",
       "GL_EXT_debug_marker",
@@ -958,7 +959,6 @@ gpu::ContextResult GLES2DecoderPassthroughImpl::Initialize(
           "GL_ANGLE_texture_compression_dxt1",
           "GL_ANGLE_texture_compression_dxt3",
           "GL_ANGLE_texture_compression_dxt5",
-          "GL_ANGLE_texture_usage",
           "GL_ANGLE_translated_shader_source",
           "GL_CHROMIUM_framebuffer_mixed_samples",
           "GL_CHROMIUM_path_rendering",
@@ -2010,13 +2010,6 @@ void GLES2DecoderPassthroughImpl::InitializeFeatureInfo(
   if (image_factory && image_factory->SupportsCreateAnonymousImage()) {
     feature_info_->EnableCHROMIUMTextureStorageImage();
   }
-}
-
-void* GLES2DecoderPassthroughImpl::GetScratchMemory(size_t size) {
-  if (scratch_memory_.size() < size) {
-    scratch_memory_.resize(size, 0);
-  }
-  return scratch_memory_.data();
 }
 
 template <typename T>

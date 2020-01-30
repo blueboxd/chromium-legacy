@@ -71,7 +71,9 @@ class CORE_EXPORT InspectorLayerTreeAgent final
   protocol::Response disable() override;
   protocol::Response compositingReasons(
       const String& layer_id,
-      std::unique_ptr<protocol::Array<String>>* compositing_reasons) override;
+      std::unique_ptr<protocol::Array<String>>* compositing_reasons,
+      std::unique_ptr<protocol::Array<String>>* compositing_reason_ids)
+      override;
   protocol::Response makeSnapshot(const String& layer_id,
                                   String* snapshot_id) override;
   protocol::Response loadSnapshot(

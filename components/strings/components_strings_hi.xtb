@@ -423,7 +423,6 @@
 <translation id="2799223571221894425">फिर से लॉन्‍च करें</translation>
 <translation id="2803306138276472711">Google सुरक्षित ब्राउज़िंग को <ph name="SITE" /> पर हाल ही में <ph name="BEGIN_LINK" />मैलवेयर का पता चला<ph name="END_LINK" /> है. आमतौर पर सुरक्षित रहने वाली वेबसाइटें कभी-कभी मैलवेयर से संक्रमित हो जाती हैं.</translation>
 <translation id="2807052079800581569">इमेज Y की स्थिति</translation>
-<translation id="2809804249696361569">दोनों शीट</translation>
 <translation id="2824775600643448204">पता और सर्च बार</translation>
 <translation id="2826760142808435982">कनेक्शन को <ph name="CIPHER" /> का उपयोग करके सुरक्षित किया गया है और उसकी पहचान की गई है और यह मुख्य विनिमय तकनीक के रूप में <ph name="KX" /> का उपयोग करता है.</translation>
 <translation id="2835170189407361413">फ़ॉर्म साफ़ करें</translation>
@@ -929,7 +928,6 @@
 <translation id="5112422516732747637">ए5</translation>
 <translation id="5115216390227830982">यूरोपियन-ईडीपी</translation>
 <translation id="5115563688576182185">(64-बिट)</translation>
-<translation id="5121469660360593280">सुरक्षा की उन गतिविधियों के बारे में डेटा शेयर करें जिन्हें 'Chrome Enterprise की उपयोगकर्ता के लिए सुरक्षा' सुविधा ने आपके एडमिन को फ़्लैग किया है. इनमें, आप जिन पेजों पर जाते हैं उनके यूआरएल और फ़ाइल के नाम या मेटाडेटा शामिल हो सकते हैं. साथ ही, वह उपयोगकर्ता नाम भी शामिल हो सकता है जिसका इस्तेमाल आप अपने डिवाइस और Chrome में साइन इन करने के लिए करते हैं.</translation>
 <translation id="5123063207673082822">शनिवार और रविवार</translation>
 <translation id="5125394840236832993">बी-प्लस</translation>
 <translation id="5126510351761255129">कार्ड की पुष्टि करें</translation>
@@ -944,7 +942,6 @@
 <translation id="5161506081086828129">स्टैकर 9</translation>
 <translation id="516920405563544094"><ph name="CREDIT_CARD" /> का कार्ड वेरीफ़िकेशन कोड (सीवीसी) डालें. आपके पुष्टि करने के बाद, आपके Google खाते के कार्ड का ब्यौरा इस साइट के साथ शेयर किया जाएगा.</translation>
 <translation id="5169827969064885044">आपके संगठन के खाते का एक्सेस खो सकता है या आपकी पहचान चोरी हो सकती है. Chrome आपको अभी अपना पासवर्ड बदलने का सुझाव देता है.</translation>
-<translation id="5170017743895942767">Chrome Enterprise की उपयोगकर्ता के लिए सुरक्षा</translation>
 <translation id="5171045022955879922">URL खोजें या टाइप करें</translation>
 <translation id="5171689220826475070">फ़ैनफ़ोल्ड-यूरोपियन</translation>
 <translation id="5172758083709347301">मशीन</translation>
@@ -1077,7 +1074,6 @@
 <translation id="5737183892635480227">{NUM_CARDS,plural, =1{अपने Google खाते में कार्ड सेव करें}one{अपने Google खाते में कार्ड सेव करें}other{अपने Google खाते में कार्ड सेव करें}}</translation>
 <translation id="5745980000221562234">{NUM_CARDS,plural, =1{इस कार्ड के लिए वर्चुअल नंबर इस्तेमाल करें}one{कोई कार्ड चुनें}other{कोई कार्ड चुनें}}</translation>
 <translation id="5763042198335101085">मान्य ईमेल पता डालें</translation>
-<translation id="5763703224595565476">आपके एडमिन ने ब्राउज़र पर 'Chrome Enterprise की उपयोगकर्ता के लिए सुरक्षा' सुविधा को चालू किया है. 'Chrome Enterprise की उपयोगकर्ता के लिए सुरक्षा' सुविधा आपका कुछ डेटा ऐक्सेस कर सकती है.</translation>
 <translation id="5765072501007116331">वितरण के तरीके और ज़रूरतें देखने के लिए, कोई पता चुनें</translation>
 <translation id="5776313857861697733">प्राथमिकता</translation>
 <translation id="5778550464785688721">MIDI डिवाइस पूरा नियंत्रण</translation>
@@ -1410,7 +1406,6 @@
 <translation id="733923710415886693">प्रमाणपत्र पारदर्शिता के माध्यम से सर्वर के प्रमाणपत्र को प्रकट नहीं किया गया.</translation>
 <translation id="734600844861828519">11x15</translation>
 <translation id="7346048084945669753">जुड़ा हुआ है या नहीं:</translation>
-<translation id="73479065977517481"><ph name="ENROLLMENT_DOMAIN" /> ने आपके ब्राउज़र पर 'Chrome Enterprise की उपयोगकर्ता के लिए सुरक्षा' सुविधा को चालू किया है. 'Chrome Enterprise की उपयोगकर्ता के लिए सुरक्षा' सुविधा आपका कुछ डेटा ऐक्सेस कर सकती है.</translation>
 <translation id="7349430561505560861">ए4-एक्स्ट्रा</translation>
 <translation id="7353601530677266744">कमांड लाइन</translation>
 <translation id="7372973238305370288">खोज नतीजे</translation>

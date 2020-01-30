@@ -199,12 +199,6 @@ IPC_MESSAGE_ROUTED0(ViewHostMsg_ClosePage_ACK)
 IPC_MESSAGE_ROUTED1(ViewHostMsg_UpdateTargetURL,
                     GURL)
 
-// Sent when the document element is available for the top-level frame.  This
-// happens after the page starts loading, but before all resources are
-// finished.
-IPC_MESSAGE_ROUTED1(ViewHostMsg_DocumentAvailableInMainFrame,
-                    bool /* uses_temporary_zoom_level */)
-
 IPC_MESSAGE_ROUTED0(ViewHostMsg_Focus)
 
 // Get the list of proxies to use for |url|, as a semicolon delimited list

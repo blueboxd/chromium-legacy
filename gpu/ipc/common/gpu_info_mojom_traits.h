@@ -10,6 +10,7 @@
 #include "gpu/config/gpu_info.h"
 #include "gpu/ipc/common/dx_diag_node_mojom_traits.h"
 #include "gpu/ipc/common/gpu_info.mojom.h"
+#include "ui/gfx/buffer_types.h"
 #include "ui/gfx/geometry/mojom/geometry_mojom_traits.h"
 
 namespace mojo {
@@ -114,7 +115,7 @@ struct StructTraits<gpu::mojom::VideoDecodeAcceleratorCapabilitiesDataView,
   }
 
   static std::vector<gpu::VideoDecodeAcceleratorSupportedProfile>
-      supported_profiles(const gpu::VideoDecodeAcceleratorCapabilities& input) {
+  supported_profiles(const gpu::VideoDecodeAcceleratorCapabilities& input) {
     return input.supported_profiles;
   }
 };
@@ -372,20 +373,6 @@ struct StructTraits<gpu::mojom::GpuInfoDataView, gpu::GPUInfo> {
   static std::vector<gpu::ImageDecodeAcceleratorSupportedProfile>
   image_decode_accelerator_supported_profiles(const gpu::GPUInfo& input) {
     return input.image_decode_accelerator_supported_profiles;
-  }
-
-  static uint64_t system_visual(const gpu::GPUInfo& input) {
-#if defined(USE_X11)
-    return input.system_visual;
-#endif
-    return 0;
-  }
-
-  static uint64_t rgba_visual(const gpu::GPUInfo& input) {
-#if defined(USE_X11)
-    return input.rgba_visual;
-#endif
-    return 0;
   }
 
   static bool oop_rasterization_supported(const gpu::GPUInfo& input) {

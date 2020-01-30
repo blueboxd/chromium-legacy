@@ -48,9 +48,6 @@ std::ostream& operator<<(std::ostream& out,
     case ScriptExecutor::CLOSE_CUSTOM_TAB:
       out << "CLOSE_CUSTOM_TAB";
       break;
-    case ScriptExecutor::RESTART:
-      out << "RESTART";
-      break;
       // Intentionally no default case to make compilation fail if a new value
       // was added to the enum but not to this list.
   }
@@ -507,10 +504,6 @@ void ScriptExecutor::Shutdown() {
 void ScriptExecutor::Close() {
   at_end_ = CLOSE_CUSTOM_TAB;
   should_stop_script_ = true;
-}
-
-void ScriptExecutor::Restart() {
-  at_end_ = RESTART;
 }
 
 autofill::PersonalDataManager* ScriptExecutor::GetPersonalDataManager() {

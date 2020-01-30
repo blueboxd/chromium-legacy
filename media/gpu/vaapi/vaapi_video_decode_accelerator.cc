@@ -81,7 +81,7 @@ bool IsGeminiLakeOrLater() {
 #define RETURN_AND_NOTIFY_ON_FAILURE(result, log, error_code, ret) \
   do {                                                             \
     if (!(result)) {                                               \
-      VLOGF(1) << log;                                             \
+      LOG(ERROR) << log;                                           \
       NotifyError(error_code);                                     \
       return ret;                                                  \
     }                                                              \
@@ -358,8 +358,8 @@ void VaapiVideoDecodeAccelerator::QueueInputBuffer(
       break;
 
     default:
-      VLOGF(1) << "Decode/Flush request from client in invalid state: "
-               << state_;
+      LOG(ERROR) << "Decode/Flush request from client in invalid state: "
+                 << state_;
       NotifyError(PLATFORM_FAILURE);
       break;
   }
@@ -621,7 +621,7 @@ void VaapiVideoDecodeAccelerator::Decode(scoped_refptr<DecoderBuffer> buffer,
   TRACE_EVENT1("media,gpu", "VAVDA::Decode", "Buffer id", bitstream_id);
 
   if (bitstream_id < 0) {
-    VLOGF(1) << "Invalid bitstream_buffer, id: " << bitstream_id;
+    LOG(ERROR) << "Invalid bitstream_buffer, id: " << bitstream_id;
     NotifyError(INVALID_ARGUMENT);
     return;
   }
@@ -752,7 +752,7 @@ void VaapiVideoDecodeAccelerator::ImportBufferForPicture(
   DCHECK(task_runner_->BelongsToCurrentThread());
 
   if (output_mode_ != Config::OutputMode::IMPORT) {
-    VLOGF(1) << "Cannot import in non-import mode";
+    LOG(ERROR) << "Cannot import in non-import mode";
     NotifyError(INVALID_ARGUMENT);
     return;
   }
@@ -771,7 +771,7 @@ void VaapiVideoDecodeAccelerator::ImportBufferForPicture(
 
     auto buffer_format = VideoPixelFormatToGfxBufferFormat(pixel_format);
     if (!buffer_format) {
-      VLOGF(1) << "Unsupported format: " << pixel_format;
+      LOG(ERROR) << "Unsupported format: " << pixel_format;
       NotifyError(INVALID_ARGUMENT);
       return;
     }
@@ -781,7 +781,7 @@ void VaapiVideoDecodeAccelerator::ImportBufferForPicture(
             *buffer_format, std::move(gpu_memory_buffer_handle))) {
       // ImportGpuMemoryBufferHandle will close the handles even on failure, so
       // we don't need to do this ourselves.
-      VLOGF(1) << "Failed to import GpuMemoryBufferHandle";
+      LOG(ERROR) << "Failed to import GpuMemoryBufferHandle";
       NotifyError(PLATFORM_FAILURE);
       return;
     }

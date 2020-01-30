@@ -588,7 +588,10 @@ OverviewWindowDragController::CompleteNormalDrag(
     // Get the window and bounds from |item_| before removing it from its grid.
     aura::Window* window = item_->GetWindow();
     const gfx::RectF bounds = item_->target_bounds();
-    item_->overview_grid()->RemoveItem(item_);
+    // Remove |item_| from its grid, with reposition=false because soon we will
+    // call |OverviewSession::PositionWindows| anyway.
+    item_->overview_grid()->RemoveItem(item_, /*item_destroying=*/false,
+                                       /*reposition=*/false);
     item_ = nullptr;
     // Use |OverviewSession::set_ignore_window_hierarchy_changes| to prevent
     // |OverviewSession::OnWindowHierarchyChanged| from ending overview as we
@@ -602,10 +605,10 @@ OverviewWindowDragController::CompleteNormalDrag(
 
     OverviewGrid* target_grid =
         overview_session_->GetGridWithRootWindow(target_root);
-    // Add |window| to |target_grid| with reposition=false because soon we will
-    // call |OverviewSession::PositionWindows| anyway.
+    // Add |window| to |target_grid| with reposition=false and restack=false,
+    // because soon we will handle both repositioning and restacking anyway.
     target_grid->AddItemInMruOrder(window, /*reposition=*/false,
-                                   /*animate=*/false);
+                                   /*animate=*/false, /*restack=*/false);
     item_ = target_grid->GetOverviewItemContaining(window);
     // Put the new item where the old item ended, so it looks like it is the
     // same item. The following call to |OverviewSession::PositionWindows| will

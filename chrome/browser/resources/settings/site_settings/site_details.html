@@ -96,45 +96,6 @@
             <iron-icon icon="all-sites:offline"></iron-icon>
             $i18n{siteSettingsSiteClearStorageOfflineData}
           </div>
-          <div class="detail">
-            <iron-icon icon="all-sites:apps"></iron-icon>
-            $i18n{siteSettingsSiteClearStorageApps}
-          </div>
-        </div>
-      </div>
-      <div slot="button-container">
-        <cr-button class="cancel-button" on-click="onCloseDialog_">
-          $i18n{cancel}
-        </cr-button>
-        <cr-button class="action-button" on-click="onClearStorage_">
-          $i18n{siteSettingsSiteClearStorage}
-        </cr-button>
-      </div>
-    </cr-dialog>
-
-    <!-- New version of confirm clear data dialog to show if storage
-         pressure UI flag is enabled. -->
-    <cr-dialog id="confirmClearStorageNew" close-text="$i18n{close}"
-        on-close="onClearStorageDialogClosed_">
-      <style include="clear-storage-dialog-shared"></style>
-      <div slot="title">
-        $i18n{siteSettingsSiteClearStorageDialogTitle}
-      </div>
-      <div slot="body">
-        [[i18n('siteSettingsSiteClearStorageConfirmationNew', pageTitle)]]
-        <div class="detail-list">
-          <div class="detail">
-            <iron-icon icon="all-sites:logout"></iron-icon>
-            $i18n{siteSettingsSiteClearStorageSignOut}
-          </div>
-          <div class="detail">
-            <iron-icon icon="all-sites:offline"></iron-icon>
-            $i18n{siteSettingsSiteClearStorageOfflineData}
-          </div>
-          <div class="detail">
-            <iron-icon icon="all-sites:apps"></iron-icon>
-            $i18n{siteSettingsSiteClearStorageApps}
-          </div>
         </div>
       </div>
       <div slot="button-container">

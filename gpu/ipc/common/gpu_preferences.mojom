@@ -87,4 +87,6 @@ struct GpuPreferences {
 
   [EnableIf=use_ozone]
   mojo_base.mojom.MessagePumpType message_pump_type;
+
+  bool enable_native_gpu_memory_buffers;
 };

@@ -601,7 +601,6 @@ void ExternalProviderImpl::CreateExternalProviders(
         Extension::FROM_WEBSTORE | Extension::WAS_INSTALLED_BY_DEFAULT |
             Extension::FOR_LOGIN_SCREEN);
     signin_profile_provider->set_auto_acknowledge(true);
-    signin_profile_provider->set_install_immediately(true);
     signin_profile_provider->set_allow_updates(true);
     provider_list->push_back(std::move(signin_profile_provider));
     return;

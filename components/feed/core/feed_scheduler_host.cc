@@ -16,7 +16,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/time/clock.h"
 #include "base/time/time.h"
-#include "components/feed/core/pref_names.h"
+#include "components/feed/core/common/pref_names.h"
 #include "components/feed/core/time_serialization.h"
 #include "components/feed/feed_feature_list.h"
 #include "components/prefs/pref_service.h"

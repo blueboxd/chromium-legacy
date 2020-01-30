@@ -38,8 +38,7 @@ class ShelfContextMenu : public ui::SimpleMenuModel::Delegate {
 
   // Helper method to get the gfx::VectorIcon for a |type|. Returns an empty
   // gfx::VectorIcon if there is no icon for this |type|.
-  const gfx::VectorIcon& GetCommandIdVectorIcon(ash::CommandId type,
-                                                int string_id) const;
+  const gfx::VectorIcon& GetCommandIdVectorIcon(int type, int string_id) const;
 
  protected:
   ShelfContextMenu(ChromeLauncherController* controller,

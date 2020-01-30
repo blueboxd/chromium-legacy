@@ -10,6 +10,11 @@
           "object": "LayoutInline SPAN id='target'",
           "rect": [6, 6, 204, 58],
           "reason": "style change"
+        },
+        {
+          "object": "LayoutImage IMG",
+          "rect": [8, 8, 200, 50],
+          "reason": "geometry"
         }
       ]
     }

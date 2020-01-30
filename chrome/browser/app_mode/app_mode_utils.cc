@@ -65,11 +65,8 @@ bool IsRunningInAppMode() {
 }
 
 bool IsRunningInForcedAppMode() {
-  return GetForcedAppModeApp().has_value() ||
-         base::CommandLine::ForCurrentProcess()->HasSwitch(
-             switches::kForceAndroidAppMode) ||
-         base::CommandLine::ForCurrentProcess()->HasSwitch(
-             switches::kForceWebAppMode);
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kForceAppMode);
 }
 
 bool IsRunningInForcedAppModeForApp(const std::string& app_id) {

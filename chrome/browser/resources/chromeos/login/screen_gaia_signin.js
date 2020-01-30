@@ -225,6 +225,15 @@ Polymer({
       type: Boolean,
       value: true,
     },
+
+    /**
+     * Whether the SAML 3rd-party page is visible.
+     * @private
+     */
+    isSamlSsoVisible_: {
+      type: Boolean,
+      computed: 'computeSamlSsoVisible_(isSaml_, pinDialogParameters_)',
+    },
   },
 
   observers: [
@@ -541,26 +550,13 @@ Polymer({
   },
 
   /**
-   * Whether the signin-frame-dialog element should be visible.
-   * @param {number} screenMode
-   * @param {OobeTypes.SecurityTokenPinDialogParameters} pinDialogParameters
-   * @return {boolean}
-   * @private
-   */
-  isSigninFrameDialogVisible_(screenMode, pinDialogParameters) {
-    // See the comment in the .css file for the explanation on why our element
-    // shouldn't be hidden during loading.
-    return screenMode == AuthMode.DEFAULT && pinDialogParameters === null;
-  },
-
-  /**
-   * Whether the saml-notice-container element should be visible.
+   * Whether the SAML 3rd-party page is visible.
    * @param {boolean} isSaml
    * @param {OobeTypes.SecurityTokenPinDialogParameters} pinDialogParameters
    * @return {boolean}
    * @private
    */
-  isSamlNoticeContainerVisible_(isSaml, pinDialogParameters) {
+  computeSamlSsoVisible_(isSaml, pinDialogParameters) {
     return isSaml && !pinDialogParameters;
   },
 
@@ -726,6 +722,7 @@ Polymer({
 
     this.$['offline-ad-auth'].onBeforeShow();
     this.$['signin-frame-dialog'].onBeforeShow();
+    this.$.pinDialog.onBeforeShow();
   },
 
   /**
@@ -1628,6 +1625,16 @@ Polymer({
    */
   isEmpty_(value) {
     return !value;
+  },
+
+  /**
+   * Whether popup overlay should be open.
+   * @param {boolean} navigationEnabled
+   * @param {boolean} isSamlSsoVisible
+   * @return {boolean}
+   */
+  showOverlay_(navigationEnabled, isSamlSsoVisible) {
+    return !navigationEnabled || isSamlSsoVisible;
   },
 });
 })();

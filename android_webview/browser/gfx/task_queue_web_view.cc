@@ -183,9 +183,13 @@ class TaskQueueViz : public TaskQueueWebView {
   void EmplaceTask(base::OnceClosure task);
 
   scoped_refptr<base::SingleThreadTaskRunner> viz_task_runner_;
+  THREAD_CHECKER(render_thread_checker_);
 
   // Only accessed on viz thread.
   bool allow_schedule_task_ = false;
+
+  // Only accessed on render thread.
+  bool inside_schedule_on_viz_and_block_ = false;
 
   base::Lock lock_;
   base::ConditionVariable condvar_{&lock_};
@@ -195,7 +199,10 @@ class TaskQueueViz : public TaskQueueWebView {
   DISALLOW_COPY_AND_ASSIGN(TaskQueueViz);
 };
 
-TaskQueueViz::TaskQueueViz() = default;
+TaskQueueViz::TaskQueueViz() {
+  DETACH_FROM_THREAD(render_thread_checker_);
+}
+
 TaskQueueViz::~TaskQueueViz() = default;
 
 void TaskQueueViz::ScheduleTask(base::OnceClosure task, bool out_of_order) {
@@ -231,7 +238,9 @@ void TaskQueueViz::EmplaceTask(base::OnceClosure task) {
 }
 
 void TaskQueueViz::ScheduleIdleTask(base::OnceClosure task) {
-  NOTREACHED();
+  DCHECK_CALLED_ON_VALID_THREAD(render_thread_checker_);
+  DCHECK(inside_schedule_on_viz_and_block_);
+  EmplaceTask(std::move(task));
 }
 
 void TaskQueueViz::ScheduleClientTask(base::OnceClosure task) {
@@ -251,6 +260,7 @@ void TaskQueueViz::InitializeVizThread(
 
 void TaskQueueViz::ScheduleOnVizAndBlock(VizTask viz_task) {
   TRACE_EVENT0("android_webview", "ScheduleOnVizAndBlock");
+  DCHECK_CALLED_ON_VALID_THREAD(render_thread_checker_);
 
   // Expected behavior is |viz_task| on the viz thread. From |viz_task| until
   // the done closure is called (which may not be in the viz_task), viz thread
@@ -272,6 +282,9 @@ void TaskQueueViz::ScheduleOnVizAndBlock(VizTask viz_task) {
                                 std::move(viz_task)));
 
   {
+    DCHECK(!inside_schedule_on_viz_and_block_);
+    base::AutoReset<bool> inside_bf(&inside_schedule_on_viz_and_block_, true);
+
     base::AutoLock lock(lock_);
     while (!done_ || !tasks_.empty()) {
       if (tasks_.empty())

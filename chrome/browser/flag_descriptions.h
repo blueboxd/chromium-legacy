@@ -459,6 +459,9 @@ extern const char kEnableNewDownloadBackendDescription[];
 extern const char kEnablePortalsName[];
 extern const char kEnablePortalsDescription[];
 
+extern const char kEnablePortalsCrossOriginName[];
+extern const char kEnablePortalsCrossOriginDescription[];
+
 extern const char kEnablePixelCanvasRecordingName[];
 extern const char kEnablePixelCanvasRecordingDescription[];
 
@@ -960,9 +963,6 @@ extern const char kScalableAppListDescription[];
 extern const char kScrollableTabStripName[];
 extern const char kScrollableTabStripDescription[];
 
-extern const char kSecurityInterstitialsDarkModeName[];
-extern const char kSecurityInterstitialsDarkModeDescription[];
-
 extern const char kSendTabToSelfBroadcastName[];
 extern const char kSendTabToSelfBroadcastDescription[];
 
@@ -1216,6 +1216,15 @@ extern const char kWebrtcHwDecodingDescription[];
 extern const char kWebrtcHwEncodingName[];
 extern const char kWebrtcHwEncodingDescription[];
 
+extern const char kWebrtcHwH264EncodingName[];
+extern const char kWebrtcHwH264EncodingDescription[];
+
+extern const char kWebrtcHwVP8EncodingName[];
+extern const char kWebrtcHwVP8EncodingDescription[];
+
+extern const char kWebrtcHwVP9EncodingName[];
+extern const char kWebrtcHwVP9EncodingDescription[];
+
 extern const char kWebrtcNewEncodeCpuLoadEstimatorName[];
 extern const char kWebrtcNewEncodeCpuLoadEstimatorDescription[];
 
@@ -1227,9 +1236,6 @@ extern const char kWebrtcSrtpAesGcmDescription[];
 
 extern const char kWebrtcStunOriginName[];
 extern const char kWebrtcStunOriginDescription[];
-
-extern const char kWebrtcUseMinMaxVEADimensionsName[];
-extern const char kWebrtcUseMinMaxVEADimensionsDescription[];
 
 #if BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)
 extern const char kWebUITabStripName[];
@@ -1613,6 +1619,9 @@ extern const char kOmniboxLooseMaxLimitOnDedicatedRowsDescription[];
 extern const char kOmniboxPedalSuggestionsName[];
 extern const char kOmniboxPedalSuggestionsDescription[];
 
+extern const char kOmniboxSuggestionButtonRowName[];
+extern const char kOmniboxSuggestionButtonRowDescription[];
+
 extern const char kOmniboxReverseAnswersName[];
 extern const char kOmniboxReverseAnswersDescription[];
 
@@ -1652,9 +1661,6 @@ extern const char kCloudPrintXpsDescription[];
 
 extern const char kD3D11VideoDecoderName[];
 extern const char kD3D11VideoDecoderDescription[];
-
-extern const char kEnableGpuAppcontainerName[];
-extern const char kEnableGpuAppcontainerDescription[];
 
 extern const char kGdiTextPrinting[];
 extern const char kGdiTextPrintingDescription[];
@@ -1987,6 +1993,9 @@ extern const char kFuzzyAppSearchDescription[];
 
 extern const char kGaiaActionButtonsName[];
 extern const char kGaiaActionButtonsDescription[];
+
+extern const char kHelpAppName[];
+extern const char kHelpAppDescription[];
 
 extern const char kHideArcMediaNotificationsName[];
 extern const char kHideArcMediaNotificationsDescription[];

@@ -169,6 +169,11 @@ class FakeWebMediaPlayerDelegate
     EXPECT_EQ(delegate_id_, delegate_id);
   }
 
+  void DidPictureInPictureAvailabilityChange(int delegate_id,
+                                             bool available) override {
+    EXPECT_EQ(delegate_id_, delegate_id);
+  }
+
  private:
   int delegate_id_ = 1234;
   Observer* observer_ = nullptr;

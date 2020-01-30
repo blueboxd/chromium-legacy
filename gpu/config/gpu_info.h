@@ -23,10 +23,6 @@
 #include "gpu/vulkan/buildflags.h"
 #include "ui/gfx/geometry/size.h"
 
-#if defined(USE_X11)
-typedef unsigned long VisualID;
-#endif
-
 #if BUILDFLAG(ENABLE_VULKAN)
 #include "gpu/config/vulkan_info.h"
 #endif
@@ -354,11 +350,6 @@ struct GPU_EXPORT GPUInfo {
 
   ImageDecodeAcceleratorSupportedProfiles
       image_decode_accelerator_supported_profiles;
-
-#if defined(USE_X11)
-  VisualID system_visual;
-  VisualID rgba_visual;
-#endif
 
   bool oop_rasterization_supported;
 

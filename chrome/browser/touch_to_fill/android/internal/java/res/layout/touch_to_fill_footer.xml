@@ -12,4 +12,4 @@
     android:layout_width="match_parent"
     android:gravity="center"
     android:minHeight="20dp"
-    android:textAppearance="@style/TextAppearance.BlackBody" />
+    android:textAppearance="@style/TextAppearance.TextMedium.Secondary" />

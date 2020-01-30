@@ -61,6 +61,7 @@ cr.define('settings', function() {
 
   cr.addSingletonGetter(PrivacyPageBrowserProxyImpl);
 
+  // #cr_define_end
   return {
     PrivacyPageBrowserProxy: PrivacyPageBrowserProxy,
     PrivacyPageBrowserProxyImpl: PrivacyPageBrowserProxyImpl,

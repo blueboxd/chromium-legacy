@@ -64,6 +64,22 @@ struct Password {
   int32 length;
 };
 
+struct KerberosConfig {
+  enum Source {
+    // Obtain credentials for Active Directory from authpolicyd.
+    kActiveDirectory = 0,
+
+    // Obtain credentials from kerberosd.
+    kKerberos = 1,
+  };
+  // Source of kerberos credentials.
+  Source source;
+
+  // Kerberos identity. Will be account GUID for Active Directory, and
+  // principal name for non-AD kerberos.
+  string identity;
+};
+
 struct MountOptions {
   // Full share path. Must be in the form "smb://hostname/sharename", and must
   // have the hostname as entered by the user and NOT resolved to an IP address
@@ -77,6 +93,7 @@ struct MountOptions {
   // memory while being transferred over IPC. This also allows the password to
   // be stored using libpasswordprovider on the Chrome OS side.
   Password? password;
+  KerberosConfig? kerberos_config;
 
   // Allow NTLM authentication.
   bool allow_ntlm = false;

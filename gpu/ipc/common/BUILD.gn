@@ -216,9 +216,13 @@ mojom("interfaces") {
     "//ui/gfx/geometry/mojom",
     "//ui/gfx/mojom",
   ]
+  enabled_features = []
   if (enable_vulkan) {
     public_deps += [ ":vulkan_interface" ]
-    enabled_features = [ "supports_vulkan" ]
+    enabled_features += [ "supports_vulkan" ]
+  }
+  if (use_x11) {
+    enabled_features += [ "use_x11" ]
   }
 }
 

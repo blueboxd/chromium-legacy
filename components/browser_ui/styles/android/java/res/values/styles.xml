@@ -5,12 +5,25 @@
 
 <!-- TODO(crbug.com/1017190): Remove the UnusedResources workaround. -->
 <resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="UnusedResources">
+    <!-- Theme shared between Chrome and embedders. -->
+    <style name="Theme.BrowserUI" parent="Theme.AppCompat.DayNight.NoActionBar">
+        <!-- Text colors -->
+        <item name="android:textColorLink">@color/default_text_color_link</item>
+        <item name="android:textColorHighlight">@color/text_highlight_color</item>
+
+        <!-- Color of checkboxes, switches, buttons, etc. -->
+        <item name="colorAccent">@color/light_active_color</item>
+        <item name="colorControlNormal">@color/control_normal_color</item>
+        <item name="colorControlActivated">@color/light_active_color</item>
+        <item name="colorControlHighlight">@color/control_highlight_color</item>
+    </style>
+
     <!-- Basic theme for an overflow menu displayed in Chrome. -->
     <style name="Base.OverflowMenuThemeOverlay" parent="Theme.AppCompat.DayNight">
         <item name="android:popupBackground">@null</item>
         <item name="android:listDivider">@null</item>
         <item name="android:listPreferredItemHeightSmall">48dp</item>
-        <item name="android:textAppearance">@style/TextAppearance.BlackTitle1</item>
+        <item name="android:textAppearance">@style/TextAppearance.TextLarge.Primary</item>
         <item name="colorControlHighlight">@color/control_highlight_color</item>
     </style>
     <style name="OverflowMenuThemeOverlay" parent="Base.OverflowMenuThemeOverlay" />

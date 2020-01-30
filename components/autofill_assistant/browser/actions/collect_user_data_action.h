@@ -37,6 +37,20 @@ class CollectUserDataAction : public Action,
       const UserData& user_data,
       const CollectUserDataOptions& collect_user_data_options);
 
+  // Ensures that |end| is > |start| by modifying either |start| or |end|,
+  // depending on |change_start|. Returns true if changes were performed.
+  static bool SanitizeDateTimeRange(
+      base::Optional<DateProto>* start_date,
+      base::Optional<int>* start_timeslot,
+      base::Optional<DateProto>* end_date,
+      base::Optional<int>* end_timeslot,
+      const CollectUserDataOptions& collect_user_data_options,
+      bool change_start);
+
+  // Comparison function for |DateProto|.
+  // Returns 0 if equal, < 0 if |first| < |second|, > 0 if |second| > |first|.
+  static int CompareDates(const DateProto& first, const DateProto& second);
+
  private:
   struct LoginDetails {
     LoginDetails(bool choose_automatically_if_no_other_options,
@@ -80,6 +94,10 @@ class CollectUserDataAction : public Action,
   void UpdatePersonalDataManagerCards(
       UserData* user_data,
       UserData::FieldChange* field_change = nullptr);
+  void UpdateDateTimeRangeStart(UserData* user_data,
+                                UserData::FieldChange* field_change = nullptr);
+  void UpdateDateTimeRangeEnd(UserData* user_data,
+                              UserData::FieldChange* field_change = nullptr);
 
   bool shown_to_user_ = false;
   bool initially_prefilled = false;

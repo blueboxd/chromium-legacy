@@ -86,20 +86,21 @@ void CSPContext::SetSelf(const url::Origin origin) {
     return;
 
   if (origin.scheme() == url::kFileScheme) {
-    self_source_ = CSPSource(url::kFileScheme, "", false, url::PORT_UNSPECIFIED,
-                             false, "");
+    self_source_ = network::mojom::CSPSource::New(
+        url::kFileScheme, "", url::PORT_UNSPECIFIED, "", false, false);
     return;
   }
 
-  self_source_ = CSPSource(
-      origin.scheme(), origin.host(), false,
-      origin.port() == 0 ? url::PORT_UNSPECIFIED : origin.port(), false, "");
+  self_source_ = network::mojom::CSPSource::New(
+      origin.scheme(), origin.host(),
+      origin.port() == 0 ? url::PORT_UNSPECIFIED : origin.port(), "", false,
+      false);
 
   DCHECK_NE("", self_source_->scheme);
 }
 
-void CSPContext::SetSelf(const CSPSource& self_source) {
-  self_source_ = self_source;
+void CSPContext::SetSelf(network::mojom::CSPSourcePtr self_source) {
+  self_source_ = std::move(self_source);
 }
 
 bool CSPContext::SchemeShouldBypassCSP(const base::StringPiece& scheme) {

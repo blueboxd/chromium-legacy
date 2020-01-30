@@ -59,6 +59,12 @@
     subtitle-key - ID of localized string to be used as default subtitle
                    element.
 
+    two-columns-adaptable - if set layout might switch to two columns instead of
+        one when there is not enough vertical space for elements. Left column
+        would contain header-container, right columnn would contain
+        footer-container. Bottom buttons are not affected. See oobe.css for
+        conditions.
+
   I.e. [no-header no-footer-padding] will make the footer occupy all the dialog
   space.
 -->
@@ -99,8 +105,6 @@
       <div id="oobe-bottom" hideShadow$="[[hideShadow]]"
           class="slot-container layout horizontal center">
         <slot name="bottom-buttons"></slot>
-        <div id="buttons-overlay" class="fit" hidden="[[!showButtonsOverlay]]">
-        </div>
       </div>
     </template>
   </template>

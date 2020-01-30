@@ -656,7 +656,7 @@ class API_AVAILABLE(macos(10.11)) TestShaderState
 void TestRenderPipelineStateNow(base::scoped_nsprotocol<id<MTLDevice>> device,
                                 const base::TimeDelta& timeout,
                                 TestShaderCallback callback)
-    API_AVAILABLE(macos(10.11)) {
+    API_AVAILABLE(macos(10.14)) {
   // Load the library binary. This should not fail.
   base::ScopedDispatchObject<dispatch_data_t> library_data = GetLibraryData();
   NSError* error = nil;
@@ -763,21 +763,27 @@ void TestShader(TestShaderCallback callback,
                                    std::move(callback));
           break;
         case TestShaderComponent::kLink:
-          closure = base::BindOnce(&TestRenderPipelineStateNow, device, timeout,
-                                   std::move(callback));
+          // The metallib listed above is in MTLLanguageVersion2_1, which is
+          // available only on 10.14 and above.
+          if (@available(macOS 10.14, *)) {
+            closure = base::BindOnce(&TestRenderPipelineStateNow, device,
+                                     timeout, std::move(callback));
+          }
           break;
       }
 
       // Run either immediately or after the specified delay.
-      if (delay.is_zero()) {
-        std::move(closure).Run();
-      } else {
-        base::PostDelayedTask(
-            FROM_HERE,
-            base::TaskTraits(base::ThreadPool(), base::TaskPriority::HIGHEST),
-            std::move(closure), delay);
+      if (closure) {
+        if (delay.is_zero()) {
+          std::move(closure).Run();
+        } else {
+          base::PostDelayedTask(
+              FROM_HERE,
+              base::TaskTraits(base::ThreadPool(), base::TaskPriority::HIGHEST),
+              std::move(closure), delay);
+        }
+        return;
       }
-      return;
     }
   }
   std::move(callback).Run(TestShaderResult::kNotAttempted, base::TimeDelta(),

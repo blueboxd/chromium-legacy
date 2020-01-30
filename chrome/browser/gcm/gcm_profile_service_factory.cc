@@ -138,10 +138,8 @@ KeyedService* GCMProfileServiceFactory::BuildServiceInstanceFor(
            base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN}));
   std::unique_ptr<GCMProfileService> service = nullptr;
 #if defined(OS_ANDROID)
-  service = std::make_unique<GCMProfileService>(
-      profile->GetPath(), blocking_task_runner,
-      content::BrowserContext::GetDefaultStoragePartition(profile)
-          ->GetURLLoaderFactoryForBrowserProcess());
+  service = std::make_unique<GCMProfileService>(profile->GetPath(),
+                                                blocking_task_runner);
 #else
   service = std::make_unique<GCMProfileService>(
       profile->GetPrefs(), profile->GetPath(),

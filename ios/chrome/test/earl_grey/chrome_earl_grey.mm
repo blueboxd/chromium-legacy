@@ -501,6 +501,12 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeEarlGreyAppInterface)
                               timeout:kWaitForUIElementTimeout];
 }
 
+- (void)waitForWebStateFrameContainingText:(const std::string&)UTF8Text {
+  NSString* text = base::SysUTF8ToNSString(UTF8Text);
+  EG_TEST_HELPER_ASSERT_NO_ERROR(
+      [ChromeEarlGreyAppInterface waitForWebStateContainingTextInIFrame:text]);
+}
+
 - (void)waitForWebStateContainingText:(const std::string&)UTF8Text
                               timeout:(NSTimeInterval)timeout {
   NSString* text = base::SysUTF8ToNSString(UTF8Text);

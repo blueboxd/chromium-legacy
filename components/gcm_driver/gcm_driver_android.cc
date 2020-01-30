@@ -14,7 +14,6 @@
 #include "base/logging.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/gcm_driver/android/jni_headers/GCMDriver_jni.h"
-#include "services/network/public/cpp/shared_url_loader_factory.h"
 
 using base::android::AppendJavaStringArrayToStringVector;
 using base::android::AttachCurrentThread;
@@ -27,12 +26,8 @@ namespace gcm {
 
 GCMDriverAndroid::GCMDriverAndroid(
     const base::FilePath& store_path,
-    const scoped_refptr<base::SequencedTaskRunner>& blocking_task_runner,
-    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
-    : GCMDriver(store_path,
-                blocking_task_runner,
-                std::move(url_loader_factory)),
-      recorder_(this) {
+    const scoped_refptr<base::SequencedTaskRunner>& blocking_task_runner)
+    : GCMDriver(store_path, blocking_task_runner), recorder_(this) {
   JNIEnv* env = AttachCurrentThread();
   java_ref_.Reset(Java_GCMDriver_create(env, reinterpret_cast<intptr_t>(this)));
 }
@@ -50,8 +45,8 @@ void GCMDriverAndroid::OnRegisterFinished(
     jboolean success) {
   std::string app_id = ConvertJavaStringToUTF8(env, j_app_id);
   std::string registration_id = ConvertJavaStringToUTF8(env, j_registration_id);
-  GCMClient::Result result = success ? GCMClient::SUCCESS
-                                     : GCMClient::UNKNOWN_ERROR;
+  GCMClient::Result result =
+      success ? GCMClient::SUCCESS : GCMClient::UNKNOWN_ERROR;
 
   recorder_.RecordRegistrationResponse(app_id, success);
 
@@ -64,8 +59,8 @@ void GCMDriverAndroid::OnUnregisterFinished(
     const JavaParamRef<jstring>& j_app_id,
     jboolean success) {
   std::string app_id = ConvertJavaStringToUTF8(env, j_app_id);
-  GCMClient::Result result = success ? GCMClient::SUCCESS
-                                     : GCMClient::UNKNOWN_ERROR;
+  GCMClient::Result result =
+      success ? GCMClient::SUCCESS : GCMClient::UNKNOWN_ERROR;
 
   recorder_.RecordUnregistrationResponse(app_id, success);
 
@@ -95,12 +90,11 @@ void GCMDriverAndroid::OnMessageReceived(
 
   // Expand j_data_keys_and_values from array to map.
   std::vector<std::string> data_keys_and_values;
-  AppendJavaStringArrayToStringVector(env,
-                                      j_data_keys_and_values,
+  AppendJavaStringArrayToStringVector(env, j_data_keys_and_values,
                                       &data_keys_and_values);
   for (size_t i = 0; i + 1 < data_keys_and_values.size(); i += 2) {
-    message.data[data_keys_and_values[i]] = data_keys_and_values[i+1];
-    message_byte_size += data_keys_and_values[i+1].size();
+    message.data[data_keys_and_values[i]] = data_keys_and_values[i + 1];
+    message_byte_size += data_keys_and_values[i + 1].size();
   }
   // Convert j_raw_data from byte[] to binary std::string.
   if (j_raw_data) {
@@ -125,11 +119,9 @@ void GCMDriverAndroid::ValidateRegistration(
       FROM_HERE, base::BindOnce(std::move(callback), true /* is_valid */));
 }
 
-void GCMDriverAndroid::OnSignedIn() {
-}
+void GCMDriverAndroid::OnSignedIn() {}
 
-void GCMDriverAndroid::OnSignedOut() {
-}
+void GCMDriverAndroid::OnSignedOut() {}
 
 void GCMDriverAndroid::AddAppHandler(const std::string& app_id,
                                      GCMAppHandler* handler) {
@@ -141,12 +133,10 @@ void GCMDriverAndroid::AddAppHandler(const std::string& app_id,
                                          ConvertUTF8ToJavaString(env, app_id));
 }
 
-void GCMDriverAndroid::AddConnectionObserver(GCMConnectionObserver* observer) {
-}
+void GCMDriverAndroid::AddConnectionObserver(GCMConnectionObserver* observer) {}
 
 void GCMDriverAndroid::RemoveConnectionObserver(
-    GCMConnectionObserver* observer) {
-}
+    GCMConnectionObserver* observer) {}
 
 GCMClient* GCMDriverAndroid::GetGCMClientForTesting() const {
   NOTIMPLEMENTED();
@@ -212,8 +202,7 @@ void GCMDriverAndroid::SetLastTokenFetchTime(const base::Time& time) {
   NOTIMPLEMENTED();
 }
 
-void GCMDriverAndroid::WakeFromSuspendForHeartbeat(bool wake) {
-}
+void GCMDriverAndroid::WakeFromSuspendForHeartbeat(bool wake) {}
 
 InstanceIDHandler* GCMDriverAndroid::GetInstanceIDHandlerInternal() {
   // Not supported for Android.
@@ -221,11 +210,9 @@ InstanceIDHandler* GCMDriverAndroid::GetInstanceIDHandlerInternal() {
 }
 
 void GCMDriverAndroid::AddHeartbeatInterval(const std::string& scope,
-                                            int interval_ms) {
-}
+                                            int interval_ms) {}
 
-void GCMDriverAndroid::RemoveHeartbeatInterval(const std::string& scope) {
-}
+void GCMDriverAndroid::RemoveHeartbeatInterval(const std::string& scope) {}
 
 void GCMDriverAndroid::OnActivityRecorded() {
   DCHECK(!get_gcm_statistics_callback_.is_null());
@@ -240,7 +227,8 @@ GCMClient::Result GCMDriverAndroid::EnsureStarted(
 }
 
 void GCMDriverAndroid::RegisterImpl(
-    const std::string& app_id, const std::vector<std::string>& sender_ids) {
+    const std::string& app_id,
+    const std::vector<std::string>& sender_ids) {
   DCHECK_EQ(1u, sender_ids.size());
   JNIEnv* env = AttachCurrentThread();
 

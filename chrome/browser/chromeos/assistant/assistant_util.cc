@@ -106,7 +106,10 @@ ash::mojom::AssistantAllowedState IsAssistantAllowedForProfile(
         IdentityManagerFactory::GetForProfileIfExists(profile);
 
     if (identity_manager) {
-      const std::string email = identity_manager->GetPrimaryAccountInfo().email;
+      // This function doesn't care about browser sync consent. We don't
+      // DCHECK that an account exists because some tests don't have one.
+      const std::string email =
+          identity_manager->GetUnconsentedPrimaryAccountInfo().email;
       if (!email.empty() &&
           (gaia::ExtractDomainName(email) == "gmail.com" ||
            gaia::ExtractDomainName(email) == "googlemail.com" ||

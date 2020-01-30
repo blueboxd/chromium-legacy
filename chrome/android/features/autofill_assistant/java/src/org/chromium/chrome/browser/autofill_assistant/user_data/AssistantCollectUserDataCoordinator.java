@@ -43,8 +43,7 @@ public class AssistantCollectUserDataCoordinator {
 
     private AssistantCollectUserDataCoordinator(
             Activity activity, AssistantCollectUserDataModel model, Locale locale) {
-        this(activity, model, locale,
-                DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT, locale));
+        this(activity, model, locale, DateFormat.getDateInstance(DateFormat.MEDIUM, locale));
     }
 
     @VisibleForTesting

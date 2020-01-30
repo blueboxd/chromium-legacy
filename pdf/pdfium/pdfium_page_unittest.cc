@@ -353,12 +353,16 @@ TEST_F(PDFiumPageHighlightTest, TestPopulateHighlights) {
     int32_t start_char_index;
     int32_t char_count;
     pp::Rect bounding_rect;
+    uint32_t color;
   };
 
+  constexpr uint32_t kHighlightDefaultColor = MakeARGB(255, 255, 255, 0);
+  constexpr uint32_t kHighlightRedColor = MakeARGB(102, 230, 0, 0);
+  constexpr uint32_t kHighlightNoColor = MakeARGB(0, 0, 0, 0);
   static const ExpectedHighlight kExpectedHighlights[] = {
-      {0, 5, {5, 196, 49, 26}},
-      {12, 7, {110, 196, 77, 26}},
-      {20, 1, {192, 196, 13, 26}}};
+      {0, 5, {5, 196, 49, 26}, kHighlightDefaultColor},
+      {12, 7, {110, 196, 77, 26}, kHighlightRedColor},
+      {20, 1, {192, 196, 13, 26}, kHighlightNoColor}};
 
   TestClient client;
   std::unique_ptr<PDFiumEngine> engine =
@@ -378,6 +382,7 @@ TEST_F(PDFiumPageHighlightTest, TestPopulateHighlights) {
               page->highlights_[i].char_count);
     CompareRect(kExpectedHighlights[i].bounding_rect,
                 page->highlights_[i].bounding_rect);
+    ASSERT_EQ(kExpectedHighlights[i].color, page->highlights_[i].color);
   }
 }
 

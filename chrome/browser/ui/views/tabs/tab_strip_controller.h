@@ -141,8 +141,12 @@ class TabStripController {
   // to |index|.
   virtual void OnKeyboardFocusedTabChanged(base::Optional<int> index) = 0;
 
-  // Returns the displayed title of the given |group|.
+  // Returns the title of the given |group|.
   virtual base::string16 GetGroupTitle(
+      const tab_groups::TabGroupId& group) const = 0;
+
+  // Returns the string describing the contents of the given |group|.
+  virtual base::string16 GetGroupContentString(
       const tab_groups::TabGroupId& group) const = 0;
 
   // Returns the color ID of the given |group|.

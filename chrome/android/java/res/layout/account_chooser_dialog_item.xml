@@ -31,14 +31,14 @@
             android:layout_height="wrap_content"
             android:ellipsize="end"
             android:singleLine="true"
-            android:textAppearance="@style/TextAppearance.BlackTitle1" />
+            android:textAppearance="@style/TextAppearance.TextLarge.Primary" />
         <TextView
             android:id="@+id/secondary_name"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:ellipsize="end"
             android:singleLine="true"
-            android:textAppearance="@style/TextAppearance.BlackBody" />
+            android:textAppearance="@style/TextAppearance.TextMedium.Secondary" />
     </LinearLayout>
     <ImageButton
         android:id="@+id/psl_info_btn"

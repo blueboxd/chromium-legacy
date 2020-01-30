@@ -13,7 +13,7 @@
 #include "components/dom_distiller/core/pref_names.h"
 #include "components/feed/buildflags.h"
 #if BUILDFLAG(ENABLE_FEED_IN_CHROME)
-#include "components/feed/core/pref_names.h"
+#include "components/feed/core/common/pref_names.h"
 #endif  // BUILDFLAG(ENABLE_FEED_IN_CHROME)
 #include "components/content_settings/core/common/pref_names.h"
 #include "components/embedder_support/pref_names.h"

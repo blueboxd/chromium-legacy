@@ -49,9 +49,6 @@ class ArCoreJavaUtils : public ArCoreSessionUtils {
       const base::android::JavaParamRef<jobject>& obj);
 
  private:
-  base::android::ScopedJavaLocalRef<jobject> getTabFromRenderer(
-      int render_process_id,
-      int render_frame_id);
 
   base::android::ScopedJavaGlobalRef<jobject> j_arcore_java_utils_;
 

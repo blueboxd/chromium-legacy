@@ -178,9 +178,10 @@ ProcessorEntity* ClientTagBasedRemoteUpdateHandler::ProcessUpdate(
     return nullptr;
   }
 
-  // Cache update encryption key name in case |update| will be moved away into
-  // ResolveConflict().
+  // Cache update encryption_key_name and is_deleted in case |update| will be
+  // moved away into ResolveConflict().
   const std::string update_encryption_key_name = update.encryption_key_name;
+  const bool update_is_tombstone = data.is_deleted();
   ConflictResolution resolution_type = ConflictResolution::kTypeSize;
   if (entity && entity->IsUnsynced()) {
     // Handle conflict resolution.
@@ -226,8 +227,10 @@ ProcessorEntity* ClientTagBasedRemoteUpdateHandler::ProcessUpdate(
   }
 
   // If the received entity has out of date encryption, we schedule another
-  // commit to fix it.
-  if (model_type_state_->encryption_key_name() != update_encryption_key_name) {
+  // commit to fix it. Tombstones aren't encrypted and hence shouldn't be
+  // checked.
+  if (!update_is_tombstone &&
+      model_type_state_->encryption_key_name() != update_encryption_key_name) {
     DVLOG(2) << ModelTypeToString(type_) << ": Requesting re-encrypt commit "
              << update_encryption_key_name << " -> "
              << model_type_state_->encryption_key_name();

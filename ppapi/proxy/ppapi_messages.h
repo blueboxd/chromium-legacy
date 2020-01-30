@@ -334,6 +334,7 @@ IPC_STRUCT_TRAITS_BEGIN(ppapi::PdfAccessibilityHighlightInfo)
   IPC_STRUCT_TRAITS_MEMBER(text_run_index)
   IPC_STRUCT_TRAITS_MEMBER(text_run_count)
   IPC_STRUCT_TRAITS_MEMBER(bounds)
+  IPC_STRUCT_TRAITS_MEMBER(color)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(ppapi::PdfAccessibilityPageObjects)

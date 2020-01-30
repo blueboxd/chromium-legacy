@@ -10,9 +10,7 @@
 #include <OleCtl.h>
 #include <wrl/client.h>
 
-#if defined(OS_WIN)
 #include <vector>
-#endif
 
 #include "base/memory/ref_counted.h"
 #include "base/stl_util.h"
@@ -1332,7 +1330,7 @@ class GetTextExtTestCallback : public TSFTextStoreTestCallback {
     SetInternalState(L"", 0, 0, 0);
     GetTextExtTest(view_cookie, 0, 0, 1, 2, 4, 6);
 
-    // Last character is not availabe due to timing issue of async API.
+    // Last character is not available due to timing issue of async API.
     // In this case, we will get first character bounds instead of whole text
     // bounds.
     SetInternalState(L"abc", 0, 0, 3);
@@ -2895,7 +2893,7 @@ TEST_F(TSFTextStoreTest, RegressionTest3) {
 
 // Due to crbug.com/978678, we should not call TextInputClient::InsertText if
 // provided text is empty. In fact, we should call TextInputClient::InsertText
-// with current composition text to commit compositon without losing text.
+// with current composition text to commit composition without losing text.
 class RegressionTest4Callback : public TSFTextStoreTestCallback {
  public:
   explicit RegressionTest4Callback(TSFTextStore* text_store)
@@ -2991,7 +2989,7 @@ TEST_F(TSFTextStoreTest, RegressionTest4) {
 // regression tests for crbug.com/1006067.
 // We should call |TextInputClient::SetCompositionText()| if ImeTextSpans are
 // changed from previous edit session during same composition even though
-// composition string and composition selection remain unchange.
+// composition string and composition selection remain unchanged.
 class RegressionTest5Callback : public TSFTextStoreTestCallback {
  public:
   explicit RegressionTest5Callback(TSFTextStore* text_store)
@@ -3040,7 +3038,7 @@ class RegressionTest5Callback : public TSFTextStoreTestCallback {
   }
 
   // Only change underline thickness in IME spans. Other states (composition
-  // string, selection) remain unchange.
+  // string, selection) remain unchanged.
   HRESULT LockGranted2(DWORD flags) {
     GetTextTest(0, -1, L"aa", 2);
 

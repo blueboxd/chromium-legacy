@@ -38,6 +38,7 @@ config("x11") {
     "X11",
     "X11-xcb",
     "xcb",
+    "xcb-dri3",
     "Xcomposite",
     "Xcursor",
     "Xdamage",

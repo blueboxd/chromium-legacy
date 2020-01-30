@@ -76,7 +76,6 @@ const char* const kPersistentPrefsWhitelist[] = {
     prefs::kRestartsWithStaleSeed,
 };
 
-// Shows notifications which correspond to PersistentPrefStore's reading errors.
 void HandleReadError(PersistentPrefStore::PrefReadError error) {}
 
 base::FilePath GetPrefStorePath() {

@@ -380,6 +380,27 @@ void AutocompleteResult::AppendDedicatedPedalMatches(
   }
 }
 
+void AutocompleteResult::ConvertInSuggestionPedalMatches(
+    AutocompleteProviderClient* client) {
+  const OmniboxPedalProvider* provider = client->GetPedalProvider();
+  // Used to ensure we keep only one Pedal of each kind.
+  std::unordered_set<OmniboxPedal*> pedals_found;
+  for (auto& match : matches_) {
+    // Skip matches that will not show Pedal because they already
+    // have a tab match or associated keyword.  Also skip matches
+    // that have already detected their Pedal.
+    if (match.has_tab_match || match.associated_keyword || match.pedal)
+      continue;
+
+    OmniboxPedal* const pedal = provider->FindPedalMatch(match.contents);
+    if (pedal) {
+      const auto result = pedals_found.insert(pedal);
+      if (result.second)
+        match.pedal = pedal;
+    }
+  }
+}
+
 void AutocompleteResult::ConvertOpenTabMatches(
     AutocompleteProviderClient* client,
     const AutocompleteInput* input) {

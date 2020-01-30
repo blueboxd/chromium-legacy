@@ -24,6 +24,7 @@
 #include "extensions/browser/api/extensions_api_client.h"
 #include "extensions/browser/extension_file_task_runner.h"
 #include "extensions/browser/extension_prefs.h"
+#include "extensions/browser/quota_service.h"
 #include "extensions/common/api/declarative_net_request.h"
 #include "extensions/common/api/declarative_net_request/constants.h"
 #include "extensions/common/extension_id.h"
@@ -174,6 +175,11 @@ void DeclarativeNetRequestGetDynamicRulesFunction::OnDynamicRulesFetched(
       dnr_api::GetDynamicRules::Results::Create(read_json_result.rules)));
 }
 
+// static
+bool
+    DeclarativeNetRequestGetMatchedRulesFunction::disable_throttling_for_test_ =
+        false;
+
 DeclarativeNetRequestGetMatchedRulesFunction::
     DeclarativeNetRequestGetMatchedRulesFunction() = default;
 DeclarativeNetRequestGetMatchedRulesFunction::
@@ -218,6 +224,22 @@ DeclarativeNetRequestGetMatchedRulesFunction::Run() {
 
   return RespondNow(
       ArgumentList(dnr_api::GetMatchedRules::Results::Create(details)));
+}
+
+void DeclarativeNetRequestGetMatchedRulesFunction::GetQuotaLimitHeuristics(
+    QuotaLimitHeuristics* heuristics) const {
+  QuotaLimitHeuristic::Config limit = {
+      dnr_api::MAX_GETMATCHEDRULES_CALLS_PER_INTERVAL,
+      base::TimeDelta::FromMinutes(dnr_api::GETMATCHEDRULES_QUOTA_INTERVAL)};
+
+  heuristics->push_back(std::make_unique<QuotaService::TimedLimit>(
+      limit, std::make_unique<QuotaLimitHeuristic::SingletonBucketMapper>(),
+      "MAX_GETMATCHEDRULES_CALLS_PER_INTERVAL"));
+}
+
+bool DeclarativeNetRequestGetMatchedRulesFunction::ShouldSkipQuotaLimiting()
+    const {
+  return user_gesture() || disable_throttling_for_test_;
 }
 
 DeclarativeNetRequestSetActionCountAsBadgeTextFunction::

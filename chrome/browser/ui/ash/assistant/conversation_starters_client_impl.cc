@@ -11,7 +11,10 @@
 #include "ash/public/cpp/assistant/conversation_starter.h"
 #include "base/i18n/rtl.h"
 #include "base/memory/weak_ptr.h"
+#include "base/stl_util.h"
+#include "base/strings/string_util.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/ash/assistant/conversation_starters_parser.h"
 #include "net/base/url_util.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -19,13 +22,14 @@
 
 namespace {
 
+// Constants -------------------------------------------------------------------
+
+// Endpoint.
 constexpr char kBaseUrl[] =
     "https://assistant.google.com/proactivesuggestions/conversationstarters";
 
-constexpr char kLocaleParamKey[] = "hl";
-
+// Network.
 constexpr int kMaxBodySizeBytes = 10 * 1024;
-
 constexpr net::NetworkTrafficAnnotationTag kNetworkTrafficAnnotationTag =
     net::DefineNetworkTrafficAnnotation("conversation_starters_loader", R"(
           semantics: {
@@ -40,6 +44,9 @@ constexpr net::NetworkTrafficAnnotationTag kNetworkTrafficAnnotationTag =
           policy: {
             cookies_allowed: YES
           })");
+
+// Param Keys.
+constexpr char kLocaleParamKey[] = "hl";
 
 // Loader ----------------------------------------------------------------------
 
@@ -80,10 +87,21 @@ class Loader {
   bool is_destroying() const { return is_destroying_; }
 
  private:
-  // TODO(dmblack): Parse conversation starters from |body|.
-  void OnComplete(std::unique_ptr<std::string> body) {
-    if (callback_)
+  void OnComplete(std::unique_ptr<std::string> safe_json_response) {
+    if (!callback_)
+      return;
+
+    // Verify |safe_json_response| is OK.
+    if (loader_->NetError() != net::OK || !safe_json_response) {
+      LOG(ERROR) << net::ErrorToString(loader_->NetError());
       std::move(callback_).Run(std::vector<ash::ConversationStarter>());
+      return;
+    }
+
+    // Return conversation starters parsed from |safe_json_response|.
+    // Note that this collection may be empty in the event of a parse error.
+    std::move(callback_).Run(
+        ConversationStartersParser::Parse(*safe_json_response));
   }
 
   scoped_refptr<network::SharedURLLoaderFactory> const factory_;
@@ -100,9 +118,7 @@ class Loader {
 // ConversationStartersClientImpl ----------------------------------------------
 
 ConversationStartersClientImpl::ConversationStartersClientImpl(Profile* profile)
-    : profile_(profile) {
-  DCHECK(profile_);
-}
+    : profile_(profile) {}
 
 ConversationStartersClientImpl::~ConversationStartersClientImpl() = default;
 
@@ -117,8 +133,8 @@ void ConversationStartersClientImpl::FetchConversationStarters(
         // Pass on |conversation_starters| to the original |callback|.
         std::move(callback).Run(std::move(conversation_starters));
 
-        // We only delete |loader| if this code is *not* being run as part
-        // of its destruction sequence.
+        // We only delete |loader| if this code is *not* being run as part of
+        // its destruction sequence.
         if (!loader->is_destroying())
           delete loader;
       },

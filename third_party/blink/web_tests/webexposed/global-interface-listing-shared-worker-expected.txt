@@ -1150,6 +1150,7 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     getter ready
 [Worker]     method close
 [Worker]     method constructor
+[Worker]     method createSendStream
 [Worker]     method receiveDatagrams
 [Worker]     method sendDatagrams
 [Worker] interface ReadableStream
@@ -1226,6 +1227,12 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     getter sourceFile
 [Worker]     getter statusCode
 [Worker]     getter violatedDirective
+[Worker]     method constructor
+[Worker] interface SendStream
+[Worker]     attribute @@toStringTag
+[Worker]     getter writable
+[Worker]     getter writingAborted
+[Worker]     method abortWriting
 [Worker]     method constructor
 [Worker] interface ServiceWorkerRegistration : EventTarget
 [Worker]     attribute @@toStringTag

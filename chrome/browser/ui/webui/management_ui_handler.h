@@ -34,6 +34,7 @@ extern const char kManagementReportNetworkInterfaces[];
 extern const char kManagementReportUsers[];
 extern const char kManagementPrinting[];
 extern const char kManagementCrostini[];
+extern const char kManagementCrostiniContainerConfiguration[];
 extern const char kManagementReportExtensions[];
 extern const char kManagementReportAndroidApplications[];
 #endif  // defined(OS_CHROMEOS)

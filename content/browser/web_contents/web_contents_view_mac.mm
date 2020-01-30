@@ -10,7 +10,6 @@
 
 #import "base/mac/mac_util.h"
 #import "base/mac/scoped_sending_event.h"
-#include "base/mac/sdk_forward_declarations.h"
 #include "base/message_loop/message_loop_current.h"
 #import "base/message_loop/message_pump_mac.h"
 #include "base/threading/thread_restrictions.h"

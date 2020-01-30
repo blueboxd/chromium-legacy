@@ -5,6 +5,7 @@
 #include "storage/browser/quota/quota_manager_proxy.h"
 
 #include <stdint.h>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -98,6 +99,16 @@ void QuotaManagerProxy::NotifyOriginNoLongerInUse(const url::Origin& origin) {
   }
   if (manager_)
     manager_->NotifyOriginNoLongerInUse(origin);
+}
+
+void QuotaManagerProxy::NotifyWriteFailed(const url::Origin& origin) {
+  if (!io_thread_->BelongsToCurrentThread()) {
+    io_thread_->PostTask(
+        FROM_HERE,
+        base::BindOnce(&QuotaManagerProxy::NotifyWriteFailed, this, origin));
+  }
+  if (manager_)
+    manager_->NotifyWriteFailed(origin);
 }
 
 void QuotaManagerProxy::SetUsageCacheEnabled(QuotaClient::ID client_id,

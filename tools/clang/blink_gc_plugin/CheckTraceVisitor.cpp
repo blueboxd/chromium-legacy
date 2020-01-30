@@ -199,7 +199,7 @@ bool CheckTraceVisitor::CheckTraceBaseCall(CallExpr* call) {
       return false;
 
     callee_record = type->getAsCXXRecordDecl();
-    func_name = trace_decl->getName();
+    func_name = std::string(trace_decl->getName());
   } else if (UnresolvedMemberExpr* callee =
              dyn_cast<UnresolvedMemberExpr>(call->getCallee())) {
     // Callee part may become unresolved if the type of the argument

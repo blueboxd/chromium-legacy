@@ -793,6 +793,16 @@ public class LibraryLoader {
                 ContextCompat.getCodeCacheDir(ContextUtils.getApplicationContext()), LIBRARY_DIR);
     }
 
+    /**
+     * This sets the LibraryLoader internal state to its fully initialized state and should *only*
+     * be used by clients like NativeTests which manually load their native libraries without using
+     * the LibraryLoader.
+     */
+    public void setLibrariesLoadedForNativeTests() {
+        mLoadState = LoadState.LOADED;
+        mInitialized = true;
+    }
+
     @NativeMethods
     interface Natives {
         // Only methods needed before or during normal JNI registration are during System.OnLoad.

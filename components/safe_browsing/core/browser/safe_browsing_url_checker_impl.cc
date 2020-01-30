@@ -18,6 +18,9 @@
 #include "components/safe_browsing/core/verdict_cache_manager.h"
 #include "components/safe_browsing/core/web_ui/constants.h"
 #include "components/security_interstitials/core/unsafe_resource.h"
+#include "components/signin/public/identity_manager/identity_manager.h"
+#include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "net/base/load_flags.h"
@@ -103,7 +106,8 @@ SafeBrowsingUrlCheckerImpl::SafeBrowsingUrlCheckerImpl(
     scoped_refptr<UrlCheckerDelegate> url_checker_delegate,
     const base::RepeatingCallback<content::WebContents*()>& web_contents_getter,
     bool real_time_lookup_enabled,
-    base::WeakPtr<VerdictCacheManager> cache_manager_on_ui)
+    base::WeakPtr<VerdictCacheManager> cache_manager_on_ui,
+    signin::IdentityManager* identity_manager_on_ui)
     : headers_(headers),
       load_flags_(load_flags),
       resource_type_(resource_type),
@@ -112,7 +116,8 @@ SafeBrowsingUrlCheckerImpl::SafeBrowsingUrlCheckerImpl(
       url_checker_delegate_(std::move(url_checker_delegate)),
       database_manager_(url_checker_delegate_->GetDatabaseManager()),
       real_time_lookup_enabled_(real_time_lookup_enabled),
-      cache_manager_on_ui_(cache_manager_on_ui) {}
+      cache_manager_on_ui_(cache_manager_on_ui),
+      identity_manager_on_ui_(identity_manager_on_ui) {}
 
 SafeBrowsingUrlCheckerImpl::~SafeBrowsingUrlCheckerImpl() {
   DCHECK(CurrentlyOnThread(ThreadID::IO));
@@ -517,7 +522,8 @@ void SafeBrowsingUrlCheckerImpl::OnGetCachedRealTimeUrlVerdictDoneOnIO(
 
   auto* rt_lookup_service = database_manager_->GetRealTimeUrlLookupService();
   rt_lookup_service->StartLookup(url, std::move(request_callback),
-                                 std::move(response_callback));
+                                 std::move(response_callback),
+                                 identity_manager_on_ui_);
 }
 
 void SafeBrowsingUrlCheckerImpl::OnRTLookupRequest(

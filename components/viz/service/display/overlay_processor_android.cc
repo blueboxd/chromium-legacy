@@ -109,7 +109,7 @@ void OverlayProcessorAndroid::ScheduleOverlays(
 
 void OverlayProcessorAndroid::OverlayPresentationComplete() {
   // This is a signal from Display::DidReceiveSwapBuffersAck. We use this to
-  // help clear locks on resources from old frame.
+  // help clear locks on resources from the old frame.
   committed_overlay_locks_.clear();
   std::swap(committed_overlay_locks_, pending_overlay_locks_.front());
   pending_overlay_locks_.pop_front();

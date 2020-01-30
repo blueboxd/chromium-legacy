@@ -250,8 +250,13 @@ SkColor AshColorProvider::GetContentLayerColorImpl(
       dark_color = gfx::kGoogleRed300;
       break;
     case ContentLayerType::kProminentIconButton:
+    case ContentLayerType::kSliderThumbEnabled:
       light_color = gfx::kGoogleBlue600;
       dark_color = gfx::kGoogleBlue300;
+      break;
+    case ContentLayerType::kSliderThumbDisabled:
+      light_color = gfx::kGoogleGrey600;
+      dark_color = gfx::kGoogleGrey600;
       break;
     case ContentLayerType::kIconSystemMenu:
       light_color = gfx::kGoogleGrey700;

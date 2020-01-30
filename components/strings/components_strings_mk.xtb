@@ -153,7 +153,7 @@
 <translation id="1569487616857761740">Внесете датум на истекување</translation>
 <translation id="1581080074034554886">CVC</translation>
 <translation id="1583429793053364125">Нешто тргна наопаку при прикажувањето на оваа веб-страница.</translation>
-<translation id="1586541204584340881">кои екстензии сте ги инсталирале;</translation>
+<translation id="1586541204584340881">кои екстензии сте ги инсталирале</translation>
 <translation id="1588438908519853928">Нормален</translation>
 <translation id="1592005682883173041">Локален пристап до податоците</translation>
 <translation id="1594030484168838125">Избери</translation>
@@ -428,7 +428,6 @@
 <translation id="2799223571221894425">Рестартирај</translation>
 <translation id="2803306138276472711">Google Safe Browsing неодамна <ph name="BEGIN_LINK" />откри злонамерен софтвер<ph name="END_LINK" /> на <ph name="SITE" />. Веб-локациите што обично се безбедни, некогаш се инфицираат со злонамерен софтвер.</translation>
 <translation id="2807052079800581569">Позиција на сликата Y</translation>
-<translation id="2809804249696361569">Двата листа</translation>
 <translation id="2824775600643448204">Лента за адреса и за пребарување</translation>
 <translation id="2826760142808435982">Поврзувањето е шифрирано и автентицирано со употреба на <ph name="CIPHER" /> и користи <ph name="KX" /> како клучен механизам за размена.</translation>
 <translation id="2835170189407361413">Исчисти формулар</translation>
@@ -937,7 +936,6 @@
 <translation id="5112422516732747637">A5</translation>
 <translation id="5115216390227830982">European-Edp</translation>
 <translation id="5115563688576182185">(64-бита)</translation>
-<translation id="5121469660360593280">Споделувајте податоци со администраторот за безбедносните настани што ги пријавила „Заштитата на компаниски корисник на Chrome“. Тука спаѓаат URL-адресите на страниците што ги посетувате, имињата или метаподатоците на датотеките и корисничкото име што го користите за најавување на вашиот уред и Chrome.</translation>
 <translation id="5123063207673082822">Викенд</translation>
 <translation id="5125394840236832993">B-Plus</translation>
 <translation id="5126510351761255129">Потврдете ја картичката</translation>
@@ -952,7 +950,6 @@
 <translation id="5161506081086828129">Фиока за складирање 9</translation>
 <translation id="516920405563544094">Внесете го CVC за <ph name="CREDIT_CARD" />. Откако ќе потврдите, деталите за картичката од вашата сметка на Google ќе се споделат со сајтов.</translation>
 <translation id="5169827969064885044">Може да го изгубите пристапот до сметката на вашата организација или да ви го украдат идентитетот. Chrome препорачува да ја смените лозинката веднаш.</translation>
-<translation id="5170017743895942767">Заштита на компаниски корисник на Chrome</translation>
 <translation id="5171045022955879922">Барај или впиши URL</translation>
 <translation id="5171689220826475070">Fanfold-European</translation>
 <translation id="5172758083709347301">Машина</translation>
@@ -1085,7 +1082,6 @@
 <translation id="5737183892635480227">{NUM_CARDS,plural, =1{Зачувајте картичка во вашата сметка на Google}one{Зачувајте картички во вашата сметка на Google}other{Зачувајте картички во вашата сметка на Google}}</translation>
 <translation id="5745980000221562234">{NUM_CARDS,plural, =1{Користи виртуелен број за картичкава}one{Изберете картичка}other{Изберете картичка}}</translation>
 <translation id="5763042198335101085">Внесете важечка адреса на е-пошта</translation>
-<translation id="5763703224595565476">Администраторот ја овозможи „Заштитата на компаниски корисник на Chrome“ во вашиот прелистувач. „Заштитата на компаниски корисник на Chrome“ има пристап до дел од вашите податоци.</translation>
 <translation id="5765072501007116331">За да ги видите методите и условите за доставување, изберете адреса</translation>
 <translation id="5776313857861697733">Приоритет</translation>
 <translation id="5778550464785688721">Целосна контрола на уредите MIDI</translation>
@@ -1246,7 +1242,7 @@
 <translation id="6433595998831338502"><ph name="HOST_NAME" /> одби да се поврзе.</translation>
 <translation id="6434309073475700221">Отфрли</translation>
 <translation id="6440503408713884761">Игнориран</translation>
-<translation id="6443406338865242315">кои екстензии и приклучоци ги имате инсталирано;</translation>
+<translation id="6443406338865242315">кои екстензии и приклучоци ги имате инсталирано</translation>
 <translation id="6446163441502663861">Kahu (плик)</translation>
 <translation id="6446608382365791566">Додајте повеќе информации</translation>
 <translation id="6447842834002726250">Колачиња</translation>
@@ -1356,7 +1352,7 @@
 <translation id="7012363358306927923">China UnionPay</translation>
 <translation id="7016992613359344582">Овие трошоци може да бидат еднократни или повторливи и може нема да бидат очигледни.</translation>
 <translation id="7029809446516969842">Лозинки</translation>
-<translation id="7031646650991750659">кои апликации од Google Play сте ги инсталирале.</translation>
+<translation id="7031646650991750659">кои апликации од Google Play сте ги инсталирале</translation>
 <translation id="7050187094878475250">Се обидовте да стигнете до <ph name="DOMAIN" />, но серверот прикажа сертификат со период на важност што е премногу долг за да му се верува.</translation>
 <translation id="705310974202322020">{NUM_CARDS,plural, =1{Картичкава не може да се зачува во моментов}one{Картичкиве не може да се зачуваат во моментов}other{Картичкиве не може да се зачуваат во моментов}}</translation>
 <translation id="7053983685419859001">Блокирај</translation>
@@ -1422,7 +1418,6 @@
 <translation id="733923710415886693">Сертификатот на серверот не е откриен преку Транспарентност на сертификати.</translation>
 <translation id="734600844861828519">11x15</translation>
 <translation id="7346048084945669753">Е поврзан:</translation>
-<translation id="73479065977517481"><ph name="ENROLLMENT_DOMAIN" /> ја овозможи „Заштитата на компаниски корисник на Chrome“ во вашиот прелистувач. „Заштитата на компаниски корисник на Chrome“ има пристап до дел од вашите податоци.</translation>
 <translation id="7349430561505560861">A4-Extra</translation>
 <translation id="7353601530677266744">Командна линија</translation>
 <translation id="7372973238305370288">резултат од пребарувањето</translation>

@@ -90,15 +90,24 @@ class SkiaOutputDeviceBufferQueue::Image {
     return scoped_skia_write_access_->surface();
   }
 
+  std::vector<GrBackendSemaphore> TakeEndWriteSkiaSemaphores() {
+    std::vector<GrBackendSemaphore> temp_vector;
+    temp_vector.swap(end_semaphores_);
+    return temp_vector;
+  }
   void EndWriteSkia() {
+    // The Flush now takes place in finishPaintCurrentBuffer on the CPU side.
+    // check if end_semaphores is not empty then flash here
     DCHECK(scoped_skia_write_access_);
-    GrFlushInfo flush_info = {
-        .fFlags = kNone_GrFlushFlags,
-        .fNumSemaphores = end_semaphores_.size(),
-        .fSignalSemaphores = end_semaphores_.data(),
-    };
-    scoped_skia_write_access_->surface()->flush(
-        SkSurface::BackendSurfaceAccess::kNoAccess, flush_info);
+    if (!end_semaphores_.empty()) {
+      GrFlushInfo flush_info = {
+          .fFlags = kNone_GrFlushFlags,
+          .fNumSemaphores = end_semaphores_.size(),
+          .fSignalSemaphores = end_semaphores_.data(),
+      };
+      scoped_skia_write_access_->surface()->flush(
+          SkSurface::BackendSurfaceAccess::kNoAccess, flush_info);
+    }
     scoped_skia_write_access_.reset();
     end_semaphores_.clear();
 
@@ -503,6 +512,11 @@ void SkiaOutputDeviceBufferQueue::EndPaint(
     const GrBackendSemaphore& semaphore) {
   DCHECK(current_image_);
   current_image_->EndWriteSkia();
+}
+
+std::vector<GrBackendSemaphore>
+SkiaOutputDeviceBufferQueue::TakeEndPaintSemaphores() {
+  return current_image_->TakeEndWriteSkiaSemaphores();
 }
 
 }  // namespace viz

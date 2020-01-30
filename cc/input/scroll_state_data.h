@@ -11,6 +11,7 @@
 
 #include "cc/cc_export.h"
 #include "cc/trees/property_tree.h"
+#include "ui/events/types/scroll_types.h"
 
 namespace cc {
 
@@ -46,9 +47,9 @@ class CC_EXPORT ScrollStateData {
   // True if the user interacts directly with the display, e.g., via
   // touch.
   bool is_direct_manipulation;
-  // Granularity units for delta - TODO(dlibby): change this to an enum -
-  // crbug.com/1045306
-  double delta_granularity;
+
+  // Granularity units for the scroll delta.
+  ui::input_types::ScrollGranularity delta_granularity;
 
   // TODO(tdresser): ScrollState shouldn't need to keep track of whether or not
   // this ScrollState object has caused a scroll. Ideally, any native scroller

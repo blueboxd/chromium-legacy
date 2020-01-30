@@ -38,12 +38,15 @@ constexpr wchar_t kRegMdmEnableForcePasswordReset[] =
 constexpr wchar_t kRegEscrowServiceServerUrl[] = L"mdm_ess_url";
 constexpr wchar_t kRegMdmSupportsMultiUser[] = L"mdm_mu";
 constexpr wchar_t kRegMdmAllowConsumerAccounts[] = L"mdm_aca";
+constexpr wchar_t kRegDeviceDetailsUploadStatus[] =
+    L"device_details_upload_status";
 constexpr wchar_t kUserPasswordLsaStoreKeyPrefix[] =
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
     L"Chrome-GCPW-";
 #else
     L"Chromium-GCPW-";
 #endif
+const char kErrorKeyInRequestResult[] = "error";
 
 // Overridden in tests to force the MDM enrollment to either succeed or fail.
 enum class EnrollmentStatus {
@@ -74,6 +77,14 @@ enum class EscrowServiceStatus {
 
 EscrowServiceStatus g_escrow_service_enabled = EscrowServiceStatus::kDisabled;
 #endif
+
+enum class DeviceDetailsUploadNeeded {
+  kForceTrue,
+  kForceFalse,
+  kDontForce,
+};
+DeviceDetailsUploadNeeded g_device_details_upload_needed =
+    DeviceDetailsUploadNeeded::kDontForce;
 
 namespace {
 
@@ -354,6 +365,23 @@ bool NeedsToEnrollWithMdm() {
   return !mdm_url.empty() && !IsEnrolledWithGoogleMdm(mdm_url);
 }
 
+bool UploadDeviceDetailsNeeded(const base::string16& sid) {
+  switch (g_device_details_upload_needed) {
+    case DeviceDetailsUploadNeeded::kForceTrue:
+      return true;
+    case DeviceDetailsUploadNeeded::kForceFalse:
+      return false;
+    case DeviceDetailsUploadNeeded::kDontForce:
+      break;
+  }
+
+  DWORD status = 0;
+  GetUserProperty(sid, kRegDeviceDetailsUploadStatus, &status);
+  base::string16 mdm_url = GetMdmUrl();
+
+  return status != 1;
+}
+
 base::string16 GetSerialNumber() {
   if (g_use_test_serial_number)
     return g_test_serial_number;
@@ -459,6 +487,22 @@ GoogleRegistrationDataForTesting::~GoogleRegistrationDataForTesting() {
 }
 
 // GoogleSerialNumberForTesting //////////////////////////////////////////
+
+// GoogleUploadDeviceDetailsNeededForTesting //////////////////////////////////
+
+GoogleUploadDeviceDetailsNeededForTesting::
+    GoogleUploadDeviceDetailsNeededForTesting(bool success) {
+  g_device_details_upload_needed = success
+                                       ? DeviceDetailsUploadNeeded::kForceTrue
+                                       : DeviceDetailsUploadNeeded::kForceFalse;
+}
+
+GoogleUploadDeviceDetailsNeededForTesting::
+    ~GoogleUploadDeviceDetailsNeededForTesting() {
+  g_device_details_upload_needed = DeviceDetailsUploadNeeded::kDontForce;
+}
+
+// GoogleUploadDeviceDetailsNeededForTesting //////////////////////////////////
 
 GoogleMdmEscrowServiceEnablerForTesting::
     GoogleMdmEscrowServiceEnablerForTesting() {

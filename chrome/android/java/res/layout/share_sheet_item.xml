@@ -8,7 +8,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:clickable="true"
-    android:textAppearance="@style/TextAppearance.BlackCaptionDefault"
+    android:textAppearance="@style/TextAppearance.TextSmall.Primary"
     android:layout_height="fill_parent"
     android:layout_width="67dp"
     android:layout_marginStart="16dp"
@@ -30,5 +30,5 @@
         android:maxLines="2"
         android:paddingTop="13dp"
         android:textAlignment="center"
-        android:textAppearance="@style/TextAppearance.BlackCaptionDefault" />
+        android:textAppearance="@style/TextAppearance.TextSmall.Primary" />
 </LinearLayout>

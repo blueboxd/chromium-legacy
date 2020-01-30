@@ -13,6 +13,8 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/notification_types.h"
+#include "content/public/common/url_constants.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 
 namespace {
@@ -98,4 +100,27 @@ IN_PROC_BROWSER_TEST_F(PermissionManagerBrowserTest,
   // TODO(crbug.com/889276) : We are relying here on the test shuts down to
   // close the browser. We need to make the test more robust by closing the
   // browser explicitly.
+}
+
+IN_PROC_BROWSER_TEST_F(PermissionManagerBrowserTest,
+                       ServiceWorkerPermissionAfterRendererCrash) {
+  content::ScopedAllowRendererCrashes scoped_allow_renderer_crashes_;
+
+  content::WindowedNotificationObserver crash_observer(
+      content::NOTIFICATION_WEB_CONTENTS_DISCONNECTED,
+      content::NotificationService::AllSources());
+  incognito_browser()->OpenURL(content::OpenURLParams(
+      GURL(content::kChromeUICrashURL), content::Referrer(),
+      WindowOpenDisposition::CURRENT_TAB, ui::PAGE_TRANSITION_TYPED, false));
+  crash_observer.Wait();
+
+  base::RunLoop run_loop;
+  auto* pm = static_cast<SubscriptionInterceptingPermissionManager*>(
+      PermissionManagerFactory::GetForProfile(incognito_browser()->profile()));
+  pm->SetSubscribeCallback(run_loop.QuitClosure());
+
+  ui_test_utils::NavigateToURL(
+      incognito_browser(), embedded_test_server()->GetURL(
+                               "/permissions/permissions_service_worker.html"));
+  run_loop.Run();
 }

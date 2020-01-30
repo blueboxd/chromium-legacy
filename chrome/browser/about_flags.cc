@@ -1325,6 +1325,18 @@ const FeatureEntry::FeatureVariation kAndroidNightModeFeatureVariations[] = {
     {"(default to light theme)", kAndroidNightModeDefaultToLightConstant,
      base::size(kAndroidNightModeDefaultToLightConstant), nullptr}};
 
+const FeatureEntry::FeatureParam kOmniboxAssistantVoiceSearch_Variations[] = {
+    {"min_agsa_version", ""},
+    {"min_android_sdk", ""},
+    {"min_memory_mb", ""},
+    {"enabled_locales", ""}};
+
+const FeatureEntry::FeatureVariation kOmniboxAssistantVoiceSearchVariations[] =
+    {
+        {"(with params)", kOmniboxAssistantVoiceSearch_Variations,
+         base::size(kOmniboxAssistantVoiceSearch_Variations), nullptr},
+};
+
 const FeatureEntry::FeatureParam
     kOmniboxSearchEngineLogoRoundedEdgesVariationConstant[] = {
         {"rounded_edges", "true"}};
@@ -1536,6 +1548,14 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableReaderModeDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(dom_distiller::kReaderMode)},
 #endif  // !defined(OS_ANDROID)
+    {"enable-webrtc-hw-h264-encoding",
+     flag_descriptions::kWebrtcHwH264EncodingName,
+     flag_descriptions::kWebrtcHwH264EncodingDescription, kOsAndroid | kOsCrOS,
+     FEATURE_VALUE_TYPE(blink::features::kWebRtcHWH264Encoding)},
+    {"enable-webrtc-hw-vp8-encoding",
+     flag_descriptions::kWebrtcHwVP8EncodingName,
+     flag_descriptions::kWebrtcHwVP8EncodingDescription, kOsAndroid | kOsCrOS,
+     FEATURE_VALUE_TYPE(blink::features::kWebRtcHWVP8Encoding)},
 #if defined(WEBRTC_USE_PIPEWIRE)
     {"enable-webrtc-pipewire-capturer",
      flag_descriptions::kWebrtcPipeWireCapturerName,
@@ -1565,10 +1585,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kWebrtcHideLocalIpsWithMdnsName,
      flag_descriptions::kWebrtcHideLocalIpsWithMdnsDecription, kOsDesktop,
      FEATURE_VALUE_TYPE(blink::features::kWebRtcHideLocalIpsWithMdns)},
-    {"enable-webrtc-use-min-max-vea-dimensions",
-     flag_descriptions::kWebrtcUseMinMaxVEADimensionsName,
-     flag_descriptions::kWebrtcUseMinMaxVEADimensionsDescription, kOsAll,
-     FEATURE_VALUE_TYPE(blink::features::kWebRtcUseMinMaxVEADimensions)},
 #if defined(OS_ANDROID)
     {"clear-old-browsing-data", flag_descriptions::kClearOldBrowsingDataName,
      flag_descriptions::kClearOldBrowsingDataDescription, kOsAndroid,
@@ -2799,7 +2815,9 @@ const FeatureEntry kFeatureEntries[] = {
     {"omnibox-assistant-voice-search",
      flag_descriptions::kOmniboxAssistantVoiceSearchName,
      flag_descriptions::kOmniboxAssistantVoiceSearchDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(omnibox::kOmniboxAssistantVoiceSearch)},
+     FEATURE_WITH_PARAMS_VALUE_TYPE(omnibox::kOmniboxAssistantVoiceSearch,
+                                    kOmniboxAssistantVoiceSearchVariations,
+                                    "OmniboxAssistantVoiceSearch")},
 
     {"omnibox-search-engine-logo",
      flag_descriptions::kOmniboxSearchEngineLogoName,
@@ -2894,6 +2912,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kOmniboxPedalSuggestionsName,
      flag_descriptions::kOmniboxPedalSuggestionsDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(omnibox::kOmniboxPedalSuggestions)},
+    {"omnibox-suggestion-button-row",
+     flag_descriptions::kOmniboxSuggestionButtonRowName,
+     flag_descriptions::kOmniboxSuggestionButtonRowDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(omnibox::kOmniboxSuggestionButtonRow)},
     {"omnibox-suggestion-transparency-options",
      flag_descriptions::kOmniboxSuggestionTransparencyOptionsName,
      flag_descriptions::kOmniboxSuggestionTransparencyOptionsDescription,
@@ -3275,14 +3297,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kUsePreferredIntervalForVideoName,
      flag_descriptions::kUsePreferredIntervalForVideoDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(features::kUsePreferredIntervalForVideo)},
-
-#if defined(OS_WIN)
-    {"enable-gpu-appcontainer", flag_descriptions::kEnableGpuAppcontainerName,
-     flag_descriptions::kEnableGpuAppcontainerDescription, kOsWin,
-     ENABLE_DISABLE_VALUE_TYPE(
-         service_manager::switches::kEnableGpuAppContainer,
-         service_manager::switches::kDisableGpuAppContainer)},
-#endif  // OS_WIN
 
     {"BundledConnectionHelp", flag_descriptions::kBundledConnectionHelpName,
      flag_descriptions::kBundledConnectionHelpDescription, kOsAll,
@@ -4039,6 +4053,11 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(features::kWebContentsOcclusion)},
 #endif  // defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
 
+    {"enable-webrtc-hw-vp9-encoding",
+     flag_descriptions::kWebrtcHwVP9EncodingName,
+     flag_descriptions::kWebrtcHwVP9EncodingDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(blink::features::kWebRtcHWVP9Encoding)},
+
 #if defined(OS_ANDROID)
     {"mobile-identity-consistency",
      flag_descriptions::kMobileIdentityConsistencyName,
@@ -4197,6 +4216,10 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-portals", flag_descriptions::kEnablePortalsName,
      flag_descriptions::kEnablePortalsDescription, kOsAll,
      FEATURE_VALUE_TYPE(blink::features::kPortals)},
+    {"enable-portals-cross-origin",
+     flag_descriptions::kEnablePortalsCrossOriginName,
+     flag_descriptions::kEnablePortalsCrossOriginDescription, kOsAll,
+     FEATURE_VALUE_TYPE(blink::features::kPortalsCrossOrigin)},
     {"enable-autofill-credit-card-authentication",
      flag_descriptions::kEnableAutofillCreditCardAuthenticationName,
      flag_descriptions::kEnableAutofillCreditCardAuthenticationDescription,
@@ -4339,12 +4362,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"ev-details-in-page-info", flag_descriptions::kEvDetailsInPageInfoName,
      flag_descriptions::kEvDetailsInPageInfoDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kEvDetailsInPageInfo)},
-
-    {"security-interstitials-dark-mode",
-     flag_descriptions::kSecurityInterstitialsDarkModeName,
-     flag_descriptions::kSecurityInterstitialsDarkModeDescription, kOsAll,
-     FEATURE_VALUE_TYPE(
-         security_interstitials::kSecurityInterstitialsDarkMode)},
 
     {"enable-autofill-credit-card-upload-feedback",
      flag_descriptions::kEnableAutofillCreditCardUploadFeedbackName,
@@ -4781,6 +4798,9 @@ const FeatureEntry kFeatureEntries[] = {
     {"split-settings-sync", flag_descriptions::kSplitSettingsSyncName,
      flag_descriptions::kSplitSettingsSyncDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kSplitSettingsSync)},
+    {"help-app", flag_descriptions::kHelpAppName,
+     flag_descriptions::kHelpAppDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(chromeos::features::kHelpAppV2)},
     {"media-app", flag_descriptions::kMediaAppName,
      flag_descriptions::kMediaAppDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kMediaApp)},

@@ -183,13 +183,6 @@ bool FloatEquals(float f1, float f2) {
          kEpsilonScale * fmaxf(fmaxf(fabsf(f1), fabsf(f2)), kEpsilonScale);
 }
 
-uint32_t MakeARGB(unsigned int a,
-                  unsigned int r,
-                  unsigned int g,
-                  unsigned int b) {
-  return (a << 24) | (r << 16) | (g << 8) | b;
-}
-
 }  // namespace
 
 PDFiumPage::LinkTarget::LinkTarget() : page(-1) {}
@@ -585,6 +578,7 @@ PDFiumPage::GetHighlightInfo() {
     cur_info.bounds = pp::FloatRect(
         highlight.bounding_rect.x(), highlight.bounding_rect.y(),
         highlight.bounding_rect.width(), highlight.bounding_rect.height());
+    cur_info.color = highlight.color;
     highlight_info.push_back(std::move(cur_info));
   }
   return highlight_info;
@@ -1079,6 +1073,22 @@ void PDFiumPage::PopulateHighlights() {
         pp::FloatRect(rect.left, rect.bottom, std::abs(rect.right - rect.left),
                       std::abs(rect.bottom - rect.top)),
         &highlight.start_char_index, &highlight.char_count);
+
+    // Retrieve the color of the highlight.
+    unsigned int color_r;
+    unsigned int color_g;
+    unsigned int color_b;
+    unsigned int color_a;
+    FPDF_PAGEOBJECT page_object = FPDFAnnot_GetObject(annot.get(), 0);
+    if (FPDFPageObj_GetFillColor(page_object, &color_r, &color_g, &color_b,
+                                 &color_a)) {
+      highlight.color = MakeARGB(color_a, color_r, color_g, color_b);
+    } else {
+      // Set the same default color as in pdfium. See calls to
+      // GetColorStringWithDefault() in CPVT_GenerateAP::Generate*AP() in
+      // pdfium.
+      highlight.color = MakeARGB(255, 255, 255, 0);
+    }
 
     highlights_.push_back(std::move(highlight));
   }

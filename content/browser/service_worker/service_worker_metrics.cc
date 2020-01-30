@@ -264,7 +264,6 @@ void ServiceWorkerMetrics::RecordDeleteAndStartOverResult(
 }
 
 void ServiceWorkerMetrics::CountControlledPageLoad(Site site,
-                                                   const GURL& url,
                                                    bool is_main_frame_load) {
   DCHECK_NE(site, Site::OTHER);
   UMA_HISTOGRAM_ENUMERATION("ServiceWorker.PageLoad", site);

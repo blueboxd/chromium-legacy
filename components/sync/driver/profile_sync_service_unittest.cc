@@ -229,7 +229,7 @@ class ProfileSyncServiceTest : public ::testing::Test {
     service_.reset();
   }
 
-  void InitializeForNthSync() {
+  void PopulatePrefsForNthSync() {
     // Set first sync time before initialize to simulate a complete sync setup.
     SyncPrefs sync_prefs(prefs());
     sync_prefs.SetCacheGuid(kTestCacheGuid);
@@ -241,6 +241,10 @@ class ProfileSyncServiceTest : public ::testing::Test {
         /*registered_types=*/UserSelectableTypeSet::All(),
         /*selected_types=*/UserSelectableTypeSet::All());
     sync_prefs.SetFirstSetupComplete();
+  }
+
+  void InitializeForNthSync() {
+    PopulatePrefsForNthSync();
     service_->Initialize();
   }
 
@@ -1562,6 +1566,54 @@ TEST_F(ProfileSyncServiceTestWithStopSyncInPausedState,
   SignIn();
   service()->Shutdown();
   EXPECT_FALSE(service()->GetDisableReasons().Empty());
+}
+
+TEST_F(ProfileSyncServiceTest, ShouldPopulateAccountIdCachedInPrefs) {
+  SyncPrefs sync_prefs(prefs());
+
+  SignIn();
+  CreateService(ProfileSyncService::AUTO_START);
+  InitializeForNthSync();
+  ASSERT_EQ(SyncService::TransportState::ACTIVE,
+            service()->GetTransportState());
+  ASSERT_EQ(kTestCacheGuid, sync_prefs.GetCacheGuid());
+  EXPECT_EQ(signin::GetTestGaiaIdForEmail(kTestUser), sync_prefs.GetGaiaId());
+}
+
+TEST_F(ProfileSyncServiceTest,
+       ShouldNotPopulateAccountIdCachedInPrefsWithLocalSync) {
+  SyncPrefs sync_prefs(prefs());
+
+  SignIn();
+  CreateServiceWithLocalSyncBackend();
+  InitializeForNthSync();
+  ASSERT_EQ(SyncService::TransportState::ACTIVE,
+            service()->GetTransportState());
+  ASSERT_EQ(kTestCacheGuid, sync_prefs.GetCacheGuid());
+  EXPECT_TRUE(sync_prefs.GetGaiaId().empty());
+}
+
+// Verifies that local sync transport data is thrown away if there is a mismatch
+// between the account ID cached in SyncPrefs and the actual one.
+TEST_F(ProfileSyncServiceTest,
+       ShouldClearLocalSyncTransportDataDueToAccountIdMismatch) {
+  SyncPrefs sync_prefs(prefs());
+
+  SignIn();
+  CreateService(ProfileSyncService::AUTO_START);
+  PopulatePrefsForNthSync();
+  ASSERT_EQ(kTestCacheGuid, sync_prefs.GetCacheGuid());
+
+  // Manually override the authenticated account ID, which should be detected
+  // during initialization.
+  sync_prefs.SetGaiaId("corrupt_gaia_id");
+
+  service()->Initialize();
+
+  ASSERT_EQ(SyncService::TransportState::ACTIVE,
+            service()->GetTransportState());
+  EXPECT_NE(kTestCacheGuid, sync_prefs.GetCacheGuid());
+  EXPECT_EQ(signin::GetTestGaiaIdForEmail(kTestUser), sync_prefs.GetGaiaId());
 }
 
 }  // namespace

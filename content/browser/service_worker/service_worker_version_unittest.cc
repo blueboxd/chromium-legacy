@@ -94,12 +94,10 @@ class ServiceWorkerVersionTest : public testing::Test {
     options.scope = scope_;
     registration_ =
         helper_->context()->registry()->CreateNewRegistration(options);
-    version_ = new ServiceWorkerVersion(
+    version_ = helper_->context()->registry()->CreateNewVersion(
         registration_.get(),
         GURL("https://www.example.com/test/service_worker.js"),
-        blink::mojom::ScriptType::kClassic,
-        helper_->context()->storage()->NewVersionId(),
-        helper_->context()->AsWeakPtr());
+        blink::mojom::ScriptType::kClassic);
     EXPECT_EQ(url::Origin::Create(scope_), version_->script_origin());
     std::vector<ServiceWorkerDatabase::ResourceRecord> records;
     records.push_back(WriteToDiskCacheSync(
@@ -1118,12 +1116,10 @@ TEST_F(ServiceWorkerVersionTest, BadOrigin) {
   options.scope = scope;
   auto registration =
       helper_->context()->registry()->CreateNewRegistration(options);
-  auto version = base::MakeRefCounted<ServiceWorkerVersion>(
+  auto version = helper_->context()->registry()->CreateNewVersion(
       registration_.get(),
       GURL("bad-origin://www.example.com/test/service_worker.js"),
-      blink::mojom::ScriptType::kClassic,
-      helper_->context()->storage()->NewVersionId(),
-      helper_->context()->AsWeakPtr());
+      blink::mojom::ScriptType::kClassic);
   ASSERT_EQ(blink::ServiceWorkerStatusCode::kErrorDisallowed,
             StartServiceWorker(version.get()));
 }
@@ -1470,7 +1466,13 @@ class ServiceWorkerVersionTerminationOnNoControlleeTest
   static bool IsTerminationEnabled() { return GetParam(); }
 
  protected:
-  static const base::TimeDelta kTerminationDelay;
+  // The value should be the same with the number set in the constructor.
+  static constexpr base::TimeDelta kTerminationDelay =
+      base::TimeDelta::FromMilliseconds(5000);
+
+  static constexpr base::TimeDelta kDefaultIdleDelay =
+      base::TimeDelta::FromSeconds(
+          blink::mojom::kServiceWorkerDefaultIdleDelayInSeconds);
 
  private:
   base::test::ScopedFeatureList feature_list_;
@@ -1478,108 +1480,143 @@ class ServiceWorkerVersionTerminationOnNoControlleeTest
 };
 
 // static
-// The value should be the same with the number set in the constructor.
-const base::TimeDelta
-    ServiceWorkerVersionTerminationOnNoControlleeTest::kTerminationDelay =
-        base::TimeDelta::FromMilliseconds(5000);
+constexpr base::TimeDelta
+    ServiceWorkerVersionTerminationOnNoControlleeTest::kTerminationDelay;
+
+// static
+constexpr base::TimeDelta
+    ServiceWorkerVersionTerminationOnNoControlleeTest::kDefaultIdleDelay;
 
 INSTANTIATE_TEST_SUITE_P(All,
                          ServiceWorkerVersionTerminationOnNoControlleeTest,
                          testing::Bool());
 
-// Confirm if a service worker can be terminated when all controllees are gone
-// and a certain period of time which is set by a flag passes.
-TEST_P(ServiceWorkerVersionTerminationOnNoControlleeTest, NoControllee) {
+// Confirm if the idle delay is updated when all controllees are gone.
+TEST_P(ServiceWorkerVersionTerminationOnNoControlleeTest,
+       IdleDelayOnNoControllee) {
   version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
+  FakeServiceWorker* service_worker_in_renderer =
+      helper_->AddNewPendingServiceWorker<FakeServiceWorker>(helper_.get());
+
+  // Add a controllee before starting a worker.
+  ServiceWorkerContainerHost* controllee = CreateControllee();
+  version_->AddControllee(controllee);
+
+  // Start the worker.
   EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk,
             StartServiceWorker(version_.get()));
   EXPECT_EQ(EmbeddedWorkerStatus::RUNNING, version_->running_status());
 
-  // Service worker should be running after the time passes for more than the
-  // termination delay.
-  ServiceWorkerContainerHost* controllee = CreateControllee();
-  version_->AddControllee(controllee);
-  task_environment_.FastForwardBy(kTerminationDelay * 2);
-  EXPECT_EQ(EmbeddedWorkerStatus::RUNNING, version_->running_status());
+  // The idle delay is set to the default until all controllees are gone.
+  task_environment_.RunUntilIdle();
+  EXPECT_FALSE(service_worker_in_renderer->idle_delay().has_value());
 
-  // Service worker will be terminated when |kTerminationDelay| passes after
-  // all controllees are gone.
+  // The idle delay is updated to |kTerminationDelay|, which is the same with
+  // when all controllees are gone.
   version_->RemoveControllee(controllee->client_uuid());
-  task_environment_.FastForwardBy(kTerminationDelay);
+  task_environment_.RunUntilIdle();
   if (IsTerminationEnabled()) {
-    EXPECT_EQ(EmbeddedWorkerStatus::STOPPED, version_->running_status());
+    EXPECT_EQ(kTerminationDelay,
+              service_worker_in_renderer->idle_delay().value());
   } else {
-    EXPECT_EQ(EmbeddedWorkerStatus::RUNNING, version_->running_status());
+    EXPECT_FALSE(service_worker_in_renderer->idle_delay().has_value());
   }
 }
 
-// Confirm if a service worker won't be terminated until all controllees are
-// gone and a certain period of time which is set by a flag passes.
+// Confirm if the idle timeout is not updated if a controllee still exists.
 TEST_P(ServiceWorkerVersionTerminationOnNoControlleeTest,
-       NotTerminatedUntilAllControlleeAreGone) {
+       NoIdleDelayUntilAllControlleeAreGone) {
   version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
-  EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk,
-            StartServiceWorker(version_.get()));
-  EXPECT_EQ(EmbeddedWorkerStatus::RUNNING, version_->running_status());
+  FakeServiceWorker* service_worker_in_renderer =
+      helper_->AddNewPendingServiceWorker<FakeServiceWorker>(helper_.get());
 
+  // Add controlees before starting a worker.
   ServiceWorkerContainerHost* controllee1 = CreateControllee();
   ServiceWorkerContainerHost* controllee2 = CreateControllee();
   version_->AddControllee(controllee1);
   version_->AddControllee(controllee2);
 
-  // Service worker won't be terminated until all controllees are gone.
-  version_->RemoveControllee(controllee1->client_uuid());
-  task_environment_.FastForwardBy(kTerminationDelay);
+  // Start the worker.
+  EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk,
+            StartServiceWorker(version_.get()));
   EXPECT_EQ(EmbeddedWorkerStatus::RUNNING, version_->running_status());
 
-  // Service worker will be terminated when |kTerminationDelay| passes after
-  // all controllees are gone.
+  // The idle delay should not be updated until all controllees are gone.
+  version_->RemoveControllee(controllee1->client_uuid());
+  task_environment_.RunUntilIdle();
+  EXPECT_FALSE(service_worker_in_renderer->idle_delay().has_value());
+
+  // The idle delay is set to |kTerminationDelay| when all controllees are gone.
   version_->RemoveControllee(controllee2->client_uuid());
-  task_environment_.FastForwardBy(kTerminationDelay);
+  task_environment_.RunUntilIdle();
   if (IsTerminationEnabled()) {
-    EXPECT_EQ(EmbeddedWorkerStatus::STOPPED, version_->running_status());
+    EXPECT_EQ(kTerminationDelay,
+              service_worker_in_renderer->idle_delay().value());
   } else {
-    EXPECT_EQ(EmbeddedWorkerStatus::RUNNING, version_->running_status());
+    EXPECT_FALSE(service_worker_in_renderer->idle_delay().has_value());
   }
 }
 
-// Confirm the timeout is extended when a new controllee is added to the
-// ServiceWorkerVersion before it's terminated.
+// Confirm the timeout is set back to the default when a new controllee is added
+// to the ServiceWorkerVersion before it's terminated.
 TEST_P(ServiceWorkerVersionTerminationOnNoControlleeTest,
-       AddControlleeBeforeTermination) {
+       AddControlleeAfterNoControllee) {
   version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
+  FakeServiceWorker* service_worker_in_renderer =
+      helper_->AddNewPendingServiceWorker<FakeServiceWorker>(helper_.get());
   EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk,
             StartServiceWorker(version_.get()));
   EXPECT_EQ(EmbeddedWorkerStatus::RUNNING, version_->running_status());
 
   {
-    // Service worker won't be terminated until |kTerminationDelay| passes
-    // after all controllees are gone.
+    // The idle timeout is set to |kTerminationDelay| if all controllees are
+    // gone.
     ServiceWorkerContainerHost* controllee = CreateControllee();
     version_->AddControllee(controllee);
     version_->RemoveControllee(controllee->client_uuid());
-    task_environment_.FastForwardBy(kTerminationDelay / 2);
-    EXPECT_EQ(EmbeddedWorkerStatus::RUNNING, version_->running_status());
+    task_environment_.RunUntilIdle();
+    if (IsTerminationEnabled()) {
+      EXPECT_EQ(kTerminationDelay,
+                service_worker_in_renderer->idle_delay().value());
+    } else {
+      EXPECT_FALSE(service_worker_in_renderer->idle_delay().has_value());
+    }
   }
 
   {
-    // Service worker won't be terminated if a new controllee is added before
-    // |kTerminationDelay| passes since the last controllee is removed.
+    // The idle timeout is set to the default again if a new client is started
+    // to be controlled by the service worker.
     ServiceWorkerContainerHost* controllee = CreateControllee();
     version_->AddControllee(controllee);
-    task_environment_.FastForwardBy(kTerminationDelay);
-    EXPECT_EQ(EmbeddedWorkerStatus::RUNNING, version_->running_status());
-
-    // Service worker will be terminated when |kTerminationDelay| passes
-    // after all controllees are gone.
-    version_->RemoveControllee(controllee->client_uuid());
-    task_environment_.FastForwardBy(kTerminationDelay);
+    task_environment_.RunUntilIdle();
     if (IsTerminationEnabled()) {
-      EXPECT_EQ(EmbeddedWorkerStatus::STOPPED, version_->running_status());
+      EXPECT_EQ(kDefaultIdleDelay,
+                service_worker_in_renderer->idle_delay().value());
     } else {
-      EXPECT_EQ(EmbeddedWorkerStatus::RUNNING, version_->running_status());
+      EXPECT_FALSE(service_worker_in_renderer->idle_delay().has_value());
+    }
+
+    // The idle timeout is set to |kTerminationDelay| again when all controllees
+    // are gone.
+    version_->RemoveControllee(controllee->client_uuid());
+    task_environment_.RunUntilIdle();
+    if (IsTerminationEnabled()) {
+      EXPECT_EQ(kTerminationDelay,
+                service_worker_in_renderer->idle_delay().value());
+    } else {
+      EXPECT_FALSE(service_worker_in_renderer->idle_delay().has_value());
     }
   }
+}
+
+// Confirm no crash happens if the worker is stopped.
+TEST_P(ServiceWorkerVersionTerminationOnNoControlleeTest, StoppedWorker) {
+  version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
+  EXPECT_EQ(EmbeddedWorkerStatus::STOPPED, version_->running_status());
+
+  ServiceWorkerContainerHost* controllee = CreateControllee();
+  version_->AddControllee(controllee);
+  version_->RemoveControllee(controllee->client_uuid());
 }
 
 }  // namespace service_worker_version_unittest

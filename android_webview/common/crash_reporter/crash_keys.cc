@@ -45,6 +45,7 @@ const char* const kWebViewCrashKeyWhiteList[] = {
     "bad_message_reason",
     "discardable-memory-allocated",
     "discardable-memory-free",
+    "mojo-message-error",
     "mojo-message-error__1",
     "mojo-message-error__2",
     "mojo-message-error__3",

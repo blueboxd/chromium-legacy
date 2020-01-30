@@ -19,11 +19,11 @@
 namespace base {
 class FilePath;
 class SequencedTaskRunner;
-}
+}  // namespace base
 
 namespace crypto {
 class ECPrivateKey;
-}
+}  // namespace crypto
 
 namespace gcm {
 
@@ -44,14 +44,19 @@ class GCMEncryptionProvider {
   // by the |result|. The |message| contains the dispatchable message in success
   // cases, or will be initialized to an empty, default state for failure.
   using DecryptMessageCallback =
-      base::Callback<void(GCMDecryptionResult result,
-                          const IncomingMessage& message)>;
+      base::OnceCallback<void(GCMDecryptionResult result,
+                              IncomingMessage message)>;
 
   // Callback to be invoked when a message may have been encrypted, as indicated
   // by the |result|. The |message| contains the dispatchable message in success
   // cases, or will be initialized to an empty, default state for failure.
   using EncryptMessageCallback =
       base::OnceCallback<void(GCMEncryptionResult result, std::string message)>;
+
+  static const char kContentEncodingProperty[];
+
+  // Content coding name defined by ietf-httpbis-encryption-encoding.
+  static const char kContentCodingAes128Gcm[];
 
   GCMEncryptionProvider();
   ~GCMEncryptionProvider();
@@ -88,7 +93,7 @@ class GCMEncryptionProvider {
   // will be used in case of success, an empty message in case of failure.
   void DecryptMessage(const std::string& app_id,
                       const IncomingMessage& message,
-                      const DecryptMessageCallback& callback);
+                      DecryptMessageCallback callback);
 
   // Attempts to encrypt the |message| using draft-ietf-webpush-encryption-08
   // scheme. |callback| will be called asynchronously when |message| has been
@@ -126,7 +131,7 @@ class GCMEncryptionProvider {
                              uint32_t record_size,
                              const std::string& ciphertext,
                              GCMMessageCryptographer::Version version,
-                             const DecryptMessageCallback& callback,
+                             DecryptMessageCallback callback,
                              std::unique_ptr<crypto::ECPrivateKey> key,
                              const std::string& auth_secret);
 

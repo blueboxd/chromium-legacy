@@ -199,8 +199,7 @@ bool ParseMultipartResponse(const std::string& content_type,
         content_type_piece.substr(1, content_type_piece.size() - 2);
   }
 
-  std::string boundary;
-  content_type_piece.CopyToString(&boundary);
+  std::string boundary(content_type_piece);
   const std::string header = "--" + boundary;
   const std::string terminator = "--" + boundary + "--";
 

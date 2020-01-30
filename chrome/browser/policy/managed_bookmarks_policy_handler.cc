@@ -27,7 +27,7 @@ ManagedBookmarksPolicyHandler::ManagedBookmarksPolicyHandler(
           chrome_schema.GetKnownProperty(key::kManagedBookmarks),
           SCHEMA_ALLOW_INVALID) {}
 
-ManagedBookmarksPolicyHandler::~ManagedBookmarksPolicyHandler() {}
+ManagedBookmarksPolicyHandler::~ManagedBookmarksPolicyHandler() = default;
 
 void ManagedBookmarksPolicyHandler::ApplyPolicySettings(
     const PolicyMap& policies,

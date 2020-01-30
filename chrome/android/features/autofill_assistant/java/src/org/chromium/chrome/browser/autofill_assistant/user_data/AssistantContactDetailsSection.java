@@ -17,6 +17,7 @@ import org.chromium.chrome.autofill_assistant.R;
 import org.chromium.chrome.browser.payments.AutofillContact;
 import org.chromium.chrome.browser.payments.ContactEditor;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -26,6 +27,8 @@ public class AssistantContactDetailsSection
         extends AssistantCollectUserDataSection<AutofillContact> {
     private ContactEditor mEditor;
     private boolean mIgnoreProfileChangeNotifications;
+    private AssistantCollectUserDataModel.ContactDescriptionOptions mSummaryOptions;
+    private AssistantCollectUserDataModel.ContactDescriptionOptions mFullOptions;
 
     AssistantContactDetailsSection(Context context, ViewGroup parent) {
         super(context, parent, R.layout.autofill_assistant_contact_summary,
@@ -62,20 +65,11 @@ public class AssistantContactDetailsSection
 
     @Override
     protected void updateFullView(View fullView, AutofillContact contact) {
-        if (contact == null) {
+        if (contact == null || mFullOptions == null) {
             return;
         }
         TextView fullViewText = fullView.findViewById(R.id.contact_full);
-        String description = "";
-        if (contact.getPayerName() != null) {
-            description += contact.getPayerName();
-        }
-        if (contact.getPayerEmail() != null) {
-            if (!description.isEmpty()) {
-                description += "\n";
-            }
-            description += contact.getPayerEmail();
-        }
+        String description = createContactDescription(mFullOptions, contact);
         fullViewText.setText(description);
         hideIfEmpty(fullViewText);
         fullView.findViewById(R.id.incomplete_error)
@@ -84,22 +78,15 @@ public class AssistantContactDetailsSection
 
     @Override
     protected void updateSummaryView(View summaryView, AutofillContact contact) {
-        if (contact == null) {
+        if (contact == null || mSummaryOptions == null) {
             return;
         }
         TextView contactSummaryView = summaryView.findViewById(R.id.contact_summary);
-
-        String description = "";
-        if (contact.getPayerEmail() != null) {
-            description = contact.getPayerEmail();
-        } else if (contact.getPayerName() != null) {
-            description = contact.getPayerName();
-        }
+        String description = createContactDescription(mSummaryOptions, contact);
         contactSummaryView.setText(description);
         hideIfEmpty(contactSummaryView);
-
-        TextView contactIncompleteView = summaryView.findViewById(R.id.incomplete_error);
-        contactIncompleteView.setVisibility(contact.isComplete() ? View.GONE : View.VISIBLE);
+        summaryView.findViewById(R.id.incomplete_error)
+                .setVisibility(contact.isComplete() ? View.GONE : View.VISIBLE);
     }
 
     @Override
@@ -156,6 +143,16 @@ public class AssistantContactDetailsSection
         setItems(contacts, selectedContactIndex);
     }
 
+    void setContactSummaryOptions(AssistantCollectUserDataModel.ContactDescriptionOptions options) {
+        mSummaryOptions = options;
+        updateViews();
+    }
+
+    void setContactFullOptions(AssistantCollectUserDataModel.ContactDescriptionOptions options) {
+        mFullOptions = options;
+        updateViews();
+    }
+
     @Override
     protected void addOrUpdateItem(AutofillContact contact, boolean select) {
         super.addOrUpdateItem(contact, select);
@@ -163,11 +160,43 @@ public class AssistantContactDetailsSection
     }
 
     private void addAutocompleteInformationToEditor(AutofillContact contact) {
-        if (mEditor == null) {
+        if (mEditor == null || contact == null) {
             return;
         }
         mEditor.addEmailAddressIfValid(contact.getPayerEmail());
         mEditor.addPayerNameIfValid(contact.getPayerName());
         mEditor.addPhoneNumberIfValid(contact.getPayerPhone());
+    }
+
+    /**
+     * Creates a "\n"-separated description of {@code contact} using {@code options}.
+     */
+    private String createContactDescription(
+            AssistantCollectUserDataModel.ContactDescriptionOptions options,
+            AutofillContact contact) {
+        List<String> descriptionLines = new ArrayList<>();
+        for (int i = 0;
+                i < options.mFields.length && descriptionLines.size() < options.mMaxNumberLines;
+                i++) {
+            String line = "";
+            switch (options.mFields[i]) {
+                case AssistantContactField.NAME_FULL:
+                    line = contact.getPayerName();
+                    break;
+                case AssistantContactField.EMAIL_ADDRESS:
+                    line = contact.getPayerEmail();
+                    break;
+                case AssistantContactField.PHONE_HOME_WHOLE_NUMBER:
+                    line = contact.getPayerPhone();
+                    break;
+                default:
+                    assert false : "profile field not handled";
+                    break;
+            }
+            if (!TextUtils.isEmpty(line)) {
+                descriptionLines.add(line);
+            }
+        }
+        return TextUtils.join("\n", descriptionLines);
     }
 }

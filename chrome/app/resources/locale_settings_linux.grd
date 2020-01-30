@@ -30,6 +30,7 @@
       <output filename="platform_locale_settings_sq.pak" type="data_package" lang="sq" />
       <output filename="platform_locale_settings_ur.pak" type="data_package" lang="ur" />
       <output filename="platform_locale_settings_uz.pak" type="data_package" lang="uz" />
+      <output filename="platform_locale_settings_zh-HK.pak" type="data_package" lang="zh-HK" />
       <output filename="platform_locale_settings_zu.pak" type="data_package" lang="zu" />
     </if>
     <output filename="platform_locale_settings_am.pak" type="data_package" lang="am" />

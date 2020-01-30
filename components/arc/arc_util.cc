@@ -64,7 +64,8 @@ void OnSetArcVmCpuRestriction(
     LOG(ERROR) << "SetVmCpuRestriction for ARCVM failed";
 }
 
-void DoSetArcVmCpuRestriction(bool do_restrict, bool concierge_started) {
+void DoSetArcVmCpuRestriction(CpuRestrictionState cpu_restriction_state,
+                              bool concierge_started) {
   if (!concierge_started) {
     LOG(ERROR) << "Concierge D-Bus service is not available";
     return;
@@ -78,15 +79,22 @@ void DoSetArcVmCpuRestriction(bool do_restrict, bool concierge_started) {
 
   vm_tools::concierge::SetVmCpuRestrictionRequest request;
   request.set_cpu_cgroup(vm_tools::concierge::CPU_CGROUP_ARCVM);
-  request.set_cpu_restriction_state(
-      do_restrict ? vm_tools::concierge::CPU_RESTRICTION_BACKGROUND
-                  : vm_tools::concierge::CPU_RESTRICTION_FOREGROUND);
+  switch (cpu_restriction_state) {
+    case CpuRestrictionState::CPU_RESTRICTION_FOREGROUND:
+      request.set_cpu_restriction_state(
+          vm_tools::concierge::CPU_RESTRICTION_FOREGROUND);
+      break;
+    case CpuRestrictionState::CPU_RESTRICTION_BACKGROUND:
+      request.set_cpu_restriction_state(
+          vm_tools::concierge::CPU_RESTRICTION_BACKGROUND);
+      break;
+  }
 
   client->SetVmCpuRestriction(request,
                               base::BindOnce(&OnSetArcVmCpuRestriction));
 }
 
-void SetArcVmCpuRestriction(bool do_restrict) {
+void SetArcVmCpuRestriction(CpuRestrictionState cpu_restriction_state) {
   auto* client = chromeos::DBusThreadManager::Get()->GetDebugDaemonClient();
   if (!client) {
     LOG(WARNING) << "DebugDaemonClient is not available";
@@ -94,18 +102,24 @@ void SetArcVmCpuRestriction(bool do_restrict) {
   }
   // TODO(wvk): Call StartConcierge() only when the service is not running.
   client->StartConcierge(
-      base::BindOnce(&DoSetArcVmCpuRestriction, do_restrict));
+      base::BindOnce(&DoSetArcVmCpuRestriction, cpu_restriction_state));
 }
 
-void SetArcContainerCpuRestriction(bool do_restrict) {
+void SetArcContainerCpuRestriction(CpuRestrictionState cpu_restriction_state) {
   if (!chromeos::SessionManagerClient::Get()) {
     LOG(WARNING) << "SessionManagerClient is not available";
     return;
   }
 
-  const login_manager::ContainerCpuRestrictionState state =
-      do_restrict ? login_manager::CONTAINER_CPU_RESTRICTION_BACKGROUND
-                  : login_manager::CONTAINER_CPU_RESTRICTION_FOREGROUND;
+  login_manager::ContainerCpuRestrictionState state;
+  switch (cpu_restriction_state) {
+    case CpuRestrictionState::CPU_RESTRICTION_FOREGROUND:
+      state = login_manager::CONTAINER_CPU_RESTRICTION_FOREGROUND;
+      break;
+    case CpuRestrictionState::CPU_RESTRICTION_BACKGROUND:
+      state = login_manager::CONTAINER_CPU_RESTRICTION_BACKGROUND;
+      break;
+  }
   chromeos::SessionManagerClient::Get()->SetArcCpuRestriction(
       state, base::BindOnce(SetArcCpuRestrictionCallback, state));
 }
@@ -250,16 +264,17 @@ int GetTaskIdFromWindowAppId(const std::string& app_id) {
   return task_id;
 }
 
-void SetArcCpuRestriction(bool do_restrict) {
+void SetArcCpuRestriction(CpuRestrictionState cpu_restriction_state) {
   // Ignore any calls to restrict the ARC container if the specified command
   // line flag is set.
-  if (chromeos::switches::IsArcCpuRestrictionDisabled() && do_restrict)
+  if (chromeos::switches::IsArcCpuRestrictionDisabled() &&
+      cpu_restriction_state == CpuRestrictionState::CPU_RESTRICTION_BACKGROUND)
     return;
 
   if (IsArcVmEnabled()) {
-    SetArcVmCpuRestriction(do_restrict);
+    SetArcVmCpuRestriction(cpu_restriction_state);
   } else {
-    SetArcContainerCpuRestriction(do_restrict);
+    SetArcContainerCpuRestriction(cpu_restriction_state);
   }
 }
 

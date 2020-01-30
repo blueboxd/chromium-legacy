@@ -1688,6 +1688,62 @@ TEST_F(TextFragmentAnchorTest, NonTextDirectives) {
   EXPECT_EQ(2u, GetDocument().Markers().Markers().size());
 }
 
+// Test that the text directive applies :target styling
+TEST_F(TextFragmentAnchorTest, CssTarget) {
+  SimRequest main_request("https://example.com/test.html#:~:text=test",
+                          "text/html");
+  SimRequest css_request("https://example.com/test.css", "text/css");
+  LoadURL("https://example.com/test.html#:~:text=test");
+  main_request.Complete(R"HTML(
+    <!DOCTYPE html>
+    <style>
+      p {
+        margin-top: 1000px;
+      }
+    </style>
+    <link rel="stylesheet" href="test.css">
+    <p id="text">test</p>
+  )HTML");
+
+  // With BlockHTMLParserOnStyleSheetsEnabled, the text fragment anchor won't be
+  // invoked until the CSS is loaded. Otherwise, we test the behavior where the
+  // text fragment anchor is invoked before and after the stylesheet is applied.
+  if (!RuntimeEnabledFeatures::BlockHTMLParserOnStyleSheetsEnabled()) {
+    Compositor().PaintFrame();
+    ScrollOffset first_scroll_offset = LayoutViewport()->GetScrollOffset();
+    ASSERT_NE(ScrollOffset(), first_scroll_offset);
+
+    Element& p = *GetDocument().getElementById("text");
+    IntRect first_bounding_rect = BoundingRectInFrame(p);
+    EXPECT_TRUE(ViewportRect().Contains(first_bounding_rect));
+
+    // Load CSS that has target styling that moves the text out of view
+    css_request.Complete(R"CSS(
+      :target {
+        margin-top: 2000px;
+      }
+    )CSS");
+    RunPendingTasks();
+    Compositor().BeginFrame();
+
+    // Ensure the target text is still in view and stayed centered
+    ASSERT_NE(first_scroll_offset, LayoutViewport()->GetScrollOffset());
+    EXPECT_EQ(first_bounding_rect, BoundingRectInFrame(p));
+  } else {
+    css_request.Complete(R"CSS(
+      :target {
+        margin-top: 2000px;
+      }
+    )CSS");
+    RunPendingTasks();
+    Compositor().BeginFrame();
+  }
+
+  Element& p = *GetDocument().getElementById("text");
+  EXPECT_TRUE(ViewportRect().Contains(BoundingRectInFrame(p)));
+  EXPECT_EQ(1u, GetDocument().Markers().Markers().size());
+}
+
 }  // namespace
 
 }  // namespace blink

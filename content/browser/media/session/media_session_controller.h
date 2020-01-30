@@ -41,7 +41,8 @@ class CONTENT_EXPORT MediaSessionController
   bool Initialize(bool has_audio,
                   bool is_remote,
                   media::MediaContentType media_content_type,
-                  media_session::MediaPosition* position);
+                  media_session::MediaPosition* position,
+                  bool is_pip_available);
 
   // Must be called when a pause occurs on the renderer side media player; keeps
   // the MediaSession instance in sync with renderer side behavior.
@@ -58,6 +59,7 @@ class CONTENT_EXPORT MediaSessionController
   RenderFrameHost* render_frame_host() const override;
   base::Optional<media_session::MediaPosition> GetPosition(
       int player_id) const override;
+  bool IsPictureInPictureAvailable(int player_id) const override;
 
   // Test helpers.
   int get_player_id_for_testing() const { return player_id_; }
@@ -68,6 +70,9 @@ class CONTENT_EXPORT MediaSessionController
   // Called when the media position state of the player has changed.
   void OnMediaPositionStateChanged(
       const media_session::MediaPosition& position);
+
+  // Called when the media picture-in-picture availability has changed.
+  void OnPictureInPictureAvailabilityChanged(bool available);
 
  private:
   friend class MediaSessionControllerTest;
@@ -86,6 +91,7 @@ class CONTENT_EXPORT MediaSessionController
   bool has_session_ = false;
   bool has_audio_ = false;
   bool is_remote_ = false;
+  bool is_picture_in_picture_available_ = false;
   media::MediaContentType media_content_type_ =
       media::MediaContentType::Persistent;
 

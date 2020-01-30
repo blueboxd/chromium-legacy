@@ -497,7 +497,7 @@ bool AssociatedUserValidator::IsAuthEnforcedForUser(const base::string16& sid) {
 
 AssociatedUserValidator::EnforceAuthReason
 AssociatedUserValidator::GetAuthEnforceReason(const base::string16& sid) {
-  // Is user is not associated, then we shouldn't have any auth enforcement.
+  // Is user not associated, then we shouldn't have any auth enforcement.
   if (!IsUserAssociated(sid))
     return AssociatedUserValidator::EnforceAuthReason::NOT_ENFORCED;
 
@@ -528,6 +528,11 @@ AssociatedUserValidator::GetAuthEnforceReason(const base::string16& sid) {
 
   if (!IsTokenHandleValidForUser(sid))
     return AssociatedUserValidator::EnforceAuthReason::INVALID_TOKEN_HANDLE;
+
+  if (UploadDeviceDetailsNeeded(sid)) {
+    return AssociatedUserValidator::EnforceAuthReason::
+        UPLOAD_DEVICE_DETAILS_FAILED;
+  }
 
   return AssociatedUserValidator::EnforceAuthReason::NOT_ENFORCED;
 }

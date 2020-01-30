@@ -11,7 +11,6 @@
 #include <set>
 
 #include "base/mac/scoped_nsobject.h"
-#include "base/mac/sdk_forward_declarations.h"
 #include "base/macros.h"
 #include "base/optional.h"
 #include "build/build_config.h"

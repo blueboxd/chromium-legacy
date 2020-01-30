@@ -116,7 +116,7 @@ class DeepScanningDialogDelegate {
     std::string sha256;
 
     // File size in bytes. -1 represents an unknown size.
-    uint64_t size;
+    uint64_t size = 0;
   };
 
   // Callback used with ShowForWebContents() that informs caller of verdict

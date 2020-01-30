@@ -26,6 +26,7 @@ import org.chromium.base.test.params.ParameterAnnotations;
 import org.chromium.base.test.params.ParameterizedRunner;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeSwitches;
@@ -91,11 +92,12 @@ public class BookmarkReorderTest extends BookmarkTest {
         BookmarkRow test =
                 (BookmarkRow) mItemsContainer.findViewHolderForAdapterPosition(2).itemView;
         View testMoreButton = test.findViewById(R.id.more);
-        View testDragHandle = test.findViewById(R.id.drag_handle);
+        View testDragHandle = test.getDragHandleViewForTests();
 
-        View testFolderA = mItemsContainer.findViewHolderForAdapterPosition(1).itemView;
+        BookmarkRow testFolderA =
+                (BookmarkRow) mItemsContainer.findViewHolderForAdapterPosition(1).itemView;
         View aMoreButton = testFolderA.findViewById(R.id.more);
-        View aDragHandle = testFolderA.findViewById(R.id.drag_handle);
+        View aDragHandle = testFolderA.getDragHandleViewForTests();
 
         toggleSelectionAndEndAnimation(testId, test);
 
@@ -137,11 +139,11 @@ public class BookmarkReorderTest extends BookmarkTest {
         BookmarkRow test =
                 (BookmarkRow) mItemsContainer.findViewHolderForAdapterPosition(2).itemView;
         View testMoreButton = test.findViewById(R.id.more);
-        View testDragHandle = test.findViewById(R.id.drag_handle);
+        View testDragHandle = test.getDragHandleViewForTests();
 
-        View a = mItemsContainer.findViewHolderForAdapterPosition(1).itemView;
+        BookmarkRow a = (BookmarkRow) mItemsContainer.findViewHolderForAdapterPosition(1).itemView;
         View aMoreButton = a.findViewById(R.id.more);
-        View aDragHandle = a.findViewById(R.id.drag_handle);
+        View aDragHandle = a.getDragHandleViewForTests();
 
         TestThreadUtils.runOnUiThreadBlocking(searchButton::performClick);
 
@@ -552,6 +554,7 @@ public class BookmarkReorderTest extends BookmarkTest {
 
     @Test
     @MediumTest
+    @DisabledTest(message = "crbug.com/1046653")
     public void testMoveButtonsGoneInSearchMode() throws Exception {
         addFolder(TEST_FOLDER_TITLE);
         openBookmarkManager();

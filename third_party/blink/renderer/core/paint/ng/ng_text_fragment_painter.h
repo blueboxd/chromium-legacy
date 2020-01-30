@@ -58,7 +58,10 @@ class NGTextFragmentPainter {
   STACK_ALLOCATED();
 
  public:
-  explicit NGTextFragmentPainter(const Cursor&);
+  explicit NGTextFragmentPainter(const Cursor& cursor) : cursor_(cursor) {}
+  NGTextFragmentPainter(const Cursor& cursor,
+                        const PhysicalOffset& parent_offset)
+      : cursor_(cursor), parent_offset_(parent_offset) {}
 
   void Paint(const PaintInfo&, const PhysicalOffset& paint_offset);
 
@@ -81,6 +84,7 @@ class NGTextFragmentPainter {
                           const PhysicalOffset& paint_offset);
 
   const Cursor& cursor_;
+  PhysicalOffset parent_offset_;
   base::Optional<NGInlineCursor> inline_cursor_for_block_flow_;
 };
 

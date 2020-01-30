@@ -40,6 +40,12 @@ extern const wchar_t kRegMdmEnableForcePasswordReset[];
 // Password lsa store key prefix.
 extern const wchar_t kUserPasswordLsaStoreKeyPrefix[];
 
+// Error key name that is likely to be present in HTTP responses.
+extern const char kErrorKeyInRequestResult[];
+
+// Upload status for device details.
+extern const wchar_t kRegDeviceDetailsUploadStatus[];
+
 // Class used in tests to force either a successful on unsuccessful enrollment
 // to google MDM.
 class GoogleMdmEnrollmentStatusForTesting {
@@ -70,10 +76,21 @@ class GoogleMdmEscrowServiceEnablerForTesting {
   ~GoogleMdmEscrowServiceEnablerForTesting();
 };
 
+// Class used in tests to force upload device details needed.
+class GoogleUploadDeviceDetailsNeededForTesting {
+ public:
+  explicit GoogleUploadDeviceDetailsNeededForTesting(bool success);
+  ~GoogleUploadDeviceDetailsNeededForTesting();
+};
+
 // If MdmEnrollmentEnabled returns true, this function verifies that the machine
 // is enrolled to MDM AND that the server to which it is enrolled is the same
 // as the one specified in |kGlobalMdmUrlRegKey|, otherwise returns false.
 bool NeedsToEnrollWithMdm();
+
+// Checks user properties to determine whether last upload device details
+// attempt succeeded for the given user.
+bool UploadDeviceDetailsNeeded(const base::string16& sid);
 
 // Gets the bios serial number of the windows device.
 base::string16 GetSerialNumber();

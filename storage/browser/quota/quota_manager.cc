@@ -50,12 +50,14 @@ const int64_t kMBytes = 1024 * 1024;
 const int kMinutesInMilliSeconds = 60 * 1000;
 const int64_t kReportHistogramInterval = 60 * 60 * 1000;  // 1 hour
 
-// Start warning about disk pressure when device has <= 15% disk space
+// Take action on write errors if there is <= 2% disk space
 // available.
-const double kDiskPressureThresholdRatio = 15;
-// Limit notifications to one a day.
-const base::TimeDelta kDiskPressureNotificationInterval =
-    base::TimeDelta::FromDays(1);
+const double kStoragePressureThresholdRatio = 2;
+
+// Limit how frequently QuotaManager polls for free disk space when
+// only using that information to identify storage pressure.
+const base::TimeDelta kStoragePressureCheckDiskStatsInterval =
+    base::TimeDelta::FromMinutes(5);
 
 }  // namespace
 
@@ -140,7 +142,6 @@ bool DeleteOriginInfoOnDBThread(const url::Origin& origin,
     UMA_HISTOGRAM_COUNTS_1000(
         QuotaManager::kEvictedOriginDaysSinceAccessHistogram,
         (now - entry.last_access_time).InDays());
-
   }
 
   if (!database->DeleteOriginInfo(origin, type))
@@ -212,7 +213,6 @@ class QuotaManager::UsageAndQuotaInfoGatherer : public QuotaTask {
                             bool is_unlimited,
                             bool is_session_only,
                             bool is_incognito,
-                            bool should_send_notification,
                             UsageAndQuotaWithBreakdownCallback callback)
       : QuotaTask(manager),
         origin_(origin),
@@ -220,8 +220,7 @@ class QuotaManager::UsageAndQuotaInfoGatherer : public QuotaTask {
         type_(type),
         is_unlimited_(is_unlimited),
         is_session_only_(is_session_only),
-        is_incognito_(is_incognito),
-        should_send_notification_(should_send_notification) {}
+        is_incognito_(is_incognito) {}
 
  protected:
   void Run() override {
@@ -289,14 +288,6 @@ class QuotaManager::UsageAndQuotaInfoGatherer : public QuotaTask {
         host_quota = available_space_ + host_usage_;
       } else if (!base::FeatureList::IsEnabled(features::kStaticHostQuota)) {
         host_quota = temp_pool_free_space + host_usage_;
-      }
-    }
-
-    if (should_send_notification_) {
-      const double percent_disk_available =
-          ((total_space_ - available_space_) * 100 / total_space_);
-      if (percent_disk_available < kDiskPressureThresholdRatio) {
-        manager()->SendStoragePressureNotification(std::move(origin_));
       }
     }
 
@@ -368,7 +359,6 @@ class QuotaManager::UsageAndQuotaInfoGatherer : public QuotaTask {
   bool is_unlimited_;
   bool is_session_only_;
   bool is_incognito_;
-  bool should_send_notification_;
   int64_t available_space_ = 0;
   int64_t total_space_ = 0;
   int64_t desired_host_quota_ = 0;
@@ -963,7 +953,7 @@ void QuotaManager::GetUsageAndQuotaWithBreakdown(
       special_storage_policy_->IsStorageSessionOnly(origin.GetURL());
   UsageAndQuotaInfoGatherer* helper = new UsageAndQuotaInfoGatherer(
       this, origin, type, IsStorageUnlimited(origin, type), is_session_only,
-      is_incognito_, false, std::move(callback));
+      is_incognito_, std::move(callback));
   helper->Start();
 }
 
@@ -993,7 +983,7 @@ void QuotaManager::GetUsageAndQuota(const url::Origin& origin,
       special_storage_policy_->IsStorageSessionOnly(origin.GetURL());
   UsageAndQuotaInfoGatherer* helper = new UsageAndQuotaInfoGatherer(
       this, origin, type, IsStorageUnlimited(origin, type), is_session_only,
-      is_incognito_, true,
+      is_incognito_,
       base::BindOnce(&DidGetUsageAndQuotaStripBreakdown, std::move(callback)));
   helper->Start();
 }
@@ -1011,6 +1001,26 @@ void QuotaManager::NotifyStorageModified(QuotaClient::ID client_id,
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   NotifyStorageModifiedInternal(client_id, origin, type, delta,
                                 base::Time::Now());
+}
+
+void QuotaManager::NotifyWriteFailed(const url::Origin& origin) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  auto age_of_disk_stats = base::TimeTicks::Now() -
+                           std::get<0>(cached_disk_stats_for_storage_pressure_);
+
+  // Avoid polling for free disk space if disk stats have been recently
+  // queried.
+  if (age_of_disk_stats < kStoragePressureCheckDiskStatsInterval) {
+    int64_t total_space = std::get<1>(cached_disk_stats_for_storage_pressure_);
+    int64_t available_space =
+        std::get<2>(cached_disk_stats_for_storage_pressure_);
+    MaybeRunStoragePressureCallback(origin, total_space, available_space);
+  }
+
+  GetStorageCapacity(
+      base::BindOnce(&QuotaManager::MaybeRunStoragePressureCallback,
+                     weak_factory_.GetWeakPtr(), origin));
 }
 
 void QuotaManager::NotifyOriginInUse(const url::Origin& origin) {
@@ -1478,30 +1488,28 @@ void QuotaManager::DeleteOriginDataInternal(const url::Origin& origin,
   deleter->Start();
 }
 
-void QuotaManager::SendStoragePressureNotification(const url::Origin origin) {
+void QuotaManager::MaybeRunStoragePressureCallback(const url::Origin& origin,
+                                                   int64_t total_space,
+                                                   int64_t available_space) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (!send_notification_function_) {
+  if (!storage_pressure_callback_) {
     // Quota will hold onto a storage pressure notification if no storage
     // pressure callback is set.
-    origin_with_pending_notification_ = std::move(origin);
+    origin_for_pending_storage_pressure_callback_ = std::move(origin);
     return;
   }
-  if (base::TimeTicks::Now() - disk_pressure_notification_timestamp_ <
-      kDiskPressureNotificationInterval) {
-    return;
+  if (100 * (available_space / total_space) < kStoragePressureThresholdRatio) {
+    storage_pressure_callback_.Run(std::move(origin));
   }
-
-  send_notification_function_.Run(std::move(origin));
-  disk_pressure_notification_timestamp_ = base::TimeTicks::Now();
 }
 
 void QuotaManager::SetStoragePressureCallback(
-    base::RepeatingCallback<void(url::Origin)> send_notification_function) {
-  send_notification_function_ = send_notification_function;
-  if (origin_with_pending_notification_.has_value()) {
-    QuotaManager::SendStoragePressureNotification(
-        std::move(origin_with_pending_notification_.value()));
-    origin_with_pending_notification_ = base::nullopt;
+    base::RepeatingCallback<void(url::Origin)> storage_pressure_callback) {
+  storage_pressure_callback_ = storage_pressure_callback;
+  if (origin_for_pending_storage_pressure_callback_.has_value()) {
+    storage_pressure_callback_.Run(
+        std::move(origin_for_pending_storage_pressure_callback_.value()));
+    origin_for_pending_storage_pressure_callback_ = base::nullopt;
   }
 }
 
@@ -1797,6 +1805,9 @@ void QuotaManager::ContinueIncognitoGetStorageCapacity(
 void QuotaManager::DidGetStorageCapacity(
     const std::tuple<int64_t, int64_t>& total_and_available) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  cached_disk_stats_for_storage_pressure_ =
+      std::make_tuple(base::TimeTicks::Now(), std::get<0>(total_and_available),
+                      std::get<1>(total_and_available));
   storage_capacity_callbacks_.Run(std::get<0>(total_and_available),
                                   std::get<1>(total_and_available));
 }

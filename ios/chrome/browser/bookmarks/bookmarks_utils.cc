@@ -16,12 +16,6 @@
 using bookmarks::BookmarkModel;
 using bookmarks::BookmarkNode;
 
-void RecordBookmarkLaunch(BookmarkLaunchLocation launch_location) {
-  DCHECK(launch_location < BOOKMARK_LAUNCH_LOCATION_COUNT);
-  UMA_HISTOGRAM_ENUMERATION("Stars.LaunchLocation", launch_location,
-                            BOOKMARK_LAUNCH_LOCATION_COUNT);
-}
-
 bool RemoveAllUserBookmarksIOS(ChromeBrowserState* browser_state) {
   BookmarkModel* bookmark_model =
       ios::BookmarkModelFactory::GetForBrowserState(browser_state);

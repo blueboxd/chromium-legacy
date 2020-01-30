@@ -85,14 +85,6 @@ void BreadcrumbManagerBrowserAgent::WebStateReplacedAt(
   LogEvent(base::StringPrintf("Replaced Tab%d with Tab%d at %d",
                               old_web_state_id, new_web_state_id, index));
 }
-void BreadcrumbManagerBrowserAgent::WillDetachWebStateAt(
-    WebStateList* web_state_list,
-    web::WebState* web_state,
-    int index) {
-  int web_state_id =
-      BreadcrumbManagerTabHelper::FromWebState(web_state)->GetUniqueId();
-  LogEvent(base::StringPrintf("Will Detatch Tab%d at %d", web_state_id, index));
-}
 void BreadcrumbManagerBrowserAgent::WebStateDetachedAt(
     WebStateList* web_state_list,
     web::WebState* web_state,

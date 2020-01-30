@@ -28,6 +28,7 @@ cr.define('settings', function() {
 
   cr.addSingletonGetter(CaptionsBrowserProxyImpl);
 
+  // #cr_define_end
   return {
     CaptionsBrowserProxy: CaptionsBrowserProxy,
     CaptionsBrowserProxyImpl: CaptionsBrowserProxyImpl,

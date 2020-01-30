@@ -62,6 +62,14 @@ public abstract class FullscreenManager {
     public abstract int getTopControlOffset();
 
     /**
+     * @return The current top controls min-height. If the min-height is changing with an animation,
+     * this will return a value between the old min-height and the new min-height, which is equal to
+     * the current visible min-height. Otherwise, this will return the same value as
+     * {@link #getTopControlsMinHeight()}.
+     */
+    public abstract int getTopControlsMinHeightOffset();
+
+    /**
      * @return The height of the bottom controls in pixels.
      */
     public abstract int getBottomControlsHeight();
@@ -70,6 +78,14 @@ public abstract class FullscreenManager {
      * @return The minimum visible height bottom controls can have in pixels.
      */
     public abstract int getBottomControlsMinHeight();
+
+    /**
+     * @return The current bottom controls min-height. If the min-height is changing with an
+     * animation, this will return a value between the old min-height and the new min-height, which
+     * is equal to the current visible min-height. Otherwise, this will return the same value as
+     * {@link #getBottomControlsMinHeight()}.
+     */
+    public abstract int getBottomControlsMinHeightOffset();
 
     /**
      * @return Whether or not the browser controls height changes should be animated.
@@ -119,9 +135,12 @@ public abstract class FullscreenManager {
      * @param topControlsOffset The Y offset of the top controls in px.
      * @param bottomControlsOffset The Y offset of the bottom controls in px.
      * @param topContentOffset The Y offset for the content in px.
+     * @param topControlsMinHeightOffset The Y offset for the top controls min-height in px.
+     * @param bottomControlsMinHeightOffset The Y offset for the bottom controls min-height in px.
      */
-    public abstract void setPositionsForTab(
-            int topControlsOffset, int bottomControlsOffset, int topContentOffset);
+    public abstract void setPositionsForTab(int topControlsOffset, int bottomControlsOffset,
+            int topContentOffset, int topControlsMinHeightOffset,
+            int bottomControlsMinHeightOffset);
 
     /**
      * Updates the current ContentView's children and any popups with the correct offsets based on

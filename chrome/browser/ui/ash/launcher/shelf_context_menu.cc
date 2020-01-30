@@ -20,6 +20,7 @@
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/app_list/extension_uninstaller.h"
 #include "chrome/browser/ui/app_list/internal_app/internal_app_metadata.h"
+#include "chrome/browser/ui/ash/launcher/app_service/app_service_shelf_context_menu.h"
 #include "chrome/browser/ui/ash/launcher/arc_shelf_context_menu.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller_util.h"
@@ -52,6 +53,12 @@ std::unique_ptr<ShelfContextMenu> ShelfContextMenu::Create(
   DCHECK(controller);
   DCHECK(item);
   DCHECK(!item->id.IsNull());
+
+  if (base::FeatureList::IsEnabled(features::kAppServiceContextMenu)) {
+    return std::make_unique<AppServiceShelfContextMenu>(controller, item,
+                                                        display_id);
+  }
+
   // Create an ArcShelfContextMenu if the item is an ARC app.
   if (arc::IsArcItem(controller->profile(), item->id.app_id))
     return std::make_unique<ArcShelfContextMenu>(controller, item, display_id);
@@ -177,7 +184,7 @@ void ShelfContextMenu::ExecuteCommand(int command_id, int event_flags) {
 }
 
 const gfx::VectorIcon& ShelfContextMenu::GetCommandIdVectorIcon(
-    ash::CommandId type,
+    int type,
     int string_id) const {
   switch (type) {
     case ash::MENU_OPEN_NEW:

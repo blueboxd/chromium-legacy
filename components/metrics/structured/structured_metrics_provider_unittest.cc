@@ -10,6 +10,7 @@
 #include "base/values.h"
 #include "components/metrics/structured/event_base.h"
 #include "components/metrics/structured/recorder.h"
+#include "components/metrics/structured/structured_events.h"
 #include "components/prefs/json_pref_store.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

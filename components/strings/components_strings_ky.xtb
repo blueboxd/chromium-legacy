@@ -428,7 +428,6 @@
 <translation id="2799223571221894425">Кайра ишке киргизүү</translation>
 <translation id="2803306138276472711">Google Коопсуз Серепчи жакында <ph name="SITE" /> сайтынан <ph name="BEGIN_LINK" />кесепеттүү программа<ph name="END_LINK" /> тапты. Кээде коопсуз вебсайттар кесепеттүү программалардан жабыркап калышат.</translation>
 <translation id="2807052079800581569">Y сүрөтүнүн абалы</translation>
-<translation id="2809804249696361569">Эки барак тең</translation>
 <translation id="2824775600643448204">Дарек жана издөө тилкеси</translation>
 <translation id="2826760142808435982">Бул туташуу <ph name="CIPHER" /> аркылуу шифрленип, аныктыгы текшерилген жана муну <ph name="KX" /> алмаштыруу механизми катары колдонот.</translation>
 <translation id="2835170189407361413">Форманы тазалоо</translation>
@@ -639,7 +638,7 @@
 <translation id="3761718714832595332">Абалын жашыруу</translation>
 <translation id="3765032636089507299">Коопсуз серептөө барагы оңдолууда.</translation>
 <translation id="3765588406864124894">9-электрондук каттар кутусу</translation>
-<translation id="3778403066972421603">Бул карточка Google каттоо эсебиңизде жана ушул түзмөктө сакталсынбы?</translation>
+<translation id="3778403066972421603">Бул карточка Google аккаунтуңузда жана ушул түзмөктө сакталсынбы?</translation>
 <translation id="3780694243617746492">Чыгаруу түпкүчү</translation>
 <translation id="3781428340399460090">Ачык кызгылтым</translation>
 <translation id="3783418713923659662">Mastercard</translation>
@@ -809,7 +808,7 @@
 <translation id="450710068430902550">Администратор менен бөлүшүү</translation>
 <translation id="4508814173490746936">Touch ID функциясын колдонуу мүмкүн эмес</translation>
 <translation id="4510487217173779431">Chou4 (Конверт)</translation>
-<translation id="4515275063822566619">Карточкалар жана даректер Chrome’дон жана Google каттоо эсебиңизден (<ph name="ACCOUNT_EMAIL" />) алынган. Аларды <ph name="BEGIN_LINK" />Жөндөөлөрдөн<ph name="END_LINK" /> башкарсаңыз болот.</translation>
+<translation id="4515275063822566619">Карточкалар жана даректер Chrome’дон жана Google аккаунтуңуздан (<ph name="ACCOUNT_EMAIL" />) алынган. Аларды <ph name="BEGIN_LINK" />Жөндөөлөрдөн<ph name="END_LINK" /> башкарсаңыз болот.</translation>
 <translation id="4517607026994743406">Comm-10 (Конверт)</translation>
 <translation id="4522570452068850558">Чоо-жайлары</translation>
 <translation id="4524138615196389145">Мындан ары WebAuthn функциясын колдонуп карталарды тезирээк ырастаңыз</translation>
@@ -936,7 +935,6 @@
 <translation id="5112422516732747637">A5</translation>
 <translation id="5115216390227830982">European-Edp</translation>
 <translation id="5115563688576182185">(64 бит)</translation>
-<translation id="5121469660360593280">Chrome Enterprise User Protect аркылуу белгиленген коопсуздук иш-чаралары тууралуу дайындарды Администраторуңуз менен бөлүшүү. Анда сиз ачкан барактардын URL даректери, файлдардын аталыштары же метадайындар, түзмөгүңүзгө жана Chrome'го кирүүдө колдонгон колдонуучунун аты бар.</translation>
 <translation id="5123063207673082822">Дем алыш</translation>
 <translation id="5125394840236832993">B-Plus</translation>
 <translation id="5126510351761255129">Картаны ырастаңыз</translation>
@@ -951,7 +949,6 @@
 <translation id="5161506081086828129">9-төшөгүч</translation>
 <translation id="516920405563544094"><ph name="CREDIT_CARD" /> картаңыздын CVC кодун киргизиңиз. Сиз ырастагандан кийин, Google аккаунтуңуздагы картанын реквизиттери бул сайтка жөнөтүлөт.</translation>
 <translation id="5169827969064885044">Кимдир бирөө сиздин жеке дайындарыңызга же уюмуңуздун аккаунтуна кирип алган окшойт. Chrome сырсөзүңүздү азыр өзгөртүүнү сунуштайт.</translation>
-<translation id="5170017743895942767">Chrome Enterprise User Protect</translation>
 <translation id="5171045022955879922">URL издеңиз же териңиз</translation>
 <translation id="5171689220826475070">Fanfold-European</translation>
 <translation id="5172758083709347301">Шайман</translation>
@@ -1084,7 +1081,6 @@
 <translation id="5737183892635480227">{NUM_CARDS,plural, =1{Картаны Google аккаунтуңузга сактап коюңуз}other{Карталарды Google аккаунтуңузга сактап коюңуз}}</translation>
 <translation id="5745980000221562234">{NUM_CARDS,plural, =1{Бул картанын виртуалдык номерин колдонуңуз}other{Карта тандоо}}</translation>
 <translation id="5763042198335101085">Жарактуу электрондук почта дарегин киргизиңиз</translation>
-<translation id="5763703224595565476">Администраторуңуз Chrome Enterprise User Protect кызматын серепчиңизден иштетти. Chrome Enterprise User Protect кызматынын айрым дайындарыңызга кирүүгө мүмкүнчүлүгү бар.</translation>
 <translation id="5765072501007116331">Жеткирүү ыкмаларын жана талаптарын көрүү үчүн дарегин тандаңыз</translation>
 <translation id="5776313857861697733">Маанилүүлүгү</translation>
 <translation id="5778550464785688721">MIDI түзмөктөрүн толук көзөмөлдөө</translation>
@@ -1421,7 +1417,6 @@
 <translation id="733923710415886693">Сервердин тастыктамасы "Тастыктаманын тунуктук саясаты" аркылуу ачыкка чыгарылган эмес.</translation>
 <translation id="734600844861828519">11x15</translation>
 <translation id="7346048084945669753">Байланыштырылган:</translation>
-<translation id="73479065977517481"><ph name="ENROLLMENT_DOMAIN" /> Chrome Enterprise User Protect кызматын иштетти. Chrome Enterprise User Protect кызматынын айрым дайындарыңызга кирүүгө мүмкүнчүлүгү бар.</translation>
 <translation id="7349430561505560861">A4-Extra</translation>
 <translation id="7353601530677266744">Буйрук сабы</translation>
 <translation id="7372973238305370288">издөө натыйжасы</translation>

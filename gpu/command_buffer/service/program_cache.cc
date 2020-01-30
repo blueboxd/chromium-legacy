@@ -200,9 +200,10 @@ void ProgramCache::ComputeProgramHash(
 
 void ProgramCache::HandleMemoryPressure(
     base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level) {
-  // This is only called with moderate or critical pressure.
-  DCHECK_NE(memory_pressure_level,
-            base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_NONE);
+  if (memory_pressure_level ==
+      base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_NONE) {
+    return;
+  }
 
   // Set a low limit on cache size for MEMORY_PRESSURE_LEVEL_MODERATE.
   size_t limit = max_size_bytes_ / 4;

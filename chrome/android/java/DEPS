@@ -2,6 +2,7 @@ include_rules = [
   "-chrome/android/features/keyboard_accessory/internal",
 
   "+chrome/browser/android/thin_webview/java",
+  "+chrome/browser/flags/android",
   "+chrome/browser/share/android",
   "+chrome/browser/thumbnail/generator/android/java",
   "+chrome/browser/ui/android/appmenu",

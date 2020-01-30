@@ -4,5 +4,5 @@
 
 #include "chrome/browser/heavy_ad_intervention/heavy_ad_features.h"
 
-extern const char kHeavyAdReportingOnlyParamName[] = "reporting-only";
-extern const char kHeavyAdReportingEnabledParamName[] = "reporting-enabled";
+const char kHeavyAdReportingOnlyParamName[] = "reporting-only";
+const char kHeavyAdReportingEnabledParamName[] = "reporting-enabled";

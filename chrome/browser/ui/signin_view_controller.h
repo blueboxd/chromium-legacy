@@ -19,6 +19,7 @@
 
 class Browser;
 class SigninViewControllerDelegate;
+struct CoreAccountId;
 
 namespace content {
 class WebContents;
@@ -34,11 +35,15 @@ enum class PromoAction;
 enum class Reason;
 }  // namespace signin_metrics
 
+namespace signin {
+enum class ReauthResult;
+}
+
 // Class responsible for showing and hiding all sign-in related UIs
 // (modal sign-in, DICE full-tab sign-in page, sync confirmation dialog, sign-in
-// error dialog). Sync confirmation is used on Win/Mac/Linux/Chrome OS.
-// Sign-in is only used on Win/Mac/Linux because Chrome OS has its own sign-in
-// flow and doesn't use DICE.
+// error dialog, reauth prompt). Sync confirmation is used on
+// Win/Mac/Linux/Chrome OS. Sign-in is only used on Win/Mac/Linux because
+// Chrome OS has its own sign-in flow and doesn't use DICE.
 class SigninViewController {
  public:
   SigninViewController();
@@ -79,6 +84,18 @@ class SigninViewController {
   // Shows the modal sign-in error dialog as a browser-modal dialog on top of
   // the |browser|'s window.
   void ShowModalSigninErrorDialog(Browser* browser);
+
+  // Shows the reauth prompt for |account_id| as either:
+  // - a browser-modal dialog on top of the |browser|'s window, or
+  // - a popup window
+  // |account_id| should be signed into the content area. Otherwise, the method
+  // fails with |kAccountNotSignedIn| error.
+  // Calls |reauth_callback| on completion of the reauth flow, or on error. The
+  // callback may be called synchronously.
+  void ShowReauthPrompt(
+      Browser* browser,
+      const CoreAccountId& account_id,
+      base::OnceCallback<void(signin::ReauthResult)> reauth_callback);
 
   // Returns true if the modal dialog is shown.
   bool ShowsModalDialog();

@@ -117,7 +117,7 @@
       'ToTAndroidASan': 'android_clang_tot_asan',
       'ToTAndroid (dbg)': 'android_clang_tot_dbg',
       'ToTAndroidCFI': 'android_clang_tot_cfi_full_cfi_diag_thin_lto_release_static_dcheck_always_on',
-      'ToTAndroidOfficial': 'android_clang_tot_release_minimal_symbols_official_optimize',
+      'ToTAndroidOfficial': 'android_clang_tot_official_arm64',
       'ToTAndroid64': 'android_clang_tot_release_arm64',
       'ToTAndroid x64': 'android_clang_tot_x64',
       'ToTLinuxOfficial': 'clang_tot_official',
@@ -535,15 +535,21 @@
       'win-swangle-x86': 'deqp_release_trybot_x86',
     },
 
-    'chromium.swarm': {
-      'Android N5 Swarm': 'android_release_bot_minimal_symbols',
-      'Android N5X Swarm': 'android_release_bot_minimal_symbols_arm64',
-      'Linux Swarm': 'release_bot_minimal_symbols',
+    'chromium.dev': {
+      # This should be the same with 'android-kitkat-arm-rel'.
+      'android-kitkat-arm-rel-swarming': 'android_release_bot_minimal_symbols_fastbuild',
 
-      # Use the same config with 'Mac Builder' to pass test for stack trace.
-      'Mac Swarm': 'gpu_tests_release_bot_minimal_symbols',
+      # This should be the same with 'android-marshmallow-arm64-rel'.
+      'android-marshmallow-arm64-rel-swarming':  'gpu_tests_android_release_bot_minimal_symbols_arm64_fastbuild',
 
-      'Windows Swarm': 'release_bot_minimal_symbols',
+      # This should be the same with 'Linux Builder'.
+      'linux-rel-swarming': 'gpu_tests_release_bot',
+
+      # This should be the same with 'Mac Builder'.
+      'mac-rel-swarming': 'gpu_tests_release_bot_minimal_symbols',
+
+      # This should be the same with 'Win x64 Builder'.
+      'win-rel-swarming': 'gpu_tests_release_bot_minimal_symbols',
     },
 
     'client.nacl.sdk': {
@@ -1056,9 +1062,9 @@
       'strip_debug_info', 'clang_tot',
     ],
 
-    'android_clang_tot_release_minimal_symbols_official_optimize': [
+    'android_clang_tot_official_arm64': [
       'android', 'release', 'static', 'minimal_symbols', 'official_optimize',
-      'clang_tot',
+      'clang_tot', 'arm64',
     ],
 
     'android_clang_tot_x64': [

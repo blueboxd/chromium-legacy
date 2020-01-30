@@ -569,7 +569,7 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   BOOL postCrashLaunch = [self mustShowRestoreInfobar];
   if (postCrashLaunch) {
     self.restoreHelper =
-        [[CrashRestoreHelper alloc] initWithBrowser:self.mainBrowser];
+        [[CrashRestoreHelper alloc] initWithBrowserState:chromeBrowserState];
     [self.restoreHelper moveAsideSessionInformation];
   }
 
@@ -668,7 +668,11 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
     // The startup parameters may create new tabs or navigations. If the restore
     // infobar is displayed now, it may be dismissed immediately and the user
     // will never be able to restore the session.
-    [self.restoreHelper showRestoreIfNeeded];
+    TabModel* currentTabModel = [self currentTabModel];
+    [self.restoreHelper
+        showRestoreIfNeededUsingWebState:currentTabModel.webStateList
+                                             ->GetActiveWebState()
+                         sessionRestorer:currentTabModel];
     self.restoreHelper = nil;
   }
 

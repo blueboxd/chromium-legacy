@@ -59,6 +59,10 @@ scoped_refptr<const NGLayoutResult> NGFieldsetLayoutAlgorithm::Layout() {
     auto legend_space =
         CreateConstraintSpaceForLegend(legend, content_box_size);
     auto result = legend.Layout(legend_space, BreakToken());
+
+    // TODO(layout-dev): Handle abortions caused by block fragmentation.
+    DCHECK_EQ(result->Status(), NGLayoutResult::kSuccess);
+
     const auto& physical_fragment = result->PhysicalFragment();
     NGBoxStrut legend_margins =
         ComputeMarginsFor(legend_space, legend.Style(), ConstraintSpace());
@@ -105,6 +109,10 @@ scoped_refptr<const NGLayoutResult> NGFieldsetLayoutAlgorithm::Layout() {
     auto child_space =
         CreateConstraintSpaceForFieldsetContent(adjusted_padding_box_size);
     auto result = fieldset_content.Layout(child_space, BreakToken());
+
+    // TODO(layout-dev): Handle abortions caused by block fragmentation.
+    DCHECK_EQ(result->Status(), NGLayoutResult::kSuccess);
+
     const auto& physical_fragment = result->PhysicalFragment();
     container_builder_.AddChild(physical_fragment,
                                 borders_with_legend.StartOffset());

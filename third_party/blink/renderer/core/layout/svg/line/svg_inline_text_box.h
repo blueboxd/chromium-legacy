@@ -109,7 +109,12 @@ class SVGInlineTextBox final : public InlineTextBox {
   Vector<SVGTextFragment> text_fragments_;
 };
 
-DEFINE_INLINE_BOX_TYPE_CASTS(SVGInlineTextBox);
+template <>
+struct DowncastTraits<SVGInlineTextBox> {
+  static bool AllowFrom(const InlineBox& box) {
+    return box.IsSVGInlineTextBox();
+  }
+};
 
 }  // namespace blink
 

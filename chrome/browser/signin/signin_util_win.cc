@@ -89,9 +89,6 @@ void FinishImportCredentialsFromProvider(const CoreAccountId& account_id,
         signin_metrics::Reason::REASON_SIGNIN_PRIMARY_ACCOUNT, account_id,
         DiceTurnSyncOnHelper::SigninAbortedMode::KEEP_ACCOUNT);
   }
-
-  // Mark this profile as having been signed in with the credential provider.
-  profile->GetPrefs()->SetBoolean(prefs::kSignedInWithCredentialProvider, true);
 }
 
 // Start the process of importing credentials from the credential provider given
@@ -134,6 +131,65 @@ void ImportCredentialsFromProvider(Profile* profile,
                                        account_id, nullptr));
     }
   }
+
+  // Mark this profile as having been signed in with the credential provider.
+  profile->GetPrefs()->SetBoolean(prefs::kSignedInWithCredentialProvider, true);
+}
+
+// Extracts preferences to consider while signing in through credential
+// provider. The preferences are set by credential provider after a successful
+// login. They manipulate the behavior of Chrome when importing refresh_token
+// provided by credential provider. When |allow_import_only_on_first_run| is
+// set to true, importing refresh_token is only allowed during Chrome
+// first time run. If it is false, refresh_token is allowed to be imported in
+// subsequent runs. When |allow_import_when_primary_account_exists| is set to
+// false, importing refresh_token is only allowed when profile doesn't have a
+// primary account. If |allow_import_when_primary_account_exists| is set to
+// true, importing refresh_token is allowed even if the profile has primary
+// account for the user authenticated through credential provider.
+void ExtractCredentialImportPreferences(
+    base::string16* cred_provider_user_gaia_id,
+    bool* allow_import_only_on_first_run,
+    bool* allow_import_when_primary_account_exists) {
+  DCHECK(cred_provider_user_gaia_id);
+  DCHECK(allow_import_only_on_first_run);
+  DCHECK(allow_import_when_primary_account_exists);
+
+  // Initialize to more restricted configuration.
+  *allow_import_only_on_first_run = true;
+  *allow_import_when_primary_account_exists = false;
+  cred_provider_user_gaia_id->clear();
+
+  base::win::RegKey key;
+  if (key.Open(HKEY_CURRENT_USER, credential_provider::kRegHkcuAccountsPath,
+               KEY_READ) != ERROR_SUCCESS) {
+    return;
+  }
+
+  base::win::RegistryKeyIterator it(key.Handle(), L"");
+  if (!it.Valid() || it.SubkeyCount() != 1)
+    return;
+
+  base::win::RegKey key_account(key.Handle(), it.Name(), KEY_QUERY_VALUE);
+  if (!key_account.Valid())
+    return;
+
+  // No need to return immediately if reading following registries fail. They
+  // will set to be stricter by default. cred_provider_user_gaia_id will be
+  // correctly set, though.
+  DWORD reg_import_only_on_first_run = 1;
+  key_account.ReadValueDW(credential_provider::kAllowImportOnlyOnFirstRun,
+                          &reg_import_only_on_first_run);
+
+  DWORD reg_import_when_primary_account_exists = 0;
+  key_account.ReadValueDW(
+      credential_provider::kAllowImportWhenPrimaryAccountExists,
+      &reg_import_when_primary_account_exists);
+
+  *cred_provider_user_gaia_id = it.Name();
+  *allow_import_only_on_first_run = (reg_import_only_on_first_run == 1);
+  *allow_import_when_primary_account_exists =
+      (reg_import_when_primary_account_exists == 1);
 }
 
 // Attempt to sign in with a credentials from a system installed credential
@@ -208,15 +264,38 @@ void SetDiceTurnSyncOnHelperDelegateForTesting(
 }
 
 void SigninWithCredentialProviderIfPossible(Profile* profile) {
-  // Check to see if auto signin information is available.  Only applies if:
-  //
-  //  - This is first run.
-  //  - Opening the initial profile.
-  //  - Not already signed in.
-  if (!(first_run::IsChromeFirstRun() &&
-        g_browser_process->profile_manager()->GetInitialProfileDir() ==
-            profile->GetPath().BaseName() &&
-        !IdentityManagerFactory::GetForProfile(profile)->HasPrimaryAccount())) {
+  bool import_only_on_first_run = true;
+  bool import_when_primary_account_exists = false;
+  base::string16 cred_provider_user_gaia_id;
+
+  ExtractCredentialImportPreferences(&cred_provider_user_gaia_id,
+                                     &import_only_on_first_run,
+                                     &import_when_primary_account_exists);
+
+  if (cred_provider_user_gaia_id.empty())
+    return;
+
+  if (import_only_on_first_run && !first_run::IsChromeFirstRun())
+    return;
+
+  if (g_browser_process->profile_manager()->GetInitialProfileDir() !=
+      profile->GetPath().BaseName()) {
+    return;
+  }
+
+  auto* identity_manager = IdentityManagerFactory::GetForProfile(profile);
+  if (identity_manager->HasPrimaryAccount()) {
+    base::string16 gaia_id =
+        base::UTF8ToUTF16(identity_manager->GetPrimaryAccountInfo().gaia);
+
+    if (!import_when_primary_account_exists ||
+        (gaia_id != cred_provider_user_gaia_id)) {
+      return;
+    }
+
+    // If there is already a primary account in the profile, this means sync was
+    // turned on. So it shouldn't be turned on again.
+    TrySigninWithCredentialProvider(profile, gaia_id, false);
     return;
   }
 

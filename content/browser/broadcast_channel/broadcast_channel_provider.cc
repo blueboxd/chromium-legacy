@@ -67,7 +67,9 @@ void BroadcastChannelProvider::Connection::OnMessage(
   service_->ReceivedMessageOnConnection(this, message);
 }
 
-BroadcastChannelProvider::BroadcastChannelProvider() {}
+BroadcastChannelProvider::BroadcastChannelProvider() = default;
+
+BroadcastChannelProvider::~BroadcastChannelProvider() = default;
 
 mojo::ReceiverId BroadcastChannelProvider::Connect(
     RenderProcessHostId render_process_host_id,
@@ -103,8 +105,6 @@ void BroadcastChannelProvider::ConnectToChannel(
                           base::Unretained(this), c.get()));
   connections_[origin].insert(std::make_pair(name, std::move(c)));
 }
-
-BroadcastChannelProvider::~BroadcastChannelProvider() {}
 
 void BroadcastChannelProvider::UnregisterConnection(Connection* c) {
   url::Origin origin = c->origin();

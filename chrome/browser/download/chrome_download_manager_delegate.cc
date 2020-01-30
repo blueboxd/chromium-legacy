@@ -480,20 +480,20 @@ bool ChromeDownloadManagerDelegate::IsDownloadReadyForCompletion(
       item->GetUserData(&SafeBrowsingState::kSafeBrowsingUserDataKey));
   if (!state) {
     // Begin the safe browsing download protection check.
+    state = new SafeBrowsingState();
+    state->set_callback(std::move(internal_complete_callback));
+    item->SetUserData(&SafeBrowsingState::kSafeBrowsingUserDataKey,
+                      base::WrapUnique(state));
     DownloadProtectionService* service = GetDownloadProtectionService();
     if (service) {
       DVLOG(2) << __func__ << "() Start SB download check for download = "
                << item->DebugString(false);
-      state = new SafeBrowsingState();
-      state->set_callback(std::move(internal_complete_callback));
-      item->SetUserData(&SafeBrowsingState::kSafeBrowsingUserDataKey,
-                        base::WrapUnique(state));
-      service->CheckClientDownload(
-          item,
-          base::Bind(&ChromeDownloadManagerDelegate::CheckClientDownloadDone,
-                     weak_ptr_factory_.GetWeakPtr(),
-                     item->GetId()));
-      return false;
+      if (service->MaybeCheckClientDownload(
+              item, base::Bind(
+                        &ChromeDownloadManagerDelegate::CheckClientDownloadDone,
+                        weak_ptr_factory_.GetWeakPtr(), item->GetId()))) {
+        return false;
+      }
     }
 
     // In case the service was disabled between the download starting and now,
@@ -518,8 +518,7 @@ bool ChromeDownloadManagerDelegate::IsDownloadReadyForCompletion(
             download::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE,
             download::DOWNLOAD_INTERRUPT_REASON_NONE);
       }
-      base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                     std::move(internal_complete_callback));
+      state->CompleteDownload();
       return false;
     }
   } else if (!state->is_complete()) {
@@ -772,8 +771,7 @@ DownloadProtectionService*
 #if BUILDFLAG(FULL_SAFE_BROWSING)
   safe_browsing::SafeBrowsingService* sb_service =
       g_browser_process->safe_browsing_service();
-  if (sb_service && sb_service->download_protection_service() &&
-      profile_->GetPrefs()->GetBoolean(prefs::kSafeBrowsingEnabled)) {
+  if (sb_service && sb_service->download_protection_service()) {
     return sb_service->download_protection_service();
   }
 #endif
@@ -1077,10 +1075,11 @@ void ChromeDownloadManagerDelegate::CheckDownloadUrl(
         service->IsSupportedDownload(*download, suggested_path);
     DVLOG(2) << __func__ << "() Start SB URL check for download = "
              << download->DebugString(false);
-    service->CheckDownloadUrl(download,
-                              base::Bind(&CheckDownloadUrlDone, callback,
-                                         is_content_check_supported));
-    return;
+    if (service->MaybeCheckDownloadUrl(
+            download, base::Bind(&CheckDownloadUrlDone, callback,
+                                 is_content_check_supported))) {
+      return;
+    }
   }
 #endif
   callback.Run(download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS);

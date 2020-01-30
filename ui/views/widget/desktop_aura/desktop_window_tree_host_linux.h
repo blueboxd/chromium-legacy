@@ -103,8 +103,6 @@ class VIEWS_EXPORT DesktopWindowTreeHostLinux
   void DestroyNonClientEventFilter();
 
   // X11ExtensionDelegate overrides:
-  void OnXWindowMapped() override;
-  void OnXWindowUnmapped() override;
   void GetWindowMask(const gfx::Size& size, SkPath* window_mask) override;
   void OnLostMouseGrab() override;
 #if BUILDFLAG(USE_ATK)

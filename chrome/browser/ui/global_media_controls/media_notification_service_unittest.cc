@@ -647,8 +647,8 @@ TEST_F(MediaNotificationServiceTest, DismissesMediaSession) {
       1);
 }
 
-// TODO(https://crbug.com/1034406) Flaky on Mac10.12
-#if defined(OS_MACOSX)
+// TODO(https://crbug.com/1034406) Flaky on Mac10.12, Linux and Win10.
+#if defined(OS_MACOSX) || defined(OS_LINUX) || defined(OS_WIN)
 #define MAYBE_CountCastSessionsAsActive DISABLED_CountCastSessionsAsActive
 #else
 #define MAYBE_CountCastSessionsAsActive CountCastSessionsAsActive

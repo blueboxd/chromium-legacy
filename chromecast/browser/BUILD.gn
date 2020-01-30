@@ -32,12 +32,9 @@ cast_source_set("prefs") {
     "//base",
     "//chromecast:chromecast_buildflags",
     "//chromecast/base",
+    "//components/cdm/browser",
     "//components/prefs",
   ]
-
-  if (is_android) {
-    deps += [ "//components/cdm/browser" ]
-  }
 }
 
 cast_source_set("feature_list") {
@@ -183,6 +180,7 @@ cast_source_set("browser") {
     "//chromecast/net",
     "//chromecast/net:connectivity_checker",
     "//chromecast/service",
+    "//components/cdm/browser",
     "//components/download/public/common:public",
     "//components/metrics",
     "//components/metrics:gpu",
@@ -228,7 +226,6 @@ cast_source_set("browser") {
     ]
     deps += [
       ":jni_headers",
-      "//components/cdm/browser",
       "//components/embedder_support/android:view",
     ]
   } else {

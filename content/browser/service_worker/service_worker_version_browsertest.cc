@@ -136,7 +136,7 @@ void ReceiveFindRegistrationStatus(
     RunOrPostTaskOnThread(FROM_HERE, run_quit_thread, std::move(quit));
 }
 
-ServiceWorkerStorage::FindRegistrationCallback CreateFindRegistrationReceiver(
+ServiceWorkerRegistry::FindRegistrationCallback CreateFindRegistrationReceiver(
     BrowserThread::ID run_quit_thread,
     base::OnceClosure quit,
     blink::ServiceWorkerStatusCode* status) {
@@ -439,10 +439,9 @@ class ServiceWorkerVersionBrowserTest : public ContentBrowserTest {
     // tests.
     registration_->set_last_update_check(base::Time::Now());
 
-    version_ = new ServiceWorkerVersion(
+    version_ = wrapper()->context()->registry()->CreateNewVersion(
         registration_.get(), embedded_test_server()->GetURL(worker_url),
-        script_type, wrapper()->context()->storage()->NewVersionId(),
-        wrapper()->context()->AsWeakPtr());
+        script_type);
     // Make the registration findable via storage functions.
     wrapper()->context()->registry()->NotifyInstallingRegistration(
         registration_.get());
@@ -474,11 +473,9 @@ class ServiceWorkerVersionBrowserTest : public ContentBrowserTest {
     ASSERT_TRUE(
         BrowserThread::CurrentlyOn(ServiceWorkerContext::GetCoreThreadId()));
     scoped_refptr<ServiceWorkerVersion> waiting_version(
-        new ServiceWorkerVersion(
+        wrapper()->context()->registry()->CreateNewVersion(
             registration_.get(), embedded_test_server()->GetURL(worker_url),
-            blink::mojom::ScriptType::kClassic,
-            wrapper()->context()->storage()->NewVersionId(),
-            wrapper()->context()->AsWeakPtr()));
+            blink::mojom::ScriptType::kClassic));
     waiting_version->set_fetch_handler_existence(
         ServiceWorkerVersion::FetchHandlerExistence::EXISTS);
     waiting_version->SetStatus(ServiceWorkerVersion::INSTALLED);

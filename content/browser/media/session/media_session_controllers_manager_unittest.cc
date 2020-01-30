@@ -102,6 +102,15 @@ class MediaSessionControllersManagerTest
     return controller->GetPosition(controller->get_player_id_for_testing());
   }
 
+  bool IsPictureInPictureAvailable(const MediaPlayerId& id) {
+    auto it = manager_->controllers_map_.find(id);
+    DCHECK(it != manager_->controllers_map_.end());
+
+    auto* controller = it->second.get();
+    return controller->IsPictureInPictureAvailable(
+        controller->get_player_id_for_testing());
+  }
+
   void TearDown() override {
     mock_media_session_controller_.reset();
     mock_media_session_controller_ptr_ = nullptr;
@@ -299,6 +308,41 @@ TEST_P(MediaSessionControllersManagerTest, MultiplePlayersWithPositionState) {
   // The controller should be updated with the new position.
   EXPECT_EQ(new_position, GetPosition(media_player_id_));
   EXPECT_EQ(expected_position2, GetPosition(media_player_id_2));
+}
+
+TEST_P(MediaSessionControllersManagerTest, PictureInPictureAvailability) {
+  if (!IsMediaSessionEnabled())
+    return;
+
+  manager_->OnPictureInPictureAvailabilityChanged(media_player_id_, true);
+  EXPECT_TRUE(manager_->RequestPlay(media_player_id_, true, false,
+                                    media::MediaContentType::Transient));
+  EXPECT_TRUE(IsPictureInPictureAvailable(media_player_id_));
+
+  manager_->OnPictureInPictureAvailabilityChanged(media_player_id_, false);
+  EXPECT_FALSE(IsPictureInPictureAvailable(media_player_id_));
+}
+
+TEST_P(MediaSessionControllersManagerTest,
+       PictureInPictureAvailabilityMultiplePlayer) {
+  if (!IsMediaSessionEnabled())
+    return;
+
+  MediaPlayerId media_player_id_2 =
+      MediaPlayerId(contents()->GetMainFrame(), 2);
+
+  manager_->OnPictureInPictureAvailabilityChanged(media_player_id_, true);
+  manager_->OnPictureInPictureAvailabilityChanged(media_player_id_2, true);
+  EXPECT_TRUE(manager_->RequestPlay(media_player_id_, true, false,
+                                    media::MediaContentType::Persistent));
+  EXPECT_TRUE(manager_->RequestPlay(media_player_id_2, true, false,
+                                    media::MediaContentType::Persistent));
+  EXPECT_TRUE(IsPictureInPictureAvailable(media_player_id_));
+  EXPECT_TRUE(IsPictureInPictureAvailable(media_player_id_2));
+
+  manager_->OnPictureInPictureAvailabilityChanged(media_player_id_, false);
+  EXPECT_FALSE(IsPictureInPictureAvailable(media_player_id_));
+  EXPECT_TRUE(IsPictureInPictureAvailable(media_player_id_2));
 }
 
 // First bool is to indicate whether InternalMediaSession is enabled.

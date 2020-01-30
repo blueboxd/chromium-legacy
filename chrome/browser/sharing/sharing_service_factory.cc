@@ -22,6 +22,7 @@
 #include "chrome/browser/sharing/sharing_service.h"
 #include "chrome/browser/sharing/sharing_sync_preference.h"
 #include "chrome/browser/sharing/vapid_key_manager.h"
+#include "chrome/browser/sharing/web_push/web_push_sender.h"
 #include "chrome/browser/sync/device_info_sync_service_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/common/buildflags.h"
@@ -152,9 +153,12 @@ KeyedService* SharingServiceFactory::BuildServiceInstanceFor(
   auto sharing_message_sender = std::make_unique<SharingMessageSender>(
       sync_prefs.get(), local_device_info_provider);
 
+  auto web_push_sender = std::make_unique<WebPushSender>(
+      content::BrowserContext::GetDefaultStoragePartition(profile)
+          ->GetURLLoaderFactoryForBrowserProcess());
   auto fcm_sender = std::make_unique<SharingFCMSender>(
-      gcm_driver, sync_prefs.get(), vapid_key_manager.get(),
-      local_device_info_provider);
+      std::move(web_push_sender), sync_prefs.get(), vapid_key_manager.get(),
+      gcm_driver, local_device_info_provider);
   SharingFCMSender* fcm_sender_ptr = fcm_sender.get();
   sharing_message_sender->RegisterSendDelegate(
       SharingMessageSender::DelegateType::kFCM, std::move(fcm_sender));

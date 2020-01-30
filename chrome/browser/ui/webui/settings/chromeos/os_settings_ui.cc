@@ -95,6 +95,7 @@
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/web_ui_data_source.h"
+#include "media/base/media_switches.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "ui/chromeos/resources/grit/ui_chromeos_resources.h"
 #include "ui/resources/grit/webui_resources.h"
@@ -218,8 +219,6 @@ OSSettingsUI::OSSettingsUI(content::WebUI* web_ui)
   // to os_localized_string_provider.
   ::settings::AddBrowserLocalizedStrings(html_source, profile,
                                          web_ui->GetWebContents());
-  ::settings::AddSharedLocalizedStrings(html_source, profile,
-                                        web_ui->GetWebContents());
 
   // AddOsLocalizedStrings must be added after AddBrowserLocalizedStrings
   // as repeated keys used by the OS strings should override the same keys

@@ -427,7 +427,6 @@
 <translation id="2799223571221894425">Qaytadan ishga tushirish</translation>
 <translation id="2803306138276472711">Google saytlar xavfsizligini tekshirish tizimi yaqinda <ph name="SITE" /> saytida <ph name="BEGIN_LINK" />zararli dasturlarni<ph name="END_LINK" /> topdi. Ehtiyot bo‘ling, ba’zida himoyalangan saytlardan ham zararli dasturlar tarqatilishi mumkin.</translation>
 <translation id="2807052079800581569">Tasvirning Y oʻqidagi joylashuvi</translation>
-<translation id="2809804249696361569">Ikkala varaq</translation>
 <translation id="2824775600643448204">Manzil va qidiruv paneli</translation>
 <translation id="2826760142808435982">Aloqa shifrlangan va <ph name="CIPHER" /> yordamida tekshirilgan. Kalitlar almashinuvi mexanizmi sifatida <ph name="KX" /> qo‘llanilmoqda.</translation>
 <translation id="2835170189407361413">Tozalash</translation>
@@ -932,7 +931,6 @@
 <translation id="5112422516732747637">A5</translation>
 <translation id="5115216390227830982">European-Edp</translation>
 <translation id="5115563688576182185">(64 bit)</translation>
-<translation id="5121469660360593280">Chrome Enterprise foydalanuvchilarini himoyalash tizimi xavfli boʻlishi mumkin deb aniqlagan xavfsizlikka oid hodisalar haqida administratorga xabar qilib turing. Bu ochilgan sahifalarning URL manzillari, fayl nomlari yoki meta axborotlar, qurilma va Chrome foydalanuvchilari nomlaridan iborat boʻlishi mumkin.</translation>
 <translation id="5123063207673082822">Dam olish kunlari</translation>
 <translation id="5125394840236832993">B-Plus</translation>
 <translation id="5126510351761255129">Kartangizni tasdiqlang</translation>
@@ -947,7 +945,6 @@
 <translation id="5161506081086828129">Taxlovchi 9</translation>
 <translation id="516920405563544094"><ph name="CREDIT_CARD" /> kartasining CVC kodini kiriting. Tasdiqlangandan so‘ng, Google hisobingizdagi bank karta maʼlumotlari bu saytda saqlanib qoladi.</translation>
 <translation id="5169827969064885044">Tashkilot hisobingiz xavf ostida va o‘g‘irlanishi mumkin. Chrome parolingizni hoziroq o‘zgartirishni tavsiya etadi.</translation>
-<translation id="5170017743895942767">Chrome Enterprise foydalanuvchilarini himoyalash tizimi</translation>
 <translation id="5171045022955879922">Qidiring yoki URL manzili kiriting</translation>
 <translation id="5171689220826475070">Fanfold-European</translation>
 <translation id="5172758083709347301">Mahalliy kompyuter</translation>
@@ -1080,7 +1077,6 @@
 <translation id="5737183892635480227">{NUM_CARDS,plural, =1{Kartangizni Google hisobingizda saqlang}other{Kartalaringizni Google hisobingizda saqlang}}</translation>
 <translation id="5745980000221562234">{NUM_CARDS,plural, =1{Bu karta uchun virtual raqam ishlatish}other{Kartani tanlang}}</translation>
 <translation id="5763042198335101085">Email manzilini xatosiz kiriting</translation>
-<translation id="5763703224595565476">Brauzeringizda administrator tomonidan Chrome Enterprise foydalanuvchilarini himoyalash tizimi faollashtirildi. Chrome Enterprise foydalanuvchilarini himoyalash tizimida ayrim maʼlumotlaringizga ruxsat bor.</translation>
 <translation id="5765072501007116331">Yetkazib berish usuli va talablari bilan tanishish uchun manzilni tanlang</translation>
 <translation id="5776313857861697733">Muhimligi</translation>
 <translation id="5778550464785688721">MIDI qurilmalar to‘liq boshqaruvi</translation>
@@ -1416,7 +1412,6 @@ Batafsil axborot:
 <translation id="733923710415886693">Sertifikatning ishonchlilik belgilari haqidagi ma’lumot server tomonidan taqdim etilmadi.</translation>
 <translation id="734600844861828519">11x15</translation>
 <translation id="7346048084945669753">Tasarrufidami:</translation>
-<translation id="73479065977517481">Brauzeringizda <ph name="ENROLLMENT_DOMAIN" /> tomonidan Chrome Enterprise foydalanuvchilarini himoyalash tizimi faollashtirildi. Chrome Enterprise foydalanuvchilarini himoyalash tizimida ayrim maʼlumotlaringizga ruxsat bor.</translation>
 <translation id="7349430561505560861">A4-Extra</translation>
 <translation id="7353601530677266744">Buyruqlar qatori</translation>
 <translation id="7372973238305370288">qidiruv natijasi</translation>

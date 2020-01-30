@@ -525,13 +525,19 @@ Polymer({
     const type = this.managedProperties_.type;
     if (type == chromeos.networkConfig.mojom.NetworkType.kCellular) {
       fields.push(
-          'cellular.homeProvider.name', 'cellular.servingOperator.name',
-          'cellular.activationState', 'cellular.roamingState',
-          'restrictedConnectivity', 'cellular.meid', 'cellular.esn',
+          'cellular.activationState', 'cellular.servingOperator.name',
+          'cellular.roamingState');
+      if (this.managedProperties_.restrictedConnectivity) {
+        fields.push('restrictedConnectivity');
+      }
+      fields.push(
+          'cellular.homeProvider.name', 'cellular.meid', 'cellular.esn',
           'cellular.iccid', 'cellular.imei', 'cellular.imsi', 'cellular.mdn',
           'cellular.min');
     } else if (type == chromeos.networkConfig.mojom.NetworkType.kWiFi) {
-      fields.push('restrictedConnectivity');
+      if (this.managedProperties_.restrictedConnectivity) {
+        fields.push('restrictedConnectivity');
+      }
     }
     return fields;
   },

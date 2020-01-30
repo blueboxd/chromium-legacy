@@ -7,13 +7,16 @@ package org.chromium.chrome.browser.bookmarks;
 import static org.chromium.components.browser_ui.widget.listmenu.BasicListMenu.buildMenuListItem;
 
 import android.content.Context;
+import android.support.v7.content.res.AppCompatResources;
 import android.util.AttributeSet;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.ImageView;
 
 import androidx.annotation.IntDef;
 import androidx.annotation.VisibleForTesting;
 
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.bookmarks.BookmarkBridge.BookmarkItem;
@@ -225,9 +228,15 @@ abstract class BookmarkRow extends SelectableItemView<BookmarkId> implements Boo
     @Override
     protected void onFinishInflate() {
         super.onFinishInflate();
-        mMoreIcon = (ListMenuButton) findViewById(R.id.more);
+
+        LayoutInflater.from(getContext()).inflate(R.layout.list_menu_button, mContentView);
+        mMoreIcon = findViewById(R.id.more);
         mMoreIcon.setDelegate(getListMenuButtonDelegate());
-        mDragHandle = findViewById(R.id.drag_handle);
+
+        mDragHandle = mEndButtonView;
+        mDragHandle.setImageResource(R.drawable.ic_drag_handle_grey600_24dp);
+        ApiCompatibilityUtils.setImageTintList(mDragHandle,
+                AppCompatResources.getColorStateList(getContext(), R.color.standard_mode_tint));
     }
 
     private ListMenuButtonDelegate getListMenuButtonDelegate() {
@@ -308,5 +317,10 @@ abstract class BookmarkRow extends SelectableItemView<BookmarkId> implements Boo
         } else {
             super.onClick(view);
         }
+    }
+
+    @VisibleForTesting
+    View getDragHandleViewForTests() {
+        return mDragHandle;
     }
 }

@@ -60,6 +60,9 @@ AX_EXPORT bool IsImage(const ax::mojom::Role role);
 // pos_in_set and set_size values.
 AX_EXPORT bool IsItemLike(const ax::mojom::Role role);
 
+// Returns true if the role is a subclass of the ARIA Landmark abstract role.
+AX_EXPORT bool IsLandmark(const ax::mojom::Role role);
+
 // Returns true if the provided role belongs to a link.
 AX_EXPORT bool IsLink(const ax::mojom::Role role);
 
@@ -86,12 +89,24 @@ AX_EXPORT bool IsReadOnlySupported(const ax::mojom::Role role);
 // table or grid row.
 AX_EXPORT bool IsRowContainer(const ax::mojom::Role role);
 
+// Returns true if the role is a subclass of the ARIA Section abstract role.
+AX_EXPORT bool IsSection(const ax::mojom::Role role);
+
+// Returns true if the role is a subclass of the ARIA Sectionhead role.
+AX_EXPORT bool IsSectionhead(const ax::mojom::Role role);
+
+// Returns true if the role is a subclass of the ARIA Select abstract role.
+AX_EXPORT bool IsSelect(const ax::mojom::Role role);
+
 // Returns true if the provided role is ordered-set like, specifically if it
 // can hold set_size values.
 AX_EXPORT bool IsSetLike(const ax::mojom::Role role);
 
 // Returns true if the provided role belongs to a non-interactive list.
 AX_EXPORT bool IsStaticList(const ax::mojom::Role role);
+
+// Returns true if the role is a subclass of the ARIA Structure abstract role.
+AX_EXPORT bool IsStructure(const ax::mojom::Role role);
 
 // Returns true if the provided role belongs to a table or grid column, and the
 // table is not used for layout purposes.

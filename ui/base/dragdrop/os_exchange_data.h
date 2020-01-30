@@ -35,7 +35,7 @@ class Vector2d;
 
 namespace ui {
 
-struct ClipboardFormatType;
+class ClipboardFormatType;
 struct FileInfo;
 
 ///////////////////////////////////////////////////////////////////////////////

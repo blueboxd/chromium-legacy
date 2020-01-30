@@ -428,7 +428,6 @@
 <translation id="2799223571221894425">Վերագործարկել</translation>
 <translation id="2803306138276472711">Վերջերս Google Safe Browsing-ը <ph name="BEGIN_LINK" />վնասագիր է հայտնաբերել<ph name="END_LINK" /> <ph name="SITE" /> կայքում: Նույնիսկ ապահով վեբկայքերը երբեմն վնասվում են վնասագրերով:</translation>
 <translation id="2807052079800581569">Պատկերի դիրքը Y առանցքով</translation>
-<translation id="2809804249696361569">Երկու թերթերը</translation>
 <translation id="2824775600643448204">Հասցեագոտի և որոնման գոտի</translation>
 <translation id="2826760142808435982">Կապակցումը գաղտնագրված և ստուգված է <ph name="CIPHER" />-ի միջոցով: Որպես բանալիների փոխանակման մեխանիզմ օգտագործվում է <ph name="KX" />-ը:</translation>
 <translation id="2835170189407361413">Մաքրել ձևաթուղթը</translation>
@@ -936,7 +935,6 @@
 <translation id="5112422516732747637">A5</translation>
 <translation id="5115216390227830982">European-Edp</translation>
 <translation id="5115563688576182185">(64 բիթանոց)</translation>
-<translation id="5121469660360593280">Ուղարկեք ձեր ադմինիստրատորին անվտանգությանը սպառնացող գործողությունների մասին տվյալները, որոնք նշվել են Chrome Enterprise օգտատերերի պաշտպանության համակարգի կողմից որպես վտանգավոր։ Սա կարող է ներառել ձեր այցելած էջերի հասցեները, ֆայլերի անուններ կամ մետատվյալներ, ինչպես նաև օգտանուններ, որոնք օգտագործում եք ձեր սարքում կամ Chrome-ում հաշիվ մտնելու համար։</translation>
 <translation id="5123063207673082822">Հանգստյան օրեր</translation>
 <translation id="5125394840236832993">B-Plus</translation>
 <translation id="5126510351761255129">Հաստատեք ձեր քարտը</translation>
@@ -951,7 +949,6 @@
 <translation id="5161506081086828129">Շեղջիչ 9</translation>
 <translation id="516920405563544094">Մուտքագրեք <ph name="CREDIT_CARD" /> քարտի CVC կոդը։ Հաստատումից հետո ձեր Google հաշվին կցված քարտի տվյալները կօգտագործվեն այս կայքի կողմից։</translation>
 <translation id="5169827969064885044">Հնարավոր է՝ չկարողանաք օգտագործել ձեր կազմակերպության հաշիվը, կամ ինչ-որ մեկը կարող է գողանալ ձեր անձնական տվյալները։ Խորհուրդ ենք տալիս փոխել գաղտնաբառը։</translation>
-<translation id="5170017743895942767">Chrome Enterprise օգտատերերի պաշտպանության համակարգ</translation>
 <translation id="5171045022955879922">Որոնեք կամ մուտքագրեք URL-ը</translation>
 <translation id="5171689220826475070">Fanfold-European</translation>
 <translation id="5172758083709347301">Համակարգիչ</translation>
@@ -1084,7 +1081,6 @@
 <translation id="5737183892635480227">{NUM_CARDS,plural, =1{Պահեք քարտը Google հաշվում}one{Պահեք քարտը Google հաշվում}other{Պահեք քարտերը Google հաշվում}}</translation>
 <translation id="5745980000221562234">{NUM_CARDS,plural, =1{Այս քարտի համար օգտագործեք վիրտուալ համար}one{Ընտրեք քարտը}other{Ընտրեք քարտը}}</translation>
 <translation id="5763042198335101085">Մուտքագրեք վավեր էլ․ հասցե</translation>
-<translation id="5763703224595565476">Ադմինիստրատորը միացրել է Chrome Enterprise օգտատերերի պաշտպանության համակարգը ձեր դիտարկիչում։ Chrome Enterprise օգտատերերի պաշտպանության համակարգին հասանելի են ձեր որոշակի տվյալները։</translation>
 <translation id="5765072501007116331">Առաքման եղանակներն ու պայմանները տեսնելու համար ընտրեք հասցե</translation>
 <translation id="5776313857861697733">Առաջնահերթություն</translation>
 <translation id="5778550464785688721">MIDI սարքերի ամբողջական կառավարում</translation>
@@ -1421,7 +1417,6 @@
 <translation id="733923710415886693">Սերվերի վկայագիրը չի բացահայտվել «Վկայագրերի թափանցիկություն» կանոնի միջոցով:</translation>
 <translation id="734600844861828519">11x15</translation>
 <translation id="7346048084945669753">Փոխկապակցված է՝</translation>
-<translation id="73479065977517481"><ph name="ENROLLMENT_DOMAIN" /> տիրույթի ադմինիստրատորը միացրել է Chrome Enterprise օգտատերերի պաշտպանության համակարգը ձեր դիտարկիչում։ Chrome Enterprise օգտատերերի պաշտպանության համակարգին հասանելի են ձեր տվյալներից որոշները։</translation>
 <translation id="7349430561505560861">A4-Extra</translation>
 <translation id="7353601530677266744">Հրամանատող</translation>
 <translation id="7372973238305370288">որոնման արդյունք</translation>

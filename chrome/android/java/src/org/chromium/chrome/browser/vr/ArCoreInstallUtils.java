@@ -63,6 +63,11 @@ public class ArCoreInstallUtils implements ModuleInstallUi.FailureUiListener {
         return new ArCoreInstallUtils(nativeArCoreInstallUtils);
     }
 
+    @CalledByNative
+    private void onNativeDestroy() {
+        mNativeArCoreInstallUtils = 0;
+    }
+
     private ArCoreInstallUtils(long nativeArCoreInstallUtils) {
         mNativeArCoreInstallUtils = nativeArCoreInstallUtils;
     }
@@ -265,9 +270,9 @@ public class ArCoreInstallUtils implements ModuleInstallUi.FailureUiListener {
     }
 
     @NativeMethods
-    /* package */ interface ArConsentPromptNative {
-        void onRequestInstallArModuleResult(long nativeArCoreConsentPrompt, boolean success);
-        void onRequestInstallSupportedArCoreResult(long nativeArCoreConsentPrompt, boolean success);
+    /* package */ interface ArInstallHelperNative {
+        void onRequestInstallArModuleResult(long nativeArCoreInstallHelper, boolean success);
+        void onRequestInstallSupportedArCoreResult(long nativeArCoreInstallHelper, boolean success);
         void installArCoreDeviceProviderFactory();
     }
 }

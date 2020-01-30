@@ -42,6 +42,9 @@ message CertLoggerInterstitialInfo {
     // An interstitial telling the user that their connection is being
     // intercepted by a known certificate.
     INTERSTITIAL_BLOCKED_INTERCEPTION = 6;
+    // An interstitial telling the user that the site they are visiting use an
+    // outdated version of TLS.
+    INTERSTITIAL_LEGACY_TLS = 7;
   }
 
   // The type of interstitial that was shown

@@ -802,10 +802,20 @@ void TrackEventThreadLocalEventSink::DoResetIncrementalState(
         perfetto::ThreadTrack::ForThread(thread_id_).uuid);
 
     ClockSnapshot* clocks = packet->set_clock_snapshot();
-    // Reference clock (CLOCK_MONOTONIC or CLOCK_BOOTTIME) is in nanos.
+    // Always reference the boottime timestamps to help trace processor
+    // translate the clocks to boottime more efficiently.
     ClockSnapshot::Clock* clock_reference = clocks->add_clocks();
-    clock_reference->set_clock_id(kTraceClockId);
-    clock_reference->set_timestamp(timestamp.since_origin().InNanoseconds());
+    clock_reference->set_clock_id(ClockSnapshot::Clock::BOOTTIME);
+    if (kTraceClockId == ClockSnapshot::Clock::BOOTTIME) {
+      clock_reference->set_timestamp(timestamp.since_origin().InNanoseconds());
+    } else {
+      int64_t current_boot_nanos = TraceBootTicksNow();
+      int64_t current_monotonic_nanos =
+          TRACE_TIME_TICKS_NOW().since_origin().InNanoseconds();
+      int64_t diff = current_boot_nanos - current_monotonic_nanos;
+      clock_reference->set_timestamp(timestamp.since_origin().InNanoseconds() +
+                                     diff);
+    }
     // Absolute clock in micros.
     ClockSnapshot::Clock* clock_absolute = clocks->add_clocks();
     clock_absolute->set_clock_id(kClockIdAbsolute);

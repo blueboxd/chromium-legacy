@@ -24,7 +24,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_toEndOf="@id/page_info_permission_icon"
-        android:textAppearance="@style/TextAppearance.BlackBodyDefault" />
+        android:textAppearance="@style/TextAppearance.TextMedium.Primary" />
 
     <org.chromium.ui.widget.TextViewWithLeading
         android:id="@+id/page_info_permission_unavailable_message"

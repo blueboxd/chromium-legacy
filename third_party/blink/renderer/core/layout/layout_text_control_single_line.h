@@ -103,7 +103,6 @@ class LayoutTextControlInnerEditor : public LayoutBlockFlow {
   }
   bool ScrollsOverflowX() const override { return HasOverflowClip(); }
   bool ScrollsOverflowY() const override { return false; }
-  bool HasLineIfEmpty() const override { return true; }
 };
 
 }  // namespace blink

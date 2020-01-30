@@ -480,10 +480,14 @@ TEST_F(AccessibilityTest, GetAccessibilityLinkInfo) {
 }
 
 TEST_F(AccessibilityTest, GetAccessibilityHighlightInfo) {
+  constexpr uint32_t kHighlightDefaultColor = MakeARGB(255, 255, 255, 0);
+  constexpr uint32_t kHighlightRedColor = MakeARGB(102, 230, 0, 0);
+  constexpr uint32_t kHighlightNoColor = MakeARGB(0, 0, 0, 0);
   static const pp::PDF::PrivateAccessibilityHighlightInfo
-      kExpectedHighlightInfo[] = {{"", 0, 0, 1, {{5, 196}, {49, 26}}},
-                                  {"", 1, 2, 1, {{110, 196}, {77, 26}}},
-                                  {"", 2, 3, 1, {{192, 196}, {13, 26}}}};
+      kExpectedHighlightInfo[] = {
+          {"", 0, 0, 1, {{5, 196}, {49, 26}}, kHighlightDefaultColor},
+          {"", 1, 2, 1, {{110, 196}, {77, 26}}, kHighlightRedColor},
+          {"", 2, 3, 1, {{192, 196}, {13, 26}}, kHighlightNoColor}};
 
   static const pp::Rect kExpectedPageRect = {{5, 3}, {533, 266}};
 
@@ -515,6 +519,7 @@ TEST_F(AccessibilityTest, GetAccessibilityHighlightInfo) {
               kExpectedHighlightInfo[i].text_run_index);
     EXPECT_EQ(highlight_info.text_run_count,
               kExpectedHighlightInfo[i].text_run_count);
+    EXPECT_EQ(highlight_info.color, kExpectedHighlightInfo[i].color);
   }
 }
 

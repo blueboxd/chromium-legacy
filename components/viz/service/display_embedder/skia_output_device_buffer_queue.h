@@ -51,6 +51,7 @@ class VIZ_SERVICE_EXPORT SkiaOutputDeviceBufferQueue final
                gfx::OverlayTransform transform) override;
   SkSurface* BeginPaint() override;
   void EndPaint(const GrBackendSemaphore& semaphore) override;
+  std::vector<GrBackendSemaphore> TakeEndPaintSemaphores(void) override;
   bool supports_alpha() { return true; }
 
   void SchedulePrimaryPlane(

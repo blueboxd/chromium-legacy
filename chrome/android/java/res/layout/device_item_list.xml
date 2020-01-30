@@ -15,7 +15,7 @@
         android:paddingBottom="8dp"
         android:paddingStart="16dp"
         android:paddingEnd="16dp"
-        android:textAppearance="@style/TextAppearance.BlackHint1" />
+        android:textAppearance="@style/TextAppearance.TextLarge.Secondary" />
 
     <!-- The "no item found" message. -->
     <org.chromium.ui.widget.TextViewWithClickableSpans
@@ -25,7 +25,7 @@
         android:layout_marginTop="8dp"
         android:layout_marginStart="16dp"
         android:layout_marginEnd="16dp"
-        android:textAppearance="@style/TextAppearance.BlackHint1"
+        android:textAppearance="@style/TextAppearance.TextLarge.Secondary"
         android:visibility="gone" />
 
     <!-- A layout containing a spinning progress bar that gets replaced with a

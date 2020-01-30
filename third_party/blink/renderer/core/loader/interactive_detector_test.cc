@@ -1,11 +1,14 @@
 // Copyright 2017 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+#include "components/ukm/test_ukm_recorder.h"
+#include "services/metrics/public/cpp/ukm_builders.h"
 
 #include "third_party/blink/renderer/core/loader/interactive_detector.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/paint/first_meaningful_paint_detector.h"
 #include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
@@ -15,6 +18,8 @@
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 
 namespace blink {
+
+using InputEvent = ukm::builders::InputEvent;
 
 class NetworkActivityCheckerForTest
     : public InteractiveDetector::NetworkActivityChecker {
@@ -596,6 +601,25 @@ TEST_F(InteractiveDetectorTest, LongTaskAfterTTIDoesNothing) {
   platform_->RunForPeriodSeconds(5.1);
   // TTI time should not change.
   EXPECT_EQ(GetDetector()->GetInteractiveTime(), long_task_1_end_time);
+}
+
+TEST_F(InteractiveDetectorTest, RecordInputDelayUKM) {
+  ukm::TestAutoSetUkmRecorder test_ukm_recorder;
+  base::TimeDelta delay = base::TimeDelta::FromMilliseconds(10);
+  Event event;
+  event.SetTrusted(true);
+  event.SetType(event_type_names::kClick);
+  base::TimeTicks processing_start = Now() + delay;
+  base::TimeTicks event_platform_timestamp = Now();
+
+  GetDetector()->HandleForInputDelay(event, event_platform_timestamp,
+                                     processing_start);
+  auto entries = test_ukm_recorder.GetEntriesByName(InputEvent::kEntryName);
+  EXPECT_EQ(1ul, entries.size());
+  auto* entry = entries[0];
+  test_ukm_recorder.ExpectEntryMetric(
+      entry, InputEvent::kInteractiveTiming_InputDelayName,
+      delay.InMilliseconds());
 }
 
 }  // namespace blink

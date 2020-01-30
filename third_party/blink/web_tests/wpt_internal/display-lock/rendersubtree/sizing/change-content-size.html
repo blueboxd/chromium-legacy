@@ -10,7 +10,7 @@
 
 <style>
 .contained {
-  intrinsic-size: 123px 456px;
+  contain-intrinsic-size: 123px 456px;
 }
 #spacer {
   width: 50px;
@@ -18,7 +18,7 @@
   background: lightgreen;
 }
 div:not([rendersubtree~="invisible"]) {
-  intrinsic-size: legacy !important;
+  contain-intrinsic-size: legacy !important;
 }
 </style>
 
@@ -36,7 +36,7 @@ function finishTest(status_string) {
 function runTest() {
   const container = document.getElementById("small");
   setInvisible(container).then(() => {
-    container.style = "intrinsic-size: 150px 150px";
+    container.style = "contain-intrinsic-size: 150px 150px";
     requestAnimationFrame(() => finishTest("PASS"));
   });
 }

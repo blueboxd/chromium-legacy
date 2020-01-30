@@ -80,6 +80,7 @@
     <output filename="values-uz/browser_ui_strings.xml" lang="uz" type="android" />
     <output filename="values-vi/browser_ui_strings.xml" lang="vi" type="android" />
     <output filename="values-zh-rCN/browser_ui_strings.xml" lang="zh-CN" type="android" />
+    <output filename="values-zh-rHK/browser_ui_strings.xml" lang="zh-HK" type="android" />
     <output filename="values-zh-rTW/browser_ui_strings.xml" lang="zh-TW" type="android" />
     <output filename="values-zu/browser_ui_strings.xml" lang="zu" type="android" />
   </outputs>

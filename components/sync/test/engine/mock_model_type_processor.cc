@@ -16,7 +16,7 @@ namespace syncer {
 
 MockModelTypeProcessor::MockModelTypeProcessor() : is_synchronous_(true) {}
 
-MockModelTypeProcessor::~MockModelTypeProcessor() {}
+MockModelTypeProcessor::~MockModelTypeProcessor() = default;
 
 void MockModelTypeProcessor::ConnectSync(
     std::unique_ptr<CommitQueue> commit_queue) {
@@ -46,6 +46,10 @@ void MockModelTypeProcessor::OnCommitCompleted(
       type_state, committed_response_list, error_response_list));
   if (is_synchronous_)
     RunQueuedTasks();
+}
+
+void MockModelTypeProcessor::OnCommitFailed() {
+  ++commit_failures_count_;
 }
 
 void MockModelTypeProcessor::OnUpdateReceived(
@@ -128,6 +132,10 @@ std::unique_ptr<CommitRequestData> MockModelTypeProcessor::DeleteRequest(
   pending_deleted_hashes_.insert(tag_hash);
 
   return request_data;
+}
+
+size_t MockModelTypeProcessor::GetNumCommitFailures() const {
+  return commit_failures_count_;
 }
 
 size_t MockModelTypeProcessor::GetNumUpdateResponses() const {

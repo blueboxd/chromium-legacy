@@ -428,7 +428,6 @@
 <translation id="2799223571221894425">ເລີ່ມເປີດໃຊ້ໃໝ່</translation>
 <translation id="2803306138276472711">ເມື່ອບໍ່ດົນມານີ້ Google Safe Browsing <ph name="BEGIN_LINK" />ໄດ້ກວດພົບມາລແວ<ph name="END_LINK" /> ຢູ່ເທິງ <ph name="SITE" />. ເວັບໄຊທ໌ທີ່ປົກກະຕິມີຄວາມປອດໄພບາງຄັ້ງຈະຕິດມາລແວ.</translation>
 <translation id="2807052079800581569">ຕຳແໜ່ງຮູບພາບຕາມແກນ Y</translation>
-<translation id="2809804249696361569">ທັງສອງແຜ່ນ</translation>
 <translation id="2824775600643448204">ແຖບ​ທີ່​ຢູ່​ ແລະ​ຄົ້ນ​ຫາ</translation>
 <translation id="2826760142808435982">ການເຊື່ອມຕໍ່ມີລະຫັດ ແລະໄດ້ຮັບຮອງແລ້ວດ້ວຍການໃຊ້ <ph name="CIPHER" /> ແລະໃຊ້ <ph name="KX" /> ເປັນກົນໄກແລກປ່ຽນປຸ່ມ.</translation>
 <translation id="2835170189407361413">ລຶບແບບຟອມ</translation>
@@ -936,7 +935,6 @@
 <translation id="5112422516732747637">A5</translation>
 <translation id="5115216390227830982">European-Edp</translation>
 <translation id="5115563688576182185">(64-ບິດ)</translation>
-<translation id="5121469660360593280">ແບ່ງປັນຂໍ້ມູນກັບຜູ້ເບິ່ງແຍງລະບົບຂອງທ່ານກ່ຽວກັບເຫດການຄວາມປອດໄພທີ່ຖືກຕິດທຸງໄວ້ໂດຍຄຸນສົມບັດການປົກປ້ອງຜູ້ໃຊ້ຂອງ Chrome Enterprise. ນີ້ອາດຮວມມີ URL ຂອງໜ້າທີ່ທ່ານເຂົ້າເບິ່ງ, ຊື່ ຫຼື ເມຕາເດຕາຂອງໄຟລ໌ ແລະ ຊື່ຜູ້ໃຊ້ທີ່ທ່ານໃຊ້ເພື່ອເຂົ້າສູ່ລະບົບອຸປະກອນ ແລະ Chrome ຂອງທ່ານ.</translation>
 <translation id="5123063207673082822">ທ້າຍອາທິດ</translation>
 <translation id="5125394840236832993">B-Plus</translation>
 <translation id="5126510351761255129">ຢືນຢັນບັດຂອງທ່ານ</translation>
@@ -951,7 +949,6 @@
 <translation id="5161506081086828129">ສະແຕັກເກີ້ 9</translation>
 <translation id="516920405563544094">ປ້ອນ CVC ສຳລັບ <ph name="CREDIT_CARD" />. ຫຼັງຈາກທີ່ທ່ານຢືນຢັນ, ລະບົບຈະແບ່ງປັນລາຍລະອຽດບັດຈາກບັນຊີ Google ຂອງທ່ານກັບເວັບໄຊນີ້.</translation>
 <translation id="5169827969064885044">ທ່ານອາດຈະສູນເສຍການເຂົ້າເຖິງບັນຊີຂອງອົງການຂອງທ່ານ ຫຼື ປະສົບກັບການລັກໃຊ້ຕົວຕົນ. Chrome ແນະນຳໃຫ້ປ່ຽນລະຫັດຜ່ານຂອງທ່ານດຽວນີ້.</translation>
-<translation id="5170017743895942767">ຄຸນສົມບັດການປົກປ້ອງຜູ້ໃຊ້ຂອງ Chrome Enterprise</translation>
 <translation id="5171045022955879922">ຄົ້ນຫາ ຫຼືພິມ URL</translation>
 <translation id="5171689220826475070">Fanfold-European</translation>
 <translation id="5172758083709347301">ເຄື່ອງຈັກ</translation>
@@ -1084,7 +1081,6 @@
 <translation id="5737183892635480227">{NUM_CARDS,plural, =1{ບັນທຶກບັດໄວ້ໃນບັນຊີ Google ຂອງທ່ານ}other{ບັນທຶກບັດໄວ້ໃນບັນຊີ Google ຂອງທ່ານ}}</translation>
 <translation id="5745980000221562234">{NUM_CARDS,plural, =1{ໃຊ້ໝາຍເລກສະເໝືອນຈິງສຳລັບບັດນີ້}other{ເລືອກບັດ}}</translation>
 <translation id="5763042198335101085">ປ້ອນທີ່ຢູ່ອີເມວທີ່ຖືກຕ້ອງ</translation>
-<translation id="5763703224595565476">ຜູ້ເບິ່ງແຍງລະບົບຂອງທ່ານໄດ້ເປີດການນຳໃຊ້ຄຸນສົມບັດການປົກປ້ອງຜູ້ໃຊ້ຂອງ Chrome Enterprise ແລ້ວ. ຄຸນສົມບັດການປົກປ້ອງຜູ້ໃຊ້ຂອງ Chrome Enterprise ມີສິດເຂົ້າເຖິງຂໍ້ມູນບາງສ່ວນຂອງທ່ານ.</translation>
 <translation id="5765072501007116331">ເພື່ອເບິ່ງວິທີ ແລະ ຂໍ້ກຳນົດການສົ່ງ, ກະລຸນາເລືອກທີ່ຢູ່</translation>
 <translation id="5776313857861697733">ບຸລິມະສິດ</translation>
 <translation id="5778550464785688721">ການ​ຄວບ​ຄຸມອຸ​ປະ​ກອນ MIDI ເຕັມ​ຮູບ​ແບບ</translation>
@@ -1421,7 +1417,6 @@
 <translation id="733923710415886693">ໃບຢັ້ງຢືນຂອງເຊີບເວີບໍ່ຖືກເປີດເຜີຍຜ່ານນະໂຍບາຍຄວາມໂປ່ງໃສຂອງໃບຢັ້ງຢືນ.</translation>
 <translation id="734600844861828519">11x15</translation>
 <translation id="7346048084945669753">ເຊື່ອມໂຍງ:</translation>
-<translation id="73479065977517481"><ph name="ENROLLMENT_DOMAIN" /> ໄດ້ເປີດການນຳໃຊ້ຄຸນສົມບັດການປົກປ້ອງຜູ້ໃຊ້ຂອງ Chrome Enterprise ແລ້ວ. ຄຸນສົມບັດການປົກປ້ອງຜູ້ໃຊ້ຂອງ Chrome Enterprise ມີສິດເຂົ້າເຖິງຂໍ້ມູນບາງສ່ວນຂອງທ່ານ.</translation>
 <translation id="7349430561505560861">A4-Extra</translation>
 <translation id="7353601530677266744">ແຖວຄໍາສັ່ງ</translation>
 <translation id="7372973238305370288">ຜົນ​ການຄົ້ນ​ຫາ</translation>

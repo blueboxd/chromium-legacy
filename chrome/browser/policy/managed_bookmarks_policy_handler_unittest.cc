@@ -253,7 +253,7 @@ TEST_F(ManagedBookmarksPolicyHandlerTest, BadBookmark) {
                                               "]"),
              nullptr);
   UpdateProviderPolicy(policy);
-  const base::Value* pref_value = NULL;
+  const base::Value* pref_value = nullptr;
   EXPECT_TRUE(
       store_->GetValue(bookmarks::prefs::kManagedBookmarks, &pref_value));
   ASSERT_TRUE(pref_value);

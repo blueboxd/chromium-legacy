@@ -34,23 +34,17 @@ void TabGroup::SetVisualData(
   controller_->ChangeTabGroupVisuals(id_);
 }
 
-base::string16 TabGroup::GetDisplayedTitle() const {
-  base::string16 title = visual_data_->title();
-  if (title.empty()) {
-    // Generate a descriptive placeholder title for the group.
-    std::vector<int> tabs_in_group = ListTabs();
-    TabUIHelper* const tab_ui_helper = TabUIHelper::FromWebContents(
-        controller_->GetWebContentsAt(tabs_in_group.front()));
-    constexpr size_t kContextMenuTabTitleMaxLength = 30;
-    base::string16 format_string = l10n_util::GetPluralStringFUTF16(
-        IDS_TAB_CXMENU_PLACEHOLDER_GROUP_TITLE, tabs_in_group.size() - 1);
-    base::string16 short_title;
-    gfx::ElideString(tab_ui_helper->GetTitle(), kContextMenuTabTitleMaxLength,
-                     &short_title);
-    title =
-        base::ReplaceStringPlaceholders(format_string, {short_title}, nullptr);
-  }
-  return title;
+base::string16 TabGroup::GetContentString() const {
+  std::vector<int> tabs_in_group = ListTabs();
+  TabUIHelper* const tab_ui_helper = TabUIHelper::FromWebContents(
+      controller_->GetWebContentsAt(tabs_in_group.front()));
+  constexpr size_t kContextMenuTabTitleMaxLength = 30;
+  base::string16 format_string = l10n_util::GetPluralStringFUTF16(
+      IDS_TAB_CXMENU_PLACEHOLDER_GROUP_TITLE, tabs_in_group.size() - 1);
+  base::string16 short_title;
+  gfx::ElideString(tab_ui_helper->GetTitle(), kContextMenuTabTitleMaxLength,
+                   &short_title);
+  return base::ReplaceStringPlaceholders(format_string, {short_title}, nullptr);
 }
 
 void TabGroup::AddTab() {

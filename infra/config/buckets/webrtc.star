@@ -18,14 +18,11 @@ luci.bucket(
     ],
 )
 
-luci.recipe.defaults.cipd_package.set(
-    'infra/recipe_bundles/chromium.googlesource.com/chromium/tools/build')
-
 defaults.bucket.set('webrtc')
 defaults.builderless.set(False)
 defaults.build_numbers.set(True)
 defaults.cpu.set(cpu.X86_64)
-defaults.executable.set(luci.recipe(name = 'chromium'))
+defaults.executable.set('recipe:chromium')
 defaults.execution_timeout.set(2 * time.hour)
 defaults.mastername.set('chromium.webrtc')
 defaults.os.set(os.LINUX_DEFAULT)

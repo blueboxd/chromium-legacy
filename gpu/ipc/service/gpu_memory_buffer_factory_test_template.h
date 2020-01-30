@@ -68,8 +68,13 @@ TYPED_TEST_P(GpuMemoryBufferFactoryTest, CreateGpuMemoryBuffer) {
         gfx::BufferUsage::SCANOUT_VEA_READ_CAMERA_AND_CPU_READ_WRITE,
     };
     for (auto usage : usages) {
+#if defined(USE_X11)
+      // On X11, we require GPUInfo to determine configuration support.
+      continue;
+#else
       if (!support.IsNativeGpuMemoryBufferConfigurationSupported(format, usage))
         continue;
+#endif
 
       gfx::GpuMemoryBufferHandle handle =
           TestFixture::factory_.CreateGpuMemoryBuffer(kBufferId, buffer_size,

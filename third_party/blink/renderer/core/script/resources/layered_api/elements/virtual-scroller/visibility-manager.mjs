@@ -321,7 +321,7 @@ export class VisibilityManager {
   #unlock =
       element => {
         element.removeAttribute('rendersubtree');
-        element.style.intrinsicSize = '';
+        element.style.containIntrinsicSize = '';
       }
 
   /**
@@ -334,7 +334,7 @@ export class VisibilityManager {
         this.#revealed.delete(element);
         const size = this.#sizeManager.getHopefulSize(element);
         element.setAttribute('rendersubtree', 'invisible activatable');
-        element.style.intrinsicSize = `${LOCKED_WIDTH_PX}px ${size}px`;
+        element.style.containIntrinsicSize = `${LOCKED_WIDTH_PX}px ${size}px`;
       }
 
   /**

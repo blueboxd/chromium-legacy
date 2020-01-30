@@ -8,10 +8,7 @@ source_set("mailto") {
     "mailto_handler_provider.h",
     "mailto_handler_provider.mm",
   ]
-  deps = [
-    "//base",
-    "//ios/chrome/browser/browser_state:forward",
-  ]
+  deps = [ "//base" ]
 }
 
 source_set("test_support") {

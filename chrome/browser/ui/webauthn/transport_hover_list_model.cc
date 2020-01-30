@@ -9,7 +9,6 @@
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/ui/webauthn/transport_utils.h"
 #include "chrome/grit/generated_resources.h"
-#include "device/fido/features.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/paint_vector_icon.h"
 
@@ -51,18 +50,10 @@ std::vector<int> TransportHoverListModel::GetButtonTags() const {
   std::transform(
       transport_list_.begin(), transport_list_.end(), tag_list.begin(),
       [](const auto& transport) { return base::strict_cast<int>(transport); });
-
-  if (base::FeatureList::IsEnabled(device::kWebAuthPhoneSupport)) {
-    tag_list.push_back(kPairPhoneTag);
-  }
   return tag_list;
 }
 
 base::string16 TransportHoverListModel::GetItemText(int item_tag) const {
-  if (item_tag == kPairPhoneTag) {
-    return l10n_util::GetStringUTF16(IDS_WEBAUTHN_TRANSPORT_POPUP_PAIR_PHONE);
-  }
-
   return GetTransportHumanReadableName(
       static_cast<AuthenticatorTransport>(item_tag),
       TransportSelectionContext::kTransportSelectionSheet);
@@ -74,13 +65,128 @@ base::string16 TransportHoverListModel::GetDescriptionText(int item_tag) const {
 
 const gfx::VectorIcon* TransportHoverListModel::GetItemIcon(
     int item_tag) const {
+  return GetTransportVectorIcon(static_cast<AuthenticatorTransport>(item_tag));
+}
+
+void TransportHoverListModel::OnListItemSelected(int item_tag) {
+  if (!delegate_) {
+    return;
+  }
+
+  delegate_->OnTransportSelected(static_cast<AuthenticatorTransport>(item_tag));
+}
+
+size_t TransportHoverListModel::GetPreferredItemCount() const {
+  return transport_list_.size();
+}
+
+bool TransportHoverListModel::StyleForTwoLines() const {
+  return false;
+}
+
+TransportHoverListModel2::TransportHoverListModel2(
+    std::vector<AuthenticatorTransport> transport_list,
+    bool cable_extension_provided,
+    Delegate* delegate)
+    : transport_list_(std::move(transport_list)),
+      cable_extension_provided_(cable_extension_provided),
+      delegate_(delegate) {}
+
+TransportHoverListModel2::~TransportHoverListModel2() = default;
+
+bool TransportHoverListModel2::ShouldShowPlaceholderForEmptyList() const {
+  return false;
+}
+
+base::string16 TransportHoverListModel2::GetPlaceholderText() const {
+  return base::string16();
+}
+
+const gfx::VectorIcon* TransportHoverListModel2::GetPlaceholderIcon() const {
+  return &gfx::kNoneIcon;
+}
+
+std::vector<int> TransportHoverListModel2::GetThrobberTags() const {
+  std::vector<int> tags;
+
+  if (base::Contains(
+          transport_list_,
+          AuthenticatorTransport::kCloudAssistedBluetoothLowEnergy)) {
+    tags.push_back(base::strict_cast<int>(
+        AuthenticatorTransport::kCloudAssistedBluetoothLowEnergy));
+  }
+
+  if (base::Contains(transport_list_,
+                     AuthenticatorTransport::kUsbHumanInterfaceDevice)) {
+    tags.push_back(base::strict_cast<int>(
+        AuthenticatorTransport::kUsbHumanInterfaceDevice));
+  }
+
+  return tags;
+}
+
+std::vector<int> TransportHoverListModel2::GetButtonTags() const {
+  std::vector<int> tags({kPairPhoneTag});
+
+  for (const auto transport : transport_list_) {
+    switch (transport) {
+      // These are throbbers, not buttons; ignore.
+      case AuthenticatorTransport::kCloudAssistedBluetoothLowEnergy:
+      case AuthenticatorTransport::kUsbHumanInterfaceDevice:
+        break;
+
+      case AuthenticatorTransport::kInternal:
+        tags.push_back(base::strict_cast<int>(transport));
+        break;
+
+      default:
+        DCHECK(false) << static_cast<int>(transport);
+    }
+  }
+
+  return tags;
+}
+
+base::string16 TransportHoverListModel2::GetItemText(int item_tag) const {
+  if (item_tag == kPairPhoneTag) {
+    return l10n_util::GetStringUTF16(IDS_WEBAUTHN_TRANSPORT_POPUP_PAIR_PHONE);
+  }
+
+  return GetTransportHumanReadableName(
+      static_cast<AuthenticatorTransport>(item_tag),
+      TransportSelectionContext::kTransportSelectionSheet);
+}
+
+base::string16 TransportHoverListModel2::GetDescriptionText(
+    int item_tag) const {
+  switch (item_tag) {
+    case base::strict_cast<int>(
+        AuthenticatorTransport::kCloudAssistedBluetoothLowEnergy):
+      if (cable_extension_provided_) {
+        return l10n_util::GetStringUTF16(
+            IDS_WEBAUTHN_CABLE_ACTIVATE_DESCRIPTION_SHORT);
+      }
+      return l10n_util::GetStringUTF16(
+          IDS_WEBAUTHN_CABLE_V2_ACTIVATE_DESCRIPTION_SHORT);
+
+    case base::strict_cast<int>(
+        AuthenticatorTransport::kUsbHumanInterfaceDevice):
+      return l10n_util::GetStringUTF16(IDS_WEBAUTHN_USB_ACTIVATE_DESCRIPTION);
+
+    default:
+      return base::string16();
+  }
+}
+
+const gfx::VectorIcon* TransportHoverListModel2::GetItemIcon(
+    int item_tag) const {
   if (item_tag == kPairPhoneTag) {
     return &kSmartphoneIcon;
   }
   return GetTransportVectorIcon(static_cast<AuthenticatorTransport>(item_tag));
 }
 
-void TransportHoverListModel::OnListItemSelected(int item_tag) {
+void TransportHoverListModel2::OnListItemSelected(int item_tag) {
   if (!delegate_) {
     return;
   }
@@ -93,11 +199,10 @@ void TransportHoverListModel::OnListItemSelected(int item_tag) {
   delegate_->OnTransportSelected(static_cast<AuthenticatorTransport>(item_tag));
 }
 
-size_t TransportHoverListModel::GetPreferredItemCount() const {
-  return transport_list_.size() + static_cast<int>(base::FeatureList::IsEnabled(
-                                      device::kWebAuthPhoneSupport));
+size_t TransportHoverListModel2::GetPreferredItemCount() const {
+  return transport_list_.size() + /* pairing a phone */ 1;
 }
 
-bool TransportHoverListModel::StyleForTwoLines() const {
-  return false;
+bool TransportHoverListModel2::StyleForTwoLines() const {
+  return true;
 }

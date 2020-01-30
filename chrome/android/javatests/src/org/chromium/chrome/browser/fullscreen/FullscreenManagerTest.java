@@ -198,6 +198,7 @@ public class FullscreenManagerTest {
     @Test
     @LargeTest
     @Feature({"Fullscreen"})
+    @DisabledTest(message = "crbug.com/1046749")
     public void testExitPersistentFullscreenAllowsManualFullscreen() {
         FullscreenManagerTestUtils.disableBrowserOverrides();
         mActivityTestRule.startMainActivityWithURL(LONG_FULLSCREEN_API_HTML_TEST_PAGE);
@@ -286,8 +287,9 @@ public class FullscreenManagerTest {
                     @Override
                     public void onContentOffsetChanged(int offset) {}
                     @Override
-                    public void onControlsOffsetChanged(
-                            int topOffset, int bottomOffset, boolean needsAnimate) {}
+                    public void onControlsOffsetChanged(int topOffset,
+                            int topControlsMinHeightOffset, int bottomOffset,
+                            int bottomControlsMinHeightOffset, boolean needsAnimate) {}
                     @Override
                     public void onToggleOverlayVideoMode(boolean enabled) {}
                     @Override

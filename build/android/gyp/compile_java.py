@@ -514,6 +514,8 @@ def _ParseOptions(argv):
       help='Whether code being compiled should be built with stricter '
       'warnings for chromium code.')
   parser.add_option(
+      '--gomacc-path', help='When set, prefix javac command with gomacc')
+  parser.add_option(
       '--errorprone-path', help='Use the Errorprone compiler at this path.')
   parser.add_option(
       '--enable-errorprone',
@@ -566,7 +568,11 @@ def main(argv):
   options, java_files = _ParseOptions(argv)
   javac_path = build_utils.JAVAC_PATH
 
-  javac_cmd = [
+  javac_cmd = []
+  if options.gomacc_path:
+    javac_cmd.append(options.gomacc_path)
+
+  javac_cmd += [
       javac_path,
       '-g',
       # Chromium only allows UTF8 source files.  Being explicit avoids

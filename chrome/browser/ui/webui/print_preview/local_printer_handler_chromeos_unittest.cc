@@ -346,7 +346,7 @@ TEST_F(LocalPrinterHandlerChromeosTest, StartFetchValidEulaUrl) {
 
   task_environment_.RunUntilIdle();
 
-  EXPECT_EQ(fetched_eula_url, "chrome://os-credits/expected_make_model");
+  EXPECT_EQ(fetched_eula_url, "chrome://os-credits/#expected_make_model");
 }
 
 // Test that a printer with no PPD license will return an empty string.

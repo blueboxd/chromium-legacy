@@ -70,11 +70,15 @@ void InstallLimiter::DisableForTest() {
 
 void InstallLimiter::Add(const scoped_refptr<CrxInstaller>& installer,
                          const CRXFileInfo& file_info) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
   // No deferred installs when disabled for test.
   if (disabled_for_test_) {
     installer->InstallCrxFile(file_info);
     return;
   }
+
+  num_installs_waiting_for_file_size_++;
 
   base::PostTaskAndReplyWithResult(
       FROM_HERE, {base::ThreadPool(), base::MayBlock()},
@@ -83,10 +87,26 @@ void InstallLimiter::Add(const scoped_refptr<CrxInstaller>& installer,
                      file_info));
 }
 
+void InstallLimiter::OnAllExternalProvidersReady() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  all_external_providers_ready_ = true;
+
+  if (AllInstallsQueuedWithFileSize()) {
+    // Stop wait timer and let install notification drive deferred installs.
+    wait_timer_.Stop();
+    CheckAndRunDeferrredInstalls();
+  }
+}
+
 void InstallLimiter::AddWithSize(const scoped_refptr<CrxInstaller>& installer,
                                  const CRXFileInfo& file_info,
                                  int64_t size) {
-  if (!ShouldDeferInstall(size, installer->expected_id())) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  num_installs_waiting_for_file_size_--;
+
+  if (!ShouldDeferInstall(size, installer->expected_id()) ||
+      AllInstallsQueuedWithFileSize()) {
     RunInstall(installer, file_info);
 
     // Stop wait timer and let install notification drive deferred installs.
@@ -138,6 +158,11 @@ void InstallLimiter::Observe(int type,
       content::Source<extensions::CrxInstaller>(source).ptr();
   running_installers_.erase(installer);
   CheckAndRunDeferrredInstalls();
+}
+
+bool InstallLimiter::AllInstallsQueuedWithFileSize() const {
+  return all_external_providers_ready_ &&
+         num_installs_waiting_for_file_size_ == 0;
 }
 
 }  // namespace extensions

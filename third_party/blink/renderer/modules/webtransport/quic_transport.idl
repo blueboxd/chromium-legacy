@@ -14,6 +14,12 @@
   // QuicTransport includes, but we define all their methods/attributes here
   // for simplicity.
 
+  // From UnidirectionalStreamsTransport
+  // TODO(ricea): Change this to Promise<SendStream> once the IDL compiler is
+  // fixed. See https://crbug.com/1047113.
+  [CallWith=ScriptState, RaisesException] Promise<any>
+      createSendStream();
+
   // From DatagramTransport mixin
   WritableStream sendDatagrams();
   ReadableStream receiveDatagrams();

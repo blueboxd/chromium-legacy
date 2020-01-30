@@ -30,7 +30,7 @@
   TestRunner.addResult(`FileSystem UISourceCodeFrame highlighter type: ${fileSystemSourceFrame.highlighterType()}`);
 
   TestRunner.addResult('Remove binding');
-  testMapping.removeBinding('foo_js_without_extension');
+  await testMapping.removeBinding('foo_js_without_extension');
   TestRunner.addResult(`FileSystem UISourceCodeFrame highlighter type: ${fileSystemSourceFrame.highlighterType()}`);
 
   TestRunner.completeTest();

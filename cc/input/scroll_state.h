@@ -77,7 +77,9 @@ class CC_EXPORT ScrollState {
 
   bool is_scroll_chain_cut() const { return data_.is_scroll_chain_cut; }
 
-  double delta_granularity() const { return data_.delta_granularity; }
+  ui::input_types::ScrollGranularity delta_granularity() const {
+    return data_.delta_granularity;
+  }
 
   ScrollStateData* data() { return &data_; }
 

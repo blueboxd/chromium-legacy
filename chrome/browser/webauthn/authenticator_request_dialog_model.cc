@@ -13,6 +13,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "build/build_config.h"
+#include "device/fido/features.h"
 #include "device/fido/fido_authenticator.h"
 
 namespace {
@@ -197,10 +198,10 @@ void AuthenticatorRequestDialogModel::
   auto most_likely_transport =
       SelectMostLikelyTransport(transport_availability_, last_used_transport_,
                                 cable_extension_provided_, have_paired_phones_);
-  if (most_likely_transport) {
+  if (most_likely_transport &&
+      !base::FeatureList::IsEnabled(device::kWebAuthPhoneSupport)) {
     StartGuidedFlowForTransport(*most_likely_transport);
   } else if (!transport_availability_.available_transports.empty()) {
-    DCHECK_GE(transport_availability_.available_transports.size(), 2u);
     SetCurrentStep(Step::kTransportSelection);
   } else {
     SetCurrentStep(Step::kErrorNoAvailableTransports);

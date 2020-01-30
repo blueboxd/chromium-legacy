@@ -114,8 +114,13 @@ bool GpuMemoryBufferSupport::IsNativeGpuMemoryBufferConfigurationSupported(
 #elif defined(USE_OZONE)
   return ui::OzonePlatform::GetInstance()->IsNativePixmapConfigSupported(format,
                                                                          usage);
-#elif defined(OS_LINUX)
-  return false;  // TODO(julian.isorce): Add linux support.
+#elif defined(USE_X11)
+  // On X11, GPU memory buffer support can only be determined after GPU
+  // initialization.
+  // viz::HostGpuMemoryBufferManager::IsNativeGpuMemoryBufferConfiguration()
+  // should be used instead.
+  NOTREACHED();
+  return false;
 #elif defined(OS_WIN)
   switch (usage) {
     case gfx::BufferUsage::GPU_READ:
@@ -138,12 +143,18 @@ bool GpuMemoryBufferSupport::IsNativeGpuMemoryBufferConfigurationSupported(
 #endif
 }
 
-bool GpuMemoryBufferSupport::IsConfigurationSupported(
+bool GpuMemoryBufferSupport::IsConfigurationSupportedForTest(
     gfx::GpuMemoryBufferType type,
     gfx::BufferFormat format,
     gfx::BufferUsage usage) {
-  if (type == GetNativeGpuMemoryBufferType())
+  if (type == GetNativeGpuMemoryBufferType()) {
+#if defined(USE_X11)
+    // On X11, we require GPUInfo to determine configuration support.
+    return false;
+#else
     return IsNativeGpuMemoryBufferConfigurationSupported(format, usage);
+#endif
+  }
 
   if (type == gfx::SHARED_MEMORY_BUFFER) {
     return GpuMemoryBufferImplSharedMemory::IsConfigurationSupported(format,

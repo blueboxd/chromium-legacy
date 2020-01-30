@@ -25,6 +25,6 @@
         android:layout_below="@+id/top_space"
         android:paddingStart="@dimen/list_item_default_margin"
         android:maxLines="1"
-        android:textAppearance="@style/TextAppearance.BlackTitle1"/>
+        android:textAppearance="@style/TextAppearance.TextLarge.Primary"/>
 
 </RelativeLayout>

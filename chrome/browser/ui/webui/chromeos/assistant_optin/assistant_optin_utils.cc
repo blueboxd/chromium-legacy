@@ -220,14 +220,16 @@ base::Value GetSettingsUiStrings(const assistant::SettingsUi& settings_ui,
   return dictionary;
 }
 
-using sync_pb::UserConsentTypes;
 void RecordActivityControlConsent(Profile* profile,
                                   std::string ui_audit_key,
                                   bool opted_in) {
   auto* identity_manager = IdentityManagerFactory::GetForProfile(profile);
-  DCHECK(identity_manager->HasPrimaryAccount());
-  const CoreAccountId account_id = identity_manager->GetPrimaryAccountId();
+  // This function doesn't care about browser sync consent.
+  DCHECK(identity_manager->HasUnconsentedPrimaryAccount());
+  const CoreAccountId account_id =
+      identity_manager->GetUnconsentedPrimaryAccountId();
 
+  using sync_pb::UserConsentTypes;
   UserConsentTypes::AssistantActivityControlConsent consent;
   consent.set_ui_audit_key(ui_audit_key);
   consent.set_status(opted_in ? UserConsentTypes::GIVEN

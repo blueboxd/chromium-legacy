@@ -105,6 +105,7 @@ cr.define('settings', function() {
   // during testing.
   cr.addSingletonGetter(ManageProfileBrowserProxyImpl);
 
+  // #cr_define_end
   return {
     ManageProfileBrowserProxy: ManageProfileBrowserProxy,
     ManageProfileBrowserProxyImpl: ManageProfileBrowserProxyImpl,

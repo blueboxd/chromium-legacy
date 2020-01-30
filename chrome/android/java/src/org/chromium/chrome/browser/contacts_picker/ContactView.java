@@ -131,7 +131,7 @@ public class ContactView extends SelectableItemView<ContactDetails> {
                          .with(ModalDialogProperties.POSITIVE_BUTTON_TEXT, mContext.getResources(),
                                  R.string.close)
                          .build();
-        mModel.set(ModalDialogProperties.TITLE_ICON, getIconDrawable());
+        mModel.set(ModalDialogProperties.TITLE_ICON, getStartIconDrawable());
         mManager.showDialog(mModel, ModalDialogManager.ModalDialogType.APP);
         return true;
     }
@@ -201,7 +201,7 @@ public class ContactView extends SelectableItemView<ContactDetails> {
         if (icon == null || !PickerAdapter.includesIcons()) {
             icon = mCategoryView.getIconGenerator().generateIconForText(
                     contactDetails.getDisplayNameAbbreviation());
-            setIconDrawable(new BitmapDrawable(getResources(), icon));
+            setStartIconDrawable(new BitmapDrawable(getResources(), icon));
         } else {
             setIconBitmap(icon);
         }
@@ -215,7 +215,7 @@ public class ContactView extends SelectableItemView<ContactDetails> {
         Resources resources = mContext.getResources();
         RoundedBitmapDrawable drawable = RoundedBitmapDrawableFactory.create(resources, icon);
         drawable.setCircular(true);
-        setIconDrawable(drawable);
+        setStartIconDrawable(drawable);
     }
 
     /**
@@ -223,7 +223,7 @@ public class ContactView extends SelectableItemView<ContactDetails> {
      * re-used.
      */
     private void resetTile() {
-        setIconDrawable(null);
+        setStartIconDrawable(null);
         mDisplayName.setText("");
         mAddress.setText("");
         mAddressOverflowCount.setText("");

@@ -36,6 +36,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.WindowDelegate;
+import org.chromium.chrome.browser.externalauth.ExternalAuthUtils;
 import org.chromium.chrome.browser.locale.LocaleManager;
 import org.chromium.chrome.browser.native_page.NativePageFactory;
 import org.chromium.chrome.browser.ntp.FakeboxDelegate;
@@ -202,7 +203,8 @@ public class LocationBarLayout extends FrameLayout
 
         mUrlActionContainer = (LinearLayout) findViewById(R.id.url_action_container);
 
-        mVoiceRecognitionHandler = new LocationBarVoiceRecognitionHandler(this);
+        mVoiceRecognitionHandler =
+                new LocationBarVoiceRecognitionHandler(this, ExternalAuthUtils.getInstance());
     }
 
     @Override

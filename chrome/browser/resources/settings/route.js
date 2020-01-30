@@ -219,8 +219,10 @@ cr.define('settings', function() {
 
   // TODO(dpapad): Change to 'get routes() {}' in export when we fix a bug in
   // ChromePass that limits the syntax of what can be returned from cr.define().
-  const routes = settings.Router.getInstance().getRoutes();
+  const routes = /** @type {!SettingsRoutes} */ (
+      settings.Router.getInstance().getRoutes());
 
+  // #cr_define_end
   return {
     buildRouterForTesting: buildRouter,
     routes: routes,

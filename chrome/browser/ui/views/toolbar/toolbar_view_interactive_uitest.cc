@@ -56,7 +56,7 @@ class ToolbarViewInteractiveUITest : public AppMenuButtonObserver,
                                      public extensions::ExtensionBrowserTest,
                                      public views::WidgetObserver {
  public:
-  ToolbarViewInteractiveUITest() = default;
+  ToolbarViewInteractiveUITest();
   ~ToolbarViewInteractiveUITest() override = default;
 
   // AppMenuButtonObserver:
@@ -93,10 +93,16 @@ class ToolbarViewInteractiveUITest : public AppMenuButtonObserver,
   // InProcessBrowserTest:
   void SetUpOnMainThread() override;
 
+  base::test::ScopedFeatureList scoped_feature_list_;
+
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   bool menu_shown_ = false;
   base::OnceClosure quit_closure_;
 };
+
+ToolbarViewInteractiveUITest::ToolbarViewInteractiveUITest() {
+  scoped_feature_list_.InitAndDisableFeature(features::kExtensionsToolbarMenu);
+}
 
 void ToolbarViewInteractiveUITest::AppMenuShown() {
   menu_shown_ = true;

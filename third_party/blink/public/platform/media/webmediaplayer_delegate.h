@@ -121,6 +121,10 @@ class BLINK_PLATFORM_EXPORT WebMediaPlayerDelegate {
       int delegate_id,
       const media_session::MediaPosition& position) = 0;
 
+  // Notify that picture-in-picture availability has changed.
+  virtual void DidPictureInPictureAvailabilityChange(int delegate_id,
+                                                     bool available) = 0;
+
   // Notify that playback is stopped. This will drop wake locks and remove any
   // external controls.
   //

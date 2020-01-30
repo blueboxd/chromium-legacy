@@ -57,6 +57,10 @@ class SESSIONS_EXPORT SessionCommand {
   // Size of data.
   size_type size() const { return static_cast<size_type>(contents_.size()); }
 
+  // The serialized format has overhead (the serialized format includes the
+  // id). This returns the size to use when serializing.
+  size_type GetSerializedSize() const;
+
   // Convenience for extracting the data to a target. Returns false if
   // count is not equal to the size of data this command contains.
   bool GetPayload(void* dest, size_t count) const;

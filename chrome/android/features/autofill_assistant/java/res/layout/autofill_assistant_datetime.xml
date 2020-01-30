@@ -4,21 +4,25 @@
      found in the LICENSE file. -->
 
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical"
+    android:orientation="horizontal"
     android:layout_width="match_parent"
     android:layout_height="wrap_content">
 
-  <TextView
-      android:id="@+id/datetime"
-      android:layout_width="wrap_content"
-      android:layout_height="wrap_content"
-      android:singleLine="true"/>
+    <org.chromium.chrome.browser.autofill_assistant.user_data.AssistantVerticalExpander
+        android:id="@+id/date_expander"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="0.5"
+        android:layout_marginStart="@dimen/autofill_assistant_bottombar_horizontal_spacing"
+        android:layout_marginEnd="@dimen/autofill_assistant_bottombar_horizontal_spacing">
+    </org.chromium.chrome.browser.autofill_assistant.user_data.AssistantVerticalExpander>
 
-  <TextView
-      android:id="@+id/error_message"
-      android:layout_width="match_parent"
-      android:layout_height="wrap_content"
-      android:textAppearance="@style/TextAppearance.ErrorCaption"
-      android:visibility="gone"/>
-
+    <org.chromium.chrome.browser.autofill_assistant.user_data.AssistantVerticalExpander
+        android:id="@+id/time_expander"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="0.5"
+        android:layout_marginStart="@dimen/autofill_assistant_bottombar_horizontal_spacing"
+        android:layout_marginEnd="@dimen/autofill_assistant_bottombar_horizontal_spacing">
+    </org.chromium.chrome.browser.autofill_assistant.user_data.AssistantVerticalExpander>
 </LinearLayout>

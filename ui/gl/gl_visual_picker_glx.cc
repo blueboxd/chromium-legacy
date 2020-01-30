@@ -36,6 +36,12 @@ GLVisualPickerGLX* GLVisualPickerGLX::GetInstance() {
   return base::Singleton<GLVisualPickerGLX>::get();
 }
 
+GLXFBConfig GLVisualPickerGLX::GetFbConfigForFormat(
+    gfx::BufferFormat format) const {
+  auto it = config_map_.find(format);
+  return it == config_map_.end() ? nullptr : it->second;
+}
+
 XVisualInfo GLVisualPickerGLX::PickBestGlVisual(
     const std::vector<XVisualInfo>& visuals,
     bool want_alpha) const {
@@ -151,6 +157,75 @@ XVisualInfo GLVisualPickerGLX::PickBestRgbaVisual(
   return PickBestGlVisual(filtered_visuals, true);
 }
 
+void GLVisualPickerGLX::FillConfigMap() {
+  if (!GLSurfaceGLX::HasGLXExtension("GLX_EXT_texture_from_pixmap"))
+    return;
+
+  std::vector<int> config_attribs{
+      // Ensure the config is compatible with pixmap drawing.
+      GLX_DRAWABLE_TYPE, GLX_PIXMAP_BIT,
+
+      // Ensure we can bind to GL_TEXTURE_2D.
+      GLX_BIND_TO_TEXTURE_TARGETS_EXT, GLX_TEXTURE_2D_BIT_EXT,
+
+      // Ensure we don't get a color-indexed context.
+      GLX_RED_SIZE, 5, GLX_GREEN_SIZE, 6, GLX_BLUE_SIZE, 5,
+
+      // No double-buffering.
+      GLX_DOUBLEBUFFER, GL_FALSE,
+
+      // Prefer true-color over direct-color.
+      GLX_X_VISUAL_TYPE, GLX_TRUE_COLOR};
+  if (has_glx_visual_rating_) {
+    // No caveats.
+    config_attribs.push_back(GLX_CONFIG_CAVEAT);
+    config_attribs.push_back(GLX_NONE);
+  }
+  config_attribs.push_back(0);
+
+  int num_elements = 0;
+  gfx::XScopedPtr<GLXFBConfig> configs(
+      glXChooseFBConfig(display_, DefaultScreen(gfx::GetXDisplay()),
+                        config_attribs.data(), &num_elements));
+  if (!configs.get()) {
+    DVLOG(0) << "glXChooseFBConfig failed.";
+    return;
+  }
+  if (!num_elements) {
+    DVLOG(0) << "glXChooseFBConfig returned 0 elements.";
+    return;
+  }
+
+  // Iterate from back to front since "preferred" FB configs appear earlier.
+  for (int i = num_elements; i-- > 0;) {
+    GLXFBConfig config = configs.get()[i];
+    // No antialiasing needed.
+    if (has_glx_multisample_) {
+      int msaa = 0;
+      glXGetFBConfigAttrib(display_, config, GLX_SAMPLES, &msaa);
+      if (msaa)
+        continue;
+    }
+    int r = 0, g = 0, b = 0, a = 0, depth = 0;
+    // No depth buffer needed.
+    glXGetFBConfigAttrib(display_, config, GLX_DEPTH_SIZE, &depth);
+    if (depth)
+      continue;
+    glXGetFBConfigAttrib(display_, config, GLX_RED_SIZE, &r);
+    glXGetFBConfigAttrib(display_, config, GLX_GREEN_SIZE, &g);
+    glXGetFBConfigAttrib(display_, config, GLX_BLUE_SIZE, &b);
+    glXGetFBConfigAttrib(display_, config, GLX_ALPHA_SIZE, &a);
+    if (r == 5 && g == 6 && b == 5 && a == 0)
+      config_map_[gfx::BufferFormat::BGR_565] = config;
+    else if (r == 8 && g == 8 && b == 8 && a == 0)
+      config_map_[gfx::BufferFormat::BGRX_8888] = config;
+    else if (r == 10 && g == 10 && b == 10 && a == 0)
+      config_map_[gfx::BufferFormat::BGRX_1010102] = config;
+    else if (r == 8 && g == 8 && b == 8 && a == 8)
+      config_map_[gfx::BufferFormat::BGRA_8888] = config;
+  }
+}
+
 GLVisualPickerGLX::GLVisualPickerGLX() : display_(gfx::GetXDisplay()) {
   has_glx_visual_rating_ =
       GLSurfaceGLX::HasGLXExtension("GLX_EXT_visual_rating");
@@ -169,6 +244,8 @@ GLVisualPickerGLX::GLVisualPickerGLX() : display_(gfx::GetXDisplay()) {
 
   system_visual_ = PickBestSystemVisual(visuals);
   rgba_visual_ = PickBestRgbaVisual(visuals);
+
+  FillConfigMap();
 }
 
 GLVisualPickerGLX::~GLVisualPickerGLX() = default;

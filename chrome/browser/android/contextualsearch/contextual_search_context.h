@@ -92,10 +92,14 @@ struct ContextualSearchContext {
   int64_t GetPreviousEventId() const;
   int GetPreviousEventResults() const;
 
-  // Causes the next resolve request to be for an exact match instead of an
-  // expandable term.
-  void RestrictResolve(JNIEnv* env,
+  // Causes resolve requests to be for an exact match instead of an expandable
+  // term.
+  void SetExactResolve(JNIEnv* env,
                        const base::android::JavaParamRef<jobject>& obj);
+
+  // Returns whether the resolve request is for an exact match instead of an
+  // expandable term.
+  bool GetExactResolve();
 
   // Detects the language of the context using CLD from the translate utility.
   base::android::ScopedJavaLocalRef<jstring> DetectLanguage(
@@ -106,17 +110,18 @@ struct ContextualSearchContext {
   base::WeakPtr<ContextualSearchContext> GetWeakPtr();
 
  private:
-  bool can_resolve;
-  bool can_send_base_page_url;
+  bool can_resolve = false;
+  bool can_send_base_page_url = false;
 
   std::string home_country;
   GURL base_page_url;
   std::string base_page_encoding;
   base::string16 surrounding_text;
-  int start_offset;
-  int end_offset;
-  int64_t previous_event_id;
-  int previous_event_results;
+  int start_offset = 0;
+  int end_offset = 0;
+  int64_t previous_event_id = 0L;
+  int previous_event_results = 0;
+  bool is_exact_resolve = false;
 
   // The linked Java object.
   base::android::ScopedJavaGlobalRef<jobject> java_object_;

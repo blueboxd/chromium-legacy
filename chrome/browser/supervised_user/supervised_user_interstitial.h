@@ -37,7 +37,9 @@ class SupervisedUserInterstitial {
 
   static std::string GetHTMLContents(
       Profile* profile,
-      supervised_user_error_page::FilteringBehaviorReason reason);
+      supervised_user_error_page::FilteringBehaviorReason reason,
+      bool already_sent_request,
+      bool is_main_frame);
 
   void GoBack();
   void RequestPermission(base::OnceCallback<void(bool)> callback);

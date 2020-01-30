@@ -360,6 +360,7 @@ cr.define('settings', function() {
   cr.addSingletonGetter(SecurityKeysResetBrowserProxyImpl);
   cr.addSingletonGetter(SecurityKeysBioEnrollProxyImpl);
 
+  // #cr_define_end
   return {
     Credential,
     Ctap2Status,

@@ -31,19 +31,10 @@ const char kMemoryLocation[] = "billing";
 namespace autofill_assistant {
 namespace {
 
-void SetDateTimeProto(DateTimeProto* proto,
-                      int year,
-                      int month,
-                      int day,
-                      int hour,
-                      int minute,
-                      int second) {
-  proto->mutable_date()->set_year(year);
-  proto->mutable_date()->set_month(month);
-  proto->mutable_date()->set_day(day);
-  proto->mutable_time()->set_hour(hour);
-  proto->mutable_time()->set_minute(minute);
-  proto->mutable_time()->set_second(second);
+void SetDateProto(DateProto* proto, int year, int month, int day) {
+  proto->set_year(year);
+  proto->set_month(month);
+  proto->set_day(day);
 }
 
 MATCHER_P(EqualsProto, message, "") {
@@ -55,6 +46,7 @@ MATCHER_P(EqualsProto, message, "") {
 
 using ::base::test::RunOnceCallback;
 using ::testing::_;
+using ::testing::ElementsAre;
 using ::testing::Eq;
 using ::testing::Invoke;
 using ::testing::Property;
@@ -418,6 +410,72 @@ TEST_F(CollectUserDataActionTest, SelectContactDetails) {
             base::UTF8ToUTF16("marion@me.xyz"));
 }
 
+TEST_F(CollectUserDataActionTest,
+       ContactDetailsDescriptionFieldsEnumConversion) {
+  ActionProto action_proto;
+  auto* collect_user_data_proto = action_proto.mutable_collect_user_data();
+  collect_user_data_proto->set_request_terms_and_conditions(false);
+  auto* contact_details_proto =
+      collect_user_data_proto->mutable_contact_details();
+  contact_details_proto->set_contact_details_name(kMemoryLocation);
+  contact_details_proto->set_request_payer_name(true);
+  contact_details_proto->set_request_payer_email(true);
+  contact_details_proto->set_request_payer_phone(true);
+  contact_details_proto->add_summary_fields(ContactDetailsProto::EMAIL_ADDRESS);
+  contact_details_proto->add_summary_fields(
+      ContactDetailsProto::PHONE_HOME_WHOLE_NUMBER);
+  contact_details_proto->set_max_number_summary_lines(2);
+  contact_details_proto->add_full_fields(ContactDetailsProto::NAME_FULL);
+  contact_details_proto->add_full_fields(ContactDetailsProto::EMAIL_ADDRESS);
+  contact_details_proto->add_full_fields(
+      ContactDetailsProto::PHONE_HOME_WHOLE_NUMBER);
+  contact_details_proto->set_max_number_full_lines(3);
+
+  EXPECT_CALL(mock_action_delegate_, CollectUserData(_)).Times(1);
+  ON_CALL(mock_action_delegate_, CollectUserData(_))
+      .WillByDefault(
+          Invoke([=](CollectUserDataOptions* collect_user_data_options) {
+            EXPECT_EQ(collect_user_data_options->contact_summary_max_lines, 2);
+            EXPECT_EQ(collect_user_data_options->contact_full_max_lines, 3);
+            EXPECT_THAT(collect_user_data_options->contact_summary_fields,
+                        ElementsAre(EMAIL_ADDRESS, PHONE_HOME_WHOLE_NUMBER));
+            EXPECT_THAT(
+                collect_user_data_options->contact_full_fields,
+                ElementsAre(NAME_FULL, EMAIL_ADDRESS, PHONE_HOME_WHOLE_NUMBER));
+          }));
+
+  CollectUserDataAction action(&mock_action_delegate_, action_proto);
+  action.ProcessAction(callback_.Get());
+}
+
+TEST_F(CollectUserDataActionTest,
+       ContactDetailsDescriptionDefaultsIfNotSpecified) {
+  ActionProto action_proto;
+  auto* collect_user_data_proto = action_proto.mutable_collect_user_data();
+  collect_user_data_proto->set_request_terms_and_conditions(false);
+  auto* contact_details_proto =
+      collect_user_data_proto->mutable_contact_details();
+  contact_details_proto->set_contact_details_name(kMemoryLocation);
+  contact_details_proto->set_request_payer_name(true);
+  contact_details_proto->set_request_payer_email(true);
+  contact_details_proto->set_request_payer_phone(true);
+
+  EXPECT_CALL(mock_action_delegate_, CollectUserData(_)).Times(1);
+  ON_CALL(mock_action_delegate_, CollectUserData(_))
+      .WillByDefault(
+          Invoke([=](CollectUserDataOptions* collect_user_data_options) {
+            EXPECT_EQ(collect_user_data_options->contact_summary_max_lines, 1);
+            EXPECT_EQ(collect_user_data_options->contact_full_max_lines, 2);
+            EXPECT_THAT(collect_user_data_options->contact_summary_fields,
+                        ElementsAre(EMAIL_ADDRESS, NAME_FULL));
+            EXPECT_THAT(collect_user_data_options->contact_full_fields,
+                        ElementsAre(NAME_FULL, EMAIL_ADDRESS));
+          }));
+
+  CollectUserDataAction action(&mock_action_delegate_, action_proto);
+  action.ProcessAction(callback_.Get());
+}
+
 TEST_F(CollectUserDataActionTest, SelectPaymentMethod) {
   ActionProto action_proto;
   auto* collect_user_data_proto = action_proto.mutable_collect_user_data();
@@ -663,15 +721,60 @@ TEST_F(CollectUserDataActionTest, UserDataComplete_DateTimeRange) {
   UserData user_data;
   CollectUserDataOptions options;
   options.request_date_time_range = true;
+  auto* time_slot = options.date_time_range.add_time_slots();
+  time_slot->set_label("08:00 AM");
+  time_slot->set_comparison_value(0);
+  time_slot = options.date_time_range.add_time_slots();
+  time_slot->set_label("09:00 AM");
+  time_slot->set_comparison_value(1);
+
+  DateProto start_date;
+  SetDateProto(&start_date, 2020, 1, 1);
+  DateProto end_date;
+  SetDateProto(&end_date, 2020, 1, 15);
+  user_data.date_time_range_start_date_ = start_date;
+  user_data.date_time_range_end_date_ = end_date;
+  user_data.date_time_range_start_timeslot_ = 0;
+  user_data.date_time_range_end_timeslot_ = 0;
+
+  // Initial selection is valid.
+  EXPECT_TRUE(CollectUserDataAction::IsUserDataComplete(user_data, options));
+
+  // Start date not before end date is not ok.
+  SetDateProto(&*user_data.date_time_range_start_date_, 2020, 2, 7);
+  SetDateProto(&*user_data.date_time_range_end_date_, 2020, 1, 15);
   EXPECT_FALSE(CollectUserDataAction::IsUserDataComplete(user_data, options));
 
-  SetDateTimeProto(&user_data.date_time_range_start_, 2019, 12, 31, 10, 30, 0);
-  SetDateTimeProto(&user_data.date_time_range_end_, 2019, 1, 28, 16, 0, 0);
+  // Same date with end time > start time is ok.
+  SetDateProto(&*user_data.date_time_range_start_date_, 2020, 1, 15);
+  SetDateProto(&*user_data.date_time_range_end_date_, 2020, 1, 15);
+  user_data.date_time_range_start_timeslot_ = 0;
+  user_data.date_time_range_end_timeslot_ = 1;
+  EXPECT_TRUE(CollectUserDataAction::IsUserDataComplete(user_data, options));
 
-  // Start date not before end date.
+  // Same date and same time is not ok.
+  user_data.date_time_range_start_timeslot_ = 0;
+  user_data.date_time_range_end_timeslot_ = 0;
   EXPECT_FALSE(CollectUserDataAction::IsUserDataComplete(user_data, options));
 
-  user_data.date_time_range_end_.mutable_date()->set_year(2020);
+  // Same date and start time > end time is not ok.
+  user_data.date_time_range_start_timeslot_ = 1;
+  user_data.date_time_range_end_timeslot_ = 0;
+  EXPECT_FALSE(CollectUserDataAction::IsUserDataComplete(user_data, options));
+
+  // Start date before end date is ok.
+  SetDateProto(&*user_data.date_time_range_start_date_, 2020, 3, 1);
+  SetDateProto(&*user_data.date_time_range_end_date_, 2020, 3, 31);
+  user_data.date_time_range_start_timeslot_ = 0;
+  user_data.date_time_range_end_timeslot_ = 1;
+  EXPECT_TRUE(CollectUserDataAction::IsUserDataComplete(user_data, options));
+  user_data.date_time_range_start_timeslot_ = 1;
+  user_data.date_time_range_end_timeslot_ = 0;
+  EXPECT_TRUE(CollectUserDataAction::IsUserDataComplete(user_data, options));
+
+  // Proper date comparison across years.
+  SetDateProto(&*user_data.date_time_range_start_date_, 2019, 11, 10);
+  SetDateProto(&*user_data.date_time_range_end_date_, 2020, 1, 5);
   EXPECT_TRUE(CollectUserDataAction::IsUserDataComplete(user_data, options));
 }
 
@@ -679,40 +782,64 @@ TEST_F(CollectUserDataActionTest, SelectDateTimeRange) {
   ActionProto action_proto;
   auto* collect_user_data_proto = action_proto.mutable_collect_user_data();
   collect_user_data_proto->set_request_terms_and_conditions(false);
-  auto* date_time_proto = collect_user_data_proto->mutable_date_time_range();
-  SetDateTimeProto(date_time_proto->mutable_start(), 2019, 10, 21, 8, 0, 0);
-  SetDateTimeProto(date_time_proto->mutable_end(), 2019, 11, 5, 16, 0, 0);
-  SetDateTimeProto(date_time_proto->mutable_min(), 2019, 11, 5, 16, 0, 0);
-  SetDateTimeProto(date_time_proto->mutable_max(), 2020, 11, 5, 16, 0, 0);
-  date_time_proto->set_start_label("Pick up");
-  date_time_proto->set_end_label("Return");
-  date_time_proto->set_invalid_error_message("Return == Pick up");
 
-  DateTimeProto actual_pickup_time;
-  DateTimeProto actual_return_time;
-  SetDateTimeProto(&actual_pickup_time, 2019, 10, 21, 7, 0, 0);
-  SetDateTimeProto(&actual_return_time, 2019, 10, 25, 19, 0, 0);
+  auto* date_time_rage = collect_user_data_proto->mutable_date_time_range();
+  SetDateProto(date_time_rage->mutable_start_date(), 2020, 1, 1);
+  SetDateProto(date_time_rage->mutable_end_date(), 2020, 1, 15);
+  SetDateProto(date_time_rage->mutable_min_date(), 2020, 1, 1);
+  SetDateProto(date_time_rage->mutable_max_date(), 2020, 12, 31);
+  date_time_rage->set_start_time_slot(0);
+  date_time_rage->set_end_time_slot(0);
+  date_time_rage->set_start_date_label("Start date");
+  date_time_rage->set_end_date_label("End date");
+  date_time_rage->set_start_time_label("Start time");
+  date_time_rage->set_end_time_label("End time");
+  date_time_rage->set_date_not_set_error("Date not set");
+  date_time_rage->set_time_not_set_error("Time not set");
 
+  auto* time_slot = date_time_rage->add_time_slots();
+  time_slot->set_label("08:00 AM");
+  time_slot->set_comparison_value(0);
+  time_slot = date_time_rage->add_time_slots();
+  time_slot->set_label("09:00 AM");
+  time_slot->set_comparison_value(1);
+
+  DateProto actual_pickup_date;
+  DateProto actual_return_date;
+  SetDateProto(&actual_pickup_date, 2020, 10, 21);
+  SetDateProto(&actual_return_date, 2020, 10, 25);
+  int actual_pickup_time = 1;
+  int actual_return_time = 1;
   ON_CALL(mock_action_delegate_, CollectUserData(_))
       .WillByDefault(
           Invoke([&](CollectUserDataOptions* collect_user_data_options) {
             user_data_.succeed_ = true;
-            user_data_.date_time_range_start_ = actual_pickup_time;
-            user_data_.date_time_range_end_ = actual_return_time;
+            user_data_.date_time_range_start_date_ = actual_pickup_date;
+            user_data_.date_time_range_start_timeslot_ = actual_pickup_time;
+            user_data_.date_time_range_end_date_ = actual_return_date;
+            user_data_.date_time_range_end_timeslot_ = actual_return_time;
             std::move(collect_user_data_options->confirm_callback)
                 .Run(&user_data_, &user_model_);
           }));
 
   EXPECT_CALL(
       callback_,
-      Run(Pointee(
-          AllOf(Property(&ProcessedActionProto::status, ACTION_APPLIED),
-                Property(&ProcessedActionProto::collect_user_data_result,
-                         Property(&CollectUserDataResultProto::date_time_start,
-                                  EqualsProto(actual_pickup_time))),
-                Property(&ProcessedActionProto::collect_user_data_result,
-                         Property(&CollectUserDataResultProto::date_time_end,
-                                  EqualsProto(actual_return_time)))))));
+      Run(Pointee(AllOf(
+          Property(&ProcessedActionProto::status, ACTION_APPLIED),
+          Property(&ProcessedActionProto::collect_user_data_result,
+                   Property(&CollectUserDataResultProto::date_range_start_date,
+                            EqualsProto(actual_pickup_date))),
+          Property(
+              &ProcessedActionProto::collect_user_data_result,
+              Property(&CollectUserDataResultProto::date_range_start_timeslot,
+                       Eq(actual_pickup_time))),
+          Property(&ProcessedActionProto::collect_user_data_result,
+                   Property(&CollectUserDataResultProto::date_range_end_date,
+                            EqualsProto(actual_return_date))),
+          Property(
+              &ProcessedActionProto::collect_user_data_result,
+              Property(&CollectUserDataResultProto::date_range_end_timeslot,
+                       Eq(actual_return_time)))))));
   CollectUserDataAction action(&mock_action_delegate_, action_proto);
   action.ProcessAction(callback_.Get());
 }

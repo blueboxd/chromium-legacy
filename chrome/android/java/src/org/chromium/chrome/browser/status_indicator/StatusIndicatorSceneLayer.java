@@ -8,12 +8,14 @@ import android.graphics.RectF;
 
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
+import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.browser.compositor.LayerTitleCache;
 import org.chromium.chrome.browser.compositor.layouts.components.VirtualView;
 import org.chromium.chrome.browser.compositor.layouts.eventfilter.EventFilter;
 import org.chromium.chrome.browser.compositor.overlays.SceneOverlay;
 import org.chromium.chrome.browser.compositor.scene_layer.SceneLayer;
 import org.chromium.chrome.browser.compositor.scene_layer.SceneOverlayLayer;
+import org.chromium.chrome.browser.fullscreen.FullscreenManager;
 import org.chromium.components.browser_ui.widget.ViewResourceFrameLayout;
 import org.chromium.ui.resources.ResourceManager;
 
@@ -34,15 +36,20 @@ class StatusIndicatorSceneLayer extends SceneOverlayLayer implements SceneOverla
     /** The {@link ViewResourceFrameLayout} that this scene layer represents. */
     private ViewResourceFrameLayout mStatusIndicator;
 
+    /** A {@link Supplier} for accessing the {@link FullscreenManager}. */
+    private Supplier<FullscreenManager> mFullscreenManagerSupplier;
+
     private boolean mIsVisible;
 
     /**
      * Build a composited status view layer.
      * @param statusIndicator The view used to generate the composited version.
      */
-    public StatusIndicatorSceneLayer(ViewResourceFrameLayout statusIndicator) {
+    public StatusIndicatorSceneLayer(ViewResourceFrameLayout statusIndicator,
+            Supplier<FullscreenManager> fullscreenManagerSupplier) {
         mStatusIndicator = statusIndicator;
         mResourceId = mStatusIndicator.getId();
+        mFullscreenManagerSupplier = fullscreenManagerSupplier;
     }
 
     /**
@@ -70,8 +77,11 @@ class StatusIndicatorSceneLayer extends SceneOverlayLayer implements SceneOverla
     @Override
     public SceneOverlayLayer getUpdatedSceneOverlayTree(RectF viewport, RectF visibleViewport,
             LayerTitleCache layerTitleCache, ResourceManager resourceManager, float yOffset) {
+        final FullscreenManager fullscreenManager = mFullscreenManagerSupplier.get();
+        final int offset =
+                fullscreenManager != null ? fullscreenManager.getTopControlsMinHeightOffset() : 0;
         StatusIndicatorSceneLayerJni.get().updateStatusIndicatorLayer(
-                mNativePtr, StatusIndicatorSceneLayer.this, resourceManager, mResourceId);
+                mNativePtr, StatusIndicatorSceneLayer.this, resourceManager, mResourceId, offset);
         return this;
     }
 
@@ -134,6 +144,6 @@ class StatusIndicatorSceneLayer extends SceneOverlayLayer implements SceneOverla
                 SceneLayer contentTree);
         void updateStatusIndicatorLayer(long nativeStatusIndicatorSceneLayer,
                 StatusIndicatorSceneLayer caller, ResourceManager resourceManager,
-                int viewResourceId);
+                int viewResourceId, int offset);
     }
 }

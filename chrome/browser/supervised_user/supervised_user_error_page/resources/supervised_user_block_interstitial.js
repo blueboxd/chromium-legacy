@@ -38,14 +38,6 @@ function makeImageSet(url1x, url2x) {
 
 function initialize() {
   var allowAccessRequests = loadTimeData.getBoolean('allowAccessRequests');
-  if (allowAccessRequests) {
-    $('request-access-button').onclick = function(event) {
-      $('request-access-button').hidden = true;
-      sendCommand('request');
-    };
-  } else {
-    $('request-access-button').hidden = true;
-  }
   var avatarURL1x = loadTimeData.getString('avatarURL1x');
   var avatarURL2x = loadTimeData.getString('avatarURL2x');
   var custodianName = loadTimeData.getString('custodianName');
@@ -72,10 +64,30 @@ function initialize() {
           'secondCustodianEmail');
     }
   }
+
+  var already_requested_access = loadTimeData.getBoolean('alreadySentRequest');
+  if (already_requested_access) {
+    var is_main_frame = loadTimeData.getBoolean('isMainFrame');
+    requestCreated(true, is_main_frame);
+    return;
+  }
+
+  if (allowAccessRequests) {
+    $('request-access-button').hidden = false;
+
+    $('request-access-button').onclick = function(event) {
+      $('request-access-button').hidden = true;
+      sendCommand('request');
+    };
+  } else {
+    $('request-access-button').hidden = true;
+  }
+
   $('back-button').onclick = function(event) {
     sendCommand('back');
   };
   if (loadTimeData.getBoolean('showFeedbackLink')) {
+    $('show-details-link').hidden = false;
     $('show-details-link').onclick = function(event) {
       showDetails = true;
       $('show-details-link').hidden = true;
@@ -105,6 +117,19 @@ function initialize() {
  */
 function setRequestStatus(isSuccessful, isMainFrame) {
   console.log('setRequestStatus(' + isSuccessful +')');
+  requestCreated(isSuccessful, isMainFrame);
+  if (isSuccessful) {
+    $('back-button').focus();
+  }
+}
+
+/**
+ * Updates the interstitial to show that the request failed or was sent.
+ * @param {boolean} isSuccessful Whether the request was successful or not.
+ * @param {boolean} isMainFrame Whether the interstitial is being shown in main
+ *     frame.
+ */
+function requestCreated(isSuccessful, isMainFrame) {
   $('block-page-header').hidden = true;
   $('block-page-message').hidden = true;
   $('hide-details-link').hidden = true;

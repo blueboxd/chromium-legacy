@@ -267,6 +267,7 @@ class TestDeskObserver : public Desk::Observer {
   // Desk::Observer:
   void OnContentChanged() override { ++notify_counts_; }
   void OnDeskDestroyed(const Desk* desk) override {}
+  void OnDeskNameChanged(const base::string16& new_name) override {}
 
  private:
   int notify_counts_ = 0;

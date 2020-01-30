@@ -428,7 +428,6 @@
 <translation id="2799223571221894425">Taaskäivita</translation>
 <translation id="2803306138276472711">Google'i ohutu sirvimise teenus <ph name="BEGIN_LINK" />tuvastas hiljuti pahavara<ph name="END_LINK" /> saidil <ph name="SITE" />. Tavaliselt turvalisi veebisaite võidakse mõnikord nakatada pahavaraga.</translation>
 <translation id="2807052079800581569">Pildi asend Y-teljel</translation>
-<translation id="2809804249696361569">Mõlemad lehed</translation>
 <translation id="2824775600643448204">Aadressi- ja otsinguriba</translation>
 <translation id="2826760142808435982">Ühendus on krüptitud ja autenditud üksusega <ph name="CIPHER" /> ning kasutab peamise vahetusmehhanismina üksust <ph name="KX" />.</translation>
 <translation id="2835170189407361413">Tühjenda vorm</translation>
@@ -937,7 +936,6 @@
 <translation id="5112422516732747637">A5</translation>
 <translation id="5115216390227830982">European-Edp</translation>
 <translation id="5115563688576182185">(64-bitine)</translation>
-<translation id="5121469660360593280">Administraatoriga jagatakse andmeid turvasündmuste kohta, mille Chrome'i ettevõtte tooteversiooni kasutaja kaitse on esile tõstnud. See võib hõlmata mõne külastatava lehe URL-i, failinimesid või metaandmeid ja kasutajanime, mida kasutate oma seadmesse ja Chrome'i sisselogimiseks.</translation>
 <translation id="5123063207673082822">Nädalavahetus</translation>
 <translation id="5125394840236832993">B-Plus</translation>
 <translation id="5126510351761255129">Kaardi kinnitamine</translation>
@@ -952,7 +950,6 @@
 <translation id="5161506081086828129">Virnastaja 9</translation>
 <translation id="516920405563544094">Sisestage krediitkaardi <ph name="CREDIT_CARD" /> CVC. Pärast kinnitamist jagatakse teie Google'i kontol oleva kaardi üksikasju selle saidiga.</translation>
 <translation id="5169827969064885044">Võite kaotada juurdepääsu oma organisatsiooni kontole või teie identiteet võidakse varastada. Chrome soovitab teil kohe oma parooli muuta.</translation>
-<translation id="5170017743895942767">Chrome'i ettevõtte tooteversiooni kasutaja kaitse</translation>
 <translation id="5171045022955879922">Otsige või sisestage URL</translation>
 <translation id="5171689220826475070">Fanfold-European</translation>
 <translation id="5172758083709347301">Masin</translation>
@@ -1085,7 +1082,6 @@
 <translation id="5737183892635480227">{NUM_CARDS,plural, =1{Salvestage kaart oma Google'i kontole}other{Salvestage kaardid oma Google'i kontole}}</translation>
 <translation id="5745980000221562234">{NUM_CARDS,plural, =1{Kasutage selle kaardi puhul virtuaalset numbrit}other{Valige kaart}}</translation>
 <translation id="5763042198335101085">Sisestage kehtiv e-posti aadress</translation>
-<translation id="5763703224595565476">Administraator lubas teie brauseris Chrome'i ettevõtte tooteversiooni kasutaja kaitse. Chrome'i ettevõtte tooteversiooni kasutaja kaitsel on juurdepääs osadele teie andmetele.</translation>
 <translation id="5765072501007116331">Kohaletoimetamisviiside ja nõuete nägemiseks valige aadress</translation>
 <translation id="5776313857861697733">Prioriteet</translation>
 <translation id="5778550464785688721">MIDI-seadmete täielik juhtimine</translation>
@@ -1422,7 +1418,6 @@ Lisateave:
 <translation id="733923710415886693">Serveri sertifikaati ei avalikustatud sertifikaadi läbipaistvuse reegli kaudu.</translation>
 <translation id="734600844861828519">11x15</translation>
 <translation id="7346048084945669753">On seotud:</translation>
-<translation id="73479065977517481"><ph name="ENROLLMENT_DOMAIN" /> lubas teie brauseris Chrome'i ettevõtte tooteversiooni kasutaja kaitse. Chrome'i ettevõtte tooteversiooni kasutaja kaitsel on juurdepääs osadele teie andmetele.</translation>
 <translation id="7349430561505560861">A4-Extra</translation>
 <translation id="7353601530677266744">Käsurida</translation>
 <translation id="7372973238305370288">otsingutulemus</translation>

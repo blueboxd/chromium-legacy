@@ -74,6 +74,8 @@ std::string SharingSendMessageResultToString(SharingSendMessageResult result) {
       return "AckTimeout";
     case SharingSendMessageResult::kInternalError:
       return "InternalError";
+    case SharingSendMessageResult::kEncryptionError:
+      return "kEncryptionError";
   }
 }
 

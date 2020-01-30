@@ -570,6 +570,16 @@ public final class ChromePreferenceKeys {
     public static final String TABBED_ACTIVITY_LAST_BACKGROUNDED_TIME_MS_PREF =
             "ChromeTabbedActivity.BackgroundTimeMs";
 
+    public static final String TABMODEL_ACTIVE_TAB_ID =
+            "org.chromium.chrome.browser.tabmodel.TabPersistentStore.ACTIVE_TAB_ID";
+    public static final String TABMODEL_HAS_COMPUTED_MAX_ID =
+            "org.chromium.chrome.browser.tabmodel.TabPersistentStore.HAS_COMPUTED_MAX_ID";
+    public static final String TABMODEL_HAS_RUN_FILE_MIGRATION =
+            "org.chromium.chrome.browser.tabmodel.TabPersistentStore.HAS_RUN_FILE_MIGRATION";
+    public static final String TABMODEL_HAS_RUN_MULTI_INSTANCE_FILE_MIGRATION =
+            "org.chromium.chrome.browser.tabmodel.TabPersistentStore."
+            + "HAS_RUN_MULTI_INSTANCE_FILE_MIGRATION";
+
     public static final String TAB_ID_MANAGER_NEXT_ID =
             "org.chromium.chrome.browser.tab.TabIdManager.NEXT_ID";
 
@@ -849,6 +859,10 @@ public final class ChromePreferenceKeys {
                 SURVEY_INFO_BAR_DISPLAYED,
                 SYNC_SESSIONS_UUID,
                 TABBED_ACTIVITY_LAST_BACKGROUNDED_TIME_MS_PREF,
+                TABMODEL_ACTIVE_TAB_ID,
+                TABMODEL_HAS_COMPUTED_MAX_ID,
+                TABMODEL_HAS_RUN_FILE_MIGRATION,
+                TABMODEL_HAS_RUN_MULTI_INSTANCE_FILE_MIGRATION,
                 TAB_ID_MANAGER_NEXT_ID,
                 TOS_ACKED_ACCOUNTS,
                 TWA_DIALOG_NUMBER_OF_DISMISSALS_ON_CLEAR_DATA,

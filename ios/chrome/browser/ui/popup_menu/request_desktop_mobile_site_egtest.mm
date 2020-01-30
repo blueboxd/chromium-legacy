@@ -29,6 +29,7 @@ const char kUserAgentTestURL[] =
 const char kMobileSiteLabel[] = "Mobile";
 
 const char kDesktopSiteLabel[] = "Desktop";
+const char kDesktopPlatformLabel[] = "MacIntel";
 
 // Custom timeout used when waiting for a web state after requesting desktop
 // or mobile mode.
@@ -246,38 +247,34 @@ class UserAgentResponseProvider : public web::DataResponseProvider {
 }
 
 // Tests that navigator.appVersion JavaScript API returns correct string for
-// desktop User Agent.
-- (void)testAppVersionJSAPIWithDesktopUserAgent {
-  web::test::SetUpFileBasedHttpServer();
-  [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl(kUserAgentTestURL)];
-  // Verify initial reception of the mobile site.
-  [ChromeEarlGrey waitForWebStateContainingText:kMobileSiteLabel];
-
-  // Request and verify reception of the desktop site.
-  [ChromeEarlGreyUI openToolsMenu];
-  [RequestDesktopButton() performAction:grey_tap()];
-  [ChromeEarlGrey waitForWebStateContainingText:kDesktopSiteLabel];
-}
-
-// Tests that navigator.appVersion JavaScript API returns correct string for
-// mobile User Agent.
+// mobile User Agent and the platform.
 - (void)testAppVersionJSAPIWithMobileUserAgent {
   web::test::SetUpFileBasedHttpServer();
   [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl(kUserAgentTestURL)];
   // Verify initial reception of the mobile site.
   [ChromeEarlGrey waitForWebStateContainingText:kMobileSiteLabel];
 
+  std::string platform =
+      base::SysNSStringToUTF8([[UIDevice currentDevice] model]);
+  [ChromeEarlGrey waitForWebStateContainingText:platform];
+
   // Request and verify reception of the desktop site.
   [ChromeEarlGreyUI openToolsMenu];
   [RequestDesktopButton() performAction:grey_tap()];
   [ChromeEarlGrey waitForWebStateContainingText:kDesktopSiteLabel
                                         timeout:kWaitForUserAgentChangeTimeout];
+  if (@available(iOS 13, *)) {
+    [ChromeEarlGrey waitForWebStateContainingText:kDesktopPlatformLabel];
+  } else {
+    [ChromeEarlGrey waitForWebStateContainingText:platform];
+  }
 
   // Request and verify reception of the mobile site.
   [ChromeEarlGreyUI openToolsMenu];
   [RequestMobileButton() performAction:grey_tap()];
   [ChromeEarlGrey waitForWebStateContainingText:kMobileSiteLabel
                                         timeout:kWaitForUserAgentChangeTimeout];
+  [ChromeEarlGrey waitForWebStateContainingText:platform];
 }
 
 @end

@@ -550,8 +550,8 @@ class RemoteCallFilesApp extends RemoteCall {
     // otherwise it won't expand. We must also to account for the case
     // :not([expanded]) to ensure it has NOT been expanded by some async
     // operation since the [expanded] checks above.
-    const expandIcon = query +
-        ':not([expanded]) > .tree-row[has-children=true] > .expand-icon';
+    const expandIcon =
+        query + ':not([expanded]) > .tree-row[has-children=true] .expand-icon';
     await this.waitAndClickElement(appId, expandIcon);
     // Wait for the expansion to finish.
     await this.waitForElement(appId, query + '[expanded]');

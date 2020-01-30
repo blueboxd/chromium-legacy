@@ -22,6 +22,7 @@
 #include "gpu/config/gpu_finch_features.h"
 #include "gpu/config/gpu_switches.h"
 #include "media/media_buildflags.h"
+#include "ui/gfx/switches.h"
 
 namespace {
 
@@ -105,6 +106,9 @@ const gpu::GpuPreferences GetGpuPreferencesFromCommandLine() {
 
   gpu_preferences.enable_android_surface_control =
       ShouldEnableAndroidSurfaceControl(*command_line);
+
+  gpu_preferences.enable_native_gpu_memory_buffers =
+      command_line->HasSwitch(switches::kEnableNativeGpuMemoryBuffers);
 
   // Some of these preferences are set or adjusted in
   // GpuDataManagerImplPrivate::AppendGpuCommandLine.

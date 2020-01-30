@@ -451,6 +451,15 @@ class CommandHandler {
     handler.canExecute.call(
         /** @type {Command} */ (handler), event, this.fileManager_);
   }
+
+  /**
+   * Returns command handler by name.
+   * @param {string} name The command name.
+   * @public
+   */
+  static getCommand(name) {
+    return CommandHandler.COMMANDS_[name];
+  }
 }
 
 /**
@@ -963,23 +972,7 @@ CommandHandler.COMMANDS_['drive-sync-settings'] = new class extends Command {
 CommandHandler.COMMANDS_['delete'] = new class extends Command {
   execute(event, fileManager) {
     const entries = CommandUtil.getCommandEntries(fileManager, event.target);
-
-    // Execute might be called without a call of canExecute method,
-    // e.g. called directly from code. Double check here not to delete
-    // undeletable entries.
-    if (!entries.every(CommandUtil.shouldShowMenuItemsForEntry.bind(
-            null, fileManager.volumeManager)) ||
-        this.containsReadOnlyEntry_(entries, fileManager)) {
-      return;
-    }
-
-    const message = entries.length === 1 ?
-        strf('GALLERY_CONFIRM_DELETE_ONE', entries[0].name) :
-        strf('GALLERY_CONFIRM_DELETE_SOME', entries.length);
-
-    fileManager.ui.deleteConfirmDialog.show(message, () => {
-      fileManager.fileOperationManager.deleteEntries(entries);
-    }, null, null);
+    this.deleteEntries_(entries, fileManager);
   }
 
   /** @override */
@@ -994,15 +987,53 @@ CommandHandler.COMMANDS_['delete'] = new class extends Command {
       return;
     }
 
-    event.canExecute = entries.length > 0 &&
-        !this.containsReadOnlyEntry_(entries, fileManager) &&
-        !fileManager.directoryModel.isReadOnly() &&
-        CommandUtil.hasCapability(entries, 'canDelete');
+    event.canExecute = this.canDeleteEntries_(entries, fileManager);
 
     // Hide if there isn't anything selected, meaning user clicked in an empty
     // space in the file list.
     const noEntries = entries.length === 0;
     event.command.setHidden(noEntries);
+  }
+
+  /**
+   * Delete the entries with an optional delete confirm dialog.
+   * @param {!Array<!Entry>} entries
+   * @param {!CommandHandlerDeps} fileManager
+   * @param {?FilesConfirmDialog} dialog An optional delete confirm dialog.
+   */
+  deleteEntries_(entries, fileManager, dialog = null) {
+    // deleteEntries_ might be called without a call of canDeleteEntries_
+    // method, e.g. called directly from code. Double check here not to delete
+    // undeletable entries.
+    if (!entries.every(CommandUtil.shouldShowMenuItemsForEntry.bind(
+            null, fileManager.volumeManager)) ||
+        this.containsReadOnlyEntry_(entries, fileManager)) {
+      return;
+    }
+
+    const message = entries.length === 1 ?
+        strf('GALLERY_CONFIRM_DELETE_ONE', entries[0].name) :
+        strf('GALLERY_CONFIRM_DELETE_SOME', entries.length);
+
+    if (!dialog) {
+      dialog = fileManager.ui.deleteConfirmDialog;
+    }
+
+    dialog.show(message, () => {
+      fileManager.fileOperationManager.deleteEntries(entries);
+    }, null, null);
+  }
+
+  /**
+   * Checks if the entries are deletable.
+   * @param {!Array<!Entry>} entries
+   * @param {!CommandHandlerDeps} fileManager
+   */
+  canDeleteEntries_(entries, fileManager) {
+    return entries.length > 0 &&
+        !this.containsReadOnlyEntry_(entries, fileManager) &&
+        !fileManager.directoryModel.isReadOnly() &&
+        CommandUtil.hasCapability(entries, 'canDelete');
   }
 
   /**

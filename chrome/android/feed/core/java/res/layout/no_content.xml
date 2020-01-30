@@ -15,11 +15,11 @@ found in the LICENSE file.
       android:layout_width="match_parent"
       android:layout_height="wrap_content"
       android:paddingBottom="@dimen/no_content_text_padding"
-      android:textAppearance="@style/TextAppearance.BlackTitle1"
+      android:textAppearance="@style/TextAppearance.TextLarge.Primary"
       android:text="@string/ntp_title_no_suggestions" />
   <TextView
       android:layout_width="match_parent"
       android:layout_height="wrap_content"
-      android:textAppearance="@style/TextAppearance.BlackHint1"
+      android:textAppearance="@style/TextAppearance.TextLarge.Secondary"
       android:text="@string/ntp_article_suggestions_section_empty" />
 </LinearLayout>

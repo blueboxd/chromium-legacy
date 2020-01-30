@@ -13337,6 +13337,12 @@ error::Error GLES2DecoderImpl::HandleReadPixels(uint32_t immediate_data_size,
       accepted_formats.push_back(GL_RGBA);
       accepted_types.push_back(GL_UNSIGNED_INT_2_10_10_10_REV);
       break;
+    case GL_R16_EXT:
+    case GL_RG16_EXT:
+    case GL_RGBA16_EXT:
+      accepted_formats.push_back(GL_RGBA);
+      accepted_types.push_back(GL_UNSIGNED_SHORT);
+      break;
     default:
       accepted_formats.push_back(GL_RGBA);
       {

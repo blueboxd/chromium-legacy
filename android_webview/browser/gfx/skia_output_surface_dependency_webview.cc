@@ -148,4 +148,9 @@ SkiaOutputSurfaceDependencyWebView::GetGpuBlockedTimeSinceLastSwap() {
   return base::TimeDelta();
 }
 
+void SkiaOutputSurfaceDependencyWebView::ScheduleDelayedGPUTaskFromGPUThread(
+    base::OnceClosure task) {
+  task_queue_->ScheduleIdleTask(std::move(task));
+}
+
 }  // namespace android_webview

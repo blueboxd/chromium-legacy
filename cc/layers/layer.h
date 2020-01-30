@@ -62,6 +62,7 @@ struct LayerDebugInfo {
   NodeId owner_node_id = kInvalidNodeId;
   int paint_count = 0;
   std::vector<const char*> compositing_reasons;
+  std::vector<const char*> compositing_reason_ids;
   struct Invalidation {
     gfx::Rect rect;
     const char* reason;

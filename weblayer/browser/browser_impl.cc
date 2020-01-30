@@ -6,9 +6,11 @@
 
 #include <algorithm>
 
+#include "base/containers/unique_ptr_adapters.h"
 #include "base/path_service.h"
 #include "components/base32/base32.h"
 #include "content/public/browser/browser_context.h"
+#include "weblayer/browser/persistence/minimal_browser_persister.h"
 #include "weblayer/browser/profile_impl.h"
 #include "weblayer/browser/session_service.h"
 #include "weblayer/browser/tab_impl.h"
@@ -46,41 +48,53 @@ BrowserImpl::BrowserImpl(ProfileImpl* profile,
     : profile_(profile),
       persistence_id_(persistence_info ? persistence_info->id : std::string()) {
   if (persistence_info)
-    CreateSessionServiceAndRestore(*persistence_info);
+    RestoreStateIfNecessary(*persistence_info);
 }
 
 BrowserImpl::~BrowserImpl() {
-  while (!tabs_.empty()) {
-    Tab* last_tab = tabs_.back();
-    RemoveTab(last_tab);
-    DCHECK(!base::Contains(tabs_, last_tab));
-  }
+#if defined(OS_ANDROID)
+  // Android side should always remove tabs first (because the Java Tab class
+  // owns the C++ Tab). See BrowserImpl.destroy() (in the Java BrowserImpl
+  // class).
+  DCHECK(tabs_.empty());
+#else
+  while (!tabs_.empty())
+    RemoveTab(tabs_.back().get());
+#endif
 }
 
 TabImpl* BrowserImpl::CreateTabForSessionRestore(
     std::unique_ptr<content::WebContents> web_contents) {
-  TabImpl* tab = new TabImpl(profile_, std::move(web_contents));
+  std::unique_ptr<TabImpl> tab =
+      std::make_unique<TabImpl>(profile_, std::move(web_contents));
 #if defined(OS_ANDROID)
-  // The Java side takes ownership of Tab.
   Java_BrowserImpl_createTabForSessionRestore(
       base::android::AttachCurrentThread(), java_impl_,
-      reinterpret_cast<jlong>(tab));
+      reinterpret_cast<jlong>(tab.get()));
 #endif
-  AddTab(tab);
-  return tab;
+  TabImpl* tab_ptr = tab.get();
+  AddTab(std::move(tab));
+  return tab_ptr;
 }
 
 #if defined(OS_ANDROID)
 void BrowserImpl::AddTab(JNIEnv* env,
                          const base::android::JavaParamRef<jobject>& caller,
                          long native_tab) {
-  AddTab(reinterpret_cast<TabImpl*>(native_tab));
+  TabImpl* tab = reinterpret_cast<TabImpl*>(native_tab);
+  std::unique_ptr<Tab> owned_tab;
+  if (tab->browser())
+    owned_tab = tab->browser()->RemoveTab(tab);
+  else
+    owned_tab.reset(tab);
+  AddTab(std::move(owned_tab));
 }
 
 void BrowserImpl::RemoveTab(JNIEnv* env,
                             const base::android::JavaParamRef<jobject>& caller,
                             long native_tab) {
-  RemoveTab(reinterpret_cast<TabImpl*>(native_tab));
+  // The Java side owns the Tab.
+  RemoveTab(reinterpret_cast<TabImpl*>(native_tab)).release();
 }
 
 base::android::ScopedJavaLocalRef<jobjectArray> BrowserImpl::GetTabs(
@@ -93,7 +107,7 @@ base::android::ScopedJavaLocalRef<jobjectArray> BrowserImpl::GetTabs(
   base::android::CheckException(env);
 
   for (size_t i = 0; i < tabs_.size(); ++i) {
-    TabImpl* tab = static_cast<TabImpl*>(tabs_[i]);
+    TabImpl* tab = static_cast<TabImpl*>(tabs_[i].get());
     env->SetObjectArrayElement(tabs, i, tab->GetJavaTab().obj());
   }
   return base::android::ScopedJavaLocalRef<jobjectArray>(env, tabs);
@@ -143,28 +157,45 @@ BrowserImpl::GetSessionServiceCryptoKey(
   return base::android::ToJavaByteArray(env, key);
 }
 
+base::android::ScopedJavaLocalRef<jbyteArray>
+BrowserImpl::GetMinimalPersistenceState(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& caller) {
+  auto state = GetMinimalPersistenceState();
+  return base::android::ToJavaByteArray(env, &(state.front()), state.size());
+}
+
 #endif
 
-void BrowserImpl::AddTab(Tab* tab) {
+std::vector<uint8_t> BrowserImpl::GetMinimalPersistenceState(
+    int max_size_in_bytes) {
+  return PersistMinimalState(this, max_size_in_bytes);
+}
+
+Tab* BrowserImpl::AddTab(std::unique_ptr<Tab> tab) {
   DCHECK(tab);
-  TabImpl* tab_impl = static_cast<TabImpl*>(tab);
-  if (tab_impl->browser() != this && tab_impl->browser())
-    tab_impl->browser()->RemoveTab(tab);
-  tabs_.push_back(tab);
+  TabImpl* tab_impl = static_cast<TabImpl*>(tab.get());
+  DCHECK(!tab_impl->browser());
+  tabs_.push_back(std::move(tab));
   tab_impl->set_browser(this);
 #if defined(OS_ANDROID)
   Java_BrowserImpl_onTabAdded(base::android::AttachCurrentThread(), java_impl_,
-                              tab ? tab_impl->GetJavaTab() : nullptr);
+                              tab_impl->GetJavaTab());
 #endif
   for (BrowserObserver& obs : browser_observers_)
-    obs.OnTabAdded(tab);
+    obs.OnTabAdded(tab_impl);
+  return tab_impl;
 }
 
-void BrowserImpl::RemoveTab(Tab* tab) {
+std::unique_ptr<Tab> BrowserImpl::RemoveTab(Tab* tab) {
   TabImpl* tab_impl = static_cast<TabImpl*>(tab);
   DCHECK_EQ(this, tab_impl->browser());
   static_cast<TabImpl*>(tab)->set_browser(nullptr);
-  tabs_.erase(std::find(tabs_.begin(), tabs_.end(), tab));
+  auto iter =
+      std::find_if(tabs_.begin(), tabs_.end(), base::MatchesUniquePtr(tab));
+  DCHECK(iter != tabs_.end());
+  std::unique_ptr<Tab> owned_tab = std::move(*iter);
+  tabs_.erase(iter);
   const bool active_tab_changed = active_tab_ == tab;
   if (active_tab_changed)
     active_tab_ = nullptr;
@@ -185,6 +216,7 @@ void BrowserImpl::RemoveTab(Tab* tab) {
   }
   for (BrowserObserver& obs : browser_observers_)
     obs.OnTabRemoved(tab, active_tab_changed);
+  return owned_tab;
 }
 
 void BrowserImpl::SetActiveTab(Tab* tab) {
@@ -208,8 +240,11 @@ Tab* BrowserImpl::GetActiveTab() {
   return active_tab_;
 }
 
-const std::vector<Tab*>& BrowserImpl::GetTabs() {
-  return tabs_;
+std::vector<Tab*> BrowserImpl::GetTabs() {
+  std::vector<Tab*> tabs(tabs_.size());
+  for (size_t i = 0; i < tabs_.size(); ++i)
+    tabs[i] = tabs_[i].get();
+  return tabs;
 }
 
 void BrowserImpl::PrepareForShutdown() {
@@ -218,6 +253,11 @@ void BrowserImpl::PrepareForShutdown() {
 
 std::string BrowserImpl::GetPersistenceId() {
   return persistence_id_;
+}
+
+std::vector<uint8_t> BrowserImpl::GetMinimalPersistenceState() {
+  // 0 means use the default max.
+  return GetMinimalPersistenceState(0);
 }
 
 void BrowserImpl::AddObserver(BrowserObserver* observer) {
@@ -241,10 +281,14 @@ base::FilePath BrowserImpl::GetSessionServiceDataPath() {
   return base_path.AppendASCII("State" + encoded_name);
 }
 
-void BrowserImpl::CreateSessionServiceAndRestore(
+void BrowserImpl::RestoreStateIfNecessary(
     const PersistenceInfo& persistence_info) {
-  session_service_ = std::make_unique<SessionService>(
-      GetSessionServiceDataPath(), this, persistence_info.last_crypto_key);
+  if (!persistence_info.id.empty()) {
+    session_service_ = std::make_unique<SessionService>(
+        GetSessionServiceDataPath(), this, persistence_info.last_crypto_key);
+  } else if (!persistence_info.minimal_state.empty()) {
+    RestoreMinimalState(this, persistence_info.minimal_state);
+  }
 }
 
 #if defined(OS_ANDROID)

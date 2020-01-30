@@ -36,6 +36,13 @@ const base::Feature kNetworkServiceSandbox {
 // sandbox::MITIGATION_EXTENSION_POINT_DISABLE.
 const base::Feature kWinSboxDisableExtensionPoints{
     "WinSboxDisableExtensionPoint", base::FEATURE_ENABLED_BY_DEFAULT};
+
+// Enables GPU AppContainer sandbox on Windows.
+const base::Feature kGpuAppContainer{"GpuAppContainer",
+                                     base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enables GPU Low Privilege AppContainer when combined with kGpuAppContainer.
+const base::Feature kGpuLPAC{"GpuLPAC", base::FEATURE_ENABLED_BY_DEFAULT};
 #endif  // defined(OS_WIN)
 
 #if !defined(OS_ANDROID)

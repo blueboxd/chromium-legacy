@@ -90,6 +90,7 @@ js_library("settings_dropdown_menu") {
 }
 
 js_library("settings_idle_load") {
+  deps = [ "//ui/webui/resources/js:assert" ]
   externs_list = [ "$externs_path/pending_polymer.js" ]
 }
 

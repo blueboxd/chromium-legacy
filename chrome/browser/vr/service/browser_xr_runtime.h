@@ -12,6 +12,7 @@
 #include "base/observer_list_types.h"
 #include "chrome/browser/vr/service/vr_service_impl.h"
 #include "chrome/browser/vr/service/xr_consent_helper.h"
+#include "chrome/browser/vr/service/xr_install_helper.h"
 #include "content/public/browser/render_frame_host.h"
 #include "device/vr/public/mojom/isolated_xr_service.mojom.h"
 #include "device/vr/public/mojom/vr_service.mojom.h"
@@ -77,10 +78,13 @@ class BrowserXRRuntime : public device::mojom::XRRuntimeEventListener {
   void RequestSession(VRServiceImpl* service,
                       const device::mojom::XRRuntimeSessionOptionsPtr& options,
                       RequestSessionCallback callback);
-  void ShowConsentPrompt(int render_frame_id,
-                         int render_process_id,
+  void ShowConsentPrompt(int render_process_id,
+                         int render_frame_id,
                          XrConsentPromptLevel consent_level,
                          OnUserConsentCallback consent_callback);
+  void EnsureInstalled(int render_process_id,
+                       int render_frame_id,
+                       OnInstallFinishedCallback install_callback);
   VRServiceImpl* GetServiceWithActiveImmersiveSession() {
     return presenting_service_;
   }
@@ -116,6 +120,7 @@ class BrowserXRRuntime : public device::mojom::XRRuntimeEventListener {
       mojo::PendingRemote<device::mojom::XRSessionController>
           immersive_session_controller);
   void OnImmersiveSessionError();
+  void OnInstallFinished(bool succeeded);
 
   device::mojom::XRDeviceId id_;
   mojo::Remote<device::mojom::XRRuntime> runtime_;
@@ -132,6 +137,8 @@ class BrowserXRRuntime : public device::mojom::XRRuntimeEventListener {
 
   base::ObserverList<BrowserXRRuntimeObserver> observers_;
   std::unique_ptr<XrConsentHelper> consent_helper_;
+  std::unique_ptr<XrInstallHelper> install_helper_;
+  OnInstallFinishedCallback install_finished_callback_;
 
   base::WeakPtrFactory<BrowserXRRuntime> weak_ptr_factory_{this};
 };

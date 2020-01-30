@@ -8,7 +8,6 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/mac/scoped_nsobject.h"
-#include "base/mac/sdk_forward_declarations.h"
 #import "ui/base/cocoa/tracking_area.h"
 #include "ui/base/ui_base_export.h"
 #include "ui/gfx/geometry/rect.h"

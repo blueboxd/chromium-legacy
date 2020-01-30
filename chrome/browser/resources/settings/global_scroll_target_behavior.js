@@ -99,6 +99,7 @@ cr.define('settings', function() {
     scrollTargetResolver.resolve(scrollTarget);
   };
 
+  // #cr_define_end
   return {
     GlobalScrollTargetBehaviorImpl: GlobalScrollTargetBehaviorImpl,
     setGlobalScrollTarget: setGlobalScrollTarget,

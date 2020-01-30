@@ -103,6 +103,7 @@ cr.define('settings', function() {
 
   cr.addSingletonGetter(ChromeCleanupProxyImpl);
 
+  // #cr_define_end
   return {
     ChromeCleanupProxy: ChromeCleanupProxy,
     ChromeCleanupProxyImpl: ChromeCleanupProxyImpl,

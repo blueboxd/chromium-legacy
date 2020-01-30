@@ -35,6 +35,7 @@
 #include "content/browser/service_worker/service_worker_installed_scripts_sender.h"
 #include "content/browser/service_worker/service_worker_provider_host.h"
 #include "content/browser/service_worker/service_worker_registration.h"
+#include "content/common/content_navigation_policy.h"
 #include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
@@ -42,7 +43,6 @@
 #include "content/public/browser/service_worker_external_request_result.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
-#include "content/public/common/navigation_policy.h"
 #include "content/public/common/result_codes.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_response_headers.h"
@@ -492,7 +492,7 @@ void ServiceWorkerVersion::StopWorker(base::OnceClosure callback) {
 
 void ServiceWorkerVersion::TriggerIdleTerminationAsap() {
   needs_to_be_terminated_asap_ = true;
-  endpoint()->SetIdleTimerDelayToZero();
+  endpoint()->SetIdleDelay(base::TimeDelta::FromSeconds(0));
 }
 
 bool ServiceWorkerVersion::OnRequestTermination() {
@@ -733,11 +733,11 @@ void ServiceWorkerVersion::AddControllee(
 
   if (base::FeatureList::IsEnabled(
           features::kServiceWorkerTerminationOnNoControllee) &&
-      !stop_on_no_controllee_callback_.IsCancelled()) {
-    DCHECK(!HasControllee());
-
-    // Cancel to stop the worker since the worker is going to have a controllee.
-    stop_on_no_controllee_callback_.Cancel();
+      !HasControllee()) {
+    // If the service worker starts to control a new client and the service
+    // worker needs to work, let's extend the idle timeout to the default value.
+    UpdateIdleDelayIfNeeded(base::TimeDelta::FromSeconds(
+        blink::mojom::kServiceWorkerDefaultIdleDelayInSeconds));
   }
 
   controllee_map_[uuid] = container_host;
@@ -778,21 +778,12 @@ void ServiceWorkerVersion::RemoveControllee(const std::string& client_uuid) {
   if (base::FeatureList::IsEnabled(
           features::kServiceWorkerTerminationOnNoControllee) &&
       !HasControllee()) {
-    // Terminate the worker |delay_ms| ms after all controllees are gone.
-    auto delay_ms =
-        base::TimeDelta::FromMilliseconds(kTerminationDelayParam.Get());
-    stop_on_no_controllee_callback_.Reset(base::BindOnce(
-        [](base::WeakPtr<ServiceWorkerVersion> version) {
-          if (!version)
-            return;
-          // The worker should not have controllee because the callback is
-          // cancelled when a new controllee appears.
-          DCHECK(!version->HasControllee());
-          version->StopWorker(base::DoNothing());
-        },
-        weak_factory_.GetWeakPtr()));
-    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE, stop_on_no_controllee_callback_.callback(), delay_ms);
+    // Terminate the worker after all controllees are gone with a delay set by
+    // |kTerminationDelayParam|, which is provided by the field trial.
+    // When a new controllee checks in before the delay passes, the idle delay
+    // is set to the default in AddControllee().
+    UpdateIdleDelayIfNeeded(
+        base::TimeDelta::FromMilliseconds(kTerminationDelayParam.Get()));
   }
 }
 
@@ -2315,6 +2306,20 @@ void ServiceWorkerVersion::InitializeGlobalScope() {
       provider_host_->container_host()->CreateServiceWorkerObjectInfoToSend(
           this),
       fetch_handler_existence_);
+}
+
+void ServiceWorkerVersion::UpdateIdleDelayIfNeeded(base::TimeDelta delay) {
+  // The idle delay can be updated only when the worker is still running.
+  bool update_idle_delay = running_status() == EmbeddedWorkerStatus::STARTING ||
+                           running_status() == EmbeddedWorkerStatus::RUNNING;
+
+  // The idle delay should not be updated when the worker needs to be
+  // terminated ASAP so that the new worker can be activated soon.
+  update_idle_delay = update_idle_delay && !needs_to_be_terminated_asap_;
+
+  if (update_idle_delay) {
+    endpoint()->SetIdleDelay(delay);
+  }
 }
 
 }  // namespace content

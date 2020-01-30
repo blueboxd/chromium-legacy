@@ -35,8 +35,10 @@
 #include "chromeos/strings/grit/chromeos_strings.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/web_ui_data_source.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "device/bluetooth/strings/grit/bluetooth_strings.h"
+#include "media/base/media_switches.h"
 #include "ui/accessibility/accessibility_switches.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/webui/web_ui_util.h"
@@ -68,9 +70,64 @@ bool IsProfileManaged(Profile* profile) {
   return profile->GetProfilePolicyConnector()->IsManaged();
 }
 
-void AddA11yStrings(content::WebUIDataSource* html_source) {
-  ::settings::AddSharedA11yStrings(html_source);
+void AddCommonStrings(content::WebUIDataSource* html_source, Profile* profile) {
   static constexpr webui::LocalizedString kLocalizedStrings[] = {
+      {"add", IDS_ADD},
+      {"advancedPageTitle", IDS_SETTINGS_ADVANCED},
+      {"back", IDS_ACCNAME_BACK},
+      {"basicPageTitle", IDS_SETTINGS_BASIC},
+      {"cancel", IDS_CANCEL},
+      {"clear", IDS_SETTINGS_CLEAR},
+      {"close", IDS_CLOSE},
+      {"confirm", IDS_CONFIRM},
+      {"continue", IDS_SETTINGS_CONTINUE},
+      {"delete", IDS_SETTINGS_DELETE},
+      {"deviceOff", IDS_SETTINGS_DEVICE_OFF},
+      {"deviceOn", IDS_SETTINGS_DEVICE_ON},
+      {"disable", IDS_DISABLE},
+      {"done", IDS_DONE},
+      {"edit", IDS_SETTINGS_EDIT},
+      {"extensionsLinkTooltip", IDS_SETTINGS_MENU_EXTENSIONS_LINK_TOOLTIP},
+      {"learnMore", IDS_LEARN_MORE},
+      {"menu", IDS_MENU},
+      {"menuButtonLabel", IDS_SETTINGS_MENU_BUTTON_LABEL},
+      {"moreActions", IDS_SETTINGS_MORE_ACTIONS},
+      {"ok", IDS_OK},
+      {"restart", IDS_SETTINGS_RESTART},
+      {"save", IDS_SAVE},
+      {"searchResultBubbleText", IDS_SEARCH_RESULT_BUBBLE_TEXT},
+      {"searchResultsBubbleText", IDS_SEARCH_RESULTS_BUBBLE_TEXT},
+      {"settings", IDS_SETTINGS_SETTINGS},
+      {"settingsAltPageTitle", IDS_SETTINGS_ALT_PAGE_TITLE},
+      {"subpageArrowRoleDescription", IDS_SETTINGS_SUBPAGE_BUTTON},
+      {"notValidWebAddress", IDS_SETTINGS_NOT_VALID_WEB_ADDRESS},
+      {"notValidWebAddressForContentType",
+       IDS_SETTINGS_NOT_VALID_WEB_ADDRESS_FOR_CONTENT_TYPE},
+  };
+  AddLocalizedStringsBulk(html_source, kLocalizedStrings);
+
+  html_source->AddBoolean(
+      "isGuest",
+      user_manager::UserManager::Get()->IsLoggedInAsGuest() ||
+          user_manager::UserManager::Get()->IsLoggedInAsPublicAccount());
+
+  html_source->AddBoolean("isSupervised", profile->IsSupervised());
+}
+
+void AddA11yStrings(content::WebUIDataSource* html_source) {
+  static constexpr webui::LocalizedString kLocalizedStrings[] = {
+      {"a11yPageTitle", IDS_SETTINGS_ACCESSIBILITY},
+      {"a11yWebStore", IDS_SETTINGS_ACCESSIBILITY_WEB_STORE},
+      {"moreFeaturesLinkDescription",
+       IDS_SETTINGS_MORE_FEATURES_LINK_DESCRIPTION},
+      {"accessibleImageLabelsTitle",
+       IDS_SETTINGS_ACCESSIBLE_IMAGE_LABELS_TITLE},
+      {"accessibleImageLabelsSubtitle",
+       IDS_SETTINGS_ACCESSIBLE_IMAGE_LABELS_SUBTITLE},
+      {"settingsSliderRoleDescription",
+       IDS_SETTINGS_SLIDER_MIN_MAX_ARIA_ROLE_DESCRIPTION},
+      {"manageAccessibilityFeatures",
+       IDS_SETTINGS_ACCESSIBILITY_MANAGE_ACCESSIBILITY_FEATURES},
       {"optionsInMenuLabel", IDS_SETTINGS_OPTIONS_IN_MENU_LABEL},
       {"largeMouseCursorLabel", IDS_SETTINGS_LARGE_MOUSE_CURSOR_LABEL},
       {"largeMouseCursorSizeLabel", IDS_SETTINGS_LARGE_MOUSE_CURSOR_SIZE_LABEL},
@@ -245,6 +302,15 @@ void AddA11yStrings(content::WebUIDataSource* html_source) {
       "showExperimentalAccessibilitySwitchAccessImprovedTextInput",
       cmd.HasSwitch(
           ::switches::kEnableExperimentalAccessibilitySwitchAccessText));
+
+  html_source->AddBoolean("showExperimentalA11yLabels",
+                          base::FeatureList::IsEnabled(
+                              ::features::kExperimentalAccessibilityLabels));
+
+  html_source->AddBoolean("enableLiveCaption",
+                          base::FeatureList::IsEnabled(media::kLiveCaption));
+
+  ::settings::AddCaptionSubpageStrings(html_source);
 }
 
 void AddLanguagesStrings(content::WebUIDataSource* html_source) {
@@ -1155,6 +1221,159 @@ void AddGoogleAssistantStrings(content::WebUIDataSource* html_source,
       chromeos::assistant::features::IsVoiceMatchDisabled());
 }
 
+void AddPrintingStrings(content::WebUIDataSource* html_source) {
+  static constexpr webui::LocalizedString kLocalizedStrings[] = {
+      {"printingPageTitle", IDS_SETTINGS_PRINTING},
+      {"cupsPrintersTitle", IDS_SETTINGS_PRINTING_CUPS_PRINTERS},
+      {"cupsPrintersLearnMoreLabel",
+       IDS_SETTINGS_PRINTING_CUPS_PRINTERS_LEARN_MORE_LABEL},
+      {"addCupsPrinter", IDS_SETTINGS_PRINTING_CUPS_PRINTERS_ADD_PRINTER},
+      {"editPrinter", IDS_SETTINGS_PRINTING_CUPS_PRINTERS_EDIT},
+      {"removePrinter", IDS_SETTINGS_PRINTING_CUPS_PRINTERS_REMOVE},
+      {"setupPrinter", IDS_SETTINGS_PRINTING_CUPS_PRINTER_SETUP_BUTTON},
+      {"setupPrinterAria",
+       IDS_SETTINGS_PRINTING_CUPS_PRINTER_SETUP_BUTTON_ARIA},
+      {"savePrinter", IDS_SETTINGS_PRINTING_CUPS_PRINTER_SAVE_BUTTON},
+      {"savePrinterAria", IDS_SETTINGS_PRINTING_CUPS_PRINTER_SAVE_BUTTON_ARIA},
+      {"searchLabel", IDS_SETTINGS_PRINTING_CUPS_SEARCH_LABEL},
+      {"noSearchResults", IDS_SEARCH_NO_RESULTS},
+      {"printerDetailsTitle", IDS_SETTINGS_PRINTING_CUPS_PRINTER_DETAILS_TITLE},
+      {"printerName", IDS_SETTINGS_PRINTING_CUPS_PRINTER_DETAILS_NAME},
+      {"printerModel", IDS_SETTINGS_PRINTING_CUPS_PRINTER_DETAILS_MODEL},
+      {"printerQueue", IDS_SETTINGS_PRINTING_CUPS_PRINTER_DETAILS_QUEUE},
+      {"savedPrintersTitle", IDS_SETTINGS_PRINTING_CUPS_SAVED_PRINTERS_TITLE},
+      {"savedPrintersCountMany",
+       IDS_SETTINGS_PRINTING_CUPS_PRINTERS_SAVED_PRINTERS_COUNT_MANY},
+      {"savedPrintersCountOne",
+       IDS_SETTINGS_PRINTING_CUPS_PRINTERS_SAVED_PRINTERS_COUNT_ONE},
+      {"savedPrintersCountNone",
+       IDS_SETTINGS_PRINTING_CUPS_PRINTERS_SAVED_PRINTERS_COUNT_NONE},
+      {"showMorePrinters", IDS_SETTINGS_PRINTING_CUPS_SHOW_MORE},
+      {"addPrintersNearbyTitle",
+       IDS_SETTINGS_PRINTING_CUPS_ADD_PRINTERS_NEARBY_TITLE},
+      {"addPrintersManuallyTitle",
+       IDS_SETTINGS_PRINTING_CUPS_ADD_PRINTERS_MANUALLY_TITLE},
+      {"manufacturerAndModelDialogTitle",
+       IDS_SETTINGS_PRINTING_CUPS_SELECT_MANUFACTURER_AND_MODEL_TITLE},
+      {"nearbyPrintersListTitle",
+       IDS_SETTINGS_PRINTING_CUPS_PRINTERS_AVAILABLE_PRINTERS},
+      {"nearbyPrintersCountMany",
+       IDS_SETTINGS_PRINTING_CUPS_PRINTERS_AVAILABLE_PRINTERS_COUNT_MANY},
+      {"nearbyPrintersCountOne",
+       IDS_SETTINGS_PRINTING_CUPS_PRINTERS_AVAILABLE_PRINTER_COUNT_ONE},
+      {"nearbyPrintersCountNone",
+       IDS_SETTINGS_PRINTING_CUPS_PRINTERS_AVAILABLE_PRINTER_COUNT_NONE},
+      {"nearbyPrintersListDescription",
+       IDS_SETTINGS_PRINTING_CUPS_PRINTERS_ADD_DETECTED_OR_NEW_PRINTER},
+      {"manufacturerAndModelAdditionalInformation",
+       IDS_SETTINGS_PRINTING_CUPS_MANUFACTURER_MODEL_ADDITIONAL_INFORMATION},
+      {"addPrinterButtonText",
+       IDS_SETTINGS_PRINTING_CUPS_ADD_PRINTER_BUTTON_ADD},
+      {"printerDetailsAdvanced", IDS_SETTINGS_PRINTING_CUPS_PRINTER_ADVANCED},
+      {"printerDetailsA11yLabel",
+       IDS_SETTINGS_PRINTING_CUPS_PRINTER_ADVANCED_ACCESSIBILITY_LABEL},
+      {"printerAddress", IDS_SETTINGS_PRINTING_CUPS_PRINTER_ADVANCED_ADDRESS},
+      {"printerProtocol", IDS_SETTINGS_PRINTING_CUPS_PRINTER_ADVANCED_PROTOCOL},
+      {"printerURI", IDS_SETTINGS_PRINTING_CUPS_PRINTER_ADVANCED_URI},
+      {"manuallyAddPrinterButtonText",
+       IDS_SETTINGS_PRINTING_CUPS_ADD_PRINTER_BUTTON_MANUAL_ADD},
+      {"discoverPrintersButtonText",
+       IDS_SETTINGS_PRINTING_CUPS_ADD_PRINTER_BUTTON_DISCOVER_PRINTERS},
+      {"printerProtocolIpp", IDS_SETTINGS_PRINTING_CUPS_PRINTER_PROTOCOL_IPP},
+      {"printerProtocolIpps", IDS_SETTINGS_PRINTING_CUPS_PRINTER_PROTOCOL_IPPS},
+      {"printerProtocolHttp", IDS_SETTINGS_PRINTING_CUPS_PRINTER_PROTOCOL_HTTP},
+      {"printerProtocolHttps",
+       IDS_SETTINGS_PRINTING_CUPS_PRINTER_PROTOCOL_HTTPS},
+      {"printerProtocolAppSocket",
+       IDS_SETTINGS_PRINTING_CUPS_PRINTER_PROTOCOL_APP_SOCKET},
+      {"printerProtocolLpd", IDS_SETTINGS_PRINTING_CUPS_PRINTER_PROTOCOL_LPD},
+      {"printerProtocolUsb", IDS_SETTINGS_PRINTING_CUPS_PRINTER_PROTOCOL_USB},
+      {"printerProtocolIppUsb",
+       IDS_SETTINGS_PRINTING_CUPS_PRINTER_PROTOCOL_IPPUSB},
+      {"printerConfiguringMessage",
+       IDS_SETTINGS_PRINTING_CUPS_PRINTER_CONFIGURING_MESSAGE},
+      {"printerManufacturer", IDS_SETTINGS_PRINTING_CUPS_PRINTER_MANUFACTURER},
+      {"selectDriver", IDS_SETTINGS_PRINTING_CUPS_PRINTER_SELECT_DRIVER},
+      {"selectDriverButtonText",
+       IDS_SETTINGS_PRINTING_CUPS_PRINTER_BUTTON_SELECT_DRIVER},
+      {"selectDriverButtonAriaLabel",
+       IDS_SETTINGS_PRINTING_CUPS_PRINTER_BUTTON_SELECT_DRIVER_ARIA_LABEL},
+      {"selectDriverErrorMessage",
+       IDS_SETTINGS_PRINTING_CUPS_PRINTER_INVALID_DRIVER},
+      {"printerAddedSuccessfulMessage",
+       IDS_SETTINGS_PRINTING_CUPS_PRINTER_ADDED_PRINTER_DONE_MESSAGE},
+      {"printerEditedSuccessfulMessage",
+       IDS_SETTINGS_PRINTING_CUPS_PRINTER_EDITED_PRINTER_DONE_MESSAGE},
+      {"printerUnavailableMessage",
+       IDS_SETTINGS_PRINTING_CUPS_PRINTER_UNAVAILABLE_MESSAGE},
+      {"noPrinterNearbyMessage",
+       IDS_SETTINGS_PRINTING_CUPS_PRINTER_NO_PRINTER_NEARBY},
+      {"searchingNearbyPrinters",
+       IDS_SETTINGS_PRINTING_CUPS_PRINTER_SEARCHING_NEARBY_PRINTER},
+      {"printerAddedFailedMessage",
+       IDS_SETTINGS_PRINTING_CUPS_PRINTER_ADDED_PRINTER_ERROR_MESSAGE},
+      {"printerAddedFatalErrorMessage",
+       IDS_SETTINGS_PRINTING_CUPS_PRINTER_ADDED_PRINTER_FATAL_ERROR_MESSAGE},
+      {"printerAddedUnreachableMessage",
+       IDS_SETTINGS_PRINTING_CUPS_PRINTER_ADDED_PRINTER_PRINTER_UNREACHABLE_MESSAGE},
+      {"printerAddedPpdTooLargeMessage",
+       IDS_SETTINGS_PRINTING_CUPS_PRINTER_ADDED_PRINTER_PPD_TOO_LARGE_MESSAGE},
+      {"printerAddedInvalidPpdMessage",
+       IDS_SETTINGS_PRINTING_CUPS_PRINTER_ADDED_PRINTER_INVALID_PPD_MESSAGE},
+      {"printerAddedPpdNotFoundMessage",
+       IDS_SETTINGS_PRINTING_CUPS_PRINTER_ADDED_PRINTER_PPD_NOT_FOUND},
+      {"printerAddedPpdUnretrievableMessage",
+       IDS_SETTINGS_PRINTING_CUPS_PRINTER_ADDED_PRINTER_PPD_UNRETRIEVABLE},
+      {"printerAddedNativePrintersNotAllowedMessage",
+       IDS_SETTINGS_PRINTING_CUPS_PRINTER_ADDED_NATIVE_PRINTERS_NOT_ALLOWED_MESSAGE},
+      {"editPrinterInvalidPrinterUpdate",
+       IDS_SETTINGS_PRINTING_CUPS_EDIT_PRINTER_INVALID_PRINTER_UPDATE},
+      {"requireNetworkMessage",
+       IDS_SETTINGS_PRINTING_CUPS_PRINTER_REQUIRE_INTERNET_MESSAGE},
+      {"checkNetworkMessage",
+       IDS_SETTINGS_PRINTING_CUPS_PRINTER_CHECK_CONNECTION_MESSAGE},
+      {"noInternetConnection",
+       IDS_SETTINGS_PRINTING_CUPS_PRINTER_NO_INTERNET_CONNECTION},
+      {"checkNetworkAndTryAgain",
+       IDS_SETTINGS_PRINTING_CUPS_PRINTER_CONNECT_TO_NETWORK_SUBTEXT},
+      {"editPrinterDialogTitle",
+       IDS_SETTINGS_PRINTING_CUPS_EDIT_PRINTER_DIALOG_TITLE},
+      {"editPrinterButtonText", IDS_SETTINGS_PRINTING_CUPS_EDIT_PRINTER_BUTTON},
+      {"currentPpdMessage",
+       IDS_SETTINGS_PRINTING_CUPS_EDIT_PRINTER_CURRENT_PPD_MESSAGE},
+      {"printerEulaNotice", IDS_SETTINGS_PRINTING_CUPS_EULA_NOTICE},
+      {"ippPrinterUnreachable", IDS_SETTINGS_PRINTING_CUPS_IPP_URI_UNREACHABLE},
+      {"generalPrinterDialogError",
+       IDS_SETTINGS_PRINTING_CUPS_DIALOG_GENERAL_ERROR},
+      {"printServerButtonText", IDS_SETTINGS_PRINTING_CUPS_PRINT_SERVER},
+      {"addPrintServerTitle",
+       IDS_SETTINGS_PRINTING_CUPS_ADD_PRINT_SERVER_TITLE},
+      {"printServerAddress", IDS_SETTINGS_PRINTING_CUPS_PRINT_SERVER_ADDRESS},
+      {"printServerFoundZeroPrinters",
+       IDS_SETTINGS_PRINTING_CUPS_PRINT_SERVER_FOUND_ZERO_PRINTERS},
+      {"printServerFoundOnePrinter",
+       IDS_SETTINGS_PRINTING_CUPS_PRINT_SERVER_FOUND_ONE_PRINTER},
+      {"printServerFoundManyPrinters",
+       IDS_SETTINGS_PRINTING_CUPS_PRINT_SERVER_FOUND_MANY_PRINTERS},
+      {"printServerInvalidUrlAddress",
+       IDS_SETTINGS_PRINTING_CUPS_PRINT_SERVER_INVALID_URL_ADDRESS},
+      {"printServerConnectionError",
+       IDS_SETTINGS_PRINTING_CUPS_PRINT_SERVER_CONNECTION_ERROR},
+      {"printServerConfigurationErrorMessage",
+       IDS_SETTINGS_PRINTING_CUPS_PRINT_SERVER_REACHABLE_BUT_CANNOT_ADD},
+  };
+  AddLocalizedStringsBulk(html_source, kLocalizedStrings);
+
+  html_source->AddString("printingCUPSPrintLearnMoreUrl",
+                         GetHelpUrlWithBoard(chrome::kCupsPrintLearnMoreURL));
+  html_source->AddString(
+      "printingCUPSPrintPpdLearnMoreUrl",
+      GetHelpUrlWithBoard(chrome::kCupsPrintPPDLearnMoreURL));
+  html_source->AddBoolean(
+      "consumerPrintServerUiEnabled",
+      base::FeatureList::IsEnabled(::features::kPrintServerUi));
+}
+
 }  // namespace
 
 void AddOsLocalizedStrings(content::WebUIDataSource* html_source,
@@ -1166,6 +1385,7 @@ void AddOsLocalizedStrings(content::WebUIDataSource* html_source,
   AddAppsStrings(html_source);
   AddBluetoothStrings(html_source);
   AddChromeOSUserStrings(html_source, profile);
+  AddCommonStrings(html_source, profile);
   AddCrostiniStrings(html_source, profile);
   AddDeviceStrings(html_source);
   AddFilesStrings(html_source);
@@ -1177,6 +1397,7 @@ void AddOsLocalizedStrings(content::WebUIDataSource* html_source,
   AddPersonalizationStrings(html_source);
   AddPersonalizationStrings(html_source);
   AddPluginVmStrings(html_source, profile);
+  AddPrintingStrings(html_source);
   AddUsersStrings(html_source);
 }
 

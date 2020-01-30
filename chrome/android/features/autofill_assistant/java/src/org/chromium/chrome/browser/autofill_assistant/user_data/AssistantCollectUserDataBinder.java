@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.autofill_assistant.user_data;
 
 import android.app.Activity;
+import android.support.annotation.Nullable;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -130,32 +131,34 @@ class AssistantCollectUserDataBinder
                             collectUserDataDelegate.onTextLinkClicked(link);
                         }
                     };
-            AssistantDateSection.Delegate dateStartDelegate = collectUserDataDelegate == null
-                    ? null
-                    : (year, month, day, hour, minute, second) -> {
-                AssistantDateTime newStartValue =
-                        new AssistantDateTime(year, month, day, hour, minute, second);
-                if (newStartValue.getTimeInUtcMillis()
-                        > view.mDateRangeEndSection.getCurrentValue().getTimeInUtcMillis()) {
-                    view.mDateRangeEndSection.setCurrentValue(newStartValue);
-                }
-                collectUserDataDelegate.onDateTimeRangeStartChanged(
-                        year, month, day, hour, minute, second);
-            };
-            AssistantDateSection.Delegate dateEndDelegate = collectUserDataDelegate == null
-                    ? null
-                    : (year, month, day, hour, minute, second) -> {
-                AssistantDateTime newEndValue =
-                        new AssistantDateTime(year, month, day, hour, minute, second);
-                if (newEndValue.getTimeInUtcMillis()
-                        < view.mDateRangeStartSection.getCurrentValue().getTimeInUtcMillis()) {
-                    view.mDateRangeStartSection.setCurrentValue(newEndValue);
-                }
-                view.mDateRangeEndSection.setErrorVisible(newEndValue.getTimeInUtcMillis()
-                        <= view.mDateRangeStartSection.getCurrentValue().getTimeInUtcMillis());
-                collectUserDataDelegate.onDateTimeRangeEndChanged(
-                        year, month, day, hour, minute, second);
-            };
+            AssistantDateSection.Delegate dateStartDelegate =
+                    collectUserDataDelegate == null ? null : new AssistantDateSection.Delegate() {
+                        @Override
+                        public void onDateChanged(@Nullable AssistantDateTime date) {
+                            collectUserDataDelegate.onDateTimeRangeStartDateChanged(date);
+                            // Set new start date as calendar fallback for the end date.
+                            view.mDateRangeEndSection.setCalendarFallbackDate(date);
+                        }
+
+                        @Override
+                        public void onTimeSlotChanged(@Nullable Integer index) {
+                            collectUserDataDelegate.onDateTimeRangeStartTimeSlotChanged(index);
+                        }
+                    };
+            AssistantDateSection.Delegate dateEndDelegate =
+                    collectUserDataDelegate == null ? null : new AssistantDateSection.Delegate() {
+                        @Override
+                        public void onDateChanged(@Nullable AssistantDateTime date) {
+                            collectUserDataDelegate.onDateTimeRangeEndDateChanged(date);
+                            // Set new end date as calendar fallback for the start date.
+                            view.mDateRangeStartSection.setCalendarFallbackDate(date);
+                        }
+
+                        @Override
+                        public void onTimeSlotChanged(@Nullable Integer index) {
+                            collectUserDataDelegate.onDateTimeRangeEndTimeSlotChanged(index);
+                        }
+                    };
             view.mTermsSection.setDelegate(termsDelegate);
             view.mTermsAsCheckboxSection.setDelegate(termsDelegate);
             view.mInfoSection.setListener(collectUserDataDelegate != null
@@ -213,13 +216,21 @@ class AssistantCollectUserDataBinder
             view.mLoginSection.setTitle(
                     model.get(AssistantCollectUserDataModel.LOGIN_SECTION_TITLE));
             return true;
-        } else if (propertyKey == AssistantCollectUserDataModel.DATE_RANGE_START_LABEL) {
-            view.mDateRangeStartSection.setTitle(
-                    model.get(AssistantCollectUserDataModel.DATE_RANGE_START_LABEL));
+        } else if (propertyKey == AssistantCollectUserDataModel.DATE_RANGE_START_DATE_LABEL) {
+            view.mDateRangeStartSection.setDateTitle(
+                    model.get(AssistantCollectUserDataModel.DATE_RANGE_START_DATE_LABEL));
             return true;
-        } else if (propertyKey == AssistantCollectUserDataModel.DATE_RANGE_END_LABEL) {
-            view.mDateRangeEndSection.setTitle(
-                    model.get(AssistantCollectUserDataModel.DATE_RANGE_END_LABEL));
+        } else if (propertyKey == AssistantCollectUserDataModel.DATE_RANGE_START_TIME_LABEL) {
+            view.mDateRangeStartSection.setTimeTitle(
+                    model.get(AssistantCollectUserDataModel.DATE_RANGE_START_TIME_LABEL));
+            return true;
+        } else if (propertyKey == AssistantCollectUserDataModel.DATE_RANGE_END_DATE_LABEL) {
+            view.mDateRangeEndSection.setDateTitle(
+                    model.get(AssistantCollectUserDataModel.DATE_RANGE_END_DATE_LABEL));
+            return true;
+        } else if (propertyKey == AssistantCollectUserDataModel.DATE_RANGE_END_TIME_LABEL) {
+            view.mDateRangeEndSection.setTimeTitle(
+                    model.get(AssistantCollectUserDataModel.DATE_RANGE_END_TIME_LABEL));
             return true;
         }
         return false;
@@ -279,13 +290,43 @@ class AssistantCollectUserDataBinder
                         model.get(AssistantCollectUserDataModel.AVAILABLE_LOGINS));
             }
             return true;
-        } else if (propertyKey == AssistantCollectUserDataModel.DATE_RANGE_START) {
+        } else if (propertyKey == AssistantCollectUserDataModel.DATE_RANGE_START_OPTIONS) {
             view.mDateRangeStartSection.setDateChoiceOptions(
-                    model.get(AssistantCollectUserDataModel.DATE_RANGE_START));
+                    model.get(AssistantCollectUserDataModel.DATE_RANGE_START_OPTIONS));
             return true;
-        } else if (propertyKey == AssistantCollectUserDataModel.DATE_RANGE_END) {
+        } else if (propertyKey == AssistantCollectUserDataModel.DATE_RANGE_START_DATE) {
+            view.mDateRangeStartSection.setCurrentDate(
+                    model.get(AssistantCollectUserDataModel.DATE_RANGE_START_DATE));
+            return true;
+        } else if (propertyKey == AssistantCollectUserDataModel.DATE_RANGE_START_TIMESLOT) {
+            view.mDateRangeStartSection.setCurrentTimeSlot(
+                    model.get(AssistantCollectUserDataModel.DATE_RANGE_START_TIMESLOT));
+            return true;
+        } else if (propertyKey == AssistantCollectUserDataModel.DATE_RANGE_END_OPTIONS) {
             view.mDateRangeEndSection.setDateChoiceOptions(
-                    model.get(AssistantCollectUserDataModel.DATE_RANGE_END));
+                    model.get(AssistantCollectUserDataModel.DATE_RANGE_END_OPTIONS));
+            return true;
+        } else if (propertyKey == AssistantCollectUserDataModel.DATE_RANGE_END_DATE) {
+            view.mDateRangeEndSection.setCurrentDate(
+                    model.get(AssistantCollectUserDataModel.DATE_RANGE_END_DATE));
+            return true;
+        } else if (propertyKey == AssistantCollectUserDataModel.DATE_RANGE_END_TIMESLOT) {
+            view.mDateRangeEndSection.setCurrentTimeSlot(
+                    model.get(AssistantCollectUserDataModel.DATE_RANGE_END_TIMESLOT));
+            return true;
+        } else if (propertyKey
+                == AssistantCollectUserDataModel.DATE_RANGE_DATE_NOT_SET_ERROR_MESSAGE) {
+            view.mDateRangeStartSection.setDateNotSetErrorMessage(
+                    model.get(AssistantCollectUserDataModel.DATE_RANGE_DATE_NOT_SET_ERROR_MESSAGE));
+            view.mDateRangeEndSection.setDateNotSetErrorMessage(
+                    model.get(AssistantCollectUserDataModel.DATE_RANGE_DATE_NOT_SET_ERROR_MESSAGE));
+            return true;
+        } else if (propertyKey
+                == AssistantCollectUserDataModel.DATE_RANGE_TIME_NOT_SET_ERROR_MESSAGE) {
+            view.mDateRangeStartSection.setTimeNotSetErrorMessage(
+                    model.get(AssistantCollectUserDataModel.DATE_RANGE_TIME_NOT_SET_ERROR_MESSAGE));
+            view.mDateRangeEndSection.setTimeNotSetErrorMessage(
+                    model.get(AssistantCollectUserDataModel.DATE_RANGE_TIME_NOT_SET_ERROR_MESSAGE));
             return true;
         } else if (propertyKey == AssistantCollectUserDataModel.PREPENDED_SECTIONS) {
             view.mPrependedSections.setSections(
@@ -323,9 +364,14 @@ class AssistantCollectUserDataBinder
                         model.get(AssistantCollectUserDataModel.GENERIC_USER_INTERFACE));
             }
             return true;
-        } else if (propertyKey == AssistantCollectUserDataModel.DATE_RANGE_INVALID_ERROR_MESSAGE) {
-            view.mDateRangeEndSection.setErrorMessage(
-                    model.get(AssistantCollectUserDataModel.DATE_RANGE_INVALID_ERROR_MESSAGE));
+        } else if (propertyKey
+                == AssistantCollectUserDataModel.CONTACT_SUMMARY_DESCRIPTION_OPTIONS) {
+            view.mContactDetailsSection.setContactSummaryOptions(
+                    model.get(AssistantCollectUserDataModel.CONTACT_SUMMARY_DESCRIPTION_OPTIONS));
+            return true;
+        } else if (propertyKey == AssistantCollectUserDataModel.CONTACT_FULL_DESCRIPTION_OPTIONS) {
+            view.mContactDetailsSection.setContactFullOptions(
+                    model.get(AssistantCollectUserDataModel.CONTACT_FULL_DESCRIPTION_OPTIONS));
             return true;
         }
 
@@ -537,9 +583,12 @@ class AssistantCollectUserDataBinder
         boolean prevSectionIsExpandedOrInvisible = false;
         for (int i = 0; i < view.mPaymentRequestExpanderAccordion.getChildCount(); i++) {
             View child = view.mPaymentRequestExpanderAccordion.getChildAt(i);
-            if (child instanceof AssistantVerticalExpander) {
-                prevSectionIsExpandedOrInvisible = ((AssistantVerticalExpander) child).isExpanded()
-                        || child.getVisibility() != View.VISIBLE;
+            if (child instanceof AssistantVerticalExpander
+                    || child == view.mDateRangeStartSection.getView()
+                    || child == view.mDateRangeEndSection.getView()) {
+                prevSectionIsExpandedOrInvisible = child.getVisibility() != View.VISIBLE
+                        || (child instanceof AssistantVerticalExpander
+                                && ((AssistantVerticalExpander) child).isExpanded());
             } else if (child.getTag() == view.mDividerTag) {
                 child.setVisibility(prevSectionIsExpandedOrInvisible ? View.GONE : View.VISIBLE);
             } else {

@@ -135,8 +135,6 @@ class X11_WINDOW_EXPORT X11Window : public PlatformWindow,
   void OnXWindowBoundsChanged(const gfx::Rect& size) override;
   void OnXWindowCloseRequested() override;
   void OnXWindowIsActiveChanged(bool active) override;
-  void OnXWindowMapped() override;
-  void OnXWindowUnmapped() override;
   void OnXWindowWorkspaceChanged() override;
   void OnXWindowLostPointerGrab() override;
   void OnXWindowEvent(ui::Event* event) override;

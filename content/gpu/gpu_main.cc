@@ -18,6 +18,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/system/sys_info.h"
+#include "base/task/post_task.h"
 #include "base/task/single_thread_task_executor.h"
 #include "base/threading/platform_thread.h"
 #include "base/timer/hi_res_timer_manager.h"
@@ -77,9 +78,10 @@
 #endif
 
 #if defined(USE_X11)
-#include "ui/base/x/x11_util.h"       // nogncheck
-#include "ui/gfx/x/x11_connection.h"  // nogncheck
-#include "ui/gfx/x/x11_switches.h"    // nogncheck
+#include "ui/base/x/x11_util.h"                          // nogncheck
+#include "ui/gfx/linux/gpu_memory_buffer_support_x11.h"  // nogncheck
+#include "ui/gfx/x/x11_connection.h"                     // nogncheck
+#include "ui/gfx/x/x11_switches.h"                       // nogncheck
 #endif
 
 #if defined(OS_LINUX)
@@ -369,6 +371,16 @@ int GpuMain(const MainFunctionParams& parameters) {
            : io_thread_priority));
 #else
   GpuProcess gpu_process(io_thread_priority);
+#endif
+
+#if defined(USE_X11)
+  // ui::GbmDevice() takes >50ms with amdgpu, so kick off
+  // GpuMemoryBufferSupportX11 creation on another thread now.
+  base::PostTask(
+      FROM_HERE, base::BindOnce([]() {
+        SCOPED_UMA_HISTOGRAM_TIMER("Linux.X11.GbmSupportX11CreationTime");
+        ui::GpuMemoryBufferSupportX11::GetInstance();
+      }));
 #endif
 
   auto* client = GetContentClient()->gpu();

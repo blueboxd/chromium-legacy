@@ -15,9 +15,14 @@ namespace content {
 class FormSubmissionTest : public RenderViewHostImplTestHarness {
  public:
   void PreventFormSubmission() {
-    ContentSecurityPolicy form_action_none(
-        {}, {{network::mojom::CSPDirectiveName::FormAction, {}}}, {}, false);
-    main_test_rfh()->AddContentSecurityPolicy(form_action_none);
+    auto form_action_none = network::mojom::CSPDirective::New(
+        network::mojom::CSPDirectiveName::FormAction,
+        network::mojom::CSPSourceList::New(
+            std::vector<network::mojom::CSPSourcePtr>(), false, false, false));
+    std::vector<network::mojom::CSPDirectivePtr> directives;
+    directives.push_back(std::move(form_action_none));
+    ContentSecurityPolicy policy({}, std::move(directives), {}, false);
+    main_test_rfh()->AddContentSecurityPolicy(std::move(policy));
   }
 };
 

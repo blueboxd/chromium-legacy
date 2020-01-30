@@ -36,10 +36,12 @@ base::string16 SpellingBubbleModel::GetMessageText() const {
   return l10n_util::GetStringUTF16(IDS_CONTENT_CONTEXT_SPELLING_BUBBLE_TEXT);
 }
 
-base::string16 SpellingBubbleModel::GetButtonLabel(BubbleButton button) const {
-  return l10n_util::GetStringUTF16(button == BUTTON_OK ?
-      IDS_CONTENT_CONTEXT_SPELLING_BUBBLE_ENABLE :
-      IDS_CONTENT_CONTEXT_SPELLING_BUBBLE_DISABLE);
+base::string16 SpellingBubbleModel::GetButtonLabel(
+    ui::DialogButton button) const {
+  return l10n_util::GetStringUTF16(
+      button == ui::DIALOG_BUTTON_OK
+          ? IDS_CONTENT_CONTEXT_SPELLING_BUBBLE_ENABLE
+          : IDS_CONTENT_CONTEXT_SPELLING_BUBBLE_DISABLE);
 }
 
 void SpellingBubbleModel::Accept() {

@@ -143,7 +143,8 @@ std::string GPUDeviceToString(const gpu::GPUInfo::GPUDevice& gpu) {
 
 std::unique_ptr<base::ListValue> BasicGpuInfoAsListValue(
     const gpu::GPUInfo& gpu_info,
-    const gpu::GpuFeatureInfo& gpu_feature_info) {
+    const gpu::GpuFeatureInfo& gpu_feature_info,
+    const gpu::GpuExtraInfo& gpu_extra_info) {
   const gpu::GPUInfo::GPUDevice& active_gpu = gpu_info.active_gpu();
   auto basic_info = std::make_unique<base::ListValue>();
   basic_info->Append(NewDescriptionValuePair(
@@ -264,6 +265,10 @@ std::unique_ptr<base::ListValue> BasicGpuInfoAsListValue(
         "Compositing manager",
         ui::IsCompositingManagerPresent() ? "Yes" : "No"));
   }
+  basic_info->Append(NewDescriptionValuePair(
+      "System visual ID", base::NumberToString(gpu_extra_info.system_visual)));
+  basic_info->Append(NewDescriptionValuePair(
+      "RGBA visual ID", base::NumberToString(gpu_extra_info.rgba_visual)));
 #endif
   std::string direct_rendering_version;
   if (gpu_info.direct_rendering_version == "1") {
@@ -290,13 +295,6 @@ std::unique_ptr<base::ListValue> BasicGpuInfoAsListValue(
       "GPU process crash count",
       std::make_unique<base::Value>(GpuProcessHost::GetGpuCrashCount())));
 
-#if defined(USE_X11)
-  basic_info->Append(NewDescriptionValuePair(
-      "System visual ID", base::NumberToString(gpu_info.system_visual)));
-  basic_info->Append(NewDescriptionValuePair(
-      "RGBA visual ID", base::NumberToString(gpu_info.rgba_visual)));
-#endif
-
   std::string buffer_formats;
   for (int i = 0; i <= static_cast<int>(gfx::BufferFormat::LAST); ++i) {
     const gfx::BufferFormat buffer_format = static_cast<gfx::BufferFormat>(i);
@@ -321,7 +319,10 @@ std::unique_ptr<base::DictionaryValue> GpuInfoAsDictionaryValue() {
   const gpu::GPUInfo gpu_info = GpuDataManagerImpl::GetInstance()->GetGPUInfo();
   const gpu::GpuFeatureInfo gpu_feature_info =
       GpuDataManagerImpl::GetInstance()->GetGpuFeatureInfo();
-  auto basic_info = BasicGpuInfoAsListValue(gpu_info, gpu_feature_info);
+  const gpu::GpuExtraInfo gpu_extra_info =
+      GpuDataManagerImpl::GetInstance()->GetGpuExtraInfo();
+  auto basic_info =
+      BasicGpuInfoAsListValue(gpu_info, gpu_feature_info, gpu_extra_info);
   info->Set("basicInfo", std::move(basic_info));
 
 #if defined(OS_WIN)
@@ -353,22 +354,32 @@ std::unique_ptr<base::ListValue> CompositorInfo() {
   return compositor_info;
 }
 
-std::unique_ptr<base::ListValue> GpuMemoryBufferInfo() {
+std::unique_ptr<base::ListValue> GpuMemoryBufferInfo(
+    const gpu::GpuExtraInfo& gpu_extra_info) {
   auto gpu_memory_buffer_info = std::make_unique<base::ListValue>();
 
   gpu::GpuMemoryBufferSupport gpu_memory_buffer_support;
 
+#if defined(USE_X11)
+  const auto& native_configurations =
+      gpu_extra_info.gpu_memory_buffer_support_x11;
+#else
   const auto native_configurations =
       gpu::GetNativeGpuMemoryBufferConfigurations(&gpu_memory_buffer_support);
+#endif
   for (size_t format = 0;
        format < static_cast<size_t>(gfx::BufferFormat::LAST) + 1; format++) {
     std::string native_usage_support;
     for (size_t usage = 0;
          usage < static_cast<size_t>(gfx::BufferUsage::LAST) + 1; usage++) {
-      if (base::Contains(
-              native_configurations,
-              std::make_pair(static_cast<gfx::BufferFormat>(format),
-                             static_cast<gfx::BufferUsage>(usage)))) {
+#if defined(USE_X11)
+      gfx::BufferUsageAndFormat element{static_cast<gfx::BufferUsage>(usage),
+                                        static_cast<gfx::BufferFormat>(format)};
+#else
+      auto element = std::make_pair(static_cast<gfx::BufferFormat>(format),
+                                    static_cast<gfx::BufferUsage>(usage));
+#endif
+      if (base::Contains(native_configurations, element)) {
         native_usage_support = base::StringPrintf(
             "%s%s %s", native_usage_support.c_str(),
             native_usage_support.empty() ? "" : ",",
@@ -686,6 +697,8 @@ std::unique_ptr<base::ListValue> GpuMessageHandler::OnRequestLogMessages(
 void GpuMessageHandler::OnGpuInfoUpdate() {
   // Get GPU Info.
   const gpu::GPUInfo gpu_info = GpuDataManagerImpl::GetInstance()->GetGPUInfo();
+  const gpu::GpuExtraInfo gpu_extra_info =
+      GpuDataManagerImpl::GetInstance()->GetGpuExtraInfo();
   auto gpu_info_val = GpuInfoAsDictionaryValue();
 
   // Add in blacklisting features
@@ -716,12 +729,13 @@ void GpuMessageHandler::OnGpuInfoUpdate() {
     const gpu::GpuFeatureInfo gpu_feature_info_for_hardware_gpu =
         GpuDataManagerImpl::GetInstance()->GetGpuFeatureInfoForHardwareGpu();
     auto gpu_info_for_hardware_gpu_val = BasicGpuInfoAsListValue(
-        gpu_info_for_hardware_gpu, gpu_feature_info_for_hardware_gpu);
+        gpu_info_for_hardware_gpu, gpu_feature_info_for_hardware_gpu,
+        gpu::GpuExtraInfo{});
     gpu_info_val->Set("basicInfoForHardwareGpu",
                       std::move(gpu_info_for_hardware_gpu_val));
   }
   gpu_info_val->Set("compositorInfo", CompositorInfo());
-  gpu_info_val->Set("gpuMemoryBufferInfo", GpuMemoryBufferInfo());
+  gpu_info_val->Set("gpuMemoryBufferInfo", GpuMemoryBufferInfo(gpu_extra_info));
   gpu_info_val->Set("displayInfo", getDisplayInfo());
   gpu_info_val->Set("videoAcceleratorsInfo", GetVideoAcceleratorsInfo());
   gpu_info_val->Set("ANGLEFeatures", GetANGLEFeatures());

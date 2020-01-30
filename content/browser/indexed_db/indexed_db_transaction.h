@@ -46,6 +46,7 @@ FORWARD_DECLARE_TEST(IndexedDBTransactionTest, SchedulePreemptiveTask);
 FORWARD_DECLARE_TEST(IndexedDBTransactionTestMode, ScheduleNormalTask);
 FORWARD_DECLARE_TEST(IndexedDBTransactionTestMode, TaskFails);
 FORWARD_DECLARE_TEST(IndexedDBTransactionTest, Timeout);
+FORWARD_DECLARE_TEST(IndexedDBTransactionTest, TimeoutPreemptive);
 FORWARD_DECLARE_TEST(IndexedDBTransactionTest, IndexedDBObserver);
 }  // namespace indexed_db_transaction_unittest
 
@@ -196,6 +197,9 @@ class CONTENT_EXPORT IndexedDBTransaction {
   FRIEND_TEST_ALL_PREFIXES(
       indexed_db_transaction_unittest::IndexedDBTransactionTest,
       Timeout);
+  FRIEND_TEST_ALL_PREFIXES(
+      indexed_db_transaction_unittest::IndexedDBTransactionTest,
+      TimeoutPreemptive);
   FRIEND_TEST_ALL_PREFIXES(
       indexed_db_transaction_unittest::IndexedDBTransactionTest,
       IndexedDBObserver);

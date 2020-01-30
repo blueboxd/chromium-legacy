@@ -9,8 +9,6 @@
 #include <utility>
 
 #include "ash/assistant/ui/assistant_ui_constants.h"
-#include "ash/public/cpp/app_list/app_list_config.h"
-#include "ash/public/cpp/app_list/app_list_features.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/gfx/canvas.h"
@@ -30,6 +28,8 @@ constexpr SkColor kStrokeColor = SkColorSetA(gfx::kGoogleGrey900, 0x24);
 constexpr SkColor kTextColor = gfx::kGoogleGrey700;
 constexpr int kStrokeWidthDip = 1;
 constexpr int kIconMarginDip = 8;
+constexpr int kIconSizeDip = 16;
+constexpr int kIconCornerRadiusDip = kIconSizeDip / 2;
 constexpr int kChipPaddingDip = 16;
 constexpr int kPreferredHeightDip = 32;
 
@@ -89,16 +89,19 @@ void SuggestionChipView::InitLayout(const Params& params) {
 
   // Icon.
   icon_view_ = AddChildView(std::make_unique<views::ImageView>());
-  const int icon_size = AppListConfig::instance().GetPreferredIconDimension(
-      SearchResultDisplayType::kChip);
-
-  icon_view_->SetImageSize(gfx::Size(icon_size, icon_size));
-  icon_view_->SetPreferredSize(gfx::Size(icon_size, icon_size));
+  icon_view_->SetImageSize(gfx::Size(kIconSizeDip, kIconSizeDip));
+  icon_view_->SetPreferredSize(gfx::Size(kIconSizeDip, kIconSizeDip));
 
   if (params.icon)
     icon_view_->SetImage(params.icon.value());
   else
     icon_view_->SetVisible(false);
+
+  icon_view_->SetPaintToLayer();
+  icon_view_->layer()->SetFillsBoundsOpaquely(false);
+  icon_view_->layer()->SetRoundedCornerRadius(
+      {kIconCornerRadiusDip, kIconCornerRadiusDip, kIconCornerRadiusDip,
+       kIconCornerRadiusDip});
 
   // Text.
   text_view_ = AddChildView(std::make_unique<views::Label>());

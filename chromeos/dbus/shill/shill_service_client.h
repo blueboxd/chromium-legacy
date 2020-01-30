@@ -81,8 +81,8 @@ class COMPONENT_EXPORT(SHILL_CLIENT) ShillServiceClient {
     // referenced by |service_path| is visible, keeps only its "intrinsic"
     // properties and removes all other properties. Intrinsic properties are
     // properties that describe the identity or the state of  the service and
-    // are not configurable, such as SSID (for wifi), signal strength (for wifi)
-    // or provider (for VPN). All other properties are removed.
+    // are not configurable, such as SSID (for wifi), signal strength (for
+    // wifi). All other properties are removed.
     virtual bool ClearConfiguredServiceProperties(
         const std::string& service_path) = 0;
 

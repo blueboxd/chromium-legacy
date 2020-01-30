@@ -65,7 +65,8 @@ class AuthenticatorSheetModelBase
 // should be accessed.
 class AuthenticatorTransportSelectorSheetModel
     : public AuthenticatorSheetModelBase,
-      public TransportHoverListModel::Delegate {
+      public TransportHoverListModel::Delegate,
+      public TransportHoverListModel2::Delegate {
  public:
   using AuthenticatorSheetModelBase::AuthenticatorSheetModelBase;
 

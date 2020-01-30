@@ -63,8 +63,8 @@ void BreadcrumbManager::AddEvent(const std::string& event) {
 
   base::Time::Exploded exploded;
   time.UTCExplode(&exploded);
-  std::string timestamp = base::StringPrintf(
-      "%02d:%02d.%03d", exploded.minute, exploded.second, exploded.millisecond);
+  std::string timestamp =
+      base::StringPrintf("%02d:%02d", exploded.minute, exploded.second);
   std::string event_log =
       base::StringPrintf("%s %s", timestamp.c_str(), event.c_str());
   event_buckets_.back().second.push_back(event_log);

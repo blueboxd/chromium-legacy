@@ -38,7 +38,6 @@ class Point;
 namespace ui {
 class DropTargetEvent;
 class OSExchangeData;
-class OSExchangeDataProviderAuraX11;
 class XTopmostWindowFinder;
 }
 
@@ -52,6 +51,7 @@ class X11MoveLoop;
 // handles the views drag events.
 class VIEWS_EXPORT DesktopDragDropClientAuraX11
     : public ui::XDragDropClient,
+      public ui::XDragDropClient::Delegate,
       public aura::client::DragDropClient,
       public ui::PlatformEventDispatcher,
       public aura::WindowObserver,
@@ -66,7 +66,7 @@ class VIEWS_EXPORT DesktopDragDropClientAuraX11
 
   void Init();
 
-  // Overridden from aura::client::DragDropClient:
+  // aura::client::DragDropClient:
   int StartDragAndDrop(std::unique_ptr<ui::OSExchangeData> data,
                        aura::Window* root_window,
                        aura::Window* source_window,
@@ -78,14 +78,14 @@ class VIEWS_EXPORT DesktopDragDropClientAuraX11
   void AddObserver(aura::client::DragDropClientObserver* observer) override;
   void RemoveObserver(aura::client::DragDropClientObserver* observer) override;
 
-  // PlatformEventDispatcher:
+  // ui::PlatformEventDispatcher:
   bool CanDispatchEvent(const ui::PlatformEvent& event) override;
   uint32_t DispatchEvent(const ui::PlatformEvent& event) override;
 
-  // Overridden from aura::WindowObserver:
+  // aura::WindowObserver:
   void OnWindowDestroyed(aura::Window* window) override;
 
-  // Overridden from X11WholeScreenMoveLoopDelegate:
+  // X11MoveLoopDelegate:
   void OnMouseMovement(const gfx::Point& screen_point,
                        int flags,
                        base::TimeTicks event_time) override;
@@ -113,13 +113,11 @@ class VIEWS_EXPORT DesktopDragDropClientAuraX11
   // then unsubscribes |target_window_| from ourselves and forgets it.
   void NotifyDragLeave();
 
-  // ui::XDragDropClient
+  // ui::XDragDropClient::Delegate
   std::unique_ptr<ui::XTopmostWindowFinder> CreateWindowFinder() override;
-  int GetDragOperation(const gfx::Point& screen_point) override;
+  int UpdateDrag(const gfx::Point& screen_point) override;
   void UpdateCursor(
       ui::DragDropTypes::DragOperation negotiated_operation) override;
-  ui::SelectionFormatMap GetFormatMap() const override;
-  void RetrieveTargets(std::vector<Atom>* targets) const override;
   void OnBeginForeignDrag(XID window) override;
   void OnEndForeignDrag() override;
   void OnBeforeDragLeave() override;
@@ -150,15 +148,12 @@ class VIEWS_EXPORT DesktopDragDropClientAuraX11
   gfx::Point target_window_location_;
   gfx::Point target_window_root_location_;
 
-  // Source side information.
-  ui::OSExchangeDataProviderAuraX11 const* source_provider_ = nullptr;
-
   // The current drag-drop client that has an active operation. Since we have
   // multiple root windows and multiple DesktopDragDropClientAuraX11 instances
   // it is important to maintain only one drag and drop operation at any time.
   static DesktopDragDropClientAuraX11* g_current_drag_drop_client;
 
-  // Widget that the user drags around. May be NULL.
+  // Widget that the user drags around.  May be nullptr.
   std::unique_ptr<Widget> drag_widget_;
 
   // The size of drag image.

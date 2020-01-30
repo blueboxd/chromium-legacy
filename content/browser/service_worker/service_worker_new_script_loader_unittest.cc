@@ -201,9 +201,8 @@ class ServiceWorkerNewScriptLoaderTest : public testing::Test {
   // next time DoRequest() is called, |version_| will attempt to install,
   // possibly updating if registration has an installed worker.
   void SetUpVersion(const GURL& script_url) {
-    version_ = base::MakeRefCounted<ServiceWorkerVersion>(
-        registration_.get(), script_url, blink::mojom::ScriptType::kClassic,
-        context()->storage()->NewVersionId(), context()->AsWeakPtr());
+    version_ = context()->registry()->CreateNewVersion(
+        registration_.get(), script_url, blink::mojom::ScriptType::kClassic);
     version_->SetStatus(ServiceWorkerVersion::NEW);
 
     if (registration_->waiting_version() || registration_->active_version())

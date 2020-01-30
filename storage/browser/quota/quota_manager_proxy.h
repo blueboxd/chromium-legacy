@@ -47,6 +47,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaManagerProxy
                                      int64_t delta);
   virtual void NotifyOriginInUse(const url::Origin& origin);
   virtual void NotifyOriginNoLongerInUse(const url::Origin& origin);
+  virtual void NotifyWriteFailed(const url::Origin& origin);
 
   virtual void SetUsageCacheEnabled(QuotaClient::ID client_id,
                                     const url::Origin& origin,

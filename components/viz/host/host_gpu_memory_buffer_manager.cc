@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
+#include "base/threading/thread_restrictions.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/process_memory_dump.h"
 #include "gpu/ipc/common/gpu_memory_buffer_impl.h"
@@ -44,9 +45,12 @@ HostGpuMemoryBufferManager::HostGpuMemoryBufferManager(
     : gpu_service_provider_(gpu_service_provider),
       client_id_(client_id),
       gpu_memory_buffer_support_(std::move(gpu_memory_buffer_support)),
-      native_configurations_(gpu::GetNativeGpuMemoryBufferConfigurations(
-          gpu_memory_buffer_support_.get())),
       task_runner_(std::move(task_runner)) {
+#if !defined(USE_X11)
+  native_configurations_ = gpu::GetNativeGpuMemoryBufferConfigurations(
+      gpu_memory_buffer_support_.get());
+  native_configurations_initialized_.Signal();
+#endif
   base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
       this, "HostGpuMemoryBufferManager", task_runner_);
 }
@@ -161,6 +165,10 @@ bool HostGpuMemoryBufferManager::IsNativeGpuMemoryBufferConfiguration(
     gfx::BufferFormat format,
     gfx::BufferUsage usage) const {
   DCHECK(task_runner_->BelongsToCurrentThread());
+  {
+    base::ScopedAllowBaseSyncPrimitivesOutsideBlockingScope allow_wait;
+    native_configurations_initialized_.Wait();
+  }
   return native_configurations_.find(std::make_pair(format, usage)) !=
          native_configurations_.end();
 }
@@ -228,6 +236,19 @@ bool HostGpuMemoryBufferManager::OnMemoryDump(
     }
   }
   return true;
+}
+
+void HostGpuMemoryBufferManager::SetNativeConfigurations(
+    gpu::GpuMemoryBufferConfigurationSet native_configurations) {
+  // Must not be done on the task runner thread to avoid deadlock.
+  DCHECK(!task_runner_->BelongsToCurrentThread());
+  if (native_configurations_initialized_.IsSignaled()) {
+    // The configurations are set on GPU initialization and should not change.
+    DCHECK(native_configurations_ == native_configurations);
+  } else {
+    native_configurations_ = native_configurations;
+    native_configurations_initialized_.Signal();
+  }
 }
 
 mojom::GpuService* HostGpuMemoryBufferManager::GetGpuService() {

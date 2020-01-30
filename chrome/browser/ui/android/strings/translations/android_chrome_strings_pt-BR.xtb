@@ -303,12 +303,11 @@
 <translation id="3282568296779691940">Fazer login no Google Chrome</translation>
 <translation id="3288003805934695103">Atualizar a página</translation>
 <translation id="32895400574683172">Notificações são permitidas</translation>
-<translation id="3290926146403723641">Para concluir tarefas da Web no Google Assistente, o Chrome envia ao Google o URL e o conteúdo do site, além das informações pessoais relevantes do usuário</translation>
 <translation id="3295530008794733555">Navegue com mais rapidez. Use menos dados.</translation>
 <translation id="3298243779924642547">Lite</translation>
 <translation id="3303414029551471755">Continuar com o download do conteúdo?</translation>
 <translation id="3306398118552023113">Este app está sendo executado no Chrome</translation>
-<translation id="3312292613668865961">Perguntar antes de permitir que sites acessem seus dispositivos e dados de realidade virtual (recomendado)</translation>
+<translation id="3312292613668865961">Perguntar antes de permitir que sites acessem seus dados e dispositivos de realidade virtual (recomendado)</translation>
 <translation id="3315103659806849044">No momento, você está personalizando suas configurações de sincronização e de serviço do Google. Para terminar de ativar a sincronização, toque no botão "Confirmar" na parte inferior da tela. Navegar para cima</translation>
 <translation id="3328801116991980348">Informações do site</translation>
 <translation id="3333961966071413176">Todos os contatos</translation>
@@ -515,7 +514,7 @@ Para alterar essa configuração, <ph name="BEGIN_LINK" />redefina a sincroniza�
 <translation id="4915549754973153784"><ph name="BEGIN_LINK" />Receber ajuda<ph name="END_LINK" /> ao procurar dispositivos…</translation>
 <translation id="4921180162323349895">{FILE_COUNT,plural, =1{# página}one{# página}other{# páginas}}</translation>
 <translation id="4932247056774066048">Você está saindo de uma conta gerenciada por <ph name="DOMAIN_NAME" />, por isso seus dados do Chrome serão excluídos deste dispositivo. No entanto, eles permanecerão na sua Conta do Google.</translation>
-<translation id="4935305910887312910">Perguntar antes de permitir que sites recebam a posição da câmera e mapeiem o cômodo (recomendado)</translation>
+<translation id="4935305910887312910">Perguntar antes de permitir que sites recebam a posição da câmera ou mapeiem o cômodo (recomendado)</translation>
 <translation id="4943703118917034429">Realidade virtual</translation>
 <translation id="4943872375798546930">Nenhum resultado</translation>
 <translation id="4958708863221495346"><ph name="URL_OF_THE_CURRENT_TAB" /> está compartilhando sua tela</translation>

@@ -336,6 +336,7 @@ cr.define('settings.address', function() {
 
   cr.addSingletonGetter(CountryDetailManagerImpl);
 
+  // #cr_define_end
   return {
     AddressComponentUI: AddressComponentUI,
     CountryDetailManager: CountryDetailManager,

@@ -32,6 +32,7 @@
       <output filename="components_chromium_strings_sq.pak" type="data_package" lang="sq" />
       <output filename="components_chromium_strings_ur.pak" type="data_package" lang="ur" />
       <output filename="components_chromium_strings_uz.pak" type="data_package" lang="uz" />
+      <output filename="components_chromium_strings_zh-HK.pak" type="data_package" lang="zh-HK" />
       <output filename="components_chromium_strings_zu.pak" type="data_package" lang="zu" />
     </if>
     <output filename="components_chromium_strings_am.pak" type="data_package" lang="am" />

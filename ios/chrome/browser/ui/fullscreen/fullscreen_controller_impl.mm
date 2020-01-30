@@ -4,8 +4,13 @@
 
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_controller_impl.h"
 
+#include "base/supports_user_data.h"
+#include "ios/chrome/browser/browser_state/browser_state_otr_helper.h"
+#include "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/ui/broadcaster/chrome_broadcast_observer_bridge.h"
 #import "ios/chrome/browser/ui/broadcaster/chrome_broadcaster.h"
+#import "ios/chrome/browser/ui/fullscreen/fullscreen_features.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_system_notification_observer.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #import "ios/public/provider/chrome/browser/ui/fullscreen_provider.h"
@@ -14,9 +19,97 @@
 #error "This file requires ARC support."
 #endif
 
+namespace {
+
+// Key used to associate the stored FullscreenControllerContainer.
+const char kFullscreenControllerContainerUserDataKey[] =
+    "fullscreen_controller_container";
+
+// Container that manages storing the FullscreenControllerImpl to a UserData
+// key.
+//
+// TODO(crbug.com/790886): Remove and subclass FullscreenController to
+// BrowserUserData when the flag is turned on by default.
+class FullscreenControllerContainer : public base::SupportsUserData::Data {
+ public:
+  FullscreenControllerContainer()
+      : fullscreen_controller_(std::make_unique<FullscreenControllerImpl>()) {}
+  ~FullscreenControllerContainer() override;
+
+  FullscreenControllerContainer(const FullscreenControllerContainer&) = delete;
+  FullscreenControllerContainer& operator=(
+      const FullscreenControllerContainer&) = delete;
+
+  FullscreenControllerContainer(FullscreenControllerContainer&&) = default;
+  FullscreenControllerContainer& operator=(FullscreenControllerContainer&&) =
+      default;
+
+  static FullscreenControllerContainer* GetForBrowserState(
+      ChromeBrowserState* browser_state);
+  static FullscreenControllerContainer* GetForBrowser(Browser* browser);
+
+  FullscreenController* GetFullscreenController();
+
+ private:
+  std::unique_ptr<FullscreenControllerImpl> fullscreen_controller_;
+};
+
+FullscreenControllerContainer::~FullscreenControllerContainer() {
+  fullscreen_controller_.reset();
+}
+
+FullscreenControllerContainer*
+FullscreenControllerContainer::GetForBrowserState(
+    ChromeBrowserState* browser_state) {
+  ChromeBrowserState* original_browser_state = static_cast<ChromeBrowserState*>(
+      GetBrowserStateRedirectedInIncognito(browser_state));
+  FullscreenControllerContainer* fullscreen_controller_container =
+      static_cast<FullscreenControllerContainer*>(
+          original_browser_state->GetUserData(
+              kFullscreenControllerContainerUserDataKey));
+  if (!fullscreen_controller_container) {
+    fullscreen_controller_container = new FullscreenControllerContainer;
+    original_browser_state->SetUserData(
+        kFullscreenControllerContainerUserDataKey,
+        base::WrapUnique(fullscreen_controller_container));
+  }
+  return fullscreen_controller_container;
+}
+
+FullscreenControllerContainer* FullscreenControllerContainer::GetForBrowser(
+    Browser* browser) {
+  DCHECK(fullscreen::features::ShouldScopeFullscreenControllerToBrowser());
+  FullscreenControllerContainer* fullscreen_controller_container =
+      static_cast<FullscreenControllerContainer*>(
+          browser->GetUserData(kFullscreenControllerContainerUserDataKey));
+  if (!fullscreen_controller_container) {
+    fullscreen_controller_container = new FullscreenControllerContainer;
+    browser->SetUserData(kFullscreenControllerContainerUserDataKey,
+                         base::WrapUnique(fullscreen_controller_container));
+  }
+  return fullscreen_controller_container;
+}
+
+FullscreenController* FullscreenControllerContainer::GetFullscreenController() {
+  return static_cast<FullscreenController*>(fullscreen_controller_.get());
+}
+
+}  // namespace
+
+// static
+FullscreenController* FullscreenController::FromBrowser(Browser* browser) {
+  return FullscreenControllerContainer::GetForBrowser(browser)
+      ->GetFullscreenController();
+}
+
+FullscreenController* FullscreenController::FromBrowserState(
+    ChromeBrowserState* browser_state) {
+  return FullscreenControllerContainer::GetForBrowserState(browser_state)
+      ->GetFullscreenController();
+}
+
 FullscreenControllerImpl::FullscreenControllerImpl()
-    : FullscreenController(),
-      broadcaster_([[ChromeBroadcaster alloc] init]),
+    : broadcaster_([[ChromeBroadcaster alloc] init]),
       mediator_(this, &model_),
       web_state_list_observer_(this, &model_, &mediator_),
       bridge_([[ChromeBroadcastOberverBridge alloc] initWithObserver:&model_]),
@@ -49,7 +142,31 @@ FullscreenControllerImpl::FullscreenControllerImpl()
       ->InitializeFullscreen(this);
 }
 
-FullscreenControllerImpl::~FullscreenControllerImpl() = default;
+FullscreenControllerImpl::~FullscreenControllerImpl() {
+  mediator_.Disconnect();
+  web_state_list_observer_.Disconnect();
+  [notification_observer_ disconnect];
+  [broadcaster_ removeObserver:bridge_
+                   forSelector:@selector(broadcastScrollViewSize:)];
+  [broadcaster_ removeObserver:bridge_
+                   forSelector:@selector(broadcastScrollViewContentSize:)];
+  [broadcaster_ removeObserver:bridge_
+                   forSelector:@selector(broadcastScrollViewContentInset:)];
+  [broadcaster_ removeObserver:bridge_
+                   forSelector:@selector(broadcastContentScrollOffset:)];
+  [broadcaster_ removeObserver:bridge_
+                   forSelector:@selector(broadcastScrollViewIsScrolling:)];
+  [broadcaster_ removeObserver:bridge_
+                   forSelector:@selector(broadcastScrollViewIsZooming:)];
+  [broadcaster_ removeObserver:bridge_
+                   forSelector:@selector(broadcastScrollViewIsDragging:)];
+  [broadcaster_ removeObserver:bridge_
+                   forSelector:@selector(broadcastCollapsedToolbarHeight:)];
+  [broadcaster_ removeObserver:bridge_
+                   forSelector:@selector(broadcastExpandedToolbarHeight:)];
+  [broadcaster_ removeObserver:bridge_
+                   forSelector:@selector(broadcastBottomToolbarHeight:)];
+}
 
 ChromeBroadcaster* FullscreenControllerImpl::broadcaster() {
   return broadcaster_;
@@ -123,30 +240,4 @@ void FullscreenControllerImpl::EnterFullscreen() {
 
 void FullscreenControllerImpl::ExitFullscreen() {
   mediator_.ExitFullscreen();
-}
-
-void FullscreenControllerImpl::Shutdown() {
-  mediator_.Disconnect();
-  web_state_list_observer_.Disconnect();
-  [notification_observer_ disconnect];
-  [broadcaster_ removeObserver:bridge_
-                   forSelector:@selector(broadcastScrollViewSize:)];
-  [broadcaster_ removeObserver:bridge_
-                   forSelector:@selector(broadcastScrollViewContentSize:)];
-  [broadcaster_ removeObserver:bridge_
-                   forSelector:@selector(broadcastScrollViewContentInset:)];
-  [broadcaster_ removeObserver:bridge_
-                   forSelector:@selector(broadcastContentScrollOffset:)];
-  [broadcaster_ removeObserver:bridge_
-                   forSelector:@selector(broadcastScrollViewIsScrolling:)];
-  [broadcaster_ removeObserver:bridge_
-                   forSelector:@selector(broadcastScrollViewIsZooming:)];
-  [broadcaster_ removeObserver:bridge_
-                   forSelector:@selector(broadcastScrollViewIsDragging:)];
-  [broadcaster_ removeObserver:bridge_
-                   forSelector:@selector(broadcastCollapsedToolbarHeight:)];
-  [broadcaster_ removeObserver:bridge_
-                   forSelector:@selector(broadcastExpandedToolbarHeight:)];
-  [broadcaster_ removeObserver:bridge_
-                   forSelector:@selector(broadcastBottomToolbarHeight:)];
 }

@@ -526,6 +526,10 @@ void AssertIsShowingDistillablePage(bool online, const GURL& distillable_url) {
 // appearing, and that the Reading List entry is present in the Reading List.
 // Loads offline version by tapping on entry without web server.
 - (void)testSavingToReadingListAndLoadNoNetwork {
+  // TODO(crbug.com/1046998): Flaky on iOS 13.1.
+  if (@available(iOS 13.1, *)) {
+    EARL_GREY_TEST_DISABLED(@"Fails on iOS 13.1.");
+  }
   [ReadingListAppInterface forceConnectionToWifi];
   GURL distillableURL = self.testServer->GetURL(kDistillableURL);
   // Open http://potato
@@ -572,6 +576,10 @@ void AssertIsShowingDistillablePage(bool online, const GURL& distillable_url) {
 // appearing, and that the Reading List entry is present in the Reading List.
 // Loads offline version by tapping on entry with delayed web server.
 - (void)testSavingToReadingListAndLoadBadNetwork {
+  // TODO(crbug.com/1046998): Flaky on iOS 13.1.
+  if (@available(iOS 13.1, *)) {
+    EARL_GREY_TEST_DISABLED(@"Fails on iOS 13.1.");
+  }
   [ReadingListAppInterface forceConnectionToWifi];
   GURL distillableURL = self.testServer->GetURL(kDistillableURL);
   // Open http://potato
@@ -674,6 +682,11 @@ void AssertIsShowingDistillablePage(bool online, const GURL& distillable_url) {
   } else {
     if (IsIPadIdiom())
       EARL_GREY_TEST_SKIPPED(@"Test skipped on Ipad Air 2, iOS12.");
+  }
+
+  // TODO(crbug.com/1046978): Test fails on iOS 13.3 iPad
+  if ([ChromeEarlGrey isIPadIdiom] && base::ios::IsRunningOnOrLater(13, 3, 0)) {
+    EARL_GREY_TEST_SKIPPED(@"Test disabled on iOS 13.3 iPad and later.");
   }
 
   AddEntriesAndOpenReadingList();

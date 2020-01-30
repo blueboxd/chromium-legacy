@@ -75,6 +75,7 @@ cr.define('settings', function() {
 
   cr.addSingletonGetter(ClearBrowsingDataBrowserProxyImpl);
 
+  // #cr_define_end
   return {
     ClearBrowsingDataBrowserProxy: ClearBrowsingDataBrowserProxy,
     ClearBrowsingDataBrowserProxyImpl: ClearBrowsingDataBrowserProxyImpl,

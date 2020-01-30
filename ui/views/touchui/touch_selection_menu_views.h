@@ -59,7 +59,6 @@ class VIEWS_EXPORT TouchSelectionMenuViews : public BubbleDialogDelegateView,
   // BubbleDialogDelegateView:
   void OnPaint(gfx::Canvas* canvas) override;
   void WindowClosing() override;
-  int GetDialogButtons() const override;
 
   TouchSelectionMenuRunnerViews* owner_;
   ui::TouchSelectionMenuClient* const client_;

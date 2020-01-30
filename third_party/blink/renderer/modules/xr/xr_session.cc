@@ -171,7 +171,8 @@ Vector<device::mojom::blink::EntityTypeForHitTest> GetEntityTypesForHitTest(
   DCHECK(options_init);
   HashSet<device::mojom::blink::EntityTypeForHitTest> result_set;
 
-  if (options_init->hasEntityTypes()) {
+  if (RuntimeEnabledFeatures::WebXRHitTestEntityTypesEnabled() &&
+      options_init->hasEntityTypes()) {
     DVLOG(2) << __func__ << ": options_init->entityTypes().size()="
              << options_init->entityTypes().size();
     for (const auto& entity_type_string : options_init->entityTypes()) {
@@ -773,7 +774,8 @@ ScriptPromise XRSession::requestHitTestSource(
   TransformationMatrix native_from_offset =
       options_init->space()->NativeFromOffsetMatrix();
 
-  if (options_init->hasEntityTypes() && options_init->entityTypes().IsEmpty()) {
+  if (RuntimeEnabledFeatures::WebXRHitTestEntityTypesEnabled() &&
+      options_init->hasEntityTypes() && options_init->entityTypes().IsEmpty()) {
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
                                       kEntityTypesNotSpecified);
     return {};
@@ -841,7 +843,8 @@ ScriptPromise XRSession::requestHitTestSourceForTransientInput(
     return {};
   }
 
-  if (options_init->hasEntityTypes() && options_init->entityTypes().IsEmpty()) {
+  if (RuntimeEnabledFeatures::WebXRHitTestEntityTypesEnabled() &&
+      options_init->hasEntityTypes() && options_init->entityTypes().IsEmpty()) {
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
                                       kEntityTypesNotSpecified);
     return {};

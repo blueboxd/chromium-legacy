@@ -30,7 +30,7 @@
             android:id="@+id/menu_item_summary"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
-            android:textAppearance="@style/TextAppearance.BlackCaption" />
+            android:textAppearance="@style/TextAppearance.TextSmall.Secondary" />
 
     </LinearLayout>
 

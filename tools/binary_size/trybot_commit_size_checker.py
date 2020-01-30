@@ -20,8 +20,11 @@ import describe
 import file_format
 import models
 
+_RESOURCE_SIZES_LOG = 'resource_sizes_log'
+_MUTABLE_CONSTANTS_LOG = 'mutable_contstants_log'
+_FOR_TESTING_LOG = 'for_test_log'
+_DEX_SYMBOLS_LOG = 'dex_symbols_log'
 _SIZEDIFF_FILENAME = 'supersize_diff.sizediff'
-_TEXT_FILENAME = 'supersize_diff.txt'
 _HTML_REPORT_BASE_URL = (
     'https://storage.googleapis.com/chrome-supersize/viewer.html?load_url=')
 _MAX_DEX_METHOD_COUNT_INCREASE = 50
@@ -128,10 +131,41 @@ def _CreateTestingSymbolsDeltas(symbols):
                            len(testing_symbols))
 
 
-def _FormatSign(number):
-  if number > 0:
-    return '+{}'.format(number)
-  return '{}'.format(number)
+def _GenerateBinarySizePluginDetails(metrics):
+  binary_size_listings = []
+  for delta, log_name in metrics:
+    listing = {
+        'name': delta.name,
+        'delta': '{} {}'.format(_FormatNumber(delta.actual), delta.units),
+        'limit': '{} {}'.format(_FormatNumber(delta.expected), delta.units),
+        'log_name': log_name,
+        'allowed': delta.IsAllowable(),
+    }
+    if log_name == _RESOURCE_SIZES_LOG:
+      listing['name'] = 'Android Binary Size'
+      binary_size_listings.insert(0, listing)
+      continue
+    # The main 'binary size' delta is always shown even if unchanged.
+    elif delta.actual == 0:
+      continue
+    binary_size_listings.append(listing)
+
+  binary_size_extras = [
+      {
+          'text': 'APK Breakdown',
+          'url': _HTML_REPORT_BASE_URL + '{{' + _SIZEDIFF_FILENAME + '}}',
+      },
+  ]
+
+  return {
+      'listings': binary_size_listings,
+      'extras': binary_size_extras,
+  }
+
+
+def _FormatNumber(number):
+  # Adds a sign for positive numbers and puts commas in large numbers
+  return '{:+,}'.format(number)
 
 
 def main():
@@ -164,9 +198,6 @@ def main():
   logging.info('Creating Supersize diff')
   supersize_diff_lines, delta_size_info = _CreateSupersizeDiff(
       args.apk_name, args.before_dir, args.after_dir)
-  supersize_text_path = os.path.join(args.staging_dir, _TEXT_FILENAME)
-  with open(supersize_text_path, 'w') as f:
-    describe.WriteLines(supersize_diff_lines, f.write)
 
   changed_symbols = delta_size_info.raw_symbols.WhereDiffStatusIs(
       models.DIFF_STATUS_UNCHANGED).Inverted()
@@ -175,6 +206,7 @@ def main():
   logging.info('Checking dex symbols')
   dex_delta_lines, dex_delta = _CreateMethodCountDelta(changed_symbols)
   size_deltas = {dex_delta}
+  metrics = {(dex_delta, _DEX_SYMBOLS_LOG)}
 
   # Look for native symbols called "kConstant" that are not actually constants.
   # C++ syntax makes this an easy mistake, and having symbols in .data uses more
@@ -183,12 +215,14 @@ def main():
   mutable_constants_lines, mutable_constants_delta = (
       _CreateMutableConstantsDelta(changed_symbols))
   size_deltas.add(mutable_constants_delta)
+  metrics.add((mutable_constants_delta, _MUTABLE_CONSTANTS_LOG))
 
   # Look for symbols with 'ForTesting' in their name.
   logging.info('Checking for symbols named "ForTest"')
   testing_symbols_lines, test_symbols_delta = (
       _CreateTestingSymbolsDeltas(changed_symbols))
   size_deltas.add(test_symbols_delta)
+  metrics.add((test_symbols_delta, _FOR_TESTING_LOG))
 
   # Check for uncompressed .pak file entries being added to avoid unnecessary
   # bloat.
@@ -200,13 +234,14 @@ def main():
   resource_sizes_lines, resource_sizes_delta = (
       _CreateResourceSizesDelta(args.apk_name, args.before_dir, args.after_dir))
   size_deltas.add(resource_sizes_delta)
+  metrics.add((resource_sizes_delta, _RESOURCE_SIZES_LOG))
 
   # .sizediff can be consumed by the html viewer.
   logging.info('Creating HTML Report')
   sizediff_path = os.path.join(args.staging_dir, _SIZEDIFF_FILENAME)
   file_format.SaveDeltaSizeInfo(delta_size_info, sizediff_path)
 
-  passing_deltas = set(m for m in size_deltas if m.IsAllowable())
+  passing_deltas = set(d for d in size_deltas if d.IsAllowable())
   failing_deltas = size_deltas - passing_deltas
 
   is_roller = '-autoroll' in args.author
@@ -235,68 +270,43 @@ https://chromium.googlesource.com/chromium/src/+/master/docs/speed/binary_size/a
   summary = '<br>' + checks_text.replace('\n', '<br>')
   links_json = [
       {
-          'name': '>>> Binary Size Details <<<',
+          'name': 'Binary Size Details',
           'lines': resource_sizes_lines,
+          'log_name': _RESOURCE_SIZES_LOG,
       },
       {
-          'name': '>>> Mutable Constants Diff <<<',
+          'name': 'Mutable Constants Diff',
           'lines': mutable_constants_lines,
+          'log_name': _MUTABLE_CONSTANTS_LOG,
       },
       {
-          'name': '>>> "ForTest" Symbols Diff <<<',
+          'name': 'ForTest Symbols Diff',
           'lines': testing_symbols_lines,
+          'log_name': _FOR_TESTING_LOG,
       },
       {
-          'name': '>>> Dex Class and Method Diff <<<',
+          'name': 'Dex Class and Method Diff',
           'lines': dex_delta_lines,
+          'log_name': _DEX_SYMBOLS_LOG,
       },
       {
-          'name': '>>> SuperSize Text Diff <<<',
-          'url': '{{' + _TEXT_FILENAME + '}}',
+          'name': 'SuperSize Text Diff',
+          'lines': supersize_diff_lines,
       },
       {
-          'name': '>>> SuperSize HTML Diff <<<',
+          'name': 'SuperSize HTML Diff',
           'url': _HTML_REPORT_BASE_URL + '{{' + _SIZEDIFF_FILENAME + '}}',
       },
   ]
   # Remove empty diffs (Mutable Constants, Dex Method, ...).
   links_json = [o for o in links_json if o.get('lines') or o.get('url')]
 
-  binary_size_listings = []
-  for delta in size_deltas:
-    listing = {
-        'name': delta.name,
-        'delta': '{} {}'.format(_FormatSign(delta.actual), delta.units),
-        'limit': '{} {}'.format(_FormatSign(delta.expected), delta.units),
-        'allowed': delta.IsAllowable(),
-    }
-    if delta is resource_sizes_delta:
-      listing['name'] = 'Android Binary Size',
-    # The main 'binary size' delta is always shown even if unchanged.
-    elif delta.actual == 0:
-      continue
-    binary_size_listings.append(listing)
-
-  binary_size_extras = [
-      {
-          'text': 'SuperSize HTML Diff',
-          'url': _HTML_REPORT_BASE_URL + '{{' + _SIZEDIFF_FILENAME + '}}',
-      },
-      {
-          'text': 'SuperSize Text Diff',
-          'url': '{{' + _TEXT_FILENAME + '}}',
-      },
-  ]
-
-  binary_size_plugin_json = {
-      'listings': binary_size_listings,
-      'extras': binary_size_extras,
-  }
+  binary_size_plugin_json = _GenerateBinarySizePluginDetails(metrics)
 
   results_json = {
       'status_code': status_code,
       'summary': summary,
-      'archive_filenames': [_SIZEDIFF_FILENAME, _TEXT_FILENAME],
+      'archive_filenames': [_SIZEDIFF_FILENAME],
       'links': links_json,
       'gerrit_plugin_details': binary_size_plugin_json,
   }

@@ -86,22 +86,6 @@ bool StateEndsFlow(AutofillAssistantState state) {
   return false;
 }
 
-// Convenience method to set all fields of a |DateTimeProto|.
-void SetDateTimeProto(DateTimeProto* proto,
-                      int year,
-                      int month,
-                      int day,
-                      int hour,
-                      int minute,
-                      int second) {
-  proto->mutable_date()->set_year(year);
-  proto->mutable_date()->set_month(month);
-  proto->mutable_date()->set_day(day);
-  proto->mutable_time()->set_hour(hour);
-  proto->mutable_time()->set_minute(minute);
-  proto->mutable_time()->set_second(second);
-}
-
 }  // namespace
 
 Controller::Controller(content::WebContents* web_contents,
@@ -829,12 +813,6 @@ void Controller::OnScriptExecuted(const std::string& script_path,
       end_state = AutofillAssistantState::TRACKING;
       return;
 
-    // TODO(b/148194528): Remove.
-    case ScriptExecutor::RESTART:
-      script_tracker_.reset();
-      script_domain_ = "";
-      break;
-
     case ScriptExecutor::CONTINUE:
       break;
 
@@ -1054,39 +1032,135 @@ void Controller::OnFormActionLinkClicked(int link) {
   }
 }
 
-void Controller::SetDateTimeRangeStart(int year,
-                                       int month,
-                                       int day,
-                                       int hour,
-                                       int minute,
-                                       int second) {
+void Controller::SetDateTimeRangeStartDate(
+    const base::Optional<DateProto>& date) {
   if (!user_data_)
     return;
 
-  SetDateTimeProto(&user_data_->date_time_range_start_, year, month, day, hour,
-                   minute, second);
+  if (user_data_->date_time_range_start_date_.has_value() && date.has_value() &&
+      CollectUserDataAction::CompareDates(
+          *user_data_->date_time_range_start_date_, *date) == 0) {
+    return;
+  }
+
+  user_data_->date_time_range_start_date_ = date;
   for (ControllerObserver& observer : observers_) {
     observer.OnUserDataChanged(user_data_.get(),
                                UserData::FieldChange::DATE_TIME_RANGE_START);
   }
+
+  if (CollectUserDataAction::SanitizeDateTimeRange(
+          &user_data_->date_time_range_start_date_,
+          &user_data_->date_time_range_start_timeslot_,
+          &user_data_->date_time_range_end_date_,
+          &user_data_->date_time_range_end_timeslot_,
+          *collect_user_data_options_,
+          /* change_start = */ false)) {
+    for (ControllerObserver& observer : observers_) {
+      observer.OnUserDataChanged(user_data_.get(),
+                                 UserData::FieldChange::DATE_TIME_RANGE_END);
+    }
+  }
+
   UpdateCollectUserDataActions();
 }
 
-void Controller::SetDateTimeRangeEnd(int year,
-                                     int month,
-                                     int day,
-                                     int hour,
-                                     int minute,
-                                     int second) {
+void Controller::SetDateTimeRangeStartTimeSlot(
+    const base::Optional<int>& timeslot_index) {
   if (!user_data_)
     return;
 
-  SetDateTimeProto(&user_data_->date_time_range_end_, year, month, day, hour,
-                   minute, second);
+  if (user_data_->date_time_range_start_timeslot_.has_value() &&
+      timeslot_index.has_value() &&
+      *user_data_->date_time_range_start_timeslot_ == *timeslot_index) {
+    return;
+  }
+
+  user_data_->date_time_range_start_timeslot_ = timeslot_index;
+  for (ControllerObserver& observer : observers_) {
+    observer.OnUserDataChanged(user_data_.get(),
+                               UserData::FieldChange::DATE_TIME_RANGE_START);
+  }
+
+  if (CollectUserDataAction::SanitizeDateTimeRange(
+          &user_data_->date_time_range_start_date_,
+          &user_data_->date_time_range_start_timeslot_,
+          &user_data_->date_time_range_end_date_,
+          &user_data_->date_time_range_end_timeslot_,
+          *collect_user_data_options_,
+          /* change_start = */ false)) {
+    for (ControllerObserver& observer : observers_) {
+      observer.OnUserDataChanged(user_data_.get(),
+                                 UserData::FieldChange::DATE_TIME_RANGE_END);
+    }
+  }
+
+  UpdateCollectUserDataActions();
+}
+
+void Controller::SetDateTimeRangeEndDate(
+    const base::Optional<DateProto>& date) {
+  if (!user_data_)
+    return;
+
+  if (user_data_->date_time_range_end_date_.has_value() && date.has_value() &&
+      CollectUserDataAction::CompareDates(
+          *user_data_->date_time_range_end_date_, *date) == 0) {
+    return;
+  }
+
+  user_data_->date_time_range_end_date_ = date;
   for (ControllerObserver& observer : observers_) {
     observer.OnUserDataChanged(user_data_.get(),
                                UserData::FieldChange::DATE_TIME_RANGE_END);
   }
+
+  if (CollectUserDataAction::SanitizeDateTimeRange(
+          &user_data_->date_time_range_start_date_,
+          &user_data_->date_time_range_start_timeslot_,
+          &user_data_->date_time_range_end_date_,
+          &user_data_->date_time_range_end_timeslot_,
+          *collect_user_data_options_,
+          /* change_start = */ true)) {
+    for (ControllerObserver& observer : observers_) {
+      observer.OnUserDataChanged(user_data_.get(),
+                                 UserData::FieldChange::DATE_TIME_RANGE_START);
+    }
+  }
+
+  UpdateCollectUserDataActions();
+}
+
+void Controller::SetDateTimeRangeEndTimeSlot(
+    const base::Optional<int>& timeslot_index) {
+  if (!user_data_)
+    return;
+
+  if (user_data_->date_time_range_end_timeslot_.has_value() &&
+      timeslot_index.has_value() &&
+      *user_data_->date_time_range_end_timeslot_ == *timeslot_index) {
+    return;
+  }
+
+  user_data_->date_time_range_end_timeslot_ = timeslot_index;
+  for (ControllerObserver& observer : observers_) {
+    observer.OnUserDataChanged(user_data_.get(),
+                               UserData::FieldChange::DATE_TIME_RANGE_END);
+  }
+
+  if (CollectUserDataAction::SanitizeDateTimeRange(
+          &user_data_->date_time_range_start_date_,
+          &user_data_->date_time_range_start_timeslot_,
+          &user_data_->date_time_range_end_date_,
+          &user_data_->date_time_range_end_timeslot_,
+          *collect_user_data_options_,
+          /* change_start = */ true)) {
+    for (ControllerObserver& observer : observers_) {
+      observer.OnUserDataChanged(user_data_.get(),
+                                 UserData::FieldChange::DATE_TIME_RANGE_START);
+    }
+  }
+
   UpdateCollectUserDataActions();
 }
 

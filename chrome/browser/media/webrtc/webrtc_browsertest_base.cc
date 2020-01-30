@@ -305,7 +305,7 @@ content::WebContents*
 WebRtcTestBase::OpenPageAndGetUserMediaInNewTabWithConstraints(
     const GURL& url,
     const std::string& constraints) const {
-  chrome::AddTabAt(browser(), GURL(), -1, true);
+  chrome::AddTabAt(browser(), GURL(url::kAboutBlankURL), -1, true);
   ui_test_utils::NavigateToURL(browser(), url);
   content::WebContents* new_tab =
       browser()->tab_strip_model()->GetActiveWebContents();
@@ -329,7 +329,7 @@ content::WebContents* WebRtcTestBase::OpenTestPageAndGetUserMediaInNewTab(
 
 content::WebContents* WebRtcTestBase::OpenTestPageInNewTab(
     const std::string& test_page) const {
-  chrome::AddTabAt(browser(), GURL(), -1, true);
+  chrome::AddTabAt(browser(), GURL(url::kAboutBlankURL), -1, true);
   GURL url = embedded_test_server()->GetURL(test_page);
   ui_test_utils::NavigateToURL(browser(), url);
   content::WebContents* new_tab =

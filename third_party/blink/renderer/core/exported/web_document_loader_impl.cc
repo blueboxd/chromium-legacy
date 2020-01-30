@@ -122,7 +122,7 @@ void WebDocumentLoaderImpl::SetExtraData(
 WebDocumentLoaderImpl::WebDocumentLoaderImpl(
     LocalFrame* frame,
     WebNavigationType navigation_type,
-    base::Optional<ContentSecurityPolicy*> content_security_policy,
+    ContentSecurityPolicy* content_security_policy,
     std::unique_ptr<WebNavigationParams> navigation_params)
     : DocumentLoader(frame,
                      navigation_type,

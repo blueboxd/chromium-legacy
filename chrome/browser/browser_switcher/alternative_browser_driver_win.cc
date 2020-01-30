@@ -13,6 +13,7 @@
 
 #include "base/files/file_path.h"
 #include "base/process/launch.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/registry.h"
@@ -46,16 +47,30 @@ const wchar_t kFirefoxVarName[] = L"${firefox}";
 const wchar_t kOperaVarName[] = L"${opera}";
 const wchar_t kSafariVarName[] = L"${safari}";
 
-const struct {
+// Case-insensitive, typical filenames for popular browsers' executables.
+const wchar_t kChromeTypicalExecutable[] = L"chrome.exe";
+const wchar_t kIETypicalExecutable[] = L"iexplore.exe";
+const wchar_t kFirefoxTypicalExecutable[] = L"firefox.exe";
+const wchar_t kOperaTypicalExecutable[] = L"launcher.exe";
+
+struct BrowserVarMapping {
   const wchar_t* var_name;
   const wchar_t* registry_key;
+  const wchar_t* typical_executable;
   const char* browser_name;
-} kBrowserVarMappings[] = {
-    {kChromeVarName, kChromeKey, ""},
-    {kIEVarName, kIExploreKey, "Internet Explorer"},
-    {kFirefoxVarName, kFirefoxKey, "Mozilla Firefox"},
-    {kOperaVarName, kOperaKey, "Opera"},
-    {kSafariVarName, kSafariKey, "Safari"},
+  BrowserType browser_type;
+};
+
+const BrowserVarMapping kBrowserVarMappings[] = {
+    {kChromeVarName, kChromeKey, kChromeTypicalExecutable, "",
+     BrowserType::kChrome},
+    {kIEVarName, kIExploreKey, kIETypicalExecutable, "Internet Explorer",
+     BrowserType::kIE},
+    {kFirefoxVarName, kFirefoxKey, kFirefoxTypicalExecutable, "Mozilla Firefox",
+     BrowserType::kFirefox},
+    {kOperaVarName, kOperaKey, kOperaTypicalExecutable, "Opera",
+     BrowserType::kOpera},
+    {kSafariVarName, kSafariKey, L"", "Safari", BrowserType::kSafari},
 };
 
 // DDE Callback function which is not used in our case at all.
@@ -97,17 +112,28 @@ std::wstring GetBrowserLocation(const wchar_t* regkey_name) {
   return location;
 }
 
-void ExpandPresetBrowsers(std::wstring* str) {
-  if (str->empty()) {
-    *str = GetBrowserLocation(kIExploreKey);
-    return;
-  }
+const BrowserVarMapping* FindBrowserMapping(base::StringPiece16 path,
+                                            bool compare_typical_executable) {
+  // If |compare_typical_executable| is true: also look at executable filenames,
+  // to reduce false-negatives when the path is specified explicitly by the
+  // admin.
+  if (path.empty())
+    path = kIEVarName;
   for (const auto& mapping : kBrowserVarMappings) {
-    if (!str->compare(mapping.var_name)) {
-      *str = GetBrowserLocation(mapping.registry_key);
-      return;
+    if (!path.compare(mapping.var_name) ||
+        (compare_typical_executable && *mapping.typical_executable &&
+         base::EndsWith(path, mapping.typical_executable,
+                        base::CompareCase::INSENSITIVE_ASCII))) {
+      return &mapping;
     }
   }
+  return nullptr;
+}
+
+void ExpandPresetBrowsers(std::wstring* str) {
+  const auto* mapping = FindBrowserMapping(*str, false);
+  if (mapping)
+    *str = GetBrowserLocation(mapping->registry_key);
 }
 
 bool ExpandUrlVarName(std::wstring* arg, const std::wstring& url_spec) {
@@ -176,13 +202,14 @@ bool AlternativeBrowserDriverImpl::TryLaunch(const GURL& url) {
 
 std::string AlternativeBrowserDriverImpl::GetBrowserName() const {
   std::wstring path = base::UTF8ToWide(prefs_->GetAlternativeBrowserPath());
-  if (path.empty())
-    path = kIEVarName;
-  for (const auto& mapping : kBrowserVarMappings) {
-    if (!path.compare(mapping.var_name))
-      return std::string(mapping.browser_name);
-  }
-  return std::string();
+  const auto* mapping = FindBrowserMapping(path, false);
+  return mapping ? mapping->browser_name : std::string();
+}
+
+BrowserType AlternativeBrowserDriverImpl::GetBrowserType() const {
+  std::wstring path = base::UTF8ToWide(prefs_->GetAlternativeBrowserPath());
+  const auto* mapping = FindBrowserMapping(path, true);
+  return mapping ? mapping->browser_type : BrowserType::kUnknown;
 }
 
 bool AlternativeBrowserDriverImpl::TryLaunchWithDde(const GURL& url) {

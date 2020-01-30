@@ -54,7 +54,6 @@
 #endif
 
 using autofill::FormTracker;
-using autofill::PasswordForm;
 using autofill::mojom::FocusedFieldType;
 using autofill::mojom::PasswordFormFieldPredictionType;
 using autofill::mojom::SubmissionIndicatorEvent;
@@ -2487,9 +2486,7 @@ TEST_F(PasswordAutofillAgentTest,
   SimulateElementClick(kPasswordName);
 
   base::string16 password = ASCIIToUTF16("NewPass22");
-  EXPECT_CALL(fake_pw_client_,
-              PresaveGeneratedPassword(testing::Field(
-                  &autofill::PasswordForm::password_value, password)));
+  EXPECT_CALL(fake_pw_client_, PresaveGeneratedPassword(_, Eq(password)));
   password_generation_->GeneratedPasswordAccepted(password);
 
   SaveAndSubmitForm();
@@ -2509,9 +2506,7 @@ TEST_F(PasswordAutofillAgentTest,
   // generaiton pop-up. GeneratedPasswordAccepted can't be called without it.
   SimulateElementClick(kPasswordName);
   base::string16 password = ASCIIToUTF16("NewPass22");
-  EXPECT_CALL(fake_pw_client_,
-              PresaveGeneratedPassword(testing::Field(
-                  &autofill::PasswordForm::password_value, password)));
+  EXPECT_CALL(fake_pw_client_, PresaveGeneratedPassword(_, Eq(password)));
   password_generation_->GeneratedPasswordAccepted(password);
 
   // The form should not be autofilled on the next call of FillPasswordForm
@@ -3440,7 +3435,7 @@ TEST_F(PasswordAutofillAgentTest, NoForm_MultipleAJAXEventsWithoutSubmission) {
 }
 
 TEST_F(PasswordAutofillAgentTest, ManualFallbackForSaving) {
-  EXPECT_CALL(fake_pw_client_, PresaveGeneratedPassword(testing::_)).Times(0);
+  EXPECT_CALL(fake_pw_client_, PresaveGeneratedPassword(_, _)).Times(0);
   // The users enters a username. No password - no fallback.
   SimulateUsernameTyping(kUsernameName);
   EXPECT_EQ(0, fake_driver_.called_show_manual_fallback_for_saving_count());

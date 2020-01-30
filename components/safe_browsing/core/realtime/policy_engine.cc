@@ -69,6 +69,22 @@ bool RealTimePolicyEngine::CanPerformFullURLLookup(
 }
 
 // static
+bool RealTimePolicyEngine::CanPerformFullURLLookupWithToken(
+    content::BrowserContext* browser_context) {
+  if (!CanPerformFullURLLookup(browser_context)) {
+    return false;
+  }
+
+  if (!base::FeatureList::IsEnabled(kRealTimeUrlLookupEnabledWithToken)) {
+    return false;
+  }
+
+  // TODO(crbug.com/1041912): Check user sync status.
+
+  return true;
+}
+
+// static
 bool RealTimePolicyEngine::CanPerformFullURLLookupForResourceType(
     content::ResourceType resource_type) {
   UMA_HISTOGRAM_ENUMERATION("SafeBrowsing.RT.ResourceTypes.Requested",

@@ -24,12 +24,15 @@ NonBlockingTypeCommitContribution::NonBlockingTypeCommitContribution(
     base::OnceCallback<void(const CommitResponseDataList&,
                             const FailedCommitResponseDataList&)>
         on_commit_response_callback,
+    base::OnceCallback<void()> on_full_commit_failure_callback,
     Cryptographer* cryptographer,
     PassphraseType passphrase_type,
     DataTypeDebugInfoEmitter* debug_info_emitter,
     bool only_commit_specifics)
     : type_(type),
       on_commit_response_callback_(std::move(on_commit_response_callback)),
+      on_full_commit_failure_callback_(
+          std::move(on_full_commit_failure_callback)),
       cryptographer_(cryptographer),
       passphrase_type_(passphrase_type),
       context_(context),
@@ -169,6 +172,10 @@ SyncerError NonBlockingTypeCommitContribution::ProcessCommitResponse(
   std::move(on_commit_response_callback_)
       .Run(committed_response_list, error_response_list);
 
+  // Commit was successfully processed. We do not want to call both
+  // |on_commit_response_callback_| and |on_full_commit_failure_callback_|.
+  on_full_commit_failure_callback_.Reset();
+
   // Let the scheduler know about the failures.
   if (unknown_error) {
     return SyncerError(SyncerError::SERVER_RETURN_UNKNOWN_ERROR);
@@ -179,6 +186,11 @@ SyncerError NonBlockingTypeCommitContribution::ProcessCommitResponse(
   } else {
     return SyncerError(SyncerError::SYNCER_OK);
   }
+}
+
+void NonBlockingTypeCommitContribution::ProcessCommitFailure() {
+  std::move(on_full_commit_failure_callback_).Run();
+  on_commit_response_callback_.Reset();
 }
 
 void NonBlockingTypeCommitContribution::CleanUp() {

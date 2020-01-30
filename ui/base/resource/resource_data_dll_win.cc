@@ -37,7 +37,7 @@ bool ResourceDataDLL::GetStringPiece(uint16_t resource_id,
                                            resource_id,
                                            &data_ptr,
                                            &data_size)) {
-    data->set(static_cast<const char*>(data_ptr), data_size);
+    *data = base::StringPiece(static_cast<const char*>(data_ptr), data_size);
     return true;
   }
   return false;

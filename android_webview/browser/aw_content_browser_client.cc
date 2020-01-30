@@ -766,10 +766,10 @@ AwContentBrowserClient::CreateURLLoaderThrottles(
           },
           base::Unretained(this)),
       wc_getter, frame_tree_node_id,
-      // TODO(crbug.com/1033760): cache manager is used to perform real time url
-      // check, which is gated by UKM opted in. Since AW currently doesn't
-      // support UKM, this feature is not enabled.
-      /* cache_manager */ nullptr));
+      // TODO(crbug.com/1033760): cache manager and identity_manager are used to
+      // perform real time url check, which is gated by UKM opted in. Since AW
+      // currently doesn't support UKM, this feature is not enabled.
+      /* cache_manager */ nullptr, /* identity_manager */ nullptr));
 
   if (request.resource_type ==
       static_cast<int>(content::ResourceType::kMainFrame)) {

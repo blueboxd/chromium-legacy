@@ -653,15 +653,7 @@ bool OverviewItem::IsDragItem() {
          overview_session_->window_drag_controller()->item() == this;
 }
 
-void OverviewItem::OnDragAnimationCompleted() {
-  // This is function is called whenever the grid repositions its windows, but
-  // we only need to restack the windows if an item was being dragged around
-  // and then released.
-  if (!should_restack_on_animation_end_)
-    return;
-
-  should_restack_on_animation_end_ = false;
-
+void OverviewItem::Restack() {
   // First stack this item's window below the snapped window if split view
   // mode is active.
   aura::Window* dragged_window = GetWindow();
@@ -1110,7 +1102,10 @@ void OverviewItem::OnWindowCloseAnimationCompleted() {
 
 void OverviewItem::OnItemSpawnedAnimationCompleted() {
   UpdateRoundedCornersAndShadow();
-  OnDragAnimationCompleted();
+  if (should_restack_on_animation_end_) {
+    Restack();
+    should_restack_on_animation_end_ = false;
+  }
   OnStartingAnimationComplete();
 }
 
@@ -1129,7 +1124,10 @@ void OverviewItem::OnItemBoundsAnimationEnded() {
     return;
 
   UpdateRoundedCornersAndShadow();
-  OnDragAnimationCompleted();
+  if (should_restack_on_animation_end_) {
+    Restack();
+    should_restack_on_animation_end_ = false;
+  }
 }
 
 void OverviewItem::PerformItemSpawnedAnimation(

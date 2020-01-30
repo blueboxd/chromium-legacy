@@ -8,7 +8,6 @@
 #include <stdint.h>
 
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
 #include "content/browser/service_worker/service_worker_context_core_observer.h"
 
 class GURL;
@@ -20,12 +19,12 @@ class ServiceWorkerContextWrapper;
 
 // Observes the service worker context of the storage partition owning this
 // instance and informs the push service of relevant service worker events.
-class PushMessagingContext : public ServiceWorkerContextCoreObserver,
-                             public base::RefCounted<PushMessagingContext> {
+class PushMessagingContext : public ServiceWorkerContextCoreObserver {
  public:
   PushMessagingContext(
       BrowserContext* browser_context,
       const scoped_refptr<ServiceWorkerContextWrapper>& service_worker_context);
+  ~PushMessagingContext() override;
 
   // ServiceWorkerContextCoreObserver methods
   void OnRegistrationDeleted(int64_t registration_id,
@@ -33,8 +32,6 @@ class PushMessagingContext : public ServiceWorkerContextCoreObserver,
   void OnStorageWiped() override;
 
  private:
-  friend class base::RefCounted<PushMessagingContext>;
-  ~PushMessagingContext() override;
   BrowserContext* browser_context_;
 
   scoped_refptr<ServiceWorkerContextWrapper> service_worker_context_;

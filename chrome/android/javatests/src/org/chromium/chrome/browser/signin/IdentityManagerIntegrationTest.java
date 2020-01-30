@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.signin;
 
-import android.accounts.Account;
 import android.support.test.filters.MediumTest;
 
 import org.junit.After;
@@ -45,14 +44,16 @@ public class IdentityManagerIntegrationTest {
     @Rule
     public AccountManagerTestRule mAccountManagerTestRule = new AccountManagerTestRule();
 
-    private static final Account TEST_ACCOUNT1 =
-            AccountManagerFacade.createAccountFromName("foo@gmail.com");
-    private static final Account TEST_ACCOUNT2 =
-            AccountManagerFacade.createAccountFromName("bar@gmail.com");
+    private static final String TEST_ACCOUNT1 = "foo@gmail.com";
+    private static final String TEST_ACCOUNT2 = "bar@gmail.com";
     private static final AccountHolder TEST_ACCOUNT_HOLDER_1 =
-            AccountHolder.builder(TEST_ACCOUNT1).alwaysAccept(true).build();
+            AccountHolder.builder(AccountManagerFacade.createAccountFromName(TEST_ACCOUNT1))
+                    .alwaysAccept(true)
+                    .build();
     private static final AccountHolder TEST_ACCOUNT_HOLDER_2 =
-            AccountHolder.builder(TEST_ACCOUNT2).alwaysAccept(true).build();
+            AccountHolder.builder(AccountManagerFacade.createAccountFromName(TEST_ACCOUNT2))
+                    .alwaysAccept(true)
+                    .build();
 
     private CoreAccountInfo mTestAccount1;
     private CoreAccountInfo mTestAccount2;
@@ -110,10 +111,10 @@ public class IdentityManagerIntegrationTest {
     private void initializeTestAccounts() {
         AccountIdProvider provider = AccountIdProvider.getInstance();
 
-        String account1Id = provider.getAccountId(TEST_ACCOUNT1.name);
+        String account1Id = provider.getAccountId(TEST_ACCOUNT1);
         mTestAccount1 =
                 new CoreAccountInfo(new CoreAccountId(account1Id), TEST_ACCOUNT1, account1Id);
-        String account2Id = provider.getAccountId(TEST_ACCOUNT2.name);
+        String account2Id = provider.getAccountId(TEST_ACCOUNT2);
         mTestAccount2 =
                 new CoreAccountInfo(new CoreAccountId(account2Id), TEST_ACCOUNT2, account2Id);
     }

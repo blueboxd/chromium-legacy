@@ -10,9 +10,9 @@
 
   var logView = UI.panels.network._networkLogView;
 
-  function newRequest(isBlob, headers, data, opt_url) {
+  function newRequest(isBlob, headers, data, opt_url, method = null) {
     var request = new SDK.NetworkRequest(0, (isBlob === true ? 'blob:' : '') + (opt_url || 'http://example.org/path'), 0, 0, 0);
-    request.requestMethod = data ? 'POST' : 'GET';
+    request.requestMethod = method || (data ? 'POST' : 'GET');
     var headerList = [];
     if (headers) {
       for (var i in headers)
@@ -25,12 +25,13 @@
     return request;
   }
 
-  async function dumpRequest(headers, data, opt_url) {
-    var curlWin = await logView._generateCurlCommand(newRequest(false, headers, data, opt_url), 'win');
-    var curlUnix = await logView._generateCurlCommand(newRequest(false, headers, data, opt_url), 'unix');
-    var powershell = await logView._generatePowerShellCommand(newRequest(false, headers, data, opt_url));
-    var fetchForBrowser = await logView._generateFetchCall(newRequest(false, headers, data, opt_url), false);
-    var fetchForNodejs = await logView._generateFetchCall(newRequest(false, headers, data, opt_url), true);
+  async function dumpRequest(headers, data, opt_url, method) {
+    const request = newRequest(false, headers, data, opt_url, method);
+    var curlWin = await logView._generateCurlCommand(request, 'win');
+    var curlUnix = await logView._generateCurlCommand(request, 'unix');
+    var powershell = await logView._generatePowerShellCommand(request);
+    var fetchForBrowser = await logView._generateFetchCall(request, false);
+    var fetchForNodejs = await logView._generateFetchCall(request, true);
     TestRunner.addResult(`cURL Windows:\n${curlWin}\n\n`);
     TestRunner.addResult(`cURL Unix:\n${curlUnix}\n\n`);
     TestRunner.addResult(`Powershell:\n${powershell}\n\n`);
@@ -77,6 +78,7 @@
   await dumpRequest({'Content-Type': 'application/binary'}, '%PATH%$PATH');
   await dumpRequest({':host': 'h', 'version': 'v'});
   await dumpRequest({'Cookie': '_x=fdsfs; aA=fdsfdsf; FOO=ID=BAR:BAZ=FOO:F=d:AO=21.212.2.212-:A=dsadas8d9as8d9a8sd9sa8d9a; AAA=117'});
+  await dumpRequest({}, null, null, '|evilcommand|');
 
   await dumpMultipleRequests([]);
   await dumpMultipleRequests([true]);

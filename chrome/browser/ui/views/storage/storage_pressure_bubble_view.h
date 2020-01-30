@@ -20,10 +20,10 @@ class StoragePressureBubbleView : public views::BubbleDialogDelegateView {
                             Browser* browser,
                             const url::Origin origin);
 
+  void OnDialogAccepted();
+
   // views::DialogDelegate:
   base::string16 GetWindowTitle() const override;
-  bool Accept() override;
-  bool Close() override;
 
   // views::BubbleDialogDelegateView:
   void Init() override;

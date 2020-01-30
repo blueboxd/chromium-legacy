@@ -37,14 +37,8 @@ TextChangeEvent = class {
    * @param {boolean} triggeredByUser .
    */
   constructor(newValue, newStart, newEnd, triggeredByUser) {
-    Object.defineProperty(this, 'value', {
-      get: function() {
-        return this.value_;
-      }.bind(this),
-      set: function(val) {
-        this.value_ = val.replace(/\u00a0/g, ' ');
-      }.bind(this)
-    });
+    /** @private {string} */
+    this.value_ = '';
     this.value = newValue;
 
     this.start = newStart;
@@ -57,6 +51,13 @@ TextChangeEvent = class {
       this.end = this.start;
       this.start = tempOffset;
     }
+  }
+
+  get value() {
+    return this.value_;
+  }
+  set value(val) {
+    this.value_ = val.replace(/\u00a0/g, ' ');
   }
 };
 

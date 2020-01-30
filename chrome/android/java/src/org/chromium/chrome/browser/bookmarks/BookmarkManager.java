@@ -523,9 +523,8 @@ public class BookmarkManager
     }
 
     @Override
-    public void openBookmark(BookmarkId bookmark, int launchLocation) {
-        if (BookmarkUtils.openBookmark(
-                    mBookmarkModel, mActivity, bookmark, launchLocation)) {
+    public void openBookmark(BookmarkId bookmark) {
+        if (BookmarkUtils.openBookmark(mBookmarkModel, mActivity, bookmark)) {
             BookmarkUtils.finishActivityOnPhone(mActivity);
         }
     }

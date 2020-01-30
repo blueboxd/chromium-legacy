@@ -17,6 +17,7 @@ js_library("main_page_behavior") {
   deps = [
     ":settings_section",
     "..:router",
+    "..:settings_routes",
     "//ui/webui/resources/js:assert",
     "//ui/webui/resources/js:util",
   ]

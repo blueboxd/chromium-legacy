@@ -7,7 +7,12 @@
 #include "ash/public/cpp/ash_features.h"
 #include "ash/shell.h"
 #include "ash/system/model/system_tray_model.h"
+#include "ash/system/session/shutdown_confirmation_dialog.h"
+#include "ash/system/system_notification_controller.h"
 #include "ash/test/ash_test_base.h"
+#include "base/files/file_path.h"
+#include "base/files/file_util.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/branding_buildflags.h"
 #include "ui/message_center/message_center.h"
@@ -72,6 +77,24 @@ class UpdateNotificationControllerTest : public AshTestBase {
         ->priority();
   }
 
+  void AddSlowBootFilePath(const base::FilePath& file_path) {
+    int bytes_written = base::WriteFile(file_path, "1\n", 2);
+    EXPECT_TRUE(bytes_written == 2);
+    Shell::Get()
+        ->system_notification_controller()
+        ->update_->slow_boot_file_path_ = file_path;
+  }
+
+  const char* GetUpdateNotificationId() {
+    return UpdateNotificationController::kNotificationId;
+  }
+
+  ShutdownConfirmationDialog* GetSlowBootConfirmationDialog() {
+    return Shell::Get()
+        ->system_notification_controller()
+        ->update_->confirmation_dialog_;
+  }
+
  private:
   DISALLOW_COPY_AND_ASSIGN(UpdateNotificationControllerTest);
 };
@@ -87,12 +110,66 @@ TEST_F(UpdateNotificationControllerTest, VisibilityAfterUpdate) {
   Shell::Get()->system_tray_model()->ShowUpdateIcon(UpdateSeverity::kLow, false,
                                                     false, UpdateType::kSystem);
 
+  // Showing Update Notification posts a task to check for slow boot request
+  // and use the result of that check to generate appropriate notification. Wait
+  // until everything is complete and then check if the notification is visible.
+  task_environment_->RunUntilIdle();
+
   // The notification is now visible.
   ASSERT_TRUE(HasNotification());
   EXPECT_EQ("Update available", GetNotificationTitle());
   EXPECT_EQ("Learn more about the latest " SYSTEM_APP_NAME " update",
             GetNotificationMessage());
   EXPECT_EQ("Restart to update", GetNotificationButton(0));
+}
+
+// Tests that the update icon becomes visible when an update becomes
+// available.
+TEST_F(UpdateNotificationControllerTest, VisibilityAfterUpdateWithSlowReboot) {
+  // The system starts with no update pending, so the notification isn't
+  // visible.
+  EXPECT_FALSE(HasNotification());
+
+  // Add a slow boot file.
+  base::ScopedTempDir tmp_dir;
+  ASSERT_TRUE(tmp_dir.CreateUniqueTempDir());
+  AddSlowBootFilePath(tmp_dir.GetPath().Append("slow_boot_required"));
+
+  // Simulate an update.
+  Shell::Get()->system_tray_model()->ShowUpdateIcon(UpdateSeverity::kLow, false,
+                                                    false, UpdateType::kSystem);
+
+  // Showing Update Notification posts a task to check for slow boot request
+  // and use the result of that check to generate appropriate notification. Wait
+  // until everything is complete and then check if the notification is visible.
+  task_environment_->RunUntilIdle();
+
+  // The notification is now visible.
+  ASSERT_TRUE(HasNotification());
+  EXPECT_EQ("Update available", GetNotificationTitle());
+  EXPECT_EQ("Learn more about the latest " SYSTEM_APP_NAME
+            " update. This Chromebook needs to restart to apply an update. "
+            "This can take up to 1 minute.",
+            GetNotificationMessage());
+  EXPECT_EQ("Restart to update", GetNotificationButton(0));
+
+  // Ensure Slow Boot Dialog is not open.
+  EXPECT_FALSE(GetSlowBootConfirmationDialog());
+
+  // Trigger Click on "Restart to Update" button in Notification.
+  message_center::MessageCenter::Get()->ClickOnNotificationButton(
+      GetUpdateNotificationId(), 0);
+
+  // Ensure Slow Boot Dialog is open and notification is removed.
+  ASSERT_TRUE(GetSlowBootConfirmationDialog());
+  EXPECT_FALSE(HasNotification());
+
+  // Click the cancel button on Slow Boot Confirmation Dialog.
+  GetSlowBootConfirmationDialog()->CancelDialog();
+
+  // Ensure that the Slow Boot Dialog is closed and notification is visible.
+  EXPECT_FALSE(GetSlowBootConfirmationDialog());
+  EXPECT_TRUE(HasNotification());
 }
 
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
@@ -104,6 +181,11 @@ TEST_F(UpdateNotificationControllerTest, VisibilityAfterFlashUpdate) {
   // Simulate an update.
   Shell::Get()->system_tray_model()->ShowUpdateIcon(UpdateSeverity::kLow, false,
                                                     false, UpdateType::kFlash);
+
+  // Showing Update Notification posts a task to check for slow boot request
+  // and use the result of that check to generate appropriate notification. Wait
+  // until everything is complete and then check if the notification is visible.
+  task_environment_->RunUntilIdle();
 
   // The notification is now visible.
   ASSERT_TRUE(HasNotification());
@@ -126,6 +208,11 @@ TEST_F(UpdateNotificationControllerTest,
   Shell::Get()->system_tray_model()->SetUpdateOverCellularAvailableIconVisible(
       true);
 
+  // Showing Update Notification posts a task to check for slow boot request
+  // and use the result of that check to generate appropriate notification. Wait
+  // until everything is complete and then check if the notification is visible.
+  task_environment_->RunUntilIdle();
+
   // The notification is now visible.
   ASSERT_TRUE(HasNotification());
   EXPECT_EQ("Update available", GetNotificationTitle());
@@ -137,6 +224,11 @@ TEST_F(UpdateNotificationControllerTest,
   // granted.
   Shell::Get()->system_tray_model()->SetUpdateOverCellularAvailableIconVisible(
       false);
+
+  // Showing Update Notification posts a task to check for slow boot request
+  // and use the result of that check to generate appropriate notification. Wait
+  // until everything is complete and then check if the notification is visible.
+  task_environment_->RunUntilIdle();
 
   // The notification disappears.
   EXPECT_FALSE(HasNotification());
@@ -151,6 +243,11 @@ TEST_F(UpdateNotificationControllerTest,
   // Simulate an update that requires factory reset.
   Shell::Get()->system_tray_model()->ShowUpdateIcon(UpdateSeverity::kLow, true,
                                                     false, UpdateType::kSystem);
+
+  // Showing Update Notification posts a task to check for slow boot request
+  // and use the result of that check to generate appropriate notification. Wait
+  // until everything is complete and then check if the notification is visible.
+  task_environment_->RunUntilIdle();
 
   // The notification is now visible.
   ASSERT_TRUE(HasNotification());
@@ -171,6 +268,11 @@ TEST_F(UpdateNotificationControllerTest, VisibilityAfterRollback) {
   Shell::Get()->system_tray_model()->ShowUpdateIcon(UpdateSeverity::kLow, false,
                                                     true, UpdateType::kSystem);
 
+  // Showing Update Notification posts a task to check for slow boot request
+  // and use the result of that check to generate appropriate notification. Wait
+  // until everything is complete and then check if the notification is visible.
+  task_environment_->RunUntilIdle();
+
   // The notification is now visible.
   ASSERT_TRUE(HasNotification());
   EXPECT_EQ("Device will be rolled back", GetNotificationTitle());
@@ -190,6 +292,11 @@ TEST_F(UpdateNotificationControllerTest, SetUpdateNotificationStateTest) {
   Shell::Get()->system_tray_model()->ShowUpdateIcon(UpdateSeverity::kLow, false,
                                                     false, UpdateType::kSystem);
 
+  // Showing Update Notification posts a task to check for slow boot request
+  // and use the result of that check to generate appropriate notification. Wait
+  // until everything is complete and then check if the notification is visible.
+  task_environment_->RunUntilIdle();
+
   // The notification is now visible.
   ASSERT_TRUE(HasNotification());
   EXPECT_EQ("Update available", GetNotificationTitle());
@@ -208,6 +315,11 @@ TEST_F(UpdateNotificationControllerTest, SetUpdateNotificationStateTest) {
       NotificationStyle::kAdminRecommended,
       base::UTF8ToUTF16(recommended_notification_title),
       base::UTF8ToUTF16(recommended_notification_body));
+
+  // Showing Update Notification posts a task to check for slow boot request
+  // and use the result of that check to generate appropriate notification. Wait
+  // until everything is complete and then check if the notification is visible.
+  task_environment_->RunUntilIdle();
 
   // The notification's title and body have changed.
   ASSERT_TRUE(HasNotification());
@@ -229,6 +341,11 @@ TEST_F(UpdateNotificationControllerTest, SetUpdateNotificationStateTest) {
       base::UTF8ToUTF16(required_notification_title),
       base::UTF8ToUTF16(required_notification_body));
 
+  // Showing Update Notification posts a task to check for slow boot request
+  // and use the result of that check to generate appropriate notification. Wait
+  // until everything is complete and then check if the notification is visible.
+  task_environment_->RunUntilIdle();
+
   // The notification's title and body have changed.
   ASSERT_TRUE(HasNotification());
   EXPECT_EQ(required_notification_title, GetNotificationTitle());
@@ -241,6 +358,11 @@ TEST_F(UpdateNotificationControllerTest, SetUpdateNotificationStateTest) {
   // Simulate notification type set back to default.
   Shell::Get()->system_tray_model()->SetUpdateNotificationState(
       NotificationStyle::kDefault, base::string16(), base::string16());
+
+  // Showing Update Notification posts a task to check for slow boot request
+  // and use the result of that check to generate appropriate notification. Wait
+  // until everything is complete and then check if the notification is visible.
+  task_environment_->RunUntilIdle();
 
   // The notification has the default text.
   ASSERT_TRUE(HasNotification());

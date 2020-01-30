@@ -3650,6 +3650,10 @@ bool WebMediaPlayerImpl::IsInPictureInPicture() const {
          WebMediaPlayer::DisplayType::kPictureInPicture;
 }
 
+void WebMediaPlayerImpl::OnPictureInPictureAvailabilityChanged(bool available) {
+  delegate_->DidPictureInPictureAvailabilityChange(delegate_id_, available);
+}
+
 void WebMediaPlayerImpl::MaybeSetContainerName() {
   // MSE nor MediaPlayerRenderer provide container information.
   if (chunk_demuxer_ || using_media_player_renderer_)

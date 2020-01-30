@@ -174,6 +174,9 @@ struct PP_PrivateAccessibilityHighlightInfo {
   uint32_t text_run_count;
   // Bounding box of the highlight.
   struct PP_FloatRect bounds;
+  // Color of the highlight in ARGB. Alpha is stored in the first 8 MSBs. RGB
+  // follows after it with each using 8 bytes.
+  uint32_t color;
 };
 
 // Holds links, images and highlights within a PDF page so that IPC messages

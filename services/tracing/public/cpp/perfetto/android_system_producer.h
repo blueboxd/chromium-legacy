@@ -97,7 +97,6 @@ class COMPONENT_EXPORT(TRACING_CPP) AndroidSystemProducer
   // ready for consumption.
   void CommitData(const perfetto::CommitDataRequest& commit,
                   CommitDataCallback callback) override;
-  perfetto::SharedMemoryArbiter* GetSharedMemoryArbiter() override;
 
   // Used by the DataSource implementations to create TraceWriters
   // for writing their protobufs, and respond to flushes.
@@ -113,7 +112,7 @@ class COMPONENT_EXPORT(TRACING_CPP) AndroidSystemProducer
   void NotifyDataSourceStarted(perfetto::DataSourceInstanceID) override;
   void NotifyDataSourceStopped(perfetto::DataSourceInstanceID) override;
   size_t shared_buffer_page_size_kb() const override;
-  perfetto::SharedMemoryArbiter* GetInProcessShmemArbiter() override;
+  perfetto::SharedMemoryArbiter* MaybeSharedMemoryArbiter() override;
   void ActivateTriggers(const std::vector<std::string>&) override;
 
  protected:

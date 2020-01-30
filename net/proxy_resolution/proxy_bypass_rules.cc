@@ -73,55 +73,15 @@ bool IsIPv4MappedLoopback(const GURL& url) {
   return ip_address.bytes()[12] == 127;
 }
 
-class HostnamePatternRule : public ProxyBypassRules::Rule {
- public:
-  HostnamePatternRule(const std::string& optional_scheme,
-                      const std::string& hostname_pattern,
-                      int optional_port)
-      : optional_scheme_(base::ToLowerASCII(optional_scheme)),
-        hostname_pattern_(base::ToLowerASCII(hostname_pattern)),
-        optional_port_(optional_port) {}
-
-  Result Evaluate(const GURL& url) const override {
-    if (optional_port_ != -1 && url.EffectiveIntPort() != optional_port_)
-      return Result::kNoMatch;  // Didn't match port expectation.
-
-    if (!optional_scheme_.empty() && url.scheme() != optional_scheme_)
-      return Result::kNoMatch;  // Didn't match scheme expectation.
-
-    // Note it is necessary to lower-case the host, since GURL uses capital
-    // letters for percent-escaped characters.
-    return base::MatchPattern(url.host(), hostname_pattern_) ? Result::kBypass
-                                                             : Result::kNoMatch;
-  }
-
-  std::string ToString() const override {
-    std::string str;
-    if (!optional_scheme_.empty())
-      base::StringAppendF(&str, "%s://", optional_scheme_.c_str());
-    str += hostname_pattern_;
-    if (optional_port_ != -1)
-      base::StringAppendF(&str, ":%d", optional_port_);
-    return str;
-  }
-
- private:
-  const std::string optional_scheme_;
-  const std::string hostname_pattern_;
-  const int optional_port_;
-
-  DISALLOW_COPY_AND_ASSIGN(HostnamePatternRule);
-};
-
-class BypassSimpleHostnamesRule : public ProxyBypassRules::Rule {
+class BypassSimpleHostnamesRule : public SchemeHostPortMatcherRule {
  public:
   BypassSimpleHostnamesRule() = default;
 
-  Result Evaluate(const GURL& url) const override {
+  SchemeHostPortMatcherResult Evaluate(const GURL& url) const override {
     return ((url.host_piece().find('.') == std::string::npos) &&
             !url.HostIsIPAddress())
-               ? Result::kBypass
-               : Result::kNoMatch;
+               ? SchemeHostPortMatcherResult::kInclude
+               : SchemeHostPortMatcherResult::kNoMatch;
   }
 
   std::string ToString() const override { return kBypassSimpleHostnames; }
@@ -130,13 +90,14 @@ class BypassSimpleHostnamesRule : public ProxyBypassRules::Rule {
   DISALLOW_COPY_AND_ASSIGN(BypassSimpleHostnamesRule);
 };
 
-class SubtractImplicitBypassesRule : public ProxyBypassRules::Rule {
+class SubtractImplicitBypassesRule : public SchemeHostPortMatcherRule {
  public:
   SubtractImplicitBypassesRule() = default;
 
-  Result Evaluate(const GURL& url) const override {
-    return ProxyBypassRules::MatchesImplicitRules(url) ? Result::kDontBypass
-                                                       : Result::kNoMatch;
+  SchemeHostPortMatcherResult Evaluate(const GURL& url) const override {
+    return ProxyBypassRules::MatchesImplicitRules(url)
+               ? SchemeHostPortMatcherResult::kExclude
+               : SchemeHostPortMatcherResult::kNoMatch;
   }
 
   std::string ToString() const override { return kSubtractImplicitBypasses; }
@@ -145,52 +106,7 @@ class SubtractImplicitBypassesRule : public ProxyBypassRules::Rule {
   DISALLOW_COPY_AND_ASSIGN(SubtractImplicitBypassesRule);
 };
 
-// Rule for matching a URL that is an IP address, if that IP address falls
-// within a certain numeric range. For example, you could use this rule to
-// match all the IPs in the CIDR block 10.10.3.4/24.
-class IPBlockRule : public ProxyBypassRules::Rule {
- public:
-  // |ip_prefix| + |prefix_length| define the IP block to match.
-  IPBlockRule(const std::string& description,
-              const std::string& optional_scheme,
-              const IPAddress& ip_prefix,
-              size_t prefix_length_in_bits)
-      : description_(description),
-        optional_scheme_(optional_scheme),
-        ip_prefix_(ip_prefix),
-        prefix_length_in_bits_(prefix_length_in_bits) {}
-
-  Result Evaluate(const GURL& url) const override {
-    if (!url.HostIsIPAddress())
-      return Result::kNoMatch;
-
-    if (!optional_scheme_.empty() && url.scheme() != optional_scheme_)
-      return Result::kNoMatch;  // Didn't match scheme expectation.
-
-    // Parse the input IP literal to a number.
-    IPAddress ip_address;
-    if (!ip_address.AssignFromIPLiteral(url.HostNoBracketsPiece()))
-      return Result::kNoMatch;
-
-    // Test if it has the expected prefix.
-    return IPAddressMatchesPrefix(ip_address, ip_prefix_,
-                                  prefix_length_in_bits_)
-               ? Result::kBypass
-               : Result::kNoMatch;
-  }
-
-  std::string ToString() const override { return description_; }
-
- private:
-  const std::string description_;
-  const std::string optional_scheme_;
-  const IPAddress ip_prefix_;
-  const size_t prefix_length_in_bits_;
-
-  DISALLOW_COPY_AND_ASSIGN(IPBlockRule);
-};
-
-std::unique_ptr<ProxyBypassRules::Rule> ParseRule(
+std::unique_ptr<SchemeHostPortMatcherRule> ParseRule(
     const std::string& raw_untrimmed,
     ProxyBypassRules::ParseFormat format) {
   std::string raw;
@@ -225,8 +141,8 @@ std::unique_ptr<ProxyBypassRules::Rule> ParseRule(
     if (!ParseCIDRBlock(raw, &ip_prefix, &prefix_length_in_bits))
       return nullptr;
 
-    return std::make_unique<IPBlockRule>(raw, scheme, ip_prefix,
-                                         prefix_length_in_bits);
+    return std::make_unique<SchemeHostPortMatcherIPBlockRule>(
+        raw, scheme, ip_prefix, prefix_length_in_bits);
   }
 
   // Check if we have an <ip-address>[:port] input. We need to treat this
@@ -239,14 +155,12 @@ std::unique_ptr<ProxyBypassRules::Rule> ParseRule(
     if (host.find('\0') != std::string::npos)
       return nullptr;
 
-    // Note that HostPortPair is used to merely to convert any IPv6 literals to
-    // a URL-safe format that can be used by canonicalization below.
-    std::string bracketed_host = HostPortPair(host, 80).HostForURL();
-    if (url::HostIsIPAddress(bracketed_host)) {
-      // Canonicalize the IP literal before adding it as a string pattern.
-      GURL tmp_url("http://" + bracketed_host);
-      return std::make_unique<HostnamePatternRule>(scheme, tmp_url.host(),
-                                                   port);
+    IPAddress ip_address;
+    if (ip_address.AssignFromIPLiteral(host)) {
+      // Instead of -1, 0 is invalid for IPEndPoint.
+      int adjusted_port = port == -1 ? 0 : port;
+      return std::make_unique<SchemeHostPortMatcherIPHostRule>(
+          scheme, IPEndPoint(ip_address, adjusted_port));
     }
   }
 
@@ -273,20 +187,13 @@ std::unique_ptr<ProxyBypassRules::Rule> ParseRule(
       !base::StartsWith(raw, "*", base::CompareCase::SENSITIVE))
     raw = "*" + raw;
 
-  return std::make_unique<HostnamePatternRule>(scheme, raw, port);
+  return std::make_unique<SchemeHostPortMatcherHostnamePatternRule>(scheme, raw,
+                                                                    port);
 }
 
 }  // namespace
 
 constexpr char net::ProxyBypassRules::kBypassListDelimeter[];
-
-ProxyBypassRules::Rule::Rule() = default;
-
-ProxyBypassRules::Rule::~Rule() = default;
-
-bool ProxyBypassRules::Rule::Equals(const Rule& rule) const {
-  return ToString() == rule.ToString();
-}
 
 ProxyBypassRules::ProxyBypassRules() = default;
 
@@ -316,7 +223,7 @@ bool ProxyBypassRules::Matches(const GURL& url, bool reverse) const {
   // found. If no matches are found then the implicit rules are consulted.
   //
   // The order of evaluation generally doesn't matter, since the common
-  // case is to have a set of (positive) bypass rules.
+  // case is to have a set of (positive) bypass rules.,
   //
   // However when mixing positive and negative bypass rules evaluation
   // order makes a difference. The chosen evaluation order here matches
@@ -331,14 +238,14 @@ bool ProxyBypassRules::Matches(const GURL& url, bool reverse) const {
   // expected to return true for (b), since the final rule "localhost"
   // bypasses it again.
   for (auto it = rules_.rbegin(); it != rules_.rend(); ++it) {
-    const std::unique_ptr<Rule>& rule = *it;
+    const std::unique_ptr<SchemeHostPortMatcherRule>& rule = *it;
 
     switch (rule->Evaluate(url)) {
-      case Rule::Result::kBypass:
+      case SchemeHostPortMatcherResult::kInclude:
         return !reverse;
-      case Rule::Result::kDontBypass:
+      case SchemeHostPortMatcherResult::kExclude:
         return reverse;
-      case Rule::Result::kNoMatch:
+      case SchemeHostPortMatcherResult::kNoMatch:
         continue;
     }
   }
@@ -356,7 +263,7 @@ bool ProxyBypassRules::operator==(const ProxyBypassRules& other) const {
     return false;
 
   for (size_t i = 0; i < rules_.size(); ++i) {
-    if (!rules_[i]->Equals(*other.rules_[i]))
+    if (rules_[i]->ToString() != other.rules_[i]->ToString())
       return false;
   }
   return true;
@@ -378,7 +285,7 @@ bool ProxyBypassRules::AddRuleForHostname(const std::string& optional_scheme,
   if (hostname_pattern.empty())
     return false;
 
-  rules_.push_back(std::make_unique<HostnamePatternRule>(
+  rules_.push_back(std::make_unique<SchemeHostPortMatcherHostnamePatternRule>(
       optional_scheme, hostname_pattern, optional_port));
   return true;
 }

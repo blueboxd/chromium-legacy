@@ -271,11 +271,13 @@ void BreakBeforeChild(const NGConstraintSpace& space,
                       bool is_forced_break,
                       NGBoxFragmentBuilder* builder) {
 #if DCHECK_IS_ON()
-  // In order to successfully break before a node, this has to be its first
-  // fragment.
-  const auto& physical_fragment = layout_result.PhysicalFragment();
-  DCHECK(!physical_fragment.IsBox() ||
-         To<NGPhysicalBoxFragment>(physical_fragment).IsFirstForNode());
+  if (layout_result.Status() == NGLayoutResult::kSuccess) {
+    // In order to successfully break before a node, this has to be its first
+    // fragment.
+    const auto& physical_fragment = layout_result.PhysicalFragment();
+    DCHECK(!physical_fragment.IsBox() ||
+           To<NGPhysicalBoxFragment>(physical_fragment).IsFirstForNode());
+  }
 #endif
 
   // Report space shortage. Note that we're not doing this for line boxes here
@@ -310,7 +312,10 @@ void PropagateSpaceShortage(const NGConstraintSpace& space,
   LayoutUnit space_shortage;
   if (layout_result.MinimalSpaceShortage() == LayoutUnit::Max()) {
     // Calculate space shortage: Figure out how much more space would have been
-    // sufficient to make the child fit right here in the current fragment.
+    // sufficient to make the child fragment fit right here in the current
+    // fragmentainer. If layout aborted, though, we can't propagate anything.
+    if (layout_result.Status() != NGLayoutResult::kSuccess)
+      return;
     NGFragment fragment(space.GetWritingMode(),
                         layout_result.PhysicalFragment());
     space_shortage = fragmentainer_block_offset + fragment.BlockSize() -
@@ -335,6 +340,13 @@ bool MovePastBreakpoint(const NGConstraintSpace& space,
                         LayoutUnit fragmentainer_block_offset,
                         NGBreakAppeal appeal_before,
                         NGBoxFragmentBuilder* builder) {
+  if (layout_result.Status() != NGLayoutResult::kSuccess) {
+    // Layout aborted - no fragment was produced. There's nothing to move
+    // past. We need to break before.
+    DCHECK_EQ(layout_result.Status(), NGLayoutResult::kOutOfFragmentainerSpace);
+    return false;
+  }
+
   const auto& physical_fragment = layout_result.PhysicalFragment();
   NGFragment fragment(space.GetWritingMode(), physical_fragment);
 

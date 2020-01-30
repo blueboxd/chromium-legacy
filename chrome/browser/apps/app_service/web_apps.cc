@@ -373,6 +373,7 @@ void WebApps::GetMenuModel(const std::string& app_id,
 
   if (!is_system_web_app) {
     CreateOpenNewSubmenu(
+        menu_type,
         web_app->display_mode() == web_app::DisplayMode::kStandalone
             ? IDS_APP_LIST_CONTEXT_MENU_NEW_WINDOW
             : IDS_APP_LIST_CONTEXT_MENU_NEW_TAB,

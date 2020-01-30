@@ -13407,7 +13407,7 @@ TEST_P(QuicStreamFactoryTest, StaleNetworkFailedBeforeHandshake) {
 }
 
 TEST_P(QuicStreamFactoryTest, ConfigInitialRttForHandshake) {
-  if (version_.SupportsAntiAmplificationLimit()) {
+  if (version_.handshake_protocol == quic::PROTOCOL_TLS1_3) {
     // IETF QUIC uses a different handshake timeout management system.
     return;
   }

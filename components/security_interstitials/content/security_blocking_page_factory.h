@@ -10,6 +10,7 @@
 #include "components/security_interstitials/content/bad_clock_blocking_page.h"
 #include "components/security_interstitials/content/blocked_interception_blocking_page.h"
 #include "components/security_interstitials/content/captive_portal_blocking_page.h"
+#include "components/security_interstitials/content/legacy_tls_blocking_page.h"
 #include "components/security_interstitials/content/mitm_software_blocking_page.h"
 #include "components/security_interstitials/content/ssl_blocking_page.h"
 #include "components/security_interstitials/content/ssl_blocking_page_base.h"
@@ -54,6 +55,15 @@ class SecurityBlockingPageFactory {
       const base::Time& time_triggered,
       ssl_errors::ClockState clock_state,
       std::unique_ptr<SSLCertReporter> ssl_cert_reporter) = 0;
+
+  // Creates a legacy TLS blocking page. The caller is responsible for ownership
+  // of the returned object.
+  virtual LegacyTLSBlockingPage* CreateLegacyTLSBlockingPage(
+      content::WebContents* web_contents,
+      int cert_error,
+      const GURL& request_url,
+      std::unique_ptr<SSLCertReporter> ssl_cert_reporter,
+      const net::SSLInfo& ssl_info) = 0;
 
   // Creates a man-in-the-middle software blocking page. The caller is
   // responsible for ownership of the returned object.

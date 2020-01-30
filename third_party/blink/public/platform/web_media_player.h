@@ -157,6 +157,8 @@ class WebMediaPlayer {
   // as it will be needed.
   virtual void OnRequestPictureInPicture() = 0;
 
+  virtual void OnPictureInPictureAvailabilityChanged(bool available) = 0;
+
   virtual void RequestRemotePlayback() {}
   virtual void RequestRemotePlaybackControl() {}
   virtual void RequestRemotePlaybackStop() {}

@@ -86,7 +86,7 @@ struct AX_EXPORT AtkTableCellInterface {
 // interfaces that an AXPlatformNodeAuraLinux's ATKObject implements.
 class ImplementedAtkInterfaces {
  public:
-  enum Value {
+  enum class Value {
     kDefault = 1 << 1,
     kDocument = 1 << 1,
     kHyperlink = 1 << 2,
@@ -100,18 +100,20 @@ class ImplementedAtkInterfaces {
     kWindow = 1 << 10,
   };
 
-  bool Implements(Value interface) { return value_ & interface; }
+  bool Implements(Value interface) const {
+    return value_ & static_cast<int>(interface);
+  }
 
-  void Add(Value other) { value_ |= other; }
+  void Add(Value other) { value_ |= static_cast<int>(other); }
 
   bool operator!=(const ImplementedAtkInterfaces& other) {
     return value_ != other.value_;
   }
 
-  int value() { return value_; }
+  int value() const { return value_; }
 
  private:
-  int value_ = kDefault;
+  int value_ = static_cast<int>(Value::kDefault);
 };
 
 // Implements accessibility on Aura Linux using ATK.

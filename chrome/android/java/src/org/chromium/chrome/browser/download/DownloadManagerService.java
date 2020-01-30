@@ -492,13 +492,24 @@ public class DownloadManagerService implements DownloadController.DownloadNotifi
             Set<String> downloadInfo, boolean forceCommit) {
         boolean success;
         if (downloadInfo.isEmpty()) {
-            success = sharedPrefs.removeKey(type, forceCommit);
+            if (forceCommit) {
+                success = sharedPrefs.removeKeySync(type);
+            } else {
+                sharedPrefs.removeKey(type);
+                success = true;
+            }
         } else {
-            success = sharedPrefs.writeStringSet(type, downloadInfo, forceCommit);
+            if (forceCommit) {
+                success = sharedPrefs.writeStringSetSync(type, downloadInfo);
+            } else {
+                sharedPrefs.writeStringSet(type, downloadInfo);
+                success = true;
+            }
         }
 
         if (!success) {
-            // Write synchronously because it might be used on restart and needs to stay up-to-date.
+            // Write synchronously because it might be used on restart and needs to stay
+            // up-to-date.
             Log.e(TAG, "Failed to write DownloadInfo " + type);
         }
     }

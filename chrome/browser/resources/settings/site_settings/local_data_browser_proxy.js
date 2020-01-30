@@ -161,6 +161,7 @@ cr.define('settings', function() {
   // during testing.
   cr.addSingletonGetter(LocalDataBrowserProxyImpl);
 
+  // #cr_define_end
   return {
     LocalDataBrowserProxy: LocalDataBrowserProxy,
     LocalDataBrowserProxyImpl: LocalDataBrowserProxyImpl,

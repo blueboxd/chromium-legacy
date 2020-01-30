@@ -119,7 +119,8 @@ Polymer({
    * @private
    */
   selectedAppNotFound_() {
-    const appId = settings.Router.getInstance().getQueryParameters().get('id');
+    const appId = /** @type {string} */ (
+        settings.Router.getInstance().getQueryParameters().get('id'));
     return this.apps_ && !this.apps_[appId];
   },
 });

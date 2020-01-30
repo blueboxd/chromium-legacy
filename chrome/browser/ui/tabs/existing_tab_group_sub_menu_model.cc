@@ -88,8 +88,11 @@ void ExistingTabGroupSubMenuModel::Build() {
   for (tab_groups::TabGroupId group : GetOrderedTabGroups()) {
     if (ShouldShowGroup(model_, context_index_, group)) {
       const TabGroup* tab_group = model_->group_model()->GetTabGroup(group);
+      const base::string16 group_title = tab_group->visual_data()->title();
+      const base::string16 displayed_title =
+          group_title.empty() ? tab_group->GetContentString() : group_title;
       AddItemWithIcon(
-          group_index, tab_group->GetDisplayedTitle(),
+          group_index, displayed_title,
           gfx::ImageSkia(std::make_unique<TabGroupIconImageSource>(
                              tab_group->visual_data()),
                          gfx::Size(TabGroupIconImageSource::kIconSize,

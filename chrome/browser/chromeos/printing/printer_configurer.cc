@@ -25,6 +25,7 @@
 #include "chrome/browser/component_updater/cros_component_installer_chromeos.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_features.h"
+#include "chrome/common/webui_url_constants.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/debug_daemon/debug_daemon_client.h"
 #include "chromeos/printing/ppd_provider.h"
@@ -298,6 +299,15 @@ void PrinterConfigurer::SetPrinterConfigurerForTesting(
     std::unique_ptr<PrinterConfigurer> printer_configurer) {
   DCHECK(!g_printer_configurer_for_test);
   g_printer_configurer_for_test = printer_configurer.release();
+}
+
+// static
+GURL PrinterConfigurer::GeneratePrinterEulaUrl(const std::string& license) {
+  GURL eula_url(chrome::kChromeUIOSCreditsURL);
+  // Construct the URL with proper reference fragment.
+  GURL::Replacements replacements;
+  replacements.SetRefStr(license);
+  return eula_url.ReplaceComponents(replacements);
 }
 
 std::ostream& operator<<(std::ostream& out, const PrinterSetupResult& result) {

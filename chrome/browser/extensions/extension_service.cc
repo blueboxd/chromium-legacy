@@ -1131,6 +1131,11 @@ bool ExtensionService::AreAllExternalProvidersReady() const {
 
 void ExtensionService::OnAllExternalProvidersReady() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+#if defined(OS_CHROMEOS)
+  InstallLimiter::Get(profile_)->OnAllExternalProvidersReady();
+#endif  // defined(OS_CHROMEOS)
+
   // Install any pending extensions.
   if (update_once_all_providers_are_ready_ && updater()) {
     update_once_all_providers_are_ready_ = false;

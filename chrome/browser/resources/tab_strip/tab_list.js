@@ -45,6 +45,11 @@ function getTabIdDataType() {
   return loadTimeData.getString('tabIdDataType');
 }
 
+/** @return {string} */
+function getGroupIdDataType() {
+  return loadTimeData.getString('tabGroupIdDataType');
+}
+
 /**
  * @enum {string}
  */
@@ -583,15 +588,18 @@ class TabListElement extends CustomElement {
    * @private
    */
   onDragStart_(event) {
-    const draggedItem = event.path[0];
-    if (!isTabElement(draggedItem) && !isTabGroupElement(draggedItem)) {
+    const draggedItem =
+        /** @type {!Array<!Element>} */ (event.composedPath()).find(item => {
+          return isTabElement(item) || isTabGroupElement(item);
+        });
+    if (!draggedItem) {
       return;
     }
 
     this.draggedItem_ = /** @type {!TabElement} */ (draggedItem);
-    this.draggedItem_.setDragging(true);
     event.dataTransfer.effectAllowed = 'move';
     const draggedItemRect = this.draggedItem_.getBoundingClientRect();
+    this.draggedItem_.setDragging(true);
     event.dataTransfer.setDragImage(
         this.draggedItem_.getDragImage(), event.clientX - draggedItemRect.left,
         event.clientY - draggedItemRect.top);
@@ -599,6 +607,9 @@ class TabListElement extends CustomElement {
     if (isTabElement(draggedItem)) {
       event.dataTransfer.setData(
           getTabIdDataType(), this.draggedItem_.tab.id.toString());
+    } else if (isTabGroupElement(draggedItem)) {
+      event.dataTransfer.setData(
+          getGroupIdDataType(), this.draggedItem_.dataset.groupId);
     }
   }
 
@@ -620,6 +631,9 @@ class TabListElement extends CustomElement {
         return;
       }
       this.tabsApi_.moveTab(tabId, this.windowId_, -1);
+    } else if (event.dataTransfer.types.includes(getGroupIdDataType())) {
+      const groupId = event.dataTransfer.getData(getGroupIdDataType());
+      this.tabsApi_.moveGroup(groupId, -1);
     }
   }
 

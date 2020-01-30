@@ -28,7 +28,7 @@ public class BookmarkFolderRow extends BookmarkRow {
     @Override
     protected void onFinishInflate() {
         super.onFinishInflate();
-        setIconDrawable(BookmarkUtils.getFolderIcon(getContext()));
+        setStartIconDrawable(BookmarkUtils.getFolderIcon(getContext()));
     }
 
     // BookmarkRow implementation.
@@ -51,7 +51,7 @@ public class BookmarkFolderRow extends BookmarkRow {
     }
 
     @Override
-    protected ColorStateList getDefaultIconTint() {
+    protected ColorStateList getDefaultStartIconTint() {
         return AppCompatResources.getColorStateList(
                 getContext(), BookmarkUtils.getFolderIconTint());
     }

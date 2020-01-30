@@ -12,7 +12,7 @@
 <body>
 <style>
 div:not([rendersubtree~="invisible"]) {
-  intrinsic-size: legacy !important;
+  contain-intrinsic-size: legacy !important;
 }
 </style>
 <script>
@@ -25,7 +25,7 @@ async_test(async(t) => {
   let child = document.createElement("div");
   container.appendChild(child);
   document.body.appendChild(container);
-  container.style = `intrinsic-size: ${CONTENT_WIDTH}px ${CONTENT_HEIGHT}px;`;
+  container.style = `contain-intrinsic-size: ${CONTENT_WIDTH}px ${CONTENT_HEIGHT}px;`;
   await setInvisible(container);
 
   let rect = container.getBoundingClientRect();
@@ -62,7 +62,7 @@ async_test(async(t) => {
   let child = document.createElement("div");
   container.appendChild(child);
   document.body.appendChild(container);
-  container.style = `width: min-content; intrinsic-size: ${CONTENT_WIDTH}px ${CONTENT_HEIGHT}px;`;
+  container.style = `width: min-content; contain-intrinsic-size: ${CONTENT_WIDTH}px ${CONTENT_HEIGHT}px;`;
   await setInvisible(container);
 
   let rect = container.getBoundingClientRect();
@@ -97,7 +97,7 @@ async_test(async(t) => {
   let child = document.createElement("div");
   container.appendChild(child);
   document.body.appendChild(container);
-  container.style = `intrinsic-size: ${CONTENT_WIDTH}px ${CONTENT_HEIGHT}px;`;
+  container.style = `contain-intrinsic-size: ${CONTENT_WIDTH}px ${CONTENT_HEIGHT}px;`;
   await setInvisible(container);
   let rect = container.getBoundingClientRect();
 
@@ -114,7 +114,7 @@ async_test(async(t) => {
   t.step(() => assert_equals(rect.height, 0,
     "Child of locked element with no content has zero height"));
 
-  container.style = "intrinsic-size: 55px 66px;";
+  container.style = "contain-intrinsic-size: 55px 66px;";
   rect = container.getBoundingClientRect();
   t.step(() => assert_equals(rect.width, BODY_WIDTH,
     "After intrinsic-size change, locked element width remains BODY_WIDTH"));

@@ -76,6 +76,8 @@ class SharingWebRtcConnection : public mojom::SignallingReceiver,
   void OnIceGatheringChange(
       webrtc::PeerConnectionInterface::IceGatheringState new_state) override;
   void OnIceCandidate(const webrtc::IceCandidateInterface* candidate) override;
+  void OnConnectionChange(
+      webrtc::PeerConnectionInterface::PeerConnectionState new_state) override;
 
   // webrtc::DataChannelObserver:
   void OnStateChange() override;
@@ -122,6 +124,9 @@ class SharingWebRtcConnection : public mojom::SignallingReceiver,
   void CloseConnection();
 
   void MaybeSendQueuedMessages();
+
+  void OnStatsReceived(
+      const rtc::scoped_refptr<const webrtc::RTCStatsReport>& report);
 
   mojo::Receiver<mojom::SignallingReceiver> signalling_receiver_;
   mojo::Remote<mojom::SignallingSender> signalling_sender_;

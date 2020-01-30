@@ -5,10 +5,11 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EVENTS_POINTER_EVENT_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_EVENTS_POINTER_EVENT_H_
 
-#include "third_party/blink/renderer/bindings/core/v8/v8_pointer_event_init.h"
 #include "third_party/blink/renderer/core/events/mouse_event.h"
 
 namespace blink {
+
+class PointerEventInit;
 
 class CORE_EXPORT PointerEvent final : public MouseEvent {
   DEFINE_WRAPPERTYPEINFO();

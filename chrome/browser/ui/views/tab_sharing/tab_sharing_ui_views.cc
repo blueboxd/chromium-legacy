@@ -276,9 +276,9 @@ void TabSharingUIViews::CreateInfobarForWebContents(
   auto* infobar_service = InfoBarService::FromWebContents(contents);
   infobar_service->AddObserver(this);
   infobars_[contents] = TabSharingInfoBarDelegate::Create(
-      infobar_service,
-      shared_tab_ == contents ? base::string16() : shared_tab_name_, app_name_,
-      !source_callback_.is_null() /*is_sharing_allowed*/, this);
+      infobar_service, shared_tab_name_, app_name_,
+      shared_tab_ == contents /*shared_tab*/,
+      !source_callback_.is_null() /*can_share*/, this);
 }
 
 void TabSharingUIViews::RemoveInfobarsForAllTabs() {

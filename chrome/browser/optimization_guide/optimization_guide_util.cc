@@ -31,3 +31,29 @@ bool IsHostValidToFetchFromRemoteOptimizationGuide(const std::string& host) {
   }
   return true;
 }
+
+optimization_guide::OptimizationGuideDecision
+GetOptimizationGuideDecisionFromOptimizationTypeDecision(
+    optimization_guide::OptimizationTypeDecision optimization_type_decision) {
+  switch (optimization_type_decision) {
+    case optimization_guide::OptimizationTypeDecision::
+        kAllowedByOptimizationFilter:
+    case optimization_guide::OptimizationTypeDecision::kAllowedByHint:
+      return optimization_guide::OptimizationGuideDecision::kTrue;
+    case optimization_guide::OptimizationTypeDecision::kUnknown:
+    case optimization_guide::OptimizationTypeDecision::
+        kHadOptimizationFilterButNotLoadedInTime:
+    case optimization_guide::OptimizationTypeDecision::
+        kHadHintButNotLoadedInTime:
+    case optimization_guide::OptimizationTypeDecision::
+        kHintFetchStartedButNotAvailableInTime:
+    case optimization_guide::OptimizationTypeDecision::kDeciderNotInitialized:
+      return optimization_guide::OptimizationGuideDecision::kUnknown;
+    case optimization_guide::OptimizationTypeDecision::kNotAllowedByHint:
+    case optimization_guide::OptimizationTypeDecision::kNoMatchingPageHint:
+    case optimization_guide::OptimizationTypeDecision::kNoHintAvailable:
+    case optimization_guide::OptimizationTypeDecision::
+        kNotAllowedByOptimizationFilter:
+      return optimization_guide::OptimizationGuideDecision::kFalse;
+  }
+}

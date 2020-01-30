@@ -309,6 +309,12 @@ void InitWindowsStringWithString(const WindowsStringCharT* string,
   windows_string->MaximumLength = windows_string->Length + buffer_char_size;
 }
 
+// Extracts the provided keys from the given dictionary. Returns true if all
+// keys are found. If any of the key isn't found, returns false.
+bool ExtractKeysFromDict(
+    const base::Value& dict,
+    const std::vector<std::pair<std::string, std::string*>>& needed_outputs);
+
 }  // namespace credential_provider
 
 #endif  // CHROME_CREDENTIAL_PROVIDER_GAIACP_GCP_UTILS_H_

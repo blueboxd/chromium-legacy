@@ -15,7 +15,7 @@
 #include "base/lazy_instance.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted_memory.h"
-#include "base/metrics/histogram_macros.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -599,8 +599,9 @@ void PrintPreviewUI::OnPrintPreviewCancelled(int request_id) {
 
 void PrintPreviewUI::OnPrintPreviewRequest(int request_id) {
   if (!initial_preview_start_time_.is_null()) {
-    UMA_HISTOGRAM_TIMES("PrintPreview.InitializationTime",
-                        base::TimeTicks::Now() - initial_preview_start_time_);
+    base::UmaHistogramTimes(
+        "PrintPreview.InitializationTime",
+        base::TimeTicks::Now() - initial_preview_start_time_);
   }
   g_print_preview_request_id_map.Get().Set(*id_, request_id);
 }
@@ -678,9 +679,10 @@ void PrintPreviewUI::OnPreviewDataIsAvailable(
     scoped_refptr<base::RefCountedMemory> data,
     int preview_request_id) {
   if (!initial_preview_start_time_.is_null()) {
-    UMA_HISTOGRAM_TIMES("PrintPreview.InitialDisplayTime",
-                        base::TimeTicks::Now() - initial_preview_start_time_);
-    UMA_HISTOGRAM_COUNTS_1M(
+    base::UmaHistogramTimes(
+        "PrintPreview.InitialDisplayTime",
+        base::TimeTicks::Now() - initial_preview_start_time_);
+    base::UmaHistogramCounts1M(
         "PrintPreview.RegeneratePreviewRequest.BeforeFirstData",
         handler_->regenerate_preview_request_count());
     initial_preview_start_time_ = base::TimeTicks();

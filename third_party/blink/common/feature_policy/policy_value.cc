@@ -117,7 +117,7 @@ bool operator<(const PolicyValue& lhs, const PolicyValue& rhs) {
   DCHECK_EQ(lhs.Type(), rhs.Type());
   switch (lhs.Type()) {
     case mojom::PolicyValueType::kBool:
-      return rhs.BoolValue();
+      return !lhs.BoolValue() && rhs.BoolValue();
     case mojom::PolicyValueType::kDecDouble:
       return lhs.DoubleValue() < rhs.DoubleValue();
     case mojom::PolicyValueType::kNull:

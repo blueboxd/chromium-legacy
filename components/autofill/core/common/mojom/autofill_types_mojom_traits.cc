@@ -231,7 +231,7 @@ bool StructTraits<autofill::mojom::PasswordGenerationUIDataDataView,
 
   if (!data.ReadGenerationElement(&out->generation_element) ||
       !data.ReadTextDirection(&out->text_direction) ||
-      !data.ReadPasswordForm(&out->password_form))
+      !data.ReadFormData(&out->form_data))
     return false;
 
   return true;

@@ -420,7 +420,6 @@
 <translation id="2799223571221894425">Ilunsad Muli</translation>
 <translation id="2803306138276472711">Kamakailan lang, ang Google Safe Browsing ay <ph name="BEGIN_LINK" />nakakita ng malware<ph name="END_LINK" /> sa <ph name="SITE" />. Paminsan-minsan, nagkakaroon ng malware ang mga website na karaniwang ligtas.</translation>
 <translation id="2807052079800581569">Posisyon ng larawan Y</translation>
-<translation id="2809804249696361569">Parehong sheet</translation>
 <translation id="2824775600643448204">Address bar at bar sa paghahanap</translation>
 <translation id="2826760142808435982">Ine-encrypt at pinapatotoo ang koneksyon gamit ang <ph name="CIPHER" /> at ginagamit ang <ph name="KX" /> bilang key exchange mechanism.</translation>
 <translation id="2835170189407361413">I-clear ang form</translation>
@@ -923,7 +922,6 @@
 <translation id="5112422516732747637">A5</translation>
 <translation id="5115216390227830982">European-Edp</translation>
 <translation id="5115563688576182185">(64-bit)</translation>
-<translation id="5121469660360593280">Magbahagi ng data tungkol sa mga pangyayari sa seguridad na na-flag ng Proteksyon sa User ng Chrome Enterprise sa iyong Administrator. Posibleng kabilang dito ang mga URL ng mga page na binibisita mo, mga pangalan ng file o metadata, at ang username na iyong ginagamit para mag-sign sa device mo at sa Chrome.</translation>
 <translation id="5123063207673082822">Weekend</translation>
 <translation id="5125394840236832993">B-Plus</translation>
 <translation id="5126510351761255129">I-verify ang iyong card</translation>
@@ -938,7 +936,6 @@
 <translation id="5161506081086828129">Stacker 9</translation>
 <translation id="516920405563544094">Ilagay ang CVC para sa <ph name="CREDIT_CARD" />. Pagkatapos mong magkumpirma, ibabahagi sa site na ito ang mga detalye ng card mula sa iyong Google Account.</translation>
 <translation id="5169827969064885044">Maaari kang mawalan ng access sa account ng iyong organisasyon o manakawan ng pagkakakilanlan. Inirerekomenda ng Chrome na palitan ang iyong password ngayon.</translation>
-<translation id="5170017743895942767">Proteksyon sa User ng Chrome Enterprise</translation>
 <translation id="5171045022955879922">Hanapin o i-type ang URL</translation>
 <translation id="5171689220826475070">Fanfold-European</translation>
 <translation id="5172758083709347301">Computer</translation>
@@ -1071,7 +1068,6 @@
 <translation id="5737183892635480227">{NUM_CARDS,plural, =1{I-save ang card sa iyong Google Account}one{I-save ang mga card sa iyong Google Account}other{I-save ang mga card sa iyong Google Account}}</translation>
 <translation id="5745980000221562234">{NUM_CARDS,plural, =1{Gumamit ng virtual na numero para sa card na ito}one{Pumili ng card}other{Pumili ng card}}</translation>
 <translation id="5763042198335101085">Maglagay ng wastong email address</translation>
-<translation id="5763703224595565476">Na-enable ng iyong administrator ang Proteksyon sa User ng Chrome Enterprise sa browser mo. May access ang Proteksyon sa User ng Chrome Enterprise sa ilan sa iyong data.</translation>
 <translation id="5765072501007116331">Upang makita ang mga pamamaraan at kinakailangan sa paghahatid, pumili ng address</translation>
 <translation id="5776313857861697733">Priyoridad</translation>
 <translation id="5778550464785688721">Ganap na pagkontrol sa mga MIDI device</translation>
@@ -1408,7 +1404,6 @@ Mga karagdagang detalye:
 <translation id="733923710415886693">Ang certificate ng server ay hindi inihayag sa pamamagitan ng Transparency ng Certificate.</translation>
 <translation id="734600844861828519">11x15</translation>
 <translation id="7346048084945669753">Naka-affiliate:</translation>
-<translation id="73479065977517481">Na-enable ng <ph name="ENROLLMENT_DOMAIN" /> ang Proteksyon sa User ng Chrome Enterprise sa iyong browser. May access ang Proteksyon sa User ng Chrome Enterprise sa ilan sa iyong data.</translation>
 <translation id="7349430561505560861">A4-Extra</translation>
 <translation id="7353601530677266744">Command Line</translation>
 <translation id="7372973238305370288">resulta ng paghahanap</translation>

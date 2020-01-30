@@ -7,9 +7,12 @@
 
 #include "ash/ash_export.h"
 #include "ash/system/model/update_model.h"
+#include "base/files/file_path.h"
 #include "base/macros.h"
 
 namespace ash {
+
+class ShutdownConfirmationDialog;
 
 // Controller class to manage update notification.
 class ASH_EXPORT UpdateNotificationController : public UpdateObserver {
@@ -20,6 +23,12 @@ class ASH_EXPORT UpdateNotificationController : public UpdateObserver {
   // UpdateObserver:
   void OnUpdateAvailable() override;
 
+  // Callback functions for Shutdown Confirmation Dialog which is generated
+  // when the device bootup process is occasionally slow - eg. memory training
+  // during the bootup due to a system firmware update.
+  void RestartForUpdate();
+  void RestartCancelled();
+
  private:
   friend class UpdateNotificationControllerTest;
 
@@ -27,10 +36,16 @@ class ASH_EXPORT UpdateNotificationController : public UpdateObserver {
   base::string16 GetNotificationTitle() const;
   base::string16 GetNotificationMessage() const;
   void HandleNotificationClick(base::Optional<int> index);
+  void GenerateUpdateNotification(
+      base::Optional<bool> slow_boot_file_path_exists);
 
   static const char kNotificationId[];
 
   UpdateModel* const model_;
+
+  base::FilePath slow_boot_file_path_;
+  bool slow_boot_file_path_exists_ = false;
+  ShutdownConfirmationDialog* confirmation_dialog_ = nullptr;
 
   base::WeakPtrFactory<UpdateNotificationController> weak_ptr_factory_{this};
 

@@ -14,6 +14,7 @@
 #include "ash/shelf/hotseat_transition_animator.h"
 #include "ash/shelf/hotseat_widget.h"
 #include "ash/shelf/shelf_background_animator.h"
+#include "ash/shelf/shelf_component.h"
 #include "ash/shelf/shelf_layout_manager_observer.h"
 #include "ash/shelf/shelf_observer.h"
 #include "base/macros.h"
@@ -34,11 +35,12 @@ class StatusAreaWidget;
 // The ShelfWidget manages the shelf view (which contains the shelf icons) and
 // the status area widget. There is one ShelfWidget per display. It is created
 // early during RootWindowController initialization.
-class ASH_EXPORT ShelfWidget : public views::Widget,
+class ASH_EXPORT ShelfWidget : public AccessibilityObserver,
+                               public SessionObserver,
+                               public ShelfComponent,
                                public ShelfLayoutManagerObserver,
                                public ShelfObserver,
-                               public SessionObserver,
-                               public AccessibilityObserver {
+                               public views::Widget {
  public:
   explicit ShelfWidget(Shelf* shelf);
   ~ShelfWidget() override;
@@ -105,6 +107,10 @@ class ASH_EXPORT ShelfWidget : public views::Widget,
   void OnMouseEvent(ui::MouseEvent* event) override;
   void OnGestureEvent(ui::GestureEvent* event) override;
   bool OnNativeWidgetActivationChanged(bool active) override;
+
+  // ShelfComponent:
+  void CalculateTargetBounds() override;
+  void UpdateLayout(bool animate) override;
 
   // ShelfLayoutManagerObserver:
   void WillDeleteShelfLayoutManager() override;

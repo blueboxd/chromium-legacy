@@ -256,6 +256,10 @@ void CertificateProviderService::ReplyToSignRequest(
     const std::vector<uint8_t>& signature) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
+  // TODO(crbug.com/1046860): Remove logging after stabilizing the feature.
+  VLOG(1) << "Extension " << extension_id << " replied to signature request "
+          << sign_request_id << ", size " << signature.size();
+
   scoped_refptr<net::X509Certificate> certificate;
   net::SSLPrivateKey::SignCallback callback;
   if (!sign_requests_.RemoveRequest(extension_id, sign_request_id, &certificate,
@@ -367,6 +371,11 @@ void CertificateProviderService::AbortSignatureRequestsForAuthenticatingUser(
        sign_requests_to_abort) {
     const std::string& extension_id = sign_request.first;
     const int sign_request_id = sign_request.second;
+
+    // TODO(crbug.com/1046860): Remove logging after stabilizing the feature.
+    VLOG(1) << "Aborting user login signature request from extension "
+            << extension_id << " id " << sign_request_id;
+
     pin_dialog_manager_.AbortSignRequest(extension_id, sign_request_id);
 
     scoped_refptr<net::X509Certificate> certificate;
@@ -448,10 +457,18 @@ void CertificateProviderService::RequestSignatureFromExtension(
   const int sign_request_id = sign_requests_.AddRequest(
       extension_id, certificate, authenticating_user_account_id,
       std::move(callback));
+
+  // TODO(crbug.com/1046860): Remove logging after stabilizing the feature.
+  VLOG(1) << "Starting signature request to extension " << extension_id
+          << " id " << sign_request_id;
+
   pin_dialog_manager_.AddSignRequestId(extension_id, sign_request_id,
                                        authenticating_user_account_id);
   if (!delegate_->DispatchSignRequestToExtension(
           extension_id, sign_request_id, algorithm, certificate, digest)) {
+    // TODO(crbug.com/1046860): Remove logging after stabilizing the feature.
+    VLOG(1) << "Failed to dispatch signature request to extension "
+            << extension_id << " id " << sign_request_id;
     scoped_refptr<net::X509Certificate> local_certificate;
     sign_requests_.RemoveRequest(extension_id, sign_request_id,
                                  &local_certificate, &callback);

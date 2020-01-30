@@ -440,7 +440,7 @@ void ServiceWorkerControlleeRequestHandler::ContinueWithActivatedVersion(
   DCHECK_NE(active_version->fetch_handler_existence(),
             ServiceWorkerVersion::FetchHandlerExistence::UNKNOWN);
   ServiceWorkerMetrics::CountControlledPageLoad(
-      active_version->site_for_uma(), stripped_url_,
+      active_version->site_for_uma(),
       resource_type_ == ResourceType::kMainFrame);
 
   if (IsResourceTypeFrame(resource_type_))

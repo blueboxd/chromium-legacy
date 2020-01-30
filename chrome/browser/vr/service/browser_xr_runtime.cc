@@ -27,6 +27,7 @@
 #include "chrome/browser/android/vr/gvr_consent_helper.h"
 #if BUILDFLAG(ENABLE_ARCORE)
 #include "chrome/browser/android/vr/arcore_device/arcore_consent_prompt.h"
+#include "chrome/browser/android/vr/arcore_device/arcore_install_helper.h"
 #endif
 #endif
 
@@ -254,6 +255,7 @@ BrowserXRRuntime::BrowserXRRuntime(
 #if BUILDFLAG(ENABLE_ARCORE)
   if (id_ == device::mojom::XRDeviceId::ARCORE_DEVICE_ID) {
     consent_helper_ = std::make_unique<ArCoreConsentPrompt>();
+    install_helper_ = std::make_unique<ArCoreInstallHelper>();
   }
 #endif
 #endif
@@ -261,6 +263,10 @@ BrowserXRRuntime::BrowserXRRuntime(
 
 BrowserXRRuntime::~BrowserXRRuntime() {
   DVLOG(2) << __func__ << ": id=" << id_;
+
+  if (install_finished_callback_) {
+    std::move(install_finished_callback_).Run(false);
+  }
 }
 
 void BrowserXRRuntime::ExitActiveImmersiveSession() {
@@ -537,6 +543,42 @@ void BrowserXRRuntime::ShowConsentPrompt(
     std::move(consent_callback).Run(consent_level, false);
   }
 #endif
+}
+
+void BrowserXRRuntime::EnsureInstalled(
+    int render_process_id,
+    int render_frame_id,
+    OnInstallFinishedCallback install_callback) {
+  // If there's no install helper, then we can assume no install is needed.
+  if (!install_helper_) {
+    std::move(install_callback).Run(true);
+    return;
+  }
+
+  // Only the most recent caller will be notified of a successful install.
+  bool had_outstanding_callback = false;
+  if (install_finished_callback_) {
+    had_outstanding_callback = true;
+    std::move(install_finished_callback_).Run(false);
+  }
+
+  install_finished_callback_ = std::move(install_callback);
+
+  // If we already had a cached install callback, then we don't need to query
+  // for installation again.
+  if (had_outstanding_callback)
+    return;
+
+  install_helper_->EnsureInstalled(
+      render_process_id, render_frame_id,
+      base::BindOnce(&BrowserXRRuntime::OnInstallFinished,
+                     weak_ptr_factory_.GetWeakPtr()));
+}
+
+void BrowserXRRuntime::OnInstallFinished(bool succeeded) {
+  DCHECK(install_finished_callback_);
+
+  std::move(install_finished_callback_).Run(succeeded);
 }
 
 void BrowserXRRuntime::OnImmersiveSessionError() {

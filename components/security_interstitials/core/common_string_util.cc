@@ -64,13 +64,6 @@ void PopulateSSLDebuggingStrings(const net::SSLInfo ssl_info,
   load_time_data->SetString("pem", base::StrCat(encoded_chain));
 }
 
-void PopulateDarkModeDisplaySetting(base::DictionaryValue* load_time_data) {
-  load_time_data->SetBoolean(
-      "darkModeAvailable",
-      base::FeatureList::IsEnabled(
-          security_interstitials::kSecurityInterstitialsDarkMode));
-}
-
 }  // namespace common_string_util
 
 }  // namespace security_interstitials

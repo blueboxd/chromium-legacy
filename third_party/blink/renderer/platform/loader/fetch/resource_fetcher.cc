@@ -158,24 +158,12 @@ ResourceLoadPriority TypeToPriority(ResourceType type) {
   return ResourceLoadPriority::kUnresolved;
 }
 
-static bool IsCacheableHTTPMethod(const AtomicString& method) {
-  // Per http://www.w3.org/Protocols/rfc2616/rfc2616-sec13.html#sec13.10,
-  // these methods always invalidate the cache entry.
-  return method != http_names::kPOST && method != http_names::kPUT &&
-         method != "DELETE";
-}
-
 bool ShouldResourceBeAddedToMemoryCache(const FetchParameters& params,
                                         Resource* resource) {
-  if (!IsMainThread())
-    return false;
-  if (params.Options().data_buffering_policy == kDoNotBufferData)
-    return false;
-  if (IsRawResource(*resource))
-    return false;
-  if (!IsCacheableHTTPMethod(params.GetResourceRequest().HttpMethod()))
-    return false;
-  return true;
+  return IsMainThread() &&
+         params.GetResourceRequest().HttpMethod() == http_names::kGET &&
+         params.Options().data_buffering_policy != kDoNotBufferData &&
+         !IsRawResource(*resource);
 }
 
 static ResourceFetcher::ResourceFetcherSet& MainThreadFetchersSet() {

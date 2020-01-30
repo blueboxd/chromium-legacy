@@ -327,12 +327,28 @@ void SmbService::CallMount(const file_system_provider::MountOptions& options,
 
   if (IsSmbFsEnabled()) {
     // TODO(amistry): Pass resolved host address to smbfs.
-    // TODO(amistry): Pass kerberos user id for chromad users.
     SmbFsShare::MountOptions smbfs_options;
     smbfs_options.username = username;
     smbfs_options.workgroup = workgroup;
     smbfs_options.password = password;
     smbfs_options.allow_ntlm = IsNTLMAuthenticationEnabled();
+    if (use_kerberos) {
+      if (user->IsActiveDirectoryUser()) {
+        smbfs_options.kerberos_options =
+            base::make_optional<SmbFsShare::KerberosOptions>(
+                SmbFsShare::KerberosOptions::Source::kActiveDirectory,
+                user->GetAccountId().GetObjGuid());
+      } else if (smb_credentials_updater_) {
+        smbfs_options.kerberos_options =
+            base::make_optional<SmbFsShare::KerberosOptions>(
+                SmbFsShare::KerberosOptions::Source::kKerberos,
+                smb_credentials_updater_->active_account_name());
+      } else {
+        LOG(WARNING) << "No Kerberos credential source available";
+        std::move(callback).Run(SmbMountResult::AUTHENTICATION_FAILED);
+        return;
+      }
+    }
 
     std::unique_ptr<SmbFsShare> mount = std::make_unique<SmbFsShare>(
         profile_, parsed_url.ToString(), options.display_name, smbfs_options);

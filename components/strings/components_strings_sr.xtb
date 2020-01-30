@@ -428,7 +428,6 @@
 <translation id="2799223571221894425">Поново покрени</translation>
 <translation id="2803306138276472711">Google безбедно прегледање је недавно <ph name="BEGIN_LINK" />открило малвер<ph name="END_LINK" /> на <ph name="SITE" />. Веб-сајтови који су обично безбедни се понекад заразе малвером.</translation>
 <translation id="2807052079800581569">Позиција слике на Y оси</translation>
-<translation id="2809804249696361569">Оба листа</translation>
 <translation id="2824775600643448204">Трака за адресу и претрагу</translation>
 <translation id="2826760142808435982">Веза је шифрована и њена аутентичност је потврђена помоћу <ph name="CIPHER" /> и користи <ph name="KX" /> као механизам за размену шифара.</translation>
 <translation id="2835170189407361413">Обриши образац</translation>
@@ -937,7 +936,6 @@
 <translation id="5112422516732747637">A5</translation>
 <translation id="5115216390227830982">European-Edp</translation>
 <translation id="5115563688576182185">(64-битни)</translation>
-<translation id="5121469660360593280">Делите са администатором податке о безбедносним догађајима које је пријавила Chrome заштита за кориснике верзије за предузећа. То може да обухвата URL-ове страница које посећујете, називе или метаподатке датотека и корисничко име помоћу ког се пријављујете на уређај и у Chrome.</translation>
 <translation id="5123063207673082822">Викенд</translation>
 <translation id="5125394840236832993">B-Plus</translation>
 <translation id="5126510351761255129">Верификујте картицу</translation>
@@ -952,7 +950,6 @@
 <translation id="5161506081086828129">9. преграда за слагање</translation>
 <translation id="516920405563544094">Унесите CVC за картицу <ph name="CREDIT_CARD" />. Када будете потврдили, подаци о картици са Google налога ће се делити са овим сајтом.</translation>
 <translation id="5169827969064885044">Могли бисте да изгубите приступ налогу за организацију или би могло да дође до крађе идентитета. Chrome вам препоручује да одмах промените лозинку.</translation>
-<translation id="5170017743895942767">Chrome заштита за кориснике верзије за предузећа</translation>
 <translation id="5171045022955879922">Претражите или унесите URL адресу</translation>
 <translation id="5171689220826475070">Fanfold-European</translation>
 <translation id="5172758083709347301">Рачунар</translation>
@@ -1085,7 +1082,6 @@
 <translation id="5737183892635480227">{NUM_CARDS,plural, =1{Сачувајте картицу на Google налогу}one{Сачувајте картице на Google налогу}few{Сачувајте картице на Google налогу}other{Сачувајте картице на Google налогу}}</translation>
 <translation id="5745980000221562234">{NUM_CARDS,plural, =1{Користите виртуелни број за ову картицу}one{Изаберите картицу}few{Изаберите картицу}other{Изаберите картицу}}</translation>
 <translation id="5763042198335101085">Унесите важећу имејл адресу</translation>
-<translation id="5763703224595565476">Администратор је у прегледачу омогућио Chrome заштиту за кориснике верзије за предузећа. Chrome заштита за кориснике верзије за предузећа има приступ неким вашим подацима.</translation>
 <translation id="5765072501007116331">Да бисте видели начине и захтеве за испоруку, изаберите адресу</translation>
 <translation id="5776313857861697733">Приоритет</translation>
 <translation id="5778550464785688721">Потпуна контрола над MIDI уређајима</translation>
@@ -1421,7 +1417,6 @@
 <translation id="733923710415886693">Сертификат сервера није откривен помоћу Транспарентности сертификата.</translation>
 <translation id="734600844861828519">11x15</translation>
 <translation id="7346048084945669753">Повезан је:</translation>
-<translation id="73479065977517481"><ph name="ENROLLMENT_DOMAIN" /> је у прегледачу омогућио Chrome заштиту за кориснике верзије за предузећа Chrome заштита за кориснике верзије за предузећа има приступ неким вашим подацима.</translation>
 <translation id="7349430561505560861">A4-Extra</translation>
 <translation id="7353601530677266744">Командна линија</translation>
 <translation id="7372973238305370288">резултат претраге</translation>

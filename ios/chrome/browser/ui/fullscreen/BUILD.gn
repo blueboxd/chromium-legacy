@@ -7,7 +7,6 @@ source_set("fullscreen") {
     "animated_scoped_fullscreen_disabler.h",
     "animated_scoped_fullscreen_disabler.mm",
     "fullscreen_controller.h",
-    "fullscreen_controller_factory.h",
     "fullscreen_controller_observer.h",
     "fullscreen_ui_updater.h",
     "scoped_fullscreen_disabler.h",
@@ -23,7 +22,6 @@ source_set("fullscreen") {
     "//base",
     "//components/keyed_service/core",
     "//components/keyed_service/ios",
-    "//ios/chrome/browser/browser_state:forward",
     "//ios/chrome/browser/web_state_list",
     "//ios/chrome/common",
   ]
@@ -62,7 +60,6 @@ source_set("internal") {
   sources = [
     "fullscreen_content_adjustment_util.h",
     "fullscreen_content_adjustment_util.mm",
-    "fullscreen_controller_factory.mm",
     "fullscreen_controller_impl.h",
     "fullscreen_controller_impl.mm",
     "fullscreen_mediator.h",
@@ -92,6 +89,7 @@ source_set("internal") {
     "//components/keyed_service/ios",
     "//ios/chrome/browser",
     "//ios/chrome/browser/browser_state",
+    "//ios/chrome/browser/main:public",
     "//ios/chrome/browser/ui/broadcaster",
     "//ios/chrome/browser/ui/util",
     "//ios/chrome/browser/ui/util",

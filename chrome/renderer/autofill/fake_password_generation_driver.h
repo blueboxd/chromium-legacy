@@ -31,20 +31,20 @@ class FakePasswordGenerationDriver
   void Flush();
 
   // autofill::mojom::PasswordGenerationDriver:
-  MOCK_METHOD1(GenerationAvailableForForm,
-               void(const autofill::PasswordForm& password_form));
   MOCK_METHOD1(
       AutomaticGenerationAvailable,
       void(const autofill::password_generation::PasswordGenerationUIData&));
-  MOCK_METHOD3(ShowPasswordEditingPopup,
+  MOCK_METHOD4(ShowPasswordEditingPopup,
                void(const gfx::RectF&,
-                    const autofill::PasswordForm&,
-                    uint32_t));
+                    const autofill::FormData&,
+                    uint32_t,
+                    const base::string16&));
   MOCK_METHOD0(PasswordGenerationRejectedByTyping, void());
-  MOCK_METHOD1(PresaveGeneratedPassword,
-               void(const autofill::PasswordForm& password_form));
+  MOCK_METHOD2(PresaveGeneratedPassword,
+               void(const autofill::FormData& form_data,
+                    const base::string16& generated_password));
   MOCK_METHOD1(PasswordNoLongerGenerated,
-               void(const autofill::PasswordForm& password_form));
+               void(const autofill::FormData& form_data));
   MOCK_METHOD0(FrameWasScrolled, void());
   MOCK_METHOD0(GenerationElementLostFocus, void());
 

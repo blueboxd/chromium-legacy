@@ -970,6 +970,16 @@ bool AwContents::IsVisible(JNIEnv* env, const JavaParamRef<jobject>& obj) {
   return browser_view_renderer_.IsClientVisible();
 }
 
+bool AwContents::IsDisplayingInterstitialForTesting(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj) {
+  security_interstitials::SecurityInterstitialTabHelper*
+      security_interstitial_tab_helper = security_interstitials::
+          SecurityInterstitialTabHelper::FromWebContents(web_contents_.get());
+  return security_interstitial_tab_helper &&
+         security_interstitial_tab_helper->IsDisplayingInterstitial();
+}
+
 base::android::ScopedJavaLocalRef<jbyteArray> AwContents::GetOpaqueState(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) {

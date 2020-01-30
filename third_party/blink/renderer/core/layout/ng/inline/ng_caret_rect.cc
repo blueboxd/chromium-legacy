@@ -22,9 +22,10 @@ PhysicalRect ComputeLocalCaretRectByBoxSide(const NGInlineCursor& cursor,
   line_box.MoveToContainingLine();
   DCHECK(line_box);
   const PhysicalOffset offset_to_line_box =
-      cursor.CurrentOffset() - line_box.CurrentOffset();
-  LayoutUnit caret_height = is_horizontal ? line_box.CurrentSize().height
-                                          : line_box.CurrentSize().width;
+      cursor.Current().OffsetInContainerBlock() -
+      line_box.Current().OffsetInContainerBlock();
+  LayoutUnit caret_height = is_horizontal ? line_box.Current().Size().height
+                                          : line_box.Current().Size().width;
   LayoutUnit caret_top =
       is_horizontal ? -offset_to_line_box.top : -offset_to_line_box.left;
 
@@ -36,9 +37,9 @@ PhysicalRect ComputeLocalCaretRectByBoxSide(const NGInlineCursor& cursor,
   LayoutUnit caret_left;
   if (is_ltr != (position_type == NGCaretPositionType::kBeforeBox)) {
     if (is_horizontal)
-      caret_left = cursor.CurrentSize().width - caret_width;
+      caret_left = cursor.Current().Size().width - caret_width;
     else
-      caret_left = cursor.CurrentSize().height - caret_width;
+      caret_left = cursor.Current().Size().height - caret_width;
   }
 
   if (!is_horizontal) {
@@ -63,8 +64,8 @@ PhysicalRect ComputeLocalCaretRectAtTextOffset(const NGInlineCursor& cursor,
 
   const bool is_horizontal = cursor.CurrentStyle().IsHorizontalWritingMode();
 
-  LayoutUnit caret_height =
-      is_horizontal ? cursor.CurrentSize().height : cursor.CurrentSize().width;
+  LayoutUnit caret_height = is_horizontal ? cursor.Current().Size().height
+                                          : cursor.Current().Size().width;
   LayoutUnit caret_top;
 
   LayoutUnit caret_left = cursor.InlinePositionForOffset(offset);
@@ -77,16 +78,17 @@ PhysicalRect ComputeLocalCaretRectAtTextOffset(const NGInlineCursor& cursor,
   }
 
   // Adjust the location to be relative to the inline formatting context.
-  PhysicalOffset caret_location =
-      PhysicalOffset(caret_left, caret_top) + cursor.CurrentOffset();
+  PhysicalOffset caret_location = PhysicalOffset(caret_left, caret_top) +
+                                  cursor.Current().OffsetInContainerBlock();
   const PhysicalSize caret_size(caret_width, caret_height);
 
   const NGPhysicalBoxFragment& fragmentainer =
       *cursor.CurrentLayoutObject()->ContainingBlockFlowFragment();
   NGInlineCursor line_box(cursor);
   line_box.MoveToContainingLine();
-  const PhysicalOffset line_box_offset = line_box.CurrentOffset();
-  const PhysicalRect line_box_rect(line_box_offset, line_box.CurrentSize());
+  const PhysicalOffset line_box_offset =
+      line_box.Current().OffsetInContainerBlock();
+  const PhysicalRect line_box_rect(line_box_offset, line_box.Current().Size());
 
   // For horizontal text, adjust the location in the x direction to ensure that
   // it completely falls in the union of line box and containing block, and
@@ -152,11 +154,11 @@ LocalCaretRect ComputeLocalSelectionRect(
 
   PhysicalRect rect = caret_rect.rect;
   if (caret_position.cursor.CurrentStyle().IsHorizontalWritingMode()) {
-    rect.SetY(line_box.CurrentOffset().top);
-    rect.SetHeight(line_box.CurrentSize().height);
+    rect.SetY(line_box.Current().OffsetInContainerBlock().top);
+    rect.SetHeight(line_box.Current().Size().height);
   } else {
-    rect.SetX(line_box.CurrentOffset().left);
-    rect.SetHeight(line_box.CurrentSize().width);
+    rect.SetX(line_box.Current().OffsetInContainerBlock().left);
+    rect.SetHeight(line_box.Current().Size().width);
   }
   return {caret_rect.layout_object, rect};
 }

@@ -396,11 +396,7 @@ std::unique_ptr<base::File> CommandStorageBackend::OpenAndWriteHeader(
 bool CommandStorageBackend::AppendCommandToFile(
     base::File* file,
     const sessions::SessionCommand& command) {
-  const size_type content_size =
-      std::min(command.size(),
-               static_cast<size_type>(std::numeric_limits<size_type>::max() -
-                                      sizeof(id_type)));
-  const size_type total_size = content_size + sizeof(id_type);
+  const size_type total_size = command.GetSerializedSize();
   if (file->WriteAtCurrentPos(reinterpret_cast<const char*>(&total_size),
                               sizeof(total_size)) != sizeof(total_size)) {
     DVLOG(1) << "error writing";
@@ -412,6 +408,8 @@ bool CommandStorageBackend::AppendCommandToFile(
     DVLOG(1) << "error writing";
     return false;
   }
+
+  const size_type content_size = total_size - sizeof(id_type);
   if (content_size == 0)
     return true;
 

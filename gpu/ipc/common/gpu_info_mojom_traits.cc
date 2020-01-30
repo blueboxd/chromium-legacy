@@ -378,10 +378,6 @@ bool StructTraits<gpu::mojom::GpuInfoDataView, gpu::GPUInfo>::Read(
   out->jpeg_decode_accelerator_supported =
       data.jpeg_decode_accelerator_supported();
 
-#if defined(USE_X11)
-  out->system_visual = data.system_visual();
-  out->rgba_visual = data.rgba_visual();
-#endif
   out->oop_rasterization_supported = data.oop_rasterization_supported();
   out->subpixel_font_rendering = data.subpixel_font_rendering();
 

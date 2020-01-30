@@ -22,9 +22,12 @@
 #include "chromecast/browser/service_connector.h"
 #include "chromecast/chromecast_buildflags.h"
 #include "chromecast/media/cdm/cast_cdm_factory.h"
+#include "components/cdm/browser/media_drm_storage_impl.h"
 #include "content/public/browser/render_process_host.h"
 #include "media/mojo/buildflags.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "services/service_manager/public/cpp/binder_map.h"
+#include "url/origin.h"
 
 #if BUILDFLAG(ENABLE_CAST_RENDERER)
 #include "chromecast/media/service/cast_mojo_media_client.h"
@@ -41,23 +44,16 @@
 #include "chromecast/common/mojom/js_channel.mojom.h"
 #endif
 
-#if defined(OS_ANDROID)
-#include "components/cdm/browser/media_drm_storage_impl.h"
-#include "mojo/public/cpp/bindings/pending_receiver.h"
-#include "url/origin.h"
-#else
+#if !defined(OS_ANDROID)
 #include "chromecast/browser/memory_pressure_controller_impl.h"
-#endif  // defined(OS_ANDROID)
+#endif  // !defined(OS_ANDROID)
 
 namespace chromecast {
 namespace shell {
 
 namespace {
 
-#if defined(OS_ANDROID)
 void CreateOriginId(cdm::MediaDrmStorageImpl::OriginIdObtainedCB callback) {
-  // TODO(crbug.com/917527): Update this to actually get a pre-provisioned
-  // origin ID.
   std::move(callback).Run(true, base::UnguessableToken::Create());
 }
 
@@ -83,7 +79,6 @@ void CreateMediaDrmStorage(
       render_frame_host, pref_service, base::BindRepeating(&CreateOriginId),
       base::BindRepeating(&AllowEmptyOriginIdCB), std::move(receiver));
 }
-#endif  // defined(OS_ANDROID)
 
 #if BUILDFLAG(ENABLE_EXTERNAL_MOJO_SERVICES)
 void StartExternalMojoBrokerService(
@@ -120,10 +115,8 @@ void CastContentBrowserClient::ExposeInterfacesToRenderer(
 void CastContentBrowserClient::ExposeInterfacesToMediaService(
     service_manager::BinderRegistry* registry,
     content::RenderFrameHost* render_frame_host) {
-#if defined(OS_ANDROID)
   registry->AddInterface(
       base::BindRepeating(&CreateMediaDrmStorage, render_frame_host));
-#endif  // defined(OS_ANDROID)
 
   registry->AddInterface(base::BindRepeating(&ServiceConnector::BindReceiver,
                                              kMediaServiceClientId));

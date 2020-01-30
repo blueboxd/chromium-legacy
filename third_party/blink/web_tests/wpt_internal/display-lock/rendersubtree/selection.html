@@ -13,7 +13,7 @@
     user-select: none;
   }
   div:not([rendersubtree~="invisible"]) {
-    intrinsic-size: legacy !important;
+    contain-intrinsic-size: legacy !important;
   }
 </style>
 <div id="container">
@@ -33,10 +33,10 @@
 
 <script>
 async function runTest() {
-  container.style = "intrinsic-size: 100px 100px;"
-  nonActivatable.style = "intrinsic-size: 20px 20px;"
-  userSelectNone.style = "intrinsic-size: 30px 30px;"
-  nested.style = "intrinsic-size: 40px 40px;"
+  container.style = "contain-intrinsic-size: 100px 100px;"
+  nonActivatable.style = "contain-intrinsic-size: 20px 20px;"
+  userSelectNone.style = "contain-intrinsic-size: 30px 30px;"
+  nested.style = "contain-intrinsic-size: 40px 40px;"
   await setInvisibleActivatable(container);
   await setInvisible(nonActivatable);
   await setInvisibleActivatable(userSelectNone);

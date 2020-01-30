@@ -424,7 +424,6 @@
 <translation id="2799223571221894425">Yeniden başlat</translation>
 <translation id="2803306138276472711">Google Güvenli Tarama yakın bir zamanda <ph name="SITE" /> sitesinde <ph name="BEGIN_LINK" />kötü amaçlı yazılım<ph name="END_LINK" /> tespit etti. Normalde güvenli olan web sitelerine bazen kötü amaçlı yazılımlar bulaşır.</translation>
 <translation id="2807052079800581569">Resim Y konumu</translation>
-<translation id="2809804249696361569">Her iki sayfa</translation>
 <translation id="2824775600643448204">Adres ve arama çubuğu</translation>
 <translation id="2826760142808435982">Bağlantı <ph name="CIPHER" /> kullanılarak şifrelenmiş ve kimliği doğrulanmıştır. Anahtar değişim mekanizması olarak <ph name="KX" /> kullanılır.</translation>
 <translation id="2835170189407361413">Formu temizle</translation>
@@ -932,7 +931,6 @@
 <translation id="5112422516732747637">A5</translation>
 <translation id="5115216390227830982">European-Edp</translation>
 <translation id="5115563688576182185">(64 bit)</translation>
-<translation id="5121469660360593280">Chrome Enterprise User Protect tarafından işaretlenen güvenlik işlemleri hakkında Yöneticiniz ile veri paylaşın. Bu veriler ziyaret ettiğiniz sayfaların URL'leri, dosya adları veya meta verilerinin yanı sıra cihazınızda ve Chrome'da oturum açmak için kullandığınız kullanıcı adını içerebilir.</translation>
 <translation id="5123063207673082822">Hafta sonu</translation>
 <translation id="5125394840236832993">B-Plus</translation>
 <translation id="5126510351761255129">Kartınızı doğrulayın</translation>
@@ -947,7 +945,6 @@
 <translation id="5161506081086828129">Yığınlayıcı 9</translation>
 <translation id="516920405563544094"><ph name="CREDIT_CARD" /> numaralı kartın CVC kodunu girin. Onayladığınızda Google Hesabınızdaki kart bilgileriniz bu siteyle paylaşılır.</translation>
 <translation id="5169827969064885044">Kuruluşunuzun hesabına erişimi kaybedebilir veya kimlik hırsızlığına maruz kalabilirsiniz. Chrome, şifrenizi hemen değiştirmenizi önerir.</translation>
-<translation id="5170017743895942767">Chrome Enterprise Kullanıcı Koruma</translation>
 <translation id="5171045022955879922">Arayın veya URL'yi yazın</translation>
 <translation id="5171689220826475070">Fanfold-European</translation>
 <translation id="5172758083709347301">Makine</translation>
@@ -1080,7 +1077,6 @@
 <translation id="5737183892635480227">{NUM_CARDS,plural, =1{Kartı Google Hesabınıza kaydedin}other{Kartları Google Hesabınıza kaydedin}}</translation>
 <translation id="5745980000221562234">{NUM_CARDS,plural, =1{Bu kart için sanal bir numara kullanın}other{Kart seçin}}</translation>
 <translation id="5763042198335101085">Geçerli bir e-posta adresi girin</translation>
-<translation id="5763703224595565476">Yöneticiniz, Chrome'da Enterprise User Protect özelliğini etkinleştirdi. Chrome Enterprise User Protect özelliğinin verilerinizin bir kısmına erişimi vardır.</translation>
 <translation id="5765072501007116331">Teslimat yöntemlerini ve gereksinimleri görmek için bir adres seçin</translation>
 <translation id="5776313857861697733">Öncelik</translation>
 <translation id="5778550464785688721">MIDI cihazları tam denetimi</translation>
@@ -1417,7 +1413,6 @@ Ek ayrıntılar:
 <translation id="733923710415886693">Sunucunun sertifikası, Sertifika Şeffaflığı aracılığıyla açıklanmadı.</translation>
 <translation id="734600844861828519">11x15</translation>
 <translation id="7346048084945669753">İlişkili olma durumu:</translation>
-<translation id="73479065977517481"><ph name="ENROLLMENT_DOMAIN" />, tarayıcınızda Chrome Enterprise User Protect özelliğini etkinleştirdi. Chrome Enterprise User Protect özelliğinin verilerinizin bir kısmına erişimi vardır.</translation>
 <translation id="7349430561505560861">A4-Extra</translation>
 <translation id="7353601530677266744">Komut Satırı</translation>
 <translation id="7372973238305370288">arama sonucu</translation>

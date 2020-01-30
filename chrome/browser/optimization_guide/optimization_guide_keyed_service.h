@@ -35,6 +35,7 @@ class TopHostProvider;
 class PredictionManager;
 }  // namespace optimization_guide
 
+class GURL;
 class OptimizationGuideHintsManager;
 
 class OptimizationGuideKeyedService
@@ -65,9 +66,14 @@ class OptimizationGuideKeyedService
     return prediction_manager_.get();
   }
 
-  // Prompts the load of the hint for the navigation, if there is at least one
-  // optimization type registered and there is a hint available.
-  void MaybeLoadHintForNavigation(content::NavigationHandle* navigation_handle);
+  // Notifies |hints_manager_| that the navigation associated with
+  // |navigation_handle| has started or redirected.
+  void OnNavigationStartOrRedirect(
+      content::NavigationHandle* navigation_handle);
+
+  // Notifies |hints_manager_| that the navigation associated with
+  // |navigation_url| has finished.
+  void OnNavigationFinish(const GURL& navigation_url);
 
   // Clears data specific to the user.
   void ClearData();

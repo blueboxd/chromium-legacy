@@ -173,18 +173,13 @@ class Controller : public ScriptExecutorDelegate,
   void SetLoginOption(std::string identifier) override;
   void OnTextLinkClicked(int link) override;
   void OnFormActionLinkClicked(int link) override;
-  void SetDateTimeRangeStart(int year,
-                             int month,
-                             int day,
-                             int hour,
-                             int minute,
-                             int second) override;
-  void SetDateTimeRangeEnd(int year,
-                           int month,
-                           int day,
-                           int hour,
-                           int minute,
-                           int second) override;
+  void SetDateTimeRangeStartDate(
+      const base::Optional<DateProto>& date) override;
+  void SetDateTimeRangeStartTimeSlot(
+      const base::Optional<int>& timeslot_index) override;
+  void SetDateTimeRangeEndDate(const base::Optional<DateProto>& date) override;
+  void SetDateTimeRangeEndTimeSlot(
+      const base::Optional<int>& timeslot_index) override;
   void SetAdditionalValue(const std::string& client_memory_key,
                           const std::string& value) override;
   void GetTouchableArea(std::vector<RectF>* area) const override;

@@ -7,7 +7,10 @@ package org.chromium.chrome.browser.omnibox;
 import android.Manifest;
 import android.app.Activity;
 import android.content.Intent;
+import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.content.pm.PackageManager.NameNotFoundException;
+import android.os.Build;
 import android.os.Bundle;
 import android.speech.RecognizerIntent;
 import android.text.TextUtils;
@@ -15,13 +18,20 @@ import android.text.TextUtils;
 import androidx.annotation.IntDef;
 import androidx.annotation.VisibleForTesting;
 
+import org.chromium.base.LocaleUtils;
+import org.chromium.base.SysUtils;
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.metrics.CachedMetrics;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.IntentHandler;
+import org.chromium.chrome.browser.externalauth.ExternalAuthUtils;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.FeatureUtilities;
 import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteCoordinator;
 import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.toolbar.ToolbarDataProvider;
+import org.chromium.chrome.browser.util.ConversionUtils;
 import org.chromium.content_public.browser.NavigationHandle;
 import org.chromium.content_public.browser.RenderFrameHost;
 import org.chromium.content_public.browser.WebContents;
@@ -30,7 +40,11 @@ import org.chromium.ui.base.PermissionCallback;
 import org.chromium.ui.base.WindowAndroid;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
+import java.util.Set;
 
 /**
  * Class containing functionality related to voice search in the location bar.
@@ -66,7 +80,24 @@ public class LocationBarVoiceRecognitionHandler {
             new CachedMetrics.EnumeratedHistogramSample(
                     "VoiceInteraction.VoiceResultConfidenceValue", 101);
 
+    // Constants for Assistant Voice Search.
+    // TODO(crbug.com/1041576): Update this placeholder to a the real min version once the code has
+    //                          landed.
+    @VisibleForTesting
+    static final int DEFAULT_ASSISTANT_AGSA_MIN_VERSION = 400000000;
+    @VisibleForTesting
+    static final int DEFAULT_ASSISTANT_MIN_ANDROID_SDK_VERSION = Build.VERSION_CODES.LOLLIPOP;
+    @VisibleForTesting
+    static final int DEFAULT_ASSISTANT_MIN_MEMORY_MB = 1024;
+    @VisibleForTesting
+    static final Set<Locale> DEFAULT_ASSISTANT_LOCALES = new HashSet<>(
+            Arrays.asList(new Locale("en", "us"), new Locale("en", "gb"), new Locale("en", "in"),
+                    new Locale("hi", "in"), new Locale("bn", "in"), new Locale("te", "in"),
+                    new Locale("mr", "in"), new Locale("ta", "in"), new Locale("kn", "in"),
+                    new Locale("ml", "in"), new Locale("gu", "in"), new Locale("ur", "in")));
+
     private final Delegate mDelegate;
+    private final ExternalAuthUtils mExternalAuthUtils;
     private WebContentsObserver mVoiceSearchWebContentsObserver;
 
     // VoiceInteractionEventSource defined in tools/metrics/histograms/enums.xml.
@@ -159,8 +190,10 @@ public class LocationBarVoiceRecognitionHandler {
         }
     }
 
-    public LocationBarVoiceRecognitionHandler(Delegate delegate) {
+    public LocationBarVoiceRecognitionHandler(
+            Delegate delegate, ExternalAuthUtils externalAuthUtils) {
         mDelegate = delegate;
+        mExternalAuthUtils = externalAuthUtils;
     }
 
     /**
@@ -307,36 +340,25 @@ public class LocationBarVoiceRecognitionHandler {
 
     /**
      * Triggers a voice recognition intent to allow the user to specify a search query.
+     *
      * @param source The source of the voice recognition initiation, such as NTP or omnibox.
      */
     public void startVoiceRecognition(@VoiceInteractionSource int source) {
+        ThreadUtils.assertOnUiThread();
+
         WindowAndroid windowAndroid = mDelegate.getWindowAndroid();
         if (windowAndroid == null) return;
         Activity activity = windowAndroid.getActivity().get();
         if (activity == null) return;
 
-        if (!windowAndroid.hasPermission(Manifest.permission.RECORD_AUDIO)) {
-            if (windowAndroid.canRequestPermission(Manifest.permission.RECORD_AUDIO)) {
-                PermissionCallback callback = new PermissionCallback() {
-                    @Override
-                    public void onRequestPermissionsResult(
-                            String[] permissions, int[] grantResults) {
-                        if (grantResults.length != 1) return;
-
-                        if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                            startVoiceRecognition(source);
-                        } else {
-                            mDelegate.updateMicButtonState();
-                        }
-                    }
-                };
-                windowAndroid.requestPermissions(
-                        new String[] {Manifest.permission.RECORD_AUDIO}, callback);
-            } else {
-                mDelegate.updateMicButtonState();
-            }
+        // Check if this can be handled by Assistant Voice Search, if so let it handle the search.
+        if (requestAssistantVoiceSearchIfConditionsMet(
+                    windowAndroid, activity.getPackageManager(), source)) {
             return;
         }
+        // Check if we need to request audio permissions. If we don't, then trigger a permissions
+        // prompt will appear and startVoiceRecognition will be called again.
+        if (!ensureAudioPermissionGranted(windowAndroid, source)) return;
 
         // Record metrics on the source of a voice search interaction, such as NTP or omnibox.
         recordVoiceSearchStartEventSource(source);
@@ -354,6 +376,177 @@ public class LocationBarVoiceRecognitionHandler {
             mDelegate.updateMicButtonState();
             recordVoiceSearchFailureEventSource(source);
         }
+    }
+
+    /**
+     * Requests the audio permission and resolves the voice recognition request if necessary.
+     *
+     * @param windowAndroid Used to request audio permissions from the Android system.
+     * @param source The source of the mic button click, used to record metrics.
+     * @return Whether audio permissions are granted.
+     */
+    @VisibleForTesting
+    boolean ensureAudioPermissionGranted(
+            WindowAndroid windowAndroid, @VoiceInteractionSource int source) {
+        if (windowAndroid.hasPermission(Manifest.permission.RECORD_AUDIO)) return true;
+
+        // If we don't have permission and also can't ask, then there's no more work left other
+        // than telling the delegate to update the mic state.
+        if (!windowAndroid.canRequestPermission(Manifest.permission.RECORD_AUDIO)) {
+            mDelegate.updateMicButtonState();
+            return false;
+        }
+
+        PermissionCallback callback = (permissions, grantResults) -> {
+            if (grantResults.length != 1) {
+                return;
+            }
+
+            if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                startVoiceRecognition(source);
+            } else {
+                mDelegate.updateMicButtonState();
+            }
+        };
+        windowAndroid.requestPermissions(new String[] {Manifest.permission.RECORD_AUDIO}, callback);
+
+        return false;
+    }
+
+    /**
+     * @return The min Agsa version required for assistant voice search. This method checks the
+     *         chrome feature list for this value before using the default.
+     */
+    private int getAgsaMinVersion() {
+        if (!ChromeFeatureList.isInitialized()) return DEFAULT_ASSISTANT_AGSA_MIN_VERSION;
+
+        int minVersion = ChromeFeatureList.getFieldTrialParamByFeatureAsInt(
+                ChromeFeatureList.OMNIBOX_ASSISTANT_VOICE_SEARCH, "min_agsa_version",
+                DEFAULT_ASSISTANT_AGSA_MIN_VERSION);
+        return minVersion;
+    }
+
+    /**
+     * @return The min Android sdk required for assistant voice search. This method checks the
+     *         chrome feature list for this value before using the default.
+     */
+    private int getMinAndroidSdk() {
+        if (!ChromeFeatureList.isInitialized()) return DEFAULT_ASSISTANT_MIN_ANDROID_SDK_VERSION;
+
+        int minAndroidSdk = ChromeFeatureList.getFieldTrialParamByFeatureAsInt(
+                ChromeFeatureList.OMNIBOX_ASSISTANT_VOICE_SEARCH, "min_android_sdk",
+                DEFAULT_ASSISTANT_MIN_ANDROID_SDK_VERSION);
+        return minAndroidSdk;
+    }
+
+    /**
+     * @return The min memory (mb) required for assistant voice search. This method checks the
+     *         chrome feature list for this value before using the default.
+     */
+    private int getMinMemoryMb() {
+        if (!ChromeFeatureList.isInitialized()) return DEFAULT_ASSISTANT_MIN_MEMORY_MB;
+
+        int minMemoryMb = ChromeFeatureList.getFieldTrialParamByFeatureAsInt(
+                ChromeFeatureList.OMNIBOX_ASSISTANT_VOICE_SEARCH, "min_memory_mb",
+                DEFAULT_ASSISTANT_MIN_MEMORY_MB);
+        return minMemoryMb;
+    }
+
+    /**
+     * @return The list of supported locales for assistant voice search. This method checks the
+     *         chrome feature list for this value before using the default.
+     */
+    private Set<Locale> getEnabledLocales() {
+        if (!ChromeFeatureList.isInitialized()) return DEFAULT_ASSISTANT_LOCALES;
+
+        String encodedEnabledLocalesList = ChromeFeatureList.getFieldTrialParamByFeature(
+                ChromeFeatureList.OMNIBOX_ASSISTANT_VOICE_SEARCH, "enabled_locales");
+        return parseLocalesFromString(encodedEnabledLocalesList);
+    }
+
+    /**
+     * @return List of locales parsed from the given input string, or a default list if the parsing
+     * fails.
+     */
+    @VisibleForTesting
+    Set<Locale> parseLocalesFromString(String encodedEnabledLocalesList) {
+        if (TextUtils.isEmpty(encodedEnabledLocalesList)) return DEFAULT_ASSISTANT_LOCALES;
+
+        String[] encodedEnabledLocales = encodedEnabledLocalesList.split(",");
+        HashSet<Locale> enabledLocales = new HashSet<>(encodedEnabledLocales.length);
+        for (int i = 0; i < encodedEnabledLocales.length; i++) {
+            Locale locale = LocaleUtils.forLanguageTag(encodedEnabledLocales[i]);
+            if (TextUtils.isEmpty(locale.getCountry()) || TextUtils.isEmpty(locale.getLanguage())) {
+                // Error with the locale encoding, fallback to the default locales.
+                return DEFAULT_ASSISTANT_LOCALES;
+            }
+            enabledLocales.add(locale);
+        }
+
+        return enabledLocales;
+    }
+
+    /**
+     * Checks to see if the call to this method can be resolved with assistant voice search and
+     * resolves it if possible.
+     *
+     * @param windowAndroid Used to request audio permissions from the Android system.
+     * @param packageManager Used to check for AGSA on the system.
+     * @param source The source of the mic button click, used to record metric
+     * @return Whether the startVoiceRecognition call has been resolved.
+     */
+    @VisibleForTesting
+    boolean requestAssistantVoiceSearchIfConditionsMet(WindowAndroid windowAndroid,
+            PackageManager packageManager, @VoiceInteractionSource int source) {
+        // TODO(crbug.com/1042085): Instrument new histogram for the assistant voice search feature.
+        if (!ChromeFeatureList.isInitialized()
+                || !ChromeFeatureList.isEnabled(ChromeFeatureList.OMNIBOX_ASSISTANT_VOICE_SEARCH)) {
+            return false;
+        }
+
+        // For now, assistant search will only work with google.
+        if (!TemplateUrlServiceFactory.get().isDefaultSearchEngineGoogle()) return false;
+
+        if (!isDeviceEligibleForAssistant(packageManager,
+                    ConversionUtils.kilobytesToMegabytes(SysUtils.amountOfPhysicalMemoryKB()),
+                    Locale.getDefault())) {
+            return false;
+        }
+
+        startAGSAForAssistantVoiceSearch(windowAndroid, source);
+        return true;
+    }
+
+    /** Start AGSA to fulfill the current voice search. */
+    private void startAGSAForAssistantVoiceSearch(
+            WindowAndroid windowAndroid, @VoiceInteractionSource int source) {
+        recordVoiceSearchStartEventSource(source);
+
+        Intent intent = new Intent(Intent.ACTION_SEARCH);
+        intent.setPackage(IntentHandler.PACKAGE_GSA);
+
+        if (!showSpeechRecognitionIntent(windowAndroid, intent, source)) {
+            mDelegate.updateMicButtonState();
+            recordVoiceSearchFailureEventSource(source);
+        }
+    }
+
+    /** @return Whether the device is eligible to use assistant. */
+    @VisibleForTesting
+    protected boolean isDeviceEligibleForAssistant(
+            PackageManager packageManager, long availableMemoryMb, Locale currentLocale) {
+        // TODO(crbug.com/1045203): Move AGSA-related logic over to GSAState.java.
+        try {
+            PackageInfo packageInfo = packageManager.getPackageInfo(IntentHandler.PACKAGE_GSA, 0);
+            if (packageInfo.versionCode < getAgsaMinVersion()) return false;
+        } catch (NameNotFoundException e) {
+            return false;
+        }
+
+        if (!mExternalAuthUtils.isGoogleSigned(IntentHandler.PACKAGE_GSA)) return false;
+
+        return getMinMemoryMb() <= availableMemoryMb && getMinAndroidSdk() <= Build.VERSION.SDK_INT
+                && getEnabledLocales().contains(currentLocale);
     }
 
     /**

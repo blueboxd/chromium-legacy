@@ -23,6 +23,10 @@ constexpr perfetto::protos::pbzero::ClockSnapshot::Clock::BuiltinClocks
     kTraceClockId = perfetto::protos::pbzero::ClockSnapshot::Clock::BOOTTIME;
 #endif
 
+// Returns CLOCK_BOOTTIME on systems that support it, otherwise falls back to
+// TRACE_TIME_TICKS_NOW().
+int64_t TraceBootTicksNow();
+
 }  // namespace tracing
 
 #endif  // SERVICES_TRACING_PUBLIC_CPP_PERFETTO_TRACE_TIME_H_

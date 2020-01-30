@@ -38,8 +38,24 @@
 
 namespace blink {
 
-std::pair<EventTarget*, StringImpl*> EventTargetKey(const Event* event) {
-  return std::make_pair(event->target(), event->type().Impl());
+bool ScriptedAnimationController::InsertToPerFrameEventsMap(
+    const Event* event) {
+  HashSet<const StringImpl*>& set =
+      per_frame_events_.insert(event->target(), HashSet<const StringImpl*>())
+          .stored_value->value;
+  return set.insert(event->type().Impl()).is_new_entry;
+}
+
+void ScriptedAnimationController::EraseFromPerFrameEventsMap(
+    const Event* event) {
+  EventTarget* target = event->target();
+  PerFrameEventsMap::iterator it = per_frame_events_.find(target);
+  if (it != per_frame_events_.end()) {
+    HashSet<const StringImpl*>& set = it->value;
+    set.erase(event->type().Impl());
+    if (set.IsEmpty())
+      per_frame_events_.erase(target);
+  }
 }
 
 ScriptedAnimationController::ScriptedAnimationController(Document* document)
@@ -111,7 +127,7 @@ void ScriptedAnimationController::DispatchEvents(
     HeapVector<Member<Event>> remaining;
     for (auto& event : event_queue_) {
       if (event && event->InterfaceName() == event_interface_filter) {
-        per_frame_events_.erase(EventTargetKey(event.Get()));
+        EraseFromPerFrameEventsMap(event.Get());
         events.push_back(event.Release());
       } else {
         remaining.push_back(event.Release());
@@ -241,7 +257,7 @@ void ScriptedAnimationController::EnqueueEvent(Event* event) {
 }
 
 void ScriptedAnimationController::EnqueuePerFrameEvent(Event* event) {
-  if (!per_frame_events_.insert(EventTargetKey(event)).is_new_entry)
+  if (!InsertToPerFrameEventsMap(event))
     return;
   EnqueueEvent(event);
 }

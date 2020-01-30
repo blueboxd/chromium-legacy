@@ -179,12 +179,16 @@ String ListMarker::TextAlternative(const LayoutObject& marker) const {
 void ListMarker::UpdateMarkerContentIfNeeded(LayoutObject& marker) {
   LayoutNGListItem* list_item = ListItem(marker);
 
-  LayoutObject* child = marker.SlowFirstChild();
-  // There should be at most one child.
-  DCHECK(!child || !child->SlowFirstChild());
   if (!marker.StyleRef().ContentBehavesAsNormal()) {
     marker_text_type_ = kNotText;
-  } else if (IsMarkerImage(marker)) {
+    return;
+  }
+
+  // There should be at most one child.
+  LayoutObject* child = marker.SlowFirstChild();
+  DCHECK(!child || !child->NextSibling());
+
+  if (IsMarkerImage(marker)) {
     StyleImage* list_style_image = list_item->StyleRef().ListStyleImage();
     if (child) {
       // If the url of `list-style-image` changed, create a new LayoutImage.
@@ -209,32 +213,36 @@ void ListMarker::UpdateMarkerContentIfNeeded(LayoutObject& marker) {
       marker.AddChild(image);
     }
     marker_text_type_ = kNotText;
-  } else if (list_item->StyleRef().ListStyleType() == EListStyleType::kNone) {
+    return;
+  }
+
+  if (list_item->StyleRef().ListStyleType() == EListStyleType::kNone) {
     marker_text_type_ = kNotText;
-  } else {
-    // Create a LayoutText in it.
-    LayoutText* text = nullptr;
-    // |text_style| should be as same as style propagated in
-    // |LayoutObject::PropagateStyleToAnonymousChildren()| to avoid unexpected
-    // full layout due by style difference. See http://crbug.com/980399
-    scoped_refptr<ComputedStyle> text_style =
-        ComputedStyle::CreateAnonymousStyleWithDisplay(
-            marker.StyleRef(), marker.StyleRef().Display());
-    if (child) {
-      if (child->IsText()) {
-        text = ToLayoutText(child);
-        text->SetStyle(text_style);
-      } else {
-        child->Destroy();
-        child = nullptr;
-      }
+    return;
+  }
+
+  // Create a LayoutText in it.
+  LayoutText* text = nullptr;
+  // |text_style| should be as same as style propagated in
+  // |LayoutObject::PropagateStyleToAnonymousChildren()| to avoid unexpected
+  // full layout due by style difference. See http://crbug.com/980399
+  scoped_refptr<ComputedStyle> text_style =
+      ComputedStyle::CreateAnonymousStyleWithDisplay(
+          marker.StyleRef(), marker.StyleRef().Display());
+  if (child) {
+    if (child->IsText()) {
+      text = ToLayoutText(child);
+      text->SetStyle(text_style);
+    } else {
+      child->Destroy();
+      child = nullptr;
     }
-    if (!child) {
-      text = LayoutText::CreateEmptyAnonymous(marker.GetDocument(), text_style,
-                                              LegacyLayout::kAuto);
-      marker.AddChild(text);
-      marker_text_type_ = kUnresolved;
-    }
+  }
+  if (!child) {
+    text = LayoutText::CreateEmptyAnonymous(marker.GetDocument(), text_style,
+                                            LegacyLayout::kAuto);
+    marker.AddChild(text);
+    marker_text_type_ = kUnresolved;
   }
 }
 

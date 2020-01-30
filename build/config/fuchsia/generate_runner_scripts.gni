@@ -26,9 +26,12 @@ declare_args() {
 #   package_name_override: Specifies the name of the generated package, if its
 #       name is different than the |package| target name. This value must match
 #       package_name_override in the |package| target.
-#   package_deps: An array of [package, package_name_override] array pairs
-#       which specify additional dependency packages to be installed
-#       prior to execution.
+#   archive_name_override: Specifies the filename of the archive file (FAR)
+#       which contains the package's data.
+#       If left unset, defaults to |package_name_override|.
+#       Defaults to the package's name.
+#   package_deps: An array of [package, archive_basename] pairs that specify
+#       additional dependency packages to be installed prior to execution.
 #   runner_script: The runner script implementation to use, relative to
 #       "build/fuchsia". Defaults to "test_runner.py".
 #   install_only: If true, executing the script will only install the package
@@ -36,20 +39,29 @@ declare_args() {
 template("fuchsia_package_runner") {
   forward_variables_from(invoker, [ "runner_script" ])
 
+  # Compute the package name.
   if (defined(invoker.package_name_override)) {
-    _pkg_shortname = invoker.package_name_override
+    _package_name = invoker.package_name_override
   } else {
-    _pkg_shortname = get_label_info(invoker.package, "name")
+    _package_name = get_label_info(invoker.package, "name")
+  }
+
+  # Compute the archive (FAR) filename.
+  if (defined(invoker.archive_name_override)) {
+    _archive_shortname = invoker.archive_name_override
+  } else {
+    _archive_shortname = _package_name
   }
 
   _pkg_dir = "$root_out_dir/gen/" + get_label_info(invoker.package, "dir") +
-             "/" + _pkg_shortname
-  _manifest_path = "$_pkg_dir/${_pkg_shortname}.archive_manifest"
-  _package_path = "$_pkg_dir/${_pkg_shortname}.far"
+             "/" + _archive_shortname
+  _manifest_path = "$_pkg_dir/${_archive_shortname}.archive_manifest"
+  _package_path = "$_pkg_dir/${_archive_shortname}.far"
 
-  generated_run_pkg_script_path = "$root_build_dir/bin/run_${_pkg_shortname}"
+  generated_run_pkg_script_path =
+      "$root_build_dir/bin/run_${_archive_shortname}"
   generated_install_pkg_script_path =
-      "$root_build_dir/bin/install_$_pkg_shortname"
+      "$root_build_dir/bin/install_${_archive_shortname}"
 
   _generate_runner_target = "${target_name}__generate_runner"
   _generate_installer_target = "${target_name}__generate_installer"
@@ -143,7 +155,7 @@ template("fuchsia_package_runner") {
       "--target-cpu",
       target_cpu,
       "--package-name",
-      _pkg_shortname,
+      _package_name,
     ]
 
     if (defined(invoker.use_test_server) && invoker.use_test_server) {

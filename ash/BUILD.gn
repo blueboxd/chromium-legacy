@@ -613,6 +613,7 @@ component("ash") {
     "shelf/shelf_button_delegate.h",
     "shelf/shelf_button_pressed_metric_tracker.cc",
     "shelf/shelf_button_pressed_metric_tracker.h",
+    "shelf/shelf_component.h",
     "shelf/shelf_config.cc",
     "shelf/shelf_container_view.cc",
     "shelf/shelf_container_view.h",
@@ -939,6 +940,8 @@ component("ash") {
     "system/session/logout_confirmation_dialog.h",
     "system/session/session_limit_notification_controller.cc",
     "system/session/session_limit_notification_controller.h",
+    "system/session/shutdown_confirmation_dialog.cc",
+    "system/session/shutdown_confirmation_dialog.h",
     "system/status_area_layout_manager.cc",
     "system/status_area_layout_manager.h",
     "system/status_area_widget.cc",
@@ -1471,6 +1474,7 @@ component("ash") {
     "//net",
     "//services/content/public/cpp",
     "//services/data_decoder/public/cpp",
+    "//services/metrics/public/cpp:ukm_builders",
     "//services/preferences/public/cpp",
 
     # TODO(msw): Remove this; ash should not depend on blink/webkit.

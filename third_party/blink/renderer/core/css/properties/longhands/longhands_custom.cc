@@ -1407,8 +1407,7 @@ void Color::ApplyInitial(StyleResolverState& state) const {
         CSSIdentifierValue::Create(CSSValueID::kInitial));
     return;
   }
-  blink::Color color = ComputedStyleInitialValues::InitialColor();
-  state.Style()->SetColor(color);
+  state.Style()->SetColor(state.Style()->InitialColorForColorScheme());
 }
 
 void Color::ApplyInherit(StyleResolverState& state) const {
@@ -1417,11 +1416,7 @@ void Color::ApplyInherit(StyleResolverState& state) const {
         CSSIdentifierValue::Create(CSSValueID::kInherit));
     return;
   }
-  blink::Color color = state.ParentStyle()->GetColor();
-  if (state.ParentStyle()->IsColorInternalText())
-    state.Style()->SetIsColorInternalText(true);
-  else
-    state.Style()->SetColor(color);
+  state.Style()->SetColor(state.ParentStyle()->GetColor());
 }
 
 void Color::ApplyValue(StyleResolverState& state, const CSSValue& value) const {
@@ -1436,13 +1431,7 @@ void Color::ApplyValue(StyleResolverState& state, const CSSValue& value) const {
     ApplyInherit(state);
     return;
   }
-
-  if (identifier_value &&
-      identifier_value->GetValueID() == CSSValueID::kInternalRootColor) {
-    state.Style()->SetIsColorInternalText(true);
-  } else {
-    state.Style()->SetColor(StyleBuilderConverter::ConvertColor(state, value));
-  }
+  state.Style()->SetColor(StyleBuilderConverter::ConvertColor(state, value));
 }
 
 const CSSValue* ColorInterpolation::CSSValueFromComputedStyleInternal(
@@ -1772,33 +1761,33 @@ const CSSValue* Contain::CSSValueFromComputedStyleInternal(
   return list;
 }
 
-const CSSValue* IntrinsicBlockSize::ParseSingleValue(
+const CSSValue* ContainIntrinsicBlockSize::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
   return css_parsing_utils::ConsumeIntrinsicLength(range, context);
 }
 
-const CSSValue* IntrinsicInlineSize::ParseSingleValue(
+const CSSValue* ContainIntrinsicInlineSize::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
   return css_parsing_utils::ConsumeIntrinsicLength(range, context);
 }
 
-const CSSValue* IntrinsicWidth::ParseSingleValue(
+const CSSValue* ContainIntrinsicWidth::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
   return css_parsing_utils::ConsumeIntrinsicLength(range, context);
 }
 
-const CSSValue* IntrinsicWidth::CSSValueFromComputedStyleInternal(
+const CSSValue* ContainIntrinsicWidth::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject* layout_object,
     bool allow_visited_style) const {
-  auto& width = style.IntrinsicWidth();
+  auto& width = style.ContainIntrinsicWidth();
   if (width.IsLegacy())
     return CSSIdentifierValue::Create(CSSValueID::kLegacy);
   if (width.IsAuto())
@@ -1807,19 +1796,19 @@ const CSSValue* IntrinsicWidth::CSSValueFromComputedStyleInternal(
                                                              style);
 }
 
-const CSSValue* IntrinsicHeight::ParseSingleValue(
+const CSSValue* ContainIntrinsicHeight::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
   return css_parsing_utils::ConsumeIntrinsicLength(range, context);
 }
 
-const CSSValue* IntrinsicHeight::CSSValueFromComputedStyleInternal(
+const CSSValue* ContainIntrinsicHeight::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject* layout_object,
     bool allow_visited_style) const {
-  auto& height = style.IntrinsicHeight();
+  auto& height = style.ContainIntrinsicHeight();
   if (height.IsLegacy())
     return CSSIdentifierValue::Create(CSSValueID::kLegacy);
   if (height.IsAuto())
@@ -2876,8 +2865,8 @@ void InternalVisitedColor::ApplyInitial(StyleResolverState& state) const {
         CSSIdentifierValue::Create(CSSValueID::kInitial));
     return;
   }
-  auto color = ComputedStyleInitialValues::InitialColor();
-  state.Style()->SetInternalVisitedColor(color);
+  state.Style()->SetInternalVisitedColor(
+      state.Style()->InitialColorForColorScheme());
 }
 
 void InternalVisitedColor::ApplyInherit(StyleResolverState& state) const {
@@ -8131,6 +8120,14 @@ void Zoom::ApplyInherit(StyleResolverState& state) const {
 
 void Zoom::ApplyValue(StyleResolverState& state, const CSSValue& value) const {
   state.SetZoom(StyleBuilderConverter::ConvertZoom(state, value));
+}
+
+const CSSValue* InternalEmptyLineHeight::ParseSingleValue(
+    CSSParserTokenRange& range,
+    const CSSParserContext&,
+    const CSSParserLocalContext&) const {
+  return css_property_parser_helpers::ConsumeIdent<CSSValueID::kFabricated,
+                                                   CSSValueID::kNone>(range);
 }
 
 }  // namespace css_longhand

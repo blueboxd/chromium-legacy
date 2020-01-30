@@ -801,7 +801,7 @@ void LayoutInline::CollectLineBoxRects(
     NGInlineCursor cursor;
     cursor.MoveTo(*this);
     for (; cursor; cursor.MoveToNextForSameLayoutObject())
-      yield(cursor.CurrentRect());
+      yield(cursor.Current().RectInContainerBlock());
     return;
   }
   if (!AlwaysCreateLineBoxes()) {
@@ -949,7 +949,7 @@ base::Optional<PhysicalOffset> LayoutInline::FirstLineBoxTopLeftInternal()
     cursor.MoveTo(*this);
     if (!cursor)
       return base::nullopt;
-    return cursor.CurrentOffset();
+    return cursor.Current().OffsetInContainerBlock();
   }
   if (const InlineBox* first_box = FirstLineBoxIncludingCulling()) {
     LayoutPoint location = first_box->Location();
@@ -1053,7 +1053,7 @@ bool LayoutInline::NodeAtPoint(HitTestResult& result,
         // NGBoxFragmentPainter::NodeAtPoint() takes an offset that is
         // accumulated up to the fragment itself. Compute this offset.
         const PhysicalOffset child_offset =
-            accumulated_offset + paint_fragment->InlineOffsetToContainerBox();
+            accumulated_offset + paint_fragment->OffsetInContainerBlock();
         if (NGBoxFragmentPainter(*paint_fragment)
                 .NodeAtPoint(result, hit_test_location, child_offset,
                              hit_test_action))
@@ -1067,7 +1067,8 @@ bool LayoutInline::NodeAtPoint(HitTestResult& result,
       NGInlineCursor descendants = cursor.CursorForDescendants();
       // NGBoxFragmentPainter::NodeAtPoint() takes an offset that is accumulated
       // up to the fragment itself. Compute this offset.
-      const PhysicalOffset child_offset = accumulated_offset + item.Offset();
+      const PhysicalOffset child_offset =
+          accumulated_offset + item.OffsetInContainerBlock();
       if (NGBoxFragmentPainter(item, *box_fragment, &descendants)
               .NodeAtPoint(result, hit_test_location, child_offset,
                            hit_test_action))
@@ -1112,7 +1113,7 @@ bool LayoutInline::HitTestCulledInline(
            container_fragment->PhysicalFragment().IsLineBox());
     NGInlineCursor cursor(*container_fragment);
     for (cursor.MoveTo(*this); cursor; cursor.MoveToNextForSameLayoutObject())
-      yield(cursor.CurrentRect());
+      yield(cursor.Current().RectInContainerBlock());
   } else {
     DCHECK(!ContainingNGBlockFlow());
     CollectCulledLineBoxRects(yield);
@@ -1164,7 +1165,7 @@ PhysicalRect LayoutInline::PhysicalLinesBoundingBox() const {
     cursor.MoveTo(*this);
     PhysicalRect bounding_box;
     for (; cursor; cursor.MoveToNextForSameLayoutObject())
-      bounding_box.UniteIfNonZero(cursor.CurrentRect());
+      bounding_box.UniteIfNonZero(cursor.Current().RectInContainerBlock());
     return bounding_box;
   }
 
@@ -1313,7 +1314,7 @@ PhysicalRect LayoutInline::LinesVisualOverflowBoundingBox() const {
     cursor.MoveTo(*this);
     for (; cursor; cursor.MoveToNextForSameLayoutObject()) {
       PhysicalRect child_rect = cursor.CurrentInkOverflow();
-      child_rect.offset += cursor.CurrentOffset();
+      child_rect.offset += cursor.Current().OffsetInContainerBlock();
       result.Unite(child_rect);
     }
     return result;
@@ -1423,7 +1424,7 @@ PhysicalRect LayoutInline::ReferenceBoxForClipPath() const {
     NGInlineCursor cursor;
     cursor.MoveTo(*this);
     if (cursor)
-      return cursor.CurrentRect();
+      return cursor.Current().RectInContainerBlock();
   }
   if (const InlineFlowBox* flow_box = FirstLineBox())
     return FlipForWritingMode(flow_box->FrameRect());

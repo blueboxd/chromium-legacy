@@ -9,5 +9,5 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:textDirection="locale"
-    android:textAppearance="@style/TextAppearance.BlackTitle1"
+    android:textAppearance="@style/TextAppearance.TextLarge.Primary"
     android:textColorLink="@color/default_text_color_link" />

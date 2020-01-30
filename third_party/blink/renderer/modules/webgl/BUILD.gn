@@ -28,6 +28,8 @@ blink_modules_sources("webgl") {
     "ext_srgb.h",
     "ext_texture_filter_anisotropic.cc",
     "ext_texture_filter_anisotropic.h",
+    "ext_texture_norm_16.cc",
+    "ext_texture_norm_16.h",
     "gl_string_query.h",
     "khr_parallel_shader_compile.cc",
     "khr_parallel_shader_compile.h",

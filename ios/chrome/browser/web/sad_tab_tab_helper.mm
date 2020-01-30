@@ -15,7 +15,7 @@
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
 #import "ios/chrome/browser/ntp/new_tab_page_tab_helper.h"
-#include "ios/chrome/browser/ui/fullscreen/fullscreen_controller_factory.h"
+#include "ios/chrome/browser/ui/fullscreen/fullscreen_controller.h"
 #include "ios/chrome/browser/ui/fullscreen/scoped_fullscreen_disabler.h"
 #import "ios/chrome/browser/web/features.h"
 #import "ios/chrome/browser/web/page_placeholder_tab_helper.h"
@@ -238,8 +238,7 @@ void SadTabTabHelper::UpdateFullscreenDisabler() {
     ChromeBrowserState* browser_state =
         ChromeBrowserState::FromBrowserState(web_state_->GetBrowserState());
     FullscreenController* fullscreen_controller =
-        FullscreenControllerFactory::GetInstance()->GetForBrowserState(
-            browser_state);
+        FullscreenController::FromBrowserState(browser_state);
     if (fullscreen_controller) {
       fullscreen_disabler_ =
           std::make_unique<ScopedFullscreenDisabler>(fullscreen_controller);

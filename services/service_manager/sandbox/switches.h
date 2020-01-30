@@ -52,9 +52,6 @@ SERVICE_MANAGER_SANDBOX_EXPORT extern const char kNoSandbox[];
 #if defined(OS_WIN)
 SERVICE_MANAGER_SANDBOX_EXPORT extern const char kAllowThirdPartyModules[];
 SERVICE_MANAGER_SANDBOX_EXPORT extern const char kAddGpuAppContainerCaps[];
-SERVICE_MANAGER_SANDBOX_EXPORT extern const char kDisableGpuAppContainer[];
-SERVICE_MANAGER_SANDBOX_EXPORT extern const char kDisableGpuLpac[];
-SERVICE_MANAGER_SANDBOX_EXPORT extern const char kEnableGpuAppContainer[];
 SERVICE_MANAGER_SANDBOX_EXPORT extern const char
     kNoSandboxAndElevatedPrivileges[];
 SERVICE_MANAGER_SANDBOX_EXPORT extern const char kAddXrAppContainerCaps[];

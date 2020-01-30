@@ -38,6 +38,7 @@
 #include "ui/base/webui/web_ui_util.h"
 
 #if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/crostini/crostini_features.h"
 #include "chrome/browser/chromeos/crostini/crostini_pref_names.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_manager_chromeos.h"
@@ -138,6 +139,8 @@ const char kManagementReportAndroidApplications[] =
     "managementReportAndroidApplications";
 const char kManagementPrinting[] = "managementPrinting";
 const char kManagementCrostini[] = "managementCrostini";
+const char kManagementCrostiniContainerConfiguration[] =
+    "managementCrostiniContainerConfiguration";
 const char kAccountManagedInfo[] = "accountManagedInfo";
 const char kDeviceManagedInfo[] = "deviceManagedInfo";
 const char kOverview[] = "overview";
@@ -266,10 +269,18 @@ void AddDeviceReportingInfo(base::Value* report_sources, Profile* profile) {
                               DeviceReportingType::kPrint);
   }
 
-  if (profile->GetPrefs()->GetBoolean(
-          crostini::prefs::kReportCrostiniUsageEnabled)) {
-    AddDeviceReportingElement(report_sources, kManagementCrostini,
-                              DeviceReportingType::kCrostini);
+  if (crostini::CrostiniFeatures::Get()->IsAllowed(profile)) {
+    if (!profile->GetPrefs()
+             ->GetFilePath(crostini::prefs::kCrostiniAnsiblePlaybookFilePath)
+             .empty()) {
+      AddDeviceReportingElement(report_sources,
+                                kManagementCrostiniContainerConfiguration,
+                                DeviceReportingType::kCrostini);
+    } else if (profile->GetPrefs()->GetBoolean(
+                   crostini::prefs::kReportCrostiniUsageEnabled)) {
+      AddDeviceReportingElement(report_sources, kManagementCrostini,
+                                DeviceReportingType::kCrostini);
+    }
   }
 
   if (g_browser_process->local_state()->GetBoolean(

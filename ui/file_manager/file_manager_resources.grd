@@ -37,6 +37,7 @@
       <include compress="gzip" name="IDR_FILE_MANAGER_ELEMENTS_FILES_QUICK_PREVIEW_CSS" file="file_manager/foreground/elements/files_quick_view.css" flattenhtml="true" type="BINDATA" />
       <include compress="gzip" name="IDR_FILE_MANAGER_ELEMENTS_FILES_QUICK_PREVIEW_HTML" file="file_manager/foreground/elements/files_quick_view.html" type="BINDATA" />
       <include compress="gzip" name="IDR_FILE_MANAGER_ELEMENTS_FILES_QUICK_PREVIEW_JS" file="file_manager/foreground/elements/files_quick_view.js" type="BINDATA" />
+      <include compress="gzip" name="IDR_FILE_MANAGER_ELEMENTS_FILES_QUICK_COMMON_CSS" file="file_manager/foreground/css/common.css" flattenhtml="true" type="BINDATA" />
       <include compress="gzip" name="IDR_FILE_MANAGER_ELEMENTS_FILES_RIPPLE_HTML" file="file_manager/foreground/elements/files_ripple.html" type="BINDATA" />
       <include compress="gzip" name="IDR_FILE_MANAGER_ELEMENTS_FILES_RIPPLE_JS" file="file_manager/foreground/elements/files_ripple.js" type="BINDATA" />
       <include compress="gzip" name="IDR_FILE_MANAGER_ELEMENTS_FILES_SAFE_AUDIO_WEBVIEW_CONTENT_CSS" file="file_manager/foreground/elements/files_safe_audio_webview_content.css" flattenhtml="true" type="BINDATA" />

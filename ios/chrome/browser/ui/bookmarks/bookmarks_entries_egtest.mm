@@ -671,13 +671,6 @@ using chrome_test_util::TappableBookmarkNodeWithLabel;
 }
 
 - (void)testContextMenuForMixedSelection {
-// TODO(crbug.com/1045966): fix for iphone-device and reenable.
-#if !TARGET_IPHONE_SIMULATOR
-  if (![ChromeEarlGrey isIPadIdiom]) {
-    EARL_GREY_TEST_DISABLED(@"Test disabled on iPhone devices.");
-  }
-#endif
-
   [BookmarkEarlGrey setupStandardBookmarks];
   [BookmarkEarlGreyUI openBookmarks];
   [BookmarkEarlGreyUI openMobileBookmarks];

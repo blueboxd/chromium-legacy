@@ -125,9 +125,8 @@ class URLLoaderThrottle::ThrottleResponseAdapter : public ResponseAdapter {
 // static
 std::unique_ptr<URLLoaderThrottle> URLLoaderThrottle::MaybeCreate(
     std::unique_ptr<HeaderModificationDelegate> delegate,
-    content::NavigationUIData* navigation_ui_data,
     content::WebContents::Getter web_contents_getter) {
-  if (!delegate->ShouldInterceptNavigation(navigation_ui_data))
+  if (!delegate->ShouldInterceptNavigation(web_contents_getter.Run()))
     return nullptr;
 
   return base::WrapUnique(new URLLoaderThrottle(

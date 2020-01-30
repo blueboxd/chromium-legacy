@@ -155,8 +155,13 @@ int GetForgiveMinutes(gpu::GpuMode gpu_mode) {
 // Feature controlling whether or not memory pressure signals will be forwarded
 // to the GPU process.
 const base::Feature kForwardMemoryPressureEventsToGpuProcess{
-    "ForwardMemoryPressureEventsToGpuProcess",
-    base::FEATURE_DISABLED_BY_DEFAULT};
+  "ForwardMemoryPressureEventsToGpuProcess",
+#if defined(OS_FUCHSIA)
+      base::FEATURE_ENABLED_BY_DEFAULT
+#else
+      base::FEATURE_DISABLED_BY_DEFAULT
+#endif
+};
 #endif
 
 // This matches base::TerminationStatus.
@@ -222,10 +227,6 @@ static const char* const kSwitchNames[] = {
     service_manager::switches::kDisableGpuSandbox,
     service_manager::switches::kNoSandbox,
 #if defined(OS_WIN)
-    service_manager::switches::kAddGpuAppContainerCaps,
-    service_manager::switches::kDisableGpuAppContainer,
-    service_manager::switches::kDisableGpuLpac,
-    service_manager::switches::kEnableGpuAppContainer,
     switches::kDisableHighResTimer,
 #endif  // defined(OS_WIN)
     switches::kEnableANGLEFeatures,

@@ -147,7 +147,7 @@ public class TabGroupPopupUiMediatorUnitTest {
         // Mock that the hidden ratio of browser control is 0.8765.
         float hiddenRatio = 0.8765f;
         doReturn(hiddenRatio).when(mChromeFullscreenManager).getBrowserControlHiddenRatio();
-        mFullScreenListenerCaptor.getValue().onControlsOffsetChanged(0, 0, false);
+        mFullScreenListenerCaptor.getValue().onControlsOffsetChanged(0, 0, 0, 0, false);
 
         assertThat(
                 mModel.get(TabGroupPopupUiProperties.CONTENT_VIEW_ALPHA), equalTo(1 - hiddenRatio));
@@ -155,7 +155,7 @@ public class TabGroupPopupUiMediatorUnitTest {
         // Mock that the hidden ratio of browser control is 0.12345.
         hiddenRatio = 0.1234f;
         doReturn(hiddenRatio).when(mChromeFullscreenManager).getBrowserControlHiddenRatio();
-        mFullScreenListenerCaptor.getValue().onControlsOffsetChanged(0, 0, false);
+        mFullScreenListenerCaptor.getValue().onControlsOffsetChanged(0, 0, 0, 0, false);
 
         assertThat(
                 mModel.get(TabGroupPopupUiProperties.CONTENT_VIEW_ALPHA), equalTo(1 - hiddenRatio));

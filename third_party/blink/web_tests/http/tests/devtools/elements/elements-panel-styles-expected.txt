@@ -13,7 +13,6 @@ color: rgb(0, 0, 255);
     OVERLOADED black - .foo elements-panel-styles.css:21 -> elements-panel-styles.css:21:7
     OVERLOADED red - #container elements-panel-styles.css:10 -> elements-panel-styles.css:10:13
     OVERLOADED magenta !important - html elements-panel-styles.css:67 -> elements-panel-styles.css:67:7
-    OVERLOADED -internal-root-color - html user agent stylesheet
 content: "[before Foo]";
     "[before Foo]" - .foo, .foo::before elements-panel-styles.css:35 -> elements-panel-styles.css:35:21
 display: block;
@@ -128,10 +127,6 @@ body { (elements-pa…tyles.css:1 -> elements-panel-styles.css:1:7)
 [expanded] 
 html { (elements-pa…yles.css:67 -> elements-panel-styles.css:67:7)
 /-- overloaded --/     color: magenta !important;
-
-[expanded] 
-html { (user agent stylesheet)
-/-- overloaded --/     color: -internal-root-color;
 
 ======== Pseudo ::before element ========
 [expanded] 

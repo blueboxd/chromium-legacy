@@ -39,6 +39,7 @@ class OneShotBackgroundSyncBrowserTest : public BackgroundSyncBaseBrowserTest {
   bool RegisterFromServiceWorker(const std::string& tag);
   bool RegisterFromCrossOriginFrame(const std::string& frame_url,
                                     std::string* script_result);
+  void WaitForTagRemoval(const std::string& tag, int64_t pauses_ms = 5);
   bool HasTag(const std::string& tag);
   bool HasTagFromServiceWorker(const std::string& tag);
   bool MatchTags(const std::string& script_result,
@@ -79,6 +80,17 @@ bool OneShotBackgroundSyncBrowserTest::RegisterFromCrossOriginFrame(
   return RunScript(
       BuildScriptString("registerOneShotSyncFromCrossOriginFrame", url.spec()),
       script_result);
+}
+
+void OneShotBackgroundSyncBrowserTest::WaitForTagRemoval(const std::string& tag,
+                                                         int64_t pauses_ms) {
+  while (HasTag(tag)) {
+    base::RunLoop run_loop;
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE, run_loop.QuitClosure(),
+        base::TimeDelta::FromMilliseconds(pauses_ms));
+    run_loop.Run();
+  }
 }
 
 bool OneShotBackgroundSyncBrowserTest::HasTag(const std::string& tag) {
@@ -144,7 +156,7 @@ IN_PROC_BROWSER_TEST_F(OneShotBackgroundSyncBrowserTest,
 
   EXPECT_TRUE(Register("foo"));
   EXPECT_TRUE(PopConsole("foo fired"));
-  EXPECT_FALSE(HasTag("foo"));
+  WaitForTagRemoval("foo");
 }
 
 IN_PROC_BROWSER_TEST_F(OneShotBackgroundSyncBrowserTest,
@@ -153,7 +165,7 @@ IN_PROC_BROWSER_TEST_F(OneShotBackgroundSyncBrowserTest,
 
   EXPECT_TRUE(Register("foo"));
   EXPECT_TRUE(PopConsole("foo fired"));
-  EXPECT_FALSE(HasTag("foo"));
+  WaitForTagRemoval("foo");
 }
 
 // Verify that Register works in a service worker
@@ -165,7 +177,7 @@ IN_PROC_BROWSER_TEST_F(OneShotBackgroundSyncBrowserTest,
   EXPECT_TRUE(RegisterFromServiceWorker("foo_sw"));
   EXPECT_TRUE(PopConsole("ok - foo_sw registered in SW"));
   EXPECT_TRUE(PopConsole("foo_sw fired"));
-  EXPECT_FALSE(HasTag("foo_sw"));
+  WaitForTagRemoval("foo_sw");
 }
 
 IN_PROC_BROWSER_TEST_F(OneShotBackgroundSyncBrowserTest,
@@ -182,7 +194,7 @@ IN_PROC_BROWSER_TEST_F(OneShotBackgroundSyncBrowserTest,
   // Resume firing by going online.
   background_sync_test_util::SetOnline(web_contents(), true);
   EXPECT_TRUE(PopConsole("foo fired"));
-  EXPECT_FALSE(HasTag("foo"));
+  WaitForTagRemoval("foo");
 }
 
 IN_PROC_BROWSER_TEST_F(OneShotBackgroundSyncBrowserTest, WaitUntil) {
@@ -201,7 +213,7 @@ IN_PROC_BROWSER_TEST_F(OneShotBackgroundSyncBrowserTest, WaitUntil) {
   EXPECT_TRUE(PopConsole("ok - delay completed"));
 
   // Verify that it finished firing.
-  EXPECT_FALSE(HasTag("delay"));
+  WaitForTagRemoval("delay");
 }
 
 IN_PROC_BROWSER_TEST_F(OneShotBackgroundSyncBrowserTest, WaitUntilReject) {
@@ -218,7 +230,7 @@ IN_PROC_BROWSER_TEST_F(OneShotBackgroundSyncBrowserTest, WaitUntilReject) {
   // Complete the task.
   EXPECT_TRUE(RejectDelayedSyncEvent());
   EXPECT_TRUE(PopConsole("ok - delay rejected"));
-  EXPECT_FALSE(HasTag("delay"));
+  WaitForTagRemoval("delay");
 }
 
 IN_PROC_BROWSER_TEST_F(OneShotBackgroundSyncBrowserTest, Incognito) {

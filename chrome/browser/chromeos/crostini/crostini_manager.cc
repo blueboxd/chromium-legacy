@@ -632,17 +632,24 @@ void CrostiniManager::AddRunningVmForTesting(std::string vm_name) {
 }
 
 LinuxPackageInfo::LinuxPackageInfo() = default;
+LinuxPackageInfo::LinuxPackageInfo(LinuxPackageInfo&&) = default;
 LinuxPackageInfo::LinuxPackageInfo(const LinuxPackageInfo&) = default;
+LinuxPackageInfo& LinuxPackageInfo::operator=(LinuxPackageInfo&&) = default;
+LinuxPackageInfo& LinuxPackageInfo::operator=(const LinuxPackageInfo&) =
+    default;
 LinuxPackageInfo::~LinuxPackageInfo() = default;
 
 ContainerInfo::ContainerInfo(std::string container_name,
                              std::string container_username,
                              std::string container_homedir)
-    : name(container_name),
-      username(container_username),
-      homedir(container_homedir) {}
+    : name(std::move(container_name)),
+      username(std::move(container_username)),
+      homedir(std::move(container_homedir)) {}
 ContainerInfo::~ContainerInfo() = default;
+ContainerInfo::ContainerInfo(ContainerInfo&&) = default;
 ContainerInfo::ContainerInfo(const ContainerInfo&) = default;
+ContainerInfo& ContainerInfo::operator=(ContainerInfo&&) = default;
+ContainerInfo& ContainerInfo::operator=(const ContainerInfo&) = default;
 
 void CrostiniManager::SetContainerSshfsMounted(std::string vm_name,
                                                std::string container_name,

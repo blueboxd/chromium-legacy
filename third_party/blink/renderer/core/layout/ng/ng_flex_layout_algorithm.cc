@@ -702,6 +702,10 @@ scoped_refptr<const NGLayoutResult> NGFlexLayoutAlgorithm::Layout() {
       NGConstraintSpace child_space = space_builder.ToConstraintSpace();
       flex_item.layout_result =
           flex_item.ng_input_node.Layout(child_space, nullptr /*break token*/);
+
+      // TODO(layout-dev): Handle abortions caused by block fragmentation.
+      DCHECK_EQ(flex_item.layout_result->Status(), NGLayoutResult::kSuccess);
+
       flex_item.cross_axis_size =
           is_horizontal_flow_
               ? flex_item.layout_result->PhysicalFragment().Size().height
@@ -807,6 +811,7 @@ void NGFlexLayoutAlgorithm::GiveLinesAndItemsFinalPositionAndSize() {
 
   base::Optional<LayoutUnit> fallback_baseline;
 
+  LayoutUnit overflow_block_size;
   for (FlexLine& line_context : line_contexts) {
     for (wtf_size_t child_number = 0;
          child_number < line_context.line_items.size(); ++child_number) {
@@ -826,17 +831,32 @@ void NGFlexLayoutAlgorithm::GiveLinesAndItemsFinalPositionAndSize() {
                                  ? flex_item.desired_location.TransposedPoint()
                                  : flex_item.desired_location;
 
+      NGBoxFragment fragment(ConstraintSpace().GetWritingMode(),
+                             ConstraintSpace().Direction(), physical_fragment);
       // Only propagate baselines from children on the first flex-line.
       if (&line_context == line_contexts.begin()) {
-        PropagateBaselineFromChild(flex_item, physical_fragment, location.Y(),
+        PropagateBaselineFromChild(flex_item, fragment, location.Y(),
                                    &fallback_baseline);
       }
 
       container_builder_.AddChild(physical_fragment,
                                   {location.X(), location.Y()});
+
       flex_item.ng_input_node.StoreMargins(flex_item.physical_margins);
+
+      LayoutUnit margin_block_end =
+          flex_item.physical_margins
+              .ConvertToLogical(ConstraintSpace().GetWritingMode(),
+                                ConstraintSpace().Direction())
+              .block_end;
+      overflow_block_size =
+          std::max(overflow_block_size,
+                   location.Y() + fragment.BlockSize() + margin_block_end);
     }
   }
+
+  container_builder_.SetOverflowBlockSize(overflow_block_size +
+                                          border_scrollbar_padding_.block_end);
 
   // Set the baseline to the fallback, if we didn't find any children with
   // baseline alignment.
@@ -846,15 +866,12 @@ void NGFlexLayoutAlgorithm::GiveLinesAndItemsFinalPositionAndSize() {
 
 void NGFlexLayoutAlgorithm::PropagateBaselineFromChild(
     const FlexItem& flex_item,
-    const NGPhysicalBoxFragment& physical_fragment,
+    const NGBoxFragment& fragment,
     LayoutUnit block_offset,
     base::Optional<LayoutUnit>* fallback_baseline) {
   // Check if we've already found an appropriate baseline.
   if (container_builder_.Baseline())
     return;
-
-  NGBoxFragment fragment(ConstraintSpace().GetWritingMode(),
-                         ConstraintSpace().Direction(), physical_fragment);
 
   LayoutUnit baseline_offset =
       block_offset + fragment.Baseline().value_or(fragment.BlockSize());

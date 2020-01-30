@@ -196,6 +196,13 @@ SessionCrashedBubbleView::SessionCrashedBubbleView(views::View* anchor_view,
   DialogDelegate::set_button_label(
       ui::DIALOG_BUTTON_CANCEL,
       l10n_util::GetStringUTF16(IDS_SESSION_CRASHED_VIEW_STARTUP_PAGES_BUTTON));
+
+  DialogDelegate::set_accept_callback(
+      base::BindOnce(&SessionCrashedBubbleView::RestorePreviousSession,
+                     base::Unretained(this)));
+  DialogDelegate::set_cancel_callback(base::BindOnce(
+      &SessionCrashedBubbleView::OpenStartupPages, base::Unretained(this)));
+
   set_close_on_deactivate(false);
   chrome::RecordDialogCreation(chrome::DialogIdentifier::SESSION_CRASHED);
 
@@ -300,24 +307,6 @@ std::unique_ptr<views::View> SessionCrashedBubbleView::CreateUmaOptInView() {
   uma_layout->AddView(std::move(uma_label));
 
   return uma_view;
-}
-
-bool SessionCrashedBubbleView::Accept() {
-  RestorePreviousSession();
-  return true;
-}
-
-// The cancel button is used as an option to open the startup pages instead of
-// restoring the previous session.
-bool SessionCrashedBubbleView::Cancel() {
-  OpenStartupPages();
-  return true;
-}
-
-bool SessionCrashedBubbleView::Close() {
-  // Don't default to Accept() just because that's the only choice. Instead, do
-  // nothing.
-  return true;
 }
 
 void SessionCrashedBubbleView::StyledLabelLinkClicked(views::StyledLabel* label,

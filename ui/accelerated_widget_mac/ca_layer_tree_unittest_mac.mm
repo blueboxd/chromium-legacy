@@ -5,7 +5,6 @@
 #import <AVFoundation/AVFoundation.h>
 #include <memory>
 
-#include "base/mac/sdk_forward_declarations.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"

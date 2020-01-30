@@ -179,7 +179,7 @@ Vector<Result> NGInlineFragmentTraversal::SelfFragmentsOf(
   for (const NGPaintFragment* fragment :
        NGPaintFragment::InlineFragmentsFor(layout_object)) {
     result.push_back(Result{&fragment->PhysicalFragment(),
-                            fragment->InlineOffsetToContainerBox()});
+                            fragment->OffsetInContainerBlock()});
   }
   return result;
 }

@@ -168,6 +168,11 @@
 // otherwise nil.
 + (NSError*)waitForWebStateContainingElement:(ElementSelector*)selector;
 
+// Waits for the current web state's frames to contain |text|.
+// If not succeed returns an NSError indicating  why the operation failed,
+// otherwise nil.
++ (NSError*)waitForWebStateContainingTextInIFrame:(NSString*)text;
+
 // Attempts to submit form with |formID| in the current WebState.
 // Returns nil on success, or else an NSError indicating why the operation
 // failed.

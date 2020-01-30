@@ -39,6 +39,7 @@ are declared in tools/grit/grit_rule.gni.
       <output filename="generated_resources_sq.pak" type="data_package" lang="sq" />
       <output filename="generated_resources_ur.pak" type="data_package" lang="ur" />
       <output filename="generated_resources_uz.pak" type="data_package" lang="uz" />
+      <output filename="generated_resources_zh-HK.pak" type="data_package" lang="zh-HK" />
       <output filename="generated_resources_zu.pak" type="data_package" lang="zu" />
     </if>
     <output filename="generated_resources_am.pak" type="data_package" lang="am" />
@@ -178,6 +179,7 @@ are declared in tools/grit/grit_rule.gni.
       <output filename="java/res/values-uz/generated_resources.xml" lang="uz" type="android" context="android_java" />
       <output filename="java/res/values-vi/generated_resources.xml" lang="vi" type="android" context="android_java" />
       <output filename="java/res/values-zh-rCN/generated_resources.xml" lang="zh-CN" type="android" context="android_java" />
+      <output filename="java/res/values-zh-rHK/generated_resources.xml" lang="zh-HK" type="android" context="android_java" />
       <output filename="java/res/values-zh-rTW/generated_resources.xml" lang="zh-TW" type="android" context="android_java" />
       <output filename="java/res/values-zu/generated_resources.xml" lang="zu" type="android" context="android_java" />
     </if>
@@ -9571,6 +9573,18 @@ Please help our engineers fix this problem. Tell us what happened right before y
           $1<ex>A VR-enabled website</ex>
         </ph> - VR presenting to headset
       </message>
+      <message name="IDS_TAB_AX_LABEL_UNNAMED_GROUP_FORMAT" desc="Accessibility label text for a tab, when it is in a group that has not been named by the user. Example: 'Google Search - Part of unnamed group'">
+        <ph name="WINDOW_TITLE">$1<ex>Google Search</ex></ph> - Part of unnamed group
+      </message>
+      <message name="IDS_TAB_AX_LABEL_NAMED_GROUP_FORMAT" desc="Accessibility label text for a tab, when it is in a group that has been named by the user. Example: 'Google Search - Part of group MyGroupName'">
+        <ph name="WINDOW_TITLE">$1<ex>Google Search</ex></ph> - Part of group <ph name="GROUP_NAME">$2</ph>
+      </message>
+      <message name="IDS_GROUP_AX_LABEL_UNNAMED_GROUP_FORMAT" desc="Accessibility label text for a tab group header, when it has not been named by the user. Example: 'Unnamed group - Google Search and 3 other tabs'">
+        Unnamed group - <ph name="GROUP_CONTENTS">$1<ex>Google Search and 3 other tabs</ex></ph>
+      </message>
+      <message name="IDS_GROUP_AX_LABEL_NAMED_GROUP_FORMAT" desc="Accessibility label text for a tab group header, when it has been named by the user. Example: 'Group MyGroupName - Google Search and 3 other tabs'">
+        Group <ph name="GROUP_NAME">$1</ph> - <ph name="GROUP_CONTENTS">$2<ex>Google Search and 3 other tabs</ex></ph>
+      </message>
 
       <!-- ProcessSingleton -->
       <message name="IDS_PROFILE_IN_USE_LINUX_QUIT" desc="Text of button in profile in use dialog to quit without doing anything.">
@@ -10345,6 +10359,12 @@ Please help our engineers fix this problem. Tell us what happened right before y
       </message>
       <message name="IDS_WEBAUTHN_CABLE_ACTIVATE_DESCRIPTION" desc="Contents of the dialog shown when the user tries to sign-in using a phone as a security key.">
         A notification was sent to your phone to confirm it's you.
+      </message>
+      <message name="IDS_WEBAUTHN_CABLE_ACTIVATE_DESCRIPTION_SHORT" desc="Second line of text in an item letting the user know that they can use their phone as a security key. The user needs to check their phone and respond to a notification that will ask them to press a button on the phone's screen to confirm that they're logging in.">
+        Unlock your phone and confirm it's you
+      </message>
+      <message name="IDS_WEBAUTHN_CABLE_V2_ACTIVATE_DESCRIPTION_SHORT" desc="Second line of text in an item letting the user know that they can use their phone as a security key. The user needs to unlock their phone and open some app on their phone to complete the login process.">
+        Open the security key app on your phone
       </message>
       <message name="IDS_WEBAUTHN_CABLE_QR_TITLE" desc="Title of a dialog that contains a QR-code for the user to scan with a mobile phone app. A QR code is a type of barcode that can be read using a smartphone's camera.">
         Pair new phone

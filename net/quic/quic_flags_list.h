@@ -85,7 +85,7 @@ QUIC_FLAG(double, FLAGS_quic_lumpy_pacing_cwnd_fraction, 0.25f)
 
 // Default enables QUIC ack decimation and adds a connection option to disable
 // it.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_ack_decimation, false)
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_ack_decimation, true)
 
 // If true, QUIC offload pacing when using USPS as egress method.
 QUIC_FLAG(bool, FLAGS_quic_restart_flag_quic_offload_pacing_to_usps2, false)
@@ -132,10 +132,6 @@ QUIC_FLAG(
     bool,
     FLAGS_quic_reloadable_flag_quic_bbr_no_bytes_acked_in_startup_recovery,
     false)
-
-// If true, use common code for checking whether a new stream ID may be
-// allocated.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_use_common_stream_check, true)
 
 // If true, QuicEpollClock::Now() will monotonically increase.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_monotonic_epoll_clock, false)
@@ -265,28 +261,6 @@ QUIC_FLAG(int32_t, FLAGS_quic_bbr2_default_startup_full_loss_count, 8)
 // upon high loss.
 QUIC_FLAG(double, FLAGS_quic_bbr2_default_inflight_hi_headroom, 0.01)
 
-// If true, log number of ack aggregation epochs in QUIC transport connection
-// stats.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_log_ack_aggregation_stats, true)
-
-// If true, for server QUIC connections, set version_negotiated_ to true by
-// default.
-QUIC_FLAG(
-    bool,
-    FLAGS_quic_reloadable_flag_quic_version_negotiated_by_default_at_server,
-    true)
-
-// If true, QuicSession::SendRstStreamInner will be factored out and deleted.
-QUIC_FLAG(bool,
-          FLAGS_quic_reloadable_flag_quic_delete_send_rst_stream_inner,
-          true)
-
-// If true, for QUIC BBRv2 flows, exit PROBE_BW_DOWN phase after one round trip
-// time.
-QUIC_FLAG(bool,
-          FLAGS_quic_reloadable_flag_quic_bbr2_exit_probe_bw_down_after_one_rtt,
-          true)
-
 // If true, QUIC connection close packet will be sent at all available
 // encryption levels.
 QUIC_FLAG(bool,
@@ -348,14 +322,14 @@ QUIC_FLAG(bool,
 // per acked packet.
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_one_bw_sample_per_ack_event2,
-          false)
+          true)
 
 // If true, QUIC will call bandwidth sampler once per ack event, instead of once
 // per acked packet.
 QUIC_FLAG(
     bool,
     FLAGS_quic_reloadable_flag_quic_bw_sampler_remove_packets_once_per_congestion_event2,
-    false)
+    true)
 
 // If true, QuicCryptoServerStream creates its HandshakerDelegate in its
 // constructor instead of in OnSuccessfulVersionNegotiation.
@@ -374,12 +348,12 @@ QUIC_FLAG(bool,
 QUIC_FLAG(
     bool,
     FLAGS_quic_reloadable_flag_quic_bbr_mitigate_overly_large_bandwidth_sample,
-    false)
+    true)
 
 // If true, support QUIC BBRv2-style loss based startup exit in BBRv1.
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_bbr_loss_based_startup_exit,
-          false)
+          true)
 
 // If true, correctly stop processing bad PROX packets.
 QUIC_FLAG(bool,
@@ -402,12 +376,26 @@ QUIC_FLAG(double, FLAGS_quic_bbr2_default_probe_bw_full_loss_count, 2)
 // ACK decimation is enabled.
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_ack_delay_alarm_granularity,
-          false)
+          true)
 
 // If true, enable the 1ACK connection option to only send 1 immediate ACK after
 // reordering.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_one_immediate_ack, false)
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_one_immediate_ack, true)
 
 // If true, instead of getting handshake state from sent packet manager, ask
 // session for current handshake state.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_use_get_handshake_state, false)
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_use_get_handshake_state, true)
+
+// If true, in QuicPacketReader, replace the use of QuicSocketUtils by
+// equivalent QuicUdpSocketApi or QuicLinuxSocketUtils functions."
+QUIC_FLAG(
+    bool,
+    FLAGS_quic_restart_flag_quic_remove_quic_socket_utils_from_packet_reader,
+    false)
+
+// If true, QuicSentPacketManager::SetSendAlgorithm(CongestionControlType) will
+// become a no-op if the current and the requested cc_type are the same.
+QUIC_FLAG(
+    bool,
+    FLAGS_quic_reloadable_flag_quic_set_send_algorithm_noop_if_cc_type_unchanged,
+    false)

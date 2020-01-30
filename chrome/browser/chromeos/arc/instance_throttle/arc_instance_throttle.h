@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "chrome/browser/chromeos/throttle_observer.h"
 #include "chrome/browser/chromeos/throttle_service.h"
+#include "components/arc/arc_util.h"
 #include "components/keyed_service/core/keyed_service.h"
 
 namespace content {
@@ -32,7 +33,8 @@ class ArcInstanceThrottle : public KeyedService,
     Delegate() = default;
     virtual ~Delegate() = default;
 
-    virtual void SetCpuRestriction(bool) = 0;
+    virtual void SetCpuRestriction(
+        CpuRestrictionState cpu_restriction_state) = 0;
     virtual void RecordCpuRestrictionDisabledUMA(
         const std::string& observer_name,
         base::TimeDelta delta) = 0;

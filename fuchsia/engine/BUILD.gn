@@ -6,6 +6,7 @@ assert(is_fuchsia)
 
 import("//build/config/fuchsia/generate_runner_scripts.gni")
 import("//build/config/fuchsia/symbol_archive.gni")
+import("//fuchsia/release_channel.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
 import("//testing/test.gni")
 import("//tools/grit/repack.gni")
@@ -205,6 +206,8 @@ fuchsia_package("web_engine") {
   binary = ":web_engine_exe"
   manifest = "context_provider.cmx"
   component_name_override = "context_provider"
+  package_name_override = "web_engine${release_channel_suffix}"
+  archive_name_override = "web_engine"
 
   excluded_files = [
     "lib/libswiftshader_libEGL.so",
@@ -300,8 +303,6 @@ test("web_engine_unittests") {
 test("web_engine_integration_tests") {
   manifest = "web_engine_integration_tests.cmx"
   sources = [
-    "test/context_provider_test_connector.cc",
-    "test/context_provider_test_connector.h",
     "test_debug_listener.cc",
     "test_debug_listener.h",
     "web_engine_debug_integration_test.cc",
@@ -318,7 +319,7 @@ test("web_engine_integration_tests") {
   ]
   package_deps = [ [
         ":web_engine",
-        "web_engine",
+        "web_engine${release_channel_suffix}",
       ] ]
 }
 

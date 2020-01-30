@@ -106,7 +106,7 @@ class ServiceWorkerRegisterJob : public ServiceWorkerRegisterJobBase {
 
   void set_registration(scoped_refptr<ServiceWorkerRegistration> registration);
   ServiceWorkerRegistration* registration() const;
-  void set_new_version(ServiceWorkerVersion* version);
+  void set_new_version(scoped_refptr<ServiceWorkerVersion> version);
   ServiceWorkerVersion* new_version();
 
   void SetPhase(Phase phase);

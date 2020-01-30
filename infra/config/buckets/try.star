@@ -1,69 +1,28 @@
-load('//lib/builders.star', 'builder', 'cpu', 'defaults', 'goma', 'os')
+load('//lib/builders.star', 'cpu', 'goma', 'os')
+load('//lib/try.star', 'try_')
 
 # Defaults that apply to all branch versions of the bucket
-luci.recipe.defaults.cipd_package.set('infra/recipe_bundles/chromium.googlesource.com/chromium/tools/build')
 
-defaults.build_numbers.set(True)
-defaults.configure_kitchen.set(True)
-defaults.cores.set(8)
-defaults.cpu.set(cpu.X86_64)
-defaults.executable.set(luci.recipe(name = 'chromium_trybot'))
-defaults.execution_timeout.set(4 * time.hour)
+try_.defaults.build_numbers.set(True)
+try_.defaults.configure_kitchen.set(True)
+try_.defaults.cores.set(8)
+try_.defaults.cpu.set(cpu.X86_64)
+try_.defaults.executable.set('recipe:chromium_trybot')
+try_.defaults.execution_timeout.set(4 * time.hour)
 # Max. pending time for builds. CQ considers builds pending >2h as timed
 # out: http://shortn/_8PaHsdYmlq. Keep this in sync.
-defaults.expiration_timeout.set(2 * time.hour)
-defaults.os.set(os.LINUX_DEFAULT)
-defaults.service_account.set('chromium-try-builder@chops-service-accounts.iam.gserviceaccount.com')
-defaults.swarming_tags.set(['vpython:native-python-wrapper'])
-defaults.task_template_canary_percentage.set(5)
+try_.defaults.expiration_timeout.set(2 * time.hour)
+try_.defaults.os.set(os.LINUX_DEFAULT)
+try_.defaults.service_account.set('chromium-try-builder@chops-service-accounts.iam.gserviceaccount.com')
+try_.defaults.swarming_tags.set(['vpython:native-python-wrapper'])
+try_.defaults.task_template_canary_percentage.set(5)
 
-defaults.caches.set([
+try_.defaults.caches.set([
     swarming.cache(
         name = 'win_toolchain',
         path = 'win_toolchain',
     ),
 ])
-
-
-def tryjob(
-    *,
-    disable_reuse=None,
-    experiment_percentage=None,
-    location_regexp=None,
-    location_regexp_exclude=None):
-  return struct(
-      disable_reuse = disable_reuse,
-      experiment_percentage = experiment_percentage,
-      location_regexp = location_regexp,
-      location_regexp_exclude = location_regexp_exclude,
-  )
-
-def try_builder(
-    *,
-    name,
-    tryjob=None,
-    **kwargs):
-  if tryjob != None:
-    luci.cq_tryjob_verifier(
-        builder = 'try/' + name,
-        cq_group = 'cq',
-        disable_reuse = tryjob.disable_reuse,
-        experiment_percentage = tryjob.experiment_percentage,
-        location_regexp = tryjob.location_regexp,
-        location_regexp_exclude = tryjob.location_regexp_exclude,
-    )
-  else:
-    # Allow CQ to trigger this builder if user opts in via CQ-Include-Trybots.
-    luci.cq_tryjob_verifier(
-        builder = 'try/' + name,
-        cq_group = 'cq',
-        includable_only = True,
-    )
-
-  return builder(
-      name = name,
-      **kwargs
-  )
 
 
 # Execute the versioned files to define all of the per-branch entities
@@ -74,48 +33,85 @@ exec('//versioned/trunk/buckets/try.star')
 
 
 # *** After this point everything is trunk only ***
-defaults.bucket.set('try')
+try_.defaults.bucket.set('try')
+try_.defaults.cq_group.set('cq')
 
 
-# Builders appear after the function used to define them, with all builders
-# defined using the same function ordered lexicographically by name
-# Builder functions are defined in lexicographic order by name ignoring the
-# '_builder' suffix
-
-# Builder functions are defined for GPU builders on each master where they
-# appear: gpu_XXX_builder where XXX is the part after the last dot in the
-# mastername
-# Builder functions are defined for each master, with additional functions
-# for specializing on OS: XXX_builder and XXX_YYY_builder where XXX is the part
-# after the last dot in the mastername and YYY is the OS
+# Builders are sorted first lexicographically by the function used to define
+# them, then lexicographically by their name
 
 
-def android_builder(*, name, **kwargs):
-  return try_builder(
-      name = name,
-      goma_backend = goma.backend.RBE_PROD,
-      mastername = 'tryserver.chromium.android',
-      **kwargs
-  )
+try_.blink_builder(
+    name = 'linux-blink-rel',
+    goma_backend = goma.backend.RBE_PROD,
+    tryjob = try_.job(
+        location_regexp = [
+            '.+/[+]/cc/.+',
+            '.+/[+]/third_party/blink/renderer/core/paint/.+',
+            '.+/[+]/third_party/blink/renderer/core/svg/.+',
+            '.+/[+]/third_party/blink/renderer/platform/graphics/.+',
+        ],
+    ),
+)
 
-android_builder(
+try_.blink_builder(
+    name = 'win10-blink-rel',
+    goma_backend = goma.backend.RBE_PROD,
+    os = os.WINDOWS_ANY,
+    builderless = True,
+)
+
+try_.blink_builder(
+    name = 'win7-blink-rel',
+    goma_backend = goma.backend.RBE_PROD,
+    os = os.WINDOWS_ANY,
+    builderless = True,
+)
+
+
+try_.blink_mac_builder(
+    name = 'mac10.10-blink-rel',
+)
+
+try_.blink_mac_builder(
+    name = 'mac10.11-blink-rel',
+)
+
+try_.blink_mac_builder(
+    name = 'mac10.12-blink-rel',
+)
+
+try_.blink_mac_builder(
+    name = 'mac10.13-blink-rel',
+)
+
+try_.blink_mac_builder(
+    name = 'mac10.13_retina-blink-rel',
+)
+
+try_.blink_mac_builder(
+    name = 'mac10.14-blink-rel',
+)
+
+
+try_.chromium_android_builder(
     name = 'android-asan',
 )
 
-android_builder(
+try_.chromium_android_builder(
     name = 'android-bfcache-debug',
 )
 
-android_builder(
+try_.chromium_android_builder(
     name = 'android-binary-size',
-    executable = luci.recipe(name = 'binary_size_trybot'),
+    executable = 'recipe:binary_size_trybot',
     goma_jobs = goma.jobs.J150,
-    tryjob = tryjob(),
+    tryjob = try_.job(),
 )
 
-android_builder(
+try_.chromium_android_builder(
     name = 'android-cronet-arm-dbg',
-    tryjob = tryjob(
+    tryjob = try_.job(
         location_regexp = [
             '.+/[+]/components/cronet/.+',
             '.+/[+]/components/grpc_support/.+',
@@ -128,41 +124,41 @@ android_builder(
     ),
 )
 
-android_builder(
+try_.chromium_android_builder(
     name = 'android-deterministic-dbg',
-    executable = luci.recipe(name = 'swarming/deterministic_build'),
+    executable = 'recipe:swarming/deterministic_build',
     execution_timeout = 6 * time.hour,
 )
 
-android_builder(
+try_.chromium_android_builder(
     name = 'android-deterministic-rel',
-    executable = luci.recipe(name = 'swarming/deterministic_build'),
+    executable = 'recipe:swarming/deterministic_build',
     execution_timeout = 6 * time.hour,
 )
 
-android_builder(
+try_.chromium_android_builder(
     name = 'android-lollipop-arm-rel',
 )
 
-android_builder(
+try_.chromium_android_builder(
     name = 'android-marshmallow-x86-fyi-rel',
 )
 
-android_builder(
+try_.chromium_android_builder(
     name = 'android-opus-kitkat-arm-rel',
 )
 
-android_builder(
+try_.chromium_android_builder(
     name = 'android-oreo-arm64-cts-networkservice-dbg',
 )
 
-android_builder(
+try_.chromium_android_builder(
     name = 'android-oreo-arm64-dbg',
 )
 
-android_builder(
+try_.chromium_android_builder(
     name = 'android-pie-arm64-dbg',
-    tryjob = tryjob(
+    tryjob = try_.job(
         location_regexp = [
             '.+/[+]/chrome/android/features/vr/.+',
             '.+/[+]/chrome/android/java/src/org/chromium/chrome/browser/vr/.+',
@@ -175,11 +171,11 @@ android_builder(
     ),
 )
 
-android_builder(
+try_.chromium_android_builder(
     name = 'android-pie-x86-fyi-rel',
 )
 
-android_builder(
+try_.chromium_android_builder(
     name = 'android-pie-arm64-coverage-rel',
     cores = 16,
     goma_jobs = goma.jobs.J300,
@@ -187,69 +183,69 @@ android_builder(
     use_clang_coverage = True,
 )
 
-android_builder(
+try_.chromium_android_builder(
     name = 'android-pie-arm64-rel',
     cores = 16,
     goma_jobs = goma.jobs.J300,
     ssd = True,
 )
 
-android_builder(
+try_.chromium_android_builder(
     name = 'android-10-arm64-rel',
 )
 
-android_builder(
+try_.chromium_android_builder(
     name = 'android-webview-marshmallow-arm64-dbg',
 )
 
-android_builder(
+try_.chromium_android_builder(
     name = 'android-webview-nougat-arm64-dbg',
 )
 
-android_builder(
+try_.chromium_android_builder(
     name = 'android-webview-oreo-arm64-dbg',
 )
 
-android_builder(
+try_.chromium_android_builder(
     name = 'android-webview-pie-arm64-dbg',
 )
 
-android_builder(
+try_.chromium_android_builder(
     name = 'android-webview-pie-arm64-fyi-rel',
 )
 
-android_builder(
+try_.chromium_android_builder(
     name = 'android_archive_rel_ng',
 )
 
-android_builder(
+try_.chromium_android_builder(
     name = 'android_arm64_dbg_recipe',
     goma_jobs = goma.jobs.J300,
 )
 
-android_builder(
+try_.chromium_android_builder(
     name = 'android_blink_rel',
 )
 
-android_builder(
+try_.chromium_android_builder(
     name = 'android_cfi_rel_ng',
     cores = 32,
 )
 
-android_builder(
+try_.chromium_android_builder(
     name = 'android_clang_dbg_recipe',
     goma_jobs = goma.jobs.J300,
 )
 
-android_builder(
+try_.chromium_android_builder(
     name = 'android_compile_dbg',
     goma_jobs = goma.jobs.J150,
-    tryjob = tryjob(),
+    tryjob = try_.job(),
 )
 
-android_builder(
+try_.chromium_android_builder(
     name = 'android_compile_x64_dbg',
-    tryjob = tryjob(
+    tryjob = try_.job(
         location_regexp = [
             '.+/[+]/chrome/android/java/src/org/chromium/chrome/browser/vr/.+',
             '.+/[+]/chrome/browser/vr/.+',
@@ -262,9 +258,9 @@ android_builder(
     ),
 )
 
-android_builder(
+try_.chromium_android_builder(
     name = 'android_compile_x86_dbg',
-    tryjob = tryjob(
+    tryjob = try_.job(
         location_regexp = [
             '.+/[+]/chrome/android/java/src/org/chromium/chrome/browser/vr/.+',
             '.+/[+]/chrome/browser/vr/.+',
@@ -277,190 +273,903 @@ android_builder(
     ),
 )
 
-android_builder(
+try_.chromium_android_builder(
     name = 'android_cronet',
-    tryjob = tryjob(),
+    tryjob = try_.job(),
 )
 
-android_builder(
+try_.chromium_android_builder(
     name = 'android_cronet_tester',
     properties = {
         'buildername': 'android-cronet-arm-dbg',
     },
 )
 
-android_builder(
+try_.chromium_android_builder(
     name = 'android_mojo',
 )
 
-android_builder(
+try_.chromium_android_builder(
     name = 'android_n5x_swarming_dbg',
 )
 
-android_builder(
+try_.chromium_android_builder(
     name = 'android_unswarmed_pixel_aosp',
 )
 
-android_builder(
+try_.chromium_android_builder(
     name = 'cast_shell_android',
-    tryjob = tryjob(),
+    tryjob = try_.job(),
 )
 
-android_builder(
+try_.chromium_android_builder(
     name = 'linux_android_dbg_ng',
 )
 
-android_builder(
+try_.chromium_android_builder(
     name = 'try-nougat-phone-tester',
 )
 
 
-def angle_builder(*, name, **kwargs):
-  return try_builder(
-      name = name,
-      builderless = False,
-      goma_backend = goma.backend.RBE_PROD,
-      mastername = 'tryserver.chromium.angle',
-      service_account = 'chromium-try-gpu-builder@chops-service-accounts.iam.gserviceaccount.com',
-      **kwargs
-  )
-
-angle_builder(
+try_.chromium_angle_builder(
     name = 'android_angle_deqp_rel_ng',
 )
 
-angle_builder(
+try_.chromium_angle_builder(
     name = 'android_angle_rel_ng',
 )
 
-angle_builder(
+try_.chromium_angle_builder(
     name = 'android_angle_vk32_deqp_rel_ng',
 )
 
-angle_builder(
+try_.chromium_angle_builder(
     name = 'android_angle_vk32_rel_ng',
 )
 
-angle_builder(
+try_.chromium_angle_builder(
     name = 'android_angle_vk64_deqp_rel_ng',
 )
 
-angle_builder(
+try_.chromium_angle_builder(
     name = 'android_angle_vk64_rel_ng',
 )
 
-angle_builder(
+try_.chromium_angle_builder(
     name = 'fuchsia-angle-rel',
 )
 
-angle_builder(
+try_.chromium_angle_builder(
     name = 'linux-angle-rel',
 )
 
-angle_builder(
+try_.chromium_angle_builder(
     name = 'linux_angle_deqp_rel_ng',
 )
 
-angle_builder(
+try_.chromium_angle_builder(
     name = 'linux_angle_ozone_rel_ng',
 )
 
-angle_builder(
+try_.chromium_angle_builder(
     name = 'mac-angle-rel',
     cores = None,
     os = os.MAC_ANY,
 )
 
-angle_builder(
+try_.chromium_angle_builder(
     name = 'win-angle-deqp-rel-32',
     os = os.WINDOWS_ANY,
 )
 
-angle_builder(
+try_.chromium_angle_builder(
     name = 'win-angle-deqp-rel-64',
     os = os.WINDOWS_ANY,
 )
 
-angle_builder(
+try_.chromium_angle_builder(
     name = 'win-angle-rel-32',
     os = os.WINDOWS_ANY,
 )
 
-angle_builder(
+try_.chromium_angle_builder(
     name = 'win-angle-rel-64',
     os = os.WINDOWS_ANY,
 )
 
 
-def blink_builder(*, name, goma_backend = None, **kwargs):
-  return try_builder(
-      name = name,
-      goma_backend = goma_backend,
-      mastername = 'tryserver.blink',
-      **kwargs
-  )
-
-blink_builder(
-    name = 'linux-blink-rel',
-    goma_backend = goma.backend.RBE_PROD,
-    tryjob = tryjob(
+try_.chromium_chromiumos_builder(
+    name = 'chromeos-amd64-generic-dbg',
+    tryjob = try_.job(
         location_regexp = [
-            '.+/[+]/cc/.+',
-            '.+/[+]/third_party/blink/renderer/core/paint/.+',
-            '.+/[+]/third_party/blink/renderer/core/svg/.+',
-            '.+/[+]/third_party/blink/renderer/platform/graphics/.+',
+            '.+/[+]/content/gpu/.+',
+            '.+/[+]/media/.+',
         ],
     ),
 )
 
-blink_builder(
-    name = 'win10-blink-rel',
-    goma_backend = goma.backend.RBE_PROD,
+try_.chromium_chromiumos_builder(
+    name = 'chromeos-amd64-generic-cfi-thin-lto-rel',
+)
+
+try_.chromium_chromiumos_builder(
+    name = 'chromeos-arm-generic-dbg',
+)
+
+try_.chromium_chromiumos_builder(
+    name = 'chromeos-arm-generic-rel',
+    tryjob = try_.job(),
+)
+
+try_.chromium_chromiumos_builder(
+    name = 'chromeos-kevin-compile-rel',
+    tryjob = try_.job(
+        location_regexp = [
+            '.+/[+]/chromeos/CHROMEOS_LKGM',
+        ],
+    ),
+)
+
+try_.chromium_chromiumos_builder(
+    name = 'chromeos-kevin-rel',
+    tryjob = try_.job(
+        location_regexp = [
+            '.+/[+]/build/chromeos/.+',
+            '.+/[+]/build/config/chromeos/.*',
+        ],
+    ),
+)
+
+try_.chromium_chromiumos_builder(
+    name = 'linux-chromeos-compile-dbg',
+    tryjob = try_.job(),
+)
+
+try_.chromium_chromiumos_builder(
+    name = 'linux-chromeos-dbg',
+)
+
+
+try_.chromium_dawn_builder(
+    name = 'dawn-linux-x64-deps-rel',
+    tryjob = try_.job(
+        location_regexp = [
+            '.+/[+]/gpu/.+',
+            '.+/[+]/testing/buildbot/chromium.dawn.json',
+            '.+/[+]/third_party/blink/renderer/modules/webgpu/.+',
+            '.+/[+]/third_party/blink/web_tests/external/wpt/webgpu/.+',
+            '.+/[+]/third_party/blink/web_tests/wpt_internal/webgpu/.+',
+            '.+/[+]/third_party/blink/web_tests/WebGPUExpectations',
+            '.+/[+]/third_party/dawn/.+',
+        ],
+    ),
+)
+
+try_.chromium_dawn_builder(
+    name = 'dawn-mac-x64-deps-rel',
+    os = os.MAC_ANY,
+    tryjob = try_.job(
+        location_regexp = [
+            '.+/[+]/gpu/.+',
+            '.+/[+]/testing/buildbot/chromium.dawn.json',
+            '.+/[+]/third_party/blink/renderer/modules/webgpu/.+',
+            '.+/[+]/third_party/blink/web_tests/external/wpt/webgpu/.+',
+            '.+/[+]/third_party/blink/web_tests/wpt_internal/webgpu/.+',
+            '.+/[+]/third_party/blink/web_tests/WebGPUExpectations',
+            '.+/[+]/third_party/dawn/.+',
+        ],
+    ),
+)
+
+try_.chromium_dawn_builder(
+    name = 'dawn-win10-x64-deps-rel',
     os = os.WINDOWS_ANY,
-    builderless = True,
+    tryjob = try_.job(
+        location_regexp = [
+            '.+/[+]/gpu/.+',
+            '.+/[+]/testing/buildbot/chromium.dawn.json',
+            '.+/[+]/third_party/blink/renderer/modules/webgpu/.+',
+            '.+/[+]/third_party/blink/web_tests/external/wpt/webgpu/.+',
+            '.+/[+]/third_party/blink/web_tests/wpt_internal/webgpu/.+',
+            '.+/[+]/third_party/blink/web_tests/WebGPUExpectations',
+            '.+/[+]/third_party/dawn/.+',
+        ],
+    ),
 )
 
-blink_builder(
-    name = 'win7-blink-rel',
-    goma_backend = goma.backend.RBE_PROD,
+try_.chromium_dawn_builder(
+    name = 'dawn-win10-x86-deps-rel',
     os = os.WINDOWS_ANY,
+    tryjob = try_.job(
+        location_regexp = [
+            '.+/[+]/gpu/.+',
+            '.+/[+]/testing/buildbot/chromium.dawn.json',
+            '.+/[+]/third_party/blink/renderer/modules/webgpu/.+',
+            '.+/[+]/third_party/blink/web_tests/external/wpt/webgpu/.+',
+            '.+/[+]/third_party/blink/web_tests/wpt_internal/webgpu/.+',
+            '.+/[+]/third_party/blink/web_tests/WebGPUExpectations',
+            '.+/[+]/third_party/dawn/.+',
+        ],
+    ),
+)
+
+try_.chromium_dawn_builder(
+    name = 'linux-dawn-rel',
+)
+
+try_.chromium_dawn_builder(
+    name = 'mac-dawn-rel',
+    os = os.MAC_ANY,
+)
+
+try_.chromium_dawn_builder(
+    name = 'win-dawn-rel',
+    os = os.WINDOWS_ANY,
+)
+
+
+try_.chromium_linux_builder(
+    name = 'cast_shell_audio_linux',
+)
+
+try_.chromium_linux_builder(
+    name = 'cast_shell_linux',
+    tryjob = try_.job(),
+)
+
+try_.chromium_linux_builder(
+    name = 'closure_compilation',
+    executable = 'recipe:closure_compilation',
+    tryjob = try_.job(
+        location_regexp = [
+            '.+/[+]/third_party/closure_compiler/.+',
+        ],
+    ),
+)
+
+try_.chromium_linux_builder(
+    name = 'fuchsia-arm64-cast',
+    tryjob = try_.job(
+        location_regexp = [
+            '.+/[+]/chromecast/.+',
+        ],
+    ),
+)
+
+try_.chromium_linux_builder(
+    name = 'fuchsia-compile-x64-dbg',
+    tryjob = try_.job(
+        experiment_percentage = 50,
+    ),
+)
+
+try_.chromium_linux_builder(
+    name = 'fuchsia-fyi-arm64-rel',
+)
+
+try_.chromium_linux_builder(
+    name = 'fuchsia-fyi-x64-dbg',
+)
+
+try_.chromium_linux_builder(
+    name = 'fuchsia-fyi-x64-rel',
+)
+
+try_.chromium_linux_builder(
+    name = 'fuchsia-x64-cast',
+    tryjob = try_.job(
+        location_regexp = [
+            '.+/[+]/chromecast/.+',
+        ],
+    ),
+)
+
+try_.chromium_linux_builder(
+    name = 'fuchsia_arm64',
+    tryjob = try_.job(),
+)
+
+try_.chromium_linux_builder(
+    name = 'fuchsia_x64',
+    tryjob = try_.job(),
+)
+
+try_.chromium_linux_builder(
+    name = 'layout_test_leak_detection',
+)
+
+try_.chromium_linux_builder(
+    name = 'leak_detection_linux',
+)
+
+try_.chromium_linux_builder(
+    name = 'linux-annotator-rel',
+)
+
+try_.chromium_linux_builder(
+    name = 'linux-bfcache-debug',
+)
+
+try_.chromium_linux_builder(
+    name = 'linux-blink-heap-concurrent-marking-tsan-rel',
+)
+
+try_.chromium_linux_builder(
+    name = 'linux-blink-heap-verification-try',
+)
+
+try_.chromium_linux_builder(
+    name = 'linux-clang-tidy-dbg',
+    executable = 'recipe:tricium_clang_tidy_wrapper',
+    goma_jobs = goma.jobs.J150,
+)
+
+try_.chromium_linux_builder(
+    name = 'linux-clang-tidy-rel',
+    executable = 'recipe:tricium_clang_tidy_wrapper',
+    goma_jobs = goma.jobs.J150,
+)
+
+try_.chromium_linux_builder(
+    name = 'linux-dcheck-off-rel',
+)
+
+try_.chromium_linux_builder(
+    name = 'linux-gcc-rel',
+    goma_backend = None,
+)
+
+try_.chromium_linux_builder(
+    name = 'linux-libfuzzer-asan-rel',
+    executable = 'recipe:chromium_libfuzzer_trybot',
+    tryjob = try_.job(),
+)
+
+try_.chromium_linux_builder(
+    name = 'linux-ozone-rel',
+    tryjob = try_.job(),
+)
+
+try_.chromium_linux_builder(
+    name = 'linux-trusty-rel',
+    goma_jobs = goma.jobs.J150,
+    os = os.LINUX_TRUSTY,
+)
+
+try_.chromium_linux_builder(
+    name = 'linux-viz-rel',
+)
+
+try_.chromium_linux_builder(
+    name = 'linux-webkit-msan-rel',
+)
+
+try_.chromium_linux_builder(
+    name = 'linux_arm',
+)
+
+try_.chromium_linux_builder(
+    name = 'linux_chromium_analysis',
+)
+
+try_.chromium_linux_builder(
+    name = 'linux_chromium_archive_rel_ng',
+)
+
+try_.chromium_linux_builder(
+    name = 'linux_chromium_asan_rel_ng',
+    goma_jobs = goma.jobs.J150,
+    ssd = True,
+    tryjob = try_.job(),
+)
+
+try_.chromium_linux_builder(
+    name = 'linux_chromium_cfi_rel_ng',
+    cores = 32,
+)
+
+try_.chromium_linux_builder(
+    name = 'linux_chromium_chromeos_asan_rel_ng',
+    goma_jobs = goma.jobs.J150,
+)
+
+try_.chromium_linux_builder(
+    name = 'linux_chromium_chromeos_msan_rel_ng',
+    goma_jobs = goma.jobs.J150,
+)
+
+try_.chromium_linux_builder(
+    name = 'linux_chromium_clobber_deterministic',
+    executable = 'recipe:swarming/deterministic_build',
+    execution_timeout = 6 * time.hour,
+)
+
+try_.chromium_linux_builder(
+    name = 'linux_chromium_clobber_rel_ng',
+)
+
+try_.chromium_linux_builder(
+    name = 'linux_chromium_compile_dbg_32_ng',
+)
+
+try_.chromium_linux_builder(
+    name = 'linux_chromium_compile_dbg_ng',
+    caches = [
+        swarming.cache(
+            name = 'builder',
+            path = 'linux_debug',
+        ),
+    ],
+    goma_jobs = goma.jobs.J150,
+    tryjob = try_.job(),
+)
+
+try_.chromium_linux_builder(
+    name = 'linux_chromium_compile_rel_ng',
+)
+
+try_.chromium_linux_builder(
+    name = 'linux_chromium_dbg_ng',
+    caches = [
+        swarming.cache(
+            name = 'builder',
+            path = 'linux_debug',
+        ),
+    ],
+    tryjob = try_.job(
+        location_regexp = [
+            '.+/[+]/build/.*check_gn_headers.*',
+        ],
+    ),
+)
+
+try_.chromium_linux_builder(
+    name = 'linux_chromium_msan_rel_ng',
+    goma_jobs = goma.jobs.J150,
+)
+
+try_.chromium_linux_builder(
+    name = 'linux_chromium_tsan_rel_ng',
+    goma_jobs = goma.jobs.J150,
+    tryjob = try_.job(),
+)
+
+try_.chromium_linux_builder(
+    name = 'linux_chromium_ubsan_rel_ng',
+)
+
+try_.chromium_linux_builder(
+    name = 'linux_layout_tests_composite_after_paint',
+    tryjob = try_.job(
+        location_regexp = [
+            '.+/[+]/third_party/blink/renderer/core/paint/.+',
+            '.+/[+]/third_party/blink/renderer/core/svg/.+',
+            '.+/[+]/third_party/blink/renderer/platform/graphics/.+',
+            '.+/[+]/third_party/blink/web_tests/FlagExpectations/composite-after-paint',
+            '.+/[+]/third_party/blink/web_tests/flag-specific/composite-after-paint/.+',
+        ],
+    ),
+)
+
+try_.chromium_linux_builder(
+    name = 'linux_layout_tests_layout_ng_disabled',
+    tryjob = try_.job(
+        location_regexp = [
+            '.+/[+]/third_party/blink/renderer/core/editing/.+',
+            '.+/[+]/third_party/blink/renderer/core/layout/.+',
+            '.+/[+]/third_party/blink/renderer/core/paint/.+',
+            '.+/[+]/third_party/blink/renderer/core/svg/.+',
+            '.+/[+]/third_party/blink/renderer/platform/fonts/shaping/.+',
+            '.+/[+]/third_party/blink/renderer/platform/graphics/.+',
+            '.+/[+]/third_party/blink/web_tests/FlagExpectations/disable-layout-ng',
+            '.+/[+]/third_party/blink/web_tests/flag-specific/disable-layout-ng/.+',
+        ],
+    ),
+)
+
+try_.chromium_linux_builder(
+    name = 'linux-layout-tests-fragment-item',
+)
+
+try_.chromium_linux_builder(
+    name = 'linux-layout-tests-fragment-paint',
+)
+
+try_.chromium_linux_builder(
+    name = 'linux_mojo',
+)
+
+try_.chromium_linux_builder(
+    name = 'linux_mojo_chromeos',
+)
+
+try_.chromium_linux_builder(
+    name = 'linux_upload_clang',
     builderless = True,
+    cores = 32,
+    executable = 'recipe:chromium_upload_clang',
+    goma_backend = None,
+    os = os.LINUX_TRUSTY,
+)
+
+try_.chromium_linux_builder(
+    name = 'linux_vr',
+    tryjob = try_.job(
+        location_regexp = [
+            '.+/[+]/chrome/browser/vr/.+',
+        ],
+    ),
+)
+
+try_.chromium_linux_builder(
+    name = 'linux-wpt-fyi-rel',
+)
+
+try_.chromium_linux_builder(
+    name = 'tricium-metrics-analysis',
+    executable = 'recipe:tricium_metrics',
 )
 
 
-def blink_mac_builder(*, name, **kwargs):
-  return blink_builder(
-      name = name,
-      cores = None,
-      goma_backend = goma.backend.RBE_PROD,
-      os = os.MAC_ANY,
-      builderless = True,
-      ssd = True,
-      **kwargs
-  )
-
-blink_mac_builder(
-    name = 'mac10.10-blink-rel',
+try_.chromium_mac_builder(
+    name = 'mac-osxbeta-rel',
+    os = os.MAC_DEFAULT,
 )
 
-blink_mac_builder(
-    name = 'mac10.11-blink-rel',
+# NOTE: the following 4 trybots aren't sensitive to Mac version on which
+# they are built, hence no additional dimension is specified.
+# The 10.xx version translates to which bots will run isolated tests.
+try_.chromium_mac_builder(
+    name = 'mac_chromium_10.10',
 )
 
-blink_mac_builder(
-    name = 'mac10.12-blink-rel',
+try_.chromium_mac_builder(
+    name = 'mac_chromium_10.12_rel_ng',
 )
 
-blink_mac_builder(
-    name = 'mac10.13-blink-rel',
+try_.chromium_mac_builder(
+    name = 'mac_chromium_10.13_rel_ng',
 )
 
-blink_mac_builder(
-    name = 'mac10.13_retina-blink-rel',
+try_.chromium_mac_builder(
+    name = 'mac_chromium_10.14_rel_ng',
 )
 
-blink_mac_builder(
-    name = 'mac10.14-blink-rel',
+try_.chromium_mac_builder(
+    name = 'mac_chromium_archive_rel_ng',
+)
+
+try_.chromium_mac_builder(
+    name = 'mac_chromium_asan_rel_ng',
+    goma_jobs = goma.jobs.J150,
+)
+
+try_.chromium_mac_builder(
+    name = 'mac_chromium_compile_dbg_ng',
+    goma_jobs = goma.jobs.J150,
+    os = os.MAC_10_13,
+    tryjob = try_.job(),
+)
+
+try_.chromium_mac_builder(
+    name = 'mac_chromium_compile_rel_ng',
+)
+
+try_.chromium_mac_builder(
+    name = 'mac_chromium_dbg_ng',
+)
+
+try_.chromium_mac_builder(
+    name = 'mac_upload_clang',
+    builderless = False,
+    caches = [
+        swarming.cache(
+            name = 'xcode_mac_9a235',
+            path = 'xcode_mac_9a235.app',
+        ),
+    ],
+    executable = 'recipe:chromium_upload_clang',
+    execution_timeout = 6 * time.hour,
+    goma_backend = None,  # Does not use Goma.
+    properties = {
+        '$depot_tools/osx_sdk': {
+            'sdk_version': '9a235',
+        },
+    },
+)
+
+
+try_.chromium_mac_ios_builder(
+    name = 'ios-device',
+)
+
+try_.chromium_mac_ios_builder(
+    name = 'ios-device-xcode-clang',
+)
+
+try_.chromium_mac_ios_builder(
+    name = 'ios-simulator-cr-recipe',
+    executable = 'recipe:chromium_trybot',
+    properties = {
+        'xcode_build_version': '11a1027',
+    },
+)
+
+try_.chromium_mac_ios_builder(
+    name = 'ios-simulator-cronet',
+    tryjob = try_.job(
+        location_regexp = [
+            '.+/[+]/components/cronet/.+',
+            '.+/[+]/components/grpc_support/.+',
+            '.+/[+]/ios/.+',
+        ],
+        location_regexp_exclude = [
+            '.+/[+]/components/cronet/android/.+',
+        ],
+    ),
+)
+
+try_.chromium_mac_ios_builder(
+    name = 'ios-simulator-eg',
+)
+
+try_.chromium_mac_ios_builder(
+    name = 'ios-simulator-noncq',
+)
+
+try_.chromium_mac_ios_builder(
+    name = 'ios-simulator-full-configs',
+    tryjob = try_.job(
+        location_regexp = [
+            '.+/[+]/ios/.+',
+        ],
+    ),
+)
+
+try_.chromium_mac_ios_builder(
+    name = 'ios-simulator-xcode-clang',
+)
+
+try_.chromium_mac_ios_builder(
+    name = 'ios13-beta-simulator',
+)
+
+try_.chromium_mac_ios_builder(
+    name = 'ios13-sdk-simulator',
+)
+
+
+
+try_.chromium_swangle_linux_builder(
+    name = 'linux-swangle-try-tot-angle-x64'
+)
+
+try_.chromium_swangle_linux_builder(
+    name = 'linux-swangle-try-tot-angle-x86'
+)
+
+try_.chromium_swangle_linux_builder(
+    name = 'linux-swangle-try-tot-swiftshader-x64'
+)
+
+try_.chromium_swangle_linux_builder(
+    name = 'linux-swangle-try-tot-swiftshader-x86'
+)
+
+try_.chromium_swangle_linux_builder(
+    name = 'linux-swangle-try-x64'
+)
+
+try_.chromium_swangle_linux_builder(
+    name = 'linux-swangle-try-x86'
+)
+
+
+try_.chromium_swangle_windows_builder(
+    name = 'win-swangle-try-tot-angle-x64',
+)
+
+try_.chromium_swangle_windows_builder(
+    name = 'win-swangle-try-tot-angle-x86',
+)
+
+try_.chromium_swangle_windows_builder(
+    name = 'win-swangle-try-tot-swiftshader-x64',
+)
+
+try_.chromium_swangle_windows_builder(
+    name = 'win-swangle-try-tot-swiftshader-x86',
+)
+
+try_.chromium_swangle_windows_builder(
+    name = 'win-swangle-try-x64',
+)
+
+try_.chromium_swangle_windows_builder(
+    name = 'win-swangle-try-x86',
+)
+
+
+try_.chromium_win_builder(
+    name = 'win-annotator-rel',
+)
+
+try_.chromium_win_builder(
+    name = 'win-asan',
+    goma_jobs = goma.jobs.J150,
+)
+
+try_.chromium_win_builder(
+    name = 'win-celab-try-rel',
+    executable = 'recipe:celab',
+    properties = {
+        'exclude': 'chrome_only',
+        'pool_name': 'celab-chromium-try',
+        'pool_size': 20,
+        'tests': '*',
+    },
+)
+
+try_.chromium_win_builder(
+    name = 'win-libfuzzer-asan-rel',
+    builderless = False,
+    executable = 'recipe:chromium_libfuzzer_trybot',
+    os = os.WINDOWS_ANY,
+    tryjob = try_.job(),
+)
+
+try_.chromium_win_builder(
+    name = 'win10_chromium_x64_dbg_ng',
+    os = os.WINDOWS_10,
+)
+
+try_.chromium_win_builder(
+    name = 'win10_chromium_x64_coverage_rel_ng',
+    os = os.WINDOWS_10,
+    use_clang_coverage = True,
+    goma_jobs = goma.jobs.J150,
+    ssd = True,
+    tryjob = try_.job(experiment_percentage = 3),
+)
+
+try_.chromium_win_builder(
+    name = 'win10_chromium_x64_rel_ng_exp',
+    builderless = False,
+    os = os.WINDOWS_ANY,
+)
+
+try_.chromium_win_builder(
+    name = 'win7-rel',
+    execution_timeout = time.hour * 9 / 2,  # 4.5 (can't multiply float * duration)
+    goma_jobs = goma.jobs.J300,
+    ssd = True,
+)
+
+try_.chromium_win_builder(
+    name = 'win_archive',
+)
+
+try_.chromium_win_builder(
+    name = 'win_chromium_compile_dbg_ng',
+    goma_jobs = goma.jobs.J150,
+    tryjob = try_.job(),
+)
+
+try_.chromium_win_builder(
+    name = 'win_chromium_compile_rel_ng',
+)
+
+try_.chromium_win_builder(
+    name = 'win_chromium_dbg_ng',
+)
+
+try_.chromium_win_builder(
+    name = 'win_chromium_x64_rel_ng',
+)
+
+try_.chromium_win_builder(
+    name = 'win_mojo',
+)
+
+try_.chromium_win_builder(
+    name = 'win_upload_clang',
+    builderless = False,
+    cores = 32,
+    executable = 'recipe:chromium_upload_clang',
+    goma_backend = None,
+    os = os.WINDOWS_ANY,
+)
+
+try_.chromium_win_builder(
+    name = 'win_x64_archive',
+)
+
+
+try_.gpu_chromium_android_builder(
+    name = 'android_optional_gpu_tests_rel',
+    tryjob = try_.job(
+        location_regexp = [
+            '.+/[+]/cc/.+',
+            '.+/[+]/chrome/browser/vr/.+',
+            '.+/[+]/components/viz/.+',
+            '.+/[+]/content/test/gpu/.+',
+            '.+/[+]/gpu/.+',
+            '.+/[+]/media/audio/.+',
+            '.+/[+]/media/filters/.+',
+            '.+/[+]/media/gpu/.+',
+            '.+/[+]/services/viz/.+',
+            '.+/[+]/testing/trigger_scripts/.+',
+            '.+/[+]/third_party/blink/renderer/modules/webgl/.+',
+            '.+/[+]/third_party/blink/renderer/platform/graphics/gpu/.+',
+            '.+/[+]/ui/gl/.+',
+        ],
+    ),
+)
+
+
+try_.gpu_chromium_linux_builder(
+    name = 'linux_optional_gpu_tests_rel',
+    tryjob = try_.job(
+        location_regexp = [
+            '.+/[+]/chrome/browser/vr/.+',
+            '.+/[+]/content/test/gpu/.+',
+            '.+/[+]/gpu/.+',
+            '.+/[+]/media/audio/.+',
+            '.+/[+]/media/filters/.+',
+            '.+/[+]/media/gpu/.+',
+            '.+/[+]/testing/buildbot/chromium.gpu.fyi.json',
+            '.+/[+]/testing/trigger_scripts/.+',
+            '.+/[+]/third_party/blink/renderer/modules/webgl/.+',
+            '.+/[+]/third_party/blink/renderer/platform/graphics/gpu/.+',
+            '.+/[+]/ui/gl/.+',
+        ],
+    ),
+)
+
+
+try_.gpu_chromium_mac_builder(
+    name = 'mac_optional_gpu_tests_rel',
+    tryjob = try_.job(
+        location_regexp = [
+            '.+/[+]/chrome/browser/vr/.+',
+            '.+/[+]/content/test/gpu/.+',
+            '.+/[+]/gpu/.+',
+            '.+/[+]/media/audio/.+',
+            '.+/[+]/media/filters/.+',
+            '.+/[+]/media/gpu/.+',
+            '.+/[+]/services/shape_detection/.+',
+            '.+/[+]/testing/buildbot/chromium.gpu.fyi.json',
+            '.+/[+]/testing/trigger_scripts/.+',
+            '.+/[+]/third_party/blink/renderer/modules/webgl/.+',
+            '.+/[+]/third_party/blink/renderer/platform/graphics/gpu/.+',
+            '.+/[+]/ui/gl/.+',
+        ],
+    ),
+)
+
+
+try_.gpu_chromium_win_builder(
+    name = 'win_optional_gpu_tests_rel',
+    builderless = True,
+    os = os.WINDOWS_DEFAULT,
+    tryjob = try_.job(
+        location_regexp = [
+            '.+/[+]/chrome/browser/vr/.+',
+            '.+/[+]/content/test/gpu/.+',
+            '.+/[+]/device/vr/.+',
+            '.+/[+]/gpu/.+',
+            '.+/[+]/media/audio/.+',
+            '.+/[+]/media/filters/.+',
+            '.+/[+]/media/gpu/.+',
+            '.+/[+]/testing/buildbot/chromium.gpu.fyi.json',
+            '.+/[+]/testing/trigger_scripts/.+',
+            '.+/[+]/third_party/blink/renderer/modules/vr/.+',
+            '.+/[+]/third_party/blink/renderer/modules/webgl/.+',
+            '.+/[+]/third_party/blink/renderer/modules/xr/.+',
+            '.+/[+]/third_party/blink/renderer/platform/graphics/gpu/.+',
+            '.+/[+]/ui/gl/.+',
+        ],
+    ),
 )
 
 
@@ -494,947 +1203,4 @@ chrome_internal_verifier(
 
 chrome_internal_verifier(
     builder = 'linux-chromeos-chrome',
-)
-
-
-def chromiumos_builder(*, name, **kwargs):
-  return try_builder(
-      name = name,
-      mastername = 'tryserver.chromium.chromiumos',
-      goma_backend = goma.backend.RBE_PROD,
-      **kwargs
-  )
-
-chromiumos_builder(
-    name = 'chromeos-amd64-generic-dbg',
-    tryjob = tryjob(
-        location_regexp = [
-            '.+/[+]/content/gpu/.+',
-            '.+/[+]/media/.+',
-        ],
-    ),
-)
-
-chromiumos_builder(
-    name = 'chromeos-amd64-generic-cfi-thin-lto-rel',
-)
-
-chromiumos_builder(
-    name = 'chromeos-arm-generic-dbg',
-)
-
-chromiumos_builder(
-    name = 'chromeos-arm-generic-rel',
-    tryjob = tryjob(),
-)
-
-chromiumos_builder(
-    name = 'chromeos-kevin-compile-rel',
-    tryjob = tryjob(
-        location_regexp = [
-            '.+/[+]/chromeos/CHROMEOS_LKGM',
-        ],
-    ),
-)
-
-chromiumos_builder(
-    name = 'chromeos-kevin-rel',
-    tryjob = tryjob(
-        location_regexp = [
-            '.+/[+]/build/chromeos/.+',
-            '.+/[+]/build/config/chromeos/.*',
-        ],
-    ),
-)
-
-chromiumos_builder(
-    name = 'linux-chromeos-compile-dbg',
-    tryjob = tryjob(),
-)
-
-chromiumos_builder(
-    name = 'linux-chromeos-dbg',
-)
-
-
-def dawn_builder(*, name, **kwargs):
-  return try_builder(
-      name = name,
-      builderless = False,
-      cores = None,
-      goma_backend = goma.backend.RBE_PROD,
-      mastername = 'tryserver.chromium.dawn',
-      service_account = 'chromium-try-gpu-builder@chops-service-accounts.iam.gserviceaccount.com',
-      **kwargs
-  )
-
-dawn_builder(
-    name = 'dawn-linux-x64-deps-rel',
-    tryjob = tryjob(
-        location_regexp = [
-            '.+/[+]/gpu/.+',
-            '.+/[+]/testing/buildbot/chromium.dawn.json',
-            '.+/[+]/third_party/blink/renderer/modules/webgpu/.+',
-            '.+/[+]/third_party/blink/web_tests/external/wpt/webgpu/.+',
-            '.+/[+]/third_party/blink/web_tests/wpt_internal/webgpu/.+',
-            '.+/[+]/third_party/blink/web_tests/WebGPUExpectations',
-            '.+/[+]/third_party/dawn/.+',
-        ],
-    ),
-)
-
-dawn_builder(
-    name = 'dawn-mac-x64-deps-rel',
-    os = os.MAC_ANY,
-    tryjob = tryjob(
-        location_regexp = [
-            '.+/[+]/gpu/.+',
-            '.+/[+]/testing/buildbot/chromium.dawn.json',
-            '.+/[+]/third_party/blink/renderer/modules/webgpu/.+',
-            '.+/[+]/third_party/blink/web_tests/external/wpt/webgpu/.+',
-            '.+/[+]/third_party/blink/web_tests/wpt_internal/webgpu/.+',
-            '.+/[+]/third_party/blink/web_tests/WebGPUExpectations',
-            '.+/[+]/third_party/dawn/.+',
-        ],
-    ),
-)
-
-dawn_builder(
-    name = 'dawn-win10-x64-deps-rel',
-    os = os.WINDOWS_ANY,
-    tryjob = tryjob(
-        location_regexp = [
-            '.+/[+]/gpu/.+',
-            '.+/[+]/testing/buildbot/chromium.dawn.json',
-            '.+/[+]/third_party/blink/renderer/modules/webgpu/.+',
-            '.+/[+]/third_party/blink/web_tests/external/wpt/webgpu/.+',
-            '.+/[+]/third_party/blink/web_tests/wpt_internal/webgpu/.+',
-            '.+/[+]/third_party/blink/web_tests/WebGPUExpectations',
-            '.+/[+]/third_party/dawn/.+',
-        ],
-    ),
-)
-
-dawn_builder(
-    name = 'dawn-win10-x86-deps-rel',
-    os = os.WINDOWS_ANY,
-    tryjob = tryjob(
-        location_regexp = [
-            '.+/[+]/gpu/.+',
-            '.+/[+]/testing/buildbot/chromium.dawn.json',
-            '.+/[+]/third_party/blink/renderer/modules/webgpu/.+',
-            '.+/[+]/third_party/blink/web_tests/external/wpt/webgpu/.+',
-            '.+/[+]/third_party/blink/web_tests/wpt_internal/webgpu/.+',
-            '.+/[+]/third_party/blink/web_tests/WebGPUExpectations',
-            '.+/[+]/third_party/dawn/.+',
-        ],
-    ),
-)
-
-dawn_builder(
-    name = 'linux-dawn-rel',
-)
-
-dawn_builder(
-    name = 'mac-dawn-rel',
-    os = os.MAC_ANY,
-)
-
-dawn_builder(
-    name = 'win-dawn-rel',
-    os = os.WINDOWS_ANY,
-)
-
-
-def gpu_builder(*, name, builderless=False, execution_timeout=6 * time.hour, **kwargs):
-  return try_builder(
-      name = name,
-      builderless = builderless,
-      execution_timeout = execution_timeout,
-      service_account = 'chromium-try-gpu-builder@chops-service-accounts.iam.gserviceaccount.com',
-      **kwargs
-  )
-
-
-def gpu_android_builder(*, name, **kwargs):
-  return gpu_builder(
-      name = name,
-      goma_backend = goma.backend.RBE_PROD,
-      mastername = 'tryserver.chromium.android',
-      **kwargs
-  )
-
-gpu_android_builder(
-    name = 'android_optional_gpu_tests_rel',
-    tryjob = tryjob(
-        location_regexp = [
-            '.+/[+]/cc/.+',
-            '.+/[+]/chrome/browser/vr/.+',
-            '.+/[+]/components/viz/.+',
-            '.+/[+]/content/test/gpu/.+',
-            '.+/[+]/gpu/.+',
-            '.+/[+]/media/audio/.+',
-            '.+/[+]/media/filters/.+',
-            '.+/[+]/media/gpu/.+',
-            '.+/[+]/services/viz/.+',
-            '.+/[+]/testing/trigger_scripts/.+',
-            '.+/[+]/third_party/blink/renderer/modules/webgl/.+',
-            '.+/[+]/third_party/blink/renderer/platform/graphics/gpu/.+',
-            '.+/[+]/ui/gl/.+',
-        ],
-    ),
-)
-
-
-def gpu_linux_builder(*, name, **kwargs):
-  return gpu_builder(
-      name = name,
-      goma_backend = goma.backend.RBE_PROD,
-      mastername = 'tryserver.chromium.linux',
-      **kwargs
-  )
-
-gpu_linux_builder(
-    name = 'linux_optional_gpu_tests_rel',
-    tryjob = tryjob(
-        location_regexp = [
-            '.+/[+]/chrome/browser/vr/.+',
-            '.+/[+]/content/test/gpu/.+',
-            '.+/[+]/gpu/.+',
-            '.+/[+]/media/audio/.+',
-            '.+/[+]/media/filters/.+',
-            '.+/[+]/media/gpu/.+',
-            '.+/[+]/testing/buildbot/chromium.gpu.fyi.json',
-            '.+/[+]/testing/trigger_scripts/.+',
-            '.+/[+]/third_party/blink/renderer/modules/webgl/.+',
-            '.+/[+]/third_party/blink/renderer/platform/graphics/gpu/.+',
-            '.+/[+]/ui/gl/.+',
-        ],
-    ),
-)
-
-
-def gpu_mac_builder(*, name, **kwargs):
-  return gpu_builder(
-      name = name,
-      cores = None,
-      goma_backend = goma.backend.RBE_PROD,
-      mastername = 'tryserver.chromium.mac',
-      os = os.MAC_ANY,
-      **kwargs
-  )
-
-gpu_mac_builder(
-    name = 'mac_optional_gpu_tests_rel',
-    tryjob = tryjob(
-        location_regexp = [
-            '.+/[+]/chrome/browser/vr/.+',
-            '.+/[+]/content/test/gpu/.+',
-            '.+/[+]/gpu/.+',
-            '.+/[+]/media/audio/.+',
-            '.+/[+]/media/filters/.+',
-            '.+/[+]/media/gpu/.+',
-            '.+/[+]/services/shape_detection/.+',
-            '.+/[+]/testing/buildbot/chromium.gpu.fyi.json',
-            '.+/[+]/testing/trigger_scripts/.+',
-            '.+/[+]/third_party/blink/renderer/modules/webgl/.+',
-            '.+/[+]/third_party/blink/renderer/platform/graphics/gpu/.+',
-            '.+/[+]/ui/gl/.+',
-        ],
-    ),
-)
-
-
-def gpu_win_builder(*, name, os=os.WINDOWS_ANY, **kwargs):
-  return gpu_builder(
-      name = name,
-      goma_backend = goma.backend.RBE_PROD,
-      mastername = 'tryserver.chromium.win',
-      os = os,
-      **kwargs
-  )
-
-gpu_win_builder(
-    name = 'win_optional_gpu_tests_rel',
-    builderless = True,
-    os = os.WINDOWS_DEFAULT,
-    tryjob = tryjob(
-        location_regexp = [
-            '.+/[+]/chrome/browser/vr/.+',
-            '.+/[+]/content/test/gpu/.+',
-            '.+/[+]/device/vr/.+',
-            '.+/[+]/gpu/.+',
-            '.+/[+]/media/audio/.+',
-            '.+/[+]/media/filters/.+',
-            '.+/[+]/media/gpu/.+',
-            '.+/[+]/testing/buildbot/chromium.gpu.fyi.json',
-            '.+/[+]/testing/trigger_scripts/.+',
-            '.+/[+]/third_party/blink/renderer/modules/vr/.+',
-            '.+/[+]/third_party/blink/renderer/modules/webgl/.+',
-            '.+/[+]/third_party/blink/renderer/modules/xr/.+',
-            '.+/[+]/third_party/blink/renderer/platform/graphics/gpu/.+',
-            '.+/[+]/ui/gl/.+',
-        ],
-    ),
-)
-
-
-def linux_builder(*, name, goma_backend = goma.backend.RBE_PROD, **kwargs):
-  return try_builder(
-      name = name,
-      goma_backend = goma_backend,
-      mastername = 'tryserver.chromium.linux',
-      **kwargs
-  )
-
-linux_builder(
-    name = 'cast_shell_audio_linux',
-)
-
-linux_builder(
-    name = 'cast_shell_linux',
-    tryjob = tryjob(),
-)
-
-linux_builder(
-    name = 'closure_compilation',
-    executable = luci.recipe(name = 'closure_compilation'),
-    tryjob = tryjob(
-        location_regexp = [
-            '.+/[+]/third_party/closure_compiler/.+',
-        ],
-    ),
-)
-
-linux_builder(
-    name = 'fuchsia-arm64-cast',
-    tryjob = tryjob(
-        location_regexp = [
-            '.+/[+]/chromecast/.+',
-        ],
-    ),
-)
-
-linux_builder(
-    name = 'fuchsia-compile-x64-dbg',
-    tryjob = tryjob(
-        experiment_percentage = 50,
-    ),
-)
-
-linux_builder(
-    name = 'fuchsia-fyi-arm64-rel',
-)
-
-linux_builder(
-    name = 'fuchsia-fyi-x64-dbg',
-)
-
-linux_builder(
-    name = 'fuchsia-fyi-x64-rel',
-)
-
-linux_builder(
-    name = 'fuchsia-x64-cast',
-    tryjob = tryjob(
-        location_regexp = [
-            '.+/[+]/chromecast/.+',
-        ],
-    ),
-)
-
-linux_builder(
-    name = 'fuchsia_arm64',
-    tryjob = tryjob(),
-)
-
-linux_builder(
-    name = 'fuchsia_x64',
-    tryjob = tryjob(),
-)
-
-linux_builder(
-    name = 'layout_test_leak_detection',
-)
-
-linux_builder(
-    name = 'leak_detection_linux',
-)
-
-linux_builder(
-    name = 'linux-annotator-rel',
-)
-
-linux_builder(
-    name = 'linux-bfcache-debug',
-)
-
-linux_builder(
-    name = 'linux-blink-heap-concurrent-marking-tsan-rel',
-)
-
-linux_builder(
-    name = 'linux-blink-heap-verification-try',
-)
-
-linux_builder(
-    name = 'linux-clang-tidy-dbg',
-    executable = luci.recipe(name = 'tricium_clang_tidy_wrapper'),
-    goma_jobs = goma.jobs.J150,
-)
-
-linux_builder(
-    name = 'linux-clang-tidy-rel',
-    executable = luci.recipe(name = 'tricium_clang_tidy_wrapper'),
-    goma_jobs = goma.jobs.J150,
-)
-
-linux_builder(
-    name = 'linux-dcheck-off-rel',
-)
-
-linux_builder(
-    name = 'linux-gcc-rel',
-    goma_backend = None,
-)
-
-linux_builder(
-    name = 'linux-libfuzzer-asan-rel',
-    executable = luci.recipe(name = 'chromium_libfuzzer_trybot'),
-    tryjob = tryjob(),
-)
-
-linux_builder(
-    name = 'linux-ozone-rel',
-    tryjob = tryjob(),
-)
-
-linux_builder(
-    name = 'linux-trusty-rel',
-    goma_jobs = goma.jobs.J150,
-    os = os.LINUX_TRUSTY,
-)
-
-linux_builder(
-    name = 'linux-viz-rel',
-)
-
-linux_builder(
-    name = 'linux-webkit-msan-rel',
-)
-
-linux_builder(
-    name = 'linux_arm',
-)
-
-linux_builder(
-    name = 'linux_chromium_analysis',
-)
-
-linux_builder(
-    name = 'linux_chromium_archive_rel_ng',
-)
-
-linux_builder(
-    name = 'linux_chromium_asan_rel_ng',
-    goma_jobs = goma.jobs.J150,
-    ssd = True,
-    tryjob = tryjob(),
-)
-
-linux_builder(
-    name = 'linux_chromium_cfi_rel_ng',
-    cores = 32,
-)
-
-linux_builder(
-    name = 'linux_chromium_chromeos_asan_rel_ng',
-    goma_jobs = goma.jobs.J150,
-)
-
-linux_builder(
-    name = 'linux_chromium_chromeos_msan_rel_ng',
-    goma_jobs = goma.jobs.J150,
-)
-
-linux_builder(
-    name = 'linux_chromium_clobber_deterministic',
-    executable = luci.recipe(name = 'swarming/deterministic_build'),
-    execution_timeout = 6 * time.hour,
-)
-
-linux_builder(
-    name = 'linux_chromium_clobber_rel_ng',
-)
-
-linux_builder(
-    name = 'linux_chromium_compile_dbg_32_ng',
-)
-
-linux_builder(
-    name = 'linux_chromium_compile_dbg_ng',
-    caches = [
-        swarming.cache(
-            name = 'builder',
-            path = 'linux_debug',
-        ),
-    ],
-    goma_jobs = goma.jobs.J150,
-    tryjob = tryjob(),
-)
-
-linux_builder(
-    name = 'linux_chromium_compile_rel_ng',
-)
-
-linux_builder(
-    name = 'linux_chromium_dbg_ng',
-    caches = [
-        swarming.cache(
-            name = 'builder',
-            path = 'linux_debug',
-        ),
-    ],
-    tryjob = tryjob(
-        location_regexp = [
-            '.+/[+]/build/.*check_gn_headers.*',
-        ],
-    ),
-)
-
-linux_builder(
-    name = 'linux_chromium_msan_rel_ng',
-    goma_jobs = goma.jobs.J150,
-)
-
-linux_builder(
-    name = 'linux_chromium_tsan_rel_ng',
-    goma_jobs = goma.jobs.J150,
-    tryjob = tryjob(),
-)
-
-linux_builder(
-    name = 'linux_chromium_ubsan_rel_ng',
-)
-
-linux_builder(
-    name = 'linux_layout_tests_composite_after_paint',
-    tryjob = tryjob(
-        location_regexp = [
-            '.+/[+]/third_party/blink/renderer/core/paint/.+',
-            '.+/[+]/third_party/blink/renderer/core/svg/.+',
-            '.+/[+]/third_party/blink/renderer/platform/graphics/.+',
-            '.+/[+]/third_party/blink/web_tests/FlagExpectations/composite-after-paint',
-            '.+/[+]/third_party/blink/web_tests/flag-specific/composite-after-paint/.+',
-        ],
-    ),
-)
-
-linux_builder(
-    name = 'linux_layout_tests_layout_ng_disabled',
-    tryjob = tryjob(
-        location_regexp = [
-            '.+/[+]/third_party/blink/renderer/core/editing/.+',
-            '.+/[+]/third_party/blink/renderer/core/layout/.+',
-            '.+/[+]/third_party/blink/renderer/core/paint/.+',
-            '.+/[+]/third_party/blink/renderer/core/svg/.+',
-            '.+/[+]/third_party/blink/renderer/platform/fonts/shaping/.+',
-            '.+/[+]/third_party/blink/renderer/platform/graphics/.+',
-            '.+/[+]/third_party/blink/web_tests/FlagExpectations/disable-layout-ng',
-            '.+/[+]/third_party/blink/web_tests/flag-specific/disable-layout-ng/.+',
-        ],
-    ),
-)
-
-linux_builder(
-    name = 'linux-layout-tests-fragment-item',
-)
-
-linux_builder(
-    name = 'linux-layout-tests-fragment-paint',
-)
-
-linux_builder(
-    name = 'linux_mojo',
-)
-
-linux_builder(
-    name = 'linux_mojo_chromeos',
-)
-
-linux_builder(
-    name = 'linux_upload_clang',
-    builderless = True,
-    cores = 32,
-    executable = luci.recipe(name = 'chromium_upload_clang'),
-    goma_backend = None,
-    os = os.LINUX_TRUSTY,
-)
-
-linux_builder(
-    name = 'linux_vr',
-    tryjob = tryjob(
-        location_regexp = [
-            '.+/[+]/chrome/browser/vr/.+',
-        ],
-    ),
-)
-
-linux_builder(
-    name = 'linux-wpt-fyi-rel',
-)
-
-linux_builder(
-    name = 'tricium-metrics-analysis',
-    executable = luci.recipe(name = 'tricium_metrics'),
-)
-
-
-def mac_builder(
-    *,
-    name,
-    builderless=True,
-    cores=None,
-    goma_backend=goma.backend.RBE_PROD,
-    os=os.MAC_ANY,
-    **kwargs):
-  return try_builder(
-      name = name,
-      cores = cores,
-      goma_backend = goma_backend,
-      mastername = 'tryserver.chromium.mac',
-      os = os,
-      builderless = builderless,
-      ssd = True,
-      **kwargs
-  )
-
-mac_builder(
-    name = 'mac-osxbeta-rel',
-    os = os.MAC_DEFAULT,
-)
-
-# NOTE: the following 4 trybots aren't sensitive to Mac version on which
-# they are built, hence no additional dimension is specified.
-# The 10.xx version translates to which bots will run isolated tests.
-mac_builder(
-    name = 'mac_chromium_10.10',
-)
-
-mac_builder(
-    name = 'mac_chromium_10.12_rel_ng',
-)
-
-mac_builder(
-    name = 'mac_chromium_10.13_rel_ng',
-)
-
-mac_builder(
-    name = 'mac_chromium_10.14_rel_ng',
-)
-
-mac_builder(
-    name = 'mac_chromium_archive_rel_ng',
-)
-
-mac_builder(
-    name = 'mac_chromium_asan_rel_ng',
-    goma_jobs = goma.jobs.J150,
-)
-
-mac_builder(
-    name = 'mac_chromium_compile_dbg_ng',
-    goma_jobs = goma.jobs.J150,
-    os = os.MAC_10_13,
-    tryjob = tryjob(),
-)
-
-mac_builder(
-    name = 'mac_chromium_compile_rel_ng',
-)
-
-mac_builder(
-    name = 'mac_chromium_dbg_ng',
-)
-
-mac_builder(
-    name = 'mac_upload_clang',
-    builderless = False,
-    caches = [
-        swarming.cache(
-            name = 'xcode_mac_9a235',
-            path = 'xcode_mac_9a235.app',
-        ),
-    ],
-    executable = luci.recipe(name = 'chromium_upload_clang'),
-    execution_timeout = 6 * time.hour,
-    goma_backend = None,  # Does not use Goma.
-    properties = {
-        '$depot_tools/osx_sdk': {
-            'sdk_version': '9a235',
-        },
-    },
-)
-
-
-def mac_ios_builder(*, name, executable=luci.recipe(name = 'ios/try'), **kwargs):
-  return try_builder(
-      name = name,
-      caches = [
-          swarming.cache(
-              name = 'xcode_ios_11a1027',
-              path = 'xcode_ios_11a1027.app',
-          ),
-      ],
-      cores = None,
-      executable = executable,
-      mastername = 'tryserver.chromium.mac',
-      os = os.MAC_ANY,
-      **kwargs
-  )
-
-mac_ios_builder(
-    name = 'ios-device',
-)
-
-mac_ios_builder(
-    name = 'ios-device-xcode-clang',
-)
-
-mac_ios_builder(
-    name = 'ios-simulator-cr-recipe',
-    executable = luci.recipe(name = 'chromium_trybot'),
-    properties = {
-        'xcode_build_version': '11a1027',
-    },
-)
-
-mac_ios_builder(
-    name = 'ios-simulator-cronet',
-    tryjob = tryjob(
-        location_regexp = [
-            '.+/[+]/components/cronet/.+',
-            '.+/[+]/components/grpc_support/.+',
-            '.+/[+]/ios/.+',
-        ],
-        location_regexp_exclude = [
-            '.+/[+]/components/cronet/android/.+',
-        ],
-    ),
-)
-
-mac_ios_builder(
-    name = 'ios-simulator-eg',
-)
-
-mac_ios_builder(
-    name = 'ios-simulator-noncq',
-)
-
-mac_ios_builder(
-    name = 'ios-simulator-full-configs',
-    tryjob = tryjob(
-        location_regexp = [
-            '.+/[+]/ios/.+',
-        ],
-    ),
-)
-
-mac_ios_builder(
-    name = 'ios-simulator-xcode-clang',
-)
-
-mac_ios_builder(
-    name = 'ios13-beta-simulator',
-)
-
-mac_ios_builder(
-    name = 'ios13-sdk-simulator',
-)
-
-
-def swangle_builder(*, name, **kwargs):
-  return try_builder(
-      name = name,
-      builderless = True,
-      mastername = 'tryserver.chromium.swangle',
-      service_account = 'chromium-try-gpu-builder@chops-service-accounts.iam.gserviceaccount.com',
-      **kwargs
-  )
-
-
-def swangle_linux_builder(*, name, **kwargs):
-  return swangle_builder(
-      name = name,
-      goma_backend = goma.backend.RBE_PROD,
-      os = os.LINUX_DEFAULT,
-      **kwargs
-  )
-
-swangle_linux_builder(
-    name = 'linux-swangle-try-tot-angle-x64'
-)
-
-swangle_linux_builder(
-    name = 'linux-swangle-try-tot-angle-x86'
-)
-
-swangle_linux_builder(
-    name = 'linux-swangle-try-tot-swiftshader-x64'
-)
-
-swangle_linux_builder(
-    name = 'linux-swangle-try-tot-swiftshader-x86'
-)
-
-swangle_linux_builder(
-    name = 'linux-swangle-try-x64'
-)
-
-swangle_linux_builder(
-    name = 'linux-swangle-try-x86'
-)
-
-
-def swangle_windows_builder(*, name, **kwargs):
-  return swangle_builder(
-      name = name,
-      os = os.WINDOWS_DEFAULT,
-      goma_backend = goma.backend.RBE_PROD,
-      **kwargs
-  )
-
-swangle_windows_builder(
-    name = 'win-swangle-try-tot-angle-x64',
-)
-
-swangle_windows_builder(
-    name = 'win-swangle-try-tot-angle-x86',
-)
-
-swangle_windows_builder(
-    name = 'win-swangle-try-tot-swiftshader-x64',
-)
-
-swangle_windows_builder(
-    name = 'win-swangle-try-tot-swiftshader-x86',
-)
-
-swangle_windows_builder(
-    name = 'win-swangle-try-x64',
-)
-
-swangle_windows_builder(
-    name = 'win-swangle-try-x86',
-)
-
-
-def win_builder(
-    *,
-    name,
-    builderless=True,
-    goma_backend=goma.backend.RBE_PROD,
-    os=os.WINDOWS_DEFAULT,
-    **kwargs):
-  return try_builder(
-      name = name,
-      builderless = builderless,
-      goma_backend = goma_backend,
-      mastername = 'tryserver.chromium.win',
-      os = os,
-      **kwargs
-  )
-
-win_builder(
-    name = 'win-annotator-rel',
-)
-
-win_builder(
-    name = 'win-asan',
-    goma_jobs = goma.jobs.J150,
-)
-
-win_builder(
-    name = 'win-celab-try-rel',
-    executable = luci.recipe(name = 'celab'),
-    properties = {
-        'exclude': 'chrome_only',
-        'pool_name': 'celab-chromium-try',
-        'pool_size': 20,
-        'tests': '*',
-    },
-)
-
-win_builder(
-    name = 'win-libfuzzer-asan-rel',
-    builderless = False,
-    executable = luci.recipe(name = 'chromium_libfuzzer_trybot'),
-    os = os.WINDOWS_ANY,
-    tryjob = tryjob(),
-)
-
-win_builder(
-    name = 'win10_chromium_x64_dbg_ng',
-    os = os.WINDOWS_10,
-)
-
-win_builder(
-    name = 'win10_chromium_x64_coverage_rel_ng',
-    os = os.WINDOWS_10,
-    use_clang_coverage = True,
-    goma_jobs = goma.jobs.J150,
-    ssd = True,
-    tryjob = tryjob(experiment_percentage = 3),
-)
-
-win_builder(
-    name = 'win10_chromium_x64_rel_ng_exp',
-    builderless = False,
-    os = os.WINDOWS_ANY,
-)
-
-win_builder(
-    name = 'win7-rel',
-    execution_timeout = time.hour * 9 / 2,  # 4.5 (can't multiply float * duration)
-    goma_jobs = goma.jobs.J300,
-    ssd = True,
-)
-
-win_builder(
-    name = 'win_archive',
-)
-
-win_builder(
-    name = 'win_chromium_compile_dbg_ng',
-    goma_jobs = goma.jobs.J150,
-    tryjob = tryjob(),
-)
-
-win_builder(
-    name = 'win_chromium_compile_rel_ng',
-)
-
-win_builder(
-    name = 'win_chromium_dbg_ng',
-)
-
-win_builder(
-    name = 'win_chromium_x64_rel_ng',
-)
-
-win_builder(
-    name = 'win_mojo',
-)
-
-win_builder(
-    name = 'win_upload_clang',
-    builderless = False,
-    cores = 32,
-    executable = luci.recipe(name = 'chromium_upload_clang'),
-    goma_backend = None,
-    os = os.WINDOWS_ANY,
-)
-
-win_builder(
-    name = 'win_x64_archive',
 )

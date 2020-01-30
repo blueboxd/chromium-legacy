@@ -426,7 +426,6 @@
 <translation id="2799223571221894425">다시 시작</translation>
 <translation id="2803306138276472711">최근 Google 세이프 브라우징이 <ph name="SITE" />에서 <ph name="BEGIN_LINK" />멀웨어를 감지<ph name="END_LINK" />했습니다. 평소에 안전한 웹사이트도 멀웨어에 감염될 때가 있습니다.</translation>
 <translation id="2807052079800581569">이미지 Y 위치</translation>
-<translation id="2809804249696361569">두 시트</translation>
 <translation id="2824775600643448204">주소창 및 검색창</translation>
 <translation id="2826760142808435982">이 연결은 <ph name="CIPHER" />을(를) 사용하여 암호화되고 인증되며 <ph name="KX" />을(를) 키 교환 매커니즘으로 사용합니다.</translation>
 <translation id="2835170189407361413">서식 지우기</translation>
@@ -935,7 +934,6 @@
 <translation id="5112422516732747637">A5</translation>
 <translation id="5115216390227830982">European-Edp</translation>
 <translation id="5115563688576182185">(64비트)</translation>
-<translation id="5121469660360593280">Chrome Enterprise User Protect에서 보고한 보안 관련 활동에 관한 데이터를 관리자와 공유합니다. 여기에는 방문한 페이지 URL, 파일 이름 또는 메타데이터 및 기기와 Chrome 로그인에 사용한 사용자 이름이 포함될 수 있습니다.</translation>
 <translation id="5123063207673082822">주말</translation>
 <translation id="5125394840236832993">B-Plus</translation>
 <translation id="5126510351761255129">카드 인증</translation>
@@ -950,7 +948,6 @@
 <translation id="5161506081086828129">스태커 9</translation>
 <translation id="516920405563544094"><ph name="CREDIT_CARD" /> 카드의 CVC를 입력하세요. 카드를 확인하면 Google 계정의 카드 세부정보가 이 사이트와 공유됩니다.</translation>
 <translation id="5169827969064885044">조직의 계정에 액세스할 수 없게 되거나 신원 도용이 발생할 수도 있습니다. 지금 비밀번호를 변경하는 것이 좋습니다.</translation>
-<translation id="5170017743895942767">Chrome Enterprise User Protect</translation>
 <translation id="5171045022955879922">검색 또는 URL 입력</translation>
 <translation id="5171689220826475070">Fanfold-유럽</translation>
 <translation id="5172758083709347301">컴퓨터</translation>
@@ -1083,7 +1080,6 @@
 <translation id="5737183892635480227">{NUM_CARDS,plural, =1{Google 계정에 카드 저장}other{Google 계정에 카드 저장}}</translation>
 <translation id="5745980000221562234">{NUM_CARDS,plural, =1{이 카드의 가상 번호 사용}other{카드 선택}}</translation>
 <translation id="5763042198335101085">올바른 이메일 주소를 입력하세요.</translation>
-<translation id="5763703224595565476">관리자가 브라우저의 Chrome Enterprise User Protect를 사용 설정했습니다. Chrome Enterprise User Protect는 내 데이터 중 일부에 액세스할 권한이 있습니다.</translation>
 <translation id="5765072501007116331">배달 방법과 요구사항을 확인하려면 주소를 선택하세요.</translation>
 <translation id="5776313857861697733">우선순위</translation>
 <translation id="5778550464785688721">MIDI 기기 전체 제어</translation>
@@ -1420,7 +1416,6 @@
 <translation id="733923710415886693">서버 인증서가 인증서 투명성 정책을 사용하여 공개되지 않았습니다.</translation>
 <translation id="734600844861828519">11x15</translation>
 <translation id="7346048084945669753">연결됨:</translation>
-<translation id="73479065977517481"><ph name="ENROLLMENT_DOMAIN" />에서 브라우저의 Chrome Enterprise User Protect를 사용 설정했습니다. Chrome Enterprise User Protect는 내 데이터 중 일부에 액세스할 권한이 있습니다.</translation>
 <translation id="7349430561505560861">A4-Extra</translation>
 <translation id="7353601530677266744">명령줄</translation>
 <translation id="7372973238305370288">검색결과</translation>

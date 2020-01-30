@@ -222,9 +222,10 @@ void VulkanRenderer::RenderFrame() {
       /* .color = */ {/* .float32 = */ {.5f, 1.f - NextFraction(), .5f, 1.f}}};
 
   gpu::VulkanSwapChain* vulkan_swap_chain = vulkan_surface_->swap_chain();
-  gpu::VulkanSwapChain::ScopedWrite scoped_write(vulkan_swap_chain);
-  const uint32_t image = scoped_write.image_index();
   {
+    gpu::VulkanSwapChain::ScopedWrite scoped_write(vulkan_swap_chain);
+    const uint32_t image = scoped_write.image_index();
+
     auto& framebuffer = framebuffers_[image];
     if (!framebuffer) {
       framebuffer = Framebuffer::Create(

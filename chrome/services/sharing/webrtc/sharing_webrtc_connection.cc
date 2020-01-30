@@ -14,6 +14,8 @@
 #include "chrome/services/sharing/webrtc/mdns_responder_adapter.h"
 #include "chrome/services/sharing/webrtc/p2p_port_allocator.h"
 #include "third_party/webrtc/api/jsep.h"
+#include "third_party/webrtc/api/stats/rtc_stats_collector_callback.h"
+#include "third_party/webrtc/api/stats/rtcstats_objects.h"
 
 namespace {
 
@@ -109,6 +111,35 @@ class ProxyAsyncResolverFactory final : public webrtc::AsyncResolverFactory {
 
  private:
   sharing::IpcPacketSocketFactory* socket_factory_;
+};
+
+class RTCStatsCollectorCallback : public webrtc::RTCStatsCollectorCallback {
+ public:
+  typedef base::OnceCallback<void(
+      const rtc::scoped_refptr<const webrtc::RTCStatsReport>& report)>
+      ResultCallback;
+
+  RTCStatsCollectorCallback(const RTCStatsCollectorCallback&) = delete;
+  RTCStatsCollectorCallback& operator=(const RTCStatsCollectorCallback&) =
+      delete;
+
+  static RTCStatsCollectorCallback* Create(ResultCallback result_callback) {
+    return new rtc::RefCountedObject<RTCStatsCollectorCallback>(
+        std::move(result_callback));
+  }
+
+  void OnStatsDelivered(
+      const rtc::scoped_refptr<const webrtc::RTCStatsReport>& report) override {
+    std::move(result_callback_).Run(report);
+  }
+
+ protected:
+  explicit RTCStatsCollectorCallback(ResultCallback result_callback)
+      : result_callback_(std::move(result_callback)) {}
+  ~RTCStatsCollectorCallback() override = default;
+
+ private:
+  ResultCallback result_callback_;
 };
 
 }  // namespace
@@ -335,6 +366,17 @@ void SharingWebRtcConnection::OnDataChannel(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   channel_ = data_channel;
   channel_->RegisterObserver(this);
+}
+
+void SharingWebRtcConnection::OnConnectionChange(
+    webrtc::PeerConnectionInterface::PeerConnectionState new_state) {
+  if (new_state !=
+      webrtc::PeerConnectionInterface::PeerConnectionState::kConnected)
+    return;
+
+  peer_connection_->GetStats(RTCStatsCollectorCallback::Create(
+      base::BindOnce(&SharingWebRtcConnection::OnStatsReceived,
+                     weak_ptr_factory_.GetWeakPtr())));
 }
 
 void SharingWebRtcConnection::OnRenegotiationNeeded() {
@@ -634,6 +676,37 @@ void SharingWebRtcConnection::MaybeSendQueuedMessages() {
     queued_messages_.pop();
   }
   queued_messages_total_size_ = 0;
+}
+
+void SharingWebRtcConnection::OnStatsReceived(
+    const rtc::scoped_refptr<const webrtc::RTCStatsReport>& report) {
+  auto transport_stats_list =
+      report->GetStatsOfType<webrtc::RTCTransportStats>();
+  if (transport_stats_list.size() != 1) {
+    LogWebRtcConnectionType(WebRtcConnectionType::kInvalid);
+    return;
+  }
+
+  const webrtc::RTCStats* selected_candidate_pair =
+      report->Get(*(transport_stats_list[0]->selected_candidate_pair_id));
+  if (!selected_candidate_pair) {
+    LogWebRtcConnectionType(WebRtcConnectionType::kInvalid);
+    return;
+  }
+
+  std::string local_candidate_id =
+      *(selected_candidate_pair->cast_to<webrtc::RTCIceCandidatePairStats>()
+            .local_candidate_id);
+  const webrtc::RTCStats* local_candidate = report->Get(local_candidate_id);
+  if (!local_candidate) {
+    LogWebRtcConnectionType(WebRtcConnectionType::kInvalid);
+    return;
+  }
+
+  std::string candidate_type =
+      *(local_candidate->cast_to<webrtc::RTCLocalIceCandidateStats>()
+            .candidate_type);
+  LogWebRtcConnectionType(StringToWebRtcConnectionType(candidate_type));
 }
 
 SharingWebRtcConnection::PendingMessage::PendingMessage(

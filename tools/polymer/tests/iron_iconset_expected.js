@@ -1,4 +1,5 @@
 import {Polymer, html} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
 import 'chrome://resources/polymer/v3_0/iron-iconset-svg/iron-iconset-svg.js';
 const template = html`
 <iron-iconset-svg name="cr_foo_20" size="20">

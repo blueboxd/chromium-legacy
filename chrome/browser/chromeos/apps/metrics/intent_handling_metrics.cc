@@ -4,8 +4,6 @@
 
 #include "chrome/browser/chromeos/apps/metrics/intent_handling_metrics.h"
 
-#include <string>
-
 #include "base/metrics/histogram_macros.h"
 #include "chrome/browser/apps/intent_helper/apps_navigation_types.h"
 #include "components/arc/metrics/arc_metrics_constants.h"
@@ -50,6 +48,22 @@ void IntentHandlingMetrics::RecordIntentPickerUserInteractionMetrics(
       AppsNavigationThrottle::GetDestinationPlatform(selected_app_package,
                                                      action);
   RecordIntentPickerMetrics(source, should_persist, action, platform);
+}
+
+void IntentHandlingMetrics::RecordExternalProtocolMetrics(
+    arc::Scheme scheme,
+    PickerEntryType entry_type,
+    bool accepted,
+    bool persisted) {
+  arc::ProtocolAction action =
+      arc::GetProtocolAction(scheme, entry_type, accepted, persisted);
+  if (accepted) {
+    UMA_HISTOGRAM_ENUMERATION("ChromeOS.Apps.ExternalProtocolDialog.Accepted",
+                              action);
+  } else {
+    UMA_HISTOGRAM_ENUMERATION("ChromeOS.Apps.ExternalProtocolDialog.Rejected",
+                              action);
+  }
 }
 
 }  // namespace apps

@@ -316,6 +316,11 @@ void MediaSessionImpl::DidUpdateFaviconURL(
     observer->MediaSessionImagesChanged(this->images_);
 }
 
+void MediaSessionImpl::MediaPictureInPictureChanged(
+    bool is_picture_in_picture) {
+  RebuildAndNotifyMediaSessionInfoChanged();
+}
+
 bool MediaSessionImpl::AddPlayer(MediaSessionPlayerObserver* observer,
                                  int player_id,
                                  media::MediaContentType media_content_type) {
@@ -923,6 +928,13 @@ MediaSessionImpl::GetMediaSessionInfoSync() {
   // If the browser context is off the record then it should be sensitive.
   info->is_sensitive = web_contents()->GetBrowserContext()->IsOffTheRecord();
 
+  info->picture_in_picture_state =
+      web_contents()->HasPictureInPictureVideo()
+          ? media_session::mojom::MediaPictureInPictureState::
+                kInPictureInPicture
+          : media_session::mojom::MediaPictureInPictureState::
+                kNotInPictureInPicture;
+
   return info;
 }
 
@@ -1309,6 +1321,13 @@ MediaSessionServiceImpl* MediaSessionImpl::ComputeServiceForRouting() {
   return best_frame ? services_[best_frame] : nullptr;
 }
 
+void MediaSessionImpl::OnPictureInPictureAvailabilityChanged() {
+  if (normal_players_.size() != 1)
+    return;
+
+  RebuildAndNotifyActionsChanged();
+}
+
 bool MediaSessionImpl::ShouldRouteAction(
     media_session::mojom::MediaSessionAction action) const {
   return routed_service_ && base::Contains(routed_service_->actions(), action);
@@ -1342,6 +1361,13 @@ void MediaSessionImpl::RebuildAndNotifyActionsChanged() {
     actions.insert(media_session::mojom::MediaSessionAction::kPlay);
     actions.insert(media_session::mojom::MediaSessionAction::kPause);
     actions.insert(media_session::mojom::MediaSessionAction::kStop);
+  }
+
+  if (IsPictureInPictureAvailable()) {
+    actions.insert(
+        media_session::mojom::MediaSessionAction::kEnterPictureInPicture);
+    actions.insert(
+        media_session::mojom::MediaSessionAction::kExitPictureInPicture);
   }
 
   // If we support kSeekTo then we support kScrubTo as well.
@@ -1410,6 +1436,14 @@ void MediaSessionImpl::RebuildAndNotifyMetadataChanged() {
     if (images_changed)
       observer->MediaSessionImagesChanged(this->images_);
   }
+}
+
+bool MediaSessionImpl::IsPictureInPictureAvailable() const {
+  if (normal_players_.size() != 1)
+    return false;
+
+  auto& first = normal_players_.begin()->first;
+  return first.observer->IsPictureInPictureAvailable(first.player_id);
 }
 
 WEB_CONTENTS_USER_DATA_KEY_IMPL(MediaSessionImpl)

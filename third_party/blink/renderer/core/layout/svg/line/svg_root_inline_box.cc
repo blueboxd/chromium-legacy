@@ -86,8 +86,8 @@ void SVGRootInlineBox::ComputePerCharacterLayoutInformation() {
 
 FloatRect SVGRootInlineBox::LayoutInlineBoxes(InlineBox& box) {
   FloatRect rect;
-  if (box.IsSVGInlineTextBox()) {
-    rect = ToSVGInlineTextBox(box).CalculateBoundaries();
+  if (auto* svg_inline_text_box = DynamicTo<SVGInlineTextBox>(box)) {
+    rect = svg_inline_text_box->CalculateBoundaries();
   } else {
     for (InlineBox* child = ToInlineFlowBox(box).FirstChild(); child;
          child = child->NextOnLine())
@@ -101,12 +101,12 @@ FloatRect SVGRootInlineBox::LayoutInlineBoxes(InlineBox& box) {
   box.SetX(logical_rect.X());
   box.SetY(logical_rect.Y());
   box.SetLogicalWidth(logical_rect.Width());
-  if (box.IsSVGInlineTextBox())
-    ToSVGInlineTextBox(box).SetLogicalHeight(logical_rect.Height());
-  else if (box.IsSVGInlineFlowBox())
-    ToSVGInlineFlowBox(box).SetLogicalHeight(logical_rect.Height());
+  if (auto* svg_inline_text_box = DynamicTo<SVGInlineTextBox>(box))
+    svg_inline_text_box->SetLogicalHeight(logical_rect.Height());
+  else if (auto* svg_inline_flow_box = DynamicTo<SVGInlineFlowBox>(box))
+    svg_inline_flow_box->SetLogicalHeight(logical_rect.Height());
   else
-    ToSVGRootInlineBox(box).SetLogicalHeight(logical_rect.Height());
+    To<SVGRootInlineBox>(box).SetLogicalHeight(logical_rect.Height());
 
   return rect;
 }
@@ -170,10 +170,9 @@ static inline void ReverseInlineBoxRangeAndValueListsIfNeeded(
     if (first == last || first == --last)
       return;
 
-    if ((*last)->IsSVGInlineTextBox() && (*first)->IsSVGInlineTextBox()) {
-      SVGInlineTextBox* first_text_box = ToSVGInlineTextBox(*first);
-      SVGInlineTextBox* last_text_box = ToSVGInlineTextBox(*last);
-
+    auto* first_text_box = DynamicTo<SVGInlineTextBox>(*first);
+    auto* last_text_box = DynamicTo<SVGInlineTextBox>(*last);
+    if (last_text_box && first_text_box) {
       // Reordering is only necessary for BiDi text that is _absolutely_
       // positioned.
       if (first_text_box->Len() == 1 &&

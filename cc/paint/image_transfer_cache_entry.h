@@ -132,6 +132,7 @@ class CC_PAINT_EXPORT ServiceImageTransferCacheEntry
 
   // Ensures the cached image has mips.
   void EnsureMips();
+  bool has_mips() const { return has_mips_; }
 
   // Used in tests and for registering each texture for memory dumps.
   const sk_sp<SkImage>& GetPlaneImage(size_t index) const;

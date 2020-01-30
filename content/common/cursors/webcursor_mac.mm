@@ -9,7 +9,6 @@
 
 #include "base/logging.h"
 #include "base/mac/scoped_cftyperef.h"
-#include "base/mac/sdk_forward_declarations.h"
 #include "content/app/resources/grit/content_resources.h"
 #include "content/public/common/content_client.h"
 #include "skia/ext/skia_utils_mac.h"

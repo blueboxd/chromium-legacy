@@ -118,10 +118,8 @@ class ServiceWorkerObjectHostTest : public testing::Test {
     options.scope = scope;
     registration_ =
         helper_->context()->registry()->CreateNewRegistration(options);
-    version_ = new ServiceWorkerVersion(
-        registration_.get(), script_url, blink::mojom::ScriptType::kClassic,
-        helper_->context()->storage()->NewVersionId(),
-        helper_->context()->AsWeakPtr());
+    version_ = helper_->context()->registry()->CreateNewVersion(
+        registration_.get(), script_url, blink::mojom::ScriptType::kClassic);
     std::vector<ServiceWorkerDatabase::ResourceRecord> records;
     records.push_back(
         ServiceWorkerDatabase::ResourceRecord(10, version_->script_url(), 100));

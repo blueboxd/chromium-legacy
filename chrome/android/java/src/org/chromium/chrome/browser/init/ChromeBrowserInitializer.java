@@ -28,13 +28,13 @@ import org.chromium.base.task.AsyncTask;
 import org.chromium.base.task.PostTask;
 import org.chromium.base.task.TaskTraits;
 import org.chromium.chrome.browser.AppHooks;
+import org.chromium.chrome.browser.ChromeCachedFlags;
 import org.chromium.chrome.browser.ChromeLocalizationUtils;
 import org.chromium.chrome.browser.ChromeStrictMode;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.FileProviderHelper;
 import org.chromium.chrome.browser.crash.LogcatExtractionRunnable;
 import org.chromium.chrome.browser.download.DownloadManagerService;
-import org.chromium.chrome.browser.flags.FeatureUtilities;
 import org.chromium.chrome.browser.services.GoogleServicesManager;
 import org.chromium.chrome.browser.webapps.ActivityAssigner;
 import org.chromium.chrome.browser.webapps.ChromeWebApkHost;
@@ -412,7 +412,7 @@ public class ChromeBrowserInitializer {
         }
 
         // Needed for field trial metrics to be properly collected in ServiceManager only mode.
-        FeatureUtilities.cacheNativeFlagsForServiceManagerOnlyMode();
+        ChromeCachedFlags.getInstance().cacheServiceManagerOnlyFlags();
 
         ModuleUtil.recordStartupTime();
     }

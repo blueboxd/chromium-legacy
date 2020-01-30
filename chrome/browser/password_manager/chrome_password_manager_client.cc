@@ -876,9 +876,9 @@ void ChromePasswordManagerClient::HideFillingUI() {
 
 void ChromePasswordManagerClient::AutomaticGenerationAvailable(
     const autofill::password_generation::PasswordGenerationUIData& ui_data) {
-  if (!password_manager::bad_message::CheckChildProcessSecurityPolicy(
+  if (!password_manager::bad_message::CheckChildProcessSecurityPolicyForURL(
           password_generation_driver_receivers_.GetCurrentTargetFrame(),
-          ui_data.password_form,
+          ui_data.form_data.url,
           BadMessageReason::
               CPMD_BAD_ORIGIN_AUTOMATIC_GENERATION_STATUS_CHANGED))
     return;
@@ -909,10 +909,12 @@ void ChromePasswordManagerClient::AutomaticGenerationAvailable(
 
 void ChromePasswordManagerClient::ShowPasswordEditingPopup(
     const gfx::RectF& bounds,
-    const autofill::PasswordForm& form,
-    uint32_t field_renderer_id) {
-  if (!password_manager::bad_message::CheckChildProcessSecurityPolicy(
-          password_generation_driver_receivers_.GetCurrentTargetFrame(), form,
+    const autofill::FormData& form_data,
+    uint32_t field_renderer_id,
+    const base::string16& password_value) {
+  if (!password_manager::bad_message::CheckChildProcessSecurityPolicyForURL(
+          password_generation_driver_receivers_.GetCurrentTargetFrame(),
+          form_data.url,
           BadMessageReason::CPMD_BAD_ORIGIN_SHOW_PASSWORD_EDITING_POPUP))
     return;
   auto* driver = driver_factory_->GetDriverForFrame(
@@ -924,24 +926,15 @@ void ChromePasswordManagerClient::ShowPasswordEditingPopup(
   autofill::password_generation::PasswordGenerationUIData ui_data(
       bounds, /*max_length=*/0, /*generation_element=*/base::string16(),
       field_renderer_id, /*is_generation_element_password_type=*/true,
-      base::i18n::TextDirection(), form);
+      base::i18n::TextDirection(), form_data);
   popup_controller_ = PasswordGenerationPopupControllerImpl::GetOrCreate(
       popup_controller_, element_bounds_in_screen_space, ui_data,
       driver->AsWeakPtr(), observer_, web_contents(),
       password_generation_driver_receivers_.GetCurrentTargetFrame());
-  DCHECK(!form.password_value.empty());
-  popup_controller_->UpdatePassword(form.password_value);
+  DCHECK(!password_value.empty());
+  popup_controller_->UpdatePassword(password_value);
   popup_controller_->Show(
       PasswordGenerationPopupController::kEditGeneratedPassword);
-}
-
-void ChromePasswordManagerClient::GenerationAvailableForForm(
-    const autofill::PasswordForm& form) {
-  if (!password_manager::bad_message::CheckChildProcessSecurityPolicy(
-          password_generation_driver_receivers_.GetCurrentTargetFrame(), form,
-          BadMessageReason::CPMD_BAD_ORIGIN_GENERATION_AVAILABLE_FOR_FORM))
-    return;
-  // TODO(https://crbug.com/949519): remove this method.
 }
 
 void ChromePasswordManagerClient::PasswordGenerationRejectedByTyping() {
@@ -950,31 +943,34 @@ void ChromePasswordManagerClient::PasswordGenerationRejectedByTyping() {
 }
 
 void ChromePasswordManagerClient::PresaveGeneratedPassword(
-    const autofill::PasswordForm& password_form) {
-  if (!password_manager::bad_message::CheckChildProcessSecurityPolicy(
+    const autofill::FormData& form_data,
+    const base::string16& password_value) {
+  if (!password_manager::bad_message::CheckChildProcessSecurityPolicyForURL(
           password_generation_driver_receivers_.GetCurrentTargetFrame(),
-          password_form,
-          BadMessageReason::CPMD_BAD_ORIGIN_PRESAVE_GENERATED_PASSWORD))
+          form_data.url,
+          BadMessageReason::CPMD_BAD_ORIGIN_PRESAVE_GENERATED_PASSWORD)) {
     return;
+  }
   if (popup_controller_)
-    popup_controller_->UpdatePassword(password_form.password_value);
+    popup_controller_->UpdatePassword(password_value);
 
   PasswordManagerDriver* driver = driver_factory_->GetDriverForFrame(
       password_generation_driver_receivers_.GetCurrentTargetFrame());
-  password_manager_.OnPresaveGeneratedPassword(driver, password_form);
+  password_manager_.OnPresaveGeneratedPassword(driver, form_data,
+                                               password_value);
 }
 
 void ChromePasswordManagerClient::PasswordNoLongerGenerated(
-    const autofill::PasswordForm& password_form) {
-  if (!password_manager::bad_message::CheckChildProcessSecurityPolicy(
+    const autofill::FormData& form_data) {
+  if (!password_manager::bad_message::CheckChildProcessSecurityPolicyForURL(
           password_generation_driver_receivers_.GetCurrentTargetFrame(),
-          password_form,
-          BadMessageReason::CPMD_BAD_ORIGIN_PASSWORD_NO_LONGER_GENERATED))
+          form_data.url,
+          BadMessageReason::CPMD_BAD_ORIGIN_PASSWORD_NO_LONGER_GENERATED)) {
     return;
-
+  }
   PasswordManagerDriver* driver = driver_factory_->GetDriverForFrame(
       password_generation_driver_receivers_.GetCurrentTargetFrame());
-  password_manager_.OnPasswordNoLongerGenerated(driver, password_form);
+  password_manager_.OnPasswordNoLongerGenerated(driver, form_data);
 
   PasswordGenerationPopupController* controller = popup_controller_.get();
   if (controller &&
@@ -1196,8 +1192,8 @@ void ChromePasswordManagerClient::ShowManualPasswordGenerationPopup(
   if (!ui_data || !driver)
     return;
   // Check the data because it's a Mojo callback and the input isn't trusted.
-  if (!password_manager::bad_message::CheckChildProcessSecurityPolicy(
-          driver->render_frame_host(), ui_data->password_form,
+  if (!password_manager::bad_message::CheckChildProcessSecurityPolicyForURL(
+          driver->render_frame_host(), ui_data->form_data.url,
           BadMessageReason::
               CPMD_BAD_ORIGIN_SHOW_MANUAL_PASSWORD_GENERATION_POPUP))
     return;
@@ -1233,7 +1229,7 @@ void ChromePasswordManagerClient::ShowPasswordGenerationPopup(
   gfx::RectF element_bounds_in_screen_space =
       GetBoundsInScreenSpace(element_bounds_in_top_frame_space);
   password_manager_.SetGenerationElementAndReasonForForm(
-      driver, ui_data.password_form, ui_data.generation_element,
+      driver, ui_data.form_data, ui_data.generation_element,
       is_manually_triggered);
 
   popup_controller_ = PasswordGenerationPopupControllerImpl::GetOrCreate(

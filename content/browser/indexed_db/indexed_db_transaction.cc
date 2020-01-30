@@ -514,7 +514,8 @@ IndexedDBTransaction::RunTasks() {
   // Otherwise, start a timer in case the front-end gets wedged and
   // never requests further activity. Read-only transactions don't
   // block other transactions, so don't time those out.
-  if (mode_ != blink::mojom::IDBTransactionMode::ReadOnly &&
+  if (!HasPendingTasks() &&
+      mode_ != blink::mojom::IDBTransactionMode::ReadOnly &&
       state_ == STARTED) {
     timeout_timer_.Start(FROM_HERE, GetInactivityTimeout(),
                          base::BindOnce(&IndexedDBTransaction::Timeout,

@@ -71,12 +71,12 @@ TEST_F(NGFragmentItemTest, BasicText) {
   const NGFragmentItem& text1 = *items_for_text[0];
   EXPECT_EQ(text1.Type(), NGFragmentItem::kText);
   EXPECT_EQ(text1.GetLayoutObject(), layout_text);
-  EXPECT_EQ(text1.Offset(), PhysicalOffset());
+  EXPECT_EQ(text1.OffsetInContainerBlock(), PhysicalOffset());
 
   const NGFragmentItem& text2 = *items_for_text[1];
   EXPECT_EQ(text2.Type(), NGFragmentItem::kText);
   EXPECT_EQ(text2.GetLayoutObject(), layout_text);
-  EXPECT_EQ(text2.Offset(), PhysicalOffset(0, 10));
+  EXPECT_EQ(text2.OffsetInContainerBlock(), PhysicalOffset(0, 10));
 
   EXPECT_EQ(IntRect(0, 0, 70, 20),
             layout_text->FragmentsVisualRectBoundingBox());

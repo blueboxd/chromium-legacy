@@ -1923,23 +1923,24 @@ const CSSValue* InsetInline::CSSValueFromComputedStyleInternal(
       insetInlineShorthand(), style, layout_object, allow_visited_style);
 }
 
-bool IntrinsicSize::ParseShorthand(
+bool ContainIntrinsicSize::ParseShorthand(
     bool important,
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext&,
     HeapVector<CSSPropertyValue, 256>& properties) const {
   return css_property_parser_helpers::ConsumeShorthandVia2Longhands(
-      intrinsicSizeShorthand(), important, context, range, properties);
+      containIntrinsicSizeShorthand(), important, context, range, properties);
 }
 
-const CSSValue* IntrinsicSize::CSSValueFromComputedStyleInternal(
+const CSSValue* ContainIntrinsicSize::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject* layout_object,
     bool allow_visited_style) const {
   return ComputedStyleUtils::ValuesForIntrinsicSizeShorthand(
-      intrinsicSizeShorthand(), style, layout_object, allow_visited_style);
+      containIntrinsicSizeShorthand(), style, layout_object,
+      allow_visited_style);
 }
 
 bool ListStyle::ParseShorthand(

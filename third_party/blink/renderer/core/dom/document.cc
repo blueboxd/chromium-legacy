@@ -659,6 +659,7 @@ Document::Document(const DocumentInit& initializer,
       // pointer?
       dom_window_(frame_ ? frame_->DomWindow() : nullptr),
       imports_controller_(initializer.ImportsController()),
+      use_counter_during_construction_(initializer.GetUseCounter()),
       context_document_(initializer.ContextDocument()),
       context_features_(ContextFeatures::DefaultSwitch()),
       http_refresh_scheduler_(MakeGarbageCollected<HttpRefreshScheduler>(this)),
@@ -834,6 +835,9 @@ Document::Document(const DocumentInit& initializer,
 
   if (frame_ && frame_->GetPage()->GetAgentMetricsCollector())
     frame_->GetPage()->GetAgentMetricsCollector()->DidAttachDocument(*this);
+
+  // We will use Loader() as UseCounter after initialization.
+  use_counter_during_construction_ = nullptr;
 }
 
 Document::~Document() {
@@ -7839,6 +7843,7 @@ StylePropertyMapReadOnly* Document::RemoveComputedStyleMapItem(
 
 void Document::Trace(Visitor* visitor) {
   visitor->Trace(imports_controller_);
+  visitor->Trace(use_counter_during_construction_);
   visitor->Trace(doc_type_);
   visitor->Trace(implementation_);
   visitor->Trace(autofocus_candidates_);
@@ -8302,15 +8307,17 @@ bool Document::IsCrossSiteSubframe() const {
 }
 
 void Document::CountUse(mojom::WebFeature feature) const {
-  if (DocumentLoader* loader = Loader()) {
+  if (use_counter_during_construction_)
+    use_counter_during_construction_->CountUse(feature);
+  else if (DocumentLoader* loader = Loader())
     loader->CountUse(feature);
-  }
 }
 
 void Document::CountUse(mojom::WebFeature feature) {
-  if (DocumentLoader* loader = Loader()) {
+  if (use_counter_during_construction_)
+    use_counter_during_construction_->CountUse(feature);
+  else if (DocumentLoader* loader = Loader())
     loader->CountUse(feature);
-  }
 }
 
 void Document::CountDeprecation(mojom::WebFeature feature) {

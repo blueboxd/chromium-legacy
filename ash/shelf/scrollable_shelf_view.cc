@@ -947,8 +947,15 @@ void ScrollableShelfView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
   // The changed view bounds may lead to update on the available space.
   UpdateAvailableSpaceAndScroll();
 
-  // When AdjustOffset() returns true, shelf view is scrolled by animation.
-  if (!AdjustOffset() && old_scroll_offset != scroll_offset_)
+  // Avoids calling AdjustOffset() when the scrollable shelf view is
+  // under scroll along the main axis. Otherwise, animation will conflict with
+  // scroll gesture. Meanwhile, translates the shelf view
+  // if AdjustOffset() returns false since when AdjustOffset() returns true,
+  // shelf view is scrolled by animation.
+  const bool should_translate_shelf_view =
+      scroll_status_ == kAlongMainAxisScroll || !AdjustOffset();
+
+  if (should_translate_shelf_view && old_scroll_offset != scroll_offset_)
     shelf_container_view_->TranslateShelfView(scroll_offset_);
 }
 
@@ -1347,14 +1354,16 @@ gfx::Insets ScrollableShelfView::CalculateEdgePadding(
 
 int ScrollableShelfView::GetStatusWidgetSizeOnPrimaryAxis(
     bool use_target_bounds) const {
-  const gfx::Size status_widget_size =
-      use_target_bounds
-          ? GetShelf()->shelf_layout_manager()->GetStatusAreaBounds().size()
-          : GetShelf()
-                ->shelf_widget()
-                ->status_area_widget()
-                ->GetWindowBoundsInScreen()
-                .size();
+  const gfx::Size status_widget_size = use_target_bounds
+                                           ? GetShelf()
+                                                 ->shelf_layout_manager()
+                                                 ->GetStatusAreaBoundsInScreen()
+                                                 .size()
+                                           : GetShelf()
+                                                 ->shelf_widget()
+                                                 ->status_area_widget()
+                                                 ->GetWindowBoundsInScreen()
+                                                 .size();
   return GetShelf()->PrimaryAxisValue(status_widget_size.width(),
                                       status_widget_size.height());
 }
@@ -1937,7 +1946,7 @@ void ScrollableShelfView::UpdateAvailableSpace() {
   // The hotseat uses |available_space_| to determine where to show its
   // background, so notify it when it is recalculated.
   if (HotseatWidget::ShouldShowHotseatBackground()) {
-    GetShelf()->shelf_widget()->hotseat_widget()->SetOpaqueBackground(
+    GetShelf()->shelf_widget()->hotseat_widget()->SetTranslucentBackground(
         GetHotseatBackgroundBounds());
   }
 

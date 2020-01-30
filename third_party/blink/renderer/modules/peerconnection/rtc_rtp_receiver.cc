@@ -192,7 +192,7 @@ RTCRtpCapabilities* RTCRtpReceiver::getCapabilities(const String& kind) {
       HeapVector<Member<RTCRtpHeaderExtensionCapability>>());
 
   std::unique_ptr<webrtc::RtpCapabilities> rtc_capabilities =
-      PeerConnectionDependencyFactory::GetInstance()->GetSenderCapabilities(
+      PeerConnectionDependencyFactory::GetInstance()->GetReceiverCapabilities(
           kind);
 
   HeapVector<Member<RTCRtpCodecCapability>> codecs;

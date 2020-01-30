@@ -1,6 +1,8 @@
 include_rules = [
+  "+components/metrics",
   "+content/public/android",
   "+content/public/app",
   "+content/public/test",
   "+ui/android",
+  "+third_party/metrics_proto"
 ]

@@ -175,6 +175,8 @@ class CalledByNative(object):
     self.static_cast = GetStaticCastForReturnType(self.return_type)
     self.gen_test_method = kwargs.get('gen_test_method', False)
     self.test_disabled = kwargs.get('test_disabled', False)
+    self.enabled_features = kwargs.get('enabled_features', None)
+    self.disabled_features = kwargs.get('disabled_features', None)
 
 
 class ConstantField(object):
@@ -670,32 +672,91 @@ def MangleCalledByNatives(jni_params, called_by_natives, always_mangle):
 # Regex to match the JNI types that should be wrapped in a JavaRef.
 RE_SCOPED_JNI_TYPES = re.compile('jobject|jclass|jstring|jthrowable|.*Array')
 
-# Regex to match a string like "@CalledByNative public void foo(int bar)".
+# Regex to match a string like "@Annotation public void foo(int bar)".
 RE_CALLED_BY_NATIVE = re.compile(
-    r'@(?P<Disabled>(?:Disabled)?)CalledByNative(?P<Unchecked>(?:Unchecked)?)'
-    r'(?P<JavaTest>(?:JavaTest)?)(?:\("(?P<annotation>.*)"\))?'
-    r'(?:\s+@\w+(?:\(.*\))?)*'  # Ignore any other annotations.
-    r'\s+(?P<prefix>('
-    r'(private|protected|public|static|abstract|final|default|synchronized)'
+    # Capture all annotations.
+    r'(?P<annotations>'
+    # Optimization: Match the first annotation that could be relevant to
+    # CalledByNative.
+    r'(?:@(?:(?:Disabled)?(?:CalledByNative|NativeJavaTestFeatures|Features\.)'
+    r'[^\(\n ]*(?:\([^\)]*\)[\n ]|[\n ])\s*)'
+    # Match the rest of the annotations.
+    r'(?:@[^\(\n ]+(?:\([^\)]*\)[\n ]|[\n ])\s*)*)'
+    r')'
+    r'(?P<prefix>(?:'
+    r'(?:private|protected|public|static|abstract|final|default|synchronized)'
     r'\s*)*)'
     r'(?:\s*@\w+)?'  # Ignore annotations in return types.
     r'\s*(?P<return_type>\S*?)'
     r'\s*(?P<name>\w+)'
     r'\s*\((?P<params>[^\)]*)\)')
 
+# Regex to match a string like "CalledByNative".
+RE_CALLED_BY_NATIVE_ANNOTATION = re.compile(
+    r'(?P<Disabled>(?:Disabled)?)CalledByNative'
+    r'(?P<Unchecked>(?:Unchecked)?)(?P<JavaTest>(?:JavaTest)?)'
+    r'(?:\("(?P<annotation>.*)"\))?')
+
+RE_ENABLED_FEATURES = re.compile(
+    r'NativeJavaTestFeatures\.Enable\((?P<features>[^\)]*)\)')
+
+RE_DISABLED_FEATURES = re.compile(
+    r'NativeJavaTestFeatures\.Disable\((?P<features>[^\)]*)\)')
+
+RE_BANNED_FEATURES = re.compile(r'^Features\.')
+
+RE_FEATURE_STRING = r'[^"]*"(.*)";'
 
 # Removes empty lines that are indented (i.e. start with 2x spaces).
 def RemoveIndentedEmptyLines(string):
   return re.sub('^(?: {2})+$\n', '', string, flags=re.MULTILINE)
 
 
-def ExtractCalledByNatives(jni_params, contents, always_mangle):
+def _StripChars(chars, string):
+  ret = string
+  for char in chars:
+    ret = ret.replace(char, '')
+  return ret
+
+
+def _GetFeaturesString(features_match, feature_list_file):
+  if not features_match:
+    return None
+  features = features_match.group('features')
+  features_list = _StripChars(" {}\n", features)
+  if not features_list:
+    return None
+  if not feature_list_file:
+    raise ParseError('Your generate_jni target must specify a feature_list_file'
+                     ' in order to support feature annotations.')
+
+  with open(feature_list_file) as f:
+    contents = f.read()
+  features_split = features_list.split(',')
+  feature_strings = []
+  for feature in features_split:
+    regex = feature.split('.')[-1] + RE_FEATURE_STRING
+    match = re.search(re.compile(regex), contents)
+    if not match:
+      raise ParseError('Feature not found in {}.'.format(feature_list_file),
+                       feature)
+    feature_strings.append(match.group(1))
+
+  return (',').join(feature_strings)
+
+
+def ExtractCalledByNatives(jni_params,
+                           contents,
+                           always_mangle,
+                           feature_list_file=None):
   """Parses all methods annotated with @CalledByNative.
 
   Args:
     jni_params: JniParams object.
     contents: the contents of the java file.
     always_mangle: See MangleCalledByNatives.
+    feature_list_file: A file containing the feature constants used by the build
+        target.
 
   Returns:
     A list of dict with information about the annotated methods.
@@ -706,6 +767,32 @@ def ExtractCalledByNatives(jni_params, contents, always_mangle):
   """
   called_by_natives = []
   for match in re.finditer(RE_CALLED_BY_NATIVE, contents):
+    cbn = None
+    enabled_features = None
+    disabled_features = None
+    for value in match.group('annotations').split('@'):
+      if not cbn:
+        cbn = re.match(RE_CALLED_BY_NATIVE_ANNOTATION, value)
+      if not enabled_features:
+        enabled_features = re.match(RE_ENABLED_FEATURES, value)
+      if not disabled_features:
+        disabled_features = re.match(RE_DISABLED_FEATURES, value)
+      if re.match(RE_BANNED_FEATURES, value):
+        raise ParseError(
+            '@Features.EnableFeatures will not work, please use '
+            '@NativeJavaTestFeatures.Enable("MyFeature") instead.', value)
+    if not cbn:
+      continue
+    java_test = 'JavaTest' in cbn.group('JavaTest')
+
+    enabled_string = _GetFeaturesString(enabled_features, feature_list_file)
+    disabled_string = _GetFeaturesString(disabled_features, feature_list_file)
+
+    if not java_test and (enabled_string or disabled_string):
+      raise ParseError(
+          '@NativeJavaTestFeatures requires @CalledByNativeJavaTest to work.',
+          match.group('annotations'))
+
     return_type = match.group('return_type')
     name = match.group('name')
     if not return_type:
@@ -718,15 +805,17 @@ def ExtractCalledByNatives(jni_params, contents, always_mangle):
     called_by_natives += [
         CalledByNative(
             system_class=False,
-            unchecked='Unchecked' in match.group('Unchecked'),
+            unchecked='Unchecked' in cbn.group('Unchecked'),
             static='static' in match.group('prefix'),
-            java_class_name=match.group('annotation') or '',
+            java_class_name=cbn.group('annotation') or '',
             return_type=return_type,
             name=name,
             is_constructor=is_constructor,
             params=JniParams.Parse(match.group('params')),
-            gen_test_method='JavaTest' in match.group('JavaTest'),
-            test_disabled='Disabled' in match.group('Disabled')),
+            gen_test_method=java_test,
+            test_disabled='Disabled' in cbn.group('Disabled'),
+            enabled_features=enabled_string,
+            disabled_features=disabled_string),
     ]
   # Check for any @CalledByNative occurrences that weren't matched.
   unmatched_lines = re.sub(RE_CALLED_BY_NATIVE, '', contents).split('\n')
@@ -951,7 +1040,8 @@ class JNIFromJavaSource(object):
     jni_namespace = ExtractJNINamespace(contents) or options.namespace
     natives = ExtractNatives(contents, options.ptr_type)
     called_by_natives = ExtractCalledByNatives(self.jni_params, contents,
-                                               options.always_mangle)
+                                               options.always_mangle,
+                                               options.feature_list_file)
 
     natives += ProxyHelpers.ExtractStaticProxyNatives(
         fully_qualified_class, contents, options.ptr_type,
@@ -1477,11 +1567,27 @@ ${PROFILING_LEAVING_NATIVE}\
   def GetTestMethodString(self, called_by_native):
     method_template = Template("""\
   TEST_F(test_fixture, ${DISABLED}${METHOD_ID_VAR_NAME_UPPERCASE}) { \\
-    JNIEnv* env = base::android::AttachCurrentThread(); \\
+${FEATURES}    JNIEnv* env = base::android::AttachCurrentThread(); \\
     Java_${JAVA_CLASS_ONLY}_${METHOD_ID_VAR_NAME}(\\
         env, java_test_object); \\
   }\\""")
+
+    features_template = Template("""\
+    base::test::ScopedFeatureList feature_list; \\
+    feature_list.InitFromCommandLine( \\
+        \"${ENABLED}\", \"${DISABLED}\"); \\
+""")
     values = self.GetCalledByNativeValues(called_by_native)
+
+    if called_by_native.enabled_features or called_by_native.disabled_features:
+      features_values = {
+          'ENABLED': called_by_native.enabled_features or '',
+          'DISABLED': called_by_native.disabled_features or ''
+      }
+      values['FEATURES'] = features_template.substitute(features_values)
+    else:
+      values['FEATURES'] = ''
+
     method_name = values['METHOD_ID_VAR_NAME']
     values['METHOD_ID_VAR_NAME_UPPERCASE'] = method_name[0].upper(
     ) + method_name[1:]
@@ -1629,6 +1735,11 @@ See SampleForTests.java for more details.
       help='Hashes the native declaration of methods used '
       'in @JniNatives interface. And uses a shorter name and package'
       ' than GEN_JNI.')
+  parser.add_argument(
+      '--feature_list_file',
+      default='',
+      help='Optional path to a Java file containing the list of possible '
+      'features to be used for validation.')
   args = parser.parse_args()
   input_files = args.input_files
   output_files = args.output_files

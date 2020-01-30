@@ -184,6 +184,7 @@ bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
     // all flags in trial config.
     if (features.IsEnabled(::features::kVizForWebView)) {
       features.EnableIfNotSet(::features::kEnableSharedImageForWebview);
+      features.EnableIfNotSet(::features::kUseSkiaForGLReadback);
       features.EnableIfNotSet(::features::kUseSkiaRenderer);
     } else {
       // Viz for WebView is required to support embedding CompositorFrameSinks

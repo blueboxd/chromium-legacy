@@ -147,6 +147,7 @@ public class EmptyTabObserver implements TabObserver {
     public void onRootIdChanged(Tab tab, int newRootId) {}
 
     @Override
-    public void onBrowserControlsOffsetChanged(
-            Tab tab, int topControlsOffsetY, int bottomControlsOffsetY, int contentOffsetY) {}
+    public void onBrowserControlsOffsetChanged(Tab tab, int topControlsOffsetY,
+            int bottomControlsOffsetY, int contentOffsetY, int topControlsMinHeightOffsetY,
+            int bottomControlsMinHeightOffsetY) {}
 }

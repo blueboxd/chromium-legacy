@@ -618,7 +618,7 @@ class LayerTreeHostImplTest : public testing::Test,
       const gfx::Vector2dF& delta) {
     auto state = UpdateState(point, delta, InputHandler::WHEEL);
     state->data()->delta_granularity =
-        static_cast<double>(ui::input_types::ScrollGranularity::kScrollByPixel);
+        ui::input_types::ScrollGranularity::kScrollByPixel;
     return state;
   }
 
@@ -1961,8 +1961,8 @@ TEST_F(LayerTreeHostImplTest, SnapAnimationCancelledByScroll) {
 
   // Interrupt the snap animation with ScrollBegin.
   auto begin_state = BeginState(pointer_position, x_delta, InputHandler::WHEEL);
-  begin_state->data()->delta_granularity = static_cast<double>(
-      ui::input_types::ScrollGranularity::kScrollByPrecisePixel);
+  begin_state->data()->delta_granularity =
+      ui::input_types::ScrollGranularity::kScrollByPrecisePixel;
   EXPECT_EQ(
       InputHandler::SCROLL_ON_IMPL_THREAD,
       host_impl_->ScrollBegin(begin_state.get(), InputHandler::WHEEL).thread);
@@ -4009,11 +4009,11 @@ TEST_F(LayerTreeHostImplTest, AnimatedGranularityCausesSmoothScroll) {
     begin_state->data()->set_current_native_scrolling_element(
         host_impl_->OuterViewportScrollNode()->element_id);
     begin_state->data()->delta_granularity =
-        static_cast<double>(ui::input_types::ScrollGranularity::kScrollByPixel);
+        ui::input_types::ScrollGranularity::kScrollByPixel;
 
     auto update_state = UpdateState(position, offset, type);
     update_state->data()->delta_granularity =
-        static_cast<double>(ui::input_types::ScrollGranularity::kScrollByPixel);
+        ui::input_types::ScrollGranularity::kScrollByPixel;
 
     ASSERT_FALSE(GetImplAnimationHost()->IsImplOnlyScrollAnimating());
 
@@ -4037,10 +4037,10 @@ TEST_F(LayerTreeHostImplTest, AnimatedGranularityCausesSmoothScroll) {
     // ScrollbarController). This time we change the granularity to precise (as
     // if thumb-dragging). This should not cause an animation.
     {
-      begin_state->data()->delta_granularity = static_cast<double>(
-          ui::input_types::ScrollGranularity::kScrollByPrecisePixel);
-      update_state->data()->delta_granularity = static_cast<double>(
-          ui::input_types::ScrollGranularity::kScrollByPrecisePixel);
+      begin_state->data()->delta_granularity =
+          ui::input_types::ScrollGranularity::kScrollByPrecisePixel;
+      update_state->data()->delta_granularity =
+          ui::input_types::ScrollGranularity::kScrollByPrecisePixel;
 
       host_impl_->ScrollBegin(begin_state.get(), type);
       ASSERT_EQ(host_impl_->CurrentlyScrollingNode(),
@@ -4076,11 +4076,11 @@ TEST_F(LayerTreeHostImplTest, NonAnimatedGranularityCausesInstantScroll) {
     begin_state->data()->set_current_native_scrolling_element(
         host_impl_->OuterViewportScrollNode()->element_id);
     begin_state->data()->delta_granularity =
-        static_cast<double>(ui::input_types::ScrollGranularity::kScrollByPixel);
+        ui::input_types::ScrollGranularity::kScrollByPixel;
 
     auto update_state = UpdateState(position, offset, type);
     update_state->data()->delta_granularity =
-        static_cast<double>(ui::input_types::ScrollGranularity::kScrollByPixel);
+        ui::input_types::ScrollGranularity::kScrollByPixel;
 
     ASSERT_FALSE(GetImplAnimationHost()->IsImplOnlyScrollAnimating());
 
@@ -12368,8 +12368,8 @@ TEST_F(LayerTreeHostImplTimelinesTest, ScrollAnimatedAborted) {
   // Use "precise pixel" granularity to avoid animating.
   auto begin_state =
       BeginState(gfx::Point(0, y), gfx::Vector2dF(0, 50), InputHandler::WHEEL);
-  begin_state->data()->delta_granularity = static_cast<double>(
-      ui::input_types::ScrollGranularity::kScrollByPrecisePixel);
+  begin_state->data()->delta_granularity =
+      ui::input_types::ScrollGranularity::kScrollByPrecisePixel;
   EXPECT_EQ(
       InputHandler::SCROLL_ON_IMPL_THREAD,
       host_impl_->ScrollBegin(begin_state.get(), InputHandler::WHEEL).thread);
@@ -12377,8 +12377,8 @@ TEST_F(LayerTreeHostImplTimelinesTest, ScrollAnimatedAborted) {
   auto update_state =
       UpdateState(gfx::Point(0, y), gfx::Vector2d(0, 50), InputHandler::WHEEL);
   // Use "precise pixel" granularity to avoid animating.
-  update_state->data()->delta_granularity = static_cast<double>(
-      ui::input_types::ScrollGranularity::kScrollByPrecisePixel);
+  update_state->data()->delta_granularity =
+      ui::input_types::ScrollGranularity::kScrollByPrecisePixel;
   host_impl_->ScrollUpdate(update_state.get());
   EXPECT_TRUE(host_impl_->IsCurrentlyScrollingLayerAt(gfx::Point(0, y + 50)));
   host_impl_->ScrollEnd();

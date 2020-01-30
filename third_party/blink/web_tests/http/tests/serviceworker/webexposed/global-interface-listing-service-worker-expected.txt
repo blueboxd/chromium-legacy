@@ -1238,6 +1238,7 @@ interface QuicTransport
     getter ready
     method close
     method constructor
+    method createSendStream
     method receiveDatagrams
     method sendDatagrams
 interface ReadableStream
@@ -1314,6 +1315,12 @@ interface SecurityPolicyViolationEvent : Event
     getter sourceFile
     getter statusCode
     getter violatedDirective
+    method constructor
+interface SendStream
+    attribute @@toStringTag
+    getter writable
+    getter writingAborted
+    method abortWriting
     method constructor
 interface ServiceWorker : EventTarget
     attribute @@toStringTag

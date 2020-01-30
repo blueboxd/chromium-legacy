@@ -971,9 +971,6 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kCloudPolicyOverridesPlatformPolicy,
     policy_prefs::kCloudPolicyOverridesPlatformPolicy,
     base::Value::Type::BOOLEAN },
-  { key::kCloudReportingEnabled,
-    prefs::kCloudReportingEnabled,
-    base::Value::Type::BOOLEAN },
 #endif  // !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
 
 #if !defined(OS_ANDROID)
@@ -981,6 +978,9 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     prefs::kCloudExtensionRequestEnabled,
     base::Value::Type::BOOLEAN
   },
+  { key::kCloudReportingEnabled,
+    prefs::kCloudReportingEnabled,
+    base::Value::Type::BOOLEAN },
 #endif
 
 #if defined(OS_WIN)
@@ -1222,6 +1222,9 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kCheckContentCompliance,
     prefs::kCheckContentCompliance,
     base::Value::Type::INTEGER },
+  { key::kBlockUnsupportedFiletypes,
+    prefs::kBlockUnsupportedFiletypes,
+    base::Value::Type::INTEGER },
   { key::kURLsToCheckComplianceOfDownloadedContent,
     prefs::kURLsToCheckComplianceOfDownloadedContent,
     base::Value::Type::LIST },
@@ -1277,6 +1280,10 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     prefs::kLocalDiscoveryEnabled,
     base::Value::Type::BOOLEAN },
 #endif
+
+  { key::kAdvancedProtectionDeepScanningEnabled,
+    prefs::kAdvancedProtectionDeepScanningEnabled,
+    base::Value::Type::BOOLEAN },
 };
 // clang-format on
 

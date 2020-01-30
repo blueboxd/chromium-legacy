@@ -176,6 +176,19 @@ public abstract class AssistantCollectUserDataSection<T extends EditableOption> 
     }
 
     /**
+     * Manually updates the summary and all full views. Should be called by subclasses after a
+     * change to how items are displayed in summary or full views.
+     */
+    void updateViews() {
+        if (mSelectedOption != null) {
+            updateSummaryView(mSummaryView, mSelectedOption);
+        }
+        for (int i = 0; i < mItems.size(); i++) {
+            updateFullView(mItems.get(i).mFullView, mItems.get(i).mOption);
+        }
+    }
+
+    /**
      * Adds a new item to the list, or updates an item in-place if it is already in the list.
      *
      * @param option The item to add or update.

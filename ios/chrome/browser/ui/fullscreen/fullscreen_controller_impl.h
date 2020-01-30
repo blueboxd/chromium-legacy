@@ -17,6 +17,13 @@
 class FullscreenControllerImpl : public FullscreenController {
  public:
   explicit FullscreenControllerImpl();
+
+  // Not copyable or movable
+  FullscreenControllerImpl(const FullscreenControllerImpl&) = delete;
+  FullscreenControllerImpl& operator=(const FullscreenControllerImpl&) = delete;
+  FullscreenControllerImpl(FullscreenControllerImpl&&) = delete;
+  FullscreenControllerImpl& operator=(FullscreenControllerImpl&&) = delete;
+
   ~FullscreenControllerImpl() override;
 
   // FullscreenController:
@@ -40,8 +47,6 @@ class FullscreenControllerImpl : public FullscreenController {
   void ExitFullscreen() override;
 
  private:
-  // KeyedService:
-  void Shutdown() override;
 
   // The broadcaster that drives the model.
   __strong ChromeBroadcaster* broadcaster_ = nil;
@@ -55,8 +60,6 @@ class FullscreenControllerImpl : public FullscreenController {
   __strong ChromeBroadcastOberverBridge* bridge_ = nil;
   // A helper object that listens for system notifications.
   __strong FullscreenSystemNotificationObserver* notification_observer_ = nil;
-
-  DISALLOW_COPY_AND_ASSIGN(FullscreenControllerImpl);
 };
 
 #endif  // IOS_CHROME_BROWSER_UI_FULLSCREEN_FULLSCREEN_CONTROLLER_IMPL_H_

@@ -10,6 +10,11 @@
   @apply --oobe-default-font;
 }
 
+
+:host([two-columns-adaptable]) #top-scroll-container {
+  flex-direction: var(--oobe-dialog-adaptable-flex-direction);
+}
+
 #top-scroll-container {
   border: transparent;
   overflow-y: auto;

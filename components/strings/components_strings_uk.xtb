@@ -418,7 +418,6 @@
 <translation id="2799223571221894425">Перезапустити</translation>
 <translation id="2803306138276472711">Функція безпечного перегляду від Google нещодавно <ph name="BEGIN_LINK" />виявила зловмисне програмне забезпечення<ph name="END_LINK" /> на сайті <ph name="SITE" />. Іноді зловмисне програмне забезпечення заражає зазвичай безпечні веб-сайти.</translation>
 <translation id="2807052079800581569">Вертикальне положення зображення</translation>
-<translation id="2809804249696361569">Обидва аркуші</translation>
 <translation id="2824775600643448204">Адресний і пошуковий рядок</translation>
 <translation id="2826760142808435982">З’єднання зашифровано й автентифіковано з використанням шифру <ph name="CIPHER" /> і використовує механізм обміну ключами <ph name="KX" />.</translation>
 <translation id="2835170189407361413">Очистити форму</translation>
@@ -921,7 +920,6 @@
 <translation id="5112422516732747637">A5</translation>
 <translation id="5115216390227830982">European-Edp</translation>
 <translation id="5115563688576182185">(64-розрядна версія)</translation>
-<translation id="5121469660360593280">Діліться з адміністратором даними про події системи безпеки, про які повідомляє Система захисту користувача Chrome Enterprise. Вони можуть містити URL-адреси відвіданих сторінок, назви файлів або метаданих, а також ім'я користувача, через яке ви входите в обліковий запис на пристрої або в Chrome.</translation>
 <translation id="5123063207673082822">Вихідні</translation>
 <translation id="5125394840236832993">B-Plus</translation>
 <translation id="5126510351761255129">Підтвердьте дані картки</translation>
@@ -936,7 +934,6 @@
 <translation id="5161506081086828129">Накопичувач 9</translation>
 <translation id="516920405563544094">Введіть код CVC картки <ph name="CREDIT_CARD" />. Щойно ви підтвердите дані картки в обліковому записі Google, цей сайт отримає доступ до них.</translation>
 <translation id="5169827969064885044">Ви можете втратити доступ до облікового запису організації, або хтось може викрасти вашу особисту інформацію. Chrome радить змінити пароль.</translation>
-<translation id="5170017743895942767">Система захисту користувача Chrome Enterprise</translation>
 <translation id="5171045022955879922">Знайдіть або введіть URL-адресу</translation>
 <translation id="5171689220826475070">Fanfold-European</translation>
 <translation id="5172758083709347301">Комп’ютер</translation>
@@ -1069,7 +1066,6 @@
 <translation id="5737183892635480227">{NUM_CARDS,plural, =1{Збережіть картку в обліковому записі Google}one{Збережіть картки в обліковому записі Google}few{Збережіть картки в обліковому записі Google}many{Збережіть картки в обліковому записі Google}other{Збережіть картки в обліковому записі Google}}</translation>
 <translation id="5745980000221562234">{NUM_CARDS,plural, =1{Використовувати для цієї картки віртуальний номер}one{Виберіть картку}few{Виберіть картку}many{Виберіть картку}other{Виберіть картку}}</translation>
 <translation id="5763042198335101085">Введіть дійсну електронну адресу</translation>
-<translation id="5763703224595565476">Ваш адміністратор увімкнув Систему захисту користувача Chrome Enterprise у веб-переглядачі. Ця система має доступ до деяких ваших даних.</translation>
 <translation id="5765072501007116331">Укажіть адресу, щоб переглянути способи доставки та вимоги.</translation>
 <translation id="5776313857861697733">Пріоритет</translation>
 <translation id="5778550464785688721">Повний контроль пристроїв MIDI</translation>
@@ -1406,7 +1402,6 @@
 <translation id="733923710415886693">Сертифікат сервера не надав інформацію про перевірку.</translation>
 <translation id="734600844861828519">11x15</translation>
 <translation id="7346048084945669753">Зв'язано:</translation>
-<translation id="73479065977517481"><ph name="ENROLLMENT_DOMAIN" /> вмикає Систему захисту користувача Chrome Enterprise у вашому веб-переглядачі. Ця система має доступ до деяких ваших даних.</translation>
 <translation id="7349430561505560861">A4-Extra</translation>
 <translation id="7353601530677266744">Командний рядок</translation>
 <translation id="7372973238305370288">результат пошуку</translation>

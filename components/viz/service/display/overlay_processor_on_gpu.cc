@@ -30,16 +30,16 @@ void OverlayProcessorOnGpu::ScheduleOverlays(
   for (auto& overlay : overlay_candidates) {
     auto shared_image_overlay =
         shared_image_representation_factory_->ProduceOverlay(overlay.mailbox);
-    // When display is re-opened, the first few frames might not have video
+    // When the display is re-opened, the first few frames might not have a video
     // resource ready. Possible investigation crbug.com/1023971.
     if (!shared_image_overlay)
       continue;
-    // In current implementation, the BeginReadAccess will ends up calling
+    // In the current implementation, the BeginReadAccess will end up calling
     // CodecImage::RenderToOverlay. Currently this code path is only used for
     // Android Classic video overlay, where update of the overlay plane is
-    // within media code. Since we are not actually passing an overlay plane to
-    // the display controller here, we are able to call EndReadAccess directly
-    // after BeginReadAccess.
+    // within the media code. Since we are not actually passing an overlay plane
+    // to the display controller here, we are able to call EndReadAccess
+    // directly after BeginReadAccess.
     shared_image_overlay->NotifyOverlayPromotion(
         true, ToNearestRect(overlay.display_rect));
     std::unique_ptr<gpu::SharedImageRepresentationOverlay::ScopedReadAccess>

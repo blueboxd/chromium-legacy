@@ -16,6 +16,8 @@ static_library("vr_android") {
   sources = [
     "android_ui_gesture_target.cc",
     "android_ui_gesture_target.h",
+    "android_vr_utils.cc",
+    "android_vr_utils.h",
     "android_vsync_helper.cc",
     "android_vsync_helper.h",
     "autocomplete_controller.cc",
@@ -84,6 +86,8 @@ static_library("vr_android") {
       "arcore_device/arcore_gl_thread.h",
       "arcore_device/arcore_impl.cc",
       "arcore_device/arcore_impl.h",
+      "arcore_device/arcore_install_helper.cc",
+      "arcore_device/arcore_install_helper.h",
       "arcore_device/arcore_java_utils.cc",
       "arcore_device/arcore_java_utils.h",
       "arcore_device/arcore_sdk.h",

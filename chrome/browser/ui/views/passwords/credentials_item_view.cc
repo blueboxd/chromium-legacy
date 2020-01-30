@@ -53,12 +53,11 @@ CredentialsItemView::CredentialsItemView(
     views::ButtonListener* button_listener,
     const base::string16& upper_text,
     const base::string16& lower_text,
-    SkColor hover_color,
     const autofill::PasswordForm* form,
     network::mojom::URLLoaderFactory* loader_factory,
     int upper_text_style,
     int lower_text_style)
-    : Button(button_listener), form_(form), hover_color_(hover_color) {
+    : Button(button_listener), form_(form) {
   set_notify_enter_exit_on_child(true);
   views::BoxLayout* layout =
       SetLayoutManager(std::make_unique<views::BoxLayout>(
@@ -138,16 +137,13 @@ void CredentialsItemView::UpdateAvatar(const gfx::ImageSkia& image) {
   image_view_->SetImage(ScaleImageForAccountAvatar(image));
 }
 
-void CredentialsItemView::SetLowerLabelColor(SkColor color) {
-  if (lower_label_)
-    lower_label_->SetEnabledColor(color);
-}
-
 int CredentialsItemView::GetPreferredHeight() const {
   return GetPreferredSize().height();
 }
 
 void CredentialsItemView::OnPaintBackground(gfx::Canvas* canvas) {
-  if (state() == STATE_PRESSED || state() == STATE_HOVERED)
-    canvas->DrawColor(hover_color_);
+  if (state() == STATE_PRESSED || state() == STATE_HOVERED) {
+    canvas->DrawColor(GetNativeTheme()->GetSystemColor(
+        ui::NativeTheme::kColorId_FocusedMenuItemBackgroundColor));
+  }
 }

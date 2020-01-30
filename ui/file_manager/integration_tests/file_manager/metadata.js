@@ -203,7 +203,7 @@
     const folder1ExpectedRows = [];
 
     for (let i = 0; i < 50; i++) {
-      let testFile = createTestFile('folder1/file-' + i + '.txt');
+      const testFile = createTestFile('folder1/file-' + i + '.txt');
       entries.push(testFile);
       folder1ExpectedRows.push(testFile.getExpectedRow());
 
@@ -291,7 +291,7 @@
         appId, '/team_drives', 'Shared drives', 'drive');
 
     // Expand Shared Drives, because expanding might need metadata.
-    const expandIcon = sharedDrivesTreeItem + ' > .tree-row > .expand-icon';
+    const expandIcon = sharedDrivesTreeItem + ' > .tree-row .expand-icon';
     await remoteCall.waitForElement(appId, expandIcon);
 
     // Click expand icon.

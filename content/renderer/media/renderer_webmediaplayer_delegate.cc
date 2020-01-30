@@ -200,6 +200,13 @@ void RendererWebMediaPlayerDelegate::DidPlayerSizeChange(
                                                          delegate_id, size));
 }
 
+void RendererWebMediaPlayerDelegate::DidPictureInPictureAvailabilityChange(
+    int delegate_id,
+    bool available) {
+  Send(new MediaPlayerDelegateHostMsg_OnPictureInPictureAvailabilityChanged(
+      routing_id(), delegate_id, available));
+}
+
 void RendererWebMediaPlayerDelegate::WasHidden() {
   RecordAction(base::UserMetricsAction("Media.Hidden"));
 

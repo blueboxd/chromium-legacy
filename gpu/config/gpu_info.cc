@@ -184,10 +184,6 @@ GPUInfo::GPUInfo()
       in_process_gpu(true),
       passthrough_cmd_decoder(false),
       jpeg_decode_accelerator_supported(false),
-#if defined(USE_X11)
-      system_visual(0),
-      rgba_visual(0),
-#endif
       oop_rasterization_supported(false),
       subpixel_font_rendering(true) {
 }
@@ -259,11 +255,6 @@ void GPUInfo::EnumerateFields(Enumerator* enumerator) const {
     ImageDecodeAcceleratorSupportedProfiles
         image_decode_accelerator_supported_profiles;
 
-#if defined(USE_X11)
-    VisualID system_visual;
-    VisualID rgba_visual;
-#endif
-
     bool oop_rasterization_supported;
     bool subpixel_font_rendering;
 
@@ -334,10 +325,6 @@ void GPUInfo::EnumerateFields(Enumerator* enumerator) const {
       jpeg_decode_accelerator_supported);
   for (const auto& profile : image_decode_accelerator_supported_profiles)
     EnumerateImageDecodeAcceleratorSupportedProfile(profile, enumerator);
-#if defined(USE_X11)
-  enumerator->AddInt64("systemVisual", system_visual);
-  enumerator->AddInt64("rgbaVisual", rgba_visual);
-#endif
   enumerator->AddBool("oopRasterizationSupported", oop_rasterization_supported);
   enumerator->AddBool("subpixelFontRendering", subpixel_font_rendering);
 #if BUILDFLAG(ENABLE_VULKAN)

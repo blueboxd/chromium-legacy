@@ -112,7 +112,7 @@ namespace blink {
 DocumentLoader::DocumentLoader(
     LocalFrame* frame,
     WebNavigationType navigation_type,
-    base::Optional<ContentSecurityPolicy*> content_security_policy,
+    ContentSecurityPolicy* content_security_policy,
     std::unique_ptr<WebNavigationParams> navigation_params)
     : params_(std::move(navigation_params)),
       frame_(frame),
@@ -176,10 +176,22 @@ DocumentLoader::DocumentLoader(
   force_fetch_cache_mode_ = params_->force_fetch_cache_mode;
   response_ = params_->response.ToResourceResponse();
   frame_policy_ = params_->frame_policy.value_or(FramePolicy());
+
   document_policy_ = CreateDocumentPolicy();
-  // Initialize |frame_policy_| in frame after the update to
-  // |frame_policy_.required_document_policy| in CreateDocumentPolicy.
-  frame_->SetFramePolicy(frame_policy_);
+  // If the document is blocked by document policy, there won't be content
+  // in the sub-frametree, thus no need to initialize required_policy for
+  // subtree.
+  if (!was_blocked_by_document_policy_) {
+    // Require-Document-Policy header only affects subtree of current document,
+    // but not the current document.
+    const DocumentPolicy::FeatureState header_required_policy =
+        DocumentPolicy::Parse(
+            response_.HttpHeaderField(http_names::kRequireDocumentPolicy)
+                .Ascii())
+            .value_or(DocumentPolicy::FeatureState{});
+    frame_->SetRequiredDocumentPolicy(DocumentPolicy::MergeFeatureState(
+        frame_policy_.required_document_policy, header_required_policy));
+  }
 
   WebNavigationTimings& timings = params_->navigation_timings;
   if (!timings.input_start.is_null())
@@ -218,14 +230,13 @@ DocumentLoader::DocumentLoader(
   if (!params_->origin_to_commit.IsNull())
     origin_to_commit_ = params_->origin_to_commit.Get()->IsolatedCopy();
 
+  loading_srcdoc_ = url_.IsAboutSrcdocURL();
   loading_url_as_empty_document_ =
       !params_->is_static_data && WillLoadUrlAsEmpty(url_);
-  loading_srcdoc_ = url_.IsAboutSrcdocURL();
 
-  DCHECK(content_security_policy.has_value() || loading_url_as_empty_document_);
-  // Take into account the CSP for this document load if applicable.
-  if (content_security_policy.has_value()) {
-    content_security_policy_ = content_security_policy.value();
+  if (!loading_url_as_empty_document_) {
+    content_security_policy_ = content_security_policy;
+
     // The CSP are null when the CSP check done in the FrameLoader failed.
     if (!content_security_policy_) {
       // Loading the document was blocked by the CSP check. Pretend that
@@ -807,18 +818,10 @@ DocumentPolicy::FeatureState DocumentLoader::CreateDocumentPolicy() {
   if (!RuntimeEnabledFeatures::DocumentPolicyEnabled())
     return DocumentPolicy::FeatureState{};
 
-  const DocumentPolicy::FeatureState header_policy =
+  DocumentPolicy::FeatureState header_policy =
       DocumentPolicy::Parse(
           response_.HttpHeaderField(http_names::kDocumentPolicy).Ascii())
           .value_or(DocumentPolicy::FeatureState{});
-
-  const DocumentPolicy::FeatureState header_required_policy =
-      DocumentPolicy::Parse(
-          response_.HttpHeaderField(http_names::kRequireDocumentPolicy).Ascii())
-          .value_or(DocumentPolicy::FeatureState{});
-
-  frame_policy_.required_document_policy = DocumentPolicy::MergeFeatureState(
-      frame_policy_.required_document_policy, header_required_policy);
 
   if (!DocumentPolicy::IsPolicyCompatible(
           frame_policy_.required_document_policy, header_policy)) {
@@ -827,6 +830,7 @@ DocumentPolicy::FeatureState DocumentLoader::CreateDocumentPolicy() {
     // policy to initialize document policy for the document.
     return frame_policy_.required_document_policy;
   }
+
   return header_policy;
 }
 
@@ -1416,7 +1420,6 @@ void DocumentLoader::DidCommitNavigation() {
   probe::DidCommitLoad(frame_, this);
 
   frame_->GetPage()->DidCommitLoad(frame_);
-  GetUseCounterHelper().DidCommitLoad(frame_);
 
   // Report legacy TLS versions after Page::DidCommitLoad, because the latter
   // clears the console.

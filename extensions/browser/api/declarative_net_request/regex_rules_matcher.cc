@@ -194,6 +194,9 @@ RegexRulesMatcher::GetBeforeRequestActionIgnoringAncestors(
 }
 
 void RegexRulesMatcher::InitializeMatcher() {
+  if (regex_list_->Length() == 0)
+    return;
+
   for (const auto* regex_rule : *regex_list_) {
     const flat_rule::UrlRule* rule = regex_rule->url_rule();
 

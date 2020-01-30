@@ -22,7 +22,6 @@ struct FrameTimingDetails;
 
 namespace cc {
 class LatencyUkmReporter;
-class RollingTimeDeltaHistory;
 
 // This is used for tracing and reporting the duration of pipeline stages within
 // a single frame.
@@ -30,12 +29,14 @@ class RollingTimeDeltaHistory;
 // For each stage in the frame pipeline, calling StartStage will start tracing
 // that stage (and end any currently running stages).
 //
-// If the tracked frame is submitted (i.e. the frame termination status is
-// kSubmittedFrame or kSubmittedFrameMissedDeadline), then the duration of each
-// stage along with the total latency will be reported to UMA. These reported
-// durations will be differentiated by whether the compositor is single threaded
-// and whether the submitted frame missed the deadline. The format of each stage
-// reported to UMA is "[SingleThreaded]Compositor.[MissedFrame.].<StageName>".
+// If the tracked frame is presented (i.e. the frame termination status is
+// kPresentedFrame), then the duration of each stage along with the total
+// latency will be reported to UMA. If the tracked frame is not presented (i.e.
+// the frame termination status is kDidNotPresentFrame or
+// kReplacedByNewReporter), then the duration is reported under
+// CompositorLatency.DroppedFrame.*.
+// The format of each stage reported to UMA is
+// "CompositorLatency.[DroppedFrame.][Interaction_name.].<StageName>".
 class CC_EXPORT CompositorFrameReporter {
  public:
   enum class FrameTerminationStatus {
@@ -49,7 +50,6 @@ class CC_EXPORT CompositorFrameReporter {
     // Reporter that is currently at a stage is replaced by a new one (e.g. two
     // BeginImplFrames can happen without issuing BeginMainFrame, so the first
     // reporter would terminate with this status).
-    // TODO(alsan): Track impl-only frames.
     kReplacedByNewReporter,
 
     // Frame that was being tracked did not end up being submitting (e.g. frame
@@ -60,10 +60,10 @@ class CC_EXPORT CompositorFrameReporter {
     kUnknown
   };
 
-  enum class MissedFrameReportType {
-    kNonMissedFrame = 0,
-    kMissedFrame = 1,
-    kMissedFrameReportTypeCount
+  enum class DroppedFrameReportType {
+    kNonDroppedFrame = 0,
+    kDroppedFrame = 1,
+    kDroppedFrameReportTypeCount
   };
 
   // These values are persisted to logs. Entries should not be renumbered and
@@ -128,7 +128,7 @@ class CC_EXPORT CompositorFrameReporter {
 
   const viz::BeginFrameId frame_id_;
 
-  void MissedSubmittedFrame();
+  void DroppedFrame();
 
   // Note that the started stage may be reported to UMA. If the histogram is
   // intended to be reported then the histograms.xml file must be updated too.
@@ -176,12 +176,9 @@ class CC_EXPORT CompositorFrameReporter {
   // be divided based on the frame submission status.
   std::vector<StageData> stage_history_;
 
-  // Returns true if the stage duration is greater than |kAbnormalityPercentile|
-  // of its RollingTimeDeltaHistory.
-  base::TimeDelta GetStateNormalUpperLimit(const StageData& stage) const;
-
   const bool is_single_threaded_;
-  MissedFrameReportType report_type_ = MissedFrameReportType::kNonMissedFrame;
+  DroppedFrameReportType report_type_ =
+      DroppedFrameReportType::kNonDroppedFrame;
   base::TimeTicks frame_termination_time_;
   base::TimeTicks begin_main_frame_start_;
   FrameTerminationStatus frame_termination_status_ =

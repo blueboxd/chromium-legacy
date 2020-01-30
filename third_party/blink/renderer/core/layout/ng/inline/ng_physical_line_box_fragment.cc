@@ -156,9 +156,10 @@ PhysicalRect NGPhysicalLineBoxFragment::ScrollableOverflow(
     const NGFragmentItem* item = descendants.CurrentItem();
     DCHECK(item);
     if (item->IsText()) {
-      PhysicalRect child_scroll_overflow = item->Rect();
+      PhysicalRect child_scroll_overflow = item->RectInContainerBlock();
       if (UNLIKELY(has_hanging_)) {
-        AdjustScrollableOverflowForHanging(child.Rect(), container_writing_mode,
+        AdjustScrollableOverflowForHanging(child.RectInContainerBlock(),
+                                           container_writing_mode,
                                            &child_scroll_overflow);
       }
       overflow.Unite(child_scroll_overflow);
@@ -168,7 +169,7 @@ PhysicalRect NGPhysicalLineBoxFragment::ScrollableOverflow(
     if (const NGPhysicalBoxFragment* child_box = item->BoxFragment()) {
       PhysicalRect child_scroll_overflow =
           child_box->ScrollableOverflowForPropagation(container);
-      child_scroll_overflow.offset += item->Offset();
+      child_scroll_overflow.offset += item->OffsetInContainerBlock();
       child_scroll_overflow.offset +=
           ComputeRelativeOffset(child_box->Style(), container_writing_mode,
                                 container_direction, container.Size());
@@ -177,7 +178,8 @@ PhysicalRect NGPhysicalLineBoxFragment::ScrollableOverflow(
   }
 
   // Make sure we include the inline-size of the line-box in the overflow.
-  AddInlineSizeToOverflow(child.Rect(), container_writing_mode, &overflow);
+  AddInlineSizeToOverflow(child.RectInContainerBlock(), container_writing_mode,
+                          &overflow);
 
   return overflow;
 }

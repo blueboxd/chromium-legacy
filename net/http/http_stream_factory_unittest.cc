@@ -3500,7 +3500,7 @@ TEST_F(ProcessAlternativeServicesTest, ProcessAltSvcQuicIetf) {
       base::MakeRefCounted<HttpResponseHeaders>(""));
   headers->AddHeader(
       "alt-svc: "
-      "h3-24=\":443\",h3-Q050=\":443\",h3-Q049=\":443\",h3-Q048=\":443\",h3-"
+      "h3-25=\":443\",h3-Q050=\":443\",h3-Q049=\":443\",h3-Q048=\":443\",h3-"
       "Q047=\":443\",h3-"
       "Q043=\":443\",h3-"
       "Q039=\":443\"");

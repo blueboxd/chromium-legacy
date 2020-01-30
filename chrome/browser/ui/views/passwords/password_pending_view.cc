@@ -272,7 +272,7 @@ PasswordPendingView::PasswordPendingView(content::WebContents* web_contents,
     std::pair<base::string16, base::string16> titles =
         GetCredentialLabelsForAccountChooser(password_form);
     CredentialsItemView* credential_view = new CredentialsItemView(
-        this, titles.first, titles.second, kButtonHoverColor, &password_form,
+        this, titles.first, titles.second, &password_form,
         content::BrowserContext::GetDefaultStoragePartition(
             model()->GetProfile())
             ->GetURLLoaderFactoryForBrowserProcess()

@@ -1655,10 +1655,11 @@ error::Error GLES2DecoderPassthroughImpl::DoGetFramebufferAttachmentParameteriv(
 
   CheckErrorCallbackState();
 
-  // Get a scratch buffer to hold the result of the query
-  GLint* scratch_params = GetTypedScratchMemory<GLint>(bufsize);
+  // Create a scratch buffer to hold the result of the query
+  std::vector<GLint> scratch_params(bufsize);
   api()->glGetFramebufferAttachmentParameterivRobustANGLEFn(
-      target, updated_attachment, pname, bufsize, length, scratch_params);
+      target, updated_attachment, pname, bufsize, length,
+      scratch_params.data());
 
   if (CheckErrorCallbackState()) {
     DCHECK(*length == 0);
@@ -1667,7 +1668,7 @@ error::Error GLES2DecoderPassthroughImpl::DoGetFramebufferAttachmentParameteriv(
 
   // Update the results of the query, if needed
   error::Error error = PatchGetFramebufferAttachmentParameter(
-      target, updated_attachment, pname, *length, scratch_params);
+      target, updated_attachment, pname, *length, scratch_params.data());
   if (error != error::kNoError) {
     *length = 0;
     return error;
@@ -1675,7 +1676,7 @@ error::Error GLES2DecoderPassthroughImpl::DoGetFramebufferAttachmentParameteriv(
 
   // Copy into the destination
   DCHECK(*length < bufsize);
-  std::copy(scratch_params, scratch_params + *length, params);
+  std::copy(scratch_params.data(), scratch_params.data() + *length, params);
 
   return error::kNoError;
 }

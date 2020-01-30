@@ -117,5 +117,6 @@ cr.define('settings', function() {
     // </if>
   }
 
+  // #cr_define_end
   return {pageVisibility: pageVisibility};
 });

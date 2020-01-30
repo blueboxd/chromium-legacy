@@ -55,7 +55,7 @@
                 android:gravity="center_vertical"
                 android:paddingStart="6dp"
                 android:singleLine="true"
-                android:textAppearance="@style/TextAppearance.BlackTitle2"
+                android:textAppearance="@style/TextAppearance.TextMediumThick.Primary"
                 android:text="@string/tab_switcher_carousel_title" />
             <TextView
                 android:id="@+id/more_tabs"

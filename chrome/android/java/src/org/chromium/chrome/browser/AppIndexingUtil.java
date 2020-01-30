@@ -15,8 +15,8 @@ import androidx.annotation.VisibleForTesting;
 import org.chromium.base.Callback;
 import org.chromium.base.SysUtils;
 import org.chromium.base.metrics.RecordHistogram;
-import org.chromium.blink.mojom.document_metadata.CopylessPaste;
-import org.chromium.blink.mojom.document_metadata.WebPage;
+import org.chromium.blink.mojom.DocumentMetadata;
+import org.chromium.blink.mojom.WebPage;
 import org.chromium.chrome.browser.historyreport.AppIndexingReporter;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
@@ -59,7 +59,7 @@ public class AppIndexingUtil {
             mObserver = new TabModelSelectorTabObserver(mTabModelSelectorImpl) {
                 @Override
                 public void onPageLoadFinished(final Tab tab, String url) {
-                    extractCopylessPasteMetadata(tab);
+                    extractDocumentMetadata(tab);
                 }
 
                 @Override
@@ -80,7 +80,7 @@ public class AppIndexingUtil {
      * title of the page is reported to App Indexing.
      */
     @VisibleForTesting
-    void extractCopylessPasteMetadata(final Tab tab) {
+    void extractDocumentMetadata(final Tab tab) {
         if (!isEnabledForTab(tab)) return;
 
         // There are three conditions that can occur with respect to the cache.
@@ -103,12 +103,12 @@ public class AppIndexingUtil {
             // Condition 3
             RecordHistogram.recordEnumeratedHistogram(
                     "CopylessPaste.CacheHit", CacheHit.MISS, CacheHit.NUM_ENTRIES);
-            CopylessPaste copylessPaste = getCopylessPasteInterface(tab);
-            if (copylessPaste == null) {
+            DocumentMetadata documentMetadata = getDocumentMetadataInterface(tab);
+            if (documentMetadata == null) {
                 return;
             }
-            copylessPaste.getEntities(webpage -> {
-                copylessPaste.close();
+            documentMetadata.getEntities(webpage -> {
+                documentMetadata.close();
                 putCacheEntry(url, webpage != null);
                 if (sCallbackForTesting != null) {
                     sCallbackForTesting.onResult(webpage);
@@ -165,7 +165,7 @@ public class AppIndexingUtil {
     }
 
     @VisibleForTesting
-    CopylessPaste getCopylessPasteInterface(Tab tab) {
+    DocumentMetadata getDocumentMetadataInterface(Tab tab) {
         WebContents webContents = tab.getWebContents();
         if (webContents == null) return null;
 
@@ -175,7 +175,7 @@ public class AppIndexingUtil {
         InterfaceProvider interfaces = mainFrame.getRemoteInterfaces();
         if (interfaces == null) return null;
 
-        return interfaces.getInterface(CopylessPaste.MANAGER);
+        return interfaces.getInterface(DocumentMetadata.MANAGER);
     }
 
     @VisibleForTesting

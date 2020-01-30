@@ -1900,6 +1900,163 @@ Unknown properties are collapsed to zero. -->
   <int value="2" label="EXPERIMENT_ENABLED"/>
 </enum>
 
+<enum name="AndroidXWebkitApiCall">
+  <int value="0" label="ADD_WEB_MESSAGE_LISTENER">
+    WebViewCompat#addWebMessageListener(WebView,String,List(String),WebMessageListener)
+  </int>
+  <int value="1" label="CLEAR_PROXY_OVERRIDE">
+    ProxyController#clearProxyOverride(Executor,Runnable)
+  </int>
+  <int value="2" label="GET_PROXY_CONTROLLER">
+    ProxyController#getInstance()
+  </int>
+  <int value="3" label="GET_SAFE_BROWSING_PRIVACY_POLICY_URL">
+    WebViewCompat#getSafeBrowsingPrivacyPolicyUrl()
+  </int>
+  <int value="4" label="GET_SERVICE_WORKER_CONTROLLER">
+    ServiceWorkerControllerCompat#getInstance()
+  </int>
+  <int value="5" label="GET_SERVICE_WORKER_WEB_SETTINGS">
+    ServiceWorkerControllerCompat#getServiceWorkerWebSettings()
+  </int>
+  <int value="6" label="GET_TRACING_CONTROLLER">
+    TracingController#getInstance()
+  </int>
+  <int value="7" label="GET_WEBCHROME_CLIENT">
+    WebViewCompat#getWebchromeClient(WebView)
+  </int>
+  <int value="8" label="GET_WEBVIEW_CLIENT">
+    WebViewCompat#getWebViewClient(WebView)
+  </int>
+  <int value="9" label="GET_WEBVIEW_RENDERER">
+    WebViewCompat#getWebViewRenderer(WebView)
+  </int>
+  <int value="10" label="GET_WEBVIEW_RENDERER_CLIENT">
+    WebViewCompat#getWebViewRenderProcessClient(WebView)
+  </int>
+  <int value="11" label="INIT_SAFE_BROWSING">
+    WebViewCompat#startSafeBrowsing(Context,ValueCallback(Boolean))
+  </int>
+  <int value="12" label="INSERT_VISUAL_STATE_CALLBACK">
+    WebViewCompat#postVisualStateCallback(WebView,long,VisualStateCallback)
+  </int>
+  <int value="13" label="IS_MULTI_PROCESS_ENABLED">
+    WebViewCompat#isMultiProcessEnabled()
+  </int>
+  <int value="14" label="JS_REPLY_POST_MESSAGE">
+    JsReplyProxy#postMessage(String)
+  </int>
+  <int value="15" label="POST_MESSAGE_TO_MAIN_FRAME">
+    WebViewCompat#postWebMessage(WebView,WebMessageCompat,Uri)
+  </int>
+  <int value="16" label="REMOVE_WEB_MESSAGE_LISTENER">
+    WebViewCompat#removeWebMessageListener(WebView,String)
+  </int>
+  <int value="17" label="SERVICE_WORKER_SETTINGS_GET_ALLOW_CONTENT_ACCESS">
+    ServiceWorkerWebSettingsCompat#getAllowContentAccess()
+  </int>
+  <int value="18" label="SERVICE_WORKER_SETTINGS_GET_ALLOW_FILE_ACCESS">
+    ServiceWorkerWebSettingsCompat#getAllowFileAccess()
+  </int>
+  <int value="19" label="SERVICE_WORKER_SETTINGS_GET_BLOCK_NETWORK_LOADS">
+    ServiceWorkerWebSettingsCompat#getBlockNetworkLoads()
+  </int>
+  <int value="20" label="SERVICE_WORKER_SETTINGS_GET_CACHE_MODE">
+    ServiceWorkerWebSettingsCompat#getCacheMode()
+  </int>
+  <int value="21" label="SERVICE_WORKER_SETTINGS_SET_ALLOW_CONTENT_ACCESS">
+    ServiceWorkerWebSettingsCompat#setAllowContentAccess(boolean)
+  </int>
+  <int value="22" label="SERVICE_WORKER_SETTINGS_SET_ALLOW_FILE_ACCESS">
+    ServiceWorkerWebSettingsCompat#setAllowFileAccess(boolean)
+  </int>
+  <int value="23" label="SERVICE_WORKER_SETTINGS_SET_BLOCK_NETWORK_LOADS">
+    ServiceWorkerWebSettingsCompat#setBlockNetworkLoads(boolean)
+  </int>
+  <int value="24" label="SERVICE_WORKER_SETTINGS_SET_CACHE_MODE">
+    ServiceWorkerWebSettingsCompat#setCacheMode(int)
+  </int>
+  <int value="25" label="SET_PROXY_OVERRIDE">
+    ProxyController#setProxyOverride(Executor,Runnable)
+  </int>
+  <int value="26" label="SET_SAFE_BROWSING_WHITELIST">
+    WebViewCompat#setSafeBrowsingWhitelist(List(String),ValueCallback(Boolean))
+  </int>
+  <int value="27" label="SET_SERVICE_WORKER_CLIENT">
+    ServiceWorkerControllerCompat#setServiceWorkerClient(ServiceWorkerClientCompat)
+  </int>
+  <int value="28" label="SET_WEBVIEW_RENDERER_CLIENT">
+    WebViewCompat#setWebViewRenderProcessClient(WebView,WebViewRenderProcessClient)
+  </int>
+  <int value="29" label="TRACING_CONTROLLER_IS_TRACING">
+    TracingController#isTracing()
+  </int>
+  <int value="30" label="TRACING_CONTROLLER_START">
+    TracingController#start(TracingConfig)
+  </int>
+  <int value="31" label="TRACING_CONTROLLER_STOP">
+    TracingController#stop(OutputStream,Executor)
+  </int>
+  <int value="32" label="WEB_MESSAGE_GET_DATA">WebMessageCompat#getData()</int>
+  <int value="33" label="WEB_MESSAGE_GET_PORTS">
+    WebMessageCompat#getPorts()
+  </int>
+  <int value="34" label="WEB_MESSAGE_PORT_CLOSE">
+    WebMessagePortCompat#close()
+  </int>
+  <int value="35" label="WEB_MESSAGE_PORT_POST_MESSAGE">
+    WebMessagePortCompat#postMessage(WebMessageCompat)
+  </int>
+  <int value="36" label="WEB_MESSAGE_PORT_SET_CALLBACK">
+    WebMessagePortCompat#setCallback(WebMessageCallbackCompat)
+  </int>
+  <int value="37" label="WEB_MESSAGE_PORT_SET_CALLBACK_WITH_HANDLER">
+    WebMessagePortCompat#setCallback(Handler,WebMessageCallbackCompat)
+  </int>
+  <int value="38" label="WEB_RESOURCE_REQUEST_IS_REDIRECT">
+    WebResourceRequestCompat#isRedirect(WebResourceRequest)
+  </int>
+  <int value="39" label="WEB_SETTINGS_GET_DISABLED_ACTION_MODE_MENU_ITEMS">
+    WebSettingsCompat#getDisabledActionModeMenuItems(WebSettings)
+  </int>
+  <int value="40" label="WEB_SETTINGS_GET_FORCE_DARK">
+    WebSettingsCompat#getForceDark(WebSettings)
+  </int>
+  <int value="41" label="WEB_SETTINGS_GET_FORCE_DARK_BEHAVIOR">
+    WebSettingsCompat#getForceDarkStrategy(WebSettings)
+  </int>
+  <int value="42" label="WEB_SETTINGS_GET_OFFSCREEN_PRE_RASTER">
+    WebSettingsCompat#getOffscreenPreRaster(WebSettings)
+  </int>
+  <int value="43" label="WEB_SETTINGS_GET_SAFE_BROWSING_ENABLED">
+    WebSettingsCompat#getSafeBrowsingEnabled(WebSettings)
+  </int>
+  <int value="44" label="WEB_SETTINGS_GET_WILL_SUPPRESS_ERROR_PAGE">
+    WebSettingsCompat#willSuppressErrorPage(WebSettings)
+  </int>
+  <int value="45" label="WEB_SETTINGS_SET_DISABLED_ACTION_MODE_MENU_ITEMS">
+    WebSettingsCompat#setDisabledActionModeMenuItems(WebSettings,int)
+  </int>
+  <int value="46" label="WEB_SETTINGS_SET_FORCE_DARK">
+    WebSettingsCompat#setForceDark(WebSettings,int)
+  </int>
+  <int value="47" label="WEB_SETTINGS_SET_FORCE_DARK_BEHAVIOR">
+    WebSettingsCompat#setForceDarkStrategy(WebSettings,int)
+  </int>
+  <int value="48" label="WEB_SETTINGS_SET_OFFSCREEN_PRE_RASTER">
+    WebSettingsCompat#setOffscreenPreRaster(WebSettings,boolean)
+  </int>
+  <int value="49" label="WEB_SETTINGS_SET_SAFE_BROWSING_ENABLED">
+    WebSettingsCompat#setSafeBrowsingEnabled(WebSettings,boolean)
+  </int>
+  <int value="50" label="WEB_SETTINGS_SET_WILL_SUPPRESS_ERROR_PAGE">
+    WebSettingsCompat#setWillSuppressErrorPage(WebSettings,boolean)
+  </int>
+  <int value="51" label="WEBVIEW_RENDERER_TERMINATE">
+    WebViewRenderProcess#terminate()
+  </int>
+</enum>
+
 <enum name="ANGLEProgramCacheResult">
   <int value="0" label="Cache Miss"/>
   <int value="1" label="Cache Hit From Memory"/>
@@ -5019,6 +5176,16 @@ Unknown properties are collapsed to zero. -->
   <int value="30" label="ServiceWorker claim"/>
 </enum>
 
+<enum name="BackForwardCacheReloadsAfterHistoryNavigation">
+  <int value="0" label="NotServedFromBackForwardCache"/>
+  <int value="1" label="ServedFromBackForwardCache"/>
+</enum>
+
+<enum name="BackForwardCacheReloadsAndHistoryNavigations">
+  <int value="0" label="HistoryNavigation"/>
+  <int value="1" label="ReloadAfterHistoryNavigation"/>
+</enum>
+
 <enum name="BackForwardNavigationType">
   <int value="0" label="Fast back navigation with WKBackForwardList"/>
   <int value="1" label="Slow back navigation"/>
@@ -5447,6 +5614,7 @@ Unknown properties are collapsed to zero. -->
   <int value="224" label="RFH_MISSING_EMBEDDING_TOKEN"/>
   <int value="225" label="RFH_BAD_DOCUMENT_POLICY_HEADER"/>
   <int value="226" label="RFMF_INVALID_PLUGIN_EMBEDDER_ORIGIN"/>
+  <int value="227" label="RFH_INVALID_CALL_FROM_NOT_MAIN_FRAME"/>
 </enum>
 
 <enum name="BadMessageReasonExtensions">
@@ -7212,6 +7380,9 @@ Unknown properties are collapsed to zero. -->
 </enum>
 
 <enum name="BooleanStarsSalientImageFound">
+  <obsolete>
+    Removed 01/2020 as we no longer record this metric.
+  </obsolete>
   <int value="0" label="Salient image was not found."/>
   <int value="1" label="Salient image was found."/>
 </enum>
@@ -7508,6 +7679,15 @@ Unknown properties are collapsed to zero. -->
   <int value="4" label="Not HTTPS"/>
   <int value="5" label="Request Failed"/>
   <int value="6" label="Runtime Cache Success"/>
+</enum>
+
+<enum name="BrowserType">
+  <int value="0" label="Unknown"/>
+  <int value="1" label="Internet Explorer"/>
+  <int value="2" label="Firefox"/>
+  <int value="3" label="Opera"/>
+  <int value="4" label="Safari"/>
+  <int value="5" label="Chrome"/>
 </enum>
 
 <enum name="BrowsingDataRemoverTasks">
@@ -12340,6 +12520,7 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
   <int value="24" label="Fingerprint.MCU.Reboot"/>
   <int value="25" label="Crash.Chrome.CrashesFromKernel"/>
   <int value="26" label="Crash.Chrome.MissedCrashes"/>
+  <int value="27" label="Crash.Collector.CollectionCount"/>
 </enum>
 
 <enum name="CrosFirstRunTutorialCompletionType">
@@ -12655,6 +12836,25 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
   <int value="2" label="Error"/>
 </enum>
 
+<enum name="CryptAuthFeatureType">
+  <int value="0" label="Better Together Host (Supported)"/>
+  <int value="1" label="Better Together Host (Enabled)"/>
+  <int value="2" label="Better Together Client (Supported)"/>
+  <int value="3" label="Better Together Client (Enabled)"/>
+  <int value="4" label="Easy Unlock Host (Supported)"/>
+  <int value="5" label="Easy Unlock Host (Enabled)"/>
+  <int value="6" label="Easy Unlock Client (Supported)"/>
+  <int value="7" label="Easy Unlock Client (Enabled)"/>
+  <int value="8" label="Magic Tether Host (Supported)"/>
+  <int value="9" label="Magic Tether Host (Enabled)"/>
+  <int value="10" label="Magic Tether Client (Supported)"/>
+  <int value="11" label="Magic Tether Client (Enabled)"/>
+  <int value="12" label="SMS Connect Host (Supported)"/>
+  <int value="13" label="SMS Connect Host (Enabled)"/>
+  <int value="14" label="SMS Connect Client (Supported)"/>
+  <int value="15" label="SMS Connect Client (Enabled)"/>
+</enum>
+
 <enum name="CryptAuthSoftwareFeature">
   <int value="0" label="UNKNOWN_FEATURE"/>
   <int value="1" label="BETTER_TOGETHER_HOST"/>
@@ -12665,6 +12865,12 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
   <int value="6" label="MAGIC_TETHER_CLIENT"/>
   <int value="7" label="SMS_CONNECT_HOST"/>
   <int value="8" label="SMS_CONNECT_CLIENT"/>
+</enum>
+
+<enum name="CryptAuthTargetService">
+  <int value="0" label="Unknown"/>
+  <int value="1" label="Enrollment"/>
+  <int value="2" label="DeviceSync"/>
 </enum>
 
 <enum name="CryptAuthV2DeviceSyncResultCode">
@@ -12738,6 +12944,25 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
   <int value="0" label="Success"/>
   <int value="1" label="Non-fatal error"/>
   <int value="2" label="Fatal error"/>
+</enum>
+
+<enum name="CryptAuthV2EnrollmentInvocationReason">
+  <int value="0" label="Invocation reason unspecified"/>
+  <int value="1" label="Initialization"/>
+  <int value="2" label="Periodic"/>
+  <int value="3" label="Slow periodic"/>
+  <int value="4" label="Fast periodic"/>
+  <int value="5" label="Expiration"/>
+  <int value="6" label="Failure recovery"/>
+  <int value="7" label="New account"/>
+  <int value="8" label="Changed account"/>
+  <int value="9" label="Feature toggled"/>
+  <int value="10" label="Server initiated"/>
+  <int value="11" label="Address change"/>
+  <int value="12" label="Software update"/>
+  <int value="13" label="Manual"/>
+  <int value="14" label="Custom key invalidation"/>
+  <int value="15" label="Proximity periodic"/>
 </enum>
 
 <enum name="CryptAuthV2EnrollmentResult">
@@ -14360,6 +14585,11 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
   <int value="0" label="BOTH_NONEMPTY"/>
   <int value="1" label="SYNC_EMPTY"/>
   <int value="2" label="PREF_EMPTY"/>
+</enum>
+
+<enum name="DeviceMode">
+  <int value="1" label="ClamshellMode"/>
+  <int value="2" label="TabletMode"/>
 </enum>
 
 <enum name="DeviceOrientation">
@@ -19300,6 +19530,8 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
   <int value="664" label="PrintingAPIExtensionsWhitelist"/>
   <int value="665" label="ReportDeviceCrashReportInfo"/>
   <int value="666" label="ScreenCaptureAllowed"/>
+  <int value="667" label="AdvancedProtectionDeepScanningEnabled"/>
+  <int value="668" label="BlockUnsupportedFiletypes"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">
@@ -37865,6 +38097,7 @@ from previous Chrome versions.
   <int value="-457174225" label="Av1Decoder:enabled"/>
   <int value="-456321929" label="ForceEnableSystemAec:disabled"/>
   <int value="-455203267" label="use_new_features_summary"/>
+  <int value="-454362199" label="HelpAppV2:disabled"/>
   <int value="-450976085"
       label="AutofillSaveCreditCardUsesImprovedMessaging:disabled"/>
   <int value="-449465495" label="disable-browser-task-scheduler"/>
@@ -38323,6 +38556,7 @@ from previous Chrome versions.
       label="OmniboxUIExperimentHideSteadyStateUrlPathQueryAndRef:enabled"/>
   <int value="116287989"
       label="ignore-litepage-redirect-optimization-blacklist"/>
+  <int value="116697601" label="OmniboxSuggestionButtonRow:disabled"/>
   <int value="118991027" label="enable-accelerated-fixed-root-background"/>
   <int value="119185738"
       label="OmniboxUIExperimentMaxAutocompleteMatches:disabled"/>
@@ -38518,6 +38752,7 @@ from previous Chrome versions.
   <int value="373193557" label="LongPressBackNewDesign:enabled"/>
   <int value="375485858" label="EnableZeroStateMixedTypesRanker:disabled"/>
   <int value="375785554" label="UserActivationV2:disabled"/>
+  <int value="375934458" label="PortalsCrossOrigin:enabled"/>
   <int value="377093001" label="WebRtcHWH264Encoding:disabled"/>
   <int value="378994579" label="Previews:enabled"/>
   <int value="379190682" label="ReorderBookmarks:enabled"/>
@@ -38672,6 +38907,7 @@ from previous Chrome versions.
       label="OmniboxHistoryQuickProviderAllowButDoNotScoreMidwordTerms:disabled"/>
   <int value="586021329" label="VibrateRequiresUserGesture:enabled"/>
   <int value="588333474" label="OfflineIndicator:disabled"/>
+  <int value="589394614" label="OmniboxSuggestionButtonRow:enabled"/>
   <int value="589924262" label="CryptAuthV2DeviceActivityStatus:enabled"/>
   <int value="592050831" label="disable-slimming-paint"/>
   <int value="593707592" label="disable-network-portal-notification"/>
@@ -39090,6 +39326,7 @@ from previous Chrome versions.
   <int value="1112051724" label="DetectingHeavyPages:enabled"/>
   <int value="1113196543" label="ShowManagedUi:disabled"/>
   <int value="1113365156" label="tab-management-experiment-type-chive"/>
+  <int value="1114270092" label="PortalsCrossOrigin:disabled"/>
   <int value="1114629582" label="enable-floating-virtual-keyboard"/>
   <int value="1115635149" label="EnableUnifiedMultiDeviceSetup:enabled"/>
   <int value="1116593018" label="CaptureThumbnailOnLoadFinished:disabled"/>
@@ -39144,7 +39381,6 @@ from previous Chrome versions.
   <int value="1182356056" label="MacV2GPUSandbox:enabled"/>
   <int value="1183260592" label="WebAssemblyBaseline:enabled"/>
   <int value="1183431946" label="v8-cache-options"/>
-  <int value="1184093076" label="WebRtcUseMinMaxVEADimensions:enabled"/>
   <int value="1184225265" label="AllowSyncXHRInPageDismissal:enabled"/>
   <int value="1185424279" label="enable-media-router"/>
   <int value="1188109510" label="AssistantAudioEraser:enabled"/>
@@ -39458,7 +39694,6 @@ from previous Chrome versions.
   <int value="1559034872" label="AutofillPrefilledFields:enabled"/>
   <int value="1560188739" label="reader-mode-heuristics"/>
   <int value="1561781431" label="VirtualKeyboardBorderedKey:enabled"/>
-  <int value="1562855415" label="WebRtcUseMinMaxVEADimensions:disabled"/>
   <int value="1563255033" label="memlog-stack-mode"/>
   <int value="1567839560"
       label="ChromeHomePersonalizedOmniboxSuggestions:disabled"/>
@@ -39562,6 +39797,7 @@ from previous Chrome versions.
   <int value="1689123607" label="enable-app-link"/>
   <int value="1689183477" label="enable-merge-key-char-events"/>
   <int value="1689275095" label="InterestFeedFeedback:disabled"/>
+  <int value="1690248203" label="HelpAppV2:enabled"/>
   <int value="1690837904" label="save-previous-document-resources"/>
   <int value="1691568199" label="AndroidSpellCheckerNonLowEnd:disabled"/>
   <int value="1693094211" label="FilesNG:disabled"/>
@@ -40229,7 +40465,7 @@ from previous Chrome versions.
 <enum name="MachineLearningServiceMojoConnectionEvent">
   <int value="0" label="Mojo bootstrap requested over D-Bus"/>
   <int value="1" label="Mojo bootstrap succeeded"/>
-  <int value="2" label="Connection error"/>
+  <int value="2" label="Connection closed"/>
 </enum>
 
 <enum name="MachineLevelUserCloudPolicyEnrollmentResult">
@@ -41320,11 +41556,11 @@ Called by update_use_counter_css.py.-->
   <int value="645" label="overscroll-behavior-block"/>
   <int value="646" label="content-size"/>
   <int value="647" label="font-optical-sizing"/>
-  <int value="648" label="intrinsic-block-size"/>
-  <int value="649" label="intrinsic-height"/>
-  <int value="650" label="intrinsic-inline-size"/>
-  <int value="651" label="intrinsic-size"/>
-  <int value="652" label="intrinsic-width"/>
+  <int value="648" label="contain-intrinsic-block-size"/>
+  <int value="649" label="contain-intrinsic-height"/>
+  <int value="650" label="contain-intrinsic-inline-size"/>
+  <int value="651" label="contain-intrinsic-size"/>
+  <int value="652" label="contain-intrinsic-width"/>
   <int value="653" label="render-subtree"/>
   <int value="654" label="origin-trial-test-property"/>
 </enum>
@@ -45857,6 +46093,13 @@ Called by update_net_trust_anchors.py.-->
   <int value="20" label="PIN_MISSING"/>
 </enum>
 
+<enum name="NetworkStatus">
+  <int value="1" label="Offline"/>
+  <int value="2" label="OnlineWifi"/>
+  <int value="3" label="OnlineCellular"/>
+  <int value="4" label="OnlineOther"/>
+</enum>
+
 <enum name="NetworkTechnology">
   <int value="0" label="Cellular"/>
   <int value="1" label="Ethernet"/>
@@ -47886,6 +48129,13 @@ Called by update_net_trust_anchors.py.-->
   <int value="5" label="Fetch race already in progress">
     A fetch race for the host and URL of the current navigation is already in
     progress.
+  </int>
+  <int value="6"
+      label="Fetch race not attempted due to too many concurrent page
+             navigation fetches">
+    The fetch race was not attempted for the host and URL of the current
+    navigation since there are too many page navigation fetches currently in
+    flight.
   </int>
 </enum>
 
@@ -57892,6 +58142,17 @@ Called by update_net_trust_anchors.py.-->
   </int>
 </enum>
 
+<enum name="SettingId">
+  <int value="1" label="Wifi"/>
+  <int value="2" label="Cellular"/>
+  <int value="3" label="Bluetooth"/>
+  <int value="4" label="NightLight"/>
+  <int value="5" label="DoNotDisturb"/>
+  <int value="6" label="Accessibility"/>
+  <int value="7" label="Volume"/>
+  <int value="8" label="Brightness"/>
+</enum>
+
 <enum name="SettingsInteractionConcludeReason">
   <int value="0" label="Registry watcher">
     A change to the protocol registry key was detected.
@@ -58023,6 +58284,11 @@ Called by update_net_trust_anchors.py.-->
   <int value="38" label="Prefs Cld Version"/>
   <int value="39" label="Prefs Cld Data Source"/>
   <int value="40" label="Prefs Dump"/>
+</enum>
+
+<enum name="SettingType">
+  <int value="1" label="QuickSettings"/>
+  <int value="2" label="OsSettings"/>
 </enum>
 
 <enum name="SetupInstallResult">
@@ -58249,12 +58515,21 @@ Called by update_net_trust_anchors.py.-->
   <int value="3" label="Payload is too large"/>
   <int value="4" label="Timeout waiting for ack"/>
   <int value="5" label="Other internal error"/>
+  <int value="6" label="Encryption error"/>
 </enum>
 
 <enum name="SharingVapidKeyCreationResult">
   <int value="0" label="Successful"/>
   <int value="1" label="EC key creation failed"/>
   <int value="2" label="Private key export failed"/>
+</enum>
+
+<enum name="SharingWebRtcConnectionType">
+  <int value="0" label="Unknown"/>
+  <int value="1" label="Host"/>
+  <int value="2" label="Server Reflexive"/>
+  <int value="3" label="Peer Reflexive"/>
+  <int value="4" label="Relay"/>
 </enum>
 
 <enum name="SharingWebRtcTimeoutState">
@@ -58271,6 +58546,15 @@ Called by update_net_trust_anchors.py.-->
   <int value="0" label="Bottom"/>
   <int value="1" label="Left"/>
   <int value="2" label="Right"/>
+</enum>
+
+<enum name="ShelfWindowDragResult">
+  <int value="0" label="Goes to home screen after drag"/>
+  <int value="1"
+      label="Dragged window restored to its original bounds after drag"/>
+  <int value="2" label="Dragged window is dropped to overview after drag"/>
+  <int value="3" label="Enters splitview mode after drag"/>
+  <int value="4" label="Drag is canceled instead of ending normally"/>
 </enum>
 
 <enum name="ShillSuspendTerminationDarkResumeActionResult">
@@ -60892,6 +61176,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="11" label="SHOW_MITM_SOFTWARE_INTERSTITIAL"/>
   <int value="12" label="OS_REPORTS_CAPTIVE_PORTAL"/>
   <int value="13" label="SHOW_BLOCKED_INTERCEPTION_INTERSTITIAL"/>
+  <int value="14" label="SHOW_LEGACY_TLS_INTERSTITIAL"/>
 </enum>
 
 <enum name="SSLErrorLearnMoreNavigationResult">
@@ -61184,6 +61469,9 @@ Called by update_net_trust_anchors.py.-->
 </enum>
 
 <enum name="StarsLaunchLocation">
+  <obsolete>
+    Removed 01/2020 as we no longer record this metric.
+  </obsolete>
   <int value="0" label="All Items"/>
   <int value="1" label="Uncategorized"/>
   <int value="2" label="Folder"/>
@@ -62363,6 +62651,18 @@ would be helpful to identify which type is being sent.
   <int value="3" label="AUTHENTICATE"/>
   <int value="4" label="DEPRECATED_4"/>
   <int value="5" label="CLEAR_SERVER_DATA"/>
+</enum>
+
+<enum name="SyncSharingMessageCommitErrorCode">
+  <int value="0" label="Ok"/>
+  <int value="1" label="Invalid argument"/>
+  <int value="2" label="Not found"/>
+  <int value="3" label="Internal"/>
+  <int value="4" label="Unavailable"/>
+  <int value="5" label="Resource exhausted"/>
+  <int value="6" label="Unauthenticated"/>
+  <int value="7" label="Permission denied"/>
+  <int value="8" label="Sync turned off"/>
 </enum>
 
 <enum name="SyncSimpleConflictResolutions">

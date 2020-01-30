@@ -34,7 +34,7 @@
             android:layout_weight="1"
             android:singleLine="true"
             android:ellipsize="end"
-            android:textAppearance="@style/TextAppearance.BlackTitle1"
+            android:textAppearance="@style/TextAppearance.TextLarge.Primary"
             android:inputType="text|textNoSuggestions"
             android:imeOptions="actionDone"
             android:theme="@style/TabGridDialogTitleTheme"

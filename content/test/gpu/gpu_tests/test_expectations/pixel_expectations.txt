@@ -221,7 +221,6 @@ crbug.com/1019462 [ android nvidia no-skia-renderer ] Pixel_Video_MP4_FourColors
 crbug.com/1019462 [ android nvidia no-skia-renderer ] Pixel_Video_MP4_Rounded_Corner [ RetryOnFailure ]
 crbug.com/1019462 [ android nvidia no-skia-renderer ] Pixel_Video_Context_Loss_VP9 [ RetryOnFailure ]
 crbug.com/1019462 [ android nvidia no-skia-renderer ] Pixel_WebGL2_BlitFramebuffer_Result_Displayed [ RetryOnFailure ]
-crbug.com/1041572 [ android nvidia no-skia-renderer ] Pixel_PaintWorkletBasics [ Skip ]
 
 # Skip dual gpu switch tests on Mac Nvidia
 crbug.com/681341 [ mac nvidia ] Pixel_WebGLLowToHighPower [ Skip ]

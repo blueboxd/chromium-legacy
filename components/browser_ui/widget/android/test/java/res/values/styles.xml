@@ -37,7 +37,7 @@
     <style name="Theme.Chromium.Settings" parent="Base.Theme.Chromium.Settings">
         <!-- Theme attributes pre-v21 -->
         <item name="android:textAppearanceMedium">@style/TextAppearance.PreferenceMediumText</item>
-        <item name="android:textAppearanceSmall">@style/TextAppearance.BlackBody</item>
+        <item name="android:textAppearanceSmall">@style/TextAppearance.TextMedium.Secondary</item>
         <item name="android:windowContentOverlay">@null</item>
     </style>
 </resources>

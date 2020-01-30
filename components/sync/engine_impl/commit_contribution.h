@@ -40,7 +40,13 @@ class CommitContribution {
       const sync_pb::ClientToServerResponse& response,
       StatusController* status) = 0;
 
-  // Cleans up any temproary state associated with the commit.  Must be called
+  // This method is called when there is an error during commit and there is no
+  // proper response to process (i.e. unparsable or unexpected server response,
+  // network error). This method may be called only if ProcessCommitResponse
+  // was never called.
+  virtual void ProcessCommitFailure() = 0;
+
+  // Cleans up any temporary state associated with the commit. Must be called
   // before destruction.
   virtual void CleanUp() = 0;
 

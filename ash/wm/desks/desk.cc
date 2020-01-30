@@ -202,6 +202,13 @@ base::AutoReset<bool> Desk::GetScopedNotifyContentChangedDisabler() {
   return base::AutoReset<bool>(&should_notify_content_changed_, false);
 }
 
+void Desk::SetName(base::string16 new_name) {
+  name_ = std::move(new_name);
+
+  for (auto& observer : observers_)
+    observer.OnDeskNameChanged(name_);
+}
+
 void Desk::Activate(bool update_window_activation) {
   // Show the associated containers on all roots.
   for (aura::Window* root : Shell::GetAllRootWindows())

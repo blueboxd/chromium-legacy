@@ -46,7 +46,6 @@ endobj
   /Subtype /Highlight
   /QuadPoints [0 55 36 59 0 36 36 36]
   /Rect [0 36 36 55]
-  /C [0.15 0 0.9 0]
   /P 3 0 R
 >>
 endobj
@@ -55,7 +54,8 @@ endobj
   /Subtype /Highlight
   /QuadPoints [79 55 136 55 79 36 136 36]
   /Rect [79 36 136 55]
-  /C [0.15 0 0.9 0]
+  /C [0.9 0 0]
+  /CA 0.4
   /P 3 0 R
 >>
 endobj
@@ -64,7 +64,8 @@ endobj
   /Subtype /Highlight
   /QuadPoints [140 55 149 55 140 36 149 36]
   /Rect [140 36 149 55]
-  /C [0.15 0 0.9 0]
+  /C [0 0 0]
+  /CA 0
   /P 3 0 R
 >>
 endobj
@@ -77,12 +78,12 @@ xref
 0000000313 00000 n 
 0000000389 00000 n 
 0000000493 00000 n 
-0000000641 00000 n 
-0000000795 00000 n 
+0000000621 00000 n 
+0000000780 00000 n 
 trailer <<
   /Root 1 0 R
   /Size 9
 >>
 startxref
-952
+938
 %%EOF

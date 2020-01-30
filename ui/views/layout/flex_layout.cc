@@ -377,6 +377,37 @@ ProposedLayout FlexLayout::CalculateProposedLayout(
   return data.layout;
 }
 
+NormalizedSize FlexLayout::GetPreferredSizeForRule(
+    const FlexRule& rule,
+    const View* child,
+    const base::Optional<int>& available_cross) const {
+  const NormalizedSize default_size =
+      Normalize(orientation(), rule.Run(child, SizeBounds()));
+  if (orientation() != LayoutOrientation::kVertical)
+    return default_size;
+
+  // In vertical layouts it's important to consider height-for-width type
+  // calculations.
+  const NormalizedSize stretch_size =
+      Normalize(orientation(),
+                rule.Run(child, SizeBounds(available_cross, base::nullopt)));
+  if (cross_axis_alignment() == LayoutAlignment::kStretch)
+    return stretch_size;
+
+  // In non-stretch environments, we don't want the cross-axis size to exceed
+  // the default, or the main-axis size to shrink below the default.
+  return NormalizedSize(std::max(default_size.main(), stretch_size.main()),
+                        std::min(default_size.cross(), stretch_size.cross()));
+}
+
+NormalizedSize FlexLayout::GetCurrentSizeForRule(
+    const FlexRule& rule,
+    const View* child,
+    const NormalizedSizeBounds& available) const {
+  return Normalize(orientation(),
+                   rule.Run(child, Denormalize(orientation(), available)));
+}
+
 void FlexLayout::InitializeChildData(
     const NormalizedSizeBounds& bounds,
     FlexLayoutData* data,
@@ -403,47 +434,17 @@ void FlexLayout::InitializeChildData(
         orientation(),
         GetViewProperty(child, layout_defaults_, views::kInternalPaddingKey));
 
-    // FlexSpecification defines "preferred size" as the size returned when we
-    // do not bound the inputs (specifically the main axis). This is different
-    // from View::GetPreferredSize() which may not take into account e.g. an
-    // the necessity to alter a view's height in a vertical layout if the width
-    // is bounded. In the common case this will be equivalent to calling
-    // GetPreferredSize().
     const base::Optional<int> available_cross =
         GetAvailableCrossAxisSize(*data, view_index, bounds);
 
-    const NormalizedSize default_size = Normalize(
-        orientation(), flex_child.flex.rule().Run(child, SizeBounds()));
-
-    // In vertical layouts it's important to consider height-for-width type
-    // calculations.
-    if (orientation() == LayoutOrientation::kVertical) {
-      const NormalizedSize stretch_size =
-          Normalize(orientation(),
-                    flex_child.flex.rule().Run(
-                        child, SizeBounds(available_cross, base::nullopt)));
-      if (cross_axis_alignment() == LayoutAlignment::kStretch) {
-        flex_child.preferred_size = stretch_size;
-      } else {
-        // In non-stretch environments, we don't want the cross-axis size to
-        // exceed the default, or the main-axis size to shrink below the
-        // default.
-        flex_child.preferred_size = NormalizedSize(
-            std::max(default_size.main(), stretch_size.main()),
-            std::min(default_size.cross(), stretch_size.cross()));
-      }
-    } else {
-      // Just use the default preferred size.
-      flex_child.preferred_size = default_size;
-    }
+    flex_child.preferred_size =
+        GetPreferredSizeForRule(flex_child.flex.rule(), child, available_cross);
 
     // gfx::Size calculation depends on whether flex is allowed.
     if (main_axis_bounded) {
-      flex_child.current_size = Normalize(
-          orientation(),
-          flex_child.flex.rule().Run(
-              child, Denormalize(orientation(),
-                                 NormalizedSizeBounds(0, available_cross))));
+      flex_child.current_size =
+          GetCurrentSizeForRule(flex_child.flex.rule(), child,
+                                NormalizedSizeBounds(0, available_cross));
       SetCrossAxis(&child_layout.available_size, orientation(),
                    available_cross);
 
@@ -801,10 +802,8 @@ void FlexLayout::AllocateFlexSpace(
           flex_amount + old_size - margin_delta,
           GetCrossAxis(orientation(), child_layout.available_size));
 
-      NormalizedSize desired_size = Normalize(
-          orientation(),
-          flex_child.flex.rule().Run(child_layout.child_view,
-                                     Denormalize(orientation(), available)));
+      NormalizedSize desired_size = GetCurrentSizeForRule(
+          flex_child.flex.rule(), child_layout.child_view, available);
       if (desired_size.main() <= 0)
         continue;
 

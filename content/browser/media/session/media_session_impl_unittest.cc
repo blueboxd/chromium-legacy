@@ -673,4 +673,26 @@ TEST_F(MediaSessionImplTest, SessionInfoSensitive_OffTheRecord) {
                   ->is_sensitive);
 }
 
+TEST_F(MediaSessionImplTest, SessionInfoPictureInPicture) {
+  WebContentsImpl* web_contents_impl =
+      static_cast<WebContentsImpl*>(web_contents());
+
+  EXPECT_EQ(
+      media_session::test::GetMediaSessionInfoSync(GetMediaSession())
+          ->picture_in_picture_state,
+      media_session::mojom::MediaPictureInPictureState::kNotInPictureInPicture);
+
+  web_contents_impl->SetHasPictureInPictureVideo(true);
+  EXPECT_EQ(
+      media_session::test::GetMediaSessionInfoSync(GetMediaSession())
+          ->picture_in_picture_state,
+      media_session::mojom::MediaPictureInPictureState::kInPictureInPicture);
+
+  web_contents_impl->SetHasPictureInPictureVideo(false);
+  EXPECT_EQ(
+      media_session::test::GetMediaSessionInfoSync(GetMediaSession())
+          ->picture_in_picture_state,
+      media_session::mojom::MediaPictureInPictureState::kNotInPictureInPicture);
+}
+
 }  // namespace content

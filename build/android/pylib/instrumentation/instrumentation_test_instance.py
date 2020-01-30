@@ -617,7 +617,7 @@ class InstrumentationTestInstance(test_instance.TestInstance):
           break
     if not self._package_info:
       logging.warning(("Unable to find package info for %s. " +
-                       "(This may just mean that the test package is" +
+                       "(This may just mean that the test package is " +
                        "currently being installed.)"),
                        self._test_package)
 

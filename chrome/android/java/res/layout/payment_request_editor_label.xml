@@ -45,6 +45,6 @@
             android:layout_below="@id/mid_label"
             android:layout_toStartOf="@id/icon"
             android:layout_alignParentStart="true"
-            android:textAppearance="@style/TextAppearance.BlackCaption" />
+            android:textAppearance="@style/TextAppearance.TextSmall.Secondary" />
 
 </RelativeLayout>

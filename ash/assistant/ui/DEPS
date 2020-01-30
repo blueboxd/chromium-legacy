@@ -10,6 +10,7 @@ include_rules = [
   "+ash/strings",
   "+base",
   "+build/buildflag.h",
+  "+cc/base",
   "+cc/paint",
   "+chromeos/assistant",
   "+chromeos/services/assistant/public",

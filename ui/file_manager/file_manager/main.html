@@ -189,167 +189,169 @@
       <command id="focus-action-bar" shortcut="a|Alt">
     </commands>
 
-    <cr-menu id="disabled-context-menu" class="chrome-menu files-menu">
-    </cr-menu>
+    <menus>
+      <cr-menu id="disabled-context-menu" class="chrome-menu files-menu">
+      </cr-menu>
 
-    <cr-menu id="file-context-menu" class="chrome-menu files-menu"
-             menu-item-selector="cr-menu-item,hr" showShortcuts
-             aria-label="$i18n{CONTEXT_MENU_LABEL}">
-      <cr-menu-item id="default-task-menu-item" command="#default-task"
-                visibleif="full-page" class="hide-on-toolbar" hidden></cr-menu-item>
-      <cr-menu-item command="#open-with"
-                visibleif="full-page" class="hide-on-toolbar" hidden></cr-menu-item>
-      <cr-menu-item command="#more-actions"
-                visibleif="full-page" class="hide-on-toolbar" hidden></cr-menu-item>
-      <hr id="tasks-separator" visibleif="full-page" class="hide-on-toolbar" hidden>
-      <hr id="actions-separator" hidden>
-      <cr-menu-item command="#cut" visibleif="full-page"></cr-menu-item>
-      <cr-menu-item command="#copy" visibleif="full-page"></cr-menu-item>
-      <cr-menu-item command="#paste" visibleif="full-page"></cr-menu-item>
-      <cr-menu-item command="#paste-into-folder" visibleif="full-page"></cr-menu-item>
-      <hr visibleif="full-page">
-      <cr-menu-item command="#get-info"></cr-menu-item>
-      <cr-menu-item command="#rename"></cr-menu-item>
-      <cr-menu-item command="#pin-folder"></cr-menu-item>
-      <cr-menu-item command="#delete" class="hide-on-toolbar">$i18n{DELETE_BUTTON_LABEL}</cr-menu-item>
-      <cr-menu-item command="#zip-selection"></cr-menu-item>
-      <cr-menu-item command="#share-with-linux"></cr-menu-item>
-      <cr-menu-item command="#manage-linux-sharing"></cr-menu-item>
-      <cr-menu-item command="#share-with-plugin-vm"></cr-menu-item>
-      <cr-menu-item command="#manage-plugin-vm-sharing"></cr-menu-item>
-      <cr-menu-item command="#set-wallpaper"></cr-menu-item>
-      <hr visibleif="saveas-file full-page" class="hide-on-toolbar">
-      <cr-menu-item command="#new-folder" visibleif="saveas-file full-page"
-                class="hide-on-toolbar"></cr-menu-item>
-    </cr-menu>
+      <cr-menu id="file-context-menu" class="chrome-menu files-menu"
+               menu-item-selector="cr-menu-item,hr" showShortcuts
+               aria-label="$i18n{CONTEXT_MENU_LABEL}">
+        <cr-menu-item id="default-task-menu-item" command="#default-task"
+                  visibleif="full-page" class="hide-on-toolbar" hidden></cr-menu-item>
+        <cr-menu-item command="#open-with"
+                  visibleif="full-page" class="hide-on-toolbar" hidden></cr-menu-item>
+        <cr-menu-item command="#more-actions"
+                  visibleif="full-page" class="hide-on-toolbar" hidden></cr-menu-item>
+        <hr id="tasks-separator" visibleif="full-page" class="hide-on-toolbar" hidden>
+        <hr id="actions-separator" hidden>
+        <cr-menu-item command="#cut" visibleif="full-page"></cr-menu-item>
+        <cr-menu-item command="#copy" visibleif="full-page"></cr-menu-item>
+        <cr-menu-item command="#paste" visibleif="full-page"></cr-menu-item>
+        <cr-menu-item command="#paste-into-folder" visibleif="full-page"></cr-menu-item>
+        <hr visibleif="full-page">
+        <cr-menu-item command="#get-info"></cr-menu-item>
+        <cr-menu-item command="#rename"></cr-menu-item>
+        <cr-menu-item command="#pin-folder"></cr-menu-item>
+        <cr-menu-item command="#delete" class="hide-on-toolbar">$i18n{DELETE_BUTTON_LABEL}</cr-menu-item>
+        <cr-menu-item command="#zip-selection"></cr-menu-item>
+        <cr-menu-item command="#share-with-linux"></cr-menu-item>
+        <cr-menu-item command="#manage-linux-sharing"></cr-menu-item>
+        <cr-menu-item command="#share-with-plugin-vm"></cr-menu-item>
+        <cr-menu-item command="#manage-plugin-vm-sharing"></cr-menu-item>
+        <cr-menu-item command="#set-wallpaper"></cr-menu-item>
+        <hr visibleif="saveas-file full-page" class="hide-on-toolbar">
+        <cr-menu-item command="#new-folder" visibleif="saveas-file full-page"
+                  class="hide-on-toolbar"></cr-menu-item>
+      </cr-menu>
 
-    <cr-menu id="roots-context-menu" class="chrome-menu files-menu"
-             menu-item-selector="cr-menu-item"
-             aria-label="$i18n{CONTEXT_MENU_LABEL}">
-      <cr-menu-item command="#configure"></cr-menu-item>
-      <cr-menu-item command="#unmount"></cr-menu-item>
-      <cr-menu-item command="#format"></cr-menu-item>
-      <cr-menu-item command="#rename"></cr-menu-item>
-      <cr-menu-item command="#unpin-folder"></cr-menu-item>
-      <cr-menu-item command="#share-with-linux"></cr-menu-item>
-      <cr-menu-item command="#manage-linux-sharing"></cr-menu-item>
-      <cr-menu-item command="#share-with-plugin-vm"></cr-menu-item>
-      <cr-menu-item command="#manage-plugin-vm-sharing"></cr-menu-item>
-    </cr-menu>
+      <cr-menu id="roots-context-menu" class="chrome-menu files-menu"
+               menu-item-selector="cr-menu-item"
+               aria-label="$i18n{CONTEXT_MENU_LABEL}">
+        <cr-menu-item command="#configure"></cr-menu-item>
+        <cr-menu-item command="#unmount"></cr-menu-item>
+        <cr-menu-item command="#format"></cr-menu-item>
+        <cr-menu-item command="#rename"></cr-menu-item>
+        <cr-menu-item command="#unpin-folder"></cr-menu-item>
+        <cr-menu-item command="#share-with-linux"></cr-menu-item>
+        <cr-menu-item command="#manage-linux-sharing"></cr-menu-item>
+        <cr-menu-item command="#share-with-plugin-vm"></cr-menu-item>
+        <cr-menu-item command="#manage-plugin-vm-sharing"></cr-menu-item>
+      </cr-menu>
 
-    <cr-menu id="directory-tree-context-menu" class="chrome-menu files-menu"
-             menu-item-selector="cr-menu-item,hr"
-             aria-label="$i18n{CONTEXT_MENU_LABEL}">
-      <cr-menu-item command="#cut" visibleif="full-page"></cr-menu-item>
-      <cr-menu-item command="#copy" visibleif="full-page"></cr-menu-item>
-      <cr-menu-item command="#paste-into-folder" visibleif="full-page"></cr-menu-item>
-      <cr-menu-item command="#share-with-linux"></cr-menu-item>
-      <cr-menu-item command="#manage-linux-sharing"></cr-menu-item>
-      <cr-menu-item command="#share-with-plugin-vm"></cr-menu-item>
-      <cr-menu-item command="#manage-plugin-vm-sharing"></cr-menu-item>
-      <hr visibleif="full-page">
-      <cr-menu-item command="#format"></cr-menu-item>
-      <cr-menu-item command="#rename"></cr-menu-item>
-      <cr-menu-item command="#pin-folder"></cr-menu-item>
-      <cr-menu-item command="#delete">$i18n{DELETE_BUTTON_LABEL}</cr-menu-item>
-      <hr visibleif="saveas-file full-page">
-      <cr-menu-item command="#new-folder" visibleif="saveas-file full-page"></cr-menu-item>
-    </cr-menu>
+      <cr-menu id="directory-tree-context-menu" class="chrome-menu files-menu"
+               menu-item-selector="cr-menu-item,hr"
+               aria-label="$i18n{CONTEXT_MENU_LABEL}">
+        <cr-menu-item command="#cut" visibleif="full-page"></cr-menu-item>
+        <cr-menu-item command="#copy" visibleif="full-page"></cr-menu-item>
+        <cr-menu-item command="#paste-into-folder" visibleif="full-page"></cr-menu-item>
+        <cr-menu-item command="#share-with-linux"></cr-menu-item>
+        <cr-menu-item command="#manage-linux-sharing"></cr-menu-item>
+        <cr-menu-item command="#share-with-plugin-vm"></cr-menu-item>
+        <cr-menu-item command="#manage-plugin-vm-sharing"></cr-menu-item>
+        <hr visibleif="full-page">
+        <cr-menu-item command="#format"></cr-menu-item>
+        <cr-menu-item command="#rename"></cr-menu-item>
+        <cr-menu-item command="#pin-folder"></cr-menu-item>
+        <cr-menu-item command="#delete">$i18n{DELETE_BUTTON_LABEL}</cr-menu-item>
+        <hr visibleif="saveas-file full-page">
+        <cr-menu-item command="#new-folder" visibleif="saveas-file full-page"></cr-menu-item>
+      </cr-menu>
 
-    <cr-menu id="sort-menu" class="chrome-menu files-menu"
-             aria-label="$i18n{SORT_BUTTON_TOOLTIP}"
-             menu-item-selector="cr-menu-item">
-      <cr-menu-item id="sort-menu-sort-by-name"
-                    command="#sort-by-name"></cr-menu-item>
-      <cr-menu-item id="sort-menu-sort-by-size"
-                    command="#sort-by-size"></cr-menu-item>
-      <cr-menu-item id="sort-menu-sort-by-type"
-                    command="#sort-by-type"></cr-menu-item>
-      <cr-menu-item id="sort-menu-sort-by-date"
-                    command="#sort-by-date"></cr-menu-item>
-    </cr-menu>
+      <cr-menu id="sort-menu" class="chrome-menu files-menu"
+               aria-label="$i18n{SORT_BUTTON_TOOLTIP}"
+               menu-item-selector="cr-menu-item">
+        <cr-menu-item id="sort-menu-sort-by-name"
+                      command="#sort-by-name"></cr-menu-item>
+        <cr-menu-item id="sort-menu-sort-by-size"
+                      command="#sort-by-size"></cr-menu-item>
+        <cr-menu-item id="sort-menu-sort-by-type"
+                      command="#sort-by-type"></cr-menu-item>
+        <cr-menu-item id="sort-menu-sort-by-date"
+                      command="#sort-by-date"></cr-menu-item>
+      </cr-menu>
 
-    <cr-menu id="gear-menu" class="chrome-menu files-menu" showShortcuts
-             aria-label="$i18n{GEAR_BUTTON_TOOLTIP}"
-             menu-item-selector="cr-menu-item, hr">
-      <cr-menu-item command="#paste-into-current-folder" visibleif="full-page"></cr-menu-item>
-      <hr visibleif="full-page">
-      <cr-menu-item id="gear-menu-newwindow" command="#new-window"></cr-menu-item>
-      <cr-menu-item id="gear-menu-newfolder" command="#new-folder"></cr-menu-item>
-      <hr>
-      <cr-menu-item command="#configure"></cr-menu-item>
-      <cr-menu-item id="gear-menu-select-all"
-                    command="#select-all"></cr-menu-item>
-      <cr-menu-item id="gear-menu-toggle-hidden-files"
-                    command="#toggle-hidden-files"></cr-menu-item>
-      <cr-menu-item id="gear-menu-toggle-hidden-android-folders"
-                    command="#toggle-hidden-android-folders"></cr-menu-item>
-      <cr-menu-item id="gear-menu-manage-linux-sharing"
-                    command="#manage-linux-sharing-gear"></cr-menu-item>
-      <cr-menu-item id="gear-menu-manage-plugin-vm-sharing"
-                    command="#manage-plugin-vm-sharing-gear"></cr-menu-item>
-      <cr-menu-item id="gear-menu-drive-sync-settings"
-                    command="#drive-sync-settings"></cr-menu-item>
-      <hr id="help-separator">
-      <cr-menu-item id="gear-menu-drive-buy-more-space"
-                    command="#drive-buy-more-space"></cr-menu-item>
-      <cr-menu-item id="gear-menu-drive-go-to-drive"
-                    command="#drive-go-to-drive"></cr-menu-item>
-      <cr-menu-item id="gear-menu-volume-help"
-                    command="#volume-help"></cr-menu-item>
-      <cr-menu-item id="gear-menu-send-feedback"
-                    command="#send-feedback"></cr-menu-item>
-      <hr id="volume-space-info-separator">
-      <cr-menu-item id="gear-menu-newservice" command="#new-service"
-          sub-menu="#add-new-services-menu"></cr-menu-item>
-      <cr-menu-item id="gear-menu-format" command="#format"></cr-menu-item>
-      <cr-menu-item id="volume-space-info" command="#volume-storage">
-        <div id="volume-space-info-contents">
-          <span id="volume-space-info-label"></span>
-          <div class="progress-bar" aria-hidden="true">
-            <div class="progress-track" id="volume-space-info-bar"></div>
+      <cr-menu id="gear-menu" class="chrome-menu files-menu" showShortcuts
+               aria-label="$i18n{GEAR_BUTTON_TOOLTIP}"
+               menu-item-selector="cr-menu-item, hr">
+        <cr-menu-item command="#paste-into-current-folder" visibleif="full-page"></cr-menu-item>
+        <hr visibleif="full-page">
+        <cr-menu-item id="gear-menu-newwindow" command="#new-window"></cr-menu-item>
+        <cr-menu-item id="gear-menu-newfolder" command="#new-folder"></cr-menu-item>
+        <hr>
+        <cr-menu-item command="#configure"></cr-menu-item>
+        <cr-menu-item id="gear-menu-select-all"
+                      command="#select-all"></cr-menu-item>
+        <cr-menu-item id="gear-menu-toggle-hidden-files"
+                      command="#toggle-hidden-files"></cr-menu-item>
+        <cr-menu-item id="gear-menu-toggle-hidden-android-folders"
+                      command="#toggle-hidden-android-folders"></cr-menu-item>
+        <cr-menu-item id="gear-menu-manage-linux-sharing"
+                      command="#manage-linux-sharing-gear"></cr-menu-item>
+        <cr-menu-item id="gear-menu-manage-plugin-vm-sharing"
+                      command="#manage-plugin-vm-sharing-gear"></cr-menu-item>
+        <cr-menu-item id="gear-menu-drive-sync-settings"
+                      command="#drive-sync-settings"></cr-menu-item>
+        <hr id="help-separator">
+        <cr-menu-item id="gear-menu-drive-buy-more-space"
+                      command="#drive-buy-more-space"></cr-menu-item>
+        <cr-menu-item id="gear-menu-drive-go-to-drive"
+                      command="#drive-go-to-drive"></cr-menu-item>
+        <cr-menu-item id="gear-menu-volume-help"
+                      command="#volume-help"></cr-menu-item>
+        <cr-menu-item id="gear-menu-send-feedback"
+                      command="#send-feedback"></cr-menu-item>
+        <hr id="volume-space-info-separator">
+        <cr-menu-item id="gear-menu-newservice" command="#new-service"
+            sub-menu="#add-new-services-menu"></cr-menu-item>
+        <cr-menu-item id="gear-menu-format" command="#format"></cr-menu-item>
+        <cr-menu-item id="volume-space-info" command="#volume-storage">
+          <div id="volume-space-info-contents">
+            <span id="volume-space-info-label"></span>
+            <div class="progress-bar" aria-hidden="true">
+              <div class="progress-track" id="volume-space-info-bar"></div>
+            </div>
           </div>
-        </div>
-      </cr-menu-item>
-    </cr-menu>
+        </cr-menu-item>
+      </cr-menu>
 
-    <cr-menu id="tasks-menu" class="chrome-menu files-menu"
-             aria-label="$i18n{OPEN_WITH_BUTTON_LABEL}"
-             menu-item-selector="cr-menu-item, hr">
-    </cr-menu>
+      <cr-menu id="tasks-menu" class="chrome-menu files-menu"
+               aria-label="$i18n{OPEN_WITH_BUTTON_LABEL}"
+               menu-item-selector="cr-menu-item, hr">
+      </cr-menu>
 
-    <cr-menu id="share-menu" class="chrome-menu files-menu"
-             aria-label="$i18n{MORE_ACTIONS_BUTTON_LABEL}"
-             menu-item-selector="cr-menu-item, hr">
-      <cr-menu-item command="#share"></cr-menu-item>
-      <cr-menu-item command="#share-with-linux"></cr-menu-item>
-      <cr-menu-item command="#manage-linux-sharing"></cr-menu-item>
-      <cr-menu-item command="#share-with-plugin-vm"></cr-menu-item>
-      <cr-menu-item command="#manage-plugin-vm-sharing"></cr-menu-item>
-      <hr id="drive-share-separator">
-      <hr id="more-actions-separator">
-      <cr-menu-item command="#show-submenu"
-                visibleif="full-page" class="hide-on-toolbar"
-                sub-menu="#share-sub-menu" hidden></cr-menu-item>
-    </cr-menu>
+      <cr-menu id="share-menu" class="chrome-menu files-menu"
+               aria-label="$i18n{MORE_ACTIONS_BUTTON_LABEL}"
+               menu-item-selector="cr-menu-item, hr">
+        <cr-menu-item command="#share"></cr-menu-item>
+        <cr-menu-item command="#share-with-linux"></cr-menu-item>
+        <cr-menu-item command="#manage-linux-sharing"></cr-menu-item>
+        <cr-menu-item command="#share-with-plugin-vm"></cr-menu-item>
+        <cr-menu-item command="#manage-plugin-vm-sharing"></cr-menu-item>
+        <hr id="drive-share-separator">
+        <hr id="more-actions-separator">
+        <cr-menu-item command="#show-submenu"
+                  visibleif="full-page" class="hide-on-toolbar"
+                  sub-menu="#share-sub-menu" hidden></cr-menu-item>
+      </cr-menu>
 
-    <cr-menu id="add-new-services-menu"
-             class="chrome-menu files-menu has-icon-start"
-             menu-item-selector="cr-menu-item, hr">
-    </cr-menu>
+      <cr-menu id="add-new-services-menu"
+               class="chrome-menu files-menu has-icon-start"
+               menu-item-selector="cr-menu-item, hr">
+      </cr-menu>
 
-    <cr-menu id="text-context-menu" class="chrome-menu files-menu" showShortcuts
-             menu-item-selector="cr-menu-item"
-             aria-label="$i18n{CONTEXT_MENU_LABEL}">
-      <cr-menu-item command="#cut"></cr-menu-item>
-      <cr-menu-item command="#copy"></cr-menu-item>
-      <cr-menu-item command="#paste"></cr-menu-item>
-      <cr-menu-item command="#delete">$i18n{DELETE_BUTTON_LABEL}</cr-menu-item>
-    </cr-menu>
+      <cr-menu id="text-context-menu" class="chrome-menu files-menu" showShortcuts
+               menu-item-selector="cr-menu-item"
+               aria-label="$i18n{CONTEXT_MENU_LABEL}">
+        <cr-menu-item command="#cut"></cr-menu-item>
+        <cr-menu-item command="#copy"></cr-menu-item>
+        <cr-menu-item command="#paste"></cr-menu-item>
+        <cr-menu-item command="#delete">$i18n{DELETE_BUTTON_LABEL}</cr-menu-item>
+      </cr-menu>
 
-    <cr-menu id="share-sub-menu" class="chrome-menu files-menu"
-             menu-item-selector="cr-menu-item">
-    </cr-menu>
+      <cr-menu id="share-sub-menu" class="chrome-menu files-menu"
+               menu-item-selector="cr-menu-item">
+      </cr-menu>
+    </menus>
 
     <div class="dialog-header" role="contentinfo">
       <div id="location-breadcrumbs" class="breadcrumbs"></div>

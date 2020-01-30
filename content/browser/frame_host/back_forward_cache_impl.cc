@@ -15,9 +15,8 @@
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/frame_host/render_frame_proxy_host.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
+#include "content/common/content_navigation_policy.h"
 #include "content/common/page_messages.h"
-#include "content/public/common/content_features.h"
-#include "content/public/common/navigation_policy.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_status_code.h"
 #include "third_party/blink/public/common/scheduler/web_scheduler_tracked_feature.h"
@@ -44,6 +43,10 @@ static constexpr int kDefaultTimeToLiveInBackForwardCacheInSeconds = 15;
 
 #if defined(OS_ANDROID)
 bool IsProcessBindingEnabled() {
+  // Avoid activating BackForwardCache trial for checking the parameters
+  // associated with it.
+  if (!IsBackForwardCacheEnabled())
+    return false;
   const std::string process_binding_param =
       base::GetFieldTrialParamValueByFeature(features::kBackForwardCache,
                                              "process_binding_strength");
@@ -154,16 +157,29 @@ uint64_t GetDisallowedFeatures(RenderFrameHostImpl* rfh) {
 }
 
 // The BackForwardCache feature is controlled via an experiment. This function
-// returns the allowed URLs where it is enabled. To enter the BackForwardCache
-// the URL of a document must have a host and a path matching with at least
-// one URL in this map. We represent/format the string associated with
-// parameter as comma separated urls.
-std::map<std::string, std::vector<std::string>> SetAllowedURLs() {
+// returns the allowed URL list where it is enabled.
+std::string GetAllowedURLList() {
+  if (!DeviceHasEnoughMemoryForBackForwardCache())
+    return "";
+  // Avoid activating BackForwardCache trial for checking the parameters
+  // associated with it.
+  if (base::FeatureList::IsEnabled(features::kBackForwardCache)) {
+    return base::GetFieldTrialParamValueByFeature(features::kBackForwardCache,
+                                                  "allowed_websites");
+  }
+
+  return base::GetFieldTrialParamValueByFeature(
+      kRecordBackForwardCacheMetricsWithoutEnabling, "allowed_websites");
+}
+
+// To enter the BackForwardCache the URL of a document must have a host and a
+// path matching with at least one URL in this map. We represent/format the
+// string associated with parameter as comma separated urls.
+std::map<std::string, std::vector<std::string>> GetAllowedURLs() {
   std::map<std::string, std::vector<std::string>> allowed_urls;
   for (auto& it :
-       base::SplitString(base::GetFieldTrialParamValueByFeature(
-                             features::kBackForwardCache, "allowed_websites"),
-                         ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL)) {
+       base::SplitString(GetAllowedURLList(), ",", base::TRIM_WHITESPACE,
+                         base::SPLIT_WANT_ALL)) {
     GURL url = GURL(it);
     allowed_urls[url.host()].emplace_back(url.path());
   }
@@ -217,7 +233,7 @@ BackForwardCacheTestDelegate::~BackForwardCacheTestDelegate() {
 }
 
 BackForwardCacheImpl::BackForwardCacheImpl()
-    : allowed_urls_(SetAllowedURLs()), weak_factory_(this) {}
+    : allowed_urls_(GetAllowedURLs()), weak_factory_(this) {}
 BackForwardCacheImpl::~BackForwardCacheImpl() = default;
 
 base::TimeDelta BackForwardCacheImpl::GetTimeToLiveInBackForwardCache() {

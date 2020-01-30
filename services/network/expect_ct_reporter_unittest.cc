@@ -53,8 +53,9 @@ class TestCertificateReportSender : public net::ReportSender {
                 error_callback) override {
     sent_report_count_++;
     latest_report_uri_ = report_uri;
-    serialized_report.CopyToString(&latest_serialized_report_);
-    content_type.CopyToString(&latest_content_type_);
+    latest_serialized_report_.assign(serialized_report.data(),
+                                     serialized_report.size());
+    latest_content_type_.assign(content_type.data(), content_type.size());
     if (!report_callback_.is_null()) {
       EXPECT_EQ(expected_report_uri_, latest_report_uri_);
       std::move(report_callback_).Run();

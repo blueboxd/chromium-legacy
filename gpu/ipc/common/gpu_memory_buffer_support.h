@@ -45,9 +45,9 @@ class GPU_EXPORT GpuMemoryBufferSupport {
 #endif
 
   // Returns whether the provided buffer format is supported.
-  bool IsConfigurationSupported(gfx::GpuMemoryBufferType type,
-                                gfx::BufferFormat format,
-                                gfx::BufferUsage usage);
+  bool IsConfigurationSupportedForTest(gfx::GpuMemoryBufferType type,
+                                       gfx::BufferFormat format,
+                                       gfx::BufferUsage usage);
 
   // Creates a GpuMemoryBufferImpl from the given |handle|. |size| and |format|
   // should match what was used to allocate the |handle|. |callback|, if

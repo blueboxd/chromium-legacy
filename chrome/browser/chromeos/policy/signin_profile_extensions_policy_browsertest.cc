@@ -6,6 +6,7 @@
 #include <string>
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
@@ -27,9 +28,11 @@
 #include "extensions/browser/extension_util.h"
 #include "extensions/browser/notification_types.h"
 #include "extensions/browser/test_extension_registry_observer.h"
+#include "extensions/browser/update_observer.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_set.h"
 #include "extensions/common/features/feature_channel.h"
+#include "extensions/common/switches.h"
 #include "net/http/http_status_code.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
@@ -50,10 +53,8 @@ namespace {
 // * The manual testing app which is whitelisted for running in the sign-in
 //   profile:
 const char kWhitelistedAppId[] = "bjaiihebfngildkcjkjckolinodhliff";
-const char kWhitelistedAppUpdateManifestPathFormat[] =
-    "/extensions/signin_screen_manual_test_app/crx/%s/update_manifest.xml";
-const char kWhitelistedAppLatestVersion[] = "4.0";
-const char kWhitelistedAppOlderVersion[] = "3.0";
+const char kWhitelistedAppUpdateManifestPath[] =
+    "/extensions/signin_screen_manual_test_app/crx/update_manifest.xml";
 // * A trivial test app which is NOT whitelisted for running in the sign-in
 //   profile:
 const char kNotWhitelistedAppId[] = "mockapnacjbcdncmpkjngjalkhphojek";
@@ -69,11 +70,19 @@ const char kWhitelistedExtensionUpdateManifestPath[] =
 const char kNotWhitelistedExtensionId[] = "mockepjebcnmhmhcahfddgfcdgkdifnc";
 const char kNotWhitelistedExtensionUpdateManifestPath[] =
     "/extensions/trivial_extension/update_manifest.xml";
+// * An extension which is NOT whitelisted for running in the sign-in profile
+//   and that suppresses its immediate auto updates:
+const char kNoImmediateUpdateExtensionId[] = "noidlplbgmdmbccnafgibfgokggdpncj";
+const char kNoImmediateUpdateExtensionUpdateManifestPathFormat[] =
+    "/extensions/no_immediate_update_extension/crx/%s/update_manifest.xml";
+const char kNoImmediateUpdateExtensionLatestVersion[] = "2.0";
+const char kNoImmediateUpdateExtensionOlderVersion[] = "1.0";
 
-// Returns the update manifest path for the whitelisted testing app with the
-// given version.
-std::string GetWhitelistedAppUpdateManifestPath(const std::string& version) {
-  return base::StringPrintf(kWhitelistedAppUpdateManifestPathFormat,
+// Returns the update manifest path for the no_immediate_update_extension with
+// the given version.
+std::string GetNoImmediateUpdateExtensionUpdateManifestPath(
+    const std::string& version) {
+  return base::StringPrintf(kNoImmediateUpdateExtensionUpdateManifestPathFormat,
                             version.c_str());
 }
 
@@ -146,26 +155,30 @@ class ExtensionBackgroundPageReadyObserver final {
 };
 
 // Observer that allows waiting until the specified version of the given
-// extension/app gets installed.
-class ExtensionVersionInstallObserver final
-    : public extensions::ExtensionRegistryObserver {
+// extension/app gets available for an update.
+class ExtensionUpdateAvailabilityObserver final
+    : public extensions::UpdateObserver {
  public:
-  ExtensionVersionInstallObserver(Profile* profile,
-                                  const std::string& extension_id,
-                                  const base::Version& awaited_version)
+  ExtensionUpdateAvailabilityObserver(Profile* profile,
+                                      const std::string& extension_id,
+                                      const base::Version& awaited_version)
       : profile_(profile),
         extension_id_(extension_id),
         awaited_version_(awaited_version) {
-    extensions::ExtensionRegistry::Get(profile)->AddObserver(this);
+    extensions::ExtensionSystem::Get(profile_)
+        ->extension_service()
+        ->AddUpdateObserver(this);
   }
 
-  ExtensionVersionInstallObserver(const ExtensionVersionInstallObserver&) =
-      delete;
-  ExtensionVersionInstallObserver& operator=(
-      const ExtensionVersionInstallObserver&) = delete;
+  ExtensionUpdateAvailabilityObserver(
+      const ExtensionUpdateAvailabilityObserver&) = delete;
+  ExtensionUpdateAvailabilityObserver& operator=(
+      const ExtensionUpdateAvailabilityObserver&) = delete;
 
-  ~ExtensionVersionInstallObserver() override {
-    extensions::ExtensionRegistry::Get(profile_)->RemoveObserver(this);
+  ~ExtensionUpdateAvailabilityObserver() override {
+    extensions::ExtensionSystem::Get(profile_)
+        ->extension_service()
+        ->RemoveUpdateObserver(this);
   }
 
   // Should be called no more than once.
@@ -175,14 +188,14 @@ class ExtensionVersionInstallObserver final
     run_loop_.Run();
   }
 
-  void OnExtensionInstalled(content::BrowserContext* browser_context,
-                            const extensions::Extension* extension,
-                            bool is_update) override {
+  void OnAppUpdateAvailable(const extensions::Extension* extension) override {
     if (extension->id() == extension_id_ &&
         extension->version() == awaited_version_) {
       run_loop_.Quit();
     }
   }
+
+  void OnChromeUpdateAvailable() override {}
 
  private:
   Profile* const profile_;
@@ -224,9 +237,8 @@ IN_PROC_BROWSER_TEST_P(SigninProfileExtensionsPolicyPerChannelTest,
   extensions::TestExtensionRegistryObserver registry_observer(
       extensions::ExtensionRegistry::Get(profile), kWhitelistedAppId);
 
-  AddExtensionForForceInstallation(
-      kWhitelistedAppId,
-      GetWhitelistedAppUpdateManifestPath(kWhitelistedAppLatestVersion));
+  AddExtensionForForceInstallation(kWhitelistedAppId,
+                                   kWhitelistedAppUpdateManifestPath);
 
   registry_observer.WaitForExtensionLoaded();
   const extensions::Extension* extension =
@@ -364,9 +376,8 @@ IN_PROC_BROWSER_TEST_F(SigninProfileExtensionsPolicyTest, MultipleApps) {
   extensions::TestExtensionRegistryObserver registry_observer2(
       extensions::ExtensionRegistry::Get(profile), kNotWhitelistedAppId);
 
-  AddExtensionForForceInstallation(
-      kWhitelistedAppId,
-      GetWhitelistedAppUpdateManifestPath(kWhitelistedAppLatestVersion));
+  AddExtensionForForceInstallation(kWhitelistedAppId,
+                                   kWhitelistedAppUpdateManifestPath);
   AddExtensionForForceInstallation(kNotWhitelistedAppId,
                                    kNotWhitelistedUpdateManifestPath);
 
@@ -384,9 +395,8 @@ IN_PROC_BROWSER_TEST_F(SigninProfileExtensionsPolicyTest,
   ExtensionBackgroundPageReadyObserver page_observer_for_extension(
       kWhitelistedExtensionId);
 
-  AddExtensionForForceInstallation(
-      kWhitelistedAppId,
-      GetWhitelistedAppUpdateManifestPath(kWhitelistedAppLatestVersion));
+  AddExtensionForForceInstallation(kWhitelistedAppId,
+                                   kWhitelistedAppUpdateManifestPath);
   AddExtensionForForceInstallation(kWhitelistedExtensionId,
                                    kWhitelistedExtensionUpdateManifestPath);
 
@@ -422,9 +432,8 @@ class SigninProfileExtensionsPolicyOfflineLaunchTest
             extensions::ExtensionRegistry::Get(GetInitialProfile()),
             kWhitelistedAppId);
 
-    AddExtensionForForceInstallation(
-        kWhitelistedAppId,
-        GetWhitelistedAppUpdateManifestPath(kWhitelistedAppLatestVersion));
+    AddExtensionForForceInstallation(kWhitelistedAppId,
+                                     kWhitelistedAppUpdateManifestPath);
 
     // In the non-PRE test, this simulates inability to make network requests
     // for fetching the extension update manifest and CRX files. In the PRE test
@@ -473,24 +482,33 @@ class SigninProfileExtensionsAutoUpdatePolicyTest
         base::Unretained(this)));
   }
 
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    SigninProfileExtensionsPolicyTest::SetUpCommandLine(command_line);
+    // Allow the test extension to be run on the login screen despite not being
+    // conformant to the "signin_screen" behavior feature.
+    command_line->AppendSwitchASCII(
+        extensions::switches::kWhitelistedExtensionID,
+        kNoImmediateUpdateExtensionId);
+  }
+
   void SetUpOnMainThread() override {
     SigninProfileExtensionsPolicyTest::SetUpOnMainThread();
 
     test_extension_registry_observer_ =
         std::make_unique<extensions::TestExtensionRegistryObserver>(
             extensions::ExtensionRegistry::Get(GetInitialProfile()),
-            kWhitelistedAppId);
-    test_extension_latest_version_install_observer_ =
-        std::make_unique<ExtensionVersionInstallObserver>(
-            GetInitialProfile(), kWhitelistedAppId,
-            base::Version(kWhitelistedAppLatestVersion));
+            kNoImmediateUpdateExtensionId);
+    test_extension_latest_version_update_available_observer_ =
+        std::make_unique<ExtensionUpdateAvailabilityObserver>(
+            GetInitialProfile(), kNoImmediateUpdateExtensionId,
+            base::Version(kNoImmediateUpdateExtensionLatestVersion));
 
-    AddExtensionForForceInstallation(kWhitelistedAppId,
+    AddExtensionForForceInstallation(kNoImmediateUpdateExtensionId,
                                      kRedirectingUpdateManifestPath);
   }
 
   void TearDownOnMainThread() override {
-    test_extension_latest_version_install_observer_.reset();
+    test_extension_latest_version_update_available_observer_.reset();
     test_extension_registry_observer_.reset();
     SigninProfileExtensionsPolicyTest::TearDownOnMainThread();
   }
@@ -505,15 +523,15 @@ class SigninProfileExtensionsAutoUpdatePolicyTest
     test_extension_registry_observer_->WaitForExtensionLoaded();
   }
 
-  void WaitForTestExtensionLatestVersionInstalled() {
-    test_extension_latest_version_install_observer_->Wait();
+  void WaitForTestExtensionLatestVersionUpdateAvailable() {
+    test_extension_latest_version_update_available_observer_->Wait();
   }
 
   base::Version GetTestExtensionVersion() {
     const extensions::Extension* const extension =
         extensions::ExtensionRegistry::Get(GetInitialProfile())
             ->enabled_extensions()
-            .GetByID(kWhitelistedAppId);
+            .GetByID(kNoImmediateUpdateExtensionId);
     if (!extension)
       return base::Version();
     return extension->version();
@@ -541,11 +559,12 @@ class SigninProfileExtensionsAutoUpdatePolicyTest
     // Redirect to the XML file for the corresponding version.
     auto response = std::make_unique<net::test_server::BasicHttpResponse>();
     response->set_code(net::HTTP_TEMPORARY_REDIRECT);
-    response->AddCustomHeader("Location",
-                              embedded_test_server()
-                                  ->GetURL(GetWhitelistedAppUpdateManifestPath(
-                                      served_extension_version_))
-                                  .spec());
+    response->AddCustomHeader(
+        "Location",
+        embedded_test_server()
+            ->GetURL(GetNoImmediateUpdateExtensionUpdateManifestPath(
+                served_extension_version_))
+            .spec());
     return response;
   }
 
@@ -555,37 +574,46 @@ class SigninProfileExtensionsAutoUpdatePolicyTest
 
   std::unique_ptr<extensions::TestExtensionRegistryObserver>
       test_extension_registry_observer_;
-  std::unique_ptr<ExtensionVersionInstallObserver>
-      test_extension_latest_version_install_observer_;
+  std::unique_ptr<ExtensionUpdateAvailabilityObserver>
+      test_extension_latest_version_update_available_observer_;
 };
 
 // This is the first preparation step for the actual test. Here the old version
-// of the whitelisted app is served, and it gets installed into the sign-in
-// profile.
+// of the app is served, and it gets installed into the sign-in profile.
 IN_PROC_BROWSER_TEST_F(SigninProfileExtensionsAutoUpdatePolicyTest,
                        PRE_PRE_Test) {
-  StartServingTestExtension(kWhitelistedAppOlderVersion);
+  StartServingTestExtension(kNoImmediateUpdateExtensionOlderVersion);
   WaitForTestExtensionLoaded();
   EXPECT_EQ(GetTestExtensionVersion(),
-            base::Version(kWhitelistedAppOlderVersion));
+            base::Version(kNoImmediateUpdateExtensionOlderVersion));
 }
 
 // This is the second preparation step for the actual test. Here the new version
-// of the app is served, and it gets fetched and installed.
+// of the app is served, and it gets fetched and cached.
 IN_PROC_BROWSER_TEST_F(SigninProfileExtensionsAutoUpdatePolicyTest, PRE_Test) {
   // Let the extensions system load the previously fetched version before
   // starting to serve the newer version, to avoid hitting flaky DCHECKs in the
   // extensions system internals (see https://crbug.com/810799).
   WaitForTestExtensionLoaded();
   EXPECT_EQ(GetTestExtensionVersion(),
-            base::Version(kWhitelistedAppOlderVersion));
+            base::Version(kNoImmediateUpdateExtensionOlderVersion));
 
   // Start serving the newer version. The extensions system should eventually
   // fetch this version due to the retry mechanism when the fetch request to the
   // update servers was failing. We verify that the new version eventually gets
-  // installed.
-  StartServingTestExtension(kWhitelistedAppLatestVersion);
-  WaitForTestExtensionLatestVersionInstalled();
+  // fetched and becomes available for an update.
+  StartServingTestExtension(kNoImmediateUpdateExtensionLatestVersion);
+  WaitForTestExtensionLatestVersionUpdateAvailable();
+
+  // The running extension should stay at the older version, since it ignores
+  // update notifications and never idles, and also the browser is expected to
+  // not force immediate updates.
+  // Note: There's no reliable way to test that the preliminary autoupdate
+  // doesn't happen, but doing RunUntilIdle() at this point should make the test
+  // at least flaky in case a bug is introduced somewhere.
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(GetTestExtensionVersion(),
+            base::Version(kNoImmediateUpdateExtensionOlderVersion));
 }
 
 // This is the actual test. Here we verify that the new version of the app, as
@@ -594,7 +622,7 @@ IN_PROC_BROWSER_TEST_F(SigninProfileExtensionsAutoUpdatePolicyTest, PRE_Test) {
 IN_PROC_BROWSER_TEST_F(SigninProfileExtensionsAutoUpdatePolicyTest, Test) {
   WaitForTestExtensionLoaded();
   EXPECT_EQ(GetTestExtensionVersion(),
-            base::Version(kWhitelistedAppLatestVersion));
+            base::Version(kNoImmediateUpdateExtensionLatestVersion));
 }
 
 }  // namespace policy

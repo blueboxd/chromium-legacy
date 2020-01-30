@@ -32,7 +32,7 @@
         android:text="@string/explore_offline_card_title"
         android:focusable="true"
         android:focusableInTouchMode="true"
-        android:textAppearance="@style/TextAppearance.BlackTitle1" />
+        android:textAppearance="@style/TextAppearance.TextLarge.Primary" />
 
     <TextView
         android:id="@+id/description"
@@ -44,7 +44,7 @@
         android:text="@string/explore_offline_card_description"
         android:focusable="true"
         android:focusableInTouchMode="true"
-        android:textAppearance="@style/TextAppearance.BlackHint2" />
+        android:textAppearance="@style/TextAppearance.TextMedium.Secondary" />
 
     <org.chromium.components.browser_ui.widget.DualControlLayout
         android:id="@+id/button_bar"

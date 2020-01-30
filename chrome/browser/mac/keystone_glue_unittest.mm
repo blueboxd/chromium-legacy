@@ -184,7 +184,8 @@ class KeystoneGlueTest : public PlatformTest {
   base::test::TaskEnvironment task_environment_;
 };
 
-TEST_F(KeystoneGlueTest, BasicGlobalCreate) {
+// The test is flaky: crbug.com/1041813.
+TEST_F(KeystoneGlueTest, DISABLED_BasicGlobalCreate) {
   // Allow creation of a KeystoneGlue by mocking out a few calls
   SEL ids = @selector(infoDictionary);
   IMP oldInfoImp_ = [[KeystoneGlue class] instanceMethodForSelector:ids];

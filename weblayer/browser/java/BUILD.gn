@@ -55,6 +55,7 @@ android_library("java") {
     "org/chromium/weblayer_private/WebLayerFactoryImpl.java",
     "org/chromium/weblayer_private/WebLayerImpl.java",
     "org/chromium/weblayer_private/WebLayerNetworkChangeNotifierRegistrationPolicy.java",
+    "org/chromium/weblayer_private/metrics/MetricsServiceClient.java",
     "org/chromium/weblayer_private/metrics/UmaUtils.java",
   ]
 
@@ -65,12 +66,14 @@ android_library("java") {
     "//base:base_java",
     "//base:jni_java",
     "//components/autofill/android:provider_java",
+    "//components/browser_ui/styles/android:java",
     "//components/crash/android:handler_java",
     "//components/crash/android:java",
     "//components/download/internal/common:internal_java",
     "//components/embedder_support/android:application_java",
     "//components/embedder_support/android:web_contents_delegate_java",
     "//components/find_in_page/android:java",
+    "//components/metrics:metrics_java",
     "//components/minidump_uploader:minidump_uploader_java",
     "//components/spellcheck/browser/android:java",
     "//components/version_info/android:version_constants_java",
@@ -91,10 +94,20 @@ android_library("java") {
       "//third_party/android_sdk:public_framework_system_java"
 }
 
+android_resources("weblayer_test_resources") {
+  resource_dirs = [ "res_test" ]
+  custom_package = "org.chromium.weblayer_private.test"
+}
+
 android_library("test_java") {
   testonly = true
   sources = [ "org/chromium/weblayer_private/test/TestWebLayerImpl.java" ]
-  deps = [ "//net/android:net_java" ]
+  deps = [
+    ":weblayer_test_resources",
+    "//net/android:net_java",
+    "//services/device/public/java:geolocation_java",
+    "//services/device/public/java:geolocation_java_test_support",
+  ]
   srcjar_deps = [ ":test_aidl" ]
 }
 
@@ -116,6 +129,7 @@ generate_jni("jni") {
     "org/chromium/weblayer_private/TabImpl.java",
     "org/chromium/weblayer_private/TopControlsContainerView.java",
     "org/chromium/weblayer_private/WebLayerImpl.java",
+    "org/chromium/weblayer_private/metrics/MetricsServiceClient.java",
     "org/chromium/weblayer_private/metrics/UmaUtils.java",
   ]
 }
@@ -148,7 +162,10 @@ android_library("gms_bridge_java") {
     "org/chromium/weblayer_private/GmsBridgeImpl.java",
   ]
 
-  deps = [ "//base:base_java" ]
+  deps = [
+    "//base:base_java",
+    "//components/embedder_support/android/metrics:java",
+  ]
 
   # The appropriate .class file will be loaded via a dependency to a library
   # like :gms_bridge_upstream_impl_java below.

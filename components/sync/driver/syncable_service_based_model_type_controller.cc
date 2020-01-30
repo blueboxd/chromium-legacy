@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "components/sync/model_impl/client_tag_based_model_type_processor.h"
+#include "components/sync/model_impl/forwarding_model_type_controller_delegate.h"
 #include "components/sync/model_impl/syncable_service_based_bridge.h"
 
 namespace syncer {
@@ -79,15 +80,33 @@ SyncableServiceBasedModelTypeController::
         ModelType type,
         OnceModelTypeStoreFactory store_factory,
         base::WeakPtr<SyncableService> syncable_service,
-        const base::RepeatingClosure& dump_stack)
-    : ModelTypeController(
-          type,
-          std::make_unique<ControllerDelegate>(type,
-                                               std::move(store_factory),
-                                               syncable_service,
-                                               dump_stack)) {}
+        const base::RepeatingClosure& dump_stack,
+        DelegateMode delegate_mode)
+    : ModelTypeController(type),
+      delegate_(std::make_unique<ControllerDelegate>(type,
+                                                     std::move(store_factory),
+                                                     syncable_service,
+                                                     dump_stack)) {
+  // Delegate for full sync is always created.
+  auto full_sync_delegate =
+      std::make_unique<syncer::ForwardingModelTypeControllerDelegate>(
+          delegate_.get());
+
+  // Delegate for transport is only created if requested and left null
+  // otherwise.
+  std::unique_ptr<syncer::ForwardingModelTypeControllerDelegate>
+      transport_delegate;
+  if (delegate_mode == DelegateMode::kTransportModeWithSingleModel) {
+    transport_delegate =
+        std::make_unique<syncer::ForwardingModelTypeControllerDelegate>(
+            delegate_.get());
+  }
+
+  InitModelTypeController(std::move(full_sync_delegate),
+                          std::move(transport_delegate));
+}
 
 SyncableServiceBasedModelTypeController::
-    ~SyncableServiceBasedModelTypeController() {}
+    ~SyncableServiceBasedModelTypeController() = default;
 
 }  // namespace syncer

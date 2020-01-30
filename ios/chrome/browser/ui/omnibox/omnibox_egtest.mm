@@ -454,6 +454,10 @@ id<GREYMatcher> SearchCopiedTextButton() {
 // it should be displayed. Select & SelectAll buttons should be hidden when the
 // omnibox is empty.
 - (void)testEmptyOmnibox {
+  if (![ChromeEarlGrey isIPadIdiom] &&
+      base::ios::IsRunningOnOrLater(13, 3, 0)) {
+    EARL_GREY_TEST_SKIPPED(@"Test disabled on iOS 13.3 iPhone and later.");
+  }
   // Focus omnibox.
   [self focusFakebox];
   [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]

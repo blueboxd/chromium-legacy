@@ -418,7 +418,6 @@
 <translation id="2799223571221894425">重新啟動</translation>
 <translation id="2803306138276472711">Google 安全瀏覽功能最近在 <ph name="SITE" /> 上<ph name="BEGIN_LINK" />偵測到惡意軟件<ph name="END_LINK" />。即使是平常可以安全使用的網站，有時也會被惡意軟件感染。</translation>
 <translation id="2807052079800581569">圖片 Y 位置</translation>
-<translation id="2809804249696361569">兩張工作表</translation>
 <translation id="2824775600643448204">網址與搜尋列</translation>
 <translation id="2826760142808435982">連線採用 <ph name="CIPHER" /> 加密，並設有 <ph name="KX" /> 金鑰交換機制。</translation>
 <translation id="2835170189407361413">清除表格</translation>
@@ -920,7 +919,6 @@
 <translation id="5112422516732747637">A5</translation>
 <translation id="5115216390227830982">European-Edp</translation>
 <translation id="5115563688576182185">(64 位元)</translation>
-<translation id="5121469660360593280">與管理員分享「Chrome Enterprise 使用者防護」所標記的安全性事件相關資料。這些資料可能包括您瀏覽的網址、檔案名稱或元數據，以及用於登入裝置和 Chrome 的使用者名稱。</translation>
 <translation id="5123063207673082822">週末</translation>
 <translation id="5125394840236832993">B-Plus</translation>
 <translation id="5126510351761255129">驗證信用卡</translation>
@@ -935,7 +933,6 @@
 <translation id="5161506081086828129">堆疊器 9</translation>
 <translation id="516920405563544094">請輸入 <ph name="CREDIT_CARD" /> 的信用卡驗證碼 (CVC)。確認後，您的 Google 帳戶會與這個網站共用您的信用卡資料。</translation>
 <translation id="5169827969064885044">您有可能會失去機構帳戶存取權，或會遭身份盜用。Chrome 建議您立即變更密碼。</translation>
-<translation id="5170017743895942767">Chrome Enterprise 使用者防護</translation>
 <translation id="5171045022955879922">搜尋或輸入網址</translation>
 <translation id="5171689220826475070">Fanfold-European</translation>
 <translation id="5172758083709347301">本機</translation>
@@ -1068,7 +1065,6 @@
 <translation id="5737183892635480227">{NUM_CARDS,plural, =1{將卡儲存至您的 Google 帳戶}other{將卡儲存至您的 Google 帳戶}}</translation>
 <translation id="5745980000221562234">{NUM_CARDS,plural, =1{使用虛擬付款卡號碼}other{請選取付款卡類型}}</translation>
 <translation id="5763042198335101085">請輸入有效的電郵地址</translation>
-<translation id="5763703224595565476">管理員已在瀏覽器上啟用了「Chrome Enterprise 使用者防護」功能。此功能可以存取您的資料。</translation>
 <translation id="5765072501007116331">如要查看送貨方式和要求，請選取一個地址</translation>
 <translation id="5776313857861697733">優先次序</translation>
 <translation id="5778550464785688721">MIDI 裝置完整控制</translation>
@@ -1405,7 +1401,6 @@
 <translation id="733923710415886693">伺服器憑證並未透過憑證透明度政策披露。</translation>
 <translation id="734600844861828519">11x15</translation>
 <translation id="7346048084945669753">是否已建立關聯：</translation>
-<translation id="73479065977517481"><ph name="ENROLLMENT_DOMAIN" /> 已在您的瀏覽器上啟用了「Chrome Enterprise User 使用者防護」功能。此功能可以存取您的資料。</translation>
 <translation id="7349430561505560861">A4-Extra</translation>
 <translation id="7353601530677266744">命令列</translation>
 <translation id="7372973238305370288">搜尋結果</translation>

@@ -334,23 +334,6 @@ PrerenderContents::~PrerenderContents() {
   prerender_manager_->RecordFinalStatus(origin(), final_status());
   prerender_manager_->RecordNetworkBytesConsumed(origin(), network_bytes_);
 
-  if (prerender_mode_ == DEPRECATED_FULL_PRERENDER) {
-    // Broadcast the removal of aliases.
-    for (content::RenderProcessHost::iterator host_iterator =
-             content::RenderProcessHost::AllHostsIterator();
-         !host_iterator.IsAtEnd(); host_iterator.Advance()) {
-      content::RenderProcessHost* host = host_iterator.GetCurrentValue();
-      IPC::ChannelProxy* channel = host->GetChannel();
-      // |channel| might be NULL in tests.
-      if (host->IsInitializedAndNotDead() && channel) {
-        mojo::AssociatedRemote<chrome::mojom::PrerenderDispatcher>
-            prerender_dispatcher;
-        channel->GetRemoteAssociatedInterface(&prerender_dispatcher);
-        prerender_dispatcher->PrerenderRemoveAliases(alias_urls_);
-      }
-    }
-  }
-
   if (!prerender_contents_)
     return;
 
@@ -458,23 +441,6 @@ bool PrerenderContents::AddAliasURL(const GURL& url) {
     return false;
 
   alias_urls_.push_back(url);
-
-  if (prerender_mode_ == DEPRECATED_FULL_PRERENDER) {
-    for (content::RenderProcessHost::iterator host_iterator =
-             content::RenderProcessHost::AllHostsIterator();
-         !host_iterator.IsAtEnd(); host_iterator.Advance()) {
-      content::RenderProcessHost* host = host_iterator.GetCurrentValue();
-      IPC::ChannelProxy* channel = host->GetChannel();
-      // |channel| might be NULL in tests.
-      if (host->IsInitializedAndNotDead() && channel) {
-        mojo::AssociatedRemote<chrome::mojom::PrerenderDispatcher>
-            prerender_dispatcher;
-        channel->GetRemoteAssociatedInterface(&prerender_dispatcher);
-        prerender_dispatcher->PrerenderAddAlias(url);
-      }
-    }
-  }
-
   return true;
 }
 
@@ -719,10 +685,9 @@ void PrerenderContents::CancelPrerenderForUnsupportedScheme(const GURL& url) {
   ReportUnsupportedPrerenderScheme(url);
 }
 
-void PrerenderContents::OnPrerenderCancelerReceiver(
+void PrerenderContents::AddPrerenderCancelerReceiver(
     mojo::PendingReceiver<chrome::mojom::PrerenderCanceler> receiver) {
-  if (!prerender_canceler_receiver_.is_bound())
-    prerender_canceler_receiver_.Bind(std::move(receiver));
+  prerender_canceler_receiver_set_.Add(this, std::move(receiver));
 }
 
 void PrerenderContents::AddNetworkBytes(int64_t bytes) {

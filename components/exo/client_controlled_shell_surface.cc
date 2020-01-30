@@ -23,6 +23,7 @@
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "ash/wm/client_controlled_state.h"
+#include "ash/wm/collision_detection/collision_detection_utils.h"
 #include "ash/wm/drag_details.h"
 #include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/toplevel_window_event_handler.h"
@@ -866,6 +867,11 @@ void ClientControlledShellSurface::SetWidgetBounds(const gfx::Rect& bounds) {
   if (!is_display_move_pending) {
     ash::ClientControlledState::AdjustBoundsForMinimumWindowVisibility(
         target_display.work_area(), &adjusted_bounds);
+    if (GetWindowState()->IsPip()) {
+      adjusted_bounds = ash::CollisionDetectionUtils::GetRestingPosition(
+          target_display, adjusted_bounds,
+          ash::CollisionDetectionUtils::RelativePriority::kPictureInPicture);
+    }
   }
 
   if (adjusted_bounds == widget_->GetWindowBoundsInScreen() &&
@@ -1093,25 +1099,10 @@ void ClientControlledShellSurface::OnPostWidgetCommit() {
   if (expected_orientation_ == orientation_)
     orientation_compositor_lock_.reset();
 
-
-  ui::ZOrderLevel z_order_level = pending_always_on_top_
-                                   ? ui::ZOrderLevel::kFloatingWindow
-                                   : ui::ZOrderLevel::kNormal;
-  ash::WindowState* window_state = GetWindowState();
-  if (window_state->IsPip()) {
-    // CTS requires a PIP window to stay at the initial position that Android
-    // calculates. UpdatePipBounds() is triggered by setting the window always
-    // on top, and depending on the density, it's adjusted by one pixel, which
-    // makes CTS fail.
-    // TODO(takise): Remove this workaround once ARC P is gone. See b/147847272
-    // for more detail.
-    base::AutoReset<bool> resetter(&ignore_bounds_change_request_, true);
-    widget_->GetNativeWindow()->SetProperty(aura::client::kZOrderingKey,
-                                            z_order_level);
-  } else {
-    widget_->GetNativeWindow()->SetProperty(aura::client::kZOrderingKey,
-                                            z_order_level);
-  }
+  widget_->GetNativeWindow()->SetProperty(aura::client::kZOrderingKey,
+                                          pending_always_on_top_
+                                              ? ui::ZOrderLevel::kFloatingWindow
+                                              : ui::ZOrderLevel::kNormal);
 }
 
 void ClientControlledShellSurface::OnSurfaceDestroying(Surface* surface) {

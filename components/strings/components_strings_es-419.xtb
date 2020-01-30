@@ -426,7 +426,6 @@
 <translation id="2799223571221894425">Reiniciar</translation>
 <translation id="2803306138276472711">La Navegación segura de Google <ph name="BEGIN_LINK" />detectó software malicioso<ph name="END_LINK" /> en <ph name="SITE" /> recientemente. A veces, los sitios web que suelen ser seguros contienen software malicioso.</translation>
 <translation id="2807052079800581569">Posición de la imagen en el eje Y</translation>
-<translation id="2809804249696361569">Ambas hojas</translation>
 <translation id="2824775600643448204">Barra de direcciones y de búsqueda</translation>
 <translation id="2826760142808435982">La conexión se encriptó y autenticó con <ph name="CIPHER" />, y utiliza <ph name="KX" /> como el mecanismo de intercambio de claves.</translation>
 <translation id="2835170189407361413">Eliminar formulario</translation>
@@ -936,7 +935,6 @@
 <translation id="5112422516732747637">A5</translation>
 <translation id="5115216390227830982">European-Edp</translation>
 <translation id="5115563688576182185">(64 bits)</translation>
-<translation id="5121469660360593280">Comparte con tu administrador información sobre eventos de seguridad que se hayan marcado en la Protección para usuarios de Chrome Enterprise. Esta información puede incluir URL de las páginas que visitas, nombres de archivos o metadatos, y el nombre de usuario con el que accedes a tu dispositivo y a Chrome.</translation>
 <translation id="5123063207673082822">Fin de semana</translation>
 <translation id="5125394840236832993">B-Plus</translation>
 <translation id="5126510351761255129">Verifica tu tarjeta</translation>
@@ -951,7 +949,6 @@
 <translation id="5161506081086828129">Apilador 9</translation>
 <translation id="516920405563544094">Ingresa el CVC de la tarjeta <ph name="CREDIT_CARD" />. Después de confirmarla, los datos de la tarjeta en tu Cuenta de Google se compartirán con este sitio.</translation>
 <translation id="5169827969064885044">Es posible que hayas perdido el acceso a la cuenta de tu organización o sufrido un robo de identidad. Chrome te recomienda que cambies la contraseña ahora.</translation>
-<translation id="5170017743895942767">Protección para usuarios de Chrome Enterprise</translation>
 <translation id="5171045022955879922">Buscar o escribir URL</translation>
 <translation id="5171689220826475070">Fanfold-European</translation>
 <translation id="5172758083709347301">Equipo</translation>
@@ -1084,7 +1081,6 @@
 <translation id="5737183892635480227">{NUM_CARDS,plural, =1{Guarda la tarjeta en tu Cuenta de Google}other{Guarda las tarjetas en tu Cuenta de Google}}</translation>
 <translation id="5745980000221562234">{NUM_CARDS,plural, =1{Usa un número virtual para esta tarjeta}other{Selecciona una tarjeta}}</translation>
 <translation id="5763042198335101085">Escribe una dirección de correo electrónico válida</translation>
-<translation id="5763703224595565476">El administrador habilitó la Protección para usuarios de Chrome Enterprise en el navegador. La Protección para usuarios de Chrome Enterprise tiene acceso a algunos de tus datos.</translation>
 <translation id="5765072501007116331">Para ver los requisitos y métodos de entrega, selecciona una dirección</translation>
 <translation id="5776313857861697733">Prioridad</translation>
 <translation id="5778550464785688721">Control total de dispositivos MIDI</translation>
@@ -1421,7 +1417,6 @@ Detalles adicionales:
 <translation id="733923710415886693">El certificado del servidor no se divulgó mediante el Certificado de transparencia.</translation>
 <translation id="734600844861828519">11x15</translation>
 <translation id="7346048084945669753">Se afilió:</translation>
-<translation id="73479065977517481"><ph name="ENROLLMENT_DOMAIN" /> habilitó la Protección para usuarios de Chrome Enterprise en el navegador. La Protección para usuarios de Chrome Enterprise tiene acceso a algunos de tus datos.</translation>
 <translation id="7349430561505560861">A4-Extra</translation>
 <translation id="7353601530677266744">Línea de comandos</translation>
 <translation id="7372973238305370288">resultado de búsqueda</translation>

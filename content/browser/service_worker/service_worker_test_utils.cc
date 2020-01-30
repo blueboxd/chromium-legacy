@@ -196,6 +196,31 @@ void WriteMetaDataToDiskCache(
           std::move(writer), std::move(callback), meta_data.size()));
 }
 
+// Writes the script with custom net::HttpResponseInfo down to |storage|
+// asynchronously. When completing tasks, |callback| will be called. You must
+// wait for |callback| instead of base::RunUntilIdle because wiriting to the
+// storage might happen on another thread and base::RunLoop could get idle
+// before writes has not finished yet.
+ServiceWorkerDatabase::ResourceRecord
+WriteToDiskCacheWithCustomResponseInfoAsync(
+    ServiceWorkerStorage* storage,
+    const GURL& script_url,
+    int64_t resource_id,
+    std::unique_ptr<net::HttpResponseInfo> http_info,
+    const std::string& body,
+    const std::string& meta_data,
+    base::OnceClosure callback) {
+  base::RepeatingClosure barrier = base::BarrierClosure(2, std::move(callback));
+  auto body_writer = storage->CreateResponseWriter(resource_id);
+  WriteBodyToDiskCache(std::move(body_writer), std::move(http_info), body,
+                       barrier);
+  auto metadata_writer = storage->CreateResponseMetadataWriter(resource_id);
+  WriteMetaDataToDiskCache(std::move(metadata_writer), meta_data,
+                           std::move(barrier));
+  return ServiceWorkerDatabase::ResourceRecord(resource_id, script_url,
+                                               body.size());
+}
+
 }  // namespace
 
 ServiceWorkerRemoteProviderEndpoint::ServiceWorkerRemoteProviderEndpoint() {}
@@ -356,9 +381,8 @@ CreateServiceWorkerRegistrationAndVersion(ServiceWorkerContextCore* context,
   blink::mojom::ServiceWorkerRegistrationOptions options;
   options.scope = scope;
   auto registration = context->registry()->CreateNewRegistration(options);
-  auto version = base::MakeRefCounted<ServiceWorkerVersion>(
-      registration.get(), script, blink::mojom::ScriptType::kClassic,
-      storage->NewVersionId(), context->AsWeakPtr());
+  auto version = context->registry()->CreateNewVersion(
+      registration.get(), script, blink::mojom::ScriptType::kClassic);
   std::vector<ServiceWorkerDatabase::ResourceRecord> records = {
       ServiceWorkerDatabase::ResourceRecord(storage->NewResourceId(), script,
                                             100)};
@@ -385,23 +409,6 @@ ServiceWorkerDatabase::ResourceRecord WriteToDiskCacheSync(
   return record;
 }
 
-ServiceWorkerDatabase::ResourceRecord
-WriteToDiskCacheWithCustomResponseInfoSync(
-    ServiceWorkerStorage* storage,
-    const GURL& script_url,
-    int64_t resource_id,
-    std::unique_ptr<net::HttpResponseInfo> http_info,
-    const std::string& body,
-    const std::string& meta_data) {
-  base::RunLoop loop;
-  ServiceWorkerDatabase::ResourceRecord record =
-      WriteToDiskCacheWithCustomResponseInfoAsync(
-          storage, script_url, resource_id, std::move(http_info), body,
-          meta_data, loop.QuitClosure());
-  loop.Run();
-  return record;
-}
-
 ServiceWorkerDatabase::ResourceRecord WriteToDiskCacheAsync(
     ServiceWorkerStorage* storage,
     const GURL& script_url,
@@ -421,26 +428,6 @@ ServiceWorkerDatabase::ResourceRecord WriteToDiskCacheAsync(
   return WriteToDiskCacheWithCustomResponseInfoAsync(
       storage, script_url, resource_id, std::move(info), body, meta_data,
       std::move(callback));
-}
-
-ServiceWorkerDatabase::ResourceRecord
-WriteToDiskCacheWithCustomResponseInfoAsync(
-    ServiceWorkerStorage* storage,
-    const GURL& script_url,
-    int64_t resource_id,
-    std::unique_ptr<net::HttpResponseInfo> http_info,
-    const std::string& body,
-    const std::string& meta_data,
-    base::OnceClosure callback) {
-  base::RepeatingClosure barrier = base::BarrierClosure(2, std::move(callback));
-  auto body_writer = storage->CreateResponseWriter(resource_id);
-  WriteBodyToDiskCache(std::move(body_writer), std::move(http_info), body,
-                       barrier);
-  auto metadata_writer = storage->CreateResponseMetadataWriter(resource_id);
-  WriteMetaDataToDiskCache(std::move(metadata_writer), meta_data,
-                           std::move(barrier));
-  return ServiceWorkerDatabase::ResourceRecord(resource_id, script_url,
-                                               body.size());
 }
 
 MockServiceWorkerResponseReader::MockServiceWorkerResponseReader()

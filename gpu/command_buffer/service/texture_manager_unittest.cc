@@ -2765,6 +2765,14 @@ TEST_F(TextureFormatTypeValidationTest, ES3WithTextureNorm16) {
                    CONTEXT_TYPE_OPENGLES3);
 
   ExpectValid(true, GL_RED, GL_UNSIGNED_SHORT, GL_R16_EXT);
+  ExpectValid(true, GL_RG, GL_UNSIGNED_SHORT, GL_RG16_EXT);
+  ExpectValid(true, GL_RGB, GL_UNSIGNED_SHORT, GL_RGB16_EXT);
+  ExpectValid(true, GL_RGBA, GL_UNSIGNED_SHORT, GL_RGBA16_EXT);
+
+  ExpectValid(true, GL_RED, GL_SHORT, GL_R16_SNORM_EXT);
+  ExpectValid(true, GL_RG, GL_SHORT, GL_RG16_SNORM_EXT);
+  ExpectValid(true, GL_RGB, GL_SHORT, GL_RGB16_SNORM_EXT);
+  ExpectValid(true, GL_RGBA, GL_SHORT, GL_RGBA16_SNORM_EXT);
 }
 
 }  // namespace gles2

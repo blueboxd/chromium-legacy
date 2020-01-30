@@ -122,20 +122,6 @@ public final class UrlFormatter {
         return UrlFormatterJni.get().formatUrlForSecurityDisplay(uri, schemeDisplay);
     }
 
-    /**
-     * @deprecated Use {@link #formatUrlForSecurityDisplay(String, int)} instead.
-     * TODO(crbug.com/596488): Remove this once internal usages are migrated.
-     * Builds a String that strips down |uri| to its host, and port.
-     * @param uri The URI to break down.
-     * @return Stripped-down String containing the essential bits of the URL, or the original URL if
-     *         it fails to parse it.
-     */
-    @Deprecated
-    public static String formatUrlForSecurityDisplayOmitScheme(String uri) {
-        return UrlFormatterJni.get().formatUrlForSecurityDisplay(
-                uri, SchemeDisplay.OMIT_HTTP_AND_HTTPS);
-    }
-
     @VisibleForTesting
     @NativeMethods
     public interface Natives {

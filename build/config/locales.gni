@@ -171,9 +171,7 @@ android_only_chrome_locales = [
 ]
 
 if (is_android) {
-  # Add all locales except "zh-HK" since this currently rendered as "zh-TW"
-  # https://crbug.com/780847
-  locales = all_chrome_locales - [ "zh-HK" ]
+  locales = all_chrome_locales
 
   # Android doesn't ship all locales on KitKat in order to save space
   # (but webview does). http://crbug.com/369218

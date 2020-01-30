@@ -447,9 +447,9 @@ bool DataPack::GetStringPiece(uint16_t resource_id,
 
   MaybePrintResourceId(resource_id);
   size_t length = next_entry->file_offset - target->file_offset;
-  data->set(reinterpret_cast<const char*>(data_source_->GetData() +
-                                          target->file_offset),
-            length);
+  *data = base::StringPiece(reinterpret_cast<const char*>(
+                                data_source_->GetData() + target->file_offset),
+                            length);
   return true;
 }
 

@@ -82,7 +82,7 @@
                 android:textAlignment="viewStart"
                 android:ellipsize="end"
                 android:singleLine="true"
-                android:textAppearance="@style/TextAppearance.BlackBodyDefault" />
+                android:textAppearance="@style/TextAppearance.TextMedium.Primary" />
 
             <org.chromium.ui.widget.ChromeImageView
                 android:id="@+id/security_icon"
@@ -104,7 +104,7 @@
                 android:textAlignment="viewStart"
                 android:ellipsize="start"
                 android:singleLine="true"
-                android:textAppearance="@style/TextAppearance.BlackHint2" />
+                android:textAppearance="@style/TextAppearance.TextMedium.Secondary" />
 
         </RelativeLayout>
 

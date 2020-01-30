@@ -17,6 +17,6 @@
         android:textDirection="locale"
         android:paddingBottom="24dp"
         android:drawablePadding="8dp"
-        android:textAppearance="@style/TextAppearance.BlackBody"
+        android:textAppearance="@style/TextAppearance.TextMedium.Secondary"
         app:chromeDrawableTint="@color/default_icon_color_blue" />
 </LinearLayout>

@@ -22,13 +22,15 @@ ExtensionRequestObserver::ExtensionRequestObserver(Profile* profile)
 ExtensionRequestObserver::~ExtensionRequestObserver() {
   extensions::ExtensionManagementFactory::GetForBrowserContext(profile_)
       ->RemoveObserver(this);
-  for (auto& notification : notifications_) {
-    if (notification)
-      notification->CloseNotification();
-  }
+  CloseAllNotifications();
 }
 
 void ExtensionRequestObserver::OnExtensionManagementSettingsChanged() {
+  if (!profile_->GetPrefs()->GetBoolean(prefs::kCloudExtensionRequestEnabled)) {
+    CloseAllNotifications();
+    return;
+  }
+
   ShowNotification(ExtensionRequestNotification::kApproved);
   ShowNotification(ExtensionRequestNotification::kRejected);
   ShowNotification(ExtensionRequestNotification::kForceInstalled);
@@ -79,6 +81,15 @@ void ExtensionRequestObserver::ShowNotification(
   notifications_[type]->Show(base::BindOnce(
       &ExtensionRequestObserver::OnNotificationClosed,
       weak_factory_.GetWeakPtr(), std::move(filtered_extension_ids)));
+}
+
+void ExtensionRequestObserver::CloseAllNotifications() {
+  for (auto& notification : notifications_) {
+    if (notification) {
+      notification->CloseNotification();
+      notification.reset();
+    }
+  }
 }
 
 void ExtensionRequestObserver::OnNotificationClosed(

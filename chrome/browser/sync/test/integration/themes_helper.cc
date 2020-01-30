@@ -10,6 +10,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/sync/test/integration/sync_datatype_helper.h"
 #include "chrome/browser/sync/test/integration/sync_extension_helper.h"
+#include "chrome/browser/themes/theme_helper.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "components/crx_file/id_util.h"
@@ -42,7 +43,7 @@ std::string GetThemeID(Profile* profile) {
 }
 
 bool UsingCustomTheme(Profile* profile) {
-  return GetThemeID(profile) != ThemeService::kDefaultThemeID;
+  return GetThemeID(profile) != ThemeHelper::kDefaultThemeID;
 }
 
 bool UsingDefaultTheme(Profile* profile) {

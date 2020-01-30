@@ -162,7 +162,9 @@ TEST_F(ProfileReportGeneratorTest, PoliciesDisabled) {
 }
 
 TEST_F(ProfileReportGeneratorTest, PendingRequest) {
-  generator_.set_extension_request_enabled(true);
+  profile()->GetTestingPrefService()->SetManagedPref(
+      prefs::kCloudExtensionRequestEnabled,
+      std::make_unique<base::Value>(true));
   std::vector<std::string> ids = {kExtensionId};
   SetExtensionToPendingList(ids);
 
@@ -173,7 +175,9 @@ TEST_F(ProfileReportGeneratorTest, PendingRequest) {
 }
 
 TEST_F(ProfileReportGeneratorTest, NoPendingRequestWhenItsDisabled) {
-  generator_.set_extension_request_enabled(false);
+  profile()->GetTestingPrefService()->SetManagedPref(
+      prefs::kCloudExtensionRequestEnabled,
+      std::make_unique<base::Value>(false));
   std::vector<std::string> ids = {kExtensionId};
   SetExtensionToPendingList(ids);
 

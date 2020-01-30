@@ -12,7 +12,7 @@
         android:id="@android:id/message"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textAppearance="@style/TextAppearance.BlackBodyDefault"
+        android:textAppearance="@style/TextAppearance.TextMedium.Primary"
         tools:text="@string/signout_message"/>
 
     <CheckBox
@@ -24,5 +24,5 @@
         android:layout_marginTop="8dp"
         android:paddingStart="4dp"
         android:text="@string/remove_local_data"
-        android:textAppearance="@style/TextAppearance.BlackBodyDefault"/>
+        android:textAppearance="@style/TextAppearance.TextMedium.Primary"/>
 </LinearLayout>

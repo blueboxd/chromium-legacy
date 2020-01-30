@@ -9,7 +9,8 @@ class QuickViewController {
   /**
    * This should be initialized with |init_| method.
    *
-   * @param {!MetadataModel} metadataModel File system metadata.
+   * @param {!CommandHandlerDeps} fileManager
+   * @param {!MetadataModel} metadataModel
    * @param {!FileSelectionHandler} selectionHandler
    * @param {!ListContainer} listContainer
    * @param {!cr.ui.MultiMenuButton} selectionMenuButton
@@ -23,9 +24,13 @@ class QuickViewController {
    * @param {!HTMLElement} dialogDom
    */
   constructor(
-      metadataModel, selectionHandler, listContainer, selectionMenuButton,
-      quickViewModel, taskController, fileListSelectionModel, quickViewUma,
-      metadataBoxController, dialogType, volumeManager, dialogDom) {
+      fileManager, metadataModel, selectionHandler, listContainer,
+      selectionMenuButton, quickViewModel, taskController,
+      fileListSelectionModel, quickViewUma, metadataBoxController, dialogType,
+      volumeManager, dialogDom) {
+    /** @private {!CommandHandlerDeps} */
+    this.fileManager_ = fileManager;
+
     /** @private {?FilesQuickView} */
     this.quickView_ = null;
 
@@ -60,13 +65,19 @@ class QuickViewController {
     this.volumeManager_ = volumeManager;
 
     /**
+     * Delete confirm dialog.
+     * @type {?FilesConfirmDialog}
+     */
+    this.deleteConfirmDialog_ = null;
+
+    /**
      * Current selection of selectionHandler.
      * @private {!Array<!FileEntry>}
      */
     this.entries_ = [];
 
     /**
-     * The tasks for the entry currently shown in Quick View.
+     * The tasks for the current entry shown in quick view.
      * @private {?FileTasks}
      */
     this.tasks_ = null;
@@ -86,16 +97,19 @@ class QuickViewController {
       // Selection menu command can be triggered with focus outside of file list
       // or button e.g.: from the directory tree.
       if (event.command.id === 'get-info') {
+        event.stopPropagation();
         this.display_(QuickViewUma.WayToOpen.SELECTION_MENU);
       }
     });
     this.listContainer_.element.addEventListener('command', event => {
       if (event.command.id === 'get-info') {
+        event.stopPropagation();
         this.display_(QuickViewUma.WayToOpen.CONTEXT_MENU);
       }
     });
     selectionMenuButton.addEventListener('command', event => {
       if (event.command.id === 'get-info') {
+        event.stopPropagation();
         this.display_(QuickViewUma.WayToOpen.SELECTION_MENU);
       }
     });
@@ -252,6 +266,28 @@ class QuickViewController {
     this.onFileSelectionChanged_(null);
   }
 
+  /**
+   * Delete the currently selected entry in quick view.
+   *
+   * @private
+   */
+  deleteSelectedEntry_() {
+    const entry = this.entries_[this.currentSelection_];
+
+    // Create a delete confirm dialog if needed.
+    if (!this.deleteConfirmDialog_) {
+      const parent = this.quickView_.shadowRoot.getElementById('dialog');
+      this.deleteConfirmDialog_ = new FilesConfirmDialog(parent);
+      this.deleteConfirmDialog_.setOkLabel(str('DELETE_BUTTON_LABEL'));
+    }
+
+    // Delete the entry.
+    const deleteMenuItem = CommandHandler.getCommand('delete');
+    if (deleteMenuItem.canDeleteEntries_([entry], this.fileManager_)) {
+      deleteMenuItem.deleteEntries_(
+          [entry], this.fileManager_, this.deleteConfirmDialog_);
+    }
+  }
 
   /**
    * Display quick view.
@@ -280,6 +316,19 @@ class QuickViewController {
   onFileSelectionChanged_(event) {
     if (event) {
       this.entries_ = event.target.selection.entries;
+
+      if (!this.entries_ || !this.entries_.length) {
+        if (this.quickView_ && this.quickView_.isOpened()) {
+          this.quickView_.close();
+        }
+        return;
+      }
+
+      if (this.currentSelection_ >= this.entries_.length) {
+        this.currentSelection_ = 0;
+      } else if (this.currentSelection_ < 0) {
+        this.currentSelection_ = this.entries_.length - 1;
+      }
     }
 
     if (this.quickView_ && this.quickView_.isOpened()) {

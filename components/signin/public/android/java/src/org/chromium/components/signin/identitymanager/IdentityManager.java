@@ -116,7 +116,7 @@ public class IdentityManager {
      * Returns whether the user's primary account is available.
      */
     public boolean hasPrimaryAccount() {
-        return IdentityManagerJni.get().hasPrimaryAccount(mNativeIdentityManager);
+        return getPrimaryAccountInfo() != null;
     }
 
     /**
@@ -141,7 +141,8 @@ public class IdentityManager {
      * is available.
      */
     public @Nullable CoreAccountId getPrimaryAccountId() {
-        return IdentityManagerJni.get().getPrimaryAccountId(mNativeIdentityManager);
+        CoreAccountInfo primaryAccountInfo = getPrimaryAccountInfo();
+        return primaryAccountInfo == null ? null : primaryAccountInfo.getId();
     }
 
     /**
@@ -225,8 +226,6 @@ public class IdentityManager {
     @NativeMethods
     interface Natives {
         public @Nullable CoreAccountInfo getPrimaryAccountInfo(long nativeIdentityManager);
-        public @Nullable CoreAccountId getPrimaryAccountId(long nativeIdentityManager);
-        public boolean hasPrimaryAccount(long nativeIdentityManager);
         public @Nullable CoreAccountInfo
         findExtendedAccountInfoForAccountWithRefreshTokenByEmailAddress(
                 long nativeIdentityManager, String email);

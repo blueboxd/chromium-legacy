@@ -60,6 +60,9 @@ ISearch = class {
       throw 'Incremental search started from invalid range.';
     }
 
+    /** @private {ISearchHandler} */
+    this.handler_;
+
     var leaf = AutomationUtil.findNodePre(
                    cursor.node, Dir.FORWARD, AutomationPredicate.leaf) ||
         cursor.node;

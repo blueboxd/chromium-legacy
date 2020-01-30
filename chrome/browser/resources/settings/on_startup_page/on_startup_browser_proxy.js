@@ -24,6 +24,7 @@ cr.define('settings', function() {
 
   cr.addSingletonGetter(OnStartupBrowserProxyImpl);
 
+  // #cr_define_end
   return {
     OnStartupBrowserProxy: OnStartupBrowserProxy,
     OnStartupBrowserProxyImpl: OnStartupBrowserProxyImpl,

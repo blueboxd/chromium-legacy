@@ -1280,7 +1280,6 @@ void XWindow::ProcessEvent(XEvent* xev) {
       has_pointer_grab_ = false;
       has_pointer_focus_ = false;
       has_window_focus_ = false;
-      OnXWindowUnmapped();
       break;
     }
     case ClientMessage: {
@@ -1383,7 +1382,6 @@ void XWindow::UpdateWMUserTime(XEvent* xev) {
 
 void XWindow::OnWindowMapped() {
   window_mapped_in_server_ = true;
-  OnXWindowMapped();
   // Some WMs only respect maximize hints after the window has been mapped.
   // Check whether we need to re-do a maximization.
   if (should_maximize_after_map_) {

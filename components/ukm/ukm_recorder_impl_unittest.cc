@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/metrics/ukm_source_id.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/test/task_environment.h"
 #include "components/ukm/test_ukm_recorder.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_entry_builder.h"
@@ -104,6 +105,24 @@ TEST(UkmRecorderImplTest, PurgeExtensionRecordings) {
   recorder.UpdateSourceURL(id4, GURL("chrome-extension://abc/index.html"));
   EXPECT_FALSE(recorder.extensions_enabled_);
   EXPECT_EQ(2U, recorder.sources().size());
+}
+
+TEST(UkmRecorderImplTest, WebApkSourceUrl) {
+  base::test::TaskEnvironment env;
+  ukm::TestAutoSetUkmRecorder test_ukm_recorder;
+
+  GURL url("https://example_url.com/manifest.json");
+  SourceId id = UkmRecorderImpl::GetSourceIdForWebApkManifestUrl(url);
+
+  ASSERT_NE(kInvalidSourceId, id);
+
+  const auto& sources = test_ukm_recorder.GetSources();
+  ASSERT_EQ(1ul, sources.size());
+  auto it = sources.find(id);
+  ASSERT_NE(sources.end(), it);
+  EXPECT_EQ(url, it->second->url());
+  EXPECT_EQ(1u, it->second->urls().size());
+  EXPECT_EQ(SourceIdType::WEBAPK_ID, GetSourceIdType(id));
 }
 
 }  // namespace ukm

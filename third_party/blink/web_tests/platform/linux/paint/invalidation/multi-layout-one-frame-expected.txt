@@ -8,27 +8,27 @@
       "paintInvalidations": [
         {
           "object": "InlineTextBox 'PASSED'",
-          "rect": [195, 11, 53, 16],
+          "rect": [201, 11, 53, 16],
           "reason": "appeared"
         },
         {
           "object": "InlineTextBox 'PASSED'",
-          "rect": [10, 11, 53, 16],
+          "rect": [12, 11, 53, 16],
           "reason": "appeared"
         },
         {
           "object": "InlineTextBox 'FAILED'",
-          "rect": [195, 11, 45, 16],
+          "rect": [201, 11, 45, 16],
           "reason": "disappeared"
         },
         {
           "object": "InlineTextBox 'FAILED'",
-          "rect": [10, 11, 45, 16],
+          "rect": [12, 11, 45, 16],
           "reason": "disappeared"
         },
         {
           "object": "NGPhysicalTextFragment ' '",
-          "rect": [189, 9, 4, 19],
+          "rect": [193, 9, 4, 19],
           "reason": "geometry"
         }
       ]

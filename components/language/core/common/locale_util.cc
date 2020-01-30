@@ -72,7 +72,7 @@ void SplitIntoMainAndTail(const std::string& locale,
   if (chunks.empty())
     return;
 
-  chunks[0].CopyToString(main_part);
+  main_part->assign(chunks[0].data(), chunks[0].size());
   *tail_part = locale.substr(main_part->size());
 }
 

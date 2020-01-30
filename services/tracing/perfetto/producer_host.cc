@@ -86,10 +86,11 @@ void ProducerHost::OnDisconnect() {
 
 void ProducerHost::OnTracingSetup() {
   if (is_in_process_) {
+    DCHECK(producer_endpoint_->MaybeSharedMemoryArbiter());
     PerfettoTracedProcess::Get()
         ->producer_client()
         ->set_in_process_shmem_arbiter(
-            producer_endpoint_->GetInProcessShmemArbiter());
+            producer_endpoint_->MaybeSharedMemoryArbiter());
     return;
   }
 

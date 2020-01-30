@@ -44,21 +44,12 @@
 
 namespace {
 
-chrome::mojom::PrerenderCanceler* GetPrerenderCanceller(int render_frame_id) {
-  content::RenderFrame* render_frame =
-      content::RenderFrame::FromRoutingID(render_frame_id);
-  if (!render_frame)
-    return nullptr;
-  prerender::PrerenderHelper* helper =
-      prerender::PrerenderHelper::Get(render_frame);
-  if (!helper)
-    return nullptr;
-
-  auto* canceler = new mojo::Remote<chrome::mojom::PrerenderCanceler>;
+mojo::PendingRemote<chrome::mojom::PrerenderCanceler> GetPrerenderCanceler(
+    content::RenderFrame* render_frame) {
+  mojo::PendingRemote<chrome::mojom::PrerenderCanceler> canceler;
   render_frame->GetBrowserInterfaceBroker()->GetInterface(
-      canceler->BindNewPipeAndPassReceiver());
-  base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, canceler);
-  return canceler->get();
+      canceler.InitWithNewPipeAndPassReceiver());
+  return canceler;
 }
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -200,8 +191,7 @@ URLLoaderThrottleProviderImpl::CreateThrottles(
       auto throttle = std::make_unique<prerender::PrerenderURLLoaderThrottle>(
           prerender_helper->prerender_mode(),
           prerender_helper->histogram_prefix(),
-          base::BindOnce(GetPrerenderCanceller, render_frame_id),
-          base::ThreadTaskRunnerHandle::Get());
+          GetPrerenderCanceler(render_frame));
       prerender_helper->AddThrottle(throttle->AsWeakPtr());
       if (prerender_helper->prerender_mode() == prerender::PREFETCH_ONLY) {
         auto* prerender_dispatcher =

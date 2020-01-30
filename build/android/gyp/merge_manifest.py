@@ -31,10 +31,8 @@ _MANIFEST_MERGER_JARS = [
 @contextlib.contextmanager
 def _ProcessManifest(manifest_path, min_sdk_version, target_sdk_version,
                      max_sdk_version, manifest_package):
-  """Patches an Android manifest to always include the 'tools' namespace
-  declaration, as it is not propagated by the manifest merger from the SDK.
-
-  See https://issuetracker.google.com/issues/63411481
+  """Patches an Android manifest's package and performs assertions to ensure
+  correctness for the manifest.
   """
   doc, manifest, _ = manifest_utils.ParseManifest(manifest_path)
   manifest_utils.AssertUsesSdk(manifest, min_sdk_version, target_sdk_version,
@@ -50,11 +48,11 @@ def _ProcessManifest(manifest_path, min_sdk_version, target_sdk_version,
     yield patched_manifest.name, manifest_utils.GetPackage(manifest)
 
 
-def _BuildManifestMergerClasspath(build_vars):
+def _BuildManifestMergerClasspath(android_sdk_root,
+                                  android_sdk_tools_version_suffix):
   return ':'.join([
-      os.path.join(
-          build_vars['android_sdk_root'], _SDK_TOOLS_LIB_DIR,
-          jar.format(suffix=build_vars['android_sdk_tools_version_suffix']))
+      os.path.join(android_sdk_root, _SDK_TOOLS_LIB_DIR,
+                   jar.format(suffix=android_sdk_tools_version_suffix))
       for jar in _MANIFEST_MERGER_JARS
   ])
 
@@ -63,9 +61,14 @@ def main(argv):
   argv = build_utils.ExpandFileArgs(argv)
   parser = argparse.ArgumentParser(description=__doc__)
   build_utils.AddDepfileOption(parser)
-  parser.add_argument('--build-vars',
-                      help='Path to GN build vars file',
-                      required=True)
+  parser.add_argument(
+      '--android-sdk-root',
+      help='Path to root of SDK providing the manifest merger tool.',
+      required=True)
+  parser.add_argument(
+      '--android-sdk-tools-version-suffix',
+      help='Version suffix for SDK providing the manifest merger tool.',
+      required=True)
   parser.add_argument('--root-manifest',
                       help='Root manifest which to merge into',
                       required=True)
@@ -88,7 +91,7 @@ def main(argv):
   args = parser.parse_args(argv)
 
   classpath = _BuildManifestMergerClasspath(
-      build_utils.ReadBuildVars(args.build_vars))
+      args.android_sdk_root, args.android_sdk_tools_version_suffix)
 
   with build_utils.AtomicOutput(args.output) as output:
     cmd = [

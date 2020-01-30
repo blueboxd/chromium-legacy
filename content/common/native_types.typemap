@@ -98,5 +98,4 @@ type_mappings = [
   "content.mojom.VisualProperties=::content::VisualProperties",
   "content.mojom.WebCursor=::content::WebCursor",
   "content.mojom.WebPopupType=::blink::WebPopupType",
-  "content.mojom.WebPreferences=::content::WebPreferences",
 ]

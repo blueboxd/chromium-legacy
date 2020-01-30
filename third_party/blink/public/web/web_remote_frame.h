@@ -30,7 +30,6 @@ class WebLocalFrameClient;
 class WebRemoteFrameClient;
 class WebString;
 class WebView;
-struct WebIntrinsicSizingInfo;
 struct WebRect;
 
 class WebRemoteFrame : public WebFrame {
@@ -141,8 +140,6 @@ class WebRemoteFrame : public WebFrame {
       blink::WebRemoteFrame* source_frame) = 0;
 
   virtual void SetHadStickyUserActivationBeforeNavigation(bool value) = 0;
-
-  virtual void IntrinsicSizingInfoChanged(const WebIntrinsicSizingInfo&) = 0;
 
   virtual WebRect GetCompositingRect() = 0;
 

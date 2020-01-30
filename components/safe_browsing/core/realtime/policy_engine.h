@@ -38,6 +38,11 @@ class RealTimePolicyEngine {
   // |browser_context|.
   static bool CanPerformFullURLLookup(content::BrowserContext* browser_context);
 
+  // Return true if the OAuth token should be associated with the URL lookup
+  // pings.
+  static bool CanPerformFullURLLookupWithToken(
+      content::BrowserContext* browser_context);
+
   friend class SafeBrowsingService;
   friend class SafeBrowsingUIHandler;
 

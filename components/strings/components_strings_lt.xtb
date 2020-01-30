@@ -428,7 +428,6 @@
 <translation id="2799223571221894425">Paleisti iš naujo</translation>
 <translation id="2803306138276472711">„Google“ saugaus naršymo sistema neseniai <ph name="BEGIN_LINK" />aptiko kenkėjiškų programų<ph name="END_LINK" /> svetainėje <ph name="SITE" />. Kartais svetainės, kurios paprastai yra saugios, užkrečiamos kenkėjiškomis programomis.</translation>
 <translation id="2807052079800581569">Vaizdo Y padėtis</translation>
-<translation id="2809804249696361569">Abu lapai</translation>
 <translation id="2824775600643448204">Adreso ir paieškos juosta</translation>
 <translation id="2826760142808435982">Ryšys užšifruotas ir tapatybė nustatyta naudojant <ph name="CIPHER" />. <ph name="KX" /> naudojamas kaip pagrindinis mainų mechanizmas.</translation>
 <translation id="2835170189407361413">Valyti formą</translation>
@@ -938,7 +937,6 @@
 <translation id="5112422516732747637">A5</translation>
 <translation id="5115216390227830982">European-Edp</translation>
 <translation id="5115563688576182185">(64 bitų)</translation>
-<translation id="5121469660360593280">Bendrinkite su administratoriumi duomenis apie saugos įvykius, pažymėtus pagal „Chrome“ įmonei skirtos versijos naudotojų apsaugą. Tai gali būti lankomų puslapių URL, failų pavadinimai ar metaduomenys ir naudotojo vardas, kurį naudodami prisijungiate prie įrenginio ir „Chrome“.</translation>
 <translation id="5123063207673082822">Savaitgalis</translation>
 <translation id="5125394840236832993">B-Plus</translation>
 <translation id="5126510351761255129">Kortelės patvirtinimas</translation>
@@ -953,7 +951,6 @@
 <translation id="5161506081086828129">9 dėtuvė</translation>
 <translation id="516920405563544094">Įveskite „<ph name="CREDIT_CARD" />“ kortelės saugos kodą (CVC). Kai patvirtinsite, „Google“ paskyroje nurodyta išsami kortelės informacija bus bendrinama su šia svetaine.</translation>
 <translation id="5169827969064885044">Galite prarasti prieigą prie organizacijos paskyros arba gali būti pavogta tapatybė. „Chrome“ rekomenduoja pakeisti slaptažodį dabar.</translation>
-<translation id="5170017743895942767">„Chrome“ įmonei skirtos versijos naudotojų apsauga</translation>
 <translation id="5171045022955879922">Ieškokite ar įveskite URL</translation>
 <translation id="5171689220826475070">Fanfold-European</translation>
 <translation id="5172758083709347301">Įrenginys</translation>
@@ -1086,7 +1083,6 @@
 <translation id="5737183892635480227">{NUM_CARDS,plural, =1{Išsaugokite kortelę „Google“ paskyroje}one{Išsaugokite korteles „Google“ paskyroje}few{Išsaugokite korteles „Google“ paskyroje}many{Išsaugokite korteles „Google“ paskyroje}other{Išsaugokite korteles „Google“ paskyroje}}</translation>
 <translation id="5745980000221562234">{NUM_CARDS,plural, =1{Šiai kortelei naudokite virtualų numerį}one{Pasirinkite kortelę}few{Pasirinkite kortelę}many{Pasirinkite kortelę}other{Pasirinkite kortelę}}</translation>
 <translation id="5763042198335101085">Įveskite galiojantį el. pašto adresą</translation>
-<translation id="5763703224595565476">Administratorius įgalino „Chrome“ įmonei skirtos versijos naudotojų apsaugą jūsų naršyklėje. „Chrome“ įmonei skirtos versijos naudotojų apsauga gali pasiekti kai kuriuos jūsų duomenis.</translation>
 <translation id="5765072501007116331">Jei norite peržiūrėti pristatymo metodus ir reikalavimus, pasirinkite adresą.</translation>
 <translation id="5776313857861697733">Prioritetas</translation>
 <translation id="5778550464785688721">MIDI įrenginių visateisis valdymas</translation>
@@ -1423,7 +1419,6 @@ Papildoma išsami informacija:
 <translation id="733923710415886693">Serverio sertifikatas nebuvo atskleistas taikant sertifikato skaidrumą.</translation>
 <translation id="734600844861828519">11 x 15</translation>
 <translation id="7346048084945669753">Susietas:</translation>
-<translation id="73479065977517481"><ph name="ENROLLMENT_DOMAIN" /> įgalino „Chrome“ įmonei skirtos versijos naudotojų apsaugą jūsų naršyklėje. „Chrome“ įmonei skirtos versijos naudotojų apsauga gali pasiekti kai kuriuos jūsų duomenis.</translation>
 <translation id="7349430561505560861">A4-Extra</translation>
 <translation id="7353601530677266744">Komandos eilutė</translation>
 <translation id="7372973238305370288">paieškos rezultatas</translation>

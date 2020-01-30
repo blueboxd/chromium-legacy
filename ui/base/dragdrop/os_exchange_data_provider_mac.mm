@@ -17,7 +17,7 @@
 #import "ui/base/clipboard/clipboard_util_mac.h"
 #include "ui/base/clipboard/custom_data_helper.h"
 #import "ui/base/dragdrop/cocoa_dnd_util.h"
-#include "ui/base/dragdrop/file_info.h"
+#include "ui/base/dragdrop/file_info/file_info.h"
 #include "url/gurl.h"
 
 @interface CrPasteboardItemWrapper : NSObject <NSPasteboardWriting>

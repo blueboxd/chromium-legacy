@@ -26,7 +26,7 @@ class AccessibilityLabelsBubbleModel : public ConfirmBubbleModel {
   // ConfirmBubbleModel implementation.
   base::string16 GetTitle() const override;
   base::string16 GetMessageText() const override;
-  base::string16 GetButtonLabel(BubbleButton button) const override;
+  base::string16 GetButtonLabel(ui::DialogButton button) const override;
   void Accept() override;
   void Cancel() override;
   base::string16 GetLinkText() const override;

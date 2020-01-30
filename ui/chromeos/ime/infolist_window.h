@@ -45,7 +45,6 @@ class UI_CHROMEOS_EXPORT InfolistWindow
  private:
   // views::BubbleDialogDelegateView:
   const char* GetClassName() const override;
-  int GetDialogButtons() const override;
 
   // views::WidgetDelegate implementation.
   void WindowClosing() override;

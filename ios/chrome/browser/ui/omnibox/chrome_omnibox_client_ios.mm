@@ -165,10 +165,6 @@ void ChromeOmniboxClientIOS::OnResultChanged(
   }
 }
 
-void ChromeOmniboxClientIOS::OnBookmarkLaunched() {
-  RecordBookmarkLaunch(BOOKMARK_LAUNCH_LOCATION_OMNIBOX);
-}
-
 void ChromeOmniboxClientIOS::DiscardNonCommittedNavigations() {
   controller_->GetWebState()
       ->GetNavigationManager()

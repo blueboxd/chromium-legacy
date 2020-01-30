@@ -803,8 +803,6 @@ bool BlinkTestController::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(BlinkTestController, message)
     IPC_MESSAGE_HANDLER(BlinkTestHostMsg_PrintMessage, OnPrintMessage)
-    IPC_MESSAGE_HANDLER(BlinkTestHostMsg_OverridePreferences,
-                        OnOverridePreferences)
     IPC_MESSAGE_HANDLER(BlinkTestHostMsg_ResetDone, OnResetDone)
     IPC_MESSAGE_HANDLER(WebTestHostMsg_BlockThirdPartyCookies,
                         OnBlockThirdPartyCookies)

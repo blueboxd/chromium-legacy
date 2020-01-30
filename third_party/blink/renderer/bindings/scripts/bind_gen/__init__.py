@@ -21,8 +21,6 @@ def _setup_sys_path():
         # //third_party/blink/renderer/build/scripts/blinkbuild
         os.path.join(root_dir, 'third_party', 'blink', 'renderer', 'build',
                      'scripts'),
-        # //third_party/depot_tools
-        os.path.join(root_dir, 'third_party', 'depot_tools'),
         # //third_party/mako/mako
         os.path.join(root_dir, 'third_party', 'mako'),
     ] + sys.path
@@ -47,7 +45,7 @@ def init(root_src_dir, root_gen_dir, component_reldirs):
             "//out/Default/gen" in GN.
         component_reldirs: Pairs of component and output directory.
     """
-    style_format.init()
+    style_format.init(root_src_dir)
 
     PathManager.init(
         root_src_dir=root_src_dir,

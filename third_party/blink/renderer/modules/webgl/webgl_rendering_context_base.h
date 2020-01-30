@@ -1002,6 +1002,7 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
   bool is_web_gl_depth_texture_formats_types_added_ = false;
   bool is_ext_srgb_formats_types_added_ = false;
   bool is_ext_color_buffer_float_formats_added_ = false;
+  bool is_ext_texture_norm16_added_ = false;
 
   GLenumHashSet supported_internal_formats_;
   GLenumHashSet supported_tex_image_source_internal_formats_;
@@ -1226,6 +1227,7 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
                                          GLenum target);
 
   void AddExtensionSupportedFormatsTypes();
+  void AddExtensionSupportedFormatsTypesWebGL2();
 
   // Helper function to check input internalformat/format/type for functions
   // Tex{Sub}Image taking TexImageSource source data.  Generates GL error and

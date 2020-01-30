@@ -59,6 +59,7 @@ class ContextualSearchFakeServer
     private String mSearchTermRequested;
     private boolean mShouldUseHttps;
     private boolean mIsOnline = true;
+    private boolean mIsExactResolve;
 
     private boolean mDidEverCallWebContentsOnShow;
 
@@ -585,6 +586,7 @@ class ContextualSearchFakeServer
         mIsOnline = true;
         mLoadedUrlCount = 0;
         mUseInvalidLowPriorityPath = false;
+        mIsExactResolve = false;
     }
 
     /**
@@ -601,6 +603,11 @@ class ContextualSearchFakeServer
     @VisibleForTesting
     boolean didAttemptLoadInvalidUrl() {
         return mUseInvalidLowPriorityPath && mLoadedUrl.contains("invalid");
+    }
+
+    @VisibleForTesting
+    boolean getIsExactResolve() {
+        return mIsExactResolve;
     }
 
     //============================================================================================
@@ -620,9 +627,10 @@ class ContextualSearchFakeServer
     //============================================================================================
 
     @Override
-    public void startSearchTermResolutionRequest(String selection, boolean isRestrictedResolve) {
+    public void startSearchTermResolutionRequest(String selection, boolean isExactResolve) {
         mLoadedUrl = null;
         mSearchTermRequested = selection;
+        mIsExactResolve = isExactResolve;
 
         if (mActiveFakeTapSearch != null) {
             mActiveFakeTapSearch.notifySearchTermResolutionStarted();

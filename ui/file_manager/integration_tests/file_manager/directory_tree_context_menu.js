@@ -105,12 +105,12 @@
       await clickDirectoryTreeContextMenuItem(
           appId, '/Downloads/photos', 'rename');
     }
-    await remoteCall.waitForElement(appId, '.tree-row > input');
+    await remoteCall.waitForElement(appId, '.tree-row input');
     await remoteCall.callRemoteTestUtil(
-        'inputText', appId, ['.tree-row > input', newName]);
+        'inputText', appId, ['.tree-row input', newName]);
     await remoteCall.callRemoteTestUtil(
         'fakeKeyDown', appId,
-        ['.tree-row > input', 'Enter', false, false, false]);
+        ['.tree-row input', 'Enter', false, false, false]);
   }
 
   /**
@@ -167,12 +167,12 @@
       await clickDirectoryTreeContextMenuItem(
           appId, '/Downloads/photos', 'new-folder');
     }
-    await remoteCall.waitForElement(appId, '.tree-row > input');
+    await remoteCall.waitForElement(appId, '.tree-row input');
     await remoteCall.callRemoteTestUtil(
-        'inputText', appId, ['.tree-row > input', 'test']);
+        'inputText', appId, ['.tree-row input', 'test']);
     await remoteCall.callRemoteTestUtil(
         'fakeKeyDown', appId,
-        ['.tree-row > input', 'Enter', false, false, false]);
+        ['.tree-row input', 'Enter', false, false, false]);
 
     // Confirm that new directory is added to the directory tree.
     await remoteCall.waitForElement(
@@ -466,10 +466,10 @@
     // Rename parent folder.
     await clickDirectoryTreeContextMenuItem(
         appId, '/Downloads/photos', 'rename');
-    await remoteCall.waitForElement(appId, '.tree-row > input');
+    await remoteCall.waitForElement(appId, '.tree-row input');
     await remoteCall.callRemoteTestUtil(
-        'inputText', appId, ['.tree-row > input', 'photos-new']);
-    const enterKey = ['.tree-row > input', 'Enter', false, false, false];
+        'inputText', appId, ['.tree-row input', 'photos-new']);
+    const enterKey = ['.tree-row input', 'Enter', false, false, false];
     chrome.test.assertTrue(
         await remoteCall.callRemoteTestUtil('fakeKeyDown', appId, enterKey),
         'Enter key failed');
@@ -523,7 +523,7 @@
     await renamePhotosDirectoryTo(appId, '', false);
 
     // Wait for the input to be removed.
-    await remoteCall.waitForElementLost(appId, '.tree-row > input');
+    await remoteCall.waitForElementLost(appId, '.tree-row input');
 
     // No dialog should be shown.
     await remoteCall.waitForElementLost(appId, '.cr-dialog-container.shown');

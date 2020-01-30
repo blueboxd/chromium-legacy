@@ -51,7 +51,8 @@ public class AssistantTermsSection {
         mTermsList.setAllowMultipleChoices(showAsSingleCheckbox);
 
         mTermsAgree = new TextView(context);
-        ApiCompatibilityUtils.setTextAppearance(mTermsAgree, R.style.TextAppearance_BlackCaption);
+        ApiCompatibilityUtils.setTextAppearance(
+                mTermsAgree, R.style.TextAppearance_TextSmall_Secondary);
         mTermsAgree.setGravity(Gravity.CENTER_VERTICAL);
         mTermsList.addItem(mTermsAgree, /* hasEditButton= */ false, selected -> {
             if (selected) {
@@ -68,7 +69,7 @@ public class AssistantTermsSection {
         } else {
             mTermsRequireReview = new TextView(context);
             ApiCompatibilityUtils.setTextAppearance(
-                    mTermsRequireReview, R.style.TextAppearance_BlackCaption);
+                    mTermsRequireReview, R.style.TextAppearance_TextSmall_Secondary);
             mTermsRequireReview.setGravity(Gravity.CENTER_VERTICAL);
             mTermsRequireReview.setTag(
                     AssistantTagsForTesting.COLLECT_USER_DATA_TERMS_REQUIRE_REVIEW);

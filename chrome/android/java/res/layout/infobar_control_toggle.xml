@@ -26,7 +26,7 @@
         android:layout_weight="1"
         android:layout_marginEnd="@dimen/dual_control_margin_between_items"
         android:gravity="center_vertical"
-        android:textAppearance="@style/TextAppearance.BlackTitle1" />
+        android:textAppearance="@style/TextAppearance.TextLarge.Primary" />
 
     <android.support.v7.widget.SwitchCompat
         android:id="@+id/control_toggle_switch"

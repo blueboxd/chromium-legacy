@@ -9,6 +9,7 @@
 #include "services/network/public/mojom/content_security_policy.mojom.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/mojom/frame/frame.mojom.h"
+#include "third_party/blink/public/mojom/frame/intrinsic_sizing_info.mojom.h"
 #include "third_party/blink/public/mojom/frame/user_activation_update_types.mojom.h"
 #include "third_party/blink/public/mojom/scroll/scroll_into_view_params.mojom.h"
 #include "ui/events/types/scroll_types.h"
@@ -62,11 +63,15 @@ class FakeRemoteFrame : public blink::mojom::RemoteFrame {
   void RenderFallbackContent() override;
   void AddResourceTimingFromChild(
       blink::mojom::ResourceTimingInfoPtr timing) override;
+
   void ScrollRectToVisible(
       const gfx::Rect& rect,
       blink::mojom::ScrollIntoViewParamsPtr params) override;
   void DidStartLoading() override;
   void DidStopLoading() override;
+
+  void IntrinsicSizingInfoOfChildChanged(
+      blink::mojom::IntrinsicSizingInfoPtr sizing_info) override;
 
  private:
   void BindFrameHostReceiver(mojo::ScopedInterfaceEndpointHandle handle);

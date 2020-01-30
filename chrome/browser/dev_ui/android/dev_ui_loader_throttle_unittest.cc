@@ -32,6 +32,17 @@ const char* const kDevUiUrls[] = {
     "chrome://bluetooth-internals/path?query#frag",
 };
 
+// Heuristically checks whether |html| is the redirect page HTML, on successful
+// install.
+bool MatchesRedirectPageHtml(const std::string& html) {
+  return html.find("window.location.reload()") != std::string::npos;
+}
+
+// Heuristically checks whether |html| is the install error page HTML.
+bool MatchesErrorPageHtml(const std::string& html) {
+  return html.find("<div id=\"failure-message\">") != std::string::npos;
+}
+
 /******** MockDevUiModuleProvider ********/
 
 // Mock DevUiModuleProvider that overrides the main module install / load
@@ -105,6 +116,11 @@ class TestDevUiLoaderThrottle : public DevUiLoaderThrottle {
       content::NavigationThrottle::ThrottleCheckResult result) override {
     called_cancel = true;
     cancel_result = std::move(result);
+  }
+
+  std::string GetCancelResult() {
+    EXPECT_TRUE(cancel_result.error_page_content().has_value());
+    return cancel_result.error_page_content().value();
   }
 
   bool called_resume = false;
@@ -224,8 +240,8 @@ TEST_F(DevUiLoaderThrottleTest, InstallSuccess) {
 
     // Simulate actual install (success)
     mock_provider_.SimulateAsyncInstall(true);  // !
-    EXPECT_TRUE(throttle->called_resume);
-    EXPECT_FALSE(throttle->called_cancel);
+    EXPECT_FALSE(throttle->called_resume);
+    EXPECT_TRUE(throttle->called_cancel);
     EXPECT_TRUE(mock_provider_.GetIsInstalled());
     EXPECT_TRUE(mock_provider_.GetIsLoaded());
   }
@@ -251,10 +267,12 @@ TEST_F(DevUiLoaderThrottleTest, InstallQueued) {
 
   // Simulate actual install.
   mock_provider_.SimulateAsyncInstall(true);  // !
-  EXPECT_TRUE(throttle1->called_resume);
-  EXPECT_FALSE(throttle1->called_cancel);
-  EXPECT_TRUE(throttle2->called_resume);
-  EXPECT_FALSE(throttle2->called_cancel);
+  EXPECT_FALSE(throttle1->called_resume);
+  EXPECT_TRUE(throttle1->called_cancel);
+  EXPECT_TRUE(MatchesRedirectPageHtml(throttle1->GetCancelResult()));
+  EXPECT_FALSE(throttle2->called_resume);
+  EXPECT_TRUE(throttle2->called_cancel);
+  EXPECT_TRUE(MatchesRedirectPageHtml(throttle2->GetCancelResult()));
   EXPECT_TRUE(mock_provider_.GetIsInstalled());
   EXPECT_TRUE(mock_provider_.GetIsLoaded());
 }
@@ -275,8 +293,9 @@ TEST_F(DevUiLoaderThrottleTest, InstallRedundant) {
 
   // Simulate actual install.
   mock_provider_.SimulateAsyncInstall(true);  // !
-  EXPECT_TRUE(throttle1->called_resume);
-  EXPECT_FALSE(throttle1->called_cancel);
+  EXPECT_FALSE(throttle1->called_resume);
+  EXPECT_TRUE(throttle1->called_cancel);
+  EXPECT_TRUE(MatchesRedirectPageHtml(throttle1->GetCancelResult()));
   EXPECT_TRUE(mock_provider_.GetIsInstalled());
   EXPECT_TRUE(mock_provider_.GetIsLoaded());
 
@@ -312,16 +331,13 @@ TEST_F(DevUiLoaderThrottleTest, InstallFailure) {
     mock_provider_.SimulateAsyncInstall(false);  // !
     EXPECT_FALSE(throttle->called_resume);
     EXPECT_TRUE(throttle->called_cancel);
-    EXPECT_FALSE(mock_provider_.GetIsInstalled());
-    EXPECT_FALSE(mock_provider_.GetIsLoaded());
     EXPECT_EQ(content::NavigationThrottle::CANCEL,
               throttle->cancel_result.action());
     EXPECT_EQ(net::ERR_CONNECTION_FAILED,
               throttle->cancel_result.net_error_code());
-    EXPECT_TRUE(throttle->cancel_result.error_page_content().has_value());
-    std::string page_content =
-        throttle->cancel_result.error_page_content().value();
-    EXPECT_NE(std::string::npos, page_content.find("<!DOCTYPE html"));
+    EXPECT_TRUE(MatchesErrorPageHtml(throttle->GetCancelResult()));
+    EXPECT_FALSE(mock_provider_.GetIsInstalled());
+    EXPECT_FALSE(mock_provider_.GetIsLoaded());
   }
 }
 

@@ -302,7 +302,7 @@ URLPattern::ParseResult URLPattern::Parse(base::StringPiece pattern) {
 
     if (host_piece == "*") {
       match_subdomains_ = true;
-      host_piece.clear();
+      host_piece = base::StringPiece();
     } else if (host_piece.starts_with("*.")) {
       if (host_piece.length() == 2) {
         // We don't allow just '*.' as a host.
@@ -353,7 +353,7 @@ void URLPattern::SetValidSchemes(int valid_schemes) {
 
 void URLPattern::SetHost(base::StringPiece host) {
   spec_.clear();
-  host.CopyToString(&host_);
+  host_.assign(host.data(), host.size());
 }
 
 void URLPattern::SetMatchAllURLs(bool val) {
@@ -375,7 +375,7 @@ void URLPattern::SetMatchSubdomains(bool val) {
 
 bool URLPattern::SetScheme(base::StringPiece scheme) {
   spec_.clear();
-  scheme.CopyToString(&scheme_);
+  scheme_.assign(scheme.data(), scheme.size());
   if (scheme_ == "*") {
     valid_schemes_ &= (SCHEME_HTTP | SCHEME_HTTPS);
   } else if (!IsValidScheme(scheme_)) {
@@ -398,7 +398,7 @@ bool URLPattern::IsValidScheme(base::StringPiece scheme) const {
 
 void URLPattern::SetPath(base::StringPiece path) {
   spec_.clear();
-  path.CopyToString(&path_);
+  path_.assign(path.data(), path.size());
   path_escaped_ = path_;
   base::ReplaceSubstringsAfterOffset(&path_escaped_, 0, "\\", "\\\\");
   base::ReplaceSubstringsAfterOffset(&path_escaped_, 0, "?", "\\?");
@@ -407,7 +407,7 @@ void URLPattern::SetPath(base::StringPiece path) {
 bool URLPattern::SetPort(base::StringPiece port) {
   spec_.clear();
   if (IsValidPortForScheme(scheme_, port)) {
-    port.CopyToString(&port_);
+    port_.assign(port.data(), port.size());
     return true;
   }
   return false;

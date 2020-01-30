@@ -13,6 +13,7 @@
 #import "ios/web/common/url_scheme_util.h"
 #import "ios/web/js_messaging/crw_js_injector.h"
 #import "ios/web/js_messaging/web_frames_manager_impl.h"
+#import "ios/web/navigation/crw_navigation_item_holder.h"
 #import "ios/web/navigation/crw_pending_navigation_info.h"
 #import "ios/web/navigation/crw_wk_navigation_states.h"
 #import "ios/web/navigation/error_page_helper.h"
@@ -132,6 +133,64 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
 }
 
 #pragma mark - WKNavigationDelegate
+
+- (void)webView:(WKWebView*)webView
+    decidePolicyForNavigationAction:(WKNavigationAction*)navigationAction
+                        preferences:(WKWebpagePreferences*)preferences
+                    decisionHandler:
+                        (void (^)(WKNavigationActionPolicy,
+                                  WKWebpagePreferences*))decisionHandler
+    API_AVAILABLE(ios(13)) {
+  web::NavigationItem* item = nullptr;
+  if (navigationAction.navigationType == WKNavigationTypeBackForward) {
+    // Use the item associated with the back/forward item to have the same user
+    // agent as the one used the first time.
+    item = [[CRWNavigationItemHolder
+        holderForBackForwardListItem:webView.backForwardList.currentItem]
+        navigationItem];
+  } else {
+    // There is no guarantee that the pending item belongs to this navigation
+    // but it is very likely that it is the case.
+    item = self.navigationManagerImpl->GetPendingItem();
+  }
+
+  // Don't initialize the userAgentType to have compilation error if there is a
+  // code path leaving it uninitialized.
+  web::UserAgentType userAgentType;
+  if (item) {
+    userAgentType = item->GetUserAgentType();
+  } else {
+    // Probably a renderer-initiated navigation. Use the UserAgent of the
+    // previous navigation.
+    item = self.webStateImpl->GetNavigationManager()->GetLastCommittedItem();
+    if (item) {
+      userAgentType = item->GetUserAgentForInheritance();
+    } else {
+      // It is possible that there isn't a last committed item, for example if a
+      // new tab is being opened via JavaScript.
+      if (base::FeatureList::IsEnabled(
+              web::features::kUseDefaultUserAgentInWebClient)) {
+        userAgentType = web::UserAgentType::AUTOMATIC;
+      } else {
+        userAgentType = web::UserAgentType::MOBILE;
+      }
+    }
+    if (userAgentType == web::UserAgentType::AUTOMATIC) {
+      userAgentType = web::GetWebClient()->GetDefaultUserAgent(webView);
+    }
+  }
+
+  WKContentMode contentMode = userAgentType == web::UserAgentType::DESKTOP
+                                  ? WKContentModeDesktop
+                                  : WKContentModeMobile;
+
+  [self webView:webView
+      decidePolicyForNavigationAction:navigationAction
+                      decisionHandler:^(WKNavigationActionPolicy policy) {
+                        preferences.preferredContentMode = contentMode;
+                        decisionHandler(policy, preferences);
+                      }];
+}
 
 - (void)webView:(WKWebView*)webView
     decidePolicyForNavigationAction:(WKNavigationAction*)action

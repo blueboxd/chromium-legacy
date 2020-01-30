@@ -54,6 +54,12 @@ LocalCardMigrationBubbleViews::LocalCardMigrationBubbleViews(
       ui::DIALOG_BUTTON_OK,
       l10n_util::GetStringUTF16(
           IDS_AUTOFILL_LOCAL_CARD_MIGRATION_BUBBLE_BUTTON_LABEL));
+  DialogDelegate::set_cancel_callback(
+      base::BindOnce(&LocalCardMigrationBubbleViews::OnDialogCancelled,
+                     base::Unretained(this)));
+  DialogDelegate::set_accept_callback(
+      base::BindOnce(&LocalCardMigrationBubbleViews::OnDialogAccepted,
+                     base::Unretained(this)));
 }
 
 void LocalCardMigrationBubbleViews::Show(DisplayReason reason) {
@@ -71,20 +77,16 @@ void LocalCardMigrationBubbleViews::Hide() {
   CloseBubble();
 }
 
-bool LocalCardMigrationBubbleViews::Accept() {
+void LocalCardMigrationBubbleViews::OnDialogAccepted() {
+  // TODO(https://crbug.com/1046793): Maybe delete this.
   if (controller_)
     controller_->OnConfirmButtonClicked();
-  return true;
 }
 
-bool LocalCardMigrationBubbleViews::Cancel() {
+void LocalCardMigrationBubbleViews::OnDialogCancelled() {
+  // TODO(https://crbug.com/1046793): Maybe delete this.
   if (controller_)
     controller_->OnCancelButtonClicked();
-  return true;
-}
-
-bool LocalCardMigrationBubbleViews::Close() {
-  return true;
 }
 
 gfx::Size LocalCardMigrationBubbleViews::CalculatePreferredSize() const {

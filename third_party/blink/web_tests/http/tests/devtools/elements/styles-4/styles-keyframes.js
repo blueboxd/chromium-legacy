@@ -27,7 +27,7 @@
   function step1() {
     TestRunner.addResult('=== Before key modification ===');
     ElementsTestRunner.dumpSelectedElementStyles(true);
-    var section = UI.panels.elements._stylesWidget._sectionBlocks[2].sections[1];
+    var section = UI.panels.elements._stylesWidget._sectionBlocks[1].sections[1];
     section.startEditingSelector();
     section._selectorElement.textContent = '1%';
     section._selectorElement.dispatchEvent(TestRunner.createKeyEvent('Enter'));
@@ -52,7 +52,7 @@
   function step4() {
     TestRunner.addResult('=== After redo ===');
     ElementsTestRunner.dumpSelectedElementStyles(true);
-    var section = UI.panels.elements._stylesWidget._sectionBlocks[2].sections[1];
+    var section = UI.panels.elements._stylesWidget._sectionBlocks[1].sections[1];
     section.startEditingSelector();
     section._selectorElement.textContent = '1% /*';
     section._selectorElement.dispatchEvent(TestRunner.createKeyEvent('Enter'));

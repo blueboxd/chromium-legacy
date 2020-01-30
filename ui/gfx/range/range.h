@@ -25,11 +25,11 @@ typedef struct _NSRange NSRange;
 
 namespace gfx {
 
-// A Range contains two integer values that represent a numeric range, like the
-// range of characters in a text selection. A range is made of a start and end
-// position; when they are the same, the Range is akin to a caret. Note that
-// |start_| can be greater than |end_| to respect the directionality of the
-// range.
+// This class represents either a forward range [min, max) or a reverse range
+// (max, min]. |start_| is always the first of these and |end_| the second; as a
+// result, the range is forward if (start_ <= end_).  The zero-width range
+// [val, val) is legal, contains and intersects itself, and is contained by and
+// intersects any nonempty range [min, max) where min <= val < max.
 class GFX_RANGE_EXPORT Range {
  public:
   // Creates an empty range {0,0}.
@@ -87,20 +87,33 @@ class GFX_RANGE_EXPORT Range {
 
   // Returns true if this range intersects the specified |range|.
   constexpr bool Intersects(const Range& range) const {
-    return IsValid() && range.IsValid() &&
-           !(range.GetMax() < GetMin() || range.GetMin() >= GetMax());
+    return Intersect(range).IsValid();
   }
 
   // Returns true if this range contains the specified |range|.
   constexpr bool Contains(const Range& range) const {
-    return IsValid() && range.IsValid() && GetMin() <= range.GetMin() &&
-           range.GetMax() <= GetMax();
+    return range.IsBoundedBy(*this) &&
+           // A non-empty range doesn't contain the range [max, max).
+           (range.GetMax() != GetMax() || range.is_empty() == is_empty());
+  }
+
+  // Returns true if this range is contained by the specified |range| or it is
+  // an empty range and ending the range |range|.
+  constexpr bool IsBoundedBy(const Range& range) const {
+    return IsValid() && range.IsValid() && GetMin() >= range.GetMin() &&
+           GetMax() <= range.GetMax();
   }
 
   // Computes the intersection of this range with the given |range|.
   // If they don't intersect, it returns an InvalidRange().
   // The returned range is always empty or forward (never reversed).
-  Range Intersect(const Range& range) const;
+  constexpr Range Intersect(const Range& range) const {
+    const uint32_t min = std::max(GetMin(), range.GetMin());
+    const uint32_t max = std::min(GetMax(), range.GetMax());
+    return (min < max || Contains(range) || range.Contains(*this))
+               ? Range(min, max)
+               : InvalidRange();
+  }
 
 #if defined(OS_MACOSX)
   Range& operator=(const NSRange& range);

@@ -1,12 +1,12 @@
 luci.console_view(
-    name = 'chromium.swarm',
+    name = 'chromium.dev',
     header = '//dev/consoles/chromium-header.textpb',
     repo = 'https://chromium.googlesource.com/chromium/src',
     entries = [
-        luci.console_view_entry(builder = 'ci/Android N5 Swarm'),
-        luci.console_view_entry(builder = 'ci/Android N5X Swarm'),
-        luci.console_view_entry(builder = 'ci/Linux Swarm'),
-        luci.console_view_entry(builder = 'ci/Mac Swarm'),
-        luci.console_view_entry(builder = 'ci/Windows Swarm'),
+        luci.console_view_entry(builder = 'ci/android-kitkat-arm-rel-swarming'),
+        luci.console_view_entry(builder = 'ci/android-marshmallow-arm64-rel-swarming'),
+        luci.console_view_entry(builder = 'ci/linux-rel-swarming'),
+        luci.console_view_entry(builder = 'ci/mac-rel-swarming'),
+        luci.console_view_entry(builder = 'ci/win-rel-swarming'),
    ],
 )

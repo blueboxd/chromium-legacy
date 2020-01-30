@@ -107,8 +107,12 @@ extern const char kDelayDeliveryUntilVerdict[];
 // or downloaded or both.
 extern const char kAllowPasswordProtectedFiles[];
 
-// Integer that indidicates if Chrome checks data for content compliance.
+// Integer that indicates if Chrome checks data for content compliance.
 extern const char kCheckContentCompliance[];
+
+// Integer that indicates if Chrome blocks data that cannot be checked for
+// content compliance due to unsupported filetypes.
+extern const char kBlockUnsupportedFiletypes[];
 
 // List of url patterns where Chrome should check compliance of downloaded
 // files.
@@ -120,6 +124,10 @@ extern const char kURLsToCheckForMalwareOfUploadedContent[];
 // List of url patterns where Chrome should not check compliance of uploaded
 // files.
 extern const char kURLsToNotCheckComplianceOfUploadedContent[];
+
+// Boolean that indicates if Chrome is allowed to prompt Advanced Protection
+// users to send their files to Google for malware scanning.
+extern const char kAdvancedProtectionDeepScanningEnabled[];
 
 }  // namespace prefs
 
@@ -188,6 +196,15 @@ enum CheckContentComplianceValues {
   CHECK_UPLOADS_AND_DOWNLOADS = 3,
   // New options must be added before CHECK_CONTENT_COMPLIANCE_MAX.
   CHECK_CONTENT_COMPLIANCE_MAX = CHECK_UPLOADS_AND_DOWNLOADS,
+};
+
+// Enum representing possible values of the BlockUnsupportedFiletypes policy.
+// This must be kept in sync with policy_templates.json.
+enum BlockUnsupportedFiletypesValues {
+  BLOCK_UNSUPPORTED_FILETYPES_NONE = 0,
+  BLOCK_UNSUPPORTED_FILETYPES_DOWNLOADS = 1,
+  BLOCK_UNSUPPORTED_FILETYPES_UPLOADS = 2,
+  BLOCK_UNSUPPORTED_FILETYPES_UPLOADS_AND_DOWNLOADS = 3,
 };
 
 // Enum representing possible values of the AllowPasswordProtectedFiles policy.

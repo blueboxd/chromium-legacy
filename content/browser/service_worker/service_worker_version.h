@@ -192,6 +192,8 @@ class CONTENT_EXPORT ServiceWorkerVersion
     virtual ~Observer() {}
   };
 
+  // The constructor should be called only from ServiceWorkerRegistry other than
+  // tests.
   ServiceWorkerVersion(ServiceWorkerRegistration* registration,
                        const GURL& script_url,
                        blink::mojom::ScriptType script_type,
@@ -868,6 +870,10 @@ class CONTENT_EXPORT ServiceWorkerVersion
                                  bool success);
 
   void InitializeGlobalScope();
+
+  // Update the idle delay if the worker is starting or running and we don't
+  // have to terminate the worker ASAP (e.g. for activation).
+  void UpdateIdleDelayIfNeeded(base::TimeDelta delay);
 
   const int64_t version_id_;
   const int64_t registration_id_;

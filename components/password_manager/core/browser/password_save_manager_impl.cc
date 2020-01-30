@@ -106,8 +106,8 @@ PasswordSaveManagerImpl::PasswordSaveManagerImpl(
 
 PasswordSaveManagerImpl::~PasswordSaveManagerImpl() = default;
 
-const PasswordForm* PasswordSaveManagerImpl::GetPendingCredentials() const {
-  return &pending_credentials_;
+const PasswordForm& PasswordSaveManagerImpl::GetPendingCredentials() const {
+  return pending_credentials_;
 }
 
 const base::string16& PasswordSaveManagerImpl::GetGeneratedPassword() const {
@@ -151,6 +151,7 @@ void PasswordSaveManagerImpl::CreatePendingCredentials(
   if (saved_form) {
     // A similar credential exists in the store already.
     pending_credentials_ = *saved_form;
+    pending_credentials_state_ = PendingCredentialsState::EQUAL_TO_SAVED_MATCH;
     if (pending_credentials_.password_value != password_to_save.first) {
       pending_credentials_state_ = PendingCredentialsState::UPDATE;
       votes_uploader_->set_password_overridden(true);
@@ -219,6 +220,11 @@ void PasswordSaveManagerImpl::CreatePendingCredentials(
 
   if (HasGeneratedPassword())
     pending_credentials_.type = PasswordForm::Type::kGenerated;
+}
+
+void PasswordSaveManagerImpl::ResetPendingCrednetials() {
+  pending_credentials_ = PasswordForm();
+  pending_credentials_state_ = PendingCredentialsState::NONE;
 }
 
 void PasswordSaveManagerImpl::Save(const FormData& observed_form,

@@ -1,20 +1,18 @@
-load('//lib/builders.star', 'builder', 'cpu', 'defaults', 'goma', 'os')
+load('//lib/builders.star', 'cpu', 'goma', 'os')
+load('//lib/ci.star', 'ci')
 
 # Defaults that apply to all branch versions of the bucket
 
-luci.recipe.defaults.cipd_package.set(
-    'infra/recipe_bundles/chromium.googlesource.com/chromium/tools/build')
-
-defaults.build_numbers.set(True)
-defaults.configure_kitchen.set(True)
-defaults.cores.set(8)
-defaults.cpu.set(cpu.X86_64)
-defaults.executable.set(luci.recipe(name = 'chromium'))
-defaults.execution_timeout.set(3 * time.hour)
-defaults.os.set(os.LINUX_DEFAULT)
-defaults.service_account.set(
+ci.defaults.build_numbers.set(True)
+ci.defaults.configure_kitchen.set(True)
+ci.defaults.cores.set(8)
+ci.defaults.cpu.set(cpu.X86_64)
+ci.defaults.executable.set('recipe:chromium')
+ci.defaults.execution_timeout.set(3 * time.hour)
+ci.defaults.os.set(os.LINUX_DEFAULT)
+ci.defaults.service_account.set(
     'chromium-ci-builder@chops-service-accounts.iam.gserviceaccount.com')
-defaults.swarming_tags.set(['vpython:native-python-wrapper'])
+ci.defaults.swarming_tags.set(['vpython:native-python-wrapper'])
 
 
 # Execute the versioned files to define all of the per-branch entities
@@ -25,7 +23,7 @@ exec('//versioned/trunk/buckets/ci.star')
 
 
 # *** After this point everything is trunk only ***
-defaults.bucket.set('ci')
+ci.defaults.bucket.set('ci')
 
 
 XCODE_IOS_11_CACHE = swarming.cache(
@@ -34,20 +32,13 @@ XCODE_IOS_11_CACHE = swarming.cache(
 )
 
 
-# Builders appear after the function used to define them, with all builders
-# defined using the same function ordered lexicographically by name
-# Builder functions are defined in lexicographic order by name ignoring the
-# '_builder' suffix
-
-# Builder functions are defined for each master, with additional functions
-# for specializing on OS or particular configuration (e.g. builders running
-# libfuzzer recipe): XXX_builder and XXX_YYY_builder where XXX is the part after
-# the last dot in the mastername and YYY is the OS or configuration
+# Builders are sorted first lexicographically by the function used to define
+# them, then lexicographically by their name
 
 
-builder(
+ci.builder(
     name = 'android-avd-packager',
-    executable = luci.recipe(name = 'android/avd_packager'),
+    executable = 'recipe:android/avd_packager',
     properties = {
         'avd_configs': [
             'tools/android/avd/proto/generic_android23.textpb',
@@ -57,9 +48,9 @@ builder(
     service_account = 'chromium-cipd-builder@chops-service-accounts.iam.gserviceaccount.com',
 )
 
-builder(
+ci.builder(
     name = 'android-sdk-packager',
-    executable = luci.recipe(name = 'android/sdk_packager'),
+    executable = 'recipe:android/sdk_packager',
     service_account = 'chromium-cipd-builder@chops-service-accounts.iam.gserviceaccount.com',
     properties = {
         # We still package part of build-tools;25.0.2 to support
@@ -134,595 +125,507 @@ builder(
 )
 
 
-def android_builder(
-    *,
-    name,
-    # TODO(tandrii): migrate to this gradually (current value of
-    # goma.jobs.MANY_JOBS_FOR_CI is 500).
-    # goma_jobs=goma.jobs.MANY_JOBS_FOR_CI
-    goma_jobs=goma.jobs.J150,
-    **kwargs):
-  return builder(
-      name = name,
-      goma_backend = goma.backend.RBE_PROD,
-      goma_jobs = goma_jobs,
-      mastername = 'chromium.android',
-      **kwargs
-  )
-
-android_builder(
+ci.android_builder(
     name = 'Android ASAN (dbg)',
 )
 
-android_builder(
+ci.android_builder(
     name = 'Android WebView L (dbg)',
 )
 
-android_builder(
+ci.android_builder(
     name = 'Android WebView M (dbg)',
 )
 
-android_builder(
+ci.android_builder(
     name = 'Android WebView N (dbg)',
 )
 
-android_builder(
+ci.android_builder(
     name = 'Android WebView O (dbg)',
 )
 
-android_builder(
+ci.android_builder(
     name = 'Android WebView P (dbg)',
 )
 
-android_builder(
+ci.android_builder(
     name = 'Android arm Builder (dbg)',
     execution_timeout = 4 * time.hour,
 )
 
-android_builder(
+ci.android_builder(
     name = 'Android arm64 Builder (dbg)',
     goma_jobs = goma.jobs.MANY_JOBS_FOR_CI,
     execution_timeout = 4 * time.hour,
 )
 
-android_builder(
+ci.android_builder(
     name = 'Android x64 Builder (dbg)',
     execution_timeout = 4 * time.hour,
 )
 
-android_builder(
+ci.android_builder(
     name = 'Android x86 Builder (dbg)',
 )
 
-android_builder(
+ci.android_builder(
     name = 'Cast Android (dbg)',
 )
 
-android_builder(
+ci.android_builder(
     name = 'Deterministic Android',
-    executable = luci.recipe(name = 'swarming/deterministic_build'),
+    executable = 'recipe:swarming/deterministic_build',
     execution_timeout = 6 * time.hour,
 )
 
-android_builder(
+ci.android_builder(
     name = 'Deterministic Android (dbg)',
-    executable = luci.recipe(name = 'swarming/deterministic_build'),
+    executable = 'recipe:swarming/deterministic_build',
     execution_timeout = 6 * time.hour,
 )
 
-android_builder(
+ci.android_builder(
     name = 'KitKat Phone Tester (dbg)',
 )
 
-android_builder(
+ci.android_builder(
     name = 'KitKat Tablet Tester',
     # We have limited tablet capacity and thus limited ability to run
     # tests in parallel, hence the high timeout.
     execution_timeout = 10 * time.hour,
 )
 
-android_builder(
+ci.android_builder(
     name = 'Lollipop Phone Tester',
 )
 
-android_builder(
+ci.android_builder(
     name = 'Lollipop Tablet Tester',
     # We have limited tablet capacity and thus limited ability to run
     # tests in parallel, hence the high timeout.
     execution_timeout = 10 * time.hour,
 )
 
-android_builder(
+ci.android_builder(
     name = 'Marshmallow 64 bit Tester',
 )
 
-android_builder(
+ci.android_builder(
     name = 'Marshmallow Tablet Tester',
     # We have limited tablet capacity and thus limited ability to run
     # tests in parallel, hence the high timeout.
     execution_timeout = 8 * time.hour,
 )
 
-android_builder(
+ci.android_builder(
     name = 'Nougat Phone Tester',
 )
 
-android_builder(
+ci.android_builder(
     name = 'Oreo Phone Tester',
 )
 
-android_builder(
+ci.android_builder(
     name = 'android-arm64-proguard-rel',
     goma_jobs = goma.jobs.MANY_JOBS_FOR_CI,
     execution_timeout = 6 * time.hour,
 )
 
-android_builder(
+ci.android_builder(
     name = 'android-cronet-arm-dbg',
     notifies = ['cronet'],
 )
 
-android_builder(
+ci.android_builder(
     name = 'android-cronet-arm-rel',
     notifies = ['cronet'],
 )
 
-android_builder(
+ci.android_builder(
     name = 'android-cronet-arm64-dbg',
     notifies = ['cronet'],
 )
 
-android_builder(
+ci.android_builder(
     name = 'android-cronet-arm64-rel',
     notifies = ['cronet'],
 )
 
-android_builder(
+ci.android_builder(
     name = 'android-cronet-asan-arm-rel',
     notifies = ['cronet'],
 )
 
-android_builder(
+ci.android_builder(
     name = 'android-cronet-kitkat-arm-rel',
     notifies = ['cronet'],
 )
 
-android_builder(
+ci.android_builder(
     name = 'android-cronet-lollipop-arm-rel',
     notifies = ['cronet'],
 )
 
 # Runs on a specific machine with an attached phone
-android_builder(
+ci.android_builder(
     name = 'android-cronet-marshmallow-arm64-perf-rel',
     cores = None,
     cpu = None,
-    executable = luci.recipe(name = 'cronet'),
+    executable = 'recipe:cronet',
     notifies = ['cronet'],
     os = os.ANDROID,
 )
 
-android_builder(
+ci.android_builder(
     name = 'android-cronet-marshmallow-arm64-rel',
     notifies = ['cronet'],
 )
 
-android_builder(
+ci.android_builder(
     name = 'android-cronet-x86-dbg',
     notifies = ['cronet'],
 )
 
-android_builder(
+ci.android_builder(
     name = 'android-cronet-x86-rel',
     notifies = ['cronet'],
 )
 
-android_builder(
+ci.android_builder(
     name = 'android-incremental-dbg',
 )
 
-android_builder(
+ci.android_builder(
     name = 'android-lollipop-arm-rel',
 )
 
-android_builder(
+ci.android_builder(
     name = 'android-pie-arm64-dbg',
 )
 
-android_builder(
+ci.android_builder(
     name = 'android-pie-arm64-rel',
 )
 
-android_builder(
+ci.android_builder(
     name = 'android-10-arm64-rel',
 )
 
 
-def android_fyi_builder(*, name, **kwargs):
-  return builder(
-      name = name,
-      goma_backend = goma.backend.RBE_PROD,
-      mastername = 'chromium.android.fyi',
-      **kwargs
-  )
-
-android_fyi_builder(
+ci.android_fyi_builder(
     name = 'android-bfcache-debug',
 )
 
-android_fyi_builder(
+ci.android_fyi_builder(
     name = 'Android WebView P Blink-CORS FYI (rel)',
 )
 
-android_fyi_builder(
+ci.android_fyi_builder(
     name = 'Android WebView P FYI (rel)',
 )
 
-android_fyi_builder(
+ci.android_fyi_builder(
     name = 'android-marshmallow-x86-fyi-rel',
 )
 
-android_fyi_builder(
+ci.android_fyi_builder(
     name = 'android-pie-x86-fyi-rel',
 )
 
 
-def chromium_builder(*, name, **kwargs):
-  return builder(
-      name = name,
-      goma_backend = goma.backend.RBE_PROD,
-      mastername = 'chromium',
-      **kwargs
-  )
-
-chromium_builder(
+ci.chromium_builder(
     name = 'android-archive-dbg',
     # Bump to 32 if needed.
     cores = 8,
 )
 
-chromium_builder(
+ci.chromium_builder(
     name = 'android-archive-rel',
     cores = 32,
 )
 
-chromium_builder(
+ci.chromium_builder(
     name = 'linux-archive-dbg',
     # Bump to 32 if needed.
     cores = 8,
 )
 
-chromium_builder(
+ci.chromium_builder(
     name = 'linux-archive-rel',
     cores = 32,
 )
 
-chromium_builder(
+ci.chromium_builder(
     name = 'mac-archive-dbg',
     # Bump to 8 cores if needed.
     cores = 4,
     os = os.MAC_DEFAULT,
 )
 
-chromium_builder(
+ci.chromium_builder(
     name = 'mac-archive-rel',
     os = os.MAC_DEFAULT,
 )
 
-chromium_builder(
+ci.chromium_builder(
     name = 'win-archive-dbg',
     cores = 32,
     os = os.WINDOWS_DEFAULT,
 )
 
-chromium_builder(
+ci.chromium_builder(
     name = 'win-archive-rel',
     cores = 32,
     os = os.WINDOWS_DEFAULT,
 )
 
-chromium_builder(
+ci.chromium_builder(
     name = 'win32-archive-dbg',
     cores = 32,
     os = os.WINDOWS_DEFAULT,
 )
 
-chromium_builder(
+ci.chromium_builder(
     name = 'win32-archive-rel',
     cores = 32,
     os = os.WINDOWS_DEFAULT,
 )
 
 
-def chromiumos_builder(*, name, **kwargs):
-  return builder(
-      name = name,
-      mastername = 'chromium.chromiumos',
-      goma_backend = goma.backend.RBE_PROD,
-      **kwargs
-  )
-
-chromiumos_builder(
+ci.chromiumos_builder(
     name = 'Linux ChromiumOS Full',
 )
 
-chromiumos_builder(
+ci.chromiumos_builder(
     name = 'chromeos-amd64-generic-asan-rel',
 )
 
-chromiumos_builder(
+ci.chromiumos_builder(
     name = 'chromeos-amd64-generic-cfi-thin-lto-rel',
 )
 
-chromiumos_builder(
+ci.chromiumos_builder(
     name = 'chromeos-amd64-generic-dbg',
 )
 
-chromiumos_builder(
+ci.chromiumos_builder(
     name = 'chromeos-arm-generic-dbg',
 )
 
-chromiumos_builder(
+ci.chromiumos_builder(
     name = 'chromeos-arm-generic-rel',
 )
 
-chromiumos_builder(
+ci.chromiumos_builder(
     name = 'chromeos-kevin-rel',
 )
 
-chromiumos_builder(
+ci.chromiumos_builder(
     name = 'linux-chromeos-dbg',
 )
 
 
-def clang_builder(*, name, cores=32, properties=None, **kwargs):
-  properties = properties or {}
-  properties.update({
-    'perf_dashboard_machine_group': 'ChromiumClang',
-  })
-  return builder(
-      name = name,
-      builderless = True,
-      cores = cores,
-      # Because these run ToT Clang, goma is not used.
-      # Naturally the runtime will be ~4-8h on average, depending on config.
-      # CFI builds will take even longer - around 11h.
-      execution_timeout = 12 * time.hour,
-      mastername = 'chromium.clang',
-      properties = properties,
-      **kwargs
-  )
-
-clang_builder(
+ci.clang_builder(
     name = 'CFI Linux CF',
 )
 
-clang_builder(
+ci.clang_builder(
     name = 'CFI Linux ToT',
 )
 
-clang_builder(
+ci.clang_builder(
     name = 'CrWinAsan',
     os = os.WINDOWS_ANY,
 )
 
-clang_builder(
+ci.clang_builder(
     name = 'CrWinAsan(dll)',
     os = os.WINDOWS_ANY,
 )
 
-clang_builder(
+ci.clang_builder(
     name = 'ToTAndroid',
 )
 
-clang_builder(
+ci.clang_builder(
     name = 'ToTAndroid (dbg)',
 )
 
-clang_builder(
+ci.clang_builder(
     name = 'ToTAndroid x64',
 )
 
-clang_builder(
+ci.clang_builder(
     name = 'ToTAndroid64',
 )
 
-clang_builder(
+ci.clang_builder(
     name = 'ToTAndroidASan',
 )
 
-clang_builder(
+ci.clang_builder(
     name = 'ToTAndroidCFI',
 )
 
-clang_builder(
+ci.clang_builder(
     name = 'ToTAndroidOfficial',
 )
 
-clang_builder(
+ci.clang_builder(
     name = 'ToTLinux',
 )
 
-clang_builder(
+ci.clang_builder(
     name = 'ToTLinux (dbg)',
 )
 
-clang_builder(
+ci.clang_builder(
     name = 'ToTLinuxASan',
 )
 
-clang_builder(
+ci.clang_builder(
     name = 'ToTLinuxASanLibfuzzer',
 )
 
-clang_builder(
+ci.clang_builder(
     name = 'ToTLinuxCoverage',
-    executable = luci.recipe(name = 'chromium_clang_coverage_tot'),
+    executable = 'recipe:chromium_clang_coverage_tot',
 )
 
-clang_builder(
+ci.clang_builder(
     name = 'ToTLinuxMSan',
 )
 
-clang_builder(
+ci.clang_builder(
     name = 'ToTLinuxTSan',
 )
 
-clang_builder(
+ci.clang_builder(
     name = 'ToTLinuxThinLTO',
 )
 
-clang_builder(
+ci.clang_builder(
     name = 'ToTLinuxUBSanVptr',
 )
 
-clang_builder(
+ci.clang_builder(
     name = 'ToTWin(dbg)',
     os = os.WINDOWS_ANY,
 )
 
-clang_builder(
+ci.clang_builder(
     name = 'ToTWin(dll)',
     os = os.WINDOWS_ANY,
 )
 
-clang_builder(
+ci.clang_builder(
     name = 'ToTWin64(dbg)',
     os = os.WINDOWS_ANY,
 )
 
-clang_builder(
+ci.clang_builder(
     name = 'ToTWin64(dll)',
     os = os.WINDOWS_ANY,
 )
 
-clang_builder(
+ci.clang_builder(
     name = 'ToTWinASanLibfuzzer',
     os = os.WINDOWS_ANY,
 )
 
-clang_builder(
+ci.clang_builder(
     name = 'ToTWinCFI',
     os = os.WINDOWS_ANY,
 )
 
-clang_builder(
+ci.clang_builder(
     name = 'ToTWinCFI64',
     os = os.WINDOWS_ANY,
 )
 
-clang_builder(
+ci.clang_builder(
     name = 'ToTWinLibcxx64',
     os = os.WINDOWS_ANY,
 )
 
-clang_builder(
+ci.clang_builder(
     name = 'UBSanVptr Linux',
     goma_backend = goma.backend.RBE_PROD,
 )
 
-clang_builder(
+ci.clang_builder(
     name = 'linux-win_cross-rel',
 )
 
 
-def clang_ios_builder(*, name, **kwargs):
-  return clang_builder(
-      name = name,
-      caches = [XCODE_IOS_11_CACHE],
-      cores = None,
-      executable = luci.recipe(name = 'ios/unified_builder_tester'),
-      os = os.MAC_10_14,
-      ssd = True,
-  )
-
-clang_ios_builder(
+ci.clang_ios_builder(
     name = 'ToTiOS',
 )
 
-clang_ios_builder(
+ci.clang_ios_builder(
     name = 'ToTiOSDevice',
 )
 
-def clang_mac_builder(*, name, cores=24, **kwargs):
-  return clang_builder(
-      name = name,
-      cores = cores,
-      os = os.MAC_10_14,
-      ssd = True,
-      properties = {
-          'xcode_build_version': '11a1027',
-      },
-      **kwargs
-  )
 
-clang_mac_builder(
+ci.clang_mac_builder(
     name = 'ToTMac',
 )
 
-clang_mac_builder(
+ci.clang_mac_builder(
     name = 'ToTMac (dbg)',
 )
 
-clang_mac_builder(
+ci.clang_mac_builder(
     name = 'ToTMacASan',
 )
 
-clang_mac_builder(
+ci.clang_mac_builder(
     name = 'ToTMacCoverage',
-    executable = luci.recipe(name = 'chromium_clang_coverage_tot'),
+    executable = 'recipe:chromium_clang_coverage_tot',
 )
 
-def dawn_builder(*, name, builderless=True, **kwargs):
-  return builder(
-      name = name,
-      builderless = builderless,
-      goma_backend = goma.backend.RBE_PROD,
-      mastername = 'chromium.dawn',
-      service_account = 'chromium-ci-gpu-builder@chops-service-accounts.iam.gserviceaccount.com',
-      **kwargs
-  )
 
-dawn_builder(
+ci.dawn_builder(
     name = 'Dawn Linux x64 Builder',
 )
 
-dawn_builder(
+ci.dawn_builder(
     name = 'Dawn Linux x64 DEPS Builder',
 )
 
-dawn_builder(
+ci.dawn_builder(
     name = 'Dawn Linux x64 DEPS Release (Intel HD 630)',
     cores = 2,
     os = os.LINUX_DEFAULT,
 )
 
-dawn_builder(
+ci.dawn_builder(
     name = 'Dawn Linux x64 DEPS Release (NVIDIA)',
     cores = 2,
     os = os.LINUX_DEFAULT,
 )
 
-dawn_builder(
+ci.dawn_builder(
     name = 'Dawn Linux x64 Release (Intel HD 630)',
     cores = 2,
     os = os.LINUX_DEFAULT,
 )
 
-dawn_builder(
+ci.dawn_builder(
     name = 'Dawn Linux x64 Release (NVIDIA)',
     cores = 2,
     os = os.LINUX_DEFAULT,
 )
 
-dawn_builder(
+ci.dawn_builder(
     name = 'Dawn Mac x64 Builder',
     builderless = False,
     cores = None,
     os = os.MAC_ANY,
 )
 
-dawn_builder(
+ci.dawn_builder(
     name = 'Dawn Mac x64 DEPS Builder',
     builderless = False,
     cores = None,
@@ -731,444 +634,381 @@ dawn_builder(
 
 # Note that the Mac testers are all thin Linux VMs, triggering jobs on the
 # physical Mac hardware in the Swarming pool which is why they run on linux
-dawn_builder(
+ci.dawn_builder(
     name = 'Dawn Mac x64 DEPS Release (AMD)',
     cores = 2,
     os = os.LINUX_DEFAULT,
 )
 
-dawn_builder(
+ci.dawn_builder(
     name = 'Dawn Mac x64 DEPS Release (Intel)',
     cores = 2,
     os = os.LINUX_DEFAULT,
 )
 
-dawn_builder(
+ci.dawn_builder(
     name = 'Dawn Mac x64 Release (AMD)',
     cores = 2,
     os = os.LINUX_DEFAULT,
 )
 
-dawn_builder(
+ci.dawn_builder(
     name = 'Dawn Mac x64 Release (Intel)',
     cores = 2,
     os = os.LINUX_DEFAULT,
 )
 
-dawn_builder(
+ci.dawn_builder(
     name = 'Dawn Win10 x86 Builder',
     os = os.WINDOWS_ANY,
 )
 
-dawn_builder(
+ci.dawn_builder(
     name = 'Dawn Win10 x64 Builder',
     os = os.WINDOWS_ANY,
 )
 
 # Note that the Win testers are all thin Linux VMs, triggering jobs on the
 # physical Win hardware in the Swarming pool, which is why they run on linux
-dawn_builder(
+ci.dawn_builder(
     name = 'Dawn Win10 x86 Release (Intel HD 630)',
     cores = 2,
     os = os.LINUX_DEFAULT,
 )
 
-dawn_builder(
+ci.dawn_builder(
     name = 'Dawn Win10 x64 Release (Intel HD 630)',
     cores = 2,
     os = os.LINUX_DEFAULT,
 )
 
-dawn_builder(
+ci.dawn_builder(
     name = 'Dawn Win10 x86 Release (NVIDIA)',
     cores = 2,
     os = os.LINUX_DEFAULT,
 )
 
-dawn_builder(
+ci.dawn_builder(
     name = 'Dawn Win10 x64 Release (NVIDIA)',
     cores = 2,
     os = os.LINUX_DEFAULT,
 )
 
-dawn_builder(
+ci.dawn_builder(
     name = 'Dawn Win10 x86 DEPS Builder',
     os = os.WINDOWS_ANY,
 )
 
-dawn_builder(
+ci.dawn_builder(
     name = 'Dawn Win10 x64 DEPS Builder',
     os = os.WINDOWS_ANY,
 )
 
-dawn_builder(
+ci.dawn_builder(
     name = 'Dawn Win10 x86 DEPS Release (Intel HD 630)',
     cores = 2,
     os = os.LINUX_DEFAULT,
 )
 
-dawn_builder(
+ci.dawn_builder(
     name = 'Dawn Win10 x64 DEPS Release (Intel HD 630)',
     cores = 2,
     os = os.LINUX_DEFAULT,
 )
 
-dawn_builder(
+ci.dawn_builder(
     name = 'Dawn Win10 x86 DEPS Release (NVIDIA)',
     cores = 2,
     os = os.LINUX_DEFAULT,
 )
 
-dawn_builder(
+ci.dawn_builder(
     name = 'Dawn Win10 x64 DEPS Release (NVIDIA)',
     cores = 2,
     os = os.LINUX_DEFAULT,
 )
 
 
-def fuzz_builder(*, name, **kwargs):
-  return builder(
-      name = name,
-      goma_backend = goma.backend.RBE_PROD,
-      mastername = 'chromium.fuzz',
-      notifies = ['chromesec-lkgr-failures'],
-      **kwargs
-  )
-
-fuzz_builder(
+ci.fuzz_builder(
     name = 'ASAN Debug',
 )
 
-fuzz_builder(
+ci.fuzz_builder(
     name = 'ASan Debug (32-bit x86 with V8-ARM)',
 )
 
-fuzz_builder(
+ci.fuzz_builder(
     name = 'ASAN Release',
 )
 
-fuzz_builder(
+ci.fuzz_builder(
     name = 'ASan Release (32-bit x86 with V8-ARM)',
 )
 
-fuzz_builder(
+ci.fuzz_builder(
     name = 'ASAN Release Media',
 )
 
-fuzz_builder(
+ci.fuzz_builder(
     name = 'Afl Upload Linux ASan',
-    executable = luci.recipe(name = 'chromium_afl'),
+    executable = 'recipe:chromium_afl',
 )
 
-fuzz_builder(
+ci.fuzz_builder(
     name = 'ASan Release Media (32-bit x86 with V8-ARM)',
 )
 
-fuzz_builder(
+ci.fuzz_builder(
     name = 'ChromiumOS ASAN Release',
 )
 
-fuzz_builder(
+ci.fuzz_builder(
     name = 'MSAN Release (chained origins)',
 )
 
-fuzz_builder(
+ci.fuzz_builder(
     name = 'MSAN Release (no origins)',
 )
 
-fuzz_builder(
+ci.fuzz_builder(
     name = 'Mac ASAN Release',
     builderless = False,
     cores = 4,
     os = os.MAC_DEFAULT,
 )
 
-fuzz_builder(
+ci.fuzz_builder(
     name = 'Mac ASAN Release Media',
     builderless = False,
     cores = 4,
     os = os.MAC_DEFAULT,
 )
 
-fuzz_builder(
+ci.fuzz_builder(
     name = 'TSAN Debug',
 )
 
-fuzz_builder(
+ci.fuzz_builder(
     name = 'TSAN Release',
 )
 
-fuzz_builder(
+ci.fuzz_builder(
     name = 'UBSan Release',
 )
 
-fuzz_builder(
+ci.fuzz_builder(
     name = 'UBSan vptr Release',
 )
 
-fuzz_builder(
+ci.fuzz_builder(
     name = 'Win ASan Release',
     builderless = False,
     os = os.WINDOWS_DEFAULT,
 )
 
-fuzz_builder(
+ci.fuzz_builder(
     name = 'Win ASan Release Media',
     builderless = False,
     os = os.WINDOWS_DEFAULT
 )
 
 
-def fuzz_libfuzzer_builder(*, name, **kwargs):
-  return fuzz_builder(
-      name = name,
-      executable = luci.recipe(name = 'chromium_libfuzzer'),
-      **kwargs
-  )
-
-fuzz_libfuzzer_builder(
+ci.fuzz_libfuzzer_builder(
     name = 'Libfuzzer Upload Chrome OS ASan',
 )
 
-fuzz_libfuzzer_builder(
+ci.fuzz_libfuzzer_builder(
     name = 'Libfuzzer Upload Linux ASan',
 )
 
-fuzz_libfuzzer_builder(
+ci.fuzz_libfuzzer_builder(
     name = 'Libfuzzer Upload Linux ASan Debug',
 )
 
-fuzz_libfuzzer_builder(
+ci.fuzz_libfuzzer_builder(
     name = 'Libfuzzer Upload Linux MSan',
 )
 
-fuzz_libfuzzer_builder(
+ci.fuzz_libfuzzer_builder(
     name = 'Libfuzzer Upload Linux UBSan',
     # Do not use builderless for this (crbug.com/980080).
     builderless = False,
 )
 
-fuzz_libfuzzer_builder(
+ci.fuzz_libfuzzer_builder(
     name = 'Libfuzzer Upload Linux V8-ARM64 ASan',
 )
 
-fuzz_libfuzzer_builder(
+ci.fuzz_libfuzzer_builder(
     name = 'Libfuzzer Upload Linux V8-ARM64 ASan Debug',
 )
 
-fuzz_libfuzzer_builder(
+ci.fuzz_libfuzzer_builder(
     name = 'Libfuzzer Upload Linux32 ASan',
 )
 
-fuzz_libfuzzer_builder(
+ci.fuzz_libfuzzer_builder(
     name = 'Libfuzzer Upload Linux32 ASan Debug',
 )
 
-fuzz_libfuzzer_builder(
+ci.fuzz_libfuzzer_builder(
     name = 'Libfuzzer Upload Linux32 V8-ARM ASan',
 )
 
-fuzz_libfuzzer_builder(
+ci.fuzz_libfuzzer_builder(
     name = 'Libfuzzer Upload Linux32 V8-ARM ASan Debug',
 )
 
-fuzz_libfuzzer_builder(
+ci.fuzz_libfuzzer_builder(
     name = 'Libfuzzer Upload Mac ASan',
     cores = 24,
     execution_timeout = 4 * time.hour,
     os = os.MAC_DEFAULT,
 )
 
-fuzz_libfuzzer_builder(
+ci.fuzz_libfuzzer_builder(
     name = 'Libfuzzer Upload Windows ASan',
     os = os.WINDOWS_DEFAULT,
 )
 
 
-def fyi_builder(
-    *,
-    name,
-    execution_timeout=10 * time.hour,
-    goma_backend = goma.backend.RBE_PROD,
-    **kwargs):
-  return builder(
-      name = name,
-      execution_timeout = execution_timeout,
-      goma_backend = goma_backend,
-      mastername = 'chromium.fyi',
-      **kwargs
-  )
-
-fyi_builder(
+ci.fyi_builder(
     name = 'Closure Compilation Linux',
-    executable = luci.recipe(name = 'closure_compilation'),
+    executable = 'recipe:closure_compilation',
 )
 
-fyi_builder(
+ci.fyi_builder(
     name = 'Linux Viz',
 )
 
-fyi_builder(
+ci.fyi_builder(
     name = 'Linux remote_run Builder',
 )
 
-fyi_builder(
+ci.fyi_builder(
     name = 'Linux remote_run Tester',
 )
 
-fyi_builder(
+ci.fyi_builder(
     name = 'Mojo Android',
 )
 
-fyi_builder(
+ci.fyi_builder(
     name = 'Mojo ChromiumOS',
 )
 
-fyi_builder(
+ci.fyi_builder(
     name = 'Mojo Linux',
 )
 
-fyi_builder(
+ci.fyi_builder(
     name = 'Site Isolation Android',
 )
 
-fyi_builder(
+ci.fyi_builder(
     name = 'VR Linux',
 )
 
-fyi_builder(
+ci.fyi_builder(
     name = 'android-mojo-webview-rel',
 )
 
-fyi_builder(
+ci.fyi_builder(
     name = 'chromeos-amd64-generic-rel-vm-tests',
 )
 
-fyi_builder(
+ci.fyi_builder(
     name = 'chromeos-kevin-rel-hw-tests',
 )
 
-fyi_builder(
+ci.fyi_builder(
     name = 'fuchsia-fyi-arm64-rel',
     notifies = ['cr-fuchsia'],
 )
 
-fyi_builder(
+ci.fyi_builder(
     name = 'fuchsia-fyi-x64-dbg',
     notifies = ['cr-fuchsia'],
 )
 
-fyi_builder(
+ci.fyi_builder(
     name = 'fuchsia-fyi-x64-rel',
     notifies = ['cr-fuchsia'],
 )
 
-fyi_builder(
+ci.fyi_builder(
     name = 'linux-annotator-rel',
 )
 
-fyi_builder(
+ci.fyi_builder(
     name = 'linux-bfcache-debug',
 )
 
-fyi_builder(
+ci.fyi_builder(
     name = 'linux-blink-animation-use-time-delta',
 )
 
-fyi_builder(
+ci.fyi_builder(
     name = 'linux-blink-cors-rel',
 )
 
-fyi_builder(
+ci.fyi_builder(
     name = 'linux-blink-heap-concurrent-marking-tsan-rel',
 )
 
-fyi_builder(
+ci.fyi_builder(
     name = 'linux-blink-heap-verification',
 )
 
-fyi_builder(
+ci.fyi_builder(
     name = 'linux-chromium-tests-staging-builder',
 )
 
-fyi_builder(
+ci.fyi_builder(
     name = 'linux-chromium-tests-staging-tests',
 )
 
-fyi_builder(
+ci.fyi_builder(
     name = 'linux-fieldtrial-rel',
 )
 
-fyi_builder(
+ci.fyi_builder(
     name = 'linux-wpt-fyi-rel',
     experimental = True,
     goma_backend = None
 )
 
-fyi_builder(
+ci.fyi_builder(
     name = 'win-pixel-builder-rel',
     os = os.WINDOWS_10,
 )
 
-fyi_builder(
+ci.fyi_builder(
     name = 'win-pixel-tester-rel',
     os = None,
 )
 
 
-def fyi_celab_builder(*, name, **kwargs):
-  return builder(
-      name = name,
-      mastername = 'chromium.fyi',
-      os = os.WINDOWS_ANY,
-      executable = luci.recipe(name = 'celab'),
-      goma_backend = goma.backend.RBE_PROD,
-      properties = {
-          'exclude': 'chrome_only',
-          'pool_name': 'celab-chromium-ci',
-          'pool_size': 20,
-          'tests': '*',
-      },
-      **kwargs
-  )
-
-fyi_celab_builder(
+ci.fyi_celab_builder(
     name = 'win-celab-builder-rel',
 )
 
-fyi_celab_builder(
+ci.fyi_celab_builder(
     name = 'win-celab-tester-rel',
 )
 
 
-def fyi_coverage_builder(
-    *,
-    name,
-    cores=32,
-    ssd=True,
-    execution_timeout=20 * time.hour,
-    goma_backend=goma.backend.RBE_PROD,
-    **kwargs):
-  return fyi_builder(
-      name = name,
-      cores = cores,
-      ssd=ssd,
-      execution_timeout = execution_timeout,
-      goma_backend = goma_backend,
-      **kwargs
-  )
-
-fyi_coverage_builder(
+ci.fyi_coverage_builder(
     name = 'android-code-coverage',
     use_java_coverage = True,
 )
 
-fyi_coverage_builder(
+ci.fyi_coverage_builder(
     name = 'android-code-coverage-native',
     use_clang_coverage = True,
 )
 
-fyi_coverage_builder(
+ci.fyi_coverage_builder(
     name = 'ios-simulator-code-coverage',
     caches = [XCODE_IOS_11_CACHE],
     cores = None,
@@ -1180,17 +1020,17 @@ fyi_coverage_builder(
     },
 )
 
-fyi_coverage_builder(
+ci.fyi_coverage_builder(
     name = 'linux-chromeos-code-coverage',
     use_clang_coverage = True,
 )
 
-fyi_coverage_builder(
+ci.fyi_coverage_builder(
     name = 'linux-code-coverage',
     use_clang_coverage = True,
 )
 
-fyi_coverage_builder(
+ci.fyi_coverage_builder(
     name = 'mac-code-coverage',
     builderless = True,
     cores = 24,
@@ -1198,7 +1038,7 @@ fyi_coverage_builder(
     use_clang_coverage = True,
 )
 
-fyi_coverage_builder(
+ci.fyi_coverage_builder(
     name = 'win10-code-coverage',
     builderless = True,
     os = os.WINDOWS_DEFAULT,
@@ -1206,321 +1046,301 @@ fyi_coverage_builder(
 )
 
 
-def fyi_ios_builder(
-    *,
-    name,
-    executable=luci.recipe(name = 'ios/unified_builder_tester'),
-    **kwargs):
-  return fyi_builder(
-      name = name,
-      caches = [XCODE_IOS_11_CACHE],
-      cores = None,
-      executable = executable,
-      goma_backend = None,
-      os = os.MAC_ANY,
-      **kwargs
-  )
-
-fyi_ios_builder(
+ci.fyi_ios_builder(
     name = 'ios-simulator-cr-recipe',
-    executable = luci.recipe(name = 'chromium'),
+    executable = 'recipe:chromium',
     properties = {
         'xcode_build_version': '11a1027',
     },
 )
 
-fyi_ios_builder(
+ci.fyi_ios_builder(
     name = 'ios-simulator-cronet',
     notifies = ['cronet'],
 )
 
-fyi_ios_builder(
+ci.fyi_ios_builder(
     name = 'ios-webkit-tot',
 )
 
-fyi_ios_builder(
+ci.fyi_ios_builder(
     name = 'ios13-beta-simulator',
 )
 
-fyi_ios_builder(
+ci.fyi_ios_builder(
     name = 'ios13-sdk-device',
 )
 
-fyi_ios_builder(
+ci.fyi_ios_builder(
     name = 'ios13-sdk-simulator',
 )
 
 
-def fyi_mac_builder(
-    *,
-    name,
-    cores=4,
-    os=os.MAC_DEFAULT,
-    **kwargs):
-  return fyi_builder(
-      name = name,
-      cores = cores,
-      goma_backend = goma.backend.RBE_PROD,
-      os = os,
-      **kwargs
-  )
-
-fyi_mac_builder(
+ci.fyi_mac_builder(
     name = 'Mac Builder Next',
     cores = None,
     os = os.MAC_10_14,
 )
 
-fyi_mac_builder(
+ci.fyi_mac_builder(
     name = 'Mac10.14 Tests',
     cores = None,
     os = os.MAC_10_14,
 )
 
-fyi_mac_builder(
+ci.fyi_mac_builder(
     name = 'Mac deterministic',
     cores = None,
-    executable = luci.recipe(name = 'swarming/deterministic_build'),
+    executable = 'recipe:swarming/deterministic_build',
     execution_timeout = 6 * time.hour,
 )
 
-fyi_mac_builder(
+ci.fyi_mac_builder(
     name = 'Mac deterministic (dbg)',
     cores = None,
-    executable = luci.recipe(name = 'swarming/deterministic_build'),
+    executable = 'recipe:swarming/deterministic_build',
     execution_timeout = 6 * time.hour,
 )
 
-fyi_mac_builder(
+ci.fyi_mac_builder(
     name = 'mac-hermetic-upgrade-rel',
     cores = 8,
 )
 
-fyi_mac_builder(
+ci.fyi_mac_builder(
     name = 'mac-mojo-rel',
     os = os.MAC_ANY,
 )
 
 
-def fyi_windows_builder(*, name, os=os.WINDOWS_DEFAULT, **kwargs):
-  return fyi_builder(
-      name = name,
-      goma_backend = goma.backend.RBE_PROD,
-      os = os,
-      **kwargs
-  )
-
-fyi_windows_builder(
+ci.fyi_windows_builder(
     name = 'Win 10 Fast Ring',
     os = os.WINDOWS_10,
 )
 
-fyi_windows_builder(
+ci.fyi_windows_builder(
     name = 'win32-arm64-rel',
     cpu = cpu.X86,
     goma_jobs = goma.jobs.J150,
 )
 
-fyi_windows_builder(
+ci.fyi_windows_builder(
     name = 'win-annotator-rel',
     builderless = True,
     execution_timeout = 16 * time.hour,
 )
 
-fyi_windows_builder(
+ci.fyi_windows_builder(
     name = 'Mojo Windows',
 )
 
 
-def gpu_fyi_builder(*, name, **kwargs):
-  return builder(
-      name = name,
-      mastername = 'chromium.gpu.fyi',
-      service_account = 'chromium-ci-gpu-builder@chops-service-accounts.iam.gserviceaccount.com',
-      **kwargs
-  )
+ci.gpu_builder(
+    name = 'GPU Linux Builder (dbg)',
+)
+
+ci.gpu_builder(
+    name = 'GPU Mac Builder (dbg)',
+    cores = None,
+    os = os.MAC_ANY,
+)
+
+ci.gpu_builder(
+    name = 'GPU Win x64 Builder (dbg)',
+    builderless = True,
+    os = os.WINDOWS_ANY,
+)
 
 
-def gpu_fyi_linux_builder(
-    *,
-    name,
-    execution_timeout=6 * time.hour,
-    goma_backend = goma.backend.RBE_PROD,
-    **kwargs):
-  return gpu_fyi_builder(
-      name = name,
-      execution_timeout = execution_timeout,
-      goma_backend = goma_backend,
-      **kwargs
-  )
+ci.gpu_thin_tester(
+    name = 'Linux Debug (NVIDIA)',
+)
 
-gpu_fyi_linux_builder(
+ci.gpu_thin_tester(
+    name = 'Mac Debug (Intel)',
+)
+
+ci.gpu_thin_tester(
+    name = 'Mac Retina Debug (AMD)',
+)
+
+ci.gpu_thin_tester(
+    name = 'Win10 x64 Debug (NVIDIA)',
+)
+
+
+ci.gpu_fyi_linux_builder(
     name = 'Android FYI 32 Vk Release (Pixel 2)',
 )
 
-gpu_fyi_linux_builder(
+ci.gpu_fyi_linux_builder(
     name = 'Android FYI 32 dEQP Vk Release (Pixel 2)',
 )
 
-gpu_fyi_linux_builder(
+ci.gpu_fyi_linux_builder(
     name = 'Android FYI 64 Perf (Pixel 2)',
     cores = 2,
 )
 
-gpu_fyi_linux_builder(
+ci.gpu_fyi_linux_builder(
     name = 'Android FYI 64 Vk Release (Pixel 2)',
 )
 
-gpu_fyi_linux_builder(
+ci.gpu_fyi_linux_builder(
     name = 'Android FYI 64 dEQP Vk Release (Pixel 2)',
 )
 
-gpu_fyi_linux_builder(
+ci.gpu_fyi_linux_builder(
     name = 'Android FYI Release (NVIDIA Shield TV)',
 )
 
-gpu_fyi_linux_builder(
+ci.gpu_fyi_linux_builder(
     name = 'Android FYI Release (Nexus 5)',
 )
 
-gpu_fyi_linux_builder(
+ci.gpu_fyi_linux_builder(
     name = 'Android FYI Release (Nexus 5X)',
 )
 
-gpu_fyi_linux_builder(
+ci.gpu_fyi_linux_builder(
     name = 'Android FYI Release (Nexus 6)',
 )
 
-gpu_fyi_linux_builder(
+ci.gpu_fyi_linux_builder(
     name = 'Android FYI Release (Nexus 6P)',
 )
 
-gpu_fyi_linux_builder(
+ci.gpu_fyi_linux_builder(
     name = 'Android FYI Release (Nexus 9)',
 )
 
-gpu_fyi_linux_builder(
+ci.gpu_fyi_linux_builder(
     name = 'Android FYI Release (Pixel 2)',
 )
 
-gpu_fyi_linux_builder(
+ci.gpu_fyi_linux_builder(
     name = 'Android FYI SkiaRenderer GL (Nexus 5X)',
 )
 
-gpu_fyi_linux_builder(
+ci.gpu_fyi_linux_builder(
     name = 'Android FYI SkiaRenderer Vulkan (Pixel 2)',
 )
 
-gpu_fyi_linux_builder(
+ci.gpu_fyi_linux_builder(
     name = 'Android FYI dEQP Release (Nexus 5X)',
 )
 
-gpu_fyi_linux_builder(
+ci.gpu_fyi_linux_builder(
     name = 'GPU FYI Linux Builder',
 )
 
-gpu_fyi_linux_builder(
+ci.gpu_fyi_linux_builder(
     name = 'GPU FYI Linux Builder (dbg)',
 )
 
-gpu_fyi_linux_builder(
+ci.gpu_fyi_linux_builder(
     name = 'GPU FYI Linux Ozone Builder',
 )
 
-gpu_fyi_linux_builder(
+ci.gpu_fyi_linux_builder(
     name = 'GPU FYI Linux dEQP Builder',
 )
 
-gpu_fyi_linux_builder(
+ci.gpu_fyi_linux_builder(
     name = 'GPU FYI Perf Android 64 Builder',
 )
 
-gpu_fyi_linux_builder(
+ci.gpu_fyi_linux_builder(
     name = 'Linux FYI GPU TSAN Release',
 )
 
 # Builder + tester.
-gpu_fyi_linux_builder(
+ci.gpu_fyi_linux_builder(
     name = 'Linux FYI SkiaRenderer Dawn Release (Intel HD 630)',
 )
 
-# Many of the GPU testers are thin testers, they use linux VMS regardless of the
-# actual OS that the tests are built for
-def gpu_fyi_linux_ci_tester(*, name, execution_timeout=6 * time.hour, **kwargs):
-  return gpu_fyi_linux_builder(
-      name = name,
-      cores = 2,
-      execution_timeout = execution_timeout,
-      # Setting goma_backend for testers is a no-op, but better to be explicit
-      # here and also leave the generated configs unchanged for these testers.
-      goma_backend = None,
-      **kwargs
-  )
 
-gpu_fyi_linux_ci_tester(
+ci.gpu_fyi_mac_builder(
+    name = 'Mac FYI GPU ASAN Release',
+)
+
+ci.gpu_fyi_mac_builder(
+    name = 'GPU FYI Mac Builder',
+)
+
+ci.gpu_fyi_mac_builder(
+    name = 'GPU FYI Mac Builder (dbg)',
+)
+
+ci.gpu_fyi_mac_builder(
+    name = 'GPU FYI Mac dEQP Builder',
+)
+
+
+ci.gpu_fyi_thin_tester(
     name = 'Linux FYI Debug (NVIDIA)',
 )
 
-gpu_fyi_linux_ci_tester(
+ci.gpu_fyi_thin_tester(
     name = 'Linux FYI Experimental Release (Intel HD 630)',
 )
 
-gpu_fyi_linux_ci_tester(
+ci.gpu_fyi_thin_tester(
     name = 'Linux FYI Experimental Release (NVIDIA)',
 )
 
-gpu_fyi_linux_ci_tester(
+ci.gpu_fyi_thin_tester(
     name = 'Linux FYI Ozone (Intel)',
 )
 
-gpu_fyi_linux_ci_tester(
+ci.gpu_fyi_thin_tester(
     name = 'Linux FYI Release (NVIDIA)',
 )
 
-gpu_fyi_linux_ci_tester(
+ci.gpu_fyi_thin_tester(
     name = 'Linux FYI Release (AMD R7 240)',
 )
 
-gpu_fyi_linux_ci_tester(
+ci.gpu_fyi_thin_tester(
     name = 'Linux FYI Release (Intel HD 630)',
 )
 
-gpu_fyi_linux_ci_tester(
+ci.gpu_fyi_thin_tester(
     name = 'Linux FYI Release (Intel UHD 630)',
     # TODO(https://crbug.com/986939): Remove this increased timeout once more
     # devices are added.
     execution_timeout = 18 * time.hour,
 )
 
-gpu_fyi_linux_ci_tester(
+ci.gpu_fyi_thin_tester(
     name = 'Linux FYI SkiaRenderer Vulkan (Intel HD 630)',
 )
 
-gpu_fyi_linux_ci_tester(
+ci.gpu_fyi_thin_tester(
     name = 'Linux FYI SkiaRenderer Vulkan (NVIDIA)',
 )
 
-gpu_fyi_linux_ci_tester(
+ci.gpu_fyi_thin_tester(
     name = 'Linux FYI dEQP Release (Intel HD 630)',
 )
 
-gpu_fyi_linux_ci_tester(
+ci.gpu_fyi_thin_tester(
     name = 'Linux FYI dEQP Release (NVIDIA)',
 )
 
-gpu_fyi_linux_ci_tester(
+ci.gpu_fyi_thin_tester(
     name = 'Mac FYI Debug (Intel)',
 )
 
-gpu_fyi_linux_ci_tester(
+ci.gpu_fyi_thin_tester(
     name = 'Mac FYI Experimental Release (Intel)',
 )
 
-gpu_fyi_linux_ci_tester(
+ci.gpu_fyi_thin_tester(
     name = 'Mac FYI Experimental Retina Release (AMD)',
 )
 
-gpu_fyi_linux_ci_tester(
+ci.gpu_fyi_thin_tester(
     name = 'Mac FYI Experimental Retina Release (NVIDIA)',
     # This bot has one machine backing its tests at the moment.
     # If it gets more, this can be removed.
@@ -1528,429 +1348,289 @@ gpu_fyi_linux_ci_tester(
     execution_timeout = 12 * time.hour,
 )
 
-gpu_fyi_linux_ci_tester(
+ci.gpu_fyi_thin_tester(
     name = 'Mac FYI Release (Intel)',
 )
 
-gpu_fyi_linux_ci_tester(
+ci.gpu_fyi_thin_tester(
     name = 'Mac FYI Retina Debug (AMD)',
 )
 
-gpu_fyi_linux_ci_tester(
+ci.gpu_fyi_thin_tester(
     name = 'Mac FYI Retina Debug (NVIDIA)',
 )
 
-gpu_fyi_linux_ci_tester(
+ci.gpu_fyi_thin_tester(
     name = 'Mac FYI Retina Release (AMD)',
 )
 
-gpu_fyi_linux_ci_tester(
+ci.gpu_fyi_thin_tester(
     name = 'Mac FYI Retina Release (NVIDIA)',
 )
 
-gpu_fyi_linux_ci_tester(
+ci.gpu_fyi_thin_tester(
     name = 'Mac FYI dEQP Release AMD',
 )
 
-gpu_fyi_linux_ci_tester(
+ci.gpu_fyi_thin_tester(
     name = 'Mac FYI dEQP Release Intel',
 )
 
-gpu_fyi_linux_ci_tester(
+ci.gpu_fyi_thin_tester(
     name = 'Mac Pro FYI Release (AMD)',
 )
 
-gpu_fyi_linux_ci_tester(
+ci.gpu_fyi_thin_tester(
     name = 'Win10 FYI x64 Debug (NVIDIA)',
 )
 
-gpu_fyi_linux_ci_tester(
+ci.gpu_fyi_thin_tester(
     name = 'Win10 FYI x64 DX12 Vulkan Debug (NVIDIA)',
 )
 
-gpu_fyi_linux_ci_tester(
+ci.gpu_fyi_thin_tester(
     name = 'Win10 FYI x64 DX12 Vulkan Release (NVIDIA)',
 )
 
-gpu_fyi_linux_ci_tester(
+ci.gpu_fyi_thin_tester(
     name = 'Win10 FYI x64 Exp Release (Intel HD 630)',
 )
 
-gpu_fyi_linux_ci_tester(
+ci.gpu_fyi_thin_tester(
     name = 'Win10 FYI x64 Exp Release (NVIDIA)',
 )
 
-gpu_fyi_linux_ci_tester(
+ci.gpu_fyi_thin_tester(
     name = 'Win10 FYI x64 Release (AMD RX 550)',
 )
 
-gpu_fyi_linux_ci_tester(
+ci.gpu_fyi_thin_tester(
     name = 'Win10 FYI x64 Release (Intel HD 630)',
 )
 
-gpu_fyi_linux_ci_tester(
+ci.gpu_fyi_thin_tester(
     name = 'Win10 FYI x64 Release (Intel UHD 630)',
     # TODO(https://crbug.com/986939): Remove this increased timeout once
     # more devices are added.
     execution_timeout = 18 * time.hour,
 )
 
-gpu_fyi_linux_ci_tester(
+ci.gpu_fyi_thin_tester(
     name = 'Win10 FYI x64 Release (NVIDIA GeForce GTX 1660)',
     execution_timeout = 18 * time.hour,
 )
 
-gpu_fyi_linux_ci_tester(
+ci.gpu_fyi_thin_tester(
     name = 'Win10 FYI x64 Release (NVIDIA)',
 )
 
-gpu_fyi_linux_ci_tester(
+ci.gpu_fyi_thin_tester(
     name = 'Win10 FYI x64 Release XR Perf (NVIDIA)',
 )
 
-gpu_fyi_linux_ci_tester(
+ci.gpu_fyi_thin_tester(
     name = 'Win10 FYI x64 SkiaRenderer GL (NVIDIA)',
 )
 
-gpu_fyi_linux_ci_tester(
+ci.gpu_fyi_thin_tester(
     name = 'Win10 FYI x64 dEQP Release (Intel HD 630)',
 )
 
-gpu_fyi_linux_ci_tester(
+ci.gpu_fyi_thin_tester(
     name = 'Win10 FYI x64 dEQP Release (NVIDIA)',
 )
 
-gpu_fyi_linux_ci_tester(
+ci.gpu_fyi_thin_tester(
     name = 'Win10 FYI x86 Release (NVIDIA)',
 )
 
-gpu_fyi_linux_ci_tester(
+ci.gpu_fyi_thin_tester(
     name = 'Win7 FYI Debug (AMD)',
 )
 
-gpu_fyi_linux_ci_tester(
+ci.gpu_fyi_thin_tester(
     name = 'Win7 FYI Release (AMD)',
 )
 
-gpu_fyi_linux_ci_tester(
+ci.gpu_fyi_thin_tester(
     name = 'Win7 FYI Release (NVIDIA)',
 )
 
-gpu_fyi_linux_ci_tester(
+ci.gpu_fyi_thin_tester(
     name = 'Win7 FYI dEQP Release (AMD)',
 )
 
-gpu_fyi_linux_ci_tester(
+ci.gpu_fyi_thin_tester(
     name = 'Win7 FYI x64 Release (NVIDIA)',
 )
 
-gpu_fyi_linux_ci_tester(
+ci.gpu_fyi_thin_tester(
     name = 'Win7 FYI x64 dEQP Release (NVIDIA)',
 )
 
 
-def gpu_fyi_mac_builder(*, name, **kwargs):
-  return gpu_fyi_builder(
-      name = name,
-      cores = 4,
-      execution_timeout = 6 * time.hour,
-      goma_backend = goma.backend.RBE_PROD,
-      os = os.MAC_ANY,
-      **kwargs
-  )
-
-gpu_fyi_mac_builder(
-    name = 'Mac FYI GPU ASAN Release',
-)
-
-gpu_fyi_mac_builder(
-    name = 'GPU FYI Mac Builder',
-)
-
-gpu_fyi_mac_builder(
-    name = 'GPU FYI Mac Builder (dbg)',
-)
-
-gpu_fyi_mac_builder(
-    name = 'GPU FYI Mac dEQP Builder',
-)
-
-
-def gpu_fyi_windows_builder(*, name, **kwargs):
-  return gpu_fyi_builder(
-      name = name,
-      builderless = True,
-      goma_backend = goma.backend.RBE_PROD,
-      os = os.WINDOWS_ANY,
-      **kwargs
-  )
-
-gpu_fyi_windows_builder(
+ci.gpu_fyi_windows_builder(
     name = 'GPU FYI Win Builder',
 )
 
-gpu_fyi_windows_builder(
+ci.gpu_fyi_windows_builder(
     name = 'GPU FYI Win Builder (dbg)',
 )
 
-gpu_fyi_windows_builder(
+ci.gpu_fyi_windows_builder(
     name = 'GPU FYI Win dEQP Builder',
 )
 
-gpu_fyi_windows_builder(
+ci.gpu_fyi_windows_builder(
     name = 'GPU FYI Win x64 Builder',
 )
 
-gpu_fyi_windows_builder(
+ci.gpu_fyi_windows_builder(
     name = 'GPU FYI Win x64 Builder (dbg)',
 )
 
-gpu_fyi_windows_builder(
+ci.gpu_fyi_windows_builder(
     name = 'GPU FYI Win x64 dEQP Builder',
 )
 
-gpu_fyi_windows_builder(
+ci.gpu_fyi_windows_builder(
     name = 'GPU FYI Win x64 DX12 Vulkan Builder',
 )
 
-gpu_fyi_windows_builder(
+ci.gpu_fyi_windows_builder(
     name = 'GPU FYI Win x64 DX12 Vulkan Builder (dbg)',
 )
 
-gpu_fyi_windows_builder(
+ci.gpu_fyi_windows_builder(
     name = 'GPU FYI XR Win x64 Builder',
 )
 
 
-def gpu_builder(*, name, **kwargs):
-  return builder(
-      name = name,
-      goma_backend = goma.backend.RBE_PROD,
-      mastername = 'chromium.gpu',
-      **kwargs
-  )
-
-gpu_builder(
-    name = 'GPU Linux Builder (dbg)',
-)
-
-gpu_builder(
-    name = 'GPU Mac Builder (dbg)',
-    cores = None,
-    os = os.MAC_ANY,
-)
-
-gpu_builder(
-    name = 'GPU Win x64 Builder (dbg)',
-    builderless = True,
-    os = os.WINDOWS_ANY,
-)
-
-
-# Many of the GPU testers are thin testers, they use linux VMS regardless of the
-# actual OS that the tests are built for
-def gpu_linux_ci_tester(*, name, **kwargs):
-  return gpu_builder(
-      name = name,
-      cores = 2,
-      os = os.LINUX_DEFAULT,
-      **kwargs
-  )
-
-gpu_linux_ci_tester(
-    name = 'Linux Debug (NVIDIA)',
-)
-
-gpu_linux_ci_tester(
-    name = 'Mac Debug (Intel)',
-)
-
-gpu_linux_ci_tester(
-    name = 'Mac Retina Debug (AMD)',
-)
-
-gpu_linux_ci_tester(
-    name = 'Win10 x64 Debug (NVIDIA)',
-)
-
-
-def linux_builder(
-    *,
-    name,
-    goma_backend = goma.backend.RBE_PROD,
-    goma_jobs=goma.jobs.MANY_JOBS_FOR_CI,
-    **kwargs):
-  return builder(
-      name = name,
-      goma_backend = goma_backend,
-      goma_jobs = goma_jobs,
-      mastername = 'chromium.linux',
-      **kwargs
-  )
-
-linux_builder(
+ci.linux_builder(
     name = 'Fuchsia x64',
     notifies = ['cr-fuchsia'],
 )
 
-linux_builder(
+ci.linux_builder(
     name = 'Cast Audio Linux',
     ssd = True,
 )
 
-linux_builder(
+ci.linux_builder(
     name = 'Cast Linux',
     goma_jobs = goma.jobs.J50,
 )
 
-linux_builder(
+ci.linux_builder(
     name = 'Deterministic Fuchsia (dbg)',
-    executable = luci.recipe(name = 'swarming/deterministic_build'),
+    executable = 'recipe:swarming/deterministic_build',
     execution_timeout = 6 * time.hour,
     goma_jobs = None,
 )
 
-linux_builder(
+ci.linux_builder(
     name = 'Deterministic Linux',
-    executable = luci.recipe(name = 'swarming/deterministic_build'),
+    executable = 'recipe:swarming/deterministic_build',
     execution_timeout = 6 * time.hour,
 )
 
-linux_builder(
+ci.linux_builder(
     name = 'Deterministic Linux (dbg)',
     cores = 32,
-    executable = luci.recipe(name = 'swarming/deterministic_build'),
+    executable = 'recipe:swarming/deterministic_build',
     execution_timeout = 6 * time.hour,
 )
 
-linux_builder(
+ci.linux_builder(
     name = 'Fuchsia ARM64',
     notifies = ['cr-fuchsia'],
 )
 
-linux_builder(
+ci.linux_builder(
     name = 'Leak Detection Linux',
 )
 
-linux_builder(
+ci.linux_builder(
     name = 'Linux Builder (dbg)',
 )
 
-linux_builder(
+ci.linux_builder(
     name = 'Linux Builder (dbg)(32)',
 )
 
-linux_builder(
+ci.linux_builder(
     name = 'Linux Tests (dbg)(1)',
 )
 
-linux_builder(
+ci.linux_builder(
     name = 'fuchsia-arm64-cast',
     notifies = ['cr-fuchsia'],
 )
 
-linux_builder(
+ci.linux_builder(
     name = 'fuchsia-x64-cast',
     notifies = ['cr-fuchsia'],
 )
 
-linux_builder(
+ci.linux_builder(
     name = 'fuchsia-x64-dbg',
     notifies = ['cr-fuchsia'],
 )
 
-linux_builder(
+ci.linux_builder(
     name = 'linux-gcc-rel',
     goma_backend = None,
 )
 
-linux_builder(
+ci.linux_builder(
     name = 'linux-ozone-rel',
 )
 
-linux_builder(
+ci.linux_builder(
     name = 'linux-trusty-rel',
     os = os.LINUX_TRUSTY,
 )
 
-linux_builder(
+ci.linux_builder(
     name = 'linux_chromium_component_updater',
-    executable = luci.recipe(name = 'findit/chromium/update_components'),
+    executable = 'recipe:findit/chromium/update_components',
     service_account = 'component-mapping-updater@chops-service-accounts.iam.gserviceaccount.com'
 )
 
 
-def mac_builder(
-    *,
-    name,
-    cores=None,
-    goma_backend = goma.backend.RBE_PROD,
-    os=os.MAC_DEFAULT,
-    **kwargs):
-  return builder(
-      name = name,
-      cores = cores,
-      goma_backend = goma_backend,
-      mastername = 'chromium.mac',
-      os = os,
-      **kwargs
-  )
-
-mac_builder(
+ci.mac_builder(
     name = 'Mac Builder (dbg)',
     os = os.MAC_ANY,
 )
 
-mac_builder(
+ci.mac_builder(
     name = 'Mac10.13 Tests (dbg)',
     os = os.MAC_ANY,
 )
 
-def mac_ios_builder(*, name, **kwargs):
-  return mac_builder(
-      name = name,
-      caches = [XCODE_IOS_11_CACHE],
-      executable = luci.recipe(name = 'ios/unified_builder_tester'),
-      goma_backend = None,
-      os = os.MAC_ANY,
-      **kwargs
-  )
 
-mac_ios_builder(
+ci.mac_ios_builder(
     name = 'ios-device',
 )
 
-mac_ios_builder(
+ci.mac_ios_builder(
     name = 'ios-device-xcode-clang',
 )
 
-mac_ios_builder(
+ci.mac_ios_builder(
     name = 'ios-simulator-full-configs',
 )
 
-mac_ios_builder(
+ci.mac_ios_builder(
     name = 'ios-simulator-noncq',
 )
 
-mac_ios_builder(
+ci.mac_ios_builder(
     name = 'ios-simulator-xcode-clang',
 )
 
 
-def memory_builder(
-    *,
-    name,
-    goma_jobs=goma.jobs.MANY_JOBS_FOR_CI,
-    **kwargs):
-  return builder(
-      name = name,
-      goma_backend = goma.backend.RBE_PROD,
-      goma_jobs = goma_jobs,
-      mastername = 'chromium.memory',
-      **kwargs
-  )
-
-memory_builder(
+ci.memory_builder(
     name = 'Android CFI',
     cores = 32,
     # TODO(https://crbug.com/919430) Remove the larger timeout once compile
@@ -1958,20 +1638,20 @@ memory_builder(
     execution_timeout = time.hour * 9 / 2,  # 4.5 (can't multiply float * duration)
 )
 
-memory_builder(
+ci.memory_builder(
     name = 'Linux ASan LSan Builder',
     ssd = True,
 )
 
-memory_builder(
+ci.memory_builder(
     name = 'Linux ASan LSan Tests (1)',
 )
 
-memory_builder(
+ci.memory_builder(
     name = 'Linux ASan Tests (sandboxed)',
 )
 
-memory_builder(
+ci.memory_builder(
     name = 'Linux CFI',
     cores = 32,
     # TODO(thakis): Remove once https://crbug.com/927738 is resolved.
@@ -1979,43 +1659,43 @@ memory_builder(
     goma_jobs = goma.jobs.MANY_JOBS_FOR_CI,
 )
 
-memory_builder(
+ci.memory_builder(
     name = 'Linux Chromium OS ASan LSan Builder',
     # TODO(crbug.com/1030593): Builds take more than 3 hours sometimes. Remove
     # once the builds are faster.
     execution_timeout = 4 * time.hour,
 )
 
-memory_builder(
+ci.memory_builder(
     name = 'Linux Chromium OS ASan LSan Tests (1)',
 )
 
-memory_builder(
+ci.memory_builder(
     name = 'Linux ChromiumOS MSan Builder',
 )
 
-memory_builder(
+ci.memory_builder(
     name = 'Linux ChromiumOS MSan Tests',
 )
 
-memory_builder(
+ci.memory_builder(
     name = 'Linux MSan Builder',
     goma_jobs = goma.jobs.MANY_JOBS_FOR_CI,
 )
 
-memory_builder(
+ci.memory_builder(
     name = 'Linux MSan Tests',
 )
 
-memory_builder(
+ci.memory_builder(
     name = 'Linux TSan Builder',
 )
 
-memory_builder(
+ci.memory_builder(
     name = 'Linux TSan Tests',
 )
 
-memory_builder(
+ci.memory_builder(
     name = 'Mac ASan 64 Builder',
     builderless = False,
     goma_debug = True,  # TODO(hinoka): Remove this after debugging.
@@ -2024,29 +1704,29 @@ memory_builder(
     os = os.MAC_DEFAULT,
 )
 
-memory_builder(
+ci.memory_builder(
     name = 'Mac ASan 64 Tests (1)',
     builderless = False,
     os = os.MAC_DEFAULT,
 )
 
-memory_builder(
+ci.memory_builder(
     name = 'WebKit Linux ASAN',
 )
 
-memory_builder(
+ci.memory_builder(
     name = 'WebKit Linux Leak',
 )
 
-memory_builder(
+ci.memory_builder(
     name = 'WebKit Linux MSAN',
 )
 
-memory_builder(
+ci.memory_builder(
     name = 'android-asan',
 )
 
-memory_builder(
+ci.memory_builder(
     name = 'win-asan',
     cores = 32,
     builderless = True,
@@ -2054,138 +1734,100 @@ memory_builder(
 )
 
 
-def swangle_builder(*, name, **kwargs):
-  return builder(
-      name = name,
-      builderless = True,
-      mastername = 'chromium.swangle',
-      service_account = 'chromium-ci-gpu-builder@chops-service-accounts.iam.gserviceaccount.com',
-      **kwargs
-  )
-
-
-def swangle_linux_builder(
-    *,
-    name,
-    **kwargs):
-  return swangle_builder(
-      name = name,
-      goma_backend = goma.backend.RBE_PROD,
-      os = os.LINUX_DEFAULT,
-      **kwargs
-  )
-
-swangle_linux_builder(
+ci.swangle_linux_builder(
     name = 'linux-swangle-tot-angle-x64'
 )
 
-swangle_linux_builder(
+ci.swangle_linux_builder(
     name = 'linux-swangle-tot-angle-x86'
 )
 
-swangle_linux_builder(
+ci.swangle_linux_builder(
     name = 'linux-swangle-tot-swiftshader-x64'
 )
 
-swangle_linux_builder(
+ci.swangle_linux_builder(
     name = 'linux-swangle-tot-swiftshader-x86'
 )
 
-swangle_linux_builder(
+ci.swangle_linux_builder(
     name = 'linux-swangle-x64'
 )
 
-swangle_linux_builder(
+ci.swangle_linux_builder(
     name = 'linux-swangle-x86'
 )
 
 
-def swangle_windows_builder(*, name, **kwargs):
-  return swangle_builder(
-      name = name,
-      goma_backend = goma.backend.RBE_PROD,
-      os = os.WINDOWS_DEFAULT,
-      **kwargs
-  )
-
-swangle_windows_builder(
+ci.swangle_windows_builder(
     name = 'win-swangle-tot-angle-x64',
 )
 
-swangle_windows_builder(
+ci.swangle_windows_builder(
     name = 'win-swangle-tot-angle-x86',
 )
 
-swangle_windows_builder(
+ci.swangle_windows_builder(
     name = 'win-swangle-tot-swiftshader-x64',
 )
 
-swangle_windows_builder(
+ci.swangle_windows_builder(
     name = 'win-swangle-tot-swiftshader-x86',
 )
 
-swangle_windows_builder(
+ci.swangle_windows_builder(
     name = 'win-swangle-x64',
 )
 
-swangle_windows_builder(
+ci.swangle_windows_builder(
     name = 'win-swangle-x86',
 )
 
 
-def win_builder(*, name, os=os.WINDOWS_DEFAULT, **kwargs):
-  return builder(
-      name = name,
-      goma_backend = goma.backend.RBE_PROD,
-      mastername = 'chromium.win',
-      os = os,
-      **kwargs
-  )
-
-win_builder(
+ci.win_builder(
     name = 'WebKit Win10',
 )
 
-win_builder(
+ci.win_builder(
     name = 'Win Builder',
     cores = 32,
     os = os.WINDOWS_ANY,
 )
 
-win_builder(
+ci.win_builder(
     name = 'Win Builder (dbg)',
     cores = 32,
     os = os.WINDOWS_ANY,
 )
 
-win_builder(
+ci.win_builder(
     name = 'Win x64 Builder (dbg)',
     cores = 32,
     builderless = True,
     os = os.WINDOWS_ANY,
 )
 
-win_builder(
+ci.win_builder(
     name = 'Win10 Tests x64 (dbg)',
 )
 
-win_builder(
+ci.win_builder(
     name = 'Win7 (32) Tests',
     os = os.WINDOWS_7,
 )
 
-win_builder(
+ci.win_builder(
     name = 'Win7 Tests (1)',
     os = os.WINDOWS_7,
 )
 
-win_builder(
+ci.win_builder(
     name = 'Win7 Tests (dbg)(1)',
     os = os.WINDOWS_7,
 )
 
-win_builder(
+ci.win_builder(
     name = 'Windows deterministic',
-    executable = luci.recipe(name = 'swarming/deterministic_build'),
+    executable = 'recipe:swarming/deterministic_build',
     execution_timeout = 6 * time.hour,
 )

@@ -46,6 +46,7 @@ cr.define('settings', function() {
 
   cr.addSingletonGetter(DownloadsBrowserProxyImpl);
 
+  // #cr_define_end
   return {
     DownloadsBrowserProxy: DownloadsBrowserProxy,
     DownloadsBrowserProxyImpl: DownloadsBrowserProxyImpl,

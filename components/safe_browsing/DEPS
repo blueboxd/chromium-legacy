@@ -5,6 +5,7 @@ include_rules = [
   "+components/prefs",
   "+components/security_interstitials/content",
   "+components/security_interstitials/core",
+  "+components/signin/public",
   "+components/sync/protocol",
   "+components/sync_preferences/testing_pref_service_syncable.h",
   "+components/unified_consent",

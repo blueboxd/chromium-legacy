@@ -11,6 +11,7 @@
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
 #include "base/memory/ptr_util.h"
+#include "base/no_destructor.h"
 #include "base/run_loop.h"
 #include "base/time/time.h"
 #include "base/values.h"
@@ -18,6 +19,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/themes/theme_helper.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/common/extensions/extension_test_util.h"
@@ -57,9 +59,15 @@ const base::FilePath::CharType kExtensionFilePath[] =
 const base::FilePath::CharType kExtensionFilePath[] = FILE_PATH_LITERAL("/oo");
 #endif
 
+const ThemeHelper& GetThemeHelper() {
+  static base::NoDestructor<std::unique_ptr<ThemeHelper>> theme_helper(
+      std::make_unique<ThemeHelper>());
+  return **theme_helper;
+}
+
 class FakeThemeService : public ThemeService {
  public:
-  FakeThemeService() : ThemeService(nullptr) {}
+  FakeThemeService() : ThemeService(nullptr, GetThemeHelper()) {}
 
   // ThemeService implementation
   void DoSetTheme(const extensions::Extension* extension,

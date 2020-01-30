@@ -625,11 +625,6 @@ public class TopToolbarCoordinator implements Toolbar {
      */
     public void enableExperimentalButton(View.OnClickListener onClickListener, Drawable image,
             @StringRes int contentDescriptionResId) {
-        if (mStartSurfaceToolbarCoordinator != null
-                && FeatureUtilities.isStartSurfaceSinglePaneEnabled()) {
-            mStartSurfaceToolbarCoordinator.enableExperimentalButton(
-                    onClickListener, image, contentDescriptionResId);
-        }
         mToolbarLayout.enableExperimentalButton(onClickListener, image, contentDescriptionResId);
     }
 
@@ -649,10 +644,6 @@ public class TopToolbarCoordinator implements Toolbar {
      * @return The experimental toolbar button if it exists.
      */
     public void updateExperimentalButtonImage(Drawable image) {
-        if (mStartSurfaceToolbarCoordinator != null
-                && FeatureUtilities.isStartSurfaceSinglePaneEnabled()) {
-            mStartSurfaceToolbarCoordinator.updateExperimentalButtonImage(image);
-        }
         mToolbarLayout.updateExperimentalButtonImage(image);
     }
 
@@ -660,10 +651,6 @@ public class TopToolbarCoordinator implements Toolbar {
      * Disable the experimental toolbar button.
      */
     public void disableExperimentalButton() {
-        if (mStartSurfaceToolbarCoordinator != null
-                && FeatureUtilities.isStartSurfaceSinglePaneEnabled()) {
-            mStartSurfaceToolbarCoordinator.disableExperimentalButton();
-        }
         mToolbarLayout.disableExperimentalButton();
     }
 
@@ -675,14 +662,63 @@ public class TopToolbarCoordinator implements Toolbar {
      */
     public void showIPHOnExperimentalButton(@StringRes int stringId,
             @StringRes int accessibilityStringId, Runnable dismissedCallback) {
+        mToolbarLayout.showIPHOnExperimentalButton(
+                stringId, accessibilityStringId, dismissedCallback);
+    }
+
+    /**
+     * Show the identity disc toolbar button.
+     * @param onClickListener The {@link OnClickListener} to be called when the button is clicked.
+     * @param image The drawable to display for the button.
+     * @param contentDescriptionResId The resource id of the content description for the button.
+     */
+    public void showIdentityDiscButton(OnClickListener onClickListener, Drawable image,
+            @StringRes int contentDescriptionResId) {
+        if (mStartSurfaceToolbarCoordinator != null
+                && FeatureUtilities.isStartSurfaceSinglePaneEnabled()) {
+            mStartSurfaceToolbarCoordinator.showIdentityDiscButton(
+                    onClickListener, image, contentDescriptionResId);
+        }
+        enableExperimentalButton(onClickListener, image, contentDescriptionResId);
+    }
+
+    /**
+     * Hide the identity disc toolbar button.
+     */
+    public void hideIdentityDiscButton() {
+        if (mStartSurfaceToolbarCoordinator != null
+                && FeatureUtilities.isStartSurfaceSinglePaneEnabled()) {
+            mStartSurfaceToolbarCoordinator.hideIdentityDiscButton();
+        }
+        disableExperimentalButton();
+    }
+
+    /**
+     * Updates image displayed on identity disc button.
+     */
+    public void updateIdentityDiscButtonImage(Drawable image) {
+        if (mStartSurfaceToolbarCoordinator != null
+                && FeatureUtilities.isStartSurfaceSinglePaneEnabled()) {
+            mStartSurfaceToolbarCoordinator.updateIdentityDiscButtonImage(image);
+        }
+        updateExperimentalButtonImage(image);
+    }
+
+    /**
+     * Displays in-product help for the identity disc button.
+     * @param stringId The id of the string resource for the text that should be shown.
+     * @param accessibilityStringId The id of the string resource of the accessibility text.
+     * @param dismissedCallback The callback that will be called when in-product help is dismissed.
+     */
+    public void showIPHOnIdentityDiscButton(@StringRes int stringId,
+            @StringRes int accessibilityStringId, Runnable dismissedCallback) {
         if (mStartSurfaceToolbarCoordinator != null
                 && mToolbarLayout.getToolbarDataProvider().isInOverviewAndShowingOmnibox()) {
-            mStartSurfaceToolbarCoordinator.showIPHOnExperimentalButton(
+            mStartSurfaceToolbarCoordinator.showIPHOnIdentityDiscButton(
                     stringId, accessibilityStringId, dismissedCallback);
             return;
         }
-        mToolbarLayout.showIPHOnExperimentalButton(
-                stringId, accessibilityStringId, dismissedCallback);
+        showIPHOnExperimentalButton(stringId, accessibilityStringId, dismissedCallback);
     }
 
     @Override

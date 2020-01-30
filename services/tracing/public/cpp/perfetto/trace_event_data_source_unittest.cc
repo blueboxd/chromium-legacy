@@ -301,9 +301,8 @@ class TraceEventDataSourceTest : public testing::Test {
     ASSERT_EQ(packet->clock_snapshot().clocks().size(), 3);
 
     EXPECT_EQ(packet->clock_snapshot().clocks()[0].clock_id(),
-              static_cast<uint32_t>(kTraceClockId));
-    EXPECT_GE(packet->clock_snapshot().clocks()[0].timestamp(),
-              min_timestamp * 1000);
+              static_cast<uint32_t>(
+                  perfetto::protos::pbzero::ClockSnapshot::Clock::BOOTTIME));
     EXPECT_FALSE(packet->clock_snapshot().clocks()[0].has_unit_multiplier_ns());
     EXPECT_FALSE(packet->clock_snapshot().clocks()[0].has_is_incremental());
 
@@ -319,8 +318,6 @@ class TraceEventDataSourceTest : public testing::Test {
     EXPECT_EQ(packet->clock_snapshot().clocks()[2].unit_multiplier_ns(), 1000u);
     EXPECT_TRUE(packet->clock_snapshot().clocks()[2].is_incremental());
 
-    EXPECT_EQ(packet->clock_snapshot().clocks()[0].timestamp(),
-              packet->clock_snapshot().clocks()[1].timestamp() * 1000);
     EXPECT_EQ(packet->clock_snapshot().clocks()[1].timestamp(),
               packet->clock_snapshot().clocks()[2].timestamp());
 

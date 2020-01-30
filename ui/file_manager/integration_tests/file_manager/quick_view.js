@@ -212,9 +212,15 @@
    * Tests that Quick View opens via the context menu with a single selection.
    */
   testcase.openQuickViewViaContextMenuSingleSelection = async () => {
-    // Open Files app on Downloads containing ENTRIES.hello.
-    const appId =
-        await setupAndWaitUntilReady(RootPath.DOWNLOADS, [ENTRIES.hello], []);
+    // Open Files app on Downloads containing BASIC_LOCAL_ENTRY_SET.
+    const appId = await setupAndWaitUntilReady(
+        RootPath.DOWNLOADS, BASIC_LOCAL_ENTRY_SET, []);
+
+    // Select hello.txt in the file list.
+    chrome.test.assertTrue(
+        !!await remoteCall.callRemoteTestUtil(
+            'selectFile', appId, [ENTRIES.hello.nameText]),
+        'selectFile failed');
 
     // Right-click the file in the file-list.
     const query = '#file-list [file-name="hello.txt"]';
@@ -228,7 +234,8 @@
     // Click the file-list context menu "Get info" command.
     const getInfoMenuItem = '#file-context-menu:not([hidden]) ' +
         ' [command="#get-info"]:not([hidden])';
-    await remoteCall.simulateUiClick(appId, getInfoMenuItem);
+    chrome.test.assertTrue(!!await remoteCall.callRemoteTestUtil(
+        'fakeMouseClick', appId, [getInfoMenuItem]));
 
     // Check: the Quick View dialog should be shown.
     const caller = getCaller();
@@ -269,7 +276,8 @@
     // Click the file-list context menu "Get info" command.
     const getInfoMenuItem = '#file-context-menu:not([hidden]) ' +
         ' [command="#get-info"]:not([hidden])';
-    await remoteCall.simulateUiClick(appId, getInfoMenuItem);
+    chrome.test.assertTrue(!!await remoteCall.callRemoteTestUtil(
+        'fakeMouseClick', appId, [getInfoMenuItem]));
 
     // Check: the Quick View dialog should be shown.
     const caller = getCaller();

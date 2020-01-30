@@ -152,7 +152,7 @@ public class SwipeRefreshHandler
     @SuppressLint("NewApi")
     @Override
     public void cleanupWebContents(WebContents webContents) {
-        if (mSwipeRefreshLayout != null) detachSwipeRefreshLayoutIfNecessary();
+        detachSwipeRefreshLayoutIfNecessary();
         mContainerView = null;
         mNavigationHandler = null;
         setEnabled(false);
@@ -274,6 +274,7 @@ public class SwipeRefreshHandler
     }
 
     private void detachSwipeRefreshLayoutIfNecessary() {
+        if (mSwipeRefreshLayout == null) return;
         cancelDetachLayoutRunnable();
         if (mSwipeRefreshLayout.getParent() != null) {
             mContainerView.removeView(mSwipeRefreshLayout);

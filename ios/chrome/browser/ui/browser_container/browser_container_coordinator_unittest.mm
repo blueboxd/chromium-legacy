@@ -11,7 +11,6 @@
 #import "ios/chrome/browser/overlays/public/web_content_area/java_script_alert_overlay.h"
 #import "ios/chrome/browser/ui/browser_container/browser_container_view_controller.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_controller.h"
-#import "ios/chrome/browser/ui/fullscreen/fullscreen_controller_factory.h"
 #import "ios/chrome/browser/web_state_list/fake_web_state_list_delegate.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/web_state_list/web_state_opener.h"
@@ -59,8 +58,7 @@ class BrowserContainerCoordinatorTest : public PlatformTest {
 
   // Accessors:
   FullscreenController* fullscreen_controller() {
-    return FullscreenControllerFactory::GetForBrowserState(
-        browser_state_.get());
+    return FullscreenController::FromBrowserState(browser_state_.get());
   }
   web::WebState* active_web_state() {
     return web_state_list_.GetActiveWebState();

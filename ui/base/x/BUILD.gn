@@ -49,10 +49,14 @@ jumbo_component("x") {
 
   if (is_desktop_linux) {
     sources += [
+      "selection_owner.cc",
+      "selection_owner.h",
       "x11_drag_context.cc",
       "x11_drag_context.h",
       "x11_drag_drop_client.cc",
       "x11_drag_drop_client.h",
+      "x11_os_exchange_data_provider.cc",
+      "x11_os_exchange_data_provider.h",
     ]
   }
 
@@ -71,6 +75,7 @@ jumbo_component("x") {
     "//ui/base:hit_test",
     "//ui/base:wm_role_names",
     "//ui/base/clipboard:clipboard_types",
+    "//ui/base/dragdrop/file_info",
     "//ui/display/util",
     "//ui/events",
     "//ui/events/devices/x11",

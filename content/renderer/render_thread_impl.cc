@@ -1990,14 +1990,16 @@ void RenderThreadImpl::PurgePluginListCache(bool reload_pages) {
 
 void RenderThreadImpl::OnMemoryPressure(
     base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level) {
-  TRACE_EVENT0("memory", "RenderThreadImpl::OnMemoryPressure");
+  TRACE_EVENT1("memory", "RenderThreadImpl::OnMemoryPressure", "Level",
+               memory_pressure_level);
   if (blink_platform_impl_) {
     blink::WebMemoryPressureListener::OnMemoryPressure(
         static_cast<blink::WebMemoryPressureLevel>(memory_pressure_level));
   }
   if (memory_pressure_level ==
-      base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL)
+      base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL) {
     ReleaseFreeMemory();
+  }
 }
 
 void RenderThreadImpl::RecordPurgeMemory(RendererMemoryMetrics before) {

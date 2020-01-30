@@ -39,7 +39,7 @@ class PasswordSaveManager {
                     scoped_refptr<PasswordFormMetricsRecorder> metrics_recorder,
                     VotesUploader* votes_uploader) = 0;
 
-  virtual const autofill::PasswordForm* GetPendingCredentials() const = 0;
+  virtual const autofill::PasswordForm& GetPendingCredentials() const = 0;
 
   virtual const base::string16& GetGeneratedPassword() const = 0;
 
@@ -53,6 +53,8 @@ class PasswordSaveManager {
       const autofill::FormData& submitted_form,
       bool is_http_auth,
       bool is_credential_api_save) = 0;
+
+  virtual void ResetPendingCrednetials() = 0;
 
   virtual void Save(const autofill::FormData& observed_form,
                     const autofill::PasswordForm& parsed_submitted_form) = 0;

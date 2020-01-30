@@ -30,6 +30,7 @@
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_transient_descendant_iterator.h"
 #include "ash/wm/window_util.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/numerics/ranges.h"
 #include "ui/base/hit_test.h"
 #include "ui/compositor/layer_animation_observer.h"
@@ -219,9 +220,9 @@ void DragWindowFromShelfController::Drag(const gfx::PointF& location_in_screen,
   previous_location_in_screen_ = location_in_screen;
 }
 
-base::Optional<DragWindowFromShelfController::ShelfWindowDragResult>
-DragWindowFromShelfController::EndDrag(const gfx::PointF& location_in_screen,
-                                       base::Optional<float> velocity_y) {
+base::Optional<ShelfWindowDragResult> DragWindowFromShelfController::EndDrag(
+    const gfx::PointF& location_in_screen,
+    base::Optional<float> velocity_y) {
   if (!drag_started_)
     return base::nullopt;
 
@@ -260,6 +261,11 @@ DragWindowFromShelfController::EndDrag(const gfx::PointF& location_in_screen,
     WindowBackdrop::Get(window_)->RestoreBackdrop();
   }
 
+  if (window_drag_result_.has_value()) {
+    UMA_HISTOGRAM_ENUMERATION(kHandleDragWindowFromShelfHistogramName,
+                              *window_drag_result_);
+  }
+
   OnDragEnded(location_in_screen, drop_window_in_overview, snap_position);
   return window_drag_result_;
 }
@@ -267,6 +273,9 @@ DragWindowFromShelfController::EndDrag(const gfx::PointF& location_in_screen,
 void DragWindowFromShelfController::CancelDrag() {
   if (!drag_started_)
     return;
+
+  UMA_HISTOGRAM_ENUMERATION(kHandleDragWindowFromShelfHistogramName,
+                            ShelfWindowDragResult::kDragCanceled);
 
   drag_started_ = false;
   // Reset the window's transform to identity transform.
@@ -306,6 +315,7 @@ void DragWindowFromShelfController::FinalizeDraggedWindow() {
       break;
     case ShelfWindowDragResult::kGoToOverviewMode:
     case ShelfWindowDragResult::kGoToSplitviewMode:
+    case ShelfWindowDragResult::kDragCanceled:
       // No action is needed.
       break;
   }

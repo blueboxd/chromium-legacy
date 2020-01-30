@@ -59,14 +59,6 @@ Polymer({
     },
 
     /**
-     * Shows overlay on top of the bottom buttons.
-     */
-    showButtonsOverlay: {
-      type: Boolean,
-      value: false,
-    },
-
-    /**
      * If true footer would be shrunk as much as possible to fit container.
      */
     footerShrinkable: {

@@ -9,6 +9,7 @@
 #include "base/task/post_task.h"
 #include "base/trace_event/trace_event.h"
 #include "chrome/browser/sharing/sharing_constants.h"
+#include "chrome/browser/sharing/sharing_fcm_sender.h"
 #include "chrome/browser/sharing/sharing_metrics.h"
 #include "chrome/browser/sharing/sharing_sync_preference.h"
 #include "chrome/browser/sharing/sharing_utils.h"
@@ -157,6 +158,13 @@ void SharingMessageSender::RegisterSendDelegate(
     std::unique_ptr<SendMessageDelegate> delegate) {
   auto result = send_delegates_.emplace(type, std::move(delegate));
   DCHECK(result.second) << "Delegate type already registered";
+}
+
+SharingFCMSender* SharingMessageSender::GetFCMSenderForTesting() const {
+  auto delegate_iter = send_delegates_.find(DelegateType::kFCM);
+  DCHECK(delegate_iter != send_delegates_.end());
+  DCHECK(delegate_iter->second);
+  return static_cast<SharingFCMSender*>(delegate_iter->second.get());
 }
 
 void SharingMessageSender::InvokeSendMessageCallback(

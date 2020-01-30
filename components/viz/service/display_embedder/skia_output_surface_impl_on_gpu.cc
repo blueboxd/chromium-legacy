@@ -933,15 +933,24 @@ bool SkiaOutputSurfaceImplOnGpu::FinishPaintCurrentFrame(
                                                   &paint);
     }
 
-    if (output_device_->need_swap_semaphore())
-      scoped_promise_image_access.end_semaphores().emplace_back();
-
     GrFlushInfo flush_info;
     flush_info.fFlags = kNone_GrFlushFlags;
-    flush_info.fNumSemaphores =
-        scoped_promise_image_access.end_semaphores().size();
-    flush_info.fSignalSemaphores =
-        scoped_promise_image_access.end_semaphores().data();
+
+    auto end_paint_semaphores =
+        scoped_output_device_paint_->GetEndPaintSemaphores();
+
+    end_paint_semaphores.insert(
+        end_paint_semaphores.end(),
+        std::make_move_iterator(
+            scoped_promise_image_access.end_semaphores().begin()),
+        std::make_move_iterator(
+            scoped_promise_image_access.end_semaphores().end()));
+
+    if (output_device_->need_swap_semaphore())
+      end_paint_semaphores.emplace_back();
+    // update the size and data pointer
+    flush_info.fNumSemaphores = end_paint_semaphores.size();
+    flush_info.fSignalSemaphores = end_paint_semaphores.data();
 
     gpu::AddVulkanCleanupTaskForSkiaFlush(vulkan_context_provider_,
                                           &flush_info);
@@ -950,15 +959,16 @@ bool SkiaOutputSurfaceImplOnGpu::FinishPaintCurrentFrame(
 
     auto result = output_sk_surface()->flush(
         SkSurface::BackendSurfaceAccess::kPresent, flush_info);
+
     if (result != GrSemaphoresSubmitted::kYes &&
         !(scoped_promise_image_access.begin_semaphores().empty() &&
-          scoped_promise_image_access.end_semaphores().empty())) {
+          end_paint_semaphores.empty())) {
       // TODO(penghuang): handle vulkan device lost.
       DLOG(ERROR) << "output_sk_surface()->flush() failed.";
       return false;
     }
     if (output_device_->need_swap_semaphore()) {
-      auto& semaphore = scoped_promise_image_access.end_semaphores().back();
+      auto& semaphore = end_paint_semaphores.back();
       DCHECK(semaphore.isInitialized());
       scoped_output_device_paint_->set_semaphore(std::move(semaphore));
     }
@@ -1699,11 +1709,9 @@ void SkiaOutputSurfaceImplOnGpu::MarkContextLost() {
 
 void SkiaOutputSurfaceImplOnGpu::ScheduleCheckReadbackCompletion() {
   if (num_readbacks_pending_ > 0 && !readback_poll_pending_) {
-    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE,
+    dependency_->ScheduleDelayedGPUTaskFromGPUThread(
         base::BindOnce(&SkiaOutputSurfaceImplOnGpu::CheckReadbackCompletion,
-                       weak_ptr_factory_.GetWeakPtr()),
-        kReadbackPollingInterval);
+                       weak_ptr_factory_.GetWeakPtr()));
     readback_poll_pending_ = true;
   }
 }

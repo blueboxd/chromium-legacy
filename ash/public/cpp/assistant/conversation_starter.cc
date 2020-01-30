@@ -15,6 +15,13 @@ ConversationStarter::ConversationStarter(const std::string& label,
       icon_url_(icon_url),
       required_permissions_(required_permissions) {}
 
+ConversationStarter::ConversationStarter(const ConversationStarter& copy) =
+    default;
+
 ConversationStarter::~ConversationStarter() = default;
+
+bool ConversationStarter::RequiresPermission(Permission permission) const {
+  return (required_permissions_ & permission) == permission;
+}
 
 }  // namespace ash

@@ -418,7 +418,6 @@
 <translation id="2799223571221894425">Nis sërish</translation>
 <translation id="2803306138276472711">Kohët e fundit "Shfletimi i sigurt me Google" <ph name="BEGIN_LINK" />zbuloi softuerin keqdashës<ph name="END_LINK" /> në <ph name="SITE" />. Faqet që zakonisht janë të sigurta ndonjëherë infektohen me softuerë keqdashës.</translation>
 <translation id="2807052079800581569">Pozicioni i imazhit në boshtin Y</translation>
-<translation id="2809804249696361569">Të dyja fletët</translation>
 <translation id="2824775600643448204">Shiriti i adresës dhe i kërkimit</translation>
 <translation id="2826760142808435982">Lidhja është e enkriptuar dhe e vërtetuar me <ph name="CIPHER" /> dhe përdor <ph name="KX" /> si mekanizëm kryesor shkëmbimi.</translation>
 <translation id="2835170189407361413">Pastro formularin</translation>
@@ -921,7 +920,6 @@
 <translation id="5112422516732747637">A5</translation>
 <translation id="5115216390227830982">European-Edp</translation>
 <translation id="5115563688576182185">(64-bit)</translation>
-<translation id="5121469660360593280">Ndaj me administratorin tënd të dhëna për ngjarjet e sigurisë që janë raportuar nga "Mbrojtja e përdoruesit" të Chrome Enterprise. Kjo mund të përfshijë URL-të e faqeve që viziton ti, emrat e skedarëve ose të dhënat meta dhe emrin e përdoruesit që përdor për t'u identifikuar në pajisjen tënde dhe në Chrome.</translation>
 <translation id="5123063207673082822">Fundjavë</translation>
 <translation id="5125394840236832993">B-Plus</translation>
 <translation id="5126510351761255129">Verifiko kartën tënde</translation>
@@ -936,7 +934,6 @@
 <translation id="5161506081086828129">Stivuesi 9</translation>
 <translation id="516920405563544094">Shkruaj kodin CVC për <ph name="CREDIT_CARD" />. Pasi t'i konfirmosh, detajet e kartës nga "Llogaria jote e Google" do të ndahen me këtë sajt.</translation>
 <translation id="5169827969064885044">Mund të humbasësh qasjen në llogarinë e organizatës ose mund të pësosh vjedhje të identitetit. Chrome rekomandon që ta ndryshosh fjalëkalimin tani.</translation>
-<translation id="5170017743895942767">"Mbrojtja e përdoruesit" e Chrome Enterprise</translation>
 <translation id="5171045022955879922">Kërko ose shkruaj URL-në</translation>
 <translation id="5171689220826475070">Fanfold-European</translation>
 <translation id="5172758083709347301">Pajisja</translation>
@@ -1069,7 +1066,6 @@
 <translation id="5737183892635480227">{NUM_CARDS,plural, =1{Ruaje kartën në "Llogarinë tënde të Google"}other{Ruaji kartat në "Llogarinë tënde të Google"}}</translation>
 <translation id="5745980000221562234">{NUM_CARDS,plural, =1{Përdor një numër virtual për këtë kartë}other{Zgjidh një kartë}}</translation>
 <translation id="5763042198335101085">Fut një adresë të vlefshme email-i</translation>
-<translation id="5763703224595565476">Administratori yt ka aktivizuar "Mbrojtjen e përdoruesit" të Chrome Enterprise në shfletuesin tënd. "Mbrojtja e përdoruesit" të Chrome Enterprise ka qasje te disa nga të dhënat e tua.</translation>
 <translation id="5765072501007116331">Për të parë mënyrat dhe kërkesat e dorëzimit, zgjidh një adresë</translation>
 <translation id="5776313857861697733">Përparësia</translation>
 <translation id="5778550464785688721">Kontroll i plotë i pajisjeve MIDI</translation>
@@ -1405,7 +1401,6 @@ Detaje shtesë:
 <translation id="733923710415886693">Certifikata e serverit nuk është zbuluar përmes "Transparencës së certifikatave".</translation>
 <translation id="734600844861828519">11x15</translation>
 <translation id="7346048084945669753">Është i lidhur:</translation>
-<translation id="73479065977517481"><ph name="ENROLLMENT_DOMAIN" /> ka aktivizuar "Mbrojtjen e përdoruesit" të Chrome Enterprise në shfletuesin tënd. "Mbrojtja e përdoruesit" të Chrome Enterprise ka qasje te disa nga të dhënat e tua.</translation>
 <translation id="7349430561505560861">A4-Extra</translation>
 <translation id="7353601530677266744">Linja e komandave</translation>
 <translation id="7372973238305370288">rezultati i kërkimit</translation>

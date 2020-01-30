@@ -63,7 +63,7 @@
                         android:layout_marginBottom="@dimen/fre_vertical_spacing"
                         android:gravity="start"
                         android:lineSpacingMultiplier="1.4"
-                        android:textAppearance="@style/TextAppearance.BlackHint2" />
+                        android:textAppearance="@style/TextAppearance.TextMedium.Secondary" />
 
                     <android.support.v7.widget.SwitchCompat
                         android:id="@+id/enable_data_saver_switch"
@@ -72,7 +72,7 @@
                         android:lineSpacingMultiplier="1.4"
                         android:showText="false"
                         android:text="@string/data_reduction_enabled_switch_lite_mode"
-                        style="@style/TextAppearance.BlackTitle2" />
+                        style="@style/TextAppearance.TextMediumThick.Primary" />
 
                 </LinearLayout>
             </LinearLayout>

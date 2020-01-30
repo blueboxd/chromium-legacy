@@ -179,8 +179,11 @@ class ASH_EXPORT OverviewSession : public display::DisplayObserver,
   void AppendItem(aura::Window* window, bool reposition, bool animate);
 
   // Similar to |AddItem| with reposition=true, but adds the window at the
-  // correct position according to MRU order.
-  void AddItemInMruOrder(aura::Window* window, bool animate);
+  // correct position according to MRU order. If |animate| and |restack| are
+  // both true, the stacking order will be adjusted after the animation. If
+  // |animate| is false and |restack| is true, the stacking order will be
+  // adjusted immediately.
+  void AddItemInMruOrder(aura::Window* window, bool animate, bool restack);
 
   // Removes |overview_item| from the corresponding grid. No items are
   // repositioned.

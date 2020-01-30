@@ -110,16 +110,16 @@ class AutofillAutocompleteTest : public InProcessBrowserTest {
   // Fills in the default input with |value|, submits the form and waits
   // for the value to have been saved in the DB or skipped, via observers.
   void FillInputAndSubmit(const std::string& value, bool should_skip_save) {
-    const char js_format[] =
-        "document.getElementById('%s').value = '%s';"
+    // Focus target form field.
+    content::FocusElementByID(web_contents(), kDefaultAutocompleteInputId);
+    content::SimulateUserInput(web_contents(), value);
+
+    constexpr char submit_js[] =
         "document.onclick = function() {"
         "  document.getElementById('testform').submit();"
         "};";
-
-    const std::string js = base::StringPrintf(
-        js_format, kDefaultAutocompleteInputId, value.c_str());
-
-    ASSERT_TRUE(content::ExecuteScript(web_contents(), js));
+    ASSERT_TRUE(
+        content::ExecuteScript(web_contents(), base::StringPrintf(submit_js)));
 
     // Set up observer for Autocomplete form submissions.
     TestAutofillAsyncObserver observer(
@@ -221,7 +221,7 @@ class AutofillAutocompleteTest : public InProcessBrowserTest {
 // Tests that a user can save a simple Autocomplete value.
 IN_PROC_BROWSER_TEST_F(AutofillAutocompleteTest, SubmitSimpleValue_Saves) {
   std::string prefix = "Some";
-  std::string test_value = "SomeName!";
+  std::string test_value = "SomeName";
   NavigateToFile(kSimpleFormFileName);
   FillInputAndSubmit(test_value, /*should_skip_save=*/false);
   ValidateSingleValue(prefix, test_value);

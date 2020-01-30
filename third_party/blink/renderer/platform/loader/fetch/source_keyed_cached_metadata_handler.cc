@@ -28,12 +28,11 @@ class SourceKeyedCachedMetadataHandler::SingleKeyHandler final
 
   void SetCachedMetadata(uint32_t data_type_id,
                          const uint8_t* data,
-                         size_t size,
-                         CacheType cache_type) override {
+                         size_t size) override {
     DCHECK(!parent_->cached_metadata_map_.Contains(key_));
     parent_->cached_metadata_map_.insert(
         key_, CachedMetadata::Create(data_type_id, data, size));
-    if (cache_type == CachedMetadataHandler::kSendToPlatform)
+    if (!disable_send_to_platform_for_testing_)
       parent_->SendToPlatform();
   }
 

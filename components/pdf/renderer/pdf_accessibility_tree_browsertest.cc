@@ -64,6 +64,13 @@ void CompareRect(const gfx::RectF& expected_rect,
   EXPECT_FLOAT_EQ(expected_rect.size().width(), actual_rect.size().width());
 }
 
+constexpr uint32_t MakeARGB(unsigned int a,
+                            unsigned int r,
+                            unsigned int g,
+                            unsigned int b) {
+  return (a << 24) | (r << 16) | (g << 8) | b;
+}
+
 // This class overrides content::FakePepperPluginInstance to record received
 // action data when tests make an accessibility action call.
 class ActionHandlingFakePepperPluginInstance
@@ -349,6 +356,8 @@ TEST_F(PdfAccessibilityTreeTest, TestHighlightCreation) {
   scoped_feature_list.InitAndEnableFeature(
       chrome_pdf::features::kAccessiblePDFHighlight);
 
+  constexpr uint32_t kHighlightWhiteColor = MakeARGB(255, 255, 255, 255);
+
   text_runs_.emplace_back(kFirstTextRun);
   text_runs_.emplace_back(kSecondTextRun);
   chars_.insert(chars_.end(), std::begin(kDummyCharsData),
@@ -359,6 +368,7 @@ TEST_F(PdfAccessibilityTreeTest, TestHighlightCreation) {
     highlight.bounds = PP_MakeFloatRectFromXYWH(1.0f, 1.0f, 5.0f, 6.0f);
     highlight.text_run_index = 0;
     highlight.text_run_count = 2;
+    highlight.color = kHighlightWhiteColor;
     page_objects_.highlights.push_back(std::move(highlight));
   }
 
@@ -411,6 +421,11 @@ TEST_F(PdfAccessibilityTreeTest, TestHighlightCreation) {
                 ax::mojom::StringAttribute::kRoleDescription));
   EXPECT_EQ(gfx::RectF(1.0f, 1.0f, 5.0f, 6.0f),
             highlight_node->data().relative_bounds.bounds);
+  ASSERT_TRUE(highlight_node->HasIntAttribute(
+      ax::mojom::IntAttribute::kBackgroundColor));
+  EXPECT_EQ(kHighlightWhiteColor,
+            static_cast<uint32_t>(highlight_node->GetIntAttribute(
+                ax::mojom::IntAttribute::kBackgroundColor)));
   ASSERT_EQ(1u, highlight_node->children().size());
 
   ui::AXNode* static_text_node = highlight_node->children()[0];

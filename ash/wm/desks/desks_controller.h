@@ -185,6 +185,11 @@ class ASH_EXPORT DesksController : public DesksHelper,
 
   void ReportDesksCountHistogram() const;
 
+  // Updates the default names (e.g. "Desk 1", "Desk 2", ... etc.) given to the
+  // desks. This is called when desks are added or removed to update the names
+  // based on the desks order.
+  void UpdateDesksDefaultNames();
+
   std::vector<std::unique_ptr<Desk>> desks_;
 
   Desk* active_desk_ = nullptr;

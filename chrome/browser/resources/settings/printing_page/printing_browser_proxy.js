@@ -28,6 +28,7 @@ cr.define('settings', function() {
 
   cr.addSingletonGetter(PrintingBrowserProxyImpl);
 
+  // #cr_define_end
   return {
     PrintingBrowserProxy: PrintingBrowserProxy,
     PrintingBrowserProxyImpl: PrintingBrowserProxyImpl,

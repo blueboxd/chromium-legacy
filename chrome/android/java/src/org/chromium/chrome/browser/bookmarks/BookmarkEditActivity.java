@@ -174,8 +174,7 @@ public class BookmarkEditActivity extends SynchronousInitializationActivity {
             intent.putExtra(BookmarkActivity.INTENT_VISIT_BOOKMARK_ID, mBookmarkId.toString());
             setResult(RESULT_OK, intent);
         } else {
-            BookmarkUtils.openBookmark(
-                    mModel, this, mBookmarkId, BookmarkLaunchLocation.BOOKMARK_EDITOR);
+            BookmarkUtils.openBookmark(mModel, this, mBookmarkId);
         }
         finish();
     }

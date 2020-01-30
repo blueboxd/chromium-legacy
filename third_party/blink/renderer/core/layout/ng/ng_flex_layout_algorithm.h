@@ -14,6 +14,7 @@ namespace blink {
 
 class NGBlockNode;
 class NGBlockBreakToken;
+class NGBoxFragment;
 
 class CORE_EXPORT NGFlexLayoutAlgorithm
     : public NGLayoutAlgorithm<NGBlockNode,
@@ -65,7 +66,7 @@ class CORE_EXPORT NGFlexLayoutAlgorithm
   // Propagates the baseline from the given flex-item if needed.
   void PropagateBaselineFromChild(
       const FlexItem&,
-      const NGPhysicalBoxFragment&,
+      const NGBoxFragment&,
       LayoutUnit block_offset,
       base::Optional<LayoutUnit>* fallback_baseline);
 

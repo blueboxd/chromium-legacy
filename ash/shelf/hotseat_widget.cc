@@ -65,10 +65,10 @@ class HotseatWindowTargeter : public aura::WindowTargeter {
                        gfx::Rect* hit_test_rect_touch) const override {
     if (target == hotseat_widget_->GetNativeWindow()) {
       // Shrink the hit bounds from the size of the window to the size of the
-      // hotseat opaque background.
+      // hotseat translucent background.
       gfx::Rect hit_bounds = target->bounds();
       hit_bounds.ClampToCenteredSize(
-          hotseat_widget_->GetOpaqueBackgroundSize());
+          hotseat_widget_->GetTranslucentBackgroundSize());
       *hit_test_rect_mouse = *hit_test_rect_touch = hit_bounds;
       return true;
     }
@@ -87,9 +87,9 @@ class HotseatWidget::DelegateView : public views::WidgetDelegateView,
                                     public WallpaperControllerObserver {
  public:
   explicit DelegateView(WallpaperControllerImpl* wallpaper_controller)
-      : opaque_background_(ui::LAYER_SOLID_COLOR),
+      : translucent_background_(ui::LAYER_SOLID_COLOR),
         wallpaper_controller_(wallpaper_controller) {
-    opaque_background_.SetName("hotseat/Background");
+    translucent_background_.SetName("hotseat/Background");
   }
   ~DelegateView() override;
 
@@ -98,9 +98,9 @@ class HotseatWidget::DelegateView : public views::WidgetDelegateView,
             ui::Layer* parent_layer);
 
   // Updates the hotseat background.
-  void UpdateOpaqueBackground();
+  void UpdateTranslucentBackground();
 
-  void SetOpaqueBackground(const gfx::Rect& opaque_background_bounds);
+  void SetTranslucentBackground(const gfx::Rect& translucent_background_bounds);
 
   // Updates the hotseat background when tablet mode changes.
   void OnTabletModeChanged();
@@ -121,12 +121,13 @@ class HotseatWidget::DelegateView : public views::WidgetDelegateView,
 
   FocusCycler* focus_cycler_ = nullptr;
   // A background layer that may be visible depending on HotseatState.
-  ui::Layer opaque_background_;
+  ui::Layer translucent_background_;
   ScrollableShelfView* scrollable_shelf_view_ = nullptr;  // unowned.
   // The WallpaperController, responsible for providing proper colors.
   WallpaperControllerImpl* wallpaper_controller_;
 
-  // The most recent color that the |opaque_background_| has been animated to.
+  // The most recent color that the |translucent_background_| has been animated
+  // to.
   SkColor target_color_ = SK_ColorTRANSPARENT;
 
   DISALLOW_COPY_AND_ASSIGN(DelegateView);
@@ -151,54 +152,55 @@ void HotseatWidget::DelegateView::Init(
 
   DCHECK(scrollable_shelf_view);
   scrollable_shelf_view_ = scrollable_shelf_view;
-  UpdateOpaqueBackground();
+  UpdateTranslucentBackground();
 }
 
-void HotseatWidget::DelegateView::UpdateOpaqueBackground() {
+void HotseatWidget::DelegateView::UpdateTranslucentBackground() {
   if (!HotseatWidget::ShouldShowHotseatBackground()) {
-    opaque_background_.SetVisible(false);
+    translucent_background_.SetVisible(false);
     if (features::IsBackgroundBlurEnabled())
-      opaque_background_.SetBackgroundBlur(0);
+      translucent_background_.SetBackgroundBlur(0);
     return;
   }
 
-  SetOpaqueBackground(scrollable_shelf_view_->GetHotseatBackgroundBounds());
+  SetTranslucentBackground(
+      scrollable_shelf_view_->GetHotseatBackgroundBounds());
 }
 
-void HotseatWidget::DelegateView::SetOpaqueBackground(
+void HotseatWidget::DelegateView::SetTranslucentBackground(
     const gfx::Rect& background_bounds) {
   DCHECK(HotseatWidget::ShouldShowHotseatBackground());
 
-  opaque_background_.SetVisible(true);
+  translucent_background_.SetVisible(true);
 
   if (ShelfConfig::Get()->GetDefaultShelfColor() != target_color_) {
     target_color_ = ShelfConfig::Get()->GetDefaultShelfColor();
     ui::ScopedLayerAnimationSettings animation_setter(
-        opaque_background_.GetAnimator());
+        translucent_background_.GetAnimator());
     animation_setter.SetTransitionDuration(
         ShelfConfig::Get()->shelf_animation_duration());
     animation_setter.SetTweenType(gfx::Tween::EASE_OUT);
     animation_setter.SetPreemptionStrategy(
         ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
-    opaque_background_.SetColor(target_color_);
+    translucent_background_.SetColor(target_color_);
   }
 
   const int radius = ShelfConfig::Get()->hotseat_size() / 2;
   gfx::RoundedCornersF rounded_corners = {radius, radius, radius, radius};
-  if (opaque_background_.rounded_corner_radii() != rounded_corners)
-    opaque_background_.SetRoundedCornerRadius(rounded_corners);
+  if (translucent_background_.rounded_corner_radii() != rounded_corners)
+    translucent_background_.SetRoundedCornerRadius(rounded_corners);
 
-  if (opaque_background_.bounds() != background_bounds)
-    opaque_background_.SetBounds(background_bounds);
+  if (translucent_background_.bounds() != background_bounds)
+    translucent_background_.SetBounds(background_bounds);
 
   if (features::IsBackgroundBlurEnabled()) {
-    opaque_background_.SetBackgroundBlur(
+    translucent_background_.SetBackgroundBlur(
         ShelfConfig::Get()->shelf_blur_radius());
   }
 }
 
 void HotseatWidget::DelegateView::OnTabletModeChanged() {
-  UpdateOpaqueBackground();
+  UpdateTranslucentBackground();
 }
 
 bool HotseatWidget::DelegateView::CanActivate() const {
@@ -212,15 +214,15 @@ void HotseatWidget::DelegateView::ReorderChildLayers(ui::Layer* parent_layer) {
     return;
 
   views::View::ReorderChildLayers(parent_layer);
-  parent_layer->StackAtBottom(&opaque_background_);
+  parent_layer->StackAtBottom(&translucent_background_);
 }
 
 void HotseatWidget::DelegateView::OnWallpaperColorsChanged() {
-  UpdateOpaqueBackground();
+  UpdateTranslucentBackground();
 }
 
 void HotseatWidget::DelegateView::SetParentLayer(ui::Layer* layer) {
-  layer->Add(&opaque_background_);
+  layer->Add(&translucent_background_);
   ReorderLayers();
 }
 
@@ -338,13 +340,18 @@ void HotseatWidget::OnTabletModeChanged() {
 float HotseatWidget::CalculateOpacity() const {
   const float target_opacity =
       GetShelfView()->shelf()->shelf_layout_manager()->GetOpacity();
-  return (state() == HotseatState::kExtended) ? 1.0f  // fully opaque
+  return (state() == HotseatState::kExtended) ? 1.0f  // fully translucent
                                               : target_opacity;
 }
 
-void HotseatWidget::SetOpaqueBackground(
-    const gfx::Rect& opaque_background_bounds) {
-  delegate_view_->SetOpaqueBackground(opaque_background_bounds);
+void HotseatWidget::SetTranslucentBackground(
+    const gfx::Rect& translucent_background_bounds) {
+  delegate_view_->SetTranslucentBackground(translucent_background_bounds);
+}
+
+void HotseatWidget::CalculateTargetBounds() {
+  // TODO(manucornet): Move target bounds calculations from the shelf layout
+  // manager.
 }
 
 void HotseatWidget::UpdateLayout(bool animate) {
@@ -365,7 +372,7 @@ void HotseatWidget::UpdateLayout(bool animate) {
   layout_inputs_ = new_layout_inputs;
 }
 
-gfx::Size HotseatWidget::GetOpaqueBackgroundSize() const {
+gfx::Size HotseatWidget::GetTranslucentBackgroundSize() const {
   DCHECK(scrollable_shelf_view_);
   return scrollable_shelf_view_->GetHotseatBackgroundBounds().size();
 }

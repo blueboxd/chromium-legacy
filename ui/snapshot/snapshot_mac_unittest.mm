@@ -10,7 +10,6 @@
 
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_nsobject.h"
-#include "base/mac/sdk_forward_declarations.h"
 #include "testing/platform_test.h"
 #import "ui/base/test/cocoa_helper.h"
 #include "ui/gfx/geometry/rect.h"

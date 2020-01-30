@@ -637,10 +637,8 @@ void TestRenderFrameHost::SimulateLoadingCompleted(
     return;
 
   if (loading_scenario == LoadingScenario::NewDocumentNavigation) {
-    static_cast<IPC::Listener*>(GetRenderViewHost())
-        ->OnMessageReceived(ViewHostMsg_DocumentAvailableInMainFrame(
-            GetRenderViewHost()->GetRoutingID(),
-            /* uses_temporary_zoom_level */ false));
+    if (frame_tree_node_->IsMainFrame())
+      DocumentAvailableInMainFrame(/* uses_temporary_zoom_level */ false);
 
     DidFinishDocumentLoad();
 

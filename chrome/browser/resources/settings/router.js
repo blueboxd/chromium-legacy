@@ -3,6 +3,14 @@
 // found in the LICENSE file.
 
 cr.define('settings', function() {
+  /**
+   * @typedef {{
+   *   BASIC: (settings.Route|undefined),
+   *   ADVANCED: (settings.Route|undefined),
+   * }}
+   */
+  let MinimumRoutes;
+
   /** Class for navigable routes. */
   class Route {
     /** @param {string} path */
@@ -126,12 +134,12 @@ cr.define('settings', function() {
       routerInstance = instance;
     }
 
-    /** @param {!SettingsRoutes} availableRoutes */
+    /** @param {!settings.MinimumRoutes} availableRoutes */
     constructor(availableRoutes) {
       /**
        * List of available routes. This is populated taking into account current
        * state (like guest mode).
-       * @private {!SettingsRoutes}
+       * @private {!settings.MinimumRoutes}
        */
       this.routes_ = availableRoutes;
 
@@ -175,7 +183,7 @@ cr.define('settings', function() {
       return this.routes_[routeName];
     }
 
-    /** @return {!SettingsRoutes} */
+    /** @return {!Object} */
     getRoutes() {
       return this.routes_;
     }
@@ -356,7 +364,9 @@ cr.define('settings', function() {
     },
   };
 
+  // #cr_define_end
   return {
+    MinimumRoutes: MinimumRoutes,
     Route: Route,    // The Route class definition.
     Router: Router,  // The Router class definition.
     RouteObserverBehavior: RouteObserverBehavior,

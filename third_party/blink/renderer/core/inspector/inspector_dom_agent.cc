@@ -2083,6 +2083,10 @@ void InspectorDOMAgent::FrameOwnerContentUpdated(
 }
 
 void InspectorDOMAgent::PseudoElementCreated(PseudoElement* pseudo_element) {
+  if (pseudo_element->IsMarkerPseudoElement() &&
+      !RuntimeEnabledFeatures::CSSMarkerPseudoElementEnabled()) {
+    return;
+  }
   Element* parent = pseudo_element->ParentOrShadowHostElement();
   if (!parent)
     return;

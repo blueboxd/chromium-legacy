@@ -201,12 +201,12 @@ void AppServiceContextMenu::OnGetMenuModel(
     apps::mojom::MenuItemsPtr menu_items) {
   auto menu_model = std::make_unique<ui::SimpleMenuModel>(this);
   submenu_ = std::make_unique<ui::SimpleMenuModel>(this);
-  int index = 0;
+  size_t index = 0;
   // Unretained is safe here because PopulateNewItemFromMojoMenuItems should
   // call GetVectorIcon synchronously.
   if (apps::PopulateNewItemFromMojoMenuItems(
           menu_items->items, menu_model.get(), submenu_.get(),
-          base::BindOnce(&AppServiceContextMenu::GetVectorIcon,
+          base::BindOnce(&AppServiceContextMenu::GetMenuItemVectorIcon,
                          base::Unretained(this)))) {
     index = 1;
   }
@@ -219,7 +219,7 @@ void AppServiceContextMenu::OnGetMenuModel(
     BuildExtensionAppShortcutsMenu(menu_model.get());
   }
 
-  for (int i = index; i < static_cast<int>(menu_items->items.size()); i++) {
+  for (size_t i = index; i < menu_items->items.size(); i++) {
     DCHECK_EQ(apps::mojom::MenuItemType::kCommand, menu_items->items[i]->type);
     AddContextMenuOption(
         menu_model.get(),
@@ -233,11 +233,6 @@ void AppServiceContextMenu::OnGetMenuModel(
   }
 
   std::move(callback).Run(std::move(menu_model));
-}
-
-const gfx::VectorIcon& AppServiceContextMenu::GetVectorIcon(int command_id,
-                                                            int string_id) {
-  return GetMenuItemVectorIcon(command_id, string_id);
 }
 
 void AppServiceContextMenu::BuildExtensionAppShortcutsMenu(

@@ -2931,6 +2931,16 @@ public class AwContents implements SmartClipProvider {
     }
 
     /**
+     * Returns true if the web contents has an associated interstitial.
+     * This method is only called by tests.
+     */
+    @VisibleForTesting
+    public boolean isDisplayingInterstitialForTesting() {
+        return AwContentsJni.get().isDisplayingInterstitialForTesting(
+                mNativeAwContents, AwContents.this);
+    }
+
+    /**
      * Key for opaque state in bundle. Note this is only public for tests.
      */
     public static final String SAVE_RESTORE_STATE_KEY = "WEBVIEW_CHROMIUM_STATE";
@@ -3983,6 +3993,7 @@ public class AwContents implements SmartClipProvider {
         void onAttachedToWindow(long nativeAwContents, AwContents caller, int w, int h);
         void onDetachedFromWindow(long nativeAwContents, AwContents caller);
         boolean isVisible(long nativeAwContents, AwContents caller);
+        boolean isDisplayingInterstitialForTesting(long nativeAwContents, AwContents caller);
         void setDipScale(long nativeAwContents, AwContents caller, float dipScale);
         void onInputEvent(long nativeAwContents, AwContents caller);
         // Returns null if save state fails.

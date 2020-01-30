@@ -589,8 +589,7 @@ WebInputEventResult ScrollManager::HandleGestureScrollUpdate(
       std::make_unique<ScrollStateData>();
   scroll_state_data->delta_x = delta.Width();
   scroll_state_data->delta_y = delta.Height();
-  scroll_state_data->delta_granularity =
-      static_cast<double>(gesture_event.DeltaUnits());
+  scroll_state_data->delta_granularity = gesture_event.DeltaUnits();
   scroll_state_data->velocity_x = velocity.Width();
   scroll_state_data->velocity_y = velocity.Height();
   scroll_state_data->position_x = position.X();
@@ -820,7 +819,7 @@ gfx::Vector2dF ScrollManager::ScrollByForSnapFling(
   scroll_state_data->is_in_inertial_phase = true;
   scroll_state_data->from_user_input = true;
   scroll_state_data->delta_granularity =
-      static_cast<double>(ScrollGranularity::kScrollByPrecisePixel);
+      ScrollGranularity::kScrollByPrecisePixel;
   scroll_state_data->delta_consumed_for_scroll_sequence =
       delta_consumed_for_scroll_sequence_;
   auto* scroll_state =

@@ -158,7 +158,7 @@ class TargetPolicy;
 
 namespace ui {
 class SelectFilePolicy;
-struct ClipboardFormatType;
+class ClipboardFormatType;
 }  // namespace ui
 
 namespace url {

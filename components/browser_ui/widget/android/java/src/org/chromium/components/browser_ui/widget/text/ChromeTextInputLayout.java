@@ -118,7 +118,7 @@ public class ChromeTextInputLayout extends LinearLayout {
                 0);
         ApiCompatibilityUtils.setTextAppearance(mLabel,
                 a.getResourceId(R.styleable.ChromeTextInputLayout_hintTextAppearance,
-                        R.style.TextAppearance_BlackCaption));
+                        R.style.TextAppearance_TextSmall_Secondary));
         mLabel.setPivotX(0f);
         mLabel.setPivotY(mLabel.getPaint().getFontMetrics().bottom);
         mLabelStatus = LabelStatus.COLLAPSED;

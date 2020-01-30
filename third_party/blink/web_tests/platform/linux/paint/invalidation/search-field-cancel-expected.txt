@@ -8,7 +8,7 @@
       "paintInvalidations": [
         {
           "object": "LayoutBlockFlow DIV",
-          "rect": [11, 47, 58, 16],
+          "rect": [12, 47, 58, 16],
           "reason": "chunk appeared"
         }
       ]

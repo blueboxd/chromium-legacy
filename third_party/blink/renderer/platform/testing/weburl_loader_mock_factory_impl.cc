@@ -118,7 +118,8 @@ void WebURLLoaderMockFactoryImpl::ServeAsynchronousRequests() {
   while (!pending_loaders_.IsEmpty()) {
     LoaderToRequestMap::iterator iter = pending_loaders_.begin();
     base::WeakPtr<WebURLLoaderMock> loader(iter->key->GetWeakPtr());
-    const WebURLRequest request = iter->value;
+    WebURLRequest request;
+    request.CopyFrom(iter->value);
     pending_loaders_.erase(loader.get());
 
     WebURLResponse response;
@@ -217,7 +218,9 @@ void WebURLLoaderMockFactoryImpl::LoadAsynchronouly(
     const WebURLRequest& request,
     WebURLLoaderMock* loader) {
   DCHECK(!pending_loaders_.Contains(loader));
-  pending_loaders_.Set(loader, request);
+  WebURLRequest new_request;
+  new_request.CopyFrom(request);
+  pending_loaders_.Set(loader, std::move(new_request));
 }
 
 void WebURLLoaderMockFactoryImpl::RunUntilIdle() {

@@ -38,6 +38,7 @@ public class AssistantVerticalExpander extends LinearLayout {
     private final ViewGroup mTitleContainer;
     private final ViewGroup mCollapsedContainer;
     private final ViewGroup mExpandedContainer;
+    private final LinearLayout mTitleAndChevronContainer;
     private final View mChevronButton;
 
     private Callback<Boolean> mOnExpansionStateChangedListener;
@@ -64,19 +65,19 @@ public class AssistantVerticalExpander extends LinearLayout {
         titleContainer.addView(mTitleContainer);
         titleContainer.addView(mCollapsedContainer);
 
-        LinearLayout titleAndChevronContainer = new LinearLayout(getContext());
-        titleAndChevronContainer.setOrientation(HORIZONTAL);
-        titleAndChevronContainer.setLayoutParams(new LinearLayout.LayoutParams(
+        mTitleAndChevronContainer = new LinearLayout(getContext());
+        mTitleAndChevronContainer.setOrientation(HORIZONTAL);
+        mTitleAndChevronContainer.setLayoutParams(new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
-        titleAndChevronContainer.addView(titleContainer,
+        mTitleAndChevronContainer.addView(titleContainer,
                 new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1.0f));
-        titleAndChevronContainer.addView(mChevronButton);
+        mTitleAndChevronContainer.addView(mChevronButton);
         update();
-        addView(titleAndChevronContainer);
+        addView(mTitleAndChevronContainer);
         addView(mExpandedContainer);
 
         // Expand/Collapse when user clicks on the title, the chevron, or the collapsed section.
-        titleAndChevronContainer.setOnClickListener(unusedView -> {
+        mTitleAndChevronContainer.setOnClickListener(unusedView -> {
             if (!mFixed) {
                 setExpanded(!mExpanded);
             }
@@ -172,6 +173,9 @@ public class AssistantVerticalExpander extends LinearLayout {
     }
     public View getExpandedView() {
         return mExpandedView;
+    }
+    public View getTitleAndChevronContainer() {
+        return mTitleAndChevronContainer;
     }
 
     /**

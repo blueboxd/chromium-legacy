@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/command_line.h"
+#include "build/build_config.h"
 #include "chrome/browser/permissions/permission_manager.h"
 #include "chrome/browser/permissions/permission_manager_factory.h"
 #include "chrome/browser/permissions/permission_request_manager.h"
@@ -66,7 +67,14 @@ IN_PROC_BROWSER_TEST_F(LocalNTPVoiceSearchSmokeTest,
   EXPECT_TRUE(console_observer.message().empty()) << console_observer.message();
 }
 
-IN_PROC_BROWSER_TEST_F(LocalNTPVoiceSearchSmokeTest, MicrophonePermission) {
+// Test is flaky: crbug.com/790963.
+#if defined(OS_CHROMEOS) || defined(OS_WIN) || defined(OS_LINUX)
+#define MAYBE_MicrophonePermission DISABLED_MicrophonePermission
+#else
+#define MAYBE_MicrophonePermission MicrophonePermission
+#endif
+IN_PROC_BROWSER_TEST_F(LocalNTPVoiceSearchSmokeTest,
+                       MAYBE_MicrophonePermission) {
   // Open a new NTP.
   content::WebContents* active_tab = local_ntp_test_utils::OpenNewTab(
       browser(), GURL(chrome::kChromeUINewTabURL));

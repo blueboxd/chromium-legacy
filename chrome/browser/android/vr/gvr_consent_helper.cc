@@ -11,6 +11,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "chrome/android/features/vr/jni_headers/VrConsentDialog_jni.h"
+#include "chrome/browser/android/vr/android_vr_utils.h"
 
 using base::android::AttachCurrentThread;
 

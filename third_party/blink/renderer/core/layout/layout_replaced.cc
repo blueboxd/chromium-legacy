@@ -978,11 +978,12 @@ static std::pair<LayoutUnit, LayoutUnit> SelectionTopAndBottom(
     const ComputedStyle& line_style = line_box.CurrentStyle();
     const WritingMode writing_mode = line_style.GetWritingMode();
     const TextDirection text_direction = line_style.Direction();
-    const PhysicalOffset line_box_offset = line_box.CurrentOffset();
-    const PhysicalSize line_box_size = line_box.CurrentSize();
+    const PhysicalOffset line_box_offset =
+        line_box.Current().OffsetInContainerBlock();
+    const PhysicalSize line_box_size = line_box.Current().Size();
     const LogicalOffset logical_offset = line_box_offset.ConvertToLogical(
         writing_mode, text_direction, fragmentainer->Size(),
-        line_box.CurrentSize());
+        line_box.Current().Size());
     const LogicalSize logical_size =
         line_box_size.ConvertToLogical(writing_mode);
     return {logical_offset.block_offset,

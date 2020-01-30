@@ -36,6 +36,7 @@ enum {
   S_FORMAT_LUMINANCE,
   S_FORMAT_LUMINANCE_ALPHA,
   S_FORMAT_RED,
+  S_FORMAT_RG,
   S_FORMAT_RGB,
   S_FORMAT_RGBA,
   S_FORMAT_RGB8,
@@ -156,10 +157,14 @@ ShaderId GetFragmentShaderId(unsigned glslVersion,
     case GL_R16_EXT:
       sourceFormatIndex = S_FORMAT_RED;
       break;
+    case GL_RG16_EXT:
+      sourceFormatIndex = S_FORMAT_RG;
+      break;
     case GL_RGB:
       sourceFormatIndex = S_FORMAT_RGB;
       break;
     case GL_RGBA:
+    case GL_RGBA16_EXT:
       sourceFormatIndex = S_FORMAT_RGBA;
       break;
     case GL_RGB8:

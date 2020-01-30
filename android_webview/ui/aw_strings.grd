@@ -83,6 +83,7 @@
     <output filename="aw_strings_uz.pak" type="data_package" lang="uz" />
     <output filename="aw_strings_vi.pak" type="data_package" lang="vi" />
     <output filename="aw_strings_zh-CN.pak" type="data_package" lang="zh-CN" />
+    <output filename="aw_strings_zh-HK.pak" type="data_package" lang="zh-HK" />
     <output filename="aw_strings_zh-TW.pak" type="data_package" lang="zh-TW" />
     <output filename="aw_strings_zu.pak" type="data_package" lang="zu" />
   </outputs>

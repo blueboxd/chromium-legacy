@@ -1,12 +1,32 @@
 # Commandline flags
 
-## Applying flags
+## Can I apply commandline flags on my device?
 
 *** note
-**Note:** this requires either a `userdebug` or `eng` Android build (you can
-check with `adb shell getprop ro.build.type`). Flags cannot be enabled on
-production builds of Android.
+**Note:** WebView only permits toggling commandline flags on devices/emulators
+running a debuggable Android OS image. **Most users cannot apply commandline
+flags, because they're using devices with production Android images.**
 ***
+
+You can check which Android image you have on your device with the following:
+
+```sh
+# If you don't have `adb` in your path, you can source this file to use
+# the copy from chromium's Android SDK.
+$ source build/android/envsetup.sh
+
+# If this outputs "userdebug" or "eng" then you can apply flags following this
+# guide. If it outputs "user" then you cannot apply flags on this device.
+$ adb shell getprop ro.build.type
+userdebug
+```
+
+If the above outputs "user," then you **cannot** apply flags on the
+device/emulator. If you intend to use this device for chromium development, then
+you may consider [re-flashing the device or creating a debuggable Android
+emulator](device-setup.md).
+
+## Applying flags
 
 WebView reads flags from a specific file on the device as part of the startup
 sequence. Therefore, it's important to always **kill the WebView-based app**

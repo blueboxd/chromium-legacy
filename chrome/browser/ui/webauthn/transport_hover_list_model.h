@@ -49,4 +49,46 @@ class TransportHoverListModel : public HoverListModel {
   DISALLOW_COPY_AND_ASSIGN(TransportHoverListModel);
 };
 
+// TransportHoverListModel2 is an intended replacement for
+// |TransportHoverListModel|. Once the replacement has occurred, the "2" can be
+// dropped.
+class TransportHoverListModel2 : public HoverListModel {
+ public:
+  // Interface that the client should implement to learn when the user clicks on
+  // views that observe the model.
+  class Delegate {
+   public:
+    // Called when the given |transport| is selected by the user.
+    virtual void OnTransportSelected(AuthenticatorTransport transport) = 0;
+    // Called when the user selects the item to pair a new phone.
+    virtual void StartPhonePairing() = 0;
+  };
+
+  explicit TransportHoverListModel2(
+      std::vector<AuthenticatorTransport> transport_list,
+      bool cable_extension_provided,
+      Delegate* delegate);
+  ~TransportHoverListModel2() override;
+
+  // HoverListModel:
+  bool ShouldShowPlaceholderForEmptyList() const override;
+  base::string16 GetPlaceholderText() const override;
+  const gfx::VectorIcon* GetPlaceholderIcon() const override;
+  std::vector<int> GetThrobberTags() const override;
+  std::vector<int> GetButtonTags() const override;
+  base::string16 GetItemText(int item_tag) const override;
+  base::string16 GetDescriptionText(int item_tag) const override;
+  const gfx::VectorIcon* GetItemIcon(int item_tag) const override;
+  void OnListItemSelected(int item_tag) override;
+  size_t GetPreferredItemCount() const override;
+  bool StyleForTwoLines() const override;
+
+ private:
+  std::vector<AuthenticatorTransport> transport_list_;
+  const bool cable_extension_provided_;
+  Delegate* const delegate_;  // Weak, may be nullptr.
+
+  DISALLOW_COPY_AND_ASSIGN(TransportHoverListModel2);
+};
+
 #endif  // CHROME_BROWSER_UI_WEBAUTHN_TRANSPORT_HOVER_LIST_MODEL_H_

@@ -269,6 +269,10 @@ class PDFiumPage {
     // Number of characters encompassed by this highlight.
     int32_t char_count = 0;
     pp::Rect bounding_rect;
+
+    // Color of the highlight in ARGB. Alpha is stored in the first 8 MSBs. RGB
+    // follows after it with each using 8 bytes.
+    uint32_t color;
   };
 
   PDFiumEngine* engine_;
@@ -296,6 +300,13 @@ class PDFiumPage {
 // Converts page orientations to the PDFium equivalents, as defined by
 // FPDF_RenderPage().
 int ToPDFiumRotation(PageOrientation orientation);
+
+constexpr uint32_t MakeARGB(unsigned int a,
+                            unsigned int r,
+                            unsigned int g,
+                            unsigned int b) {
+  return (a << 24) | (r << 16) | (g << 8) | b;
+}
 
 }  // namespace chrome_pdf
 

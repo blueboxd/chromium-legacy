@@ -287,6 +287,32 @@ IN_PROC_BROWSER_TEST_P(SingleClientBookmarksSyncTest, InjectedBookmark) {
   EXPECT_EQ(1u, CountBookmarksWithTitlesMatching(kSingleProfileIndex, title));
 }
 
+IN_PROC_BROWSER_TEST_P(SingleClientBookmarksSyncTest,
+                       DownloadTwoPre2015BookmarksWithSameItemId) {
+  const std::string title1 = "Title1";
+  const std::string title2 = "Title2";
+
+  // Mimic the creation of two bookmarks from two different devices, with the
+  // same client item ID.
+  fake_server::BookmarkEntityBuilder bookmark_builder1(
+      title1, /*originator_cache_guid=*/base::GenerateGUID(),
+      /*originator_client_item_id=*/"1");
+  fake_server::BookmarkEntityBuilder bookmark_builder2(
+      title2, /*originator_cache_guid=*/base::GenerateGUID(),
+      /*originator_client_item_id=*/"1");
+
+  fake_server_->InjectEntity(bookmark_builder1.BuildBookmark(
+      GURL("http://page1.com"), /*is_legacy=*/true));
+  fake_server_->InjectEntity(bookmark_builder2.BuildBookmark(
+      GURL("http://page2.com"), /*is_legacy=*/true));
+
+  DisableVerifier();
+  ASSERT_TRUE(SetupSync());
+
+  EXPECT_EQ(1u, CountBookmarksWithTitlesMatching(kSingleProfileIndex, title1));
+  EXPECT_EQ(1u, CountBookmarksWithTitlesMatching(kSingleProfileIndex, title2));
+}
+
 // Test that a client doesn't mutate the favicon data in the process
 // of storing the favicon data from sync to the database or in the process
 // of requesting data from the database for sync.

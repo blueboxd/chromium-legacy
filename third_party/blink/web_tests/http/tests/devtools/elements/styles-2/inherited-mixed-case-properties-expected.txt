@@ -1,7 +1,6 @@
 Tests that non-standard mixed-cased properties are displayed in the Styles pane.
 
 color: rgb(0, 0, 0);
-    OVERLOADED -internal-root-color - html user agent stylesheet
 display: block;
     block - div user agent stylesheet
 -webkit-font-smoothing: antialiased;
@@ -20,10 +19,5 @@ Style Attribute { ()
 [expanded] 
 #container { (<style>)
     -webkit-FONT-smoothing: antialiased;
-
-======== Inherited from html ========
-[expanded] 
-html { (user agent stylesheet)
-/-- overloaded --/     color: -internal-root-color;
 
 

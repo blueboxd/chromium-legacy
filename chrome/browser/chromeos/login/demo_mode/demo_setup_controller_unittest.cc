@@ -21,6 +21,7 @@
 #include "chrome/browser/chromeos/policy/device_cloud_policy_manager_chromeos.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
 #include "chrome/browser/component_updater/cros_component_installer_chromeos.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/test/base/scoped_testing_local_state.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chromeos/cryptohome/system_salt_getter.h"
@@ -352,6 +353,34 @@ TEST_F(DemoSetupControllerTest, EnrollTwice) {
 
   EXPECT_TRUE(helper_->WaitResult(true));
   EXPECT_EQ("", GetDeviceRequisition());
+}
+
+TEST_F(DemoSetupControllerTest, GetSubOrganizationEmail) {
+  std::string email = DemoSetupController::GetSubOrganizationEmail();
+
+  // kDemoModeCountry defaults to "us" which is the root organisation.
+  EXPECT_EQ(email, "");
+
+  // Test other supported countries.
+  const std::string testing_supported_countries[] = {"be", "de", "es", "fr",
+                                                     "ie", "jp", "nl", "se"};
+
+  for (auto country : testing_supported_countries) {
+    g_browser_process->local_state()->SetString(prefs::kDemoModeCountry,
+                                                country);
+    email = DemoSetupController::GetSubOrganizationEmail();
+    EXPECT_EQ(email, "admin-" + country + "@" + policy::kDemoModeDomain);
+  }
+
+  // Test unsupported country string.
+  g_browser_process->local_state()->SetString(prefs::kDemoModeCountry, "kr");
+  email = DemoSetupController::GetSubOrganizationEmail();
+  EXPECT_EQ(email, "");
+
+  // Test random string.
+  g_browser_process->local_state()->SetString(prefs::kDemoModeCountry, "foo");
+  email = DemoSetupController::GetSubOrganizationEmail();
+  EXPECT_EQ(email, "");
 }
 
 }  //  namespace chromeos

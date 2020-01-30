@@ -42,7 +42,7 @@
                 android:layout_marginStart="16dp"
                 android:layout_marginTop="16dp"
                 android:layout_marginEnd="16dp"
-                android:textAppearance="@style/TextAppearance.BlackHeadline"
+                android:textAppearance="@style/TextAppearance.Headline.Primary"
                 tools:text="@string/signin_title"/>
             <LinearLayout
                 android:id="@+id/signin_account_picker"
@@ -78,7 +78,7 @@
                         android:layout_height="wrap_content"
                         android:gravity="center_vertical"
                         android:minHeight="20dp"
-                        android:textAppearance="@style/TextAppearance.BlackTitle1"
+                        android:textAppearance="@style/TextAppearance.TextLarge.Primary"
                         tools:text="John Doe"/>
                     <TextView
                         android:id="@+id/account_text_secondary"
@@ -86,7 +86,7 @@
                         android:layout_height="wrap_content"
                         android:gravity="center_vertical"
                         android:minHeight="20dp"
-                        android:textAppearance="@style/TextAppearance.BlackBody"
+                        android:textAppearance="@style/TextAppearance.TextMedium.Secondary"
                         tools:text="john.doe@example.com"/>
                 </LinearLayout>
                 <!-- For forced sign-in & consent bump this ImageView shows checkmark icon. -->
@@ -107,7 +107,7 @@
                 android:layout_marginStart="16dp"
                 android:layout_marginTop="16dp"
                 android:layout_marginEnd="16dp"
-                android:textAppearance="@style/TextAppearance.BlackTitle1"
+                android:textAppearance="@style/TextAppearance.TextLarge.Primary"
                 tools:text="@string/signin_sync_title"/>
             <TextView
                 android:id="@+id/signin_sync_description"
@@ -116,7 +116,7 @@
                 android:layout_below="@id/signin_sync_title"
                 android:layout_marginStart="16dp"
                 android:layout_marginEnd="16dp"
-                android:textAppearance="@style/TextAppearance.BlackBody"
+                android:textAppearance="@style/TextAppearance.TextMedium.Secondary"
                 tools:text="@string/signin_sync_description"/>
             <View
                 android:id="@+id/signin_divider"
@@ -133,7 +133,7 @@
                 android:layout_marginStart="16dp"
                 android:layout_marginTop="16dp"
                 android:layout_marginEnd="16dp"
-                android:textAppearance="@style/TextAppearance.BlackBody"
+                android:textAppearance="@style/TextAppearance.TextMedium.Secondary"
                 tools:text="@string/signin_details_description"/>
         </RelativeLayout>
     </org.chromium.chrome.browser.signin.SigninScrollView>

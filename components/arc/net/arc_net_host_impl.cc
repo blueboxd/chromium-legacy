@@ -225,8 +225,7 @@ arc::mojom::ConnectionStateType TranslateConnectionState(
     const std::string& state) {
   if (state == shill::kStateReady)
     return arc::mojom::ConnectionStateType::CONNECTED;
-  if (state == shill::kStateAssociation ||
-      state == shill::kStateConfiguration)
+  if (state == shill::kStateAssociation || state == shill::kStateConfiguration)
     return arc::mojom::ConnectionStateType::CONNECTING;
   if ((state == shill::kStateIdle) || (state == shill::kStateFailure) ||
       (state == shill::kStateDisconnect) || (state == ""))
@@ -365,7 +364,8 @@ const chromeos::NetworkState* GetShillBackedNetwork(
     return nullptr;
 
   // Non-Tether networks are already backed by Shill.
-  if (!chromeos::NetworkTypePattern::Tether().MatchesType(network->type()))
+  const std::string type = network->type();
+  if (type.empty() || !chromeos::NetworkTypePattern::Tether().MatchesType(type))
     return network;
 
   // Tether networks which are not connected are also not backed by Shill.

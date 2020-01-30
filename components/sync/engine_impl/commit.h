@@ -67,6 +67,9 @@ class Commit {
   void CleanUp();
 
  private:
+  // Report commit failure to each contribution.
+  void ReportFullCommitFailure();
+
   ContributionMap contributions_;
 
   sync_pb::ClientToServerMessage message_;

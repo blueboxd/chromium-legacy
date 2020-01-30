@@ -195,16 +195,16 @@ TEST_F(CompositorFrameReportingControllerTest,
   SimulatePresentCompositorFrame();
 
   histogram_tester.ExpectTotalCount(
-      "CompositorLatency.MissedFrame.BeginImplFrameToSendBeginMainFrame", 0);
+      "CompositorLatency.DroppedFrame.BeginImplFrameToSendBeginMainFrame", 0);
   histogram_tester.ExpectTotalCount(
-      "CompositorLatency.MissedFrame.SendBeginMainFrameToCommit", 0);
-  histogram_tester.ExpectTotalCount("CompositorLatency.MissedFrame.Commit", 0);
+      "CompositorLatency.DroppedFrame.SendBeginMainFrameToCommit", 0);
+  histogram_tester.ExpectTotalCount("CompositorLatency.DroppedFrame.Commit", 0);
   histogram_tester.ExpectTotalCount(
-      "CompositorLatency.MissedFrame.EndCommitToActivation", 0);
-  histogram_tester.ExpectTotalCount("CompositorLatency.MissedFrame.Activation",
+      "CompositorLatency.DroppedFrame.EndCommitToActivation", 0);
+  histogram_tester.ExpectTotalCount("CompositorLatency.DroppedFrame.Activation",
                                     0);
   histogram_tester.ExpectTotalCount(
-      "CompositorLatency.MissedFrame.EndActivateToSubmitCompositorFrame", 0);
+      "CompositorLatency.DroppedFrame.EndActivateToSubmitCompositorFrame", 0);
   histogram_tester.ExpectTotalCount(
       "CompositorLatency.BeginImplFrameToSendBeginMainFrame", 1);
   histogram_tester.ExpectTotalCount(
@@ -233,16 +233,16 @@ TEST_F(CompositorFrameReportingControllerTest,
 
   // Other histograms should be reported updated.
   histogram_tester.ExpectTotalCount(
-      "CompositorLatency.MissedFrame.BeginImplFrameToSendBeginMainFrame", 1);
+      "CompositorLatency.DroppedFrame.BeginImplFrameToSendBeginMainFrame", 1);
   histogram_tester.ExpectTotalCount(
-      "CompositorLatency.MissedFrame.SendBeginMainFrameToCommit", 1);
-  histogram_tester.ExpectTotalCount("CompositorLatency.MissedFrame.Commit", 1);
+      "CompositorLatency.DroppedFrame.SendBeginMainFrameToCommit", 1);
+  histogram_tester.ExpectTotalCount("CompositorLatency.DroppedFrame.Commit", 1);
   histogram_tester.ExpectTotalCount(
-      "CompositorLatency.MissedFrame.EndCommitToActivation", 1);
-  histogram_tester.ExpectTotalCount("CompositorLatency.MissedFrame.Activation",
+      "CompositorLatency.DroppedFrame.EndCommitToActivation", 1);
+  histogram_tester.ExpectTotalCount("CompositorLatency.DroppedFrame.Activation",
                                     0);
   histogram_tester.ExpectTotalCount(
-      "CompositorLatency.MissedFrame.EndActivateToSubmitCompositorFrame", 0);
+      "CompositorLatency.DroppedFrame.EndActivateToSubmitCompositorFrame", 0);
 }
 
 TEST_F(CompositorFrameReportingControllerTest, ImplFrameCausedNoDamage) {
@@ -251,7 +251,7 @@ TEST_F(CompositorFrameReportingControllerTest, ImplFrameCausedNoDamage) {
   SimulateBeginImplFrame();
   SimulateBeginImplFrame();
   histogram_tester.ExpectTotalCount(
-      "CompositorLatency.MissedFrame.BeginImplFrameToSendBeginMainFrame", 0);
+      "CompositorLatency.DroppedFrame.BeginImplFrameToSendBeginMainFrame", 0);
 }
 
 TEST_F(CompositorFrameReportingControllerTest, MainFrameCausedNoDamage) {
@@ -276,9 +276,9 @@ TEST_F(CompositorFrameReportingControllerTest, MainFrameCausedNoDamage) {
   reporting_controller_.WillBeginMainFrame(current_id_3_);
 
   histogram_tester.ExpectTotalCount(
-      "CompositorLatency.MissedFrame.BeginImplFrameToSendBeginMainFrame", 0);
+      "CompositorLatency.DroppedFrame.BeginImplFrameToSendBeginMainFrame", 0);
   histogram_tester.ExpectTotalCount(
-      "CompositorLatency.MissedFrame.SendBeginMainFrameToCommit", 0);
+      "CompositorLatency.DroppedFrame.SendBeginMainFrameToCommit", 0);
 }
 
 TEST_F(CompositorFrameReportingControllerTest, MainFrameAborted) {
@@ -326,7 +326,7 @@ TEST_F(CompositorFrameReportingControllerTest, MainFrameAborted2) {
   viz::FrameTimingDetails details = {};
   reporting_controller_.DidPresentCompositorFrame(1, details);
   histogram_tester.ExpectTotalCount(
-      "CompositorLatency.MissedFrame.BeginImplFrameToSendBeginMainFrame", 0);
+      "CompositorLatency.DroppedFrame.BeginImplFrameToSendBeginMainFrame", 0);
   histogram_tester.ExpectTotalCount(
       "CompositorLatency.BeginImplFrameToSendBeginMainFrame", 1);
   histogram_tester.ExpectTotalCount(
@@ -344,7 +344,7 @@ TEST_F(CompositorFrameReportingControllerTest, MainFrameAborted2) {
                                                  current_id_1_);
   reporting_controller_.DidPresentCompositorFrame(2, details);
   histogram_tester.ExpectTotalCount(
-      "CompositorLatency.MissedFrame.BeginImplFrameToSendBeginMainFrame", 0);
+      "CompositorLatency.DroppedFrame.BeginImplFrameToSendBeginMainFrame", 0);
   histogram_tester.ExpectTotalCount(
       "CompositorLatency.BeginImplFrameToSendBeginMainFrame", 2);
   histogram_tester.ExpectTotalCount(
@@ -364,7 +364,7 @@ TEST_F(CompositorFrameReportingControllerTest, MainFrameAborted2) {
                                                  current_id_1_);
   reporting_controller_.DidPresentCompositorFrame(3, details);
   histogram_tester.ExpectTotalCount(
-      "CompositorLatency.MissedFrame.BeginImplFrameToSendBeginMainFrame", 0);
+      "CompositorLatency.DroppedFrame.BeginImplFrameToSendBeginMainFrame", 0);
   histogram_tester.ExpectTotalCount(
       "CompositorLatency.BeginImplFrameToSendBeginMainFrame", 3);
   histogram_tester.ExpectTotalCount(

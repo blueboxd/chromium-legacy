@@ -78,9 +78,6 @@ class ScriptExecutor : public ActionDelegate,
 
     // Shut down Autofill Assistant and CCT.
     CLOSE_CUSTOM_TAB,
-
-    // Reset all state and restart.
-    RESTART,
   };
 
   // Contains the result of the Run operation.
@@ -203,7 +200,6 @@ class ScriptExecutor : public ActionDelegate,
   void LoadURL(const GURL& url) override;
   void Shutdown() override;
   void Close() override;
-  void Restart() override;
   autofill::PersonalDataManager* GetPersonalDataManager() override;
   WebsiteLoginFetcher* GetWebsiteLoginFetcher() override;
   content::WebContents* GetWebContents() override;

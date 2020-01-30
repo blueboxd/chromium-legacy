@@ -134,6 +134,7 @@ jumbo_component("service") {
   if (use_x11) {
     sources += [ "x_util.h" ]
     libs += [ "X11" ]
+    deps += [ "//ui/gfx/linux:gpu_memory_buffer_support_x11" ]
   }
   if (use_ozone) {
     deps += [ "//ui/ozone" ]

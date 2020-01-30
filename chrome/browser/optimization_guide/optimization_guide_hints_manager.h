@@ -58,8 +58,13 @@ class StoreUpdateData;
 class TopHostProvider;
 }  // namespace optimization_guide
 
+class OptimizationGuideNavigationData;
 class PrefService;
 class Profile;
+
+using OptimizationGuideDecisionCallback =
+    base::OnceCallback<void(optimization_guide::OptimizationGuideDecision,
+                            const optimization_guide::OptimizationMetadata&)>;
 
 class OptimizationGuideHintsManager
     : public optimization_guide::OptimizationGuideServiceObserver,
@@ -120,6 +125,14 @@ class OptimizationGuideHintsManager
       optimization_guide::proto::OptimizationType optimization_type,
       optimization_guide::OptimizationMetadata* optimization_metadata);
 
+  // Invokes |callback| with the decision for |navigation_url| and
+  // |optimization_type|, when sufficient information has been collected by
+  // |this| to make the decision.
+  void CanApplyOptimizationAsync(
+      const GURL& navigation_url,
+      optimization_guide::proto::OptimizationType optimization_type,
+      OptimizationGuideDecisionCallback callback);
+
   // Clears fetched hints from |hint_cache_|.
   void ClearFetchedHints();
 
@@ -147,6 +160,9 @@ class OptimizationGuideHintsManager
   // signal for tests.
   void OnNavigationStartOrRedirect(content::NavigationHandle* navigation_handle,
                                    base::OnceClosure callback);
+
+  // Notifies |this| that a navigation with URL |navigation_url| has finished.
+  void OnNavigationFinish(const GURL& navigation_url);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(OptimizationGuideHintsManagerTest, IsGoogleURL);
@@ -291,6 +307,23 @@ class OptimizationGuideHintsManager
   void MaybeFetchHintsForNavigation(
       content::NavigationHandle* navigation_handle);
 
+  // Returns the OptimizationTypeDecision based on the given parameters.
+  // |optimization_metadata| will be populated, if applicable. If
+  // |navigation_data| is provided, some metrics will be populated within it.
+  optimization_guide::OptimizationTypeDecision CanApplyOptimization(
+      OptimizationGuideNavigationData* navigation_data,
+      const GURL& url,
+      optimization_guide::proto::OptimizationType optimization_type,
+      optimization_guide::OptimizationMetadata* optimization_metadata);
+
+  // If an entry for |navigation_url| is contained in |registered_callbacks_|,
+  // it will load the hint for |navigation_url|'s host and upon completion, will
+  // invoke the registered callbacks for |navigation_url|.
+  void PrepareToInvokeRegisteredCallbacks(const GURL& navigation_url);
+
+  // Invokes the registered callbacks for |navigation_url|, if applicable.
+  void OnReadyToInvokeRegisteredCallbacks(const GURL& navigation_url);
+
   // The OptimizationGuideService that this guide is listening to. Not owned.
   optimization_guide::OptimizationGuideService* const
       optimization_guide_service_;
@@ -319,6 +352,12 @@ class OptimizationGuideHintsManager
   base::flat_map<optimization_guide::proto::OptimizationType,
                  std::unique_ptr<optimization_guide::OptimizationFilter>>
       blacklist_optimization_filters_ GUARDED_BY(optimization_filters_lock_);
+
+  // A map from URL to a map of callbacks keyed by their optimization type.
+  base::flat_map<GURL,
+                 base::flat_map<optimization_guide::proto::OptimizationType,
+                                std::vector<OptimizationGuideDecisionCallback>>>
+      registered_callbacks_;
 
   // Background thread where hints processing should be performed.
   scoped_refptr<base::SequencedTaskRunner> background_task_runner_;

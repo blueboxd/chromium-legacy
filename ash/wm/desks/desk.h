@@ -13,6 +13,7 @@
 #include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
+#include "base/strings/string16.h"
 #include "ui/aura/window_observer.h"
 
 namespace ash {
@@ -41,6 +42,9 @@ class ASH_EXPORT Desk {
     // Called when Desk is at the end of its destructor. Desk automatically
     // removes its Observers before calling this.
     virtual void OnDeskDestroyed(const Desk* desk) = 0;
+
+    // Called  when the desk's name changes.
+    virtual void OnDeskNameChanged(const base::string16& new_name) = 0;
   };
 
   explicit Desk(int associated_container_id);
@@ -49,6 +53,8 @@ class ASH_EXPORT Desk {
   int container_id() const { return container_id_; }
 
   const std::vector<aura::Window*>& windows() const { return windows_; }
+
+  const base::string16& name() const { return name_; }
 
   bool is_active() const { return is_active_; }
 
@@ -66,6 +72,9 @@ class ASH_EXPORT Desk {
   void RemoveWindowFromDesk(aura::Window* window);
 
   base::AutoReset<bool> GetScopedNotifyContentChangedDisabler();
+
+  // Sets the desk's name to |new_name| and updates the observers.
+  void SetName(base::string16 new_name);
 
   // Activates this desk. All windows on this desk (if any) will become visible
   // (by means of showing this desk's associated containers on all root
@@ -112,6 +121,9 @@ class ASH_EXPORT Desk {
   // list when they're notified of desk change events.
   // TODO(afakhry): Change this to track MRU windows on this desk.
   std::vector<aura::Window*> windows_;
+
+  // The name given to this desk.
+  base::string16 name_;
 
   // Maps all root windows to observer objects observing the containers
   // associated with this desk on those root windows.

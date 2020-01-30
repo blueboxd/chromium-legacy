@@ -42,10 +42,7 @@ perfetto::SharedMemory* DummyProducer::shared_memory() const {
 size_t DummyProducer::shared_buffer_page_size_kb() const {
   return 0;
 }
-perfetto::SharedMemoryArbiter* DummyProducer::GetSharedMemoryArbiter() {
-  return nullptr;
-}
-perfetto::SharedMemoryArbiter* DummyProducer::GetInProcessShmemArbiter() {
+perfetto::SharedMemoryArbiter* DummyProducer::MaybeSharedMemoryArbiter() {
   return nullptr;
 }
 void DummyProducer::NotifyFlushComplete(perfetto::FlushRequestID) {}

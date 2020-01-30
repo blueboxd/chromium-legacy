@@ -104,7 +104,7 @@ DesktopAutomationHandler = class extends BaseAutomationHandler {
 
   /**
    * Provides all feedback once ChromeVox's focus changes.
-   * @param {!AutomationEvent} evt
+   * @param {!ChromeVoxEvent} evt
    */
   onEventDefault(evt) {
     var node = evt.target;
@@ -140,7 +140,7 @@ DesktopAutomationHandler = class extends BaseAutomationHandler {
   }
 
   /**
-   * @param {!AutomationEvent} evt
+   * @param {!ChromeVoxEvent} evt
    */
   onEventFromViews(evt) {
     if (evt.target.root.role == RoleType.DESKTOP) {
@@ -149,7 +149,7 @@ DesktopAutomationHandler = class extends BaseAutomationHandler {
     }
 
     /**
-     * @param {!AutomationEvent} evt
+     * @param {!ChromeVoxEvent} evt
      */
     onEventIfSelected(evt) {
       if (evt.target.selected) {
@@ -199,7 +199,7 @@ DesktopAutomationHandler = class extends BaseAutomationHandler {
     }
 
     /**
-     * @param {!AutomationEvent} evt
+     * @param {!ChromeVoxEvent} evt
      */
     onHover(evt) {
       if (!GestureCommandHandler.getEnabled()) {
@@ -242,7 +242,7 @@ DesktopAutomationHandler = class extends BaseAutomationHandler {
 
     /**
      * Makes an announcement without changing focus.
-     * @param {!AutomationEvent} evt
+     * @param {!ChromeVoxEvent} evt
      */
     onAlert(evt) {
       var node = evt.target;
@@ -264,7 +264,7 @@ DesktopAutomationHandler = class extends BaseAutomationHandler {
   }
 
   /**
-   * @param {!AutomationEvent} evt
+   * @param {!ChromeVoxEvent} evt
    */
   onDocumentSelectionChanged(evt) {
     var selectionStart = evt.target.selectionStartObject;
@@ -293,7 +293,7 @@ DesktopAutomationHandler = class extends BaseAutomationHandler {
 
   /**
    * Provides all feedback once a focus event fires.
-   * @param {!AutomationEvent} evt
+   * @param {!ChromeVoxEvent} evt
    */
   onFocus(evt) {
     if (evt.target.role == RoleType.ROOT_WEB_AREA &&
@@ -341,7 +341,7 @@ DesktopAutomationHandler = class extends BaseAutomationHandler {
 
   /**
    * Provides all feedback once a load complete event fires.
-   * @param {!AutomationEvent} evt
+   * @param {!ChromeVoxEvent} evt
    */
   onLoadComplete(evt) {
     // A load complete gets fired on the desktop node when display metrics
@@ -405,7 +405,7 @@ DesktopAutomationHandler = class extends BaseAutomationHandler {
 
   /**
    * Provides all feedback once a change event in a text field fires.
-   * @param {!AutomationEvent} evt
+   * @param {!ChromeVoxEvent} evt
    * @private
    */
   onEditableChanged_(evt) {
@@ -448,7 +448,7 @@ DesktopAutomationHandler = class extends BaseAutomationHandler {
 
     /**
      * Provides all feedback once a value changed event fires.
-     * @param {!AutomationEvent} evt
+     * @param {!ChromeVoxEvent} evt
      */
     onValueChanged(evt) {
       // Skip root web areas.
@@ -501,7 +501,7 @@ DesktopAutomationHandler = class extends BaseAutomationHandler {
 
     /**
      * Handle updating the active indicator when the document scrolls.
-     * @param {!AutomationEvent} evt
+     * @param {!ChromeVoxEvent} evt
      */
     onScrollPositionChanged(evt) {
       var currentRange = ChromeVoxState.instance.currentRange;
@@ -511,7 +511,7 @@ DesktopAutomationHandler = class extends BaseAutomationHandler {
     }
 
     /**
-     * @param {!AutomationEvent} evt
+     * @param {!ChromeVoxEvent} evt
      */
     onSelection(evt) {
       // Invalidate any previous editable text handler state since some nodes,
@@ -540,7 +540,7 @@ DesktopAutomationHandler = class extends BaseAutomationHandler {
 
     /**
      * Provides all feedback once a menu start event fires.
-     * @param {!AutomationEvent} evt
+     * @param {!ChromeVoxEvent} evt
      */
     onMenuStart(evt) {
       ChromeVoxState.instance.markCurrentRange();
@@ -549,7 +549,7 @@ DesktopAutomationHandler = class extends BaseAutomationHandler {
 
     /**
      * Provides all feedback once a menu end event fires.
-     * @param {!AutomationEvent} evt
+     * @param {!ChromeVoxEvent} evt
      */
     onMenuEnd(evt) {
       this.onEventDefault(evt);
@@ -615,7 +615,7 @@ DesktopAutomationHandler = class extends BaseAutomationHandler {
     }
 
     /**
-     * @param {AutomationEvent} evt
+     * @param {ChromeVoxEvent} evt
      * @private
      */
     maybeRecoverFocusAndOutput_(evt, focus) {

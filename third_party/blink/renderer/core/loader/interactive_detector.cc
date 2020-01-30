@@ -5,6 +5,8 @@
 #include "third_party/blink/renderer/core/loader/interactive_detector.h"
 
 #include "base/time/default_tick_clock.h"
+#include "services/metrics/public/cpp/ukm_builders.h"
+#include "services/metrics/public/cpp/ukm_recorder.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
@@ -227,6 +229,13 @@ void InteractiveDetector::HandleForInputDelay(
     page_event_times_.first_input_timestamp = event_timestamp;
     input_delay_metrics_changed = true;
   }
+
+  // Record input delay UKM.
+  ukm::SourceId source_id = GetSupplementable()->UkmSourceID();
+  DCHECK_NE(source_id, ukm::kInvalidSourceId);
+  ukm::builders::InputEvent(source_id)
+      .SetInteractiveTiming_InputDelay(delay.InMilliseconds())
+      .Record(ukm::UkmRecorder::Get());
 
   UMA_HISTOGRAM_CUSTOM_TIMES(kHistogramInputDelay, delay,
                              base::TimeDelta::FromMilliseconds(1),

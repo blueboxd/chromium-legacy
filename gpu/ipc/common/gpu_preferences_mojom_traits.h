@@ -178,6 +178,9 @@ struct StructTraits<gpu::mojom::GpuPreferencesDataView, gpu::GpuPreferences> {
       return false;
 #endif
 
+    out->enable_native_gpu_memory_buffers =
+        prefs.enable_native_gpu_memory_buffers();
+
     return true;
   }
 
@@ -347,6 +350,10 @@ struct StructTraits<gpu::mojom::GpuPreferencesDataView, gpu::GpuPreferences> {
     return prefs.message_pump_type;
   }
 #endif
+  static bool enable_native_gpu_memory_buffers(
+      const gpu::GpuPreferences& prefs) {
+    return prefs.enable_native_gpu_memory_buffers;
+  }
 };
 
 }  // namespace mojo

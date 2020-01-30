@@ -22,6 +22,8 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.util.AdvancedMockContext;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
+import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
+import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabIdManager;
 import org.chromium.chrome.browser.tab.TabState;
@@ -126,8 +128,8 @@ public class RestoreMigrateTest {
         store.waitForMigrationToFinish();
 
         // Make sure we don't hit the migration path again.
-        Assert.assertTrue(ContextUtils.getAppSharedPreferences().getBoolean(
-                TabbedModeTabPersistencePolicy.PREF_HAS_RUN_FILE_MIGRATION, false));
+        Assert.assertTrue(SharedPreferencesManager.getInstance().readBoolean(
+                ChromePreferenceKeys.TABMODEL_HAS_RUN_FILE_MIGRATION, false));
 
         // Check that the files were moved.
         File newDir = TabbedModeTabPersistencePolicy.getOrCreateTabbedModeStateDirectory();

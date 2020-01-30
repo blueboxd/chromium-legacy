@@ -6,8 +6,10 @@
 
 namespace syncer {
 
-ModelTypeProcessor::ModelTypeProcessor() {}
+ModelTypeProcessor::ModelTypeProcessor() = default;
 
-ModelTypeProcessor::~ModelTypeProcessor() {}
+ModelTypeProcessor::~ModelTypeProcessor() = default;
+
+void ModelTypeProcessor::OnCommitFailed() {}
 
 }  // namespace syncer

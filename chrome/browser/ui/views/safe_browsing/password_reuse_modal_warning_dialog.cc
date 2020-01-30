@@ -148,6 +148,25 @@ PasswordReuseModalWarningDialog::PasswordReuseModalWarningDialog(
       ui::DIALOG_BUTTON_CANCEL,
       l10n_util::GetStringUTF16(IDS_PAGE_INFO_IGNORE_PASSWORD_WARNING_BUTTON));
 
+  // The set_*_callback() methods below need a OnceCallback each and we only have one
+  // (done_callback_), so create a proxy callback that references done_callback_ and use it for each
+  // of the set_*_callback() callbacks. Note that since only one of the three callbacks can ever be
+  // invoked, done_callback_ is still run at most once.
+  auto make_done_callback = [this](safe_browsing::WarningAction value) {
+    return base::BindOnce(
+        [](OnWarningDone* callback, safe_browsing::WarningAction value) {
+          std::move(*callback).Run(value);
+        },
+        base::Unretained(&done_callback_), value);
+  };
+  DialogDelegate::set_accept_callback(
+      password_type_.account_type() != ReusedPasswordAccountType::SAVED_PASSWORD
+          ? make_done_callback(WarningAction::CHANGE_PASSWORD)
+          : base::DoNothing());
+  DialogDelegate::set_cancel_callback(
+      make_done_callback(WarningAction::IGNORE_WARNING));
+  DialogDelegate::set_close_callback(make_done_callback(WarningAction::CLOSE));
+
   // |service| maybe NULL in tests.
   if (service_)
     service_->AddObserver(this);
@@ -260,25 +279,6 @@ gfx::ImageSkia PasswordReuseModalWarningDialog::GetWindowIcon() {
 }
 
 bool PasswordReuseModalWarningDialog::ShouldShowWindowIcon() const {
-  return true;
-}
-
-bool PasswordReuseModalWarningDialog::Cancel() {
-  std::move(done_callback_).Run(WarningAction::IGNORE_WARNING);
-  return true;
-}
-
-bool PasswordReuseModalWarningDialog::Accept() {
-  if (password_type_.account_type() !=
-      ReusedPasswordAccountType::SAVED_PASSWORD)
-    std::move(done_callback_).Run(WarningAction::CHANGE_PASSWORD);
-
-  return true;
-}
-
-bool PasswordReuseModalWarningDialog::Close() {
-  if (done_callback_)
-    std::move(done_callback_).Run(WarningAction::CLOSE);
   return true;
 }
 

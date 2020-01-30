@@ -457,8 +457,10 @@ void RenderWidgetHostViewAndroid::OnRenderFrameMetadataChangedBeforeActivation(
   view_.UpdateFrameInfo({scrollable_viewport_size_dip, top_content_offset_dip});
   bool controls_changed = UpdateControls(
       view_.GetDipScale(), metadata.top_controls_height,
-      metadata.top_controls_shown_ratio, metadata.bottom_controls_height,
-      metadata.bottom_controls_shown_ratio);
+      metadata.top_controls_shown_ratio,
+      metadata.top_controls_min_height_offset, metadata.bottom_controls_height,
+      metadata.bottom_controls_shown_ratio,
+      metadata.bottom_controls_min_height_offset);
 
   SetContentBackgroundColor(is_transparent ? SK_ColorTRANSPARENT
                                            : root_background_color);
@@ -1292,8 +1294,10 @@ bool RenderWidgetHostViewAndroid::UpdateControls(
     float dip_scale,
     float top_controls_height,
     float top_controls_shown_ratio,
+    float top_controls_min_height_offset,
     float bottom_controls_height,
-    float bottom_controls_shown_ratio) {
+    float bottom_controls_shown_ratio,
+    float bottom_controls_min_height_offset) {
   float to_pix = IsUseZoomForDSFEnabled() ? 1.f : dip_scale;
   float top_controls_pix = top_controls_height * to_pix;
   // |top_content_offset| is in physical pixels if --use-zoom-for-dsf is
@@ -1305,8 +1309,14 @@ bool RenderWidgetHostViewAndroid::UpdateControls(
   float top_translate = top_shown_pix - top_controls_pix;
   bool top_changed =
       !cc::MathUtil::IsFloatNearlyTheSame(top_shown_pix, prev_top_shown_pix_);
+
+  float top_min_height_offset_pix = top_controls_min_height_offset * to_pix;
+  top_changed |= !cc::MathUtil::IsFloatNearlyTheSame(
+      top_min_height_offset_pix, prev_top_controls_min_height_offset_pix_);
+
   if (top_changed || !controls_initialized_)
-    view_.OnTopControlsChanged(top_translate, top_shown_pix);
+    view_.OnTopControlsChanged(top_translate, top_shown_pix,
+                               top_min_height_offset_pix);
   prev_top_shown_pix_ = top_shown_pix;
   prev_top_controls_translate_ = top_translate;
 
@@ -1315,8 +1325,16 @@ bool RenderWidgetHostViewAndroid::UpdateControls(
   bool bottom_changed = !cc::MathUtil::IsFloatNearlyTheSame(
       bottom_shown_pix, prev_bottom_shown_pix_);
   float bottom_translate = bottom_controls_pix - bottom_shown_pix;
+
+  float bottom_min_height_offset_pix =
+      bottom_controls_min_height_offset * to_pix;
+  bottom_changed |= !cc::MathUtil::IsFloatNearlyTheSame(
+      bottom_min_height_offset_pix,
+      prev_bottom_controls_min_height_offset_pix_);
+
   if (bottom_changed || !controls_initialized_)
-    view_.OnBottomControlsChanged(bottom_translate, bottom_shown_pix);
+    view_.OnBottomControlsChanged(bottom_translate, bottom_shown_pix,
+                                  bottom_min_height_offset_pix);
   prev_bottom_shown_pix_ = bottom_shown_pix;
   prev_bottom_controls_translate_ = bottom_translate;
   controls_initialized_ = true;

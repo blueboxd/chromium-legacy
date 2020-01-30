@@ -79,6 +79,13 @@ MockMediaSessionPlayerObserver::GetPosition(int player_id) const {
   return players_[player_id].position_;
 }
 
+bool MockMediaSessionPlayerObserver::IsPictureInPictureAvailable(
+    int player_id) const {
+  EXPECT_GE(player_id, 0);
+  EXPECT_GT(players_.size(), static_cast<size_t>(player_id));
+  return false;
+}
+
 RenderFrameHost* MockMediaSessionPlayerObserver::render_frame_host() const {
   return render_frame_host_;
 }

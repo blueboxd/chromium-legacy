@@ -817,7 +817,6 @@ void FrameSequenceTracker::ReportMainFrameCausedNoDamage(
   // It is possible for |awaiting_main_response_sequence_| to be zero here if a
   // commit had already happened before (e.g. B(x)E(x)N(x)). So check that case
   // here.
-  // XXX: Add a DCHECK() at least to make sure that's what happened?
   if (awaiting_main_response_sequence_) {
     DCHECK_EQ(awaiting_main_response_sequence_, args.frame_id.sequence_number)
         << TRACKER_DCHECK_MSG;

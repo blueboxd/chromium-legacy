@@ -51,6 +51,7 @@ cr.define('settings', function() {
 
   cr.addSingletonGetter(DefaultBrowserBrowserProxyImpl);
 
+  // #cr_define_end
   return {
     DefaultBrowserBrowserProxy: DefaultBrowserBrowserProxy,
     DefaultBrowserBrowserProxyImpl: DefaultBrowserBrowserProxyImpl,

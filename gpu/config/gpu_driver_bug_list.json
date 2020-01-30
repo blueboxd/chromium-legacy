@@ -3530,6 +3530,19 @@
       "disabled_extensions": [
         "GL_EXT_multisampled_render_to_texture"
       ]
+    },
+    {
+      "id": 331,
+      "cr_bugs": [1046462],
+      "description": "GL and Vulkan interop doesn't work with AMD GPU properly",
+      "os": {
+        "type": "linux"
+      },
+      "vendor_id": "0x1002",
+      "disabled_extensions": [
+        "GL_EXT_memory_object_fd",
+        "GL_EXT_semaphore_fd"
+      ]
     }
   ]
 }

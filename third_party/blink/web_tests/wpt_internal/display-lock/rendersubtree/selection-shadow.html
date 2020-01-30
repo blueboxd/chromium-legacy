@@ -10,7 +10,7 @@
 
 <style>
 div:not([rendersubtree~="invisible"]) {
-  intrinsic-size: legacy !important;
+  contain-intrinsic-size: legacy !important;
 }
 </style>
 </div>
@@ -52,9 +52,9 @@ async function runTest() {
   secondSlot.name = "second";
   shadowRoot.appendChild(secondSlot);
 
-  host.style = "intrinsic-size: 100px 100px;"
-  nonActivatable.style = "intrinsic-size: 20px 20px;"
-  slottedToFirst.style = "intrinsic-size: 40px 40px;"
+  host.style = "contain-intrinsic-size: 100px 100px;"
+  nonActivatable.style = "contain-intrinsic-size: 20px 20px;"
+  slottedToFirst.style = "contain-intrinsic-size: 40px 40px;"
   await setInvisibleActivatable(host);
   await setInvisible(nonActivatable);
   await setInvisibleActivatable(slottedToFirst);

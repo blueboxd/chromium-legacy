@@ -38,7 +38,6 @@ class CredentialsItemView : public AccountAvatarFetcherDelegate,
   CredentialsItemView(views::ButtonListener* button_listener,
                       const base::string16& upper_text,
                       const base::string16& lower_text,
-                      SkColor hover_color,
                       const autofill::PasswordForm* form,
                       network::mojom::URLLoaderFactory* loader_factory,
                       int upper_text_style = views::style::STYLE_PRIMARY,
@@ -49,8 +48,6 @@ class CredentialsItemView : public AccountAvatarFetcherDelegate,
 
   // AccountAvatarFetcherDelegate:
   void UpdateAvatar(const gfx::ImageSkia& image) override;
-
-  void SetLowerLabelColor(SkColor color);
 
   int GetPreferredHeight() const;
 
@@ -64,8 +61,6 @@ class CredentialsItemView : public AccountAvatarFetcherDelegate,
   views::Label* upper_label_ = nullptr;
   views::Label* lower_label_ = nullptr;
   views::ImageView* info_icon_ = nullptr;
-
-  SkColor hover_color_;
 
   base::WeakPtrFactory<CredentialsItemView> weak_ptr_factory_{this};
 

@@ -383,7 +383,7 @@ Vector<LayoutText::TextBoxInfo> LayoutText::GetTextBoxInfo() const {
         // Compute rect of the legacy text box.
         LayoutRect rect =
             cursor.CurrentLocalRect(clamped_start, clamped_end).ToLayoutRect();
-        rect.MoveBy(cursor.CurrentOffset().ToLayoutPoint());
+        rect.MoveBy(cursor.Current().OffsetInContainerBlock().ToLayoutPoint());
 
         // Compute start of the legacy text box.
         if (unit.AssociatedNode()) {
@@ -512,7 +512,7 @@ void LayoutText::CollectLineBoxRects(const PhysicalRectCollector& yield,
         if (cursor.IsHiddenForPaint())
           continue;
       }
-      yield(cursor.CurrentRect());
+      yield(cursor.Current().RectInContainerBlock());
     }
     return;
   }
@@ -627,7 +627,7 @@ void LayoutText::AbsoluteQuadsForRange(Vector<FloatQuad>& quads,
       const unsigned clamped_start = std::max(start, offset.start);
       const unsigned clamped_end = std::min(end, offset.end);
       PhysicalRect rect = cursor.CurrentLocalRect(clamped_start, clamped_end);
-      rect.Move(cursor.CurrentOffset());
+      rect.Move(cursor.Current().OffsetInContainerBlock());
       const FloatQuad quad = LocalRectToAbsoluteQuad(rect);
       if (clamped_start < clamped_end) {
         quads.push_back(quad);
@@ -1631,7 +1631,8 @@ PhysicalOffset LayoutText::FirstLineBoxTopLeft() const {
       return PhysicalOffset();
     NGInlineCursor cursor;
     cursor.MoveTo(*this);
-    return cursor ? cursor.CurrentOffset() : PhysicalOffset();
+    return cursor ? cursor.Current().OffsetInContainerBlock()
+                  : PhysicalOffset();
   }
   if (const auto* text_box = FirstTextBox()) {
     LayoutPoint location = text_box->Location();
@@ -2155,7 +2156,7 @@ PhysicalRect LayoutText::LocalSelectionVisualRect() const {
       if (status.start == status.end)
         continue;
       PhysicalRect item_rect = ComputeLocalSelectionRectForText(cursor, status);
-      item_rect.offset += cursor.CurrentOffset();
+      item_rect.offset += cursor.Current().OffsetInContainerBlock();
       rect.Unite(item_rect);
     }
     return rect;

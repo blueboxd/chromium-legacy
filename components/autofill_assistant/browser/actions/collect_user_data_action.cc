@@ -5,12 +5,15 @@
 #include "components/autofill_assistant/browser/actions/collect_user_data_action.h"
 
 #include <algorithm>
+#include <array>
 #include <set>
 #include <utility>
+#include <vector>
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/i18n/case_conversion.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/autofill_data_util.h"
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
@@ -32,6 +35,15 @@
 #include "ui/base/l10n/l10n_util.h"
 
 namespace {
+
+static constexpr int kDefaultMaxNumberContactSummaryLines = 1;
+static constexpr std::array<autofill_assistant::AutofillContactField, 2>
+    kDefaultContactSummaryFields = {autofill_assistant::EMAIL_ADDRESS,
+                                    autofill_assistant::NAME_FULL};
+static constexpr int kDefaultMaxNumberContactFullLines = 2;
+static constexpr std::array<autofill_assistant::AutofillContactField, 2>
+    kDefaultContactFullFields = {autofill_assistant::NAME_FULL,
+                                 autofill_assistant::EMAIL_ADDRESS};
 
 using autofill_assistant::CollectUserDataOptions;
 using autofill_assistant::DateTimeProto;
@@ -153,29 +165,67 @@ bool IsValidTermsChoice(
          terms_state != TermsAndConditionsState::NOT_SELECTED;
 }
 
-// Comparison function for |DateTimeProto|.
-// Returns 0 if equal, < 0 if |first| < |second|, > 0 if |second| > |first|.
-int CompareDateTimes(const DateTimeProto& first, const DateTimeProto& second) {
-  auto first_tuple = std::make_tuple(
-      first.date().year(), first.date().month(), first.date().day(),
-      first.time().hour(), first.time().minute(), first.time().second());
-  auto second_tuple = std::make_tuple(
-      second.date().year(), second.date().month(), second.date().day(),
-      second.time().hour(), second.time().minute(), second.time().second());
-  if (first_tuple < second_tuple) {
-    return -1;
-  } else if (second_tuple < first_tuple) {
-    return 1;
+// Checks |proto| and writes an error message to |error| if fields are missing.
+bool IsValidDateTimeRangeProto(
+    const autofill_assistant::DateTimeRangeProto& proto,
+    std::string* error) {
+  std::vector<std::string> missing_fields;
+  if (proto.start_date_label().empty())
+    missing_fields.emplace_back("start_date_label");
+  if (proto.start_time_label().empty())
+    missing_fields.emplace_back("start_time_label");
+  if (proto.end_date_label().empty())
+    missing_fields.emplace_back("end_date_label");
+  if (proto.end_time_label().empty())
+    missing_fields.emplace_back("end_time_label");
+  if (!proto.has_start_date())
+    missing_fields.emplace_back("start_date");
+  if (!proto.has_start_time_slot())
+    missing_fields.emplace_back("start_time_slot");
+  if (!proto.has_end_date())
+    missing_fields.emplace_back("end_date");
+  if (!proto.has_end_time_slot())
+    missing_fields.emplace_back("end_time_slot");
+  if (!proto.has_min_date())
+    missing_fields.emplace_back("min_date");
+  if (!proto.has_max_date())
+    missing_fields.emplace_back("max_date");
+  if (proto.time_slots().empty())
+    missing_fields.emplace_back("time_slots");
+  if (proto.date_not_set_error().empty())
+    missing_fields.emplace_back("date_not_set_error");
+  if (proto.time_not_set_error().empty())
+    missing_fields.emplace_back("time_not_set_error");
+
+  if (error != nullptr && !missing_fields.empty()) {
+    error->assign("The following fields are missing or empty: ");
+    error->append(base::JoinString(missing_fields, ", "));
   }
-  return 0;
+
+  return missing_fields.empty();
 }
 
 bool IsValidDateTimeRange(
-    const DateTimeProto& start,
-    const DateTimeProto& end,
+    const base::Optional<autofill_assistant::DateProto>& start_date,
+    const base::Optional<int> start_timeslot,
+    const base::Optional<autofill_assistant::DateProto> end_date,
+    const base::Optional<int> end_timeslot,
     const CollectUserDataOptions& collect_user_data_options) {
-  return !collect_user_data_options.request_date_time_range ||
-         CompareDateTimes(start, end) < 0;
+  if (!collect_user_data_options.request_date_time_range) {
+    return true;
+  }
+  if (!start_date.has_value() || !start_timeslot.has_value() ||
+      !end_date.has_value() || !end_timeslot.has_value()) {
+    return false;
+  }
+
+  auto temp_start_date = start_date;
+  auto temp_start_timeslot = start_timeslot;
+  auto temp_end_date = end_date;
+  auto temp_end_timeslot = end_timeslot;
+  return !autofill_assistant::CollectUserDataAction::SanitizeDateTimeRange(
+      &temp_start_date, &temp_start_timeslot, &temp_end_date,
+      &temp_end_timeslot, collect_user_data_options, false);
 }
 
 bool IsValidUserFormSection(
@@ -422,6 +472,8 @@ void CollectUserDataAction::OnShowToUser(UserData* user_data,
   delegate_->GetPersonalDataManager()->AddObserver(this);
   UpdatePersonalDataManagerProfiles(user_data);
   UpdatePersonalDataManagerCards(user_data);
+  UpdateDateTimeRangeStart(user_data);
+  UpdateDateTimeRangeEnd(user_data);
 
   // Gather info for UMA histograms.
   if (!shown_to_user_) {
@@ -488,10 +540,24 @@ void CollectUserDataAction::OnGetUserData(
     }
 
     if (collect_user_data.has_date_time_range()) {
+      DCHECK(user_data->date_time_range_start_date_.has_value());
+      DCHECK(user_data->date_time_range_start_timeslot_.has_value());
+      DCHECK(user_data->date_time_range_end_date_.has_value());
+      DCHECK(user_data->date_time_range_end_timeslot_.has_value());
       *processed_action_proto_->mutable_collect_user_data_result()
-           ->mutable_date_time_start() = user_data->date_time_range_start_;
+           ->mutable_date_range_start_date() =
+          *user_data->date_time_range_start_date_;
+      *user_data->date_time_range_start_date_;
+      processed_action_proto_->mutable_collect_user_data_result()
+          ->set_date_range_start_timeslot(
+              *user_data->date_time_range_start_timeslot_);
       *processed_action_proto_->mutable_collect_user_data_result()
-           ->mutable_date_time_end() = user_data->date_time_range_end_;
+           ->mutable_date_range_end_date() =
+          *user_data->date_time_range_end_date_;
+      *user_data->date_time_range_end_date_;
+      processed_action_proto_->mutable_collect_user_data_result()
+          ->set_date_range_end_timeslot(
+              *user_data->date_time_range_end_timeslot_);
     }
 
     for (const auto& value : user_data->additional_values_) {
@@ -551,6 +617,43 @@ bool CollectUserDataAction::CreateOptionsFromProto() {
         contact_details.request_payer_name();
     collect_user_data_options_->request_payer_phone =
         contact_details.request_payer_phone();
+    // TODO(b/146405276): Remove legacy support for |summary_fields| and
+    // |full_fields|.
+    if (contact_details.summary_fields().empty()) {
+      collect_user_data_options_->contact_summary_max_lines =
+          kDefaultMaxNumberContactSummaryLines;
+      collect_user_data_options_->contact_summary_fields.assign(
+          kDefaultContactSummaryFields.begin(),
+          kDefaultContactSummaryFields.end());
+    } else {
+      for (const auto& field : contact_details.summary_fields()) {
+        collect_user_data_options_->contact_summary_fields.emplace_back(
+            (AutofillContactField)field);
+      }
+      if (contact_details.max_number_summary_lines() <= 0) {
+        DVLOG(1) << "max_number_summary_lines must be > 0";
+        return false;
+      }
+      collect_user_data_options_->contact_summary_max_lines =
+          contact_details.max_number_summary_lines();
+    }
+    if (contact_details.full_fields().empty()) {
+      collect_user_data_options_->contact_full_max_lines =
+          kDefaultMaxNumberContactFullLines;
+      collect_user_data_options_->contact_full_fields.assign(
+          kDefaultContactFullFields.begin(), kDefaultContactFullFields.end());
+    } else {
+      for (const auto& field : contact_details.full_fields()) {
+        collect_user_data_options_->contact_full_fields.emplace_back(
+            (AutofillContactField)field);
+      }
+      if (contact_details.max_number_full_lines() <= 0) {
+        DVLOG(1) << "max_number_full_lines must be > 0";
+        return false;
+      }
+      collect_user_data_options_->contact_full_max_lines =
+          contact_details.max_number_full_lines();
+    }
     if (collect_user_data_options_->request_payer_email ||
         collect_user_data_options_->request_payer_name ||
         collect_user_data_options_->request_payer_phone) {
@@ -652,19 +755,19 @@ bool CollectUserDataAction::CreateOptionsFromProto() {
   }
 
   if (collect_user_data.has_date_time_range()) {
-    if (!collect_user_data.date_time_range().has_start_label() ||
-        !collect_user_data.date_time_range().has_end_label() ||
-        !collect_user_data.date_time_range().has_start() ||
-        !collect_user_data.date_time_range().has_end() ||
-        !collect_user_data.date_time_range().has_min() ||
-        !collect_user_data.date_time_range().has_max()) {
-      DVLOG(1) << "Invalid action: missing one or more of the required fields "
-                  "'start', 'end', 'min', 'max', 'start_label', end_label'.";
+    std::string error_message;
+    if (!IsValidDateTimeRangeProto(collect_user_data.date_time_range(),
+                                   &error_message)) {
+      DVLOG(1) << "Invalid action: " << error_message;
       return false;
     }
-    if (collect_user_data.date_time_range().invalid_error_message().empty()) {
-      DVLOG(1) << "Invalid action: date_time_range.invalid_error_message "
-                  "must not be empty.";
+    if (collect_user_data.date_time_range().start_time_slot() < 0 ||
+        collect_user_data.date_time_range().end_time_slot() < 0 ||
+        collect_user_data.date_time_range().start_time_slot() >=
+            collect_user_data.date_time_range().time_slots().size() ||
+        collect_user_data.date_time_range().end_time_slot() >=
+            collect_user_data.date_time_range().time_slots().size()) {
+      DVLOG(1) << "Invalid action: time slot index out of range";
       return false;
     }
     collect_user_data_options_->request_date_time_range = true;
@@ -808,6 +911,7 @@ bool CollectUserDataAction::CheckInitialAutofillDataComplete(
   return true;
 }
 
+// TODO(b/148448649): Move to dedicated helper namespace.
 // static
 bool CollectUserDataAction::IsUserDataComplete(
     const UserData& user_data,
@@ -824,8 +928,94 @@ bool CollectUserDataAction::IsUserDataComplete(
                               options) &&
          IsValidLoginChoice(user_data.login_choice_identifier_, options) &&
          IsValidTermsChoice(user_data.terms_and_conditions_, options) &&
-         IsValidDateTimeRange(user_data.date_time_range_start_,
-                              user_data.date_time_range_end_, options);
+         IsValidDateTimeRange(user_data.date_time_range_start_date_,
+                              user_data.date_time_range_start_timeslot_,
+                              user_data.date_time_range_end_date_,
+                              user_data.date_time_range_end_timeslot_, options);
+}
+
+// TODO(b/148448649): Move to dedicated helper namespace.
+// static
+int CollectUserDataAction::CompareDates(const DateProto& first,
+                                        const DateProto& second) {
+  auto first_tuple = std::make_tuple(first.year(), first.month(), first.day());
+  auto second_tuple =
+      std::make_tuple(second.year(), second.month(), second.day());
+  if (first_tuple < second_tuple) {
+    return -1;
+  } else if (second_tuple < first_tuple) {
+    return 1;
+  }
+  return 0;
+}
+
+// TODO(b/148448649): Move to dedicated helper namespace.
+// static
+bool CollectUserDataAction::SanitizeDateTimeRange(
+    base::Optional<DateProto>* start_date,
+    base::Optional<int>* start_timeslot,
+    base::Optional<DateProto>* end_date,
+    base::Optional<int>* end_timeslot,
+    const CollectUserDataOptions& collect_user_data_options,
+    bool change_start) {
+  if (!collect_user_data_options.request_date_time_range) {
+    return false;
+  }
+  DCHECK(start_date);
+  DCHECK(start_timeslot);
+  DCHECK(end_date);
+  DCHECK(end_timeslot);
+  if (!start_date->has_value() || !end_date->has_value()) {
+    return false;
+  }
+
+  auto date_comparison = CompareDates(**start_date, **end_date);
+  if (date_comparison < 0) {
+    return false;
+  }
+
+  // Start date > end date, reset date.
+  if (date_comparison > 0) {
+    if (change_start) {
+      start_date->reset();
+    } else {
+      end_date->reset();
+    }
+    return true;
+  }
+
+  if (!start_timeslot->has_value() || !end_timeslot->has_value()) {
+    return false;
+  }
+
+  DCHECK(**start_timeslot >= 0 &&
+         **start_timeslot <
+             collect_user_data_options.date_time_range.time_slots().size());
+  DCHECK(**end_timeslot >= 0 &&
+         **end_timeslot <
+             collect_user_data_options.date_time_range.time_slots().size());
+  auto start_time =
+      collect_user_data_options.date_time_range.time_slots(**start_timeslot);
+  auto end_time =
+      collect_user_data_options.date_time_range.time_slots(**end_timeslot);
+  auto time_comparison =
+      start_time.comparison_value() - end_time.comparison_value();
+  if (time_comparison < 0) {
+    return false;
+  }
+
+  // Start date == end date and start time >= end time, reset time.
+  if (time_comparison >= 0) {
+    if (change_start) {
+      start_timeslot->reset();
+    } else {
+      end_timeslot->reset();
+    }
+    return true;
+  }
+
+  NOTREACHED();
+  return false;
 }
 
 void CollectUserDataAction::UpdatePersonalDataManagerProfiles(
@@ -987,6 +1177,52 @@ void CollectUserDataAction::OnPersonalDataChanged() {
   delegate_->WriteUserData(
       base::BindOnce(&CollectUserDataAction::UpdatePersonalDataManagerCards,
                      weak_ptr_factory_.GetWeakPtr()));
+}
+
+void CollectUserDataAction::UpdateDateTimeRangeStart(
+    UserData* user_data,
+    UserData::FieldChange* field_change) {
+  DCHECK(user_data != nullptr);
+  DCHECK(collect_user_data_options_ != nullptr);
+
+  UserData::FieldChange changed = UserData::FieldChange::NONE;
+  if (!user_data->date_time_range_start_date_.has_value()) {
+    user_data->date_time_range_start_date_ =
+        collect_user_data_options_->date_time_range.start_date();
+    changed = UserData::FieldChange::DATE_TIME_RANGE_START;
+  }
+  if (!user_data->date_time_range_start_timeslot_.has_value()) {
+    user_data->date_time_range_start_timeslot_ =
+        collect_user_data_options_->date_time_range.start_time_slot();
+    changed = UserData::FieldChange::DATE_TIME_RANGE_START;
+  }
+
+  if (field_change != nullptr && changed != UserData::FieldChange::NONE) {
+    *field_change = changed;
+  }
+}
+
+void CollectUserDataAction::UpdateDateTimeRangeEnd(
+    UserData* user_data,
+    UserData::FieldChange* field_change) {
+  DCHECK(user_data != nullptr);
+  DCHECK(collect_user_data_options_ != nullptr);
+
+  UserData::FieldChange changed = UserData::FieldChange::NONE;
+  if (!user_data->date_time_range_end_date_.has_value()) {
+    user_data->date_time_range_end_date_ =
+        collect_user_data_options_->date_time_range.end_date();
+    changed = UserData::FieldChange::DATE_TIME_RANGE_END;
+  }
+  if (!user_data->date_time_range_end_timeslot_.has_value()) {
+    user_data->date_time_range_end_timeslot_ =
+        collect_user_data_options_->date_time_range.end_time_slot();
+    changed = UserData::FieldChange::DATE_TIME_RANGE_END;
+  }
+
+  if (field_change != nullptr && changed != UserData::FieldChange::NONE) {
+    *field_change = changed;
+  }
 }
 
 }  // namespace autofill_assistant

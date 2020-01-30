@@ -14,8 +14,8 @@ bool StructTraits<mojo_base::mojom::FilePathDataView, base::FilePath>::Read(
 #if defined(OS_WIN)
   ArrayDataView<uint16_t> view;
   data.GetPathDataView(&view);
-  path_view.set(reinterpret_cast<const base::char16*>(view.data()),
-                view.size());
+  path_view = base::StringPiece16(
+      reinterpret_cast<const base::char16*>(view.data()), view.size());
 #else
   if (!data.ReadPath(&path_view)) {
     return false;

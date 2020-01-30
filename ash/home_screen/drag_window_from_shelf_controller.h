@@ -10,6 +10,7 @@
 #include "ash/ash_export.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/public/cpp/window_properties.h"
+#include "ash/shelf/shelf_metrics.h"
 #include "ash/wm/splitview/split_view_controller.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -66,20 +67,6 @@ class ASH_EXPORT DragWindowFromShelfController : public aura::WindowObserver {
   // value, the window will snap back to its original position. The value is
   // different for standard or dense shelf.
   static float GetReturnToMaximizedThreshold();
-
-  enum class ShelfWindowDragResult {
-    // Go to home screen after drag ends.
-    kGoToHomeScreen,
-
-    // Dragged window restored to its original bounds.
-    kRestoreToOriginalBounds,
-
-    // Dragged window is dropped to overview after drag ends.
-    kGoToOverviewMode,
-
-    // Enter splitview mode after drag ends.
-    kGoToSplitviewMode,
-  };
 
   class Observer : public base::CheckedObserver {
    public:

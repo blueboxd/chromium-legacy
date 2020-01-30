@@ -95,10 +95,9 @@ bool ThemeServiceAuraLinux::IsSystemThemeDistinctFromDefaultTheme() const {
   return true;
 }
 
-bool ThemeServiceAuraLinux::IsSystemTheme(
-    const CustomThemeSupplier* theme_supplier) const {
-  return theme_supplier &&
-         theme_supplier->get_theme_type() == CustomThemeSupplier::NATIVE_X11;
+bool ThemeServiceAuraLinux::UsingSystemTheme() const {
+  return GetThemeSupplier() && GetThemeSupplier()->get_theme_type() ==
+                                   CustomThemeSupplier::NATIVE_X11;
 }
 
 void ThemeServiceAuraLinux::FixInconsistentPreferencesIfNeeded() {
@@ -106,7 +105,7 @@ void ThemeServiceAuraLinux::FixInconsistentPreferencesIfNeeded() {
 
   // When using the system theme, the theme ID should match the default. Give
   // precedence to the non-default theme specified.
-  if (GetThemeID() != ThemeService::kDefaultThemeID &&
+  if (GetThemeID() != ThemeHelper::kDefaultThemeID &&
       prefs->GetBoolean(prefs::kUsesSystemTheme)) {
     prefs->SetBoolean(prefs::kUsesSystemTheme, false);
   }

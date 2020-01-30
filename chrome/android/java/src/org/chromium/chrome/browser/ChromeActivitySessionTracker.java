@@ -23,9 +23,6 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.accessibility.FontSizePrefs;
 import org.chromium.chrome.browser.browsing_data.BrowsingDataType;
 import org.chromium.chrome.browser.browsing_data.TimePeriod;
-import org.chromium.chrome.browser.firstrun.FirstRunUtils;
-import org.chromium.chrome.browser.flags.ChromeFeatureList;
-import org.chromium.chrome.browser.flags.FeatureUtilities;
 import org.chromium.chrome.browser.metrics.UmaUtils;
 import org.chromium.chrome.browser.metrics.VariationsSession;
 import org.chromium.chrome.browser.notifications.NotificationPlatformBridge;
@@ -42,8 +39,6 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.translate.TranslateBridge;
 import org.chromium.ui.base.ResourceBundle;
 
-import java.util.Arrays;
-import java.util.List;
 import java.util.Locale;
 
 /**
@@ -61,7 +56,6 @@ public class ChromeActivitySessionTracker {
 
     private boolean mIsInitialized;
     private boolean mIsStarted;
-    private boolean mIsFinishedCachingNativeFlags;
 
     /**
      * @return The activity session tracker for Chrome.
@@ -127,7 +121,6 @@ public class ChromeActivitySessionTracker {
         assert mIsInitialized;
 
         onForegroundSessionStart();
-        cacheNativeFlags();
     }
 
     /**
@@ -249,21 +242,6 @@ public class ChromeActivitySessionTracker {
 
         PrefServiceBridge.getInstance().setBoolean(
                 Pref.WEBKIT_PASSWORD_ECHO_ENABLED, systemEnabled);
-    }
-
-    /**
-     * Caches flags that are needed by Activities that launch before the native library is loaded
-     * and stores them in SharedPreferences. Because this function is called during launch after the
-     * library has loaded, they won't affect the next launch until Chrome is restarted.
-     */
-    private void cacheNativeFlags() {
-        if (mIsFinishedCachingNativeFlags) return;
-        FirstRunUtils.cacheFirstRunPrefs();
-
-        List<String> featuresToCache = Arrays.asList(ChromeFeatureList.HOMEPAGE_LOCATION_POLICY);
-        FeatureUtilities.cacheNativeFlags(featuresToCache);
-        FeatureUtilities.cacheAdditionalNativeFlags();
-        mIsFinishedCachingNativeFlags = true;
     }
 
     /**

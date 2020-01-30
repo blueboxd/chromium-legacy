@@ -54,9 +54,9 @@ base::string16 AccessibilityLabelsBubbleModel::GetMessageText() const {
 }
 
 base::string16 AccessibilityLabelsBubbleModel::GetButtonLabel(
-    BubbleButton button) const {
+    ui::DialogButton button) const {
   return l10n_util::GetStringUTF16(
-      button == BUTTON_OK
+      button == ui::DIALOG_BUTTON_OK
           ? IDS_CONTENT_CONTEXT_ACCESSIBILITY_LABELS_BUBBLE_ENABLE
           : IDS_CONTENT_CONTEXT_ACCESSIBILITY_LABELS_BUBBLE_DISABLE);
 }

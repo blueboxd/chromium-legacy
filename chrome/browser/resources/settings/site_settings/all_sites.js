@@ -480,7 +480,7 @@ Polymer({
    * @return {string}
    * @private
    */
-  getConfirmClearDataLabel_: function() {
+  getClearDataLabel_: function() {
     // actionMenuModel_ will be null when dialog closes
     if (this.actionMenuModel_ === null) {
       return '';
@@ -500,9 +500,19 @@ Polymer({
         return loadTimeData.substituteString(this.i18n(messageId), origin);
       } else {
         // Clear SiteGroup
-        const messageId = hasInstalledPWA ?
-            'siteSettingsSiteGroupDeleteConfirmationInstalled' :
-            'siteSettingsSiteGroupDeleteConfirmationNew';
+        let messageId;
+        if (hasInstalledPWA) {
+          const multipleAppsInstalled =
+              (this.filteredList_[index].origins || [])
+                  .filter(o => o.isInstalled)
+                  .length > 1;
+
+          messageId = multipleAppsInstalled ?
+              'siteSettingsSiteGroupDeleteConfirmationInstalledPlural' :
+              'siteSettingsSiteGroupDeleteConfirmationInstalled';
+        } else {
+          messageId = 'siteSettingsSiteGroupDeleteConfirmationNew';
+        }
         return loadTimeData.substituteString(
             this.i18n(messageId), this.actionMenuModel_.item.etldPlus1);
       }
@@ -534,6 +544,20 @@ Polymer({
     return loadTimeData.substituteString(
         this.i18n('siteSettingsSiteGroupResetConfirmation'),
         this.actionMenuModel_.item.etldPlus1);
+  },
+  /**
+   * Get the appropriate label for the clear all data confirmation
+   * dialog, depending on whether or not any apps are installed.
+   * @return {string}
+   * @private
+   */
+  getClearAllDataLabel_: function() {
+    const anyAppsInstalled = this.filteredList_.some(g => g.hasInstalledPWA);
+    const messageId = anyAppsInstalled ?
+        'siteSettingsClearAllStorageConfirmationInstalled' :
+        'siteSettingsClearAllStorageConfirmation';
+    return loadTimeData.substituteString(
+        this.i18n(messageId), this.totalUsage_);
   },
 
   /**

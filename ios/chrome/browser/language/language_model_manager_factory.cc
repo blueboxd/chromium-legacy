@@ -22,7 +22,7 @@
 
 namespace {
 
-void PrepareLanguageModels(ios::ChromeBrowserState* const chrome_state,
+void PrepareLanguageModels(ChromeBrowserState* const chrome_state,
                            language::LanguageModelManager* const manager) {
   // Create and set the primary Language Model to use based on the state of
   // experiments.
@@ -68,7 +68,7 @@ LanguageModelManagerFactory* LanguageModelManagerFactory::GetInstance() {
 
 // static
 language::LanguageModelManager* LanguageModelManagerFactory::GetForBrowserState(
-    ios::ChromeBrowserState* const state) {
+    ChromeBrowserState* const state) {
   return static_cast<language::LanguageModelManager*>(
       GetInstance()->GetServiceForBrowserState(state, true));
 }
@@ -83,8 +83,8 @@ LanguageModelManagerFactory::~LanguageModelManagerFactory() {}
 std::unique_ptr<KeyedService>
 LanguageModelManagerFactory::BuildServiceInstanceFor(
     web::BrowserState* const state) const {
-  ios::ChromeBrowserState* const chrome_state =
-      ios::ChromeBrowserState::FromBrowserState(state);
+  ChromeBrowserState* const chrome_state =
+      ChromeBrowserState::FromBrowserState(state);
   std::unique_ptr<language::LanguageModelManager> manager =
       std::make_unique<language::LanguageModelManager>(
           chrome_state->GetPrefs(),

@@ -22,7 +22,7 @@
             android:id="@+id/sync_import_data_prompt"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textAppearance="@style/TextAppearance.BlackTitle1" />
+            android:textAppearance="@style/TextAppearance.TextLarge.Primary" />
 
         <org.chromium.components.browser_ui.widget.RadioButtonWithDescription
             android:id="@+id/sync_confirm_import_choice"

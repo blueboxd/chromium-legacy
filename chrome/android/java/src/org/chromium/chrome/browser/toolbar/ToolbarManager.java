@@ -625,7 +625,8 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
 
             @Override
             public void onBrowserControlsOffsetChanged(Tab tab, int topControlsOffsetY,
-                    int bottomControlsOffsetY, int contentOffsetY) {
+                    int bottomControlsOffsetY, int contentOffsetY, int topControlsMinHeightOffset,
+                    int bottomControlsMinHeightOffset) {
                 // For now, this is only useful for the offline indicator v2 feature.
                 if (ChromeFeatureList.isInitialized()
                         && !ChromeFeatureList.isEnabled(ChromeFeatureList.OFFLINE_INDICATOR_V2)) {
@@ -1085,6 +1086,43 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
     public void showIPHOnExperimentalButton(@StringRes int stringId,
             @StringRes int accessibilityStringId, Runnable dismissedCallback) {
         mToolbar.showIPHOnExperimentalButton(stringId, accessibilityStringId, dismissedCallback);
+    }
+
+    /**
+     * Show the identity disc toolbar button.
+     * @param onClickListener The {@link OnClickListener} to be called when the button is clicked.
+     * @param image The drawable to display for the button.
+     * @param contentDescriptionResId The resource id of the content description for the button.
+     */
+    public void showIdentityDiscButton(OnClickListener onClickListener, Drawable image,
+            @StringRes int contentDescriptionResId) {
+        mToolbar.showIdentityDiscButton(onClickListener, image, contentDescriptionResId);
+    }
+
+    /**
+     * Hide the identity disc toolbar button.
+     */
+    public void hideIdentityDiscButton() {
+        mToolbar.hideIdentityDiscButton();
+    }
+
+    /**
+     * Updates image displayed on identity disc button.
+     * @param image The drawable to display for the button.
+     */
+    public void updateIdentityDiscButtonImage(Drawable image) {
+        mToolbar.updateIdentityDiscButtonImage(image);
+    }
+
+    /**
+     * Displays in-product help for the identity disc button.
+     * @param stringId The id of the string resource for the text that should be shown.
+     * @param accessibilityStringId The id of the string resource of the accessibility text.
+     * @param dismissedCallback The callback that will be called when in-product help is dismissed.
+     */
+    public void showIPHOnIdentityDiscButton(@StringRes int stringId,
+            @StringRes int accessibilityStringId, Runnable dismissedCallback) {
+        mToolbar.showIPHOnIdentityDiscButton(stringId, accessibilityStringId, dismissedCallback);
     }
 
     /**

@@ -212,7 +212,8 @@ class CertificateViewer implements OnItemSelectedListener {
         t.setTextAlignment(View.TEXT_ALIGNMENT_VIEW_START);
         t.setPadding(mPadding, mPadding / 2, mPadding, 0);
         t.setText(label);
-        ApiCompatibilityUtils.setTextAppearance(t, R.style.TextAppearance_BlackTitle2);
+        ApiCompatibilityUtils.setTextAppearance(
+                t, R.style.TextAppearance_TextMediumThick_Primary);
         certificateView.addView(t);
         return t;
     }
@@ -222,7 +223,7 @@ class CertificateViewer implements OnItemSelectedListener {
         t.setTextAlignment(View.TEXT_ALIGNMENT_VIEW_START);
         t.setText(value);
         t.setPadding(mPadding, 0, mPadding, mPadding / 2);
-        ApiCompatibilityUtils.setTextAppearance(t, R.style.TextAppearance_BlackBodyDefault);
+        ApiCompatibilityUtils.setTextAppearance(t, R.style.TextAppearance_TextMedium_Primary);
         certificateView.addView(t);
     }
 

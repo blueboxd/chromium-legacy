@@ -8,7 +8,6 @@
 
 #include "base/bind.h"
 #import "base/mac/scoped_objc_class_swizzler.h"
-#include "base/mac/sdk_forward_declarations.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #import "components/remote_cocoa/app_shim/native_widget_ns_window_bridge.h"

@@ -334,6 +334,10 @@ class DemoSetupTest : public LoginManagerTest {
     const std::string element =
         base::StrCat({ScreenToContentQuery(NetworkScreenView::kScreenId),
                       ".getNetworkListItemByNameForTest('", name, "')"});
+    // We are looking up element by localized text. In Polymer v2 we might
+    // get to this point when element still not have proper localized string,
+    // and getNetworkListItemByNameForTest would return null.
+    test::OobeJS().CreateWaiter(element)->Wait();
     test::OobeJS().CreateVisibilityWaiter(true, element)->Wait();
 
     const std::string query = base::StrCat({element, ".click()"});

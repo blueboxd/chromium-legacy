@@ -65,7 +65,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:paddingBottom="2dp"
-            android:textAppearance="@style/TextAppearance.BlackBody" />
+            android:textAppearance="@style/TextAppearance.TextMedium.Secondary" />
 
         <!-- The rating bar used for Play Store app ratings for native apps.
              Displayed in place of the origin. -->

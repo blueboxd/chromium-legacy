@@ -334,7 +334,7 @@ void ClientSession::CreateMediaStreams() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // Create a VideoStream to pump frames from the capturer to the client.
-#if defined(OS_MACOSX)
+#if defined(OS_MACOSX) || defined(OS_WIN)
   // On macOS the capturer includes the mouse cursor.
   video_stream_ = connection_->StartVideoStream(
       desktop_environment_->CreateVideoCapturer());

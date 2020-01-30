@@ -162,10 +162,6 @@ class OptimizationGuideKeyedServiceBrowserTest
         https_server_->GetURL("somehost.com", "/hashints/whatever");
     url_that_redirects_ = https_server_->GetURL("/redirect");
 
-    // Set up an OptimizationGuideKeyedService consumer.
-    consumer_.reset(new OptimizationGuideConsumerWebContentsObserver(
-        browser()->tab_strip_model()->GetActiveWebContents()));
-
     SetEffectiveConnectionType(
         net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_SLOW_2G);
   }
@@ -180,6 +176,10 @@ class OptimizationGuideKeyedServiceBrowserTest
     OptimizationGuideKeyedServiceFactory::GetForProfile(browser()->profile())
         ->RegisterOptimizationTypesAndTargets(
             {optimization_guide::proto::NOSCRIPT}, /*optimization_targets=*/{});
+
+    // Set up an OptimizationGuideKeyedService consumer.
+    consumer_.reset(new OptimizationGuideConsumerWebContentsObserver(
+        browser()->tab_strip_model()->GetActiveWebContents()));
   }
 
   void PushHintsComponentAndWaitForCompletion() {
@@ -272,11 +272,6 @@ IN_PROC_BROWSER_TEST_F(
   ui_test_utils::NavigateToURL(browser(), url_with_hints());
 
   histogram_tester.ExpectTotalCount("OptimizationGuide.LoadedHint.Result", 0);
-  // There is a hint that matches this URL but it wasn't loaded.
-  EXPECT_EQ(optimization_guide::OptimizationGuideDecision::kTrue,
-            last_should_target_navigation_decision());
-  EXPECT_EQ(optimization_guide::OptimizationGuideDecision::kUnknown,
-            last_can_apply_optimization_decision());
 }
 
 IN_PROC_BROWSER_TEST_F(OptimizationGuideKeyedServiceBrowserTest,

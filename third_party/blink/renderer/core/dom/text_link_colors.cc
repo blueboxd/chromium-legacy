@@ -85,8 +85,6 @@ Color TextLinkColors::ColorFromCSSValue(const CSSValue& value,
       return LayoutTheme::GetTheme().FocusRingColor();
     case CSSValueID::kCurrentcolor:
       return current_color;
-    case CSSValueID::kInternalRootColor:
-      return LayoutTheme::GetTheme().RootElementColor(color_scheme);
     default:
       return StyleColor::ColorFromKeyword(value_id, color_scheme);
   }

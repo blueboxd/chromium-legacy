@@ -71,6 +71,23 @@ ScriptPromise PortalContents::Activate(ScriptState* script_state,
 
 void PortalContents::OnActivateResponse(
     mojom::blink::PortalActivateResult result) {
+  auto reject = [&](DOMExceptionCode code, const char* message) {
+    if (GetDocument().IsContextDestroyed())
+      return;
+
+    ScriptState* script_state = activate_resolver_->GetScriptState();
+    ScriptState::Scope scope(script_state);
+    // TODO(jbroman): It's slightly unfortunate to hard-code the string
+    // HTMLPortalElement here. Ideally this would be threaded through from
+    // there and carried with the ScriptPromiseResolver. See
+    // https://crbug.com/991544.
+    ExceptionState exception_state(script_state->GetIsolate(),
+                                   ExceptionState::kExecutionContext,
+                                   "HTMLPortalElement", "activate");
+    exception_state.ThrowDOMException(code, message);
+    activate_resolver_->Reject(exception_state);
+  };
+
   bool should_destroy_contents = false;
   switch (result) {
     case mojom::blink::PortalActivateResult::kPredecessorWasAdopted:
@@ -82,24 +99,14 @@ void PortalContents::OnActivateResponse(
       break;
 
     case mojom::blink::PortalActivateResult::
-        kRejectedDueToPredecessorNavigation: {
-      if (!GetDocument().IsContextDestroyed()) {
-        ScriptState* script_state = activate_resolver_->GetScriptState();
-        ScriptState::Scope scope(script_state);
-        // TODO(jbroman): It's slightly unfortunate to hard-code the string
-        // HTMLPortalElement here. Ideally this would be threaded through from
-        // there and carried with the ScriptPromiseResolver. See
-        // https://crbug.com/991544.
-        ExceptionState exception_state(script_state->GetIsolate(),
-                                       ExceptionState::kExecutionContext,
-                                       "HTMLPortalElement", "activate");
-        exception_state.ThrowDOMException(
-            DOMExceptionCode::kInvalidStateError,
-            "A top-level navigation is in progress.");
-        activate_resolver_->Reject(exception_state);
-      }
+        kRejectedDueToPredecessorNavigation:
+      reject(DOMExceptionCode::kInvalidStateError,
+             "A top-level navigation is in progress.");
       break;
-    }
+    case mojom::blink::PortalActivateResult::kRejectedDueToPortalNotReady:
+      reject(DOMExceptionCode::kInvalidStateError,
+             "The portal was not yet ready or was blocked.");
+      break;
     case mojom::blink::PortalActivateResult::kDisconnected:
       // Only called when |remote_portal_| is disconnected. This usually happens
       // when the browser/test runner is being shut down.

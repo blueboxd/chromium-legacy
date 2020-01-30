@@ -29,27 +29,8 @@ class VR_EXPORT ArCoreConsentPrompt : public XrConsentHelper {
   // Called from Java end.
   void OnUserConsentResult(JNIEnv* env,
                            jboolean is_granted);
-  void OnRequestInstallArModuleResult(
-      JNIEnv* env,
-      bool success);
-  void OnRequestInstallSupportedArCoreResult(
-      JNIEnv* env,
-      bool success);
 
  private:
-  // Returns true if AR module installation is supported, false otherwise.
-  bool CanRequestInstallArModule();
-  // Returns true if AR module is not installed, false otherwise.
-  bool ShouldRequestInstallArModule();
-  void RequestInstallArModule();
-  bool ShouldRequestInstallSupportedArCore();
-  void RequestInstallSupportedArCore();
-
-  void RequestArModule();
-  void OnRequestArModuleResult(bool success);
-  void RequestArCoreInstallOrUpdate();
-  void OnRequestArCoreInstallOrUpdateResult(bool success);
-
   void CallDeferredUserConsentCallback(bool is_permission_granted);
 
   base::WeakPtr<ArCoreConsentPrompt> GetWeakPtr() {
@@ -59,16 +40,7 @@ class VR_EXPORT ArCoreConsentPrompt : public XrConsentHelper {
   OnUserConsentCallback on_user_consent_callback_;
   XrConsentPromptLevel consent_level_;
 
-  base::OnceCallback<void(bool)> on_request_ar_module_result_callback_;
-  base::OnceCallback<void(bool)>
-      on_request_arcore_install_or_update_result_callback_;
-
   base::android::ScopedJavaGlobalRef<jobject> jdelegate_;
-  int render_process_id_;
-  int render_frame_id_;
-
-  base::android::ScopedJavaGlobalRef<jobject> java_install_utils_;
-  THREAD_CHECKER(thread_checker_);
 
   base::WeakPtrFactory<ArCoreConsentPrompt> weak_ptr_factory_;
   DISALLOW_COPY_AND_ASSIGN(ArCoreConsentPrompt);

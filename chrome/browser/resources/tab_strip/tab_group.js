@@ -10,19 +10,24 @@ export class TabGroupElement extends CustomElement {
     return `{__html_template__}`;
   }
 
-  connectedCallback() {
-    this.setAttribute('draggable', 'true');
-  }
-
   /** @return {!HTMLElement} */
   getDragImage() {
-    // TODO(johntlee): Update drag image.
-    return this;
+    return /** @type {!HTMLElement} */ (this.$('#dragImage'));
   }
 
-  /** @param {boolean} isDragging */
-  setDragging(isDragging) {
-    // TODO(johntlee): Update UI when dragging.
+  /** @param {boolean} enabled */
+  setDragging(enabled) {
+    // Since the draggable target is the #chip, if the #chip moves and is no
+    // longer under the pointer while the dragstart event is happening, the drag
+    // will get canceled. This is unfortunately the behavior of the native drag
+    // and drop API. The workaround is to have two different attributes: one
+    // to get the drag image and start the drag event while keeping #chip in
+    // place, and another to update the placeholder to take the place of where
+    // the #chip would be.
+    this.toggleAttribute('getting-drag-image_', enabled);
+    requestAnimationFrame(() => {
+      this.toggleAttribute('dragging', enabled);
+    });
   }
 
   /**

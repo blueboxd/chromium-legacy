@@ -8,7 +8,6 @@
 
 #include "base/bind.h"
 #include "base/hash/hash.h"
-#include "base/mac/sdk_forward_declarations.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"

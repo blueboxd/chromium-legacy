@@ -50,18 +50,25 @@ void AddRadioItem(uint32_t command_id,
       ->items.push_back(CreateRadioItem(command_id, string_id, group_id));
 }
 
-void CreateOpenNewSubmenu(uint32_t string_id,
+void CreateOpenNewSubmenu(apps::mojom::MenuType menu_type,
+                          uint32_t string_id,
                           apps::mojom::MenuItemsPtr* menu_items) {
   apps::mojom::MenuItemPtr menu_item = apps::mojom::MenuItem::New();
   menu_item->type = apps::mojom::MenuItemType::kSubmenu;
-  menu_item->command_id = ash::LAUNCH_NEW;
+  menu_item->command_id = (menu_type == apps::mojom::MenuType::kAppList)
+                              ? ash::LAUNCH_NEW
+                              : ash::MENU_OPEN_NEW;
   menu_item->string_id = string_id;
 
   menu_item->submenu.push_back(
-      CreateRadioItem(ash::USE_LAUNCH_TYPE_REGULAR,
+      CreateRadioItem((menu_type == apps::mojom::MenuType::kAppList)
+                          ? ash::USE_LAUNCH_TYPE_REGULAR
+                          : ash::LAUNCH_TYPE_REGULAR_TAB,
                       IDS_APP_LIST_CONTEXT_MENU_NEW_TAB, kGroupId));
   menu_item->submenu.push_back(
-      CreateRadioItem(ash::USE_LAUNCH_TYPE_WINDOW,
+      CreateRadioItem((menu_type == apps::mojom::MenuType::kAppList)
+                          ? ash::USE_LAUNCH_TYPE_WINDOW
+                          : ash::LAUNCH_TYPE_WINDOW,
                       IDS_APP_LIST_CONTEXT_MENU_NEW_WINDOW, kGroupId));
 
   menu_item->radio_group_id = kInvalidRadioGroupId;
@@ -124,7 +131,8 @@ bool PopulateNewItemFromMojoMenuItems(
   }
 
   auto& item = menu_items[0];
-  if (item->command_id != ash::LAUNCH_NEW) {
+  if (item->command_id != ash::LAUNCH_NEW &&
+      item->command_id != ash::MENU_OPEN_NEW) {
     return false;
   }
 

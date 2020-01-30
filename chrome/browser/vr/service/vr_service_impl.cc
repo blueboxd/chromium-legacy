@@ -99,6 +99,21 @@ ContentSettingsType GetRequiredPermission(device::mojom::XRSessionMode mode) {
 
 namespace vr {
 
+VRServiceImpl::SessionRequestData::SessionRequestData(
+    device::mojom::XRSessionOptionsPtr options,
+    device::mojom::VRService::RequestSessionCallback callback,
+    std::set<device::mojom::XRSessionFeature> enabled_features,
+    device::mojom::XRDeviceId runtime_id)
+    : options(std::move(options)),
+      callback(std::move(callback)),
+      enabled_features(std::move(enabled_features)),
+      runtime_id(runtime_id) {}
+
+VRServiceImpl::SessionRequestData::~SessionRequestData() = default;
+
+VRServiceImpl::SessionRequestData::SessionRequestData(SessionRequestData&&) =
+    default;
+
 VRServiceImpl::VRServiceImpl(content::RenderFrameHost* render_frame_host)
     : WebContentsObserver(
           content::WebContents::FromRenderFrameHost(render_frame_host)),
@@ -236,16 +251,13 @@ bool VRServiceImpl::IsXrDeviceConsentPromptDisabledForTesting() {
 }
 
 void VRServiceImpl::OnInlineSessionCreated(
-    device::mojom::XRSessionOptionsPtr options,
-    device::mojom::XRDeviceId session_runtime_id,
-    device::mojom::VRService::RequestSessionCallback callback,
-    const std::set<device::mojom::XRSessionFeature>& enabled_features,
+    SessionRequestData request,
     device::mojom::XRSessionPtr session,
     mojo::PendingRemote<device::mojom::XRSessionController>
         pending_controller) {
   if (!session) {
-    std::move(callback).Run(
-        device::mojom::RequestSessionResult::NewFailureReason(
+    std::move(request.callback)
+        .Run(device::mojom::RequestSessionResult::NewFailureReason(
             device::mojom::RequestSessionError::UNKNOWN_RUNTIME_ERROR));
     return;
   }
@@ -257,26 +269,22 @@ void VRServiceImpl::OnInlineSessionCreated(
 
   auto id = magic_window_controllers_.Add(std::move(controller));
   DVLOG(2) << __func__ << ": session_id=" << id.GetUnsafeValue()
-           << " runtime_id=" << session_runtime_id;
+           << " runtime_id=" << request.runtime_id;
 
   // Note: We might be recording an inline session that was created by WebVR.
   auto* session_metrics_tracker =
       GetSessionMetricsHelper()->RecordInlineSessionStart(id.GetUnsafeValue());
 
-  OnSessionCreated(std::move(options), session_runtime_id, std::move(callback),
-                   enabled_features, std::move(session),
+  OnSessionCreated(std::move(request), std::move(session),
                    session_metrics_tracker);
 }
 
 void VRServiceImpl::OnImmersiveSessionCreated(
-    device::mojom::XRSessionOptionsPtr options,
-    device::mojom::XRDeviceId session_runtime_id,
-    device::mojom::VRService::RequestSessionCallback callback,
-    const std::set<device::mojom::XRSessionFeature>& enabled_features,
+    SessionRequestData request,
     device::mojom::XRSessionPtr session) {
   if (!session) {
-    std::move(callback).Run(
-        device::mojom::RequestSessionResult::NewFailureReason(
+    std::move(request.callback)
+        .Run(device::mojom::RequestSessionResult::NewFailureReason(
             device::mojom::RequestSessionError::UNKNOWN_RUNTIME_ERROR));
     return;
   }
@@ -295,8 +303,7 @@ void VRServiceImpl::OnImmersiveSessionCreated(
         GetSessionMetricsHelper()->RecordImmersiveSessionStart();
   }
 
-  OnSessionCreated(std::move(options), session_runtime_id, std::move(callback),
-                   enabled_features, std::move(session),
+  OnSessionCreated(std::move(request), std::move(session),
                    session_metrics_tracker);
 }
 
@@ -324,39 +331,37 @@ SessionMetricsHelper* VRServiceImpl::GetSessionMetricsHelper() {
 }
 
 void VRServiceImpl::OnSessionCreated(
-    device::mojom::XRSessionOptionsPtr options,
-    device::mojom::XRDeviceId session_runtime_id,
-    device::mojom::VRService::RequestSessionCallback callback,
-    const std::set<device::mojom::XRSessionFeature>& enabled_features,
+    SessionRequestData request,
     device::mojom::XRSessionPtr session,
     WebXRSessionTracker* session_metrics_tracker) {
-  DVLOG(2) << __func__ << ": session_runtime_id=" << session_runtime_id;
+  DVLOG(2) << __func__ << ": session_runtime_id=" << request.runtime_id;
 
   // Not checking for validity of |session|, since that's done by
   // |OnInlineSessionCreated| and |OnImmersiveSessionCreated|.
 
-  UMA_HISTOGRAM_ENUMERATION("XR.RuntimeUsed", session_runtime_id);
+  UMA_HISTOGRAM_ENUMERATION("XR.RuntimeUsed", request.runtime_id);
 
   mojo::Remote<device::mojom::XRSessionClient> client;
   session->client_receiver = client.BindNewPipeAndPassReceiver();
 
   session->enabled_features.clear();
-  for (const auto& feature : enabled_features) {
+  for (const auto& feature : request.enabled_features) {
     session->enabled_features.push_back(feature);
   }
 
   client->OnVisibilityStateChanged(visibility_state_);
   session_clients_.Add(std::move(client));
 
-  session_metrics_tracker->RecordRequestedFeatures(*options, enabled_features);
+  session_metrics_tracker->RecordRequestedFeatures(*(request.options),
+                                                   request.enabled_features);
 
   auto success = device::mojom::RequestSessionSuccess::New();
   success->session = std::move(session);
   success->metrics_recorder =
       session_metrics_tracker->BindMetricsRecorderPipe();
 
-  std::move(callback).Run(
-      device::mojom::RequestSessionResult::NewSuccess(std::move(success)));
+  std::move(request.callback)
+      .Run(device::mojom::RequestSessionResult::NewSuccess(std::move(success)));
 }
 
 void VRServiceImpl::RequestSession(
@@ -408,37 +413,36 @@ void VRServiceImpl::RequestSession(
     }
   }
 
-  ShowConsentPrompt(std::move(options), std::move(callback), runtime,
-                    std::move(requested_features));
+  SessionRequestData request(std::move(options), std::move(callback),
+                             std::move(requested_features), runtime->GetId());
+
+  ShowConsentPrompt(std::move(request), runtime);
 }
 
-void VRServiceImpl::ShowConsentPrompt(
-    device::mojom::XRSessionOptionsPtr options,
-    device::mojom::VRService::RequestSessionCallback callback,
-    BrowserXRRuntime* runtime,
-    std::set<device::mojom::XRSessionFeature> requested_features) {
+void VRServiceImpl::ShowConsentPrompt(SessionRequestData request,
+                                      BrowserXRRuntime* runtime) {
   DVLOG(2) << __func__;
-  DCHECK(options);
+  DCHECK(request.options);
   DCHECK(runtime);
+  DCHECK_EQ(runtime->GetId(), request.runtime_id);
 
 #if defined(OS_WIN)
-  DCHECK_NE(options->mode, device::mojom::XRSessionMode::kImmersiveAr);
+  DCHECK_NE(request.options->mode, device::mojom::XRSessionMode::kImmersiveAr);
 #endif
 
   bool consent_granted = false;
-  XrConsentPromptLevel consent_level =
-      GetRequiredConsentLevel(options->mode, runtime, requested_features);
+  XrConsentPromptLevel consent_level = GetRequiredConsentLevel(
+      request.options->mode, runtime, request.enabled_features);
   if (!base::FeatureList::IsEnabled(features::kWebXrPermissionsApi)) {
     consent_granted =
         ((consent_level == XrConsentPromptLevel::kNone) ||
-         IsConsentGrantedForDevice(runtime->GetId(), consent_level));
+         IsConsentGrantedForDevice(request.runtime_id, consent_level));
   }
 
   // Skip the consent prompt if the user has already consented for this device,
   // or if consent is not needed.
   if (consent_granted || IsXrDeviceConsentPromptDisabledForTesting()) {
-    DoRequestSession(std::move(options), std::move(callback), runtime,
-                     std::move(requested_features));
+    EnsureRuntimeInstalled(std::move(request), runtime);
     return;
   }
 
@@ -449,14 +453,14 @@ void VRServiceImpl::ShowConsentPrompt(
 
     // Need to calculate the permission before the call below, as otherwise
     // std::move nulls options out before GetRequiredPermission runs.
-    ContentSettingsType permission = GetRequiredPermission(options->mode);
+    ContentSettingsType permission =
+        GetRequiredPermission(request.options->mode);
     permission_manager->RequestPermission(
         permission, render_frame_host_,
         render_frame_host_->GetLastCommittedURL(), true,
         base::BindOnce(&VRServiceImpl::OnPermissionResult,
-                       weak_ptr_factory_.GetWeakPtr(), std::move(options),
-                       std::move(callback), runtime->GetId(),
-                       std::move(requested_features), consent_level));
+                       weak_ptr_factory_.GetWeakPtr(), std::move(request),
+                       consent_level));
     return;
   }
 
@@ -464,92 +468,107 @@ void VRServiceImpl::ShowConsentPrompt(
       render_frame_host_->GetProcess()->GetID(),
       render_frame_host_->GetRoutingID(), consent_level,
       base::BindOnce(&VRServiceImpl::OnConsentResult,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(options),
-                     std::move(callback), runtime->GetId(),
-                     std::move(requested_features)));
+                     weak_ptr_factory_.GetWeakPtr(), std::move(request)));
 }
 
 // TODO(alcooper): Once the ConsentFlow can be removed expected_runtime_id and
 // consent_level shouldn't be needed.
-void VRServiceImpl::OnPermissionResult(
-    device::mojom::XRSessionOptionsPtr options,
-    device::mojom::VRService::RequestSessionCallback callback,
-    device::mojom::XRDeviceId expected_runtime_id,
-    std::set<device::mojom::XRSessionFeature> enabled_features,
-    XrConsentPromptLevel consent_level,
-    ContentSetting setting_value) {
-  OnConsentResult(std::move(options), std::move(callback), expected_runtime_id,
-                  std::move(enabled_features), consent_level,
+void VRServiceImpl::OnPermissionResult(SessionRequestData request,
+                                       XrConsentPromptLevel consent_level,
+                                       ContentSetting setting_value) {
+  OnConsentResult(std::move(request), consent_level,
                   setting_value == ContentSetting::CONTENT_SETTING_ALLOW);
 }
 
-void VRServiceImpl::OnConsentResult(
-    device::mojom::XRSessionOptionsPtr options,
-    device::mojom::VRService::RequestSessionCallback callback,
-    device::mojom::XRDeviceId expected_runtime_id,
-    std::set<device::mojom::XRSessionFeature> enabled_features,
-    XrConsentPromptLevel consent_level,
-    bool is_consent_granted) {
+void VRServiceImpl::OnConsentResult(SessionRequestData request,
+                                    XrConsentPromptLevel consent_level,
+                                    bool is_consent_granted) {
   DVLOG(2) << __func__;
-
   if (!is_consent_granted) {
-    std::move(callback).Run(
-        device::mojom::RequestSessionResult::NewFailureReason(
+    std::move(request.callback)
+        .Run(device::mojom::RequestSessionResult::NewFailureReason(
             device::mojom::RequestSessionError::USER_DENIED_CONSENT));
     return;
   }
 
-  // Get the runtime again, since we're running in an async context
-  // and the pointer returned from `GetRuntimeForOptions` is non-owning.
-  auto* runtime = runtime_manager_->GetRuntimeForOptions(options.get());
-
-  // Ensure that it's the same runtime as the one we expect.
-  if (!runtime || runtime->GetId() != expected_runtime_id) {
-    std::move(callback).Run(
-        device::mojom::RequestSessionResult::NewFailureReason(
-            device::mojom::RequestSessionError::UNKNOWN_RUNTIME_ERROR));
-    return;
-  }
-  AddConsentGrantedDevice(runtime->GetId(), consent_level);
+  AddConsentGrantedDevice(request.runtime_id, consent_level);
 
   // Re-check for another client instance after a potential user consent.
   if (runtime_manager_->IsOtherClientPresenting(this)) {
     // Can't create sessions while an immersive session exists.
-    std::move(callback).Run(
-        device::mojom::RequestSessionResult::NewFailureReason(
+    std::move(request.callback)
+        .Run(device::mojom::RequestSessionResult::NewFailureReason(
             device::mojom::RequestSessionError::EXISTING_IMMERSIVE_SESSION));
     return;
   }
 
-  DoRequestSession(std::move(options), std::move(callback), runtime,
-                   std::move(enabled_features));
+  EnsureRuntimeInstalled(std::move(request), nullptr);
 }
 
-void VRServiceImpl::DoRequestSession(
-    device::mojom::XRSessionOptionsPtr options,
-    device::mojom::VRService::RequestSessionCallback callback,
-    BrowserXRRuntime* runtime,
-    std::set<device::mojom::XRSessionFeature> enabled_features) {
+void VRServiceImpl::EnsureRuntimeInstalled(SessionRequestData request,
+                                           BrowserXRRuntime* runtime) {
   DVLOG(2) << __func__;
-  // Get the runtime we'll be creating a session with.
-  DCHECK(runtime);
 
-  device::mojom::XRDeviceId session_runtime_id = runtime->GetId();
+  // If we were not provided the runtime, try to get it again.
+  if (!runtime)
+    runtime = runtime_manager_->GetRuntimeForOptions(request.options.get());
+
+  // Ensure that it's the same runtime as the one we expect.
+  if (!runtime || runtime->GetId() != request.runtime_id) {
+    std::move(request.callback)
+        .Run(device::mojom::RequestSessionResult::NewFailureReason(
+            device::mojom::RequestSessionError::UNKNOWN_RUNTIME_ERROR));
+    return;
+  }
+
+  runtime->EnsureInstalled(
+      render_frame_host_->GetProcess()->GetID(),
+      render_frame_host_->GetRoutingID(),
+      base::BindOnce(&VRServiceImpl::OnInstallResult,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(request)));
+}
+
+void VRServiceImpl::OnInstallResult(SessionRequestData request,
+                                    bool install_succeeded) {
+  if (!install_succeeded) {
+    std::move(request.callback)
+        .Run(device::mojom::RequestSessionResult::NewFailureReason(
+            device::mojom::RequestSessionError::RUNTIME_INSTALL_FAILURE));
+    return;
+  }
+
+  DoRequestSession(std::move(request));
+}
+
+void VRServiceImpl::DoRequestSession(SessionRequestData request) {
+  DVLOG(2) << __func__;
+  // Get the runtime again, since we're running in an async context
+  // and the pointer returned from `GetRuntimeForOptions` is non-owning.
+  auto* runtime = runtime_manager_->GetRuntimeForOptions(request.options.get());
+
+  // Ensure that it's the same runtime as the one we expect.
+  if (!runtime || runtime->GetId() != request.runtime_id) {
+    std::move(request.callback)
+        .Run(device::mojom::RequestSessionResult::NewFailureReason(
+            device::mojom::RequestSessionError::UNKNOWN_RUNTIME_ERROR));
+    return;
+  }
+
   TRACE_EVENT_INSTANT1("xr", "GetRuntimeForOptions", TRACE_EVENT_SCOPE_THREAD,
-                       "id", session_runtime_id);
+                       "id", request.runtime_id);
 
-  auto runtime_options = GetRuntimeOptions(options.get());
+  auto runtime_options = GetRuntimeOptions(request.options.get());
 
 #if defined(OS_ANDROID) && BUILDFLAG(ENABLE_ARCORE)
-  if (session_runtime_id == device::mojom::XRDeviceId::ARCORE_DEVICE_ID) {
+  if (request.runtime_id == device::mojom::XRDeviceId::ARCORE_DEVICE_ID) {
     runtime_options->render_process_id =
         render_frame_host_->GetProcess()->GetID();
     runtime_options->render_frame_id = render_frame_host_->GetRoutingID();
   }
 #endif
   // Make the resolved enabled features available to the runtime.
-  runtime_options->enabled_features.reserve(enabled_features.size());
-  for (const auto& feature : enabled_features) {
+  runtime_options->enabled_features.reserve(request.enabled_features.size());
+  for (const auto& feature : request.enabled_features) {
     runtime_options->enabled_features.push_back(feature);
   }
 
@@ -558,9 +577,7 @@ void VRServiceImpl::DoRequestSession(
 
     base::OnceCallback<void(device::mojom::XRSessionPtr)> immersive_callback =
         base::BindOnce(&VRServiceImpl::OnImmersiveSessionCreated,
-                       weak_ptr_factory_.GetWeakPtr(), std::move(options),
-                       session_runtime_id, std::move(callback),
-                       std::move(enabled_features));
+                       weak_ptr_factory_.GetWeakPtr(), std::move(request));
     runtime->RequestSession(this, std::move(runtime_options),
                             std::move(immersive_callback));
   } else {
@@ -569,9 +586,7 @@ void VRServiceImpl::DoRequestSession(
         mojo::PendingRemote<device::mojom::XRSessionController>)>
         non_immersive_callback =
             base::BindOnce(&VRServiceImpl::OnInlineSessionCreated,
-                           weak_ptr_factory_.GetWeakPtr(), std::move(options),
-                           session_runtime_id, std::move(callback),
-                           std::move(enabled_features));
+                           weak_ptr_factory_.GetWeakPtr(), std::move(request));
     runtime->GetRuntime()->RequestSession(std::move(runtime_options),
                                           std::move(non_immersive_callback));
   }

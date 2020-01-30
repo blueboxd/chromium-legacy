@@ -82,8 +82,7 @@ ContextProviderCommandBuffer::ContextProviderCommandBuffer(
 }
 
 ContextProviderCommandBuffer::~ContextProviderCommandBuffer() {
-  DCHECK(main_thread_checker_.CalledOnValidThread() ||
-         context_thread_checker_.CalledOnValidThread());
+  DCHECK(context_thread_checker_.CalledOnValidThread());
 
   if (bind_tried_ && bind_result_ == gpu::ContextResult::kSuccess) {
     // Clear the lock to avoid DCHECKs that the lock is being held during

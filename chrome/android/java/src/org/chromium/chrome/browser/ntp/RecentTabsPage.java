@@ -303,7 +303,8 @@ public class RecentTabsPage
     public void onContentOffsetChanged(int offset) {}
 
     @Override
-    public void onControlsOffsetChanged(int topOffset, int bottomOffset, boolean needsAnimate) {}
+    public void onControlsOffsetChanged(int topOffset, int topControlsMinHeightOffset,
+            int bottomOffset, int bottomControlsMinHeightOffset, boolean needsAnimate) {}
 
     @Override
     public void onToggleOverlayVideoMode(boolean enabled) {}

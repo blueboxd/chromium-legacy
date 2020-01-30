@@ -72,13 +72,13 @@ class Union(WithIdentifier, WithCodeGeneratorInfo, WithComponent,
 
         components = set()
 
-        def collect_components(idl_type):
-            user_defined_type = idl_type.type_definition_object
-            if user_defined_type:
-                components.update(user_defined_type.components)
+        def collect_primary_component(idl_type):
+            type_definition_object = idl_type.type_definition_object
+            if type_definition_object:
+                components.add(type_definition_object.components[0])
 
         for idl_type in flattened_members:
-            idl_type.apply_to_all_composing_elements(collect_components)
+            idl_type.apply_to_all_composing_elements(collect_primary_component)
 
         # TODO(peria, yukishiino): Produce unique union names.  Trying to
         # produce the names compatible to the old bindings generator for the

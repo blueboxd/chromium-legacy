@@ -386,8 +386,10 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   bool UpdateControls(float dip_scale,
                       float top_controls_height,
                       float top_controls_shown_ratio,
+                      float top_controls_min_height_offset,
                       float bottom_controls_height,
-                      float bottom_controls_shown_ratio);
+                      float bottom_controls_shown_ratio,
+                      float bottom_controls_min_height_offset);
   void OnDidUpdateVisualPropertiesComplete(
       const cc::RenderFrameMetadata& metadata);
 
@@ -514,8 +516,10 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
 
   float prev_top_shown_pix_;
   float prev_top_controls_translate_;
+  float prev_top_controls_min_height_offset_pix_;
   float prev_bottom_shown_pix_;
   float prev_bottom_controls_translate_;
+  float prev_bottom_controls_min_height_offset_pix_;
   float page_scale_;
   float min_page_scale_;
   float max_page_scale_;

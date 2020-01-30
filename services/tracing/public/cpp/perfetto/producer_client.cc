@@ -127,7 +127,7 @@ void ProducerClient::NewDataSourceAdded(
   producer_host_->RegisterDataSource(std::move(new_registration));
 }
 
-perfetto::SharedMemoryArbiter* ProducerClient::GetSharedMemoryArbiter() {
+perfetto::SharedMemoryArbiter* ProducerClient::MaybeSharedMemoryArbiter() {
   return in_process_arbiter_ ? in_process_arbiter_
                              : shared_memory_arbiter_.get();
 }
@@ -300,11 +300,6 @@ size_t ProducerClient::shared_buffer_page_size_kb() const {
   return 0;
 }
 
-perfetto::SharedMemoryArbiter* ProducerClient::GetInProcessShmemArbiter() {
-  NOTREACHED();
-  return nullptr;
-}
-
 void ProducerClient::NotifyFlushComplete(perfetto::FlushRequestID id) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (pending_replies_for_latest_flush_.first != id) {
@@ -314,7 +309,7 @@ void ProducerClient::NotifyFlushComplete(perfetto::FlushRequestID id) {
 
   DCHECK_NE(pending_replies_for_latest_flush_.second, 0u);
   if (--pending_replies_for_latest_flush_.second == 0) {
-    GetSharedMemoryArbiter()->NotifyFlushComplete(id);
+    MaybeSharedMemoryArbiter()->NotifyFlushComplete(id);
   }
 }
 

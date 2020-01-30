@@ -31,6 +31,8 @@ class MODULES_EXPORT AmbientLightSensor final : public Sensor {
   base::Optional<double> latest_reading_;
 
   FRIEND_TEST_ALL_PREFIXES(AmbientLightSensorTest, IlluminanceRounding);
+  FRIEND_TEST_ALL_PREFIXES(AmbientLightSensorTest,
+                           PlatformSensorReadingsBeforeActivation);
 };
 
 }  // namespace blink

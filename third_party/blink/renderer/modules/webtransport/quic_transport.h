@@ -5,6 +5,8 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBTRANSPORT_QUIC_TRANSPORT_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBTRANSPORT_QUIC_TRANSPORT_H_
 
+#include <stdint.h>
+
 #include "base/containers/span.h"
 #include "base/util/type_safety/pass_key.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
@@ -18,6 +20,7 @@
 #include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/heap/heap_allocator.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 
@@ -31,6 +34,9 @@ class ScriptPromiseResolver;
 class ScriptState;
 class WebTransportCloseInfo;
 class WritableStream;
+class ScriptPromise;
+class ScriptPromiseResolver;
+class WebTransportCloseProxy;
 
 // https://wicg.github.io/web-transport/#quic-transport
 class MODULES_EXPORT QuicTransport final
@@ -53,6 +59,8 @@ class MODULES_EXPORT QuicTransport final
   ~QuicTransport() override;
 
   // QuicTransport IDL implementation.
+  ScriptPromise createSendStream(ScriptState*, ExceptionState&);
+
   WritableStream* sendDatagrams() { return outgoing_datagrams_; }
   ReadableStream* receiveDatagrams() { return received_datagrams_; }
   void close(const WebTransportCloseInfo*);
@@ -76,6 +84,9 @@ class MODULES_EXPORT QuicTransport final
   // Implementation of ActiveScriptWrappable
   bool HasPendingActivity() const final;
 
+  // Forwards a SendFin() message to the mojo interface.
+  void SendFin(uint32_t stream_id);
+
   // ScriptWrappable implementation
   void Trace(Visitor* visitor) override;
 
@@ -84,8 +95,16 @@ class MODULES_EXPORT QuicTransport final
   class DatagramUnderlyingSource;
 
   void Init(const String& url, ExceptionState&);
+
+  // Reset the QuicTransport object and all associated streams.
+  void ResetAll();
   void Dispose();
   void OnConnectionError();
+  void RejectPendingStreamResolvers();
+  void OnCreateStreamResponse(ScriptPromiseResolver*,
+                              mojo::ScopedDataPipeProducerHandle producer,
+                              bool succeeded,
+                              uint32_t stream_id);
 
   bool cleanly_closed_ = false;
   Member<ReadableStream> received_datagrams_;
@@ -95,9 +114,20 @@ class MODULES_EXPORT QuicTransport final
   // This corresponds to the [[SentDatagrams]] internal slot in the standard.
   Member<WritableStream> outgoing_datagrams_;
 
-  Member<ScriptState> script_state_;
+  const Member<ScriptState> script_state_;
 
   const KURL url_;
+
+  // Map from stream_id to SendStream, ReceiveStream or BidirectionalStream.
+  // Intentionally keeps streams reachable by GC as long as they are open.
+  // This doesn't support stream ids of 0xfffffffe or larger.
+  // TODO(ricea): Find out if such large stream ids are possible.
+  HeapHashMap<uint32_t,
+              Member<WebTransportCloseProxy>,
+              WTF::DefaultHash<uint32_t>::Hash,
+              WTF::UnsignedWithZeroKeyHashTraits<uint32_t>>
+      stream_map_;
+
   mojo::Remote<network::mojom::blink::QuicTransport> quic_transport_;
   mojo::Receiver<network::mojom::blink::QuicTransportHandshakeClient>
       handshake_client_receiver_{this};
@@ -107,6 +137,10 @@ class MODULES_EXPORT QuicTransport final
   ScriptPromise ready_;
   Member<ScriptPromiseResolver> closed_resolver_;
   ScriptPromise closed_;
+
+  // Tracks resolvers for in-progress createSendStream() operations so they can
+  // be rejected
+  HeapHashSet<Member<ScriptPromiseResolver>> create_send_stream_resolvers_;
 };
 
 }  // namespace blink

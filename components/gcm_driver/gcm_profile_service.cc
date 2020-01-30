@@ -124,11 +124,9 @@ void GCMProfileService::IdentityObserver::StartAccountTracker(
 #if BUILDFLAG(USE_GCM_FROM_PLATFORM)
 GCMProfileService::GCMProfileService(
     base::FilePath path,
-    scoped_refptr<base::SequencedTaskRunner>& blocking_task_runner,
-    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory) {
+    scoped_refptr<base::SequencedTaskRunner>& blocking_task_runner) {
   driver_ = std::make_unique<GCMDriverAndroid>(
-      path.Append(gcm_driver::kGCMStoreDirname), blocking_task_runner,
-      std::move(url_loader_factory));
+      path.Append(gcm_driver::kGCMStoreDirname), blocking_task_runner);
 }
 #else
 GCMProfileService::GCMProfileService(

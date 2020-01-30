@@ -7,7 +7,6 @@
 
 #include <map>
 
-#include "base/memory/ref_counted.h"
 #include "content/common/content_export.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "third_party/blink/public/mojom/broadcastchannel/broadcast_channel.mojom.h"
@@ -16,10 +15,10 @@
 namespace content {
 
 class CONTENT_EXPORT BroadcastChannelProvider
-    : public base::RefCountedThreadSafe<BroadcastChannelProvider>,
-      public blink::mojom::BroadcastChannelProvider {
+    : public blink::mojom::BroadcastChannelProvider {
  public:
   BroadcastChannelProvider();
+  ~BroadcastChannelProvider() override;
 
   using RenderProcessHostId = int;
   mojo::ReceiverId Connect(
@@ -37,10 +36,7 @@ class CONTENT_EXPORT BroadcastChannelProvider
   auto& receivers_for_testing() { return receivers_; }
 
  private:
-  friend class base::RefCountedThreadSafe<BroadcastChannelProvider>;
   class Connection;
-
-  ~BroadcastChannelProvider() override;
 
   void UnregisterConnection(Connection*);
   void ReceivedMessageOnConnection(Connection*,

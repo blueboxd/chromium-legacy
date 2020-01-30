@@ -432,6 +432,8 @@ class AuthenticatorRequestDialogModel {
       bool has_paired_phones,
       base::Optional<device::QRGeneratorKey> qr_generator_key);
 
+  bool cable_extension_provided() const { return cable_extension_provided_; }
+
   const std::string& relying_party_id() const { return relying_party_id_; }
 
   bool request_may_start_over() const { return request_may_start_over_; }

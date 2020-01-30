@@ -1109,17 +1109,18 @@ class ModalDialogDelegate : public DialogDelegateView {
       : modal_type_(modal_type) {}
 
   void set_can_close(bool value) { can_close_ = value; }
-  void set_buttons(int buttons) { buttons_ = buttons; }
+  void SetButtons(int buttons) {
+    DialogDelegate::set_buttons(buttons);
+    DialogModelChanged();
+  }
 
   // DialogDelegateView:
-  int GetDialogButtons() const override { return buttons_; }
   ui::ModalType GetModalType() const override { return modal_type_; }
   bool Close() override { return can_close_; }
 
  private:
   const ui::ModalType modal_type_;
   bool can_close_ = true;
-  int buttons_ = ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL;
 
   DISALLOW_COPY_AND_ASSIGN(ModalDialogDelegate);
 };
@@ -2440,7 +2441,7 @@ TEST_F(NativeWidgetMacTest, TouchBar) {
   }
 
   // Remove the cancel button.
-  delegate->set_buttons(ui::DIALOG_BUTTON_OK);
+  delegate->SetButtons(ui::DIALOG_BUTTON_OK);
   delegate->DialogModelChanged();
   EXPECT_TRUE(delegate->GetOkButton());
   EXPECT_FALSE(delegate->GetCancelButton());

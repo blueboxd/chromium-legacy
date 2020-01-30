@@ -107,8 +107,9 @@ class ScopedLogIn {
   void LogIn() {
     fake_user_manager_->AddUser(account_id_);
     fake_user_manager_->LoginUser(account_id_);
-    if (!identity_test_env_->identity_manager()->HasPrimaryAccount()) {
-      identity_test_env_->MakePrimaryAccountAvailable(
+    if (!identity_test_env_->identity_manager()
+             ->HasUnconsentedPrimaryAccount()) {
+      identity_test_env_->MakeUnconsentedPrimaryAccountAvailable(
           account_id_.GetUserEmail());
     }
   }

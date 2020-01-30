@@ -138,6 +138,7 @@ class MediaSessionImpl : public MediaSession,
   void OnWebContentsLostFocus(RenderWidgetHost*) override;
   void TitleWasSet(NavigationEntry* entry) override;
   void DidUpdateFaviconURL(const std::vector<FaviconURL>& candidates) override;
+  void MediaPictureInPictureChanged(bool is_picture_in_picture) override;
 
   // MediaSessionService-related methods
 
@@ -265,6 +266,8 @@ class MediaSessionImpl : public MediaSession,
     return audio_focus_group_id_;
   }
 
+  void OnPictureInPictureAvailabilityChanged();
+
   // Returns whether the action should be routed to |routed_service_|.
   bool ShouldRouteAction(media_session::mojom::MediaSessionAction action) const;
 
@@ -378,6 +381,8 @@ class MediaSessionImpl : public MediaSession,
   // Rebuilds |metadata_| and |images_| and notifies observers if they have
   // changed.
   void RebuildAndNotifyMetadataChanged();
+
+  bool IsPictureInPictureAvailable() const;
 
   // Called when a MediaSessionAction is received. The action will be forwarded
   // to blink::MediaSession corresponding to the current routed service.

@@ -15,14 +15,11 @@
 #include "chromecast/base/cast_paths.h"
 #include "chromecast/base/pref_names.h"
 #include "chromecast/chromecast_buildflags.h"
+#include "components/cdm/browser/media_drm_storage_impl.h"
 #include "components/prefs/json_pref_store.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service_factory.h"
 #include "components/prefs/pref_store.h"
-
-#if defined(OS_ANDROID) && !BUILDFLAG(USE_CHROMECAST_CDMS)
-#include "components/cdm/browser/media_drm_storage_impl.h"
-#endif  // defined(OS_ANDROID) && !BUILDFLAG(USE_CHROMECAST_CDMS)
 
 namespace chromecast {
 namespace shell {
@@ -61,9 +58,7 @@ std::unique_ptr<PrefService> PrefServiceHelper::CreatePrefService(
   registry->RegisterListPref(prefs::kActiveDCSExperiments);
   registry->RegisterDictionaryPref(prefs::kLatestDCSFeatures);
 
-#if defined(OS_ANDROID) && !BUILDFLAG(USE_CHROMECAST_CDMS)
   cdm::MediaDrmStorageImpl::RegisterProfilePrefs(registry);
-#endif  // defined(OS_ANDROID) && !BUILDFLAG(USE_CHROMECAST_CDMS)
 
   RegisterPlatformPrefs(registry);
 

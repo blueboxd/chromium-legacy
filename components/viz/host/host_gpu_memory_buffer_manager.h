@@ -67,6 +67,7 @@ class VIZ_HOST_EXPORT HostGpuMemoryBufferManager
       gpu::SurfaceHandle surface_handle,
       base::OnceCallback<void(gfx::GpuMemoryBufferHandle)> callback);
 
+  // This method will block until the initial GPUInfo is received.
   bool IsNativeGpuMemoryBufferConfiguration(gfx::BufferFormat format,
                                             gfx::BufferUsage usage) const;
 
@@ -83,7 +84,14 @@ class VIZ_HOST_EXPORT HostGpuMemoryBufferManager
   bool OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
                     base::trace_event::ProcessMemoryDump* pmd) override;
 
+ protected:
+  // Must be called from a thread other than |task_runner_|'s thread.
+  void SetNativeConfigurations(
+      gpu::GpuMemoryBufferConfigurationSet native_configurations);
+
  private:
+  friend class HostGpuMemoryBufferManagerTest;
+
   struct PendingBufferInfo {
     PendingBufferInfo();
     PendingBufferInfo(PendingBufferInfo&&);
@@ -132,7 +140,9 @@ class VIZ_HOST_EXPORT HostGpuMemoryBufferManager
 
   std::unique_ptr<gpu::GpuMemoryBufferSupport> gpu_memory_buffer_support_;
 
-  const gpu::GpuMemoryBufferConfigurationSet native_configurations_;
+  gpu::GpuMemoryBufferConfigurationSet native_configurations_;
+  mutable base::WaitableEvent native_configurations_initialized_;
+
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   base::WeakPtr<HostGpuMemoryBufferManager> weak_ptr_;
   base::WeakPtrFactory<HostGpuMemoryBufferManager> weak_factory_{this};

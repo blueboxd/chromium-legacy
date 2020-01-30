@@ -34,7 +34,9 @@ class FormDataParser {
     const std::string& name() const { return name_; }
     base::Value take_value() { return std::move(value_); }
 
-    void set_name(base::StringPiece str) { str.CopyToString(&name_); }
+    void set_name(base::StringPiece str) {
+      name_.assign(str.data(), str.size());
+    }
     void SetBinaryValue(base::StringPiece str);
     void SetStringValue(std::string str);
 

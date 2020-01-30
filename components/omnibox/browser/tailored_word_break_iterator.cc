@@ -28,7 +28,7 @@ bool TailoredWordBreakIterator::Advance() {
     return false;
   prev_ = 0;
   pos_ = 0;
-  underscore_word_.clear();
+  underscore_word_ = base::StringPiece16();
   if (!IsWord())
     return true;
   base::StringPiece16 word = BreakIterator::GetStringPiece();

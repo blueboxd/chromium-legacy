@@ -702,6 +702,15 @@ void ShelfWidget::OnBackgroundTypeChanged(ShelfBackgroundType background_type,
   delegate_view_->UpdateOpaqueBackground();
 }
 
+void ShelfWidget::CalculateTargetBounds() {
+  // TODO(manucornet): Move target bounds calculations from the shelf layout
+  // manager.
+}
+
+void ShelfWidget::UpdateLayout(bool animate) {
+  // TODO(manucornet): Refactor layout update logic into this method.
+}
+
 void ShelfWidget::OnSessionStateChanged(session_manager::SessionState state) {
   // Do not show shelf widget:
   // * when views based shelf is disabled

@@ -823,9 +823,9 @@ class PixelTestPages(object):
 
     return [
       PixelTestPage(
-        'pixel_paintWorklet_basics.html',
-        base_name + '_PaintWorkletBasics',
-        test_rect=[0, 0, 300, 300],
+        'pixel_paintWorklet_transform.html',
+        base_name + '_PaintWorkletTransform',
+        test_rect=[0, 0, 200, 200],
         browser_args=browser_args),
     ]
 

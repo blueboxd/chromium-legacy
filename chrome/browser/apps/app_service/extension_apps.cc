@@ -663,6 +663,7 @@ void ExtensionApps::GetMenuModel(const std::string& app_id,
 
   if (!is_platform_app && !is_system_web_app) {
     CreateOpenNewSubmenu(
+        menu_type,
         extensions::GetLaunchType(extensions::ExtensionPrefs::Get(profile_),
                                   extension) ==
                 extensions::LaunchType::LAUNCH_TYPE_WINDOW
@@ -1345,15 +1346,19 @@ void ExtensionApps::GetMenuModelForChromeBrowserApp(
   // "Normal" windows are not allowed when incognito is enforced.
   if (IncognitoModePrefs::GetAvailability(profile_->GetPrefs()) !=
       IncognitoModePrefs::FORCED) {
-    AddCommandItem(ash::APP_CONTEXT_MENU_NEW_WINDOW, IDS_APP_LIST_NEW_WINDOW,
-                   &menu_items);
+    AddCommandItem((menu_type == apps::mojom::MenuType::kAppList)
+                       ? ash::APP_CONTEXT_MENU_NEW_WINDOW
+                       : ash::MENU_NEW_WINDOW,
+                   IDS_APP_LIST_NEW_WINDOW, &menu_items);
   }
 
   // Incognito windows are not allowed when incognito is disabled.
   if (!profile_->IsOffTheRecord() &&
       IncognitoModePrefs::GetAvailability(profile_->GetPrefs()) !=
           IncognitoModePrefs::DISABLED) {
-    AddCommandItem(ash::APP_CONTEXT_MENU_NEW_INCOGNITO_WINDOW,
+    AddCommandItem((menu_type == apps::mojom::MenuType::kAppList)
+                       ? ash::APP_CONTEXT_MENU_NEW_INCOGNITO_WINDOW
+                       : ash::MENU_NEW_INCOGNITO_WINDOW,
                    IDS_APP_LIST_NEW_INCOGNITO_WINDOW, &menu_items);
   }
 

@@ -170,6 +170,8 @@ TEST_F(AssociatedUserValidatorTest, NoTokenHandles) {
 }
 
 TEST_F(AssociatedUserValidatorTest, ValidTokenHandle) {
+  GoogleUploadDeviceDetailsNeededForTesting upload_device_details_needed(false);
+
   FakeAssociatedUserValidator validator;
 
   CComBSTR sid;
@@ -226,6 +228,8 @@ TEST_F(AssociatedUserValidatorTest, InvalidTokenHandleNoInternet) {
 }
 
 TEST_F(AssociatedUserValidatorTest, InvalidTokenHandleTimeout) {
+  GoogleUploadDeviceDetailsNeededForTesting upload_device_details_needed(false);
+
   FakeAssociatedUserValidator validator(base::TimeDelta::FromMilliseconds(50));
   CComBSTR sid;
   ASSERT_EQ(S_OK, fake_os_user_manager()->CreateTestOSUser(
@@ -247,6 +251,8 @@ TEST_F(AssociatedUserValidatorTest, InvalidTokenHandleTimeout) {
 }
 
 TEST_F(AssociatedUserValidatorTest, TokenHandleValidityStillFresh) {
+  GoogleUploadDeviceDetailsNeededForTesting upload_device_details_needed(false);
+
   FakeAssociatedUserValidator validator;
 
   CComBSTR sid;
@@ -425,10 +431,12 @@ INSTANTIATE_TEST_SUITE_P(All,
 // 7. bool - Password Recovery is enabled.
 // 8. bool - Contains stored password.
 // 9. bool - Last online login is stale.
+// 10. bool - Uploaded device deails.
 class AssociatedUserValidatorUserAccessBlockingTest
     : public AssociatedUserValidatorTest,
       public ::testing::WithParamInterface<
           std::tuple<CREDENTIAL_PROVIDER_USAGE_SCENARIO,
+                     bool,
                      bool,
                      bool,
                      bool,
@@ -459,6 +467,7 @@ TEST_P(AssociatedUserValidatorUserAccessBlockingTest, BlockUserAccessAsNeeded) {
   const bool password_recovery_enabled = std::get<6>(GetParam());
   const bool contains_stored_password = std::get<7>(GetParam());
   const bool is_last_login_stale = std::get<8>(GetParam());
+  const bool uploaded_device_details = std::get<9>(GetParam());
   GoogleMdmEnrolledStatusForTesting forced_status(mdm_enrolled);
 
   GoogleMdmEscrowServiceEnablerForTesting escrow_service_enabler;
@@ -525,6 +534,9 @@ TEST_P(AssociatedUserValidatorUserAccessBlockingTest, BlockUserAccessAsNeeded) {
     EXPECT_TRUE(policy->PrivateDataExists(store_key.c_str()));
   }
 
+  ASSERT_EQ(S_OK, SetUserProperty((BSTR)sid, kRegDeviceDetailsUploadStatus,
+                                  uploaded_device_details ? 1 : 0));
+
   // Remove all user properties associated with the sid if the
   // user isn't associated.
   if (!is_user_associated)
@@ -546,6 +558,7 @@ TEST_P(AssociatedUserValidatorUserAccessBlockingTest, BlockUserAccessAsNeeded) {
       ((!internet_available && is_last_login_stale) ||
        (internet_available &&
         ((mdm_url_set && !mdm_enrolled) || !token_handle_valid ||
+         !uploaded_device_details ||
          (password_recovery_enabled && !contains_stored_password))));
 
   bool should_user_be_blocked =
@@ -579,9 +592,12 @@ INSTANTIATE_TEST_SUITE_P(
                        ::testing::Bool(),
                        ::testing::Bool(),
                        ::testing::Bool(),
+                       ::testing::Bool(),
                        ::testing::Bool()));
 
 TEST_F(AssociatedUserValidatorTest, ValidTokenHandle_Refresh) {
+  GoogleUploadDeviceDetailsNeededForTesting upload_device_details_needed(false);
+
   // Save the current time and then override the time clock to return a fake
   // time.
   TimeClockOverrideValue::current_time_ = base::Time::Now();
@@ -639,6 +655,7 @@ TEST_F(AssociatedUserValidatorTest, InvalidTokenHandle_MissingPasswordLsaData) {
   ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegEscrowServiceServerUrl,
                                           L"https://escrow.com"));
   GoogleMdmEnrolledStatusForTesting force_success(true);
+  GoogleUploadDeviceDetailsNeededForTesting upload_device_details_needed(false);
 
   base::string16 store_key = GetUserPasswordLsaStoreKey(OLE2W(sid));
 
@@ -669,6 +686,7 @@ TEST_F(AssociatedUserValidatorTest, ValidTokenHandle_PresentPasswordLsaData) {
   ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegEscrowServiceServerUrl,
                                           L"https://escrow.com"));
   GoogleMdmEnrolledStatusForTesting force_success(true);
+  GoogleUploadDeviceDetailsNeededForTesting upload_device_details_needed(false);
 
   base::string16 store_key = GetUserPasswordLsaStoreKey(OLE2W(sid));
 

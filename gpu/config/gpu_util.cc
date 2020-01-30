@@ -47,9 +47,6 @@ GpuFeatureStatus GetAndroidSurfaceControlFeatureStatus(
 #if !defined(OS_ANDROID)
   return kGpuFeatureStatusDisabled;
 #else
-  if (blacklisted_features.count(GPU_FEATURE_TYPE_ANDROID_SURFACE_CONTROL))
-    return kGpuFeatureStatusBlacklisted;
-
   if (!gpu_preferences.enable_android_surface_control)
     return kGpuFeatureStatusDisabled;
 
@@ -289,11 +286,6 @@ void AdjustGpuFeatureStatusToWorkarounds(GpuFeatureInfo* gpu_feature_info) {
   if (gpu_feature_info->IsWorkaroundEnabled(DISABLE_D3D11) ||
       gpu_feature_info->IsWorkaroundEnabled(DISABLE_ES3_GL_CONTEXT)) {
     gpu_feature_info->status_values[GPU_FEATURE_TYPE_ACCELERATED_WEBGL2] =
-        kGpuFeatureStatusBlacklisted;
-  }
-
-  if (gpu_feature_info->IsWorkaroundEnabled(DISABLE_AIMAGEREADER)) {
-    gpu_feature_info->status_values[GPU_FEATURE_TYPE_ANDROID_SURFACE_CONTROL] =
         kGpuFeatureStatusBlacklisted;
   }
 }

@@ -16,7 +16,6 @@
 #import "ios/chrome/browser/snapshots/snapshot_tab_helper.h"
 #import "ios/chrome/browser/ui/fullscreen/animated_scoped_fullscreen_disabler.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_controller.h"
-#import "ios/chrome/browser/ui/fullscreen/fullscreen_controller_factory.h"
 #import "ios/chrome/browser/ui/fullscreen/scoped_fullscreen_disabler.h"
 #import "ios/chrome/browser/ui/side_swipe/card_side_swipe_view.h"
 #import "ios/chrome/browser/ui/side_swipe/side_swipe_gesture_recognizer.h"
@@ -360,8 +359,7 @@ const NSUInteger kIpadGreySwipeTabCount = 8;
   if (gesture.state == UIGestureRecognizerStateBegan) {
     // Disable fullscreen while the side swipe gesture is occurring.
     _fullscreenDisabler = std::make_unique<ScopedFullscreenDisabler>(
-        FullscreenControllerFactory::GetInstance()->GetForBrowserState(
-            self.browserState));
+        FullscreenController::FromBrowserState(self.browserState));
     SnapshotTabHelper::FromWebState(self.activeWebState)
         ->UpdateSnapshotWithCallback(nil);
     [[NSNotificationCenter defaultCenter]
@@ -453,8 +451,7 @@ const NSUInteger kIpadGreySwipeTabCount = 8;
     // Make sure the Toolbar is visible by disabling Fullscreen.
     _animatedFullscreenDisabler =
         std::make_unique<AnimatedScopedFullscreenDisabler>(
-            FullscreenControllerFactory::GetInstance()->GetForBrowserState(
-                self.browserState));
+            FullscreenController::FromBrowserState(self.browserState));
     _animatedFullscreenDisabler->StartAnimation();
 
     _inSwipe = YES;
@@ -526,7 +523,7 @@ const NSUInteger kIpadGreySwipeTabCount = 8;
 
     // Add horizontal stack view controller.
     CGFloat headerHeight =
-        FullscreenControllerFactory::GetForBrowserState(self.browserState)
+        FullscreenController::FromBrowserState(self.browserState)
             ->GetMaxViewportInsets()
             .top;
 

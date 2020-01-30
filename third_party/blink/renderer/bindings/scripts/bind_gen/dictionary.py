@@ -30,6 +30,7 @@ from .codegen_expr import expr_from_exposure
 from .codegen_format import format_template as _format
 from .codegen_utils import collect_include_headers_of_idl_types
 from .codegen_utils import component_export
+from .codegen_utils import component_export_header
 from .codegen_utils import enclose_with_header_guard
 from .codegen_utils import make_copyright_header
 from .codegen_utils import make_forward_declarations
@@ -300,7 +301,7 @@ def make_dict_create_def(cg_context):
         class_name=cg_context.class_name,
         arg_decls=[
             "v8::Isolate* isolate",
-            "v8::Local<v8::Object> v8_dictionary",
+            "v8::Local<v8::Value> v8_value",
             "ExceptionState& exception_state",
         ],
         return_type=T("${class_name}*"))
@@ -310,8 +311,10 @@ def make_dict_create_def(cg_context):
 
     body.append(
         T("""\
+DCHECK(!v8_value.IsEmpty());
+
 ${class_name}* dictionary = MakeGarbageCollected<${class_name}>();
-dictionary->FillMembers(isolate, v8_dictionary, exception_state);
+dictionary->FillMembers(isolate, v8_value, exception_state);
 if (exception_state.HadException()) {
   return nullptr;
 }
@@ -335,44 +338,50 @@ def make_fill_dict_members_def(cg_context):
         class_name=cg_context.class_name,
         arg_decls=[
             "v8::Isolate* isolate",
-            "v8::Local<v8::Object> v8_dictionary",
+            "v8::Local<v8::Value> v8_value",
             "ExceptionState& exception_state",
         ],
         return_type="void")
     func_def.add_template_vars(cg_context.template_bindings())
 
-    body = func_def.body
-
-    text = "if (v8_dictionary->IsUndefinedOrNull()) { return; }"
     if len(required_own_members) > 0:
-        text = """\
-if (v8_dictionary->IsUndefinedOrNull()) {
-  exception_state.ThrowError(ExceptionMessages::FailedToConstruct(
+        check_required_members_node = T("""\
+if (v8_value->IsNullOrUndefined()) {
+  exception_state.ThrowTypeError(ExceptionMessages::FailedToConstruct(
       "${dictionary.identifier}",
       "has required members, but null/undefined was passed."));
   return;
-}"""
-    body.append(T(text))
+}""")
+    else:
+        check_required_members_node = T("""\
+if (v8_value->IsNullOrUndefined()) {
+  return;
+}""")
 
     # [PermissiveDictionaryConversion]
     if "PermissiveDictionaryConversion" in dictionary.extended_attributes:
-        text = """\
-if (!v8_dictionary->IsObject()) {
+        permissive_conversion_node = T("""\
+if (!v8_value->IsObject()) {
   // [PermissiveDictionaryConversion]
   return;
-}"""
+}""")
     else:
-        text = """\
-if (!v8_dictionary->IsObject()) {
+        permissive_conversion_node = T("""\
+if (!v8_value->IsObject()) {
   exception_state.ThrowTypeError(
       ExceptionMessages::FailedToConstruct(
           "${dictionary.identifier}", "The value is not of type Object"));
   return;
-}"""
-    body.append(T(text))
+}""")
 
-    body.append(
-        T("FillMembersInternal(isolate, v8_dictionary, exception_state);"))
+    call_internal_func_node = T("""\
+FillMembersInternal(isolate, v8_value.As<v8::Object>(), exception_state);""")
+
+    func_def.body.extend([
+        check_required_members_node,
+        permissive_conversion_node,
+        call_internal_func_node,
+    ])
 
     return func_def
 
@@ -437,7 +446,7 @@ def make_fill_own_dict_member(key_index, member):
 
     pattern = """
 if (!v8_dictionary->Get(${current_context}, member_names[{_1}].Get(${isolate}))
-         .ToLocal(&v8_memer)) {{
+         .ToLocal(&v8_value)) {{
   ${exception_state}.RethrowV8Exception(try_block.Exception());
   return;
 }}"""
@@ -534,12 +543,12 @@ static ${class_name}* Create() {
 }
 static ${class_name}* Create(
     v8::Isolate* isolate,
-    v8::Local<v8::Object> v8_dictionary,
+    v8::Local<v8::Value> v8_value,
     ExceptionState& exception_state);
 ${class_name}() = default;
 ~${class_name}() = default;
 
-void Trace(Visitor* visitor);
+void Trace(Visitor* visitor) override;
 """))
 
     for member in dictionary.own_members:
@@ -558,6 +567,11 @@ bool FillWithMembers(
     v8::Isolate* isolate,
     v8::Local<v8::Object> creation_context,
     v8::Local<v8::Object> v8_dictionary) const override;
+
+void FillMembersInternal(
+    v8::Isolate* isolate,
+    v8::Local<v8::Object> v8_dictionary,
+    ExceptionState& exception_state);
 """))
 
     private_section = class_def.private_section
@@ -572,11 +586,7 @@ bool FillWithOwnMembers(
 
 void FillMembers(
     v8::Isolate* isolate,
-    v8::Local<v8::Object> v8_dictionary,
-    ExceptionState& exception_state);
-void FillMembersInternal(
-    v8::Isolate* isolate,
-    v8::Local<v8::Object> v8_dictionary,
+    v8::Local<v8::Value> v8_value,
     ExceptionState& exception_state);
 """))
 
@@ -653,6 +663,7 @@ def generate_dictionary(dictionary):
             [member.idl_type for member in dictionary.own_members]))
     header_node.accumulator.add_include_headers([
         base_class_header,
+        component_export_header(dictionary.components[0]),
         "v8/include/v8.h",
     ])
     header_node.accumulator.add_class_decls([
@@ -660,10 +671,11 @@ def generate_dictionary(dictionary):
         "Visitor",
     ])
     source_node.accumulator.add_include_headers([
+        "third_party/blink/renderer/bindings/core/v8/native_value_traits_impl.h",
         "third_party/blink/renderer/platform/bindings/exception_messages.h",
         "third_party/blink/renderer/platform/bindings/exception_state.h",
+        "third_party/blink/renderer/platform/bindings/v8_per_isolate_data.h",
         "third_party/blink/renderer/platform/heap/visitor.h",
-        "v8/include/v8.h",
     ])
 
     header_node.extend([

@@ -4,6 +4,9 @@
                                 var(--tabstrip-tab-thumbnail-height));
     --tabstrip-tab-width: var(--tabstrip-tab-thumbnail-width);
     --tabstrip-tab-spacing: 16px;
+    --tabstrip-tab-dragging-shadow:
+        0 4px 4px 0 rgba(var(--google-grey-800-rgb), .3),
+        0 8px 12px 6px rgba(var(--google-grey-800-rgb), .15);
 
     background: var(--tabstrip-background-color);
     box-sizing: border-box;
@@ -55,6 +58,9 @@
 
   tabstrip-tab-group {
     --tabstrip-tab-spacing: 8px;
+  }
+
+  tabstrip-tab-group:not([dragging]) {
     margin-block-end: calc(-1 * var(--tabstrip-tab-spacing));
     margin-block-start: calc(-1 * var(--tabstrip-tab-spacing));
     margin-inline-end: var(--tabstrip-tab-spacing);
@@ -65,8 +71,15 @@
     --tabstrip-tab-spacing: 0px;
   }
 
-  tabstrip-tab + tabstrip-tab-group {
+  tabstrip-tab + tabstrip-tab-group:not([dragging]) {
     margin-inline-start: calc(-1 * var(--tabstrip-tab-spacing));
+  }
+
+  tabstrip-tab-group[dragging] {
+    margin-block-end: 0;
+    margin-block-start: 0;
+    margin-inline-end: 16px;
+    margin-inline-start: 0;
   }
 
   #newTabButton {

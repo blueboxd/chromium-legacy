@@ -97,7 +97,6 @@ class CORE_EXPORT WebRemoteFrameImpl final
   void UpdateUserActivationState(
       mojom::blink::UserActivationUpdateType) override;
   void TransferUserActivationFrom(blink::WebRemoteFrame* source_frame) override;
-  void IntrinsicSizingInfoChanged(const WebIntrinsicSizingInfo&) override;
   void SetHadStickyUserActivationBeforeNavigation(bool value) override;
   v8::Local<v8::Object> GlobalProxy() const override;
   WebRect GetCompositingRect() override;

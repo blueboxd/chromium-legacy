@@ -8,4 +8,4 @@
     android:layout_height="match_parent"
     android:id="@+id/text"
     android:singleLine="true"
-    android:textAppearance="@style/TextAppearance.BlackTitle1" />
+    android:textAppearance="@style/TextAppearance.TextLarge.Primary" />

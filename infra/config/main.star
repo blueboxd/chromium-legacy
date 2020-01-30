@@ -72,6 +72,8 @@ luci.milo(
     logo = 'https://storage.googleapis.com/chrome-infra-public/logo/chromium.svg',
 )
 
+exec('//recipes.star')
+
 exec('//buckets/ci.star')
 exec('//buckets/findit.star')
 exec('//buckets/goma.star')

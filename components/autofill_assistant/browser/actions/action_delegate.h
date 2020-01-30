@@ -271,10 +271,6 @@ class ActionDelegate {
   // Shut down Autofill Assistant and closes Chrome.
   virtual void Close() = 0;
 
-  // Restart Autofill Assistant at the end of the current script with a cleared
-  // state.
-  virtual void Restart() = 0;
-
   // Get current personal data manager.
   virtual autofill::PersonalDataManager* GetPersonalDataManager() = 0;
 

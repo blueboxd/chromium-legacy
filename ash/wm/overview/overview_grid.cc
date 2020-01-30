@@ -382,8 +382,10 @@ void OverviewGrid::Shutdown() {
         single_animation_in_clamshell);
   }
 
-  while (!window_list_.empty())
-    RemoveItem(window_list_.back().get());
+  while (!window_list_.empty()) {
+    RemoveItem(window_list_.back().get(), /*item_destroying=*/false,
+               /*reposition=*/false);
+  }
 
   // RemoveItem() uses `overview_session_`, so clear it at the end.
   overview_session_ = nullptr;
@@ -516,7 +518,8 @@ void OverviewGrid::AddItem(aura::Window* window,
                            bool animate,
                            const base::flat_set<OverviewItem*>& ignored_items,
                            size_t index,
-                           bool use_spawn_animation) {
+                           bool use_spawn_animation,
+                           bool restack) {
   DCHECK(!GetOverviewItemContaining(window));
   DCHECK_LE(index, window_list_.size());
 
@@ -537,6 +540,12 @@ void OverviewGrid::AddItem(aura::Window* window,
     item->OnStartingAnimationComplete();
   }
 
+  if (restack) {
+    if (reposition && animate)
+      item->set_should_restack_on_animation_end(true);
+    else
+      item->Restack();
+  }
   if (reposition)
     PositionWindows(animate, ignored_items);
 }
@@ -546,14 +555,15 @@ void OverviewGrid::AppendItem(aura::Window* window,
                               bool animate,
                               bool use_spawn_animation) {
   AddItem(window, reposition, animate, /*ignored_items=*/{},
-          window_list_.size(), use_spawn_animation);
+          window_list_.size(), use_spawn_animation, /*restack=*/false);
 }
 
 void OverviewGrid::AddItemInMruOrder(aura::Window* window,
                                      bool reposition,
-                                     bool animate) {
+                                     bool animate,
+                                     bool restack) {
   AddItem(window, reposition, animate, /*ignored_items=*/{},
-          FindInsertionIndex(window));
+          FindInsertionIndex(window), /*use_spawn_animation=*/false, restack);
 }
 
 void OverviewGrid::RemoveItem(OverviewItem* overview_item,

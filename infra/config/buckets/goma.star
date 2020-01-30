@@ -18,15 +18,12 @@ luci.bucket(
     ],
 )
 
-luci.recipe.defaults.cipd_package.set(
-        'infra/recipe_bundles/chromium.googlesource.com/chromium/tools/build')
-
 defaults.bucket.set('goma')
 defaults.build_numbers.set(True)
 defaults.configure_kitchen.set(True)
 defaults.cores.set(8)
 defaults.cpu.set(cpu.X86_64)
-defaults.executable.set(luci.recipe(name = 'chromium'))
+defaults.executable.set('recipe:chromium')
 defaults.execution_timeout.set(3 * time.hour)
 defaults.os.set(os.LINUX_DEFAULT)
 defaults.pool.set('luci.chromium.ci')
@@ -126,7 +123,7 @@ fyi_goma_canary_builder(
         ),
     ],
     cores = None,
-    executable = luci.recipe(name = 'ios/unified_builder_tester'),
+    executable = 'recipe:ios/unified_builder_tester',
     os = os.MAC_ANY,
 )
 
@@ -205,7 +202,7 @@ fyi_goma_rbe_canary_builder(
         ),
     ],
     cores = None,
-    executable = luci.recipe(name = 'ios/unified_builder_tester'),
+    executable = 'recipe:ios/unified_builder_tester',
     os = os.MAC_ANY,
 )
 
@@ -304,7 +301,7 @@ fyi_goma_latest_client_builder(
         ),
     ],
     cores = None,
-    executable = luci.recipe(name = 'ios/unified_builder_tester'),
+    executable = 'recipe:ios/unified_builder_tester',
     os = os.MAC_ANY,
 )
 
@@ -397,7 +394,7 @@ fyi_goma_rbe_latest_client_builder(
         ),
     ],
     cores = None,
-    executable = luci.recipe(name = 'ios/unified_builder_tester'),
+    executable = 'recipe:ios/unified_builder_tester',
     os = os.MAC_ANY,
 )
 

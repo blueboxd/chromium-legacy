@@ -1,0 +1,12 @@
+This is a testharness.js-based test.
+FAIL same-origin document opening popup redirect from https://web-platform.test:8444 to https://not-web-platform.test:8444 with redirectCache true and destCache false assert_equals: expected "" but got "SAME_ORIGIN_CROSS_ORIGIN_cache_redirect_not_cache_destination"
+FAIL same-origin document opening popup redirect from https://web-platform.test:8444 to https://not-web-platform.test:8444 with redirectCache false and destCache true assert_equals: expected "" but got "SAME_ORIGIN_CROSS_ORIGIN_not_cache_redirect_cache_destination"
+FAIL same-origin document opening popup redirect from https://web-platform.test:8444 to https://not-web-platform.test:8444 with redirectCache true and destCache true assert_equals: expected "" but got "SAME_ORIGIN_CROSS_ORIGIN_cache_redirect_cache_destination"
+FAIL same-origin document opening popup redirect from https://not-web-platform.test:8444 to https://web-platform.test:8444 with redirectCache true and destCache false assert_equals: expected "" but got "CROSS_ORIGIN_SAME_ORIGIN_cache_redirect_not_cache_destination"
+FAIL same-origin document opening popup redirect from https://not-web-platform.test:8444 to https://web-platform.test:8444 with redirectCache false and destCache true assert_equals: expected "" but got "CROSS_ORIGIN_SAME_ORIGIN_not_cache_redirect_cache_destination"
+FAIL same-origin document opening popup redirect from https://not-web-platform.test:8444 to https://web-platform.test:8444 with redirectCache true and destCache true assert_equals: expected "" but got "CROSS_ORIGIN_SAME_ORIGIN_cache_redirect_cache_destination"
+FAIL same-origin document opening popup redirect from https://www1.web-platform.test:8444 to https://not-web-platform.test:8444 with redirectCache true and destCache false assert_equals: expected "" but got "SAME_SITE_CROSS_ORIGIN_cache_redirect_not_cache_destination"
+FAIL same-origin document opening popup redirect from https://www1.web-platform.test:8444 to https://not-web-platform.test:8444 with redirectCache false and destCache true assert_equals: expected "" but got "SAME_SITE_CROSS_ORIGIN_not_cache_redirect_cache_destination"
+FAIL same-origin document opening popup redirect from https://www1.web-platform.test:8444 to https://not-web-platform.test:8444 with redirectCache true and destCache true assert_equals: expected "" but got "SAME_SITE_CROSS_ORIGIN_cache_redirect_cache_destination"
+Harness: the test ran to completion.
+

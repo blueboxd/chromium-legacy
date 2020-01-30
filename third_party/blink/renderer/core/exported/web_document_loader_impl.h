@@ -53,7 +53,7 @@ class CORE_EXPORT WebDocumentLoaderImpl final : public DocumentLoader,
  public:
   WebDocumentLoaderImpl(LocalFrame*,
                         WebNavigationType navigation_type,
-                        base::Optional<ContentSecurityPolicy*>,
+                        ContentSecurityPolicy*,
                         std::unique_ptr<WebNavigationParams> navigation_params);
 
   static WebDocumentLoaderImpl* FromDocumentLoader(DocumentLoader* loader) {

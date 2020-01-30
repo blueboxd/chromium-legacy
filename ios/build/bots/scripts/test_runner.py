@@ -219,6 +219,7 @@ def terminate_process(proc, proc_name):
     LOGGER.info('Error while killing a process: %s' % ex)
 
 
+# TODO(crbug.com/1044812): Moved print_process_output to utils class.
 def print_process_output(proc,
                          proc_name=None,
                          parser=None,
@@ -248,10 +249,12 @@ def print_process_output(proc,
     # that will kill `frozen` running process if no new line is read
     # and will finish test attempt.
     # If new line appears in timeout, just cancel timer.
-    timer = threading.Timer(timeout, terminate_process, [proc, proc_name])
-    timer.start()
-    line = proc.stdout.readline()
-    timer.cancel()
+    try:
+      timer = threading.Timer(timeout, terminate_process, [proc, proc_name])
+      timer.start()
+      line = proc.stdout.readline()
+    finally:
+      timer.cancel()
     if not line:
       break
     line = line.rstrip()

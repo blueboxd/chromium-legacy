@@ -193,7 +193,7 @@ class StartSurfaceToolbarMediator {
         mPropertyModel.set(LOGO_IS_VISIBLE, shouldShowLogo);
     }
 
-    void enableIdentityDisc(View.OnClickListener onClickListener, Drawable image,
+    void showIdentityDisc(View.OnClickListener onClickListener, Drawable image,
             @StringRes int contentDescriptionResId) {
         mEnableIdentityDisc = true;
         mPropertyModel.set(IDENTITY_DISC_CLICK_HANDLER, onClickListener);
@@ -206,7 +206,7 @@ class StartSurfaceToolbarMediator {
         mPropertyModel.set(IDENTITY_DISC_IMAGE, image);
     }
 
-    void disableIdentityDisc() {
+    void hideIdentityDisc() {
         mEnableIdentityDisc = false;
         mPropertyModel.set(IDENTITY_DISC_IS_VISIBLE, false);
     }

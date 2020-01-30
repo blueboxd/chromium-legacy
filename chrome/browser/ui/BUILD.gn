@@ -804,6 +804,7 @@ jumbo_static_library("ui") {
         "webui/feed_internals/feed_internals_ui.cc",
         "webui/feed_internals/feed_internals_ui.h",
       ]
+      deps += [ "//components/feed/core/common:feed_core_common" ]
     }
     deps += [
       "//chrome/android:jni_headers",
@@ -2741,8 +2742,6 @@ jumbo_static_library("ui") {
       "views/autofill/payments/save_card_sign_in_promo_bubble_views.h",
       "views/autofill/payments/save_upi_offer_bubble_views.cc",
       "views/autofill/payments/save_upi_offer_bubble_views.h",
-      "views/autofill/view_util.cc",
-      "views/autofill/view_util.h",
       "views/bookmarks/bookmark_bar_view.cc",
       "views/bookmarks/bookmark_bar_view.h",
       "views/bookmarks/bookmark_bar_view_observer.h",
@@ -3027,6 +3026,8 @@ jumbo_static_library("ui") {
       "views/media_router/presentation_receiver_window_view.h",
       "views/media_router/web_contents_display_observer_view.cc",
       "views/media_router/web_contents_display_observer_view.h",
+      "views/message_box_dialog.cc",
+      "views/message_box_dialog.h",
       "views/native_file_system/native_file_system_access_icon_view.cc",
       "views/native_file_system/native_file_system_access_icon_view.h",
       "views/native_file_system/native_file_system_directory_access_confirmation_view.cc",
@@ -3213,8 +3214,6 @@ jumbo_static_library("ui") {
       "views/sharing/sharing_dialog_view.h",
       "views/sharing/sharing_icon_view.cc",
       "views/sharing/sharing_icon_view.h",
-      "views/simple_message_box_views.cc",
-      "views/simple_message_box_views.h",
       "views/status_bubble_views.cc",
       "views/status_bubble_views.h",
       "views/storage/storage_pressure_bubble_view.cc",
@@ -3814,6 +3813,8 @@ jumbo_static_library("ui") {
       "ash/assistant/assistant_web_view_impl.h",
       "ash/assistant/conversation_starters_client_impl.cc",
       "ash/assistant/conversation_starters_client_impl.h",
+      "ash/assistant/conversation_starters_parser.cc",
+      "ash/assistant/conversation_starters_parser.h",
       "ash/assistant/device_actions.cc",
       "ash/assistant/device_actions.h",
       "ash/assistant/proactive_suggestions_client_impl.cc",
@@ -3830,6 +3831,8 @@ jumbo_static_library("ui") {
       "ash/launcher/app_service/app_service_app_window_launcher_item_controller.h",
       "ash/launcher/app_service/app_service_instance_registry_helper.cc",
       "ash/launcher/app_service/app_service_instance_registry_helper.h",
+      "ash/launcher/app_service/app_service_shelf_context_menu.cc",
+      "ash/launcher/app_service/app_service_shelf_context_menu.h",
       "ash/launcher/app_service/launcher_app_service_app_updater.cc",
       "ash/launcher/app_service/launcher_app_service_app_updater.h",
       "ash/launcher/app_window_base.cc",

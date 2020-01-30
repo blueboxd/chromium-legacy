@@ -30,14 +30,10 @@ base::string16 TestConfirmBubbleModel::GetMessageText() const {
   return base::ASCIIToUTF16("Test Message");
 }
 
-int TestConfirmBubbleModel::GetButtons() const {
-  return BUTTON_OK | BUTTON_CANCEL;
-}
-
 base::string16 TestConfirmBubbleModel::GetButtonLabel(
-    BubbleButton button) const {
-  return button == BUTTON_OK ? base::ASCIIToUTF16("OK")
-                             : base::ASCIIToUTF16("Cancel");
+    ui::DialogButton button) const {
+  return button == ui::DIALOG_BUTTON_OK ? base::ASCIIToUTF16("OK")
+                                        : base::ASCIIToUTF16("Cancel");
 }
 
 void TestConfirmBubbleModel::Accept() {

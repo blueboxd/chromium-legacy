@@ -130,10 +130,10 @@ public class HistoryActivityTest {
     @SmallTest
     public void testRemove_SingleItem() throws Exception {
         int callCount = mTestObserver.onChangedCallback.getCallCount();
-        final SelectableItemView<HistoryItem> itemView = getItemView(2);
+        final HistoryItemView itemView = (HistoryItemView) getItemView(2);
 
         TestThreadUtils.runOnUiThreadBlocking(
-                () -> itemView.findViewById(R.id.remove).performClick());
+                () -> itemView.getRemoveButtonForTests().performClick());
 
         // Check that one item was removed.
         mTestObserver.onChangedCallback.waitForCallback(callCount, 1);
@@ -290,8 +290,8 @@ public class HistoryActivityTest {
     @SmallTest
     public void testSupervisedUser() throws Exception {
         final HistoryManagerToolbar toolbar = mHistoryManager.getToolbarForTests();
-        final SelectableItemView<HistoryItem> item = getItemView(2);
-        View itemRemoveButton = item.findViewById(R.id.remove);
+        final HistoryItemView item = (HistoryItemView) getItemView(2);
+        View itemRemoveButton = item.getRemoveButtonForTests();
 
         // The item's remove button is visible for non-supervised users when there is no selection.
         Assert.assertEquals(View.VISIBLE, itemRemoveButton.getVisibility());
@@ -302,31 +302,31 @@ public class HistoryActivityTest {
         Assert.assertTrue(toolbar.getItemById(R.id.selection_mode_delete_menu_id).isVisible());
         Assert.assertTrue(toolbar.getItemById(R.id.selection_mode_delete_menu_id).isEnabled());
         // The item's remove button is invisible for non-supervised users when there is a selection.
-        Assert.assertEquals(View.INVISIBLE, item.findViewById(R.id.remove).getVisibility());
+        Assert.assertEquals(View.INVISIBLE, item.getRemoveButtonForTests().getVisibility());
 
         // Turn selection off and check if remove button is visible.
         toggleItemSelection(2);
         Assert.assertFalse(mHistoryManager.getSelectionDelegateForTests().isSelectionEnabled());
-        Assert.assertEquals(View.VISIBLE, item.findViewById(R.id.remove).getVisibility());
+        Assert.assertEquals(View.VISIBLE, item.getRemoveButtonForTests().getVisibility());
 
         signInToSupervisedAccount();
 
-        Assert.assertEquals(View.GONE, item.findViewById(R.id.remove).getVisibility());
+        Assert.assertEquals(View.GONE, item.getRemoveButtonForTests().getVisibility());
         toggleItemSelection(2);
         Assert.assertNull(toolbar.getItemById(R.id.selection_mode_open_in_incognito));
         Assert.assertNull(toolbar.getItemById(R.id.selection_mode_delete_menu_id));
         Assert.assertTrue(mHistoryManager.getSelectionDelegateForTests().isSelectionEnabled());
-        Assert.assertEquals(View.GONE, item.findViewById(R.id.remove).getVisibility());
+        Assert.assertEquals(View.GONE, item.getRemoveButtonForTests().getVisibility());
 
         // Make sure selection is no longer enabled.
         toggleItemSelection(2);
         Assert.assertFalse(mHistoryManager.getSelectionDelegateForTests().isSelectionEnabled());
-        Assert.assertEquals(View.GONE, item.findViewById(R.id.remove).getVisibility());
+        Assert.assertEquals(View.GONE, item.getRemoveButtonForTests().getVisibility());
 
         signOut();
 
         // Check that the item's remove button visibility is set correctly after signing out.
-        Assert.assertEquals(View.VISIBLE, item.findViewById(R.id.remove).getVisibility());
+        Assert.assertEquals(View.VISIBLE, item.getRemoveButtonForTests().getVisibility());
     }
 
     @Test

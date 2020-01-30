@@ -878,10 +878,9 @@ void NGBlockNode::CopyFragmentDataToLayoutBox(
   LayoutBlock* block = DynamicTo<LayoutBlock>(box_);
   bool needs_full_invalidation = false;
   if (LIKELY(block && is_last_fragment)) {
-    LayoutUnit intrinsic_block_size =
-        layout_result.UnconstrainedIntrinsicBlockSize();
+    LayoutUnit overflow_block_size = layout_result.OverflowBlockSize();
     if (UNLIKELY(previous_break_token))
-      intrinsic_block_size += previous_break_token->ConsumedBlockSize();
+      overflow_block_size += previous_break_token->ConsumedBlockSize();
 
 #if DCHECK_IS_ON()
     block->CheckPositionedObjectsNeedLayout();
@@ -904,7 +903,7 @@ void NGBlockNode::CopyFragmentDataToLayoutBox(
     // computes visual overflow from |RootInlineBox| if |ChildrenInline()|
     block->SetNeedsOverflowRecalc(
         LayoutObject::OverflowRecalcType::kOnlyVisualOverflowRecalc);
-    block->ComputeLayoutOverflow(intrinsic_block_size - borders.block_end -
+    block->ComputeLayoutOverflow(overflow_block_size - borders.block_end -
                                  scrollbars.block_end);
   }
 
@@ -1082,7 +1081,8 @@ void NGBlockNode::CopyFragmentDataToLayoutBoxForInlineChildren(
       if (!layout_object)
         continue;
       if (LayoutBox* layout_box = ToLayoutBoxOrNull(layout_object)) {
-        PhysicalOffset maybe_flipped_offset = cursor.CurrentOffset();
+        PhysicalOffset maybe_flipped_offset =
+            cursor.Current().OffsetInContainerBlock();
         if (initial_container_is_flipped) {
           maybe_flipped_offset.left = container.Size().width -
                                       child->Size().width -

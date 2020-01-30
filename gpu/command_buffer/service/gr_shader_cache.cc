@@ -126,8 +126,6 @@ void GrShaderCache::PurgeMemory(
 
   switch (memory_pressure_level) {
     case base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_NONE:
-      // This function is only called with moderate or critical pressure.
-      NOTREACHED();
       return;
     case base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_MODERATE:
       cache_size_limit_ = cache_size_limit_ / 4;

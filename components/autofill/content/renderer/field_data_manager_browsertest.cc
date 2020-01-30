@@ -12,6 +12,8 @@
 #include "third_party/blink/public/web/web_form_control_element.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 
+using base::UTF8ToUTF16;
+
 namespace autofill {
 
 class FieldDataManagerTest : public content::RenderViewTest {
@@ -44,70 +46,70 @@ class FieldDataManagerTest : public content::RenderViewTest {
 };
 
 TEST_F(FieldDataManagerTest, UpdateFieldDataMap) {
-  FieldDataManager field_data_manager;
-  field_data_manager.UpdateFieldDataMap(control_elements_[0],
-                                        control_elements_[0].Value().Utf16(),
-                                        FieldPropertiesFlags::USER_TYPED);
+  const scoped_refptr<FieldDataManager> field_data_manager =
+      base::MakeRefCounted<FieldDataManager>();
+  field_data_manager->UpdateFieldDataMap(control_elements_[0],
+                                         control_elements_[0].Value().Utf16(),
+                                         FieldPropertiesFlags::USER_TYPED);
   const uint32_t id = control_elements_[0].UniqueRendererFormControlId();
-  EXPECT_TRUE(field_data_manager.HasFieldData(id));
-  EXPECT_EQ(base::UTF8ToUTF16("first"),
-            field_data_manager.GetUserTypedValue(id));
+  EXPECT_TRUE(field_data_manager->HasFieldData(id));
+  EXPECT_EQ(UTF8ToUTF16("first"), field_data_manager->GetUserTypedValue(id));
   EXPECT_EQ(FieldPropertiesFlags::USER_TYPED,
-            field_data_manager.GetFieldPropertiesMask(id));
+            field_data_manager->GetFieldPropertiesMask(id));
 
-  field_data_manager.UpdateFieldDataMap(control_elements_[0],
-                                        base::UTF8ToUTF16("newvalue"),
-                                        FieldPropertiesFlags::AUTOFILLED);
-  EXPECT_EQ(base::UTF8ToUTF16("newvalue"),
-            field_data_manager.GetUserTypedValue(id));
+  field_data_manager->UpdateFieldDataMap(control_elements_[0],
+                                         UTF8ToUTF16("newvalue"),
+                                         FieldPropertiesFlags::AUTOFILLED);
+  EXPECT_EQ(UTF8ToUTF16("newvalue"), field_data_manager->GetUserTypedValue(id));
   FieldPropertiesMask mask =
       FieldPropertiesFlags::USER_TYPED | FieldPropertiesFlags::AUTOFILLED;
-  EXPECT_EQ(mask, field_data_manager.GetFieldPropertiesMask(id));
+  EXPECT_EQ(mask, field_data_manager->GetFieldPropertiesMask(id));
 
-  field_data_manager.UpdateFieldDataMap(control_elements_[1],
-                                        control_elements_[1].Value().Utf16(),
-                                        FieldPropertiesFlags::AUTOFILLED);
+  field_data_manager->UpdateFieldDataMap(control_elements_[1],
+                                         control_elements_[1].Value().Utf16(),
+                                         FieldPropertiesFlags::AUTOFILLED);
   EXPECT_EQ(FieldPropertiesFlags::NO_FLAGS,
-            field_data_manager.GetFieldPropertiesMask(
+            field_data_manager->GetFieldPropertiesMask(
                 control_elements_[1].UniqueRendererFormControlId()));
 
-  field_data_manager.ClearData();
-  EXPECT_FALSE(field_data_manager.HasFieldData(id));
+  field_data_manager->ClearData();
+  EXPECT_FALSE(field_data_manager->HasFieldData(id));
 }
 
 TEST_F(FieldDataManagerTest, UpdateFieldDataMapWithNullValue) {
-  FieldDataManager field_data_manager;
-  field_data_manager.UpdateFieldDataMapWithNullValue(
+  const scoped_refptr<FieldDataManager> field_data_manager =
+      base::MakeRefCounted<FieldDataManager>();
+  field_data_manager->UpdateFieldDataMapWithNullValue(
       control_elements_[0], FieldPropertiesFlags::USER_TYPED);
   const uint32_t id = control_elements_[0].UniqueRendererFormControlId();
-  EXPECT_TRUE(field_data_manager.HasFieldData(id));
-  EXPECT_EQ(base::string16(), field_data_manager.GetUserTypedValue(id));
+  EXPECT_TRUE(field_data_manager->HasFieldData(id));
+  EXPECT_EQ(base::string16(), field_data_manager->GetUserTypedValue(id));
   EXPECT_EQ(FieldPropertiesFlags::USER_TYPED,
-            field_data_manager.GetFieldPropertiesMask(id));
+            field_data_manager->GetFieldPropertiesMask(id));
 
-  field_data_manager.UpdateFieldDataMapWithNullValue(
+  field_data_manager->UpdateFieldDataMapWithNullValue(
       control_elements_[0], FieldPropertiesFlags::AUTOFILLED);
-  EXPECT_EQ(base::string16(), field_data_manager.GetUserTypedValue(id));
+  EXPECT_EQ(base::string16(), field_data_manager->GetUserTypedValue(id));
   FieldPropertiesMask mask =
       FieldPropertiesFlags::USER_TYPED | FieldPropertiesFlags::AUTOFILLED;
-  EXPECT_EQ(mask, field_data_manager.GetFieldPropertiesMask(id));
+  EXPECT_EQ(mask, field_data_manager->GetFieldPropertiesMask(id));
 
-  field_data_manager.UpdateFieldDataMap(control_elements_[0],
-                                        control_elements_[0].Value().Utf16(),
-                                        FieldPropertiesFlags::AUTOFILLED);
-  EXPECT_EQ(base::UTF8ToUTF16("first"),
-            field_data_manager.GetUserTypedValue(id));
+  field_data_manager->UpdateFieldDataMap(control_elements_[0],
+                                         control_elements_[0].Value().Utf16(),
+                                         FieldPropertiesFlags::AUTOFILLED);
+  EXPECT_EQ(UTF8ToUTF16("first"), field_data_manager->GetUserTypedValue(id));
 }
 
 TEST_F(FieldDataManagerTest, FindMachedValue) {
-  FieldDataManager field_data_manager;
-  field_data_manager.UpdateFieldDataMap(control_elements_[0],
-                                        control_elements_[0].Value().Utf16(),
-                                        FieldPropertiesFlags::USER_TYPED);
+  const scoped_refptr<FieldDataManager> field_data_manager =
+      base::MakeRefCounted<FieldDataManager>();
+  field_data_manager->UpdateFieldDataMap(control_elements_[0],
+                                         control_elements_[0].Value().Utf16(),
+                                         FieldPropertiesFlags::USER_TYPED);
   EXPECT_TRUE(
-      field_data_manager.FindMachedValue(base::UTF8ToUTF16("first_element")));
+      field_data_manager->FindMachedValue(UTF8ToUTF16("first_element")));
   EXPECT_FALSE(
-      field_data_manager.FindMachedValue(base::UTF8ToUTF16("second_element")));
+      field_data_manager->FindMachedValue(UTF8ToUTF16("second_element")));
 }
 
 }  // namespace autofill

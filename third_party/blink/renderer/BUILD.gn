@@ -49,7 +49,7 @@ config("inside_blink") {
       "-Wno-implicit-int-conversion",
     ]
 
-    if (llvm_force_head_revision) {
+    if (!is_chromeos || default_toolchain != "//build/toolchain/cros:target") {
       cflags += [
         "-Wno-enum-enum-conversion",
         "-Wno-enum-float-conversion",

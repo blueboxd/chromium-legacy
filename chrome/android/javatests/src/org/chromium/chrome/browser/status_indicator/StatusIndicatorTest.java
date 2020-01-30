@@ -12,6 +12,7 @@ import android.support.test.filters.MediumTest;
 import android.view.View;
 import android.view.ViewGroup;
 
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -23,10 +24,13 @@ import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
+import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.tabbed_mode.TabbedRootUiCoordinator;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.browser.Features;
+import org.chromium.content_public.browser.test.util.Criteria;
+import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.test.util.UiRestriction;
 
@@ -37,7 +41,7 @@ import org.chromium.ui.test.util.UiRestriction;
 // clang-format off
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
-@Features.EnableFeatures({ChromeFeatureList.OFFLINE_INDICATOR_V2})
+@Features.DisableFeatures({ChromeFeatureList.OFFLINE_INDICATOR_V2})
 // TODO(crbug.com/1035584): Enable for tablets once we support them.
 @Restriction({UiRestriction.RESTRICTION_TYPE_PHONE})
 public class StatusIndicatorTest {
@@ -52,8 +56,8 @@ public class StatusIndicatorTest {
 
     @Before
     public void setUp() throws InterruptedException {
+        TabbedRootUiCoordinator.setEnableStatusIndicatorForTests(true);
         mActivityTestRule.startMainActivityOnBlankPage();
-
         mStatusIndicatorCoordinator = ((TabbedRootUiCoordinator) mActivityTestRule.getActivity()
                                                .getRootUiCoordinatorForTesting())
                                               .getStatusIndicatorCoordinatorForTesting();
@@ -66,9 +70,16 @@ public class StatusIndicatorTest {
                 (ViewGroup.MarginLayoutParams) controlContainer.getLayoutParams();
     }
 
+    @After
+    public void tearDown() {
+        TabbedRootUiCoordinator.setEnableStatusIndicatorForTests(false);
+    }
+
     @Test
     @MediumTest
     public void testShowAndHide() {
+        final ChromeFullscreenManager fullscreenManager =
+                mActivityTestRule.getActivity().getFullscreenManager();
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();
 
         assertThat("Wrong initial Android view visibility.",
@@ -80,20 +91,30 @@ public class StatusIndicatorTest {
 
         TestThreadUtils.runOnUiThreadBlocking(mStatusIndicatorCoordinator::show);
 
-        assertThat("Android view is not visible.", mStatusIndicatorContainer.getVisibility(),
+        InstrumentationRegistry.getInstrumentation().waitForIdleSync();
+
+        // TODO(sinansahin): Investigate setting the duration for the browser controls animations to
+        // 0 for testing.
+
+        // Wait until the status indicator finishes animating, or becomes fully visible.
+        CriteriaHelper.pollUiThread(Criteria.equals(mStatusIndicatorContainer.getHeight(),
+                fullscreenManager::getTopControlsMinHeightOffset));
+
+        // Now, the Android view should be visible.
+        assertThat("Wrong Android view visibility.", mStatusIndicatorContainer.getVisibility(),
                 equalTo(View.VISIBLE));
-        Assert.assertTrue("Composited view is not visible.",
-                mStatusIndicatorSceneLayer.isSceneOverlayTreeShowing());
-        assertThat("Wrong control container top margin.", mControlContainerLayoutParams.topMargin,
-                equalTo(mStatusIndicatorContainer.getHeight()));
 
         TestThreadUtils.runOnUiThreadBlocking(mStatusIndicatorCoordinator::hide);
 
-        assertThat("Android view is not gone.", mStatusIndicatorContainer.getVisibility(),
+        // The Android view visibility should be {@link View.GONE} after #hide().
+        assertThat("Wrong Android view visibility.", mStatusIndicatorContainer.getVisibility(),
                 equalTo(View.GONE));
-        Assert.assertFalse("Composited view is visible.",
+
+        // Wait until the status indicator finishes animating, or becomes fully hidden.
+        CriteriaHelper.pollUiThread(
+                Criteria.equals(0, fullscreenManager::getTopControlsMinHeightOffset));
+
+        Assert.assertFalse("Composited view shouldn't be visible.",
                 mStatusIndicatorSceneLayer.isSceneOverlayTreeShowing());
-        assertThat("Wrong control container top margin.", mControlContainerLayoutParams.topMargin,
-                equalTo(0));
     }
 }

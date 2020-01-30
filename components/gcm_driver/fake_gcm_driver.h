@@ -9,7 +9,6 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "components/gcm_driver/gcm_driver.h"
-#include "services/network/test/test_url_loader_factory.h"
 
 namespace base {
 class SequencedTaskRunner;
@@ -66,8 +65,6 @@ class FakeGCMDriver : public GCMDriver {
                                GCMDecryptionResult result) override;
 
  private:
-  network::TestURLLoaderFactory test_url_loader_factory_;
-
   DISALLOW_COPY_AND_ASSIGN(FakeGCMDriver);
 };
 

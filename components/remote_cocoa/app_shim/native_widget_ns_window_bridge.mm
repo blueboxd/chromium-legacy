@@ -14,7 +14,6 @@
 #include "base/logging.h"
 #import "base/mac/foundation_util.h"
 #include "base/mac/mac_util.h"
-#import "base/mac/sdk_forward_declarations.h"
 #include "base/no_destructor.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/sys_string_conversions.h"

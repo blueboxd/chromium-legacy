@@ -10,6 +10,7 @@
 #include "chrome/browser/optimization_guide/optimization_guide_navigation_data.h"
 #include "chrome/browser/optimization_guide/optimization_guide_session_statistic.h"
 #include "chrome/browser/optimization_guide/optimization_guide_top_host_provider.h"
+#include "chrome/browser/optimization_guide/optimization_guide_util.h"
 #include "chrome/browser/optimization_guide/prediction/prediction_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/leveldb_proto/public/proto_database_provider.h"
@@ -21,6 +22,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/storage_partition.h"
+#include "url/gurl.h"
 
 namespace {
 
@@ -91,33 +93,6 @@ GetOptimizationGuideDecisionFromOptimizationTargetDecision(
   }
 }
 
-// Returns the OptimizationGuideDecision from |optimization_type_decision|.
-optimization_guide::OptimizationGuideDecision
-GetOptimizationGuideDecisionFromOptimizationTypeDecision(
-    optimization_guide::OptimizationTypeDecision optimization_type_decision) {
-  switch (optimization_type_decision) {
-    case optimization_guide::OptimizationTypeDecision::
-        kAllowedByOptimizationFilter:
-    case optimization_guide::OptimizationTypeDecision::kAllowedByHint:
-      return optimization_guide::OptimizationGuideDecision::kTrue;
-    case optimization_guide::OptimizationTypeDecision::kUnknown:
-    case optimization_guide::OptimizationTypeDecision::
-        kHadOptimizationFilterButNotLoadedInTime:
-    case optimization_guide::OptimizationTypeDecision::
-        kHadHintButNotLoadedInTime:
-    case optimization_guide::OptimizationTypeDecision::
-        kHintFetchStartedButNotAvailableInTime:
-    case optimization_guide::OptimizationTypeDecision::kDeciderNotInitialized:
-      return optimization_guide::OptimizationGuideDecision::kUnknown;
-    case optimization_guide::OptimizationTypeDecision::kNotAllowedByHint:
-    case optimization_guide::OptimizationTypeDecision::kNoMatchingPageHint:
-    case optimization_guide::OptimizationTypeDecision::kNoHintAvailable:
-    case optimization_guide::OptimizationTypeDecision::
-        kNotAllowedByOptimizationFilter:
-      return optimization_guide::OptimizationGuideDecision::kFalse;
-  }
-}
-
 }  // namespace
 
 OptimizationGuideKeyedService::OptimizationGuideKeyedService(
@@ -157,7 +132,7 @@ void OptimizationGuideKeyedService::Initialize(
   }
 }
 
-void OptimizationGuideKeyedService::MaybeLoadHintForNavigation(
+void OptimizationGuideKeyedService::OnNavigationStartOrRedirect(
     content::NavigationHandle* navigation_handle) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
@@ -165,6 +140,14 @@ void OptimizationGuideKeyedService::MaybeLoadHintForNavigation(
     hints_manager_->OnNavigationStartOrRedirect(navigation_handle,
                                                 base::DoNothing());
   }
+}
+
+void OptimizationGuideKeyedService::OnNavigationFinish(
+    const GURL& navigation_url) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  if (hints_manager_)
+    hints_manager_->OnNavigationFinish(navigation_url);
 }
 
 void OptimizationGuideKeyedService::RegisterOptimizationTypesAndTargets(

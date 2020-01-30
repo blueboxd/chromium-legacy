@@ -6481,7 +6481,7 @@ TEST_F(AXPositionTest, CreatePreviousWordPositionInList) {
   ASSERT_EQ(0, text_position->text_offset());
 }
 
-TEST_F(AXPositionTest, EmbeddedObjectReplacementCharacterTextNavigation) {
+TEST_F(AXPositionTest, EmptyObjectReplacedByCharacterTextNavigation) {
   g_ax_embedded_object_behavior = AXEmbeddedObjectBehavior::kExposeCharacter;
 
   // ++1 kRootWebArea
@@ -6491,61 +6491,98 @@ TEST_F(AXPositionTest, EmbeddedObjectReplacementCharacterTextNavigation) {
   // ++++++5 kGenericContainer
   // ++++6 kStaticText
   // ++++++7 kInlineTextBox
-  AXNodeData root;
-  AXNodeData static_text1;
-  AXNodeData inline_box1;
-  AXNodeData text_field;
-  AXNodeData generic_container;
-  AXNodeData static_text2;
-  AXNodeData inline_box2;
+  // ++++8 kHeading
+  // ++++++9 kStaticText
+  // ++++++++10 kInlineTextBox
+  // ++++11 kGenericContainer ignored
+  // ++++12 kGenericContainer
+  AXNodeData root_1;
+  AXNodeData static_text_2;
+  AXNodeData inline_box_3;
+  AXNodeData text_field_4;
+  AXNodeData generic_container_5;
+  AXNodeData static_text_6;
+  AXNodeData inline_box_7;
+  AXNodeData heading_8;
+  AXNodeData static_text_9;
+  AXNodeData inline_box_10;
+  AXNodeData generic_container_11;
+  AXNodeData generic_container_12;
 
-  root.id = 1;
-  static_text1.id = 2;
-  inline_box1.id = 3;
-  text_field.id = 4;
-  generic_container.id = 5;
-  static_text2.id = 6;
-  inline_box2.id = 7;
+  root_1.id = 1;
+  static_text_2.id = 2;
+  inline_box_3.id = 3;
+  text_field_4.id = 4;
+  generic_container_5.id = 5;
+  static_text_6.id = 6;
+  inline_box_7.id = 7;
+  heading_8.id = 8;
+  static_text_9.id = 9;
+  inline_box_10.id = 10;
+  generic_container_11.id = 11;
+  generic_container_12.id = 12;
 
-  root.role = ax::mojom::Role::kRootWebArea;
-  root.child_ids = {static_text1.id, text_field.id, static_text2.id};
+  root_1.role = ax::mojom::Role::kRootWebArea;
+  root_1.child_ids = {static_text_2.id,        text_field_4.id,
+                      static_text_6.id,        heading_8.id,
+                      generic_container_11.id, generic_container_12.id};
 
-  static_text1.role = ax::mojom::Role::kStaticText;
-  static_text1.SetName("Hello ");
-  static_text1.child_ids = {inline_box1.id};
+  static_text_2.role = ax::mojom::Role::kStaticText;
+  static_text_2.SetName("Hello ");
+  static_text_2.child_ids = {inline_box_3.id};
 
-  inline_box1.role = ax::mojom::Role::kInlineTextBox;
-  inline_box1.SetName("Hello ");
-  inline_box1.AddIntListAttribute(ax::mojom::IntListAttribute::kWordStarts,
-                                  std::vector<int32_t>{0});
-  inline_box1.AddIntListAttribute(ax::mojom::IntListAttribute::kWordEnds,
-                                  std::vector<int32_t>{6});
+  inline_box_3.role = ax::mojom::Role::kInlineTextBox;
+  inline_box_3.SetName("Hello ");
+  inline_box_3.AddIntListAttribute(ax::mojom::IntListAttribute::kWordStarts,
+                                   std::vector<int32_t>{0});
+  inline_box_3.AddIntListAttribute(ax::mojom::IntListAttribute::kWordEnds,
+                                   std::vector<int32_t>{6});
 
-  text_field.role = ax::mojom::Role::kTextField;
-  text_field.child_ids = {generic_container.id};
+  text_field_4.role = ax::mojom::Role::kTextField;
+  text_field_4.child_ids = {generic_container_5.id};
 
-  generic_container.role = ax::mojom::Role::kGenericContainer;
+  generic_container_5.role = ax::mojom::Role::kGenericContainer;
 
-  static_text2.role = ax::mojom::Role::kStaticText;
-  static_text2.SetName(" world");
-  static_text2.child_ids = {inline_box2.id};
+  static_text_6.role = ax::mojom::Role::kStaticText;
+  static_text_6.SetName(" world");
+  static_text_6.child_ids = {inline_box_7.id};
 
-  inline_box2.role = ax::mojom::Role::kInlineTextBox;
-  inline_box2.SetName(" world");
-  inline_box2.AddIntListAttribute(ax::mojom::IntListAttribute::kWordStarts,
-                                  std::vector<int32_t>{1});
-  inline_box2.AddIntListAttribute(ax::mojom::IntListAttribute::kWordEnds,
-                                  std::vector<int32_t>{6});
+  inline_box_7.role = ax::mojom::Role::kInlineTextBox;
+  inline_box_7.SetName(" world");
+  inline_box_7.AddIntListAttribute(ax::mojom::IntListAttribute::kWordStarts,
+                                   std::vector<int32_t>{1});
+  inline_box_7.AddIntListAttribute(ax::mojom::IntListAttribute::kWordEnds,
+                                   std::vector<int32_t>{6});
 
-  std::unique_ptr<AXTree> new_tree =
-      CreateAXTree({root, static_text1, inline_box1, text_field,
-                    generic_container, static_text2, inline_box2});
+  heading_8.role = ax::mojom::Role::kHeading;
+  heading_8.child_ids = {static_text_9.id};
+
+  static_text_9.role = ax::mojom::Role::kStaticText;
+  static_text_9.child_ids = {inline_box_10.id};
+  static_text_9.SetName("3.14");
+
+  inline_box_10.role = ax::mojom::Role::kInlineTextBox;
+  inline_box_10.SetName("3.14");
+
+  generic_container_11.role = ax::mojom::Role::kGenericContainer;
+  generic_container_11.AddBoolAttribute(
+      ax::mojom::BoolAttribute::kIsLineBreakingObject, true);
+  generic_container_11.AddState(ax::mojom::State::kIgnored);
+
+  generic_container_12.role = ax::mojom::Role::kGenericContainer;
+  generic_container_12.AddBoolAttribute(
+      ax::mojom::BoolAttribute::kIsLineBreakingObject, true);
+
+  std::unique_ptr<AXTree> new_tree = CreateAXTree(
+      {root_1, static_text_2, inline_box_3, text_field_4, generic_container_5,
+       static_text_6, inline_box_7, heading_8, static_text_9, inline_box_10,
+       generic_container_11, generic_container_12});
 
   AXNodePosition::SetTree(new_tree.get());
 
   // CreateStartWordStartPosition tests.
   TestPositionType position = AXNodePosition::CreateTextPosition(
-      new_tree->data().tree_id, inline_box1.id,
+      new_tree->data().tree_id, inline_box_3.id,
       0 /* child_index_or_text_offset */, ax::mojom::TextAffinity::kDownstream);
 
   TestPositionType result_position =
@@ -6624,7 +6661,7 @@ TEST_F(AXPositionTest, EmbeddedObjectReplacementCharacterTextNavigation) {
 
   // GetText() with embedded object replacement character test.
   position = AXNodePosition::CreateTextPosition(
-      new_tree->data().tree_id, generic_container.id, 0 /* text_offset */,
+      new_tree->data().tree_id, generic_container_5.id, 0 /* text_offset */,
       ax::mojom::TextAffinity::kDownstream);
 
   base::string16 expected_text;
@@ -6634,17 +6671,17 @@ TEST_F(AXPositionTest, EmbeddedObjectReplacementCharacterTextNavigation) {
   // GetText() on a node parent of text nodes and an embedded object replacement
   // character.
   position = AXNodePosition::CreateTextPosition(
-      new_tree->data().tree_id, root.id, 0 /* text_offset */,
+      new_tree->data().tree_id, root_1.id, 0 /* text_offset */,
       ax::mojom::TextAffinity::kDownstream);
 
-  expected_text = base::WideToUTF16(L"Hello ") +
-                  AXNodePosition::kEmbeddedCharacter +
-                  base::WideToUTF16(L" world");
+  expected_text =
+      base::WideToUTF16(L"Hello ") + AXNodePosition::kEmbeddedCharacter +
+      base::WideToUTF16(L" world3.14") + AXNodePosition::kEmbeddedCharacter;
   ASSERT_EQ(expected_text, position->GetText());
 
   // MaxTextOffset() with an embedded object replacement character.
   position = AXNodePosition::CreateTextPosition(
-      new_tree->data().tree_id, generic_container.id, 0 /* text_offset */,
+      new_tree->data().tree_id, generic_container_5.id, 0 /* text_offset */,
       ax::mojom::TextAffinity::kDownstream);
 
   ASSERT_EQ(1, position->MaxTextOffset());
@@ -6661,17 +6698,35 @@ TEST_F(AXPositionTest, EmbeddedObjectReplacementCharacterTextNavigation) {
   position = position->CreateParentPosition();
   expectations =
       "TextPosition anchor_id=1 text_offset=6 affinity=downstream "
-      "annotated_text=Hello <\xEF\xBF\xBC> world";
+      "annotated_text=Hello <\xEF\xBF\xBC> world3.14\xEF\xBF\xBC";
   ASSERT_EQ(position->ToString(), expectations);
-  ASSERT_EQ(13, position->MaxTextOffset());
+  ASSERT_EQ(18, position->MaxTextOffset());
 
   // MaxTextOffset() on a node parent of text nodes and an embedded object
   // replacement character.
   position = AXNodePosition::CreateTextPosition(
-      new_tree->data().tree_id, root.id, 0 /* text_offset */,
+      new_tree->data().tree_id, root_1.id, 0 /* text_offset */,
       ax::mojom::TextAffinity::kDownstream);
+  ASSERT_EQ(18, position->MaxTextOffset());
 
-  ASSERT_EQ(13, position->MaxTextOffset());
+  // The following is to test a specific edge case with heading navigation,
+  // occurring in AXPosition::CreatePreviousFormatStartPosition.
+  //
+  // When the position is at the beginning of an unignored empty object,
+  // preceded by an ignored empty object itself preceded by an heading node, the
+  // previous format start position should stay on this unignored empty object.
+  // It shouldn't move to the beginning of the heading.
+  TestPositionType text_position = AXNodePosition::CreateTextPosition(
+      new_tree->data().tree_id, generic_container_12.id, 0 /* text_offset */,
+      ax::mojom::TextAffinity::kDownstream);
+  ASSERT_NE(nullptr, text_position);
+
+  text_position = text_position->CreatePreviousFormatStartPosition(
+      AXBoundaryBehavior::StopIfAlreadyAtBoundary);
+  EXPECT_NE(nullptr, text_position);
+  EXPECT_TRUE(text_position->IsTextPosition());
+  EXPECT_EQ(generic_container_12.id, text_position->anchor_id());
+  EXPECT_EQ(0, text_position->text_offset());
 }
 
 //

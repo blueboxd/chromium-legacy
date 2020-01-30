@@ -74,6 +74,7 @@ class PLATFORM_EXPORT MarkingVisitorCommon : public Visitor {
   void RegisterBackingStoreReference(void** slot);
 
   MarkingWorklist::View marking_worklist_;
+  WriteBarrierWorklist::View write_barrier_worklist_;
   NotFullyConstructedWorklist::View not_fully_constructed_worklist_;
   WeakCallbackWorklist::View weak_callback_worklist_;
   MovableReferenceWorklist::View movable_reference_worklist_;
@@ -197,8 +198,6 @@ class PLATFORM_EXPORT MarkingVisitor
   // Exact version of the marking write barriers.
   static bool WriteBarrierSlow(void*);
   static void TraceMarkedBackingStoreSlow(void*);
-
-  WriteBarrierWorklist::View write_barrier_worklist_;
 };
 
 // static

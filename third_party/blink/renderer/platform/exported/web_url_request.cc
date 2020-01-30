@@ -52,43 +52,44 @@ namespace blink {
 
 WebURLRequest::ExtraData::ExtraData() : render_frame_id_(MSG_ROUTING_NONE) {}
 
-// The purpose of this struct is to permit allocating a ResourceRequest on the
-// heap, which is otherwise disallowed by DISALLOW_NEW annotation on
-// ResourceRequest.
-// TODO(keishi): Replace with GCWrapper<ResourceRequest>
-struct WebURLRequest::ResourceRequestContainer {
-  ResourceRequestContainer() = default;
-  explicit ResourceRequestContainer(const ResourceRequest& r) {
-    resource_request.CopyFrom(r);
-  }
-
-  ResourceRequest resource_request;
-};
-
 WebURLRequest::~WebURLRequest() = default;
 
 WebURLRequest::WebURLRequest()
-    : owned_resource_request_(new ResourceRequestContainer()),
-      resource_request_(&owned_resource_request_->resource_request) {}
+    : owned_resource_request_(std::make_unique<ResourceRequest>()),
+      resource_request_(owned_resource_request_.get()) {}
 
-WebURLRequest::WebURLRequest(const WebURLRequest& r)
-    : owned_resource_request_(
-          new ResourceRequestContainer(*r.resource_request_)),
-      resource_request_(&owned_resource_request_->resource_request) {}
+WebURLRequest::WebURLRequest(WebURLRequest&& src) {
+  *this = std::move(src);
+}
+
+WebURLRequest& WebURLRequest::operator=(WebURLRequest&& src) {
+  if (this == &src) {
+    return *this;
+  }
+  if (src.owned_resource_request_) {
+    owned_resource_request_ = std::move(src.owned_resource_request_);
+    resource_request_ = owned_resource_request_.get();
+  } else {
+    owned_resource_request_ = std::make_unique<ResourceRequest>();
+    resource_request_ = owned_resource_request_.get();
+    CopyFrom(src);
+  }
+  src.resource_request_ = nullptr;
+  return *this;
+}
 
 WebURLRequest::WebURLRequest(const WebURL& url) : WebURLRequest() {
   SetUrl(url);
 }
 
-WebURLRequest& WebURLRequest::operator=(const WebURLRequest& r) {
+void WebURLRequest::CopyFrom(const WebURLRequest& r) {
   // Copying subclasses that have different m_resourceRequest ownership
   // semantics via this operator is just not supported.
   DCHECK(owned_resource_request_);
-  DCHECK(resource_request_);
-  if (&r != this) {
-    resource_request_->CopyFrom(*r.resource_request_);
-  }
-  return *this;
+  DCHECK_EQ(owned_resource_request_.get(), resource_request_);
+  DCHECK(owned_resource_request_->IsNull());
+  DCHECK(this != &r);
+  resource_request_->CopyFrom(*r.resource_request_);
 }
 
 bool WebURLRequest::IsNull() const {

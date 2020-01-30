@@ -71,7 +71,7 @@ class PLATFORM_EXPORT FontFallbackList : public RefCounted<FontFallbackList> {
   }
 
   const SimpleFontData* PrimarySimpleFontData(
-      const FontDescription& font_description) {
+      const FontDescription& font_description) const {
     if (!cached_primary_simple_font_data_) {
       cached_primary_simple_font_data_ =
           DeterminePrimarySimpleFontData(font_description);
@@ -83,6 +83,13 @@ class PLATFORM_EXPORT FontFallbackList : public RefCounted<FontFallbackList> {
 
   FallbackListCompositeKey CompositeKey(const FontDescription&) const;
 
+  bool CanShapeWordByWord(const FontDescription&) const;
+
+  void SetCanShapeWordByWordForTesting(bool b) {
+    can_shape_word_by_word_ = b;
+    can_shape_word_by_word_computed_ = true;
+  }
+
  private:
   FontFallbackList();
 
@@ -92,6 +99,7 @@ class PLATFORM_EXPORT FontFallbackList : public RefCounted<FontFallbackList> {
       const FontDescription&) const;
 
   void ReleaseFontData();
+  bool ComputeCanShapeWordByWord(const FontDescription&) const;
 
   mutable Vector<scoped_refptr<FontData>, 1> font_list_;
   mutable const SimpleFontData* cached_primary_simple_font_data_;
@@ -100,6 +108,8 @@ class PLATFORM_EXPORT FontFallbackList : public RefCounted<FontFallbackList> {
   mutable int family_index_;
   uint16_t generation_;
   mutable bool has_loading_fallback_ : 1;
+  mutable bool can_shape_word_by_word_ : 1;
+  mutable bool can_shape_word_by_word_computed_ : 1;
   mutable base::WeakPtr<ShapeCache> shape_cache_;
 
   DISALLOW_COPY_AND_ASSIGN(FontFallbackList);

@@ -52,7 +52,9 @@ class SupervisedUserNavigationThrottle : public content::NavigationThrottle {
                    supervised_user_error_page::FilteringBehaviorReason reason,
                    bool uncertain);
 
-  void OnInterstitialResult(CallbackActions continue_request);
+  void OnInterstitialResult(CallbackActions continue_request,
+                            bool already_requested_permission,
+                            bool is_main_frame);
 
   const SupervisedUserURLFilter* url_filter_;
   bool deferred_;

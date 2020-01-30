@@ -98,15 +98,14 @@ bool HeadersContainFrameAncestorsCSP(const net::HttpResponseHeaders* headers) {
 
 class FrameAncestorCSPContext : public CSPContext {
  public:
-  explicit FrameAncestorCSPContext(
-      RenderFrameHostImpl* navigated_frame,
-      const std::vector<ContentSecurityPolicy>& policies)
+  FrameAncestorCSPContext(RenderFrameHostImpl* navigated_frame,
+                          std::vector<ContentSecurityPolicy> policies)
       : navigated_frame_(navigated_frame) {
     // TODO(arthursonzogni): Refactor CSPContext to its original state, it
     // shouldn't own any ContentSecurityPolicies on its own. This should be
     // defined by the implementation instead. Copies could be avoided here.
-    for (const auto& policy : policies)
-      AddContentSecurityPolicy(policy);
+    for (auto& policy : policies)
+      AddContentSecurityPolicy(std::move(policy));
   }
 
  private:
@@ -278,7 +277,7 @@ NavigationThrottle::ThrottleCheckResult AncestorThrottle::ProcessResponseImpl(
     // are reported to the navigating frame.
     FrameAncestorCSPContext csp_context(
         NavigationRequest::From(navigation_handle())->GetRenderFrameHost(),
-        policies);
+        std::move(policies));
     csp_context.SetSelf(url::Origin::Create(navigation_handle()->GetURL()));
 
     // Check CSP frame-ancestors against every parent.

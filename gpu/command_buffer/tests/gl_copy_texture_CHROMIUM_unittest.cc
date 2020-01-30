@@ -175,6 +175,9 @@ void getExpectedColorAndMask(GLenum src_internal_format,
     case GL_LUMINANCE_ALPHA:
       setColor(color[0], color[0], color[0], color[1], adjusted_color);
       break;
+    case GL_RG16_EXT:
+      setColor(color[0], color[1], 0, 255, adjusted_color);
+      break;
     case GL_RGB:
     case GL_RGB8:
     case GL_RGB_YCBCR_420V_CHROMIUM:
@@ -183,6 +186,7 @@ void getExpectedColorAndMask(GLenum src_internal_format,
       break;
     case GL_RGBA:
     case GL_RGBA8:
+    case GL_RGBA16_EXT:
       setColor(color[0], color[1], color[2], color[3], adjusted_color);
       break;
     case GL_BGRA_EXT:
@@ -648,6 +652,17 @@ class GLCopyTextureCHROMIUMES3Test : public GLCopyTextureCHROMIUMTest {
     return !gl_.decoder()->GetFeatureInfo()->feature_flags().ext_texture_norm16;
   }
 
+  bool ShouldSkipRGBA16ToRGB10A2() const {
+    DCHECK(!ShouldSkipTest());
+#if (defined(OS_MACOSX) || defined(OS_LINUX)) && \
+    (defined(ARCH_CPU_X86) || defined(ARCH_CPU_X86_64))
+    // // TODO(crbug.com/1046873): Fails on mac and linux intel.
+    return true;
+#else
+    return false;
+#endif
+  }
+
   bool ShouldSkipRGB10A2() const {
     DCHECK(!ShouldSkipTest());
     const gl::GLVersionInfo& gl_version_info =
@@ -740,6 +755,8 @@ TEST_P(GLCopyTextureCHROMIUMES3Test, FormatCombinations) {
       {GL_BGRA_EXT, GL_BGRA_EXT, GL_UNSIGNED_BYTE},
       {GL_BGRA8_EXT, GL_BGRA_EXT, GL_UNSIGNED_BYTE},
       {GL_R16_EXT, GL_RED, GL_UNSIGNED_SHORT},
+      {GL_RG16_EXT, GL_RG, GL_UNSIGNED_SHORT},
+      {GL_RGBA16_EXT, GL_RGBA, GL_UNSIGNED_SHORT},
       {GL_RGB10_A2, GL_RGBA, GL_UNSIGNED_INT_2_10_10_10_REV},
   };
 
@@ -806,9 +823,16 @@ TEST_P(GLCopyTextureCHROMIUMES3Test, FormatCombinations) {
           ShouldSkipSRGBEXT()) {
         continue;
       }
-      if (src_format_type.internal_format == GL_R16_EXT && ShouldSkipNorm16())
+      if ((src_format_type.internal_format == GL_R16_EXT ||
+           src_format_type.internal_format == GL_RG16_EXT ||
+           src_format_type.internal_format == GL_RGBA16_EXT) &&
+          ShouldSkipNorm16())
         continue;
       if (src_format_type.internal_format == GL_RGB10_A2 && ShouldSkipRGB10A2())
+        continue;
+      if (src_format_type.internal_format == GL_RGBA16_EXT &&
+          dest_format_type.internal_format == GL_RGB10_A2 &&
+          ShouldSkipRGBA16ToRGB10A2())
         continue;
 
       RunCopyTexture(GL_TEXTURE_2D, copy_type, src_format_type, 0,

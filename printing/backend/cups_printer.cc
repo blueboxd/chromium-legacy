@@ -57,7 +57,7 @@ std::vector<base::StringPiece> CupsPrinter::GetSupportedOptionValueStrings(
   base::StringPiece value;
   int num_options = ippGetCount(attr);
   for (int i = 0; i < num_options; ++i) {
-    value.set(ippGetString(attr, i, nullptr));
+    value = ippGetString(attr, i, nullptr);
     values.push_back(value);
   }
 

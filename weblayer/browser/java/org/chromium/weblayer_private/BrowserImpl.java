@@ -315,5 +315,6 @@ public class BrowserImpl extends IBrowser.Stub {
         String getPersistenceId(long nativeBrowserImpl, BrowserImpl browser);
         void saveSessionServiceIfNecessary(long nativeBrowserImpl, BrowserImpl browser);
         byte[] getSessionServiceCryptoKey(long nativeBrowserImpl, BrowserImpl browser);
+        byte[] getMinimalPersistenceState(long nativeBrowserImpl, BrowserImpl browser);
     }
 }

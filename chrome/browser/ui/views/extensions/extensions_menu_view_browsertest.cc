@@ -12,9 +12,11 @@
 #include "build/build_config.h"
 #include "chrome/browser/extensions/chrome_test_extension_loader.h"
 #include "chrome/browser/extensions/extension_action_runner.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/scripting_permissions_modifier.h"
 #include "chrome/browser/ui/extensions/extension_installed_bubble.h"
 #include "chrome/browser/ui/test/test_browser_dialog.h"
+#include "chrome/browser/ui/toolbar/toolbar_action_view_controller.h"
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/views/extensions/extensions_menu_button.h"
 #include "chrome/browser/ui/views/extensions/extensions_menu_item_view.h"
@@ -28,6 +30,8 @@
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
+#include "extensions/browser/disable_reason.h"
+#include "extensions/browser/extension_system.h"
 #include "extensions/common/extension.h"
 #include "extensions/test/test_extension_dir.h"
 #include "net/dns/mock_host_resolver.h"
@@ -354,6 +358,31 @@ IN_PROC_BROWSER_TEST_F(ExtensionsMenuViewBrowserTest, TriggerPopup) {
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionsMenuViewBrowserTest,
+                       RemoveExtensionShowingPopup) {
+  LoadTestExtension("extensions/simple_with_popup");
+  ShowUi("");
+  VerifyUi();
+  TriggerSingleExtensionButton();
+
+  ExtensionsContainer* const extensions_container =
+      BrowserView::GetBrowserViewForBrowser(browser())
+          ->toolbar()
+          ->extensions_container();
+  ToolbarActionViewController* action =
+      extensions_container->GetPoppedOutAction();
+  ASSERT_NE(nullptr, action);
+  ASSERT_EQ(1u, GetVisibleToolbarActionViews().size());
+
+  extensions::ExtensionSystem::Get(browser()->profile())
+      ->extension_service()
+      ->DisableExtension(action->GetId(),
+                         extensions::disable_reason::DISABLE_USER_ACTION);
+
+  EXPECT_EQ(nullptr, extensions_container->GetPoppedOutAction());
+  EXPECT_TRUE(GetVisibleToolbarActionViews().empty());
+}
+
+IN_PROC_BROWSER_TEST_F(ExtensionsMenuViewBrowserTest,
                        TriggeringExtensionClosesMenu) {
   LoadTestExtension("extensions/trigger_actions/browser_action");
   ShowUi("");
@@ -542,6 +571,3 @@ INSTANTIATE_TEST_SUITE_P(AcceptDialog,
 INSTANTIATE_TEST_SUITE_P(CancelDialog,
                          ActivateWithReloadExtensionsMenuBrowserTest,
                          testing::Values(false));
-
-// TODO(pbos): Add test coverage that makes sure removing popped-out extensions
-// properly disposes of the popup.

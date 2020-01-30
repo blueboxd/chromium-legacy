@@ -33,7 +33,6 @@ class ProfileReportGenerator {
 
   void set_extensions_enabled(bool enabled);
   void set_policies_enabled(bool enabled);
-  void set_extension_request_enabled(bool enabled);
 
   // Generates report for Profile if it's activated. Returns the report with
   // |callback| once it's ready. The report is null if it can't be generated.
@@ -57,7 +56,6 @@ class ProfileReportGenerator {
 
   bool extensions_enabled_ = true;
   bool policies_enabled_ = true;
-  bool extension_request_enabled_ = false;
 
   std::unique_ptr<em::ChromeUserProfileInfo> report_ = nullptr;
 

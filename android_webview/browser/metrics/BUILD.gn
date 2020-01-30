@@ -4,19 +4,16 @@
 
 source_set("metrics") {
   sources = [
-    "aw_metrics_log_uploader.cc",
-    "aw_metrics_log_uploader.h",
     "aw_metrics_service_client.cc",
     "aw_metrics_service_client.h",
     "aw_stability_metrics_provider.cc",
     "aw_stability_metrics_provider.h",
-    "memory_metrics_logger.cc",
-    "memory_metrics_logger.h",
   ]
   deps = [
     "//android_webview:browser_jni_headers",
     "//android_webview/common",
     "//base",
+    "//components/embedder_support/android/metrics",
     "//components/metrics",
     "//components/metrics:gpu",
     "//components/metrics:net",
@@ -25,6 +22,5 @@ source_set("metrics") {
     "//components/version_info",
     "//components/version_info/android:channel_getter",
     "//content/public/browser",
-    "//services/resource_coordinator/public/cpp/memory_instrumentation:browser",
   ]
 }

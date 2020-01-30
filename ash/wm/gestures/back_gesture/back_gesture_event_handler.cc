@@ -7,6 +7,7 @@
 #include "ash/app_list/app_list_controller_impl.h"
 #include "ash/display/screen_orientation_controller.h"
 #include "ash/home_screen/home_screen_controller.h"
+#include "ash/public/cpp/app_types.h"
 #include "ash/public/cpp/ash_features.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
@@ -19,6 +20,7 @@
 #include "ash/wm/window_util.h"
 #include "ash/wm/wm_event.h"
 #include "base/metrics/user_metrics.h"
+#include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/wm/core/coordinate_conversion.h"
@@ -325,10 +327,20 @@ bool BackGestureEventHandler::CanStartGoingBack(
     return false;
   }
 
+  aura::Window* top_window = TabletModeWindowManager::GetTopWindow();
   // Do not enable back gesture if MRU window list is empty and it is not in
   // overview mode.
-  if (!Shell::Get()->overview_controller()->InOverviewSession() &&
-      !TabletModeWindowManager::GetTopWindow()) {
+  if (!top_window && !shell->overview_controller()->InOverviewSession())
+    return false;
+
+  // Do not enable back gesture for arc windows in fullscreen mode since some of
+  // them can only stay in fullscreen mode. This will also make arc apps that
+  // can stay in different window modes can't use back gesture to exit
+  // fullscreen mode.
+  if (top_window &&
+      top_window->GetProperty(aura::client::kAppType) ==
+          static_cast<int>(AppType::ARC_APP) &&
+      WindowState::Get(top_window)->IsFullscreen()) {
     return false;
   }
 

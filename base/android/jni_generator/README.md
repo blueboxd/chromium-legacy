@@ -257,6 +257,14 @@ Please note that unlike @DisabledTest, you should not provide a message in the
 annotation as to why the test is disabled, as this will be interpreted as the
 inner class name by the CalledByNative jni generator.
 
+#### Feature flag support in @CalledByNativeJavaTest tests
+Features may be enabled/disabled for the Java test methods by using the
+@NativeJavaTestFeatures.Enabled or @NativeJavaTestFeatures.Disabled annotations.
+
+Note that these annotations will re-initialize the feature list given they
+initialize through the command line approach, and so will clear any features
+set by, say, test setup.
+
 ### Additional Guidelines / Advice
 
 Minimize the surface API between the two sides. Rather than calling multiple

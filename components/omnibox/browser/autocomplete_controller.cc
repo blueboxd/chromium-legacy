@@ -580,11 +580,16 @@ void AutocompleteController::UpdateResult(
        i != providers_.end(); ++i)
     result_.AppendMatches(input_, (*i)->matches());
 
-  if (OmniboxFieldTrial::IsPedalSuggestionsEnabled())
-    result_.AppendDedicatedPedalMatches(provider_client_.get(), input_);
-
   if (OmniboxFieldTrial::IsTabSwitchSuggestionsEnabled())
     result_.ConvertOpenTabMatches(provider_client_.get(), &input_);
+
+  if (OmniboxFieldTrial::IsPedalSuggestionsEnabled()) {
+    if (OmniboxFieldTrial::IsSuggestionButtonRowEnabled()) {
+      result_.ConvertInSuggestionPedalMatches(provider_client_.get());
+    } else {
+      result_.AppendDedicatedPedalMatches(provider_client_.get(), input_);
+    }
+  }
 
   // Sort the matches and trim to a small number of "best" matches.
   const AutocompleteMatch* preserve_default_match = nullptr;

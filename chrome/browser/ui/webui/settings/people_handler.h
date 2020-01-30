@@ -16,6 +16,7 @@
 #include "build/buildflag.h"
 #include "chrome/browser/ui/webui/settings/settings_page_ui_handler.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service.h"
+#include "components/history/core/browser/web_history_service.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/signin/public/base/signin_buildflags.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
@@ -186,6 +187,7 @@ class PeopleHandler : public SettingsPageUIHandler,
 
   void OnQueryHistoryRecordingCompletion(
       const std::string& webui_callback_id,
+      history::WebHistoryService::Request* request,
       const base::Optional<bool>& history_recording_enabled);
 
   void HandleGetStoredAccounts(const base::ListValue* args);
@@ -230,6 +232,11 @@ class PeopleHandler : public SettingsPageUIHandler,
 
   // Used to listen for pref changes to allow or disallow signin.
   PrefChangeRegistrar profile_pref_registrar_;
+
+  // Pending web and app activity requests to query whether history recording
+  // is enabled or not.
+  std::set<std::unique_ptr<history::WebHistoryService::Request>>
+      web_and_app_activity_requests_;
 
   // Manages observer lifetimes.
   ScopedObserver<signin::IdentityManager, signin::IdentityManager::Observer>

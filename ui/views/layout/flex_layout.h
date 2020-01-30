@@ -22,6 +22,7 @@
 
 namespace views {
 
+class NormalizedSize;
 class NormalizedSizeBounds;
 class View;
 
@@ -144,6 +145,21 @@ class VIEWS_EXPORT FlexLayout : public LayoutManagerBase {
   // to the indices of child views within that order that can flex.
   // See FlexSpecification::order().
   using FlexOrderToViewIndexMap = std::map<int, std::vector<size_t>>;
+
+  // Returns the preferred size for a given |rule| and |child| given unbounded
+  // space, with the caveat that for vertical layouts the horizontal axis is
+  // bounded to |available_cross| to factor in height-for-width considerations.
+  // This corresponds to the FlexSpecification "preferred size".
+  NormalizedSize GetPreferredSizeForRule(
+      const FlexRule& rule,
+      const View* child,
+      const base::Optional<int>& available_cross) const;
+
+  // Returns the size for a given |rule| and |child| with |available| space.
+  NormalizedSize GetCurrentSizeForRule(
+      const FlexRule& rule,
+      const View* child,
+      const NormalizedSizeBounds& available) const;
 
   // Fills out the child entries for |data| and generates some initial size
   // and visibility data, and stores off information about which views can

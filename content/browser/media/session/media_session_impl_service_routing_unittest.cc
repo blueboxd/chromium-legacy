@@ -64,6 +64,10 @@ class MockMediaSessionPlayerObserver : public MediaSessionPlayerObserver {
     position_ = position;
   }
 
+  bool IsPictureInPictureAvailable(int player_id) const override {
+    return false;
+  }
+
   RenderFrameHost* render_frame_host() const override {
     return render_frame_host_;
   }

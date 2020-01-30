@@ -108,10 +108,10 @@ PasswordGenerationPopupControllerImpl::PasswordGenerationPopupControllerImpl(
     content::RenderFrameHost* frame)
     : content::WebContentsObserver(web_contents),
       view_(nullptr),
-      form_(ui_data.password_form),
+      form_data_(ui_data.form_data),
       driver_(driver),
       observer_(observer),
-      form_signature_(autofill::CalculateFormSignature(form_.form_data)),
+      form_signature_(autofill::CalculateFormSignature(form_data_)),
       field_signature_(autofill::CalculateFieldSignatureByNameAndType(
           ui_data.generation_element,
           "password")),
@@ -194,7 +194,7 @@ void PasswordGenerationPopupControllerImpl::PasswordAccepted() {
     return;
 
   base::WeakPtr<PasswordGenerationPopupControllerImpl> weak_this = GetWeakPtr();
-  driver_->GeneratedPasswordAccepted(form_.form_data, generation_element_id_,
+  driver_->GeneratedPasswordAccepted(form_data_, generation_element_id_,
                                      current_password_);
   // |this| can be destroyed here because GeneratedPasswordAccepted pops up
   // another UI and generates some event to close the dropdown.

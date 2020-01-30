@@ -33,6 +33,7 @@
 #include "base/power_monitor/power_monitor_device_source.h"
 #include "base/process/process_metrics.h"
 #include "base/run_loop.h"
+#include "base/scoped_observer.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -441,21 +442,23 @@ class GpuDataManagerVisualProxy : public GpuDataManagerObserver {
  public:
   explicit GpuDataManagerVisualProxy(GpuDataManagerImpl* gpu_data_manager)
       : gpu_data_manager_(gpu_data_manager) {
-    gpu_data_manager_->AddObserver(this);
+    if (!base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kHeadless))
+      scoped_observer_.Add(gpu_data_manager_);
   }
 
-  ~GpuDataManagerVisualProxy() override {
-    gpu_data_manager_->RemoveObserver(this);
-  }
+  ~GpuDataManagerVisualProxy() override = default;
 
-  void OnGpuInfoUpdate() override {
-    if (base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kHeadless))
-      return;
+  void OnGpuInfoUpdate() override { OnUpdate(); }
+  void OnGpuExtraInfoUpdate() override { OnUpdate(); }
+
+ private:
+  void OnUpdate() {
     gpu::GPUInfo gpu_info = gpu_data_manager_->GetGPUInfo();
+    gpu::GpuExtraInfo gpu_extra_info = gpu_data_manager_->GetGpuExtraInfo();
     if (!ui::XVisualManager::GetInstance()->OnGPUInfoChanged(
             gpu_info.software_rendering ||
                 !gpu_data_manager_->GpuAccessAllowed(nullptr),
-            gpu_info.system_visual, gpu_info.rgba_visual)) {
+            gpu_extra_info.system_visual, gpu_extra_info.rgba_visual)) {
       // The GPU process sent back bad visuals, which should never happen.
       auto* gpu_process_host =
           GpuProcessHost::Get(GPU_PROCESS_KIND_SANDBOXED, false);
@@ -464,8 +467,10 @@ class GpuDataManagerVisualProxy : public GpuDataManagerObserver {
     }
   }
 
- private:
   GpuDataManagerImpl* gpu_data_manager_;
+
+  ScopedObserver<GpuDataManagerImpl, GpuDataManagerObserver> scoped_observer_{
+      this};
 
   DISALLOW_COPY_AND_ASSIGN(GpuDataManagerVisualProxy);
 };

@@ -77,15 +77,15 @@ void SupervisedUserNavigationObserver::OnRequestBlocked(
     supervised_user_error_page::FilteringBehaviorReason reason,
     int64_t navigation_id,
     int frame_id,
-    const base::Callback<
-        void(SupervisedUserNavigationThrottle::CallbackActions)>& callback) {
+    const OnInterstitialResultCallback& callback) {
   SupervisedUserNavigationObserver* navigation_observer =
       SupervisedUserNavigationObserver::FromWebContents(web_contents);
 
   // Cancel the navigation if there is no navigation observer.
   if (!navigation_observer) {
     callback.Run(
-        SupervisedUserNavigationThrottle::CallbackActions::kCancelNavigation);
+        SupervisedUserNavigationThrottle::CallbackActions::kCancelNavigation,
+        /* already_requested_permission */ false, /* is_main_frame */ false);
     return;
   }
 
@@ -172,6 +172,8 @@ void SupervisedUserNavigationObserver::OnURLFilterChanged() {
                      web_contents()->GetLastCommittedURL(),
                      main_frame_process_id, routing_id));
 
+  MaybeUpdateRequestedHosts();
+
   Profile* profile =
       Profile::FromBrowserContext(web_contents()->GetBrowserContext());
   SupervisedUserService* service =
@@ -194,8 +196,7 @@ void SupervisedUserNavigationObserver::OnRequestBlockedInternal(
     supervised_user_error_page::FilteringBehaviorReason reason,
     int64_t navigation_id,
     int frame_id,
-    const base::Callback<
-        void(SupervisedUserNavigationThrottle::CallbackActions)>& callback) {
+    const OnInterstitialResultCallback& callback) {
   // TODO(bauerb): Use SaneTime when available.
   base::Time timestamp = base::Time::Now();
   // Create a history entry for the attempt and mark it as such.  This history
@@ -273,16 +274,20 @@ void SupervisedUserNavigationObserver::MaybeShowInterstitial(
     bool initial_page_load,
     int64_t navigation_id,
     int frame_id,
-    const base::Callback<
-        void(SupervisedUserNavigationThrottle::CallbackActions)>& callback) {
+    const OnInterstitialResultCallback& callback) {
   std::unique_ptr<SupervisedUserInterstitial> interstitial =
       SupervisedUserInterstitial::Create(web_contents(), url, reason, frame_id,
                                          navigation_id);
 
   supervised_user_interstitials_[frame_id] = std::move(interstitial);
 
+  bool already_requested = base::Contains(requested_hosts_, url.host());
+  bool is_main_frame =
+      frame_id == web_contents()->GetMainFrame()->GetFrameTreeNodeId();
+
   callback.Run(SupervisedUserNavigationThrottle::CallbackActions::
-                   kCancelWithInterstitial);
+                   kCancelWithInterstitial,
+               already_requested, is_main_frame);
 }
 
 void SupervisedUserNavigationObserver::FilterRenderFrame(
@@ -321,8 +326,15 @@ void SupervisedUserNavigationObserver::RequestPermission(
   auto* render_frame_host = receiver_.GetCurrentTargetFrame();
   int id = render_frame_host->GetFrameTreeNodeId();
 
-  if (base::Contains(supervised_user_interstitials_, id))
-    supervised_user_interstitials_[id]->RequestPermission(std::move(callback));
+  if (base::Contains(supervised_user_interstitials_, id)) {
+    SupervisedUserInterstitial* interstitial =
+        supervised_user_interstitials_[id].get();
+
+    interstitial->RequestPermission(
+        base::BindOnce(&SupervisedUserNavigationObserver::RequestCreated,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback),
+                       interstitial->url().host()));
+  }
 }
 
 void SupervisedUserNavigationObserver::Feedback() {
@@ -331,6 +343,31 @@ void SupervisedUserNavigationObserver::Feedback() {
 
   if (base::Contains(supervised_user_interstitials_, id))
     supervised_user_interstitials_[id]->ShowFeedback();
+}
+
+void SupervisedUserNavigationObserver::RequestCreated(
+    RequestPermissionCallback callback,
+    const std::string& host,
+    bool successfully_created_request) {
+  if (successfully_created_request)
+    requested_hosts_.insert(host);
+  std::move(callback).Run(successfully_created_request);
+}
+
+void SupervisedUserNavigationObserver::MaybeUpdateRequestedHosts() {
+  SupervisedUserURLFilter::FilteringBehavior filtering_behavior;
+
+  for (auto iter = requested_hosts_.begin(); iter != requested_hosts_.end();) {
+    bool is_manual = url_filter_->GetManualFilteringBehaviorForURL(
+        GURL(*iter), &filtering_behavior);
+
+    if (is_manual && filtering_behavior ==
+                         SupervisedUserURLFilter::FilteringBehavior::ALLOW) {
+      iter = requested_hosts_.erase(iter);
+    } else {
+      iter++;
+    }
+  }
 }
 
 WEB_CONTENTS_USER_DATA_KEY_IMPL(SupervisedUserNavigationObserver)

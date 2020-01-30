@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/rand_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "build/build_config.h"
 #include "chrome/browser/sync/test/integration/feature_toggler.h"
 #include "chrome/browser/sync/test/integration/passwords_helper.h"
@@ -341,6 +342,7 @@ IN_PROC_BROWSER_TEST_P(TwoClientPasswordsSyncTest, E2E_ONLY(TwoClientAddPass)) {
 IN_PROC_BROWSER_TEST_P(TwoClientPasswordsSyncTest, AddImmediatelyAfterDelete) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   ASSERT_TRUE(AllProfilesContainSamePasswordFormsAsVerifier());
+  base::HistogramTester histogram_tester;
 
   PasswordForm form0 = CreateTestPasswordForm(0);
   AddLogin(GetVerifierPasswordStore(), form0);
@@ -355,6 +357,12 @@ IN_PROC_BROWSER_TEST_P(TwoClientPasswordsSyncTest, AddImmediatelyAfterDelete) {
 
   ASSERT_TRUE(SamePasswordFormsAsVerifierChecker(1).Wait());
   ASSERT_TRUE(AllProfilesContainSamePasswordFormsAsVerifier());
+  // There should be only one deletion. This is to test the bug
+  // (crbug.com/1046309) where the USS client was local deletions when receiving
+  // remote deletions.
+  EXPECT_EQ(
+      1, histogram_tester.GetBucketCount("Sync.ModelTypeEntityChange3.PASSWORD",
+                                         /*LOCAL_DELETION=*/0));
 }
 
 INSTANTIATE_TEST_SUITE_P(USS,

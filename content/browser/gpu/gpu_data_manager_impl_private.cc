@@ -877,6 +877,8 @@ void GpuDataManagerImplPrivate::UpdateGpuFeatureInfo(
 void GpuDataManagerImplPrivate::UpdateGpuExtraInfo(
     const gpu::GpuExtraInfo& gpu_extra_info) {
   gpu_extra_info_ = gpu_extra_info;
+  observer_list_->Notify(FROM_HERE,
+                         &GpuDataManagerObserver::OnGpuExtraInfoUpdate);
 }
 
 gpu::GpuFeatureInfo GpuDataManagerImplPrivate::GetGpuFeatureInfo() const {
@@ -957,10 +959,14 @@ void GpuDataManagerImplPrivate::UpdateGpuPreferences(
   // GpuMemoryBuffer if this is not native, see https://crbug.com/791676.
   if (auto* gpu_memory_buffer_manager =
           GpuMemoryBufferManagerSingleton::GetInstance()) {
+    // On X11, we do not know GpuMemoryBuffer configuration support until
+    // receiving the initial GPUInfo.
+#if !defined(USE_X11)
     gpu_preferences->disable_biplanar_gpu_memory_buffers_for_video_frames =
         !gpu_memory_buffer_manager->IsNativeGpuMemoryBufferConfiguration(
             gfx::BufferFormat::YUV_420_BIPLANAR,
             gfx::BufferUsage::GPU_READ_CPU_READ_WRITE);
+#endif
   }
 
   gpu_preferences->gpu_program_cache_size =

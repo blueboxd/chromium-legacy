@@ -19,11 +19,13 @@
 #include "chrome/browser/ui/views/tabs/tab_strip_controller.h"
 #include "chrome/browser/ui/views/tabs/tab_strip_layout.h"
 #include "chrome/browser/ui/views/tabs/tab_strip_types.h"
+#include "chrome/grit/generated_resources.h"
 #include "components/tab_groups/tab_group_color.h"
 #include "components/tab_groups/tab_group_id.h"
 #include "components/tab_groups/tab_group_visual_data.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkPath.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/geometry/insets.h"
@@ -199,15 +201,25 @@ void TabGroupHeader::OnGestureEvent(ui::GestureEvent* event) {
   event->SetHandled();
 }
 
+void TabGroupHeader::OnFocus() {
+  View::OnFocus();
+  tab_strip_->UpdateHoverCard(nullptr);
+}
+
 void TabGroupHeader::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   node_data->role = ax::mojom::Role::kTabList;
   node_data->AddState(ax::mojom::State::kEditable);
 
-  base::string16 name = tab_strip_->GetGroupTitle(group().value());
-  if (name.empty()) {
-    node_data->SetNameExplicitlyEmpty();
+  base::string16 title =
+      tab_strip_->controller()->GetGroupTitle(group().value());
+  base::string16 contents =
+      tab_strip_->controller()->GetGroupContentString(group().value());
+  if (title.empty()) {
+    node_data->SetName(l10n_util::GetStringFUTF16(
+        IDS_GROUP_AX_LABEL_UNNAMED_GROUP_FORMAT, contents));
   } else {
-    node_data->SetName(name);
+    node_data->SetName(l10n_util::GetStringFUTF16(
+        IDS_GROUP_AX_LABEL_NAMED_GROUP_FORMAT, title, contents));
   }
 }
 

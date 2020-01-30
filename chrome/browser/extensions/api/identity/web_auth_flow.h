@@ -95,6 +95,10 @@ class WebAuthFlow : public content::NotificationObserver,
   // Returns an ID string attached to the window. Can override for testing.
   virtual const std::string& GetAppWindowKey() const;
 
+  // Returns the URL used by the SiteInstance associated with the WebViewGuest
+  // used in the WebAuthFlow.
+  static GURL GetWebViewSiteURL();
+
  private:
   friend class ::WebAuthFlowTest;
 

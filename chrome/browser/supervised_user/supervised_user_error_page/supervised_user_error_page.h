@@ -26,6 +26,9 @@ int GetBlockMessageID(
     bool is_child_account,
     bool single_parent);
 
+// This function assumes that the error page will be displayed in the main
+// frame. It also assumes that there was no request already sent to access the
+// blocked url.
 std::string BuildHtml(bool allow_access_requests,
                       const std::string& profile_image_url,
                       const std::string& profile_image_url2,
@@ -37,6 +40,20 @@ std::string BuildHtml(bool allow_access_requests,
                       bool is_deprecated,
                       FilteringBehaviorReason reason,
                       const std::string& app_locale);
+
+std::string BuildHtml(bool allow_access_requests,
+                      const std::string& profile_image_url,
+                      const std::string& profile_image_url2,
+                      const std::string& custodian,
+                      const std::string& custodian_email,
+                      const std::string& second_custodian,
+                      const std::string& second_custodian_email,
+                      bool is_child_account,
+                      bool is_deprecated,
+                      FilteringBehaviorReason reason,
+                      const std::string& app_locale,
+                      bool already_sent_request,
+                      bool is_main_frame);
 
 }  //  namespace supervised_user_error_page
 

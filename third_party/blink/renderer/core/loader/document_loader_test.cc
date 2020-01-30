@@ -296,6 +296,23 @@ TEST_F(DocumentLoaderSimTest, ReportErrorWhenDocumentPolicyIncompatible) {
   EXPECT_EQ(child_document->Url(), SecurityOrigin::UrlWithUniqueOpaqueOrigin());
 }
 
+// HTTP header Require-Document-Policy should only take effect on subtree of
+// current document, but not on current document.
+TEST_F(DocumentLoaderSimTest,
+       RequireDocumentPolicyHeaderShouldNotAffectCurrentDocument) {
+  blink::ScopedDocumentPolicyForTest sdp(true);
+  SimRequest::Params params;
+  params.response_http_headers = {
+      {"Require-Document-Policy", "unoptimized-lossless-images;bpp=1.0"},
+      {"Document-Policy", "unoptimized-lossless-images;bpp=1.1"}};
+
+  SimRequest main_resource("https://example.com", "text/html", params);
+  LoadURL("https://example.com");
+  // If document is blocked by document policy because of incompatible document
+  // policy, this test will fail by crashing here.
+  main_resource.Finish();
+}
+
 TEST_F(DocumentLoaderTest, CommitsDeferredOnSameOriginNavigation) {
   const KURL& requestor_url =
       KURL(NullURL(), "https://www.example.com/foo.html");

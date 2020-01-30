@@ -101,6 +101,7 @@ class NGBoxFragmentPainter : public BoxPainterBase {
   void PaintBlockChildren(const PaintInfo&);
   void PaintInlineItems(const PaintInfo&,
                         const PhysicalOffset& paint_offset,
+                        const PhysicalOffset& parent_offset,
                         NGInlineCursor* cursor);
   void PaintLineBoxChildren(NGInlineCursor* children,
                             const PaintInfo&,
@@ -130,13 +131,15 @@ class NGBoxFragmentPainter : public BoxPainterBase {
                       const PhysicalOffset& paint_offset);
   void PaintTextItem(const NGInlineCursor& cursor,
                      const PaintInfo&,
-                     const PhysicalOffset& paint_offset);
+                     const PhysicalOffset& paint_offset,
+                     const PhysicalOffset& parent_offset);
   MoveTo PaintLineBoxItem(const NGFragmentItem& item,
                           const PaintInfo& paint_info,
                           const PhysicalOffset& paint_offset);
-  MoveTo PaintBoxItem(const NGFragmentItem& item,
-                      const PaintInfo& paint_info,
-                      const PhysicalOffset& paint_offset);
+  void PaintBoxItem(const NGFragmentItem& item,
+                    const NGInlineCursor& cursor,
+                    const PaintInfo& paint_info,
+                    const PhysicalOffset& paint_offset);
   void PaintFloatingChildren(const NGPhysicalContainerFragment&,
                              const PaintInfo& paint_info,
                              const PaintInfo& float_paint_info);

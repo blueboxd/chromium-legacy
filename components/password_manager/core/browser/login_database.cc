@@ -1588,12 +1588,6 @@ bool LoginDatabase::GetLogins(
     s.BindString(placeholder++, expression);
   }
 
-  if (!should_PSL_matching_apply && !should_federated_apply) {
-    // Otherwise the histogram is reported in StatementToForms.
-    UMA_HISTOGRAM_ENUMERATION("PasswordManager.PslDomainMatchTriggering",
-                              PSL_DOMAIN_MATCH_NOT_USED,
-                              PSL_DOMAIN_MATCH_COUNT);
-  }
   PrimaryKeyToFormMap key_to_form_map;
   FormRetrievalResult result = StatementToForms(
       &s, should_PSL_matching_apply || should_federated_apply ? &form : nullptr,
@@ -1985,8 +1979,6 @@ FormRetrievalResult LoginDatabase::StatementToForms(
     sql::Statement* statement,
     const PasswordStore::FormDigest* matched_form,
     PrimaryKeyToFormMap* key_to_form_map) {
-  PSLDomainMatchMetric psl_domain_match_metric = PSL_DOMAIN_MATCH_NONE;
-
   std::vector<PasswordForm> forms_to_be_deleted;
 
   key_to_form_map->clear();
@@ -2013,26 +2005,16 @@ FormRetrievalResult LoginDatabase::StatementToForms(
         case MatchResult::NO_MATCH:
           continue;
         case MatchResult::EXACT_MATCH:
-          break;
-        case MatchResult::PSL_MATCH:
-          psl_domain_match_metric = PSL_DOMAIN_MATCH_FOUND;
-          new_form->is_public_suffix_match = true;
-          break;
         case MatchResult::FEDERATED_MATCH:
           break;
+        case MatchResult::PSL_MATCH:
         case MatchResult::FEDERATED_PSL_MATCH:
-          psl_domain_match_metric = PSL_DOMAIN_MATCH_FOUND_FEDERATED;
           new_form->is_public_suffix_match = true;
           break;
       }
     }
 
     key_to_form_map->emplace(primary_key, std::move(new_form));
-  }
-
-  if (matched_form) {
-    UMA_HISTOGRAM_ENUMERATION("PasswordManager.PslDomainMatchTriggering",
-                              psl_domain_match_metric, PSL_DOMAIN_MATCH_COUNT);
   }
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)

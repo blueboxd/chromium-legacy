@@ -85,12 +85,6 @@ DOM_CODE_DECLARATION {
   //            USB     evdev    XKB     Win     Mac   Code
   DOM_CODE(0x000000, 0x0000, 0x0000, 0x0000, 0xffff, NULL, NONE), // Invalid
 
-#if defined(OS_ANDROID)
-#define DOM_CODE_ANDROID
-#include "ui/events/keycodes/dom/keycode_conversion_data_android_generated.inc"
-#undef DOM_CODE_ANDROID
-#endif
-
   // =========================================
   // Non-USB codes
   // =========================================

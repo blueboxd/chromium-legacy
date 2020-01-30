@@ -257,9 +257,7 @@ SafeBrowsingService::GetVerdictCacheManagerWeakPtr(Profile* profile) const {
 
 BinaryUploadService* SafeBrowsingService::GetBinaryUploadService(
     Profile* profile) const {
-  if (profile->GetPrefs()->GetBoolean(prefs::kSafeBrowsingEnabled))
-    return services_delegate_->GetBinaryUploadService(profile);
-  return nullptr;
+  return services_delegate_->GetBinaryUploadService(profile);
 }
 
 std::string SafeBrowsingService::GetProtocolConfigClientName() const {

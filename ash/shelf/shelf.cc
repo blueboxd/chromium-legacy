@@ -329,6 +329,10 @@ ShelfVisibilityState Shelf::GetVisibilityState() const {
                                : SHELF_HIDDEN;
 }
 
+gfx::Rect Shelf::GetShelfBoundsInScreen() const {
+  return shelf_layout_manager_->GetShelfBoundsInScreen();
+}
+
 gfx::Rect Shelf::GetIdealBounds() const {
   return shelf_layout_manager_->GetIdealBounds();
 }

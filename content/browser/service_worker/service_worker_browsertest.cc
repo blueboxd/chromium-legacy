@@ -750,7 +750,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBrowserTest, IdleTimerWithDevTools) {
             // In production code, WakeUp() as the result of
             // RequestTermination() doesn't happen when the idle timer delay is
             // set to zero. Instead, activating a new worker will be triggered.
-            version->endpoint()->SetIdleTimerDelayToZero();
+            version->endpoint()->SetIdleDelay(base::TimeDelta::FromSeconds(0));
             std::move(done).Run();
           },
           loop.QuitClosure(), base::Unretained(wrapper()),

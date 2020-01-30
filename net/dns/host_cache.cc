@@ -934,7 +934,7 @@ const HostCache::Key* HostCache::GetMatchingKey(
     HostCache::Entry::Source* source_out,
     HostCache::EntryStaleness* stale_out) {
   net::HostCache::Key cache_key;
-  hostname.CopyToString(&cache_key.hostname);
+  cache_key.hostname = std::string(hostname);
 
   const std::pair<const HostCache::Key, HostCache::Entry>* cache_result =
       LookupStale(cache_key, tick_clock_->NowTicks(), stale_out,

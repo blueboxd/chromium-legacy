@@ -6,6 +6,7 @@
 <org.chromium.chrome.browser.toolbar.top.StartSurfaceToolbarView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/tab_switcher_toolbar"
     android:layout_width="match_parent"
     android:layout_height="@dimen/toolbar_height_no_shadow"
@@ -47,12 +48,14 @@
         android:paddingEnd="8dp"
         android:contentDescription="@string/accessibility_toolbar_btn_new_tab" />
 
-    <include
-        layout="@layout/experimental_toolbar_button"
-        android:id="@+id/experimental_toolbar_button_start"
+    <org.chromium.ui.widget.ChromeImageButton
+        android:id="@+id/identity_disc_button"
         android:layout_toStartOf="@+id/menu_anchor"
+        android:paddingStart="@dimen/start_surface_toolbar_button_padding_to_button"
+        android:paddingEnd="@dimen/start_surface_toolbar_button_padding_to_button"
         style="@style/ToolbarButton"
-        android:visibility="gone" />
+        android:visibility="gone"
+        tools:ignore="ContentDescription"/>
 
     <FrameLayout
       android:id="@+id/menu_anchor"

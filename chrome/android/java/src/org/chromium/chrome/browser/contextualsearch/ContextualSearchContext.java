@@ -279,14 +279,10 @@ public abstract class ContextualSearchContext {
     }
 
     /**
-     * Specifies that this resolve must return a non-expanding result.
+     * Specifies that this search must be exact so the resolve must return a non-expanding result.
      */
-    void setRestrictedResolve() {
-        // TODO(donnd): Improve by sending full context plus a boolean.
-        mSurroundingText = mInitialSelectedWord;
-        mSelectionStartOffset = 0;
-        mSelectionEndOffset = mSurroundingText.length();
-        ContextualSearchContextJni.get().restrictResolve(mNativePointer, this);
+    void setExactResolve() {
+        ContextualSearchContextJni.get().setExactResolve(mNativePointer, this);
     }
 
     /**
@@ -584,6 +580,6 @@ public abstract class ContextualSearchContext {
         void setContent(long nativeContextualSearchContext, ContextualSearchContext caller,
                 String content, int selectionStart, int selectionEnd);
         String detectLanguage(long nativeContextualSearchContext, ContextualSearchContext caller);
-        void restrictResolve(long nativeContextualSearchContext, ContextualSearchContext caller);
+        void setExactResolve(long nativeContextualSearchContext, ContextualSearchContext caller);
     }
 }

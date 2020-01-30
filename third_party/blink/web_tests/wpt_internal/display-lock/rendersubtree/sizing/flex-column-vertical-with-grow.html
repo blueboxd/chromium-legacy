@@ -19,7 +19,7 @@
   writing-mode: vertical-rl;
 }
 #container {
-  intrinsic-size: 12px 34px;
+  contain-intrinsic-size: 12px 34px;
   flex-grow: 3;
 }
 .item {
@@ -29,7 +29,7 @@
   flex-grow: 1;
 }
 div:not([rendersubtree~="invisible"]) {
-  intrinsic-size: legacy !important;
+  contain-intrinsic-size: legacy !important;
 }
 </style>
 

@@ -166,21 +166,44 @@ class Dependency:
     return 'import \'%s\';' % self.js_path
 
 
-def _extract_dependencies(html_file):
+def _generate_js_imports(html_file):
+  output = []
+  imports_end_index = -1
+  imports_found = False
   with io.open(html_file, encoding='utf-8', mode='r') as f:
     lines = f.readlines()
     deps = []
-    for line in lines:
+    for i, line in enumerate(lines):
       match = re.search(r'\s*<link rel="import" href="(.*)"', line)
       if match:
-        deps.append(match.group(1))
-  return deps;
+        if not imports_found:
+          imports_found = True
+          # Include the previous line if it is an opening <if> tag.
+          if (i > 0):
+            previous_line = lines[i - 1]
+            if re.search(r'^\s*<if', previous_line):
+              previous_line = '// ' + previous_line
+              output.append(previous_line.rstrip('\n'))
 
+        imports_end_index = i
 
-def _generate_js_imports(html_file):
-  return map(
-      lambda dep: Dependency(html_file, dep).to_js_import(_auto_imports),
-      _extract_dependencies(html_file))
+        # Convert HTML import URL to equivalent JS import URL.
+        dep = Dependency(html_file, match.group(1)).to_js_import(_auto_imports)
+        output.append(dep)
+
+      elif imports_found:
+        if re.search(r'^\s*</?if', line):
+          line = '// ' + line
+        output.append(line.rstrip('\n'))
+
+  if len(output) == 0:
+    return output
+
+  # Include the next line if it is a closing </if> tag.
+  if re.search(r'^// \s*</if>', output[imports_end_index + 1]):
+    imports_end_index += 1
+
+  return output[0:imports_end_index + 1]
 
 
 def _extract_dom_module_id(html_file):

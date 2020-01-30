@@ -38,6 +38,12 @@ import java.util.List;
 public class AssistantCollectUserDataModel extends PropertyModel {
     // TODO(crbug.com/806868): Add |setSelectedLogin|.
 
+    /** Options specifying how to summarize an {@code AutofillContact}. */
+    public static class ContactDescriptionOptions {
+        public @AssistantContactField int[] mFields;
+        public int mMaxNumberLines;
+    }
+
     public static final WritableObjectPropertyKey<AssistantCollectUserDataDelegate> DELEGATE =
             new WritableObjectPropertyKey<>();
 
@@ -119,19 +125,40 @@ public class AssistantCollectUserDataModel extends PropertyModel {
     public static final WritableBooleanPropertyKey REQUEST_DATE_RANGE =
             new WritableBooleanPropertyKey();
 
-    public static final WritableObjectPropertyKey<AssistantDateChoiceOptions> DATE_RANGE_START =
+    public static final WritableObjectPropertyKey<AssistantDateChoiceOptions>
+            DATE_RANGE_START_OPTIONS = new WritableObjectPropertyKey<>();
+
+    public static final WritableObjectPropertyKey<AssistantDateTime> DATE_RANGE_START_DATE =
             new WritableObjectPropertyKey<>();
 
-    public static final WritableObjectPropertyKey<String> DATE_RANGE_START_LABEL =
+    public static final WritableObjectPropertyKey<Integer> DATE_RANGE_START_TIMESLOT =
             new WritableObjectPropertyKey<>();
 
-    public static final WritableObjectPropertyKey<AssistantDateChoiceOptions> DATE_RANGE_END =
+    public static final WritableObjectPropertyKey<String> DATE_RANGE_START_DATE_LABEL =
             new WritableObjectPropertyKey<>();
 
-    public static final WritableObjectPropertyKey<String> DATE_RANGE_END_LABEL =
+    public static final WritableObjectPropertyKey<String> DATE_RANGE_START_TIME_LABEL =
             new WritableObjectPropertyKey<>();
 
-    public static final WritableObjectPropertyKey<String> DATE_RANGE_INVALID_ERROR_MESSAGE =
+    public static final WritableObjectPropertyKey<AssistantDateChoiceOptions>
+            DATE_RANGE_END_OPTIONS = new WritableObjectPropertyKey<>();
+
+    public static final WritableObjectPropertyKey<AssistantDateTime> DATE_RANGE_END_DATE =
+            new WritableObjectPropertyKey<>();
+
+    public static final WritableObjectPropertyKey<Integer> DATE_RANGE_END_TIMESLOT =
+            new WritableObjectPropertyKey<>();
+
+    public static final WritableObjectPropertyKey<String> DATE_RANGE_END_DATE_LABEL =
+            new WritableObjectPropertyKey<>();
+
+    public static final WritableObjectPropertyKey<String> DATE_RANGE_END_TIME_LABEL =
+            new WritableObjectPropertyKey<>();
+
+    public static final WritableObjectPropertyKey<String> DATE_RANGE_DATE_NOT_SET_ERROR_MESSAGE =
+            new WritableObjectPropertyKey<>();
+
+    public static final WritableObjectPropertyKey<String> DATE_RANGE_TIME_NOT_SET_ERROR_MESSAGE =
             new WritableObjectPropertyKey<>();
 
     public static final WritableObjectPropertyKey<List<AssistantAdditionalSectionFactory>>
@@ -152,6 +179,12 @@ public class AssistantCollectUserDataModel extends PropertyModel {
     public static final WritableObjectPropertyKey<View> GENERIC_USER_INTERFACE =
             new WritableObjectPropertyKey<>();
 
+    public static final WritableObjectPropertyKey<ContactDescriptionOptions>
+            CONTACT_SUMMARY_DESCRIPTION_OPTIONS = new WritableObjectPropertyKey<>();
+
+    public static final WritableObjectPropertyKey<ContactDescriptionOptions>
+            CONTACT_FULL_DESCRIPTION_OPTIONS = new WritableObjectPropertyKey<>();
+
     public AssistantCollectUserDataModel() {
         super(DELEGATE, WEB_CONTENTS, VISIBLE, SELECTED_SHIPPING_ADDRESS,
                 SELECTED_PAYMENT_INSTRUMENT, SELECTED_CONTACT_DETAILS, LOGIN_SECTION_TITLE,
@@ -161,11 +194,14 @@ public class AssistantCollectUserDataModel extends PropertyModel {
                 AVAILABLE_CONTACTS, AVAILABLE_SHIPPING_ADDRESSES, AVAILABLE_PAYMENT_INSTRUMENTS,
                 SUPPORTED_BASIC_CARD_NETWORKS, AVAILABLE_LOGINS, EXPANDED_SECTION,
                 REQUIRE_BILLING_POSTAL_CODE, BILLING_POSTAL_CODE_MISSING_TEXT,
-                CREDIT_CARD_EXPIRED_TEXT, REQUEST_DATE_RANGE, DATE_RANGE_START,
-                DATE_RANGE_START_LABEL, DATE_RANGE_END, DATE_RANGE_END_LABEL,
-                DATE_RANGE_INVALID_ERROR_MESSAGE, PREPENDED_SECTIONS, APPENDED_SECTIONS,
-                TERMS_REQUIRE_REVIEW_TEXT, PRIVACY_NOTICE_TEXT, INFO_SECTION_TEXT,
-                GENERIC_USER_INTERFACE);
+                CREDIT_CARD_EXPIRED_TEXT, REQUEST_DATE_RANGE, DATE_RANGE_START_OPTIONS,
+                DATE_RANGE_START_DATE, DATE_RANGE_START_TIMESLOT, DATE_RANGE_START_DATE_LABEL,
+                DATE_RANGE_START_TIME_LABEL, DATE_RANGE_END_OPTIONS, DATE_RANGE_END_DATE,
+                DATE_RANGE_END_TIMESLOT, DATE_RANGE_END_DATE_LABEL, DATE_RANGE_END_TIME_LABEL,
+                DATE_RANGE_DATE_NOT_SET_ERROR_MESSAGE, DATE_RANGE_TIME_NOT_SET_ERROR_MESSAGE,
+                PREPENDED_SECTIONS, APPENDED_SECTIONS, TERMS_REQUIRE_REVIEW_TEXT,
+                PRIVACY_NOTICE_TEXT, INFO_SECTION_TEXT, GENERIC_USER_INTERFACE,
+                CONTACT_SUMMARY_DESCRIPTION_OPTIONS, CONTACT_FULL_DESCRIPTION_OPTIONS);
 
         /**
          * Set initial state for basic type properties (others are implicitly null).
@@ -180,8 +216,6 @@ public class AssistantCollectUserDataModel extends PropertyModel {
         set(REQUEST_SHIPPING_ADDRESS, false);
         set(REQUEST_LOGIN_CHOICE, false);
         set(REQUIRE_BILLING_POSTAL_CODE, false);
-        set(DATE_RANGE_START_LABEL, "");
-        set(DATE_RANGE_END_LABEL, "");
         set(PREPENDED_SECTIONS, Collections.emptyList());
         set(APPENDED_SECTIONS, Collections.emptyList());
         set(AVAILABLE_PAYMENT_INSTRUMENTS, Collections.emptyList());
@@ -329,35 +363,90 @@ public class AssistantCollectUserDataModel extends PropertyModel {
 
     /** Configures the start of the date/time range. */
     @CalledByNative
-    private void setDateTimeRangeStart(AssistantDateTime initialValue, AssistantDateTime minValue,
-            AssistantDateTime maxValue) {
+    private void setDateTimeRangeStartOptions(
+            AssistantDateTime minDate, AssistantDateTime maxDate, String[] timeSlots) {
         AssistantDateChoiceOptions options =
-                new AssistantDateChoiceOptions(initialValue, minValue, maxValue);
-        set(DATE_RANGE_START, options);
+                new AssistantDateChoiceOptions(minDate, maxDate, Arrays.asList(timeSlots));
+        set(DATE_RANGE_START_OPTIONS, options);
     }
 
     /** Configures the end of the date/time range. */
     @CalledByNative
-    private void setDateTimeRangeEnd(AssistantDateTime initialValue, AssistantDateTime minValue,
-            AssistantDateTime maxValue) {
+    private void setDateTimeRangeEndOptions(
+            AssistantDateTime minDate, AssistantDateTime maxDate, String[] timeSlots) {
         AssistantDateChoiceOptions options =
-                new AssistantDateChoiceOptions(initialValue, minValue, maxValue);
-        set(DATE_RANGE_END, options);
+                new AssistantDateChoiceOptions(minDate, maxDate, Arrays.asList(timeSlots));
+        set(DATE_RANGE_END_OPTIONS, options);
     }
 
     @CalledByNative
-    private void setDateTimeRangeStartLabel(String label) {
-        set(DATE_RANGE_START_LABEL, label);
+    private void setDateTimeRangeStartDate(AssistantDateTime date) {
+        set(DATE_RANGE_START_DATE, date);
     }
 
     @CalledByNative
-    private void setDateTimeRangeEndLabel(String label) {
-        set(DATE_RANGE_END_LABEL, label);
+    private void setDateTimeRangeStartTimeSlot(int timeSlot) {
+        set(DATE_RANGE_START_TIMESLOT, timeSlot);
     }
 
     @CalledByNative
-    private void setDateRangeInvalidErrorMessage(String error) {
-        set(DATE_RANGE_INVALID_ERROR_MESSAGE, error);
+    private void setDateTimeRangeEndDate(AssistantDateTime date) {
+        set(DATE_RANGE_END_DATE, date);
+    }
+
+    @CalledByNative
+    private void setDateTimeRangeEndTimeSlot(int timeSlot) {
+        set(DATE_RANGE_END_TIMESLOT, timeSlot);
+    }
+
+    @CalledByNative
+    private void clearDateTimeRangeStartDate() {
+        set(DATE_RANGE_START_DATE, null);
+    }
+
+    @CalledByNative
+    private void clearDateTimeRangeStartTimeSlot() {
+        set(DATE_RANGE_START_TIMESLOT, null);
+    }
+
+    @CalledByNative
+    private void clearDateTimeRangeEndDate() {
+        set(DATE_RANGE_END_DATE, null);
+    }
+
+    @CalledByNative
+    private void clearDateTimeRangeEndTimeSlot() {
+        set(DATE_RANGE_END_TIMESLOT, null);
+    }
+
+    @CalledByNative
+    private void setDateTimeRangeStartDateLabel(String label) {
+        set(DATE_RANGE_START_DATE_LABEL, label);
+    }
+
+    @CalledByNative
+    private void setDateTimeRangeStartTimeLabel(String label) {
+        set(DATE_RANGE_START_TIME_LABEL, label);
+    }
+
+    @CalledByNative
+    private void setDateTimeRangeEndDateLabel(String label) {
+        set(DATE_RANGE_END_DATE_LABEL, label);
+    }
+
+    @CalledByNative
+    private void setDateTimeRangeEndTimeLabel(String label) {
+        set(DATE_RANGE_END_TIME_LABEL, label);
+    }
+
+    @CalledByNative
+    private void setDateTimeRangeDateNotSetErrorMessage(String message) {
+        set(DATE_RANGE_DATE_NOT_SET_ERROR_MESSAGE, message);
+    }
+
+    @CalledByNative
+    private void setDateTimeRangeTimeNotSetErrorMessage(String message) {
+        set(DATE_RANGE_TIME_NOT_SET_ERROR_MESSAGE, message);
     }
 
     @CalledByNative
@@ -524,5 +613,24 @@ public class AssistantCollectUserDataModel extends PropertyModel {
     @CalledByNative
     private void setGenericUserInterface(@Nullable View userInterface) {
         set(GENERIC_USER_INTERFACE, userInterface);
+    }
+
+    @CalledByNative
+    private static ContactDescriptionOptions createContactDescriptionOptions(
+            @AssistantContactField int[] fields, int maxNumberLines) {
+        ContactDescriptionOptions options = new ContactDescriptionOptions();
+        options.mFields = fields;
+        options.mMaxNumberLines = maxNumberLines;
+        return options;
+    }
+
+    @CalledByNative
+    private void setContactSummaryDescriptionOptions(ContactDescriptionOptions options) {
+        set(CONTACT_SUMMARY_DESCRIPTION_OPTIONS, options);
+    }
+
+    @CalledByNative
+    private void setContactFullDescriptionOptions(ContactDescriptionOptions options) {
+        set(CONTACT_FULL_DESCRIPTION_OPTIONS, options);
     }
 }

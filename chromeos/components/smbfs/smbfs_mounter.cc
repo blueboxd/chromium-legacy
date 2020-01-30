@@ -21,6 +21,15 @@ constexpr char kMountUrlPrefix[] = "smbfs://";
 constexpr base::TimeDelta kMountTimeout = base::TimeDelta::FromSeconds(20);
 }  // namespace
 
+SmbFsMounter::KerberosOptions::KerberosOptions(Source source,
+                                               const std::string& identity)
+    : source(source), identity(identity) {
+  DCHECK(source == Source::kActiveDirectory || source == Source::kKerberos);
+  DCHECK(!identity.empty());
+}
+
+SmbFsMounter::KerberosOptions::~KerberosOptions() = default;
+
 SmbFsMounter::MountOptions::MountOptions() = default;
 
 SmbFsMounter::MountOptions::MountOptions(const MountOptions&) = default;
@@ -124,7 +133,12 @@ void SmbFsMounter::OnMountDone(
   mount_options->workgroup = options_.workgroup;
   mount_options->allow_ntlm = options_.allow_ntlm;
 
-  if (!options_.password.empty()) {
+  if (options_.kerberos_options) {
+    mojom::KerberosConfigPtr kerberos_config = mojom::KerberosConfig::New();
+    kerberos_config->source = options_.kerberos_options->source;
+    kerberos_config->identity = options_.kerberos_options->identity;
+    mount_options->kerberos_config = std::move(kerberos_config);
+  } else if (!options_.password.empty()) {
     if (options_.password.size() > mojom::Password::kMaxLength) {
       LOG(WARNING) << "smbfs password too long";
       ProcessMountError(mojom::MountError::kUnknown);

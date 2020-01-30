@@ -38,6 +38,6 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="@dimen/navigation_popup_default_padding"
         android:minHeight="@dimen/navigation_popup_item_height"
-        android:textAppearance="@style/TextAppearance.BlackTitle1"
+        android:textAppearance="@style/TextAppearance.TextLarge.Primary"
         android:singleLine="true"/>
 </LinearLayout>

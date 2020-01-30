@@ -106,8 +106,9 @@ Polymer({
   },
 
   /**
-   * @param {string|!chromeos.networkConfig.mojom.NetworkCertificate} item
-   * @return {string}
+   * @param {string|number|!chromeos.networkConfig.mojom.NetworkCertificate}
+   *     item
+   * @return {string|number}
    * @private
    */
   getItemValue_(item) {
@@ -116,7 +117,7 @@ Polymer({
                  item)
           .hash;
     }
-    return /** @type {string} */ (item);
+    return /** @type {string|number}*/ (item);
   },
 
   /**

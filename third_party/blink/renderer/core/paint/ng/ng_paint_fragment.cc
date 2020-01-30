@@ -139,7 +139,9 @@ LogicalRect ExpandSelectionRectToLineHeight(const LogicalRect& rect,
   NGInlineCursor line(cursor);
   line.MoveToContainingLine();
   const PhysicalRect line_physical_rect(
-      line.CurrentOffset() - cursor.CurrentOffset(), line.CurrentSize());
+      line.Current().OffsetInContainerBlock() -
+          cursor.Current().OffsetInContainerBlock(),
+      line.Current().Size());
   return ExpandSelectionRectToLineHeight(
       rect, ComputeLogicalRectFor(line_physical_rect, cursor));
 }
@@ -758,7 +760,7 @@ base::Optional<PhysicalRect> NGPaintFragment::LocalVisualRectFor(
     if (fragment->PhysicalFragment().IsHiddenForPaint())
       continue;
     PhysicalRect child_visual_rect = fragment->SelfInkOverflow();
-    child_visual_rect.offset += fragment->InlineOffsetToContainerBox();
+    child_visual_rect.offset += fragment->OffsetInContainerBlock();
     visual_rect.Unite(child_visual_rect);
   }
   return visual_rect;
@@ -943,7 +945,7 @@ PhysicalRect ComputeLocalSelectionRectForText(
 PhysicalRect ComputeLocalSelectionRectForReplaced(
     const NGInlineCursor& cursor) {
   DCHECK(cursor.CurrentLayoutObject()->IsLayoutReplaced());
-  const PhysicalRect selection_rect = PhysicalRect({}, cursor.CurrentSize());
+  const PhysicalRect selection_rect = PhysicalRect({}, cursor.Current().Size());
   LogicalRect logical_rect = ComputeLogicalRectFor(selection_rect, cursor);
   const LogicalRect line_height_expanded_rect =
       ExpandSelectionRectToLineHeight(logical_rect, cursor);

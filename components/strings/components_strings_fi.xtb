@@ -428,7 +428,6 @@
 <translation id="2799223571221894425">Käynnistä uudelleen</translation>
 <translation id="2803306138276472711">Google-selaussuoja havaitsi sivustossa <ph name="SITE" /> äskettäin <ph name="BEGIN_LINK" />haittaohjelmia<ph name="END_LINK" />. Tavallisesti turvalliset sivustot voivat joskus saada haittaohjelmatartunnan.</translation>
 <translation id="2807052079800581569">Kuvan Y sijainti</translation>
-<translation id="2809804249696361569">Molemmat sivut</translation>
 <translation id="2824775600643448204">Osoite- ja hakupalkki</translation>
 <translation id="2826760142808435982">Yhteys on salattu ja todennettu <ph name="CIPHER" />:n avulla ja se käyttää menetelmää <ph name="KX" /> avainvaihtomekanismina.</translation>
 <translation id="2835170189407361413">Tyhjennä lomake</translation>
@@ -938,7 +937,6 @@
 <translation id="5112422516732747637">A5</translation>
 <translation id="5115216390227830982">Eurooppalainen-Edp</translation>
 <translation id="5115563688576182185">(64-bittinen)</translation>
-<translation id="5121469660360593280">Jaa järjestelmänvalvojalle dataa Chrome Enterprisen käyttäjäsuojan merkitsemistä tietoturvatapahtumista. Tämä voi sisältää avaamiesi sivujen URL-osoitteita, tiedostonimiä tai sisällönkuvaustietoja ja käyttäjänimen, jolla kirjaudut sisään laitteellesi ja Chromeen.</translation>
 <translation id="5123063207673082822">Viikonloppu</translation>
 <translation id="5125394840236832993">B-Plus</translation>
 <translation id="5126510351761255129">Vahvista kortti</translation>
@@ -953,7 +951,6 @@
 <translation id="5161506081086828129">Pinoaja 9</translation>
 <translation id="516920405563544094">Anna kortin <ph name="CREDIT_CARD" /> CVC. Vahvistamisen jälkeen korttitiedot Google-tililtäsi jaetaan tämän sivuston kanssa.</translation>
 <translation id="5169827969064885044">Voit menettää organisaatiosi tilin käyttöoikeuden tai joutua identiteettivarkauden uhriksi. Chrome suosittelee vaihtamaan salasanan välittömästi.</translation>
-<translation id="5170017743895942767">Chrome Enterprisen käyttäjäsuojaus</translation>
 <translation id="5171045022955879922">Kirjoita hakusanoja tai URL-osoite</translation>
 <translation id="5171689220826475070">European Fanfold</translation>
 <translation id="5172758083709347301">Kaikki tietokoneen käyttäjät</translation>
@@ -1086,7 +1083,6 @@
 <translation id="5737183892635480227">{NUM_CARDS,plural, =1{Tallenna kortti Google-tilillesi}other{Tallenna kortit Google-tilillesi}}</translation>
 <translation id="5745980000221562234">{NUM_CARDS,plural, =1{Käytä tämän kortin kanssa virtuaalinumeroa}other{Valitse kortti}}</translation>
 <translation id="5763042198335101085">Anna voimassa oleva sähköpostiosoite.</translation>
-<translation id="5763703224595565476">Järjestelmänvalvoja on ottanut Chrome Enterprisen käyttäjäsuojan käyttöön selaimellasi. Chrome Enterprisen käyttäjäsuoja pääsee osaan datastasi.</translation>
 <translation id="5765072501007116331">Valitse osoite, niin näet toimitustavat ja vaatimukset.</translation>
 <translation id="5776313857861697733">Tärkeät</translation>
 <translation id="5778550464785688721">MIDI-laitteiden täysi käyttöoikeus</translation>
@@ -1423,7 +1419,6 @@ Lisätietoja:
 <translation id="733923710415886693">Palvelimen varmenteesta ei ole saatu Certificate Transparencyn vaatimia tietoja.</translation>
 <translation id="734600844861828519">11x15</translation>
 <translation id="7346048084945669753">On yhdistetty:</translation>
-<translation id="73479065977517481"><ph name="ENROLLMENT_DOMAIN" /> otti Chrome Enterprisen käyttäjäsuojan käyttöön selaimellesi. Chrome Enterprisen käyttäjäsuoja pääsee osaan datastasi.</translation>
 <translation id="7349430561505560861">A4-ekstra</translation>
 <translation id="7353601530677266744">Komentorivi</translation>
 <translation id="7372973238305370288">hakutulos</translation>

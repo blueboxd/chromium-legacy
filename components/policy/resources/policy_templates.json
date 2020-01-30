@@ -18699,6 +18699,57 @@
       '''
     },
     {
+      'name': 'BlockUnsupportedFiletypes',
+      'owners': ['rogerta@chromium.org', 'mad@chromium.org'],
+      'type': 'int-enum',
+      'schema': {
+        'type': 'integer',
+        'enum': [ 0, 1, 2, 3 ],
+      },
+      'items': [
+        {
+          'name': 'Block-unsupported-filetypes-none',
+          'value': 0,
+          'caption': '''Do not block unsupported filetypes''',
+        },
+        {
+          'name': 'Block-unsupported-filetypes-downloads',
+          'value': 1,
+          'caption': '''Block download of unsupported filetypes''',
+        },
+        {
+          'name': 'Block-unsupported-filetypes-uploads',
+          'value': 2,
+          'caption': '''Block upload of unsupported filetypes''',
+        },
+        {
+          'name': 'Block-unsupported-filetypes-uploads-and-downloads',
+          'value': 3,
+          'caption': '''Block uploads and downloads of unsupported filetypes''',
+        },
+      ],
+      'example_value': 0,
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': False,
+      },
+      'id': 668,
+      'supported_on': ['chrome.*:81-', 'chrome_os:81-'],
+      'future': True,
+      'caption': '''Block users from uploading or downloading files that are presently unsupported for a DLP or malware scan.''',
+      'tags': [],
+      'desc': '''Controls how <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> handles data that is uploaded, downloaded, pasted from the clipboard, or dragged and dropped that have unsupported filetypes regarding DLP or malware scan.
+
+      If this policy is not set or set to 'Block unsupported filetypes none' (0), <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> allows upload or download for data with unsupported filetypes regarding DLP or malware scan.
+
+      If this policy is set to 'Block unsupported filetypes downloads' (1) and the user attempts to download a file from a URL in the <ph name="DOMAINS_TO_CHECK_COMPLIANCE_OF_DOWNLOADED_CONTENT_POLICTY_NAME">URLsToCheckComplianceOfDownloadedContent</ph> policy and has unsupported filetypes regarding DLP or malware scan, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will block the data downloaded.
+
+      If this policy is set to 'Block unsupported filetypes uploads' (2) and the user attempts to upload a file to a domain not in the <ph name="DOMAINS_TO_NOT_CHECK_COMPLIANCE_OF_UPLOADED_CONTENT_POLICY_NAME">URLsToNotCheckComplianceOfUploadedContent</ph> and the file has unsupported filetype regarding DLP or malware scan, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will block the file uploaded, data pasted from the clipboard, or data dragged and dropped.
+
+      If this policy is set to 'Block unsupported filetypes uploads and downloads' (3), <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> behaves according to the rules described under 'Block unsupported filetypes uploads' and 'Block unsupported filetypes downloads'.
+      '''
+    },
+    {
       'name': 'CheckContentCompliance',
       'owners': ['rogerta@chromium.org', 'mad@chromium.org'],
       'type': 'int-enum',
@@ -19510,7 +19561,8 @@
       'desc': '''This policy controls the treatment for mixed content (HTTP content in HTTPS sites) in the browser.
        If the policy is set to true or unset, audio and video mixed content will be autoupgraded to HTTPS (i.e. the URL will be rewritten as HTTPS, without a fallback if the resource is not available over HTTPS) and a 'Not Secure' warning will be shown in the URL bar for image mixed content.
        If the policy is set to false, autoupgrades will be disabled for audio and video, and no warning will be shown for images.
-       This policy does not affect other types of mixed content other than audio, video, and images.''',
+       This policy does not affect other types of mixed content other than audio, video, and images.
+       This policy will no longer take effect starting in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> 84.''',
     },
     {
       'name': 'PerAppTimeLimitsWhitelist',
@@ -19619,6 +19671,22 @@
 
       When this policy is disabled, any calls to screen-share APIs will fail
       with an error.''',
+    },
+    {
+      'name': 'AdvancedProtectionDeepScanningEnabled',
+      'owners': ['file://chrome/browser/safe_browsing/OWNERS'],
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome.*:81-'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': True,
+      'id': 667,
+      'caption': '''Enable sending downloads to Google for deep scanning for users enrolled in the Advanced Protection program''',
+      'tags': [],
+      'desc': '''This policy controls whether users enrolled in the Advanced Protection program are allowed to send their downloads to Google for malware scanning. If set to True or not set, enrolled users will be be prompted to send their files to Google for deep scanning. If the user selects 'Scan', their download will be sent to Google. If set to False, users will not be prompted and their downloads will not be sent to Google.''',
     },
   ],
 
@@ -20452,6 +20520,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   ],
   'placeholders': [],
   'deleted_policy_ids': [412, 546, 562, 569, 578],
-  'highest_id_currently_used': 666,
+  'highest_id_currently_used': 668,
   'highest_atomic_group_id_currently_used': 38
 }

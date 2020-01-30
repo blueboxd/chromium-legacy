@@ -322,8 +322,10 @@ void CreditCardAccessManager::FetchCreditCard(
   if (should_wait_to_authenticate) {
     // Wait for |ready_to_start_authentication_| to be signaled by
     // OnDidGetUnmaskDetails() or until timeout before calling Authenticate().
-    base::PostTaskAndReplyWithResult(
-        FROM_HERE, {base::ThreadPool(), base::MayBlock()},
+    auto task_runner =
+        base::CreateTaskRunner({base::ThreadPool(), base::MayBlock()});
+    cancelable_authenticate_task_tracker_.PostTaskAndReplyWithResult(
+        task_runner.get(), FROM_HERE,
         base::BindOnce(&WaitForEvent, &ready_to_start_authentication_),
         base::BindOnce(&CreditCardAccessManager::Authenticate,
                        weak_ptr_factory_.GetWeakPtr()));
@@ -577,10 +579,16 @@ void CreditCardAccessManager::HandleDialogUserResponse(
     case WebauthnDialogCallbackType::kVerificationCancelled:
       // TODO(crbug.com/949269): Add tests and logging for canceling verify
       // pending dialog.
-      GetOrCreateFIDOAuthenticator()->CancelVerification();
-      unmask_details_request_in_progress_ = false;
-      is_authentication_in_progress_ = false;
+      cancelable_authenticate_task_tracker_.TryCancelAll();
+      payments_client_->CancelRequest();
       SignalCanFetchUnmaskDetails();
+      ready_to_start_authentication_.Reset();
+      unmask_details_request_in_progress_ = false;
+      GetOrCreateFIDOAuthenticator()->CancelVerification();
+
+      // Indicate that FIDO authentication was canceled, resulting in falling
+      // back to CVC auth.
+      OnFIDOAuthenticationComplete(/*did_succeed=*/false);
       break;
   }
 }

@@ -25,6 +25,11 @@ enum ImageStateElement {
 // Otherwise, returns false.
 bool IsWebViewContainingText(web::WebState* web_state, const std::string& text);
 
+// Returns true if there is a a frame from |web_state| that contains |text|.
+// This method is waiting for the duration of the JavaScript messages exchange.
+bool IsWebViewContainingTextInFrame(web::WebState* web_state,
+                                    const std::string& text);
+
 // Waits for the given web state to contain |text|. If the condition is not met
 // within |timeout| false is returned.
 bool WaitForWebViewContainingText(

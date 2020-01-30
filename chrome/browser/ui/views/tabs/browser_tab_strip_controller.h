@@ -84,6 +84,8 @@ class BrowserTabStripController : public TabStripController,
   void OnKeyboardFocusedTabChanged(base::Optional<int> index) override;
   base::string16 GetGroupTitle(
       const tab_groups::TabGroupId& group_id) const override;
+  base::string16 GetGroupContentString(
+      const tab_groups::TabGroupId& group_id) const override;
   tab_groups::TabGroupColorId GetGroupColorId(
       const tab_groups::TabGroupId& group_id) const override;
   void SetVisualDataForGroup(

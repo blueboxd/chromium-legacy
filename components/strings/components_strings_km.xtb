@@ -431,7 +431,6 @@
 <translation id="2799223571221894425">បើកដំណើរការឡើងវិញ</translation>
 <translation id="2803306138276472711">ការរុករកសុវត្ថិភាព Google <ph name="BEGIN_LINK" />បានរកឃើញមេរោគ<ph name="END_LINK" /> នៅលើ <ph name="SITE" />កន្លងទៅថ្មីៗនេះ។ គេហទំព័រដែលជាធម្មតាមានសុវត្ថិភាពអាចឆ្លងមេរោគនៅពេលខ្លះ។</translation>
 <translation id="2807052079800581569">ទីតាំង​រូបភាព Y</translation>
-<translation id="2809804249696361569">សន្លឹកទាំងពីរ</translation>
 <translation id="2824775600643448204">អាសយដ្ឋាន និងរបាស្វែងរក</translation>
 <translation id="2826760142808435982">ការភ្ជាប់ត្រូវបានអ៊ីនគ្រីប និងសម្គាល់អត្តសញ្ញាណ ដោយប្រើ <ph name="CIPHER" /> និងប្រើ <ph name="KX" /> ជាយន្តការផ្តោះប្តូរសោ។</translation>
 <translation id="2835170189407361413">ជម្រះបែបបទ</translation>
@@ -941,7 +940,6 @@
 <translation id="5112422516732747637">A5</translation>
 <translation id="5115216390227830982">European-Edp</translation>
 <translation id="5115563688576182185">(64-ប៊ីត)</translation>
-<translation id="5121469660360593280">ចែករំលែក​ទិន្នន័យ​អំពី​ព្រឹត្តិការណ៍​ទាក់ទងនឹង​សុវត្ថិភាព​ដែល Chrome Enterprise User Protect បាន​រាយការណ៍ជាមួយ​អ្នកគ្រប់គ្រង​របស់អ្នក​។ នេះអាចរួមបញ្ចូលទំព័រ URL ដែលអ្នកចូលមើល ឈ្មោះឯកសារ ឬទិន្នន័យ​មេតា និងឈ្មោះអ្នកប្រើប្រាស់ ដែលអ្នកប្រើ​ ដើម្បីចូលឧបករណ៍របស់អ្នក និង Chrome។</translation>
 <translation id="5123063207673082822">ចុង​សប្ដាហ៍</translation>
 <translation id="5125394840236832993">B-Plus</translation>
 <translation id="5126510351761255129">ផ្ទៀងផ្ទាត់កាតរបស់អ្នក</translation>
@@ -956,7 +954,6 @@
 <translation id="5161506081086828129">ទម្រគំនរទី 9</translation>
 <translation id="516920405563544094">បញ្ចូល CVC សម្រាប់ <ph name="CREDIT_CARD" /> ។ បន្ទាប់​ពីអ្នក​បញ្ជាក់​ហើយ ព័ត៌មាន​លម្អិត​អំពី​កាតដែលបាន​មកពីគណនី Google របស់អ្នក​នឹងត្រូវ​បាន​ចែករំលែក​ជាមួយ​គេហទំព័រ​នេះ។</translation>
 <translation id="5169827969064885044">អ្នកអាច​បាត់បង់​សិទ្ធិចូល​ប្រើ​គណនី​​របស់ស្ថាប័នអ្នក ឬ​ជួបប្រទះ​នឹង​ការលួចយក​អត្តសញ្ញាណ។ Chrome សូមណែនាំ​ឱ្យប្ដូរ​ពាក្យសម្ងាត់​របស់អ្នក​ឥឡូវនេះ។</translation>
-<translation id="5170017743895942767">Chrome Enterprise User Protect</translation>
 <translation id="5171045022955879922">ស្វែងរក ឬវាយបញ្ចូល URL</translation>
 <translation id="5171689220826475070">Fanfold-European</translation>
 <translation id="5172758083709347301">ម៉ាស៊ីន</translation>
@@ -1089,7 +1086,6 @@
 <translation id="5737183892635480227">{NUM_CARDS,plural, =1{រក្សាទុកបណ្ណនៅក្នុងគណនី Google របស់អ្នក}other{រក្សាទុកបណ្ណ​នៅក្នុងគណនី Google របស់អ្នក}}</translation>
 <translation id="5745980000221562234">{NUM_CARDS,plural, =1{ប្រើ​លេខ​និម្មិត​សម្រាប់​បណ្ណឥណទាន​នេះ}other{ជ្រើសរើស​បណ្ណឥណទាន}}</translation>
 <translation id="5763042198335101085">បញ្ចូលអាសយដ្ឋានអ៊ីមែលដែលត្រឹមត្រូវ</translation>
-<translation id="5763703224595565476">អ្នកគ្រប់គ្រង​របស់អ្នក​បានបើក Chrome Enterprise User Protect នៅលើ​កម្មវិធី​រុករក​តាម​អ៊ីនធឺណិត​របស់អ្នក​។ Chrome Enterprise User Protect មាន​សិទ្ធិ​ចូលប្រើទិន្នន័យ​មួយចំនួន​របស់អ្នក​។</translation>
 <translation id="5765072501007116331">ដើម្បីមើលមធ្យោបាយ និងលក្ខខណ្ឌតម្រូវនៃការដឹកជញ្ជូនផ្ទាល់ សូមជ្រើសរើសអាសយដ្ឋាន</translation>
 <translation id="5776313857861697733">អាទិភាព</translation>
 <translation id="5778550464785688721">ការគ្រប់គ្រងពេញលេញលើឧបករណ៍ MIDI</translation>
@@ -1426,7 +1422,6 @@
 <translation id="733923710415886693">វិញ្ញាបនបត្រម៉ាស៊ីនមេមិនត្រូវបានបង្ហាញឲ្យដឹងតាមរយៈគោលការណ៍តម្លាភាពវិញ្ញាបនបត្រ។</translation>
 <translation id="734600844861828519">11x15</translation>
 <translation id="7346048084945669753">បានភ្ជាប់៖</translation>
-<translation id="73479065977517481"><ph name="ENROLLMENT_DOMAIN" /> បាន​បើក Chrome Enterprise User Protect នៅលើ​កម្មវិធី​រុករក​តាម​អ៊ីនធឺណិត​របស់អ្នក​។ Chrome Enterprise User Protect មាន​សិទ្ធិ​ចូលប្រើទិន្នន័យ​មួយចំនួន​របស់អ្នក​។</translation>
 <translation id="7349430561505560861">A4-Extra</translation>
 <translation id="7353601530677266744">អត្ថបទបញ្ជា</translation>
 <translation id="7372973238305370288">លទ្ធផលស្វែងរក</translation>

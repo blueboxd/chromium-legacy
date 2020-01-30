@@ -124,7 +124,7 @@ class TestBufferedSpdyVisitor : public BufferedSpdyFramerVisitorInterface {
                     altsvc_vector) override {
     altsvc_count_++;
     altsvc_stream_id_ = stream_id;
-    origin.CopyToString(&altsvc_origin_);
+    altsvc_origin_.assign(origin.data(), origin.size());
     altsvc_vector_ = altsvc_vector;
   }
 

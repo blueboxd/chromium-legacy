@@ -6213,6 +6213,7 @@ interface QuicTransport
     getter ready
     method close
     method constructor
+    method createSendStream
     method receiveDatagrams
     method sendDatagrams
 interface RTCCertificate
@@ -7895,6 +7896,12 @@ interface Selection
     method setBaseAndExtent
     method setPosition
     method toString
+interface SendStream
+    attribute @@toStringTag
+    getter writable
+    getter writingAborted
+    method abortWriting
+    method constructor
 interface Sensor : EventTarget
     attribute @@toStringTag
     getter activated

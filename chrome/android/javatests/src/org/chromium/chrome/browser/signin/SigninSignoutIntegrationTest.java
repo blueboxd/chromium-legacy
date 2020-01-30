@@ -106,8 +106,8 @@ public class SigninSignoutIntegrationTest {
         verify(mSignInStateObserverMock, never()).onSignedOut();
         assertSignedIn();
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            Assert.assertEquals(account,
-                    mSigninManager.getIdentityManager().getPrimaryAccountInfo().getAccount());
+            Assert.assertEquals(account.name,
+                    mSigninManager.getIdentityManager().getPrimaryAccountInfo().getName());
         });
     }
 

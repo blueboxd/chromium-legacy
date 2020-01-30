@@ -103,7 +103,8 @@ class AssociatedUserValidator {
     NOT_ENROLLED_WITH_MDM,
     MISSING_PASSWORD_RECOVERY_INFO,
     INVALID_TOKEN_HANDLE,
-    ONLINE_LOGIN_STALE
+    ONLINE_LOGIN_STALE,
+    UPLOAD_DEVICE_DETAILS_FAILED
   };
 
   // Returns the reason for enforcing authentication for the provided |sid|.

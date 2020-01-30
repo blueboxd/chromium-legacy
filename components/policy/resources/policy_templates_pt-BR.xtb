@@ -1781,6 +1781,7 @@ Se você desativar esta configuração ou deixá-la sem definição, todas as p�
       Se esta política não for definida, qualquer certificado que precise obrigatoriamente ser divulgado via Transparência dos certificados será tratado como não confiável se não for divulgado de acordo com a política de Transparência dos certificados.</translation>
 <translation id="3765260570442823273">Duração da mensagem de aviso de saída de usuário ocioso</translation>
 <translation id="377044054160169374">Aplicação de intervenção de experiência ofensiva</translation>
+<translation id="3780102107513139202">Ativar variações relativas apenas a correções críticas</translation>
 <translation id="3780152581321609624">Incluir porta não padrão no SPN Kerberos</translation>
 <translation id="3780319008680229708">Se esta política for definida como true, o ícone do Google Cast sempre será exibido na barra de ferramentas ou no menu flutuante, e os usuários não poderão removê-lo.
 
@@ -2017,6 +2018,7 @@ Observe que esta política não se aplica ao modo de navegação anônima.</tran
 <translation id="4027608872760987929">Ativar o provedor de pesquisa padrão</translation>
 <translation id="4039085364173654945">Controla se o subconteúdo de terceiros em uma página pode acionar pop-up de uma caixa de diálogo básica de autorização HTTP. Normalmente, esta função é desativada como proteção contra phishing. Se esta política não estiver definida, a função é desativada e o subconteúdo de terceiros não terá permissão para acionar pop-up de uma caixa de diálogo básica de autorização HTTP.</translation>
 <translation id="4056910949759281379">Desativar o protocolo SPDY</translation>
+<translation id="4061590579642538878">Enviar informações sobre relatórios de erros.</translation>
 <translation id="4075675819066819571">Posicionar a estante no lado esquerdo da tela</translation>
 <translation id="4075864623710596000">Os nomes de host especificados nesta lista estarão isentos da verificação de política HSTS que poderia fazer upgrade de solicitações de http para https. Apenas nomes de host de etiqueta única são permitidos nesta política. Nomes de host precisam ser canonizados: todos os IDNs precisam ser convertidos no formato de etiqueta A, e todas as letras ASCII precisam ser minúsculas. Esta política se aplica apenas aos nomes de host especificados. Ela não se aplica a subdomínios dos nomes especificados.</translation>
 <translation id="408029843066770167">Permitir consultas a um serviço de hora do Google</translation>
@@ -2526,13 +2528,10 @@ Quando a |IdleAction| não for definida, a ação padrão de suspensão será re
 <translation id="4970855112942626932">Desativar login no navegador</translation>
 <translation id="4978405676361550165">Se a política "OffHours" for definida, as políticas do dispositivo especificadas serão ignoradas (use as configurações padrão dessas políticas) durante os intervalos de tempo definidos. As políticas do dispositivo são reaplicadas pelo Chrome em todos os eventos quando o período "OffHours" começa ou termina. O usuário será notificado e forçado a se desconectar quando o período "OffHours" terminar e as configurações de política do dispositivo forem alteradas (por exemplo, quando o usuário estiver conectado com uma conta que não seja permitida).</translation>
 <translation id="4980635395568992380">Tipo do dado:</translation>
-<translation id="4980794848194997251">Esta política controla o tratamento para conteúdo misto (conteúdo HTTP em sites HTTPS) no navegador.
-       Se a política for definida como "verdadeira" ou não for definida, os conteúdos mistos de áudio e vídeo serão automaticamente atualizados para HTTPS (por exemplo, o URL será reescrito como HTTPS, sem o substituto se a fonte não estiver disponível em HTTPS), e um aviso de "Não seguro" será exibido na barra de URL para conteúdo misto de imagem.
-       Se a política for definida como "falsa", as atualizações automáticas serão desativadas para áudio e vídeo, e nenhum aviso será exibido para imagens.
-       Esta política só afeta tipos de conteúdo misto de áudio, vídeo e imagens.</translation>
 <translation id="4983201894483989687">Permitir a execução de plug-ins que estão desatualizados</translation>
 <translation id="4986560318567565414">Caminho para mudar do navegador alternativo para o Chrome.</translation>
 <translation id="4988291787868618635">Ação a ser realizada quando o intervalo de inatividade for atingido</translation>
+<translation id="500149597848135831">Permitir todas as variações</translation>
 <translation id="5032164758660626397">Impedir que o usuário transfira arquivos grandes</translation>
 <translation id="5047604665028708335">Permitir acesso a sites fora de pacotes de conteúdo</translation>
 <translation id="5052081091120171147">Se ativada, esta política força a importação do histórico de navegação a partir do navegador padrão atual. Se ativada, esta política também afeta a caixa de diálogo de importação. Se desativada, nenhum histórico de navegação é importado. Caso não seja definida, o usuário pode ser solicitado a responder se deseja importar ou permitir a importação automática.</translation>
@@ -2605,6 +2604,7 @@ O campo <ph name="PROXY_MODE_PROXY_SETTINGS_FIELD" /> permite que você especifi
 <translation id="5102203758995933166">Permite aplicar a configuração de rede por usuário a um dispositivo <ph name="PRODUCT_OS_NAME" />. A configuração de rede é uma string formatada em JSON, conforme definido pelo formato Open Network Configuration.</translation>
 <translation id="5105313908130842249">Intervalo de bloqueio da tela no funcionamento com energia da bateria</translation>
 <translation id="5108031557082757679">Impressoras empresariais desativadas</translation>
+<translation id="5109383437323376357">Determinar a disponibilidade de variações</translation>
 <translation id="5112121363469561920">Define o tipo padrão de lupa ativado na tela de login.
 
           Se esta política for definida, ela controlará o tipo de lupa que será ativado quando a tela de login for exibida. Configurar a política como "Nenhuma" desativará a lupa.
@@ -3334,6 +3334,9 @@ O campo <ph name="PROXY_MODE_PROXY_SETTINGS_FIELD" /> permite que você especifi
 <translation id="6221175752766085998">Permitir certificados emitidos pelas âncoras de confiança locais sem a extensão subjectAlternativeName</translation>
 <translation id="6224304369267200483">Os URLs/domínios permitidos automaticamente direcionam a declaração da chave de segurança</translation>
 <translation id="6233173491898450179">Definir diretório de download</translation>
+<translation id="6242147107333796512">Enviar informações de relatórios de erros, como ID remoto, carimbo de data/hora da captura e causa.
+
+      Se a política for definida como falsa ou não for definida, as informações de relatórios de erros não serão enviadas. Se ela for definida como verdadeira, as informações de relatórios de erros serão enviadas.</translation>
 <translation id="6244210204546589761">URLs que devem ser abertos na inicialização</translation>
 <translation id="6247316685259031374">Esta política controla o sandbox do processo de áudio.
       Se esta política for ativada, o processo de áudio será executado no sandbox.
@@ -3976,6 +3979,15 @@ Essas políticas são ignoradas se a Área de trabalho remota do Google Chrome n
 <translation id="7311458740754205918">Se a política é definida como true ou não é configurada, a página "Nova guia" pode mostrar sugestões de conteúdo com base no histórico de navegação, nos interesses ou no local do usuário.
 
       Se a política for definida como false, as sugestões de conteúdo geradas automaticamente não serão mostradas na página "Nova guia".</translation>
+<translation id="7323572763274343342">Configurar esta política permite especificar quais variações têm permissão para ser aplicadas no <ph name="PRODUCT_NAME" />.
+
+      As variações fornecem uma maneira de oferecer modificações para o <ph name="PRODUCT_NAME" /> sem lançar uma nova versão do navegador, ativando ou desativando recursos já existentes.
+
+      Definir <ph name="VARIATIONS_ENABLED_OPTION_NAME" /> (valor 0) ou não definir a política permite que todas as variações sejam aplicadas ao navegador.
+
+      Definir <ph name="CRITICAL_VARIATIONS_ONLY_OPTION_NAME" /> (valor 1) permite que apenas as variações consideradas como correções críticas de segurança ou estabilidade sejam aplicadas ao <ph name="PRODUCT_NAME" />.
+
+      Definir <ph name="VARIATIONS_DISABLED_OPTION_NAME" /> (valor 2) impede que qualquer variação seja aplicada ao navegador Esse modo não é recomendado, porque pode impedir que os desenvolvedores do <ph name="PRODUCT_NAME" /> forneçam correções críticas de segurança de maneira rápida.</translation>
 <translation id="7323896582714668701">Parâmetros de linha de comando adicionais para o <ph name="PRODUCT_NAME" /></translation>
 <translation id="7326394567531622570">Semelhante a Wipe (valor 2), mas tenta preservar os tokens de login para que o usuário não precise fazer login novamente.</translation>
 <translation id="7329968046053403405">Especifica o tipo de conta fornecida pelo app de autenticação Android compatível com a autenticação <ph name="HTTP_NEGOTIATE" /> (por exemplo, autenticação Kerberos). Essa informação deve ser disponibilizada pelo fornecedor do app de autenticação. Para ver outros detalhes, consulte https://goo.gl/hajyfN.
@@ -4050,6 +4062,19 @@ Essas políticas são ignoradas se a Área de trabalho remota do Google Chrome n
           Se esta política não for definida ou for definida como "Ativada", o Google Chrome aceitará conteúdos da Web exibidos como Signed HTTP Exchanges.
 
           Se esta política for definida como "Desativada", as Signed HTTP Exchanges não poderão ser carregadas.</translation>
+<translation id="7509496865303347769">Configura o URL padrão da página inicial no <ph name="PRODUCT_NAME" /> e impede que os usuários o modifiquem.
+
+          A página inicial é aquela aberta pelo botão "Página inicial". No computador, as páginas que são abertas na inicialização são controladas pelas políticas RestoreOnStartup.
+
+          O tipo da página inicial pode ser configurado como um URL que você especifica aqui ou como a página "Nova guia". Se você selecionar a página "Nova guia", esta política não terá efeito.
+
+          Se você ativar essa configuração, os usuários não poderão mudar o URL da página inicial deles no <ph name="PRODUCT_NAME" />, mas ainda poderão escolher a página "Nova guia" como página inicial.
+
+          Se esta política não for definida, o usuário poderá escolher a própria página inicial caso HomepageIsNewTabPage também não esteja definida.
+
+          O URL precisa ter um esquema padrão, como "http://example.com" ou "https://example.com".
+
+          Esta política está disponível apenas em instâncias do Windows associadas a um domínio do <ph name="MS_AD_NAME" /> ou instâncias do Windows 10 Pro ou Enterprise inscritas no gerenciamento de dispositivos.</translation>
 <translation id="7511361072385293666">Se esta política é definida como "true" ou não é configurada, o uso do protocolo QUIC no <ph name="PRODUCT_NAME" /> é permitido.
       Se esta política é definida como "false", o uso do protocolo QUIC não é permitido.</translation>
 <translation id="7517845714620372896">Especifica a porcentagem de brilho da tela.
@@ -4209,6 +4234,7 @@ Se esta política não for definida, o renderizador padrão será usado para tod
 <translation id="7717938661004793600">Configurar recursos de acessibilidade do <ph name="PRODUCT_OS_NAME" />.</translation>
 <translation id="7731026922044991970">Reverter para o comportamento <ph name="ATTRIBUTE_SAMESITE_NAME" /> legado para os cookies em todos os sites</translation>
 <translation id="7747447585227954402">Permite que dispositivos usem um <ph name="PLUGIN_VM_NAME" /> no <ph name="PRODUCT_OS_NAME" /></translation>
+<translation id="7749024457938190837">Extensões com permissão para pular a caixa de diálogo de confirmação ao enviar trabalhos de impressão por meio da API chrome.printing</translation>
 <translation id="7749402620209366169">Permite autenticação de dois fatores para hosts de acesso remoto em vez de PIN especificado pelo usuário. 
 
           Se esta configuração for ativada, os usuários deverão fornecer um código de dois fatores válido ao acessar um host.
@@ -4517,6 +4543,9 @@ O modo recomendado para configurar políticas no Windows é por meio de GPO, emb
           Se você desativar essa configuração, haverá a busca de metatags nas páginas.
 
           Se esta política não for configurada, haverá a busca de metatags nas páginas.</translation>
+<translation id="8295496526151576383">Esta política especifica as extensões com permissão para pular a caixa de diálogo de confirmação do trabalho de impressão quando elas usarem a função <ph name="SUBMIT_JOB_FUNCTION" /> da <ph name="PRINTING_API" /> para enviar um trabalho de impressão.
+
+      Se uma extensão não estiver na lista, ou a lista não estiver definida, a caixa de diálogo de confirmação do trabalho de impressão será mostrada ao usuário para cada chamada de função <ph name="SUBMIT_JOB_FUNCTION" />.</translation>
 <translation id="829641334878002866">Permite definir o período, em milissegundos, entre a primeira notificação de que o dispositivo <ph name="PRODUCT_OS_NAME" /> precisa ser reiniciado para aplicar uma atualização pendente e o fim do período especificado pela política <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" />.
 
       Se esta política não for definida, o período padrão de 259.200.000 milissegundos (três dias) será usado para dispositivos <ph name="PRODUCT_OS_NAME" />.</translation>
@@ -5104,6 +5133,7 @@ Se você ativar esta configuração, o <ph name="PRODUCT_NAME" /> e os apps ARC 
       Se a política for definida como falsa, a opção "Cabeçalhos e rodapés" não ficará selecionada na caixa de diálogo de visualização de impressão, e o usuário não poderá alterá-la.
 
       Se a política for definida como verdadeira, a opção "Cabeçalhos e rodapés" ficará selecionada na caixa de diálogo de visualização de impressão, e o usuário não poderá alterá-la.</translation>
+<translation id="9213751049772256263">Desativar todas as variações</translation>
 <translation id="9217154963008402249">Frequência de pacotes de monitoramento de rede</translation>
 <translation id="922540222991413931">Configurar extensão, aplicativo e origens de instalação do script do usuário</translation>
 <translation id="924557436754151212">Importar senhas salvas do navegador padrão na primeira execução</translation>

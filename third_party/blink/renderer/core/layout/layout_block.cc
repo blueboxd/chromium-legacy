@@ -1667,18 +1667,16 @@ void LayoutBlock::ComputeChildPreferredLogicalWidths(
 }
 
 bool LayoutBlock::HasLineIfEmpty() const {
-  if (!GetNode())
-    return false;
-
-  if (IsRootEditableElement(*GetNode()))
-    return true;
-
-  if (auto* shadow_root = DynamicTo<ShadowRoot>(GetNode())) {
-    if (IsA<HTMLInputElement>(shadow_root->host()))
+  if (GetNode()) {
+    if (IsRootEditableElement(*GetNode()))
       return true;
-  }
 
-  return false;
+    if (auto* shadow_root = DynamicTo<ShadowRoot>(GetNode())) {
+      if (IsA<HTMLInputElement>(shadow_root->host()))
+        return true;
+    }
+  }
+  return FirstLineStyleRef().HasLineIfEmpty();
 }
 
 LayoutUnit LayoutBlock::EmptyLineBaseline(

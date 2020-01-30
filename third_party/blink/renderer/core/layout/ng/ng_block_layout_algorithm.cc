@@ -741,7 +741,7 @@ scoped_refptr<const NGLayoutResult> NGBlockLayoutAlgorithm::FinishLayout(
   }
 
   // Save the unconstrained intrinsic size on the builder before clamping it.
-  container_builder_.SetUnconstrainedIntrinsicBlockSize(intrinsic_block_size_);
+  container_builder_.SetOverflowBlockSize(intrinsic_block_size_);
 
   intrinsic_block_size_ = ClampIntrinsicBlockSize(
       ConstraintSpace(), Node(), border_scrollbar_padding_,
@@ -1017,6 +1017,10 @@ void NGBlockLayoutAlgorithm::HandleFloat(
       PositionFloat(&unpositioned_float, &exclusion_space_);
 
   const NGLayoutResult& layout_result = *positioned_float.layout_result;
+
+  // TODO(mstensho): Handle abortions caused by block fragmentation.
+  DCHECK_EQ(layout_result.Status(), NGLayoutResult::kSuccess);
+
   const auto& physical_fragment = layout_result.PhysicalFragment();
   if (const NGBreakToken* token = physical_fragment.BreakToken()) {
     DCHECK(ConstraintSpace().HasBlockFragmentation());
@@ -1243,6 +1247,10 @@ NGLayoutResult::EStatus NGBlockLayoutAlgorithm::HandleNewFormattingContext(
       return NGLayoutResult::kSuccess;
     if (break_status == NGBreakStatus::kNeedsEarlierBreak)
       return NGLayoutResult::kNeedsEarlierBreak;
+
+    // If the child aborted layout, we cannot continue.
+    DCHECK_EQ(layout_result->Status(), NGLayoutResult::kSuccess);
+
     EBreakBetween break_after = JoinFragmentainerBreakValues(
         layout_result->FinalBreakAfter(), child.Style().BreakAfter());
     container_builder_.SetPreviousBreakAfter(break_after);
@@ -1379,6 +1387,12 @@ NGBlockLayoutAlgorithm::LayoutNewFormattingContext(
     // Since this child establishes a new formatting context, no exclusion space
     // should be returned.
     DCHECK(layout_result->ExclusionSpace().IsEmpty());
+
+    if (layout_result->Status() != NGLayoutResult::kSuccess) {
+      DCHECK_EQ(layout_result->Status(),
+                NGLayoutResult::kOutOfFragmentainerSpace);
+      return layout_result;
+    }
 
     NGFragment fragment(writing_mode, layout_result->PhysicalFragment());
 

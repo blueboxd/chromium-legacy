@@ -156,7 +156,7 @@
     },
     {
       name: "AOMAriaProperties",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "AOMAriaRelationshipProperties",
@@ -416,6 +416,7 @@
       // Support for the CSS color-scheme property from the css-color-adjust spec.
       // https://drafts.csswg.org/css-color-adjust/#color-scheme-prop
       name: "CSSColorScheme",
+      status: "stable",
     },
     {
       // When the color-scheme is supported via the CSS color-scheme property
@@ -793,7 +794,7 @@
     },
     {
       name: "GetDisplayMedia",
-      status: "stable",
+      status: {"Android": "", "default": "stable"},
     },
     {
       name: "GroupEffect",
@@ -1054,6 +1055,7 @@
     // https://drafts.csswg.org/css-color-adjust/#color-scheme-meta
     {
       name: "MetaColorScheme",
+      status: "stable",
     },
     // This is enabled by default on Windows only. The only part that's
     // "experimental" is the support on other platforms.
@@ -1876,6 +1878,11 @@
     {
       name: "WebXRHitTest",
       // depends_on: ["WebXRARModule"],  // TODO(https://crbug.com/954679): uncomment once bug is fixed
+      status: "experimental"
+    },
+    {
+      name: "WebXRHitTestEntityTypes",
+      depends_on: ["WebXRHitTest"],
       status: "experimental"
     },
     {

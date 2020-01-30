@@ -8,7 +8,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/values.h"
-#include "build/build_config.h"
 #include "chrome/browser/sync/test/integration/preferences_helper.h"
 #include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
@@ -75,16 +74,8 @@ IN_PROC_BROWSER_TEST_F(SingleClientPreferencesSyncTest, Sanity) {
   EXPECT_TRUE(BooleanPrefMatches(prefs::kHomePageIsNewTabPage));
 }
 
-// Flaky on Windows. https://crbug.com/930482
-#if defined(OS_WIN)
-#define MAYBE_ShouldRemoveBadDataWhenRegistering \
-  DISABLED_ShouldRemoveBadDataWhenRegistering
-#else
-#define MAYBE_ShouldRemoveBadDataWhenRegistering \
-  ShouldRemoveBadDataWhenRegistering
-#endif
 IN_PROC_BROWSER_TEST_F(SingleClientPreferencesSyncTest,
-                       MAYBE_ShouldRemoveBadDataWhenRegistering) {
+                       ShouldRemoveBadDataWhenRegistering) {
   // Populate the data store with data of type boolean but register as string.
   SetPreexistingPreferencesFileContents(
       0, "{\"testing\":{\"my-test-preference\":true}}");

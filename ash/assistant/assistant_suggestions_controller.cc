@@ -4,6 +4,7 @@
 
 #include "ash/assistant/assistant_suggestions_controller.h"
 
+#include <algorithm>
 #include <utility>
 #include <vector>
 
@@ -18,6 +19,7 @@
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "base/rand_util.h"
+#include "base/stl_util.h"
 #include "chromeos/services/assistant/public/cpp/assistant_prefs.h"
 #include "chromeos/services/assistant/public/features.h"
 #include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
@@ -36,6 +38,35 @@ using chromeos::assistant::mojom::AssistantSuggestionType;
 // Conversation starters -------------------------------------------------------
 
 constexpr int kMaxNumOfConversationStarters = 3;
+
+bool IsAllowed(const ConversationStarter& conversation_starter) {
+  using Permission = ConversationStarter::Permission;
+
+  if (conversation_starter.RequiresPermission(Permission::kUnknown))
+    return false;
+
+  if (conversation_starter.RequiresPermission(Permission::kRelatedInfo) &&
+      !AssistantState::Get()->context_enabled().value_or(false)) {
+    return false;
+  }
+
+  return true;
+}
+
+AssistantSuggestionPtr ToAssistantSuggestionPtr(
+    const ConversationStarter& conversation_starter) {
+  AssistantSuggestionPtr ptr = AssistantSuggestion::New();
+  ptr->type = AssistantSuggestionType::kConversationStarter;
+  ptr->text = conversation_starter.label();
+
+  if (conversation_starter.action_url().has_value())
+    ptr->action_url = conversation_starter.action_url().value();
+
+  if (conversation_starter.icon_url().has_value())
+    ptr->icon_url = conversation_starter.icon_url().value();
+
+  return ptr;
+}
 
 }  // namespace
 
@@ -154,12 +185,33 @@ void AssistantSuggestionsController::FetchConversationStarters() {
   ConversationStartersClient::Get()->FetchConversationStarters(base::BindOnce(
       [](const base::WeakPtr<AssistantSuggestionsController>& self,
          std::vector<ConversationStarter>&& conversation_starters) {
-        // When the server doesn't respond with any conversation starters we'll
-        // fallback to the locally provided set.
-        if (self && conversation_starters.empty())
-          self->ProvideConversationStarters();
+        if (!self)
+          return;
 
-        // TODO(dmblack): Handle non-empty case.
+        // Remove any conversation starters which we determine to not be allowed
+        // based on the required permissions that they specify. Note that this
+        // no-ops if the collection is empty.
+        base::EraseIf(conversation_starters,
+                      [](const ConversationStarter& conversation_starter) {
+                        return !IsAllowed(conversation_starter);
+                      });
+
+        // When the server doesn't respond with any conversation starters that
+        // we can present, we'll fallback to the locally provided set.
+        if (conversation_starters.empty()) {
+          self->ProvideConversationStarters();
+          return;
+        }
+
+        // Otherwise we transform our conversation starters into the type that
+        // is understood by the suggestions model...
+        std::vector<AssistantSuggestionPtr> suggestions;
+        std::transform(
+            conversation_starters.begin(), conversation_starters.end(),
+            std::back_inserter(suggestions), ToAssistantSuggestionPtr);
+
+        // ...and we update our cache.
+        self->model_.SetConversationStarters(std::move(suggestions));
       },
       conversation_starters_weak_factory_.GetWeakPtr()));
 }

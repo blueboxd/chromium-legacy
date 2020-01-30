@@ -12,10 +12,10 @@ import static android.support.test.espresso.assertion.PositionAssertions.isBelow
 import static android.support.test.espresso.assertion.ViewAssertions.doesNotExist;
 import static android.support.test.espresso.assertion.ViewAssertions.matches;
 import static android.support.test.espresso.contrib.PickerActions.setDate;
-import static android.support.test.espresso.contrib.PickerActions.setTime;
 import static android.support.test.espresso.matcher.RootMatchers.isDialog;
 import static android.support.test.espresso.matcher.ViewMatchers.isDescendantOfA;
 import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
+import static android.support.test.espresso.matcher.ViewMatchers.withClassName;
 import static android.support.test.espresso.matcher.ViewMatchers.withContentDescription;
 import static android.support.test.espresso.matcher.ViewMatchers.withEffectiveVisibility;
 import static android.support.test.espresso.matcher.ViewMatchers.withId;
@@ -24,6 +24,7 @@ import static android.support.test.espresso.matcher.ViewMatchers.withText;
 
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
@@ -37,6 +38,7 @@ import static org.chromium.chrome.browser.autofill_assistant.AssistantTagsForTes
 import android.support.test.espresso.matcher.ViewMatchers.Visibility;
 import android.support.test.filters.MediumTest;
 import android.view.View;
+import android.widget.DatePicker;
 import android.widget.TextView;
 
 import org.hamcrest.Matcher;
@@ -53,6 +55,7 @@ import org.chromium.chrome.browser.autofill.PersonalDataManager;
 import org.chromium.chrome.browser.autofill_assistant.AutofillAssistantCollectUserDataTestHelper.ViewHolder;
 import org.chromium.chrome.browser.autofill_assistant.user_data.AssistantCollectUserDataCoordinator;
 import org.chromium.chrome.browser.autofill_assistant.user_data.AssistantCollectUserDataModel;
+import org.chromium.chrome.browser.autofill_assistant.user_data.AssistantContactField;
 import org.chromium.chrome.browser.autofill_assistant.user_data.AssistantDateChoiceOptions;
 import org.chromium.chrome.browser.autofill_assistant.user_data.AssistantDateTime;
 import org.chromium.chrome.browser.autofill_assistant.user_data.AssistantLoginChoice;
@@ -86,11 +89,24 @@ public class AutofillAssistantCollectUserDataUiTest {
     public CustomTabActivityTestRule mTestRule = new CustomTabActivityTestRule();
 
     private AutofillAssistantCollectUserDataTestHelper mHelper;
+    AssistantCollectUserDataModel.ContactDescriptionOptions mDefaultContactSummaryOptions;
+    AssistantCollectUserDataModel.ContactDescriptionOptions mDefaultContactFullOptions;
 
     @Before
     public void setUp() throws Exception {
         AutofillAssistantUiTestUtil.startOnBlankPage(mTestRule);
         mHelper = new AutofillAssistantCollectUserDataTestHelper();
+
+        mDefaultContactSummaryOptions =
+                new AssistantCollectUserDataModel.ContactDescriptionOptions();
+        mDefaultContactSummaryOptions.mFields =
+                new int[] {AssistantContactField.EMAIL_ADDRESS, AssistantContactField.NAME_FULL};
+        mDefaultContactSummaryOptions.mMaxNumberLines = 1;
+
+        mDefaultContactFullOptions = new AssistantCollectUserDataModel.ContactDescriptionOptions();
+        mDefaultContactFullOptions.mFields =
+                new int[] {AssistantContactField.NAME_FULL, AssistantContactField.EMAIL_ADDRESS};
+        mDefaultContactFullOptions.mMaxNumberLines = 2;
     }
 
     /** Creates a coordinator for use in UI tests, and adds it to the global view hierarchy. */
@@ -198,6 +214,8 @@ public class AutofillAssistantCollectUserDataUiTest {
         onView(is(viewHolder.mContactSection)).check(matches(not(isDisplayed())));
         onView(is(viewHolder.mPaymentSection)).check(matches(not(isDisplayed())));
         onView(is(viewHolder.mShippingSection)).check(matches(not(isDisplayed())));
+        onView(is(viewHolder.mDateRangeStartSection)).check(matches(not(isDisplayed())));
+        onView(is(viewHolder.mDateRangeEndSection)).check(matches(not(isDisplayed())));
 
         /* Contact details should be visible if either name, phone, or email is requested. */
         TestThreadUtils.runOnUiThreadBlocking(
@@ -311,9 +329,19 @@ public class AutofillAssistantCollectUserDataUiTest {
                        isDescendantOfA(is(viewHolder.mLoginsSection))))
                 .check(matches(not(isDisplayed())));
         onView(allOf(withId(R.id.section_title_add_button),
+                       isDescendantOfA(withId(R.id.date_expander)),
                        isDescendantOfA(is(viewHolder.mDateRangeStartSection))))
                 .check(matches(not(isDisplayed())));
         onView(allOf(withId(R.id.section_title_add_button),
+                       isDescendantOfA(withId(R.id.time_expander)),
+                       isDescendantOfA(is(viewHolder.mDateRangeStartSection))))
+                .check(matches(not(isDisplayed())));
+        onView(allOf(withId(R.id.section_title_add_button),
+                       isDescendantOfA(withId(R.id.date_expander)),
+                       isDescendantOfA(is(viewHolder.mDateRangeEndSection))))
+                .check(matches(not(isDisplayed())));
+        onView(allOf(withId(R.id.section_title_add_button),
+                       isDescendantOfA(withId(R.id.time_expander)),
                        isDescendantOfA(is(viewHolder.mDateRangeEndSection))))
                 .check(matches(not(isDisplayed())));
 
@@ -330,10 +358,20 @@ public class AutofillAssistantCollectUserDataUiTest {
 
         /* Date/time range sections should always display the chevron. */
         onView(allOf(withTagValue(is(VERTICAL_EXPANDER_CHEVRON)),
-                       isDescendantOfA(is(viewHolder.mDateRangeStartSection))))
+                       isDescendantOfA(is(viewHolder.mDateRangeStartSection)),
+                       isDescendantOfA(withId(R.id.date_expander))))
                 .check(matches(isDisplayed()));
         onView(allOf(withTagValue(is(VERTICAL_EXPANDER_CHEVRON)),
-                       isDescendantOfA(is(viewHolder.mDateRangeEndSection))))
+                       isDescendantOfA(is(viewHolder.mDateRangeStartSection)),
+                       isDescendantOfA(withId(R.id.time_expander))))
+                .check(matches(isDisplayed()));
+        onView(allOf(withTagValue(is(VERTICAL_EXPANDER_CHEVRON)),
+                       isDescendantOfA(is(viewHolder.mDateRangeEndSection)),
+                       isDescendantOfA(withId(R.id.date_expander))))
+                .check(matches(isDisplayed()));
+        onView(allOf(withTagValue(is(VERTICAL_EXPANDER_CHEVRON)),
+                       isDescendantOfA(is(viewHolder.mDateRangeEndSection)),
+                       isDescendantOfA(withId(R.id.time_expander))))
                 .check(matches(isDisplayed()));
 
         /* Empty sections are collapsed. */
@@ -381,6 +419,10 @@ public class AutofillAssistantCollectUserDataUiTest {
             model.set(AssistantCollectUserDataModel.WEB_CONTENTS, mTestRule.getWebContents());
             model.set(AssistantCollectUserDataModel.REQUEST_NAME, true);
             model.set(AssistantCollectUserDataModel.REQUEST_EMAIL, true);
+            model.set(AssistantCollectUserDataModel.CONTACT_SUMMARY_DESCRIPTION_OPTIONS,
+                    mDefaultContactSummaryOptions);
+            model.set(AssistantCollectUserDataModel.CONTACT_FULL_DESCRIPTION_OPTIONS,
+                    mDefaultContactFullOptions);
             model.set(AssistantCollectUserDataModel.AVAILABLE_CONTACTS, Collections.emptyList());
             model.set(AssistantCollectUserDataModel.SELECTED_CONTACT_DETAILS, null);
             model.set(AssistantCollectUserDataModel.VISIBLE, true);
@@ -593,8 +635,13 @@ public class AutofillAssistantCollectUserDataUiTest {
             model.set(AssistantCollectUserDataModel.REQUEST_NAME, true);
             model.set(AssistantCollectUserDataModel.REQUEST_PHONE, true);
             model.set(AssistantCollectUserDataModel.REQUEST_EMAIL, true);
+            model.set(AssistantCollectUserDataModel.CONTACT_SUMMARY_DESCRIPTION_OPTIONS,
+                    mDefaultContactSummaryOptions);
+            model.set(AssistantCollectUserDataModel.CONTACT_FULL_DESCRIPTION_OPTIONS,
+                    mDefaultContactFullOptions);
             model.set(AssistantCollectUserDataModel.REQUEST_PAYMENT, true);
             model.set(AssistantCollectUserDataModel.REQUEST_SHIPPING_ADDRESS, true);
+            model.set(AssistantCollectUserDataModel.REQUEST_DATE_RANGE, true);
             AutofillContact contact = AssistantCollectUserDataModel.createAutofillContact(
                     mTestRule.getActivity(), profile, /* requestName= */ true,
                     /* requestPhone= */ true, /* requestEmail= */ true);
@@ -659,7 +706,8 @@ public class AutofillAssistantCollectUserDataUiTest {
         assertThat(viewHolder.mLoginList.getItemCount(), is(1));
 
         testContact("maggie@simpson.com", "Maggie Simpson\nmaggie@simpson.com",
-                viewHolder.mContactSection.getCollapsedView(), viewHolder.mContactList.getItem(0));
+                viewHolder.mContactSection.getCollapsedView(), viewHolder.mContactList.getItem(0),
+                /* isComplete = */ true);
         testPaymentMethod("1111", "Jon Doe", "12/2050",
                 viewHolder.mPaymentSection.getCollapsedView(),
                 viewHolder.mPaymentMethodList.getItem(0));
@@ -683,6 +731,78 @@ public class AutofillAssistantCollectUserDataUiTest {
         assertThat(delegate.mAddress.getProfile().getStreetAddress(), containsString("123 Main"));
         assertThat(delegate.mTermsStatus, is(AssistantTermsAndConditionsState.NOT_SELECTED));
         assertThat(delegate.mLoginChoice.getIdentifier(), is("id"));
+    }
+
+    /** Tests custom summary options for the contact details section. */
+    @Test
+    @MediumTest
+    public void testContactDetailsCustomSummary() throws Exception {
+        AutofillContact contactFull = AssistantCollectUserDataModel.createAutofillContact(
+                mTestRule.getActivity(),
+                new PersonalDataManager.AutofillProfile("GUID", "https://www.example.com",
+                        "Maggie Simpson", "Acme Inc.", "123 Main", "California", "Los Angeles", "",
+                        "90210", "", "UZ", "555 123-4567", "maggie@simpson.com", ""),
+                /* requestName= */ true,
+                /* requestPhone= */ true, /* requestEmail= */ true);
+
+        AutofillContact contactWithoutEmail =
+                AssistantCollectUserDataModel.createAutofillContact(mTestRule.getActivity(),
+                        new PersonalDataManager.AutofillProfile("GUID", "https://www.example.com",
+                                "John Simpson", "Acme Inc.", "123 Main", "California",
+                                "Los Angeles", "", "90210", "", "UZ", "555 123-4567", "", ""),
+                        /* requestName= */ true,
+                        /* requestPhone= */ true, /* requestEmail= */ true);
+
+        AssistantCollectUserDataModel model = new AssistantCollectUserDataModel();
+        AssistantCollectUserDataCoordinator coordinator = createCollectUserDataCoordinator(model);
+        AutofillAssistantCollectUserDataTestHelper.MockDelegate delegate =
+                new AutofillAssistantCollectUserDataTestHelper.MockDelegate();
+        AutofillAssistantCollectUserDataTestHelper
+                .ViewHolder viewHolder = TestThreadUtils.runOnUiThreadBlocking(
+                () -> new AutofillAssistantCollectUserDataTestHelper.ViewHolder(coordinator));
+
+        AssistantCollectUserDataModel.ContactDescriptionOptions summaryOptions =
+                new AssistantCollectUserDataModel.ContactDescriptionOptions();
+        summaryOptions.mFields = new int[] {AssistantContactField.NAME_FULL,
+                AssistantContactField.EMAIL_ADDRESS, AssistantContactField.PHONE_HOME_WHOLE_NUMBER};
+        summaryOptions.mMaxNumberLines = 3;
+
+        AssistantCollectUserDataModel.ContactDescriptionOptions fullOptions =
+                new AssistantCollectUserDataModel.ContactDescriptionOptions();
+        fullOptions.mFields = new int[] {AssistantContactField.NAME_FULL,
+                AssistantContactField.PHONE_HOME_WHOLE_NUMBER, AssistantContactField.EMAIL_ADDRESS};
+        fullOptions.mMaxNumberLines = 3;
+
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            model.set(AssistantCollectUserDataModel.WEB_CONTENTS, mTestRule.getWebContents());
+            model.set(AssistantCollectUserDataModel.DELEGATE, delegate);
+            model.set(AssistantCollectUserDataModel.REQUEST_NAME, true);
+            model.set(AssistantCollectUserDataModel.REQUEST_PHONE, true);
+            model.set(AssistantCollectUserDataModel.REQUEST_EMAIL, true);
+            model.set(AssistantCollectUserDataModel.CONTACT_SUMMARY_DESCRIPTION_OPTIONS,
+                    summaryOptions);
+            model.set(AssistantCollectUserDataModel.CONTACT_FULL_DESCRIPTION_OPTIONS, fullOptions);
+            List<AutofillContact> contacts = new ArrayList<>();
+            contacts.add(contactFull);
+            contacts.add(contactWithoutEmail);
+            model.set(AssistantCollectUserDataModel.AVAILABLE_CONTACTS, contacts);
+            model.set(AssistantCollectUserDataModel.SELECTED_CONTACT_DETAILS, contactFull);
+            model.set(AssistantCollectUserDataModel.VISIBLE, true);
+        });
+
+        testContact("Maggie Simpson\nmaggie@simpson.com\n555 123-4567",
+                "Maggie Simpson\n555 123-4567\nmaggie@simpson.com",
+                viewHolder.mContactSection.getCollapsedView(), viewHolder.mContactList.getItem(0),
+                /* isComplete = */ true);
+
+        TestThreadUtils.runOnUiThreadBlocking(
+                ()
+                        -> model.set(AssistantCollectUserDataModel.SELECTED_CONTACT_DETAILS,
+                                contactWithoutEmail));
+
+        testContact("John Simpson\n555 123-4567", "John Simpson\n555 123-4567",
+                viewHolder.mContactSection.getCollapsedView(), viewHolder.mContactList.getItem(0),
+                /* isComplete = */ false);
     }
 
     @Test
@@ -960,45 +1080,65 @@ public class AutofillAssistantCollectUserDataUiTest {
         AssistantCollectUserDataModel model = new AssistantCollectUserDataModel();
         Locale locale = LocaleUtils.forLanguageTag("en-US");
         AssistantCollectUserDataCoordinator coordinator = createCollectUserDataCoordinator(
-                model, locale, new SimpleDateFormat("MMM d, yyyy h:mm a", locale));
+                model, locale, new SimpleDateFormat("MMM d, yyyy", locale));
         AutofillAssistantCollectUserDataTestHelper.MockDelegate delegate =
                 new AutofillAssistantCollectUserDataTestHelper.MockDelegate();
         AutofillAssistantCollectUserDataTestHelper
                 .ViewHolder viewHolder = TestThreadUtils.runOnUiThreadBlocking(
                 () -> new AutofillAssistantCollectUserDataTestHelper.ViewHolder(coordinator));
 
-        AssistantDateTime startTime = new AssistantDateTime(2019, 10, 21, 8, 0, 0);
-        AssistantDateTime endTime = new AssistantDateTime(2019, 11, 7, 18, 30, 0);
-        AssistantDateTime minTime = new AssistantDateTime(2019, 10, 21, 8, 0, 0);
-        AssistantDateTime maxTime = new AssistantDateTime(2020, 10, 21, 8, 0, 0);
+        List<String> timeSlots = new ArrayList<>();
+        timeSlots.add("08:00 AM");
+        timeSlots.add("09:00 AM");
+
+        AssistantDateTime startDate = new AssistantDateTime(2019, 10, 21, 0, 0, 0);
+        AssistantDateTime endDate = new AssistantDateTime(2019, 11, 7, 0, 0, 0);
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             model.set(AssistantCollectUserDataModel.DELEGATE, delegate);
             model.set(AssistantCollectUserDataModel.REQUEST_DATE_RANGE, true);
-            model.set(AssistantCollectUserDataModel.DATE_RANGE_START,
-                    new AssistantDateChoiceOptions(startTime, minTime, maxTime));
-            model.set(AssistantCollectUserDataModel.DATE_RANGE_END,
-                    new AssistantDateChoiceOptions(endTime, minTime, maxTime));
-            model.set(AssistantCollectUserDataModel.DATE_RANGE_START_LABEL, "Pick up");
-            model.set(AssistantCollectUserDataModel.DATE_RANGE_END_LABEL, "Return");
-            model.set(AssistantCollectUserDataModel.DATE_RANGE_INVALID_ERROR_MESSAGE,
-                    "Return must be later than pick up");
+            model.set(AssistantCollectUserDataModel.DATE_RANGE_START_OPTIONS,
+                    new AssistantDateChoiceOptions(new AssistantDateTime(2019, 10, 21, 0, 0, 0),
+                            new AssistantDateTime(2020, 10, 21, 0, 0, 0), timeSlots));
+            model.set(AssistantCollectUserDataModel.DATE_RANGE_END_OPTIONS,
+                    new AssistantDateChoiceOptions(new AssistantDateTime(2019, 10, 21, 0, 0, 0),
+                            new AssistantDateTime(2020, 10, 21, 0, 0, 0), timeSlots));
+            model.set(AssistantCollectUserDataModel.DATE_RANGE_START_DATE, startDate);
+            model.set(AssistantCollectUserDataModel.DATE_RANGE_START_TIMESLOT, 0);
+            model.set(AssistantCollectUserDataModel.DATE_RANGE_END_DATE, endDate);
+            model.set(AssistantCollectUserDataModel.DATE_RANGE_END_TIMESLOT, 1);
+
+            model.set(AssistantCollectUserDataModel.DATE_RANGE_START_DATE_LABEL, "Start date");
+            model.set(AssistantCollectUserDataModel.DATE_RANGE_START_TIME_LABEL, "Start time");
+            model.set(AssistantCollectUserDataModel.DATE_RANGE_END_DATE_LABEL, "End date");
+            model.set(AssistantCollectUserDataModel.DATE_RANGE_END_TIME_LABEL, "End time");
+            model.set(AssistantCollectUserDataModel.DATE_RANGE_DATE_NOT_SET_ERROR_MESSAGE,
+                    "Date not set");
+            model.set(AssistantCollectUserDataModel.DATE_RANGE_TIME_NOT_SET_ERROR_MESSAGE,
+                    "Time not set");
             model.set(AssistantCollectUserDataModel.VISIBLE, true);
         });
 
-        onView(withText("Return must be later than pick up"))
-                .check(matches(withEffectiveVisibility(Visibility.GONE)));
-        onView(allOf(withId(R.id.datetime), isDescendantOfA(is(viewHolder.mDateRangeStartSection)),
-                       withText("Oct 21, 2019 8:00 AM")))
+        onView(withText("Date not set")).check(doesNotExist());
+        onView(withText("Time not set")).check(doesNotExist());
+
+        onView(allOf(isDescendantOfA(is(viewHolder.mDateRangeStartSection)),
+                       withText("Oct 21, 2019")))
+                .check(matches(isDisplayed()));
+        onView(allOf(isDescendantOfA(is(viewHolder.mDateRangeStartSection)), withText("08:00 AM")))
                 .check(matches(isDisplayed()));
 
-        onView(allOf(withId(R.id.datetime), isDescendantOfA(is(viewHolder.mDateRangeEndSection)),
-                       withText("Nov 7, 2019 6:30 PM")))
+        onView(allOf(isDescendantOfA(is(viewHolder.mDateRangeEndSection)), withText("Nov 7, 2019")))
+                .check(matches(isDisplayed()));
+        onView(allOf(isDescendantOfA(is(viewHolder.mDateRangeEndSection)), withText("09:00 AM")))
                 .check(matches(isDisplayed()));
 
+        assertThat(delegate.mDateRangeStartDate.getTimeInUtcMillis(),
+                is(startDate.getTimeInUtcMillis()));
+        assertThat(delegate.mDateRangeStartTimeSlot, is(0));
         assertThat(
-                delegate.mDateRangeStart.getTimeInUtcMillis(), is(startTime.getTimeInUtcMillis()));
-        assertThat(delegate.mDateRangeEnd.getTimeInUtcMillis(), is(endTime.getTimeInUtcMillis()));
+                delegate.mDateRangeEndDate.getTimeInUtcMillis(), is(endDate.getTimeInUtcMillis()));
+        assertThat(delegate.mDateRangeEndTimeSlot, is(1));
     }
 
     @Test
@@ -1007,157 +1147,230 @@ public class AutofillAssistantCollectUserDataUiTest {
         AssistantCollectUserDataModel model = new AssistantCollectUserDataModel();
         Locale locale = LocaleUtils.forLanguageTag("de-DE");
         AssistantCollectUserDataCoordinator coordinator = createCollectUserDataCoordinator(
-                model, locale, new SimpleDateFormat("dd.MM.yyyy HH:mm", locale));
+                model, locale, new SimpleDateFormat("dd.MM.yyyy", locale));
         AutofillAssistantCollectUserDataTestHelper.MockDelegate delegate =
                 new AutofillAssistantCollectUserDataTestHelper.MockDelegate();
         AutofillAssistantCollectUserDataTestHelper
                 .ViewHolder viewHolder = TestThreadUtils.runOnUiThreadBlocking(
                 () -> new AutofillAssistantCollectUserDataTestHelper.ViewHolder(coordinator));
 
-        AssistantDateTime startTime = new AssistantDateTime(2019, 10, 21, 8, 0, 0);
-        AssistantDateTime endTime = new AssistantDateTime(2019, 11, 7, 18, 30, 0);
-        AssistantDateTime minTime = new AssistantDateTime(2019, 10, 21, 8, 0, 0);
-        AssistantDateTime maxTime = new AssistantDateTime(2020, 10, 21, 8, 0, 0);
+        List<String> timeSlots = new ArrayList<>();
+        timeSlots.add("08:00");
+        timeSlots.add("09:00");
+
+        AssistantDateTime startDate = new AssistantDateTime(2019, 10, 21, 0, 0, 0);
+        AssistantDateTime endDate = new AssistantDateTime(2019, 11, 7, 0, 0, 0);
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             model.set(AssistantCollectUserDataModel.DELEGATE, delegate);
             model.set(AssistantCollectUserDataModel.REQUEST_DATE_RANGE, true);
-            model.set(AssistantCollectUserDataModel.DATE_RANGE_START,
-                    new AssistantDateChoiceOptions(startTime, minTime, maxTime));
-            model.set(AssistantCollectUserDataModel.DATE_RANGE_END,
-                    new AssistantDateChoiceOptions(endTime, minTime, maxTime));
-            model.set(AssistantCollectUserDataModel.DATE_RANGE_START_LABEL, "Pick up");
-            model.set(AssistantCollectUserDataModel.DATE_RANGE_END_LABEL, "Return");
-            model.set(AssistantCollectUserDataModel.DATE_RANGE_INVALID_ERROR_MESSAGE,
-                    "Return must be later than pick up");
+            model.set(AssistantCollectUserDataModel.DATE_RANGE_START_OPTIONS,
+                    new AssistantDateChoiceOptions(new AssistantDateTime(2019, 10, 21, 0, 0, 0),
+                            new AssistantDateTime(2020, 10, 21, 0, 0, 0), timeSlots));
+            model.set(AssistantCollectUserDataModel.DATE_RANGE_END_OPTIONS,
+                    new AssistantDateChoiceOptions(new AssistantDateTime(2019, 10, 21, 0, 0, 0),
+                            new AssistantDateTime(2020, 10, 21, 0, 0, 0), timeSlots));
+            model.set(AssistantCollectUserDataModel.DATE_RANGE_START_DATE, startDate);
+            model.set(AssistantCollectUserDataModel.DATE_RANGE_START_TIMESLOT, 0);
+            model.set(AssistantCollectUserDataModel.DATE_RANGE_END_DATE, endDate);
+            model.set(AssistantCollectUserDataModel.DATE_RANGE_END_TIMESLOT, 1);
+
+            model.set(AssistantCollectUserDataModel.DATE_RANGE_START_DATE_LABEL, "Start date");
+            model.set(AssistantCollectUserDataModel.DATE_RANGE_START_TIME_LABEL, "Start time");
+            model.set(AssistantCollectUserDataModel.DATE_RANGE_END_DATE_LABEL, "End date");
+            model.set(AssistantCollectUserDataModel.DATE_RANGE_END_TIME_LABEL, "End time");
+            model.set(AssistantCollectUserDataModel.DATE_RANGE_DATE_NOT_SET_ERROR_MESSAGE,
+                    "Date not set");
+            model.set(AssistantCollectUserDataModel.DATE_RANGE_TIME_NOT_SET_ERROR_MESSAGE,
+                    "Time not set");
             model.set(AssistantCollectUserDataModel.VISIBLE, true);
         });
 
-        onView(withText("Return must be later than pick up"))
-                .check(matches(withEffectiveVisibility(Visibility.GONE)));
-        onView(allOf(withId(R.id.datetime), isDescendantOfA(is(viewHolder.mDateRangeStartSection)),
-                       withText("21.10.2019 08:00")))
+        onView(withText("Date not set")).check(doesNotExist());
+        onView(withText("Time not set")).check(doesNotExist());
+
+        onView(allOf(isDescendantOfA(is(viewHolder.mDateRangeStartSection)),
+                       withText("21.10.2019")))
+                .check(matches(isDisplayed()));
+        onView(allOf(isDescendantOfA(is(viewHolder.mDateRangeStartSection)), withText("08:00")))
                 .check(matches(isDisplayed()));
 
-        onView(allOf(withId(R.id.datetime), isDescendantOfA(is(viewHolder.mDateRangeEndSection)),
-                       withText("07.11.2019 18:30")))
+        onView(allOf(isDescendantOfA(is(viewHolder.mDateRangeEndSection)), withText("07.11.2019")))
+                .check(matches(isDisplayed()));
+        onView(allOf(isDescendantOfA(is(viewHolder.mDateRangeEndSection)), withText("09:00")))
                 .check(matches(isDisplayed()));
 
+        assertThat(delegate.mDateRangeStartDate.getTimeInUtcMillis(),
+                is(startDate.getTimeInUtcMillis()));
+        assertThat(delegate.mDateRangeStartTimeSlot, is(0));
         assertThat(
-                delegate.mDateRangeStart.getTimeInUtcMillis(), is(startTime.getTimeInUtcMillis()));
-        assertThat(delegate.mDateRangeEnd.getTimeInUtcMillis(), is(endTime.getTimeInUtcMillis()));
+                delegate.mDateRangeEndDate.getTimeInUtcMillis(), is(endDate.getTimeInUtcMillis()));
+        assertThat(delegate.mDateRangeEndTimeSlot, is(1));
     }
 
     @Test
     @MediumTest
-    public void testDateRangeClamp() throws Exception {
+    public void testDateOrTimeNotSet() throws Exception {
         AssistantCollectUserDataModel model = new AssistantCollectUserDataModel();
         Locale locale = LocaleUtils.forLanguageTag("en-US");
         AssistantCollectUserDataCoordinator coordinator = createCollectUserDataCoordinator(
-                model, locale, new SimpleDateFormat("MMM d, yyyy h:mm a", locale));
+                model, locale, new SimpleDateFormat("MMM d, yyyy", locale));
         AutofillAssistantCollectUserDataTestHelper.MockDelegate delegate =
                 new AutofillAssistantCollectUserDataTestHelper.MockDelegate();
         AutofillAssistantCollectUserDataTestHelper
                 .ViewHolder viewHolder = TestThreadUtils.runOnUiThreadBlocking(
                 () -> new AutofillAssistantCollectUserDataTestHelper.ViewHolder(coordinator));
 
-        AssistantDateTime startTime = new AssistantDateTime(2019, 11, 7, 18, 30, 0);
-        AssistantDateTime endTime = new AssistantDateTime(2019, 10, 21, 8, 0, 0);
-        AssistantDateTime minTime = new AssistantDateTime(2019, 10, 21, 8, 0, 0);
-        AssistantDateTime maxTime = new AssistantDateTime(2020, 10, 21, 8, 0, 0);
+        List<String> timeSlots = new ArrayList<>();
+        timeSlots.add("08:00 AM");
+        timeSlots.add("09:00 AM");
 
-        // Note the sequence: after the start time is set, the end time is modified to be *before*
-        // the start time. This should automatically clamp the start time to the end time.
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             model.set(AssistantCollectUserDataModel.DELEGATE, delegate);
             model.set(AssistantCollectUserDataModel.REQUEST_DATE_RANGE, true);
-            model.set(AssistantCollectUserDataModel.DATE_RANGE_START,
-                    new AssistantDateChoiceOptions(startTime, minTime, maxTime));
-            model.set(AssistantCollectUserDataModel.DATE_RANGE_END,
-                    new AssistantDateChoiceOptions(endTime, minTime, maxTime));
-            model.set(AssistantCollectUserDataModel.DATE_RANGE_START_LABEL, "Pick up");
-            model.set(AssistantCollectUserDataModel.DATE_RANGE_END_LABEL, "Return");
-            model.set(AssistantCollectUserDataModel.DATE_RANGE_INVALID_ERROR_MESSAGE,
-                    "Return must be later than pick up");
+            model.set(AssistantCollectUserDataModel.DATE_RANGE_START_OPTIONS,
+                    new AssistantDateChoiceOptions(new AssistantDateTime(2019, 10, 21, 0, 0, 0),
+                            new AssistantDateTime(2020, 10, 21, 0, 0, 0), timeSlots));
+            model.set(AssistantCollectUserDataModel.DATE_RANGE_END_OPTIONS,
+                    new AssistantDateChoiceOptions(new AssistantDateTime(2019, 10, 21, 0, 0, 0),
+                            new AssistantDateTime(2020, 10, 21, 0, 0, 0), timeSlots));
+            model.set(AssistantCollectUserDataModel.DATE_RANGE_START_DATE, null);
+            model.set(AssistantCollectUserDataModel.DATE_RANGE_START_TIMESLOT, null);
+            model.set(AssistantCollectUserDataModel.DATE_RANGE_END_DATE, null);
+            model.set(AssistantCollectUserDataModel.DATE_RANGE_END_TIMESLOT, null);
+
+            model.set(AssistantCollectUserDataModel.DATE_RANGE_START_DATE_LABEL, "Start date");
+            model.set(AssistantCollectUserDataModel.DATE_RANGE_START_TIME_LABEL, "Start time");
+            model.set(AssistantCollectUserDataModel.DATE_RANGE_END_DATE_LABEL, "End date");
+            model.set(AssistantCollectUserDataModel.DATE_RANGE_END_TIME_LABEL, "End time");
+            model.set(AssistantCollectUserDataModel.DATE_RANGE_DATE_NOT_SET_ERROR_MESSAGE,
+                    "Date not set");
+            model.set(AssistantCollectUserDataModel.DATE_RANGE_TIME_NOT_SET_ERROR_MESSAGE,
+                    "Time not set");
             model.set(AssistantCollectUserDataModel.VISIBLE, true);
         });
 
-        onView(allOf(withId(R.id.datetime), isDescendantOfA(is(viewHolder.mDateRangeStartSection)),
-                       withText("Oct 21, 2019 8:00 AM")))
+        onView(allOf(isDescendantOfA(is(viewHolder.mDateRangeStartSection)),
+                       withText("Date not set")))
+                .check(matches(isDisplayed()));
+        onView(allOf(isDescendantOfA(is(viewHolder.mDateRangeStartSection)),
+                       withText("Time not set")))
+                .check(matches(isDisplayed()));
+        onView(allOf(isDescendantOfA(is(viewHolder.mDateRangeEndSection)),
+                       withText("Date not set")))
+                .check(matches(isDisplayed()));
+        onView(allOf(isDescendantOfA(is(viewHolder.mDateRangeEndSection)),
+                       withText("Time not set")))
                 .check(matches(isDisplayed()));
 
-        onView(allOf(withId(R.id.datetime), isDescendantOfA(is(viewHolder.mDateRangeEndSection)),
-                       withText("Oct 21, 2019 8:00 AM")))
-                .check(matches(isDisplayed()));
-        onView(withText("Return must be later than pick up"))
-                .check(matches(withEffectiveVisibility(Visibility.VISIBLE)));
+        TestThreadUtils.runOnUiThreadBlocking(
+                ()
+                        -> model.set(AssistantCollectUserDataModel.DATE_RANGE_START_DATE,
+                                new AssistantDateTime(2019, 10, 21, 0, 0, 0)));
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> model.set(AssistantCollectUserDataModel.DATE_RANGE_START_TIMESLOT, 0));
+        TestThreadUtils.runOnUiThreadBlocking(
+                ()
+                        -> model.set(AssistantCollectUserDataModel.DATE_RANGE_END_DATE,
+                                new AssistantDateTime(2019, 11, 7, 0, 0, 0)));
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> model.set(AssistantCollectUserDataModel.DATE_RANGE_END_TIMESLOT, 0));
 
-        assertThat(delegate.mDateRangeStart.getTimeInUtcMillis(), is(endTime.getTimeInUtcMillis()));
-        assertThat(delegate.mDateRangeEnd.getTimeInUtcMillis(), is(endTime.getTimeInUtcMillis()));
+        onView(allOf(isDescendantOfA(is(viewHolder.mDateRangeStartSection)),
+                       withText("Date not set")))
+                .check(doesNotExist());
+        onView(allOf(isDescendantOfA(is(viewHolder.mDateRangeStartSection)),
+                       withText("Time not set")))
+                .check(doesNotExist());
+        onView(allOf(isDescendantOfA(is(viewHolder.mDateRangeEndSection)),
+                       withText("Date not set")))
+                .check(doesNotExist());
+        onView(allOf(isDescendantOfA(is(viewHolder.mDateRangeEndSection)),
+                       withText("Time not set")))
+                .check(doesNotExist());
     }
 
     @Test
     @MediumTest
-    public void testDateRangePopup() throws Exception {
+    public void testDateRangePopups() throws Exception {
         AssistantCollectUserDataModel model = new AssistantCollectUserDataModel();
         Locale locale = LocaleUtils.forLanguageTag("en-US");
         AssistantCollectUserDataCoordinator coordinator = createCollectUserDataCoordinator(
-                model, locale, new SimpleDateFormat("MMM d, yyyy h:mm a", locale));
+                model, locale, new SimpleDateFormat("MMM d, yyyy", locale));
         AutofillAssistantCollectUserDataTestHelper.MockDelegate delegate =
                 new AutofillAssistantCollectUserDataTestHelper.MockDelegate();
         AutofillAssistantCollectUserDataTestHelper
                 .ViewHolder viewHolder = TestThreadUtils.runOnUiThreadBlocking(
                 () -> new AutofillAssistantCollectUserDataTestHelper.ViewHolder(coordinator));
 
-        AssistantDateTime startTime = new AssistantDateTime(2019, 10, 21, 8, 0, 0);
-        AssistantDateTime endTime = new AssistantDateTime(2019, 11, 7, 18, 30, 0);
-        AssistantDateTime minTime = new AssistantDateTime(2019, 10, 21, 8, 0, 0);
-        AssistantDateTime maxTime = new AssistantDateTime(2020, 10, 21, 8, 0, 0);
+        List<String> timeSlots = new ArrayList<>();
+        timeSlots.add("08:00 AM");
+        timeSlots.add("09:00 AM");
+
+        AssistantDateTime startDate = new AssistantDateTime(2019, 10, 21, 0, 0, 0);
+        AssistantDateTime endDate = new AssistantDateTime(2019, 11, 7, 0, 0, 0);
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             model.set(AssistantCollectUserDataModel.DELEGATE, delegate);
             model.set(AssistantCollectUserDataModel.REQUEST_DATE_RANGE, true);
-            model.set(AssistantCollectUserDataModel.DATE_RANGE_START,
-                    new AssistantDateChoiceOptions(startTime, minTime, maxTime));
-            model.set(AssistantCollectUserDataModel.DATE_RANGE_END,
-                    new AssistantDateChoiceOptions(endTime, minTime, maxTime));
-            model.set(AssistantCollectUserDataModel.DATE_RANGE_START_LABEL, "Pick up");
-            model.set(AssistantCollectUserDataModel.DATE_RANGE_END_LABEL, "Return");
-            model.set(AssistantCollectUserDataModel.DATE_RANGE_INVALID_ERROR_MESSAGE,
-                    "Return must be later than pick up");
+            model.set(AssistantCollectUserDataModel.DATE_RANGE_START_OPTIONS,
+                    new AssistantDateChoiceOptions(new AssistantDateTime(2019, 10, 21, 0, 0, 0),
+                            new AssistantDateTime(2020, 10, 21, 0, 0, 0), timeSlots));
+            model.set(AssistantCollectUserDataModel.DATE_RANGE_END_OPTIONS,
+                    new AssistantDateChoiceOptions(new AssistantDateTime(2019, 10, 21, 0, 0, 0),
+                            new AssistantDateTime(2020, 10, 21, 0, 0, 0), timeSlots));
+            model.set(AssistantCollectUserDataModel.DATE_RANGE_START_DATE, startDate);
+            model.set(AssistantCollectUserDataModel.DATE_RANGE_START_TIMESLOT, 0);
+            model.set(AssistantCollectUserDataModel.DATE_RANGE_END_DATE, endDate);
+            model.set(AssistantCollectUserDataModel.DATE_RANGE_END_TIMESLOT, 1);
+
+            model.set(AssistantCollectUserDataModel.DATE_RANGE_START_DATE_LABEL, "Start date");
+            model.set(AssistantCollectUserDataModel.DATE_RANGE_START_TIME_LABEL, "Start time");
+            model.set(AssistantCollectUserDataModel.DATE_RANGE_END_DATE_LABEL, "End date");
+            model.set(AssistantCollectUserDataModel.DATE_RANGE_END_TIME_LABEL, "End time");
+            model.set(AssistantCollectUserDataModel.DATE_RANGE_DATE_NOT_SET_ERROR_MESSAGE,
+                    "Date not set");
+            model.set(AssistantCollectUserDataModel.DATE_RANGE_TIME_NOT_SET_ERROR_MESSAGE,
+                    "Time not set");
             model.set(AssistantCollectUserDataModel.VISIBLE, true);
         });
 
-        AssistantDateTime newStartTime = new AssistantDateTime(2019, 11, 3, 12, 0, 0);
-        AssistantDateTime newEndTime = new AssistantDateTime(2019, 11, 12, 20, 30, 0);
+        AssistantDateTime newStartDate = new AssistantDateTime(2019, 11, 3, 0, 0, 0);
+        AssistantDateTime newEndDate = new AssistantDateTime(2019, 11, 12, 0, 0, 0);
 
-        onView(withText("Return must be later than pick up"))
-                .check(matches(withEffectiveVisibility(Visibility.GONE)));
-        onView(allOf(withId(R.id.datetime), isDescendantOfA(is(viewHolder.mDateRangeStartSection))))
+        onView(allOf(withId(R.id.date_expander),
+                       isDescendantOfA(is(viewHolder.mDateRangeStartSection))))
                 .perform(click());
-        onView(withId(R.id.date_picker))
+        onView(withClassName(equalTo(DatePicker.class.getName())))
                 .inRoot(isDialog())
                 .perform(setDate(
-                        newStartTime.getYear(), newStartTime.getMonth(), newStartTime.getDay()));
-        onView(withId(R.id.time_picker))
-                .inRoot(isDialog())
-                .perform(setTime(newStartTime.getHour(), newStartTime.getMinute()));
-        onView(withId(android.R.id.button1)).inRoot(isDialog()).perform(click());
+                        newStartDate.getYear(), newStartDate.getMonth(), newStartDate.getDay()));
+        onView(withText(R.string.date_picker_dialog_set)).inRoot(isDialog()).perform(click());
 
-        onView(allOf(withId(R.id.datetime), isDescendantOfA(is(viewHolder.mDateRangeEndSection))))
+        onView(allOf(withId(R.id.time_expander),
+                       isDescendantOfA(is(viewHolder.mDateRangeStartSection))))
                 .perform(click());
-        onView(withId(R.id.date_picker))
-                .inRoot(isDialog())
-                .perform(setDate(newEndTime.getYear(), newEndTime.getMonth(), newEndTime.getDay()));
-        onView(withId(R.id.time_picker))
-                .inRoot(isDialog())
-                .perform(setTime(newEndTime.getHour(), newEndTime.getMinute()));
-        onView(withId(android.R.id.button1)).inRoot(isDialog()).perform(click());
+        onView(withText("09:00 AM")).inRoot(isDialog()).perform(click());
 
-        assertThat(delegate.mDateRangeStart.getTimeInUtcMillis(),
-                is(newStartTime.getTimeInUtcMillis()));
-        assertThat(
-                delegate.mDateRangeEnd.getTimeInUtcMillis(), is(newEndTime.getTimeInUtcMillis()));
+        onView(allOf(withId(R.id.date_expander),
+                       isDescendantOfA(is(viewHolder.mDateRangeEndSection))))
+                .perform(click());
+        onView(withClassName(equalTo(DatePicker.class.getName())))
+                .inRoot(isDialog())
+                .perform(setDate(newEndDate.getYear(), newEndDate.getMonth(), newEndDate.getDay()));
+        onView(withText(R.string.date_picker_dialog_set)).inRoot(isDialog()).perform(click());
+
+        onView(allOf(withId(R.id.time_expander),
+                       isDescendantOfA(is(viewHolder.mDateRangeEndSection))))
+                .perform(click());
+        onView(withText("08:00 AM")).inRoot(isDialog()).perform(click());
+
+        assertThat(delegate.mDateRangeStartDate.getTimeInUtcMillis(),
+                is(newStartDate.getTimeInUtcMillis()));
+        assertThat(delegate.mDateRangeStartTimeSlot, is(1));
+        assertThat(delegate.mDateRangeEndDate.getTimeInUtcMillis(),
+                is(newEndDate.getTimeInUtcMillis()));
+        assertThat(delegate.mDateRangeEndTimeSlot, is(0));
     }
 
     @Test
@@ -1267,16 +1480,16 @@ public class AutofillAssistantCollectUserDataUiTest {
     }
 
     private void testContact(String expectedContactSummary, String expectedContactFullDescription,
-            View summaryView, View fullView) {
+            View summaryView, View fullView, boolean isComplete) {
         onView(allOf(withId(R.id.contact_summary), isDescendantOfA(is(summaryView))))
                 .check(matches(withText(expectedContactSummary)));
-        onView(allOf(withId(R.id.incomplete_error), isDescendantOfA(is(summaryView))))
-                .check(matches(not(isDisplayed())));
+        assertThat(summaryView.findViewById(R.id.incomplete_error).getVisibility(),
+                is(isComplete ? View.GONE : View.VISIBLE));
 
         onView(allOf(withId(R.id.contact_full), isDescendantOfA(is(fullView))))
                 .check(matches(withText(expectedContactFullDescription)));
-        onView(allOf(withId(R.id.incomplete_error), isDescendantOfA(is(fullView))))
-                .check(matches(not(isDisplayed())));
+        assertThat(fullView.findViewById(R.id.incomplete_error).getVisibility(),
+                is(isComplete ? View.GONE : View.VISIBLE));
     }
 
     private void testPaymentMethod(String expectedObfuscatedCardNumber, String expectedCardName,

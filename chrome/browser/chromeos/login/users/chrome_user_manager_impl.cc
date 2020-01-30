@@ -1017,7 +1017,7 @@ void ChromeUserManagerImpl::ArcKioskAppLoggedIn(user_manager::User* user) {
       user_manager::User::USER_IMAGE_INVALID, false);
 
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  command_line->AppendSwitch(::switches::kForceAndroidAppMode);
+  command_line->AppendSwitch(::switches::kForceAppMode);
   command_line->AppendSwitch(::switches::kSilentLaunch);
 
   // Disable window animation since kiosk app runs in a single full screen
@@ -1036,7 +1036,7 @@ void ChromeUserManagerImpl::WebKioskAppLoggedIn(user_manager::User* user) {
       user_manager::User::USER_IMAGE_INVALID, false);
 
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  command_line->AppendSwitch(::switches::kForceWebAppMode);
+  command_line->AppendSwitch(::switches::kForceAppMode);
   command_line->AppendSwitch(
       ::switches::kSilentLaunch);  // To open no extra windows.
 

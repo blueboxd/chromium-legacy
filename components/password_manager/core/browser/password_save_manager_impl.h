@@ -11,7 +11,13 @@ namespace password_manager {
 
 class PasswordGenerationManager;
 
-enum class PendingCredentialsState { NONE, NEW_LOGIN, UPDATE, AUTOMATIC_SAVE };
+enum class PendingCredentialsState {
+  NONE,
+  NEW_LOGIN,
+  UPDATE,
+  AUTOMATIC_SAVE,
+  EQUAL_TO_SAVED_MATCH
+};
 
 class PasswordSaveManagerImpl : public PasswordSaveManager {
  public:
@@ -23,7 +29,7 @@ class PasswordSaveManagerImpl : public PasswordSaveManager {
   static std::unique_ptr<PasswordSaveManagerImpl> CreatePasswordSaveManagerImpl(
       const PasswordManagerClient* client);
 
-  const autofill::PasswordForm* GetPendingCredentials() const override;
+  const autofill::PasswordForm& GetPendingCredentials() const override;
   const base::string16& GetGeneratedPassword() const override;
   FormSaver* GetFormSaver() const override;
 
@@ -40,6 +46,8 @@ class PasswordSaveManagerImpl : public PasswordSaveManager {
       const autofill::FormData& submitted_form,
       bool is_http_auth,
       bool is_credential_api_save) override;
+
+  void ResetPendingCrednetials() override;
 
   void Save(const autofill::FormData& observed_form,
             const autofill::PasswordForm& parsed_submitted_form) override;

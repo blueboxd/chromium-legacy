@@ -311,8 +311,8 @@ class RenderFrameHostManagerTest : public RenderViewHostImplTestHarness {
     return GURL("http://isolated-cross-site.com");
   }
 
-  // Creates a test RenderViewHost that's swapped out.
-  void CreateSwappedOutRenderViewHost() {
+  // Creates an inactive test RenderViewHost.
+  void CreateInactiveRenderViewHost() {
     const GURL kChromeURL(GetWebUIURL("foo"));
     const GURL kDestUrl("http://www.google.com/");
 
@@ -327,15 +327,15 @@ class RenderFrameHostManagerTest : public RenderViewHostImplTestHarness {
     EXPECT_TRUE(contents()->CrossProcessNavigationPending());
 
     // Manually increase the number of active frames in the
-    // SiteInstance that ntp_rfh belongs to, to prevent it from being
-    // destroyed when it gets swapped out.
+    // SiteInstance that ntp_rfh belongs to, to prevent the SiteInstance from
+    // being destroyed when ntp_rfh goes away.
     ntp_rfh->GetSiteInstance()->IncrementActiveFrameCount();
 
     TestRenderFrameHost* dest_rfh = contents()->GetPendingMainFrame();
     CHECK(dest_rfh);
     EXPECT_NE(ntp_rfh, dest_rfh);
 
-    // Commit. This will swap out ntp_rfh.
+    // Commit. This replaces ntp_rfh with a proxy and leaves its RVH inactive.
     navigation->Commit();
   }
 
@@ -590,13 +590,12 @@ TEST_F(RenderFrameHostManagerTest, UpdateFaviconURLWhilePendingUnload) {
 // Test if RenderViewHost::GetRenderWidgetHosts() only returns active
 // widgets.
 TEST_F(RenderFrameHostManagerTest, GetRenderWidgetHostsReturnsActiveViews) {
-  CreateSwappedOutRenderViewHost();
+  CreateInactiveRenderViewHost();
   std::unique_ptr<RenderWidgetHostIterator> widgets(
       RenderWidgetHost::GetRenderWidgetHosts());
 
   // We know that there is the only one active widget. Another view is
-  // now swapped out, so the swapped out view is not included in the
-  // list.
+  // now inactive, so the inactive view is not included in the list.
   RenderWidgetHost* widget = widgets->GetNextHost();
   EXPECT_FALSE(widgets->GetNextHost());
   RenderViewHost* rvh = RenderViewHost::From(widget);
@@ -607,10 +606,10 @@ TEST_F(RenderFrameHostManagerTest, GetRenderWidgetHostsReturnsActiveViews) {
 // RenderViewHostImpl::GetAllRenderWidgetHosts().
 // RenderViewHost::GetRenderWidgetHosts() returns only active widgets, but
 // RenderViewHostImpl::GetAllRenderWidgetHosts() returns everything
-// including swapped out ones.
+// including inactive ones.
 TEST_F(RenderFrameHostManagerTest,
        GetRenderWidgetHostsWithinGetAllRenderWidgetHosts) {
-  CreateSwappedOutRenderViewHost();
+  CreateInactiveRenderViewHost();
   std::unique_ptr<RenderWidgetHostIterator> widgets(
       RenderWidgetHost::GetRenderWidgetHosts());
 
@@ -629,7 +628,7 @@ TEST_F(RenderFrameHostManagerTest,
 }
 
 // Test if SiteInstanceImpl::active_frame_count() is correctly updated
-// as frames in a SiteInstance get swapped out and in.
+// as frames in a SiteInstance get replaced.
 TEST_F(RenderFrameHostManagerTest, ActiveFrameCountWhileSwappingInAndOut) {
   const GURL kUrl1("http://www.google.com/");
   const GURL kUrl2("http://www.chromium.org/");
@@ -1175,28 +1174,26 @@ TEST_F(RenderFrameHostManagerTest, CreateProxiesForOpeners) {
   // BrowsingInstance).
   contents()->NavigateAndCommit(kUrl2);
   TestRenderFrameHost* rfh2 = main_test_rfh();
-  TestRenderViewHost* rvh2 = test_rvh();
   EXPECT_NE(site_instance1, rfh2->GetSiteInstance());
   EXPECT_TRUE(site_instance1->IsRelatedSiteInstance(rfh2->GetSiteInstance()));
 
-  // Ensure rvh1 is placed on swapped out list of the current tab.
+  // Ensure rvh1 is kept with the proxy of the current tab.
   EXPECT_TRUE(rfh1_deleted_observer.deleted());
-  EXPECT_TRUE(manager->GetRenderFrameProxyHost(site_instance1.get()));
-  EXPECT_EQ(rvh1,
-            manager->GetSwappedOutRenderViewHost(rvh1->GetSiteInstance()));
+  EXPECT_EQ(rvh1, manager->GetRenderFrameProxyHost(site_instance1.get())
+                      ->GetRenderViewHost());
 
-  // Ensure a proxy and swapped out RVH are created in the first opener tab.
-  EXPECT_TRUE(
-      opener1_manager->GetRenderFrameProxyHost(rfh2->GetSiteInstance()));
-  TestRenderViewHost* opener1_rvh = static_cast<TestRenderViewHost*>(
-      opener1_manager->GetSwappedOutRenderViewHost(rvh2->GetSiteInstance()));
+  // Ensure a proxy and inactive RVH are created in the first opener tab.
+  RenderFrameProxyHost* rfph1 =
+      opener1_manager->GetRenderFrameProxyHost(rfh2->GetSiteInstance());
+  TestRenderViewHost* opener1_rvh =
+      static_cast<TestRenderViewHost*>(rfph1->GetRenderViewHost());
   EXPECT_FALSE(opener1_rvh->is_active());
 
-  // Ensure a proxy and swapped out RVH are created in the second opener tab.
-  EXPECT_TRUE(
-      opener2_manager->GetRenderFrameProxyHost(rfh2->GetSiteInstance()));
-  TestRenderViewHost* opener2_rvh = static_cast<TestRenderViewHost*>(
-      opener2_manager->GetSwappedOutRenderViewHost(rvh2->GetSiteInstance()));
+  // Ensure a proxy and inactive RVH are created in the second opener tab.
+  RenderFrameProxyHost* rfph2 =
+      opener2_manager->GetRenderFrameProxyHost(rfh2->GetSiteInstance());
+  TestRenderViewHost* opener2_rvh =
+      static_cast<TestRenderViewHost*>(rfph2->GetRenderViewHost());
   EXPECT_FALSE(opener2_rvh->is_active());
 
   // Navigate to a cross-BrowsingInstance URL.
@@ -1206,15 +1203,11 @@ TEST_F(RenderFrameHostManagerTest, CreateProxiesForOpeners) {
   EXPECT_FALSE(site_instance1->IsRelatedSiteInstance(rfh3->GetSiteInstance()));
 
   // No scripting is allowed across BrowsingInstances, so we should not create
-  // swapped out RVHs for the opener chain in this case.
+  // proxies for the opener chain in this case.
   EXPECT_FALSE(
       opener1_manager->GetRenderFrameProxyHost(rfh3->GetSiteInstance()));
   EXPECT_FALSE(
-      opener1_manager->GetSwappedOutRenderViewHost(rfh3->GetSiteInstance()));
-  EXPECT_FALSE(
       opener2_manager->GetRenderFrameProxyHost(rfh3->GetSiteInstance()));
-  EXPECT_FALSE(
-      opener2_manager->GetSwappedOutRenderViewHost(rfh3->GetSiteInstance()));
 }
 
 // Test that a page can disown the opener of the WebContents.
@@ -1352,9 +1345,9 @@ TEST_F(RenderFrameHostManagerTest, DisownOpenerAfterNavigation) {
   EXPECT_FALSE(contents()->HasOpener());
 }
 
-// Test that we clean up swapped out RenderViewHosts when a process hosting
-// those associated RenderViews crashes. http://crbug.com/258993
-TEST_F(RenderFrameHostManagerTest, CleanUpSwappedOutRVHOnProcessCrash) {
+// Test that we clean up RenderFrameProxyHosts when a process hosting the
+// associated frames crashes. http://crbug.com/258993
+TEST_F(RenderFrameHostManagerTest, CleanUpProxiesOnProcessCrash) {
   const GURL kUrl1("http://www.google.com/");
   const GURL kUrl2 = isolated_cross_site_url();
 
@@ -1376,14 +1369,15 @@ TEST_F(RenderFrameHostManagerTest, CleanUpSwappedOutRVHOnProcessCrash) {
   EXPECT_TRUE(opener1_manager->current_host()->IsRenderViewLive());
   EXPECT_TRUE(opener1_manager->current_frame_host()->IsRenderFrameLive());
 
-  // Use a cross-process navigation in the opener to swap out the old RVH.
+  // Use a cross-process navigation in the opener to make the old RVH inactive.
   EXPECT_FALSE(
-      opener1_manager->GetSwappedOutRenderViewHost(rfh1->GetSiteInstance()));
+      opener1_manager->GetRenderFrameProxyHost(rfh1->GetSiteInstance()));
   opener1->NavigateAndCommit(kUrl2);
-  RenderViewHostImpl* swapped_out_rvh =
-      opener1_manager->GetSwappedOutRenderViewHost(rfh1->GetSiteInstance());
-  EXPECT_TRUE(swapped_out_rvh);
-  EXPECT_FALSE(swapped_out_rvh->is_active());
+  RenderFrameProxyHost* rfph1 =
+      opener1_manager->GetRenderFrameProxyHost(rfh1->GetSiteInstance());
+  RenderViewHostImpl* rvh1 = rfph1->GetRenderViewHost();
+  EXPECT_TRUE(rvh1);
+  EXPECT_FALSE(rvh1->is_active());
 
   // Fake a process crash.
   rfh1->GetProcess()->SimulateCrash();
@@ -1392,24 +1386,21 @@ TEST_F(RenderFrameHostManagerTest, CleanUpSwappedOutRVHOnProcessCrash) {
   // is deleted.
   RenderFrameProxyHost* render_frame_proxy_host =
       opener1_manager->GetRenderFrameProxyHost(rfh1->GetSiteInstance());
-  EXPECT_TRUE(render_frame_proxy_host);
+  EXPECT_EQ(rfph1, render_frame_proxy_host);
   EXPECT_FALSE(render_frame_proxy_host->is_render_frame_proxy_live());
 
-  // Expect the swapped out RVH to exist but not be live.
-  EXPECT_TRUE(
-      opener1_manager->GetSwappedOutRenderViewHost(rfh1->GetSiteInstance()));
-  EXPECT_FALSE(
-      opener1_manager->GetSwappedOutRenderViewHost(rfh1->GetSiteInstance())
-          ->IsRenderViewLive());
+  // Expect the RVH to exist but not be live.
+  EXPECT_TRUE(rfph1->GetRenderViewHost());
+  EXPECT_FALSE(rfph1->GetRenderViewHost()->IsRenderViewLive());
 
-  // Reload the initial tab. This should recreate the opener's swapped out RVH
-  // in the original SiteInstance.
+  // Reload the initial tab. This should recreate the opener's RVH in the
+  // original SiteInstance.
   contents()->GetController().Reload(ReloadType::NORMAL, true);
   contents()->GetMainFrame()->PrepareForCommit();
   TestRenderFrameHost* rfh2 = contents()->GetMainFrame();
-  EXPECT_TRUE(
-      opener1_manager->GetSwappedOutRenderViewHost(rfh2->GetSiteInstance())
-          ->IsRenderViewLive());
+  EXPECT_TRUE(opener1_manager->GetRenderFrameProxyHost(rfh2->GetSiteInstance())
+                  ->GetRenderViewHost()
+                  ->IsRenderViewLive());
   EXPECT_EQ(
       opener1_manager->GetRoutingIdForSiteInstance(rfh2->GetSiteInstance()),
       rfh2->GetRenderViewHost()->opener_frame_route_id());
@@ -1685,9 +1676,9 @@ TEST_F(RenderFrameHostManagerTest, UnloadFrameAfterUnloadACK) {
   EXPECT_TRUE(rfh_deleted_observer.deleted());
 }
 
-// Test that the RenderViewHost is properly swapped out if a navigation in the
-// new renderer commits before sending the UnfreezableFrameMsg_Unload message to
-// the old renderer.
+// Test that a RenderFrameHost is properly deleted if a navigation in the new
+// renderer commits before sending the UnfreezableFrameMsg_Unload message to the
+// old renderer.
 // This simulates a cross-site navigation to a synchronously committing URL
 // (e.g., a data URL) and ensures it works properly.
 TEST_F(RenderFrameHostManagerTest, CommitNewNavigationBeforeSendingUnload) {
@@ -1704,8 +1695,8 @@ TEST_F(RenderFrameHostManagerTest, CommitNewNavigationBeforeSendingUnload) {
   RenderFrameDeletedObserver rfh_deleted_observer(rfh1);
   EXPECT_TRUE(rfh1->is_active());
 
-  // Increment the number of active frames in SiteInstanceImpl so that rfh1 is
-  // not deleted on unload.
+  // Increment the number of active frames in rfh1's SiteInstance so that the
+  // SiteInstance is not deleted on unload.
   scoped_refptr<SiteInstanceImpl> site_instance = rfh1->GetSiteInstance();
   site_instance->IncrementActiveFrameCount();
 

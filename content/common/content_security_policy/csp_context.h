@@ -63,7 +63,7 @@ class CONTENT_EXPORT CSPContext {
   void ModifyRequestUrlForCsp(GURL* url);
 
   void SetSelf(const url::Origin origin);
-  void SetSelf(const CSPSource& self_source);
+  void SetSelf(network::mojom::CSPSourcePtr self_source);
 
   // When a CSPSourceList contains 'self', the url is allowed when it match the
   // CSPSource returned by this function.
@@ -71,14 +71,14 @@ class CONTENT_EXPORT CSPContext {
   // unique and no urls will match 'self' whatever they are.
   // Note: When there is a 'self' source, its scheme is guaranteed to be
   // non-empty.
-  const base::Optional<CSPSource>& self_source() { return self_source_; }
+  const network::mojom::CSPSourcePtr& self_source() { return self_source_; }
 
   virtual void ReportContentSecurityPolicyViolation(
       const CSPViolationParams& violation_params);
 
   void ResetContentSecurityPolicies() { policies_.clear(); }
-  void AddContentSecurityPolicy(const ContentSecurityPolicy& policy) {
-    policies_.push_back(policy);
+  void AddContentSecurityPolicy(ContentSecurityPolicy policy) {
+    policies_.push_back(std::move(policy));
   }
 
   virtual bool SchemeShouldBypassCSP(const base::StringPiece& scheme);
@@ -98,7 +98,7 @@ class CONTENT_EXPORT CSPContext {
       SourceLocation* source_location) const;
 
  private:
-  base::Optional<CSPSource> self_source_;
+  network::mojom::CSPSourcePtr self_source_;  // Nullable.
   std::vector<ContentSecurityPolicy> policies_;
 
   DISALLOW_COPY_AND_ASSIGN(CSPContext);

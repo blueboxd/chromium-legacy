@@ -43,7 +43,7 @@
                 android:layout_marginStart="3dp"
                 android:layout_marginEnd="3dp"
                 android:text="@string/bookmark_folder"
-                android:textAppearance="@style/TextAppearance.BlackCaption" />
+                android:textAppearance="@style/TextAppearance.TextSmall.Secondary" />
 
             <TextView
                 android:id="@+id/folder_text"

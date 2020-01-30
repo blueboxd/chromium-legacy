@@ -8,6 +8,7 @@
 #include "base/test/gtest_util.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "chrome/browser/chromeos/apps/intent_helper/chromeos_apps_navigation_throttle.h"
+#include "chrome/browser/chromeos/arc/intent_helper/arc_external_protocol_dialog.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace apps {
@@ -56,6 +57,18 @@ TEST_F(IntentHandlingMetricsTest,
   histogram_tester.ExpectBucketCount(
       "ChromeOS.Apps.ExternalProtocolDialog",
       AppsNavigationThrottle::PickerAction::ARC_APP_PREFERRED_PRESSED, 1);
+}
+
+TEST_F(IntentHandlingMetricsTest, TestRecordExternalProtocolMetrics) {
+  base::HistogramTester histogram_tester;
+
+  IntentHandlingMetrics test = IntentHandlingMetrics();
+  test.RecordExternalProtocolMetrics(arc::Scheme::IRC, PickerEntryType::kArc,
+                                     /*accepted=*/true, /*persisted=*/true);
+
+  histogram_tester.ExpectBucketCount(
+      "ChromeOS.Apps.ExternalProtocolDialog.Accepted",
+      arc::ProtocolAction::IRC_ACCEPTED_PERSISTED, 1);
 }
 
 }  // namespace apps

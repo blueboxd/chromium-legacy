@@ -212,8 +212,8 @@ public class OverviewListLayoutTest {
             }
         });
 
-        TestTouchUtils.performClickOnMainSync(InstrumentationRegistry.getInstrumentation(),
-                item.findViewById(R.id.close_btn_modern));
+        TestTouchUtils.performClickOnMainSync(
+                InstrumentationRegistry.getInstrumentation(), item.getCloseButtonForTests());
 
         didReceiveClosureCommittedHelper.waitForCallback(0);
 
@@ -293,8 +293,8 @@ public class OverviewListLayoutTest {
             }
         });
 
-        TestTouchUtils.performClickOnMainSync(InstrumentationRegistry.getInstrumentation(),
-                item.findViewById(R.id.close_btn_modern));
+        TestTouchUtils.performClickOnMainSync(
+                InstrumentationRegistry.getInstrumentation(), item.getCloseButtonForTests());
 
         didReceivePendingClosureHelper.waitForCallback(0);
 

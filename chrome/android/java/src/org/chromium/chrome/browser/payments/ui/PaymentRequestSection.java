@@ -374,11 +374,11 @@ public abstract class PaymentRequestSection extends LinearLayout implements View
         mSummaryLeftTextView = new TextView(getContext());
         mSummaryLeftTextView.setId(R.id.payments_left_summary_label);
         ApiCompatibilityUtils.setTextAppearance(
-                mSummaryLeftTextView, R.style.TextAppearance_BlackTitle1);
+                mSummaryLeftTextView, R.style.TextAppearance_TextLarge_Primary);
 
         mSummaryRightTextView = new TextView(getContext());
         ApiCompatibilityUtils.setTextAppearance(
-                mSummaryRightTextView, R.style.TextAppearance_BlackTitle1);
+                mSummaryRightTextView, R.style.TextAppearance_TextLarge_Primary);
         mSummaryRightTextView.setTextAlignment(TEXT_ALIGNMENT_TEXT_END);
 
         // The main TextView sucks up all the available space.
@@ -604,7 +604,7 @@ public abstract class PaymentRequestSection extends LinearLayout implements View
             // Create the view and set the text appearance and layout parameters.
             mUpdatedView = new TextView(context);
             ApiCompatibilityUtils.setTextAppearance(
-                    mUpdatedView, R.style.TextAppearance_BlackTitle1);
+                    mUpdatedView, R.style.TextAppearance_TextLarge_Primary);
             LinearLayout.LayoutParams updatedLayoutParams = new LinearLayout.LayoutParams(
                     LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
             mUpdatedView.setTextAlignment(TEXT_ALIGNMENT_TEXT_END);
@@ -997,7 +997,7 @@ public abstract class PaymentRequestSection extends LinearLayout implements View
                     columnSpan = 4;
 
                     ApiCompatibilityUtils.setTextAppearance(
-                            labelView, R.style.TextAppearance_BlackBody);
+                            labelView, R.style.TextAppearance_TextMedium_Secondary);
                     labelView.setId(R.id.payments_description_label);
                 } else if (mRowType == OPTION_ROW_TYPE_WARNING) {
                     // Warnings use three columns.
@@ -1338,17 +1338,18 @@ public abstract class PaymentRequestSection extends LinearLayout implements View
                 // Section summary should be displayed as descriptive text style.
                 if (!mSummaryInDescriptiveText) {
                     ApiCompatibilityUtils.setTextAppearance(
-                            getSummaryLeftTextView(), R.style.TextAppearance_BlackBody);
+                            getSummaryLeftTextView(), R.style.TextAppearance_TextMedium_Secondary);
                     mSummaryInDescriptiveText = true;
                 }
                 SectionUiUtils.showSectionSummaryInTextViewInSingeLine(
                         getContext(), mSectionInformation, getSummaryLeftTextView());
             } else {
                 setLogoDrawable(selectedItem.getDrawableIcon());
-                // Selected item summary should be displayed as R.style.TextAppearance_BlackTitle1.
+                // Selected item summary should be displayed as
+                // R.style.TextAppearance_TextLarge_Primary.
                 if (mSummaryInDescriptiveText) {
                     ApiCompatibilityUtils.setTextAppearance(
-                            getSummaryLeftTextView(), R.style.TextAppearance_BlackTitle1);
+                            getSummaryLeftTextView(), R.style.TextAppearance_TextLarge_Primary);
                     mSummaryInDescriptiveText = false;
                 }
                 // Split summary in DISPLAY_MODE_NORMAL if caller specified. The first part is

@@ -65,11 +65,11 @@ source_set("password_protection_metrics_util") {
 
 source_set("password_protection_unittest") {
   testonly = true
-  if (safe_browsing_mode == 1) {
-    sources = [
-      "password_protection_service_unittest.cc",
-      "visual_utils_unittest.cc",
-    ]
+  if (safe_browsing_mode > 0) {
+    sources = [ "password_protection_service_unittest.cc" ]
+    if (safe_browsing_mode == 1) {
+      sources += [ "visual_utils_unittest.cc" ]
+    }
     deps = [
       ":mock_password_protection",
       ":password_protection",
@@ -99,7 +99,7 @@ source_set("password_protection_unittest") {
 
 source_set("mock_password_protection") {
   testonly = true
-  if (safe_browsing_mode == 1) {
+  if (safe_browsing_mode > 0) {
     sources = [
       "mock_password_protection_service.cc",
       "mock_password_protection_service.h",

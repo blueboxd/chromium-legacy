@@ -178,9 +178,6 @@ crbug.com/979380 fast/hidpi/scrollbar-appearance-increase-device-scale-factor.ht
 fast/multicol/composited-layer-will-change.html [ Crash ]
 paint/clipath/change-mask-clip-path-multicol-crash.html [ Crash ]
 
-# Clip-path and mask.
-crbug.com/979369 svg/clip-path/deep-nested-clip-in-mask.svg [ Failure ]
-
 # Animation failure related to direct property update
 crbug.com/1041013 external/wpt/web-animations/timing-model/animations/update-playback-rate-slow.html [ Failure ]
 crbug.com/1041013 external/wpt/web-animations/timing-model/animations/update-playback-rate-zero.html [ Failure ]

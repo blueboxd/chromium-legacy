@@ -133,6 +133,7 @@ cr.define('settings', function() {
    */
   const SITE_EXCEPTION_WILDCARD = '*';
 
+  // #cr_define_end
   return {
     ALL_SITES,
     AllSitesAction,

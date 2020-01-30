@@ -4,6 +4,7 @@
 
 #include "android_webview/browser/gfx/root_frame_sink.h"
 
+#include "android_webview/browser/gfx/child_frame.h"
 #include "android_webview/browser/gfx/display_scheduler_webview.h"
 #include "android_webview/browser/gfx/viz_compositor_thread_runner_webview.h"
 #include "base/no_destructor.h"
@@ -22,6 +23,49 @@ viz::FrameSinkId AllocateParentSinkId() {
 }
 
 }  // namespace
+
+class RootFrameSink::ChildCompositorFrameSink
+    : public viz::mojom::CompositorFrameSinkClient {
+ public:
+  ChildCompositorFrameSink(RootFrameSink* owner,
+                           uint32_t layer_tree_frame_sink_id,
+                           viz::FrameSinkId frame_sink_id)
+      : owner_(owner),
+        layer_tree_frame_sink_id_(layer_tree_frame_sink_id),
+        frame_sink_id_(frame_sink_id),
+        support_(std::make_unique<viz::CompositorFrameSinkSupport>(
+            this,
+            owner->GetFrameSinkManager(),
+            frame_sink_id,
+            false)) {
+    support_->SetBeginFrameSource(nullptr);
+  }
+
+  void DidReceiveCompositorFrameAck(
+      const std::vector<viz::ReturnedResource>& resources) override {
+    ReclaimResources(resources);
+  }
+  void OnBeginFrame(const viz::BeginFrameArgs& args,
+                    const viz::FrameTimingDetailsMap& feedbacks) override {}
+  void OnBeginFramePausedChanged(bool paused) override {}
+  void ReclaimResources(
+      const std::vector<viz::ReturnedResource>& resources) override {
+    owner_->ReturnResources(frame_sink_id_, layer_tree_frame_sink_id_,
+                            resources);
+  }
+
+  const viz::FrameSinkId frame_sink_id() { return frame_sink_id_; }
+
+  uint32_t layer_tree_frame_sink_id() { return layer_tree_frame_sink_id_; }
+
+  viz::CompositorFrameSinkSupport* support() { return support_.get(); }
+
+ private:
+  RootFrameSink* const owner_;
+  const uint32_t layer_tree_frame_sink_id_;
+  const viz::FrameSinkId frame_sink_id_;
+  std::unique_ptr<viz::CompositorFrameSinkSupport> support_;
+};
 
 RootFrameSink::RootFrameSink(RootFrameSinkClient* client)
     : root_frame_sink_id_(AllocateParentSinkId()), client_(client) {
@@ -69,7 +113,8 @@ void RootFrameSink::OnNeedsBeginFrames(bool needs_begin_frames) {
                        TRACE_EVENT_SCOPE_THREAD, "needs_begin_frames",
                        needs_begin_frames);
   needs_begin_frames_ = needs_begin_frames;
-  client_->SetNeedsBeginFrames(needs_begin_frames);
+  if (client_)
+    client_->SetNeedsBeginFrames(needs_begin_frames);
 }
 
 void RootFrameSink::AddChildFrameSinkId(const viz::FrameSinkId& frame_sink_id) {
@@ -111,7 +156,8 @@ void RootFrameSink::SetNeedsDraw(bool needs_draw) {
   // It's possible that client submitted last frame and unsubscribed from
   // BeginFrames, but we haven't draw it yet.
   if (!needs_begin_frames_ && needs_draw) {
-    client_->Invalidate();
+    if (client_)
+      client_->Invalidate();
   }
 }
 
@@ -123,8 +169,45 @@ void RootFrameSink::ReturnResources(
     viz::FrameSinkId frame_sink_id,
     uint32_t layer_tree_frame_sink_id,
     std::vector<viz::ReturnedResource> resources) {
-  client_->ReturnResources(frame_sink_id, layer_tree_frame_sink_id,
-                           std::move(resources));
+  if (client_)
+    client_->ReturnResources(frame_sink_id, layer_tree_frame_sink_id,
+                             std::move(resources));
+}
+
+void RootFrameSink::DettachClient() {
+  client_ = nullptr;
+}
+
+void RootFrameSink::SubmitChildCompositorFrame(ChildFrame* child_frame) {
+  DCHECK(child_frame->frame);
+  if (!child_sink_support_ ||
+      child_sink_support_->frame_sink_id() != child_frame->frame_sink_id ||
+      child_sink_support_->layer_tree_frame_sink_id() !=
+          child_frame->layer_tree_frame_sink_id) {
+    child_sink_support_.reset();
+
+    child_sink_support_ = std::make_unique<ChildCompositorFrameSink>(
+        this, child_frame->layer_tree_frame_sink_id,
+        child_frame->frame_sink_id);
+  }
+
+  child_sink_support_->support()->SubmitCompositorFrame(
+      child_frame->local_surface_id, std::move(*child_frame->frame),
+      std::move(child_frame->hit_test_region_list));
+  child_frame->frame.reset();
+
+  CopyOutputRequestQueue requests;
+  requests.swap(child_frame->copy_requests);
+  for (auto& copy_request : requests) {
+    child_sink_support_->support()->RequestCopyOfOutput(
+        child_frame->local_surface_id, std::move(copy_request));
+  }
+}
+
+viz::FrameTimingDetailsMap RootFrameSink::TakeChildFrameTimingDetailsMap() {
+  if (child_sink_support_)
+    return child_sink_support_->support()->TakeFrameTimingDetailsMap();
+  return viz::FrameTimingDetailsMap();
 }
 
 }  // namespace android_webview

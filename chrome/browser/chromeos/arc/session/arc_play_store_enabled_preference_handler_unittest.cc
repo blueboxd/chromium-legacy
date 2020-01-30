@@ -82,8 +82,8 @@ class ArcPlayStoreEnabledPreferenceHandlerTest : public testing::Test {
     GetFakeUserManager()->AddUser(account_id);
     GetFakeUserManager()->LoginUser(account_id);
 
-    identity_test_env_profile_adaptor_->identity_test_env()->SetPrimaryAccount(
-        kTestEmail);
+    identity_test_env_profile_adaptor_->identity_test_env()
+        ->MakeUnconsentedPrimaryAccountAvailable(kTestEmail);
   }
 
   void TearDown() override {
@@ -112,11 +112,11 @@ class ArcPlayStoreEnabledPreferenceHandlerTest : public testing::Test {
         ConsentAuditorFactory::GetForProfile(profile()));
   }
 
-  CoreAccountId GetAuthenticatedAccountId() const {
+  CoreAccountId GetAccountId() const {
     auto* identity_manager =
         identity_test_env_profile_adaptor_->identity_test_env()
             ->identity_manager();
-    return identity_manager->GetPrimaryAccountInfo().account_id;
+    return identity_manager->GetUnconsentedPrimaryAccountInfo().account_id;
   }
 
  private:
@@ -193,7 +193,7 @@ TEST_F(ArcPlayStoreEnabledPreferenceHandlerTest, PrefChangeRevokesConsent) {
   play_consent.set_consent_flow(
       UserConsentTypes::ArcPlayTermsOfServiceConsent::SETTING_CHANGE);
   EXPECT_CALL(*auditor, RecordArcPlayConsent(
-                            GetAuthenticatedAccountId(),
+                            GetAccountId(),
                             consent_auditor::ArcPlayConsentEq(play_consent)));
 
   ASSERT_FALSE(IsArcPlayStoreEnabledForProfile(profile()));

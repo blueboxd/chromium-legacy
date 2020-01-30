@@ -19,6 +19,8 @@ import org.chromium.components.background_task_scheduler.TaskIds;
 import org.chromium.components.background_task_scheduler.TaskParameters;
 import org.chromium.net.ConnectionType;
 
+import java.util.Collections;
+
 /**
  * Handles servicing background offlining requests.
  */
@@ -105,7 +107,8 @@ public class PrefetchBackgroundTask extends NativeBackgroundTask {
         if (isBrowserRunningInReducedMode()
                 && !ChromeFeatureList.isEnabled(
                         ChromeFeatureList.INTEREST_FEED_CONTENT_SUGGESTIONS)) {
-            FeatureUtilities.cacheFeedEnabled();
+            FeatureUtilities.cacheNativeFlags(
+                    Collections.singletonList(ChromeFeatureList.INTEREST_FEED_CONTENT_SUGGESTIONS));
             mTaskFinishedCallback.taskFinished(true /* needsReschedule */);
             return;
         }

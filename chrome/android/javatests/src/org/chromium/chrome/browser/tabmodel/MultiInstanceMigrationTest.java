@@ -17,6 +17,8 @@ import org.junit.runner.RunWith;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.test.util.AdvancedMockContext;
 import org.chromium.base.test.util.Feature;
+import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
+import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.tab.TabState;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.browser.tabmodel.MockTabModelSelector;
@@ -43,8 +45,8 @@ public class MultiInstanceMigrationTest {
 
         // Set the shared pref stating that the legacy file migration has occurred. The
         // multi-instance migration won't happen if the legacy path is taken.
-        ContextUtils.getAppSharedPreferences().edit().putBoolean(
-                TabbedModeTabPersistencePolicy.PREF_HAS_RUN_FILE_MIGRATION, true).apply();
+        SharedPreferencesManager.getInstance().writeBoolean(
+                ChromePreferenceKeys.TABMODEL_HAS_RUN_FILE_MIGRATION, true);
     }
 
     @After
@@ -106,8 +108,8 @@ public class MultiInstanceMigrationTest {
         buildPersistentStoreAndWaitForMigration();
 
         // Make sure we don't hit the migration path again.
-        Assert.assertTrue(ContextUtils.getAppSharedPreferences().getBoolean(
-                TabbedModeTabPersistencePolicy.PREF_HAS_RUN_MULTI_INSTANCE_FILE_MIGRATION, false));
+        Assert.assertTrue(SharedPreferencesManager.getInstance().readBoolean(
+                ChromePreferenceKeys.TABMODEL_HAS_RUN_MULTI_INSTANCE_FILE_MIGRATION, false));
 
         // Check that all metadata files moved.
         File newStateFile0 = new File(

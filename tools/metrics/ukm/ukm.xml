@@ -4141,6 +4141,23 @@ be describing additional metrics about the same event.
   </metric>
 </event>
 
+<event name="InputEvent">
+  <owner>hbsong@chromium.org</owner>
+  <summary>
+    Metrics associated with user input events. This event is recorded in Blink
+    and may not be recorded for the same page visits as events like PageLoad.
+    Consumers of this event's metrics should be aware of this when making
+    comparisons between InputEvent metrics and PageLoad metrics.
+  </summary>
+  <metric name="InteractiveTiming.InputDelay">
+    <summary>
+      Measures Input Delay, the duration between the hardware timestamp and the
+      start of event processing on the main thread for the meaningful input. In
+      ms. (go/FirstInputDelay)
+    </summary>
+  </metric>
+</event>
+
 <event name="Intervention.DocumentWrite.ScriptBlock" singular="True">
   <owner>bmcquade@chromium.org</owner>
   <summary>
@@ -9976,6 +9993,149 @@ be describing additional metrics about the same event.
     <summary>
       Site engagement score in the range [0, 100], rounded down to a multiple of
       10 to limit granularity.
+    </summary>
+  </metric>
+</event>
+
+<event name="UserSettingsEvent">
+  <owner>wrong@chromium.org</owner>
+  <owner>jiameng@chromium.org</owner>
+  <summary>
+    Contains information about user activities relating to settings changes.
+  </summary>
+  <metric name="BatteryPercentage">
+    <summary>
+      Battery percentage from 0 to 100.
+    </summary>
+  </metric>
+  <metric name="Country">
+    <summary>
+      Country ID at install, corresponding to the value used by
+      src/components/country_codes/country_codes.h.
+    </summary>
+  </metric>
+  <metric name="CurrentValue">
+    <summary>
+      Value of the setting after the change.
+    </summary>
+  </metric>
+  <metric name="DayOfWeek" enum="DayOfWeek">
+    <summary>
+      Day of the week of the settings change.
+    </summary>
+  </metric>
+  <metric name="DeviceMode" enum="DeviceMode">
+    <summary>
+      The current device mode, such as clamshell or tablet.
+    </summary>
+  </metric>
+  <metric name="DeviceOrientation" enum="DeviceOrientation">
+    <summary>
+      The current orientation of the device.
+    </summary>
+  </metric>
+  <metric name="EventId">
+    <summary>
+      Randomly generated ID that links together settings events that occured at
+      the same time.
+    </summary>
+  </metric>
+  <metric name="HasNightLightSchedule" enum="Boolean">
+    <summary>
+      A boolean indicating whether the user has set up a night light schedule.
+    </summary>
+  </metric>
+  <metric name="HasWifiSecurity" enum="Boolean">
+    <summary>
+      A boolean indicating whether or not the current wifi network has security.
+      Only populated upon connection to a wifi network.
+    </summary>
+  </metric>
+  <metric name="HourOfDay">
+    <summary>
+      Time in hours since midnight in the local time zone.
+    </summary>
+  </metric>
+  <metric name="IsAfterSunset" enum="Boolean">
+    <summary>
+      A boolean, true if it is after sunset and before sunrise in the local
+      time.
+    </summary>
+  </metric>
+  <metric name="IsCharging" enum="Boolean">
+    <summary>
+      A boolean indicating whether the device is charging.
+    </summary>
+  </metric>
+  <metric name="IsFromSearch" enum="Boolean">
+    <summary>
+      A boolean indicating whether or not search was used to navigate to the
+      setting.
+    </summary>
+  </metric>
+  <metric name="IsPairedBluetoothDevice" enum="Boolean">
+    <summary>
+      A boolean indicating whether or not the current bluetooth device was
+      already paired. Only populated upon connection to a bluetooth device.
+    </summary>
+  </metric>
+  <metric name="IsPlayingAudio" enum="Boolean">
+    <summary>
+      A boolean indicating whether the device is playing audio.
+    </summary>
+  </metric>
+  <metric name="IsPlayingVideo" enum="Boolean">
+    <summary>
+      A boolean indicating whether the device is playing video.
+    </summary>
+  </metric>
+  <metric name="IsRecentlyFullscreen" enum="Boolean">
+    <summary>
+      A boolean indicating whether the device has been in fullscreen mode in the
+      last 5 minutes.
+    </summary>
+  </metric>
+  <metric name="IsRecentlyPresenting" enum="Boolean">
+    <summary>
+      A boolean indicating whether the device has been presenting in the last 5
+      minutes.
+    </summary>
+  </metric>
+  <metric name="NetworkStatus" enum="NetworkStatus">
+    <summary>
+      Internet connection status of the device.
+    </summary>
+  </metric>
+  <metric name="PreviousValue">
+    <summary>
+      Value of the setting before the change.
+    </summary>
+  </metric>
+  <metric name="SettingId" enum="SettingId">
+    <summary>
+      The setting that was changed.
+    </summary>
+  </metric>
+  <metric name="SettingType" enum="SettingType">
+    <summary>
+      Where the settings event originated from.
+    </summary>
+  </metric>
+  <metric name="SignalStrength">
+    <summary>
+      The signal strength for the connected network. Only populated upon
+      connection to a wifi or cellular network.
+    </summary>
+  </metric>
+  <metric name="TimeSinceLastSettingsChange">
+    <summary>
+      Time in minutes since the last settings change.
+    </summary>
+  </metric>
+  <metric name="UsedCellularInSession" enum="Boolean">
+    <summary>
+      A boolean indicating whether the user has connected to a cellular network
+      in the current session.
     </summary>
   </metric>
 </event>

@@ -27,8 +27,7 @@ class MockDelegate : public HeaderModificationDelegate {
   MockDelegate() = default;
   ~MockDelegate() override = default;
 
-  MOCK_METHOD1(ShouldInterceptNavigation,
-               bool(content::NavigationUIData* navigation_ui_data));
+  MOCK_METHOD1(ShouldInterceptNavigation, bool(content::WebContents* contents));
   MOCK_METHOD2(ProcessRequest,
                void(ChromeRequestAdapter* request_adapter,
                     const GURL& redirect_url));
@@ -51,15 +50,14 @@ TEST(ChromeSigninURLLoaderThrottleTest, NoIntercept) {
 
   EXPECT_CALL(*delegate, ShouldInterceptNavigation(_)).WillOnce(Return(false));
   EXPECT_FALSE(URLLoaderThrottle::MaybeCreate(base::WrapUnique(delegate),
-                                              nullptr /* navigation_ui_data */,
                                               NullWebContentsGetter()));
 }
 
 TEST(ChromeSigninURLLoaderThrottleTest, Intercept) {
   auto* delegate = new MockDelegate();
   EXPECT_CALL(*delegate, ShouldInterceptNavigation(_)).WillOnce(Return(true));
-  auto throttle = URLLoaderThrottle::MaybeCreate(
-      base::WrapUnique(delegate), nullptr, NullWebContentsGetter());
+  auto throttle = URLLoaderThrottle::MaybeCreate(base::WrapUnique(delegate),
+                                                 NullWebContentsGetter());
   ASSERT_TRUE(throttle);
 
   // Phase 1: Start the request.
@@ -229,8 +227,8 @@ TEST(ChromeSigninURLLoaderThrottleTest, Intercept) {
 TEST(ChromeSigninURLLoaderThrottleTest, InterceptSubFrame) {
   auto* delegate = new MockDelegate();
   EXPECT_CALL(*delegate, ShouldInterceptNavigation(_)).WillOnce(Return(true));
-  auto throttle = URLLoaderThrottle::MaybeCreate(
-      base::WrapUnique(delegate), nullptr, NullWebContentsGetter());
+  auto throttle = URLLoaderThrottle::MaybeCreate(base::WrapUnique(delegate),
+                                                 NullWebContentsGetter());
   ASSERT_TRUE(throttle);
 
   EXPECT_CALL(*delegate, ProcessRequest(_, _))

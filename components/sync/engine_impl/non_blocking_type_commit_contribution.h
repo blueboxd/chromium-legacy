@@ -28,6 +28,10 @@ class ModelTypeWorker;
 // closely with the ModelTypeWorker.
 class NonBlockingTypeCommitContribution : public CommitContribution {
  public:
+  // Note: only one of |on_commit_response_callback| and
+  // |on_full_commit_failure_callback| will be called.
+  // TODO(rushans): there is still possible rare case when both of these
+  // callbacks are never called, i.e. if get updates from the server fails.
   NonBlockingTypeCommitContribution(
       ModelType type,
       const sync_pb::DataTypeContext& context,
@@ -35,6 +39,7 @@ class NonBlockingTypeCommitContribution : public CommitContribution {
       base::OnceCallback<void(const CommitResponseDataList&,
                               const FailedCommitResponseDataList&)>
           on_commit_response_callback,
+      base::OnceCallback<void()> on_full_commit_failure_callback,
       Cryptographer* cryptographer,
       PassphraseType passphrase_type,
       DataTypeDebugInfoEmitter* debug_info_emitter,
@@ -46,6 +51,7 @@ class NonBlockingTypeCommitContribution : public CommitContribution {
   SyncerError ProcessCommitResponse(
       const sync_pb::ClientToServerResponse& response,
       StatusController* status) override;
+  void ProcessCommitFailure() override;
   void CleanUp() override;
   size_t GetNumEntries() const override;
 
@@ -66,6 +72,12 @@ class NonBlockingTypeCommitContribution : public CommitContribution {
   base::OnceCallback<void(const CommitResponseDataList&,
                           const FailedCommitResponseDataList&)>
       on_commit_response_callback_;
+
+  // A callback to inform the object that created this contribution about commit
+  // failure. This callback differs from |on_commit_response_callback_| and will
+  // be called when the server respond with any error code or do not respond at
+  // all (i.e. there is no internet connection).
+  base::OnceCallback<void()> on_full_commit_failure_callback_;
 
   // A non-owned pointer to cryptographer to encrypt entities.
   Cryptographer* const cryptographer_;

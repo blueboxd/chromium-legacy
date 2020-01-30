@@ -90,11 +90,42 @@ void CrostiniPortForwarder::OnAddPortCompleted(ResultCallback result_callback,
   std::move(result_callback).Run(success);
 }
 
+void CrostiniPortForwarder::OnDeactivatePortCompleted(
+    ResultCallback result_callback,
+    PortRuleKey key,
+    bool success) {
+  if (!success) {
+    LOG(ERROR) << "Failed to deactivate port, port is still being forwarded: "
+               << key.port_number;
+    std::move(result_callback).Run(success);
+    return;
+  }
+  // TODO(matterchen): Set existing port forward preference active state ==
+  // False.
+  forwarded_ports_.erase(key);
+  std::move(result_callback).Run(success);
+}
+
+void CrostiniPortForwarder::OnRemovePortCompleted(
+    ResultCallback result_callback,
+    PortRuleKey key,
+    bool success) {
+  if (!success) {
+    LOG(ERROR) << "Failed to remove port, port is still being forwarded: "
+               << key.port_number;
+    std::move(result_callback).Run(success);
+    return;
+  }
+  // TODO(matterchen): Remove existing port forward preference.
+  forwarded_ports_.erase(key);
+  std::move(result_callback).Run(success);
+}
+
 void CrostiniPortForwarder::TryActivatePort(
     uint16_t port_number,
     const Protocol& protocol_type,
     const std::string& ipv4_addr,
-    chromeos::PermissionBrokerClient::ResultCallback result_callback) {
+    base::OnceCallback<void(bool)> result_callback) {
   chromeos::PermissionBrokerClient* client =
       chromeos::PermissionBrokerClient::Get();
   if (!client) {
@@ -121,14 +152,45 @@ void CrostiniPortForwarder::TryActivatePort(
 
   forwarded_ports_[port_key] = std::move(lifeline_local);
 
-  if (Protocol::TCP == protocol_type) {
-    client->RequestTcpPortForward(
-        port_number, kDefaultInterfaceToForward, ipv4_addr, port_number,
-        std::move(lifeline_remote.get()), std::move(result_callback));
-  } else if (Protocol::UDP == protocol_type) {
-    client->RequestUdpPortForward(
-        port_number, kDefaultInterfaceToForward, ipv4_addr, port_number,
-        std::move(lifeline_remote.get()), std::move(result_callback));
+  switch (protocol_type) {
+    case Protocol::TCP:
+      client->RequestTcpPortForward(
+          port_number, kDefaultInterfaceToForward, ipv4_addr, port_number,
+          std::move(lifeline_remote.get()), std::move(result_callback));
+      break;
+    case Protocol::UDP:
+      client->RequestUdpPortForward(
+          port_number, kDefaultInterfaceToForward, ipv4_addr, port_number,
+          std::move(lifeline_remote.get()), std::move(result_callback));
+      break;
+  }
+}
+
+void CrostiniPortForwarder::TryDeactivatePort(
+    const PortRuleKey& key,
+    base::OnceCallback<void(bool)> result_callback) {
+  if (forwarded_ports_.find(key) == forwarded_ports_.end()) {
+    LOG(ERROR) << "Trying to deactivate a non-active port.";
+    std::move(result_callback).Run(false);
+    return;
+  }
+
+  chromeos::PermissionBrokerClient* client =
+      chromeos::PermissionBrokerClient::Get();
+  if (!client) {
+    LOG(ERROR) << "Could not get permission broker client.";
+    std::move(result_callback).Run(false);
+    return;
+  }
+
+  switch (key.protocol_type) {
+    case Protocol::TCP:
+      client->ReleaseTcpPortForward(key.port_number, kDefaultInterfaceToForward,
+                                    std::move(result_callback));
+      break;
+    case Protocol::UDP:
+      client->ReleaseUdpPortForward(key.port_number, kDefaultInterfaceToForward,
+                                    std::move(result_callback));
   }
 }
 
@@ -159,13 +221,19 @@ void CrostiniPortForwarder::AddPort(uint16_t port_number,
 }
 
 void CrostiniPortForwarder::ActivatePort(uint16_t port_number,
+                                         const Protocol& protocol_type,
                                          ResultCallback result_callback) {
-  // TODO(matterchen): Find the current port setting from profile preferences.
   PortRuleKey existing_port_key = {
       .port_number = port_number,
-      .protocol_type = Protocol::TCP,
+      .protocol_type = protocol_type,
       .input_ifname = kDefaultInterfaceToForward,
   };
+
+  if (forwarded_ports_.find(existing_port_key) != forwarded_ports_.end()) {
+    LOG(ERROR) << "Trying to activate an already active port.";
+    std::move(result_callback).Run(false);
+    return;
+  }
 
   base::OnceCallback<void(bool)> on_activate_port_completed =
       base::BindOnce(&CrostiniPortForwarder::OnActivatePortCompleted,
@@ -173,9 +241,52 @@ void CrostiniPortForwarder::ActivatePort(uint16_t port_number,
                      existing_port_key);
 
   // TODO(matterchen): Extract container IPv4 address.
-  CrostiniPortForwarder::TryActivatePort(port_number, Protocol::TCP,
+  CrostiniPortForwarder::TryActivatePort(port_number, protocol_type,
                                          "PLACEHOLDER_IP_ADDRESS",
                                          std::move(on_activate_port_completed));
+}
+
+void CrostiniPortForwarder::DeactivatePort(uint16_t port_number,
+                                           const Protocol& protocol_type,
+                                           ResultCallback result_callback) {
+  PortRuleKey existing_port_key = {
+      .port_number = port_number,
+      .protocol_type = protocol_type,
+      .input_ifname = kDefaultInterfaceToForward,
+  };
+
+  base::OnceCallback<void(bool)> on_deactivate_port_completed =
+      base::BindOnce(&CrostiniPortForwarder::OnDeactivatePortCompleted,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(result_callback),
+                     existing_port_key);
+
+  CrostiniPortForwarder::TryDeactivatePort(
+      existing_port_key, std::move(on_deactivate_port_completed));
+}
+
+void CrostiniPortForwarder::RemovePort(uint16_t port_number,
+                                       const Protocol& protocol_type,
+                                       ResultCallback result_callback) {
+  // TODO(matterchen): Check if port is active in preferences, if active,
+  // deactivate port using on_remove_port_completed callback. Otherwise, just
+  // remove from preferences by calling OnRemovePortCompleted directly.
+  PortRuleKey existing_port_key = {
+      .port_number = port_number,
+      .protocol_type = protocol_type,
+      .input_ifname = kDefaultInterfaceToForward,
+  };
+
+  base::OnceCallback<void(bool)> on_remove_port_completed =
+      base::BindOnce(&CrostiniPortForwarder::OnRemovePortCompleted,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(result_callback),
+                     existing_port_key);
+
+  CrostiniPortForwarder::TryDeactivatePort(existing_port_key,
+                                           std::move(on_remove_port_completed));
+}
+
+size_t CrostiniPortForwarder::GetNumberOfForwardedPortsForTesting() {
+  return forwarded_ports_.size();
 }
 
 }  // namespace crostini

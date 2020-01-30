@@ -823,12 +823,13 @@ Resource::MatchStatus Resource::CanReuse(const FetchParameters& params) const {
   if (resource_request_.GetKeepalive() || new_request.GetKeepalive())
     return MatchStatus::kKeepaliveSet;
 
-  if (GetResourceRequest().HttpMethod() != new_request.HttpMethod())
+  if (GetResourceRequest().HttpMethod() != http_names::kGET ||
+      new_request.HttpMethod() != http_names::kGET) {
     return MatchStatus::kRequestMethodDoesNotMatch;
+  }
 
-  if (GetResourceRequest().HttpBody() != new_request.HttpBody())
-    return MatchStatus::kUnknownFailure;
-
+  // A GET request doesn't have a request body.
+  DCHECK(!new_request.HttpBody());
 
   // Don't reuse an existing resource when the source origin is different.
   if (!existing_origin->IsSameOriginWith(new_origin.get()))

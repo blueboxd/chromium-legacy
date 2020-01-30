@@ -21,6 +21,8 @@ public class TabBrowserControlsOffsetHelper extends EmptyTabObserver implements 
     private int mTopControlsOffset;
     private int mBottomControlsOffset;
     private int mContentOffset;
+    private int mTopControlsMinHeightOffset;
+    private int mBottomControlsMinHeightOffset;
 
     /** {@code true} if offset was changed by compositor. */
     private boolean mOffsetInitialized;
@@ -46,27 +48,39 @@ public class TabBrowserControlsOffsetHelper extends EmptyTabObserver implements 
     }
 
     /**
-     * Sets new top control and content offset from renderer.
+     * Sets new top control, content, and min-height offset from renderer.
      * @param topControlsOffset Top control offset.
      * @param contentOffset Content offset.
+     * @param topControlsMinHeightOffset Current min-height offset for the top controls that may be
+     *                                   changing as a result of an in-progress min-height change
+     *                                   animation in the renderer.
      */
-    void setTopOffset(int topControlsOffset, int contentOffset) {
+    void setTopOffset(int topControlsOffset, int contentOffset, int topControlsMinHeightOffset) {
         if (mOffsetInitialized && topControlsOffset == mTopControlsOffset
-                && mContentOffset == contentOffset) {
+                && mContentOffset == contentOffset
+                && mTopControlsMinHeightOffset == topControlsMinHeightOffset) {
             return;
         }
         mTopControlsOffset = topControlsOffset;
         mContentOffset = contentOffset;
+        mTopControlsMinHeightOffset = topControlsMinHeightOffset;
         notifyControlsOffsetChanged();
     }
 
     /**
      * Sets new bottom control offset from renderer.
      * @param bottomControlsOffset Bottom control offset.
+     * @param bottomControlsMinHeightOffset Current min-height offset for the bottom controls that
+     *                                      may be changing as a result of an in-progress min-height
+     *                                      change animation in the renderer.
      */
-    void setBottomOffset(int bottomControlsOffset) {
-        if (mOffsetInitialized && mBottomControlsOffset == bottomControlsOffset) return;
+    void setBottomOffset(int bottomControlsOffset, int bottomControlsMinHeightOffset) {
+        if (mOffsetInitialized && mBottomControlsOffset == bottomControlsOffset
+                && mBottomControlsMinHeightOffset == bottomControlsMinHeightOffset) {
+            return;
+        }
         mBottomControlsOffset = bottomControlsOffset;
+        mBottomControlsMinHeightOffset = bottomControlsMinHeightOffset;
         notifyControlsOffsetChanged();
     }
 
@@ -74,8 +88,9 @@ public class TabBrowserControlsOffsetHelper extends EmptyTabObserver implements 
         mOffsetInitialized = true;
         RewindableIterator<TabObserver> observers = mTab.getTabObservers();
         while (observers.hasNext()) {
-            observers.next().onBrowserControlsOffsetChanged(
-                    mTab, mTopControlsOffset, mBottomControlsOffset, mContentOffset);
+            observers.next().onBrowserControlsOffsetChanged(mTab, mTopControlsOffset,
+                    mBottomControlsOffset, mContentOffset, mTopControlsMinHeightOffset,
+                    mBottomControlsMinHeightOffset);
         }
     }
 
@@ -98,9 +113,19 @@ public class TabBrowserControlsOffsetHelper extends EmptyTabObserver implements 
         return mBottomControlsOffset;
     }
 
-    /** @return content offset */
+    /** @return Content offset */
     public int contentOffset() {
         return mContentOffset;
+    }
+
+    /** @return Top controls min-height offset */
+    public int topControlsMinHeightOffset() {
+        return mTopControlsMinHeightOffset;
+    }
+
+    /** @return Bottom controls min-height offset */
+    public int bottomControlsMinHeightOffset() {
+        return mBottomControlsMinHeightOffset;
     }
 
     /** @return Whether the control offset is initialized by compositor. */

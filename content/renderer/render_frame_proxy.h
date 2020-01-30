@@ -224,8 +224,6 @@ class CONTENT_EXPORT RenderFrameProxy : public IPC::Listener,
   void OnDeleteProxy();
   void OnChildFrameProcessGone();
   void OnCompositorFrameSwapped(const IPC::Message& message);
-  void OnIntrinsicSizingInfoOfChildChanged(
-      blink::WebIntrinsicSizingInfo sizing_info);
   void OnUpdateOpener(int opener_routing_id);
   void OnViewChanged(const FrameMsg_ViewChanged_Params& params);
   void OnDidUpdateFramePolicy(const blink::FramePolicy& frame_policy);

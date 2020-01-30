@@ -8,6 +8,7 @@
 #include "build/build_config.h"
 #include "chrome/common/prerender_util.h"
 #include "content/public/common/content_constants.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/load_flags.h"
 #include "net/url_request/redirect_info.h"
 #include "services/network/public/cpp/resource_request.h"
@@ -20,19 +21,17 @@ namespace {
 const char kPurposeHeaderName[] = "Purpose";
 const char kPurposeHeaderValue[] = "prefetch";
 
-void CancelPrerenderForUnsupportedMethod(
-    PrerenderURLLoaderThrottle::CancelerGetterCallback callback) {
-  chrome::mojom::PrerenderCanceler* canceler = std::move(callback).Run();
-  if (canceler)
-    canceler->CancelPrerenderForUnsupportedMethod();
+void CallCancelPrerenderForUnsupportedMethod(
+    mojo::PendingRemote<chrome::mojom::PrerenderCanceler> canceler) {
+  mojo::Remote<chrome::mojom::PrerenderCanceler>(std::move(canceler))
+      ->CancelPrerenderForUnsupportedMethod();
 }
 
-void CancelPrerenderForUnsupportedScheme(
-    PrerenderURLLoaderThrottle::CancelerGetterCallback callback,
+void CallCancelPrerenderForUnsupportedScheme(
+    mojo::PendingRemote<chrome::mojom::PrerenderCanceler> canceler,
     const GURL& url) {
-  chrome::mojom::PrerenderCanceler* canceler = std::move(callback).Run();
-  if (canceler)
-    canceler->CancelPrerenderForUnsupportedScheme(url);
+  mojo::Remote<chrome::mojom::PrerenderCanceler>(std::move(canceler))
+      ->CancelPrerenderForUnsupportedScheme(url);
 }
 
 // Returns true if the response has a "no-store" cache control header.
@@ -46,12 +45,11 @@ bool IsNoStoreResponse(const network::mojom::URLResponseHead& response_head) {
 PrerenderURLLoaderThrottle::PrerenderURLLoaderThrottle(
     PrerenderMode mode,
     const std::string& histogram_prefix,
-    CancelerGetterCallback canceler_getter,
-    scoped_refptr<base::SequencedTaskRunner> canceler_getter_task_runner)
+    mojo::PendingRemote<chrome::mojom::PrerenderCanceler> canceler)
     : mode_(mode),
       histogram_prefix_(histogram_prefix),
-      canceler_getter_(std::move(canceler_getter)),
-      canceler_getter_task_runner_(canceler_getter_task_runner) {
+      canceler_(std::move(canceler)) {
+  DCHECK(canceler_);
 }
 
 PrerenderURLLoaderThrottle::~PrerenderURLLoaderThrottle() {
@@ -90,9 +88,7 @@ void PrerenderURLLoaderThrottle::WillStartRequest(
     // prefetch going.
     delegate_->CancelWithError(net::ERR_ABORTED);
     if (mode_ == DEPRECATED_FULL_PRERENDER) {
-      canceler_getter_task_runner_->PostTask(
-          FROM_HERE, base::BindOnce(CancelPrerenderForUnsupportedMethod,
-                                    std::move(canceler_getter_)));
+      CallCancelPrerenderForUnsupportedMethod(std::move(canceler_));
       return;
     }
   }
@@ -107,9 +103,7 @@ void PrerenderURLLoaderThrottle::WillStartRequest(
     // WillRedirectRequest() and PrerenderContents::CheckURL(). See
     // http://crbug.com/673771.
     delegate_->CancelWithError(net::ERR_ABORTED);
-    canceler_getter_task_runner_->PostTask(
-        FROM_HERE, base::BindOnce(CancelPrerenderForUnsupportedScheme,
-                                  std::move(canceler_getter_), request->url));
+    CallCancelPrerenderForUnsupportedScheme(std::move(canceler_), request->url);
     return;
   }
 
@@ -166,10 +160,8 @@ void PrerenderURLLoaderThrottle::WillRedirectRequest(
   // Abort any prerenders with requests which redirect to invalid schemes.
   if (!DoesURLHaveValidScheme(redirect_info->new_url)) {
     delegate_->CancelWithError(net::ERR_ABORTED);
-    canceler_getter_task_runner_->PostTask(
-        FROM_HERE,
-        base::BindOnce(CancelPrerenderForUnsupportedScheme,
-                       std::move(canceler_getter_), redirect_info->new_url));
+    CallCancelPrerenderForUnsupportedScheme(std::move(canceler_),
+                                            redirect_info->new_url);
   } else if (follow_only_when_prerender_shown_header == "1" &&
              resource_type_ != content::ResourceType::kMainFrame) {
     // Only defer redirects with the Follow-Only-When-Prerender-Shown

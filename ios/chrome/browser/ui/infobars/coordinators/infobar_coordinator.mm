@@ -7,7 +7,7 @@
 
 #include "base/mac/foundation_util.h"
 #import "ios/chrome/browser/ui/fullscreen/animated_scoped_fullscreen_disabler.h"
-#import "ios/chrome/browser/ui/fullscreen/fullscreen_controller_factory.h"
+#import "ios/chrome/browser/ui/fullscreen/fullscreen_controller.h"
 #import "ios/chrome/browser/ui/infobars/banners/infobar_banner_accessibility_util.h"
 #import "ios/chrome/browser/ui/infobars/banners/infobar_banner_presentation_state.h"
 #import "ios/chrome/browser/ui/infobars/coordinators/infobar_coordinator_implementation.h"
@@ -110,8 +110,7 @@ const CGFloat kBannerOverlapWithOmnibox = 5.0;
   // Make sure to display the Toolbar/s before presenting the Banner.
   _animatedFullscreenDisabler =
       std::make_unique<AnimatedScopedFullscreenDisabler>(
-          FullscreenControllerFactory::GetInstance()->GetForBrowserState(
-              self.browserState));
+          FullscreenController::FromBrowserState(self.browserState));
   _animatedFullscreenDisabler->StartAnimation();
 
   [self.bannerViewController

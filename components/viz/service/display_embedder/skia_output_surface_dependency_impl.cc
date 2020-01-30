@@ -131,6 +131,16 @@ void SkiaOutputSurfaceDependencyImpl::ScheduleGrContextCleanup() {
   gpu_service_impl_->gpu_channel_manager()->ScheduleGrContextCleanup();
 }
 
+void SkiaOutputSurfaceDependencyImpl::ScheduleDelayedGPUTaskFromGPUThread(
+    base::OnceClosure task) {
+  DCHECK(gpu_service_impl_->main_runner()->BelongsToCurrentThread());
+
+  constexpr base::TimeDelta kDelayForDelayedWork =
+      base::TimeDelta::FromMilliseconds(2);
+  gpu_service_impl_->main_runner()->PostDelayedTask(FROM_HERE, std::move(task),
+                                                    kDelayForDelayedWork);
+}
+
 #if defined(OS_WIN)
 void SkiaOutputSurfaceDependencyImpl::DidCreateAcceleratedSurfaceChildWindow(
     gpu::SurfaceHandle parent_window,

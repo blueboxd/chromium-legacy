@@ -13,4 +13,4 @@
     android:padding="@dimen/autofill_assistant_bottombar_vertical_spacing"
     android:paddingBottom="@dimen/autofill_assistant_info_box_spacing"
     android:drawablePadding="@dimen/autofill_assistant_bottombar_vertical_spacing"
-    android:textAppearance="@style/TextAppearance.BlackTitle1"/>
+    android:textAppearance="@style/TextAppearance.TextLarge.Primary"/>

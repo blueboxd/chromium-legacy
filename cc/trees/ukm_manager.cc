@@ -170,14 +170,14 @@ void UkmManager::RecordThroughputUKM(
 }
 
 void UkmManager::RecordLatencyUKM(
-    CompositorFrameReporter::MissedFrameReportType report_type,
+    CompositorFrameReporter::DroppedFrameReportType report_type,
     const std::vector<CompositorFrameReporter::StageData>& stage_history,
     const base::flat_set<FrameSequenceTrackerType>* active_trackers,
     const viz::FrameTimingDetails& viz_breakdown) const {
   ukm::builders::Graphics_Smoothness_Latency builder(source_id_);
 
   if (report_type ==
-      CompositorFrameReporter::MissedFrameReportType::kMissedFrame) {
+      CompositorFrameReporter::DroppedFrameReportType::kDroppedFrame) {
     builder.SetMissedFrame(true);
   }
 

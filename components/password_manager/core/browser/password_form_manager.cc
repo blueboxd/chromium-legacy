@@ -235,7 +235,7 @@ PasswordFormManager::GetFederatedMatches() const {
 }
 
 const PasswordForm& PasswordFormManager::GetPendingCredentials() const {
-  return *password_save_manager_->GetPendingCredentials();
+  return password_save_manager_->GetPendingCredentials();
 }
 
 metrics_util::CredentialSourceType PasswordFormManager::GetCredentialSource()
@@ -402,15 +402,16 @@ FormFetcher* PasswordFormManager::GetFormFetcher() {
 }
 
 bool PasswordFormManager::IsPendingCredentialsPublicSuffixMatch() const {
-  return password_save_manager_->GetPendingCredentials()
-      ->is_public_suffix_match;
+  return password_save_manager_->GetPendingCredentials().is_public_suffix_match;
 }
 
-void PasswordFormManager::PresaveGeneratedPassword(const PasswordForm& form) {
+void PasswordFormManager::PresaveGeneratedPassword(
+    const FormData& form_data,
+    const base::string16& password_value) {
   // TODO(https://crbug.com/831123): Propagate generated password independently
   // of PasswordForm when PasswordForm goes away from the renderer process.
-  PresaveGeneratedPasswordInternal(form.form_data,
-                                   form.password_value /*generated_password*/);
+  PresaveGeneratedPasswordInternal(form_data,
+                                   password_value /*generated_password*/);
 }
 
 void PasswordFormManager::PasswordNoLongerGenerated() {
@@ -611,11 +612,17 @@ bool PasswordFormManager::ProvisionallySave(
   RecordMetricOnReadonly(parser_.readonly_status(), !!parsed_submitted_form,
                          FormDataParser::Mode::kSaving);
 
-  // This function might be called multiple times. Consider as success if the
-  // submitted form was successfully parsed on a previous call.
-  if (!parsed_submitted_form ||
-      !parsed_submitted_form->HasNonEmptyPasswordValue()) {
-    return is_submitted_;
+  bool have_password_to_save =
+      parsed_submitted_form &&
+      parsed_submitted_form->HasNonEmptyPasswordValue();
+
+  if (!have_password_to_save) {
+    // In case of error during parsing, reset the state.
+    parsed_submitted_form_.reset();
+    submitted_form_ = FormData();
+    password_save_manager_->ResetPendingCrednetials();
+    is_submitted_ = false;
+    return false;
   }
 
   parsed_submitted_form_ = std::move(parsed_submitted_form);

@@ -75,6 +75,7 @@ cr.define('settings', function() {
   // during testing.
   cr.addSingletonGetter(ImportDataBrowserProxyImpl);
 
+  // #cr_define_end
   return {
     BrowserProfile,
     ImportDataStatus,

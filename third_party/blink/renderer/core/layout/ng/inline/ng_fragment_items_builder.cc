@@ -172,7 +172,7 @@ void NGFragmentItemsBuilder::ConvertToPhysical(WritingMode writing_mode,
       unsigned descendants_count = item->DescendantsCount();
       DCHECK(descendants_count);
       if (descendants_count) {
-        const PhysicalRect line_box_bounds = item->Rect();
+        const PhysicalRect line_box_bounds = item->RectInContainerBlock();
         while (--descendants_count) {
           ++offset;
           ++item_iter;

@@ -412,6 +412,12 @@ std::vector<uint8_t> MakeCCCDValue(uint8_t value) {
   return {value, 0};
 }
 
+void SendRssiOnGetConnectionInfoDone(
+    arc::ArcBluetoothBridge::ReadRemoteRssiCallback callback,
+    const device::BluetoothDevice::ConnectionInfo& conn_info) {
+  std::move(callback).Run(conn_info.rssi);
+}
+
 }  // namespace
 
 namespace arc {
@@ -1166,6 +1172,11 @@ void ArcBluetoothBridge::OnPoweredOn(
     SetPrimaryUserBluetoothPowerSetting(true);
 
   std::move(callback).Run(mojom::BluetoothAdapterState::ON);
+
+  // Sends cached devices to Android after its Bluetooth stack is ready. We
+  // should do this after the above callback since Android will clear its
+  // device cache after receiving the "ON" state of adapter.
+  SendCachedDevices();
 }
 
 void ArcBluetoothBridge::OnPoweredOff(
@@ -1756,8 +1767,14 @@ void ArcBluetoothBridge::ReadRemoteRssi(mojom::BluetoothAddressPtr remote_addr,
     std::move(callback).Run(mojom::kUnknownPower);
     return;
   }
-  std::move(callback).Run(
-      device->GetInquiryRSSI().value_or(mojom::kUnknownPower));
+
+  if (device->IsConnected()) {
+    device->GetConnectionInfo(base::AdaptCallbackForRepeating(
+        base::BindOnce(&SendRssiOnGetConnectionInfoDone, std::move(callback))));
+  } else {
+    std::move(callback).Run(
+        device->GetInquiryRSSI().value_or(mojom::kUnknownPower));
+  }
 }
 
 void ArcBluetoothBridge::OpenBluetoothSocket(
@@ -2428,6 +2445,22 @@ void ArcBluetoothBridge::EnqueueRemotePowerChange(
 void ArcBluetoothBridge::DequeueRemotePowerChange(
     ArcBluetoothBridge::AdapterPowerState powered) {
   remote_power_changes_.pop();
+}
+
+void ArcBluetoothBridge::SendCachedDevices() const {
+  auto* bluetooth_instance = ARC_GET_INSTANCE_FOR_METHOD(
+      arc_bridge_service_->bluetooth(), OnDevicePropertiesChanged);
+  if (!bluetooth_instance)
+    return;
+
+  for (const auto* device : bluetooth_adapter_->GetDevices()) {
+    // Since a cached device may not be a currently available device, we use
+    // OnDevicePropertiesChanged() instead of OnDeviceFound() to avoid trigger
+    // the logic of device found in Android.
+    bluetooth_instance->OnDevicePropertiesChanged(
+        mojom::BluetoothAddress::From(device->GetAddress()),
+        GetDeviceProperties(mojom::BluetoothPropertyType::ALL, device));
+  }
 }
 
 std::vector<mojom::BluetoothPropertyPtr>

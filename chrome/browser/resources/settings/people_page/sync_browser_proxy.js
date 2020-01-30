@@ -325,6 +325,7 @@ cr.define('settings', function() {
 
   cr.addSingletonGetter(SyncBrowserProxyImpl);
 
+  // #cr_define_end
   return {
     PageStatus,
     StatusAction,

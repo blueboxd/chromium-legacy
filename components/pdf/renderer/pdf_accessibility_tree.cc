@@ -916,6 +916,8 @@ ui::AXNodeData* PdfAccessibilityTree::CreateHighlightNode(
   highlight_node->AddStringAttribute(ax::mojom::StringAttribute::kName,
                                      std::string());
   highlight_node->relative_bounds.bounds = ToGfxRectF(highlight.bounds);
+  highlight_node->AddIntAttribute(ax::mojom::IntAttribute::kBackgroundColor,
+                                  highlight.color);
 
   return highlight_node;
 }

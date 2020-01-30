@@ -228,9 +228,6 @@
     // Value used to implement the behavior in:
     // https://quirks.spec.whatwg.org/#the-tables-inherit-color-from-body-quirk
     "-internal-quirk-inherit",
-    // The default color value for the root element. Using a keyword to account
-    // for different values for different color schemes like dark mode.
-    "-internal-root-color",
     //
     // background-repeat
     //
@@ -1214,5 +1211,9 @@
     "invisible",
     "skip-activation",
     "skip-viewport-activation",
+
+    // -internal-empty-line-height
+    // none
+    "fabricated",
   ],
 }

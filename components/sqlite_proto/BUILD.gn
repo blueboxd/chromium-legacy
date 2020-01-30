@@ -14,6 +14,8 @@ static_library("sqlite_proto") {
     "key_value_data.h",
     "key_value_table.cc",
     "key_value_table.h",
+    "proto_table_manager.cc",
+    "proto_table_manager.h",
     "table_manager.cc",
     "table_manager.h",
   ]
@@ -29,6 +31,7 @@ source_set("unit_tests") {
   sources = [
     "key_value_data_unittest.cc",
     "key_value_table_unittest.cc",
+    "proto_table_manager_unittest.cc",
   ]
   deps = [
     ":sqlite_proto",

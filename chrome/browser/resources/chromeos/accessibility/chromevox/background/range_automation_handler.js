@@ -31,6 +31,9 @@ RangeAutomationHandler = class extends BaseAutomationHandler {
     /** @private {Output} */
     this.lastAttributeOutput_;
 
+    /** @private {number} */
+    this.delayedAttributeOutputId_ = -1;
+
     ChromeVoxState.addObserver(this);
   }
 
@@ -64,7 +67,7 @@ RangeAutomationHandler = class extends BaseAutomationHandler {
   }
 
   /**
-   * @param {!AutomationEvent} evt
+   * @param {!ChromeVoxEvent} evt
    */
   onEventIfInRange(evt) {
     if (!DesktopAutomationHandler.announceActions &&
@@ -113,7 +116,7 @@ RangeAutomationHandler = class extends BaseAutomationHandler {
   }
 
   /**
-   * @param {!AutomationEvent} evt
+   * @param {!ChromeVoxEvent} evt
    */
   onAriaAttributeChanged(evt) {
     // Don't report changes on editable nodes since they interfere with text
@@ -140,7 +143,7 @@ RangeAutomationHandler = class extends BaseAutomationHandler {
 
   /**
    * Provides all feedback once a checked state changed event fires.
-   * @param {!AutomationEvent} evt
+   * @param {!ChromeVoxEvent} evt
    */
   onCheckedStateChanged(evt) {
     if (!AutomationPredicate.checkable(evt.target)) {
@@ -155,7 +158,7 @@ RangeAutomationHandler = class extends BaseAutomationHandler {
   /**
    * Updates the focus ring if the location of the current range, or
    * an descendant of the current range, changes.
-   * @param {!AutomationEvent} evt
+   * @param {!ChromeVoxEvent} evt
    */
   onLocationChanged(evt) {
     var cur = ChromeVoxState.instance.currentRange;

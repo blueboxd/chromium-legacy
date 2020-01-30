@@ -9,4 +9,4 @@
     android:layout_height="wrap_content"
     android:minHeight="36dp"
     android:gravity="center_vertical"
-    android:textAppearance="@style/TextAppearance.BlackTitle1" />
+    android:textAppearance="@style/TextAppearance.TextLarge.Primary" />

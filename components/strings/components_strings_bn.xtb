@@ -429,7 +429,6 @@
 <translation id="2799223571221894425">পুনঃশুরু</translation>
 <translation id="2803306138276472711">Google নিরাপদ ব্রাউজিং সাম্প্রতিক <ph name="SITE" />-এ <ph name="BEGIN_LINK" />ম্যালওয়্যার শনাক্ত করেছে<ph name="END_LINK" />। যেসব ওয়েবসাইট সাধারণত নিরাপদ থাকে, সেগুলি কখনও কখনও ম্যালওয়্যার দিয়ে আক্রান্ত হয়।</translation>
 <translation id="2807052079800581569">ইমেজ Y পজিশন</translation>
-<translation id="2809804249696361569">উভয় শিট</translation>
 <translation id="2824775600643448204">ঠিকানা এবং সার্চ দণ্ড</translation>
 <translation id="2826760142808435982"><ph name="CIPHER" /> ব্যবহার করে এই সংযোগটি এনক্রিপ্টেড এবং প্রমাণীকৃত করা হয়েছে এবং কী এক্সচেঞ্জ প্রক্রিয়া হিসাবে <ph name="KX" /> ব্যবহার করে৷</translation>
 <translation id="2835170189407361413">ফর্ম সাফ করুন</translation>
@@ -938,7 +937,6 @@
 <translation id="5112422516732747637">A5</translation>
 <translation id="5115216390227830982">European-Edp</translation>
 <translation id="5115563688576182185">(৬৪-বিট)</translation>
-<translation id="5121469660360593280">আপনার অ্যাডমিনিস্ট্রেটর সহ Chrome এন্টারপ্রাইজ ইউজার সুরক্ষা, নিরাপত্তা সংক্রান্ত ঘটনা সম্পর্কিত যে ডেটা ফ্ল্যাগ করেছে সেটি শেয়ার করুন। এতে ডিভাইসে এবং Chrome-এ সাইন-ইন করার সময় আপনার দেখা পৃষ্ঠাগুলির ইউআরএল, ফাইলের নাম অথবা মেটাডেটা এবং আপনি যে ব্যবহারকারীর নাম ব্যবহার করেন সেগুলিও অন্তর্ভুক্ত থাকতে পারে।</translation>
 <translation id="5123063207673082822">সপ্তাহান্ত</translation>
 <translation id="5125394840236832993">B-Plus</translation>
 <translation id="5126510351761255129">আপনার কার্ডটি যাচাই করুন</translation>
@@ -953,7 +951,6 @@
 <translation id="5161506081086828129">স্ট্যাকার ৯</translation>
 <translation id="516920405563544094"><ph name="CREDIT_CARD" />-এর জন্য সিভিসি লিখুন। আপনি কনফার্ম করার পর আপনার Google অ্যাকাউন্ট থেকে কার্ডের বিবরণ এই সাইটে শেয়ার করা হবে।</translation>
 <translation id="5169827969064885044">আপনি নিজের প্রতিষ্ঠানের অ্যাকাউন্টের অ্যাক্সেস হারাতে পারেন অথবা আপনার পরিচয় চুরি হয়ে যেতে পারে। Chrome এখনই আপনার পাসওয়ার্ড পরিবর্তন করার আর্জি জানাচ্ছে।</translation>
-<translation id="5170017743895942767">Chrome এন্টারপ্রাইজ ইউজার সুরক্ষা</translation>
 <translation id="5171045022955879922">খুঁজুন বা URL লিখুন</translation>
 <translation id="5171689220826475070">Fanfold-European</translation>
 <translation id="5172758083709347301">যন্ত্র</translation>
@@ -1086,7 +1083,6 @@
 <translation id="5737183892635480227">{NUM_CARDS,plural, =1{Google অ্যাকাউন্টে কার্ড সেভ করুন}one{Google অ্যাকাউন্টে কার্ড সেভ করুন}other{Google অ্যাকাউন্টে কার্ড সেভ করুন}}</translation>
 <translation id="5745980000221562234">{NUM_CARDS,plural, =1{এই কার্ডের জন্য ভার্চুয়াল নম্বর ব্যবহার করুন}one{একটি কার্ড বেছে নিন}other{একটি কার্ড বেছে নিন}}</translation>
 <translation id="5763042198335101085">একটি সঠিক ইমেল আইডি লিখুন</translation>
-<translation id="5763703224595565476">আপনার অ্যাডমিনিস্ট্রেটর ব্রাউজারে Chrome এন্টারপ্রাইজ ইউজার সুরক্ষা চালু করেছেন। আপনার কিছু ডেটা Chrome এন্টারপ্রাইজ ইউজার সুরক্ষা অ্যাক্সেস করতে পারবে।</translation>
 <translation id="5765072501007116331">ডেলিভারির পদ্ধতি এবং প্রয়োজনীয়তাগুলি দেখতে একটি ঠিকানা বেছে নিন</translation>
 <translation id="5776313857861697733">অগ্রাধিকার</translation>
 <translation id="5778550464785688721">MIDI ডিভাইসসমূহ পূর্ণ নিয়ন্ত্রণ</translation>
@@ -1422,7 +1418,6 @@
 <translation id="733923710415886693">সার্ভারের সার্টিফিকেটটি সার্টিফিকেটের স্বচ্ছতার মাধ্যমে প্রকাশ করা হয়নি।</translation>
 <translation id="734600844861828519">11x15</translation>
 <translation id="7346048084945669753">অ্যাফিলিয়েট কিনা:</translation>
-<translation id="73479065977517481"><ph name="ENROLLMENT_DOMAIN" /> আপনার ব্রাউজারে Chrome এন্টারপ্রাইজ ইউজার সুরক্ষা চালু করেছে। আপনার কিছু ডেটা Chrome এন্টারপ্রাইজ ইউজার সুরক্ষা অ্যাক্সেস করতে পারবে।</translation>
 <translation id="7349430561505560861">A4-Extra</translation>
 <translation id="7353601530677266744">কম্যান্ড লাইন</translation>
 <translation id="7372973238305370288">ফলাফল খুঁজুন</translation>

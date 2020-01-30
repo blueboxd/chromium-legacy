@@ -426,7 +426,6 @@
 <translation id="2799223571221894425">Стартиране отново</translation>
 <translation id="2803306138276472711">Google Безопасно сърфиране наскоро <ph name="BEGIN_LINK" />откри злонамерен софтуер<ph name="END_LINK" /> на <ph name="SITE" />. Уебсайтовете, които обикновено са надеждни, понякога се заразяват с опасен софтуер.</translation>
 <translation id="2807052079800581569">Позиция на изображението по оста Y</translation>
-<translation id="2809804249696361569">И двата листа</translation>
 <translation id="2824775600643448204">Лента за адреси и за търсене</translation>
 <translation id="2826760142808435982">Връзката е шифрована и удостоверена посредством <ph name="CIPHER" /> и използва <ph name="KX" /> като механизъм за обмен на ключове.</translation>
 <translation id="2835170189407361413">Изчистване на формуляра</translation>
@@ -935,7 +934,6 @@
 <translation id="5112422516732747637">A5</translation>
 <translation id="5115216390227830982">European-Edp</translation>
 <translation id="5115563688576182185">(64 бита)</translation>
-<translation id="5121469660360593280">Споделяне с администратора ви на данни за събития, свързани със сигурността, за които е сигнализирано от Chrome Enterprise User Protect. Данните могат да включват URL адресите на посещаваните от вас страници, имената или метаданните на файлове и потребителското име, с което влизате в профила си на устройството си и в Chrome.</translation>
 <translation id="5123063207673082822">Уикенда</translation>
 <translation id="5125394840236832993">B-Plus</translation>
 <translation id="5126510351761255129">Потвърдете картата</translation>
@@ -950,7 +948,6 @@
 <translation id="5161506081086828129">Стакер 9</translation>
 <translation id="516920405563544094">Въведете кода за проверка за <ph name="CREDIT_CARD" />. След като потвърдите картата си, данните за нея от профила ви в Google ще бъдат споделени с този сайт.</translation>
 <translation id="5169827969064885044">Възможно е да загубите достъп до профила си в организацията или самоличността ви да бъде открадната. Chrome препоръчва да промените паролата си сега.</translation>
-<translation id="5170017743895942767">Chrome Enterprise User Protect</translation>
 <translation id="5171045022955879922">Търсете или въведете URL адрес</translation>
 <translation id="5171689220826475070">Fanfold-European</translation>
 <translation id="5172758083709347301">Машината</translation>
@@ -1083,7 +1080,6 @@
 <translation id="5737183892635480227">{NUM_CARDS,plural, =1{Запазване на картата в профила ви в Google}other{Запазване на картите в профила ви в Google}}</translation>
 <translation id="5745980000221562234">{NUM_CARDS,plural, =1{Използвайте виртуален номер за тази карта}other{Изберете карта}}</translation>
 <translation id="5763042198335101085">Въведете валиден имейл адрес</translation>
-<translation id="5763703224595565476">Администраторът ви е активирал Chrome Enterprise User Protect в браузъра ви. Функцията има достъп до някои от данните ви.</translation>
 <translation id="5765072501007116331">За да видите начините на бърза доставка и изискванията, изберете адрес</translation>
 <translation id="5776313857861697733">Приоритет</translation>
 <translation id="5778550464785688721">Пълен контрол над MIDI устройства</translation>
@@ -1420,7 +1416,6 @@
 <translation id="733923710415886693">Сертификатът на сървъра не е разкрит чрез Прозрачност на сертификатите.</translation>
 <translation id="734600844861828519">11 x 15</translation>
 <translation id="7346048084945669753">Потребителят е вътрешен:</translation>
-<translation id="73479065977517481"><ph name="ENROLLMENT_DOMAIN" /> активира Chrome Enterprise User Protect в браузъра ви. Функцията има достъп до някои от данните ви.</translation>
 <translation id="7349430561505560861">A4-Extra</translation>
 <translation id="7353601530677266744">Команден ред</translation>
 <translation id="7372973238305370288">резултат от търсенето</translation>

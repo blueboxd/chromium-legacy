@@ -26,12 +26,16 @@ class Browser {
     PersistenceInfo(const PersistenceInfo& other);
     ~PersistenceInfo();
 
-    // Uniquely identifies this browser for session restore, empty is a not a
+    // Uniquely identifies this browser for session restore, empty is not a
     // valid id.
     std::string id;
 
     // Last key used to encrypt incognito profile.
     std::vector<uint8_t> last_crypto_key;
+
+    // If non-empty used to restore the state of the browser. This is only used
+    // if |id| is empty.
+    std::vector<uint8_t> minimal_state;
   };
 
   // Creates a new Browser. |persistence_info|, if non-null, is used for saving
@@ -42,17 +46,23 @@ class Browser {
 
   virtual ~Browser() {}
 
-  virtual void AddTab(Tab* tab) = 0;
-  virtual void RemoveTab(Tab* tab) = 0;
+  virtual Tab* AddTab(std::unique_ptr<Tab> tab) = 0;
+  virtual std::unique_ptr<Tab> RemoveTab(Tab* tab) = 0;
   virtual void SetActiveTab(Tab* tab) = 0;
   virtual Tab* GetActiveTab() = 0;
-  virtual const std::vector<Tab*>& GetTabs() = 0;
+  virtual std::vector<Tab*> GetTabs() = 0;
 
   // Called early on in shutdown, before any tabs have been removed.
   virtual void PrepareForShutdown() = 0;
 
   // Returns the id supplied to Create() that is used for persistence.
   virtual std::string GetPersistenceId() = 0;
+
+  // Returns the tabs and navigations in a format suitable for serialization.
+  // This state can be later restored via |PersistenceInfo::minimal_state|.
+  // This is not the full state, only a minimal snapshot intended for
+  // lightweight restore when full persistence is not desirable.
+  virtual std::vector<uint8_t> GetMinimalPersistenceState() = 0;
 
   virtual void AddObserver(BrowserObserver* observer) = 0;
   virtual void RemoveObserver(BrowserObserver* observer) = 0;

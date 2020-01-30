@@ -119,6 +119,7 @@ cr.define('settings', function() {
   // during testing.
   cr.addSingletonGetter(SearchEnginesBrowserProxyImpl);
 
+  // #cr_define_end
   return {
     SearchEnginesBrowserProxy: SearchEnginesBrowserProxy,
     SearchEnginesBrowserProxyImpl: SearchEnginesBrowserProxyImpl,

@@ -48,27 +48,15 @@
 
 namespace blink {
 
-Font::Font() : can_shape_word_by_word_(0), shape_word_by_word_computed_(0) {}
+Font::Font() = default;
 
-Font::Font(const FontDescription& fd)
-    : font_description_(fd),
-      can_shape_word_by_word_(0),
-      shape_word_by_word_computed_(0) {}
+Font::Font(const FontDescription& fd) : font_description_(fd) {}
 
-Font::Font(const Font& other)
-    : font_description_(other.font_description_),
-      font_fallback_list_(other.font_fallback_list_),
-      // TODO(yosin): We should have a comment the reason why don't we copy
-      // |m_canShapeWordByWord| and |m_shapeWordByWordComputed| from |other|,
-      // since |operator=()| copies them from |other|.
-      can_shape_word_by_word_(0),
-      shape_word_by_word_computed_(0) {}
+Font::Font(const Font& other) = default;
 
 Font& Font::operator=(const Font& other) {
   font_description_ = other.font_description_;
   font_fallback_list_ = other.font_fallback_list_;
-  can_shape_word_by_word_ = other.can_shape_word_by_word_;
-  shape_word_by_word_computed_ = other.shape_word_by_word_computed_;
   return *this;
 }
 
@@ -426,23 +414,8 @@ ShapeCache* Font::GetShapeCache() const {
 }
 
 bool Font::CanShapeWordByWord() const {
-  if (!shape_word_by_word_computed_) {
-    can_shape_word_by_word_ = ComputeCanShapeWordByWord();
-    shape_word_by_word_computed_ = true;
-  }
-  return can_shape_word_by_word_;
-}
-
-bool Font::ComputeCanShapeWordByWord() const {
-  if (!GetFontDescription().GetTypesettingFeatures())
-    return true;
-
-  if (!PrimaryFont())
-    return false;
-
-  const FontPlatformData& platform_data = PrimaryFont()->PlatformData();
-  TypesettingFeatures features = GetFontDescription().GetTypesettingFeatures();
-  return !platform_data.HasSpaceInLigaturesOrKerning(features);
+  return font_fallback_list_ &&
+         font_fallback_list_->CanShapeWordByWord(GetFontDescription());
 }
 
 void Font::ReportNotDefGlyph() const {

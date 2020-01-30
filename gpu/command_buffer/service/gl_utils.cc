@@ -920,8 +920,21 @@ CopyTextureMethod GetCopyTextureCHROMIUMMethod(const FeatureInfo* feature_info,
   if (source_target == GL_TEXTURE_2D &&
       (dest_target == GL_TEXTURE_2D || dest_target == GL_TEXTURE_CUBE_MAP) &&
       source_format_color_renderable && copy_tex_image_format_valid &&
-      source_level == 0 && !flip_y && !premultiply_alpha_change && !dither)
-    return CopyTextureMethod::DIRECT_COPY;
+      source_level == 0 && !flip_y && !premultiply_alpha_change && !dither) {
+    auto source_texture_type = GLES2Util::GetGLReadPixelsImplementationType(
+        source_internal_format, source_target);
+    auto dest_texture_type = GLES2Util::GetGLReadPixelsImplementationType(
+        dest_internal_format, dest_target);
+    if (source_texture_type != GL_UNSIGNED_SHORT ||
+        source_texture_type == dest_texture_type) {
+      // https://crbug.com/1042239. As it is stated in the latest OpenGL ES 3.2
+      // spec (Oct 22, 2019) it is optional for implementation to support
+      // conversion between unmatched source and dest effective internal format.
+      // R16 to R16F direct copy failure is seen on Android Nvidia shield
+      // devices. So we won't use DIRECT_COPY for this format.
+      return CopyTextureMethod::DIRECT_COPY;
+    }
+  }
   if (dest_format_color_renderable && dest_level == 0 &&
       dest_target != GL_TEXTURE_CUBE_MAP)
     return CopyTextureMethod::DIRECT_DRAW;
@@ -1014,6 +1027,8 @@ bool ValidateCopyTextureCHROMIUMInternalFormats(const FeatureInfo* feature_info,
       source_internal_format == GL_RGB_YCBCR_422_CHROMIUM ||
       source_internal_format == GL_RGB_YCBCR_P010_CHROMIUM ||
       source_internal_format == GL_R16_EXT ||
+      source_internal_format == GL_RG16_EXT ||
+      source_internal_format == GL_RGBA16_EXT ||
       source_internal_format == GL_RGB10_A2;
   if (!valid_source_format) {
     *output_error_msg = "invalid source internal format " +

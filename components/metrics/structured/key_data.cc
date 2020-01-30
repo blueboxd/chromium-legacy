@@ -12,10 +12,10 @@
 #include "base/time/time.h"
 #include "base/unguessable_token.h"
 #include "base/values.h"
+#include "components/metrics/structured/structured_events.h"
 #include "components/prefs/json_pref_store.h"
 #include "crypto/hmac.h"
 #include "crypto/sha2.h"
-#include "tools/metrics/structured/structured_events.h"
 
 namespace metrics {
 namespace structured {

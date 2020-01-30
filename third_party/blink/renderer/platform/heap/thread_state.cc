@@ -753,10 +753,13 @@ void ThreadState::AtomicPauseMarkPrologue(
       available_concurrent_marking_task_ids_.clear();
     }
 #if DCHECK_IS_ON()
-    MarkingWorklist* worklist = Heap().GetMarkingWorklist();
+    MarkingWorklist* marking_worklist = Heap().GetMarkingWorklist();
+    WriteBarrierWorklist* write_barrier_worklist =
+        Heap().GetWriteBarrierWorklist();
     for (int concurrent_task = WorklistTaskId::ConcurrentThreadBase;
-         concurrent_task < worklist->num_tasks(); ++concurrent_task) {
-      DCHECK(worklist->IsLocalEmpty(concurrent_task));
+         concurrent_task < marking_worklist->num_tasks(); ++concurrent_task) {
+      DCHECK(marking_worklist->IsLocalEmpty(concurrent_task));
+      DCHECK(write_barrier_worklist->IsLocalEmpty(concurrent_task));
     }
 #endif  // DCHECK_IS_ON()
     DisableIncrementalMarkingBarrier();
@@ -1184,6 +1187,8 @@ void ThreadState::IncrementalMarkingStart(BlinkGC::GCReason reason) {
       const uint8_t max_concurrent_task_id =
           WorklistTaskId::ConcurrentThreadBase +
           kNumberOfConcurrentMarkingTasks;
+      DCHECK_EQ(Heap().GetMarkingWorklist()->num_tasks(),
+                Heap().GetWriteBarrierWorklist()->num_tasks());
       DCHECK_LE(max_concurrent_task_id,
                 Heap().GetMarkingWorklist()->num_tasks());
       // Initialize concurrent marking task ids.

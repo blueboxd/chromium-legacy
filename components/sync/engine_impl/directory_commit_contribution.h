@@ -68,6 +68,8 @@ class DirectoryCommitContribution : public CommitContribution {
       const sync_pb::ClientToServerResponse& response,
       StatusController* status) override;
 
+  void ProcessCommitFailure() override;
+
   // Cleans up any temporary state associated with the commit.  Must be called
   // before destruction.
   void CleanUp() override;

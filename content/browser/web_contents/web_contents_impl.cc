@@ -4696,6 +4696,11 @@ void WebContentsImpl::DidContainInsecureFormAction() {
   controller_.ssl_manager()->DidContainInsecureFormAction();
 }
 
+void WebContentsImpl::DocumentAvailableInMainFrame() {
+  for (auto& observer : observers_)
+    observer.DocumentAvailableInMainFrame();
+}
+
 void WebContentsImpl::OnDidRunInsecureContent(RenderFrameHostImpl* source,
                                               const GURL& security_origin,
                                               const GURL& target_url) {
@@ -6196,12 +6201,6 @@ void WebContentsImpl::UpdateTitle(RenderFrameHost* render_frame_host,
   // TODO(evan): make use of title_direction.
   // http://code.google.com/p/chromium/issues/detail?id=27094
   UpdateTitleForEntry(entry, title);
-}
-
-void WebContentsImpl::DocumentAvailableInMainFrame(
-    RenderViewHost* render_view_host) {
-  for (auto& observer : observers_)
-    observer.DocumentAvailableInMainFrame();
 }
 
 void WebContentsImpl::RouteCloseEvent(RenderViewHost* rvh) {

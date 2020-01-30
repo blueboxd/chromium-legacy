@@ -204,6 +204,9 @@ template("chrome_public_common_apk_or_module_tmpl") {
         # For bundles, only include resource strings files from our full
         # locale list, but nothing more.
         aapt_locale_whitelist = locales
+
+        # zh_hk is supported in Android bundles.
+        support_zh_hk = false
       }
     }
 

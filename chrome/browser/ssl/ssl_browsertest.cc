@@ -136,6 +136,7 @@
 #include "content/public/common/url_constants.h"
 #include "content/public/common/web_preferences.h"
 #include "content/public/test/browser_test_utils.h"
+#include "content/public/test/content_mock_cert_verifier.h"
 #include "content/public/test/download_test_observer.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_renderer_host.h"
@@ -148,6 +149,7 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/sync_call_restrictions.h"
 #include "net/base/escape.h"
+#include "net/base/features.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
@@ -162,6 +164,7 @@
 #include "net/http/transport_security_state_test_util.h"
 #include "net/ssl/client_cert_identity_test_util.h"
 #include "net/ssl/client_cert_store.h"
+#include "net/ssl/ssl_config.h"
 #include "net/ssl/ssl_info.h"
 #include "net/ssl/ssl_server_config.h"
 #include "net/test/cert_test_util.h"
@@ -673,6 +676,22 @@ class SSLUITestBase : public InProcessBrowserTest,
 
     EXPECT_TRUE(pref_service->GetBoolean(pref_name));
     EXPECT_TRUE(pref_service->IsManagedPreference(pref_name));
+
+    // Wait for the updated SSL configuration to be sent to the network service,
+    // to avoid a race.
+    g_browser_process->system_network_context_manager()
+        ->FlushSSLConfigManagerForTesting();
+  }
+
+  // Sets the policy identified by |policy_name| to |policy_value|.
+  void SetPolicy(const char* policy_name,
+                 std::unique_ptr<base::Value> policy_value) {
+    policy::PolicyMap policy_map;
+    policy_map.Set(policy_name, policy::POLICY_LEVEL_MANDATORY,
+                   policy::POLICY_SCOPE_MACHINE, policy::POLICY_SOURCE_CLOUD,
+                   std::move(policy_value), nullptr);
+
+    EXPECT_NO_FATAL_FAILURE(UpdateChromePolicy(policy_map));
 
     // Wait for the updated SSL configuration to be sent to the network service,
     // to avoid a race.
@@ -6958,21 +6977,31 @@ void SetShouldNotRequireCTForTesting() {
   network_service_test->SetShouldRequireCT(required_ct);
 }
 
-class TLSLegacyVersionSSLUITest : public CertVerifierBrowserTest {
+class TLSLegacyVersionSSLUITest : public SSLUITest {
  public:
-  TLSLegacyVersionSSLUITest()
-      : CertVerifierBrowserTest(),
-        https_server_(net::EmbeddedTestServer::TYPE_HTTPS) {}
-  ~TLSLegacyVersionSSLUITest() override {}
+  TLSLegacyVersionSSLUITest() = default;
+  ~TLSLegacyVersionSSLUITest() override = default;
 
   void SetUpOnMainThread() override {
-    CertVerifierBrowserTest::SetUpOnMainThread();
-    host_resolver()->AddRule("*", "127.0.0.1");
+    SSLUITest::SetUpOnMainThread();
     mock_cert_verifier()->set_default_result(net::OK);
-
-    https_server_.AddDefaultHandlers(GetChromeTestDataDir());
-
     SetShouldNotRequireCTForTesting();
+  }
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    mock_cert_verifier_.SetUpCommandLine(command_line);
+  }
+
+  void SetUpInProcessBrowserTestFixture() override {
+    mock_cert_verifier_.SetUpInProcessBrowserTestFixture();
+  }
+
+  void TearDownInProcessBrowserTestFixture() override {
+    mock_cert_verifier_.TearDownInProcessBrowserTestFixture();
+  }
+
+  content::ContentMockCertVerifier::CertVerifier* mock_cert_verifier() {
+    return mock_cert_verifier_.mock_cert_verifier();
   }
 
  protected:
@@ -6986,7 +7015,7 @@ class TLSLegacyVersionSSLUITest : public CertVerifierBrowserTest {
   }
 
  private:
-  net::EmbeddedTestServer https_server_;
+  content::ContentMockCertVerifier mock_cert_verifier_;
 
   DISALLOW_COPY_AND_ASSIGN(TLSLegacyVersionSSLUITest);
 };
@@ -7078,6 +7107,175 @@ IN_PROC_BROWSER_TEST_F(TLSLegacyVersionSSLUITest, ManySubresources) {
     EXPECT_TRUE(base::MatchPattern(console_observer.message(),
                                    "*should enable TLS 1.2 or later*"));
   }
+}
+
+class LegacyTLSInterstitialTest : public TLSLegacyVersionSSLUITest {
+ public:
+  LegacyTLSInterstitialTest() {
+    feature_list_.InitAndEnableFeature(net::features::kLegacyTLSEnforced);
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+
+  DISALLOW_COPY_AND_ASSIGN(LegacyTLSInterstitialTest);
+};
+
+// When kLegacyTLSEnforcement is enabled, visiting a legacy TLS page should
+// show the legacy TLS specific interstitial.
+IN_PROC_BROWSER_TEST_F(LegacyTLSInterstitialTest, ShowsInterstitial) {
+  SetTLSVersion(net::SSL_PROTOCOL_VERSION_TLS1);
+  ASSERT_TRUE(https_server()->Start());
+  base::HistogramTester histograms;
+
+  ui_test_utils::NavigateToURL(browser(),
+                               https_server()->GetURL("/ssl/google.html"));
+  auto* tab = browser()->tab_strip_model()->GetActiveWebContents();
+  WaitForInterstitial(tab);
+  ASSERT_TRUE(
+      chrome_browser_interstitials::IsShowingLegacyTLSInterstitial(tab));
+
+  // Check that the histogram for the legacy TLS interstitial was recorded.
+  histograms.ExpectTotalCount(SSLErrorHandler::GetHistogramNameForTesting(), 2);
+  histograms.ExpectBucketCount(SSLErrorHandler::GetHistogramNameForTesting(),
+                               SSLErrorHandler::HANDLE_ALL, 1);
+  histograms.ExpectBucketCount(SSLErrorHandler::GetHistogramNameForTesting(),
+                               SSLErrorHandler::SHOW_LEGACY_TLS_INTERSTITIAL,
+                               1);
+
+  // Click through the interstitial.
+  ProceedThroughInterstitial(tab);
+
+  // Navigating to the same page now shouldn't cause an interstitial.
+  ui_test_utils::NavigateToURL(browser(),
+                               https_server()->GetURL("/ssl/google.html"));
+  tab = browser()->tab_strip_model()->GetActiveWebContents();
+  EXPECT_FALSE(
+      chrome_browser_interstitials::IsShowingLegacyTLSInterstitial(tab));
+
+  // Check that no new interstitial metrics were recorded from this navigation.
+  histograms.ExpectTotalCount(SSLErrorHandler::GetHistogramNameForTesting(), 2);
+}
+
+// When kLegacyTLSEnforcement is enabled but the SSLVersionMin enterprise policy
+// is set, the SSLVersionMin policy should also override the version we show the
+// legacy TLS interstitial on.
+IN_PROC_BROWSER_TEST_F(LegacyTLSInterstitialTest, PolicyOverridesInterstitial) {
+  // Set the SSLVersionMin policy and make sure that the network service has
+  // received the update.
+  std::unique_ptr<base::Value> policy_value =
+      std::make_unique<base::Value>("tls1");  // TLS 1.0
+  SetPolicy(policy::key::kSSLVersionMin, std::move(policy_value));
+
+  SetTLSVersion(net::SSL_PROTOCOL_VERSION_TLS1);
+  ASSERT_TRUE(https_server()->Start());
+
+  base::HistogramTester histograms;
+
+  ui_test_utils::NavigateToURL(browser(),
+                               https_server()->GetURL("/ssl/google.html"));
+  auto* tab = browser()->tab_strip_model()->GetActiveWebContents();
+  EXPECT_FALSE(
+      chrome_browser_interstitials::IsShowingLegacyTLSInterstitial(tab));
+
+  // Interstitial metrics should not have been recorded from this navigation.
+  histograms.ExpectTotalCount(SSLErrorHandler::GetHistogramNameForTesting(), 0);
+}
+
+// Check that if we have bypassed the legacy TLS error previously and then the
+// server responded with TLS 1.2, we drop the error exception.
+IN_PROC_BROWSER_TEST_F(LegacyTLSInterstitialTest, FixedServerDropsBypass) {
+  int port;  // Save the port used so the different servers can be "identical".
+
+  // Connect over TLS 1.0 and proceed through the interstitial to set an error
+  // bypass.
+  SetTLSVersion(net::SSL_PROTOCOL_VERSION_TLS1);
+  ASSERT_TRUE(https_server()->Start());
+  port = https_server()->port();
+  ui_test_utils::NavigateToURL(browser(),
+                               https_server()->GetURL("/ssl/google.html"));
+  auto* tab = browser()->tab_strip_model()->GetActiveWebContents();
+  WaitForInterstitial(tab);
+  ProceedThroughInterstitial(tab);
+  ASSERT_TRUE(https_server()->ShutdownAndWaitUntilComplete());
+
+  // Connect over a "fixed" TLS 1.2 connection.
+  net::EmbeddedTestServer tls12_server(net::EmbeddedTestServer::TYPE_HTTPS);
+  ASSERT_TRUE(tls12_server.Start(port));
+  ui_test_utils::NavigateToURL(browser(),
+                               tls12_server.GetURL("/ssl/google.html"));
+  EXPECT_FALSE(
+      chrome_browser_interstitials::IsShowingLegacyTLSInterstitial(tab));
+  ASSERT_TRUE(tls12_server.ShutdownAndWaitUntilComplete());
+
+  // Go back to connecting over TLS 1.0. Visiting should once again show the
+  // legacy TLS interstitial
+  net::EmbeddedTestServer tls1_server(net::EmbeddedTestServer::TYPE_HTTPS);
+  net::SSLServerConfig config;
+  config.version_max = net::SSL_PROTOCOL_VERSION_TLS1;
+  config.version_min = net::SSL_PROTOCOL_VERSION_TLS1;
+  tls1_server.SetSSLConfig(net::EmbeddedTestServer::CERT_OK, config);
+  ASSERT_TRUE(tls1_server.Start(port));
+  ui_test_utils::NavigateToURL(browser(),
+                               tls1_server.GetURL("/ssl/google.html"));
+  WaitForInterstitial(tab);
+  EXPECT_TRUE(
+      chrome_browser_interstitials::IsShowingLegacyTLSInterstitial(tab));
+}
+
+// Check that cliking the "back to safety" button works for the legacy TLS
+// interstitial.
+IN_PROC_BROWSER_TEST_F(LegacyTLSInterstitialTest, BackToSafety) {
+  // Connect over TLS 1.0 and don't proceed through the interstitial.
+  SetTLSVersion(net::SSL_PROTOCOL_VERSION_TLS1);
+  ASSERT_TRUE(https_server()->Start());
+  ui_test_utils::NavigateToURL(browser(),
+                               https_server()->GetURL("/ssl/google.html"));
+  auto* tab = browser()->tab_strip_model()->GetActiveWebContents();
+  WaitForInterstitial(tab);
+  DontProceedThroughInterstitial(tab);
+  EXPECT_NE(tab->GetVisibleURL(), https_server()->GetURL("/ssl/google.html"));
+}
+
+// A WebContentsObserver that allows the user to wait for a navigation, and
+// check whether the resource for the navigation was loaded from cache or not.
+class CacheNavigationObserver : public content::WebContentsObserver {
+ public:
+  explicit CacheNavigationObserver(WebContents* web_contents,
+                                   bool expect_cached)
+      : WebContentsObserver(web_contents), expect_cached_(expect_cached) {}
+  ~CacheNavigationObserver() override = default;
+
+  void WaitForNavigation() { run_loop_.Run(); }
+
+  // WebContentsObserver:
+  void DidFinishNavigation(
+      content::NavigationHandle* navigation_handle) override {
+    ASSERT_EQ(expect_cached_, navigation_handle->WasResponseCached());
+    run_loop_.Quit();
+  }
+
+ private:
+  bool expect_cached_;
+  base::RunLoop run_loop_;
+};
+
+// Tests that resources loaded over legacy TLS should not be cached.
+IN_PROC_BROWSER_TEST_F(LegacyTLSInterstitialTest, LegacyTLSPagesNotCached) {
+  // Connect over TLS 1.0 and proceed through the interstitial to set an error
+  // bypass.
+  SetTLSVersion(net::SSL_PROTOCOL_VERSION_TLS1);
+  ASSERT_TRUE(https_server()->Start());
+  ui_test_utils::NavigateToURL(browser(),
+                               https_server()->GetURL("/ssl/google.html"));
+  auto* tab = browser()->tab_strip_model()->GetActiveWebContents();
+  WaitForInterstitial(tab);
+  ProceedThroughInterstitial(tab);
+
+  CacheNavigationObserver observer(tab, false);
+  ui_test_utils::NavigateToURL(browser(),
+                               https_server()->GetURL("/ssl/google.html"));
+  observer.WaitForNavigation();  // Will fail if resource is loaded from cache.
 }
 
 // Checks that SimpleURLLoader, which uses services/network/url_loader.cc, goes

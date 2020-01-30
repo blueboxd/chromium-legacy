@@ -101,8 +101,7 @@ bool ParseScaleFactor(const base::StringPiece& identifier,
   }
 
   double scale = 0;
-  std::string stripped;
-  identifier.substr(0, identifier.length() - 1).CopyToString(&stripped);
+  std::string stripped(identifier.substr(0, identifier.length() - 1));
   if (!base::StringToDouble(stripped, &scale)) {
     LOG(WARNING) << "Invalid scale factor format: " << identifier;
     return false;
@@ -154,7 +153,7 @@ void ParsePathAndImageSpec(const GURL& url,
             pos + 1, stripped_path.length() - pos - 1), &factor)) {
       // Strip scale factor specification from path.
       stripped_path.remove_suffix(stripped_path.length() - pos);
-      stripped_path.CopyToString(path);
+      path->assign(stripped_path.data(), stripped_path.size());
     }
     if (scale_factor)
       *scale_factor = factor;
@@ -171,7 +170,7 @@ void ParsePathAndImageSpec(const GURL& url,
             &index)) {
       // Strip frame index specification from path.
       stripped_path.remove_suffix(stripped_path.length() - pos);
-      stripped_path.CopyToString(path);
+      path->assign(stripped_path.data(), stripped_path.size());
     }
     if (frame_index)
       *frame_index = index;

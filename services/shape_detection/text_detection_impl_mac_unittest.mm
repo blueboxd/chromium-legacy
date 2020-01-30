@@ -4,12 +4,13 @@
 
 #include "services/shape_detection/text_detection_impl_mac.h"
 
+#import <AppKit/AppKit.h>
+
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/mac/scoped_nsobject.h"
-#include "base/mac/sdk_forward_declarations.h"
 #include "base/run_loop.h"
 #include "base/test/task_environment.h"
 #include "testing/gmock/include/gmock/gmock.h"

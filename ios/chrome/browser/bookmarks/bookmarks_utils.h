@@ -17,21 +17,6 @@ class BookmarkModel;
 class BookmarkNode;
 }
 
-// Possible locations where a bookmark can be opened from.
-enum BookmarkLaunchLocation {
-  BOOKMARK_LAUNCH_LOCATION_ALL_ITEMS,
-  BOOKMARK_LAUNCH_LOCATION_UNCATEGORIZED_DEPRECATED,
-  BOOKMARK_LAUNCH_LOCATION_FOLDER,
-  BOOKMARK_LAUNCH_LOCATION_FILTER_DEPRECATED,
-  BOOKMARK_LAUNCH_LOCATION_SEARCH_DEPRECATED,
-  BOOKMARK_LAUNCH_LOCATION_BOOKMARK_EDITOR_DEPRECATED,
-  BOOKMARK_LAUNCH_LOCATION_OMNIBOX,
-  BOOKMARK_LAUNCH_LOCATION_COUNT,
-};
-
-// Records the proper metric based on the launch location.
-void RecordBookmarkLaunch(BookmarkLaunchLocation launch_location);
-
 // Removes all user bookmarks and clears bookmark-related pref. Requires
 // bookmark model to be loaded.
 // Return true if the bookmarks were successfully removed and false otherwise.

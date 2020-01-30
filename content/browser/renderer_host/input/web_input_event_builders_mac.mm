@@ -35,7 +35,6 @@
 
 #include <stdint.h>
 
-#include "base/mac/sdk_forward_declarations.h"
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
 #include "third_party/blink/public/common/input/web_input_event.h"

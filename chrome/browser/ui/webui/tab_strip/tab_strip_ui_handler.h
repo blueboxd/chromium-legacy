@@ -52,6 +52,8 @@ class TabStripUIHandler : public content::WebUIMessageHandler,
   FRIEND_TEST_ALL_PREFIXES(TabStripUIHandlerTest, GetGroupVisualData);
   FRIEND_TEST_ALL_PREFIXES(TabStripUIHandlerTest, GroupTab);
   FRIEND_TEST_ALL_PREFIXES(TabStripUIHandlerTest, MoveGroup);
+  FRIEND_TEST_ALL_PREFIXES(TabStripUIHandlerTest, MoveGroupAcrossProfiles);
+  FRIEND_TEST_ALL_PREFIXES(TabStripUIHandlerTest, MoveGroupAcrossWindows);
   FRIEND_TEST_ALL_PREFIXES(TabStripUIHandlerTest, UngroupTab);
 
   void HandleCreateNewTab(const base::ListValue* args);

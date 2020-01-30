@@ -65,10 +65,6 @@ class COMPONENT_EXPORT(TRACING_CPP) PerfettoProducer
       std::unique_ptr<PerfettoProducer> perfetto_producer);
 
  protected:
-  // Returns the SMA of the SharedMemory from the perfetto service or nullptr if
-  // not initialized (no trace has ever been started).
-  virtual perfetto::SharedMemoryArbiter* GetSharedMemoryArbiter() = 0;
-
   PerfettoTaskRunner* task_runner();
 
  private:

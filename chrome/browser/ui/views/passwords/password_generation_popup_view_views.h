@@ -11,6 +11,10 @@
 
 class PasswordGenerationPopupController;
 
+namespace views {
+class Label;
+}
+
 class PasswordGenerationPopupViewViews : public autofill::AutofillPopupBaseView,
                                          public PasswordGenerationPopupView {
  public:
@@ -34,12 +38,16 @@ class PasswordGenerationPopupViewViews : public autofill::AutofillPopupBaseView,
   void CreateLayoutAndChildren();
 
   // views:Views implementation.
+  void OnThemeChanged() override;
   void OnPaint(gfx::Canvas* canvas) override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   gfx::Size CalculatePreferredSize() const override;
 
   // Sub view that displays the actual generated password.
   GeneratedPasswordBox* password_view_ = nullptr;
+
+  // The footer label.
+  views::Label* help_label_ = nullptr;
 
   // Controller for this view. Weak reference.
   PasswordGenerationPopupController* controller_;

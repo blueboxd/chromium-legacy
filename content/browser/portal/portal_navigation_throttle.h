@@ -19,9 +19,6 @@ namespace content {
 //
 // This throttle is enabled only when portals are enabled but third-party
 // portals are not, and provides enforcement of that state.
-//
-// Note: This has complicated interactions with portal activation, which are not
-// yet resolved. See https://crbug.com/1013389.
 class CONTENT_EXPORT PortalNavigationThrottle : public NavigationThrottle {
  public:
   static std::unique_ptr<PortalNavigationThrottle> MaybeCreateThrottleFor(

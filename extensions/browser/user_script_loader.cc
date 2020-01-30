@@ -93,7 +93,8 @@ bool UserScriptLoader::ParseMetadataHeader(const base::StringPiece& script_text,
     if (line_end == std::string::npos)
       line_end = script_text.length() - 1;
 
-    line.set(script_text.data() + line_start, line_end - line_start);
+    line = base::StringPiece(script_text.data() + line_start,
+                             line_end - line_start);
 
     if (!in_metadata) {
       if (line.starts_with(kUserScriptBegin))

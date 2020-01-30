@@ -90,8 +90,9 @@ class CustomScrollbar final : public Scrollbar {
 
   void UpdateScrollbarParts(bool destroy = false);
 
-  scoped_refptr<ComputedStyle> GetScrollbarPseudoElementStyle(ScrollbarPart,
-                                                              PseudoId);
+  scoped_refptr<const ComputedStyle> GetScrollbarPseudoElementStyle(
+      ScrollbarPart,
+      PseudoId);
   void UpdateScrollbarPart(ScrollbarPart, bool destroy = false);
 
   HashMap<unsigned, LayoutCustomScrollbarPart*> parts_;

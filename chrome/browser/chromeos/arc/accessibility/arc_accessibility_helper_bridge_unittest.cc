@@ -78,6 +78,15 @@ class ArcAccessibilityHelperBridgeTest : public ChromeViewsTestBase {
       return event_router_->GetEventCount(event_name);
     }
 
+    arc::mojom::AccessibilityFilterType GetFilterTypeForProfile(
+        Profile* profile) override {
+      return filter_type_for_test_;
+    }
+
+    void SetFilterTypeForTest(arc::mojom::AccessibilityFilterType filter_type) {
+      filter_type_for_test_ = filter_type;
+    }
+
    private:
     aura::Window* GetActiveWindow() override { return window_.get(); }
     extensions::EventRouter* GetEventRouter() const override {
@@ -86,6 +95,8 @@ class ArcAccessibilityHelperBridgeTest : public ChromeViewsTestBase {
 
     std::unique_ptr<aura::Window> window_;
     extensions::TestEventRouter* const event_router_;
+    arc::mojom::AccessibilityFilterType filter_type_for_test_ =
+        arc::mojom::AccessibilityFilterType::ALL;
 
     DISALLOW_COPY_AND_ASSIGN(TestArcAccessibilityHelperBridge);
   };
@@ -204,7 +215,6 @@ class ArcAccessibilityHelperBridgeTest : public ChromeViewsTestBase {
 TEST_F(ArcAccessibilityHelperBridgeTest, TaskAndAXTreeLifecycle) {
   TestArcAccessibilityHelperBridge* helper_bridge =
       accessibility_helper_bridge();
-  helper_bridge->set_filter_type_all_for_test();
 
   const auto& key_to_tree = helper_bridge->trees_for_test();
   ASSERT_EQ(0U, key_to_tree.size());
@@ -294,8 +304,6 @@ TEST_F(ArcAccessibilityHelperBridgeTest, TaskAndAXTreeLifecycle) {
 TEST_F(ArcAccessibilityHelperBridgeTest, EventAnnouncement) {
   TestArcAccessibilityHelperBridge* helper_bridge =
       accessibility_helper_bridge();
-  helper_bridge->set_filter_type_all_for_test();
-
   std::vector<std::string> text({"Str"});
   auto event = arc::mojom::AccessibilityEventData::New();
   event->event_type = arc::mojom::AccessibilityEventType::ANNOUNCEMENT;
@@ -337,6 +345,10 @@ TEST_F(ArcAccessibilityHelperBridgeTest, NotificationEventArriveFirst) {
   event1->event_type = arc::mojom::AccessibilityEventType::WINDOW_STATE_CHANGED;
   event1->notification_key = base::make_optional<std::string>(kNotificationKey);
   event1->node_data.push_back(arc::mojom::AccessibilityNodeInfoData::New());
+  event1->window_data =
+      std::vector<arc::mojom::AccessibilityWindowInfoDataPtr>();
+  event1->window_data->push_back(
+      arc::mojom::AccessibilityWindowInfoData::New());
   helper_bridge->OnAccessibilityEvent(event1.Clone());
 
   EXPECT_EQ(1U, key_to_tree_.size());
@@ -373,6 +385,10 @@ TEST_F(ArcAccessibilityHelperBridgeTest, NotificationEventArriveFirst) {
   event3->event_type = arc::mojom::AccessibilityEventType::WINDOW_STATE_CHANGED;
   event3->notification_key = base::make_optional<std::string>(kNotificationKey);
   event3->node_data.push_back(arc::mojom::AccessibilityNodeInfoData::New());
+  event3->window_data =
+      std::vector<arc::mojom::AccessibilityWindowInfoDataPtr>();
+  event3->window_data->push_back(
+      arc::mojom::AccessibilityWindowInfoData::New());
   helper_bridge->OnAccessibilityEvent(event3.Clone());
 
   EXPECT_EQ(1U, key_to_tree_.size());
@@ -438,6 +454,10 @@ TEST_F(ArcAccessibilityHelperBridgeTest, NotificationSurfaceArriveFirst) {
   event1->event_type = arc::mojom::AccessibilityEventType::WINDOW_STATE_CHANGED;
   event1->notification_key = base::make_optional<std::string>(kNotificationKey);
   event1->node_data.push_back(arc::mojom::AccessibilityNodeInfoData::New());
+  event1->window_data =
+      std::vector<arc::mojom::AccessibilityWindowInfoDataPtr>();
+  event1->window_data->push_back(
+      arc::mojom::AccessibilityWindowInfoData::New());
   helper_bridge->OnAccessibilityEvent(event1.Clone());
 
   EXPECT_EQ(1U, key_to_tree_.size());
@@ -452,8 +472,6 @@ TEST_F(ArcAccessibilityHelperBridgeTest, NotificationSurfaceArriveFirst) {
 
 TEST_F(ArcAccessibilityHelperBridgeTest,
        TextSelectionChangeActivateNotificationWidget) {
-  accessibility_helper_bridge()->set_filter_type_all_for_test();
-
   // Prepare notification surface.
   std::unique_ptr<MockArcNotificationSurface> surface =
       std::make_unique<MockArcNotificationSurface>(kNotificationKey);
@@ -510,8 +528,6 @@ TEST_F(ArcAccessibilityHelperBridgeTest,
 }
 
 TEST_F(ArcAccessibilityHelperBridgeTest, TextSelectionChangedFocusContentView) {
-  accessibility_helper_bridge()->set_filter_type_all_for_test();
-
   // Prepare notification surface.
   std::unique_ptr<MockArcNotificationSurface> surface =
       std::make_unique<MockArcNotificationSurface>(kNotificationKey);
@@ -633,6 +649,69 @@ TEST_F(GetCaptionStyleFromPrefsTests, EmptyValues) {
   EXPECT_EQ("", style->background_color);
   EXPECT_EQ("", style->user_locale);
   EXPECT_EQ(arc::mojom::CaptionTextShadowType::NONE, style->text_shadow_type);
+}
+
+TEST_F(ArcAccessibilityHelperBridgeTest, FilterTypeChange) {
+  TestArcAccessibilityHelperBridge* helper_bridge =
+      accessibility_helper_bridge();
+  const auto& key_to_tree = helper_bridge->trees_for_test();
+  ASSERT_EQ(0U, key_to_tree.size());
+
+  auto event1 = arc::mojom::AccessibilityEventData::New();
+  event1->source_id = 1;
+  event1->task_id = 1;
+  event1->event_type = arc::mojom::AccessibilityEventType::VIEW_FOCUSED;
+  event1->node_data.push_back(arc::mojom::AccessibilityNodeInfoData::New());
+  event1->node_data[0]->id = 1;
+  event1->node_data[0]->string_properties =
+      base::flat_map<arc::mojom::AccessibilityStringProperty, std::string>();
+  event1->node_data[0]->string_properties.value().insert(
+      std::make_pair(arc::mojom::AccessibilityStringProperty::PACKAGE_NAME,
+                     "com.android.vending"));
+  event1->window_data =
+      std::vector<arc::mojom::AccessibilityWindowInfoDataPtr>();
+  event1->window_data->push_back(
+      arc::mojom::AccessibilityWindowInfoData::New());
+  arc::mojom::AccessibilityWindowInfoData* root_window1 =
+      event1->window_data->back().get();
+  root_window1->window_id = 100;
+  root_window1->root_node_id = 1;
+
+  // There's no active window.
+  helper_bridge->OnAccessibilityEvent(event1.Clone());
+  ASSERT_EQ(0U, key_to_tree.size());
+
+  // Let's make task 1 active by activating the window.
+  helper_bridge->SetActiveWindowId(std::string("org.chromium.arc.1"));
+  helper_bridge->SetFilterTypeForTest(arc::mojom::AccessibilityFilterType::ALL);
+  helper_bridge->InvokeUpdateEnabledFeatureForTesting();
+  helper_bridge->OnAccessibilityEvent(event1.Clone());
+  ASSERT_EQ(1U, key_to_tree.size());
+
+  // Changing from ALL to OFF should result in existing trees being destroyed.
+  helper_bridge->SetFilterTypeForTest(arc::mojom::AccessibilityFilterType::OFF);
+  helper_bridge->InvokeUpdateEnabledFeatureForTesting();
+  ASSERT_EQ(0U, key_to_tree.size());
+
+  // Changing from OFF to FOCUS should not result in any changes.
+  helper_bridge->SetFilterTypeForTest(
+      arc::mojom::AccessibilityFilterType::FOCUS);
+  helper_bridge->InvokeUpdateEnabledFeatureForTesting();
+  ASSERT_EQ(0U, key_to_tree.size());
+
+  // Changing from FOCUS to ALL should not result in any changes.
+  helper_bridge->SetFilterTypeForTest(arc::mojom::AccessibilityFilterType::ALL);
+  helper_bridge->InvokeUpdateEnabledFeatureForTesting();
+  ASSERT_EQ(0U, key_to_tree.size());
+
+  // Dispatch event again, to test changing of filter type from ALL to OFF.
+  helper_bridge->OnAccessibilityEvent(event1.Clone());
+
+  // Changing from ALL to FOCUS should not result in any changes.
+  helper_bridge->SetFilterTypeForTest(
+      arc::mojom::AccessibilityFilterType::FOCUS);
+  helper_bridge->InvokeUpdateEnabledFeatureForTesting();
+  ASSERT_EQ(0U, key_to_tree.size());
 }
 
 }  // namespace arc

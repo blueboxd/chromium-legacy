@@ -151,6 +151,7 @@ CandidateWindowView::CandidateWindowView(gfx::NativeView parent,
       should_show_upper_side_(false),
       was_candidate_window_open_(false),
       window_shell_id_(window_shell_id) {
+  DialogDelegate::set_buttons(ui::DIALOG_BUTTON_NONE);
   SetCanActivate(false);
   DCHECK(parent);
   set_parent_window(parent);
@@ -399,10 +400,6 @@ void CandidateWindowView::SelectCandidateAt(int index_in_page) {
 
 const char* CandidateWindowView::GetClassName() const {
   return "CandidateWindowView";
-}
-
-int CandidateWindowView::GetDialogButtons() const {
-  return ui::DIALOG_BUTTON_NONE;
 }
 
 void CandidateWindowView::ButtonPressed(views::Button* sender,

@@ -38,10 +38,6 @@ PrerenderDispatcher::~PrerenderDispatcher() {
   WebPrerenderingSupport::Shutdown();
 }
 
-bool PrerenderDispatcher::IsPrerenderURL(const GURL& url) const {
-  return running_prerender_urls_.count(url) >= 1;
-}
-
 void PrerenderDispatcher::IncrementPrefetchCount() {
   prefetch_count_++;
 }
@@ -94,20 +90,6 @@ void PrerenderDispatcher::PrerenderDomContentLoaded(int prerender_id) {
       << " null.";
 
   prerender.DidSendDOMContentLoadedForPrerender();
-}
-
-void PrerenderDispatcher::PrerenderAddAlias(const GURL& alias) {
-  running_prerender_urls_.insert(alias);
-}
-
-void PrerenderDispatcher::PrerenderRemoveAliases(
-    const std::vector<GURL>& aliases) {
-  for (size_t i = 0; i < aliases.size(); ++i) {
-    auto it = running_prerender_urls_.find(aliases[i]);
-    if (it != running_prerender_urls_.end()) {
-      running_prerender_urls_.erase(it);
-    }
-  }
 }
 
 void PrerenderDispatcher::PrerenderStop(int prerender_id) {

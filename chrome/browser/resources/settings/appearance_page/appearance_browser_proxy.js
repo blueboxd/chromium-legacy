@@ -75,6 +75,7 @@ cr.define('settings', function() {
 
   cr.addSingletonGetter(AppearanceBrowserProxyImpl);
 
+  // #cr_define_end
   return {
     AppearanceBrowserProxy: AppearanceBrowserProxy,
     AppearanceBrowserProxyImpl: AppearanceBrowserProxyImpl,

@@ -30,10 +30,7 @@ class ASH_EXPORT DeskMiniView
       public Desk::Observer,
       public OverviewHighlightController::OverviewHighlightableView {
  public:
-  DeskMiniView(DesksBarView* owner_bar,
-               aura::Window* root_window,
-               Desk* desk,
-               const base::string16& title);
+  DeskMiniView(DesksBarView* owner_bar, aura::Window* root_window, Desk* desk);
   ~DeskMiniView() override;
 
   aura::Window* root_window() { return root_window_; }
@@ -43,8 +40,6 @@ class ASH_EXPORT DeskMiniView
   const CloseDeskButton* close_desk_button() const {
     return close_desk_button_;
   }
-
-  void SetTitle(const base::string16& title);
 
   // Returns the associated desk's container window on the display this
   // mini_view resides on.
@@ -75,6 +70,7 @@ class ASH_EXPORT DeskMiniView
   // Desk::Observer:
   void OnContentChanged() override;
   void OnDeskDestroyed(const Desk* desk) override;
+  void OnDeskNameChanged(const base::string16& new_name) override;
 
   // OverviewHighlightController::OverviewHighlightableView:
   views::View* GetView() override;

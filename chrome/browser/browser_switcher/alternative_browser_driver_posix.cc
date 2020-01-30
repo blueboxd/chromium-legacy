@@ -8,6 +8,7 @@
 
 #include "base/files/file_path.h"
 #include "base/process/launch.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
@@ -41,16 +42,20 @@ const char kOperaVarName[] = "${opera}";
 const char kSafariVarName[] = "${safari}";
 #endif
 
-const struct {
+struct BrowserVarMapping {
   const char* var_name;
   const char* executable_name;
   const char* browser_name;
-} kBrowserVarMappings[] = {
-    {kChromeVarName, kChromeExecutableName, ""},
-    {kFirefoxVarName, kFirefoxExecutableName, "Mozilla Firefox"},
-    {kOperaVarName, kOperaExecutableName, "Opera"},
+  BrowserType browser_type;
+};
+
+const BrowserVarMapping kBrowserVarMappings[] = {
+    {kChromeVarName, kChromeExecutableName, "", BrowserType::kChrome},
+    {kFirefoxVarName, kFirefoxExecutableName, "Mozilla Firefox",
+     BrowserType::kFirefox},
+    {kOperaVarName, kOperaExecutableName, "Opera", BrowserType::kOpera},
 #if defined(OS_MACOSX)
-    {kSafariVarName, kSafariExecutableName, "Safari"},
+    {kSafariVarName, kSafariExecutableName, "Safari", BrowserType::kSafari},
 #endif
 };
 
@@ -122,21 +127,24 @@ void AppendCommandLineArguments(base::CommandLine* cmd_line,
     cmd_line->AppendArg(url.spec());
 }
 
-void ExpandPresetBrowsers(std::string* str) {
+const BrowserVarMapping* FindBrowserMapping(base::StringPiece path) {
 #if defined(OS_MACOSX)
   // Unlike most POSIX platforms, MacOS always has another browser than Chrome,
   // so admins don't have to explicitly configure one.
-  if (str->empty()) {
-    *str = kSafariExecutableName;
-    return;
-  }
+  if (path.empty())
+    path = kSafariVarName;
 #endif
   for (const auto& mapping : kBrowserVarMappings) {
-    if (!str->compare(mapping.var_name)) {
-      *str = mapping.executable_name;
-      return;
-    }
+    if (!path.compare(mapping.var_name))
+      return &mapping;
   }
+  return nullptr;
+}
+
+void ExpandPresetBrowsers(std::string* str) {
+  const auto* mapping = FindBrowserMapping(*str);
+  if (mapping)
+    *str = mapping->executable_name;
 }
 
 }  // namespace
@@ -177,17 +185,14 @@ bool AlternativeBrowserDriverImpl::TryLaunch(const GURL& url) {
 
 std::string AlternativeBrowserDriverImpl::GetBrowserName() const {
   std::string path = prefs_->GetAlternativeBrowserPath();
-#if defined(OS_MACOSX)
-  // Unlike most POSIX platforms, MacOS always has another browser than Chrome,
-  // so admins don't have to explicitly configure one.
-  if (path.empty())
-    path = kSafariVarName;
-#endif
-  for (const auto& mapping : kBrowserVarMappings) {
-    if (!path.compare(mapping.var_name))
-      return std::string(mapping.browser_name);
-  }
-  return std::string();
+  const auto* mapping = FindBrowserMapping(path);
+  return mapping ? mapping->browser_name : std::string();
+}
+
+BrowserType AlternativeBrowserDriverImpl::GetBrowserType() const {
+  std::string path = prefs_->GetAlternativeBrowserPath();
+  const auto* mapping = FindBrowserMapping(path);
+  return mapping ? mapping->browser_type : BrowserType::kUnknown;
 }
 
 base::CommandLine AlternativeBrowserDriverImpl::CreateCommandLine(

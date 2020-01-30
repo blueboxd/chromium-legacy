@@ -193,9 +193,9 @@ class PLATFORM_EXPORT ScriptState final : public GarbageCollected<ScriptState> {
   // exactly.
   SelfKeepAlive<ScriptState> reference_from_v8_context_;
 
-  static constexpr int kV8ContextPerContextDataIndex = static_cast<int>(
-      gin::kPerContextDataStartIndex +  // NOLINT(readability/enum_casing)
-      gin::kEmbedderBlink);             // NOLINT(readability/enum_casing)
+  static constexpr int kV8ContextPerContextDataIndex =
+      static_cast<int>(gin::kPerContextDataStartIndex) +
+      static_cast<int>(gin::kEmbedderBlink);
 
   DISALLOW_COPY_AND_ASSIGN(ScriptState);
 };

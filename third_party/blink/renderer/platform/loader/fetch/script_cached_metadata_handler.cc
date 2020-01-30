@@ -18,22 +18,19 @@ void ScriptCachedMetadataHandler::Trace(blink::Visitor* visitor) {
   CachedMetadataHandler::Trace(visitor);
 }
 
-void ScriptCachedMetadataHandler::SetCachedMetadata(
-    uint32_t data_type_id,
-    const uint8_t* data,
-    size_t size,
-    CachedMetadataHandler::CacheType cache_type) {
+void ScriptCachedMetadataHandler::SetCachedMetadata(uint32_t data_type_id,
+                                                    const uint8_t* data,
+                                                    size_t size) {
   // Currently, only one type of cached metadata per resource is supported. If
   // the need arises for multiple types of metadata per resource this could be
   // enhanced to store types of metadata in a map.
   DCHECK(!cached_metadata_);
   cached_metadata_ = CachedMetadata::Create(data_type_id, data, size);
-  if (cache_type == CachedMetadataHandler::kSendToPlatform)
+  if (!disable_send_to_platform_for_testing_)
     SendToPlatform();
 }
 
-void ScriptCachedMetadataHandler::ClearCachedMetadata(
-    CachedMetadataHandler::CacheType cache_type) {
+void ScriptCachedMetadataHandler::ClearCachedMetadata(CacheType cache_type) {
   cached_metadata_ = nullptr;
   if (cache_type == CachedMetadataHandler::kSendToPlatform)
     SendToPlatform();

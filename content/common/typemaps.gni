@@ -9,5 +9,4 @@ typemaps = [
   "//content/common/native_types_mac.typemap",
   "//content/common/navigation_params.typemap",
   "//content/common/render_frame_metadata.typemap",
-  "//content/common/web_preferences.typemap",
 ]

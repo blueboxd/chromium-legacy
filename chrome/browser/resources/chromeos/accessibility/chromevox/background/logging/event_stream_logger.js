@@ -31,7 +31,7 @@ EventStreamLogger = class {
 
   /**
    * Adds eventStreamLogging to this handler.
-   * @param {chrome.automation.chrome.automation.EventType} eventType
+   * @param {chrome.automation.EventType} eventType
    * @protected
    */
   addWatcher_(eventType) {
@@ -40,7 +40,7 @@ EventStreamLogger = class {
 
   /**
    * Removes eventStreamLogging from this handler.
-   * @param {chrome.automation.chrome.automation.EventType} eventType
+   * @param {chrome.automation.EventType} eventType
    * @protected
    */
   removeWatcher_(eventType) {
@@ -57,7 +57,7 @@ EventStreamLogger = class {
   }
 
   /**
-   * @param {chrome.automation.chrome.automation.EventType} eventType
+   * @param {chrome.automation.EventType} eventType
    * @param {boolean} checked
    */
   notifyEventStreamFilterChanged(eventType, checked) {

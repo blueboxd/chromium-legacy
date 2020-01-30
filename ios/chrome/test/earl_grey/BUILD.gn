@@ -130,10 +130,12 @@ chrome_ios_eg_test("ios_chrome_perf_egtests") {
 }
 
 chrome_ios_eg_test("ios_chrome_device_check_egtests") {
+  defines = [ "CHROME_EARL_GREY_1" ]
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [ "device_check_egtest.mm" ]
   deps = [
     ":test_support",
+    "//ios/testing/earl_grey:earl_grey_support",
     "//ios/third_party/earl_grey:earl_grey+link",
     "//url",
   ]
@@ -167,6 +169,25 @@ chrome_ios_eg_test("ios_chrome_smoke_egtests") {
 
 chrome_ios_eg_test("ios_chrome_translate_egtests") {
   deps = [ "//ios/chrome/browser/translate:eg_tests" ]
+}
+
+# This target is only used in routinely device checks. Thus, the target name is
+# different from other EG2 tests.
+source_set("device_check_eg2_tests") {
+  defines = [ "CHROME_EARL_GREY_2" ]
+  configs += [
+    "//build/config/compiler:enable_arc",
+    "//build/config/ios:xctest_config",
+  ]
+  testonly = true
+  sources = [ "device_check_egtest.mm" ]
+  deps = [
+    ":eg_test_support+eg2",
+    "//ios/testing/earl_grey:eg_test_support+eg2",
+    "//ios/third_party/earl_grey2:test_lib",
+    "//url",
+  ]
+  libs = [ "UIKit.framework" ]
 }
 
 source_set("test_support") {

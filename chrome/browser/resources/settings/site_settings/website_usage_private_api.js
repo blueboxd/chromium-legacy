@@ -108,6 +108,7 @@ cr.define('settings.WebsiteUsagePrivateApi', function() {
     instance.notifyUsageDeleted(origin);
   };
 
+  // #cr_define_end
   return {
     websiteUsagePolymerInstance: websiteUsagePolymerInstance,
     fetchUsageTotal: fetchUsageTotal,

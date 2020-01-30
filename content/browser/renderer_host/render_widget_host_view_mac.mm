@@ -1002,7 +1002,7 @@ bool RenderWidgetHostViewMac::GetCachedFirstRectForCharacterRange(
   const TextInputManager::CompositionRangeInfo* composition_info =
       GetCompositionRangeInfo();
   if (!composition_info || composition_info->range.is_empty()) {
-    if (!selection->range().Contains(requested_range))
+    if (!requested_range.IsBoundedBy(selection->range()))
       return false;
     DCHECK(GetFocusedWidget());
     if (actual_range)

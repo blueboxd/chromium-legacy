@@ -468,7 +468,6 @@ message ActionProto {
     ShowProgressBarProto show_progress_bar = 24;
     HighlightElementProto highlight_element = 31;
     ShowDetailsProto show_details = 32;
-    ResetProto reset = 34;
     StopProto stop = 35;
     CollectUserDataProto collect_user_data = 36;
     SetAttributeProto set_attribute = 37;
@@ -486,7 +485,7 @@ message ActionProto {
   // action sent to the client after this one. Default is false.
   optional bool clean_contextual_ui = 33;
 
-  reserved 47;
+  reserved 34, 47;
 }
 
 // Result of |CollectUserDataProto| to be sent to the server.
@@ -505,16 +504,22 @@ message CollectUserDataResultProto {
   optional int32 terms_link = 5;
   // The payload of the chosen login option.
   optional bytes login_payload = 6;
-  // The start of the date/time range, if requested.
-  optional DateTimeProto date_time_start = 7;
-  // The end of the date/time range, if requested.
-  optional DateTimeProto date_time_end = 8;
   // The values obtained by the generic user interface.
   optional ModelProto model = 9;
   // The memory keys of all non-empty text inputs, corresponding to the memory
   // keys specified in |TextInputProto|. The values themselves are stored in the
   // client and do not leave the device.
   repeated string set_text_input_memory_keys = 10;
+  // The start date of the date/time range, if requested.
+  optional DateProto date_range_start_date = 11;
+  // The index of the selected timeslot for the start of the date/time range.
+  optional int32 date_range_start_timeslot = 12;
+  // The end date of the date/time range, if requested.
+  optional DateProto date_range_end_date = 13;
+  // The index of the selected timeslot for the end of the date/time range.
+  optional int32 date_range_end_timeslot = 14;
+
+  reserved 7, 8;
 }
 
 message ProcessedActionProto {
@@ -1255,6 +1260,14 @@ message PromptProto {
 }
 
 message ContactDetailsProto {
+  // A subset of fields available for autofill profiles. See
+  // |components/autofill/code/browser/field_types.h|.
+  enum AutofillContactField {
+    NAME_FULL = 7;
+    EMAIL_ADDRESS = 9;
+    PHONE_HOME_WHOLE_NUMBER = 14;
+  }
+
   // Data saved under this name can be reused by UseAddressAction.
   optional string contact_details_name = 1;
   // If true asks user for full name.
@@ -1263,6 +1276,19 @@ message ContactDetailsProto {
   optional bool request_payer_email = 3;
   // If true asks user for phone.
   optional bool request_payer_phone = 4;
+  // This controls the summary of the selected contact in the collapsed contact
+  // section (one line per field, in the order specified, up to and including
+  // |max_number_summary_fields| lines).
+  repeated AutofillContactField summary_fields = 5;
+  // The maximum number of lines for the selected contact in the collapsed
+  // contact section.
+  optional int32 max_number_summary_lines = 6;
+  // This controls the full description of contacts in the expanded contact
+  // section (one line per field, in the order specified, up to and including
+  // |max_number_full_lines| lines).
+  repeated AutofillContactField full_fields = 7;
+  // The maximum number of lines for contacts in the expanded contact section.
+  optional int32 max_number_full_lines = 8;
 }
 
 // A generic read-only popup message.
@@ -1334,20 +1360,43 @@ message LoginDetailsProto {
 }
 
 message DateTimeRangeProto {
-  // The start value of the date/time range.
-  optional DateTimeProto start = 1;
-  // The end value of the date/time range.
-  optional DateTimeProto end = 2;
-  // The minimum allowed value of the date/time range.
-  optional DateTimeProto min = 3;
-  // The maximum allowed value of the date/time range.
-  optional DateTimeProto max = 4;
-  // The label of the start date/time value (e.g., 'Pick-up').
-  optional string start_label = 5;
-  // The label of the end date/time value (e.g., 'Return').
-  optional string end_label = 6;
-  // The error to show if the date range is invalid.
-  optional string invalid_error_message = 7;
+  message TimeSlot {
+    // The label to display.
+    optional string label = 1;
+    // The comparison value to be used to compare this timeslot
+    // to others. Smaller values indicate earlier times. This will be used to
+    // prevent start > end and vice-versa.
+    optional int32 comparison_value = 2;
+  }
+
+  // The initial start date of the date/time range.
+  optional DateProto start_date = 15;
+  // The index of the initial start time slot to select.
+  optional int32 start_time_slot = 13;
+  // The initial end date of the date/time range.
+  optional DateProto end_date = 16;
+  // The index of the initial end time slot to select.
+  optional int32 end_time_slot = 14;
+  // The minimum allowed date of the date/time range.
+  optional DateProto min_date = 3;
+  // The maximum allowed date of the date/time range.
+  optional DateProto max_date = 4;
+  // The label for the start date (e.g., 'Pick up date').
+  optional string start_date_label = 8;
+  // The label for the start time (e.g., 'Pick up time').
+  optional string start_time_label = 9;
+  // The label for the end date (e.g., 'Drop off date').
+  optional string end_date_label = 10;
+  // The label for the end time (e.g., 'Drop off time').
+  optional string end_time_label = 11;
+  // The time slots to offer (e.g., 08:00 AM, 08:30 AM, ...)
+  repeated TimeSlot time_slots = 12;
+  // The error message to display if the date is not set.
+  optional string date_not_set_error = 17;
+  // The error message to display if the time is not set.
+  optional string time_not_set_error = 18;
+
+  reserved 1, 2, 5, 6, 7;
 }
 
 // A section showing a simple text message.
@@ -1467,9 +1516,6 @@ message CollectUserDataProto {
   // Text to be shown in a separate info section.
   optional string info_section_text = 24;
 }
-
-// Resets Autofill Assistant: clears any state and server payload.
-message ResetProto {}
 
 // Stop Autofill Assistant.
 message StopProto {

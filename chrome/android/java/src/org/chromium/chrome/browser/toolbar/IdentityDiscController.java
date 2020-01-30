@@ -53,7 +53,7 @@ class IdentityDiscController implements NativeInitObserver, ProfileDataCache.Obs
 
     // Context is used for fetching resources and launching preferences page.
     private final Context mContext;
-    // Toolbar manager exposes APIs for manipulating experimental button.
+    // Toolbar manager exposes APIs for manipulating identity disc button.
     private final ToolbarManager mToolbarManager;
     private ActivityLifecycleDispatcher mActivityLifecycleDispatcher;
 
@@ -129,10 +129,10 @@ class IdentityDiscController implements NativeInitObserver, ProfileDataCache.Obs
                 showIdentityDisc(accountName);
                 maybeShowIPH();
             } else if (mState != oldState) {
-                mToolbarManager.updateExperimentalButtonImage(getProfileImage(accountName));
+                mToolbarManager.updateIdentityDiscButtonImage(getProfileImage(accountName));
             }
         } else if (oldState != IdentityDiscState.NONE) {
-            mToolbarManager.disableExperimentalButton();
+            mToolbarManager.hideIdentityDiscButton();
         }
     }
 
@@ -167,7 +167,7 @@ class IdentityDiscController implements NativeInitObserver, ProfileDataCache.Obs
      * Triggers profile image fetch and displays Identity Disc on top toolbar.
      */
     private void showIdentityDisc(String accountName) {
-        mToolbarManager.enableExperimentalButton(view -> {
+        mToolbarManager.showIdentityDiscButton(view -> {
             recordIdentityDiscUsed();
             SettingsLauncher.getInstance().launchSettingsPage(
                     mContext, SyncAndServicesSettings.class);
@@ -188,7 +188,7 @@ class IdentityDiscController implements NativeInitObserver, ProfileDataCache.Obs
         }
         if (mState != IdentityDiscState.NONE) {
             mState = IdentityDiscState.NONE;
-            mToolbarManager.disableExperimentalButton();
+            mToolbarManager.hideIdentityDiscButton();
         }
     }
 
@@ -202,7 +202,7 @@ class IdentityDiscController implements NativeInitObserver, ProfileDataCache.Obs
 
         String accountName = ChromeSigninController.get().getSignedInAccountName();
         if (accountId.equals(accountName)) {
-            mToolbarManager.updateExperimentalButtonImage(getProfileImage(accountName));
+            mToolbarManager.updateIdentityDiscButtonImage(getProfileImage(accountName));
         }
     }
 
@@ -247,7 +247,7 @@ class IdentityDiscController implements NativeInitObserver, ProfileDataCache.Obs
         Tracker tracker = TrackerFactory.getTrackerForProfile(profile);
         if (!tracker.shouldTriggerHelpUI(FeatureConstants.IDENTITY_DISC_FEATURE)) return;
 
-        mToolbarManager.showIPHOnExperimentalButton(R.string.iph_identity_disc_text,
+        mToolbarManager.showIPHOnIdentityDiscButton(R.string.iph_identity_disc_text,
                 R.string.iph_identity_disc_accessibility_text,
                 () -> { tracker.dismissed(FeatureConstants.IDENTITY_DISC_FEATURE); });
     }

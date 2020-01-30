@@ -26,7 +26,6 @@
 
 namespace autofill {
 
-struct PasswordForm;
 class PasswordAutofillAgent;
 
 // This class is responsible for controlling communication for password
@@ -145,11 +144,10 @@ class PasswordGenerationAgent : public content::RenderFrameObserver,
   void LogBoolean(autofill::SavePasswordProgressLogger::StringID message_id,
                   bool truth_value);
 
-  // Creates a password form to presave a generated password. It copies behavior
-  // of CreatePasswordFormFromWebForm/FromUnownedInputElements, but takes
-  // |password_value| from |generation_element_| and empties |username_value|.
-  // If a form creating is failed, returns an empty unique_ptr.
-  std::unique_ptr<PasswordForm> CreatePasswordFormToPresave();
+  // Creates a FormData to presave a generated password. It copies behavior
+  // of CreateFromDataFromWebForm/FromUnownedInputElements. If a form
+  // creating is failed, returns an empty unique_ptr.
+  std::unique_ptr<FormData> CreateFormDataToPresave();
 
   // Contains the current element where generation is offered at the moment. It
   // can be either automatic or manual password generation.

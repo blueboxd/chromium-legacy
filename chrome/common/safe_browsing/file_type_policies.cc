@@ -48,9 +48,9 @@ FileTypePolicies::~FileTypePolicies() {
   AutoLock lock(lock_);  // DCHECK fail if the lock is held.
 }
 
-void FileTypePolicies::ReadResourceBundle(std::string* binary_pb) {
+std::string FileTypePolicies::ReadResourceBundle() {
   ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
-  bundle.GetRawDataResource(IDR_DOWNLOAD_FILE_TYPES_PB).CopyToString(binary_pb);
+  return std::string(bundle.GetRawDataResource(IDR_DOWNLOAD_FILE_TYPES_PB));
 }
 
 void FileTypePolicies::RecordUpdateMetrics(UpdateResult result,
@@ -69,8 +69,7 @@ void FileTypePolicies::RecordUpdateMetrics(UpdateResult result,
 
 void FileTypePolicies::PopulateFromResourceBundle() {
   AutoLock lock(lock_);
-  std::string binary_pb;
-  ReadResourceBundle(&binary_pb);
+  std::string binary_pb = ReadResourceBundle();
   UpdateResult result = PopulateFromBinaryPb(binary_pb);
   RecordUpdateMetrics(result, "ResourceBundle");
 }

@@ -256,7 +256,7 @@ public class SnackbarView {
             return snackbar.getTextAppearance();
         }
 
-        return org.chromium.ui.R.style.TextAppearance_BlackBodyDefault;
+        return org.chromium.ui.R.style.TextAppearance_TextMedium_Primary;
     }
 
     private static int getButtonTextAppearance(Snackbar snackbar) {

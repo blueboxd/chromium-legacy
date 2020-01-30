@@ -454,7 +454,7 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final
       const String& id,
       DispatchContentDeleteEventCallback callback) override;
   void Ping(PingCallback callback) override;
-  void SetIdleTimerDelayToZero() override;
+  void SetIdleDelay(base::TimeDelta delay) override;
   void AddMessageToConsole(mojom::blink::ConsoleMessageLevel,
                            const String& message) override;
 

@@ -18,22 +18,25 @@ infobars::InfoBar* TabSharingInfoBarDelegate::Create(
     InfoBarService* infobar_service,
     const base::string16& shared_tab_name,
     const base::string16& app_name,
-    bool is_sharing_allowed,
+    bool shared_tab,
+    bool can_share,
     TabSharingUI* ui) {
   DCHECK(infobar_service);
   return infobar_service->AddInfoBar(infobar_service->CreateConfirmInfoBar(
-      base::WrapUnique(new TabSharingInfoBarDelegate(shared_tab_name, app_name,
-                                                     is_sharing_allowed, ui))));
+      base::WrapUnique(new TabSharingInfoBarDelegate(
+          shared_tab_name, app_name, shared_tab, can_share, ui))));
 }
 
 TabSharingInfoBarDelegate::TabSharingInfoBarDelegate(
     base::string16 shared_tab_name,
     base::string16 app_name,
-    bool is_sharing_allowed,
+    bool shared_tab,
+    bool can_share,
     TabSharingUI* ui)
     : shared_tab_name_(std::move(shared_tab_name)),
       app_name_(std::move(app_name)),
-      is_sharing_allowed_(is_sharing_allowed),
+      shared_tab_(shared_tab),
+      can_share_(can_share),
       ui_(ui) {}
 
 bool TabSharingInfoBarDelegate::EqualsDelegate(
@@ -52,13 +55,17 @@ TabSharingInfoBarDelegate::GetIdentifier() const {
 }
 
 base::string16 TabSharingInfoBarDelegate::GetMessageText() const {
-  if (shared_tab_name_.empty()) {
+  if (shared_tab_) {
     return l10n_util::GetStringFUTF16(
         IDS_TAB_SHARING_INFOBAR_SHARING_CURRENT_TAB_LABEL, app_name_);
   }
-  return l10n_util::GetStringFUTF16(
-      IDS_TAB_SHARING_INFOBAR_SHARING_ANOTHER_TAB_LABEL, shared_tab_name_,
-      app_name_);
+  return !shared_tab_name_.empty()
+             ? l10n_util::GetStringFUTF16(
+                   IDS_TAB_SHARING_INFOBAR_SHARING_ANOTHER_TAB_LABEL,
+                   shared_tab_name_, app_name_)
+             : l10n_util::GetStringFUTF16(
+                   IDS_TAB_SHARING_INFOBAR_SHARING_ANOTHER_UNTITLED_TAB_LABEL,
+                   app_name_);
 }
 
 base::string16 TabSharingInfoBarDelegate::GetButtonLabel(
@@ -69,9 +76,7 @@ base::string16 TabSharingInfoBarDelegate::GetButtonLabel(
 }
 
 int TabSharingInfoBarDelegate::GetButtons() const {
-  return shared_tab_name_.empty() || !is_sharing_allowed_
-             ? BUTTON_OK
-             : BUTTON_OK | BUTTON_CANCEL;
+  return shared_tab_ || !can_share_ ? BUTTON_OK : BUTTON_OK | BUTTON_CANCEL;
 }
 
 bool TabSharingInfoBarDelegate::Accept() {

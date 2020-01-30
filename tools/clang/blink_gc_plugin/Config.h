@@ -36,42 +36,42 @@ extern const char kReverseIteratorName[];
 
 class Config {
  public:
-  static bool IsMember(const std::string& name) {
+  static bool IsMember(llvm::StringRef name) {
     return name == "Member";
   }
 
-  static bool IsWeakMember(const std::string& name) {
+  static bool IsWeakMember(llvm::StringRef name) {
     return name == "WeakMember";
   }
 
-  static bool IsMemberHandle(const std::string& name) {
+  static bool IsMemberHandle(llvm::StringRef name) {
     return IsMember(name) ||
            IsWeakMember(name);
   }
 
-  static bool IsPersistent(const std::string& name) {
+  static bool IsPersistent(llvm::StringRef name) {
     return name == "Persistent" ||
            name == "WeakPersistent" ;
   }
 
-  static bool IsCrossThreadPersistent(const std::string& name) {
+  static bool IsCrossThreadPersistent(llvm::StringRef name) {
     return name == "CrossThreadPersistent" ||
            name == "CrossThreadWeakPersistent" ;
   }
 
-  static bool IsRefPtr(const std::string& name) {
+  static bool IsRefPtr(llvm::StringRef name) {
     return name == "RefPtr";
   }
 
-  static bool IsUniquePtr(const std::string& name) {
+  static bool IsUniquePtr(llvm::StringRef name) {
     return name == "unique_ptr";
   }
 
-  static bool IsTraceWrapperV8Reference(const std::string& name) {
+  static bool IsTraceWrapperV8Reference(llvm::StringRef name) {
     return name == "TraceWrapperV8Reference";
   }
 
-  static bool IsWTFCollection(const std::string& name) {
+  static bool IsWTFCollection(llvm::StringRef name) {
     return name == "Vector" ||
            name == "Deque" ||
            name == "HashSet" ||
@@ -81,14 +81,14 @@ class Config {
            name == "HashMap";
   }
 
-  static bool IsGCCollection(const std::string& name) {
+  static bool IsGCCollection(llvm::StringRef name) {
     return name == "HeapVector" || name == "HeapDeque" ||
            name == "HeapHashSet" || name == "HeapListHashSet" ||
            name == "HeapLinkedHashSet" || name == "HeapHashCountedSet" ||
            name == "HeapHashMap";
   }
 
-  static bool IsGCCollectionWithUnsafeIterator(const std::string& name) {
+  static bool IsGCCollectionWithUnsafeIterator(llvm::StringRef name) {
     if (!IsGCCollection(name))
       return false;
     // The list hash set iterators refer to the set, not the
@@ -98,42 +98,42 @@ class Config {
     return true;
   }
 
-  static bool IsHashMap(const std::string& name) {
+  static bool IsHashMap(llvm::StringRef name) {
     return name == "HashMap" ||
            name == "HeapHashMap" ||
            name == "PersistentHeapHashMap";
   }
 
   // Assumes name is a valid collection name.
-  static size_t CollectionDimension(const std::string& name) {
+  static size_t CollectionDimension(llvm::StringRef name) {
     return (IsHashMap(name) || name == "pair") ? 2 : 1;
   }
 
-  static bool IsRefCountedBase(const std::string& name) {
+  static bool IsRefCountedBase(llvm::StringRef name) {
     return name == "RefCounted" ||
            name == "ThreadSafeRefCounted";
   }
 
-  static bool IsGCSimpleBase(const std::string& name) {
+  static bool IsGCSimpleBase(llvm::StringRef name) {
     return name == "GarbageCollected";
   }
 
-  static bool IsGCMixinBase(const std::string& name) {
+  static bool IsGCMixinBase(llvm::StringRef name) {
     return name == "GarbageCollectedMixin";
   }
 
-  static bool IsGCBase(const std::string& name) {
+  static bool IsGCBase(llvm::StringRef name) {
     return IsGCSimpleBase(name) || IsGCMixinBase(name);
   }
 
-  static bool IsIterator(const std::string& name) {
+  static bool IsIterator(llvm::StringRef name) {
     return name == kIteratorName || name == kConstIteratorName ||
            name == kReverseIteratorName || name == kConstReverseIteratorName;
   }
 
   // Returns true of the base classes that do not need a vtable entry for trace
   // because they cannot possibly initiate a GC during construction.
-  static bool IsSafePolymorphicBase(const std::string& name) {
+  static bool IsSafePolymorphicBase(llvm::StringRef name) {
     return IsGCBase(name) || IsRefCountedBase(name);
   }
 
@@ -155,7 +155,7 @@ class Config {
            IsIgnoreAnnotated(decl);
   }
 
-  static bool IsVisitor(const std::string& name) {
+  static bool IsVisitor(llvm::StringRef name) {
     return name == "Visitor" || name == "VisitorHelper";
   }
 

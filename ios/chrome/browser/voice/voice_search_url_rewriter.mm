@@ -23,8 +23,8 @@ bool VoiceSearchURLRewriter(GURL* url, web::BrowserState* browser_state) {
   if (!google_util::IsGoogleSearchUrl(*url))
     return false;
 
-  ios::ChromeBrowserState* chrome_browser_state =
-      ios::ChromeBrowserState::FromBrowserState(browser_state);
+  ChromeBrowserState* chrome_browser_state =
+      ChromeBrowserState::FromBrowserState(browser_state);
   std::string language =
       chrome_browser_state->GetPrefs()->GetString(prefs::kVoiceSearchLocale);
   GURL rewritten_url(*url);

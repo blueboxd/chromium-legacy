@@ -25,6 +25,7 @@ class DeviceInfo;
 class LocalDeviceInfoProvider;
 }  // namespace syncer
 
+class SharingFCMSender;
 class SharingSyncPreference;
 enum class SharingDevicePlatform;
 enum class SharingSendMessageResult;
@@ -78,6 +79,9 @@ class SharingMessageSender {
   // called with |type|.
   void RegisterSendDelegate(DelegateType type,
                             std::unique_ptr<SendMessageDelegate> delegate);
+
+  // Returns SharingFCMSender for testing.
+  SharingFCMSender* GetFCMSenderForTesting() const;
 
  private:
   struct SentMessageMetadata {

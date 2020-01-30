@@ -26,6 +26,7 @@ import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.ImageView.ScaleType;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -234,15 +235,16 @@ public class AccessibilityTabModelListItem extends FrameLayout implements OnClic
     @Override
     public void onFinishInflate() {
         super.onFinishInflate();
-        mTabContents = findViewById(R.id.tab_contents_modern);
+
+        mTabContents = findViewById(R.id.content);
         mTitleView = mTabContents.findViewById(R.id.title);
         mDescriptionView = mTabContents.findViewById(R.id.description);
-        mFaviconView = mTabContents.findViewById(R.id.icon_view);
-        mCloseButton = mTabContents.findViewById(R.id.close_btn_modern);
+        mFaviconView = mTabContents.findViewById(R.id.start_icon);
+        mCloseButton = mTabContents.findViewById(R.id.end_button);
         mFaviconView.setBackgroundResource(R.drawable.list_item_icon_modern_bg);
 
-        mUndoContents = (LinearLayout) findViewById(R.id.undo_contents);
-        mUndoButton = (Button) findViewById(R.id.undo_button);
+        mUndoContents = findViewById(R.id.undo_contents);
+        mUndoButton = findViewById(R.id.undo_button);
 
         setClickable(true);
         setFocusable(true);
@@ -250,6 +252,17 @@ public class AccessibilityTabModelListItem extends FrameLayout implements OnClic
         mCloseButton.setOnClickListener(this);
         mUndoButton.setOnClickListener(this);
         setOnClickListener(this);
+
+        mCloseButton.setVisibility(View.VISIBLE);
+        mCloseButton.setImageResource(R.drawable.btn_delete_24dp);
+        mCloseButton.setScaleType(ScaleType.CENTER_INSIDE);
+        mCloseButton.setPaddingRelative(
+                getResources().getDimensionPixelSize(
+                        R.dimen.accessibility_tab_switcher_item_close_button_padding_start),
+                getPaddingTop(),
+                getResources().getDimensionPixelSize(
+                        R.dimen.accessibility_tab_switcher_item_close_button_padding_end),
+                getPaddingBottom());
     }
 
     /**
@@ -321,9 +334,10 @@ public class AccessibilityTabModelListItem extends FrameLayout implements OnClic
         } else {
             setBackgroundResource(R.color.modern_primary_color);
             mFaviconView.getBackground().setLevel(mDefaultLevel);
-            ApiCompatibilityUtils.setTextAppearance(mTitleView, R.style.TextAppearance_BlackTitle1);
             ApiCompatibilityUtils.setTextAppearance(
-                    mDescriptionView, R.style.TextAppearance_BlackBody);
+                    mTitleView, R.style.TextAppearance_TextLarge_Primary);
+            ApiCompatibilityUtils.setTextAppearance(
+                    mDescriptionView, R.style.TextAppearance_TextMedium_Secondary);
             ApiCompatibilityUtils.setImageTintList(mCloseButton, mDefaultCloseIconColor);
         }
 
@@ -625,5 +639,10 @@ public class AccessibilityTabModelListItem extends FrameLayout implements OnClic
 
     private void notifyTabUpdated(Tab tab) {
         if (mListener != null) mListener.tabChanged(tab.getId());
+    }
+
+    @VisibleForTesting
+    View getCloseButtonForTests() {
+        return mCloseButton;
     }
 }

@@ -1105,7 +1105,7 @@
     {
       "id": 122,
       "description": "GPU rasterization should only be enabled on NVIDIA and Intel and AMD RX-R2 GPUs with DX11+ or any GPU using ANGLE's GL backend.",
-      "cr_bugs": [643850],
+      "cr_bugs": [1047002],
       "os": {
         "type": "win"
       },
@@ -1295,7 +1295,7 @@
     {
       "id": 136,
       "description": "GPU rasterization is blacklisted on NVidia Fermi architecture for now.",
-      "cr_bugs": [643850],
+      "cr_bugs": [1047002],
       "os": {
         "type": "win"
       },
@@ -1347,7 +1347,7 @@
     {
       "id": 139,
       "description": "GPU Rasterization is disabled on pre-GCN AMD cards",
-      "cr_bugs": [643850],
+      "cr_bugs": [1047002],
       "os": {
         "type": "win"
       },

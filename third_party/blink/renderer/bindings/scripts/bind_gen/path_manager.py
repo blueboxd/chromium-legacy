@@ -102,7 +102,13 @@ class PathManager(object):
             assert components[0] == "core"
             assert components[1] == "modules"
             self._is_cross_components = True
-            self._api_component = components[0]
+            # Union does not have to support cross-component code generation
+            # because clients of IDL union must be on an upper or same layer to
+            # any of union members.
+            if isinstance(idl_definition, web_idl.Union):
+                self._api_component = components[1]
+            else:
+                self._api_component = components[0]
             self._impl_component = components[1]
         else:
             assert False

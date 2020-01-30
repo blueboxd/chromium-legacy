@@ -333,7 +333,7 @@ bool ExtractExtensionFromDERCert(base::StringPiece cert,
                                  base::StringPiece* out_contents) {
   *out_extension_present = false;
   *out_extension_critical = false;
-  out_contents->clear();
+  *out_contents = base::StringPiece();
 
   ParsedExtension extension;
   if (!ExtractExtensionWithOID(cert, der::Input(extension_oid),

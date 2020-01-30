@@ -296,6 +296,14 @@ void HTMLVideoElement::SetDisplayMode(DisplayMode mode) {
     GetLayoutObject()->UpdateFromElement();
 }
 
+void HTMLVideoElement::UpdatePictureInPictureAvailability() {
+  if (!web_media_player_)
+    return;
+
+  web_media_player_->OnPictureInPictureAvailabilityChanged(
+      SupportsPictureInPicture());
+}
+
 // TODO(zqzhang): this callback could be used to hide native controls instead of
 // using a settings. See `HTMLMediaElement::onMediaControlsEnabledChange`.
 void HTMLVideoElement::OnBecamePersistentVideo(bool value) {
@@ -381,6 +389,11 @@ void HTMLVideoElement::UpdateDisplayState() {
 }
 
 void HTMLVideoElement::OnPlay() {
+  if (!video_has_played_) {
+    video_has_played_ = true;
+    UpdatePictureInPictureAvailability();
+  }
+
   if (!RuntimeEnabledFeatures::VideoAutoFullscreenEnabled() ||
       FastHasAttribute(html_names::kPlaysinlineAttr)) {
     return;
@@ -844,6 +857,13 @@ void HTMLVideoElement::OnWebMediaPlayerCreated() {
     if (auto* video_raf = VideoRequestAnimationFrame::From(*this))
       video_raf->OnWebMediaPlayerCreated();
   }
+}
+
+void HTMLVideoElement::AttributeChanged(
+    const AttributeModificationParams& params) {
+  HTMLElement::AttributeChanged(params);
+  if (params.name == html_names::kDisablepictureinpictureAttr)
+    UpdatePictureInPictureAvailability();
 }
 
 void HTMLVideoElement::OnRequestAnimationFrame(

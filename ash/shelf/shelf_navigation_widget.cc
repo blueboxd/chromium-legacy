@@ -404,6 +404,11 @@ void ShelfNavigationWidget::OnShelfConfigUpdated() {
   UpdateLayout(/*animate=*/true);
 }
 
+void ShelfNavigationWidget::CalculateTargetBounds() {
+  // TODO(manucornet): Move target bounds calculations from the shelf layout
+  // manager.
+}
+
 void ShelfNavigationWidget::UpdateLayout(bool animate) {
   const bool back_button_shown = IsBackButtonShown();
   const bool home_button_shown = IsHomeButtonShown();

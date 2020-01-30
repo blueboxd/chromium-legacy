@@ -26,20 +26,20 @@
                   android:layout_height="wrap_content"
                   android:layout_marginStart="12dp"
                   android:layout_marginEnd="12dp"
-                  android:textAppearance="@style/TextAppearance.BlackBody"/>
+                  android:textAppearance="@style/TextAppearance.TextMedium.Secondary"/>
 
         <TextView android:id="@+id/credit_card_expiration"
                   android:layout_width="wrap_content"
                   android:layout_height="wrap_content"
                   android:ellipsize="end"
                   android:maxLines="1"
-                  android:textAppearance="@style/TextAppearance.BlackBody"/>
+                  android:textAppearance="@style/TextAppearance.TextMedium.Secondary"/>
     </LinearLayout>
 
     <TextView android:id="@+id/credit_card_name"
               android:layout_width="wrap_content"
               android:layout_height="wrap_content"
-              android:textAppearance="@style/TextAppearance.BlackBody"/>
+              android:textAppearance="@style/TextAppearance.TextMedium.Secondary"/>
 
     <TextView
         android:id="@+id/incomplete_error"

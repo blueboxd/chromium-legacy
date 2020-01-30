@@ -30,8 +30,9 @@ cr.define('settings', function() {
     if (!route) {
       return RouteState.INITIAL;
     }
-    if (route === settings.Router.getInstance().getRoutes().BASIC ||
-        route === settings.Router.getInstance().getRoutes().ABOUT) {
+    const routes = /** @type {!SettingsRoutes} */ (
+        settings.Router.getInstance().getRoutes());
+    if (route === routes.BASIC || route === routes.ABOUT) {
       return RouteState.TOP_LEVEL;
     }
     if (route.isSubpage()) {
@@ -391,5 +392,6 @@ cr.define('settings', function() {
     },
   };
 
+  // #cr_define_end
   return {MainPageBehavior, RouteState};
 });

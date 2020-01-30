@@ -128,10 +128,11 @@ void ArcPlayStoreEnabledPreferenceHandler::OnPreferenceChanged() {
       // TODO(crbug.com/850297): Fix unrelated tests that are not properly
       // setting up the state of identity_manager and enable the DCHECK instead
       // of the conditional below.
-      // DCHECK(identity_manager->HasPrimaryAccount());
-      if (identity_manager->HasPrimaryAccount()) {
+      // DCHECK(identity_manager->HasUnconsentedPrimaryAccount());
+      if (identity_manager->HasUnconsentedPrimaryAccount()) {
+        // This class doesn't care about browser sync consent.
         const CoreAccountId account_id =
-            identity_manager->GetPrimaryAccountId();
+            identity_manager->GetUnconsentedPrimaryAccountId();
 
         UserConsentTypes::ArcPlayTermsOfServiceConsent play_consent;
         play_consent.set_status(UserConsentTypes::NOT_GIVEN);

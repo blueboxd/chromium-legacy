@@ -44,6 +44,7 @@ constexpr int kChildInvitationFd = 42;
 constexpr char kUsername[] = "username";
 constexpr char kWorkgroup[] = "example.com";
 constexpr char kPassword[] = "myverysecurepassword";
+constexpr char kKerberosIdentity[] = "my-kerberos-identity";
 
 chromeos::disks::DiskMountManager::MountPointInfo MakeMountPointInfo(
     const std::string& source_path,
@@ -299,6 +300,64 @@ TEST_F(SmbFsMounterTest, MountOptions) {
   mount_options.workgroup = kWorkgroup;
   mount_options.password = kPassword;
   mount_options.allow_ntlm = true;
+  std::unique_ptr<SmbFsMounter> mounter = std::make_unique<TestSmbFsMounter>(
+      kSharePath, mount_options, &mock_delegate_, base::FilePath(kMountPath),
+      chromeos::MOUNT_ERROR_NONE,
+      mojo::Remote<mojom::SmbFsBootstrap>(
+          bootstrap_receiver.BindNewPipeAndPassRemote()));
+  mounter->Mount(callback);
+
+  run_loop.Run();
+}
+
+TEST_F(SmbFsMounterTest, KerberosAuthentication) {
+  base::RunLoop run_loop;
+  auto callback =
+      base::BindLambdaForTesting([&run_loop](mojom::MountError mount_error,
+                                             std::unique_ptr<SmbFsHost> host) {
+        EXPECT_EQ(mount_error, mojom::MountError::kOk);
+        ASSERT_TRUE(host);
+        EXPECT_EQ(host->mount_path(), base::FilePath(kMountPath));
+        run_loop.Quit();
+      });
+
+  // Dummy Mojo bindings to satifsy lifetimes.
+  mojo::PendingRemote<mojom::SmbFsDelegate> delegate_remote;
+  TestSmbFsImpl mock_smbfs;
+  mojo::Receiver<mojom::SmbFs> smbfs_receiver(&mock_smbfs);
+
+  TestSmbFsBootstrapImpl mock_bootstrap;
+  mojo::Receiver<mojom::SmbFsBootstrap> bootstrap_receiver(&mock_bootstrap);
+  EXPECT_CALL(mock_bootstrap, MountShare(_, _, _))
+      .WillOnce([&delegate_remote, &smbfs_receiver](
+                    mojom::MountOptionsPtr options,
+                    mojo::PendingRemote<mojom::SmbFsDelegate> delegate,
+                    mojom::SmbFsBootstrap::MountShareCallback callback) {
+        EXPECT_EQ(options->share_path, kSharePath);
+        EXPECT_EQ(options->username, kUsername);
+        EXPECT_EQ(options->workgroup, kWorkgroup);
+        EXPECT_FALSE(options->allow_ntlm);
+        EXPECT_FALSE(options->password);
+
+        ASSERT_TRUE(options->kerberos_config);
+        EXPECT_EQ(options->kerberos_config->source,
+                  mojom::KerberosConfig::Source::kKerberos);
+        EXPECT_EQ(options->kerberos_config->identity, kKerberosIdentity);
+
+        delegate_remote = std::move(delegate);
+        std::move(callback).Run(mojom::MountError::kOk,
+                                smbfs_receiver.BindNewPipeAndPassRemote());
+      });
+
+  SmbFsMounter::MountOptions mount_options;
+  mount_options.username = kUsername;
+  mount_options.workgroup = kWorkgroup;
+  // Even though the password is set, it should be ignored because kerberos
+  // authentication is being used.
+  mount_options.password = kPassword;
+  mount_options.kerberos_options =
+      base::make_optional<SmbFsMounter::KerberosOptions>(
+          SmbFsMounter::KerberosOptions::Source::kKerberos, kKerberosIdentity);
   std::unique_ptr<SmbFsMounter> mounter = std::make_unique<TestSmbFsMounter>(
       kSharePath, mount_options, &mock_delegate_, base::FilePath(kMountPath),
       chromeos::MOUNT_ERROR_NONE,

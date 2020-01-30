@@ -368,7 +368,7 @@ base::string16 GetFirefoxImporterName(const base::FilePath& app_path) {
         in_app_section = true;
       } else if (in_app_section) {
         if (base::StartsWith(line, name_attr, base::CompareCase::SENSITIVE)) {
-          line.substr(name_attr.size()).CopyToString(&branding_name);
+          branding_name = std::string(line.substr(name_attr.size()));
           break;
         }
         if (line.length() > 0 && line[0] == '[') {

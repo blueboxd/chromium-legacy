@@ -121,6 +121,10 @@ def main(args):
     for entry in images_json:
       if entry['type'] not in ['blk', 'zbi', 'kernel']:
         continue
+      # Not all images are actually built. Only copy images with the 'archive'
+      # tag.
+      if not entry.get('archive'):
+        continue
 
       shutil.copyfile(os.path.join(arch_output_dir, entry['path']),
                       os.path.join(arch_image_dir, entry['name']) + '.' +

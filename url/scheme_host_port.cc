@@ -172,8 +172,8 @@ SchemeHostPort::SchemeHostPort(const GURL& url) : port_(0) {
   if (!IsValidInput(scheme, host, port, ALREADY_CANONICALIZED))
     return;
 
-  scheme.CopyToString(&scheme_);
-  host.CopyToString(&host_);
+  scheme_ = std::string(scheme);
+  host_ = std::string(host);
   port_ = port;
 }
 

@@ -3235,6 +3235,61 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
                   .IsEquivalent(child->ComputeSiteForCookies()));
 }
 
+IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
+                       ComputeSiteForCookiesParentNavigatedAway) {
+  // Navigate to site with same-domain frame, save a RenderFrameHostImpl to
+  // the child.
+  GURL url = embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(a)");
+
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+
+  WebContentsImpl* wc = static_cast<WebContentsImpl*>(shell()->web_contents());
+  RenderFrameHostImpl* main_frame = wc->GetMainFrame();
+
+  EXPECT_EQ("a.com", main_frame->GetLastCommittedURL().host());
+
+  ASSERT_EQ(1u, main_frame->child_count());
+  FrameTreeNode* child_a = main_frame->child_at(0);
+  RenderFrameHostImpl* child_rfh = child_a->current_frame_host();
+  EXPECT_EQ("a.com", child_rfh->GetLastCommittedOrigin().host());
+  GURL kid_url = child_rfh->GetLastCommittedURL();
+
+  // Disable the unload ACK and the unload timer. Also pretend the child frame
+  // has an unload handler, so it doesn't get cleaned up synchronously, and
+  // block its detach handler.
+  auto filter = base::MakeRefCounted<DropMessageFilter>(
+      FrameMsgStart, FrameHostMsg_Unload_ACK::ID);
+  main_frame->GetProcess()->AddFilter(filter.get());
+  main_frame->DisableUnloadTimerForTesting();
+  child_rfh->SuddenTerminationDisablerChanged(
+      true, blink::mojom::SuddenTerminationDisablerType::kUnloadHandler);
+  child_rfh->SetSubframeUnloadTimeoutForTesting(base::TimeDelta::FromDays(7));
+  auto filter_detach = base::MakeRefCounted<DropMessageFilter>(
+      FrameMsgStart, FrameHostMsg_Detach::ID);
+  child_rfh->GetProcess()->AddFilter(filter_detach.get());
+
+  // Open a popup on a.com to keep the process alive.
+  OpenPopup(shell(), embedded_test_server()->GetURL("a.com", "/title2.html"),
+            "foo");
+
+  // Navigate root to b.com.
+  EXPECT_TRUE(NavigateToURL(
+      shell(), embedded_test_server()->GetURL("b.com", "/title3.html")));
+
+  // The old RFH should be pending deletion, but its site_for_cookies should
+  // be unchanged.
+  EXPECT_FALSE(child_rfh->is_active());
+  EXPECT_EQ(kid_url, child_rfh->GetLastCommittedURL());
+  EXPECT_EQ(url, main_frame->GetLastCommittedURL());
+  EXPECT_FALSE(main_frame->is_active());
+  EXPECT_FALSE(main_frame->IsCurrent());
+  net::SiteForCookies computed_for_child = child_rfh->ComputeSiteForCookies();
+  EXPECT_TRUE(
+      net::SiteForCookies::FromUrl(url).IsEquivalent(computed_for_child))
+      << computed_for_child.ToDebugString();
+}
+
 // Make sure a local file and its subresources can be reloaded after a crash. In
 // particular, after https://crbug.com/981339, a different RenderFrameHost will
 // be used for reloading the file. File access must be correctly granted.

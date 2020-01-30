@@ -352,8 +352,8 @@ HRESULT WinHttpUrlFetcher::BuildRequestAndFetchResultFromHttpService(
     std::string access_token,
     const std::vector<std::pair<std::string, std::string>>& headers,
     const base::Value& request_dict,
-    const std::vector<std::pair<std::string, std::string*>>& needed_outputs,
-    const base::TimeDelta& request_timeout) {
+    const base::TimeDelta& request_timeout,
+    base::Optional<base::Value>* request_result) {
   auto url_fetcher = WinHttpUrlFetcher::Create(request_url);
   if (!url_fetcher) {
     LOGFN(ERROR) << "Could not create valid fetcher for url="
@@ -383,25 +383,13 @@ HRESULT WinHttpUrlFetcher::BuildRequestAndFetchResultFromHttpService(
     }
   }
 
-  base::Optional<base::Value> request_result =
-      (new HttpServiceRequest(std::move(url_fetcher)))
-          ->WaitForResponseFromHttpService(request_timeout);
+  auto extracted_param = (new HttpServiceRequest(std::move(url_fetcher)))
+                             ->WaitForResponseFromHttpService(request_timeout);
 
-  if (!request_result)
+  if (!extracted_param)
     return E_FAIL;
 
-  for (const std::pair<std::string, std::string*>& output : needed_outputs) {
-    const std::string* output_value =
-        request_result->FindStringKey(output.first);
-    if (!output_value) {
-      LOGFN(ERROR) << "Could not extract value '" << output.first
-                   << "' from server response";
-      hr = E_FAIL;
-      break;
-    }
-    DCHECK(output.second);
-    *output.second = *output_value;
-  }
+  *request_result = std::move(extracted_param);
 
   return hr;
 }

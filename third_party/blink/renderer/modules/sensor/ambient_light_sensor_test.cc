@@ -26,17 +26,34 @@ class MockSensorProxyObserver
 
   // Synchronously waits for OnSensorReadingChanged() to be called.
   void WaitForOnSensorReadingChanged() {
-    run_loop_.emplace();
-    run_loop_->Run();
+    sensor_reading_changed_run_loop_.emplace();
+    sensor_reading_changed_run_loop_->Run();
+  }
+
+  // Synchronously waits for OnSensorInitialized() to be called.
+  void WaitForSensorInitialization() {
+    sensor_initialized_run_loop_.emplace();
+    sensor_initialized_run_loop_->Run();
+  }
+
+  // SensorProxy::Observer overrides.
+  void OnSensorInitialized() override {
+    if (sensor_initialized_run_loop_.has_value() &&
+        sensor_initialized_run_loop_->running()) {
+      sensor_initialized_run_loop_->Quit();
+    }
   }
 
   void OnSensorReadingChanged() override {
-    DCHECK(run_loop_.has_value() && run_loop_->running());
-    run_loop_->Quit();
+    if (sensor_reading_changed_run_loop_.has_value() &&
+        sensor_reading_changed_run_loop_->running()) {
+      sensor_reading_changed_run_loop_->Quit();
+    }
   }
 
  private:
-  base::Optional<base::RunLoop> run_loop_;
+  base::Optional<base::RunLoop> sensor_initialized_run_loop_;
+  base::Optional<base::RunLoop> sensor_reading_changed_run_loop_;
 };
 
 }  // namespace
@@ -147,6 +164,43 @@ TEST(AmbientLightSensorTest, IlluminanceRounding) {
   // Make sure there were no stray "reading" events besides those we expected
   // above.
   EXPECT_EQ(3U, event_counter->event_count());
+}
+
+TEST(AmbientLightSensorTest, PlatformSensorReadingsBeforeActivation) {
+  SensorTestContext context;
+  NonThrowableExceptionState exception_state;
+
+  auto* sensor = AmbientLightSensor::Create(context.GetExecutionContext(),
+                                            exception_state);
+  sensor->start();
+
+  auto* sensor_proxy =
+      SensorProviderProxy::From(To<Document>(context.GetExecutionContext()))
+          ->GetSensorProxy(device::mojom::blink::SensorType::AMBIENT_LIGHT);
+  ASSERT_NE(sensor_proxy, nullptr);
+  auto* mock_observer = MakeGarbageCollected<MockSensorProxyObserver>();
+  sensor_proxy->AddObserver(mock_observer);
+
+  bool illuminance_is_null;
+
+  // Instead of waiting for SensorProxy::Observer::OnSensorReadingChanged(), we
+  // wait for OnSensorInitialized(), which happens earlier. The platform may
+  // start sending readings and calling OnSensorReadingChanged() at any moment
+  // from this point on.
+  // This test verifies AmbientLightSensor::OnSensorReadingChanged() is able to
+  // handle the case of it being called before Sensor itself has transitioned to
+  // a fully activated state.
+  mock_observer->WaitForSensorInitialization();
+  context.sensor_provider()->UpdateAmbientLightSensorData(42);
+  ASSERT_FALSE(sensor->IsActivated());
+  EXPECT_EQ(0, sensor->illuminance(illuminance_is_null));
+  EXPECT_TRUE(illuminance_is_null);
+
+  SensorTestUtils::WaitForEvent(sensor, event_type_names::kReading);
+
+  EXPECT_EQ(42, sensor->latest_reading_);
+  EXPECT_EQ(50, sensor->illuminance(illuminance_is_null));
+  EXPECT_FALSE(illuminance_is_null);
 }
 
 }  // namespace blink

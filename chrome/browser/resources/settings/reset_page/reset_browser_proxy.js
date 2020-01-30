@@ -113,6 +113,7 @@ cr.define('settings', function() {
 
   cr.addSingletonGetter(ResetBrowserProxyImpl);
 
+  // #cr_define_end
   return {
     ResetBrowserProxy: ResetBrowserProxy,
     ResetBrowserProxyImpl: ResetBrowserProxyImpl,

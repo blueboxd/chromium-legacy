@@ -86,6 +86,14 @@ base::android::ScopedJavaLocalRef<jobject> CreateJavaDateTime(
       proto.time().hour(), proto.time().minute(), proto.time().second());
 }
 
+base::android::ScopedJavaLocalRef<jobject> CreateJavaDate(
+    JNIEnv* env,
+    const DateProto& proto) {
+  DateTimeProto date_time;
+  *date_time.mutable_date() = proto;
+  return CreateJavaDateTime(env, date_time);
+}
+
 base::android::ScopedJavaLocalRef<jobject> CreateJavaDialogButton(
     JNIEnv* env,
     const InfoPopupProto_DialogButton& button_proto) {
@@ -893,22 +901,48 @@ void UiControllerAndroid::OnFormActionLinkClicked(int link) {
   ui_delegate_->OnFormActionLinkClicked(link);
 }
 
-void UiControllerAndroid::OnDateTimeRangeStartChanged(int year,
-                                                      int month,
-                                                      int day,
-                                                      int hour,
-                                                      int minute,
-                                                      int second) {
-  ui_delegate_->SetDateTimeRangeStart(year, month, day, hour, minute, second);
+void UiControllerAndroid::OnDateTimeRangeStartDateChanged(int year,
+                                                          int month,
+                                                          int day) {
+  auto date = base::make_optional<DateProto>();
+  date->set_year(year);
+  date->set_month(month);
+  date->set_day(day);
+  ui_delegate_->SetDateTimeRangeStartDate(date);
 }
 
-void UiControllerAndroid::OnDateTimeRangeEndChanged(int year,
-                                                    int month,
-                                                    int day,
-                                                    int hour,
-                                                    int minute,
-                                                    int second) {
-  ui_delegate_->SetDateTimeRangeEnd(year, month, day, hour, minute, second);
+void UiControllerAndroid::OnDateTimeRangeStartDateCleared() {
+  ui_delegate_->SetDateTimeRangeStartDate(base::nullopt);
+}
+
+void UiControllerAndroid::OnDateTimeRangeStartTimeSlotChanged(int index) {
+  ui_delegate_->SetDateTimeRangeStartTimeSlot(base::make_optional<int>(index));
+}
+
+void UiControllerAndroid::OnDateTimeRangeStartTimeSlotCleared() {
+  ui_delegate_->SetDateTimeRangeStartTimeSlot(base::nullopt);
+}
+
+void UiControllerAndroid::OnDateTimeRangeEndDateChanged(int year,
+                                                        int month,
+                                                        int day) {
+  auto date = base::make_optional<DateProto>();
+  date->set_year(year);
+  date->set_month(month);
+  date->set_day(day);
+  ui_delegate_->SetDateTimeRangeEndDate(date);
+}
+
+void UiControllerAndroid::OnDateTimeRangeEndDateCleared() {
+  ui_delegate_->SetDateTimeRangeEndDate(base::nullopt);
+}
+
+void UiControllerAndroid::OnDateTimeRangeEndTimeSlotChanged(int index) {
+  ui_delegate_->SetDateTimeRangeEndTimeSlot(base::make_optional<int>(index));
+}
+
+void UiControllerAndroid::OnDateTimeRangeEndTimeSlotCleared() {
+  ui_delegate_->SetDateTimeRangeEndTimeSlot(base::nullopt);
 }
 
 void UiControllerAndroid::OnKeyValueChanged(const std::string& key,
@@ -949,6 +983,24 @@ void UiControllerAndroid::OnCollectUserDataOptionsChanged(
       env, jmodel, collect_user_data_options->request_payer_email);
   Java_AssistantCollectUserDataModel_setRequestPhone(
       env, jmodel, collect_user_data_options->request_payer_phone);
+  std::vector<int> contact_summary_fields;
+  for (const auto& field : collect_user_data_options->contact_summary_fields) {
+    contact_summary_fields.emplace_back((int)field);
+  }
+  Java_AssistantCollectUserDataModel_setContactSummaryDescriptionOptions(
+      env, jmodel,
+      Java_AssistantCollectUserDataModel_createContactDescriptionOptions(
+          env, base::android::ToJavaIntArray(env, contact_summary_fields),
+          collect_user_data_options->contact_summary_max_lines));
+  std::vector<int> contact_full_fields;
+  for (const auto& field : collect_user_data_options->contact_full_fields) {
+    contact_full_fields.emplace_back((int)field);
+  }
+  Java_AssistantCollectUserDataModel_setContactFullDescriptionOptions(
+      env, jmodel,
+      Java_AssistantCollectUserDataModel_createContactDescriptionOptions(
+          env, base::android::ToJavaIntArray(env, contact_full_fields),
+          collect_user_data_options->contact_full_max_lines));
   Java_AssistantCollectUserDataModel_setRequestShippingAddress(
       env, jmodel, collect_user_data_options->request_shipping);
   Java_AssistantCollectUserDataModel_setRequestPayment(
@@ -987,31 +1039,48 @@ void UiControllerAndroid::OnCollectUserDataOptionsChanged(
   Java_AssistantCollectUserDataModel_setRequestDateRange(
       env, jmodel, collect_user_data_options->request_date_time_range);
   if (collect_user_data_options->request_date_time_range) {
-    auto jstart_date = CreateJavaDateTime(
-        env, collect_user_data_options->date_time_range.start());
-    auto jend_date = CreateJavaDateTime(
-        env, collect_user_data_options->date_time_range.end());
-    auto jmin_date = CreateJavaDateTime(
-        env, collect_user_data_options->date_time_range.min());
-    auto jmax_date = CreateJavaDateTime(
-        env, collect_user_data_options->date_time_range.max());
-    Java_AssistantCollectUserDataModel_setDateTimeRangeStart(
-        env, jmodel, jstart_date, jmin_date, jmax_date);
-    Java_AssistantCollectUserDataModel_setDateTimeRangeEnd(
-        env, jmodel, jend_date, jmin_date, jmax_date);
-    Java_AssistantCollectUserDataModel_setDateTimeRangeStartLabel(
+    auto jmin_date = CreateJavaDate(
+        env, collect_user_data_options->date_time_range.min_date());
+    auto jmax_date = CreateJavaDate(
+        env, collect_user_data_options->date_time_range.max_date());
+    std::vector<std::string> time_slots;
+    for (const auto& slot :
+         collect_user_data_options->date_time_range.time_slots()) {
+      time_slots.emplace_back(slot.label());
+    }
+    auto jtime_slots = base::android::ToJavaArrayOfStrings(env, time_slots);
+    Java_AssistantCollectUserDataModel_setDateTimeRangeStartOptions(
+        env, jmodel, jmin_date, jmax_date, jtime_slots);
+    Java_AssistantCollectUserDataModel_setDateTimeRangeEndOptions(
+        env, jmodel, jmin_date, jmax_date, jtime_slots);
+    Java_AssistantCollectUserDataModel_setDateTimeRangeStartDateLabel(
         env, jmodel,
         base::android::ConvertUTF8ToJavaString(
-            env, collect_user_data_options->date_time_range.start_label()));
-    Java_AssistantCollectUserDataModel_setDateTimeRangeEndLabel(
+            env,
+            collect_user_data_options->date_time_range.start_date_label()));
+    Java_AssistantCollectUserDataModel_setDateTimeRangeStartTimeLabel(
         env, jmodel,
         base::android::ConvertUTF8ToJavaString(
-            env, collect_user_data_options->date_time_range.end_label()));
-    Java_AssistantCollectUserDataModel_setDateRangeInvalidErrorMessage(
+            env,
+            collect_user_data_options->date_time_range.start_time_label()));
+    Java_AssistantCollectUserDataModel_setDateTimeRangeEndDateLabel(
         env, jmodel,
         base::android::ConvertUTF8ToJavaString(
-            env, collect_user_data_options->date_time_range
-                     .invalid_error_message()));
+            env, collect_user_data_options->date_time_range.end_date_label()));
+    Java_AssistantCollectUserDataModel_setDateTimeRangeEndTimeLabel(
+        env, jmodel,
+        base::android::ConvertUTF8ToJavaString(
+            env, collect_user_data_options->date_time_range.end_time_label()));
+    Java_AssistantCollectUserDataModel_setDateTimeRangeDateNotSetErrorMessage(
+        env, jmodel,
+        base::android::ConvertUTF8ToJavaString(
+            env,
+            collect_user_data_options->date_time_range.date_not_set_error()));
+    Java_AssistantCollectUserDataModel_setDateTimeRangeTimeNotSetErrorMessage(
+        env, jmodel,
+        base::android::ConvertUTF8ToJavaString(
+            env,
+            collect_user_data_options->date_time_range.time_not_set_error()));
   }
   Java_AssistantCollectUserDataModel_setTermsRequireReviewText(
       env, jmodel,
@@ -1207,6 +1276,44 @@ void UiControllerAndroid::OnUserDataChanged(
             ? nullptr
             : autofill::PersonalDataManagerAndroid::CreateJavaProfileFromNative(
                   env, *billing_address));
+  }
+
+  if (field_change == UserData::FieldChange::ALL ||
+      field_change == UserData::FieldChange::DATE_TIME_RANGE_START) {
+    if (state->date_time_range_start_date_.has_value()) {
+      Java_AssistantCollectUserDataModel_setDateTimeRangeStartDate(
+          env, jmodel,
+          CreateJavaDate(env, *state->date_time_range_start_date_));
+    } else {
+      Java_AssistantCollectUserDataModel_clearDateTimeRangeStartDate(env,
+                                                                     jmodel);
+    }
+
+    if (state->date_time_range_start_timeslot_.has_value()) {
+      Java_AssistantCollectUserDataModel_setDateTimeRangeStartTimeSlot(
+          env, jmodel, *state->date_time_range_start_timeslot_);
+    } else {
+      Java_AssistantCollectUserDataModel_clearDateTimeRangeStartTimeSlot(
+          env, jmodel);
+    }
+  }
+
+  if (field_change == UserData::FieldChange::ALL ||
+      field_change == UserData::FieldChange::DATE_TIME_RANGE_END) {
+    if (state->date_time_range_end_date_.has_value()) {
+      Java_AssistantCollectUserDataModel_setDateTimeRangeEndDate(
+          env, jmodel, CreateJavaDate(env, *state->date_time_range_end_date_));
+    } else {
+      Java_AssistantCollectUserDataModel_clearDateTimeRangeEndDate(env, jmodel);
+    }
+
+    if (state->date_time_range_end_timeslot_.has_value()) {
+      Java_AssistantCollectUserDataModel_setDateTimeRangeEndTimeSlot(
+          env, jmodel, *state->date_time_range_end_timeslot_);
+    } else {
+      Java_AssistantCollectUserDataModel_clearDateTimeRangeEndTimeSlot(env,
+                                                                       jmodel);
+    }
   }
 
   // TODO(crbug.com/806868): Add |setSelectedLogin|.

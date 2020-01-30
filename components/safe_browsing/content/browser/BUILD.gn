@@ -36,6 +36,7 @@ jumbo_source_set("browser") {
     "//components/safe_browsing/core/web_ui:constants",
     "//components/security_interstitials/content:security_interstitial_page",
     "//components/security_interstitials/core:unsafe_resource",
+    "//components/signin/public/identity_manager",
     "//content/public/browser:browser",
     "//net:extras",
   ]

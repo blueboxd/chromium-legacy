@@ -45,9 +45,10 @@ class MockSharingFCMSender : public SharingFCMSender {
       SharingSyncPreference* sync_preference,
       syncer::LocalDeviceInfoProvider* local_device_info_provider)
       : SharingFCMSender(
-            /*gcm_driver=*/nullptr,
+            /*web_push_sender=*/nullptr,
             sync_preference,
             /*vapid_key_manager=*/nullptr,
+            /*gcm_driver=*/nullptr,
             local_device_info_provider) {}
   MockSharingFCMSender(const MockSharingFCMSender&) = delete;
   MockSharingFCMSender& operator=(const MockSharingFCMSender&) = delete;

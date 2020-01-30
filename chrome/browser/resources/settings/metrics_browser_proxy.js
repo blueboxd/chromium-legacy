@@ -84,6 +84,7 @@ cr.define('settings', function() {
 
   cr.addSingletonGetter(MetricsBrowserProxyImpl);
 
+  // #cr_define_end
   return {
     MetricsBrowserProxy,
     MetricsBrowserProxyImpl,

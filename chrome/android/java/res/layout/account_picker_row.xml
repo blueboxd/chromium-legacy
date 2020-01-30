@@ -28,7 +28,7 @@
             android:layout_height="wrap_content"
             android:gravity="center_vertical"
             android:minHeight="20dp"
-            android:textAppearance="@style/TextAppearance.BlackBodyDefault"
+            android:textAppearance="@style/TextAppearance.TextMedium.Primary"
             tools:text="John Doe"/>
         <TextView
             android:id="@+id/account_text_secondary"
@@ -36,7 +36,7 @@
             android:layout_height="wrap_content"
             android:gravity="center_vertical"
             android:minHeight="20dp"
-            android:textAppearance="@style/TextAppearance.BlackCaption"
+            android:textAppearance="@style/TextAppearance.TextSmall.Secondary"
             tools:text="john.doe@example.com"/>
     </LinearLayout>
     <ImageView

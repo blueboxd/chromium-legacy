@@ -17,8 +17,8 @@
 #include "content/browser/service_worker/service_worker_job_coordinator.h"
 #include "content/browser/service_worker/service_worker_metrics.h"
 #include "content/browser/service_worker/service_worker_register_job.h"
+#include "content/common/content_navigation_policy.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/common/navigation_policy.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom.h"
 
 namespace content {
@@ -49,6 +49,7 @@ ServiceWorkerRegistration::ServiceWorkerRegistration(
       update_via_cache_(options.update_via_cache),
       registration_id_(registration_id),
       status_(Status::kIntact),
+      store_state_(StoreState::kNotStored),
       should_activate_when_ready_(false),
       resources_total_size_bytes_(0),
       context_(context),
@@ -88,6 +89,18 @@ void ServiceWorkerRegistration::SetStatus(Status status) {
 #endif  // DCHECK_IS_ON()
 
   status_ = status;
+}
+
+bool ServiceWorkerRegistration::IsStored() const {
+  return context_ && store_state_ == StoreState::kStored;
+}
+
+void ServiceWorkerRegistration::SetStored() {
+  store_state_ = StoreState::kStored;
+}
+
+void ServiceWorkerRegistration::UnsetStored() {
+  store_state_ = StoreState::kNotStored;
 }
 
 ServiceWorkerVersion* ServiceWorkerRegistration::GetNewestVersion() const {

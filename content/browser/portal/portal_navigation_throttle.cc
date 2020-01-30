@@ -17,6 +17,16 @@
 
 namespace content {
 
+namespace {
+
+// A URL where developers can learn more about why this navigation throttle may
+// have cancelled their request.
+const char* GetBlockedInfoURL() {
+  return "https://www.chromium.org/blink/origin-trials/portals";
+}
+
+}  // namespace
+
 // static
 std::unique_ptr<PortalNavigationThrottle>
 PortalNavigationThrottle::MaybeCreateThrottleFor(
@@ -68,14 +78,13 @@ PortalNavigationThrottle::WillStartOrRedirectRequest() {
   if (origin == first_party_origin)
     return PROCEED;
 
-  // TODO(crbug.com/1013389): Update this message to refer to external
-  // documentation if we write any.
   portal->owner_render_frame_host()->AddMessageToConsole(
       blink::mojom::ConsoleMessageLevel::kWarning,
       base::StringPrintf("Navigating a portal to cross-origin content (from "
-                         "%s) is not currently permitted and was blocked.",
-                         origin.Serialize().c_str()));
-  return BLOCK_REQUEST;
+                         "%s) is not currently permitted and was blocked. "
+                         "See %s for more information.",
+                         origin.Serialize().c_str(), GetBlockedInfoURL()));
+  return CANCEL;
 }
 
 }  // namespace content

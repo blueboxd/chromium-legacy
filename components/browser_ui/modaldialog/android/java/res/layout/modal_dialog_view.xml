@@ -33,7 +33,7 @@
 
             <org.chromium.ui.widget.TextViewWithLeading
                 android:id="@+id/message"
-                android:textAppearance="@style/TextAppearance.BlackBody"
+                android:textAppearance="@style/TextAppearance.TextMedium.Secondary"
                 app:leading="20sp"
                 style="@style/AlertDialogContent" />
 

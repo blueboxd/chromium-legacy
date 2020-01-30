@@ -40,7 +40,7 @@
         android:layout_toEndOf="@id/payment_app_icon"
         android:layout_width="wrap_content"
         android:paddingTop="@dimen/microtransaction_large_text_vertical_spacing"
-        android:textAppearance="@style/TextAppearance.BlackBodyDefault"/>
+        android:textAppearance="@style/TextAppearance.TextMedium.Primary"/>
 
     <!-- Payment app name, e.g., "Bob Pay". -->
     <TextView
@@ -51,7 +51,7 @@
         android:layout_toEndOf="@id/payment_app_icon"
         android:layout_width="wrap_content"
         android:paddingTop="@dimen/microtransaction_large_text_vertical_spacing"
-        android:textAppearance="@style/TextAppearance.BlackTitle1"/>
+        android:textAppearance="@style/TextAppearance.TextLarge.Primary"/>
 
     <!-- Small emphasized status message, e.g., "Touch sensor to pay". -->
     <TextView
@@ -70,7 +70,7 @@
         android:layout_height="wrap_content"
         android:layout_toEndOf="@id/payment_app_icon"
         android:layout_width="wrap_content"
-        android:textAppearance="@style/TextAppearance.BlackBodyDefault"/>
+        android:textAppearance="@style/TextAppearance.TextMedium.Primary"/>
 
     <!-- Bold formatted amount, e.g., "$1.00". -->
     <TextView
@@ -80,7 +80,7 @@
         android:layout_toEndOf="@id/currency"
         android:layout_width="wrap_content"
         android:paddingStart="@dimen/microtransaction_amount_currency_spacing"
-        android:textAppearance="@style/TextAppearance.BlackTitle2"/>
+        android:textAppearance="@style/TextAppearance.TextMediumThick.Primary"/>
 
     <!-- Status icon, e.g., the fingerprint icon. -->
     <ImageView

@@ -418,7 +418,6 @@
 <translation id="2799223571221894425">重新启动</translation>
 <translation id="2803306138276472711">Google安全浏览功能最近在<ph name="SITE" />上<ph name="BEGIN_LINK" />检测到了恶意软件<ph name="END_LINK" />。平常非常安全的网站有时也会感染恶意软件。</translation>
 <translation id="2807052079800581569">图片 Y 轴位置</translation>
-<translation id="2809804249696361569">两个工作表</translation>
 <translation id="2824775600643448204">地址和搜索栏</translation>
 <translation id="2826760142808435982">该连接使用 <ph name="CIPHER" /> 进行加密和身份验证，并使用 <ph name="KX" /> 作为密钥交换机制。</translation>
 <translation id="2835170189407361413">清除表单</translation>
@@ -917,7 +916,6 @@
 <translation id="5112422516732747637">A5</translation>
 <translation id="5115216390227830982">European-Edp</translation>
 <translation id="5115563688576182185">（64 位）</translation>
-<translation id="5121469660360593280">与您的管理员分享“Chrome 企业级用户保护”功能报告的安全性事件的相关数据。这可能包括您所访问网页的网址、文件名或元数据，以及您在登录设备和 Chrome 时使用的用户名。</translation>
 <translation id="5123063207673082822">周末</translation>
 <translation id="5125394840236832993">B-Plus</translation>
 <translation id="5126510351761255129">验证您的银行卡</translation>
@@ -932,7 +930,6 @@
 <translation id="5161506081086828129">堆叠出纸器 9</translation>
 <translation id="516920405563544094">请输入 <ph name="CREDIT_CARD" /> 的银行卡验证码 (CVC)。待您确认后，系统便会将您 Google 帐号中的信用卡详细信息共享给该网站。</translation>
 <translation id="5169827969064885044">您可能会无法再访问所属组织的帐号，或被他人盗用身份信息。Chrome 建议您立即更改密码。</translation>
-<translation id="5170017743895942767">Chrome 企业级用户保护</translation>
 <translation id="5171045022955879922">搜索或输入网址</translation>
 <translation id="5171689220826475070">Fanfold-European</translation>
 <translation id="5172758083709347301">本机</translation>
@@ -1065,7 +1062,6 @@
 <translation id="5737183892635480227">{NUM_CARDS,plural, =1{将这张卡保存在您的 Google 帐号中}other{将这些卡保存在您的 Google 帐号中}}</translation>
 <translation id="5745980000221562234">{NUM_CARDS,plural, =1{使用这张卡的虚拟卡号}other{选择一张卡}}</translation>
 <translation id="5763042198335101085">请输入有效的电子邮件地址</translation>
-<translation id="5763703224595565476">您的管理员已在您的浏览器中启用了“Chrome 企业级用户保护”功能。“Chrome 企业级用户保护”功能可以访问您的部分数据。</translation>
 <translation id="5765072501007116331">要查看递送方式和要求，请选择相应地址</translation>
 <translation id="5776313857861697733">优先级</translation>
 <translation id="5778550464785688721">完全控制 MIDI 设备</translation>
@@ -1401,7 +1397,6 @@
 <translation id="733923710415886693">该服务器的证书未通过证书透明度政策进行披露。</translation>
 <translation id="734600844861828519">11x15</translation>
 <translation id="7346048084945669753">有无关联：</translation>
-<translation id="73479065977517481"><ph name="ENROLLMENT_DOMAIN" /> 已在您的浏览器中启用了“Chrome 企业级用户保护”功能。“Chrome 企业级用户保护”功能可以访问您的部分数据。</translation>
 <translation id="7349430561505560861">A4-Extra</translation>
 <translation id="7353601530677266744">命令行</translation>
 <translation id="7372973238305370288">搜索结果</translation>

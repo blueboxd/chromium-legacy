@@ -60,8 +60,14 @@ class CORE_EXPORT NGInlineCursorPosition {
   }
 
   NGStyleVariant StyleVariant() const;
+  bool UsesFirstLineStyle() const;
 
   const DisplayItemClient* GetDisplayItemClient() const;
+
+  // The offset relative to the root of the inline formatting context.
+  const PhysicalRect RectInContainerBlock() const;
+  const PhysicalOffset OffsetInContainerBlock() const;
+  const PhysicalSize Size() const;
 
  private:
   const NGPaintFragment* paint_fragment_ = nullptr;
@@ -226,15 +232,10 @@ class CORE_EXPORT NGInlineCursor {
   // reserved direction.
   TextDirection CurrentResolvedDirection() const;
   const ComputedStyle& CurrentStyle() const;
-  bool UsesFirstLineStyle() const;
 
   // InkOverflow of itself, including contents if they contribute to the ink
   // overflow of this object (e.g. when not clipped,) in the local coordinate.
   const PhysicalRect CurrentInkOverflow() const;
-  // The offset relative to the root of the inline formatting context.
-  const PhysicalOffset CurrentOffset() const;
-  const PhysicalRect CurrentRect() const;
-  const PhysicalSize CurrentSize() const;
 
   // Returns start/end of offset in text content of current text fragment.
   // It is error when this cursor doesn't point to text fragment.
@@ -292,6 +293,7 @@ class CORE_EXPORT NGInlineCursor {
 
   // Move the current posint at |paint_fragment|.
   void MoveTo(const NGPaintFragment& paint_fragment);
+  void MoveTo(const NGPaintFragment* paint_fragment);
 
   // Move to first |NGFragmentItem| or |NGPaintFragment| associated to
   // |layout_object|. When |layout_object| has no associated fragments, this
@@ -305,6 +307,9 @@ class CORE_EXPORT NGInlineCursor {
   // at fragment without children, this cursor points nothing.
   // See also |TryToMoveToFirstChild()|.
   void MoveToFirstChild();
+
+  // Move to the first line.
+  void MoveToFirstLine();
 
   // Move to first logical leaf of current line box. If current line box has
   // no children, curosr becomes null.

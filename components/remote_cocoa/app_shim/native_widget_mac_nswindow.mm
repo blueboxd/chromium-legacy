@@ -5,7 +5,6 @@
 #import "components/remote_cocoa/app_shim/native_widget_mac_nswindow.h"
 
 #include "base/mac/foundation_util.h"
-#import "base/mac/sdk_forward_declarations.h"
 #import "components/remote_cocoa/app_shim/native_widget_ns_window_bridge.h"
 #include "components/remote_cocoa/app_shim/native_widget_ns_window_host_helper.h"
 #import "components/remote_cocoa/app_shim/views_nswindow_delegate.h"

@@ -40,8 +40,7 @@ class COMPONENT_EXPORT(TRACING_CPP) DummyProducer : public SystemProducer {
                   CommitDataCallback callback) override;
   perfetto::SharedMemory* shared_memory() const override;
   size_t shared_buffer_page_size_kb() const override;
-  perfetto::SharedMemoryArbiter* GetSharedMemoryArbiter() override;
-  perfetto::SharedMemoryArbiter* GetInProcessShmemArbiter() override;
+  perfetto::SharedMemoryArbiter* MaybeSharedMemoryArbiter() override;
   void NotifyFlushComplete(perfetto::FlushRequestID) override;
   void NotifyDataSourceStarted(perfetto::DataSourceInstanceID) override;
   void NotifyDataSourceStopped(perfetto::DataSourceInstanceID) override;

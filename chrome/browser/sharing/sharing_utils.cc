@@ -10,49 +10,81 @@
 
 namespace {
 
-syncer::ModelTypeSet GetRequiredSyncDataTypes() {
-  // DeviceInfo is always required to list devices.
-  syncer::ModelTypeSet required_data_types(syncer::DEVICE_INFO);
+bool CanListDevices(syncer::SyncService* sync_service) {
+  syncer::ModelTypeSet active_data_types = sync_service->GetActiveDataTypes();
 
-  // Legacy implementation of device list and VAPID key uses sync preferences.
-  if (!base::FeatureList::IsEnabled(kSharingUseDeviceInfo) ||
-      !base::FeatureList::IsEnabled(kSharingDeriveVapidKey)) {
-    required_data_types.Put(syncer::PREFERENCES);
+  // Can list device using DeviceInfo and sharing.synced_devices preferences.
+  if (active_data_types.HasAll({syncer::DEVICE_INFO, syncer::PREFERENCES}))
+    return true;
+
+  // Can list device using only DeviceInfo.
+  if (base::FeatureList::IsEnabled(kSharingUseDeviceInfo) &&
+      active_data_types.Has(syncer::DEVICE_INFO)) {
+    return true;
   }
 
-  return required_data_types;
+  return false;
 }
 
 }  // namespace
+
+bool CanSendViaVapid(syncer::SyncService* sync_service) {
+  // Can send using VAPID key in sharing.vapid_key preferences.
+  if (sync_service->GetActiveDataTypes().Has(syncer::PREFERENCES))
+    return true;
+
+  // TODO(crbug.com/1012226): Remove when derive VAPID key is removed.
+  // Can send using derived VAPID key if local sync is disabled.
+  return base::FeatureList::IsEnabled(kSharingDeriveVapidKey) &&
+         !sync_service->IsLocalSyncEnabled();
+}
+
+bool CanSendViaSenderID(syncer::SyncService* sync_service) {
+  return base::FeatureList::IsEnabled(kSharingSendViaSync) &&
+         sync_service->GetActiveDataTypes().Has(syncer::SHARING_MESSAGE);
+}
 
 bool IsSyncEnabledForSharing(syncer::SyncService* sync_service) {
   if (!sync_service)
     return false;
 
-  bool is_sync_enabled =
-      sync_service->GetTransportState() ==
-          syncer::SyncService::TransportState::ACTIVE &&
-      sync_service->GetActiveDataTypes().HasAll(GetRequiredSyncDataTypes());
-  // TODO(crbug.com/1012226): Remove local sync check when we have dedicated
-  // Sharing data type.
-  if (base::FeatureList::IsEnabled(kSharingDeriveVapidKey))
-    is_sync_enabled &= !sync_service->IsLocalSyncEnabled();
-  return is_sync_enabled;
+  if (sync_service->GetTransportState() !=
+      syncer::SyncService::TransportState::ACTIVE) {
+    return false;
+  }
+
+  if (!CanListDevices(sync_service)) {
+    return false;
+  }
+
+  if (!CanSendViaVapid(sync_service) && !CanSendViaSenderID(sync_service)) {
+    return false;
+  }
+
+  return true;
 }
 
 bool IsSyncDisabledForSharing(syncer::SyncService* sync_service) {
+  // Sync service is not initialized, we can't be sure it's disabled.
   if (!sync_service)
     return false;
 
-  bool is_sync_disabled =
-      sync_service->GetTransportState() ==
-          syncer::SyncService::TransportState::DISABLED ||
-      (sync_service->GetTransportState() ==
-           syncer::SyncService::TransportState::ACTIVE &&
-       !sync_service->GetActiveDataTypes().HasAll(GetRequiredSyncDataTypes()));
-  // TODO(crbug.com/1012226): Remove local sync check when we have dedicated
-  // Sharing data type.
-  if (base::FeatureList::IsEnabled(kSharingDeriveVapidKey))
-    is_sync_disabled |= sync_service->IsLocalSyncEnabled();
-  return is_sync_disabled;
+  if (sync_service->GetTransportState() ==
+      syncer::SyncService::TransportState::DISABLED) {
+    return true;
+  }
+
+  // Ignore transient states.
+  if (sync_service->GetTransportState() !=
+      syncer::SyncService::TransportState::ACTIVE) {
+    return false;
+  }
+
+  if (!CanListDevices(sync_service))
+    return true;
+
+  if (!CanSendViaVapid(sync_service) && !CanSendViaSenderID(sync_service))
+    return true;
+
+  return false;
 }

@@ -8,22 +8,8 @@ GEN_INCLUDE(
 
 /**
  * Test fixture.
- * @constructor
- * @extends {ChromeVoxUnitTestBase}
  */
-function ChromeVoxBrailleDisplayManagerUnitTest() {}
-
-ChromeVoxBrailleDisplayManagerUnitTest.prototype = {
-  __proto__: ChromeVoxUnitTestBase.prototype,
-
-  /** @override */
-  closureModuleDeps: [
-    'BrailleDisplayManager',
-    'BrailleInterface',
-    'LibLouis',
-    'NavBraille',
-  ],
-
+ChromeVoxBrailleDisplayManagerUnitTest = class extends ChromeVoxUnitTestBase {
   /** @override */
   setUp() {
     /** @const */
@@ -34,7 +20,7 @@ ChromeVoxBrailleDisplayManagerUnitTest.prototype = {
     /** @const */
     this.DISPLAY_ROW_SIZE = 1;
     this.DISPLAY_COLUMN_SIZE = 12;
-  },
+  }
 
   addFakeApi() {
     chrome.brailleDisplayPrivate = {};
@@ -47,7 +33,7 @@ ChromeVoxBrailleDisplayManagerUnitTest.prototype = {
     }.bind(this);
     chrome.brailleDisplayPrivate.onDisplayStateChanged = new FakeChromeEvent();
     chrome.brailleDisplayPrivate.onKeyEvent = new FakeChromeEvent();
-  },
+  }
 
   displayAvailable() {
     this.displayState = {
@@ -55,7 +41,7 @@ ChromeVoxBrailleDisplayManagerUnitTest.prototype = {
       textRowCount: this.DISPLAY_ROW_SIZE,
       textColumnCount: this.DISPLAY_COLUMN_SIZE
     };
-  },
+  }
 
   /**
    * Asserts display pan position and selection markers on the last written
@@ -87,7 +73,7 @@ ChromeVoxBrailleDisplayManagerUnitTest.prototype = {
             'Missing cursor marker at position ' + i);
       }
     }
-  },
+  }
 
   /**
    * Asserts that the last written display content is an empty buffer of
@@ -100,7 +86,7 @@ ChromeVoxBrailleDisplayManagerUnitTest.prototype = {
     this.writtenCells.length = 0;
     assertTrue(content instanceof ArrayBuffer);
     assertTrue(content.byteLength == 0);
-  },
+  }
 
   /**
    * Asserts that the groups passed in actually match what we expect.
@@ -109,6 +95,15 @@ ChromeVoxBrailleDisplayManagerUnitTest.prototype = {
     assertEquals(JSON.stringify(groups), JSON.stringify(expected));
   }
 };
+
+/** @override */
+ChromeVoxBrailleDisplayManagerUnitTest.prototype.closureModuleDeps = [
+  'BrailleDisplayManager',
+  'BrailleInterface',
+  'LibLouis',
+  'NavBraille',
+];
+
 
 /** @extends {ExpandingBrailleTranslator} */
 function FakeTranslator() {}

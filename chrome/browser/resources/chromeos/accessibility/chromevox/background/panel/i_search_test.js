@@ -9,52 +9,48 @@ GEN_INCLUDE([
 
 /**
  * Test fixture for ISearch.
- * @constructor
- * @extends {ChromeVoxNextE2ETest}
  */
-function ChromeVoxISearchTest() {
-  ChromeVoxNextE2ETest.call(this);
-}
-
-ChromeVoxISearchTest.prototype = {
-  __proto__: ChromeVoxNextE2ETest.prototype,
-
+ChromeVoxISearchTest = class extends ChromeVoxNextE2ETest {
   /** @override */
-  runtimeDeps: ['ISearch', 'ISearchHandler'],
+  get runtimeDeps() {
+    return ['ISearch', 'ISearchHandler'];
+  }
 
-  linksAndHeadingsDoc: `
-    <p>start</p>
-    <a href='#a'>Home</a>
-    <a href='#b'>About US</a>
-    <p>
-      <h1>Latest Breaking News</h1>
-      <a href='foo'>See more...</a>
-    </p>
-    <a href='#bar'>Questions?</a>
-    <h2>Privacy Policy</h2>
-    <p>end<span>of test</span></p>
-  `
+  get linksAndHeadingsDoc() {
+    return `
+      <p>start</p>
+      <a href='#a'>Home</a>
+      <a href='#b'>About US</a>
+      <p>
+        <h1>Latest Breaking News</h1>
+        <a href='foo'>See more...</a>
+      </p>
+      <a href='#bar'>Questions?</a>
+      <h2>Privacy Policy</h2>
+      <p>end<span>of test</span></p>
+    `;
+  }
 };
+
 
 /**
  * @implements {ISearchHandler}
- * @constructor
  */
-function FakeISearchHandler(testObj) {
-  this.test = testObj;
-  this.expect_ = [];
-}
+class FakeISearchHandler {
+  constructor(testObj) {
+    this.test = testObj;
+    this.expect_ = [];
+  }
 
-FakeISearchHandler.prototype = {
   /** @override */
   onSearchReachedBoundary(boundaryNode) {
     this.expect_.shift()({node: boundaryNode, isBoundary: true});
-  },
+  }
 
   /** @override */
   onSearchResultChanged(node, start, end) {
     this.expect_.shift()({node, start, end});
-  },
+  }
 
   expect(str, opt_callback) {
     this.expect_.push(this.test.newCallback(function(args) {
@@ -70,7 +66,8 @@ FakeISearchHandler.prototype = {
       opt_callback && opt_callback();
     }));
   }
-};
+}
+
 
 TEST_F('ChromeVoxISearchTest', 'Simple', function() {
   this.runWithLoadedTree(this.linksAndHeadingsDoc, function(rootNode) {

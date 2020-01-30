@@ -7,43 +7,40 @@ GEN_INCLUDE(['chromevox_e2e_test_base.js']);
 
 /**
  * Base test fixture for ChromeVox Next end to end tests.
- *
  * These tests are identical to ChromeVoxE2ETests except for performing the
  * necessary setup to run ChromeVox Next.
- * @constructor
- * @extends {ChromeVoxE2ETest}
  */
-function ChromeVoxNextE2ETest() {
-  ChromeVoxE2ETest.call(this);
+ChromeVoxNextE2ETest = class extends ChromeVoxE2ETest {
+  constructor() {
+    super();
 
-  if (this.runtimeDeps.length > 0) {
-    chrome.extension.getViews().forEach(function(w) {
-      this.runtimeDeps.forEach(function(dep) {
-        if (w[dep]) {
-          window[dep] = w[dep];
-        }
+    if (this.runtimeDeps.length > 0) {
+      chrome.extension.getViews().forEach(function(w) {
+        this.runtimeDeps.forEach(function(dep) {
+          if (w[dep]) {
+            window[dep] = w[dep];
+          }
+        }.bind(this));
       }.bind(this));
-    }.bind(this));
+    }
+
+    // For tests, enable announcement of events we trigger via automation.
+    DesktopAutomationHandler.announceActions = true;
+
+    this.originalOutputContextValues_ = {};
+    for (var role in Output.ROLE_INFO_) {
+      this.originalOutputContextValues_[role] =
+          Output.ROLE_INFO_[role]['outputContextFirst'];
+    }
   }
-
-  // For tests, enable announcement of events we trigger via automation.
-  DesktopAutomationHandler.announceActions = true;
-
-  this.originalOutputContextValues_ = {};
-  for (var role in Output.ROLE_INFO_) {
-    this.originalOutputContextValues_[role] =
-        Output.ROLE_INFO_[role]['outputContextFirst'];
-  }
-}
-
-ChromeVoxNextE2ETest.prototype = {
-  __proto__: ChromeVoxE2ETest.prototype,
 
   /**
    * Dependencies defined on a background window other than this one.
    * @type {!Array<string>}
    */
-  runtimeDeps: [],
+  get runtimeDeps() {
+    return [];
+  }
 
   /**
    * Gets the desktop from the automation API and Launches a new tab with
@@ -81,7 +78,7 @@ ChromeVoxNextE2ETest.prototype = {
       var createParams = {active: true, url};
       chrome.tabs.create(createParams);
     }.bind(this));
-  },
+  }
 
   listenOnce(node, eventType, callback, capture) {
     var innerCallback = this.newCallback(function() {
@@ -89,7 +86,7 @@ ChromeVoxNextE2ETest.prototype = {
       callback.apply(this, arguments);
     });
     node.addEventListener(eventType, innerCallback, capture);
-  },
+  }
 
   /**
    * Forces output to place context utterances at the end of output. This eases
@@ -99,7 +96,7 @@ ChromeVoxNextE2ETest.prototype = {
     for (var role in Output.ROLE_INFO_) {
       Output.ROLE_INFO_[role]['outputContextFirst'] = undefined;
     }
-  },
+  }
 
   /**
    * Forces output to place context utterances at the beginning of output.
@@ -108,7 +105,7 @@ ChromeVoxNextE2ETest.prototype = {
     for (var role in Output.ROLE_INFO_) {
       Output.ROLE_INFO_[role]['outputContextFirst'] = true;
     }
-  },
+  }
 
   /** Resets contextual output values to their defaults. */
   resetContextualOutput() {

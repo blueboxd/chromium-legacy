@@ -14,21 +14,13 @@ GEN_INCLUDE([
 
 /**
  * Test fixture for Live Regions.
- * @constructor
- * @extends {ChromeVoxNextE2ETest}
  */
-function ChromeVoxLiveRegionsTest() {
-  ChromeVoxNextE2ETest.call(this);
-}
-
-ChromeVoxLiveRegionsTest.prototype = {
-  __proto__: ChromeVoxNextE2ETest.prototype,
-
+ChromeVoxLiveRegionsTest = class extends ChromeVoxNextE2ETest {
   /** @override */
   setUp() {
     window.RoleType = chrome.automation.RoleType;
     window.TreeChangeType = chrome.automation.TreeChangeType;
-  },
+  }
 
   /**
    * @return {!MockFeedback}
@@ -38,7 +30,7 @@ ChromeVoxLiveRegionsTest.prototype = {
         new MockFeedback(this.newCallback(), this.newCallback.bind(this));
     mockFeedback.install();
     return mockFeedback;
-  },
+  }
 
   /**
    * Create a function which performs the command |cmd|.
@@ -49,7 +41,7 @@ ChromeVoxLiveRegionsTest.prototype = {
     return function() {
       CommandHandler.onCommand(cmd);
     };
-  },
+  }
 
   /**
    * Simulates work done when users interact using keyboard, braille, or
@@ -57,8 +49,9 @@ ChromeVoxLiveRegionsTest.prototype = {
    */
   simulateUserInteraction() {
     Output.forceModeForNextSpeechUtterance(QueueMode.FLUSH);
-  },
+  }
 };
+
 
 TEST_F('ChromeVoxLiveRegionsTest', 'LiveRegionAddElement', function() {
   var mockFeedback = this.createMockFeedback();

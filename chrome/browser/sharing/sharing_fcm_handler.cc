@@ -89,10 +89,10 @@ void SharingFCMHandler::OnMessage(const std::string& app_id,
   TRACE_EVENT_BEGIN0("sharing", "SharingFCMHandler::OnMessage");
 
   base::TimeTicks message_received_time = base::TimeTicks::Now();
-  std::string message_id = GetStrippedMessageId(message.message_id);
   chrome_browser_sharing::SharingMessage sharing_message;
   if (!sharing_message.ParseFromString(message.raw_data)) {
-    LOG(ERROR) << "Failed to parse incoming message with id : " << message_id;
+    LOG(ERROR) << "Failed to parse incoming message with id : "
+               << message.message_id;
     return;
   }
   chrome_browser_sharing::SharingMessage::PayloadCase payload_case =
@@ -112,9 +112,13 @@ void SharingFCMHandler::OnMessage(const std::string& app_id,
   } else {
     SharingMessageHandler::DoneCallback done_callback = base::DoNothing();
     if (payload_case != chrome_browser_sharing::SharingMessage::kAckMessage) {
+      std::string message_id = sharing_message.message_id();
+      if (message_id.empty())
+        message_id = GetStrippedMessageId(message.message_id);
       done_callback = base::BindOnce(
           &SharingFCMHandler::SendAckMessage, weak_ptr_factory_.GetWeakPtr(),
-          std::move(message_id), message_type, GetTargetInfo(sharing_message),
+          std::move(message_id), message_type, GetFCMChannel(sharing_message),
+          GetServerChannel(sharing_message),
           sync_preference_->GetDevicePlatform(sharing_message.sender_guid()),
           message_received_time);
     }
@@ -141,30 +145,37 @@ void SharingFCMHandler::OnStoreReset() {
   // TODO: Handle GCM store reset.
 }
 
-base::Optional<syncer::DeviceInfo::SharingTargetInfo>
-SharingFCMHandler::GetTargetInfo(
+base::Optional<chrome_browser_sharing::FCMChannelConfiguration>
+SharingFCMHandler::GetFCMChannel(
     const chrome_browser_sharing::SharingMessage& original_message) {
-  if (original_message.has_fcm_channel_configuration()) {
-    auto& fcm_configuration = original_message.fcm_channel_configuration();
-    return syncer::DeviceInfo::SharingTargetInfo{
-        fcm_configuration.vapid_fcm_token(), fcm_configuration.vapid_p256dh(),
-        fcm_configuration.vapid_auth_secret()};
-  }
+  if (original_message.has_fcm_channel_configuration())
+    return original_message.fcm_channel_configuration();
 
-  return sync_preference_->GetTargetInfo(original_message.sender_guid());
+  return sync_preference_->GetFCMChannel(original_message.sender_guid());
+}
+
+base::Optional<chrome_browser_sharing::ServerChannelConfiguration>
+SharingFCMHandler::GetServerChannel(
+    const chrome_browser_sharing::SharingMessage& original_message) {
+  if (!original_message.has_server_channel_configuration())
+    return base::nullopt;
+
+  return original_message.server_channel_configuration();
 }
 
 void SharingFCMHandler::SendAckMessage(
     std::string original_message_id,
     chrome_browser_sharing::MessageType original_message_type,
-    base::Optional<syncer::DeviceInfo::SharingTargetInfo> target_info,
+    base::Optional<chrome_browser_sharing::FCMChannelConfiguration> fcm_channel,
+    base::Optional<chrome_browser_sharing::ServerChannelConfiguration>
+        server_channel,
     SharingDevicePlatform sender_device_type,
     base::TimeTicks message_received_time,
     std::unique_ptr<chrome_browser_sharing::ResponseMessage> response) {
   LogSharingMessageHandlerTime(original_message_type,
                                base::TimeTicks::Now() - message_received_time);
-  if (!target_info) {
-    LOG(ERROR) << "Unable to find target info";
+  if (!fcm_channel && !server_channel) {
+    LOG(ERROR) << "Unable to find ack channel configuration";
     LogSendSharingAckMessageResult(original_message_type, sender_device_type,
                                    SharingSendMessageResult::kDeviceNotFound);
     return;
@@ -183,8 +194,18 @@ void SharingFCMHandler::SendAckMessage(
   if (response)
     ack_message->set_allocated_response_message(response.release());
 
-  sharing_fcm_sender_->SendMessageToTargetInfo(
-      std::move(*target_info),
+  if (server_channel) {
+    sharing_fcm_sender_->SendMessageToServerTarget(
+        *server_channel, std::move(sharing_message),
+        base::BindOnce(&SharingFCMHandler::OnAckMessageSent,
+                       weak_ptr_factory_.GetWeakPtr(),
+                       std::move(original_message_id), original_message_type,
+                       sender_device_type, trace_id));
+    return;
+  }
+
+  sharing_fcm_sender_->SendMessageToFcmTarget(
+      *fcm_channel,
       base::TimeDelta::FromSeconds(kSharingAckMessageTTLSeconds.Get()),
       std::move(sharing_message),
       base::BindOnce(&SharingFCMHandler::OnAckMessageSent,

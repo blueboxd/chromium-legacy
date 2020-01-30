@@ -11,6 +11,7 @@
 #include "ios/chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/feature_engagement/tracker_factory.h"
+#import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/overlays/public/overlay_presenter.h"
 #include "ios/chrome/browser/reading_list/reading_list_model_factory.h"
 #import "ios/chrome/browser/search_engines/template_url_service_factory.h"
@@ -60,20 +61,19 @@ PopupMenuCommandType CommandTypeFromPopupType(PopupMenuType type) {
 
 @implementation PopupMenuCoordinator
 
-@synthesize dispatcher = _dispatcher;
 @synthesize mediator = _mediator;
 @synthesize presenter = _presenter;
 @synthesize requestStartTime = _requestStartTime;
 @synthesize UIUpdater = _UIUpdater;
-@synthesize webStateList = _webStateList;
 @synthesize bubblePresenter = _bubblePresenter;
 @synthesize viewController = _viewController;
 
 #pragma mark - ChromeCoordinator
 
 - (void)start {
-  [self.dispatcher startDispatchingToTarget:self
-                                forProtocol:@protocol(PopupMenuCommands)];
+  [self.browser->GetCommandDispatcher()
+      startDispatchingToTarget:self
+                   forProtocol:@protocol(PopupMenuCommands)];
   NSNotificationCenter* defaultCenter = [NSNotificationCenter defaultCenter];
   [defaultCenter addObserver:self
                     selector:@selector(applicationDidEnterBackground:)
@@ -82,7 +82,7 @@ PopupMenuCommandType CommandTypeFromPopupType(PopupMenuType type) {
 }
 
 - (void)stop {
-  [self.dispatcher stopDispatchingToTarget:self];
+  [self.browser->GetCommandDispatcher() stopDispatchingToTarget:self];
   [self.mediator disconnect];
   self.mediator = nil;
   self.viewController = nil;
@@ -195,8 +195,10 @@ PopupMenuCommandType CommandTypeFromPopupType(PopupMenuType type) {
   if (self.presenter)
     [self dismissPopupMenuAnimated:YES];
 
+  // TODO(crbug.com/1045047): Use HandlerForProtocol after commands protocol
+  // clean up.
   id<BrowserCommands> callableDispatcher =
-      static_cast<id<BrowserCommands>>(self.dispatcher);
+      static_cast<id<BrowserCommands>>(self.browser->GetCommandDispatcher());
   [callableDispatcher
       prepareForPopupMenuPresentation:CommandTypeFromPopupType(type)];
 
@@ -233,8 +235,9 @@ PopupMenuCommandType CommandTypeFromPopupType(PopupMenuType type) {
       triggerNewIncognitoTabTip:triggerNewIncognitoTabTip];
   self.mediator.engagementTracker =
       feature_engagement::TrackerFactory::GetForBrowserState(self.browserState);
-  self.mediator.webStateList = self.webStateList;
-  self.mediator.dispatcher = static_cast<id<BrowserCommands>>(self.dispatcher);
+  self.mediator.webStateList = self.browser->GetWebStateList();
+  self.mediator.dispatcher =
+      static_cast<id<BrowserCommands>>(self.browser->GetCommandDispatcher());
   self.mediator.bookmarkModel =
       ios::BookmarkModelFactory::GetForBrowserState(self.browserState);
   self.mediator.templateURLService =
@@ -247,7 +250,7 @@ PopupMenuCommandType CommandTypeFromPopupType(PopupMenuType type) {
   self.actionHandler.baseViewController = self.baseViewController;
   self.actionHandler.dispatcher =
       static_cast<id<ApplicationCommands, BrowserCommands, LoadQueryCommands>>(
-          self.dispatcher);
+          self.browser->GetCommandDispatcher());
   self.actionHandler.commandHandler = self.mediator;
   tableViewController.delegate = self.actionHandler;
 

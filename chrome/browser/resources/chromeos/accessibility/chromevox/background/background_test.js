@@ -14,16 +14,8 @@ GEN_INCLUDE([
 
 /**
  * Test fixture for Background.
- * @constructor
- * @extends {ChromeVoxNextE2ETest}
  */
-function ChromeVoxBackgroundTest() {
-  ChromeVoxNextE2ETest.call(this);
-}
-
-ChromeVoxBackgroundTest.prototype = {
-  __proto__: ChromeVoxNextE2ETest.prototype,
-
+ChromeVoxBackgroundTest = class extends ChromeVoxNextE2ETest {
   /** @override */
   setUp() {
     window.EventType = chrome.automation.EventType;
@@ -33,7 +25,7 @@ ChromeVoxBackgroundTest.prototype = {
     window.Mod = constants.ModifierFlag;
 
     this.forceContextualLastOutput();
-  },
+  }
 
   /**
    * @return {!MockFeedback}
@@ -43,7 +35,7 @@ ChromeVoxBackgroundTest.prototype = {
         new MockFeedback(this.newCallback(), this.newCallback.bind(this));
     mockFeedback.install();
     return mockFeedback;
-  },
+  }
 
   /**
    * Create a function which perform the command |cmd|.
@@ -54,86 +46,99 @@ ChromeVoxBackgroundTest.prototype = {
     return function() {
       CommandHandler.onCommand(cmd);
     };
-  },
+  }
 
   press(keyCode, modifiers) {
     return function() {
       BackgroundKeyboardHandler.sendKeyPress(keyCode, modifiers);
     };
-  },
+  }
 
-  linksAndHeadingsDoc: `
-    <p>start</p>
-    <a href='#a'>alpha</a>
-    <a href='#b'>beta</a>
-    <p>
-      <h1>charlie</h1>
-      <a href='foo'>delta</a>
-    </p>
-    <a href='#bar'>echo</a>
-    <h2>foxtraut</h2>
-    <p>end<span>of test</span></p>
-  `,
+  get linksAndHeadingsDoc() {
+    return `
+      <p>start</p>
+      <a href='#a'>alpha</a>
+      <a href='#b'>beta</a>
+      <p>
+        <h1>charlie</h1>
+        <a href='foo'>delta</a>
+      </p>
+      <a href='#bar'>echo</a>
+      <h2>foxtraut</h2>
+      <p>end<span>of test</span></p>
+    `;
+  }
 
-  buttonDoc: `
-    <p>start</p>
-    <button>hello button one</button>
-    cats
-    <button>hello button two</button>
-    <p>end</p>
-  `,
+  get buttonDoc() {
+    return `
+      <p>start</p>
+      <button>hello button one</button>
+      cats
+      <button>hello button two</button>
+      <p>end</p>
+    `;
+  }
 
-  formsDoc: `
-    <select id="fruitSelect">
-      <option>apple</option>
-      <option>grape</option>
-      <option> banana</option>
-    </select>
-  `,
+  get formsDoc() {
+    return `
+      <select id="fruitSelect">
+        <option>apple</option>
+        <option>grape</option>
+        <option> banana</option>
+      </select>
+    `;
+  }
 
-  iframesDoc: `
-    <p>start</p>
-    <button>Before</button>
-    <iframe srcdoc="<button>Inside</button><h1>Inside</h1>"></iframe>
-    <button>After</button>
-  `,
+  get iframesDoc() {
+    return `
+      <p>start</p>
+      <button>Before</button>
+      <iframe srcdoc="<button>Inside</button><h1>Inside</h1>"></iframe>
+      <button>After</button>
+    `;
+  }
 
-  disappearingObjectDoc: `
-    <p>start</p>
-    <div role="group">
-      <p>Before1</p>
-      <p>Before2</p>
-      <p>Before3</p>
-    </div>
-    <div role="group">
-      <p id="disappearing">Disappearing</p>
-    </div>
-    <div role="group">
-      <p>After1</p>
-      <p>After2</p>
-      <p>After3</p>
-    </div>
-    <div id="live" aria-live="assertive"></div>
-    <div id="delete" role="button">Delete</div>
-    <script>
-      document.getElementById('delete').addEventListener('click', function() {
-        var d = document.getElementById('disappearing');
-        d.parentElement.removeChild(d);
-        document.getElementById('live').innerText = 'Deleted';
-        document.body.offsetTop
-      });
-    </script>
-  `,
+  get disappearingObjectDoc() {
+    return `
+      <p>start</p>
+      <div role="group">
+        <p>Before1</p>
+        <p>Before2</p>
+        <p>Before3</p>
+      </div>
+      <div role="group">
+        <p id="disappearing">Disappearing</p>
+      </div>
+      <div role="group">
+        <p>After1</p>
+        <p>After2</p>
+        <p>After3</p>
+      </div>
+      <div id="live" aria-live="assertive"></div>
+      <div id="delete" role="button">Delete</div>
+      <script>
+        document.getElementById('delete').addEventListener('click', function() {
+          var d = document.getElementById('disappearing');
+          d.parentElement.removeChild(d);
+          document.getElementById('live').innerText = 'Deleted';
+          document.body.offsetTop
+        });
+      </script>
+    `;
+  }
 
-  detailsDoc: `
-    <p aria-details="details">start</p>
-    <div role="group">
-      <p>Before</p>
-      <p id="details">Details</p>
-      <p>After</p>
-    </div>
-  `,
+  get detailsDoc() {
+    return `
+      <p aria-details="details">start</p>
+      <div role="group">
+        <p>Before</p>
+        <p id="details">Details</p>
+        <p>After</p>
+      </div>
+    `;
+  }
 };
+
 
 /** Tests that ChromeVox classic is in this context. */
 SYNC_TEST_F('ChromeVoxBackgroundTest', 'ClassicNamespaces', function() {

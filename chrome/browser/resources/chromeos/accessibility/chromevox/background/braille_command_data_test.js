@@ -9,16 +9,9 @@ GEN_INCLUDE(['../testing/assert_additions.js']);
 
 /**
  * Test fixture for braille_command_data.js.
- * @constructor
- * @extends {ChromeVoxE2ETestBase}
  */
-function ChromeVoxBrailleCommandDataTest() {
-  ChromeVoxNextE2ETest.call(this);
-}
+ChromeVoxBrailleCommandDataTest = class extends ChromeVoxNextE2ETest {};
 
-ChromeVoxBrailleCommandDataTest.prototype = {
-  __proto__: ChromeVoxNextE2ETest.prototype,
-};
 
 SYNC_TEST_F('ChromeVoxBrailleCommandDataTest', 'Duplicates', function() {
   try {

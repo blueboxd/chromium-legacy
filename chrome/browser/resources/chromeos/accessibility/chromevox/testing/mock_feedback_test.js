@@ -21,24 +21,20 @@ function earcon(earconName) {
 
 /**
  * Test fixture.
- * @constructor
- * @extends {ChromeVoxUnitTestBase}
  */
-function MockFeedbackUnitTest() {
-  ChromeVoxUnitTestBase.call(this);
-  this.expectedCalls = [];
-}
-
-MockFeedbackUnitTest.prototype = {
-  __proto__: ChromeVoxUnitTestBase.prototype,
+MockFeedbackUnitTest = class extends ChromeVoxUnitTestBase {
+  constructor() {
+    super();
+    this.expectedCalls = [];
+  }
 
   setUp() {
     window.ChromeVox = window.ChromeVox || {};
-  },
-
-  closureModuleDeps:
-      ['BrailleInterface', 'NavBraille', 'TtsInterface', 'AbstractEarcons']
+  }
 };
+
+MockFeedbackUnitTest.prototype.closureModuleDeps =
+    ['BrailleInterface', 'NavBraille', 'TtsInterface', 'AbstractEarcons'];
 
 TEST_F('MockFeedbackUnitTest', 'speechAndCallbacks', function() {
   var afterThirdStringCalled = false;

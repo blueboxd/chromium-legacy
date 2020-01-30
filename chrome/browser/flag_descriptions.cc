@@ -1701,6 +1701,12 @@ const char kSharingRenameDevicesDescription[] =
     "Enables renaming devices using HardwareInfo when populating device list "
     "and sender device info.";
 
+const char kSharingSendViaSyncName[] =
+    "Enable sending Sharing message via Sync";
+const char kSharingSendViaSyncDescription[] =
+    "Enables sending Sharing message via commiting to Chrome Sync's "
+    "SHARING_MESSAGE data type";
+
 const char kSharingUseDeviceInfoName[] =
     "Enable Sharing device registration in DeviceInfo";
 const char kSharingUseDeviceInfoDescription[] =

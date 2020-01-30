@@ -9,21 +9,17 @@ GEN_INCLUDE([
 
 /**
  * Test fixture for cursors.
- * @constructor
- * @extends {ChromeVoxNextE2ETest}
  */
-function ChromeVoxCursorsTest() {
-  ChromeVoxNextE2ETest.call(this);
-}
-
-ChromeVoxCursorsTest.prototype = {
-  __proto__: ChromeVoxNextE2ETest.prototype,
-
+ChromeVoxCursorsTest = class extends ChromeVoxNextE2ETest {
   /** Test cursors.Cursor. @const {string} */
-  CURSOR: 'cursor',
+  get CURSOR() {
+    return 'cursor';
+  }
 
   /** Test cursors.Range. @const {string} */
-  RANGE: 'range',
+  get RANGE() {
+    return 'range';
+  }
 
   /** @override */
   setUp() {
@@ -37,7 +33,7 @@ ChromeVoxCursorsTest.prototype = {
     window.BOUND = cursors.Movement.BOUND;
     window.DIRECTIONAL = cursors.Movement.DIRECTIONAL;
     window.RoleType = chrome.automation.RoleType;
-  },
+  }
 
   /**
    * Performs a series of operations on a cursor and asserts the result.
@@ -57,84 +53,91 @@ ChromeVoxCursorsTest.prototype = {
       var expected = move[3];
       this.makeCursorAssertion(expected, cursor);
     }
-  },
-
-  /**
-   * Performs a series of operations on a range and asserts the result.
-   * @param {cursors.Range} range The starting range.
-   * @param {!Array<Array<
-   *          cursors.Unit|
-   *          cursors.Movement|
-   *          constants.Dir|
-   *          Object>>}
-   *     moves An array of arrays. Each inner array contains 4 items: unit,
-   *     direction, start and end assertions objects. See example below.
-   */
-  rangeMoveAndAssert(range, moves) {
-    var move = null;
-    while (move = moves.shift()) {
-      range = range.move(move[0], move[1]);
-      var expectedStart = move[2];
-      var expectedEnd = move[3];
-
-      this.makeCursorAssertion(expectedStart, range.start);
-      this.makeCursorAssertion(expectedEnd, range.end);
     }
-  },
 
-  /**
-   * Makes assertions about the given |cursor|.
-   * @param {Object} expected
-   * @param {Cursor} cursor
-   */
-  makeCursorAssertion(expected, cursor) {
-    if (goog.isDef(expected.value)) {
-      assertEquals(expected.value, cursor.node.name);
-    }
-    if (goog.isDef(expected.index)) {
-      assertEquals(expected.index, cursor.index);
-    }
-  },
+    /**
+     * Performs a series of operations on a range and asserts the result.
+     * @param {cursors.Range} range The starting range.
+     * @param {!Array<Array<
+     *          cursors.Unit|
+     *          cursors.Movement|
+     *          constants.Dir|
+     *          Object>>}
+     *     moves An array of arrays. Each inner array contains 4 items: unit,
+     *     direction, start and end assertions objects. See example below.
+     */
+    rangeMoveAndAssert(range, moves) {
+      var move = null;
+      while (move = moves.shift()) {
+        range = range.move(move[0], move[1]);
+        var expectedStart = move[2];
+        var expectedEnd = move[3];
 
-  /**
-   * Runs the specified moves on the |doc| and asserts expectations.
-   * @param {function} doc
-   * @param {string=} opt_testType Either CURSOR or RANGE.
-   */
-  runCursorMovesOnDocument(doc, moves, opt_testType) {
-    this.runWithLoadedTree(doc, function(root) {
-      var start = null;
-
-      // This occurs as a result of a load complete.
-      var start =
-          AutomationUtil.findNodePost(root, FORWARD, AutomationPredicate.leaf);
-
-      var cursor = new cursors.Cursor(start, 0);
-      if (!opt_testType || opt_testType == this.CURSOR) {
-        var cursor = new cursors.Cursor(start, 0);
-        this.cursorMoveAndAssert(cursor, moves);
-      } else if (opt_testType == this.RANGE) {
-        var range = new cursors.Range(cursor, cursor);
-        this.rangeMoveAndAssert(range, moves);
+        this.makeCursorAssertion(expectedStart, range.start);
+        this.makeCursorAssertion(expectedEnd, range.end);
       }
-    });
-  },
+    }
 
-  simpleDoc: `
-    <p>start <span>same line</span>
-    <p>end
-  `,
+    /**
+     * Makes assertions about the given |cursor|.
+     * @param {Object} expected
+     * @param {Cursor} cursor
+     */
+    makeCursorAssertion(expected, cursor) {
+      if (goog.isDef(expected.value)) {
+        assertEquals(expected.value, cursor.node.name);
+      }
+      if (goog.isDef(expected.index)) {
+        assertEquals(expected.index, cursor.index);
+      }
+    }
 
-  multiInlineDoc: `
-    <p style='max-width: 5px'>start diff line</p>
-    <p>end
-  `,
+    /**
+     * Runs the specified moves on the |doc| and asserts expectations.
+     * @param {function} doc
+     * @param {string=} opt_testType Either CURSOR or RANGE.
+     */
+    runCursorMovesOnDocument(doc, moves, opt_testType) {
+      this.runWithLoadedTree(doc, function(root) {
+        var start = null;
 
-  buttonAndInlineTextDoc: `
-    <div>Inline text content</div>
-    <div role="button">Button example content</div>
-  `
+        // This occurs as a result of a load complete.
+        var start = AutomationUtil.findNodePost(
+            root, FORWARD, AutomationPredicate.leaf);
+
+        var cursor = new cursors.Cursor(start, 0);
+        if (!opt_testType || opt_testType == this.CURSOR) {
+          var cursor = new cursors.Cursor(start, 0);
+          this.cursorMoveAndAssert(cursor, moves);
+        } else if (opt_testType == this.RANGE) {
+          var range = new cursors.Range(cursor, cursor);
+          this.rangeMoveAndAssert(range, moves);
+        }
+      });
+    }
+
+    get simpleDoc() {
+      return `
+      <p>start <span>same line</span>
+      <p>end
+    `;
+    }
+
+    get multiInlineDoc() {
+      return `
+      <p style='max-width: 5px'>start diff line</p>
+      <p>end
+    `;
+    }
+
+    get buttonAndInlineTextDoc() {
+      return `
+      <div>Inline text content</div>
+      <div role="button">Button example content</div>
+    `;
+    }
 };
+
 
 TEST_F('ChromeVoxCursorsTest', 'CharacterCursor', function() {
   this.runCursorMovesOnDocument(this.simpleDoc, [

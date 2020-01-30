@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "base/callback_forward.h"
 #include "components/optimization_guide/proto/hints.pb.h"
 #include "components/optimization_guide/proto/models.pb.h"
 
@@ -43,6 +44,10 @@ struct OptimizationMetadata {
   proto::PublicImageMetadata public_image_metadata;
 };
 
+using OptimizationGuideDecisionCallback =
+    base::OnceCallback<void(optimization_guide::OptimizationGuideDecision,
+                            const optimization_guide::OptimizationMetadata&)>;
+
 class OptimizationGuideDecider {
  public:
   // Registers the optimization types and targets that intend to be queried
@@ -52,17 +57,28 @@ class OptimizationGuideDecider {
       const std::vector<proto::OptimizationType>& optimization_types,
       const std::vector<proto::OptimizationTarget>& optimization_targets) = 0;
 
-  // Returns whether the current conditions match |optimization_target|.
+  // Returns whether the current conditions match |optimization_target|. This
+  // should only be called for main frame navigations.
   virtual OptimizationGuideDecision ShouldTargetNavigation(
       content::NavigationHandle* navigation_handle,
       proto::OptimizationTarget optimization_target) = 0;
 
   // Returns whether |optimization_type| can be applied for the URL associated
-  // with |navigation_handle|.
+  // with |navigation_handle|. This should only be called for main frame
+  // navigations.
   virtual OptimizationGuideDecision CanApplyOptimization(
       content::NavigationHandle* navigation_handle,
       proto::OptimizationType optimization_type,
       OptimizationMetadata* optimization_metadata) = 0;
+
+  // Invokes |callback| with the decision for the URL contained in
+  // |navigation_handle| and |optimization_type|, when sufficient information
+  // has been collected to make the decision. This should only be called for
+  // main frame navigations.
+  virtual void CanApplyOptimizationAsync(
+      content::NavigationHandle* navigation_handle,
+      proto::OptimizationType optimization_type,
+      OptimizationGuideDecisionCallback callback) = 0;
 
  protected:
   OptimizationGuideDecider() {}

@@ -40,10 +40,11 @@ const char kText[] = "Some text to copy to phone device.";
 class MockSharingDeviceRegistration : public SharingDeviceRegistration {
  public:
   MockSharingDeviceRegistration()
-      : SharingDeviceRegistration(/* pref_service_= */ nullptr,
-                                  /* sharing_sync_preference_= */ nullptr,
-                                  /* instance_id_driver_= */ nullptr,
-                                  /* vapid_key_manager_= */ nullptr) {}
+      : SharingDeviceRegistration(/*pref_service=*/nullptr,
+                                  /*sharing_sync_preference=*/nullptr,
+                                  /*vapid_key_manager=*/nullptr,
+                                  /*instance_id_driver=*/nullptr,
+                                  /*sync_service=*/nullptr) {}
 
   ~MockSharingDeviceRegistration() override = default;
 

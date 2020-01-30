@@ -22,6 +22,7 @@
 #include "chrome/browser/navigation_predictor/navigation_predictor_keyed_service.h"
 #include "components/optimization_guide/hints_component_info.h"
 #include "components/optimization_guide/hints_fetcher.h"
+#include "components/optimization_guide/optimization_guide_decider.h"
 #include "components/optimization_guide/optimization_guide_service_observer.h"
 #include "components/optimization_guide/proto/hints.pb.h"
 #include "components/optimization_guide/proto/models.pb.h"
@@ -47,11 +48,8 @@ class SharedURLLoaderFactory;
 namespace optimization_guide {
 class HintCache;
 class HintsFetcherFactory;
-enum class OptimizationGuideDecision;
 class OptimizationFilter;
-struct OptimizationMetadata;
 class OptimizationGuideService;
-enum class OptimizationTarget;
 enum class OptimizationTargetDecision;
 enum class OptimizationTypeDecision;
 class StoreUpdateData;
@@ -61,10 +59,6 @@ class TopHostProvider;
 class OptimizationGuideNavigationData;
 class PrefService;
 class Profile;
-
-using OptimizationGuideDecisionCallback =
-    base::OnceCallback<void(optimization_guide::OptimizationGuideDecision,
-                            const optimization_guide::OptimizationMetadata&)>;
 
 class OptimizationGuideHintsManager
     : public optimization_guide::OptimizationGuideServiceObserver,
@@ -131,7 +125,7 @@ class OptimizationGuideHintsManager
   void CanApplyOptimizationAsync(
       const GURL& navigation_url,
       optimization_guide::proto::OptimizationType optimization_type,
-      OptimizationGuideDecisionCallback callback);
+      optimization_guide::OptimizationGuideDecisionCallback callback);
 
   // Clears fetched hints from |hint_cache_|.
   void ClearFetchedHints();
@@ -354,9 +348,11 @@ class OptimizationGuideHintsManager
       blacklist_optimization_filters_ GUARDED_BY(optimization_filters_lock_);
 
   // A map from URL to a map of callbacks keyed by their optimization type.
-  base::flat_map<GURL,
-                 base::flat_map<optimization_guide::proto::OptimizationType,
-                                std::vector<OptimizationGuideDecisionCallback>>>
+  base::flat_map<
+      GURL,
+      base::flat_map<
+          optimization_guide::proto::OptimizationType,
+          std::vector<optimization_guide::OptimizationGuideDecisionCallback>>>
       registered_callbacks_;
 
   // Background thread where hints processing should be performed.

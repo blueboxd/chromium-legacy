@@ -15,9 +15,9 @@ namespace {
 void ReplyToCallback(SharingMessageBridge::CommitFinishedCallback callback,
                      const sync_pb::SharingMessageCommitError& commit_error) {
   DCHECK(commit_error.has_error_code());
-  base::UmaHistogramEnumeration("Sync.SharingMessage.CommitResult",
-                                commit_error.error_code(),
-                                sync_pb::SharingMessageCommitError::COUNT);
+  base::UmaHistogramExactLinear(
+      "Sync.SharingMessage.CommitResult", commit_error.error_code(),
+      sync_pb::SharingMessageCommitError::ErrorCode_ARRAYSIZE);
   std::move(callback).Run(commit_error);
 }
 

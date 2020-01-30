@@ -3884,6 +3884,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kSharingRenameDevicesDescription, kOsAll,
      FEATURE_VALUE_TYPE(send_tab_to_self::kSharingRenameDevices)},
 
+    {"sharing-send-via-sync", flag_descriptions::kSharingSendViaSyncName,
+     flag_descriptions::kSharingSendViaSyncDescription, kOsAll,
+     FEATURE_VALUE_TYPE(kSharingSendViaSync)},
+
     {"sharing-device-expiration",
      flag_descriptions::kSharingDeviceExpirationName,
      flag_descriptions::kSharingDeviceExpirationDescription, kOsAll,

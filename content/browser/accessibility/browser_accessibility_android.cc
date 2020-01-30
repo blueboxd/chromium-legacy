@@ -348,7 +348,22 @@ bool BrowserAccessibilityAndroid::IsInterestingOnAndroid() const {
   if (HasState(ax::mojom::State::kInvisible))
     return false;
 
-  // Focusable nodes are always interesting. Note that IsFocusable()
+  // Walk up the ancestry. A non-focusable child of a control is not
+  // interesting. A child of an invisible iframe is also not interesting.
+  const BrowserAccessibility* parent = PlatformGetParent();
+  while (parent != nullptr) {
+    if (ui::IsControl(parent->GetRole()) && !IsFocusable())
+      return false;
+
+    if (parent->GetRole() == ax::mojom::Role::kIframe &&
+        parent->GetData().HasState(ax::mojom::State::kInvisible)) {
+      return false;
+    }
+
+    parent = parent->PlatformGetParent();
+  }
+
+  // Otherwise, focusable nodes are always interesting. Note that IsFocusable()
   // already skips over things like iframes and child frames that are
   // technically focusable but shouldn't be exposed as focusable on Android.
   if (IsFocusable())
@@ -357,14 +372,6 @@ bool BrowserAccessibilityAndroid::IsInterestingOnAndroid() const {
   // If it's not focusable but has a control role, then it's interesting.
   if (ui::IsControl(GetRole()))
     return true;
-
-  // A non focusable child of a control is not interesting
-  const BrowserAccessibility* parent = PlatformGetParent();
-  while (parent != nullptr) {
-    if (ui::IsControl(parent->GetRole()))
-      return false;
-    parent = parent->PlatformGetParent();
-  }
 
   // Otherwise, the interesting nodes are leaf nodes with non-whitespace text.
   return PlatformIsLeaf() &&

@@ -211,6 +211,7 @@ void SharingService::OnDeviceRegistered(
       break;
     case SharingDeviceRegistrationResult::kEncryptionError:
     case SharingDeviceRegistrationResult::kFcmFatalError:
+    case SharingDeviceRegistrationResult::kInternalError:
       backoff_entry_.InformOfRequest(false);
       // No need to bother retrying in the case of one of fatal errors.
       LOG(ERROR) << "Device registration failed with fatal error";
@@ -242,6 +243,7 @@ void SharingService::OnDeviceUnregistered(
       break;
     case SharingDeviceRegistrationResult::kEncryptionError:
     case SharingDeviceRegistrationResult::kFcmFatalError:
+    case SharingDeviceRegistrationResult::kInternalError:
       LOG(ERROR) << "Device un-registration failed with fatal error";
       break;
     case SharingDeviceRegistrationResult::kDeviceNotRegistered:

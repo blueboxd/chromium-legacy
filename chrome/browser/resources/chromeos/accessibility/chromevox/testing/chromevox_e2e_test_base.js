@@ -6,54 +6,39 @@ GEN_INCLUDE(['common.js', 'callback_helper.js']);
 
 /**
  * Base test fixture for ChromeVox end to end tests.
- *
  * These tests run against production ChromeVox inside of the extension's
  * background page context.
- * @constructor
  */
-function ChromeVoxE2ETest() {
-  this.callbackHelper_ = new CallbackHelper(this);
-}
-
-ChromeVoxE2ETest.prototype = {
-  __proto__: testing.Test.prototype,
-
-  /**
-   * @override
-   * No UI in the background context.
-   */
-  runAccessibilityChecks: false,
-
-  /** @override */
-  isAsync: true,
-
-  /** @override */
-  browsePreload: null,
+ChromeVoxE2ETest = class extends testing.Test {
+  constructor() {
+    super();
+    this.callbackHelper_ = new CallbackHelper(this);
+  }
 
   /** @override */
   testGenCppIncludes() {
     GEN(`
-#include "ash/accessibility/accessibility_delegate.h"
-#include "ash/shell.h"
-#include "base/bind.h"
-#include "base/callback.h"
-#include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
-#include "chrome/common/extensions/extension_constants.h"
-#include "extensions/common/extension_l10n_util.h"
-    `);
-  },
+  #include "ash/accessibility/accessibility_delegate.h"
+  #include "ash/shell.h"
+  #include "base/bind.h"
+  #include "base/callback.h"
+  #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
+  #include "chrome/common/extensions/extension_constants.h"
+  #include "extensions/common/extension_l10n_util.h"
+      `);
+  }
 
   /** @override */
   testGenPreamble() {
     GEN(`
-  auto allow = extension_l10n_util::AllowGzippedMessagesAllowedForTest();
-  base::Closure load_cb =
-      base::Bind(&chromeos::AccessibilityManager::EnableSpokenFeedback,
-          base::Unretained(chromeos::AccessibilityManager::Get()),
-          true);
-  WaitForExtension(extension_misc::kChromeVoxExtensionId, load_cb);
-    `);
-  },
+    auto allow = extension_l10n_util::AllowGzippedMessagesAllowedForTest();
+    base::Closure load_cb =
+        base::Bind(&chromeos::AccessibilityManager::EnableSpokenFeedback,
+            base::Unretained(chromeos::AccessibilityManager::Get()),
+            true);
+    WaitForExtension(extension_misc::kChromeVoxExtensionId, load_cb);
+      `);
+  }
 
   /**
    * Launch a new tab, wait until tab status complete, then run callback.
@@ -68,7 +53,7 @@ ChromeVoxE2ETest.prototype = {
         }
       });
     });
-  },
+  }
 
   /**
    * Launches the given document in a new tab.
@@ -84,7 +69,7 @@ ChromeVoxE2ETest.prototype = {
         opt_callback(tab.url);
       }
     });
-  },
+  }
 
   /**
    * Creates a callback that optionally calls {@code opt_callback} when

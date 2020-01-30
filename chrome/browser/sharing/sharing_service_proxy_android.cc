@@ -43,7 +43,6 @@ SharingServiceProxyAndroid::~SharingServiceProxyAndroid() {
 void SharingServiceProxyAndroid::SendSharedClipboardMessage(
     JNIEnv* env,
     const base::android::JavaParamRef<jstring>& j_guid,
-    const jlong j_last_updated_timestamp_millis,
     const base::android::JavaParamRef<jstring>& j_text,
     const jint j_retries,
     const base::android::JavaParamRef<jobject>& j_runnable) {
@@ -54,20 +53,12 @@ void SharingServiceProxyAndroid::SendSharedClipboardMessage(
   chrome_browser_sharing::SharingMessage sharing_message;
   sharing_message.mutable_shared_clipboard_message()->set_text(std::move(text));
 
-  syncer::DeviceInfo device(
-      guid,
-      /*client_name=*/std::string(),
-      /*chrome_version=*/std::string(),
-      /*sync_user_agent=*/std::string(), sync_pb::SyncEnums::TYPE_UNSET,
-      /*signin_scoped_device_id=*/std::string(), base::SysInfo::HardwareInfo(),
-      base::Time::FromJavaTime(j_last_updated_timestamp_millis),
-      /*send_tab_to_self_receiving_enabled=*/false,
-      /*sharing_info=*/base::nullopt);
+  auto device = sharing_service_->GetDeviceByGuid(guid);
   auto callback =
       base::BindOnce(base::android::RunIntCallbackAndroid,
                      base::android::ScopedJavaGlobalRef<jobject>(j_runnable));
   sharing_service_->SendMessageToDevice(
-      device, base::TimeDelta::FromSeconds(kSharingMessageTTLSeconds.Get()),
+      *device, base::TimeDelta::FromSeconds(kSharingMessageTTLSeconds.Get()),
       std::move(sharing_message),
       base::BindOnce(
           [](int retries, base::OnceCallback<void(int)> callback,

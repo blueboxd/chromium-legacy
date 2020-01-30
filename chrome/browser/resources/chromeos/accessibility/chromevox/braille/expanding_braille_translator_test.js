@@ -9,43 +9,39 @@ GEN_INCLUDE([
 
 /**
  * Test fixture.
- * @constructor
- * @extends {ChromeVoxUnitTestBase}
  */
-function ChromeVoxExpandingBrailleTranslatorUnitTest() {}
+ChromeVoxExpandingBrailleTranslatorUnitTest =
+    class extends ChromeVoxUnitTestBase {};
 
-ChromeVoxExpandingBrailleTranslatorUnitTest.prototype = {
-  __proto__: ChromeVoxUnitTestBase.prototype,
 
-  /** @override */
-  closureModuleDeps: [
-    'Spannable',
-    'BrailleTextStyleSpan',
-    'ExpandingBrailleTranslator',
-    'LibLouis',
-    'ValueSelectionSpan',
-    'ValueSpan',
-  ]
-};
+/** @override */
+ChromeVoxUnitTestBase.prototype.closureModuleDeps = [
+  'Spannable',
+  'BrailleTextStyleSpan',
+  'ExpandingBrailleTranslator',
+  'LibLouis',
+  'ValueSelectionSpan',
+  'ValueSpan',
+];
 
 /**
  * An implementation of {@link LibLouis.Translator} whose translation
  * output is an array buffer of the same byte length as the input and where
  * each byte is equal to the character code of {@code resultChar}.  The
  * position mappings are one to one in both directions.
- * @param {string} resultChar A one character string used for each byte of the
- *     result.
- * @constructor
- * @extends {LibLouis.Translator}
  */
-function FakeTranslator(resultChar, opt_styleMap) {
-  /** @private {string} */
-  this.resultChar_ = resultChar;
-  /** @private {!Object} */
-  this.styleMap_ = opt_styleMap || {};
-}
+class FakeTranslator {
+  /**
+   * @param {string} resultChar A one character string used for each byte of the
+   *     result.
+   */
+  constructor(resultChar, opt_styleMap) {
+    /** @private {string} */
+    this.resultChar_ = resultChar;
+    /** @private {!Object} */
+    this.styleMap_ = opt_styleMap || {};
+  }
 
-FakeTranslator.prototype = {
   /** @Override */
   translate(text, formTypeMap, callback) {
     var result = new Uint8Array(text.length);
@@ -62,7 +58,8 @@ FakeTranslator.prototype = {
     }
     callback(result.buffer, textToBraille, brailleToText);
   }
-};
+}
+
 
 /**
  * Asserts that a array buffer, viewed as an uint8 array, matches

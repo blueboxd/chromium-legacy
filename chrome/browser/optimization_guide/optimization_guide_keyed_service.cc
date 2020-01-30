@@ -179,6 +179,9 @@ optimization_guide::OptimizationGuideDecision
 OptimizationGuideKeyedService::ShouldTargetNavigation(
     content::NavigationHandle* navigation_handle,
     optimization_guide::proto::OptimizationTarget optimization_target) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK(navigation_handle->IsInMainFrame());
+
   if (!hints_manager_) {
     // We are not initialized yet, just return unknown.
     LogOptimizationTargetDecision(
@@ -208,6 +211,9 @@ OptimizationGuideKeyedService::CanApplyOptimization(
     content::NavigationHandle* navigation_handle,
     optimization_guide::proto::OptimizationType optimization_type,
     optimization_guide::OptimizationMetadata* optimization_metadata) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK(navigation_handle->IsInMainFrame());
+
   if (!hints_manager_) {
     // We are not initialized yet, just return unknown.
     LogOptimizationTypeDecision(
@@ -224,6 +230,24 @@ OptimizationGuideKeyedService::CanApplyOptimization(
                               optimization_type_decision);
   return GetOptimizationGuideDecisionFromOptimizationTypeDecision(
       optimization_type_decision);
+}
+
+void OptimizationGuideKeyedService::CanApplyOptimizationAsync(
+    content::NavigationHandle* navigation_handle,
+    optimization_guide::proto::OptimizationType optimization_type,
+    optimization_guide::OptimizationGuideDecisionCallback callback) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK(navigation_handle->IsInMainFrame());
+
+  if (!hints_manager_) {
+    std::move(callback).Run(
+        optimization_guide::OptimizationGuideDecision::kUnknown,
+        /*metadata=*/{});
+    return;
+  }
+
+  hints_manager_->CanApplyOptimizationAsync(
+      navigation_handle->GetURL(), optimization_type, std::move(callback));
 }
 
 void OptimizationGuideKeyedService::ClearData() {

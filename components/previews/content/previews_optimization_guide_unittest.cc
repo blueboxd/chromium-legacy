@@ -94,6 +94,13 @@ class TestOptimizationGuideDecider
     return std::get<0>(response);
   }
 
+  void CanApplyOptimizationAsync(
+      content::NavigationHandle* navigation_handle,
+      optimization_guide::proto::OptimizationType,
+      optimization_guide::OptimizationGuideDecisionCallback callback) override {
+    NOTREACHED();
+  }
+
   void SetResponses(
       std::map<std::tuple<GURL, optimization_guide::proto::OptimizationType>,
                std::tuple<optimization_guide::OptimizationGuideDecision,

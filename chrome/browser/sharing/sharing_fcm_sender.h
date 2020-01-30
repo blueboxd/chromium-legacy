@@ -26,9 +26,11 @@ enum class GCMEncryptionResult;
 
 namespace syncer {
 class LocalDeviceInfoProvider;
+class SyncService;
 }  // namespace syncer
 
 enum class SendWebPushMessageResult;
+class SharingMessageBridge;
 class SharingSyncPreference;
 class VapidKeyManager;
 
@@ -37,24 +39,35 @@ class SharingFCMSender : public SharingMessageSender::SendMessageDelegate {
  public:
   using SharingMessage = chrome_browser_sharing::SharingMessage;
   using SendMessageCallback =
-      base::OnceCallback<void(SharingSendMessageResult,
-                              base::Optional<std::string>)>;
+      base::OnceCallback<void(SharingSendMessageResult result,
+                              base::Optional<std::string> message_id)>;
 
   SharingFCMSender(std::unique_ptr<WebPushSender> web_push_sender,
+                   SharingMessageBridge* sharing_message_bridge,
                    SharingSyncPreference* sync_preference,
                    VapidKeyManager* vapid_key_manager,
                    gcm::GCMDriver* gcm_driver,
-                   syncer::LocalDeviceInfoProvider* local_device_info_provider);
+                   syncer::LocalDeviceInfoProvider* local_device_info_provider,
+                   syncer::SyncService* sync_service);
   SharingFCMSender(const SharingFCMSender&) = delete;
   SharingFCMSender& operator=(const SharingFCMSender&) = delete;
   ~SharingFCMSender() override;
 
-  // Sends a |message| to device identified by |target|, which expires
-  // after |time_to_live| seconds. |callback| will be invoked with message_id if
-  // asynchronous operation succeeded, or base::nullopt if operation failed.
-  virtual void SendMessageToTargetInfo(
-      syncer::DeviceInfo::SharingTargetInfo target,
+  // Sends a |message| to device identified by |fcm_configuration|, which
+  // expires after |time_to_live| seconds. |callback| will be invoked with
+  // message_id if asynchronous operation succeeded, or base::nullopt if
+  // operation failed.
+  virtual void SendMessageToFcmTarget(
+      const chrome_browser_sharing::FCMChannelConfiguration& fcm_configuration,
       base::TimeDelta time_to_live,
+      SharingMessage message,
+      SendMessageCallback callback);
+
+  // Sends a |message| to device identified by |server_channel|, |callback| will
+  // be invoked with message_id if asynchronous operation succeeded, or
+  // base::nullopt if operation failed.
+  virtual void SendMessageToServerTarget(
+      const chrome_browser_sharing::ServerChannelConfiguration& server_channel,
       SharingMessage message,
       SendMessageCallback callback);
 
@@ -70,26 +83,54 @@ class SharingFCMSender : public SharingMessageSender::SendMessageDelegate {
                              SendMessageCallback callback) override;
 
  private:
-  void OnMessageEncrypted(std::string fcm_token,
-                          base::TimeDelta time_to_live,
-                          SendMessageCallback callback,
+  using MessageSender = base::OnceCallback<void(std::string message,
+                                                SendMessageCallback callback)>;
+
+  void EncryptMessage(const std::string& authorized_entity,
+                      const std::string& p256dh,
+                      const std::string& auth_secret,
+                      const SharingMessage& message,
+                      SendMessageCallback callback,
+                      MessageSender message_sender);
+
+  void OnMessageEncrypted(SendMessageCallback callback,
+                          MessageSender message_sender,
                           gcm::GCMEncryptionResult result,
                           std::string message);
 
-  base::Optional<syncer::DeviceInfo::SharingTargetInfo> GetTargetInfo(
-      const syncer::DeviceInfo& device);
+  void DoSendMessageToVapidTarget(const std::string& fcm_token,
+                                  base::TimeDelta time_to_live,
+                                  std::string message,
+                                  SendMessageCallback callback);
+
+  void OnMessageSentToVapidTarget(SendMessageCallback callback,
+                                  SendWebPushMessageResult result,
+                                  base::Optional<std::string> message_id);
+
+  void DoSendMessageToSenderIdTarget(const std::string& fcm_token,
+                                     base::TimeDelta time_to_live,
+                                     const std::string& message_id,
+                                     std::string message,
+                                     SendMessageCallback callback);
+
+  void DoSendMessageToServerTarget(const std::string& server_channel,
+                                   const std::string& message_id,
+                                   std::string message,
+                                   SendMessageCallback callback);
+
+  void OnMessageSentViaSync(SendMessageCallback callback,
+                            const std::string& message_id,
+                            const sync_pb::SharingMessageCommitError& error);
 
   bool SetMessageSenderInfo(SharingMessage* message);
 
-  void OnMessageSent(SendMessageCallback callback,
-                     SendWebPushMessageResult result,
-                     base::Optional<std::string> message_id);
-
   std::unique_ptr<WebPushSender> web_push_sender_;
+  SharingMessageBridge* sharing_message_bridge_;
   SharingSyncPreference* sync_preference_;
   VapidKeyManager* vapid_key_manager_;
   gcm::GCMDriver* gcm_driver_;
   syncer::LocalDeviceInfoProvider* local_device_info_provider_;
+  syncer::SyncService* sync_service_;
 
   base::WeakPtrFactory<SharingFCMSender> weak_ptr_factory_{this};
 };

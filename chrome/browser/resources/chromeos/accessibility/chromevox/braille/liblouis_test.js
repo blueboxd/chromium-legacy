@@ -12,26 +12,17 @@ GEN_INCLUDE([
   '../testing/chromevox_e2e_test_base.js', '../testing/assert_additions.js'
 ]);
 
-/**
- * @constructor
- * @extends {ChromeVoxE2ETest}
- */
-function ChromeVoxLibLouisTest() {
-  ChromeVoxE2ETest.call(this);
-}
-
-ChromeVoxLibLouisTest.prototype = {
-  __proto__: ChromeVoxE2ETest.prototype,
-
+ChromeVoxLibLouisTest = class extends ChromeVoxE2ETest {
   createLiblouis() {
     return new LibLouis(
         chrome.extension.getURL('braille/liblouis_wrapper.js'), '', () => {});
-  },
+  }
 
   withTranslator(liblouis, tableNames, callback) {
     liblouis.getTranslator(tableNames, this.newCallback(callback));
-  },
+  }
 };
+
 
 function assertEqualsUint8Array(expected, actual) {
   var asArray = [];

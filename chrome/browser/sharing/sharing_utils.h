@@ -11,6 +11,12 @@ namespace syncer {
 class SyncService;
 }  // namespace syncer
 
+// Returns true if can send messages via VAPID.
+bool CanSendViaVapid(syncer::SyncService* sync_service);
+
+// Returns true if can send messages via sedner ID.
+bool CanSendViaSenderID(syncer::SyncService* sync_service);
+
 // Returns true if required sync feature is enabled.
 bool IsSyncEnabledForSharing(syncer::SyncService* sync_service);
 

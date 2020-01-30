@@ -793,8 +793,12 @@
            See http://msdn.microsoft.com/en-us/library/aa371197.aspx. -->
       <RemoveExistingProducts After="InstallInitialize" />
 
-      <Custom Action="remove_symbolic_link" Before="RemoveFiles"/>
-      <Custom Action="make_symbolic_link" After="InstallFiles"/>
+      <Custom Action="remove_symbolic_link" Before="RemoveFiles">
+        Installed AND (NOT MAINTENANCE)
+      </Custom>
+      <Custom Action="make_symbolic_link" After="InstallFiles">
+        NOT Installed
+      </Custom>
     </InstallExecuteSequence>
   </Product>
 </Wix>

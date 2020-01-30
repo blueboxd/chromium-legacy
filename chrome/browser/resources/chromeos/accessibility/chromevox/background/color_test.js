@@ -7,16 +7,9 @@ GEN_INCLUDE(['../testing/chromevox_next_e2e_test_base.js']);
 
 /**
  * Test fixture for Color.
- * @constructor
- * @extends {ChromeVoxE2ETest}
  */
-function ChromeVoxColorTest() {
-  ChromeVoxNextE2ETest.call(this);
-}
+ChromeVoxColorTest = class extends ChromeVoxNextE2ETest {};
 
-ChromeVoxColorTest.prototype = {
-  __proto__: ChromeVoxNextE2ETest.prototype,
-};
 
 SYNC_TEST_F('ChromeVoxColorTest', 'FindDistanceTest', function() {
   // Hexadecimal representations of colors.

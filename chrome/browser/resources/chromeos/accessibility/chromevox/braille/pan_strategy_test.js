@@ -6,21 +6,14 @@ GEN_INCLUDE(['../testing/chromevox_unittest_base.js']);
 
 /**
  * Test fixture.
- * @constructor
- * @extends {ChromeVoxUnitTestBase}
  */
-function ChromeVoxPanStrategyUnitTest() {}
+ChromeVoxPanStrategyUnitTest = class extends ChromeVoxUnitTestBase {};
 
-ChromeVoxPanStrategyUnitTest.prototype = {
-  __proto__: ChromeVoxUnitTestBase.prototype,
+/** @override */
+ChromeVoxPanStrategyUnitTest.prototype.closureModuleDeps = [
+  'PanStrategy',
+];
 
-  /** @override */
-  closureModuleDeps: [
-    'PanStrategy',
-  ],
-
-
-};
 
 /**
  * Creates an array buffer based off of the passed in content.

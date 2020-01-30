@@ -3257,6 +3257,11 @@
     "expiry_milestone": 83
   },
   {
+    "name": "sharing-send-via-sync",
+    "owners": [ "//chrome/browser/sharing/OWNERS" ],
+    "expiry_milestone": 84
+  },
+  {
     "name": "sharing-use-device-info",
     "owners": [ "//chrome/browser/sharing/OWNERS" ],
     "expiry_milestone": 82

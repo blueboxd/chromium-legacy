@@ -38,4 +38,7 @@ extern const base::Feature kSharingAckMessageTTL;
 // The FCM TTL in seconds for sharing ack messages.
 extern const base::FeatureParam<int> kSharingAckMessageTTLSeconds;
 
+// Feature flag for sending sharing message via Sync.
+extern const base::Feature kSharingSendViaSync;
+
 #endif  // CHROME_BROWSER_SHARING_FEATURES_H_

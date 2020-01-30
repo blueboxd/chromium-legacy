@@ -876,7 +876,7 @@ OptimizationGuideHintsManager::CanApplyOptimization(
 void OptimizationGuideHintsManager::CanApplyOptimizationAsync(
     const GURL& navigation_url,
     optimization_guide::proto::OptimizationType optimization_type,
-    OptimizationGuideDecisionCallback callback) {
+    optimization_guide::OptimizationGuideDecisionCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   optimization_guide::OptimizationMetadata metadata;

@@ -11,16 +11,9 @@ GEN_INCLUDE([
  * Test fixture for BrailleTable tests.
  * This is an E2E test because there's no easy way to load a data file in
  * a webui-style test.
- * @constructor
- * @extends {ChromeVoxE2ETest}
  */
-function ChromeVoxBrailleTableTest() {
-  ChromeVoxE2ETest.call(this);
-}
+ChromeVoxBrailleTableTest = class extends ChromeVoxE2ETest {};
 
-ChromeVoxBrailleTableTest.prototype = {
-  __proto__: ChromeVoxE2ETest.prototype,
-};
 
 /**
  * Tests that {@code getAll} can fetch and parse the tables file.

@@ -14,16 +14,12 @@ GEN_INCLUDE([
 
 /**
  * Test fixture for editing tests.
- * @constructor
- * @extends {ChromeVoxNextE2ETest}
  */
-function ChromeVoxEditingTest() {
-  ChromeVoxNextE2ETest.call(this);
-  window.RoleType = chrome.automation.RoleType;
-}
-
-ChromeVoxEditingTest.prototype = {
-  __proto__: ChromeVoxNextE2ETest.prototype,
+ChromeVoxEditingTest = class extends ChromeVoxNextE2ETest {
+  constructor() {
+    super();
+    window.RoleType = chrome.automation.RoleType;
+  }
 
   /**
    * @return {!MockFeedback}
@@ -33,15 +29,15 @@ ChromeVoxEditingTest.prototype = {
         new MockFeedback(this.newCallback(), this.newCallback.bind(this));
     mockFeedback.install();
     return mockFeedback;
-  },
+  }
 
   press(keyCode, modifiers) {
     return function() {
       BackgroundKeyboardHandler.sendKeyPress(keyCode, modifiers);
     };
-  },
-
+  }
 };
+
 
 var doc = `
   <label for='singleLine'>singleLine</label>

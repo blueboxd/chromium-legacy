@@ -6,6 +6,8 @@
 
 #include <unordered_map>
 #include <unordered_set>
+#include <vector>
+#include "chrome/browser/sharing/proto/sharing_message.pb.h"
 
 #include "base/callback.h"
 #include "base/stl_util.h"
@@ -19,6 +21,8 @@
 #include "components/sync_device_info/local_device_info_provider.h"
 #include "components/sync_device_info/local_device_info_util.h"
 #include "content/public/browser/browser_task_traits.h"
+
+using sync_pb::SharingSpecificFields;
 
 SharingDeviceSourceSync::SharingDeviceSourceSync(
     syncer::SyncService* sync_service,
@@ -71,7 +75,7 @@ std::unique_ptr<syncer::DeviceInfo> SharingDeviceSourceSync::GetDeviceByGuid(
 
 std::vector<std::unique_ptr<syncer::DeviceInfo>>
 SharingDeviceSourceSync::GetDeviceCandidates(
-    sync_pb::SharingSpecificFields::EnabledFeatures required_feature) {
+    SharingSpecificFields::EnabledFeatures required_feature) {
   if (!IsSyncEnabledForSharing(sync_service_) || !IsReady())
     return {};
 
@@ -123,17 +127,50 @@ std::vector<std::unique_ptr<syncer::DeviceInfo>>
 SharingDeviceSourceSync::FilterDeviceCandidates(
     std::vector<std::unique_ptr<syncer::DeviceInfo>> devices,
     const base::Time min_updated_time,
-    sync_pb::SharingSpecificFields::EnabledFeatures required_feature) const {
-  base::EraseIf(devices,
-                [this, required_feature, min_updated_time](const auto& device) {
-                  // Checks if |last_updated_timestamp| is not too old.
-                  if (device->last_updated_timestamp() < min_updated_time)
-                    return true;
+    SharingSpecificFields::EnabledFeatures required_feature) const {
+  std::set<SharingSpecificFields::EnabledFeatures> accepted_features{
+      required_feature};
+  if (required_feature == SharingSpecificFields::CLICK_TO_CALL) {
+    accepted_features.insert(SharingSpecificFields::CLICK_TO_CALL_VAPID);
+  }
+  if (required_feature == SharingSpecificFields::SHARED_CLIPBOARD) {
+    accepted_features.insert(SharingSpecificFields::SHARED_CLIPBOARD_VAPID);
+  }
 
-                  // Checks whether |device| supports |required_feature|.
-                  return !sync_prefs_->GetEnabledFeatures(device.get())
-                              .count(required_feature);
-                });
+  bool can_send_via_vapid = CanSendViaVapid(sync_service_);
+  bool can_send_via_sender_id = CanSendViaSenderID(sync_service_);
+
+  base::EraseIf(devices, [this, min_updated_time, accepted_features,
+                          can_send_via_vapid,
+                          can_send_via_sender_id](const auto& device) {
+    // Checks if |last_updated_timestamp| is not too old.
+    if (device->last_updated_timestamp() < min_updated_time)
+      return true;
+
+    // Checks if device has fcm configuration.
+    auto fcm_configuration = sync_prefs_->GetFCMChannel(*device);
+    if (!fcm_configuration)
+      return true;
+
+    // Checks if message can be sent via either VAPID or sender ID.
+    bool vapid_channel_valid =
+        (can_send_via_vapid && !fcm_configuration->vapid_fcm_token().empty() &&
+         !fcm_configuration->vapid_p256dh().empty() &&
+         !fcm_configuration->vapid_auth_secret().empty());
+    bool sender_id_channel_valid =
+        (can_send_via_sender_id &&
+         !fcm_configuration->sender_id_fcm_token().empty() &&
+         !fcm_configuration->sender_id_p256dh().empty() &&
+         !fcm_configuration->sender_id_auth_secret().empty());
+    if (!vapid_channel_valid && !sender_id_channel_valid)
+      return true;
+
+    // Checks whether |device| supports any of |accepted_features|.
+    return base::STLSetIntersection<
+               std::vector<SharingSpecificFields::EnabledFeatures>>(
+               sync_prefs_->GetEnabledFeatures(device.get()), accepted_features)
+        .empty();
+  });
   return devices;
 }
 

@@ -16,7 +16,11 @@ namespace {
 class FakeSharingDeviceRegistration : public SharingDeviceRegistration {
  public:
   FakeSharingDeviceRegistration()
-      : SharingDeviceRegistration(nullptr, nullptr, nullptr, nullptr) {}
+      : SharingDeviceRegistration(/*pref_service=*/nullptr,
+                                  /*sharing_sync_preference=*/nullptr,
+                                  /*vapid_key_manager=*/nullptr,
+                                  /*instance_id_driver=*/nullptr,
+                                  /*sync_service=*/nullptr) {}
   ~FakeSharingDeviceRegistration() override = default;
 
   bool IsSharedClipboardSupported() const override {

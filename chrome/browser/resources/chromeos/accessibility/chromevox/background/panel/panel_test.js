@@ -13,20 +13,12 @@ GEN_INCLUDE([
 
 /**
  * Test fixture for Panel.
- * @constructor
- * @extends {ChromeVoxNextE2ETest}
  */
-function ChromeVoxPanelTest() {
-  ChromeVoxNextE2ETest.call(this);
-}
-
-ChromeVoxPanelTest.prototype = {
-  __proto__: ChromeVoxNextE2ETest.prototype,
-
+ChromeVoxPanelTest = class extends ChromeVoxNextE2ETest {
   /** @override */
   testGenCppIncludes() {
     ChromeVoxE2ETest.prototype.testGenCppIncludes.call(this);
-  },
+  }
 
   /**
    * @return {!MockFeedback}
@@ -36,7 +28,7 @@ ChromeVoxPanelTest.prototype = {
         new MockFeedback(this.newCallback(), this.newCallback.bind(this));
     mockFeedback.install();
     return mockFeedback;
-  },
+  }
 
   getPanelWindow() {
     var panelWindow = null;
@@ -46,7 +38,7 @@ ChromeVoxPanelTest.prototype = {
       });
     }
     return panelWindow;
-  },
+  }
 
   /**
    * Gets the Panel object in the panel.html window. Note that the extension
@@ -55,7 +47,7 @@ ChromeVoxPanelTest.prototype = {
    */
   getPanel() {
     return this.getPanelWindow().Panel;
-  },
+  }
 
   fireMockEvent(key) {
     return function() {
@@ -65,15 +57,18 @@ ChromeVoxPanelTest.prototype = {
       obj.key = key;
       this.getPanel().onKeyDown(obj);
     }.bind(this);
-  },
+  }
 
-  linksDoc: `
-    <p>start</p>
-    <a href="#">apple</a>
-    <a href="#">grape</a>
-    <a href="#">banana</a>
-  `
+  get linksDoc() {
+    return `
+      <p>start</p>
+      <a href="#">apple</a>
+      <a href="#">grape</a>
+      <a href="#">banana</a>
+    `;
+  }
 };
+
 
 // TODO: Flaky timeouts. https://crbug.com/795840 and https://crbug.com/990229
 TEST_F('ChromeVoxPanelTest', 'DISABLED_ActivateMenu', function() {

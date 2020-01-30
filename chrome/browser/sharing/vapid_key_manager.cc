@@ -39,6 +39,10 @@ bool VapidKeyManager::RefreshCachedKey() {
     if (vapid_key_)
       return false;
 
+    // Don't generate keys if preferences is not syncing to avoid isolated keys.
+    if (!sync_service_->GetActiveDataTypes().Has(syncer::PREFERENCES))
+      return false;
+
     auto generated_key = crypto::ECPrivateKey::Create();
     if (!generated_key) {
       LogSharingVapidKeyCreationResult(

@@ -12,6 +12,7 @@
 #include "base/test/bind_test_util.h"
 #include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
+#include "chrome/browser/sharing/proto/sharing_message.pb.h"
 #include "chrome/browser/sharing/sharing_device_registration_result.h"
 #include "chrome/browser/sharing/sharing_device_source_sync.h"
 #include "chrome/browser/sharing/sharing_fcm_sender.h"
@@ -170,11 +171,12 @@ std::unique_ptr<TestRenderViewContextMenu> SharingBrowserTest::InitContextMenu(
 
 void SharingBrowserTest::CheckLastReceiver(
     const std::string& device_guid) const {
-  auto target_info =
-      sharing_service_->GetSyncPreferencesForTesting()->GetTargetInfo(
+  auto fcm_configuration =
+      sharing_service_->GetSyncPreferencesForTesting()->GetFCMChannel(
           device_guid);
-  ASSERT_TRUE(target_info);
-  EXPECT_EQ(target_info->fcm_token, fake_web_push_sender_->fcm_token());
+  ASSERT_TRUE(fcm_configuration);
+  EXPECT_EQ(fcm_configuration->vapid_fcm_token(),
+            fake_web_push_sender_->fcm_token());
 }
 
 chrome_browser_sharing::SharingMessage

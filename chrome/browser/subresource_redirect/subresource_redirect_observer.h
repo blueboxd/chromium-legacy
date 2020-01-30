@@ -23,7 +23,7 @@ class SubresourceRedirectObserver
  public:
   static void MaybeCreateForWebContents(content::WebContents* web_contents);
 
-  ~SubresourceRedirectObserver() override = default;
+  ~SubresourceRedirectObserver() override;
   SubresourceRedirectObserver(const SubresourceRedirectObserver&) = delete;
   SubresourceRedirectObserver& operator=(const SubresourceRedirectObserver&) =
       delete;

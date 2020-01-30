@@ -43,66 +43,66 @@
 
 /**
  * Combined mock class for braille and speech output.
- * @param {function=} opt_finishedCallback Called when all expectations have
- *     been met.
- * @constructor
  */
-var MockFeedback = function(opt_finishedCallback) {
+MockFeedback = class {
   /**
-   * @type {function}
-   * @private
+   * @param {function=} opt_finishedCallback Called when all expectations have
+   *     been met.
    */
-  this.finishedCallback_ = opt_finishedCallback || null;
-  /**
-   * True when |replay| has been called and actions are being replayed.
-   * @type {boolean}
-   * @private
-   */
-  this.replaying_ = false;
-  /**
-   * True when inside the |process| function to prevent nested calls.
-   * @type {boolean}
-   * @private
-   */
-  this.inProcess_ = false;
-  /**
-   * Pending expectations and callbacks.
-   * @type {Array<{perform(): boolean, toString(): string}>}
-   * @private
-   */
-  this.pendingActions_ = [];
-  /**
-   * Pending speech utterances.
-   * @type {Array<{text: string, callback: (function|undefined)}>}
-   * @private
-   */
-  this.pendingUtterances_ = [];
-  /**
-   * Pending braille output.
-   * @type {Array<{text: string, callback: (function|undefined)}>}
-   * @private
-   */
-  this.pendingBraille_ = [];
-  /**
-   * Pending earcons.
-   * @type {Array<{text: string, callback: (function|undefined)}>}
-   * @private
-   */
-  this.pendingEarcons_ = [];
-  /**
-   * Handle for the timeout set for debug logging.
-   * @type {number}
-   * @private
-   */
-  this.logTimeoutId_ = 0;
-  /**
-   * @type {NavBraille}
-   * @private
-   */
-  this.lastMatchedBraille_ = null;
-};
-
-MockFeedback.prototype = {
+  constructor(opt_finishedCallback) {
+    /**
+     * @type {function}
+     * @private
+     */
+    this.finishedCallback_ = opt_finishedCallback || null;
+    /**
+     * True when |replay| has been called and actions are being replayed.
+     * @type {boolean}
+     * @private
+     */
+    this.replaying_ = false;
+    /**
+     * True when inside the |process| function to prevent nested calls.
+     * @type {boolean}
+     * @private
+     */
+    this.inProcess_ = false;
+    /**
+     * Pending expectations and callbacks.
+     * @type {Array<{perform(): boolean, toString(): string}>}
+     * @private
+     */
+    this.pendingActions_ = [];
+    /**
+     * Pending speech utterances.
+     * @type {Array<{text: string, callback: (function|undefined)}>}
+     * @private
+     */
+    this.pendingUtterances_ = [];
+    /**
+     * Pending braille output.
+     * @type {Array<{text: string, callback: (function|undefined)}>}
+     * @private
+     */
+    this.pendingBraille_ = [];
+    /**
+     * Pending earcons.
+     * @type {Array<{text: string, callback: (function|undefined)}>}
+     * @private
+     */
+    this.pendingEarcons_ = [];
+    /**
+     * Handle for the timeout set for debug logging.
+     * @type {number}
+     * @private
+     */
+    this.logTimeoutId_ = 0;
+    /**
+     * @type {NavBraille}
+     * @private
+     */
+    this.lastMatchedBraille_ = null;
+  }
 
   /**
    * Install mock objects as |ChromeVox.tts| and |ChromeVox.braille|
@@ -137,7 +137,7 @@ MockFeedback.prototype = {
     // Next; replace it with MockEarcons.
     delete ChromeVox.earcons;
     ChromeVox.earcons = new MockEarcons();
-  },
+  }
 
   /**
    * Adds an expectation for one or more spoken utterances.
@@ -159,7 +159,7 @@ MockFeedback.prototype = {
       });
     }.bind(this));
     return this;
-  },
+  }
 
   /**
    * Adds an expectation for one spoken utterance that will be enqueued
@@ -170,7 +170,7 @@ MockFeedback.prototype = {
    */
   expectSpeechWithQueueMode(text, queueMode) {
     return this.expectSpeechWithProperties.apply(this, [{queueMode}, text]);
-  },
+  }
 
   /**
    * Adds an expectation for one spoken utterance that will be queued.
@@ -179,7 +179,7 @@ MockFeedback.prototype = {
    */
   expectQueuedSpeech(text) {
     return this.expectSpeechWithQueueMode(text, QueueMode.QUEUE);
-  },
+  }
 
   /**
    * Adds an expectation for one spoken utterance that will be flushed.
@@ -188,7 +188,7 @@ MockFeedback.prototype = {
    */
   expectFlushingSpeech(text) {
     return this.expectSpeechWithQueueMode(text, QueueMode.FLUSH);
-  },
+  }
 
   /**
    * Adds an expectation for one spoken utterance that will be queued
@@ -198,7 +198,7 @@ MockFeedback.prototype = {
    */
   expectCategoryFlushSpeech(text) {
     return this.expectSpeechWithQueueMode(text, QueueMode.CATEGORY_FLUSH);
-  },
+  }
 
   /**
    * Adds expectations for spoken utterances with specified language.
@@ -209,7 +209,7 @@ MockFeedback.prototype = {
   expectSpeechWithLanguage(language, ...rest) {
     return this.expectSpeechWithProperties.apply(
         this, [{lang: language}].concat(rest));
-  },
+  }
 
   /**
    * Adds expectations for spoken utterances with properties.
@@ -232,7 +232,7 @@ MockFeedback.prototype = {
       });
     }.bind(this));
     return this;
-  },
+  }
 
   /**
    * Adds an expectation that the next spoken utterances do *not* match
@@ -266,7 +266,7 @@ MockFeedback.prototype = {
       });
     }.bind(this));
     return this;
-  },
+  }
 
   /**
    * Adds an expectation for braille output.
@@ -292,7 +292,7 @@ MockFeedback.prototype = {
       }
     });
     return this;
-  },
+  }
 
   /**
    * Adds an expectation for a played earcon.
@@ -312,7 +312,7 @@ MockFeedback.prototype = {
       }
     });
     return this;
-  },
+  }
 
   /**
    * Arranges for a callback to be invoked when all expectations that were
@@ -333,7 +333,7 @@ MockFeedback.prototype = {
       }
     });
     return this;
-  },
+  }
 
   /**
    * Clears all pending output. Useful in cases where previous output might
@@ -348,7 +348,7 @@ MockFeedback.prototype = {
     }.bind(this));
 
     return this;
-  },
+  }
 
   /**
    * Processes any feedback that has been received so far and treis to
@@ -362,7 +362,7 @@ MockFeedback.prototype = {
     assertFalse(this.replaying_);
     this.replaying_ = true;
     this.process_();
-  },
+  }
 
   /**
    * Returns the |NavBraille| that matched an expectation.  This is
@@ -373,7 +373,7 @@ MockFeedback.prototype = {
   get lastMatchedBraille() {
     assertTrue(this.replaying_);
     return this.lastMatchedBraille_;
-  },
+  }
 
   /**
    * @param {string} textString
@@ -396,19 +396,19 @@ MockFeedback.prototype = {
     var allProperties = {text: textString, queueMode, properties, callback};
     this.pendingUtterances_.push(allProperties);
     this.process_();
-  },
+  }
 
   /** @private */
   addBraille_(navBraille) {
     this.pendingBraille_.push(navBraille);
     this.process_();
-  },
+  }
 
   /** @private */
   addEarcon_(earconName) {
     this.pendingEarcons_.push({text: earconName});
     this.process_();
-  },
+  }
 
   /*** @private */
   process_() {
@@ -445,7 +445,7 @@ MockFeedback.prototype = {
     } finally {
       this.inProcess_ = false;
     }
-  },
+  }
 
   /** @private */
   logPendingState_() {
@@ -477,48 +477,48 @@ MockFeedback.prototype = {
     logPending('braille', this.pendingBraille_);
     logPending('earcons', this.pendingEarcons_);
     this.logTimeoutId_ = 0;
-  },
-};
-
-/**
- * @param {string} text
- * @param {Object} props
- * @param {Array<{text: (string|RegExp), callback: (function|undefined)}>}
- *     pending
- * @return {Object}
- * @private
- */
-MockFeedback.matchAndConsume_ = function(text, props, pending) {
-  for (var i = 0, candidate; candidate = pending[i]; ++i) {
-    var candidateText = candidate.text;
-    if (typeof (candidateText) != 'string') {
-      candidateText = candidateText.toString();
     }
 
-    if (text === candidateText ||
-        (text instanceof RegExp && text.test(candidateText)) ||
-        (typeof (text) == 'function' && text(candidate))) {
-      var matched = true;
-      for (prop in props) {
-        if (candidate[prop] !== props[prop] &&
-            (!candidate.properties ||
-             candidate.properties[prop] != props[prop])) {
-          matched = false;
-          break;
+    /**
+     * @param {string} text
+     * @param {Object} props
+     * @param {Array<{text: (string|RegExp), callback: (function|undefined)}>}
+     *     pending
+     * @return {Object}
+     * @private
+     */
+    static matchAndConsume_(text, props, pending) {
+      for (var i = 0, candidate; candidate = pending[i]; ++i) {
+        var candidateText = candidate.text;
+        if (typeof (candidateText) != 'string') {
+          candidateText = candidateText.toString();
+        }
+
+        if (text === candidateText ||
+            (text instanceof RegExp && text.test(candidateText)) ||
+            (typeof (text) == 'function' && text(candidate))) {
+          var matched = true;
+          for (let prop in props) {
+            if (candidate[prop] !== props[prop] &&
+                (!candidate.properties ||
+                 candidate.properties[prop] != props[prop])) {
+              matched = false;
+              break;
+            }
+          }
+          if (matched) {
+            break;
+          }
         }
       }
-      if (matched) {
-        break;
+      if (candidate) {
+        var consumed = pending.splice(0, i + 1);
+        consumed.forEach(function(item) {
+          if (item.callback) {
+            item.callback();
+          }
+        });
       }
+      return candidate;
     }
-  }
-  if (candidate) {
-    var consumed = pending.splice(0, i + 1);
-    consumed.forEach(function(item) {
-      if (item.callback) {
-        item.callback();
-      }
-    });
-  }
-  return candidate;
 };

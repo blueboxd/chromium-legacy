@@ -63,6 +63,7 @@ source_set("unit_tests") {
     ":selector_coordinator",
     "//base",
     "//base/test:test_support",
+    "//ios/chrome/browser/main:test_support",
     "//ios/chrome/test:test_support",
     "//testing/gtest",
     "//third_party/ocmock",

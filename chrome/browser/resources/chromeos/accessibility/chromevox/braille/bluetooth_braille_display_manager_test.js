@@ -25,43 +25,35 @@ chrome.accessibilityPrivate = {};
 
 /**
  * A fake BluetoothBraileDisplayManagerListener.
- * @constructor
  */
-function FakeBluetoothBrailleDisplayManagerListener() {
-  this.displays = [];
-  this.wasPincodeRequested = false;
-}
+class FakeBluetoothBrailleDisplayManagerListener {
+  constructor() {
+    this.displays = [];
+    this.wasPincodeRequested = false;
+  }
 
-FakeBluetoothBrailleDisplayManagerListener.prototype = {
   onDisplayListChanged(displays) {
     this.displays = displays;
-  },
+  }
+
   onPincodeRequested(displays) {
     this.wasPincodeRequested = true;
-  },
-};
+  }
+}
+
 
 /**
  * Test fixture.
- * @constructor
- * @extends {ChromeVoxUnitTestBase}
  */
-function ChromeVoxBluetoothBrailleDisplayManagerUnitTest() {
-  ChromeVoxUnitTestBase.call(this);
-}
+ChromeVoxBluetoothBrailleDisplayManagerUnitTest =
+    class extends ChromeVoxUnitTestBase {};
 
-ChromeVoxBluetoothBrailleDisplayManagerUnitTest.prototype = {
-  __proto__: ChromeVoxUnitTestBase.prototype,
+/** @override */
+ChromeVoxBluetoothBrailleDisplayManagerUnitTest.prototype.closureModuleDeps = [
+  'BluetoothBrailleDisplayManager',
+];
 
-  /** @override */
-  isAsync: true,
-
-  /** @override */
-  closureModuleDeps: [
-    'BluetoothBrailleDisplayManager',
-  ]
-};
-
+ChromeVoxBluetoothBrailleDisplayManagerUnitTest.prototype.isAsync = true;
 TEST_F(
     'ChromeVoxBluetoothBrailleDisplayManagerUnitTest', 'Connect', function() {
       var connectCalled = false;

@@ -21,256 +21,243 @@ chrome.virtualKeyboardPrivate = {};
  * A fake input field that behaves like the Braille IME and also updates
  * the input manager's knowledge about the display content when text changes
  * in the edit field.
- * @param {FakePort} port A fake port.
- * @param {BrailleInputHandler} inputHandler to work with.
- * @constructor
  */
-function FakeEditor(port, inputHandler) {
-  /** @private {FakePort} */
-  this.port_ = port;
-  /** @private {BrailleInputHandler} */
-  this.inputHandler_ = inputHandler;
-  /** @private {string} */
-  this.text_ = '';
-  /** @private {number} */
-  this.selectionStart_ = 0;
-  /** @private {number} */
-  this.selectionEnd_ = 0;
-  /** @private {number} */
-  this.contextID_ = 0;
-  /** @private {boolean} */
-  this.allowDeletes_ = false;
-  /** @private {string} */
-  this.uncommittedText_ = '';
-  /** @private {?Array<number>} */
-  this.extraCells_ = [];
-  port.postMessage = goog.bind(this.handleMessage_, this);
-}
-
-
-/**
- * Sets the content and selection (or cursor) of the edit field.
- * This fakes what happens when the field is edited by other means than
- * via the braille keyboard.
- * @param {string} text Text to replace the current content of the field.
- * @param {number} selectionStart Start of the selection or cursor position.
- * @param {number=} opt_selectionEnd End of selection, or ommited if the
- *     selection is a cursor.
- */
-FakeEditor.prototype.setContent = function(
-    text, selectionStart, opt_selectionEnd) {
-  this.text_ = text;
-  this.selectionStart_ = selectionStart;
-  this.selectionEnd_ =
-      goog.isDef(opt_selectionEnd) ? opt_selectionEnd : selectionStart;
-  this.callOnDisplayContentChanged_();
-};
-
-
-/**
- * Sets the selection in the editor.
- * @param {number} selectionStart Start of the selection or cursor position.
- * @param {number=} opt_selectionEnd End of selection, or ommited if the
- *     selection is a cursor.
- */
-FakeEditor.prototype.select = function(selectionStart, opt_selectionEnd) {
-  this.setContent(this.text_, selectionStart, opt_selectionEnd);
-};
-
-
-/**
- * Inserts text into the edit field, optionally selecting the inserted
- * text.
- * @param {string} newText Text to insert.
- * @param {boolean=} opt_select If {@code true}, selects the inserted text,
- *     otherwise leaves the cursor at the end of the new text.
- */
-FakeEditor.prototype.insert = function(newText, opt_select) {
-  this.text_ = this.text_.substring(0, this.selectionStart_) + newText +
-      this.text_.substring(this.selectionEnd_);
-  if (opt_select) {
-    this.selectionEnd_ = this.selectionStart_ + newText.length;
-  } else {
-    this.selectionStart_ += newText.length;
-    this.selectionEnd_ = this.selectionStart_;
+FakeEditor = class {
+  /**
+   * @param {FakePort} port A fake port.
+   * @param {BrailleInputHandler} inputHandler to work with.
+   */
+  constructor(port, inputHandler) {
+    /** @private {FakePort} */
+    this.port_ = port;
+    /** @private {BrailleInputHandler} */
+    this.inputHandler_ = inputHandler;
+    /** @private {string} */
+    this.text_ = '';
+    /** @private {number} */
+    this.selectionStart_ = 0;
+    /** @private {number} */
+    this.selectionEnd_ = 0;
+    /** @private {number} */
+    this.contextID_ = 0;
+    /** @private {boolean} */
+    this.allowDeletes_ = false;
+    /** @private {string} */
+    this.uncommittedText_ = '';
+    /** @private {?Array<number>} */
+    this.extraCells_ = [];
+    port.postMessage = goog.bind(this.handleMessage_, this);
   }
-  this.callOnDisplayContentChanged_();
-};
 
+  /**
+   * Sets the content and selection (or cursor) of the edit field.
+   * This fakes what happens when the field is edited by other means than
+   * via the braille keyboard.
+   * @param {string} text Text to replace the current content of the field.
+   * @param {number} selectionStart Start of the selection or cursor position.
+   * @param {number=} opt_selectionEnd End of selection, or ommited if the
+   *     selection is a cursor.
+   */
+  setContent(text, selectionStart, opt_selectionEnd) {
+    this.text_ = text;
+    this.selectionStart_ = selectionStart;
+    this.selectionEnd_ =
+        goog.isDef(opt_selectionEnd) ? opt_selectionEnd : selectionStart;
+    this.callOnDisplayContentChanged_();
+  }
 
-/**
- * Sets whether the editor should cause a test failure if the input handler
- * tries to delete text before the cursor.  By default, thi value is
- * {@code false}.
- * @param {boolean} allowDeletes The new value.
- */
-FakeEditor.prototype.setAllowDeletes = function(allowDeletes) {
-  this.allowDeletes_ = allowDeletes;
-};
+  /**
+   * Sets the selection in the editor.
+   * @param {number} selectionStart Start of the selection or cursor position.
+   * @param {number=} opt_selectionEnd End of selection, or ommited if the
+   *     selection is a cursor.
+   */
+  select(selectionStart, opt_selectionEnd) {
+    this.setContent(this.text_, selectionStart, opt_selectionEnd);
+  }
 
-
-/**
- * Signals to the input handler that the Braille IME is active or not active,
- * depending on the argument.
- * @param {boolean} value Whether the IME is active or not.
- */
-FakeEditor.prototype.setActive = function(value) {
-  this.message_({type: 'activeState', active: value});
-};
-
-
-/**
- * Fails if the current editor content and selection range don't match
- * the arguments to this function.
- * @param {string} text Text that should be in the field.
- * @param {number} selectionStart Start of selection.
- * @param {number+} opt_selectionEnd End of selection, default to selection
- *     start to indicate a cursor.
- */
-FakeEditor.prototype.assertContentIs = function(
-    text, selectionStart, opt_selectionEnd) {
-  var selectionEnd =
-      goog.isDef(opt_selectionEnd) ? opt_selectionEnd : selectionStart;
-  assertEquals(text, this.text_);
-  assertEquals(selectionStart, this.selectionStart_);
-  assertEquals(selectionEnd, this.selectionEnd_);
-};
-
-
-/**
- * Asserts that the uncommitted text last sent to the IME is the given text.
- * @param {string} text
- */
-FakeEditor.prototype.assertUncommittedTextIs = function(text) {
-  assertEquals(text, this.uncommittedText_);
-};
-
-
-/**
- * Asserts that the input handler has added 'extra cells' for uncommitted
- * text into the braille content.
- * @param {string} cells Cells as a space-separated list of numbers.
- */
-FakeEditor.prototype.assertExtraCellsAre = function(cells) {
-  assertEqualsJSON(cellsToArray(cells), this.extraCells_);
-};
-
-
-/**
- * Sends a message from the IME to the input handler.
- * @param {Object} msg The message to send.
- * @private
- */
-FakeEditor.prototype.message_ = function(msg) {
-  var listener = this.port_.onMessage.getListener();
-  assertNotEquals(null, listener);
-  listener(msg);
-};
-
-
-FakeEditor.prototype.createValue = function(
-    text, opt_selStart, opt_selEnd, opt_textOffset) {
-  var spannable = new Spannable(text, new ValueSpan(opt_textOffset || 0));
-  if (goog.isDef(opt_selStart)) {
-    opt_selEnd = goog.isDef(opt_selEnd) ? opt_selEnd : opt_selStart;
-    // TODO(plundblad): This looses the distinction between the selection
-    // anchor (start) and focus (end).  We should use that information to
-    // decide where to pan the braille display.
-    if (opt_selStart > opt_selEnd) {
-      var temp = opt_selStart;
-      opt_selStart = opt_selEnd;
-      opt_selEnd = temp;
+  /**
+   * Inserts text into the edit field, optionally selecting the inserted
+   * text.
+   * @param {string} newText Text to insert.
+   * @param {boolean=} opt_select If {@code true}, selects the inserted text,
+   *     otherwise leaves the cursor at the end of the new text.
+   */
+  insert(newText, opt_select) {
+    this.text_ = this.text_.substring(0, this.selectionStart_) + newText +
+        this.text_.substring(this.selectionEnd_);
+    if (opt_select) {
+      this.selectionEnd_ = this.selectionStart_ + newText.length;
+    } else {
+      this.selectionStart_ += newText.length;
+      this.selectionEnd_ = this.selectionStart_;
     }
-
-    spannable.setSpan(new ValueSelectionSpan(), opt_selStart, opt_selEnd);
+    this.callOnDisplayContentChanged_();
   }
-  return spannable;
-};
 
+  /**
+   * Sets whether the editor should cause a test failure if the input handler
+   * tries to delete text before the cursor.  By default, thi value is
+   * {@code false}.
+   * @param {boolean} allowDeletes The new value.
+   */
+  setAllowDeletes(allowDeletes) {
+    this.allowDeletes_ = allowDeletes;
+  }
 
-/**
- * Calls the {@code onDisplayContentChanged} method of the input handler
- * with the current editor content and selection.
- * @private
- */
-FakeEditor.prototype.callOnDisplayContentChanged_ = function() {
-  var content =
-      this.createValue(this.text_, this.selectionStart_, this.selectionEnd_);
-  var grabExtraCells = function() {
-    var span = content.getSpanInstanceOf(ExtraCellsSpan);
-    assertNotEquals(null, span);
-    // Convert the ArrayBuffer to a normal array for easier comparision.
-    this.extraCells_ =
-        Array.prototype.map.call(new Uint8Array(span.cells), function(a) {
-          return a;
-        });
-  }.bind(this);
-  this.inputHandler_.onDisplayContentChanged(content, grabExtraCells);
-  grabExtraCells();
-};
+  /**
+   * Signals to the input handler that the Braille IME is active or not active,
+   * depending on the argument.
+   * @param {boolean} value Whether the IME is active or not.
+   */
+  setActive(value) {
+    this.message_({type: 'activeState', active: value});
+  }
 
+  /**
+   * Fails if the current editor content and selection range don't match
+   * the arguments to this function.
+   * @param {string} text Text that should be in the field.
+   * @param {number} selectionStart Start of selection.
+   * @param {number+} opt_selectionEnd End of selection, default to selection
+   *     start to indicate a cursor.
+   */
+  assertContentIs(text, selectionStart, opt_selectionEnd) {
+    var selectionEnd =
+        goog.isDef(opt_selectionEnd) ? opt_selectionEnd : selectionStart;
+    assertEquals(text, this.text_);
+    assertEquals(selectionStart, this.selectionStart_);
+    assertEquals(selectionEnd, this.selectionEnd_);
+  }
 
-/**
- * Informs the input handler that a new text field is focused.  The content
- * of the field is not cleared and should be updated separately.
- * @param {string} fieldType The type of the field (see the documentation
- *     for the {@code chrome.input.ime} API).
- */
-FakeEditor.prototype.focus = function(fieldType) {
-  this.contextID_++;
-  this.message_({
-    type: 'inputContext',
-    context: {type: fieldType, contextID: this.contextID_}
-  });
-};
+  /**
+   * Asserts that the uncommitted text last sent to the IME is the given text.
+   * @param {string} text
+   */
+  assertUncommittedTextIs(text) {
+    assertEquals(text, this.uncommittedText_);
+  }
 
+  /**
+   * Asserts that the input handler has added 'extra cells' for uncommitted
+   * text into the braille content.
+   * @param {string} cells Cells as a space-separated list of numbers.
+   */
+  assertExtraCellsAre(cells) {
+    assertEqualsJSON(cellsToArray(cells), this.extraCells_);
+  }
 
-/**
- * Inform the input handler that focus left the input field.
- */
-FakeEditor.prototype.blur = function() {
-  this.message_({type: 'inputContext', context: null});
-  this.contextID_ = 0;
-};
+  /**
+   * Sends a message from the IME to the input handler.
+   * @param {Object} msg The message to send.
+   * @private
+   */
+  message_(msg) {
+    var listener = this.port_.onMessage.getListener();
+    assertNotEquals(null, listener);
+    listener(msg);
+  }
 
-
-/**
- * Handles a message from the input handler to the IME.
- * @param {Object} msg The message.
- * @private
- */
-FakeEditor.prototype.handleMessage_ = function(msg) {
-  assertEquals(this.contextID_, msg.contextID);
-  switch (msg.type) {
-    case 'replaceText':
-      var deleteBefore = msg.deleteBefore;
-      var newText = msg.newText;
-      assertTrue(goog.isNumber(deleteBefore));
-      assertTrue(goog.isString(newText));
-      assertTrue(deleteBefore <= this.selectionStart_);
-      if (deleteBefore > 0) {
-        assertTrue(this.allowDeletes_);
-        this.text_ =
-            this.text_.substring(0, this.selectionStart_ - deleteBefore) +
-            this.text_.substring(this.selectionEnd_);
-        this.selectionStart_ -= deleteBefore;
-        this.selectionEnd_ = this.selectionStart_;
-        this.callOnDisplayContentChanged_();
+  createValue(text, opt_selStart, opt_selEnd, opt_textOffset) {
+    var spannable = new Spannable(text, new ValueSpan(opt_textOffset || 0));
+    if (goog.isDef(opt_selStart)) {
+      opt_selEnd = goog.isDef(opt_selEnd) ? opt_selEnd : opt_selStart;
+      // TODO(plundblad): This looses the distinction between the selection
+      // anchor (start) and focus (end).  We should use that information to
+      // decide where to pan the braille display.
+      if (opt_selStart > opt_selEnd) {
+        var temp = opt_selStart;
+        opt_selStart = opt_selEnd;
+        opt_selEnd = temp;
       }
-      this.insert(newText);
-      break;
-    case 'setUncommitted':
-      assertTrue(goog.isString(msg.text));
-      this.uncommittedText_ = msg.text;
-      break;
-    case 'commitUncommitted':
-      this.insert(this.uncommittedText_);
-      this.uncommittedText_ = '';
-      break;
-    default:
-      throw new Error('Unexpected message to IME: ' + JSON.stringify(msg));
+
+      spannable.setSpan(new ValueSelectionSpan(), opt_selStart, opt_selEnd);
+    }
+    return spannable;
+  }
+
+  /**
+   * Calls the {@code onDisplayContentChanged} method of the input handler
+   * with the current editor content and selection.
+   * @private
+   */
+  callOnDisplayContentChanged_() {
+    var content =
+        this.createValue(this.text_, this.selectionStart_, this.selectionEnd_);
+    var grabExtraCells = function() {
+      var span = content.getSpanInstanceOf(ExtraCellsSpan);
+      assertNotEquals(null, span);
+      // Convert the ArrayBuffer to a normal array for easier comparision.
+      this.extraCells_ =
+          Array.prototype.map.call(new Uint8Array(span.cells), function(a) {
+            return a;
+          });
+    }.bind(this);
+    this.inputHandler_.onDisplayContentChanged(content, grabExtraCells);
+    grabExtraCells();
+  }
+
+  /**
+   * Informs the input handler that a new text field is focused.  The content
+   * of the field is not cleared and should be updated separately.
+   * @param {string} fieldType The type of the field (see the documentation
+   *     for the {@code chrome.input.ime} API).
+   */
+  focus(fieldType) {
+    this.contextID_++;
+    this.message_({
+      type: 'inputContext',
+      context: {type: fieldType, contextID: this.contextID_}
+    });
+  }
+
+  /**
+   * Inform the input handler that focus left the input field.
+   */
+  blur() {
+    this.message_({type: 'inputContext', context: null});
+    this.contextID_ = 0;
+  }
+
+  /**
+   * Handles a message from the input handler to the IME.
+   * @param {Object} msg The message.
+   * @private
+   */
+  handleMessage_(msg) {
+    assertEquals(this.contextID_, msg.contextID);
+    switch (msg.type) {
+      case 'replaceText':
+        var deleteBefore = msg.deleteBefore;
+        var newText = msg.newText;
+        assertTrue(goog.isNumber(deleteBefore));
+        assertTrue(goog.isString(newText));
+        assertTrue(deleteBefore <= this.selectionStart_);
+        if (deleteBefore > 0) {
+          assertTrue(this.allowDeletes_);
+          this.text_ =
+              this.text_.substring(0, this.selectionStart_ - deleteBefore) +
+              this.text_.substring(this.selectionEnd_);
+          this.selectionStart_ -= deleteBefore;
+          this.selectionEnd_ = this.selectionStart_;
+          this.callOnDisplayContentChanged_();
+        }
+        this.insert(newText);
+        break;
+      case 'setUncommitted':
+        assertTrue(goog.isString(msg.text));
+        this.uncommittedText_ = msg.text;
+        break;
+      case 'commitUncommitted':
+        this.insert(this.uncommittedText_);
+        this.uncommittedText_ = '';
+        break;
+      default:
+        throw new Error('Unexpected message to IME: ' + JSON.stringify(msg));
+    }
   }
 };
+
 
 /*
  * Fakes a {@code Port} used for message passing in the Chrome extension APIs.
@@ -317,72 +304,75 @@ var CONTRACTED_TABLE = [
 /**
  * A fake braille translator that can do back translation according
  * to one of the tables above.
- * @param {Array<Array<number>>} table Backtranslation mapping.
- * @param {boolean=} opt_capitalize Whether the result should be capitalized.
- * @constructor
  */
-function FakeTranslator(table, opt_capitalize) {
-  /** @private */
-  this.table_ = table.map(function(entry) {
-    var cells = entry[0];
-    var result = [];
-    if (cells[0] === '^') {
-      result.start = true;
-      cells = cells.substring(1);
-    }
-    if (cells[cells.length - 1] === '$') {
-      result.end = true;
-      cells = cells.substring(0, cells.length - 1);
-    }
-    result[0] = cellsToArray(cells);
-    result[1] = entry[1];
-    return result;
-  });
-  /** @private {boolean} */
-  this.capitalize_ = opt_capitalize || false;
-}
-
-
-/**
- * Implements the {@code LibLouis.BrailleTranslator.backTranslate} method.
- * @param {!ArrayBuffer} cells Cells to be translated.
- * @param {function(?string)} callback Callback for result.
- */
-FakeTranslator.prototype.backTranslate = function(cells, callback) {
-  var cellsArray = new Uint8Array(cells);
-  var result = '';
-  var pos = 0;
-  while (pos < cellsArray.length) {
-    var match = null;
-    outer: for (var i = 0, entry; entry = this.table_[i]; ++i) {
-      if (pos + entry[0].length > cellsArray.length) {
-        continue;
+FakeTranslator = class {
+  /**
+   * @param {Array<Array<number>>} table Backtranslation mapping.
+   * @param {boolean=} opt_capitalize Whether the result should be capitalized.
+   */
+  constructor(table, opt_capitalize) {
+    /** @private */
+    this.table_ = table.map(function(entry) {
+      var cells = entry[0];
+      var result = [];
+      if (cells[0] === '^') {
+        result.start = true;
+        cells = cells.substring(1);
       }
-      if (entry.start && pos > 0 && cellsArray[pos - 1] !== 0) {
-        continue;
+      if (cells[cells.length - 1] === '$') {
+        result.end = true;
+        cells = cells.substring(0, cells.length - 1);
       }
-      for (var j = 0; j < entry[0].length; ++j) {
-        if (entry[0][j] !== cellsArray[pos + j]) {
-          continue outer;
+      result[0] = cellsToArray(cells);
+      result[1] = entry[1];
+      return result;
+    });
+    /** @private {boolean} */
+    this.capitalize_ = opt_capitalize || false;
+  }
+
+  /**
+   * Implements the {@code LibLouis.BrailleTranslator.backTranslate} method.
+   * @param {!ArrayBuffer} cells Cells to be translated.
+   * @param {function(?string)} callback Callback for result.
+   */
+  backTranslate(cells, callback) {
+    var cellsArray = new Uint8Array(cells);
+    var result = '';
+    var pos = 0;
+    while (pos < cellsArray.length) {
+      var match = null;
+      outer: for (var i = 0, entry; entry = this.table_[i]; ++i) {
+        if (pos + entry[0].length > cellsArray.length) {
+          continue;
         }
+        if (entry.start && pos > 0 && cellsArray[pos - 1] !== 0) {
+          continue;
+        }
+        for (var j = 0; j < entry[0].length; ++j) {
+          if (entry[0][j] !== cellsArray[pos + j]) {
+            continue outer;
+          }
+        }
+        if (entry.end && pos + j < cellsArray.length &&
+            cellsArray[pos + j] !== 0) {
+          continue;
+        }
+        match = entry;
+        break;
       }
-      if (entry.end && pos + j < cellsArray.length &&
-          cellsArray[pos + j] !== 0) {
-        continue;
-      }
-      match = entry;
-      break;
+      assertNotEquals(
+          null, match, 'Backtranslating ' + cellsArray[pos] + ' at ' + pos);
+      result += match[1];
+      pos += match[0].length;
     }
-    assertNotEquals(
-        null, match, 'Backtranslating ' + cellsArray[pos] + ' at ' + pos);
-    result += match[1];
-    pos += match[0].length;
+    if (this.capitalize_) {
+      result = result.toUpperCase();
+    }
+    callback(result);
   }
-  if (this.capitalize_) {
-    result = result.toUpperCase();
-  }
-  callback(result);
 };
+
 
 /** @extends {BrailleTranslatorManager} */
 function FakeTranslatorManager() {}
@@ -446,19 +436,8 @@ function cellsToArray(cells) {
 
 /**
  * Test fixture.
- * @constructor
- * @extends {ChromeVoxUnitTestBase}
  */
-function ChromeVoxBrailleInputHandlerUnitTest() {}
-
-ChromeVoxBrailleInputHandlerUnitTest.prototype = {
-  __proto__: ChromeVoxUnitTestBase.prototype,
-
-  /** @override */
-  closureModuleDeps: [
-    'BrailleInputHandler',
-  ],
-
+ChromeVoxBrailleInputHandlerUnitTest = class extends ChromeVoxUnitTestBase {
   /**
    * Creates an editor and establishes a connection from the IME.
    * @return {FakeEditor}
@@ -466,7 +445,7 @@ ChromeVoxBrailleInputHandlerUnitTest.prototype = {
   createEditor() {
     chrome.runtime.onConnectExternal.getListener()(this.port);
     return new FakeEditor(this.port, this.inputHandler);
-  },
+  }
 
   /**
    * Sends a series of braille cells to the input handler.
@@ -479,7 +458,7 @@ ChromeVoxBrailleInputHandlerUnitTest.prototype = {
       var event = {command: BrailleKeyCommand.DOTS, brailleDots: cell};
       return prevResult && this.inputHandler.onBrailleKeyEvent(event);
     }.bind(this), true);
-  },
+  }
 
   /**
    * Sends a standard key event (such as backspace) to the braille input
@@ -493,7 +472,7 @@ ChromeVoxBrailleInputHandlerUnitTest.prototype = {
       standardKeyCode: keyCode
     };
     return this.inputHandler.onBrailleKeyEvent(event);
-  },
+  }
 
   /**
    * Shortcut for asserting that the value expansion mode is {@code NONE}.
@@ -502,7 +481,7 @@ ChromeVoxBrailleInputHandlerUnitTest.prototype = {
     assertEquals(
         ExpandingBrailleTranslator.ExpansionType.NONE,
         this.inputHandler.getExpansionType());
-  },
+  }
 
   /**
    * Shortcut for asserting that the value expansion mode is {@code SELECTION}.
@@ -511,7 +490,7 @@ ChromeVoxBrailleInputHandlerUnitTest.prototype = {
     assertEquals(
         ExpandingBrailleTranslator.ExpansionType.SELECTION,
         this.inputHandler.getExpansionType());
-  },
+  }
 
   /**
    * Shortcut for asserting that the value expansion mode is {@code ALL}.
@@ -520,7 +499,7 @@ ChromeVoxBrailleInputHandlerUnitTest.prototype = {
     assertEquals(
         ExpandingBrailleTranslator.ExpansionType.ALL,
         this.inputHandler.getExpansionType());
-  },
+  }
 
   storeKeyEvent(event, opt_callback) {
     var storedCopy = {keyCode: event.keyCode};
@@ -534,7 +513,7 @@ ChromeVoxBrailleInputHandlerUnitTest.prototype = {
     if (goog.isDef(opt_callback)) {
       callback();
     }
-  },
+  }
 
   /** @override */
   setUp() {
@@ -556,6 +535,12 @@ ChromeVoxBrailleInputHandlerUnitTest.prototype = {
     this.keyEvents = [];
   }
 };
+
+/** @override */
+ChromeVoxBrailleInputHandlerUnitTest.prototype.closureModuleDeps = [
+  'BrailleInputHandler',
+];
+
 
 TEST_F(
     'ChromeVoxBrailleInputHandlerUnitTest', 'ConnectFromUnknownExtension',

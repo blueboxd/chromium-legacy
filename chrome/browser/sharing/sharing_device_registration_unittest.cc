@@ -135,8 +135,9 @@ class SharingDeviceRegistrationTest : public testing::Test {
         vapid_key_manager_(&sync_prefs_, &test_sync_service_),
         sharing_device_registration_(pref_service_.get(),
                                      &sync_prefs_,
+                                     &vapid_key_manager_,
                                      &mock_instance_id_driver_,
-                                     &vapid_key_manager_) {
+                                     &test_sync_service_) {
     SharingSyncPreference::RegisterProfilePrefs(prefs_.registry());
   }
 
@@ -195,15 +196,27 @@ class SharingDeviceRegistrationTest : public testing::Test {
   }
 
   std::set<sync_pb::SharingSpecificFields::EnabledFeatures>
-  GetExpectedEnabledFeatures() {
+  GetExpectedEnabledFeatures(bool supports_vapid) {
     // IsClickToCallSupported() involves JNI call which is hard to test.
     if (sharing_device_registration_.IsClickToCallSupported()) {
-      return {sync_pb::SharingSpecificFields::CLICK_TO_CALL,
-              sync_pb::SharingSpecificFields::SHARED_CLIPBOARD};
+      if (supports_vapid) {
+        return {sync_pb::SharingSpecificFields::CLICK_TO_CALL,
+                sync_pb::SharingSpecificFields::CLICK_TO_CALL_VAPID,
+                sync_pb::SharingSpecificFields::SHARED_CLIPBOARD,
+                sync_pb::SharingSpecificFields::SHARED_CLIPBOARD_VAPID};
+      } else {
+        return {sync_pb::SharingSpecificFields::CLICK_TO_CALL,
+                sync_pb::SharingSpecificFields::SHARED_CLIPBOARD};
+      }
     }
 
     // Shared clipboard should always be supported.
-    return {sync_pb::SharingSpecificFields::SHARED_CLIPBOARD};
+    if (supports_vapid) {
+      return {sync_pb::SharingSpecificFields::SHARED_CLIPBOARD,
+              sync_pb::SharingSpecificFields::SHARED_CLIPBOARD_VAPID};
+    } else {
+      return {sync_pb::SharingSpecificFields::SHARED_CLIPBOARD};
+    }
   }
 
  protected:
@@ -246,6 +259,9 @@ TEST_F(SharingDeviceRegistrationTest, IsSharedClipboardSupported_False) {
 }
 
 TEST_F(SharingDeviceRegistrationTest, RegisterDeviceTest_Success) {
+  scoped_feature_list_.InitAndEnableFeature(kSharingSendViaSync);
+  test_sync_service_.SetActiveDataTypes(
+      {syncer::DEVICE_INFO, syncer::PREFERENCES, syncer::SHARING_MESSAGE});
   SetInstanceIDFCMResult(instance_id::InstanceID::Result::SUCCESS);
   SetInstanceIDFCMToken(kVapidFCMToken);
   fake_device_info_sync_service_.GetDeviceInfoTracker()->Add(
@@ -255,7 +271,7 @@ TEST_F(SharingDeviceRegistrationTest, RegisterDeviceTest_Success) {
   RegisterDeviceSync();
 
   std::set<sync_pb::SharingSpecificFields::EnabledFeatures> enabled_features =
-      GetExpectedEnabledFeatures();
+      GetExpectedEnabledFeatures(/*supports_vapid=*/true);
   syncer::DeviceInfo::SharingInfo expected_sharing_info(
       {kVapidFCMToken, kDevicep256dh, kDeviceAuthSecret},
       {kSenderIdFCMToken, kSenderIdP256dh, kSenderIdAuthSecret},
@@ -280,6 +296,69 @@ TEST_F(SharingDeviceRegistrationTest, RegisterDeviceTest_Success) {
   EXPECT_TRUE(fcm_registration_);
 }
 
+TEST_F(SharingDeviceRegistrationTest, RegisterDeviceTest_Vapid_Only) {
+  scoped_feature_list_.InitAndDisableFeature(kSharingSendViaSync);
+  SetInstanceIDFCMResult(instance_id::InstanceID::Result::SUCCESS);
+  SetInstanceIDFCMToken(kVapidFCMToken);
+  fake_device_info_sync_service_.GetDeviceInfoTracker()->Add(
+      fake_device_info_sync_service_.GetLocalDeviceInfoProvider()
+          ->GetLocalDeviceInfo());
+
+  RegisterDeviceSync();
+
+  std::set<sync_pb::SharingSpecificFields::EnabledFeatures> enabled_features =
+      GetExpectedEnabledFeatures(/*supports_vapid=*/true);
+  syncer::DeviceInfo::SharingInfo expected_sharing_info(
+      {kVapidFCMToken, kDevicep256dh, kDeviceAuthSecret},
+      syncer::DeviceInfo::SharingTargetInfo(), enabled_features);
+
+  EXPECT_EQ(SharingDeviceRegistrationResult::kSuccess, result_);
+  EXPECT_EQ(expected_sharing_info, local_sharing_info_);
+  EXPECT_TRUE(fcm_registration_);
+}
+
+TEST_F(SharingDeviceRegistrationTest, RegisterDeviceTest_SenderIDOnly) {
+  scoped_feature_list_.InitWithFeatures(
+      /*enabled_feautres=*/{kSharingSendViaSync, kSharingUseDeviceInfo},
+      /*disabled_features=*/{});
+  test_sync_service_.SetActiveDataTypes(
+      {syncer::DEVICE_INFO, syncer::SHARING_MESSAGE});
+  SetInstanceIDFCMResult(instance_id::InstanceID::Result::SUCCESS);
+  SetInstanceIDFCMToken(kVapidFCMToken);
+  fake_device_info_sync_service_.GetDeviceInfoTracker()->Add(
+      fake_device_info_sync_service_.GetLocalDeviceInfoProvider()
+          ->GetLocalDeviceInfo());
+
+  RegisterDeviceSync();
+
+  std::set<sync_pb::SharingSpecificFields::EnabledFeatures> enabled_features =
+      GetExpectedEnabledFeatures(/*supports_vapid=*/false);
+  syncer::DeviceInfo::SharingInfo expected_sharing_info(
+      syncer::DeviceInfo::SharingTargetInfo(),
+      {kSenderIdFCMToken, kSenderIdP256dh, kSenderIdAuthSecret},
+      enabled_features);
+
+  EXPECT_EQ(SharingDeviceRegistrationResult::kSuccess, result_);
+  EXPECT_EQ(expected_sharing_info, local_sharing_info_);
+  EXPECT_TRUE(fcm_registration_);
+}
+
+TEST_F(SharingDeviceRegistrationTest, RegisterDeviceTest_InternalError) {
+  scoped_feature_list_.InitAndDisableFeature(kSharingSendViaSync);
+  test_sync_service_.SetActiveDataTypes({});
+  SetInstanceIDFCMResult(instance_id::InstanceID::Result::SUCCESS);
+  SetInstanceIDFCMToken(kVapidFCMToken);
+  fake_device_info_sync_service_.GetDeviceInfoTracker()->Add(
+      fake_device_info_sync_service_.GetLocalDeviceInfoProvider()
+          ->GetLocalDeviceInfo());
+
+  RegisterDeviceSync();
+
+  EXPECT_EQ(SharingDeviceRegistrationResult::kInternalError, result_);
+  EXPECT_FALSE(local_sharing_info_);
+  EXPECT_FALSE(fcm_registration_);
+}
+
 TEST_F(SharingDeviceRegistrationTest, RegisterDeviceTest_NetworkError) {
   SetInstanceIDFCMResult(instance_id::InstanceID::Result::NETWORK_ERROR);
 
@@ -301,6 +380,7 @@ TEST_F(SharingDeviceRegistrationTest, RegisterDeviceTest_FatalError) {
 }
 
 TEST_F(SharingDeviceRegistrationTest, UnregisterDeviceTest_Success) {
+  scoped_feature_list_.InitAndEnableFeature(kSharingSendViaSync);
   SetInstanceIDFCMResult(instance_id::InstanceID::Result::SUCCESS);
   fake_device_info_sync_service_.GetDeviceInfoTracker()->Add(
       fake_device_info_sync_service_.GetLocalDeviceInfoProvider()
@@ -329,7 +409,7 @@ TEST_F(SharingDeviceRegistrationTest, UnregisterDeviceTest_Success) {
 
   // Device should be registered with the new FCM token.
   std::set<sync_pb::SharingSpecificFields::EnabledFeatures> enabled_features =
-      GetExpectedEnabledFeatures();
+      GetExpectedEnabledFeatures(/*supports_vapid=*/true);
   syncer::DeviceInfo::SharingInfo expected_sharing_info(
       {kVapidFCMToken2, kDevicep256dh, kDeviceAuthSecret},
       {kSenderIdFCMToken, kSenderIdP256dh, kSenderIdAuthSecret},
@@ -338,4 +418,29 @@ TEST_F(SharingDeviceRegistrationTest, UnregisterDeviceTest_Success) {
   EXPECT_EQ(SharingDeviceRegistrationResult::kSuccess, result_);
   EXPECT_EQ(expected_sharing_info, local_sharing_info_);
   EXPECT_TRUE(fcm_registration_);
+}
+
+TEST_F(SharingDeviceRegistrationTest, UnregisterDeviceTest_SenderIDonly) {
+  scoped_feature_list_.InitWithFeatures(
+      /*enabled_features=*/{kSharingSendViaSync, kSharingUseDeviceInfo},
+      /*disabled_features=*/{});
+  test_sync_service_.SetActiveDataTypes(
+      {syncer::DEVICE_INFO, syncer::SHARING_MESSAGE});
+  SetInstanceIDFCMResult(instance_id::InstanceID::Result::SUCCESS);
+  fake_device_info_sync_service_.GetDeviceInfoTracker()->Add(
+      fake_device_info_sync_service_.GetLocalDeviceInfoProvider()
+          ->GetLocalDeviceInfo());
+
+  // First register the device.
+  RegisterDeviceSync();
+  EXPECT_EQ(SharingDeviceRegistrationResult::kSuccess, result_);
+  EXPECT_TRUE(local_sharing_info_);
+  EXPECT_TRUE(fcm_registration_);
+  EXPECT_FALSE(fcm_registration_->authorized_entity);
+
+  // Then unregister the device.
+  UnregisterDeviceSync();
+  EXPECT_EQ(SharingDeviceRegistrationResult::kSuccess, result_);
+  EXPECT_FALSE(local_sharing_info_);
+  EXPECT_FALSE(fcm_registration_);
 }

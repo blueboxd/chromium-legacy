@@ -96,13 +96,14 @@ class FakeSharingDeviceRegistration : public SharingDeviceRegistration {
   FakeSharingDeviceRegistration(
       PrefService* pref_service,
       SharingSyncPreference* prefs,
-      instance_id::InstanceIDDriver* instance_id_driver,
       VapidKeyManager* vapid_key_manager,
-      syncer::LocalDeviceInfoProvider* device_info_tracker)
+      instance_id::InstanceIDDriver* instance_id_driver,
+      syncer::SyncService* sync_service)
       : SharingDeviceRegistration(pref_service,
                                   prefs,
+                                  vapid_key_manager,
                                   instance_id_driver,
-                                  vapid_key_manager),
+                                  sync_service),
         vapid_key_manager_(vapid_key_manager) {}
   ~FakeSharingDeviceRegistration() override = default;
 
@@ -140,9 +141,8 @@ class SharingServiceTest : public testing::Test {
         new SharingSyncPreference(&prefs_, &fake_device_info_sync_service);
     vapid_key_manager_ = new VapidKeyManager(sync_prefs_, &test_sync_service_);
     sharing_device_registration_ = new FakeSharingDeviceRegistration(
-        /* pref_service= */ nullptr, sync_prefs_, &mock_instance_id_driver_,
-        vapid_key_manager_,
-        fake_device_info_sync_service.GetLocalDeviceInfoProvider());
+        /* pref_service= */ nullptr, sync_prefs_, vapid_key_manager_,
+        &mock_instance_id_driver_, &test_sync_service_);
     handler_registry_ = new testing::NiceMock<MockSharingHandlerRegistry>();
     fcm_handler_ = new testing::NiceMock<MockSharingFCMHandler>();
     device_source_ = new testing::NiceMock<MockSharingDeviceSource>();

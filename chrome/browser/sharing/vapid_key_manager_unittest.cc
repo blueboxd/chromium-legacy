@@ -54,6 +54,21 @@ TEST_F(VapidKeyManagerTest, CreateKeyFlow) {
   EXPECT_EQ(key_info, key_info_2);
 }
 
+TEST_F(VapidKeyManagerTest, SkipCreateKeyFlow) {
+  scoped_feature_list_.InitAndDisableFeature(kSharingDeriveVapidKey);
+  test_sync_service_.SetActiveDataTypes({});
+
+  // No keys stored in preferences.
+  EXPECT_EQ(base::nullopt, sharing_sync_preference_.GetVapidKey());
+
+  // Expected to skip creating keys when sync preference is not available.
+  EXPECT_FALSE(vapid_key_manager_.GetOrCreateKey());
+
+  // Refreshing keys still won't generate keys.
+  vapid_key_manager_.RefreshCachedKey();
+  EXPECT_FALSE(vapid_key_manager_.GetOrCreateKey());
+}
+
 TEST_F(VapidKeyManagerTest, ReadFromPreferenceFlow) {
   scoped_feature_list_.InitAndDisableFeature(kSharingDeriveVapidKey);
 

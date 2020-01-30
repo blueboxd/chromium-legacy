@@ -741,7 +741,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 
     _browserContainerViewController = browserContainerViewController;
     _dependencyFactory = factory;
-    self.commandDispatcher = commandDispatcher;
+    self.commandDispatcher = browser->GetCommandDispatcher();
     [self.commandDispatcher
         startDispatchingToTarget:self
                      forProtocol:@protocol(BrowserCommands)];
@@ -2188,8 +2188,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
       [[PopupMenuCoordinator alloc] initWithBaseViewController:self
                                                        browser:self.browser];
   self.popupMenuCoordinator.bubblePresenter = self.bubblePresenter;
-  self.popupMenuCoordinator.dispatcher = self.commandDispatcher;
-  self.popupMenuCoordinator.webStateList = self.tabModel.webStateList;
   self.popupMenuCoordinator.UIUpdater = _toolbarCoordinatorAdaptor;
   [self.popupMenuCoordinator start];
 
@@ -2481,7 +2479,8 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   // be unrecognized.
   if (_isShutdown)
     return;
-  [self.dispatcher hidePageInfo];
+  if ([self.dispatcher respondsToSelector:@selector(hidePageInfo)])
+    [self.dispatcher hidePageInfo];
   [self.dispatcher dismissPopupMenuAnimated:NO];
   [self.bubblePresenter dismissBubbles];
 }
@@ -4191,8 +4190,9 @@ NSString* const kBrowserViewControllerSnackbarCategory =
     [self.activityOverlayCoordinator stop];
     self.activityOverlayCoordinator = nil;
   } else if (!self.activityOverlayCoordinator) {
-    self.activityOverlayCoordinator =
-        [[ActivityOverlayCoordinator alloc] initWithBaseViewController:self];
+    self.activityOverlayCoordinator = [[ActivityOverlayCoordinator alloc]
+        initWithBaseViewController:self
+                           browser:self.browser];
     [self.activityOverlayCoordinator start];
   }
 }

@@ -7,16 +7,9 @@ GEN_INCLUDE(['../../testing/chromevox_next_e2e_test_base.js']);
 
 /**
  * Test fixture for automation_util.js.
- * @constructor
- * @extends {ChromeVoxE2ETestBase}
  */
-function ChromeVoxLogStoreTest() {
-  ChromeVoxNextE2ETest.call(this);
-}
+ChromeVoxLogStoreTest = class extends ChromeVoxNextE2ETest {};
 
-ChromeVoxLogStoreTest.prototype = {
-  __proto__: ChromeVoxNextE2ETest.prototype,
-};
 
 SYNC_TEST_F('ChromeVoxLogStoreTest', 'ShortLogs', function() {
   var logStore = new LogStore();

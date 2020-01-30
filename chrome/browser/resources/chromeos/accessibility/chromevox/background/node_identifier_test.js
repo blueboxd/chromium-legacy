@@ -7,54 +7,51 @@ GEN_INCLUDE(['../testing/chromevox_next_e2e_test_base.js']);
 
 /**
  * Test fixture for NodeIdentifier.
- * @constructor
- * @extends {ChromeVoxE2ETest}
  */
-function ChromeVoxNodeIdentifierTest() {
-  ChromeVoxNextE2ETest.call(this);
-}
-
-ChromeVoxNodeIdentifierTest.prototype = {
-  __proto__: ChromeVoxNextE2ETest.prototype,
-
+ChromeVoxNodeIdentifierTest = class extends ChromeVoxNextE2ETest {
   /**
    * Returns the start node of the current ChromeVox range.
    */
   getRangeStart() {
     return ChromeVoxState.instance.getCurrentRange().start.node;
-  },
+  }
 
   /** @override */
   setUp() {
     window.RoleType = chrome.automation.RoleType;
-  },
+  }
 
-  // Test documents //
+  get basicButtonDoc() {
+    return `
+      <p>Start here</p>
+      <button id="apple-button">Apple</button>
+      <button>Orange</button>
+    `;
+  }
 
-  basicButtonDoc: `
-    <p>Start here</p>
-    <button id="apple-button">Apple</button>
-    <button>Orange</button>
-  `,
+  get duplicateButtonDoc() {
+    return `
+      <p>Start here</p>
+      <button>Click me</button>
+      <button>Click me</button>
+    `;
+  }
 
-  duplicateButtonDoc: `
-    <p>Start here</p>
-    <button>Click me</button>
-    <button>Click me</button>
-  `,
-
-  identicalListsDoc: `
-    <p>Start here</p>
-    <ul>
-      <li>Apple</li>
-      <li>Orange</li>
-    </ul>
-    <ul>
-      <li>Apple</li>
-      <li>Orange</li>
-    </ul>
-  `
+  get identicalListsDoc() {
+    return `
+      <p>Start here</p>
+      <ul>
+        <li>Apple</li>
+        <li>Orange</li>
+      </ul>
+      <ul>
+        <li>Apple</li>
+        <li>Orange</li>
+      </ul>
+    `;
+  }
 };
+
 
 // Tests that we can distinguish between two similar buttons.
 TEST_F('ChromeVoxNodeIdentifierTest', 'BasicButtonTest', function() {

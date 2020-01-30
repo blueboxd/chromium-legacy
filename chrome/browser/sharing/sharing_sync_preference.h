@@ -18,6 +18,10 @@
 #include "components/prefs/pref_change_registrar.h"
 #include "components/sync_device_info/device_info.h"
 
+namespace chrome_browser_sharing {
+class FCMChannelConfiguration;
+}  // namespace chrome_browser_sharing
+
 namespace syncer {
 class DeviceInfoSyncService;
 class DeviceInfoTracker;
@@ -26,7 +30,7 @@ class LocalDeviceInfoProvider;
 
 namespace user_prefs {
 class PrefRegistrySyncable;
-}
+}  // namespace user_prefs
 
 class PrefService;
 
@@ -39,13 +43,14 @@ class SharingSyncPreference {
  public:
   // FCM registration status of current device. Not synced across devices.
   struct FCMRegistration {
-    FCMRegistration(std::string authorized_entity, base::Time timestamp);
+    FCMRegistration(base::Optional<std::string> authorized_entity,
+                    base::Time timestamp);
     FCMRegistration(FCMRegistration&& other);
     FCMRegistration& operator=(FCMRegistration&& other);
     ~FCMRegistration();
 
     // Authorized entity registered with FCM.
-    std::string authorized_entity;
+    base::Optional<std::string> authorized_entity;
 
     // Timestamp of latest registration.
     base::Time timestamp;
@@ -88,9 +93,13 @@ class SharingSyncPreference {
   std::set<sync_pb::SharingSpecificFields::EnabledFeatures> GetEnabledFeatures(
       const syncer::DeviceInfo* device_info) const;
 
-  // Returns the SharingTargetInfo of device with specified |device_info|.
-  base::Optional<syncer::DeviceInfo::SharingTargetInfo> GetTargetInfo(
+  // Returns the FCMChannelConfiguration of device with specified |guid|.
+  base::Optional<chrome_browser_sharing::FCMChannelConfiguration> GetFCMChannel(
       const std::string& guid) const;
+
+  // Returns the FCMChannelConfiguration of device with specified |device_info|.
+  base::Optional<chrome_browser_sharing::FCMChannelConfiguration> GetFCMChannel(
+      const syncer::DeviceInfo& device_info) const;
 
   SharingDevicePlatform GetDevicePlatform(const std::string& guid) const;
 

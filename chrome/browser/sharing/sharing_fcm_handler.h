@@ -63,14 +63,21 @@ class SharingFCMHandler : public gcm::GCMAppHandler {
   void OnMessagesDeleted(const std::string& app_id) override;
 
  private:
-  base::Optional<syncer::DeviceInfo::SharingTargetInfo> GetTargetInfo(
+  base::Optional<chrome_browser_sharing::FCMChannelConfiguration> GetFCMChannel(
+      const chrome_browser_sharing::SharingMessage& original_message);
+
+  base::Optional<chrome_browser_sharing::ServerChannelConfiguration>
+  GetServerChannel(
       const chrome_browser_sharing::SharingMessage& original_message);
 
   // Ack message sent back to the original sender of message.
   void SendAckMessage(
       std::string original_message_id,
       chrome_browser_sharing::MessageType original_message_type,
-      base::Optional<syncer::DeviceInfo::SharingTargetInfo> target_info,
+      base::Optional<chrome_browser_sharing::FCMChannelConfiguration>
+          fcm_channel,
+      base::Optional<chrome_browser_sharing::ServerChannelConfiguration>
+          server_channel,
       SharingDevicePlatform sender_device_type,
       base::TimeTicks message_received_time,
       std::unique_ptr<chrome_browser_sharing::ResponseMessage> response);

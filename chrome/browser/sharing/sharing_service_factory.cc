@@ -18,6 +18,8 @@
 #include "chrome/browser/sharing/sharing_fcm_handler.h"
 #include "chrome/browser/sharing/sharing_fcm_sender.h"
 #include "chrome/browser/sharing/sharing_handler_registry_impl.h"
+#include "chrome/browser/sharing/sharing_message_bridge.h"
+#include "chrome/browser/sharing/sharing_message_bridge_factory.h"
 #include "chrome/browser/sharing/sharing_message_sender.h"
 #include "chrome/browser/sharing/sharing_service.h"
 #include "chrome/browser/sharing/sharing_sync_preference.h"
@@ -107,6 +109,7 @@ SharingServiceFactory::SharingServiceFactory()
   DependsOn(instance_id::InstanceIDProfileServiceFactory::GetInstance());
   DependsOn(DeviceInfoSyncServiceFactory::GetInstance());
   DependsOn(ProfileSyncServiceFactory::GetInstance());
+  DependsOn(SharingMessageBridgeFactory::GetInstance());
 }
 
 SharingServiceFactory::~SharingServiceFactory() = default;
@@ -125,50 +128,51 @@ KeyedService* SharingServiceFactory::BuildServiceInstanceFor(
   PrecompilePhoneNumberRegexesAsync();
 #endif  // BUILDFLAG(ENABLE_CLICK_TO_CALL)
 
-  gcm::GCMProfileService* gcm_profile_service =
-      gcm::GCMProfileServiceFactory::GetForProfile(profile);
-  gcm::GCMDriver* gcm_driver = gcm_profile_service->driver();
-  CleanEncryptionInfoWithoutAuthorizedEntity(gcm_driver);
+  syncer::DeviceInfoSyncService* device_info_sync_service =
+      DeviceInfoSyncServiceFactory::GetForProfile(profile);
+  auto sync_prefs = std::make_unique<SharingSyncPreference>(
+      profile->GetPrefs(), device_info_sync_service);
+
+  auto vapid_key_manager =
+      std::make_unique<VapidKeyManager>(sync_prefs.get(), sync_service);
 
   instance_id::InstanceIDProfileService* instance_id_service =
       instance_id::InstanceIDProfileServiceFactory::GetForProfile(profile);
-
-  syncer::DeviceInfoSyncService* device_info_sync_service =
-      DeviceInfoSyncServiceFactory::GetForProfile(profile);
-  syncer::DeviceInfoTracker* device_info_tracker =
-      device_info_sync_service->GetDeviceInfoTracker();
-  syncer::LocalDeviceInfoProvider* local_device_info_provider =
-      device_info_sync_service->GetLocalDeviceInfoProvider();
-  content::SmsFetcher* sms_fetcher = content::SmsFetcher::Get(context);
-
-  auto sync_prefs = std::make_unique<SharingSyncPreference>(
-      profile->GetPrefs(), device_info_sync_service);
-  auto vapid_key_manager =
-      std::make_unique<VapidKeyManager>(sync_prefs.get(), sync_service);
   auto sharing_device_registration =
       std::make_unique<SharingDeviceRegistration>(
-          profile->GetPrefs(), sync_prefs.get(), instance_id_service->driver(),
-          vapid_key_manager.get());
-
-  auto sharing_message_sender = std::make_unique<SharingMessageSender>(
-      sync_prefs.get(), local_device_info_provider);
+          profile->GetPrefs(), sync_prefs.get(), vapid_key_manager.get(),
+          instance_id_service->driver(), sync_service);
 
   auto web_push_sender = std::make_unique<WebPushSender>(
       content::BrowserContext::GetDefaultStoragePartition(profile)
           ->GetURLLoaderFactoryForBrowserProcess());
+  SharingMessageBridge* message_bridge =
+      SharingMessageBridgeFactory::GetForBrowserContext(profile);
+  gcm::GCMDriver* gcm_driver =
+      gcm::GCMProfileServiceFactory::GetForProfile(profile)->driver();
+  CleanEncryptionInfoWithoutAuthorizedEntity(gcm_driver);
+  syncer::LocalDeviceInfoProvider* local_device_info_provider =
+      device_info_sync_service->GetLocalDeviceInfoProvider();
   auto fcm_sender = std::make_unique<SharingFCMSender>(
-      std::move(web_push_sender), sync_prefs.get(), vapid_key_manager.get(),
-      gcm_driver, local_device_info_provider);
+      std::move(web_push_sender), message_bridge, sync_prefs.get(),
+      vapid_key_manager.get(), gcm_driver, local_device_info_provider,
+      sync_service);
+
+  auto sharing_message_sender = std::make_unique<SharingMessageSender>(
+      sync_prefs.get(), local_device_info_provider);
   SharingFCMSender* fcm_sender_ptr = fcm_sender.get();
   sharing_message_sender->RegisterSendDelegate(
       SharingMessageSender::DelegateType::kFCM, std::move(fcm_sender));
 
-  SharingServiceHost* sharing_service_host_ptr =
-      MaybeRegisterSharingServiceHost(sharing_message_sender.get(), context);
-
+  syncer::DeviceInfoTracker* device_info_tracker =
+      device_info_sync_service->GetDeviceInfoTracker();
   auto device_source = std::make_unique<SharingDeviceSourceSync>(
       sync_service, local_device_info_provider, device_info_tracker,
       sync_prefs.get());
+
+  content::SmsFetcher* sms_fetcher = content::SmsFetcher::Get(context);
+  SharingServiceHost* sharing_service_host_ptr =
+      MaybeRegisterSharingServiceHost(sharing_message_sender.get(), context);
   auto handler_registry = std::make_unique<SharingHandlerRegistryImpl>(
       profile, sharing_device_registration.get(), sharing_message_sender.get(),
       device_source.get(), sms_fetcher, sharing_service_host_ptr);

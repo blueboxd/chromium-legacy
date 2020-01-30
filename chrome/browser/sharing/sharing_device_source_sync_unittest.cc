@@ -30,13 +30,23 @@
 
 namespace {
 
+const char kVapidFCMToken[] = "test_fcm_token";
+const char kSenderIdFCMToken[] = "sharing_fcm_token";
+const char kDevicep256dh[] = "test_p256_dh";
+const char kSenderIdP256dh[] = "sharing_p256dh";
+const char kDeviceAuthSecret[] = "test_auth_secret";
+const char kSenderIdAuthSecret[] = "sharing_auth_secret";
+
 std::unique_ptr<syncer::DeviceInfo> CreateDeviceInfo(
     const std::string& client_name,
     const base::SysInfo::HardwareInfo& hardware_info,
-    sync_pb::SharingSpecificFields::EnabledFeatures enabled_feature) {
-  syncer::DeviceInfo::SharingInfo sharing_info(
-      syncer::DeviceInfo::SharingTargetInfo(),
-      syncer::DeviceInfo::SharingTargetInfo(), {enabled_feature});
+    syncer::DeviceInfo::SharingTargetInfo vapid_target_info,
+    syncer::DeviceInfo::SharingTargetInfo sender_id_target_info,
+    std::set<sync_pb::SharingSpecificFields::EnabledFeatures>
+        enabled_features) {
+  syncer::DeviceInfo::SharingInfo sharing_info(std::move(vapid_target_info),
+                                               std::move(sender_id_target_info),
+                                               std::move(enabled_features));
 
   return std::make_unique<syncer::DeviceInfo>(
       base::GenerateGUID(), client_name, "chrome_version", "sync_user_agent",
@@ -45,13 +55,22 @@ std::unique_ptr<syncer::DeviceInfo> CreateDeviceInfo(
       /*send_tab_to_self_receiving_enabled=*/false, std::move(sharing_info));
 }
 
+std::unique_ptr<syncer::DeviceInfo> CreateDeviceInfo(
+    const std::string& client_name,
+    const base::SysInfo::HardwareInfo& hardware_info,
+    sync_pb::SharingSpecificFields::EnabledFeatures enabled_feature) {
+  return CreateDeviceInfo(
+      client_name, hardware_info,
+      {kVapidFCMToken, kDevicep256dh, kDeviceAuthSecret},
+      {kSenderIdFCMToken, kSenderIdP256dh, kSenderIdAuthSecret},
+      {enabled_feature});
+}
+
 class SharingDeviceSourceSyncTest : public testing::Test {
  public:
   SharingDeviceSourceSyncTest()
       : sharing_sync_preference_(&prefs_, &fake_device_info_sync_service_) {
     SharingSyncPreference::RegisterProfilePrefs(prefs_.registry());
-    scoped_feature_list_.InitAndEnableFeature(
-        send_tab_to_self::kSharingRenameDevices);
   }
 
   std::unique_ptr<SharingDeviceSourceSync> CreateDeviceSource(
@@ -295,7 +314,22 @@ TEST_F(SharingDeviceSourceSyncTest, GetDeviceCandidates_MissingRequirements) {
   EXPECT_TRUE(candidates.empty());
 }
 
+TEST_F(SharingDeviceSourceSyncTest,
+       GetDeviceCandidates_AlternativeRequirement) {
+  auto device_source = CreateDeviceSource(/*wait_until_ready=*/true);
+  auto device_info = CreateDeviceInfo(
+      "client_name", {}, sync_pb::SharingSpecificFields::CLICK_TO_CALL_VAPID);
+  fake_device_info_tracker_.Add(device_info.get());
+
+  auto devices = device_source->GetDeviceCandidates(
+      sync_pb::SharingSpecificFields::CLICK_TO_CALL);
+  ASSERT_EQ(1u, devices.size());
+  EXPECT_EQ(device_info->guid(), devices[0]->guid());
+}
+
 TEST_F(SharingDeviceSourceSyncTest, GetDeviceCandidates_RenameAfterFiltering) {
+  scoped_feature_list_.InitAndEnableFeature(
+      send_tab_to_self::kSharingRenameDevices);
   auto device_source = CreateDeviceSource(/*wait_until_ready=*/true);
 
   // This device will be filtered out because its older than |min_updated_time|.
@@ -338,4 +372,53 @@ TEST_F(SharingDeviceSourceSyncTest, GetDeviceCandidates_RenameAfterFiltering) {
   EXPECT_EQ(
       send_tab_to_self::GetSharingDeviceNames(device_info_2.get()).short_name,
       devices[1]->client_name());
+}
+
+TEST_F(SharingDeviceSourceSyncTest, GetDeviceCandidates_NoChannel) {
+  auto device_source = CreateDeviceSource(/*wait_until_ready=*/true);
+  auto device_info =
+      CreateDeviceInfo("client_name", /*hardware_info=*/{},
+                       /*vapid_target_info=*/{}, /*sender_id_target_info=*/{},
+                       {sync_pb::SharingSpecificFields::CLICK_TO_CALL});
+  fake_device_info_tracker_.Add(device_info.get());
+
+  auto devices = device_source->GetDeviceCandidates(
+      sync_pb::SharingSpecificFields::CLICK_TO_CALL);
+  EXPECT_TRUE(devices.empty());
+}
+
+TEST_F(SharingDeviceSourceSyncTest, GetDeviceCandidates_FCMChannel) {
+  scoped_feature_list_.InitAndDisableFeature(kSharingSendViaSync);
+  auto device_source = CreateDeviceSource(/*wait_until_ready=*/true);
+  auto device_info =
+      CreateDeviceInfo("client_name", /*hardware_info=*/{},
+                       {kVapidFCMToken, kDevicep256dh, kDeviceAuthSecret},
+                       /*sender_id_target_info=*/{},
+                       {sync_pb::SharingSpecificFields::CLICK_TO_CALL});
+  fake_device_info_tracker_.Add(device_info.get());
+
+  auto devices = device_source->GetDeviceCandidates(
+      sync_pb::SharingSpecificFields::CLICK_TO_CALL);
+  ASSERT_EQ(1u, devices.size());
+  EXPECT_EQ(device_info->guid(), devices[0]->guid());
+}
+
+TEST_F(SharingDeviceSourceSyncTest, GetDeviceCandidates_SenderIDChannel) {
+  scoped_feature_list_.InitWithFeatures(
+      /*enabled_features=*/{kSharingSendViaSync, kSharingUseDeviceInfo},
+      /*disabled_features=*/{});
+  test_sync_service_.SetActiveDataTypes(
+      {syncer::DEVICE_INFO, syncer::SHARING_MESSAGE});
+  auto device_source = CreateDeviceSource(/*wait_until_ready=*/true);
+  auto device_info = CreateDeviceInfo(
+      "client_name", /*hardware_info=*/{},
+      /*vapid_target_info=*/{},
+      {kSenderIdFCMToken, kSenderIdP256dh, kSenderIdAuthSecret},
+      {sync_pb::SharingSpecificFields::CLICK_TO_CALL});
+  fake_device_info_tracker_.Add(device_info.get());
+
+  auto devices = device_source->GetDeviceCandidates(
+      sync_pb::SharingSpecificFields::CLICK_TO_CALL);
+  ASSERT_EQ(1u, devices.size());
+  EXPECT_EQ(device_info->guid(), devices[0]->guid());
 }

@@ -24,19 +24,6 @@ class JavaScriptDialogViews : public JavaScriptDialog,
  public:
   ~JavaScriptDialogViews() override;
 
-  // Creates a new JS dialog. Note the two callbacks; |dialog_callback| is for
-  // user responses, while |dialog_force_closed_callback| is for when Views
-  // forces the dialog closed without a user reply.
-  static base::WeakPtr<JavaScriptDialogViews> Create(
-      content::WebContents* parent_web_contents,
-      content::WebContents* alerting_web_contents,
-      const base::string16& title,
-      content::JavaScriptDialogType dialog_type,
-      const base::string16& message_text,
-      const base::string16& default_prompt_text,
-      content::JavaScriptDialogManager::DialogClosedCallback dialog_callback,
-      base::OnceClosure dialog_force_closed_callback);
-
   // JavaScriptDialog:
   void CloseDialogWithoutCallback() override;
   base::string16 GetUserInput() override;
@@ -57,6 +44,7 @@ class JavaScriptDialogViews : public JavaScriptDialog,
 
  private:
   friend class JavaScriptDialog;
+  friend class JavaScriptDialogTabHelperDelegateDesktop;
 
   JavaScriptDialogViews(
       content::WebContents* parent_web_contents,

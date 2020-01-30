@@ -10,15 +10,12 @@ GEN_INCLUDE(['../testing/mock_feedback.js']);
 
 /**
  * Test fixture for Download_Handler.
- * @constructor
- * @extends {ChromeVoxE2ETest}
  */
-function ChromeVoxDownloadTest() {
-  ChromeVoxNextE2ETest.call(this);
-}
-
-ChromeVoxDownloadTest.prototype = {
-  __proto__: ChromeVoxNextE2ETest.prototype,
+ChromeVoxDownloadTest = class extends ChromeVoxNextE2ETest {
+  constructor() {
+    super();
+    this.timeRemainingUnits = '';
+  }
 
   addFakeApi() {
     // Fake out Chrome Downloads API namespace.
@@ -39,12 +36,12 @@ ChromeVoxDownloadTest.prototype = {
       COMPLETE: 'complete',
       INTERRUPTED: 'interrupted'
     };
-  },
+  }
 
   /** @override */
   setUp() {
     window.simulateEvent = this.simulateEvent.bind(this);
-  },
+  }
 
   /**
    * @return{!MockFeedback}
@@ -54,7 +51,7 @@ ChromeVoxDownloadTest.prototype = {
         new MockFeedback(this.newCallback(), this.newCallback.bind(this));
     mockFeedback.install();
     return mockFeedback;
-  },
+  }
 
   /**
    * Simulates a chrome.downloads.onChanged event with the given parameters.
@@ -65,7 +62,7 @@ ChromeVoxDownloadTest.prototype = {
       assertNotEquals(null, listener);
       listener(item);
     };
-  },
+  }
 
   getTimeRemaining(units) {
     if (!units) {
@@ -91,10 +88,9 @@ ChromeVoxDownloadTest.prototype = {
     } else {
       console.error('Did not specify a valid unit type');
     }
-  },
-
-  timeRemainingUnits: '',
+  }
 };
+
 
 TEST_F('ChromeVoxDownloadTest', 'DownloadStartedTest', function() {
   localStorage['announceDownloadNotifications'] = 'true';

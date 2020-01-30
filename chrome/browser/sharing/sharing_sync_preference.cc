@@ -11,6 +11,7 @@
 #include "base/value_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/sharing/features.h"
+#include "chrome/browser/sharing/proto/sharing_message.pb.h"
 #include "chrome/browser/sharing/sharing_metrics.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/scoped_user_pref_update.h"
@@ -92,12 +93,28 @@ base::Value SharingInfoToValue(const syncer::DeviceInfo::SharingInfo& device) {
   return result;
 }
 
+void FillVapidFCMChannel(
+    chrome_browser_sharing::FCMChannelConfiguration& fcm_configuration,
+    const syncer::DeviceInfo::SharingTargetInfo& target_info) {
+  fcm_configuration.set_vapid_fcm_token(target_info.fcm_token);
+  fcm_configuration.set_vapid_p256dh(target_info.p256dh);
+  fcm_configuration.set_vapid_auth_secret(target_info.auth_secret);
+}
+
+void FillSenderIdFCMChannel(
+    chrome_browser_sharing::FCMChannelConfiguration& fcm_configuration,
+    const syncer::DeviceInfo::SharingTargetInfo& target_info) {
+  fcm_configuration.set_sender_id_fcm_token(target_info.fcm_token);
+  fcm_configuration.set_sender_id_p256dh(target_info.p256dh);
+  fcm_configuration.set_sender_id_auth_secret(target_info.auth_secret);
+}
+
 }  // namespace
 
 using sync_pb::SharingSpecificFields;
 
 SharingSyncPreference::FCMRegistration::FCMRegistration(
-    std::string authorized_entity,
+    base::Optional<std::string> authorized_entity,
     base::Time timestamp)
     : authorized_entity(std::move(authorized_entity)), timestamp(timestamp) {}
 
@@ -188,24 +205,32 @@ base::Optional<SharingSyncPreference::FCMRegistration>
 SharingSyncPreference::GetFCMRegistration() const {
   const base::DictionaryValue* registration =
       prefs_->GetDictionary(prefs::kSharingFCMRegistration);
-  const std::string* authorized_entity =
+  const std::string* authorized_entity_ptr =
       registration->FindStringKey(kRegistrationAuthorizedEntity);
   const base::Value* timestamp_value =
       registration->FindKey(kRegistrationTimestamp);
-  if (!authorized_entity || !timestamp_value)
+  if (!timestamp_value)
     return base::nullopt;
+
+  base::Optional<std::string> authorized_entity;
+  if (authorized_entity_ptr)
+    authorized_entity = *authorized_entity_ptr;
 
   base::Time timestamp;
   if (!base::GetValueAsTime(*timestamp_value, &timestamp))
     return base::nullopt;
 
-  return FCMRegistration(*authorized_entity, timestamp);
+  return FCMRegistration(authorized_entity, timestamp);
 }
 
 void SharingSyncPreference::SetFCMRegistration(FCMRegistration registration) {
   DictionaryPrefUpdate update(prefs_, prefs::kSharingFCMRegistration);
-  update->SetStringKey(kRegistrationAuthorizedEntity,
-                       std::move(registration.authorized_entity));
+  if (registration.authorized_entity) {
+    update->SetStringKey(kRegistrationAuthorizedEntity,
+                         std::move(*registration.authorized_entity));
+  } else {
+    update->RemoveKey(kRegistrationAuthorizedEntity);
+  }
   update->SetKey(kRegistrationTimestamp,
                  base::CreateTimeValue(registration.timestamp));
 }
@@ -244,22 +269,42 @@ SharingSyncPreference::GetEnabledFeatures(
   return enabled_features;
 }
 
-base::Optional<syncer::DeviceInfo::SharingTargetInfo>
-SharingSyncPreference::GetTargetInfo(const std::string& guid) const {
+base::Optional<chrome_browser_sharing::FCMChannelConfiguration>
+SharingSyncPreference::GetFCMChannel(const std::string& guid) const {
   auto device_info = device_info_tracker_->GetDeviceInfo(guid);
-  if (device_info && device_info->sharing_info()) {
-    return device_info->sharing_info()->vapid_target_info;
+  if (!device_info)
+    return base::nullopt;
+
+  return GetFCMChannel(*device_info);
+}
+
+base::Optional<chrome_browser_sharing::FCMChannelConfiguration>
+SharingSyncPreference::GetFCMChannel(
+    const syncer::DeviceInfo& device_info) const {
+  if (device_info.sharing_info()) {
+    chrome_browser_sharing::FCMChannelConfiguration fcm_configuration;
+    FillVapidFCMChannel(fcm_configuration,
+                        device_info.sharing_info()->vapid_target_info);
+    FillSenderIdFCMChannel(fcm_configuration,
+                           device_info.sharing_info()->sender_id_target_info);
+    return fcm_configuration;
   }
 
   // Fallback to read from prefs::kSharingSyncedDevices if reading from sync
   // provider failed.
   const base::DictionaryValue* devices_preferences =
       prefs_->GetDictionary(prefs::kSharingSyncedDevices);
-  const base::Value* value = devices_preferences->FindKey(guid);
+  const base::Value* value = devices_preferences->FindKey(device_info.guid());
   if (!value)
     return base::nullopt;
 
-  return ValueToTargetInfo(*value);
+  auto vapid_target_info = ValueToTargetInfo(*value);
+  if (!vapid_target_info)
+    return base::nullopt;
+
+  chrome_browser_sharing::FCMChannelConfiguration fcm_configuration;
+  FillVapidFCMChannel(fcm_configuration, *vapid_target_info);
+  return fcm_configuration;
 }
 
 SharingDevicePlatform SharingSyncPreference::GetDevicePlatform(

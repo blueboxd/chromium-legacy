@@ -172,6 +172,11 @@ class TestOptimizationGuideDecider
       override {
     return optimization_guide::OptimizationGuideDecision::kFalse;
   }
+  void CanApplyOptimizationAsync(
+      content::NavigationHandle* navigation_handle,
+      optimization_guide::proto::OptimizationType optimization_type,
+      optimization_guide::OptimizationGuideDecisionCallback callback) override {
+  }
 };
 
 // Stub class of PreviewsOptimizationGuide to control what is allowed when

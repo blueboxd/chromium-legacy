@@ -11,16 +11,8 @@ GEN_INCLUDE([
  * Test fixture for BrailleTranslatorManager tests.
  * This is an E2E test because there's no easy way to load a data file in
  * a webui-style test.
- * @constructor
- * @extends {ChromeVoxE2ETest}
  */
-function ChromeVoxBrailleTranslatorManagerTest() {
-  ChromeVoxE2ETest.call(this);
-}
-
-ChromeVoxBrailleTranslatorManagerTest.prototype = {
-  __proto__: ChromeVoxE2ETest.prototype,
-
+ChromeVoxBrailleTranslatorManagerTest = class extends ChromeVoxE2ETest {
   /** @override */
   setUp() {
     this.liblouis = new FakeLibLouis();
@@ -29,12 +21,13 @@ ChromeVoxBrailleTranslatorManagerTest.prototype = {
     // This is called by an event handler in production, but we don't rely
     // on that for this test.
     this.manager.loadLiblouis_();
-  },
+  }
 
   addChangeListener(callback) {
     return this.manager.addChangeListener(callOnce(this.newCallback(callback)));
-  },
+  }
 };
+
 
 /** @extends {LibLouis} */
 function FakeLibLouis() {}
@@ -59,14 +52,14 @@ FakeLibLouis.prototype = {
   }
 };
 
-/**
- * @extends {LibLouis.Translator}
- * @param {BrailleTable.Table} table
- * @constructor
- */
-function FakeTranslator(table) {
-  this.table = table;
-}
+FakeTranslator = class {
+  /**
+   * @param {BrailleTable.Table} table
+   */
+  constructor(table) {
+    this.table = table;
+  }
+};
 
 function callOnce(callback) {
   var called = false;

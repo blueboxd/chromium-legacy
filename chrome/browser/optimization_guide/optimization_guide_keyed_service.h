@@ -92,6 +92,10 @@ class OptimizationGuideKeyedService
       content::NavigationHandle* navigation_handle,
       optimization_guide::proto::OptimizationType optimization_type,
       optimization_guide::OptimizationMetadata* optimization_metadata) override;
+  void CanApplyOptimizationAsync(
+      content::NavigationHandle* navigation_handle,
+      optimization_guide::proto::OptimizationType optimization_type,
+      optimization_guide::OptimizationGuideDecisionCallback callback) override;
 
   // KeyedService implementation:
   void Shutdown() override;

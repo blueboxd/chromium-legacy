@@ -153,15 +153,6 @@ class SubresourceRedirectBrowserTest : public InProcessBrowserTest {
     RetryForHistogramUntilCountReached(
         &histogram_tester_,
         optimization_guide::kComponentHintsUpdatedResultHistogramString, 1);
-
-    // Navigate to |hint_setup_url| to prime the OptimizationGuide hints for the
-    // url's host and ensure that they have been loaded from the store (via
-    // histogram) prior to the navigation that tests functionality.
-    ui_test_utils::NavigateToURL(browser(), hint_setup_url);
-
-    RetryForHistogramUntilCountReached(
-        &histogram_tester_, optimization_guide::kLoadedHintLocalHistogramString,
-        1);
   }
 
   GURL http_url() const { return http_url_; }

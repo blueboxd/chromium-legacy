@@ -11,6 +11,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "chrome/android/chrome_jni_headers/JavascriptTabModalDialog_jni.h"
 #include "chrome/browser/android/tab_android.h"
+#include "chrome/browser/ui/javascript_dialogs/javascript_dialog_tab_helper_delegate_android.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
@@ -31,25 +32,6 @@ JavaScriptDialogAndroid::~JavaScriptDialogAndroid() {
     Java_JavascriptTabModalDialog_dismiss(AttachCurrentThread(),
                                           dialog_jobject_);
   }
-}
-
-// static
-base::WeakPtr<JavaScriptDialog> JavaScriptDialog::CreateNewDialog(
-    content::WebContents* parent_web_contents,
-    content::WebContents* alerting_web_contents,
-    const base::string16& title,
-    content::JavaScriptDialogType dialog_type,
-    const base::string16& message_text,
-    const base::string16& default_prompt_text,
-    content::JavaScriptDialogManager::DialogClosedCallback
-        callback_on_button_clicked,
-    base::OnceClosure callback_on_cancelled) {
-  return (new JavaScriptDialogAndroid(parent_web_contents,
-                                      alerting_web_contents, title, dialog_type,
-                                      message_text, default_prompt_text,
-                                      std::move(callback_on_button_clicked),
-                                      std::move(callback_on_cancelled)))
-      ->weak_factory_.GetWeakPtr();
 }
 
 void JavaScriptDialogAndroid::CloseDialogWithoutCallback() {
@@ -142,4 +124,26 @@ JavaScriptDialogAndroid::JavaScriptDialogAndroid(
 
   Java_JavascriptTabModalDialog_showDialog(env, dialog_object, jwindow,
                                            reinterpret_cast<intptr_t>(this));
+}
+
+// Note on the two callbacks: |dialog_callback_on_button_clicked| is for the
+// case where user responds to the dialog. |dialog_callback_on_cancelled| is
+// for the case where user cancels the dialog without interacting with the
+// dialog (e.g. clicks the navigate back button on Android).
+base::WeakPtr<JavaScriptDialog>
+JavaScriptDialogTabHelperDelegateAndroid::CreateNewDialog(
+    content::WebContents* alerting_web_contents,
+    const base::string16& title,
+    content::JavaScriptDialogType dialog_type,
+    const base::string16& message_text,
+    const base::string16& default_prompt_text,
+    content::JavaScriptDialogManager::DialogClosedCallback
+        callback_on_button_clicked,
+    base::OnceClosure callback_on_cancelled) {
+  return (new JavaScriptDialogAndroid(web_contents_, alerting_web_contents,
+                                      title, dialog_type, message_text,
+                                      default_prompt_text,
+                                      std::move(callback_on_button_clicked),
+                                      std::move(callback_on_cancelled)))
+      ->weak_factory_.GetWeakPtr();
 }

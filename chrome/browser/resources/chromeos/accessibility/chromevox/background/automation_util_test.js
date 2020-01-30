@@ -9,16 +9,8 @@ GEN_INCLUDE(['../testing/snippets.js']);
 
 /**
  * Test fixture for automation_util.js.
- * @constructor
- * @extends {ChromeVoxE2ETestBase}
  */
-function ChromeVoxAutomationUtilE2ETest() {
-  ChromeVoxNextE2ETest.call(this);
-}
-
-ChromeVoxAutomationUtilE2ETest.prototype = {
-  __proto__: ChromeVoxNextE2ETest.prototype,
-
+ChromeVoxAutomationUtilE2ETest = class extends ChromeVoxNextE2ETest {
   /** @override */
   setUp() {
     window.Dir = constants.Dir;
@@ -37,29 +29,33 @@ ChromeVoxAutomationUtilE2ETest.prototype = {
       return AutomationUtil.getUniqueAncestors(node1, node2)
           .filter(filterNonDesktopRoot);
     };
-  },
+  }
 
   basicDoc() { /*!
-<p><a href='#'></a>hello</p>
-<h1><ul><li>a</ul><div role="group"><button></button></div></h1>
-*/ },
+  <p><a href='#'></a>hello</p>
+  <h1><ul><li>a</ul><div role="group"><button></button></div></h1>
+  */
+  }
 
   secondDoc() { /*!
-<html>
-<head><title>Second doc</title></head>
-<body><div>Second</div></body>
-</html>
-*/ },
+  <html>
+  <head><title>Second doc</title></head>
+  <body><div>Second</div></body>
+  </html>
+  */
+  }
 
   iframeDoc() { /*!
-<html>
-<head><title>Second doc</title></head>
-<body>
-  <iframe src="data:text/html,<p>Inside</p>"></iframe>
-</body>
-</html>
-*/ }
+  <html>
+  <head><title>Second doc</title></head>
+  <body>
+    <iframe src="data:text/html,<p>Inside</p>"></iframe>
+  </body>
+  </html>
+  */
+  }
 };
+
 
 TEST_F('ChromeVoxAutomationUtilE2ETest', 'GetAncestors', function() {
   this.runWithLoadedTree(this.basicDoc, function(root) {

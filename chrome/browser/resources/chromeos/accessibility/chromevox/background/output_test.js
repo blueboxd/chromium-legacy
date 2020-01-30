@@ -98,16 +98,8 @@ function checkOutput_(expectedText, expectedSpans, actualText, actualSpans) {
 
 /**
  * Test fixture for output.js.
- * @constructor
- * @extends {ChromeVoxNextE2ETestBase}
  */
-function ChromeVoxOutputE2ETest() {
-  ChromeVoxNextE2ETest.call(this);
-}
-
-ChromeVoxOutputE2ETest.prototype = {
-  __proto__: ChromeVoxNextE2ETest.prototype,
-
+ChromeVoxOutputE2ETest = class extends ChromeVoxNextE2ETest {
   /** @override */
   setUp() {
     window.Dir = AutomationUtil.Dir;
@@ -115,6 +107,7 @@ ChromeVoxOutputE2ETest.prototype = {
     this.forceContextualLastOutput();
   }
 };
+
 
 TEST_F('ChromeVoxOutputE2ETest', 'Links', function() {
   this.runWithLoadedTree('<a href="#">Click here</a>', function(root) {

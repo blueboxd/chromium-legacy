@@ -10,6 +10,15 @@
 // Coordinator for displaying an activity indicator overlay over the current
 // context.
 @interface ActivityOverlayCoordinator : ChromeCoordinator
+
+// Unavailable, use -initWithBaseViewController:browser:.
+- (instancetype)initWithBaseViewController:(UIViewController*)viewController
+    NS_UNAVAILABLE;
+// Unavailable, use -initWithBaseViewController:browser:.
+- (instancetype)initWithBaseViewController:(UIViewController*)viewController
+                              browserState:(ChromeBrowserState*)browserState
+    NS_UNAVAILABLE;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_ELEMENTS_ACTIVITY_OVERLAY_COORDINATOR_H_

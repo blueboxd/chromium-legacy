@@ -7,6 +7,7 @@
 #include "base/bind_helpers.h"
 #include "base/test/mock_callback.h"
 #include "chrome/browser/sharing/fake_device_info.h"
+#include "chrome/browser/sharing/proto/sharing_message.pb.h"
 #include "chrome/browser/sharing/sharing_fcm_sender.h"
 #include "chrome/browser/sharing/sharing_metrics.h"
 #include "chrome/browser/sharing/sharing_sync_preference.h"
@@ -46,16 +47,19 @@ class MockSharingFCMSender : public SharingFCMSender {
       syncer::LocalDeviceInfoProvider* local_device_info_provider)
       : SharingFCMSender(
             /*web_push_sender=*/nullptr,
+            /*sharing_message_bridge=*/nullptr,
             sync_preference,
             /*vapid_key_manager=*/nullptr,
             /*gcm_driver=*/nullptr,
-            local_device_info_provider) {}
+            local_device_info_provider,
+            /*sync_service=*/nullptr) {}
   MockSharingFCMSender(const MockSharingFCMSender&) = delete;
   MockSharingFCMSender& operator=(const MockSharingFCMSender&) = delete;
   ~MockSharingFCMSender() override = default;
 
-  MOCK_METHOD4(SendMessageToTargetInfo,
-               void(syncer::DeviceInfo::SharingTargetInfo target,
+  MOCK_METHOD4(SendMessageToFcmTarget,
+               void(const chrome_browser_sharing::FCMChannelConfiguration&
+                        fcm_configuration,
                     base::TimeDelta time_to_live,
                     SharingMessage message,
                     SendMessageCallback callback));
@@ -160,24 +164,26 @@ TEST_F(SharingMessageSenderTest, MessageSent_AckTimedout) {
               Run(testing::Eq(SharingSendMessageResult::kAckTimeout),
                   testing::Eq(nullptr)));
 
-  auto simulate_timeout = [&](syncer::DeviceInfo::SharingTargetInfo target,
-                              base::TimeDelta time_to_live,
-                              chrome_browser_sharing::SharingMessage message,
-                              SharingFCMSender::SendMessageCallback callback) {
-    // FCM message sent successfully.
-    std::move(callback).Run(SharingSendMessageResult::kSuccessful,
-                            kSenderMessageID);
-    task_environment_.FastForwardBy(kTimeToLive);
+  auto simulate_timeout =
+      [&](const chrome_browser_sharing::FCMChannelConfiguration&
+              fcm_configuration,
+          base::TimeDelta time_to_live,
+          chrome_browser_sharing::SharingMessage message,
+          SharingFCMSender::SendMessageCallback callback) {
+        // FCM message sent successfully.
+        std::move(callback).Run(SharingSendMessageResult::kSuccessful,
+                                kSenderMessageID);
+        task_environment_.FastForwardBy(kTimeToLive);
 
-    // Callback already run with result timeout, ack received for same message
-    // id is ignored.
-    sharing_message_sender_.OnAckReceived(kSenderMessageID,
-                                          /*response=*/nullptr);
-  };
+        // Callback already run with result timeout, ack received for same
+        // message id is ignored.
+        sharing_message_sender_.OnAckReceived(kSenderMessageID,
+                                              /*response=*/nullptr);
+      };
 
   EXPECT_CALL(
       *mock_sharing_fcm_sender_,
-      SendMessageToTargetInfo(testing::_, testing::_, testing::_, testing::_))
+      SendMessageToFcmTarget(testing::_, testing::_, testing::_, testing::_))
       .WillOnce(testing::Invoke(simulate_timeout));
 
   sharing_message_sender_.SendMessageToDevice(
@@ -194,7 +200,8 @@ TEST_F(SharingMessageSenderTest, SendMessageToDevice_InternalError) {
                   testing::Eq(nullptr)));
 
   auto simulate_internal_error =
-      [&](syncer::DeviceInfo::SharingTargetInfo target,
+      [&](const chrome_browser_sharing::FCMChannelConfiguration&
+              fcm_configuration,
           base::TimeDelta time_to_live,
           chrome_browser_sharing::SharingMessage message,
           SharingFCMSender::SendMessageCallback callback) {
@@ -210,7 +217,7 @@ TEST_F(SharingMessageSenderTest, SendMessageToDevice_InternalError) {
 
   EXPECT_CALL(
       *mock_sharing_fcm_sender_,
-      SendMessageToTargetInfo(testing::_, testing::_, testing::_, testing::_))
+      SendMessageToFcmTarget(testing::_, testing::_, testing::_, testing::_))
       .WillOnce(testing::Invoke(simulate_internal_error));
 
   sharing_message_sender_.SendMessageToDevice(
@@ -231,7 +238,8 @@ TEST_F(SharingMessageSenderTest, MessageSent_AckReceived) {
                   ProtoEquals(expected_response_message)));
 
   auto simulate_expected_ack_message_received =
-      [&](syncer::DeviceInfo::SharingTargetInfo target,
+      [&](const chrome_browser_sharing::FCMChannelConfiguration&
+              fcm_configuration,
           base::TimeDelta time_to_live,
           chrome_browser_sharing::SharingMessage message,
           SharingFCMSender::SendMessageCallback callback) {
@@ -248,16 +256,18 @@ TEST_F(SharingMessageSenderTest, MessageSent_AckReceived) {
             send_tab_to_self::GetSharingDeviceNames(local_device).full_name,
             message.sender_device_name());
         ASSERT_TRUE(local_device->sharing_info().has_value());
-        auto& fcm_configuration = message.fcm_channel_configuration();
-        ASSERT_EQ(kSenderVapidFcmToken, fcm_configuration.vapid_fcm_token());
-        ASSERT_EQ(kSenderVapidP256dh, fcm_configuration.vapid_p256dh());
+        auto& fcm_ack_configuration = message.fcm_channel_configuration();
+        ASSERT_EQ(kSenderVapidFcmToken,
+                  fcm_ack_configuration.vapid_fcm_token());
+        ASSERT_EQ(kSenderVapidP256dh, fcm_ack_configuration.vapid_p256dh());
         ASSERT_EQ(kSenderVapidAuthSecret,
-                  fcm_configuration.vapid_auth_secret());
+                  fcm_ack_configuration.vapid_auth_secret());
         ASSERT_EQ(kSenderSenderIdFcmToken,
-                  fcm_configuration.sender_id_fcm_token());
-        ASSERT_EQ(kSenderSenderIdP256dh, fcm_configuration.sender_id_p256dh());
+                  fcm_ack_configuration.sender_id_fcm_token());
+        ASSERT_EQ(kSenderSenderIdP256dh,
+                  fcm_ack_configuration.sender_id_p256dh());
         ASSERT_EQ(kSenderSenderIdAuthSecret,
-                  fcm_configuration.sender_id_auth_secret());
+                  fcm_ack_configuration.sender_id_auth_secret());
 
         // Simulate ack message received.
         std::unique_ptr<chrome_browser_sharing::ResponseMessage>
@@ -271,7 +281,7 @@ TEST_F(SharingMessageSenderTest, MessageSent_AckReceived) {
 
   EXPECT_CALL(
       *mock_sharing_fcm_sender_,
-      SendMessageToTargetInfo(testing::_, testing::_, testing::_, testing::_))
+      SendMessageToFcmTarget(testing::_, testing::_, testing::_, testing::_))
       .WillOnce(testing::Invoke(simulate_expected_ack_message_received));
 
   sharing_message_sender_.SendMessageToDevice(
@@ -292,7 +302,8 @@ TEST_F(SharingMessageSenderTest, MessageSent_AckReceivedBeforeMessageId) {
                   ProtoEquals(expected_response_message)));
 
   auto simulate_expected_ack_message_received =
-      [&](syncer::DeviceInfo::SharingTargetInfo target,
+      [&](const chrome_browser_sharing::FCMChannelConfiguration&
+              fcm_configuration,
           base::TimeDelta time_to_live,
           chrome_browser_sharing::SharingMessage message,
           SharingFCMSender::SendMessageCallback callback) {
@@ -312,7 +323,7 @@ TEST_F(SharingMessageSenderTest, MessageSent_AckReceivedBeforeMessageId) {
 
   EXPECT_CALL(
       *mock_sharing_fcm_sender_,
-      SendMessageToTargetInfo(testing::_, testing::_, testing::_, testing::_))
+      SendMessageToFcmTarget(testing::_, testing::_, testing::_, testing::_))
       .WillOnce(testing::Invoke(simulate_expected_ack_message_received));
 
   sharing_message_sender_.SendMessageToDevice(

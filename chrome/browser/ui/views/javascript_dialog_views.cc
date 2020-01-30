@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/javascript_dialog_views.h"
 
 #include "chrome/browser/ui/browser_dialogs.h"
+#include "chrome/browser/ui/javascript_dialogs/javascript_dialog_tab_helper_delegate_desktop.h"
 #include "chrome/browser/ui/views/title_origin_label.h"
 #include "components/constrained_window/constrained_window_views.h"
 #include "content/public/browser/javascript_dialog_manager.h"
@@ -15,23 +16,6 @@
 #include "ui/views/layout/fill_layout.h"
 
 JavaScriptDialogViews::~JavaScriptDialogViews() = default;
-
-// static
-base::WeakPtr<JavaScriptDialog> JavaScriptDialog::CreateNewDialog(
-    content::WebContents* parent_web_contents,
-    content::WebContents* alerting_web_contents,
-    const base::string16& title,
-    content::JavaScriptDialogType dialog_type,
-    const base::string16& message_text,
-    const base::string16& default_prompt_text,
-    content::JavaScriptDialogManager::DialogClosedCallback dialog_callback,
-    base::OnceClosure dialog_force_closed_callback) {
-  return (new JavaScriptDialogViews(
-              parent_web_contents, alerting_web_contents, title, dialog_type,
-              message_text, default_prompt_text, std::move(dialog_callback),
-              std::move(dialog_force_closed_callback)))
-      ->weak_factory_.GetWeakPtr();
-}
 
 void JavaScriptDialogViews::CloseDialogWithoutCallback() {
   dialog_callback_.Reset();
@@ -121,4 +105,23 @@ JavaScriptDialogViews::JavaScriptDialogViews(
 
   constrained_window::ShowWebModalDialogViews(this, parent_web_contents);
   chrome::RecordDialogCreation(chrome::DialogIdentifier::JAVA_SCRIPT);
+}
+
+// Creates a new JS dialog. Note the two callbacks; |dialog_callback| is for
+// user responses, while |dialog_force_closed_callback| is for when Views
+// forces the dialog closed without a user reply.
+base::WeakPtr<JavaScriptDialog>
+JavaScriptDialogTabHelperDelegateDesktop::CreateNewDialog(
+    content::WebContents* alerting_web_contents,
+    const base::string16& title,
+    content::JavaScriptDialogType dialog_type,
+    const base::string16& message_text,
+    const base::string16& default_prompt_text,
+    content::JavaScriptDialogManager::DialogClosedCallback dialog_callback,
+    base::OnceClosure dialog_force_closed_callback) {
+  return (new JavaScriptDialogViews(
+              web_contents_, alerting_web_contents, title, dialog_type,
+              message_text, default_prompt_text, std::move(dialog_callback),
+              std::move(dialog_force_closed_callback)))
+      ->weak_factory_.GetWeakPtr();
 }

@@ -7,32 +7,17 @@ GEN_INCLUDE(['common.js', 'callback_helper.js']);
 
 /**
  * Base test fixture for ChromeVox unit tests.
- *
  * Note that while conceptually these are unit tests, these tests need
  * to run in a full web page, so they're actually run as WebUI browser
  * tests.
- *
- * @constructor
- * @extends {testing.Test}
  */
-function ChromeVoxUnitTestBase() {
-  if (this.isAsync) {
-    this.callbackHelper_ = new CallbackHelper(this);
+ChromeVoxUnitTestBase = class extends testing.Test {
+  constructor() {
+    super();
+    if (this.isAsync) {
+      this.callbackHelper_ = new CallbackHelper(this);
+    }
   }
-}
-
-ChromeVoxUnitTestBase.prototype = {
-  __proto__: testing.Test.prototype,
-
-  /** @override */
-  browsePreload: DUMMY_URL,
-
-  /**
-   * @override
-   * It doesn't make sense to run the accessibility audit on these tests,
-   * since many of them are deliberately testing inaccessible html.
-   */
-  runAccessibilityChecks: false,
 
   /**
    * Loads some inlined html into the body of the current document, replacing
@@ -47,7 +32,7 @@ ChromeVoxUnitTestBase.prototype = {
       document.body.removeChild(document.body.firstChild);
     }
     this.appendHtml(html);
-  },
+  }
 
   /**
    * Loads some inlined html into the current document, replacing
@@ -69,7 +54,7 @@ ChromeVoxUnitTestBase.prototype = {
     var html =
         TestUtils.extractHtmlFromCommentEncodedString(commentEncodedHtml);
     this.loadHtml(html);
-  },
+  }
 
   /**
    * Appends some inlined html into the current document, at the end of
@@ -87,7 +72,7 @@ ChromeVoxUnitTestBase.prototype = {
     var html =
         TestUtils.extractHtmlFromCommentEncodedString(commentEncodedHtml);
     this.appendHtml(html);
-  },
+  }
 
   /**
    * Appends some inlined html into the current document, at the end of
@@ -102,13 +87,7 @@ ChromeVoxUnitTestBase.prototype = {
       fragment.appendChild(div.firstChild);
     }
     document.body.appendChild(fragment);
-  },
-
-  /**
-   * @type {CallbackHelper}
-   * @private
-   */
-  callbackHelper_: null,
+  }
 
   /**
    * Creates a callback that optionally calls {@code opt_callback} when
@@ -123,3 +102,20 @@ ChromeVoxUnitTestBase.prototype = {
     return this.callbackHelper_.wrap(opt_callback);
   }
 };
+
+// Due to limitations of the test framework, we need to place members directly
+// on the prototype. The framework cannot actually instantiate the object during
+// its first pass where it uses this file to generate C++ code.
+
+/** @override */
+ChromeVoxUnitTestBase.prototype.browsePreload = DUMMY_URL;
+
+/** @override */
+ChromeVoxUnitTestBase.prototype.isAsync = false;
+
+/**
+ * @override
+ * It doesn't make sense to run the accessibility audit on these tests,
+ * since many of them are deliberately testing inaccessible html.
+ */
+ChromeVoxUnitTestBase.prototype.runAccessibilityChecks = false;

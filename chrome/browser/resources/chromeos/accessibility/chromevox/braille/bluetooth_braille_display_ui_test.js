@@ -29,33 +29,18 @@ chrome.metricsPrivate.recordUserAction = function() {};
 
 /**
  * Test fixture.
- * @constructor
- * @extends {ChromeVoxUnitTestBase}
  */
-function ChromeVoxBluetoothBrailleDisplayUIUnitTest() {
-  ChromeVoxUnitTestBase.call(this);
-}
-
-ChromeVoxBluetoothBrailleDisplayUIUnitTest.prototype = {
-  __proto__: ChromeVoxUnitTestBase.prototype,
-
-  /** @override */
-  closureModuleDeps: [
-    'BluetoothBrailleDisplayManager',
-    'BluetoothBrailleDisplayUI',
-    'TestMsgs',
-  ],
-
-  /** @override */
-  isAsync: true,
-
+ChromeVoxBluetoothBrailleDisplayUIUnitTest =
+    class extends ChromeVoxUnitTestBase {
   /** @override */
   setUp() {
     Msgs = TestMsgs;
-  },
+  }
 
   /** Label of the select. @type {string} */
-  selectLabel: 'Select a bluetooth braille display',
+  get selectLabel() {
+    return 'Select a bluetooth braille display';
+  }
 
   /**
    * Builds an expected stringified version of the widget, inserting static
@@ -65,15 +50,25 @@ ChromeVoxBluetoothBrailleDisplayUIUnitTest.prototype = {
    */
   buildUIExpectation(controls) {
     return `
-      <div>
-        <h2>Bluetooth Braille Display</h2>
-        <div class="option">
-          <span id="bluetoothBrailleSelectLabel">${this.selectLabel}</span>
-          ${controls}
-        </div>
-      </div>`;
+        <div>
+          <h2>Bluetooth Braille Display</h2>
+          <div class="option">
+            <span id="bluetoothBrailleSelectLabel">${this.selectLabel}</span>
+            ${controls}
+          </div>
+        </div>`;
   }
 };
+
+
+/** @override */
+ChromeVoxBluetoothBrailleDisplayUIUnitTest.prototype.closureModuleDeps = [
+  'BluetoothBrailleDisplayManager',
+  'BluetoothBrailleDisplayUI',
+  'TestMsgs',
+];
+
+ChromeVoxBluetoothBrailleDisplayUIUnitTest.prototype.isAsync = true;
 
 SYNC_TEST_F(
     'ChromeVoxBluetoothBrailleDisplayUIUnitTest', 'NoDisplays', function() {

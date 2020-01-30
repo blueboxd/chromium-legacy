@@ -7,21 +7,14 @@ GEN_INCLUDE(['../testing/chromevox_next_e2e_test_base.js']);
 
 /**
  * Test fixture for ChromeVox KeyboardHandler.
- * @constructor
- * @extends {ChromeVoxE2ETest}
  */
-function ChromeVoxBackgroundKeyboardHandlerTest() {
-  ChromeVoxNextE2ETest.call(this);
-}
-
-ChromeVoxBackgroundKeyboardHandlerTest.prototype = {
-  __proto__: ChromeVoxNextE2ETest.prototype,
-
+ChromeVoxBackgroundKeyboardHandlerTest = class extends ChromeVoxNextE2ETest {
   /** @override */
   setUp() {
     window.keyboardHandler = new BackgroundKeyboardHandler();
   }
 };
+
 
 TEST_F(
     'ChromeVoxBackgroundKeyboardHandlerTest', 'SearchGetsPassedThrough',

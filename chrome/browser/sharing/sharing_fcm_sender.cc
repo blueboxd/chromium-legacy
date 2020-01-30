@@ -6,57 +6,147 @@
 
 #include "base/callback.h"
 #include "base/callback_helpers.h"
+#include "base/guid.h"
+#include "base/version.h"
+#include "chrome/browser/sharing/features.h"
 #include "chrome/browser/sharing/sharing_constants.h"
+#include "chrome/browser/sharing/sharing_message_bridge.h"
 #include "chrome/browser/sharing/sharing_sync_preference.h"
 #include "chrome/browser/sharing/vapid_key_manager.h"
 #include "chrome/browser/sharing/web_push/web_push_sender.h"
 #include "components/gcm_driver/crypto/gcm_encryption_result.h"
 #include "components/gcm_driver/gcm_driver.h"
+#include "components/sync/driver/sync_service.h"
 #include "components/sync_device_info/local_device_info_provider.h"
 
 SharingFCMSender::SharingFCMSender(
     std::unique_ptr<WebPushSender> web_push_sender,
+    SharingMessageBridge* sharing_message_bridge,
     SharingSyncPreference* sync_preference,
     VapidKeyManager* vapid_key_manager,
     gcm::GCMDriver* gcm_driver,
-    syncer::LocalDeviceInfoProvider* local_device_info_provider)
+    syncer::LocalDeviceInfoProvider* local_device_info_provider,
+    syncer::SyncService* sync_service)
     : web_push_sender_(std::move(web_push_sender)),
+      sharing_message_bridge_(sharing_message_bridge),
       sync_preference_(sync_preference),
       vapid_key_manager_(vapid_key_manager),
       gcm_driver_(gcm_driver),
-      local_device_info_provider_(local_device_info_provider) {}
+      local_device_info_provider_(local_device_info_provider),
+      sync_service_(sync_service) {}
 
 SharingFCMSender::~SharingFCMSender() = default;
 
-void SharingFCMSender::SendMessageToTargetInfo(
-    syncer::DeviceInfo::SharingTargetInfo target,
-    base::TimeDelta time_to_live,
-    SharingMessage message,
-    SendMessageCallback callback) {
-  TRACE_EVENT0("sharing", "SharingFCMSender::SendMessageToTargetInfo");
+void SharingFCMSender::DoSendMessageToDevice(const syncer::DeviceInfo& device,
+                                             base::TimeDelta time_to_live,
+                                             SharingMessage message,
+                                             SendMessageCallback callback) {
+  TRACE_EVENT0("sharing", "SharingFCMSender::DoSendMessageToDevice");
 
-  base::Optional<SharingSyncPreference::FCMRegistration> fcm_registration =
-      sync_preference_->GetFCMRegistration();
-  if (!fcm_registration) {
-    LOG(ERROR) << "Unable to retrieve FCM registration";
-    std::move(callback).Run(SharingSendMessageResult::kInternalError,
-                            base::nullopt);
+  auto fcm_configuration = sync_preference_->GetFCMChannel(device);
+  if (!fcm_configuration) {
+    std::move(callback).Run(SharingSendMessageResult::kDeviceNotFound,
+                            /*message_id=*/base::nullopt);
     return;
   }
 
+  if (!SetMessageSenderInfo(&message)) {
+    std::move(callback).Run(SharingSendMessageResult::kInternalError,
+                            /*message_id=*/base::nullopt);
+    return;
+  }
+
+  SendMessageToFcmTarget(*fcm_configuration, time_to_live, std::move(message),
+                         std::move(callback));
+}
+
+void SharingFCMSender::SendMessageToFcmTarget(
+    const chrome_browser_sharing::FCMChannelConfiguration& fcm_configuration,
+    base::TimeDelta time_to_live,
+    SharingMessage message,
+    SendMessageCallback callback) {
+  TRACE_EVENT0("sharing", "SharingFCMSender::SendMessageToFcmTarget");
+
+  if (base::FeatureList::IsEnabled(kSharingSendViaSync) &&
+      sync_service_->GetActiveDataTypes().Has(syncer::SHARING_MESSAGE) &&
+      !fcm_configuration.sender_id_fcm_token().empty() &&
+      !fcm_configuration.sender_id_p256dh().empty() &&
+      !fcm_configuration.sender_id_auth_secret().empty()) {
+    message.set_message_id(base::GenerateGUID());
+    EncryptMessage(
+        kSharingSenderID, fcm_configuration.sender_id_p256dh(),
+        fcm_configuration.sender_id_auth_secret(), message, std::move(callback),
+        base::BindOnce(&SharingFCMSender::DoSendMessageToSenderIdTarget,
+                       weak_ptr_factory_.GetWeakPtr(),
+                       fcm_configuration.sender_id_fcm_token(), time_to_live,
+                       message.message_id()));
+    return;
+  }
+
+  if (!fcm_configuration.vapid_fcm_token().empty() &&
+      !fcm_configuration.vapid_p256dh().empty() &&
+      !fcm_configuration.vapid_auth_secret().empty()) {
+    base::Optional<SharingSyncPreference::FCMRegistration> fcm_registration =
+        sync_preference_->GetFCMRegistration();
+    if (!fcm_registration || !fcm_registration->authorized_entity) {
+      LOG(ERROR) << "Unable to retrieve FCM registration";
+      std::move(callback).Run(SharingSendMessageResult::kInternalError,
+                              /*message_id=*/base::nullopt);
+      return;
+    }
+
+    EncryptMessage(
+        *fcm_registration->authorized_entity, fcm_configuration.vapid_p256dh(),
+        fcm_configuration.vapid_auth_secret(), message, std::move(callback),
+        base::BindOnce(&SharingFCMSender::DoSendMessageToVapidTarget,
+                       weak_ptr_factory_.GetWeakPtr(),
+                       fcm_configuration.vapid_fcm_token(), time_to_live));
+    return;
+  }
+
+  std::move(callback).Run(SharingSendMessageResult::kDeviceNotFound,
+                          /*message_id=*/base::nullopt);
+}
+
+void SharingFCMSender::SendMessageToServerTarget(
+    const chrome_browser_sharing::ServerChannelConfiguration& server_channel,
+    SharingMessage message,
+    SendMessageCallback callback) {
+  TRACE_EVENT0("sharing", "SharingFCMSender::SendMessageToServerTarget");
+
+  if (!base::FeatureList::IsEnabled(kSharingSendViaSync) ||
+      !sync_service_->GetActiveDataTypes().Has(syncer::SHARING_MESSAGE)) {
+    std::move(callback).Run(SharingSendMessageResult::kInternalError,
+                            /*message_id=*/base::nullopt);
+    return;
+  }
+
+  message.set_message_id(base::GenerateGUID());
+  EncryptMessage(
+      kSharingSenderID, server_channel.p256dh(), server_channel.auth_secret(),
+      message, std::move(callback),
+      base::BindOnce(&SharingFCMSender::DoSendMessageToServerTarget,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     server_channel.configuration(), message.message_id()));
+}
+
+void SharingFCMSender::EncryptMessage(const std::string& authorized_entity,
+                                      const std::string& p256dh,
+                                      const std::string& auth_secret,
+                                      const SharingMessage& message,
+                                      SendMessageCallback callback,
+                                      MessageSender message_sender) {
   std::string payload;
   message.SerializeToString(&payload);
   gcm_driver_->EncryptMessage(
-      kSharingFCMAppID, fcm_registration->authorized_entity, target.p256dh,
-      target.auth_secret, payload,
-      base::BindOnce(
-          &SharingFCMSender::OnMessageEncrypted, weak_ptr_factory_.GetWeakPtr(),
-          std::move(target.fcm_token), time_to_live, std::move(callback)));
+      kSharingFCMAppID, authorized_entity, p256dh, auth_secret, payload,
+      base::BindOnce(&SharingFCMSender::OnMessageEncrypted,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback),
+                     std::move(message_sender)));
 }
 
-void SharingFCMSender::OnMessageEncrypted(std::string fcm_token,
-                                          base::TimeDelta time_to_live,
-                                          SendMessageCallback callback,
+void SharingFCMSender::OnMessageEncrypted(SendMessageCallback callback,
+                                          MessageSender message_sender,
                                           gcm::GCMEncryptionResult result,
                                           std::string message) {
   if (result != gcm::GCMEncryptionResult::ENCRYPTED_DRAFT_08) {
@@ -66,11 +156,21 @@ void SharingFCMSender::OnMessageEncrypted(std::string fcm_token,
     return;
   }
 
+  std::move(message_sender).Run(std::move(message), std::move(callback));
+}
+
+void SharingFCMSender::DoSendMessageToVapidTarget(
+    const std::string& fcm_token,
+    base::TimeDelta time_to_live,
+    std::string message,
+    SendMessageCallback callback) {
+  TRACE_EVENT0("sharing", "SharingFCMSender::DoSendMessageToVapidTarget");
+
   auto* vapid_key = vapid_key_manager_->GetOrCreateKey();
   if (!vapid_key) {
     LOG(ERROR) << "Unable to retrieve VAPID key";
     std::move(callback).Run(SharingSendMessageResult::kInternalError,
-                            base::nullopt);
+                            /*message_id=*/base::nullopt);
     return;
   }
 
@@ -81,71 +181,16 @@ void SharingFCMSender::OnMessageEncrypted(std::string fcm_token,
 
   web_push_sender_->SendMessage(
       fcm_token, vapid_key, std::move(web_push_message),
-      base::BindOnce(&SharingFCMSender::OnMessageSent,
+      base::BindOnce(&SharingFCMSender::OnMessageSentToVapidTarget,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
-void SharingFCMSender::DoSendMessageToDevice(const syncer::DeviceInfo& device,
-                                             base::TimeDelta time_to_live,
-                                             SharingMessage message,
-                                             SendMessageCallback callback) {
-  TRACE_EVENT0("sharing", "SharingFCMSender::DoSendMessageToDevice");
-
-  base::Optional<syncer::DeviceInfo::SharingTargetInfo> target_info =
-      GetTargetInfo(device);
-  if (!target_info) {
-    std::move(callback).Run(SharingSendMessageResult::kDeviceNotFound,
-                            /*response=*/nullptr);
-    return;
-  }
-
-  if (!SetMessageSenderInfo(&message)) {
-    std::move(callback).Run(SharingSendMessageResult::kInternalError,
-                            /*response=*/nullptr);
-    return;
-  }
-
-  SendMessageToTargetInfo(std::move(*target_info), time_to_live,
-                          std::move(message), std::move(callback));
-}
-
-base::Optional<syncer::DeviceInfo::SharingTargetInfo>
-SharingFCMSender::GetTargetInfo(const syncer::DeviceInfo& device) {
-  if (device.sharing_info())
-    return device.sharing_info()->vapid_target_info;
-
-  // TODO(crbug/1015411): Here we assume caller gets the |device| from
-  // GetDeviceCandidates, so DeviceInfoTracker is ready. It's better to queue up
-  // the message and wait until DeviceInfoTracker is ready.
-  return sync_preference_->GetTargetInfo(device.guid());
-}
-
-bool SharingFCMSender::SetMessageSenderInfo(SharingMessage* message) {
-  base::Optional<syncer::DeviceInfo::SharingInfo> sharing_info =
-      sync_preference_->GetLocalSharingInfo(
-          local_device_info_provider_->GetLocalDeviceInfo());
-  if (!sharing_info)
-    return false;
-
-  auto* fcm_configuration = message->mutable_fcm_channel_configuration();
-  fcm_configuration->set_vapid_fcm_token(
-      sharing_info->vapid_target_info.fcm_token);
-  fcm_configuration->set_vapid_p256dh(sharing_info->vapid_target_info.p256dh);
-  fcm_configuration->set_vapid_auth_secret(
-      sharing_info->vapid_target_info.auth_secret);
-  fcm_configuration->set_sender_id_fcm_token(
-      sharing_info->sender_id_target_info.fcm_token);
-  fcm_configuration->set_sender_id_p256dh(
-      sharing_info->sender_id_target_info.p256dh);
-  fcm_configuration->set_sender_id_auth_secret(
-      sharing_info->sender_id_target_info.auth_secret);
-  return true;
-}
-
-void SharingFCMSender::OnMessageSent(SendMessageCallback callback,
-                                     SendWebPushMessageResult result,
-                                     base::Optional<std::string> message_id) {
-  TRACE_EVENT1("sharing", "SharingFCMSender::OnMessageSent", "result", result);
+void SharingFCMSender::OnMessageSentToVapidTarget(
+    SendMessageCallback callback,
+    SendWebPushMessageResult result,
+    base::Optional<std::string> message_id) {
+  TRACE_EVENT1("sharing", "SharingFCMSender::OnMessageSentToVapidTarget",
+               "result", result);
 
   SharingSendMessageResult send_message_result;
   switch (result) {
@@ -171,6 +216,115 @@ void SharingFCMSender::OnMessageSent(SendMessageCallback callback,
   }
 
   std::move(callback).Run(send_message_result, message_id);
+}
+
+void SharingFCMSender::DoSendMessageToSenderIdTarget(
+    const std::string& fcm_token,
+    base::TimeDelta time_to_live,
+    const std::string& message_id,
+    std::string message,
+    SendMessageCallback callback) {
+  TRACE_EVENT0("sharing", "SharingFCMSender::DoSendMessageToSenderIdTarget");
+
+  // Double check that SHARING_MESSAGE is syncing.
+  if (!sync_service_->GetActiveDataTypes().Has(syncer::SHARING_MESSAGE)) {
+    std::move(callback).Run(SharingSendMessageResult::kInternalError,
+                            /*response=*/nullptr);
+    return;
+  }
+
+  auto specifics = std::make_unique<sync_pb::SharingMessageSpecifics>();
+  auto* fcm_configuration =
+      specifics->mutable_channel_configuration()->mutable_fcm();
+  fcm_configuration->set_token(fcm_token);
+  fcm_configuration->set_ttl(time_to_live.InSeconds());
+  fcm_configuration->set_priority(10);
+  specifics->set_payload(message);
+
+  sharing_message_bridge_->SendSharingMessage(
+      std::move(specifics),
+      base::BindOnce(&SharingFCMSender::OnMessageSentViaSync,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback),
+                     message_id));
+}
+
+void SharingFCMSender::DoSendMessageToServerTarget(
+    const std::string& server_channel,
+    const std::string& message_id,
+    std::string message,
+    SendMessageCallback callback) {
+  TRACE_EVENT0("sharing", "SharingFCMSender::DoSendMessageToServerTarget");
+
+  // Double check that SHARING_MESSAGE is syncing.
+  if (!sync_service_->GetActiveDataTypes().Has(syncer::SHARING_MESSAGE)) {
+    std::move(callback).Run(SharingSendMessageResult::kInternalError,
+                            /*response=*/nullptr);
+    return;
+  }
+
+  auto specifics = std::make_unique<sync_pb::SharingMessageSpecifics>();
+  specifics->mutable_channel_configuration()->set_server(server_channel);
+  specifics->set_payload(message);
+
+  sharing_message_bridge_->SendSharingMessage(
+      std::move(specifics),
+      base::BindOnce(&SharingFCMSender::OnMessageSentViaSync,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback),
+                     message_id));
+}
+
+void SharingFCMSender::OnMessageSentViaSync(
+    SendMessageCallback callback,
+    const std::string& message_id,
+    const sync_pb::SharingMessageCommitError& error) {
+  TRACE_EVENT1("sharing", "SharingFCMSender::OnMessageSentViaSync", "error",
+               error.error_code());
+
+  SharingSendMessageResult send_message_result;
+  switch (error.error_code()) {
+    case sync_pb::SharingMessageCommitError::NONE:
+      send_message_result = SharingSendMessageResult::kSuccessful;
+      break;
+    case sync_pb::SharingMessageCommitError::NOT_FOUND:
+      send_message_result = SharingSendMessageResult::kDeviceNotFound;
+      break;
+    case sync_pb::SharingMessageCommitError::INVALID_ARGUMENT:
+      send_message_result = SharingSendMessageResult::kPayloadTooLarge;
+      break;
+    case sync_pb::SharingMessageCommitError::INTERNAL:
+    case sync_pb::SharingMessageCommitError::UNAVAILABLE:
+    case sync_pb::SharingMessageCommitError::RESOURCE_EXHAUSTED:
+    case sync_pb::SharingMessageCommitError::UNAUTHENTICATED:
+    case sync_pb::SharingMessageCommitError::PERMISSION_DENIED:
+    case sync_pb::SharingMessageCommitError::SYNC_TURNED_OFF:
+      send_message_result = SharingSendMessageResult::kInternalError;
+      break;
+  }
+  // TODO(alexchau): Cases for SYNC_ERROR and NETWORK_ERROR.
+
+  std::move(callback).Run(send_message_result, message_id);
+}
+
+bool SharingFCMSender::SetMessageSenderInfo(SharingMessage* message) {
+  base::Optional<syncer::DeviceInfo::SharingInfo> sharing_info =
+      sync_preference_->GetLocalSharingInfo(
+          local_device_info_provider_->GetLocalDeviceInfo());
+  if (!sharing_info)
+    return false;
+
+  auto* fcm_configuration = message->mutable_fcm_channel_configuration();
+  fcm_configuration->set_vapid_fcm_token(
+      sharing_info->vapid_target_info.fcm_token);
+  fcm_configuration->set_vapid_p256dh(sharing_info->vapid_target_info.p256dh);
+  fcm_configuration->set_vapid_auth_secret(
+      sharing_info->vapid_target_info.auth_secret);
+  fcm_configuration->set_sender_id_fcm_token(
+      sharing_info->sender_id_target_info.fcm_token);
+  fcm_configuration->set_sender_id_p256dh(
+      sharing_info->sender_id_target_info.p256dh);
+  fcm_configuration->set_sender_id_auth_secret(
+      sharing_info->sender_id_target_info.auth_secret);
+  return true;
 }
 
 void SharingFCMSender::SetWebPushSenderForTesting(

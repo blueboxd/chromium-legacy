@@ -59,19 +59,8 @@ function assertSpanNotFound(spannable, annotation) {
 
 /**
  * Test fixture.
- * @constructor
- * @extends {ChromeVoxUnitTestBase}
  */
-function ChromeVoxSpannableUnitTest() {}
-
-ChromeVoxSpannableUnitTest.prototype = {
-  __proto__: ChromeVoxUnitTestBase.prototype,
-
-  /** @override */
-  closureModuleDeps: [
-    'Spannable',
-  ],
-
+ChromeVoxSpannableUnitTest = class extends ChromeVoxUnitTestBase {
   /** @override */
   setUp() {
     Spannable.registerStatelessSerializableSpan(
@@ -83,6 +72,13 @@ ChromeVoxSpannableUnitTest.prototype = {
         NonStatelessSerializableSpan.prototype.toJson);
   }
 };
+
+
+/** @override */
+ChromeVoxSpannableUnitTest.prototype.closureModuleDeps = [
+  'Spannable',
+];
+
 
 TEST_F('ChromeVoxSpannableUnitTest', 'ToStringUnannotated', function() {
   assertEquals('', new Spannable().toString());

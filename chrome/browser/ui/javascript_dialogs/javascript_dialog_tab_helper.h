@@ -13,14 +13,10 @@
 #include "base/optional.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/javascript_dialogs/javascript_dialog.h"
+#include "chrome/browser/ui/javascript_dialogs/javascript_dialog_tab_helper_delegate.h"
 #include "content/public/browser/javascript_dialog_manager.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
-
-#if !defined(OS_ANDROID)
-#include "chrome/browser/ui/browser_list_observer.h"
-#include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
-#endif
 
 // A class, attached to WebContentses in browser windows, that is the
 // JavaScriptDialogManager for them and handles displaying their dialogs.
@@ -43,10 +39,6 @@
 class JavaScriptDialogTabHelper
     : public content::JavaScriptDialogManager,
       public content::WebContentsObserver,
-#if !defined(OS_ANDROID)
-      public BrowserListObserver,
-      public TabStripModelObserver,
-#endif
       public content::WebContentsUserData<JavaScriptDialogTabHelper> {
  public:
   enum class DismissalCause {
@@ -97,8 +89,14 @@ class JavaScriptDialogTabHelper
     kMaxValue = kDialogClosed,
   };
 
-  explicit JavaScriptDialogTabHelper(content::WebContents* web_contents);
+  static void CreateForWebContents(
+      content::WebContents* web_contents,
+      std::unique_ptr<JavaScriptDialogTabHelperDelegate> delegate);
+
   ~JavaScriptDialogTabHelper() override;
+
+  void BrowserActiveStateChanged();
+  void CloseDialogWithReason(DismissalCause reason);
 
   void SetDialogShownCallbackForTesting(base::OnceClosure callback);
   bool IsShowingDialogForTesting() const;
@@ -130,19 +128,16 @@ class JavaScriptDialogTabHelper
   void DidStartNavigation(
       content::NavigationHandle* navigation_handle) override;
 
-#if !defined(OS_ANDROID)
-  // BrowserListObserver:
-  void OnBrowserSetLastActive(Browser* browser) override;
-
-  // TabStripModelObserver:
-  void OnTabStripModelChanged(
-      TabStripModel* tab_strip_model,
-      const TabStripModelChange& change,
-      const TabStripSelectionChange& selection) override;
-#endif
-
  private:
   friend class content::WebContentsUserData<JavaScriptDialogTabHelper>;
+
+  // This is here to hide the normal WebContentsUserData factory function in
+  // favor of that which takes a delegate.
+  static void CreateForWebContents(content::WebContents* web_contents);
+
+  JavaScriptDialogTabHelper(
+      content::WebContents* web_contents,
+      std::unique_ptr<JavaScriptDialogTabHelperDelegate> delegate);
 
   // Logs the cause of a dialog dismissal in UMA.
   void LogDialogDismissalCause(DismissalCause cause);
@@ -155,17 +150,6 @@ class JavaScriptDialogTabHelper
   void CloseDialog(DismissalCause cause,
                    bool success,
                    const base::string16& user_input);
-
-  // Marks the tab as needing attention. The WebContents must be in a browser
-  // window.
-  void SetTabNeedsAttention(bool attention);
-
-#if !defined(OS_ANDROID)
-  // Marks the tab as needing attention.
-  void SetTabNeedsAttentionImpl(bool attention,
-                                TabStripModel* tab_strip_model,
-                                int index);
-#endif
 
   // There can be at most one dialog (pending or not) being shown at any given
   // time on a tab. Depending on the type of the dialog, the variables
@@ -212,21 +196,7 @@ class JavaScriptDialogTabHelper
   // A closure to be fired when a dialog is dismissed. For testing only.
   DialogDismissedCallback dialog_dismissed_;
 
-#if !defined(OS_ANDROID)
-  // If this instance is observing a TabStripModel, then this member is not
-  // nullptr.
-  //
-  // This raw pointer is safe to use because the lifetime of this instance is
-  // tied to the corresponding WebContents, which is owned by the TabStripModel.
-  // Any time TabStripModel would give up ownership of the WebContents, it would
-  // first send either a TabStripModelChange::kRemoved or kReplaced
-  // via OnTabStripModelChanged() callback, which gives this instance the
-  // opportunity to stop observing the TabStripModel.
-  //
-  // A TabStripModel cannot be destroyed without first detaching all of its
-  // WebContents.
-  TabStripModel* tab_strip_model_being_observed_ = nullptr;
-#endif
+  std::unique_ptr<JavaScriptDialogTabHelperDelegate> delegate_;
 
   WEB_CONTENTS_USER_DATA_KEY_DECL();
 

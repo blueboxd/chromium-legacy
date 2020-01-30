@@ -11,16 +11,9 @@ GEN_INCLUDE([
 
 /**
  * Test fixture.
- * @constructor
- * @extends {ChromeVoxE2ETest}
  */
-function ChromeVoxTtsBackgroundTest() {
-  ChromeVoxE2ETest.call(this);
-}
+ChromeVoxTtsBackgroundTest = class extends ChromeVoxE2ETest {};
 
-ChromeVoxTtsBackgroundTest.prototype = {
-  __proto__: ChromeVoxE2ETest.prototype
-};
 
 SYNC_TEST_F('ChromeVoxTtsBackgroundTest', 'Preprocess', function() {
   var tts = new TtsBackground(false);

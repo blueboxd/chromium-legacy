@@ -12,7 +12,7 @@ goog.provide('TestMsgs');
 goog.require('Msgs');
 goog.require('TestMessages');
 
-class TestMsgs {
+TestMsgs = class {
   constructor() {}
 
   /**
@@ -48,7 +48,7 @@ class TestMsgs {
     }
     return Msgs.applySubstitutions_(messageString, opt_subs);
   }
-}
+};
 
 /**
  * @type {function(string, Array<string>=): string}

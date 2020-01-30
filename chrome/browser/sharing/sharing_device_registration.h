@@ -20,11 +20,15 @@ class PrefService;
 
 namespace instance_id {
 class InstanceIDDriver;
-}
+}  // namespace instance_id
 
+namespace syncer {
+class SyncService;
+}  // namespace syncer
+
+enum class SharingDeviceRegistrationResult;
 class SharingSyncPreference;
 class VapidKeyManager;
-enum class SharingDeviceRegistrationResult;
 
 // Responsible for registering and unregistering device with
 // SharingSyncPreference.
@@ -38,8 +42,9 @@ class SharingDeviceRegistration {
 
   SharingDeviceRegistration(PrefService* pref_service,
                             SharingSyncPreference* prefs,
+                            VapidKeyManager* vapid_key_manager,
                             instance_id::InstanceIDDriver* instance_id_driver,
-                            VapidKeyManager* vapid_key_manager);
+                            syncer::SyncService* sync_service);
   virtual ~SharingDeviceRegistration();
 
   // Registers device with sharing sync preferences. Takes a |callback| function
@@ -88,14 +93,14 @@ class SharingDeviceRegistration {
 
   void OnVapidTargetInfoRetrieved(
       RegistrationCallback callback,
-      const std::string& authorized_entity,
+      base::Optional<std::string> authorized_entity,
       SharingDeviceRegistrationResult result,
       base::Optional<syncer::DeviceInfo::SharingTargetInfo> vapid_target_info);
 
   void OnSharingTargetInfoRetrieved(
       RegistrationCallback callback,
-      const std::string& authorized_entity,
-      syncer::DeviceInfo::SharingTargetInfo vapid_target_info,
+      base::Optional<std::string> authorized_entity,
+      base::Optional<syncer::DeviceInfo::SharingTargetInfo> vapid_target_info,
       SharingDeviceRegistrationResult result,
       base::Optional<syncer::DeviceInfo::SharingTargetInfo>
           sharing_target_info);
@@ -113,13 +118,17 @@ class SharingDeviceRegistration {
   base::Optional<std::string> GetAuthorizationEntity() const;
 
   // Computes and returns a set of all enabled features on the device.
-  std::set<sync_pb::SharingSpecificFields_EnabledFeatures> GetEnabledFeatures()
-      const;
+  // |supports_vapid|: If set to true, then enabled features with VAPID suffix
+  // will be returned, meaning old clients can send VAPID message to this device
+  // for those features.
+  std::set<sync_pb::SharingSpecificFields_EnabledFeatures> GetEnabledFeatures(
+      bool supports_vapid) const;
 
   PrefService* pref_service_;
   SharingSyncPreference* sharing_sync_preference_;
-  instance_id::InstanceIDDriver* instance_id_driver_;
   VapidKeyManager* vapid_key_manager_;
+  instance_id::InstanceIDDriver* instance_id_driver_;
+  syncer::SyncService* sync_service_;
   base::Optional<std::set<sync_pb::SharingSpecificFields_EnabledFeatures>>
       enabled_features_testing_value_;
 

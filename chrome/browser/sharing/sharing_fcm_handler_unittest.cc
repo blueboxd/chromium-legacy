@@ -9,6 +9,7 @@
 #include "chrome/browser/sharing/fake_sharing_handler_registry.h"
 #include "chrome/browser/sharing/features.h"
 #include "chrome/browser/sharing/mock_sharing_message_handler.h"
+#include "chrome/browser/sharing/proto/sharing_message.pb.h"
 #include "chrome/browser/sharing/sharing_constants.h"
 #include "chrome/browser/sharing/sharing_fcm_handler.h"
 #include "chrome/browser/sharing/sharing_fcm_sender.h"
@@ -35,24 +36,39 @@ const char kTestMessageIdSecondaryUser[] =
 const char kOriginalMessageId[] = "test_original_message_id";
 const char kSenderGuid[] = "test_sender_guid";
 const char kSenderName[] = "test_sender_name";
-const char kFCMToken[] = "test_vapid_fcm_token";
-const char kP256dh[] = "test_p256_dh";
-const char kAuthSecret[] = "test_auth_secret";
+const char kVapidFCMToken[] = "test_vapid_fcm_token";
+const char kVapidP256dh[] = "test_vapid_p256_dh";
+const char kVapidAuthSecret[] = "test_vapid_auth_secret";
+const char kSenderIdFCMToken[] = "test_sender_id_fcm_token";
+const char kSenderIdP256dh[] = "test_sender_id_p256_dh";
+const char kSenderIdAuthSecret[] = "test_sender_id_auth_secret";
+const char kServerConfiguration[] = "test_server_configuration";
+const char kServerP256dh[] = "test_server_p256_dh";
+const char kServerAuthSecret[] = "test_server_auth_secret";
 
 class MockSharingFCMSender : public SharingFCMSender {
  public:
   MockSharingFCMSender()
       : SharingFCMSender(
             /*web_push_sender=*/nullptr,
+            /*sharing_message_bridge=*/nullptr,
             /*sync_preference=*/nullptr,
             /*vapid_key_manager=*/nullptr,
             /*gcm_driver=*/nullptr,
-            /*local_device_info_provider=*/nullptr) {}
+            /*local_device_info_provider=*/nullptr,
+            /*sync_service=*/nullptr) {}
   ~MockSharingFCMSender() override = default;
 
-  MOCK_METHOD4(SendMessageToTargetInfo,
-               void(syncer::DeviceInfo::SharingTargetInfo target,
+  MOCK_METHOD4(SendMessageToFcmTarget,
+               void(const chrome_browser_sharing::FCMChannelConfiguration&
+                        fcm_configuration,
                     base::TimeDelta time_to_live,
+                    SharingMessage message,
+                    SendMessageCallback callback));
+
+  MOCK_METHOD3(SendMessageToServerTarget,
+               void(const chrome_browser_sharing::ServerChannelConfiguration&
+                        server_channel,
                     SharingMessage message,
                     SendMessageCallback callback));
 };
@@ -72,9 +88,8 @@ class SharingFCMHandlerTest : public testing::Test {
         /*last_updated_timestamp=*/base::Time::Now(),
         /*send_tab_to_self_receiving_enabled=*/false,
         syncer::DeviceInfo::SharingInfo(
-            {kFCMToken, kP256dh, kAuthSecret},
-            {"sender_id_fcm_token", "sender_id_p256dh",
-             "sender_id_auth_secret"},
+            {kVapidFCMToken, kVapidP256dh, kVapidAuthSecret},
+            {kSenderIdFCMToken, kSenderIdP256dh, kSenderIdAuthSecret},
             std::set<sync_pb::SharingSpecificFields::EnabledFeatures>()));
     SharingSyncPreference::RegisterProfilePrefs(prefs_.registry());
   }
@@ -115,11 +130,20 @@ MATCHER_P(ProtoEquals, message, "") {
   return expected_serialized == actual_serialized;
 }
 
-MATCHER(DeviceMatcher, "") {
-  return arg.fcm_token == kFCMToken && arg.p256dh == kP256dh &&
-         arg.auth_secret == kAuthSecret;
+MATCHER(FCMChannelMatcher, "") {
+  return arg.vapid_fcm_token() == kVapidFCMToken &&
+         arg.vapid_p256dh() == kVapidP256dh &&
+         arg.vapid_auth_secret() == kVapidAuthSecret &&
+         arg.sender_id_fcm_token() == kSenderIdFCMToken &&
+         arg.sender_id_p256dh() == kSenderIdP256dh &&
+         arg.sender_id_auth_secret() == kSenderIdAuthSecret;
 }
 
+MATCHER(ServerChannelMatcher, "") {
+  return arg.configuration() == kServerConfiguration &&
+         arg.p256dh() == kServerP256dh &&
+         arg.auth_secret() == kServerAuthSecret;
+}
 // Tests handling of SharingMessage with AckMessage payload. This is different
 // from other payloads since we need to ensure AckMessage is not sent for
 // SharingMessage with AckMessage payload.
@@ -132,7 +156,7 @@ TEST_F(SharingFCMHandlerTest, AckMessageHandler) {
 
   EXPECT_CALL(mock_sharing_message_handler_,
               OnMessage(ProtoEquals(sharing_message), _));
-  EXPECT_CALL(mock_sharing_fcm_sender_, SendMessageToTargetInfo(_, _, _, _))
+  EXPECT_CALL(mock_sharing_fcm_sender_, SendMessageToFcmTarget(_, _, _, _))
       .Times(0);
   handler_registry_.SetSharingHandler(SharingMessage::kAckMessage,
                                       &mock_sharing_message_handler_);
@@ -156,7 +180,7 @@ TEST_F(SharingFCMHandlerTest, PingMessageHandler) {
 
   // Tests OnMessage flow in SharingFCMHandler when no handler is registered.
   EXPECT_CALL(mock_sharing_message_handler_, OnMessage(_, _)).Times(0);
-  EXPECT_CALL(mock_sharing_fcm_sender_, SendMessageToTargetInfo(_, _, _, _))
+  EXPECT_CALL(mock_sharing_fcm_sender_, SendMessageToFcmTarget(_, _, _, _))
       .Times(0);
   sharing_fcm_handler_->OnMessage(kTestAppId, incoming_message);
 
@@ -171,8 +195,8 @@ TEST_F(SharingFCMHandlerTest, PingMessageHandler) {
   EXPECT_CALL(mock_sharing_message_handler_, OnMessage(_, _));
   EXPECT_CALL(
       mock_sharing_fcm_sender_,
-      SendMessageToTargetInfo(
-          DeviceMatcher(),
+      SendMessageToFcmTarget(
+          FCMChannelMatcher(),
           Eq(base::TimeDelta::FromSeconds(kSharingAckMessageTTLSeconds.Get())),
           ProtoEquals(sharing_ack_message), _));
   handler_registry_.SetSharingHandler(SharingMessage::kPingMessage,
@@ -182,9 +206,43 @@ TEST_F(SharingFCMHandlerTest, PingMessageHandler) {
   // Tests OnMessage flow in SharingFCMHandler after registered handler is
   // removed.
   EXPECT_CALL(mock_sharing_message_handler_, OnMessage(_, _)).Times(0);
-  EXPECT_CALL(mock_sharing_fcm_sender_, SendMessageToTargetInfo(_, _, _, _))
+  EXPECT_CALL(mock_sharing_fcm_sender_, SendMessageToFcmTarget(_, _, _, _))
       .Times(0);
   handler_registry_.SetSharingHandler(SharingMessage::kPingMessage, nullptr);
+  sharing_fcm_handler_->OnMessage(kTestAppId, incoming_message);
+}
+
+TEST_F(SharingFCMHandlerTest, PingMessageHandlerWithMessageIdInPayload) {
+  fake_device_info_sync_service_.GetDeviceInfoTracker()->Add(
+      fake_device_info_.get());
+
+  SharingMessage sharing_message;
+  sharing_message.set_sender_guid(kSenderGuid);
+  sharing_message.mutable_ping_message();
+  sharing_message.set_message_id(kTestMessageId);
+  gcm::IncomingMessage incoming_message =
+      CreateGCMIncomingMessage(std::string(), sharing_message);
+
+  SharingMessage sharing_ack_message;
+  sharing_ack_message.mutable_ack_message()->set_original_message_id(
+      kTestMessageId);
+
+  ON_CALL(mock_sharing_message_handler_,
+          OnMessage(ProtoEquals(sharing_message), _))
+      .WillByDefault(testing::Invoke(
+          [](const SharingMessage& message,
+             SharingMessageHandler::DoneCallback done_callback) {
+            std::move(done_callback).Run(/*response=*/nullptr);
+          }));
+  EXPECT_CALL(mock_sharing_message_handler_, OnMessage(_, _));
+  EXPECT_CALL(
+      mock_sharing_fcm_sender_,
+      SendMessageToFcmTarget(
+          FCMChannelMatcher(),
+          Eq(base::TimeDelta::FromSeconds(kSharingAckMessageTTLSeconds.Get())),
+          ProtoEquals(sharing_ack_message), _));
+  handler_registry_.SetSharingHandler(SharingMessage::kPingMessage,
+                                      &mock_sharing_message_handler_);
   sharing_fcm_handler_->OnMessage(kTestAppId, incoming_message);
 }
 
@@ -215,8 +273,8 @@ TEST_F(SharingFCMHandlerTest, PingMessageHandlerWithResponse) {
   EXPECT_CALL(mock_sharing_message_handler_, OnMessage(_, _));
   EXPECT_CALL(
       mock_sharing_fcm_sender_,
-      SendMessageToTargetInfo(
-          DeviceMatcher(),
+      SendMessageToFcmTarget(
+          FCMChannelMatcher(),
           Eq(base::TimeDelta::FromSeconds(kSharingAckMessageTTLSeconds.Get())),
           ProtoEquals(sharing_ack_message), _));
   handler_registry_.SetSharingHandler(SharingMessage::kPingMessage,
@@ -250,8 +308,8 @@ TEST_F(SharingFCMHandlerTest, PingMessageHandlerSecondaryUser) {
           }));
   EXPECT_CALL(
       mock_sharing_fcm_sender_,
-      SendMessageToTargetInfo(
-          DeviceMatcher(),
+      SendMessageToFcmTarget(
+          FCMChannelMatcher(),
           Eq(base::TimeDelta::FromSeconds(kSharingAckMessageTTLSeconds.Get())),
           ProtoEquals(sharing_ack_message), _));
   handler_registry_.SetSharingHandler(SharingMessage::kPingMessage,
@@ -262,14 +320,19 @@ TEST_F(SharingFCMHandlerTest, PingMessageHandlerSecondaryUser) {
 // Test for handling of SharingMessage payload with RecipientInfo other than
 // AckMessage.
 TEST_F(SharingFCMHandlerTest, PingMessageHandlerWithFCMChannelConfiguration) {
+  // Avoid adding fake_device_info_ to provider so it must be provided from
+  // original message.
   SharingMessage sharing_message;
   sharing_message.set_sender_guid(kSenderGuid);
   sharing_message.mutable_ping_message();
   chrome_browser_sharing::FCMChannelConfiguration* fcm_configuration =
       sharing_message.mutable_fcm_channel_configuration();
-  fcm_configuration->set_vapid_fcm_token(kFCMToken);
-  fcm_configuration->set_vapid_p256dh(kP256dh);
-  fcm_configuration->set_vapid_auth_secret(kAuthSecret);
+  fcm_configuration->set_vapid_fcm_token(kVapidFCMToken);
+  fcm_configuration->set_vapid_p256dh(kVapidP256dh);
+  fcm_configuration->set_vapid_auth_secret(kVapidAuthSecret);
+  fcm_configuration->set_sender_id_fcm_token(kSenderIdFCMToken);
+  fcm_configuration->set_sender_id_p256dh(kSenderIdP256dh);
+  fcm_configuration->set_sender_id_auth_secret(kSenderIdAuthSecret);
   gcm::IncomingMessage incoming_message =
       CreateGCMIncomingMessage(kTestMessageId, sharing_message);
 
@@ -286,10 +349,41 @@ TEST_F(SharingFCMHandlerTest, PingMessageHandlerWithFCMChannelConfiguration) {
           }));
   EXPECT_CALL(
       mock_sharing_fcm_sender_,
-      SendMessageToTargetInfo(
-          DeviceMatcher(),
+      SendMessageToFcmTarget(
+          FCMChannelMatcher(),
           Eq(base::TimeDelta::FromSeconds(kSharingAckMessageTTLSeconds.Get())),
           ProtoEquals(sharing_ack_message), _));
+  handler_registry_.SetSharingHandler(SharingMessage::kPingMessage,
+                                      &mock_sharing_message_handler_);
+  sharing_fcm_handler_->OnMessage(kTestAppId, incoming_message);
+}
+
+TEST_F(SharingFCMHandlerTest,
+       PingMessageHandlerWithServerChannelConfiguration) {
+  SharingMessage sharing_message;
+  sharing_message.mutable_ping_message();
+  chrome_browser_sharing::ServerChannelConfiguration* server_configuration =
+      sharing_message.mutable_server_channel_configuration();
+  server_configuration->set_configuration(kServerConfiguration);
+  server_configuration->set_p256dh(kServerP256dh);
+  server_configuration->set_auth_secret(kServerAuthSecret);
+  gcm::IncomingMessage incoming_message =
+      CreateGCMIncomingMessage(kTestMessageId, sharing_message);
+
+  SharingMessage sharing_ack_message;
+  sharing_ack_message.mutable_ack_message()->set_original_message_id(
+      kTestMessageId);
+
+  ON_CALL(mock_sharing_message_handler_,
+          OnMessage(ProtoEquals(sharing_message), _))
+      .WillByDefault(testing::Invoke(
+          [](const SharingMessage& message,
+             SharingMessageHandler::DoneCallback done_callback) {
+            std::move(done_callback).Run(/*response=*/nullptr);
+          }));
+  EXPECT_CALL(mock_sharing_fcm_sender_,
+              SendMessageToServerTarget(ServerChannelMatcher(),
+                                        ProtoEquals(sharing_ack_message), _));
   handler_registry_.SetSharingHandler(SharingMessage::kPingMessage,
                                       &mock_sharing_message_handler_);
   sharing_fcm_handler_->OnMessage(kTestAppId, incoming_message);

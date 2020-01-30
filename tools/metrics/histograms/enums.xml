@@ -39748,6 +39748,7 @@ from previous Chrome versions.
   <int value="1626824478" label="ExperimentalAppBanners:disabled"/>
   <int value="1628259213" label="DuetTabStripIntegrationAndroid:enabled"/>
   <int value="1628831121" label="SafeBrowsingUseLocalBlacklistsV2:enabled"/>
+  <int value="1630159957" label="SharingSendViaSync:disabled"/>
   <int value="1630988998" label="VrBrowsingExperimentalRendering:disabled"/>
   <int value="1632112977" label="ash-disable-tablet-autohide-titlebars"/>
   <int value="1633456034" label="chrome-home-swipe-logic"/>
@@ -40135,6 +40136,7 @@ from previous Chrome versions.
   <int value="2089897928" label="enable-audio-focus"/>
   <int value="2091002949" label="RemoveNavigationHistory:disabled"/>
   <int value="2092605092" label="ChromeHomeShowGoogleGWhenUrlCleared:disabled"/>
+  <int value="2092968851" label="SharingSendViaSync:enabled"/>
   <int value="2093235103" label="default-tile-width"/>
   <int value="2093949489" label="ArrayPrototypeValues:enabled"/>
   <int value="2094335682" label="StreamlinedUsbPrinterSetup:enabled"/>
@@ -58469,6 +58471,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="3" label="Failed with FCM transient error"/>
   <int value="4" label="Failed with FCM fatal error"/>
   <int value="5" label="Device has not been registered"/>
+  <int value="6" label="Other internal error"/>
 </enum>
 
 <enum name="SharingDialogType">

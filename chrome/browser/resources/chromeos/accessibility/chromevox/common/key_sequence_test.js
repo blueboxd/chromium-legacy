@@ -9,20 +9,8 @@ GEN_INCLUDE([
 
 /**
  * Test fixture.
- * @constructor
- * @extends {ChromeVoxUnitTestBase}
  */
-function ChromeVoxKeySequenceUnitTest() {}
-
-ChromeVoxKeySequenceUnitTest.prototype = {
-  __proto__: ChromeVoxUnitTestBase.prototype,
-
-  /** @override */
-  closureModuleDeps: [
-    'ChromeVox',
-    'KeySequence',
-  ],
-
+ChromeVoxKeySequenceUnitTest = class extends ChromeVoxUnitTestBase {
   /**
    * Create mock event object.
    * @param {number} keyCode The event key code (i.e. 13 for Enter).
@@ -78,7 +66,7 @@ ChromeVoxKeySequenceUnitTest.prototype = {
     }
 
     return mockEvent;
-  },
+  }
 
   /** @override */
   setUp() {
@@ -157,6 +145,12 @@ ChromeVoxKeySequenceUnitTest.prototype = {
     this.shiftCtrlEvent = this.createMockEvent(17, {shiftKey: true});
   }
 };
+
+/** @override */
+ChromeVoxKeySequenceUnitTest.prototype.closureModuleDeps = [
+  'ChromeVox',
+  'KeySequence',
+];
 
 TEST_F('ChromeVoxKeySequenceUnitTest', 'SimpleSequenceNoModifier', function() {
   var downKey = new KeySequence(this.downArrowEvent, false);

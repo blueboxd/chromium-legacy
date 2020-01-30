@@ -13,30 +13,23 @@ GEN_INCLUDE([
 
 /**
  * Test fixture for tree_walker.js.
- * @constructor
- * @extends {ChromeVoxE2ETestBase}
  */
-function ChromeVoxAutomationTreeWalkerTest() {
-  ChromeVoxNextE2ETest.call(this);
-}
-
-ChromeVoxAutomationTreeWalkerTest.prototype = {
-  __proto__: ChromeVoxNextE2ETest.prototype,
+ChromeVoxAutomationTreeWalkerTest = class extends ChromeVoxNextE2ETest {
   /** @override */
   testGenCppIncludes() {
     ChromeVoxE2ETest.prototype.testGenCppIncludes.call(this);
 
     // See https://crbug.com/981953 for details.
     GEN(`
-#if !defined(NDEBUG)
-#define MAYBE_Forward DISABLED_Forward
-#define MAYBE_Backward DISABLED_Backward
-#else
-#define MAYBE_Forward Forward
-#define MAYBE_Backward Backward
-#endif
-    `);
-  },
+  #if !defined(NDEBUG)
+  #define MAYBE_Forward DISABLED_Forward
+  #define MAYBE_Backward DISABLED_Backward
+  #else
+  #define MAYBE_Forward Forward
+  #define MAYBE_Backward Backward
+  #endif
+      `);
+  }
 
   flattenTree(node, outResult) {
     outResult.push(node);
@@ -49,7 +42,7 @@ ChromeVoxAutomationTreeWalkerTest.prototype = {
       this.flattenTree(node, outResult);
       node = node.nextSibling;
     }
-  },
+  }
 
   isAncestor(ancestor, node) {
     while (node = node.parent) {
@@ -58,12 +51,13 @@ ChromeVoxAutomationTreeWalkerTest.prototype = {
       }
     }
     return false;
-  },
+  }
 
   isDescendant(descendant, node) {
     return this.isAncestor(node, descendant);
   }
 };
+
 
 TEST_F('ChromeVoxAutomationTreeWalkerTest', 'MAYBE_Forward', function() {
   chrome.automation.getDesktop(this.newCallback(function(d) {

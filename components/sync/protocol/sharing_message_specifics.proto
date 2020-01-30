@@ -55,9 +55,8 @@ message SharingMessageSpecifics {
 // Used for the server to return fine grained commit errors back to the client.
 message SharingMessageCommitError {
   // This enum is used in histograms. Entries should not be renumbered and
-  // numeric values should never be reused. Only add at the end and update
-  // COUNT. Also remember to update in tools/metrics/histograms/enums.xml
-  // SyncSharingMessageCommitErrorCode enum.
+  // numeric values should never be reused. Also remember to update in
+  // tools/metrics/histograms/enums.xml SyncSharingMessageCommitErrorCode enum.
   enum ErrorCode {
     NONE = 0;
     INVALID_ARGUMENT = 1;
@@ -69,8 +68,6 @@ message SharingMessageCommitError {
     PERMISSION_DENIED = 7;
     // Client-specific error code.
     SYNC_TURNED_OFF = 8;
-
-    COUNT = 9;
   }
 
   optional ErrorCode error_code = 1;

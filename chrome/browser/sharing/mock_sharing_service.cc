@@ -19,8 +19,9 @@ MockSharingService::MockSharingService()
           std::make_unique<SharingDeviceRegistration>(
               /*pref_service=*/nullptr,
               /*sharing_sync_preference=*/nullptr,
+              /*vapid_key_manager=*/nullptr,
               /*instance_id_driver=*/nullptr,
-              /*vapid_key_manager=*/nullptr),
+              /*sync_service=*/nullptr),
           /*message_sender=*/nullptr,
           /*device_source=*/nullptr,
           /*handler_registry=*/nullptr,

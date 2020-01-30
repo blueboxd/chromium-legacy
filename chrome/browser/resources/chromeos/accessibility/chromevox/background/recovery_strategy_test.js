@@ -10,17 +10,14 @@ GEN_INCLUDE([
 
 /**
  * Test fixture for recovery strategy tests.
- * @constructor
- * @extends {ChromeVoxNextE2ETest}
  */
-function ChromeVoxRecoveryStrategyTest() {
-  ChromeVoxNextE2ETest.call(this);
-  window.RoleType = chrome.automation.RoleType;
-}
-
-ChromeVoxRecoveryStrategyTest.prototype = {
-  __proto__: ChromeVoxNextE2ETest.prototype,
+ChromeVoxRecoveryStrategyTest = class extends ChromeVoxNextE2ETest {
+  constructor() {
+    super();
+    window.RoleType = chrome.automation.RoleType;
+  }
 };
+
 
 TEST_F('ChromeVoxRecoveryStrategyTest', 'ReparentedRecovery', function() {
   this.runWithLoadedTree(

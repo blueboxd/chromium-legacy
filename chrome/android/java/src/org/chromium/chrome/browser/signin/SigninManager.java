@@ -379,7 +379,7 @@ public class SigninManager
     public void signIn(@SigninAccessPoint int accessPoint, CoreAccountInfo accountInfo,
             @Nullable SignInCallback callback) {
         assert accountInfo != null;
-        signIn(accessPoint, AccountManagerFacade.createAccountFromName(accountInfo.getName()),
+        signIn(accessPoint, AccountManagerFacade.createAccountFromName(accountInfo.getEmail()),
                 callback);
     }
 
@@ -480,7 +480,7 @@ public class SigninManager
         // Cache the signed-in account name. This must be done after the native call, otherwise
         // sync tries to start without being signed in natively and crashes.
         ChromeSigninController.get().setSignedInAccountName(
-                mSignInState.mCoreAccountInfo.getName());
+                mSignInState.mCoreAccountInfo.getEmail());
         enableSync(mSignInState.mCoreAccountInfo);
 
         if (mSignInState.mCallback != null) {
@@ -707,7 +707,7 @@ public class SigninManager
         // Cache the signed-in account name. This must be done after the native call, otherwise
         // sync tries to start without being signed in the native code and crashes.
         mAndroidSyncSettings.updateAccount(
-                AccountManagerFacade.createAccountFromName(accountInfo.getName()));
+                AccountManagerFacade.createAccountFromName(accountInfo.getEmail()));
         mAndroidSyncSettings.enableChromeSync();
     }
 

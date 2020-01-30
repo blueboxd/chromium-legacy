@@ -95,17 +95,29 @@ bool HasFocusInAnyChildView(views::View* view) {
   return search == view;
 }
 
-views::Label* CreateBubbleLabel(const base::string16& message, SkColor color) {
-  views::Label* label = new views::Label(message, views::style::CONTEXT_LABEL,
-                                         views::style::STYLE_PRIMARY);
-  label->SetLineHeight(20);
+views::Label* CreateBubbleLabel(const base::string16& message,
+                                SkColor color,
+                                views::View* view_defining_max_width,
+                                int font_size_delta,
+                                gfx::Font::Weight font_weight) {
+  views::Label* label =
+      new views::Label(message, views::style::CONTEXT_MESSAGE_BOX_BODY_TEXT,
+                       views::style::STYLE_PRIMARY);
   label->SetAutoColorReadabilityEnabled(false);
   label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   label->SetEnabledColor(color);
   label->SetSubpixelRenderingEnabled(false);
   const gfx::FontList& base_font_list = views::Label::GetDefaultFontList();
-  label->SetFontList(base_font_list.Derive(0, gfx::Font::FontStyle::NORMAL,
-                                           gfx::Font::Weight::NORMAL));
+  label->SetFontList(base_font_list.Derive(
+      font_size_delta, gfx::Font::FontStyle::NORMAL, font_weight));
+  if (view_defining_max_width != nullptr) {
+    label->SetMultiLine(true);
+    label->SetAllowCharacterBreak(true);
+    // Make sure to set a maximum label width, otherwise text wrapping will
+    // significantly increase width and layout may not work correctly if
+    // the input string is very long.
+    label->SetMaximumWidth(view_defining_max_width->GetPreferredSize().width());
+  }
   return label;
 }
 

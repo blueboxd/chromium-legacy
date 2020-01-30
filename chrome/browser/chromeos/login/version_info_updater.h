@@ -54,7 +54,7 @@ class VersionInfoUpdater : public policy::CloudPolicyStore::Observer {
 
   // Starts fetching version info. The delegate will be notified when update
   // is received.
-  void StartUpdate(bool is_official_build);
+  void StartUpdate(bool is_chrome_branded);
 
   // Determine whether the system information will be displayed forcedly.
   base::Optional<bool> IsSystemInfoEnforced() const;

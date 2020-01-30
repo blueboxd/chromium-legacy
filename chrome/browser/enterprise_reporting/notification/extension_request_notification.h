@@ -28,7 +28,6 @@ class ExtensionRequestNotification
     kNumberOfTypes = 3
   };
 
-  ExtensionRequestNotification();
   ExtensionRequestNotification(Profile* profile,
                                const NotifyType notify_type,
                                const ExtensionIds& extension_ids);

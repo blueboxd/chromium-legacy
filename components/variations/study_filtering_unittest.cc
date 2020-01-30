@@ -213,13 +213,17 @@ TEST(VariationsStudyFilteringTest, CheckStudyLocale) {
 }
 
 TEST(VariationsStudyFilteringTest, CheckStudyPlatform) {
-  const Study::Platform platforms[] = {
-      Study::PLATFORM_WINDOWS,         Study::PLATFORM_MAC,
-      Study::PLATFORM_LINUX,           Study::PLATFORM_CHROMEOS,
-      Study::PLATFORM_ANDROID,         Study::PLATFORM_IOS,
-      Study::PLATFORM_ANDROID_WEBVIEW, Study::PLATFORM_FUCHSIA};
+  const Study::Platform platforms[] = {Study::PLATFORM_WINDOWS,
+                                       Study::PLATFORM_MAC,
+                                       Study::PLATFORM_LINUX,
+                                       Study::PLATFORM_CHROMEOS,
+                                       Study::PLATFORM_ANDROID,
+                                       Study::PLATFORM_IOS,
+                                       Study::PLATFORM_ANDROID_WEBLAYER,
+                                       Study::PLATFORM_FUCHSIA,
+                                       Study::PLATFORM_ANDROID_WEBVIEW};
   ASSERT_EQ(Study::Platform_ARRAYSIZE, static_cast<int>(base::size(platforms)));
-  bool platform_added[base::size(platforms)] = {0};
+  bool platform_added[base::size(platforms)] = {false};
 
   Study::Filter filter;
 

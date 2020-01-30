@@ -22,10 +22,11 @@ namespace content {
 // `navigate-to` and `form-action` (in the case of form submissions).
 class InitiatorCSPContext : public CSPContext {
  public:
-  InitiatorCSPContext(std::vector<ContentSecurityPolicy> policies,
-                      network::mojom::CSPSourcePtr self_source,
-                      mojo::PendingRemote<blink::mojom::NavigationInitiator>
-                          navigation_initiator);
+  InitiatorCSPContext(
+      std::vector<network::mojom::ContentSecurityPolicyPtr> policies,
+      network::mojom::CSPSourcePtr self_source,
+      mojo::PendingRemote<blink::mojom::NavigationInitiator>
+          navigation_initiator);
   ~InitiatorCSPContext() override;
 
   void ReportContentSecurityPolicyViolation(

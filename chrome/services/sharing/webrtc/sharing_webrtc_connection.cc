@@ -263,7 +263,8 @@ void SharingWebRtcConnection::OnOfferReceived(
       webrtc::CreateSessionDescription(webrtc::SdpType::kOffer, offer,
                                        nullptr));
   if (!description) {
-    LOG(ERROR) << "Failed to parse received offer";
+    LogWebRtcConnectionErrorReason(
+        WebRtcConnectionErrorReason::kInvalidRemoteOffer);
     CloseConnection();
     return;
   }
@@ -299,21 +300,20 @@ void SharingWebRtcConnection::SendMessage(const std::vector<uint8_t>& message,
                                           SendMessageCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (message.empty()) {
-    LOG(ERROR) << "Tried to send an empty message";
+    LogWebRtcSendMessageResult(WebRtcSendMessageResult::kEmptyMessage);
     std::move(callback).Run(mojom::SendMessageResult::kError);
     return;
   }
 
   // TODO(crbug.com/1039280): Split / merge logic for messages > 256k.
   if (message.size() > kMaxMessageSize) {
-    LOG(ERROR) << "Message too large. Tried to send " << message.size()
-               << " bytes but limit is " << kMaxMessageSize;
+    LogWebRtcSendMessageResult(WebRtcSendMessageResult::kPayloadTooLarge);
     std::move(callback).Run(mojom::SendMessageResult::kError);
     return;
   }
 
   if (message.size() > AvailableBufferSize()) {
-    LOG(ERROR) << "Buffer is not large enough";
+    LogWebRtcSendMessageResult(WebRtcSendMessageResult::kBufferExceeded);
     std::move(callback).Run(mojom::SendMessageResult::kError);
     return;
   }
@@ -322,6 +322,7 @@ void SharingWebRtcConnection::SendMessage(const std::vector<uint8_t>& message,
     CreateDataChannel();
 
   if (!channel_) {
+    LogWebRtcSendMessageResult(WebRtcSendMessageResult::kDataChannelNotReady);
     CloseConnection();
     std::move(callback).Run(mojom::SendMessageResult::kError);
     return;
@@ -341,15 +342,13 @@ void SharingWebRtcConnection::SendMessage(const std::vector<uint8_t>& message,
   }
 
   if (channel_->state() != webrtc::DataChannelInterface::DataState::kOpen) {
-    LOG(ERROR) << "Tried to send while DataChannel was "
-               << webrtc::DataChannelInterface::DataStateString(
-                      channel_->state());
+    LogWebRtcSendMessageResult(WebRtcSendMessageResult::kDataChannelNotReady);
     std::move(callback).Run(mojom::SendMessageResult::kError);
     return;
   }
 
   if (!channel_->Send(std::move(buffer))) {
-    LOG(ERROR) << "Failed to send message";
+    LogWebRtcSendMessageResult(WebRtcSendMessageResult::kInternalError);
     CloseConnection();
     std::move(callback).Run(mojom::SendMessageResult::kError);
     return;
@@ -445,16 +444,14 @@ void SharingWebRtcConnection::CreateDataChannel() {
       peer_connection_->CreateDataChannel(kChannelName, &data_channel_init);
   if (channel_)
     channel_->RegisterObserver(this);
-  else
-    LOG(ERROR) << "Failed to create a DataChannel";
 }
 
 void SharingWebRtcConnection::CreateAnswer(OnOfferReceivedCallback callback,
                                            webrtc::RTCError error) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!error.ok()) {
-    LOG(ERROR) << "Failed to set remote description: " << error.message()
-               << " (" << webrtc::ToString(error.type()) << ")";
+    LogWebRtcConnectionErrorReason(
+        WebRtcConnectionErrorReason::kInvalidRemoteOffer);
     CloseConnection();
     return;
   }
@@ -474,12 +471,8 @@ void SharingWebRtcConnection::SetLocalAnswer(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   std::string sdp;
   if (!error.ok() || !description || !description->ToString(&sdp)) {
-    if (!error.ok()) {
-      LOG(ERROR) << "Failed to create local answer: " << error.message() << " ("
-                 << webrtc::ToString(error.type()) << ")";
-    } else {
-      LOG(ERROR) << "Failed to serialize local answer";
-    }
+    LogWebRtcConnectionErrorReason(
+        WebRtcConnectionErrorReason::kInvalidLocalAnswer);
     CloseConnection();
     return;
   }
@@ -496,8 +489,8 @@ void SharingWebRtcConnection::OnAnswerCreated(OnOfferReceivedCallback callback,
                                               webrtc::RTCError error) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!error.ok()) {
-    LOG(ERROR) << "Failed to set local description: " << error.message() << " ("
-               << webrtc::ToString(error.type()) << ")";
+    LogWebRtcConnectionErrorReason(
+        WebRtcConnectionErrorReason::kInvalidLocalAnswer);
     CloseConnection();
     return;
   }
@@ -523,12 +516,8 @@ void SharingWebRtcConnection::SetLocalOffer(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   std::string sdp;
   if (!error.ok() || !description || !description->ToString(&sdp)) {
-    if (!error.ok()) {
-      LOG(ERROR) << "Failed to create local offer: " << error.message() << " ("
-                 << webrtc::ToString(error.type()) << ")";
-    } else {
-      LOG(ERROR) << "Failed to serialize local offer";
-    }
+    LogWebRtcConnectionErrorReason(
+        WebRtcConnectionErrorReason::kInvalidLocalOffer);
     CloseConnection();
     return;
   }
@@ -544,8 +533,8 @@ void SharingWebRtcConnection::OnOfferCreated(const std::string& sdp,
                                              webrtc::RTCError error) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!error.ok()) {
-    LOG(ERROR) << "Failed to set local description: " << error.message() << " ("
-               << webrtc::ToString(error.type()) << ")";
+    LogWebRtcConnectionErrorReason(
+        WebRtcConnectionErrorReason::kInvalidLocalOffer);
     CloseConnection();
     return;
   }
@@ -561,7 +550,8 @@ void SharingWebRtcConnection::OnAnswerReceived(const std::string& answer) {
       webrtc::CreateSessionDescription(webrtc::SdpType::kAnswer, answer,
                                        nullptr));
   if (!description) {
-    LOG(ERROR) << "Failed to parse received answer";
+    LogWebRtcConnectionErrorReason(
+        WebRtcConnectionErrorReason::kInvalidRemoteAnswer);
     CloseConnection();
     return;
   }
@@ -576,8 +566,8 @@ void SharingWebRtcConnection::OnAnswerReceived(const std::string& answer) {
 void SharingWebRtcConnection::OnRemoteDescriptionSet(webrtc::RTCError error) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!error.ok()) {
-    LOG(ERROR) << "Failed to set remote description: " << error.message()
-               << " (" << webrtc::ToString(error.type()) << ")";
+    LogWebRtcConnectionErrorReason(
+        WebRtcConnectionErrorReason::kInvalidRemoteAnswer);
     CloseConnection();
     return;
   }
@@ -621,6 +611,7 @@ void SharingWebRtcConnection::CloseConnection() {
 
   // Call all queued callbacks.
   while (!queued_messages_.empty()) {
+    LogWebRtcSendMessageResult(WebRtcSendMessageResult::kConnectionClosed);
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(std::move(queued_messages_.front().callback),
                                   mojom::SendMessageResult::kError));
@@ -665,15 +656,22 @@ void SharingWebRtcConnection::MaybeSendQueuedMessages() {
   // Send all queued messages. All of them should fit into the DataChannel
   // buffer as we checked the total size before accepting new messages.
   while (!queued_messages_.empty()) {
-    if (!channel_->Send(std::move(queued_messages_.front().buffer))) {
-      LOG(ERROR) << "Failed to send message";
+    PendingMessage pending_message(std::move(queued_messages_.front()));
+    queued_messages_.pop();
+
+    bool success = channel_->Send(std::move(pending_message.buffer));
+    LogWebRtcSendMessageResult(success
+                                   ? WebRtcSendMessageResult::kSuccess
+                                   : WebRtcSendMessageResult::kInternalError);
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(std::move(pending_message.callback),
+                                  success ? mojom::SendMessageResult::kSuccess
+                                          : mojom::SendMessageResult::kError));
+
+    if (!success) {
       CloseConnection();
       return;
     }
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(std::move(queued_messages_.front().callback),
-                                  mojom::SendMessageResult::kSuccess));
-    queued_messages_.pop();
   }
   queued_messages_total_size_ = 0;
 }

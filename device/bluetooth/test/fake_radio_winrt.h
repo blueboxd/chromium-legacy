@@ -47,6 +47,7 @@ class FakeRadioWinrt
   void SimulateAdapterPowerFailure();
   void SimulateAdapterPoweredOn();
   void SimulateAdapterPoweredOff();
+  void SimulateSpuriousStateChangedEvent();
 
  private:
   ABI::Windows::Devices::Radios::RadioState state_ =

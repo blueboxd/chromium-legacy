@@ -27,7 +27,7 @@ const size_t expected_mapped_key_count[] = {
   213,  // evdev
   213,  // xkb
   157,  // windows
-  118,  // mac
+  119,  // mac
 };
 
 const size_t kNativeColumns = base::size(expected_mapped_key_count);

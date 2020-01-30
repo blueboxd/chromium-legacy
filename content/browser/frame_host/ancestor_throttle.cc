@@ -98,8 +98,9 @@ bool HeadersContainFrameAncestorsCSP(const net::HttpResponseHeaders* headers) {
 
 class FrameAncestorCSPContext : public CSPContext {
  public:
-  FrameAncestorCSPContext(RenderFrameHostImpl* navigated_frame,
-                          std::vector<ContentSecurityPolicy> policies)
+  FrameAncestorCSPContext(
+      RenderFrameHostImpl* navigated_frame,
+      std::vector<network::mojom::ContentSecurityPolicyPtr> policies)
       : navigated_frame_(navigated_frame) {
     // TODO(arthursonzogni): Refactor CSPContext to its original state, it
     // shouldn't own any ContentSecurityPolicies on its own. This should be
@@ -260,14 +261,6 @@ NavigationThrottle::ThrottleCheckResult AncestorThrottle::ProcessResponseImpl(
   // existing content-security-policy on the response.
   if (is_response_check && base::FeatureList::IsEnabled(
                                network::features::kOutOfBlinkFrameAncestors)) {
-    // TODO(arthursonzogni): Remove content::ContentSecurityPolicy in favor
-    // of network::mojom::ContentSecurityPolicy, this will avoid conversion
-    // between type here.
-    std::vector<ContentSecurityPolicy> policies;
-    policies.reserve(request->response()->content_security_policy.size());
-    for (auto& policy : request->response()->content_security_policy)
-      policies.push_back(ContentSecurityPolicy(policy.Clone()));
-
     // TODO(lfg): If the initiating document is known and correspond to the
     // navigating frame's current document, consider using:
     // navigation_request().common_params().source_location here instead.
@@ -277,7 +270,7 @@ NavigationThrottle::ThrottleCheckResult AncestorThrottle::ProcessResponseImpl(
     // are reported to the navigating frame.
     FrameAncestorCSPContext csp_context(
         NavigationRequest::From(navigation_handle())->GetRenderFrameHost(),
-        std::move(policies));
+        mojo::Clone(request->response()->content_security_policy));
     csp_context.SetSelf(url::Origin::Create(navigation_handle()->GetURL()));
 
     // Check CSP frame-ancestors against every parent.

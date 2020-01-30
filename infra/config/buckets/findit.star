@@ -69,4 +69,5 @@ builder(
         'gs_bucket': 'findit-for-me',
         'gs_object': 'bot_db.json',
     },
+    schedule = '0 0,6,12,18 * * *',
 )

@@ -7,6 +7,7 @@
 #include "ash/public/cpp/login_screen.h"
 #include "ash/public/cpp/login_screen_model.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/branding_buildflags.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/version_info/channel.h"
@@ -19,10 +20,10 @@ MojoSystemInfoDispatcher::MojoSystemInfoDispatcher() = default;
 MojoSystemInfoDispatcher::~MojoSystemInfoDispatcher() = default;
 
 void MojoSystemInfoDispatcher::StartRequest() {
-#if defined(OFFICIAL_BUILD)
-  version_info_updater_.StartUpdate(true /*is_official_build*/);
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+  version_info_updater_.StartUpdate(true /*is_chrome_branded*/);
 #else
-  version_info_updater_.StartUpdate(false /*is_official_build*/);
+  version_info_updater_.StartUpdate(false /*is_chrome_branded*/);
 #endif
 }
 

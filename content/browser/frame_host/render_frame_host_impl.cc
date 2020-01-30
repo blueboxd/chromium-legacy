@@ -2581,7 +2581,7 @@ void RenderFrameHostImpl::DidAddContentSecurityPolicies(
   std::vector<network::mojom::ContentSecurityPolicyHeaderPtr> headers;
   for (auto& policy : policies) {
     headers.push_back(policy->header.Clone());
-    AddContentSecurityPolicy(ContentSecurityPolicy(std::move(policy)));
+    AddContentSecurityPolicy(std::move(policy));
   }
   frame_tree_node()->AddContentSecurityPolicies(std::move(headers));
 }
@@ -5413,6 +5413,15 @@ void RenderFrameHostImpl::CommitNavigation(
 
   url::Origin main_world_origin_for_url_loader_factory =
       GetOriginForURLLoaderFactory(navigation_request);
+  if (navigation_request && navigation_request->appcache_handle()) {
+    // AppCache may create a subresource URLLoaderFactory later, so make sure it
+    // has the correct origin to use when calling
+    // ContentBrowserClient::WillCreateURLLoaderFactory().
+    navigation_request->appcache_handle()
+        ->host()
+        ->set_origin_for_url_loader_factory(
+            main_world_origin_for_url_loader_factory);
+  }
   std::unique_ptr<blink::PendingURLLoaderFactoryBundle>
       subresource_loader_factories;
   if ((!is_same_document || is_first_navigation) && !is_srcdoc) {

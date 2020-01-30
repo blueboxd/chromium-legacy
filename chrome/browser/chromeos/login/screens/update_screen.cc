@@ -10,6 +10,7 @@
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/threading/thread_restrictions.h"
+#include "build/branding_buildflags.h"
 #include "chrome/browser/chromeos/login/error_screens_histogram_helper.h"
 #include "chrome/browser/chromeos/login/screen_manager.h"
 #include "chrome/browser/chromeos/login/screens/network_error.h"
@@ -70,7 +71,7 @@ void UpdateScreen::OnViewDestroyed(UpdateView* view) {
 }
 
 void UpdateScreen::Show() {
-#if !defined(OFFICIAL_BUILD)
+#if !BUILDFLAG(GOOGLE_CHROME_BRANDING)
   if (view_) {
     view_->SetCancelUpdateShortcutEnabled(true);
   }
@@ -92,12 +93,13 @@ void UpdateScreen::Hide() {
 }
 
 void UpdateScreen::OnUserAction(const std::string& action_id) {
-  bool is_official_build = false;
-#if defined(OFFICIAL_BUILD)
-  is_official_build = true;
+  bool is_chrome_branded_build = false;
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+  is_chrome_branded_build = true;
 #endif
 
-  if (!is_official_build && action_id == kUserActionCancelUpdateShortcut) {
+  if (!is_chrome_branded_build &&
+      action_id == kUserActionCancelUpdateShortcut) {
     // Skip update UI, usually used only in debug builds/tests.
     VLOG(1) << "Forced update cancel";
     ExitUpdate(Result::UPDATE_NOT_REQUIRED);

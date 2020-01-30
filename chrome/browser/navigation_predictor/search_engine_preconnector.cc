@@ -11,7 +11,9 @@
 #include "chrome/browser/predictors/loading_predictor_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
+#include "chrome/common/pref_names.h"
 #include "components/google/core/common/google_util.h"
+#include "components/prefs/pref_service.h"
 #include "components/search_engines/template_url_service.h"
 #include "content/public/browser/browser_context.h"
 #include "net/base/features.h"
@@ -59,6 +61,12 @@ void SearchEnginePreconnector::PreconnectDSE() {
   DCHECK(!timer_.IsRunning());
 
   if (!base::FeatureList::IsEnabled(features::kPreconnectToSearch))
+    return;
+
+  // Don't preconnect unless the user allows search suggestions.
+  if (!Profile::FromBrowserContext(browser_context_)
+           ->GetPrefs()
+           ->GetBoolean(prefs::kSearchSuggestEnabled))
     return;
 
   GURL preconnect_url = GetDefaultSearchEngineOriginURL();

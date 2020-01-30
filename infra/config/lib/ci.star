@@ -104,6 +104,7 @@ def clang_ios_builder(*, name, **kwargs):
       executable = 'recipe:ios/unified_builder_tester',
       os = builders.os.MAC_10_14,
       ssd = True,
+      **kwargs
   )
 
 

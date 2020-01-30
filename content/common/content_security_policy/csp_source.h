@@ -15,7 +15,7 @@ namespace content {
 
 // TODO(arthursonzogni): Once CSPContext has been moved to
 // /services/network/public/content_security_policy, this file is going to be
-// moved there has well.
+// moved there as well.
 class CSPContext;
 
 // Check if a |url| matches with a CSP |source| matches.

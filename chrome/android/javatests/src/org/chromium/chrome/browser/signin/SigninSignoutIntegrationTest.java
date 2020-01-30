@@ -107,7 +107,7 @@ public class SigninSignoutIntegrationTest {
         assertSignedIn();
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             Assert.assertEquals(account.name,
-                    mSigninManager.getIdentityManager().getPrimaryAccountInfo().getName());
+                    mSigninManager.getIdentityManager().getPrimaryAccountInfo().getEmail());
         });
     }
 

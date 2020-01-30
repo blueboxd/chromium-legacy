@@ -977,10 +977,10 @@ void ClearKeyCdm::OnUnitTestComplete(bool success) {
 }
 
 void ClearKeyCdm::StartFileIOTest() {
-  file_io_test_runner_.reset(new FileIOTestRunner(base::Bind(
+  file_io_test_runner_.reset(new FileIOTestRunner(base::BindRepeating(
       &CdmHostProxy::CreateFileIO, base::Unretained(cdm_host_proxy_.get()))));
-  file_io_test_runner_->RunAllTests(
-      base::Bind(&ClearKeyCdm::OnFileIOTestComplete, base::Unretained(this)));
+  file_io_test_runner_->RunAllTests(base::BindOnce(
+      &ClearKeyCdm::OnFileIOTestComplete, base::Unretained(this)));
 }
 
 void ClearKeyCdm::OnFileIOTestComplete(bool success) {

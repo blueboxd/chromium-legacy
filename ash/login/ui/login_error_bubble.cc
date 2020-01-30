@@ -5,6 +5,7 @@
 #include "ash/login/ui/login_error_bubble.h"
 
 #include "ash/login/ui/non_accessible_view.h"
+#include "ash/login/ui/views_utils.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
@@ -12,6 +13,7 @@
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/controls/image_view.h"
+#include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
 
@@ -48,10 +50,14 @@ LoginErrorBubble::~LoginErrorBubble() = default;
 
 void LoginErrorBubble::SetContent(views::View* content) {
   if (content_)
-    RemoveChildView(content_);
-
+    delete content_;
   content_ = content;
   AddChildView(content_);
+}
+
+void LoginErrorBubble::SetTextContent(const base::string16& message) {
+  SetContent(
+      login_views_utils::CreateBubbleLabel(message, gfx::kGoogleGrey200, this));
 }
 
 void LoginErrorBubble::SetAccessibleName(const base::string16& name) {

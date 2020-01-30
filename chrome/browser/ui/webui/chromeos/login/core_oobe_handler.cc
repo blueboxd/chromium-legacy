@@ -16,6 +16,7 @@
 #include "base/command_line.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
+#include "build/branding_buildflags.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
@@ -163,7 +164,7 @@ void CoreOobeHandler::DeclareLocalizedValues(
 void CoreOobeHandler::Initialize() {
   UpdateA11yState();
   UpdateOobeUIVisibility();
-#if defined(OFFICIAL_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   version_info_updater_.StartUpdate(true);
 #else
   version_info_updater_.StartUpdate(false);

@@ -230,6 +230,8 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterWinrt : public BluetoothAdapter {
   base::Optional<EventRegistrationToken> powered_radios_enumerated_token_;
   size_t num_powered_radios_ = 0;
 
+  bool radio_was_powered_ = false;
+
   std::vector<scoped_refptr<BluetoothAdvertisement>> pending_advertisements_;
 
   EventRegistrationToken advertisement_received_token_;

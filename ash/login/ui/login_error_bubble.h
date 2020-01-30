@@ -21,6 +21,8 @@ class ASH_EXPORT LoginErrorBubble : public LoginBaseBubbleView {
   ~LoginErrorBubble() override;
 
   void SetContent(views::View* content);
+  // Covers most cases where content is a simple label containing a message.
+  void SetTextContent(const base::string16& message);
   // We set an accessible name when content is not accessible. This happens if
   // content is a container (e.g. a text and a "learn more" button). In such a
   // case, it will have multiple subviews but only one which needs to be read

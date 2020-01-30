@@ -146,8 +146,6 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoCableDiscovery
       base::RepeatingCallback<void(std::unique_ptr<CableDiscoveryData>)>>
       pairing_callback_;
 
-  bool is_powered_ = false;
-
   // observed_devices_ caches the information from observed caBLE devices so
   // that the device-log isn't spammed.
   mutable base::flat_map<std::string, std::unique_ptr<ObservedDeviceData>>

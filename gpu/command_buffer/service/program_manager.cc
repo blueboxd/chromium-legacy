@@ -1398,7 +1398,6 @@ bool Program::Link(ShaderManager* manager,
           &bind_attrib_location_map_, transform_feedback_varyings_,
           transform_feedback_buffer_mode_, client);
       link = success != ProgramCache::PROGRAM_LOAD_SUCCESS;
-      UMA_HISTOGRAM_BOOLEAN("GPU.ProgramCache.LoadBinarySuccess", !link);
     }
   }
 

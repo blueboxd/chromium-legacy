@@ -59,6 +59,10 @@ void ModelTypeSyncBridge::OnCommitAttemptErrors(
   // By default the bridge just ignores failed commit items.
 }
 
+void ModelTypeSyncBridge::OnCommitAttemptFailed() {
+  // By default ignore any failures.
+}
+
 size_t ModelTypeSyncBridge::EstimateSyncOverheadMemoryUsage() const {
   return 0U;
 }

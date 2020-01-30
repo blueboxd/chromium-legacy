@@ -659,6 +659,11 @@ bool HasClearAllDirective(const sync_pb::ModelTypeState& model_type_state) {
       .has_version_watermark();
 }
 
+void ClientTagBasedModelTypeProcessor::OnCommitFailed() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  bridge_->OnCommitAttemptFailed();
+}
+
 void ClientTagBasedModelTypeProcessor::OnUpdateReceived(
     const sync_pb::ModelTypeState& model_type_state,
     UpdateResponseDataList updates) {

@@ -21,7 +21,7 @@ Polymer({
     /**
      * Flag that determines whether help link is shown.
      */
-    isOfficial_: Boolean,
+    isGoogleBranded_: Boolean,
 
     /**
      * Whether to show the TPM firmware update checkbox.
@@ -62,8 +62,8 @@ Polymer({
   },
 
   /** @private */
-  isHelpLinkHidden_(uiState_, isOfficial_) {
-    return !isOfficial_ || (uiState_ == 'revert-promise-view');
+  isHelpLinkHidden_(uiState_, isGoogleBranded_) {
+    return !isGoogleBranded_ || (uiState_ == 'revert-promise-view');
   },
 
   /** @private */

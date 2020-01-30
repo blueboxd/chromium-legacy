@@ -229,6 +229,10 @@ class CONTENT_EXPORT AppCacheHost : public blink::mojom::AppCacheHost,
     site_for_cookies_initialized_ = true;
   }
 
+  void set_origin_for_url_loader_factory(const url::Origin& origin) {
+    origin_for_url_loader_factory_ = origin;
+  }
+
   // Returns a weak pointer reference to the host.
   base::WeakPtr<AppCacheHost> GetWeakPtr();
 
@@ -399,6 +403,10 @@ class CONTENT_EXPORT AppCacheHost : public blink::mojom::AppCacheHost,
 
   // Used to inform the QuotaManager of what origins are currently in use.
   url::Origin origin_in_use_;
+
+  // The origin used when calling
+  // ContentBrowserClient::WillCreateURLLoaderFactory().
+  url::Origin origin_for_url_loader_factory_;
 
   // To be used in policy checks.
   net::SiteForCookies site_for_cookies_;

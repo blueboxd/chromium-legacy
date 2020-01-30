@@ -16,6 +16,12 @@
       testRunner.waitUntilDone();
   }
 
+  let numVideosRendered = 0;
+  function waitForRender(time, dict) {
+    if(++numVideosRendered == 2)
+      testRunner.notifyDone();
+  }
+
   async function setupMse(video, contentType) {
     let promise = new Promise((resolve, reject) => {
       let mediaSource = new MediaSource();
@@ -48,6 +54,7 @@
     let singleSizeVideo = document.getElementById('single_size');
     let ss_sourceBuffer = await setupMse(singleSizeVideo, 'video/webm; codecs="vp8"');
     await appendBuffer(ss_sourceBuffer, videoData240p);
+    singleSizeVideo.requestAnimationFrame(waitForRender);
 
     // Setup the second video with a single size for 1 second, followed by a larger size for 2 additional seconds.
     let mixedSizeVideo = document.getElementById('mixed_size');
@@ -57,14 +64,7 @@
     await appendBuffer(ms_sourceBuffer, videoData480p);
 
     // Seek the second video beyond the first size.
-    mixedSizeVideo.addEventListener('seeked', () => {
-      if (window.testRunner) {
-        // Make sure we render the seeked frame.
-        requestAnimationFrame(() => {
-          testRunner.notifyDone();
-        });
-      }
-    });
     mixedSizeVideo.currentTime = 2;
+    mixedSizeVideo.requestAnimationFrame(waitForRender);
   })();
 </script>

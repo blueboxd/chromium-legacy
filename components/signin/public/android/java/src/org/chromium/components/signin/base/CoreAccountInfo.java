@@ -50,7 +50,7 @@ public class CoreAccountInfo {
      * Returns the email of the current account.
      */
     @CalledByNative
-    public String getName() {
+    public String getEmail() {
         return mEmail;
     }
 
@@ -64,7 +64,7 @@ public class CoreAccountInfo {
 
     @Override
     public String toString() {
-        return String.format("CoreAccountInfo{id[%s], name[%s]}", getId(), getName());
+        return String.format("CoreAccountInfo{id[%s], name[%s]}", getId(), getEmail());
     }
 
     @Override

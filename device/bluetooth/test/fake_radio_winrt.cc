@@ -104,6 +104,10 @@ void FakeRadioWinrt::SimulateAdapterPoweredOff() {
   state_changed_handler_->Invoke(this, nullptr);
 }
 
+void FakeRadioWinrt::SimulateSpuriousStateChangedEvent() {
+  state_changed_handler_->Invoke(this, nullptr);
+}
+
 FakeRadioStaticsWinrt::FakeRadioStaticsWinrt() = default;
 
 FakeRadioStaticsWinrt::~FakeRadioStaticsWinrt() = default;

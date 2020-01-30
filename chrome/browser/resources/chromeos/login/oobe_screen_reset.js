@@ -35,7 +35,7 @@ login.createScreen('ResetScreen', 'reset', function() {
       'setIsTpmFirmwareUpdateEditable',
       'setTpmFirmwareUpdateMode',
       'setIsConfirmational',
-      'setIsOfficialBuild',
+      'setIsGoogleBrandedBuild',
       'setScreenState',
     ],
 
@@ -53,8 +53,6 @@ login.createScreen('ResetScreen', 'reset', function() {
     tpmFirmwareUpdateMode_: RESET_SCREEN_UI_STATE.REVERT_PROMISE,
     /** @type {boolean} */
     isConfirmational_: false,
-    /** @type {boolean} */
-    isOfficialBuild_: false,
     /** @type {RESET_SCREEN_STATE} */
     screenState_: RESET_SCREEN_STATE.RESTART_REQUIRED,
 
@@ -100,10 +98,8 @@ login.createScreen('ResetScreen', 'reset', function() {
       }
     },
 
-    setIsOfficialBuild(isOfficial) {
-      this.isOfficialBuild_ = isOfficial;
-
-      $('oobe-reset-md').isOfficial_ = isOfficial;
+    setIsGoogleBrandedBuild(isGoogleBranded) {
+      $('oobe-reset-md').isGoogleBranded_ = isGoogleBranded;
     },
 
     setScreenState(state) {

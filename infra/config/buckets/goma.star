@@ -30,6 +30,7 @@ defaults.pool.set('luci.chromium.ci')
 defaults.service_account.set(
         'chromium-ci-builder@chops-service-accounts.iam.gserviceaccount.com')
 defaults.swarming_tags.set(['vpython:native-python-wrapper'])
+defaults.triggered_by.set(['master-gitiles-trigger'])
 
 
 # Builders appear after the function used to define them, with all builders

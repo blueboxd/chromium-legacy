@@ -32,10 +32,13 @@ PerformanceHintsObserver::PerformanceHintsObserver(
   }
 }
 
-PerformanceHintsObserver::~PerformanceHintsObserver() = default;
+PerformanceHintsObserver::~PerformanceHintsObserver() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+}
 
 base::Optional<PerformanceHint> PerformanceHintsObserver::HintForURL(
     const GURL& url) const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!url.is_valid()) {
     return base::nullopt;
   }
@@ -50,6 +53,7 @@ base::Optional<PerformanceHint> PerformanceHintsObserver::HintForURL(
 
 void PerformanceHintsObserver::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(navigation_handle);
   if (!navigation_handle->IsInMainFrame() ||
       navigation_handle->IsSameDocument() ||
@@ -70,25 +74,24 @@ void PerformanceHintsObserver::DidFinishNavigation(
     return;
   }
 
-  optimization_guide::OptimizationMetadata optimization_metadata;
-  OptimizationGuideDecision decision =
-      optimization_guide_decider_->CanApplyOptimization(
-          navigation_handle, optimization_guide::proto::PERFORMANCE_HINTS,
-          &optimization_metadata);
+  optimization_guide_decider_->CanApplyOptimizationAsync(
+      navigation_handle, optimization_guide::proto::PERFORMANCE_HINTS,
+      base::BindOnce(&PerformanceHintsObserver::ProcessPerformanceHint,
+                     weak_factory_.GetWeakPtr()));
+}
 
+void PerformanceHintsObserver::ProcessPerformanceHint(
+    OptimizationGuideDecision decision,
+    const optimization_guide::OptimizationMetadata& optimization_metadata) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (decision != OptimizationGuideDecision::kTrue) {
     // Apply results are counted under
     // OptimizationGuide.ApplyDecision.PerformanceHints.
     return;
   }
 
-  if (optimization_metadata.performance_hints_metadata.performance_hints()
-          .size() <= 0) {
-    return;
-  }
-
-  for (PerformanceHint& hint : *optimization_metadata.performance_hints_metadata
-                                    .mutable_performance_hints()) {
+  for (const PerformanceHint& hint :
+       optimization_metadata.performance_hints_metadata.performance_hints()) {
     hints_.emplace_back(URLPatternWithWildcards(hint.wildcard_pattern()), hint);
   }
 }

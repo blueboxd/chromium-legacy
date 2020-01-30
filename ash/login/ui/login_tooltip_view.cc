@@ -36,8 +36,8 @@ LoginTooltipView::LoginTooltipView(const base::string16& message,
   info_icon->SetImage(gfx::CreateVectorIcon(views::kInfoIcon, SK_ColorWHITE));
   AddChildView(info_icon);
 
-  label_ = login_views_utils::CreateBubbleLabel(message, SK_ColorWHITE);
-  label_->SetMultiLine(true);
+  label_ =
+      login_views_utils::CreateBubbleLabel(message, gfx::kGoogleGrey200, this);
   AddChildView(label_);
 }
 

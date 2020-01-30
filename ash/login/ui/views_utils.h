@@ -29,7 +29,16 @@ ASH_EXPORT bool ShouldShowLandscape(const views::Widget* widget);
 ASH_EXPORT bool HasFocusInAnyChildView(views::View* view);
 
 // Creates a standard text label for use in the login bubbles.
-views::Label* CreateBubbleLabel(const base::string16& message, SkColor color);
+// If |view_defining_max_width| is set, we allow the label to have multiple
+// lines and we set its maximum width to the preferred width of
+// |view_defining_max_width|. |font_size_delta| is the size in pixels to add to
+// the default font size.
+views::Label* CreateBubbleLabel(
+    const base::string16& message,
+    SkColor color,
+    views::View* view_defining_max_width = nullptr,
+    int font_size_delta = 0,
+    gfx::Font::Weight font_weight = gfx::Font::Weight::NORMAL);
 
 // Get the bubble container for |view| to place a LoginBaseBubbleView.
 views::View* GetBubbleContainer(views::View* view);

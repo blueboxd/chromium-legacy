@@ -196,7 +196,7 @@ const base::Feature kCrostiniAdvancedAccessControls{
 // Enables infrastructure for applying Ansible playbook to default Crostini
 // container.
 const base::Feature kCrostiniAnsibleInfrastructure{
-    "CrostiniAnsibleInfrastructure", base::FEATURE_DISABLED_BY_DEFAULT};
+    "CrostiniAnsibleInfrastructure", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables infrastructure for generating Ansible playbooks for the default
 // Crostini container from software configurations in JSON schema.

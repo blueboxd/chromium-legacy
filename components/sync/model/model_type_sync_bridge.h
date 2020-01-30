@@ -168,6 +168,11 @@ class ModelTypeSyncBridge {
   virtual void OnCommitAttemptErrors(
       const syncer::FailedCommitResponseDataList& error_response_list);
 
+  // Called only when a commit failed due to server error. The commit will
+  // automatically be retried, so most implementations don't need to handle
+  // this.
+  virtual void OnCommitAttemptFailed();
+
   // Returns an estimate of memory usage attributed to sync (that is, excludes
   // the actual model). Because the resulting UMA metrics are often used to
   // compare with the non-USS equivalent implementations (SyncableService), it's

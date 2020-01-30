@@ -236,7 +236,7 @@ SkColor AshColorProvider::GetContentLayerColorImpl(
       break;
     case ContentLayerType::kTextSecondary:
       light_color = gfx::kGoogleGrey700;
-      dark_color = gfx::kGoogleGrey500;
+      dark_color = gfx::kGoogleGrey400;
       break;
     case ContentLayerType::kIconPrimary:
       light_color = gfx::kGoogleGrey700;

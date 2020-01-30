@@ -15,7 +15,17 @@ luci.bucket(
             roles = acl.BUILDBUCKET_OWNER,
             groups = 'google/luci-task-force@google.com',
         ),
+        acl.entry(
+            roles = acl.SCHEDULER_OWNER,
+            groups = 'project-webrtc-admins',
+        ),
     ],
+)
+
+luci.gitiles_poller(
+    name = 'webrtc-gitiles-trigger-master',
+    bucket = 'webrtc',
+    repo = 'https://webrtc.googlesource.com/src/',
 )
 
 defaults.bucket.set('webrtc.fyi')
@@ -29,6 +39,7 @@ defaults.os.set(os.LINUX_DEFAULT)
 defaults.pool.set('luci.chromium.webrtc.fyi')
 defaults.service_account.set('chromium-ci-builder@chops-service-accounts.iam.gserviceaccount.com')
 defaults.swarming_tags.set(['vpython:native-python-wrapper'])
+defaults.triggered_by.set(['webrtc-gitiles-trigger-master'])
 
 
 # Builders are defined in lexicographic order by name
@@ -51,10 +62,12 @@ builder(
 
 builder(
     name = 'WebRTC Chromium FYI Android Tests (dbg) (K Nexus5)',
+    triggered_by = ['WebRTC Chromium FYI Android Builder (dbg)'],
 )
 
 builder(
     name = 'WebRTC Chromium FYI Android Tests (dbg) (M Nexus5X)',
+    triggered_by = ['WebRTC Chromium FYI Android Builder ARM64 (dbg)'],
 )
 
 builder(
@@ -69,6 +82,7 @@ builder(
 
 builder(
     name = 'WebRTC Chromium FYI Linux Tester',
+    triggered_by = ['WebRTC Chromium FYI Linux Builder'],
 )
 
 builder(
@@ -115,6 +129,7 @@ builder(
     properties = {
         'xcode_build_version': '10e1001',
     },
+    triggered_by = ['WebRTC Chromium FYI Mac Builder'],
 )
 
 builder(
@@ -132,16 +147,19 @@ builder(
 builder(
     name = 'WebRTC Chromium FYI Win10 Tester',
     os = os.WINDOWS_DEFAULT,
+    triggered_by = ['WebRTC Chromium FYI Win Builder'],
 )
 
 builder(
     name = 'WebRTC Chromium FYI Win7 Tester',
     os = os.WINDOWS_7,
+    triggered_by = ['WebRTC Chromium FYI Win Builder'],
 )
 
 builder(
     name = 'WebRTC Chromium FYI Win8 Tester',
     os = os.WINDOWS_8_1,
+    triggered_by = ['WebRTC Chromium FYI Win Builder'],
 )
 
 builder(

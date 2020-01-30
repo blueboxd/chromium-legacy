@@ -11,6 +11,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/task/post_task.h"
 #include "base/values.h"
+#include "build/branding_buildflags.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/browser_process_platform_part_chromeos.h"
@@ -170,9 +171,10 @@ ResetScreen::ResetScreen(ResetView* view,
     view_->SetIsTpmFirmwareUpdateEditable(true);
     view_->SetTpmFirmwareUpdateMode(tpm_firmware_update::Mode::kPowerwash);
     view_->SetIsConfirmational(false);
-    view_->SetIsOfficialBuild(false);
-#if defined(OFFICIAL_BUILD)
-    view_->SetIsOfficialBuild(true);
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+    view_->SetIsGoogleBrandedBuild(true);
+#else
+    view_->SetIsGoogleBrandedBuild(false);
 #endif
   }
 }
@@ -404,7 +406,7 @@ void ResetScreen::OnConfirmationDismissed() {
 }
 
 void ResetScreen::ShowHelpArticle(HelpAppLauncher::HelpTopic topic) {
-#if defined(OFFICIAL_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   VLOG(1) << "Trying to view help article " << topic;
   if (!help_app_.get()) {
     help_app_ = new HelpAppLauncher(

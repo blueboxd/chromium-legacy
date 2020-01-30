@@ -11,14 +11,14 @@ namespace {
 
 // Helper function that returns true if |policy| should be checked under
 // |check_csp_disposition|.
-bool ShouldCheckPolicy(const ContentSecurityPolicy& policy,
+bool ShouldCheckPolicy(const network::mojom::ContentSecurityPolicyPtr& policy,
                        CSPContext::CheckCSPDisposition check_csp_disposition) {
   switch (check_csp_disposition) {
     case CSPContext::CHECK_REPORT_ONLY_CSP:
-      return policy.header.type ==
+      return policy->header->type ==
              network::mojom::ContentSecurityPolicyType::kReport;
     case CSPContext::CHECK_ENFORCED_CSP:
-      return policy.header.type ==
+      return policy->header->type ==
              network::mojom::ContentSecurityPolicyType::kEnforce;
     case CSPContext::CHECK_ALL_CSP:
       return true;
@@ -45,7 +45,7 @@ bool CSPContext::IsAllowedByCsp(network::mojom::CSPDirectiveName directive_name,
   bool allow = true;
   for (const auto& policy : policies_) {
     if (ShouldCheckPolicy(policy, check_csp_disposition)) {
-      allow &= ContentSecurityPolicy::Allow(
+      allow &= CheckContentSecurityPolicy(
           policy, directive_name, url, has_followed_redirect, is_response_check,
           this, source_location, is_form_submission);
     }
@@ -59,7 +59,7 @@ bool CSPContext::IsAllowedByCsp(network::mojom::CSPDirectiveName directive_name,
 bool CSPContext::ShouldModifyRequestUrlForCsp(
     bool is_subresource_or_form_submission) {
   for (const auto& policy : policies_) {
-    if (ContentSecurityPolicy::ShouldUpgradeInsecureRequest(policy) &&
+    if (ShouldUpgradeInsecureRequest(policy) &&
         is_subresource_or_form_submission) {
       return true;
     }

@@ -418,6 +418,15 @@ class CC_EXPORT FrameSequenceTracker {
   uint64_t last_processed_main_sequence_ = 0;
   uint64_t last_processed_main_sequence_latency_ = 0;
 
+  // Handle off-screen main damage case. In this case, the sequence is typically
+  // like: b(1)B(0,1)E(1)n(1)e(1)b(2)n(2)e(2)...b(10)E(2)B(10,10)n(10)e(10).
+  // Note that between two 'E's, all the impl frames caused no damage, and
+  // no main frames were submitted or caused no damage.
+  bool had_impl_frame_submitted_between_commits_ = false;
+  uint64_t previous_begin_main_sequence_ = 0;
+  // TODO(xidachen): remove this one.
+  uint64_t current_begin_main_sequence_ = 0;
+
 #if DCHECK_IS_ON()
   bool is_inside_frame_ = false;
 

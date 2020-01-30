@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "base/values.h"
+#include "build/branding_buildflags.h"
 #include "chrome/browser/chromeos/login/oobe_screen.h"
 #include "chrome/browser/chromeos/login/screens/update_screen.h"
 #include "chrome/grit/chromium_strings.h"
@@ -97,7 +98,7 @@ void UpdateScreenHandler::DeclareLocalizedValues(
                IDS_DOWNLOADING_TIME_LEFT_STATUS_MINUTES);
   builder->Add("downloadingTimeLeftSmall", IDS_DOWNLOADING_TIME_LEFT_SMALL);
 
-#if !defined(OFFICIAL_BUILD)
+#if !BUILDFLAG(GOOGLE_CHROME_BRANDING)
   builder->Add("cancelUpdateHint", IDS_UPDATE_CANCEL);
   builder->Add("cancelledUpdateMessage", IDS_UPDATE_CANCELLED);
 #else

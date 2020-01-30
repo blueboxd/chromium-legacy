@@ -46,8 +46,6 @@ constexpr int kNotificationBodies[] = {
 
 }  // namespace
 
-ExtensionRequestNotification::ExtensionRequestNotification() = default;
-
 ExtensionRequestNotification::ExtensionRequestNotification(
     Profile* profile,
     const NotifyType notify_type,

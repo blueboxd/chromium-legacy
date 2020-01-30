@@ -54130,6 +54130,9 @@ Called by update_net_trust_anchors.py.-->
 </enum>
 
 <enum name="RasterSourceClearType">
+  <obsolete>
+    Not used after M77. No longer tuning this code.
+  </obsolete>
   <int value="0" label="No clear"/>
   <int value="1" label="Full clear"/>
   <int value="2" label="Border clear"/>
@@ -58527,12 +58530,28 @@ Called by update_net_trust_anchors.py.-->
   <int value="2" label="Private key export failed"/>
 </enum>
 
+<enum name="SharingWebRtcConnectionErrorReason">
+  <int value="0" label="Invalid Remote Offer"/>
+  <int value="1" label="Invalid Remote Answer"/>
+  <int value="2" label="Invalid Local Offer"/>
+  <int value="3" label="Invalid Local Answer"/>
+</enum>
+
 <enum name="SharingWebRtcConnectionType">
   <int value="0" label="Unknown"/>
   <int value="1" label="Host"/>
   <int value="2" label="Server Reflexive"/>
   <int value="3" label="Peer Reflexive"/>
   <int value="4" label="Relay"/>
+</enum>
+
+<enum name="SharingWebRtcSendMessageResult">
+  <int value="0" label="Internal error"/>
+  <int value="1" label="Success"/>
+  <int value="2" label="Empty Message"/>
+  <int value="3" label="Payload Too Large"/>
+  <int value="4" label="Buffer Exceeded"/>
+  <int value="5" label="Connection Closed"/>
 </enum>
 
 <enum name="SharingWebRtcTimeoutState">
@@ -62666,6 +62685,7 @@ would be helpful to identify which type is being sent.
   <int value="6" label="Unauthenticated"/>
   <int value="7" label="Permission denied"/>
   <int value="8" label="Sync turned off"/>
+  <int value="9" label="Sync error"/>
 </enum>
 
 <enum name="SyncSimpleConflictResolutions">

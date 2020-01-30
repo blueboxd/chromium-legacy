@@ -190,4 +190,21 @@ TEST_F(SharingMessageBridgeTest, ShouldInvokeCallbackOnSyncStoppedEvent) {
       sync_pb::SharingMessageCommitError::SYNC_TURNED_OFF, 1);
 }
 
+TEST_F(SharingMessageBridgeTest, ShouldInvokeCallbackOnSyncCommitFailure) {
+  base::HistogramTester histogram_tester;
+  base::MockCallback<SharingMessageBridge::CommitFinishedCallback> callback;
+  bridge()->SendSharingMessage(CreateSpecifics("test_payload"), callback.Get());
+  ASSERT_EQ(bridge()->GetCallbacksCountForTesting(), 1u);
+
+  EXPECT_CALL(
+      callback,
+      Run(HasErrorCode(sync_pb::SharingMessageCommitError::SYNC_ERROR)));
+  bridge()->OnCommitAttemptFailed();
+
+  EXPECT_EQ(bridge()->GetCallbacksCountForTesting(), 0u);
+  histogram_tester.ExpectUniqueSample(
+      "Sync.SharingMessage.CommitResult",
+      sync_pb::SharingMessageCommitError::SYNC_ERROR, 1);
+}
+
 }  // namespace

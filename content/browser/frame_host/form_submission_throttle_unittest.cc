@@ -19,9 +19,9 @@ class FormSubmissionTest : public RenderViewHostImplTestHarness {
         network::mojom::CSPDirectiveName::FormAction,
         network::mojom::CSPSourceList::New(
             std::vector<network::mojom::CSPSourcePtr>(), false, false, false));
-    std::vector<network::mojom::CSPDirectivePtr> directives;
-    directives.push_back(std::move(form_action_none));
-    ContentSecurityPolicy policy({}, std::move(directives), {}, false);
+    auto policy = network::mojom::ContentSecurityPolicy::New();
+    policy->header = network::mojom::ContentSecurityPolicyHeader::New();
+    policy->directives.push_back(std::move(form_action_none));
     main_test_rfh()->AddContentSecurityPolicy(std::move(policy));
   }
 };

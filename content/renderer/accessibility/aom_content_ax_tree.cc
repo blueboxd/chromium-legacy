@@ -141,7 +141,8 @@ bool AomContentAxTree::ComputeAccessibilityTree() {
   tree_update.root_id = content_tree_update.root_id;
   tree_update.nodes.assign(content_tree_update.nodes.begin(),
                            content_tree_update.nodes.end());
-  return tree_.Unserialize(tree_update);
+  CHECK(tree_.Unserialize(tree_update)) << tree_.error();
+  return true;
 }
 
 bool AomContentAxTree::GetBoolAttributeForAXNode(

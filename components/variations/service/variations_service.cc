@@ -399,8 +399,10 @@ GURL VariationsService::GetVariationsServerURL(HttpOptions http_options) {
     server_url = net::AppendOrReplaceQueryParameter(server_url, "restrict",
                                                     restrict_mode);
   }
-  server_url = net::AppendOrReplaceQueryParameter(server_url, "osname",
-                                                  GetPlatformString());
+  server_url = net::AppendOrReplaceQueryParameter(
+      server_url, "osname",
+      osname_server_param_override_.empty() ? GetPlatformString()
+                                            : osname_server_param_override_);
 
   // Add channel to the request URL.
   version_info::Channel channel = client_->GetChannelForVariations();
@@ -947,6 +949,13 @@ void VariationsService::CancelCurrentRequestForTesting() {
 void VariationsService::StartRepeatedVariationsSeedFetchForTesting() {
   InitResourceRequestedAllowedNotifier();
   return StartRepeatedVariationsSeedFetch();
+}
+
+void VariationsService::OverridePlatform(
+    Study::Platform platform,
+    const std::string& osname_server_param_override) {
+  field_trial_creator_.OverrideVariationsPlatform(platform);
+  osname_server_param_override_ = osname_server_param_override;
 }
 
 std::string VariationsService::GetOverriddenPermanentCountry() {

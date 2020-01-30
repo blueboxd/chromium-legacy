@@ -14,46 +14,29 @@
 
 namespace content {
 
+// TODO(arthursonzogni): Once CSPContext has been moved to
+// /services/network/public/content_security_policy, this file is going to be
+// moved there as well.
 class CSPContext;
 struct SourceLocation;
 
-// https://www.w3.org/TR/CSP3/#framework-policy
-//
-// A ContentSecurityPolicy is a collection of CSPDirectives which will be
-// enforced upon requests.
-struct CONTENT_EXPORT ContentSecurityPolicy {
-  ContentSecurityPolicy();
-  ContentSecurityPolicy(
-      const network::mojom::ContentSecurityPolicyHeader& header,
-      std::vector<network::mojom::CSPDirectivePtr> directives,
-      const std::vector<std::string>& report_endpoints,
-      bool use_reporting_api);
-  explicit ContentSecurityPolicy(network::mojom::ContentSecurityPolicyPtr);
-  ContentSecurityPolicy(const ContentSecurityPolicy&) = delete;
-  ContentSecurityPolicy(ContentSecurityPolicy&&);
-  ~ContentSecurityPolicy();
+// Return true when the |policy| allows a request to the |url| in relation to
+// the |directive| for a given |context|.
+// Note: Any policy violation are reported to the |context|.
+bool CONTENT_EXPORT CheckContentSecurityPolicy(
+    const network::mojom::ContentSecurityPolicyPtr& policy,
+    network::mojom::CSPDirectiveName directive,
+    const GURL& url,
+    bool has_followed_redirect,
+    bool is_response_check,
+    CSPContext* context,
+    const SourceLocation& source_location,
+    bool is_form_submission);
 
-  network::mojom::ContentSecurityPolicyHeader header;
-  std::vector<network::mojom::CSPDirectivePtr> directives;
-  std::vector<std::string> report_endpoints;
-  bool use_reporting_api;
-
-  // Return true when the |policy| allows a request to the |url| in relation to
-  // the |directive| for a given |context|.
-  // Note: Any policy violation are reported to the |context|.
-  static bool Allow(const ContentSecurityPolicy& policy,
-                    network::mojom::CSPDirectiveName directive,
-                    const GURL& url,
-                    bool has_followed_redirect,
-                    bool is_response_check,
-                    CSPContext* context,
-                    const SourceLocation& source_location,
-                    bool is_form_submission);
-
-  // Returns true if |policy| specifies that an insecure HTTP request should be
-  // upgraded to HTTPS.
-  static bool ShouldUpgradeInsecureRequest(const ContentSecurityPolicy& policy);
-};
+// Returns true if |policy| specifies that an insecure HTTP request should be
+// upgraded to HTTPS.
+bool CONTENT_EXPORT ShouldUpgradeInsecureRequest(
+    const network::mojom::ContentSecurityPolicyPtr& policy);
 
 std::string CONTENT_EXPORT ToString(const network::mojom::CSPDirectivePtr&);
 

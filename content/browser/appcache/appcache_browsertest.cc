@@ -16,12 +16,14 @@
 #include "content/public/browser/ssl_status.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/content_client.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
 #include "content/shell/browser/shell.h"
+#include "content/test/test_content_browser_client.h"
 #include "net/cert/cert_status_flags.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -191,6 +193,130 @@ IN_PROC_BROWSER_TEST_F(AppCacheNetworkServiceBrowserTest,
 
   // The AppCache update should only reload the manifest.
   EXPECT_EQ(0, resource_request_count);
+}
+
+// Client which intercepts all requests using WillCreateURLLoaderFactory() and
+// logs them in intercepted_request_map().
+class LoaderFactoryInterceptingBrowserClient : public TestContentBrowserClient {
+ public:
+  bool WillCreateURLLoaderFactory(
+      BrowserContext* browser_context,
+      RenderFrameHost* frame,
+      int render_process_id,
+      URLLoaderFactoryType type,
+      const url::Origin& request_initiator,
+      base::Optional<int64_t> navigation_id,
+      mojo::PendingReceiver<network::mojom::URLLoaderFactory>* factory_receiver,
+      mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient>*
+          header_client,
+      bool* bypass_redirect_checks,
+      bool* disable_secure_dns,
+      network::mojom::URLLoaderFactoryOverridePtr* factory_override) override {
+    auto proxied_receiver = std::move(*factory_receiver);
+    mojo::PendingRemote<network::mojom::URLLoaderFactory> target_factory_remote;
+    *factory_receiver = target_factory_remote.InitWithNewPipeAndPassReceiver();
+
+    proxies_.push_back(std::make_unique<PassThroughURLLoaderFactory>(
+        std::move(proxied_receiver), std::move(target_factory_remote),
+        request_initiator, this));
+
+    return true;
+  }
+
+  const std::map<GURL, url::Origin>& intercepted_request_map() const {
+    return intercepted_request_map_;
+  }
+
+ private:
+  class PassThroughURLLoaderFactory : public network::mojom::URLLoaderFactory {
+   public:
+    PassThroughURLLoaderFactory(
+        mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver,
+        mojo::PendingRemote<network::mojom::URLLoaderFactory> target_factory,
+        const url::Origin& request_initiator,
+        LoaderFactoryInterceptingBrowserClient* client)
+        : target_factory_(std::move(target_factory)),
+          request_initiator_(request_initiator),
+          client_(client) {
+      proxy_receivers_.Add(this, std::move(receiver));
+    }
+
+    void CreateLoaderAndStart(
+        mojo::PendingReceiver<network::mojom::URLLoader> loader_receiver,
+        int32_t routing_id,
+        int32_t request_id,
+        uint32_t options,
+        const network::ResourceRequest& request,
+        mojo::PendingRemote<network::mojom::URLLoaderClient> client,
+        const net::MutableNetworkTrafficAnnotationTag& traffic_annotation)
+        override {
+      client_->intercepted_request_map_[request.url] = request_initiator_;
+      target_factory_->CreateLoaderAndStart(
+          std::move(loader_receiver), routing_id, request_id, options, request,
+          std::move(client), traffic_annotation);
+    }
+
+    void Clone(mojo::PendingReceiver<network::mojom::URLLoaderFactory>
+                   loader_receiver) override {
+      proxy_receivers_.Add(this, std::move(loader_receiver));
+    }
+
+   private:
+    mojo::Remote<network::mojom::URLLoaderFactory> target_factory_;
+    url::Origin request_initiator_;
+    LoaderFactoryInterceptingBrowserClient* client_;
+    mojo::ReceiverSet<network::mojom::URLLoaderFactory> proxy_receivers_;
+  };
+
+  std::map<GURL, url::Origin> intercepted_request_map_;
+  std::vector<std::unique_ptr<PassThroughURLLoaderFactory>> proxies_;
+};
+
+IN_PROC_BROWSER_TEST_F(AppCacheNetworkServiceBrowserTest,
+                       AppCacheRequestsAreProxied) {
+  LoaderFactoryInterceptingBrowserClient browser_client;
+  ContentBrowserClient* original_client =
+      SetBrowserClientForTesting(&browser_client);
+  net::EmbeddedTestServer embedded_test_server;
+  embedded_test_server.ServeFilesFromSourceDirectory(GetTestDataFilePath());
+
+  ASSERT_TRUE(embedded_test_server.Start());
+
+  GURL main_url =
+      embedded_test_server.GetURL("/appcache/simple_page_with_manifest.html");
+
+  base::string16 expected_title = base::ASCIIToUTF16("AppCache updated");
+
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+  TitleWatcher title_watcher(shell()->web_contents(), expected_title);
+  EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
+
+  const auto& request_map = browser_client.intercepted_request_map();
+  EXPECT_EQ(request_map.count(main_url), 1u);
+
+  GURL subresource_url = embedded_test_server.GetURL("/appcache/logo.png");
+  EXPECT_EQ(request_map.count(subresource_url), 1u);
+  EXPECT_EQ(request_map.find(subresource_url)->second,
+            url::Origin::Create(embedded_test_server.base_url()));
+
+  GURL subresource_url2 = embedded_test_server.GetURL("/appcache/logo2.png");
+  EXPECT_EQ(request_map.count(subresource_url2), 0u);
+
+  const char kScript[] = R"(
+      new Promise(function (resolve, reject) {
+          var img = document.createElement('img');
+          img.src = '/appcache/logo2.png';
+          img.onload = _ => resolve('IMG LOADED');
+          img.onerror = reject;
+      })
+  )";
+  EXPECT_EQ("IMG LOADED", EvalJs(shell(), kScript));
+
+  EXPECT_EQ(request_map.count(subresource_url2), 1u);
+  EXPECT_EQ(request_map.find(subresource_url2)->second,
+            url::Origin::Create(embedded_test_server.base_url()));
+
+  SetBrowserClientForTesting(original_client);
 }
 
 }  // namespace content

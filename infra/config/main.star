@@ -19,17 +19,6 @@ lucicfg.config(
     fail_on_warnings = True,
 )
 
-# Copy the not-yet migrated files to the generated outputs
-# TODO(https://crbug.com/1011908) Migrate the configuration in these files to starlark
-[lucicfg.emit(dest = f, data = io.read_file(f)) for f in (
-    # TODO(https://crbug.com/819899) There are a number of noop jobs for dummy
-    # builders defined due to legacy requirements that trybots mirror CI bots
-    # and noop scheduler jobs cannot be created in lucicfg, so the trybots need
-    # to be updated to not rely on dummy builders and the noop jobs need to be
-    # removed
-    'luci-scheduler.cfg',
-)]
-
 # Just copy tricium-prod.cfg to the generated outputs
 lucicfg.emit(
     dest = 'tricium-prod.cfg',
@@ -42,18 +31,24 @@ luci.project(
     logdog = 'luci-logdog.appspot.com',
     milo = 'luci-milo.appspot.com',
     notify = 'luci-notify.appspot.com',
+    scheduler = 'luci-scheduler.appspot.com',
     swarming = 'chromium-swarm.appspot.com',
     acls = [
         acl.entry(
             roles = [
                 acl.LOGDOG_READER,
                 acl.PROJECT_CONFIGS_READER,
+                acl.SCHEDULER_READER,
             ],
             groups = 'all',
         ),
         acl.entry(
             roles = acl.LOGDOG_WRITER,
             groups = 'luci-logdog-chromium-writers',
+        ),
+        acl.entry(
+            roles = acl.SCHEDULER_OWNER,
+            groups = 'project-chromium-admins',
         ),
     ],
 )
@@ -127,9 +122,12 @@ exec('//consoles/tryserver.chromium.win.star')
 exec('//notifiers.star')
 
 exec('//generators/cq-builders-md.star')
+# TODO(https://crbug.com/819899) There are a number of noop jobs for dummy
+# builders defined due to legacy requirements that trybots mirror CI bots
+# no-op scheduler jobs are not supported by the lucicfg libraries, so this
+# generator adds in the necessary no-op jobs
+# The trybots should be update to not require no-op jobs to be triggered so that
+# the no-op jobs can be removed
+exec('//generators/scheduler-noop-jobs.star')
 
 exec('//validators/builders-in-consoles.star')
-# TODO(https://crbug.com/1011908) Provides some checking of scheduler
-# configuration since it can't be migrated to starlark until no-op jobs are
-# removed
-exec('//validators/scheduler-validation.star')

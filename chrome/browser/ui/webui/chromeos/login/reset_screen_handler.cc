@@ -147,8 +147,8 @@ void ResetScreenHandler::SetIsConfirmational(bool value) {
   CallJS("login.ResetScreen.setIsConfirmational", value);
 }
 
-void ResetScreenHandler::SetIsOfficialBuild(bool value) {
-  CallJS("login.ResetScreen.setIsOfficialBuild", value);
+void ResetScreenHandler::SetIsGoogleBrandedBuild(bool value) {
+  CallJS("login.ResetScreen.setIsGoogleBrandedBuild", value);
 }
 
 void ResetScreenHandler::SetScreenState(State value) {

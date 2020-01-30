@@ -129,6 +129,7 @@ class TestModelTypeSyncBridge : public FakeModelTypeSyncBridge {
   int merge_call_count() const { return merge_call_count_; }
   int apply_call_count() const { return apply_call_count_; }
   int get_storage_key_call_count() const { return get_storage_key_call_count_; }
+  int commit_failures_count() const { return commit_failures_count_; }
 
   // FakeModelTypeSyncBridge overrides.
 
@@ -174,6 +175,8 @@ class TestModelTypeSyncBridge : public FakeModelTypeSyncBridge {
     }
   }
 
+  void OnCommitAttemptFailed() override { commit_failures_count_++; }
+
   void SetOnCommitAttemptErrorsCallback(
       base::OnceCallback<void(const FailedCommitResponseDataList&)> callback) {
     on_commit_attempt_errors_callback_ = std::move(callback);
@@ -193,6 +196,7 @@ class TestModelTypeSyncBridge : public FakeModelTypeSyncBridge {
   int merge_call_count_ = 0;
   int apply_call_count_ = 0;
   int get_storage_key_call_count_ = 0;
+  int commit_failures_count_ = 0;
 
   // Stores the data callback between GetData() and OnCommitDataLoaded().
   base::OnceClosure data_callback_;
@@ -2507,6 +2511,7 @@ TEST_F(ClientTagBasedModelTypeProcessorTest,
       /*committed_response_list=*/CommitResponseDataList(), failed_list);
 
   ASSERT_EQ(1u, actual_error_response_list.size());
+  EXPECT_EQ(0, bridge()->commit_failures_count());
   EXPECT_EQ(response_data.client_tag_hash,
             actual_error_response_list[0].client_tag_hash);
   EXPECT_EQ(response_data.response_type,
@@ -2533,6 +2538,14 @@ TEST_F(ClientTagBasedModelTypeProcessorTest,
       model_type_state(),
       /*committed_response_list=*/CommitResponseDataList(),
       /*rror_response_list=*/FailedCommitResponseDataList());
+  EXPECT_EQ(0, bridge()->commit_failures_count());
+}
+
+TEST_F(ClientTagBasedModelTypeProcessorTest, ShouldPropagateFullCommitFailure) {
+  ASSERT_EQ(0, bridge()->commit_failures_count());
+
+  type_processor()->OnCommitFailed();
+  EXPECT_EQ(1, bridge()->commit_failures_count());
 }
 
 class CommitOnlyClientTagBasedModelTypeProcessorTest

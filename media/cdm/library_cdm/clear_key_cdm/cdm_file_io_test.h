@@ -21,8 +21,9 @@
 
 namespace media {
 
-typedef base::Callback<void(bool success)> CompletionCB;
-typedef base::Callback<cdm::FileIO*(cdm::FileIOClient* client)> CreateFileIOCB;
+using CompletionCB = base::OnceCallback<void(bool success)>;
+using CreateFileIOCB =
+    base::RepeatingCallback<cdm::FileIO*(cdm::FileIOClient* client)>;
 
 // A customizable test class that tests cdm::FileIO implementation.
 // - To create a test, call AddTestStep() to add a test step. A test step can be
@@ -85,7 +86,7 @@ class FileIOTest : public cdm::FileIOClient {
                            uint32_t data2_size);
 
   // Runs this test case and returns the test result through |completion_cb|.
-  void Run(const CompletionCB& completion_cb);
+  void Run(CompletionCB completion_cb);
 
  private:
   struct TestStep {
@@ -167,7 +168,7 @@ class FileIOTestRunner {
 
   // Run all tests. When tests are completed, the result will be reported in the
   // |completion_cb|.
-  void RunAllTests(const CompletionCB& completion_cb);
+  void RunAllTests(CompletionCB completion_cb);
 
  private:
   void OnTestComplete(bool success);

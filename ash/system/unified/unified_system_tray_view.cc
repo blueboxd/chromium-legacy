@@ -257,20 +257,14 @@ SkColor UnifiedSystemTrayView::GetBackgroundColor() {
         AshColorProvider::BaseLayerType::kTransparent90,
         kUnifiedMenuBackgroundColor);
   }
-
-  AshColorProvider::BaseLayerType layer_type =
-      (Shell::Get()->tablet_mode_controller() &&
-       Shell::Get()->tablet_mode_controller()->InTabletMode())
-          ? AshColorProvider::BaseLayerType::kTransparent60
-          : AshColorProvider::BaseLayerType::kTransparent74;
-
   auto background_type = Shelf::ForWindow(Shell::GetPrimaryRootWindow())
                              ->shelf_widget()
                              ->GetBackgroundType();
-  if (background_type == ShelfBackgroundType::kMaximized ||
-      background_type == ShelfBackgroundType::kInApp) {
-    layer_type = AshColorProvider::BaseLayerType::kTransparent90;
-  }
+  AshColorProvider::BaseLayerType layer_type =
+      (background_type == ShelfBackgroundType::kMaximized ||
+       background_type == ShelfBackgroundType::kInApp)
+          ? AshColorProvider::BaseLayerType::kTransparent90
+          : AshColorProvider::BaseLayerType::kTransparent74;
 
   SkColor background_color = AshColorProvider::Get()->GetBaseLayerColor(
       layer_type, AshColorProvider::AshColorMode::kDark);

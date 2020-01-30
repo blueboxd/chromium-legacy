@@ -24,6 +24,7 @@ exec('//versioned/trunk/buckets/ci.star')
 
 # *** After this point everything is trunk only ***
 ci.defaults.bucket.set('ci')
+ci.defaults.triggered_by.set(['master-gitiles-trigger'])
 
 
 XCODE_IOS_11_CACHE = swarming.cache(
@@ -45,13 +46,17 @@ ci.builder(
             'tools/android/avd/proto/generic_android28.textpb',
         ],
     },
+    schedule = '0 7 * * 0 *',
     service_account = 'chromium-cipd-builder@chops-service-accounts.iam.gserviceaccount.com',
+    triggered_by = [],
 )
 
 ci.builder(
     name = 'android-sdk-packager',
     executable = 'recipe:android/sdk_packager',
+    schedule = '0 7 * * 0 *',
     service_account = 'chromium-cipd-builder@chops-service-accounts.iam.gserviceaccount.com',
+    triggered_by = [],
     properties = {
         # We still package part of build-tools;25.0.2 to support
         # http://bit.ly/2KNUygZ
@@ -131,22 +136,27 @@ ci.android_builder(
 
 ci.android_builder(
     name = 'Android WebView L (dbg)',
+    triggered_by = ['Android arm Builder (dbg)'],
 )
 
 ci.android_builder(
     name = 'Android WebView M (dbg)',
+    triggered_by = ['Android arm64 Builder (dbg)'],
 )
 
 ci.android_builder(
     name = 'Android WebView N (dbg)',
+    triggered_by = ['Android arm64 Builder (dbg)'],
 )
 
 ci.android_builder(
     name = 'Android WebView O (dbg)',
+    triggered_by = ['Android arm64 Builder (dbg)'],
 )
 
 ci.android_builder(
     name = 'Android WebView P (dbg)',
+    triggered_by = ['Android arm64 Builder (dbg)'],
 )
 
 ci.android_builder(
@@ -173,6 +183,7 @@ ci.android_builder(
     name = 'Cast Android (dbg)',
 )
 
+
 ci.android_builder(
     name = 'Deterministic Android',
     executable = 'recipe:swarming/deterministic_build',
@@ -187,6 +198,7 @@ ci.android_builder(
 
 ci.android_builder(
     name = 'KitKat Phone Tester (dbg)',
+    triggered_by = ['Android arm Builder (dbg)'],
 )
 
 ci.android_builder(
@@ -194,10 +206,12 @@ ci.android_builder(
     # We have limited tablet capacity and thus limited ability to run
     # tests in parallel, hence the high timeout.
     execution_timeout = 10 * time.hour,
+    triggered_by = ['Android arm Builder (dbg)'],
 )
 
 ci.android_builder(
     name = 'Lollipop Phone Tester',
+    triggered_by = ['Android arm Builder (dbg)'],
 )
 
 ci.android_builder(
@@ -205,10 +219,12 @@ ci.android_builder(
     # We have limited tablet capacity and thus limited ability to run
     # tests in parallel, hence the high timeout.
     execution_timeout = 10 * time.hour,
+    triggered_by = ['Android arm Builder (dbg)'],
 )
 
 ci.android_builder(
     name = 'Marshmallow 64 bit Tester',
+    triggered_by = ['Android arm64 Builder (dbg)'],
 )
 
 ci.android_builder(
@@ -216,14 +232,17 @@ ci.android_builder(
     # We have limited tablet capacity and thus limited ability to run
     # tests in parallel, hence the high timeout.
     execution_timeout = 8 * time.hour,
+    triggered_by = ['Android arm Builder (dbg)'],
 )
 
 ci.android_builder(
     name = 'Nougat Phone Tester',
+    triggered_by = ['Android arm64 Builder (dbg)'],
 )
 
 ci.android_builder(
     name = 'Oreo Phone Tester',
+    triggered_by = ['Android arm64 Builder (dbg)'],
 )
 
 ci.android_builder(
@@ -260,11 +279,13 @@ ci.android_builder(
 ci.android_builder(
     name = 'android-cronet-kitkat-arm-rel',
     notifies = ['cronet'],
+    triggered_by = ['android-cronet-arm-rel'],
 )
 
 ci.android_builder(
     name = 'android-cronet-lollipop-arm-rel',
     notifies = ['cronet'],
+    triggered_by = ['android-cronet-arm-rel'],
 )
 
 # Runs on a specific machine with an attached phone
@@ -280,6 +301,7 @@ ci.android_builder(
 ci.android_builder(
     name = 'android-cronet-marshmallow-arm64-rel',
     notifies = ['cronet'],
+    triggered_by = ['android-cronet-arm64-rel'],
 )
 
 ci.android_builder(
@@ -302,6 +324,7 @@ ci.android_builder(
 
 ci.android_builder(
     name = 'android-pie-arm64-dbg',
+    triggered_by = ['Android arm64 Builder (dbg)'],
 )
 
 ci.android_builder(
@@ -327,10 +350,14 @@ ci.android_fyi_builder(
 
 ci.android_fyi_builder(
     name = 'android-marshmallow-x86-fyi-rel',
+    schedule = '0 7 * * *',
+    triggered_by = [],
 )
 
 ci.android_fyi_builder(
     name = 'android-pie-x86-fyi-rel',
+    schedule = '0 7 * * *',
+    triggered_by = [],
 )
 
 
@@ -598,24 +625,28 @@ ci.dawn_builder(
     name = 'Dawn Linux x64 DEPS Release (Intel HD 630)',
     cores = 2,
     os = os.LINUX_DEFAULT,
+    triggered_by = ['Dawn Linux x64 DEPS Builder'],
 )
 
 ci.dawn_builder(
     name = 'Dawn Linux x64 DEPS Release (NVIDIA)',
     cores = 2,
     os = os.LINUX_DEFAULT,
+    triggered_by = ['Dawn Linux x64 DEPS Builder'],
 )
 
 ci.dawn_builder(
     name = 'Dawn Linux x64 Release (Intel HD 630)',
     cores = 2,
     os = os.LINUX_DEFAULT,
+    triggered_by = ['Dawn Linux x64 Builder'],
 )
 
 ci.dawn_builder(
     name = 'Dawn Linux x64 Release (NVIDIA)',
     cores = 2,
     os = os.LINUX_DEFAULT,
+    triggered_by = ['Dawn Linux x64 Builder'],
 )
 
 ci.dawn_builder(
@@ -638,24 +669,28 @@ ci.dawn_builder(
     name = 'Dawn Mac x64 DEPS Release (AMD)',
     cores = 2,
     os = os.LINUX_DEFAULT,
+    triggered_by = ['Dawn Mac x64 DEPS Builder'],
 )
 
 ci.dawn_builder(
     name = 'Dawn Mac x64 DEPS Release (Intel)',
     cores = 2,
     os = os.LINUX_DEFAULT,
+    triggered_by = ['Dawn Mac x64 DEPS Builder'],
 )
 
 ci.dawn_builder(
     name = 'Dawn Mac x64 Release (AMD)',
     cores = 2,
     os = os.LINUX_DEFAULT,
+    triggered_by = ['Dawn Mac x64 Builder'],
 )
 
 ci.dawn_builder(
     name = 'Dawn Mac x64 Release (Intel)',
     cores = 2,
     os = os.LINUX_DEFAULT,
+    triggered_by = ['Dawn Mac x64 Builder'],
 )
 
 ci.dawn_builder(
@@ -674,24 +709,28 @@ ci.dawn_builder(
     name = 'Dawn Win10 x86 Release (Intel HD 630)',
     cores = 2,
     os = os.LINUX_DEFAULT,
+    triggered_by = ['Dawn Win10 x86 Builder'],
 )
 
 ci.dawn_builder(
     name = 'Dawn Win10 x64 Release (Intel HD 630)',
     cores = 2,
     os = os.LINUX_DEFAULT,
+    triggered_by = ['Dawn Win10 x64 Builder'],
 )
 
 ci.dawn_builder(
     name = 'Dawn Win10 x86 Release (NVIDIA)',
     cores = 2,
     os = os.LINUX_DEFAULT,
+    triggered_by = ['Dawn Win10 x86 Builder'],
 )
 
 ci.dawn_builder(
     name = 'Dawn Win10 x64 Release (NVIDIA)',
     cores = 2,
     os = os.LINUX_DEFAULT,
+    triggered_by = ['Dawn Win10 x64 Builder'],
 )
 
 ci.dawn_builder(
@@ -708,66 +747,100 @@ ci.dawn_builder(
     name = 'Dawn Win10 x86 DEPS Release (Intel HD 630)',
     cores = 2,
     os = os.LINUX_DEFAULT,
+    triggered_by = ['Dawn Win10 x86 DEPS Builder'],
 )
 
 ci.dawn_builder(
     name = 'Dawn Win10 x64 DEPS Release (Intel HD 630)',
     cores = 2,
     os = os.LINUX_DEFAULT,
+    triggered_by = ['Dawn Win10 x64 DEPS Builder'],
 )
 
 ci.dawn_builder(
     name = 'Dawn Win10 x86 DEPS Release (NVIDIA)',
     cores = 2,
     os = os.LINUX_DEFAULT,
+    triggered_by = ['Dawn Win10 x86 DEPS Builder'],
 )
 
 ci.dawn_builder(
     name = 'Dawn Win10 x64 DEPS Release (NVIDIA)',
     cores = 2,
     os = os.LINUX_DEFAULT,
+    triggered_by = ['Dawn Win10 x64 DEPS Builder'],
 )
 
 
 ci.fuzz_builder(
     name = 'ASAN Debug',
+    triggering_policy = scheduler.greedy_batching(
+        max_concurrent_invocations = 4,
+    ),
 )
 
 ci.fuzz_builder(
     name = 'ASan Debug (32-bit x86 with V8-ARM)',
+    triggering_policy = scheduler.greedy_batching(
+        max_concurrent_invocations = 4,
+    ),
 )
 
 ci.fuzz_builder(
     name = 'ASAN Release',
+    triggering_policy = scheduler.greedy_batching(
+        max_concurrent_invocations = 5,
+    ),
 )
 
 ci.fuzz_builder(
     name = 'ASan Release (32-bit x86 with V8-ARM)',
+    triggering_policy = scheduler.greedy_batching(
+        max_concurrent_invocations = 4,
+    ),
 )
 
 ci.fuzz_builder(
     name = 'ASAN Release Media',
+    triggering_policy = scheduler.greedy_batching(
+        max_concurrent_invocations = 4,
+    ),
 )
 
 ci.fuzz_builder(
     name = 'Afl Upload Linux ASan',
     executable = 'recipe:chromium_afl',
+    triggering_policy = scheduler.greedy_batching(
+        max_concurrent_invocations = 4,
+    ),
 )
 
 ci.fuzz_builder(
     name = 'ASan Release Media (32-bit x86 with V8-ARM)',
+    triggering_policy = scheduler.greedy_batching(
+        max_concurrent_invocations = 4,
+    ),
 )
 
 ci.fuzz_builder(
     name = 'ChromiumOS ASAN Release',
+    triggering_policy = scheduler.greedy_batching(
+        max_concurrent_invocations = 6,
+    ),
 )
 
 ci.fuzz_builder(
     name = 'MSAN Release (chained origins)',
+    triggering_policy = scheduler.greedy_batching(
+        max_concurrent_invocations = 4,
+    ),
 )
 
 ci.fuzz_builder(
     name = 'MSAN Release (no origins)',
+    triggering_policy = scheduler.greedy_batching(
+        max_concurrent_invocations = 4,
+    ),
 )
 
 ci.fuzz_builder(
@@ -775,6 +848,9 @@ ci.fuzz_builder(
     builderless = False,
     cores = 4,
     os = os.MAC_DEFAULT,
+    triggering_policy = scheduler.greedy_batching(
+        max_concurrent_invocations = 2,
+    ),
 )
 
 ci.fuzz_builder(
@@ -782,81 +858,135 @@ ci.fuzz_builder(
     builderless = False,
     cores = 4,
     os = os.MAC_DEFAULT,
+    triggering_policy = scheduler.greedy_batching(
+        max_concurrent_invocations = 2,
+    ),
 )
 
 ci.fuzz_builder(
     name = 'TSAN Debug',
+    triggering_policy = scheduler.greedy_batching(
+        max_concurrent_invocations = 4,
+    ),
 )
 
 ci.fuzz_builder(
     name = 'TSAN Release',
+    triggering_policy = scheduler.greedy_batching(
+        max_concurrent_invocations = 3,
+    ),
 )
 
 ci.fuzz_builder(
     name = 'UBSan Release',
+    triggering_policy = scheduler.greedy_batching(
+        max_concurrent_invocations = 4,
+    ),
 )
 
 ci.fuzz_builder(
     name = 'UBSan vptr Release',
+    triggering_policy = scheduler.greedy_batching(
+        max_concurrent_invocations = 4,
+    ),
 )
 
 ci.fuzz_builder(
     name = 'Win ASan Release',
     builderless = False,
     os = os.WINDOWS_DEFAULT,
+    triggering_policy = scheduler.greedy_batching(
+        max_concurrent_invocations = 7,
+    ),
 )
 
 ci.fuzz_builder(
     name = 'Win ASan Release Media',
     builderless = False,
-    os = os.WINDOWS_DEFAULT
+    os = os.WINDOWS_DEFAULT,
+    triggering_policy = scheduler.greedy_batching(
+        max_concurrent_invocations = 6,
+    ),
 )
 
 
 ci.fuzz_libfuzzer_builder(
     name = 'Libfuzzer Upload Chrome OS ASan',
+    triggering_policy = scheduler.greedy_batching(
+        max_concurrent_invocations = 3,
+    ),
 )
 
 ci.fuzz_libfuzzer_builder(
     name = 'Libfuzzer Upload Linux ASan',
+    triggering_policy = scheduler.greedy_batching(
+        max_concurrent_invocations = 5,
+    ),
 )
 
 ci.fuzz_libfuzzer_builder(
     name = 'Libfuzzer Upload Linux ASan Debug',
+    triggering_policy = scheduler.greedy_batching(
+        max_concurrent_invocations = 5,
+    ),
 )
 
 ci.fuzz_libfuzzer_builder(
     name = 'Libfuzzer Upload Linux MSan',
+    triggering_policy = scheduler.greedy_batching(
+        max_concurrent_invocations = 5,
+    ),
 )
 
 ci.fuzz_libfuzzer_builder(
     name = 'Libfuzzer Upload Linux UBSan',
     # Do not use builderless for this (crbug.com/980080).
     builderless = False,
+    triggering_policy = scheduler.greedy_batching(
+        max_concurrent_invocations = 5,
+    ),
 )
 
 ci.fuzz_libfuzzer_builder(
     name = 'Libfuzzer Upload Linux V8-ARM64 ASan',
+    triggering_policy = scheduler.greedy_batching(
+        max_concurrent_invocations = 1,
+    ),
 )
 
 ci.fuzz_libfuzzer_builder(
     name = 'Libfuzzer Upload Linux V8-ARM64 ASan Debug',
+    triggering_policy = scheduler.greedy_batching(
+        max_concurrent_invocations = 1,
+    ),
 )
 
 ci.fuzz_libfuzzer_builder(
     name = 'Libfuzzer Upload Linux32 ASan',
+    triggering_policy = scheduler.greedy_batching(
+        max_concurrent_invocations = 3,
+    ),
 )
 
 ci.fuzz_libfuzzer_builder(
     name = 'Libfuzzer Upload Linux32 ASan Debug',
+    triggering_policy = scheduler.greedy_batching(
+        max_concurrent_invocations = 3,
+    ),
 )
 
 ci.fuzz_libfuzzer_builder(
     name = 'Libfuzzer Upload Linux32 V8-ARM ASan',
+    triggering_policy = scheduler.greedy_batching(
+        max_concurrent_invocations = 1,
+    ),
 )
 
 ci.fuzz_libfuzzer_builder(
     name = 'Libfuzzer Upload Linux32 V8-ARM ASan Debug',
+    triggering_policy = scheduler.greedy_batching(
+        max_concurrent_invocations = 1,
+    ),
 )
 
 ci.fuzz_libfuzzer_builder(
@@ -869,6 +999,9 @@ ci.fuzz_libfuzzer_builder(
 ci.fuzz_libfuzzer_builder(
     name = 'Libfuzzer Upload Windows ASan',
     os = os.WINDOWS_DEFAULT,
+    triggering_policy = scheduler.greedy_batching(
+        max_concurrent_invocations = 3,
+    ),
 )
 
 
@@ -887,6 +1020,7 @@ ci.fyi_builder(
 
 ci.fyi_builder(
     name = 'Linux remote_run Tester',
+    triggered_by = ['Linux remote_run Builder'],
 )
 
 ci.fyi_builder(
@@ -966,6 +1100,7 @@ ci.fyi_builder(
 
 ci.fyi_builder(
     name = 'linux-chromium-tests-staging-tests',
+    triggered_by = ['linux-chromium-tests-staging-builder'],
 )
 
 ci.fyi_builder(
@@ -975,7 +1110,7 @@ ci.fyi_builder(
 ci.fyi_builder(
     name = 'linux-wpt-fyi-rel',
     experimental = True,
-    goma_backend = None
+    goma_backend = None,
 )
 
 ci.fyi_builder(
@@ -986,21 +1121,27 @@ ci.fyi_builder(
 ci.fyi_builder(
     name = 'win-pixel-tester-rel',
     os = None,
+    triggered_by = ['win-pixel-builder-rel'],
 )
 
 
 ci.fyi_celab_builder(
     name = 'win-celab-builder-rel',
+    schedule = '0 0,6,12,18 * * *',
+    triggered_by = [],
 )
 
 ci.fyi_celab_builder(
     name = 'win-celab-tester-rel',
+    triggered_by = ['win-celab-builder-rel'],
 )
 
 
 ci.fyi_coverage_builder(
     name = 'android-code-coverage',
     use_java_coverage = True,
+    schedule = 'triggered',
+    triggered_by = [],
 )
 
 ci.fyi_coverage_builder(
@@ -1023,11 +1164,14 @@ ci.fyi_coverage_builder(
 ci.fyi_coverage_builder(
     name = 'linux-chromeos-code-coverage',
     use_clang_coverage = True,
+    schedule = 'triggered',
+    triggered_by = [],
 )
 
 ci.fyi_coverage_builder(
     name = 'linux-code-coverage',
     use_clang_coverage = True,
+    triggered_by = [],
 )
 
 ci.fyi_coverage_builder(
@@ -1061,6 +1205,8 @@ ci.fyi_ios_builder(
 
 ci.fyi_ios_builder(
     name = 'ios-webkit-tot',
+    schedule = '0 1-23/6 * * *',
+    triggered_by = [],
 )
 
 ci.fyi_ios_builder(
@@ -1086,6 +1232,7 @@ ci.fyi_mac_builder(
     name = 'Mac10.14 Tests',
     cores = None,
     os = os.MAC_10_14,
+    triggered_by = ['Mac Builder Next'],
 )
 
 ci.fyi_mac_builder(
@@ -1154,18 +1301,22 @@ ci.gpu_builder(
 
 ci.gpu_thin_tester(
     name = 'Linux Debug (NVIDIA)',
+    triggered_by = ['GPU Linux Builder (dbg)'],
 )
 
 ci.gpu_thin_tester(
     name = 'Mac Debug (Intel)',
+    triggered_by = ['GPU Mac Builder (dbg)'],
 )
 
 ci.gpu_thin_tester(
     name = 'Mac Retina Debug (AMD)',
+    triggered_by = ['GPU Mac Builder (dbg)'],
 )
 
 ci.gpu_thin_tester(
     name = 'Win10 x64 Debug (NVIDIA)',
+    triggered_by = ['GPU Win x64 Builder (dbg)'],
 )
 
 
@@ -1180,6 +1331,7 @@ ci.gpu_fyi_linux_builder(
 ci.gpu_fyi_linux_builder(
     name = 'Android FYI 64 Perf (Pixel 2)',
     cores = 2,
+    triggered_by = ['GPU FYI Perf Android 64 Builder'],
 )
 
 ci.gpu_fyi_linux_builder(
@@ -1279,30 +1431,37 @@ ci.gpu_fyi_mac_builder(
 
 ci.gpu_fyi_thin_tester(
     name = 'Linux FYI Debug (NVIDIA)',
+    triggered_by = ['GPU FYI Linux Builder (dbg)'],
 )
 
 ci.gpu_fyi_thin_tester(
     name = 'Linux FYI Experimental Release (Intel HD 630)',
+    triggered_by = ['GPU FYI Linux Builder'],
 )
 
 ci.gpu_fyi_thin_tester(
     name = 'Linux FYI Experimental Release (NVIDIA)',
+    triggered_by = ['GPU FYI Linux Builder'],
 )
 
 ci.gpu_fyi_thin_tester(
     name = 'Linux FYI Ozone (Intel)',
+    triggered_by = ['GPU FYI Linux Ozone Builder'],
 )
 
 ci.gpu_fyi_thin_tester(
     name = 'Linux FYI Release (NVIDIA)',
+    triggered_by = ['GPU FYI Linux Builder'],
 )
 
 ci.gpu_fyi_thin_tester(
     name = 'Linux FYI Release (AMD R7 240)',
+    triggered_by = ['GPU FYI Linux Builder'],
 )
 
 ci.gpu_fyi_thin_tester(
     name = 'Linux FYI Release (Intel HD 630)',
+    triggered_by = ['GPU FYI Linux Builder'],
 )
 
 ci.gpu_fyi_thin_tester(
@@ -1310,34 +1469,42 @@ ci.gpu_fyi_thin_tester(
     # TODO(https://crbug.com/986939): Remove this increased timeout once more
     # devices are added.
     execution_timeout = 18 * time.hour,
+    triggered_by = ['GPU FYI Linux Builder'],
 )
 
 ci.gpu_fyi_thin_tester(
     name = 'Linux FYI SkiaRenderer Vulkan (Intel HD 630)',
+    triggered_by = ['GPU FYI Linux Builder'],
 )
 
 ci.gpu_fyi_thin_tester(
     name = 'Linux FYI SkiaRenderer Vulkan (NVIDIA)',
+    triggered_by = ['GPU FYI Linux Builder'],
 )
 
 ci.gpu_fyi_thin_tester(
     name = 'Linux FYI dEQP Release (Intel HD 630)',
+    triggered_by = ['GPU FYI Linux dEQP Builder'],
 )
 
 ci.gpu_fyi_thin_tester(
     name = 'Linux FYI dEQP Release (NVIDIA)',
+    triggered_by = ['GPU FYI Linux dEQP Builder'],
 )
 
 ci.gpu_fyi_thin_tester(
     name = 'Mac FYI Debug (Intel)',
+    triggered_by = ['GPU FYI Mac Builder (dbg)'],
 )
 
 ci.gpu_fyi_thin_tester(
     name = 'Mac FYI Experimental Release (Intel)',
+    triggered_by = ['GPU FYI Mac Builder'],
 )
 
 ci.gpu_fyi_thin_tester(
     name = 'Mac FYI Experimental Retina Release (AMD)',
+    triggered_by = ['GPU FYI Mac Builder'],
 )
 
 ci.gpu_fyi_thin_tester(
@@ -1346,66 +1513,82 @@ ci.gpu_fyi_thin_tester(
     # If it gets more, this can be removed.
     # See crbug.com/853307 for more context.
     execution_timeout = 12 * time.hour,
+    triggered_by = ['GPU FYI Mac Builder'],
 )
 
 ci.gpu_fyi_thin_tester(
     name = 'Mac FYI Release (Intel)',
+    triggered_by = ['GPU FYI Mac Builder'],
 )
 
 ci.gpu_fyi_thin_tester(
     name = 'Mac FYI Retina Debug (AMD)',
+    triggered_by = ['GPU FYI Mac Builder (dbg)'],
 )
 
 ci.gpu_fyi_thin_tester(
     name = 'Mac FYI Retina Debug (NVIDIA)',
+    triggered_by = ['GPU FYI Mac Builder (dbg)'],
 )
 
 ci.gpu_fyi_thin_tester(
     name = 'Mac FYI Retina Release (AMD)',
+    triggered_by = ['GPU FYI Mac Builder'],
 )
 
 ci.gpu_fyi_thin_tester(
     name = 'Mac FYI Retina Release (NVIDIA)',
+    triggered_by = ['GPU FYI Mac Builder'],
 )
 
 ci.gpu_fyi_thin_tester(
     name = 'Mac FYI dEQP Release AMD',
+    triggered_by = ['GPU FYI Mac dEQP Builder'],
 )
 
 ci.gpu_fyi_thin_tester(
     name = 'Mac FYI dEQP Release Intel',
+    triggered_by = ['GPU FYI Mac dEQP Builder'],
 )
 
 ci.gpu_fyi_thin_tester(
     name = 'Mac Pro FYI Release (AMD)',
+    triggered_by = ['GPU FYI Mac Builder'],
 )
 
 ci.gpu_fyi_thin_tester(
     name = 'Win10 FYI x64 Debug (NVIDIA)',
+    triggered_by = ['GPU FYI Win x64 Builder (dbg)'],
 )
 
 ci.gpu_fyi_thin_tester(
     name = 'Win10 FYI x64 DX12 Vulkan Debug (NVIDIA)',
+    triggered_by = ['GPU FYI Win x64 DX12 Vulkan Builder (dbg)'],
 )
 
 ci.gpu_fyi_thin_tester(
     name = 'Win10 FYI x64 DX12 Vulkan Release (NVIDIA)',
+    triggered_by = ['GPU FYI Win x64 DX12 Vulkan Builder'],
 )
 
 ci.gpu_fyi_thin_tester(
     name = 'Win10 FYI x64 Exp Release (Intel HD 630)',
+    triggered_by = ['GPU FYI Win x64 Builder'],
 )
 
 ci.gpu_fyi_thin_tester(
     name = 'Win10 FYI x64 Exp Release (NVIDIA)',
+    triggered_by = ['GPU FYI Win x64 Builder'],
 )
 
 ci.gpu_fyi_thin_tester(
     name = 'Win10 FYI x64 Release (AMD RX 550)',
+    triggered_by = ['GPU FYI Win x64 Builder'],
 )
 
 ci.gpu_fyi_thin_tester(
     name = 'Win10 FYI x64 Release (Intel HD 630)',
+    triggered_by = ['GPU FYI Win x64 Builder'],
 )
 
 ci.gpu_fyi_thin_tester(
@@ -1413,59 +1596,73 @@ ci.gpu_fyi_thin_tester(
     # TODO(https://crbug.com/986939): Remove this increased timeout once
     # more devices are added.
     execution_timeout = 18 * time.hour,
+    triggered_by = ['GPU FYI Win x64 Builder'],
 )
 
 ci.gpu_fyi_thin_tester(
     name = 'Win10 FYI x64 Release (NVIDIA GeForce GTX 1660)',
     execution_timeout = 18 * time.hour,
+    triggered_by = ['GPU FYI Win x64 Builder'],
 )
 
 ci.gpu_fyi_thin_tester(
     name = 'Win10 FYI x64 Release (NVIDIA)',
+    triggered_by = ['GPU FYI Win x64 Builder'],
 )
 
 ci.gpu_fyi_thin_tester(
     name = 'Win10 FYI x64 Release XR Perf (NVIDIA)',
+    triggered_by = ['GPU FYI XR Win x64 Builder'],
 )
 
 ci.gpu_fyi_thin_tester(
     name = 'Win10 FYI x64 SkiaRenderer GL (NVIDIA)',
+    triggered_by = ['GPU FYI Win x64 Builder'],
 )
 
 ci.gpu_fyi_thin_tester(
     name = 'Win10 FYI x64 dEQP Release (Intel HD 630)',
+    triggered_by = ['GPU FYI Win x64 dEQP Builder'],
 )
 
 ci.gpu_fyi_thin_tester(
     name = 'Win10 FYI x64 dEQP Release (NVIDIA)',
+    triggered_by = ['GPU FYI Win x64 dEQP Builder'],
 )
 
 ci.gpu_fyi_thin_tester(
     name = 'Win10 FYI x86 Release (NVIDIA)',
+    triggered_by = ['GPU FYI Win Builder'],
 )
 
 ci.gpu_fyi_thin_tester(
     name = 'Win7 FYI Debug (AMD)',
+    triggered_by = ['GPU FYI Win Builder (dbg)'],
 )
 
 ci.gpu_fyi_thin_tester(
     name = 'Win7 FYI Release (AMD)',
+    triggered_by = ['GPU FYI Win Builder'],
 )
 
 ci.gpu_fyi_thin_tester(
     name = 'Win7 FYI Release (NVIDIA)',
+    triggered_by = ['GPU FYI Win Builder'],
 )
 
 ci.gpu_fyi_thin_tester(
     name = 'Win7 FYI dEQP Release (AMD)',
+    triggered_by = ['GPU FYI Win dEQP Builder'],
 )
 
 ci.gpu_fyi_thin_tester(
     name = 'Win7 FYI x64 Release (NVIDIA)',
+    triggered_by = ['GPU FYI Win x64 Builder'],
 )
 
 ci.gpu_fyi_thin_tester(
     name = 'Win7 FYI x64 dEQP Release (NVIDIA)',
+    triggered_by = ['GPU FYI Win x64 dEQP Builder'],
 )
 
 
@@ -1560,6 +1757,7 @@ ci.linux_builder(
 
 ci.linux_builder(
     name = 'Linux Tests (dbg)(1)',
+    triggered_by = ['Linux Builder (dbg)'],
 )
 
 ci.linux_builder(
@@ -1594,7 +1792,9 @@ ci.linux_builder(
 ci.linux_builder(
     name = 'linux_chromium_component_updater',
     executable = 'recipe:findit/chromium/update_components',
-    service_account = 'component-mapping-updater@chops-service-accounts.iam.gserviceaccount.com'
+    schedule = '0 0,6,12,18 * * *',
+    service_account = 'component-mapping-updater@chops-service-accounts.iam.gserviceaccount.com',
+    triggered_by = [],
 )
 
 
@@ -1606,6 +1806,7 @@ ci.mac_builder(
 ci.mac_builder(
     name = 'Mac10.13 Tests (dbg)',
     os = os.MAC_ANY,
+    triggered_by = ['Mac Builder (dbg)'],
 )
 
 
@@ -1645,10 +1846,12 @@ ci.memory_builder(
 
 ci.memory_builder(
     name = 'Linux ASan LSan Tests (1)',
+    triggered_by = ['Linux ASan LSan Builder'],
 )
 
 ci.memory_builder(
     name = 'Linux ASan Tests (sandboxed)',
+    triggered_by = ['Linux ASan LSan Builder'],
 )
 
 ci.memory_builder(
@@ -1668,6 +1871,7 @@ ci.memory_builder(
 
 ci.memory_builder(
     name = 'Linux Chromium OS ASan LSan Tests (1)',
+    triggered_by = ['Linux Chromium OS ASan LSan Builder'],
 )
 
 ci.memory_builder(
@@ -1676,6 +1880,7 @@ ci.memory_builder(
 
 ci.memory_builder(
     name = 'Linux ChromiumOS MSan Tests',
+    triggered_by = ['Linux ChromiumOS MSan Builder'],
 )
 
 ci.memory_builder(
@@ -1685,6 +1890,7 @@ ci.memory_builder(
 
 ci.memory_builder(
     name = 'Linux MSan Tests',
+    triggered_by = ['Linux MSan Builder'],
 )
 
 ci.memory_builder(
@@ -1693,6 +1899,7 @@ ci.memory_builder(
 
 ci.memory_builder(
     name = 'Linux TSan Tests',
+    triggered_by = ['Linux TSan Builder'],
 )
 
 ci.memory_builder(
@@ -1702,12 +1909,16 @@ ci.memory_builder(
     goma_jobs = None,
     cores = None,  # Swapping between 8 and 24
     os = os.MAC_DEFAULT,
+    triggering_policy = scheduler.greedy_batching(
+        max_concurrent_invocations = 2,
+    ),
 )
 
 ci.memory_builder(
     name = 'Mac ASan 64 Tests (1)',
     builderless = False,
     os = os.MAC_DEFAULT,
+    triggered_by = ['Mac ASan 64 Builder'],
 )
 
 ci.memory_builder(
@@ -1735,27 +1946,27 @@ ci.memory_builder(
 
 
 ci.swangle_linux_builder(
-    name = 'linux-swangle-tot-angle-x64'
+    name = 'linux-swangle-tot-angle-x64',
 )
 
 ci.swangle_linux_builder(
-    name = 'linux-swangle-tot-angle-x86'
+    name = 'linux-swangle-tot-angle-x86',
 )
 
 ci.swangle_linux_builder(
-    name = 'linux-swangle-tot-swiftshader-x64'
+    name = 'linux-swangle-tot-swiftshader-x64',
 )
 
 ci.swangle_linux_builder(
-    name = 'linux-swangle-tot-swiftshader-x86'
+    name = 'linux-swangle-tot-swiftshader-x86',
 )
 
 ci.swangle_linux_builder(
-    name = 'linux-swangle-x64'
+    name = 'linux-swangle-x64',
 )
 
 ci.swangle_linux_builder(
-    name = 'linux-swangle-x86'
+    name = 'linux-swangle-x86',
 )
 
 
@@ -1786,6 +1997,7 @@ ci.swangle_windows_builder(
 
 ci.win_builder(
     name = 'WebKit Win10',
+    triggered_by = ['Win Builder'],
 )
 
 ci.win_builder(
@@ -1809,21 +2021,25 @@ ci.win_builder(
 
 ci.win_builder(
     name = 'Win10 Tests x64 (dbg)',
+    triggered_by = ['Win x64 Builder (dbg)'],
 )
 
 ci.win_builder(
     name = 'Win7 (32) Tests',
     os = os.WINDOWS_7,
+    triggered_by = ['Win Builder'],
 )
 
 ci.win_builder(
     name = 'Win7 Tests (1)',
     os = os.WINDOWS_7,
+    triggered_by = ['Win Builder'],
 )
 
 ci.win_builder(
     name = 'Win7 Tests (dbg)(1)',
     os = os.WINDOWS_7,
+    triggered_by = ['Win Builder (dbg)'],
 )
 
 ci.win_builder(

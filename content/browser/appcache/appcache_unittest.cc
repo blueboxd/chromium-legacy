@@ -9,10 +9,10 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "base/test/task_environment.h"
 #include "content/browser/appcache/appcache.h"
 #include "content/browser/appcache/appcache_host.h"
 #include "content/browser/appcache/mock_appcache_service.h"
+#include "content/public/test/browser_task_environment.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/mojom/appcache/appcache.mojom.h"
@@ -22,7 +22,7 @@
 namespace content {
 
 class AppCacheTest : public testing::Test {
-  base::test::TaskEnvironment task_environment_;
+  BrowserTaskEnvironment task_environment_;
 };
 
 TEST_F(AppCacheTest, CleanupUnusedCache) {

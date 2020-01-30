@@ -31,20 +31,21 @@ finally:
   sys.path.pop(0)
 
 _platforms = [
-  'android',
-  'android_webview',
-  'chromeos',
-  'fuchsia',
-  'ios',
-  'linux',
-  'mac',
-  'windows',
+    'android',
+    'android_weblayer',
+    'android_webview',
+    'chromeos',
+    'fuchsia',
+    'ios',
+    'linux',
+    'mac',
+    'windows',
 ]
 
 _form_factors = [
-  'desktop',
-  'phone',
-  'tablet',
+    'desktop',
+    'phone',
+    'tablet',
 ]
 
 # Convert a platform argument to the matching Platform enum value in

@@ -1,6 +1,9 @@
 load('//lib/builders.star', 'cpu', 'goma', 'os')
 load('//lib/ci.star', 'ci')
 load('//versioned/vars/ci.star', 'vars')
+# Load this using relative path so that the load statement doesn't
+# need to be changed when making a new milestone
+load('../vars.star', milestone_vars='vars')
 
 luci.bucket(
     name = vars.bucket.get(),
@@ -20,9 +23,17 @@ luci.bucket(
     ],
 )
 
+luci.gitiles_poller(
+    name = vars.poller.get(),
+    bucket = vars.bucket.get(),
+    repo = 'https://chromium.googlesource.com/chromium/src',
+    refs = [milestone_vars.ref],
+)
+
 
 ci.defaults.bucket.set(vars.bucket.get())
 ci.defaults.bucketed_triggers.set(True)
+ci.defaults.triggered_by.set([vars.poller.get()])
 
 
 # Builders are sorted first lexicographically by the function used to define
@@ -52,6 +63,7 @@ ci.chromiumos_builder(
 ci.fyi_builder(
     name = 'mac-osxbeta-rel',
     goma_backend = None,
+    triggered_by = [vars.bucket.builder('Mac Builder')],
 )
 
 
@@ -59,6 +71,7 @@ ci.fyi_windows_builder(
     name = 'Win10 Tests x64 1803',
     goma_backend = None,
     os = os.WINDOWS_10,
+    triggered_by = [vars.bucket.builder('Win x64 Builder')],
 )
 
 
@@ -85,18 +98,22 @@ ci.gpu_builder(
 
 ci.gpu_thin_tester(
     name = 'Linux Release (NVIDIA)',
+    triggered_by = [vars.bucket.builder('GPU Linux Builder')],
 )
 
 ci.gpu_thin_tester(
     name = 'Mac Release (Intel)',
+    triggered_by = [vars.bucket.builder('GPU Mac Builder')],
 )
 
 ci.gpu_thin_tester(
     name = 'Mac Retina Release (AMD)',
+    triggered_by = [vars.bucket.builder('GPU Mac Builder')],
 )
 
 ci.gpu_thin_tester(
     name = 'Win10 x64 Release (NVIDIA)',
+    triggered_by = [vars.bucket.builder('GPU Win x64 Builder')],
 )
 
 
@@ -106,7 +123,8 @@ ci.linux_builder(
 
 ci.linux_builder(
     name = 'Linux Tests',
-    goma_backend = None
+    goma_backend = None,
+    triggered_by = [vars.bucket.builder('Linux Builder')],
 )
 
 
@@ -117,26 +135,31 @@ ci.mac_builder(
 # The build runs on 10.13, but triggers tests on 10.10 bots.
 ci.mac_builder(
     name = 'Mac10.10 Tests',
+    triggered_by = [vars.bucket.builder('Mac Builder')],
 )
 
 # The build runs on 10.13, but triggers tests on 10.11 bots.
 ci.mac_builder(
     name = 'Mac10.11 Tests',
+    triggered_by = [vars.bucket.builder('Mac Builder')],
 )
 
 ci.mac_builder(
     name = 'Mac10.12 Tests',
     os = os.MAC_10_12,
+    triggered_by = [vars.bucket.builder('Mac Builder')],
 )
 
 ci.mac_builder(
     name = 'Mac10.13 Tests',
     os = os.MAC_10_13,
+    triggered_by = [vars.bucket.builder('Mac Builder')],
 )
 
 ci.mac_builder(
     name = 'WebKit Mac10.13 (retina)',
     os = os.MAC_10_13,
+    triggered_by = [vars.bucket.builder('Mac Builder')],
 )
 
 
@@ -148,6 +171,7 @@ ci.mac_ios_builder(
 ci.win_builder(
     name = 'Win 7 Tests x64 (1)',
     os = os.WINDOWS_7,
+    triggered_by = [vars.bucket.builder('Win x64 Builder')],
 )
 
 ci.win_builder(
@@ -158,4 +182,5 @@ ci.win_builder(
 
 ci.win_builder(
     name = 'Win10 Tests x64',
+    triggered_by = [vars.bucket.builder('Win x64 Builder')],
 )

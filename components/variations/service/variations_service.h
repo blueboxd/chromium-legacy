@@ -219,6 +219,12 @@ class VariationsService
   // Exposes StartRepeatedVariationsSeedFetch for testing.
   void StartRepeatedVariationsSeedFetchForTesting();
 
+  // Allows the embedder to override the platform and override the OS name in
+  // the variations server url. This is useful for android webview and weblayer
+  // which are distinct from regular android chrome.
+  void OverridePlatform(Study::Platform platform,
+                        const std::string& osname_server_param_override);
+
  protected:
   // Starts the fetching process once, where |OnURLFetchComplete| is called with
   // the response. This calls DoFetchToURL with the set url.
@@ -430,6 +436,10 @@ class VariationsService
 
   // True if the last request was a retry over http.
   bool last_request_was_http_retry_;
+
+  // When not empty, contains an override for the os name in the variations
+  // server url.
+  std::string osname_server_param_override_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

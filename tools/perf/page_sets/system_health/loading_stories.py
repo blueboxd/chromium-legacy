@@ -399,6 +399,20 @@ class LoadGmailStory2019(_LoadingStory):
     action_runner.tab.WaitForDocumentReadyStateToBeComplete()
 
 
+class LoadChatStory2020(_LoadingStory):
+  NAME = 'load:tools:chat:2020'
+  # Needs to be http and not https.
+  URL = 'http://chat.google.com/'
+  TAGS = [story_tags.YEAR_2020]
+  SUPPORTED_PLATFORMS = platforms.DESKTOP_ONLY
+  SKIP_LOGIN = False
+
+  def _Login(self, action_runner):
+    google_login.NewLoginGoogleAccount(action_runner, 'chatfeature')
+    action_runner.tab.WaitForDocumentReadyStateToBeComplete()
+
+
+
 class LoadStackOverflowStory2018(_LoadingStory):
   """Load a typical question & answer page of stackoverflow.com"""
   NAME = 'load:tools:stackoverflow:2018'

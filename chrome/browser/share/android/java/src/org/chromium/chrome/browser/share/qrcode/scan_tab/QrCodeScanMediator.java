@@ -1,9 +1,11 @@
 // Copyright 2019 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+
 package org.chromium.chrome.browser.share.qrcode.scan_tab;
 
 import android.Manifest.permission;
+import android.app.Activity;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.graphics.ImageFormat;
@@ -18,9 +20,13 @@ import com.google.android.gms.vision.Frame;
 import com.google.android.gms.vision.barcode.Barcode;
 import com.google.android.gms.vision.barcode.BarcodeDetector;
 
+import org.chromium.ui.base.ActivityAndroidPermissionDelegate;
+import org.chromium.ui.base.AndroidPermissionDelegate;
+import org.chromium.ui.base.PermissionCallback;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.widget.Toast;
 
+import java.lang.ref.WeakReference;
 import java.nio.ByteBuffer;
 
 /**
@@ -39,9 +45,11 @@ public class QrCodeScanMediator implements Camera.PreviewCallback {
     private final NavigationObserver mNavigationObserver;
     private final TabCreator mTabCreator;
     private final Handler mMainThreadHandler;
+    private final AndroidPermissionDelegate mPermissionDelegate;
 
     /**
      * The QrCodeScanMediator constructor.
+     *
      * @param context The context to use for user permissions.
      * @param propertyModel The property modelto use to communicate with views.
      * @param observer The observer for navigation event.
@@ -50,25 +58,62 @@ public class QrCodeScanMediator implements Camera.PreviewCallback {
             TabCreator tabCreator) {
         mContext = context;
         mPropertyModel = propertyModel;
+        mPermissionDelegate = new ActivityAndroidPermissionDelegate(
+                new WeakReference<Activity>((Activity) mContext));
         mPropertyModel.set(QrCodeScanViewProperties.HAS_CAMERA_PERMISSION, hasCameraPermission());
+        mPropertyModel.set(
+                QrCodeScanViewProperties.CAN_PROMPT_FOR_PERMISSION, canPromptForPermission());
         mDetector = new BarcodeDetector.Builder(context).build();
         mNavigationObserver = observer;
         mTabCreator = tabCreator;
         mMainThreadHandler = new Handler(Looper.getMainLooper());
     }
 
-    /** Returns whether uers has granted camera permissions. */
+    /** Returns whether the user has granted camera permissions. */
     private Boolean hasCameraPermission() {
         return mContext.checkPermission(permission.CAMERA, Process.myPid(), Process.myUid())
                 == PackageManager.PERMISSION_GRANTED;
     }
 
+    /** Returns whether the user has granted camera permissions. */
+    private Boolean canPromptForPermission() {
+        return mPermissionDelegate.canRequestPermission(permission.CAMERA);
+    }
+
     /**
      * Sets whether QrCode UI is on foreground.
+     *
      * @param isOnForeground Indicates whether this component UI is current on foreground.
      */
     public void setIsOnForeground(boolean isOnForeground) {
         mPropertyModel.set(QrCodeScanViewProperties.IS_ON_FOREGROUND, isOnForeground);
+    }
+
+    /**
+     * Prompts the user for camera permission and processes the results.
+     */
+    public void promptForCameraPermission() {
+        final PermissionCallback callback = new PermissionCallback() {
+            // Handle the results from prompting the user for camera permission.
+            @Override
+            public void onRequestPermissionsResult(String[] permissions, int[] grantResults) {
+                // No results were produced (Does this ever happen?)
+                if (grantResults.length == 0) {
+                    return;
+                }
+                if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    mPropertyModel.set(QrCodeScanViewProperties.HAS_CAMERA_PERMISSION, true);
+                } else {
+                    mPropertyModel.set(QrCodeScanViewProperties.HAS_CAMERA_PERMISSION, false);
+                    if (!mPermissionDelegate.canRequestPermission(permission.CAMERA)) {
+                        mPropertyModel.set(
+                                QrCodeScanViewProperties.CAN_PROMPT_FOR_PERMISSION, false);
+                    }
+                }
+            }
+        };
+
+        mPermissionDelegate.requestPermissions(new String[] {permission.CAMERA}, callback);
     }
 
     /**

@@ -212,12 +212,7 @@ void ProgramCache::HandleMemoryPressure(
     limit = 0;
   }
 
-  size_t bytes_freed = Trim(limit);
-  if (bytes_freed > 0) {
-    UMA_HISTOGRAM_COUNTS_100000(
-        "GPU.ProgramCache.MemoryReleasedOnPressure",
-        static_cast<base::HistogramBase::Sample>(bytes_freed) / 1024);
-  }
+  Trim(limit);
 }
 
 }  // namespace gles2

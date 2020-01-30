@@ -94,6 +94,7 @@ using ABI::Windows::Devices::Radios::RadioAccessStatus_Unspecified;
 using ABI::Windows::Devices::Radios::RadioState;
 using ABI::Windows::Devices::Radios::RadioState_Off;
 using ABI::Windows::Devices::Radios::RadioState_On;
+using ABI::Windows::Devices::Radios::RadioState_Unknown;
 using ABI::Windows::Foundation::IAsyncOperation;
 using ABI::Windows::Foundation::IReference;
 using ABI::Windows::Foundation::Collections::IVector;
@@ -468,6 +469,17 @@ void ExtractAndUpdateAdvertisementData(
                                   ExtractManufacturerData(advertisement.Get()));
 }
 
+RadioState GetState(IRadio* radio) {
+  RadioState state;
+  HRESULT hr = radio->get_State(&state);
+  if (FAILED(hr)) {
+    VLOG(2) << "Getting Radio State failed: "
+            << logging::SystemErrorCodeToString(hr);
+    return RadioState_Unknown;
+  }
+  return state;
+}
+
 }  // namespace
 
 std::string BluetoothAdapterWinrt::GetAddress() const {
@@ -504,15 +516,7 @@ bool BluetoothAdapterWinrt::IsPowered() const {
   if (!radio_)
     return num_powered_radios_ != 0;
 
-  RadioState state;
-  HRESULT hr = radio_->get_State(&state);
-  if (FAILED(hr)) {
-    VLOG(2) << "Getting Radio State failed: "
-            << logging::SystemErrorCodeToString(hr);
-    return false;
-  }
-
-  return state == RadioState_On;
+  return GetState(radio_.Get()) == RadioState_On;
 }
 
 bool BluetoothAdapterWinrt::IsDiscoverable() const {
@@ -1148,6 +1152,7 @@ void BluetoothAdapterWinrt::OnGetRadio(base::ScopedClosureRunner on_init,
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (radio) {
     radio_ = std::move(radio);
+    radio_was_powered_ = GetState(radio_.Get()) == RadioState_On;
     radio_state_changed_token_ = AddTypedEventHandler(
         radio_.Get(), &IRadio::add_StateChanged,
         base::BindRepeating(&BluetoothAdapterWinrt::OnRadioStateChanged,
@@ -1219,8 +1224,17 @@ void BluetoothAdapterWinrt::OnSetRadioState(RadioAccessStatus access_status) {
 
 void BluetoothAdapterWinrt::OnRadioStateChanged(IRadio* radio,
                                                 IInspectable* object) {
+  DCHECK(radio_.Get() == radio);
   RunPendingPowerCallbacks();
-  NotifyAdapterPoweredChanged(IsPowered());
+
+  // Deduplicate StateChanged events, which can occur twice for a single
+  // power-on change.
+  const bool is_powered = GetState(radio) == RadioState_On;
+  if (radio_was_powered_ == is_powered) {
+    return;
+  }
+  radio_was_powered_ = is_powered;
+  NotifyAdapterPoweredChanged(is_powered);
 }
 
 void BluetoothAdapterWinrt::OnPoweredRadioAdded(IDeviceWatcher* watcher,

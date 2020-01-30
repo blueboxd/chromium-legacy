@@ -12,6 +12,7 @@
 #include "base/no_destructor.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
+#include "build/branding_buildflags.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/policy/auto_enrollment_client_impl.h"
@@ -155,16 +156,16 @@ std::string AutoEnrollmentStateToString(policy::AutoEnrollmentState state) {
 }
 
 // Returns true if this is an official build and the device has Chrome firmware.
-bool IsOfficialChrome() {
+bool IsGoogleBrandedChrome() {
   std::string firmware_type;
-  bool is_official =
+  bool is_chrome_branded =
       !system::StatisticsProvider::GetInstance()->GetMachineStatistic(
           system::kFirmwareTypeKey, &firmware_type) ||
       firmware_type != system::kFirmwareTypeValueNonchrome;
-#if !defined(OFFICIAL_BUILD)
-  is_official = false;
+#if !BUILDFLAG(GOOGLE_CHROME_BRANDING)
+  is_chrome_branded = false;
 #endif
-  return is_official;
+  return is_chrome_branded;
 }
 
 // Schedules immediate initialization of the |DeviceManagementService| and
@@ -333,7 +334,7 @@ bool AutoEnrollmentController::IsFREEnabled() {
 
   if (command_line_mode.empty() ||
       command_line_mode == kForcedReEnrollmentOfficialBuild) {
-    return IsOfficialChrome();
+    return IsGoogleBrandedChrome();
   }
 
   if (command_line_mode == kForcedReEnrollmentNever)
@@ -349,7 +350,7 @@ bool AutoEnrollmentController::IsInitialEnrollmentEnabled() {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
 
   if (!command_line->HasSwitch(switches::kEnterpriseEnableInitialEnrollment))
-    return IsOfficialChrome();
+    return IsGoogleBrandedChrome();
 
   std::string command_line_mode = command_line->GetSwitchValueASCII(
       switches::kEnterpriseEnableInitialEnrollment);
@@ -358,7 +359,7 @@ bool AutoEnrollmentController::IsInitialEnrollmentEnabled() {
 
   if (command_line_mode.empty() ||
       command_line_mode == kInitialEnrollmentOfficialBuild) {
-    return IsOfficialChrome();
+    return IsGoogleBrandedChrome();
   }
 
   if (command_line_mode == kInitialEnrollmentNever)

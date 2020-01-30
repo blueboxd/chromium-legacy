@@ -4013,6 +4013,14 @@ The site does NOT gain access to the camera. The camera images are only visible 
         Position QR/barcode in this frame.
       </message>
 
+      <message name="IDS_QR_CODE_PERMISSION_DESCRIPTION" desc="Text on QR code sharing tab indicating that permissions need to be given.">
+        Please enable your camera to scan a QR code
+      </message>
+
+      <message name="IDS_QR_CODE_PERMISSION_CONTINUE_LABEL" desc="Text on button on QR code sharing tab triggering camera permission dialog.">
+        Continue
+      </message>
+
       <!-- Chime DFM module strings -->
       <message name="IDS_CHIME_MODULE_TITLE" desc="Text shown when the chime module is referenced in install start, success, failure UI (e.g. in IDS_MODULE_INSTALL_START_TEXT, which will expand to 'Installing Google Notifications Platform for Chrome…').">
         Google Notifications Platform

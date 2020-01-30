@@ -160,7 +160,7 @@ void MakeSectionBold(views::StyledLabel* label,
       style.custom_font = label->GetDefaultFontList().Derive(
           0, gfx::Font::FontStyle::NORMAL, gfx::Font::Weight::BOLD);
     }
-    style.override_color = SK_ColorWHITE;
+    style.override_color = gfx::kGoogleGrey200;
     return style;
   };
 
@@ -874,24 +874,9 @@ void LockContentsView::OnFingerprintStateChanged(const AccountId& account_id,
       FingerprintState::DISABLED_FROM_TIMEOUT) {
     base::string16 error_text = l10n_util::GetStringUTF16(
         IDS_ASH_LOGIN_FINGERPRINT_UNLOCK_DISABLED_FROM_TIMEOUT);
-    auto* label = new views::Label(error_text);
-    label->SetAutoColorReadabilityEnabled(false);
-    label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-    label->SetEnabledColor(SK_ColorWHITE);
-    label->SetSubpixelRenderingEnabled(false);
-    const gfx::FontList& base_font_list = views::Label::GetDefaultFontList();
-    label->SetFontList(base_font_list.Derive(0, gfx::Font::FontStyle::NORMAL,
-                                             gfx::Font::Weight::NORMAL));
-    label->SetMultiLine(true);
-    label->SetAllowCharacterBreak(true);
-    // Make sure to set a maximum label width, otherwise text wrapping will
-    // significantly increase width and layout may not work correctly if
-    // the input string is very long.
-    label->SetMaximumWidth(
-        big_view->auth_user()->password_view()->GetPreferredSize().width());
 
     auth_error_bubble_->SetAnchorView(big_view->auth_user()->password_view());
-    auth_error_bubble_->SetContent(label);
+    auth_error_bubble_->SetTextContent(error_text);
     auth_error_bubble_->SetPersistent(true);
     auth_error_bubble_->Show();
   }
@@ -1031,17 +1016,9 @@ void LockContentsView::OnWarningMessageUpdated(const base::string16& message) {
   if (warning_banner_bubble_->GetVisible())
     warning_banner_bubble_->Hide();
   // Shows warning banner as a persistent error bubble.
-  views::Label* label =
-      new views::Label(message, views::style::CONTEXT_MESSAGE_BOX_BODY_TEXT,
-                       views::style::STYLE_PRIMARY);
-  label->SetMultiLine(true);
-  label->SetAutoColorReadabilityEnabled(false);
-  label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  label->SetEnabledColor(SK_ColorWHITE);
-
   warning_banner_bubble_->SetAnchorView(
       CurrentBigUserView()->auth_user()->password_view());
-  warning_banner_bubble_->SetContent(label);
+  warning_banner_bubble_->SetTextContent(message);
   warning_banner_bubble_->Show();
 }
 
@@ -1208,15 +1185,7 @@ void LockContentsView::OnDetachableBasePairingStatusChanged(
   base::string16 error_text =
       l10n_util::GetStringUTF16(IDS_ASH_LOGIN_ERROR_DETACHABLE_BASE_CHANGED);
 
-  views::Label* label =
-      new views::Label(error_text, views::style::CONTEXT_MESSAGE_BOX_BODY_TEXT,
-                       views::style::STYLE_PRIMARY);
-  label->SetMultiLine(true);
-  label->SetAutoColorReadabilityEnabled(false);
-  label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  label->SetEnabledColor(SK_ColorWHITE);
-
-  detachable_base_error_bubble_->SetContent(label);
+  detachable_base_error_bubble_->SetTextContent(error_text);
   detachable_base_error_bubble_->SetAnchorView(
       CurrentBigUserView()->auth_user()->password_view());
   detachable_base_error_bubble_->Show();
@@ -1814,15 +1783,8 @@ void LockContentsView::OnBigUserChanged() {
     base::string16 message = l10n_util::GetStringUTF16(
         IDS_ASH_LOGIN_POD_LEGACY_SUPERVISED_EXPIRATION_WARNING);
     // Shows supervised user deprecation message as a persistent error bubble.
-    views::Label* label =
-        new views::Label(message, views::style::CONTEXT_MESSAGE_BOX_BODY_TEXT,
-                         views::style::STYLE_PRIMARY);
-    label->SetMultiLine(true);
-    label->SetAutoColorReadabilityEnabled(false);
-    label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-    label->SetEnabledColor(SK_ColorWHITE);
 
-    supervised_user_deprecation_bubble_->SetContent(label);
+    supervised_user_deprecation_bubble_->SetTextContent(message);
     supervised_user_deprecation_bubble_->SetAnchorView(
         CurrentBigUserView()->auth_user()->password_view());
     supervised_user_deprecation_bubble_->Show();

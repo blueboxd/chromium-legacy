@@ -42,7 +42,7 @@ class ResetView {
   virtual void SetIsTpmFirmwareUpdateEditable(bool value) = 0;
   virtual void SetTpmFirmwareUpdateMode(tpm_firmware_update::Mode value) = 0;
   virtual void SetIsConfirmational(bool value) = 0;
-  virtual void SetIsOfficialBuild(bool value) = 0;
+  virtual void SetIsGoogleBrandedBuild(bool value) = 0;
   virtual void SetScreenState(State value) = 0;
 
   virtual State GetScreenState() = 0;
@@ -79,7 +79,7 @@ class ResetScreenHandler : public ResetView,
   void SetIsTpmFirmwareUpdateEditable(bool value) override;
   void SetTpmFirmwareUpdateMode(tpm_firmware_update::Mode value) override;
   void SetIsConfirmational(bool value) override;
-  void SetIsOfficialBuild(bool value) override;
+  void SetIsGoogleBrandedBuild(bool value) override;
   void SetScreenState(State value) override;
   State GetScreenState() override;
   tpm_firmware_update::Mode GetTpmFirmwareUpdateMode() override;

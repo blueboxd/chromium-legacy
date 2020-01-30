@@ -121,7 +121,7 @@ public class IdentityManagerIntegrationTest {
 
     private void seedAccountTrackerService() {
         AccountIdProvider provider = AccountIdProvider.getInstance();
-        String[] accountNames = {mTestAccount1.getName(), mTestAccount2.getName()};
+        String[] accountNames = {mTestAccount1.getEmail(), mTestAccount2.getEmail()};
         String[] accountIds = {mTestAccount1.getGaiaId(), mTestAccount2.getGaiaId()};
         IdentityServicesProvider.get().getAccountTrackerService().syncForceRefreshForTest(
                 accountIds, accountNames);

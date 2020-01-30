@@ -68,6 +68,8 @@ message SharingMessageCommitError {
     PERMISSION_DENIED = 7;
     // Client-specific error code.
     SYNC_TURNED_OFF = 8;
+    // Error code for network errors or unparsable server response.
+    SYNC_ERROR = 9;
   }
 
   optional ErrorCode error_code = 1;

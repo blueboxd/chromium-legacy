@@ -70,7 +70,7 @@ class SystemButtonHighlightPathGenerator
 SystemLabelButton::SystemLabelButton(views::ButtonListener* listener,
                                      const base::string16& text,
                                      DisplayType display_type)
-    : LabelButton(listener, text) {
+    : LabelButton(listener, text), display_type_(display_type) {
   SetImageLabelSpacing(kSystemButtonImageLabelSpacing);
   label()->SetMultiLine(true);
   label()->SetMaximumWidth(kSystemButtonMaxLabelWidthDp);
@@ -79,40 +79,19 @@ SystemLabelButton::SystemLabelButton(views::ButtonListener* listener,
   SetMinSize(gfx::Size(0, kSystemButtonHeight));
   SetPaintToLayer();
   layer()->SetFillsBoundsOpaquely(false);
-  if (display_type == SystemLabelButton::DisplayType::ALERT_WITH_ICON) {
+  if (display_type == DisplayType::ALERT_WITH_ICON) {
     SetImage(
         views::Button::STATE_NORMAL,
         CreateVectorIcon(kLockScreenAlertIcon, kSystemButtonContentColorAlert));
   }
   SetTextSubpixelRenderingEnabled(false);
-  SkColor default_background = AshColorProvider::Get()->GetControlsLayerColor(
-      AshColorProvider::ControlsLayerType::kInactiveControlBackground,
-      AshColorProvider::AshColorMode::kDark);
-  bool is_alert =
-      display_type == SystemLabelButton::DisplayType::ALERT_WITH_ICON ||
-      display_type == SystemLabelButton::DisplayType::ALERT_NO_ICON;
-  background_color_ =
-      is_alert ? kSystemButtonBackgroundColorAlert : default_background;
-  SkColor font_color = is_alert ? kSystemButtonContentColorAlert
-                                : kSystemButtonContentColorDefault;
-  SetTextColor(views::Button::STATE_NORMAL, font_color);
-  SetTextColor(views::Button::STATE_HOVERED, font_color);
-  SetTextColor(views::Button::STATE_PRESSED, font_color);
+  SetInkDropMode(InkDropMode::ON);
+  bool is_alert = display_type == DisplayType::ALERT_WITH_ICON ||
+                  display_type == DisplayType::ALERT_NO_ICON;
+  SetAlertMode(is_alert);
+
   views::HighlightPathGenerator::Install(
       this, std::make_unique<SystemButtonHighlightPathGenerator>());
-
-  SetInkDropMode(InkDropMode::ON);
-  if (is_alert) {
-    const AshColorProvider::RippleAttributes ripple_attributes =
-        AshColorProvider::Get()->GetRippleAttributes(background_color_);
-    set_ink_drop_base_color(ripple_attributes.base_color);
-    set_ink_drop_visible_opacity(ripple_attributes.inkdrop_opacity);
-    set_ink_drop_highlight_opacity(ripple_attributes.highlight_opacity);
-  } else {
-    // using RippleAttributes here doesn't give visually satisfying results
-    // in default display mode
-    set_ink_drop_base_color(kInkDropBaseColorDefault);
-  }
 
   SetFocusBehavior(FocusBehavior::ALWAYS);
   SetInstallFocusRingOnFocus(true);
@@ -131,6 +110,43 @@ gfx::Insets SystemLabelButton::GetInsets() const {
   return gfx::Insets(
       kSystemButtonMarginTopBottomDp, kSystemButtonMarginLeftRightDp,
       kSystemButtonMarginTopBottomDp, kSystemButtonMarginLeftRightDp);
+}
+
+void SystemLabelButton::SetDisplayType(DisplayType display_type) {
+  // We only support transitions from a non-icon display type to another.
+  DCHECK(display_type_ != DisplayType::ALERT_WITH_ICON);
+  DCHECK(display_type != DisplayType::ALERT_WITH_ICON);
+  display_type_ = display_type;
+  bool alert_mode = display_type == DisplayType::ALERT_NO_ICON;
+  SetAlertMode(alert_mode);
+}
+
+void SystemLabelButton::SetAlertMode(bool alert_mode) {
+  if (alert_mode)
+    background_color_ = kSystemButtonBackgroundColorAlert;
+  else {
+    background_color_ = AshColorProvider::Get()->GetControlsLayerColor(
+        AshColorProvider::ControlsLayerType::kInactiveControlBackground,
+        AshColorProvider::AshColorMode::kDark);
+  }
+
+  SkColor font_color = alert_mode ? kSystemButtonContentColorAlert
+                                  : kSystemButtonContentColorDefault;
+  SetTextColor(views::Button::STATE_NORMAL, font_color);
+  SetTextColor(views::Button::STATE_HOVERED, font_color);
+  SetTextColor(views::Button::STATE_PRESSED, font_color);
+
+  if (alert_mode) {
+    const AshColorProvider::RippleAttributes ripple_attributes =
+        AshColorProvider::Get()->GetRippleAttributes(background_color_);
+    set_ink_drop_base_color(ripple_attributes.base_color);
+    set_ink_drop_visible_opacity(ripple_attributes.inkdrop_opacity);
+    set_ink_drop_highlight_opacity(ripple_attributes.highlight_opacity);
+  } else {
+    // using RippleAttributes here doesn't give visually satisfying results
+    // in default display mode
+    set_ink_drop_base_color(kInkDropBaseColorDefault);
+  }
 }
 
 }  // namespace ash

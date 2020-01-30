@@ -316,6 +316,9 @@
         "load:social:vk:2018": {
             "DEFAULT": "system_health_desktop_a099b947c2.wprgo"
         },
+        "load:tools:chat:2020": {
+            "DEFAULT": "system_health_desktop_62b68fb318.wprgo"
+        },
         "load:tools:docs": {
             "DEFAULT": "system_health_desktop_004.wprgo"
         },

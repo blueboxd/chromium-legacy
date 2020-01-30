@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/no_destructor.h"
+#include "components/crash/core/common/crash_key.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/renderer/api/automation/automation_internal_custom_bindings.h"
 #include "ui/accessibility/ax_language_detection.h"
@@ -289,6 +290,9 @@ bool AutomationAXTreeWrapper::OnAccessibilityEvents(
     did_send_tree_change_during_unserialization_ = false;
 
     if (!tree_.Unserialize(update)) {
+      static crash_reporter::CrashKeyString<4> crash_key(
+          "ax-tree-wrapper-unserialize-failed");
+      crash_key.Set("yes");
       event_generator_.ClearEvents();
       return false;
     }

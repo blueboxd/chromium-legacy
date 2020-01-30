@@ -20,6 +20,7 @@
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/appcache_interfaces.h"
+#include "content/public/common/content_client.h"
 #include "content/public/common/url_constants.h"
 #include "net/url_request/url_request.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
@@ -641,13 +642,24 @@ void AppCacheHost::MaybePassSubresourceFactory() {
     return;
 
   mojo::PendingRemote<network::mojom::URLLoaderFactory> factory_remote;
-  AppCacheSubresourceURLFactory::CreateURLLoaderFactory(GetWeakPtr(),
-                                                        &factory_remote);
+  auto factory_receiver = factory_remote.InitWithNewPipeAndPassReceiver();
+  auto* rfh = RenderFrameHost::FromID(process_id_, render_frame_id_);
+  if (rfh) {
+    GetContentClient()->browser()->WillCreateURLLoaderFactory(
+        rfh->GetProcess()->GetBrowserContext(), rfh, process_id_,
+        ContentBrowserClient::URLLoaderFactoryType::kDocumentSubResource,
+        origin_for_url_loader_factory_, base::nullopt /* navigation_id */,
+        &factory_receiver, nullptr /* header_client */,
+        nullptr /* bypass_redirect_checks */, nullptr /* disable_secure_dns */,
+        nullptr /* factory_override */);
+  }
 
   // We may not have bound |factory_remote| if the storage partition has shut
   // down.
-  if (factory_remote)
+  if (AppCacheSubresourceURLFactory::CreateURLLoaderFactory(
+          GetWeakPtr(), std::move(factory_receiver))) {
     frontend()->SetSubresourceFactory(std::move(factory_remote));
+  }
 }
 
 void AppCacheHost::SetAppCacheSubresourceFactory(

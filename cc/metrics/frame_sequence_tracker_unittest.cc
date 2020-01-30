@@ -588,9 +588,6 @@ TEST_F(FrameSequenceTrackerTest, MainFrameNoDamageTracking) {
 }
 
 TEST_F(FrameSequenceTrackerTest, BeginMainFrameSubmit) {
-  const uint64_t source = 1;
-  uint64_t sequence = 0;
-
   // Start with a bunch of frames so that the metric does get reported at the
   // end of the test.
   ImplThroughput().frames_expected = 98u;
@@ -598,34 +595,12 @@ TEST_F(FrameSequenceTrackerTest, BeginMainFrameSubmit) {
   MainThroughput().frames_expected = 98u;
   MainThroughput().frames_produced = 98u;
 
-  // Start a frame, send to main, but end the frame with no-damage before main
-  // responds.
-  auto first_args = CreateBeginFrameArgs(source, ++sequence);
-  collection_.NotifyBeginImplFrame(first_args);
-  collection_.NotifyBeginMainFrame(first_args);
-  collection_.NotifyImplFrameCausedNoDamage(
-      viz::BeginFrameAck(first_args, false));
-  collection_.NotifyFrameEnd(first_args);
+  const char sequence[] = "b(1)B(0,1)n(1)e(1)b(2)E(1)B(1,2)s(1)S(1)e(2)P(1)";
+  GenerateSequence(sequence);
+  EXPECT_EQ(ImplThroughput().frames_expected, 99u);
+  EXPECT_EQ(MainThroughput().frames_expected, 100u);
 
-  // Start another frame, send to begin, but submit with main-update from the
-  // first frame (main thread has finally responded by this time to the first
-  // frame).
-  auto second_args = CreateBeginFrameArgs(source, ++sequence);
-  collection_.NotifyBeginImplFrame(second_args);
-  collection_.NotifyMainFrameProcessed(first_args);
-  collection_.NotifyBeginMainFrame(second_args);
-  uint32_t frame_token = NextFrameToken();
-  collection_.NotifySubmitFrame(frame_token, /*has_missing_content=*/false,
-                                viz::BeginFrameAck(second_args, true),
-                                first_args);
-  collection_.NotifyFrameEnd(second_args);
-
-  // When the frame is presented, the main-frame should count towards its
-  // throughput.
   base::HistogramTester histogram_tester;
-  const auto interval = viz::BeginFrameArgs::DefaultInterval();
-  gfx::PresentationFeedback feedback(base::TimeTicks::Now(), interval, 0);
-  collection_.NotifyFramePresented(frame_token, feedback);
   ReportMetrics();
 
   const char metric[] = "Graphics.Smoothness.Throughput.MainThread.TouchScroll";
@@ -756,6 +731,97 @@ TEST_F(FrameSequenceTrackerTest, MainThroughputWithHighLatency) {
   EXPECT_EQ(ImplThroughput().frames_produced, 1u);
   EXPECT_EQ(MainThroughput().frames_expected, 2u);
   EXPECT_EQ(MainThroughput().frames_produced, 1u);
+}
+
+TEST_F(FrameSequenceTrackerTest, OffScreenMainDamage1) {
+  const char sequence[] =
+      "b(1)B(0,1)n(1)e(1)b(2)E(1)B(1,2)n(2)e(2)b(3)E(2)B(2,3)n(3)e(3)";
+  GenerateSequence(sequence);
+  EXPECT_EQ(ImplThroughput().frames_expected, 0u);
+  // At E(2), B(0,1) is treated no damage.
+  EXPECT_EQ(MainThroughput().frames_expected, 2u);
+}
+
+TEST_F(FrameSequenceTrackerTest, OffScreenMainDamage2) {
+  const char sequence[] =
+      "b(1)B(0,1)n(1)e(1)b(2)E(1)B(1,2)n(2)e(2)b(3)n(3)e(3)b(4)n(4)e(4)b(8)E(2)"
+      "B(8,8)n(8)e(8)";
+  GenerateSequence(sequence);
+  EXPECT_EQ(ImplThroughput().frames_expected, 0u);
+  // At E(2), B(0,1) is treated as no damage.
+  EXPECT_EQ(MainThroughput().frames_expected, 7u);
+}
+
+TEST_F(FrameSequenceTrackerTest, OffScreenMainDamage3) {
+  const char sequence[] =
+      "b(34)B(0,34)n(34)e(34)b(35)n(35)e(35)b(36)E(34)n(36)e(36)b(39)s(1)e(39)";
+  GenerateSequence(sequence);
+  EXPECT_EQ(ImplThroughput().frames_expected, 1u);
+  EXPECT_EQ(MainThroughput().frames_expected, 1u);
+}
+
+TEST_F(FrameSequenceTrackerTest, OffScreenMainDamage4) {
+  const char sequence[] =
+      "b(9)B(0,9)n(9)Re(9)E(9)b(11)B(0,11)n(11)e(11)b(12)E(11)B(11,12)s(1)S(11)"
+      "e(12)b(13)E(12)s(2)S(12)";
+  GenerateSequence(sequence);
+  EXPECT_EQ(ImplThroughput().frames_expected, 2u);
+  EXPECT_EQ(MainThroughput().frames_expected, 2u);
+}
+
+TEST_F(FrameSequenceTrackerTest, OffScreenMainDamage5) {
+  const char sequence[] =
+      "b(1)B(0,1)E(1)s(1)S(1)e(1)b(2)n(2)e(2)b(3)B(1,3)n(3)e(3)E(3)b(4)B(3,4)n("
+      "4)e(4)E(4)";
+  GenerateSequence(sequence);
+  EXPECT_EQ(ImplThroughput().frames_expected, 1u);
+  // At E(4), we treat B(1,3) as if it had no damage.
+  EXPECT_EQ(MainThroughput().frames_expected, 3u);
+}
+
+TEST_F(FrameSequenceTrackerTest, OffScreenMainDamage6) {
+  const char sequence[] =
+      "b(1)B(0,1)E(1)s(1)S(1)e(1)b(2)B(1,2)E(2)n(2)N(2,2)e(2)b(3)B(0,3)E(3)n(3)"
+      "N(3,3)e(3)";
+  GenerateSequence(sequence);
+  EXPECT_EQ(ImplThroughput().frames_expected, 1u);
+  EXPECT_EQ(MainThroughput().frames_expected, 1u);
+}
+
+TEST_F(FrameSequenceTrackerTest, OffScreenMainDamage7) {
+  const char sequence[] =
+      "b(8)B(0,8)n(8)e(8)b(9)E(8)B(8,9)E(9)s(1)S(8)e(9)b(10)s(2)S(9)e(10)";
+  GenerateSequence(sequence);
+  EXPECT_EQ(ImplThroughput().frames_expected, 2u);
+  EXPECT_EQ(MainThroughput().frames_expected, 1u);
+}
+
+TEST_F(FrameSequenceTrackerTest, OffScreenMainDamage8) {
+  const char sequence[] =
+      "b(18)B(0,18)E(18)n(18)N(18,18)Re(18)b(20)B(0,20)N(20,20)n(20)N(0,20)e("
+      "20)b(21)B(0,21)E(21)s(1)S(21)e(21)";
+  GenerateSequence(sequence);
+  EXPECT_EQ(ImplThroughput().frames_expected, 1u);
+  EXPECT_EQ(MainThroughput().frames_expected, 1u);
+}
+
+TEST_F(FrameSequenceTrackerTest, OffScreenMainDamage9) {
+  const char sequence[] =
+      "b(78)n(78)Re(78)Rb(82)B(0,82)E(82)n(82)N(82,82)Re(82)b(86)B(0,86)E(86)n("
+      "86)e(86)b(87)s(1)S(86)e(87)";
+  GenerateSequence(sequence);
+  EXPECT_EQ(ImplThroughput().frames_expected, 1u);
+  EXPECT_EQ(MainThroughput().frames_expected, 1u);
+}
+
+TEST_F(FrameSequenceTrackerTest, OffScreenMainDamage10) {
+  const char sequence[] =
+      "b(2)B(0,2)E(2)n(2)N(2,2)e(2)b(3)B(0,3)E(3)n(3)N(3,3)e(3)b(4)B(0,4)E(4)n("
+      "4)N(4,4)e(4)b(5)B(0,5)E(5)n(5)N(5,5)e(5)b(6)B(0,6)n(6)e(6)E(6)Rb(8)B(0,"
+      "8)E(8)n(8)N(8,8)e(8)";
+  GenerateSequence(sequence);
+  EXPECT_EQ(ImplThroughput().frames_expected, 0u);
+  EXPECT_EQ(MainThroughput().frames_expected, 0u);
 }
 
 }  // namespace cc

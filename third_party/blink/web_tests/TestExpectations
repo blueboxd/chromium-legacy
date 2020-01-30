@@ -6509,3 +6509,4 @@ crbug.com/1047126 [ Win ] external/wpt/IndexedDB/keypath-exceptions.htm [ Failur
 crbug.com/1047164 [ Mac ] fast/scroll-snap/snaps-after-keyboard-scrolling.html [ Pass Failure ]
 crbug.com/1047208 virtual/omt-service-worker-startup/http/tests/serviceworker/update-served-from-cache.html [ Pass Failure ]
 crbug.com/1047208 http/tests/serviceworker/update-served-from-cache.html [ Pass Failure ]
+crbug.com/1047293 [ Mac ] editing/pasteboard/pasteboard_with_unfocused_selection.html [ Pass Failure ]

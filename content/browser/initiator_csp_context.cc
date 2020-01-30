@@ -7,7 +7,7 @@
 namespace content {
 
 InitiatorCSPContext::InitiatorCSPContext(
-    std::vector<ContentSecurityPolicy> policies,
+    std::vector<network::mojom::ContentSecurityPolicyPtr> policies,
     network::mojom::CSPSourcePtr self_source,
     mojo::PendingRemote<blink::mojom::NavigationInitiator> navigation_initiator)
     : reporting_render_frame_host_impl_(nullptr),

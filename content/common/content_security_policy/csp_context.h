@@ -77,7 +77,8 @@ class CONTENT_EXPORT CSPContext {
       const CSPViolationParams& violation_params);
 
   void ResetContentSecurityPolicies() { policies_.clear(); }
-  void AddContentSecurityPolicy(ContentSecurityPolicy policy) {
+  void AddContentSecurityPolicy(
+      network::mojom::ContentSecurityPolicyPtr policy) {
     policies_.push_back(std::move(policy));
   }
 
@@ -99,7 +100,7 @@ class CONTENT_EXPORT CSPContext {
 
  private:
   network::mojom::CSPSourcePtr self_source_;  // Nullable.
-  std::vector<ContentSecurityPolicy> policies_;
+  std::vector<network::mojom::ContentSecurityPolicyPtr> policies_;
 
   DISALLOW_COPY_AND_ASSIGN(CSPContext);
 };

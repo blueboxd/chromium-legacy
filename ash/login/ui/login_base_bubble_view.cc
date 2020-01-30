@@ -28,14 +28,8 @@ namespace {
 // Total width of the bubble view.
 constexpr int kBubbleTotalWidthDp = 192;
 
-// Horizontal margin of the bubble view.
-constexpr int kBubbleHorizontalMarginDp = 16;
-
-// Top margin of the bubble view.
-constexpr int kBubbleTopMarginDp = 16;
-
-// Bottom margin of the bubble view.
-constexpr int kBubbleBottomMarginDp = 16;
+// Margin around the bubble view.
+constexpr int kBubblePaddingDp = 16;
 
 // Spacing between the child view inside the bubble view.
 constexpr int kBubbleBetweenChildSpacingDp = 16;
@@ -130,9 +124,7 @@ LoginBaseBubbleView::LoginBaseBubbleView(views::View* anchor_view,
   views::BoxLayout* layout_manager =
       SetLayoutManager(std::make_unique<views::BoxLayout>(
           views::BoxLayout::Orientation::kVertical,
-          gfx::Insets(kBubbleTopMarginDp, kBubbleHorizontalMarginDp,
-                      kBubbleBottomMarginDp, kBubbleHorizontalMarginDp),
-          kBubbleBetweenChildSpacingDp));
+          gfx::Insets(kBubblePaddingDp), kBubbleBetweenChildSpacingDp));
   layout_manager->set_cross_axis_alignment(
       views::BoxLayout::CrossAxisAlignment::kStart);
 

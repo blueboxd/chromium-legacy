@@ -757,6 +757,13 @@ void BluetoothTestWinrt::InitFakeAdapterWithRadioAccessDenied() {
   run_loop.Run();
 }
 
+void BluetoothTestWinrt::SimulateSpuriousRadioStateChangedEvent() {
+  static_cast<FakeRadioWinrt*>(
+      static_cast<TestBluetoothAdapterWinrt*>(adapter_.get())
+          ->GetRadioForTesting())
+      ->SimulateSpuriousStateChangedEvent();
+}
+
 void BluetoothTestWinrt::SimulateAdapterPowerFailure() {
   static_cast<FakeRadioWinrt*>(
       static_cast<TestBluetoothAdapterWinrt*>(adapter_.get())

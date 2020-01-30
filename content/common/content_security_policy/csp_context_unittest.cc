@@ -55,29 +55,38 @@ class CSPContextTest : public CSPContext {
   bool sanitize_data_for_use_in_csp_violation_ = false;
 };
 
-// Build a new policy made of only one directive and no report endpoints.
-ContentSecurityPolicy BuildPolicy(CSPDirectiveName directive_name,
-                                  network::mojom::CSPSourcePtr source) {
-  std::vector<network::mojom::CSPSourcePtr> sources;
-  sources.push_back(std::move(source));
-  std::vector<network::mojom::CSPDirectivePtr> directives;
-  directives.push_back(network::mojom::CSPDirective::New(
-      directive_name, network::mojom::CSPSourceList::New(std::move(sources),
-                                                         false, false, false)));
-  return ContentSecurityPolicy({}, std::move(directives), {}, false);
+network::mojom::ContentSecurityPolicyPtr EmptyCSP() {
+  auto policy = network::mojom::ContentSecurityPolicy::New();
+  policy->header = network::mojom::ContentSecurityPolicyHeader::New();
+  return policy;
 }
 
-ContentSecurityPolicy BuildPolicy(CSPDirectiveName directive_name,
-                                  network::mojom::CSPSourcePtr source_1,
-                                  network::mojom::CSPSourcePtr source_2) {
-  std::vector<network::mojom::CSPSourcePtr> sources;
-  sources.push_back(std::move(source_1));
-  sources.push_back(std::move(source_2));
-  std::vector<network::mojom::CSPDirectivePtr> directives;
-  directives.push_back(network::mojom::CSPDirective::New(
-      directive_name, network::mojom::CSPSourceList::New(std::move(sources),
-                                                         false, false, false)));
-  return ContentSecurityPolicy({}, std::move(directives), {}, false);
+// Build a new policy made of only one directive and no report endpoints.
+network::mojom::ContentSecurityPolicyPtr BuildPolicy(
+    CSPDirectiveName directive_name,
+    network::mojom::CSPSourcePtr source) {
+  auto directive = network::mojom::CSPDirective::New();
+  directive->name = directive_name;
+  directive->source_list = network::mojom::CSPSourceList::New();
+  directive->source_list->sources.push_back(std::move(source));
+  auto policy = EmptyCSP();
+  policy->directives.push_back(std::move(directive));
+  return policy;
+}
+
+// Build a new policy made of only one directive and no report endpoints.
+network::mojom::ContentSecurityPolicyPtr BuildPolicy(
+    CSPDirectiveName directive_name,
+    network::mojom::CSPSourcePtr source_1,
+    network::mojom::CSPSourcePtr source_2) {
+  auto directive = network::mojom::CSPDirective::New();
+  directive->name = directive_name;
+  directive->source_list = network::mojom::CSPSourceList::New();
+  directive->source_list->sources.push_back(std::move(source_1));
+  directive->source_list->sources.push_back(std::move(source_2));
+  auto policy = EmptyCSP();
+  policy->directives.push_back(std::move(directive));
+  return policy;
 }
 
 network::mojom::CSPSourcePtr BuildCSPSource(const char* scheme,
@@ -209,12 +218,12 @@ TEST(CSPContextTest, CheckCSPDisposition) {
   CSPContextTest context;
 
   // Add an enforced policy.
-  ContentSecurityPolicy enforce_csp = BuildPolicy(
-      CSPDirectiveName::FrameSrc, BuildCSPSource("", "example.com"));
+  auto enforce_csp = BuildPolicy(CSPDirectiveName::FrameSrc,
+                                 BuildCSPSource("", "example.com"));
   // Add a report-only policy.
-  ContentSecurityPolicy report_only_csp = BuildPolicy(
-      CSPDirectiveName::DefaultSrc, BuildCSPSource("", "example.com"));
-  report_only_csp.header.type =
+  auto report_only_csp = BuildPolicy(CSPDirectiveName::DefaultSrc,
+                                     BuildCSPSource("", "example.com"));
+  report_only_csp->header->type =
       network::mojom::ContentSecurityPolicyType::kReport;
 
   context.AddContentSecurityPolicy(std::move(enforce_csp));

@@ -10,7 +10,10 @@
 
 #include "base/feature_list.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/optional.h"
+#include "base/sequence_checker.h"
+#include "components/optimization_guide/optimization_guide_decider.h"
 #include "components/optimization_guide/proto/hints.pb.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
@@ -21,7 +24,6 @@ class WebContents;
 }  // namespace content
 
 namespace optimization_guide {
-class OptimizationGuideDecider;
 class URLPatternWithWildcards;
 namespace proto {
 class PerformanceHint;
@@ -44,6 +46,13 @@ class PerformanceHintsObserver
   PerformanceHintsObserver(const PerformanceHintsObserver&) = delete;
   PerformanceHintsObserver& operator=(const PerformanceHintsObserver&) = delete;
 
+  // This callback populates |hints_| with performance information for links on
+  // the current page and is called by |optimization_guide_decider_| when a
+  // definite decision has been reached.
+  void ProcessPerformanceHint(
+      optimization_guide::OptimizationGuideDecision decision,
+      const optimization_guide::OptimizationMetadata& optimization_metadata);
+
   // Returns a PerformanceHint for a link to |url|, if one exists.
   base::Optional<optimization_guide::proto::PerformanceHint> HintForURL(
       const GURL& url) const;
@@ -65,6 +74,10 @@ class PerformanceHintsObserver
   std::vector<std::pair<optimization_guide::URLPatternWithWildcards,
                         optimization_guide::proto::PerformanceHint>>
       hints_;
+
+  SEQUENCE_CHECKER(sequence_checker_);
+
+  base::WeakPtrFactory<PerformanceHintsObserver> weak_factory_{this};
 
   WEB_CONTENTS_USER_DATA_KEY_DECL();
 };

@@ -403,6 +403,8 @@ struct CommitErrorCodeTestData {
     {sync_pb::SharingMessageCommitError::PERMISSION_DENIED,
      SharingSendMessageResult::kInternalError},
     {sync_pb::SharingMessageCommitError::SYNC_TURNED_OFF,
+     SharingSendMessageResult::kInternalError},
+    {sync_pb::SharingMessageCommitError::SYNC_ERROR,
      SharingSendMessageResult::kInternalError}};
 
 class SharingFCMSenderCommitErrorCodeTest

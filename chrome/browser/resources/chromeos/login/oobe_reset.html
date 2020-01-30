@@ -36,7 +36,7 @@
           [[i18nDynamic(locale, 'resetRestartMessage')]]
         </div>
         <a id="powerwash-help-link-md" href="#"
-            hidden="[[isHelpLinkHidden_(uiState_, isOfficial_)]]"
+            hidden="[[isHelpLinkHidden_(uiState_, isGoogleBranded_)]]"
             on-tap="onLearnMoreTap_">
           [[i18nDynamic(locale, 'learnMore')]]
         </a>
@@ -68,7 +68,8 @@
             <span>
               [[i18nDynamic(locale, 'resetTPMFirmwareUpdate')]]
             </span>
-            <a href="#" hidden="[[isHelpLinkHidden_(uiState_, isOfficial_)]]"
+            <a href="#"
+                hidden="[[isHelpLinkHidden_(uiState_, isGoogleBranded_)]]"
                 on-tap="onTPMFirmwareUpdateLearnMore_">
               [[i18nDynamic(locale, 'learnMore')]]
             </a>

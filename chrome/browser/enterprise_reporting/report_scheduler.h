@@ -12,7 +12,7 @@
 #include "base/containers/flat_set.h"
 #include "base/macros.h"
 #include "build/build_config.h"
-#include "chrome/browser/enterprise_reporting/notification/extension_request_notification.h"
+#include "chrome/browser/enterprise_reporting/notification/extension_request_observer_factory.h"
 #include "chrome/browser/enterprise_reporting/report_generator.h"
 #include "chrome/browser/enterprise_reporting/report_uploader.h"
 #include "chrome/browser/profiles/profile_manager_observer.h"
@@ -90,10 +90,7 @@ class ReportScheduler : public ProfileManagerObserver {
 
   std::unique_ptr<base::flat_set<base::FilePath>> stale_profiles_;
 
-  // Create an un-used notification instance so that the resources won't be
-  // filtered out in the unit test. This will be removed once the whole
-  // implementation is finished.
-  ExtensionRequestNotification notification_;
+  ExtensionRequestObserverFactory extension_request_observer_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ReportScheduler);
 };

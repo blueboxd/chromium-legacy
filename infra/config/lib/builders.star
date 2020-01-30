@@ -211,6 +211,7 @@ defaults = args.defaults(
     # unnecessarily make wrapper functions
     bucket = args.COMPUTE,
     executable = args.COMPUTE,
+    triggered_by = args.COMPUTE,
 
     # Forward on luci.builder.defaults so users have a consistent interface
     **{a: getattr(luci.builder.defaults, a) for a in dir(luci.builder.defaults)}
@@ -221,6 +222,7 @@ def builder(
     name,
     bucket=args.DEFAULT,
     executable=args.DEFAULT,
+    triggered_by=args.DEFAULT,
     os=args.DEFAULT,
     builderless=args.DEFAULT,
     auto_builder_dimension=args.DEFAULT,
@@ -418,6 +420,9 @@ def builder(
   executable = defaults.get_value('executable', executable)
   if executable != args.COMPUTE:
     kwargs['executable'] = executable
+  triggered_by = defaults.get_value('triggered_by', triggered_by)
+  if triggered_by != args.COMPUTE:
+    kwargs['triggered_by'] = triggered_by
 
   return luci.builder(
       name = name,

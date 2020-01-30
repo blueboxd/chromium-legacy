@@ -447,6 +447,10 @@ void AssertIsShowingDistillablePage(bool online, const GURL& distillable_url) {
 // appearing, and that the Reading List entry is present in the Reading List.
 // Loads offline version via context menu.
 - (void)testSavingToReadingListAndLoadDistilled {
+  // TODO(crbug.com/1047236): Test fails when run on iOS 13.
+  if (@available(iOS 13, *)) {
+    EARL_GREY_TEST_DISABLED(@"Fails on iOS 13.");
+  }
   [ReadingListAppInterface forceConnectionToWifi];
   GURL distillablePageURL(self.testServer->GetURL(kDistillableURL));
   GURL nonDistillablePageURL(self.testServer->GetURL(kNonDistillableURL));

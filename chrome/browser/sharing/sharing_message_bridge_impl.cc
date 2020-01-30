@@ -145,6 +145,19 @@ void SharingMessageBridgeImpl::OnCommitAttemptErrors(
   }
 }
 
+void SharingMessageBridgeImpl::OnCommitAttemptFailed() {
+  // Full commit failed means we need to drop all entities and report an error
+  // using callback.
+  sync_pb::SharingMessageCommitError sync_error_message;
+  sync_error_message.set_error_code(
+      sync_pb::SharingMessageCommitError::SYNC_ERROR);
+  for (auto& cth_and_callback : commit_callbacks_) {
+    change_processor()->UntrackEntityForClientTagHash(cth_and_callback.first);
+    ReplyToCallback(std::move(cth_and_callback.second), sync_error_message);
+  }
+  commit_callbacks_.clear();
+}
+
 void SharingMessageBridgeImpl::ApplyStopSyncChanges(
     std::unique_ptr<syncer::MetadataChangeList> metadata_change_list) {
   sync_pb::SharingMessageCommitError sync_disabled_error_message;

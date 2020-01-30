@@ -1032,19 +1032,10 @@ NavigationRequest::NavigationRequest(
 
   begin_params_->headers = headers.ToString();
 
-  // Build the initiator_csp_context_.
-  {
-    std::vector<network::mojom::ContentSecurityPolicyPtr> mojo_policies =
-        std::move(common_params_->initiator_csp_info->initiator_csp);
-    std::vector<ContentSecurityPolicy> initiator_policies;
-    for (auto& policy : mojo_policies)
-      initiator_policies.push_back(ContentSecurityPolicy(std::move(policy)));
-
-    initiator_csp_context_.reset(new InitiatorCSPContext(
-        std::move(initiator_policies),
-        std::move(common_params_->initiator_csp_info->initiator_self_source),
-        std::move(navigation_initiator)));
-  }
+  initiator_csp_context_.reset(new InitiatorCSPContext(
+      std::move(common_params_->initiator_csp_info->initiator_csp),
+      std::move(common_params_->initiator_csp_info->initiator_self_source),
+      std::move(navigation_initiator)));
 
   navigation_entry_offset_ = EstimateHistoryOffset();
 

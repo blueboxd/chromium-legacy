@@ -96,6 +96,7 @@ load:social:instagram:2019,,mobile,2019
 load:social:pinterest:2019,,"desktop,mobile","2019,javascript_heavy"
 load:social:twitter:2019,,mobile,2019
 load:social:vk:2018,,desktop,"2018,international"
+load:tools:chat:2020,,desktop,2020
 load:tools:docs:2019,Load a typical google doc page (2019).,"desktop,mobile","2019,health_check"
 load:tools:drive:2019,,"desktop,mobile","2019,javascript_heavy"
 load:tools:dropbox:2019,,mobile,2019

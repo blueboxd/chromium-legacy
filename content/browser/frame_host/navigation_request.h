@@ -458,6 +458,10 @@ class CONTENT_EXPORT NavigationRequest
 
   std::unique_ptr<AppCacheNavigationHandle> TakeAppCacheHandle();
 
+  AppCacheNavigationHandle* appcache_handle() const {
+    return appcache_handle_.get();
+  }
+
   void set_complete_callback_for_testing(
       ThrottleChecksFinishedCallback callback) {
     complete_callback_for_testing_ = std::move(callback);

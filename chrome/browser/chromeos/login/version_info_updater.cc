@@ -62,14 +62,14 @@ VersionInfoUpdater::~VersionInfoUpdater() {
     policy_manager->core()->store()->RemoveObserver(this);
 }
 
-void VersionInfoUpdater::StartUpdate(bool is_official_build) {
+void VersionInfoUpdater::StartUpdate(bool is_chrome_branded) {
   if (base::SysInfo::IsRunningOnChromeOS()) {
     base::PostTaskAndReplyWithResult(
         FROM_HERE,
         {base::ThreadPool(), base::MayBlock(),
          base::TaskPriority::USER_VISIBLE},
         base::BindOnce(&version_loader::GetVersion,
-                       is_official_build
+                       is_chrome_branded
                            ? version_loader::VERSION_SHORT_WITH_DATE
                            : version_loader::VERSION_FULL),
         base::BindOnce(&VersionInfoUpdater::OnVersion,

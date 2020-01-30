@@ -534,6 +534,8 @@ void FrameSequenceTracker::ReportBeginMainFrame(
   }
   main_throughput().frames_expected +=
       begin_main_frame_data_.previous_sequence_delta;
+  previous_begin_main_sequence_ = current_begin_main_sequence_;
+  current_begin_main_sequence_ = args.frame_id.sequence_number;
 }
 
 void FrameSequenceTracker::ReportMainFrameProcessed(
@@ -545,6 +547,23 @@ void FrameSequenceTracker::ReportMainFrameProcessed(
     return;
 
   TRACKER_TRACE_STREAM << "E(" << args.frame_id.sequence_number << ")";
+
+  const bool previous_main_frame_submitted_or_no_damage =
+      previous_begin_main_sequence_ != 0 &&
+      (last_submitted_main_sequence_ == previous_begin_main_sequence_ ||
+       last_no_main_damage_sequence_ == previous_begin_main_sequence_);
+  if (last_processed_main_sequence_ != 0 &&
+      !had_impl_frame_submitted_between_commits_ &&
+      !previous_main_frame_submitted_or_no_damage) {
+    DCHECK_GE(main_throughput().frames_expected,
+              begin_main_frame_data_.previous_sequence_delta)
+        << TRACKER_DCHECK_MSG;
+    main_throughput().frames_expected -=
+        begin_main_frame_data_.previous_sequence_delta;
+    last_no_main_damage_sequence_ = previous_begin_main_sequence_;
+  }
+  had_impl_frame_submitted_between_commits_ = false;
+
   if (first_received_main_sequence_ &&
       args.frame_id.sequence_number >= first_received_main_sequence_) {
     if (awaiting_main_response_sequence_) {
@@ -587,6 +606,7 @@ void FrameSequenceTracker::ReportSubmitFrame(
   compositor_frame_submitted_ = true;
 
   TRACKER_TRACE_STREAM << "s(" << frame_token << ")";
+  had_impl_frame_submitted_between_commits_ = true;
   const bool main_changes_after_sequence_started =
       first_received_main_sequence_ &&
       origin_args.frame_id.sequence_number >= first_received_main_sequence_;

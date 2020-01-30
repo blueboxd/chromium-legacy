@@ -65,7 +65,6 @@ class ASH_EXPORT LoginUserMenuView : public LoginBaseBubbleView,
   base::RepeatingClosure on_remove_user_warning_shown_;
   base::RepeatingClosure on_remove_user_requested_;
   views::View* remove_user_confirm_data_ = nullptr;
-  views::Label* remove_user_label_ = nullptr;
   RemoveUserButton* remove_user_button_ = nullptr;
   views::Label* username_label_ = nullptr;
 

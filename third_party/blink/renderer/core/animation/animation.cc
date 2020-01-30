@@ -43,6 +43,8 @@
 #include "third_party/blink/renderer/core/animation/keyframe_effect.h"
 #include "third_party/blink/renderer/core/animation/pending_animations.h"
 #include "third_party/blink/renderer/core/animation/scroll_timeline.h"
+#include "third_party/blink/renderer/core/css/properties/css_property_ref.h"
+#include "third_party/blink/renderer/core/css/resolver/style_resolver.h"
 #include "third_party/blink/renderer/core/css/style_change_reason.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/dom_node_ids.h"
@@ -65,6 +67,8 @@
 namespace blink {
 
 namespace {
+
+enum PseudoPriority { kMarker, kBefore, kOther, kAfter };
 
 unsigned NextSequenceNumber() {
   static unsigned next = 0;
@@ -89,6 +93,16 @@ double Min(base::Optional<double> a, double b) {
   if (a.has_value())
     return std::min(a.value(), b);
   return b;
+}
+
+PseudoPriority ConvertStringtoPriority(const String& pseudo) {
+  if (pseudo == "::marker")
+    return PseudoPriority::kMarker;
+  if (pseudo == "::before")
+    return PseudoPriority::kBefore;
+  if (pseudo == "::after")
+    return PseudoPriority::kAfter;
+  return PseudoPriority::kOther;
 }
 
 Animation::AnimationClassPriority AnimationPriority(
@@ -442,6 +456,68 @@ bool Animation::HasLowerCompositeOrdering(const Animation* animation1,
   AnimationClassPriority priority2 = AnimationPriority(animation2);
   if (priority1 != priority2)
     return priority1 < priority2;
+
+  // If the the animation class is CssAnimation or CssTransition, then first
+  // compare the owning element of animation1 and animation2, sort two of them
+  // by tree order of their conrresponding owning element
+  // The specs:
+  // https://drafts.csswg.org/css-animations-2/#animation-composite-order
+  // https://drafts.csswg.org/css-transitions-2/#animation-composite-order
+  if (priority1 != kDefaultPriority && animation1->effect() &&
+      animation2->effect()) {
+    // TODO(crbug.com/1043778): Implement and use OwningElement on CSSAnimation
+    // and CSSTransition.
+    auto* effect1 = DynamicTo<KeyframeEffect>(animation1->effect());
+    auto* effect2 = DynamicTo<KeyframeEffect>(animation2->effect());
+    Element* target1 = effect1->target();
+    Element* target2 = effect2->target();
+
+    if (*target1 != *target2) {
+      return target1->compareDocumentPosition(target2) &
+             Node::kDocumentPositionFollowing;
+    }
+
+    // A pseudo-element has a higher composite ordering than its originating
+    // element, but lower than the originating element's children.  Two
+    // pseudo-elements sharing the same originating element are sorted as
+    // follows:
+    // ::marker
+    // ::before
+    // ::other
+    // ::after
+    // The "::other" category is a catch-all for any pseudo-element that does
+    // not match another label. This category is not currently covered in the
+    // spec.
+    // TODO: revisit when the spec is clarified
+    // (https://github.com/w3c/csswg-drafts/issues/4502).
+    const String& pseudo1 =
+        const_cast<KeyframeEffect*>(effect1)->pseudoElement();
+    const String& pseudo2 =
+        const_cast<KeyframeEffect*>(effect2)->pseudoElement();
+
+    if (!pseudo1.IsEmpty() && !pseudo2.IsEmpty()) {
+      PseudoPriority priority1 = ConvertStringtoPriority(pseudo1);
+      PseudoPriority priority2 = ConvertStringtoPriority(pseudo2);
+      // In this case, we are comparing the SequenceNumber for now.
+      // TODO(crbug.com/1045835): compare them via Animation Name Property
+      if (priority1 == priority2)
+        return animation1->SequenceNumber() < animation2->SequenceNumber();
+      return priority1 < priority2;
+    }
+
+    // If one is pseudo element and the other one is not, then we compare the
+    // hosting element and the owning element.
+    if (!pseudo1.IsEmpty())
+      return false;
+
+    if (!pseudo2.IsEmpty())
+      return true;
+    // TODO: Sort animation1 and animation2 based on their position in the
+    // computed value of "animation-name" property
+  }
+  // If the anmiations are not-CSS web animation or both animations have the
+  // same owning element then just compare them via generation time/ sequence
+  // number
   return animation1->SequenceNumber() < animation2->SequenceNumber();
 }
 
@@ -2034,6 +2110,77 @@ String Animation::replaceState() {
     default:
       NOTREACHED();
       return "";
+  }
+}
+
+// https://drafts.csswg.org/web-animations-1/#dom-animation-commitstyles
+void Animation::commitStyles(ExceptionState& exception_state) {
+  Element* target = content_ && content_->IsKeyframeEffect()
+                        ? To<KeyframeEffect>(effect())->target()
+                        : nullptr;
+
+  // 1. If target is not an element capable of having a style attribute
+  //    (for example, it is a pseudo-element or is an element in a document
+  //    format for which style attributes are not defined) throw a
+  //    "NoModificationAllowedError" DOMException and abort these steps.
+  if (!target || !target->IsStyledElement() ||
+      !To<KeyframeEffect>(effect())->pseudoElement().IsEmpty()) {
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kNoModificationAllowedError,
+        "Animation not associated with a styled target element");
+    return;
+  }
+  // 2. If, after applying any pending style changes, target is not being
+  //    rendered, throw an "InvalidStateError" DOMException and abort these
+  //    steps.
+  target->GetDocument().UpdateStyleAndLayoutTreeForNode(target);
+  if (!target->GetLayoutObject()) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
+                                      "Target element is not rendered.");
+    return;
+  }
+
+  // 3. Let inline style be the result of getting the CSS declaration block
+  //    corresponding to target’s style attribute. If target does not have a
+  //    style attribute, let inline style be a new empty CSS declaration block
+  //    with the readonly flag unset and owner node set to target.
+  CSSStyleDeclaration* inline_style = target->style();
+
+  // 4. Let targeted properties be the set of physical longhand properties
+  //    that are a target property for at least one animation effect
+  //    associated with animation whose effect target is target.
+  PropertyHandleSet animation_properties =
+      To<KeyframeEffect>(effect())->Model()->Properties();
+
+  // 5. For each property, property, in targeted properties:
+  //   5.1 Let partialEffectStack be a copy of the effect stack for property
+  //       on target.
+  //   5.2 If animation’s replace state is removed, add all animation effects
+  //       associated with animation whose effect target is target and which
+  //       include property as a target property to partialEffectStack.
+  //   5.3 Remove from partialEffectStack any animation effects whose
+  //       associated animation has a higher composite order than animation.
+  //   5.4 Let effect value be the result of calculating the result of
+  //       partialEffectStack for property using target’s computed style
+  //       (see § 5.4.3 Calculating the result of an effect stack).
+  //   5.5 Set a CSS declaration property for effect value in inline style.
+  // 6. Update style attribute for inline style.
+  ActiveInterpolationsMap interpolations_map =
+      To<KeyframeEffect>(effect())->InterpolationsForCommitStyles();
+  StyleResolver& resolver = target->GetDocument().EnsureStyleResolver();
+  scoped_refptr<ComputedStyle> style =
+      resolver.StyleForInterpolations(*target, interpolations_map);
+
+  for (const auto& property : animation_properties) {
+    if (!property.IsCSSProperty())
+      continue;
+
+    CSSPropertyRef ref(property.GetCSSPropertyName(), target->GetDocument());
+    const CSSValue* value = ref.GetProperty().CSSValueFromComputedStyle(
+       *style, nullptr, false);
+    inline_style->setProperty(&target->GetDocument(),
+                              property.GetCSSPropertyName().ToAtomicString(),
+                              value->CssText(), "", ASSERT_NO_EXCEPTION);
   }
 }
 

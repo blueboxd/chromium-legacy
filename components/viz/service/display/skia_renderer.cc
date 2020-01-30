@@ -2317,6 +2317,7 @@ SkiaRenderer::DrawRPDQParams SkiaRenderer::CalculateRPDQParams(
   }
 
   // Convert CC image filters for the backdrop into a SkImageFilter root node
+  // TODO(weiliangc): ChromeOS would need backdrop_filter_quality implemented
   if (backdrop_filters) {
     DCHECK(!backdrop_filters->IsEmpty());
 

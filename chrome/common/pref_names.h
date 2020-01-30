@@ -651,6 +651,7 @@ extern const char kAudioCaptureAllowed[];
 extern const char kAudioCaptureAllowedUrls[];
 extern const char kVideoCaptureAllowed[];
 extern const char kVideoCaptureAllowedUrls[];
+extern const char kScreenCaptureAllowed[];
 
 #if defined(OS_CHROMEOS)
 extern const char kDemoModeConfig[];

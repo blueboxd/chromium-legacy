@@ -1515,6 +1515,7 @@ TEST_F(DisplayLockContextTest,
       width: 100px;
       height: 100px;
       contain: style layout;
+      will-change: transform;
     }
     #composited {
       will-change: transform;

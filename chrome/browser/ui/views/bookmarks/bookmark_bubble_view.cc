@@ -147,21 +147,11 @@ void BookmarkBubbleView::WindowClosing() {
 
 // views::DialogDelegate -------------------------------------------------------
 
-bool BookmarkBubbleView::Cancel() {
+void BookmarkBubbleView::OnDialogCancelled() {
   base::RecordAction(UserMetricsAction("BookmarkBubble_Unstar"));
   // Set this so we remove the bookmark after the window closes.
   remove_bookmark_ = true;
   apply_edits_ = false;
-  return true;
-}
-
-bool BookmarkBubbleView::Accept() {
-  return true;
-}
-
-bool BookmarkBubbleView::Close() {
-  // Allow closing when activation lost. Default would call Accept().
-  return true;
 }
 
 void BookmarkBubbleView::OnDialogInitialized() {
@@ -246,6 +236,9 @@ BookmarkBubbleView::BookmarkBubbleView(
       l10n_util::GetStringUTF16(IDS_BOOKMARK_BUBBLE_REMOVE_BOOKMARK));
   DialogDelegate::SetExtraView(CreateEditButton(this));
   DialogDelegate::SetFootnoteView(CreateSigninPromoView());
+
+  DialogDelegate::set_cancel_callback(base::Bind(
+      &BookmarkBubbleView::OnDialogCancelled, base::Unretained(this)));
 
   chrome::RecordDialogCreation(chrome::DialogIdentifier::BOOKMARK);
   set_margins(ChromeLayoutProvider::Get()->GetDialogInsetsForContentType(

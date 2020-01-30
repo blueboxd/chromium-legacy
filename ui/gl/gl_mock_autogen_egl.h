@@ -121,6 +121,11 @@ MOCK_METHOD6(GetFrameTimestampsANDROID,
                         EGLnsecsANDROID* values));
 MOCK_METHOD3(GetFrameTimestampSupportedANDROID,
              EGLBoolean(EGLDisplay dpy, EGLSurface surface, EGLint timestamp));
+MOCK_METHOD4(GetMscRateCHROMIUM,
+             EGLBoolean(EGLDisplay dpy,
+                        EGLSurface surface,
+                        EGLint* numerator,
+                        EGLint* denominator));
 MOCK_METHOD1(GetNativeClientBufferANDROID,
              EGLClientBuffer(const struct AHardwareBuffer* ahardwarebuffer));
 MOCK_METHOD3(GetNextFrameIdANDROID,

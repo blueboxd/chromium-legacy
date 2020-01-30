@@ -4488,6 +4488,20 @@ void WebContentsImpl::DidFinishNavigation(NavigationHandle* navigation_handle) {
     display_cutout_host_impl_->DidFinishNavigation(navigation_handle);
 
   if (navigation_handle->HasCommitted()) {
+    // TODO(domfarolino, dmazzoni): Do this using WebContentsObserver. See
+    // https://crbug.com/981271.
+    BrowserAccessibilityManager* manager =
+        static_cast<RenderFrameHostImpl*>(
+            navigation_handle->GetRenderFrameHost())
+            ->browser_accessibility_manager();
+    if (manager) {
+      if (navigation_handle->IsErrorPage()) {
+        manager->NavigationFailed();
+      } else {
+        manager->NavigationSucceeded();
+      }
+    }
+
     if (navigation_handle->IsInMainFrame()) {
       last_committed_source_id_including_same_document_ =
           ukm::ConvertToSourceId(navigation_handle->GetNavigationId(),
@@ -5956,6 +5970,15 @@ void WebContentsImpl::DidStartLoading(FrameTreeNode* frame_tree_node,
   // Reset the focus state from DidStartNavigation to false if a new load starts
   // afterward, in case loading logic triggers a FocusLocationBarByDefault call.
   should_focus_location_bar_by_default_ = false;
+
+  // Notify accessibility that the user is navigating away from the
+  // current document.
+  // TODO(domfarolino, dmazzoni): Do this using WebContentsObserver. See
+  // https://crbug.com/981271.
+  BrowserAccessibilityManager* manager =
+      frame_tree_node->current_frame_host()->browser_accessibility_manager();
+  if (manager)
+    manager->UserIsNavigatingAway();
 }
 
 void WebContentsImpl::DidStopLoading() {

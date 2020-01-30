@@ -35,6 +35,7 @@ chrome.automation.EventType = {
   END_OF_TEST: 'endOfTest',
   EXPANDED_CHANGED: 'expandedChanged',
   FOCUS: 'focus',
+  FOCUS_AFTER_MENU_CLOSE: 'focusAfterMenuClose',
   FOCUS_CONTEXT: 'focusContext',
   HIDE: 'hide',
   HIT_TEST_RESULT: 'hitTestResult',

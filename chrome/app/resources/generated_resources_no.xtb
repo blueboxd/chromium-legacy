@@ -26,7 +26,6 @@
 <translation id="1031362278801463162">Laster inn forhåndsvisning</translation>
 <translation id="1032605640136438169">Les gjennom de nye vilkårene</translation>
 <translation id="103279545524624934">Frigjør lagringsplass for å starte Android-apper.</translation>
-<translation id="1033343386521881354">Fant én skriver på utskriftstjeneren.</translation>
 <translation id="1033780634303702874">bruke de seriekoblede enhetene dine</translation>
 <translation id="1034942643314881546">Slår på adb for å skape illustrasjon av apper</translation>
 <translation id="1036348656032585052">Slå av</translation>
@@ -34,7 +33,6 @@
 <translation id="1036982837258183574">Trykk på |<ph name="ACCELERATOR" />| for å avslutte fullskjerm</translation>
 <translation id="1038168778161626396">Kun chiffrering</translation>
 <translation id="1039337018183941703">Ugyldig eller skadet fil.</translation>
-<translation id="1039850285407663109">Den valgte filen er ukjent og kan være farlig. Vurder å skanne filen før du åpner den.</translation>
 <translation id="1041175011127912238">Denne siden svarer ikke</translation>
 <translation id="1041263367839475438">Tilgjengelige enheter</translation>
 <translation id="1042174272890264476">Datamaskinen din har <ph name="SHORT_PRODUCT_NAME" />s RLZ-bibliotek innebygget. RLZ tildeler en ikke-unik, ikke-personlig tagg for å måle søk og <ph name="SHORT_PRODUCT_NAME" />-bruk drevet av en bestemt markedsføringskampanje. Disse etikettene vises noen ganger i Google-søk i <ph name="PRODUCT_NAME" />.</translation>
@@ -636,7 +634,6 @@
 <translation id="1858585891038687145">Stol på dette sertifikatet for identifisering av programvareprodusenter.</translation>
 <translation id="1861262398884155592">Denne mappen er tom</translation>
 <translation id="1863182668524159459">Fant ingen serielle porter</translation>
-<translation id="1863552924692672565"><ph name="FILE_NAME" /> er ukjent. Skann filen for å minimere risikoen.</translation>
 <translation id="1864111464094315414">Pålogging</translation>
 <translation id="1864400682872660285">Kaldere</translation>
 <translation id="1864454756846565995">USB-C-enhet (porten på baksiden)</translation>
@@ -4020,7 +4017,6 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="6678717876183468697">Nettadresse for søk</translation>
 <translation id="6680442031740878064">Tilgjengelig: <ph name="AVAILABLE_SPACE" /></translation>
 <translation id="6680650203439190394">Hastighet</translation>
-<translation id="6681301928961274620">Fant ingen skrivere på utskriftstjeneren.</translation>
 <translation id="6681668084120808868">Ta et bilde</translation>
 <translation id="6681964764822470072">«<ph name="APP_NAME" />» blir avinstallert.</translation>
 <translation id="668599234725812620">Åpne Google Play</translation>
@@ -5550,7 +5546,6 @@ Jeg tror ikke det er nødvendig å blokkere dette nettstedet.</translation>
 <translation id="8794025342371547160">Begrenset IP</translation>
 <translation id="879413103056696865">Når Wi-Fi-sonen er på, kommer <ph name="PHONE_NAME" /> til å</translation>
 <translation id="8795916974678578410">Nytt vindu</translation>
-<translation id="8797086401386164142">Fant <ph name="NUM_PRINTERS" /> skrivere på utskriftstjeneren.</translation>
 <translation id="8797459392481275117">Oversett aldri dette nettstedet</translation>
 <translation id="8798099450830957504">Standard</translation>
 <translation id="8798441408945964110">Leverandørnavn</translation>

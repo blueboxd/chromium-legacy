@@ -351,8 +351,10 @@ class CORE_EXPORT ContentSecurityPolicy final
 
   // Determine whether to enforce the assignment failure. Also handle reporting.
   // Returns whether enforcing Trusted Types CSP directives are present.
-  bool AllowTrustedTypeAssignmentFailure(const String& message,
-                                         const String& sample = String()) const;
+  bool AllowTrustedTypeAssignmentFailure(
+      const String& message,
+      const String& sample = String(),
+      const String& sample_prefix = String()) const;
 
   void UsesScriptHashAlgorithms(uint8_t content_security_policy_hash_algorithm);
   void UsesStyleHashAlgorithms(uint8_t content_security_policy_hash_algorithm);
@@ -409,7 +411,8 @@ class CORE_EXPORT ContentSecurityPolicy final
                        LocalFrame* = nullptr,
                        RedirectStatus = RedirectStatus::kFollowedRedirect,
                        Element* = nullptr,
-                       const String& source = g_empty_string);
+                       const String& source = g_empty_string,
+                       const String& source_prefix = g_empty_string);
 
   // Called when mixed content is detected on a page; will trigger a violation
   // report if the 'block-all-mixed-content' directive is specified for a

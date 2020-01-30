@@ -2494,6 +2494,11 @@
     "expiry_milestone": 90
   },
   {
+    "name": "legacy-tls-enforced",
+    "owners": [ "cthomp" ],
+    "expiry_milestone": 87
+  },
+  {
     "name": "list-all-display-modes",
     "owners": [ "//ui/display/OWNERS" ],
     // This flag is used for debugging and development purposes to list all
@@ -3048,6 +3053,11 @@
     "expiry_milestone": 82
   },
   {
+    "name": "photo-picker-video-support",
+    "owners": [ "finnur" ],
+    "expiry_milestone": 83
+  },
+  {
     "name": "policy-atomic-group-enabled",
     "owners": [ "ydago" ],
     "expiry_milestone": 80
@@ -3230,6 +3240,11 @@
     "name": "sharing-use-device-info",
     "owners": [ "//chrome/browser/sharing/OWNERS" ],
     "expiry_milestone": 82
+  },
+  {
+    "name": "shelf-hide-buttons-in-tablet",
+    "owners": [ "tbarzic", "//ash/shelf/OWNERS" ],
+    "expiry_milestone": 84
   },
   {
     "name": "shelf-hotseat",

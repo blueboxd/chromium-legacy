@@ -127,7 +127,7 @@ void TabLoadTracker::StartTracking(content::WebContents* web_contents) {
   // documented in TransitionState.
   WebContentsData data;
   data.loading_state = loading_state;
-  if (web_contents->IsLoadingToDifferentDocument())
+  if (data.loading_state == LOADING)
     data.did_start_loading_seen = true;
   data.is_ui_tab = IsUiTab(web_contents);
   tabs_.insert(std::make_pair(web_contents, data));
@@ -165,22 +165,11 @@ void TabLoadTracker::DidStartLoading(content::WebContents* web_contents) {
     return;
   auto it = tabs_.find(web_contents);
   DCHECK(it != tabs_.end());
-
   if (it->second.loading_state == LOADING) {
-    // A load starts but the page has not become idle since the previous load.
     DCHECK(it->second.did_start_loading_seen);
     return;
   }
   it->second.did_start_loading_seen = true;
-
-  // A load in a non-visible WebContents can be deferred by a NavigationThrottle
-  // until DidReceiveResponse(). Therefore, wait until DidReceiveResponse() to
-  // transition a hidden WebContents to LOADING. However, transition to LOADING
-  // immediately for a visible WebContents, to ensure that policies that depend
-  // on LoadingState are applied as soon as possible.
-  if (web_contents->GetVisibility() == content::Visibility::VISIBLE) {
-    TransitionState(it, LOADING, true);
-  }
 }
 
 void TabLoadTracker::DidReceiveResponse(content::WebContents* web_contents) {
@@ -191,12 +180,12 @@ void TabLoadTracker::DidReceiveResponse(content::WebContents* web_contents) {
     DCHECK(it->second.did_start_loading_seen);
     return;
   }
-
-  if (!it->second.did_start_loading_seen) {
-    // Response is received after the page has become idle.
+  // A transition to loading requires both DidStartLoading (navigation
+  // committed) and DidReceiveResponse (data has been trasmitted over the
+  // network) events to occur. This is because NavigationThrottles can block
+  // actual network requests, but not the rest of the state machinery.
+  if (!it->second.did_start_loading_seen)
     return;
-  }
-
   TransitionState(it, LOADING, true);
 }
 
@@ -248,8 +237,7 @@ TabLoadTracker::LoadingState TabLoadTracker::DetermineLoadingState(
   // loading. Start from the assumption that it is UNLOADED.
   LoadingState loading_state = UNLOADED;
   if (web_contents->IsLoadingToDifferentDocument() &&
-      (web_contents->GetVisibility() == content::Visibility::VISIBLE ||
-       !web_contents->IsWaitingForResponse())) {
+      !web_contents->IsWaitingForResponse()) {
     loading_state = LOADING;
   } else {
     // Determine if the WebContents is already loaded. A loaded WebContents has

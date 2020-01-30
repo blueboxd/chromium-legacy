@@ -382,9 +382,6 @@ CanvasResourceProvider* OffscreenCanvas::GetOrCreateResourceProvider() {
 
     if (ResourceProvider() && ResourceProvider()->IsValid()) {
       ResourceProvider()->Clear();
-      // Always save an initial frame, to support resetting the top level matrix
-      // and clip.
-      ResourceProvider()->Canvas()->save();
 
       if (needs_matrix_clip_restore_) {
         needs_matrix_clip_restore_ = false;

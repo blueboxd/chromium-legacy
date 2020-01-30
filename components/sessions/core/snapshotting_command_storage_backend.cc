@@ -62,7 +62,7 @@ void SnapshottingCommandStorageBackend::ReadLastSessionCommands(
   InitIfNecessary();
 
   std::vector<std::unique_ptr<sessions::SessionCommand>> commands;
-  ReadCommandsFromFile(last_file_path_, &commands);
+  ReadCommandsFromFile(last_file_path_, std::vector<uint8_t>(), &commands);
   std::move(callback).Run(std::move(commands));
 }
 

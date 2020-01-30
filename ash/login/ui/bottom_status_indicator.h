@@ -22,6 +22,12 @@ namespace ash {
 
 class BottomStatusIndicator : public views::View {
  public:
+  enum class ContentType {
+    kNone,
+    kManagedDevice,
+    kAdbSideLoadingEnabled,
+  };
+
   BottomStatusIndicator();
 
   BottomStatusIndicator(const BottomStatusIndicator&) = delete;
@@ -32,9 +38,16 @@ class BottomStatusIndicator : public views::View {
   void SetIcon(const gfx::VectorIcon& vector_icon,
                AshColorProvider::ContentLayerType type);
 
+  void set_content_type(ContentType content_type) {
+    content_type_ = content_type;
+  }
+  ContentType content_type() const { return content_type_; }
+
  private:
   views::Label* label_ = nullptr;
   views::ImageView* icon_ = nullptr;
+
+  ContentType content_type_ = ContentType::kNone;
 };
 
 }  // namespace ash

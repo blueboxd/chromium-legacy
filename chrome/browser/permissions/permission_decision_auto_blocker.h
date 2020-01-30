@@ -91,6 +91,14 @@ class PermissionDecisionAutoBlocker : public KeyedService {
   // type at |url|.
   int GetIgnoreCount(const GURL& url, ContentSettingsType permission);
 
+  // Returns a set of urls currently under embargo for |content_type|.
+  std::set<GURL> GetEmbargoedOrigins(ContentSettingsType content_type);
+
+  // Returns a set of urls currently under embargo for the provided
+  // |content_type| types.
+  std::set<GURL> GetEmbargoedOrigins(
+      std::vector<ContentSettingsType> content_types);
+
   // Records that a dismissal of a prompt for |permission| was made. If the
   // total number of dismissals exceeds a threshhold and
   // features::kBlockPromptsIfDismissedOften is enabled, it will place |url|

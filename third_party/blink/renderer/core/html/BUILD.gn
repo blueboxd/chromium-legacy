@@ -580,7 +580,8 @@ blink_core_sources("html") {
     "window_name_collection.h",
   ]
 
-  jumbo_excluded_sources = [ "canvas/canvas_rendering_context.cc" ]  # https://crbug.com/716395
+  jumbo_excluded_sources =
+      [ "canvas/canvas_rendering_context.cc" ]  # https://crbug.com/716395
 
   deps = [
     "//services/metrics/public/cpp:metrics_cpp",

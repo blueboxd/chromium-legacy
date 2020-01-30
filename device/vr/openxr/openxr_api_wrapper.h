@@ -44,7 +44,7 @@ class OpenXrApiWrapper {
 
   static VRTestHook* GetTestHook();
 
-  bool session_ended() const { return session_ended_; }
+  bool UpdateAndGetSessionEnded();
 
   XrResult InitSession(const Microsoft::WRL::ComPtr<ID3D11Device>& d3d_device,
                        std::unique_ptr<OpenXRInputHelper>* input_helper);

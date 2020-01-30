@@ -93,7 +93,7 @@ import("//build/config/crypto.gni")
 import("//build/config/features.gni")
 import("//build/config/sanitizers/sanitizers.gni")
 import("//build/config/ui.gni")
-import("//build/toolchain/gcc_toolchain.gni")  # For enable_resource_whitelist_generation
+import("//build/toolchain/gcc_toolchain.gni")
 if (enable_resource_whitelist_generation) {
   assert(target_os == "android" || target_os == "win",
          "unsupported platform for resource whitelist generation")

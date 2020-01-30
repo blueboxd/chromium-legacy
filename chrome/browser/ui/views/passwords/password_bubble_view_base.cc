@@ -114,10 +114,10 @@ base::string16 PasswordBubbleViewBase::GetWindowTitle() const {
 bool PasswordBubbleViewBase::ShouldShowWindowTitle() const {
   const PasswordBubbleControllerBase* controller = GetController();
   if (controller) {
-    return controller->GetTitle().empty();
+    return !controller->GetTitle().empty();
   }
   DCHECK(model_);
-  return model_->title().empty();
+  return !model_->title().empty();
 }
 
 PasswordBubbleViewBase::PasswordBubbleViewBase(

@@ -26,7 +26,6 @@
 <translation id="1031362278801463162">Előnézet betöltése</translation>
 <translation id="1032605640136438169">Kérjük, tekintse meg az új Feltételeket</translation>
 <translation id="103279545524624934">Szabadítson fel tárhelyet az Android-alkalmazások elindításához.</translation>
-<translation id="1033343386521881354">1 nyomtató található a nyomtatószerveren.</translation>
 <translation id="1033780634303702874">Hozzáférés a soros eszközökhöz</translation>
 <translation id="1034942643314881546">Illusztráció: Alkalmazások létrehozásának engedélyezése az ADB számára</translation>
 <translation id="1036348656032585052">Kikapcsolás</translation>
@@ -34,7 +33,6 @@
 <translation id="1036982837258183574">A teljes képernyős nézetből való kilépéshez nyomja meg a következő billentyűt: |<ph name="ACCELERATOR" />|</translation>
 <translation id="1038168778161626396">Csak titkosítás</translation>
 <translation id="1039337018183941703">Érvénytelen vagy sérült fájl</translation>
-<translation id="1039850285407663109">A kiválasztott fájl ismeretlen, és veszélyes lehet. Fontolja meg az ellenőrzését, mielőtt megnyitja.</translation>
 <translation id="1041175011127912238">Az oldal nem válaszol</translation>
 <translation id="1041263367839475438">Rendelkezésre álló eszközök</translation>
 <translation id="1042174272890264476">Számítógépe a <ph name="SHORT_PRODUCT_NAME" /> RLZ-könyvtárát is tartalmazza beépítve. Az RLZ egy nem egyedi, személy szerinti azonosításra nem alkalmas címkét rendel hozzá a keresések és a <ph name="SHORT_PRODUCT_NAME" /> használatának egy adott promóciós kampány keretein belüli felméréséhez. Ezek a címkék időnként a <ph name="PRODUCT_NAME" /> Google-keresési lekérdezéseiben is feltűnnek.</translation>
@@ -639,7 +637,6 @@
 <translation id="1858585891038687145">Bízzon meg ebben a tanúsítványban a szoftvergyártók azonosításakor</translation>
 <translation id="1861262398884155592">Ez a mappa üres</translation>
 <translation id="1863182668524159459">Nem található soros port</translation>
-<translation id="1863552924692672565">A(z) <ph name="FILE_NAME" /> fájl ismeretlen. A kockázatok csökkentése érdekében ellenőrizze.</translation>
 <translation id="1864111464094315414">Bejelentkezés</translation>
 <translation id="1864400682872660285">Hideg színek</translation>
 <translation id="1864454756846565995">C típusú USB-vel kompatibilis eszköz (hátsó port)</translation>
@@ -4026,7 +4023,6 @@ Győződjön meg arról, hogy nem ad ki bizalmas adatokat.</translation>
 <translation id="6678717876183468697">Lekérdezés URL-je</translation>
 <translation id="6680442031740878064">Rendelkezésre álló tárhely: <ph name="AVAILABLE_SPACE" /></translation>
 <translation id="6680650203439190394">Értékelés</translation>
-<translation id="6681301928961274620">Nem található nyomtató a nyomtatószerveren.</translation>
 <translation id="6681668084120808868">Fényképkészítés</translation>
 <translation id="6681964764822470072">A(z) „<ph name="APP_NAME" />” el lesz távolítva.</translation>
 <translation id="668599234725812620">A Google Play megnyitása</translation>
@@ -5556,7 +5552,6 @@ A kulcsfájlt tartsa biztonságos helyen. Szüksége lesz rá ahhoz, hogy új ve
 <translation id="8794025342371547160">Korlátozott IP</translation>
 <translation id="879413103056696865">Amíg a hotspot be van kapcsolva, az Ön <ph name="PHONE_NAME" /> telefonja:</translation>
 <translation id="8795916974678578410">Új ablak</translation>
-<translation id="8797086401386164142"><ph name="NUM_PRINTERS" /> nyomtató található a nyomtatószerveren.</translation>
 <translation id="8797459392481275117">Ezt a webhelyet soha ne fordítsa le</translation>
 <translation id="8798099450830957504">Alapértelmezett</translation>
 <translation id="8798441408945964110">Szolgáltató neve</translation>

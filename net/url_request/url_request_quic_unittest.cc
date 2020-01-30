@@ -417,6 +417,10 @@ TEST_P(URLRequestQuicTest, CancelPushIfCached_SomeCached) {
 #if !defined(OS_FUCHSIA) && !defined(OS_IOS)
   // TODO(crbug.com/813631): Make this work on Fuchsia.
   // TODO(crbug.com/1032568): Make this work on iOS.
+
+  // Wait until the server has processed all errors which is
+  // happening asynchronously
+  base::RunLoop().RunUntilIdle();
   // Verify the reset error count received on the server side.
   EXPECT_LE(1u, GetRstErrorCountReceivedByServer(quic::QUIC_STREAM_CANCELLED));
 #endif

@@ -18,6 +18,7 @@
 #include "chrome/browser/prerender/isolated/isolated_prerender_features.h"
 #include "chrome/browser/prerender/isolated/prefetched_response_container.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
@@ -63,6 +64,13 @@ class IsolatedPrerenderTabHelperTest : public ChromeRenderViewHostTestHarness {
 
     IsolatedPrerenderTabHelper::FromWebContents(web_contents())
         ->SetURLLoaderFactoryForTesting(test_shared_loader_factory_);
+
+    SetDataSaverEnabled(true);
+  }
+
+  void SetDataSaverEnabled(bool enabled) {
+    data_reduction_proxy::DataReductionProxySettings::
+        SetDataSaverEnabledForTesting(profile()->GetPrefs(), enabled);
   }
 
   void MakeNavigationPrediction(const content::WebContents* web_contents,
@@ -167,6 +175,20 @@ TEST_F(IsolatedPrerenderTabHelperTest, FeatureDisabled) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndDisableFeature(
       features::kPrefetchSRPNavigationPredictions_HTMLOnly);
+
+  GURL doc_url("https://www.google.com/search?q=cats");
+  GURL prediction_url("https://www.cat-food.com/");
+  MakeNavigationPrediction(web_contents(), doc_url, {prediction_url});
+
+  EXPECT_EQ(RequestCount(), 0);
+}
+
+TEST_F(IsolatedPrerenderTabHelperTest, DataSaverDisabled) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      features::kPrefetchSRPNavigationPredictions_HTMLOnly);
+
+  SetDataSaverEnabled(false);
 
   GURL doc_url("https://www.google.com/search?q=cats");
   GURL prediction_url("https://www.cat-food.com/");

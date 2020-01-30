@@ -78,7 +78,5 @@ blink_modules_sources("webgpu") {
     "worker_navigator_gpu.cc",
     "worker_navigator_gpu.h",
   ]
-  deps = [
-    "//third_party/dawn/src/dawn:dawn_headers",
-  ]
+  deps = [ "//third_party/dawn/src/dawn:dawn_headers" ]
 }

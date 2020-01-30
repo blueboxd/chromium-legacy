@@ -13,7 +13,7 @@
 #include "base/observer_list.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
-#include "base/task/lazy_task_runner.h"
+#include "base/task/lazy_thread_pool_task_runner.h"
 #include "base/task/sequence_manager/sequence_manager.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"

@@ -211,6 +211,15 @@ void TestAutofillClient::UpdateAutofillPopupDataListValues(
     const std::vector<base::string16>& values,
     const std::vector<base::string16>& labels) {}
 
+base::span<const Suggestion> TestAutofillClient::GetPopupSuggestions() const {
+  return base::span<const Suggestion>();
+}
+
+void TestAutofillClient::PinPopupViewUntilUpdate() {}
+
+void TestAutofillClient::UpdatePopup(const std::vector<Suggestion>& suggestions,
+                                     autofill::PopupType popup_type) {}
+
 void TestAutofillClient::HideAutofillPopup(PopupHidingReason reason) {}
 
 bool TestAutofillClient::IsAutocompleteEnabled() {

@@ -10,7 +10,6 @@
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
-#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/default_tick_clock.h"
@@ -424,7 +423,7 @@ TEST_P(QuicChromiumClientSessionTest, Handle) {
 
   session_.reset();
 
-  // Veirfy that the handle works correctly after the session is deleted.
+  // Verify that the handle works correctly after the session is deleted.
   EXPECT_FALSE(handle->IsConnected());
   EXPECT_TRUE(handle->OneRttKeysAvailable());
   EXPECT_EQ(version_, handle->GetQuicVersion());
@@ -1034,7 +1033,6 @@ TEST_P(QuicChromiumClientSessionTest, MaxNumStreams) {
 }
 
 TEST_P(QuicChromiumClientSessionTest, PushStreamTimedOutNoResponse) {
-  base::HistogramTester histogram_tester;
   MockQuicData quic_data(version_);
   int packet_num = 1;
   if (VersionUsesHttp3(version_.transport_version)) {
@@ -1091,7 +1089,6 @@ TEST_P(QuicChromiumClientSessionTest, PushStreamTimedOutNoResponse) {
 }
 
 TEST_P(QuicChromiumClientSessionTest, PushStreamTimedOutWithResponse) {
-  base::HistogramTester histogram_tester;
   MockQuicData quic_data(version_);
   int packet_num = 1;
   if (VersionUsesHttp3(version_.transport_version)) {
@@ -1274,7 +1271,6 @@ TEST_P(QuicChromiumClientSessionTest, CancelPushWhenPendingValidation) {
 }
 
 TEST_P(QuicChromiumClientSessionTest, CancelPushBeforeReceivingResponse) {
-  base::HistogramTester histogram_tester;
   MockQuicData quic_data(version_);
   int packet_num = 1;
   if (VersionUsesHttp3(version_.transport_version)) {
@@ -1331,7 +1327,6 @@ TEST_P(QuicChromiumClientSessionTest, CancelPushBeforeReceivingResponse) {
 }
 
 TEST_P(QuicChromiumClientSessionTest, CancelPushAfterReceivingResponse) {
-  base::HistogramTester histogram_tester;
   MockQuicData quic_data(version_);
   int packet_num = 1;
   if (VersionUsesHttp3(version_.transport_version)) {
@@ -2036,6 +2031,65 @@ TEST_P(QuicChromiumClientSessionTest, RetransmittableOnWireTimeout) {
   alarm_factory_.FireAlarm(alarm);
   base::RunLoop().RunUntilIdle();
 
+  quic_data.Resume();
+  EXPECT_TRUE(quic_data.AllReadDataConsumed());
+  EXPECT_TRUE(quic_data.AllWriteDataConsumed());
+}
+
+// Regression test for https://crbug.com/1043531.
+TEST_P(QuicChromiumClientSessionTest, ResetOnEmptyResponseHeaders) {
+  MockQuicData quic_data(version_);
+  int packet_num = 1;
+  if (VersionUsesHttp3(version_.transport_version)) {
+    quic_data.AddWrite(ASYNC,
+                       client_maker_.MakeInitialSettingsPacket(packet_num++));
+  } else {
+    // In case of Google QUIC, QuicSpdyStream resets the stream.
+    quic_data.AddWrite(ASYNC, client_maker_.MakeRstPacket(
+                                  packet_num++, true,
+                                  GetNthClientInitiatedBidirectionalStreamId(0),
+                                  quic::QUIC_HEADERS_TOO_LARGE));
+  }
+  quic_data.AddRead(ASYNC, ERR_IO_PENDING);
+  quic_data.AddRead(ASYNC, OK);  // EOF
+  quic_data.AddSocketDataToFactory(&socket_factory_);
+  Initialize();
+
+  ProofVerifyDetailsChromium details;
+  details.cert_verify_result.verified_cert =
+      ImportCertFromFile(GetTestCertsDirectory(), "spdy_pooling.pem");
+  ASSERT_TRUE(details.cert_verify_result.verified_cert.get());
+
+  CompleteCryptoHandshake();
+  session_->OnProofVerifyDetailsAvailable(details);
+
+  auto session_handle = session_->CreateHandle(destination_);
+  TestCompletionCallback callback;
+  EXPECT_EQ(OK, session_handle->RequestStream(/*requires_confirmation=*/false,
+                                              callback.callback(),
+                                              TRAFFIC_ANNOTATION_FOR_TESTS));
+
+  auto stream_handle = session_handle->ReleaseStream();
+  EXPECT_TRUE(stream_handle->IsOpen());
+
+  auto* stream = quic::test::QuicSessionPeer::GetOrCreateStream(
+      session_.get(), stream_handle->id());
+
+  const quic::QuicHeaderList empty_response_headers;
+  static_cast<quic::QuicSpdyStream*>(stream)->OnStreamHeaderList(
+      /* fin = */ false, /* frame_len = */ 0, empty_response_headers);
+
+  if (VersionUsesHttp3(version_.transport_version)) {
+    // In case of IETF QUIC, QuicSpdyStream::OnStreamHeaderList() calls
+    // QuicChromiumClientStream::OnInitialHeadersComplete() with the empty
+    // header list, and QuicChromiumClientStream signals an error.
+    spdy::SpdyHeaderBlock header_block;
+    int rv = stream_handle->ReadInitialHeaders(&header_block,
+                                               CompletionOnceCallback());
+    EXPECT_THAT(rv, IsError(ERR_INVALID_RESPONSE));
+  }
+
+  base::RunLoop().RunUntilIdle();
   quic_data.Resume();
   EXPECT_TRUE(quic_data.AllReadDataConsumed());
   EXPECT_TRUE(quic_data.AllWriteDataConsumed());

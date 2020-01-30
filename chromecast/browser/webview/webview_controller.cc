@@ -83,7 +83,8 @@ WebviewController::MaybeGetNavigationThrottle(
   if (webview_user_data &&
       webview_user_data->controller()->has_navigation_delegate_) {
     return std::make_unique<WebviewNavigationThrottle>(
-        handle, webview_user_data->controller());
+        handle,
+        webview_user_data->controller()->weak_ptr_factory_.GetWeakPtr());
   }
   return nullptr;
 }
@@ -157,6 +158,12 @@ void WebviewController::SendNavigationEvent(
 
   current_navigation_throttle_ = throttle;
   client_->EnqueueSend(std::move(response));
+}
+
+void WebviewController::OnNavigationThrottleDestroyed(
+    WebviewNavigationThrottle* throttle) {
+  if (current_navigation_throttle_ == throttle)
+    current_navigation_throttle_ = nullptr;
 }
 
 void WebviewController::ClosePage() {

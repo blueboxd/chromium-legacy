@@ -7,9 +7,7 @@ import("//android_webview/variables.gni")
 import("//build/config/android/rules.gni")
 
 generate_jni("nonembedded_jni_headers") {
-  sources = [
-    "java/src/org/chromium/android_webview/nonembedded/WebViewApkApplication.java",
-  ]
+  sources = [ "java/src/org/chromium/android_webview/nonembedded/WebViewApkApplication.java" ]
 }
 
 # Contains classes needed by the webview apk, but not used when loading the apk
@@ -94,9 +92,7 @@ android_library("services_java") {
 }
 
 source_set("nonembedded") {
-  sources = [
-    "webview_apk_application.cc",
-  ]
+  sources = [ "webview_apk_application.cc" ]
   deps = [
     ":nonembedded_jni_headers",
     "//android_webview/common",

@@ -31,7 +31,11 @@ const gfx::VectorIcon* AccountHoverListModel::GetPlaceholderIcon() const {
   return &kUserAccountAvatarIcon;
 }
 
-std::vector<int> AccountHoverListModel::GetItemTags() const {
+std::vector<int> AccountHoverListModel::GetThrobberTags() const {
+  return {};
+}
+
+std::vector<int> AccountHoverListModel::GetButtonTags() const {
   std::vector<int> tag_list(response_list_->size());
   for (size_t i = 0; i < response_list_->size(); ++i)
     tag_list[i] = i;

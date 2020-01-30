@@ -324,6 +324,10 @@ gfx::NativeViewAccessible ViewAccessibility::GetFocusedDescendant() {
   return view_->GetNativeViewAccessible();
 }
 
+void ViewAccessibility::FireFocusAfterMenuClose() {
+  NotifyAccessibilityEvent(ax::mojom::Event::kFocusAfterMenuClose);
+}
+
 const ViewAccessibility::AccessibilityEventsCallback&
 ViewAccessibility::accessibility_events_callback() const {
   return accessibility_events_callback_;

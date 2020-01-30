@@ -35,7 +35,7 @@ declare_args() {
   # The SDK version used when making official builds. This is a single exact
   # version, not a minimum. If this version isn't available official builds
   # will fail.
-  mac_sdk_official_version = "10.14"
+  mac_sdk_official_version = "10.15"
 }
 
 # Check that the version of macOS SDK used is the one requested when building

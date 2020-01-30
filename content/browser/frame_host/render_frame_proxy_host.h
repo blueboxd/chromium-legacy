@@ -66,12 +66,19 @@ class RenderWidgetHostView;
 // forward. It also instructs the RenderFrameHost to run the unload event
 // handler and is kept alive for the duration. Once the event handling is
 // complete, the RenderFrameHost is deleted.
-class RenderFrameProxyHost : public IPC::Listener,
-                             public IPC::Sender,
-                             public mojom::RenderFrameProxyHost,
-                             public blink::mojom::RemoteFrameHost {
+class CONTENT_EXPORT RenderFrameProxyHost
+    : public IPC::Listener,
+      public IPC::Sender,
+      public mojom::RenderFrameProxyHost,
+      public blink::mojom::RemoteFrameHost {
  public:
+  using CreatedCallback = base::RepeatingCallback<void(RenderFrameProxyHost*)>;
+
   static RenderFrameProxyHost* FromID(int process_id, int routing_id);
+
+  // Sets a callback to be called whenever any RenderFrameProxyHost is created.
+  static void SetCreatedCallbackForTesting(
+      const CreatedCallback& created_callback);
 
   RenderFrameProxyHost(SiteInstance* site_instance,
                        scoped_refptr<RenderViewHostImpl> render_view_host,
@@ -145,8 +152,7 @@ class RenderFrameProxyHost : public IPC::Listener,
   void DidFocusFrame() override;
   void CheckCompleted() override;
 
-  CONTENT_EXPORT blink::AssociatedInterfaceProvider*
-  GetRemoteAssociatedInterfacesTesting();
+  blink::AssociatedInterfaceProvider* GetRemoteAssociatedInterfacesTesting();
 
  private:
   // IPC Message handlers.

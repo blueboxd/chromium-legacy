@@ -33,7 +33,6 @@
 <translation id="1036982837258183574">फ़ुल स्क्रीन से बाहर निकलने के लिए |<ph name="ACCELERATOR" />| दबाएं</translation>
 <translation id="1038168778161626396">केवल कूटलेखन</translation>
 <translation id="1039337018183941703">अमान्‍य या खराब फ़ाइल</translation>
-<translation id="1039850285407663109">चुनी गई फ़ाइल अज्ञात है और खतरनाक हो सकती है. इस फ़ाइल को खोलने से पहले स्कैन करें.</translation>
 <translation id="1041175011127912238">इस पेज से जवाब नहीं मिल रहा है</translation>
 <translation id="1041263367839475438">उपलब्ध डिवाइस</translation>
 <translation id="1042174272890264476">आपके कंप्यूटर में पहले से ही <ph name="SHORT_PRODUCT_NAME" /> की RLZ लाइब्रेरी होती है. किसी खास प्रचार कैंपेन में इस्तेमाल हुई खोजों और <ph name="SHORT_PRODUCT_NAME" /> के इस्तेमाल को मापने के लिए, RLZ एक बिना-विशिष्ट, बिना निजी तौर वाला टैग तय करता है. कभी-कभी ये लेबल <ph name="PRODUCT_NAME" /> में 'Google सर्च' क्वेरी में दिखाई देते हैं.</translation>
@@ -633,7 +632,6 @@
 <translation id="1858585891038687145">सॉफ़्टवेयर निर्माताओं की पहचान करने के लिए इस प्रमाणपत्र पर विश्वास करें</translation>
 <translation id="1861262398884155592">यह फ़ोल्डर खाली है</translation>
 <translation id="1863182668524159459">काेई सीरियल पाेर्ट नहीं मिला</translation>
-<translation id="1863552924692672565"><ph name="FILE_NAME" /> अज्ञात है. जोखिम कम करने के लिए फ़ाइल स्कैन करें.</translation>
 <translation id="1864111464094315414">प्रवेश करें</translation>
 <translation id="1864400682872660285">कूलर</translation>
 <translation id="1864454756846565995">USB-C डिवाइस (पिछला पोर्ट)</translation>
@@ -4470,7 +4468,7 @@
 <translation id="7352651011704765696">कुछ गलत हुआ</translation>
 <translation id="735361434055555355">Linux इंस्टॉल किया जा रहा है...</translation>
 <translation id="7353887511974462734">मौजूदा समूह में जोड़ें</translation>
-<translation id="7354341762311560488">आपके कीबोर्ड पर सबसे नीचे बाईं ओर वाली कुंजी, फ़िंगरप्रिंट का सेंसर है. किसी भी उंगली से इसे हल्के से छुएं.</translation>
+<translation id="7354341762311560488">आपके कीबोर्ड पर सबसे नीचे बाईं ओर वाली कुंजी, फ़िंगरप्रिंट सेंसर है. किसी भी उंगली से इसे हल्के से छुएं.</translation>
 <translation id="735745346212279324">VPN डिसकनेक्ट है</translation>
 <translation id="7359588939039777303">विज्ञापन ब्लॉक हैं.</translation>
 <translation id="7360183604634508679">बुकमार्क मेन्यू</translation>

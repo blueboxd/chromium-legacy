@@ -55,14 +55,15 @@ class CORE_EXPORT BrowserControls final
   void SetShownRatio(float top_ratio, float bottom_ratio);
 
   void UpdateConstraintsAndState(cc::BrowserControlsState constraints,
-                                 cc::BrowserControlsState current,
-                                 bool animate);
+                                 cc::BrowserControlsState current);
 
   void ScrollBegin();
 
   // Scrolls browser controls vertically if possible and returns the remaining
   // scroll amount.
   FloatSize ScrollBy(FloatSize scroll_delta);
+
+  void ScrollEnd();
 
   cc::BrowserControlsState PermittedState() const { return permitted_state_; }
 

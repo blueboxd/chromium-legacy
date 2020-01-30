@@ -206,19 +206,11 @@ bool HomeScreenController::GoHome(int64_t display_id) {
                        display_id));
 
     for (auto* active_window : active_windows) {
-      BackdropWindowMode original_backdrop_mode =
-          active_window->GetProperty(kBackdropWindowMode);
-      active_window->SetProperty(kBackdropWindowMode,
-                                 BackdropWindowMode::kDisabled);
-
       // Do the scale-down transform for the entire transient tree.
       for (auto* window : GetTransientTreeIterator(active_window)) {
         // Self-destructed when window transform animation is done.
         new WindowScaleAnimation(
             window, WindowScaleAnimation::WindowScaleType::kScaleDownToShelf,
-            window == active_window
-                ? base::make_optional(original_backdrop_mode)
-                : base::nullopt,
             window == active_window ? window_transforms_callback
                                     : base::NullCallback());
       }

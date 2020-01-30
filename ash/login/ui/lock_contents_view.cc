@@ -26,6 +26,7 @@
 #include "ash/login/ui/note_action_launch_button.h"
 #include "ash/login/ui/parent_access_widget.h"
 #include "ash/login/ui/scrollable_users_list_view.h"
+#include "ash/login/ui/system_label_button.h"
 #include "ash/login/ui/views_utils.h"
 #include "ash/media/media_controller_impl.h"
 #include "ash/public/cpp/ash_features.h"
@@ -107,18 +108,14 @@ constexpr int kMediumDensityDistanceBetweenAuthUserAndUsersPortraitDp = 84;
 constexpr int kHorizontalPaddingAuthErrorBubbleDp = 8;
 constexpr int kVerticalPaddingAuthErrorBubbleDp = 8;
 
-// Spacing between the auth error text and the learn more button.
-constexpr int kLearnMoreButtonVerticalSpacingDp = 6;
-
 // Spacing between the bottom status indicator and the shelf.
 constexpr int kBottomStatusIndicatorBottomMarginDp = 16;
 
 // Spacing between icon and text in the bottom status indicator.
 constexpr int kBottomStatusIndicatorChildSpacingDp = 8;
 
-// Blue-ish color for the "learn more" button text.
-constexpr SkColor kLearnMoreButtonTextColor =
-    SkColorSetARGB(0xFF, 0x7B, 0xAA, 0xF7);
+// Spacing between child of LoginBaseBubbleView.
+constexpr int kBubbleBetweenChildSpacingDp = 16;
 
 constexpr char kLockContentsViewName[] = "LockContentsView";
 constexpr char kAuthErrorContainerName[] = "AuthErrorContainer";
@@ -127,50 +124,6 @@ constexpr char kAuthErrorContainerName[] = "AuthErrorContainer";
 void SetPreferredWidthForView(views::View* view, int width) {
   view->SetPreferredSize(gfx::Size(width, kNonEmptyHeightDp));
 }
-
-class AuthErrorLearnMoreButton : public views::Button,
-                                 public views::ButtonListener {
- public:
-  explicit AuthErrorLearnMoreButton(LoginErrorBubble* parent_bubble)
-      : views::Button(this), parent_bubble_(parent_bubble) {
-    SetLayoutManager(std::make_unique<views::FillLayout>());
-    auto* label =
-        new views::Label(l10n_util::GetStringUTF16(IDS_ASH_LEARN_MORE));
-    label->SetAutoColorReadabilityEnabled(false);
-    label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-    label->SetEnabledColor(kLearnMoreButtonTextColor);
-    label->SetSubpixelRenderingEnabled(false);
-    const gfx::FontList& base_font_list = views::Label::GetDefaultFontList();
-    label->SetFontList(base_font_list.Derive(0, gfx::Font::FontStyle::NORMAL,
-                                             gfx::Font::Weight::NORMAL));
-    AddChildView(label);
-
-    SetAccessibleName(l10n_util::GetStringUTF16(IDS_ASH_LEARN_MORE));
-  }
-
-  void ButtonPressed(Button* sender, const ui::Event& event) override {
-    Shell::Get()->login_screen_controller()->ShowAccountAccessHelpApp(
-        GetWidget()->GetNativeWindow());
-    parent_bubble_->Hide();
-  }
-
- private:
-  LoginErrorBubble* parent_bubble_;
-
-  DISALLOW_COPY_AND_ASSIGN(AuthErrorLearnMoreButton);
-};
-
-class AuthErrorBubble : public LoginErrorBubble {
- public:
-  AuthErrorBubble() = default;
-
-  // ash::LoginBaseBubbleView
-  gfx::Point CalculatePosition() override {
-    return CalculatePositionUsingDefaultStrategy(
-        PositioningStrategy::kShowOnRightSideOrLeftSide,
-        kHorizontalPaddingAuthErrorBubbleDp, kVerticalPaddingAuthErrorBubbleDp);
-  }
-};
 
 // Focuses the first or last focusable child of |root|. If |reverse| is false,
 // this focuses the first focusable child. If |reverse| is true, this focuses
@@ -316,6 +269,26 @@ struct MediumViewLayout {
 };
 
 }  // namespace
+
+class LockContentsView::AuthErrorBubble : public LoginErrorBubble,
+                                          public views::ButtonListener {
+ public:
+  AuthErrorBubble() = default;
+
+  // LoginErrorBubble:
+  gfx::Point CalculatePosition() override {
+    return CalculatePositionUsingDefaultStrategy(
+        PositioningStrategy::kShowOnRightSideOrLeftSide,
+        kHorizontalPaddingAuthErrorBubbleDp, kVerticalPaddingAuthErrorBubbleDp);
+  }
+
+  // views::ButtonListener:
+  void ButtonPressed(views::Button* sender, const ui::Event& event) override {
+    Shell::Get()->login_screen_controller()->ShowAccountAccessHelpApp(
+        GetWidget()->GetNativeWindow());
+    Hide();
+  }
+};
 
 class LockContentsView::AutoLoginUserActivityHandler
     : public ui::UserActivityObserver {
@@ -620,7 +593,9 @@ void LockContentsView::ShowEntrepriseDomainName(
                                  ui::GetChromeOSDeviceName(),
                                  base::UTF8ToUTF16(entreprise_domain_name)),
       gfx::kGoogleGrey200);
-  bottom_status_indicator_->SetVisible(true);
+  bottom_status_indicator_->set_content_type(
+      BottomStatusIndicator::ContentType::kManagedDevice);
+  UpdateBottomStatusIndicatorVisibility();
 }
 
 void LockContentsView::ShowAdbEnabled() {
@@ -629,7 +604,9 @@ void LockContentsView::ShowAdbEnabled() {
   bottom_status_indicator_->SetText(
       l10n_util::GetStringUTF16(IDS_ASH_LOGIN_SCREEN_UNVERIFIED_CODE_WARNING),
       gfx::kGoogleRed300);
-  bottom_status_indicator_->SetVisible(true);
+  bottom_status_indicator_->set_content_type(
+      BottomStatusIndicator::ContentType::kAdbSideLoadingEnabled);
+  UpdateBottomStatusIndicatorVisibility();
 }
 
 void LockContentsView::ShowSystemInfo() {
@@ -1259,9 +1236,12 @@ void LockContentsView::OnFocusLeavingLockScreenApps(bool reverse) {
 
 void LockContentsView::OnOobeDialogStateChanged(OobeDialogState state) {
   oobe_dialog_visible_ = state != OobeDialogState::HIDDEN;
+  extension_ui_visible_ = state == OobeDialogState::EXTENSION_LOGIN;
 
   // Show either oobe dialog or lock screen.
   SetVisible(!oobe_dialog_visible_);
+
+  UpdateBottomStatusIndicatorVisibility();
 
   if (!oobe_dialog_visible_ && primary_big_view_)
     primary_big_view_->RequestFocus();
@@ -1941,12 +1921,17 @@ void LockContentsView::ShowAuthErrorMessage() {
   MakeSectionBold(label, error_text, bold_start, bold_length);
   label->SetAutoColorReadabilityEnabled(false);
 
-  auto* learn_more_button = new AuthErrorLearnMoreButton(auth_error_bubble_);
+  auto* learn_more_button = new SystemLabelButton(
+      auth_error_bubble_, l10n_util::GetStringUTF16(IDS_ASH_LEARN_MORE),
+      SystemLabelButton::DisplayType::DEFAULT);
 
   auto* container = new NonAccessibleView(kAuthErrorContainerName);
-  container->SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::Orientation::kVertical, gfx::Insets(),
-      kLearnMoreButtonVerticalSpacingDp));
+  auto* container_layout =
+      container->SetLayoutManager(std::make_unique<views::BoxLayout>(
+          views::BoxLayout::Orientation::kVertical, gfx::Insets(),
+          kBubbleBetweenChildSpacingDp));
+  container_layout->set_cross_axis_alignment(
+      views::BoxLayout::CrossAxisAlignment::kStart);
   container->AddChildView(label);
   container->AddChildView(learn_more_button);
 
@@ -2182,6 +2167,16 @@ bool LockContentsView::GetSystemInfoVisibility() const {
   } else {
     return enable_system_info_if_possible_;
   }
+}
+
+void LockContentsView::UpdateBottomStatusIndicatorVisibility() {
+  bool visible =
+      bottom_status_indicator_->content_type() ==
+          BottomStatusIndicator::ContentType::kAdbSideLoadingEnabled ||
+      (bottom_status_indicator_->content_type() ==
+           BottomStatusIndicator::ContentType::kManagedDevice &&
+       !extension_ui_visible_);
+  bottom_status_indicator_->SetVisible(visible);
 }
 
 }  // namespace ash

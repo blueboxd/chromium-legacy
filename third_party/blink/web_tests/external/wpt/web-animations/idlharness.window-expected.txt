@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 143 tests; 139 PASS, 4 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 143 tests; 141 PASS, 2 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS idl_test setup
 PASS idl_test validation
 PASS Partial interface Document: original interface defined
@@ -65,7 +65,7 @@ PASS Animation interface: operation pause()
 PASS Animation interface: operation updatePlaybackRate(double)
 PASS Animation interface: operation reverse()
 PASS Animation interface: operation persist()
-FAIL Animation interface: operation commitStyles() assert_own_property: interface prototype object missing non-static operation expected property "commitStyles" missing
+PASS Animation interface: operation commitStyles()
 PASS Animation must be primary interface of new Animation()
 PASS Stringification of new Animation()
 PASS Animation interface: new Animation() must inherit property "id" with the proper type
@@ -90,7 +90,7 @@ PASS Animation interface: new Animation() must inherit property "updatePlaybackR
 PASS Animation interface: calling updatePlaybackRate(double) on new Animation() with too few arguments must throw TypeError
 PASS Animation interface: new Animation() must inherit property "reverse()" with the proper type
 PASS Animation interface: new Animation() must inherit property "persist()" with the proper type
-FAIL Animation interface: new Animation() must inherit property "commitStyles()" with the proper type assert_inherits: property "commitStyles" not found in prototype chain
+PASS Animation interface: new Animation() must inherit property "commitStyles()" with the proper type
 PASS AnimationEffect interface: existence and properties of interface object
 PASS AnimationEffect interface object length
 PASS AnimationEffect interface object name

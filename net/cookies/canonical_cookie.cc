@@ -557,6 +557,8 @@ CanonicalCookie::CookieInclusionStatus CanonicalCookie::IncludeForRequestURL(
       UMA_HISTOGRAM_ENUMERATION("Cookie.SameSiteDifferentSchemeRequest",
                                 options.same_site_cookie_context_full(),
                                 CookieOptions::SameSiteCookieContext::COUNT);
+      AddSameSiteCrossSchemeWarning(&status,
+                                    options.same_site_cookie_context_full());
     }
   }
 
@@ -656,6 +658,8 @@ void CanonicalCookie::IsSetPermittedInContext(
       UMA_HISTOGRAM_ENUMERATION("Cookie.SameSiteDifferentSchemeResponse",
                                 options.same_site_cookie_context_full(),
                                 CookieOptions::SameSiteCookieContext::COUNT);
+      AddSameSiteCrossSchemeWarning(status,
+                                    options.same_site_cookie_context_full());
     }
   }
 
@@ -746,6 +750,48 @@ std::string CanonicalCookie::BuildCookieLine(
     AppendCookieLineEntry(cookie, &cookie_line);
   }
   return cookie_line;
+}
+
+void net::CanonicalCookie::AddSameSiteCrossSchemeWarning(
+    CookieInclusionStatus* status,
+    CookieOptions::SameSiteCookieContext context) const {
+  switch (context) {
+    case CookieOptions::SameSiteCookieContext::
+        SAME_SITE_LAX_METHOD_UNSAFE_CROSS_SCHEME_SECURE_URL:
+      status->AddWarningReason(
+          CookieInclusionStatus::
+              WARN_SAMESITE_LAX_METHOD_UNSAFE_CROSS_SCHEME_SECURE_URL);
+      break;
+    case CookieOptions::SameSiteCookieContext::
+        SAME_SITE_LAX_CROSS_SCHEME_SECURE_URL:
+      status->AddWarningReason(
+          CookieInclusionStatus::WARN_SAMESITE_LAX_CROSS_SCHEME_SECURE_URL);
+      break;
+    case CookieOptions::SameSiteCookieContext::
+        SAME_SITE_STRICT_CROSS_SCHEME_SECURE_URL:
+      status->AddWarningReason(
+          CookieInclusionStatus::WARN_SAMESITE_STRICT_CROSS_SCHEME_SECURE_URL);
+      break;
+    case CookieOptions::SameSiteCookieContext::
+        SAME_SITE_LAX_METHOD_UNSAFE_CROSS_SCHEME_INSECURE_URL:
+      status->AddWarningReason(
+          CookieInclusionStatus::
+              WARN_SAMESITE_LAX_METHOD_UNSAFE_CROSS_SCHEME_INSECURE_URL);
+      break;
+    case CookieOptions::SameSiteCookieContext::
+        SAME_SITE_LAX_CROSS_SCHEME_INSECURE_URL:
+      status->AddWarningReason(
+          CookieInclusionStatus::WARN_SAMESITE_LAX_CROSS_SCHEME_INSECURE_URL);
+      break;
+    case CookieOptions::SameSiteCookieContext::
+        SAME_SITE_STRICT_CROSS_SCHEME_INSECURE_URL:
+      status->AddWarningReason(
+          CookieInclusionStatus::
+              WARN_SAMESITE_STRICT_CROSS_SCHEME_INSECURE_URL);
+      break;
+    default:
+      break;
+  }
 }
 
 // static
@@ -920,6 +966,29 @@ bool CanonicalCookie::CookieInclusionStatus::HasWarningReason(
   return warning_reasons_ & GetWarningBitmask(reason);
 }
 
+bool net::CanonicalCookie::CookieInclusionStatus::HasCrossSchemeWarning(
+    CookieInclusionStatus::WarningReason* reason) const {
+  if (!ShouldWarn())
+    return false;
+
+  const CookieInclusionStatus::WarningReason cross_scheme_warnings[] = {
+      WARN_SAMESITE_LAX_METHOD_UNSAFE_CROSS_SCHEME_SECURE_URL,
+      WARN_SAMESITE_LAX_CROSS_SCHEME_SECURE_URL,
+      WARN_SAMESITE_STRICT_CROSS_SCHEME_SECURE_URL,
+      WARN_SAMESITE_LAX_METHOD_UNSAFE_CROSS_SCHEME_INSECURE_URL,
+      WARN_SAMESITE_LAX_CROSS_SCHEME_INSECURE_URL,
+      WARN_SAMESITE_STRICT_CROSS_SCHEME_INSECURE_URL};
+  for (const auto warning : cross_scheme_warnings) {
+    if (HasWarningReason(warning)) {
+      if (reason)
+        *reason = warning;
+      return true;
+    }
+  }
+
+  return false;
+}
+
 void CanonicalCookie::CookieInclusionStatus::AddWarningReason(
     WarningReason reason) {
   warning_reasons_ |= GetWarningBitmask(reason);
@@ -979,6 +1048,21 @@ std::string CanonicalCookie::CookieInclusionStatus::GetDebugString() const {
     base::StrAppend(&out, {"WARN_SAMESITE_UNSPECIFIED_CROSS_SITE_CONTEXT, "});
   if (HasWarningReason(WARN_SAMESITE_NONE_INSECURE))
     base::StrAppend(&out, {"WARN_SAMESITE_NONE_INSECURE, "});
+  if (HasWarningReason(WARN_SAMESITE_UNSPECIFIED_LAX_ALLOW_UNSAFE))
+    base::StrAppend(&out, {"WARN_SAMESITE_UNSPECIFIED_LAX_ALLOW_UNSAFE, "});
+  if (HasWarningReason(WARN_SAMESITE_LAX_METHOD_UNSAFE_CROSS_SCHEME_SECURE_URL))
+    base::StrAppend(
+        &out, {"WARN_SAMESITE_LAX_METHOD_UNSAFE_CROSS_SCHEME_SECURE_URL, "});
+  if (HasWarningReason(WARN_SAMESITE_LAX_CROSS_SCHEME_SECURE_URL))
+    base::StrAppend(&out, {"WARN_SAMESITE_LAX_CROSS_SCHEME_SECURE_URL, "});
+  if (HasWarningReason(WARN_SAMESITE_STRICT_CROSS_SCHEME_SECURE_URL))
+    base::StrAppend(&out, {"WARN_SAMESITE_STRICT_CROSS_SCHEME_SECURE_URL, "});
+  if (HasWarningReason(
+          WARN_SAMESITE_LAX_METHOD_UNSAFE_CROSS_SCHEME_INSECURE_URL))
+    base::StrAppend(
+        &out, {"WARN_SAMESITE_LAX_METHOD_UNSAFE_CROSS_SCHEME_INSECURE_URL, "});
+  if (HasWarningReason(WARN_SAMESITE_LAX_CROSS_SCHEME_INSECURE_URL))
+    base::StrAppend(&out, {"WARN_SAMESITE_LAX_CROSS_SCHEME_INSECURE_URL, "});
   if (HasWarningReason(WARN_SAMESITE_UNSPECIFIED_LAX_ALLOW_UNSAFE))
     base::StrAppend(&out, {"WARN_SAMESITE_UNSPECIFIED_LAX_ALLOW_UNSAFE, "});
 

@@ -112,6 +112,7 @@
 <translation id="2352467521400612932">触控笔设置</translation>
 <translation id="2354174487190027830">正在激活“<ph name="NAME" />”</translation>
 <translation id="2359808026110333948">继续</translation>
+<translation id="2364154243880592194">状态栏，时间 <ph name="TIME" />，<ph name="BATTERY" />按搜索键 + 向左箭头键可访问通知中心。</translation>
 <translation id="2365393535144473978">如果您启用移动数据网络，蓝牙亦会随之开启。</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="2412593942846481727">有可用的更新</translation>
@@ -335,6 +336,7 @@
 <translation id="5669267381087807207">正在激活</translation>
 <translation id="5673434351075758678">当系统同步完您的设置后，“<ph name="FROM_LOCALE" />”即会改为“<ph name="TO_LOCALE" />”。</translation>
 <translation id="5682642926269496722">当前用户帐号无法使用 Google 助理。</translation>
+<translation id="5689633613396158040">护眼模式可让您更舒适地在黯淡的光线下查看屏幕或阅读文字。点按即可更改护眼模式的开启时间或彻底关闭护眼模式。</translation>
 <translation id="5691772641933328258">无法识别指纹</translation>
 <translation id="5710450975648804523">“请勿打扰”模式已开启</translation>
 <translation id="573413375004481890">此设备无法支持您的所有显示屏，因此断开了与其中一个显示屏的连接</translation>
@@ -514,6 +516,7 @@
 <translation id="8142441511840089262">双击</translation>
 <translation id="8142699993796781067">专用网络</translation>
 <translation id="8152092012181020186">按 Ctrl + W 即可关闭。</translation>
+<translation id="8155007568264258537"><ph name="FEATURE_NAME" />：此设置由您的管理员管理。</translation>
 <translation id="8167567890448493835">目前使用的是“<ph name="LOCALE_NAME" />”</translation>
 <translation id="8190698733819146287">自定义语言和输入法...</translation>
 <translation id="8192202700944119416">已隐藏通知。</translation>

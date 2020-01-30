@@ -112,6 +112,7 @@
 <translation id="2352467521400612932">સ્ટાઇલસની સેટિંગ</translation>
 <translation id="2354174487190027830"><ph name="NAME" /> ને સક્રિય કરી રહ્યું છે</translation>
 <translation id="2359808026110333948">આગળ વધો</translation>
+<translation id="2364154243880592194">સ્ટેટસ ટ્રે, સમય <ph name="TIME" />, <ph name="BATTERY" /> નોટિફિકેશન કેન્દ્ર ઍક્સેસ કરવા માટે 'શોધો' + ડાબી ઍરો કી દબાવો.</translation>
 <translation id="2365393535144473978">મોબાઇલ ડેટા ચાલુ કરવાથી બ્લૂટૂથ ચાલુ થશે.</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="2412593942846481727">અપડેટ ઉપલબ્ધ છે</translation>
@@ -335,6 +336,7 @@
 <translation id="5669267381087807207">સક્રિય કરી રહ્યું છે</translation>
 <translation id="5673434351075758678">તમારી સેટિંગને સિંક કર્યા પછી "<ph name="FROM_LOCALE" />" થી "<ph name="TO_LOCALE" />"માં ફેરવો.</translation>
 <translation id="5682642926269496722">હાલના વપરાશકર્તા એકાઉન્ટ માટે Google આસિસ્ટંટ ઉપલબ્ધ નથી.</translation>
+<translation id="5689633613396158040">રાત્રિ પ્રકાશથી તમે સરળતાથી તમારી સ્ક્રીનને જોઈ શકો છો અથવા ઓછા પ્રકાશમાં વાંચી શકો છો. રાત્રિ પ્રકાશ ચાલુ થવાનો સમય બદલવા અથવા તેને સંપૂર્ણપણે બંધ કરવા ટૅપ કરો.</translation>
 <translation id="5691772641933328258">ફિંગરપ્રિન્ટ ઓળખી શકાઈ નથી</translation>
 <translation id="5710450975648804523">ખલેલ પાડશો નહીં ચાલુ છે</translation>
 <translation id="573413375004481890">આ ડિવાઇસ તમારા બધા ડિસ્પ્લેને સપોર્ટ કરી શક્યું નથી, તેથી એકને ડિસ્કનેક્ટ કરવામાં આવ્યું છે</translation>
@@ -514,6 +516,7 @@
 <translation id="8142441511840089262">ડબલ ક્લિક કરો</translation>
 <translation id="8142699993796781067">ખાનગી નેટવર્ક</translation>
 <translation id="8152092012181020186">બંધ કરવા માટે Ctrl + W દબાવો.</translation>
+<translation id="8155007568264258537"><ph name="FEATURE_NAME" /> આ સેટિંગને તમારા વ્યવસ્થાપક દ્વારા મેનેજ કરવામાં આવે છે.</translation>
 <translation id="8167567890448493835"><ph name="LOCALE_NAME" />નો ઉપયોગ કરી રહ્યા છે</translation>
 <translation id="8190698733819146287">ભાષાઓ અને ઇનપુટને કસ્ટમાઇઝ કરો...</translation>
 <translation id="8192202700944119416">નોટિફિકેશન છુપાવેલા છે.</translation>

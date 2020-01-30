@@ -235,6 +235,14 @@ XrResult OpenXrApiWrapper::PickEnvironmentBlendMode(XrSystemId system) {
   return XR_SUCCESS;
 }
 
+bool OpenXrApiWrapper::UpdateAndGetSessionEnded() {
+  // Ensure we have the latest state from the OpenXR runtime.
+  if (XR_FAILED(ProcessEvents())) {
+    DCHECK(session_ended_);
+  }
+  return session_ended_;
+}
+
 // Callers of this function must check the XrResult return value and destroy
 // this OpenXrApiWrapper object on failure to clean up any intermediate
 // objects that may have been created before the failure.
@@ -384,7 +392,7 @@ XrResult OpenXrApiWrapper::BeginFrame(
   DCHECK(HasSession());
   DCHECK(HasColorSwapChain());
 
-  RETURN_IF_XR_FAILED(ProcessEvents());
+  DCHECK(!session_ended_);
 
   XrFrameWaitInfo wait_frame_info = {XR_TYPE_FRAME_WAIT_INFO};
   XrFrameState frame_state = {XR_TYPE_FRAME_STATE};

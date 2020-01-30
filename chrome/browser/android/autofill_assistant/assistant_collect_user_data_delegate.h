@@ -38,10 +38,9 @@ class AssistantCollectUserDataDelegate {
       const base::android::JavaParamRef<jobject>& jcaller,
       jint state);
 
-  void OnTermsAndConditionsLinkClicked(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& jcaller,
-      jint link);
+  void OnTextLinkClicked(JNIEnv* env,
+                         const base::android::JavaParamRef<jobject>& jcaller,
+                         jint link);
 
   void OnLoginChoiceChanged(
       JNIEnv* env,

@@ -25,6 +25,10 @@ class AdTaggingClusterTelemetry(perf_benchmark.PerfBenchmark):
   def AddBenchmarkCommandLineArgs(cls, parser):
     ct_benchmarks_util.AddBenchmarkCommandLineArgs(parser)
     parser.add_option(
+        '--additional-histograms',
+        action='store',
+        help='Comma-separated list of additional UMA histograms to record.')
+    parser.add_option(
         '--verbose-cpu-metrics',
         action='store_true',
         help='Enables non-UMA CPU metrics.')
@@ -36,6 +40,9 @@ class AdTaggingClusterTelemetry(perf_benchmark.PerfBenchmark):
   @classmethod
   def ProcessCommandLineArgs(cls, parser, args):
     ct_benchmarks_util.ValidateCommandLineArgs(parser, args)
+    cls.additional_histograms = []
+    if args.additional_histograms is not None:
+      cls.additional_histograms = args.additional_histograms.split(',')
     cls.enable_limited_cpu_time_metric = args.verbose_cpu_metrics
     cls.enable_memory_metric = args.verbose_memory_metrics
 
@@ -73,6 +80,7 @@ class AdTaggingClusterTelemetry(perf_benchmark.PerfBenchmark):
         'PageLoad.Experimental.Bytes.NetworkIncludingHeaders',
         'PageLoad.PaintTiming.NavigationToFirstContentfulPaint',
     ]
+    uma_histograms.extend(self.additional_histograms)
     for histogram in uma_histograms:
       tbm_options.config.chrome_trace_config.EnableUMAHistograms(histogram)
 

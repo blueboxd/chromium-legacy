@@ -216,6 +216,7 @@ if (!is_android) {
       deps = [ "//chrome/browser/resources/settings:build" ]
     } else {
       source = "settings/settings_resources.grd"
+      deps = [ "//chrome/browser/resources/settings:polymer3_elements" ]
     }
 
     defines = chrome_grit_defines

@@ -926,7 +926,7 @@ TEST_P(HistogramTest, WriteHTMLGraph) {
   histogram->WriteHTMLGraph(&output);
 
   const char kOutputFormatRe[] =
-      R"(<PRE>Histogram: HTMLOut recorded 5 samples, mean = 4\.0.*<br>)"
+      R"(<PRE><h4>Histogram: HTMLOut recorded 5 samples, mean = 4\.0.*<\/h4>)"
       R"(0  \.\.\. <br>)"
       R"(4  -+O \(5 = 100\.0%\) \{0\.0%\}<br>)"
       R"(7  \.\.\. <br><\/PRE>)";

@@ -32,6 +32,7 @@
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
 #include "components/safe_browsing/core/features.h"
 #include "components/safe_browsing/core/proto/csd.pb.h"
+#include "components/safe_browsing/core/realtime/policy_engine.h"
 #include "components/safe_browsing/core/web_ui/constants.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/user_prefs/user_prefs.h"
@@ -1514,6 +1515,17 @@ void SafeBrowsingUIHandler::GetRTLookupResponses(const base::ListValue* args) {
   ResolveJavascriptCallback(base::Value(callback_id), responses_sent);
 }
 
+void SafeBrowsingUIHandler::GetRTLookupExperimentEnabled(
+    const base::ListValue* args) {
+  base::ListValue value;
+  value.Append(base::Value(RealTimePolicyEngine::IsUrlLookupEnabled()));
+
+  AllowJavascript();
+  std::string callback_id;
+  args->GetString(0, &callback_id);
+  ResolveJavascriptCallback(base::Value(callback_id), value);
+}
+
 void SafeBrowsingUIHandler::GetReferrerChain(const base::ListValue* args) {
   std::string url_string;
   args->GetString(1, &url_string);
@@ -1723,6 +1735,10 @@ void SafeBrowsingUIHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "getRTLookupResponses",
       base::BindRepeating(&SafeBrowsingUIHandler::GetRTLookupResponses,
+                          base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "getRTLookupExperimentEnabled",
+      base::BindRepeating(&SafeBrowsingUIHandler::GetRTLookupExperimentEnabled,
                           base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "getLogMessages",

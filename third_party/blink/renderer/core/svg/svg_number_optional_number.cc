@@ -91,7 +91,7 @@ void SVGNumberOptionalNumber::SetInitial(unsigned value) {
 
 void SVGNumberOptionalNumber::Add(SVGPropertyBase* other,
                                   SVGElement* context_element) {
-  auto* other_number_optional_number = ToSVGNumberOptionalNumber(other);
+  auto* other_number_optional_number = To<SVGNumberOptionalNumber>(other);
   first_number_->Add(other_number_optional_number->FirstNumber(),
                      context_element);
   second_number_->Add(other_number_optional_number->SecondNumber(),
@@ -106,10 +106,10 @@ void SVGNumberOptionalNumber::CalculateAnimatedValue(
     SVGPropertyBase* to,
     SVGPropertyBase* to_at_end_of_duration,
     SVGElement* context_element) {
-  auto* from_number = ToSVGNumberOptionalNumber(from);
-  auto* to_number = ToSVGNumberOptionalNumber(to);
+  auto* from_number = To<SVGNumberOptionalNumber>(from);
+  auto* to_number = To<SVGNumberOptionalNumber>(to);
   auto* to_at_end_of_duration_number =
-      ToSVGNumberOptionalNumber(to_at_end_of_duration);
+      To<SVGNumberOptionalNumber>(to_at_end_of_duration);
 
   first_number_->CalculateAnimatedValue(
       animation_element, percentage, repeat_count, from_number->FirstNumber(),

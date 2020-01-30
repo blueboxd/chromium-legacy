@@ -26,7 +26,6 @@
 <translation id="1031362278801463162">A carregar a pré-visualização</translation>
 <translation id="1032605640136438169">Reveja os novos termos.</translation>
 <translation id="103279545524624934">Liberte espaço em disco para iniciar as aplicações para Android.</translation>
-<translation id="1033343386521881354">Foi encontrada 1 impressora do servidor de impressão.</translation>
 <translation id="1033780634303702874">Aceder aos dispositivos de série</translation>
 <translation id="1034942643314881546">Ativar o adb para criar a ilustração das aplicações</translation>
 <translation id="1036348656032585052">Desativar</translation>
@@ -34,7 +33,6 @@
 <translation id="1036982837258183574">Premir |<ph name="ACCELERATOR" />| para sair do ecrã inteiro</translation>
 <translation id="1038168778161626396">Cifrar apenas</translation>
 <translation id="1039337018183941703">Ficheiro inválido ou danificado</translation>
-<translation id="1039850285407663109">O ficheiro selecionado é desconhecido e pode ser perigoso. Pondere analisar este ficheiro antes de o abrir.</translation>
 <translation id="1041175011127912238">Esta página não está a responder.</translation>
 <translation id="1041263367839475438">Dispositivos disponíveis</translation>
 <translation id="1042174272890264476">O seu computador também tem a biblioteca RLZ de <ph name="SHORT_PRODUCT_NAME" /> incorporada. A RLZ atribui uma etiqueta não exclusiva e não identificável a nível pessoal para medir as pesquisas e a utilização de <ph name="SHORT_PRODUCT_NAME" /> impulsionada por uma campanha promocional específica. Estas etiquetas por vezes aparecem em consultas da Pesquisa Google em <ph name="PRODUCT_NAME" />.</translation>
@@ -639,7 +637,6 @@
 <translation id="1858585891038687145">Confiar neste certificado para identificar fabricantes de software</translation>
 <translation id="1861262398884155592">Esta pasta está vazia</translation>
 <translation id="1863182668524159459">Nenhuma porta de série encontrada.</translation>
-<translation id="1863552924692672565">O ficheiro <ph name="FILE_NAME" /> é desconhecido. Analise-o para minimizar o risco.</translation>
 <translation id="1864111464094315414">Início de sessão</translation>
 <translation id="1864400682872660285">Mais frio</translation>
 <translation id="1864454756846565995">Dispositivo USB-C (porta traseira)</translation>
@@ -4026,7 +4023,6 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="6678717876183468697">URL de consulta</translation>
 <translation id="6680442031740878064">Disponível: <ph name="AVAILABLE_SPACE" /></translation>
 <translation id="6680650203439190394">Classificar</translation>
-<translation id="6681301928961274620">Não foram encontradas quaisquer impressoras do servidor de impressão.</translation>
 <translation id="6681668084120808868">Tirar foto</translation>
 <translation id="6681964764822470072">O "<ph name="APP_NAME" />" será desinstalado.</translation>
 <translation id="668599234725812620">Abrir o Google Play</translation>
@@ -5555,7 +5551,6 @@ Mantenha o seu ficheiro de chave num local seguro, pois irá precisar dele para 
 <translation id="8794025342371547160">IP restrito</translation>
 <translation id="879413103056696865">Enquanto a zona Wi-Fi estiver ativada, o <ph name="PHONE_NAME" /> irá:</translation>
 <translation id="8795916974678578410">Nova janela</translation>
-<translation id="8797086401386164142">Foram encontradas <ph name="NUM_PRINTERS" /> impressoras do servidor de impressão.</translation>
 <translation id="8797459392481275117">Nunca traduzir este site</translation>
 <translation id="8798099450830957504">Predefinição</translation>
 <translation id="8798441408945964110">Nome do fornecedor</translation>

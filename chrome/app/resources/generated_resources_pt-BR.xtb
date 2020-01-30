@@ -26,7 +26,6 @@
 <translation id="1031362278801463162">Carregando visualização</translation>
 <translation id="1032605640136438169">Leia os novos termos</translation>
 <translation id="103279545524624934">Libere espaço em disco para iniciar apps Android.</translation>
-<translation id="1033343386521881354">1 impressora encontrada no servidor de impressão.</translation>
 <translation id="1033780634303702874">Acessar seus dispositivos de série</translation>
 <translation id="1034942643314881546">Ativando adb para criar ilustração de apps</translation>
 <translation id="1036348656032585052">Desativar</translation>
@@ -34,7 +33,6 @@
 <translation id="1036982837258183574">Pressione |<ph name="ACCELERATOR" />| para sair do modo tela cheia</translation>
 <translation id="1038168778161626396">Somente codificar</translation>
 <translation id="1039337018183941703">Arquivo inválido ou corrompido</translation>
-<translation id="1039850285407663109">O arquivo selecionado é desconhecido e pode ser perigoso. Verifique-o antes de abrir.</translation>
 <translation id="1041175011127912238">Esta página não está respondendo</translation>
 <translation id="1041263367839475438">Dispositivos disponíveis</translation>
 <translation id="1042174272890264476">Seu computador já vem com a biblioteca RLZ do <ph name="SHORT_PRODUCT_NAME" /> integrada. O RLZ atribui uma tag não exclusiva e sem identificação pessoal para medir as pesquisas e o uso do <ph name="SHORT_PRODUCT_NAME" /> gerados por uma campanha promocional específica. Esses marcadores às vezes aparecem em consultas da Pesquisa Google no <ph name="PRODUCT_NAME" />.</translation>
@@ -639,7 +637,6 @@
 <translation id="1858585891038687145">Confiar neste certificado para a identificação de criadores do software</translation>
 <translation id="1861262398884155592">Esta pasta está vazia</translation>
 <translation id="1863182668524159459">Nenhuma porta serial encontrada</translation>
-<translation id="1863552924692672565">O arquivo <ph name="FILE_NAME" /> é desconhecido. Verifique-o para minimizar os riscos.</translation>
 <translation id="1864111464094315414">Login</translation>
 <translation id="1864400682872660285">Mais frias</translation>
 <translation id="1864454756846565995">Dispositivo USB-C (porta traseira)</translation>
@@ -4027,7 +4024,6 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="6678717876183468697">URL de consulta</translation>
 <translation id="6680442031740878064">Disponível: <ph name="AVAILABLE_SPACE" /></translation>
 <translation id="6680650203439190394">Velocidade</translation>
-<translation id="6681301928961274620">Não foram encontradas impressoras no servidor.</translation>
 <translation id="6681668084120808868">Tirar foto</translation>
 <translation id="6681964764822470072">O app "<ph name="APP_NAME" />" será desinstalado.</translation>
 <translation id="668599234725812620">Abrir o Google Play</translation>
@@ -5557,7 +5553,6 @@ Mantenha a sua chave de arquivo em um local seguro. Você precisará dela para c
 <translation id="8794025342371547160">IP restrito</translation>
 <translation id="879413103056696865">Enquanto o ponto de acesso estiver ativado, seu <ph name="PHONE_NAME" /> vai:</translation>
 <translation id="8795916974678578410">Nova janela</translation>
-<translation id="8797086401386164142"><ph name="NUM_PRINTERS" /> impressoras encontradas no servidor de impressão.</translation>
 <translation id="8797459392481275117">Nunca traduzir este site</translation>
 <translation id="8798099450830957504">Padrão</translation>
 <translation id="8798441408945964110">Nome do provedor</translation>

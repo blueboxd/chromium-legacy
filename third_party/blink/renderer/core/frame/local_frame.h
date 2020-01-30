@@ -39,7 +39,6 @@
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/unique_receiver_set.h"
-#include "third_party/blink/public/mojom/ad_tagging/ad_frame.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/frame/frame.mojom-blink.h"
 #include "third_party/blink/public/mojom/frame/lifecycle.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/input/focus_type.mojom-blink-forward.h"
@@ -377,12 +376,9 @@ class CORE_EXPORT LocalFrame final : public Frame,
   // be removed.
   bool IsProvisional() const;
 
-  // True if AdTracker heuristics have determined that this frame is an ad.
-  // Calculated in the constructor but LocalFrames created on behalf of OOPIF
-  // aren't set until just before commit (ReadyToCommitNavigation time) by the
-  // embedder.
-  bool IsAdSubframe() const;
-  bool IsAdRoot() const;
+  // Called in the constructor if AdTracker heuristics have determined that this
+  // frame is an ad; LocalFrames created on behalf of OOPIF aren't set until
+  // just before commit (ReadyToCommitNavigation time) by the embedder.
   void SetIsAdSubframe(blink::mojom::AdFrameType ad_frame_type);
 
   // Updates the frame color overlay to match the highlight ad setting.
@@ -591,12 +587,6 @@ class CORE_EXPORT LocalFrame final : public Frame,
   float text_zoom_factor_;
 
   bool in_view_source_mode_;
-
-  // Type of frame detected by heuristics checking if the frame was created
-  // for advertising purposes. It's per-frame (as opposed to per-document)
-  // because when an iframe is created on behalf of ad script that same frame is
-  // not typically reused for non-ad purposes.
-  mojom::AdFrameType ad_frame_type_;
 
   Member<CoreProbeSink> probe_sink_;
   scoped_refptr<InspectorTaskRunner> inspector_task_runner_;

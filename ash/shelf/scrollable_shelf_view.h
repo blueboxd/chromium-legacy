@@ -294,9 +294,6 @@ class ASH_EXPORT ScrollableShelfView : public views::AccessiblePaneView,
   float CalculatePageScrollingOffset(bool forward,
                                      LayoutStrategy layout_strategy) const;
 
-  // Updates the gradient zone.
-  void UpdateGradientZone();
-
   // Calculates the bounds of the gradient zone before/after the shelf
   // container.
   FadeZone CalculateStartGradientZone() const;
@@ -305,11 +302,9 @@ class ASH_EXPORT ScrollableShelfView : public views::AccessiblePaneView,
   // Updates the visibility of gradient zones.
   void UpdateGradientZoneState();
 
-  // Updates the gradient zone if the gradient zone's expected visibility is
-  // different from the actual value or arrow buttons' bounds change indicated
-  // by parameters.
-  void MaybeUpdateGradientZone(bool is_left_arrow_changed,
-                               bool is_right_arrow_changed);
+  // Updates the gradient zone if the gradient zone's target bounds are
+  // different from the actual values.
+  void MaybeUpdateGradientZone();
 
   // Returns the actual scroll offset for the given scroll distance along the
   // main axis under the specific layout strategy. When the left arrow button

@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_CONSTRAINED_WINDOW_NATIVE_WEB_CONTENTS_MODAL_DIALOG_MANAGER_VIEWS_MAC_H_
 #define COMPONENTS_CONSTRAINED_WINDOW_NATIVE_WEB_CONTENTS_MODAL_DIALOG_MANAGER_VIEWS_MAC_H_
 
+#include "base/callback.h"
 #include "components/constrained_window/native_web_contents_modal_dialog_manager_views.h"
 
 namespace web_modal {
@@ -22,7 +23,9 @@ class NativeWebContentsModalDialogManagerViewsMac
  public:
   NativeWebContentsModalDialogManagerViewsMac(
       gfx::NativeWindow dialog,
-      web_modal::SingleWebContentsDialogManagerDelegate* native_delegate);
+      web_modal::SingleWebContentsDialogManagerDelegate* native_delegate,
+      base::OnceCallback<void(views::Widget*)> show_sheet);
+  ~NativeWebContentsModalDialogManagerViewsMac() override;
 
   // NativeWebContentsModalDialogManagerViews:
   void OnPositionRequiresUpdate() override;
@@ -30,6 +33,7 @@ class NativeWebContentsModalDialogManagerViewsMac
   void HideWidget(views::Widget* widget) override;
 
  private:
+  base::OnceCallback<void(views::Widget*)> show_sheet_;
   DISALLOW_COPY_AND_ASSIGN(NativeWebContentsModalDialogManagerViewsMac);
 };
 

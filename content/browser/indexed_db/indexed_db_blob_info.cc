@@ -30,7 +30,6 @@ void IndexedDBBlobInfo::ConvertBlobInfo(
     if (iter.is_file()) {
       info->file = blink::mojom::IDBFileInfo::New();
       info->file->name = iter.file_name();
-      info->file->path = iter.file_path();
       info->file->last_modified = iter.last_modified();
     }
     blob_or_file_info->push_back(std::move(info));
@@ -58,7 +57,6 @@ IndexedDBBlobInfo::IndexedDBBlobInfo(const base::string16& type,
 IndexedDBBlobInfo::IndexedDBBlobInfo(
     mojo::PendingRemote<blink::mojom::Blob> blob_remote,
     const std::string& uuid,
-    const base::FilePath& file_path,
     const base::string16& file_name,
     const base::string16& type,
     const base::Time& last_modified,
@@ -69,7 +67,6 @@ IndexedDBBlobInfo::IndexedDBBlobInfo(
       type_(type),
       size_(size),
       file_name_(file_name),
-      file_path_(file_path),
       last_modified_(last_modified) {}
 
 IndexedDBBlobInfo::IndexedDBBlobInfo(int64_t blob_number,
@@ -102,9 +99,9 @@ void IndexedDBBlobInfo::set_size(int64_t size) {
   size_ = size;
 }
 
-void IndexedDBBlobInfo::set_file_path(const base::FilePath& file_path) {
-  DCHECK(file_path_.empty());
-  file_path_ = file_path;
+void IndexedDBBlobInfo::set_indexed_db_file_path(
+    const base::FilePath& file_path) {
+  indexed_db_file_path_ = file_path;
 }
 
 void IndexedDBBlobInfo::set_last_modified(const base::Time& time) {

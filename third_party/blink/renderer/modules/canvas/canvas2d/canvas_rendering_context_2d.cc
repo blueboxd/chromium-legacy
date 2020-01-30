@@ -149,15 +149,16 @@ void CanvasRenderingContext2D::SetCanvasGetContextResult(
 
 CanvasRenderingContext2D::~CanvasRenderingContext2D() = default;
 
-void CanvasRenderingContext2D::ValidateStateStack() const {
+void CanvasRenderingContext2D::ValidateStateStackWithCanvas(
+    const cc::PaintCanvas* canvas) const {
 #if DCHECK_IS_ON()
-  if (cc::PaintCanvas* sk_canvas = ExistingDrawingCanvas()) {
+  if (canvas) {
     // The canvas should always have an initial save frame, to support
     // resetting the top level matrix and clip.
-    DCHECK_GT(sk_canvas->getSaveCount(), 1);
+    DCHECK_GT(canvas->getSaveCount(), 1);
 
     if (context_lost_mode_ == kNotLostContext) {
-      DCHECK_EQ(static_cast<size_t>(sk_canvas->getSaveCount()),
+      DCHECK_EQ(static_cast<size_t>(canvas->getSaveCount()),
                 state_stack_.size() + 1);
     }
   }

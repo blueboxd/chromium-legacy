@@ -26,7 +26,6 @@
 <translation id="1031362278801463162">Визуализацията се зарежда</translation>
 <translation id="1032605640136438169">Моля, прегледайте новите Условия</translation>
 <translation id="103279545524624934">Освободете място на диска, за да стартирате приложения за Android.</translation>
-<translation id="1033343386521881354">В сървъра за отпечатване бе открит 1 принтер.</translation>
 <translation id="1033780634303702874">Достъп до серийните ви устройства</translation>
 <translation id="1034942643314881546">Илюстрация на активирането на adb за създаване на приложения</translation>
 <translation id="1036348656032585052">Изключване</translation>
@@ -34,7 +33,6 @@
 <translation id="1036982837258183574">Натиснете |<ph name="ACCELERATOR" />| за изход от режима на цял екран</translation>
 <translation id="1038168778161626396">Само шифроване</translation>
 <translation id="1039337018183941703">Невалиден или повреден файл</translation>
-<translation id="1039850285407663109">Избраният файл е неизвестен и може да бъде опасен. Добре е да го сканирате, преди да го отворите.</translation>
 <translation id="1041175011127912238">Страницата не реагира</translation>
 <translation id="1041263367839475438">Налични устройства</translation>
 <translation id="1042174272890264476">Компютърът ви също се предлага с библиотеката RLZ на <ph name="SHORT_PRODUCT_NAME" />, която е вградена. Тя задава неуникален и непозволяващ лично идентифициране маркер за измерване на търсенията и използването на <ph name="SHORT_PRODUCT_NAME" />, стимулирани от определена промоционална кампания. Тези етикети понякога се показват в заявките за търсене с Google в <ph name="PRODUCT_NAME" />.</translation>
@@ -636,7 +634,6 @@
 <translation id="1858585891038687145">Да се има доверие на този сертификат за идентифициране на производители на софтуер</translation>
 <translation id="1861262398884155592">Тази папка е празна</translation>
 <translation id="1863182668524159459">Няма намерени серийни портове</translation>
-<translation id="1863552924692672565">Файлът „<ph name="FILE_NAME" />“ е неизвестен. Сканирайте го, за да сведете риска до минимум.</translation>
 <translation id="1864111464094315414">Вход</translation>
 <translation id="1864400682872660285">По-студени цветове</translation>
 <translation id="1864454756846565995">USB-C устройство (задният порт)</translation>
@@ -3142,7 +3139,7 @@
 <translation id="5427459444770871191">Завъртане &amp;по часовниковата стрелка</translation>
 <translation id="542872847390508405">Сърфирате като гост</translation>
 <translation id="5428850089342283580"><ph name="ACCNAME_APP" /> (Налице е актуализация)</translation>
-<translation id="542948651837270806">Трябва да бъде инсталирана актуализация на фърмуера на модула за надеждна платформа. Вижте информацията на адрес<ph name="TPM_FIRMWARE_UPDATE_LINK" /></translation>
+<translation id="542948651837270806">Трябва да бъде инсталирана актуализация на фърмуера на модула за надеждна платформа. Вижте информацията на адрес <ph name="TPM_FIRMWARE_UPDATE_LINK" /></translation>
 <translation id="5430931332414098647">Незабавен тетъринг</translation>
 <translation id="5431318178759467895">Цветно</translation>
 <translation id="5431825016875453137">OpenVPN/L2TP</translation>
@@ -4025,7 +4022,6 @@
 <translation id="6678717876183468697">URL адрес на заявката</translation>
 <translation id="6680442031740878064">Свободно място: <ph name="AVAILABLE_SPACE" /></translation>
 <translation id="6680650203439190394">Скорост</translation>
-<translation id="6681301928961274620">В сървъра за отпечатване не бяха открити принтери.</translation>
 <translation id="6681668084120808868">Снимане</translation>
 <translation id="6681964764822470072"><ph name="APP_NAME" /> ще се деинсталира.</translation>
 <translation id="668599234725812620">Отваряне на Google Play</translation>
@@ -5555,7 +5551,6 @@
 <translation id="8794025342371547160">Ограничен IP адрес</translation>
 <translation id="879413103056696865">Докато точката за достъп е включена, устройството ви <ph name="PHONE_NAME" /> ще:</translation>
 <translation id="8795916974678578410">Нов прозорец</translation>
-<translation id="8797086401386164142">В сървъра за отпечатване бяха открити <ph name="NUM_PRINTERS" /> принтера.</translation>
 <translation id="8797459392481275117">Този сайт да не се превежда никога</translation>
 <translation id="8798099450830957504">По подразбиране</translation>
 <translation id="8798441408945964110">Име на доставчика</translation>

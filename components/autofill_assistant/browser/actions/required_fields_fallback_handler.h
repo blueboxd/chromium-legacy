@@ -112,7 +112,7 @@ class RequiredFieldsFallbackHandler {
                                std::unique_ptr<FallbackData> fallback_data,
                                const ClientStatus& status);
 
-  ClientStatus initial_autofill_status_;
+  ClientStatus client_status_;
 
   std::vector<RequiredField> required_fields_;
   base::OnceCallback<void(const ClientStatus&,

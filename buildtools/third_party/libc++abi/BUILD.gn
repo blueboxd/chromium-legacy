@@ -15,9 +15,7 @@ source_set("libc++abi") {
   # unwinding symbols, unlike Linux does with glibc.  Build and link against
   # libunwind manually to get this functionality.
   if (is_fuchsia) {
-    deps = [
-      "//buildtools/third_party/libunwind",
-    ]
+    deps = [ "//buildtools/third_party/libunwind" ]
   }
 
   sources = [

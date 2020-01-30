@@ -182,7 +182,8 @@ jumbo_component("modules") {
   }
 
   if (is_win) {
-    cflags = [ "/wd4334" ]  # Result of 32-bit shift implicitly converted to 64 bits.
+    cflags =
+        [ "/wd4334" ]  # Result of 32-bit shift implicitly converted to 64 bits.
   }
 
   configs -= [ "//build/config/compiler:default_symbols" ]

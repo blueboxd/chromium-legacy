@@ -20,6 +20,7 @@
 #include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/memory/memory_pressure_listener.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/no_destructor.h"
 #include "base/rand_util.h"
@@ -147,7 +148,7 @@ const int kExpireDaysThreshold = 90;
 
 // The maximum number of days for which domain visit metrics are computed
 // each time HistoryBackend::GetDomainDiversity() is called.
-constexpr int kDomainDiversityBacktrackMaxDays = 7;
+constexpr int kDomainDiversityMaxBacktrackedDays = 7;
 
 // An offset that corrects possible error in date/time arithmetic caused by
 // fluctuation of day length due to Daylight Saving Time (DST). For example,
@@ -871,6 +872,12 @@ void HistoryBackend::InitImpl(
 
 void HistoryBackend::OnMemoryPressure(
     base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level) {
+  // TODO(sebmarchand): Check if MEMORY_PRESSURE_LEVEL_MODERATE should also be
+  // ignored.
+  if (memory_pressure_level ==
+      base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_NONE) {
+    return;
+  }
   if (db_)
     db_->TrimMemory();
   if (thumbnail_db_)
@@ -1229,17 +1236,16 @@ DomainDiversityResults HistoryBackend::GetDomainDiversity(
     int number_of_days_to_report,
     DomainMetricBitmaskType metric_type_bitmask) {
   DCHECK_GE(number_of_days_to_report, 0);
-  DCHECK_LE(number_of_days_to_report, kDomainDiversityBacktrackMaxDays);
   DomainDiversityResults result;
 
   if (!db_)
     return result;
 
   number_of_days_to_report =
-      std::min(number_of_days_to_report, kDomainDiversityBacktrackMaxDays);
+      std::min(number_of_days_to_report, kDomainDiversityMaxBacktrackedDays);
 
   base::Time current_midnight = report_time.LocalMidnight();
-  base::ElapsedTimer db_timer;
+  SCOPED_UMA_HISTOGRAM_TIMER("History.DomainCountQueryTime");
 
   for (int days_back = 0; days_back < number_of_days_to_report; ++days_back) {
     DomainMetricSet single_metric_set;
@@ -1272,8 +1278,6 @@ DomainDiversityResults HistoryBackend::GetDomainDiversity(
     current_midnight = MidnightNDaysLater(current_midnight, -1);
   }
 
-  UMA_HISTOGRAM_COUNTS_10000("History.DomainCountQueryTime",
-                             db_timer.Elapsed().InMilliseconds());
   return result;
 }
 

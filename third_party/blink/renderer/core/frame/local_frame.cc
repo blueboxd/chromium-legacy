@@ -895,7 +895,6 @@ LocalFrame::LocalFrame(LocalFrameClient* client,
       page_zoom_factor_(ParentPageZoomFactor(this)),
       text_zoom_factor_(ParentTextZoomFactor(this)),
       in_view_source_mode_(false),
-      ad_frame_type_(mojom::AdFrameType::kNonAd),
       inspector_task_runner_(InspectorTaskRunner::Create(
           GetTaskRunner(TaskType::kInternalInspector))),
       interface_registry_(interface_registry
@@ -1141,15 +1140,14 @@ bool LocalFrame::CanNavigate(const Frame& target_frame,
 
 void LocalFrame::SetIsAdSubframeIfNecessary() {
   DCHECK(ad_tracker_);
+  if (IsAdSubframe())
+    return;
+
   Frame* parent = Tree().Parent();
   if (!parent)
     return;
 
-  // If the parent frame is local, directly determine if it's an ad. If it's
-  // remote, then it is up to the embedder that moved this frame out-of-
-  // process to set this frame as an ad via SetIsAdSubframe before commit.
-  auto* parent_local_frame = DynamicTo<LocalFrame>(parent);
-  bool parent_is_ad = parent_local_frame && parent_local_frame->IsAdSubframe();
+  bool parent_is_ad = parent->IsAdSubframe();
 
   if (parent_is_ad || ad_tracker_->IsAdScriptInStack()) {
     SetIsAdSubframe(parent_is_ad ? blink::mojom::AdFrameType::kChildAd
@@ -1434,14 +1432,6 @@ bool LocalFrame::IsProvisional() const {
 
   DCHECK(Owner());
   return Owner()->ContentFrame() != this;
-}
-
-bool LocalFrame::IsAdSubframe() const {
-  return ad_frame_type_ != blink::mojom::AdFrameType::kNonAd;
-}
-
-bool LocalFrame::IsAdRoot() const {
-  return ad_frame_type_ == blink::mojom::AdFrameType::kRootAd;
 }
 
 void LocalFrame::SetIsAdSubframe(blink::mojom::AdFrameType ad_frame_type) {

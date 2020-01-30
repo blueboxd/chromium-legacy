@@ -11,7 +11,7 @@
 #include "base/files/file_path.h"
 #include "base/location.h"
 #include "base/sequenced_task_runner.h"
-#include "base/task/lazy_task_runner.h"
+#include "base/task/lazy_thread_pool_task_runner.h"
 #include "base/task/post_task.h"
 #include "chrome/browser/win/conflicts/module_database_observer.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -109,9 +109,9 @@ ModuleDatabase::~ModuleDatabase() {
 
 // static
 scoped_refptr<base::SequencedTaskRunner> ModuleDatabase::GetTaskRunner() {
-  static base::LazySequencedTaskRunner g_module_database_task_runner =
-      LAZY_SEQUENCED_TASK_RUNNER_INITIALIZER(
-          base::TaskTraits(base::ThreadPool(), base::TaskPriority::BEST_EFFORT,
+  static base::LazyThreadPoolSequencedTaskRunner g_module_database_task_runner =
+      LAZY_THREAD_POOL_SEQUENCED_TASK_RUNNER_INITIALIZER(
+          base::TaskTraits(base::TaskPriority::BEST_EFFORT,
                            base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN));
   return g_module_database_task_runner.Get();
 }

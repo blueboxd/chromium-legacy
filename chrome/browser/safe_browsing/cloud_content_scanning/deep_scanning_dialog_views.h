@@ -54,7 +54,7 @@ class DeepScanningDialogViews : public views::DialogDelegate {
   };
   DeepScanningDialogViews(std::unique_ptr<DeepScanningDialogDelegate> delegate,
                           content::WebContents* web_contents,
-                          base::Optional<DeepScanAccessPoint> access_point,
+                          DeepScanAccessPoint access_point,
                           bool is_file_scan);
 
   // views::DialogDelegate:
@@ -120,6 +120,14 @@ class DeepScanningDialogViews : public views::DialogDelegate {
   // Returns the appropriate upload top image ID depending on |dialog_status_|.
   int GetUploadImageId(bool use_dark) const;
 
+  // Returns the appropriate pending message ID depending on |access_point_| and
+  // |is_file_scan_|.
+  int GetPendingMessageId() const;
+
+  // Returns the appropriate failure message ID depending on |access_point_| and
+  // |is_file_scan_|.
+  int GetFailureMessageId() const;
+
   // Show the dialog. Sets |shown_| to true.
   void Show();
 
@@ -148,7 +156,7 @@ class DeepScanningDialogViews : public views::DialogDelegate {
 
   // The access point that caused this dialog to open. This changes what text
   // and top image are shown to the user.
-  base::Optional<DeepScanAccessPoint> access_point_;
+  DeepScanAccessPoint access_point_;
 
   // Indicates whether the scan being done is for files or for text. This
   // changes what text and top image are shown to the user.

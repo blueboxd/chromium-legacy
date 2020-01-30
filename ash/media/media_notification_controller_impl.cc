@@ -164,7 +164,7 @@ void MediaNotificationControllerImpl::OnFocusLost(
 
   // If we lost focus then we should freeze the notification as it may regain
   // focus after a second or so.
-  it->second.Freeze();
+  it->second.Freeze(base::DoNothing());
 }
 
 void MediaNotificationControllerImpl::ShowNotification(const std::string& id) {

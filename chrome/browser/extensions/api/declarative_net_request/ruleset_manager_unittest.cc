@@ -184,8 +184,7 @@ TEST_P(RulesetManagerTest, MultipleRulesets) {
       ASSERT_NO_FATAL_FAILURE(CreateMatcherForRules(
           {rule_one}, std::to_string(mask) + "_one", &matcher));
       extension_id_one = last_loaded_extension()->id();
-      manager()->AddRuleset(extension_id_one, std::move(matcher),
-                            URLPatternSet());
+      manager()->AddRuleset(extension_id_one, std::move(matcher));
     }
     if (mask & kEnableRulesetTwo) {
       ++expected_matcher_count;
@@ -193,8 +192,7 @@ TEST_P(RulesetManagerTest, MultipleRulesets) {
       ASSERT_NO_FATAL_FAILURE(CreateMatcherForRules(
           {rule_two}, std::to_string(mask) + "_two", &matcher));
       extension_id_two = last_loaded_extension()->id();
-      manager()->AddRuleset(extension_id_two, std::move(matcher),
-                            URLPatternSet());
+      manager()->AddRuleset(extension_id_two, std::move(matcher));
     }
 
     ASSERT_EQ(expected_matcher_count, manager()->GetMatcherCountForTest());
@@ -230,8 +228,7 @@ TEST_P(RulesetManagerTest, IncognitoRequests) {
   std::unique_ptr<CompositeMatcher> matcher;
   ASSERT_NO_FATAL_FAILURE(
       CreateMatcherForRules({rule_one}, "test_extension", &matcher));
-  manager()->AddRuleset(last_loaded_extension()->id(), std::move(matcher),
-                        URLPatternSet());
+  manager()->AddRuleset(last_loaded_extension()->id(), std::move(matcher));
 
   WebRequestInfo request_info(GetRequestParamsForURL("http://example.com"));
 
@@ -306,8 +303,7 @@ TEST_P(RulesetManagerTest, TotalEvaluationTimeHistogram) {
   std::unique_ptr<CompositeMatcher> matcher;
   ASSERT_NO_FATAL_FAILURE(
       CreateMatcherForRules({rule}, "test_extension", &matcher));
-  manager()->AddRuleset(last_loaded_extension()->id(), std::move(matcher),
-                        URLPatternSet());
+  manager()->AddRuleset(last_loaded_extension()->id(), std::move(matcher));
 
   {
     base::HistogramTester tester;
@@ -343,8 +339,7 @@ TEST_P(RulesetManagerTest, Redirect) {
   ASSERT_NO_FATAL_FAILURE(
       CreateMatcherForRules({rule}, "test_extension", &matcher,
                             {"*://example.com/*", "*://abc.com/*"}));
-  manager()->AddRuleset(last_loaded_extension()->id(), std::move(matcher),
-                        URLPatternSet());
+  manager()->AddRuleset(last_loaded_extension()->id(), std::move(matcher));
 
   // Create a request to "example.com" with an empty initiator. It should be
   // redirected to "google.com".
@@ -396,8 +391,7 @@ TEST_P(RulesetManagerTest, ExtensionScheme) {
         std::vector<std::string>({URLPattern::kAllUrlsPattern}),
         true /* has_background_script */));
     extension_1 = last_loaded_extension();
-    manager()->AddRuleset(extension_1->id(), std::move(matcher),
-                          URLPatternSet());
+    manager()->AddRuleset(extension_1->id(), std::move(matcher));
   }
 
   // Add another extension with a background page which redirects all requests
@@ -415,8 +409,7 @@ TEST_P(RulesetManagerTest, ExtensionScheme) {
         std::vector<std::string>({URLPattern::kAllUrlsPattern}),
         true /* has_background_script */));
     extension_2 = last_loaded_extension();
-    manager()->AddRuleset(extension_2->id(), std::move(matcher),
-                          URLPatternSet());
+    manager()->AddRuleset(extension_2->id(), std::move(matcher));
   }
 
   EXPECT_EQ(2u, manager()->GetMatcherCountForTest());
@@ -475,8 +468,7 @@ TEST_P(RulesetManagerTest, RemoveHeaders) {
     ASSERT_NO_FATAL_FAILURE(
         CreateMatcherForRules({rule}, "test extension", &matcher));
     extension_1 = last_loaded_extension();
-    manager()->AddRuleset(extension_1->id(), std::move(matcher),
-                          URLPatternSet());
+    manager()->AddRuleset(extension_1->id(), std::move(matcher));
   }
 
   // Add another extension with a background page which removes the "cookie" and
@@ -492,8 +484,7 @@ TEST_P(RulesetManagerTest, RemoveHeaders) {
     ASSERT_NO_FATAL_FAILURE(
         CreateMatcherForRules({rule}, "test extension 2", &matcher));
     extension_2 = last_loaded_extension();
-    manager()->AddRuleset(extension_2->id(), std::move(matcher),
-                          URLPatternSet());
+    manager()->AddRuleset(extension_2->id(), std::move(matcher));
   }
 
   EXPECT_EQ(2u, manager()->GetMatcherCountForTest());
@@ -530,175 +521,6 @@ TEST_P(RulesetManagerTest, RemoveHeaders) {
 
   EXPECT_EQ(expected_action_1, actual_actions[0]);
   EXPECT_EQ(expected_action_2, actual_actions[1]);
-}
-
-TEST_P(RulesetManagerTest, PageAllowingAPI) {
-  // Add an extension which blocks all requests except for requests from
-  // http://google.com/allow* which are allowed.
-  {
-    std::unique_ptr<CompositeMatcher> matcher;
-
-    // This blocks all subresource requests. By default the main-frame resource
-    // type is excluded.
-    TestRule rule1 = CreateGenericRule();
-    rule1.id = kMinValidID;
-    rule1.condition->url_filter = std::string("*");
-
-    // Also block main frame requests.
-    TestRule rule2 = CreateGenericRule();
-    rule2.id = kMinValidID + 1;
-    rule2.condition->url_filter = std::string("*");
-    rule2.condition->resource_types = std::vector<std::string>({"main_frame"});
-
-    ASSERT_NO_FATAL_FAILURE(
-        CreateMatcherForRules({rule1, rule2}, "test extension", &matcher, {},
-                              true /* background_script */));
-
-    URLPatternSet pattern_set(
-        {URLPattern(URLPattern::SCHEME_ALL, "http://google.com/allow*")});
-    manager()->AddRuleset(last_loaded_extension()->id(), std::move(matcher),
-                          std::move(pattern_set));
-  }
-
-  int rule_1_id = kMinValidID;
-  int rule_2_id = kMinValidID + 1;
-
-  constexpr int kDummyFrameRoutingId = 2;
-  constexpr int kDummyFrameId = 3;
-  constexpr int kDummyParentFrameId = 1;
-  constexpr int kDummyTabId = 5;
-  constexpr int kDummyWindowId = 7;
-  constexpr char kAllowedPageURL[] = "http://google.com/allow123";
-
-  struct FrameDataParams {
-    int frame_id;
-    int parent_frame_id;
-    std::string last_committed_main_frame_url;
-    base::Optional<GURL> pending_main_frame_url;
-  };
-  struct TestCase {
-    std::string url;
-    content::ResourceType type;
-    base::Optional<std::string> initiator;
-    int frame_routing_id;
-    base::Optional<FrameDataParams> frame_data_params;
-    bool expect_blocked_with_allowed_pages;
-    base::Optional<int> matched_rule_id;
-  } test_cases[] = {
-      // Main frame requests. Allowed based on request url.
-      {kAllowedPageURL, content::ResourceType::kMainFrame, base::nullopt,
-       MSG_ROUTING_NONE,
-       FrameDataParams({ExtensionApiFrameIdMap::kTopFrameId,
-                        ExtensionApiFrameIdMap::kInvalidFrameId,
-                        "http://google.com/xyz", base::nullopt}),
-       false, base::nullopt},
-      {"http://google.com/xyz", content::ResourceType::kMainFrame,
-       base::nullopt, MSG_ROUTING_NONE,
-       FrameDataParams({ExtensionApiFrameIdMap::kTopFrameId,
-                        ExtensionApiFrameIdMap::kInvalidFrameId,
-                        kAllowedPageURL, base::nullopt}),
-       true, rule_2_id},
-
-      // Non-navigation browser or service worker request. Not allowed,
-      // since the request doesn't correspond to a frame.
-      {"http://google.com/xyz", content::ResourceType::kScript, base::nullopt,
-       MSG_ROUTING_NONE, base::nullopt, true, rule_1_id},
-
-      // Renderer requests - with no |pending_main_frame_url|. Allowed based
-      // on the |last_committed_main_frame_url|.
-      {kAllowedPageURL, content::ResourceType::kScript, "http://google.com",
-       kDummyFrameRoutingId,
-       FrameDataParams({kDummyFrameId, kDummyParentFrameId,
-                        "http://google.com/xyz", base::nullopt}),
-       true, rule_1_id},
-      {"http://google.com/xyz", content::ResourceType::kScript,
-       "http://google.com", kDummyFrameRoutingId,
-       FrameDataParams({kDummyFrameId, kDummyParentFrameId, kAllowedPageURL,
-                        base::nullopt}),
-       false, base::nullopt},
-
-      // Renderer requests with |pending_main_frame_url|. This only happens for
-      // main frame subresource requests.
-
-      // Here we'll determine "http://example.com/xyz" to be the main frame url
-      // due to the origin.
-      {"http://example.com/script.js", content::ResourceType::kScript,
-       "http://example.com", kDummyFrameRoutingId,
-       FrameDataParams({ExtensionApiFrameIdMap::kTopFrameId,
-                        ExtensionApiFrameIdMap::kInvalidFrameId,
-                        kAllowedPageURL, GURL("http://example.com/xyz")}),
-       true, rule_1_id},
-
-      // Here we'll determine |kAllowedPageURL| to be the main
-      // frame url due to the origin.
-      {"http://example.com/script.js", content::ResourceType::kScript,
-       "http://google.com", kDummyFrameRoutingId,
-       FrameDataParams({ExtensionApiFrameIdMap::kTopFrameId,
-                        ExtensionApiFrameIdMap::kInvalidFrameId,
-                        kAllowedPageURL, GURL("http://yahoo.com/xyz")}),
-       false, base::nullopt},
-
-      // In these cases both |pending_main_frame_url| and
-      // |last_committed_main_frame_url| will be tested since we won't be able
-      // to determine the correct top level frame url using origin.
-      {"http://example.com/script.js", content::ResourceType::kScript,
-       "http://google.com", kDummyFrameRoutingId,
-       FrameDataParams({ExtensionApiFrameIdMap::kTopFrameId,
-                        ExtensionApiFrameIdMap::kInvalidFrameId,
-                        "http://google.com/abc", GURL(kAllowedPageURL)}),
-       false, base::nullopt},
-      {"http://example.com/script.js", content::ResourceType::kScript,
-       base::nullopt, kDummyFrameRoutingId,
-       FrameDataParams({ExtensionApiFrameIdMap::kTopFrameId,
-                        ExtensionApiFrameIdMap::kInvalidFrameId,
-                        kAllowedPageURL, GURL("http://google.com/abc")}),
-       false, base::nullopt},
-      {"http://example.com/script.js", content::ResourceType::kScript,
-       base::nullopt, kDummyFrameRoutingId,
-       FrameDataParams({ExtensionApiFrameIdMap::kTopFrameId,
-                        ExtensionApiFrameIdMap::kInvalidFrameId,
-                        "http://yahoo.com/abc",
-                        GURL("http://yahoo.com/allow123")}),
-       true, rule_1_id},
-  };
-
-  for (size_t i = 0; i < base::size(test_cases); ++i) {
-    const TestCase test_case = test_cases[i];
-    SCOPED_TRACE(base::StringPrintf("Testing case number %zu with url %s",
-                                    i + 1, test_case.url.c_str()));
-
-    WebRequestInfoInitParams params = GetRequestParamsForURL(test_case.url);
-    ASSERT_TRUE(params.url.is_valid());
-    params.type = test_case.type;
-
-    if (test_case.initiator)
-      params.initiator = url::Origin::Create(GURL(*test_case.initiator));
-
-    params.frame_id = test_case.frame_routing_id;
-
-    if (test_case.frame_data_params) {
-      const FrameDataParams& frame_params = *test_case.frame_data_params;
-      params.frame_data = ExtensionApiFrameIdMap::FrameData(
-          frame_params.frame_id, frame_params.parent_frame_id, kDummyTabId,
-          kDummyWindowId, GURL(frame_params.last_committed_main_frame_url),
-          frame_params.pending_main_frame_url);
-    }
-
-    WebRequestInfo request_info(std::move(params));
-    const std::vector<RequestAction>& actions = manager()->EvaluateRequest(
-        request_info, false /*is_incognito_context*/);
-
-    if (test_case.expect_blocked_with_allowed_pages) {
-      ASSERT_EQ(1u, actions.size());
-      EXPECT_EQ(CreateRequestActionForTesting(
-                    RequestActionType::BLOCK, *test_case.matched_rule_id,
-                    kDefaultPriority, dnr_api::SOURCE_TYPE_MANIFEST,
-                    last_loaded_extension()->id()),
-                actions[0]);
-    } else {
-      EXPECT_TRUE(actions.empty());
-    }
-  }
 }
 
 TEST_P(RulesetManagerTest, HostPermissionForInitiator) {
@@ -781,8 +603,7 @@ TEST_P(RulesetManagerTest, HostPermissionForInitiator) {
   // Test redirect extension.
   {
     SCOPED_TRACE("Testing redirect extension");
-    manager()->AddRuleset(redirect_extension_id, std::move(redirect_matcher),
-                          URLPatternSet());
+    manager()->AddRuleset(redirect_extension_id, std::move(redirect_matcher));
     for (const auto& test : cases) {
       RequestAction redirect_action = CreateRequestActionForTesting(
           RequestActionType::REDIRECT, kMinValidID, kMinValidPriority,
@@ -799,8 +620,7 @@ TEST_P(RulesetManagerTest, HostPermissionForInitiator) {
   // Test blocking extension.
   {
     SCOPED_TRACE("Testing blocking extension");
-    manager()->AddRuleset(blocking_extension_id, std::move(blocking_matcher),
-                          URLPatternSet());
+    manager()->AddRuleset(blocking_extension_id, std::move(blocking_matcher));
     for (const auto& test : cases) {
       RequestAction block_action = CreateRequestActionForTesting(
           RequestActionType::BLOCK, kMinValidID, kDefaultPriority,

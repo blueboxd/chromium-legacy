@@ -13,6 +13,7 @@
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
 #include "third_party/blink/public/common/frame/frame_owner_element_type.h"
 #include "third_party/blink/public/common/frame/frame_policy.h"
+#include "third_party/blink/public/mojom/ad_tagging/ad_frame.mojom-shared.h"
 #include "third_party/blink/public/platform/web_insecure_request_policy.h"
 #include "url/origin.h"
 
@@ -148,6 +149,11 @@ struct CONTENT_EXPORT FrameReplicationState {
   // operator.
   blink::FrameOwnerElementType frame_owner_element_type =
       blink::FrameOwnerElementType::kNone;
+
+  // Whether this frame is an ad frame. Once a frame becomes an ad, it stays as
+  // an ad throughout its lifetime, even if it later navigates to a non-ad
+  // document.
+  blink::mojom::AdFrameType ad_frame_type = blink::mojom::AdFrameType::kNonAd;
 
   // IMPORTANT NOTE: When adding a new member to this struct, don't forget to
   // also add a corresponding entry to the struct traits in frame_messages.h!

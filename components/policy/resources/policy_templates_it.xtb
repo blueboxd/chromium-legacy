@@ -1769,6 +1769,7 @@ Questa norma viene rispettata soltanto se viene attivata la norma "DefaultSearch
       Se questa norma non viene impostata, i certificati che devono essere resi pubblici tramite Certificate Transparency verranno considerati non attendibili nel caso in cui non vengano resi pubblici secondo quanto previsto dalle norme di Certificate Transparency.</translation>
 <translation id="3765260570442823273">Durata del messaggio di avviso di uscita per inattività</translation>
 <translation id="377044054160169374">Applicazione dell'intervento in caso di esperienza intrusiva</translation>
+<translation id="3780102107513139202">Attiva solo le varianti relative alle correzioni critiche</translation>
 <translation id="3780152581321609624">Includi porta non standard in Kerberos SPN</translation>
 <translation id="3780319008680229708">Se il criterio è impostato su true, l'icona Cast della barra degli strumenti sarà sempre visibile nella barra degli strumenti o nel menu extra e gli utenti non potranno rimuoverla.
 
@@ -2002,6 +2003,7 @@ Avviso. È consigliabile mantenere attivati gli aggiornamenti automatici per con
 <translation id="4027608872760987929">Attiva il provider di ricerca predefinito</translation>
 <translation id="4039085364173654945">Consente di stabilire se per i contenuti secondari di terze parti presenti in una pagina è consentita la visualizzazione di una finestra di dialogo Autorizzazione di base HTTP. Generalmente questa norma non è attiva per tutela dal phishing. Se questa norma non viene impostata, l'impostazione verrà disattivata e per i contenuti secondari di terze parti non potrà essere visualizzata una finestra di dialogo Autorizzazione di base HTTP.</translation>
 <translation id="4056910949759281379">Disabilita protocollo SPDY</translation>
+<translation id="4061590579642538878">Segnala informazioni relative ai rapporti sugli arresti anomali.</translation>
 <translation id="4075675819066819571">Posiziona la shelf sul lato sinistro dello schermo</translation>
 <translation id="4075864623710596000">I nomi host specificati in questo elenco saranno esenti dalla verifica dei criteri HSTS che potrebbero eseguire l'upgrade delle richieste da http a https. Solo i nomi host con etichetta singola sono consentiti in questo criterio. I nomi host devono essere canonicalizzati: ogni IDN deve essere convertito nel relativo formato A-label e tutte le lettere ASCII devono essere minuscole. Questo criterio si applica soltanto ai nomi host specificati e non ai relativi sottodomini.</translation>
 <translation id="408029843066770167">Consenti query a un servizio orario di Google</translation>
@@ -2514,6 +2516,7 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
 <translation id="4983201894483989687">Consenti esecuzione dei plug-in obsoleti</translation>
 <translation id="4986560318567565414">Percorso a Chrome per cambiare il browser alternativo.</translation>
 <translation id="4988291787868618635">Azione da compiere a raggiungimento ritardo inattività</translation>
+<translation id="500149597848135831">Attiva tutte le varianti</translation>
 <translation id="5032164758660626397">Impedisci all'utente di trasferire file di grandi dimensioni</translation>
 <translation id="5047604665028708335">Consenti l'accesso ai siti non presenti nei pacchetti di contenuti</translation>
 <translation id="5052081091120171147">Se è attiva, questa norma impone l'importazione della cronologia di navigazione dal browser predefinito corrente. Se la norma è attiva incide anche sulla finestra di dialogo di importazione. Se non è attiva, la cronologia di navigazione non viene importata. Se non viene impostata, all'utente potrebbe essere chiesto se desidera effettuare l'importazione, oppure l'importazione potrebbe avvenire automaticamente.</translation>
@@ -2589,6 +2592,7 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
 <translation id="5102203758995933166">Consente di forzare l'applicazione della configurazione di rete per utente su un dispositivo <ph name="PRODUCT_OS_NAME" />. La configurazione di rete è una stringa in formato JSON come definita nel formato Open Network Configuration.</translation>
 <translation id="5105313908130842249">Ritardo blocco schermo in caso di utilizzo della batteria</translation>
 <translation id="5108031557082757679">Stampanti aziendali associate ai dispositivi disattivate</translation>
+<translation id="5109383437323376357">Determina la disponibilità delle varianti</translation>
 <translation id="5112121363469561920">Consente di impostare il tipo predefinito di lente d'ingrandimento che viene attivato nella schermata di accesso.
 
           Se questo criterio viene impostato, consente di stabilire il tipo di lente d'ingrandimento che viene attivato quando viene mostrata la schermata di accesso. Se il criterio viene impostato su "Nessuno", la lente d'ingrandimento viene disattivata.
@@ -3323,6 +3327,12 @@ Il valore della norma deve essere specificato in millisecondi. I valori devono e
 <translation id="6221175752766085998">Consenti i certificati privi dell'estensione subjectAlternativeName emessi dai trust anchor locali</translation>
 <translation id="6224304369267200483">URL/domini per cui è consentita automaticamente l'attestazione diretta dei token di sicurezza</translation>
 <translation id="6233173491898450179">Imposta directory di download</translation>
+<translation id="6242147107333796512">Segnala informazioni relative ai rapporti sugli arresti anomali, come ID remoto,
+      timestamp di acquisizione e causa.
+
+      Se il criterio è impostato su false o non viene configurato, le informazioni relative ai rapporti sugli arresti anomali
+      non verranno segnalate. Se viene impostato su true, le informazioni relative ai rapporti sugli arresti anomali verranno
+      segnalate.</translation>
 <translation id="6244210204546589761">Pagine da aprire all'avvio</translation>
 <translation id="6247316685259031374">Questo criterio consente di controllare la sandbox del processo audio.
       Se questo criterio viene attivato, il processo audio verrà eseguito con limitazione tramite sandbox.
@@ -3966,6 +3976,15 @@ Se l'impostazione viene disattivata, questa funzione non sarà disponibile.</tra
 <translation id="7311458740754205918">Se questa norma viene impostata su true o non viene impostata, nella pagina Nuova scheda potrebbero essere mostrati suggerimenti di contenuti basati sulla cronologia di navigazione, sugli interessi o sulla posizione dell'utente.
 
       Se viene impostata su false, i suggerimenti di contenuti generati automaticamente non vengono mostrati nella pagina Nuova scheda.</translation>
+<translation id="7323572763274343342">La configurazione di questo criterio consente di specificare quali varianti è possibile applicare in<ph name="PRODUCT_NAME" />.
+
+      Le varianti forniscono un mezzo per apportare modifiche a <ph name="PRODUCT_NAME" /> senza inviare una nuova versione del browser attivando o disattivando in modo selettivo le funzionalità già esistenti.
+
+      La configurazione di <ph name="VARIATIONS_ENABLED_OPTION_NAME" /> (valore 0) o la mancata configurazione del criterio consentono di applicare al browser tutte le varianti.
+
+      La configurazione di <ph name="CRITICAL_VARIATIONS_ONLY_OPTION_NAME" /> (valore 1) consente di applicare a <ph name="PRODUCT_NAME" /> esclusivamente correzioni della stabilità o varianti considerate critiche per la sicurezza.
+
+      La configurazione di <ph name="VARIATIONS_DISABLED_OPTION_NAME" /> (valore 2) impedisce di applicare al browser tutte le varianti. Questa modalità potrebbe impedire agli sviluppatori di <ph name="PRODUCT_NAME" /> di fornire correzioni della sicurezza critiche in tempo utile e pertanto non è consigliata.</translation>
 <translation id="7323896582714668701">Parametri aggiuntivi della riga di comando per <ph name="PRODUCT_NAME" /></translation>
 <translation id="7326394567531622570">Simile a Wipe (valore 2), ma prova a mantenere i token di accesso per evitare all'utente di dover accedere di nuovo.</translation>
 <translation id="7329968046053403405">Consente di specificare il tipo di account degli account forniti dall'app di autenticazione di Android che supporta l'autenticazione <ph name="HTTP_NEGOTIATE" /> (ad esempio, l'autenticazione Kerberos). Queste informazioni dovrebbero essere messe a disposizione dal fornitore dell'app di autenticazione. Per ulteriori informazioni, visitare la pagina https://goo.gl/hajyfN.
@@ -4038,6 +4057,19 @@ Se l'impostazione viene disattivata, questa funzione non sarà disponibile.</tra
           Se questa norma non è impostata o viene attivata, Google Chrome accetterà i contenuti web pubblicati come Signed HTTP Exchanges.
 
           Se non viene attivata, i contenuti Signed HTTP Exchanges non potranno essere caricati.</translation>
+<translation id="7509496865303347769">Consente di configurare l'URL della home page di <ph name="PRODUCT_NAME" /> predefinito e di impedire agli utenti di modificarlo.
+
+          La home page è la pagina che viene aperta facendo clic sul pulsante Home. Sul desktop, le pagine che si aprono all'avvio vengono stabilite dai criteri RestoreOnStartup.
+
+          La home page può essere un URL specificato qui oppure la pagina Nuova scheda. Se selezioni la pagina Nuova scheda, questo criterio non viene applicato.
+
+          Se attivi questa impostazione, gli utenti non possono modificare l'URL della home page di <ph name="PRODUCT_NAME" />, ma possono scegliere come home page la pagina Nuova scheda.
+
+          Se questo criterio non viene impostato e non viene impostato neanche il criterio HomepageIsNewTabPage, l'utente potrà scegliere la home page che preferisce.
+
+          L'URL deve avere uno schema standard, ad esempio "http://example.com" o "https://example.com".
+
+          Questo criterio è disponibile esclusivamente per le istanze di Windows che fanno parte di un dominio <ph name="MS_AD_NAME" />, così come per le istanze di Windows 10 Pro o Enterprise registrate per la gestione dei dispositivi.</translation>
 <translation id="7511361072385293666">Se questa norma viene impostata su true o non viene impostata, l'utilizzo del protocollo QUIC in <ph name="PRODUCT_NAME" /> è consentito.
      Se questa norma viene impostata su false, l'utilizzo del protocollo QUIC non è consentito.</translation>
 <translation id="7517845714620372896">Consente di specificare la percentuale di luminosità dello schermo.
@@ -4198,6 +4230,7 @@ Nota. Attualmente i riavvii automatici vengono attivati soltanto durante la visu
 <translation id="7717938661004793600">Configura le funzioni di accessibilità di <ph name="PRODUCT_OS_NAME" />.</translation>
 <translation id="7731026922044991970">Ripristina il comportamento <ph name="ATTRIBUTE_SAMESITE_NAME" /> precedente per i cookie su tutti i siti</translation>
 <translation id="7747447585227954402">Consenti ai dispositivi di usare <ph name="PLUGIN_VM_NAME" /> su <ph name="PRODUCT_OS_NAME" /></translation>
+<translation id="7749024457938190837">Estensioni consentite per ignorare la finestra di dialogo di conferma durante l'invio di processi di stampa tramite l'API chrome.printing</translation>
 <translation id="7749402620209366169">Consente di abilitare l'autenticazione a due fattori per gli host di accesso remoto invece di un PIN specificato dall'utente.
 
           Se questa impostazione è abilitata, gli utenti devono fornire un codice valido a due fattori quando accedono a un host.
@@ -4504,6 +4537,9 @@ Se attivi questa impostazione, le pagine non saranno sottoposte a scansione per 
 Se disattivi questa impostazione, le pagine saranno sottoposte a scansione per i metatag.
 
 Se questa norma non viene impostata, le pagine saranno sottoposte a scansione per i metatag.</translation>
+<translation id="8295496526151576383">Questo criterio specifica le estensioni consentite per ignorare la finestra di dialogo di conferma del processo di stampa utilizzando la funzione <ph name="PRINTING_API" /> <ph name="SUBMIT_JOB_FUNCTION" /> per l'invio di un processo di stampa.
+
+      Se un'estensione non è presente nell'elenco o non è configurato alcun elenco, la finestra di dialogo di conferma del processo di stampa verrà visualizzata dall'utente per ogni chiamata funzione <ph name="SUBMIT_JOB_FUNCTION" />.</translation>
 <translation id="829641334878002866">Ti consente di impostare il periodo di tempo, in millisecondi, tra la prima notifica relativa alla necessità di riavviare un dispositivo <ph name="PRODUCT_OS_NAME" /> per applicare un aggiornamento in sospeso e la fine del periodo di tempo specificato dal criterio <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" />.
 
       Se non è impostato, per i dispositivi <ph name="PRODUCT_OS_NAME" /> viene utilizzato il periodo predefinito di 259200000 millisecondi (tre giorni).</translation>
@@ -4777,15 +4813,6 @@ Se l'impostazione viene impostata su true, o se non viene impostata, l'attestazi
 <translation id="8757552286070680084">Configurazione di DTC wilco</translation>
 <translation id="8758831693895931466">Attiva la registrazione alla gestione della cloud obbligatoria</translation>
 <translation id="8759829385824155666">Tipi di crittografia Kerberos consentiti</translation>
-<translation id="87635449713742708">Questo criterio consente di forzare l'esecuzione del codice di networking nel processo del browser.
-
-      Questo criterio è disattivato per impostazione predefinita e, se attivato, rende gli utenti vulnerabili ai problemi di sicurezza dopo che il processo di networking viene limitato tramite sandbox.
-
-      Questo criterio è pensato per offrire alle aziende la possibilità di eseguire la migrazione a programmi software di terze parti che non dipendono dalla combinazione delle API di networking. È consigliabile usare i server proxy anziché LSP e patch di API Win32.
-
-      Se questo criterio non viene impostato, il codice di networking verrà eseguito per impostazione predefinita fuori dal processo del browser.
-
-      Questo criterio verrà rimosso nella versione 82 di <ph name="PRODUCT_NAME" />.</translation>
 <translation id="8764119899999036911">Consente di specificare se il Kerberos SPN generato si basa sul nome canonico DNS o sul nome originale inserito. Se attivi questa impostazione, la ricerca CNAME verrà saltata e verrà utilizzato il nome del server inserito. Se disattivi l'impostazione o non la imposti, il nome canonico del server sarà determinato tramite ricerca CNAME.</translation>
 <translation id="8764477907716150749">Questa norma è per uso interno di <ph name="PRODUCT_NAME" />.</translation>
 <translation id="8777369558049831576">Mostra una casella di controllo "Apri sempre" nella finestra di dialogo relativa ai protocolli esterni</translation>
@@ -5073,6 +5100,7 @@ https://www.w3.org/TR/secure-contexts/
       Se la norma viene impostata su false, l'opzione "Intestazioni e piè di pagina" non viene selezionata nella finestra di dialogo dell'anteprima di stampa e l'utente non può modificarla.
 
       Se la norma viene impostata su true, l'opzione "Intestazioni e piè di pagina" viene selezionata nella finestra di dialogo dell'anteprima di stampa e l'utente non può modificarla.</translation>
+<translation id="9213751049772256263">Disattiva tutte le varianti</translation>
 <translation id="9217154963008402249">Frequenza dei pacchetti di rete di monitoraggio</translation>
 <translation id="922540222991413931">Configura fonti di installazione di estensioni, applicazioni e script utente</translation>
 <translation id="924557436754151212">Importa password salvate dal browser predefinito alla prima esecuzione</translation>

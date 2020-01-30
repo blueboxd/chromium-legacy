@@ -8,6 +8,7 @@
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
 #include "ios/chrome/browser/infobars/infobar_metrics_recorder.h"
+#import "ios/chrome/browser/ui/autofill/save_card_infobar_metrics_recorder.h"
 #import "ios/chrome/browser/ui/autofill/save_card_message_with_links.h"
 #import "ios/chrome/browser/ui/infobars/modals/infobar_modal_constants.h"
 #import "ios/chrome/browser/ui/infobars/modals/infobar_save_card_modal_delegate.h"
@@ -327,18 +328,18 @@ typedef NS_ENUM(NSInteger, ItemType) {
 }
 
 - (void)nameEditDidBegin {
-  // TODO(crbug.com/1014652): Implement, should only be needed to record
-  // SaveCard specific editing metrics.
+  [SaveCardInfobarMetricsRecorder
+      recordModalEvent:MobileMessagesSaveCardModalEvent::EditedCardHolderName];
 }
 
 - (void)monthEditDidBegin {
-  // TODO(crbug.com/1014652): Implement, should only be needed to record
-  // SaveCard specific editing metrics.
+  [SaveCardInfobarMetricsRecorder
+      recordModalEvent:MobileMessagesSaveCardModalEvent::EditedExpirationMonth];
 }
 
 - (void)yearEditDidBegin {
-  // TODO(crbug.com/1014652): Implement, should only be needed to record
-  // SaveCard specific editing metrics.
+  [SaveCardInfobarMetricsRecorder
+      recordModalEvent:MobileMessagesSaveCardModalEvent::EditedExpirationYear];
 }
 
 - (void)nameDidChange:(UITextField*)textField {

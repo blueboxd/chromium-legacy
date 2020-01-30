@@ -935,6 +935,14 @@ TEST_P(QuicChromiumClientStreamTest, HeadersAndDataBeforeHandle) {
             quiche::QuicheStringPiece(buffer->data(), data_len));
 }
 
+// Regression test for https://crbug.com/1043531.
+TEST_P(QuicChromiumClientStreamTest, ResetOnEmptyResponseHeaders) {
+  const spdy::SpdyHeaderBlock empty_response_headers;
+  ProcessHeaders(empty_response_headers);
+  int rv = handle_->ReadInitialHeaders(&headers_, CompletionOnceCallback());
+  EXPECT_THAT(rv, IsError(ERR_INVALID_RESPONSE));
+}
+
 }  // namespace
 }  // namespace test
 }  // namespace net

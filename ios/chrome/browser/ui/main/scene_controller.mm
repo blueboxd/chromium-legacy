@@ -1080,11 +1080,7 @@ enum class TabSwitcherDismissalMode { NONE, NORMAL, INCOGNITO };
     // Now that all the operations on the tabs have been done, display the
     // restore infobar if needed.
     dispatch_async(dispatch_get_main_queue(), ^{
-      TabModel* currentTabModel = [self currentTabModel];
-      [self.mainController.restoreHelper
-          showRestoreIfNeededUsingWebState:currentTabModel.webStateList
-                                               ->GetActiveWebState()
-                           sessionRestorer:currentTabModel];
+      [self.mainController.restoreHelper showRestoreIfNeeded];
       self.mainController.restoreHelper = nil;
     });
   }

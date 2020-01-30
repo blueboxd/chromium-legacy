@@ -32,7 +32,6 @@ class ASH_EXPORT LoginErrorBubble : public LoginBaseBubbleView {
   void SetPersistent(bool persistent) override;
 
   // views::View:
-  gfx::Size CalculatePreferredSize() const override;
   const char* GetClassName() const override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
 

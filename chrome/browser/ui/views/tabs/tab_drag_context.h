@@ -72,8 +72,13 @@ class TabDragContext {
   // the width of the new tab button.
   virtual int GetTabAreaWidth() const = 0;
 
-  // Returns where the drag region ends; tabs dragged past this should detach.
+  // Returns the width of the region in which dragged tabs are allowed to exist.
+  virtual int GetTabDragAreaWidth() const = 0;
+
+  // Returns where the drag region begins and ends; tabs dragged beyond these
+  // points should detach.
   virtual int TabDragAreaEndX() const = 0;
+  virtual int TabDragAreaBeginX() const = 0;
 
   // Returns the horizontal drag threshold - the amount a tab drag must move to
   // trigger a reorder. This is dependent on the width of tabs. The smaller the

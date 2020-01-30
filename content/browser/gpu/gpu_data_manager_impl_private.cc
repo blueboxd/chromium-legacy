@@ -510,6 +510,8 @@ void GpuDataManagerImplPrivate::InitializeGpuModes() {
 
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kDisableGpu)) {
+    // Chomecast audio-only builds run with the flag --disable-gpu. The GPU
+    // process should not be started in this case.
 #if BUILDFLAG(IS_CHROMECAST)
     fallback_modes_.clear();
     fallback_modes_.push_back(gpu::GpuMode::DISABLED);
@@ -588,24 +590,7 @@ bool GpuDataManagerImplPrivate::GpuAccessAllowed(std::string* reason) const {
 }
 
 bool GpuDataManagerImplPrivate::GpuProcessStartAllowed() const {
-#if defined(OS_WIN)
-  // On Windows if hardware GPU access is disabled we run the display compositor
-  // in the browser process and don't start a GPU process.
-  // TODO(kylechar/zmo): Remove special case for Windows here.
-  return GpuAccessAllowed(nullptr);
-#else
-#if BUILDFLAG(IS_CHROMECAST)
-  // Chromecast with GPU disabled should not try to run in the GPU process.
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kDisableGpu)) {
-    return false;
-  }
-#endif  // IS_CHROMECAST
-  // For all other platforms we either always run the display compositor in the
-  // GPU process (Linux, Mac and Fuchsia) or GPU access is never disabled
-  // (Android and Chrome OS).
-  return true;
-#endif
+  return gpu_mode_ != gpu::GpuMode::DISABLED;
 }
 
 void GpuDataManagerImplPrivate::RequestDxdiagDx12VulkanGpuInfoIfNeeded(

@@ -15,6 +15,36 @@
 #include "components/autofill_assistant/browser/client_status.h"
 
 namespace autofill_assistant {
+namespace {
+
+AutofillErrorInfoProto::AutofillFieldError* AddAutofillError(
+    const RequiredFieldsFallbackHandler::RequiredField& required_field,
+    ClientStatus* client_status) {
+  auto* field_error = client_status->mutable_details()
+                          ->mutable_autofill_error_info()
+                          ->add_autofill_field_error();
+  *field_error->mutable_field() =
+      required_field.selector.ToElementReferenceProto();
+  field_error->set_field_key(required_field.fallback_key);
+  return field_error;
+}
+
+void FillStatusDetailsWithMissingFallbackData(
+    const RequiredFieldsFallbackHandler::RequiredField& required_field,
+    ClientStatus* client_status) {
+  auto* field_error = AddAutofillError(required_field, client_status);
+  field_error->set_no_fallback_value(true);
+}
+
+void FillStatusDetailsWithError(
+    const RequiredFieldsFallbackHandler::RequiredField& required_field,
+    ProcessedActionStatusProto error_status,
+    ClientStatus* client_status) {
+  auto* field_error = AddAutofillError(required_field, client_status);
+  field_error->set_status(error_status);
+}
+
+}  // namespace
 
 RequiredFieldsFallbackHandler::RequiredFieldsFallbackHandler(
     const std::vector<RequiredField>& required_fields,
@@ -44,7 +74,9 @@ void RequiredFieldsFallbackHandler::CheckAndFallbackRequiredFields(
     base::OnceCallback<void(const ClientStatus&,
                             const base::Optional<ClientStatus>&)>
         status_update_callback) {
-  initial_autofill_status_ = initial_autofill_status;
+  DCHECK(fallback_data != nullptr);
+
+  client_status_ = initial_autofill_status;
   status_update_callback_ = std::move(status_update_callback);
 
   if (required_fields_.empty()) {
@@ -66,7 +98,10 @@ void RequiredFieldsFallbackHandler::CheckAllRequiredFields(
   DCHECK(!batch_element_checker_);
   batch_element_checker_ = std::make_unique<BatchElementChecker>();
   for (size_t i = 0; i < required_fields_.size(); i++) {
-    if (required_fields_[i].forced) {
+    // First run (with fallback data) we skip checking forced fields, since
+    // we overwrite them anyway. Second run (without fallback data) forced
+    // fields should be checked.
+    if (required_fields_[i].forced && fallback_data != nullptr) {
       continue;
     }
 
@@ -106,14 +141,14 @@ void RequiredFieldsFallbackHandler::OnCheckRequiredFieldsDone(
 
   if (!should_fallback) {
     std::move(status_update_callback_)
-        .Run(ClientStatus(ACTION_APPLIED), initial_autofill_status_);
+        .Run(ClientStatus(ACTION_APPLIED), client_status_);
     return;
   }
 
-  if (!fallback_data) {
+  if (fallback_data == nullptr) {
     // Validation failed and we don't want to try the fallback.
     std::move(status_update_callback_)
-        .Run(ClientStatus(MANUAL_FALLBACK), initial_autofill_status_);
+        .Run(ClientStatus(MANUAL_FALLBACK), client_status_);
     return;
   }
 
@@ -127,11 +162,13 @@ void RequiredFieldsFallbackHandler::OnCheckRequiredFieldsDone(
 
     if (fallback_data->GetValue(required_field.fallback_key).has_value()) {
       has_fallbacks = true;
+    } else {
+      FillStatusDetailsWithMissingFallbackData(required_field, &client_status_);
     }
   }
   if (!has_fallbacks) {
     std::move(status_update_callback_)
-        .Run(ClientStatus(MANUAL_FALLBACK), initial_autofill_status_);
+        .Run(ClientStatus(MANUAL_FALLBACK), client_status_);
     return;
   }
 
@@ -182,7 +219,13 @@ void RequiredFieldsFallbackHandler::OnGetFallbackFieldTag(
                                               std::move(fallback_data));
   }
 
-  DVLOG(3) << "Setting fallback value for " << required_field.selector;
+  if (!element_tag_status.ok()) {
+    DVLOG(3) << "Status for element tag was "
+             << element_tag_status.proto_status();
+  }
+
+  DVLOG(3) << "Setting fallback value for " << required_field.selector << " ("
+           << element_tag << ")";
   if (element_tag == "SELECT") {
     action_delegate_->SelectOption(
         required_field.selector, fallback_value.value(),
@@ -205,9 +248,13 @@ void RequiredFieldsFallbackHandler::OnSetFallbackFieldValue(
     std::unique_ptr<FallbackData> fallback_data,
     const ClientStatus& set_field_status) {
   if (!set_field_status.ok()) {
-    // Fallback failed: we stop the script without checking the fields.
+    FillStatusDetailsWithError(required_fields_[required_fields_index],
+                               set_field_status.proto_status(),
+                               &client_status_);
+
+    // Fallback failed: we stop the script without checking the other fields.
     std::move(status_update_callback_)
-        .Run(ClientStatus(MANUAL_FALLBACK), initial_autofill_status_);
+        .Run(ClientStatus(MANUAL_FALLBACK), client_status_);
     return;
   }
 

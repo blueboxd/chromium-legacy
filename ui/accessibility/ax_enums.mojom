@@ -41,6 +41,7 @@ enum Event {
   kEndOfTest,        // Sentinel value indicating the end of a test
   kExpandedChanged,  // Web
   kFocus,
+  kFocusAfterMenuClose,
   kFocusContext,  // Contextual focus event that must delay the next focus event
   kHide,          // Remove: http://crbug.com/392502
   kHitTestResult,

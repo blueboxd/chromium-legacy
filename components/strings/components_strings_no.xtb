@@ -364,7 +364,7 @@
 <translation id="2544644783021658368">Enkeltdokument</translation>
 <translation id="254947805923345898">Regelverdien er ikke gyldig.</translation>
 <translation id="255002559098805027"><ph name="HOST_NAME" /> sendte et ugyldig svar.</translation>
-<translation id="2553853292994445426">Kontrollér innstillingene for sikker DNS. Det kan hende at du har konfigurert en sikker DNS-tjener som vi ikke klarer å koble til.</translation>
+<translation id="2553853292994445426">Kontrollér innstillingene for sikker DNS. Det er mulig du har konfigurert en sikker DNS-tjener som vi ikke klarer å koble til.</translation>
 <translation id="2556876185419854533">&amp;Angre endringen</translation>
 <translation id="257674075312929031">Gruppe</translation>
 <translation id="2586657967955657006">Utklippstavle</translation>

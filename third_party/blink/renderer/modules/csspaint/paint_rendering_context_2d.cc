@@ -110,10 +110,11 @@ cc::PaintCanvas* PaintRenderingContext2D::ExistingDrawingCanvas() const {
   return Canvas();
 }
 
-void PaintRenderingContext2D::ValidateStateStack() const {
+void PaintRenderingContext2D::ValidateStateStackWithCanvas(
+    const cc::PaintCanvas* canvas) const {
 #if DCHECK_IS_ON()
-  if (cc::PaintCanvas* sk_canvas = ExistingDrawingCanvas()) {
-    DCHECK_EQ(static_cast<size_t>(sk_canvas->getSaveCount()),
+  if (canvas) {
+    DCHECK_EQ(static_cast<size_t>(canvas->getSaveCount()),
               state_stack_.size() + 1);
   }
 #endif

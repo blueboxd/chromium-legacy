@@ -12,7 +12,7 @@
 #endif
 
 @implementation ChromeCoordinator {
-  ios::ChromeBrowserState* _browserState;
+  ChromeBrowserState* _browserState;
 }
 
 - (nullable instancetype)initWithBaseViewController:
@@ -21,8 +21,8 @@
 }
 
 - (nullable instancetype)
-initWithBaseViewController:(UIViewController*)viewController
-              browserState:(ios::ChromeBrowserState*)browserState {
+    initWithBaseViewController:(UIViewController*)viewController
+                  browserState:(ChromeBrowserState*)browserState {
   if (self = [super init]) {
     _baseViewController = viewController;
     _childCoordinators = [MutableCoordinatorArray array];
@@ -49,7 +49,7 @@ initWithBaseViewController:(UIViewController*)viewController
   return self.childCoordinators.lastObject;
 }
 
-- (ios::ChromeBrowserState*)browserState {
+- (ChromeBrowserState*)browserState {
   return self.browser ? self.browser->GetBrowserState() : _browserState;
 }
 

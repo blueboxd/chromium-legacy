@@ -5135,4 +5135,135 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
   EXPECT_EQ(5, GetEnd(range_span_ignored_nodes.Get())->anchor_id());
   EXPECT_EQ(0, GetEnd(range_span_ignored_nodes.Get())->text_offset());
 }
+
+TEST_F(AXPlatformNodeTextRangeProviderTest, TestValidateStartAndEnd) {
+  // This test updates the tree structure to test a specific edge case -
+  // CreatePositionAtFormatBoundary when text lies at the beginning and end
+  // of the AX tree.
+  AXNodeData root_data;
+  root_data.id = 1;
+  root_data.role = ax::mojom::Role::kRootWebArea;
+
+  AXNodeData text_data;
+  text_data.id = 2;
+  text_data.role = ax::mojom::Role::kStaticText;
+  text_data.SetName("some text");
+
+  AXNodeData more_text_data;
+  more_text_data.id = 3;
+  more_text_data.role = ax::mojom::Role::kStaticText;
+  more_text_data.SetName("more text");
+
+  root_data.child_ids = {text_data.id, more_text_data.id};
+
+  ui::AXTreeUpdate update;
+  ui::AXTreeID tree_id = ui::AXTreeID::CreateNewAXTreeID();
+  update.root_id = root_data.id;
+  update.tree_data.tree_id = tree_id;
+  update.has_tree_data = true;
+  update.nodes = {root_data, text_data, more_text_data};
+  Init(update);
+  AXNodePosition::SetTree(tree_.get());
+
+  // Create a position at MaxTextOffset
+  // Making |owner| AXID:1 so that |TestAXNodeWrapper::BuildAllWrappers|
+  // will build the entire tree.
+  AXPlatformNodeWin* owner = static_cast<AXPlatformNodeWin*>(
+      AXPlatformNodeFromNode(GetNodeFromTree(tree_id, 1)));
+
+  // TextPosition, anchor_id=2, text_offset=9, annotated_text=some text<>
+  AXNodePosition::AXPositionInstance range_start =
+      AXNodePosition::CreateTextPosition(tree_id, /*anchor_id=*/1,
+                                         /*text_offset=*/0,
+                                         ax::mojom::TextAffinity::kDownstream);
+
+  // TextPosition, anchor_id=2, text_offset=9, annotated_text=some text<>
+  AXNodePosition::AXPositionInstance range_end =
+      AXNodePosition::CreateTextPosition(tree_id, /*anchor_id=*/3,
+                                         /*text_offset=*/9,
+                                         ax::mojom::TextAffinity::kDownstream);
+
+  ComPtr<ITextRangeProvider> text_range_provider =
+      AXPlatformNodeTextRangeProviderWin::CreateTextRangeProvider(
+          owner, std::move(range_start), std::move(range_end));
+
+  // Since the end of the range is at MaxTextOffset, moving it by 1 character
+  // should have an expected_count of 0.
+  EXPECT_UIA_MOVE_ENDPOINT_BY_UNIT(
+      text_range_provider, TextPatternRangeEndpoint_End, TextUnit_Character,
+      /*count*/ 1,
+      /*expected_text*/ L"some textmore text",
+      /*expected_count*/ 0);
+
+  // Now make a change to shorten MaxTextOffset. Ensure that this position is
+  // invalid, then call SnapToMaxTextOffsetIfBeyond and ensure that it is now
+  // valid.
+  more_text_data.SetName("ore tex");
+  AXTreeUpdate test_update;
+  test_update.nodes = {more_text_data};
+  ASSERT_TRUE(tree_->Unserialize(test_update));
+
+  EXPECT_UIA_MOVE_ENDPOINT_BY_UNIT(
+      text_range_provider, TextPatternRangeEndpoint_End, TextUnit_Character,
+      /*count*/ 1,
+      /*expected_text*/ L"some textore tex",
+      /*expected_count*/ 0);
+
+  // Now modify the tree so that start_ is pointing to a node that has been
+  // removed from the tree.
+  text_data.SetName("");
+  AXTreeUpdate test_update2;
+  test_update2.nodes = {text_data};
+  ASSERT_TRUE(tree_->Unserialize(test_update2));
+
+  EXPECT_UIA_MOVE_ENDPOINT_BY_UNIT(
+      text_range_provider, TextPatternRangeEndpoint_Start, TextUnit_Character,
+      /*count*/ 1,
+      /*expected_text*/ L"re tex",
+      /*expected_count*/ 1);
+
+  // Now adjust a node that's not the final node in the tree to point past
+  // MaxTextOffset. First move the range endpoints so that they're pointing to
+  // MaxTextOffset on the first node.
+  text_data.SetName("some text");
+  AXTreeUpdate test_update3;
+  test_update3.nodes = {text_data};
+  ASSERT_TRUE(tree_->Unserialize(test_update3));
+
+  EXPECT_UIA_MOVE_ENDPOINT_BY_UNIT(
+      text_range_provider, TextPatternRangeEndpoint_Start, TextUnit_Character,
+      /*count*/ -10,
+      /*expected_text*/ L"some textore tex",
+      /*expected_count*/ -10);
+
+  // Ensure that we're at MaxTextOffset on the first node by first
+  // overshooting a negative move...
+  EXPECT_UIA_MOVE_ENDPOINT_BY_UNIT(
+      text_range_provider, TextPatternRangeEndpoint_End, TextUnit_Character,
+      /*count*/ -8,
+      /*expected_text*/ L"some tex",
+      /*expected_count*/ -8);
+
+  // ...followed by a positive move
+  EXPECT_UIA_MOVE_ENDPOINT_BY_UNIT(
+      text_range_provider, TextPatternRangeEndpoint_End, TextUnit_Character,
+      /*count*/ 1,
+      /*expected_text*/ L"some text",
+      /*expected_count*/ 1);
+
+  // Now our range's start_ is pointing to offset 0 on the first node and end_
+  // is pointing to MaxTextOffset on the first node. Now modify the tree so
+  // that MaxTextOffset is invalid on the first node and ensure that we can
+  // still move
+  text_data.SetName("some tex");
+  AXTreeUpdate test_update4;
+  test_update4.nodes = {text_data};
+  ASSERT_TRUE(tree_->Unserialize(test_update4));
+
+  EXPECT_UIA_MOVE_ENDPOINT_BY_UNIT(
+      text_range_provider, TextPatternRangeEndpoint_Start, TextUnit_Character,
+      /*count*/ 1,
+      /*expected_text*/ L"ome tex",
+      /*expected_count*/ 1);
+}
 }  // namespace ui

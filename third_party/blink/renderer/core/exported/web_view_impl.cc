@@ -1284,7 +1284,7 @@ void WebViewImpl::UpdateBrowserControlsConstraint(
       GetBrowserControls().PermittedState();
 
   GetBrowserControls().UpdateConstraintsAndState(
-      constraint, cc::BrowserControlsState::kBoth, false);
+      constraint, cc::BrowserControlsState::kBoth);
 
   // If the controls are going from a locked hidden to unlocked state, or vice
   // versa, the ICB size needs to change but we can't rely on getting a

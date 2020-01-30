@@ -91,7 +91,7 @@ String SVGRect::ValueAsString() const {
 }
 
 void SVGRect::Add(SVGPropertyBase* other, SVGElement*) {
-  value_ += ToSVGRect(other)->Value();
+  value_ += To<SVGRect>(other)->Value();
 }
 
 void SVGRect::CalculateAnimatedValue(
@@ -102,9 +102,9 @@ void SVGRect::CalculateAnimatedValue(
     SVGPropertyBase* to_value,
     SVGPropertyBase* to_at_end_of_duration_value,
     SVGElement*) {
-  SVGRect* from_rect = ToSVGRect(from_value);
-  SVGRect* to_rect = ToSVGRect(to_value);
-  SVGRect* to_at_end_of_duration_rect = ToSVGRect(to_at_end_of_duration_value);
+  auto* from_rect = To<SVGRect>(from_value);
+  auto* to_rect = To<SVGRect>(to_value);
+  auto* to_at_end_of_duration_rect = To<SVGRect>(to_at_end_of_duration_value);
 
   float animated_x = X();
   float animated_y = Y();

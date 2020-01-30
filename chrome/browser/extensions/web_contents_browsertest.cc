@@ -102,7 +102,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, WebContents) {
 IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ExtensionNavigationUIData) {
   ASSERT_TRUE(embedded_test_server()->Start());
   content::WebContents* web_contents = GetActiveWebContents(browser());
-  GURL last_committed_main_frame_url = web_contents->GetLastCommittedURL();
   ExtensionNavigationUIDataObserver observer(web_contents);
 
   // Load a page with an iframe.
@@ -129,9 +128,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ExtensionNavigationUIData) {
               frame_data.parent_frame_id);
     EXPECT_EQ(expected_tab_id, frame_data.tab_id);
     EXPECT_EQ(expected_window_id, frame_data.window_id);
-    EXPECT_EQ(last_committed_main_frame_url,
-              frame_data.last_committed_main_frame_url);
-    EXPECT_FALSE(frame_data.pending_main_frame_url);
   }
 
   // Test ExtensionNavigationUIData for the sub-frame.
@@ -149,8 +145,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ExtensionNavigationUIData) {
     EXPECT_EQ(ExtensionApiFrameIdMap::kTopFrameId, frame_data.parent_frame_id);
     EXPECT_EQ(expected_tab_id, frame_data.tab_id);
     EXPECT_EQ(expected_window_id, frame_data.window_id);
-    EXPECT_EQ(url, frame_data.last_committed_main_frame_url);
-    EXPECT_FALSE(frame_data.pending_main_frame_url);
   }
 }
 

@@ -7,7 +7,10 @@
 #include <memory>
 
 #include "build/build_config.h"
+#include "ui/accessibility/ax_enums.mojom.h"
+#include "ui/accessibility/platform/ax_platform_node_base.h"
 #include "ui/native_theme/native_theme.h"
+#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/controls/button/menu_button_controller.h"
 #include "ui/views/controls/menu/menu_controller.h"
 #include "ui/views/controls/menu/menu_delegate.h"
@@ -24,6 +27,24 @@
 #endif
 
 namespace views {
+
+namespace {
+
+// This should be called after the menu has closed, to fire a focus event on
+// the previously focused node in the parent widget, if one exists.
+void FireFocusAfterMenuClose(base::WeakPtr<Widget> widget) {
+  if (widget) {
+    FocusManager* focus_manager = widget->GetFocusManager();
+    if (focus_manager && focus_manager->GetFocusedView()) {
+      focus_manager->GetFocusedView()
+          ->GetViewAccessibility()
+          .FireFocusAfterMenuClose();
+    }
+  }
+}
+
+}  // namespace
+
 namespace internal {
 
 #if !defined(OS_MACOSX)
@@ -162,8 +183,14 @@ base::TimeTicks MenuRunnerImpl::GetClosingEventTime() const {
 void MenuRunnerImpl::OnMenuClosed(NotifyType type,
                                   MenuItemView* menu,
                                   int mouse_event_flags) {
-  if (controller_)
+  base::WeakPtr<Widget> parent_widget;
+  if (controller_) {
     closing_event_time_ = controller_->closing_event_time();
+    // Get a pointer to the parent widget before destroying the menu.
+    if (controller_->owner())
+      parent_widget = controller_->owner()->GetWeakPtr();
+  }
+
   menu_->RemoveEmptyMenus();
   menu_->set_controller(nullptr);
 
@@ -177,6 +204,7 @@ void MenuRunnerImpl::OnMenuClosed(NotifyType type,
   // destroyed.
   menu_->DestroyAllMenuHosts();
   if (delete_after_run_) {
+    FireFocusAfterMenuClose(parent_widget);
     delete this;
     return;
   }
@@ -193,6 +221,7 @@ void MenuRunnerImpl::OnMenuClosed(NotifyType type,
     if (ref && type == NOTIFY_DELEGATE)
       menu_->GetDelegate()->OnMenuClosed(menu);
   }
+  FireFocusAfterMenuClose(parent_widget);
 }
 
 void MenuRunnerImpl::SiblingMenuCreated(MenuItemView* menu) {

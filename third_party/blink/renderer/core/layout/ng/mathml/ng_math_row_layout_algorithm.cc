@@ -7,9 +7,10 @@
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_child_layout_context.h"
 #include "third_party/blink/renderer/core/layout/ng/mathml/ng_math_layout_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_block_break_token.h"
-#include "third_party/blink/renderer/core/layout/ng/ng_fragment.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_box_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_length_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_out_of_flow_layout_part.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
 #include "third_party/blink/renderer/core/mathml/mathml_element.h"
 
 namespace blink {
@@ -63,15 +64,16 @@ void NGMathRowLayoutAlgorithm::LayoutRowItems(
         To<NGBlockNode>(child).Layout(child_space, nullptr /* break token */);
     const NGPhysicalContainerFragment& physical_fragment =
         result->PhysicalFragment();
-    NGFragment fragment(ConstraintSpace().GetWritingMode(), physical_fragment);
+    NGBoxFragment fragment(ConstraintSpace().GetWritingMode(),
+                           ConstraintSpace().Direction(),
+                           To<NGPhysicalBoxFragment>(physical_fragment));
 
     NGBoxStrut margins =
         ComputeMarginsFor(child_space, child_style, ConstraintSpace());
     inline_offset += margins.inline_start;
 
-    // TODO(rbuis): get ascent from physical fragment. Take into account writing
-    // mode.
-    LayoutUnit ascent;
+    LayoutUnit ascent = margins.block_start +
+                        fragment.Baseline().value_or(fragment.BlockSize());
     *max_row_block_baseline = std::max(*max_row_block_baseline, ascent);
 
     // TODO(rbuis): Operators can add lspace and rspace.
@@ -120,7 +122,8 @@ scoped_refptr<const NGLayoutResult> NGMathRowLayoutAlgorithm::Layout() {
         To<NGPhysicalContainerFragment>(*child.fragment), child.offset);
   }
 
-  // TODO(rbuis): handle baselines.
+  container_builder_.SetBaseline(border_scrollbar_padding_.block_start +
+                                 max_row_block_baseline);
 
   auto block_size = ComputeBlockSizeForFragment(
       ConstraintSpace(), Style(), border_padding_,

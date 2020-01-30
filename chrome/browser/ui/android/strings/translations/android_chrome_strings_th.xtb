@@ -134,6 +134,7 @@
 <translation id="1994173015038366702">URL ของเว็บไซต์</translation>
 <translation id="2000419248597011803">ส่งคุกกี้และการค้นหาบางรายการจากแถบที่อยู่และช่องค้นหาไปยังเครื่องมือค้นหาเริ่มต้น</translation>
 <translation id="2002537628803770967">ใช้ข้อมูลบัตรเครดิตและที่อยู่จาก Google Pay</translation>
+<translation id="2012973609889389923">เว็บไซต์รวดเร็ว</translation>
 <translation id="2013642289801508067">{FILE_COUNT,plural, =1{# ไฟล์}other{# ไฟล์}}</translation>
 <translation id="2017836877785168846">ล้างประวัติการเข้าชมและการเติมข้อความอัตโนมัติในแถบที่อยู่เว็บ</translation>
 <translation id="2021896219286479412">ส่วนควบคุมเว็บไซต์แบบเต็มหน้าจอ</translation>
@@ -307,6 +308,7 @@
 <translation id="3298243779924642547">Lite</translation>
 <translation id="3303414029551471755">ต้องการดำเนินการดาวน์โหลดเนื้อหานี้ไหม</translation>
 <translation id="3306398118552023113">แอปนี้กำลังทำงานใน Chrome</translation>
+<translation id="3312292613668865961">ถามก่อนที่จะอนุญาตให้เว็บไซต์เข้าถึงอุปกรณ์และข้อมูล Virtual Reality ของคุณ (แนะนำ)</translation>
 <translation id="3315103659806849044">ขณะนี้คุณกำลังปรับแต่งการตั้งค่าการซิงค์และบริการ Google แตะปุ่ม "ยืนยัน" ใกล้ด้านล่างของหน้าจอเพื่อเปิดการซิงค์ให้เสร็จสิ้น กลับ</translation>
 <translation id="3328801116991980348">ข้อมูลไซต์</translation>
 <translation id="3333961966071413176">รายชื่อติดต่อทั้งหมด</translation>
@@ -512,6 +514,7 @@
 <translation id="4915549754973153784"><ph name="BEGIN_LINK" />รับความช่วยเหลือ<ph name="END_LINK" />ระหว่างการค้นหาอุปกรณ์…</translation>
 <translation id="4921180162323349895">{FILE_COUNT,plural, =1{# หน้า}other{# หน้า}}</translation>
 <translation id="4932247056774066048">เนื่องจากคุณกำลังจะออกจากระบบบัญชีที่จัดการโดย <ph name="DOMAIN_NAME" /> ข้อมูลใน Chrome จะถูกลบออกจากอุปกรณ์นี้ แต่จะยังคงอยู่ในบัญชี Google</translation>
+<translation id="4935305910887312910">ถามก่อนที่จะอนุญาตให้เว็บไซต์รับข้อมูลตำแหน่งของกล้องหรือทำแผนผังห้องของคุณ (แนะนำ)</translation>
 <translation id="4943703118917034429">Virtual Reality</translation>
 <translation id="4943872375798546930">ไม่มีผลการค้นหา</translation>
 <translation id="4958708863221495346"><ph name="URL_OF_THE_CURRENT_TAB" /> กำลังแชร์หน้าจอของคุณ</translation>
@@ -743,6 +746,7 @@
 <translation id="6573431926118603307">แท็บที่คุณเปิดไว้ใน Chrome ในอุปกรณ์เครื่องอื่นๆ จะปรากฏที่นี่</translation>
 <translation id="6583199322650523874">บุ๊กมาร์กหน้าปัจจุบัน</translation>
 <translation id="6593061639179217415">เว็บไซต์เวอร์ชันเดสก์ท็อป</translation>
+<translation id="6597891566292541626">จัดตำแหน่งคิวอาร์โค้ด/บาร์โค้ดให้อยู่ในกรอบนี้</translation>
 <translation id="6600954340915313787">คัดลอกไปยัง Chrome แล้ว</translation>
 <translation id="6608650720463149374"><ph name="GIGABYTES" /> GB</translation>
 <translation id="6612358246767739896">เนื้อหาที่ได้รับความคุ้มครอง</translation>
@@ -952,6 +956,7 @@
 <translation id="8109613176066109935">เปิดการซิงค์เพื่อรับบุ๊กมาร์กในอุปกรณ์ทุกเครื่องของคุณ</translation>
 <translation id="8110087112193408731">ต้องการแสดงกิจกรรม Chrome ในไลฟ์สไตล์ดิจิทัลไหม</translation>
 <translation id="8116925261070264013">ปิดเสียง</translation>
+<translation id="8127542551745560481">แก้ไขหน้าแรก</translation>
 <translation id="813082847718468539">ดูข้อมูลเว็บไซต์</translation>
 <translation id="8156139159503939589">คุณอ่านภาษาใดได้บ้าง</translation>
 <translation id="8168435359814927499">เนื้อหา</translation>
@@ -1023,6 +1028,7 @@
 <translation id="8676374126336081632">ล้างข้อมูลที่ป้อน</translation>
 <translation id="8687353297350450808">{N_BARS,plural, =1{ระดับความแรงของสัญญาณ: # แถบ}other{ระดับความแรงของสัญญาณ: # แถบ}}</translation>
 <translation id="868929229000858085">ค้นหารายชื่อติดต่อ</translation>
+<translation id="8698438463325761328">บล็อกเว็บไซต์ไม่ให้เข้าถึงอุปกรณ์และข้อมูล Virtual Reality ของคุณ</translation>
 <translation id="869891660844655955">วันหมดอายุ</translation>
 <translation id="8728487861892616501">การใช้แอปพลิเคชันนี้หมายความว่าคุณยอมรับ <ph name="BEGIN_LINK1" />ข้อกำหนดในการให้บริการ<ph name="END_LINK1" /> และ <ph name="BEGIN_LINK2" />ประกาศเกี่ยวกับนโยบายความเป็นส่วนตัว<ph name="END_LINK2" /> ของ Chrome รวมถึง <ph name="BEGIN_LINK3" />ประกาศเกี่ยวกับนโยบายความเป็นส่วนตัวสำหรับบัญชี Google ที่จัดการด้วย Family Link<ph name="END_LINK3" /></translation>
 <translation id="8748850008226585750">เนื้อหาถูกซ่อนไว้</translation>
@@ -1039,6 +1045,7 @@
 <translation id="883806473910249246">เกิดข้อผิดพลาดขณะดาวน์โหลดเนื้อหา</translation>
 <translation id="8840953339110955557">หน้าเว็บนี้อาจแตกต่างไปจากเวอร์ชันที่ออนไลน์</translation>
 <translation id="8847988622838149491">USB</translation>
+<translation id="884828189055900810">บล็อกเว็บไซต์ไม่ให้รับข้อมูลตำแหน่งของกล้องหรือทำแผนผังห้องของคุณ</translation>
 <translation id="8853345339104747198"><ph name="TAB_TITLE" /> เป็นแท็บ</translation>
 <translation id="885701979325669005">พื้นที่เก็บข้อมูล</translation>
 <translation id="889338405075704026">ไปที่การตั้งค่า Chrome</translation>
@@ -1046,6 +1053,7 @@
 <translation id="8909135823018751308">แชร์…</translation>
 <translation id="8912362522468806198">บัญชี Google</translation>
 <translation id="8920114477895755567">กำลังรอรายละเอียดของผู้ปกครอง</translation>
+<translation id="8921772741368021346"><ph name="POSITION" /> / <ph name="DURATION" /></translation>
 <translation id="8922289737868596582">ดาวน์โหลดหน้าจากปุ่มตัวเลือกเพิ่มเติมเพื่อใช้งานแบบออฟไลน์</translation>
 <translation id="8926666909099850184">NFC ในอุปกรณ์นี้ปิดอยู่ เปิดได้ใน<ph name="BEGIN_LINK" />การตั้งค่า Android<ph name="END_LINK" /></translation>
 <translation id="8937772741022875483">ต้องการนำกิจกรรม Chrome ออกจากไลฟ์สไตล์ดิจิทัลไหม</translation>

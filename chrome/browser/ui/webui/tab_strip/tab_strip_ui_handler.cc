@@ -342,6 +342,9 @@ void TabStripUIHandler::RegisterMessages() {
       "getTabs",
       base::Bind(&TabStripUIHandler::HandleGetTabs, base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
+      "getWindowId", base::Bind(&TabStripUIHandler::HandleGetWindowId,
+                                base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
       "getGroupVisualData",
       base::Bind(&TabStripUIHandler::HandleGetGroupVisualData,
                  base::Unretained(this)));
@@ -478,6 +481,14 @@ void TabStripUIHandler::HandleGetTabs(const base::ListValue* args) {
     tabs.Append(GetTabData(tab_strip_model->GetWebContentsAt(i), i));
   }
   ResolveJavascriptCallback(callback_id, tabs);
+}
+
+void TabStripUIHandler::HandleGetWindowId(const base::ListValue* args) {
+  AllowJavascript();
+  const base::Value& callback_id = args->GetList()[0];
+  ResolveJavascriptCallback(
+      callback_id,
+      base::Value(extensions::ExtensionTabUtil::GetWindowId(browser_)));
 }
 
 void TabStripUIHandler::HandleGetGroupVisualData(const base::ListValue* args) {

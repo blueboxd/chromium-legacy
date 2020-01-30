@@ -26,7 +26,6 @@
 <translation id="1031362278801463162">Načítava sa ukážka</translation>
 <translation id="1032605640136438169">Prečítajte si nové zmluvné podmienky</translation>
 <translation id="103279545524624934">Ak chcete spúšťať aplikácie pre Android, uvoľnite miesto na disku.</translation>
-<translation id="1033343386521881354">Na tlačovom serveri bola nájdená 1 tlačiareň.</translation>
 <translation id="1033780634303702874">Mať prístup k zariadeniam pripojeným cez sériový port</translation>
 <translation id="1034942643314881546">Aktivovanie nástroja ADB na vytváranie obrázkov aplikácií</translation>
 <translation id="1036348656032585052">Vypnúť</translation>
@@ -34,7 +33,6 @@
 <translation id="1036982837258183574">Režim celej obrazovky ukončíte stlačením klávesa |<ph name="ACCELERATOR" />|</translation>
 <translation id="1038168778161626396">Len zašifrovanie</translation>
 <translation id="1039337018183941703">Neplatný alebo poškodený súbor</translation>
-<translation id="1039850285407663109">Vybraný súbor je neznámy a môže byť nebezpečný. Než ho otvoríte, zvážte jeho kontrolu.</translation>
 <translation id="1041175011127912238">Táto stránka nereaguje</translation>
 <translation id="1041263367839475438">Dostupné zariadenia</translation>
 <translation id="1042174272890264476">Váš počítač má tiež vstavanú knižnicu RLZ prehliadača <ph name="SHORT_PRODUCT_NAME" />. Knižnica RLZ priradí nejedinečnú značku, pomocou ktorej sa nedá zistiť totožnosť, na meranie výsledkov a použitia prehliadača <ph name="SHORT_PRODUCT_NAME" /> vyplývajúceho z konkrétnej propagačnej kampane. Tieto menovky sa niekedy zobrazujú v dopytoch Vyhľadávania Google v prehliadači <ph name="PRODUCT_NAME" />.</translation>
@@ -639,7 +637,6 @@
 <translation id="1858585891038687145">Dôverovať tomuto certifikátu na identifikáciu tvorcov softvéru</translation>
 <translation id="1861262398884155592">Tento priečinok je prázdny</translation>
 <translation id="1863182668524159459">Nenašli sa žiadne sériové porty</translation>
-<translation id="1863552924692672565">Súbor <ph name="FILE_NAME" /> je neznámy. Ak chcete minimalizovať riziko, skontrolujte ho.</translation>
 <translation id="1864111464094315414">Prihlásiť sa</translation>
 <translation id="1864400682872660285">Chladnejšie</translation>
 <translation id="1864454756846565995">Zariadenie USB-C (port vzadu)</translation>
@@ -1372,7 +1369,7 @@ Ak chcete spravovať nastavenia tohto účtu, nainštalujte si do zariadenia apl
 <translation id="2865919525181940183">Snímky programov, ktoré sú momentálne na obrazovke</translation>
 <translation id="286674810810214575">Kontrolujú sa zdroje napájania…</translation>
 <translation id="2867768963760577682">Otvoriť ako pevnú kartu</translation>
-<translation id="2868184003987917410">Nepovoliť webom používať vaše zariadenia virtuálnej reality a spojené údaje</translation>
+<translation id="2868184003987917410">Nepovoliť webom používať vaše zariadenia a údaje virtuálnej reality</translation>
 <translation id="2868746137289129307">Toto rozšírenie je zastarané a je zakázané podnikovým pravidlom. Možno bude opäť automaticky povolené, keď bude k dispozícii novšia verzia.</translation>
 <translation id="2870560284913253234">Web</translation>
 <translation id="2870909136778269686">Prebieha aktualizácia...</translation>
@@ -2515,7 +2512,7 @@ Ak chcete spravovať nastavenia tohto účtu, nainštalujte si do zariadenia apl
 <translation id="4501530680793980440">Potvrdiť odstránenie</translation>
 <translation id="4502423230170890588">Odstrániť z tohto zariadenia</translation>
 <translation id="4504940961672722399">Rozšírenie použijete stlačením klávesov <ph name="EXTENSION_SHORTCUT" />.</translation>
-<translation id="4507164039066603071">Nepovoliť webom používať polohu kamery alebo mapovať vašu miestnosť</translation>
+<translation id="4507164039066603071">Nepovoliť webom používať polohu kamery ani mapovať vašu miestnosť</translation>
 <translation id="4508051413094283164">Otvoriť všetky v okne inkognito</translation>
 <translation id="4508265954913339219">Aktivácia zlyhala</translation>
 <translation id="4508765956121923607">&amp;Zobraziť zdrojový kód</translation>
@@ -4024,7 +4021,6 @@ Ak chcete spravovať nastavenia tohto účtu, nainštalujte si do zariadenia apl
 <translation id="6678717876183468697">Webová adresa dopytu</translation>
 <translation id="6680442031740878064">K dispozícii: <ph name="AVAILABLE_SPACE" /></translation>
 <translation id="6680650203439190394">Ohodnotiť</translation>
-<translation id="6681301928961274620">Na tlačovom serveri neboli nájdené žiadne tlačiarne.</translation>
 <translation id="6681668084120808868">Zaznamenať fotografiu</translation>
 <translation id="6681964764822470072">Aplikácia <ph name="APP_NAME" /> bude odinštalovaná.</translation>
 <translation id="668599234725812620">Otvoriť Google Play</translation>
@@ -4274,7 +4270,7 @@ Ak chcete spravovať nastavenia tohto účtu, nainštalujte si do zariadenia apl
 <translation id="703001695939087067">Vstúpili ste do režimu prehľadu okien. Môžete ich prechádzať pomocou klávesa Tab.</translation>
 <translation id="7031608529463141342"><ph name="WINDOW_TITLE" /> – sériový port je pripojený</translation>
 <translation id="7031962166228839643">Model TPM sa pripravuje, čakajte (môže to trvať niekoľko minút)...</translation>
-<translation id="7034615910652881882">Opýtať sa, keď chce web používať vaše zariadenia virtuálnej reality a spojené údaje</translation>
+<translation id="7034615910652881882">Opýtať sa, keď chce web používať vaše zariadenia a údaje virtuálnej reality.</translation>
 <translation id="7037509989619051237">Ukážka textu</translation>
 <translation id="7039326228527141150">Pristupovať k zariadením USB od dodávateľa <ph name="VENDOR_NAME" /></translation>
 <translation id="7039912931802252762">Karta Smart Card – prihlásenie</translation>
@@ -4572,7 +4568,7 @@ Ak chcete spravovať nastavenia tohto účtu, nainštalujte si do zariadenia apl
 <translation id="7443806024147773267">Získajte prístup k svojim heslám, keď sa prihlásite do účtu Google</translation>
 <translation id="7444983668544353857">Zakázať zariadenie <ph name="NETWORKDEVICE" /></translation>
 <translation id="7448430327655618736">Inštalujte aplikácie automaticky</translation>
-<translation id="7448625729116931228">Opýtať sa, keď chce web používať vaše zariadenia virtuálnej reality a spojené údaje</translation>
+<translation id="7448625729116931228">Opýtať sa, keď chce web používať vaše zariadenia a údaje virtuálnej reality (odporúčané)</translation>
 <translation id="7450761244949417357">Otvára sa v prehliadači <ph name="ALTERNATIVE_BROWSER_NAME" /></translation>
 <translation id="7453008956351770337">Výberom tejto tlačiarne udeľujete nasledujúcemu rozšíreniu povolenie k tlačiarni pristupovať:</translation>
 <translation id="7454548535253569100">Portál: <ph name="SUBFRAME_SITE" /></translation>
@@ -5553,7 +5549,6 @@ Súbor kľúča uložte na bezpečné miesto. Budete ho potrebovať na vytvoreni
 <translation id="8794025342371547160">Obmedzená adresa IP</translation>
 <translation id="879413103056696865">Keď je hotspot zapnutý, telefón <ph name="PHONE_NAME" />:</translation>
 <translation id="8795916974678578410">Nové okno</translation>
-<translation id="8797086401386164142">Na tlačovom serveri boli nájdené tlačiarne (<ph name="NUM_PRINTERS" />).</translation>
 <translation id="8797459392481275117">Tento web nikdy neprekladať</translation>
 <translation id="8798099450830957504">Predvolené</translation>
 <translation id="8798441408945964110">Názov poskytovateľa</translation>

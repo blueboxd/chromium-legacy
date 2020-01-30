@@ -793,7 +793,8 @@ core_static_dependency_idl_files =
     core_dependency_idl_files + webcore_testing_dependency_idl_files
 
 # Generated IDL files
-core_generated_interface_idl_files = generated_webcore_testing_idl_files  # interfaces
+core_generated_interface_idl_files =
+    generated_webcore_testing_idl_files  # interfaces
 core_generated_dependency_idl_files =
     core_global_constructors_generated_idl_files  # partial interfaces
 

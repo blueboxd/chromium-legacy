@@ -17,6 +17,7 @@
 #include "ash/public/cpp/window_properties.h"
 #include "ash/root_window_controller.h"
 #include "ash/session/session_controller_impl.h"
+#include "ash/shelf/drag_handle.h"
 #include "ash/shelf/home_button.h"
 #include "ash/shelf/hotseat_transition_animator.h"
 #include "ash/shelf/hotseat_widget.h"
@@ -165,7 +166,7 @@ class ShelfWidget::DelegateView : public views::WidgetDelegate,
 
   // A drag handle shown in tablet mode when we are not on the home screen.
   // Owned by the view hierarchy.
-  views::View* drag_handle_ = nullptr;
+  DragHandle* drag_handle_ = nullptr;
 
   // When true, the default focus of the shelf is the last focusable child.
   bool default_last_focusable_child_ = false;
@@ -197,26 +198,18 @@ ShelfWidget::DelegateView::DelegateView(ShelfWidget* shelf_widget)
   ShowAnimatingBackground(false);
   animating_background_.SetColor(ShelfConfig::Get()->GetMaximizedShelfColor());
 
-  std::unique_ptr<views::View> drag_handle_ptr =
-      std::make_unique<views::View>();
-  const int radius = kDragHandleCornerRadius;
   const AshColorProvider::RippleAttributes ripple_attributes =
       AshColorProvider::Get()->GetRippleAttributes(
           ShelfConfig::Get()->GetDefaultShelfColor());
-  drag_handle_ = AddChildView(std::move(drag_handle_ptr));
-  drag_handle_->SetPaintToLayer(ui::LAYER_SOLID_COLOR);
-  drag_handle_->layer()->SetColor(ripple_attributes.base_color);
-  // TODO(manucornet): Figure out why we need a manual opacity adjustment
-  // to make this color look the same as the status area highlight.
-  drag_handle_->layer()->SetOpacity(ripple_attributes.inkdrop_opacity + 0.075);
-  drag_handle_->layer()->SetRoundedCornerRadius(
-      {radius, radius, radius, radius});
-  drag_handle_->SetSize(kDragHandleSize);
+
+  drag_handle_ = AddChildView(std::make_unique<DragHandle>(
+      kDragHandleSize, ripple_attributes, kDragHandleCornerRadius));
 
   animating_drag_handle_.SetColor(ripple_attributes.base_color);
   animating_drag_handle_.SetOpacity(ripple_attributes.inkdrop_opacity + 0.075);
   animating_drag_handle_.SetRoundedCornerRadius(
-      {radius, radius, radius, radius});
+      {kDragHandleCornerRadius, kDragHandleCornerRadius,
+       kDragHandleCornerRadius, kDragHandleCornerRadius});
 }
 
 ShelfWidget::DelegateView::~DelegateView() = default;

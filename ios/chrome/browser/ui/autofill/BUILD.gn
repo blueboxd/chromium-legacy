@@ -141,6 +141,15 @@ source_set("autofill_message") {
   deps = [ "//url:url" ]
 }
 
+source_set("autofill_metrics") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  sources = [
+    "save_card_infobar_metrics_recorder.h",
+    "save_card_infobar_metrics_recorder.mm",
+  ]
+  deps = [ "//base" ]
+}
+
 source_set("eg_tests") {
   defines = [ "CHROME_EARL_GREY_1" ]
   configs += [ "//build/config/compiler:enable_arc" ]

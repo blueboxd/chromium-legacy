@@ -271,8 +271,7 @@ class NET_EXPORT_PRIVATE QuicChromiumClientStream
   // True if this stream is the first data stream created on this session.
   bool IsFirstStream();
 
-  bool DeliverInitialHeaders(spdy::SpdyHeaderBlock* header_block,
-                             int* frame_len);
+  int DeliverInitialHeaders(spdy::SpdyHeaderBlock* header_block);
 
   bool DeliverTrailingHeaders(spdy::SpdyHeaderBlock* header_block,
                               int* frame_len);
@@ -291,8 +290,6 @@ class NET_EXPORT_PRIVATE QuicChromiumClientStream
   NetLogWithSource net_log_;
   Handle* handle_;
 
-  bool headers_delivered_;
-
   // True when initial headers have been sent.
   bool initial_headers_sent_;
 
@@ -303,7 +300,11 @@ class NET_EXPORT_PRIVATE QuicChromiumClientStream
   // during connection migration.
   bool can_migrate_to_cellular_network_;
 
-  // Stores the initial header if they arrive before the handle.
+  // True if initial headers have arrived.
+  bool initial_headers_arrived_;
+  // True if initial headers have been delivered to the handle..
+  bool headers_delivered_;
+  // Stores the initial header until they are delivered to the handle.
   spdy::SpdyHeaderBlock initial_headers_;
   // Length of the HEADERS frame containing initial headers.
   size_t initial_headers_frame_len_;

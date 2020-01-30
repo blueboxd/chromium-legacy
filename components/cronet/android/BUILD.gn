@@ -1276,49 +1276,45 @@ if (!is_component_build) {
     ]
   }
 
-  # TODO(crbug.com/1044636) Temporarily disabling generate_javadoc
-  # as it does not work correctly against preview Android SDK
-  if (android_sdk_release == "q") {
-    action("generate_javadoc") {
-      script = "//components/cronet/tools/generate_javadoc.py"
-      depfile = "$target_gen_dir/$target_name.d"
-      _zip_file = "$target_gen_dir/$target_name.zip"
-      outputs = [ _zip_file ]
-      _annotations_jar = "$root_out_dir/lib.java/third_party/android_deps/androidx_annotation_annotation.jar"
-      _src_jar = "$_package_dir/cronet_api-src.jar"
-      inputs = [
-        _annotations_jar,
-        _src_jar,
-        android_sdk_jar,
-      ]
+  action("generate_javadoc") {
+    script = "//components/cronet/tools/generate_javadoc.py"
+    depfile = "$target_gen_dir/$target_name.d"
+    _zip_file = "$target_gen_dir/$target_name.zip"
+    outputs = [ _zip_file ]
+    _annotations_jar = "$root_out_dir/lib.java/third_party/android_deps/androidx_annotation_annotation.jar"
+    _src_jar = "$_package_dir/cronet_api-src.jar"
+    inputs = [
+      _annotations_jar,
+      _src_jar,
+      android_sdk_jar,
+    ]
 
-      args = [
-        "--output-dir",
-        rebase_path(_package_dir, root_build_dir),
-        "--input-dir",
-        rebase_path("//components/cronet", root_build_dir),
-        "--overview-file",
-        rebase_path("$_package_dir/README.md.html", root_build_dir),
-        "--readme-file",
-        rebase_path("//components/cronet/README.md", root_build_dir),
-        "--depfile",
-        rebase_path(depfile, root_build_dir),
-        "--zip-file",
-        rebase_path(_zip_file, root_build_dir),
-        "--android-sdk-jar",
-        rebase_path(android_sdk_jar, root_build_dir),
-        "--support-annotations-jar",
-        rebase_path(_annotations_jar, root_build_dir),
+    args = [
+      "--output-dir",
+      rebase_path(_package_dir, root_build_dir),
+      "--input-dir",
+      rebase_path("//components/cronet", root_build_dir),
+      "--overview-file",
+      rebase_path("$_package_dir/README.md.html", root_build_dir),
+      "--readme-file",
+      rebase_path("//components/cronet/README.md", root_build_dir),
+      "--depfile",
+      rebase_path(depfile, root_build_dir),
+      "--zip-file",
+      rebase_path(_zip_file, root_build_dir),
+      "--android-sdk-jar",
+      rebase_path(android_sdk_jar, root_build_dir),
+      "--support-annotations-jar",
+      rebase_path(_annotations_jar, root_build_dir),
 
-        # JavaDoc is generated from Cronet's API source jar.
-        "--input-src-jar",
-        rebase_path(_src_jar, root_build_dir),
-      ]
-      deps = [
-        ":jar_cronet_api_source",
-        "//third_party/android_deps:androidx_annotation_annotation_java",
-      ]
-    }
+      # JavaDoc is generated from Cronet's API source jar.
+      "--input-src-jar",
+      rebase_path(_src_jar, root_build_dir),
+    ]
+    deps = [
+      ":jar_cronet_api_source",
+      "//third_party/android_deps:androidx_annotation_annotation_java",
+    ]
   }
 
   copy("cronet_package_copy") {
@@ -1504,6 +1500,7 @@ if (!is_component_build) {
         ":cronet_package_copy_resources",
         ":cronet_sizes",
         ":cronet_test_package",
+        ":generate_javadoc",
         ":generate_licenses",
         ":jar_cronet_api_source",
         ":jar_cronet_impl_common_java_source",
@@ -1519,11 +1516,6 @@ if (!is_component_build) {
       ]
       if (current_cpu == "arm" && arm_version == 7) {
         deps += [ ":enforce_no_neon" ]
-      }
-      # Due to crbug.com/1044636 generate_javadoc is only available
-      # when targeting the q SDK
-      if (android_sdk_release == "q") {
-        deps += [ ":generate_javadoc" ]
       }
     }
   }

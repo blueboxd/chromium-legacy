@@ -129,7 +129,7 @@ class UiControllerAndroid : public ControllerObserver {
       std::unique_ptr<autofill::AutofillProfile> billing_profile);
   void OnTermsAndConditionsChanged(TermsAndConditionsState state);
   void OnLoginChoiceChanged(std::string identifier);
-  void OnTermsAndConditionsLinkClicked(int link);
+  void OnTextLinkClicked(int link);
   void OnFormActionLinkClicked(int link);
   void OnDateTimeRangeStartChanged(int year,
                                    int month,

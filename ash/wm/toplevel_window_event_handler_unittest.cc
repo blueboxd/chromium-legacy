@@ -8,6 +8,7 @@
 #include "ash/display/screen_orientation_controller.h"
 #include "ash/display/screen_orientation_controller_test_api.h"
 #include "ash/public/cpp/app_types.h"
+#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
@@ -1173,10 +1174,14 @@ class ToplevelWindowEventHandlerDragTest : public AshTestBase {
   DISALLOW_COPY_AND_ASSIGN(ToplevelWindowEventHandlerDragTest);
 };
 
-// Tests that tap the window in overview grid during window drag should end
-// the overview mode.
+// Tests that tap the window in overview grid during window drag from top should
+// end the overview mode.
 TEST_F(ToplevelWindowEventHandlerDragTest,
        TapWindowInOverviewGridDuringWindowDrag) {
+  base::test::ScopedFeatureList scoped_features;
+  scoped_features.InitWithFeatures(
+      /*enabled_features=*/{features::kDragWindowFromTop},
+      /*disabled_features=*/{});
   TabletModeControllerTestApi().EnterTabletMode();
 
   SendGestureEvent(gfx::Point(100, 0), 0, 5, ui::ET_GESTURE_SCROLL_BEGIN);
@@ -1209,6 +1214,10 @@ TEST_F(ToplevelWindowEventHandlerDragTest,
 // when dragging from the top. Regression test for https://crbug.com/1444132
 TEST_F(ToplevelWindowEventHandlerDragTest,
        NonResizableWindowsCanBeDraggedInTabletMode) {
+  base::test::ScopedFeatureList scoped_features;
+  scoped_features.InitWithFeatures(
+      /*enabled_features=*/{features::kDragWindowFromTop},
+      /*disabled_features=*/{});
   TabletModeControllerTestApi().EnterTabletMode();
 
   dragged_window_->SetProperty(aura::client::kResizeBehaviorKey,
@@ -1243,8 +1252,13 @@ TEST_F(ToplevelWindowEventHandlerDragTest,
   EXPECT_FALSE(overview_controller->InOverviewSession());
 }
 
-// Tests that the window drag will be reverted if the screen is being rotated.
+// Tests that the window drag from top will be reverted if the screen is being
+// rotated.
 TEST_F(ToplevelWindowEventHandlerDragTest, DisplayConfigurationChangeTest) {
+  base::test::ScopedFeatureList scoped_features;
+  scoped_features.InitWithFeatures(
+      /*enabled_features=*/{features::kDragWindowFromTop},
+      /*disabled_features=*/{});
   TabletModeControllerTestApi().EnterTabletMode();
 
   int64_t display_id = display::Screen::GetScreen()->GetPrimaryDisplay().id();

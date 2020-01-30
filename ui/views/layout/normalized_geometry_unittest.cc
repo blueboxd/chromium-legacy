@@ -47,15 +47,15 @@ TEST(NormalizedRectTest, Inset_Negative) {
 }
 
 TEST(NormalizedGeometryTest, GetMainAxis_Size) {
-  gfx::Size size{1, 2};
+  gfx::Size size(1, 2);
 
   EXPECT_EQ(1, GetMainAxis(LayoutOrientation::kHorizontal, size));
   EXPECT_EQ(2, GetMainAxis(LayoutOrientation::kVertical, size));
 }
 
 TEST(NormalizedGeometryTest, GetMainAxis_SizeBounds) {
-  SizeBounds size{1, 2};
-  SizeBounds size2{};
+  SizeBounds size(1, 2);
+  SizeBounds size2;
 
   EXPECT_EQ(base::Optional<int>(1),
             GetMainAxis(LayoutOrientation::kHorizontal, size));
@@ -68,7 +68,7 @@ TEST(NormalizedGeometryTest, GetMainAxis_SizeBounds) {
 }
 
 TEST(NormalizedGeometryTest, GetCrossAxis_Size) {
-  gfx::Size size{1, 2};
+  gfx::Size size(1, 2);
 
   EXPECT_EQ(2, GetCrossAxis(LayoutOrientation::kHorizontal, size));
   EXPECT_EQ(1, GetCrossAxis(LayoutOrientation::kVertical, size));
@@ -76,7 +76,7 @@ TEST(NormalizedGeometryTest, GetCrossAxis_Size) {
 
 TEST(NormalizedGeometryTest, GetCrossAxis_SizeBounds) {
   SizeBounds size{1, 2};
-  SizeBounds size2{};
+  SizeBounds size2;
 
   EXPECT_EQ(base::Optional<int>(2),
             GetCrossAxis(LayoutOrientation::kHorizontal, size));
@@ -89,7 +89,7 @@ TEST(NormalizedGeometryTest, GetCrossAxis_SizeBounds) {
 }
 
 TEST(NormalizedGeometryTest, SetMainAxis_Size) {
-  gfx::Size size{1, 2};
+  gfx::Size size(1, 2);
 
   SetMainAxis(&size, LayoutOrientation::kHorizontal, 3);
   SetMainAxis(&size, LayoutOrientation::kVertical, 4);
@@ -97,7 +97,7 @@ TEST(NormalizedGeometryTest, SetMainAxis_Size) {
 }
 
 TEST(NormalizedGeometryTest, SetMainAxis_SizeBounds) {
-  SizeBounds size{1, 2};
+  SizeBounds size(1, 2);
 
   SetMainAxis(&size, LayoutOrientation::kHorizontal, 3);
   SetMainAxis(&size, LayoutOrientation::kVertical, 4);
@@ -111,7 +111,7 @@ TEST(NormalizedGeometryTest, SetMainAxis_SizeBounds) {
 }
 
 TEST(NormalizedGeometryTest, SetCrossAxis_Size) {
-  gfx::Size size{1, 2};
+  gfx::Size size(1, 2);
 
   SetCrossAxis(&size, LayoutOrientation::kHorizontal, 3);
   SetCrossAxis(&size, LayoutOrientation::kVertical, 4);
@@ -119,7 +119,7 @@ TEST(NormalizedGeometryTest, SetCrossAxis_Size) {
 }
 
 TEST(NormalizedGeometryTest, SetCrossAxis_SizeBounds) {
-  SizeBounds size{1, 2};
+  SizeBounds size(1, 2);
 
   SetCrossAxis(&size, LayoutOrientation::kHorizontal, 3);
   SetCrossAxis(&size, LayoutOrientation::kVertical, 4);

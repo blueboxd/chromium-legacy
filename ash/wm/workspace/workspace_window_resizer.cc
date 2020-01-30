@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "ash/public/cpp/app_types.h"
+#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
 #include "ash/screen_util.h"
@@ -59,6 +60,15 @@ std::unique_ptr<WindowResizer> CreateWindowResizerForTabletMode(
     const gfx::PointF& point_in_parent,
     int window_component,
     ::wm::WindowMoveSource source) {
+  // Note: window dragging from top is disabled by default. But tab dragging is
+  // still kept enabled (but is not visible to users from M81 because they have
+  // mohnstrudel enabled #webui-tab-strip. If mohnstrudel is disabled by the
+  // user from chrome://flags, they should still be able to do tab dragging).
+  if (!base::FeatureList::IsEnabled(features::kDragWindowFromTop) &&
+      !window_util::IsDraggingTabs(window)) {
+    return nullptr;
+  }
+
   WindowState* window_state = WindowState::Get(window);
   // Only maximized/fullscreen/snapped window can be dragged from the top of
   // the screen.

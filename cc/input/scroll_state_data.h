@@ -46,7 +46,8 @@ class CC_EXPORT ScrollStateData {
   // True if the user interacts directly with the display, e.g., via
   // touch.
   bool is_direct_manipulation;
-  // Minimum amount this input device can scroll.
+  // Granularity units for delta - TODO(dlibby): change this to an enum -
+  // crbug.com/1045306
   double delta_granularity;
 
   // TODO(tdresser): ScrollState shouldn't need to keep track of whether or not

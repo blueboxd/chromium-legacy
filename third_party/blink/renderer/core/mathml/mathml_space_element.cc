@@ -42,8 +42,7 @@ void MathMLSpaceElement::CollectStyleForPresentationAttribute(
                                               value);
     }
     if (name == mathml_names::kHeightAttr) {
-      AddPropertyToPresentationAttributeStyle(
-          style, CSSPropertyID::kVerticalAlign, value);
+      SetInlineStyleProperty(CSSPropertyID::kVerticalAlign, value, false);
     }
   } else {
     MathMLElement::CollectStyleForPresentationAttribute(name, value, style);

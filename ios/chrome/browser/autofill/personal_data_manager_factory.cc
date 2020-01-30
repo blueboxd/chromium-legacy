@@ -23,7 +23,7 @@ namespace autofill {
 
 // static
 PersonalDataManager* PersonalDataManagerFactory::GetForBrowserState(
-    ios::ChromeBrowserState* browser_state) {
+    ChromeBrowserState* browser_state) {
   return static_cast<PersonalDataManager*>(
       GetInstance()->GetServiceForBrowserState(browser_state, true));
 }
@@ -48,8 +48,8 @@ PersonalDataManagerFactory::~PersonalDataManagerFactory() {}
 std::unique_ptr<KeyedService>
 PersonalDataManagerFactory::BuildServiceInstanceFor(
     web::BrowserState* context) const {
-  ios::ChromeBrowserState* chrome_browser_state =
-      ios::ChromeBrowserState::FromBrowserState(context);
+  ChromeBrowserState* chrome_browser_state =
+      ChromeBrowserState::FromBrowserState(context);
   std::unique_ptr<PersonalDataManager> service(
       new PersonalDataManager(GetApplicationContext()->GetApplicationLocale()));
   auto autofill_db =

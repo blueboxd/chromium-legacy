@@ -19,7 +19,7 @@ class Tab;
 // A helper that waits for a navigation to finish.
 class TestNavigationObserver : public NavigationObserver {
  public:
-  enum class NavigationEvent { Start, Completion, Failure };
+  enum class NavigationEvent { kStart, kCompletion, kFailure };
 
   // Creates an instance that begins waiting for a Navigation within |shell| and
   // to |url| to reach the specified |target_event|.

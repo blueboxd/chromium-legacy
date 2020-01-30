@@ -24,6 +24,10 @@ class KioskAppDataDelegate {
   // Invoked when failed to load web store data of an app.
   virtual void OnKioskAppDataLoadFailure(const std::string& app_id) const = 0;
 
+  // Invoked when the data which is stored in ExternalCache for current app is
+  // damaged.
+  virtual void OnExternalCacheDamaged(const std::string& app_id) = 0;
+
  protected:
   virtual ~KioskAppDataDelegate() {}
 };

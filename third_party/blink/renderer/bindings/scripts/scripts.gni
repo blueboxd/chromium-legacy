@@ -159,7 +159,9 @@ template("idl_compiler") {
   # "import site" to speed up startup. Figure out if we need this and do
   # something similar (not really expressible in GN now).
   _script = "//third_party/blink/renderer/bindings/scripts/idl_compiler.py"
-  _inputs = idl_lexer_parser_files + idl_compiler_files  # to be explicit (covered by parsetab)
+  _inputs =
+      idl_lexer_parser_files + idl_compiler_files  # to be explicit (covered by
+                                                   # parsetab)
   _inputs += [
     "$bindings_scripts_output_dir/lextab.py",
     "$bindings_scripts_output_dir/parsetab.pickle",
@@ -248,7 +250,9 @@ template("idl_impl") {
     idl_files_list = "$target_gen_dir/${target_name}_file_list.tmp"
     write_file(idl_files_list, rebase_path(invoker.dict_idls, root_build_dir))
 
-    inputs = idl_lexer_parser_files + idl_compiler_files  # to be explicit (covered by parsetab)
+    inputs =
+        idl_lexer_parser_files + idl_compiler_files  # to be explicit (covered
+                                                     # by parsetab)
     inputs += [
       "$bindings_scripts_output_dir/lextab.py",
       "$bindings_scripts_output_dir/parsetab.pickle",

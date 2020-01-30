@@ -37,6 +37,15 @@ export function setScrollAnimationEnabledForTesting(enabled) {
 }
 
 /**
+ * Gets the data type of tab IDs on DataTransfer objects in drag events. This
+ * is a function so that loadTimeData can get overridden by tests.
+ * @return {string}
+ */
+function getTabIdDataType() {
+  return loadTimeData.getString('tabIdDataType');
+}
+
+/**
  * @enum {string}
  */
 const LayoutVariable = {
@@ -147,6 +156,9 @@ class TabListElement extends CustomElement {
     /** @private {!Function} */
     this.windowBlurListener_ = () => this.onWindowBlur_();
 
+    /** @private @const {number} */
+    this.windowId_;
+
     /** @private {!Function} */
     this.contextMenuListener_ = e => this.onContextMenu_(e);
 
@@ -167,6 +179,8 @@ class TabListElement extends CustomElement {
         'dragend', (e) => this.onDragEnd_(/** @type {!DragEvent} */ (e)));
     this.addEventListener(
         'dragover', (e) => this.onDragOver_(/** @type {!DragEvent} */ (e)));
+    this.addEventListener(
+        'drop', e => this.onDrop_(/** @type {!DragEvent} */ (e)));
 
     document.addEventListener('contextmenu', this.contextMenuListener_);
     document.addEventListener(
@@ -265,6 +279,10 @@ class TabListElement extends CustomElement {
     this.tabStripEmbedderProxy_.getLayout().then(
         layout => this.applyCSSDictionary_(layout));
     this.fetchAndUpdateColors_();
+
+    this.tabStripEmbedderProxy_.getWindowId().then(windowId => {
+      this.windowId_ = windowId;
+    });
 
     const getTabsStartTimestamp = Date.now();
     this.tabsApi_.getTabs().then(tabs => {
@@ -508,9 +526,7 @@ class TabListElement extends CustomElement {
       return;
     }
 
-    const allTabElements =
-        Array.from(this.shadowRoot.querySelectorAll('tabstrip-tab'));
-
+    const allTabElements = Array.from(this.$all('tabstrip-tab'));
     const dragOverTabElement = composedPath.find(isTabElement);
     if (dragOverTabElement && !dragOverTabElement.tab.pinned) {
       const dragOverIndex = allTabElements.indexOf(dragOverTabElement);
@@ -558,7 +574,8 @@ class TabListElement extends CustomElement {
 
     const dragOverIndex =
         Array.from(this.$all('tabstrip-tab')).indexOf(dragOverTabElement);
-    this.tabsApi_.moveTab(this.draggedItem_.tab.id, dragOverIndex);
+    this.tabsApi_.moveTab(
+        this.draggedItem_.tab.id, this.windowId_, dragOverIndex);
   }
 
   /**
@@ -578,6 +595,32 @@ class TabListElement extends CustomElement {
     event.dataTransfer.setDragImage(
         this.draggedItem_.getDragImage(), event.clientX - draggedItemRect.left,
         event.clientY - draggedItemRect.top);
+
+    if (isTabElement(draggedItem)) {
+      event.dataTransfer.setData(
+          getTabIdDataType(), this.draggedItem_.tab.id.toString());
+    }
+  }
+
+  /**
+   * @param {!DragEvent} event
+   * @private
+   */
+  onDrop_(event) {
+    if (this.draggedItem_) {
+      // If there is a valid dragged item, the drag originated from this TabList
+      // and is handled already by previous dragover events.
+      return;
+    }
+
+    if (event.dataTransfer.types.includes(getTabIdDataType())) {
+      const tabId = Number(event.dataTransfer.getData(getTabIdDataType()));
+      if (Number.isNaN(tabId)) {
+        // Invalid tab ID. Return silently.
+        return;
+      }
+      this.tabsApi_.moveTab(tabId, this.windowId_, -1);
+    }
   }
 
   /** @private */

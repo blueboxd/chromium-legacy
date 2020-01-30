@@ -89,7 +89,6 @@
 #include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos.h"
 #include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos_factory.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
-#include "chrome/browser/ui/webui/chromeos/network_element_localized_strings_provider.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chromeos/constants/chromeos_features.h"
@@ -2484,13 +2483,6 @@ void AddBrowserLocalizedStrings(content::WebUIDataSource* html_source,
   certificate_manager::AddLocalizedStrings(html_source);
 #endif
 
-#if defined(OS_CHROMEOS)
-  chromeos::network_element::AddLocalizedStrings(html_source);
-  chromeos::network_element::AddOncLocalizedStrings(html_source);
-  chromeos::network_element::AddDetailsLocalizedStrings(html_source);
-  chromeos::network_element::AddConfigLocalizedStrings(html_source);
-  chromeos::network_element::AddErrorLocalizedStrings(html_source);
-#endif
   policy_indicator::AddLocalizedStrings(html_source);
   AddSecurityKeysStrings(html_source);
 

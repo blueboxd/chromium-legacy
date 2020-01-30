@@ -87,9 +87,7 @@ static_library("test_support") {
     "test/test_helpers.h",
   ]
 
-  public_deps = [
-    ":sql",
-  ]
+  public_deps = [ ":sql" ]
   deps = [
     "//base",
     "//testing/gtest",
@@ -99,13 +97,9 @@ static_library("test_support") {
 
 bundle_data("sql_unittests_bundle_data") {
   testonly = true
-  sources = [
-    "test/data/recovery_387868",
-  ]
-  outputs = [
-    "{{bundle_resources_dir}}/" +
-        "{{source_root_relative_dir}}/{{source_file_part}}",
-  ]
+  sources = [ "test/data/recovery_387868" ]
+  outputs = [ "{{bundle_resources_dir}}/" +
+              "{{source_root_relative_dir}}/{{source_file_part}}" ]
 }
 
 test("sql_unittests") {
@@ -130,9 +124,7 @@ test("sql_unittests") {
     "transaction_unittest.cc",
   ]
 
-  data = [
-    "test/data/",
-  ]
+  data = [ "test/data/" ]
 
   deps = [
     ":sql",

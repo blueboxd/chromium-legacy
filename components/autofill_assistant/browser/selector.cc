@@ -20,6 +20,20 @@ Selector::Selector(const ElementReferenceProto& proto) {
   pseudo_type = proto.pseudo_type();
 }
 
+ElementReferenceProto Selector::ToElementReferenceProto() const {
+  ElementReferenceProto proto;
+  for (const auto& selector : selectors) {
+    proto.add_selectors(selector);
+  }
+  if (must_be_visible) {
+    proto.set_visibility_requirement(MUST_BE_VISIBLE);
+  }
+  proto.set_inner_text_pattern(inner_text_pattern);
+  proto.set_value_pattern(value_pattern);
+  proto.set_pseudo_type(pseudo_type);
+  return proto;
+}
+
 Selector::Selector(std::vector<std::string> s)
     : selectors(s), pseudo_type(PseudoType::UNDEFINED) {}
 Selector::Selector(std::vector<std::string> s, PseudoType p)

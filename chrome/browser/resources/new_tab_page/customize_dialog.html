@@ -20,6 +20,7 @@
   .menu-item {
     align-items: center;
     border-radius: 0 16px 16px 0;
+    color: var(--ntp-primary-text-color);
     cursor: pointer;
     display: flex;
     flex-direction: row;
@@ -34,23 +35,24 @@
     border-radius: 16px 0 0 16px;
   }
 
-  .menu-item:hover {
-    background-color: rgba(var(--google-grey-900-rgb), .1);
+  .menu-item:hover,
+  .menu-item:focus {
+    background-color: var(--ntp-hover-background-color);
+  }
+
+  .menu-item:active {
+    background-color: var(--ntp-active-background-color);
   }
 
   .menu-item[selected] {
-    background-color: var(--google-blue-50);
-    color: var(--google-blue-refresh-700);
-  }
-
-  :host-context(.focus-outline-visible) .menu-item:focus {
-    background-color: rgba(var(--google-grey-900-rgb), .16);
+    background-color: var(--ntp-selected-background-color);
+    color: var(--ntp-selected-primary-text-color);
   }
 
   .menu-item-icon {
     -webkit-mask-repeat: no-repeat;
     -webkit-mask-size: 100%;
-    background-color: var(--cr-secondary-text-color);
+    background-color: var(--ntp-primary-text-color);
     height: 20px;
     margin-inline-end: 16px;
     margin-inline-start: 24px;
@@ -58,7 +60,7 @@
   }
 
   .menu-item[selected] .menu-item-icon {
-    background-color: var(--google-blue-refresh-700);
+    background-color: var(--ntp-selected-primary-text-color);
   }
 
   #backgroundsIcon {

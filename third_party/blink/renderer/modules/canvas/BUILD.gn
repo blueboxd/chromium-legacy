@@ -42,9 +42,7 @@ blink_modules_sources("canvas") {
 }
 
 fuzzer_test("canvas_fuzzer") {
-  sources = [
-    "canvas_fuzzer.cc",
-  ]
+  sources = [ "canvas_fuzzer.cc" ]
   seed_corpuses = [ "//third_party/blink/web_tests/fast/canvas" ]
   deps = [
     "../../platform:blink_fuzzer_test_support",

@@ -26,7 +26,6 @@
 <translation id="1031362278801463162">Caricamento anteprima in corso</translation>
 <translation id="1032605640136438169">Ti invitiamo a leggere i nuovi termini</translation>
 <translation id="103279545524624934">Libera spazio sul disco per avviare le app Android.</translation>
-<translation id="1033343386521881354">1 stampante trovata sul server di stampa.</translation>
 <translation id="1033780634303702874">Accesso ai dispositivi seriali</translation>
 <translation id="1034942643314881546">Attivazione di ADB per creare l'illustrazione delle app</translation>
 <translation id="1036348656032585052">Disattiva</translation>
@@ -34,7 +33,6 @@
 <translation id="1036982837258183574">Premi |<ph name="ACCELERATOR" />| per uscire dalla modalità a schermo intero</translation>
 <translation id="1038168778161626396">Solo crittografia</translation>
 <translation id="1039337018183941703">File non valido o danneggiato</translation>
-<translation id="1039850285407663109">Il file selezionato è sconosciuto e potrebbe essere pericoloso. Esegui una scansione prima di aprirlo.</translation>
 <translation id="1041175011127912238">Questa pagina non risponde</translation>
 <translation id="1041263367839475438">Dispositivi disponibili</translation>
 <translation id="1042174272890264476">Sul computer è integrata anche la libreria RLZ di <ph name="SHORT_PRODUCT_NAME" />. RLZ assegna un tag non univoco che non consente l'identificazione personale per valutare le ricerche e l'utilizzo di <ph name="SHORT_PRODUCT_NAME" /> promosso da una determinata campagna promozionale. Talvolta queste etichette vengono visualizzate in query della Ricerca Google in <ph name="PRODUCT_NAME" />.</translation>
@@ -639,7 +637,6 @@
 <translation id="1858585891038687145">Considera attendibile questo certificato per l'identificazione dei creatori di software</translation>
 <translation id="1861262398884155592">Questa cartella è vuota</translation>
 <translation id="1863182668524159459">Nessuna porta seriale trovata</translation>
-<translation id="1863552924692672565"><ph name="FILE_NAME" /> è sconosciuto. Esegui una scansione del file per ridurre al minimo i rischi.</translation>
 <translation id="1864111464094315414">Accesso</translation>
 <translation id="1864400682872660285">Più fredda</translation>
 <translation id="1864454756846565995">Dispositivo USB-C (porta posteriore)</translation>
@@ -4024,7 +4021,6 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="6678717876183468697">URL query</translation>
 <translation id="6680442031740878064">Disponibile: <ph name="AVAILABLE_SPACE" /></translation>
 <translation id="6680650203439190394">Velocità</translation>
-<translation id="6681301928961274620">Nessuna stampante trovata sul server di stampa.</translation>
 <translation id="6681668084120808868">Scatta foto</translation>
 <translation id="6681964764822470072">L'app "<ph name="APP_NAME" />" verrà disinstallata.</translation>
 <translation id="668599234725812620">Apri Google Play</translation>
@@ -5553,7 +5549,6 @@ Conserva il file di chiave in un luogo sicuro. Ti servirà per creare nuove vers
 <translation id="8794025342371547160">IP limitato</translation>
 <translation id="879413103056696865">Quando l'hotspot è attivo, il tuo <ph name="PHONE_NAME" />:</translation>
 <translation id="8795916974678578410">Nuova finestra</translation>
-<translation id="8797086401386164142"><ph name="NUM_PRINTERS" /> stampanti trovate sul server di stampa.</translation>
 <translation id="8797459392481275117">Non tradurre mai questo sito</translation>
 <translation id="8798099450830957504">Predefinito</translation>
 <translation id="8798441408945964110">Nome provider</translation>

@@ -66,6 +66,16 @@ class CodeSignConfig(object):
         self._notary_password = notary_password
         self._notary_asc_provider = notary_asc_provider
 
+    @staticmethod
+    def is_chrome_branded():
+        """Returns True if the build is an official Google Chrome build and
+        should use Chrome-specific resources.
+
+        This is a @staticmethod and not a @property so that it can be tested
+        during the process of creating a CodeSignConfig object.
+        """
+        raise ConfigError('is_chrome_branded')
+
     @property
     def identity(self):
         """Returns the code signing identity that will be used to sign the

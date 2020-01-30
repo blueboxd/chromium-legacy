@@ -9,7 +9,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 
-import org.chromium.base.metrics.CachedMetrics.BooleanHistogramSample;
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.util.IntentUtils;
 
 /**
@@ -21,9 +21,6 @@ import org.chromium.chrome.browser.util.IntentUtils;
  */
 public class VrFirstRunActivity extends Activity {
     private static final long SHOW_DOFF_TIMEOUT_MS = 500;
-
-    private static final BooleanHistogramSample sFreNotCompleteBrowserHistogram =
-            new BooleanHistogramSample("VRFreNotComplete.Browser");
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -73,7 +70,7 @@ public class VrFirstRunActivity extends Activity {
         finish();
     }
 
-    private void recordFreHistogram() {
-        sFreNotCompleteBrowserHistogram.record(true);
+    private static void recordFreHistogram() {
+        RecordHistogram.recordBooleanHistogram("VRFreNotComplete.Browser", true);
     }
 }

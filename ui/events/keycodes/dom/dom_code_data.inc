@@ -201,7 +201,7 @@ DOM_CODE_DECLARATION {
   // The keycap varies on international keyboards:
   //   Dan: '*  Dutch: <>  Ger: #'  UK: #~
   // TODO(garykac): Verify Mac intl keyboard.
-  DOM_CODE(0x070032, 0x0000, 0x0000, 0x0000, 0xffff, "IntlHash", INTL_HASH),
+  //DOM_CODE(0x070032, 0x0000, 0x0000, 0x0000, 0xffff, NULL, INTL_HASH),
   DOM_CODE(0x070033, 0x0027, 0x002f, 0x0027, 0x0029, "Semicolon", SEMICOLON), // ;:
   DOM_CODE(0x070034, 0x0028, 0x0030, 0x0028, 0x0027, "Quote", QUOTE), // '"
   DOM_CODE(0x070035, 0x0029, 0x0031, 0x0029, 0x0032, "Backquote", BACKQUOTE), // `~

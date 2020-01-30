@@ -119,7 +119,8 @@ ActiveInterpolationsMap EffectStack::ActiveInterpolations(
     const HeapVector<Member<const InertEffect>>* new_animations,
     const HeapHashSet<Member<const Animation>>* suppressed_animations,
     KeyframeEffect::Priority priority,
-    PropertyHandleFilter property_handle_filter) {
+    PropertyHandleFilter property_handle_filter,
+    KeyframeEffect* partial_effect_stack_cutoff) {
   ActiveInterpolationsMap result;
 
   if (effect_stack) {
@@ -128,7 +129,14 @@ ActiveInterpolationsMap EffectStack::ActiveInterpolations(
     std::sort(sampled_effects.begin(), sampled_effects.end(),
               CompareSampledEffects);
     effect_stack->RemoveRedundantSampledEffects();
+    bool reached_cuttoff = false;
     for (const auto& sampled_effect : sampled_effects) {
+      if (reached_cuttoff)
+        break;
+      if (partial_effect_stack_cutoff &&
+          sampled_effect->Effect() == partial_effect_stack_cutoff)
+        reached_cuttoff = true;
+
       if (sampled_effect->GetPriority() != priority ||
           // TODO(majidvp): Instead of accessing the effect's animation move the
           // check inside KeyframeEffect. http://crbug.com/812410

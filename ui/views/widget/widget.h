@@ -879,6 +879,8 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   // returned lock can safely outlive the associated widget.
   std::unique_ptr<PaintAsActiveLock> LockPaintAsActive();
 
+  base::WeakPtr<Widget> GetWeakPtr();
+
   // Overridden from NativeWidgetDelegate:
   bool IsModal() const override;
   bool IsDialogBox() const override;

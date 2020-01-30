@@ -8,11 +8,11 @@
 
 #include "chrome/browser/sharing/fake_sharing_handler_registry.h"
 #include "chrome/browser/sharing/features.h"
+#include "chrome/browser/sharing/mock_sharing_message_handler.h"
 #include "chrome/browser/sharing/sharing_constants.h"
 #include "chrome/browser/sharing/sharing_fcm_handler.h"
 #include "chrome/browser/sharing/sharing_fcm_sender.h"
 #include "chrome/browser/sharing/sharing_handler_registry.h"
-#include "chrome/browser/sharing/sharing_message_handler.h"
 #include "chrome/browser/sharing/sharing_sync_preference.h"
 #include "components/gcm_driver/fake_gcm_driver.h"
 #include "components/sync_device_info/device_info.h"
@@ -38,17 +38,6 @@ const char kSenderName[] = "test_sender_name";
 const char kFCMToken[] = "test_vapid_fcm_token";
 const char kP256dh[] = "test_p256_dh";
 const char kAuthSecret[] = "test_auth_secret";
-
-class MockSharingMessageHandler : public SharingMessageHandler {
- public:
-  MockSharingMessageHandler() = default;
-  ~MockSharingMessageHandler() override = default;
-
-  // SharingMessageHandler implementation:
-  MOCK_METHOD2(OnMessage,
-               void(SharingMessage message,
-                    SharingMessageHandler::DoneCallback done_callback));
-};
 
 class MockSharingFCMSender : public SharingFCMSender {
  public:

@@ -372,6 +372,3 @@ crbug.com/856601 [ Linux ] external/wpt/permissions/idlharness.any.html [ Pass T
 # Sheriff 2020-01-10
 crbug.com/1041052 [ Linux ] external/wpt/offscreen-canvas/filter/offscreencanvas.filter.w.html [ Timeout ]
 crbug.com/1041052 [ Linux ] external/wpt/2dcontext/fill-and-stroke-styles/canvas_colorsandstyles_createlineargradient_001.htm [ Timeout ]
-
-# Sheriff 2020-01-13
-crbug.com/1041709 [ Linux ] external/wpt/paint-timing/first-image-child.html [ Pass Timeout ]

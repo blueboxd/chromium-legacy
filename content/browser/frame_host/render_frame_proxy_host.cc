@@ -40,6 +40,11 @@ namespace content {
 
 namespace {
 
+RenderFrameProxyHost::CreatedCallback& GetProxyHostCreatedCallback() {
+  static base::NoDestructor<RenderFrameProxyHost::CreatedCallback> s_callback;
+  return *s_callback;
+}
+
 // The (process id, routing id) pair that identifies one RenderFrameProxy.
 typedef std::pair<int32_t, int32_t> RenderFrameProxyHostID;
 typedef std::unordered_map<RenderFrameProxyHostID,
@@ -50,6 +55,12 @@ base::LazyInstance<RoutingIDFrameProxyMap>::DestructorAtExit
     g_routing_id_frame_proxy_map = LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
+
+// static
+void RenderFrameProxyHost::SetCreatedCallbackForTesting(
+    const CreatedCallback& created_callback) {
+  GetProxyHostCreatedCallback() = created_callback;
+}
 
 // static
 RenderFrameProxyHost* RenderFrameProxyHost::FromID(int process_id,
@@ -100,6 +111,9 @@ RenderFrameProxyHost::RenderFrameProxyHost(
     // navigated back to the same SiteInstance as its parent.
     cross_process_frame_connector_.reset(new CrossProcessFrameConnector(this));
   }
+
+  if (!GetProxyHostCreatedCallback().is_null())
+    GetProxyHostCreatedCallback().Run(this);
 }
 
 RenderFrameProxyHost::~RenderFrameProxyHost() {
@@ -231,7 +245,7 @@ bool RenderFrameProxyHost::InitRenderFrameProxy() {
   // let the renderer know so it can also mark the proxy as loading. See
   // https://crbug.com/916137.
   if (frame_tree_node_->IsLoading())
-    Send(new FrameMsg_DidStartLoading(routing_id_));
+    GetAssociatedRemoteFrame()->DidStartLoading();
 
   // For subframes, initialize the proxy's FrameOwnerProperties only if they
   // differ from default values.

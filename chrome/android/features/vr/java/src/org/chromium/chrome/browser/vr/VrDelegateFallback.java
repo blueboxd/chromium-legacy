@@ -16,7 +16,7 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.compat.ApiHelperForN;
 import org.chromium.base.library_loader.LibraryLoader;
-import org.chromium.base.metrics.CachedMetrics;
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.task.PostTask;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
@@ -29,9 +29,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * Fallback {@link VrDelegate} implementation if the VR module is not available.
  */
 /* package */ class VrDelegateFallback extends VrDelegate {
-    /* package */ static final CachedMetrics
-            .BooleanHistogramSample ENTER_VR_BROWSER_WITHOUT_FEATURE_MODULE_METRIC =
-            new CachedMetrics.BooleanHistogramSample("VR.EnterVrBrowserWithoutFeatureModule");
+    /* package */ static void recordEnterVrBrowserWithoutFeatureModule(boolean sample) {
+        RecordHistogram.recordBooleanHistogram("VR.EnterVrBrowserWithoutFeatureModule", sample);
+    }
     private static final String TAG = "VrDelegateFallback";
     private static final boolean DEBUG_LOGS = false;
     private static final String DEFAULT_VR_MODE_PACKAGE = "com.google.vr.vrcore";
@@ -199,7 +199,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
         }
         assert VrModule.isInstalled();
 
-        ENTER_VR_BROWSER_WITHOUT_FEATURE_MODULE_METRIC.record(true);
+        recordEnterVrBrowserWithoutFeatureModule(true);
 
         // We need native to enter VR. Enter VR flow will automatically continue once native is
         // loaded.
@@ -214,7 +214,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
     }
 
     private void onVrModuleInstallFailure(Activity activity) {
-        ENTER_VR_BROWSER_WITHOUT_FEATURE_MODULE_METRIC.record(false);
+        recordEnterVrBrowserWithoutFeatureModule(false);
 
         // For SVR close Chrome. For standalones launch into 2D-in-VR (if that fails, close Chrome).
         if (bootsToVr()) {

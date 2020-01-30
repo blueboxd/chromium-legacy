@@ -713,6 +713,10 @@ const char kShortMergeSessionTimeoutForTest[] =
 const char kSchedulerConfiguration[] = "scheduler-configuration";
 const char kSchedulerConfigurationConservative[] = "conservative";
 const char kSchedulerConfigurationPerformance[] = "performance";
+
+// Specifies what the default scheduler configuration value is if the user does
+// not set one.
+const char kSchedulerConfigurationDefault[] = "scheduler-configuration-default";
 #endif  // defined(OS_CHROMEOS)
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_CHROMEOS)

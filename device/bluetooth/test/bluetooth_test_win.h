@@ -119,6 +119,10 @@ class BluetoothTestWinrt : public BluetoothTestWin,
   BluetoothTestWinrt();
   ~BluetoothTestWinrt() override;
 
+  // Simulate a fake adapter whose power status cannot be
+  // controlled because of a Windows Privacy setting.
+  void InitFakeAdapterWithRadioAccessDenied();
+
   // BluetoothTestBase:
   bool PlatformSupportsLowEnergy() override;
   void InitWithDefaultAdapter() override;

@@ -9,12 +9,24 @@
 #include "ui/events/devices/x11/device_data_manager_x11.h"
 #include "ui/events/devices/x11/touch_factory_x11.h"
 #include "ui/events/event_utils.h"
+#include "ui/events/keycodes/keyboard_code_conversion_x.h"
 #include "ui/events/platform/platform_event_dispatcher.h"
 #include "ui/events/platform/x11/x11_hotplug_event_handler.h"
 #include "ui/events/x/events_x_utils.h"
+#include "ui/events/x/x11_event_translation.h"
 #include "ui/events/x/x11_window_event_manager.h"
 #include "ui/gfx/x/x11.h"
 #include "ui/gfx/x/x11_atom_cache.h"
+
+#if defined(USE_GLIB)
+#include "ui/events/platform/x11/x11_event_watcher_glib.h"
+#else
+#include "ui/events/platform/x11/x11_event_watcher_fdwatch.h"
+#endif
+
+#if defined(OS_CHROMEOS)
+#include "ui/events/ozone/chromeos/cursor_controller.h"
+#endif
 
 namespace ui {
 
@@ -89,11 +101,16 @@ x11::Bool IsPropertyNotifyForTimestamp(Display* display,
 
 }  // namespace
 
+#if defined(USE_GLIB)
+using X11EventWatcherImpl = X11EventWatcherGlib;
+#else
+using X11EventWatcherImpl = X11EventWatcherFdWatch;
+#endif
+
 X11EventSource* X11EventSource::instance_ = nullptr;
 
-X11EventSource::X11EventSource(X11EventSourceDelegate* delegate,
-                               XDisplay* display)
-    : delegate_(delegate),
+X11EventSource::X11EventSource(XDisplay* display)
+    : watcher_(std::make_unique<X11EventWatcherImpl>(this)),
       display_(display),
       dispatching_event_(nullptr),
       dummy_initialized_(false),
@@ -102,10 +119,11 @@ X11EventSource::X11EventSource(X11EventSourceDelegate* delegate,
   DCHECK(!instance_);
   instance_ = this;
 
-  DCHECK(delegate_);
   DCHECK(display_);
   DeviceDataManagerX11::CreateInstance();
   InitializeXkb(display_);
+
+  watcher_->StartWatching();
 }
 
 X11EventSource::~X11EventSource() {
@@ -232,31 +250,125 @@ X11EventSource::GetRootCursorLocationFromCurrentEvent() const {
 
 // TODO(crbug.com/965991): Use ui::Event in Aura/X11
 #if defined(USE_OZONE)
-void X11EventSource::RemoveXEventDispatcher(XEventDispatcher* dispatcher) {
-  delegate_->RemoveXEventDispatcher(dispatcher);
+void X11EventSource::AddXEventDispatcher(XEventDispatcher* dispatcher) {
+  dispatchers_xevent_.AddObserver(dispatcher);
+  PlatformEventDispatcher* event_dispatcher =
+      dispatcher->GetPlatformEventDispatcher();
+  if (event_dispatcher)
+    AddPlatformEventDispatcher(event_dispatcher);
 }
 
-void X11EventSource::AddXEventDispatcher(XEventDispatcher* dispatcher) {
-  delegate_->AddXEventDispatcher(dispatcher);
+void X11EventSource::RemoveXEventDispatcher(XEventDispatcher* dispatcher) {
+  dispatchers_xevent_.RemoveObserver(dispatcher);
+  PlatformEventDispatcher* event_dispatcher =
+      dispatcher->GetPlatformEventDispatcher();
+  if (event_dispatcher)
+    RemovePlatformEventDispatcher(event_dispatcher);
 }
 
 void X11EventSource::AddXEventObserver(XEventObserver* observer) {
-  delegate_->AddXEventObserver(observer);
+  CHECK(observer);
+  observers_.AddObserver(observer);
 }
 
 void X11EventSource::RemoveXEventObserver(XEventObserver* observer) {
-  delegate_->RemoveXEventObserver(observer);
+  CHECK(observer);
+  observers_.RemoveObserver(observer);
 }
 
 std::unique_ptr<ScopedXEventDispatcher>
 X11EventSource::OverrideXEventDispatcher(XEventDispatcher* dispatcher) {
-  return delegate_->OverrideXEventDispatcher(dispatcher);
+  CHECK(dispatcher);
+  overridden_dispatcher_restored_ = false;
+  return std::make_unique<ScopedXEventDispatcher>(&overridden_dispatcher_,
+                                                  dispatcher);
 }
 
 void X11EventSource::RestoreOverridenXEventDispatcher() {
-  delegate_->RestoreOverridenXEventDispatcher();
+  CHECK(overridden_dispatcher_);
+  overridden_dispatcher_restored_ = true;
+}
+
+void X11EventSource::DispatchPlatformEvent(const PlatformEvent& event,
+                                           XEvent* xevent) {
+  DCHECK(event);
+
+  // First, tell the XEventDispatchers, which can have PlatformEventDispatcher,
+  // an ui::Event is going to be sent next. It must make a promise to handle
+  // next translated |event| sent by PlatformEventSource based on a XID in
+  // |xevent| tested in CheckCanDispatchNextPlatformEvent(). This is needed
+  // because it is not possible to access |event|'s associated NativeEvent* and
+  // check if it is the event's target window (XID).
+  for (XEventDispatcher& dispatcher : dispatchers_xevent_)
+    dispatcher.CheckCanDispatchNextPlatformEvent(xevent);
+
+  DispatchEvent(event);
+
+  // Explicitly reset a promise to handle next translated event.
+  for (XEventDispatcher& dispatcher : dispatchers_xevent_)
+    dispatcher.PlatformEventDispatchFinished();
+}
+
+void X11EventSource::DispatchXEventToXEventDispatchers(XEvent* xevent) {
+  bool stop_dispatching = false;
+
+  for (auto& observer : observers_)
+    observer.WillProcessXEvent(xevent);
+
+  if (overridden_dispatcher_) {
+    stop_dispatching = overridden_dispatcher_->DispatchXEvent(xevent);
+  }
+
+  if (!stop_dispatching) {
+    for (XEventDispatcher& dispatcher : dispatchers_xevent_) {
+      if (dispatcher.DispatchXEvent(xevent))
+        break;
+    }
+  }
+
+  for (auto& observer : observers_)
+    observer.DidProcessXEvent(xevent);
+
+  // If an overridden dispatcher has been destroyed, then the event source
+  // should halt dispatching the current stream of events, and wait until the
+  // next message-loop iteration for dispatching events. This lets any nested
+  // message-loop to unwind correctly and any new dispatchers to receive the
+  // correct sequence of events.
+  if (overridden_dispatcher_restored_)
+    StopCurrentEventStream();
+
+  overridden_dispatcher_restored_ = false;
+}
+
+void XEventDispatcher::CheckCanDispatchNextPlatformEvent(XEvent* xev) {}
+
+void XEventDispatcher::PlatformEventDispatchFinished() {}
+
+PlatformEventDispatcher* XEventDispatcher::GetPlatformEventDispatcher() {
+  return nullptr;
 }
 #endif
+
+void X11EventSource::ProcessXEvent(XEvent* xevent) {
+#if !defined(USE_OZONE)
+  DispatchEvent(xevent);
+#else
+  auto translated_event = ui::BuildEventFromXEvent(*xevent);
+  if (translated_event) {
+#if defined(OS_CHROMEOS)
+    if (translated_event->IsLocatedEvent()) {
+      ui::CursorController::GetInstance()->SetCursorLocation(
+          translated_event->AsLocatedEvent()->location_f());
+    }
+#endif
+    DispatchPlatformEvent(translated_event.get(), xevent);
+  } else {
+    // Only if we can't translate XEvent into ui::Event, try to dispatch XEvent
+    // directly to XEventDispatchers.
+    DispatchXEventToXEventDispatchers(xevent);
+  }
+#endif
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // X11EventSource, protected
@@ -270,7 +382,7 @@ void X11EventSource::ExtractCookieDataDispatchEvent(XEvent* xevent) {
 
   dispatching_event_ = xevent;
 
-  delegate_->ProcessXEvent(xevent);
+  ProcessXEvent(xevent);
   PostDispatchEvent(xevent);
 
   dispatching_event_ = nullptr;
@@ -316,6 +428,8 @@ void X11EventSource::StopCurrentEventStream() {
 }
 
 void X11EventSource::OnDispatcherListChanged() {
+  watcher_->StartWatching();
+
   if (!hotplug_event_handler_) {
     hotplug_event_handler_ = std::make_unique<X11HotplugEventHandler>();
     // Force the initial device query to have an update list of active devices.
@@ -336,5 +450,12 @@ ScopedXEventDispatcher::~ScopedXEventDispatcher() {
   X11EventSource::GetInstance()->RestoreOverridenXEventDispatcher();
 #endif
 }
+
+// static
+#if !defined(USE_OZONE)
+std::unique_ptr<PlatformEventSource> PlatformEventSource::CreateDefault() {
+  return std::make_unique<X11EventSource>(gfx::GetXDisplay());
+}
+#endif
 
 }  // namespace ui

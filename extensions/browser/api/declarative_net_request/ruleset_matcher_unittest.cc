@@ -40,7 +40,7 @@ namespace extensions {
 namespace declarative_net_request {
 namespace {
 
-class RulesetMatcherTest : public ::testing::Test {
+class RulesetMatcherTest : public ExtensionsTest {
  public:
   RulesetMatcherTest() : channel_(::version_info::Channel::UNKNOWN) {}
 

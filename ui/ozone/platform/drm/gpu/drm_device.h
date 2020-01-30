@@ -7,6 +7,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+
 #include <memory>
 #include <vector>
 
@@ -106,12 +107,7 @@ class DrmDevice : public base::RefCountedThreadSafe<DrmDevice> {
   virtual bool SetCrtc(uint32_t crtc_id,
                        uint32_t framebuffer,
                        std::vector<uint32_t> connectors,
-                       drmModeModeInfo* mode);
-
-  // Used to set a specific configuration to the CRTC. Normally this function
-  // would be called with a CRTC saved state (from |GetCrtc|) to restore it to
-  // its original configuration.
-  virtual bool SetCrtc(drmModeCrtc* crtc, std::vector<uint32_t> connectors);
+                       drmModeModeInfo mode);
 
   virtual bool DisableCrtc(uint32_t crtc_id);
 
@@ -168,7 +164,8 @@ class DrmDevice : public base::RefCountedThreadSafe<DrmDevice> {
                            uint64_t value);
 
   // Creates a property blob with data |blob| of size |size|.
-  virtual ScopedDrmPropertyBlob CreatePropertyBlob(void* blob, size_t size);
+  virtual ScopedDrmPropertyBlob CreatePropertyBlob(const void* blob,
+                                                   size_t size);
 
   virtual void DestroyPropertyBlob(uint32_t id);
 

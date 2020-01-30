@@ -18,6 +18,8 @@
 #include "chrome/browser/prerender/prerender_manager_factory.h"
 #include "chrome/browser/prerender/prerender_origin.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/search_engines/template_url_service_factory.h"
+#include "chrome/common/pref_names.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/content_settings/core/common/features.h"
 #include "components/content_settings/core/common/pref_names.h"
@@ -26,6 +28,7 @@
 #include "components/page_load_metrics/browser/page_load_metrics_util.h"
 #include "components/page_load_metrics/browser/protocol_util.h"
 #include "components/prefs/pref_service.h"
+#include "components/search_engines/template_url_service.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
 #include "net/base/load_timing_info.h"
@@ -34,6 +37,7 @@
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
 #include "services/network/public/cpp/network_quality_tracker.h"
+#include "third_party/blink/public/common/mime_util/mime_util.h"
 #include "third_party/metrics_proto/system_profile.pb.h"
 #include "ui/events/blink/blink_features.h"
 
@@ -68,6 +72,29 @@ int32_t LayoutShiftUmaValue(float shift_score) {
   return static_cast<int>(roundf(std::min(shift_score, 10.0f) * 10.0f));
 }
 
+bool IsDefaultSearchEngine(content::BrowserContext* browser_context,
+                           const GURL& url) {
+  if (!browser_context)
+    return false;
+
+  auto* template_service = TemplateURLServiceFactory::GetForProfile(
+      Profile::FromBrowserContext(browser_context));
+
+  if (!template_service)
+    return false;
+
+  return template_service->IsSearchResultsPageFromDefaultSearchProvider(url);
+}
+
+bool IsUserHomePage(content::BrowserContext* browser_context, const GURL& url) {
+  if (!browser_context)
+    return false;
+
+  return url.spec() == Profile::FromBrowserContext(browser_context)
+                           ->GetPrefs()
+                           ->GetString(prefs::kHomePage);
+}
+
 }  // namespace
 
 // static
@@ -93,12 +120,17 @@ UkmPageLoadMetricsObserver::ObservePolicy UkmPageLoadMetricsObserver::OnStart(
     content::NavigationHandle* navigation_handle,
     const GURL& currently_committed_url,
     bool started_in_foreground) {
+  browser_context_ = navigation_handle->GetWebContents()->GetBrowserContext();
+
+  start_url_is_default_search_ =
+      IsDefaultSearchEngine(browser_context_, navigation_handle->GetURL());
+  start_url_is_home_page_ =
+      IsUserHomePage(browser_context_, navigation_handle->GetURL());
+
   if (!started_in_foreground) {
     was_hidden_ = true;
     return CONTINUE_OBSERVING;
   }
-
-  browser_context_ = navigation_handle->GetWebContents()->GetBrowserContext();
 
   // When OnStart is invoked, we don't yet know whether we're observing a web
   // page load, vs another kind of load (e.g. a download or a PDF). Thus,
@@ -158,6 +190,7 @@ UkmPageLoadMetricsObserver::ObservePolicy UkmPageLoadMetricsObserver::OnCommit(
   is_signed_exchange_inner_response_ =
       navigation_handle->IsSignedExchangeInnerResponse();
   RecordNoStatePrefetchMetrics(navigation_handle, source_id);
+  RecordGeneratedNavigationUKM(source_id, navigation_handle->GetURL());
   navigation_is_cross_process_ = !navigation_handle->IsSameProcess();
   navigation_entry_offset_ = navigation_handle->GetNavigationEntryOffset();
   main_document_sequence_number_ = navigation_handle->GetWebContents()
@@ -223,9 +256,17 @@ void UkmPageLoadMetricsObserver::OnResourceDataUseObserved(
     return;
   for (auto const& resource : resources) {
     network_bytes_ += resource->delta_bytes;
-    if (resource->is_complete &&
-        resource->cache_type !=
-            page_load_metrics::mojom::CacheType::kNotCached) {
+
+    // Only sum body lengths for completed resources.
+    if (!resource->is_complete)
+      continue;
+    if (blink::IsSupportedJavascriptMimeType(resource->mime_type)) {
+      js_decoded_bytes_ += resource->decoded_body_length;
+      if (resource->decoded_body_length > js_max_decoded_bytes_)
+        js_max_decoded_bytes_ = resource->decoded_body_length;
+    }
+    if (resource->cache_type !=
+        page_load_metrics::mojom::CacheType::kNotCached) {
       cache_bytes_ += resource->encoded_body_length;
     }
   }
@@ -351,6 +392,12 @@ void UkmPageLoadMetricsObserver::RecordTimingMetrics(
   builder.SetNet_CacheBytes2(ukm::GetExponentialBucketMin(cache_bytes_, 1.3));
   builder.SetNet_NetworkBytes2(
       ukm::GetExponentialBucketMin(network_bytes_, 1.3));
+
+  // Use a bucket spacing factor of 10 for JS bytes.
+  builder.SetNet_JavaScriptBytes(
+      ukm::GetExponentialBucketMin(js_decoded_bytes_, 10));
+  builder.SetNet_JavaScriptMaxBytes(
+      ukm::GetExponentialBucketMin(js_max_decoded_bytes_, 10));
 
   if (main_frame_timing_)
     ReportMainResourceTimingMetrics(timing, &builder);
@@ -663,4 +710,24 @@ bool UkmPageLoadMetricsObserver::IsOfflinePreview(
 #else
   return false;
 #endif
+}
+
+void UkmPageLoadMetricsObserver::RecordGeneratedNavigationUKM(
+    ukm::SourceId source_id,
+    const GURL& committed_url) {
+  bool final_url_is_home_page = IsUserHomePage(browser_context_, committed_url);
+  bool final_url_is_default_search =
+      IsDefaultSearchEngine(browser_context_, committed_url);
+
+  if (!final_url_is_home_page && !final_url_is_default_search &&
+      !start_url_is_home_page_ && !start_url_is_default_search_) {
+    return;
+  }
+
+  ukm::builders::GeneratedNavigation builder(source_id);
+  builder.SetFinalURLIsHomePage(final_url_is_home_page);
+  builder.SetFinalURLIsDefaultSearchEngine(final_url_is_default_search);
+  builder.SetFirstURLIsHomePage(start_url_is_home_page_);
+  builder.SetFirstURLIsDefaultSearchEngine(start_url_is_default_search_);
+  builder.Record(ukm::UkmRecorder::Get());
 }

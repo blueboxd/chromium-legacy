@@ -12,9 +12,7 @@ if (enable_google_benchmarks) {
   source_set("google_benchmark") {
     testonly = true
 
-    public = [
-      "src/include/benchmark/benchmark.h",
-    ]
+    public = [ "src/include/benchmark/benchmark.h" ]
 
     sources = [
       "src/src/arraysize.h",
@@ -72,11 +70,7 @@ if (enable_google_benchmarks) {
 
   source_set("benchmark_main") {
     testonly = true
-    sources = [
-      "src/src/benchmark_main.cc",
-    ]
-    deps = [
-      ":google_benchmark",
-    ]
+    sources = [ "src/src/benchmark_main.cc" ]
+    deps = [ ":google_benchmark" ]
   }
 }

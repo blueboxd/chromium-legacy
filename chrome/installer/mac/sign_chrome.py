@@ -51,7 +51,7 @@ def create_config(config_args, development):
     except ImportError as e:
         # If the build specified Google Chrome as the product, then the
         # internal config has to be available.
-        if config_class(*config_args).product == 'Google Chrome':
+        if config_class.is_chrome_branded():
             raise e
 
     if development:

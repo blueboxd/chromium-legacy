@@ -1260,6 +1260,18 @@ ssl_verify_result_t SSLClientSocketImpl::HandleVerifyResult() {
       result = ct_result;
   }
 
+  // If no other errors occurred, check whether the connection used a legacy TLS
+  // version.
+  if (result == OK &&
+      SSL_version(ssl_.get()) < context_->config().version_min_warn &&
+      base::FeatureList::IsEnabled(features::kLegacyTLSEnforced)) {
+    server_cert_verify_result_.cert_status |= CERT_STATUS_LEGACY_TLS;
+
+    // Only set the resulting net error if it hasn't been previously bypassed.
+    if (!ssl_config_.IsAllowedBadCert(server_cert_.get(), nullptr))
+      result = ERR_SSL_OBSOLETE_VERSION;
+  }
+
   is_fatal_cert_error_ =
       IsCertStatusError(server_cert_verify_result_.cert_status) &&
       result != ERR_CERT_KNOWN_INTERCEPTION_BLOCKED &&

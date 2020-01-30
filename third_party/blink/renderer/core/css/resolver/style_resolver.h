@@ -132,9 +132,18 @@ class CORE_EXPORT StyleResolver final : public GarbageCollected<StyleResolver> {
 
   static bool HasAuthorBackground(const StyleResolverState&);
 
+  scoped_refptr<ComputedStyle> StyleForInterpolations(
+      Element& target,
+      ActiveInterpolationsMap& animations);
+
   void Trace(blink::Visitor*);
 
  private:
+  void ApplyBaseComputedStyle(Element* element,
+                              StyleResolverState& state,
+                              RuleMatchingBehavior matching_behavior,
+                              bool can_cache_animation_base_computed_style);
+
   // FIXME: This should probably go away, folded into FontBuilder.
   void UpdateFont(StyleResolverState&);
 

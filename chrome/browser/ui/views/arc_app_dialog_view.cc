@@ -62,10 +62,6 @@ class ArcAppDialogView : public views::DialogDelegateView,
   ui::ModalType GetModalType() const override;
   bool ShouldShowCloseButton() const override;
 
-  // views::DialogDelegate:
-  bool Accept() override;
-  bool Cancel() override;
-
   // views::View:
   gfx::Size CalculatePreferredSize() const override;
 
@@ -74,6 +70,9 @@ class ArcAppDialogView : public views::DialogDelegateView,
                          const gfx::ImageSkia& image) override;
 
   void AddMultiLineLabel(views::View* parent, const base::string16& label_text);
+
+  void OnDialogAccepted();
+  void OnDialogCancelled();
 
   views::ImageView* icon_view_ = nullptr;
 
@@ -107,6 +106,10 @@ ArcAppDialogView::ArcAppDialogView(Profile* profile,
   DialogDelegate::set_button_label(ui::DIALOG_BUTTON_OK, confirm_button_text);
   DialogDelegate::set_button_label(ui::DIALOG_BUTTON_CANCEL,
                                    cancel_button_text);
+  DialogDelegate::set_accept_callback(base::BindOnce(
+      &ArcAppDialogView::OnDialogAccepted, base::Unretained(this)));
+  DialogDelegate::set_cancel_callback(base::BindOnce(
+      &ArcAppDialogView::OnDialogCancelled, base::Unretained(this)));
 
   ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
 
@@ -164,11 +167,11 @@ void ArcAppDialogView::AddMultiLineLabel(views::View* parent,
 }
 
 void ArcAppDialogView::ConfirmOrCancelForTest(bool confirm) {
-  if (confirm)
-    Accept();
-  else
-    Cancel();
-  GetWidget()->Close();
+  if (confirm) {
+    AcceptDialog();
+  } else {
+    CancelDialog();
+  }
 }
 
 base::string16 ArcAppDialogView::GetWindowTitle() const {
@@ -183,16 +186,16 @@ bool ArcAppDialogView::ShouldShowCloseButton() const {
   return false;
 }
 
-bool ArcAppDialogView::Accept() {
-  if (confirm_callback_)
-    std::move(confirm_callback_).Run(true);
-  return true;
+void ArcAppDialogView::OnDialogAccepted() {
+  // The dialog can either be accepted or cancelled, but never both.
+  DCHECK(confirm_callback_);
+  std::move(confirm_callback_).Run(true);
 }
 
-bool ArcAppDialogView::Cancel() {
-  if (confirm_callback_)
-    std::move(confirm_callback_).Run(false);
-  return true;
+void ArcAppDialogView::OnDialogCancelled() {
+  // The dialog can either be accepted or cancelled, but never both.
+  DCHECK(confirm_callback_);
+  std::move(confirm_callback_).Run(false);
 }
 
 gfx::Size ArcAppDialogView::CalculatePreferredSize() const {

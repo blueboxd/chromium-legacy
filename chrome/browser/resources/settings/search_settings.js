@@ -603,7 +603,7 @@ cr.define('settings', function() {
   let instance = null;
 
   /** @return {!SearchManager} */
-  function getSearchManager() {
+  /* #export */ function getSearchManager() {
     if (instance === null) {
       instance = new SearchManagerImpl();
     }
@@ -618,6 +618,7 @@ cr.define('settings', function() {
     instance = searchManager;
   }
 
+  // #cr_define_end
   return {
     getSearchManager,
     setSearchManagerForTesting,

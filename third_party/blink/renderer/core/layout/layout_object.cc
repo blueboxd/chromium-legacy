@@ -470,20 +470,26 @@ LayoutObject* LayoutObject::NextInPreOrder() const {
 }
 
 bool LayoutObject::HasClipRelatedProperty() const {
-  // TODO(trchen): Refactor / remove this function.
   // This function detects a bunch of properties that can potentially affect
-  // clip inheritance chain. However such generalization is practially useless
+  // clip inheritance chain. However such generalization is practically useless
   // because these properties change clip inheritance in different way that
   // needs to be handled explicitly.
   // CSS clip applies clip to the current element and all descendants.
-  // CSS overflow clip applies only to containg-block descendants.
+  // CSS overflow clip applies only to containing-block descendants.
   // CSS contain:paint applies to all descendants by making itself a containing
   // block for all descendants.
   // CSS clip-path/mask/filter induces a stacking context and applies inherited
   // clip to that stacking context, while resetting clip for descendants. This
   // special behavior is already handled elsewhere.
-  if (HasClip() || HasOverflowClip() || ShouldApplyPaintContainment())
+  if (HasClip() || HasOverflowClip())
     return true;
+  // Paint containment establishes isolation which creates clip isolation nodes.
+  // Style & Layout containment also establish isolation (see
+  // |NeedsIsolationNodes| in PaintPropertyTreeBuilder).
+  if (ShouldApplyPaintContainment() ||
+      (ShouldApplyStyleContainment() && ShouldApplyLayoutContainment())) {
+    return true;
+  }
   if (IsBox() && ToLayoutBox(this)->HasControlClip())
     return true;
   return false;

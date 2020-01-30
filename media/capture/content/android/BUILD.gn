@@ -30,9 +30,7 @@ source_set("android") {
 }
 
 generate_jni("screen_capture_jni_headers") {
-  sources = [
-    "java/src/org/chromium/media/ScreenCapture.java",
-  ]
+  sources = [ "java/src/org/chromium/media/ScreenCapture.java" ]
 }
 
 android_library("screen_capture_java") {
@@ -40,8 +38,6 @@ android_library("screen_capture_java") {
     "//base:base_java",
     "//base:jni_java",
   ]
-  sources = [
-    "java/src/org/chromium/media/ScreenCapture.java",
-  ]
+  sources = [ "java/src/org/chromium/media/ScreenCapture.java" ]
   annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
 }

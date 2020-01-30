@@ -10,9 +10,9 @@
 #include "base/time/time.h"
 #include "chrome/browser/sharing/fake_device_info.h"
 #include "chrome/browser/sharing/fake_sharing_handler_registry.h"
+#include "chrome/browser/sharing/mock_sharing_message_handler.h"
 #include "chrome/browser/sharing/proto/sharing_message.pb.h"
 #include "chrome/browser/sharing/sharing_constants.h"
-#include "chrome/browser/sharing/sharing_message_handler.h"
 #include "chrome/browser/sharing/webrtc/webrtc_signalling_host_fcm.h"
 #include "chrome/services/sharing/public/mojom/webrtc.mojom.h"
 #include "content/public/test/browser_task_environment.h"
@@ -60,16 +60,6 @@ class MockSignallingHost : public WebRtcSignallingHostFCM {
   MOCK_METHOD2(OnOfferReceived, void(const std::string&, SendOfferCallback));
   MOCK_METHOD1(OnIceCandidatesReceived,
                void(std::vector<sharing::mojom::IceCandidatePtr>));
-};
-
-class MockSharingMessageHandler : public SharingMessageHandler {
- public:
-  MockSharingMessageHandler() = default;
-  ~MockSharingMessageHandler() override = default;
-
-  // SharingMessageHandler:
-  MOCK_METHOD2(OnMessage,
-               void(chrome_browser_sharing::SharingMessage, DoneCallback));
 };
 
 chrome_browser_sharing::WebRtcMessage CreateMessage() {

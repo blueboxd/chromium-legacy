@@ -42,7 +42,11 @@ const gfx::VectorIcon* TransportHoverListModel::GetPlaceholderIcon() const {
   return &gfx::kNoneIcon;
 }
 
-std::vector<int> TransportHoverListModel::GetItemTags() const {
+std::vector<int> TransportHoverListModel::GetThrobberTags() const {
+  return {};
+}
+
+std::vector<int> TransportHoverListModel::GetButtonTags() const {
   std::vector<int> tag_list(transport_list_.size());
   std::transform(
       transport_list_.begin(), transport_list_.end(), tag_list.begin(),

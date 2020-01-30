@@ -128,6 +128,7 @@ void PageResourceDataUse::DidCompleteResponse(
   // Report the difference in received bytes.
   is_complete_ = true;
   encoded_body_length_ = status.encoded_body_length;
+  decoded_body_length_ = status.decoded_body_length;
   int64_t delta_bytes = status.encoded_data_length - total_received_bytes_;
   if (delta_bytes > 0) {
     total_received_bytes_ += delta_bytes;
@@ -194,6 +195,7 @@ mojom::ResourceDataUpdatePtr PageResourceDataUse::GetResourceDataUpdate() {
   resource_data_update->is_main_frame_resource = is_main_frame_resource_;
   resource_data_update->mime_type = mime_type_;
   resource_data_update->encoded_body_length = encoded_body_length_;
+  resource_data_update->decoded_body_length = decoded_body_length_;
   resource_data_update->cache_type = cache_type_;
   resource_data_update->is_secure_scheme = is_secure_scheme_;
   resource_data_update->proxy_used = proxy_used_;

@@ -62,12 +62,25 @@ class CORE_EXPORT EffectStack {
 
   using PropertyHandleFilter = bool (*)(const PropertyHandle&);
   bool AffectsProperties(PropertyHandleFilter) const;
+
+  // Produces a map of properties to active effects.
+  // |effect_stack| contains the sequence of sample effects for an element.
+  // |new_animations| is an optional list of animations to be explicitly added
+  // to the active animations map.
+  // |suppressed_animations| is an optional list of animations to ignore.
+  // |priority| is for matching the effect priority and may be kDefaultPriority
+  // or kTransitionPriority.
+  // |property_handle_filter| is an optional filter for determining which
+  // properties to include in the interpolations map.
+  // |partial_effect_stack_cutoff| is an optional cutoff point, used to create
+  // a partial effect stack.
   static ActiveInterpolationsMap ActiveInterpolations(
-      EffectStack*,
+      EffectStack* effect_stack,
       const HeapVector<Member<const InertEffect>>* new_animations,
       const HeapHashSet<Member<const Animation>>* suppressed_animations,
-      KeyframeEffect::Priority,
-      PropertyHandleFilter = nullptr);
+      KeyframeEffect::Priority priority,
+      PropertyHandleFilter property_handle_filter = nullptr,
+      KeyframeEffect* partial_effect_stack_cutoff = nullptr);
 
   void Trace(blink::Visitor*);
 

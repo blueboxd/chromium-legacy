@@ -114,8 +114,7 @@ SVGPropertyBase* SVGPath::CloneForAnimation(const String& value) const {
 }
 
 void SVGPath::Add(SVGPropertyBase* other, SVGElement*) {
-  const SVGPathByteStream& other_path_byte_stream =
-      ToSVGPath(other)->ByteStream();
+  const auto& other_path_byte_stream = To<SVGPath>(other)->ByteStream();
   if (ByteStream().size() != other_path_byte_stream.size() ||
       ByteStream().IsEmpty() || other_path_byte_stream.IsEmpty())
     return;
@@ -134,14 +133,14 @@ void SVGPath::CalculateAnimatedValue(
     SVGElement*) {
   bool is_to_animation = animation_element.GetAnimationMode() == kToAnimation;
 
-  const SVGPath& to = ToSVGPath(*to_value);
+  const auto& to = To<SVGPath>(*to_value);
   const SVGPathByteStream& to_stream = to.ByteStream();
 
   // If no 'to' value is given, nothing to animate.
   if (!to_stream.size())
     return;
 
-  const SVGPath& from = ToSVGPath(*from_value);
+  const auto& from = To<SVGPath>(*from_value);
   const SVGPathByteStream* from_stream = &from.ByteStream();
 
   std::unique_ptr<SVGPathByteStream> copy;
@@ -178,7 +177,7 @@ void SVGPath::CalculateAnimatedValue(
     if (repeat_count && animation_element.IsAccumulated()) {
       new_stream = ConditionallyAddPathByteStreams(
           std::move(new_stream),
-          ToSVGPath(to_at_end_of_duration_value)->ByteStream(), repeat_count);
+          To<SVGPath>(to_at_end_of_duration_value)->ByteStream(), repeat_count);
     }
   }
   path_value_ = MakeGarbageCollected<CSSPathValue>(std::move(new_stream));

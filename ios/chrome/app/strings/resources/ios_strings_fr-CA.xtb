@@ -192,6 +192,7 @@
 <translation id="3474649192738347024">Formulaires remplis.</translation>
 <translation id="3478058380795961209">Mois d'expir.</translation>
 <translation id="3482959374254649722">Synchronisation de vos onglets en cours…</translation>
+<translation id="3484946776651937681">Ouvrir dans le dossier Téléchargement</translation>
 <translation id="3493531032208478708"><ph name="BEGIN_LINK" />En savoir plus<ph name="END_LINK" /> sur le contenu suggéré</translation>
 <translation id="3494788280727468875">Confirmer l'effacement des données de navigation</translation>
 <translation id="35083190962747987">Ouvrir ${url}</translation>
@@ -537,6 +538,7 @@ Vos données ont été chiffrées avec votre phrase de passe le <ph name="TIME" 
 <translation id="8319076807703933069">Nouvelle recherche</translation>
 <translation id="8323906514956095947">Maintenez le doigt sur le bouton pour afficher plus d'options d'onglets</translation>
 <translation id="8328777765163860529">Tout fermer</translation>
+<translation id="8386068868580335421">Réinitialiser</translation>
 <translation id="8407669440184693619">Aucun mot de passé trouvé pour ce site</translation>
 <translation id="842017693807136194">Connecté avec</translation>
 <translation id="8428045167754449968">Ville</translation>

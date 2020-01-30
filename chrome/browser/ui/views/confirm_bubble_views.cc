@@ -46,6 +46,10 @@ ConfirmBubbleViews::ConfirmBubbleViews(
   DialogDelegate::set_button_label(
       ui::DIALOG_BUTTON_CANCEL,
       model_->GetButtonLabel(ConfirmBubbleModel::BUTTON_CANCEL));
+  DialogDelegate::set_accept_callback(base::BindOnce(
+      &ConfirmBubbleModel::Accept, base::Unretained(model_.get())));
+  DialogDelegate::set_cancel_callback(base::BindOnce(
+      &ConfirmBubbleModel::Cancel, base::Unretained(model_.get())));
   help_button_ = DialogDelegate::SetExtraView(::CreateExtraView(this));
 
   set_margins(ChromeLayoutProvider::Get()->GetDialogInsetsForContentType(
@@ -87,16 +91,6 @@ bool ConfirmBubbleViews::IsDialogButtonEnabled(ui::DialogButton button) const {
       NOTREACHED();
       return false;
   }
-}
-
-bool ConfirmBubbleViews::Cancel() {
-  model_->Cancel();
-  return true;
-}
-
-bool ConfirmBubbleViews::Accept() {
-  model_->Accept();
-  return true;
 }
 
 ui::ModalType ConfirmBubbleViews::GetModalType() const {

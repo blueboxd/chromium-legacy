@@ -589,6 +589,7 @@ gfx::NativeViewAccessible AXPlatformNodeWin::GetNativeViewAccessible() {
 }
 
 void AXPlatformNodeWin::NotifyAccessibilityEvent(ax::mojom::Event event_type) {
+  AXPlatformNodeBase::NotifyAccessibilityEvent(event_type);
   // Menu items fire selection events but Windows screen readers work reliably
   // with focus events. Remap here.
   if (event_type == ax::mojom::Event::kSelection) {
@@ -3411,29 +3412,106 @@ IFACEMETHODIMP AXPlatformNodeWin::get_text(LONG start_offset,
   return S_OK;
 }
 
-IFACEMETHODIMP AXPlatformNodeWin::get_textAtOffset(
+HRESULT AXPlatformNodeWin::IAccessibleTextGetTextForOffsetType(
+    TextOffsetType text_offset_type,
     LONG offset,
     enum IA2TextBoundaryType boundary_type,
     LONG* start_offset,
     LONG* end_offset,
     BSTR* text) {
   COM_OBJECT_VALIDATE_3_ARGS(start_offset, end_offset, text);
-  // The IAccessible2 spec says we don't have to implement the "sentence"
-  // boundary type, we can just let the screen reader handle it.
-  if (boundary_type == IA2_TEXT_BOUNDARY_SENTENCE) {
-    *start_offset = 0;
-    *end_offset = 0;
-    *text = nullptr;
+  AXPlatformNode::NotifyAddAXModeFlags(kScreenReaderAndHTMLAccessibilityModes |
+                                       ui::AXMode::kInlineTextBoxes);
+
+  // https://accessibility.linuxfoundation.org/a11yspecs/ia2/docs/html/_accessible_text_8idl.html
+  // IA2_TEXT_BOUNDARY_SENTENCE is optional and we can let the screenreader
+  // handle it, the rest of the boundary types must be supported.
+  if (boundary_type == IA2_TEXT_BOUNDARY_SENTENCE)
     return S_FALSE;
-  }
+
+  HandleSpecialTextOffset(&offset);
+  if (offset < 0)
+    return E_INVALIDARG;
 
   const base::string16& text_str = TextForIAccessibleText();
+  LONG text_len = text_str.length();
 
-  *start_offset = FindBoundary(text_str, boundary_type, offset,
-                               AXTextBoundaryDirection::kBackwards);
-  *end_offset = FindBoundary(text_str, boundary_type, offset,
-                             AXTextBoundaryDirection::kForwards);
-  return get_text(*start_offset, *end_offset, text);
+  // https://accessibility.linuxfoundation.org/a11yspecs/ia2/docs/html/interface_i_accessible_text.html
+  // All methods that operate on particular characters use character indices
+  // (e.g. IAccessibleText::textAtOffset) from 0 to length-1.
+  if (offset >= text_len) {
+    // We aren't strictly following the spec here by allowing offset to be equal
+    // to the text length for IA2_TEXT_BOUNDARY_LINE in case screen readers
+    // expect this behavior which has existed since Feb. 2015,
+    // commit: 6baff46f520e31ff92669890207be5708064d16e.
+    const bool offset_for_line_text_len =
+        offset == text_len && boundary_type == IA2_TEXT_BOUNDARY_LINE;
+    if (!offset_for_line_text_len)
+      return E_INVALIDARG;
+  }
+
+  LONG start, end;
+
+  switch (text_offset_type) {
+    case TextOffsetType::kAtOffset: {
+      end = FindBoundary(boundary_type, offset,
+                         ui::AXTextBoundaryDirection::kForwards);
+      // Early return if the range will be degenerate containing no text.
+      if (end <= 0)
+        return S_FALSE;
+      start = FindBoundary(boundary_type, offset,
+                           ui::AXTextBoundaryDirection::kBackwards);
+      break;
+    }
+    case TextOffsetType::kBeforeOffset: {
+      // Find the start of the boundary at |offset| and assign to |end|,
+      // then find the start of the preceding boundary and assign to |start|.
+      end = FindBoundary(boundary_type, offset,
+                         ui::AXTextBoundaryDirection::kBackwards);
+      // Early return if the range will be degenerate containing no text,
+      // or the range is after |offset|. Because the character at |offset| must
+      // be excluded, |end| and |offset| may be equal.
+      if (end <= 0 || end > offset)
+        return S_FALSE;
+      start = FindBoundary(boundary_type, end - 1,
+                           ui::AXTextBoundaryDirection::kBackwards);
+      break;
+    }
+    case TextOffsetType::kAfterOffset: {
+      // Find the end of the boundary at |offset| and assign to |start|,
+      // then find the end of the following boundary and assign to |end|.
+      start = FindBoundary(boundary_type, offset,
+                           ui::AXTextBoundaryDirection::kForwards);
+      // Early return if the range will be degenerate containing no text,
+      // or the range is before or includes|offset|. Because the character at
+      // |offset| must be excluded, |start| and |offset| cannot be equal.
+      if (start >= text_len || start <= offset)
+        return S_FALSE;
+      end = FindBoundary(boundary_type, start,
+                         ui::AXTextBoundaryDirection::kForwards);
+      break;
+    }
+  }
+
+  DCHECK_LE(start, end);
+  if (start >= end)
+    return S_FALSE;
+
+  *start_offset = start;
+  *end_offset = end;
+  return get_text(start, end, text);
+}
+
+IFACEMETHODIMP AXPlatformNodeWin::get_textAtOffset(
+    LONG offset,
+    enum IA2TextBoundaryType boundary_type,
+    LONG* start_offset,
+    LONG* end_offset,
+    BSTR* text) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_TEXT_AT_OFFSET);
+  return IAccessibleTextGetTextForOffsetType(TextOffsetType::kAtOffset, offset,
+                                             boundary_type, start_offset,
+                                             end_offset, text);
 }
 
 IFACEMETHODIMP AXPlatformNodeWin::get_textBeforeOffset(
@@ -3442,24 +3520,10 @@ IFACEMETHODIMP AXPlatformNodeWin::get_textBeforeOffset(
     LONG* start_offset,
     LONG* end_offset,
     BSTR* text) {
-  if (!start_offset || !end_offset || !text)
-    return E_INVALIDARG;
-
-  // The IAccessible2 spec says we don't have to implement the "sentence"
-  // boundary type, we can just let the screenreader handle it.
-  if (boundary_type == IA2_TEXT_BOUNDARY_SENTENCE) {
-    *start_offset = 0;
-    *end_offset = 0;
-    *text = nullptr;
-    return S_FALSE;
-  }
-
-  const base::string16& text_str = TextForIAccessibleText();
-
-  *start_offset = FindBoundary(text_str, boundary_type, offset,
-                               AXTextBoundaryDirection::kBackwards);
-  *end_offset = offset;
-  return get_text(*start_offset, *end_offset, text);
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_TEXT_BEFORE_OFFSET);
+  return IAccessibleTextGetTextForOffsetType(TextOffsetType::kBeforeOffset,
+                                             offset, boundary_type,
+                                             start_offset, end_offset, text);
 }
 
 IFACEMETHODIMP AXPlatformNodeWin::get_textAfterOffset(
@@ -3468,24 +3532,10 @@ IFACEMETHODIMP AXPlatformNodeWin::get_textAfterOffset(
     LONG* start_offset,
     LONG* end_offset,
     BSTR* text) {
-  if (!start_offset || !end_offset || !text)
-    return E_INVALIDARG;
-
-  // The IAccessible2 spec says we don't have to implement the "sentence"
-  // boundary type, we can just let the screenreader handle it.
-  if (boundary_type == IA2_TEXT_BOUNDARY_SENTENCE) {
-    *start_offset = 0;
-    *end_offset = 0;
-    *text = nullptr;
-    return S_FALSE;
-  }
-
-  const base::string16& text_str = TextForIAccessibleText();
-
-  *start_offset = offset;
-  *end_offset = FindBoundary(text_str, boundary_type, offset,
-                             AXTextBoundaryDirection::kForwards);
-  return get_text(*start_offset, *end_offset, text);
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_TEXT_AFTER_OFFSET);
+  return IAccessibleTextGetTextForOffsetType(TextOffsetType::kAfterOffset,
+                                             offset, boundary_type,
+                                             start_offset, end_offset, text);
 }
 
 IFACEMETHODIMP AXPlatformNodeWin::get_offsetAtPoint(
@@ -3578,6 +3628,25 @@ IFACEMETHODIMP AXPlatformNodeWin::setSelection(LONG selection_index,
     return S_OK;
   }
   return E_FAIL;
+}
+
+//
+// IAccessibleHypertext methods not implemented.
+//
+
+IFACEMETHODIMP AXPlatformNodeWin::get_nHyperlinks(LONG* hyperlink_count) {
+  return E_NOTIMPL;
+}
+
+IFACEMETHODIMP AXPlatformNodeWin::get_hyperlink(
+    LONG index,
+    IAccessibleHyperlink** hyperlink) {
+  return E_NOTIMPL;
+}
+
+IFACEMETHODIMP AXPlatformNodeWin::get_hyperlinkIndex(LONG char_index,
+                                                     LONG* hyperlink_index) {
+  return E_NOTIMPL;
 }
 
 //
@@ -7028,6 +7097,7 @@ base::Optional<EVENTID> AXPlatformNodeWin::MojoEventToUIAEvent(
       return UIA_SystemAlertEventId;
     case ax::mojom::Event::kFocus:
     case ax::mojom::Event::kFocusContext:
+    case ax::mojom::Event::kFocusAfterMenuClose:
       return UIA_AutomationFocusChangedEventId;
     case ax::mojom::Event::kLiveRegionChanged:
       return UIA_LiveRegionChangedEventId;
@@ -7186,16 +7256,22 @@ void AXPlatformNodeWin::HandleSpecialTextOffset(LONG* offset) {
   }
 }
 
-LONG AXPlatformNodeWin::FindBoundary(const base::string16& text,
-                                     IA2TextBoundaryType ia2_boundary,
+LONG AXPlatformNodeWin::FindBoundary(IA2TextBoundaryType ia2_boundary,
                                      LONG start_offset,
                                      AXTextBoundaryDirection direction) {
   HandleSpecialTextOffset(&start_offset);
+
+  // If the |start_offset| is equal to the location of the caret, then use the
+  // focus affinity, otherwise default to downstream affinity.
+  ax::mojom::TextAffinity affinity = ax::mojom::TextAffinity::kDownstream;
+  int selection_start, selection_end;
+  GetSelectionOffsets(&selection_start, &selection_end);
+  if (selection_end >= 0 && start_offset == selection_end)
+    affinity = GetDelegate()->GetTreeData().sel_focus_affinity;
+
   AXTextBoundary boundary = FromIA2TextBoundary(ia2_boundary);
-  std::vector<int32_t> line_breaks;
-  return static_cast<LONG>(FindAccessibleTextBoundary(
-      text, line_breaks, boundary, start_offset, direction,
-      ax::mojom::TextAffinity::kDownstream));
+  return static_cast<LONG>(
+      FindTextBoundary(boundary, start_offset, direction, affinity));
 }
 
 AXPlatformNodeWin* AXPlatformNodeWin::GetTargetFromChildID(

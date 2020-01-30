@@ -36,7 +36,7 @@ InterpolationValue SVGRectInterpolationType::MaybeConvertSVGValue(
   if (svg_value.GetType() != kAnimatedRect)
     return nullptr;
 
-  const SVGRect& rect = ToSVGRect(svg_value);
+  const auto& rect = To<SVGRect>(svg_value);
   auto result = std::make_unique<InterpolableList>(kRectComponentIndexCount);
   result->Set(kRectX, std::make_unique<InterpolableNumber>(rect.X()));
   result->Set(kRectY, std::make_unique<InterpolableNumber>(rect.Y()));

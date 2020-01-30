@@ -186,7 +186,8 @@ void CSPDirectiveList::ReportViolation(
     const KURL& blocked_url,
     ResourceRequest::RedirectStatus redirect_status,
     ContentSecurityPolicy::ViolationType violation_type,
-    const String& sample) const {
+    const String& sample,
+    const String& sample_prefix) const {
   String message =
       IsReportOnly() ? "[Report Only] " + console_message : console_message;
   policy_->LogToConsole(
@@ -199,7 +200,7 @@ void CSPDirectiveList::ReportViolation(
                            nullptr,  // localFrame
                            redirect_status,
                            nullptr,  // Element*
-                           sample);
+                           sample, sample_prefix);
 }
 
 void CSPDirectiveList::ReportViolationWithFrame(
@@ -332,7 +333,8 @@ void CSPDirectiveList::ReportMixedContent(
 
 bool CSPDirectiveList::AllowTrustedTypeAssignmentFailure(
     const String& message,
-    const String& sample) const {
+    const String& sample,
+    const String& sample_prefix) const {
   if (!require_trusted_types_for_ || !require_trusted_types_for_->require())
     return true;
 
@@ -341,7 +343,7 @@ bool CSPDirectiveList::AllowTrustedTypeAssignmentFailure(
           ContentSecurityPolicy::DirectiveType::kRequireTrustedTypesFor),
       ContentSecurityPolicy::DirectiveType::kRequireTrustedTypesFor, message,
       KURL(), RedirectStatus::kFollowedRedirect,
-      ContentSecurityPolicy::kTrustedTypesSinkViolation, sample);
+      ContentSecurityPolicy::kTrustedTypesSinkViolation, sample, sample_prefix);
   return IsReportOnly();
 }
 

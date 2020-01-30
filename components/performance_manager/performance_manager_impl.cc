@@ -12,7 +12,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "base/task/lazy_task_runner.h"
+#include "base/task/lazy_thread_pool_task_runner.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "components/performance_manager/graph/frame_node_impl.h"
@@ -40,10 +40,9 @@ PerformanceManagerImpl* g_performance_manager_from_pm_sequence = nullptr;
 PerformanceManagerImpl* g_performance_manager_from_any_sequence = nullptr;
 
 // The performance manager TaskRunner.
-base::LazySequencedTaskRunner g_performance_manager_task_runner =
-    LAZY_SEQUENCED_TASK_RUNNER_INITIALIZER(
-        base::TaskTraits(base::ThreadPool(),
-                         base::TaskPriority::USER_VISIBLE,
+base::LazyThreadPoolSequencedTaskRunner g_performance_manager_task_runner =
+    LAZY_THREAD_POOL_SEQUENCED_TASK_RUNNER_INITIALIZER(
+        base::TaskTraits(base::TaskPriority::USER_VISIBLE,
                          base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN,
                          base::MayBlock()));
 

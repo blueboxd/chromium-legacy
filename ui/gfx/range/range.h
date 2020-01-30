@@ -23,10 +23,6 @@ typedef struct _NSRange NSRange;
 #endif
 #endif  // defined(OS_MACOSX)
 
-#if defined(OS_WIN)
-typedef struct _charrange CHARRANGE;
-#endif
-
 namespace gfx {
 
 // A Range contains two integer values that represent a numeric range, like the
@@ -48,10 +44,6 @@ class GFX_RANGE_EXPORT Range {
   // Platform constructors.
 #if defined(OS_MACOSX)
   explicit Range(const NSRange& range);
-#elif defined(OS_WIN)
-  // The |total_length| paramater should be used if the CHARRANGE is set to
-  // {0,-1} to indicate the whole range.
-  Range(const CHARRANGE& range, long total_length = -1);
 #endif
 
   // Returns a range that is invalid, which is {UINT32_MAX,UINT32_MAX}.

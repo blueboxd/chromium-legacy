@@ -68,8 +68,17 @@ const char* TrayContainer::GetClassName() const {
   return "TrayContainer";
 }
 
+TrayContainer::LayoutInputs TrayContainer::GetLayoutInputs() const {
+  return {shelf_->IsHorizontalAlignment(),
+          ShelfConfig::Get()->status_area_hit_region_padding(),
+          GetAnchorBoundsInScreen(), main_axis_margin_, cross_axis_margin_};
+}
+
 void TrayContainer::UpdateLayout() {
-  const bool is_horizontal = shelf_->IsHorizontalAlignment();
+  const LayoutInputs new_layout_inputs = GetLayoutInputs();
+  if (layout_inputs_.has_value() && *layout_inputs_ == new_layout_inputs)
+    return;
+  const bool is_horizontal = new_layout_inputs.shelf_alignment_is_horizontal;
 
   // Adjust the size of status tray dark background by adding additional
   // empty border.
@@ -79,13 +88,12 @@ void TrayContainer::UpdateLayout() {
 
   gfx::Insets insets(
       is_horizontal
-          ? gfx::Insets(0, ShelfConfig::Get()->status_area_hit_region_padding())
-          : gfx::Insets(ShelfConfig::Get()->status_area_hit_region_padding(),
-                        0));
+          ? gfx::Insets(0, new_layout_inputs.status_area_hit_region_padding)
+          : gfx::Insets(new_layout_inputs.status_area_hit_region_padding, 0));
   SetBorder(views::CreateEmptyBorder(insets));
 
-  int horizontal_margin = main_axis_margin_;
-  int vertical_margin = cross_axis_margin_;
+  int horizontal_margin = new_layout_inputs.main_axis_margin;
+  int vertical_margin = new_layout_inputs.cross_axis_margin;
   if (!is_horizontal)
     std::swap(horizontal_margin, vertical_margin);
 
@@ -96,6 +104,7 @@ void TrayContainer::UpdateLayout() {
   views::View::SetLayoutManager(std::move(layout));
 
   PreferredSizeChanged();
+  layout_inputs_ = new_layout_inputs;
 }
 
 }  // namespace ash

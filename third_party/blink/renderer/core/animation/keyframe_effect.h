@@ -133,6 +133,8 @@ class CORE_EXPORT KeyframeEffect final : public AnimationEffect {
 
   bool AnimationsPreserveAxisAlignment() const;
 
+  ActiveInterpolationsMap InterpolationsForCommitStyles();
+
  private:
   EffectModel::CompositeOperation CompositeInternal() const;
 

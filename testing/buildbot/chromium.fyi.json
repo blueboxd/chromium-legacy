@@ -12586,6 +12586,24 @@
             }
           ]
         },
+        "test": "events_unittests",
+        "test_target": "//ui/events:events_unittests"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "arm64",
+              "inside_docker": "1",
+              "os": "Ubuntu-16.04"
+            }
+          ]
+        },
         "test": "gfx_unittests",
         "test_target": "//ui/gfx:gfx_unittests"
       },
@@ -13156,6 +13174,26 @@
         },
         "test": "crypto_unittests",
         "test_target": "//crypto:crypto_unittests"
+      },
+      {
+        "args": [
+          "--device=aemu"
+        ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "kvm": "1",
+              "os": "Ubuntu-16.04"
+            }
+          ]
+        },
+        "test": "events_unittests",
+        "test_target": "//ui/events:events_unittests"
       },
       {
         "args": [
@@ -13768,6 +13806,26 @@
         },
         "test": "crypto_unittests",
         "test_target": "//crypto:crypto_unittests"
+      },
+      {
+        "args": [
+          "--device=aemu"
+        ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "kvm": "1",
+              "os": "Ubuntu-16.04"
+            }
+          ]
+        },
+        "test": "events_unittests",
+        "test_target": "//ui/events:events_unittests"
       },
       {
         "args": [

@@ -196,8 +196,7 @@ class CONTENT_EXPORT RenderFrameProxy : public IPC::Listener,
   base::UnguessableToken GetDevToolsFrameToken() override;
   uint32_t Print(const blink::WebRect& rect, cc::PaintCanvas* canvas) override;
 
-  // IPC handlers
-  void OnDidStartLoading();
+  void DidStartLoading();
 
   void WasEvicted();
 
@@ -229,7 +228,6 @@ class CONTENT_EXPORT RenderFrameProxy : public IPC::Listener,
       blink::WebIntrinsicSizingInfo sizing_info);
   void OnUpdateOpener(int opener_routing_id);
   void OnViewChanged(const FrameMsg_ViewChanged_Params& params);
-  void OnDidStopLoading();
   void OnDidUpdateFramePolicy(const blink::FramePolicy& frame_policy);
   void OnDidSetFramePolicyHeaders(
       blink::WebSandboxFlags active_sandbox_flags,

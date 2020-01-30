@@ -26,7 +26,6 @@
 <translation id="1031362278801463162">Cargando vista previa</translation>
 <translation id="1032605640136438169">Revisa los nuevos términos</translation>
 <translation id="103279545524624934">Libera espacio del disco para iniciar aplicaciones de Android.</translation>
-<translation id="1033343386521881354">Se ha encontrado 1 impresora en el servidor de impresión.</translation>
 <translation id="1033780634303702874">Acceder a tus dispositivos en serie</translation>
 <translation id="1034942643314881546">Ilustración de habilitar ADB para crear aplicaciones</translation>
 <translation id="1036348656032585052">Desactivar</translation>
@@ -34,7 +33,6 @@
 <translation id="1036982837258183574">Pulsa |<ph name="ACCELERATOR" />| para salir del modo de pantalla completa</translation>
 <translation id="1038168778161626396">Solo cifrar</translation>
 <translation id="1039337018183941703">El archivo no es válido o está dañado</translation>
-<translation id="1039850285407663109">El archivo seleccionado es desconocido y podría ser peligroso. Te recomendamos que lo analices antes de abrirlo.</translation>
 <translation id="1041175011127912238">La página no responde</translation>
 <translation id="1041263367839475438">Dispositivos disponibles</translation>
 <translation id="1042174272890264476">El ordenador también incluye la biblioteca RLZ de <ph name="SHORT_PRODUCT_NAME" />. RLZ asigna una etiqueta identificable, no exclusiva y no personal para medir las búsquedas y el uso de <ph name="SHORT_PRODUCT_NAME" /> derivados de una determinada campaña promocional. Estas etiquetas aparecen a veces en las consultas de la Búsqueda de Google realizadas en <ph name="PRODUCT_NAME" />.</translation>
@@ -639,7 +637,6 @@
 <translation id="1858585891038687145">Confiar en este certificado para identificar a los fabricantes de software</translation>
 <translation id="1861262398884155592">Esta carpeta está vacía</translation>
 <translation id="1863182668524159459">No se ha encontrado ningún puerto serie</translation>
-<translation id="1863552924692672565"><ph name="FILE_NAME" /> es un archivo desconocido. Analízalo para reducir el riesgo.</translation>
 <translation id="1864111464094315414">Acceder</translation>
 <translation id="1864400682872660285">Más frío</translation>
 <translation id="1864454756846565995">Dispositivo USB-C (puerto trasero)</translation>
@@ -4024,7 +4021,6 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="6678717876183468697">URL de la consulta</translation>
 <translation id="6680442031740878064">Disponible: <ph name="AVAILABLE_SPACE" /></translation>
 <translation id="6680650203439190394">Velocidad</translation>
-<translation id="6681301928961274620">No se ha encontrado ninguna impresora en el servidor de impresión.</translation>
 <translation id="6681668084120808868">Sacar foto</translation>
 <translation id="6681964764822470072">"<ph name="APP_NAME" />" se desinstalará.</translation>
 <translation id="668599234725812620">Abrir Google Play</translation>
@@ -5554,7 +5550,6 @@ Guarda tu archivo de clave en un lugar seguro, ya que lo necesitarás para crear
 <translation id="8794025342371547160">IP restringida</translation>
 <translation id="879413103056696865">Mientras el punto de acceso esté activo, tu <ph name="PHONE_NAME" />:</translation>
 <translation id="8795916974678578410">Nueva ventana</translation>
-<translation id="8797086401386164142">Se han encontrado <ph name="NUM_PRINTERS" /> impresoras en el servidor de impresión.</translation>
 <translation id="8797459392481275117">No traducir nunca este sitio web</translation>
 <translation id="8798099450830957504">Predeterminado</translation>
 <translation id="8798441408945964110">Nombre del proveedor</translation>

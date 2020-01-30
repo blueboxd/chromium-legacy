@@ -73,7 +73,7 @@
 //     }
 // The third parameter is a unique ID to match ASYNC_BEGIN/ASYNC_END pairs.
 // ASYNC_BEGIN and ASYNC_END can occur on any thread of any traced process.
-// Pointers can be used for the ID parameter, and they will be mangled
+// Pointers can be used for the ID parameter, and they will be annotated
 // internally so that the same pointer on two different processes will not
 // match. For example:
 //   class MyTracedClass {
@@ -1081,19 +1081,17 @@
 #define TRACE_EVENT_FLAG_NONE (static_cast<unsigned int>(0))
 #define TRACE_EVENT_FLAG_COPY (static_cast<unsigned int>(1 << 0))
 #define TRACE_EVENT_FLAG_HAS_ID (static_cast<unsigned int>(1 << 1))
-// TODO(crbug.com/639003): Free this bit after ID mangling is deprecated.
-#define TRACE_EVENT_FLAG_MANGLE_ID (static_cast<unsigned int>(1 << 2))
-#define TRACE_EVENT_FLAG_SCOPE_OFFSET (static_cast<unsigned int>(1 << 3))
-#define TRACE_EVENT_FLAG_SCOPE_EXTRA (static_cast<unsigned int>(1 << 4))
-#define TRACE_EVENT_FLAG_EXPLICIT_TIMESTAMP (static_cast<unsigned int>(1 << 5))
-#define TRACE_EVENT_FLAG_ASYNC_TTS (static_cast<unsigned int>(1 << 6))
-#define TRACE_EVENT_FLAG_BIND_TO_ENCLOSING (static_cast<unsigned int>(1 << 7))
-#define TRACE_EVENT_FLAG_FLOW_IN (static_cast<unsigned int>(1 << 8))
-#define TRACE_EVENT_FLAG_FLOW_OUT (static_cast<unsigned int>(1 << 9))
-#define TRACE_EVENT_FLAG_HAS_CONTEXT_ID (static_cast<unsigned int>(1 << 10))
-#define TRACE_EVENT_FLAG_HAS_PROCESS_ID (static_cast<unsigned int>(1 << 11))
-#define TRACE_EVENT_FLAG_HAS_LOCAL_ID (static_cast<unsigned int>(1 << 12))
-#define TRACE_EVENT_FLAG_HAS_GLOBAL_ID (static_cast<unsigned int>(1 << 13))
+#define TRACE_EVENT_FLAG_SCOPE_OFFSET (static_cast<unsigned int>(1 << 2))
+#define TRACE_EVENT_FLAG_SCOPE_EXTRA (static_cast<unsigned int>(1 << 3))
+#define TRACE_EVENT_FLAG_EXPLICIT_TIMESTAMP (static_cast<unsigned int>(1 << 4))
+#define TRACE_EVENT_FLAG_ASYNC_TTS (static_cast<unsigned int>(1 << 5))
+#define TRACE_EVENT_FLAG_BIND_TO_ENCLOSING (static_cast<unsigned int>(1 << 6))
+#define TRACE_EVENT_FLAG_FLOW_IN (static_cast<unsigned int>(1 << 7))
+#define TRACE_EVENT_FLAG_FLOW_OUT (static_cast<unsigned int>(1 << 8))
+#define TRACE_EVENT_FLAG_HAS_CONTEXT_ID (static_cast<unsigned int>(1 << 9))
+#define TRACE_EVENT_FLAG_HAS_PROCESS_ID (static_cast<unsigned int>(1 << 10))
+#define TRACE_EVENT_FLAG_HAS_LOCAL_ID (static_cast<unsigned int>(1 << 11))
+#define TRACE_EVENT_FLAG_HAS_GLOBAL_ID (static_cast<unsigned int>(1 << 12))
 // TODO(eseckler): Remove once we have native support for typed proto events in
 // TRACE_EVENT macros.
 #define TRACE_EVENT_FLAG_TYPED_PROTO_ARGS (static_cast<unsigned int>(1 << 15))
@@ -1116,9 +1114,9 @@
 
 // Enum reflecting the scope of an INSTANT event. Must fit within
 // TRACE_EVENT_FLAG_SCOPE_MASK.
-#define TRACE_EVENT_SCOPE_GLOBAL (static_cast<unsigned char>(0 << 3))
-#define TRACE_EVENT_SCOPE_PROCESS (static_cast<unsigned char>(1 << 3))
-#define TRACE_EVENT_SCOPE_THREAD (static_cast<unsigned char>(2 << 3))
+#define TRACE_EVENT_SCOPE_GLOBAL (static_cast<unsigned char>(0 << 2))
+#define TRACE_EVENT_SCOPE_PROCESS (static_cast<unsigned char>(1 << 2))
+#define TRACE_EVENT_SCOPE_THREAD (static_cast<unsigned char>(2 << 2))
 
 #define TRACE_EVENT_SCOPE_NAME_GLOBAL ('g')
 #define TRACE_EVENT_SCOPE_NAME_PROCESS ('p')

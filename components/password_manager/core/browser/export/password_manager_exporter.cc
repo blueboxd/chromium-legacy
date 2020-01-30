@@ -10,7 +10,7 @@
 #include "base/files/file_util.h"
 #include "base/location.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/task/lazy_task_runner.h"
+#include "base/task/lazy_thread_pool_task_runner.h"
 #include "base/task/post_task.h"
 #include "base/task_runner_util.h"
 #include "build/build_config.h"
@@ -26,11 +26,9 @@ namespace {
 // destination and one of them was cancelled and will delete the file. We use
 // TaskPriority::USER_VISIBLE, because a busy UI is displayed while the
 // passwords are being exported.
-base::LazySingleThreadTaskRunner g_task_runner =
-    LAZY_SINGLE_THREAD_TASK_RUNNER_INITIALIZER(
-        base::TaskTraits(base::ThreadPool(),
-                         base::MayBlock(),
-                         base::TaskPriority::USER_VISIBLE),
+base::LazyThreadPoolSingleThreadTaskRunner g_task_runner =
+    LAZY_THREAD_POOL_SINGLE_THREAD_TASK_RUNNER_INITIALIZER(
+        base::TaskTraits(base::MayBlock(), base::TaskPriority::USER_VISIBLE),
         base::SingleThreadTaskRunnerThreadMode::SHARED);
 
 // A wrapper for |write_function|, which can be bound and keep a copy of its

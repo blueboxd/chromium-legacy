@@ -143,6 +143,12 @@ ASH_PUBLIC_EXPORT extern const base::Feature kDragFromShelfToHomeOrOverview;
 // preferences, or policy).
 ASH_PUBLIC_EXPORT extern const base::Feature kHideShelfControlsInTabletMode;
 
+// Enables dragging a window from top to enter overview or splitview. Only for
+// tablet mode. Currently disabled by default.
+// TODO(https://crbug.com/1041928): Remove this after this feature is fully
+// deprecated.
+ASH_PUBLIC_EXPORT extern const base::Feature kDragWindowFromTop;
+
 ASH_PUBLIC_EXPORT bool IsAllowAmbientEQEnabled();
 
 ASH_PUBLIC_EXPORT bool IsAutoNightLightEnabled();

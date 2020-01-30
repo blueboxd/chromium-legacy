@@ -78,6 +78,9 @@ class FakeRadioStaticsWinrt
   FakeRadioStaticsWinrt();
   ~FakeRadioStaticsWinrt() override;
 
+  void SimulateRequestAccessAsyncError(
+      ABI::Windows::Devices::Radios::RadioAccessStatus status);
+
   // IRadioStatics:
   IFACEMETHODIMP GetRadiosAsync(
       ABI::Windows::Foundation::IAsyncOperation<
@@ -94,6 +97,9 @@ class FakeRadioStaticsWinrt
       override;
 
  private:
+  ABI::Windows::Devices::Radios::RadioAccessStatus access_status_ =
+      ABI::Windows::Devices::Radios::RadioAccessStatus_Allowed;
+
   DISALLOW_COPY_AND_ASSIGN(FakeRadioStaticsWinrt);
 };
 

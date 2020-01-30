@@ -89,6 +89,45 @@ function waitForAnimationEnd(getValue, max_frame, max_unchanged_frame) {
   })
 }
 
+// TODO(bokan): Replace uses of the above with this one.
+function waitForAnimationEndTimeBased(getValue) {
+  // Give up if the animation still isn't done after this many milliseconds.
+  const TIMEOUT_MS = 1000;
+
+  // If the value is unchanged for this many milliseconds, we consider the
+  // animation ended and return.
+  const END_THRESHOLD_MS = 200;
+
+  const START_TIME = performance.now();
+
+  let last_changed_time = START_TIME;
+  let last_value = getValue();
+  return new Promise((resolve, reject) => {
+    function tick() {
+      let cur_time = performance.now();
+
+      if (cur_time - last_changed_time > END_THRESHOLD_MS) {
+        resolve();
+        return;
+      }
+
+      if (cur_time - START_TIME > TIMEOUT_MS) {
+        reject();
+        return;
+      }
+
+      let current_value = getValue();
+      if (last_value != current_value) {
+        last_changed_time = cur_time;
+        last_value = current_value;
+      }
+
+      requestAnimationFrame(tick);
+    }
+    tick();
+  })
+}
+
 // Enums for gesture_source_type parameters in gpuBenchmarking synthetic
 // gesture methods. Must match C++ side enums in synthetic_gesture_params.h
 const GestureSourceType = (function() {
@@ -127,7 +166,7 @@ const GestureSourceType = (function() {
 // https://crbug.com/893608
 const SPEED_INSTANT = 400000;
 
-function smoothScroll(pixels_to_scroll, start_x, start_y, gesture_source_type, direction, speed_in_pixels_s, precise_scrolling_deltas, scroll_by_page, cursor_visible) {
+function smoothScroll(pixels_to_scroll, start_x, start_y, gesture_source_type, direction, speed_in_pixels_s, precise_scrolling_deltas, scroll_by_page, cursor_visible, scroll_by_percentage) {
   return new Promise((resolve, reject) => {
     if (window.chrome && chrome.gpuBenchmarking) {
       chrome.gpuBenchmarking.smoothScrollBy(pixels_to_scroll,
@@ -139,7 +178,8 @@ function smoothScroll(pixels_to_scroll, start_x, start_y, gesture_source_type, d
                                             speed_in_pixels_s,
                                             precise_scrolling_deltas,
                                             scroll_by_page,
-                                            cursor_visible);
+                                            cursor_visible,
+                                            scroll_by_percentage);
     } else {
       reject('This test requires chrome.gpuBenchmarking');
     }

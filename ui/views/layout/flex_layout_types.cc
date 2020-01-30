@@ -38,7 +38,8 @@ int InterpolateSize(MinimumFlexSizeRule minimum_size_rule,
       case MinimumFlexSizeRule::kPreferredSnapToZero:
         return 0;
     }
-  } else if (available_size < preferred_size) {
+  }
+  if (available_size < preferred_size) {
     switch (minimum_size_rule) {
       case MinimumFlexSizeRule::kPreferred:
         return preferred_size;
@@ -51,13 +52,12 @@ int InterpolateSize(MinimumFlexSizeRule minimum_size_rule,
       case MinimumFlexSizeRule::kPreferredSnapToZero:
         return 0;
     }
-  } else {
-    switch (maximum_size_rule) {
-      case MaximumFlexSizeRule::kPreferred:
-        return preferred_size;
-      case MaximumFlexSizeRule::kUnbounded:
-        return available_size;
-    }
+  }
+  switch (maximum_size_rule) {
+    case MaximumFlexSizeRule::kPreferred:
+      return preferred_size;
+    case MaximumFlexSizeRule::kUnbounded:
+      return available_size;
   }
 }
 
@@ -90,8 +90,7 @@ gfx::Size GetPreferredSize(MinimumFlexSizeRule minimum_size_rule,
   LazyMinimumSize min(view);
   gfx::Size preferred = view->GetPreferredSize();
 
-  int width, height;
-
+  int width;
   if (!maximum_size.width()) {
     // Not having a maximum size is different from having a large available
     // size; a view can't grow infinitely, so we go with its preferred size.
@@ -127,6 +126,7 @@ gfx::Size GetPreferredSize(MinimumFlexSizeRule minimum_size_rule,
     }
   }
 
+  int height;
   if (!maximum_size.height()) {
     // Not having a maximum size is different from having a large available
     // size; a view can't grow infinitely, so we go with its preferred size.
@@ -212,7 +212,8 @@ void Inset1D::Expand(int leading, int trailing) {
 }
 
 bool Inset1D::operator==(const Inset1D& other) const {
-  return leading_ == other.leading_ && trailing_ == other.trailing_;
+  return std::tie(leading_, trailing_) ==
+         std::tie(other.leading_, other.trailing_);
 }
 
 bool Inset1D::operator!=(const Inset1D& other) const {
@@ -292,7 +293,7 @@ void Span::Align(const Span& container,
 }
 
 bool Span::operator==(const Span& other) const {
-  return start_ == other.start_ && length_ == other.length_;
+  return std::tie(start_, length_) == std::tie(other.start_, other.length_);
 }
 
 bool Span::operator!=(const Span& other) const {

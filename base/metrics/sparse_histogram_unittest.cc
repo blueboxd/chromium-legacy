@@ -412,7 +412,7 @@ TEST_P(SparseHistogramTest, WriteHTMLGraph) {
   histogram->WriteHTMLGraph(&output);
 
   const char kOutputFormatRe[] =
-      R"(<PRE>Histogram: HTMLOut recorded 20 samples.*<br>)"
+      R"(<PRE><h4>Histogram: HTMLOut recorded 20 samples.*<\/h4>)"
       R"(4   -+O +\(5 = 25.0%\)<br>)"
       R"(10  -+O +\(15 = 75.0%\)<br><\/PRE>)";
 

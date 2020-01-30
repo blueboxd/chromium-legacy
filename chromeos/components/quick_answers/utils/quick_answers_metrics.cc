@@ -20,6 +20,8 @@ const char kDurationSuffix[] = ".Duration";
 
 std::string ResultTypeToString(ResultType result_type) {
   switch (result_type) {
+    case ResultType::kNoResult:
+      return ".NoResult";
     case ResultType::kDefinitionResult:
       return ".Definition";
     case ResultType::kTranslationResult:

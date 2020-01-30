@@ -13,9 +13,7 @@ action_foreach("registry_controlled_domains") {
     "effective_tld_names_unittest5.gperf",
     "effective_tld_names_unittest6.gperf",
   ]
-  outputs = [
-    "${target_gen_dir}/{{source_name_part}}-inc.cc",
-  ]
+  outputs = [ "${target_gen_dir}/{{source_name_part}}-inc.cc" ]
   args = [
     "{{source}}",
     rebase_path("${target_gen_dir}/{{source_name_part}}-inc.cc",

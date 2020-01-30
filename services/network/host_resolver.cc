@@ -36,10 +36,20 @@ ConvertOptionalParameters(
   parameters.dns_query_type = mojo_parameters->dns_query_type;
   parameters.initial_priority = mojo_parameters->initial_priority;
   parameters.source = mojo_parameters->source;
-  parameters.cache_usage =
-      mojo_parameters->allow_cached_response
-          ? net::HostResolver::ResolveHostParameters::CacheUsage::ALLOWED
-          : net::HostResolver::ResolveHostParameters::CacheUsage::DISALLOWED;
+  switch (mojo_parameters->cache_usage) {
+    case mojom::ResolveHostParameters::CacheUsage::ALLOWED:
+      parameters.cache_usage =
+          net::HostResolver::ResolveHostParameters::CacheUsage::ALLOWED;
+      break;
+    case mojom::ResolveHostParameters::CacheUsage::STALE_ALLOWED:
+      parameters.cache_usage =
+          net::HostResolver::ResolveHostParameters::CacheUsage::STALE_ALLOWED;
+      break;
+    case mojom::ResolveHostParameters::CacheUsage::DISALLOWED:
+      parameters.cache_usage =
+          net::HostResolver::ResolveHostParameters::CacheUsage::DISALLOWED;
+      break;
+  }
   parameters.include_canonical_name = mojo_parameters->include_canonical_name;
   parameters.loopback_only = mojo_parameters->loopback_only;
   parameters.is_speculative = mojo_parameters->is_speculative;

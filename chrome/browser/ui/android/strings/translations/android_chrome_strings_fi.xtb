@@ -279,6 +279,7 @@
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> kirjanmerkki}other{<ph name="BOOKMARKS_COUNT_MANY" /> kirjanmerkkiä}}</translation>
 <translation id="3089395242580810162">Avaa incognito-välilehdellä</translation>
 <translation id="3123473560110926937">Estetty tietyillä sivustoilla</translation>
+<translation id="3123734510202723619">Ilmoitukset</translation>
 <translation id="3137521801621304719">Poistu incognito-tilasta</translation>
 <translation id="3143515551205905069">Peruuta synkronointi</translation>
 <translation id="3157842584138209013">Lisäasetukset-painiketta klikkaamalla voit katsoa, kuinka paljon dataa olet säästänyt.</translation>

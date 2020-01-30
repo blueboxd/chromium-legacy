@@ -34,7 +34,7 @@ class CORE_EXPORT ListMarker {
   }
 
   void UpdateMarkerTextIfNeeded(LayoutObject& marker) {
-    if (!is_marker_text_updated_ && !IsMarkerImage(marker))
+    if (marker_text_type_ == kUnresolved)
       UpdateMarkerText(marker);
   }
   void UpdateMarkerContentIfNeeded(LayoutObject&);
@@ -45,17 +45,25 @@ class CORE_EXPORT ListMarker {
 
  private:
   enum MarkerTextFormat { kWithSuffix, kWithoutSuffix };
-  enum MarkerType { kStatic, kOrdinalValue, kSymbolValue };
-  MarkerType MarkerText(const LayoutObject&,
-                        StringBuilder*,
-                        MarkerTextFormat) const;
+  enum MarkerTextType {
+    kNotText,  // The marker doesn't have a LayoutText, either because it has
+               // not been created yet or because 'list-style-type' is 'none',
+               // 'list-style-image' is not 'none', or 'content' is not
+               // 'normal'.
+    kUnresolved,    // The marker has a LayoutText that needs to be updated.
+    kOrdinalValue,  // The marker text depends on the ordinal.
+    kStatic,        // The marker text doesn't depend on the ordinal.
+    kSymbolValue,   // Like kStatic, but the marker is painted as a symbol.
+  };
+  MarkerTextType MarkerText(const LayoutObject&,
+                            StringBuilder*,
+                            MarkerTextFormat) const;
   void UpdateMarkerText(LayoutObject&);
   void UpdateMarkerText(LayoutObject&, LayoutText*);
 
   void ListStyleTypeChanged(LayoutObject&);
 
-  unsigned marker_type_ : 2;  // Type
-  unsigned is_marker_text_updated_ : 1;
+  unsigned marker_text_type_ : 3;  // MarkerTextType
 };
 
 }  // namespace blink

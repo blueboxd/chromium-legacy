@@ -9,6 +9,10 @@
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/views/view.h"
 
+namespace views {
+class Label;
+}  // namespace views
+
 namespace ash {
 
 class LoginTooltipView : public LoginBaseBubbleView {
@@ -22,10 +26,9 @@ class LoginTooltipView : public LoginBaseBubbleView {
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   gfx::Point CalculatePosition() override;
 
-  // views::View:
-  gfx::Size CalculatePreferredSize() const override;
-
  private:
+  views::Label* label_ = nullptr;
+
   DISALLOW_COPY_AND_ASSIGN(LoginTooltipView);
 };
 

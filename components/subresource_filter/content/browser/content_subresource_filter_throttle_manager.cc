@@ -124,9 +124,13 @@ void ContentSubresourceFilterThrottleManager::ReadyToCommitNavigation(
   bool parent_is_ad = base::Contains(ad_frames_, frame_host->GetParent());
 
   blink::mojom::AdFrameType ad_frame_type = blink::mojom::AdFrameType::kNonAd;
-  if (is_ad_subframe)
+  if (is_ad_subframe) {
     ad_frame_type = parent_is_ad ? blink::mojom::AdFrameType::kChildAd
                                  : blink::mojom::AdFrameType::kRootAd;
+    // Replicate ad frame type to this frame's proxies, so that it can be looked
+    // up in any process involved in rendering the current page.
+    frame_host->UpdateAdFrameType(ad_frame_type);
+  }
 
   mojo::AssociatedRemote<mojom::SubresourceFilterAgent> agent;
   frame_host->GetRemoteAssociatedInterfaces()->GetInterface(&agent);
@@ -383,6 +387,17 @@ void ContentSubresourceFilterThrottleManager::OnFrameIsAdSubframe(
   DCHECK(render_frame_host);
 
   ad_frames_.insert(render_frame_host);
+
+  bool parent_is_ad =
+      base::Contains(ad_frames_, render_frame_host->GetParent());
+  blink::mojom::AdFrameType ad_frame_type =
+      parent_is_ad ? blink::mojom::AdFrameType::kChildAd
+                   : blink::mojom::AdFrameType::kRootAd;
+
+  // Replicate ad frame type to this frame's proxies, so that it can be looked
+  // up in any process involved in rendering the current page.
+  render_frame_host->UpdateAdFrameType(ad_frame_type);
+
   SubresourceFilterObserverManager::FromWebContents(web_contents())
       ->NotifyAdSubframeDetected(render_frame_host);
 }

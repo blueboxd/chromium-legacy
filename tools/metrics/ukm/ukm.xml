@@ -3571,6 +3571,42 @@ be describing additional metrics about the same event.
   </metric>
 </event>
 
+<event name="GeneratedNavigation" singular="True">
+  <owner>ryansturm@chromium.org</owner>
+  <owner>avi@chromium.org</owner>
+  <summary>
+    Logged when the user navigated to their home page or their default search
+    engine. Recorded if the first URL or the final URL matches the pattern for
+    Default Search or matches the user's home page URL. Recorded upon commit
+    (even if the page was not foreground).
+  </summary>
+  <metric name="FinalURLIsDefaultSearchEngine">
+    <summary>
+      If the navigation committed URL matches the template URL of the user's
+      Default Search Engine.
+    </summary>
+  </metric>
+  <metric name="FinalURLIsHomePage">
+    <summary>
+      If the navigation committed URL matches the user's home page URL. Not
+      recorded on Android because home page is managed outside of Chrome.
+    </summary>
+  </metric>
+  <metric name="FirstURLIsDefaultSearchEngine">
+    <summary>
+      If the navigation starting URL matches the template URL of the user's
+      Default Search Engine.
+    </summary>
+  </metric>
+  <metric name="FirstURLIsHomePage">
+    <summary>
+      If the navigation starting URL (first URL in the redirect chain) matches
+      the user's home page URL. Not recorded on Android because home page is
+      managed outside of Chrome.
+    </summary>
+  </metric>
+</event>
+
 <event name="GoogleDocsOfflineExtension">
   <owner>rhalavati@chromium.org</owner>
   <owner>chrome-privacy-core@google.com</owner>
@@ -6948,6 +6984,22 @@ be describing additional metrics about the same event.
       navigation for this page load was initiated.
     </summary>
   </metric>
+  <metric name="Net.JavaScriptBytes">
+    <summary>
+      The sum of decoded body lengths of all JavaScript resouces that completed
+      loading on the page. This is rounded down to the nearest exponential
+      bucket (with a bucket spacing factor of 10). On mobile this only records
+      bytes up until the page/app is backgrounded.
+    </summary>
+  </metric>
+  <metric name="Net.JavaScriptMaxBytes">
+    <summary>
+      The max of decoded body lengths of all JavaScript resouces that completed
+      loading on the page. This is rounded down to the nearest exponential
+      bucket (with a bucket spacing factor of 10). On mobile this only records
+      bytes up until the page/app is backgrounded.
+    </summary>
+  </metric>
   <metric name="Net.NetworkBytes">
     <obsolete>
       Deprecated 03/2019 in favor of Net.NetworkBytes2.
@@ -8143,6 +8195,28 @@ be describing additional metrics about the same event.
       the responsiveness of a tab. A lower value means the tab will respond to
       inputs faster. This metric is equal to
       RendererScheduler.ExpectedTaskQueueingDuration of the main frame process.
+    </summary>
+  </metric>
+</event>
+
+<event name="SameSiteDifferentSchemeRequest">
+  <owner>bingler@chromium.org</owner>
+  <metric name="SameSiteContextWithSchemes" enum="SameSiteCookieContext">
+    <summary>
+      An enum that records the type of same-site context if a cookie marked with
+      SameSite=Lax or SameSite=Strict is sent across schemes on a request. E.x.:
+      An http site making a request to an https site.
+    </summary>
+  </metric>
+</event>
+
+<event name="SameSiteDifferentSchemeResponse">
+  <owner>bingler@chromium.org</owner>
+  <metric name="SameSiteContextWithSchemes" enum="SameSiteCookieContext">
+    <summary>
+      An enum that records the type of same-site context if a cookie marked with
+      SameSite=Lax or SameSite=Strict is set across schemes on a response. E.x.:
+      An http site returning a response to an https site.
     </summary>
   </metric>
 </event>

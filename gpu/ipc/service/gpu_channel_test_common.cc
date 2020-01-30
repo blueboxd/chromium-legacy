@@ -7,6 +7,7 @@
 #include "base/memory/unsafe_shared_memory_region.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/trace_event/memory_dump_manager.h"
 #include "gpu/command_buffer/common/activity_flags.h"
 #include "gpu/command_buffer/service/scheduler.h"
 #include "gpu/command_buffer/service/shared_image_manager.h"
@@ -62,7 +63,9 @@ GpuChannelTestCommon::GpuChannelTestCommon(bool use_stub_bindings)
 GpuChannelTestCommon::GpuChannelTestCommon(
     std::vector<int32_t> enabled_workarounds,
     bool use_stub_bindings)
-    : task_runner_(new base::TestSimpleTaskRunner),
+    : memory_dump_manager_(
+          base::trace_event::MemoryDumpManager::CreateInstanceForTesting()),
+      task_runner_(new base::TestSimpleTaskRunner),
       io_task_runner_(new base::TestSimpleTaskRunner),
       sync_point_manager_(new SyncPointManager()),
       shared_image_manager_(new SharedImageManager(false /* thread_safe */)),

@@ -26,7 +26,6 @@
 <translation id="1031362278801463162">미리보기 로드 중</translation>
 <translation id="1032605640136438169">새로운 약관을 검토해 주세요.</translation>
 <translation id="103279545524624934">Android 앱을 실행하려면 디스크 저장 공간을 확보하세요.</translation>
-<translation id="1033343386521881354">인쇄 서버에 프린터 1개가 있습니다.</translation>
 <translation id="1033780634303702874">직렬 기기에 액세스</translation>
 <translation id="1034942643314881546">앱 생성에 ADB 사용 설정 삽화</translation>
 <translation id="1036348656032585052">사용 중지</translation>
@@ -34,7 +33,6 @@
 <translation id="1036982837258183574">전체화면을 종료하려면 |<ph name="ACCELERATOR" />|을(를) 누르세요.</translation>
 <translation id="1038168778161626396">암호화만</translation>
 <translation id="1039337018183941703">잘못되었거나 손상된 파일입니다.</translation>
-<translation id="1039850285407663109">선택한 파일은 알 수 없는 파일이므로 위험할 수 있습니다. 파일을 열기 전에 검사하는 것을 고려해 보세요.</translation>
 <translation id="1041175011127912238">페이지가 응답하지 않음</translation>
 <translation id="1041263367839475438">사용 가능한 기기</translation>
 <translation id="1042174272890264476">또한 컴퓨터에는 <ph name="SHORT_PRODUCT_NAME" /> RLZ 라이브러리가 내장되어 있습니다. RLZ는 고유하지 않고 개인 식별이 불가능한 태그를 할당하여 특정 홍보 캠페인을 통한 검색 및 <ph name="SHORT_PRODUCT_NAME" /> 사용 실태를 측정합니다. 이러한 라벨은 <ph name="PRODUCT_NAME" />의 Google 검색어에 표시되기도 합니다.</translation>
@@ -639,7 +637,6 @@
 <translation id="1858585891038687145">소프트웨어 제작자를 식별하기 위해 이 인증서 신뢰</translation>
 <translation id="1861262398884155592">폴더가 비어 있습니다.</translation>
 <translation id="1863182668524159459">직렬 포트를 찾을 수 없음</translation>
-<translation id="1863552924692672565"><ph name="FILE_NAME" />은(는) 알 수 없는 파일입니다. 파일을 검사하여 위험을 최소화하세요.</translation>
 <translation id="1864111464094315414">로그인</translation>
 <translation id="1864400682872660285">시원함</translation>
 <translation id="1864454756846565995">USB-C 기기(후면 포트)</translation>
@@ -1939,7 +1936,7 @@
 <translation id="3677657024345889897">가장 조용하게</translation>
 <translation id="3677911431265050325">모바일 버전으로 보기</translation>
 <translation id="3678156199662914018">확장 프로그램: <ph name="EXTENSION_NAME" /></translation>
-<translation id="3678613690490567106">동기화를 통해 모든 기기에서 맞춤설정된 환경 사용</translation>
+<translation id="3678613690490567106">동기화하여 모든 기기에서 맞춤설정된 환경 사용</translation>
 <translation id="3681311097828166361">의견을 보내주셔서 감사합니다. 현재 오프라인 상태이므로 보고서는 나중에 전송됩니다.</translation>
 <translation id="3682824389861648626">움직임 기준</translation>
 <translation id="3683524264665795342"><ph name="APP_NAME" /> 화면 공유 요청</translation>
@@ -4023,7 +4020,6 @@
 <translation id="6678717876183468697">쿼리 URL</translation>
 <translation id="6680442031740878064">사용 가능한 저장용량: <ph name="AVAILABLE_SPACE" /></translation>
 <translation id="6680650203439190394">속도</translation>
-<translation id="6681301928961274620">인쇄 서버에서 프린터를 찾을 수 없습니다.</translation>
 <translation id="6681668084120808868">사진 찍기</translation>
 <translation id="6681964764822470072">'<ph name="APP_NAME" />'이(가) 제거됩니다.</translation>
 <translation id="668599234725812620">Google Play 열기</translation>
@@ -5553,7 +5549,6 @@
 <translation id="8794025342371547160">제한된 IP</translation>
 <translation id="879413103056696865">핫스팟이 사용 설정되어 있는 동안 <ph name="PHONE_NAME" />이(가) 다음과 같이 작동함</translation>
 <translation id="8795916974678578410">새 창</translation>
-<translation id="8797086401386164142">인쇄 서버에 프린터 <ph name="NUM_PRINTERS" />개가 있습니다.</translation>
 <translation id="8797459392481275117">이 사이트 번역 안함</translation>
 <translation id="8798099450830957504">기본값</translation>
 <translation id="8798441408945964110">공급자 이름</translation>

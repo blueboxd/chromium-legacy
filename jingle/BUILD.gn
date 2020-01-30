@@ -28,9 +28,7 @@ static_library("jingle_glue") {
     "glue/task_pump.cc",
     "glue/task_pump.h",
   ]
-  public_deps = [
-    "//services/network/public/mojom",
-  ]
+  public_deps = [ "//services/network/public/mojom" ]
   deps = [
     "//base",
     "//net",

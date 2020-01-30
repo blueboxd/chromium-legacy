@@ -10,6 +10,8 @@
 #include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
 #include "chrome/browser/media/webrtc/media_stream_capture_indicator.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/pref_names.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "third_party/blink/public/mojom/mediastream/media_stream.mojom-shared.h"
@@ -52,6 +54,12 @@ void TabCaptureAccessHandler::HandleRequest(
     NOTREACHED();
     std::move(callback).Run(
         devices, blink::mojom::MediaStreamRequestResult::INVALID_STATE,
+        std::move(ui));
+    return;
+  }
+  if (!profile->GetPrefs()->GetBoolean(prefs::kScreenCaptureAllowed)) {
+    std::move(callback).Run(
+        devices, blink::mojom::MediaStreamRequestResult::PERMISSION_DENIED,
         std::move(ui));
     return;
   }

@@ -28,6 +28,7 @@ CONTENT_EXPORT extern const base::Feature kBackgroundFetch;
 CONTENT_EXPORT extern const base::Feature kBackForwardCache;
 CONTENT_EXPORT extern const base::Feature kBackForwardCacheMemoryControl;
 CONTENT_EXPORT extern const base::Feature kBlockCredentialedSubresources;
+CONTENT_EXPORT extern const base::Feature kBrowserUseDisplayThreadPriority;
 CONTENT_EXPORT extern const base::Feature
     kBrowserVerifiedUserActivationKeyboard;
 CONTENT_EXPORT extern const base::Feature kBrowserVerifiedUserActivationMouse;
@@ -37,6 +38,7 @@ CONTENT_EXPORT extern const base::Feature kCacheStorageEagerReading;
 CONTENT_EXPORT extern const base::Feature kCacheStorageHighPriorityMatch;
 CONTENT_EXPORT extern const base::Feature kCanvas2DImageChromium;
 CONTENT_EXPORT extern const base::Feature kConsolidatedMovementXY;
+CONTENT_EXPORT extern const base::Feature kConversionMeasurement;
 CONTENT_EXPORT extern const base::Feature kCookieDeprecationMessages;
 CONTENT_EXPORT extern const base::Feature kCooperativeScheduling;
 CONTENT_EXPORT extern const base::Feature kCrashReporting;
@@ -49,6 +51,7 @@ CONTENT_EXPORT extern const base::Feature kExperimentalProductivityFeatures;
 CONTENT_EXPORT extern const base::Feature kExpensiveBackgroundTimerThrottling;
 CONTENT_EXPORT extern const base::Feature
     kExtraSafelistedRequestHeadersForOutOfBlinkCors;
+CONTENT_EXPORT extern const base::Feature kFeaturePolicyForClientHints;
 CONTENT_EXPORT extern const base::Feature kFeaturePolicyForSandbox;
 CONTENT_EXPORT extern const base::Feature kFontSrcLocalMatching;
 CONTENT_EXPORT extern const base::Feature kForcedColors;
@@ -104,6 +107,7 @@ CONTENT_EXPORT extern const base::Feature kResamplingInputEvents;
 CONTENT_EXPORT extern const base::Feature
     kRunVideoCaptureServiceInBrowserProcess;
 CONTENT_EXPORT extern const base::Feature kSavePageAsWebBundle;
+CONTENT_EXPORT extern const base::Feature kScriptStreamingOnPreload;
 CONTENT_EXPORT extern const base::Feature
     kSendBeaconThrowForBlobWithNonSimpleType;
 CONTENT_EXPORT extern const base::Feature kServiceWorkerOnUI;
@@ -127,10 +131,12 @@ CONTENT_EXPORT extern const base::Feature kSyntheticPointerActions;
 CONTENT_EXPORT extern const base::Feature kTimerThrottlingForHiddenFrames;
 CONTENT_EXPORT extern const base::Feature kTouchpadAsyncPinchEvents;
 CONTENT_EXPORT extern const base::Feature kTouchpadOverscrollHistoryNavigation;
+CONTENT_EXPORT extern const base::Feature kTrustedDOMTypes;
 CONTENT_EXPORT extern const base::Feature kUseFramePriorityInRenderProcessHost;
 CONTENT_EXPORT extern const base::Feature kUserActivationPostMessageTransfer;
 CONTENT_EXPORT extern const base::Feature kUserActivationSameOriginVisibility;
 CONTENT_EXPORT extern const base::Feature kUserAgentClientHint;
+CONTENT_EXPORT extern const base::Feature kVideoPlaybackQuality;
 CONTENT_EXPORT extern const base::Feature kV8LowMemoryModeForSubframes;
 CONTENT_EXPORT extern const base::Feature kV8VmFuture;
 CONTENT_EXPORT extern const base::Feature kWebAssemblyBaseline;
@@ -155,11 +161,6 @@ CONTENT_EXPORT extern const base::Feature kWebXrArModule;
 CONTENT_EXPORT extern const base::Feature kWebXrHitTest;
 CONTENT_EXPORT extern const base::Feature kWebXrIncubations;
 CONTENT_EXPORT extern const base::Feature kWebXrPermissionsApi;
-CONTENT_EXPORT extern const base::Feature kScriptStreamingOnPreload;
-CONTENT_EXPORT extern const base::Feature kTrustedDOMTypes;
-CONTENT_EXPORT extern const base::Feature kBrowserUseDisplayThreadPriority;
-CONTENT_EXPORT extern const base::Feature kFeaturePolicyForClientHints;
-CONTENT_EXPORT extern const base::Feature kVideoPlaybackQuality;
 
 #if defined(OS_ANDROID)
 CONTENT_EXPORT extern const base::Feature kAndroidAutofillAccessibility;

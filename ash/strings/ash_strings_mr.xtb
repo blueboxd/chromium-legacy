@@ -112,6 +112,7 @@
 <translation id="2352467521400612932">स्टायलस सेटिंग्ज</translation>
 <translation id="2354174487190027830"><ph name="NAME" /> सक्रिय करत आहे</translation>
 <translation id="2359808026110333948">सुरू ठेवा</translation>
+<translation id="2364154243880592194">स्थिती ट्रे, वेळ <ph name="TIME" />, <ph name="BATTERY" /> सूचना केंद्र ॲक्सेस करण्यासाठी शोध + डावे बटण दाबा.</translation>
 <translation id="2365393535144473978">मोबाइल डेटा सुरू केल्याने ब्लूटूथ सुरू होईल.</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="2412593942846481727">अपडेट उपलब्ध आहे</translation>
@@ -335,6 +336,7 @@
 <translation id="5669267381087807207">सक्रिय करीत आहे </translation>
 <translation id="5673434351075758678">तुमच्या सेटिंग्ज सिंक केल्यानंतर "<ph name="FROM_LOCALE" />" पासून "<ph name="TO_LOCALE" />" पर्यंत.</translation>
 <translation id="5682642926269496722">सध्याच्या वापरकर्ता खात्यावर Google असिस्टंट उपलब्ध नाही.</translation>
+<translation id="5689633613396158040">रात्रीचा प्रकाश तुमच्या स्क्रीनकडे पाहणे किंवा मंद प्रकाशात वाचणे आणखी सोपे करते. रात्रीचा प्रकाश कधी सुरू होईल किंवा पूर्ण बंद होईल हे बदलण्यासाठी टॅप करा.</translation>
 <translation id="5691772641933328258">फिंगरप्रिंट ओळखले नाही</translation>
 <translation id="5710450975648804523">व्यत्यय आणू नका सुरू आहे</translation>
 <translation id="573413375004481890">हे डिव्हाइस तुमच्या सर्व डिस्प्लेंना सपोर्ट करू शकले नाही, त्यामुळे एक डिस्प्ले डिस्कनेक्ट केला गेला</translation>
@@ -514,6 +516,7 @@
 <translation id="8142441511840089262">डबल क्लिक करा</translation>
 <translation id="8142699993796781067">खाजगी नेटवर्क</translation>
 <translation id="8152092012181020186">बंद करण्यासाठी Ctrl + W दाबा.</translation>
+<translation id="8155007568264258537"><ph name="FEATURE_NAME" /> हे सेटिंग तुमच्या अ‍ॅडमिनिस्ट्रेटरद्वारे व्यवस्थापित केले जाते.</translation>
 <translation id="8167567890448493835"><ph name="LOCALE_NAME" /> वापरत आहे</translation>
 <translation id="8190698733819146287">भाषा आणि इनपुट कस्टमाइझ करा...</translation>
 <translation id="8192202700944119416">सूचना लपवलेल्या आहेत.</translation>

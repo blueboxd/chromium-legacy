@@ -64,8 +64,11 @@ source_set("unit_tests") {
   sources = [
     "spellcheck_host_metrics_unittest.cc",
     "spellcheck_platform_mac_unittest.cc",
-    "spellcheck_platform_win_unittest.cc",
   ]
+
+  if (is_win) {
+    sources += [ "windows_spell_checker_unittest.cc" ]
+  }
 
   deps = [
     ":browser",

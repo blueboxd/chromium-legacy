@@ -7,6 +7,7 @@
 #include "ash/test/ash_test_base.h"
 #include "base/run_loop.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "build/build_config.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/layer.h"
@@ -21,7 +22,13 @@ using PresentationTimeRecorderTest = ash::AshTestBase;
 constexpr char kName[] = "Histogram";
 constexpr char kMaxLatencyName[] = "MaxLatency.Histogram";
 
-TEST_F(PresentationTimeRecorderTest, Histogram) {
+// The test is flaky on CrOS. crbug.com/1043465.
+#if defined(OS_CHROMEOS)
+#define MAYBE_Histogram DISABLED_Histogram
+#else
+#define MAYBE_Histogram Histogram
+#endif
+TEST_F(PresentationTimeRecorderTest, MAYBE_Histogram) {
   base::HistogramTester histogram_tester;
 
   auto* compositor = CurrentContext()->layer()->GetCompositor();

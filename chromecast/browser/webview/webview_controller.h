@@ -57,6 +57,7 @@ class WebviewController : public CastWebContents::Delegate,
   // navigation handle.
   void SendNavigationEvent(WebviewNavigationThrottle* throttle,
                            content::NavigationHandle* navigation_handle);
+  void OnNavigationThrottleDestroyed(WebviewNavigationThrottle* throttle);
 
  protected:
   content::WebContents* GetWebContents() override;

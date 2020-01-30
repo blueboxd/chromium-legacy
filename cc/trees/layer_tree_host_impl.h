@@ -855,6 +855,10 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
   void CollectScrollDeltas(ScrollAndScaleSet* scroll_info);
   void CollectScrollbarUpdates(ScrollAndScaleSet* scroll_info) const;
 
+  gfx::Vector2dF ResolveScrollPercentageToPixels(
+      const ScrollNode& scroll_node,
+      const gfx::Vector2dF& resolved_pixels);
+
   // Returns the ScrollNode we should use to scroll, accounting for viewport
   // scroll chaining rules.
   ScrollNode* GetNodeToScroll(ScrollNode* node) const;

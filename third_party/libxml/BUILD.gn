@@ -125,12 +125,8 @@ static_library("libxml_utils") {
     "chromium/libxml_utils.cc",
     "chromium/libxml_utils.h",
   ]
-  deps = [
-    ":libxml",
-  ]
-  public_deps = [
-    "//third_party/icu:icuuc",
-  ]
+  deps = [ ":libxml" ]
+  public_deps = [ "//third_party/icu:icuuc" ]
   public_configs = [ ":libxml_config" ]
 }
 
@@ -300,12 +296,8 @@ static_library("libxml") {
   }
 
   public_configs = [ ":libxml_config" ]
-  public_deps = [
-    "//third_party/icu:icuuc",
-  ]
-  deps = [
-    "//third_party/zlib",
-  ]
+  public_deps = [ "//third_party/icu:icuuc" ]
+  deps = [ "//third_party/zlib" ]
 
   if (is_mac || is_ios || is_android || is_fuchsia) {
     # http://www.xmlsoft.org/threads.html says that this is required when using

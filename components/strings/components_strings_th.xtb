@@ -79,6 +79,7 @@
 <translation id="129553762522093515">เพิ่งปิด</translation>
 <translation id="1298536327547837046">การสแกนหามัลแวร์</translation>
 <translation id="129863573139666797"><ph name="BEGIN_LINK" />ลองล้างคุกกี้<ph name="END_LINK" /></translation>
+<translation id="1301324364792935241">ตรวจสอบการตั้งค่า DNS ที่ปลอดภัย</translation>
 <translation id="1307966114820526988">ฟีเจอร์ที่เลิกใช้งานแล้ว</translation>
 <translation id="1314509827145471431">เย็บเล่มด้านขวา</translation>
 <translation id="1320233736580025032">Prc1 (ซองจดหมาย)</translation>
@@ -152,6 +153,7 @@
 <translation id="1569487616857761740">ป้อนวันที่หมดอายุ</translation>
 <translation id="1581080074034554886">CVC</translation>
 <translation id="1583429793053364125">มีสิ่งผิดปกติเกิดขึ้นในขณะที่แสดงหน้าเว็บนี้</translation>
+<translation id="1586541204584340881">ส่วนขยายที่คุณติดตั้ง</translation>
 <translation id="1588438908519853928">ปกติ</translation>
 <translation id="1592005682883173041">การเข้าถึงข้อมูลในเครื่อง</translation>
 <translation id="1594030484168838125">เลือก</translation>
@@ -362,6 +364,7 @@
 <translation id="2544644783021658368">เอกสารเดียว</translation>
 <translation id="254947805923345898">ค่านโยบายไม่ถูกต้อง</translation>
 <translation id="255002559098805027"><ph name="HOST_NAME" /> ส่งการตอบกลับที่ไม่ถูกต้อง</translation>
+<translation id="2553853292994445426">ตรวจสอบการตั้งค่า DNS ที่ปลอดภัย คุณอาจกำหนดค่าเซิร์ฟเวอร์ DNS ที่ปลอดภัยไว้ซึ่งทำการเชื่อมต่อไม่สำเร็จ</translation>
 <translation id="2556876185419854533">&amp;เลิกทำการแก้ไข</translation>
 <translation id="257674075312929031">กลุ่ม</translation>
 <translation id="2586657967955657006">คลิปบอร์ด</translation>
@@ -474,6 +477,7 @@
 <translation id="3095940652251934233">Statement</translation>
 <translation id="3096100844101284527">เพิ่มที่อยู่สำหรับรับสินค้า</translation>
 <translation id="3105172416063519923">รหัสสินทรัพย์:</translation>
+<translation id="3107591622054137333"><ph name="BEGIN_LINK" />ตรวจสอบการกำหนดค่า DNS ที่ปลอดภัย<ph name="END_LINK" /></translation>
 <translation id="3109728660330352905">คุณไม่มีสิทธิ์ดูหน้านี้</translation>
 <translation id="3113284927548439113">กะที่ 3</translation>
 <translation id="3116158981186517402">แยกออกเป็นชั้นๆ</translation>
@@ -770,6 +774,7 @@
 <translation id="4390472908992056574">Brim</translation>
 <translation id="4406896451731180161">ผลการค้นหา</translation>
 <translation id="4408413947728134509">คุกกี้ <ph name="NUM_COOKIES" /></translation>
+<translation id="4414290883293381923">คุณเพิ่งใส่รหัสผ่านในเว็บไซต์ที่มีการหลอกลวง Chrome ขอแนะนำให้ไปที่ <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, <ph name="WEBSITE_3" /> และเว็บไซต์อื่นๆ ที่คุณใช้รหัสผ่านนี้ และเปลี่ยนรหัสผ่านทันที</translation>
 <translation id="4415426530740016218">ที่อยู่ในการรับ</translation>
 <translation id="4424024547088906515">เซิร์ฟเวอร์นี้ไม่สามารถพิสูจน์ได้ว่าเป็น <ph name="DOMAIN" /> เพราะ Chrome ไม่เชื่อถือใบรับรองความปลอดภัย โดยอาจเกิดจากการกำหนดค่าผิดหรือผู้บุกรุกที่ขัดขวางการเชื่อมต่อของคุณ</translation>
 <translation id="443121186588148776">พอร์ตอนุกรม</translation>
@@ -1201,6 +1206,7 @@
 <translation id="6353505687280762741">{COUNT,plural, =0{ไม่มี}=1{มีรหัสผ่าน 1 รายการ (สำหรับ <ph name="DOMAIN_LIST" />, ซิงค์แล้ว)}=2{มีรหัสผ่าน 2 รายการ (สำหรับ <ph name="DOMAIN_LIST" />, ซิงค์แล้ว)}other{มีรหัสผ่าน # รายการ (สำหรับ <ph name="DOMAIN_LIST" />, ซิงค์แล้ว)}}</translation>
 <translation id="6358450015545214790">นี่หมายถึงอะไร</translation>
 <translation id="6361757823711327522">B7</translation>
+<translation id="6364095313648930329"><ph name="BEGIN_LINK" />ตรวจสอบพร็อกซี ไฟร์วอลล์ และการกำหนดค่า DNS ที่ปลอดภัย<ph name="END_LINK" /></translation>
 <translation id="6366710531182496394">เย็บด้วยลวดเย็บกระดาษด้านซ้าย 2 ครั้ง</translation>
 <translation id="6377268785556383139">มีผลการค้นหา "<ph name="SEARCH_TEXT" />" 1 รายการ</translation>
 <translation id="6380497234672085559">A0</translation>
@@ -1223,6 +1229,7 @@
 <translation id="6433595998831338502"><ph name="HOST_NAME" /> ปฏิเสธการเชื่อมต่อ</translation>
 <translation id="6434309073475700221">ทิ้ง</translation>
 <translation id="6440503408713884761">ละเว้น</translation>
+<translation id="6443406338865242315">ส่วนขยายและปลั๊กอินที่คุณติดตั้ง</translation>
 <translation id="6446163441502663861">Kahu (ซองจดหมาย)</translation>
 <translation id="6446608382365791566">เพิ่มข้อมูลเพิ่มเติม</translation>
 <translation id="6447842834002726250">คุกกี้</translation>
@@ -1332,6 +1339,7 @@
 <translation id="7012363358306927923">China UnionPay</translation>
 <translation id="7016992613359344582">การเรียกเก็บเงินเหล่านี้อาจเกิดขึ้นครั้งเดียวหรือเป็นเกิดขึ้นซ้ำๆ และอาจไม่แสดงอย่างชัดแจ้ง</translation>
 <translation id="7029809446516969842">รหัสผ่าน</translation>
+<translation id="7031646650991750659">แอปจาก Google Play ที่คุณติดตั้ง</translation>
 <translation id="7050187094878475250">คุณพยายามเข้าถึง <ph name="DOMAIN" /> แต่เซิร์ฟเวอร์ได้แสดงใบรับรองที่มีระยะเวลาที่สามารถใช้ได้นานเกินกว่าที่จะเชื่อถือได้</translation>
 <translation id="705310974202322020">{NUM_CARDS,plural, =1{บันทึกบัตรนี้ไม่ได้ในตอนนี้}other{บันทึกบัตรเหล่านี้ไม่ได้ในตอนนี้}}</translation>
 <translation id="7053983685419859001">บล็อก</translation>
@@ -1391,6 +1399,7 @@
 <translation id="7319430975418800333">A3</translation>
 <translation id="7320336641823683070">ความช่วยเหลือเกี่ยวกับการเชื่อมต่อ</translation>
 <translation id="733354035281974745">ลบล้างบัญชีภายในอุปกรณ์</translation>
+<translation id="7333654844024768166">คุณเพิ่งใส่รหัสผ่านในเว็บไซต์ที่มีการหลอกลวง Chromium ขอแนะนำให้ไปที่ <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, <ph name="WEBSITE_3" /> และเว็บไซต์อื่นๆ ที่คุณใช้รหัสผ่านนี้ และเปลี่ยนรหัสผ่านทันที</translation>
 <translation id="7334320624316649418">&amp;ทำซ้ำการจัดลำดับใหม่</translation>
 <translation id="7337706099755338005">ยังไม่พร้อมให้ใช้งานในแพลตฟอร์มของคุณ</translation>
 <translation id="733923710415886693">ไม่มีการเปิดเผยใบรับรองของเซิร์ฟเวอร์ผ่านความโปร่งใสของใบรับรอง</translation>

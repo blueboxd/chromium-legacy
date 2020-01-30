@@ -370,27 +370,34 @@ void NavigationManagerImpl::ReloadWithUserAgentType(
     UserAgentType user_agent_type) {
   DCHECK_NE(user_agent_type, UserAgentType::NONE);
 
-  NavigationItem* last_non_redirect_item = GetTransientItem();
-  if (!last_non_redirect_item ||
-      ui::PageTransitionIsRedirect(last_non_redirect_item->GetTransitionType()))
-    last_non_redirect_item = GetVisibleItem();
-  if (!last_non_redirect_item ||
-      ui::PageTransitionIsRedirect(last_non_redirect_item->GetTransitionType()))
-    last_non_redirect_item = GetLastCommittedNonRedirectedItem(this);
+  NavigationItem* item_to_reload = GetTransientItem();
+  if (!item_to_reload ||
+      ui::PageTransitionIsRedirect(item_to_reload->GetTransitionType()))
+    item_to_reload = GetVisibleItem();
+  if (!item_to_reload ||
+      ui::PageTransitionIsRedirect(item_to_reload->GetTransitionType())) {
+    NavigationItem* last_committed_before_redirect =
+        GetLastCommittedNonRedirectedItem(this);
+    if (last_committed_before_redirect) {
+      // When a tab is opened on a redirect, there is no last committed item
+      // before the redirect. In that case, take the last committed item.
+      item_to_reload = last_committed_before_redirect;
+    }
+  }
 
-  if (!last_non_redirect_item)
+  if (!item_to_reload)
     return;
 
   // |reloadURL| will be empty if a page was open by DOM.
-  GURL reload_url(last_non_redirect_item->GetOriginalRequestURL());
+  GURL reload_url(item_to_reload->GetOriginalRequestURL());
   if (reload_url.is_empty()) {
-    reload_url = last_non_redirect_item->GetVirtualURL();
+    reload_url = item_to_reload->GetVirtualURL();
   }
 
   WebLoadParams params(reload_url);
-  if (last_non_redirect_item->GetVirtualURL() != reload_url)
-    params.virtual_url = last_non_redirect_item->GetVirtualURL();
-  params.referrer = last_non_redirect_item->GetReferrer();
+  if (item_to_reload->GetVirtualURL() != reload_url)
+    params.virtual_url = item_to_reload->GetVirtualURL();
+  params.referrer = item_to_reload->GetReferrer();
   params.transition_type = ui::PAGE_TRANSITION_RELOAD;
 
   switch (user_agent_type) {

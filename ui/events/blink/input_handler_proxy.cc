@@ -245,7 +245,7 @@ void InputHandlerProxy::HandleInputEventWithLatencyInfo(
   DCHECK(input_handler_);
 
   TRACE_EVENT_WITH_FLOW1("input,benchmark", "LatencyInfo.Flow",
-                         TRACE_ID_DONT_MANGLE(latency_info.trace_id()),
+                         TRACE_ID_GLOBAL(latency_info.trace_id()),
                          TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT,
                          "step", "HandleInputEventImpl");
 

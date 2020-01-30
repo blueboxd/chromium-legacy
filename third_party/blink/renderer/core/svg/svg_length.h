@@ -27,6 +27,7 @@
 #include "third_party/blink/renderer/core/svg/svg_length_context.h"
 #include "third_party/blink/renderer/core/svg/svg_parsing_error.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/casting.h"
 
 namespace blink {
 
@@ -144,7 +145,12 @@ class SVGLength final : public SVGPropertyBase {
   unsigned unit_mode_ : 2;
 };
 
-DEFINE_SVG_PROPERTY_TYPE_CASTS(SVGLength);
+template <>
+struct DowncastTraits<SVGLength> {
+  static bool AllowFrom(const SVGPropertyBase& value) {
+    return value.GetType() == SVGLength::ClassType();
+  }
+};
 
 }  // namespace blink
 

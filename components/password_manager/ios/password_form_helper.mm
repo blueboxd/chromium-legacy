@@ -56,14 +56,6 @@ constexpr char kCommandPrefix[] = "passwordForm";
 // Handler for injected JavaScript callbacks.
 - (BOOL)handleScriptCommand:(const base::DictionaryValue&)JSONCommand;
 
-// Finds the currently submitted password form named |formName| and calls
-// |completionHandler| with the populated data structure. |found| is YES if the
-// current form was found successfully, NO otherwise.
-- (void)extractSubmittedPasswordForm:(const std::string&)formName
-                   completionHandler:
-                       (void (^)(BOOL found,
-                                 const FormData& form))completionHandler;
-
 // Parses the |jsonString| which contatins the password forms found on a web
 // page to populate the |forms| vector.
 - (void)getPasswordFormsFromJSON:(NSString*)jsonString
@@ -181,24 +173,16 @@ constexpr char kCommandPrefix[] = "passwordForm";
     // origin.
     return;
   }
-  __weak PasswordFormHelper* weakSelf = self;
-  // This code is racing against the new page loading and will not get the
-  // password form data if the page has changed. In most cases this code wins
-  // the race.
-  // TODO(crbug.com/418827): Fix this by passing in more data from the JS side.
-  id completionHandler = ^(BOOL found, const FormData& form) {
-    PasswordFormHelper* strongSelf = weakSelf;
-    id<PasswordFormHelperDelegate> strongDelegate = strongSelf.delegate;
-    if (!strongSelf || !strongSelf->_webState || !strongDelegate) {
-      return;
-    }
-    [strongDelegate formHelper:strongSelf
-                 didSubmitForm:form
-                   inMainFrame:formInMainFrame];
-  };
-  // TODO(crbug.com/418827): Use |formData| instead of extracting form again.
-  [self extractSubmittedPasswordForm:formName
-                   completionHandler:completionHandler];
+  if (!self.delegate || formData.empty())
+    return;
+  FormData form;
+  NSString* nsFormData = [NSString stringWithUTF8String:formData.c_str()];
+  std::unique_ptr<base::Value> formValue = autofill::ParseJson(nsFormData);
+  autofill::ExtractFormData(*formValue, false, base::string16(), pageURL,
+                            pageURL.GetOrigin(), &form);
+  [self.delegate formHelper:self
+              didSubmitForm:form
+                inMainFrame:formInMainFrame];
 }
 
 #pragma mark - Private methods
@@ -230,43 +214,6 @@ constexpr char kCommandPrefix[] = "passwordForm";
   }
 
   return NO;
-}
-
-- (void)extractSubmittedPasswordForm:(const std::string&)formName
-                   completionHandler:
-                       (void (^)(BOOL found,
-                                 const FormData& form))completionHandler {
-  DCHECK(completionHandler);
-
-  if (!_webState) {
-    return;
-  }
-
-  GURL pageURL;
-  if (!GetPageURLAndCheckTrustLevel(_webState, &pageURL)) {
-    completionHandler(NO, FormData());
-    return;
-  }
-
-  id extractSubmittedFormCompletionHandler = ^(NSString* jsonString) {
-    std::unique_ptr<base::Value> formValue = autofill::ParseJson(jsonString);
-    if (!formValue) {
-      completionHandler(NO, FormData());
-      return;
-    }
-
-    FormData form;
-    if (!autofill::ExtractFormData(*formValue, false, base::string16(), pageURL,
-                                   pageURL.GetOrigin(), &form)) {
-      completionHandler(NO, FormData());
-      return;
-    }
-
-    completionHandler(YES, form);
-  };
-
-  [self.jsPasswordManager extractForm:base::SysUTF8ToNSString(formName)
-                    completionHandler:extractSubmittedFormCompletionHandler];
 }
 
 - (void)getPasswordFormsFromJSON:(NSString*)jsonString

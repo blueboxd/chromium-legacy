@@ -7,31 +7,14 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/test/mock_callback.h"
+#include "chrome/browser/sharing/mock_sharing_message_sender.h"
 #include "chrome/browser/sharing/proto/sharing_message.pb.h"
 #include "chrome/browser/sharing/sharing_fcm_sender.h"
-#include "chrome/browser/sharing/sharing_message_sender.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
 constexpr char kTestMessageId[] = "test_message_id";
-
-class MockSharingMessageSender : public SharingMessageSender {
- public:
-  MockSharingMessageSender()
-      : SharingMessageSender(
-            /*sync_prefs=*/nullptr,
-            /*local_device_info_provider=*/nullptr) {}
-  ~MockSharingMessageSender() override = default;
-
-  MOCK_METHOD2(
-      OnAckReceived,
-      void(const std::string& fcm_message_id,
-           std::unique_ptr<chrome_browser_sharing::ResponseMessage> response));
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockSharingMessageSender);
-};
 
 class AckMessageHandlerTest : public testing::Test {
  protected:

@@ -104,10 +104,26 @@ class ASH_EXPORT Shelf : public ShelfLayoutManagerObserver {
   bool IsHorizontalAlignment() const;
 
   // Returns a value based on shelf alignment.
-  int SelectValueForShelfAlignment(int bottom, int left, int right) const;
+  template <typename T>
+  T SelectValueForShelfAlignment(T bottom, T left, T right) const {
+    switch (alignment_) {
+      case ShelfAlignment::kBottom:
+      case ShelfAlignment::kBottomLocked:
+        return bottom;
+      case ShelfAlignment::kLeft:
+        return left;
+      case ShelfAlignment::kRight:
+        return right;
+    }
+    NOTREACHED();
+    return bottom;
+  }
 
   // Returns |horizontal| if shelf is horizontal, otherwise |vertical|.
-  int PrimaryAxisValue(int horizontal, int vertical) const;
+  template <typename T>
+  T PrimaryAxisValue(T horizontal, T vertical) const {
+    return IsHorizontalAlignment() ? horizontal : vertical;
+  }
 
   void SetAutoHideBehavior(ShelfAutoHideBehavior behavior);
 

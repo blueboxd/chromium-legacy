@@ -4732,15 +4732,6 @@
 <translation id="8757552286070680084">Wilco DTC 配置</translation>
 <translation id="8758831693895931466">启用强制性云管理注册</translation>
 <translation id="8759829385824155666">允许的 Kerberos 加密类型</translation>
-<translation id="87635449713742708">此政策会强制网络代码在浏览器进程中运行。
-
-      此政策默认处于停用状态；若被启用，则会在网络进程被沙盒化后使用户面临安全问题的威胁。
-
-      此政策旨在使企业有机会迁移到不依靠与网络 API 挂钩来运行的第三方软件。我们建议通过 LSP 和 Win32 API 修补来使用代理服务器。
-
-      如果此政策未设置，网络代码默认会在浏览器进程之外运行。
-
-      在 <ph name="PRODUCT_NAME" /> 版本 82 中，此政策将被移除。</translation>
 <translation id="8764119899999036911">指定 Kerberos SPN 是基于规范 DNS 名称还是基于输入的原始名称。如果您启用了此设置，系统将跳过 CNAME 查找步骤，并使用输入的服务器名称。如果您停用或未配置此设置，系统将通过 CNAME 查找来确定服务器的规范名称。</translation>
 <translation id="8764477907716150749">此政策仅供 <ph name="PRODUCT_NAME" /> 在内部使用。</translation>
 <translation id="8777369558049831576">在外部协议对话框中显示“始终打开”复选框。</translation>

@@ -540,7 +540,13 @@ void DownloadItemView::Layout() {
 
     int status_y =
         file_name_y + font_list_.GetBaseline() + kVerticalTextPadding;
-    status_label_->SetBoundsRect(gfx::Rect(mirrored_x, status_y, kTextWidth,
+    bool should_expand_for_status_text =
+        (model_->GetDangerType() ==
+         download::DOWNLOAD_DANGER_TYPE_DEEP_SCANNED_SAFE);
+    int status_width = should_expand_for_status_text
+                           ? status_label_->GetPreferredSize().width()
+                           : kTextWidth;
+    status_label_->SetBoundsRect(gfx::Rect(mirrored_x, status_y, status_width,
                                            status_font_list_.GetHeight()));
   }
 
@@ -588,12 +594,12 @@ gfx::Size DownloadItemView::CalculatePreferredSize() const {
                     GetWarningIconSize()});
       width += kEndPadding;
     }
-
   } else {
     gfx::Size label_size = file_name_label_->GetPreferredSize();
     label_size.SetToMax(status_label_->GetPreferredSize());
+    label_size.SetToMax(gfx::Size(kTextWidth, 0));
     width = kStartPadding + DownloadShelf::kProgressIndicatorSize +
-            kProgressTextPadding + kTextWidth + kEndPadding;
+            kProgressTextPadding + label_size.width() + kEndPadding;
   }
 
   if (mode_ != DANGEROUS_MODE)

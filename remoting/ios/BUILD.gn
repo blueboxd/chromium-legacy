@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//ios/third_party/features.gni")
 import("//remoting/build/config/remoting_build.gni")
 import("//remoting/remoting_locales.gni")
 
@@ -84,9 +85,13 @@ test("ios_remoting_unittests") {
     deps += [ ":unittests_locale_${locale}_bundle_data" ]
   }
 
-  bundle_deps = [
-    "//ios/third_party/material_components_ios:material_components_ios+bundle",
-  ]
+  if (ios_third_party_material_components_built_as_framework) {
+    deps += [
+      "//ios/third_party/material_components_ios:material_components_ios+link",
+    ]
+
+    bundle_deps = [ "//ios/third_party/material_components_ios:material_components_ios+bundle" ]
+  }
 }
 
 foreach(locale, remoting_locales_with_underscores) {

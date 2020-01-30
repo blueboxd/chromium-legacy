@@ -217,10 +217,19 @@ SkColor TabGroupEditorBubbleView::InitColorSet() {
 
 void TabGroupEditorBubbleView::UpdateGroup() {
   base::Optional<int> selected_element = color_selector_->GetSelectedElement();
-  const tab_groups::TabGroupColorId color_id =
+  const tab_groups::TabGroupColorId current_color =
+      tab_controller_->GetGroupColorId(group_);
+  const tab_groups::TabGroupColorId updated_color =
       selected_element.has_value() ? color_ids_[selected_element.value()]
-                                   : tab_controller_->GetGroupColorId(group_);
-  tab_groups::TabGroupVisualData new_data(title_field_->GetText(), color_id);
+                                   : current_color;
+
+  if (current_color != updated_color) {
+    base::RecordAction(
+        base::UserMetricsAction("TabGroups_TabGroupBubble_ColorChanged"));
+  }
+
+  tab_groups::TabGroupVisualData new_data(title_field_->GetText(),
+                                          updated_color);
   tab_controller_->SetVisualDataForGroup(group_, new_data);
 }
 
@@ -273,13 +282,19 @@ void TabGroupEditorBubbleView::ButtonListener::ButtonPressed(
       tab_controller_->AddNewTabInGroup(group_);
       break;
     case TAB_GROUP_HEADER_CXMENU_UNGROUP:
+      base::RecordAction(
+          base::UserMetricsAction("TabGroups_TabGroupBubble_Ungroup"));
       anchor_view_->RemoveObserverFromWidget(sender->GetWidget());
       tab_controller_->UngroupAllTabsInGroup(group_);
       break;
     case TAB_GROUP_HEADER_CXMENU_CLOSE_GROUP:
+      base::RecordAction(
+          base::UserMetricsAction("TabGroups_TabGroupBubble_CloseGroup"));
       tab_controller_->CloseAllTabsInGroup(group_);
       break;
     case TAB_GROUP_HEADER_CXMENU_FEEDBACK: {
+      base::RecordAction(
+          base::UserMetricsAction("TabGroups_TabGroupBubble_SendFeedback"));
       const Browser* browser = tab_controller_->GetBrowser();
       chrome::ShowFeedbackPage(
           browser, chrome::FeedbackSource::kFeedbackSourceDesktopTabGroups,

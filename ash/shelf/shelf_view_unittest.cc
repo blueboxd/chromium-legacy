@@ -269,23 +269,34 @@ TEST_F(ShelfObserverIconTest, AddRemoveWithMultipleDisplays) {
 
   Shelf* second_shelf = Shelf::ForWindow(Shell::GetAllRootWindows()[1]);
   TestShelfObserver second_observer(second_shelf);
+  ShelfViewTestAPI second_shelf_test_api(
+      second_shelf->GetShelfViewForTesting());
 
   ShelfItem item;
   item.id = ShelfID("foo");
   item.type = TYPE_APP;
   EXPECT_FALSE(observer()->icon_positions_changed());
   EXPECT_FALSE(second_observer.icon_positions_changed());
+
+  // Add item and wait for all animations to finish.
   const int shelf_item_index = ShelfModel::Get()->Add(item);
   shelf_view_test()->RunMessageLoopUntilAnimationsDone();
+  second_shelf_test_api.RunMessageLoopUntilAnimationsDone();
+
   EXPECT_TRUE(observer()->icon_positions_changed());
   EXPECT_TRUE(second_observer.icon_positions_changed());
-  observer()->Reset();
-  second_observer.Reset();
 
-  EXPECT_FALSE(observer()->icon_positions_changed());
-  EXPECT_FALSE(second_observer.icon_positions_changed());
+  // Reset observer so they can track the next set of animations.
+  observer()->Reset();
+  ASSERT_FALSE(observer()->icon_positions_changed());
+  second_observer.Reset();
+  ASSERT_FALSE(second_observer.icon_positions_changed());
+
+  // Remove the item, and wait for all the animations to complete.
   ShelfModel::Get()->RemoveItemAt(shelf_item_index);
   shelf_view_test()->RunMessageLoopUntilAnimationsDone();
+  second_shelf_test_api.RunMessageLoopUntilAnimationsDone();
+
   EXPECT_TRUE(observer()->icon_positions_changed());
   EXPECT_TRUE(second_observer.icon_positions_changed());
 

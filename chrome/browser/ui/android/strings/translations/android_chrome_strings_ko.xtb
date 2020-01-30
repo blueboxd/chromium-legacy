@@ -279,6 +279,7 @@
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{북마크 <ph name="BOOKMARKS_COUNT_ONE" />개}other{북마크 <ph name="BOOKMARKS_COUNT_MANY" />개}}</translation>
 <translation id="3089395242580810162">시크릿 탭에서 열기</translation>
 <translation id="3123473560110926937">일부 사이트에서 차단됨</translation>
+<translation id="3123734510202723619">공지사항</translation>
 <translation id="3137521801621304719">시크릿 모드 나가기</translation>
 <translation id="3143515551205905069">동기화 취소</translation>
 <translation id="3157842584138209013">추가 옵션 버튼에서 저장한 데이터의 양을 확인해보세요.</translation>

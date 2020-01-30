@@ -118,6 +118,10 @@ class TestAutofillClient : public AutofillClient {
   void UpdateAutofillPopupDataListValues(
       const std::vector<base::string16>& values,
       const std::vector<base::string16>& labels) override;
+  base::span<const autofill::Suggestion> GetPopupSuggestions() const override;
+  void PinPopupViewUntilUpdate() override;
+  void UpdatePopup(const std::vector<autofill::Suggestion>& suggestions,
+                   PopupType popup_type) override;
   void HideAutofillPopup(PopupHidingReason reason) override;
   bool IsAutocompleteEnabled() override;
   void PropagateAutofillPredictions(

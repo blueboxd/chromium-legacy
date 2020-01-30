@@ -35,20 +35,16 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * A utility {@code class} meant to help determine whether or not certain features are supported by
- * this device.
+ * A class to cache the state of flags from {@link ChromeFeatureList}.
  *
- * This utility class also contains support for cached feature flags that must take effect on
- * startup before native is initialized but are set via native code. The caching is done in
+ * It caches certain feature flags that must take effect on startup before native is initialized.
+ * ChromeFeatureList can only be queried through native code. The caching is done in
  * {@link android.content.SharedPreferences}, which is available in Java immediately.
  *
- * To cache the flag {@link ChromeFeatureList}.FOO:
- * - Call {@link FeatureUtilities#cacheFlag(String, String)} in {@link
- *   FeatureUtilities#cacheNativeFlags()} passing
- *   {@link ChromePreferenceKeys#FLAGS_CACHED}.createKey(FOO) and FOO.
- * - To query whether the cached flag is enabled in client code, call
- *   {@link FeatureUtilities#isFlagEnabled(String, boolean)} passing
- *   {@link ChromePreferenceKeys#FLAGS_CACHED}.createKey(FOO).
+ * To cache a flag from ChromeFeatureList:
+ * - Set its default value by adding an entry to {@link #sDefaults}.
+ * - Add it to the list passed to {@link #cacheNativeFlags()}.
+ * - Call {@link #isEnabled(String)} to query whether the cached flag is enabled.
  *   Consider this the source of truth for whether the flag is turned on in the current session.
  * - When querying whether a cached feature is enabled from native, a @CalledByNative method can be
  *   exposed in this file to allow feature_utilities.cc to retrieve the cached value.
@@ -60,11 +56,83 @@ import java.util.Map;
  * value in shared preferences.
  */
 public class FeatureUtilities {
+    /**
+     * Stores the default values for each feature flag queried, used as a fallback in case native
+     * isn't loaded, and no value has been previously cached.
+     */
+    private static Map<String, Boolean> sDefaults = new HashMap<String, Boolean>() {
+        { put(ChromeFeatureList.HOMEPAGE_LOCATION_POLICY, false); }
+    };
+
     private static Map<String, Boolean> sFlags = new HashMap<>();
     private static Boolean sHasRecognitionIntentHandler;
     private static String sReachedCodeProfilerTrialGroup;
     private static Boolean sEnabledTabThumbnailApsectRatioForTesting;
     private static final String ALLOW_TO_REFETCH = "allow_to_refetch";
+
+    /**
+     * Checks if a cached feature flag is enabled.
+     *
+     * Requires that the feature be registered in {@link #sDefaults}.
+     *
+     * Rules from highest to lowest priority:
+     * 1. If the flag has been forced by {@link #setForTesting}, the forced value is returned.
+     * 2. If a value was previously returned in the same run, the same value is returned for
+     *    consistency.
+     * 3. If native is loaded, the value from {@link ChromeFeatureList} is returned.
+     * 4. If in a previous run, the value from {@link ChromeFeatureList} was cached to SharedPrefs,
+     *    it is returned.
+     * 5. The default value defined in {@link #sDefaults} is returned.
+     *
+     * @param featureName the feature name from ChromeFeatureList.
+     * @return whether the cached feature should be considered enabled.
+     */
+    public static boolean isEnabled(String featureName) {
+        // All cached feature flags should have a default value.
+        if (!sDefaults.containsKey(featureName)) {
+            throw new IllegalArgumentException(
+                    "Feature " + featureName + " has no default in FeatureUtilities.");
+        }
+
+        String preferenceName = getPrefForFeatureFlag(featureName);
+
+        Boolean flag = sFlags.get(preferenceName);
+        if (flag != null) {
+            return flag;
+        }
+
+        SharedPreferencesManager prefs = SharedPreferencesManager.getInstance();
+        if (prefs.contains(preferenceName)) {
+            flag = prefs.readBoolean(preferenceName, false);
+        } else {
+            flag = sDefaults.get(featureName);
+        }
+        sFlags.put(preferenceName, flag);
+        return flag;
+    }
+
+    /**
+     * Caches the value of a feature from {@link ChromeFeatureList} to SharedPrefs.
+     *
+     * @param featureName the feature name from ChromeFeatureList.
+     */
+    private static void cacheFeature(String featureName) {
+        String preferenceName = getPrefForFeatureFlag(featureName);
+        boolean isEnabledInNative = ChromeFeatureList.isEnabled(featureName);
+        SharedPreferencesManager.getInstance().writeBoolean(preferenceName, isEnabledInNative);
+    }
+
+    /**
+     * Forces a feature to be enabled or disabled for testing.
+     *
+     * @param featureName the feature name from ChromeFeatureList.
+     * @param value the value that {@link #isEnabled(String)} will be forced to return. If null,
+     *     remove any values previously forced.
+     */
+    public static void setForTesting(String featureName, @Nullable Boolean value) {
+        String preferenceName = getPrefForFeatureFlag(featureName);
+        sFlags.put(preferenceName, value);
+    }
 
     /**
      * Determines whether or not the {@link RecognizerIntent#ACTION_WEB_SEARCH} {@link Intent}
@@ -88,7 +156,23 @@ public class FeatureUtilities {
     /**
      * Caches flags that must take effect on startup but are set via native code.
      */
-    public static void cacheNativeFlags() {
+    public static void cacheNativeFlags(List<String> featuresToCache) {
+        for (String featureName : featuresToCache) {
+            if (!sDefaults.containsKey(featureName)) {
+                throw new IllegalArgumentException(
+                        "Feature " + featureName + " has no default in FeatureUtilities.");
+            }
+            cacheFeature(featureName);
+        }
+    }
+
+    /**
+     * Caches a predetermined list of flags that must take effect on startup but are set via native
+     * code.
+     *
+     * Do not add new simple boolean flags here, use {@link #cacheNativeFlags} instead.
+     */
+    public static void cacheAdditionalNativeFlags() {
         cacheCommandLineOnNonRootedEnabled();
         cacheBottomToolbarEnabled();
         cacheAdaptiveToolbarEnabled();
@@ -105,7 +189,6 @@ public class FeatureUtilities {
         cacheReachedCodeProfilerTrialGroup();
         cacheStartSurfaceEnabled();
         cacheNativeTabSwitcherUiFlags();
-        cacheHomepageLocationPolicyEnabled();
         cachePaintPreviewTestEnabled();
         cacheAllowToRefetchTabThumbnail();
 
@@ -698,24 +781,6 @@ public class FeatureUtilities {
     }
 
     /**
-     * Caches the feature flag for whether we enable the homepage location policy.
-     */
-    private static void cacheHomepageLocationPolicyEnabled() {
-        cacheFlag(ChromePreferenceKeys.FLAGS_CACHED.createKey(
-                          ChromeFeatureList.HOMEPAGE_LOCATION_POLICY),
-                ChromeFeatureList.HOMEPAGE_LOCATION_POLICY);
-    }
-
-    /**
-     * @return True if homepage location policy is supported to be enabled.
-     */
-    public static boolean isHomepageLocationPolicyEnabled() {
-        return isFlagEnabled(ChromePreferenceKeys.FLAGS_CACHED.createKey(
-                                     ChromeFeatureList.HOMEPAGE_LOCATION_POLICY),
-                false);
-    }
-
-    /**
      * @return Whether the thumbnail_aspect_ratio field trail is set.
      */
     public static boolean isTabThumbnailAspectRatioNotOne() {
@@ -756,15 +821,9 @@ public class FeatureUtilities {
     }
 
     /**
-     * Expose an interface to set the homepage policy feature flag to be enabled during tests.
+     * @deprecated Add the feature to {@link #cacheNativeFlags() instead}.
      */
-    @VisibleForTesting
-    public static void setHomepageLocationPolicyEnabledForTesting(@Nullable Boolean isEnabled) {
-        sFlags.put(ChromePreferenceKeys.FLAGS_CACHED.createKey(
-                           ChromeFeatureList.HOMEPAGE_LOCATION_POLICY),
-                isEnabled);
-    }
-
+    @Deprecated
     private static void cacheFlag(String preferenceName, String featureName) {
         SharedPreferencesManager.getInstance().writeBoolean(
                 preferenceName, ChromeFeatureList.isEnabled(featureName));
@@ -776,6 +835,10 @@ public class FeatureUtilities {
                 ChromeFeatureList.getFieldTrialParamByFeature(featureName, variationName));
     }
 
+    /**
+     * @deprecated Call {@link #isEnabled(String)} instead.
+     */
+    @Deprecated
     private static boolean isFlagEnabled(String preferenceName, boolean defaultValue) {
         Boolean flag = sFlags.get(preferenceName);
         if (flag == null) {
@@ -783,6 +846,10 @@ public class FeatureUtilities {
             sFlags.put(preferenceName, flag);
         }
         return flag;
+    }
+
+    private static String getPrefForFeatureFlag(String featureName) {
+        return ChromePreferenceKeys.FLAGS_CACHED.createKey(featureName);
     }
 
     private static String getPrefForFieldTrialParam(String featureName, String paramName) {
@@ -793,6 +860,13 @@ public class FeatureUtilities {
     @VisibleForTesting
     public static void resetFlagsForTesting() {
         sFlags.clear();
+    }
+
+    @VisibleForTesting
+    public static Map<String, Boolean> swapDefaultsForTesting(Map<String, Boolean> testDefaults) {
+        Map<String, Boolean> swapped = sDefaults;
+        sDefaults = testDefaults;
+        return swapped;
     }
 
     @NativeMethods

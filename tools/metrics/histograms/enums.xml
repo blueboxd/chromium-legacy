@@ -19299,6 +19299,7 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
   <int value="663" label="ChromeVariations"/>
   <int value="664" label="PrintingAPIExtensionsWhitelist"/>
   <int value="665" label="ReportDeviceCrashReportInfo"/>
+  <int value="666" label="ScreenCaptureAllowed"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">
@@ -26132,6 +26133,7 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
   <int value="3147" label="V8Animation_Onremove_AttributeSetter"/>
   <int value="3148" label="ClassicSharedWorker"/>
   <int value="3149" label="ModuleSharedWorker"/>
+  <int value="3150" label="V8Animation_CommitStyles_Method"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -37656,6 +37658,7 @@ from previous Chrome versions.
   <int value="-718626298" label="SysInternals:enabled"/>
   <int value="-716953514" label="disable-password-separated-signin-flow"/>
   <int value="-716272467" label="AssistantAppSupport:disabled"/>
+  <int value="-715865629" label="HideShelfControlsInTabletMode:enabled"/>
   <int value="-715733307" label="force-effective-connection-type"/>
   <int value="-715552057" label="GridLayoutForNtpShortcuts:disabled"/>
   <int value="-714712077" label="ClickToOpenPDFPlaceholder:disabled"/>
@@ -37768,6 +37771,7 @@ from previous Chrome versions.
   <int value="-568448085" label="SharedClipboardReceiver:disabled"/>
   <int value="-567920515" label="disable-experimental-hotwording"/>
   <int value="-563980787" label="disable-webrtc"/>
+  <int value="-563600258" label="PhotoPickerVideoSupport:disabled"/>
   <int value="-562274241" label="enable-extension-action-redesign"/>
   <int value="-561194974" label="AutofillExpandedPopupViews:enabled"/>
   <int value="-560551550" label="use-memory-pressure-chromeos"/>
@@ -37896,6 +37900,7 @@ from previous Chrome versions.
   <int value="-397392156" label="FtpProtocol:disabled"/>
   <int value="-396994784" label="enable-vr-shell"/>
   <int value="-396496344" label="ViewsTaskManager:enabled"/>
+  <int value="-396046249" label="PhotoPickerVideoSupport:enabled"/>
   <int value="-395606844" label="enable-site-settings"/>
   <int value="-395454065" label="DisablePostScriptPrinting:disabled"/>
   <int value="-387606010" label="ArcBootCompletedBroadcast:enabled"/>
@@ -39221,6 +39226,7 @@ from previous Chrome versions.
   <int value="1268470658" label="disable-android-password-link"/>
   <int value="1269940659" label="EnumerateAudioDevices:enabled"/>
   <int value="1269952439" label="AndroidAIAFetching:disabled"/>
+  <int value="1271871811" label="LegacyTLSEnforced:enabled"/>
   <int value="1272699563" label="enable-hosted-mode"/>
   <int value="1272923911" label="NewMessageListView:disabled"/>
   <int value="1274717741" label="top-chrome-touch-ui"/>
@@ -39642,6 +39648,7 @@ from previous Chrome versions.
   <int value="1795186324" label="SyncPseudoUSSExtensionSettings:disabled"/>
   <int value="1798347197"
       label="ContextualSuggestionsIPHReverseScroll:disabled"/>
+  <int value="1799521026" label="LegacyTLSEnforced:disabled"/>
   <int value="1803465156" label="enable-zero-suggest-most-visited"/>
   <int value="1803470125" label="SyncUSSSessions:enabled"/>
   <int value="1803914892" label="TemporaryUnexpireFlagsM76:enabled"/>
@@ -39752,6 +39759,7 @@ from previous Chrome versions.
   <int value="1927218315" label="ShelfNewUi:disabled"/>
   <int value="1927259098" label="TranslateLanguageByULP:enabled"/>
   <int value="1928407249" label="NewPhotoPicker:enabled"/>
+  <int value="1929603041" label="HideShelfControlsInTabletMode:disabled"/>
   <int value="1930901873" label="disable-sync-app-list"/>
   <int value="1931309368" label="fill-on-account-select:disabled"/>
   <int value="1932204471" label="SyncPseudoUSSThemes:disabled"/>
@@ -42890,6 +42898,12 @@ Called by update_use_counter_css.py.-->
 <enum name="MobileMessagesPasswordsModalPresent">
   <int value="0" label="PresentedAfterSaveBanner"/>
   <int value="1" label="PresentedAfterUpdateBanner"/>
+</enum>
+
+<enum name="MobileMessagesSaveCardModalEvent">
+  <int value="0" label="EditedCardHolderName"/>
+  <int value="1" label="EditedExpirationMonth"/>
+  <int value="2" label="EditedExpirationYear"/>
 </enum>
 
 <enum name="MobileMessagesTranslateBannerEvent">
@@ -53609,6 +53623,7 @@ Called by update_net_trust_anchors.py.-->
 </enum>
 
 <enum name="QuickAnswersResultType">
+  <int value="0" label="kNoResult"/>
   <int value="5493" label="kDefinitionResult"/>
   <int value="6613" label="kTranslationResult"/>
   <int value="13668" label="kUnitConversionResult"/>
@@ -57931,6 +57946,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="35" label="PRIVACY_SITE_SETTINGS_CLIPBOARD"/>
   <int value="36" label="PRIVACY_SITE_SETTINGS_PAYMENT_HANDLER"/>
   <int value="37" label="PRIVACY_SITE_SETTINGS_MIXEDSCRIPT"/>
+  <int value="38" label="PRIVACY_SITE_SETTINGS_BLUETOOTH_SCANNING"/>
 </enum>
 
 <enum name="SettingsResetPromptConfigError">

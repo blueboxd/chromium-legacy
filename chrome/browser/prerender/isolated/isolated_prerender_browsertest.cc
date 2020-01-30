@@ -25,6 +25,7 @@
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/common/resource_type.h"
 #include "content/public/test/browser_test_base.h"
@@ -75,6 +76,12 @@ class IsolatedPrerenderBrowserTest
   void SetUpCommandLine(base::CommandLine* cmd) override {
     InProcessBrowserTest::SetUpCommandLine(cmd);
     cmd->AppendSwitchASCII("host-rules", "MAP * 127.0.0.1");
+  }
+
+  void SetDataSaverEnabled(bool enabled) {
+    data_reduction_proxy::DataReductionProxySettings::
+        SetDataSaverEnabledForTesting(browser()->profile()->GetPrefs(),
+                                      enabled);
   }
 
   std::unique_ptr<prerender::PrerenderHandle> StartPrerender(const GURL& url) {
@@ -146,6 +153,8 @@ class IsolatedPrerenderBrowserTest
 
 IN_PROC_BROWSER_TEST_F(IsolatedPrerenderBrowserTest,
                        DISABLE_ON_WIN_MAC_CHROMEOS(PrerenderIsIsolated)) {
+  SetDataSaverEnabled(true);
+
   base::HistogramTester histogram_tester;
 
   ASSERT_TRUE(content::SetCookie(browser()->profile(), GetOriginServerURL("/"),

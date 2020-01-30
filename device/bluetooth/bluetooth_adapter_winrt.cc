@@ -495,7 +495,7 @@ bool BluetoothAdapterWinrt::IsPresent() const {
 }
 
 bool BluetoothAdapterWinrt::CanPower() const {
-  return radio_ != nullptr;
+  return radio_ != nullptr && radio_access_allowed_;
 }
 
 bool BluetoothAdapterWinrt::IsPowered() const {
@@ -1117,10 +1117,12 @@ void BluetoothAdapterWinrt::OnRequestRadioAccess(
     base::ScopedClosureRunner on_init,
     RadioAccessStatus access_status) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  if (access_status != RadioAccessStatus_Allowed) {
-    VLOG(2) << "Got unexpected Radio Access Status: "
-            << ToCString(access_status);
-    return;
+  radio_access_allowed_ = access_status == RadioAccessStatus_Allowed;
+  if (!radio_access_allowed_) {
+    // This happens if "Allow apps to control device radios" is off in Privacy
+    // settings.
+    VLOG(2) << "RequestRadioAccessAsync failed: " << ToCString(access_status)
+            << "Will not be able to change radio power.";
   }
 
   ComPtr<IAsyncOperation<Radio*>> get_radio_op;

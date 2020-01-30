@@ -61,6 +61,7 @@ class ProtoDatabaseProvider;
 namespace content {
 
 class BackgroundFetchContext;
+class ConversionManager;
 class CookieStoreContext;
 class BlobRegistryWrapper;
 class PrefetchURLLoaderService;
@@ -463,6 +464,7 @@ class CONTENT_EXPORT StoragePartitionImpl
   std::unique_ptr<leveldb_proto::ProtoDatabaseProvider>
       proto_database_provider_;
   scoped_refptr<ContentIndexContextImpl> content_index_context_;
+  std::unique_ptr<ConversionManager> conversion_manager_;
 
   // ReceiverSet for StoragePartitionService, using the process id as the
   // binding context type. The process id can subsequently be used during

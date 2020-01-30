@@ -1,0 +1,52 @@
+<!doctype html>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../../resources/gesture-util.js"></script>
+<div id="outerScroller" style="width: 400px; height: 400px; overflow: scroll;">
+  <div id="innerScroller" style="width: 200px; height: 200px; overflow: scroll;">
+    <div style="width: 1000px; height:1000px;"></div>
+  </div>
+  <div style="width: 1000px; height:1000px;"></div>
+</div>
+<script>
+
+const WHEEL_DELTA = 100;
+const SCROLL_PERCENTAGE = 0.6;
+
+function scrollAt(x, y) {
+  return smoothScroll(SCROLL_PERCENTAGE, x, y, GestureSourceType.MOUSE_INPUT,
+                      'down', SPEED_INSTANT /* speed_in_pixels_s */,
+                      false /* precise_scrolling_deltas */,
+                      false /* scroll_by_page */, 
+                      true /* cursor_visible */,
+                      true /* scroll_by_percentage */);
+}
+
+async function test_scroller(scrollElement, x, y) {
+  let deltaY = 0;
+  scrollElement.addEventListener("wheel", evt => { deltaY = evt.deltaY });
+
+  await scrollAt(x, y);
+
+  function isCorrectOffset() {
+    return Math.abs(scrollElement.scrollTop - 
+        scrollElement.clientHeight * SCROLL_PERCENTAGE) <= 0.5;
+  }
+  await waitFor(isCorrectOffset,
+                "Scrolling by 10% must scroll the correct amount.");
+  await conditionHolds(isCorrectOffset, 
+                "Scrolling 10% must not scroll past the correct ammount");
+  
+  assert_equals(deltaY, WHEEL_DELTA,
+                "Wheel scrolling must report a constant delta value.");
+}
+
+promise_test(function() {
+  return test_scroller(innerScroller, 100, 100);
+}, "innerScroller percentage resolved correctly");
+
+promise_test(function() {
+  return test_scroller(outerScroller, 300, 300);
+}, "outerScroller percentage resolved correctly");
+
+</script>

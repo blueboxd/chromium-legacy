@@ -82,18 +82,14 @@ if (internal_gles2_conform_tests) {
   }
   action("generate_gles2_conform_tests") {
     script = "generate_gles2_conform_tests.py"
-    outputs = [
-      "$target_gen_dir/gles2_conform_test_autogen.cc",
-    ]
+    outputs = [ "$target_gen_dir/gles2_conform_test_autogen.cc" ]
     args = [ rebase_path("$target_gen_dir") ]
   }
   executable("gles2_conform_test_windowless") {
     testonly = true
 
     # Include a dummy c++ file to force linking of libstdc++.
-    sources = [
-      "dummy.cc",
-    ]
+    sources = [ "dummy.cc" ]
 
     gtf_source = "//third_party/gles2_conform/GTF_ES/glsl/GTF/Source"
     sources += [
@@ -476,14 +472,10 @@ test("gles2_conform_test") {
     "//testing/gtest",
   ]
 
-  data = [
-    "gles2_conform_test_expectations.txt",
-  ]
+  data = [ "gles2_conform_test_expectations.txt" ]
 
   if (internal_gles2_conform_tests) {
-    data_deps = [
-      ":gles2_conform_test_windowless",
-    ]
+    data_deps = [ ":gles2_conform_test_windowless" ]
     deps += [ ":generate_gles2_conform_tests" ]
     sources += [ "$target_gen_dir/gles2_conform_test_autogen.cc" ]
     data += [ "//third_party/gles2_conform/GTF_ES/" ]

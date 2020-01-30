@@ -16,6 +16,7 @@
 #include "base/memory/ref_counted.h"
 #include "components/viz/service/viz_service_export.h"
 #include "gpu/command_buffer/common/mailbox.h"
+#include "gpu/command_buffer/common/sync_token.h"
 #include "gpu/ipc/common/surface_handle.h"
 #include "ui/gfx/buffer_types.h"
 #include "ui/gfx/color_space.h"
@@ -122,6 +123,7 @@ class VIZ_SERVICE_EXPORT BufferQueue {
   struct VIZ_SERVICE_EXPORT AllocatedSurface {
     AllocatedSurface(std::unique_ptr<gfx::GpuMemoryBuffer> buffer,
                      const gpu::Mailbox& mailbox,
+                     const gpu::SyncToken& creation_sync_token,
                      const gfx::Rect& rect);
     ~AllocatedSurface();
 
@@ -129,6 +131,9 @@ class VIZ_SERVICE_EXPORT BufferQueue {
     // SurfaceHandle, we don't have to keep track of |buffer|.
     std::unique_ptr<gfx::GpuMemoryBuffer> buffer;
     gpu::Mailbox mailbox;
+    // SyncToken generated when |mailbox| was created. The client of BufferQueue
+    // should insert this token in its command stream before using |mailbox|.
+    gpu::SyncToken creation_sync_token;
     gfx::Rect damage;  // This is the damage for this frame from the previous.
   };
 
@@ -138,11 +143,8 @@ class VIZ_SERVICE_EXPORT BufferQueue {
   void UpdateBufferDamage(const gfx::Rect& damage);
 
   // Return a buffer that is available to be drawn into or nullptr if there is
-  // no available buffer and one cannot be created. If a new buffer is created
-  // *|creation_sync_token| is set to a sync token that the client must wait on
-  // before using the buffer.
-  std::unique_ptr<AllocatedSurface> GetNextSurface(
-      gpu::SyncToken* creation_sync_token);
+  // no available buffer and one cannot be created.
+  std::unique_ptr<AllocatedSurface> GetNextSurface();
 
   gpu::SharedImageInterface* const sii_;
   gfx::Size size_;

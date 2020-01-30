@@ -123,7 +123,8 @@ template("msvc_toolchain") {
     # passing in a list of include directories isn't enough.
     if (defined(invoker.sys_include_flags)) {
       env_wrapper = ""
-      sys_include_flags = "${invoker.sys_include_flags} "  # Note trailing space.
+      sys_include_flags =
+          "${invoker.sys_include_flags} "  # Note trailing space.
     } else {
       # clang-cl doesn't need this env hoop, so omit it there.
       assert((defined(toolchain_args.is_clang) && !toolchain_args.is_clang) ||
@@ -136,7 +137,7 @@ template("msvc_toolchain") {
     # mt.exe in PATH on non-Windows, so it's not needed there anyways.
     if (host_os != "win") {
       linker_wrapper = ""
-      sys_lib_flags = "${invoker.sys_lib_flags} "  # Note trailing space
+      sys_lib_flags = "${invoker.sys_lib_flags} "  # Note trailing space.
     } else if (defined(invoker.sys_lib_flags)) {
       # Invoke ninja as wrapper instead of tool wrapper, because python
       # invocation requires higher cpu usage compared to ninja invocation, and
@@ -144,10 +145,11 @@ template("msvc_toolchain") {
       # TODO(thakis): Remove wrapper once lld-link can merge manifests without
       # relying on mt.exe being in %PATH% on Windows, https://crbug.com/872740
       linker_wrapper = "ninja -t msvc -e $env -- "  # Note trailing space.
-      sys_lib_flags = "${invoker.sys_lib_flags} "  # Note trailing space
+      sys_lib_flags = "${invoker.sys_lib_flags} "  # Note trailing space.
     } else {
+      # Note trailing space:
       linker_wrapper =
-          "$python_path $tool_wrapper_path link-wrapper $env False "  # Note trailing space.
+          "$python_path $tool_wrapper_path link-wrapper $env False "
       sys_lib_flags = ""
     }
 
@@ -268,7 +270,8 @@ template("msvc_toolchain") {
     }
 
     tool("solink") {
-      dllname = "{{output_dir}}/{{target_output_name}}{{output_extension}}"  # e.g. foo.dll
+      # E.g. "foo.dll":
+      dllname = "{{output_dir}}/{{target_output_name}}{{output_extension}}"
       libname = "${dllname}.lib"  # e.g. foo.dll.lib
       pdbname = "${dllname}.pdb"
       rspfile = "${dllname}.rsp"
@@ -302,7 +305,9 @@ template("msvc_toolchain") {
     }
 
     tool("solink_module") {
-      dllname = "{{output_dir}}/{{target_output_name}}{{output_extension}}"  # e.g. foo.dll
+      dllname =
+          "{{output_dir}}/{{target_output_name}}{{output_extension}}"  # e.g.
+                                                                       # foo.dll
       pdbname = "${dllname}.pdb"
       rspfile = "${dllname}.rsp"
       pool = "//build/toolchain:link_pool($default_toolchain)"

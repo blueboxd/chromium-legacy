@@ -1803,4 +1803,52 @@ TEST_F(CompositedLayerMappingTest,
   EXPECT_TRUE(mapping->NeedsRepaint(*vertical_scrollbar_layer));
 }
 
+TEST_F(CompositedLayerMappingTest, IsolationClippingContainer) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      #hideable {
+        overflow: hidden;
+        height: 10px;
+      }
+      .isolation {
+        contain: style layout;
+        height: 100px;
+      }
+      .squash-container {
+        will-change: transform;
+      }
+      .squashed {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100px;
+        height: 100px;
+      }
+    </style>
+    <div id="hideable">
+      <div class="isolation" id="isolation_a">
+        <div class="squash-container" id="squash_container_a">a</div>
+        <div class="squashed"></div>
+      </div>
+      <div class="isolation">
+        <div class="squash-container">b</div>
+        <div class="squashed"></div>
+      </div>
+    </div>
+  )HTML");
+
+  Element* hideable = GetDocument().getElementById("hideable");
+  hideable->SetInlineStyleProperty(CSSPropertyID::kOverflow, "visible");
+
+  UpdateAllLifecyclePhasesForTest();
+
+  auto* isolation_a = GetDocument().getElementById("isolation_a");
+  auto* isolation_a_object = isolation_a->GetLayoutObject();
+
+  auto* squash_container_a = GetDocument().getElementById("squash_container_a");
+  PaintLayer* squash_container_a_layer =
+      ToLayoutBoxModelObject(squash_container_a->GetLayoutObject())->Layer();
+  EXPECT_EQ(squash_container_a_layer->ClippingContainer(), isolation_a_object);
+}
+
 }  // namespace blink

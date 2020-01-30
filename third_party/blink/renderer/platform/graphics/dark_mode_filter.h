@@ -21,6 +21,7 @@ namespace blink {
 
 class DarkModeColorClassifier;
 class DarkModeColorFilter;
+class ScopedDarkModeElementRoleOverride;
 
 class PLATFORM_EXPORT DarkModeFilter {
  public:
@@ -52,6 +53,8 @@ class PLATFORM_EXPORT DarkModeFilter {
   SkColorFilter* GetImageFilterForTesting() { return image_filter_.get(); }
 
  private:
+  friend class ScopedDarkModeElementRoleOverride;
+
   DarkModeSettings settings_;
 
   bool ShouldApplyToColor(const Color& color, ElementRole role);
@@ -60,6 +63,20 @@ class PLATFORM_EXPORT DarkModeFilter {
   std::unique_ptr<DarkModeColorClassifier> background_classifier_;
   std::unique_ptr<DarkModeColorFilter> color_filter_;
   sk_sp<SkColorFilter> image_filter_;
+  base::Optional<ElementRole> role_override_;
+};
+
+// Temporarily override the element role for the scope of this object's
+// lifetime - for example when drawing symbols that play the role of text.
+class PLATFORM_EXPORT ScopedDarkModeElementRoleOverride {
+ public:
+  ScopedDarkModeElementRoleOverride(GraphicsContext* graphics_context,
+                                    DarkModeFilter::ElementRole role);
+  ~ScopedDarkModeElementRoleOverride();
+
+ private:
+  GraphicsContext* graphics_context_;
+  base::Optional<DarkModeFilter::ElementRole> previous_role_override_;
 };
 
 }  // namespace blink

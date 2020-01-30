@@ -1084,7 +1084,7 @@ TabDragController::DetachPosition TabDragController::GetDetachPosition(
   gfx::Point attached_point(point_in_screen);
   views::View::ConvertPointFromScreen(attached_context_->AsView(),
                                       &attached_point);
-  if (attached_point.x() < 0)
+  if (attached_point.x() < attached_context_->TabDragAreaBeginX())
     return DETACH_BEFORE;
   if (attached_point.x() >= attached_context_->TabDragAreaEndX())
     return DETACH_AFTER;
@@ -1148,7 +1148,8 @@ bool TabDragController::DoesTabStripContain(
   // specified context...
   gfx::Rect tabstrip_bounds = GetTabstripScreenBounds(context);
   const int x_in_strip = point_in_screen.x() - tabstrip_bounds.x();
-  return (x_in_strip >= 0) && (x_in_strip < context->TabDragAreaEndX()) &&
+  return (x_in_strip >= context->TabDragAreaBeginX()) &&
+         (x_in_strip < context->TabDragAreaEndX()) &&
          DoesRectContainVerticalPointExpanded(
              tabstrip_bounds, kVerticalDetachMagnetism, point_in_screen.y());
 }
@@ -1478,7 +1479,7 @@ gfx::Point TabDragController::GetAttachedDragPoint(
   const int x = attached_context_->AsView()->GetMirroredXInView(tab_loc.x()) -
                 mouse_offset_.x();
 
-  const int max_x = attached_context_->TabDragAreaEndX() -
+  const int max_x = attached_context_->GetTabDragAreaWidth() -
                     TabStrip::GetSizeNeededForViews(attached_views_);
   return gfx::Point(base::ClampToRange(x, 0, max_x), 0);
 }

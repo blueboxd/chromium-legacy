@@ -33,10 +33,14 @@ class AppServiceContextMenu : public app_list::AppContextMenu {
                         AppListControllerDelegate* controller);
   ~AppServiceContextMenu() override;
 
+  AppServiceContextMenu(const AppServiceContextMenu&) = delete;
+  AppServiceContextMenu& operator=(const AppServiceContextMenu&) = delete;
+
   // AppContextMenu overrides:
   void GetMenuModel(GetMenuModelCallback callback) override;
   void ExecuteCommand(int command_id, int event_flags) override;
   bool IsCommandIdChecked(int command_id) const override;
+  bool IsCommandIdEnabled(int command_id) const override;
 
  private:
   void OnGetMenuModel(GetMenuModelCallback callback,
@@ -53,6 +57,8 @@ class AppServiceContextMenu : public app_list::AppContextMenu {
                                 GetMenuModelCallback callback);
 
   void ShowAppInfo();
+
+  void SetLaunchType(int command_id);
 
   apps::mojom::AppType app_type_;
 

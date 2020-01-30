@@ -148,9 +148,7 @@ jumbo_component("service") {
 
 source_set("test_support") {
   testonly = true
-  sources = [
-    "gpu_memory_buffer_factory_test_template.h",
-  ]
+  sources = [ "gpu_memory_buffer_factory_test_template.h" ]
   public_deps = [
     ":service",
     "//testing/gtest:gtest",

@@ -4798,15 +4798,6 @@ Pengguna tidak dapat mengubah atau mengganti setelan ini.</translation>
 <translation id="8757552286070680084">Konfigurasi DTC wilco</translation>
 <translation id="8758831693895931466">Aktifkan pendaftaran pengelolaan cloud wajib</translation>
 <translation id="8759829385824155666">Jenis enkripsi Kerberos yang diizinkan</translation>
-<translation id="87635449713742708">Kebijakan ini akan memaksa kode jaringan untuk berjalan di proses browser.
-
-      Kebijakan ini dinonaktifkan secara default, dan jika diaktifkan, pengguna akan rentan terhadap masalah keamanan setelah proses jaringan masuk dalam sandbox.
-
-      Kebijakan ini dimaksudkan untuk memberi perusahaan kesempatan melakukan migrasi ke software pihak ke-3 yang tidak bergantung pada penarikan networking API. Server proxy lebih direkomendasikan daripada patch LSP dan Win32 API.
-
-      Jika kebijakan ini tidak ditetapkan, kode jaringan akan keluar dari proses browser secara default.
-
-      Kebijakan ini akan dihapus dari <ph name="PRODUCT_NAME" /> versi 82.</translation>
 <translation id="8764119899999036911">Menentukan apakah Kerberos SPN yang dihasilkan didasarkan pada nama DNS kanonik atau nama asli yang dimasukkan. Jika Anda mengaktifkan setelan ini, pencarian CNAME akan dilewati dan nama server akan digunakan seperti saat dimasukkan. Jika Anda menonaktifkan setelan ini atau membiarkannya tidak disetel, nama kanonik server akan ditentukan melalui pencarian CNAME.</translation>
 <translation id="8764477907716150749">Kebijakan ini untuk penggunaan internal oleh <ph name="PRODUCT_NAME" /> sendiri.</translation>
 <translation id="8777369558049831576">Menampilkan kotak centang "Always open" pada dialog protokol eksternal.</translation>

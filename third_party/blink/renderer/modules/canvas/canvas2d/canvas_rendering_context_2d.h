@@ -188,7 +188,7 @@ class MODULES_EXPORT CanvasRenderingContext2D final
   sk_sp<PaintFilter> StateGetFilter() final;
   void SnapshotStateForFilter() final;
 
-  void ValidateStateStack() const final;
+  void ValidateStateStackWithCanvas(const cc::PaintCanvas*) const final;
 
   void FinalizeFrame() override;
 

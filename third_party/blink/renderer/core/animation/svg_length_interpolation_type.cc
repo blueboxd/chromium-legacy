@@ -70,7 +70,7 @@ InterpolationValue SVGLengthInterpolationType::MaybeConvertSVGValue(
   if (svg_value.GetType() != kAnimatedLength)
     return nullptr;
 
-  return MaybeConvertSVGLength(ToSVGLength(svg_value));
+  return MaybeConvertSVGLength(To<SVGLength>(svg_value));
 }
 
 SVGPropertyBase* SVGLengthInterpolationType::AppliedSVGValue(

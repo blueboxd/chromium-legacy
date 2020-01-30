@@ -176,6 +176,61 @@ void ShelfContextMenu::ExecuteCommand(int command_id, int event_flags) {
   }
 }
 
+const gfx::VectorIcon& ShelfContextMenu::GetCommandIdVectorIcon(
+    ash::CommandId type,
+    int string_id) const {
+  switch (type) {
+    case ash::MENU_OPEN_NEW:
+      if (string_id == IDS_APP_LIST_CONTEXT_MENU_NEW_TAB)
+        return views::kNewTabIcon;
+      if (string_id == IDS_APP_LIST_CONTEXT_MENU_NEW_WINDOW)
+        return views::kNewWindowIcon;
+      return views::kOpenIcon;
+    case ash::MENU_CLOSE:
+      return views::kCloseIcon;
+    case ash::SHOW_APP_INFO:
+      return views::kInfoIcon;
+    case ash::UNINSTALL:
+      return views::kUninstallIcon;
+    case ash::MENU_PIN:
+      return controller_->IsPinned(item_.id) ? views::kUnpinIcon
+                                             : views::kPinIcon;
+    case ash::MENU_NEW_WINDOW:
+      return views::kNewWindowIcon;
+    case ash::MENU_NEW_INCOGNITO_WINDOW:
+      return views::kNewIncognitoWindowIcon;
+    case ash::LAUNCH_TYPE_PINNED_TAB:
+    case ash::LAUNCH_TYPE_REGULAR_TAB:
+    case ash::LAUNCH_TYPE_FULLSCREEN:
+    case ash::LAUNCH_TYPE_WINDOW:
+      // Check items use a default icon in touchable and default context menus.
+      return gfx::kNoneIcon;
+    case ash::NOTIFICATION_CONTAINER:
+      NOTREACHED() << "NOTIFICATION_CONTAINER does not have an icon, and it is "
+                      "added to the model by NotificationMenuController.";
+      return gfx::kNoneIcon;
+    case ash::STOP_APP:
+      if (string_id == IDS_CROSTINI_SHUT_DOWN_LINUX_MENU_ITEM)
+        return views::kLinuxShutdownIcon;
+      return gfx::kNoneIcon;
+    case ash::CROSTINI_USE_HIGH_DENSITY:
+      return views::kLinuxHighDensityIcon;
+    case ash::CROSTINI_USE_LOW_DENSITY:
+      return views::kLinuxLowDensityIcon;
+    case ash::SWAP_WITH_NEXT:
+    case ash::SWAP_WITH_PREVIOUS:
+      return gfx::kNoneIcon;
+    case ash::LAUNCH_APP_SHORTCUT_FIRST:
+    case ash::LAUNCH_APP_SHORTCUT_LAST:
+    case ash::COMMAND_ID_COUNT:
+      NOTREACHED();
+      return gfx::kNoneIcon;
+    default:
+      NOTREACHED();
+      return gfx::kNoneIcon;
+  }
+}
+
 void ShelfContextMenu::AddPinMenu(ui::SimpleMenuModel* menu_model) {
   // Expect a valid ShelfID to add pin/unpin menu item.
   DCHECK(!item_.id.IsNull());
@@ -239,59 +294,4 @@ void ShelfContextMenu::AddContextMenuOption(ui::SimpleMenuModel* menu_model,
     return;
   }
   menu_model->AddItemWithStringId(type, string_id);
-}
-
-const gfx::VectorIcon& ShelfContextMenu::GetCommandIdVectorIcon(
-    ash::CommandId type,
-    int string_id) const {
-  switch (type) {
-    case ash::MENU_OPEN_NEW:
-      if (string_id == IDS_APP_LIST_CONTEXT_MENU_NEW_TAB)
-        return views::kNewTabIcon;
-      if (string_id == IDS_APP_LIST_CONTEXT_MENU_NEW_WINDOW)
-        return views::kNewWindowIcon;
-      return views::kOpenIcon;
-    case ash::MENU_CLOSE:
-      return views::kCloseIcon;
-    case ash::SHOW_APP_INFO:
-      return views::kInfoIcon;
-    case ash::UNINSTALL:
-      return views::kUninstallIcon;
-    case ash::MENU_PIN:
-      return controller_->IsPinned(item_.id) ? views::kUnpinIcon
-                                             : views::kPinIcon;
-    case ash::MENU_NEW_WINDOW:
-      return views::kNewWindowIcon;
-    case ash::MENU_NEW_INCOGNITO_WINDOW:
-      return views::kNewIncognitoWindowIcon;
-    case ash::LAUNCH_TYPE_PINNED_TAB:
-    case ash::LAUNCH_TYPE_REGULAR_TAB:
-    case ash::LAUNCH_TYPE_FULLSCREEN:
-    case ash::LAUNCH_TYPE_WINDOW:
-      // Check items use a default icon in touchable and default context menus.
-      return gfx::kNoneIcon;
-    case ash::NOTIFICATION_CONTAINER:
-      NOTREACHED() << "NOTIFICATION_CONTAINER does not have an icon, and it is "
-                      "added to the model by NotificationMenuController.";
-      return gfx::kNoneIcon;
-    case ash::STOP_APP:
-      if (string_id == IDS_CROSTINI_SHUT_DOWN_LINUX_MENU_ITEM)
-        return views::kLinuxShutdownIcon;
-      return gfx::kNoneIcon;
-    case ash::CROSTINI_USE_HIGH_DENSITY:
-      return views::kLinuxHighDensityIcon;
-    case ash::CROSTINI_USE_LOW_DENSITY:
-      return views::kLinuxLowDensityIcon;
-    case ash::SWAP_WITH_NEXT:
-    case ash::SWAP_WITH_PREVIOUS:
-      return gfx::kNoneIcon;
-    case ash::LAUNCH_APP_SHORTCUT_FIRST:
-    case ash::LAUNCH_APP_SHORTCUT_LAST:
-    case ash::COMMAND_ID_COUNT:
-      NOTREACHED();
-      return gfx::kNoneIcon;
-    default:
-      NOTREACHED();
-      return gfx::kNoneIcon;
-  }
 }

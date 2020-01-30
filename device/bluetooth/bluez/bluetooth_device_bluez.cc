@@ -812,7 +812,7 @@ void BluetoothDeviceBlueZ::GattServiceRemoved(
     const dbus::ObjectPath& object_path) {
   auto iter = gatt_services_.find(object_path.value());
   if (iter == gatt_services_.end()) {
-    VLOG(3) << "Unknown GATT service removed: " << object_path.value();
+    DVLOG(3) << "Unknown GATT service removed: " << object_path.value();
     return;
   }
 
@@ -842,8 +842,8 @@ void BluetoothDeviceBlueZ::UpdateGattServices(
 
   DCHECK(IsGattServicesDiscoveryComplete());
 
-  VLOG(3) << "Updating the list of GATT services associated with device "
-          << object_path_.value();
+  DVLOG(3) << "Updating the list of GATT services associated with device "
+           << object_path_.value();
 
   const std::vector<dbus::ObjectPath> service_paths =
       bluez::BluezDBusManager::Get()

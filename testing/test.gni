@@ -79,9 +79,7 @@ template("test") {
         testonly = true
         dist_dir = "$root_out_dir/$target_name"
         binary = _exec_output
-        deps = [
-          ":$_exec_target",
-        ]
+        deps = [ ":$_exec_target" ]
         if (defined(invoker.extra_dist_files)) {
           extra_files = invoker.extra_dist_files
         }
@@ -112,9 +110,7 @@ template("test") {
         unwind_table_asset(_unwind_table_asset_name) {
           testonly = true
           library_target = _library_target
-          deps = [
-            ":$_library_target",
-          ]
+          deps = [ ":$_library_target" ]
         }
       }
 
@@ -170,9 +166,7 @@ template("test") {
 
         # Dep needed for the test runner .runtime_deps file to pick up data
         # deps from the forward_variables_from(invoker, "*") on the library.
-        data_deps = [
-          ":$_library_target",
-        ]
+        data_deps = [ ":$_library_target" ]
       }
       test_name = _output_name
       test_suite = _output_name
@@ -188,9 +182,7 @@ template("test") {
       testonly = true
       executable = "$root_build_dir/bin/run_$_output_name"
       wrapper_script = "$root_build_dir/$_output_name"
-      deps = [
-        ":$_test_runner_target",
-      ]
+      deps = [ ":$_test_runner_target" ]
       if (_use_raw_android_executable) {
         deps += [ ":$_dist_target" ]
       } else {
@@ -218,9 +210,7 @@ template("test") {
       package = ":$_pkg_target"
       package_name_override = _output_name
 
-      deps = [
-        "//testing/buildbot/filters:fuchsia_filters",
-      ]
+      deps = [ "//testing/buildbot/filters:fuchsia_filters" ]
     }
 
     fuchsia_package(_pkg_target) {
@@ -252,12 +242,8 @@ template("test") {
 
     bundle_data(_resources_bundle_data) {
       visibility = [ ":$_test_target" ]
-      sources = [
-        "//testing/gtest_ios/Default.png",
-      ]
-      outputs = [
-        "{{bundle_resources_dir}}/{{source_file_part}}",
-      ]
+      sources = [ "//testing/gtest_ios/Default.png" ]
+      outputs = [ "{{bundle_resources_dir}}/{{source_file_part}}" ]
     }
 
     if (enable_run_ios_unittests_with_xctest) {

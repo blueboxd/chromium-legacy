@@ -37,7 +37,7 @@ InterpolationValue SVGPointListInterpolationType::MaybeConvertSVGValue(
   if (svg_value.GetType() != kAnimatedPoints)
     return nullptr;
 
-  const SVGPointList& point_list = ToSVGPointList(svg_value);
+  const auto& point_list = To<SVGPointList>(svg_value);
   auto result = std::make_unique<InterpolableList>(point_list.length() * 2);
   for (wtf_size_t i = 0; i < point_list.length(); i++) {
     const SVGPoint& point = *point_list.at(i);

@@ -30,6 +30,48 @@
 
 namespace content {
 
+#define EXPECT_IA2_TEXT_AT_OFFSET(provider, index, text_boundary, expected_hr, \
+                                  start, end, text)                            \
+  {                                                                            \
+    LONG actual_start;                                                         \
+    LONG actual_end;                                                           \
+    base::win::ScopedBstr actual_text;                                         \
+    EXPECT_EQ(expected_hr,                                                     \
+              provider->get_textAtOffset(index, text_boundary, &actual_start,  \
+                                         &actual_end, actual_text.Receive())); \
+    EXPECT_EQ(start, actual_start);                                            \
+    EXPECT_EQ(end, actual_end);                                                \
+    EXPECT_STREQ(text, actual_text);                                           \
+  }
+
+#define EXPECT_IA2_TEXT_BEFORE_OFFSET(provider, index, text_boundary, \
+                                      expected_hr, start, end, text)  \
+  {                                                                   \
+    LONG actual_start;                                                \
+    LONG actual_end;                                                  \
+    base::win::ScopedBstr actual_text;                                \
+    EXPECT_EQ(expected_hr, provider->get_textBeforeOffset(            \
+                               index, text_boundary, &actual_start,   \
+                               &actual_end, actual_text.Receive()));  \
+    EXPECT_EQ(start, actual_start);                                   \
+    EXPECT_EQ(end, actual_end);                                       \
+    EXPECT_STREQ(text, actual_text);                                  \
+  }
+
+#define EXPECT_IA2_TEXT_AFTER_OFFSET(provider, index, text_boundary, \
+                                     expected_hr, start, end, text)  \
+  {                                                                  \
+    LONG actual_start;                                               \
+    LONG actual_end;                                                 \
+    base::win::ScopedBstr actual_text;                               \
+    EXPECT_EQ(expected_hr, provider->get_textAfterOffset(            \
+                               index, text_boundary, &actual_start,  \
+                               &actual_end, actual_text.Receive())); \
+    EXPECT_EQ(start, actual_start);                                  \
+    EXPECT_EQ(end, actual_end);                                      \
+    EXPECT_STREQ(text, actual_text);                                 \
+  }
+
 // BrowserAccessibilityWinTest ------------------------------------------------
 
 class BrowserAccessibilityWinTest : public testing::Test {
@@ -251,9 +293,22 @@ TEST_F(BrowserAccessibilityWinTest, TestChildrenChangeNoLeaks) {
 }
 
 TEST_F(BrowserAccessibilityWinTest, TestTextBoundaries) {
+  //
+  // +-1 root
+  //   +-2 text_field
+  //     +-3 static_text1 "One two three."
+  //     | +-4 inline_box1 "One two three."
+  //     +-5 line_break1 "\n"
+  //     +-6 static_text2 "Four five six."
+  //     | +-7 inline_box2 "Four five six."
+  //     +-8 line_break2 "\n" kIsLineBreakingObject
+  //     +-9 static_text3 "Seven eight nine."
+  //       +-10 inline_box3 "Seven eight nine."
+  //
   std::string line1 = "One two three.";
   std::string line2 = "Four five six.";
-  std::string text_value = line1 + '\n' + line2;
+  std::string line3 = "Seven eight nine.";
+  std::string text_value = line1 + '\n' + line2 + '\n' + line3;
 
   ui::AXNodeData root;
   root.id = 1;
@@ -265,13 +320,13 @@ TEST_F(BrowserAccessibilityWinTest, TestTextBoundaries) {
   text_field.role = ax::mojom::Role::kTextField;
   text_field.AddState(ax::mojom::State::kEditable);
   text_field.SetValue(text_value);
-  std::vector<int32_t> line_start_offsets;
-  line_start_offsets.push_back(15);
   text_field.AddIntListAttribute(ax::mojom::IntListAttribute::kCachedLineStarts,
-                                 line_start_offsets);
+                                 {15});
   text_field.child_ids.push_back(3);
   text_field.child_ids.push_back(5);
   text_field.child_ids.push_back(6);
+  text_field.child_ids.push_back(8);
+  text_field.child_ids.push_back(9);
 
   ui::AXNodeData static_text1;
   static_text1.id = 3;
@@ -285,23 +340,19 @@ TEST_F(BrowserAccessibilityWinTest, TestTextBoundaries) {
   inline_box1.role = ax::mojom::Role::kInlineTextBox;
   inline_box1.AddState(ax::mojom::State::kEditable);
   inline_box1.SetName(line1);
-  std::vector<int32_t> word_start_offsets1;
-  word_start_offsets1.push_back(0);
-  word_start_offsets1.push_back(4);
-  word_start_offsets1.push_back(8);
   inline_box1.AddIntListAttribute(ax::mojom::IntListAttribute::kWordStarts,
-                                  word_start_offsets1);
+                                  {0, 4, 8});
 
-  ui::AXNodeData line_break;
-  line_break.id = 5;
-  line_break.role = ax::mojom::Role::kLineBreak;
-  line_break.AddState(ax::mojom::State::kEditable);
-  line_break.SetName("\n");
+  ui::AXNodeData line_break1;
+  line_break1.id = 5;
+  line_break1.role = ax::mojom::Role::kLineBreak;
+  line_break1.AddState(ax::mojom::State::kEditable);
+  line_break1.SetName("\n");
 
   inline_box1.AddIntAttribute(ax::mojom::IntAttribute::kNextOnLineId,
-                              line_break.id);
-  line_break.AddIntAttribute(ax::mojom::IntAttribute::kPreviousOnLineId,
-                             inline_box1.id);
+                              line_break1.id);
+  line_break1.AddIntAttribute(ax::mojom::IntAttribute::kPreviousOnLineId,
+                              inline_box1.id);
 
   ui::AXNodeData static_text2;
   static_text2.id = 6;
@@ -315,17 +366,42 @@ TEST_F(BrowserAccessibilityWinTest, TestTextBoundaries) {
   inline_box2.role = ax::mojom::Role::kInlineTextBox;
   inline_box2.AddState(ax::mojom::State::kEditable);
   inline_box2.SetName(line2);
-  std::vector<int32_t> word_start_offsets2;
-  word_start_offsets2.push_back(0);
-  word_start_offsets2.push_back(5);
-  word_start_offsets2.push_back(10);
   inline_box2.AddIntListAttribute(ax::mojom::IntListAttribute::kWordStarts,
-                                  word_start_offsets2);
+                                  {0, 5, 10});
+
+  ui::AXNodeData line_break2;
+  line_break2.id = 8;
+  line_break2.role = ax::mojom::Role::kLineBreak;
+  line_break2.AddState(ax::mojom::State::kEditable);
+  line_break2.SetName("\n");
+  line_break2.AddBoolAttribute(ax::mojom::BoolAttribute::kIsLineBreakingObject,
+                               true);
+
+  inline_box2.AddIntAttribute(ax::mojom::IntAttribute::kNextOnLineId,
+                              line_break2.id);
+  line_break2.AddIntAttribute(ax::mojom::IntAttribute::kPreviousOnLineId,
+                              inline_box2.id);
+
+  ui::AXNodeData static_text3;
+  static_text3.id = 9;
+  static_text3.role = ax::mojom::Role::kStaticText;
+  static_text3.AddState(ax::mojom::State::kEditable);
+  static_text3.SetName(line3);
+  static_text3.child_ids.push_back(10);
+
+  ui::AXNodeData inline_box3;
+  inline_box3.id = 10;
+  inline_box3.role = ax::mojom::Role::kInlineTextBox;
+  inline_box3.AddState(ax::mojom::State::kEditable);
+  inline_box3.SetName(line3);
+  inline_box3.AddIntListAttribute(ax::mojom::IntListAttribute::kWordStarts,
+                                  {0, 6, 12});
 
   std::unique_ptr<BrowserAccessibilityManager> manager(
       BrowserAccessibilityManager::Create(
           MakeAXTreeUpdate(root, text_field, static_text1, inline_box1,
-                           line_break, static_text2, inline_box2),
+                           line_break1, static_text2, inline_box2, line_break2,
+                           static_text3, inline_box3),
           test_browser_accessibility_delegate_.get(),
           new BrowserAccessibilityFactory()));
 
@@ -335,7 +411,7 @@ TEST_F(BrowserAccessibilityWinTest, TestTextBoundaries) {
   ASSERT_EQ(1U, root_obj->PlatformChildCount());
 
   BrowserAccessibilityComWin* text_field_obj =
-      ToBrowserAccessibilityWin(root_obj->PlatformGetChild(0))->GetCOM();
+      ToBrowserAccessibilityComWin(root_obj->PlatformGetChild(0));
   ASSERT_NE(nullptr, text_field_obj);
 
   LONG text_len;
@@ -350,67 +426,152 @@ TEST_F(BrowserAccessibilityWinTest, TestTextBoundaries) {
   EXPECT_STREQ(L"One ", text);
   text.Reset();
 
-  LONG start;
-  LONG end;
-  EXPECT_EQ(S_OK, text_field_obj->get_textAtOffset(
-                      1, IA2_TEXT_BOUNDARY_CHAR, &start, &end, text.Receive()));
-  EXPECT_EQ(1, start);
-  EXPECT_EQ(2, end);
-  EXPECT_STREQ(L"n", text);
-  text.Reset();
+  EXPECT_IA2_TEXT_AT_OFFSET(text_field_obj, 1, IA2_TEXT_BOUNDARY_CHAR,
+                            /*expected_hr=*/S_OK, /*start=*/1, /*end=*/2,
+                            /*text=*/L"n");
 
-  EXPECT_EQ(S_FALSE,
-            text_field_obj->get_textAtOffset(text_len, IA2_TEXT_BOUNDARY_CHAR,
-                                             &start, &end, text.Receive()));
-  EXPECT_EQ(0, start);
-  EXPECT_EQ(0, end);
-  EXPECT_EQ(nullptr, text);
-  text.Reset();
+  EXPECT_IA2_TEXT_AT_OFFSET(text_field_obj, text_len, IA2_TEXT_BOUNDARY_CHAR,
+                            /*expected_hr=*/E_INVALIDARG, /*start=*/0,
+                            /*end=*/0,
+                            /*text=*/nullptr);
 
-  EXPECT_EQ(S_FALSE,
-            text_field_obj->get_textAtOffset(text_len, IA2_TEXT_BOUNDARY_WORD,
-                                             &start, &end, text.Receive()));
-  EXPECT_EQ(0, start);
-  EXPECT_EQ(0, end);
-  EXPECT_EQ(nullptr, text);
-  text.Reset();
+  EXPECT_IA2_TEXT_AT_OFFSET(text_field_obj, text_len, IA2_TEXT_BOUNDARY_WORD,
+                            /*expected_hr=*/E_INVALIDARG, /*start=*/0,
+                            /*end=*/0,
+                            /*text=*/nullptr);
 
-  EXPECT_EQ(S_OK, text_field_obj->get_textAtOffset(
-                      1, IA2_TEXT_BOUNDARY_WORD, &start, &end, text.Receive()));
-  EXPECT_EQ(0, start);
-  EXPECT_EQ(4, end);
-  EXPECT_STREQ(L"One ", text);
-  text.Reset();
+  EXPECT_IA2_TEXT_AT_OFFSET(text_field_obj, 1, IA2_TEXT_BOUNDARY_WORD,
+                            /*expected_hr=*/S_OK, /*start=*/0, /*end=*/4,
+                            /*text=*/L"One ");
 
-  EXPECT_EQ(S_OK, text_field_obj->get_textAtOffset(
-                      6, IA2_TEXT_BOUNDARY_WORD, &start, &end, text.Receive()));
-  EXPECT_EQ(4, start);
-  EXPECT_EQ(8, end);
-  EXPECT_STREQ(L"two ", text);
-  text.Reset();
+  EXPECT_IA2_TEXT_AT_OFFSET(text_field_obj, 6, IA2_TEXT_BOUNDARY_WORD,
+                            /*expected_hr=*/S_OK, /*start=*/4, /*end=*/8,
+                            /*text=*/L"two ");
 
-  EXPECT_EQ(S_OK, text_field_obj->get_textAtOffset(
-                      text_len - 1, IA2_TEXT_BOUNDARY_WORD, &start, &end,
-                      text.Receive()));
-  EXPECT_EQ(25, start);
-  EXPECT_EQ(29, end);
-  EXPECT_STREQ(L"six.", text);
-  text.Reset();
+  EXPECT_IA2_TEXT_AT_OFFSET(text_field_obj, text_len - 1,
+                            IA2_TEXT_BOUNDARY_WORD,
+                            /*expected_hr=*/S_OK, /*start=*/42, /*end=*/47,
+                            /*text=*/L"nine.");
 
-  EXPECT_EQ(S_OK, text_field_obj->get_textAtOffset(
-                      1, IA2_TEXT_BOUNDARY_LINE, &start, &end, text.Receive()));
-  EXPECT_EQ(0, start);
-  EXPECT_EQ(15, end);
-  EXPECT_STREQ(L"One two three.\n", text);
-  text.Reset();
+  EXPECT_IA2_TEXT_AT_OFFSET(text_field_obj, 1, IA2_TEXT_BOUNDARY_LINE,
+                            /*expected_hr=*/S_OK, /*start=*/0, /*end=*/15,
+                            /*text=*/L"One two three.\n");
 
-  EXPECT_EQ(S_OK,
-            text_field_obj->get_textAtOffset(text_len, IA2_TEXT_BOUNDARY_LINE,
-                                             &start, &end, text.Receive()));
-  EXPECT_EQ(15, start);
-  EXPECT_EQ(text_len, end);
-  EXPECT_STREQ(L"Four five six.", text);
-  text.Reset();
+  EXPECT_IA2_TEXT_AT_OFFSET(text_field_obj, text_len, IA2_TEXT_BOUNDARY_LINE,
+                            /*expected_hr=*/S_OK, /*start=*/30, /*end=*/47,
+                            /*text=*/L"Seven eight nine.");
+
+  EXPECT_IA2_TEXT_AT_OFFSET(text_field_obj, 1, IA2_TEXT_BOUNDARY_PARAGRAPH,
+                            /*expected_hr=*/S_OK, /*start=*/0, /*end=*/30,
+                            /*text=*/L"One two three.\nFour five six.\n");
+
+  EXPECT_IA2_TEXT_AT_OFFSET(text_field_obj, text_len - 1,
+                            IA2_TEXT_BOUNDARY_PARAGRAPH,
+                            /*expected_hr=*/S_OK, /*start=*/30, /*end=*/47,
+                            /*text=*/L"Seven eight nine.");
+
+  EXPECT_IA2_TEXT_AT_OFFSET(text_field_obj, text_len,
+                            IA2_TEXT_BOUNDARY_PARAGRAPH,
+                            /*expected_hr=*/E_INVALIDARG, /*start=*/0,
+                            /*end=*/0,
+                            /*text=*/nullptr);
+
+  EXPECT_IA2_TEXT_BEFORE_OFFSET(text_field_obj, 0, IA2_TEXT_BOUNDARY_CHAR,
+                                /*expected_hr=*/S_FALSE, /*start=*/0, /*end=*/0,
+                                /*text=*/nullptr);
+
+  EXPECT_IA2_TEXT_BEFORE_OFFSET(text_field_obj, 1, IA2_TEXT_BOUNDARY_CHAR,
+                                /*expected_hr=*/S_OK, /*start=*/0, /*end=*/1,
+                                /*text=*/L"O");
+
+  EXPECT_IA2_TEXT_BEFORE_OFFSET(
+      text_field_obj, text_len, IA2_TEXT_BOUNDARY_CHAR,
+      /*expected_hr=*/E_INVALIDARG, /*start=*/0, /*end=*/0,
+      /*text=*/nullptr);
+
+  EXPECT_IA2_TEXT_BEFORE_OFFSET(
+      text_field_obj, text_len, IA2_TEXT_BOUNDARY_WORD,
+      /*expected_hr=*/E_INVALIDARG, /*start=*/0, /*end=*/0,
+      /*text=*/nullptr);
+
+  EXPECT_IA2_TEXT_BEFORE_OFFSET(text_field_obj, 1, IA2_TEXT_BOUNDARY_WORD,
+                                /*expected_hr=*/S_FALSE, /*start=*/0, /*end=*/0,
+                                /*text=*/nullptr);
+
+  EXPECT_IA2_TEXT_BEFORE_OFFSET(text_field_obj, 4, IA2_TEXT_BOUNDARY_WORD,
+                                /*expected_hr=*/S_OK, /*start=*/0, /*end=*/4,
+                                /*text=*/L"One ");
+
+  EXPECT_IA2_TEXT_BEFORE_OFFSET(text_field_obj, 6, IA2_TEXT_BOUNDARY_WORD,
+                                /*expected_hr=*/S_OK, /*start=*/0, /*end=*/4,
+                                /*text=*/L"One ");
+
+  EXPECT_IA2_TEXT_BEFORE_OFFSET(text_field_obj, text_len - 1,
+                                IA2_TEXT_BOUNDARY_WORD,
+                                /*expected_hr=*/S_OK, /*start=*/36, /*end=*/42,
+                                /*text=*/L"eight ");
+
+  EXPECT_IA2_TEXT_BEFORE_OFFSET(text_field_obj, 0, IA2_TEXT_BOUNDARY_LINE,
+                                /*expected_hr=*/S_FALSE, /*start=*/0, /*end=*/0,
+                                /*text=*/nullptr);
+
+  EXPECT_IA2_TEXT_BEFORE_OFFSET(text_field_obj, text_len - 1,
+                                IA2_TEXT_BOUNDARY_LINE,
+                                /*expected_hr=*/S_OK, /*start=*/15, /*end=*/30,
+                                /*text=*/L"Four five six.\n");
+
+  EXPECT_IA2_TEXT_BEFORE_OFFSET(text_field_obj, 18, IA2_TEXT_BOUNDARY_PARAGRAPH,
+                                /*expected_hr=*/S_FALSE, /*start=*/0, /*end=*/0,
+                                /*text=*/nullptr);
+
+  EXPECT_IA2_TEXT_BEFORE_OFFSET(text_field_obj, text_len - 1,
+                                IA2_TEXT_BOUNDARY_PARAGRAPH,
+                                /*expected_hr=*/S_OK, /*start=*/0, /*end=*/30,
+                                /*text=*/L"One two three.\nFour five six.\n");
+
+  EXPECT_IA2_TEXT_AFTER_OFFSET(text_field_obj, 0, IA2_TEXT_BOUNDARY_CHAR,
+                               /*expected_hr=*/S_OK, /*start=*/1, /*end=*/2,
+                               /*text=*/L"n");
+
+  EXPECT_IA2_TEXT_AFTER_OFFSET(text_field_obj, 1, IA2_TEXT_BOUNDARY_CHAR,
+                               /*expected_hr=*/S_OK, /*start=*/2, /*end=*/3,
+                               /*text=*/L"e");
+
+  EXPECT_IA2_TEXT_AFTER_OFFSET(text_field_obj, text_len, IA2_TEXT_BOUNDARY_CHAR,
+                               /*expected_hr=*/E_INVALIDARG, /*start=*/0,
+                               /*end=*/0,
+                               /*text=*/nullptr);
+
+  EXPECT_IA2_TEXT_AFTER_OFFSET(text_field_obj, 1, IA2_TEXT_BOUNDARY_WORD,
+                               /*expected_hr=*/S_OK, /*start=*/4, /*end=*/8,
+                               /*text=*/L"two ");
+
+  EXPECT_IA2_TEXT_AFTER_OFFSET(text_field_obj, 6, IA2_TEXT_BOUNDARY_WORD,
+                               /*expected_hr=*/S_OK, /*start=*/8, /*end=*/15,
+                               /*text=*/L"three.\n");
+
+  EXPECT_IA2_TEXT_AFTER_OFFSET(text_field_obj, text_len, IA2_TEXT_BOUNDARY_WORD,
+                               /*expected_hr=*/E_INVALIDARG, /*start=*/0,
+                               /*end=*/0,
+                               /*text=*/nullptr);
+
+  EXPECT_IA2_TEXT_AFTER_OFFSET(text_field_obj, 0, IA2_TEXT_BOUNDARY_LINE,
+                               /*expected_hr=*/S_OK, /*start=*/15, /*end=*/30,
+                               /*text=*/L"Four five six.\n");
+
+  EXPECT_IA2_TEXT_AFTER_OFFSET(text_field_obj, text_len - 1,
+                               IA2_TEXT_BOUNDARY_LINE,
+                               /*expected_hr=*/S_FALSE, /*start=*/0, /*end=*/0,
+                               /*text=*/nullptr);
+
+  EXPECT_IA2_TEXT_AFTER_OFFSET(text_field_obj, 18, IA2_TEXT_BOUNDARY_PARAGRAPH,
+                               /*expected_hr=*/S_OK, /*start=*/30, /*end=*/47,
+                               /*text=*/L"Seven eight nine.");
+
+  EXPECT_IA2_TEXT_AFTER_OFFSET(text_field_obj, text_len - 1,
+                               IA2_TEXT_BOUNDARY_PARAGRAPH,
+                               /*expected_hr=*/S_FALSE, /*start=*/0, /*end=*/0,
+                               /*text=*/nullptr);
 
   EXPECT_EQ(S_OK, text_field_obj->get_text(0, IA2_TEXT_OFFSET_LENGTH,
                                            text.Receive()));
@@ -1173,19 +1334,363 @@ TEST_F(BrowserAccessibilityWinTest, TextBoundariesOnlyEmbeddedObjectsNoCrash) {
   ASSERT_NE(nullptr, menu_accessible_com);
   ASSERT_EQ(ax::mojom::Role::kMenu, menu_accessible_com->GetData().role);
 
-  LONG start;
-  LONG end;
-  base::win::ScopedBstr text;
-  EXPECT_EQ(S_OK, menu_accessible_com->get_textAtOffset(
-                      0, IA2_TEXT_BOUNDARY_CHAR, &start, &end, text.Receive()));
   // TODO(crbug.com/1039528): This should not have 2 embedded object characters.
-  EXPECT_EQ(0, start);
-  EXPECT_EQ(2, end);
-  EXPECT_STREQ(
-      L"\xFFFC"
-      L"\xFFFC",
-      text);
-  text.Reset();
+  {
+    const std::array<base::char16, 2> pieces = {
+        ui::AXPlatformNodeBase::kEmbeddedCharacter,
+        ui::AXPlatformNodeBase::kEmbeddedCharacter};
+    const base::string16 expect(pieces.cbegin(), pieces.cend());
+    EXPECT_IA2_TEXT_AT_OFFSET(menu_accessible_com, 0, IA2_TEXT_BOUNDARY_CHAR,
+                              /*expected_hr=*/S_OK, /*start=*/0, /*end=*/2,
+                              /*text=*/expect.c_str());
+  }
+}
+
+TEST_F(BrowserAccessibilityWinTest, TestTextBoundariesEmbeddedCharacterText) {
+  // Update the tree structure to test empty leaf text positions.
+  //
+  // +-1 root_data
+  //   +-2 body_data
+  //     +-3 static_text_1_data "before"
+  //     | +-4 inline_text_1_data "before"
+  //     +-5 menu_data_1
+  //     | +-6 button_data
+  //     |   +-7 button_leaf_container_data
+  //     |   +-8 button_leaf_svg_data
+  //     +-9 menu_data_2
+  //     +-10 static_text_2_data "after"
+  //     | +-11 inline_text_2_data "after"
+  //     +-12 static_text_3_data "tail"
+  //     | +-13 inline_text_3_data "tail"
+  //
+  ui::AXNodeData root_data;
+  root_data.id = 1;
+  root_data.role = ax::mojom::Role::kRootWebArea;
+
+  ui::AXNodeData body_data;
+  body_data.id = 2;
+  body_data.role = ax::mojom::Role::kGenericContainer;
+
+  ui::AXNodeData static_text_1_data;
+  static_text_1_data.id = 3;
+  static_text_1_data.role = ax::mojom::Role::kStaticText;
+  static_text_1_data.SetName("before");
+
+  ui::AXNodeData inline_text_1_data;
+  inline_text_1_data.id = 4;
+  inline_text_1_data.role = ax::mojom::Role::kInlineTextBox;
+  inline_text_1_data.SetName("before");
+
+  ui::AXNodeData menu_data_1;
+  menu_data_1.id = 5;
+  menu_data_1.role = ax::mojom::Role::kMenu;
+
+  ui::AXNodeData button_data;
+  button_data.id = 6;
+  button_data.role = ax::mojom::Role::kButton;
+
+  ui::AXNodeData button_leaf_container_data;
+  button_leaf_container_data.id = 7;
+  button_leaf_container_data.role = ax::mojom::Role::kGenericContainer;
+
+  ui::AXNodeData button_leaf_svg_data;
+  button_leaf_svg_data.id = 8;
+  button_leaf_svg_data.role = ax::mojom::Role::kSvgRoot;
+
+  ui::AXNodeData menu_data_2;
+  menu_data_2.id = 9;
+  menu_data_2.role = ax::mojom::Role::kMenu;
+
+  ui::AXNodeData static_text_2_data;
+  static_text_2_data.id = 10;
+  static_text_2_data.role = ax::mojom::Role::kStaticText;
+  static_text_2_data.SetName("after");
+
+  ui::AXNodeData inline_text_2_data;
+  inline_text_2_data.id = 11;
+  inline_text_2_data.role = ax::mojom::Role::kInlineTextBox;
+  inline_text_2_data.SetName("after");
+
+  ui::AXNodeData static_text_3_data;
+  static_text_3_data.id = 12;
+  static_text_3_data.role = ax::mojom::Role::kStaticText;
+  static_text_3_data.SetName("tail");
+
+  ui::AXNodeData inline_text_3_data;
+  inline_text_3_data.id = 13;
+  inline_text_3_data.role = ax::mojom::Role::kInlineTextBox;
+  inline_text_3_data.SetName("tail");
+
+  root_data.child_ids = {body_data.id};
+  body_data.child_ids = {static_text_1_data.id, menu_data_1.id, menu_data_2.id,
+                         static_text_2_data.id, static_text_3_data.id};
+  menu_data_1.child_ids = {button_data.id};
+  button_data.child_ids = {button_leaf_container_data.id,
+                           button_leaf_svg_data.id};
+  static_text_1_data.child_ids = {inline_text_1_data.id};
+  static_text_2_data.child_ids = {inline_text_2_data.id};
+  static_text_3_data.child_ids = {inline_text_3_data.id};
+
+  ui::AXTreeUpdate update;
+  ui::AXTreeData tree_data;
+  tree_data.tree_id = ui::AXTreeID::CreateNewAXTreeID();
+  tree_data.focused_tree_id = tree_data.tree_id;
+  update.tree_data = tree_data;
+  update.has_tree_data = true;
+  update.root_id = root_data.id;
+  update.nodes = {root_data,
+                  body_data,
+                  static_text_1_data,
+                  inline_text_1_data,
+                  menu_data_1,
+                  button_data,
+                  button_leaf_container_data,
+                  button_leaf_svg_data,
+                  menu_data_2,
+                  static_text_2_data,
+                  inline_text_2_data,
+                  static_text_3_data,
+                  inline_text_3_data};
+
+  std::unique_ptr<BrowserAccessibilityManager> manager(
+      BrowserAccessibilityManager::Create(
+          update, test_browser_accessibility_delegate_.get(),
+          new BrowserAccessibilityFactory()));
+
+  ASSERT_NE(nullptr, manager->GetRoot());
+  BrowserAccessibilityWin* root_accessible =
+      ToBrowserAccessibilityWin(manager->GetRoot());
+  ASSERT_NE(nullptr, root_accessible);
+  ASSERT_EQ(1U, root_accessible->PlatformChildCount());
+
+  BrowserAccessibilityWin* body_accessible =
+      ToBrowserAccessibilityWin(root_accessible->PlatformGetChild(0));
+  ASSERT_NE(nullptr, body_accessible);
+  ASSERT_EQ(5U, body_accessible->PlatformChildCount());
+  BrowserAccessibilityComWin* body_accessible_com = body_accessible->GetCOM();
+  ASSERT_NE(nullptr, body_accessible_com);
+
+  BrowserAccessibilityComWin* static_text_1_com =
+      ToBrowserAccessibilityWin(body_accessible->PlatformGetChild(0))->GetCOM();
+  ASSERT_NE(nullptr, static_text_1_com);
+  ASSERT_EQ(ax::mojom::Role::kStaticText, static_text_1_com->GetData().role);
+
+  BrowserAccessibilityComWin* menu_1_accessible_com =
+      ToBrowserAccessibilityWin(body_accessible->PlatformGetChild(1))->GetCOM();
+  ASSERT_NE(nullptr, menu_1_accessible_com);
+  ASSERT_EQ(ax::mojom::Role::kMenu, menu_1_accessible_com->GetData().role);
+
+  BrowserAccessibilityComWin* menu_2_accessible_com =
+      ToBrowserAccessibilityWin(body_accessible->PlatformGetChild(2))->GetCOM();
+  ASSERT_NE(nullptr, menu_2_accessible_com);
+  ASSERT_EQ(ax::mojom::Role::kMenu, menu_2_accessible_com->GetData().role);
+
+  BrowserAccessibilityComWin* static_text_2_com =
+      ToBrowserAccessibilityWin(body_accessible->PlatformGetChild(3))->GetCOM();
+  ASSERT_NE(nullptr, static_text_2_com);
+  ASSERT_EQ(ax::mojom::Role::kStaticText, static_text_2_com->GetData().role);
+
+  BrowserAccessibilityComWin* static_text_3_com =
+      ToBrowserAccessibilityWin(body_accessible->PlatformGetChild(4))->GetCOM();
+  ASSERT_NE(nullptr, static_text_3_com);
+  ASSERT_EQ(ax::mojom::Role::kStaticText, static_text_3_com->GetData().role);
+
+  // L"<b>efore" [obj] [obj] L"after" L"tail"
+  EXPECT_IA2_TEXT_AT_OFFSET(body_accessible_com, 0, IA2_TEXT_BOUNDARY_CHAR,
+                            /*expected_hr=*/S_OK, /*start=*/0, /*end=*/1,
+                            /*text=*/L"b");
+
+  // L"bef<o>re" [obj] [obj] L"after" L"tail"
+  EXPECT_IA2_TEXT_AT_OFFSET(body_accessible_com, 3, IA2_TEXT_BOUNDARY_CHAR,
+                            /*expected_hr=*/S_OK, /*start=*/3, /*end=*/4,
+                            /*text=*/L"o");
+
+  // L"befor<e>" [obj] [obj] L"after" L"tail"
+  EXPECT_IA2_TEXT_AT_OFFSET(body_accessible_com, 5, IA2_TEXT_BOUNDARY_CHAR,
+                            /*expected_hr=*/S_OK, /*start=*/5, /*end=*/6,
+                            /*text=*/L"e");
+
+  // L"before" <[obj]> [obj] L"after" L"tail"
+  // TODO(crbug.com/1039528): This should not include multiple characters.
+  {
+    const std::array<base::char16, 3> pieces = {
+        ui::AXPlatformNodeBase::kEmbeddedCharacter,
+        ui::AXPlatformNodeBase::kEmbeddedCharacter, L'a'};
+    const base::string16 expect(pieces.cbegin(), pieces.cend());
+    EXPECT_IA2_TEXT_AT_OFFSET(body_accessible_com, 6, IA2_TEXT_BOUNDARY_CHAR,
+                              /*expected_hr=*/S_OK, /*start=*/6, /*end=*/9,
+                              /*text=*/
+                              expect.c_str());
+  }
+
+  // L"before" [obj] <[obj]> L"after" L"tail"
+  // TODO(crbug.com/1039528): This should not include multiple characters.
+  {
+    const std::array<base::char16, 2> pieces = {
+        ui::AXPlatformNodeBase::kEmbeddedCharacter, L'a'};
+    const base::string16 expect(pieces.cbegin(), pieces.cend());
+    EXPECT_IA2_TEXT_AT_OFFSET(body_accessible_com, 7, IA2_TEXT_BOUNDARY_CHAR,
+                              /*expected_hr=*/S_OK, /*start=*/7, /*end=*/9,
+                              /*text=*/
+                              expect.c_str());
+  }
+
+  // L"before" [obj] [obj] L"<a>fter" L"tail"
+  EXPECT_IA2_TEXT_AT_OFFSET(body_accessible_com, 8, IA2_TEXT_BOUNDARY_CHAR,
+                            /*expected_hr=*/S_OK, /*start=*/8, /*end=*/9,
+                            /*text=*/L"a");
+
+  // L"before" [obj] [obj] L"a<f>ter" L"tail"
+  EXPECT_IA2_TEXT_AT_OFFSET(body_accessible_com, 9, IA2_TEXT_BOUNDARY_CHAR,
+                            /*expected_hr=*/S_OK, /*start=*/9, /*end=*/10,
+                            /*text=*/L"f");
+
+  // L"before" [obj] [obj] L"afte<r>" L"tail"
+  EXPECT_IA2_TEXT_AT_OFFSET(body_accessible_com, 12, IA2_TEXT_BOUNDARY_CHAR,
+                            /*expected_hr=*/S_OK, /*start=*/12, /*end=*/13,
+                            /*text=*/L"r");
+
+  // L"before" [obj] [obj] L"after" L"<t>ail"
+  EXPECT_IA2_TEXT_AT_OFFSET(body_accessible_com, 13, IA2_TEXT_BOUNDARY_CHAR,
+                            /*expected_hr=*/S_OK, /*start=*/13, /*end=*/14,
+                            /*text=*/L"t");
+
+  // L"before" [obj] [obj] L"after" L"ta<i>l"
+  EXPECT_IA2_TEXT_AT_OFFSET(body_accessible_com, 15, IA2_TEXT_BOUNDARY_CHAR,
+                            /*expected_hr=*/S_OK, /*start=*/15, /*end=*/16,
+                            /*text=*/L"i");
+
+  // L"before" [obj] [obj] L"after" L"tai<l>"
+  EXPECT_IA2_TEXT_AT_OFFSET(body_accessible_com, 16, IA2_TEXT_BOUNDARY_CHAR,
+                            /*expected_hr=*/S_OK, /*start=*/16, /*end=*/17,
+                            /*text=*/L"l");
+
+  // L"before" [obj] [obj] L"after" L"tail<>"
+  EXPECT_IA2_TEXT_AT_OFFSET(body_accessible_com, 17, IA2_TEXT_BOUNDARY_CHAR,
+                            /*expected_hr=*/E_INVALIDARG, /*start=*/0,
+                            /*end=*/0,
+                            /*text=*/nullptr);
+
+  // L"<b>efore"
+  EXPECT_IA2_TEXT_AT_OFFSET(static_text_1_com, 0, IA2_TEXT_BOUNDARY_CHAR,
+                            /*expected_hr=*/S_OK, /*start=*/0, /*end=*/1,
+                            /*text=*/L"b");
+
+  // L"be<f>ore"
+  EXPECT_IA2_TEXT_AT_OFFSET(static_text_1_com, 2, IA2_TEXT_BOUNDARY_CHAR,
+                            /*expected_hr=*/S_OK, /*start=*/2, /*end=*/3,
+                            /*text=*/L"f");
+
+  // L"before<>"
+  EXPECT_IA2_TEXT_AT_OFFSET(static_text_1_com, 6, IA2_TEXT_BOUNDARY_CHAR,
+                            /*expected_hr=*/E_INVALIDARG, /*start=*/0,
+                            /*end=*/0,
+                            /*text=*/nullptr);
+
+  // <[obj]>
+  EXPECT_IA2_TEXT_AT_OFFSET(
+      menu_1_accessible_com, 0, IA2_TEXT_BOUNDARY_CHAR,
+      /*expected_hr=*/S_OK, /*start=*/0, /*end=*/1,
+      /*text=*/
+      base::string16{ui::AXPlatformNodeBase::kEmbeddedCharacter}.c_str());
+
+  // [obj]<>
+  EXPECT_IA2_TEXT_AT_OFFSET(menu_1_accessible_com, 1, IA2_TEXT_BOUNDARY_CHAR,
+                            /*expected_hr=*/E_INVALIDARG, /*start=*/0,
+                            /*end=*/0,
+                            /*text=*/nullptr);
+
+  // L"<>"
+  EXPECT_IA2_TEXT_AT_OFFSET(menu_2_accessible_com, 0, IA2_TEXT_BOUNDARY_CHAR,
+                            /*expected_hr=*/E_INVALIDARG, /*start=*/0,
+                            /*end=*/0,
+                            /*text=*/nullptr);
+
+  // L"<a>fter"
+  EXPECT_IA2_TEXT_AT_OFFSET(static_text_2_com, 0, IA2_TEXT_BOUNDARY_CHAR,
+                            /*expected_hr=*/S_OK, /*start=*/0, /*end=*/1,
+                            /*text=*/L"a");
+
+  // L"af<t>er"
+  EXPECT_IA2_TEXT_AT_OFFSET(static_text_2_com, 2, IA2_TEXT_BOUNDARY_CHAR,
+                            /*expected_hr=*/S_OK, /*start=*/2, /*end=*/3,
+                            /*text=*/L"t");
+
+  // L"after<>"
+  EXPECT_IA2_TEXT_AT_OFFSET(static_text_2_com, 5, IA2_TEXT_BOUNDARY_CHAR,
+                            /*expected_hr=*/E_INVALIDARG, /*start=*/0,
+                            /*end=*/0,
+                            /*text=*/nullptr);
+
+  // L"<t>ail"
+  EXPECT_IA2_TEXT_AT_OFFSET(static_text_3_com, 0, IA2_TEXT_BOUNDARY_CHAR,
+                            /*expected_hr=*/S_OK, /*start=*/0, /*end=*/1,
+                            /*text=*/L"t");
+
+  // L"ta<i>l"
+  EXPECT_IA2_TEXT_AT_OFFSET(static_text_3_com, 2, IA2_TEXT_BOUNDARY_CHAR,
+                            /*expected_hr=*/S_OK, /*start=*/2, /*end=*/3,
+                            /*text=*/L"i");
+
+  // L"tail<>"
+  EXPECT_IA2_TEXT_AT_OFFSET(static_text_3_com, 4, IA2_TEXT_BOUNDARY_CHAR,
+                            /*expected_hr=*/E_INVALIDARG, /*start=*/0,
+                            /*end=*/0,
+                            /*text=*/nullptr);
+
+  // L"before" [obj] <[obj]> L"<a>fter" L"tail"
+  EXPECT_IA2_TEXT_BEFORE_OFFSET(
+      body_accessible_com, 7, IA2_TEXT_BOUNDARY_CHAR,
+      /*expected_hr=*/S_OK, /*start=*/6, /*end=*/7,
+      /*text=*/
+      base::string16{ui::AXPlatformNodeBase::kEmbeddedCharacter}.c_str());
+
+  // L"before" <[obj]> [obj] L"after" L"tail"
+  EXPECT_IA2_TEXT_BEFORE_OFFSET(body_accessible_com, 6, IA2_TEXT_BOUNDARY_CHAR,
+                                /*expected_hr=*/S_OK, /*start=*/5, /*end=*/6,
+                                /*text=*/L"e");
+
+  // <[obj]>
+  EXPECT_IA2_TEXT_BEFORE_OFFSET(menu_1_accessible_com, 0,
+                                IA2_TEXT_BOUNDARY_CHAR,
+                                /*expected_hr=*/S_FALSE, /*start=*/0, /*end=*/0,
+                                /*text=*/nullptr);
+
+  // L"<>"
+  EXPECT_IA2_TEXT_BEFORE_OFFSET(menu_2_accessible_com, 0,
+                                IA2_TEXT_BOUNDARY_CHAR,
+                                /*expected_hr=*/E_INVALIDARG, /*start=*/0,
+                                /*end=*/0,
+                                /*text=*/nullptr);
+
+  // L"befor<e>" [obj] <[obj]> L"after" L"tail"
+  // TODO(crbug.com/1039528): This should not include multiple characters.
+  {
+    const std::array<base::char16, 3> pieces = {
+        ui::AXPlatformNodeBase::kEmbeddedCharacter,
+        ui::AXPlatformNodeBase::kEmbeddedCharacter, L'a'};
+    const base::string16 expect(pieces.cbegin(), pieces.cend());
+    EXPECT_IA2_TEXT_AFTER_OFFSET(body_accessible_com, 5, IA2_TEXT_BOUNDARY_CHAR,
+                                 /*expected_hr=*/S_OK, /*start=*/6, /*end=*/9,
+                                 /*text=*/expect.c_str());
+  }
+
+  // L"before" <[obj]> [obj] L"after" L"tail"
+  // TODO(crbug.com/1039528): This should probably not skip over L"a"
+  EXPECT_IA2_TEXT_AFTER_OFFSET(body_accessible_com, 6, IA2_TEXT_BOUNDARY_CHAR,
+                               /*expected_hr=*/S_OK, /*start=*/9, /*end=*/10,
+                               /*text=*/L"f");
+
+  // <[obj]>
+  EXPECT_IA2_TEXT_AFTER_OFFSET(menu_1_accessible_com, 0, IA2_TEXT_BOUNDARY_CHAR,
+                               /*expected_hr=*/S_FALSE, /*start=*/0, /*end=*/0,
+                               /*text=*/nullptr);
+
+  // L"<>"
+  EXPECT_IA2_TEXT_AFTER_OFFSET(menu_2_accessible_com, 0, IA2_TEXT_BOUNDARY_CHAR,
+                               /*expected_hr=*/E_INVALIDARG, /*start=*/0,
+                               /*end=*/0,
+                               /*text=*/nullptr);
 }
 
 TEST_F(BrowserAccessibilityWinTest, TestCaretAndSelectionInSimpleFields) {

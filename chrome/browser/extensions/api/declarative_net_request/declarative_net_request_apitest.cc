@@ -47,14 +47,6 @@ class DeclarativeNetRequestAPItest : public extensions::ExtensionApiTest {
   DISALLOW_COPY_AND_ASSIGN(DeclarativeNetRequestAPItest);
 };
 
-IN_PROC_BROWSER_TEST_F(DeclarativeNetRequestAPItest, PageAllowingAPI) {
-  ASSERT_TRUE(RunExtensionTest("page_allowing_api")) << message_;
-}
-
-IN_PROC_BROWSER_TEST_F(DeclarativeNetRequestAPItest, ExtensionWithNoRuleset) {
-  ASSERT_TRUE(RunExtensionTest("extension_with_no_ruleset")) << message_;
-}
-
 IN_PROC_BROWSER_TEST_F(DeclarativeNetRequestAPItest, DynamicRules) {
   ASSERT_TRUE(RunExtensionTest("dynamic_rules")) << message_;
 }

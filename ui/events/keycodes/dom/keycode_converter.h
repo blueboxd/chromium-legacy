@@ -33,6 +33,7 @@ typedef struct {
   //  On Linux: XKB scancode
   //  On Windows: Windows OEM scancode
   //  On Mac: Mac keycode
+  //  On Fuchsia: 16-bit Code from the USB Keyboard Usage Page.
   int native_keycode;
 
   // The UIEvents (aka: DOM4Events) |code| value as defined in:

@@ -80,7 +80,7 @@ public class HomepagePolicyIntegrationTest {
     @Before
     public void setUp() {
         // Disable Histogram for tests.
-        FeatureUtilities.setHomepageLocationPolicyEnabledForTesting(true);
+        FeatureUtilities.setForTesting(ChromeFeatureList.HOMEPAGE_LOCATION_POLICY, true);
 
         // Give some user pref setting, simulate user that have their customized preference.
         // Use shared preference manager, not to change the order object created in tests.
@@ -95,7 +95,7 @@ public class HomepagePolicyIntegrationTest {
     @After
     public void tearDown() {
         mTestServer.stopAndDestroyServer();
-        FeatureUtilities.setHomepageLocationPolicyEnabledForTesting(null);
+        FeatureUtilities.setForTesting(ChromeFeatureList.HOMEPAGE_LOCATION_POLICY, null);
     }
 
     @Test

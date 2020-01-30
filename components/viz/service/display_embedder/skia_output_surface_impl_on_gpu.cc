@@ -1271,7 +1271,7 @@ void SkiaOutputSurfaceImplOnGpu::CopyOutput(
     surface->asyncRescaleAndReadPixelsYUV420(
         kRec709_SkYUVColorSpace, SkColorSpace::MakeSRGB(), src_rect,
         {geometry.result_bounds.width(), geometry.result_bounds.height()},
-        SkSurface::RescaleGamma::kSrc, filter_quality, OnYUVReadbackDone,
+        SkSurface::RescaleGamma::kSrc, filter_quality, &OnYUVReadbackDone,
         context.release());
   } else if (request->result_format() ==
              CopyOutputRequest::ResultFormat::RGBA_BITMAP) {
@@ -1286,11 +1286,11 @@ void SkiaOutputSurfaceImplOnGpu::CopyOutput(
             std::move(request), geometry.result_bounds, color_space, weak_ptr_);
     surface->asyncRescaleAndReadPixels(
         dst_info, src_rect, SkSurface::RescaleGamma::kSrc, filter_quality,
-        OnRGBAReadbackDone, context.release());
+        &OnRGBAReadbackDone, context.release());
   } else {
     NOTIMPLEMENTED();  // ResultFormat::RGBA_TEXTURE
   }
-  CheckReadbackCompletion();
+  ScheduleCheckReadbackCompletion();
 }
 
 gpu::DecoderContext* SkiaOutputSurfaceImplOnGpu::decoder() {
@@ -1697,23 +1697,27 @@ void SkiaOutputSurfaceImplOnGpu::MarkContextLost() {
   }
 }
 
-void SkiaOutputSurfaceImplOnGpu::CheckReadbackCompletion() {
-  gr_context()->checkAsyncWorkCompletion();
-
+void SkiaOutputSurfaceImplOnGpu::ScheduleCheckReadbackCompletion() {
   if (num_readbacks_pending_ > 0 && !readback_poll_pending_) {
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE,
-        base::BindOnce(
-            [](base::WeakPtr<SkiaOutputSurfaceImplOnGpu> impl_on_gpu) {
-              if (!impl_on_gpu)
-                return;
-              impl_on_gpu->readback_poll_pending_ = false;
-              impl_on_gpu->CheckReadbackCompletion();
-            },
-            weak_ptr_factory_.GetWeakPtr()),
+        base::BindOnce(&SkiaOutputSurfaceImplOnGpu::CheckReadbackCompletion,
+                       weak_ptr_factory_.GetWeakPtr()),
         kReadbackPollingInterval);
     readback_poll_pending_ = true;
   }
+}
+
+void SkiaOutputSurfaceImplOnGpu::CheckReadbackCompletion() {
+  readback_poll_pending_ = false;
+
+  // If there are no pending readback requests or we can't make the context
+  // current then exit. There is no thing to do here.
+  if (num_readbacks_pending_ == 0 || !MakeCurrent(/*need_fbo0=*/false))
+    return;
+
+  gr_context()->checkAsyncWorkCompletion();
+  ScheduleCheckReadbackCompletion();
 }
 
 }  // namespace viz

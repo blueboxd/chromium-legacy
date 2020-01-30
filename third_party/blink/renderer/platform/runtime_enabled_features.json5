@@ -1507,7 +1507,7 @@
     },
     {
       name: "ScrollSnapAfterLayout",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "ScrollTimeline",

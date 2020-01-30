@@ -26,7 +26,6 @@
 <translation id="1031362278801463162">Cargando vista previa</translation>
 <translation id="1032605640136438169">Revisa las Condiciones nuevas</translation>
 <translation id="103279545524624934">Libera espacio en el disco para ejecutar apps de Android.</translation>
-<translation id="1033343386521881354">Se encontró 1 impresora en el servidor de impresión.</translation>
 <translation id="1033780634303702874">Acceder a tus dispositivos en serie</translation>
 <translation id="1034942643314881546">Habilitando ADB para crear la ilustración de apps</translation>
 <translation id="1036348656032585052">Desactivar</translation>
@@ -34,7 +33,6 @@
 <translation id="1036982837258183574">Presiona |<ph name="ACCELERATOR" />| para salir de la pantalla completa</translation>
 <translation id="1038168778161626396">Sólo cifrar</translation>
 <translation id="1039337018183941703">Archivo no válido o dañado</translation>
-<translation id="1039850285407663109">El archivo seleccionado es desconocido y puede ser peligroso. Se recomienda analizarlo antes de abrirlo.</translation>
 <translation id="1041175011127912238">Esta página no responde</translation>
 <translation id="1041263367839475438">Dispositivos disponibles</translation>
 <translation id="1042174272890264476">Tu computadora también tiene la biblioteca RLZ de <ph name="SHORT_PRODUCT_NAME" /> incorporada. RLZ asigna una etiqueta identificable, no exclusiva y no personal para medir las búsquedas y el uso de <ph name="SHORT_PRODUCT_NAME" /> impulsados por una determinada campaña de promoción. Estas etiquetas aparecen a veces en las consultas de la Búsqueda de Google en <ph name="PRODUCT_NAME" />.</translation>
@@ -636,7 +634,6 @@
 <translation id="1858585891038687145">Confiar en este certificado para identificar fabricantes de software</translation>
 <translation id="1861262398884155592">Esta carpeta está vacía</translation>
 <translation id="1863182668524159459">No se encontraron puertos en serie</translation>
-<translation id="1863552924692672565"><ph name="FILE_NAME" /> es un archivo desconocido. Analízalo para reducir el riesgo.</translation>
 <translation id="1864111464094315414">Acceder</translation>
 <translation id="1864400682872660285">Frío</translation>
 <translation id="1864454756846565995">Dispositivo USB-C (puerto trasero)</translation>
@@ -4022,7 +4019,6 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="6678717876183468697">URL de consulta</translation>
 <translation id="6680442031740878064">Disponible: <ph name="AVAILABLE_SPACE" /></translation>
 <translation id="6680650203439190394">Velocidad</translation>
-<translation id="6681301928961274620">No se encontraron impresoras en el servidor de impresión.</translation>
 <translation id="6681668084120808868">Tomar foto</translation>
 <translation id="6681964764822470072">Se desinstalará "<ph name="APP_NAME" />".</translation>
 <translation id="668599234725812620">Abrir Google Play</translation>
@@ -5552,7 +5548,6 @@ Mantén el archivo de clave en un lugar seguro. Debes crear las nuevas versiones
 <translation id="8794025342371547160">IP restringido</translation>
 <translation id="879413103056696865">Mientras el hotspot esté activado, tu número <ph name="PHONE_NAME" /> podrá:</translation>
 <translation id="8795916974678578410">Nueva ventana</translation>
-<translation id="8797086401386164142">Se encontraron <ph name="NUM_PRINTERS" /> impresoras en el servidor de impresión.</translation>
 <translation id="8797459392481275117">Nunca traducir este sitio</translation>
 <translation id="8798099450830957504">Predeterminado</translation>
 <translation id="8798441408945964110">Nombre del proveedor</translation>

@@ -15,8 +15,6 @@
 namespace ui {
 namespace {
 
-const uint32_t kUsbHidKeyboardPage = 0x07;
-
 int KeyModifiersToFlags(int modifiers) {
   int flags = 0;
   if (modifiers & fuchsia::ui::input::kModifierShift)
@@ -167,11 +165,7 @@ bool InputEventDispatcher::ProcessKeyboardEvent(
       break;
   }
 
-  // Currently KeyboardEvent doesn't specify HID Usage page. |hid_usage|
-  // field always contains values from the Keyboard page. See
-  // https://fuchsia.atlassian.net/browse/SCN-762 .
-  DomCode dom_code = KeycodeConverter::UsbKeycodeToDomCode(
-      (kUsbHidKeyboardPage << 16) | event.hid_usage);
+  DomCode dom_code = KeycodeConverter::NativeKeycodeToDomCode(event.hid_usage);
   DomKey dom_key;
   KeyboardCode key_code;
   if (!DomCodeToUsLayoutDomKey(dom_code, KeyModifiersToFlags(event.modifiers),

@@ -59,20 +59,26 @@
       assert_false(array[1].matches(":hover"));
       assert_equals(document.scrollingElement.scrollTop, 0);
 
-      // Keyboard scroll end up at 4th element. Hover state does not update during scrolling,
-      // only the 4th element has a hover effect.
+      // Keyboard scroll end up at 4th element. Hover state does not update
+      // during scrolling, only the 4th element has a hover effect. We wait for
+      // the end of each scroll animation for consistency; Mac differs from
+      // other platforms in how ongoing scroll animations are updated.
       eventSender.keyDown('ArrowDown');
+      await waitForAnimationEndTimeBased(() => { return document.scrollingElement.scrollTop; });
       eventSender.keyDown('ArrowDown');
+      await waitForAnimationEndTimeBased(() => { return document.scrollingElement.scrollTop; });
       eventSender.keyDown('ArrowDown');
+      await waitForAnimationEndTimeBased(() => { return document.scrollingElement.scrollTop; });
       eventSender.keyDown('ArrowDown');
-      // Wait enough time to see if we fire a fake mouse move event to update the hover state.
-      await waitForAnimationEnd(() => { return document.scrollingElement.scrollTop; }, 300, 15);
+      await waitForAnimationEndTimeBased(() => { return document.scrollingElement.scrollTop; });
+
+      // Make sure we update the  hover state when the scroll animation is finished.
       assert_approx_equals(document.scrollingElement.scrollTop, 3 * elementHeight, 25);
-      assert_false(array[0].matches(":hover"));
-      assert_false(array[1].matches(":hover"));
-      assert_false(array[2].matches(":hover"));
-      assert_true(array[3].matches(":hover"));
-      assert_false(array[4].matches(":hover"));
+      assert_false(array[0].matches(":hover"), "first element unexpectedly hovered");
+      assert_false(array[1].matches(":hover"), "second element unexpectedly hovered");
+      assert_false(array[2].matches(":hover"), "third element unexpectedly hovered");
+      assert_true(array[3].matches(":hover"), "expected element not hovered");
+      assert_false(array[4].matches(":hover"), "fifth element unexpectedly hovered");
     }, 'Keyboard smooth scroll on the page, no hover update during scrolling, but updating hover at the end of scroll.');
   }
 

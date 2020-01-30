@@ -4940,15 +4940,6 @@ Bạn nên định cấu hình chính sách trên Windows qua GPO, mặc dù vi�
 <translation id="8757552286070680084">Cấu hình bộ điều khiển chẩn đoán và đo từ xa (DTC) wilco</translation>
 <translation id="8758831693895931466">Bật đăng ký quản lý đám mây bắt buộc</translation>
 <translation id="8759829385824155666">Các loại mã hóa Kerberos được cho phép</translation>
-<translation id="87635449713742708">Chính sách này buộc mã nối mạng chạy trong quá trình chạy trình duyệt.
-
-      Chính sách này được tắt theo mặc định. Nếu bạn bật chính sách này, thì người dùng sẽ dễ gặp phải các sự cố bảo mật sau khi quá trình nối mạng được chạy trong hộp cát.
-
-      Chính sách này nhằm mang đến cho doanh nghiệp cơ hội di chuyển sang phần mềm của bên thứ 3 không phụ thuộc vào việc kết nối các API nối mạng. Thay vì vá API Win32 và LSP, bạn nên sử dụng máy chủ proxy.
-
-      Nếu bạn không đặt chính sách này, thì mã nối mạng sẽ chạy ngoài quá trình chạy trình duyệt theo mặc định.
-
-      Chính sách này sẽ bị xóa trong phiên bản <ph name="PRODUCT_NAME" /> 82.</translation>
 <translation id="8764119899999036911">Chỉ định Kerberos SPN được tạo sẽ dựa trên tên DNS chuẩn hay tên gốc đã nhập.
 
           Nếu bạn bật cài đặt này, tra cứu CNAME sẽ được bỏ qua và tên máy chủ sẽ giống như tên đã nhập.

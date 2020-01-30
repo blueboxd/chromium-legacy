@@ -208,6 +208,10 @@ class ScrollableShelfView::GradientLayerDelegate : public ui::LayerDelegate {
   void set_end_fade_zone(const FadeZone& fade_zone) {
     end_fade_zone_ = fade_zone;
   }
+  gfx::Rect start_fade_zone_bounds() const {
+    return start_fade_zone_.zone_rect;
+  }
+  gfx::Rect end_fade_zone_bounds() const { return end_fade_zone_.zone_rect; }
   ui::Layer* layer() { return &layer_; }
 
  private:
@@ -549,8 +553,7 @@ void ScrollableShelfView::OnFocusRingActivationChanged(bool activated) {
       GetShelf()->shelf_widget()->ForceToHideHotseat();
   }
 
-  MaybeUpdateGradientZone(/*is_left_arrow_changed=*/false,
-                          /*is_right_arrow_changed=*/false);
+  MaybeUpdateGradientZone();
 }
 
 void ScrollableShelfView::ScrollToNewPage(bool forward) {
@@ -734,8 +737,7 @@ void ScrollableShelfView::StartShelfScrollAnimation(float scroll_distance) {
   StopObservingImplicitAnimations();
 
   during_scroll_animation_ = true;
-  MaybeUpdateGradientZone(/*is_left_arrow_changed=*/false,
-                          /*is_right_arrow_changed=*/false);
+  MaybeUpdateGradientZone();
 
   ui::ScopedLayerAnimationSettings animation_settings(
       shelf_view_->layer()->GetAnimator());
@@ -861,13 +863,6 @@ void ScrollableShelfView::Layout() {
     shelf_container_bounds.Transpose();
   }
 
-  const bool is_left_arrow_changed =
-      (left_arrow_->bounds() != left_arrow_bounds) ||
-      (!left_arrow_bounds.IsEmpty() && !left_arrow_->GetVisible());
-  const bool is_right_arrow_changed =
-      (right_arrow_->bounds() != right_arrow_bounds) ||
-      (!right_arrow_bounds.IsEmpty() && !right_arrow_->GetVisible());
-
   // Layout |left_arrow_| if it should show.
   left_arrow_->SetVisible(!left_arrow_bounds.IsEmpty());
   if (left_arrow_->GetVisible())
@@ -885,10 +880,7 @@ void ScrollableShelfView::Layout() {
     layer()->SetMaskLayer(gradient_layer_delegate_->layer());
   }
 
-  if (gradient_layer_delegate_->layer()->bounds() != layer()->bounds())
-    gradient_layer_delegate_->layer()->SetBounds(layer()->bounds());
-
-  MaybeUpdateGradientZone(is_left_arrow_changed, is_right_arrow_changed);
+  MaybeUpdateGradientZone();
 
   // Layout |shelf_container_view_|.
   shelf_container_view_->SetBoundsRect(shelf_container_bounds);
@@ -947,6 +939,9 @@ void ScrollableShelfView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
 }
 
 void ScrollableShelfView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
+  if (gradient_layer_delegate_->layer()->bounds() != layer()->bounds())
+    gradient_layer_delegate_->layer()->SetBounds(layer()->bounds());
+
   const gfx::Vector2dF old_scroll_offset = scroll_offset_;
 
   // The changed view bounds may lead to update on the available space.
@@ -1437,8 +1432,7 @@ bool ScrollableShelfView::ShouldHandleGestures(const ui::GestureEvent& event) {
     layout_strategy_before_main_axis_scrolling_ = layout_strategy_;
 
     // The change in |scroll_status_| may lead to update on the gradient zone.
-    MaybeUpdateGradientZone(/*is_left_arrow_changed=*/false,
-                            /*is_right_arrow_changed=*/false);
+    MaybeUpdateGradientZone();
   }
 
   if (event.type() == ui::ET_GESTURE_END)
@@ -1453,8 +1447,7 @@ void ScrollableShelfView::ResetScrollStatus() {
   layout_strategy_before_main_axis_scrolling_ = kNotShowArrowButtons;
 
   // The change in |scroll_status_| may lead to update on the gradient zone.
-  MaybeUpdateGradientZone(/*is_left_arrow_changed=*/false,
-                          /*is_right_arrow_changed=*/false);
+  MaybeUpdateGradientZone();
 }
 
 bool ScrollableShelfView::ProcessGestureEvent(const ui::GestureEvent& event) {
@@ -1662,13 +1655,6 @@ float ScrollableShelfView::CalculatePageScrollingOffset(
   return offset;
 }
 
-void ScrollableShelfView::UpdateGradientZone() {
-  gradient_layer_delegate_->set_start_fade_zone(CalculateStartGradientZone());
-  gradient_layer_delegate_->set_end_fade_zone(CalculateEndGradientZone());
-
-  SchedulePaint();
-}
-
 ScrollableShelfView::FadeZone ScrollableShelfView::CalculateStartGradientZone()
     const {
   if (!should_show_start_gradient_zone_)
@@ -1677,17 +1663,6 @@ ScrollableShelfView::FadeZone ScrollableShelfView::CalculateStartGradientZone()
   gfx::Rect zone_rect;
   bool fade_in = false;
   const bool is_horizontal_alignment = GetShelf()->IsHorizontalAlignment();
-  gfx::Rect left_arrow_bounds;
-  if (left_arrow_->GetVisible()) {
-    left_arrow_bounds = left_arrow_->bounds();
-  } else {
-    // If the arrow button is invisible, the gradient zone is created on
-    // the side of |visible_space_|.
-    left_arrow_bounds = gfx::Rect(
-        is_horizontal_alignment ? GetMirroredRect(visible_space_).x() : 0,
-        is_horizontal_alignment ? 0 : visible_space_.y(), /*width=*/0,
-        /*height=*/0);
-  }
 
   if (is_horizontal_alignment) {
     int gradient_start;
@@ -1697,19 +1672,19 @@ ScrollableShelfView::FadeZone ScrollableShelfView::CalculateStartGradientZone()
     // one-pixel to offset the potential rounding error during rendering (we
     // also do it in CalculateEndGradientZone()).
     if (ShouldAdaptToRTL()) {
-      const gfx::Rect mirrored_left_arrow_bounds =
-          GetMirroredRect(left_arrow_bounds);
-      gradient_start = mirrored_left_arrow_bounds.x() - kGradientZoneLength;
-      gradient_end = mirrored_left_arrow_bounds.x() + 1;
+      const int border = visible_space_.right();
+      gradient_start = border - kGradientZoneLength;
+      gradient_end = border + 1;
     } else {
-      gradient_start = left_arrow_bounds.right() - 1;
-      gradient_end = left_arrow_bounds.right() + kGradientZoneLength;
+      const int border = visible_space_.x();
+      gradient_start = border - 1;
+      gradient_end = border + kGradientZoneLength;
     }
     zone_rect =
         gfx::Rect(gradient_start, 0, gradient_end - gradient_start, height());
   } else {
-    zone_rect = gfx::Rect(0, left_arrow_bounds.bottom() - 1, width(),
-                          kGradientZoneLength + 1);
+    zone_rect =
+        gfx::Rect(0, visible_space_.y() - 1, width(), kGradientZoneLength + 1);
   }
 
   fade_in = !ShouldAdaptToRTL();
@@ -1726,36 +1701,23 @@ ScrollableShelfView::FadeZone ScrollableShelfView::CalculateEndGradientZone()
   bool fade_in = false;
   const bool is_horizontal_alignment = GetShelf()->IsHorizontalAlignment();
 
-  gfx::Rect right_arrow_bounds;
-  if (right_arrow_->GetVisible()) {
-    right_arrow_bounds = right_arrow_->bounds();
-  } else {
-    // If the arrow button is invisible, the gradient zone is created on
-    // the side of |visible_space_|.
-    right_arrow_bounds = gfx::Rect(
-        is_horizontal_alignment ? GetMirroredRect(visible_space_).right() : 0,
-        is_horizontal_alignment ? 0 : visible_space_.bottom(),
-        /*width=*/0,
-        /*height=*/0);
-  }
-
   if (is_horizontal_alignment) {
     int gradient_start;
     int gradient_end;
 
     if (ShouldAdaptToRTL()) {
-      const gfx::Rect mirrored_right_arrow_bounds =
-          GetMirroredRect(right_arrow_bounds);
-      gradient_start = mirrored_right_arrow_bounds.right() - 1;
-      gradient_end = mirrored_right_arrow_bounds.right() + kGradientZoneLength;
+      const int border = visible_space_.x();
+      gradient_start = border - 1;
+      gradient_end = border + kGradientZoneLength;
     } else {
-      gradient_start = right_arrow_bounds.x() - kGradientZoneLength;
-      gradient_end = right_arrow_bounds.x() + 1;
+      const int border = visible_space_.right();
+      gradient_start = border - kGradientZoneLength;
+      gradient_end = border + 1;
     }
     zone_rect =
         gfx::Rect(gradient_start, 0, gradient_end - gradient_start, height());
   } else {
-    zone_rect = gfx::Rect(0, right_arrow_bounds.y() - kGradientZoneLength,
+    zone_rect = gfx::Rect(0, visible_space_.bottom() - kGradientZoneLength,
                           width(), kGradientZoneLength + 1);
   }
 
@@ -1785,23 +1747,32 @@ void ScrollableShelfView::UpdateGradientZoneState() {
   should_show_end_gradient_zone_ = ShouldShowRightArrow();
 }
 
-void ScrollableShelfView::MaybeUpdateGradientZone(bool is_left_arrow_changed,
-                                                  bool is_right_arrow_changed) {
+void ScrollableShelfView::MaybeUpdateGradientZone() {
   // Fade zones should be updated if:
   // (1) Fade zone's visibility changes.
   // (2) Fade zone should show and the arrow button's location changes.
   UpdateGradientZoneState();
-  const bool should_update_end_fade_zone =
-      (should_show_end_gradient_zone_ !=
-       gradient_layer_delegate_->IsEndFadeZoneVisible()) ||
-      (should_show_end_gradient_zone_ && is_right_arrow_changed);
-  const bool should_update_start_fade_zone =
-      (should_show_start_gradient_zone_ !=
-       gradient_layer_delegate_->IsStartFadeZoneVisible()) ||
-      (should_show_start_gradient_zone_ && is_left_arrow_changed);
 
-  if (should_update_start_fade_zone || should_update_end_fade_zone)
-    UpdateGradientZone();
+  const FadeZone target_start_fade_zone = CalculateStartGradientZone();
+  const FadeZone target_end_fade_zone = CalculateEndGradientZone();
+
+  const bool should_update_start_fade_zone =
+      target_start_fade_zone.zone_rect !=
+      gradient_layer_delegate_->start_fade_zone_bounds();
+  const bool should_update_end_fade_zone =
+      target_end_fade_zone.zone_rect !=
+      gradient_layer_delegate_->end_fade_zone_bounds();
+
+  if (!should_update_start_fade_zone && !should_update_end_fade_zone)
+    return;
+
+  if (should_update_start_fade_zone)
+    gradient_layer_delegate_->set_start_fade_zone(target_start_fade_zone);
+
+  if (should_update_end_fade_zone)
+    gradient_layer_delegate_->set_end_fade_zone(target_end_fade_zone);
+
+  SchedulePaint();
 }
 
 int ScrollableShelfView::GetActualScrollOffset(

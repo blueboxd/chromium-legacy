@@ -725,7 +725,22 @@ void AdsPageLoadMetricsObserver::RecordAggregateHistogramsForAdTagging(
   ADS_HISTOGRAM("FrameCounts.AdFrames.Total", UMA_HISTOGRAM_COUNTS_1000,
                 visibility, aggregate_ad_info.num_frames);
 
-  // Don't post UMA for pages that don't have ads.
+  // Only record AllPages histograms for the AnyVisibility suffix as these
+  // numbers do not change for different visibility types.
+  if (visibility == FrameData::FrameVisibility::kAnyVisibility) {
+    ADS_HISTOGRAM("AllPages.PercentTotalBytesAds", UMA_HISTOGRAM_PERCENTAGE,
+                  visibility,
+                  aggregate_frame_data_->ad_bytes() * 100 /
+                      aggregate_frame_data_->bytes());
+    if (aggregate_frame_data_->network_bytes()) {
+      ADS_HISTOGRAM("AllPages.PercentNetworkBytesAds", UMA_HISTOGRAM_PERCENTAGE,
+                    visibility,
+                    aggregate_frame_data_->ad_network_bytes() * 100 /
+                        aggregate_frame_data_->network_bytes());
+    }
+  }
+
+  // Only post AllPages and FrameCounts UMAs for pages that don't have ads.
   if (aggregate_ad_info.num_frames == 0)
     return;
 
@@ -740,13 +755,13 @@ void AdsPageLoadMetricsObserver::RecordAggregateHistogramsForAdTagging(
 
   if (aggregate_frame_data_->bytes()) {
     ADS_HISTOGRAM(
-        "Bytes.FullPage.Total.PercentAds2", UMA_HISTOGRAM_PERCENTAGE,
+        "Bytes.FullPage.Total2.PercentAdFrames", UMA_HISTOGRAM_PERCENTAGE,
         visibility,
         aggregate_ad_info.bytes * 100 / aggregate_frame_data_->bytes());
   }
   if (aggregate_frame_data_->network_bytes()) {
-    ADS_HISTOGRAM("Bytes.FullPage.Network.PercentAds", UMA_HISTOGRAM_PERCENTAGE,
-                  visibility,
+    ADS_HISTOGRAM("Bytes.FullPage.Network.PercentAdFrames",
+                  UMA_HISTOGRAM_PERCENTAGE, visibility,
                   aggregate_ad_info.network_bytes * 100 /
                       aggregate_frame_data_->network_bytes());
   }

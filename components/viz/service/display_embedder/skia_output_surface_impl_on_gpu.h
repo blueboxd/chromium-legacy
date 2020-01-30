@@ -252,6 +252,14 @@ class SkiaOutputSurfaceImplOnGpu : public gpu::ImageTransportSurfaceDelegate,
     return scoped_output_device_paint_->sk_surface();
   }
 
+  // Schedules a task to check if any skia readback requests have completed
+  // after a short delay. Will not schedule a task if there is already a
+  // scheduled task or no readback requests are pending.
+  void ScheduleCheckReadbackCompletion();
+
+  // Checks if any skia readback requests have completed. If there are still
+  // pending readback requests after checking then it will reschedule itself
+  // after a short delay.
   void CheckReadbackCompletion();
 
   class ReleaseCurrent {

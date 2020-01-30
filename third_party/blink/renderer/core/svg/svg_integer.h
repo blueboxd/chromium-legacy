@@ -33,6 +33,7 @@
 
 #include "third_party/blink/renderer/core/svg/properties/svg_property_helper.h"
 #include "third_party/blink/renderer/core/svg/svg_parsing_error.h"
+#include "third_party/blink/renderer/platform/wtf/casting.h"
 
 namespace blink {
 
@@ -71,7 +72,12 @@ class SVGInteger final : public SVGPropertyHelper<SVGInteger> {
   int value_;
 };
 
-DEFINE_SVG_PROPERTY_TYPE_CASTS(SVGInteger);
+template <>
+struct DowncastTraits<SVGInteger> {
+  static bool AllowFrom(const SVGPropertyBase& value) {
+    return value.GetType() == SVGInteger::ClassType();
+  }
+};
 
 }  // namespace blink
 

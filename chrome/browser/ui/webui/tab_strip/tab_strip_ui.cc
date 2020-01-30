@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/webui/tab_strip/tab_strip_ui.h"
 
 #include "base/feature_list.h"
+#include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/themes/theme_service.h"
@@ -34,6 +35,8 @@
 #include "ui/gfx/color_utils.h"
 #include "ui/resources/grit/webui_resources.h"
 
+const char kWebUITabIdDataType[] = "application/vnd.chromium.tab";
+
 TabStripUI::TabStripUI(content::WebUI* web_ui)
     : content::WebUIController(web_ui) {
   content::HostZoomMap::Get(web_ui->GetWebContents()->GetSiteInstance())
@@ -48,6 +51,8 @@ TabStripUI::TabStripUI(content::WebUI* web_ui)
   webui::SetupWebUIDataSource(
       html_source, base::make_span(kTabStripResources, kTabStripResourcesSize),
       generated_path, IDR_TAB_STRIP_HTML);
+
+  html_source->AddString("tabIdDataType", kWebUITabIdDataType);
 
   // Add a load time string for the frame color to allow the tab strip to paint
   // a background color that matches the frame before any content loads

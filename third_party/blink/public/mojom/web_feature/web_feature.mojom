@@ -2512,6 +2512,7 @@ enum WebFeature {
   kV8Animation_Onremove_AttributeSetter = 3147,
   kClassicSharedWorker = 3148,
   kModuleSharedWorker = 3149,
+  kV8Animation_CommitStyles_Method = 3150,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

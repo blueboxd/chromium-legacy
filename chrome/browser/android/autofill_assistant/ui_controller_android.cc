@@ -885,8 +885,8 @@ void UiControllerAndroid::OnLoginChoiceChanged(std::string identifier) {
   ui_delegate_->SetLoginOption(identifier);
 }
 
-void UiControllerAndroid::OnTermsAndConditionsLinkClicked(int link) {
-  ui_delegate_->OnTermsAndConditionsLinkClicked(link);
+void UiControllerAndroid::OnTextLinkClicked(int link) {
+  ui_delegate_->OnTextLinkClicked(link);
 }
 
 void UiControllerAndroid::OnFormActionLinkClicked(int link) {
@@ -1017,6 +1017,10 @@ void UiControllerAndroid::OnCollectUserDataOptionsChanged(
       env, jmodel,
       base::android::ConvertUTF8ToJavaString(
           env, collect_user_data_options->terms_require_review_text));
+  Java_AssistantCollectUserDataModel_setInfoSectionText(
+      env, jmodel,
+      base::android::ConvertUTF8ToJavaString(
+          env, collect_user_data_options->info_section_text));
   Java_AssistantCollectUserDataModel_setPrivacyNoticeText(
       env, jmodel,
       base::android::ConvertUTF8ToJavaString(

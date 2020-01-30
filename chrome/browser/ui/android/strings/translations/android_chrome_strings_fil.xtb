@@ -279,6 +279,7 @@
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> bookmark}one{<ph name="BOOKMARKS_COUNT_MANY" /> bookmark}other{<ph name="BOOKMARKS_COUNT_MANY" /> na bookmark}}</translation>
 <translation id="3089395242580810162">Buksan sa tab na incognito</translation>
 <translation id="3123473560110926937">Naka-block sa ilang site</translation>
+<translation id="3123734510202723619">Mga Anunsyo</translation>
 <translation id="3137521801621304719">Umalis sa mode na incognito</translation>
 <translation id="3143515551205905069">Kanselahin ang pag-sync</translation>
 <translation id="3157842584138209013">Tingnan kung gaano karaming data ang iyong natipid sa button ng Higit Pang Opsyon</translation>

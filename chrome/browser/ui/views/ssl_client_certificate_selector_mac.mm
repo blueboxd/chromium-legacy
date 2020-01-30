@@ -138,14 +138,13 @@ class SSLClientCertificateSelectorDelegate
       : SSLClientAuthObserver(contents->GetBrowserContext(),
                               cert_request_info,
                               std::move(delegate)) {
-    certificate_selector_.reset([[SSLClientCertificateSelectorMac alloc]
-        initWithClientCerts:std::move(client_certs)
-                   delegate:weak_factory_.GetWeakPtr()]);
-    views::Widget* overlay_window =
-        constrained_window::ShowWebModalDialogWithOverlayViews(this, contents);
-    [certificate_selector_ showSheetForWindow:overlay_window->GetNativeWindow()
-                                                  .GetNativeNSWindow()];
     StartObserving();
+    // Note this may call ShowSheet() synchronously or in a separate event loop
+    // iteration.
+    constrained_window::ShowWebModalDialogWithOverlayViews(
+        this, contents,
+        base::BindOnce(&SSLClientCertificateSelectorDelegate::ShowSheet,
+                       weak_factory_.GetWeakPtr(), std::move(client_certs)));
   }
 
   ~SSLClientCertificateSelectorDelegate() override {
@@ -153,6 +152,10 @@ class SSLClientCertificateSelectorDelegate
     // (|certificate_selector_|) in its -beginSheetForWindow:... method. Break
     // the retain cycle by explicitly canceling the dialog.
     [certificate_selector_ closeSelectorSheetWithCode:NSModalResponseAbort];
+
+    // This matches the StartObserving() call if ShowSheet() was never called
+    // and the request was canceled.
+    StopObserving();
   }
 
   // WidgetDelegate:
@@ -160,10 +163,16 @@ class SSLClientCertificateSelectorDelegate
 
   // OkAndCancelableForTesting:
   void ClickOkButton() override {
+    // Tests should not call ClickOkButton() on a sheet that has not yet been
+    // shown.
+    DCHECK(certificate_selector_);
     [certificate_selector_ closeSelectorSheetWithCode:NSModalResponseOK];
   }
 
   void ClickCancelButton() override {
+    // Tests should not call ClickCancelButton() on a sheet that has not yet
+    // been shown.
+    DCHECK(certificate_selector_);
     [certificate_selector_ closeSelectorSheetWithCode:NSModalResponseCancel];
   }
 
@@ -173,13 +182,8 @@ class SSLClientCertificateSelectorDelegate
   }
 
   void SetDeallocClosureForTesting(base::OnceClosure dealloc_closure) {
-    DeallocClosureCaller* caller = [[DeallocClosureCaller alloc]
-        initWithDeallocClosure:std::move(dealloc_closure)];
-    // The use of the caller as the key is deliberate; nothing needs to ever
-    // look it up, so it's a convenient unique value.
-    objc_setAssociatedObject(certificate_selector_.get(), caller, caller,
-                             OBJC_ASSOCIATION_RETAIN_NONATOMIC);
-    [caller release];
+    dealloc_closure_ = std::move(dealloc_closure);
+    SetDeallocClosureIfReady();
   }
 
   base::OnceClosure GetCancellationCallback() {
@@ -193,11 +197,53 @@ class SSLClientCertificateSelectorDelegate
 
  private:
   void CloseSelector() {
-    [certificate_selector_ closeSelectorSheetWithCode:NSModalResponseStop];
+    cancelled_ = true;
+    if (certificate_selector_) {
+      [certificate_selector_ closeSelectorSheetWithCode:NSModalResponseStop];
+    } else {
+      CloseWidgetWithReason(views::Widget::ClosedReason::kUnspecified);
+    }
+  }
+
+  void ShowSheet(net::ClientCertIdentityList client_certs,
+                 views::Widget* overlay_window) {
+    DCHECK(!certificate_selector_);
+    if (cancelled_) {
+      // If CloseSelector() is called before the sheet is shown, it should
+      // synchronously destroy the dialog, which means ShowSheet() cannot later
+      // be called, but check for this in case the dialog logic changes.
+      NOTREACHED();
+      return;
+    }
+
+    certificate_selector_.reset([[SSLClientCertificateSelectorMac alloc]
+        initWithClientCerts:std::move(client_certs)
+                   delegate:weak_factory_.GetWeakPtr()]);
+    SetDeallocClosureIfReady();
+    [certificate_selector_ showSheetForWindow:overlay_window->GetNativeWindow()
+                                                  .GetNativeNSWindow()];
+  }
+
+  // Attaches |dealloc_closure_| to |certificate_selector_| if both are created.
+  // |certificate_selector_| is not created until ShowSheet(), so this method
+  // allows SetDeallocClosureForTesting() to take effect when ShowSheet() is
+  // deferred.
+  void SetDeallocClosureIfReady() {
+    if (!certificate_selector_ || dealloc_closure_.is_null())
+      return;
+
+    base::scoped_nsobject<DeallocClosureCaller> caller(
+        [[DeallocClosureCaller alloc]
+            initWithDeallocClosure:std::move(dealloc_closure_)]);
+    // The use of the caller as the key is deliberate; nothing needs to ever
+    // look it up, so it's a convenient unique value.
+    objc_setAssociatedObject(certificate_selector_.get(), caller, caller,
+                             OBJC_ASSOCIATION_RETAIN_NONATOMIC);
   }
 
   base::scoped_nsobject<SSLClientCertificateSelectorMac> certificate_selector_;
-
+  bool cancelled_ = false;
+  base::OnceClosure dealloc_closure_;
   base::WeakPtrFactory<SSLClientCertificateSelectorDelegate> weak_factory_{
       this};
 

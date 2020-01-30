@@ -24,6 +24,7 @@
 #include "third_party/blink/renderer/core/svg/svg_parsing_error.h"
 #include "third_party/blink/renderer/platform/geometry/float_rect.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/casting.h"
 
 namespace blink {
 
@@ -83,7 +84,12 @@ class SVGRect final : public SVGPropertyHelper<SVGRect> {
   FloatRect value_;
 };
 
-DEFINE_SVG_PROPERTY_TYPE_CASTS(SVGRect);
+template <>
+struct DowncastTraits<SVGRect> {
+  static bool AllowFrom(const SVGPropertyBase& value) {
+    return value.GetType() == SVGRect::ClassType();
+  }
+};
 
 }  // namespace blink
 

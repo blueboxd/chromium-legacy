@@ -15,6 +15,8 @@
 #include "ui/base/ui_base_types.h"
 #include "ui/events/keycodes/dom/dom_code.h"
 #include "ui/events/test/event_generator.h"
+#include "ui/views/accessibility/view_accessibility.h"
+#include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/menu/menu_controller.h"
 #include "ui/views/controls/menu/menu_delegate.h"
 #include "ui/views/controls/menu/menu_item_view.h"
@@ -28,6 +30,7 @@
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/widget/native_widget_private.h"
 #include "ui/views/widget/widget.h"
+#include "ui/views/widget/widget_delegate.h"
 #include "ui/views/widget/widget_utils.h"
 
 namespace {
@@ -608,6 +611,121 @@ TEST_F(MenuRunnerDestructionTest, MenuRunnerDestroyedDuringReleaseRef) {
   menu_controller.controller()->Cancel(MenuController::ExitType::kAll);
   // Both the |menu_runner| and |menu_controller| should have been deleted.
   EXPECT_EQ(nullptr, ref);
+  EXPECT_EQ(nullptr, menu_controller.controller());
+}
+
+TEST_F(MenuRunnerImplTest, FocusOnMenuClose) {
+  internal::MenuRunnerImpl* menu_runner =
+      new internal::MenuRunnerImpl(menu_item_view());
+
+  // Create test button that has focus.
+  LabelButton* button =
+      new LabelButton(nullptr, base::string16(), style::CONTEXT_BUTTON);
+  button->SetID(1);
+  button->SetSize(gfx::Size(20, 20));
+  owner()->GetRootView()->AddChildView(button);
+  button->SetFocusBehavior(View::FocusBehavior::ALWAYS);
+  button->GetWidget()->widget_delegate()->SetCanActivate(true);
+  button->GetWidget()->Activate();
+  button->RequestFocus();
+
+  // Open the menu.
+  menu_runner->RunMenuAt(owner(), nullptr, gfx::Rect(),
+                         MenuAnchorPosition::kTopLeft, 0);
+
+  MenuControllerTestApi menu_controller;
+  menu_controller.SetShowing(false);
+
+  // Test that closing the menu sends the kFocusAfterMenuClose event.
+  bool focus_after_menu_close_sent = false;
+  ViewAccessibility::AccessibilityEventsCallback accessibility_events_callback =
+      base::BindRepeating(
+          [](bool* focus_after_menu_close_sent,
+             const ui::AXPlatformNodeDelegate* delegate,
+             const ax::mojom::Event event_type) {
+            if (event_type == ax::mojom::Event::kFocusAfterMenuClose)
+              *focus_after_menu_close_sent = true;
+          },
+          &focus_after_menu_close_sent);
+  button->GetViewAccessibility().set_accessibility_events_callback(
+      std::move(accessibility_events_callback));
+  menu_runner->OnMenuClosed(internal::MenuControllerDelegate::NOTIFY_DELEGATE,
+                            nullptr, 0);
+
+  EXPECT_TRUE(focus_after_menu_close_sent);
+
+  // Set the callback to a no-op to avoid accessing
+  // "focus_after_menu_close_sent" after this test has completed.
+  button->GetViewAccessibility().set_accessibility_events_callback(
+      base::DoNothing());
+
+  menu_runner->Release();
+}
+
+TEST_F(MenuRunnerImplTest, FocusOnMenuCloseDeleteAfterRun) {
+  // Create test button that has focus.
+  LabelButton* button =
+      new LabelButton(nullptr, base::string16(), style::CONTEXT_BUTTON);
+  button->SetID(1);
+  button->SetSize(gfx::Size(20, 20));
+  owner()->GetRootView()->AddChildView(button);
+  button->SetFocusBehavior(View::FocusBehavior::ALWAYS);
+  button->GetWidget()->widget_delegate()->SetCanActivate(true);
+  button->GetWidget()->Activate();
+  button->RequestFocus();
+
+  internal::MenuRunnerImpl* menu_runner =
+      new internal::MenuRunnerImpl(menu_item_view());
+  menu_runner->RunMenuAt(owner(), nullptr, gfx::Rect(),
+                         MenuAnchorPosition::kTopLeft, 0);
+
+  // Hide the menu, and clear its item selection state.
+  MenuControllerTestApi menu_controller;
+  menu_controller.SetShowing(false);
+  menu_controller.ClearState();
+
+  std::unique_ptr<TestMenuDelegate> menu_delegate2(new TestMenuDelegate);
+  MenuItemView* menu_item_view2 = new MenuItemView(menu_delegate2.get());
+  menu_item_view2->AppendMenuItem(1, base::ASCIIToUTF16("One"));
+
+  internal::MenuRunnerImpl* menu_runner2 =
+      new internal::MenuRunnerImpl(menu_item_view2);
+  menu_runner2->RunMenuAt(owner(), nullptr, gfx::Rect(),
+                          MenuAnchorPosition::kTopLeft, MenuRunner::FOR_DROP);
+
+  EXPECT_NE(menu_controller.controller(), MenuController::GetActiveInstance());
+  menu_controller.SetShowing(true);
+
+  // Test that closing the menu sends the kFocusAfterMenuClose event.
+  bool focus_after_menu_close_sent = false;
+  ViewAccessibility::AccessibilityEventsCallback accessibility_events_callback =
+      base::BindRepeating(
+          [](bool* focus_after_menu_close_sent,
+             const ui::AXPlatformNodeDelegate* delegate,
+             const ax::mojom::Event event_type) {
+            if (event_type == ax::mojom::Event::kFocusAfterMenuClose)
+              *focus_after_menu_close_sent = true;
+          },
+          &focus_after_menu_close_sent);
+  button->GetViewAccessibility().set_accessibility_events_callback(
+      std::move(accessibility_events_callback));
+  menu_runner2->Release();
+
+  EXPECT_TRUE(focus_after_menu_close_sent);
+  focus_after_menu_close_sent = false;
+  menu_runner->Release();
+
+  EXPECT_TRUE(focus_after_menu_close_sent);
+
+  // Set the callback to a no-op to avoid accessing
+  // "focus_after_menu_close_sent" after this test has completed.
+  button->GetViewAccessibility().set_accessibility_events_callback(
+      base::DoNothing());
+
+  // This is not expected to run, however this is from the origin ASAN stack
+  // traces. So regressions will be caught with the same stack trace.
+  if (menu_controller.controller())
+    menu_controller.controller()->Cancel(MenuController::ExitType::kAll);
   EXPECT_EQ(nullptr, menu_controller.controller());
 }
 

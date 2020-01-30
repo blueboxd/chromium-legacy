@@ -26,7 +26,6 @@
 <translation id="1031362278801463162">পূৰ্বদৰ্শন ল’ড কৰি থকা হৈছে</translation>
 <translation id="1032605640136438169">অনুগ্ৰহ কৰি নতুন চৰ্তাৱলী পৰ্যালোচনা কৰক</translation>
 <translation id="103279545524624934">Android এপ্ লঞ্চ কৰিবলৈ ডিস্কৰ ঠাই খালী কৰক।</translation>
-<translation id="1033343386521881354">প্ৰিণ্ট ছার্ভাৰটোৰ পৰা ১ টা প্ৰিণ্টাৰ বিচাৰি পোৱা গৈছে।</translation>
 <translation id="1033780634303702874">আপোনাৰ ছিৰিয়েল ডিভাইচসমূহ এক্সেছ কৰক</translation>
 <translation id="1034942643314881546">এপ্‌সমূহৰ সবিশেষ বর্ণনা সৃষ্টি কৰিবলৈ adb সক্ষম কৰি থকা হৈছে</translation>
 <translation id="1036348656032585052">অফ কৰক</translation>
@@ -34,7 +33,6 @@
 <translation id="1036982837258183574">সম্পূৰ্ণ স্ক্রীণৰ পৰা ওলাই যাবলৈ |<ph name="ACCELERATOR" />|ত টিপক</translation>
 <translation id="1038168778161626396">কেৱল সাংকেতিক</translation>
 <translation id="1039337018183941703">অমান্য বা ব্যৱহাৰৰ অনুপযোগী ফাইল</translation>
-<translation id="1039850285407663109">বাছনি কৰা ফাইলটো অজ্ঞাত আৰু বিপজ্জনক হ’ব পাৰে। এই ফাইলটো খোলাৰ পূর্বে স্কেন কৰাৰ কথা বিবেচনা কৰক।</translation>
 <translation id="1041175011127912238">এই পৃষ্ঠাটোৱে সঁহাৰি জনোৱা নাই</translation>
 <translation id="1041263367839475438">উপলব্ধ ডিভাইচসমূ্হ</translation>
 <translation id="1042174272890264476">আপোনাৰ কম্পিউটাৰৰ সৈতে <ph name="SHORT_PRODUCT_NAME" />ৰ RLZ লাইব্ৰেৰী অন্তনিৰ্মিত ভাৱে আছে। কোনো বিশেষ প্ৰচাৰ অভিযানত ব্যৱহাৰ হোৱা সন্ধান আৰু <ph name="SHORT_PRODUCT_NAME" />ৰ ব্যৱহাৰ জুখিবলৈ RLZএ কোনো অদ্বৈত নোহোৱা, ব্যক্তিগতভাৱে চিনাক্ত কৰিব নোৱাৰা টেগ দিয়ে। এই লেবেলসমূহ কেতিয়াবা <ph name="PRODUCT_NAME" />ৰ Google Searchত কৰা সন্ধানত প্ৰদর্শিত হয়।</translation>
@@ -636,7 +634,6 @@
 <translation id="1858585891038687145">ছফ্‌টৱেৰ মেকাৰসকলক চিনাক্ত কৰিবলৈ এই প্ৰমাণপত্ৰখনক বিশ্বাস কৰক</translation>
 <translation id="1861262398884155592">এই ফল্ডাৰটো খালী</translation>
 <translation id="1863182668524159459">কোনো ছিৰিয়েল প'ৰ্ট বিচাৰি পোৱা নগ'ল</translation>
-<translation id="1863552924692672565"><ph name="FILE_NAME" /> অজ্ঞাত। ক্ষতিৰ সম্ভাৱনা কমাবলৈ ফাইল স্কেন কৰক।</translation>
 <translation id="1864111464094315414">লগ ইন কৰক</translation>
 <translation id="1864400682872660285">শীতল</translation>
 <translation id="1864454756846565995">USB-C ডিভাইচ (পিছফালে থকা পর্ট)</translation>
@@ -4014,7 +4011,6 @@
 <translation id="6678717876183468697">কুৱেৰীৰ URL</translation>
 <translation id="6680442031740878064">উপলব্ধ: <ph name="AVAILABLE_SPACE" /></translation>
 <translation id="6680650203439190394">হাৰ</translation>
-<translation id="6681301928961274620">প্ৰিণ্ট ছার্ভাৰটোৰ পৰা কোনো প্ৰিণ্টাৰ বিচাৰি পোৱা নগ’ল।</translation>
 <translation id="6681668084120808868">ফট’ তোলক</translation>
 <translation id="6681964764822470072">"<ph name="APP_NAME" />" আনইনষ্টল হ’ব।</translation>
 <translation id="668599234725812620">Google Play খোলক</translation>
@@ -5538,7 +5534,6 @@
 <translation id="8794025342371547160">প্ৰতিবন্ধিত আইপি</translation>
 <translation id="879413103056696865">হটস্পট অন হৈ থাকিলে আপোনাৰ <ph name="PHONE_NAME" />টোৱে এইসমূহ কৰিব পাৰিব:</translation>
 <translation id="8795916974678578410">নতুন ৱিণ্ড’</translation>
-<translation id="8797086401386164142">প্ৰিণ্ট ছার্ভাৰটোৰ পৰা <ph name="NUM_PRINTERS" /> টা প্ৰিণ্টাৰ বিচাৰি পোৱা গৈছে।</translation>
 <translation id="8797459392481275117">এই ছাইটটো কেতিয়াও অনুবাদ নকৰিব</translation>
 <translation id="8798099450830957504">ডিফ’ল্ট</translation>
 <translation id="8798441408945964110">প্ৰদানকাৰীৰ নাম</translation>

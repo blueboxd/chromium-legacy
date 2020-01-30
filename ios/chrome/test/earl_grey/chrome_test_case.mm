@@ -407,6 +407,10 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeTestCaseAppInterface)
   [self closeAllTabs];
   [ChromeEarlGrey setContentSettings:CONTENT_SETTING_DEFAULT];
 
+  // Enforce the assumption that the tests are runing in portrait.
+  [ChromeEarlGrey rotateDeviceToOrientation:UIDeviceOrientationPortrait
+                                      error:nil];
+
   [CoverageUtils configureCoverageReportPath];
 }
 

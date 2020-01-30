@@ -75,9 +75,7 @@ jumbo_component("ui") {
     deps += [ "//ui/ozone" ]
   }
 
-  data_deps = [
-    ":resources",
-  ]
+  data_deps = [ ":resources" ]
 }
 
 static_library("test_support") {
@@ -120,21 +118,13 @@ grit("resources_grit") {
     "inputview_gen_js=" + rebase_path(inputview_gen_js, root_build_dir),
   ]
 
-  deps = [
-    ":inputview",
-  ]
+  deps = [ ":inputview" ]
 }
 
 copy("resources") {
-  sources = [
-    "$target_gen_dir/keyboard_resources.pak",
-  ]
-  outputs = [
-    "$root_out_dir/keyboard_resources.pak",
-  ]
-  public_deps = [
-    ":resources_grit",
-  ]
+  sources = [ "$target_gen_dir/keyboard_resources.pak" ]
+  outputs = [ "$root_out_dir/keyboard_resources.pak" ]
+  public_deps = [ ":resources_grit" ]
 }
 
 build_closure("inputview") {
@@ -179,9 +169,7 @@ test("keyboard_unittests") {
     "//ui/wm",
   ]
 
-  data_deps = [
-    "//ui/resources:ui_test_pak_data",
-  ]
+  data_deps = [ "//ui/resources:ui_test_pak_data" ]
 
   if (use_ozone) {
     deps += [ "//ui/ozone" ]

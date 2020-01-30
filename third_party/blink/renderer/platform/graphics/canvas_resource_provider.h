@@ -206,6 +206,8 @@ class PLATFORM_EXPORT CanvasResourceProvider
     return canvas_resources_.size();
   }
 
+  void RestoreBackBuffer(const cc::PaintImage&);
+
  protected:
   gpu::gles2::GLES2Interface* ContextGL() const;
   gpu::raster::RasterInterface* RasterInterface() const;

@@ -26,7 +26,6 @@
 <translation id="1031362278801463162">ਪ੍ਰੀਵਿਊ ਲੋਡ ਕਰ ਰਿਹਾ ਹੈ</translation>
 <translation id="1032605640136438169">ਕਿਰਪਾ ਕਰਕੇ ਨਵੇਂ ਨਿਯਮਾਂ ਦੀ ਸਮੀਖਿਆ ਕਰੋ</translation>
 <translation id="103279545524624934">Android ਐਪਾਂ ਨੂੰ ਲਾਂਚ ਕਰਨ ਲਈ ਡਿਸਕ ਜਗ੍ਹਾ ਨੂੰ ਖਾਲੀ ਕਰੋ।</translation>
-<translation id="1033343386521881354">ਪ੍ਰਿੰਟ ਸਰਵਰ ਤੋਂ 1 ਪ੍ਰਿੰਟਰ ਮਿਲਿਆ।</translation>
 <translation id="1033780634303702874">ਆਪਣੀਆਂ ਸੀਰੀਅਲ ਡਿਵਾਈਸਾਂ ਤੇ ਪਹੁੰਚ ਪ੍ਰਾਪਤ ਕਰੋ</translation>
 <translation id="1034942643314881546">ਐਪਾਂ ਦਾ ਚਿੱਤਰ ਬਣਾਉਣ ਲਈ ADB ਨੂੰ ਚਾਲੂ ਕੀਤਾ ਜਾ ਰਿਹਾ ਹੈ</translation>
 <translation id="1036348656032585052">ਬੰਦ ਕਰੋ</translation>
@@ -34,7 +33,6 @@
 <translation id="1036982837258183574">ਪੂਰੀ ਸਕ੍ਰੀਨ ਤੋਂ ਬਾਹਰ ਜਾਣ ਲਈ |<ph name="ACCELERATOR" />| ਦਬਾਓ</translation>
 <translation id="1038168778161626396">ਕੇਵਲ ਐਨਸਿਫਰ</translation>
 <translation id="1039337018183941703">ਅਵੈਧ ਜਾਂ ਖਰਾਬ ਫ਼ਾਈਲ</translation>
-<translation id="1039850285407663109">ਚੁਣੀ ਹੋਈ ਫ਼ਾਈਲ ਅਗਿਆਤ ਹੈ ਅਤੇ ਇਹ ਖਤਰਨਾਕ ਹੋ ਸਕਦੀ ਹੈ। ਇਸ ਫ਼ਾਈਲ ਨੂੰ ਖੋਲ੍ਹਣ ਤੋਂ ਪਹਿਲਾਂ ਸਕੈਨ ਕਰਨ 'ਤੇ ਵਿਚਾਰ ਕਰੋ।</translation>
 <translation id="1041175011127912238">ਇਹ ਪੰਨਾ ਪ੍ਰਤਿਕਿਰਿਆ ਨਹੀਂ ਦੇ ਰਿਹਾ ਹੈ</translation>
 <translation id="1041263367839475438">ਉਪਲਬਧ ਡੀਵਾਈਸਾਂ</translation>
 <translation id="1042174272890264476">ਤੁਹਾਡਾ ਕੰਪਿਊਟਰ ਵੀ <ph name="SHORT_PRODUCT_NAME" /> ਦੀ RLZ ਲਾਇਬ੍ਰੇਰੀ ਬਿਲਟ ਇਨ ਤੋਂ ਆਉਂਦਾ ਹੈ। RLZ ਖੋਜਾਂ ਅਤੇ ਇੱਕ ਖ਼ਾਸ ਪ੍ਰਚਾਰ ਮੁਹਿੰਮ ਵੱਲੋਂ ਕੀਤੀ ਗਈ <ph name="SHORT_PRODUCT_NAME" /> ਵਰਤੋਂ ਦਾ ਹਿਸਾਬ ਲਗਾਉਣ ਲਈ ਇੱਕ ਗ਼ੈਰ-ਬੇਜੋੜ, ਗ਼ੈਰ-ਨਿੱਜੀ ਪਛਾਣਯੋਗ ਟੈਗ ਅਸਾਈਨ ਕਰਦਾ ਹੈ। ਇਹ ਲੇਬਲ ਕਦੇ-ਕਦਾਈਂ <ph name="PRODUCT_NAME" /> ਵਿੱਚ Google ਖੋਜ ਪੁੱਛਗਿੱਛਾਂ ਵਿੱਚ ਪ੍ਰਗਟ ਹੁੰਦੇ ਹਨ।</translation>
@@ -639,7 +637,6 @@
 <translation id="1858585891038687145">ਸਾਫਟਵੇਅਰ ਨਿਰਮਾਤਾਵਾਂ ਦੀ ਪਛਾਣ ਕਰਨ ਲਈ ਇਸ ਪ੍ਰਮਾਣ-ਪੱਤਰ 'ਤੇ ਭਰੋਸਾ ਕਰੋ</translation>
 <translation id="1861262398884155592">ਇਹ ਫੋਲਡਰ ਖਾਲੀ ਹੈ</translation>
 <translation id="1863182668524159459">ਕੋਈ ਸੀਰੀਅਲ ਪੋਰਟ ਨਹੀਂ ਮਿਲੇ</translation>
-<translation id="1863552924692672565"><ph name="FILE_NAME" /> ਅਗਿਆਤ ਹੈ। ਜੋਖਮ ਘਟਾਉਣ ਲਈ ਫ਼ਾਈਲ ਸਕੈਨ ਕਰੋ।</translation>
 <translation id="1864111464094315414">ਲੌਗ-ਇਨ ਕਰੋ</translation>
 <translation id="1864400682872660285">ਵਧੇਰੇ ਹਲਕਾ</translation>
 <translation id="1864454756846565995">USB-C ਡੀਵਾਈਸ (ਪਿਛਲਾ ਪੋਰਟ)</translation>
@@ -1699,7 +1696,7 @@
 <translation id="3348038390189153836">ਹਟਾਉਣਯੋਗ ਡੀਵਾਈਸ ਖੋਜੀ ਗਈ</translation>
 <translation id="3349933790966648062">ਵਰਤੀ ਗਈ ਮੈਮੋਰੀ</translation>
 <translation id="3350117557200012647">ਜੋੜਾਬੱਧ ਕਰਨ ਦੇ ਮੋਡ ਵਿੱਚ ਜਾਓ</translation>
-<translation id="3350244554415289209">ਕਿਸੇ ਸਾਈਟ ਵੱਲੋਂ ਤੁਹਾਡੇ ਕੈਮਰੇ ਦੀ ਸਥਿਤੀ ਜਾਂ ਤੁਹਾਡੇ ਕਮਰੇ ਦੀ ਰੂਪ-ਰੇਖਾ ਜਾਣਨ ਵੇਲੇ ਪੁੱਛੋ (ਸਿਫ਼ਾਰਸ਼ੀ)</translation>
+<translation id="3350244554415289209">ਕਿਸੇ ਸਾਈਟ ਵੱਲੋਂ ਤੁਹਾਡੇ ਕੈਮਰੇ ਦੀ ਸਥਿਤੀ ਤੱਕ ਪਹੁੰਚ ਕਰਨ ਜਾਂ ਤੁਹਾਡੇ ਕਮਰੇ ਨੂੰ ਮਾਪਣ ਵੇਲੇ ਪੁੱਛੋ (ਸਿਫ਼ਾਰਸ਼ੀ)</translation>
 <translation id="3355936511340229503">ਕਨੈਕਸ਼ਨ ਗੜਬੜ</translation>
 <translation id="3356580349448036450">ਪੂਰਾ</translation>
 <translation id="3359256513598016054">ਪ੍ਰਮਾਣ-ਪੱਤਰ ਨੀਤੀ ਪਾਬੰਦੀਆਂ</translation>
@@ -4023,7 +4020,6 @@
 <translation id="6678717876183468697">ਪੁੱਛਗਿਛ URL</translation>
 <translation id="6680442031740878064">ਉਪਲਬਧ: <ph name="AVAILABLE_SPACE" /></translation>
 <translation id="6680650203439190394">ਦਰ</translation>
-<translation id="6681301928961274620">ਪ੍ਰਿੰਟ ਸਰਵਰ ਤੋਂ ਕੋਈ ਪ੍ਰਿੰਟਰ ਨਹੀਂ ਮਿਲਿਆ।</translation>
 <translation id="6681668084120808868">ਫ਼ੋਟੋ ਲਓ</translation>
 <translation id="6681964764822470072">"<ph name="APP_NAME" />" ਅਣਸਥਾਪਤ ਕੀਤੀ ਜਾਵੇਗੀ।</translation>
 <translation id="668599234725812620">Google Play ਖੋਲ੍ਹੋ</translation>
@@ -4709,7 +4705,7 @@
 <translation id="7652808307838961528">ਵਿਅਕਤੀ, <ph name="PROFILE_NAME" /> ਦਾ ਸੰਪਾਦਨ ਕਰੋ</translation>
 <translation id="765293928828334535">ਇਸ ਵੈੱਬਸਾਈਟ ਤੋਂ ਐਪਾਂ, ਐਕਸਟੈਂਸ਼ਨਾਂ ਅਤੇ ਵਰਤੋਂਕਾਰ ਸਕ੍ਰਿਪਟਾਂ ਸ਼ਾਮਲ ਨਹੀਂ ਕੀਤੀਆਂ ਜਾ ਸਕਦੀਆਂ ਹਨ</translation>
 <translation id="7652954539215530680">ਇੱਕ ਪਿੰਨ ਬਣਾਓ</translation>
-<translation id="7653295403398566475">ਕਿਸੇ ਸਾਈਟ ਵੱਲੋਂ ਤੁਹਾਡੇ ਕੈਮਰੇ ਦੀ ਸਥਿਤੀ ਜਾਂ ਤੁਹਾਡੇ ਕਮਰੇ ਦੀ ਰੂਪ-ਰੇਖਾ ਜਾਣਨ ਵੇਲੇ ਪੁੱਛੋ</translation>
+<translation id="7653295403398566475">ਕਿਸੇ ਸਾਈਟ ਵੱਲੋਂ ਤੁਹਾਡੇ ਕੈਮਰੇ ਦੀ ਸਥਿਤੀ ਤੱਕ ਪਹੁੰਚ ਕਰਨ ਜਾਂ ਤੁਹਾਡੇ ਕਮਰੇ ਨੂੰ ਮਾਪਣ ਵੇਲੇ ਪੁੱਛੋ</translation>
 <translation id="7654941827281939388">ਇਹ ਖਾਤਾ ਪਹਿਲਾਂ ਹੀ ਇਸ ਕੰਪਿਊਟਰ 'ਤੇ ਵਰਤਿਆ ਜਾ ਰਿਹਾ ਹੈ।</translation>
 <translation id="7658239707568436148">ਰੱਦ ਕਰੋ</translation>
 <translation id="7659584679870740384">ਤੁਸੀਂ ਇਹ ਡੀਵਾਈਸ ਵਰਤਣ ਲਈ ਅਧਿਕਾਰਿਤ ਨਹੀਂ ਹੋ। ਕਿਰਪਾ ਕਰਕੇ ਸਾਈਨ-ਇਨ ਸੰਬੰਧੀ ਇਜਾਜ਼ਤ ਲਈ ਡੀਵਾਈਸ ਪ੍ਰਬੰਧਕ ਨੂੰ ਸੰਪਰਕ ਕਰੋ।</translation>
@@ -5550,7 +5546,6 @@
 <translation id="8794025342371547160">ਪ੍ਰਤਿਬੰਧਿਤ IP</translation>
 <translation id="879413103056696865">ਹੌਟਸਪੌਟ ਚਾਲੂ ਹੋਣ 'ਤੇ, ਤੁਹਾਡਾ <ph name="PHONE_NAME" />:</translation>
 <translation id="8795916974678578410">ਨਵੀਂ Window</translation>
-<translation id="8797086401386164142">ਪ੍ਰਿੰਟ ਸਰਵਰ ਤੋਂ <ph name="NUM_PRINTERS" /> ਪ੍ਰਿੰਟਰ ਮਿਲੇ।</translation>
 <translation id="8797459392481275117">ਕਦੇ ਵੀ ਇਸ ਸਾਈਟ ਦਾ ਅਨੁਵਾਦ ਨਾ ਕਰੋ</translation>
 <translation id="8798099450830957504">ਪੂਰਵ-ਨਿਰਧਾਰਤ</translation>
 <translation id="8798441408945964110">ਪ੍ਰਦਾਨਕ ਦਾ ਨਾਮ</translation>

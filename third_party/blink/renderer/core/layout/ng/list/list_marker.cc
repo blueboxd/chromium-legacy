@@ -12,8 +12,7 @@
 
 namespace blink {
 
-ListMarker::ListMarker()
-    : marker_type_(kStatic), is_marker_text_updated_(false) {}
+ListMarker::ListMarker() : marker_text_type_(kNotText) {}
 
 const ListMarker* ListMarker::Get(const LayoutObject* object) {
   if (!object)
@@ -33,17 +32,17 @@ ListMarker* ListMarker::Get(LayoutObject* object) {
 // If the value of ListStyleType changed, we need to the marker text has been
 // updated.
 void ListMarker::ListStyleTypeChanged(LayoutObject& marker) {
-  if (!is_marker_text_updated_)
+  if (marker_text_type_ == kNotText || marker_text_type_ == kUnresolved)
     return;
 
-  is_marker_text_updated_ = false;
+  marker_text_type_ = kUnresolved;
   marker.SetNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(
       layout_invalidation_reason::kListStyleTypeChange);
 }
 
 void ListMarker::OrdinalValueChanged(LayoutObject& marker) {
-  if (marker_type_ == kOrdinalValue && is_marker_text_updated_) {
-    is_marker_text_updated_ = false;
+  if (marker_text_type_ == kOrdinalValue) {
+    marker_text_type_ = kUnresolved;
     marker.SetNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(
         layout_invalidation_reason::kListValueChange);
   }
@@ -51,10 +50,12 @@ void ListMarker::OrdinalValueChanged(LayoutObject& marker) {
 
 void ListMarker::UpdateMarkerText(LayoutObject& marker, LayoutText* text) {
   DCHECK(text);
+  DCHECK_EQ(marker_text_type_, kUnresolved);
   StringBuilder marker_text_builder;
-  marker_type_ = MarkerText(marker, &marker_text_builder, kWithSuffix);
+  marker_text_type_ = MarkerText(marker, &marker_text_builder, kWithSuffix);
   text->SetTextIfNeeded(marker_text_builder.ToString().ReleaseImpl());
-  is_marker_text_updated_ = true;
+  DCHECK_NE(marker_text_type_, kNotText);
+  DCHECK_NE(marker_text_type_, kUnresolved);
 }
 
 void ListMarker::UpdateMarkerText(LayoutObject& marker) {
@@ -65,20 +66,21 @@ LayoutNGListItem* ListMarker::ListItem(const LayoutObject& marker) {
   return ToLayoutNGListItem(marker.GetNode()->parentNode()->GetLayoutObject());
 }
 
-ListMarker::MarkerType ListMarker::MarkerText(const LayoutObject& marker,
-                                              StringBuilder* text,
-                                              MarkerTextFormat format) const {
+ListMarker::MarkerTextType ListMarker::MarkerText(
+    const LayoutObject& marker,
+    StringBuilder* text,
+    MarkerTextFormat format) const {
   if (IsMarkerImage(marker)) {
     if (format == kWithSuffix)
       text->Append(' ');
-    return kStatic;
+    return kNotText;
   }
 
   LayoutNGListItem* list_item = ListItem(marker);
   const ComputedStyle& style = list_item->StyleRef();
   switch (style.ListStyleType()) {
     case EListStyleType::kNone:
-      return kStatic;
+      return kNotText;
     case EListStyleType::kString: {
       text->Append(style.ListStyleStringValue());
       return kStatic;
@@ -181,8 +183,7 @@ void ListMarker::UpdateMarkerContentIfNeeded(LayoutObject& marker) {
   // There should be at most one child.
   DCHECK(!child || !child->SlowFirstChild());
   if (!marker.StyleRef().ContentBehavesAsNormal()) {
-    marker_type_ = kStatic;
-    is_marker_text_updated_ = true;
+    marker_text_type_ = kNotText;
   } else if (IsMarkerImage(marker)) {
     StyleImage* list_style_image = list_item->StyleRef().ListStyleImage();
     if (child) {
@@ -207,9 +208,9 @@ void ListMarker::UpdateMarkerContentIfNeeded(LayoutObject& marker) {
       image->SetIsGeneratedContent();
       marker.AddChild(image);
     }
+    marker_text_type_ = kNotText;
   } else if (list_item->StyleRef().ListStyleType() == EListStyleType::kNone) {
-    marker_type_ = kStatic;
-    is_marker_text_updated_ = true;
+    marker_text_type_ = kNotText;
   } else {
     // Create a LayoutText in it.
     LayoutText* text = nullptr;
@@ -232,14 +233,14 @@ void ListMarker::UpdateMarkerContentIfNeeded(LayoutObject& marker) {
       text = LayoutText::CreateEmptyAnonymous(marker.GetDocument(), text_style,
                                               LegacyLayout::kAuto);
       marker.AddChild(text);
-      is_marker_text_updated_ = false;
+      marker_text_type_ = kUnresolved;
     }
   }
 }
 
 LayoutObject* ListMarker::SymbolMarkerLayoutText(
     const LayoutObject& marker) const {
-  if (marker_type_ != kSymbolValue)
+  if (marker_text_type_ != kSymbolValue)
     return nullptr;
   return marker.SlowFirstChild();
 }

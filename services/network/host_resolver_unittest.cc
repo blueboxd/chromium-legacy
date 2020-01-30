@@ -12,8 +12,8 @@
 #include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/test/bind_test_util.h"
-#include "base/test/simple_test_tick_clock.h"
 #include "base/test/task_environment.h"
+#include "base/time/time.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -39,11 +39,12 @@ namespace {
 
 class HostResolverTest : public testing::Test {
  public:
-  HostResolverTest()
-      : task_environment_(base::test::TaskEnvironment::MainThreadType::IO) {}
+  HostResolverTest() = default;
 
  protected:
-  base::test::TaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_{
+      base::test::TaskEnvironment::TimeSource::MOCK_TIME,
+      base::test::TaskEnvironment::MainThreadType::IO};
 };
 
 net::IPEndPoint CreateExpectedEndPoint(const std::string& address,
@@ -401,8 +402,6 @@ TEST_F(HostResolverTest, SeparateCacheBySource) {
       kDomain, kAnyResultOriginal);
   inner_resolver->rules_map()[net::HostResolverSource::SYSTEM]->AddRule(
       kDomain, kSystemResultOriginal);
-  base::SimpleTestTickClock test_clock;
-  inner_resolver->set_tick_clock(&test_clock);
 
   HostResolver resolver(inner_resolver.get(), net::NetLog::Get());
 
@@ -473,8 +472,6 @@ TEST_F(HostResolverTest, CacheDisabled) {
   constexpr char kResultOriginal[] = "1.2.3.4";
   auto inner_resolver = std::make_unique<net::MockCachingHostResolver>();
   inner_resolver->rules()->AddRule(kDomain, kResultOriginal);
-  base::SimpleTestTickClock test_clock;
-  inner_resolver->set_tick_clock(&test_clock);
 
   HostResolver resolver(inner_resolver.get(), net::NetLog::Get());
 
@@ -502,7 +499,8 @@ TEST_F(HostResolverTest, CacheDisabled) {
   TestResolveHostClient cached_client(&pending_cached_client, &cached_run_loop);
   mojom::ResolveHostParametersPtr cached_parameters =
       mojom::ResolveHostParameters::New();
-  cached_parameters->allow_cached_response = true;
+  cached_parameters->cache_usage =
+      mojom::ResolveHostParameters::CacheUsage::ALLOWED;
   resolver.ResolveHost(net::HostPortPair(kDomain, 80),
                        net::NetworkIsolationKey(), std::move(cached_parameters),
                        std::move(pending_cached_client));
@@ -519,7 +517,78 @@ TEST_F(HostResolverTest, CacheDisabled) {
                                         &uncached_run_loop);
   mojom::ResolveHostParametersPtr uncached_parameters =
       mojom::ResolveHostParameters::New();
-  uncached_parameters->allow_cached_response = false;
+  uncached_parameters->cache_usage =
+      mojom::ResolveHostParameters::CacheUsage::DISALLOWED;
+  resolver.ResolveHost(
+      net::HostPortPair(kDomain, 80), net::NetworkIsolationKey(),
+      std::move(uncached_parameters), std::move(pending_uncached_client));
+  uncached_run_loop.Run();
+
+  EXPECT_EQ(net::OK, uncached_client.result_error());
+  EXPECT_THAT(uncached_client.result_addresses().value().endpoints(),
+              testing::ElementsAre(CreateExpectedEndPoint(kResultFresh, 80)));
+}
+
+TEST_F(HostResolverTest, CacheStaleAllowed) {
+  constexpr char kDomain[] = "example.com";
+  constexpr char kResultOriginal[] = "1.2.3.4";
+  auto inner_resolver = std::make_unique<net::MockCachingHostResolver>();
+  inner_resolver->rules()->AddRule(kDomain, kResultOriginal);
+
+  HostResolver resolver(inner_resolver.get(), net::NetLog::Get());
+
+  // Load result into cache.
+  base::RunLoop run_loop;
+  mojo::PendingRemote<mojom::ResolveHostClient> pending_client;
+  TestResolveHostClient client(&pending_client, &run_loop);
+  resolver.ResolveHost(net::HostPortPair(kDomain, 80),
+                       net::NetworkIsolationKey(), nullptr,
+                       std::move(pending_client));
+  run_loop.Run();
+  ASSERT_EQ(net::OK, client.result_error());
+  EXPECT_THAT(
+      client.result_addresses().value().endpoints(),
+      testing::ElementsAre(CreateExpectedEndPoint(kResultOriginal, 80)));
+
+  // Change |inner_resolver| rules to ensure results are coming from cache or
+  // not based on whether they resolve to the old or new value.
+  constexpr char kResultFresh[] = "111.222.1.1";
+  inner_resolver->rules()->ClearRules();
+  inner_resolver->rules()->AddRule(kDomain, kResultFresh);
+
+  // MockHostResolver gives cache entries a 1 min TTL, so simulate a day
+  // passing, which is more than long enough for the cached results to become
+  // stale.
+  task_environment_.FastForwardBy(base::TimeDelta::FromDays(1));
+
+  // Fetching stale results returns the original cached value.
+  base::RunLoop cached_run_loop;
+  mojo::PendingRemote<mojom::ResolveHostClient> pending_cached_client;
+  TestResolveHostClient cached_client(&pending_cached_client, &cached_run_loop);
+  mojom::ResolveHostParametersPtr cached_parameters =
+      mojom::ResolveHostParameters::New();
+  cached_parameters->cache_usage =
+      mojom::ResolveHostParameters::CacheUsage::STALE_ALLOWED;
+  resolver.ResolveHost(net::HostPortPair(kDomain, 80),
+                       net::NetworkIsolationKey(), std::move(cached_parameters),
+                       std::move(pending_cached_client));
+  cached_run_loop.Run();
+
+  EXPECT_EQ(net::OK, cached_client.result_error());
+  EXPECT_THAT(
+      cached_client.result_addresses().value().endpoints(),
+      testing::ElementsAre(CreateExpectedEndPoint(kResultOriginal, 80)));
+
+  // Resolution where only non-stale cache usage is allowed returns the new
+  // value.
+  base::RunLoop uncached_run_loop;
+  mojo::PendingRemote<mojom::ResolveHostClient> pending_uncached_client;
+  TestResolveHostClient uncached_client(&pending_uncached_client,
+                                        &uncached_run_loop);
+  mojom::ResolveHostParametersPtr uncached_parameters =
+      mojom::ResolveHostParameters::New();
+  uncached_parameters->cache_usage =
+      mojom::ResolveHostParameters::CacheUsage::ALLOWED;
   resolver.ResolveHost(
       net::HostPortPair(kDomain, 80), net::NetworkIsolationKey(),
       std::move(uncached_parameters), std::move(pending_uncached_client));
@@ -537,8 +606,6 @@ TEST_F(HostResolverTest, CacheDisabled_ErrorResults) {
   constexpr char kResult[] = "1.2.3.4";
   auto inner_resolver = std::make_unique<net::MockCachingHostResolver>();
   inner_resolver->rules()->AddRule(kDomain, kResult);
-  base::SimpleTestTickClock test_clock;
-  inner_resolver->set_tick_clock(&test_clock);
 
   HostResolver resolver(inner_resolver.get(), net::NetLog::Get());
 
@@ -563,7 +630,8 @@ TEST_F(HostResolverTest, CacheDisabled_ErrorResults) {
   TestResolveHostClient cached_client(&pending_cached_client, &cached_run_loop);
   mojom::ResolveHostParametersPtr cached_parameters =
       mojom::ResolveHostParameters::New();
-  cached_parameters->allow_cached_response = true;
+  cached_parameters->cache_usage =
+      mojom::ResolveHostParameters::CacheUsage::ALLOWED;
   resolver.ResolveHost(net::HostPortPair(kDomain, 80),
                        net::NetworkIsolationKey(), std::move(cached_parameters),
                        std::move(pending_cached_client));
@@ -576,7 +644,8 @@ TEST_F(HostResolverTest, CacheDisabled_ErrorResults) {
                                         &uncached_run_loop);
   mojom::ResolveHostParametersPtr uncached_parameters =
       mojom::ResolveHostParameters::New();
-  uncached_parameters->allow_cached_response = false;
+  uncached_parameters->cache_usage =
+      mojom::ResolveHostParameters::CacheUsage::DISALLOWED;
   resolver.ResolveHost(
       net::HostPortPair(kDomain, 80), net::NetworkIsolationKey(),
       std::move(uncached_parameters), std::move(pending_uncached_client));

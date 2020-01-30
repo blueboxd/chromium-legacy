@@ -4939,15 +4939,6 @@ Los usuarios no pueden cambiar ni anular esta opción.</translation>
 <translation id="8757552286070680084">Configuración de Wilco DTC</translation>
 <translation id="8758831693895931466">Activar el registro obligatorio en la gestión en la nube</translation>
 <translation id="8759829385824155666">Tipos de cifrado Kerberos admitidos</translation>
-<translation id="87635449713742708">Esta política fuerza que el código de red se ejecute en el proceso del navegador.
-
-      Está inhabilitada de forma predeterminada, pero, si se habilita, deja a los usuarios desprotegidos frente a problemas de seguridad cuando el proceso de red se pone en zona de pruebas.
-
-      El objetivo de esta política es dar a las empresas la opción de migrar a software de terceros que no dependa de la modificación de las API de red. Es recomendable utilizar servidores proxy en lugar de LSP y parches de la API Win32.
-
-      Si no se establece esta política, el código de red se ejecutará fuera del proceso del navegador de forma predeterminada.
-
-      Esta política se eliminará en la versión 82 de <ph name="PRODUCT_NAME" />.</translation>
 <translation id="8764119899999036911">Permite especificar si el SPN de Kerberos se basa en el nombre de dominio canónico o en el nombre que se introdujo originalmente.
 
           Si habilitas esta opción, se omitirá la consulta de nombre canónico y se usará el nombre del servidor tal como se haya introducido.

@@ -27,6 +27,7 @@ enum class LoadStatus {
 // numeric values should never be reused.
 // Note: Enums labels are at |QuickAnswersResultType|.
 enum class ResultType {
+  kNoResult = 0,
   kDefinitionResult = 5493,
   kTranslationResult = 6613,
   kUnitConversionResult = 13668,

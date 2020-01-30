@@ -26,7 +26,6 @@
 <translation id="1031362278801463162">プレビューを読み込んでいます</translation>
 <translation id="1032605640136438169">新しい利用規約をご確認ください</translation>
 <translation id="103279545524624934">Android アプリを起動できるようにディスク領域を解放します。</translation>
-<translation id="1033343386521881354">プリント サーバーで 1 個のプリンタが見つかりました。</translation>
 <translation id="1033780634303702874">シリアル デバイスへのアクセス</translation>
 <translation id="1034942643314881546">ADB によるアプリのイラストレーション作成を有効にする</translation>
 <translation id="1036348656032585052">オフにする</translation>
@@ -34,7 +33,6 @@
 <translation id="1036982837258183574">全画面表示を終了するには |<ph name="ACCELERATOR" />| を押します</translation>
 <translation id="1038168778161626396">暗号化のみ</translation>
 <translation id="1039337018183941703">ファイルが無効であるか壊れています</translation>
-<translation id="1039850285407663109">選択したファイルは不明で、危害を及ぼす可能性があります。このファイルを開く前にスキャンすることをおすすめします。</translation>
 <translation id="1041175011127912238">このページは応答していません</translation>
 <translation id="1041263367839475438">使用可能なデバイス</translation>
 <translation id="1042174272890264476">お使いのパソコンには <ph name="SHORT_PRODUCT_NAME" /> の RLZ ライブラリも組み込まれています。RLZ は、個人を特定できないタグを割り当てて、特定の販促キャンペーンで生じた検索や <ph name="SHORT_PRODUCT_NAME" /> の利用状況を計測します。これらのラベルは <ph name="PRODUCT_NAME" /> で Google 検索キーワード内に表示されることがあります。</translation>
@@ -639,7 +637,6 @@
 <translation id="1858585891038687145">ソフトウェア作成元の識別でこの証明書を信頼します</translation>
 <translation id="1861262398884155592">このフォルダは空です</translation>
 <translation id="1863182668524159459">シリアルポートが見つかりません</translation>
-<translation id="1863552924692672565"><ph name="FILE_NAME" /> は不明なファイルです。リスクを最小限にするには、ファイルをスキャンすることをおすすめします。</translation>
 <translation id="1864111464094315414">ログイン</translation>
 <translation id="1864400682872660285">寒色</translation>
 <translation id="1864454756846565995">USB-C デバイス（背面のポート）</translation>
@@ -4025,7 +4022,6 @@
 <translation id="6678717876183468697">クエリ URL</translation>
 <translation id="6680442031740878064">空き容量: <ph name="AVAILABLE_SPACE" /></translation>
 <translation id="6680650203439190394">速度</translation>
-<translation id="6681301928961274620">プリント サーバーでプリンタが見つかりませんでした。</translation>
 <translation id="6681668084120808868">写真を撮る</translation>
 <translation id="6681964764822470072">「<ph name="APP_NAME" />」をアンインストールします。</translation>
 <translation id="668599234725812620">Google Play を開く</translation>
@@ -5555,7 +5551,6 @@
 <translation id="8794025342371547160">制限付き IP</translation>
 <translation id="879413103056696865">アクセス ポイントが有効な場合、<ph name="PHONE_NAME" /> は次のように動作します。</translation>
 <translation id="8795916974678578410">新規ウインドウ</translation>
-<translation id="8797086401386164142">プリント サーバーで <ph name="NUM_PRINTERS" /> 個のプリンタが見つかりました。</translation>
 <translation id="8797459392481275117">このサイトは翻訳しない</translation>
 <translation id="8798099450830957504">既定</translation>
 <translation id="8798441408945964110">プロバイダ名</translation>

@@ -136,7 +136,7 @@ class SSLBrowserTest : public WebLayerBrowserTest {
     ASSERT_TRUE(IsShowingSSLInterstitial(shell()->tab()));
 
     TestNavigationObserver navigation_observer(
-        expected_url, TestNavigationObserver::NavigationEvent::Completion,
+        expected_url, TestNavigationObserver::NavigationEvent::kCompletion,
         shell());
     ExecuteScript(shell(),
                   "window.certificateErrorPageController." +
@@ -167,7 +167,7 @@ class SSLBrowserTest : public WebLayerBrowserTest {
     // login URL, so simply detect the start of the navigation to the page.
     TestNavigationObserver navigation_observer(
         GetCaptivePortalLoginPageUrlForTesting(),
-        TestNavigationObserver::NavigationEvent::Start, shell());
+        TestNavigationObserver::NavigationEvent::kStart, shell());
     ExecuteScript(shell(), "window.certificateErrorPageController.openLogin();",
                   false /*use_separate_isolate*/);
     navigation_observer.Wait();

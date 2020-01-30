@@ -979,13 +979,8 @@ TEST_P(InputRouterImplTest, TouchTypesIgnoringAck) {
   EXPECT_FALSE(HasPendingEvents());
 }
 
-// TODO(https://crbug.com/866946): Test is flaky on Fuchsia.
-#if defined(OS_FUCHSIA)
-#define MAYBE_GestureTypesIgnoringAck DISABLED_GestureTypesIgnoringAck
-#else
-#define MAYBE_GestureTypesIgnoringAck GestureTypesIgnoringAck
-#endif
-TEST_P(InputRouterImplTest, MAYBE_GestureTypesIgnoringAck) {
+// TODO(https://crbug.com/866946): Test is flaky, especially on Mac & Fuchsia.
+TEST_P(InputRouterImplTest, DISABLED_GestureTypesIgnoringAck) {
   // We test every gesture type, ensuring that the stream of gestures is valid.
 
 #if defined(OS_WIN)

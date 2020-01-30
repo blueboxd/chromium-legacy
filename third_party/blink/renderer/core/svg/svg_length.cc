@@ -326,7 +326,7 @@ bool SVGLength::NegativeValuesForbiddenForAnimatedLengthAttribute(
 
 void SVGLength::Add(SVGPropertyBase* other, SVGElement* context_element) {
   SVGLengthContext length_context(context_element);
-  SetValue(Value(length_context) + ToSVGLength(other)->Value(length_context),
+  SetValue(Value(length_context) + To<SVGLength>(other)->Value(length_context),
            length_context);
 }
 
@@ -338,10 +338,10 @@ void SVGLength::CalculateAnimatedValue(
     SVGPropertyBase* to_value,
     SVGPropertyBase* to_at_end_of_duration_value,
     SVGElement* context_element) {
-  SVGLength* from_length = ToSVGLength(from_value);
-  SVGLength* to_length = ToSVGLength(to_value);
-  SVGLength* to_at_end_of_duration_length =
-      ToSVGLength(to_at_end_of_duration_value);
+  auto* from_length = To<SVGLength>(from_value);
+  auto* to_length = To<SVGLength>(to_value);
+  auto* to_at_end_of_duration_length =
+      To<SVGLength>(to_at_end_of_duration_value);
 
   SVGLengthContext length_context(context_element);
   float animated_number = Value(length_context);
@@ -374,7 +374,7 @@ void SVGLength::CalculateAnimatedValue(
 float SVGLength::CalculateDistance(SVGPropertyBase* to_value,
                                    SVGElement* context_element) {
   SVGLengthContext length_context(context_element);
-  SVGLength* to_length = ToSVGLength(to_value);
+  auto* to_length = To<SVGLength>(to_value);
 
   return fabsf(to_length->Value(length_context) - Value(length_context));
 }

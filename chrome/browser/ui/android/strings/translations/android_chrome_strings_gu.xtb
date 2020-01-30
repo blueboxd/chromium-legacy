@@ -134,6 +134,7 @@
 <translation id="1994173015038366702">સાઈટ URL</translation>
 <translation id="2000419248597011803">ઍડ્રેસ બાર અને શોધ બૉક્સમાંથી કેટલીક કુકી અને શોધને તમારા ડિફૉલ્ટ શોધ એંજિન પર મોકલે છે</translation>
 <translation id="2002537628803770967">Google Payનો ઉપયોગ કરતા ક્રેડિટ કાર્ડ અને સરનામાં</translation>
+<translation id="2012973609889389923">ઝડપી સાઇટ</translation>
 <translation id="2013642289801508067">{FILE_COUNT,plural, =1{# ફાઇલ}one{# ફાઇલો}other{# ફાઇલો}}</translation>
 <translation id="2017836877785168846">ઍડ્રેસ બારમાં ઇતિહાસ અને સ્વતઃપૂર્ણ કરવું સાફ કરો.</translation>
 <translation id="2021896219286479412">પૂર્ણ સ્ક્રીન સાઇટ નિયંત્રણો</translation>
@@ -307,6 +308,7 @@
 <translation id="3298243779924642547">લાઇટ</translation>
 <translation id="3303414029551471755">કન્ટેન્ટ ડાઉનલોડ કરવા માટે આગળ વધીએ?</translation>
 <translation id="3306398118552023113">આ ઍપ Chromeમાં ચાલી રહી છે</translation>
+<translation id="3312292613668865961">કોઈ સાઇટને તમારું વર્ચ્યુઅલ રિયાલિટી ડિવાઇસ અને ડેટા ઍક્સેસ કરવાની મંજૂરી આપતા પહેલાં પૂછો (સુઝાવ આપેલો છે)</translation>
 <translation id="3315103659806849044">તમે હાલમાં તમારા સિંક અને Google સેવા સેટિંગને કસ્ટમાઇઝ કરી રહ્યાં છો. સિંક ચાલુ કરવાનું પૂર્ણ કરવા માટે, સ્ક્રીનની નીચેની બાજુએ કન્ફર્મ કરો બટન પર ટૅપ કરો. ઉપર નૅવિગેટ કરો</translation>
 <translation id="3328801116991980348">સાઇટ માહિતી</translation>
 <translation id="3333961966071413176">બધા સંપર્કો</translation>
@@ -512,6 +514,7 @@
 <translation id="4915549754973153784">ઉપકરણોને સ્કેન કરતી વખતે <ph name="BEGIN_LINK" />સહાય મેળવો<ph name="END_LINK" />…</translation>
 <translation id="4921180162323349895">{FILE_COUNT,plural, =1{# પેજ}one{# પેજ}other{# પેજ}}</translation>
 <translation id="4932247056774066048"><ph name="DOMAIN_NAME" /> દ્વારા મેનેજ કરવામાં આવતા એકાઉન્ટમાંથી તમે સાઇન આઉટ કરી રહ્યાં હોવાને કારણે આ ડિવાઇસમાંથી તમારો Chrome ડેટા ડિલીટ કરવામાં આવશે. તે તમારા Google એકાઉન્ટમાં રહેશે.</translation>
+<translation id="4935305910887312910">કોઈ સાઇટને તમારા કૅમેરાની સ્થિતી મેળવવા અથવા તમારા રૂમનો નકશો બનાવવાની મંજૂરી આપતા પહેલાં પૂછો (સુઝાવ આપેલો છે)</translation>
 <translation id="4943703118917034429">વર્ચ્યુઅલ રિયાલિટી</translation>
 <translation id="4943872375798546930">પરિણામો નથી</translation>
 <translation id="4958708863221495346"><ph name="URL_OF_THE_CURRENT_TAB" />, તમારી સ્ક્રીન શેર કરી રહ્યું છે</translation>
@@ -743,6 +746,7 @@
 <translation id="6573431926118603307">તમારા અન્ય ઉપકરણો પર તમે Chrome માં ખોલેલા ટૅબ્સ અહીં દેખાશે.</translation>
 <translation id="6583199322650523874">વર્તમાન પૃષ્ઠને બુકમાર્ક કરો</translation>
 <translation id="6593061639179217415">ડેસ્કટૉપ સાઇટ</translation>
+<translation id="6597891566292541626">QR/બારકોડને આ ફ્રેમમાં મૂકો.</translation>
 <translation id="6600954340915313787">Chrome માં કોપી કરાયું</translation>
 <translation id="6608650720463149374"><ph name="GIGABYTES" /> GB</translation>
 <translation id="6612358246767739896">સુરક્ષિત કન્ટેન્ટ</translation>
@@ -952,6 +956,7 @@
 <translation id="8109613176066109935">તમારા બધા ઉપકરણો પર તમારા બુકમાર્ક મેળવવા માટે, સિંક કરવાનું ચાલુ કરો</translation>
 <translation id="8110087112193408731">શું તમારી Chromeની પ્રવૃત્તિ ડિજિટલ લાઇફસ્ટાઇલમાં બતાવીએ?</translation>
 <translation id="8116925261070264013">મ્યૂટ કરેલ</translation>
+<translation id="8127542551745560481">હોમપેજમાં ફેરફાર કરો</translation>
 <translation id="813082847718468539">સ્થાન માહિતી જુઓ</translation>
 <translation id="8156139159503939589">તમે કઈ ભાષાઓ વાંચી શકો છો?</translation>
 <translation id="8168435359814927499">કન્ટેન્ટ</translation>
@@ -1023,6 +1028,7 @@
 <translation id="8676374126336081632">ઇનપુટ સાફ કરો</translation>
 <translation id="8687353297350450808">{N_BARS,plural, =1{સિગ્નલની ક્ષમતાનું સ્તર: # બાર}one{સિગ્નલની ક્ષમતાનું સ્તર: # બાર}other{સિગ્નલની ક્ષમતાનું સ્તર: # બાર}}</translation>
 <translation id="868929229000858085">તમારા સંપર્કો શોધો</translation>
+<translation id="8698438463325761328">સાઇટને તમારું વર્ચ્યુઅલ રિયાલિટી ડિવાઇસ અને ડેટા ઍક્સેસ કરવાથી બ્લૉક કરો</translation>
 <translation id="869891660844655955">સમાપ્તિ તારીખ</translation>
 <translation id="8728487861892616501">આ ઍપ્લિકેશનનો ઉપયોગ કરીને તમે Chromeની <ph name="BEGIN_LINK1" />સેવાની શરતો<ph name="END_LINK1" /> અને <ph name="BEGIN_LINK2" />ગોપનીયતા સૂચના<ph name="END_LINK2" /> અને <ph name="BEGIN_LINK3" />Family Link દ્વારા મેનેજ થતા Google એકાઉન્ટ્સ માટેની ગોપનીયતા સૂચના<ph name="END_LINK3" /> સાથે સંમત થાઓ છો.</translation>
 <translation id="8748850008226585750">સામગ્રીઓ છુપાવેલ છે</translation>
@@ -1039,6 +1045,7 @@
 <translation id="883806473910249246">કન્ટેન્ટ ડાઉનલોડ કરતી વખતે એક ભૂલ આવી.</translation>
 <translation id="8840953339110955557">આ પેજ ઑનલાઇન વર્ઝનથી અલગ હોય શકે છે.</translation>
 <translation id="8847988622838149491">USB</translation>
+<translation id="884828189055900810">સાઇટને કૅમેરાની સ્થિતી મેળવવાથી અથવા રૂમનો નકશો બનાવવાથી બ્લૉક કરો</translation>
 <translation id="8853345339104747198"><ph name="TAB_TITLE" />, ટેબ</translation>
 <translation id="885701979325669005">સ્ટોરેજ</translation>
 <translation id="889338405075704026">Chrome સેટિંગ પર જાઓ</translation>
@@ -1046,6 +1053,7 @@
 <translation id="8909135823018751308">શેર કરો…</translation>
 <translation id="8912362522468806198">Google એકાઉન્ટ</translation>
 <translation id="8920114477895755567">માતાપિતાની વિગતોની રાહ જોઈ રહ્યાં છે.</translation>
+<translation id="8921772741368021346"><ph name="POSITION" /> / <ph name="DURATION" /></translation>
 <translation id="8922289737868596582">વધુ વિકલ્પો બટનની મદદથી પેજ ડાઉનલોડ કરો, જેથી તમે ઇન્ટરનેટ વિના પણ તેનો ઉપયોગ કરી શકો</translation>
 <translation id="8926666909099850184">આ ડિવાઇસ માટે NFC સેવા બંધ કરેલી છે. તેને <ph name="BEGIN_LINK" />Android સેટિંગ<ph name="END_LINK" />માં ચાલુ કરો.</translation>
 <translation id="8937772741022875483">તમારી Chromeની પ્રવૃત્તિને ડિજિટલ લાઇફસ્ટાઇલમાંથી કાઢી નાખીએ?</translation>

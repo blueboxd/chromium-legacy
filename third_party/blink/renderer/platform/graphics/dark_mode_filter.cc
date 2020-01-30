@@ -13,6 +13,7 @@
 #include "third_party/blink/renderer/platform/graphics/dark_mode_generic_classifier.h"
 #include "third_party/blink/renderer/platform/graphics/dark_mode_icon_classifier.h"
 #include "third_party/blink/renderer/platform/graphics/dark_mode_image_classifier.h"
+#include "third_party/blink/renderer/platform/graphics/graphics_context.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_types.h"
 #include "third_party/skia/include/core/SkColorFilter.h"
 #include "third_party/skia/include/effects/SkColorMatrix.h"
@@ -129,6 +130,9 @@ void DarkModeFilter::UpdateSettings(const DarkModeSettings& new_settings) {
 
 Color DarkModeFilter::InvertColorIfNeeded(const Color& color,
                                           ElementRole role) {
+  if (role_override_.has_value())
+    role = role_override_.value();
+
   if (IsDarkModeActive() && ShouldApplyToColor(color, role))
     return color_filter_->InvertColor(color);
   return color;
@@ -147,6 +151,9 @@ void DarkModeFilter::ApplyToImageFlagsIfNeeded(const FloatRect& src_rect,
 base::Optional<cc::PaintFlags> DarkModeFilter::ApplyToFlagsIfNeeded(
     const cc::PaintFlags& flags,
     ElementRole role) {
+  if (role_override_.has_value())
+    role = role_override_.value();
+
   if (!IsDarkModeActive())
     return base::nullopt;
 
@@ -193,6 +200,20 @@ bool DarkModeFilter::ShouldApplyToColor(const Color& color, ElementRole role) {
       return false;
   }
   NOTREACHED();
+}
+
+ScopedDarkModeElementRoleOverride::ScopedDarkModeElementRoleOverride(
+    GraphicsContext* graphics_context,
+    DarkModeFilter::ElementRole role)
+    : graphics_context_(graphics_context) {
+  DarkModeFilter& dark_mode_filter = graphics_context->dark_mode_filter_;
+  previous_role_override_ = dark_mode_filter.role_override_;
+  dark_mode_filter.role_override_ = role;
+}
+
+ScopedDarkModeElementRoleOverride::~ScopedDarkModeElementRoleOverride() {
+  DarkModeFilter& dark_mode_filter = graphics_context_->dark_mode_filter_;
+  dark_mode_filter.role_override_ = previous_role_override_;
 }
 
 }  // namespace blink

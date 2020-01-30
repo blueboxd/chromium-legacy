@@ -40,6 +40,8 @@ const char* ToString(ax::mojom::Event event) {
       return "expandedChanged";
     case ax::mojom::Event::kFocus:
       return "focus";
+    case ax::mojom::Event::kFocusAfterMenuClose:
+      return "focusAfterMenuClose";
     case ax::mojom::Event::kFocusContext:
       return "focusContext";
     case ax::mojom::Event::kHide:
@@ -168,6 +170,8 @@ ax::mojom::Event ParseEvent(const char* event) {
     return ax::mojom::Event::kExpandedChanged;
   if (0 == strcmp(event, "focus"))
     return ax::mojom::Event::kFocus;
+  if (0 == strcmp(event, "focusAfterMenuClose"))
+    return ax::mojom::Event::kFocusAfterMenuClose;
   if (0 == strcmp(event, "focusContext"))
     return ax::mojom::Event::kFocusContext;
   if (0 == strcmp(event, "hide"))

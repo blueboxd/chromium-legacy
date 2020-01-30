@@ -181,6 +181,8 @@ class ASH_EXPORT ShelfConfig : public TabletModeObserver,
  private:
   friend class ShelfConfigTest;
 
+  class ShelfAccessibilityObserver;
+
   // Called whenever something has changed in the shelf configuration. Notifies
   // all observers.
   void OnShelfConfigUpdated();
@@ -194,6 +196,9 @@ class ASH_EXPORT ShelfConfig : public TabletModeObserver,
   // |ignore_in_app_state| - Whether the returned shelf size should be
   //                         calculated as if is_in_app() returns false.
   int GetShelfSize(bool ignore_in_app_state) const;
+
+  // Updates shelf config - called when the accessibility state changes.
+  void UpdateConfigForAccessibilityState();
 
   // Whether shelf is currently standard or dense.
   bool is_dense_;
@@ -275,6 +280,10 @@ class ASH_EXPORT ShelfConfig : public TabletModeObserver,
   // The padding between the app icon and the end of the scrollable shelf in
   // tablet mode.
   const int app_icon_end_padding_;
+
+  // Object responsible for observing accessibility settings relevant to shelf
+  // config.
+  std::unique_ptr<ShelfAccessibilityObserver> accessibility_observer_;
 
   base::ObserverList<Observer> observers_;
 

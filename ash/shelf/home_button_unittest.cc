@@ -7,6 +7,7 @@
 #include <memory>
 #include <string>
 
+#include "ash/accessibility/accessibility_controller_impl.h"
 #include "ash/app_list/test/app_list_test_helper.h"
 #include "ash/app_list/views/app_list_view.h"
 #include "ash/assistant/assistant_controller.h"
@@ -40,8 +41,6 @@ namespace {
 ui::GestureEvent CreateGestureEvent(ui::GestureEventDetails details) {
   return ui::GestureEvent(0, 0, ui::EF_NONE, base::TimeTicks(), details);
 }
-
-}  // namespace
 
 class HomeButtonTest
     : public AshTestBase,
@@ -116,6 +115,48 @@ class HomeButtonTest
 
   DISALLOW_COPY_AND_ASSIGN(HomeButtonTest);
 };
+
+enum class TestAccessibilityFeature {
+  kSpokenFeedback,
+  kAutoclick,
+  kSwitchAccess
+};
+
+// Tests home button visibility with number of accessibility setting enabled,
+// with kHideControlsInTabletModeFeature.
+class HomeButtonVisibilityWithAccessibilityFeaturesTest
+    : public AshTestBase,
+      public ::testing::WithParamInterface<TestAccessibilityFeature> {
+ public:
+  HomeButtonVisibilityWithAccessibilityFeaturesTest() {
+    scoped_feature_list_.InitWithFeatures(
+        {chromeos::features::kShelfHotseat,
+         features::kHideShelfControlsInTabletMode},
+        {});
+  }
+  ~HomeButtonVisibilityWithAccessibilityFeaturesTest() override = default;
+
+  void SetTestA11yFeatureEnabled(bool enabled) {
+    switch (GetParam()) {
+      case TestAccessibilityFeature::kSpokenFeedback:
+        Shell::Get()->accessibility_controller()->SetSpokenFeedbackEnabled(
+            enabled, A11Y_NOTIFICATION_NONE);
+        break;
+      case TestAccessibilityFeature::kAutoclick:
+        Shell::Get()->accessibility_controller()->SetAutoclickEnabled(enabled);
+        break;
+      case TestAccessibilityFeature::kSwitchAccess:
+        Shell::Get()->accessibility_controller()->SetSwitchAccessEnabled(
+            enabled);
+        break;
+    }
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+}  // namespace
 
 // The parameters indicate whether the kShelfHotseat and
 // kHideShelfControlsInTabletMode features are enabled.
@@ -529,6 +570,45 @@ TEST_P(HomeButtonTest, ClickOnCornerPixel) {
   GetEventGenerator()->ClickLeftButton();
   GetAppListTestHelper()->WaitUntilIdle();
   GetAppListTestHelper()->CheckVisibility(true);
+}
+
+INSTANTIATE_TEST_SUITE_P(
+    All,
+    HomeButtonVisibilityWithAccessibilityFeaturesTest,
+    ::testing::Values(TestAccessibilityFeature::kSpokenFeedback,
+                      TestAccessibilityFeature::kAutoclick,
+                      TestAccessibilityFeature::kSwitchAccess));
+
+TEST_P(HomeButtonVisibilityWithAccessibilityFeaturesTest,
+       TabletModeSwitchWithA11yFeatureEnabled) {
+  SetTestA11yFeatureEnabled(true /*enabled*/);
+
+  ShelfNavigationWidget::TestApi test_api(
+      GetPrimaryShelf()->shelf_widget()->navigation_widget());
+  EXPECT_TRUE(test_api.IsHomeButtonVisible());
+
+  // Switch to tablet mode, and verify the home button is still visible.
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
+  EXPECT_TRUE(test_api.IsHomeButtonVisible());
+
+  // The button should be hidden if the feature gets disabled.
+  SetTestA11yFeatureEnabled(false /*enabled*/);
+  EXPECT_FALSE(test_api.IsHomeButtonVisible());
+}
+
+TEST_P(HomeButtonVisibilityWithAccessibilityFeaturesTest,
+       FeatureEnabledWhileInTabletMode) {
+  ShelfNavigationWidget::TestApi test_api(
+      GetPrimaryShelf()->shelf_widget()->navigation_widget());
+  EXPECT_TRUE(test_api.IsHomeButtonVisible());
+
+  // Switch to tablet mode, and verify the home button is hidden.
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
+  EXPECT_FALSE(test_api.IsHomeButtonVisible());
+
+  // The button should be shown if the feature gets enabled.
+  SetTestA11yFeatureEnabled(true /*enabled*/);
+  EXPECT_TRUE(test_api.IsHomeButtonVisible());
 }
 
 }  // namespace ash

@@ -9,7 +9,7 @@
 #include "base/metrics/user_metrics.h"
 #include "build/buildflag.h"
 #include "chrome/browser/signin/account_consistency_mode_manager.h"
-#include "chrome/browser/ui/passwords/manage_passwords_bubble_model.h"
+#include "chrome/browser/ui/passwords/passwords_model_delegate.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/chrome_typography.h"
 #include "chrome/browser/ui/views/sync/dice_bubble_sync_promo_view.h"
@@ -21,11 +21,10 @@
 #include "ui/views/controls/button/md_text_button.h"
 #include "ui/views/layout/fill_layout.h"
 
-
 PasswordSignInPromoView::DiceSyncPromoDelegate::DiceSyncPromoDelegate(
-    ManagePasswordsBubbleModel* model)
-    : model_(model) {
-  DCHECK(model_);
+    SignInPromoBubbleController* controller)
+    : controller_(controller) {
+  DCHECK(controller_);
 }
 
 PasswordSignInPromoView::DiceSyncPromoDelegate::~DiceSyncPromoDelegate() =
@@ -34,19 +33,18 @@ PasswordSignInPromoView::DiceSyncPromoDelegate::~DiceSyncPromoDelegate() =
 void PasswordSignInPromoView::DiceSyncPromoDelegate::OnEnableSync(
     const AccountInfo& account,
     bool is_default_promo_account) {
-  model_->OnSignInToChromeClicked(account, is_default_promo_account);
+  controller_->OnSignInToChromeClicked(account, is_default_promo_account);
 }
 
 PasswordSignInPromoView::PasswordSignInPromoView(
-    ManagePasswordsBubbleModel* model)
-    : model_(model) {
-  DCHECK(model_);
-
+    content::WebContents* web_contents)
+    : controller_(PasswordsModelDelegateFromWebContents(web_contents)) {
   SetLayoutManager(std::make_unique<views::FillLayout>());
-  Profile* profile = model_->GetProfile();
+  Profile* profile = controller_.GetProfile();
   DCHECK(AccountConsistencyModeManager::IsDiceEnabledForProfile(profile));
   dice_sync_promo_delegate_ =
-      std::make_unique<PasswordSignInPromoView::DiceSyncPromoDelegate>(model_);
+      std::make_unique<PasswordSignInPromoView::DiceSyncPromoDelegate>(
+          &controller_);
   AddChildView(new DiceBubbleSyncPromoView(
       profile, dice_sync_promo_delegate_.get(),
       signin_metrics::AccessPoint::ACCESS_POINT_PASSWORD_BUBBLE,

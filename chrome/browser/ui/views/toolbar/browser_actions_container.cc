@@ -381,8 +381,8 @@ views::FlexRule BrowserActionsContainer::GetFlexRule() {
                                       : browser_actions->GetResizeAreaWidth();
             // The ceiling on the value is the lesser of the preferred and
             // available size.
-            width = std::max(min_width, std::min(preferred_size.width(),
-                                                 *maximum_size.width()));
+            width = base::ClampToRange(preferred_size.width(), min_width,
+                                       *maximum_size.width());
           } else {
             // When not animating or resizing, the desired width should always
             // be based on the number of icons that can be displayed.

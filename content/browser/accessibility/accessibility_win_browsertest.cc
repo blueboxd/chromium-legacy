@@ -578,7 +578,7 @@ void AccessibilityWinBrowserTest::CheckTextAtOffset(
   EXPECT_EQ(S_OK, hr);
   EXPECT_EQ(expected_start_offset, start_offset);
   EXPECT_EQ(expected_end_offset, end_offset);
-  EXPECT_EQ(expected_text, std::wstring(text, text.Length()));
+  EXPECT_STREQ(expected_text.c_str(), text);
 }
 
 std::vector<base::win::ScopedVariant>
@@ -2857,13 +2857,13 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   invalid_offset = InputContentsString().size();
   hr = input_text->get_textAtOffset(invalid_offset, IA2_TEXT_BOUNDARY_CHAR,
                                     &start_offset, &end_offset, text.Receive());
-  EXPECT_EQ(S_FALSE, hr);
+  EXPECT_EQ(E_INVALIDARG, hr);
   EXPECT_EQ(0, start_offset);
   EXPECT_EQ(0, end_offset);
   EXPECT_EQ(nullptr, static_cast<BSTR>(text));
   hr = input_text->get_textAtOffset(invalid_offset, IA2_TEXT_BOUNDARY_WORD,
                                     &start_offset, &end_offset, text.Receive());
-  EXPECT_EQ(S_FALSE, hr);
+  EXPECT_EQ(E_INVALIDARG, hr);
   EXPECT_EQ(0, start_offset);
   EXPECT_EQ(0, end_offset);
   EXPECT_EQ(nullptr, static_cast<BSTR>(text));
@@ -2873,9 +2873,16 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   EXPECT_EQ(0, start_offset);
   EXPECT_EQ(0, end_offset);
   EXPECT_EQ(nullptr, static_cast<BSTR>(text));
+  hr = input_text->get_textAtOffset(invalid_offset, IA2_TEXT_BOUNDARY_LINE,
+                                    &start_offset, &end_offset, text.Receive());
+  EXPECT_EQ(S_OK, hr);
+  EXPECT_EQ(0, start_offset);
+  EXPECT_EQ(46, end_offset);
+  EXPECT_STREQ(L"Moz/5.0 (ST 6.x; WWW33) WebKit  \"KHTML, like\".", text);
+  text.Reset();
   hr = input_text->get_textAtOffset(invalid_offset, IA2_TEXT_BOUNDARY_ALL,
                                     &start_offset, &end_offset, text.Receive());
-  EXPECT_EQ(S_FALSE, hr);
+  EXPECT_EQ(E_INVALIDARG, hr);
   EXPECT_EQ(0, start_offset);
   EXPECT_EQ(0, end_offset);
   EXPECT_EQ(nullptr, static_cast<BSTR>(text));
@@ -2885,14 +2892,14 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   hr = input_text->get_textAtOffset(IA2_TEXT_OFFSET_LENGTH,
                                     IA2_TEXT_BOUNDARY_CHAR, &start_offset,
                                     &end_offset, text.Receive());
-  EXPECT_EQ(S_FALSE, hr);
+  EXPECT_EQ(E_INVALIDARG, hr);
   EXPECT_EQ(0, start_offset);
   EXPECT_EQ(0, end_offset);
   EXPECT_EQ(nullptr, static_cast<BSTR>(text));
   hr = input_text->get_textAtOffset(IA2_TEXT_OFFSET_LENGTH,
                                     IA2_TEXT_BOUNDARY_WORD, &start_offset,
                                     &end_offset, text.Receive());
-  EXPECT_EQ(S_FALSE, hr);
+  EXPECT_EQ(E_INVALIDARG, hr);
   EXPECT_EQ(0, start_offset);
   EXPECT_EQ(0, end_offset);
   EXPECT_EQ(nullptr, static_cast<BSTR>(text));
@@ -2904,9 +2911,17 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   EXPECT_EQ(0, end_offset);
   EXPECT_EQ(nullptr, static_cast<BSTR>(text));
   hr = input_text->get_textAtOffset(IA2_TEXT_OFFSET_LENGTH,
+                                    IA2_TEXT_BOUNDARY_LINE, &start_offset,
+                                    &end_offset, text.Receive());
+  EXPECT_EQ(S_OK, hr);
+  EXPECT_EQ(0, start_offset);
+  EXPECT_EQ(46, end_offset);
+  EXPECT_STREQ(L"Moz/5.0 (ST 6.x; WWW33) WebKit  \"KHTML, like\".", text);
+  text.Reset();
+  hr = input_text->get_textAtOffset(IA2_TEXT_OFFSET_LENGTH,
                                     IA2_TEXT_BOUNDARY_ALL, &start_offset,
                                     &end_offset, text.Receive());
-  EXPECT_EQ(S_FALSE, hr);
+  EXPECT_EQ(E_INVALIDARG, hr);
   EXPECT_EQ(0, start_offset);
   EXPECT_EQ(0, end_offset);
   EXPECT_EQ(nullptr, static_cast<BSTR>(text));
@@ -2947,14 +2962,14 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   hr = textarea_text->get_textAtOffset(invalid_offset, IA2_TEXT_BOUNDARY_CHAR,
                                        &start_offset, &end_offset,
                                        text.Receive());
-  EXPECT_EQ(S_FALSE, hr);
+  EXPECT_EQ(E_INVALIDARG, hr);
   EXPECT_EQ(0, start_offset);
   EXPECT_EQ(0, end_offset);
   EXPECT_EQ(nullptr, static_cast<BSTR>(text));
   hr = textarea_text->get_textAtOffset(invalid_offset, IA2_TEXT_BOUNDARY_WORD,
                                        &start_offset, &end_offset,
                                        text.Receive());
-  EXPECT_EQ(S_FALSE, hr);
+  EXPECT_EQ(E_INVALIDARG, hr);
   EXPECT_EQ(0, start_offset);
   EXPECT_EQ(0, end_offset);
   EXPECT_EQ(nullptr, static_cast<BSTR>(text));
@@ -2965,10 +2980,18 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   EXPECT_EQ(0, start_offset);
   EXPECT_EQ(0, end_offset);
   EXPECT_EQ(nullptr, static_cast<BSTR>(text));
+  hr = textarea_text->get_textAtOffset(invalid_offset, IA2_TEXT_BOUNDARY_LINE,
+                                       &start_offset, &end_offset,
+                                       text.Receive());
+  EXPECT_EQ(S_OK, hr);
+  EXPECT_EQ(32, start_offset);
+  EXPECT_EQ(46, end_offset);
+  EXPECT_STREQ(L"\"KHTML, like\".", text);
+  text.Reset();
   hr = textarea_text->get_textAtOffset(invalid_offset, IA2_TEXT_BOUNDARY_ALL,
                                        &start_offset, &end_offset,
                                        text.Receive());
-  EXPECT_EQ(S_FALSE, hr);
+  EXPECT_EQ(E_INVALIDARG, hr);
   EXPECT_EQ(0, start_offset);
   EXPECT_EQ(0, end_offset);
   EXPECT_EQ(nullptr, static_cast<BSTR>(text));
@@ -2978,14 +3001,14 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   hr = textarea_text->get_textAtOffset(IA2_TEXT_OFFSET_LENGTH,
                                        IA2_TEXT_BOUNDARY_CHAR, &start_offset,
                                        &end_offset, text.Receive());
-  EXPECT_EQ(S_FALSE, hr);
+  EXPECT_EQ(E_INVALIDARG, hr);
   EXPECT_EQ(0, start_offset);
   EXPECT_EQ(0, end_offset);
   EXPECT_EQ(nullptr, static_cast<BSTR>(text));
   hr = textarea_text->get_textAtOffset(IA2_TEXT_OFFSET_LENGTH,
                                        IA2_TEXT_BOUNDARY_WORD, &start_offset,
                                        &end_offset, text.Receive());
-  EXPECT_EQ(S_FALSE, hr);
+  EXPECT_EQ(E_INVALIDARG, hr);
   EXPECT_EQ(0, start_offset);
   EXPECT_EQ(0, end_offset);
   EXPECT_EQ(nullptr, static_cast<BSTR>(text));
@@ -2997,9 +3020,17 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   EXPECT_EQ(0, end_offset);
   EXPECT_EQ(nullptr, static_cast<BSTR>(text));
   hr = textarea_text->get_textAtOffset(IA2_TEXT_OFFSET_LENGTH,
+                                       IA2_TEXT_BOUNDARY_LINE, &start_offset,
+                                       &end_offset, text.Receive());
+  EXPECT_EQ(S_OK, hr);
+  EXPECT_EQ(32, start_offset);
+  EXPECT_EQ(46, end_offset);
+  EXPECT_STREQ(L"\"KHTML, like\".", text);
+  text.Reset();
+  hr = textarea_text->get_textAtOffset(IA2_TEXT_OFFSET_LENGTH,
                                        IA2_TEXT_BOUNDARY_ALL, &start_offset,
                                        &end_offset, text.Receive());
-  EXPECT_EQ(S_FALSE, hr);
+  EXPECT_EQ(E_INVALIDARG, hr);
   EXPECT_EQ(0, start_offset);
   EXPECT_EQ(0, end_offset);
   EXPECT_EQ(nullptr, static_cast<BSTR>(text));

@@ -178,8 +178,6 @@ target(link_target_type, "child") {
 group("for_content_tests") {
   visibility = [ "//content/test/*" ]
   if (!is_component_build) {
-    public_deps = [
-      ":child",
-    ]
+    public_deps = [ ":child" ]
   }
 }

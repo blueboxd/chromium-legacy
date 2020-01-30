@@ -11,6 +11,7 @@
 #include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/run_loop.h"
+#include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "build/build_config.h"
 #include "cc/base/switches.h"
@@ -19,6 +20,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test.h"
+#include "headless/app/headless_shell_switches.h"
 #include "headless/lib/browser/headless_web_contents_impl.h"
 #include "headless/public/devtools/domains/browser.h"
 #include "headless/public/devtools/domains/dom_snapshot.h"
@@ -510,6 +512,133 @@ class HeadlessWebContentsPDFPageSizeRoundingTest
 
 HEADLESS_ASYNC_DEVTOOLED_TEST_F(HeadlessWebContentsPDFPageSizeRoundingTest);
 
+const char kExpectedStructTreeJSON[] = R"({
+   "type": "Document",
+   "~children": [ {
+      "type": "H",
+      "~children": [ {
+         "type": "NonStruct"
+      } ]
+   }, {
+      "type": "P",
+      "~children": [ {
+         "type": "NonStruct"
+      } ]
+   }, {
+      "type": "L",
+      "~children": [ {
+         "type": "LI",
+         "~children": [ {
+            "type": "NonStruct"
+         } ]
+      }, {
+         "type": "LI",
+         "~children": [ {
+            "type": "NonStruct"
+         } ]
+      } ]
+   }, {
+      "type": "Table",
+      "~children": [ {
+         "type": "TR",
+         "~children": [ {
+            "type": "TH",
+            "~children": [ {
+               "type": "NonStruct"
+            } ]
+         }, {
+            "type": "TH",
+            "~children": [ {
+               "type": "NonStruct"
+            } ]
+         } ]
+      }, {
+         "type": "TR",
+         "~children": [ {
+            "type": "TD",
+            "~children": [ {
+               "type": "NonStruct"
+            } ]
+         }, {
+            "type": "TD",
+            "~children": [ {
+               "type": "NonStruct"
+            } ]
+         } ]
+      } ]
+   } ]
+}
+)";
+
+class HeadlessWebContentsTaggedPDFTest
+    : public HeadlessAsyncDevTooledBrowserTest,
+      public page::Observer {
+ public:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    // Specifically request a tagged (accessible) PDF. Maybe someday
+    // we can enable this by default.
+    HeadlessAsyncDevTooledBrowserTest::SetUpCommandLine(command_line);
+    command_line->AppendSwitch(switches::kExportTaggedPDF);
+  }
+
+  void RunDevTooledTest() override {
+    EXPECT_TRUE(embedded_test_server()->Start());
+
+    devtools_client_->GetPage()->AddObserver(this);
+
+    base::RunLoop run_loop(base::RunLoop::Type::kNestableTasksAllowed);
+    devtools_client_->GetPage()->Enable(run_loop.QuitClosure());
+    run_loop.Run();
+
+    devtools_client_->GetPage()->Navigate(
+        embedded_test_server()->GetURL("/structured_doc.html").spec());
+  }
+
+  void OnLoadEventFired(const page::LoadEventFiredParams&) override {
+    devtools_client_->GetPage()->GetExperimental()->PrintToPDF(
+        page::PrintToPDFParams::Builder()
+            .SetPrintBackground(true)
+            .SetPaperHeight(41)
+            .SetPaperWidth(41)
+            .SetMarginTop(0)
+            .SetMarginBottom(0)
+            .SetMarginLeft(0)
+            .SetMarginRight(0)
+            .Build(),
+        base::BindOnce(&HeadlessWebContentsTaggedPDFTest::OnPDFCreated,
+                       base::Unretained(this)));
+  }
+
+  void OnPDFCreated(std::unique_ptr<page::PrintToPDFResult> result) {
+    ASSERT_TRUE(result);
+    protocol::Binary pdf_data = result->GetData();
+    EXPECT_GT(pdf_data.size(), 0U);
+    auto pdf_span = base::make_span(pdf_data.data(), pdf_data.size());
+    int num_pages;
+    EXPECT_TRUE(chrome_pdf::GetPDFDocInfo(pdf_span, &num_pages, nullptr));
+    EXPECT_EQ(1, num_pages);
+
+    base::Optional<bool> tagged = chrome_pdf::IsPDFDocTagged(pdf_span);
+    ASSERT_TRUE(tagged.has_value());
+    EXPECT_TRUE(tagged.value());
+
+    constexpr int kFirstPage = 0;
+    base::Value struct_tree =
+        chrome_pdf::GetPDFStructTreeForPage(pdf_span, kFirstPage);
+    std::string json;
+    base::JSONWriter::WriteWithOptions(
+        struct_tree, base::JSONWriter::OPTIONS_PRETTY_PRINT, &json);
+    // Map Windows line endings to Unix by removing '\r'.
+    base::RemoveChars(json, "\r", &json);
+
+    EXPECT_EQ(kExpectedStructTreeJSON, json);
+
+    FinishAsynchronousTest();
+  }
+};
+
+HEADLESS_ASYNC_DEVTOOLED_TEST_F(HeadlessWebContentsTaggedPDFTest);
+
 #endif  // BUILDFLAG(ENABLE_PRINTING)
 
 class HeadlessWebContentsSecurityTest
@@ -671,11 +800,11 @@ class HeadlessWebContentsBeginFrameControlTest
   void SetUpCommandLine(base::CommandLine* command_line) override {
     HeadlessBrowserTest::SetUpCommandLine(command_line);
     // See bit.ly/headless-rendering for why we use these flags.
-    command_line->AppendSwitch(switches::kRunAllCompositorStagesBeforeDraw);
-    command_line->AppendSwitch(switches::kDisableNewContentRenderingTimeout);
+    command_line->AppendSwitch(::switches::kRunAllCompositorStagesBeforeDraw);
+    command_line->AppendSwitch(::switches::kDisableNewContentRenderingTimeout);
     command_line->AppendSwitch(cc::switches::kDisableCheckerImaging);
     command_line->AppendSwitch(cc::switches::kDisableThreadedAnimation);
-    command_line->AppendSwitch(switches::kDisableThreadedScrolling);
+    command_line->AppendSwitch(::switches::kDisableThreadedScrolling);
   }
 
   void OnCreateTargetResult(

@@ -143,19 +143,13 @@ bool CreateThreadInternal(size_t stack_size,
   params->joinable = out_thread_handle != nullptr;
   params->priority = priority;
 
-  void* thread_handle;
-  {
-    SCOPED_UMA_HISTOGRAM_TIMER("Windows.CreateThreadTime");
-
-    // Using CreateThread here vs _beginthreadex makes thread creation a bit
-    // faster and doesn't require the loader lock to be available.  Our code
-    // will  have to work running on CreateThread() threads anyway, since we run
-    // code on the Windows thread pool, etc.  For some background on the
-    // difference:
-    //   http://www.microsoft.com/msj/1099/win32/win321099.aspx
-    thread_handle =
-        ::CreateThread(nullptr, stack_size, ThreadFunc, params, flags, nullptr);
-  }
+  // Using CreateThread here vs _beginthreadex makes thread creation a bit
+  // faster and doesn't require the loader lock to be available.  Our code will
+  // have to work running on CreateThread() threads anyway, since we run code on
+  // the Windows thread pool, etc.  For some background on the difference:
+  // http://www.microsoft.com/msj/1099/win32/win321099.aspx
+  void* thread_handle =
+      ::CreateThread(nullptr, stack_size, ThreadFunc, params, flags, nullptr);
 
   if (!thread_handle) {
     DWORD last_error = ::GetLastError();

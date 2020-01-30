@@ -6,6 +6,9 @@
 
 #include <utility>
 
+#include "base/strings/string_piece.h"
+#include "base/time/time.h"
+#include "components/metrics/field_trials_provider.h"
 #include "content/public/browser/background_tracing_manager.h"
 #include "third_party/metrics_proto/chrome_user_metrics_extension.pb.h"
 #include "third_party/metrics_proto/trace_log.pb.h"
@@ -35,6 +38,13 @@ void BackgroundTracingMetricsProvider::ProvideIndependentMetrics(
   }
   metrics::TraceLog* log = uma_proto->add_trace_log();
   log->set_raw_data(std::move(serialized_trace));
+
+  // TODO(ssid): Find a better way to record other system profile metrics in
+  // independent providers.
+  variations::FieldTrialsProvider provider(nullptr, base::StringPiece());
+  provider.ProvideSystemProfileMetricsWithLogCreationTime(
+      base::TimeTicks(), uma_proto->mutable_system_profile());
+
   std::move(done_callback).Run(true);
 }
 

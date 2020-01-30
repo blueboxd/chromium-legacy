@@ -561,8 +561,8 @@ jumbo_component("base") {
       "cursor/cursor_loader_win.h",
     ]
     deps += [ "//third_party/wtl" ]
-    cflags = [ "/wd4324" ]  # Structure was padded due to __declspec(align()), which is
-                            # uninteresting.
+    cflags = [ "/wd4324" ]  # Structure was padded due to __declspec(align()),
+                            # which is uninteresting.
 
     ldflags = [
       "/DELAYLOAD:d2d1.dll",

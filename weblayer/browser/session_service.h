@@ -5,6 +5,8 @@
 #ifndef WEBLAYER_BROWSER_SESSION_SERVICE_H_
 #define WEBLAYER_BROWSER_SESSION_SERVICE_H_
 
+#include <stddef.h>
+
 #include <map>
 #include <memory>
 #include <string>
@@ -39,12 +41,20 @@ class SessionService : public sessions::CommandStorageManagerDelegate,
                        public sessions::SessionTabHelperDelegate,
                        public BrowserObserver {
  public:
-  SessionService(const base::FilePath& path, BrowserImpl* browser);
+  SessionService(const base::FilePath& path,
+                 BrowserImpl* browser,
+                 const std::vector<uint8_t>& decryption_key);
 
   SessionService(const SessionService&) = delete;
   SessionService& operator=(const SessionService&) = delete;
 
   ~SessionService() override;
+
+  void SaveIfNecessary();
+
+  // Returns the key used to encrypt the file. Empty if not encrypted.
+  // Encryption is done when saving and the profile is off the record.
+  const std::vector<uint8_t>& GetCryptoKey() const;
 
  private:
   friend class SessionServiceTestHelper;
@@ -54,6 +64,7 @@ class SessionService : public sessions::CommandStorageManagerDelegate,
   // CommandStorageManagerDelegate:
   bool ShouldUseDelayedSave() override;
   void OnWillSaveCommands() override;
+  void OnGeneratedNewCryptoKey(const std::vector<uint8_t>& key) override;
 
   // BrowserObserver;
   void OnTabAdded(Tab* tab) override;
@@ -111,6 +122,8 @@ class SessionService : public sessions::CommandStorageManagerDelegate,
 
   // Force session commands to be rebuild before next save event.
   bool rebuild_on_next_save_;
+
+  std::vector<uint8_t> crypto_key_;
 
   base::CancelableTaskTracker cancelable_task_tracker_;
 };

@@ -145,6 +145,25 @@ class VIEWS_EXPORT FlexLayout : public LayoutManagerBase {
   // See FlexSpecification::order().
   using FlexOrderToViewIndexMap = std::map<int, std::vector<size_t>>;
 
+  // Fills out the child entries for |data| and generates some initial size
+  // and visibility data, and stores off information about which views can
+  // expand in |flex_order_to_index|.
+  void InitializeChildData(const NormalizedSizeBounds& bounds,
+                           FlexLayoutData* data,
+                           FlexOrderToViewIndexMap* flex_order_to_index) const;
+
+  // Caclulates the child bounds (in screen coordinates) for each visible child
+  // in the layout.
+  void CalculateChildBounds(const SizeBounds& size_bounds,
+                            FlexLayoutData* data) const;
+
+  // Calculates available space for non-flex views.
+  void CalculateNonFlexAvailableSpace(
+      FlexLayoutData* data,
+      int available_space,
+      const ChildViewSpacing& child_spacing,
+      const FlexOrderToViewIndexMap& flex_views) const;
+
   // Returns the combined margins across the cross axis of the host view, for a
   // particular child view.
   Inset1D GetCrossAxisMargins(const FlexLayoutData& layout,
@@ -185,31 +204,11 @@ class VIEWS_EXPORT FlexLayout : public LayoutManagerBase {
   //
   // Typically, this method will be called once with |expandable_views| set and
   // then again with it null to allocate the remaining space.
-  void AllocateFlexSpace(
-      const NormalizedSizeBounds& bounds,
-      const FlexOrderToViewIndexMap& order_to_index,
-      FlexLayoutData* data,
-      ChildViewSpacing* child_spacing,
-      FlexOrderToViewIndexMap* expandable_views = nullptr) const;
-
-  // Fills out the child entries for |data| and generates some initial size
-  // and visibility data, and stores off information about which views can
-  // expand in |flex_order_to_index|.
-  void InitializeChildData(const NormalizedSizeBounds& bounds,
-                           FlexLayoutData* data,
-                           FlexOrderToViewIndexMap* flex_order_to_index) const;
-
-  // Caclulates the child bounds (in screen coordinates) for each visible child
-  // in the layout.
-  void CalculateChildBounds(const SizeBounds& size_bounds,
-                            FlexLayoutData* data) const;
-
-  // Calculates available space for non-flex views.
-  void CalculateNonFlexAvailableSpace(
-      FlexLayoutData* data,
-      int available_space,
-      const ChildViewSpacing& child_spacing,
-      const FlexOrderToViewIndexMap& flex_views) const;
+  void AllocateFlexSpace(const NormalizedSizeBounds& bounds,
+                         const FlexOrderToViewIndexMap& order_to_index,
+                         FlexLayoutData* data,
+                         ChildViewSpacing* child_spacing,
+                         FlexOrderToViewIndexMap* expandable_views) const;
 
   // Gets the default value for a particular layout property, which will be used
   // if the property is not set on a child view being laid out (e.g.

@@ -26,7 +26,6 @@
 <translation id="1031362278801463162">Ma’lumotlar oldindan ko‘rish uchun yuklanmoqda</translation>
 <translation id="1032605640136438169">Yangi shartlar bilan tanishib chiqing</translation>
 <translation id="103279545524624934">Android ilovalarni ishga tushirish uchun diskda joy bo‘shating.</translation>
-<translation id="1033343386521881354">Bosma serverda 1 ta printer topildi.</translation>
 <translation id="1033780634303702874">Keyingi seriyali qurilmalaringizga ruxsat</translation>
 <translation id="1034942643314881546">Ilovalar illustratsiyalarini yaratish uchun ADB ishga tushirilmoqda</translation>
 <translation id="1036348656032585052">O‘chirib qo‘yish</translation>
@@ -34,7 +33,6 @@
 <translation id="1036982837258183574">To‘liq ekran rejimidan chiqish uchun |<ph name="ACCELERATOR" />| tugmasini bosing</translation>
 <translation id="1038168778161626396">Faqat shifrdan chiqarish</translation>
 <translation id="1039337018183941703">Fayl yaroqsiz yoki shikastlangan</translation>
-<translation id="1039850285407663109">Tanlangan fayl nomaʼlum va zararli boʻlishi mumkin. Uni ochishdan oldin antivirus orqali tekshiring.</translation>
 <translation id="1041175011127912238">Bu sahifa javob bermayapti.</translation>
 <translation id="1041263367839475438">Mavjud qurilmalar</translation>
 <translation id="1042174272890264476">Kompyuteringizda ichki o‘rnatilgan <ph name="SHORT_PRODUCT_NAME" /> RLZ kutubxonasi mavjud. RLZ mahsulotimiz(<ph name="SHORT_PRODUCT_NAME" />) reklama kompaniyalari natijalari asosidagi qidiruv so‘rovlari soni va mahsulotdan foydalanish statistikasini baholashimizga yordam beradigan ko‘rinmas va foydalanuvchini aniqlamaydigan yorliq tayinlaydi. Ushbu yorliqlar ba’zida mahsulotimiz (<ph name="PRODUCT_NAME" />) orqali bajarilgan qidiruv so‘rovlarida paydo bo‘lishi mumkin.</translation>
@@ -637,7 +635,6 @@ xizmatlarini sizga moslashtirish maqsadlarida foydalanishi mumkin. Bu ruxsatni m
 <translation id="1858585891038687145">Dasturiy ta’minot ishlab chiquvchilarni identifikatsiya qilishda ushbu sertifikat ishonchli deb hisoblansin.</translation>
 <translation id="1861262398884155592">Bu jild bo‘sh</translation>
 <translation id="1863182668524159459">Hech qanday ketma-ket port topilmadi</translation>
-<translation id="1863552924692672565"><ph name="FILE_NAME" /> nomaʼlum fayl. Xavfsizlik yuzasidan uni antivirus orqali tekshiring.</translation>
 <translation id="1864111464094315414">Kirish</translation>
 <translation id="1864400682872660285">Salqinroq</translation>
 <translation id="1864454756846565995">USB-C qurilma (orqa port)</translation>
@@ -4023,7 +4020,6 @@ Ochiq eksponenta (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bit):
 <translation id="6678717876183468697">So‘rovning URL manzili</translation>
 <translation id="6680442031740878064">Bo‘sh: <ph name="AVAILABLE_SPACE" /></translation>
 <translation id="6680650203439190394">Nutq tezligi</translation>
-<translation id="6681301928961274620">Bosma serverda hech qanday printer topilmadi.</translation>
 <translation id="6681668084120808868">Suratga olish</translation>
 <translation id="6681964764822470072">“<ph name="APP_NAME" />” o‘chirib tashlanadi.</translation>
 <translation id="668599234725812620">Play Marketni ochish</translation>
@@ -5551,7 +5547,6 @@ Kalit faylini ishonchli joyda saqlang. U kengaytmaning yangi versiyalarini yarat
 <translation id="8794025342371547160">Taqiqlangan IP</translation>
 <translation id="879413103056696865">Hotspot yoniq ekanligida, <ph name="PHONE_NAME" />:</translation>
 <translation id="8795916974678578410">Yangi oyna</translation>
-<translation id="8797086401386164142">Bosma serverda <ph name="NUM_PRINTERS" /> ta printer topildi.</translation>
 <translation id="8797459392481275117">Bu sayt hech qachon tarjima qilinmasin</translation>
 <translation id="8798099450830957504">Standart</translation>
 <translation id="8798441408945964110">Ta’minotchi nomi</translation>

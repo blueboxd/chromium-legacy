@@ -353,9 +353,7 @@ static_library("minizip") {
     defines = [ "USE_FILE32API" ]
   }
 
-  deps = [
-    ":zlib",
-  ]
+  deps = [ ":zlib" ]
 
   configs -= [ "//build/config/compiler:chromium_code" ]
   configs += [
@@ -371,9 +369,7 @@ static_library("minizip") {
 executable("zlib_bench") {
   include_dirs = [ "." ]
 
-  sources = [
-    "contrib/bench/zlib_bench.cc",
-  ]
+  sources = [ "contrib/bench/zlib_bench.cc" ]
 
   if (!is_debug) {
     configs -= [ "//build/config/compiler:default_optimization" ]
@@ -383,7 +379,5 @@ executable("zlib_bench") {
   configs -= [ "//build/config/compiler:chromium_code" ]
   configs += [ "//build/config/compiler:no_chromium_code" ]
 
-  deps = [
-    ":zlib",
-  ]
+  deps = [ ":zlib" ]
 }

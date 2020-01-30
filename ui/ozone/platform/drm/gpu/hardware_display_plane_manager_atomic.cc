@@ -7,6 +7,7 @@
 #include <sync/sync.h>
 #include <xf86drm.h>
 #include <xf86drmMode.h>
+
 #include <memory>
 #include <utility>
 
@@ -57,28 +58,92 @@ HardwareDisplayPlaneManagerAtomic::HardwareDisplayPlaneManagerAtomic(
     DrmDevice* drm)
     : HardwareDisplayPlaneManager(drm) {}
 
-HardwareDisplayPlaneManagerAtomic::~HardwareDisplayPlaneManagerAtomic() {
+HardwareDisplayPlaneManagerAtomic::~HardwareDisplayPlaneManagerAtomic() =
+    default;
+
+bool HardwareDisplayPlaneManagerAtomic::Modeset(
+    uint32_t crtc_id,
+    uint32_t framebuffer_id,
+    uint32_t connector_id,
+    const drmModeModeInfo& mode,
+    const HardwareDisplayPlaneList& plane_list) {
+  const int connector_idx = LookupConnectorIndex(connector_id);
+  DCHECK_GE(connector_idx, 0);
+  connectors_props_[connector_idx].crtc_id.value = crtc_id;
+  bool res =
+      AddPropertyIfValid(plane_list.atomic_property_set.get(), connector_id,
+                         connectors_props_[connector_idx].crtc_id);
+
+  const int crtc_idx = LookupCrtcIndex(crtc_id);
+  DCHECK_GE(crtc_idx, 0);
+
+  crtc_state_[crtc_idx].properties.active.value = 1UL;
+  ScopedDrmPropertyBlob mode_blob =
+      drm_->CreatePropertyBlob(&mode, sizeof(mode));
+  crtc_state_[crtc_idx].properties.mode_id.value =
+      mode_blob ? mode_blob->id() : 0;
+
+  res &= AddPropertyIfValid(plane_list.atomic_property_set.get(), crtc_id,
+                            crtc_state_[crtc_idx].properties.active);
+  res &= AddPropertyIfValid(plane_list.atomic_property_set.get(), crtc_id,
+                            crtc_state_[crtc_idx].properties.mode_id);
+
+  DCHECK(res);
+  return Commit(plane_list, /*should_modeset=*/true,
+                /*page_flip_request=*/nullptr,
+                /*out_fence=*/nullptr);
+}
+
+bool HardwareDisplayPlaneManagerAtomic::DisableModeset(uint32_t crtc,
+                                                       uint32_t connector) {
+  ScopedDrmAtomicReqPtr property_set(drmModeAtomicAlloc());
+
+  const int connector_idx = LookupConnectorIndex(connector);
+  DCHECK_GE(connector_idx, 0);
+  connectors_props_[connector_idx].crtc_id.value = 0UL;
+  bool res = AddPropertyIfValid(property_set.get(), connector,
+                                connectors_props_[connector_idx].crtc_id);
+
+  const int crtc_idx = LookupCrtcIndex(crtc);
+  DCHECK_GE(crtc_idx, 0);
+  crtc_state_[crtc_idx].properties.active.value = 0UL;
+  crtc_state_[crtc_idx].properties.mode_id.value = 0UL;
+  res &= AddPropertyIfValid(property_set.get(), crtc,
+                            crtc_state_[crtc_idx].properties.active);
+  res &= AddPropertyIfValid(property_set.get(), crtc,
+                            crtc_state_[crtc_idx].properties.mode_id);
+
+  DCHECK(res);
+  return drm_->CommitProperties(property_set.get(),
+                                DRM_MODE_ATOMIC_ALLOW_MODESET, 1, nullptr);
 }
 
 bool HardwareDisplayPlaneManagerAtomic::Commit(
     const HardwareDisplayPlaneList& plane_list,
+    bool should_modeset,
     scoped_refptr<PageFlipRequest> page_flip_request,
     std::unique_ptr<gfx::GpuFence>* out_fence) {
-  bool test_only = !page_flip_request;
+  bool test_only = !should_modeset && !page_flip_request;
+
   for (HardwareDisplayPlane* plane : plane_list.old_plane_list) {
     if (!base::Contains(plane_list.plane_list, plane)) {
-      // This plane is being released, so we need to zero it.
-      plane->set_in_use(false);
-      HardwareDisplayPlaneAtomic* atomic_plane =
-          static_cast<HardwareDisplayPlaneAtomic*>(plane);
-      atomic_plane->SetPlaneData(
-          plane_list.atomic_property_set.get(), 0, 0, gfx::Rect(), gfx::Rect(),
-          gfx::OVERLAY_TRANSFORM_NONE, base::kInvalidPlatformFile);
+      if (plane->in_use()) {
+        // This plane is being released, so we need to zero it.
+        plane->set_in_use(false);
+        HardwareDisplayPlaneAtomic* atomic_plane =
+            static_cast<HardwareDisplayPlaneAtomic*>(plane);
+        atomic_plane->SetPlaneData(plane_list.atomic_property_set.get(), 0, 0,
+                                   gfx::Rect(), gfx::Rect(),
+                                   gfx::OVERLAY_TRANSFORM_NONE,
+                                   base::kInvalidPlatformFile);
+      }
     }
   }
 
   std::vector<uint32_t> crtcs;
   for (HardwareDisplayPlane* plane : plane_list.plane_list) {
+    if (!plane->in_use())
+      continue;
     HardwareDisplayPlaneAtomic* atomic_plane =
         static_cast<HardwareDisplayPlaneAtomic*>(plane);
     if (crtcs.empty() || crtcs.back() != atomic_plane->crtc_id())
@@ -110,11 +175,10 @@ bool HardwareDisplayPlaneManagerAtomic::Commit(
   }
 
   uint32_t flags = 0;
-  if (test_only) {
-    flags = DRM_MODE_ATOMIC_TEST_ONLY;
-  } else {
-    flags = DRM_MODE_ATOMIC_NONBLOCK;
-  }
+  if (should_modeset)
+    flags = DRM_MODE_ATOMIC_ALLOW_MODESET;
+  else
+    flags = test_only ? DRM_MODE_ATOMIC_TEST_ONLY : DRM_MODE_ATOMIC_NONBLOCK;
 
   // After we perform the atomic commit, and if the caller has requested an
   // out-fence, the out_fence_fds vector will contain any provided out-fence

@@ -2060,6 +2060,16 @@
     ]
   },
 
+  "ScreenCaptureAllowed": {
+    "os": ["win", "linux", "mac", "chromeos"],
+    "policy_pref_mapping_test": [
+      {
+        "policies": { "ScreenCaptureAllowed": false },
+        "prefs": { "hardware.screen_capture_enabled": {} }
+      }
+    ]
+  },
+
   "DefaultWebBluetoothGuardSetting": {
     "os": ["win", "linux", "mac", "chromeos"],
     "policy_pref_mapping_test": [

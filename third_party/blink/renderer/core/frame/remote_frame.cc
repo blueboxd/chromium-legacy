@@ -245,6 +245,22 @@ void RemoteFrame::AddResourceTimingFromChild(
                           /*worker_timing_receiver=*/mojo::NullReceiver());
 }
 
+void RemoteFrame::DidStartLoading() {
+  SetIsLoading(true);
+}
+
+void RemoteFrame::DidStopLoading() {
+  SetIsLoading(false);
+
+  // When a subframe finishes loading, the parent should check if *all*
+  // subframes have finished loading (which may mean that the parent can declare
+  // that the parent itself has finished loading). This remote-subframe-focused
+  // code has a local-subframe equivalent in FrameLoader::DidFinishNavigation.
+  Frame* parent = Tree().Parent();
+  if (parent)
+    parent->CheckCompleted();
+}
+
 void RemoteFrame::DidFocus() {
   GetRemoteFrameHostRemote().DidFocusFrame();
 }
@@ -370,6 +386,15 @@ void RemoteFrame::SetReplicatedOrigin(
     AXObjectCache* cache = owner_element->GetDocument().ExistingAXObjectCache();
     if (cache)
       cache->ChildrenChanged(owner_element);
+  }
+}
+
+void RemoteFrame::SetReplicatedAdFrameType(
+    mojom::blink::AdFrameType ad_frame_type) {
+  if (ad_frame_type_ == mojom::blink::AdFrameType::kNonAd) {
+    ad_frame_type_ = ad_frame_type;
+  } else {
+    DCHECK_EQ(ad_frame_type_, ad_frame_type);
   }
 }
 

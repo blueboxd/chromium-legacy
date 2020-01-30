@@ -28,9 +28,7 @@ if (current_toolchain == host_toolchain) {
       ":android_protoc_warnings",
     ]
 
-    deps = [
-      "//third_party/zlib",
-    ]
+    deps = [ "//third_party/zlib" ]
 
     sources = [
       "src/src/google/protobuf/compiler/code_generator.cc",

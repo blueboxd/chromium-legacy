@@ -28,6 +28,23 @@ TEST(SelectorTest, FromProto) {
   EXPECT_EQ(PseudoType::BEFORE, selector.pseudo_type);
 }
 
+TEST(SelectorTest, ToProto) {
+  Selector selector;
+  selector.selectors.emplace_back("a");
+  selector.selectors.emplace_back("b");
+  selector.inner_text_pattern = "c";
+  selector.value_pattern = "d";
+  selector.must_be_visible = true;
+  selector.pseudo_type = PseudoType::BEFORE;
+
+  ElementReferenceProto proto = selector.ToElementReferenceProto();
+  EXPECT_THAT(proto.selectors(), testing::ElementsAre("a", "b"));
+  EXPECT_EQ("c", proto.inner_text_pattern());
+  EXPECT_EQ("d", proto.value_pattern());
+  EXPECT_EQ(MUST_BE_VISIBLE, proto.visibility_requirement());
+  EXPECT_EQ(PseudoType::BEFORE, proto.pseudo_type());
+}
+
 TEST(SelectorTest, Comparison) {
   EXPECT_FALSE(Selector({"a"}) == Selector({"b"}));
   EXPECT_LT(Selector({"a"}), Selector({"b"}));

@@ -279,6 +279,7 @@
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> ta bukmark}other{<ph name="BOOKMARKS_COUNT_MANY" /> ta bukmark}}</translation>
 <translation id="3089395242580810162">Inkognito rejimida ochish</translation>
 <translation id="3123473560110926937">Ayrim saytlarda bloklangan</translation>
+<translation id="3123734510202723619">Xabarnomalar</translation>
 <translation id="3137521801621304719">Inkognito rejimidan chiqish</translation>
 <translation id="3143515551205905069">Sinxronizatsiyani bekor qilish</translation>
 <translation id="3157842584138209013">Tejalgan trafik miqdorini bilish uchun “Boshqa parametrlar” tugmasini bosing</translation>

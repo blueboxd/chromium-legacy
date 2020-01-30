@@ -10,6 +10,7 @@ export class TestTabStripEmbedderProxy extends TestBrowserProxy {
       'closeContainer',
       'getColors',
       'getLayout',
+      'getWindowId',
       'isVisible',
       'observeThemeChanges',
       'showBackgroundContextMenu',
@@ -22,6 +23,7 @@ export class TestTabStripEmbedderProxy extends TestBrowserProxy {
     this.colors_ = {};
     this.layout_ = {};
     this.visible_ = false;
+    this.windowId_;
   }
 
   getColors() {
@@ -32,6 +34,11 @@ export class TestTabStripEmbedderProxy extends TestBrowserProxy {
   getLayout() {
     this.methodCalled('getLayout');
     return Promise.resolve(this.layout_);
+  }
+
+  getWindowId() {
+    this.methodCalled('getWindowId');
+    return Promise.resolve(this.windowId_);
   }
 
   isVisible() {
@@ -58,6 +65,10 @@ export class TestTabStripEmbedderProxy extends TestBrowserProxy {
   closeContainer() {
     this.methodCalled('closeContainer');
     return Promise.resolve();
+  }
+
+  setWindowId(windowId) {
+    this.windowId_ = windowId;
   }
 
   showBackgroundContextMenu(locationX, locationY) {

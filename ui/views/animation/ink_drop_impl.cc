@@ -10,6 +10,7 @@
 #include "ui/compositor/layer.h"
 #include "ui/views/animation/ink_drop_highlight.h"
 #include "ui/views/animation/ink_drop_host_view.h"
+#include "ui/views/animation/ink_drop_util.h"
 #include "ui/views/animation/square_ink_drop_ripple.h"
 #include "ui/views/style/platform_style.h"
 
@@ -749,6 +750,11 @@ void InkDropImpl::CreateInkDropHighlight() {
 
   highlight_ = ink_drop_host_->CreateInkDropHighlight();
   DCHECK(highlight_);
+
+  // If the platform provides HC colors, we need to show them fully on hover and
+  // press.
+  if (views::UsingPlatformHighContrastInkDrop(ink_drop_host_))
+    highlight_->set_visible_opacity(1.0f);
 
   highlight_->set_observer(this);
   root_layer_->Add(highlight_->layer());

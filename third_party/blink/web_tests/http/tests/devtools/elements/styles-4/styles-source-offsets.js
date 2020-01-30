@@ -58,6 +58,17 @@ body.mainpage {
     }
   }
 
+  await (() => {
+    // TODO(crbug.com/1046354): This is a workaround for loadHTML() resolving
+    // before parsing is finished. In this case the stylesheet is blocking html
+    // parsing with BlockHTMLParsingOnStyleSheets enabled and mainBody is not
+    // found by selectNodeWithId below.
+    let resolve;
+    const promise = new Promise(r => resolve = r);
+    TestRunner.waitForPageLoad(() => resolve());
+    return promise;
+  })();
+
   ElementsTestRunner.selectNodeWithId('mainBody', step1);
 
   async function step1(node) {

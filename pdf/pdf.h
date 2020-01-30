@@ -9,6 +9,7 @@
 
 #include "base/containers/span.h"
 #include "base/optional.h"
+#include "base/values.h"
 #include "build/build_config.h"
 
 #if defined(OS_WIN)
@@ -104,6 +105,11 @@ bool GetPDFDocInfo(base::span<const uint8_t> pdf_buffer,
 // Returns true if it's a tagged (accessible) PDF, false if it's a valid
 // PDF but untagged, and nullopt if the PDF can't be parsed.
 base::Optional<bool> IsPDFDocTagged(base::span<const uint8_t> pdf_buffer);
+
+// Given a tagged PDF (see IsPDFDocTagged, above), return the portion of
+// the structure tree for a given page as a hierarchical tree of base::Values.
+base::Value GetPDFStructTreeForPage(base::span<const uint8_t> pdf_buffer,
+                                    int page_index);
 
 // Gets the dimensions of a specific page in a document.
 // |pdf_buffer| is the buffer that contains the entire PDF document to be

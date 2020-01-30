@@ -84,14 +84,7 @@ ExtensionNavigationUIData::ExtensionNavigationUIData(
     int frame_id,
     int parent_frame_id,
     content::GlobalFrameRoutingId parent_routing_id)
-    : frame_data_(frame_id,
-                  parent_frame_id,
-                  tab_id,
-                  window_id,
-                  // The RenderFrameHost may not have an associated WebContents
-                  // in cases such as interstitial pages.
-                  web_contents ? web_contents->GetLastCommittedURL() : GURL(),
-                  base::nullopt /* pending_main_frame_url */),
+    : frame_data_(frame_id, parent_frame_id, tab_id, window_id),
       parent_routing_id_(parent_routing_id) {
   WebViewGuest* web_view = WebViewGuest::FromWebContents(web_contents);
   if (web_view) {

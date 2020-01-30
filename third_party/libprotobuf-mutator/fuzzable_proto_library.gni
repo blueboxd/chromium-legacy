@@ -51,9 +51,7 @@ template("fuzzable_proto_library") {
       if (defined(invoker.testonly)) {
         testonly = invoker.testonly
       }
-      sources = [
-        "//third_party/libprotobuf-mutator/dummy.cc",
-      ]
+      sources = [ "//third_party/libprotobuf-mutator/dummy.cc" ]
       public_deps = [
         ":proto_library_" + target_name,
         "//third_party/libprotobuf-mutator:protobuf_full",

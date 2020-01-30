@@ -219,6 +219,29 @@ void ViewAXPlatformNodeDelegate::OnMenuEnd() {
     ui::AXPlatformNode::SetPopupFocusOverride(nullptr);
 }
 
+void ViewAXPlatformNodeDelegate::FireFocusAfterMenuClose() {
+  ui::AXPlatformNodeBase* focused_node =
+      static_cast<ui::AXPlatformNodeBase*>(ax_platform_node_);
+  // Continue to drill down focused nodes to get to the "deepest" node that is
+  // focused, this is not necessarily a view. (It could be web content.)
+  while (focused_node) {
+    ui::AXPlatformNodeBase* deeper_focus = static_cast<ui::AXPlatformNodeBase*>(
+        ui::AXPlatformNode::FromNativeViewAccessible(focused_node->GetFocus()));
+    if (!deeper_focus || deeper_focus == focused_node)
+      break;
+    focused_node = deeper_focus;
+  }
+  if (focused_node) {
+    // callback used for testing
+    if (accessibility_events_callback_)
+      accessibility_events_callback_.Run(
+          this, ax::mojom::Event::kFocusAfterMenuClose);
+
+    focused_node->NotifyAccessibilityEvent(
+        ax::mojom::Event::kFocusAfterMenuClose);
+  }
+}
+
 // ui::AXPlatformNodeDelegate
 
 const ui::AXNodeData& ViewAXPlatformNodeDelegate::GetData() const {

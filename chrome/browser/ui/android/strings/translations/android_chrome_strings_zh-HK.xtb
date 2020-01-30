@@ -308,7 +308,7 @@
 <translation id="3298243779924642547">簡易模式</translation>
 <translation id="3303414029551471755">繼續下載內容？</translation>
 <translation id="3306398118552023113">Chrome 正在執行此應用程式</translation>
-<translation id="3312292613668865961">系統必須先詢問你，才能允許網站存取你的虛擬實境裝置和資料 (建議)</translation>
+<translation id="3312292613668865961">在允許網站存取您的虛擬實境﻿裝置和資料前詢問您 (建議)</translation>
 <translation id="3315103659806849044">你宜家自訂緊同步功能同 Google 服務設定。你㩒一下畫面底部附近嘅 [確認] 掣，就可以完成打開同步處理功能嘅程序喇。向上瀏覽</translation>
 <translation id="3328801116991980348">網站資料</translation>
 <translation id="3333961966071413176">所有聯絡人</translation>
@@ -514,7 +514,7 @@
 <translation id="4915549754973153784">正在掃描裝置…<ph name="BEGIN_LINK" />查看說明<ph name="END_LINK" /></translation>
 <translation id="4921180162323349895">{FILE_COUNT,plural, =1{# 個網頁}other{# 個網頁}}</translation>
 <translation id="4932247056774066048">您即將登出由 <ph name="DOMAIN_NAME" /> 管理的帳戶，因此您的 Chrome 資料亦會從此裝置上刪除，但仍會保留在您的 Google 帳戶中。</translation>
-<translation id="4935305910887312910">系統必須先詢問你，才能允許網站取得攝影機位置或對應你的房間 (建議)</translation>
+<translation id="4935305910887312910">在允許網站接收接收攝錄機位置或對應您的房間佈局前先詢問您 (建議)</translation>
 <translation id="4943703118917034429">虛擬實境</translation>
 <translation id="4943872375798546930">沒有結果</translation>
 <translation id="4958708863221495346"><ph name="URL_OF_THE_CURRENT_TAB" /> 正在共用您的螢幕</translation>
@@ -746,7 +746,7 @@
 <translation id="6573431926118603307">您在其他裝置上開啟的 Chrome 分頁會在這裡顯示。</translation>
 <translation id="6583199322650523874">將目前的網頁加入書籤</translation>
 <translation id="6593061639179217415">桌面版網站</translation>
-<translation id="6597891566292541626">將這個方框對準 QR 圖碼/條碼。</translation>
+<translation id="6597891566292541626">將二維條碼/條碼放在此方框中。</translation>
 <translation id="6600954340915313787">已複製至 Chrome</translation>
 <translation id="6608650720463149374"><ph name="GIGABYTES" /> GB</translation>
 <translation id="6612358246767739896">受保護內容</translation>
@@ -1027,7 +1027,7 @@
 <translation id="8676374126336081632">清除輸入</translation>
 <translation id="8687353297350450808">{N_BARS,plural, =1{訊號強度等級：# 格}other{訊號強度等級：# 格}}</translation>
 <translation id="868929229000858085">搜尋您的聯絡人</translation>
-<translation id="8698438463325761328">禁止網站存取你的虛擬實境裝置和資料</translation>
+<translation id="8698438463325761328">禁止網站存取您的虛擬實境﻿裝置和資料</translation>
 <translation id="869891660844655955">到期日</translation>
 <translation id="8728487861892616501">繼續使用此應用程式即表示您同意 Chrome 的《<ph name="BEGIN_LINK1" />服務條款<ph name="END_LINK1" />》、《<ph name="BEGIN_LINK2" />私隱聲明<ph name="END_LINK2" />》及《<ph name="BEGIN_LINK3" />由 Family Link 管理的 Google 帳戶之私隱聲明<ph name="END_LINK3" />。</translation>
 <translation id="8748850008226585750">內容已隱藏</translation>
@@ -1044,7 +1044,7 @@
 <translation id="883806473910249246">下載內容時發生錯誤。</translation>
 <translation id="8840953339110955557">此網頁可能與網上版本不同。</translation>
 <translation id="8847988622838149491">USB</translation>
-<translation id="884828189055900810">禁止網站取得攝影機位置或對應你的房間</translation>
+<translation id="884828189055900810">禁止網站接收攝錄機位置或對應您的房間佈局</translation>
 <translation id="8853345339104747198"><ph name="TAB_TITLE" /> (分頁)</translation>
 <translation id="885701979325669005">儲存設備</translation>
 <translation id="889338405075704026">前往 Chrome 設定</translation>

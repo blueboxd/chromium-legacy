@@ -9,7 +9,6 @@
 #include "chrome/browser/sharing/sharing_message_handler.h"
 #include "chrome/browser/sharing/sharing_message_sender.h"
 #include "chrome/browser/sharing/sharing_service.h"
-
 #include "testing/gmock/include/gmock/gmock.h"
 
 class MockSharingService : public SharingService {

@@ -16,22 +16,22 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "base/sequenced_task_runner.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
+#include "chrome/browser/chromeos/child_accounts/time_limits/app_activity_report_interface.h"
 #include "chrome/browser/chromeos/child_accounts/usage_time_state_notifier.h"
 #include "chrome/browser/chromeos/policy/status_collector/status_collector.h"
 #include "components/policy/proto/device_management_backend.pb.h"
+
+class Profile;
 
 namespace chromeos {
 namespace system {
 class StatisticsProvider;
 }
 }  // namespace chromeos
-
-namespace user_manager {
-class User;
-}
 
 class PrefService;
 
@@ -66,6 +66,7 @@ class ChildStatusCollector : public StatusCollector,
   // activity reporting daily data aggregation. It is represented by the
   // distance from midnight.
   ChildStatusCollector(PrefService* pref_service,
+                       Profile* profile,
                        chromeos::system::StatisticsProvider* provider,
                        const AndroidStatusFetcher& android_status_fetcher,
                        base::TimeDelta activity_day_start);
@@ -103,14 +104,14 @@ class ChildStatusCollector : public StatusCollector,
   // session (i.e. it is not device data).
   bool FillUserSpecificFields(
       scoped_refptr<ChildStatusCollectorState> state,
-      enterprise_management::ChildStatusReportRequest* status,
-      const user_manager::User* user);
+      enterprise_management::ChildStatusReportRequest* status);
 
   // Helpers for the various portions of child status report. Return true if
   // they actually report any status. Functions that queue async queries take a
   // |ChildStatusCollectorState| instance.
   bool GetActivityTimes(
       enterprise_management::ChildStatusReportRequest* status);
+  bool GetAppActivity(enterprise_management::ChildStatusReportRequest* status);
   bool GetVersionInfo(enterprise_management::ChildStatusReportRequest* status);
   // Queues async queries!
   bool GetAndroidStatus(const scoped_refptr<ChildStatusCollectorState>& state);
@@ -118,8 +119,15 @@ class ChildStatusCollector : public StatusCollector,
   // Update the cached values of the reporting settings.
   void UpdateReportingSettings();
 
+  // Called to update the stored app activity data, after the report with app
+  // activity was submitted.
+  void OnAppActivityReportSubmitted();
+
   // Mainly used to store activity periods for reporting. Not owned.
   PrefService* const pref_service_;
+
+  // Profile of the user that the status is collected for.
+  Profile* const profile_;
 
   // The last time an active state check was performed.
   base::Time last_active_check_;
@@ -134,6 +142,10 @@ class ChildStatusCollector : public StatusCollector,
   // unsuccessful uploads don't result in dropped data.
   int64_t last_reported_day_ = 0;
   int duration_for_last_reported_day_ = 0;
+
+  // The parameters associated with last app activity report.
+  base::Optional<chromeos::app_time::AppActivityReportInterface::ReportParams>
+      last_report_params_;
 
   base::RepeatingTimer update_child_usage_timer_;
 

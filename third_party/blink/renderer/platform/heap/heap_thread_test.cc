@@ -162,7 +162,8 @@ class PersistentSameThreadCheckTester : public AlternatingThreadTester {
 #if DCHECK_IS_ON()
 // TODO(keishi) This test is flaky on mac-rel bot.
 // crbug.com/709069
-#if !defined(OS_MACOSX)
+// This test is also flaky on Linux. crbug.com/1043580.
+#if !defined(OS_MACOSX) && !defined(OS_LINUX)
 TEST_F(HeapThreadDeathTest, PersistentSameThreadCheck) {
   EXPECT_DEATH(PersistentSameThreadCheckTester().Test(), "");
 }

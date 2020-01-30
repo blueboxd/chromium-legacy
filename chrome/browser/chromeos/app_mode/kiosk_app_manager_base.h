@@ -62,6 +62,7 @@ class KioskAppManagerBase : public KioskAppDataDelegate {
   void GetKioskAppIconCacheDir(base::FilePath* cache_dir) const override;
   void OnKioskAppDataChanged(const std::string& app_id) const override;
   void OnKioskAppDataLoadFailure(const std::string& app_id) const override;
+  void OnExternalCacheDamaged(const std::string& app_id) override;
 
   // Gets whether the bailout shortcut is disabled.
   bool GetDisableBailoutShortcut() const;

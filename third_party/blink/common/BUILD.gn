@@ -74,10 +74,10 @@ jumbo_source_set("common") {
     "messaging/message_port_channel.cc",
     "messaging/message_port_descriptor.cc",
     "messaging/message_port_descriptor_mojom_traits.cc",
-    "messaging/simple_message_port.cc",
     "messaging/string_message_codec.cc",
     "messaging/transferable_message.cc",
     "messaging/transferable_message_mojom_traits.cc",
+    "messaging/web_message_port.cc",
     "mime_util/mime_util.cc",
     "notifications/notification_mojom_traits.cc",
     "notifications/notification_resources.cc",
@@ -201,8 +201,8 @@ jumbo_source_set("common_unittests_sources") {
     # they are excluded as they require V8 environment but V8 snapshot is
     # not available in the current minimum test setting.
     sources += [
-      "messaging/simple_message_port_unittest.cc",
       "messaging/string_message_codec_unittest.cc",
+      "messaging/web_message_port_unittest.cc",
     ]
   }
 

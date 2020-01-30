@@ -5,7 +5,10 @@
 #ifndef COMPONENTS_SESSIONS_CORE_COMMAND_STORAGE_MANAGER_H_
 #define COMPONENTS_SESSIONS_CORE_COMMAND_STORAGE_MANAGER_H_
 
+#include <stddef.h>
+
 #include <memory>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/files/file_path.h"
@@ -37,11 +40,15 @@ class SESSIONS_EXPORT CommandStorageManager {
 
   // Creates a new CommandStorageManager. After creation you need to invoke
   // Init. |delegate| will remain owned by the creator and it is guaranteed
-  // that its lifetime surpasses this class.
-  // |type| gives the type of session service, |path| the path to save files to.
+  // that its lifetime surpasses this class. |path| is the path to save files
+  // to. If |enable_crypto| is true, the contents of the file are encrypted.
   CommandStorageManager(const base::FilePath& path,
-                        CommandStorageManagerDelegate* delegate);
+                        CommandStorageManagerDelegate* delegate,
+                        bool enable_crypto = false);
   virtual ~CommandStorageManager();
+
+  // Helper to generate a new key.
+  static std::vector<uint8_t> CreateCryptoKey();
 
   // Returns the set of commands which were scheduled to be written. Once
   // committed to the backend, the commands are removed from here.
@@ -88,9 +95,11 @@ class SESSIONS_EXPORT CommandStorageManager {
   // occurred.
   bool HasPendingSave() const;
 
-  // Requests the commands for the current session.
+  // Requests the commands for the current session. If |decryption_key| is
+  // non-empty it is used to decrypt the contents of the file.
   base::CancelableTaskTracker::TaskId ScheduleGetCurrentSessionCommands(
       GetCommandsCallback callback,
+      const std::vector<uint8_t>& decryption_key,
       base::CancelableTaskTracker* tracker);
 
  protected:
@@ -121,6 +130,9 @@ class SESSIONS_EXPORT CommandStorageManager {
 
   // The backend object which reads and saves commands.
   scoped_refptr<CommandStorageBackend> backend_;
+
+  // If true, all commands are encrypted.
+  bool use_crypto_ = false;
 
   // Commands we need to send over to the backend.
   std::vector<std::unique_ptr<SessionCommand>> pending_commands_;

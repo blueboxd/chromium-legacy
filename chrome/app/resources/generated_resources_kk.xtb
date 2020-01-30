@@ -26,7 +26,6 @@
 <translation id="1031362278801463162">Алдын ала көріністі жүктеу</translation>
 <translation id="1032605640136438169">Жаңа шарттарды қарап шығыңыз.</translation>
 <translation id="103279545524624934">Android қолданбаларын орнату үшін дискіде орын босатыңыз.</translation>
-<translation id="1033343386521881354">Басып шығару серверінен 1 принтер табылды.</translation>
 <translation id="1033780634303702874">Сериялық құрылғыларыңызға кіру</translation>
 <translation id="1034942643314881546">Қолданбалардың кескінін жасау үшін adb-ді іске қосу</translation>
 <translation id="1036348656032585052">Өшіру</translation>
@@ -34,7 +33,6 @@
 <translation id="1036982837258183574">Толық экран режимінен шығу үшін |<ph name="ACCELERATOR" />| пернесін басыңыз</translation>
 <translation id="1038168778161626396">Тек шифрдан шығару</translation>
 <translation id="1039337018183941703">Файл жарамсыз немесе бүлінген</translation>
-<translation id="1039850285407663109">Таңдалған файл белгісіз, сондықтан қауіпті болуы мүмкін. Осы файлды ашпас бұрын, оны тексергеніңіз жөн.</translation>
 <translation id="1041175011127912238">Бұл бет жауап бермей жатыр.</translation>
 <translation id="1041263367839475438">Қолжетімді құрылғылар</translation>
 <translation id="1042174272890264476">Сонымен қатар компьютеріңізге <ph name="SHORT_PRODUCT_NAME" /> RLZ кітапханасы ендірілген. RLZ кітапханасы белгілі бір науқан арқылы жүргізілген іздеулер мен <ph name="SHORT_PRODUCT_NAME" /> пайдалану мүмкіндігін өлшеу үшін бірегей емес, жеке анықталмайтын тегті тағайындайды. Бұл белгілер кейде <ph name="PRODUCT_NAME" /> өніміндегі Google Search сұрауларында пайда болады.</translation>
@@ -636,7 +634,6 @@
 <translation id="1858585891038687145">Бағдарламалық жасақтама авторларын анықтауда осы сертификатқа сену</translation>
 <translation id="1861262398884155592">Бұл қалта бос</translation>
 <translation id="1863182668524159459">Сериялық порттар табылмады.</translation>
-<translation id="1863552924692672565"><ph name="FILE_NAME" /> – белгісіз файл. Қатерді азайту үшін файлды тексеріңіз.</translation>
 <translation id="1864111464094315414">Кіру</translation>
 <translation id="1864400682872660285">Салқындатқыш</translation>
 <translation id="1864454756846565995">USB-C құрылғысы (артқы ұяшық)</translation>
@@ -3939,7 +3936,7 @@
 <translation id="6545864417968258051">Bluetooth құрылғыларын іздеу</translation>
 <translation id="6545867563032584178">Микрофон Mac жүйесінің параметрлерінде өшірілген.</translation>
 <translation id="6547354035488017500">Кемінде 512 MБ орын босатпасаңыз, құрылғы жауап бермейтін болады. Бұл үшін файлдарды құрылғының жадынан жойыңыз.</translation>
-<translation id="6549966385318247177">Бұл ересектерге арналған мазмұнға байланысты бөгелді.</translation>
+<translation id="6549966385318247177">Бұл — ересектерге арналған мазмұнға байланысты бөгелді.</translation>
 <translation id="6550675742724504774">Опциялар</translation>
 <translation id="6551508934388063976">Пәрмен қолжетімсіз. Жаңа терезе ашу үшін Ctrl+N тіркесімін басыңыз.</translation>
 <translation id="6551612971599078809">Сайт USB құрылғысын пайдалануда</translation>
@@ -4022,7 +4019,6 @@
 <translation id="6678717876183468697">Сұрау URL мекенжайы</translation>
 <translation id="6680442031740878064">Бос: <ph name="AVAILABLE_SPACE" /></translation>
 <translation id="6680650203439190394">Жылдамдық</translation>
-<translation id="6681301928961274620">Басып шығару серверінен бірде-бір принтер табылмады.</translation>
 <translation id="6681668084120808868">Фотосуретке түсіру</translation>
 <translation id="6681964764822470072">"<ph name="APP_NAME" />" жойылады.</translation>
 <translation id="668599234725812620">Google Play дүкенін ашу</translation>
@@ -5551,7 +5547,6 @@
 <translation id="8794025342371547160">Шектелген IP мекенжайы</translation>
 <translation id="879413103056696865">Хотспот қосулы кезде, <ph name="PHONE_NAME" />:</translation>
 <translation id="8795916974678578410">Жаңа терезе</translation>
-<translation id="8797086401386164142">Басып шығару серверінен <ph name="NUM_PRINTERS" /> принтер табылды.</translation>
 <translation id="8797459392481275117">Бұл сайт ешқашан аударылмасын</translation>
 <translation id="8798099450830957504">Әдепкі</translation>
 <translation id="8798441408945964110">Провайдер аты</translation>

@@ -14,6 +14,7 @@
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/geometry/safe_integer_conversions.h"
 #include "ui/native_theme/native_theme.h"
+#include "ui/views/views_features.h"
 
 namespace {
 
@@ -154,6 +155,11 @@ bool ThemeServiceWin::GetPlatformHighContrastColor(int id,
       break;
 
     // Highlight/Selected Background
+    case ThemeProperties::COLOR_TOOLBAR_INK_DROP:
+      if (!base::FeatureList::IsEnabled(
+              views::features::kEnablePlatformHighContrastInkDrop))
+        return false;
+      FALLTHROUGH;
     case ThemeProperties::COLOR_OMNIBOX_RESULTS_BG_SELECTED:
     case ThemeProperties::COLOR_OMNIBOX_RESULTS_BG_HOVERED:
       system_theme_color = ui::NativeTheme::SystemThemeColor::kHighlight;

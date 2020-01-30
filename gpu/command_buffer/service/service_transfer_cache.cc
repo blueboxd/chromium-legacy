@@ -75,20 +75,26 @@ void DumpMemoryForYUVImageTransferCacheEntry(
   DCHECK(entry->is_yuv());
 
   std::vector<size_t> plane_sizes = entry->GetPlaneCachedSizes();
+  if (plane_sizes.empty()) {
+    // This entry corresponds to an unmipped hardware decoded image.
+    MemoryAllocatorDump* dump = pmd->CreateAllocatorDump(
+        dump_base_name + base::StringPrintf("/dma_buf"));
+    dump->AddScalar(MemoryAllocatorDump::kNameSize,
+                    MemoryAllocatorDump::kUnitsBytes, entry->CachedSize());
+    // We don't need to establish shared ownership of the dump with Skia: the
+    // reason is that Skia doesn't own the textures for hardware decoded images,
+    // so it won't count them in its memory dump (because
+    // SkiaGpuTraceMemoryDump::shouldDumpWrappedObjects() returns false).
+    return;
+  }
+
   for (size_t i = 0u; i < entry->num_planes(); ++i) {
     MemoryAllocatorDump* dump = pmd->CreateAllocatorDump(
         dump_base_name +
         base::StringPrintf("/plane_%0u", base::checked_cast<uint32_t>(i)));
-    if (plane_sizes.empty()) {
-      // Hardware-decoded image case.
-      dump->AddScalar(MemoryAllocatorDump::kNameSize,
-                      MemoryAllocatorDump::kUnitsBytes,
-                      (i == SkYUVAIndex::kY_Index) ? entry->CachedSize() : 0u);
-    } else {
-      DCHECK_EQ(plane_sizes.size(), entry->num_planes());
-      dump->AddScalar(MemoryAllocatorDump::kNameSize,
-                      MemoryAllocatorDump::kUnitsBytes, plane_sizes.at(i));
-    }
+    DCHECK_EQ(plane_sizes.size(), entry->num_planes());
+    dump->AddScalar(MemoryAllocatorDump::kNameSize,
+                    MemoryAllocatorDump::kUnitsBytes, plane_sizes.at(i));
 
     // If entry->image() is backed by multiple textures,
     // getBackendTexture() would end up flattening them to RGB, which is

@@ -40,128 +40,6 @@ namespace flat_rule = url_pattern_index::flat;
 namespace dnr_api = api::declarative_net_request;
 using PageAccess = PermissionsData::PageAccess;
 
-// Describes the different cases pertaining to initiator checks to find the main
-// frame url for a main frame subresource.
-// These values are persisted to logs. Entries should not be renumbered and
-// numeric values should never be reused.
-enum class PageAllowingInitiatorCheck {
-  kInitiatorAbsent = 0,
-  kNeitherCandidateMatchesInitiator = 1,
-  kCommittedCandidateMatchesInitiator = 2,
-  kPendingCandidateMatchesInitiator = 3,
-  kBothCandidatesMatchInitiator = 4,
-  kMaxValue = kBothCandidatesMatchInitiator,
-};
-
-// Returns true if |request| came from a page from the set of
-// |allowed_pages|. This necessitates finding the main frame url
-// corresponding to |request|. The logic behind how this is done is subtle and
-// as follows:
-//   - Requests made by the browser (not including navigation/frame requests) or
-//     service worker: These requests don't correspond to a render frame and
-//     hence they are not considered for allowing using the page
-//     allowing API.
-//   - Requests that correspond to a page: These include:
-//     - Main frame request: To check if it is allowed, check the request
-//       url against the set of allowed pages.
-//     - Main frame subresource request: We might not be able to
-//       deterministically map a main frame subresource to the main frame url.
-//       This is because when a main frame subresource request reaches the
-//       browser, the main frame navigation would have been committed in the
-//       renderer, but the browser may not have been notified of the commit.
-//       Hence the FrameData for the request may not have the correct value for
-//       the |last_committed_main_frame_url|. To get around this we use
-//       FrameData's |pending_main_frame_url| which is populated in
-//       WebContentsObserver::ReadyToCommitNavigation. This happens before the
-//       renderer is asked to commit the navigation.
-//     - Subframe subresources: When a subframe subresource request reaches the
-//       browser, it is assured that the browser knows about its parent frame
-//       commit. For these requests, use the |last_committed_main_frame_url| and
-//       match it against the set of allowed pages.
-bool IsRequestPageAllowed(const WebRequestInfo& request,
-                          const URLPatternSet& allowed_pages) {
-  if (allowed_pages.is_empty())
-    return false;
-
-  // If this is a main frame request, |request.url| will be the main frame url.
-  if (request.type == content::ResourceType::kMainFrame)
-    return allowed_pages.MatchesURL(request.url);
-
-  // This should happen for requests not corresponding to a render frame e.g.
-  // non-navigation browser requests or service worker requests.
-  if (request.frame_data.frame_id == ExtensionApiFrameIdMap::kInvalidFrameId)
-    return false;
-
-  const bool evaluate_pending_main_frame_url =
-      request.frame_data.pending_main_frame_url &&
-      *request.frame_data.pending_main_frame_url !=
-          request.frame_data.last_committed_main_frame_url;
-
-  if (!evaluate_pending_main_frame_url) {
-    return allowed_pages.MatchesURL(
-        request.frame_data.last_committed_main_frame_url);
-  }
-
-  // |pending_main_frame_url| should only be set for main-frame subresource
-  // loads.
-  DCHECK_EQ(ExtensionApiFrameIdMap::kTopFrameId, request.frame_data.frame_id);
-
-  auto log_uma = [](PageAllowingInitiatorCheck value) {
-    UMA_HISTOGRAM_ENUMERATION(
-        "Extensions.DeclarativeNetRequest.PageWhitelistingInitiatorCheck",
-        value);
-  };
-
-  // At this point, we are evaluating a main-frame subresource. There are two
-  // candidate main frame urls - |pending_main_frame_url| and
-  // |last_committed_main_frame_url|. To predict the correct main frame url,
-  // compare the request initiator (origin of the requesting frame i.e. origin
-  // of the main frame in this case) with the candidate urls' origins. If only
-  // one of the candidate url's origin matches the request initiator, we can be
-  // reasonably sure that it is the correct main frame url.
-  if (!request.initiator) {
-    log_uma(PageAllowingInitiatorCheck::kInitiatorAbsent);
-  } else {
-    const bool initiator_matches_pending_url =
-        url::Origin::Create(*request.frame_data.pending_main_frame_url) ==
-        *request.initiator;
-    const bool initiator_matches_committed_url =
-        url::Origin::Create(request.frame_data.last_committed_main_frame_url) ==
-        *request.initiator;
-
-    if (initiator_matches_pending_url && !initiator_matches_committed_url) {
-      // We predict that |pending_main_frame_url| is the actual main frame url.
-      log_uma(PageAllowingInitiatorCheck::kPendingCandidateMatchesInitiator);
-      return allowed_pages.MatchesURL(
-          *request.frame_data.pending_main_frame_url);
-    }
-
-    if (initiator_matches_committed_url && !initiator_matches_pending_url) {
-      // We predict that |last_committed_main_frame_url| is the actual main
-      // frame url.
-      log_uma(PageAllowingInitiatorCheck::kCommittedCandidateMatchesInitiator);
-      return allowed_pages.MatchesURL(
-          request.frame_data.last_committed_main_frame_url);
-    }
-
-    if (initiator_matches_pending_url && initiator_matches_committed_url) {
-      log_uma(PageAllowingInitiatorCheck::kBothCandidatesMatchInitiator);
-    } else {
-      DCHECK(!initiator_matches_pending_url);
-      DCHECK(!initiator_matches_committed_url);
-      log_uma(PageAllowingInitiatorCheck::kNeitherCandidateMatchesInitiator);
-    }
-  }
-
-  // If we are not able to correctly predict the main frame url, simply test
-  // against both the possible URLs. This means a small proportion of main frame
-  // subresource requests might be incorrectly allowed by the page
-  // allowing API.
-  return allowed_pages.MatchesURL(
-             request.frame_data.last_committed_main_frame_url) ||
-         allowed_pages.MatchesURL(*request.frame_data.pending_main_frame_url);
-}
-
 void NotifyRequestWithheld(const ExtensionId& extension_id,
                            const WebRequestInfo& request) {
   DCHECK(ExtensionsAPIClient::Get());
@@ -201,15 +79,13 @@ RulesetManager::~RulesetManager() {
 }
 
 void RulesetManager::AddRuleset(const ExtensionId& extension_id,
-                                std::unique_ptr<CompositeMatcher> matcher,
-                                URLPatternSet allowed_pages) {
+                                std::unique_ptr<CompositeMatcher> matcher) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(IsAPIAvailable());
 
   bool inserted;
-  std::tie(std::ignore, inserted) =
-      rulesets_.emplace(extension_id, prefs_->GetInstallTime(extension_id),
-                        std::move(matcher), std::move(allowed_pages));
+  std::tie(std::ignore, inserted) = rulesets_.emplace(
+      extension_id, prefs_->GetInstallTime(extension_id), std::move(matcher));
   DCHECK(inserted) << "AddRuleset called twice in succession for "
                    << extension_id;
 
@@ -264,30 +140,6 @@ CompositeMatcher* RulesetManager::GetMatcherForExtension(
 
   DCHECK(iter->matcher);
   return iter->matcher.get();
-}
-
-void RulesetManager::UpdateAllowedPages(const ExtensionId& extension_id,
-                                        URLPatternSet allowed_pages) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(IsAPIAvailable());
-
-  // This is O(n) but it's ok since the number of extensions will be small and
-  // we have to maintain the rulesets sorted in decreasing order of installation
-  // time.
-  auto iter =
-      std::find_if(rulesets_.begin(), rulesets_.end(),
-                   [&extension_id](const ExtensionRulesetData& ruleset) {
-                     return ruleset.extension_id == extension_id;
-                   });
-
-  // There must be ExtensionRulesetData corresponding to this |extension_id|.
-  DCHECK(iter != rulesets_.end());
-
-  iter->allowed_pages = std::move(allowed_pages);
-
-  // Clear the renderers' cache so that they take the updated allowed pages
-  // into account.
-  ClearRendererCacheOnNavigation();
 }
 
 const std::vector<RequestAction>& RulesetManager::EvaluateRequest(
@@ -358,12 +210,10 @@ void RulesetManager::SetObserverForTest(TestObserver* observer) {
 RulesetManager::ExtensionRulesetData::ExtensionRulesetData(
     const ExtensionId& extension_id,
     const base::Time& extension_install_time,
-    std::unique_ptr<CompositeMatcher> matcher,
-    URLPatternSet allowed_pages)
+    std::unique_ptr<CompositeMatcher> matcher)
     : extension_id(extension_id),
       extension_install_time(extension_install_time),
-      matcher(std::move(matcher)),
-      allowed_pages(std::move(allowed_pages)) {}
+      matcher(std::move(matcher)) {}
 RulesetManager::ExtensionRulesetData::~ExtensionRulesetData() = default;
 RulesetManager::ExtensionRulesetData::ExtensionRulesetData(
     ExtensionRulesetData&& other) = default;
@@ -566,9 +416,6 @@ bool RulesetManager::ShouldEvaluateRulesetForRequest(
       !util::IsIncognitoEnabled(ruleset.extension_id, browser_context_)) {
     return false;
   }
-
-  if (IsRequestPageAllowed(request, ruleset.allowed_pages))
-    return false;
 
   return true;
 }

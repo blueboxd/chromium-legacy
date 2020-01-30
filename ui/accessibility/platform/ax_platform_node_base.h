@@ -248,6 +248,10 @@ class AX_EXPORT AXPlatformNodeBase : public AXPlatformNode {
   // Return the number of instances of AXPlatformNodeBase, for leak testing.
   static size_t GetInstanceCountForTesting();
 
+  static void SetOnNotifyEventCallbackForTesting(
+      ax::mojom::Event event_type,
+      base::RepeatingClosure callback);
+
   // This method finds text boundaries in the text used for platform text APIs.
   // Implementations may use side-channel data such as line or word indices to
   // produce appropriate results.

@@ -26,7 +26,6 @@
 <translation id="1031362278801463162">Նախադիտման բեռնում</translation>
 <translation id="1032605640136438169">Ծանոթացեք նոր պայմաններին</translation>
 <translation id="103279545524624934">Android հավելվածները գործարկելու համար ազատեք սկավառակի տարածքը:</translation>
-<translation id="1033343386521881354">Տպման սերվերում գտնվել է 1 տպիչ։</translation>
 <translation id="1033780634303702874">Մուտք գործել ձեր հաջորդական սարքեր</translation>
 <translation id="1034942643314881546">Միացրեք ADB-ն՝ հավելվածների պատկեր ստեղծելու համար</translation>
 <translation id="1036348656032585052">Անջատել</translation>
@@ -34,7 +33,6 @@
 <translation id="1036982837258183574">Լիաէկրան ռեժիմից դուրս գալու համար սեղմեք |<ph name="ACCELERATOR" />|</translation>
 <translation id="1038168778161626396">Միայն կոդավորում</translation>
 <translation id="1039337018183941703">Ֆայլն անվավեր է կամ վնասված</translation>
-<translation id="1039850285407663109">Ընտրված ֆայլն անհայտ է և կարող է վտանգավոր լինել։ Նախքան բացելը խորհուրդ ենք տալիս ստուգել այն։</translation>
 <translation id="1041175011127912238">Էջը չի արձագանքում</translation>
 <translation id="1041263367839475438">Հասանելի սարքեր</translation>
 <translation id="1042174272890264476">Ձեր համակարգչում նաև առկա է <ph name="SHORT_PRODUCT_NAME" />-ի ներկառուցված RLZ գրադարանը: RLZ-ը նշանակում է ոչ եզակի, անձը չնույնացնող ներդիր` որոնումների և <ph name="SHORT_PRODUCT_NAME" />-ի օգտագործման չափումների համար` նախագծված հատուկ գովազդային արշավի կողմից: Այս պիտակները երբեմն ցուցադրվում են Google որոնման հարցումների մեջ <ph name="PRODUCT_NAME" />-ում:</translation>
@@ -640,7 +638,6 @@
 <translation id="1858585891038687145">Վստահել այս հավաստագրին ծրագրակազմ արտադրողների նույնականացման համար</translation>
 <translation id="1861262398884155592">Այս պանակը դատարկ է</translation>
 <translation id="1863182668524159459">Հաջորդական միացքներ չեն գտնվել</translation>
-<translation id="1863552924692672565"><ph name="FILE_NAME" /> ֆայլն անհայտ է։ Ստուգեք այն՝ ռիսկը նվազագույնի հասցնելու համար։</translation>
 <translation id="1864111464094315414">Մուտք</translation>
 <translation id="1864400682872660285">Սառը</translation>
 <translation id="1864454756846565995">USB-C սարք (հետևի միացք)</translation>
@@ -4029,7 +4026,6 @@
 <translation id="6678717876183468697">Հարցման URL-ը</translation>
 <translation id="6680442031740878064">Հասանելի է <ph name="AVAILABLE_SPACE" /></translation>
 <translation id="6680650203439190394">Խոսքի արագությունը</translation>
-<translation id="6681301928961274620">Տպման սերվերում որևէ տպիչ չի գտնվել։</translation>
 <translation id="6681668084120808868">Լուսանկարել</translation>
 <translation id="6681964764822470072">«<ph name="APP_NAME" />» հավելվածը կհեռացվի:</translation>
 <translation id="668599234725812620">Բացել Google Play-ը</translation>
@@ -5557,7 +5553,6 @@
 <translation id="8794025342371547160">Սահմանափակված IP</translation>
 <translation id="879413103056696865">Երբ միացնեք թեժ կետը, «<ph name="PHONE_NAME" />» սարքը՝</translation>
 <translation id="8795916974678578410">New Window</translation>
-<translation id="8797086401386164142">Տպման սերվերում գտնվել է <ph name="NUM_PRINTERS" /> տպիչ։</translation>
 <translation id="8797459392481275117">Երբեք չթարգմանել այս կայքը</translation>
 <translation id="8798099450830957504">Կանխադրված</translation>
 <translation id="8798441408945964110">Մատակարարի անունը</translation>

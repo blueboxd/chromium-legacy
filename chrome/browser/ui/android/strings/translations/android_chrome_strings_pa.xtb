@@ -514,7 +514,7 @@
 <translation id="4915549754973153784">ਡੀਵਾਈਸਾਂ ਲਈ ਸਕੈਨ ਕਰਨ ਦੌਰਾਨ <ph name="BEGIN_LINK" />ਮਦਦ ਪ੍ਰਾਪਤ ਕਰੋ<ph name="END_LINK" />…</translation>
 <translation id="4921180162323349895">{FILE_COUNT,plural, =1{# ਪੰਨਾ}one{# ਪੰਨਾ}other{# ਪੰਨੇ}}</translation>
 <translation id="4932247056774066048">ਕਿਉਂਕਿ ਤੁਸੀਂ <ph name="DOMAIN_NAME" /> ਵੱਲੋਂ ਪ੍ਰਬੰਧਿਤ ਕੀਤੇ ਖਾਤੇ ਤੋਂ ਸਾਈਨ-ਆਊਟ ਕਰ ਰਹੇ ਹੋ, ਤਾਂ ਇਸ ਡੀਵਾਈਸ ਤੋਂ ਤੁਹਾਡਾ Chrome ਡਾਟਾ ਮਿਟਾ ਦਿੱਤਾ ਜਾਵੇਗਾ। ਪਰ ਇਹ ਤੁਹਾਡੇ Google ਖਾਤੇ ਵਿੱਚ ਬਰਕਰਾਰ ਰਹੇਗਾ।</translation>
-<translation id="4935305910887312910">ਸਾਈਟਾਂ ਨੂੰ ਤੁਹਾਡੇ ਕੈਮਰੇ ਦੀ ਸਥਿਤੀ ਅਤੇ ਤੁਹਾਡੇ ਕਮਰੇ ਦੀ ਰੂਪ-ਰੇਖਾ ਜਾਣਨ ਦੇਣ ਤੋਂ ਪਹਿਲਾਂ ਪੁੱਛੋ (ਸਿਫ਼ਾਰਸ਼ੀ)</translation>
+<translation id="4935305910887312910">ਸਾਈਟਾਂ ਨੂੰ ਤੁਹਾਡੇ ਕੈਮਰੇ ਦੀ ਸਥਿਤੀ ਪ੍ਰਾਪਤ ਕਰਨ ਜਾਂ ਤੁਹਾਡੇ ਕਮਰੇ ਨੂੰ ਮਾਪਣ ਦੇਣ ਤੋਂ ਪਹਿਲਾਂ ਪੁੱਛੋ (ਸਿਫ਼ਾਰਸ਼ੀ)</translation>
 <translation id="4943703118917034429">ਆਭਾਸੀ ਵਾਸਤਵਿਕਤਾ</translation>
 <translation id="4943872375798546930">ਕੋਈ ਨਤੀਜੇ ਨਹੀਂ</translation>
 <translation id="4958708863221495346"><ph name="URL_OF_THE_CURRENT_TAB" /> ਤੁਹਾਡੀ ਸਕ੍ਰੀਨ ਨੂੰ ਸਾਂਝਾ ਕਰ ਰਿਹਾ ਹੈ</translation>
@@ -1045,7 +1045,7 @@
 <translation id="883806473910249246">ਸਮੱਗਰੀ ਡਾਊਨਲੋਡ ਕਰਨ ਸਮੇਂ ਕੋਈ ਗੜਬੜ ਹੋਈ।</translation>
 <translation id="8840953339110955557">ਇਹ ਪੰਨਾ ਆਨਲਾਈਨ ਵਰਜਨ ਤੋਂ ਵੱਖਰਾ ਹੋ ਸਕਦਾ ਹੈ।</translation>
 <translation id="8847988622838149491">USB</translation>
-<translation id="884828189055900810">ਸਾਈਟਾਂ ਨੂੰ ਤੁਹਾਡੇ ਕੈਮਰੇ ਦੀ ਸਥਿਤੀ ਜਾਂ ਤੁਹਾਡੇ ਕਮਰੇ ਦੀ ਰੂਪ-ਰੇਖਾ ਜਾਣਨ ਤੋਂ ਬਲਾਕ ਕਰੋ</translation>
+<translation id="884828189055900810">ਸਾਈਟਾਂ ਨੂੰ ਤੁਹਾਡੇ ਕੈਮਰੇ ਦੀ ਸਥਿਤੀ ਪ੍ਰਾਪਤ ਕਰਨ ਜਾਂ ਤੁਹਾਡੇ ਕਮਰੇ ਨੂੰ ਮਾਪਣ ਤੋਂ ਬਲਾਕ ਕਰੋ</translation>
 <translation id="8853345339104747198"><ph name="TAB_TITLE" />, ਟੈਬ</translation>
 <translation id="885701979325669005">ਸਟੋਰੇਜ</translation>
 <translation id="889338405075704026">Chrome ਸੈਟਿੰਗਾਂ 'ਤੇ ਜਾਓ</translation>

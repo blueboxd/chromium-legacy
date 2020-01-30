@@ -219,6 +219,8 @@ class MediaNotificationService
         presentation_manager_;
   };
 
+  void OnItemUnfrozen(const std::string& id);
+
   void OnReceivedAudioFocusRequests(
       std::vector<media_session::mojom::AudioFocusRequestStatePtr> sessions);
 

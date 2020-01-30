@@ -2037,22 +2037,6 @@ WebFrame* WebLocalFrameImpl::FindFrameByName(const WebString& name) {
   return WebFrame::FromFrame(GetFrame()->Tree().FindFrameByName(name));
 }
 
-bool WebLocalFrameImpl::ScrollTo(const gfx::Point& scrollPosition,
-                                 bool animate,
-                                 base::OnceClosure on_finish) {
-  if (!GetFrame())
-    return false;
-  ScrollableArea* area = GetFrame()->View()->GetScrollableArea();
-  ScrollOffset offset = area->ScrollPositionToOffset(
-      FloatPoint(scrollPosition.x(), scrollPosition.y()));
-  area->SetScrollOffset(
-      offset, mojom::blink::ScrollIntoViewParams::Type::kProgrammatic,
-      animate ? mojom::blink::ScrollIntoViewParams::Behavior::kSmooth
-              : mojom::blink::ScrollIntoViewParams::Behavior::kInstant,
-      ScrollableArea::ScrollCallback(std::move(on_finish)));
-  return true;
-}
-
 void WebLocalFrameImpl::SetEmbeddingToken(
     const base::UnguessableToken& embedding_token) {
   frame_->SetEmbeddingToken(embedding_token);

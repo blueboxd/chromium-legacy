@@ -19,7 +19,7 @@
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/lazy_task_runner.h"
+#include "base/task/lazy_thread_pool_task_runner.h"
 #include "base/task/post_task.h"
 #include "content/public/browser/browser_task_traits.h"
 
@@ -43,9 +43,9 @@ using std::set;
 
 base::SequencedTaskRunner* impl_task_runner() {
   constexpr base::TaskTraits kBlockingTraits = {
-      base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT};
-  static base::LazySequencedTaskRunner s_sequenced_task_task_runner =
-      LAZY_SEQUENCED_TASK_RUNNER_INITIALIZER(kBlockingTraits);
+      base::MayBlock(), base::TaskPriority::BEST_EFFORT};
+  static base::LazyThreadPoolSequencedTaskRunner s_sequenced_task_task_runner =
+      LAZY_THREAD_POOL_SEQUENCED_TASK_RUNNER_INITIALIZER(kBlockingTraits);
   return s_sequenced_task_task_runner.Get().get();
 }
 

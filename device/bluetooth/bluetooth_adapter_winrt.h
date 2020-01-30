@@ -212,6 +212,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterWinrt : public BluetoothAdapter {
   void RemoveAdvertisementReceivedHandler();
 
   bool is_initialized_ = false;
+  bool radio_access_allowed_ = false;
   std::string address_;
   std::string name_;
   std::unique_ptr<base::ScopedClosureRunner> on_init_;

@@ -163,6 +163,13 @@ void ShutdownSessionServiceAndWait(BrowserImpl* browser) {
   run_loop.Run();
 }
 
+std::unique_ptr<BrowserImpl> CreateBrowser(ProfileImpl* profile,
+                                           const std::string& persistence_id) {
+  Browser::PersistenceInfo info;
+  info.id = persistence_id;
+  return std::make_unique<BrowserImpl>(profile, &info);
+}
+
 }  // namespace
 
 using SessionServiceTest = WebLayerBrowserTest;
@@ -170,8 +177,7 @@ using SessionServiceTest = WebLayerBrowserTest;
 IN_PROC_BROWSER_TEST_F(SessionServiceTest, SingleTab) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
-  std::unique_ptr<BrowserImpl> browser =
-      std::make_unique<BrowserImpl>(GetProfile(), "x");
+  std::unique_ptr<BrowserImpl> browser = CreateBrowser(GetProfile(), "x");
   std::unique_ptr<Tab> tab = Tab::Create(GetProfile());
   browser->AddTab(tab.get());
   const GURL url = embedded_test_server()->GetURL("/simple_page.html");
@@ -180,7 +186,7 @@ IN_PROC_BROWSER_TEST_F(SessionServiceTest, SingleTab) {
   tab.reset();
   browser.reset();
 
-  browser = std::make_unique<BrowserImpl>(GetProfile(), "x");
+  browser = CreateBrowser(GetProfile(), "x");
   // Should be no tabs while waiting for restore.
   EXPECT_TRUE(browser->GetTabs().empty());
   // Wait for the restore and navigation to complete.
@@ -197,8 +203,7 @@ IN_PROC_BROWSER_TEST_F(SessionServiceTest, SingleTab) {
 IN_PROC_BROWSER_TEST_F(SessionServiceTest, TwoTabs) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
-  std::unique_ptr<BrowserImpl> browser =
-      std::make_unique<BrowserImpl>(GetProfile(), "x");
+  std::unique_ptr<BrowserImpl> browser = CreateBrowser(GetProfile(), "x");
   std::unique_ptr<Tab> tab1 = Tab::Create(GetProfile());
   browser->AddTab(tab1.get());
   const GURL url1 = embedded_test_server()->GetURL("/simple_page.html");
@@ -218,7 +223,7 @@ IN_PROC_BROWSER_TEST_F(SessionServiceTest, TwoTabs) {
     tab2.reset();
     browser.reset();
 
-    browser = std::make_unique<BrowserImpl>(GetProfile(), "x");
+    browser = CreateBrowser(GetProfile(), "x");
     // Should be no tabs while waiting for restore.
     EXPECT_TRUE(browser->GetTabs().empty()) << "iteration " << i;
     // Wait for the restore and navigation to complete. This waits for the
@@ -246,8 +251,7 @@ IN_PROC_BROWSER_TEST_F(SessionServiceTest, MoveBetweenBrowsers) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   // Create a browser with two tabs.
-  std::unique_ptr<BrowserImpl> browser1 =
-      std::make_unique<BrowserImpl>(GetProfile(), "x");
+  std::unique_ptr<BrowserImpl> browser1 = CreateBrowser(GetProfile(), "x");
   std::unique_ptr<Tab> tab1 = Tab::Create(GetProfile());
   browser1->AddTab(tab1.get());
   const GURL url1 = embedded_test_server()->GetURL("/simple_page.html");
@@ -260,8 +264,7 @@ IN_PROC_BROWSER_TEST_F(SessionServiceTest, MoveBetweenBrowsers) {
   browser1->SetActiveTab(tab2.get());
 
   // Create another browser with a single tab.
-  std::unique_ptr<BrowserImpl> browser2 =
-      std::make_unique<BrowserImpl>(GetProfile(), "y");
+  std::unique_ptr<BrowserImpl> browser2 = CreateBrowser(GetProfile(), "y");
   std::unique_ptr<Tab> tab3 = Tab::Create(GetProfile());
   browser2->AddTab(tab3.get());
   const GURL url3 = embedded_test_server()->GetURL("/simple_page3.html");
@@ -281,7 +284,7 @@ IN_PROC_BROWSER_TEST_F(SessionServiceTest, MoveBetweenBrowsers) {
   browser2.reset();
 
   // Restore the browsers.
-  browser1 = std::make_unique<BrowserImpl>(GetProfile(), "x");
+  browser1 = CreateBrowser(GetProfile(), "x");
   BrowserNavigationObserverImpl::WaitForNewTabToCompleteNavigation(
       browser1.get(), url1, 1);
   ASSERT_EQ(1u, browser1->GetTabs().size());
@@ -289,7 +292,7 @@ IN_PROC_BROWSER_TEST_F(SessionServiceTest, MoveBetweenBrowsers) {
                    ->GetNavigationController()
                    ->GetNavigationListSize());
 
-  browser2 = std::make_unique<BrowserImpl>(GetProfile(), "y");
+  browser2 = CreateBrowser(GetProfile(), "y");
   BrowserNavigationObserverImpl::WaitForNewTabToCompleteNavigation(
       browser2.get(), url2, 2);
   ASSERT_EQ(2u, browser2->GetTabs().size());

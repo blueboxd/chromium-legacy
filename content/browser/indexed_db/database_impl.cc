@@ -245,15 +245,6 @@ void DatabaseImpl::GetAll(int64_t transaction_id,
     return;
   }
 
-  if (!connection_->database()->IsObjectStoreIdInMetadata(object_store_id)) {
-    IndexedDBDatabaseError error(blink::mojom::IDBException::kUnknownError,
-                                 "Bad request");
-    std::move(callback).Run(
-        blink::mojom::IDBDatabaseGetAllResult::NewErrorResult(
-            blink::mojom::IDBError::New(error.code(), error.message())));
-    return;
-  }
-
   blink::mojom::IDBDatabase::GetAllCallback aborting_callback =
       CreateCallbackAbortOnDestruct<blink::mojom::IDBDatabase::GetAllCallback,
                                     blink::mojom::IDBDatabaseGetAllResultPtr>(
@@ -399,10 +390,6 @@ void DatabaseImpl::Count(
   if (!transaction)
     return;
 
-  if (!connection_->database()->IsObjectStoreIdAndMaybeIndexIdInMetadata(
-          object_store_id, index_id))
-    return;
-
   transaction->ScheduleTask(BindWeakOperation(
       &IndexedDBDatabase::CountOperation, connection_->database()->AsWeakPtr(),
       object_store_id, index_id,
@@ -426,9 +413,6 @@ void DatabaseImpl::DeleteRange(
   IndexedDBTransaction* transaction =
       connection_->GetTransaction(transaction_id);
   if (!transaction)
-    return;
-
-  if (!connection_->database()->IsObjectStoreIdInMetadata(object_store_id))
     return;
 
   transaction->ScheduleTask(BindWeakOperation(
@@ -475,9 +459,6 @@ void DatabaseImpl::Clear(
   IndexedDBTransaction* transaction =
       connection_->GetTransaction(transaction_id);
   if (!transaction)
-    return;
-
-  if (!connection_->database()->IsObjectStoreIdInMetadata(object_store_id))
     return;
 
   transaction->ScheduleTask(BindWeakOperation(

@@ -134,6 +134,7 @@
 <translation id="1994173015038366702">साइट URL</translation>
 <translation id="2000419248597011803">यसले ठेगाना पट्टी र खोज बाकसका केही कुकी र खोजहरूलाई तपाईंको पूर्वनिर्धारित खोज इन्जिनमा पठाउँछ</translation>
 <translation id="2002537628803770967">Google Pay को प्रयोग गर्ने क्रेडिट कार्ड र ठेगानाहरू</translation>
+<translation id="2012973609889389923">छिटो लोष हुने साइट</translation>
 <translation id="2013642289801508067">{FILE_COUNT,plural, =1{# फाइल}other{# फाइलहरू}}</translation>
 <translation id="2017836877785168846">ठेगाना पट्टीबाट इतिहास र स्वतः पूर्णतासम्बन्धी सुविधाहरूलाई खाली गर्दछ।</translation>
 <translation id="2021896219286479412">पूर्ण स्क्रिनको साइटका नियन्त्रणहरू</translation>
@@ -307,6 +308,7 @@
 <translation id="3298243779924642547">लाइट</translation>
 <translation id="3303414029551471755">सामग्री डाउनलोड गर्न अगाडि बढ्ने हो?</translation>
 <translation id="3306398118552023113">यो अनुप्रयोग Chrome मा चलिरहेको छ</translation>
+<translation id="3312292613668865961">साइटहरूलाई तपाईंको भर्चुअल रियालिटी (सिफारिस गरिएको)</translation>
 <translation id="3315103659806849044">तपाईं हाल आफ्ना सिंक तथा Google का सेवासम्बन्धी सेटिङहरूलाई आफू अनुकूल पार्दै हुनुहुन्छ। सिंक सेवा सक्रिय पार्ने कार्य पूरा गर्न स्क्रिन बटनको छेवैमा रहेको सुनिश्चित गर्नुहोस् नामक बटनमा ट्याप गर्नुहोस्। माथि नेभिगेसन गर्नुहोस्</translation>
 <translation id="3328801116991980348">साइट जानकारी</translation>
 <translation id="3333961966071413176">सबै सम्पर्कहरू</translation>
@@ -511,6 +513,7 @@
 <translation id="4915549754973153784">अन्य यन्त्रहरूलाई स्क्यान गर्दा <ph name="BEGIN_LINK" />मद्दत प्राप्त गर्नुहोस्<ph name="END_LINK" />…</translation>
 <translation id="4921180162323349895">{FILE_COUNT,plural, =1{# पृष्ठ}other{# पृष्ठहरू}}</translation>
 <translation id="4932247056774066048">तपाईं <ph name="DOMAIN_NAME" /> ले व्यवस्थापन गरेको खाताबाट साइन आउट गरिरहनुभएको हुनाले तपाईंको Chrome को डेटा यस यन्त्रबाट मेटाइने छ। यो डेटा तपाईंको Google खातामै रहिरहने छ।</translation>
+<translation id="4935305910887312910">साइटहरूलाई तपाईंको क्यामेराको स्थितिसम्बन्धी जानकारी प्राप्त गर्ने वा तपाईंको कोठाको नक्साङ्कन गर्ने अनुमति दिनुअघि सोध्नुहोस् (सिफारिस गरिएको)</translation>
 <translation id="4943703118917034429">भर्चुअल रियालिटी</translation>
 <translation id="4943872375798546930">कुनै नतिजा छैन</translation>
 <translation id="4958708863221495346"><ph name="URL_OF_THE_CURRENT_TAB" /> तपाईँको स्क्रिन आदान प्रदान गर्दैछ</translation>
@@ -742,6 +745,7 @@
 <translation id="6573431926118603307">तपाईँले आफ्ना अन्य यन्त्रहरूमा Chrome मा खोल्नुभएका ट्याबहरू यहाँ देखिनेछन्।</translation>
 <translation id="6583199322650523874">हालको पृष्ठलाई पुस्तक चिन्ह लगाउनुहोस्</translation>
 <translation id="6593061639179217415">डेस्कटप साइट</translation>
+<translation id="6597891566292541626">QR/बार कोडलाई यस फ्रेमभित्र पार्नुहोस्।</translation>
 <translation id="6600954340915313787">Chrome मा प्रतिलिपि गरियो</translation>
 <translation id="6608650720463149374"><ph name="GIGABYTES" /> जि.बि.</translation>
 <translation id="6612358246767739896">संरक्षित सामग्री</translation>
@@ -951,6 +955,7 @@
 <translation id="8109613176066109935">आफ्ना सबै यन्त्रमा पुस्तक चिन्हहरू प्राप्त गर्न सिंक गर्ने सुविधा सक्रिय गर्नुहोस्</translation>
 <translation id="8110087112193408731">तपाईंले Chrome मा गर्नुभएका क्रियाकलाप डिजिटल वेलबिइङमा देखाउने हो?</translation>
 <translation id="8116925261070264013">म्युट गरियो</translation>
+<translation id="8127542551745560481">गृहपृष्ठ सम्पदान गर्नुहोस्</translation>
 <translation id="813082847718468539">साइट जानकारी हेर्नुहोस्</translation>
 <translation id="8156139159503939589">तपाईं कुन कुन भाषा पढ्नुहुन्छ?</translation>
 <translation id="8168435359814927499">सामग्री</translation>
@@ -1022,6 +1027,7 @@
 <translation id="8676374126336081632">आगत मेटाउनुहोस्</translation>
 <translation id="8687353297350450808">{N_BARS,plural, =1{सङ्केतको क्षमता स्तर: # बार}other{सङ्केतको क्षमता स्तर: # बारहरू}}</translation>
 <translation id="868929229000858085">आफ्ना सम्पर्कहरू खोज्नुहोस्</translation>
+<translation id="8698438463325761328">साइटहरूलाई भर्चुअल रियालिटी चल्ने तपाईंका यन्त्र र डेटामाथि पहुँच राख्न दिनुहोस्</translation>
 <translation id="869891660844655955">समाप्ति मिति</translation>
 <translation id="8728487861892616501">यो अनुप्रयोगको प्रयोग गरेर, तपाईं Chrome को <ph name="BEGIN_LINK1" />सेवाका सर्तहरू<ph name="END_LINK1" /> र <ph name="BEGIN_LINK2" />गोपनीयतासम्बन्धी सूचना<ph name="END_LINK2" /> तथा <ph name="BEGIN_LINK3" />Family Link बाट व्यवस्थापन गरिएको Google खाताका गोपनीयतासम्बन्धी सूचना<ph name="END_LINK3" /> मा सहमति जनाउनुहुन्छ।</translation>
 <translation id="8748850008226585750">सामग्रीहरू लुकाइएका छन्</translation>
@@ -1038,6 +1044,7 @@
 <translation id="883806473910249246">उक्त सामग्री डाउलोड गर्ने क्रममा एउटा त्रुटि भयो।</translation>
 <translation id="8840953339110955557">यो पृष्ठ अनलाइन संस्करणभन्दा भिन्न हुन सक्छ।</translation>
 <translation id="8847988622838149491">USB</translation>
+<translation id="884828189055900810">साइटहरूलाई तपाईंको क्यामेराको स्थितिसम्बन्धी जानकारी प्राप्त गर्न वा तपाईंको कोठाको नक्साङ्कन गर्नबाट रोक लगाउनुहोस्</translation>
 <translation id="8853345339104747198"><ph name="TAB_TITLE" />, ट्याब</translation>
 <translation id="885701979325669005">भण्डारण</translation>
 <translation id="889338405075704026">Chrome को सेटिङमा जानुहोस्</translation>
@@ -1045,6 +1052,7 @@
 <translation id="8909135823018751308">साझा गर्नुहोस्...</translation>
 <translation id="8912362522468806198">Google खाता</translation>
 <translation id="8920114477895755567">अभिभावकहरूको विवरणको लागि प्रतीक्षा गर्दै।</translation>
+<translation id="8921772741368021346"><ph name="POSITION" />/<ph name="DURATION" /></translation>
 <translation id="8922289737868596582">पृष्ठहरूलाई अफलाइन हेर्न थप विकल्पहरू नामक बटनबाट तिनीहरूलाई डाउनलोड गर्नुहोस्</translation>
 <translation id="8926666909099850184">यो यन्त्रमा NFC निष्क्रिय पारिएको छ। <ph name="BEGIN_LINK" />Android का सेटिङ<ph name="END_LINK" /> मा गई यसलाई सक्रिय गर्नुहोस्।</translation>
 <translation id="8937772741022875483">तपाईंले Chrome मा गर्नुभएका क्रियाकलाप डिजिटल वेलबिइङबाट हटाउने हो?</translation>

@@ -239,6 +239,22 @@ void WebViewAutofillClientIOS::UpdateAutofillPopupDataListValues(
   NOTREACHED();
 }
 
+base::span<const autofill::Suggestion>
+WebViewAutofillClientIOS::GetPopupSuggestions() const {
+  NOTIMPLEMENTED();
+  return base::span<const autofill::Suggestion>();
+}
+
+void WebViewAutofillClientIOS::PinPopupViewUntilUpdate() {
+  NOTIMPLEMENTED();
+}
+
+void WebViewAutofillClientIOS::UpdatePopup(
+    const std::vector<autofill::Suggestion>& suggestions,
+    autofill::PopupType popup_type) {
+  NOTIMPLEMENTED();
+}
+
 void WebViewAutofillClientIOS::HideAutofillPopup(PopupHidingReason reason) {
   [bridge_ hideAutofillPopup];
 }

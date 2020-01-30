@@ -120,7 +120,7 @@ void BaseRenderingContext2D::RestoreMatrixClipStack(cc::PaintCanvas* c) const {
     c->save();
   }
   c->restore();
-  ValidateStateStack();
+  ValidateStateStackWithCanvas(c);
 }
 
 void BaseRenderingContext2D::UnwindStateStack() {

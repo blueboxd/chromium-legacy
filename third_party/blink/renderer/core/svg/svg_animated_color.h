@@ -33,6 +33,7 @@
 
 #include "third_party/blink/renderer/core/css/style_color.h"
 #include "third_party/blink/renderer/core/svg/properties/svg_property.h"
+#include "third_party/blink/renderer/platform/wtf/casting.h"
 
 namespace blink {
 
@@ -63,7 +64,12 @@ class SVGColorProperty final : public SVGPropertyBase {
   StyleColor style_color_;
 };
 
-DEFINE_SVG_PROPERTY_TYPE_CASTS(SVGColorProperty);
+template <>
+struct DowncastTraits<SVGColorProperty> {
+  static bool AllowFrom(const SVGPropertyBase& value) {
+    return value.GetType() == SVGColorProperty::ClassType();
+  }
+};
 
 }  // namespace blink
 

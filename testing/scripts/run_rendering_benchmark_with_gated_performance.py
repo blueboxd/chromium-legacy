@@ -86,48 +86,62 @@ class ResultRecorder(object):
 
     return (self.output, self.return_code)
 
-def interpret_run_benchmark_results(upper_limit_data,
-    isolated_script_test_output, benchmark):
-  out_dir_path = os.path.dirname(isolated_script_test_output)
-  output_path = os.path.join(out_dir_path, benchmark, 'test_results.json')
-  result_recorder = ResultRecorder()
+def parse_csv_results(csv_obj, upper_limit_data):
+  """ Parses the raw CSV data
+  Convers the csv_obj into an array of valid values for averages and
+  confidence intervals based on the described upper_limits.
 
-  with open(output_path, 'r+') as resultsFile:
-    initialOut = json.load(resultsFile)
-    result_recorder.set_tests(initialOut)
+  Args:
+    csv_obj: An array of rows (dict) descriving the CSV results
+    upper_limit_data: A dictionary containing the upper limits of each story
 
-    results_path = os.path.join(out_dir_path, benchmark, 'perf_results.csv')
-    values_per_story = {}
+  Raturns:
+    A dictionary which has the stories as keys and an array of confidence
+    intervals and valid averages as data.
+  """
+  values_per_story = {}
+  for row in csv_obj:
+    # For now only frame_times is used for testing representatives'
+    # performance.
+    if row['name'] != 'frame_times':
+      continue
+    story_name = row['stories']
+    if (story_name not in upper_limit_data):
+      continue
+    if story_name not in values_per_story:
+      values_per_story[story_name] = {
+        'averages': [],
+        'ci_095': []
+      }
 
-    with open(results_path) as csv_file:
-      reader = csv.DictReader(csv_file)
-      for row in reader:
-        # For now only frame_times is used for testing representatives'
-        # performance.
-        if row['name'] != 'frame_times':
-          continue
-        story_name = row['stories']
-        if (story_name not in upper_limit_data):
-          continue
-        if story_name not in values_per_story:
-          values_per_story[story_name] = {
-            'averages': [],
-            'ci_095': []
-          }
+    if (row['avg'] == '' or row['count'] == 0):
+      continue
+    values_per_story[story_name]['ci_095'].append(float(row['ci_095']))
 
-        if (row['avg'] == '' or row['count'] == 0):
-          continue
-        values_per_story[story_name]['ci_095'].append(float(row['ci_095']))
+    upper_limit_ci = upper_limit_data[story_name]['ci_095']
+    # Only average values which are not noisy will be used
+    if (float(row['ci_095']) <= upper_limit_ci * CI_ERROR_MARGIN):
+      values_per_story[story_name]['averages'].append(float(row['avg']))
 
-        upper_limit_ci = upper_limit_data[story_name]['ci_095']
-        # Only average values which are not noisy will be used
-        if (float(row['ci_095']) <= upper_limit_ci * CI_ERROR_MARGIN):
-          values_per_story[story_name]['averages'].append(float(row['avg']))
+  return values_per_story
 
-    # Clearing the result of run_benchmark and write the gated perf results
-    resultsFile.seek(0)
-    resultsFile.truncate(0)
+def compare_values(values_per_story, upper_limit_data, benchmark,
+  result_recorder):
+  """ Parses the raw CSV data
+  Compares the values in values_per_story with the upper_limit_data and
+  determines if the story passes or fails.
 
+  Args:
+    csv_obj: An array of rows (dict) descriving the CSV results
+    upper_limit_data: A dictionary containing the upper limits of each story
+    benchmark: A String for the benchmark (e.g. rendering.desktop) used only
+      for printing the results.
+    result_recorder: A ResultRecorder containing the initial failures if there
+      are stories which failed prior to comparing values (e.g. GPU crashes).
+
+  Raturns:
+    A ResultRecorder containing the passes and failures.
+  """
   for story_name in values_per_story:
     if len(values_per_story[story_name]['ci_095']) == 0:
       print(('[  FAILED  ] {}/{} has no valid values for frame_times. Check ' +
@@ -157,6 +171,28 @@ def interpret_run_benchmark_results(upper_limit_data,
           benchmark, story_name, measured_avg, upper_limit_avg))
 
   return result_recorder
+
+def interpret_run_benchmark_results(upper_limit_data,
+    isolated_script_test_output, benchmark):
+  out_dir_path = os.path.dirname(isolated_script_test_output)
+  output_path = os.path.join(out_dir_path, benchmark, 'test_results.json')
+  result_recorder = ResultRecorder()
+
+  with open(output_path, 'r+') as resultsFile:
+    initialOut = json.load(resultsFile)
+    result_recorder.set_tests(initialOut)
+    results_path = os.path.join(out_dir_path, benchmark, 'perf_results.csv')
+
+    with open(results_path) as csv_file:
+      csv_obj = csv.DictReader(csv_file)
+      values_per_story = parse_csv_results(csv_obj, upper_limit_data)
+
+    # Clearing the result of run_benchmark and write the gated perf results
+    resultsFile.seek(0)
+    resultsFile.truncate(0)
+
+  return compare_values(values_per_story, upper_limit_data, benchmark,
+    result_recorder)
 
 def replace_arg_values(args, key_value_pairs):
   for index in range(0, len(args)):

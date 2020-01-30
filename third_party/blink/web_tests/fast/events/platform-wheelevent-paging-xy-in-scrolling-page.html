@@ -1,6 +1,7 @@
 <html>
     <head>
         <script src="../../resources/js-test.js"></script>
+        <script src="../../resources/gesture-util.js"></script>
         <script>
             window.jsTestIsAsync = true;
             var isMacOSX = navigator.userAgent.indexOf("Mac OS X") >= 0;
@@ -23,13 +24,16 @@
             var event;
             var div;
 
-            function runTest()
+            async function runTest()
             {
                 document.body.addEventListener("mousewheel", mousewheelHandler, false);
 
                 if (window.eventSender) {
                     eventSender.mouseMoveTo(100, 110);
                     eventSender.continuousMouseScrollBy(-window.givenScrollLeft, -window.givenScrollTop, true);
+                    await waitForCompositorCommit();
+                    await waitForAnimationEndTimeBased(() => {return document.scrollingElement.scrollTop;});
+                    await waitForAnimationEndTimeBased(() => {return document.scrollingElement.scrollLeft;});
                 }
 
                 shouldBecomeEqual("document.scrollingElement.scrollTop == window.expectedScrollTop && " +

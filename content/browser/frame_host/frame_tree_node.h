@@ -418,6 +418,8 @@ class CONTENT_EXPORT FrameTreeNode {
   void SetEmbeddingToken(
       const base::Optional<base::UnguessableToken>& embedding_token);
 
+  void SetAdFrameType(blink::mojom::AdFrameType ad_frame_type);
+
  private:
   FRIEND_TEST_ALL_PREFIXES(SitePerProcessFeaturePolicyBrowserTest,
                            ContainerPolicyDynamic);

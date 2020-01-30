@@ -252,10 +252,11 @@ class MediaNotificationServiceTest : public testing::Test {
     // focus lost here.
     SimulateFocusLost(id);
 
-    // Now, close the tab.
+    // Now, close the tab. The session may have been destroyed with
+    // |SimulateFocusLost()| above.
     auto item_itr = service_->sessions_.find(id.ToString());
-    EXPECT_NE(service_->sessions_.end(), item_itr);
-    item_itr->second.WebContentsDestroyed();
+    if (item_itr != service_->sessions_.end())
+      item_itr->second.WebContentsDestroyed();
   }
 
   void SimulatePlaybackStateChanged(const base::UnguessableToken& id,
@@ -416,10 +417,52 @@ TEST_F(MediaNotificationServiceTest, ShowControllableOnGainAndHideOnLoss) {
 TEST_F(MediaNotificationServiceTest, DoesNotShowUncontrollableSession) {
   base::UnguessableToken id = base::UnguessableToken::Create();
 
+  // When focus is gained, we should not show an active session.
   EXPECT_FALSE(HasActiveNotifications());
   SimulateFocusGained(id, false);
   SimulateNecessaryMetadata(id);
   EXPECT_FALSE(HasActiveNotifications());
+
+  // When focus is lost, we should not have a frozen session.
+  SimulateFocusLost(id);
+  EXPECT_FALSE(HasFrozenNotifications());
+
+  // When focus is regained, we should still not have an active session.
+  SimulateFocusGained(id, false);
+  EXPECT_FALSE(HasActiveNotifications());
+}
+
+TEST_F(MediaNotificationServiceTest,
+       DoesNotShowControllableSessionThatBecomesUncontrollable) {
+  // Start playing active media.
+  base::UnguessableToken id = SimulatePlayingControllableMedia();
+  EXPECT_TRUE(HasActiveNotifications());
+
+  // Lose focus so the item freezes.
+  SimulateFocusLost(id);
+  EXPECT_FALSE(HasActiveNotifications());
+  EXPECT_TRUE(HasFrozenNotifications());
+
+  // After 1s, the item should still be frozen.
+  AdvanceClockMilliseconds(1000);
+  EXPECT_FALSE(HasActiveNotifications());
+  EXPECT_TRUE(HasFrozenNotifications());
+
+  // If the item regains focus but is not controllable, it should not become
+  // active.
+  SimulateFocusGained(id, false);
+  EXPECT_FALSE(HasActiveNotifications());
+  EXPECT_TRUE(HasFrozenNotifications());
+
+  // And the frozen timer should still fire after the initial 2.5 seconds is
+  // finished.
+  AdvanceClockMilliseconds(1400);
+  EXPECT_FALSE(HasActiveNotifications());
+  EXPECT_TRUE(HasFrozenNotifications());
+
+  AdvanceClockMilliseconds(200);
+  EXPECT_FALSE(HasActiveNotifications());
+  EXPECT_FALSE(HasFrozenNotifications());
 }
 
 TEST_F(MediaNotificationServiceTest, ShowsAllInitialControllableSessions) {
@@ -648,8 +691,8 @@ TEST_F(MediaNotificationServiceTest, LoseGainLoseDoesNotCauseRaceCondition) {
   // Simulate regaining focus, but no artwork yet so we wait.
   SimulateFocusGained(id, true);
   SimulateNecessaryMetadata(id);
-  EXPECT_TRUE(HasActiveNotifications());
-  EXPECT_FALSE(HasFrozenNotifications());
+  EXPECT_FALSE(HasActiveNotifications());
+  EXPECT_TRUE(HasFrozenNotifications());
 
   // Then, lose focus again before getting artwork.
   SimulateFocusLost(id);

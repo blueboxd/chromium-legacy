@@ -9,7 +9,5 @@ blink_core_sources("animation_frame") {
     "worker_animation_frame_provider.cc",
     "worker_animation_frame_provider.h",
   ]
-  deps = [
-    "//mojo/public/cpp/bindings:bindings",
-  ]
+  deps = [ "//mojo/public/cpp/bindings:bindings" ]
 }

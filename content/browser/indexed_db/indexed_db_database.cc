@@ -956,7 +956,7 @@ Status IndexedDBDatabase::GetAllOperation(
     IndexedDBTransaction* transaction) {
   IDB_TRACE1("IndexedDBDatabase::GetAllOperation", "txn.id", transaction->id());
 
-  if (!IsObjectStoreIdInMetadata(object_store_id)) {
+  if (!IsObjectStoreIdAndMaybeIndexIdInMetadata(object_store_id, index_id)) {
     IndexedDBDatabaseError error = CreateError(
         blink::mojom::IDBException::kUnknownError, "Bad request", transaction);
     std::move(callback).Run(

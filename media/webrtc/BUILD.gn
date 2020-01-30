@@ -58,8 +58,6 @@ source_set("unit_tests") {
       "//testing/gtest",
       "//third_party/webrtc_overrides:webrtc_component",
     ]
-    sources = [
-      "audio_processor_unittest.cc",
-    ]
+    sources = [ "audio_processor_unittest.cc" ]
   }
 }

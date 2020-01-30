@@ -26,7 +26,6 @@
 <translation id="1031362278801463162">Φόρτωση προεπισκόπησης</translation>
 <translation id="1032605640136438169">Ελέγξτε τους νέους όρους.</translation>
 <translation id="103279545524624934">Ελευθερώστε χώρο στον δίσκο, για την εκκίνηση εφαρμογών Android.</translation>
-<translation id="1033343386521881354">Βρέθηκε ένας εκτυπωτής από τον διακομιστή εκτύπωσης.</translation>
 <translation id="1033780634303702874">Πρόσβαση στις σειριακές συσκευές</translation>
 <translation id="1034942643314881546">Ενεργοποίηση του adb για δημιουργία εικόνων εφαρμογών</translation>
 <translation id="1036348656032585052">Απενεργοποίηση</translation>
@@ -34,7 +33,6 @@
 <translation id="1036982837258183574">Πατήστε το |<ph name="ACCELERATOR" />| για να εξέλθετε από την πλήρη οθόνη</translation>
 <translation id="1038168778161626396">Μόνο κρυπτογράφηση</translation>
 <translation id="1039337018183941703">Μη έγκυρο ή κατεστραμμένο αρχείο</translation>
-<translation id="1039850285407663109">Το επιλεγμένο αρχείο είναι άγνωστο και μπορεί να είναι επικίνδυνο. Μπορείτε να εκτελέσετε σάρωση του αρχείου πριν από το άνοιγμά του.</translation>
 <translation id="1041175011127912238">Αυτή η σελίδα δεν αποκρίνεται.</translation>
 <translation id="1041263367839475438">Διαθέσιμες συσκευές</translation>
 <translation id="1042174272890264476">Ο υπολογιστής σας κυκλοφορεί και με ενσωματωμένη τη βιβλιοθήκη RLZ του <ph name="SHORT_PRODUCT_NAME" />. Το RLZ εκχωρεί μια μη μοναδική ετικέτα μη προσωπικής ταυτοποίησης για τη μέτρηση των αναζητήσεων και της χρήσης του <ph name="SHORT_PRODUCT_NAME" /> που προκύπτει από μια συγκεκριμένη καμπάνια προώθησης. Αυτές οι ετικέτες εμφανίζονται μερικές φορές σε ερωτήματα στην Αναζήτηση Google στο <ph name="PRODUCT_NAME" />.</translation>
@@ -639,7 +637,6 @@
 <translation id="1858585891038687145">Να θεωρείται αξιόπιστο αυτό το πιστοποιητικό για τον προσδιορισμό κατασκευαστών λογισμικού</translation>
 <translation id="1861262398884155592">Αυτός ο φάκελος είναι άδειος</translation>
 <translation id="1863182668524159459">Δεν βρέθηκαν σειριακές θύρες</translation>
-<translation id="1863552924692672565">Το αρχείο <ph name="FILE_NAME" /> είναι άγνωστο. Σάρωση του αρχείου για ελαχιστοποίηση του κινδύνου.</translation>
 <translation id="1864111464094315414">Σύνδεση</translation>
 <translation id="1864400682872660285">Ψυχρότερο</translation>
 <translation id="1864454756846565995">Συσκευή USB-C (πίσω θύρα)</translation>
@@ -4026,7 +4023,6 @@
 <translation id="6678717876183468697">URL ερωτήματος</translation>
 <translation id="6680442031740878064">Διαθέσιμος χώρος: <ph name="AVAILABLE_SPACE" /></translation>
 <translation id="6680650203439190394">Βαθμολόγηση</translation>
-<translation id="6681301928961274620">Δεν βρέθηκαν εκτυπωτές από τον διακομιστή εκτύπωσης.</translation>
 <translation id="6681668084120808868">Λήψη φωτογραφίας</translation>
 <translation id="6681964764822470072">Η εγκατάσταση της εφαρμογής "<ph name="APP_NAME" />" θα καταργηθεί.</translation>
 <translation id="668599234725812620">Άνοιγμα Google Play</translation>
@@ -5554,7 +5550,6 @@
 <translation id="8794025342371547160">Περιορισμένο IP</translation>
 <translation id="879413103056696865">Ενώ το σημείο πρόσβασης Wi-Fi είναι ενεργό, το τηλέφωνο <ph name="PHONE_NAME" /> θα:</translation>
 <translation id="8795916974678578410">Νέο Παράθυρο</translation>
-<translation id="8797086401386164142">Βρέθηκαν <ph name="NUM_PRINTERS" /> εκτυπωτές από τον διακομιστή εκτύπωσης.</translation>
 <translation id="8797459392481275117">Να μη γίνεται ποτέ μετάφραση αυτού του ιστοτόπου</translation>
 <translation id="8798099450830957504">Προεπιλογή</translation>
 <translation id="8798441408945964110">Όνομα παρόχου</translation>

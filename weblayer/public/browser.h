@@ -5,6 +5,8 @@
 #ifndef WEBLAYER_PUBLIC_BROWSER_H_
 #define WEBLAYER_PUBLIC_BROWSER_H_
 
+#include <stddef.h>
+
 #include <memory>
 #include <string>
 #include <vector>
@@ -19,10 +21,24 @@ class Tab;
 // the set of Tabs.
 class Browser {
  public:
-  // Creates a new Browser. |persistence_id|, if non-empty, is used for saving
+  struct PersistenceInfo {
+    PersistenceInfo();
+    PersistenceInfo(const PersistenceInfo& other);
+    ~PersistenceInfo();
+
+    // Uniquely identifies this browser for session restore, empty is a not a
+    // valid id.
+    std::string id;
+
+    // Last key used to encrypt incognito profile.
+    std::vector<uint8_t> last_crypto_key;
+  };
+
+  // Creates a new Browser. |persistence_info|, if non-null, is used for saving
   // and restoring the state of the browser.
-  static std::unique_ptr<Browser> Create(Profile* profile,
-                                         const std::string& persistence_id);
+  static std::unique_ptr<Browser> Create(
+      Profile* profile,
+      const PersistenceInfo* persistence_info);
 
   virtual ~Browser() {}
 
@@ -36,7 +52,7 @@ class Browser {
   virtual void PrepareForShutdown() = 0;
 
   // Returns the id supplied to Create() that is used for persistence.
-  virtual const std::string& GetPersistenceId() = 0;
+  virtual std::string GetPersistenceId() = 0;
 
   virtual void AddObserver(BrowserObserver* observer) = 0;
   virtual void RemoveObserver(BrowserObserver* observer) = 0;

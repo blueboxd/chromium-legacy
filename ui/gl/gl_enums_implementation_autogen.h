@@ -2693,26 +2693,6 @@ static const GLEnums::EnumToString enum_to_string_table[] = {
         "GL_TEXTURE_FILTERING_HINT_CHROMIUM",
     },
     {
-        0x8AF1,
-        "GL_COLOR_SPACE_UNSPECIFIED_CHROMIUM",
-    },
-    {
-        0x8AF2,
-        "GL_COLOR_SPACE_SCRGB_LINEAR_CHROMIUM",
-    },
-    {
-        0x8AF3,
-        "GL_COLOR_SPACE_SRGB_CHROMIUM",
-    },
-    {
-        0x8AF4,
-        "GL_COLOR_SPACE_DISPLAY_P3_CHROMIUM",
-    },
-    {
-        0x8AF5,
-        "GL_COLOR_SPACE_HDR10_CHROMIUM",
-    },
-    {
         0x8AF6,
         "GL_SHARED_IMAGE_ACCESS_MODE_READ_CHROMIUM",
     },

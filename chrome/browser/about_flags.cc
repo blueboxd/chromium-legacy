@@ -1839,6 +1839,10 @@ const FeatureEntry kFeatureEntries[] = {
     {"instant-tethering", flag_descriptions::kTetherName,
      flag_descriptions::kTetherDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kInstantTethering)},
+    {"shelf-hide-buttons-in-tablet",
+     flag_descriptions::kHideShelfControlsInTabletModeName,
+     flag_descriptions::kHideShelfControlsInTabletModeDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(ash::features::kHideShelfControlsInTabletMode)},
     {"shelf-hotseat", flag_descriptions::kShelfHotseatName,
      flag_descriptions::kShelfHotseatDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kShelfHotseat)},
@@ -4841,6 +4845,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kRecoverFromNeverSaveAndroidDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(
          password_manager::features::kRecoverFromNeverSaveAndroid)},
+    {"photo-picker-video-support",
+     flag_descriptions::kPhotoPickerVideoSupportName,
+     flag_descriptions::kPhotoPickerVideoSupportDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kPhotoPickerVideoSupport)},
 #endif  // defined(OS_ANDROID)
 
     {"freeze-user-agent", flag_descriptions::kFreezeUserAgentName,
@@ -4853,6 +4861,10 @@ const FeatureEntry kFeatureEntries[] = {
      kOsMac | kOsWin | kOsLinux,
      FEATURE_VALUE_TYPE(features::kUserDataSnapshot)},
 #endif
+
+    {"legacy-tls-enforced", flag_descriptions::kLegacyTLSEnforcedName,
+     flag_descriptions::kLegacyTLSEnforcedDescription, kOsDesktop | kOsAndroid,
+     FEATURE_VALUE_TYPE(net::features::kLegacyTLSEnforced)},
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

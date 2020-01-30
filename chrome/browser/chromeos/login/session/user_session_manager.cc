@@ -110,7 +110,6 @@
 #include "chrome/browser/ui/webui/chromeos/login/discover/modules/discover_module_pin_setup.h"
 #include "chrome/browser/ui/webui/chromeos/login/supervision_transition_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/terms_of_service_screen_handler.h"
-#include "chrome/browser/ui/zoom/chrome_zoom_level_prefs.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_features.h"
@@ -164,7 +163,6 @@
 #include "content/public/common/content_switches.h"
 #include "extensions/common/features/feature_session_type.h"
 #include "rlz/buildflags/buildflags.h"
-#include "third_party/blink/public/common/page/page_zoom.h"
 #include "third_party/cros_system_api/switches/chrome_switches.h"
 #include "ui/base/ime/chromeos/input_method_descriptor.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"
@@ -1658,14 +1656,6 @@ void UserSessionManager::OnCryptohomeOperationCompleted(Profile* profile,
 }
 
 void UserSessionManager::FinalizePrepareProfile(Profile* profile) {
-  // Record each user's "Page zoom" setting for https://crbug.com/955071.
-  // This can be removed after M79.
-  double zoom_level = profile->GetZoomLevelPrefs()->GetDefaultZoomLevelPref();
-  double zoom_factor = blink::PageZoomLevelToZoomFactor(zoom_level);
-  int zoom_percent = std::floor(zoom_factor * 100);
-  // Zoom can be greater than 100%.
-  UMA_HISTOGRAM_COUNTS_1000("Login.DefaultPageZoom", zoom_percent);
-
   BootTimesRecorder::Get()->AddLoginTimeMarker("TPMOwn-End", false);
 
   user_manager::UserManager* user_manager = user_manager::UserManager::Get();

@@ -14,15 +14,16 @@
 # Make any desired modifications, and then upload the dump back to the connected
 # device.
 # > content_dump.py --device=FA77D0303076 --apk='com.chrome.canary' --reverse
-import os
-import re
-import sys
 import argparse
-import subprocess
 import glob
-from os.path import join, dirname, realpath
-
+import os
 import plyvel
+import protoc_util
+import re
+import subprocess
+import sys
+
+from os.path import join, dirname, realpath
 
 # A dynamic import for encoding and decoding of escaped textproto strings.
 _prototext_mod = None
@@ -61,21 +62,8 @@ DUMP_DIR = args.dump_to
 DB_PATH = args.db
 CONTENT_DB_PATH = join(DB_PATH, 'content')
 DEVICE_DB_PATH = "/data/data/{}/app_chrome/Default/feed".format(args.apk)
-_protoc_path = None
-
-
-# Returns the path to the proto compiler, protoc.
-def protoc_path():
-  global _protoc_path
-  if not _protoc_path:
-    protoc_list = list(glob.glob(join(ROOT_DIR, "out") + "/*/protoc")) + list(
-        glob.glob(join(ROOT_DIR, "out") + "/*/*/protoc"))
-    if not len(protoc_list):
-      print("Can't find a suitable build output directory",
-            "(it should have protoc)")
-      sys.exit(1)
-    _protoc_path = protoc_list[0]
-  return _protoc_path
+CONTENT_STORAGE_PROTO = (
+    'components/feed_library/core/proto/content_storage.proto')
 
 
 def adb_base_args():
@@ -97,45 +85,6 @@ def adb_push_db():
                         ["push", CONTENT_DB_PATH, DEVICE_DB_PATH])
 
 
-def get_feed_protos():
-  result = [
-      join(ROOT_DIR, 'components/feed_library/core/proto/content_storage.proto')
-  ]
-  for root, _, files in os.walk(join(ROOT_DIR, "third_party/feed_library")):
-    result += [join(root, f) for f in files if f.endswith('.proto')]
-
-  return result
-
-
-protoc_common_args = [
-    '-I' + join(ROOT_DIR, 'third_party/feed_library/src'), '-I' + join(ROOT_DIR)
-] + get_feed_protos()
-
-
-def run_command(args, input):
-  proc = subprocess.run(
-      args,
-      input=input,
-      stdout=subprocess.PIPE,
-      stderr=subprocess.PIPE,
-      check=True)
-  return proc.stdout
-
-
-# Decode a binary proto into textproto format.
-def decode_proto(data, message_name):
-  return run_command(
-      [protoc_path(), '--decode=' + message_name] + protoc_common_args,
-      data).decode('utf-8')
-
-
-# Encode a textproto into binary proto format.
-def encode_proto(text, message_name):
-  return run_command(
-      [protoc_path(), '--encode=' + message_name] + protoc_common_args,
-      text.encode())
-
-
 # Ignore DB entries with the 'sp::' prefix, as they are not yet supported.
 def is_key_supported(key):
   return not key.startswith('sp::')
@@ -155,13 +104,15 @@ def proto_message_from_db_key(key):
 def extract_db_entry(key, data):
   # DB entries are feed.ContentStorageProto messages. First extract
   # the content_data contained within.
-  text_proto = decode_proto(data, 'feed.ContentStorageProto')
+  text_proto = protoc_util.decode_proto(data, 'feed.ContentStorageProto',
+                                        ROOT_DIR, CONTENT_STORAGE_PROTO)
   m = re.search(r"content_data: \"((?:\\\"|[^\"])*)\"", text_proto)
   raw_data = prototext().CUnescape(m.group(1))
 
   # Next, convert raw_data into a textproto. The DB key informs which message
   # is stored.
-  result = decode_proto(raw_data, proto_message_from_db_key(key))
+  result = protoc_util.decode_proto(raw_data, proto_message_from_db_key(key),
+                                    ROOT_DIR, CONTENT_STORAGE_PROTO)
   return result
 
 
@@ -196,15 +147,17 @@ def load():
         key = file.read().strip()
       with open(join(DUMP_DIR, f), 'r') as file:
         value_text_proto = file.read()
-      value_encoded = encode_proto(value_text_proto,
-                                   proto_message_from_db_key(key))
+      value_encoded = protoc_util.encode_proto(value_text_proto,
+                                               proto_message_from_db_key(key),
+                                               ROOT_DIR, CONTENT_STORAGE_PROTO)
       # Create binary feed.ContentStorageProto by encoding its textproto.
       content_storage_text = 'key: "{}"\ncontent_data: "{}"'.format(
           prototext().CEscape(key, False),
           prototext().CEscape(value_encoded, False))
 
-      store_encoded = encode_proto(content_storage_text,
-                                   'feed.ContentStorageProto')
+      store_encoded = protoc_util.encode_proto(content_storage_text,
+                                               'feed.ContentStorageProto',
+                                               ROOT_DIR, CONTENT_STORAGE_PROTO)
       db.put(key.encode(), store_encoded)
   db.close()
   adb_push_db()

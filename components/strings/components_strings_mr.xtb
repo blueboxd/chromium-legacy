@@ -79,6 +79,7 @@
 <translation id="129553762522093515">अलीकडे बंद केलेले</translation>
 <translation id="1298536327547837046">मालवेअर स्कॅनिंग</translation>
 <translation id="129863573139666797"><ph name="BEGIN_LINK" />आपल्या कुकीज साफ करून पहा<ph name="END_LINK" /></translation>
+<translation id="1301324364792935241">तुमची सुरक्षित DNS सेटिंग्ज तपासा</translation>
 <translation id="1307966114820526988">कालबाह्य झालेली वैशिष्‍ट्ये</translation>
 <translation id="1314509827145471431">बाइंड राइट</translation>
 <translation id="1320233736580025032">Prc1 (Envelope)</translation>
@@ -152,6 +153,7 @@
 <translation id="1569487616857761740">एक्स्पायरीची तारीख एंटर करा</translation>
 <translation id="1581080074034554886">CVC</translation>
 <translation id="1583429793053364125">हे वेबपेज प्रदर्शित करताना काहीतरी चूक झाली.</translation>
+<translation id="1586541204584340881">तुम्ही कोणती एक्स्टेंशन इंस्टॉल केली आहेत</translation>
 <translation id="1588438908519853928">सामान्य</translation>
 <translation id="1592005682883173041">स्थानिक डेटा ॲक्सेस</translation>
 <translation id="1594030484168838125">निवडा</translation>
@@ -362,6 +364,7 @@
 <translation id="2544644783021658368">एक दस्तऐवज</translation>
 <translation id="254947805923345898">धोरण मूल्य वैध नाही.</translation>
 <translation id="255002559098805027"><ph name="HOST_NAME" /> नी एक चुकीचे प्रतिसाद पाठविला.</translation>
+<translation id="2553853292994445426">तुमची सुरक्षित DNS सेटिंग्ज तपासा. तुम्ही कदाचित कनेक्ट करता येत नसलेला एखाद्या सुरक्षित DNS सर्व्हर कॉन्फिगर केला आहे.</translation>
 <translation id="2556876185419854533">&amp; संपादित करा पूर्ववत करा</translation>
 <translation id="257674075312929031">गट</translation>
 <translation id="2586657967955657006">क्लिपबोर्ड</translation>
@@ -484,6 +487,7 @@
 <translation id="3095940652251934233">Statement</translation>
 <translation id="3096100844101284527">पिकअप पत्ता जोडा</translation>
 <translation id="3105172416063519923">मालमत्ता आयडी:</translation>
+<translation id="3107591622054137333"><ph name="BEGIN_LINK" />सुरक्षित DNS कॉन्फिगरेशन तपासत आहे<ph name="END_LINK" /></translation>
 <translation id="3109728660330352905">तुम्हाला हे पेज पाहण्याची परवानगी नाही.</translation>
 <translation id="3113284927548439113">तिसरी शिफ्ट</translation>
 <translation id="3116158981186517402">लॅमिनेट</translation>
@@ -785,6 +789,7 @@
 <translation id="4390472908992056574">ब्रिम</translation>
 <translation id="4406896451731180161">शोध परिणाम</translation>
 <translation id="4408413947728134509">कुकीज <ph name="NUM_COOKIES" /></translation>
+<translation id="4414290883293381923">तुम्ही आताच एका फसव्या साइटवर तुमचा पासवर्ड एंटर केला आहे. तुम्ही हा पासवर्ड जेथे वापरता अशा <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, <ph name="WEBSITE_3" /> आणि इतर साइटवर जाण्याची व तो आता बदलण्याची Chrome शिफारस करते.</translation>
 <translation id="4415426530740016218">घेण्याचा पत्ता</translation>
 <translation id="4424024547088906515">हा सर्व्हर हे <ph name="DOMAIN" /> असल्याचे सिद्ध करू शकला नाही; त्याचे सुरक्षितता सर्टिफिकेट Chrome द्वारे विश्वसनीय नाही. हे कदाचित एका चुकीच्या कॉंफिगरेशनमुळे किंवा हल्लेखोराने तुमचे कनेक्शन इंटरसेप्ट केल्यामुळे झाले असू शकते.</translation>
 <translation id="443121186588148776">सिरीअल पोर्ट</translation>
@@ -1218,6 +1223,7 @@
 <translation id="6353505687280762741">{COUNT,plural, =0{काहीही नाही}=1{(<ph name="DOMAIN_LIST" /> साठी) एक पासवर्ड सिंक केला}=2{(<ph name="DOMAIN_LIST" /> साठी) दोन पासवर्ड सिंक केले}other{(<ph name="DOMAIN_LIST" /> साठी) # पासवर्ड सिंक केले}}</translation>
 <translation id="6358450015545214790">याचा अर्थ काय आहे?</translation>
 <translation id="6361757823711327522">B7</translation>
+<translation id="6364095313648930329"><ph name="BEGIN_LINK" />प्रॉक्सी, फायरवॉल आणि सुरक्षित DNS कॉन्फिगरेशन तपासत आहे<ph name="END_LINK" /></translation>
 <translation id="6366710531182496394">ड्युअल स्टेपल लेफ्ट</translation>
 <translation id="6377268785556383139">'<ph name="SEARCH_TEXT" />' साठी एक परिणाम</translation>
 <translation id="6380497234672085559">A0</translation>
@@ -1240,6 +1246,7 @@
 <translation id="6433595998831338502"><ph name="HOST_NAME" /> नी कनेक्ट करण्यास नकार दिला.</translation>
 <translation id="6434309073475700221">नाकारा</translation>
 <translation id="6440503408713884761">दुर्लक्ष केले</translation>
+<translation id="6443406338865242315">तुम्ही कोणती एक्स्टेंशन आणि प्लग-इन इंस्टॉल केली आहेत</translation>
 <translation id="6446163441502663861">Kahu (Envelope)</translation>
 <translation id="6446608382365791566">अधिक माहिती जोडा</translation>
 <translation id="6447842834002726250">कुकीज</translation>
@@ -1349,6 +1356,7 @@
 <translation id="7012363358306927923">China UnionPay</translation>
 <translation id="7016992613359344582">हे शुल्क एकाच वेळी द्यायचे किंवा आवर्ती असू शकतात आणि स्पष्ट नसू शकतात.</translation>
 <translation id="7029809446516969842">पासवर्ड</translation>
+<translation id="7031646650991750659">तुम्ही कोणती Google Play ॲप्स इंस्टॉल केली आहेत</translation>
 <translation id="7050187094878475250">तुम्ही <ph name="DOMAIN" /> वर पोहोचण्याचा प्रयत्न केला, परंतु सर्व्हरने एक सर्टिफिकेट सादर केले आहे ज्याचा वैधता कालावधी हा विश्वासार्हतेसाठी खूप मोठा आहे.</translation>
 <translation id="705310974202322020">{NUM_CARDS,plural, =1{हे कार्ड आत्ता सेव्ह केले जाऊ शकत नाही}other{ही कार्डे आत्ता सेव्ह केली जाऊ शकत नाहीत}}</translation>
 <translation id="7053983685419859001">अवरोधित करा</translation>
@@ -1408,6 +1416,7 @@
 <translation id="7319430975418800333">A3</translation>
 <translation id="7320336641823683070">कनेक्शन मदत</translation>
 <translation id="733354035281974745">डिव्हाइसचे स्थानिक खाते ओव्हरराइड करा</translation>
+<translation id="7333654844024768166">तुम्ही आताच एका फसव्या साइटवर तुमचा पासवर्ड एंटर केला आहे. तुम्ही हा पासवर्ड जेथे वापरता अशा <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, <ph name="WEBSITE_3" /> आणि इतर साइटवर जाण्याची व तो आता बदलण्याची Chromium शिफारस करते.</translation>
 <translation id="7334320624316649418">&amp;पुनर्क्रमित करा पुन्हा करा</translation>
 <translation id="7337706099755338005">तुमच्या प्लॅटफॉर्मवर उपलब्ध नाही.</translation>
 <translation id="733923710415886693">सर्टिफिकेट पारदर्शकतेअंतर्गत सर्व्हरचे सर्टिफिकेट उघड केले नाही.</translation>

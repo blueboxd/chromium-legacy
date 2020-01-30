@@ -7,17 +7,12 @@
 
 #import <Foundation/Foundation.h>
 
-class ChromeBrowserState;
-
-@protocol SessionWindowRestoring;
-namespace web {
-class WebState;
-}
+class Browser;
 
 // Helper class for handling session restoration after a crash.
 @interface CrashRestoreHelper : NSObject
 
-- (instancetype)initWithBrowserState:(ChromeBrowserState*)browserState;
+- (instancetype)initWithBrowser:(Browser*)browser;
 
 // Saves the session information stored on disk in temporary files and will
 // then delete those from their default location. This will ensure that the
@@ -25,10 +20,9 @@ class WebState;
 // sessions.
 - (void)moveAsideSessionInformation;
 
-// Shows an infobar on the currently selected tab of the given |tabModel|. This
-// infobar lets the user restore its session after a crash.
-- (void)showRestoreIfNeededUsingWebState:(web::WebState*)webState
-                         sessionRestorer:(id<SessionWindowRestoring>)restorer;
+// Shows an infobar on the currently active tab of the browser. This infobar
+// lets the user restore its session after a crash.
+- (void)showRestoreIfNeeded;
 
 @end
 

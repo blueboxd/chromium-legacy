@@ -45,6 +45,8 @@ struct Selector {
   Selector(std::vector<std::string> s, PseudoType p);
   ~Selector();
 
+  ElementReferenceProto ToElementReferenceProto() const;
+
   Selector(Selector&& other);
   Selector(const Selector& other);
   Selector& operator=(Selector&& other);

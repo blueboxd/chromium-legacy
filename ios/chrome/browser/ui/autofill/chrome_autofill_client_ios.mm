@@ -354,6 +354,22 @@ void ChromeAutofillClientIOS::UpdateAutofillPopupDataListValues(
   NOTREACHED();
 }
 
+base::span<const autofill::Suggestion>
+ChromeAutofillClientIOS::GetPopupSuggestions() const {
+  NOTIMPLEMENTED();
+  return base::span<const autofill::Suggestion>();
+}
+
+void ChromeAutofillClientIOS::PinPopupViewUntilUpdate() {
+  NOTIMPLEMENTED();
+}
+
+void ChromeAutofillClientIOS::UpdatePopup(
+    const std::vector<autofill::Suggestion>& suggestions,
+    autofill::PopupType popup_type) {
+  NOTIMPLEMENTED();
+}
+
 void ChromeAutofillClientIOS::HideAutofillPopup(PopupHidingReason reason) {
   [bridge_ hideAutofillPopup];
 }

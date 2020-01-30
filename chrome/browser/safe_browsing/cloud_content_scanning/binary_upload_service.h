@@ -149,8 +149,9 @@ class BinaryUploadService {
   // Sets |can_upload_data_| for tests.
   void SetAuthForTesting(bool authorized);
 
-  // Returns the URL that requests are uploaded to.
-  static GURL GetUploadUrl();
+  // Returns the URL that requests are uploaded to. Scans for enterprise go to a
+  // different URL than scans for Advanced Protection users.
+  static GURL GetUploadUrl(bool is_advanced_protection_request);
 
  private:
   friend class BinaryUploadServiceTest;

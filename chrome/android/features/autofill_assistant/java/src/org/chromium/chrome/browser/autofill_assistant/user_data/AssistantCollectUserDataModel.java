@@ -146,6 +146,9 @@ public class AssistantCollectUserDataModel extends PropertyModel {
     public static final WritableObjectPropertyKey<String> PRIVACY_NOTICE_TEXT =
             new WritableObjectPropertyKey<>();
 
+    public static final WritableObjectPropertyKey<String> INFO_SECTION_TEXT =
+            new WritableObjectPropertyKey<>();
+
     public static final WritableObjectPropertyKey<View> GENERIC_USER_INTERFACE =
             new WritableObjectPropertyKey<>();
 
@@ -161,7 +164,8 @@ public class AssistantCollectUserDataModel extends PropertyModel {
                 CREDIT_CARD_EXPIRED_TEXT, REQUEST_DATE_RANGE, DATE_RANGE_START,
                 DATE_RANGE_START_LABEL, DATE_RANGE_END, DATE_RANGE_END_LABEL,
                 DATE_RANGE_INVALID_ERROR_MESSAGE, PREPENDED_SECTIONS, APPENDED_SECTIONS,
-                TERMS_REQUIRE_REVIEW_TEXT, PRIVACY_NOTICE_TEXT, GENERIC_USER_INTERFACE);
+                TERMS_REQUIRE_REVIEW_TEXT, PRIVACY_NOTICE_TEXT, INFO_SECTION_TEXT,
+                GENERIC_USER_INTERFACE);
 
         /**
          * Set initial state for basic type properties (others are implicitly null).
@@ -184,6 +188,7 @@ public class AssistantCollectUserDataModel extends PropertyModel {
         set(AVAILABLE_CONTACTS, Collections.emptyList());
         set(AVAILABLE_SHIPPING_ADDRESSES, Collections.emptyList());
         set(AVAILABLE_BILLING_ADDRESSES, Collections.emptyList());
+        set(INFO_SECTION_TEXT, "");
     }
 
     @CalledByNative
@@ -398,6 +403,11 @@ public class AssistantCollectUserDataModel extends PropertyModel {
     @CalledByNative
     private void setTermsRequireReviewText(String text) {
         set(TERMS_REQUIRE_REVIEW_TEXT, text);
+    }
+
+    @CalledByNative
+    private void setInfoSectionText(String text) {
+        set(INFO_SECTION_TEXT, text);
     }
 
     @CalledByNative

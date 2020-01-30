@@ -117,6 +117,8 @@ void ApplyWebTestDefaultPreferences(WebPreferences* prefs) {
   prefs->strict_mixed_content_checking = false;
   prefs->strict_powerful_feature_restrictions = false;
   prefs->webgl_errors_to_console_enabled = false;
+  prefs->enable_scroll_animator =
+      !command_line.HasSwitch(switches::kDisableSmoothScrolling);
   base::string16 serif;
 #if defined(OS_MACOSX)
   prefs->cursive_font_family_map[kCommonScript] =

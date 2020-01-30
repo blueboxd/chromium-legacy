@@ -65,19 +65,20 @@ class ShareSheetPropertyModelBuilder {
                                 }
                                 mBottomSheetController.hideContent(bottomSheet, true);
                                 ShareHelper.makeIntentAndShare(params, component);
-                            });
+                            }, /*isFirstParty=*/false);
             models.add(propertyModel);
         }
         return models;
     }
 
     protected PropertyModel createPropertyModel(
-            Drawable icon, String label, OnClickListener listener) {
+            Drawable icon, String label, OnClickListener listener, boolean isFirstParty) {
         PropertyModel propertyModel =
                 new PropertyModel.Builder(ShareSheetItemViewProperties.ALL_KEYS)
                         .with(ShareSheetItemViewProperties.ICON, icon)
                         .with(ShareSheetItemViewProperties.LABEL, label)
                         .with(ShareSheetItemViewProperties.CLICK_LISTENER, listener)
+                        .with(ShareSheetItemViewProperties.IS_FIRST_PARTY, isFirstParty)
                         .build();
         return propertyModel;
     }

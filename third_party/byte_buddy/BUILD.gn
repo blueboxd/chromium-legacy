@@ -31,9 +31,7 @@ java_prebuilt("dx_25_0_2_java") {
 android_java_prebuilt("byte_buddy_android_java") {
   testonly = true
   enable_bytecode_checks = false
-  deps = [
-    ":dx_25_0_2_java",
-  ]
+  deps = [ ":dx_25_0_2_java" ]
   proguard_configs = [ "//third_party/byte_buddy/proguard.flags" ]
   jar_path = "lib/byte-buddy-android.jar"
 }

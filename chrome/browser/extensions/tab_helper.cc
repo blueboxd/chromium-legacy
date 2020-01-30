@@ -185,7 +185,7 @@ void TabHelper::RenderFrameCreated(content::RenderFrameHost* host) {
 
 void TabHelper::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
-  if (!navigation_handle->IsInMainFrame() || !navigation_handle->HasCommitted())
+  if (!navigation_handle->HasCommitted() || !navigation_handle->IsInMainFrame())
     return;
 
   InvokeForContentRulesRegistries(

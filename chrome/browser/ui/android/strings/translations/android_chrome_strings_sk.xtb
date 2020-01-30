@@ -279,6 +279,7 @@
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> záložka}few{<ph name="BOOKMARKS_COUNT_MANY" /> záložky}many{<ph name="BOOKMARKS_COUNT_MANY" /> bookmarks}other{<ph name="BOOKMARKS_COUNT_MANY" /> záložiek}}</translation>
 <translation id="3089395242580810162">Otvoriť na karte inkognito</translation>
 <translation id="3123473560110926937">Blokované na niektorých weboch</translation>
+<translation id="3123734510202723619">Oznámenia</translation>
 <translation id="3137521801621304719">Ukončiť režim inkognito</translation>
 <translation id="3143515551205905069">Zrušiť synchronizáciu</translation>
 <translation id="3157842584138209013">Ak chcete zistiť, koľko dát ste ušetrili, klepnite na tlačidlo Ďalšie možnosti</translation>
@@ -307,7 +308,7 @@
 <translation id="3298243779924642547">Zjednoduš.</translation>
 <translation id="3303414029551471755">Pokračovať a stiahnuť obsah?</translation>
 <translation id="3306398118552023113">Táto aplikácia je spustená v Chrome</translation>
-<translation id="3312292613668865961">Opýtať sa, či chcete povoliť webom používať vaše zariadenia virtuálnej reality a spojené údaje (odporúčané)</translation>
+<translation id="3312292613668865961">Opýtať sa, či chcete povoliť webom používať vaše zariadenia a údaje virtuálnej reality (odporúčané)</translation>
 <translation id="3315103659806849044">Momentálne prispôsobujete nastavenia synchronizácie a služieb Googlu. Ak chcete dokončiť zapnutie synchronizácie, klepnite na tlačidlo Potvrdiť v dolnej časti obrazovky. Prejsť hore</translation>
 <translation id="3328801116991980348">Informácie o stránkach</translation>
 <translation id="3333961966071413176">Všetky kontakty</translation>
@@ -745,7 +746,7 @@ Niektoré weby môžu napríklad na túto žiadosť reagovať tak, že vám zobr
 <translation id="6573431926118603307">Tu sa zobrazia karty, ktoré ste otvorili v Chrome na iných zariadeniach.</translation>
 <translation id="6583199322650523874">Pridanie aktuálnej stránky medzi záložky</translation>
 <translation id="6593061639179217415">Web pre počítače</translation>
-<translation id="6597891566292541626">Poloha kódu QR alebo čiarového kódu v tomto ráme.</translation>
+<translation id="6597891566292541626">Poloha QR kódu alebo čiarového kódu v tomto ráme.</translation>
 <translation id="6600954340915313787">Skopírovaná do prehliadača Chrome</translation>
 <translation id="6608650720463149374"><ph name="GIGABYTES" /> GB</translation>
 <translation id="6612358246767739896">Chránený obsah</translation>
@@ -1027,7 +1028,7 @@ Web NEZÍSKA prístup k fotoaparátu. Obrázky fotoaparátu sú viditeľné iba
 <translation id="8676374126336081632">Vymazať vstup</translation>
 <translation id="8687353297350450808">{N_BARS,plural, =1{Úroveň sily signálu: # čiarka}few{Úroveň sily signálu: # čiarky}many{Úroveň sily signálu: # čiarky}other{Úroveň sily signálu: # čiarok}}</translation>
 <translation id="868929229000858085">Prehľadať kontakty</translation>
-<translation id="8698438463325761328">Blokovať weby, aby nemohli používať vaše zariadenie virtuálnej reality a spojené údaje</translation>
+<translation id="8698438463325761328">Blokovať weby, aby nemohli používať vaše zariadenie a údaje virtuálnej reality</translation>
 <translation id="869891660844655955">Koniec platnosti</translation>
 <translation id="8728487861892616501">Používaním tejto aplikácie vyjadrujete súhlas so <ph name="BEGIN_LINK1" />zmluvnými podmienkami<ph name="END_LINK1" /> prehliadača Chrome a <ph name="BEGIN_LINK2" />oznámením o ochrane súkromia<ph name="END_LINK2" />, ako aj <ph name="BEGIN_LINK3" />oznámením o ochrane súkromia pre účty Google spravované pomocou aplikácie Family Link<ph name="END_LINK3" />.</translation>
 <translation id="8748850008226585750">Obsah je skrytý</translation>

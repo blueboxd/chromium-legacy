@@ -266,7 +266,9 @@ class EGLSyncControlVSyncProvider : public SyncControlVSyncProvider {
   }
 
   bool GetMscRate(int32_t* numerator, int32_t* denominator) override {
-    return false;
+    bool result = eglGetMscRateCHROMIUM(g_egl_display, surface_, numerator,
+                                        denominator) == EGL_TRUE;
+    return result;
   }
 
   bool IsHWClock() const override { return true; }

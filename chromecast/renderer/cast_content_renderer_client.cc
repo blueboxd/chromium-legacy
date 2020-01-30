@@ -65,6 +65,14 @@
 
 namespace chromecast {
 namespace shell {
+namespace {
+bool IsSupportedBitstreamAudioCodecHelper(::media::AudioCodec codec, int mask) {
+  return (codec == ::media::kCodecAC3 && (kBitstreamAudioCodecAc3 & mask)) ||
+         (codec == ::media::kCodecEAC3 && (kBitstreamAudioCodecEac3 & mask)) ||
+         (codec == ::media::kCodecMpegHAudio &&
+          (kBitstreamAudioCodecMpegHAudio & mask));
+}
+}  // namespace
 
 #if defined(OS_ANDROID)
 // Audio renderer algorithm maximum capacity.
@@ -246,10 +254,10 @@ void CastContentRendererClient::AddSupportedKeySystems(
 
 bool CastContentRendererClient::IsSupportedAudioType(
     const ::media::AudioType& type) {
+#if defined(OS_ANDROID)
   if (type.spatial_rendering)
     return false;
 
-#if defined(OS_ANDROID)
   // No ATV device we know of has (E)AC3 decoder, so it relies on the audio sink
   // device.
   if (type.codec == ::media::kCodecEAC3) {
@@ -272,7 +280,7 @@ bool CastContentRendererClient::IsSupportedAudioType(
 
   // If the HDMI sink supports bitstreaming the codec, then the vendor backend
   // does not need to support it.
-  if (IsSupportedBitstreamAudioCodec(type.codec))
+  if (CheckSupportedBitstreamAudioCodec(type.codec, type.spatial_rendering))
     return true;
 
   media::AudioCodec codec = media::ToCastAudioCodec(type.codec);
@@ -304,15 +312,21 @@ bool CastContentRendererClient::IsSupportedVideoType(
 
 bool CastContentRendererClient::IsSupportedBitstreamAudioCodec(
     ::media::AudioCodec codec) {
-  return (codec == ::media::kCodecAC3 &&
-          (kBitstreamAudioCodecAc3 &
-           supported_bitstream_audio_codecs_info_.codecs)) ||
-         (codec == ::media::kCodecEAC3 &&
-          (kBitstreamAudioCodecEac3 &
-           supported_bitstream_audio_codecs_info_.codecs)) ||
-         (codec == ::media::kCodecMpegHAudio &&
-          (kBitstreamAudioCodecMpegHAudio &
-           supported_bitstream_audio_codecs_info_.codecs));
+  return IsSupportedBitstreamAudioCodecHelper(
+      codec, supported_bitstream_audio_codecs_info_.codecs);
+}
+
+bool CastContentRendererClient::CheckSupportedBitstreamAudioCodec(
+    ::media::AudioCodec codec,
+    bool check_spatial_rendering) {
+  if (!IsSupportedBitstreamAudioCodec(codec))
+    return false;
+
+  if (!check_spatial_rendering)
+    return true;
+
+  return IsSupportedBitstreamAudioCodecHelper(
+      codec, supported_bitstream_audio_codecs_info_.spatial_rendering);
 }
 
 std::unique_ptr<blink::WebPrescientNetworking>

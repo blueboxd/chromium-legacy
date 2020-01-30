@@ -90,7 +90,7 @@ SVGParsingError SVGLengthList::SetValueAsString(const String& value) {
 }
 
 void SVGLengthList::Add(SVGPropertyBase* other, SVGElement* context_element) {
-  SVGLengthList* other_list = ToSVGLengthList(other);
+  auto* other_list = To<SVGLengthList>(other);
 
   if (length() != other_list->length())
     return;
@@ -114,10 +114,10 @@ void SVGLengthList::CalculateAnimatedValue(
     SVGPropertyBase* to_value,
     SVGPropertyBase* to_at_end_of_duration_value,
     SVGElement* context_element) {
-  SVGLengthList* from_list = ToSVGLengthList(from_value);
-  SVGLengthList* to_list = ToSVGLengthList(to_value);
-  SVGLengthList* to_at_end_of_duration_list =
-      ToSVGLengthList(to_at_end_of_duration_value);
+  auto* from_list = To<SVGLengthList>(from_value);
+  auto* to_list = To<SVGLengthList>(to_value);
+  auto* to_at_end_of_duration_list =
+      To<SVGLengthList>(to_at_end_of_duration_value);
 
   SVGLengthContext length_context(context_element);
   DCHECK_EQ(mode_, SVGLength::LengthModeForAnimatedLengthAttribute(

@@ -785,6 +785,22 @@ TEST_P(BluetoothTestWinrtOnly, ConstructFakeAdapterWithoutRadio) {
   EXPECT_FALSE(adapter_->IsDiscoverable());
   EXPECT_FALSE(adapter_->IsDiscovering());
 }
+
+TEST_P(BluetoothTestWinrtOnly, ConstructFakeAdapterWithoutPowerControl) {
+  if (!PlatformSupportsLowEnergy()) {
+    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
+    return;
+  }
+
+  InitFakeAdapterWithRadioAccessDenied();
+  EXPECT_EQ(adapter_->GetAddress(), kTestAdapterAddress);
+  EXPECT_EQ(adapter_->GetName(), kTestAdapterName);
+  EXPECT_TRUE(adapter_->IsPresent());
+  EXPECT_FALSE(adapter_->CanPower());
+  EXPECT_TRUE(adapter_->IsPowered());
+  EXPECT_FALSE(adapter_->IsDiscoverable());
+  EXPECT_FALSE(adapter_->IsDiscovering());
+}
 #endif  // defined(OS_WIN)
 
 // TODO(scheib): Enable BluetoothTest fixture tests on all platforms.
@@ -2033,15 +2049,9 @@ TEST_F(BluetoothTest, DiscoverConnectedLowEnergyDeviceTwice) {
 #endif  // defined(OS_MACOSX)
 
 #if defined(OS_WIN)
-INSTANTIATE_TEST_SUITE_P(
-    All,
-    BluetoothTestWinrt,
-    ::testing::Bool());
+INSTANTIATE_TEST_SUITE_P(All, BluetoothTestWinrt, ::testing::Bool());
 
-INSTANTIATE_TEST_SUITE_P(
-    All,
-    BluetoothTestWinrtOnly,
-    ::testing::Values(true));
+INSTANTIATE_TEST_SUITE_P(All, BluetoothTestWinrtOnly, ::testing::Values(true));
 #endif  // defined(OS_WIN)
 
 }  // namespace device

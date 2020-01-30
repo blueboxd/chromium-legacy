@@ -20,6 +20,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chromeos/assistant_optin/assistant_optin_utils.h"
 #include "chrome/browser/ui/webui/chromeos/bluetooth_dialog_localized_strings_provider.h"
+#include "chrome/browser/ui/webui/chromeos/network_element_localized_strings_provider.h"
 #include "chrome/browser/ui/webui/chromeos/smb_shares/smb_shares_localized_strings_provider.h"
 #include "chrome/browser/ui/webui/settings/shared_settings_localized_strings_provider.h"
 #include "chrome/browser/ui/webui/webui_util.h"
@@ -993,6 +994,12 @@ void AddInternetStrings(content::WebUIDataSource* html_source) {
       {"tetherEnableBluetooth", IDS_ENABLE_BLUETOOTH},
   };
   AddLocalizedStringsBulk(html_source, kLocalizedStrings);
+
+  chromeos::network_element::AddLocalizedStrings(html_source);
+  chromeos::network_element::AddOncLocalizedStrings(html_source);
+  chromeos::network_element::AddDetailsLocalizedStrings(html_source);
+  chromeos::network_element::AddConfigLocalizedStrings(html_source);
+  chromeos::network_element::AddErrorLocalizedStrings(html_source);
 
   html_source->AddString("networkGoogleNameserversLearnMoreUrl",
                          chrome::kGoogleNameserversLearnMoreURL);

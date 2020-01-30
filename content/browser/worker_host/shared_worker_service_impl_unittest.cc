@@ -293,13 +293,8 @@ TEST_F(SharedWorkerServiceImplTest, BasicTest) {
 
 // Tests that the shared worker will not be started if the hosting web contents
 // is destroyed while the script is being fetched.
-// Disabled on Fuchsia because this unittest is flaky.
-#if defined(OS_FUCHSIA)
-#define MAYBE_WebContentsDestroyed DISABLED_WebContentsDestroyed
-#else
-#define MAYBE_WebContentsDestroyed WebContentsDestroyed
-#endif
-TEST_F(SharedWorkerServiceImplTest, MAYBE_WebContentsDestroyed) {
+// TODO(https://crbug.com/1029434): Flaky on at least Fuchsia and Linux.
+TEST_F(SharedWorkerServiceImplTest, DISABLED_WebContentsDestroyed) {
   std::unique_ptr<TestWebContents> web_contents =
       CreateWebContents(GURL("http://example.com/"));
   TestRenderFrameHost* render_frame_host = web_contents->GetMainFrame();

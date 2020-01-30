@@ -10,7 +10,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/clipboard/clipboard_constants.h"
 #include "ui/base/dragdrop/file_info.h"
-#include "ui/events/platform/x11/x11_event_source_glib.h"
+#include "ui/events/platform/x11/x11_event_source.h"
 #include "ui/gfx/x/x11_atom_cache.h"
 #include "url/gurl.h"
 
@@ -37,7 +37,7 @@ class OSExchangeDataProviderAuraX11Test : public testing::Test {
 
  protected:
   base::test::TaskEnvironment task_environment_;
-  X11EventSourceGlib event_source;
+  X11EventSource event_source;
   ui::OSExchangeDataProviderAuraX11 provider;
 };
 

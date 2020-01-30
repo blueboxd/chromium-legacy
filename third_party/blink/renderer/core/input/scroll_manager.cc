@@ -659,6 +659,8 @@ void ScrollManager::HandleDeferredGestureScrollEnd(
 WebInputEventResult ScrollManager::HandleGestureScrollEnd(
     const WebGestureEvent& gesture_event) {
   TRACE_EVENT0("input", "ScrollManager::handleGestureScrollEnd");
+  GetPage()->GetBrowserControls().ScrollEnd();
+
   Node* node = scroll_gesture_handling_node_;
 
   if (node && node->GetLayoutObject()) {

@@ -40,19 +40,14 @@ ExtensionApiFrameIdMap::FrameData::FrameData()
       tab_id(extension_misc::kUnknownTabId),
       window_id(extension_misc::kUnknownWindowId) {}
 
-ExtensionApiFrameIdMap::FrameData::FrameData(
-    int frame_id,
-    int parent_frame_id,
-    int tab_id,
-    int window_id,
-    GURL last_committed_main_frame_url,
-    base::Optional<GURL> pending_main_frame_url)
+ExtensionApiFrameIdMap::FrameData::FrameData(int frame_id,
+                                             int parent_frame_id,
+                                             int tab_id,
+                                             int window_id)
     : frame_id(frame_id),
       parent_frame_id(parent_frame_id),
       tab_id(tab_id),
-      window_id(window_id),
-      last_committed_main_frame_url(std::move(last_committed_main_frame_url)),
-      pending_main_frame_url(std::move(pending_main_frame_url)) {}
+      window_id(window_id) {}
 
 ExtensionApiFrameIdMap::FrameData::~FrameData() = default;
 
@@ -160,32 +155,14 @@ ExtensionApiFrameIdMap::FrameData ExtensionApiFrameIdMap::KeyToValue(
   if (!rfh || (require_live_frame && !rfh->IsRenderFrameLive()))
     return FrameData();
 
-  content::WebContents* web_contents =
-      content::WebContents::FromRenderFrameHost(rfh);
-
-  base::Optional<GURL> pending_main_frame_url;
-  // Only set |pending_main_frame_url| if |rfh| is the main frame and a pending
-  // entry exists.
-  if (rfh->GetParent() == nullptr && web_contents &&
-      web_contents->GetController().GetPendingEntry()) {
-    pending_main_frame_url =
-        web_contents->GetController().GetPendingEntry()->GetURL();
-  }
-
-  // The RenderFrameHost may not have an associated WebContents in cases
-  // such as interstitial pages.
-  GURL last_committed_main_frame_url =
-      web_contents ? web_contents->GetLastCommittedURL() : GURL();
   int tab_id = extension_misc::kUnknownTabId;
   int window_id = extension_misc::kUnknownWindowId;
   // The browser client can be null in unittests.
   if (ExtensionsBrowserClient::Get()) {
     ExtensionsBrowserClient::Get()->GetTabAndWindowIdForWebContents(
-        web_contents, &tab_id, &window_id);
+        content::WebContents::FromRenderFrameHost(rfh), &tab_id, &window_id);
   }
-  return FrameData(GetFrameId(rfh), GetParentFrameId(rfh), tab_id, window_id,
-                   std::move(last_committed_main_frame_url),
-                   std::move(pending_main_frame_url));
+  return FrameData(GetFrameId(rfh), GetParentFrameId(rfh), tab_id, window_id);
 }
 
 ExtensionApiFrameIdMap::FrameData ExtensionApiFrameIdMap::GetFrameData(

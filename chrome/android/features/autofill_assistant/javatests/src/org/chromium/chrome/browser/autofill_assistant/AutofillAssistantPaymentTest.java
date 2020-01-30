@@ -173,10 +173,25 @@ public class AutofillAssistantPaymentTest {
                         .setSetFormValue(
                                 SetFormFieldValueProto.newBuilder()
                                         .addValue(SetFormFieldValueProto.KeyPress.newBuilder()
-                                                          .setGeneratePassword(true))
+                                                          .setGeneratePassword(
+                                                                  SetFormFieldValueProto
+                                                                          .GeneratePassword
+                                                                          .newBuilder()
+                                                                          .setMemoryKey(
+                                                                                  "memory-key")))
                                         .setElement(ElementReferenceProto.newBuilder().addSelectors(
                                                 "#password")))
                         .build());
+        list.add(
+                (ActionProto) ActionProto.newBuilder()
+                        .setSetFormValue(
+                                SetFormFieldValueProto.newBuilder()
+                                        .addValue(SetFormFieldValueProto.KeyPress.newBuilder()
+                                                          .setClientMemoryKey("memory-key"))
+                                        .setElement(ElementReferenceProto.newBuilder().addSelectors(
+                                                "#password-conf")))
+                        .build());
+
         list.add((ActionProto) ActionProto.newBuilder()
                          .setPrompt(PromptProto.newBuilder().setMessage("Prompt").addChoices(
                                  PromptProto.Choice.newBuilder()))
@@ -194,7 +209,10 @@ public class AutofillAssistantPaymentTest {
         startAutofillAssistant(mTestRule.getActivity(), testService);
 
         waitUntilViewMatchesCondition(withText("Prompt"), isCompletelyDisplayed());
-        assertThat(getElementValue("password", getWebContents()).length(), greaterThan(0));
+        String password = getElementValue("password", getWebContents());
+        String confirmation_password = getElementValue("password-conf", getWebContents());
+        assertThat(password.length(), greaterThan(0));
+        assertThat(password, is(confirmation_password));
     }
 
     /**

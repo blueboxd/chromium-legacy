@@ -7,10 +7,10 @@
 #include "base/guid.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/mock_callback.h"
+#include "chrome/browser/sharing/mock_sharing_device_source.h"
 #include "chrome/browser/sharing/mock_sharing_service.h"
 #include "chrome/browser/sharing/proto/shared_clipboard_message.pb.h"
 #include "chrome/browser/sharing/shared_clipboard/shared_clipboard_test_base.h"
-#include "chrome/browser/sharing/sharing_device_source.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/sync/protocol/sync_enums.pb.h"
@@ -26,19 +26,6 @@ const char kEmptyDeviceName[] = "";
 const char kDeviceNameInDeviceInfo[] = "DeviceNameInDeviceInfo";
 const char kDeviceNameInMessage[] = "DeviceNameInMessage";
 
-class MockSharingDeviceSource : public SharingDeviceSource {
- public:
-  bool IsReady() override { return true; }
-
-  MOCK_METHOD1(GetDeviceByGuid,
-               std::unique_ptr<syncer::DeviceInfo>(const std::string& guid));
-
-  MOCK_METHOD1(
-      GetDeviceCandidates,
-      std::vector<std::unique_ptr<syncer::DeviceInfo>>(
-          sync_pb::SharingSpecificFields::EnabledFeatures required_feature));
-};
-
 class SharedClipboardMessageHandlerTest : public SharedClipboardTestBase {
  public:
   SharedClipboardMessageHandlerTest() = default;
@@ -47,6 +34,7 @@ class SharedClipboardMessageHandlerTest : public SharedClipboardTestBase {
 
   void SetUp() override {
     SharedClipboardTestBase::SetUp();
+    ON_CALL(device_source_, IsReady()).WillByDefault(testing::Return(true));
     message_handler_ = std::make_unique<SharedClipboardMessageHandlerDesktop>(
         &device_source_, &profile_);
   }

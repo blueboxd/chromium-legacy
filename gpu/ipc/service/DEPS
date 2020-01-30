@@ -15,3 +15,9 @@ include_rules = [
   "+ui/platform_window",
   "+media/gpu/android/texture_owner.h",
 ]
+
+specific_include_rules = {
+  "image_decode_accelerator_stub_unittest\.cc": [
+    "+skia/ext/skia_memory_dump_provider.h",
+  ],
+}

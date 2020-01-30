@@ -330,6 +330,38 @@ base::Time PermissionDecisionAutoBlocker::GetEmbargoStartTime(
                                                   : ignore_start_time;
 }
 
+std::set<GURL> PermissionDecisionAutoBlocker::GetEmbargoedOrigins(
+    ContentSettingsType content_type) {
+  return GetEmbargoedOrigins(std::vector<ContentSettingsType>{content_type});
+}
+
+std::set<GURL> PermissionDecisionAutoBlocker::GetEmbargoedOrigins(
+    std::vector<ContentSettingsType> content_types) {
+  auto* map = HostContentSettingsMapFactory::GetForProfile(profile_);
+  DCHECK(map);
+  ContentSettingsForOneType embargo_settings;
+  map->GetSettingsForOneType(ContentSettingsType::PERMISSION_AUTOBLOCKER_DATA,
+                             std::string(), &embargo_settings);
+  std::set<GURL> origins;
+  for (const auto& e : embargo_settings) {
+    for (auto content_type : content_types) {
+      if (!permissions::PermissionUtil::IsPermission(content_type))
+        continue;
+      const GURL url(e.primary_pattern.ToString());
+      permissions::PermissionResult result =
+          GetEmbargoResult(map, url, content_type, clock_->Now());
+      if (result.source ==
+              permissions::PermissionStatusSource::MULTIPLE_DISMISSALS ||
+          result.source ==
+              permissions::PermissionStatusSource::MULTIPLE_IGNORES) {
+        origins.insert(url);
+        break;
+      }
+    }
+  }
+  return origins;
+}
+
 int PermissionDecisionAutoBlocker::GetDismissCount(
     const GURL& url,
     ContentSettingsType permission) {

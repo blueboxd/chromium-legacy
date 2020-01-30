@@ -403,8 +403,8 @@ class IndexedDBBackingStoreTestWithBlobs : public IndexedDBBackingStoreTest {
                       std::move(pending_receiver));
                 },
                 uuid, remote.InitWithNewPipeAndPassReceiver()));
-    IndexedDBBlobInfo info(std::move(remote), uuid, base::FilePath(), file_name,
-                           type, last_modified, size);
+    IndexedDBBlobInfo info(std::move(remote), uuid, file_name, type,
+                           last_modified, size);
     return info;
   }
 
@@ -476,7 +476,7 @@ class IndexedDBBackingStoreTestWithBlobs : public IndexedDBBackingStoreTest {
     if (ids.size() != blob_context_->writes().size())
       return false;
     for (const auto& read : reads) {
-      if (ids.count(read.file_path()) != 1)
+      if (ids.count(read.indexed_db_file_path()) != 1)
         return false;
     }
     return true;

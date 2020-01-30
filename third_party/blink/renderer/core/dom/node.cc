@@ -1528,6 +1528,8 @@ void Node::ClearFlatTreeNodeDataIfHostChanged(const ContainerNode& parent) {
 }
 
 bool Node::IsDescendantOf(const Node* other) const {
+  DCHECK(this);  // Necessary for clusterfuzz tooling to get a useful backtrace
+
   // Return true if other is an ancestor of this, otherwise false
   if (!other || isConnected() != other->isConnected())
     return false;

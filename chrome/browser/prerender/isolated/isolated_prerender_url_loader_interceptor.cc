@@ -12,6 +12,7 @@
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/prerender/prerender_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
@@ -23,6 +24,13 @@ bool ShouldInterceptRequestForPrerender(
     const network::ResourceRequest& tentative_resource_request,
     content::BrowserContext* browser_context) {
   if (!base::FeatureList::IsEnabled(features::kIsolatePrerenders))
+    return false;
+
+  // Lite Mode must be enabled for this feature to be enabled.
+  Profile* profile = Profile::FromBrowserContext(browser_context);
+  bool ds_enabled = data_reduction_proxy::DataReductionProxySettings::
+      IsDataSaverEnabledByUser(profile->IsOffTheRecord(), profile->GetPrefs());
+  if (!ds_enabled)
     return false;
 
   // TODO(crbug.com/1023486): Add other triggering checks.

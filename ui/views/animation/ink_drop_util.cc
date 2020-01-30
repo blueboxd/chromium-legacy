@@ -11,6 +11,9 @@
 #include "ui/gfx/geometry/safe_integer_conversions.h"
 #include "ui/gfx/geometry/vector2d_f.h"
 #include "ui/gfx/transform.h"
+#include "ui/native_theme/native_theme.h"
+#include "ui/views/view.h"
+#include "ui/views/views_features.h"
 
 namespace views {
 
@@ -49,6 +52,15 @@ gfx::Transform GetTransformSubpixelCorrection(const gfx::Transform& transform,
     DCHECK_LT(std::abs(gfx::ToRoundedInt(offset.y()) - offset.y()), kEpsilon);
 #endif
   return subpixel_correction;
+}
+
+bool UsingPlatformHighContrastInkDrop(const View* view) {
+  const ui::NativeTheme* theme = view->GetNativeTheme();
+  return theme &&
+         theme->GetDefaultSystemColorScheme() ==
+             ui::NativeTheme::ColorScheme::kPlatformHighContrast &&
+         base::FeatureList::IsEnabled(
+             features::kEnablePlatformHighContrastInkDrop);
 }
 
 }  // namespace views

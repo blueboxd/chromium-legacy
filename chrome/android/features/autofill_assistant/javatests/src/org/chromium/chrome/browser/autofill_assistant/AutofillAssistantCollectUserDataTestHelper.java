@@ -10,6 +10,7 @@ import static org.chromium.chrome.browser.autofill_assistant.user_data.Assistant
 
 import android.view.View;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import androidx.annotation.Nullable;
 
@@ -52,6 +53,7 @@ public class AutofillAssistantCollectUserDataTestHelper {
         final AssistantVerticalExpander mDateRangeStartSection;
         final AssistantVerticalExpander mDateRangeEndSection;
         final LinearLayout mTermsSection;
+        final TextView mInfoSection;
         final AssistantChoiceList mContactList;
         final AssistantChoiceList mPaymentMethodList;
         final AssistantChoiceList mShippingAddressList;
@@ -75,6 +77,8 @@ public class AutofillAssistantCollectUserDataTestHelper {
                     AssistantTagsForTesting.COLLECT_USER_DATA_DATE_RANGE_END_TAG);
             mTermsSection = coordinator.getView().findViewWithTag(
                     AssistantTagsForTesting.COLLECT_USER_DATA_RADIO_TERMS_SECTION_TAG);
+            mInfoSection = coordinator.getView().findViewWithTag(
+                    AssistantTagsForTesting.COLLECT_USER_DATA_INFO_SECTION_TAG);
             mDividers = findViewsWithTag(coordinator.getView(), DIVIDER_TAG);
             mContactList = (AssistantChoiceList) (findViewsWithTag(
                     mContactSection, COLLECT_USER_DATA_CHOICE_LIST)
@@ -135,7 +139,7 @@ public class AutofillAssistantCollectUserDataTestHelper {
         }
 
         @Override
-        public void onTermsAndConditionsLinkClicked(int link) {
+        public void onTextLinkClicked(int link) {
             mLastLinkClicked = link;
         }
 

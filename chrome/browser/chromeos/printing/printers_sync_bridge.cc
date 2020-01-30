@@ -73,15 +73,18 @@ bool ResolveInvalidPpdReference(sync_pb::PrinterSpecifics* specifics) {
   auto* ppd_ref = specifics->mutable_ppd_reference();
 
   if (!ppd_ref->autoconf()) {
+    base::UmaHistogramBoolean("Printing.CUPS.InvalidPpdResolved", false);
     return false;
   }
 
   if (!ppd_ref->has_user_supplied_ppd_url() &&
       !ppd_ref->has_effective_make_and_model()) {
+    base::UmaHistogramBoolean("Printing.CUPS.InvalidPpdResolved", false);
     return false;
   }
 
   ppd_ref->clear_autoconf();
+  base::UmaHistogramBoolean("Printing.CUPS.InvalidPpdResolved", true);
   return true;
 }
 

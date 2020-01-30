@@ -4,6 +4,7 @@
 
 import {webUIListenerCallback} from 'chrome://resources/js/cr.m.js';
 import {FocusOutlineManager} from 'chrome://resources/js/cr/ui/focus_outline_manager.m.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {setScrollAnimationEnabledForTesting} from 'chrome://tab-strip/tab_list.js';
 import {TabStripEmbedderProxy} from 'chrome://tab-strip/tab_strip_embedder_proxy.js';
 import {TabsApiProxy} from 'chrome://tab-strip/tabs_api_proxy.js';
@@ -81,6 +82,11 @@ suite('TabList', () => {
       title: 'Tab 3',
     },
   ];
+  const currentWindowId = 1000;
+
+  const strings = {
+    tabIdDataType: 'application/tab-id',
+  };
 
   function pinTabAt(tab, index) {
     const changeInfo = {index: index, pinned: true};
@@ -107,6 +113,7 @@ suite('TabList', () => {
   }
 
   setup(() => {
+    loadTimeData.overrideValues(strings);
     document.body.innerHTML = '';
     document.body.style.margin = 0;
 
@@ -116,6 +123,7 @@ suite('TabList', () => {
     callbackRouter = testTabsApiProxy.callbackRouter;
 
     testTabStripEmbedderProxy = new TestTabStripEmbedderProxy();
+    testTabStripEmbedderProxy.setWindowId(currentWindowId);
     testTabStripEmbedderProxy.setColors({
       '--background-color': 'white',
       '--foreground-color': 'black',
@@ -132,7 +140,10 @@ suite('TabList', () => {
     tabList = document.createElement('tabstrip-tab-list');
     document.body.appendChild(tabList);
 
-    return testTabsApiProxy.whenCalled('getTabs');
+    return Promise.all([
+      testTabsApiProxy.whenCalled('getTabs'),
+      testTabStripEmbedderProxy.whenCalled('getWindowId'),
+    ]);
   });
 
   teardown(() => {
@@ -549,8 +560,10 @@ suite('TabList', () => {
     });
     dragOverTab.dispatchEvent(dragOverEvent);
     assertEquals(dragOverEvent.dataTransfer.dropEffect, 'move');
-    const [tabId, newIndex] = await testTabsApiProxy.whenCalled('moveTab');
+    const [tabId, windowId, newIndex] =
+        await testTabsApiProxy.whenCalled('moveTab');
     assertEquals(tabId, tabs[draggedIndex].id);
+    assertEquals(currentWindowId, windowId);
     assertEquals(newIndex, dragOverIndex);
   });
 
@@ -680,6 +693,26 @@ suite('TabList', () => {
     const [groupId, index] = await testTabsApiProxy.whenCalled('moveGroup');
     assertEquals('group0', groupId);
     assertEquals(1, index);
+  });
+
+  test('DropTabIntoList', async () => {
+    const droppedTabId = 9000;
+    const mockDataTransfer = new MockDataTransfer();
+    mockDataTransfer.setData(strings.tabIdDataType, droppedTabId);
+    const dropEvent = new DragEvent('drop', {
+      bubbles: true,
+      composed: true,
+      clientX: 100,
+      clientY: 150,
+      dataTransfer: mockDataTransfer,
+    });
+    tabList.dispatchEvent(dropEvent);
+
+    const [tabId, windowId, index] =
+        await testTabsApiProxy.whenCalled('moveTab');
+    assertEquals(droppedTabId, tabId);
+    assertEquals(currentWindowId, windowId);
+    assertEquals(-1, index);
   });
 
   test('tracks and untracks thumbnails based on viewport', async () => {

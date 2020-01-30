@@ -49,6 +49,7 @@ def _CommonChecks(input_api, output_api):
   result.extend(_CheckSemanticColorsReferences(input_api, output_api))
   result.extend(_CheckXmlNamespacePrefixes(input_api, output_api))
   result.extend(_CheckTextAppearance(input_api, output_api))
+  result.extend(_CheckButtonCompatWidgetUsage(input_api, output_api))
   # Add more checks here
   return result
 
@@ -67,8 +68,9 @@ def _CheckColorFormat(input_api, output_api):
         errors.append(
             '  %s:%d\n    \t%s' % (f.LocalPath(), line_number, line.strip()))
   if errors:
-    return [output_api.PresubmitError(
-  '''
+    return [
+        output_api.PresubmitError(
+            '''
   Android Color Reference Check failed:
     Your new code added (A)RGB values for colors that are not well
     formatted, listed below.
@@ -78,8 +80,8 @@ def _CheckColorFormat(input_api, output_api):
     defined in chrome/android/java/res/values/colors.xml.
 
     See https://crbug.com/775198 for more information.
-  ''',
-        errors)]
+  ''', errors)
+    ]
   return []
 
 
@@ -102,8 +104,9 @@ def _CheckColorReferences(input_api, output_api):
           errors.append(issue)
   result = []
   if errors:
-    result += [output_api.PresubmitError(
-  '''
+    result += [
+        output_api.PresubmitError(
+            '''
   Android Color Reference Check failed:
     Your new code added new color references that are not color resources from
     ui/android/java/res/values/color_palette.xml, listed below.
@@ -112,11 +115,12 @@ def _CheckColorReferences(input_api, output_api):
     color resource in colors.xml, and reference the color by @color/....
 
     See https://crbug.com/775198 for more information.
-  ''',
-        errors)]
+  ''', errors)
+    ]
   if warnings:
-    result += [output_api.PresubmitPromptWarning(
-  '''
+    result += [
+        output_api.PresubmitPromptWarning(
+            '''
   Android Color Reference Check warning:
     Your new code added new color references that are not color resources from
     ui/android/java/res/values/color_palette.xml, listed below.
@@ -129,8 +133,8 @@ def _CheckColorReferences(input_api, output_api):
     than a PNG/9-patch.
 
     Please contact src/chrome/android/java/res/OWNERS for questions.
-  ''',
-        warnings)]
+  ''', warnings)
+    ]
   return result
 
 
@@ -155,8 +159,9 @@ def _CheckDuplicateColors(input_api, output_api):
         errors.append(
             '  %s:%d\n    \t%s' % (f.LocalPath(), line_number, line.strip()))
   if errors:
-    return [output_api.PresubmitError(
-  '''
+    return [
+        output_api.PresubmitError(
+            '''
   Android Duplicate Color Declaration Check failed:
     Your new code added new colors by (A)RGB values that are already defined in
     ui/android/java/res/values/color_palette.xml, listed below.
@@ -166,8 +171,8 @@ def _CheckDuplicateColors(input_api, output_api):
     general name (e.g. modern_grey_100).
 
     See https://crbug.com/775198 for more information.
-  ''',
-        errors)]
+  ''', errors)
+    ]
   return []
 
 
@@ -196,8 +201,9 @@ def _CheckSemanticColorsReferences(input_api, output_api):
             '  %s:%d\n    \t%s' % (f.LocalPath(), line_number, line.strip()))
 
   if errors:
-    return [output_api.PresubmitError(
-  '''
+    return [
+        output_api.PresubmitError(
+            '''
   Android Semantic Color Reference Check failed:
     Your new color values added in semantic_colors are not defined in
     ui/android/java/res/values/color_palette.xml, listed below.
@@ -206,8 +212,8 @@ def _CheckSemanticColorsReferences(input_api, output_api):
     the existing color resource from color_palette.xml.
 
     See https://crbug.com/775198 for more information.
-  ''',
-        errors)]
+  ''', errors)
+    ]
   return []
 
 
@@ -221,8 +227,9 @@ def _CheckXmlNamespacePrefixes(input_api, output_api):
         errors.append(
             '  %s:%d\n    \t%s' % (f.LocalPath(), line_number, line.strip()))
   if errors:
-    return [output_api.PresubmitError(
-  '''
+    return [
+        output_api.PresubmitError(
+            '''
   XML Namespace Prefixes Check failed:
     Your new code added new xml namespace declaration that is not consistent
     with other XML files. Namespace "http://schemas.android.com/apk/res-auto"
@@ -231,8 +238,8 @@ def _CheckXmlNamespacePrefixes(input_api, output_api):
     xmlns:app="http://schemas.android.com/apk/res-auto"
 
     See https://crbug.com/850616 for more information.
-  ''',
-        errors)]
+  ''', errors)
+    ]
   return []
 
 
@@ -276,8 +283,9 @@ def _CheckTextAppearance(input_api, output_api):
   # TODO(huayinz): Change the path on the error message to the corresponding
   # styles.xml when this check applies to all resource directories.
   if errors:
-    return [output_api.PresubmitError(
-  '''
+    return [
+        output_api.PresubmitError(
+            '''
   Android Text Appearance Check failed:
     Your modified files contain Android text attributes defined outside
     text appearance styles, listed below.
@@ -307,8 +315,8 @@ def _CheckTextAppearance(input_api, output_api):
     Please contact hannahs@chromium.org for UX approval, and
     src/chrome/android/java/res/OWNERS for questions.
     See https://crbug.com/775198 for more information.
-  ''',
-        errors)]
+  ''', errors)
+    ]
   return []
 
 
@@ -321,8 +329,9 @@ def _CheckNewTextAppearance(input_api, output_api):
         errors.append(
             '  %s:%d\n    \t%s' % (f.LocalPath(), line_number, line.strip()))
   if errors:
-    return [output_api.PresubmitPromptWarning(
-  '''
+    return [
+        output_api.PresubmitPromptWarning(
+            '''
   New Text Appearance in styles.xml Check failed:
     Your new code added, edited or removed a text appearance style.
     If you are removing or editing an existing text appearance style, or your
@@ -331,8 +340,41 @@ def _CheckNewTextAppearance(input_api, output_api):
     Otherwise, please contact hannahs@chromium.org for UX approval, and
     src/chrome/android/java/res/OWNERS for questions.
     See https://crbug.com/775198 for more information.
-  ''',
-        errors)]
+  ''', errors)
+    ]
+  return []
+
+
+### unfavored android widgets below ###
+def _CheckButtonCompatWidgetUsage(input_api, output_api):
+  """Encourage using ButtonCompat rather than Button, AppButtonCompat"""
+  warnings = []
+
+  for f in IncludedFiles(input_api):
+    # layout resource files
+    for line_number, line in f.ChangedContents():
+      if (re.search(r'<Button$', line) or
+          re.search(r'<android.support.v7.widget.AppCompatButton$', line)):
+        warnings.append(
+            '  %s:%d\n    \t%s' % (f.LocalPath(), line_number, line.strip()))
+
+  if warnings:
+    return [
+        output_api.PresubmitPromptWarning(
+            '''
+  Android Widget Check warning:
+    Your new code is using Button or AppCompatButton, listed below.
+
+    Use org.chromium.ui.widget.ButtonCompat instead of Button and
+    AppCompatButton if possible; ButtonCompat is a Material-styled button with a
+    customizable background color. On L devices, this is a true Material button.
+    On earlier devices, the button is similar but lacks ripples and a shadow.
+
+    See https://crbug.com/775198 and https://crbug.com/908651 for
+    more information.
+  ''', warnings)
+    ]
+
   return []
 
 ### helpers ###

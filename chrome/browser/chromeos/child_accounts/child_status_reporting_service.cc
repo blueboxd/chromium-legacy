@@ -86,6 +86,7 @@ void ChildStatusReportingService::CreateStatusUploaderIfNeeded(
       client,
       std::make_unique<policy::ChildStatusCollector>(
           pref_change_registrar_->prefs(),
+          Profile::FromBrowserContext(context_),
           system::StatisticsProvider::GetInstance(),
           policy::ChildStatusCollector::AndroidStatusFetcher(),
           day_reset_time_),

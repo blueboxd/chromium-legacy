@@ -3538,8 +3538,14 @@ TYPED_TEST(GPURendererPixelTest, BlendingWithoutAntiAliasing) {
       cc::ExactPixelComparator(/*discard_alpha=*/true)));
 }
 
+// Test is flaky on Linux TSAN. crbug.com/1044587.
+#if defined(OS_LINUX) && defined(THREAD_SANITIZER)
+#define MAYBE_TrilinearFiltering DISABLED_TrilinearFiltering
+#else
+#define MAYBE_TrilinearFiltering TrilinearFiltering
+#endif
 // Trilinear filtering is only supported in the gl renderer.
-TYPED_TEST(GPURendererPixelTest, TrilinearFiltering) {
+TYPED_TEST(GPURendererPixelTest, MAYBE_TrilinearFiltering) {
   gfx::Rect viewport_rect(this->device_viewport_size_);
 
   int root_pass_id = 1;

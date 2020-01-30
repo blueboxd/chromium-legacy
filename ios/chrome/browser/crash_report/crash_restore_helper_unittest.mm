@@ -13,6 +13,7 @@
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #include "ios/chrome/browser/crash_report/crash_restore_helper.h"
+#import "ios/chrome/browser/main/test_browser.h"
 #import "ios/chrome/browser/sessions/session_service_ios.h"
 #include "ios/web/public/test/web_task_environment.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -40,13 +41,14 @@ class CrashRestoreHelperTest : public PlatformTest {
     chrome_browser_state_ = test_cbs_builder.Build();
     off_the_record_chrome_browser_state_ =
         chrome_browser_state_->GetOffTheRecordChromeBrowserState();
-    helper_ = [[CrashRestoreHelper alloc]
-        initWithBrowserState:chrome_browser_state_.get()];
+    test_browser_ = std::make_unique<TestBrowser>(chrome_browser_state_.get());
+    helper_ = [[CrashRestoreHelper alloc] initWithBrowser:test_browser_.get()];
   }
 
  protected:
   web::WebTaskEnvironment task_environment_;
   std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
+  std::unique_ptr<TestBrowser> test_browser_;
   ChromeBrowserState* off_the_record_chrome_browser_state_;
   CrashRestoreHelper* helper_;
 };

@@ -141,6 +141,22 @@ AccessibilitySelectedState AXMenuListOption::IsSelected() const {
                                              : kSelectedStateFalse);
 }
 
+bool AXMenuListOption::OnNativeClickAction() {
+  if (!element_)
+    return false;
+
+  // Clicking on an option within a menu list should first select that item,
+  // then toggle whether the menu list is showing.
+  element_->SetSelected(true);
+
+  // Calling OnNativeClickAction on the parent select element will toggle
+  // it open or closed.
+  if (ParentObject() && ParentObject()->IsMenuListPopup())
+    return ParentObject()->OnNativeClickAction();
+
+  return AXMockObject::OnNativeClickAction();
+}
+
 bool AXMenuListOption::OnNativeSetSelectedAction(bool b) {
   if (!element_ || !CanSetSelectedAttribute())
     return false;

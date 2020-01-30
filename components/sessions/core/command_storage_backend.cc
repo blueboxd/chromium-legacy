@@ -5,22 +5,28 @@
 #include "components/sessions/core/command_storage_backend.h"
 
 #include <stdint.h>
+#include <algorithm>
 #include <limits>
 #include <utility>
 
 #include "base/files/file.h"
 #include "base/files/file_util.h"
 #include "build/build_config.h"
+#include "crypto/aead.h"
 
 namespace sessions {
 
+namespace {
+
 // File version number.
-static const int32_t kFileCurrentVersion = 1;
+constexpr int32_t kFileCurrentVersion = 1;
+constexpr int32_t kEncryptedFileCurrentVersion = 2;
 
 // The signature at the beginning of the file = SSNS (Sessions).
-static const int32_t kFileSignature = 0x53534E53;
+constexpr int32_t kFileSignature = 0x53534E53;
 
-namespace {
+// Length (in bytes) of the nonce (used when encrypting).
+constexpr int kNonceLength = 12;
 
 // The file header is the first bytes written to the file,
 // and is used to identify the file as one written by us.
@@ -40,13 +46,16 @@ class SessionFileReader {
   typedef sessions::SessionCommand::id_type id_type;
   typedef sessions::SessionCommand::size_type size_type;
 
-  explicit SessionFileReader(const base::FilePath& path)
-      : errored_(false),
-        buffer_(CommandStorageBackend::kFileReadBufferSize, 0),
-        buffer_position_(0),
-        available_count_(0) {
-    file_.reset(
-        new base::File(path, base::File::FLAG_OPEN | base::File::FLAG_READ));
+  SessionFileReader(const base::FilePath& path,
+                    const std::vector<uint8_t>& crypto_key)
+      : buffer_(CommandStorageBackend::kFileReadBufferSize, 0),
+        crypto_key_(crypto_key) {
+    if (!crypto_key.empty()) {
+      aead_ = std::make_unique<crypto::Aead>(crypto::Aead::AES_256_GCM);
+      aead_->Init(base::make_span(crypto_key_));
+    }
+    file_ = std::make_unique<base::File>(
+        path, base::File::FLAG_OPEN | base::File::FLAG_READ);
   }
   // Reads the contents of the file specified in the constructor, returning
   // true on success, and filling up |commands| with commands.
@@ -59,6 +68,16 @@ class SessionFileReader {
   // the end of file was successfully reached.
   std::unique_ptr<sessions::SessionCommand> ReadCommand();
 
+  // Decrypts a previously encrypted command. Returns the new command on
+  // success.
+  std::unique_ptr<sessions::SessionCommand> CreateCommandFromEncrypted(
+      const char* data,
+      size_type length);
+
+  // Creates a command from the previously written value.
+  std::unique_ptr<sessions::SessionCommand> CreateCommand(const char* data,
+                                                          size_type length);
+
   // Shifts the unused portion of buffer_ to the beginning and fills the
   // remaining portion with data from the file. Returns false if the buffer
   // couldn't be filled. A return value of false only signals an error if
@@ -66,19 +85,26 @@ class SessionFileReader {
   bool FillBuffer();
 
   // Whether an error condition has been detected (
-  bool errored_;
+  bool errored_ = false;
 
   // As we read from the file, data goes here.
   std::string buffer_;
+
+  const std::vector<uint8_t> crypto_key_;
+
+  std::unique_ptr<crypto::Aead> aead_;
 
   // The file.
   std::unique_ptr<base::File> file_;
 
   // Position in buffer_ of the data.
-  size_t buffer_position_;
+  size_t buffer_position_ = 0;
 
   // Number of available bytes; relative to buffer_position_.
-  size_t available_count_;
+  size_t available_count_ = 0;
+
+  // Count of the number of commands encountered.
+  int command_counter_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(SessionFileReader);
 };
@@ -91,9 +117,13 @@ bool SessionFileReader::Read(
   int read_count;
   read_count =
       file_->ReadAtCurrentPos(reinterpret_cast<char*>(&header), sizeof(header));
-  if (read_count != sizeof(header) || header.signature != kFileSignature ||
-      header.version != kFileCurrentVersion)
-    return false;
+  if (read_count != sizeof(header) || header.signature != kFileSignature) {
+    const bool encrypt = aead_.get() != nullptr;
+    if ((encrypt && header.version != kEncryptedFileCurrentVersion) ||
+        (!encrypt && header.version != kFileCurrentVersion)) {
+      return false;
+    }
+  }
 
   std::vector<std::unique_ptr<sessions::SessionCommand>> read_commands;
   for (std::unique_ptr<sessions::SessionCommand> command = ReadCommand();
@@ -138,18 +168,60 @@ std::unique_ptr<sessions::SessionCommand> SessionFileReader::ReadCommand() {
       return nullptr;
     }
   }
-  const id_type command_id = buffer_[buffer_position_];
-  // NOTE: command_size includes the size of the id, which is not part of
-  // the contents of the SessionCommand.
-  std::unique_ptr<sessions::SessionCommand> command =
-      std::make_unique<sessions::SessionCommand>(
-          command_id, command_size - sizeof(id_type));
-  if (command_size > sizeof(id_type)) {
-    memcpy(command->contents(), &(buffer_[buffer_position_ + sizeof(id_type)]),
-           command_size - sizeof(id_type));
+  std::unique_ptr<SessionCommand> command;
+  if (aead_) {
+    command = CreateCommandFromEncrypted(buffer_.c_str() + buffer_position_,
+                                         command_size);
+  } else {
+    command = CreateCommand(buffer_.c_str() + buffer_position_, command_size);
   }
+  ++command_counter_;
   buffer_position_ += command_size;
   available_count_ -= command_size;
+  return command;
+}
+
+std::unique_ptr<sessions::SessionCommand>
+SessionFileReader::CreateCommandFromEncrypted(const char* data,
+                                              size_type length) {
+  // This means the nonce overflowed and we're reusing a nonce.
+  // CommandStorageBackend should never write enough commands to trigger this,
+  // so assume we should stop.
+  if (command_counter_ < 0)
+    return nullptr;
+
+  char nonce[kNonceLength];
+  memset(nonce, 0, kNonceLength);
+  memcpy(nonce, &command_counter_, sizeof(command_counter_));
+  std::string plain_text;
+  if (!aead_->Open(base::StringPiece(data, length),
+                   base::StringPiece(nonce, kNonceLength), base::StringPiece(),
+                   &plain_text)) {
+    DVLOG(1) << "SessionFileReader::ReadCommand, decryption failed";
+    return nullptr;
+  }
+  if (plain_text.size() < sizeof(id_type)) {
+    DVLOG(1) << "SessionFileReader::ReadCommand, size too small";
+    return nullptr;
+  }
+  return CreateCommand(plain_text.c_str(), plain_text.size());
+}
+
+std::unique_ptr<sessions::SessionCommand> SessionFileReader::CreateCommand(
+    const char* data,
+    size_type length) {
+  // Callers should have checked the size.
+  DCHECK_GE(length, sizeof(id_type));
+  const id_type command_id = data[0];
+  // NOTE: |length| includes the size of the id, which is not part of the
+  // contents of the SessionCommand.
+  std::unique_ptr<sessions::SessionCommand> command =
+      std::make_unique<sessions::SessionCommand>(command_id,
+                                                 length - sizeof(id_type));
+  if (length > sizeof(id_type)) {
+    memcpy(command->contents(), &(data[sizeof(id_type)]),
+           length - sizeof(id_type));
+  }
   return command;
 }
 
@@ -181,17 +253,40 @@ bool SessionFileReader::FillBuffer() {
 // static
 const int CommandStorageBackend::kFileReadBufferSize = 1024;
 
+// static
+const SessionCommand::size_type
+    CommandStorageBackend::kEncryptionOverheadInBytes = 16;
+
 CommandStorageBackend::CommandStorageBackend(
     scoped_refptr<base::SequencedTaskRunner> owning_task_runner,
     const base::FilePath& path)
-    : RefCountedDeleteOnSequence(owning_task_runner), path_(path) {
-  // NOTE: this is invoked on the main thread, don't do file access here.
-}
+    : RefCountedDeleteOnSequence(owning_task_runner), path_(path) {}
 
 void CommandStorageBackend::AppendCommands(
     std::vector<std::unique_ptr<sessions::SessionCommand>> commands,
-    bool truncate) {
+    bool truncate,
+    const std::vector<uint8_t>& crypto_key) {
   InitIfNecessary();
+
+  if (truncate) {
+    const bool was_encrypted = IsEncrypted();
+    const bool encrypt = !crypto_key.empty();
+    if (was_encrypted != encrypt) {
+      // The header is different when encrypting, so the file needs to be
+      // recreated.
+      CloseFile();
+    }
+    if (encrypt) {
+      aead_ = std::make_unique<crypto::Aead>(crypto::Aead::AES_256_GCM);
+      crypto_key_ = crypto_key;
+      aead_->Init(base::make_span(crypto_key_));
+    } else {
+      aead_.reset();
+    }
+  } else {
+    // |crypto_key| is only used when |truncate| is true.
+    DCHECK(crypto_key.empty());
+  }
 
   // Make sure and check |file_|, if opening the file failed |file_| will be
   // null.
@@ -207,6 +302,7 @@ void CommandStorageBackend::AppendCommands(
 
 void CommandStorageBackend::ReadCurrentSessionCommands(
     const base::CancelableTaskTracker::IsCanceledCallback& is_canceled,
+    const std::vector<uint8_t>& crypto_key,
     GetCommandsCallback callback) {
   if (is_canceled.Run())
     return;
@@ -214,38 +310,21 @@ void CommandStorageBackend::ReadCurrentSessionCommands(
   InitIfNecessary();
 
   std::vector<std::unique_ptr<sessions::SessionCommand>> commands;
-  ReadCommandsFromFile(path_, &commands);
+  ReadCommandsFromFile(path_, crypto_key, &commands);
   std::move(callback).Run(std::move(commands));
 }
 
 bool CommandStorageBackend::AppendCommandsToFile(
     base::File* file,
     const std::vector<std::unique_ptr<sessions::SessionCommand>>& commands) {
-  for (auto i = commands.begin(); i != commands.end(); ++i) {
-    int wrote;
-    const size_type content_size = static_cast<size_type>((*i)->size());
-    const size_type total_size = content_size + sizeof(id_type);
-    wrote = file->WriteAtCurrentPos(reinterpret_cast<const char*>(&total_size),
-                                    sizeof(total_size));
-    if (wrote != sizeof(total_size)) {
-      NOTREACHED() << "error writing";
-      return false;
-    }
-    id_type command_id = (*i)->id();
-    wrote = file->WriteAtCurrentPos(reinterpret_cast<char*>(&command_id),
-                                    sizeof(command_id));
-    if (wrote != sizeof(command_id)) {
-      NOTREACHED() << "error writing";
-      return false;
-    }
-    if (content_size > 0) {
-      wrote = file->WriteAtCurrentPos(reinterpret_cast<char*>((*i)->contents()),
-                                      content_size);
-      if (wrote != content_size) {
-        NOTREACHED() << "error writing";
+  for (auto& command : commands) {
+    if (IsEncrypted()) {
+      if (!AppendEncryptedCommandToFile(file, *(command.get())))
         return false;
-      }
+    } else if (!AppendCommandToFile(file, *(command.get()))) {
+      return false;
     }
+    commands_written_++;
   }
 #if defined(OS_CHROMEOS)
   file->Flush();
@@ -266,8 +345,9 @@ void CommandStorageBackend::InitIfNecessary() {
 
 bool CommandStorageBackend::ReadCommandsFromFile(
     const base::FilePath& path,
+    const std::vector<uint8_t>& crypto_key,
     std::vector<std::unique_ptr<sessions::SessionCommand>>* commands) {
-  SessionFileReader file_reader(path);
+  SessionFileReader file_reader(path, crypto_key);
   return file_reader.Read(commands);
 }
 
@@ -289,6 +369,7 @@ void CommandStorageBackend::TruncateFile() {
   }
   if (!file_)
     file_ = OpenAndWriteHeader(path_);
+  commands_written_ = 0;
 }
 
 std::unique_ptr<base::File> CommandStorageBackend::OpenAndWriteHeader(
@@ -302,12 +383,93 @@ std::unique_ptr<base::File> CommandStorageBackend::OpenAndWriteHeader(
     return nullptr;
   FileHeader header;
   header.signature = kFileSignature;
-  header.version = kFileCurrentVersion;
-  int wrote =
-      file->WriteAtCurrentPos(reinterpret_cast<char*>(&header), sizeof(header));
-  if (wrote != sizeof(header))
+  header.version =
+      IsEncrypted() ? kEncryptedFileCurrentVersion : kFileCurrentVersion;
+  if (file->WriteAtCurrentPos(reinterpret_cast<char*>(&header),
+                              sizeof(header)) != sizeof(header)) {
     return nullptr;
+  }
+  commands_written_ = 0;
   return file;
+}
+
+bool CommandStorageBackend::AppendCommandToFile(
+    base::File* file,
+    const sessions::SessionCommand& command) {
+  const size_type content_size =
+      std::min(command.size(),
+               static_cast<size_type>(std::numeric_limits<size_type>::max() -
+                                      sizeof(id_type)));
+  const size_type total_size = content_size + sizeof(id_type);
+  if (file->WriteAtCurrentPos(reinterpret_cast<const char*>(&total_size),
+                              sizeof(total_size)) != sizeof(total_size)) {
+    DVLOG(1) << "error writing";
+    return false;
+  }
+  id_type command_id = command.id();
+  if (file->WriteAtCurrentPos(reinterpret_cast<char*>(&command_id),
+                              sizeof(command_id)) != sizeof(command_id)) {
+    DVLOG(1) << "error writing";
+    return false;
+  }
+  if (content_size == 0)
+    return true;
+
+  if (file->WriteAtCurrentPos(reinterpret_cast<const char*>(command.contents()),
+                              content_size) != content_size) {
+    DVLOG(1) << "error writing";
+    return false;
+  }
+  return true;
+}
+
+bool CommandStorageBackend::AppendEncryptedCommandToFile(
+    base::File* file,
+    const sessions::SessionCommand& command) {
+  // This means the nonce overflowed and we're reusing a nonce. This class
+  // should never write enough commands to trigger this, so assume we should
+  // stop.
+  if (commands_written_ < 0)
+    return false;
+  DCHECK(IsEncrypted());
+  char nonce[kNonceLength];
+  memset(nonce, 0, kNonceLength);
+  memcpy(nonce, &commands_written_, sizeof(commands_written_));
+
+  // Encryption adds overhead, resulting in a slight reduction in the available
+  // space for each command. Chop any contents beyond the available size.
+  const size_type command_size = std::min(
+      command.size(),
+      static_cast<size_type>(std::numeric_limits<size_type>::max() -
+                             sizeof(id_type) - kEncryptionOverheadInBytes));
+  std::vector<char> command_and_id(command_size + sizeof(id_type));
+  const id_type command_id = command.id();
+  memcpy(&command_and_id.front(), reinterpret_cast<const char*>(&command_id),
+         sizeof(id_type));
+  memcpy(&(command_and_id.front()) + sizeof(id_type), command.contents(),
+         command_size);
+
+  std::string cipher_text;
+  aead_->Seal(base::StringPiece(&command_and_id.front(), command_and_id.size()),
+              base::StringPiece(nonce, kNonceLength), base::StringPiece(),
+              &cipher_text);
+  DCHECK_LE(cipher_text.size(), std::numeric_limits<size_type>::max());
+  const size_type command_and_id_size =
+      static_cast<size_type>(cipher_text.size());
+
+  int wrote = file->WriteAtCurrentPos(
+      reinterpret_cast<const char*>(&command_and_id_size),
+      sizeof(command_and_id_size));
+  if (wrote != sizeof(command_and_id_size)) {
+    DVLOG(1) << "error writing";
+    return false;
+  }
+  wrote = file->WriteAtCurrentPos(cipher_text.c_str(), cipher_text.size());
+  if (wrote != static_cast<int>(cipher_text.size())) {
+    DVLOG(1) << "error writing";
+    return false;
+  }
+  return true;
 }
 
 }  // namespace sessions

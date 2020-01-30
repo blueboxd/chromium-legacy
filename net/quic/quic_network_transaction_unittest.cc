@@ -1281,6 +1281,53 @@ TEST_P(QuicNetworkTransactionTest, ForceQuic) {
   }
 }
 
+// Regression test for https://crbug.com/1043531.
+TEST_P(QuicNetworkTransactionTest, ResetOnEmptyResponseHeaders) {
+  if (!quic::VersionUsesHttp3(version_.transport_version)) {
+    return;
+  }
+
+  context_.params()->origins_to_force_quic_on.insert(
+      HostPortPair::FromString("mail.example.org:443"));
+
+  MockQuicData mock_quic_data(version_);
+  int write_packet_num = 1;
+  mock_quic_data.AddWrite(SYNCHRONOUS,
+                          ConstructInitialSettingsPacket(write_packet_num++));
+  mock_quic_data.AddWrite(
+      SYNCHRONOUS,
+      ConstructClientRequestHeadersPacket(
+          write_packet_num++, GetNthClientInitiatedBidirectionalStreamId(0),
+          true, true, GetRequestHeaders("GET", "https", "/")));
+
+  const quic::QuicStreamId request_stream_id =
+      GetNthClientInitiatedBidirectionalStreamId(0);
+  spdy::SpdyHeaderBlock empty_response_headers;
+  const std::string response_data = server_maker_.QpackEncodeHeaders(
+      request_stream_id, std::move(empty_response_headers), nullptr);
+  uint64_t read_packet_num = 1;
+  mock_quic_data.AddRead(
+      ASYNC, ConstructServerDataPacket(read_packet_num++, request_stream_id,
+                                       false, false, response_data));
+  mock_quic_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);  // No more data to read
+
+  mock_quic_data.AddWrite(
+      ASYNC,
+      ConstructClientAckAndDataPacket(
+          write_packet_num++, true, GetQpackDecoderStreamId(), 1, 1, 1, false,
+          StreamCancellationQpackDecoderInstruction(request_stream_id)));
+
+  mock_quic_data.AddSocketDataToFactory(&socket_factory_);
+
+  CreateSession();
+
+  HttpNetworkTransaction trans(DEFAULT_PRIORITY, session_.get());
+  TestCompletionCallback callback;
+  int rv = trans.Start(&request_, callback.callback(), net_log_.bound());
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
+  EXPECT_THAT(callback.WaitForResult(), IsError(ERR_INVALID_RESPONSE));
+}
+
 TEST_P(QuicNetworkTransactionTest, LargeResponseHeaders) {
   context_.params()->origins_to_force_quic_on.insert(
       HostPortPair::FromString("mail.example.org:443"));

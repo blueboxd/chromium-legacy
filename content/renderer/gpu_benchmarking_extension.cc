@@ -297,8 +297,11 @@ bool BeginSmoothScroll(GpuBenchmarkingContext* context,
                        float fling_velocity,
                        bool precise_scrolling_deltas,
                        bool scroll_by_page,
-                       bool cursor_visible) {
+                       bool cursor_visible,
+                       bool scroll_by_percentage) {
   DCHECK(!(precise_scrolling_deltas && scroll_by_page));
+  DCHECK(!(precise_scrolling_deltas && scroll_by_percentage));
+  DCHECK(!(scroll_by_page && scroll_by_percentage));
   if (ThrowIfPointOutOfBounds(context, args, gfx::Point(start_x, start_y),
                               "Start point not in bounds")) {
     return false;
@@ -342,6 +345,9 @@ bool BeginSmoothScroll(GpuBenchmarkingContext* context,
   } else if (precise_scrolling_deltas) {
     gesture_params.granularity =
         ui::input_types::ScrollGranularity::kScrollByPrecisePixel;
+  } else if (scroll_by_percentage) {
+    gesture_params.granularity =
+        ui::input_types::ScrollGranularity::kScrollByPercentage;
   } else {
     gesture_params.granularity =
         ui::input_types::ScrollGranularity::kScrollByPixel;
@@ -692,6 +698,7 @@ bool GpuBenchmarking::SmoothScrollBy(gin::Arguments* args) {
   bool precise_scrolling_deltas = true;
   bool scroll_by_page = false;
   bool cursor_visible = true;
+  bool scroll_by_percentage = false;
 
   if (!GetOptionalArg(args, &pixels_to_scroll) ||
       !GetOptionalArg(args, &callback) || !GetOptionalArg(args, &start_x) ||
@@ -701,7 +708,8 @@ bool GpuBenchmarking::SmoothScrollBy(gin::Arguments* args) {
       !GetOptionalArg(args, &speed_in_pixels_s) ||
       !GetOptionalArg(args, &precise_scrolling_deltas) ||
       !GetOptionalArg(args, &scroll_by_page) ||
-      !GetOptionalArg(args, &cursor_visible)) {
+      !GetOptionalArg(args, &cursor_visible) ||
+      !GetOptionalArg(args, &scroll_by_percentage)) {
     return false;
   }
 
@@ -711,12 +719,16 @@ bool GpuBenchmarking::SmoothScrollBy(gin::Arguments* args) {
   // Scroll by page only for mouse inputs.
   DCHECK(!scroll_by_page ||
          gesture_source_type == SyntheticGestureParams::MOUSE_INPUT);
+  // Scroll by percentage only for mouse inputs.
+  DCHECK(!scroll_by_percentage ||
+         gesture_source_type == SyntheticGestureParams::MOUSE_INPUT);
 
   EnsureRemoteInterface();
-  return BeginSmoothScroll(
-      &context, args, input_injector_, pixels_to_scroll, callback,
-      gesture_source_type, direction, speed_in_pixels_s, true, start_x, start_y,
-      0, precise_scrolling_deltas, scroll_by_page, cursor_visible);
+  return BeginSmoothScroll(&context, args, input_injector_, pixels_to_scroll,
+                           callback, gesture_source_type, direction,
+                           speed_in_pixels_s, true, start_x, start_y, 0,
+                           precise_scrolling_deltas, scroll_by_page,
+                           cursor_visible, scroll_by_percentage);
 }
 
 bool GpuBenchmarking::SmoothDrag(gin::Arguments* args) {
@@ -778,7 +790,8 @@ bool GpuBenchmarking::Swipe(gin::Arguments* args) {
       &context, args, input_injector_, -pixels_to_scroll, callback,
       gesture_source_type, direction, speed_in_pixels_s, false, start_x,
       start_y, fling_velocity, true /* precise_scrolling_deltas */,
-      false /* scroll_by_page */, true /* cursor_visible */);
+      false /* scroll_by_page */, true /* cursor_visible */,
+      false /* scroll_by_percentage */);
 }
 
 bool GpuBenchmarking::ScrollBounce(gin::Arguments* args) {

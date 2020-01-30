@@ -79,6 +79,7 @@
 <translation id="129553762522093515">最近关闭的标签页</translation>
 <translation id="1298536327547837046">恶意软件扫描</translation>
 <translation id="129863573139666797"><ph name="BEGIN_LINK" />尝试清除 Cookie<ph name="END_LINK" /></translation>
+<translation id="1301324364792935241">请检查您的安全 DNS 设置</translation>
 <translation id="1307966114820526988">已被弃用的功能</translation>
 <translation id="1314509827145471431">装订（右侧）</translation>
 <translation id="1320233736580025032">Prc1 (Envelope)</translation>
@@ -152,6 +153,7 @@
 <translation id="1569487616857761740">输入失效日期</translation>
 <translation id="1581080074034554886">CVC</translation>
 <translation id="1583429793053364125">显示此网页时出了点问题。</translation>
+<translation id="1586541204584340881">您已安装的扩展程序</translation>
 <translation id="1588438908519853928">正常</translation>
 <translation id="1592005682883173041">本地数据访问权限</translation>
 <translation id="1594030484168838125">选择</translation>
@@ -362,6 +364,7 @@
 <translation id="2544644783021658368">单一文档</translation>
 <translation id="254947805923345898">政策值无效。</translation>
 <translation id="255002559098805027"><ph name="HOST_NAME" /> 发送的响应无效。</translation>
+<translation id="2553853292994445426">请检查您的安全 DNS 设置。您可能已配置了安全 DNS 服务器但无法连接到它。</translation>
 <translation id="2556876185419854533">撤消修改(&amp;U)</translation>
 <translation id="257674075312929031">群组</translation>
 <translation id="2586657967955657006">剪贴板</translation>
@@ -474,6 +477,7 @@
 <translation id="3095940652251934233">Statement</translation>
 <translation id="3096100844101284527">添加取货地址</translation>
 <translation id="3105172416063519923">资产 ID：</translation>
+<translation id="3107591622054137333"><ph name="BEGIN_LINK" />检查安全 DNS 配置<ph name="END_LINK" /></translation>
 <translation id="3109728660330352905">您未获授权，无法查看此网页。</translation>
 <translation id="3113284927548439113">第三批</translation>
 <translation id="3116158981186517402">粘合</translation>
@@ -767,6 +771,7 @@
 <translation id="4390472908992056574">帽檐式</translation>
 <translation id="4406896451731180161">搜索结果</translation>
 <translation id="4408413947728134509"><ph name="NUM_COOKIES" />Cookie</translation>
+<translation id="4414290883293381923">您刚刚在一个诈骗网站中输入了密码。Chrome 建议您立即前往 <ph name="WEBSITE_1" />、<ph name="WEBSITE_2" />、<ph name="WEBSITE_3" /> 以及使用此密码的其他网站更改密码。</translation>
 <translation id="4415426530740016218">取货地址</translation>
 <translation id="4424024547088906515">此服务器无法证明它是<ph name="DOMAIN" />；Chrome不信任其安全证书。出现此问题的原因可能是配置有误或您的连接被拦截了。</translation>
 <translation id="443121186588148776">串行端口</translation>
@@ -1197,6 +1202,7 @@
 <translation id="6353505687280762741">{COUNT,plural, =0{无}=1{1 个密码（用于 <ph name="DOMAIN_LIST" />，已同步）}=2{2 个密码（用于 <ph name="DOMAIN_LIST" />，已同步）}other{# 个密码（用于 <ph name="DOMAIN_LIST" />，已同步）}}</translation>
 <translation id="6358450015545214790">这分别意味着什么？</translation>
 <translation id="6361757823711327522">B7</translation>
+<translation id="6364095313648930329"><ph name="BEGIN_LINK" />检查代理服务器、防火墙和安全 DNS 配置<ph name="END_LINK" /></translation>
 <translation id="6366710531182496394">双钉（左侧）</translation>
 <translation id="6377268785556383139">1 个与“<ph name="SEARCH_TEXT" />”相符的搜索结果</translation>
 <translation id="6380497234672085559">A0</translation>
@@ -1219,6 +1225,7 @@
 <translation id="6433595998831338502"><ph name="HOST_NAME" /> 拒绝了我们的连接请求。</translation>
 <translation id="6434309073475700221">放弃</translation>
 <translation id="6440503408713884761">已忽略</translation>
+<translation id="6443406338865242315">您已安装的扩展程序和插件</translation>
 <translation id="6446163441502663861">Kahu (Envelope)</translation>
 <translation id="6446608382365791566">添加更多信息</translation>
 <translation id="6447842834002726250">Cookie</translation>
@@ -1328,6 +1335,7 @@
 <translation id="7012363358306927923">中国银联</translation>
 <translation id="7016992613359344582">这些费用可能只收取一次，也可能会周期性收取，而且可能不易察觉。</translation>
 <translation id="7029809446516969842">密码</translation>
+<translation id="7031646650991750659">您已安装的 Google Play 应用</translation>
 <translation id="7050187094878475250">您尝试访问 <ph name="DOMAIN" />，但服务器提供的证书不可信（有效期过长）。</translation>
 <translation id="705310974202322020">{NUM_CARDS,plural, =1{此刻无法保存这张卡}other{此刻无法保存这些卡}}</translation>
 <translation id="7053983685419859001">禁止</translation>
@@ -1387,6 +1395,7 @@
 <translation id="7319430975418800333">A3</translation>
 <translation id="7320336641823683070">与连接相关的帮助</translation>
 <translation id="733354035281974745">设备本地帐号替换</translation>
+<translation id="7333654844024768166">您刚刚在一个诈骗网站中输入了密码。Chromium 建议您立即前往 <ph name="WEBSITE_1" />、<ph name="WEBSITE_2" />、<ph name="WEBSITE_3" /> 以及使用此密码的其他网站更改密码。</translation>
 <translation id="7334320624316649418">恢复顺序调整(&amp;R)</translation>
 <translation id="7337706099755338005">在您的平台上不可用。</translation>
 <translation id="733923710415886693">该服务器的证书未通过证书透明度政策进行披露。</translation>

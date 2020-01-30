@@ -267,8 +267,12 @@ SSLConfigServiceManagerPref::GetSSLConfigFromPrefs() const {
   std::string version_max_str = ssl_version_max_.GetValue();
 
   network::mojom::SSLVersion version_min;
-  if (SSLProtocolVersionFromString(version_min_str, &version_min))
+  if (SSLProtocolVersionFromString(version_min_str, &version_min)) {
     config->version_min = version_min;
+    // If the ssl_version_min policy is set, we override the minimum warning
+    // version to that value, so that the policy also controls the interstitial.
+    config->version_min_warn = version_min;
+  }
 
   network::mojom::SSLVersion version_max;
   if (SSLProtocolVersionFromString(version_max_str, &version_max) &&

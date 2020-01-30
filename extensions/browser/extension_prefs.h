@@ -597,12 +597,6 @@ class ExtensionPrefs : public KeyedService {
   void SetDNRDynamicRulesetChecksum(const ExtensionId& extension_id,
                                     int checksum);
 
-  // Sets the set of allowed pages for the given |extension_id|.
-  void SetDNRAllowedPages(const ExtensionId& extension_id, URLPatternSet set);
-
-  // Returns the set of allowed pages for the given |extension_id|.
-  URLPatternSet GetDNRAllowedPages(const ExtensionId& extension_id) const;
-
   // Whether the extension with the given |extension_id| is using its ruleset's
   // matched action count for the badge text. This is set via the
   // setActionCountAsBadgeText API call.

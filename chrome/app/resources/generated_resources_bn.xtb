@@ -26,7 +26,6 @@
 <translation id="1031362278801463162">প্রিভিউ লোড হচ্ছে</translation>
 <translation id="1032605640136438169">নতুন শর্তাবলী ভাল করে পড়ে নিন</translation>
 <translation id="103279545524624934">Android অ্যাপ্লিকেশন লঞ্চ করার জন্য ডিস্কে জায়গা খালি করুন।</translation>
-<translation id="1033343386521881354">প্রিন্ট সার্ভারে একটি প্রিন্টার পাওয়া গেছে।</translation>
 <translation id="1033780634303702874">আপনার সিরিয়াল ডিভাইসগুলি অ্যাক্সেস করুন</translation>
 <translation id="1034942643314881546">অ্যাপ ইলাস্ট্রেশন করতে adb চালু করা হচ্ছে</translation>
 <translation id="1036348656032585052">বন্ধ করুন</translation>
@@ -34,7 +33,6 @@
 <translation id="1036982837258183574">পূর্ণ স্ক্রিন থেকে বেরিয়ে যেতে |<ph name="ACCELERATOR" />| চাপুন</translation>
 <translation id="1038168778161626396">কেবলমাত্র চিহ্ন প্রদান</translation>
 <translation id="1039337018183941703">ভুল বা দূষিত ফাইল</translation>
-<translation id="1039850285407663109">বেছে নেওয়া ফাইলটি অজানা এবং সেটি বিপজ্জনকও হতে পারে। এই ফাইল খোলার আগে স্ক্যান করে নিলে ভাল হয়।</translation>
 <translation id="1041175011127912238">এই পৃষ্ঠা সাড়া দিচ্ছে না</translation>
 <translation id="1041263367839475438">উপলভ্য ডিভাইস</translation>
 <translation id="1042174272890264476">আপনার কম্পিউটারও <ph name="SHORT_PRODUCT_NAME" /> এর RLZ লাইব্রেরি বিল্ট ইনের সাথে আসে৷ RLZ সার্চগুলি পরিমাপ করার জন্য একটি সাধারণ, ব্যক্তিগতভাবে সনাক্তকরণযোগ্য নয় এমন ট্যাগ নির্ধারণ করে এবং <ph name="SHORT_PRODUCT_NAME" /> এর ব্যবহার একটি নির্দিষ্ট প্রচারাভিযানের মাধ্যমে চালিত হয়৷ এই লেবেলগুলি কখনো কখনো <ph name="PRODUCT_NAME" /> এ Google সার্চ ক্যোয়ারিগুলিতে প্রদর্শিত হয়৷</translation>
@@ -639,7 +637,6 @@
 <translation id="1858585891038687145">সফ্টওয়্যার প্রস্তুতকারকদের শনাক্তকরণের জন্য এই সার্টিফিকেটটিকে বিশ্বাস করুন</translation>
 <translation id="1861262398884155592">ফোল্ডারটি খালি</translation>
 <translation id="1863182668524159459">কোনও সিরিয়াল পোর্ট পাওয়া যায়নি</translation>
-<translation id="1863552924692672565"><ph name="FILE_NAME" /> অজানা। ঝুঁকি কমাতে ফাইল স্ক্যান করুন।</translation>
 <translation id="1864111464094315414">লগ-ইন করুন</translation>
 <translation id="1864400682872660285">কুলার</translation>
 <translation id="1864454756846565995">USB-C ডিভাইস (পিছনের পোর্ট)</translation>
@@ -4025,7 +4022,6 @@
 <translation id="6678717876183468697">কোয়েরি URL</translation>
 <translation id="6680442031740878064">খালি জায়গা: <ph name="AVAILABLE_SPACE" /></translation>
 <translation id="6680650203439190394">দ্রুততা</translation>
-<translation id="6681301928961274620">প্রিন্ট সার্ভার থেকে কোনও প্রিন্টার খুঁজে পাওয়া যায়নি।</translation>
 <translation id="6681668084120808868">ফটো তুলুন</translation>
 <translation id="6681964764822470072">"<ph name="APP_NAME" />" আনইনস্টল করা হবে।</translation>
 <translation id="668599234725812620">Google Play খুলুন</translation>
@@ -5553,7 +5549,6 @@
 <translation id="8794025342371547160">বিধিনিষেধযুক্ত IP</translation>
 <translation id="879413103056696865">হটস্পট চালু থাকা অবস্থায়, আপনার <ph name="PHONE_NAME" /> যা করবে:</translation>
 <translation id="8795916974678578410">নতুন উইন্ডো</translation>
-<translation id="8797086401386164142">প্রিন্ট সার্ভারে <ph name="NUM_PRINTERS" />টি প্রিন্টার পাওয়া গেছে।</translation>
 <translation id="8797459392481275117">কখনও এই সাইটটিকে অনুবাদ করবেন না</translation>
 <translation id="8798099450830957504">ডিফল্ট</translation>
 <translation id="8798441408945964110">পরিষেবা প্রদানকারীর নাম</translation>

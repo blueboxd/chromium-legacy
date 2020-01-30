@@ -26,7 +26,7 @@ namespace ash {
 namespace {
 
 // Total width of the expanded view.
-constexpr int kBubbleTotalWidthDp = 600;
+constexpr int kBubbleTotalWidthDp = 628;
 // Total height of the expanded view.
 constexpr int kBubbleTotalHeightDp = 324;
 

@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/mock_callback.h"
 #include "base/test/task_environment.h"
 #include "base/unguessable_token.h"
 #include "build/build_config.h"
@@ -1005,7 +1006,7 @@ TEST_F(MAYBE_MediaNotificationViewImplTest, Freezing_DoNotUpdateMetadata) {
   metadata.album = base::ASCIIToUTF16("album");
 
   EXPECT_CALL(container(), OnMediaSessionMetadataChanged()).Times(0);
-  GetItem()->Freeze();
+  GetItem()->Freeze(base::DoNothing());
   GetItem()->MediaSessionMetadataChanged(metadata);
 
   EXPECT_EQ(base::ASCIIToUTF16("title"), title_label()->GetText());
@@ -1019,7 +1020,7 @@ TEST_F(MAYBE_MediaNotificationViewImplTest, Freezing_DoNotUpdateImage) {
   EXPECT_CALL(container(), OnMediaArtworkChanged(_)).Times(0);
   EXPECT_CALL(container(), OnColorsChanged(_, _)).Times(0);
 
-  GetItem()->Freeze();
+  GetItem()->Freeze(base::DoNothing());
   GetItem()->MediaControllerImageChanged(
       media_session::mojom::MediaSessionImageType::kArtwork, image);
 
@@ -1032,7 +1033,7 @@ TEST_F(MAYBE_MediaNotificationViewImplTest, Freezing_DoNotUpdatePlaybackState) {
 
   EXPECT_CALL(container(), OnMediaSessionInfoChanged(_)).Times(0);
 
-  GetItem()->Freeze();
+  GetItem()->Freeze(base::DoNothing());
 
   EXPECT_TRUE(GetButtonForAction(MediaSessionAction::kPlay));
   EXPECT_FALSE(GetButtonForAction(MediaSessionAction::kPause));
@@ -1051,7 +1052,7 @@ TEST_F(MAYBE_MediaNotificationViewImplTest, Freezing_DoNotUpdateActions) {
   EXPECT_FALSE(
       GetButtonForAction(MediaSessionAction::kSeekForward)->GetVisible());
 
-  GetItem()->Freeze();
+  GetItem()->Freeze(base::DoNothing());
   EnableAction(MediaSessionAction::kSeekForward);
 
   EXPECT_FALSE(
@@ -1063,7 +1064,7 @@ TEST_F(MAYBE_MediaNotificationViewImplTest, Freezing_DisableInteraction) {
 
   EXPECT_EQ(0, media_controller()->next_track_count());
 
-  GetItem()->Freeze();
+  GetItem()->Freeze(base::DoNothing());
 
   SimulateButtonClick(MediaSessionAction::kNextTrack);
   GetItem()->FlushForTesting();
@@ -1076,7 +1077,9 @@ TEST_F(MAYBE_MediaNotificationViewImplTest, UnfreezingDoesntMissUpdates) {
   EnableAction(MediaSessionAction::kPause);
 
   // Freeze the item and clear the metadata.
-  GetItem()->Freeze();
+  base::MockOnceClosure unfrozen_callback;
+  EXPECT_CALL(unfrozen_callback, Run).Times(0);
+  GetItem()->Freeze(unfrozen_callback.Get());
   GetItem()->MediaSessionInfoChanged(nullptr);
   GetItem()->MediaSessionMetadataChanged(base::nullopt);
 
@@ -1102,12 +1105,14 @@ TEST_F(MAYBE_MediaNotificationViewImplTest, UnfreezingDoesntMissUpdates) {
 
   // The item should still be frozen, and the view should contain the old data.
   EXPECT_TRUE(GetItem()->frozen());
+  testing::Mock::VerifyAndClearExpectations(&unfrozen_callback);
   EXPECT_TRUE(GetButtonForAction(MediaSessionAction::kPlay));
   EXPECT_FALSE(GetButtonForAction(MediaSessionAction::kPause));
   EXPECT_EQ(base::ASCIIToUTF16("title"), title_label()->GetText());
   EXPECT_EQ(base::ASCIIToUTF16("artist"), artist_label()->GetText());
 
   // Update the metadata.
+  EXPECT_CALL(unfrozen_callback, Run);
   media_session::MediaMetadata metadata;
   metadata.title = base::ASCIIToUTF16("title2");
   metadata.artist = base::ASCIIToUTF16("artist2");
@@ -1115,6 +1120,7 @@ TEST_F(MAYBE_MediaNotificationViewImplTest, UnfreezingDoesntMissUpdates) {
 
   // The item should no longer be frozen, and we should see the updated data.
   EXPECT_FALSE(GetItem()->frozen());
+  testing::Mock::VerifyAndClearExpectations(&unfrozen_callback);
   EXPECT_FALSE(GetButtonForAction(MediaSessionAction::kPlay));
   EXPECT_TRUE(GetButtonForAction(MediaSessionAction::kPause));
   EXPECT_EQ(base::ASCIIToUTF16("title2"), title_label()->GetText());
@@ -1134,7 +1140,9 @@ TEST_F(MAYBE_MediaNotificationViewImplTest, UnfreezingWaitsForArtwork_Timeout) {
   EXPECT_FALSE(GetArtworkImage().isNull());
 
   // Freeze the item and clear the metadata.
-  GetItem()->Freeze();
+  base::MockOnceClosure unfrozen_callback;
+  EXPECT_CALL(unfrozen_callback, Run).Times(0);
+  GetItem()->Freeze(unfrozen_callback.Get());
   GetItem()->MediaSessionInfoChanged(nullptr);
   GetItem()->MediaSessionMetadataChanged(base::nullopt);
   GetItem()->MediaControllerImageChanged(
@@ -1177,6 +1185,7 @@ TEST_F(MAYBE_MediaNotificationViewImplTest, UnfreezingWaitsForArtwork_Timeout) {
 
   // The item should still be frozen, and waiting for a new image.
   EXPECT_TRUE(GetItem()->frozen());
+  testing::Mock::VerifyAndClearExpectations(&unfrozen_callback);
   EXPECT_TRUE(GetButtonForAction(MediaSessionAction::kPlay));
   EXPECT_FALSE(GetButtonForAction(MediaSessionAction::kPause));
   EXPECT_EQ(base::ASCIIToUTF16("title"), title_label()->GetText());
@@ -1185,9 +1194,11 @@ TEST_F(MAYBE_MediaNotificationViewImplTest, UnfreezingWaitsForArtwork_Timeout) {
 
   // Once the freeze timer fires, the item should unfreeze even if there's no
   // artwork.
+  EXPECT_CALL(unfrozen_callback, Run);
   AdvanceClockMilliseconds(2600);
 
   EXPECT_FALSE(GetItem()->frozen());
+  testing::Mock::VerifyAndClearExpectations(&unfrozen_callback);
   EXPECT_FALSE(GetButtonForAction(MediaSessionAction::kPlay));
   EXPECT_TRUE(GetButtonForAction(MediaSessionAction::kPause));
   EXPECT_EQ(base::ASCIIToUTF16("title2"), title_label()->GetText());
@@ -1209,7 +1220,9 @@ TEST_F(MAYBE_MediaNotificationViewImplTest,
   EXPECT_FALSE(GetArtworkImage().isNull());
 
   // Freeze the item and clear the metadata.
-  GetItem()->Freeze();
+  base::MockOnceClosure unfrozen_callback;
+  EXPECT_CALL(unfrozen_callback, Run).Times(0);
+  GetItem()->Freeze(unfrozen_callback.Get());
   GetItem()->MediaSessionInfoChanged(nullptr);
   GetItem()->MediaSessionMetadataChanged(base::nullopt);
   GetItem()->MediaControllerImageChanged(
@@ -1252,6 +1265,7 @@ TEST_F(MAYBE_MediaNotificationViewImplTest,
 
   // The item should still be frozen, and waiting for a new image.
   EXPECT_TRUE(GetItem()->frozen());
+  testing::Mock::VerifyAndClearExpectations(&unfrozen_callback);
   EXPECT_TRUE(GetButtonForAction(MediaSessionAction::kPlay));
   EXPECT_FALSE(GetButtonForAction(MediaSessionAction::kPause));
   EXPECT_EQ(base::ASCIIToUTF16("title"), title_label()->GetText());
@@ -1259,6 +1273,7 @@ TEST_F(MAYBE_MediaNotificationViewImplTest,
   EXPECT_FALSE(GetArtworkImage().isNull());
 
   // Once we receive artwork, the item should unfreeze.
+  EXPECT_CALL(unfrozen_callback, Run);
   SkBitmap new_image;
   new_image.allocN32Pixels(10, 10);
   new_image.eraseColor(SK_ColorYELLOW);
@@ -1266,6 +1281,7 @@ TEST_F(MAYBE_MediaNotificationViewImplTest,
       media_session::mojom::MediaSessionImageType::kArtwork, new_image);
 
   EXPECT_FALSE(GetItem()->frozen());
+  testing::Mock::VerifyAndClearExpectations(&unfrozen_callback);
   EXPECT_FALSE(GetButtonForAction(MediaSessionAction::kPlay));
   EXPECT_TRUE(GetButtonForAction(MediaSessionAction::kPause));
   EXPECT_EQ(base::ASCIIToUTF16("title2"), title_label()->GetText());

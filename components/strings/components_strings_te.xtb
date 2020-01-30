@@ -79,6 +79,7 @@
 <translation id="129553762522093515">ఇటీవల మూసివెయ్యబడినవి</translation>
 <translation id="1298536327547837046">మాల్‌వేర్ స్కానింగ్</translation>
 <translation id="129863573139666797"><ph name="BEGIN_LINK" />మీ కుక్కీలను తీసివేయడానికి ప్రయత్నించండి<ph name="END_LINK" /></translation>
+<translation id="1301324364792935241">మీ సెక్యూర్ DNS సెట్టింగ్‌లను తనిఖీ చేయండి</translation>
 <translation id="1307966114820526988">విస్మరించబడిన ఫీచర్‌లు</translation>
 <translation id="1314509827145471431">కుడివైపున బైండ్</translation>
 <translation id="1320233736580025032">Prc1 (ఎన్వలప్)</translation>
@@ -154,6 +155,7 @@
 <translation id="1569487616857761740">గడువు ముగింపు తేదీని నమోదు చేయండి</translation>
 <translation id="1581080074034554886">CVC</translation>
 <translation id="1583429793053364125">ఈ వెబ్ పేజీని ప్రదర్శిస్తున్నప్పుడు ఏదో తప్పు జరిగింది.</translation>
+<translation id="1586541204584340881">మీరు ఏ ఎక్స్‌టెన్షన్‌లను ఇన్ స్టాల్ చేసుకున్నారు</translation>
 <translation id="1588438908519853928">సాధారణ</translation>
 <translation id="1592005682883173041">స్థానిక డేటా యాక్సెస్</translation>
 <translation id="1594030484168838125">ఎంచుకోండి</translation>
@@ -364,6 +366,7 @@
 <translation id="2544644783021658368">ఒక డాక్యుమెంట్</translation>
 <translation id="254947805923345898">విధానం విలువ చెల్లుబాటు కాదు.</translation>
 <translation id="255002559098805027"><ph name="HOST_NAME" /> చెల్లని ప్రతిస్పందనను పంపింది.</translation>
+<translation id="2553853292994445426">మీ సెక్యూర్ DNS సెట్టింగ్‌లను తనిఖీ చేయండి. మీరు కాన్ఫిగర్ చేసిన సెక్యూర్ సర్వర్‌కు కనెక్ట్ కావడంలో వైఫల్యం ఎదురవుతూ ఉన్నట్టుంది.</translation>
 <translation id="2556876185419854533">&amp;సవరించడాన్ని రద్దు చేయి</translation>
 <translation id="257674075312929031">సమూహం</translation>
 <translation id="2586657967955657006">క్లిప్‌బోర్డ్</translation>
@@ -484,6 +487,7 @@
 <translation id="3095940652251934233">స్టేట్‌మెంట్</translation>
 <translation id="3096100844101284527">పికప్ చిరునామాను జోడించండి</translation>
 <translation id="3105172416063519923">అసెట్ ID:</translation>
+<translation id="3107591622054137333"><ph name="BEGIN_LINK" />సెక్యూర్ DNS కాన్ఫిగరేషన్‌ని తనిఖీ చేస్తోంది<ph name="END_LINK" /></translation>
 <translation id="3109728660330352905">మీకు ఈ పేజీని వీక్షించడానికి అధికారం లేదు.</translation>
 <translation id="3113284927548439113">మూడవ షిఫ్ట్</translation>
 <translation id="3116158981186517402">లామినేట్</translation>
@@ -786,6 +790,7 @@
 <translation id="4390472908992056574">బ్రిమ్</translation>
 <translation id="4406896451731180161">శోధన ఫలితాలు</translation>
 <translation id="4408413947728134509">కుక్కీలు <ph name="NUM_COOKIES" /></translation>
+<translation id="4414290883293381923">మీరు మోసపూరితమైన సైట్‌లో మీ పాస్‌వర్డ్‌ను ఎంటర్ చేశారు. మీరు ఈ పాస్‌వర్డ్‌ను ఉపయోగించిన<ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, <ph name="WEBSITE_3" /> మరియు ఇతర సైట్‌లకు ఇప్పుడే వెళ్లి, మీ పాస్‌వర్డ్‌ను మార్చాల్సిందిగా Chrome సిఫార్సు చేస్తోంది.</translation>
 <translation id="4415426530740016218">పికప్ చిరునామా</translation>
 <translation id="4424024547088906515">ఈ సర్వర్ <ph name="DOMAIN" /> అని నిరూపించుకోలేకపోయింది; దీని భద్రతా ప్రమాణపత్రాన్ని Chrome విశ్వసించలేదు. ఇది తప్పుగా కాన్ఫిగర్ చేయడం వలన లేదా దాడిచేసే వ్యక్తి మీ కనెక్షన్‌కు అంతరాయం కలిగించడం వలన జరిగి ఉండవచ్చు.</translation>
 <translation id="443121186588148776">శ్రేణీకృత పోర్ట్</translation>
@@ -1218,6 +1223,7 @@
 <translation id="6353505687280762741">{COUNT,plural, =0{ఏవీ లేవు}=1{1 పాస్‌వర్డ్ (<ph name="DOMAIN_LIST" />కు చెందినది, సింక్ చేయబడింది)}=2{2 పాస్‌వర్డ్‌లు (<ph name="DOMAIN_LIST" />కు చెందినవి, సింక్ చేయబడ్డాయి)}other{# పాస్‌వర్డ్‌లు (<ph name="DOMAIN_LIST" />కు చెందినవి, సింక్ చేయబడ్డాయి)}}</translation>
 <translation id="6358450015545214790">దీని అర్ధం ఏమిటి?</translation>
 <translation id="6361757823711327522">B7</translation>
+<translation id="6364095313648930329"><ph name="BEGIN_LINK" />ప్రాక్సీ, ఫైర్‌వాల్ మరియు సెక్యూర్ DNS కాన్ఫిగరేషన్‌ను తనిఖీ చేయడం<ph name="END_LINK" /></translation>
 <translation id="6366710531182496394">ఎడమవైపు డ్యుయల్ స్టేపుల్</translation>
 <translation id="6377268785556383139">'<ph name="SEARCH_TEXT" />' అనే దానికి 1 ఫలితం మాత్రమే లభించింది</translation>
 <translation id="6380497234672085559">A0</translation>
@@ -1240,6 +1246,7 @@
 <translation id="6433595998831338502"><ph name="HOST_NAME" /> కనెక్ట్ కావడానికి నిరాకరించింది.</translation>
 <translation id="6434309073475700221">తొలగించు</translation>
 <translation id="6440503408713884761">విస్మరించబడింది</translation>
+<translation id="6443406338865242315">ఏ ఎక్స్‌టెన్షన్‌లు మరియు ప్లగిన్‌లను మీరు ఇన్‌స్టాల్ చేశారు</translation>
 <translation id="6446163441502663861">Kahu (ఎన్వలప్)</translation>
 <translation id="6446608382365791566">మరింత సమాచారాన్ని జోడించండి</translation>
 <translation id="6447842834002726250">కుక్కీలు</translation>
@@ -1349,6 +1356,7 @@
 <translation id="7012363358306927923">చైనా యూనియన్ పే</translation>
 <translation id="7016992613359344582">ఈ ఛార్జ్‌లు ఒకే సారి చెల్లించేవి లేదా పునరావృతంగా చెల్లించాల్సినవి కావచ్చు మరియు స్పష్టంగా పేర్కొనబడకపోవచ్చు.</translation>
 <translation id="7029809446516969842">పాస్‌వర్డ్‌లు</translation>
+<translation id="7031646650991750659">ఏ Google Play యాప్‌లు మీరు ఇన్‌స్టాల్ చేశారు</translation>
 <translation id="7050187094878475250">మీరు <ph name="DOMAIN" />ను చేరుకోవడానికి ప్రయత్నించారు, కానీ సర్వర్ అందించిన ప్రమాణపత్రం విశ్వసించలేనంత ఎక్కువ చెల్లుబాటు వ్యవధిని కలిగి ఉంది.</translation>
 <translation id="705310974202322020">{NUM_CARDS,plural, =1{ప్రస్తుతం ఈ కార్డ్‌ని సేవ్ చేయలేరు}other{ప్రస్తుతం ఈ కార్డ్‌లని సేవ్ చేయలేరు}}</translation>
 <translation id="7053983685419859001">నిరోధించు</translation>
@@ -1408,6 +1416,7 @@
 <translation id="7319430975418800333">A3</translation>
 <translation id="7320336641823683070">కనెక్షన్ సహాయం</translation>
 <translation id="733354035281974745">పరికర స్థానిక ఖాతా భర్తీ</translation>
+<translation id="7333654844024768166">మీరు మోసపూరితమైన సైట్‌లో మీ పాస్‌వర్డ్‌ను ఎంటర్ చేశారు. మీరు ఈ పాస్‌వర్డ్‌ను ఉపయోగించిన <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, <ph name="WEBSITE_3" /> ఇతర సైట్‌లకు ఇప్పుడే వెళ్లి, దాన్ని మార్చాల్సిందిగా Chromium సిఫార్సు చేస్తోంది.</translation>
 <translation id="7334320624316649418">&amp;మళ్లీ క్రమం చేయడాన్ని పునరావృతం చేయి</translation>
 <translation id="7337706099755338005">మీ ప్లాట్‌ఫారమ్‌లో అందుబాటులో లేదు.</translation>
 <translation id="733923710415886693">సర్వర్ ప్రమాణపత్రాన్ని ప్రమాణపత్రం పారదర్శకత ద్వారా బహిరంగపరచలేదు.</translation>

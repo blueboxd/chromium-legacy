@@ -97,9 +97,7 @@ static_library("minizip") {
 }
 
 fuzzer_test("minizip_compress_fuzzer") {
-  sources = [
-    "minizip_compress_fuzzer.cc",
-  ]
+  sources = [ "minizip_compress_fuzzer.cc" ]
   deps = [
     ":minizip",
     "//base",
@@ -108,11 +106,7 @@ fuzzer_test("minizip_compress_fuzzer") {
 }
 
 fuzzer_test("minizip_uncompress_fuzzer") {
-  sources = [
-    "minizip_uncompress_fuzzer.cc",
-  ]
-  deps = [
-    ":minizip",
-  ]
+  sources = [ "minizip_uncompress_fuzzer.cc" ]
+  deps = [ ":minizip" ]
   seed_corpus = "minizip_uncompress_corpus"
 }

@@ -15,6 +15,9 @@
 
 namespace base {
 class TestSimpleTaskRunner;
+namespace trace_event {
+class MemoryDumpManager;
+}  // namespace trace_event
 }  // namespace base
 
 namespace IPC {
@@ -52,6 +55,7 @@ class GpuChannelTestCommon : public testing::Test {
   base::UnsafeSharedMemoryRegion GetSharedMemoryRegion();
 
  private:
+  std::unique_ptr<base::trace_event::MemoryDumpManager> memory_dump_manager_;
   IPC::TestSink sink_;
   scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
   scoped_refptr<base::TestSimpleTaskRunner> io_task_runner_;

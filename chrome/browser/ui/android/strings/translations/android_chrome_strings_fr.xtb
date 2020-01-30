@@ -134,7 +134,7 @@
 <translation id="1994173015038366702">URL du site</translation>
 <translation id="2000419248597011803">Envoie des cookies et des recherches effectuées à partir de la barre d'adresse et du champ de recherche à votre moteur de recherche par défaut</translation>
 <translation id="2002537628803770967">Cartes de crédit et adresses utilisées dans Google Pay</translation>
-<translation id="2012973609889389923">Site chargeable rapidement</translation>
+<translation id="2012973609889389923">Site rapide</translation>
 <translation id="2013642289801508067">{FILE_COUNT,plural, =1{# fichier}one{# fichier}other{# fichiers}}</translation>
 <translation id="2017836877785168846">Efface l'historique et les saisies semi-automatiques dans la barre d'adresse.</translation>
 <translation id="2021896219286479412">Commandes du site en plein écran</translation>
@@ -308,7 +308,7 @@
 <translation id="3298243779924642547">Simplifié</translation>
 <translation id="3303414029551471755">Poursuivre et télécharger le contenu ?</translation>
 <translation id="3306398118552023113">Cette application s'exécute dans Chrome</translation>
-<translation id="3312292613668865961">Vous demander votre avis avant d'autoriser les sites à accéder à vos données et à votre appareil de réalité virtuelle (recommandé)</translation>
+<translation id="3312292613668865961">Vous demander votre avis avant d'autoriser les sites à accéder à vos données et votre appareil de réalité virtuelle (recommandé)</translation>
 <translation id="3315103659806849044">Vous personnalisez actuellement les paramètres relatifs aux services Google et à la synchronisation. Pour valider l'activation de la synchronisation, appuyez sur le bouton "Confirmer" en bas de l'écran. Revenir en haut de la page</translation>
 <translation id="3328801116991980348">Informations sur le site</translation>
 <translation id="3333961966071413176">Tous les contacts</translation>
@@ -514,7 +514,7 @@ Pour modifier ce paramètre, <ph name="BEGIN_LINK" />réinitialisez la synchroni
 <translation id="4915549754973153784"><ph name="BEGIN_LINK" />Obtenir de l'aide<ph name="END_LINK" /> lors de la recherche d'appareils…</translation>
 <translation id="4921180162323349895">{FILE_COUNT,plural, =1{# page}one{# page}other{# pages}}</translation>
 <translation id="4932247056774066048">Vous vous déconnectez d'un compte géré par <ph name="DOMAIN_NAME" />. Vos données Chrome seront donc supprimées de cet appareil, mais elles seront conservées dans votre compte Google.</translation>
-<translation id="4935305910887312910">Vous demander votre avis avant d'autoriser les sites à recevoir la position de votre caméra ou à cartographier votre pièce (recommandé)</translation>
+<translation id="4935305910887312910">Vous demander votre avis avant d'autoriser les sites à obtenir la position de la caméra ou à cartographier la pièce (recommandé)</translation>
 <translation id="4943703118917034429">Réalité virtuelle</translation>
 <translation id="4943872375798546930">Aucun résultat</translation>
 <translation id="4958708863221495346"><ph name="URL_OF_THE_CURRENT_TAB" /> partage votre écran.</translation>
@@ -1028,7 +1028,7 @@ En revanche, le site n'a PAS accès à la caméra. Vous seul pouvez voir les ima
 <translation id="8676374126336081632">Effacer la saisie</translation>
 <translation id="8687353297350450808">{N_BARS,plural, =1{Intensité du signal : # barre}one{Intensité du signal : # barre}other{Intensité du signal : # barres}}</translation>
 <translation id="868929229000858085">Rechercher des contacts</translation>
-<translation id="8698438463325761328">Empêcher les sites d'accéder à vos données et à votre appareil de réalité virtuelle</translation>
+<translation id="8698438463325761328">Empêcher les sites d'accéder à vos données et votre appareil de réalité virtuelle</translation>
 <translation id="869891660844655955">Date d'expiration</translation>
 <translation id="8728487861892616501">En utilisant cette application, vous acceptez les <ph name="BEGIN_LINK1" />Conditions d'utilisation<ph name="END_LINK1" /> et l'<ph name="BEGIN_LINK2" />Avis de confidentialité<ph name="END_LINK2" /> de Chrome, ainsi que l'<ph name="BEGIN_LINK3" />Avis de confidentialité relatif aux comptes Google gérés dans Family Link<ph name="END_LINK3" />.</translation>
 <translation id="8748850008226585750">Contenu masqué</translation>
@@ -1045,7 +1045,7 @@ En revanche, le site n'a PAS accès à la caméra. Vous seul pouvez voir les ima
 <translation id="883806473910249246">Une erreur s'est produite lors du téléchargement du contenu.</translation>
 <translation id="8840953339110955557">Cette page peut différer de la version en ligne.</translation>
 <translation id="8847988622838149491">USB</translation>
-<translation id="884828189055900810">Empêcher les sites de recevoir la position de votre caméra ou de cartographier votre pièce</translation>
+<translation id="884828189055900810">Empêcher les sites d'obtenir la position de la caméra ou de cartographier la pièce</translation>
 <translation id="8853345339104747198">"<ph name="TAB_TITLE" />", onglet</translation>
 <translation id="885701979325669005">Données stockées</translation>
 <translation id="889338405075704026">Accéder aux paramètres Chrome</translation>

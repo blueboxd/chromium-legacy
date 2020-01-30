@@ -383,6 +383,10 @@ bool IsReverseAnswersEnabled();
 // Returns true if the short bookmark suggestions flag is enabled.
 bool IsShortBookmarkSuggestionsEnabled();
 
+// Whether a single row of buttons is shown on suggestions with actionable
+// elements like keywords, tab-switch buttons, and Pedals.
+bool IsSuggestionButtonRowEnabled();
+
 // Returns true if either the tab switch suggestions flag is enabled.
 bool IsTabSwitchSuggestionsEnabled();
 

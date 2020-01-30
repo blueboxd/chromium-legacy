@@ -53,6 +53,8 @@ class PDFiumEngineExports : public PDFEngineExports {
                      double* max_page_width) override;
   base::Optional<bool> IsPDFDocTagged(
       base::span<const uint8_t> pdf_buffer) override;
+  base::Value GetPDFStructTreeForPage(base::span<const uint8_t> pdf_buffer,
+                                      int page_index) override;
   bool GetPDFPageSizeByIndex(base::span<const uint8_t> pdf_buffer,
                              int page_number,
                              double* width,

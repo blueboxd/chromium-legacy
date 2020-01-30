@@ -8,6 +8,7 @@
 #include "ui/accessibility/ax_action_data.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
+#include "ui/accessibility/platform/ax_platform_node_base.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/geometry/size.h"
@@ -387,6 +388,26 @@ TEST_F(ViewAXPlatformNodeDelegateTest, OverrideHasPopup) {
   ui::AXNodeData node_data_2;
   view_ids[2]->GetViewAccessibility().GetAccessibleNodeData(&node_data_2);
   EXPECT_EQ(node_data_2.GetHasPopup(), ax::mojom::HasPopup::kMenu);
+}
+
+TEST_F(ViewAXPlatformNodeDelegateTest, FocusOnMenuClose) {
+  // Set Focus on the button
+  button_->SetFocusBehavior(View::FocusBehavior::ALWAYS);
+  EXPECT_EQ(nullptr, button_->GetFocusManager()->GetFocusedView());
+  EXPECT_EQ(nullptr, button_accessibility()->GetFocus());
+
+  EXPECT_TRUE(SetFocused(button_accessibility(), true));
+  EXPECT_EQ(button_->GetNativeViewAccessible(),
+            button_accessibility()->GetFocus());
+
+  // Fire FocusAfterMenuClose event on the button.
+  base::RunLoop run_loop;
+  ui::AXPlatformNodeBase::SetOnNotifyEventCallbackForTesting(
+      ax::mojom::Event::kFocusAfterMenuClose, run_loop.QuitClosure());
+  button_accessibility()->FireFocusAfterMenuClose();
+  run_loop.Run();
+  EXPECT_EQ(button_->GetNativeViewAccessible(),
+            button_accessibility()->GetFocus());
 }
 
 #if defined(USE_AURA)

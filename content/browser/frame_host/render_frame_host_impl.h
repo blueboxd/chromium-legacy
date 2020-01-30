@@ -339,6 +339,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
                                   bool animate) override;
   void Reload() override;
   bool IsDOMContentLoaded() override;
+  void UpdateAdFrameType(blink::mojom::AdFrameType ad_frame_type) override;
 
   // Determines if a clipboard paste using |data| of type |data_type| is allowed
   // in this renderer frame.  The implementation delegates to

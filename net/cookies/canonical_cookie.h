@@ -265,6 +265,12 @@ class NET_EXPORT CanonicalCookie {
     COOKIE_PREFIX_LAST
   };
 
+  // Applies the appropriate warning for the given cross-scheme
+  // SameSiteCookieContext.
+  void AddSameSiteCrossSchemeWarning(
+      CookieInclusionStatus* status,
+      const CookieOptions::SameSiteCookieContext context) const;
+
   // Returns the CookiePrefix (or COOKIE_PREFIX_NONE if none) that
   // applies to the given cookie |name|.
   static CookiePrefix GetCookiePrefix(const std::string& name);
@@ -373,6 +379,16 @@ class NET_EXPORT CanonicalCookie::CookieInclusionStatus {
     // enough to activate the Lax-allow-unsafe intervention.
     WARN_SAMESITE_UNSPECIFIED_LAX_ALLOW_UNSAFE = 2,
 
+    // The following warnings indicate that a SameSite cookie is being sent/set
+    // across schemes and with what same-site context.
+    // See CookieOptions::SameSiteCookieContext.
+    WARN_SAMESITE_LAX_METHOD_UNSAFE_CROSS_SCHEME_SECURE_URL = 3,
+    WARN_SAMESITE_LAX_CROSS_SCHEME_SECURE_URL = 4,
+    WARN_SAMESITE_STRICT_CROSS_SCHEME_SECURE_URL = 5,
+    WARN_SAMESITE_LAX_METHOD_UNSAFE_CROSS_SCHEME_INSECURE_URL = 6,
+    WARN_SAMESITE_LAX_CROSS_SCHEME_INSECURE_URL = 7,
+    WARN_SAMESITE_STRICT_CROSS_SCHEME_INSECURE_URL = 8,
+
     // This should be kept last.
     NUM_WARNING_REASONS
   };
@@ -411,6 +427,12 @@ class NET_EXPORT CanonicalCookie::CookieInclusionStatus {
 
   // Whether the given reason for warning is present.
   bool HasWarningReason(WarningReason reason) const;
+
+  // Whether a cross-scheme warning is present.
+  // If the function returns true and |reason| is valid then |reason| will
+  // contain which warning was found.
+  bool HasCrossSchemeWarning(
+      CookieInclusionStatus::WarningReason* reason = nullptr) const;
 
   // Add an warning reason.
   void AddWarningReason(WarningReason reason);

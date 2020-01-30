@@ -4898,15 +4898,6 @@ Als dit beleid niet is ingesteld, worden er geen beperkingen toegepast en kan de
 <translation id="8757552286070680084">Wilco DTC-configuratie</translation>
 <translation id="8758831693895931466">Verplichte inschrijving voor cloudbeheer inschakelen</translation>
 <translation id="8759829385824155666">Toegestane Kerberos-versleutelingstypen</translation>
-<translation id="87635449713742708">Met dit beleid wordt afgedwongen dat netwerkcode wordt uitgevoerd in het browserproces.
-
-      Dit beleid is standaard uitgeschakeld. Indien ingeschakeld, worden gebruikers blootgesteld aan beveiligingsproblemen als het netwerkproces in een sandbox wordt uitgevoerd.
-
-      Dit beleid is bedoeld om bedrijven de kans te geven naar software van derden te migreren die niet afhankelijk is van hooking van de netwerk-API's. Proxyservers krijgen de voorkeur boven LSP's en Win32 API-patching.
-
-      Als dit beleid niet is ingesteld, wordt de netwerkcode standaard uitgevoerd buiten het browserproces.
-
-      Dit beleid wordt verwijderd in <ph name="PRODUCT_NAME" />-versie 82.</translation>
 <translation id="8764119899999036911">Hiermee wordt gespecificeerd of de gegenereerde Kerberos-SPN wordt gebaseerd op de canonieke DNS-naam of de oorspronkelijk opgegeven naam.
 
           Als je deze instelling inschakelt, wordt de CNAME-lookup overgeslagen en wordt de servernaam gebruikt zoals deze is opgegeven.

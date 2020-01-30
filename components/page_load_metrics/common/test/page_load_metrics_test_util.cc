@@ -79,6 +79,7 @@ page_load_metrics::mojom::ResourceDataUpdatePtr CreateResource(
     bool was_cached,
     int64_t delta_bytes,
     int64_t encoded_body_length,
+    int64_t decoded_body_length,
     bool is_complete) {
   auto resource_data_update =
       page_load_metrics::mojom::ResourceDataUpdate::New();
@@ -88,6 +89,7 @@ page_load_metrics::mojom::ResourceDataUpdatePtr CreateResource(
   resource_data_update->delta_bytes = delta_bytes;
   resource_data_update->received_data_length = delta_bytes;
   resource_data_update->encoded_body_length = encoded_body_length;
+  resource_data_update->decoded_body_length = decoded_body_length;
   resource_data_update->is_complete = is_complete;
   return resource_data_update;
 }
@@ -99,14 +101,17 @@ GetSampleResourceDataUpdateForTesting(int64_t resource_size) {
   // Cached resource.
   resources.push_back(CreateResource(true /* was_cached */, 0 /* delta_bytes */,
                                      resource_size /* encoded_body_length */,
+                                     resource_size /* decoded_body_length */,
                                      true /* is_complete */));
   // Uncached resource.
   resources.push_back(CreateResource(
       false /* was_cached */, resource_size /* delta_bytes */,
-      resource_size /* encoded_body_length */, true /* is_complete */));
+      resource_size /* encoded_body_length */,
+      resource_size /* decoded_body_length */, true /* is_complete */));
   // Uncached, unfinished, resource.
   resources.push_back(
       CreateResource(false /* was_cached */, resource_size /* delta_bytes */,
-                     0 /* encoded_body_length */, false /* is_complete */));
+                     0 /* encoded_body_length */, 0 /* decoded_body_length */,
+                     false /* is_complete */));
   return resources;
 }

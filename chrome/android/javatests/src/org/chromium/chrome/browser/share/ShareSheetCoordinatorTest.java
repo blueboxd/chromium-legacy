@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.share;
 
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyBoolean;
 
 import android.app.Activity;
 import android.support.test.filters.MediumTest;
@@ -55,18 +56,20 @@ public final class ShareSheetCoordinatorTest {
                                            .with(ShareSheetItemViewProperties.ICON, null)
                                            .with(ShareSheetItemViewProperties.LABEL, "testModel1")
                                            .with(ShareSheetItemViewProperties.CLICK_LISTENER, null)
+                                           .with(ShareSheetItemViewProperties.IS_FIRST_PARTY, false)
                                            .build();
         PropertyModel testModel2 = new PropertyModel.Builder(ShareSheetItemViewProperties.ALL_KEYS)
                                            .with(ShareSheetItemViewProperties.ICON, null)
                                            .with(ShareSheetItemViewProperties.LABEL, "testModel2")
                                            .with(ShareSheetItemViewProperties.CLICK_LISTENER, null)
+                                           .with(ShareSheetItemViewProperties.IS_FIRST_PARTY, false)
                                            .build();
 
         mThirdPartyPropertyModels =
                 new ArrayList<PropertyModel>(Arrays.asList(testModel1, testModel2));
         Mockito.when(mPropertyModelBuilder.selectThirdPartyApps(any(), any(), any()))
                 .thenReturn(mThirdPartyPropertyModels);
-        Mockito.when(mPropertyModelBuilder.createPropertyModel(any(), any(), any()))
+        Mockito.when(mPropertyModelBuilder.createPropertyModel(any(), any(), any(), anyBoolean()))
                 .thenCallRealMethod();
     }
 
@@ -86,12 +89,18 @@ public final class ShareSheetCoordinatorTest {
         Assert.assertEquals("First property model isn't QR Code.",
                 activity.getResources().getString(R.string.qr_code_share_icon_label),
                 propertyModels.get(0).get(ShareSheetItemViewProperties.LABEL));
+        Assert.assertEquals("First property model isn't marked as first party.", true,
+                propertyModels.get(0).get(ShareSheetItemViewProperties.IS_FIRST_PARTY));
         Assert.assertEquals("Second property model isn't SendTabToSelf.",
                 activity.getResources().getString(R.string.send_tab_to_self_share_activity_title),
                 propertyModels.get(1).get(ShareSheetItemViewProperties.LABEL));
+        Assert.assertEquals("Second property model isn't marked as first party.", true,
+                propertyModels.get(1).get(ShareSheetItemViewProperties.IS_FIRST_PARTY));
         Assert.assertEquals("Third property model isn't Copy URL.",
                 activity.getResources().getString(R.string.sharing_copy_url),
                 propertyModels.get(2).get(ShareSheetItemViewProperties.LABEL));
+        Assert.assertEquals("Third property model isn't marked as first party.", true,
+                propertyModels.get(2).get(ShareSheetItemViewProperties.IS_FIRST_PARTY));
     }
 
     @Test
@@ -109,15 +118,23 @@ public final class ShareSheetCoordinatorTest {
         Assert.assertEquals("First property model isn't QR Code.",
                 activity.getResources().getString(R.string.qr_code_share_icon_label),
                 propertyModels.get(0).get(ShareSheetItemViewProperties.LABEL));
+        Assert.assertEquals("First property model isn't marked as first party.", true,
+                propertyModels.get(0).get(ShareSheetItemViewProperties.IS_FIRST_PARTY));
         Assert.assertEquals("Second property model isn't SendTabToSelf.",
                 activity.getResources().getString(R.string.send_tab_to_self_share_activity_title),
                 propertyModels.get(1).get(ShareSheetItemViewProperties.LABEL));
+        Assert.assertEquals("Second property model isn't marked as first party.", true,
+                propertyModels.get(1).get(ShareSheetItemViewProperties.IS_FIRST_PARTY));
         Assert.assertEquals("Third property model isn't Copy URL.",
                 activity.getResources().getString(R.string.sharing_copy_url),
                 propertyModels.get(2).get(ShareSheetItemViewProperties.LABEL));
+        Assert.assertEquals("Third property model isn't marked as first party.", true,
+                propertyModels.get(2).get(ShareSheetItemViewProperties.IS_FIRST_PARTY));
         Assert.assertEquals("Fourth property model isn't Screenshotz.",
                 activity.getResources().getString(R.string.sharing_screenshot),
                 propertyModels.get(3).get(ShareSheetItemViewProperties.LABEL));
+        Assert.assertEquals("Fourth property model isn't marked as first party.", true,
+                propertyModels.get(3).get(ShareSheetItemViewProperties.IS_FIRST_PARTY));
     }
 
     @Test
@@ -133,10 +150,16 @@ public final class ShareSheetCoordinatorTest {
         Assert.assertEquals("Incorrect number of property models.", 3, propertyModels.size());
         Assert.assertEquals("First property model isn't testModel1.", "testModel1",
                 propertyModels.get(0).get(ShareSheetItemViewProperties.LABEL));
+        Assert.assertEquals("First property model is marked as first party.", false,
+                propertyModels.get(0).get(ShareSheetItemViewProperties.IS_FIRST_PARTY));
         Assert.assertEquals("Second property model isn't testModel2.", "testModel2",
                 propertyModels.get(1).get(ShareSheetItemViewProperties.LABEL));
+        Assert.assertEquals("Second property model is marked as first party.", false,
+                propertyModels.get(1).get(ShareSheetItemViewProperties.IS_FIRST_PARTY));
         Assert.assertEquals("Third property model isn't More.",
                 activity.getResources().getString(R.string.sharing_more_icon_label),
                 propertyModels.get(2).get(ShareSheetItemViewProperties.LABEL));
+        Assert.assertEquals("Thired property model isn't marked as first party.", true,
+                propertyModels.get(2).get(ShareSheetItemViewProperties.IS_FIRST_PARTY));
     }
 }

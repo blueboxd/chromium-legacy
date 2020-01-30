@@ -79,6 +79,7 @@
 <translation id="129553762522093515">हालैमा बन्द गरिएको</translation>
 <translation id="1298536327547837046">मालवेयर स्क्यान गर्ने सुविधा</translation>
 <translation id="129863573139666797"><ph name="BEGIN_LINK" />कुकीहरूलाई खाली गर्ने प्रयास गर्नुहोस्<ph name="END_LINK" /></translation>
+<translation id="1301324364792935241">DNS सेटिङ</translation>
 <translation id="1307966114820526988">चल्तीबाट हटाइएका सुविधाहरू</translation>
 <translation id="1314509827145471431">दायाँ बाइन्ड</translation>
 <translation id="1320233736580025032">Prc1 (Envelope)</translation>
@@ -152,6 +153,7 @@
 <translation id="1569487616857761740">म्याद सकिने मिति प्रविष्टि गर्नुहोस्</translation>
 <translation id="1581080074034554886">CVC</translation>
 <translation id="1583429793053364125">यो वेबपृष्ठ प्रदर्शन गर्दा कुनै त्रुटी भयो।</translation>
+<translation id="1586541204584340881">तपाईंले स्थापना गर्नुभएका एक्स्टेन्सनहरू</translation>
 <translation id="1588438908519853928">सामान्य</translation>
 <translation id="1592005682883173041">स्थानीय डेटा पहुँच</translation>
 <translation id="1594030484168838125">छनौट गर्नुहोस्</translation>
@@ -362,6 +364,7 @@
 <translation id="2544644783021658368">एउटा कागजात</translation>
 <translation id="254947805923345898">नीतिको मान मान्य छैन।</translation>
 <translation id="255002559098805027"><ph name="HOST_NAME" /> ले अमान्य प्रतिक्रिया पठायो।</translation>
+<translation id="2553853292994445426">आफ्नो सुरक्षित DNS सेटिङको जाँच गर्नुहोस्। तपाईंले जोड्न नसकिएका सुरक्षित DNS सर्भर कन्फिगर गर्नुभएको हुन सक्छ।</translation>
 <translation id="2556876185419854533">सम्पादन &amp;पूर्ववत गर्नुहोस्</translation>
 <translation id="257674075312929031">समूह</translation>
 <translation id="2586657967955657006">क्लिपबोर्ड</translation>
@@ -476,6 +479,7 @@
 <translation id="3095940652251934233">वक्तव्य</translation>
 <translation id="3096100844101284527">पिकअप गर्ने ठेगाना थप्नुहोस्</translation>
 <translation id="3105172416063519923">सम्पत्ति ID:</translation>
+<translation id="3107591622054137333"><ph name="BEGIN_LINK" />सुरक्षित DNS कन्फिगुरेसनको जाँच गर्दै<ph name="END_LINK" /></translation>
 <translation id="3109728660330352905">तपाईंलाई यस पृष्ठ हेर्न अधिकार छैन।</translation>
 <translation id="3113284927548439113">तेस्रो सिफ्ट</translation>
 <translation id="3116158981186517402">लेमिनेसन गर्नुहोस्</translation>
@@ -770,6 +774,7 @@
 <translation id="4390472908992056574">बिट</translation>
 <translation id="4406896451731180161">खोजका परिणाम</translation>
 <translation id="4408413947728134509"><ph name="NUM_COOKIES" /> कुकीहरू</translation>
+<translation id="4414290883293381923">तपाईंले भर्खरै कुनै भ्रामक साइटमा आफ्नो पासवर्ड प्रविष्टि गर्नुभएको छ। Chrome ले <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> <ph name="WEBSITE_3" />, र तपाईंले यो पासवर्ड प्रयोग गर्ने अन्य साइटहरूमा गई आफ्नो पासवर्ड अहिले नै बदल्न सिफारिस गर्छ।</translation>
 <translation id="4415426530740016218">पिकअप गर्ने ठेगाना</translation>
 <translation id="4424024547088906515">यो सर्भरले यो <ph name="DOMAIN" /> को भनि प्रमाणित गर्न सकेन; यसको सुरक्षा प्रमाणपत्रलाई Chrome ले विश्वास गर्दैन। यो कुनै एउटा मिसकन्फिगरेसन वा कुनै आक्रमणकारीले तपाईंको जडानमा गरेको हस्तक्षेपको कारणले गर्दा भएको हुन सक्छ।</translation>
 <translation id="443121186588148776">क्रमिक पोर्ट</translation>
@@ -1201,6 +1206,7 @@
 <translation id="6353505687280762741">{COUNT,plural, =0{कुनै पनि होइन}=1{<ph name="DOMAIN_LIST" /> को १ पासवर्ड (सिंक गरिएको छ)}=2{<ph name="DOMAIN_LIST" /> का २ पासवर्डहरू (सिंक गरिएका छन्)}other{<ph name="DOMAIN_LIST" /> का # पासवर्डहरू (सिंक गरिएका छन्)}}</translation>
 <translation id="6358450015545214790">यसको अर्थ के हो?</translation>
 <translation id="6361757823711327522">B7</translation>
+<translation id="6364095313648930329"><ph name="BEGIN_LINK" />प्रोक्सी, फायरवाल र सुरक्षित DNS कन्फिगुरेसनको जाँच गर्दै<ph name="END_LINK" /></translation>
 <translation id="6366710531182496394">बायाँपट्टि दुई स्टिच</translation>
 <translation id="6377268785556383139">'<ph name="SEARCH_TEXT" />' को १ परिणाम</translation>
 <translation id="6380497234672085559">A0</translation>
@@ -1223,6 +1229,7 @@
 <translation id="6433595998831338502"><ph name="HOST_NAME" /> ले जडान गर्न अस्वीकार गर्यो।</translation>
 <translation id="6434309073475700221">त्याग्नुहोस्</translation>
 <translation id="6440503408713884761">उपेक्षित</translation>
+<translation id="6443406338865242315">तपाईंले स्थापना गर्नुभएका विस्तार र प्लगइनहरू</translation>
 <translation id="6446163441502663861">Kahu (Envelope)</translation>
 <translation id="6446608382365791566">थप जानकारी थप्नुहोस्</translation>
 <translation id="6447842834002726250">कुकीहरू</translation>
@@ -1332,6 +1339,7 @@
 <translation id="7012363358306927923">चीन UnionPay</translation>
 <translation id="7016992613359344582">यी शुल्कहरू एक पटक तिरे पुग्ने वा बारम्बार तिर्नु पर्ने हुन सक्छन् र यस सम्बन्धमा स्पष्टता नहुन पनि सक्छ।</translation>
 <translation id="7029809446516969842">पासवर्डहरू</translation>
+<translation id="7031646650991750659">तपाईंले स्थापना गर्नुभएका Google Play अनुप्रयोगहरू</translation>
 <translation id="7050187094878475250">तपाईं <ph name="DOMAIN" /> मा पुग्न प्रयास गर्नुभयो, तर सर्भरले एउटा प्रमाणपत्र प्रस्तुत गर्दछ जसको वैधानिकता अवधि भरोसा योग्य हुन निकै लामो छ।</translation>
 <translation id="705310974202322020">{NUM_CARDS,plural, =1{यो कार्ड अहिले सुरक्षित गर्न सकिँदैन}other{यी कार्डहरू अहिले सुरक्षित गर्न सकिँदैन}}</translation>
 <translation id="7053983685419859001">रोक्नुहोस्</translation>
@@ -1391,6 +1399,7 @@
 <translation id="7319430975418800333">A3</translation>
 <translation id="7320336641823683070">जडानसम्बन्धी मद्दत</translation>
 <translation id="733354035281974745">यन्त्रका स्थानीय खाताको ओभरराइड</translation>
+<translation id="7333654844024768166">तपाईंले भर्खरै कुनै भ्रामक साइटमा आफ्नो पासवर्ड प्रविष्टि गर्नुभएको छ। Chromium ले <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, <ph name="WEBSITE_3" /> र तपाईंले यो पासवर्ड प्रयोग गर्ने अन्य साइटहरूमा गई तपाईंको पासवर्ड अहिले नै बदल्न सिफारिस गर्छ।</translation>
 <translation id="7334320624316649418">क्रम परिवर्तन &amp;पुन: गर्नुहोस्</translation>
 <translation id="7337706099755338005">तपाईंको प्लेटफर्ममा उपलब्ध छैन।</translation>
 <translation id="733923710415886693">प्रमाणपत्रको पारदर्शिता नीति मार्फत सर्भरको प्रमाणपत्रको खुलासा भएन।</translation>

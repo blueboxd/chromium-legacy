@@ -2315,7 +2315,7 @@ void ShelfView::ShelfItemRemoved(int model_index, const ShelfItem& old_item) {
   if (view.get() == shelf_->tooltip()->GetCurrentAnchorView())
     shelf_->tooltip()->Close();
 
-  if (view->GetVisible()) {
+  if (view->GetVisible() && view->layer()->opacity() > 0.0f) {
     if (chromeos::switches::ShouldShowScrollableShelf())
       UpdateVisibleIndices();
 

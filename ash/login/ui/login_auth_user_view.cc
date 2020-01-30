@@ -20,6 +20,7 @@
 #include "ash/login/ui/non_accessible_view.h"
 #include "ash/login/ui/parent_access_view.h"
 #include "ash/login/ui/pin_keyboard_animation.h"
+#include "ash/login/ui/system_label_button.h"
 #include "ash/login/ui/views_utils.h"
 #include "ash/public/cpp/login_constants.h"
 #include "ash/resources/vector_icons/vector_icons.h"
@@ -41,15 +42,12 @@
 #include "ui/compositor/layer_animation_sequence.h"
 #include "ui/compositor/layer_animator.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
-#include "ui/gfx/canvas.h"
 #include "ui/gfx/color_analysis.h"
-#include "ui/gfx/color_palette.h"
 #include "ui/gfx/interpolated_transform.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/vector_icon_types.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
-#include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/button/md_text_button.h"
 #include "ui/views/controls/highlight_path_generator.h"
 #include "ui/views/layout/box_layout.h"
@@ -113,24 +111,6 @@ constexpr int kDisabledAuthMessageRoundedCornerRadiusDp = 8;
 
 constexpr int kNonEmptyWidthDp = 1;
 
-// The color of the required online sign-in  message text.
-constexpr SkColor kSystemButtonMessageColor = SK_ColorBLACK;
-// The background color of the required online sign-in button.
-constexpr SkColor kSystemButtonBackgroundColor =
-    SkColorSetA(gfx::kGoogleRed300, SK_AlphaOPAQUE);
-
-constexpr int kUserInfoBubbleWidth = 192;
-constexpr int kUserInfoBubbleExternalPadding = 8;
-constexpr int kSystemButtonIconSize = 20;
-constexpr int kSystemButtonMarginTopBottomDp = 6;
-constexpr int kSystemButtonMarginLeftRightDp = 16;
-constexpr int kSystemButtonBorderRadius = 16;
-constexpr int kSystemButtonImageLabelSpacing = 8;
-constexpr int kSystemButtonMaxLabelWidthDp =
-    kUserInfoBubbleWidth - 2 * kUserInfoBubbleExternalPadding -
-    kSystemButtonIconSize - kSystemButtonImageLabelSpacing -
-    2 * kSystemButtonBorderRadius;
-
 // Returns an observer that will hide |view| when it fires. The observer will
 // delete itself after firing (by returning true). Make sure to call
 // |observer->SetActive()| after attaching it.
@@ -192,69 +172,6 @@ class ClearPasswordAndHideAnimationObserver
   LoginPasswordView* const password_view_;
 
   DISALLOW_COPY_AND_ASSIGN(ClearPasswordAndHideAnimationObserver);
-};
-
-SkPath GetSystemButtonHighlightPath(const views::View* view) {
-  gfx::Rect rect(view->GetLocalBounds());
-  return SkPath().addRoundRect(gfx::RectToSkRect(rect),
-                               kSystemButtonBorderRadius,
-                               kSystemButtonBorderRadius);
-}
-
-class SystemButtonHighlightPathGenerator
-    : public views::HighlightPathGenerator {
- public:
-  SystemButtonHighlightPathGenerator() = default;
-  SystemButtonHighlightPathGenerator(
-      const SystemButtonHighlightPathGenerator&) = delete;
-  SystemButtonHighlightPathGenerator& operator=(
-      const SystemButtonHighlightPathGenerator&) = delete;
-
-  // views::HighlightPathGenerator:
-  SkPath GetHighlightPath(const views::View* view) override {
-    return GetSystemButtonHighlightPath(view);
-  }
-};
-
-class SystemButton : public views::LabelButton {
- public:
-  SystemButton(views::ButtonListener* listener, const base::string16& text)
-      : LabelButton(listener, text) {
-    SetImageLabelSpacing(kSystemButtonImageLabelSpacing);
-    label()->SetMultiLine(true);
-    label()->SetMaximumWidth(kSystemButtonMaxLabelWidthDp);
-    label()->SetFontList(
-        gfx::FontList().DeriveWithWeight(gfx::Font::Weight::MEDIUM));
-    SetPaintToLayer();
-    layer()->SetFillsBoundsOpaquely(false);
-    SetImage(views::Button::STATE_NORMAL,
-             CreateVectorIcon(kLockScreenAlertIcon, kSystemButtonMessageColor));
-    SetTextSubpixelRenderingEnabled(false);
-    SetTextColor(views::Button::STATE_NORMAL, kSystemButtonMessageColor);
-    SetTextColor(views::Button::STATE_HOVERED, kSystemButtonMessageColor);
-    SetTextColor(views::Button::STATE_PRESSED, kSystemButtonMessageColor);
-    views::HighlightPathGenerator::Install(
-        this, std::make_unique<SystemButtonHighlightPathGenerator>());
-  }
-
-  SystemButton(const SystemButton&) = delete;
-  SystemButton& operator=(const SystemButton&) = delete;
-  ~SystemButton() override = default;
-
-  // views::LabelButton:
-  void PaintButtonContents(gfx::Canvas* canvas) override {
-    cc::PaintFlags flags;
-    flags.setAntiAlias(true);
-    flags.setColor(kSystemButtonBackgroundColor);
-    flags.setStyle(cc::PaintFlags::kFill_Style);
-    canvas->DrawPath(GetSystemButtonHighlightPath(this), flags);
-  }
-
-  gfx::Insets GetInsets() const override {
-    return gfx::Insets(
-        kSystemButtonMarginTopBottomDp, kSystemButtonMarginLeftRightDp,
-        kSystemButtonMarginTopBottomDp, kSystemButtonMarginLeftRightDp);
-  }
 };
 
 // The label shown below the fingerprint icon.
@@ -604,8 +521,8 @@ class LoginAuthUserView::ChallengeResponseView : public views::View,
     if (state == State::kFailure) {
       reset_state_timer_.Start(
           FROM_HERE, kChallengeResponseResetAfterFailureDelay,
-          base::BindRepeating(&ChallengeResponseView::SetState,
-                              base::Unretained(this), State::kInitial));
+          base::BindOnce(&ChallengeResponseView::SetState,
+                         base::Unretained(this), State::kInitial));
     }
 
     arrow_button_->EnableLoadingAnimation(state == State::kAuthenticating);
@@ -852,8 +769,9 @@ LoginAuthUserView::LoginAuthUserView(const LoginUserInfo& user,
                       callbacks.on_easy_unlock_icon_hovered,
                       callbacks.on_easy_unlock_icon_tapped);
 
-  auto online_sign_in_message = std::make_unique<SystemButton>(
-      this, l10n_util::GetStringUTF16(IDS_ASH_LOGIN_SIGN_IN_REQUIRED_MESSAGE));
+  auto online_sign_in_message = std::make_unique<SystemLabelButton>(
+      this, l10n_util::GetStringUTF16(IDS_ASH_LOGIN_SIGN_IN_REQUIRED_MESSAGE),
+      SystemLabelButton::DisplayType::ALERT_WITH_ICON);
   online_sign_in_message_ = online_sign_in_message.get();
 
   auto disabled_auth_message = std::make_unique<DisabledAuthMessageView>();

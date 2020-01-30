@@ -1248,6 +1248,7 @@
       'cronet_tests': {},
       'cronet_unittests': {},
       'crypto_unittests': {},
+      'events_unittests': {},
       'gfx_unittests': {},
       'gpu_unittests': {},
       'http_service_tests': {},

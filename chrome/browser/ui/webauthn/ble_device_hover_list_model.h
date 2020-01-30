@@ -43,7 +43,8 @@ class BleDeviceHoverListModel : public HoverListModel,
   base::string16 GetItemText(int item_tag) const override;
   base::string16 GetDescriptionText(int item_tag) const override;
   const gfx::VectorIcon* GetItemIcon(int item_tag) const override;
-  std::vector<int> GetItemTags() const override;
+  std::vector<int> GetThrobberTags() const override;
+  std::vector<int> GetButtonTags() const override;
   void OnListItemSelected(int item_tag) override;
   size_t GetPreferredItemCount() const override;
   bool StyleForTwoLines() const override;

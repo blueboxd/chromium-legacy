@@ -26,7 +26,6 @@
 <translation id="1031362278801463162">Įkeliama peržiūra</translation>
 <translation id="1032605640136438169">Peržiūrėkite naujas sąlygas</translation>
 <translation id="103279545524624934">Atlaisvinkite vietos diske, kad galėtumėte paleisti „Android“ programas.</translation>
-<translation id="1033343386521881354">Rastas vienas spausdintuvas iš spausdinimo serverio.</translation>
 <translation id="1033780634303702874">Pasiekti nuosekliuosius įtaisus</translation>
 <translation id="1034942643314881546">ADB įgalinimas kurti programos iliustraciją</translation>
 <translation id="1036348656032585052">Išjungti</translation>
@@ -34,7 +33,6 @@
 <translation id="1036982837258183574">Paspauskite |<ph name="ACCELERATOR" />|, kad išeitumėte iš viso ekrano režimo</translation>
 <translation id="1038168778161626396">Tik šifruoti</translation>
 <translation id="1039337018183941703">Netinkamas arba sugadintas failas</translation>
-<translation id="1039850285407663109">Pasirinktas failas nežinomas ir gali būti pavojingas. Apsvarstykite galimybę nuskaityti prieš atidarydami šį failą.</translation>
 <translation id="1041175011127912238">Šis puslapis neatsako</translation>
 <translation id="1041263367839475438">Pasiekiami įrenginiai</translation>
 <translation id="1042174272890264476">Jūsų kompiuteryje taip pat įdiegta „<ph name="SHORT_PRODUCT_NAME" />“ RLZ biblioteka. RLZ priskiria neunikalią, asmens neidentifikuojančią žymą, kad įvertintų tam tikros reklamos kampanijos paieškas ir „<ph name="SHORT_PRODUCT_NAME" />“ naudojimą. Šios etiketės kartais rodomos „Google“ paieškos užklausose „<ph name="PRODUCT_NAME" />“.</translation>
@@ -639,7 +637,6 @@
 <translation id="1858585891038687145">Pasitikėti šiuo sertifikatu nustatant programinės įrangos kūrėjus</translation>
 <translation id="1861262398884155592">Šis aplankas tuščias</translation>
 <translation id="1863182668524159459">Nuosekliųjų prievadų nerasta</translation>
-<translation id="1863552924692672565">Failas „<ph name="FILE_NAME" />“ nežinomas. Nuskaitykite failą, kad sumažintumėte riziką.</translation>
 <translation id="1864111464094315414">Prisijungimas</translation>
 <translation id="1864400682872660285">Šaltesnio atspalvio</translation>
 <translation id="1864454756846565995">USB-C įrenginys (prievadas gale)</translation>
@@ -4026,7 +4023,6 @@ Ar norite paleisti „<ph name="CONTROL_PANEL_APPLET_NAME" />“?</translation>
 <translation id="6678717876183468697">Užklausos URL</translation>
 <translation id="6680442031740878064">Pasiekiama: <ph name="AVAILABLE_SPACE" /></translation>
 <translation id="6680650203439190394">Sparta</translation>
-<translation id="6681301928961274620">Nerasta jokių spausdintuvų iš spausdinimo serverio.</translation>
 <translation id="6681668084120808868">Fotografuoti</translation>
 <translation id="6681964764822470072">„<ph name="APP_NAME" />“ bus pašalinta.</translation>
 <translation id="668599234725812620">Atidaryti „Google Play“</translation>
@@ -5556,7 +5552,6 @@ Rakto failą laikykite saugioje vietoje. Jo reikės, kai norėsite sukurti nauja
 <translation id="8794025342371547160">Ribotas IP</translation>
 <translation id="879413103056696865">Kai viešosios interneto prieigos taškas bus įjungtas, „<ph name="PHONE_NAME" />“:</translation>
 <translation id="8795916974678578410">Naujas langas</translation>
-<translation id="8797086401386164142">Rasta spausdintuvų iš spausdinimo serverio: <ph name="NUM_PRINTERS" />.</translation>
 <translation id="8797459392481275117">Niekada neversti šios svetainės</translation>
 <translation id="8798099450830957504">Numatytasis</translation>
 <translation id="8798441408945964110">Teikėjo pavadinimas</translation>

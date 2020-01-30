@@ -63,9 +63,6 @@ class BookmarkBubbleView : public LocationBarBubbleDelegateView,
   gfx::ImageSkia GetWindowIcon() override;
   bool ShouldShowWindowIcon() const override;
   void WindowClosing() override;
-  bool Cancel() override;
-  bool Accept() override;
-  bool Close() override;
   void OnDialogInitialized() override;
   const char* GetClassName() const override;
 
@@ -108,6 +105,8 @@ class BookmarkBubbleView : public LocationBarBubbleDelegateView,
 
   // Creates the signin promo view, if there should be one.
   std::unique_ptr<views::View> CreateSigninPromoView();
+
+  void OnDialogCancelled();
 
   // The bookmark bubble, if we're showing one.
   static BookmarkBubbleView* bookmark_bubble_;

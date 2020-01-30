@@ -195,8 +195,10 @@
   self.modalViewController.legalMessages = [self legalMessagesForModal];
   if ((base::FeatureList::IsEnabled(
           autofill::features::kAutofillSaveCardInfobarEditSupport))) {
+    // Only allow editing if the card will be uploaded and it hasn't been
+    // previously saved.
     self.modalViewController.supportsEditing =
-        self.saveCardInfoBarDelegate->upload();
+        self.saveCardInfoBarDelegate->upload() && !self.infobarAccepted;
   } else {
     self.modalViewController.supportsEditing = NO;
   }

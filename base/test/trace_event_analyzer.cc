@@ -112,8 +112,10 @@ bool TraceEvent::SetFromJSON(const base::Value* event_value) {
       return false;
     }
   }
-  if (require_id && !dictionary->GetString("id", &id)) {
-    LOG(ERROR) << "id is missing from ASYNC_BEGIN/ASYNC_END TraceEvent JSON";
+  if (require_id && !dictionary->GetString("id", &id) &&
+      !dictionary->FindKey("id2")) {
+    LOG(ERROR)
+        << "id/id2 is missing from ASYNC_BEGIN/ASYNC_END TraceEvent JSON";
     return false;
   }
 

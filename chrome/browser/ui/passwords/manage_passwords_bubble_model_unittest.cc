@@ -60,11 +60,6 @@ constexpr char kUIDismissalReasonSaveMetric[] =
 constexpr char kUIDismissalReasonUpdateMetric[] =
     "PasswordManager.UpdateUIDismissalReason";
 
-MATCHER_P(AccountEq, expected, "") {
-  return expected.account_id == arg.account_id && expected.email == arg.email &&
-         expected.gaia == arg.gaia;
-}
-
 }  // namespace
 
 class ManagePasswordsBubbleModelTest : public ::testing::Test {
@@ -377,20 +372,6 @@ TEST_F(ManagePasswordsBubbleModelTest, SignInPromoOK) {
   EXPECT_FALSE(model()->ReplaceToShowPromotionIfNeeded());
 #else
   EXPECT_TRUE(model()->ReplaceToShowPromotionIfNeeded());
-
-  AccountInfo account;
-  account.account_id = CoreAccountId("foo_account_id");
-  account.gaia = "foo_gaia_id";
-  account.email = "foo@bar.com";
-  EXPECT_CALL(*controller(), EnableSync(AccountEq(account), false));
-  model()->OnSignInToChromeClicked(account,
-                                   false /* is_default_promo_account */);
-  DestroyModelAndVerifyControllerExpectations();
-  histogram_tester.ExpectUniqueSample(
-      kUIDismissalReasonSaveMetric,
-      password_manager::metrics_util::CLICKED_SAVE, 1);
-  EXPECT_TRUE(prefs()->GetBoolean(
-      password_manager::prefs::kWasSignInPasswordPromoClicked));
 #endif
 }
 

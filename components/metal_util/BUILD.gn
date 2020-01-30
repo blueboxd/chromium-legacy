@@ -20,7 +20,10 @@ component("metal_util") {
     "types.h",
   ]
 
-  deps = [ "//base" ]
+  deps = [
+    "//base",
+    "//components/crash/core/common:crash_key",
+  ]
 
   libs = [
     "Cocoa.framework",

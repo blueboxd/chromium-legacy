@@ -225,6 +225,13 @@ BaseBlockingPage* SafeBrowsingUIManager::CreateBlockingPageForSubresource(
       SafeBrowsingBlockingPage::CreateBlockingPage(
           this, contents, blocked_url, unsafe_resource,
           /*should_trigger_reporting=*/false);
+
+  // Report that we showed an interstitial.
+  MaybeTriggerSecurityInterstitialShownEvent(
+      contents, blocked_url,
+      GetThreatTypeStringForInterstitial(unsafe_resource.threat_type),
+      /*net_error_code=*/0);
+
   return blocking_page;
 }
 

@@ -26,7 +26,6 @@
 <translation id="1031362278801463162">טוען תצוגה מקדימה</translation>
 <translation id="1032605640136438169">יש לקרוא את התנאים החדשים</translation>
 <translation id="103279545524624934">‏עליך לפנות שטח אחסון כדי להפעיל אפליקציות Android.</translation>
-<translation id="1033343386521881354">נמצאה מדפסת אחת המשויכת לשרת ההדפסה.</translation>
 <translation id="1033780634303702874">גישה להתקנים הסיריאליים שלך</translation>
 <translation id="1034942643314881546">‏המערכת מפעילה את ADB ליצירת איור של אפליקציות</translation>
 <translation id="1036348656032585052">כבה</translation>
@@ -34,7 +33,6 @@
 <translation id="1036982837258183574">לחץ על |<ph name="ACCELERATOR" />| כדי לצאת ממסך מלא</translation>
 <translation id="1038168778161626396">הצפנה בלבד</translation>
 <translation id="1039337018183941703">הקובץ לא חוקי, או שהוא פגום</translation>
-<translation id="1039850285407663109">הקובץ שנבחר אינו מזוהה ועלול להיות מסוכן. מומלץ לסרוק אותו לפני הפתיחה.</translation>
 <translation id="1041175011127912238">הדף לא מגיב</translation>
 <translation id="1041263367839475438">מכשירים זמינים</translation>
 <translation id="1042174272890264476">‏המחשב שלך מגיע גם עם ספריית ה-RLZ המובנה של <ph name="SHORT_PRODUCT_NAME" />‏. RLZ מקצה תג שאינו ייחודי ואינו ניתן לזיהוי על מנת למדוד את החיפוש ואת השימוש ב-<ph name="SHORT_PRODUCT_NAME" /> המונעים על ידי קמפיין ספציפי לקידום מכירות. התוויות האלה מופיעות לעתים בשאילתות החיפוש של Google ב-<ph name="PRODUCT_NAME" />.</translation>
@@ -636,7 +634,6 @@
 <translation id="1858585891038687145">תן אמון באישור זה לזיהוי מפתחי תוכנה</translation>
 <translation id="1861262398884155592">התיקייה הזו ריקה</translation>
 <translation id="1863182668524159459">לא נמצאו יציאות טוריות</translation>
-<translation id="1863552924692672565"><ph name="FILE_NAME" /> אינו מזוהה. יש לסרוק את הקובץ כדי להקטין את הסיכון.</translation>
 <translation id="1864111464094315414">התחבר</translation>
 <translation id="1864400682872660285">קריר יותר</translation>
 <translation id="1864454756846565995">‏מכשיר עם יציאת USB-C (יציאה אחורית)</translation>
@@ -4022,7 +4019,6 @@
 <translation id="6678717876183468697">כתובת אתר של שאילתה</translation>
 <translation id="6680442031740878064">השטח הזמין: <ph name="AVAILABLE_SPACE" /></translation>
 <translation id="6680650203439190394">קצב</translation>
-<translation id="6681301928961274620">לא נמצאו מדפסות המשויכות לשרת ההדפסה.</translation>
 <translation id="6681668084120808868">צלם תמונה</translation>
 <translation id="6681964764822470072">ההתקנה של "<ph name="APP_NAME" />" תוסר.</translation>
 <translation id="668599234725812620">‏פתח את Google Play</translation>
@@ -5553,7 +5549,6 @@
 <translation id="8794025342371547160">‏IP מוגבל</translation>
 <translation id="879413103056696865">כשהנקודה לשיתוף אינטרנט מופעלת, ה-<ph name="PHONE_NAME" /> יבצע את הפעולות הבאות:</translation>
 <translation id="8795916974678578410">חלון חדש</translation>
-<translation id="8797086401386164142">נמצאו <ph name="NUM_PRINTERS" /> מדפסות המשויכות לשרת הההדפסה.</translation>
 <translation id="8797459392481275117">איני רוצה לקבל תרגום של אתר זה בכלל</translation>
 <translation id="8798099450830957504">ברירת מחדל</translation>
 <translation id="8798441408945964110">שם ספק</translation>

@@ -19,7 +19,11 @@ import org.chromium.base.StrictModeContext;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.autofill.PersonalDataManager;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
+import org.chromium.chrome.browser.autofill.prefeditor.EditorDialog;
 import org.chromium.chrome.browser.autofill.prefeditor.EditorObserverForTest;
+import org.chromium.chrome.browser.payments.AddressEditor;
+import org.chromium.chrome.browser.payments.AutofillAddress;
+import org.chromium.chrome.browser.payments.SettingsAutofillAndPaymentsObserver;
 import org.chromium.chrome.browser.settings.ChromeSwitchPreference;
 import org.chromium.chrome.browser.settings.ManagedPreferenceDelegate;
 
@@ -30,6 +34,8 @@ public class AutofillProfilesFragment extends PreferenceFragmentCompat
         implements PersonalDataManager.PersonalDataManagerObserver {
     private static EditorObserverForTest sObserverForTest;
     static final String PREF_NEW_PROFILE = "new_profile";
+
+    EditorDialog mLastEditorDialogForTest;
 
     @Override
     public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
@@ -84,12 +90,10 @@ public class AutofillProfilesFragment extends PreferenceFragmentCompat
             // Add a preference for the profile.
             Preference pref;
             if (profile.getIsLocal()) {
-                AutofillProfileEditorPreference localPref =
-                        new AutofillProfileEditorPreference(getActivity(), getStyledContext());
-                localPref.setTitle(profile.getFullName());
-                localPref.setSummary(profile.getLabel());
-                localPref.setKey(localPref.getTitle().toString()); // For testing.
-                pref = localPref;
+                pref = new AutofillProfileEditorPreference(getStyledContext());
+                pref.setTitle(profile.getFullName());
+                pref.setSummary(profile.getLabel());
+                pref.setKey(pref.getTitle().toString()); // For testing.
             } else {
                 pref = new Preference(getStyledContext());
                 pref.setWidgetLayoutResource(R.layout.autofill_server_data_label);
@@ -106,7 +110,7 @@ public class AutofillProfilesFragment extends PreferenceFragmentCompat
         // new addresses.
         if (PersonalDataManager.isAutofillProfileEnabled()) {
             AutofillProfileEditorPreference pref =
-                    new AutofillProfileEditorPreference(getActivity(), getStyledContext());
+                    new AutofillProfileEditorPreference(getStyledContext());
             Drawable plusIcon = ApiCompatibilityUtils.getDrawable(getResources(), R.drawable.plus);
             plusIcon.mutate();
             plusIcon.setColorFilter(
@@ -143,10 +147,69 @@ public class AutofillProfilesFragment extends PreferenceFragmentCompat
     @VisibleForTesting
     public static void setObserverForTest(EditorObserverForTest observerForTest) {
         sObserverForTest = observerForTest;
-        AutofillProfileEditorPreference.setEditorObserverForTest(sObserverForTest);
+        EditorDialog.setEditorObserverForTest(sObserverForTest);
+    }
+
+    @Override
+    public void onDisplayPreferenceDialog(Preference preference) {
+        if (preference instanceof AutofillProfileEditorPreference) {
+            String guid = ((AutofillProfileEditorPreference) preference).getGUID();
+            EditorDialog editorDialog = prepareEditorDialog(guid);
+            mLastEditorDialogForTest = editorDialog;
+            AutofillAddress autofillAddress = guid == null
+                    ? null
+                    : new AutofillAddress(
+                            getActivity(), PersonalDataManager.getInstance().getProfile(guid));
+            editAddress(editorDialog, autofillAddress);
+            return;
+        }
+
+        super.onDisplayPreferenceDialog(preference);
+    }
+
+    @VisibleForTesting
+    EditorDialog prepareEditorDialog(String guid) {
+        Runnable runnable = guid == null ? null : () -> {
+            PersonalDataManager.getInstance().deleteProfile(guid);
+            SettingsAutofillAndPaymentsObserver.getInstance().notifyOnAddressDeleted(guid);
+            if (sObserverForTest != null) {
+                sObserverForTest.onEditorReadyToEdit();
+            }
+        };
+
+        return new EditorDialog(getActivity(), runnable);
+    }
+
+    private void editAddress(EditorDialog dialog, AutofillAddress autofillAddress) {
+        AddressEditor addressEditor =
+                new AddressEditor(AddressEditor.Purpose.AUTOFILL_SETTINGS, /*saveToDisk=*/true);
+        addressEditor.setEditorDialog(dialog);
+
+        /*
+         * There are four cases for |address| here.
+         * (1) |address| is null: the user canceled address creation
+         * (2) |address| is non-null: the user canceled editing an existing address
+         * (3) |address| is non-null: the user edited an existing address.
+         * (4) |address| is non-null: the user created a new address.
+         * We should save the changes (set the profile) for cases 3 and 4,
+         * and it's OK to set the profile for 2.
+         */
+        addressEditor.edit(autofillAddress, address -> {
+            if (address != null) {
+                PersonalDataManager.getInstance().setProfile(address.getProfile());
+                SettingsAutofillAndPaymentsObserver.getInstance().notifyOnAddressUpdated(address);
+            }
+            if (sObserverForTest != null) {
+                sObserverForTest.onEditorReadyToEdit();
+            }
+        });
     }
 
     private Context getStyledContext() {
         return getPreferenceManager().getContext();
+    }
+
+    EditorDialog getEditorDialogForTest() {
+        return mLastEditorDialogForTest;
     }
 }

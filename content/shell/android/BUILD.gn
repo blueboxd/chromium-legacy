@@ -39,9 +39,7 @@ shared_library("libcontent_shell_content_view") {
       "//media/midi",
     ]
   }
-  sources = [
-    "shell_library_loader.cc",
-  ]
+  sources = [ "shell_library_loader.cc" ]
   configs -= [ "//build/config/android:hide_all_but_jni_onload" ]
   configs += [ "//build/config/android:hide_all_but_jni" ]
 }
@@ -55,9 +53,7 @@ shared_library("libcontent_native_test") {
     "//content/shell:content_shell_lib",
   ]
 
-  sources = [
-    "shell_test_library_loader.cc",
-  ]
+  sources = [ "shell_test_library_loader.cc" ]
   configs -= [ "//build/config/android:hide_all_but_jni_onload" ]
   configs += [ "//build/config/android:hide_all_but_jni" ]
 }
@@ -114,9 +110,7 @@ jinja_template("content_shell_test_manifest") {
 android_resources("content_shell_apk_resources") {
   testonly = true
   resource_dirs = [ "shell_apk/res" ]
-  deps = [
-    ":content_shell_java_resources",
-  ]
+  deps = [ ":content_shell_java_resources" ]
   custom_package = "org.chromium.content_shell_apk"
 }
 
@@ -151,16 +145,13 @@ android_library("content_shell_apk_java") {
 
 android_aidl("content_javatests_aidl") {
   import_include = [ "shell_apk/src" ]
-  sources = [
-    "shell_apk/src/org/chromium/content_shell_apk/IChildProcessTest.aidl",
-  ]
+  sources =
+      [ "shell_apk/src/org/chromium/content_shell_apk/IChildProcessTest.aidl" ]
 }
 
 android_assets("content_shell_assets") {
   testonly = true
-  sources = [
-    "$root_out_dir/content_shell.pak",
-  ]
+  sources = [ "$root_out_dir/content_shell.pak" ]
   disable_compression = true
   deps = [
     "//content/shell:pak",
@@ -223,9 +214,7 @@ content_shell_apk_tmpl("content_shell_test_apk") {
     "//net/android:net_javatests",
     "//third_party/android_support_test_runner:runner_java",
   ]
-  data_deps = [
-    "//testing/buildbot/filters:content_shell_test_apk_filters",
-  ]
+  data_deps = [ "//testing/buildbot/filters:content_shell_test_apk_filters" ]
   if (enable_chrome_android_internal) {
     data_deps += [ "//clank/build/bot/filters:content_shell_test_apk_filters" ]
   }
@@ -351,9 +340,7 @@ if (current_cpu != "x64") {
 
   generate_jni("linker_test_jni_headers") {
     testonly = true
-    sources = [
-      "linker_test_apk/src/org/chromium/chromium_linker_test_apk/LinkerTests.java",
-    ]
+    sources = [ "linker_test_apk/src/org/chromium/chromium_linker_test_apk/LinkerTests.java" ]
   }
 }
 
@@ -367,7 +354,5 @@ android_library("content_shell_browsertests_java") {
     "//third_party/android_deps:com_android_support_support_compat_java",
     "//ui/android:ui_java",
   ]
-  sources = [
-    "browsertests/src/org/chromium/content_shell/browsertests/ContentShellBrowserTestActivity.java",
-  ]
+  sources = [ "browsertests/src/org/chromium/content_shell/browsertests/ContentShellBrowserTestActivity.java" ]
 }

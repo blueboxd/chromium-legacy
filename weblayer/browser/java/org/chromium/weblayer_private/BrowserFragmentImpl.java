@@ -93,6 +93,13 @@ public class BrowserFragmentImpl extends RemoteFragmentImpl {
         mContext = null;
     }
 
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        StrictModeWorkaround.apply();
+        mBrowser.onSaveInstanceState(outState);
+        super.onSaveInstanceState(outState);
+    }
+
     public IBrowserFragment asIBrowserFragment() {
         return new IBrowserFragment.Stub() {
             @Override

@@ -16,7 +16,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/lazy_task_runner.h"
+#include "base/task/lazy_thread_pool_task_runner.h"
 #include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
@@ -57,10 +57,9 @@ namespace {
 
 const char kMediaGalleryMountPrefix[] = "media_galleries-";
 
-base::LazySequencedTaskRunner g_media_task_runner =
-    LAZY_SEQUENCED_TASK_RUNNER_INITIALIZER(
-        base::TaskTraits(base::ThreadPool(),
-                         base::MayBlock(),
+base::LazyThreadPoolSequencedTaskRunner g_media_task_runner =
+    LAZY_THREAD_POOL_SEQUENCED_TASK_RUNNER_INITIALIZER(
+        base::TaskTraits(base::MayBlock(),
                          base::TaskPriority::USER_VISIBLE,
                          base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN));
 

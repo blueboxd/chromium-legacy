@@ -1410,9 +1410,15 @@ TEST_F(NetworkServiceTestWithService, CRLSetDoesNotDowngrade) {
 // The SpawnedTestServer does not work on iOS.
 #if !defined(OS_IOS)
 
+// The test is flaky on Android. crbug.com/1045732.
+#if defined(OS_ANDROID)
+#define MAYBE_AIAFetching DISABLED_AIAFetching
+#else
+#define MAYBE_AIAFetching AIAFetching
+#endif
 // Test |primary_network_context|, which is required by AIA fetching, among
 // other things.
-TEST_F(NetworkServiceTestWithService, AIAFetching) {
+TEST_F(NetworkServiceTestWithService, MAYBE_AIAFetching) {
   mojom::NetworkContextParamsPtr context_params = CreateContextParams();
   context_params->primary_network_context = true;
 

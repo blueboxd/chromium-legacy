@@ -27,10 +27,6 @@ namespace blink {
 
 namespace {
 
-// This value is derived from the Trusted Types spec (draft), and determines the
-// maximum length of the sample value in the violation reports.
-const unsigned kReportedValueMaximumLength = 40;
-
 enum TrustedTypeViolationKind {
   kAnyTrustedTypeAssignment,
   kTrustedHTMLAssignment,
@@ -98,29 +94,22 @@ const char* GetMessage(TrustedTypeViolationKind kind) {
   return "";
 }
 
-std::pair<String, String> GetMessageAndSample(
-    TrustedTypeViolationKind kind,
-    const ExceptionState& exception_state,
-    const String& value) {
+String GetSamplePrefix(const ExceptionState& exception_state) {
   const char* interface_name = exception_state.InterfaceName();
   const char* property_name = exception_state.PropertyName();
 
   // We have two sample formats, one for eval and one for assignment.
   // If we don't have the required values being passed in, just leave the
   // sample empty.
-  StringBuilder sample;
+  StringBuilder sample_prefix;
   if (interface_name && strcmp("eval", interface_name) == 0) {
-    sample.Append("eval");
+    sample_prefix.Append("eval");
   } else if (interface_name && property_name) {
-    sample.Append(interface_name);
-    sample.Append(".");
-    sample.Append(property_name);
+    sample_prefix.Append(interface_name);
+    sample_prefix.Append(".");
+    sample_prefix.Append(property_name);
   }
-  if (!sample.IsEmpty()) {
-    sample.Append(" ");
-    sample.Append(value.Left(kReportedValueMaximumLength));
-  }
-  return std::make_pair<String, String>(GetMessage(kind), sample.ToString());
+  return sample_prefix.ToString();
 }
 
 // Handle failure of a Trusted Type assignment.
@@ -143,14 +132,13 @@ bool TrustedTypeFail(TrustedTypeViolationKind kind,
   if (execution_context->GetTrustedTypes())
     execution_context->GetTrustedTypes()->CountTrustedTypeAssignmentError();
 
-  String message;
-  String sample;
-  std::tie(message, sample) = GetMessageAndSample(kind, exception_state, value);
-  bool allow = execution_context->GetSecurityContext()
-                   .GetContentSecurityPolicy()
-                   ->AllowTrustedTypeAssignmentFailure(message, sample);
+  bool allow =
+      execution_context->GetSecurityContext()
+          .GetContentSecurityPolicy()
+          ->AllowTrustedTypeAssignmentFailure(GetMessage(kind), value,
+                                              GetSamplePrefix(exception_state));
   if (!allow) {
-    exception_state.ThrowTypeError(message);
+    exception_state.ThrowTypeError(GetMessage(kind));
   }
   return !allow;
 }

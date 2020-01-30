@@ -364,7 +364,7 @@
 <translation id="2544644783021658368">Jeden dokument</translation>
 <translation id="254947805923345898">Hodnota pravidla je neplatná.</translation>
 <translation id="255002559098805027">Web <ph name="HOST_NAME" /> odoslal neplatnú odpoveď.</translation>
-<translation id="2553853292994445426">Skontrolujte svoje nastavenia zabezpečeného servera DNS. Možno ste nastavili zabezpečený server DNS, ku ktorému sa nedá pripojiť.</translation>
+<translation id="2553853292994445426">Skontrolujte svoje nastavenia zabezpečeného servera DNS. Možno ste nakonfigurovali zabezpečený server DNS, ku ktorému sa nedá pripojiť.</translation>
 <translation id="2556876185419854533">&amp;Vrátiť späť úpravu</translation>
 <translation id="257674075312929031">Skupina</translation>
 <translation id="2586657967955657006">Schránka</translation>
@@ -477,7 +477,7 @@
 <translation id="3095940652251934233">Výpis</translation>
 <translation id="3096100844101284527">Pridať adresu vyzdvihnutia</translation>
 <translation id="3105172416063519923">Identifikátor obsahu:</translation>
-<translation id="3107591622054137333"><ph name="BEGIN_LINK" />skontrolovať konfiguráciu zabezpečeného servera DNS<ph name="END_LINK" /></translation>
+<translation id="3107591622054137333"><ph name="BEGIN_LINK" />Skontrolovať konfiguráciu zabezpečeného servera DNS<ph name="END_LINK" /></translation>
 <translation id="3109728660330352905">Nemáte povolenie na zobrazenie tejto stránky.</translation>
 <translation id="3113284927548439113">Tretia zmena</translation>
 <translation id="3116158981186517402">Laminovať</translation>
@@ -1225,7 +1225,7 @@
 <translation id="6433595998831338502">Web <ph name="HOST_NAME" /> zamietol pripojenie.</translation>
 <translation id="6434309073475700221">Odstrániť</translation>
 <translation id="6440503408713884761">Ignorované</translation>
-<translation id="6443406338865242315">ktoré rozšírenia a doplnky máte nainštalované;</translation>
+<translation id="6443406338865242315">Ktoré rozšírenia a doplnky máte nainštalované</translation>
 <translation id="6446163441502663861">Kahu (obálka)</translation>
 <translation id="6446608382365791566">Pridanie ďalších informácií</translation>
 <translation id="6447842834002726250">Súbory cookie</translation>
@@ -1335,7 +1335,7 @@
 <translation id="7012363358306927923">China UnionPay</translation>
 <translation id="7016992613359344582">Tieto poplatky môžu byť jednorazové alebo opakované a nemusia byť predvídateľné.</translation>
 <translation id="7029809446516969842">Heslá</translation>
-<translation id="7031646650991750659">ktoré aplikácie Google Play máte nainštalované.</translation>
+<translation id="7031646650991750659">Ktoré aplikácie Google Play máte nainštalované.</translation>
 <translation id="7050187094878475250">Pokúsili ste sa prejsť do domény <ph name="DOMAIN" />, ale server udelil certifikát, ktorého obdobie platnosti je príliš dlhé, a preto nie je dôveryhodný</translation>
 <translation id="705310974202322020">{NUM_CARDS,plural, =1{Túto kartu nie je momentálne možné uložiť}few{Tieto karty nie je momentálne možné uložiť}many{Tieto karty nie je momentálne možné uložiť}other{Tieto karty nie je momentálne možné uložiť}}</translation>
 <translation id="7053983685419859001">Blokovať</translation>

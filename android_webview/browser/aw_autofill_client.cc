@@ -226,6 +226,22 @@ void AwAutofillClient::UpdateAutofillPopupDataListValues(
   // See crrev.com/18102002 if need to implement.
 }
 
+base::span<const autofill::Suggestion> AwAutofillClient::GetPopupSuggestions()
+    const {
+  NOTIMPLEMENTED();
+  return base::span<const autofill::Suggestion>();
+}
+
+void AwAutofillClient::PinPopupViewUntilUpdate() {
+  NOTIMPLEMENTED();
+}
+
+void AwAutofillClient::UpdatePopup(
+    const std::vector<autofill::Suggestion>& suggestions,
+    autofill::PopupType popup_type) {
+  NOTIMPLEMENTED();
+}
+
 void AwAutofillClient::HideAutofillPopup(autofill::PopupHidingReason reason) {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);

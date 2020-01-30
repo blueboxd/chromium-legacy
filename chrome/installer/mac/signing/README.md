@@ -35,8 +35,7 @@ launch-able), signed Chromium:
    - `com.apple.application-identifier`
    - `keychain-access-groups`
    - `com.apple.developer.associated-domains.applinks.read-write`
-2. `touch out/<outdir>/Chromium\ Packaging/keystone_install.sh`
-3. Run `sign_chrome.py` as documented above.
+2. Run `sign_chrome.py` as documented above.
 
 Note that the Chromium [code sign
 config](https://cs.chromium.org/chromium/src/chrome/installer/mac/signing/chromium_config.py)

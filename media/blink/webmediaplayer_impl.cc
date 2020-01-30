@@ -1688,6 +1688,11 @@ void WebMediaPlayerImpl::OnMemoryPressure(
   DCHECK(base::FeatureList::IsEnabled(kMemoryPressureBasedSourceBufferGC));
   DCHECK(chunk_demuxer_);
 
+  if (memory_pressure_level ==
+      base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_NONE) {
+    return;
+  }
+
   // The new value of |memory_pressure_level| will take effect on the next
   // garbage collection. Typically this means the next SourceBuffer append()
   // operation, since per MSE spec, the garbage collection must only occur

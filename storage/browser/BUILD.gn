@@ -6,9 +6,7 @@ import("//mojo/public/tools/bindings/mojom.gni")
 import("//testing/test.gni")
 
 mojom("mojom") {
-  sources = [
-    "blob/mojom/blob_storage_context.mojom",
-  ]
+  sources = [ "blob/mojom/blob_storage_context.mojom" ]
 
   public_deps = [
     "//mojo/public/mojom/base",
@@ -249,9 +247,7 @@ jumbo_component("browser") {
 }
 
 executable("dump_file_system") {
-  sources = [
-    "file_system/dump_file_system.cc",
-  ]
+  sources = [ "file_system/dump_file_system.cc" ]
 
   deps = [
     ":browser",

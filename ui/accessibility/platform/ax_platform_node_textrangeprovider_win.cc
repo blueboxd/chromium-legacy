@@ -15,27 +15,31 @@
 #define UIA_VALIDATE_TEXTRANGEPROVIDER_CALL()              \
   if (!owner() || !owner()->GetDelegate() || !start_ ||    \
       !start_->GetAnchor() || !end_ || !end_->GetAnchor()) \
-    return UIA_E_ELEMENTNOTAVAILABLE;
+    return UIA_E_ELEMENTNOTAVAILABLE;                      \
+  ValidateStartAndEndPositions();
 #define UIA_VALIDATE_TEXTRANGEPROVIDER_CALL_1_IN(in)       \
   if (!owner() || !owner()->GetDelegate() || !start_ ||    \
       !start_->GetAnchor() || !end_ || !end_->GetAnchor()) \
     return UIA_E_ELEMENTNOTAVAILABLE;                      \
   if (!in)                                                 \
-    return E_POINTER;
+    return E_POINTER;                                      \
+  ValidateStartAndEndPositions();
 #define UIA_VALIDATE_TEXTRANGEPROVIDER_CALL_1_OUT(out)     \
   if (!owner() || !owner()->GetDelegate() || !start_ ||    \
       !start_->GetAnchor() || !end_ || !end_->GetAnchor()) \
     return UIA_E_ELEMENTNOTAVAILABLE;                      \
   if (!out)                                                \
     return E_POINTER;                                      \
-  *out = {};
+  *out = {};                                               \
+  ValidateStartAndEndPositions();
 #define UIA_VALIDATE_TEXTRANGEPROVIDER_CALL_1_IN_1_OUT(in, out) \
   if (!owner() || !owner()->GetDelegate() || !start_ ||         \
       !start_->GetAnchor() || !end_ || !end_->GetAnchor())      \
     return UIA_E_ELEMENTNOTAVAILABLE;                           \
   if (!in || !out)                                              \
     return E_POINTER;                                           \
-  *out = {};
+  *out = {};                                                    \
+  ValidateStartAndEndPositions();
 
 // Validate bounds calculated by AXPlatformNodeDelegate. Degenerate bounds
 // indicate the interface is not yet supported on the platform.
@@ -1250,6 +1254,22 @@ void AXPlatformNodeTextRangeProviderWin::
     focus_action.action = ax::mojom::Action::kFocus;
     root_delegate->AccessibilityPerformAction(focus_action);
   }
+}
+
+// This method ensures that start_ and end_ are valid positions in certain
+// scenarios. Currently, it only adjusts for the scenario where start_ or end_
+// is past MaxTextOffset, and moves them to be positioned at MaxTextOffset if
+// they are beyond that. For performance reasons, only validate the final node
+// in the tree. It's possible that other nodes can extend beyond MaxTextOffset,
+// but it's more catastrophic when the final node in the tree extends beyond
+// MaxTextOffset. Note that this method does not handle all scenarios where text
+// positions can become invalid.
+void AXPlatformNodeTextRangeProviderWin::ValidateStartAndEndPositions() {
+  if (start_->AtLastNodeInTree())
+    start_->SnapToMaxTextOffsetIfBeyond();
+
+  if (end_->AtLastNodeInTree())
+    end_->SnapToMaxTextOffsetIfBeyond();
 }
 
 }  // namespace ui

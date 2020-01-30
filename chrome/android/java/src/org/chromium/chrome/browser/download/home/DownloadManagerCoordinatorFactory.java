@@ -30,7 +30,7 @@ public class DownloadManagerCoordinatorFactory {
             ModalDialogManager modalDialogManager) {
         Profile profile = Profile.getMainProfile();
         LegacyDownloadProvider legacyProvider =
-                config.useNewDownloadPath ? new LegacyDownloadProviderImpl() : null;
+                config.useNewDownloadPath ? null : new LegacyDownloadProviderImpl();
         return new DownloadManagerCoordinatorImpl(activity, config, new PrefetchEnabledSupplier(),
                 DownloadManagerCoordinatorFactory::settingsLaunchHelper, snackbarManager,
                 modalDialogManager, TrackerFactory.getTrackerForProfile(profile),

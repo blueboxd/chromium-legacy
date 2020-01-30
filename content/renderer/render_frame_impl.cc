@@ -2347,7 +2347,7 @@ void RenderFrameImpl::OnUnload(
   }
 
   if (is_loading)
-    proxy->OnDidStartLoading();
+    proxy->DidStartLoading();
 
   // Initialize the WebRemoteFrame with the replication state passed by the
   // process that is now rendering the frame.

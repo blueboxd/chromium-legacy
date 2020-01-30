@@ -5,7 +5,6 @@
 #ifndef COMPONENTS_VIZ_SERVICE_FRAME_SINKS_BEGIN_FRAME_TRACKER_H_
 #define COMPONENTS_VIZ_SERVICE_FRAME_SINKS_BEGIN_FRAME_TRACKER_H_
 
-#include "base/containers/ring_buffer.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
 #include "components/viz/service/viz_service_export.h"
 
@@ -24,9 +23,6 @@ class VIZ_SERVICE_EXPORT BeginFrameTracker {
   static constexpr int kLimitStop = 100;
   static constexpr int kLimitThrottle = 10;
 
-  BeginFrameTracker();
-  ~BeginFrameTracker();
-
   // To be called every time OnBeginFrame() is sent.
   void SentBeginFrame(const BeginFrameArgs& args);
 
@@ -42,15 +38,6 @@ class VIZ_SERVICE_EXPORT BeginFrameTracker {
   int outstanding_begin_frames_ = 0;
 
   BeginFrameId last_frame_id_;
-
-  // The following variables are keeping track of some information about sent
-  // and received BeginFrameIds. This information is just being tracked only so
-  // it's available in crash minidumps to help debug https://crbug.com/1011441.
-  // TODO(crbug.com/1011441): Remove this before it hits stable channel!
-  int total_begin_frames_sent_ = 0;
-  int total_acks_received_ = 0;
-  base::RingBuffer<BeginFrameId, 10> recent_begin_frames_sent_;
-  base::RingBuffer<BeginFrameId, 10> recent_acks_received_;
 };
 
 }  // namespace viz

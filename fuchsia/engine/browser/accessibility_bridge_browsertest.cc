@@ -132,6 +132,13 @@ class FakeSemanticsManager : public fuchsia::accessibility::semantics::testing::
     listener_->OnSemanticsModeChanged(is_enabled, []() {});
   }
 
+  // Pumps the message loop until the RegisterViewForSemantics() is called.
+  void WaitUntilViewRegistered() {
+    base::RunLoop loop;
+    on_view_registered_ = loop.QuitClosure();
+    loop.Run();
+  }
+
   // The value returned by hit testing is written to a class member. In the case
   // Run() times out, the function continues so we don't want to write to a
   // local variable.
@@ -159,6 +166,7 @@ class FakeSemanticsManager : public fuchsia::accessibility::semantics::testing::
     view_ref_ = std::move(view_ref);
     listener_ = listener.Bind();
     semantic_tree_binding_.Bind(std::move(semantic_tree_request));
+    std::move(on_view_registered_).Run();
   }
 
   void NotImplemented_(const std::string& name) final {
@@ -171,6 +179,7 @@ class FakeSemanticsManager : public fuchsia::accessibility::semantics::testing::
   FakeSemanticTree semantic_tree_;
   fidl::Binding<SemanticTree> semantic_tree_binding_;
   base::Optional<uint32_t> hit_test_result_;
+  base::OnceClosure on_view_registered_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeSemanticsManager);
 };
@@ -213,7 +222,9 @@ class AccessibilityBridgeTest : public cr_fuchsia::WebEngineBrowserTest {
         std::move(semantics_manager_ptr));
     frame_ptr_->EnableHeadlessRendering();
 
-    base::RunLoop().RunUntilIdle();
+    semantics_manager_.WaitUntilViewRegistered();
+    ASSERT_TRUE(semantics_manager_.is_view_registered());
+    ASSERT_TRUE(semantics_manager_.is_listener_valid());
   }
 
  protected:
@@ -229,16 +240,15 @@ class AccessibilityBridgeTest : public cr_fuchsia::WebEngineBrowserTest {
 // Test registration to the SemanticsManager and accessibility mode on
 // WebContents is set correctly.
 IN_PROC_BROWSER_TEST_F(AccessibilityBridgeTest, RegisterViewRef) {
-  // Check that setup is successful.
-  EXPECT_TRUE(semantics_manager_.is_view_registered());
-  EXPECT_TRUE(semantics_manager_.is_listener_valid());
-
   // Change the accessibility mode on the Fuchsia side and check that it is
   // propagated correctly.
-  EXPECT_FALSE(frame_impl_->web_contents_for_test()
+  ASSERT_FALSE(frame_impl_->web_contents_for_test()
                    ->IsWebContentsOnlyAccessibilityModeForTesting());
   semantics_manager_.SetSemanticsModeEnabled(true);
+
+  // Spin the loop to let the FrameImpl receive the mode-change.
   base::RunLoop().RunUntilIdle();
+
   EXPECT_TRUE(frame_impl_->web_contents_for_test()
                   ->IsWebContentsOnlyAccessibilityModeForTesting());
 }
@@ -250,7 +260,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityBridgeTest, CorrectDataSent) {
   semantics_manager_.SetSemanticsModeEnabled(true);
 
   GURL page_url1(embedded_test_server()->GetURL(kPage1Path));
-  EXPECT_TRUE(cr_fuchsia::LoadUrlAndExpectResponse(
+  ASSERT_TRUE(cr_fuchsia::LoadUrlAndExpectResponse(
       controller.get(), fuchsia::web::LoadUrlParams(), page_url1.spec()));
   navigation_listener_.RunUntilUrlAndTitleEquals(page_url1, kPage1Title);
 
@@ -276,7 +286,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityBridgeTest, DataSentWithBatching) {
   semantics_manager_.SetSemanticsModeEnabled(true);
 
   GURL page_url2(embedded_test_server()->GetURL(kPage2Path));
-  EXPECT_TRUE(cr_fuchsia::LoadUrlAndExpectResponse(
+  ASSERT_TRUE(cr_fuchsia::LoadUrlAndExpectResponse(
       controller.get(), fuchsia::web::LoadUrlParams(), page_url2.spec()));
   navigation_listener_.RunUntilUrlAndTitleEquals(page_url2, kPage2Title);
 
@@ -294,7 +304,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityBridgeTest, TestNavigation) {
   semantics_manager_.SetSemanticsModeEnabled(true);
 
   GURL page_url1(embedded_test_server()->GetURL(kPage1Path));
-  EXPECT_TRUE(cr_fuchsia::LoadUrlAndExpectResponse(
+  ASSERT_TRUE(cr_fuchsia::LoadUrlAndExpectResponse(
       controller.get(), fuchsia::web::LoadUrlParams(), page_url1.spec()));
   navigation_listener_.RunUntilUrlAndTitleEquals(page_url1, kPage1Title);
 
@@ -307,7 +317,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityBridgeTest, TestNavigation) {
       semantics_manager_.semantic_tree()->HasNodeWithLabel(kParagraphName));
 
   GURL page_url2(embedded_test_server()->GetURL(kPage2Path));
-  EXPECT_TRUE(cr_fuchsia::LoadUrlAndExpectResponse(
+  ASSERT_TRUE(cr_fuchsia::LoadUrlAndExpectResponse(
       controller.get(), fuchsia::web::LoadUrlParams(), page_url2.spec()));
 
   semantics_manager_.semantic_tree()->RunUntilNodeCountAtLeast(kPage2NodeCount);
@@ -330,7 +340,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityBridgeTest, HitTest) {
   semantics_manager_.SetSemanticsModeEnabled(true);
 
   GURL page_url1(embedded_test_server()->GetURL(kPage1Path));
-  EXPECT_TRUE(cr_fuchsia::LoadUrlAndExpectResponse(
+  ASSERT_TRUE(cr_fuchsia::LoadUrlAndExpectResponse(
       controller.get(), fuchsia::web::LoadUrlParams(), page_url1.spec()));
   navigation_listener_.RunUntilUrlAndTitleEquals(page_url1, kPage1Title);
   semantics_manager_.semantic_tree()->RunUntilNodeCountAtLeast(kPage1NodeCount);

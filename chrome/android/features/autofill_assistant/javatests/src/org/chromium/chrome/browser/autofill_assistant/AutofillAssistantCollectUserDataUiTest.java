@@ -769,6 +769,29 @@ public class AutofillAssistantCollectUserDataUiTest {
 
     @Test
     @MediumTest
+    public void testInfoSectionText() throws Exception {
+        AssistantCollectUserDataModel model = new AssistantCollectUserDataModel();
+        AssistantCollectUserDataCoordinator coordinator = createCollectUserDataCoordinator(model);
+        AutofillAssistantCollectUserDataTestHelper
+                .ViewHolder viewHolder = TestThreadUtils.runOnUiThreadBlocking(
+                () -> new AutofillAssistantCollectUserDataTestHelper.ViewHolder(coordinator));
+
+        // Setting a text from "backend".
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            model.set(AssistantCollectUserDataModel.INFO_SECTION_TEXT, "Info section text.");
+            model.set(AssistantCollectUserDataModel.VISIBLE, true);
+        });
+        onView(is(viewHolder.mInfoSection))
+                .check(matches(allOf(withText("Info section text."), isDisplayed())));
+
+        // Set the text back to empty, which should remove the text section.
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> { model.set(AssistantCollectUserDataModel.INFO_SECTION_TEXT, ""); });
+        onView(is(viewHolder.mInfoSection)).check(matches(not(isDisplayed())));
+    }
+
+    @Test
+    @MediumTest
     public void testPrivacyNotice() throws Exception {
         AssistantCollectUserDataModel model = new AssistantCollectUserDataModel();
         AssistantCollectUserDataCoordinator coordinator = createCollectUserDataCoordinator(model);

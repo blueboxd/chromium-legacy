@@ -171,7 +171,7 @@ class Controller : public ScriptExecutorDelegate,
   void SetTermsAndConditions(
       TermsAndConditionsState terms_and_conditions) override;
   void SetLoginOption(std::string identifier) override;
-  void OnTermsAndConditionsLinkClicked(int link) override;
+  void OnTextLinkClicked(int link) override;
   void OnFormActionLinkClicked(int link) override;
   void SetDateTimeRangeStart(int year,
                              int month,

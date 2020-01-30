@@ -25,6 +25,12 @@
 
 namespace ui {
 
+namespace {
+// A function to call when focus changes, for testing only.
+base::LazyInstance<std::map<ax::mojom::Event, base::RepeatingClosure>>::
+    DestructorAtExit g_on_notify_event_for_testing;
+}  // namespace
+
 const base::char16 AXPlatformNodeBase::kEmbeddedCharacter = L'\xfffc';
 
 // Map from each AXPlatformNode's unique id to its instance.
@@ -54,6 +60,13 @@ AXPlatformNode* AXPlatformNodeBase::GetFromUniqueId(int32_t unique_id) {
 // static
 size_t AXPlatformNodeBase::GetInstanceCountForTesting() {
   return g_unique_id_map.Get().size();
+}
+
+// static
+void AXPlatformNodeBase::SetOnNotifyEventCallbackForTesting(
+    ax::mojom::Event event_type,
+    base::RepeatingClosure callback) {
+  g_on_notify_event_for_testing.Get()[event_type] = std::move(callback);
 }
 
 AXPlatformNodeBase::AXPlatformNodeBase() = default;
@@ -124,6 +137,11 @@ gfx::NativeViewAccessible AXPlatformNodeBase::GetNativeViewAccessible() {
 }
 
 void AXPlatformNodeBase::NotifyAccessibilityEvent(ax::mojom::Event event_type) {
+  if (g_on_notify_event_for_testing.Get().find(event_type) !=
+          g_on_notify_event_for_testing.Get().end() &&
+      g_on_notify_event_for_testing.Get()[event_type]) {
+    g_on_notify_event_for_testing.Get()[event_type].Run();
+  }
 }
 
 #if defined(OS_MACOSX)

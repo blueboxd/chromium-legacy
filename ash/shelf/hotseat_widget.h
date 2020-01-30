@@ -8,6 +8,7 @@
 #include "ash/ash_export.h"
 #include "ash/public/cpp/shelf_config.h"
 #include "ash/public/cpp/shelf_types.h"
+#include "base/optional.h"
 #include "ui/views/widget/widget.h"
 
 namespace aura {
@@ -58,7 +59,7 @@ class ASH_EXPORT HotseatWidget : public views::Widget,
   void OnTabletModeChanged();
 
   // Returns the target opacity (between 0 and 1) given current conditions.
-  float CalculateOpacity();
+  float CalculateOpacity() const;
 
   // Sets the bounds of the opaque background which functions as the hotseat
   // background.
@@ -98,6 +99,23 @@ class ASH_EXPORT HotseatWidget : public views::Widget,
 
  private:
   class DelegateView;
+
+  struct LayoutInputs {
+    gfx::Rect bounds;
+    float opacity = 0.0f;
+
+    bool operator==(const LayoutInputs& other) const {
+      return bounds == other.bounds && opacity == other.opacity;
+    }
+  };
+
+  // Collects the inputs for layout.
+  LayoutInputs GetLayoutInputs() const;
+
+  // The set of inputs that impact this widget's layout. The assumption is that
+  // this widget needs a relayout if, and only if, one or more of these has
+  // changed.
+  base::Optional<LayoutInputs> layout_inputs_;
 
   HotseatState state_ = HotseatState::kShown;
 

@@ -2847,6 +2847,9 @@ group("telemetry_perf_unittests") {
     # For tests in tools/perf/process_perf_results_unittest.py
     "//build/android/pylib/",
     "//tools/swarming_client/",
+
+    # For representative perf testing run_rendering_benchmark_with_gated_performance.py
+    "//testing/scripts/run_rendering_benchmark_with_gated_performance.py",
   ]
 }
 
@@ -3358,6 +3361,12 @@ test("unit_tests") {
     "../browser/sharing/fake_device_info.h",
     "../browser/sharing/fake_sharing_handler_registry.cc",
     "../browser/sharing/fake_sharing_handler_registry.h",
+    "../browser/sharing/mock_sharing_device_source.cc",
+    "../browser/sharing/mock_sharing_device_source.h",
+    "../browser/sharing/mock_sharing_message_handler.cc",
+    "../browser/sharing/mock_sharing_message_handler.h",
+    "../browser/sharing/mock_sharing_message_sender.cc",
+    "../browser/sharing/mock_sharing_message_sender.h",
     "../browser/sharing/mock_sharing_service.cc",
     "../browser/sharing/mock_sharing_service.h",
     "../browser/sharing/sharing_device_registration_unittest.cc",
@@ -4044,6 +4053,7 @@ test("unit_tests") {
       "../browser/ui/passwords/bubble_controllers/auto_sign_in_bubble_controller_unittest.cc",
       "../browser/ui/passwords/bubble_controllers/generation_confirmation_bubble_controller_unittest.cc",
       "../browser/ui/passwords/bubble_controllers/items_bubble_controller_unittest.cc",
+      "../browser/ui/passwords/bubble_controllers/sign_in_promo_bubble_controller_unittest.cc",
       "../browser/ui/passwords/credential_leak_dialog_controller_impl_unittest.cc",
       "../browser/ui/passwords/credential_manager_dialog_controller_impl_unittest.cc",
       "../browser/ui/passwords/manage_passwords_bubble_model_unittest.cc",

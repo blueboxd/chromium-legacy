@@ -112,6 +112,7 @@
 <translation id="2352467521400612932">اسٹائلس کی ترتیبات</translation>
 <translation id="2354174487190027830"><ph name="NAME" /> کو فعال کیا جا رہا ہے</translation>
 <translation id="2359808026110333948">جاری رکھیں</translation>
+<translation id="2364154243880592194">اطلاع کے مرکز تک رسائی کے لیے صورتحال کی ٹرے،<ph name="TIME" /> وقت، <ph name="BATTERY" /> تلاش + بائیں تیر والی بٹن کو دبائيں۔</translation>
 <translation id="2365393535144473978">موبائل ڈیٹا فعال کرنے سے بلوٹوتھ فعال ہو جائے گا۔</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="2412593942846481727">اپ ڈیٹ دستیاب ہے</translation>
@@ -335,6 +336,7 @@
 <translation id="5669267381087807207">فعال کیا جا رہا ہے</translation>
 <translation id="5673434351075758678">‏آپ کی ترتیبات کی مطابقت پذیری کے بعد '<ph name="FROM_LOCALE" />' سے '‎'‎<ph name="TO_LOCALE" />‎ میں۔</translation>
 <translation id="5682642926269496722">‏Google اسسٹنٹ موجودہ صارف اکاؤنٹ کے لیے دستیاب نہیں ہے۔</translation>
+<translation id="5689633613396158040">نائٹ لائٹ سے مدھم روشنی میں اپنی اسکرین کو دیکھنا یا پڑھنا آسان ہو جاتا ہے۔ نائٹ لائٹ کے آن ہونے کے وقت کو تبدیل کرنے کے لئے تھپتھپائیں یا اسے مکمل طور پر آف کر دیں۔</translation>
 <translation id="5691772641933328258">فنگر پرنٹ کی شناخت نہیں ہو سکی</translation>
 <translation id="5710450975648804523">'ڈسٹرب نہ کریں' آن ہے</translation>
 <translation id="573413375004481890">یہ آلہ آپ کے تمام ڈسپلیز کو سپورٹ نہیں کر سکتا، لہذا ایک کو غیر منسلک کر دیا گیا ہے</translation>
@@ -514,6 +516,7 @@
 <translation id="8142441511840089262">دو بار کلک کریں</translation>
 <translation id="8142699993796781067">نجی نیٹ ورک</translation>
 <translation id="8152092012181020186">‏بند کرنے کے لیے Ctrl + W‎ کو دبائیں۔</translation>
+<translation id="8155007568264258537"><ph name="FEATURE_NAME" /> یہ ترتیب آپ کے منتظم کے زیر انتظام ہے۔</translation>
 <translation id="8167567890448493835"><ph name="LOCALE_NAME" /> استعمال کر کے</translation>
 <translation id="8190698733819146287">زبانوں اور ان پٹ کو حسب ضرورت بنائیں…</translation>
 <translation id="8192202700944119416">اطلاعات پوشیدہ ہیں۔</translation>

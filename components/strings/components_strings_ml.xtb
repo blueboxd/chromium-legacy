@@ -79,6 +79,7 @@
 <translation id="129553762522093515">സമീപകാലത്ത് അടച്ചവ</translation>
 <translation id="1298536327547837046">മാൽവേർ സ്‌കാനിംഗ്</translation>
 <translation id="129863573139666797"><ph name="BEGIN_LINK" />നിങ്ങളുടെ കുക്കികൾ മായ്‌ക്കുന്നത് പരീക്ഷിക്കുക<ph name="END_LINK" /></translation>
+<translation id="1301324364792935241">നിങ്ങളുടെ സുരക്ഷിത DNS ക്രമീകരണം പരിശോധിക്കുക</translation>
 <translation id="1307966114820526988">അവസാനിപ്പിച്ച ഫീച്ചറുകൾ</translation>
 <translation id="1314509827145471431">വലതുവശത്ത് ബൈൻഡ് ചെയ്യുക</translation>
 <translation id="1320233736580025032">Prc1 (എൻവലപ്പ്)</translation>
@@ -152,6 +153,7 @@
 <translation id="1569487616857761740">കാലഹരണപ്പെടുന്ന തീയതി നൽകുക</translation>
 <translation id="1581080074034554886">CVC</translation>
 <translation id="1583429793053364125">ഈ വെബ്‌പേജ് പ്രദർശിപ്പിക്കുമ്പോൾ എന്തോ കുഴപ്പം സംഭവിച്ചു.</translation>
+<translation id="1586541204584340881">ഏതൊക്കെ വിപുലീകരണങ്ങൾ നിങ്ങൾ ഇൻസ്‌റ്റാൾ ചെയ്തിട്ടുണ്ട് എന്നത്</translation>
 <translation id="1588438908519853928">സാധാരണം</translation>
 <translation id="1592005682883173041">പ്രാദേശിക ഡാറ്റ ആക്‌സസ്</translation>
 <translation id="1594030484168838125">തിരഞ്ഞെടുക്കുക</translation>
@@ -362,6 +364,7 @@
 <translation id="2544644783021658368">സിംഗിൾ ഡോക്യുമെന്റ്</translation>
 <translation id="254947805923345898">നയത്തിൻ്റെ മൂല്യം അസാധുവാണ്.</translation>
 <translation id="255002559098805027"><ph name="HOST_NAME" /> അസാധുവായ ഒരു പ്രതികരണം അയച്ചു.</translation>
+<translation id="2553853292994445426">നിങ്ങളുടെ സുരക്ഷിത DNS ക്രമീകരണം പരിശോധിക്കുക. കണക്ഷനുകളിൽ തകരാർ ഉള്ള സുരക്ഷിത DNS സെർവറായിരിക്കാം നിങ്ങൾ കോൺഫിഗർ ചെയ്തിരിക്കുന്നത്.</translation>
 <translation id="2556876185419854533">&amp;എഡിറ്റുചെയ്യുന്നത് പഴയപടിയാക്കുക</translation>
 <translation id="257674075312929031">ഗ്രൂപ്പ്</translation>
 <translation id="2586657967955657006">ക്ലിപ്പ്ബോർഡ്</translation>
@@ -474,6 +477,7 @@
 <translation id="3095940652251934233">പ്രസ്‌താവന</translation>
 <translation id="3096100844101284527">പിക്കപ്പ് വിലാസം ചേർക്കുക</translation>
 <translation id="3105172416063519923">അസറ്റ് ഐഡി:</translation>
+<translation id="3107591622054137333"><ph name="BEGIN_LINK" />സുരക്ഷിത DNS കോൺഫിഗറേഷൻ പരിശോധിക്കുന്നു<ph name="END_LINK" /></translation>
 <translation id="3109728660330352905">നിങ്ങൾക്ക് ഈ പേജ് കാണാനുള്ള അംഗീകാരമില്ല.</translation>
 <translation id="3113284927548439113">മൂന്നാമത്തെ ഷിഫ്റ്റ്</translation>
 <translation id="3116158981186517402">ലാമിനേറ്റ് ചെയ്യൂ</translation>
@@ -770,6 +774,7 @@
 <translation id="4390472908992056574">ബ്രിം</translation>
 <translation id="4406896451731180161">തിരയൽ ഫലങ്ങൾ</translation>
 <translation id="4408413947728134509">കുക്കികൾ <ph name="NUM_COOKIES" /></translation>
+<translation id="4414290883293381923">വഞ്ചനാപരമായ സൈറ്റിൽ നിങ്ങൾ ഇപ്പോൾ പാസ്‍വേഡ് നൽകി. നിങ്ങൾ ഈ പാസ്‌വേഡ് ഉപയോഗിക്കുന്ന <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, <ph name="WEBSITE_3" /> എന്നിവയിലേക്കും മറ്റ് സൈറ്റുകളിലേക്കും പോയി, ഇപ്പോൾ തന്നെ അത് മാറ്റാൻ Chrome ശുപാർശ ചെയ്യുന്നു.</translation>
 <translation id="4415426530740016218">പിക്കപ്പ് വിലാസം</translation>
 <translation id="4424024547088906515">ഈ സെർവറിന് അത് <ph name="DOMAIN" /> ആണെന്ന് തെളിയിക്കാനായില്ല; അതിന്റെ സുരക്ഷാ സർട്ടിഫിക്കറ്റ് Chrome-ന് പരിചയമില്ലാത്തതാണ്. തെറ്റായ കോൺഫിഗറേഷൻ കാരണമോ ഒരു അക്രമണകാരി നിങ്ങളുടെ കണക്ഷനെ തടസ്സപ്പെടുത്തുന്നത് കൊണ്ടോ ആയിരിക്കാം ഇത് സംഭവിച്ചത്.</translation>
 <translation id="443121186588148776">സീരിയൽ പോർട്ട്</translation>
@@ -1201,6 +1206,7 @@
 <translation id="6353505687280762741">{COUNT,plural, =0{ഒന്നുമില്ല}=1{<ph name="DOMAIN_LIST" /> എന്നതിനുള്ള ഒരു പാസ്‌വേഡ് (സമന്വയിപ്പിച്ചത്)}=2{<ph name="DOMAIN_LIST" /> എന്നതിനുള്ള 2 പാസ്‌വേഡുകൾ (സമന്വയിപ്പിച്ചത്)}other{<ph name="DOMAIN_LIST" /> എന്നതിനുള്ള# പാസ്‌വേഡുകൾ (സമന്വയിപ്പിച്ചത്)}}</translation>
 <translation id="6358450015545214790">ഇത് അര്‍ത്ഥമാക്കുന്നതെന്താണ്?</translation>
 <translation id="6361757823711327522">B7</translation>
+<translation id="6364095313648930329"><ph name="BEGIN_LINK" />പ്രോക്‌സിയും ഫയർവാളും സുരക്ഷിത DNS കോൺഫിഗറേഷനും പരിശോധിക്കുന്നു<ph name="END_LINK" /></translation>
 <translation id="6366710531182496394">ഇടതുവശത്ത് ഇരട്ട സ്‌റ്റേപ്പിൾ ചെയ്യുക</translation>
 <translation id="6377268785556383139">'<ph name="SEARCH_TEXT" />' എന്നതിനായി ഒരു ഫലം</translation>
 <translation id="6380497234672085559">A0</translation>
@@ -1223,6 +1229,7 @@
 <translation id="6433595998831338502"><ph name="HOST_NAME" /> കണക്‌റ്റുചെയ്യൽ നിരസിച്ചു.</translation>
 <translation id="6434309073475700221">നിരാകരിക്കുക</translation>
 <translation id="6440503408713884761">അവഗണിച്ചു</translation>
+<translation id="6443406338865242315">ഏതൊക്കെ വിപുലീകരണങ്ങളും പ്ലഗിനുകളും നിങ്ങൾ ഇൻസ്‌റ്റാൾ ചെയ്തിട്ടുണ്ട് എന്നത്</translation>
 <translation id="6446163441502663861">കഹു (എൻവലപ്പ്)</translation>
 <translation id="6446608382365791566">കൂടുതൽ വിവരങ്ങൾ ചേർക്കുക</translation>
 <translation id="6447842834002726250">കുക്കികള്‍</translation>
@@ -1332,6 +1339,7 @@
 <translation id="7012363358306927923">ചൈന UnionPay</translation>
 <translation id="7016992613359344582">ഈ നിരക്കുകൾ ഒറ്റത്തവണ അടയ്ക്കുന്നതോ അല്ലെങ്കിൽ ആവർത്തിക്കുന്നവയോ ആവാം, ഒപ്പം വ്യക്തമല്ലായിരിക്കാം.</translation>
 <translation id="7029809446516969842">പാസ്‌വേഡുകള്‍</translation>
+<translation id="7031646650991750659">നിങ്ങൾ ഇൻസ്‌റ്റാൾ ചെയ്തിരിക്കുന്ന Google Play ആപ്പുകൾ</translation>
 <translation id="7050187094878475250">നിങ്ങൾ <ph name="DOMAIN" /> എന്നതിലെത്താൻ ശ്രമിച്ചു, എന്നാൽ തീരെ വിശ്വാസയോഗ്യമല്ലാത്ത ഒരു കാലാവധിയുള്ള സർട്ടിഫിക്കറ്റാണ് സെർവർ കാണിക്കുന്നത്.</translation>
 <translation id="705310974202322020">{NUM_CARDS,plural, =1{ഈ കാർഡ് ഇപ്പോൾ സംരക്ഷിക്കാനാവില്ല}other{ഈ കാർഡുകൾ ഇപ്പോൾ സംരക്ഷിക്കാനാവില്ല}}</translation>
 <translation id="7053983685419859001">തടയുക</translation>
@@ -1391,6 +1399,7 @@
 <translation id="7319430975418800333">A3</translation>
 <translation id="7320336641823683070">കണക്ഷൻ സഹായം</translation>
 <translation id="733354035281974745">ഉപകരണ ലോക്കൽ അക്കൗണ്ട് അസാധുവാക്കുക</translation>
+<translation id="7333654844024768166">വഞ്ചനാപരമായ സൈറ്റിൽ നിങ്ങൾ ഇപ്പോൾ പാസ്‍വേഡ് നൽകി. നിങ്ങൾ ഈ പാസ്‌വേഡ് ഉപയോഗിക്കുന്ന <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, <ph name="WEBSITE_3" /> എന്നിവയിലേക്കും മറ്റ് സൈറ്റുകളിലേക്കും പോയി, ഇപ്പോൾ തന്നെ അത് മാറ്റാൻ Chromium ശുപാർശ ചെയ്യുന്നു.</translation>
 <translation id="7334320624316649418">&amp;പുനഃക്രമീകരിക്കുന്നത് വീണ്ടും ചെയ്യുക</translation>
 <translation id="7337706099755338005">നിങ്ങളുടെ പ്ലാറ്റ്‌ഫോമിൽ ലഭ്യമല്ല.</translation>
 <translation id="733923710415886693">സർട്ടിഫിക്കറ്റ് സുതാര്യതയിലൂടെ സെർവറുടെ സർട്ടിഫിക്കറ്റ് വെളിപ്പെടുത്തിയിട്ടില്ല.</translation>

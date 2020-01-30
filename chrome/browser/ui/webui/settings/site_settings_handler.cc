@@ -703,27 +703,11 @@ void SiteSettingsHandler::HandleGetAllSites(const base::ListValue* args) {
 
   // Retrieve a list of embargoed settings to check separately. This ensures
   // that only settings included in |content_types| will be listed in all sites.
-  ContentSettingsForOneType embargo_settings;
-  map->GetSettingsForOneType(ContentSettingsType::PERMISSION_AUTOBLOCKER_DATA,
-                             std::string(), &embargo_settings);
-  PermissionManager* permission_manager = PermissionManager::Get(profile);
-  for (const ContentSettingPatternSource& e : embargo_settings) {
-    for (ContentSettingsType content_type : content_types) {
-      if (permissions::PermissionUtil::IsPermission(content_type)) {
-        const GURL url(e.primary_pattern.ToString());
-        // Add |url| to the set if there are any embargo settings.
-        permissions::PermissionResult result =
-            permission_manager->GetPermissionStatus(content_type, url, url);
-        if (result.source ==
-                permissions::PermissionStatusSource::MULTIPLE_DISMISSALS ||
-            result.source ==
-                permissions::PermissionStatusSource::MULTIPLE_IGNORES) {
-          CreateOrAppendSiteGroupEntry(&all_sites_map_, url);
-          origin_permission_set_.insert(url.spec());
-          break;
-        }
-      }
-    }
+  auto* autoblocker = PermissionDecisionAutoBlocker::GetForProfile(profile_);
+  for (auto& url : autoblocker->GetEmbargoedOrigins(content_types)) {
+    // Add |url| to the set if there are any embargo settings.
+    CreateOrAppendSiteGroupEntry(&all_sites_map_, url);
+    origin_permission_set_.insert(url.spec());
   }
 
   // Convert |types| to a list of ContentSettingsTypes.

@@ -122,12 +122,16 @@ HRESULT FakeRadioStaticsWinrt::FromIdAsync(HSTRING device_id,
   return E_NOTIMPL;
 }
 
+void FakeRadioStaticsWinrt::SimulateRequestAccessAsyncError(
+    ABI::Windows::Devices::Radios::RadioAccessStatus status) {
+  access_status_ = status;
+}
+
 HRESULT FakeRadioStaticsWinrt::RequestAccessAsync(
     IAsyncOperation<RadioAccessStatus>** operation) {
   auto async_op = Make<base::win::AsyncOperation<RadioAccessStatus>>();
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::BindOnce(async_op->callback(), RadioAccessStatus_Allowed));
+      FROM_HERE, base::BindOnce(async_op->callback(), access_status_));
   *operation = async_op.Detach();
   return S_OK;
 }

@@ -185,6 +185,7 @@ interface Animation : EventTarget
     getter startTime
     getter timeline
     method cancel
+    method commitStyles
     method constructor
     method finish
     method pause

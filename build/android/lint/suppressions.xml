@@ -44,6 +44,7 @@ Still reading?
   <issue id="ByteOrderMark" severity="Error">
     <ignore regexp="values-pt-rBR/android_chrome_strings.xml"/>
     <ignore regexp="values-si/android_chrome_strings.xml"/>
+    <ignore regexp="values-zh-rHK/android_chrome_strings.xml"/>
   </issue>
   <issue id="ClickableViewAccessibility" severity="ignore"/>
   <issue id="CommitPrefEdits">

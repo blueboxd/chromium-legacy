@@ -82,4 +82,9 @@ void OutputSurface::SetGpuVSyncCallback(GpuVSyncCallback callback) {
 void OutputSurface::SetGpuVSyncEnabled(bool enabled) {
   NOTREACHED();
 }
+
+gpu::Mailbox OutputSurface::GetOverlayMailbox() const {
+  return gpu::Mailbox();
+}
+
 }  // namespace viz

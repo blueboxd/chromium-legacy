@@ -79,7 +79,6 @@ const char* RealGLXApi::glXQueryExtensionsStringFn(Display* dpy,
 
   if (!driver_->fn.glXQueryExtensionsStringFn)
     return nullptr;
-
   const char* str = GLXApiBase::glXQueryExtensionsStringFn(dpy, screen);
   if (!str)
     return nullptr;
@@ -111,13 +110,10 @@ void TraceGLXApi::SetDisabledExtensions(
 bool GetGLWindowSystemBindingInfoGLX(const GLVersionInfo& gl_info,
                                      GLWindowSystemBindingInfo* info) {
   Display* display = glXGetCurrentDisplay();
-  const int kDefaultScreen = 0;
-  const char* vendor =
-      glXQueryServerString(display, kDefaultScreen, GLX_VENDOR);
-  const char* version =
-      glXQueryServerString(display, kDefaultScreen, GLX_VERSION);
-  const char* extensions =
-      glXQueryServerString(display, kDefaultScreen, GLX_EXTENSIONS);
+  const int screen = (display ? DefaultScreen(display) : 0);
+  const char* vendor = glXQueryServerString(display, screen, GLX_VENDOR);
+  const char* version = glXQueryServerString(display, screen, GLX_VERSION);
+  const char* extensions = glXQueryExtensionsString(display, screen);
   *info = GLWindowSystemBindingInfo();
   if (vendor)
     info->vendor = vendor;

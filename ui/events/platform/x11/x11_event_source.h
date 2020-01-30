@@ -14,6 +14,7 @@
 #include "base/macros.h"
 #include "base/optional.h"
 #include "ui/events/events_export.h"
+#include "ui/events/platform/platform_event_source.h"
 #include "ui/gfx/x/x11_types.h"
 
 using Time = unsigned long;
@@ -77,30 +78,22 @@ class EVENTS_EXPORT XEventObserver {
   virtual ~XEventObserver() {}
 };
 
-// Responsible for notifying X11EventSource when new XEvents are available and
-// processing/dispatching XEvents. Implementations will likely be a
-// PlatformEventSource.
-class X11EventSourceDelegate {
+// Responsible for notifying X11EventSource when new XEvents are available to
+// be processed/dispatched.
+class X11EventWatcher {
  public:
-  X11EventSourceDelegate() = default;
-  virtual ~X11EventSourceDelegate() = default;
+  X11EventWatcher() = default;
+  virtual ~X11EventWatcher() = default;
 
-  // Processes (if necessary) and handles dispatching XEvents.
-  virtual void ProcessXEvent(XEvent* xevent) = 0;
+  // Starts watching for X Events and feeding them into X11EventSource to be
+  // processed, through XEventSource::ProcessXEvent(), as they come in.
+  virtual void StartWatching() = 0;
 
-  // TODO(crbug.com/965991): Use ui::Event in Aura/X11
-#if defined(USE_OZONE)
-  virtual void AddXEventDispatcher(XEventDispatcher* dispatcher) = 0;
-  virtual void RemoveXEventDispatcher(XEventDispatcher* dispatcher) = 0;
-  virtual void AddXEventObserver(XEventObserver* observer) = 0;
-  virtual void RemoveXEventObserver(XEventObserver* observer) = 0;
-  virtual std::unique_ptr<ScopedXEventDispatcher> OverrideXEventDispatcher(
-      XEventDispatcher* dispatcher) = 0;
-  virtual void RestoreOverridenXEventDispatcher() = 0;
-#endif
+  // Stops watching for X Events.
+  virtual void StopWatching() = 0;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(X11EventSourceDelegate);
+  DISALLOW_COPY_AND_ASSIGN(X11EventWatcher);
 };
 
 // A temporary XEventDispatcher can be installed on a X11EventSource that
@@ -123,12 +116,14 @@ class EVENTS_EXPORT ScopedXEventDispatcher {
   DISALLOW_COPY_AND_ASSIGN(ScopedXEventDispatcher);
 };
 
-// Receives X11 events and sends them to X11EventSourceDelegate. Handles
-// receiving, pre-process and post-processing XEvents.
-class EVENTS_EXPORT X11EventSource {
+// PlatformEventSource implementation for X11, both Ozone and non-Ozone.
+// Receives X11 events from X11EventWatcher and sends them to registered
+// {Platform,X}EventDispatchers. Handles receiving, pre-process, translation
+// and post-processing of XEvents.
+class EVENTS_EXPORT X11EventSource : public PlatformEventSource {
  public:
-  X11EventSource(X11EventSourceDelegate* delegate, XDisplay* display);
-  ~X11EventSource();
+  explicit X11EventSource(XDisplay* display);
+  ~X11EventSource() override;
 
   static bool HasInstance();
   static X11EventSource* GetInstance();
@@ -152,9 +147,6 @@ class EVENTS_EXPORT X11EventSource {
   // Returns the root pointer location only if there is an event being
   // dispatched that contains that information.
   base::Optional<gfx::Point> GetRootCursorLocationFromCurrentEvent() const;
-
-  void StopCurrentEventStream();
-  void OnDispatcherListChanged();
 
   // Explicitly asks the X11 server for the current timestamp, and updates
   // |last_seen_server_time_| with this value.
@@ -191,6 +183,8 @@ class EVENTS_EXPORT X11EventSource {
       XEventDispatcher* dispatcher);
 #endif
 
+  void ProcessXEvent(XEvent* xevent);
+
  protected:
   // Extracts cookie data from |xevent| if it's of GenericType, and dispatches
   // the event. This function also frees up the cookie data after dispatch is
@@ -203,11 +197,27 @@ class EVENTS_EXPORT X11EventSource {
  private:
   friend class ScopedXEventDispatcher;
 
+// TODO(crbug.com/965991): Use ui::Event in Aura/X11
+#if defined(USE_OZONE)
+  // Tells XEventDispatchers, which can also have PlatformEventDispatchers, that
+  // a translated event is going to be sent next, then dispatches the event and
+  // notifies XEventDispatchers the event has been sent out and, most probably,
+  // consumed.
+  void DispatchPlatformEvent(const PlatformEvent& event, XEvent* xevent);
+
+  // Sends XEvent to registered XEventDispatchers.
+  void DispatchXEventToXEventDispatchers(XEvent* xevent);
+#endif
+
+  // PlatformEventSource:
+  void StopCurrentEventStream() override;
+  void OnDispatcherListChanged() override;
+
   void RestoreOverridenXEventDispatcher();
 
   static X11EventSource* instance_;
 
-  X11EventSourceDelegate* delegate_;
+  std::unique_ptr<X11EventWatcher> watcher_;
 
   // The connection to the X11 server used to receive the events.
   XDisplay* display_;
@@ -230,6 +240,17 @@ class EVENTS_EXPORT X11EventSource {
   // Used to sample RTT measurements, with frequency 1/1000.
   std::default_random_engine generator_;
   std::uniform_int_distribution<int> distribution_;
+
+// TODO(crbug.com/965991): Use ui::Event in Aura/X11
+#if defined(USE_OZONE)
+  // Keep track of all XEventDispatcher to send XEvents directly to.
+  base::ObserverList<XEventDispatcher>::Unchecked dispatchers_xevent_;
+
+  base::ObserverList<XEventObserver>::Unchecked observers_;
+
+  XEventDispatcher* overridden_dispatcher_ = nullptr;
+  bool overridden_dispatcher_restored_ = false;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(X11EventSource);
 };

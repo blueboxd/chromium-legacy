@@ -436,7 +436,7 @@ class WebMediaPlayer {
   // Register a request to be notified the next time a video frame is presented
   // to the compositor. The video frame and its metadata will be surfaced via
   // WebMediaPlayerClient::OnRequestAnimationFrame().
-  // TODO(https://crbug.com/1022186): Add pointer to spec.
+  // See https://wicg.github.io/video-raf/.
   virtual void RequestAnimationFrame() {}
 
   virtual base::WeakPtr<WebMediaPlayer> AsWeakPtr() = 0;

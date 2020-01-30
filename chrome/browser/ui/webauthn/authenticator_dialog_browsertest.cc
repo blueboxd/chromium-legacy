@@ -34,9 +34,7 @@ class AuthenticatorDialogTest : public DialogBrowserTest {
     ::device::FidoRequestHandlerBase::TransportAvailabilityInfo
         transport_availability;
     transport_availability.available_transports = {
-        AuthenticatorTransport::kBluetoothLowEnergy,
         AuthenticatorTransport::kUsbHumanInterfaceDevice,
-        AuthenticatorTransport::kNearFieldCommunication,
         AuthenticatorTransport::kInternal,
         AuthenticatorTransport::kCloudAssistedBluetoothLowEnergy};
     model->set_cable_transport_info(/*cable_extension_provided=*/true,

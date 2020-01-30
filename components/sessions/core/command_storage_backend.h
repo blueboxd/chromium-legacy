@@ -21,6 +21,10 @@ namespace base {
 class File;
 }
 
+namespace crypto {
+class Aead;
+}
+
 namespace sessions {
 
 // CommandStorageBackend is the backend used by CommandStorageManager. It writes
@@ -39,6 +43,9 @@ class SESSIONS_EXPORT CommandStorageBackend
   // for testing.
   static const int kFileReadBufferSize;
 
+  // Number of bytes encryption adds.
+  static const size_type kEncryptionOverheadInBytes;
+
   // Creates a CommandStorageBackend. This method is invoked on the MAIN thread,
   // and does no IO. The real work is done from Init, which is invoked on
   // a background task runer.
@@ -54,15 +61,18 @@ class SESSIONS_EXPORT CommandStorageBackend
   }
 
   // Appends the specified commands to the current file. If |truncate| is true
-  // the file is truncated.
+  // the file is truncated. If |truncate| is true and |crypto_key| is non-empty,
+  // then all commands are encrypted using the supplied key.
   void AppendCommands(
       std::vector<std::unique_ptr<sessions::SessionCommand>> commands,
-      bool truncate);
+      bool truncate,
+      const std::vector<uint8_t>& crypto_key = std::vector<uint8_t>());
 
-  // Invoked from the service to read the commands that make up the last
-  // session, invokes ReadLastSessionCommandsImpl to do the work.
+  // Reads the commands that make up the current session. If |crypto_key|
+  // is non-empty, it is used to decrypt the file.
   void ReadCurrentSessionCommands(
       const base::CancelableTaskTracker::IsCanceledCallback& is_canceled,
+      const std::vector<uint8_t>& crypto_key,
       GetCommandsCallback callback);
 
   bool inited() const { return inited_; }
@@ -79,12 +89,12 @@ class SESSIONS_EXPORT CommandStorageBackend
 
   const base::FilePath& path() const { return path_; }
 
-  // Reads the commands from the current file.
-  //
-  // On success, the read commands are added to commands. It is up to the
-  // caller to delete the commands.
+  // Reads the commands from the specified file.  If |crypto_key| is non-empty,
+  // it is used to decrypt the file. On success, the read commands are added to
+  // |commands|.
   bool ReadCommandsFromFile(
       const base::FilePath& path,
+      const std::vector<uint8_t>& crypto_key,
       std::vector<std::unique_ptr<sessions::SessionCommand>>* commands);
 
   // Closes the file. The next time AppendCommands() is called the file will
@@ -112,6 +122,19 @@ class SESSIONS_EXPORT CommandStorageBackend
       base::File* file,
       const std::vector<std::unique_ptr<sessions::SessionCommand>>& commands);
 
+  // Writes |command| to |file|. Returns true on success.
+  bool AppendCommandToFile(base::File* file,
+                           const sessions::SessionCommand& command);
+
+  // Encrypts |command| and writes it to |file|. Returns true on success.
+  // The contents of the command and id are encrypted together. This is
+  // preceded by the length of the command.
+  bool AppendEncryptedCommandToFile(base::File* file,
+                                    const sessions::SessionCommand& command);
+
+  // Returns true if commands are encrypted.
+  bool IsEncrypted() const { return !crypto_key_.empty(); }
+
   // Path commands are saved to.
   const base::FilePath path_;
 
@@ -121,6 +144,12 @@ class SESSIONS_EXPORT CommandStorageBackend
   // Whether DoInit() was called. DoInit() is called on the background task
   // runner.
   bool inited_ = false;
+
+  std::vector<uint8_t> crypto_key_;
+  std::unique_ptr<crypto::Aead> aead_;
+
+  // Incremented every time a command is written.
+  int commands_written_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(CommandStorageBackend);
 };

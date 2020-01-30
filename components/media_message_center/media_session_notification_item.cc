@@ -196,8 +196,9 @@ void MediaSessionNotificationItem::SetController(
   MaybeHideOrShowNotification();
 }
 
-void MediaSessionNotificationItem::Freeze() {
+void MediaSessionNotificationItem::Freeze(base::OnceClosure unfrozen_callback) {
   is_bound_ = false;
+  unfrozen_callback_ = std::move(unfrozen_callback);
 
   if (frozen_)
     return;
@@ -268,6 +269,8 @@ void MediaSessionNotificationItem::Unfreeze() {
     if (session_favicon_.has_value())
       view_->UpdateWithFavicon(*session_favicon_);
   }
+
+  std::move(unfrozen_callback_).Run();
 }
 
 bool MediaSessionNotificationItem::HasArtwork() const {

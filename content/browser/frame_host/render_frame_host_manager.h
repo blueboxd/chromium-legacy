@@ -378,6 +378,10 @@ class CONTENT_EXPORT RenderFrameHostManager
   void OnDidUpdateOrigin(const url::Origin& origin,
                          bool is_potentially_trustworthy_unique_origin);
 
+  // Send updated ad frame type to all frame proxies at ready-to-commit time
+  // when the ad status gets updated.
+  void OnDidSetAdFrameType(blink::mojom::AdFrameType ad_frame_type);
+
   void EnsureRenderViewInitialized(RenderViewHostImpl* render_view_host,
                                    SiteInstance* instance);
 

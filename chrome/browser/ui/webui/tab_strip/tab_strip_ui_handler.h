@@ -58,6 +58,7 @@ class TabStripUIHandler : public content::WebUIMessageHandler,
   base::DictionaryValue GetTabData(content::WebContents* contents, int index);
   base::DictionaryValue GetTabGroupData(TabGroup* group);
   void HandleGetTabs(const base::ListValue* args);
+  void HandleGetWindowId(const base::ListValue* args);
   void HandleGetGroupVisualData(const base::ListValue* args);
   void HandleGetThemeColors(const base::ListValue* args);
   void HandleCloseContainer(const base::ListValue* args);

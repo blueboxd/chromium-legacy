@@ -26,7 +26,6 @@
 <translation id="1031362278801463162">Nalaganje predogleda</translation>
 <translation id="1032605640136438169">Preglejte nove pogoje</translation>
 <translation id="103279545524624934">Če želite zagnati aplikacije za Android, sprostite prostor na disku.</translation>
-<translation id="1033343386521881354">V tiskalnem strežniku je bil najden 1 tiskalnik.</translation>
 <translation id="1033780634303702874">Dostop do serijskih naprav</translation>
 <translation id="1034942643314881546">Omogočanje orodja ADB za ustvarjanje ilustracij aplikacij</translation>
 <translation id="1036348656032585052">Izklop</translation>
@@ -34,7 +33,6 @@
 <translation id="1036982837258183574">Pritisnite |<ph name="ACCELERATOR" />| za zapiranje celozaslonskega načina</translation>
 <translation id="1038168778161626396">Le šifriranje</translation>
 <translation id="1039337018183941703">Neveljavna ali poškodovana datoteka</translation>
-<translation id="1039850285407663109">Izbrana datoteka je neznana in je morda nevarna. Preden jo odprete, razmislite o njenem pregledu.</translation>
 <translation id="1041175011127912238">Ta stran se ne odziva</translation>
 <translation id="1041263367839475438">Razpoložljive naprave</translation>
 <translation id="1042174272890264476">V vašem računalniku je tudi vgrajena knjižnica RLZ izdelka <ph name="SHORT_PRODUCT_NAME" />. RLZ za merjenje iskanj in uporabe izdelka <ph name="SHORT_PRODUCT_NAME" /> v okviru določene promocijske akcije dodeli neenolično oznako, ki ne omogoča osebne prepoznave. Te oznake so včasih v izdelku <ph name="PRODUCT_NAME" /> prikazane v iskalnih poizvedbah v Googlu.</translation>
@@ -639,7 +637,6 @@
 <translation id="1858585891038687145">Zaupaj temu potrdilu za prepoznavanje proizvajalcev programske opreme</translation>
 <translation id="1861262398884155592">Ta mapa je prazna</translation>
 <translation id="1863182668524159459">Ni serijskih vrat</translation>
-<translation id="1863552924692672565">Datoteka <ph name="FILE_NAME" /> je neznana. Preglejte jo, če želite zmanjšati tveganje.</translation>
 <translation id="1864111464094315414">Prijava</translation>
 <translation id="1864400682872660285">Hladneje</translation>
 <translation id="1864454756846565995">Naprava USB-C (vrata zadaj)</translation>
@@ -4027,7 +4024,6 @@ Poskrbite, da ne boste razkrili morebitnih občutljivih podatkov.</translation>
 <translation id="6678717876183468697">URL poizvedbe</translation>
 <translation id="6680442031740878064">Na voljo: <ph name="AVAILABLE_SPACE" /></translation>
 <translation id="6680650203439190394">Hitrost</translation>
-<translation id="6681301928961274620">V tiskalnem strežniku ni bil najden noben tiskalnik.</translation>
 <translation id="6681668084120808868">Posnemi fotografijo</translation>
 <translation id="6681964764822470072">Aplikacija »<ph name="APP_NAME" />« bo odstranjena.</translation>
 <translation id="668599234725812620">Odpiranje Googla Play</translation>
@@ -5557,7 +5553,6 @@ Datoteko s ključem shranite na varnem. Potrebovali jo boste za izdelavo novih r
 <translation id="8794025342371547160">Omejen IP</translation>
 <translation id="879413103056696865">Medtem ko je dostopna točka vklopljena, bo telefon <ph name="PHONE_NAME" />:</translation>
 <translation id="8795916974678578410">Novo okno</translation>
-<translation id="8797086401386164142">Število najdenih tiskalnikov v tiskalnem strežniku: <ph name="NUM_PRINTERS" />.</translation>
 <translation id="8797459392481275117">Nikoli ne prevedi tega spletnega mesta</translation>
 <translation id="8798099450830957504">Privzeto</translation>
 <translation id="8798441408945964110">Ime ponudnika</translation>

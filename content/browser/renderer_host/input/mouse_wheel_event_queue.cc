@@ -157,7 +157,9 @@ void MouseWheelEventQueue::ProcessMouseWheelAck(
            event_sent_for_gesture_ack_->event.delta_units ==
                ui::input_types::ScrollGranularity::kScrollByPrecisePixel ||
            event_sent_for_gesture_ack_->event.delta_units ==
-               ui::input_types::ScrollGranularity::kScrollByPixel);
+               ui::input_types::ScrollGranularity::kScrollByPixel ||
+           event_sent_for_gesture_ack_->event.delta_units ==
+               ui::input_types::ScrollGranularity::kScrollByPercentage);
     scroll_update.data.scroll_update.delta_units =
         event_sent_for_gesture_ack_->event.delta_units;
 

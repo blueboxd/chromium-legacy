@@ -51,6 +51,10 @@ public final class ProfileImpl extends IProfile.Stub {
         return mName;
     }
 
+    public boolean isIncognito() {
+        return mName.isEmpty();
+    }
+
     @Override
     public void clearBrowsingData(@NonNull @BrowsingDataType int[] dataTypes, long fromMillis,
             long toMillis, @NonNull IObjectWrapper completionCallback) {

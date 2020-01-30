@@ -140,7 +140,5 @@ static_library("usrsctp") {
   if (is_fuchsia) {
     defines += [ "__Userspace_os_Fuchsia" ]
   }
-  deps = [
-    "//third_party/boringssl",
-  ]
+  deps = [ "//third_party/boringssl" ]
 }

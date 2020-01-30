@@ -261,6 +261,11 @@ void DriverEGL::InitializeExtensionBindings() {
             GetGLProcAddress("eglGetFrameTimestampSupportedANDROID"));
   }
 
+  if (ext.b_EGL_CHROMIUM_sync_control) {
+    fn.eglGetMscRateCHROMIUMFn = reinterpret_cast<eglGetMscRateCHROMIUMProc>(
+        GetGLProcAddress("eglGetMscRateCHROMIUM"));
+  }
+
   if (ext.b_EGL_ANDROID_get_native_client_buffer) {
     fn.eglGetNativeClientBufferANDROIDFn =
         reinterpret_cast<eglGetNativeClientBufferANDROIDProc>(
@@ -578,6 +583,14 @@ EGLBoolean EGLApiBase::eglGetFrameTimestampSupportedANDROIDFn(
     EGLint timestamp) {
   return driver_->fn.eglGetFrameTimestampSupportedANDROIDFn(dpy, surface,
                                                             timestamp);
+}
+
+EGLBoolean EGLApiBase::eglGetMscRateCHROMIUMFn(EGLDisplay dpy,
+                                               EGLSurface surface,
+                                               EGLint* numerator,
+                                               EGLint* denominator) {
+  return driver_->fn.eglGetMscRateCHROMIUMFn(dpy, surface, numerator,
+                                             denominator);
 }
 
 EGLClientBuffer EGLApiBase::eglGetNativeClientBufferANDROIDFn(
@@ -1074,6 +1087,15 @@ EGLBoolean TraceEGLApi::eglGetFrameTimestampSupportedANDROIDFn(
       "gpu", "TraceEGLAPI::eglGetFrameTimestampSupportedANDROID")
   return egl_api_->eglGetFrameTimestampSupportedANDROIDFn(dpy, surface,
                                                           timestamp);
+}
+
+EGLBoolean TraceEGLApi::eglGetMscRateCHROMIUMFn(EGLDisplay dpy,
+                                                EGLSurface surface,
+                                                EGLint* numerator,
+                                                EGLint* denominator) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceEGLAPI::eglGetMscRateCHROMIUM")
+  return egl_api_->eglGetMscRateCHROMIUMFn(dpy, surface, numerator,
+                                           denominator);
 }
 
 EGLClientBuffer TraceEGLApi::eglGetNativeClientBufferANDROIDFn(
@@ -1744,6 +1766,20 @@ EGLBoolean LogEGLApi::eglGetFrameTimestampSupportedANDROIDFn(EGLDisplay dpy,
                  << "(" << dpy << ", " << surface << ", " << timestamp << ")");
   EGLBoolean result =
       egl_api_->eglGetFrameTimestampSupportedANDROIDFn(dpy, surface, timestamp);
+  GL_SERVICE_LOG("GL_RESULT: " << result);
+  return result;
+}
+
+EGLBoolean LogEGLApi::eglGetMscRateCHROMIUMFn(EGLDisplay dpy,
+                                              EGLSurface surface,
+                                              EGLint* numerator,
+                                              EGLint* denominator) {
+  GL_SERVICE_LOG("eglGetMscRateCHROMIUM"
+                 << "(" << dpy << ", " << surface << ", "
+                 << static_cast<const void*>(numerator) << ", "
+                 << static_cast<const void*>(denominator) << ")");
+  EGLBoolean result =
+      egl_api_->eglGetMscRateCHROMIUMFn(dpy, surface, numerator, denominator);
   GL_SERVICE_LOG("GL_RESULT: " << result);
   return result;
 }

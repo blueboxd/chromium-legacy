@@ -26,7 +26,6 @@
 <translation id="1031362278801463162">Ідзе загрузка перадпрагляду</translation>
 <translation id="1032605640136438169">Азнаёмцеся з новымі ўмовамі</translation>
 <translation id="103279545524624934">Каб запускаць праграмы Android, вызваліце месца на дыску.</translation>
-<translation id="1033343386521881354">На серверы друку знойдзены 1 прынтар.</translation>
 <translation id="1033780634303702874">Доступ да паслядоўных прылад</translation>
 <translation id="1034942643314881546">Уключэнне ADB для стварэння ілюстрацый для праграм</translation>
 <translation id="1036348656032585052">Выключыць</translation>
@@ -34,7 +33,6 @@
 <translation id="1036982837258183574">Націсніце "<ph name="ACCELERATOR" />", каб выйсці з поўнаэкраннага рэжыму</translation>
 <translation id="1038168778161626396">Толькі шыфраванне</translation>
 <translation id="1039337018183941703">Недапушчальны або пашкоджаны файл</translation>
-<translation id="1039850285407663109">Выбраны файл – невядомы і можа быць небяспечным. Перад адкрыццём гэты файл лепш праверыць.</translation>
 <translation id="1041175011127912238">Гэтая старонка не адказвае</translation>
 <translation id="1041263367839475438">Даступныя прылады</translation>
 <translation id="1042174272890264476">Ваш камп'ютар пастаўляецца з убудаванай бібліятэкай RLZ для <ph name="SHORT_PRODUCT_NAME" />. RLZ прызначае неўнікальны цэтлік, які не дазваляе ідэнтыфікаваць асобу, для ацэнкі пошукавых запытаў і статыстыкі выкарыстання <ph name="SHORT_PRODUCT_NAME" />, якія з'яўляюцца вынікам пэўных рэкламных кампаній. Гэтыя меткі часам з'яўляюцца ў пошукавых запытах у Google у прадукце <ph name="PRODUCT_NAME" />.</translation>
@@ -639,7 +637,6 @@
 <translation id="1858585891038687145">Давяраць гэтаму сертыфікату пры ідэнтыфікацыі стваральнікаў праграмнага забеспячэння</translation>
 <translation id="1861262398884155592">Гэта папка пустая</translation>
 <translation id="1863182668524159459">Паслядоўныя парты не знойдзены</translation>
-<translation id="1863552924692672565">Файл "<ph name="FILE_NAME" />" – невядомы Каб звесці рызыку да мінімуму, выканайце праверку файла</translation>
 <translation id="1864111464094315414">Уваход</translation>
 <translation id="1864400682872660285">Халадней</translation>
 <translation id="1864454756846565995">Прылада USB-C (порт ззаду)</translation>
@@ -4025,7 +4022,6 @@
 <translation id="6678717876183468697">URL запыту</translation>
 <translation id="6680442031740878064">Даступна: <ph name="AVAILABLE_SPACE" /></translation>
 <translation id="6680650203439190394">Хуткасць</translation>
-<translation id="6681301928961274620">На серверы друку прынтараў не знойдзена.</translation>
 <translation id="6681668084120808868">Зрабіць фота</translation>
 <translation id="6681964764822470072">Праграма "<ph name="APP_NAME" />" будзе выдалена.</translation>
 <translation id="668599234725812620">Адкрыць Google Play</translation>
@@ -5554,7 +5550,6 @@
 <translation id="8794025342371547160">IP-адрас з абмежаваннямі</translation>
 <translation id="879413103056696865">Калі хот-спот уключаны, прылада <ph name="PHONE_NAME" /> будзе:</translation>
 <translation id="8795916974678578410">Новае акно</translation>
-<translation id="8797086401386164142">Знойдзена прынтараў на серверы друку: <ph name="NUM_PRINTERS" />.</translation>
 <translation id="8797459392481275117">Ніколі не перакладаць гэты сайт</translation>
 <translation id="8798099450830957504">Стандартна</translation>
 <translation id="8798441408945964110">Назва пастаўшчыка</translation>

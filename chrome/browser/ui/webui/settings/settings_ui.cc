@@ -49,6 +49,7 @@
 #include "chrome/browser/ui/webui/settings/settings_startup_pages_handler.h"
 #include "chrome/browser/ui/webui/settings/shared_settings_localized_strings_provider.h"
 #include "chrome/browser/ui/webui/settings/site_settings_handler.h"
+#include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/browser/web_applications/components/app_registrar.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
@@ -120,6 +121,11 @@
 #include "chrome/browser/ui/webui/settings/printing_handler.h"
 #endif
 
+#if !BUILDFLAG(OPTIMIZE_WEBUI)
+constexpr char kGeneratedPath[] =
+    "@out_folder@/gen/chrome/browser/resources/settings/";
+#endif
+
 namespace settings {
 // static
 void SettingsUI::RegisterProfilePrefs(
@@ -144,14 +150,16 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
   content::WebUIDataSource* html_source =
       content::WebUIDataSource::Create(chrome::kChromeUISettingsHost);
 
-  // TODO(dpapad): Replace the following calls with SetupWebUIDataSource()
-  // when Settings is migrated to Polymer3.
+  // TODO(dpapad): Replace the following calls with
+  // SetupBundledWebUIDataSource() when Settings is migrated to Polymer3.
   // Currently only used for testing the Polymer 3 version of
   // certificate-manager.
+#if BUILDFLAG(OPTIMIZE_WEBUI)
   html_source->OverrideContentSecurityPolicyScriptSrc(
       "script-src chrome://resources chrome://test 'self';");
   html_source->AddResourcePath("test_loader.js", IDR_WEBUI_JS_TEST_LOADER);
   html_source->AddResourcePath("test_loader.html", IDR_WEBUI_HTML_TEST_LOADER);
+#endif
 
   AddSettingsPageUIHandler(std::make_unique<AppearanceHandler>(web_ui));
 
@@ -284,12 +292,9 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
                                IDR_SETTINGS_LAZY_LOAD_VULCANIZED_HTML);
   html_source->SetDefaultResource(IDR_SETTINGS_VULCANIZED_HTML);
 #else
-  // Add all settings resources.
-  for (size_t i = 0; i < kSettingsResourcesSize; ++i) {
-    html_source->AddResourcePath(kSettingsResources[i].name,
-                                 kSettingsResources[i].value);
-  }
-  html_source->SetDefaultResource(IDR_SETTINGS_SETTINGS_HTML);
+  webui::SetupWebUIDataSource(
+      html_source, base::make_span(kSettingsResources, kSettingsResourcesSize),
+      kGeneratedPath, IDR_SETTINGS_SETTINGS_HTML);
 #endif
 
   AddSharedLocalizedStrings(html_source, profile, web_ui->GetWebContents());

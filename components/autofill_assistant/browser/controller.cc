@@ -1037,7 +1037,7 @@ void Controller::OnCollectUserDataAdditionalActionTriggered(int index) {
   std::move(callback).Run(index);
 }
 
-void Controller::OnTermsAndConditionsLinkClicked(int link) {
+void Controller::OnTextLinkClicked(int link) {
   if (!user_data_)
     return;
 

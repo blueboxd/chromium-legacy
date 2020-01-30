@@ -22,6 +22,7 @@
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/url_loader_interceptor.h"
 #include "mojo/public/cpp/system/data_pipe_utils.h"
+#include "net/base/features.h"
 #include "net/base/load_flags.h"
 #include "net/base/test_completion_callback.h"
 #include "net/http/http_util.h"
@@ -54,6 +55,7 @@ class MockHTTPServer {
     const std::string headers;
     const std::string body;
     bool has_certificate_error = false;
+    net::CertStatus cert_status = 0;
   };
 
   void Set(const GURL& url, const Response& response) {
@@ -101,7 +103,7 @@ class MockNetwork {
     response_head->headers->GetMimeType(&response_head->mime_type);
     response_head->network_accessed = access_network_;
     if (response.has_certificate_error) {
-      response_head->cert_status = net::CERT_STATUS_DATE_INVALID;
+      response_head->cert_status = response.cert_status;
     }
 
     mojo::Remote<network::mojom::URLLoaderClient>& client = params->client;
@@ -410,6 +412,7 @@ TEST_F(ServiceWorkerNewScriptLoaderTest, Error_CertificateError) {
   MockHTTPServer::Response response(std::string("HTTP/1.1 200 OK\n\n"),
                                     std::string("body"));
   response.has_certificate_error = true;
+  response.cert_status = net::CERT_STATUS_DATE_INVALID;
   mock_server_.Set(kScriptURL, response);
   SetUpRegistration(kScriptURL);
   DoRequest(kScriptURL, &client, &loader);
@@ -442,6 +445,47 @@ TEST_F(ServiceWorkerNewScriptLoaderTest, Error_NoMimeType) {
 
   // The request should be failed because of the response with no MIME type.
   EXPECT_EQ(net::ERR_INSECURE_RESPONSE, client->completion_status().error_code);
+  EXPECT_FALSE(client->has_received_response());
+
+  // The response shouldn't be stored in the storage.
+  EXPECT_FALSE(VerifyStoredResponse(kScriptURL));
+  // No sample should be recorded since a write didn't occur.
+  histogram_tester.ExpectTotalCount(kHistogramWriteResponseResult, 0);
+}
+
+class ServiceWorkerNewScriptLoaderTestWithLegacyTLSEnforced
+    : public ServiceWorkerNewScriptLoaderTest {
+ public:
+  ServiceWorkerNewScriptLoaderTestWithLegacyTLSEnforced() {
+    feature_list_.InitAndEnableFeature(net::features::kLegacyTLSEnforced);
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+// Tests that service workers fail to load over a connection with legacy TLS.
+TEST_F(ServiceWorkerNewScriptLoaderTestWithLegacyTLSEnforced, Error_LegacyTLS) {
+  base::HistogramTester histogram_tester;
+
+  std::unique_ptr<network::TestURLLoaderClient> client;
+  std::unique_ptr<ServiceWorkerNewScriptLoader> loader;
+
+  // Serve a response with a certificate error.
+  const GURL kScriptURL("https://example.com/certificate-error.js");
+  MockHTTPServer::Response response(std::string("HTTP/1.1 200 OK\n\n"),
+                                    std::string("body"));
+  response.has_certificate_error = true;
+  response.cert_status = net::CERT_STATUS_LEGACY_TLS;
+  mock_server_.Set(kScriptURL, response);
+  SetUpRegistration(kScriptURL);
+  DoRequest(kScriptURL, &client, &loader);
+  client->RunUntilComplete();
+
+  // The request should be failed because of the response with the legacy TLS
+  // error.
+  EXPECT_EQ(net::ERR_SSL_OBSOLETE_VERSION,
+            client->completion_status().error_code);
   EXPECT_FALSE(client->has_received_response());
 
   // The response shouldn't be stored in the storage.

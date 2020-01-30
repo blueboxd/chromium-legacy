@@ -69,12 +69,9 @@ std::unique_ptr<views::InkDropHighlight> CreateToolbarInkDropHighlight(
 SkColor GetToolbarInkDropBaseColor(const views::View* host_view) {
   const auto* theme_provider = host_view->GetThemeProvider();
   // There may be no theme provider in unit tests.
-  if (theme_provider) {
-    return color_utils::GetColorWithMaxContrast(
-        theme_provider->GetColor(ThemeProperties::COLOR_TOOLBAR));
-  }
-
-  return gfx::kPlaceholderColor;
+  return theme_provider
+             ? theme_provider->GetColor(ThemeProperties::COLOR_TOOLBAR_INK_DROP)
+             : gfx::kPlaceholderColor;
 }
 
 views::InstallableInkDropConfig GetToolbarInstallableInkDropConfig(

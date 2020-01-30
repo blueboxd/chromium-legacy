@@ -70,15 +70,11 @@ component("gles2") {
 }
 
 component("raster") {
-  public_deps = [
-    "//gpu/command_buffer/client:raster_sources",
-  ]
+  public_deps = [ "//gpu/command_buffer/client:raster_sources" ]
 }
 
 component("webgpu") {
-  public_deps = [
-    "//gpu/command_buffer/client:webgpu_sources",
-  ]
+  public_deps = [ "//gpu/command_buffer/client:webgpu_sources" ]
 }
 
 if (!use_static_angle) {
@@ -221,14 +217,10 @@ jumbo_static_library("test_support") {
 
 if (!is_android && !is_fuchsia && !is_chromeos) {
   proto_library("gl_lpm_fuzzer_proto") {
-    sources = [
-      "command_buffer/tests/lpm/gl_lpm_fuzzer.proto",
-    ]
+    sources = [ "command_buffer/tests/lpm/gl_lpm_fuzzer.proto" ]
 
     use_protobuf_full = true
-    deps = [
-      "//third_party/protobuf:protobuf_full",
-    ]
+    deps = [ "//third_party/protobuf:protobuf_full" ]
   }
 
   static_library("gl_lpm_shader_to_string") {
@@ -244,9 +236,7 @@ if (!is_android && !is_fuchsia && !is_chromeos) {
   }
 
   test("gl_lpm_shader_to_string_unittest") {
-    sources = [
-      "command_buffer/tests/lpm/gl_lpm_shader_to_string_unittest.cc",
-    ]
+    sources = [ "command_buffer/tests/lpm/gl_lpm_shader_to_string_unittest.cc" ]
 
     deps = [
       ":gl_lpm_shader_to_string",
@@ -430,9 +420,7 @@ test("gl_tests") {
     ]
   }
 
-  data_deps = [
-    "//testing/buildbot/filters:gl_tests_filters",
-  ]
+  data_deps = [ "//testing/buildbot/filters:gl_tests_filters" ]
 }
 
 test("gpu_unittests") {
@@ -752,9 +740,7 @@ test("command_buffer_perftests") {
 }
 
 fuzzer_test("gpu_fuzzer") {
-  sources = [
-    "command_buffer/tests/fuzzer_main.cc",
-  ]
+  sources = [ "command_buffer/tests/fuzzer_main.cc" ]
 
   deps = [
     ":gles2",
@@ -772,9 +758,7 @@ fuzzer_test("gpu_fuzzer") {
 
 if (is_linux) {
   fuzzer_test("gpu_angle_fuzzer") {
-    sources = [
-      "command_buffer/tests/fuzzer_main.cc",
-    ]
+    sources = [ "command_buffer/tests/fuzzer_main.cc" ]
 
     defines = [ "GPU_FUZZER_USE_ANGLE" ]
 
@@ -792,9 +776,7 @@ if (is_linux) {
   }
 
   fuzzer_test("gpu_angle_passthrough_fuzzer") {
-    sources = [
-      "command_buffer/tests/fuzzer_main.cc",
-    ]
+    sources = [ "command_buffer/tests/fuzzer_main.cc" ]
 
     defines = [
       "GPU_FUZZER_USE_ANGLE",
@@ -815,9 +797,7 @@ if (is_linux) {
   }
 
   fuzzer_test("gpu_swiftshader_fuzzer") {
-    sources = [
-      "command_buffer/tests/fuzzer_main.cc",
-    ]
+    sources = [ "command_buffer/tests/fuzzer_main.cc" ]
 
     defines = [ "GPU_FUZZER_USE_SWIFTSHADER" ]
 
@@ -835,9 +815,7 @@ if (is_linux) {
   }
 
   fuzzer_test("gpu_raster_fuzzer") {
-    sources = [
-      "command_buffer/tests/fuzzer_main.cc",
-    ]
+    sources = [ "command_buffer/tests/fuzzer_main.cc" ]
 
     defines = [ "GPU_FUZZER_USE_RASTER_DECODER" ]
 
@@ -855,9 +833,7 @@ if (is_linux) {
   }
 
   fuzzer_test("gpu_raster_passthrough_fuzzer") {
-    sources = [
-      "command_buffer/tests/fuzzer_main.cc",
-    ]
+    sources = [ "command_buffer/tests/fuzzer_main.cc" ]
 
     defines = [
       "GPU_FUZZER_USE_ANGLE",
@@ -879,9 +855,7 @@ if (is_linux) {
   }
 
   fuzzer_test("gpu_raster_swiftshader_fuzzer") {
-    sources = [
-      "command_buffer/tests/fuzzer_main.cc",
-    ]
+    sources = [ "command_buffer/tests/fuzzer_main.cc" ]
 
     defines = [
       "GPU_FUZZER_USE_RASTER_DECODER",
@@ -902,9 +876,7 @@ if (is_linux) {
   }
 
   fuzzer_test("gpu_raster_angle_fuzzer") {
-    sources = [
-      "command_buffer/tests/fuzzer_main.cc",
-    ]
+    sources = [ "command_buffer/tests/fuzzer_main.cc" ]
 
     defines = [
       "GPU_FUZZER_USE_RASTER_DECODER",

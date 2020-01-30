@@ -6,6 +6,7 @@
 
 assert(is_fuchsia)
 
+import("//build/cipd/cipd.gni")
 import("//build/util/process_version.gni")
 
 # gn binary location.
@@ -47,37 +48,20 @@ process_version("build_id") {
 # Prepares a CIPD archive and generates a manifest file.
 #
 # Parameters:
-#   cipd_manifest_name: The filename to use for the generated CIPD YAML file.
-#   cipd_path: The path where the package will be located inside the CIPD
-#              repository.
-#   cipd_description: Sets the "description" field in CIPD metadata.
+#   package_definition_yaml: The filename to use for the generated CIPD YAML
+#                            file.
+#   package: The path where the package will be located inside the CIPD
+#            repository.
+#   description: Sets the "description" field in CIPD metadata.
 #   install_mode: String, should be either "symlink" or "copy".
 #   deps: A list of targets to build prior to copying files.
 #   sources: A list of files to copy into the staging root.
 template("cipd_archive") {
   forward_variables_from(invoker,
                          [
-                           "cipd_manifest_name",
-                           "cipd_path",
-                           "cipd_description",
-                           "install_mode",
                            "deps",
                            "sources",
                          ])
-  archive_staging_dir = "${target_gen_dir}/${target_name}"
-  if (!defined(invoker.install_mode)) {
-    install_mode = "symlink"
-  }
-  assert(install_mode == "copy" || install_mode == "symlink",
-         "\"install_mode\" arg should be either \"copy\" or \"symlink\".")
-  yaml_contents = [
-    "package: ${cipd_path}",
-    "description: ${cipd_description}",
-    "root: \${outdir}/" + rebase_path(archive_staging_dir, root_build_dir),
-    "install_mode: ${install_mode}",
-    "data:",
-    "  - file: LICENSE",
-  ]
 
   if (!defined(deps)) {
     deps = []
@@ -87,23 +71,27 @@ template("cipd_archive") {
     ":license",
   ]
 
-  foreach(source, sources) {
-    yaml_contents += [ "  - file: " + get_path_info(source, "file") ]
+  if (!defined(sources)) {
+    sources = []
   }
-
   sources += get_target_outputs(":license")
-  write_file("${archive_staging_dir}/${cipd_manifest_name}", yaml_contents)
 
-  copy(target_name) {
+  cipd_package_definition(target_name) {
     testonly = true
-    outputs = [ "${archive_staging_dir}/{{source_file_part}}" ]
+    forward_variables_from(invoker,
+                           [
+                             "description",
+                             "install_mode",
+                             "package",
+                             "package_definition_yaml",
+                           ])
   }
 }
 
 cipd_archive("webrunner") {
-  cipd_manifest_name = "webrunner.yaml"
-  cipd_path = "chromium/fuchsia/webrunner-\${targetarch}"
-  cipd_description = "Prebuilt Chrome and Web Runner binaries for Fuchsia."
+  package_definition_yaml = "webrunner.yaml"
+  package = "chromium/fuchsia/webrunner-\${targetarch}"
+  description = "Prebuilt Chrome and Web Runner binaries for Fuchsia."
 
   deps = [
     "//fuchsia/engine:web_engine",
@@ -117,9 +105,9 @@ cipd_archive("webrunner") {
 }
 
 cipd_archive("castrunner") {
-  cipd_manifest_name = "castrunner.yaml"
-  cipd_path = "chromium/fuchsia/castrunner-\${targetarch}"
-  cipd_description = "Prebuilt Cast application Runner binaries for Fuchsia."
+  package_definition_yaml = "castrunner.yaml"
+  package = "chromium/fuchsia/castrunner-\${targetarch}"
+  description = "Prebuilt Cast application Runner binaries for Fuchsia."
 
   deps = [ "//fuchsia/runners:cast_runner_pkg" ]
 
@@ -127,9 +115,9 @@ cipd_archive("castrunner") {
 }
 
 cipd_archive("http") {
-  cipd_manifest_name = "http.yaml"
-  cipd_path = "chromium/fuchsia/http-\${targetarch}"
-  cipd_description = "Prebuilt HTTP service binary for Fuchsia."
+  package_definition_yaml = "http.yaml"
+  package = "chromium/fuchsia/http-\${targetarch}"
+  description = "Prebuilt HTTP service binary for Fuchsia."
 
   deps = [ "//fuchsia/http:http_pkg" ]
 
@@ -162,9 +150,9 @@ action("strip_chromedriver_binary") {
 }
 
 cipd_archive("chromedriver") {
-  cipd_manifest_name = "chromedriver.yaml"
-  cipd_path = "chromium/fuchsia/chromedriver/\${os}-\${arch}"
-  cipd_description = "Prebuilt Chromedriver binary for Fuchsia host."
+  package_definition_yaml = "chromedriver.yaml"
+  package = "chromium/fuchsia/chromedriver/\${os}-\${arch}"
+  description = "Prebuilt Chromedriver binary for Fuchsia host."
   install_mode = "copy"
   deps = [ ":strip_chromedriver_binary" ]
 
@@ -173,9 +161,9 @@ cipd_archive("chromedriver") {
 
 cipd_archive("tests") {
   _manifest_path = "${target_gen_dir}/test_manifest.json"
-  cipd_manifest_name = "tests.yaml"
-  cipd_path = "chromium/fuchsia/tests-\${targetarch}"
-  cipd_description = "Prebuilt Chromium tests for Fuchsia."
+  package_definition_yaml = "tests.yaml"
+  package = "chromium/fuchsia/tests-\${targetarch}"
+  description = "Prebuilt Chromium tests for Fuchsia."
 
   deps = [
     "//base:base_unittests_pkg",
@@ -217,9 +205,9 @@ cipd_archive("tests") {
 }
 
 cipd_archive("debug_symbols") {
-  cipd_manifest_name = "debug_symbols.yaml"
-  cipd_path = "chromium/fuchsia/debug-symbols-\${targetarch}"
-  cipd_description = "Debugging symbols for prebuilt binaries from Chromium."
+  package_definition_yaml = "debug_symbols.yaml"
+  package = "chromium/fuchsia/debug-symbols-\${targetarch}"
+  description = "Debugging symbols for prebuilt binaries from Chromium."
 
   _symbol_tarballs = [
     "${root_gen_dir}/fuchsia/engine/web_engine/web_engine.symbols.tar.bz2",
@@ -243,9 +231,9 @@ cipd_archive("debug_symbols") {
 }
 
 cipd_archive("clear_key_cdm") {
-  cipd_manifest_name = "clear_key_cdm.yaml"
-  cipd_path = "chromium/fuchsia/libclearkeycdm-\${targetarch}"
-  cipd_description = "Prebuilt libclearkeycdm.so binary for Fuchsia."
+  package_definition_yaml = "clear_key_cdm.yaml"
+  package = "chromium/fuchsia/libclearkeycdm-\${targetarch}"
+  description = "Prebuilt libclearkeycdm.so binary for Fuchsia."
 
   deps = [ "//media/cdm/library_cdm/clear_key_cdm:clear_key_cdm" ]
 

@@ -988,9 +988,13 @@ TEST_P(OverviewSessionTest, ActivationCancelsOverview) {
   EXPECT_EQ(window1.get(), window_util::GetFocusedWindow());
 }
 
-// Tests that if a window is dragged while overview is open, the activation
-// of the dragged window does not cancel overview.
+// Tests that if a window is dragged from top while overview is open, the
+//  activation of the dragged window does not cancel overview.
 TEST_P(OverviewSessionTest, ActivateDraggedWindowNotCancelOverview) {
+  base::test::ScopedFeatureList scoped_features;
+  scoped_features.InitWithFeatures(
+      /*enabled_features=*/{features::kDragWindowFromTop},
+      /*disabled_features=*/{});
   UpdateDisplay("800x600");
   EnterTabletMode();
   std::unique_ptr<aura::Window> window1(CreateTestWindow());
@@ -1014,9 +1018,13 @@ TEST_P(OverviewSessionTest, ActivateDraggedWindowNotCancelOverview) {
   EXPECT_FALSE(InOverviewSession());
 }
 
-// Tests that activate a non-dragged window during window drag will not cancel
-// overview mode.
+// Tests that activate a non-dragged window during window drag from top will not
+// cancel overview mode.
 TEST_P(OverviewSessionTest, ActivateAnotherWindowDuringDragNotCancelOverview) {
+  base::test::ScopedFeatureList scoped_features;
+  scoped_features.InitWithFeatures(
+      /*enabled_features=*/{features::kDragWindowFromTop},
+      /*disabled_features=*/{});
   UpdateDisplay("800x600");
   EnterTabletMode();
   std::unique_ptr<aura::Window> window1(CreateTestWindow());
@@ -1393,6 +1401,10 @@ TEST_P(OverviewSessionTest, DropTargetOnCorrectDisplayForDraggingFromOverview) {
 // dragged from the top.
 TEST_P(OverviewSessionTest,
        DropTargetRemovedIfWindowDraggedFromTopIsDestroyed) {
+  base::test::ScopedFeatureList scoped_features;
+  scoped_features.InitWithFeatures(
+      /*enabled_features=*/{features::kDragWindowFromTop},
+      /*disabled_features=*/{});
   EnterTabletMode();
   std::unique_ptr<aura::Window> window = CreateTestWindow();
   std::unique_ptr<aura::Window> window2 = CreateTestWindow();
@@ -2376,6 +2388,10 @@ TEST_P(OverviewSessionTest, OverviewWidgetStackingOrder) {
 // Test that dragging a window from the top creates a drop target stacked at the
 // bottom. Test that dropping into overview removes the drop target.
 TEST_P(OverviewSessionTest, DropTargetStackedAtBottomForWindowDraggedFromTop) {
+  base::test::ScopedFeatureList scoped_features;
+  scoped_features.InitWithFeatures(
+      /*enabled_features=*/{features::kDragWindowFromTop},
+      /*disabled_features=*/{});
   UpdateDisplay("800x600");
   EnterTabletMode();
   std::unique_ptr<aura::Window> window1(CreateTestWindow());
@@ -6313,6 +6329,34 @@ TEST_P(SplitViewOverviewSessionInClamshellTestMultiDisplayOnly,
   // |window3| and |window5|).
   ASSERT_EQ(4u, grid1->window_list().size());
   EXPECT_EQ(grid1->GetDropTarget(), grid1->window_list()[2].get());
+}
+
+// Verify that the drop target in each overview grid has the correct bounds when
+// a maximized window is being dragged.
+TEST_P(SplitViewOverviewSessionInClamshellTestMultiDisplayOnly,
+       DropTargetBoundsForMaximizedWindowDraggedToOtherDisplay) {
+  UpdateDisplay("1000x400,1000x400/l");
+  std::unique_ptr<aura::Window> window = CreateTestWindow();
+  WindowState::Get(window.get())->Maximize();
+  ToggleOverview();
+  OverviewItem* item = GetOverviewItemForWindow(window.get());
+  // Verify that |item| is letter boxed.
+  EXPECT_EQ(ScopedOverviewTransformWindow::GridWindowFillMode::kLetterBoxed,
+            item->GetWindowDimensionsType());
+  EXPECT_EQ(2.f,
+            item->target_bounds().width() / item->target_bounds().height());
+  overview_session()->InitiateDrag(item, item->target_bounds().CenterPoint(),
+                                   /*is_touch_dragging=*/false);
+  Shell::Get()->cursor_manager()->SetDisplay(
+      display_manager()->GetSecondaryDisplay());
+  overview_session()->Drag(item, gfx::PointF(1200.f, 0.f));
+  OverviewItem* drop_target = GetDropTarget(1);
+  ASSERT_TRUE(drop_target);
+  // Verify that |drop_target| is effectively pillar boxed. Avoid calling
+  // |OverviewItem::GetWindowDimensionsType|, because it does not work for drop
+  // targets (and that is okay).
+  EXPECT_EQ(0.5f, drop_target->target_bounds().width() /
+                      drop_target->target_bounds().height());
 }
 
 // Verify that the drop target in each overview grid has bounds representing

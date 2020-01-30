@@ -196,6 +196,11 @@ class ASH_EXPORT SplitViewController : public aura::WindowObserver,
   // on the middle split position).
   void InitDividerPositionForTransition(int divider_position);
 
+  // Called when the overview button tray has been long pressed. Enters
+  // splitview mode if the active window is snappable. Also enters overview mode
+  // if device is not currently in overview mode.
+  void OnOverviewButtonTrayLongPressed(const gfx::Point& event_location);
+
   // Called when a window (either it's browser window or an app window) start/
   // end being dragged.
   void OnWindowDragStarted(aura::Window* dragged_window);

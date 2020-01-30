@@ -23,6 +23,8 @@ class ConversionStorage {
   // functionality like annotating conversion reports.
   class Delegate {
    public:
+    virtual ~Delegate() = default;
+
     // New conversions will be sent through this callback for
     // pruning/modification before they are added to storage. This will be
     // called during the execution of

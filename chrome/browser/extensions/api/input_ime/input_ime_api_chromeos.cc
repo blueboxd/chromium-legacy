@@ -22,6 +22,7 @@
 #include "chrome/browser/ui/ash/keyboard/chrome_keyboard_controller_client.h"
 #include "chrome/common/extensions/api/input_ime.h"
 #include "chrome/common/extensions/api/input_method_private.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/process_manager.h"
 #include "extensions/common/manifest_handlers/background_info.h"
@@ -462,9 +463,11 @@ bool InputImeEventRouter::RegisterImeExtension(
   }
 
   auto observer = std::make_unique<ImeObserverChromeOS>(extension_id, profile);
-  auto engine = (extension_id == "jkghodnilhceideoidjikpgommlajknk")
-                    ? std::make_unique<chromeos::NativeInputMethodEngine>()
-                    : std::make_unique<chromeos::InputMethodEngine>();
+  auto engine =
+      (extension_id == "jkghodnilhceideoidjikpgommlajknk" &&
+       base::FeatureList::IsEnabled(chromeos::features::kNativeRuleBasedTyping))
+          ? std::make_unique<chromeos::NativeInputMethodEngine>()
+          : std::make_unique<chromeos::InputMethodEngine>();
   engine->Initialize(std::move(observer), extension_id.c_str(), profile);
   engine_map_[extension_id] = std::move(engine);
 

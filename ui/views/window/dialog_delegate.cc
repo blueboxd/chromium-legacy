@@ -141,14 +141,31 @@ bool DialogDelegate::IsDialogButtonEnabled(ui::DialogButton button) const {
 }
 
 bool DialogDelegate::Cancel() {
+  if (cancel_callback_)
+    std::move(cancel_callback_).Run();
   return true;
 }
 
 bool DialogDelegate::Accept() {
+  if (accept_callback_)
+    std::move(accept_callback_).Run();
   return true;
 }
 
 bool DialogDelegate::Close() {
+  if (close_callback_ || cancel_callback_ || accept_callback_) {
+    if (close_callback_)
+      std::move(close_callback_).Run();
+    return true;
+  } else {
+    return DefaultClose();
+  }
+}
+
+bool DialogDelegate::DefaultClose() {
+  DCHECK(!close_callback_);
+  DCHECK(!cancel_callback_);
+  DCHECK(!accept_callback_);
   int buttons = GetDialogButtons();
   if ((buttons & ui::DIALOG_BUTTON_CANCEL) ||
       (buttons == ui::DIALOG_BUTTON_NONE)) {

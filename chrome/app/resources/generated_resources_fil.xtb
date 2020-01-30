@@ -26,7 +26,6 @@
 <translation id="1031362278801463162">Preview ng paglo-load</translation>
 <translation id="1032605640136438169">Pakisuri ang mga bagong tuntunin</translation>
 <translation id="103279545524624934">Magbakante ng disk space upang mailunsad ang Android apps.</translation>
-<translation id="1033343386521881354">May nakitang 1 printer mula sa server sa pag-print.</translation>
 <translation id="1033780634303702874">I-access ang iyong mga serial device</translation>
 <translation id="1034942643314881546">Ine-enable ang adb para makagawa ng illustration ng mga app</translation>
 <translation id="1036348656032585052">I-off</translation>
@@ -34,7 +33,6 @@
 <translation id="1036982837258183574">Pindutin ang |<ph name="ACCELERATOR" />| upang lumabas sa full screen</translation>
 <translation id="1038168778161626396">Encipher Lamang</translation>
 <translation id="1039337018183941703">Di-wasto o sira ang file</translation>
-<translation id="1039850285407663109">Hindi kilala ang napiling file at may posibilidad na mapanganib ito. Isaalang-alang ang pag-scan bago buksan ang file na ito.</translation>
 <translation id="1041175011127912238">Hindi tumutugon ang page na ito</translation>
 <translation id="1041263367839475438">Mga available na device</translation>
 <translation id="1042174272890264476">Ang iyong computer ay may naka-built in din na RLZ library ng <ph name="SHORT_PRODUCT_NAME" />. Nagtatalaga ang RLZ ng hindi natatangi at hindi personal na nakakapagpakilalang tag upang sukatin ang mga paghahanap at paggamit ng <ph name="SHORT_PRODUCT_NAME" /> na nahimok ng isang partikular na kampanya sa pag-promote. Lumalabas minsan ang mga label na ito sa mga query sa Paghahanap sa Google sa <ph name="PRODUCT_NAME" />.</translation>
@@ -639,7 +637,6 @@
 <translation id="1858585891038687145">Pagkatiwalaan ang certificate na ito para sa pagtukoy sa mga gumawa ng software</translation>
 <translation id="1861262398884155592">Walang laman ang folder na ito</translation>
 <translation id="1863182668524159459">Walang nakitang serial port</translation>
-<translation id="1863552924692672565">Hindi kilala ang <ph name="FILE_NAME" />. I-scan ang file para mabawasan ang posibleng panganib.</translation>
 <translation id="1864111464094315414">Mag-login</translation>
 <translation id="1864400682872660285">Cooler</translation>
 <translation id="1864454756846565995">USB-C device (port sa rear)</translation>
@@ -4025,7 +4022,6 @@ Puwede mong pamahalaan ang mga setting ng account na ito sa pamamagitan ng pag-i
 <translation id="6678717876183468697">URL ng Query</translation>
 <translation id="6680442031740878064">Available: <ph name="AVAILABLE_SPACE" /></translation>
 <translation id="6680650203439190394">I-rate</translation>
-<translation id="6681301928961274620">Walang nakitang anumang printer mula sa server sa pag-print.</translation>
 <translation id="6681668084120808868">Kumuha ng larawan</translation>
 <translation id="6681964764822470072">Ia-uninstall ang "<ph name="APP_NAME" />."</translation>
 <translation id="668599234725812620">Buksan ang Google Play</translation>
@@ -5556,7 +5552,6 @@ Ilagay ang iyong key file sa ligtas na lugar. Kailangan mo ito upang lumikha ng 
 <translation id="8794025342371547160">Pinaghihigpitang IP</translation>
 <translation id="879413103056696865">Habang naka-on ang hotspot, gagawin ng iyong <ph name="PHONE_NAME" /> ang mga sumusunod:</translation>
 <translation id="8795916974678578410">New Window</translation>
-<translation id="8797086401386164142">May nakitang <ph name="NUM_PRINTERS" /> (na) printer mula sa server sa pag-print.</translation>
 <translation id="8797459392481275117">Huwag Kailanman Isalin Ang Site na Ito</translation>
 <translation id="8798099450830957504">Default</translation>
 <translation id="8798441408945964110">Pangalan ng provider</translation>

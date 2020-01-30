@@ -29,8 +29,8 @@ SVGIntegerOptionalIntegerInterpolationType::MaybeConvertSVGValue(
   if (svg_value.GetType() != kAnimatedIntegerOptionalInteger)
     return nullptr;
 
-  const SVGIntegerOptionalInteger& integer_optional_integer =
-      ToSVGIntegerOptionalInteger(svg_value);
+  const auto& integer_optional_integer =
+      To<SVGIntegerOptionalInteger>(svg_value);
   auto result = std::make_unique<InterpolableList>(2);
   result->Set(0, std::make_unique<InterpolableNumber>(
                      integer_optional_integer.FirstInteger()->Value()));

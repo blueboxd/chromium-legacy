@@ -150,6 +150,12 @@ NET_EXPORT extern const base::Feature
 // Turns off streaming media caching to disk.
 NET_EXPORT extern const base::Feature kTurnOffStreamingMediaCaching;
 
+// When enabled, sites that use TLS versions below the |version_min_warn|
+// threshold are marked with the LEGACY_TLS CertStatus and return an
+// ERR_SSL_OBSOLETE_VERSION error. This is used to trigger an interstitial
+// warning for these pages.
+NET_EXPORT extern const base::Feature kLegacyTLSEnforced;
+
 }  // namespace features
 }  // namespace net
 

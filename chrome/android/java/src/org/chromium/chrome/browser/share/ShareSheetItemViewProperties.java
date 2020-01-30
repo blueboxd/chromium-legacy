@@ -22,5 +22,9 @@ final class ShareSheetItemViewProperties {
     public static final WritableObjectPropertyKey<OnClickListener> CLICK_LISTENER =
             new WritableObjectPropertyKey<>();
 
-    public static final PropertyKey[] ALL_KEYS = {ICON, LABEL, CLICK_LISTENER};
+    /** True if this share sheet item is provided by Chrome. **/
+    public static final WritableObjectPropertyKey<Boolean> IS_FIRST_PARTY =
+            new WritableObjectPropertyKey<>();
+
+    public static final PropertyKey[] ALL_KEYS = {ICON, LABEL, CLICK_LISTENER, IS_FIRST_PARTY};
 }

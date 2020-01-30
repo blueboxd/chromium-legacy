@@ -206,8 +206,8 @@ IN_PROC_BROWSER_TEST_F(OmniboxApiTest, DISABLED_Basic) {
   }
   */
 }
-// Test is flaky: https://crbug.com/1029568
-IN_PROC_BROWSER_TEST_F(OmniboxApiTest, DISABLED_OnInputEntered) {
+
+IN_PROC_BROWSER_TEST_F(OmniboxApiTest, OnInputEntered) {
   ASSERT_TRUE(RunExtensionTest("omnibox")) << message_;
   Profile* profile = browser()->profile();
   search_test_utils::WaitForTemplateURLServiceToLoad(
@@ -309,10 +309,16 @@ IN_PROC_BROWSER_TEST_F(OmniboxApiTest, DISABLED_IncognitoSplitMode) {
   }
 }
 
+// The test is flaky on Win10. crbug.com/1045731.
+#if defined(OS_WIN)
+#define MAYBE_PopupStaysClosed DISABLED_PopupStaysClosed
+#else
+#define MAYBE_PopupStaysClosed PopupStaysClosed
+#endif
 // Tests that the autocomplete popup doesn't reopen after accepting input for
 // a given query.
 // http://crbug.com/88552
-IN_PROC_BROWSER_TEST_F(OmniboxApiTest, PopupStaysClosed) {
+IN_PROC_BROWSER_TEST_F(OmniboxApiTest, MAYBE_PopupStaysClosed) {
   ASSERT_TRUE(RunExtensionTest("omnibox")) << message_;
 
   // The results depend on the TemplateURLService being loaded. Make sure it is
@@ -437,9 +443,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxApiTest, MAYBE_DeleteOmniboxSuggestionResult) {
 }
 
 // Tests typing something but not staying in keyword mode.
-// Test is flaky. crbug.com/1030219
-IN_PROC_BROWSER_TEST_F(OmniboxApiTest,
-                       DISABLED_ExtensionSuggestionsOnlyInKeywordMode) {
+IN_PROC_BROWSER_TEST_F(OmniboxApiTest, ExtensionSuggestionsOnlyInKeywordMode) {
   ASSERT_TRUE(RunExtensionTest("omnibox")) << message_;
 
   // The results depend on the TemplateURLService being loaded. Make sure it is

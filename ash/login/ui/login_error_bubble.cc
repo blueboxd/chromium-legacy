@@ -32,15 +32,11 @@ LoginErrorBubble::LoginErrorBubble(views::View* content,
                                    views::View* anchor_view,
                                    bool is_persistent)
     : LoginBaseBubbleView(anchor_view), is_persistent_(is_persistent) {
-  auto* alert_view = new NonAccessibleView("AlertIconContainer");
-  alert_view->SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::Orientation::kHorizontal));
   views::ImageView* alert_icon = new views::ImageView();
   alert_icon->SetPreferredSize(gfx::Size(kAlertIconSizeDp, kAlertIconSizeDp));
   alert_icon->SetImage(
       gfx::CreateVectorIcon(kLockScreenAlertIcon, SK_ColorWHITE));
-  alert_view->AddChildView(alert_icon);
-  AddChildView(alert_view);
+  AddChildView(alert_icon);
 
   if (content) {
     content_ = content;
@@ -68,16 +64,6 @@ bool LoginErrorBubble::IsPersistent() const {
 
 void LoginErrorBubble::SetPersistent(bool persistent) {
   is_persistent_ = persistent;
-}
-
-gfx::Size LoginErrorBubble::CalculatePreferredSize() const {
-  gfx::Size size;
-
-  if (GetAnchorView())
-    size.set_width(GetAnchorView()->width());
-
-  size.set_height(GetHeightForWidth(size.width()));
-  return size;
 }
 
 const char* LoginErrorBubble::GetClassName() const {

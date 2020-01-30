@@ -4934,15 +4934,6 @@ Cette règle n'est prise en compte que si la règle "DefaultSearchProviderEnable
 <translation id="8757552286070680084">Configuration d'un dispositif DTC de Wilco</translation>
 <translation id="8758831693895931466">Activer l'inscription obligatoire à la gestion cloud</translation>
 <translation id="8759829385824155666">Types de chiffrement Kerberos autorisés</translation>
-<translation id="87635449713742708">Cette règle force le code réseau à s'exécuter dans le processus du navigateur.
-
-      Cette règle est désactivée par défaut. Si elle est activée, elle expose les utilisateurs à des problèmes de sécurité une fois le processus de mise en réseau envoyé dans le bac à sable.
-
-      Cette règle est destinée à donner aux entreprises la possibilité de migrer vers un logiciel tiers qui ne dépend pas de la connexion des API de mise en réseau. Il est recommandé d'utiliser des serveurs proxy plutôt que des LSP ou des correctifs de l'API Win32.
-
-      Si cette règle n'est pas configurée, le code réseau s'exécute, par défaut, en dehors du processus du navigateur.
-
-      Cette règle sera supprimée dans la version 82 de <ph name="PRODUCT_NAME" />.</translation>
 <translation id="8764119899999036911">Indique si le SPN Kerberos généré est basé sur le nom DNS canonique ou sur le nom d'origine saisi. 
 
 Si vous activez ce paramètre, la recherche du CNAME sera ignorée et le nom du serveur sera utilisé tel qu'il a été saisi. 

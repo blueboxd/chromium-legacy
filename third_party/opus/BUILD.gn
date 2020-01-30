@@ -151,9 +151,7 @@ config("opus_test_config") {
 if (use_opus_arm_rtcd) {
   action("convert_rtcd_assembler") {
     script = "convert_rtcd_assembler.py"
-    outputs = [
-      "$target_gen_dir/celt_pitch_xcorr_arm_gnu.S",
-    ]
+    outputs = [ "$target_gen_dir/celt_pitch_xcorr_arm_gnu.S" ]
     args = [
       rebase_path("//third_party/opus/src/celt/arm/arm2gnu.pl", root_build_dir),
       rebase_path("//third_party/opus/src/celt/arm/celt_pitch_xcorr_arm.s",
@@ -502,9 +500,7 @@ static_library("opus") {
 }
 
 executable("opus_compare") {
-  sources = [
-    "src/src/opus_compare.c",
-  ]
+  sources = [ "src/src/opus_compare.c" ]
 
   configs -= [ "//build/config/compiler:chromium_code" ]
   configs += [
@@ -519,9 +515,7 @@ executable("opus_compare") {
 }
 
 executable("opus_demo") {
-  sources = [
-    "src/src/opus_demo.c",
-  ]
+  sources = [ "src/src/opus_demo.c" ]
 
   configs -= [ "//build/config/compiler:chromium_code" ]
   configs += [
@@ -536,9 +530,7 @@ executable("opus_demo") {
 }
 
 test("test_opus_api") {
-  sources = [
-    "src/tests/test_opus_api.c",
-  ]
+  sources = [ "src/tests/test_opus_api.c" ]
 
   configs -= [ "//build/config/compiler:chromium_code" ]
   configs += [
@@ -546,9 +538,7 @@ test("test_opus_api") {
     ":opus_test_config",
   ]
 
-  deps = [
-    ":opus",
-  ]
+  deps = [ ":opus" ]
 }
 
 test("test_opus_encode") {
@@ -563,9 +553,7 @@ test("test_opus_encode") {
     ":opus_test_config",
   ]
 
-  deps = [
-    ":opus",
-  ]
+  deps = [ ":opus" ]
 }
 
 # GN orders flags on a target before flags from configs. The default config
@@ -582,9 +570,7 @@ config("test_opus_decode_config") {
 }
 
 test("test_opus_decode") {
-  sources = [
-    "src/tests/test_opus_decode.c",
-  ]
+  sources = [ "src/tests/test_opus_decode.c" ]
 
   configs -= [ "//build/config/compiler:chromium_code" ]
   configs += [
@@ -593,15 +579,11 @@ test("test_opus_decode") {
     ":test_opus_decode_config",
   ]
 
-  deps = [
-    ":opus",
-  ]
+  deps = [ ":opus" ]
 }
 
 test("test_opus_padding") {
-  sources = [
-    "src/tests/test_opus_padding.c",
-  ]
+  sources = [ "src/tests/test_opus_padding.c" ]
 
   configs -= [ "//build/config/compiler:chromium_code" ]
   configs += [
@@ -609,9 +591,7 @@ test("test_opus_padding") {
     ":opus_test_config",
   ]
 
-  deps = [
-    ":opus",
-  ]
+  deps = [ ":opus" ]
 }
 
 # Compilation fails on windows due to wstring/string mistmatch.
@@ -619,13 +599,9 @@ test("test_opus_padding") {
 # It is ok to run it on linux though, for experimentation purpose.
 if (!is_win) {
   test("opus_tests") {
-    sources = [
-      "tests/opus_benchmark.cc",
-    ]
+    sources = [ "tests/opus_benchmark.cc" ]
 
-    data = [
-      "tests/resources/speech_mono_32_48kHz.pcm",
-    ]
+    data = [ "tests/resources/speech_mono_32_48kHz.pcm" ]
 
     deps = [
       ":opus",

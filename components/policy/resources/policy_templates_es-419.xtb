@@ -4839,15 +4839,6 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
 <translation id="8757552286070680084">Configuración de DTC wilco</translation>
 <translation id="8758831693895931466">Habilitar la inscripción obligatoria en la administración de la nube</translation>
 <translation id="8759829385824155666">Se permiten los tipos de encriptación de Kerberos</translation>
-<translation id="87635449713742708">Esta política fuerza la ejecución del código de red en el proceso de navegación.
-
-      Está inhabilitada de forma predeterminada, pero, si se habilita, deja a los usuarios desprotegidos frente a problemas de seguridad una vez que el proceso de red se encuentre en la zona de pruebas.
-
-      Esta política permite que las empresas migren a software de terceros sin necesidad de modificar las API de red. Se recomiendan los servidores Proxy antes que los LSP y la aplicación de parches de API Win32.
-
-      Si no se establece esta política, el código de red se ejecutará de forma predeterminada por fuera del proceso del navegador.
-
-      En la versión 82 de <ph name="PRODUCT_NAME" />, se quitará esta política.</translation>
 <translation id="8764119899999036911">Especifica si el SPN de Kerberos generado se basa en el nombre canónico DNS o en el nombre original introducido. Si se habilita esta configuración, se salteará la búsqueda de CNAME y se usará el nombre del servidor que se haya introducido. Si se inhabilita esta opción o si no se configura, el nombre canónico del servidor se determinará a través de una búsqueda de CNAME.</translation>
 <translation id="8764477907716150749">Esta política es para uso interno de <ph name="PRODUCT_NAME" />.</translation>
 <translation id="8777369558049831576">Muestra la casilla de verificación "Always open" en un cuadro de diálogo del protocolo externo</translation>

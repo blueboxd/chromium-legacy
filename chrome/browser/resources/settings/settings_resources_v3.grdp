@@ -1,4 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <grit-part>
-  <!--TODO(crbug.com/1026426): Add generated Polymer 3 files here-->
+  <include name="IDR_SETTINGS_SEARCH_SETTINGS_M_JS"
+           file="${root_gen_dir}/chrome/browser/resources/settings/search_settings.m.js"
+           use_base_dir="false"
+           type="BINDATA" />
+  <include name="IDR_SETTINGS_SETTINGS_V3_HTML"
+           file="settings_v3.html"
+           type="BINDATA" />
+  <include name="IDR_SETTINGS_SETTINGS_V3_JS"
+           file="settings.js"
+           type="BINDATA" />
 </grit-part>

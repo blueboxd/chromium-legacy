@@ -1484,18 +1484,8 @@ TEST_F(RenderWidgetHostViewAuraTest, TouchEventState) {
   EXPECT_EQ("TouchEnd", GetMessageNames(events));
 }
 
-// The DOM KeyCode map for Fuchsia maps all DomCodes to 0.  This means that
-// tests which expect different behaviors for different keys will not work.
-// Tracked via crbug.com/829551
-#if defined(OS_FUCHSIA)
-#define MAYBE_KeyEventRoutingWithKeyboardLockActiveForOneKey \
-  DISABLED_KeyEventRoutingWithKeyboardLockActiveForOneKey
-#else
-#define MAYBE_KeyEventRoutingWithKeyboardLockActiveForOneKey \
-  KeyEventRoutingWithKeyboardLockActiveForOneKey
-#endif
 TEST_F(RenderWidgetHostViewAuraTest,
-       MAYBE_KeyEventRoutingWithKeyboardLockActiveForOneKey) {
+       KeyEventRoutingWithKeyboardLockActiveForOneKey) {
   view_->InitAsChild(nullptr);
   view_->Show();
 
@@ -1543,18 +1533,8 @@ TEST_F(RenderWidgetHostViewAuraTest,
   }
 }
 
-// The DOM KeyCode map for Fuchsia maps all DomCodes to 0.  This means that
-// tests which expect different behaviors for different keys will not work.
-// Tracked via crbug.com/829551
-#if defined(OS_FUCHSIA)
-#define MAYBE_KeyEventRoutingWithKeyboardLockActiveForEscKey \
-  DISABLED_KeyEventRoutingWithKeyboardLockActiveForEscKey
-#else
-#define MAYBE_KeyEventRoutingWithKeyboardLockActiveForEscKey \
-  KeyEventRoutingWithKeyboardLockActiveForEscKey
-#endif
 TEST_F(RenderWidgetHostViewAuraTest,
-       MAYBE_KeyEventRoutingWithKeyboardLockActiveForEscKey) {
+       KeyEventRoutingWithKeyboardLockActiveForEscKey) {
   view_->InitAsChild(nullptr);
   view_->Show();
 

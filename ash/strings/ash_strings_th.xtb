@@ -112,6 +112,7 @@
 <translation id="2352467521400612932">การตั้งค่าสไตลัส</translation>
 <translation id="2354174487190027830">กำลังเปิดใช้งาน <ph name="NAME" /></translation>
 <translation id="2359808026110333948">ต่อไป</translation>
+<translation id="2364154243880592194">ถาดสถานะ, เวลา <ph name="TIME" />, <ph name="BATTERY" /> กด "ค้นหา" + ลูกศรซ้าย เพื่อเข้าถึงศูนย์การแจ้งเตือน</translation>
 <translation id="2365393535144473978">การเปิดใช้เน็ตมือถือจะเปิดใช้บลูทูธ</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="2412593942846481727">มีเวอร์ชันอัปเดต</translation>
@@ -335,6 +336,7 @@
 <translation id="5669267381087807207">กำลังเปิดการใช้งาน</translation>
 <translation id="5673434351075758678">เปลี่ยนจาก "<ph name="FROM_LOCALE" />" เป็น "<ph name="TO_LOCALE" />" หลังการซิงก์การตั้งค่า</translation>
 <translation id="5682642926269496722">Google Assistant ไม่พร้อมใช้งานกับบัญชีผู้ใช้ปัจจุบัน</translation>
+<translation id="5689633613396158040">แสงตอนกลางคืนช่วยให้มองหรืออ่านหน้าจอในแสงสลัวได้ง่ายขึ้น แตะเพื่อเปลี่ยนเวลาเปิดแสงตอนกลางคืนหรือจะปิดไปเลยก็ได้</translation>
 <translation id="5691772641933328258">ระบบไม่รู้จักลายนิ้วมือนี้</translation>
 <translation id="5710450975648804523">โหมดห้ามรบกวนเปิดอยู่</translation>
 <translation id="573413375004481890">อุปกรณ์นี้รองรับจอแสดงผลทั้งหมดไม่ได้ ระบบจึงยกเลิกการเชื่อมต่อจอแสดงผลจอหนึ่ง</translation>
@@ -514,6 +516,7 @@
 <translation id="8142441511840089262">ดับเบิลคลิก</translation>
 <translation id="8142699993796781067">เครือข่ายส่วนบุคคล</translation>
 <translation id="8152092012181020186">กด Ctrl + W เพื่อปิด</translation>
+<translation id="8155007568264258537"><ph name="FEATURE_NAME" /> การตั้งค่านี้จัดการโดยผู้ดูแลระบบ</translation>
 <translation id="8167567890448493835">กำลังใช้<ph name="LOCALE_NAME" /></translation>
 <translation id="8190698733819146287">กำหนดค่าภาษาและการป้อนข้อมูล... </translation>
 <translation id="8192202700944119416">ซ่อนการแจ้งเตือนไว้</translation>

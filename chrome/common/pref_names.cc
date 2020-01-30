@@ -2007,6 +2007,12 @@ const char kVideoCaptureAllowed[] = "hardware.video_capture_enabled";
 // capture devices without prompt.
 const char kVideoCaptureAllowedUrls[] = "hardware.video_capture_allowed_urls";
 
+// A pref holding the value of the policy used to explicitly allow or deny
+// access to screen capture.  This includes all APIs that allow capturing
+// the desktop, a window or a tab. When disabled, access to screen capture
+// is not allowed and API calls will fail with an error.
+const char kScreenCaptureAllowed[] = "hardware.screen_capture_enabled";
+
 #if defined(OS_CHROMEOS)
 // An integer pref that holds enum value of current demo mode configuration.
 // Values are defined by DemoSession::DemoModeConfig enum.

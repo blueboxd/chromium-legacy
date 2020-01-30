@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.share;
 
 import android.content.Context;
+import android.support.v7.content.res.AppCompatResources;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -15,6 +16,8 @@ import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.base.ContextUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetContent;
 import org.chromium.ui.modelutil.MVCListAdapter.ListItem;
@@ -91,6 +94,12 @@ public class ShareSheetBottomSheetContent implements BottomSheetContent, OnItemC
             view.setText(model.get(ShareSheetItemViewProperties.LABEL));
         } else if (ShareSheetItemViewProperties.CLICK_LISTENER.equals(propertyKey)) {
             parent.setOnClickListener(model.get(ShareSheetItemViewProperties.CLICK_LISTENER));
+        } else if (ShareSheetItemViewProperties.IS_FIRST_PARTY.equals(propertyKey)) {
+            if (!model.get(ShareSheetItemViewProperties.IS_FIRST_PARTY)) return;
+            ImageView view = (ImageView) parent.findViewById(R.id.icon);
+            ApiCompatibilityUtils.setImageTintList(view,
+                    AppCompatResources.getColorStateList(
+                            ContextUtils.getApplicationContext(), R.color.standard_mode_tint));
         }
     }
 

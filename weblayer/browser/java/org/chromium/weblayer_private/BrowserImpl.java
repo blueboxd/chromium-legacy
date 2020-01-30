@@ -36,6 +36,9 @@ import java.util.List;
 public class BrowserImpl extends IBrowser.Stub {
     private static final ObserverList<Observer> sLifecycleObservers = new ObserverList<Observer>();
 
+    public static final String SAVED_STATE_SESSION_SERVICE_CRYPTO_KEY =
+            "SAVED_STATE_SESSION_SERVICE_CRYPTO_KEY";
+
     private long mNativeBrowser;
     private final ProfileImpl mProfile;
     private BrowserViewController mViewController;
@@ -64,8 +67,11 @@ public class BrowserImpl extends IBrowser.Stub {
 
     public BrowserImpl(ProfileImpl profile, String persistenceId, Bundle savedInstanceState) {
         mProfile = profile;
-        mNativeBrowser =
-                BrowserImplJni.get().createBrowser(profile.getNativeProfile(), persistenceId, this);
+        byte[] cryptoKey = savedInstanceState != null
+                ? savedInstanceState.getByteArray(SAVED_STATE_SESSION_SERVICE_CRYPTO_KEY)
+                : null;
+        mNativeBrowser = BrowserImplJni.get().createBrowser(
+                profile.getNativeProfile(), persistenceId, cryptoKey, this);
 
         for (Observer observer : sLifecycleObservers) {
             observer.onBrowserCreated();
@@ -102,6 +108,17 @@ public class BrowserImpl extends IBrowser.Stub {
     public void onFragmentDetached() {
         destroyAttachmentState();
         updateAllTabs();
+    }
+
+    public void onSaveInstanceState(Bundle outState) {
+        if (mProfile.isIncognito()
+                && !BrowserImplJni.get().getPersistenceId(mNativeBrowser, this).isEmpty()) {
+            // Trigger a save now as saving may generate a new crypto key. This doesn't actually
+            // save synchronously, rather triggers a save on a background task runner.
+            BrowserImplJni.get().saveSessionServiceIfNecessary(mNativeBrowser, this);
+            outState.putByteArray(SAVED_STATE_SESSION_SERVICE_CRYPTO_KEY,
+                    BrowserImplJni.get().getSessionServiceCryptoKey(mNativeBrowser, this));
+        }
     }
 
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -286,7 +303,8 @@ public class BrowserImpl extends IBrowser.Stub {
 
     @NativeMethods
     interface Natives {
-        long createBrowser(long profile, String persistenceId, BrowserImpl caller);
+        long createBrowser(long profile, String persistenceId, byte[] persistenceCryptoKey,
+                BrowserImpl caller);
         void deleteBrowser(long browser);
         void addTab(long nativeBrowserImpl, BrowserImpl browser, long nativeTab);
         void removeTab(long nativeBrowserImpl, BrowserImpl browser, long nativeTab);
@@ -295,5 +313,7 @@ public class BrowserImpl extends IBrowser.Stub {
         TabImpl getActiveTab(long nativeBrowserImpl, BrowserImpl browser);
         void prepareForShutdown(long nativeBrowserImpl, BrowserImpl browser);
         String getPersistenceId(long nativeBrowserImpl, BrowserImpl browser);
+        void saveSessionServiceIfNecessary(long nativeBrowserImpl, BrowserImpl browser);
+        byte[] getSessionServiceCryptoKey(long nativeBrowserImpl, BrowserImpl browser);
     }
 }

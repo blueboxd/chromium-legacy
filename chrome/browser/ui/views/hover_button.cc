@@ -8,13 +8,10 @@
 
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/chrome_typography.h"
 #include "chrome/browser/ui/views/hover_button_controller.h"
 #include "ui/events/event_constants.h"
-#include "ui/gfx/color_palette.h"
-#include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/animation/ink_drop_impl.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
@@ -24,7 +21,6 @@
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/style/typography.h"
-#include "ui/views/view_class_properties.h"
 
 namespace {
 
@@ -353,35 +349,8 @@ void HoverButton::OnBoundsChanged(const gfx::Rect& previous_bounds) {
   }
 }
 
-void HoverButton::SetStyle(Style style) {
-  if (style == STYLE_PROMINENT) {
-    SkColor background_color = GetNativeTheme()->GetSystemColor(
-        ui::NativeTheme::kColorId_ProminentButtonColor);
-    SetBackground(views::CreateSolidBackground(background_color));
-    // White text on |gfx::kGoogleBlue500| would be adjusted by
-    // AutoColorRedability. However, this specific combination has an
-    // exception (http://go/mdcontrast). So, disable AutoColorReadability.
-    title_->SetAutoColorReadabilityEnabled(false);
-    SetTitleTextStyle(views::style::STYLE_DIALOG_BUTTON_DEFAULT,
-                      background_color);
-    SetSubtitleColor(GetNativeTheme()->GetSystemColor(
-        ui::NativeTheme::kColorId_TextOnProminentButtonColor));
-  } else if (style == STYLE_ERROR) {
-    DCHECK_EQ(nullptr, background());
-    title_->SetDefaultTextStyle(STYLE_RED);
-  } else {
-    NOTREACHED();
-  }
-}
-
 void HoverButton::SetTitleTextStyle(views::style::TextStyle text_style,
                                     SkColor background_color) {
   title_->SetDisplayedOnBackgroundColor(background_color);
   title_->SetDefaultTextStyle(text_style);
 }
-
-void HoverButton::SetSubtitleColor(SkColor color) {
-  if (subtitle_)
-    subtitle_->SetEnabledColor(color);
-}
-

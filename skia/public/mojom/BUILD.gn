@@ -36,18 +36,12 @@ mojom("mojom") {
     "skcolor.mojom",
   ]
 
-  public_deps = [
-    "//mojo/public/mojom/base",
-  ]
+  public_deps = [ "//mojo/public/mojom/base" ]
 }
 
 mojom("test_interfaces") {
   testonly = true
-  sources = [
-    "test/traits_test_service.mojom",
-  ]
+  sources = [ "test/traits_test_service.mojom" ]
 
-  public_deps = [
-    ":mojom",
-  ]
+  public_deps = [ ":mojom" ]
 }

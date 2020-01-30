@@ -335,7 +335,7 @@ void HotseatWidget::OnTabletModeChanged() {
   delegate_view_->OnTabletModeChanged();
 }
 
-float HotseatWidget::CalculateOpacity() {
+float HotseatWidget::CalculateOpacity() const {
   const float target_opacity =
       GetShelfView()->shelf()->shelf_layout_manager()->GetOpacity();
   return (state() == HotseatState::kExtended) ? 1.0f  // fully opaque
@@ -348,6 +348,9 @@ void HotseatWidget::SetOpaqueBackground(
 }
 
 void HotseatWidget::UpdateLayout(bool animate) {
+  const LayoutInputs new_layout_inputs = GetLayoutInputs();
+  if (layout_inputs_.has_value() && *layout_inputs_ == new_layout_inputs)
+    return;
   ui::Layer* layer = GetNativeView()->layer();
   ui::ScopedLayerAnimationSettings animation_setter(layer->GetAnimator());
   animation_setter.SetTransitionDuration(
@@ -357,9 +360,9 @@ void HotseatWidget::UpdateLayout(bool animate) {
   animation_setter.SetPreemptionStrategy(
       ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
 
-  layer->SetOpacity(CalculateOpacity());
-  SetBounds(
-      GetShelfView()->shelf()->shelf_layout_manager()->GetHotseatBounds());
+  layer->SetOpacity(new_layout_inputs.opacity);
+  SetBounds(new_layout_inputs.bounds);
+  layout_inputs_ = new_layout_inputs;
 }
 
 gfx::Size HotseatWidget::GetOpaqueBackgroundSize() const {
@@ -409,6 +412,11 @@ void HotseatWidget::SetState(HotseatState state) {
   } else {
     hotseat_window_targeter_.reset();
   }
+}
+
+HotseatWidget::LayoutInputs HotseatWidget::GetLayoutInputs() const {
+  return {GetShelfView()->shelf()->shelf_layout_manager()->GetHotseatBounds(),
+          CalculateOpacity()};
 }
 
 }  // namespace ash

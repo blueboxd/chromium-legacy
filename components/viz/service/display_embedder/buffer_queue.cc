@@ -37,10 +37,13 @@ void BufferQueue::SetSyncTokenProvider(SyncTokenProvider* sync_token_provider) {
 
 gpu::Mailbox BufferQueue::GetCurrentBuffer(
     gpu::SyncToken* creation_sync_token) {
-  DCHECK(creation_sync_token);
   if (!current_surface_)
-    current_surface_ = GetNextSurface(creation_sync_token);
-  return current_surface_ ? current_surface_->mailbox : gpu::Mailbox();
+    current_surface_ = GetNextSurface();
+  if (!current_surface_)
+    return gpu::Mailbox();
+  if (creation_sync_token)
+    *creation_sync_token = current_surface_->creation_sync_token;
+  return current_surface_->mailbox;
 }
 
 void BufferQueue::UpdateBufferDamage(const gfx::Rect& damage) {
@@ -124,9 +127,7 @@ void BufferQueue::FreeSurface(std::unique_ptr<AllocatedSurface> surface,
   allocated_count_--;
 }
 
-std::unique_ptr<BufferQueue::AllocatedSurface> BufferQueue::GetNextSurface(
-    gpu::SyncToken* creation_sync_token) {
-  DCHECK(creation_sync_token);
+std::unique_ptr<BufferQueue::AllocatedSurface> BufferQueue::GetNextSurface() {
   if (!available_surfaces_.empty()) {
     std::unique_ptr<AllocatedSurface> surface =
         std::move(available_surfaces_.back());
@@ -158,16 +159,20 @@ std::unique_ptr<BufferQueue::AllocatedSurface> BufferQueue::GetNextSurface(
   }
 
   allocated_count_++;
-  *creation_sync_token = sii_->GenUnverifiedSyncToken();
-  return std::make_unique<AllocatedSurface>(std::move(buffer), mailbox,
-                                            gfx::Rect(size_));
+  gpu::SyncToken creation_sync_token = sii_->GenUnverifiedSyncToken();
+  return std::make_unique<AllocatedSurface>(
+      std::move(buffer), mailbox, creation_sync_token, gfx::Rect(size_));
 }
 
 BufferQueue::AllocatedSurface::AllocatedSurface(
     std::unique_ptr<gfx::GpuMemoryBuffer> buffer,
     const gpu::Mailbox& mailbox,
+    const gpu::SyncToken& creation_sync_token,
     const gfx::Rect& rect)
-    : buffer(buffer.release()), mailbox(mailbox), damage(rect) {}
+    : buffer(buffer.release()),
+      mailbox(mailbox),
+      creation_sync_token(creation_sync_token),
+      damage(rect) {}
 
 BufferQueue::AllocatedSurface::~AllocatedSurface() {
   DCHECK(!buffer);

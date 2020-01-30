@@ -16,6 +16,7 @@
 #include "base/bind_helpers.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/location.h"
 #include "base/optional.h"
 #include "base/run_loop.h"
@@ -37,6 +38,7 @@
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/code_cache/generated_code_cache.h"
 #include "content/browser/code_cache/generated_code_cache_context.h"
+#include "content/browser/conversions/conversion_manager.h"
 #include "content/browser/cookie_store/cookie_store_context.h"
 #include "content/browser/devtools/devtools_url_loader_interceptor.h"
 #include "content/browser/file_system/browser_file_system_helper.h"
@@ -73,11 +75,13 @@
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "net/base/net_errors.h"
 #include "net/cookies/canonical_cookie.h"
+#include "net/cookies/cookie_options.h"
 #include "net/cookies/cookie_util.h"
 #include "net/http/http_auth_preferences.h"
 #include "net/ssl/client_cert_store.h"
 #include "net/url_request/url_request_context.h"
 #include "ppapi/buildflags/buildflags.h"
+#include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/network/cookie_manager.h"
 #include "services/network/network_context.h"
 #include "services/network/network_service.h"
@@ -409,6 +413,47 @@ void DeprecateSameSiteCookies(int process_id,
   }
 }
 
+int64_t CrossSchemeWarningToContextInt64(
+    net::CanonicalCookie::CookieInclusionStatus::WarningReason reason) {
+  // Convert from the status's WarningReason enum to a SameSiteCookieContext
+  // enum and cast to a int64_t for UKM. The UKMs are using the
+  // SameSiteCookieContext in order to match up with the UMAs which are
+  // recording similar information.
+  // TODO(https://crbug.com/1046456): Remove after deprecated.
+  switch (reason) {
+    case net::CanonicalCookie::CookieInclusionStatus::
+        WARN_SAMESITE_LAX_METHOD_UNSAFE_CROSS_SCHEME_SECURE_URL:
+      return static_cast<int64_t>(
+          net::CookieOptions::SameSiteCookieContext::
+              SAME_SITE_LAX_METHOD_UNSAFE_CROSS_SCHEME_SECURE_URL);
+    case net::CanonicalCookie::CookieInclusionStatus::
+        WARN_SAMESITE_LAX_CROSS_SCHEME_SECURE_URL:
+      return static_cast<int64_t>(net::CookieOptions::SameSiteCookieContext::
+                                      SAME_SITE_LAX_CROSS_SCHEME_SECURE_URL);
+    case net::CanonicalCookie::CookieInclusionStatus::
+        WARN_SAMESITE_STRICT_CROSS_SCHEME_SECURE_URL:
+      return static_cast<int64_t>(net::CookieOptions::SameSiteCookieContext::
+                                      SAME_SITE_STRICT_CROSS_SCHEME_SECURE_URL);
+    case net::CanonicalCookie::CookieInclusionStatus::
+        WARN_SAMESITE_LAX_METHOD_UNSAFE_CROSS_SCHEME_INSECURE_URL:
+      return static_cast<int64_t>(
+          net::CookieOptions::SameSiteCookieContext::
+              SAME_SITE_LAX_METHOD_UNSAFE_CROSS_SCHEME_INSECURE_URL);
+    case net::CanonicalCookie::CookieInclusionStatus::
+        WARN_SAMESITE_LAX_CROSS_SCHEME_INSECURE_URL:
+      return static_cast<int64_t>(net::CookieOptions::SameSiteCookieContext::
+                                      SAME_SITE_LAX_CROSS_SCHEME_INSECURE_URL);
+    case net::CanonicalCookie::CookieInclusionStatus::
+        WARN_SAMESITE_STRICT_CROSS_SCHEME_INSECURE_URL:
+      return static_cast<int64_t>(
+          net::CookieOptions::SameSiteCookieContext::
+              SAME_SITE_STRICT_CROSS_SCHEME_INSECURE_URL);
+    default:
+      // Return invalid value if there is no cross-scheme warning.
+      return -1;
+  }
+}
+
 void ReportCookiesChangedOnUI(
     std::vector<GlobalFrameRoutingId> destinations,
     const GURL& url,
@@ -441,6 +486,22 @@ void ReportCookiesChangedOnUI(
         web_contents->OnCookieChange(url, site_for_cookies,
                                      cookie_and_status.cookie,
                                      /* blocked_by_policy =*/false);
+
+        // TODO(https://crbug.com/1046456): Remove after deprecated.
+        net::CanonicalCookie::CookieInclusionStatus::WarningReason
+            cross_scheme_warning;
+        if (cookie_and_status.status.HasCrossSchemeWarning(
+                &cross_scheme_warning)) {
+          ukm::SourceId source_id =
+              static_cast<WebContentsImpl*>(web_contents)
+                  ->GetUkmSourceIdForLastCommittedSource();
+
+          int64_t context =
+              CrossSchemeWarningToContextInt64(cross_scheme_warning);
+          ukm::builders::SameSiteDifferentSchemeRequest(source_id)
+              .SetSameSiteContextWithSchemes(context)
+              .Record(ukm::UkmRecorder::Get());
+        }
       }
     }
   }
@@ -458,6 +519,7 @@ void ReportCookiesReadOnUI(
   }
 
   net::CookieList accepted, blocked;
+  std::vector<net::CanonicalCookie::CookieInclusionStatus> accepted_status;
   for (auto& cookie_and_status : cookie_list) {
     if (cookie_and_status.status.HasExclusionReason(
             net::CanonicalCookie::CookieInclusionStatus::
@@ -465,6 +527,7 @@ void ReportCookiesReadOnUI(
       blocked.push_back(std::move(cookie_and_status.cookie));
     } else if (cookie_and_status.status.IsInclude()) {
       accepted.push_back(std::move(cookie_and_status.cookie));
+      accepted_status.push_back(std::move(cookie_and_status.status));
     }
   }
 
@@ -476,6 +539,23 @@ void ReportCookiesReadOnUI(
         continue;
       web_contents->OnCookiesRead(url, site_for_cookies, accepted,
                                   /* blocked_by_policy =*/false);
+
+      // TODO(https://crbug.com/1046456): Remove after deprecated.
+      for (const auto& status : accepted_status) {
+        net::CanonicalCookie::CookieInclusionStatus::WarningReason
+            cross_scheme_warning;
+        if (status.HasCrossSchemeWarning(&cross_scheme_warning)) {
+          ukm::SourceId source_id =
+              static_cast<WebContentsImpl*>(web_contents)
+                  ->GetUkmSourceIdForLastCommittedSource();
+
+          int64_t context =
+              CrossSchemeWarningToContextInt64(cross_scheme_warning);
+          ukm::builders::SameSiteDifferentSchemeResponse(source_id)
+              .SetSameSiteContextWithSchemes(context)
+              .Record(ukm::UkmRecorder::Get());
+        }
+      }
     }
   }
 
@@ -1326,6 +1406,15 @@ void StoragePartitionImpl::Initialize() {
           filesystem_context_, blob_context,
           browser_context_->GetNativeFileSystemPermissionContext(),
           browser_context_->IsOffTheRecord());
+
+  // The Conversion Measurement API is not available in Incognito mode.
+  if (!is_in_memory_ &&
+      base::FeatureList::IsEnabled(features::kConversionMeasurement)) {
+    conversion_manager_ = std::make_unique<ConversionManager>(
+        path,
+        base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock(),
+                                         base::TaskPriority::BEST_EFFORT}));
+  }
 
   GeneratedCodeCacheSettings settings =
       GetContentClient()->browser()->GetGeneratedCodeCacheSettings(

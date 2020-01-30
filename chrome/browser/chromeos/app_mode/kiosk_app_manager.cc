@@ -276,6 +276,14 @@ bool KioskAppManager::GetSwitchesForSessionRestore(
   return true;
 }
 
+void KioskAppManager::OnExternalCacheDamaged(const std::string& app_id) {
+  CHECK(external_cache_);
+  base::FilePath crx_path;
+  std::string version;
+  GetCachedCrx(app_id, &crx_path, &version);
+  external_cache_->OnDamagedFileDetected(crx_path);
+}
+
 void KioskAppManager::AddAppForTest(
     const std::string& app_id,
     const AccountId& account_id,

@@ -19,7 +19,6 @@
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/lazy_task_runner.h"
 #include "base/task/post_task.h"
 #include "build/build_config.h"
 #include "chrome/browser/apps/user_type_filter.h"

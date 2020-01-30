@@ -200,7 +200,7 @@
       First print page
     </message>
     <message name="IDS_PRINT_JOB_SHEETS_JOB_BOTH_SHEET" desc="PWG5100.3 (6.2) Additional values for the IPP 'job-sheets' Job Template Attribute: job-both-sheet">
-      Both sheet
+      Both sheets
     </message>
     <message name="IDS_PRINT_JOB_SHEETS_JOB_END_SHEET" desc="PWG5100.3 (6.2) Additional values for the IPP 'job-sheets' Job Template Attribute: job-end-sheet. 'End' is an adjective.">
       End sheet

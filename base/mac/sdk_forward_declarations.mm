@@ -4,7 +4,7 @@
 
 #include "base/mac/sdk_forward_declarations.h"
 
-#if !defined(MAC_OS_X_VERSION_10_11) || \
-    MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_11
-//NSString* const CIDetectorTypeText = @"CIDetectorTypeText";
-#endif  // MAC_OS_X_VERSION_10_11
+// ----------------------------------------------------------------------------
+// This file is reserved for the definition of any constant values declared in
+// sdk_forward_declarations.h.
+// ----------------------------------------------------------------------------

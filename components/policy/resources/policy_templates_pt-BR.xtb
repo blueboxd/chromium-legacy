@@ -3424,7 +3424,7 @@ O campo <ph name="PROXY_MODE_PROXY_SETTINGS_FIELD" /> permite que você especifi
 <translation id="6464074037294098618">Ativa o Preenchimento automático de endereços</translation>
 <translation id="6467613372414922590">Permitir hosts de mensagens nativas no nível do usuário (instalados sem permissão do administrador)</translation>
 <translation id="6468980648680553776">O uso desta política foi suspenso. Use RemoteAccessHostClientDomainList.</translation>
-<translation id="6473623140202114570">Configure a lista de domínios em que a política Safe Browsing não acionará avisos.</translation>
+<translation id="6473623140202114570">Configure a lista de domínios em que a política Navegação segura não acionará avisos.</translation>
 <translation id="6487780893361255867">Use a implementação legada de <ph name="CORS" /> em vez do novo <ph name="CORS" />.
 
       Se esta configuração for definida como verdadeira, a implementação legada será usada e precisará ser compatível com versões anteriores.
@@ -4802,15 +4802,6 @@ O modo recomendado para configurar políticas no Windows é por meio de GPO, emb
 <translation id="8757552286070680084">Configuração do DTC wilco</translation>
 <translation id="8758831693895931466">Permite a inscrição obrigatória no gerenciamento em nuvem</translation>
 <translation id="8759829385824155666">Permitir tipos de criptografia Kerberos</translation>
-<translation id="87635449713742708">Esta política força o código de rede a ser executado no processo do navegador.
-
-      A política fica desativada por padrão e, se ativada, deixa os usuários vulneráveis a problemas de segurança quando o processo de rede está no sandbox.
-
-      Esta política tem como objetivo oferecer às empresas a oportunidade de migrar para um software de terceiros que não dependa de hook das APIs de rede. Recomendamos o uso de servidores proxy em vez da aplicação de patches de API Win32 e LSPs.
-
-      Se esta política não for configurada, o código de rede será executado fora do processo do navegador por padrão.
-
-      Esta política será removida na versão 82 do <ph name="PRODUCT_NAME" />.</translation>
 <translation id="8764119899999036911">Especifica se o SPN do Kerberos se baseia no nome DNS canônico ou no nome original inserido. Se ativar esta configuração, a pesquisa CNAME será ignorada e o nome do servidor será usado como inserido. Se desativar essa configuração ou a deixar sem definição, o nome canônico do servidor será determinado através da pesquisa CNAME.</translation>
 <translation id="8764477907716150749">Esta política é destinada a uso interno pelo próprio <ph name="PRODUCT_NAME" />.</translation>
 <translation id="8777369558049831576">Exibir uma caixa de seleção "Sempre aberto" na caixa de diálogo do protocolo externo.</translation>

@@ -340,7 +340,7 @@ def _package_dmg(paths, dist, config):
     # Don't put a name on the /Applications symbolic link because the same disk
     # image is used for all languages.
     # yapf: disable
-    commands.run_command([
+    pkg_dmg = [
         os.path.join(packaging_dir, 'pkg-dmg'),
         '--verbosity', '0',
         '--tempdir', paths.work,
@@ -348,18 +348,26 @@ def _package_dmg(paths, dist, config):
         '--target', dmg_path,
         '--format', 'UDBZ',
         '--volname', config.app_product,
-        '--icon', os.path.join(packaging_dir, icon_file),
         '--copy', '{}:/'.format(app_path),
-        '--copy',
-            '{}/keystone_install.sh:/.keystone_install'.format(packaging_dir),
-        '--mkdir', '.background',
-        '--copy',
-            '{}/chrome_dmg_background.png:/.background/background.png'.format(
-                packaging_dir),
-        '--copy', '{}/{}:/.DS_Store'.format(packaging_dir, dsstore_file),
         '--symlink', '/Applications:/ ',
-    ])
+    ]
     # yapf: enable
+
+    if config.is_chrome_branded():
+        # yapf: disable
+        pkg_dmg += [
+            '--icon', os.path.join(packaging_dir, icon_file),
+            '--copy',
+                '{}/keystone_install.sh:/.keystone_install'.format(packaging_dir),
+            '--mkdir', '.background',
+            '--copy',
+                '{}/chrome_dmg_background.png:/.background/background.png'.format(
+                    packaging_dir),
+            '--copy', '{}/{}:/.DS_Store'.format(packaging_dir, dsstore_file),
+        ]
+        # yapf: enable
+
+    commands.run_command(pkg_dmg)
 
     return dmg_path
 
@@ -375,13 +383,14 @@ def _package_installer_tools(paths, config):
     DIFF_TOOLS = 'diff_tools'
 
     tools_to_sign = signing.get_installer_tools(config)
+    chrome_tools = (
+        'keystone_install.sh',) if config.is_chrome_branded() else ()
     other_tools = (
         'dirdiffer.sh',
         'dirpatcher.sh',
         'dmgdiffer.sh',
-        'keystone_install.sh',
         'pkg-dmg',
-    )
+    ) + chrome_tools
 
     with commands.WorkDirectory(paths) as paths:
         diff_tools_dir = os.path.join(paths.work, DIFF_TOOLS)

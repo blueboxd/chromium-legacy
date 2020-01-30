@@ -11,6 +11,7 @@
 #include "chrome/browser/navigation_predictor/navigation_predictor_keyed_service_factory.h"
 #include "chrome/browser/prerender/isolated/isolated_prerender_features.h"
 #include "chrome/browser/profiles/profile.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
 #include "components/google/core/common/google_util.h"
 #include "components/search_engines/template_url_service.h"
 #include "content/public/browser/browser_context.h"
@@ -219,6 +220,13 @@ void IsolatedPrerenderTabHelper::OnPredictionUpdated(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!base::FeatureList::IsEnabled(
           features::kPrefetchSRPNavigationPredictions_HTMLOnly)) {
+    return;
+  }
+
+  // DataSaver must be enabled by the user to use this feature.
+  if (!data_reduction_proxy::DataReductionProxySettings::
+          IsDataSaverEnabledByUser(profile_->IsOffTheRecord(),
+                                   profile_->GetPrefs())) {
     return;
   }
 

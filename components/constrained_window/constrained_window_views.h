@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/callback_forward.h"
 #include "build/build_config.h"
 #include "ui/gfx/native_widget_types.h"
 
@@ -61,10 +62,14 @@ views::Widget* ShowWebModalDialogViews(
 // Like ShowWebModalDialogViews, but used to show a native dialog "sheet" on
 // Mac. Sheets are always modal to their parent window. To make them tab-modal,
 // this provides an invisible tab-modal overlay window managed by
-// WebContentsModalDialogManager, which can host a dialog sheet.
+// WebContentsModalDialogManager, which can host a dialog sheet. The caller
+// should not create the sheet until |show_sheet| is called, which may be
+// synchronous or in a separate event loop iteration. |show_sheet| is passed the
+// overlay window the attach the sheet to.
 views::Widget* ShowWebModalDialogWithOverlayViews(
     views::WidgetDelegate* dialog,
-    content::WebContents* initiator_web_contents);
+    content::WebContents* initiator_web_contents,
+    base::OnceCallback<void(views::Widget*)> show_sheet);
 #endif
 
 // Create a widget for |dialog| that is modal to |web_contents|.

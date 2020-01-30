@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/callback_forward.h"
+#include "base/containers/span.h"
 #include "base/i18n/rtl.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
@@ -18,6 +19,7 @@
 #include "build/build_config.h"
 #include "components/autofill/core/browser/payments/legal_message_line.h"
 #include "components/autofill/core/browser/payments/risk_data_loader.h"
+#include "components/autofill/core/browser/ui/popup_item_ids.h"
 #include "components/autofill/core/browser/ui/popup_types.h"
 #include "components/security_state/core/security_state.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
@@ -420,6 +422,17 @@ class AutofillClient : public RiskDataLoader {
   virtual void UpdateAutofillPopupDataListValues(
       const std::vector<base::string16>& values,
       const std::vector<base::string16>& labels) = 0;
+
+  // Informs the client that |UpdatePopup| will be called which enables
+  // keeping the UI alive.
+  virtual void PinPopupViewUntilUpdate() = 0;
+
+  // Returns (not elided) suggestions currently held by the UI.
+  virtual base::span<const Suggestion> GetPopupSuggestions() const = 0;
+
+  // Updates the popup contents with the newly given suggestions.
+  virtual void UpdatePopup(const std::vector<autofill::Suggestion>& suggestions,
+                           PopupType popup_type) = 0;
 
   // Hide the Autofill popup if one is currently showing.
   virtual void HideAutofillPopup(PopupHidingReason reason) = 0;

@@ -60,6 +60,7 @@ class VIZ_SERVICE_EXPORT GLOutputSurfaceBufferQueue
   uint32_t GetFramebufferCopyTextureFormat() override;
   bool IsDisplayedAsOverlayPlane() const override;
   unsigned GetOverlayTextureId() const override;
+  gpu::Mailbox GetOverlayMailbox() const override;
   gfx::BufferFormat GetOverlayBufferFormat() const override;
 
   // GLOutputSurface:

@@ -646,8 +646,8 @@ class LayoutManagerBaseAvailableSizeTest : public testing::Test {
 };
 
 TEST_F(LayoutManagerBaseAvailableSizeTest, ReturnsCorrectValues) {
-  const SizeBounds kChild1Bounds{3, 7};
-  const SizeBounds kChild2Bounds{11, 13};
+  const SizeBounds kChild1Bounds(3, 7);
+  const SizeBounds kChild2Bounds(11, 13);
   View* const child1 = view()->AddChildView(std::make_unique<View>());
   View* const child2 = view()->AddChildView(std::make_unique<View>());
   View not_a_child;

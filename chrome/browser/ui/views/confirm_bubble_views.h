@@ -37,8 +37,6 @@ class ConfirmBubbleViews : public views::DialogDelegateView,
 
   // views::DialogDelegate implementation.
   bool IsDialogButtonEnabled(ui::DialogButton button) const override;
-  bool Cancel() override;
-  bool Accept() override;
 
   // views::WidgetDelegate implementation.
   ui::ModalType GetModalType() const override;

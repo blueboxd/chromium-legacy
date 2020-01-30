@@ -141,6 +141,11 @@ typedef EGLBoolean(GL_BINDING_CALL* eglGetFrameTimestampSupportedANDROIDProc)(
     EGLDisplay dpy,
     EGLSurface surface,
     EGLint timestamp);
+typedef EGLBoolean(GL_BINDING_CALL* eglGetMscRateCHROMIUMProc)(
+    EGLDisplay dpy,
+    EGLSurface surface,
+    EGLint* numerator,
+    EGLint* denominator);
 typedef EGLClientBuffer(GL_BINDING_CALL* eglGetNativeClientBufferANDROIDProc)(
     const struct AHardwareBuffer* ahardwarebuffer);
 typedef EGLBoolean(GL_BINDING_CALL* eglGetNextFrameIdANDROIDProc)(
@@ -336,6 +341,7 @@ struct ProcsEGL {
   eglGetFrameTimestampsANDROIDProc eglGetFrameTimestampsANDROIDFn;
   eglGetFrameTimestampSupportedANDROIDProc
       eglGetFrameTimestampSupportedANDROIDFn;
+  eglGetMscRateCHROMIUMProc eglGetMscRateCHROMIUMFn;
   eglGetNativeClientBufferANDROIDProc eglGetNativeClientBufferANDROIDFn;
   eglGetNextFrameIdANDROIDProc eglGetNextFrameIdANDROIDFn;
   eglGetPlatformDisplayProc eglGetPlatformDisplayFn;
@@ -494,6 +500,10 @@ class GL_EXPORT EGLApi {
       EGLDisplay dpy,
       EGLSurface surface,
       EGLint timestamp) = 0;
+  virtual EGLBoolean eglGetMscRateCHROMIUMFn(EGLDisplay dpy,
+                                             EGLSurface surface,
+                                             EGLint* numerator,
+                                             EGLint* denominator) = 0;
   virtual EGLClientBuffer eglGetNativeClientBufferANDROIDFn(
       const struct AHardwareBuffer* ahardwarebuffer) = 0;
   virtual EGLBoolean eglGetNextFrameIdANDROIDFn(EGLDisplay dpy,
@@ -658,6 +668,8 @@ class GL_EXPORT EGLApi {
   ::gl::g_current_egl_context->eglGetFrameTimestampsANDROIDFn
 #define eglGetFrameTimestampSupportedANDROID \
   ::gl::g_current_egl_context->eglGetFrameTimestampSupportedANDROIDFn
+#define eglGetMscRateCHROMIUM \
+  ::gl::g_current_egl_context->eglGetMscRateCHROMIUMFn
 #define eglGetNativeClientBufferANDROID \
   ::gl::g_current_egl_context->eglGetNativeClientBufferANDROIDFn
 #define eglGetNextFrameIdANDROID \

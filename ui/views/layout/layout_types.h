@@ -28,16 +28,15 @@ enum class LayoutOrientation {
 class VIEWS_EXPORT SizeBounds {
  public:
   SizeBounds();
-  SizeBounds(const base::Optional<int>& width,
-             const base::Optional<int>& height);
+  SizeBounds(base::Optional<int> width, base::Optional<int> height);
   explicit SizeBounds(const gfx::Size& size);
   SizeBounds(const SizeBounds& other);
 
   const base::Optional<int>& width() const { return width_; }
-  void set_width(const base::Optional<int>& width) { width_ = width; }
+  void set_width(base::Optional<int> width) { width_ = std::move(width); }
 
   const base::Optional<int>& height() const { return height_; }
-  void set_height(const base::Optional<int>& height) { height_ = height; }
+  void set_height(base::Optional<int> height) { height_ = std::move(height); }
 
   // Enlarges (or shrinks, if negative) each upper bound that is present by the
   // specified amounts.

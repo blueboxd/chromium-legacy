@@ -113,6 +113,9 @@ public class AssistantCollectUserDataCoordinator {
                 new AssistantTermsSection(mActivity, paymentRequestExpanderAccordion,
                         /* showAsSingleCheckbox= */ true);
 
+        AssistantInfoSection infoSection =
+                new AssistantInfoSection(mActivity, paymentRequestExpanderAccordion);
+
         paymentRequestExpanderAccordion.setTag(
                 AssistantTagsForTesting.COLLECT_USER_DATA_ACCORDION_TAG);
         loginSection.getView().setTag(AssistantTagsForTesting.COLLECT_USER_DATA_LOGIN_SECTION_TAG);
@@ -130,14 +133,15 @@ public class AssistantCollectUserDataCoordinator {
                 AssistantTagsForTesting.COLLECT_USER_DATA_RADIO_TERMS_SECTION_TAG);
         termsAsCheckboxSection.getView().setTag(
                 AssistantTagsForTesting.COLLECT_USER_DATA_CHECKBOX_TERMS_SECTION_TAG);
+        infoSection.getView().setTag(AssistantTagsForTesting.COLLECT_USER_DATA_INFO_SECTION_TAG);
 
         // Bind view and mediator through the model.
         mViewHolder = new AssistantCollectUserDataBinder.ViewHolder(mPaymentRequestUI,
                 paymentRequestExpanderAccordion, sectionToSectionPadding, loginSection,
                 contactDetailsSection, dateRangeStartSection, dateRangeEndSection,
                 paymentMethodSection, shippingAddressSection, termsSection, termsAsCheckboxSection,
-                prependedSections, appendedSections, genericUserInterfaceContainer, DIVIDER_TAG,
-                activity);
+                infoSection, prependedSections, appendedSections, genericUserInterfaceContainer,
+                DIVIDER_TAG, activity);
         AssistantCollectUserDataBinder binder = new AssistantCollectUserDataBinder();
         PropertyModelChangeProcessor.create(model, mViewHolder, binder);
 

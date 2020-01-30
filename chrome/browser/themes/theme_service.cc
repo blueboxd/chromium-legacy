@@ -666,6 +666,10 @@ SkColor ThemeService::GetDefaultColor(int id, bool incognito) const {
       return SkColorSetA(GetColor(TP::COLOR_TOOLBAR_BUTTON_ICON, incognito),
                          0x4D);
     }
+    case TP::COLOR_TOOLBAR_INK_DROP: {
+      return color_utils::GetColorWithMaxContrast(
+          GetColor(TP::COLOR_TOOLBAR, incognito));
+    }
     case TP::COLOR_TOOLBAR_CONTENT_AREA_SEPARATOR:
       if (UsingDefaultTheme())
         break;

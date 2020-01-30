@@ -379,13 +379,10 @@ CanvasResourceProvider* Canvas2DLayerBridge::GetOrCreateResourceProvider(
     }
   }
 
-  PaintFlags copy_paint;
-  copy_paint.setBlendMode(SkBlendMode::kSrc);
   PaintImageBuilder builder = PaintImageBuilder::WithDefault();
   builder.set_image(hibernation_image_, PaintImage::GetNextContentId());
   builder.set_id(PaintImage::GetNextId());
-  resource_provider->Canvas()->drawImage(builder.TakePaintImage(), 0, 0,
-                                         &copy_paint);
+  resource_provider->RestoreBackBuffer(builder.TakePaintImage());
   hibernation_image_.reset();
 
   if (resource_host_) {
@@ -494,9 +491,9 @@ bool Canvas2DLayerBridge::WritePixels(const SkImageInfo& orig_info,
 
   last_record_tainted_by_write_pixels_ = true;
   have_recorded_draw_commands_ = false;
-  // Add a save to initialize the transform/clip stack and then restore it after
-  // the draw. This is needed because each recording initializes and the resets
-  // this state after every flush.
+  // Apply clipstack to canvas_ and then restore it to original state once
+  // we leave this scope. This is needed because each recording initializes and
+  // resets this state after every flush.
   cc::PaintCanvas* canvas = ResourceProvider()->Canvas();
   PaintCanvasAutoRestore auto_restore(canvas, true);
   if (GetOrCreateResourceProvider()) {

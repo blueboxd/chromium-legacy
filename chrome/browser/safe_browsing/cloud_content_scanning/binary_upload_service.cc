@@ -36,8 +36,11 @@ namespace {
 
 const int kScanningTimeoutSeconds = 5 * 60;  // 5 minutes
 
-const char kSbBinaryUploadUrl[] =
+const char kSbEnterpriseUploadUrl[] =
     "https://safebrowsing.google.com/safebrowsing/uploads/scan";
+
+const char kSbAppUploadUrl[] =
+    "https://safebrowsing.google.com/safebrowsing/uploads/app";
 
 bool IsAdvancedProtectionRequest(const BinaryUploadService::Request& request) {
   return !request.deep_scanning_request().has_dlp_scan_request() &&
@@ -209,8 +212,8 @@ void BinaryUploadService::OnGetRequestData(Request* request,
   base::Base64Encode(metadata, &metadata);
 
   auto upload_request = MultipartUploadRequest::Create(
-      url_loader_factory_, GURL(kSbBinaryUploadUrl), metadata, data.contents,
-      traffic_annotation,
+      url_loader_factory_, GetUploadUrl(IsAdvancedProtectionRequest(*request)),
+      metadata, data.contents, traffic_annotation,
       base::BindOnce(&BinaryUploadService::OnUploadComplete,
                      weakptr_factory_.GetWeakPtr(), request));
   upload_request->Start();
@@ -465,8 +468,9 @@ void BinaryUploadService::SetAuthForTesting(bool authorized) {
 }
 
 // static
-GURL BinaryUploadService::GetUploadUrl() {
-  return GURL(kSbBinaryUploadUrl);
+GURL BinaryUploadService::GetUploadUrl(bool is_advanced_protection) {
+  return is_advanced_protection ? GURL(kSbAppUploadUrl)
+                                : GURL(kSbEnterpriseUploadUrl);
 }
 
 }  // namespace safe_browsing

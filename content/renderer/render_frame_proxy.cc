@@ -343,6 +343,7 @@ void RenderFrameProxy::SetReplicatedState(const FrameReplicationState& state) {
   web_frame_->SetReplicatedInsecureRequestPolicy(state.insecure_request_policy);
   web_frame_->SetReplicatedInsecureNavigationsSet(
       state.insecure_navigations_set);
+  web_frame_->SetReplicatedAdFrameType(state.ad_frame_type);
   web_frame_->SetReplicatedFeaturePolicyHeaderAndOpenerPolicies(
       state.feature_policy_header, state.opener_feature_state);
   if (state.has_received_user_gesture) {
@@ -414,8 +415,6 @@ bool RenderFrameProxy::OnMessageReceived(const IPC::Message& msg) {
                         OnIntrinsicSizingInfoOfChildChanged)
     IPC_MESSAGE_HANDLER(FrameMsg_UpdateOpener, OnUpdateOpener)
     IPC_MESSAGE_HANDLER(FrameMsg_ViewChanged, OnViewChanged)
-    IPC_MESSAGE_HANDLER(FrameMsg_DidStartLoading, OnDidStartLoading)
-    IPC_MESSAGE_HANDLER(FrameMsg_DidStopLoading, OnDidStopLoading)
     IPC_MESSAGE_HANDLER(FrameMsg_DidUpdateFramePolicy, OnDidUpdateFramePolicy)
     IPC_MESSAGE_HANDLER(FrameMsg_DidSetFramePolicyHeaders,
                         OnDidSetFramePolicyHeaders)
@@ -469,17 +468,13 @@ void RenderFrameProxy::OnUpdateOpener(int opener_routing_id) {
   web_frame_->SetOpener(opener);
 }
 
-void RenderFrameProxy::OnDidStartLoading() {
+void RenderFrameProxy::DidStartLoading() {
   web_frame_->DidStartLoading();
 }
 
 void RenderFrameProxy::OnViewChanged(
     const FrameMsg_ViewChanged_Params& params) {
   FrameSinkIdChanged(params.frame_sink_id);
-}
-
-void RenderFrameProxy::OnDidStopLoading() {
-  web_frame_->DidStopLoading();
 }
 
 void RenderFrameProxy::OnDidUpdateName(const std::string& name,

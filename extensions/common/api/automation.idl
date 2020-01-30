@@ -27,6 +27,7 @@
     endOfTest,
     expandedChanged,
     focus,
+    focusAfterMenuClose,
     focusContext,
     hide,
     hitTestResult,

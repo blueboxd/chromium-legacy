@@ -279,6 +279,7 @@
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> 個書籤}other{<ph name="BOOKMARKS_COUNT_MANY" /> 個書籤}}</translation>
 <translation id="3089395242580810162">在無痕式分頁中開啟</translation>
 <translation id="3123473560110926937">在某些網站上設定封鎖</translation>
+<translation id="3123734510202723619">公告事項</translation>
 <translation id="3137521801621304719">離開無痕模式</translation>
 <translation id="3143515551205905069">取消同步處理</translation>
 <translation id="3157842584138209013">如要查看節省的數據用量，請點選 [更多選項] 按鈕</translation>
@@ -307,7 +308,7 @@
 <translation id="3298243779924642547">精簡版本</translation>
 <translation id="3303414029551471755">繼續下載這項內容？</translation>
 <translation id="3306398118552023113">Chrome 正在執行這個應用程式</translation>
-<translation id="3312292613668865961">系統必須先詢問你，才能允許網站存取你的虛擬實境裝置和資料 (建議)</translation>
+<translation id="3312292613668865961">系統必須先詢問你，才能允許網站存取你的虛擬實境裝置和資料 (建議設定)</translation>
 <translation id="3315103659806849044">你正在自訂同步功能和 Google 服務設定。如要完成開啟同步功能，請輕觸畫面底部附近的 [確認] 按鈕。向上瀏覽</translation>
 <translation id="3328801116991980348">網站資訊</translation>
 <translation id="3333961966071413176">所有聯絡人</translation>
@@ -513,7 +514,7 @@
 <translation id="4915549754973153784"><ph name="BEGIN_LINK" />查看說明<ph name="END_LINK" />。正在掃描裝置…</translation>
 <translation id="4921180162323349895">{FILE_COUNT,plural, =1{# 個網頁}other{# 個網頁}}</translation>
 <translation id="4932247056774066048">你即將登出由 <ph name="DOMAIN_NAME" /> 管理的帳戶，因此系統會將你的 Chrome 資料從這個裝置上刪除，但是這些資料會繼續保留在你的 Google 帳戶中。</translation>
-<translation id="4935305910887312910">系統必須先詢問你，才能允許網站取得攝影機位置或對應你的房間 (建議)</translation>
+<translation id="4935305910887312910">系統必須先詢問你，才能允許網站取得攝影機位置或對應你的房間 (建議設定)</translation>
 <translation id="4943703118917034429">虛擬實境</translation>
 <translation id="4943872375798546930">沒有結果</translation>
 <translation id="4958708863221495346"><ph name="URL_OF_THE_CURRENT_TAB" /> 正在共用你的畫面。</translation>

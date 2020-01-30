@@ -29,8 +29,7 @@ SVGNumberOptionalNumberInterpolationType::MaybeConvertSVGValue(
   if (svg_value.GetType() != kAnimatedNumberOptionalNumber)
     return nullptr;
 
-  const SVGNumberOptionalNumber& number_optional_number =
-      ToSVGNumberOptionalNumber(svg_value);
+  const auto& number_optional_number = To<SVGNumberOptionalNumber>(svg_value);
   auto result = std::make_unique<InterpolableList>(2);
   result->Set(0, std::make_unique<InterpolableNumber>(
                      number_optional_number.FirstNumber()->Value()));

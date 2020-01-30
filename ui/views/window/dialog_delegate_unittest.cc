@@ -6,6 +6,7 @@
 
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/bind_test_util.h"
 #include "build/build_config.h"
 #include "ui/base/hit_test.h"
 #include "ui/events/event_processor.h"
@@ -430,6 +431,26 @@ TEST_F(DialogTest, UnfocusableInitialFocus) {
   EXPECT_TRUE(textfield->HasFocus());
   EXPECT_EQ(textfield, dialog->GetFocusManager()->GetFocusedView());
   dialog_widget->CloseNow();
+}
+
+using DialogDelegateCloseTest = ViewsTestBase;
+
+TEST_F(DialogDelegateCloseTest, AnyCallbackInhibitsDefaultClose) {
+  DialogDelegateView dialog;
+
+  bool cancelled = false;
+  bool accepted = false;
+
+  dialog.set_cancel_callback(
+      base::BindLambdaForTesting([&]() { cancelled = true; }));
+  dialog.set_accept_callback(
+      base::BindLambdaForTesting([&]() { accepted = true; }));
+
+  // At this point DefaultClose() would invoke either Accept() or Cancel().
+  EXPECT_TRUE(dialog.Close());
+
+  EXPECT_FALSE(cancelled);
+  EXPECT_FALSE(accepted);
 }
 
 }  // namespace views

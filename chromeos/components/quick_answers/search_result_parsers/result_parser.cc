@@ -45,6 +45,10 @@ std::unique_ptr<ResultParser> ResultParserFactory::Create(
     case ResultType::kUnitConversionResult:
       return std::make_unique<UnitConversionResultParser>();
       // TODO(llin): Add other result parsers.
+
+    case ResultType::kNoResult:
+      NOTREACHED();
+      break;
   }
 
   return nullptr;

@@ -500,6 +500,28 @@ void ChromeAutofillClient::UpdateAutofillPopupDataListValues(
     popup_controller_->UpdateDataListValues(values, labels);
 }
 
+base::span<const Suggestion> ChromeAutofillClient::GetPopupSuggestions() const {
+  if (!popup_controller_.get())
+    return base::span<const Suggestion>();
+  return popup_controller_->GetUnelidedSuggestions();
+}
+
+void ChromeAutofillClient::PinPopupViewUntilUpdate() {
+  if (popup_controller_.get())
+    popup_controller_->PinViewUntilUpdate();
+}
+
+void ChromeAutofillClient::UpdatePopup(
+    const std::vector<autofill::Suggestion>& suggestions,
+    PopupType popup_type) {
+  if (!popup_controller_.get())
+    return;  // Update only if there is a popup.
+
+  // Calling show will reuse the existing view automatically
+  popup_controller_->Show(suggestions, /*autoselect_first_suggestion=*/false,
+                          popup_type);
+}
+
 void ChromeAutofillClient::HideAutofillPopup(PopupHidingReason reason) {
   if (popup_controller_.get())
     popup_controller_->Hide(reason);

@@ -110,6 +110,9 @@ class ThemeProperties {
     // shelf.
     COLOR_TOOLBAR_VERTICAL_SEPARATOR,
 
+    // Opaque base color for toolbar button ink drops.
+    COLOR_TOOLBAR_INK_DROP,
+
     // Color used for various 'shelves' and 'bars'.
     COLOR_DOWNLOAD_SHELF,
     COLOR_INFOBAR,

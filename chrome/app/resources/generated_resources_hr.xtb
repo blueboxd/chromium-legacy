@@ -26,7 +26,6 @@
 <translation id="1031362278801463162">Učitavanje pregleda</translation>
 <translation id="1032605640136438169">Pregledajte nove uvjete</translation>
 <translation id="103279545524624934">Oslobodite prostor na disku da biste pokrenuli Android aplikacije.</translation>
-<translation id="1033343386521881354">Pronađen je jedan pisač s poslužitelja za ispis.</translation>
 <translation id="1033780634303702874">pristupiti vašim serijski spojenim uređajima</translation>
 <translation id="1034942643314881546">Omogućavanje adb-a za stvaranje ilustracije aplikacija</translation>
 <translation id="1036348656032585052">Isključi</translation>
@@ -34,7 +33,6 @@
 <translation id="1036982837258183574">Pritisnite |<ph name="ACCELERATOR" />| da biste zatvorili prikaz na cijelom zaslonu</translation>
 <translation id="1038168778161626396">Samo za šifriranje</translation>
 <translation id="1039337018183941703">Neispravna ili oštećena datoteka</translation>
-<translation id="1039850285407663109">Odabrana datoteka nije poznata i može biti opasna. Preporučujemo da je prije otvaranja skenirate.</translation>
 <translation id="1041175011127912238">Stranica ne reagira</translation>
 <translation id="1041263367839475438">Dostupni uređaji</translation>
 <translation id="1042174272890264476">Vaše računalo ima ugrađenu RLZ biblioteku preglednika <ph name="SHORT_PRODUCT_NAME" />. RLZ dodjeljuje nejedinstvenu oznaku koja ne može poslužiti za osobnu identifikaciju za mjerenje pretraživanja i upotrebu proizvoda <ph name="SHORT_PRODUCT_NAME" /> potaknutu određenom promotivnom kampanjom. Te se oznake ponekad prikazuju u upitima Google pretraživanja u pregledniku <ph name="PRODUCT_NAME" />.</translation>
@@ -639,7 +637,6 @@
 <translation id="1858585891038687145">Vjeruj ovom certifikatu za identifikaciju proizvođača softvera</translation>
 <translation id="1861262398884155592">Mapa je prazna</translation>
 <translation id="1863182668524159459">Nije pronađen nijedan serijski priključak</translation>
-<translation id="1863552924692672565">Datoteka <ph name="FILE_NAME" /> nije poznata. Skenirajte datoteku da biste smanjili rizik.</translation>
 <translation id="1864111464094315414">Prijava</translation>
 <translation id="1864400682872660285">Hladnije</translation>
 <translation id="1864454756846565995">USB-C uređaj (stražnji priključak)</translation>
@@ -3066,7 +3063,7 @@ Postavkama računa možete upravljati tako da instalirate aplikaciju Family Link
 <translation id="5311304534597152726">Prijavite se kao</translation>
 <translation id="53116743016968120"><ph name="ERROR_MESSAGE" /> Pokušajte ponovo.</translation>
 <translation id="5313628438272378649">Ovim prijenosom krše se sigurnosna pravila vaše organizacije te se on ne može dovršiti.</translation>
-<translation id="5314381603623123224">Chromeovi Uvjeti pružanja usluge mijenjaju se 31. ožujka</translation>
+<translation id="5314381603623123224">Chromeovi uvjeti pružanja usluge mijenjaju se 31. ožujka</translation>
 <translation id="5315738755890845852">Dodatna vitičasta zagrada: <ph name="ERROR_LINE" /></translation>
 <translation id="5315873049536339193">Identitet</translation>
 <translation id="5317780077021120954">Spremi</translation>
@@ -4025,7 +4022,6 @@ Postavkama računa možete upravljati tako da instalirate aplikaciju Family Link
 <translation id="6678717876183468697">URL upita</translation>
 <translation id="6680442031740878064">Dostupno: <ph name="AVAILABLE_SPACE" /></translation>
 <translation id="6680650203439190394">Brzina</translation>
-<translation id="6681301928961274620">Nije pronađen nijedan pisač s poslužitelja za ispis.</translation>
 <translation id="6681668084120808868">Snimite fotografiju</translation>
 <translation id="6681964764822470072">Aplikacija "<ph name="APP_NAME" />" deinstalirat će se.</translation>
 <translation id="668599234725812620">Otvori Google Play</translation>
@@ -5555,7 +5551,6 @@ Mislim da ta web-lokacija ne bi trebala biti blokirana!</translation>
 <translation id="8794025342371547160">Ograničeni IP</translation>
 <translation id="879413103056696865">Dok je žarišna točka uključena, vaš će <ph name="PHONE_NAME" />:</translation>
 <translation id="8795916974678578410">Novi prozor</translation>
-<translation id="8797086401386164142">Pronađeno pisača s poslužitelja za ispis: <ph name="NUM_PRINTERS" />.</translation>
 <translation id="8797459392481275117">Nikad nemoj prevoditi ovu web-lokaciju</translation>
 <translation id="8798099450830957504">Zadano</translation>
 <translation id="8798441408945964110">Naziv davatelja usluge</translation>

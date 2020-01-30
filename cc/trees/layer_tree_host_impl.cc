@@ -3642,6 +3642,17 @@ void LayerTreeHostImpl::BindToClient(InputHandlerClient* client) {
   input_handler_client_ = client;
 }
 
+gfx::Vector2dF LayerTreeHostImpl::ResolveScrollPercentageToPixels(
+    const ScrollNode& scroll_node,
+    const gfx::Vector2dF& scroll_delta) {
+  gfx::Vector2dF scroll_delta_in_pixels;
+  scroll_delta_in_pixels.set_x(scroll_delta.x() *
+                               scroll_node.container_bounds.width());
+  scroll_delta_in_pixels.set_y(scroll_delta.y() *
+                               scroll_node.container_bounds.height());
+  return scroll_delta_in_pixels;
+}
+
 InputHandler::ScrollStatus LayerTreeHostImpl::TryScroll(
     const ScrollTree& scroll_tree,
     ScrollNode* scroll_node) const {
@@ -4622,6 +4633,21 @@ InputHandlerScrollResult LayerTreeHostImpl::ScrollUpdate(
     base::TimeDelta delayed_by) {
   DCHECK(scroll_state);
   last_scroll_state_ = *scroll_state;
+
+  bool is_delta_percent_units =
+      scroll_state->delta_granularity() ==
+      static_cast<double>(
+          ui::input_types::ScrollGranularity::kScrollByPercentage);
+  if (CurrentlyScrollingNode() && is_delta_percent_units) {
+    gfx::Vector2dF resolvedScrollDelta = ResolveScrollPercentageToPixels(
+        *CurrentlyScrollingNode(),
+        gfx::Vector2dF(scroll_state->delta_x(), scroll_state->delta_y()));
+
+    scroll_state->data()->delta_x = resolvedScrollDelta.x();
+    scroll_state->data()->delta_y = resolvedScrollDelta.y();
+    scroll_state->data()->delta_granularity =
+        static_cast<double>(ui::input_types::ScrollGranularity::kScrollByPixel);
+  }
 
   gfx::Vector2dF scroll_delta(scroll_state->delta_x(), scroll_state->delta_y());
   scroll_accumulated_this_frame_ += scroll_delta;

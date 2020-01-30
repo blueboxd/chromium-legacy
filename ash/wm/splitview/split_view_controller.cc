@@ -816,6 +816,73 @@ void SplitViewController::InitDividerPositionForTransition(
   divider_position_ = divider_position;
 }
 
+void SplitViewController::OnOverviewButtonTrayLongPressed(
+    const gfx::Point& event_location) {
+  // Do nothing if split view is not enabled.
+  if (!ShouldAllowSplitView())
+    return;
+
+  // Depending on the state of the windows and split view, a long press has many
+  // different results.
+  // 1. Already in split view - exit split view. The active snapped window
+  // becomes maximized. If overview was seen alongside a snapped window, then
+  // overview mode ends.
+  // 2. Not in overview mode - enter split view iff there is an active window
+  // and it is snappable.
+  // 3. In overview mode - enter split view iff there are at least two windows
+  // in the overview grid for the display where the overview button was long
+  // pressed, and the first window in that overview grid is snappable.
+
+  MruWindowTracker::WindowList mru_window_list =
+      Shell::Get()->mru_window_tracker()->BuildWindowForCycleList(kActiveDesk);
+  // Do nothing if there is one or less windows in the MRU list.
+  if (mru_window_list.empty())
+    return;
+
+  auto* overview_controller = Shell::Get()->overview_controller();
+  aura::Window* target_window = mru_window_list[0];
+
+  // Exit split view mode if we are already in it.
+  if (InSplitViewMode()) {
+    DCHECK(IsWindowInSplitView(target_window));
+    DCHECK(target_window);
+    EndSplitView();
+    overview_controller->EndOverview();
+    MaximizeIfSnapped(target_window);
+    wm::ActivateWindow(target_window);
+    base::RecordAction(
+        base::UserMetricsAction("Tablet_LongPressOverviewButtonExitSplitView"));
+    return;
+  }
+
+  // Show a toast if the window cannot be snapped.
+  if (!CanSnapWindow(target_window)) {
+    ShowAppCannotSnapToast();
+    return;
+  }
+
+  // Start overview mode if we aren't already in it.
+  if (!overview_controller->InOverviewSession()) {
+    // If we are not in overview mode, enter overview mode and then find the
+    // window item to snap.
+    overview_controller->StartOverview();
+  } else {
+    // If we are already in overview, do nothing if there is one window or less.
+    OverviewSession* overview_session = overview_controller->overview_session();
+    DCHECK(overview_session);
+    OverviewGrid* grid = overview_session->GetGridWithRootWindow(
+        window_util::GetRootWindowAt(event_location));
+    DCHECK(grid);
+    if (grid->window_list().size() < 2)
+      return;
+  }
+
+  SnapWindow(target_window, SplitViewController::LEFT);
+  wm::ActivateWindow(target_window);
+  base::RecordAction(
+      base::UserMetricsAction("Tablet_LongPressOverviewButtonEnterSplitView"));
+}
+
 void SplitViewController::OnWindowDragStarted(aura::Window* dragged_window) {
   DCHECK(dragged_window);
   if (IsWindowInSplitView(dragged_window))

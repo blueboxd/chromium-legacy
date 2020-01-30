@@ -214,6 +214,7 @@ extern const char kShortMergeSessionTimeoutForTest[];
 extern const char kSchedulerConfiguration[];
 extern const char kSchedulerConfigurationConservative[];
 extern const char kSchedulerConfigurationPerformance[];
+extern const char kSchedulerConfigurationDefault[];
 #endif  // defined(OS_CHROMEOS)
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_CHROMEOS)

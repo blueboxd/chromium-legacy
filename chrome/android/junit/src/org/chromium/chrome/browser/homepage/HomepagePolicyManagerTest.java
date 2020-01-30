@@ -73,7 +73,7 @@ public class HomepagePolicyManagerTest {
 
         ChromeBrowserInitializer.setForTesting(mChromeBrowserInitializer);
 
-        FeatureUtilities.setHomepageLocationPolicyEnabledForTesting(true);
+        FeatureUtilities.setForTesting(ChromeFeatureList.HOMEPAGE_LOCATION_POLICY, true);
 
         // Disable the policy during setup
         PrefServiceBridge.setInstanceForTesting(mMockServiceBridge);
@@ -87,7 +87,7 @@ public class HomepagePolicyManagerTest {
     @After
     public void tearDown() {
         // Empty cache inside the FeatureUtilities
-        FeatureUtilities.setHomepageLocationPolicyEnabledForTesting(null);
+        FeatureUtilities.setForTesting(ChromeFeatureList.HOMEPAGE_LOCATION_POLICY, null);
     }
 
     /**
@@ -272,7 +272,7 @@ public class HomepagePolicyManagerTest {
     public void testFeatureFlagDisabled() {
         Mockito.reset(mMockRegistrar);
         Mockito.reset(mMockServiceBridge);
-        FeatureUtilities.setHomepageLocationPolicyEnabledForTesting(false);
+        FeatureUtilities.setForTesting(ChromeFeatureList.HOMEPAGE_LOCATION_POLICY, false);
 
         // 1. Test initialization early finishing
         setupNewHomepagePolicyManagerForTests(true, TEST_URL, null);
@@ -299,7 +299,7 @@ public class HomepagePolicyManagerTest {
     @SmallTest
     @DisableFeatures(ChromeFeatureList.HOMEPAGE_LOCATION_POLICY)
     public void testIllegal_Refresh() {
-        FeatureUtilities.setHomepageLocationPolicyEnabledForTesting(false);
+        FeatureUtilities.setForTesting(ChromeFeatureList.HOMEPAGE_LOCATION_POLICY, false);
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> { mHomepagePolicyManager.onPreferenceChange(); });
     }

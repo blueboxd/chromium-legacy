@@ -26,7 +26,6 @@
 <translation id="1031362278801463162">ກໍາລັງໂຫຼດການເບິ່ງຕົວຢ່າງກ່ອນ</translation>
 <translation id="1032605640136438169">ກະລຸນາກວດເບິ່ງຂໍ້ກຳນົດໃໝ່</translation>
 <translation id="103279545524624934">ຂະຫຍາຍພື້ນທີ່ດິສກ໌ເພື່ອເປີດໃຊ້ແອັບ Android.</translation>
-<translation id="1033343386521881354">ພົບເຄື່ອງພິມ 1 ລາຍການຈາກເຊີບເວີການພິມ.</translation>
 <translation id="1033780634303702874">ເຂົ້າ​ຫາອຸ​ປະ​ກອນ Serial ຂອງ​ທ່ານ</translation>
 <translation id="1034942643314881546">ເປີດນຳໃຊ້ ADB ເພື່ອສ້າງຮູບປະກອບແອັບ</translation>
 <translation id="1036348656032585052">ປິດ</translation>
@@ -34,7 +33,6 @@
 <translation id="1036982837258183574">ກົດ |<ph name="ACCELERATOR" />| ເພື່ອອອກຈາກເຕັມຈໍ</translation>
 <translation id="1038168778161626396">ປ່ຽນເປັນລະຫັດເທົ່ານັ້ນ</translation>
 <translation id="1039337018183941703">ໄຟລ໌ເສຍຫາຍ ຫຼື ບໍ່ຖືກຕ້ອງ</translation>
-<translation id="1039850285407663109">ໄຟລ໌ທີ່ເລືອກເປັນໄຟລ໌ທີ່ບໍ່ຮູ້ຈັກ ແລະ ອາດຈະເປັນອັນຕະລາຍ. ຂໍແນະນຳໃຫ້ສະແກນກ່ອນເປີດໄຟລ໌ນີ້.</translation>
 <translation id="1041175011127912238">ໜ້ານີ້ບໍ່ຕອບສະໜອງ</translation>
 <translation id="1041263367839475438">ອຸປະກອນທີ່ໃຊ້ໄດ້</translation>
 <translation id="1042174272890264476">ຄອມພິວເຕີຂອງທ່ານຍັງມາພ້ອມກັບຄັງເກັບມ້ຽນ RLZ ຂອງ <ph name="SHORT_PRODUCT_NAME" /> ມາກັບເຄື່ອງ. RLZ ມອບໝາຍໃຫ້ແທັກສາມາດລະບຸໄດ້ບໍ່ເປັນເອກະລັກ, ບໍ່ເປັນສ່ວນຕົວ ເພື່ອວັດແທກການຄົ້ນຫາ ແລະການໃຊ້ <ph name="SHORT_PRODUCT_NAME" /> ຂັບເຄື່ອນໂດຍການໂຄສະນາສະເພາະ. ບາງຄັ້ງສະຫຼາກເຫຼົ່ານີ້ປະກົດຂຶ້ນຢູ່ໃນການສອບຖາມການຄົ້ນຫາ Google ຢູ່ໃນ <ph name="PRODUCT_NAME" />.</translation>
@@ -637,7 +635,6 @@
 <translation id="1858585891038687145">ເຊື່ອໝັ້ນໃບຢັ້ງຢືນນີ້ສຳລັບການລະບຸຕົວຕົນຜູ້ສ້າງຊອບແວ</translation>
 <translation id="1861262398884155592">ໂຟນເດີນີ້ຫວ່າງເປົ່າ</translation>
 <translation id="1863182668524159459">ບໍ່ພົບຜອດອະນຸກຳ</translation>
-<translation id="1863552924692672565"><ph name="FILE_NAME" /> ເປັນໄຟລ໌ທີ່ບໍ່ຮູ້ຈັກ. ສະແກນໄຟລ໌ເພື່ອເຮັດໃຫ້ມີຄວາມສ່ຽງໜ້ອຍສຸດ.</translation>
 <translation id="1864111464094315414">ເຂົ້າ​ສູ່​ລະ​ບົບ</translation>
 <translation id="1864400682872660285">ເຢັນກວ່າ</translation>
 <translation id="1864454756846565995">ອຸ​ປະ​ກອນ USB-C (ຜອດ​ດ້ານຫຼັງ)</translation>
@@ -4023,7 +4020,6 @@
 <translation id="6678717876183468697">URL ສອບ​ຖາມ</translation>
 <translation id="6680442031740878064">ມີໃຫ້: <ph name="AVAILABLE_SPACE" /></translation>
 <translation id="6680650203439190394">ໃຫ້ຄະແນນ</translation>
-<translation id="6681301928961274620">ຊອກບໍ່ເຫັນເຄື່ອງພິມໃດໆຈາກເຊີບເວີການພິມ.</translation>
 <translation id="6681668084120808868">ຖ່າຍຮູບ</translation>
 <translation id="6681964764822470072">"<ph name="APP_NAME" />" ຈະຖືກຖອນຕິດຕັ້ງ.</translation>
 <translation id="668599234725812620">ເປີດ Google Play</translation>
@@ -5551,7 +5547,6 @@
 <translation id="8794025342371547160">IP ທີ່ຖືກຈໍາກັດ</translation>
 <translation id="879413103056696865">ໃນຂະນະທີ່ຮັອດສະປອດເປີດຢູ່, <ph name="PHONE_NAME" /> ຂອງທ່ານຈະ:</translation>
 <translation id="8795916974678578410">ໜ້າ​ຕ່າງໃຫມ່</translation>
-<translation id="8797086401386164142">ພົບເຄື່ອງພິມ <ph name="NUM_PRINTERS" /> ເຄື່ອງຈາກເຊີບເວີການພິມ.</translation>
 <translation id="8797459392481275117">ຢ່າແປເວັບໄຊນີ້</translation>
 <translation id="8798099450830957504">ຄ່າ​ມາດຕະຖານ</translation>
 <translation id="8798441408945964110">ຊື່ຜູ້ໃຫ້ບໍລິການ</translation>

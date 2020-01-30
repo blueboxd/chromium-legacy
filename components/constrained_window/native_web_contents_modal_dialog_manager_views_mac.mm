@@ -6,6 +6,8 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include <utility>
+
 #include "components/constrained_window/constrained_window_views.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "content/public/browser/web_contents.h"
@@ -38,8 +40,13 @@ namespace constrained_window {
 NativeWebContentsModalDialogManagerViewsMac::
     NativeWebContentsModalDialogManagerViewsMac(
         gfx::NativeWindow dialog,
-        web_modal::SingleWebContentsDialogManagerDelegate* native_delegate)
-    : NativeWebContentsModalDialogManagerViews(dialog, native_delegate) {}
+        web_modal::SingleWebContentsDialogManagerDelegate* native_delegate,
+        base::OnceCallback<void(views::Widget*)> show_sheet)
+    : NativeWebContentsModalDialogManagerViews(dialog, native_delegate),
+      show_sheet_(std::move(show_sheet)) {}
+
+NativeWebContentsModalDialogManagerViewsMac::
+    ~NativeWebContentsModalDialogManagerViewsMac() = default;
 
 // NativeWebContentsModalDialogManagerViews:
 void NativeWebContentsModalDialogManagerViewsMac::OnPositionRequiresUpdate() {
@@ -78,8 +85,13 @@ void NativeWebContentsModalDialogManagerViewsMac::ShowWidget(
     NativeWebContentsModalDialogManagerViews::ShowWidget(widget);
     // Make sure the dialog is sized correctly for the correct animations.
     OnPositionRequiresUpdate();
+    if (!show_sheet_.is_null())
+      std::move(show_sheet_).Run(GetWidget(dialog()));
     return;
   }
+
+  // The sheet must already have been shown.
+  DCHECK(show_sheet_.is_null());
 
   // Account for window resizes that happen while another tab is open.
   OnPositionRequiresUpdate();

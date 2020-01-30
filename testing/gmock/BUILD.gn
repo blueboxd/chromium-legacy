@@ -14,9 +14,7 @@ source_set("gmock") {
     "include/gmock/gmock-matchers.h",
     "include/gmock/gmock.h",
   ]
-  deps = [
-    "//third_party/googletest:gmock",
-  ]
+  deps = [ "//third_party/googletest:gmock" ]
 
   public_configs = [
     "//third_party/googletest:gmock_config",
@@ -29,7 +27,5 @@ source_set("gmock") {
 # into //third_party/googletest.
 source_set("gmock_main") {
   testonly = true
-  deps = [
-    "//third_party/googletest:gmock_main",
-  ]
+  deps = [ "//third_party/googletest:gmock_main" ]
 }

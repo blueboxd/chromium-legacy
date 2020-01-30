@@ -15,6 +15,7 @@
 #include "base/callback_helpers.h"
 #include "base/files/file_util.h"
 #include "base/location.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/optional.h"
 #include "base/run_loop.h"
@@ -157,6 +158,7 @@ class ReadBufferingStreamSocket : public WrappedStreamSocket {
   int DoRead();
   int DoReadComplete(int result);
   void OnReadCompleted(int result);
+  int CopyToCaller(IOBuffer* buf);
 
   State state_;
   scoped_refptr<GrowableIOBuffer> read_buffer_;
@@ -209,8 +211,11 @@ int ReadBufferingStreamSocket::ReadIfReady(IOBuffer* buf,
 
   state_ = STATE_READ;
   int rv = DoLoop(OK);
-  if (rv == ERR_IO_PENDING)
+  if (rv == OK) {
+    rv = CopyToCaller(buf);
+  } else if (rv == ERR_IO_PENDING) {
     user_read_callback_ = std::move(callback);
+  }
   return rv;
 }
 
@@ -252,20 +257,10 @@ int ReadBufferingStreamSocket::DoReadComplete(int result) {
 
   read_buffer_->set_offset(read_buffer_->offset() + result);
   if (read_buffer_->RemainingCapacity() > 0) {
+    // Keep reading until |read_buffer_| is full.
     state_ = STATE_READ;
-    return OK;
   }
-
-  // If ReadIfReady() is called by the user and this is an asynchronous
-  // completion, notify the user that read can be retried.
-  if (user_read_buf_ == nullptr)
-    return OK;
-
-  memcpy(user_read_buf_->data(),
-         read_buffer_->StartOfBuffer(),
-         read_buffer_->capacity());
-  read_buffer_->set_offset(0);
-  return read_buffer_->capacity();
+  return OK;
 }
 
 void ReadBufferingStreamSocket::OnReadCompleted(int result) {
@@ -275,8 +270,20 @@ void ReadBufferingStreamSocket::OnReadCompleted(int result) {
   result = DoLoop(result);
   if (result == ERR_IO_PENDING)
     return;
-  user_read_buf_ = nullptr;
+  if (result == OK && user_read_buf_) {
+    // If the user called Read(), return the data to the caller.
+    result = CopyToCaller(user_read_buf_.get());
+    user_read_buf_ = nullptr;
+  }
   std::move(user_read_callback_).Run(result);
+}
+
+int ReadBufferingStreamSocket::CopyToCaller(IOBuffer* buf) {
+  // Note this assumes |buf| is large enough for |read_buffer_|. ReadIfReady()
+  // rejects small reads.
+  memcpy(buf->data(), read_buffer_->StartOfBuffer(), read_buffer_->capacity());
+  read_buffer_->set_offset(0);
+  return read_buffer_->capacity();
 }
 
 // Simulates synchronously receiving an error during Read() or Write()
@@ -2405,13 +2412,7 @@ TEST_P(SSLClientSocketReadTest, Read_SmallChunks) {
   } while (rv > 0);
 }
 
-#if defined(OS_CHROMEOS)
-// TODO(crbug.com/1045656) Flaky on ChromeOS.
-#define MAYBE_Read_ManySmallRecords DISABLED_Read_ManySmallRecords
-#else
-#define MAYBE_Read_ManySmallRecords Read_ManySmallRecords
-#endif
-TEST_P(SSLClientSocketReadTest, MAYBE_Read_ManySmallRecords) {
+TEST_P(SSLClientSocketReadTest, Read_ManySmallRecords) {
   ASSERT_TRUE(
       StartEmbeddedTestServer(EmbeddedTestServer::CERT_OK, GetServerConfig()));
 
@@ -5804,6 +5805,136 @@ TEST_P(SSLHandshakeDetailsTest, Metrics) {
     histograms.ExpectUniqueSample("Net.SSLHandshakeDetails",
                                   GetParam().expected_resume, 1);
   }
+}
+
+class LegacyTLSDeprecationTest : public SSLClientSocketTest {
+ public:
+  LegacyTLSDeprecationTest() {
+    feature_list_.InitAndEnableFeature(features::kLegacyTLSEnforced);
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+// Set version_min_warn to TLS 1.2 and check that TLS 1.0 and 1.1 fail (with the
+// expected error and cert status) but TLS 1.2 and 1.3 pass.
+TEST_F(LegacyTLSDeprecationTest, SetVersionMinWarnToTLS12) {
+  const struct TestCase {
+    uint16_t ssl_version;
+    int expected_net_error;
+    CertStatus expected_cert_status;
+  } kTestCases[]{
+      {SSL_PROTOCOL_VERSION_TLS1, ERR_SSL_OBSOLETE_VERSION,
+       CERT_STATUS_LEGACY_TLS},
+      {SSL_PROTOCOL_VERSION_TLS1_1, ERR_SSL_OBSOLETE_VERSION,
+       CERT_STATUS_LEGACY_TLS},
+      {SSL_PROTOCOL_VERSION_TLS1_2, OK, 0},
+      {SSL_PROTOCOL_VERSION_TLS1_3, OK, 0},
+  };
+
+  for (const auto& test_case : kTestCases) {
+    SCOPED_TRACE(test_case.ssl_version);
+
+    SSLServerConfig server_config;
+    server_config.version_min = test_case.ssl_version;
+    server_config.version_max = test_case.ssl_version;
+    ASSERT_TRUE(
+        StartEmbeddedTestServer(EmbeddedTestServer::CERT_OK, server_config));
+
+    SSLContextConfig client_context_config;
+    client_context_config.version_min = SSL_PROTOCOL_VERSION_TLS1;
+    client_context_config.version_max = SSL_PROTOCOL_VERSION_TLS1_3;
+    client_context_config.version_min_warn = SSL_PROTOCOL_VERSION_TLS1_2;
+    ssl_config_service_->UpdateSSLConfigAndNotify(client_context_config);
+
+    SSLConfig client_config;
+
+    // Try to connect, then check that the expected error is returned and no
+    // unexpected cert_status are set.
+    int rv;
+    ASSERT_TRUE(CreateAndConnectSSLClientSocket(client_config, &rv));
+    EXPECT_THAT(rv, IsError(test_case.expected_net_error));
+    SSLInfo info;
+    ASSERT_TRUE(sock_->GetSSLInfo(&info));
+    EXPECT_EQ(test_case.expected_cert_status,
+              info.cert_status & test_case.expected_cert_status);
+    net::CertStatus extra_cert_errors =
+        test_case.expected_cert_status ^
+        (info.cert_status & CERT_STATUS_ALL_ERRORS);
+    EXPECT_FALSE(extra_cert_errors);
+  }
+}
+
+// Check that TLS 1.0 and TLS 1.1 failure is bypassed when you add
+// allowed_bad_certs (with the expected error and cert status).
+TEST_F(LegacyTLSDeprecationTest, NoErrorWhenAddedToAllowedBadCerts) {
+  SSLServerConfig server_config;
+  server_config.version_min = SSL_PROTOCOL_VERSION_TLS1;
+  server_config.version_max = SSL_PROTOCOL_VERSION_TLS1;
+  ASSERT_TRUE(
+      StartEmbeddedTestServer(EmbeddedTestServer::CERT_OK, server_config));
+
+  SSLConfig client_config;
+  client_config.allowed_bad_certs.emplace_back(
+      embedded_test_server()->GetCertificate(), CERT_STATUS_LEGACY_TLS);
+
+  // Connection should proceed without a net error but with
+  // CERT_STATUS_LEGACY_TLS.
+  int rv;
+  ASSERT_TRUE(CreateAndConnectSSLClientSocket(client_config, &rv));
+  EXPECT_THAT(rv, IsOk());
+  SSLInfo info;
+  ASSERT_TRUE(sock_->GetSSLInfo(&info));
+  EXPECT_EQ(CERT_STATUS_LEGACY_TLS, info.cert_status);
+}
+
+// Check that if the we have bypassed a certificate error previously and then
+// the server responded with TLS 1.0, we fill in both cert status flags.
+TEST_F(LegacyTLSDeprecationTest, BypassedCertShouldSetLegacyTLSStatus) {
+  SSLServerConfig server_config;
+  server_config.version_min = SSL_PROTOCOL_VERSION_TLS1;
+  server_config.version_max = SSL_PROTOCOL_VERSION_TLS1;
+  ASSERT_TRUE(StartEmbeddedTestServer(EmbeddedTestServer::CERT_MISMATCHED_NAME,
+                                      server_config));
+  cert_verifier_->set_default_result(ERR_CERT_COMMON_NAME_INVALID);
+
+  SSLConfig client_config;
+  client_config.allowed_bad_certs.emplace_back(
+      embedded_test_server()->GetCertificate(),
+      CERT_STATUS_COMMON_NAME_INVALID);
+
+  // Connection should proceed, and CERT_STATUS_LEGACY_TLS and
+  // CERT_STATUS_COMMON_NAME_INVALID should be set.
+  int rv;
+  ASSERT_TRUE(CreateAndConnectSSLClientSocket(client_config, &rv));
+  EXPECT_THAT(rv, IsOk());
+  SSLInfo info;
+  ASSERT_TRUE(sock_->GetSSLInfo(&info));
+  EXPECT_TRUE(info.cert_status & CERT_STATUS_LEGACY_TLS);
+  EXPECT_TRUE(info.cert_status & CERT_STATUS_COMMON_NAME_INVALID);
+}
+
+// Checks that other errors are prioritized over legacy TLS errors.
+TEST_F(LegacyTLSDeprecationTest, PrioritizeCertErrorsOverLegacyTLS) {
+  SSLServerConfig server_config;
+  server_config.version_min = SSL_PROTOCOL_VERSION_TLS1;
+  server_config.version_max = SSL_PROTOCOL_VERSION_TLS1;
+  ASSERT_TRUE(
+      StartEmbeddedTestServer(EmbeddedTestServer::CERT_EXPIRED, server_config));
+  cert_verifier_->set_default_result(ERR_CERT_DATE_INVALID);
+
+  SSLConfig client_config;
+
+  // Connection should fail with ERR_CERT_DATE_INVALID and only the date invalid
+  // cert status.
+  int rv;
+  ASSERT_TRUE(CreateAndConnectSSLClientSocket(client_config, &rv));
+  EXPECT_THAT(rv, IsError(ERR_CERT_DATE_INVALID));
+  SSLInfo info;
+  ASSERT_TRUE(sock_->GetSSLInfo(&info));
+  EXPECT_FALSE(info.cert_status & CERT_STATUS_LEGACY_TLS);
+  EXPECT_TRUE(info.cert_status & CERT_STATUS_DATE_INVALID);
 }
 
 TEST_F(SSLClientSocketZeroRTTTest, EarlyDataReasonNewSession) {

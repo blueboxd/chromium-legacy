@@ -9,6 +9,10 @@
  * If the update-value-on-input flag is set, value will be set to whatever is
  * in the input box. Otherwise, value will only be set when an element in items
  * is clicked.
+ *
+ * The |invalid| property tracks whether the user's current text input in the
+ * dropdown matches the previously saved dropdown value. This property can be
+ * used to disable certain user actions when the dropdown is invalid.
  */
 Polymer({
   is: 'cr-searchable-drop-down',
@@ -48,6 +52,20 @@ Polymer({
 
     placeholder: String,
 
+    /**
+     * Used to track in real time if the |value| in cr-searchable-drop-down
+     * matches the value in the underlying cr-input. These values will differ
+     * after a user types in input that does not match a valid dropdown option.
+     * |invalid| is always false when |updateValueOnInput| is set to true. This
+     * is because when |updateValueOnInput| is set to true, we are not setting a
+     * restrictive set of valid options.
+     */
+    invalid: {
+      type: Boolean,
+      value: false,
+      notify: true,
+    },
+
     /** @type {!Array<string>} */
     items: {
       type: Array,
@@ -58,6 +76,7 @@ Polymer({
     value: {
       type: String,
       notify: true,
+      observer: 'updateInvalid_',
     },
 
     /** @type {string} */
@@ -357,6 +376,9 @@ Polymer({
     // but scollable dropdown. Refitting the dropdown allows it to expand to
     // accommodate the new items.
     this.enqueueDropdownRefit_();
+
+    // Need check to if the input is valid when the user types.
+    this.updateInvalid_();
   },
 
   /*
@@ -421,5 +443,18 @@ Polymer({
     if (!this.updateValueOnInput) {
       this.$.search.value = this.value;
     }
-  }
+
+    // Need check to if the input is valid when the dropdown loses focus.
+    this.updateInvalid_();
+  },
+
+  /**
+   * If |updateValueOnInput| is true then any value is allowable so always set
+   * |invalid| to false.
+   * @private
+   */
+  updateInvalid_: function () {
+    this.invalid =
+        !this.updateValueOnInput && (this.value !== this.$.search.value);
+  },
 });

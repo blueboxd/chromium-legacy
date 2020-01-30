@@ -74,10 +74,7 @@ public class BrowserFragmentLifecycleTest {
         latch.await();
     }
 
-    @Test
-    @SmallTest
-    public void restoresPreviousSession() throws InterruptedException {
-        Bundle extras = new Bundle();
+    private void restoresPreviousSession(Bundle extras) throws InterruptedException {
         extras.putString(InstrumentationActivity.EXTRA_PERSISTENCE_ID, "x");
         final String url = mActivityTestRule.getTestDataURL("simple_page.html");
         InstrumentationActivity activity = mActivityTestRule.launchShellWithUrl(url, extras);
@@ -107,5 +104,20 @@ public class BrowserFragmentLifecycleTest {
             });
         });
         latch.await();
+    }
+
+    @Test
+    @SmallTest
+    public void restoresPreviousSession() throws InterruptedException {
+        restoresPreviousSession(new Bundle());
+    }
+
+    @Test
+    @SmallTest
+    public void restoresPreviousSessionIncognito() throws InterruptedException {
+        Bundle extras = new Bundle();
+        // This forces incognito.
+        extras.putString(InstrumentationActivity.EXTRA_PROFILE_NAME, null);
+        restoresPreviousSession(extras);
     }
 }

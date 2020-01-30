@@ -107,7 +107,8 @@ component("gamepad") {
   defines = [ "DEVICE_GAMEPAD_IMPLEMENTATION" ]
 
   if (is_win) {
-    cflags = [ "/wd4267" ]  # conversion from 'size_t' (64 bit) to 'type'(32 bit).
+    cflags =
+        [ "/wd4267" ]  # conversion from 'size_t' (64 bit) to 'type'(32 bit).
   }
 
   if (is_linux) {

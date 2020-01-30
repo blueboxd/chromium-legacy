@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/no_destructor.h"
 #include "base/stl_util.h"
 #include "chromeos/components/multidevice/logging/logging.h"
@@ -15,6 +16,7 @@
 #include "chromeos/services/device_sync/cryptauth_client.h"
 #include "chromeos/services/device_sync/cryptauth_ecies_encryptor_impl.h"
 #include "chromeos/services/device_sync/cryptauth_key_creator_impl.h"
+#include "chromeos/services/device_sync/cryptauth_task_metrics_logger.h"
 #include "chromeos/services/device_sync/value_string_encoding.h"
 
 namespace chromeos {
@@ -65,30 +67,47 @@ SyncMetadataNetworkRequestErrorToResultCode(NetworkRequestError error) {
   }
 }
 
-void RecordGroupKeyCreationMetrics(const base::TimeDelta& execution_time) {
+void RecordGroupKeyCreationMetrics(const base::TimeDelta& execution_time,
+                                   CryptAuthAsyncTaskResult result) {
   LogAsyncExecutionTimeMetric(
       "CryptAuth.DeviceSyncV2.MetadataSyncer.ExecutionTime.GroupKeyCreation",
       execution_time);
+  LogCryptAuthAsyncTaskSuccessMetric(
+      "CryptAuth.DeviceSyncV2.MetadataSyncer.AsyncTaskResult.GroupKeyCreation",
+      result);
 }
 
 void RecordLocalDeviceMetadataEncryptionMetrics(
-    const base::TimeDelta& execution_time) {
+    const base::TimeDelta& execution_time,
+    CryptAuthAsyncTaskResult result) {
   LogAsyncExecutionTimeMetric(
       "CryptAuth.DeviceSyncV2.MetadataSyncer.ExecutionTime."
       "LocalDeviceMetadataEncryption",
       execution_time);
+  LogCryptAuthAsyncTaskSuccessMetric(
+      "CryptAuth.DeviceSyncV2.MetadataSyncer.AsyncTaskResult."
+      "LocalDeviceMetadataEncryption",
+      result);
 }
 
-void RecordFirstSyncMetadataMetrics(const base::TimeDelta& execution_time) {
+void RecordFirstSyncMetadataMetrics(const base::TimeDelta& execution_time,
+                                    CryptAuthApiCallResult result) {
   LogAsyncExecutionTimeMetric(
       "CryptAuth.DeviceSyncV2.MetadataSyncer.ExecutionTime.FirstSyncMetadata",
       execution_time);
+  LogCryptAuthApiCallSuccessMetric(
+      "CryptAuth.DeviceSyncV2.MetdataSyncer.ApiCallResult.FirstSyncMetadata",
+      result);
 }
 
-void RecordSecondSyncMetadataMetrics(const base::TimeDelta& execution_time) {
+void RecordSecondSyncMetadataMetrics(const base::TimeDelta& execution_time,
+                                     CryptAuthApiCallResult result) {
   LogAsyncExecutionTimeMetric(
       "CryptAuth.DeviceSyncV2.MetadataSyncer.ExecutionTime.SecondSyncMetadata",
       execution_time);
+  LogCryptAuthApiCallSuccessMetric(
+      "CryptAuth.DeviceSyncV2.MetdataSyncer.ApiCallResult.SecondSyncMetadata",
+      result);
 }
 
 }  // namespace
@@ -196,8 +215,6 @@ void CryptAuthMetadataSyncerImpl::SetState(State state) {
   if (!timeout_for_state)
     return;
 
-  // TODO(https://crbug.com/936273): Add metrics to track failure rates due to
-  // async timeouts.
   timer_->Start(FROM_HERE, *timeout_for_state,
                 base::BindOnce(&CryptAuthMetadataSyncerImpl::OnTimeout,
                                base::Unretained(this)));
@@ -213,16 +230,20 @@ void CryptAuthMetadataSyncerImpl::OnTimeout() {
       base::TimeTicks::Now() - last_state_change_timestamp_;
   switch (state_) {
     case State::kWaitingForGroupKeyCreation:
-      RecordGroupKeyCreationMetrics(execution_time);
+      RecordGroupKeyCreationMetrics(execution_time,
+                                    CryptAuthAsyncTaskResult::kTimeout);
       break;
     case State::kWaitingForLocalDeviceMetadataEncryption:
-      RecordLocalDeviceMetadataEncryptionMetrics(execution_time);
+      RecordLocalDeviceMetadataEncryptionMetrics(
+          execution_time, CryptAuthAsyncTaskResult::kTimeout);
       break;
     case State::kWaitingForFirstSyncMetadataResponse:
-      RecordFirstSyncMetadataMetrics(execution_time);
+      RecordFirstSyncMetadataMetrics(execution_time,
+                                     CryptAuthApiCallResult::kTimeout);
       break;
     case State::kWaitingForSecondSyncMetadataResponse:
-      RecordSecondSyncMetadataMetrics(execution_time);
+      RecordSecondSyncMetadataMetrics(execution_time,
+                                      CryptAuthApiCallResult::kTimeout);
       break;
     default:
       NOTREACHED();
@@ -334,10 +355,13 @@ void CryptAuthMetadataSyncerImpl::OnLocalDeviceMetadataEncrypted(
     const base::Optional<std::string>& encrypted_metadata) {
   DCHECK_EQ(State::kWaitingForLocalDeviceMetadataEncryption, state_);
 
-  RecordLocalDeviceMetadataEncryptionMetrics(base::TimeTicks::Now() -
-                                             last_state_change_timestamp_);
+  bool success = encrypted_metadata.has_value();
+  RecordLocalDeviceMetadataEncryptionMetrics(
+      base::TimeTicks::Now() - last_state_change_timestamp_,
+      success ? CryptAuthAsyncTaskResult::kSuccess
+              : CryptAuthAsyncTaskResult::kError);
 
-  if (!encrypted_metadata) {
+  if (!success) {
     FinishAttempt(
         CryptAuthDeviceSyncResult::ResultCode::kErrorEncryptingDeviceMetadata);
     return;
@@ -367,14 +391,17 @@ void CryptAuthMetadataSyncerImpl::OnGroupKeyCreated(
     const base::Optional<CryptAuthKey>& client_ephemeral_dh) {
   DCHECK_EQ(State::kWaitingForGroupKeyCreation, state_);
 
-  RecordGroupKeyCreationMetrics(base::TimeTicks::Now() -
-                                last_state_change_timestamp_);
-
   const auto it = new_keys.find(
       CryptAuthKeyBundle::Name::kDeviceSyncBetterTogetherGroupKey);
   DCHECK(it != new_keys.end());
 
-  if (!it->second) {
+  bool success = it->second.has_value();
+  RecordGroupKeyCreationMetrics(
+      base::TimeTicks::Now() - last_state_change_timestamp_,
+      success ? CryptAuthAsyncTaskResult::kSuccess
+              : CryptAuthAsyncTaskResult::kError);
+
+  if (!success) {
     FinishAttempt(
         CryptAuthDeviceSyncResult::ResultCode::kErrorCreatingGroupKey);
     return;
@@ -425,9 +452,11 @@ void CryptAuthMetadataSyncerImpl::OnSyncMetadataSuccess(
   base::TimeDelta execution_time =
       base::TimeTicks::Now() - last_state_change_timestamp_;
   if (state_ == State::kWaitingForFirstSyncMetadataResponse)
-    RecordFirstSyncMetadataMetrics(execution_time);
+    RecordFirstSyncMetadataMetrics(execution_time,
+                                   CryptAuthApiCallResult::kSuccess);
   else if (state_ == State::kWaitingForSecondSyncMetadataResponse)
-    RecordSecondSyncMetadataMetrics(execution_time);
+    RecordSecondSyncMetadataMetrics(execution_time,
+                                    CryptAuthApiCallResult::kSuccess);
   else
     NOTREACHED();
 
@@ -441,9 +470,11 @@ void CryptAuthMetadataSyncerImpl::OnSyncMetadataFailure(
   base::TimeDelta execution_time =
       base::TimeTicks::Now() - last_state_change_timestamp_;
   if (state_ == State::kWaitingForFirstSyncMetadataResponse)
-    RecordFirstSyncMetadataMetrics(execution_time);
+    RecordFirstSyncMetadataMetrics(
+        execution_time, CryptAuthApiCallResultFromNetworkRequestError(error));
   else if (state_ == State::kWaitingForSecondSyncMetadataResponse)
-    RecordSecondSyncMetadataMetrics(execution_time);
+    RecordSecondSyncMetadataMetrics(
+        execution_time, CryptAuthApiCallResultFromNetworkRequestError(error));
   else
     NOTREACHED();
 
@@ -465,11 +496,12 @@ void CryptAuthMetadataSyncerImpl::FilterMetadataAndFinishAttempt() {
   bool did_non_fatal_error_occur = false;
   for (const cryptauthv2::DeviceMetadataPacket& metadata :
        sync_metadata_response_->encrypted_metadata()) {
-    // TODO(https://crbug.com/936273): Log metrics for invalid
-    // DeviceMetadataPackets.
     bool is_device_metadata_packet_valid =
         !metadata.device_id().empty() && !metadata.device_name().empty() &&
         !metadata.device_public_key().empty();
+    base::UmaHistogramBoolean(
+        "CryptAuth.DeviceSyncV2.MetadataSyncer.IsDeviceMetadataPacketValid",
+        is_device_metadata_packet_valid);
     if (!is_device_metadata_packet_valid) {
       PA_LOG(ERROR) << "Invalid DeviceMetadataPacket: device_id = "
                     << metadata.device_id() << ", device_public_key = "
@@ -480,9 +512,11 @@ void CryptAuthMetadataSyncerImpl::FilterMetadataAndFinishAttempt() {
       continue;
     }
 
-    // TODO(https://crbug.com/936273): Log metrics for duplicate device IDs.
     bool is_duplicate_id =
         base::Contains(id_to_device_metadata_packet_map_, metadata.device_id());
+    base::UmaHistogramBoolean(
+        "CryptAuth.DeviceSyncV2.MetadataSyncer.IsDuplicateDeviceId",
+        is_duplicate_id);
     if (is_duplicate_id) {
       PA_LOG(ERROR) << "Duplicate device IDs (" << metadata.device_id()
                     << ") in SyncMetadata response.";

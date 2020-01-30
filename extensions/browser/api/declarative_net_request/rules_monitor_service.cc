@@ -305,8 +305,7 @@ void RulesMonitorService::OnRulesetLoaded(LoadRequestData load_data) {
 
   extensions_with_rulesets_.insert(load_data.extension_id);
   LoadRuleset(load_data.extension_id,
-              std::make_unique<CompositeMatcher>(std::move(matchers)),
-              prefs_->GetDNRAllowedPages(load_data.extension_id));
+              std::make_unique<CompositeMatcher>(std::move(matchers)));
 }
 
 void RulesMonitorService::OnDynamicRulesUpdated(
@@ -360,14 +359,13 @@ void RulesMonitorService::UnloadRuleset(const ExtensionId& extension_id) {
   }
 }
 
-void RulesMonitorService::LoadRuleset(const ExtensionId& extension_id,
-                                      std::unique_ptr<CompositeMatcher> matcher,
-                                      URLPatternSet allowed_pages) {
+void RulesMonitorService::LoadRuleset(
+    const ExtensionId& extension_id,
+    std::unique_ptr<CompositeMatcher> matcher) {
   bool increment_extra_headers =
       !ruleset_manager_.HasAnyExtraHeadersMatcher() &&
       matcher->HasAnyExtraHeadersMatcher();
-  ruleset_manager_.AddRuleset(extension_id, std::move(matcher),
-                              prefs_->GetDNRAllowedPages(extension_id));
+  ruleset_manager_.AddRuleset(extension_id, std::move(matcher));
 
   if (increment_extra_headers) {
     ExtensionWebRequestEventRouter::GetInstance()

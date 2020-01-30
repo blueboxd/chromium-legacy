@@ -73,21 +73,19 @@ const base::Feature kBackForwardCache{"BackForwardCache",
 const base::Feature kBackForwardCacheMemoryControl{
     "BackForwardCacheMemoryControls", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Allows swipe left/right from touchpad change browser navigation. Currently
-// only enabled by default on CrOS.
-const base::Feature kTouchpadOverscrollHistoryNavigation {
-  "TouchpadOverscrollHistoryNavigation",
-#if defined(OS_CHROMEOS) || defined(OS_WIN)
-      base::FEATURE_ENABLED_BY_DEFAULT
-#else
-      base::FEATURE_DISABLED_BY_DEFAULT
-#endif
-};
-
 // Block subresource requests whose URLs contain embedded credentials (e.g.
 // `https://user:pass@example.com/resource`).
 const base::Feature kBlockCredentialedSubresources{
     "BlockCredentialedSubresources", base::FEATURE_ENABLED_BY_DEFAULT};
+
+// Use ThreadPriority::DISPLAY for browser UI and IO threads.
+#if defined(OS_ANDROID) || defined(OS_CHROMEOS)
+const base::Feature kBrowserUseDisplayThreadPriority{
+    "BrowserUseDisplayThreadPriority", base::FEATURE_ENABLED_BY_DEFAULT};
+#else
+const base::Feature kBrowserUseDisplayThreadPriority{
+    "BrowserUseDisplayThreadPriority", base::FEATURE_DISABLED_BY_DEFAULT};
+#endif
 
 // When enabled, keyboard user activation will be verified by the browser side.
 const base::Feature kBrowserVerifiedUserActivationKeyboard{
@@ -131,6 +129,10 @@ const base::Feature kCanvas2DImageChromium {
 // When enabled, event.movement is calculated in blink instead of in browser.
 const base::Feature kConsolidatedMovementXY{"ConsolidatedMovementXY",
                                             base::FEATURE_ENABLED_BY_DEFAULT};
+
+// Controls whether the Conversion Measurement API is enabled.
+const base::Feature kConversionMeasurement{"ConversionMeasurement",
+                                           base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Show messages in the DevTools console about upcoming deprecations
 // that would affect sent/received cookies.
@@ -180,6 +182,10 @@ const base::Feature kExpensiveBackgroundTimerThrottling{
 const base::Feature kExtraSafelistedRequestHeadersForOutOfBlinkCors{
     "ExtraSafelistedRequestHeadersForOutOfBlinkCors",
     base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Controls whether Client Hints are guarded by FeaturePolicy.
+const base::Feature kFeaturePolicyForClientHints{
+    "FeaturePolicyForClientHints", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // When enabled Feature Policy propagation is similar to sandbox flags and,
 // sandbox flags are implemented on top of Feature Policy.
@@ -470,6 +476,10 @@ const base::Feature kRunVideoCaptureServiceInBrowserProcess{
 const base::Feature kSavePageAsWebBundle{"SavePageAsWebBundle",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Start streaming scripts on script preload.
+const base::Feature kScriptStreamingOnPreload{"ScriptStreamingOnPreload",
+                                              base::FEATURE_ENABLED_BY_DEFAULT};
+
 // Make sendBeacon throw for a Blob with a non simple type.
 const base::Feature kSendBeaconThrowForBlobWithNonSimpleType{
     "SendBeaconThrowForBlobWithNonSimpleType",
@@ -573,6 +583,21 @@ const base::Feature kTimerThrottlingForHiddenFrames{
 const base::Feature kTouchpadAsyncPinchEvents{"TouchpadAsyncPinchEvents",
                                               base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Allows swipe left/right from touchpad change browser navigation. Currently
+// only enabled by default on CrOS.
+const base::Feature kTouchpadOverscrollHistoryNavigation {
+  "TouchpadOverscrollHistoryNavigation",
+#if defined(OS_CHROMEOS) || defined(OS_WIN)
+      base::FEATURE_ENABLED_BY_DEFAULT
+#else
+      base::FEATURE_DISABLED_BY_DEFAULT
+#endif
+};
+
+// Controls whether the Trusted Types API is available.
+const base::Feature kTrustedDOMTypes{"TrustedDOMTypes",
+                                     base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Controls whether the RenderProcessHost uses its frames' priorities for
 // determining if it should be backgrounded. When all frames associated with a
 // RenderProcessHost are low priority, that process may be backgrounded even if
@@ -596,6 +621,10 @@ const base::Feature kUserActivationSameOriginVisibility{
 // https://tools.ietf.org/html/draft-west-ua-client-hints.
 const base::Feature kUserAgentClientHint{"UserAgentClientHint",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Controls whether the <video>.getVideoPlaybackQuality() API is enabled.
+const base::Feature kVideoPlaybackQuality{"VideoPlaybackQuality",
+                                          base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables V8's low memory mode for subframes. This is used only
 // in conjunction with the --site-per-process feature.
@@ -737,31 +766,6 @@ const base::Feature kWebXrIncubations{"WebXRIncubations",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kWebXrPermissionsApi{"WebXrPermissionsApi",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Start streaming scripts on script preload.
-const base::Feature kScriptStreamingOnPreload{"ScriptStreamingOnPreload",
-                                              base::FEATURE_ENABLED_BY_DEFAULT};
-
-// Controls whether the Trusted Types API is available.
-const base::Feature kTrustedDOMTypes{"TrustedDOMTypes",
-                                     base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Controls whether Client Hints are guarded by FeaturePolicy.
-const base::Feature kFeaturePolicyForClientHints{
-    "FeaturePolicyForClientHints", base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Controls whether the <video>.getVideoPlaybackQuality() API is enabled.
-const base::Feature kVideoPlaybackQuality{"VideoPlaybackQuality",
-                                          base::FEATURE_ENABLED_BY_DEFAULT};
-
-// Use ThreadPriority::DISPLAY for browser UI and IO threads.
-#if defined(OS_ANDROID) || defined(OS_CHROMEOS)
-const base::Feature kBrowserUseDisplayThreadPriority{
-    "BrowserUseDisplayThreadPriority", base::FEATURE_ENABLED_BY_DEFAULT};
-#else
-const base::Feature kBrowserUseDisplayThreadPriority{
-    "BrowserUseDisplayThreadPriority", base::FEATURE_DISABLED_BY_DEFAULT};
-#endif
 
 #if defined(OS_ANDROID)
 // Autofill Accessibility in Android.

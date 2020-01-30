@@ -95,7 +95,8 @@ void DnsProbeRunner::RunProbe(base::OnceClosure callback) {
       network::mojom::ResolveHostParameters::New();
   parameters->dns_query_type = net::DnsQueryType::A;
   parameters->source = net::HostResolverSource::DNS;
-  parameters->allow_cached_response = false;
+  parameters->cache_usage =
+      network::mojom::ResolveHostParameters::CacheUsage::DISALLOWED;
 
   // Use transient NIKs - don't want cached responses anyways, so no benefit
   // from sharing a cache, beyond multiple probes not evicting anything.

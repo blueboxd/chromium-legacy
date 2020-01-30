@@ -75,7 +75,7 @@ SVGParsingError SVGNumber::SetValueAsString(const String& string) {
 }
 
 void SVGNumber::Add(SVGPropertyBase* other, SVGElement*) {
-  SetValue(value_ + ToSVGNumber(other)->Value());
+  SetValue(value_ + To<SVGNumber>(other)->Value());
 }
 
 void SVGNumber::CalculateAnimatedValue(
@@ -86,9 +86,9 @@ void SVGNumber::CalculateAnimatedValue(
     SVGPropertyBase* to,
     SVGPropertyBase* to_at_end_of_duration,
     SVGElement*) {
-  SVGNumber* from_number = ToSVGNumber(from);
-  SVGNumber* to_number = ToSVGNumber(to);
-  SVGNumber* to_at_end_of_duration_number = ToSVGNumber(to_at_end_of_duration);
+  auto* from_number = To<SVGNumber>(from);
+  auto* to_number = To<SVGNumber>(to);
+  auto* to_at_end_of_duration_number = To<SVGNumber>(to_at_end_of_duration);
 
   animation_element.AnimateAdditiveNumber(
       percentage, repeat_count, from_number->Value(), to_number->Value(),
@@ -96,7 +96,7 @@ void SVGNumber::CalculateAnimatedValue(
 }
 
 float SVGNumber::CalculateDistance(SVGPropertyBase* other, SVGElement*) {
-  return fabsf(value_ - ToSVGNumber(other)->Value());
+  return fabsf(value_ - To<SVGNumber>(other)->Value());
 }
 
 SVGNumber* SVGNumberAcceptPercentage::Clone() const {

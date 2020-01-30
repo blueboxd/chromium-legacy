@@ -338,6 +338,15 @@ def main():
                       default=sys.platform in ('linux2', 'darwin'))
   args = parser.parse_args()
 
+  # TODO(crbug.com/1042192): Remove in the next Clang roll.
+  if args.llvm_force_head_revision:
+    global RELEASE_VERSION
+    RELEASE_VERSION = '11.0.0'
+    old_lib_dir = os.path.join(LLVM_BUILD_DIR, 'lib', 'clang', '10.0.0')
+    if (os.path.isdir(old_lib_dir)):
+      print('Removing old lib dir: ' + old_lib_dir)
+      RmTree(old_lib_dir)
+
   if args.lto_lld and not args.bootstrap:
     print('--lto-lld requires --bootstrap')
     return 1
@@ -434,26 +443,24 @@ def main():
     # (this is needed for bootstrap builds and for building the fuchsia runtime)
     projects += ';libcxx'
 
-  base_cmake_args = [
-      '-GNinja',
-      '-DCMAKE_BUILD_TYPE=Release',
-      '-DLLVM_ENABLE_ASSERTIONS=%s' % ('OFF' if args.disable_asserts else 'ON'),
-      '-DLLVM_ENABLE_PROJECTS=' + projects,
-      '-DLLVM_TARGETS_TO_BUILD=' + targets,
-      '-DLLVM_ENABLE_PIC=OFF',
-      '-DLLVM_ENABLE_UNWIND_TABLES=OFF',
-      '-DLLVM_ENABLE_TERMINFO=OFF',
-      '-DCLANG_PLUGIN_SUPPORT=OFF',
-      '-DCLANG_ENABLE_STATIC_ANALYZER=OFF',
-      '-DCLANG_ENABLE_ARCMT=OFF',
-      '-DBUG_REPORT_URL=' + BUG_REPORT_URL,
-      # See PR41956: Don't link libcxx into libfuzzer.
-      '-DCOMPILER_RT_USE_LIBCXX=NO',
-      # Don't run Go bindings tests; PGO makes them confused.
-      '-DLLVM_INCLUDE_GO_TESTS=OFF',
-      # TODO(b/148147812) Goma client doesn't handle in-process cc1.
-      '-DCLANG_SPAWN_CC1=ON',
-  ]
+  base_cmake_args = ['-GNinja',
+                     '-DCMAKE_BUILD_TYPE=Release',
+                     '-DLLVM_ENABLE_ASSERTIONS=%s' %
+                         ('OFF' if args.disable_asserts else 'ON'),
+                     '-DLLVM_ENABLE_PROJECTS=' + projects,
+                     '-DLLVM_TARGETS_TO_BUILD=' + targets,
+                     '-DLLVM_ENABLE_PIC=OFF',
+                     '-DLLVM_ENABLE_UNWIND_TABLES=OFF',
+                     '-DLLVM_ENABLE_TERMINFO=OFF',
+                     '-DCLANG_PLUGIN_SUPPORT=OFF',
+                     '-DCLANG_ENABLE_STATIC_ANALYZER=OFF',
+                     '-DCLANG_ENABLE_ARCMT=OFF',
+                     '-DBUG_REPORT_URL=' + BUG_REPORT_URL,
+                     # See PR41956: Don't link libcxx into libfuzzer.
+                     '-DCOMPILER_RT_USE_LIBCXX=NO',
+                     # Don't run Go bindings tests; PGO makes them confused.
+                     '-DLLVM_INCLUDE_GO_TESTS=OFF',
+                     ]
 
   if args.gcc_toolchain:
     # Don't use the custom gcc toolchain when building compiler-rt tests; those

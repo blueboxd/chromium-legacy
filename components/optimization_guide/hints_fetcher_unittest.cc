@@ -171,8 +171,7 @@ TEST_F(HintsFetcherTest, FetchOptimizationGuideServiceHints) {
       "OptimizationGuide.HintsFetcher.GetHintsRequest.FetchLatency.BatchUpdate",
       1);
   histogram_tester.ExpectUniqueSample(
-      "OptimizationGuide.HintsFetcher.GetHintsRequest.RequestStatus."
-      "BatchUpdate",
+      "OptimizationGuide.HintsFetcher.RequestStatus.BatchUpdate",
       HintsFetcherRequestStatus::kSuccess, 1);
 }
 
@@ -189,8 +188,7 @@ TEST_F(HintsFetcherTest, FetchInProgress) {
     EXPECT_TRUE(FetchHints({"foo.com"}, {} /* urls */));
     EXPECT_FALSE(FetchHints({"bar.com"}, {} /* urls */));
     histogram_tester.ExpectUniqueSample(
-        "OptimizationGuide.HintsFetcher.GetHintsRequest.RequestStatus."
-        "BatchUpdate",
+        "OptimizationGuide.HintsFetcher.RequestStatus.BatchUpdate",
         HintsFetcherRequestStatus::kFetcherBusy, 1);
   }
 
@@ -201,8 +199,7 @@ TEST_F(HintsFetcherTest, FetchInProgress) {
     SimulateResponse(response_content, net::HTTP_OK);
     EXPECT_TRUE(FetchHints({"bar.com"}, {} /* urls */));
     histogram_tester.ExpectUniqueSample(
-        "OptimizationGuide.HintsFetcher.GetHintsRequest.RequestStatus."
-        "BatchUpdate",
+        "OptimizationGuide.HintsFetcher.RequestStatus.BatchUpdate",
         HintsFetcherRequestStatus::kSuccess, 1);
   }
 }
@@ -277,8 +274,7 @@ TEST_F(HintsFetcherTest, FetchReturned404) {
   histogram_tester.ExpectTotalCount(
       "OptimizationGuide.HintsFetcher.GetHintsRequest.FetchLatency", 0);
   histogram_tester.ExpectUniqueSample(
-      "OptimizationGuide.HintsFetcher.GetHintsRequest.RequestStatus."
-      "BatchUpdate",
+      "OptimizationGuide.HintsFetcher.RequestStatus.BatchUpdate",
       HintsFetcherRequestStatus::kResponseError, 1);
 }
 
@@ -295,8 +291,7 @@ TEST_F(HintsFetcherTest, FetchReturnBadResponse) {
   histogram_tester.ExpectTotalCount(
       "OptimizationGuide.HintsFetcher.GetHintsRequest.FetchLatency", 0);
   histogram_tester.ExpectUniqueSample(
-      "OptimizationGuide.HintsFetcher.GetHintsRequest.RequestStatus."
-      "BatchUpdate",
+      "OptimizationGuide.HintsFetcher.RequestStatus.BatchUpdate",
       HintsFetcherRequestStatus::kResponseError, 1);
 }
 
@@ -312,8 +307,7 @@ TEST_F(HintsFetcherTest, FetchAttemptWhenNetworkOffline) {
   histogram_tester.ExpectTotalCount(
       "OptimizationGuide.HintsFetcher.GetHintsRequest.FetchLatency", 0);
   histogram_tester.ExpectUniqueSample(
-      "OptimizationGuide.HintsFetcher.GetHintsRequest.RequestStatus."
-      "BatchUpdate",
+      "OptimizationGuide.HintsFetcher.RequestStatus.BatchUpdate",
       HintsFetcherRequestStatus::kNetworkOffline, 1);
 
   SetConnectionOnline();
@@ -557,8 +551,7 @@ TEST_F(HintsFetcherTest, OnlyURLsToFetch) {
       "OptimizationGuide.HintsFetcher.GetHintsRequest.FetchLatency.BatchUpdate",
       1);
   histogram_tester.ExpectUniqueSample(
-      "OptimizationGuide.HintsFetcher.GetHintsRequest.RequestStatus."
-      "BatchUpdate",
+      "OptimizationGuide.HintsFetcher.RequestStatus.BatchUpdate",
       static_cast<int>(HintsFetcherRequestStatus::kSuccess), 1);
 }
 
@@ -569,8 +562,7 @@ TEST_F(HintsFetcherTest, NoHostsOrURLsToFetch) {
   EXPECT_FALSE(FetchHints({} /* hosts */, {} /* urls */));
   EXPECT_FALSE(hints_fetched());
   histogram_tester.ExpectUniqueSample(
-      "OptimizationGuide.HintsFetcher.GetHintsRequest.RequestStatus."
-      "BatchUpdate",
+      "OptimizationGuide.HintsFetcher.RequestStatus.BatchUpdate",
       static_cast<int>(HintsFetcherRequestStatus::kNoHostsOrURLsToFetch), 1);
 }
 

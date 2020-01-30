@@ -3015,10 +3015,18 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
     if (position->IsNullPosition())
       return nil;
 
-    AXPlatformRange range(position->CreatePreviousLineStartPosition(
-                              ui::AXBoundaryBehavior::StopIfAlreadyAtBoundary),
-                          position->CreateNextLineEndPosition(
-                              ui::AXBoundaryBehavior::StopIfAlreadyAtBoundary));
+    // If the initial position is between lines, e.g. if it is on a soft line
+    // break or on an ignored position that separates lines, we have to return
+    // the previous line. This is what Safari does.
+    //
+    // Note that hard line breaks are on a line of their own.
+    BrowserAccessibilityPositionInstance startPosition =
+        position->CreatePreviousLineStartPosition(
+            ui::AXBoundaryBehavior::StopIfAlreadyAtBoundary);
+    BrowserAccessibilityPositionInstance endPosition =
+        startPosition->CreateNextLineStartPosition(
+            ui::AXBoundaryBehavior::StopAtLastAnchorBoundary);
+    AXPlatformRange range(std::move(startPosition), std::move(endPosition));
     return CreateTextMarkerRange(std::move(range));
   }
 

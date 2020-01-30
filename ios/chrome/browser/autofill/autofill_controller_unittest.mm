@@ -378,7 +378,7 @@ TEST_F(AutofillControllerTest, ReadFormName) {
 TEST_F(AutofillControllerTest, ProfileImport) {
   PersonalDataManager* personal_data_manager =
       PersonalDataManagerFactory::GetForBrowserState(
-          ios::ChromeBrowserState::FromBrowserState(GetBrowserState()));
+          ChromeBrowserState::FromBrowserState(GetBrowserState()));
   // Check there are no registered profiles already.
   EXPECT_EQ(0U, personal_data_manager->GetProfiles().size());
   ASSERT_TRUE(LoadHtmlAndWaitForFormFetched(kProfileFormHtml, 1));
@@ -413,7 +413,7 @@ void AutofillControllerTest::SetUpForSuggestions(
     size_t expected_number_of_forms) {
   PersonalDataManager* personal_data_manager =
       PersonalDataManagerFactory::GetForBrowserState(
-          ios::ChromeBrowserState::FromBrowserState(GetBrowserState()));
+          ChromeBrowserState::FromBrowserState(GetBrowserState()));
   AutofillProfile profile(base::GenerateGUID(), "https://www.example.com/");
   profile.SetRawInfo(NAME_FULL, base::UTF8ToUTF16("Homer Simpson"));
   profile.SetRawInfo(ADDRESS_HOME_LINE1, base::UTF8ToUTF16("123 Main Street"));
@@ -478,7 +478,7 @@ TEST_F(AutofillControllerTest, ProfileSuggestionsFromSelectField) {
 TEST_F(AutofillControllerTest, MultipleProfileSuggestions) {
   PersonalDataManager* personal_data_manager =
       PersonalDataManagerFactory::GetForBrowserState(
-          ios::ChromeBrowserState::FromBrowserState(GetBrowserState()));
+          ChromeBrowserState::FromBrowserState(GetBrowserState()));
   PersonalDataManagerFinishedProfileTasksWaiter waiter(personal_data_manager);
 
   AutofillProfile profile(base::GenerateGUID(), "https://www.example.com/");
@@ -644,7 +644,7 @@ TEST_F(AutofillControllerTest, CreditCardImport) {
   InfoBarManagerImpl::CreateForWebState(web_state());
   PersonalDataManager* personal_data_manager =
       PersonalDataManagerFactory::GetForBrowserState(
-          ios::ChromeBrowserState::FromBrowserState(GetBrowserState()));
+          ChromeBrowserState::FromBrowserState(GetBrowserState()));
 
   // Check there are no registered profiles already.
   EXPECT_EQ(0U, personal_data_manager->GetCreditCards().size());

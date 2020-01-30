@@ -4,6 +4,8 @@
 
 #include "ash/public/cpp/shelf_config.h"
 
+#include "ash/accessibility/accessibility_controller_impl.h"
+#include "ash/accessibility/accessibility_observer.h"
 #include "ash/app_list/app_list_controller_impl.h"
 #include "ash/public/cpp/ash_features.h"
 #include "ash/session/session_controller_impl.h"
@@ -11,6 +13,7 @@
 #include "ash/style/ash_color_provider.h"
 #include "ash/wallpaper/wallpaper_controller_impl.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
+#include "base/scoped_observer.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "ui/gfx/color_analysis.h"
 #include "ui/gfx/color_palette.h"
@@ -30,7 +33,45 @@ bool IsTabletMode() {
          Shell::Get()->tablet_mode_controller()->InTabletMode();
 }
 
+// Whether the the shelf control buttons must be shown for accessibility
+// reasons.
+bool ShelfControlsForcedShownForAccessibility() {
+  AccessibilityControllerImpl* accessibility_controller =
+      Shell::Get()->accessibility_controller();
+  return accessibility_controller->spoken_feedback_enabled() ||
+         accessibility_controller->autoclick_enabled() ||
+         accessibility_controller->switch_access_enabled();
+}
+
 }  // namespace
+
+class ShelfConfig::ShelfAccessibilityObserver : public AccessibilityObserver {
+ public:
+  ShelfAccessibilityObserver(
+      const base::RepeatingClosure& accessibility_state_changed_callback)
+      : accessibility_state_changed_callback_(
+            accessibility_state_changed_callback) {
+    observer_.Add(Shell::Get()->accessibility_controller());
+  }
+
+  ShelfAccessibilityObserver(const ShelfAccessibilityObserver& other) = delete;
+  ShelfAccessibilityObserver& operator=(
+      const ShelfAccessibilityObserver& other) = delete;
+
+  ~ShelfAccessibilityObserver() override = default;
+
+  // AccessibilityObserver:
+  void OnAccessibilityStatusChanged() override {
+    accessibility_state_changed_callback_.Run();
+  }
+  void OnAccessibilityControllerShutdown() override { observer_.RemoveAll(); }
+
+ private:
+  base::RepeatingClosure accessibility_state_changed_callback_;
+
+  ScopedObserver<AccessibilityControllerImpl, AccessibilityObserver> observer_{
+      this};
+};
 
 ShelfConfig::ShelfConfig()
     : is_dense_(false),
@@ -63,6 +104,9 @@ ShelfConfig::ShelfConfig()
       mousewheel_scroll_offset_threshold_(20),
       in_app_control_button_height_inset_(4),
       app_icon_end_padding_(4) {
+  accessibility_observer_ = std::make_unique<ShelfAccessibilityObserver>(
+      base::BindRepeating(&ShelfConfig::UpdateConfigForAccessibilityState,
+                          base::Unretained(this)));
   UpdateConfig(is_app_list_visible_);
 }
 
@@ -228,7 +272,8 @@ void ShelfConfig::UpdateConfig(bool app_list_visible) {
   // TODO(http::crbug.com/1008956): Add a user preference that would allow the
   // user or a policy to override this behavior.
   const bool new_shelf_controls_shown =
-      !(in_tablet_mode && features::IsHideShelfControlsInTabletModeEnabled());
+      !(in_tablet_mode && features::IsHideShelfControlsInTabletModeEnabled()) ||
+      ShelfControlsForcedShownForAccessibility();
 
   if (new_is_dense == is_dense_ &&
       shelf_controls_shown_ == new_shelf_controls_shown &&
@@ -340,6 +385,10 @@ int ShelfConfig::GetAppIconEndPadding() const {
   return (chromeos::switches::ShouldShowShelfHotseat() && IsTabletMode())
              ? app_icon_end_padding_
              : 0;
+}
+
+void ShelfConfig::UpdateConfigForAccessibilityState() {
+  UpdateConfig(is_app_list_visible_);
 }
 
 void ShelfConfig::OnShelfConfigUpdated() {

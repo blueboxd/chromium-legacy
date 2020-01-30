@@ -113,12 +113,6 @@ class CORE_EXPORT ScrollableArea : public GarbageCollectedMixin {
                 mojom::blink::ScrollIntoViewParams::Type,
                 mojom::blink::ScrollIntoViewParams::Behavior =
                     mojom::blink::ScrollIntoViewParams::Behavior::kInstant);
-  void SetScrollOffsetSingleAxis(
-      ScrollbarOrientation,
-      float,
-      mojom::blink::ScrollIntoViewParams::Type,
-      mojom::blink::ScrollIntoViewParams::Behavior =
-          mojom::blink::ScrollIntoViewParams::Behavior::kInstant);
 
   virtual void SetPendingHistoryRestoreScrollOffset(
       const HistoryItem::ViewState& view_state,
@@ -568,6 +562,12 @@ class CORE_EXPORT ScrollableArea : public GarbageCollectedMixin {
   virtual int PageStep(ScrollbarOrientation) const;
   virtual int DocumentStep(ScrollbarOrientation) const;
   virtual float PixelStep(ScrollbarOrientation) const;
+
+  // This returns the amount a percent-based delta should be resolved against;
+  // which is the visible height of the scroller. This value is eventually
+  // used to scroll the incoming scroll delta, where a scroll delta of 1
+  // represents one hundred percent.
+  float PercentageStep(ScrollbarOrientation) const;
 
   // Returns true if a snap point was found.
   bool PerformSnapping(

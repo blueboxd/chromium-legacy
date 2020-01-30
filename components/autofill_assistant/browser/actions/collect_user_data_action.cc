@@ -505,7 +505,6 @@ void CollectUserDataAction::OnGetUserData(
         ->set_is_terms_and_conditions_accepted(
             user_data->terms_and_conditions_ ==
             TermsAndConditionsState::ACCEPTED);
-
     if (user_model != nullptr &&
         collect_user_data.has_generic_user_interface()) {
       *processed_action_proto_->mutable_collect_user_data_result()
@@ -693,6 +692,12 @@ bool CollectUserDataAction::CreateOptionsFromProto() {
         section);
   }
 
+  if (collect_user_data.has_info_section_text() &&
+      collect_user_data.info_section_text().empty()) {
+    DVLOG(1) << "Info text set but empty.";
+    return false;
+  }
+
   if (collect_user_data.has_generic_user_interface()) {
     collect_user_data_options_->generic_user_interface =
         collect_user_data.generic_user_interface();
@@ -732,6 +737,11 @@ bool CollectUserDataAction::CreateOptionsFromProto() {
     }
     collect_user_data_options_->terms_require_review_text =
         collect_user_data.terms_require_review_text();
+  }
+
+  if (collect_user_data.has_info_section_text()) {
+    collect_user_data_options_->info_section_text =
+        collect_user_data.info_section_text();
   }
 
   collect_user_data_options_->privacy_notice_text =

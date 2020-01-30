@@ -26,6 +26,11 @@ export class TabStripEmbedderProxy {
     return sendWithPromise('getLayout');
   }
 
+  /** @return {!Promise<number>} */
+  getWindowId() {
+    return sendWithPromise('getWindowId');
+  }
+
   observeThemeChanges() {
     chrome.send('observeThemeChanges');
   }

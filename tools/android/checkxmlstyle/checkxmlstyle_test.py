@@ -26,7 +26,8 @@ class IncludedFilesTest(unittest.TestCase):
         MockFile('content/java/res_test/test.xml', lines),
         MockFile('components/test/java/res_test/test.xml', lines)
     ]
-    self.assertEqual(4, len(list(checkxmlstyle.IncludedFiles(mock_input_api))))
+    self.assertEqual(4,
+                     len(list(checkxmlstyle.IncludedFiles(mock_input_api))))
 
   def testFileExcluded(self):
     lines = []
@@ -34,12 +35,12 @@ class IncludedFilesTest(unittest.TestCase):
     mock_input_api.files = [
         MockFile('chrome/res_test/test.xml', lines),
         MockFile('ui/test/test.xml', lines),
-        MockFile('ui/java/res/test.java', lines),
         MockFile('content/java/res.xml', lines),
         MockFile('components/java/test.xml', lines),
         MockFile('test/java/res/test.xml', lines)
     ]
-    self.assertEqual(0, len(list(checkxmlstyle.IncludedFiles(mock_input_api))))
+    self.assertEqual(0,
+                     len(list(checkxmlstyle.IncludedFiles(mock_input_api))))
 
 
 class ColorFormatTest(unittest.TestCase):
@@ -352,6 +353,38 @@ class NewTextAppearanceTest(unittest.TestCase):
     errors = checkxmlstyle._CheckNewTextAppearance(
         mock_input_api, MockOutputApi())
     self.assertEqual(0, len(errors))
+
+
+class UnfavoredWidgetsTest(unittest.TestCase):
+
+  def testButtonCompatUsage(self):
+    xmlChanges = [
+        '<Button',
+        '   android:text="@string/hello"',
+        '   android:text="@color/modern_blue_600"',
+        '/>',
+        '',
+        '<android.support.v7.widget.AppCompatButton',
+        '   android:text="@string/welcome"',
+        '   android:color="@color/modern_purple_300"',
+        '/>',
+        '<org.chromium.ui.widget.ButtonCompat',
+        '   android:id="@+id/action_button"',
+        '/>'
+    ]
+    mock_input_api = MockInputApi()
+    mock_input_api.files = [
+        MockFile('ui/android/java/res/layout/dropdown_item.xml', xmlChanges)
+    ]
+    result = checkxmlstyle._CheckButtonCompatWidgetUsage(
+        mock_input_api, MockOutputApi())
+
+    self.assertEqual(1, len(result))
+    self.assertEqual(2, len(result[0].items))
+    self.assertEqual('  ui/android/java/res/layout/dropdown_item.xml:1',
+                     result[0].items[0].splitlines()[0])
+    self.assertEqual('  ui/android/java/res/layout/dropdown_item.xml:6',
+                     result[0].items[1].splitlines()[0])
 
 
 if __name__ == '__main__':

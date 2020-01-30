@@ -22,10 +22,19 @@ typedef khronos_uint64_t EGLuint64CHROMIUM;
 EGLAPI EGLBoolean EGLAPIENTRY eglGetSyncValuesCHROMIUM(
     EGLDisplay dpy, EGLSurface surface, EGLuint64CHROMIUM *ust,
     EGLuint64CHROMIUM *msc, EGLuint64CHROMIUM *sbc);
+EGLAPI EGLBoolean EGLAPIENTRY eglGetMscRateCHROMIUM(EGLDisplay dpy,
+                                                    EGLSurface surface,
+                                                    EGLint* numerator,
+                                                    EGLint* denominator);
 #endif /* EGL_EGLEXT_PROTOTYPES */
 typedef EGLBoolean (EGLAPIENTRYP PFNEGLGETSYNCVALUESCHROMIUMPROC)
     (EGLDisplay dpy, EGLSurface surface, EGLuint64CHROMIUM *ust,
      EGLuint64CHROMIUM *msc, EGLuint64CHROMIUM *sbc);
+typedef EGLBoolean(EGLAPIENTRYP PFNEGLGETMSCRATECHROMIUMPROC)(
+    EGLDisplay dpy,
+    EGLSurface surface,
+    EGLint* numerator,
+    EGLint* denominator);
 #endif
 #endif
 

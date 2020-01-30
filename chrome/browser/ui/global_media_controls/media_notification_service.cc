@@ -319,11 +319,6 @@ void MediaNotificationService::OnFocusGained(
     it->second.SetController(std::move(session_controller));
     it->second.item()->SetController(std::move(item_controller),
                                      std::move(session->session_info));
-    if (!base::Contains(dragged_out_session_ids_, id))
-      active_controllable_session_ids_.insert(id);
-    frozen_session_ids_.erase(id);
-    for (auto& observer : observers_)
-      observer.OnNotificationListChanged();
   } else {
     sessions_.emplace(
         std::piecewise_construct, std::forward_as_tuple(id),
@@ -347,7 +342,17 @@ void MediaNotificationService::OnFocusLost(
   if (it == sessions_.end())
     return;
 
-  it->second.item()->Freeze();
+  // If we're not currently showing this item, then we can just remove it.
+  if (!base::Contains(active_controllable_session_ids_, id) &&
+      !base::Contains(frozen_session_ids_, id) &&
+      !base::Contains(dragged_out_session_ids_, id)) {
+    RemoveItem(id);
+    return;
+  }
+
+  // Otherwise, freeze it in case it regains focus quickly.
+  it->second.item()->Freeze(base::BindOnce(
+      &MediaNotificationService::OnItemUnfrozen, base::Unretained(this), id));
   active_controllable_session_ids_.erase(id);
   frozen_session_ids_.insert(id);
   for (auto& observer : observers_)
@@ -643,6 +648,16 @@ void MediaNotificationService::OnSessionBecameInactive(const std::string& id) {
   inactive_session_ids_.insert(id);
 
   HideNotification(id);
+}
+
+void MediaNotificationService::OnItemUnfrozen(const std::string& id) {
+  frozen_session_ids_.erase(id);
+
+  if (!base::Contains(dragged_out_session_ids_, id))
+    active_controllable_session_ids_.insert(id);
+
+  for (auto& observer : observers_)
+    observer.OnNotificationListChanged();
 }
 
 void MediaNotificationService::OnReceivedAudioFocusRequests(

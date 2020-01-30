@@ -28,9 +28,7 @@ source_set("libfuzzer_main") {
     # appropriate parameter passing to run the target in an isolate. This
     # directive makes this script and its dependencies to be included in the
     # target's isolate.
-    data = [
-      "//tools/code_coverage/",
-    ]
+    data = [ "//tools/code_coverage/" ]
   }
 }
 

@@ -757,6 +757,13 @@ void SourceBufferStream::OnMemoryPressure(
     base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level,
     bool force_instant_gc) {
   DVLOG(4) << __func__ << " level=" << memory_pressure_level;
+  // TODO(sebmarchand): Check if MEMORY_PRESSURE_LEVEL_MODERATE should also be
+  // ignored.
+  if (memory_pressure_level ==
+      base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_NONE) {
+    return;
+  }
+
   memory_pressure_level_ = memory_pressure_level;
 
   if (force_instant_gc)

@@ -729,7 +729,7 @@ void TestDomainMetric(const base::Optional<DomainMetricCountType>& metric,
                       int expected) {
   if (expected >= 0) {
     ASSERT_TRUE(metric.has_value());
-    EXPECT_EQ(metric.value().count, expected);
+    EXPECT_EQ(expected, metric.value().count);
   } else {
     EXPECT_FALSE(metric.has_value());
   }
@@ -780,7 +780,7 @@ TEST_F(HistoryServiceTest, GetDomainDiversityShortBasetimeRange) {
   base::Time query_time = base::Time::Now();
 
   // Make sure |query_time| is at least some time past the midnight so that
-  // some domain visits can be inserted between |query_time| and midnight\
+  // some domain visits can be inserted between |query_time| and midnight
   // for testing.
   query_time =
       std::max(query_time.LocalMidnight() + base::TimeDelta::FromMinutes(10),
@@ -816,16 +816,16 @@ TEST_F(HistoryServiceTest, GetDomainDiversityShortBasetimeRange) {
       history::kEnableLast1DayMetric | history::kEnableLast7DayMetric |
           history::kEnableLast28DayMetric,
       &tracker_);
-  EXPECT_EQ(res.size(), 0u);
+  EXPECT_EQ(0u, res.size());
 
-  // Metrics will be computed for each of the 4 continuous midnights .
+  // Metrics will be computed for each of the 4 continuous midnights.
   res = GetDomainDiversityHelper(
       history, GetTimeInThePast(query_time, 4, 0), query_time,
       history::kEnableLast1DayMetric | history::kEnableLast7DayMetric |
           history::kEnableLast28DayMetric,
       &tracker_);
 
-  ASSERT_EQ(res.size(), 4u);
+  ASSERT_EQ(4u, res.size());
 
   TestDomainMetricSet(res[0], 1, 2, 2);
   TestDomainMetricSet(res[1], 2, 2, 2);
@@ -863,12 +863,12 @@ TEST_F(HistoryServiceTest, GetDomainDiversityLongBasetimeRange) {
                 GetTimeInThePast(query_time, 1, 13));
 
   DomainDiversityResults res = GetDomainDiversityHelper(
-      history, GetTimeInThePast(query_time, 7, 12), query_time,
+      history, GetTimeInThePast(query_time, 10, 12), query_time,
       history::kEnableLast1DayMetric | history::kEnableLast7DayMetric |
           history::kEnableLast28DayMetric,
       &tracker_);
   // Only up to seven days will be considered.
-  ASSERT_EQ(res.size(), 7u);
+  ASSERT_EQ(7u, res.size());
 
   TestDomainMetricSet(res[0], 2, 3, 5);
   TestDomainMetricSet(res[1], 1, 2, 4);
@@ -898,7 +898,7 @@ TEST_F(HistoryServiceTest, GetDomainDiversityBitmaskTest) {
       history, GetTimeInThePast(query_time, 7, 12), query_time,
       history::kEnableLast1DayMetric | history::kEnableLast7DayMetric,
       &tracker_);
-  ASSERT_EQ(res.size(), 7u);
+  ASSERT_EQ(7u, res.size());
 
   TestDomainMetricSet(res[0], 1, 2, -1);
   TestDomainMetricSet(res[1], 0, 1, -1);
@@ -913,7 +913,7 @@ TEST_F(HistoryServiceTest, GetDomainDiversityBitmaskTest) {
       history::kEnableLast28DayMetric | history::kEnableLast7DayMetric,
       &tracker_);
 
-  ASSERT_EQ(res.size(), 6u);
+  ASSERT_EQ(6u, res.size());
   TestDomainMetricSet(res[0], -1, 2, 3);
   TestDomainMetricSet(res[1], -1, 1, 2);
   TestDomainMetricSet(res[2], -1, 1, 2);

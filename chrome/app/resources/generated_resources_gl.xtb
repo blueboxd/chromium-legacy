@@ -26,7 +26,6 @@
 <translation id="1031362278801463162">Cargando vista previa</translation>
 <translation id="1032605640136438169">Revísaas</translation>
 <translation id="103279545524624934">Libera espazo en disco para iniciar as aplicacións de Android.</translation>
-<translation id="1033343386521881354">Atopouse 1 impresora no servidor de impresión.</translation>
 <translation id="1033780634303702874">Acceder aos teus dispositivos en serie</translation>
 <translation id="1034942643314881546">Activando ADB para crear a ilustración de aplicacións</translation>
 <translation id="1036348656032585052">Desactivar</translation>
@@ -34,7 +33,6 @@
 <translation id="1036982837258183574">Preme |<ph name="ACCELERATOR" />| para saír da pantalla completa</translation>
 <translation id="1038168778161626396">Só cifrar</translation>
 <translation id="1039337018183941703">O ficheiro non é válido ou está danado</translation>
-<translation id="1039850285407663109">Descoñécese o ficheiro seleccionado e pode ser perigoso. É recomendable que o analices antes de abrilo.</translation>
 <translation id="1041175011127912238">Esta páxina non responde</translation>
 <translation id="1041263367839475438">Dispositivos dispoñibles</translation>
 <translation id="1042174272890264476">O ordenador tamén inclúe a biblioteca de <ph name="SHORT_PRODUCT_NAME" />. RLZ asigna unha etiqueta que non é exclusiva e sen identificación persoal para medir as buscas e o uso de <ph name="SHORT_PRODUCT_NAME" /> derivados dunha determinada campaña promocional. En ocasións estas etiquetas aparecen nas consultas de Busca de Google en <ph name="PRODUCT_NAME" />.</translation>
@@ -638,7 +636,6 @@
 <translation id="1858585891038687145">Confía neste certificado para identificar fabricantes de software</translation>
 <translation id="1861262398884155592">Este cartafol está baleiro</translation>
 <translation id="1863182668524159459">Non se encontrou ningún porto de serie</translation>
-<translation id="1863552924692672565">Descoñécese o ficheiro <ph name="FILE_NAME" />. Analízao para minimizar o risco.</translation>
 <translation id="1864111464094315414">Inicio de sesión</translation>
 <translation id="1864400682872660285">Cores máis frías</translation>
 <translation id="1864454756846565995">Dispositivo USB-C (porto posterior)</translation>
@@ -4024,7 +4021,6 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="6678717876183468697">URL da consulta</translation>
 <translation id="6680442031740878064">Espazo dispoñible: <ph name="AVAILABLE_SPACE" /></translation>
 <translation id="6680650203439190394">Velocidade</translation>
-<translation id="6681301928961274620">Non se atopou ningunha impresora no servidor de impresión.</translation>
 <translation id="6681668084120808868">Tirar foto</translation>
 <translation id="6681964764822470072">Desinstalarase "<ph name="APP_NAME" />".</translation>
 <translation id="668599234725812620">Abrir Google Play</translation>
@@ -5553,7 +5549,6 @@ Mantén o ficheiro de clave nun lugar seguro, xa que o precisarás para crear no
 <translation id="8794025342371547160">IP restrinxida</translation>
 <translation id="879413103056696865">Mentres a zona wifi estea activada, o teu teléfono <ph name="PHONE_NAME" />:</translation>
 <translation id="8795916974678578410">Nova ventá</translation>
-<translation id="8797086401386164142">Atopáronse <ph name="NUM_PRINTERS" /> impresoras no servidor de impresión.</translation>
 <translation id="8797459392481275117">Non traducir nunca este sitio</translation>
 <translation id="8798099450830957504">Predeterminado</translation>
 <translation id="8798441408945964110">Nome do fornecedor</translation>

@@ -166,7 +166,7 @@ IN_PROC_BROWSER_TEST_F(DownloadBrowserTest, DisallowNoDownload) {
 
   // Downloads always count as failed navigations.
   TestNavigationObserver observer(
-      url, TestNavigationObserver::NavigationEvent::Failure, shell());
+      url, TestNavigationObserver::NavigationEvent::kFailure, shell());
   shell()->tab()->GetNavigationController()->Navigate(url);
   observer.Wait();
 

@@ -71,6 +71,11 @@ void KioskAppManagerBase::OnKioskAppDataLoadFailure(
     observer.OnKioskAppDataLoadFailure(app_id);
 }
 
+void KioskAppManagerBase::OnExternalCacheDamaged(const std::string& app_id) {
+  // Should be implemented only in those kiosks that use ExternalCache.
+  NOTREACHED();
+}
+
 bool KioskAppManagerBase::GetDisableBailoutShortcut() const {
   bool enable;
   if (CrosSettings::Get()->GetBoolean(

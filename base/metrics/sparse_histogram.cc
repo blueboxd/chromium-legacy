@@ -173,8 +173,9 @@ void SparseHistogram::WriteHTMLGraph(std::string* output) const {
   std::unique_ptr<HistogramSamples> snapshot = SnapshotSamples();
 
   output->append("<PRE>");
+  output->append("<h4>");
   WriteAsciiHeader(*snapshot, output);
-  output->append(kHtmlNewLine);
+  output->append("</h4>");
   WriteAsciiBody(*snapshot, true, kHtmlNewLine, output);
   output->append("</PRE>");
 }

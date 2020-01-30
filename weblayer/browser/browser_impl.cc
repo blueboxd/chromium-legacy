@@ -17,6 +17,7 @@
 
 #if defined(OS_ANDROID)
 #include "base/android/callback_android.h"
+#include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/json/json_writer.h"
 #include "weblayer/browser/java/jni/BrowserImpl_jni.h"
@@ -24,26 +25,28 @@
 
 namespace weblayer {
 
-std::unique_ptr<Browser> Browser::Create(Profile* profile,
-                                         const std::string& persistence_id) {
+std::unique_ptr<Browser> Browser::Create(
+    Profile* profile,
+    const PersistenceInfo* persistence_info) {
   return std::make_unique<BrowserImpl>(static_cast<ProfileImpl*>(profile),
-                                       persistence_id);
+                                       persistence_info);
 }
 
 #if defined(OS_ANDROID)
 BrowserImpl::BrowserImpl(ProfileImpl* profile,
-                         const std::string& persistence_id,
+                         const PersistenceInfo* persistence_info,
                          const base::android::JavaParamRef<jobject>& java_impl)
-    : BrowserImpl(profile, persistence_id) {
+    : BrowserImpl(profile, persistence_info) {
   java_impl_ = java_impl;
 }
 #endif
 
 BrowserImpl::BrowserImpl(ProfileImpl* profile,
-                         const std::string& persistence_id)
-    : profile_(profile), persistence_id_(persistence_id) {
-  if (!persistence_id.empty())
-    CreateSessionServiceAndRestore();
+                         const PersistenceInfo* persistence_info)
+    : profile_(profile),
+      persistence_id_(persistence_info ? persistence_info->id : std::string()) {
+  if (persistence_info)
+    CreateSessionServiceAndRestore(*persistence_info);
 }
 
 BrowserImpl::~BrowserImpl() {
@@ -121,7 +124,23 @@ base::android::ScopedJavaLocalRef<jstring> BrowserImpl::GetPersistenceId(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& caller) {
   return base::android::ScopedJavaLocalRef<jstring>(
-      base::android::ConvertUTF8ToJavaString(env, persistence_id_));
+      base::android::ConvertUTF8ToJavaString(env, GetPersistenceId()));
+}
+
+void BrowserImpl::SaveSessionServiceIfNecessary(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& caller) {
+  session_service_->SaveIfNecessary();
+}
+
+base::android::ScopedJavaLocalRef<jbyteArray>
+BrowserImpl::GetSessionServiceCryptoKey(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& caller) {
+  std::vector<uint8_t> key;
+  if (session_service_)
+    key = session_service_->GetCryptoKey();
+  return base::android::ToJavaByteArray(env, key);
 }
 
 #endif
@@ -197,7 +216,7 @@ void BrowserImpl::PrepareForShutdown() {
   session_service_.reset();
 }
 
-const std::string& BrowserImpl::GetPersistenceId() {
+std::string BrowserImpl::GetPersistenceId() {
   return persistence_id_;
 }
 
@@ -217,27 +236,42 @@ base::FilePath BrowserImpl::GetSessionServiceDataPath() {
   } else {
     base_path = profile_->data_path().AppendASCII("Restore Data");
   }
-  const std::string encoded_name = base32::Base32Encode(persistence_id_);
+  DCHECK(!GetPersistenceId().empty());
+  const std::string encoded_name = base32::Base32Encode(GetPersistenceId());
   return base_path.AppendASCII("State" + encoded_name);
 }
 
-void BrowserImpl::CreateSessionServiceAndRestore() {
-  session_service_ =
-      std::make_unique<SessionService>(GetSessionServiceDataPath(), this);
+void BrowserImpl::CreateSessionServiceAndRestore(
+    const PersistenceInfo& persistence_info) {
+  session_service_ = std::make_unique<SessionService>(
+      GetSessionServiceDataPath(), this, persistence_info.last_crypto_key);
 }
 
 #if defined(OS_ANDROID)
 static jlong JNI_BrowserImpl_CreateBrowser(
     JNIEnv* env,
     jlong profile,
-    const base::android::JavaParamRef<jstring>& persistence_id,
+    const base::android::JavaParamRef<jstring>& j_persistence_id,
+    const base::android::JavaParamRef<jbyteArray>& j_persistence_crypto_key,
     const base::android::JavaParamRef<jobject>& java_impl) {
-  return reinterpret_cast<intptr_t>(new BrowserImpl(
-      reinterpret_cast<ProfileImpl*>(profile),
-      persistence_id.obj()
-          ? base::android::ConvertJavaStringToUTF8(persistence_id)
-          : std::string(),
-      java_impl));
+  Browser::PersistenceInfo persistence_info;
+  Browser::PersistenceInfo* persistence_info_ptr = nullptr;
+
+  if (j_persistence_id.obj()) {
+    const std::string persistence_id =
+        base::android::ConvertJavaStringToUTF8(j_persistence_id);
+    if (!persistence_id.empty()) {
+      persistence_info.id = persistence_id;
+      if (j_persistence_crypto_key.obj()) {
+        base::android::JavaByteArrayToByteVector(
+            env, j_persistence_crypto_key, &(persistence_info.last_crypto_key));
+      }
+      persistence_info_ptr = &persistence_info;
+    }
+  }
+  return reinterpret_cast<intptr_t>(
+      new BrowserImpl(reinterpret_cast<ProfileImpl*>(profile),
+                      persistence_info_ptr, java_impl));
 }
 
 static void JNI_BrowserImpl_DeleteBrowser(JNIEnv* env, jlong browser) {

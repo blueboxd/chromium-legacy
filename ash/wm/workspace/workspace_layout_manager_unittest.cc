@@ -21,6 +21,7 @@
 #include "ash/public/cpp/shelf_config.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/test/shell_test_api.h"
+#include "ash/public/cpp/window_backdrop.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/root_window_controller.h"
 #include "ash/screen_util.h"
@@ -1312,7 +1313,8 @@ TEST_F(WorkspaceLayoutManagerBackdropTest, BackdropTest) {
   window3->Show();
   EXPECT_FALSE(test_helper.GetBackdropWindow());
 
-  window2->SetProperty(kBackdropWindowMode, BackdropWindowMode::kEnabled);
+  WindowBackdrop::Get(window2.get())
+      ->SetBackdropMode(WindowBackdrop::BackdropMode::kEnabled);
   aura::Window* backdrop = test_helper.GetBackdropWindow();
   EXPECT_TRUE(backdrop);
   {
@@ -1326,7 +1328,8 @@ TEST_F(WorkspaceLayoutManagerBackdropTest, BackdropTest) {
 
   // Setting the property to the one below the backdrop window shouldn't change
   // the state.
-  window1->SetProperty(kBackdropWindowMode, BackdropWindowMode::kEnabled);
+  WindowBackdrop::Get(window1.get())
+      ->SetBackdropMode(WindowBackdrop::BackdropMode::kEnabled);
   {
     aura::Window::Windows children = window1->parent()->children();
     EXPECT_EQ(4U, children.size());
@@ -1337,7 +1340,8 @@ TEST_F(WorkspaceLayoutManagerBackdropTest, BackdropTest) {
   }
 
   // Setting the property to the top will move the backdrop up.
-  window3->SetProperty(kBackdropWindowMode, BackdropWindowMode::kEnabled);
+  WindowBackdrop::Get(window3.get())
+      ->SetBackdropMode(WindowBackdrop::BackdropMode::kEnabled);
   {
     aura::Window::Windows children = window1->parent()->children();
     EXPECT_EQ(4U, children.size());
@@ -1347,8 +1351,8 @@ TEST_F(WorkspaceLayoutManagerBackdropTest, BackdropTest) {
     EXPECT_EQ(window3.get(), children[3]);
   }
 
-  // Clearing the property in the middle will not change the backdrop position.
-  window2->ClearProperty(kBackdropWindowMode);
+  // Disabling the backdrop in the middle will not change the backdrop position.
+  WindowBackdrop::Get(window2.get())->DisableBackdrop();
   {
     aura::Window::Windows children = window1->parent()->children();
     EXPECT_EQ(4U, children.size());
@@ -1358,8 +1362,8 @@ TEST_F(WorkspaceLayoutManagerBackdropTest, BackdropTest) {
     EXPECT_EQ(window3.get(), children[3]);
   }
 
-  // Clearing the property on top will move the backdrop to bottom.
-  window3->ClearProperty(kBackdropWindowMode);
+  // Disabling the backdrop on top will move the backdrop to bottom.
+  WindowBackdrop::Get(window3.get())->DisableBackdrop();
   {
     aura::Window::Windows children = window1->parent()->children();
     EXPECT_EQ(4U, children.size());
@@ -1390,8 +1394,20 @@ TEST_F(WorkspaceLayoutManagerBackdropTest, BackdropTest) {
     EXPECT_EQ(window3.get(), children[3]);
   }
 
-  // Enabling tablet mode will put the backdrop on the top most window.
+  // Enabling tablet mode will put the backdrop on the top most window that can
+  // have backdrop.
   SetTabletModeEnabled(true);
+  {
+    aura::Window::Windows children = window1->parent()->children();
+    EXPECT_EQ(4U, children.size());
+    EXPECT_EQ(backdrop, children[0]);
+    EXPECT_EQ(window1.get(), children[1]);
+    EXPECT_EQ(window2.get(), children[2]);
+    EXPECT_EQ(window3.get(), children[3]);
+  }
+  // Restore the backdrop on |window2| and |window3| will update the backdrop.
+  WindowBackdrop::Get(window2.get())->RestoreBackdrop();
+  WindowBackdrop::Get(window3.get())->RestoreBackdrop();
   {
     aura::Window::Windows children = window1->parent()->children();
     EXPECT_EQ(4U, children.size());
@@ -1421,20 +1437,9 @@ TEST_F(WorkspaceLayoutManagerBackdropTest, BackdropTest) {
     EXPECT_EQ(window3.get(), children[3]);
   }
 
-  // Exiting tablet mode will move the backdrop back to window1.
+  // Exiting tablet mode will move the backdrop back to window3 as window3 is
+  // the top most window with kEnabled backdrop mode.
   SetTabletModeEnabled(false);
-  {
-    aura::Window::Windows children = window1->parent()->children();
-    EXPECT_EQ(4U, children.size());
-    EXPECT_EQ(backdrop, children[0]);
-    EXPECT_EQ(window1.get(), children[1]);
-    EXPECT_EQ(window2.get(), children[2]);
-    EXPECT_EQ(window3.get(), children[3]);
-  }
-
-  // Re-enter tablet mode. Clearing the property is a no-op in this case.
-  SetTabletModeEnabled(true);
-  window3->ClearProperty(kBackdropWindowMode);
   {
     aura::Window::Windows children = window1->parent()->children();
     EXPECT_EQ(4U, children.size());
@@ -1444,9 +1449,19 @@ TEST_F(WorkspaceLayoutManagerBackdropTest, BackdropTest) {
     EXPECT_EQ(window3.get(), children[3]);
   }
 
-  // Setting the property explicitly to kDisabled will move the backdrop to
-  // window2.
-  window3->SetProperty(kBackdropWindowMode, BackdropWindowMode::kDisabled);
+  // Re-enter tablet mode. window3 still has the backdrop.
+  SetTabletModeEnabled(true);
+  {
+    aura::Window::Windows children = window1->parent()->children();
+    EXPECT_EQ(4U, children.size());
+    EXPECT_EQ(window1.get(), children[0]);
+    EXPECT_EQ(window2.get(), children[1]);
+    EXPECT_EQ(backdrop, children[2]);
+    EXPECT_EQ(window3.get(), children[3]);
+  }
+
+  // Explicitly disable backdrop on window3 will move the backdrop to window2.
+  WindowBackdrop::Get(window3.get())->DisableBackdrop();
   {
     aura::Window::Windows children = window1->parent()->children();
     EXPECT_EQ(4U, children.size());
@@ -1507,7 +1522,8 @@ TEST_F(WorkspaceLayoutManagerBackdropTest, SpokenFeedbackFullscreenBackground) {
       &delegate, 0, gfx::Rect(0, 0, 100, 100)));
   window->Show();
 
-  window->SetProperty(kBackdropWindowMode, BackdropWindowMode::kEnabled);
+  WindowBackdrop::Get(window.get())
+      ->SetBackdropMode(WindowBackdrop::BackdropMode::kEnabled);
   EXPECT_TRUE(test_helper.GetBackdropWindow());
 
   ui::test::EventGenerator* generator = GetEventGenerator();
@@ -2017,8 +2033,8 @@ TEST_F(WorkspaceLayoutManagerBackdropTest,
   always_on_top_window->Show();
   always_on_top_window->SetProperty(aura::client::kZOrderingKey,
                                     ui::ZOrderLevel::kFloatingWindow);
-  always_on_top_window->SetProperty(kBackdropWindowMode,
-                                    BackdropWindowMode::kEnabled);
+  WindowBackdrop::Get(always_on_top_window.get())
+      ->SetBackdropMode(WindowBackdrop::BackdropMode::kEnabled);
 
   aura::Window* always_on_top_container =
   always_on_top_controller->GetContainer(always_on_top_window.get());

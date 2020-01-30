@@ -61,9 +61,7 @@ if (!use_system_gestures) {
       "gestures/src/util.cc",
     ]
 
-    deps = [
-      "//third_party/jsoncpp",
-    ]
+    deps = [ "//third_party/jsoncpp" ]
 
     defines = [ "GESTURES_INTERNAL=1" ]
 

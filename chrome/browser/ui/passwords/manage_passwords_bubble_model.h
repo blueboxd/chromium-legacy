@@ -25,7 +25,6 @@ namespace password_manager {
 class PasswordFormMetricsRecorder;
 }
 
-struct AccountInfo;
 class PasswordsModelDelegate;
 class Profile;
 
@@ -62,11 +61,6 @@ class ManagePasswordsBubbleModel {
 
   // Called by the view code when the save/update button is clicked by the user.
   void OnSaveClicked();
-
-  // Called by the view when the "Sign in" button or the "Sync to" button in the
-  // promo bubble is clicked.
-  void OnSignInToChromeClicked(const AccountInfo& account,
-                               bool is_default_promo_account);
 
 #if defined(PASSWORD_STORE_SELECT_ENABLED)
   // Called by the view when the account store checkbox is toggled.

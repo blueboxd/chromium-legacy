@@ -1,7 +1,0 @@
-This is a testharness.js-based test.
-PASS getAnimations for non-animated content
-PASS getAnimations for CSS Transitions
-FAIL CSS Transitions targetting (pseudo-)elements should have correct order after sorting assert_equals: Transition #3 has expected target expected Element node <div style="display: list-item; left: 100px; transition: ... but got Element node <div style="left: 100px; transition: left 100s ease 0s;">...
-PASS Transitions are not returned after they have finished
-Harness: the test ran to completion.
-

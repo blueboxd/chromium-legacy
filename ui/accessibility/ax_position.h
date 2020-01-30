@@ -864,7 +864,19 @@ class AXPosition {
   bool AtEndOfDocument() const {
     if (IsNullPosition())
       return false;
-    return CreateNextAnchorPosition()->IsNullPosition() && AtEndOfAnchor();
+    return AtLastNodeInTree() && AtEndOfAnchor();
+  }
+
+  bool AtLastNodeInTree() const {
+    if (IsNullPosition())
+      return false;
+
+    // Avoid a potentionally expensive MaxTextOffset call by only using tree
+    // positions. The only thing that matters is whether our anchor_id_ is at
+    // the last anchor of the document, so we're free to ignore text_offset_.
+    AXPositionInstance tree_position =
+        CreateTreePosition(tree_id_, anchor_id_, 0);
+    return tree_position->CreateNextAnchorPosition()->IsNullPosition();
   }
 
   // This method finds the lowest common AXNodeType of |this| and |second|.
@@ -2732,6 +2744,16 @@ class AXPosition {
 
     return base::Optional<int>(this_tree_position_ancestor->child_index() -
                                other_tree_position_ancestor->child_index());
+  }
+
+  // A valid position can become invalid if the underlying tree structure
+  // changes. This is expected behavior, but it is sometimes necessary to
+  // maintain valid positions. This method modifies an invalid position that is
+  // beyond MaxTextOffset to snap to MaxTextOffset.
+  void SnapToMaxTextOffsetIfBeyond() {
+    int max_text_offset = MaxTextOffset();
+    if (text_offset_ > max_text_offset)
+      text_offset_ = max_text_offset;
   }
 
   // Returns true if this position is on an empty object node that needs to

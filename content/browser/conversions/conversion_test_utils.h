@@ -21,7 +21,7 @@ namespace content {
 class EmptyStorageDelegate : public ConversionStorage::Delegate {
  public:
   EmptyStorageDelegate() = default;
-  virtual ~EmptyStorageDelegate() = default;
+  ~EmptyStorageDelegate() override = default;
 
   // ConversionStorage::Delegate
   void ProcessNewConversionReports(

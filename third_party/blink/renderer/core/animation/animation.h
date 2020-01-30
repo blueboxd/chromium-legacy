@@ -258,6 +258,7 @@ class CORE_EXPORT Animation : public EventTargetWithInlineData,
   void RemoveReplacedAnimation();
   void persist();
   String replaceState();
+  void commitStyles(ExceptionState& = ASSERT_NO_EXCEPTION);
   bool ReplaceStateRemoved() const override {
     return replace_state_ == kRemoved;
   }

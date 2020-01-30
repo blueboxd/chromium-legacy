@@ -975,7 +975,8 @@ void DeleteSelectionCommand::RemovePreviouslySelectedEmptyTableRows(
     if (IsTableRowEmpty(end_table_row_.Get())) {
       // Don't remove end_table_row_ if it's where we're putting the ending
       // selection.
-      if (!ending_position_.AnchorNode()->IsDescendantOf(
+      if (ending_position_.IsNull() ||
+          !ending_position_.AnchorNode()->IsDescendantOf(
               end_table_row_.Get())) {
         // FIXME: We probably shouldn't remove end_table_row_ unless it's
         // fully selected, even if it is empty. We'll need to start

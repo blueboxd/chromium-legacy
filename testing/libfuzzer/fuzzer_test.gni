@@ -77,9 +77,7 @@ template("fuzzer_test") {
           }
         }
 
-        outputs = [
-          out,
-        ]
+        outputs = [ out ]
 
         deps = [ "//testing/libfuzzer:seed_corpus" ] + seed_corpus_deps
       }
@@ -96,12 +94,8 @@ template("fuzzer_test") {
       if (defined(invoker.dict)) {
         # Copy dictionary to output.
         copy(target_name + "_dict_copy") {
-          sources = [
-            invoker.dict,
-          ]
-          outputs = [
-            "$root_build_dir/" + target_name + ".dict",
-          ]
+          sources = [ invoker.dict ]
+          outputs = [ "$root_build_dir/" + target_name + ".dict" ]
         }
         test_deps += [ ":" + target_name + "_dict_copy" ]
       }
@@ -148,9 +142,7 @@ template("fuzzer_test") {
           args += invoker.environment_variables
         }
 
-        outputs = [
-          "$root_build_dir/$config_file_name",
-        ]
+        outputs = [ "$root_build_dir/$config_file_name" ]
       }
       test_deps += [ ":" + config_file_name ]
     }
@@ -182,9 +174,7 @@ template("fuzzer_test") {
                   ] + _full_deps
         }
 
-        outputs = [
-          "$root_build_dir/$owners_file_name",
-        ]
+        outputs = [ "$root_build_dir/$owners_file_name" ]
       }
       test_data_deps += [ ":" + owners_file_name ]
     }

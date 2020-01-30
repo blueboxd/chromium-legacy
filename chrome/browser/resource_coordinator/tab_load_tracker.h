@@ -43,9 +43,6 @@ class TabManagerResourceCoordinatorSignalObserverHelper;
 // the TabManager this is done by a combination of the
 // ResourceCoordinatorTabHelper and the
 // TabManagerResourceCoordinatorSignalObserver.
-//
-// TODO(https://crbug.com/1028291): Migrate to PerformanceManager to allow
-// policies based on loading state to be implemented without extra thread hops.
 class TabLoadTracker {
  public:
   // An observer class. This allows external classes to be notified of loading

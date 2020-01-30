@@ -292,17 +292,23 @@ TEST_F(GpuDataManagerImplPrivateTest, FallbackWithSwiftShaderDisabled) {
 }
 #endif  // !OS_FUCHSIA
 
+#if !BUILDFLAG(IS_CHROMECAST)
 TEST_F(GpuDataManagerImplPrivateTest, GpuStartsWithGpuDisabled) {
   base::CommandLine::ForCurrentProcess()->AppendSwitch(switches::kDisableGpu);
   ScopedGpuDataManagerImplPrivate manager;
-#if BUILDFLAG(IS_CHROMECAST)
-  // GPU should not start if disabled.
-  EXPECT_EQ(gpu::GpuMode::DISABLED, manager->GetGpuMode());
-#else
   EXPECT_EQ(gpu::GpuMode::SWIFTSHADER, manager->GetGpuMode());
-#endif  // IS_CHROMECAST
 }
+#endif  // !IS_CHROMECAST
 #endif  // !OS_ANDROID && !OS_CHROMEOS
+
+// Chromecast audio-only builds should not launch the GPU process.
+#if BUILDFLAG(IS_CHROMECAST)
+TEST_F(GpuDataManagerImplPrivateTest, ChromecastStartsWithGpuDisabled) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(switches::kDisableGpu);
+  ScopedGpuDataManagerImplPrivate manager;
+  EXPECT_EQ(gpu::GpuMode::DISABLED, manager->GetGpuMode());
+}
+#endif  // IS_CHROMECAST
 
 #if defined(OS_MACOSX)
 TEST_F(GpuDataManagerImplPrivateTest, FallbackFromMetalToGL) {

@@ -516,7 +516,7 @@ void InputRouterImpl::FilterAndSendWebInputEvent(
                WebInputEvent::GetName(input_event.GetType()));
   TRACE_EVENT_WITH_FLOW2(
       "input,benchmark,devtools.timeline", "LatencyInfo.Flow",
-      TRACE_ID_DONT_MANGLE(latency_info.trace_id()),
+      TRACE_ID_GLOBAL(latency_info.trace_id()),
       TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT, "step",
       "SendInputEventUI", "frameTreeNodeId", frame_tree_node_id_);
 

@@ -442,6 +442,8 @@ class PLATFORM_EXPORT GraphicsContext {
   static sk_sp<SkColorFilter> WebCoreColorFilterToSkiaColorFilter(ColorFilter);
 
  private:
+  friend class ScopedDarkModeElementRoleOverride;
+
   const GraphicsContextState* ImmutableState() const { return paint_state_; }
 
   GraphicsContextState* MutableState() {

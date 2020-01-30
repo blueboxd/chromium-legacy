@@ -29,8 +29,8 @@ public interface AssistantCollectUserDataDelegate {
     /** The currently selected terms & conditions state has changed. */
     void onTermsAndConditionsChanged(@AssistantTermsAndConditionsState int state);
 
-    /** Called when a link on the terms and conditions message is clicked. */
-    void onTermsAndConditionsLinkClicked(int link);
+    /** Called when a text link of the form <link0>text</link0>in a message is clicked. */
+    void onTextLinkClicked(int link);
 
     /** The currently selected login choice has changed. */
     void onLoginChoiceChanged(@Nullable AssistantLoginChoice loginChoice);

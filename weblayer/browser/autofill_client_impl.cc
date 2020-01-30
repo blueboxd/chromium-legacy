@@ -239,6 +239,22 @@ void AutofillClientImpl::HideAutofillPopup(autofill::PopupHidingReason reason) {
   // take.
 }
 
+base::span<const autofill::Suggestion> AutofillClientImpl::GetPopupSuggestions()
+    const {
+  NOTIMPLEMENTED();
+  return base::span<const autofill::Suggestion>();
+}
+
+void AutofillClientImpl::PinPopupViewUntilUpdate() {
+  NOTIMPLEMENTED();
+}
+
+void AutofillClientImpl::UpdatePopup(
+    const std::vector<autofill::Suggestion>& suggestions,
+    autofill::PopupType popup_type) {
+  NOTREACHED();
+}
+
 bool AutofillClientImpl::IsAutocompleteEnabled() {
   NOTREACHED();
   return false;

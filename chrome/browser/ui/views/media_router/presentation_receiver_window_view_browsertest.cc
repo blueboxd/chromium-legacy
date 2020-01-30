@@ -25,7 +25,7 @@
 #include "ui/views/view.h"
 #include "url/gurl.h"
 
-#if defined(CHROMEOS)
+#if defined(OS_CHROMEOS)
 #include "ash/public/cpp/window_properties.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"

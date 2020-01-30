@@ -26,7 +26,6 @@
 <translation id="1031362278801463162">Notiek priekšskatījuma ielāde</translation>
 <translation id="1032605640136438169">Lūdzu, pārskatiet jaunos noteikumus.</translation>
 <translation id="103279545524624934">Atbrīvojiet vietu diskā, lai varētu palaist Android lietotnes.</translation>
-<translation id="1033343386521881354">Atrasts 1 printeris no drukas servera.</translation>
 <translation id="1033780634303702874">Piekļūt jūsu seriālajām ierīcēm</translation>
 <translation id="1034942643314881546">ADB iespējošana lietotņu ilustrācijas izveidei</translation>
 <translation id="1036348656032585052">Izslēgt</translation>
@@ -34,7 +33,6 @@
 <translation id="1036982837258183574">Lai izietu no pilnekrāna režīma, nospiediet |<ph name="ACCELERATOR" />|.</translation>
 <translation id="1038168778161626396">Tikai šifrēt</translation>
 <translation id="1039337018183941703">Nederīgs vai bojāts fails</translation>
-<translation id="1039850285407663109">Atlasītais fails nav zināms un var būt bīstams. Pirms šī faila atvēršanas apsveriet iespēju to skenēt.</translation>
 <translation id="1041175011127912238">Šī lapa nereaģē</translation>
 <translation id="1041263367839475438">Pieejamās ierīces</translation>
 <translation id="1042174272890264476">Jūsu datorā ir iebūvēta arī pārlūka <ph name="SHORT_PRODUCT_NAME" /> RLZ bibliotēka. RLZ piešķir neunikālu, personu neidentificējošu atzīmi, lai novērtētu noteiktas reklāmas kampaņas ietvaros ievadītos meklēšanas vienumus un pārlūka <ph name="SHORT_PRODUCT_NAME" /> lietojumu. Šīs atzīmes pārlūkā <ph name="PRODUCT_NAME" /> dažkārt tiek rādītas Google meklēšanas vaicājumos.</translation>
@@ -639,7 +637,6 @@
 <translation id="1858585891038687145">Uzticēties šim sertifikātam, lai identificētu programmatūras izstrādātājus</translation>
 <translation id="1861262398884155592">Šī mape ir tukša</translation>
 <translation id="1863182668524159459">Netika atrasti seriālie porti</translation>
-<translation id="1863552924692672565"><ph name="FILE_NAME" /> nav zināms. Skenējiet failu, lai samazinātu risku.</translation>
 <translation id="1864111464094315414">Pieteikties</translation>
 <translation id="1864400682872660285">Vēsāks</translation>
 <translation id="1864454756846565995">USB-C ierīce (aizmugurējā pieslēgvieta)</translation>
@@ -4025,7 +4022,6 @@ Vai vēlaties palaist rīku <ph name="CONTROL_PANEL_APPLET_NAME" />?</translatio
 <translation id="6678717876183468697">Vaicājuma URL</translation>
 <translation id="6680442031740878064">Pieejamā vieta: <ph name="AVAILABLE_SPACE" /></translation>
 <translation id="6680650203439190394">Ātrums</translation>
-<translation id="6681301928961274620">Netika atrasts neviens printeris no drukas servera.</translation>
 <translation id="6681668084120808868">Uzņemt fotoattēlu</translation>
 <translation id="6681964764822470072">Lietotne <ph name="APP_NAME" /> tiks atinstalēta.</translation>
 <translation id="668599234725812620">Atvērt pakalpojumu Google Play</translation>
@@ -5554,7 +5550,6 @@ Glabājiet atslēgas failu drošā vietā. Tas būs vajadzīgs, lai izveidotu ja
 <translation id="8794025342371547160">Ierobežota IP adrese</translation>
 <translation id="879413103056696865">Kamēr darbosies tīklājs, ierīcē <ph name="PHONE_NAME" />:</translation>
 <translation id="8795916974678578410">Jauns logs</translation>
-<translation id="8797086401386164142">Atrasti <ph name="NUM_PRINTERS" /> printeri no drukas servera.</translation>
 <translation id="8797459392481275117">Nekad netulkot šo vietni</translation>
 <translation id="8798099450830957504">Noklusējums</translation>
 <translation id="8798441408945964110">Pakalpojumu sniedzēja nosaukums</translation>

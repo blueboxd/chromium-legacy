@@ -23,7 +23,6 @@ class WebBlobInfo {
                            uint64_t size,
                            mojo::ScopedMessagePipeHandle);
   BLINK_EXPORT WebBlobInfo(const WebString& uuid,
-                           const WebString& file_path,
                            const WebString& file_name,
                            const WebString& type,
                            const base::Optional<base::Time>& last_modified,
@@ -38,7 +37,6 @@ class WebBlobInfo {
                                                  const WebString& type,
                                                  uint64_t size);
   BLINK_EXPORT static WebBlobInfo FileForTesting(const WebString& uuid,
-                                                 const WebString& file_path,
                                                  const WebString& file_name,
                                                  const WebString& type);
 
@@ -51,7 +49,6 @@ class WebBlobInfo {
   const WebString& Uuid() const { return uuid_; }
   const WebString& GetType() const { return type_; }
   uint64_t size() const { return size_; }
-  const WebString& FilePath() const { return file_path_; }
   const WebString& FileName() const { return file_name_; }
   base::Optional<base::Time> LastModified() const { return last_modified_; }
   BLINK_EXPORT mojo::ScopedMessagePipeHandle CloneBlobHandle() const;
@@ -59,7 +56,6 @@ class WebBlobInfo {
 #if INSIDE_BLINK
   BLINK_EXPORT WebBlobInfo(scoped_refptr<BlobDataHandle>);
   BLINK_EXPORT WebBlobInfo(scoped_refptr<BlobDataHandle>,
-                           const WebString& file_path,
                            const WebString& file_name,
                            const base::Optional<base::Time>& last_modified);
   // TODO(mek): Get rid of these constructors after ensuring that the
@@ -68,7 +64,6 @@ class WebBlobInfo {
                            const WebString& type,
                            uint64_t size);
   BLINK_EXPORT WebBlobInfo(scoped_refptr<BlobDataHandle>,
-                           const WebString& file_path,
                            const WebString& file_name,
                            const WebString& type,
                            const base::Optional<base::Time>& last_modified,
@@ -82,7 +77,6 @@ class WebBlobInfo {
   WebString type_;  // MIME type
   uint64_t size_;
   WebPrivatePtr<BlobDataHandle> blob_handle_;
-  WebString file_path_;   // Only for File
   WebString file_name_;   // Only for File
   base::Optional<base::Time> last_modified_;  // Only for File
 };

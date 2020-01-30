@@ -50,7 +50,6 @@ class CONTENT_EXPORT IndexedDBBlobInfo {
   // it should be considered corrupt.
   IndexedDBBlobInfo(mojo::PendingRemote<blink::mojom::Blob> blob_remote,
                     const std::string& uuid,
-                    const base::FilePath& file_path,
                     const base::string16& file_name,
                     const base::string16& type,
                     const base::Time& last_modified,
@@ -76,8 +75,10 @@ class CONTENT_EXPORT IndexedDBBlobInfo {
   const base::string16& type() const { return type_; }
   int64_t size() const { return size_; }
   const base::string16& file_name() const { return file_name_; }
+  const base::FilePath indexed_db_file_path() const {
+    return indexed_db_file_path_;
+  }
   int64_t blob_number() const { return blob_number_; }
-  const base::FilePath& file_path() const { return file_path_; }
   const base::Time& last_modified() const { return last_modified_; }
   const base::RepeatingClosure& mark_used_callback() const {
     return mark_used_callback_;
@@ -87,7 +88,7 @@ class CONTENT_EXPORT IndexedDBBlobInfo {
   }
 
   void set_size(int64_t size);
-  void set_file_path(const base::FilePath& file_path);
+  void set_indexed_db_file_path(const base::FilePath& file_path);
   void set_last_modified(const base::Time& time);
   void set_blob_number(int64_t blob_number);
   void set_mark_used_callback(base::RepeatingClosure mark_used_callback);
@@ -102,12 +103,13 @@ class CONTENT_EXPORT IndexedDBBlobInfo {
   std::string uuid_;
   // Mime type.
   base::string16 type_;
+  // This is the path of the file that was copied into the IndexedDB system.
+  // Only populated when reading from the database.
+  base::FilePath indexed_db_file_path_;
   // -1 if unknown for File.
   int64_t size_;
   // Only for File.
   base::string16 file_name_;
-  // Only for File.
-  base::FilePath file_path_;
   // Only for File; valid only if size is.
   base::Time last_modified_;
 

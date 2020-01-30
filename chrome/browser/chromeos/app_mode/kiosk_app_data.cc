@@ -545,7 +545,16 @@ void KioskAppData::OnCrxLoadFinished(const CrxLoader* crx_loader) {
     return;
 
   if (!crx_loader->success()) {
-    SetStatus(STATUS_ERROR);
+    // If we did get some data before in from Local State, but the extentension
+    // file got corrupted, we should notify the ExternalCache to remove it and
+    // redownload it upon next session start(kiosk or login).
+    if (status() == STATUS_LOADED) {
+      // Our cache is corrupted, we need to notify ExternalCache about that.
+      if (delegate_)
+        delegate_->OnExternalCacheDamaged(app_id());
+    } else {
+      SetStatus(STATUS_ERROR);
+    }
     return;
   }
 

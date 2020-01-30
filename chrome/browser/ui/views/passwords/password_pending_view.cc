@@ -467,7 +467,7 @@ void PasswordPendingView::ReplaceWithPromo() {
   set_margins(ChromeLayoutProvider::Get()->GetDialogInsetsForContentType(
       views::TEXT, views::TEXT));
   if (model()->state() == password_manager::ui::CHROME_SIGN_IN_PROMO_STATE) {
-    sign_in_promo_ = new PasswordSignInPromoView(model());
+    sign_in_promo_ = new PasswordSignInPromoView(model()->GetWebContents());
     AddChildView(sign_in_promo_);
   } else {
     NOTREACHED();

@@ -84,7 +84,11 @@ const gfx::VectorIcon* BleDeviceHoverListModel::GetItemIcon(
   return GetTransportVectorIcon(AuthenticatorTransport::kBluetoothLowEnergy);
 }
 
-std::vector<int> BleDeviceHoverListModel::GetItemTags() const {
+std::vector<int> BleDeviceHoverListModel::GetThrobberTags() const {
+  return {};
+}
+
+std::vector<int> BleDeviceHoverListModel::GetButtonTags() const {
   std::vector<int> tag_list;
   tag_list.reserve(authenticator_tags_.size());
 

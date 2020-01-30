@@ -26,6 +26,7 @@
 #include "chrome/browser/ui/app_list/extension_app_utils.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/webui/settings/chromeos/app_management/app_management_uma.h"
+#include "chrome/browser/web_applications/components/app_registry_controller.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/grit/generated_resources.h"
@@ -122,14 +123,7 @@ void AppServiceContextMenu::ExecuteCommand(int command_id, int event_flags) {
     default:
       if (command_id >= ash::USE_LAUNCH_TYPE_COMMAND_START &&
           command_id < ash::USE_LAUNCH_TYPE_COMMAND_END) {
-        // Hosted apps can only toggle between LAUNCH_TYPE_WINDOW and
-        // LAUNCH_TYPE_REGULAR.
-        extensions::LaunchType launch_type =
-            (controller()->GetExtensionLaunchType(profile(), app_id()) ==
-             extensions::LAUNCH_TYPE_WINDOW)
-                ? extensions::LAUNCH_TYPE_REGULAR
-                : extensions::LAUNCH_TYPE_WINDOW;
-        controller()->SetExtensionLaunchType(profile(), app_id(), launch_type);
+        SetLaunchType(command_id);
         return;
       }
 
@@ -192,6 +186,14 @@ bool AppServiceContextMenu::IsCommandIdChecked(int command_id) const {
     default:
       return AppContextMenu::IsCommandIdChecked(command_id);
   }
+}
+
+bool AppServiceContextMenu::IsCommandIdEnabled(int command_id) const {
+  if (extensions::ContextMenuMatcher::IsExtensionsCustomCommandId(command_id) &&
+      extension_menu_items_) {
+    return extension_menu_items_->IsCommandIdEnabled(command_id);
+  }
+  return AppContextMenu::IsCommandIdEnabled(command_id);
 }
 
 void AppServiceContextMenu::OnGetMenuModel(
@@ -286,4 +288,44 @@ void AppServiceContextMenu::ShowAppInfo() {
   }
 
   controller()->DoShowAppInfoFlow(profile(), app_id());
+}
+
+void AppServiceContextMenu::SetLaunchType(int command_id) {
+  switch (app_type_) {
+    case apps::mojom::AppType::kWeb:
+      if (base::FeatureList::IsEnabled(
+              features::kDesktopPWAsWithoutExtensions)) {
+        // Web apps can only toggle between kStandalone and kBrowser.
+        web_app::DisplayMode user_display_mode =
+            ConvertUseLaunchTypeCommandToDisplayMode(command_id);
+        if (user_display_mode != web_app::DisplayMode::kUndefined) {
+          auto* provider = web_app::WebAppProvider::Get(profile());
+          DCHECK(provider);
+          provider->registry_controller().SetAppUserDisplayMode(
+              app_id(), user_display_mode);
+        }
+        return;
+      }
+      // Otherwise deliberately fall through to fallback on Bookmark Apps.
+      FALLTHROUGH;
+    case apps::mojom::AppType::kExtension: {
+      // Hosted apps can only toggle between LAUNCH_TYPE_WINDOW and
+      // LAUNCH_TYPE_REGULAR.
+      extensions::LaunchType launch_type =
+          (controller()->GetExtensionLaunchType(profile(), app_id()) ==
+           extensions::LAUNCH_TYPE_WINDOW)
+              ? extensions::LAUNCH_TYPE_REGULAR
+              : extensions::LAUNCH_TYPE_WINDOW;
+      controller()->SetExtensionLaunchType(profile(), app_id(), launch_type);
+      return;
+    }
+    case apps::mojom::AppType::kArc:
+      FALLTHROUGH;
+    case apps::mojom::AppType::kCrostini:
+      FALLTHROUGH;
+    case apps::mojom::AppType::kBuiltIn:
+      FALLTHROUGH;
+    default:
+      return;
+  }
 }

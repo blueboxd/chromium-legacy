@@ -225,7 +225,7 @@ template("chrome_public_common_apk_or_module_tmpl") {
         if (!defined(negative_main_dex_globs)) {
           negative_main_dex_globs = [
             "*ApplicationStatus*",  # Doesn't work in non-browser process.
-            "*ChromeActivity*",  # Pulls in the world, so ensure it doesn't slip in.
+            "*ChromeActivity*",  # Pulls in the world; ensure it stays out.
             "*GoogleApiAvailability*",  # Play Services only in browser process.
             "*R\$*",  # Should not use resources from non-browser process.
           ]
@@ -487,8 +487,9 @@ template("monochrome_public_common_apk_or_module_tmpl") {
           [ "//chrome/android:libmonochrome_64($_hwasan_toolchain)" ]
 
       if (use_chromium_linker) {
-        shared_libraries +=
-            [ "//base/android/linker:chromium_android_linker($_hwasan_toolchain)" ]
+        shared_libraries += [
+          "//base/android/linker:chromium_android_linker($_hwasan_toolchain)",
+        ]
       }
     }
 

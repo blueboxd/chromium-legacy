@@ -6,22 +6,12 @@
 
 namespace viz {
 
-BeginFrameTracker::BeginFrameTracker() = default;
-
-BeginFrameTracker::~BeginFrameTracker() = default;
-
 void BeginFrameTracker::SentBeginFrame(const BeginFrameArgs& args) {
-  ++total_begin_frames_sent_;
-  recent_begin_frames_sent_.SaveToBuffer(args.frame_id);
-
   ++outstanding_begin_frames_;
   last_frame_id_ = args.frame_id;
 }
 
 void BeginFrameTracker::ReceivedAck(const BeginFrameAck& ack) {
-  ++total_acks_received_;
-  recent_acks_received_.SaveToBuffer(ack.frame_id);
-
   if (MatchesLastSent(ack)) {
     // If the BeginFrameAck matches the last sent BeginFrameArgs then we know
     // the client has read every message from the pipe. While the client

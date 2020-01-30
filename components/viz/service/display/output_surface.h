@@ -19,6 +19,7 @@
 #include "components/viz/common/resources/returned_resource.h"
 #include "components/viz/service/display/software_output_device.h"
 #include "components/viz/service/viz_service_export.h"
+#include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/command_buffer/common/texture_in_use_response.h"
 #include "gpu/ipc/common/surface_handle.h"
 #include "gpu/ipc/gpu_task_scheduler_helper.h"
@@ -144,6 +145,9 @@ class VIZ_SERVICE_EXPORT OutputSurface {
 
   // Get the texture for the main image's overlay.
   virtual unsigned GetOverlayTextureId() const = 0;
+
+  // Returns the |mailbox| corresponding to the main image's overlay.
+  virtual gpu::Mailbox GetOverlayMailbox() const;
 
   // Get the format for the main image's overlay.
   virtual gfx::BufferFormat GetOverlayBufferFormat() const = 0;

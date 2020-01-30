@@ -4909,15 +4909,6 @@ Bu politika "true" (doğru) olarak ayarlanırsa kullanıcının tarayıcıyı ku
 <translation id="8757552286070680084">Wilco DTC yapılandırması</translation>
 <translation id="8758831693895931466">Zorunlu bulut yönetimi kaydını etkinleştir</translation>
 <translation id="8759829385824155666">İzin verilen Kerberos şifreleme türleri</translation>
-<translation id="87635449713742708">Bu politika, ağ iletişimi kodunu tarayıcı işleminde çalışmaya zorlar.
-
-      Bu politika varsayılan olarak devre dışıdır ve etkinleştirilmesi halinde, ağ iletişimi işlemi korumalı alan içine alındıktan sonra kullanıcıları güvenlik sorunlarına karşı savunmasız hale getirir.
-
-      Bu politikanın amacı, işletmelere ağ iletişimi API'lerinin tutulmasına bel bağlamayan üçüncü taraf yazılımlarına geçme fırsatı vermektir. LSP'lerden ve Win32 API yamalarından ziyade proxy sunucuları önerilir.
-
-      Bu politika ayarlanmazsa varsayılan olarak ağ iletişimi kodunun tarayıcı işlemi kalmaz.
-
-      Bu politika, <ph name="PRODUCT_NAME" /> 82 sürümünde kaldırılacaktır.</translation>
 <translation id="8764119899999036911">Kerberos SPN'sinin standart DNS adına mı, yoksa girilen orijinal ada mı dayalı olduğunu belirtir.
 
           Bu ayarı etkinleştirirseniz, CNAME araması atlanır ve sunucu adı girildiği gibi kullanılır.

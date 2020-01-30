@@ -187,6 +187,10 @@ struct ResourceDataUpdate {
   // content encodings. Only set for complete resources.
   int64 encoded_body_length = 0;
 
+  // The length of the response body in bytes for the resource after decoding.
+  // Only set for complete resources.
+  int64 decoded_body_length = 0;
+
   // Whether this resource load has completed.
   bool is_complete;
 

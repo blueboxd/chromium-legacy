@@ -3601,6 +3601,7 @@ void AXPlatformNodeAuraLinux::OnInvalidStatusChanged() {
 
 void AXPlatformNodeAuraLinux::NotifyAccessibilityEvent(
     ax::mojom::Event event_type) {
+  AXPlatformNodeBase::NotifyAccessibilityEvent(event_type);
   switch (event_type) {
     // There are three types of messages that we receive for popup menus. Each
     // time a popup menu is shown, we get a kMenuPopupStart message. This

@@ -71,9 +71,7 @@ component("gin") {
   ]
 
   if (v8_use_external_startup_data) {
-    data = [
-      "$root_out_dir/snapshot_blob.bin",
-    ]
+    data = [ "$root_out_dir/snapshot_blob.bin" ]
   }
 
   defines = [ "GIN_IMPLEMENTATION" ]
@@ -82,9 +80,7 @@ component("gin") {
     "//base",
     "//v8",
   ]
-  deps = [
-    "//base/third_party/dynamic_annotations",
-  ]
+  deps = [ "//base/third_party/dynamic_annotations" ]
 
   if (is_mac) {
     libs = [ "CoreFoundation.framework" ]
@@ -94,9 +90,7 @@ component("gin") {
 }
 
 executable("gin_shell") {
-  sources = [
-    "shell/gin_main.cc",
-  ]
+  sources = [ "shell/gin_main.cc" ]
 
   deps = [
     ":gin",
@@ -157,9 +151,7 @@ test("gin_unittests") {
     "//v8:external_startup_data",
   ]
 
-  data_deps = [
-    "//tools/v8_context_snapshot:v8_context_snapshot",
-  ]
+  data_deps = [ "//tools/v8_context_snapshot:v8_context_snapshot" ]
   data = []
 
   # gin_shell is not an Android app.

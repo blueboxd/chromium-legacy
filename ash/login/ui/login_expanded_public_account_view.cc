@@ -39,13 +39,13 @@ namespace {
 
 constexpr const char kLoginExpandedPublicAccountViewClassName[] =
     "LoginExpandedPublicAccountView";
-constexpr int kExpandedViewWidthDp = 600;
+constexpr int kExpandedViewWidthDp = 628;
 constexpr int kExpandedViewHeightDp = 324;
 
 constexpr int kTextLineHeightDp = 16;
 constexpr int kRoundRectCornerRadiusDp = 2;
 constexpr int kBorderThicknessDp = 1;
-constexpr int kRightPaneMarginDp = 28;
+constexpr int kHorizontalMarginPaneDp = 28;
 constexpr int kLabelMarginDp = 20;
 constexpr int kLeftMarginForSelectionButton = 8;
 constexpr int kRightMarginForSelectionButton = 3;
@@ -63,7 +63,7 @@ constexpr int kDropDownIconSizeDp = 16;
 constexpr int kArrowButtonSizeDp = 48;
 constexpr int kAdvancedViewButtonWidthDp = 190;
 constexpr int kAdvancedViewButtonHeightDp = 16;
-constexpr int kSelectionBoxWidthDp = 178;
+constexpr int kSelectionBoxWidthDp = 192;
 constexpr int kSelectionBoxHeightDp = 28;
 constexpr int kTopSpacingForLabelInAdvancedViewDp = 7;
 constexpr int kTopSpacingForLabelInRegularViewDp = 65;
@@ -298,7 +298,7 @@ class RightPaneView : public NonAccessibleView,
       : on_learn_more_tapped_(on_learn_more_tapped) {
     SetPreferredSize(
         gfx::Size(kExpandedViewWidthDp / 2, kExpandedViewHeightDp));
-    SetBorder(views::CreateEmptyBorder(gfx::Insets(kRightPaneMarginDp)));
+    SetBorder(views::CreateEmptyBorder(gfx::Insets(kHorizontalMarginPaneDp)));
 
     // Create labels view.
     labels_view_ = new NonAccessibleView();

@@ -15,6 +15,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/sessions/core/command_storage_backend.h"
 #include "components/sessions/core/command_storage_manager_delegate.h"
+#include "crypto/random.h"
 
 namespace sessions {
 namespace {
@@ -50,13 +51,23 @@ constexpr base::TimeDelta kSaveDelay = base::TimeDelta::FromMilliseconds(2500);
 
 CommandStorageManager::CommandStorageManager(
     const base::FilePath& path,
-    CommandStorageManagerDelegate* delegate)
+    CommandStorageManagerDelegate* delegate,
+    bool enable_crypto)
     : CommandStorageManager(base::MakeRefCounted<CommandStorageBackend>(
                                 CreateDefaultBackendTaskRunner(),
                                 path),
-                            delegate) {}
+                            delegate) {
+  use_crypto_ = enable_crypto;
+}
 
 CommandStorageManager::~CommandStorageManager() = default;
+
+// static
+std::vector<uint8_t> CommandStorageManager::CreateCryptoKey() {
+  std::vector<uint8_t> key(32);
+  crypto::RandBytes(&(key.front()), key.size());
+  return key;
+}
 
 void CommandStorageManager::ScheduleCommand(
     std::unique_ptr<SessionCommand> command) {
@@ -118,12 +129,15 @@ void CommandStorageManager::Save() {
   if (pending_commands_.empty())
     return;
 
-  // We create a new vector which will receive all elements from the
-  // current commands. This will also clear the current list.
+  std::vector<uint8_t> crypto_key;
+  if (use_crypto_ && pending_reset_) {
+    crypto_key = CreateCryptoKey();
+    delegate_->OnGeneratedNewCryptoKey(crypto_key);
+  }
   backend_task_runner()->PostNonNestableTask(
       FROM_HERE,
       base::BindOnce(&CommandStorageBackend::AppendCommands, backend_,
-                     std::move(pending_commands_), pending_reset_));
+                     std::move(pending_commands_), pending_reset_, crypto_key));
 
   if (pending_reset_) {
     commands_since_reset_ = 0;
@@ -138,6 +152,7 @@ bool CommandStorageManager::HasPendingSave() const {
 base::CancelableTaskTracker::TaskId
 CommandStorageManager::ScheduleGetCurrentSessionCommands(
     GetCommandsCallback callback,
+    const std::vector<uint8_t>& decryption_key,
     base::CancelableTaskTracker* tracker) {
   base::CancelableTaskTracker::IsCanceledCallback is_canceled;
   GetCommandsCallback backend_callback;
@@ -147,7 +162,8 @@ CommandStorageManager::ScheduleGetCurrentSessionCommands(
   backend_task_runner()->PostNonNestableTask(
       FROM_HERE,
       base::BindOnce(&CommandStorageBackend::ReadCurrentSessionCommands,
-                     backend_.get(), is_canceled, std::move(backend_callback)));
+                     backend_.get(), is_canceled, decryption_key,
+                     std::move(backend_callback)));
   return id;
 }
 

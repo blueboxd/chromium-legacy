@@ -251,7 +251,7 @@ void TestHistograms(const base::HistogramTester& histograms,
       non_ad_cached_kb + non_ad_uncached_kb, 1);
   if (total_ad_kb + non_ad_cached_kb + non_ad_uncached_kb > 0) {
     histograms.ExpectUniqueSample(
-        SuffixedHistogram("Bytes.FullPage.Total.PercentAds2"),
+        SuffixedHistogram("Bytes.FullPage.Total2.PercentAdFrames"),
         (total_ad_kb * 100) /
             (total_ad_kb + non_ad_cached_kb + non_ad_uncached_kb),
         1);
@@ -263,7 +263,7 @@ void TestHistograms(const base::HistogramTester& histograms,
   }
   if (total_ad_uncached_kb + non_ad_uncached_kb > 0) {
     histograms.ExpectUniqueSample(
-        SuffixedHistogram("Bytes.FullPage.Network.PercentAds"),
+        SuffixedHistogram("Bytes.FullPage.Network.PercentAdFrames"),
         (total_ad_uncached_kb * 100) /
             (total_ad_uncached_kb + non_ad_uncached_kb),
         1);
@@ -722,6 +722,31 @@ TEST_F(AdsPageLoadMetricsObserverTest, PageWithAds) {
                  0 /* non_ad_cached_kb */, 20 /* non_ad_uncached_kb */);
 }
 
+TEST_F(AdsPageLoadMetricsObserverTest, PageWithAdsButNoAdFrame) {
+  RenderFrameHost* main_frame = NavigateMainFrame(kNonAdUrl);
+  ResourceDataUpdate(main_frame, ResourceCached::kNotCached, 40,
+                     "" /* mime_type */, false /* is_ad_resource */);
+  ResourceDataUpdate(main_frame, ResourceCached::kNotCached, 10,
+                     "" /* mime_type */, true /* is_ad_resource */);
+  ResourceDataUpdate(main_frame, ResourceCached::kCachedHttp, 30,
+                     "" /* mime_type */, false /* is_ad_resource */);
+  ResourceDataUpdate(main_frame, ResourceCached::kCachedHttp, 20,
+                     "" /* mime_type */, true /* is_ad_resource */);
+
+  // Navigate again to trigger histograms.
+  NavigateFrame(kNonAdUrl, main_frame);
+
+  TestHistograms(histogram_tester(), test_ukm_recorder(), {},
+                 50 /* non_ad_cached_kb */, 50 /* non_ad_uncached_kb */);
+
+  // We expect the ad bytes percentages to be correctly reported, even though
+  // there was no ad frame.
+  histogram_tester().ExpectUniqueSample(
+      SuffixedHistogram("AllPages.PercentNetworkBytesAds"), 20, 1);
+  histogram_tester().ExpectUniqueSample(
+      SuffixedHistogram("AllPages.PercentTotalBytesAds"), 30, 1);
+}
+
 TEST_F(AdsPageLoadMetricsObserverTest, AdFrameMimeTypeBytes) {
   RenderFrameHost* main_frame = NavigateMainFrame(kNonAdUrl);
   RenderFrameHost* ad_frame = CreateAndNavigateSubFrame(kAdUrl, main_frame);
@@ -1026,10 +1051,16 @@ TEST_F(AdsPageLoadMetricsObserverTest, MainFrameResource) {
   histogram_tester().ExpectTotalCount(
       "PageLoad.Clients.Ads.NonVisible.FrameCounts.AdFrames.Total", 1);
 
-  // There are three FrameCounts.AdFrames.Total histograms
+  // Verify that the ad bytes percentages were recorded as zero.
+  histogram_tester().ExpectUniqueSample(
+      "PageLoad.Clients.Ads.AllPages.PercentNetworkBytesAds", 0, 1);
+  histogram_tester().ExpectUniqueSample(
+      "PageLoad.Clients.Ads.AllPages.PercentTotalBytesAds", 0, 1);
+
+  // There are three FrameCounts.AdFrames.Total and two AllPages histograms
   // recorded for each page load, one for each visibility type. There shouldn't
   // be any other histograms for a page with no ad resources.
-  EXPECT_EQ(3u, histogram_tester()
+  EXPECT_EQ(5u, histogram_tester()
                     .GetTotalCountsForPrefix("PageLoad.Clients.Ads.")
                     .size());
   EXPECT_EQ(0u, test_ukm_recorder()

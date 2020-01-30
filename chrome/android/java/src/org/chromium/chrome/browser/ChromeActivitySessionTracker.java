@@ -24,6 +24,7 @@ import org.chromium.chrome.browser.accessibility.FontSizePrefs;
 import org.chromium.chrome.browser.browsing_data.BrowsingDataType;
 import org.chromium.chrome.browser.browsing_data.TimePeriod;
 import org.chromium.chrome.browser.firstrun.FirstRunUtils;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.FeatureUtilities;
 import org.chromium.chrome.browser.metrics.UmaUtils;
 import org.chromium.chrome.browser.metrics.VariationsSession;
@@ -41,6 +42,8 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.translate.TranslateBridge;
 import org.chromium.ui.base.ResourceBundle;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Locale;
 
 /**
@@ -256,7 +259,10 @@ public class ChromeActivitySessionTracker {
     private void cacheNativeFlags() {
         if (mIsFinishedCachingNativeFlags) return;
         FirstRunUtils.cacheFirstRunPrefs();
-        FeatureUtilities.cacheNativeFlags();
+
+        List<String> featuresToCache = Arrays.asList(ChromeFeatureList.HOMEPAGE_LOCATION_POLICY);
+        FeatureUtilities.cacheNativeFlags(featuresToCache);
+        FeatureUtilities.cacheAdditionalNativeFlags();
         mIsFinishedCachingNativeFlags = true;
     }
 

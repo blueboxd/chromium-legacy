@@ -1469,7 +1469,7 @@ TEST_F(TraceEventTestFixture, AsyncBeginEndEvents) {
 }
 
 // Test ASYNC_BEGIN/END events
-TEST_F(TraceEventTestFixture, AsyncBeginEndPointerMangling) {
+TEST_F(TraceEventTestFixture, AsyncBeginEndPointerNotMangled) {
   void* ptr = this;
 
   TraceLog::GetInstance()->SetProcessID(100);
@@ -1490,19 +1490,13 @@ TEST_F(TraceEventTestFixture, AsyncBeginEndPointerMangling) {
   EXPECT_TRUE(async_begin2);
   EXPECT_TRUE(async_end);
 
-  Value* value = nullptr;
-  std::string async_begin_id_str;
-  std::string async_begin2_id_str;
-  std::string async_end_id_str;
-  ASSERT_TRUE(async_begin->Get("id", &value));
-  ASSERT_TRUE(value->GetAsString(&async_begin_id_str));
-  ASSERT_TRUE(async_begin2->Get("id", &value));
-  ASSERT_TRUE(value->GetAsString(&async_begin2_id_str));
-  ASSERT_TRUE(async_end->Get("id", &value));
-  ASSERT_TRUE(value->GetAsString(&async_end_id_str));
+  std::string async_begin_id_str = *async_begin->FindStringPath("id2.local");
+  std::string async_begin2_id_str = *async_begin2->FindStringPath("id2.local");
+  std::string async_end_id_str = *async_end->FindStringPath("id2.local");
 
+  // Since all ids are process-local and not mangled, they should be equal.
   EXPECT_STREQ(async_begin_id_str.c_str(), async_begin2_id_str.c_str());
-  EXPECT_STRNE(async_begin_id_str.c_str(), async_end_id_str.c_str());
+  EXPECT_STREQ(async_begin_id_str.c_str(), async_end_id_str.c_str());
 }
 
 // Test that static strings are not copied.

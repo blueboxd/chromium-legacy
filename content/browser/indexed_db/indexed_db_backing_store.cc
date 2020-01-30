@@ -1771,7 +1771,7 @@ Status IndexedDBBackingStore::Transaction::GetBlobInfoForRecord(
       return InternalInconsistencyStatus();
     }
     for (auto& entry : value->blob_info) {
-      entry.set_file_path(
+      entry.set_indexed_db_file_path(
           backing_store_->GetBlobFileName(database_id, entry.blob_number()));
       entry.set_mark_used_callback(
           backing_store_->active_blob_registry()->GetMarkBlobActiveCallback(

@@ -292,20 +292,14 @@ void WebRemoteFrameImpl::SetReplicatedInsecureNavigationsSet(
   GetFrame()->SetInsecureNavigationsSet(set);
 }
 
-void WebRemoteFrameImpl::DidStartLoading() {
-  GetFrame()->SetIsLoading(true);
+void WebRemoteFrameImpl::SetReplicatedAdFrameType(
+    mojom::blink::AdFrameType ad_frame_type) {
+  DCHECK(GetFrame());
+  GetFrame()->SetReplicatedAdFrameType(ad_frame_type);
 }
 
-void WebRemoteFrameImpl::DidStopLoading() {
-  GetFrame()->SetIsLoading(false);
-
-  // When a subframe finishes loading, the parent should check if *all*
-  // subframes have finished loading (which may mean that the parent can declare
-  // that the parent itself has finished loading).  This remote-subframe-focused
-  // code has a local-subframe equivalent in FrameLoader::DidFinishNavigation.
-  Frame* parent = GetFrame()->Tree().Parent();
-  if (parent)
-    parent->CheckCompleted();
+void WebRemoteFrameImpl::DidStartLoading() {
+  GetFrame()->DidStartLoading();
 }
 
 bool WebRemoteFrameImpl::IsIgnoredForHitTest() const {

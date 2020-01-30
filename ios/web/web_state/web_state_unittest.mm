@@ -434,6 +434,11 @@ TEST_F(WebStateTest, CallStopDuringSessionRestore) {
 // Verifies that calling NavigationManager::LoadURLWithParams() does not stop
 // the session restoration and eventually loads the requested URL.
 TEST_F(WebStateTest, CallLoadURLWithParamsDuringSessionRestore) {
+  if (@available(iOS 13.1, *)) {
+    // TODO(crbug.com/1046576): this test is flaky on iOS 13.1.
+    return;
+  }
+
   // Create session storage with large number of items.
   const int kItemCount = 10;
   NSMutableArray<CRWNavigationItemStorage*>* item_storages =

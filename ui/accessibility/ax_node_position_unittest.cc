@@ -4172,6 +4172,31 @@ TEST_F(AXPositionTest, CreatePositionAtEndOfDocumentWithTextPosition) {
   EXPECT_EQ(ax::mojom::TextAffinity::kDownstream, test_position->affinity());
 }
 
+TEST_F(AXPositionTest, AtLastNodeInTree) {
+  TestPositionType text_position = AXNodePosition::CreateTextPosition(
+      tree_.data().tree_id, inline_box1_.id, 6 /* text_offset */,
+      ax::mojom::TextAffinity::kDownstream);
+  ASSERT_NE(nullptr, text_position);
+  EXPECT_FALSE(text_position->AtLastNodeInTree());
+  EXPECT_FALSE(text_position->AsTreePosition()->AtLastNodeInTree());
+
+  TestPositionType test_position =
+      text_position->CreatePositionAtEndOfDocument();
+  ASSERT_NE(nullptr, test_position);
+  EXPECT_TRUE(test_position->AtLastNodeInTree());
+  EXPECT_TRUE(test_position->AsTreePosition()->AtLastNodeInTree());
+  EXPECT_FALSE(text_position->CreateNullPosition()->AtLastNodeInTree());
+
+  TestPositionType on_last_node_but_not_at_maxtextoffset =
+      AXNodePosition::CreateTextPosition(tree_.data().tree_id, inline_box2_.id,
+                                         1 /* text_offset */,
+                                         ax::mojom::TextAffinity::kDownstream);
+  ASSERT_NE(nullptr, on_last_node_but_not_at_maxtextoffset);
+  EXPECT_TRUE(on_last_node_but_not_at_maxtextoffset->AtLastNodeInTree());
+  EXPECT_TRUE(on_last_node_but_not_at_maxtextoffset->AsTreePosition()
+                  ->AtLastNodeInTree());
+}
+
 TEST_F(AXPositionTest, CreateChildPositionAtWithNullPosition) {
   TestPositionType null_position = AXNodePosition::CreateNullPosition();
   ASSERT_NE(nullptr, null_position);
@@ -4915,6 +4940,81 @@ TEST_F(AXPositionTest, CreateNextAndPreviousCharacterPositionWithNullPosition) {
       AXBoundaryBehavior::CrossBoundary);
   EXPECT_NE(nullptr, test_position);
   EXPECT_TRUE(test_position->IsNullPosition());
+}
+
+TEST_F(AXPositionTest, SnapToMaxTextOffsetIfBeyond) {
+  // This test updates the tree structure to test a specific edge case -
+  // CreatePositionAtFormatBoundary when text lies at the and of a
+  // document, where MaxTextOffset on the final node is shortened.
+  AXNodeData root_data;
+  root_data.id = 1;
+  root_data.role = ax::mojom::Role::kRootWebArea;
+
+  AXNodeData text_data;
+  text_data.id = 2;
+  text_data.role = ax::mojom::Role::kStaticText;
+  text_data.SetName("some text");
+
+  root_data.child_ids = {text_data.id};
+
+  std::unique_ptr<AXTree> new_tree = CreateAXTree({root_data, text_data});
+  AXNodePosition::SetTree(new_tree.get());
+
+  // Create a position at MaxTextOffset
+  TestPositionType text_position = AXNodePosition::CreateTextPosition(
+      new_tree->data().tree_id, text_data.id, 9 /* text_offset */,
+      ax::mojom::TextAffinity::kDownstream);
+  ASSERT_NE(nullptr, text_position);
+  ASSERT_TRUE(text_position->IsTextPosition());
+
+  // Test basic cases with static MaxTextOffset
+  TestPositionType test_position = text_position->CreateNextCharacterPosition(
+      AXBoundaryBehavior::StopIfAlreadyAtBoundary);
+  EXPECT_TRUE(test_position->IsValid());
+  EXPECT_NE(nullptr, test_position);
+  EXPECT_TRUE(test_position->IsTextPosition());
+  EXPECT_EQ(text_data.id, test_position->anchor_id());
+  EXPECT_EQ(9, test_position->text_offset());
+  test_position = text_position->CreateNextCharacterPosition(
+      AXBoundaryBehavior::CrossBoundary);
+  EXPECT_NE(nullptr, test_position);
+  EXPECT_TRUE(test_position->IsNullPosition());
+
+  // Now make a change to shorten MaxTextOffset. Ensure that this position is
+  // invalid, then call SnapToMaxTextOffsetIfBeyond and ensure that it is now
+  // valid.
+  text_data.SetName("some tex");
+  AXTreeUpdate update;
+  update.nodes = {text_data};
+  ASSERT_TRUE(new_tree->Unserialize(update));
+
+  EXPECT_FALSE(text_position->IsValid());
+  text_position->SnapToMaxTextOffsetIfBeyond();
+  EXPECT_TRUE(text_position->IsValid());
+
+  // Now repeat the prior tests and ensure that we can create next character
+  // positions with the new, valid MaxTextOffset (8).
+  test_position = text_position->CreateNextCharacterPosition(
+      AXBoundaryBehavior::StopIfAlreadyAtBoundary);
+  EXPECT_TRUE(test_position->IsValid());
+  EXPECT_NE(nullptr, test_position);
+  EXPECT_TRUE(test_position->IsTextPosition());
+  EXPECT_EQ(text_data.id, test_position->anchor_id());
+  EXPECT_EQ(8, test_position->text_offset());
+  test_position = text_position->CreateNextCharacterPosition(
+      AXBoundaryBehavior::CrossBoundary);
+  EXPECT_NE(nullptr, test_position);
+  EXPECT_TRUE(test_position->IsNullPosition());
+
+  // Ensure that SnapToMaxTextOffsetIfBeyond does not impact nodes beyond
+  // MaxTextOffset
+  TestPositionType text_position_at_beginning =
+      AXNodePosition::CreateTextPosition(new_tree->data().tree_id, text_data.id,
+                                         0 /* text_offset */,
+                                         ax::mojom::TextAffinity::kDownstream);
+  EXPECT_EQ(0, text_position_at_beginning->text_offset());
+  text_position->SnapToMaxTextOffsetIfBeyond();
+  EXPECT_EQ(0, text_position_at_beginning->text_offset());
 }
 
 TEST_F(AXPositionTest, CreateNextCharacterPosition) {

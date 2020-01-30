@@ -25,11 +25,8 @@ namespace {
 // Returns false if either the width or height of |bounds| is specified and is
 // smaller than the corresponding element of |size|.
 bool CanFitInBounds(const gfx::Size& size, const SizeBounds& bounds) {
-  if (bounds.width() && *bounds.width() < size.width())
-    return false;
-  if (bounds.height() && *bounds.height() < size.height())
-    return false;
-  return true;
+  return (!bounds.width() || (*bounds.width() >= size.width())) &&
+         (!bounds.height() || (*bounds.height() >= size.height()));
 }
 
 // Returns the ChildLayout data for the child view in the proposed layout, or
@@ -991,9 +988,9 @@ ChildLayout AnimatingLayoutManager::CalculateSlideFade(
 }
 
 SizeBounds AnimatingLayoutManager::GetAvailableHostSize() const {
-  if (!host_view() || !host_view()->parent())
-    return SizeBounds();
-  return host_view()->parent()->GetAvailableSize(host_view());
+  DCHECK(host_view());
+  const auto* const parent = host_view()->parent();
+  return parent ? parent->GetAvailableSize(host_view()) : SizeBounds();
 }
 
 // Returns the space in which to calculate the target layout.
@@ -1006,16 +1003,17 @@ gfx::Size AnimatingLayoutManager::GetAvailableTargetLayoutSize() {
   const gfx::Size preferred_size =
       target_layout_manager()->GetPreferredSize(host_view());
   if (!bounds.width() || *bounds.width() > preferred_size.width()) {
-    return {preferred_size.width(),
-            bounds.height()
-                ? std::min(preferred_size.height(), *bounds.height())
-                : preferred_size.height()};
+    return gfx::Size(preferred_size.width(),
+                     bounds.height()
+                         ? std::min(preferred_size.height(), *bounds.height())
+                         : preferred_size.height());
   }
 
   const int height = target_layout_manager()->GetPreferredHeightForWidth(
       host_view(), *bounds.width());
-  return {*bounds.width(),
-          bounds.height() ? std::min(height, *bounds.height()) : height};
+  return gfx::Size(*bounds.width(), bounds.height()
+                                        ? std::min(height, *bounds.height())
+                                        : height);
 }
 
 // static
@@ -1034,8 +1032,8 @@ gfx::Size AnimatingLayoutManager::DefaultFlexRuleImpl(
   if (CanFitInBounds(preferred_size, size_bounds))
     return preferred_size;
 
-  const LayoutOrientation orientation = animating_layout->orientation();
-  const base::Optional<int> bounds_main = GetMainAxis(orientation, size_bounds);
+  const base::Optional<int> bounds_main =
+      GetMainAxis(animating_layout->orientation(), size_bounds);
 
   // Special case - if we're being asked for a zero-size layout we'll return the
   // minimum size of the layout. This is because we're being probed for how
@@ -1060,22 +1058,24 @@ gfx::Size AnimatingLayoutManager::DefaultFlexRuleImpl(
   // provided.
   gfx::Size size;
   if (size_bounds.width() && size_bounds.height()) {
-    // If both width and height are specified, query the preferred layout in
-    // that space and return its size.
-    size = {*size_bounds.width(), *size_bounds.height()};
+    // Both width and height are specified.  Constraining the width may change
+    // the desired height, so we can't just blindly return the minimum in both
+    // dimensions.  Instead, query the target layout in the constrained space
+    // and return its size.
+    size = gfx::Size(*size_bounds.width(), *size_bounds.height());
   } else if (size_bounds.width()) {
-    // If only the width is specified and we are still constrained, use the
-    // height-for-width calculation.
+    // The width is specified and too small.  Use the height-for-width
+    // calculation.
     // TODO(dfried): This should be rare, but it is also inefficient. See if we
-    // can't add an alternative to GetPreferredHeightForWidth that actually
+    // can't add an alternative to GetPreferredHeightForWidth() that actually
     // calculates the layout in this space so we don't have to do it twice.
     const int height =
         target_layout->GetPreferredHeightForWidth(view, *size_bounds.width());
-    size = {*size_bounds.width(), height};
+    size = gfx::Size(*size_bounds.width(), height);
   } else {
-    // We now know that only the height is constrained and it's too small.
-    // Fortunately the height of a layout can't (shouldn't?) affect its width.
-    size = {target_preferred.width(), *size_bounds.height()};
+    // The height is specified and too small.  Fortunately the height of a
+    // layout can't (shouldn't?) affect its width.
+    size = gfx::Size(target_preferred.width(), *size_bounds.height());
   }
 
   return target_layout->GetProposedLayout(size).host_size;

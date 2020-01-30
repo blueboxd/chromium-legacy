@@ -144,6 +144,8 @@ class VIEWS_EXPORT ViewAccessibility {
   // native accessibility object associated with this view.
   gfx::NativeViewAccessible GetFocusedDescendant();
 
+  virtual void FireFocusAfterMenuClose();
+
   // Used for testing. Allows a test to watch accessibility events.
   const AccessibilityEventsCallback& accessibility_events_callback() const;
   void set_accessibility_events_callback(AccessibilityEventsCallback callback);

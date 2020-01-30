@@ -71,7 +71,6 @@
 #include "media/mojo/services/video_decode_perf_history.h"
 #include "net/http/transport_security_state.h"
 #include "ppapi/buildflags/buildflags.h"
-#include "services/network/public/mojom/network_context.mojom.h"
 #include "storage/browser/database/database_tracker.h"
 
 #if defined(OS_ANDROID)
@@ -189,12 +188,6 @@ OffTheRecordProfileImpl::~OffTheRecordProfileImpl() {
 #if BUILDFLAG(ENABLE_PLUGINS)
   ChromePluginServiceFilter::GetInstance()->UnregisterProfile(this);
 #endif
-
-  // Clears any data the network stack contains that may be related to the
-  // OTR session. Must be done before DestroyBrowserContextServices, since
-  // the NetworkContext is managed by one such service.
-  GetDefaultStoragePartition(this)->GetNetworkContext()->ClearHostCache(
-      nullptr, network::mojom::NetworkContext::ClearHostCacheCallback());
 
   FullBrowserTransitionManager::Get()->OnProfileDestroyed(this);
 

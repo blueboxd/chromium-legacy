@@ -13,13 +13,11 @@ namespace views {
 namespace {
 
 base::Optional<int> OptionalValueBetween(double value,
-                                         base::Optional<int> start,
-                                         base::Optional<int> target) {
-  if (start.has_value() != target.has_value())
-    return target;
-  if (start)
-    return gfx::Tween::IntValueBetween(value, *start, *target);
-  return base::nullopt;
+                                         const base::Optional<int>& start,
+                                         const base::Optional<int>& target) {
+  return (start.has_value() && target.has_value())
+             ? gfx::Tween::IntValueBetween(value, *start, *target)
+             : target;
 }
 
 SizeBounds SizeBoundsBetween(double value,

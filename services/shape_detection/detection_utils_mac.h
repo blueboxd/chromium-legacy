@@ -6,13 +6,14 @@
 #define SERVICES_SHAPE_DETECTION_DETECTION_UTILS_MAC_H_
 
 #import <CoreImage/CoreImage.h>
+#import <Foundation/Foundation.h>
+#import <Vision/Vision.h>
 #include <os/availability.h>
 
 #include <memory>
 
 #include "base/callback.h"
 #include "base/mac/scoped_nsobject.h"
-#include "base/mac/sdk_forward_declarations.h"
 #include "base/macros.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/geometry/rect_f.h"

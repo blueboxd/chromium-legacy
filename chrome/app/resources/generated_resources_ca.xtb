@@ -26,7 +26,6 @@
 <translation id="1031362278801463162">S'està carregant la previsualització</translation>
 <translation id="1032605640136438169">Revisa les condicions noves</translation>
 <translation id="103279545524624934">Allibera espai al disc per poder iniciar aplicacions d'Android.</translation>
-<translation id="1033343386521881354">S'ha trobat 1 impressora al servidor d'impressió.</translation>
 <translation id="1033780634303702874">Accedeix als dispositius en sèrie</translation>
 <translation id="1034942643314881546">S'està activant ADB per crear la il·lustració d'aplicacions</translation>
 <translation id="1036348656032585052">Desactiva</translation>
@@ -34,7 +33,6 @@
 <translation id="1036982837258183574">Premeu |<ph name="ACCELERATOR" />| per sortir de la pantalla completa</translation>
 <translation id="1038168778161626396">Només encriptar</translation>
 <translation id="1039337018183941703">Fitxer no vàlid o malmès</translation>
-<translation id="1039850285407663109">El fitxer seleccionat és desconegut i podria ser perillós. Pots optar per escanejar-lo abans d'obrir-lo.</translation>
 <translation id="1041175011127912238">Aquesta pàgina no respon</translation>
 <translation id="1041263367839475438">Dispositius disponibles</translation>
 <translation id="1042174272890264476">L'ordinador també incorpora la biblioteca RLZ de <ph name="SHORT_PRODUCT_NAME" />. La biblioteca RLZ assigna una etiqueta no única i sense identificació personal per mesurar les cerques i l'ús de <ph name="SHORT_PRODUCT_NAME" /> derivats d'una campanya promocional concreta. De vegades, aquestes etiquetes apareixen a les consultes de la Cerca de Google a <ph name="PRODUCT_NAME" />.</translation>
@@ -639,7 +637,6 @@
 <translation id="1858585891038687145">Confia en aquest certificat per identificar generadors de programari</translation>
 <translation id="1861262398884155592">Aquesta carpeta és buida</translation>
 <translation id="1863182668524159459">No s'ha trobat cap port en sèrie</translation>
-<translation id="1863552924692672565">El fitxer <ph name="FILE_NAME" /> és desconegut. Escaneja'l per reduir el risc.</translation>
 <translation id="1864111464094315414">Inicia la sessió</translation>
 <translation id="1864400682872660285">Més fred</translation>
 <translation id="1864454756846565995">Dispositiu USB-C (port posterior)</translation>
@@ -3141,7 +3138,7 @@ en almenys <ph name="INSTALL_SIZE" /> d'espai lliure. Per alliberar espai, supri
 <translation id="5427459444770871191">Gira en el sentit de les &amp;agulles del rellotge</translation>
 <translation id="542872847390508405">Esteu navegant com a convidat.</translation>
 <translation id="5428850089342283580"><ph name="ACCNAME_APP" /> (l'actualització està disponible)</translation>
-<translation id="542948651837270806">Cal instal·lar una actualització del microprogramari del mòdul de plataforma de confiança. Consulta <ph name="TPM_FIRMWARE_UPDATE_LINK" />.</translation>
+<translation id="542948651837270806">Cal instal·lar una actualització per al microprogramari del mòdul de plataforma de confiança. Consulta <ph name="TPM_FIRMWARE_UPDATE_LINK" />.</translation>
 <translation id="5430931332414098647">Compartició de xarxa instantània</translation>
 <translation id="5431318178759467895">Color</translation>
 <translation id="5431825016875453137">OpenVPN/L2TP</translation>
@@ -4024,7 +4021,6 @@ Assegureu-vos que no es pugui accedir a informació sensible.</translation>
 <translation id="6678717876183468697">URL de la consulta</translation>
 <translation id="6680442031740878064">Disponible: <ph name="AVAILABLE_SPACE" /></translation>
 <translation id="6680650203439190394">Velocitat</translation>
-<translation id="6681301928961274620">No s'ha trobat cap impressora al servidor d'impressió.</translation>
 <translation id="6681668084120808868">Fes una foto</translation>
 <translation id="6681964764822470072">"<ph name="APP_NAME" />" es desinstal·larà.</translation>
 <translation id="668599234725812620">Obre Google Play</translation>
@@ -5554,7 +5550,6 @@ Deseu el fitxer de clau en una ubicació segura. El necessitareu per crear versi
 <translation id="8794025342371547160">IP restringida</translation>
 <translation id="879413103056696865">Mentre el punt d'accés Wi-Fi estigui activat, el telèfon <ph name="PHONE_NAME" />:</translation>
 <translation id="8795916974678578410">Finestra nova</translation>
-<translation id="8797086401386164142">S'han trobat <ph name="NUM_PRINTERS" /> impressores al servidor d'impressió.</translation>
 <translation id="8797459392481275117">No tradueixis mai aquest lloc</translation>
 <translation id="8798099450830957504">Predeterminat</translation>
 <translation id="8798441408945964110">Nom del proveïdor</translation>

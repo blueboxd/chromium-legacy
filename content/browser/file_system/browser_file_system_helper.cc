@@ -15,7 +15,7 @@
 #include "base/files/file_path.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/lazy_task_runner.h"
+#include "base/task/lazy_thread_pool_task_runner.h"
 #include "base/task/post_task.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/public/browser/browser_context.h"
@@ -49,10 +49,9 @@ namespace {
 
 // All FileSystemContexts currently need to share the same sequence per sharing
 // global objects: https://codereview.chromium.org/2883403002#msg14.
-base::LazySequencedTaskRunner g_fileapi_task_runner =
-    LAZY_SEQUENCED_TASK_RUNNER_INITIALIZER(
-        base::TaskTraits(base::ThreadPool(),
-                         base::MayBlock(),
+base::LazyThreadPoolSequencedTaskRunner g_fileapi_task_runner =
+    LAZY_THREAD_POOL_SEQUENCED_TASK_RUNNER_INITIALIZER(
+        base::TaskTraits(base::MayBlock(),
                          base::TaskPriority::USER_VISIBLE,
                          base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN));
 

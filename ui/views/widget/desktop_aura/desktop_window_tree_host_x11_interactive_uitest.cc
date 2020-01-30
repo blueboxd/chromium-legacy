@@ -14,7 +14,6 @@
 #include "ui/base/x/x11_util.h"
 #include "ui/events/event_handler.h"
 #include "ui/events/platform/x11/x11_event_source.h"
-#include "ui/events/platform/x11/x11_event_source_glib.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/x/x11.h"
 #include "ui/gfx/x/x11_atom_cache.h"
@@ -107,8 +106,7 @@ void DispatchMouseMotionEvent(DesktopWindowTreeHostX11* desktop_host,
   xev.xmotion.is_hint = NotifyNormal;
   xev.xmotion.same_screen = x11::True;
 
-  static_cast<ui::X11EventSourceGlib*>(ui::PlatformEventSource::GetInstance())
-      ->ProcessXEvent(&xev);
+  ui::X11EventSource::GetInstance()->ProcessXEvent(&xev);
 }
 
 }  // namespace

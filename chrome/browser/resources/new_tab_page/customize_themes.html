@@ -5,8 +5,9 @@
 
   #thirdPartyTheme {
     align-items: center;
-    border: 1px solid var(--google-grey-200);
     border-radius: 5px;
+    border: 1px solid var(--ntp-border-color);
+    color: var(--ntp-primary-text-color);
     display: flex;
     flex-direction: row;
     margin-bottom: 24px;
@@ -17,7 +18,7 @@
     -webkit-mask-image: url(icons/brush.svg);
     -webkit-mask-repeat: no-repeat;
     -webkit-mask-size: 100%;
-    background-color: var(--cr-secondary-text-color);
+    background-color: var(--ntp-primary-text-color);
     height: 24px;
     margin-inline-end: 20px;
     width: 24px;
@@ -36,7 +37,7 @@
     -webkit-mask-image: url(chrome://resources/images/open_in_new.svg);
     -webkit-mask-repeat: no-repeat;
     -webkit-mask-size: 100%;
-    background-color: var(--cr-secondary-text-color);
+    background-color: var(--ntp-primary-text-color);
     height: 20px;
     margin-inline-end: 24px;
     width: 20px;
@@ -86,6 +87,14 @@
     --ntp-theme-icon-frame-color: rgb(222, 225, 230);
     --ntp-theme-icon-active-tab-color: white;
   }
+
+  @media (prefers-color-scheme: dark) {
+    #defaultTheme {
+      --ntp-theme-icon-frame-color: rgb(var(--google-grey-900-rgb));
+      --ntp-theme-icon-active-tab-color: rgb(50, 54, 57);
+    }
+  }
+
 </style>
 <div id="thirdPartyThemeContainer" hidden="[[!isThirdPartyTheme_(theme)]]">
   <div id="thirdPartyTheme">

@@ -5,6 +5,7 @@
 import("//chrome/common/features.gni")
 import("//third_party/closure_compiler/compile_js.gni")
 import("//tools/grit/grit_rule.gni")
+import("//ui/webui/resources/tools/js_modulizer.gni")
 import("//ui/webui/webui_features.gni")
 import("../optimize_webui.gni")
 
@@ -45,7 +46,12 @@ if (optimize_webui) {
 
     # The .grd contains references to generated files.
     source_is_generated = true
+    grit_flags = [
+      "-E",
+      "root_gen_dir=" + rebase_path(root_gen_dir, root_build_dir),
+    ]
 
+    deps = [ ":polymer3_elements" ]
     defines = chrome_grit_defines
     outputs = [
       "grit/settings_resources.h",
@@ -185,4 +191,14 @@ js_library("search_settings") {
     "//ui/webui/resources/js:util",
   ]
   externs_list = [ "$externs_path/pending_polymer.js" ]
+}
+
+# Polymer 3 related rules.
+
+group("polymer3_elements") {
+  public_deps = [ ":modulize" ]
+}
+
+js_modulizer("modulize") {
+  input_files = [ "search_settings.js" ]
 }

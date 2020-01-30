@@ -35,7 +35,6 @@ from . import style_format
 from .dictionary import generate_dictionaries
 from .enumeration import generate_enumerations
 from .interface import generate_interfaces
-from .output_file_list import update_generated_bindings_gni
 from .path_manager import PathManager
 from .union import generate_unions
 

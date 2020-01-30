@@ -893,10 +893,12 @@ bool ContentSecurityPolicy::IsFrameAncestorsEnforced() const {
 
 bool ContentSecurityPolicy::AllowTrustedTypeAssignmentFailure(
     const String& message,
-    const String& sample) const {
+    const String& sample,
+    const String& sample_prefix) const {
   bool allow = true;
   for (const auto& policy : policies_) {
-    allow &= policy->AllowTrustedTypeAssignmentFailure(message, sample);
+    allow &= policy->AllowTrustedTypeAssignmentFailure(message, sample,
+                                                       sample_prefix);
   }
   return allow;
 }
@@ -975,7 +977,8 @@ static void GatherSecurityPolicyViolationEventData(
     ContentSecurityPolicyType header_type,
     ContentSecurityPolicy::ViolationType violation_type,
     std::unique_ptr<SourceLocation> source_location,
-    const String& script_source) {
+    const String& script_source,
+    const String& sample_prefix) {
   if (effective_type == ContentSecurityPolicy::DirectiveType::kFrameAncestors) {
     // If this load was blocked via 'frame-ancestors', then the URL of
     // |document| has not yet been initialized. In this case, we'll set both
@@ -1056,10 +1059,24 @@ static void GatherSecurityPolicyViolationEventData(
     init->setColumnNumber(0);
   }
 
-  if (!script_source.IsEmpty()) {
-    init->setSample(script_source.StripWhiteSpace().Left(
+  // Build the sample string. CSP demands that the sample is restricted to
+  // 40 characters (kMaxSampleLength), to prevent inadvertent exfiltration of
+  // user data. For some use cases, we also have a sample prefix, which
+  // must not depend on user data and where we will apply the sample limit
+  // separately.
+  StringBuilder sample;
+  if (!sample_prefix.IsEmpty()) {
+    sample.Append(sample_prefix.StripWhiteSpace().Left(
         ContentSecurityPolicy::kMaxSampleLength));
   }
+  if (!script_source.IsEmpty()) {
+    if (!sample.IsEmpty())
+      sample.Append(" ");
+    sample.Append(script_source.StripWhiteSpace().Left(
+        ContentSecurityPolicy::kMaxSampleLength));
+  }
+  if (!sample.IsEmpty())
+    init->setSample(sample.ToString());
 }
 
 void ContentSecurityPolicy::ReportViolation(
@@ -1076,7 +1093,8 @@ void ContentSecurityPolicy::ReportViolation(
     LocalFrame* context_frame,
     RedirectStatus redirect_status,
     Element* element,
-    const String& source) {
+    const String& source,
+    const String& source_prefix) {
   DCHECK(violation_type == kURLViolation || blocked_url.IsEmpty());
 
   // TODO(lukasza): Support sending reports from OOPIFs -
@@ -1108,7 +1126,7 @@ void ContentSecurityPolicy::ReportViolation(
   GatherSecurityPolicyViolationEventData(
       violation_data, relevant_delegate, directive_text, effective_type,
       blocked_url, header, redirect_status, header_type, violation_type,
-      std::move(source_location), source);
+      std::move(source_location), source, source_prefix);
 
   // TODO(mkwst): Obviously, we shouldn't hit this check, as extension-loaded
   // resources should be allowed regardless. We apparently do, however, so

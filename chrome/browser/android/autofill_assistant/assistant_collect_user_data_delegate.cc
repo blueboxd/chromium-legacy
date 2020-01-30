@@ -127,11 +127,11 @@ void AssistantCollectUserDataDelegate::OnTermsAndConditionsChanged(
       static_cast<TermsAndConditionsState>(state));
 }
 
-void AssistantCollectUserDataDelegate::OnTermsAndConditionsLinkClicked(
+void AssistantCollectUserDataDelegate::OnTextLinkClicked(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& jcaller,
     jint link) {
-  ui_controller_->OnTermsAndConditionsLinkClicked(link);
+  ui_controller_->OnTextLinkClicked(link);
 }
 
 void AssistantCollectUserDataDelegate::OnLoginChoiceChanged(

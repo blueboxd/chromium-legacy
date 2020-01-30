@@ -9,7 +9,7 @@
 #include "base/files/file_util.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string_util.h"
-#include "base/task/lazy_task_runner.h"
+#include "base/task/lazy_thread_pool_task_runner.h"
 #include "base/task/post_task.h"
 #include "base/third_party/icu/icu_utf.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -20,9 +20,9 @@ namespace content {
 
 scoped_refptr<base::SequencedTaskRunner> impl_task_runner() {
   constexpr base::TaskTraits kBlockingTraits = {
-      base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT};
-  static base::LazySequencedTaskRunner s_sequenced_task_unner =
-      LAZY_SEQUENCED_TASK_RUNNER_INITIALIZER(kBlockingTraits);
+      base::MayBlock(), base::TaskPriority::BEST_EFFORT};
+  static base::LazyThreadPoolSequencedTaskRunner s_sequenced_task_unner =
+      LAZY_THREAD_POOL_SEQUENCED_TASK_RUNNER_INITIALIZER(kBlockingTraits);
   return s_sequenced_task_unner.Get();
 }
 

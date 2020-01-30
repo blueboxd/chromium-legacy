@@ -308,7 +308,7 @@
 <translation id="3298243779924642547">Lite-Modus</translation>
 <translation id="3303414029551471755">Inhalt herunterladen?</translation>
 <translation id="3306398118552023113">Diese App wird in Chrome ausgeführt</translation>
-<translation id="3312292613668865961">Nachfragen, bevor Websites erlaubt wird, auf Ihre Virtual-Reality-Geräte und -Daten zuzugreifen (empfohlen)</translation>
+<translation id="3312292613668865961">Nachfragen, bevor Websites erlaubt wird, auf mein Virtual-Reality-Gerät und meine Virtual-Reality-Daten zuzugreifen (empfohlen)</translation>
 <translation id="3315103659806849044">Sie passen gerade die Einstellungen für "Synchronisierung und Google-Dienste" an Wenn Sie die Aktivierung der Synchronisierung abschließen möchten, tippen Sie unten auf dem Bildschirm auf "Bestätigen". Nach oben</translation>
 <translation id="3328801116991980348">Websiteinformationen</translation>
 <translation id="3333961966071413176">Alle Kontakte</translation>
@@ -319,7 +319,7 @@
 <translation id="3367813778245106622">Melden Sie sich nochmals an, um die Synchronisierung zu starten</translation>
 <translation id="3374023511497244703">Ihre Lesezeichen, Ihr Verlauf, Ihre Passwörter und andere Chrome-Daten werden nicht mehr mit Ihrem Google-Konto synchronisiert.</translation>
 <translation id="3384347053049321195">Bild teilen</translation>
-<translation id="3386292677130313581">Nachfragen, bevor Websites Ihr Standort angezeigt wird (empfohlen)</translation>
+<translation id="3386292677130313581">Nachfragen, bevor Websites mein Standort angezeigt wird (empfohlen)</translation>
 <translation id="3387650086002190359"><ph name="FILE_NAME" /> konnte aufgrund von Dateisystemfehlern nicht heruntergeladen werden.</translation>
 <translation id="3389286852084373014">SMS zu lang</translation>
 <translation id="3398320232533725830">Lesezeichen-Manager öffnen</translation>
@@ -514,7 +514,7 @@ Wenn Sie diese Einstellung ändern möchten, <ph name="BEGIN_LINK" />setzen Sie 
 <translation id="4915549754973153784"><ph name="BEGIN_LINK" />Hilfe aufrufen<ph name="END_LINK" />, während nach Geräten gesucht wird…</translation>
 <translation id="4921180162323349895">{FILE_COUNT,plural, =1{# Seite}other{# Seiten}}</translation>
 <translation id="4932247056774066048">Da Sie sich von einem Konto abmelden, das von <ph name="DOMAIN_NAME" /> verwaltet wird, werden Ihre Chrome-Daten auf diesem Gerät gelöscht. Die Daten bleiben jedoch in Ihrem Google-Konto.</translation>
-<translation id="4935305910887312910">Nachfragen, bevor Websites erlaubt wird, auf Ihre Kameraposition zuzugreifen oder Ihr Zimmer zu vermessen (empfohlen)</translation>
+<translation id="4935305910887312910">Nachfragen, bevor Websites erlaubt wird, auf meine Kameraposition zuzugreifen oder mein Zimmer zu vermessen (empfohlen)</translation>
 <translation id="4943703118917034429">Virtual Reality</translation>
 <translation id="4943872375798546930">Keine Ergebnisse</translation>
 <translation id="4958708863221495346"><ph name="URL_OF_THE_CURRENT_TAB" /> hat Ihren Bildschirm freigegeben</translation>
@@ -1028,7 +1028,7 @@ Die Website erhält KEINEN Zugriff auf die Kamera. Die Kamerabilder sind nur fü
 <translation id="8676374126336081632">Eingabe löschen</translation>
 <translation id="8687353297350450808">{N_BARS,plural, =1{Signalstärke: # Balken}other{Signalstärke: # Balken}}</translation>
 <translation id="868929229000858085">Kontakte durchsuchen</translation>
-<translation id="8698438463325761328">Websites daran hindern, auf Ihre Virtual-Reality-Geräte und -Daten zuzugreifen</translation>
+<translation id="8698438463325761328">Websites daran hindern, auf mein Virtual-Reality-Gerät und meine Virtual-Reality-Daten zuzugreifen</translation>
 <translation id="869891660844655955">Ablaufdatum</translation>
 <translation id="8728487861892616501">Durch die Nutzung dieser Anwendung stimmen Sie den <ph name="BEGIN_LINK1" />Nutzungsbedingungen<ph name="END_LINK1" /> und <ph name="BEGIN_LINK2" />Datenschutzhinweisen<ph name="END_LINK2" /> von Chrome sowie den <ph name="BEGIN_LINK3" />Datenschutzhinweisen für mit Family Link verwaltete Google-Konten<ph name="END_LINK3" /> zu.</translation>
 <translation id="8748850008226585750">Inhalte ausgeblendet</translation>
@@ -1045,7 +1045,7 @@ Die Website erhält KEINEN Zugriff auf die Kamera. Die Kamerabilder sind nur fü
 <translation id="883806473910249246">Beim Herunterladen des Inhalts ist ein Fehler aufgetreten.</translation>
 <translation id="8840953339110955557">Diese Seite unterscheidet sich gegebenenfalls von der Onlineversion.</translation>
 <translation id="8847988622838149491">USB</translation>
-<translation id="884828189055900810">Websites daran hindern, auf Ihre Kameraposition zuzugreifen oder Ihr Zimmer zu vermessen</translation>
+<translation id="884828189055900810">Websites daran hindern, auf meine Kameraposition zuzugreifen oder mein Zimmer zu vermessen</translation>
 <translation id="8853345339104747198"><ph name="TAB_TITLE" /></translation>
 <translation id="885701979325669005">Speicher</translation>
 <translation id="889338405075704026">Zu den Chrome-Einstellungen</translation>

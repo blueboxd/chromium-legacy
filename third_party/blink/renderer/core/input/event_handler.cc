@@ -192,7 +192,8 @@ EventHandler::EventHandler(LocalFrame& frame)
       mouse_event_manager_(
           MakeGarbageCollected<MouseEventManager>(frame, *scroll_manager_)),
       mouse_wheel_event_manager_(
-          MakeGarbageCollected<MouseWheelEventManager>(frame)),
+          MakeGarbageCollected<MouseWheelEventManager>(frame,
+                                                       *scroll_manager_)),
       keyboard_event_manager_(
           MakeGarbageCollected<KeyboardEventManager>(frame, *scroll_manager_)),
       pointer_event_manager_(

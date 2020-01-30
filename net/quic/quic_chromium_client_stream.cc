@@ -63,9 +63,8 @@ void QuicChromiumClientStream::Handle::OnInitialHeadersAvailable() {
   if (!read_headers_callback_)
     return;  // Wait for ReadInitialHeaders to be called.
 
-  int rv = ERR_QUIC_PROTOCOL_ERROR;
-  if (!stream_->DeliverInitialHeaders(read_headers_buffer_, &rv))
-    rv = ERR_QUIC_PROTOCOL_ERROR;
+  int rv = stream_->DeliverInitialHeaders(read_headers_buffer_);
+  DCHECK_NE(ERR_IO_PENDING, rv);
 
   ResetAndRun(std::move(read_headers_callback_), rv);
 }
@@ -150,9 +149,10 @@ int QuicChromiumClientStream::Handle::ReadInitialHeaders(
   if (!stream_)
     return net_error_;
 
-  int frame_len = 0;
-  if (stream_->DeliverInitialHeaders(header_block, &frame_len))
-    return frame_len;
+  int rv = stream_->DeliverInitialHeaders(header_block);
+  if (rv != ERR_IO_PENDING) {
+    return rv;
+  }
 
   read_headers_buffer_ = header_block;
   SetCallback(std::move(callback), &read_headers_callback_);
@@ -407,11 +407,12 @@ QuicChromiumClientStream::QuicChromiumClientStream(
     : quic::QuicSpdyStream(id, session, type),
       net_log_(net_log),
       handle_(nullptr),
-      headers_delivered_(false),
       initial_headers_sent_(false),
       session_(session),
       quic_version_(session->connection()->transport_version()),
       can_migrate_to_cellular_network_(true),
+      initial_headers_arrived_(false),
+      headers_delivered_(false),
       initial_headers_frame_len_(0),
       trailing_headers_frame_len_(0) {}
 
@@ -424,11 +425,12 @@ QuicChromiumClientStream::QuicChromiumClientStream(
     : quic::QuicSpdyStream(pending, session, type),
       net_log_(net_log),
       handle_(nullptr),
-      headers_delivered_(false),
       initial_headers_sent_(false),
       session_(session),
       quic_version_(session->connection()->transport_version()),
       can_migrate_to_cellular_network_(true),
+      initial_headers_arrived_(false),
+      headers_delivered_(false),
       initial_headers_frame_len_(0),
       trailing_headers_frame_len_(0) {}
 
@@ -457,6 +459,7 @@ void QuicChromiumClientStream::OnInitialHeadersComplete(
   session_->OnInitialHeadersComplete(id(), header_block);
 
   // Buffer the headers and deliver them when the handle arrives.
+  initial_headers_arrived_ = true;
   initial_headers_ = std::move(header_block);
   initial_headers_frame_len_ = frame_len;
 
@@ -582,8 +585,9 @@ QuicChromiumClientStream::CreateHandle() {
   handle_ = handle.get();
 
   // Should this perhaps be via PostTask to make reasoning simpler?
-  if (!initial_headers_.empty())
+  if (initial_headers_arrived_) {
     handle_->OnInitialHeadersAvailable();
+  }
 
   return handle;
 }
@@ -652,13 +656,18 @@ void QuicChromiumClientStream::NotifyHandleOfTrailingHeadersAvailable() {
   handle_->OnTrailingHeadersAvailable();
 }
 
-bool QuicChromiumClientStream::DeliverInitialHeaders(
-    spdy::SpdyHeaderBlock* headers,
-    int* frame_len) {
-  if (initial_headers_.empty())
-    return false;
+int QuicChromiumClientStream::DeliverInitialHeaders(
+    spdy::SpdyHeaderBlock* headers) {
+  if (!initial_headers_arrived_) {
+    return ERR_IO_PENDING;
+  }
 
   headers_delivered_ = true;
+
+  if (initial_headers_.empty()) {
+    return ERR_INVALID_RESPONSE;
+  }
+
   net_log_.AddEvent(
       NetLogEventType::QUIC_CHROMIUM_CLIENT_STREAM_READ_RESPONSE_HEADERS,
       [&](NetLogCaptureMode capture_mode) {
@@ -667,8 +676,7 @@ bool QuicChromiumClientStream::DeliverInitialHeaders(
       });
 
   *headers = std::move(initial_headers_);
-  *frame_len = initial_headers_frame_len_;
-  return true;
+  return initial_headers_frame_len_;
 }
 
 bool QuicChromiumClientStream::DeliverTrailingHeaders(

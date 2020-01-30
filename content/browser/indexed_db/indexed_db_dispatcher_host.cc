@@ -450,7 +450,7 @@ void IndexedDBDispatcherHost::CreateAllBlobs(
 #if !defined(OS_ANDROID)
     last_modified = blob_info.last_modified();
 #endif
-    BindFileReader(blob_info.file_path(), last_modified,
+    BindFileReader(blob_info.indexed_db_file_path(), last_modified,
                    blob_info.release_callback(),
                    element->reader.InitWithNewPipeAndPassReceiver());
 

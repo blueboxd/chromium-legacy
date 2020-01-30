@@ -5,6 +5,8 @@
 import("//build/config/python.gni")
 import("//third_party/blink/renderer/bindings/bindings.gni")
 import("//third_party/blink/renderer/bindings/core/v8/generated.gni")
+import("//third_party/blink/renderer/bindings/idl_in_core.gni")
+import("//third_party/blink/renderer/bindings/idl_in_modules.gni")
 import("//third_party/blink/renderer/bindings/modules/v8/generated.gni")
 import("//third_party/blink/renderer/bindings/scripts/scripts.gni")
 import("//third_party/blink/renderer/build/scripts/scripts.gni")
@@ -74,13 +76,21 @@ template("collect_idl_files") {
 }
 
 collect_idl_files("web_idl_in_core") {
-  # All IDL files in 'core' component.
-  inputs = core_static_interface_idl_files +
-           core_generated_interface_idl_files + core_all_dependency_idl_files
+  component = "core"
 
-  # The hack of "constructor attributes" for the old bindings generator is not
-  # necessary for the new one.
-  inputs -= core_global_constructors_generated_idl_files
+  inputs = static_idl_files_in_core
+  deps = []
+
+  inputs += get_path_info(
+          [
+            "$root_gen_dir/third_party/blink/renderer/core/testing/internal_runtime_flags.idl",
+            "$root_gen_dir/third_party/blink/renderer/core/testing/internal_settings_generated.idl",
+          ],
+          "abspath")
+  deps += [
+    "//third_party/blink/renderer/core:generated_testing_idls_internal_runtime_flags",
+    "//third_party/blink/renderer/core:generated_testing_idls_settings",
+  ]
 
   # Supplemental IDL definitions to support the migration from the old bindings
   # generator to the new one.
@@ -89,19 +99,14 @@ collect_idl_files("web_idl_in_core") {
   # Additional IDL files to test and demonstrate the new IDL compiler.
   inputs += [ "${bindings_scripts_dir}/web_idl/demonstration_and_testing.idl" ]
 
-  component = "core"
   output = "${bindings_output_dir}/web_idl_in_core.pickle"
-  deps = [
-    "//third_party/blink/renderer/core:generated_testing_idls_internal_runtime_flags",
-    "//third_party/blink/renderer/core:generated_testing_idls_settings",
-  ]
 }
 
 collect_idl_files("web_idl_in_modules") {
-  # All IDL files in 'modules' component.
-  inputs = modules_definition_idl_files + modules_static_interface_idl_files +
-           modules_static_dependency_idl_files
   component = "modules"
+
+  inputs = static_idl_files_in_modules
+
   output = "${bindings_output_dir}/web_idl_in_modules.pickle"
 }
 

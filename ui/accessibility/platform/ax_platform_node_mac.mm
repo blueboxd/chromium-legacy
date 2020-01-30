@@ -1201,6 +1201,7 @@ gfx::NativeViewAccessible AXPlatformNodeMac::GetNativeViewAccessible() {
 }
 
 void AXPlatformNodeMac::NotifyAccessibilityEvent(ax::mojom::Event event_type) {
+  AXPlatformNodeBase::NotifyAccessibilityEvent(event_type);
   GetNativeViewAccessible();
   // Handle special cases.
 

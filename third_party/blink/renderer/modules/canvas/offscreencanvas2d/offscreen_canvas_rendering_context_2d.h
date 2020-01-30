@@ -114,7 +114,7 @@ class MODULES_EXPORT OffscreenCanvasRenderingContext2D final
   sk_sp<PaintFilter> StateGetFilter() final;
   void SnapshotStateForFilter() final;
 
-  void ValidateStateStack() const final;
+  void ValidateStateStackWithCanvas(const cc::PaintCanvas*) const final;
 
   bool HasAlpha() const final { return CreationAttributes().alpha; }
   bool isContextLost() const override;

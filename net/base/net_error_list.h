@@ -542,13 +542,16 @@ NET_ERROR(CERT_SYMANTEC_LEGACY, -215)
 // the device owner.
 NET_ERROR(CERT_KNOWN_INTERCEPTION_BLOCKED, -217)
 
+// The connection uses an obsolete version of SSL/TLS.
+NET_ERROR(SSL_OBSOLETE_VERSION, -218)
+
 // Add new certificate error codes here.
 //
 // Update the value of CERT_END whenever you add a new certificate error
 // code.
 
 // The value immediately past the last certificate error code.
-NET_ERROR(CERT_END, -218)
+NET_ERROR(CERT_END, -219)
 
 // The URL is invalid.
 NET_ERROR(INVALID_URL, -300)

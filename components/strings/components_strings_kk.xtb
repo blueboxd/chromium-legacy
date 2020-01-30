@@ -153,7 +153,7 @@
 <translation id="1569487616857761740">Жарамдылық мерзімін енгізіңіз.</translation>
 <translation id="1581080074034554886">CVC</translation>
 <translation id="1583429793053364125">Бұл веб-бетті көрсету кезінде қате кетті.</translation>
-<translation id="1586541204584340881">қай кеңейтімдерді орнатқаныңызды</translation>
+<translation id="1586541204584340881">қай кеңейтімдерді орнатқаныңызды;</translation>
 <translation id="1588438908519853928">Қалыпты</translation>
 <translation id="1592005682883173041">Жергілікті деректерге кіру</translation>
 <translation id="1594030484168838125">Таңдау</translation>
@@ -1355,7 +1355,7 @@
 <translation id="7012363358306927923">China UnionPay</translation>
 <translation id="7016992613359344582">Бұл ақылар сізге білдіртпей бір рет не қайта-қайта алынуы мүмкін.</translation>
 <translation id="7029809446516969842">Құпия сөздер</translation>
-<translation id="7031646650991750659">Google Play-дің қай қолданбаларын орнатқаныңызды</translation>
+<translation id="7031646650991750659">Google Play-дің қай қолданбаларын орнатқаныңызды.</translation>
 <translation id="7050187094878475250"><ph name="DOMAIN" /> доменіне қол жеткізуге әрекет еттіңіз, бірақ сервер сенімді болуы үшін жарамдылық мерзімі тым ұзақ болған сертификатты ұсынды.</translation>
 <translation id="705310974202322020">{NUM_CARDS,plural, =1{Бұл карта қазір сақталмайды}other{Бұл карталар қазір сақталмайды}}</translation>
 <translation id="7053983685419859001">Бөгеу</translation>

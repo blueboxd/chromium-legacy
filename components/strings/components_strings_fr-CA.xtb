@@ -79,6 +79,7 @@
 <translation id="129553762522093515">Récemment fermés</translation>
 <translation id="1298536327547837046">Recherche de logiciels malveillants</translation>
 <translation id="129863573139666797"><ph name="BEGIN_LINK" />Essayez d'effacer vos témoins<ph name="END_LINK" /></translation>
+<translation id="1301324364792935241">Vérifiez les paramètres de DNS sécurisés</translation>
 <translation id="1307966114820526988">Fonctionnalités discontinuées</translation>
 <translation id="1314509827145471431">Reliure à droite</translation>
 <translation id="1320233736580025032">Enveloppe Prc1</translation>
@@ -152,6 +153,7 @@
 <translation id="1569487616857761740">Entrez la date d'expiration</translation>
 <translation id="1581080074034554886">CVC</translation>
 <translation id="1583429793053364125">Une erreur s'est produite lors de l'affichage de cette page Web.</translation>
+<translation id="1586541204584340881">Les extensions que vous avez installées</translation>
 <translation id="1588438908519853928">Normal</translation>
 <translation id="1592005682883173041">Accès aux données locales</translation>
 <translation id="1594030484168838125">Choisir</translation>
@@ -362,6 +364,7 @@
 <translation id="2544644783021658368">Document simple</translation>
 <translation id="254947805923345898">La valeur attribuée à la politique n'est pas valide.</translation>
 <translation id="255002559098805027"><ph name="HOST_NAME" /> a envoyé une réponse non valide.</translation>
+<translation id="2553853292994445426">Vérifiez les paramètres de DNS sécurisé. L'échec de connexion est peut-être dû à un serveur DNS sécurisé que vous avez configuré.</translation>
 <translation id="2556876185419854533">&amp;Annuler la modification</translation>
 <translation id="257674075312929031">Groupe</translation>
 <translation id="2586657967955657006">Presse-papiers</translation>
@@ -474,6 +477,7 @@
 <translation id="3095940652251934233">Relevé</translation>
 <translation id="3096100844101284527">Ajouter une adresse de ramassage</translation>
 <translation id="3105172416063519923">Identifiant de ressource :</translation>
+<translation id="3107591622054137333"><ph name="BEGIN_LINK" />De vérifier la configuration du serveur DNS sécurisé<ph name="END_LINK" /></translation>
 <translation id="3109728660330352905">Vous ne disposez pas de l'autorisation nécessaire pour afficher cette page.</translation>
 <translation id="3113284927548439113">Troisième quart</translation>
 <translation id="3116158981186517402">Plastifier</translation>
@@ -771,6 +775,7 @@
 <translation id="4390472908992056574">Bord</translation>
 <translation id="4406896451731180161">résultats de recherche</translation>
 <translation id="4408413947728134509">Témoins <ph name="NUM_COOKIES" /></translation>
+<translation id="4414290883293381923">Vous venez d'entrer votre mot de passe sur un site trompeur. Chrome vous recommande de visiter <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, <ph name="WEBSITE_3" /> ainsi que tout autre site sur lequel vous avez utilisé ce mot de passe, puis de le changer maintenant.</translation>
 <translation id="4415426530740016218">Adresse de ramassage</translation>
 <translation id="4424024547088906515">Impossible de vérifier sur le serveur qu'il s'agit bien du domaine <ph name="DOMAIN" />, car son certificat de sécurité n'est pas considéré comme fiable par Chrome. Cela peut être dû à une mauvaise configuration ou bien à l'interception de votre connexion par un pirate informatique.</translation>
 <translation id="443121186588148776">Port série</translation>
@@ -1154,7 +1159,7 @@
 <translation id="6120179357481664955">Se souvenir de votre identifiant UPI?</translation>
 <translation id="6146055958333702838">Vérifiez les câbles et redémarrez votre routeur, votre modem
     ou tout autre périphérique réseau utilisé.</translation>
-<translation id="614940544461990577">Essayez :</translation>
+<translation id="614940544461990577">Essayez ceci :</translation>
 <translation id="6150036310511284407">Triple perforation à gauche</translation>
 <translation id="6151417162996330722">La période de validité du certificat du serveur est trop longue.</translation>
 <translation id="6157877588268064908">Pour voir les exigences et les modes de livraison, sélectionnez une adresse</translation>
@@ -1202,6 +1207,7 @@
 <translation id="6353505687280762741">{COUNT,plural, =0{Aucun}=1{1 mot de passe (pour <ph name="DOMAIN_LIST" />, synchronisé)}=2{2 mots de passe (pour <ph name="DOMAIN_LIST" />, synchronisés)}one{# mot de passe (pour <ph name="DOMAIN_LIST" />, synchronisé)}other{# mots de passe (pour <ph name="DOMAIN_LIST" />, synchronisés)}}</translation>
 <translation id="6358450015545214790">Qu'est-ce que c'est?</translation>
 <translation id="6361757823711327522">B7</translation>
+<translation id="6364095313648930329"><ph name="BEGIN_LINK" />De vérifier la configuration du mandataire, du pare-feu et du DNS sécurisé<ph name="END_LINK" /></translation>
 <translation id="6366710531182496394">Double agrafe à gauche</translation>
 <translation id="6377268785556383139">1 résultat trouvé pour « <ph name="SEARCH_TEXT" /> »</translation>
 <translation id="6380497234672085559">A0</translation>
@@ -1224,6 +1230,7 @@
 <translation id="6433595998831338502"><ph name="HOST_NAME" /> a refusé la connexion.</translation>
 <translation id="6434309073475700221">Supprimer</translation>
 <translation id="6440503408713884761">Ignorée</translation>
+<translation id="6443406338865242315">Les extensions et les plugiciels que vous avez installés</translation>
 <translation id="6446163441502663861">Enveloppe Kahu</translation>
 <translation id="6446608382365791566">Ajouter plus de renseignements</translation>
 <translation id="6447842834002726250">Témoins</translation>
@@ -1333,6 +1340,7 @@
 <translation id="7012363358306927923">China UnionPay</translation>
 <translation id="7016992613359344582">Ces frais peuvent être ponctuels ou récurrents, et peuvent ne pas être évidents.</translation>
 <translation id="7029809446516969842">Mots de passe</translation>
+<translation id="7031646650991750659">Quelles applications Google Play vous avez installées</translation>
 <translation id="7050187094878475250">Vous avez essayé d’atteindre <ph name="DOMAIN" />, mais le serveur a présenté un certificat dont la période de validité est trop longue pour être sûre.</translation>
 <translation id="705310974202322020">{NUM_CARDS,plural, =1{Cette carte ne peut pas être enregistrée pour le moment}one{Cette carte ne peut pas être enregistrée pour le moment}other{Ces cartes ne peuvent pas être enregistrées pour le moment}}</translation>
 <translation id="7053983685419859001">Bloquer</translation>
@@ -1392,6 +1400,7 @@ Détails supplémentaires :
 <translation id="7319430975418800333">A3</translation>
 <translation id="7320336641823683070">Aide pour la connexion</translation>
 <translation id="733354035281974745">Ignorer le compte local de l'appareil</translation>
+<translation id="7333654844024768166">Vous venez d'entrer votre mot de passe sur un site trompeur. Chromium vous recommande de visiter <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, <ph name="WEBSITE_3" /> ainsi que tout autre site sur lequel vous avez utilisé ce mot de passe, puis de le changer maintenant.</translation>
 <translation id="7334320624316649418">&amp;Rétablir la réorganisation</translation>
 <translation id="7337706099755338005">Non disponible sur votre plateforme.</translation>
 <translation id="733923710415886693">Le certificat du serveur n'a pas été divulgué par l'intermédiaire de l'outil Certificate Transparency.</translation>

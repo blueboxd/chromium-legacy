@@ -26,7 +26,6 @@
 <translation id="1031362278801463162">Indlæser eksempel</translation>
 <translation id="1032605640136438169">Læs de nye vilkår</translation>
 <translation id="103279545524624934">Frigør diskplads for at starte Android-apps.</translation>
-<translation id="1033343386521881354">Der blev fundet 1 printer på printerserveren.</translation>
 <translation id="1033780634303702874">Få adgang til dine serieenheder</translation>
 <translation id="1034942643314881546">Illustration, der viser, at ADB aktiveres for at oprette apps</translation>
 <translation id="1036348656032585052">Deaktiver</translation>
@@ -34,7 +33,6 @@
 <translation id="1036982837258183574">Tryk på |<ph name="ACCELERATOR" />| for at afslutte fuld skærm</translation>
 <translation id="1038168778161626396">Kun omsætning til kode</translation>
 <translation id="1039337018183941703">Ugyldig eller beskadiget fil</translation>
-<translation id="1039850285407663109">Den valgte fil er ukendt og er muligvis skadelig. Du bør scanne filen, før du åbner den.</translation>
 <translation id="1041175011127912238">Denne side svarer ikke</translation>
 <translation id="1041263367839475438">Tilgængelige enheder</translation>
 <translation id="1042174272890264476">Computeren leveres også med <ph name="SHORT_PRODUCT_NAME" />s RLZ-samling indbygget. RLZ tildeler et ikke-unikt, ikke-personligt identificerbart tag til at måle søgninger og <ph name="SHORT_PRODUCT_NAME" />-brug, der er drevet af en bestemt kampagne. Disse etiketter vises nogle gange i Googles søgeforespørgsler i <ph name="PRODUCT_NAME" />.</translation>
@@ -639,7 +637,6 @@
 <translation id="1858585891038687145">Hav tillid til dette certifikat i forbindelse med identifikation af softwareproducenter</translation>
 <translation id="1861262398884155592">Denne mappe er tom</translation>
 <translation id="1863182668524159459">Der blev ikke fundet nogen serieporte</translation>
-<translation id="1863552924692672565"><ph name="FILE_NAME" /> er ukendt. Scan filen for at minimere risikoen.</translation>
 <translation id="1864111464094315414">Login</translation>
 <translation id="1864400682872660285">Kølig</translation>
 <translation id="1864454756846565995">USB-C-enhed (port bagpå)</translation>
@@ -4026,7 +4023,6 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="6678717876183468697">Webadresse for søgeforespørgsler</translation>
 <translation id="6680442031740878064">Tilgængelig: <ph name="AVAILABLE_SPACE" /></translation>
 <translation id="6680650203439190394">Talehastighed</translation>
-<translation id="6681301928961274620">Der blev ikke fundet nogen printere på printerserveren.</translation>
 <translation id="6681668084120808868">Tag billede</translation>
 <translation id="6681964764822470072">"<ph name="APP_NAME" />" afinstalleres.</translation>
 <translation id="668599234725812620">Åbn Google Play</translation>
@@ -5556,7 +5552,6 @@ Opbevar din nøglefil på et sikkert sted. Du skal bruge den til at oprette nye 
 <translation id="8794025342371547160">Adgangsbeskyttet IP-adresse</translation>
 <translation id="879413103056696865">Mens hotspottet er aktivt, vil din <ph name="PHONE_NAME" />:</translation>
 <translation id="8795916974678578410">Nyt vindue</translation>
-<translation id="8797086401386164142">Der blev fundet <ph name="NUM_PRINTERS" /> printere på printerserveren.</translation>
 <translation id="8797459392481275117">Oversæt aldrig dette website</translation>
 <translation id="8798099450830957504">Standard</translation>
 <translation id="8798441408945964110">Navn på udbyder</translation>

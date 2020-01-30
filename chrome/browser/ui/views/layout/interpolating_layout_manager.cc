@@ -8,9 +8,10 @@
 #include <utility>
 
 #include "ui/gfx/animation/tween.h"
+#include "ui/views/layout/normalized_geometry.h"
 #include "ui/views/view.h"
 
-InterpolatingLayoutManager::InterpolatingLayoutManager() {}
+InterpolatingLayoutManager::InterpolatingLayoutManager() = default;
 InterpolatingLayoutManager::~InterpolatingLayoutManager() = default;
 
 InterpolatingLayoutManager& InterpolatingLayoutManager::SetOrientation(
@@ -55,9 +56,7 @@ InterpolatingLayoutManager::GetInterpolation(
   LayoutInterpolation result;
 
   const base::Optional<int> dimension =
-      orientation_ == views::LayoutOrientation::kHorizontal
-          ? size_bounds.width()
-          : size_bounds.height();
+      views::GetMainAxis(orientation_, size_bounds);
 
   // Find the larger layout that overlaps the target size.
   auto match = dimension ? embedded_layouts_.upper_bound({*dimension, 0})
@@ -77,7 +76,7 @@ InterpolatingLayoutManager::GetInterpolation(
         << " but there is no smaller layout to interpolate with.";
     result.second = (--match)->second;
     result.percent_second =
-        float{first_span.end() - *dimension} / float{first_span.length()};
+        float{first_span.end() - *dimension} / first_span.length();
   }
 
   return result;
@@ -85,8 +84,8 @@ InterpolatingLayoutManager::GetInterpolation(
 
 views::ProposedLayout InterpolatingLayoutManager::CalculateProposedLayout(
     const views::SizeBounds& size_bounds) const {
-  // For interpolating layout we will never call this method except for fully-
-  // specified sizes.
+  // For interpolating layout we will never call this method for unbounded
+  // sizes.
   DCHECK(size_bounds.width());
   DCHECK(size_bounds.height());
   const gfx::Size size(*size_bounds.width(), *size_bounds.height());
@@ -150,7 +149,7 @@ int InterpolatingLayoutManager::GetPreferredHeightForWidth(
   // experience; if this doesn't work in practice we can look at other options.
 
   const LayoutInterpolation interpolation =
-      GetInterpolation({width, base::nullopt});
+      GetInterpolation(views::SizeBounds(width, base::nullopt));
   const int first =
       interpolation.first->GetPreferredHeightForWidth(host, width);
   if (!interpolation.second)

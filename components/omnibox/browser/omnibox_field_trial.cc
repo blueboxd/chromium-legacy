@@ -650,6 +650,10 @@ bool OmniboxFieldTrial::IsShortBookmarkSuggestionsEnabled() {
          base::FeatureList::IsEnabled(omnibox::kAutocompleteTitles);
 }
 
+bool OmniboxFieldTrial::IsSuggestionButtonRowEnabled() {
+  return base::FeatureList::IsEnabled(omnibox::kOmniboxSuggestionButtonRow);
+}
+
 bool OmniboxFieldTrial::IsTabSwitchSuggestionsEnabled() {
   return base::FeatureList::IsEnabled(omnibox::kOmniboxTabSwitchSuggestions);
 }

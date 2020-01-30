@@ -587,8 +587,9 @@ void Histogram::WriteHTMLGraph(std::string* output) const {
   // are consistent across our output activities.
   std::unique_ptr<SampleVector> snapshot = SnapshotAllSamples();
   output->append("<PRE>");
+  output->append("<h4>");
   WriteAsciiHeader(*snapshot, output);
-  output->append(kHtmlNewLine);
+  output->append("</h4>");
   WriteAsciiBody(*snapshot, true, kHtmlNewLine, output);
   output->append("</PRE>");
 }

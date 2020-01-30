@@ -287,24 +287,6 @@ bool Shelf::IsHorizontalAlignment() const {
   return true;
 }
 
-int Shelf::SelectValueForShelfAlignment(int bottom, int left, int right) const {
-  switch (alignment_) {
-    case ShelfAlignment::kBottom:
-    case ShelfAlignment::kBottomLocked:
-      return bottom;
-    case ShelfAlignment::kLeft:
-      return left;
-    case ShelfAlignment::kRight:
-      return right;
-  }
-  NOTREACHED();
-  return bottom;
-}
-
-int Shelf::PrimaryAxisValue(int horizontal, int vertical) const {
-  return IsHorizontalAlignment() ? horizontal : vertical;
-}
-
 void Shelf::SetAutoHideBehavior(ShelfAutoHideBehavior auto_hide_behavior) {
   DCHECK(shelf_layout_manager_);
 

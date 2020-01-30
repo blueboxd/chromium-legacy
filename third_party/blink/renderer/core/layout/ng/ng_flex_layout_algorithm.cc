@@ -856,26 +856,21 @@ void NGFlexLayoutAlgorithm::PropagateBaselineFromChild(
   NGBoxFragment fragment(ConstraintSpace().GetWritingMode(),
                          ConstraintSpace().Direction(), physical_fragment);
 
-  if (base::Optional<LayoutUnit> baseline = fragment.Baseline()) {
-    LayoutUnit baseline_offset = block_offset + *baseline;
+  LayoutUnit baseline_offset =
+      block_offset + fragment.Baseline().value_or(fragment.BlockSize());
 
-    // We prefer a baseline from a child with baseline alignment, and no
-    // auto-margins in the cross axis.
-    if (FlexLayoutAlgorithm::AlignmentForChild(Style(), flex_item.style) ==
-            ItemPosition::kBaseline &&
-        !flex_item.HasAutoMarginsInCrossAxis()) {
-      container_builder_.SetBaseline(baseline_offset);
-      return;
-    }
-
-    // Set the fallback baseline to this (if not set yet).
-    *fallback_baseline = fallback_baseline->value_or(baseline_offset);
+  // We prefer a baseline from a child with baseline alignment, and no
+  // auto-margins in the cross axis (even if we have to synthesize the
+  // baseline).
+  if (FlexLayoutAlgorithm::AlignmentForChild(Style(), flex_item.style) ==
+          ItemPosition::kBaseline &&
+      !flex_item.HasAutoMarginsInCrossAxis()) {
+    container_builder_.SetBaseline(baseline_offset);
     return;
   }
 
-  // Use the block-end border-box edge as the last resort baseline.
-  *fallback_baseline =
-      fallback_baseline->value_or(block_offset + fragment.BlockSize());
+  // Set the fallback baseline if it doesn't have a value yet.
+  *fallback_baseline = fallback_baseline->value_or(baseline_offset);
 }
 
 base::Optional<MinMaxSize> NGFlexLayoutAlgorithm::ComputeMinMaxSize(

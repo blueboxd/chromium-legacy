@@ -158,6 +158,7 @@ struct CollectUserDataOptions {
   // If empty, terms and conditions should not be shown.
   std::string accept_terms_and_conditions_text;
   std::string terms_require_review_text;
+  std::string info_section_text;
   std::string privacy_notice_text;
   bool show_terms_as_checkbox = false;
 

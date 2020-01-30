@@ -26,7 +26,6 @@
 <translation id="1031362278801463162">Ачаалах явцыг харах</translation>
 <translation id="1032605640136438169">Шинэ нөхцөлийг шалгаж үзнэ үү</translation>
 <translation id="103279545524624934">Андройд апп-г ажиллуулахын тулд дискний багтаамжийг нэмэгдүүлнэ үү.</translation>
-<translation id="1033343386521881354">Хэвлэх серверээс 1 хэвлэгч олдлоо.</translation>
 <translation id="1033780634303702874">Цуваа төхөөрөмжүүд рүүгээ нэвтэр</translation>
 <translation id="1034942643314881546">Аппын зурагт тайлбарыг үүсгэхийн тулд adb-г идэвхжүүлж байна</translation>
 <translation id="1036348656032585052">Унтраа</translation>
@@ -34,7 +33,6 @@
 <translation id="1036982837258183574">Бүтэн дэлгэцээс гарах бол |<ph name="ACCELERATOR" />|-г дарна уу</translation>
 <translation id="1038168778161626396">Зөвхөн шифрлэх</translation>
 <translation id="1039337018183941703">Буруу эсвэл алдаатай файл</translation>
-<translation id="1039850285407663109">Сонгосон файл нь танигдаагүй бөгөөд аюултай байж болзошгүй. Энэ файлыг нээхээс өмнө скан хийнэ үү.</translation>
 <translation id="1041175011127912238">Энэ хуудас хариу өгөхгүй байна</translation>
 <translation id="1041263367839475438">Боломжтой байгаа төхөөрөмжүүд</translation>
 <translation id="1042174272890264476">Таны компьютер мөн <ph name="SHORT_PRODUCT_NAME" />-ын RLZ программын мэдээллийн сантай байдаг.  RLZ нь тодорхой кампанит ажлаар удирдуулсан хайлтууд болон <ph name="SHORT_PRODUCT_NAME" />-ын хэрэглээг хэмжих онцгой бус, мөн хувийн бус, тодорхойлох боломжтой цонхнуудыг ажиллуулдаг. Эдгээр хаягууд нь заримдаа <ph name="PRODUCT_NAME" /> дахь Google Хайлтын асуултуудад харагддаг.</translation>
@@ -635,7 +633,6 @@
 <translation id="1858585891038687145">Програм хангамж боловсруулагчийг тодорхойлох итгэмжлэлийг энэ сертификатад олгох</translation>
 <translation id="1861262398884155592">Энэ фолдер хоосон байна</translation>
 <translation id="1863182668524159459">Цуваа порт олдсонгүй</translation>
-<translation id="1863552924692672565"><ph name="FILE_NAME" /> нь танигдаагүй байна. Эрсдэлийг багасгахын тулд файлыг скан хийнэ үү.</translation>
 <translation id="1864111464094315414">Нэвтрэх</translation>
 <translation id="1864400682872660285">Хүйтэн</translation>
 <translation id="1864454756846565995">USB-C төхөөрөмж (ард талын порт)</translation>
@@ -4019,7 +4016,6 @@
 <translation id="6678717876183468697">Хүсэлтийн URL</translation>
 <translation id="6680442031740878064">Сул зай: <ph name="AVAILABLE_SPACE" /></translation>
 <translation id="6680650203439190394">Үнэлэх</translation>
-<translation id="6681301928961274620">Хэвлэх серверээс ямар ч хэвлэгч олдсонгүй.</translation>
 <translation id="6681668084120808868">Гэрэл зураг авах</translation>
 <translation id="6681964764822470072">"<ph name="APP_NAME" />"-г устгах болно.</translation>
 <translation id="668599234725812620">Google Play-г нээх</translation>
@@ -5543,7 +5539,6 @@
 <translation id="8794025342371547160">Хязгаарласан IP</translation>
 <translation id="879413103056696865">Сүлжээний цэг асаалттай үед таны <ph name="PHONE_NAME" /> дараахыг хийнэ:</translation>
 <translation id="8795916974678578410">Шинэ цонх</translation>
-<translation id="8797086401386164142">Хэвлэх серверээс <ph name="NUM_PRINTERS" /> хэвлэгч олдлоо.</translation>
 <translation id="8797459392481275117">Энэ сайтыг хэзээ ч бүү орчуул</translation>
 <translation id="8798099450830957504">Гэрээ үл биелүүлэх</translation>
 <translation id="8798441408945964110">Үйлчилгээ үзүүлэгчийн нэр</translation>

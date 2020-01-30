@@ -33,6 +33,9 @@ void FakeRemoteFrame::SetReplicatedOrigin(
     const url::Origin& origin,
     bool is_potentially_trustworthy_unique_origin) {}
 
+void FakeRemoteFrame::SetReplicatedAdFrameType(
+    blink::mojom::AdFrameType ad_frame_type) {}
+
 void FakeRemoteFrame::DispatchLoadEventForFrameOwner() {}
 
 void FakeRemoteFrame::Collapse(bool collapsed) {}
@@ -63,6 +66,10 @@ void FakeRemoteFrame::AddResourceTimingFromChild(
 void FakeRemoteFrame::ScrollRectToVisible(
     const gfx::Rect& rect,
     blink::mojom::ScrollIntoViewParamsPtr params) {}
+
+void FakeRemoteFrame::DidStartLoading() {}
+
+void FakeRemoteFrame::DidStopLoading() {}
 
 void FakeRemoteFrame::FakeRemoteFrame::BindFrameHostReceiver(
     mojo::ScopedInterfaceEndpointHandle handle) {

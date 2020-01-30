@@ -7,6 +7,7 @@
 #include <drm.h>
 #include <string.h>
 #include <xf86drm.h>
+
 #include <memory>
 #include <utility>
 
@@ -65,29 +66,39 @@ HardwareDisplayController::HardwareDisplayController(
   AllocateCursorBuffers();
 }
 
-HardwareDisplayController::~HardwareDisplayController() {
-}
+HardwareDisplayController::~HardwareDisplayController() = default;
 
 bool HardwareDisplayController::Modeset(const DrmOverlayPlane& primary,
-                                        drmModeModeInfo mode) {
+                                        const drmModeModeInfo& mode) {
   TRACE_EVENT0("drm", "HDC::Modeset");
-  DCHECK(primary.buffer.get());
-  bool status = true;
-  for (const auto& controller : crtc_controllers_)
-    status &= controller->Modeset(primary, mode);
-
-  is_disabled_ = false;
-  ResetCursor();
-  OnModesetComplete(primary);
-  return status;
+  return ModesetCrtc(primary, /*use_current_crtc_mode=*/false, mode);
 }
 
 bool HardwareDisplayController::Enable(const DrmOverlayPlane& primary) {
   TRACE_EVENT0("drm", "HDC::Enable");
+  drmModeModeInfo empty_mode = {};
+  return ModesetCrtc(primary, /*use_current_crtc_mode=*/true, empty_mode);
+}
+
+bool HardwareDisplayController::ModesetCrtc(const DrmOverlayPlane& primary,
+                                            bool use_current_crtc_mode,
+                                            const drmModeModeInfo& mode) {
   DCHECK(primary.buffer.get());
   bool status = true;
-  for (const auto& controller : crtc_controllers_)
-    status &= controller->Modeset(primary, controller->mode());
+
+  HardwareDisplayPlaneList hardware_planes = {};
+  hardware_planes.old_plane_list = GetAllOwnedPlanes();
+  GetDrmDevice()->plane_manager()->BeginFrame(hardware_planes);
+
+  DrmOverlayPlaneList plane_list = {};
+  plane_list.push_back(primary.Clone());
+  for (const auto& controller : crtc_controllers_) {
+    status &= controller->AssignOverlayPlanes(&hardware_planes, plane_list,
+                                              /*is_modesetting=*/true);
+    drmModeModeInfo modeset_mode =
+        use_current_crtc_mode ? controller->mode() : mode;
+    status &= controller->Modeset(primary, modeset_mode, hardware_planes);
+  }
 
   is_disabled_ = false;
   ResetCursor();
@@ -99,6 +110,10 @@ void HardwareDisplayController::Disable() {
   TRACE_EVENT0("drm", "HDC::Disable");
 
   for (const auto& controller : crtc_controllers_)
+    // TODO(crbug.com/1015104): Modeset and Disable operations should go
+    // together. The current split is due to how the legacy/atomic split
+    // evolved. It should be cleaned up under the more generic
+    // HardwareDisplayPlaneManager{Legacy,Atomic} calls.
     controller->Disable();
 
   bool ret = GetDrmDevice()->plane_manager()->DisableOverlayPlanes(
@@ -170,11 +185,12 @@ bool HardwareDisplayController::ScheduleOrTestPageFlip(
 
   bool status = true;
   for (const auto& controller : crtc_controllers_) {
-    status &= controller->AssignOverlayPlanes(&hardware_planes, pending_planes);
+    status &= controller->AssignOverlayPlanes(&hardware_planes, pending_planes,
+                                              /*is_modesetting=*/false);
   }
 
   status &= GetDrmDevice()->plane_manager()->Commit(
-      hardware_planes, page_flip_request, out_fence);
+      hardware_planes, /*modeset=*/false, page_flip_request, out_fence);
 
   return status;
 }

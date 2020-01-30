@@ -364,8 +364,6 @@ void MemBackendImpl::OnMemoryPressure(
     base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level) {
   switch (memory_pressure_level) {
     case base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_NONE:
-      // Not supposed to get this here, but if there is no problem, there is
-      // no problem...
       break;
     case base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_MODERATE:
       EvictTill(max_size_ / 2);

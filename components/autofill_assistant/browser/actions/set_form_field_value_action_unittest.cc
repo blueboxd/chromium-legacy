@@ -21,6 +21,7 @@ const char kFakeSelector[] = "#some_selector";
 const char kFakeUsername[] = "user@example.com";
 const char kFakePassword[] = "example_password";
 const char kGeneratedPassword[] = "m-W2b-_.7Fu9A.A";
+const char kMemoryKeyForGeneratedPassword[] = "memory-key-for-generation";
 }  // namespace
 
 namespace autofill_assistant {
@@ -42,6 +43,9 @@ class SetFormFieldValueActionTest : public testing::Test {
         MUST_BE_VISIBLE);
     ON_CALL(mock_action_delegate_, GetUserData)
         .WillByDefault(Return(&user_data_));
+    ON_CALL(mock_action_delegate_, WriteUserData)
+        .WillByDefault(
+            RunOnceCallback<0>(&user_data_, /* field_change = */ nullptr));
     ON_CALL(mock_action_delegate_, GetWebsiteLoginFetcher)
         .WillByDefault(Return(&mock_website_login_fetcher_));
     ON_CALL(mock_action_delegate_, OnShortWaitForElement(_, _))
@@ -152,7 +156,8 @@ TEST_F(SetFormFieldValueActionTest, PasswordToFill) {
 
 TEST_F(SetFormFieldValueActionTest, GeneratedPassword) {
   auto* value = set_form_field_proto_->add_value();
-  value->set_generate_password(true);
+  value->mutable_generate_password()->set_memory_key(
+      kMemoryKeyForGeneratedPassword);
   SetFormFieldValueAction action(&mock_action_delegate_, proto_);
   ON_CALL(mock_action_delegate_, OnGetFieldValue(_, _))
       .WillByDefault(RunOnceCallback<1>(OkClientStatus(), kGeneratedPassword));
@@ -164,6 +169,8 @@ TEST_F(SetFormFieldValueActionTest, GeneratedPassword) {
       callback_,
       Run(Pointee(Property(&ProcessedActionProto::status, ACTION_APPLIED))));
   action.ProcessAction(callback_.Get());
+  EXPECT_EQ(kGeneratedPassword,
+            user_data_.additional_values_[kMemoryKeyForGeneratedPassword]);
 }
 
 TEST_F(SetFormFieldValueActionTest, Keycode) {

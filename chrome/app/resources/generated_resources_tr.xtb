@@ -26,7 +26,6 @@
 <translation id="1031362278801463162">Önizleme yükleniyor</translation>
 <translation id="1032605640136438169">Lütfen yeni şartları inceleyin</translation>
 <translation id="103279545524624934">Android uygulamalarını başlatmak için disk alanını boşaltın.</translation>
-<translation id="1033343386521881354">Yazdırma sunucusunda 1 yazıcı bulundu.</translation>
 <translation id="1033780634303702874">Seri cihazlarınıza erişme</translation>
 <translation id="1034942643314881546">Uygulama resmi oluşturmak için adb etkinleştiriliyor</translation>
 <translation id="1036348656032585052">Kapat</translation>
@@ -34,7 +33,6 @@
 <translation id="1036982837258183574">Tam ekrandan çıkmak için |<ph name="ACCELERATOR" />| tuşuna basın</translation>
 <translation id="1038168778161626396">Yalnızca Şifrele</translation>
 <translation id="1039337018183941703">Geçersiz veya bozuk dosya</translation>
-<translation id="1039850285407663109">Seçilen dosya bilinmiyor ve tehlikeli olabilir. Bu dosyayı açmadan önce taramayı düşünün.</translation>
 <translation id="1041175011127912238">Bu sayfa yanıt vermiyor</translation>
 <translation id="1041263367839475438">Kullanılabilir cihazlar</translation>
 <translation id="1042174272890264476">Bilgisayarınızda aynı zamanda yerleşik <ph name="SHORT_PRODUCT_NAME" /> RLZ kitaplığı da bulunur. RLZ, aramaları ve belirli bir promosyon kampanyasının sağladığı <ph name="SHORT_PRODUCT_NAME" /> kullanımını ölçmek için benzersiz olmayan ve kimlik bilgileri içermeyen bir etiket atar. Bu etiketler bazen <ph name="PRODUCT_NAME" /> içindeki Google Arama sorgularında görünür.</translation>
@@ -281,7 +279,7 @@
 <translation id="138784436342154190">Varsayılan başlangıç sayfası geri yüklensin mi?</translation>
 <translation id="1390548061267426325">Normal Sekme Olarak Aç</translation>
 <translation id="1393283411312835250">Güneş ve bulutlar</translation>
-<translation id="1393787139683794508">Bu işlem, <ph name="ORIGIN_NAME" /> web sitesinin depoladığı tüm verileri ve çerezleri temizler.</translation>
+<translation id="1393787139683794508">Bu işlem, <ph name="ORIGIN_NAME" /> tarafından depolanan tüm verileri ve çerezleri temizler.</translation>
 <translation id="1395730723686586365">Güncelleyici başladı</translation>
 <translation id="1396139853388185343">Yazıcı kurulum hatası</translation>
 <translation id="1396259464226642517">Bu beklenmeyen bir sonuç muydu? <ph name="BEGIN_LINK" />Geri bildirim gönder<ph name="END_LINK" /></translation>
@@ -639,7 +637,6 @@
 <translation id="1858585891038687145">Yazılım üreticilerini tanımlamak için bu sertifikaya güvenin</translation>
 <translation id="1861262398884155592">Bu klasör boş</translation>
 <translation id="1863182668524159459">Seri bağlantı noktası bulunamadı</translation>
-<translation id="1863552924692672565"><ph name="FILE_NAME" /> bilinmiyor. Riski en aza indirmek için dosyayı tarayın.</translation>
 <translation id="1864111464094315414">Oturum Aç</translation>
 <translation id="1864400682872660285">Daha Soğuk</translation>
 <translation id="1864454756846565995">USB-C cihaz (arka bağlantı noktası)</translation>
@@ -4026,7 +4023,6 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
 <translation id="6678717876183468697">Sorgu URL'si</translation>
 <translation id="6680442031740878064">Kullanılabilir alan: <ph name="AVAILABLE_SPACE" /></translation>
 <translation id="6680650203439190394">Hız</translation>
-<translation id="6681301928961274620">Yazdırma sunucusunda yazıcı bulunamadı.</translation>
 <translation id="6681668084120808868">Fotoğraf çek</translation>
 <translation id="6681964764822470072">"<ph name="APP_NAME" />" uygulaması kaldırılacak.</translation>
 <translation id="668599234725812620">Google Play'i aç</translation>
@@ -5555,7 +5551,6 @@ Anahtar dosyanızı güvenli bir yerde saklayın. Uzantınızın yeni sürümler
 <translation id="8794025342371547160">Kısıtlı IP</translation>
 <translation id="879413103056696865">Hotspot açıkken <ph name="PHONE_NAME" /> telefonunuz:</translation>
 <translation id="8795916974678578410">Yeni Pencere</translation>
-<translation id="8797086401386164142">Yazdırma sunucusunda <ph name="NUM_PRINTERS" /> yazıcı bulundu.</translation>
 <translation id="8797459392481275117">Bu Siteyi Hiçbir Zaman Çevirme</translation>
 <translation id="8798099450830957504">Varsayılan</translation>
 <translation id="8798441408945964110">Sağlayıcı adı</translation>
@@ -5704,7 +5699,7 @@ Anahtar dosyanızı güvenli bir yerde saklayın. Uzantınızın yeni sürümler
 <translation id="8985264973231822211"><ph name="DEVICE_LAST_ACTIVATED_TIME" /> gün önce etkinleştirildi</translation>
 <translation id="8986362086234534611">Unut</translation>
 <translation id="8986494364107987395">Kullanım istatistiklerini ve çökme raporlarını otomatik olarak Google'a gönder</translation>
-<translation id="8986651757229422279">Bu işlem, <ph name="ORIGIN_NAME" /> web sitesinin depoladığı tüm veriler ve çerezler ile sitenin yüklediği uygulamaları temizleyecek.</translation>
+<translation id="8986651757229422279">Bu işlem, <ph name="ORIGIN_NAME" /> tarafından depolanan tüm veriler ve çerezler ile yüklemiş olduğu uygulamayı temizleyecek.</translation>
 <translation id="8987927404178983737">Ay</translation>
 <translation id="8991520179165052608">Site, mikrofonunuzu kullanabilir</translation>
 <translation id="899403249577094719">Netscape Sertifikası Temel URL'si</translation>

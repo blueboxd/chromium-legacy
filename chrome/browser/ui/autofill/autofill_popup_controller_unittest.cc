@@ -172,8 +172,10 @@ class TestAutofillPopupController : public AutofillPopupControllerImpl {
   MOCK_METHOD1(Hide, void(PopupHidingReason reason));
   MOCK_METHOD0(GetRootAXPlatformNodeForWebContents, ui::AXPlatformNode*());
 
-  void DoHide() {
-    AutofillPopupControllerImpl::Hide(PopupHidingReason::kTabGone);
+  void DoHide() { DoHide(PopupHidingReason::kTabGone); }
+
+  void DoHide(PopupHidingReason reason) {
+    AutofillPopupControllerImpl::Hide(reason);
   }
 };
 
@@ -694,6 +696,19 @@ TEST_F(AutofillPopupControllerUnitTest, HidingClearsPreview) {
   EXPECT_CALL(delegate, ClearPreviewedForm());
   // Hide() also deletes the object itself.
   test_controller->DoHide();
+}
+
+TEST_F(AutofillPopupControllerUnitTest, DontHideWhenWaitingForData) {
+  EXPECT_CALL(*autofill_popup_view(), Hide).Times(0);
+  autofill_popup_controller_->PinViewUntilUpdate();
+
+  // Hide() will not work for stale data or when focusing native UI.
+  autofill_popup_controller_->DoHide(PopupHidingReason::kStaleData);
+  autofill_popup_controller_->DoHide(PopupHidingReason::kEndEditing);
+
+  // Check the expectations now since TearDown will perform a successful hide.
+  Mock::VerifyAndClearExpectations(delegate());
+  Mock::VerifyAndClearExpectations(autofill_popup_view());
 }
 
 #if !defined(OS_ANDROID)

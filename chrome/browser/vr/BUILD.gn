@@ -518,9 +518,7 @@ test("vr_common_unittests") {
     ]
   }
   if (is_win) {
-    configs += [
-      "//build/config/win:delayloads",
-    ]
+    configs += [ "//build/config/win:delayloads" ]
   }
 }
 

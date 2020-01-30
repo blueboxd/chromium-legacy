@@ -108,15 +108,11 @@ group("webkit_unit_tests") {
   visibility = []  # Allow re-assignment of list.
   visibility = [ "*" ]
   testonly = true
-  deps = [
-    ":blink_unittests",
-  ]
+  deps = [ ":blink_unittests" ]
 }
 
 test("blink_unittests") {
-  deps = [
-    ":blink_unittests_sources",
-  ]
+  deps = [ ":blink_unittests_sources" ]
 
   data_deps = [
     ":blink_unittests_data",
@@ -138,9 +134,7 @@ test("blink_unittests") {
 }
 
 test("blink_perf_tests") {
-  deps = [
-    ":blink_perf_tests_sources",
-  ]
+  deps = [ ":blink_perf_tests_sources" ]
 }
 
 jumbo_source_set("blink_perf_tests_sources") {
@@ -148,9 +142,7 @@ jumbo_source_set("blink_perf_tests_sources") {
   visibility = [ "*" ]
   testonly = true
 
-  sources = [
-    "tests/run_all_tests.cc",
-  ]
+  sources = [ "tests/run_all_tests.cc" ]
 
   deps = [
     ":controller",
@@ -171,9 +163,7 @@ jumbo_source_set("blink_unittests_sources") {
   visibility = [ "*" ]
   testonly = true
 
-  sources = [
-    "tests/run_all_tests.cc",
-  ]
+  sources = [ "tests/run_all_tests.cc" ]
   sources += bindings_unittest_files
   if (is_linux) {
     sources += [ "memory_usage_monitor_posix_test.cc" ]

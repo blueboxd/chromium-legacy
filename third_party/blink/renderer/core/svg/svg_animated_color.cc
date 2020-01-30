@@ -60,7 +60,7 @@ void SVGColorProperty::Add(SVGPropertyBase* other,
 
   Color fallback_color = FallbackColorForCurrentColor(context_element);
   Color from_color =
-      ToSVGColorProperty(other)->style_color_.Resolve(fallback_color);
+      To<SVGColorProperty>(other)->style_color_.Resolve(fallback_color);
   Color to_color = style_color_.Resolve(fallback_color);
   style_color_ = StyleColor(ColorDistance::AddColors(from_color, to_color));
 }
@@ -73,10 +73,10 @@ void SVGColorProperty::CalculateAnimatedValue(
     SVGPropertyBase* to_value,
     SVGPropertyBase* to_at_end_of_duration_value,
     SVGElement* context_element) {
-  StyleColor from_style_color = ToSVGColorProperty(from_value)->style_color_;
-  StyleColor to_style_color = ToSVGColorProperty(to_value)->style_color_;
+  StyleColor from_style_color = To<SVGColorProperty>(from_value)->style_color_;
+  StyleColor to_style_color = To<SVGColorProperty>(to_value)->style_color_;
   StyleColor to_at_end_of_duration_style_color =
-      ToSVGColorProperty(to_at_end_of_duration_value)->style_color_;
+      To<SVGColorProperty>(to_at_end_of_duration_value)->style_color_;
 
   // Apply currentColor rules.
   DCHECK(context_element);
@@ -119,7 +119,7 @@ float SVGColorProperty::CalculateDistance(SVGPropertyBase* to_value,
 
   Color from_color = style_color_.Resolve(fallback_color);
   Color to_color =
-      ToSVGColorProperty(to_value)->style_color_.Resolve(fallback_color);
+      To<SVGColorProperty>(to_value)->style_color_.Resolve(fallback_color);
   return ColorDistance::Distance(from_color, to_color);
 }
 

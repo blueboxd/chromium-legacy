@@ -21,7 +21,7 @@
 
 namespace ash {
 
-constexpr int kMenuItemWidthDp = 178;
+constexpr int kMenuItemWidthDp = 192;
 constexpr int kMenuItemHeightDp = 28;
 constexpr int kRegularMenuItemLeftPaddingDp = 2;
 constexpr int kGroupMenuItemLeftPaddingDp = 10;

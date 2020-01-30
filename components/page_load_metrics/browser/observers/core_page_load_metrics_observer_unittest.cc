@@ -1493,7 +1493,8 @@ TEST_F(CorePageLoadMetricsObserverTest, UnfinishedBytesRecorded) {
   // Incomplete resource.
   resources.push_back(
       CreateResource(false /* was_cached */, 10 * 1024 /* delta_bytes */,
-                     0 /* encoded_body_length */, false /* is_complete */));
+                     0 /* encoded_body_length */, 0 /* decoded_body_length */,
+                     false /* is_complete */));
   tester()->SimulateResourceDataUseUpdate(resources);
 
   // Navigate again to force histogram recording.

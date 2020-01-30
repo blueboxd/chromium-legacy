@@ -11,18 +11,19 @@ the proto_convertor script, then a engineer runs this script to encode the
 mockserver textpb file into a binary proto file that is being used by the feed
 card render test (Refers to go/create-a-feed-card-render-test for more).
 
-Make sure you have absl-py installed via pip install absl-py.
+Make sure you have absl-py installed via 'python3 -m pip install absl-py'.
 
 Usage example:
-    python ./mockserver_textpb_to_binary.py
+    python3 ./mockserver_textpb_to_binary.py
     --chromium_path ~/chromium/src
     --output_file /tmp/binary.pb
-    --source_file ~/tmp/original.textpb
+    --source_file /tmp/original.textpb
     --alsologtostderr
 """
 
 import glob
 import os
+import protoc_util
 import subprocess
 
 from absl import app
@@ -35,25 +36,8 @@ flags.DEFINE_string('output_file', '', 'The target output binary file path.')
 flags.DEFINE_string('source_file', '',
                     'The source proto file, in textpb format, path.')
 
-CMD_TEMPLATE = r'cat {} | {} --encode={} -I{} -I$(find {} -name "*.proto") > {}'
 ENCODE_NAMESPACE = 'components.feed.core.proto.wire.mockserver.MockServer'
 COMPONENT_FEED_PROTO_PATH = 'components/feed/core/proto'
-_protoc_path = None
-
-
-def protoc_path(root_dir):
-  """Returns the path to the proto compiler, protoc."""
-  global _protoc_path
-  if not _protoc_path:
-    protoc_list = list(
-        glob.glob(os.path.join(root_dir, "out") + "/*/protoc")) + list(
-            glob.glob(os.path.join(root_dir, "out") + "/*/*/protoc"))
-    if not len(protoc_list):
-      print("Can't find a suitable build output directory",
-            "(it should have protoc)")
-      sys.exit(1)
-    _protoc_path = protoc_list[0]
-  return _protoc_path
 
 
 def main(argv):
@@ -66,12 +50,14 @@ def main(argv):
   if not FLAGS.output_file:
     raise app.UsageError('output_file flag must be set.')
 
-  protoc_cmd = CMD_TEMPLATE.format(
-      FLAGS.source_file, protoc_path(FLAGS.chromium_path), ENCODE_NAMESPACE,
-      FLAGS.chromium_path,
-      os.path.join(FLAGS.chromium_path,
-                   COMPONENT_FEED_PROTO_PATH), FLAGS.output_file)
-  subprocess.call(protoc_cmd, shell=True)
+  with open(FLAGS.source_file) as file:
+    value_text_proto = file.read()
+
+  encoded = protoc_util.encode_proto(value_text_proto, ENCODE_NAMESPACE,
+                                     FLAGS.chromium_path,
+                                     COMPONENT_FEED_PROTO_PATH)
+  with open(FLAGS.output_file, 'wb') as file:
+    file.write(encoded)
 
 
 if __name__ == '__main__':

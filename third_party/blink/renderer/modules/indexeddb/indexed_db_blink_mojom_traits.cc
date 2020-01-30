@@ -7,7 +7,6 @@
 #include "base/stl_util.h"
 #include "mojo/public/cpp/bindings/array_traits_wtf_vector.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
-#include "third_party/blink/public/platform/file_path_conversion.h"
 #include "third_party/blink/public/platform/web_blob_info.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_key_range.h"
 #include "third_party/blink/renderer/platform/file_metadata.h"
@@ -194,7 +193,6 @@ StructTraits<blink::mojom::IDBValueDataView, std::unique_ptr<blink::IDBValue>>::
     auto blob_info = blink::mojom::blink::IDBBlobInfo::New();
     if (info.IsFile()) {
       blob_info->file = blink::mojom::blink::IDBFileInfo::New();
-      blob_info->file->path = blink::WebStringToFilePath(info.FilePath());
       String name = info.FileName();
       if (name.IsNull())
         name = g_empty_string;
@@ -243,8 +241,7 @@ bool StructTraits<blink::mojom::IDBValueDataView,
   for (const auto& info : blob_or_file_info) {
     if (info->file) {
       value_blob_info.emplace_back(
-          info->uuid, blink::FilePathToWebString(info->file->path),
-          info->file->name, info->mime_type,
+          info->uuid, info->file->name, info->mime_type,
           blink::NullableTimeToOptionalTime(info->file->last_modified),
           info->size, info->blob.PassPipe());
     } else {

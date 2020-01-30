@@ -56,13 +56,11 @@ class ShareButton extends ChromeImageButton implements TintObserver {
         mActivityTabTabObserver = new ActivityTabTabObserver(activityTabProvider) {
             @Override
             public void onObservingDifferentTab(Tab tab) {
-                if (tab == null) return;
                 updateButtonEnabledState(tab);
             }
 
             @Override
             public void onUpdateUrl(Tab tab, String url) {
-                if (tab == null) return;
                 updateButtonEnabledState(tab);
             }
         };

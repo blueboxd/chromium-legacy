@@ -74,22 +74,19 @@ class ShelfDragCallback {
     Shelf* shelf = AshTestBase::GetPrimaryShelf();
     gfx::Rect shelf_bounds = GetShelfWidget()->GetWindowBoundsInScreen();
 
-    float scroll_delta =
-        GetShelfLayoutManager()->PrimaryAxisValue(scroll_.y(), scroll_.x());
-    bool increasing_drag =
-        GetShelfLayoutManager()->SelectValueForShelfAlignment(
-            scroll_delta<0, scroll_delta> 0, scroll_delta < 0);
-    const int shelf_size = GetShelfLayoutManager()->PrimaryAxisValue(
-        shelf_bounds.height(), shelf_bounds.width());
+    float scroll_delta = shelf->PrimaryAxisValue(scroll_.y(), scroll_.x());
+    bool increasing_drag = shelf->SelectValueForShelfAlignment(
+        scroll_delta<0, scroll_delta> 0, scroll_delta < 0);
+    const int shelf_size =
+        shelf->PrimaryAxisValue(shelf_bounds.height(), shelf_bounds.width());
     if (was_visible_on_drag_start_) {
       if (increasing_drag) {
         // If dragging inwards from the visible state, then the shelf should
         // 'overshoot', but not by more than the scroll delta.
-        const int bounds_delta =
-            GetShelfLayoutManager()->SelectValueForShelfAlignment(
-                visible_shelf_bounds_.y() - shelf_bounds.y(),
-                shelf_bounds.x() - visible_shelf_bounds_.x(),
-                visible_shelf_bounds_.x() - shelf_bounds.x());
+        const int bounds_delta = shelf->SelectValueForShelfAlignment(
+            visible_shelf_bounds_.y() - shelf_bounds.y(),
+            shelf_bounds.x() - visible_shelf_bounds_.x(),
+            visible_shelf_bounds_.x() - shelf_bounds.x());
         EXPECT_GE(bounds_delta, 0);
         EXPECT_LE(bounds_delta, std::abs(scroll_delta));
       } else {

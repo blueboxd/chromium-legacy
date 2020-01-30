@@ -56,6 +56,7 @@ class AssistantCollectUserDataBinder
         private final AssistantShippingAddressSection mShippingAddressSection;
         private final AssistantTermsSection mTermsSection;
         private final AssistantTermsSection mTermsAsCheckboxSection;
+        private final AssistantInfoSection mInfoSection;
         private final AssistantAdditionalSectionContainer mPrependedSections;
         private final AssistantAdditionalSectionContainer mAppendedSections;
         private final ViewGroup mGenericUserInterfaceContainer;
@@ -70,6 +71,7 @@ class AssistantCollectUserDataBinder
                 AssistantPaymentMethodSection paymentMethodSection,
                 AssistantShippingAddressSection shippingAddressSection,
                 AssistantTermsSection termsSection, AssistantTermsSection termsAsCheckboxSection,
+                AssistantInfoSection infoSection,
                 AssistantAdditionalSectionContainer prependedSections,
                 AssistantAdditionalSectionContainer appendedSections,
                 ViewGroup genericUserInterfaceContainer, Object dividerTag, Activity activity) {
@@ -84,6 +86,7 @@ class AssistantCollectUserDataBinder
             mShippingAddressSection = shippingAddressSection;
             mTermsSection = termsSection;
             mTermsAsCheckboxSection = termsAsCheckboxSection;
+            mInfoSection = infoSection;
             mPrependedSections = prependedSections;
             mAppendedSections = appendedSections;
             mGenericUserInterfaceContainer = genericUserInterfaceContainer;
@@ -124,7 +127,7 @@ class AssistantCollectUserDataBinder
                                 view.mTermsAsCheckboxSection.setTermsStatus(
                                         AssistantTermsAndConditionsState.NOT_SELECTED);
                             });
-                            collectUserDataDelegate.onTermsAndConditionsLinkClicked(link);
+                            collectUserDataDelegate.onTextLinkClicked(link);
                         }
                     };
             AssistantDateSection.Delegate dateStartDelegate = collectUserDataDelegate == null
@@ -155,6 +158,9 @@ class AssistantCollectUserDataBinder
             };
             view.mTermsSection.setDelegate(termsDelegate);
             view.mTermsAsCheckboxSection.setDelegate(termsDelegate);
+            view.mInfoSection.setListener(collectUserDataDelegate != null
+                            ? collectUserDataDelegate::onTextLinkClicked
+                            : null);
             view.mContactDetailsSection.setListener(collectUserDataDelegate != null
                             ? collectUserDataDelegate::onContactInfoChanged
                             : null);
@@ -300,6 +306,9 @@ class AssistantCollectUserDataBinder
                     model.get(AssistantCollectUserDataModel.TERMS_REQUIRE_REVIEW_TEXT));
             view.mTermsAsCheckboxSection.setTermsRequireReviewText(
                     model.get(AssistantCollectUserDataModel.TERMS_REQUIRE_REVIEW_TEXT));
+            return true;
+        } else if (propertyKey == AssistantCollectUserDataModel.INFO_SECTION_TEXT) {
+            view.mInfoSection.setText(model.get(AssistantCollectUserDataModel.INFO_SECTION_TEXT));
             return true;
         } else if (propertyKey == AssistantCollectUserDataModel.PRIVACY_NOTICE_TEXT) {
             view.mTermsSection.setPrivacyNoticeText(

@@ -14,7 +14,7 @@
 #include "ui/display/screen.h"
 #include "ui/events/devices/x11/touch_factory_x11.h"
 #include "ui/events/event.h"
-#include "ui/events/platform/x11/x11_event_source_default.h"
+#include "ui/events/platform/x11/x11_event_source.h"
 #include "ui/events/test/events_test_utils_x11.h"
 #include "ui/ozone/test/mock_platform_window_delegate.h"
 #include "ui/platform_window/platform_window_delegate.h"
@@ -92,7 +92,7 @@ class X11WindowOzoneTest : public testing::Test {
 
   void SetUp() override {
     XDisplay* display = gfx::GetXDisplay();
-    event_source_ = std::make_unique<X11EventSourceDefault>(display);
+    event_source_ = std::make_unique<X11EventSource>(display);
 
     display::Screen::SetScreenInstance(new TestScreen());
 
@@ -128,7 +128,7 @@ class X11WindowOzoneTest : public testing::Test {
 
  private:
   std::unique_ptr<base::test::TaskEnvironment> task_env_;
-  std::unique_ptr<X11EventSourceDefault> event_source_;
+  std::unique_ptr<X11EventSource> event_source_;
 
   DISALLOW_COPY_AND_ASSIGN(X11WindowOzoneTest);
 };

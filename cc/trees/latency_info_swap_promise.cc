@@ -39,7 +39,7 @@ int64_t LatencyInfoSwapPromise::TraceId() const {
 // Trace the original LatencyInfo of a LatencyInfoSwapPromise
 void LatencyInfoSwapPromise::OnCommit() {
   TRACE_EVENT_WITH_FLOW1("input,benchmark", "LatencyInfo.Flow",
-                         TRACE_ID_DONT_MANGLE(TraceId()),
+                         TRACE_ID_GLOBAL(TraceId()),
                          TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT,
                          "step", "HandleInputEventMainCommit");
 }

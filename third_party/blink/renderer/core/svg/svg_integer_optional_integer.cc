@@ -89,7 +89,7 @@ void SVGIntegerOptionalInteger::SetInitial(unsigned value) {
 
 void SVGIntegerOptionalInteger::Add(SVGPropertyBase* other,
                                     SVGElement* context_element) {
-  auto* other_integer_optional_integer = ToSVGIntegerOptionalInteger(other);
+  auto* other_integer_optional_integer = To<SVGIntegerOptionalInteger>(other);
   first_integer_->Add(other_integer_optional_integer->FirstInteger(),
                       context_element);
   second_integer_->Add(other_integer_optional_integer->SecondInteger(),
@@ -104,10 +104,10 @@ void SVGIntegerOptionalInteger::CalculateAnimatedValue(
     SVGPropertyBase* to,
     SVGPropertyBase* to_at_end_of_duration,
     SVGElement* context_element) {
-  auto* from_integer = ToSVGIntegerOptionalInteger(from);
-  auto* to_integer = ToSVGIntegerOptionalInteger(to);
+  auto* from_integer = To<SVGIntegerOptionalInteger>(from);
+  auto* to_integer = To<SVGIntegerOptionalInteger>(to);
   auto* to_at_end_of_duration_integer =
-      ToSVGIntegerOptionalInteger(to_at_end_of_duration);
+      To<SVGIntegerOptionalInteger>(to_at_end_of_duration);
 
   first_integer_->CalculateAnimatedValue(
       animation_element, percentage, repeat_count, from_integer->FirstInteger(),

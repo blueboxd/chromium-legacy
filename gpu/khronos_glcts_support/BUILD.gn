@@ -13,12 +13,8 @@ if (internal_khronos_glcts_tests) {
       [ "//third_party/khronos_glcts/GTF_ES/glsl/GTF/mustpass_es20.run" ]
 
   copy("glcts_resources") {
-    sources = [
-      "//third_party/khronos_glcts/cts/data",
-    ]
-    outputs = [
-      "$root_out_dir/khronos_glcts_data/gl_cts/{{source_file_part}}",
-    ]
+    sources = [ "//third_party/khronos_glcts/cts/data" ]
+    outputs = [ "$root_out_dir/khronos_glcts_data/gl_cts/{{source_file_part}}" ]
   }
 
   copy("glcts_gtf_resources") {
@@ -29,17 +25,14 @@ if (internal_khronos_glcts_tests) {
                 "//third_party/khronos_glcts/GTF_ES/glsl/GTF/GL2Tests",
                 "//third_party/khronos_glcts/GTF_ES/glsl/GTF/GLCoverage",
               ] + glcts_gtf_runfiles
-    outputs = [
-      "$root_out_dir/khronos_glcts_data/gl_cts/GTF/{{source_file_part}}",
-    ]
+    outputs =
+        [ "$root_out_dir/khronos_glcts_data/gl_cts/GTF/{{source_file_part}}" ]
   }
 
   action("generate_khronos_glcts_tests") {
     script = "generate_khronos_glcts_tests.py"
     sources = [ "khronos_glcts_test.h" ] + glcts_gtf_runfiles
-    outputs = [
-      "$target_gen_dir/khronos_glcts_test_autogen.cc",
-    ]
+    outputs = [ "$target_gen_dir/khronos_glcts_test_autogen.cc" ]
     args = [ "--outdir=" + rebase_path("$target_gen_dir") ] + glcts_gtf_runfiles
   }
 
@@ -118,9 +111,7 @@ if (internal_khronos_glcts_tests) {
       "//third_party/khronos_glcts/framework/delibs/depool/dePoolTest.h",
     ]
 
-    deps = [
-      ":debase",
-    ]
+    deps = [ ":debase" ]
 
     configs += [ ":defaults_config" ]
     configs -= [ "//build/config/compiler:chromium_code" ]
@@ -146,9 +137,7 @@ if (internal_khronos_glcts_tests) {
       "//third_party/khronos_glcts/framework/delibs/dethread/deThreadTest.h",
     ]
 
-    deps = [
-      ":debase",
-    ]
+    deps = [ ":debase" ]
 
     configs += [ ":defaults_config" ]
     configs -= [ "//build/config/compiler:chromium_code" ]
@@ -390,11 +379,10 @@ if (internal_khronos_glcts_tests) {
       "//third_party/libpng:libpng",
     ]
 
-    public_deps = [
-      ":qphelper",
-    ]
+    public_deps = [ ":qphelper" ]
 
-    include_dirs = [ "//third_party/khronos_glcts/framework/delibs/libpng" ]  #png.hpp
+    include_dirs =
+        [ "//third_party/khronos_glcts/framework/delibs/libpng" ]  # png.hpp
 
     configs += [ ":defaults_config" ]
     configs -= [ "//build/config/compiler:chromium_code" ]
@@ -485,9 +473,7 @@ if (internal_khronos_glcts_tests) {
       "//third_party/khronos_glcts/framework/opengl/gluVarTypeUtil.hpp",
     ]
 
-    public_deps = [
-      ":glwrapper",
-    ]
+    public_deps = [ ":glwrapper" ]
 
     deps = [
       ":delibs",
@@ -884,9 +870,7 @@ if (internal_khronos_glcts_tests) {
       "//third_party/khronos_glcts/cts/gles2/es2cTestPackage.hpp",
     ]
 
-    public_deps = [
-      ":glcts_common",
-    ]
+    public_deps = [ ":glcts_common" ]
 
     deps = [
       ":delibs",
@@ -907,13 +891,9 @@ if (internal_khronos_glcts_tests) {
   }
 
   source_set("tcutil_platform_windowless") {
-    sources = [
-      "native/egl_native_windowless.cc",
-    ]
+    sources = [ "native/egl_native_windowless.cc" ]
 
-    deps = [
-      ":khronos_glcts_framework",
-    ]
+    deps = [ ":khronos_glcts_framework" ]
 
     configs -= [ "//build/config/compiler:no_rtti" ]
     configs += [ "//build/config/compiler:rtti" ]
@@ -956,9 +936,7 @@ if (!is_android) {
       "//testing/gtest",
     ]
 
-    data = [
-      "khronos_glcts_test_expectations.txt",
-    ]
+    data = [ "khronos_glcts_test_expectations.txt" ]
 
     if (internal_khronos_glcts_tests) {
       sources += [ "$target_gen_dir/khronos_glcts_test_autogen.cc" ]

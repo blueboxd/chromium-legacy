@@ -28,10 +28,10 @@ import subprocess
 import sys
 
 
-# This contains binaries from Xcode 10.12.1, along with the 10.14 SDKs. To build
-# this package, see comments in build/xcode_binaries.yaml
+# This contains binaries from Xcode 11.2.1, along with the 10.15 SDKs (aka
+# 11B53). To build this package, see comments in build/xcode_binaries.yaml
 MAC_BINARIES_LABEL = 'infra_internal/ios/xcode/xcode_binaries/mac-amd64'
-MAC_BINARIES_TAG = 'yjQtk3auAegQO4t18uBtBlKbj76xBjVtLE-3UM2faRUC'
+MAC_BINARIES_TAG = 'X5ZbqG_UKa-N64_XSBkAwShWPtzskeXhQRfpzc_1KUYC'
 
 # The toolchain will not be downloaded if the minimum OS version is not met.
 # 17 is the major version number for macOS 10.13.

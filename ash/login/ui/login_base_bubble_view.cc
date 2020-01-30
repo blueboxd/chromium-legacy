@@ -9,6 +9,7 @@
 #include "ash/login/ui/views_utils.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shell.h"
+#include "ash/style/ash_color_provider.h"
 #include "base/scoped_observer.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/aura/client/focus_change_observer.h"
@@ -25,19 +26,22 @@ namespace ash {
 namespace {
 
 // Total width of the bubble view.
-constexpr int kBubbleTotalWidthDp = 178;
+constexpr int kBubbleTotalWidthDp = 192;
 
 // Horizontal margin of the bubble view.
-constexpr int kBubbleHorizontalMarginDp = 14;
+constexpr int kBubbleHorizontalMarginDp = 16;
 
 // Top margin of the bubble view.
-constexpr int kBubbleTopMarginDp = 13;
+constexpr int kBubbleTopMarginDp = 16;
 
 // Bottom margin of the bubble view.
-constexpr int kBubbleBottomMarginDp = 18;
+constexpr int kBubbleBottomMarginDp = 16;
 
 // Spacing between the child view inside the bubble view.
-constexpr int kBubbleBetweenChildSpacingDp = 6;
+constexpr int kBubbleBetweenChildSpacingDp = 16;
+
+// Border radius of the rounded bubble.
+constexpr int kErrorBubbleBorderRadius = 8;
 
 // The amount of time for bubble show/hide animation.
 constexpr base::TimeDelta kBubbleAnimationDuration =
@@ -123,17 +127,27 @@ LoginBaseBubbleView::LoginBaseBubbleView(views::View* anchor_view,
                                          aura::Window* parent_window)
     : anchor_view_(anchor_view),
       bubble_handler_(std::make_unique<LoginBubbleHandler>(this)) {
-  SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::Orientation::kVertical,
-      gfx::Insets(kBubbleTopMarginDp, kBubbleHorizontalMarginDp,
-                  kBubbleBottomMarginDp, kBubbleHorizontalMarginDp),
-      kBubbleBetweenChildSpacingDp));
+  views::BoxLayout* layout_manager =
+      SetLayoutManager(std::make_unique<views::BoxLayout>(
+          views::BoxLayout::Orientation::kVertical,
+          gfx::Insets(kBubbleTopMarginDp, kBubbleHorizontalMarginDp,
+                      kBubbleBottomMarginDp, kBubbleHorizontalMarginDp),
+          kBubbleBetweenChildSpacingDp));
+  layout_manager->set_cross_axis_alignment(
+      views::BoxLayout::CrossAxisAlignment::kStart);
 
   SetVisible(false);
-  SetBackground(views::CreateSolidBackground(SK_ColorBLACK));
 
   // Layer rendering is needed for animation.
   SetPaintToLayer();
+  SkColor background_color = AshColorProvider::Get()->GetBaseLayerColor(
+      AshColorProvider::BaseLayerType::kTransparent74,
+      AshColorProvider::AshColorMode::kDark);
+  layer()->SetBackgroundBlur(
+      static_cast<float>(AshColorProvider::LayerBlurSigma::kBlurDefault));
+  SetBackground(views::CreateRoundedRectBackground(background_color,
+                                                   kErrorBubbleBorderRadius));
+  layer()->SetFillsBoundsOpaquely(false);
 }
 
 LoginBaseBubbleView::~LoginBaseBubbleView() = default;

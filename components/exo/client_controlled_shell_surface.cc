@@ -16,6 +16,7 @@
 #include "ash/public/cpp/immersive/immersive_fullscreen_controller.h"
 #include "ash/public/cpp/rounded_corner_decorator.h"
 #include "ash/public/cpp/shell_window_ids.h"
+#include "ash/public/cpp/window_backdrop.h"
 #include "ash/public/cpp/window_pin_type.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/public/cpp/window_state_type.h"
@@ -1193,14 +1194,15 @@ void ClientControlledShellSurface::UpdateBackdrop() {
 
   // Always create a backdrop regardless of the geometry because
   // maximized/fullscreen widget's geometry can be cropped.
-  bool enable_backdrop = (widget_->IsFullscreen() || widget_->IsMaximized());
+  bool enable_backdrop = widget_->IsFullscreen() || widget_->IsMaximized();
 
-  ash::BackdropWindowMode target_backdrop_mode =
-      enable_backdrop ? ash::BackdropWindowMode::kEnabled
-                      : ash::BackdropWindowMode::kAutoOpaque;
+  ash::WindowBackdrop::BackdropMode target_backdrop_mode =
+      enable_backdrop ? ash::WindowBackdrop::BackdropMode::kEnabled
+                      : ash::WindowBackdrop::BackdropMode::kAuto;
 
-  if (window->GetProperty(ash::kBackdropWindowMode) != target_backdrop_mode)
-    window->SetProperty(ash::kBackdropWindowMode, target_backdrop_mode);
+  ash::WindowBackdrop* window_backdrop = ash::WindowBackdrop::Get(window);
+  if (window_backdrop->mode() != target_backdrop_mode)
+    window_backdrop->SetBackdropMode(target_backdrop_mode);
 }
 
 void ClientControlledShellSurface::UpdateFrameWidth() {

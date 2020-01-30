@@ -103,8 +103,9 @@ class BaseTest : public testing::Test {
   void ScanUpload(content::WebContents* web_contents,
                   DeepScanningDialogDelegate::Data data,
                   DeepScanningDialogDelegate::CompletionCallback callback) {
-    // The access point is only used for metrics, so its value doesn't affect
-    // the rest of the tests and can always be the same.
+    // The access point is only used for metrics and choosing the dialog text if
+    // one is shown, so its value doesn't affect the tests in this file and can
+    // always be the same.
     DeepScanningDialogDelegate::ShowForWebContents(
         web_contents, std::move(data), std::move(callback),
         DeepScanAccessPoint::UPLOAD);

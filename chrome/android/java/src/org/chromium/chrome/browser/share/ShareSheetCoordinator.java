@@ -77,12 +77,14 @@ public class ShareSheetCoordinator {
         PropertyModel qrcodePropertyModel = mPropertyModelBuilder.createPropertyModel(
                 AppCompatResources.getDrawable(activity, R.drawable.qr_code),
                 activity.getResources().getString(R.string.qr_code_share_icon_label),
-                (currentActivity) -> {
+                (currentActivity)
+                        -> {
                     mBottomSheetController.hideContent(bottomSheet, true);
                     QrCodeCoordinator qrCodeCoordinator =
                             new QrCodeCoordinator(activity, this::createNewTab);
                     qrCodeCoordinator.show();
-                });
+                },
+                /*isFirstParty=*/true);
         models.add(qrcodePropertyModel);
 
         // Send Tab To Self
@@ -92,7 +94,8 @@ public class ShareSheetCoordinator {
                                 AppCompatResources.getDrawable(activity, R.drawable.send_tab),
                                 activity.getResources().getString(
                                         R.string.send_tab_to_self_share_activity_title),
-                                (shareParams) -> {
+                                (shareParams)
+                                        -> {
                                     mBottomSheetController.hideContent(bottomSheet, true);
                                     SendTabToSelfShareActivity.actionHandler(activity,
                                             mActivityTabProvider.get()
@@ -100,7 +103,8 @@ public class ShareSheetCoordinator {
                                                     .getNavigationController()
                                                     .getVisibleEntry(),
                                             mBottomSheetController);
-                                });
+                                },
+                                /*isFirstParty=*/true);
         models.add(sttsPropertyModel);
 
         // Copy URL
@@ -118,26 +122,23 @@ public class ShareSheetCoordinator {
                     Toast toast =
                             Toast.makeText(activity, R.string.link_copied, Toast.LENGTH_SHORT);
                     toast.show();
-                });
+                }, /*isFirstParty=*/true);
         models.add(copyPropertyModel);
 
          // ScreenShot
         PropertyModel screenshotPropertyModel = null;
         if (ChromeFeatureList.isEnabled(ChromeFeatureList.CHROME_SHARE_SCREENSHOT)) {
-            screenshotPropertyModel =
-                    new PropertyModel.Builder(ShareSheetItemViewProperties.ALL_KEYS)
-                            .with(ShareSheetItemViewProperties.ICON,
-                                    AppCompatResources.getDrawable(activity, R.drawable.screenshot))
-                            .with(ShareSheetItemViewProperties.LABEL,
-                                    activity.getResources().getString(R.string.sharing_screenshot))
-                            .with(ShareSheetItemViewProperties.CLICK_LISTENER,
-                                    (shareParams) -> {
-                                        mBottomSheetController.hideContent(bottomSheet, true);
-                                        ScreenshotCoordinator screenshotCoordinator =
-                                                new ScreenshotCoordinator(activity);
-                                        screenshotCoordinator.takeScreenshot();
-                                    })
-                            .build();
+            screenshotPropertyModel = mPropertyModelBuilder.createPropertyModel(
+                    AppCompatResources.getDrawable(activity, R.drawable.screenshot),
+                    activity.getResources().getString(R.string.sharing_screenshot),
+                    (shareParams)
+                            -> {
+                        mBottomSheetController.hideContent(bottomSheet, true);
+                        ScreenshotCoordinator screenshotCoordinator =
+                                new ScreenshotCoordinator(activity);
+                        screenshotCoordinator.takeScreenshot();
+                    },
+                    /*isFirstParty=*/true);
             models.add(screenshotPropertyModel);
         }
 
@@ -153,10 +154,12 @@ public class ShareSheetCoordinator {
         PropertyModel morePropertyModel = mPropertyModelBuilder.createPropertyModel(
                 AppCompatResources.getDrawable(activity, R.drawable.sharing_more),
                 activity.getResources().getString(R.string.sharing_more_icon_label),
-                (shareParams) -> {
+                (shareParams)
+                        -> {
                     mBottomSheetController.hideContent(bottomSheet, true);
                     ShareHelper.showDefaultShareUi(params);
-                });
+                },
+                /*isFirstParty=*/true);
         models.add(morePropertyModel);
 
         return models;

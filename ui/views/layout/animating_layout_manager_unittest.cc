@@ -2714,8 +2714,9 @@ constexpr base::TimeDelta kMinimumAnimationTime =
 class ImmediateLayoutManager : public LayoutManagerBase {
  public:
   explicit ImmediateLayoutManager(bool use_preferred_size,
-                                  const SizeBounds& size_bounds = SizeBounds())
-      : use_preferred_size_(use_preferred_size), size_bounds_(size_bounds) {
+                                  SizeBounds size_bounds = SizeBounds())
+      : use_preferred_size_(use_preferred_size),
+        size_bounds_(std::move(size_bounds)) {
     DCHECK(use_preferred_size_ || size_bounds == SizeBounds());
   }
 
@@ -3519,7 +3520,7 @@ TEST_F(AnimatingLayoutManagerFlexRuleTest, ReturnsPreferredSize) {
   InitLayout(LayoutOrientation::kHorizontal, kScaleToMinimumSnapToZero,
              gfx::Size(5, 5), false);
   EXPECT_EQ(flex_layout()->GetPreferredSize(view()),
-            flex_rule()->Run(view(), {}));
+            flex_rule()->Run(view(), SizeBounds()));
 }
 
 TEST_F(AnimatingLayoutManagerFlexRuleTest,
@@ -3527,8 +3528,8 @@ TEST_F(AnimatingLayoutManagerFlexRuleTest,
   InitLayout(LayoutOrientation::kVertical, kScaleToMinimumSnapToZero,
              gfx::Size(5, 5), true);
   const gfx::Size preferred = flex_layout()->GetPreferredSize(view());
-  const gfx::Size result =
-      flex_rule()->Run(view(), {preferred.width() + 5, base::nullopt});
+  const gfx::Size result = flex_rule()->Run(
+      view(), SizeBounds(preferred.width() + 5, base::nullopt));
   EXPECT_EQ(preferred, result);
   EXPECT_EQ(3U, GetVisibleChildCount(result));
 }
@@ -3543,7 +3544,8 @@ TEST_F(AnimatingLayoutManagerFlexRuleTest,
   const int height_for_width =
       flex_layout()->GetPreferredHeightForWidth(view(), width);
   DCHECK_GT(height_for_width, preferred.height());
-  const gfx::Size result = flex_rule()->Run(view(), {width, base::nullopt});
+  const gfx::Size result =
+      flex_rule()->Run(view(), SizeBounds(width, base::nullopt));
   EXPECT_EQ(gfx::Size(width, height_for_width), result);
   EXPECT_EQ(3U, GetVisibleChildCount(result));
 }
@@ -3553,7 +3555,7 @@ TEST_F(AnimatingLayoutManagerFlexRuleTest, HorizontalBounded_FlexToSize) {
              gfx::Size(5, 5), false);
 
   const gfx::Size preferred = flex_layout()->GetPreferredSize(view());
-  const gfx::Size actual{preferred.width() - 5, preferred.height()};
+  const gfx::Size actual(preferred.width() - 5, preferred.height());
   const ProposedLayout layout = flex_layout()->GetProposedLayout(actual);
   DCHECK_LT(layout.host_size.width(), preferred.width());
   const gfx::Size result = flex_rule()->Run(view(), SizeBounds(actual));
@@ -3565,7 +3567,7 @@ TEST_F(AnimatingLayoutManagerFlexRuleTest, HorizontalBounded_DropOut) {
   InitLayout(LayoutOrientation::kHorizontal, kDropOut, {}, false);
 
   const gfx::Size preferred = flex_layout()->GetPreferredSize(view());
-  const gfx::Size actual{preferred.width() - 5, preferred.height()};
+  const gfx::Size actual(preferred.width() - 5, preferred.height());
   const ProposedLayout layout = flex_layout()->GetProposedLayout(actual);
   DCHECK_LT(layout.host_size.width(), actual.width());
   const gfx::Size result = flex_rule()->Run(view(), SizeBounds(actual));
@@ -3578,7 +3580,7 @@ TEST_F(AnimatingLayoutManagerFlexRuleTest, VerticalBounded_FlexToSize) {
              gfx::Size(5, 5), false);
 
   const gfx::Size preferred = flex_layout()->GetPreferredSize(view());
-  const gfx::Size actual{preferred.width(), preferred.height() - 5};
+  const gfx::Size actual(preferred.width(), preferred.height() - 5);
   const ProposedLayout layout = flex_layout()->GetProposedLayout(actual);
   DCHECK_LT(layout.host_size.height(), preferred.height());
   const gfx::Size result = flex_rule()->Run(view(), SizeBounds(actual));
@@ -3590,7 +3592,7 @@ TEST_F(AnimatingLayoutManagerFlexRuleTest, VerticalBounded_DropOut) {
   InitLayout(LayoutOrientation::kVertical, kDropOut, {}, false);
 
   const gfx::Size preferred = flex_layout()->GetPreferredSize(view());
-  const gfx::Size actual{preferred.width(), preferred.height() - 5};
+  const gfx::Size actual(preferred.width(), preferred.height() - 5);
   const ProposedLayout layout = flex_layout()->GetProposedLayout(actual);
   DCHECK_LT(layout.host_size.height(), actual.height());
   const gfx::Size result = flex_rule()->Run(view(), SizeBounds(actual));
@@ -3603,7 +3605,7 @@ TEST_F(AnimatingLayoutManagerFlexRuleTest, HorizontalDoubleBounded_DropOut) {
              gfx::Size(10, 5), true);
 
   const gfx::Size preferred = flex_layout()->GetPreferredSize(view());
-  const gfx::Size actual{preferred.width() - 5, preferred.height() - 5};
+  const gfx::Size actual(preferred.width() - 5, preferred.height() - 5);
   const ProposedLayout layout = flex_layout()->GetProposedLayout(actual);
   DCHECK_LT(layout.host_size.width(), preferred.width());
   DCHECK_LT(layout.host_size.height(), preferred.height());
@@ -3617,7 +3619,7 @@ TEST_F(AnimatingLayoutManagerFlexRuleTest, VerticalDoubleBounded_DropOut) {
              gfx::Size(5, 10), true);
 
   const gfx::Size preferred = flex_layout()->GetPreferredSize(view());
-  const gfx::Size actual{preferred.width() - 5, preferred.height() - 5};
+  const gfx::Size actual(preferred.width() - 5, preferred.height() - 5);
   const ProposedLayout layout = flex_layout()->GetProposedLayout(actual);
   DCHECK_LT(layout.host_size.width(), preferred.width());
   DCHECK_LT(layout.host_size.height(), preferred.height());
@@ -4093,9 +4095,9 @@ class AnimatingLayoutManagerRealtimeTest
   bool UseContainerTestApi() const override { return false; }
 
  protected:
-  void InitRootView(const SizeBounds& bounds = SizeBounds()) {
+  void InitRootView(SizeBounds bounds = SizeBounds()) {
     root_view()->SetLayoutManager(std::make_unique<ImmediateLayoutManager>(
-        layout()->should_animate_bounds(), bounds));
+        layout()->should_animate_bounds(), std::move(bounds)));
     layout()->EnableAnimationForTesting();
   }
 
@@ -4285,7 +4287,7 @@ TEST_F(AnimatingLayoutManagerRealtimeTest,
   flex_layout->SetCollapseMargins(true);
   flex_layout->SetCrossAxisAlignment(LayoutAlignment::kStart);
   flex_layout->SetDefault(kMarginsKey, kChildMargins);
-  InitRootView(kSizeBounds);
+  InitRootView(std::move(kSizeBounds));
   child(0)->SetProperty(kFlexBehaviorKey, FlexSpecification::ForSizeRule(
                                               MinimumFlexSizeRule::kScaleToZero,
                                               MaximumFlexSizeRule::kPreferred));

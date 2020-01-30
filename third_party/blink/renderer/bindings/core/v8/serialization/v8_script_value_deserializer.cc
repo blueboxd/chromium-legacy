@@ -652,9 +652,8 @@ File* V8ScriptValueDeserializer::ReadFileIndex() {
   }
   if (!blob_handle)
     return nullptr;
-  return File::CreateFromIndexedSerialization(info.FilePath(), info.FileName(),
-                                              info.size(), info.LastModified(),
-                                              blob_handle);
+  return File::CreateFromIndexedSerialization(info.FileName(), info.size(),
+                                              info.LastModified(), blob_handle);
 }
 
 DOMRectReadOnly* V8ScriptValueDeserializer::ReadDOMRectReadOnly() {

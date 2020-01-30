@@ -335,7 +335,7 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
                                              &IID_IAccessible2_4,
                                              &LIBID_IAccessible2Lib>,
                         public IAccessibleEx,
-                        public IAccessibleText,
+                        public IAccessibleHypertext,
                         public IAccessibleTable,
                         public IAccessibleTable2,
                         public IAccessibleTableCell,
@@ -374,6 +374,7 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
     COM_INTERFACE_ENTRY(IAccessible2_4)
     COM_INTERFACE_ENTRY(IAccessibleEx)
     COM_INTERFACE_ENTRY(IAccessibleText)
+    COM_INTERFACE_ENTRY(IAccessibleHypertext)
     COM_INTERFACE_ENTRY(IAccessibleTable)
     COM_INTERFACE_ENTRY(IAccessibleTable2)
     COM_INTERFACE_ENTRY(IAccessibleTableCell)
@@ -926,6 +927,18 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
   IFACEMETHODIMP get_table(IUnknown** table) override;
 
   //
+  // IAccessibleHypertext methods not implemented.
+  //
+
+  IFACEMETHODIMP get_nHyperlinks(LONG* hyperlink_count) override;
+
+  IFACEMETHODIMP
+  get_hyperlink(LONG index, IAccessibleHyperlink** hyperlink) override;
+
+  IFACEMETHODIMP
+  get_hyperlinkIndex(LONG char_index, LONG* hyperlink_index) override;
+
+  //
   // IAccessibleText methods not implemented.
   //
 
@@ -1231,11 +1244,22 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
   // Return the text to use for IAccessibleText.
   base::string16 TextForIAccessibleText();
 
-  // Search forwards (direction == 1) or backwards (direction == -1)
-  // from the given offset until the given boundary is found, and
-  // return the offset of that boundary.
-  LONG FindBoundary(const base::string16& text,
-                    IA2TextBoundaryType ia2_boundary,
+  // Enum used to specify whether IAccessibleText is requesting text
+  // At, Before, or After a specified offset.
+  enum class TextOffsetType { kAtOffset, kBeforeOffset, kAfterOffset };
+
+  // Helper for implementing IAccessibleText::get_text{At|Before|After}Offset.
+  HRESULT IAccessibleTextGetTextForOffsetType(
+      TextOffsetType text_offset_type,
+      LONG offset,
+      enum IA2TextBoundaryType boundary_type,
+      LONG* start_offset,
+      LONG* end_offset,
+      BSTR* text);
+
+  // Search forwards or backwards from the given offset until the given IA2
+  // text boundary is found, and return the offset of that boundary.
+  LONG FindBoundary(IA2TextBoundaryType ia2_boundary,
                     LONG start_offset,
                     AXTextBoundaryDirection direction);
 

@@ -41,6 +41,7 @@ template("sizes_test") {
       data += [
         mac_bin_path + "llvm-size",
         mac_bin_path + "size",
+        mac_bin_path + "size-classic",
       ]
     }
   }

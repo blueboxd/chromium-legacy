@@ -22,7 +22,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
-#include "base/task/lazy_task_runner.h"
+#include "base/task/lazy_thread_pool_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/default_tick_clock.h"
 #include "base/trace_event/trace_event.h"
@@ -58,10 +58,9 @@ namespace {
 // SequencedTaskRunner to get the network id. A SequencedTaskRunner is used
 // rather than parallel tasks to avoid having many threads getting the network
 // id concurrently.
-base::LazySequencedTaskRunner g_get_network_id_task_runner =
-    LAZY_SEQUENCED_TASK_RUNNER_INITIALIZER(
-        base::TaskTraits(base::ThreadPool(),
-                         base::MayBlock(),
+base::LazyThreadPoolSequencedTaskRunner g_get_network_id_task_runner =
+    LAZY_THREAD_POOL_SEQUENCED_TASK_RUNNER_INITIALIZER(
+        base::TaskTraits(base::MayBlock(),
                          base::TaskPriority::BEST_EFFORT,
                          base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN));
 #endif

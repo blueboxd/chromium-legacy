@@ -83,14 +83,13 @@ class CORE_EXPORT File final : public Blob {
         last_modified, std::move(blob_data_handle));
   }
   static File* CreateFromIndexedSerialization(
-      const String& path,
       const String& name,
       uint64_t size,
       const base::Optional<base::Time>& last_modified,
       scoped_refptr<BlobDataHandle> blob_data_handle) {
-    return MakeGarbageCollected<File>(path, name, String(), kIsNotUserVisible,
-                                      true, size, last_modified,
-                                      std::move(blob_data_handle));
+    return MakeGarbageCollected<File>(
+        String(), name, String(), kIsNotUserVisible, true, size, last_modified,
+        std::move(blob_data_handle));
   }
 
   // For session restore feature.

@@ -6,6 +6,7 @@
 #define CHROMECAST_BROWSER_WEBVIEW_WEBVIEW_NAVIGATION_THROTTLE_H_
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner.h"
 #include "chromecast/browser/webview/proto/webview.grpc.pb.h"
 #include "content/public/browser/navigation_throttle.h"
@@ -20,7 +21,7 @@ class WebviewController;
 class WebviewNavigationThrottle : public content::NavigationThrottle {
  public:
   WebviewNavigationThrottle(content::NavigationHandle* handle,
-                            WebviewController* controller);
+                            base::WeakPtr<WebviewController> controller);
 
   ~WebviewNavigationThrottle() override;
 
@@ -34,7 +35,7 @@ class WebviewNavigationThrottle : public content::NavigationThrottle {
  private:
   scoped_refptr<base::SequencedTaskRunner> response_task_runner_;
 
-  WebviewController* controller_;
+  base::WeakPtr<WebviewController> controller_;
 
   DISALLOW_COPY_AND_ASSIGN(WebviewNavigationThrottle);
 };

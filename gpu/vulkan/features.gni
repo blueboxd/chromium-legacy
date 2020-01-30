@@ -11,7 +11,7 @@ declare_args() {
   enable_vulkan = is_linux || is_android || is_fuchsia
 
   # Enable swiftshader vulkan. Disabling it can save build time, however
-  # --use-vulkan=swiftshader and some tests which using swiftshader vulan will
+  # --use-vulkan=swiftshader and some tests which use swiftshader vulkan will
   # not work.
   enable_swiftshader_vulkan = true
 }

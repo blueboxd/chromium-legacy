@@ -55,8 +55,8 @@ export class TestTabsApiProxy extends TestBrowserProxy {
     this.methodCalled('moveGroup', [groupId, newIndex]);
   }
 
-  moveTab(tabId, newIndex) {
-    this.methodCalled('moveTab', [tabId, newIndex]);
+  moveTab(tabId, windowId, newIndex) {
+    this.methodCalled('moveTab', [tabId, windowId, newIndex]);
     return Promise.resolve();
   }
 

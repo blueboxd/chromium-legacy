@@ -5,6 +5,10 @@
 #ifndef COMPONENTS_SESSIONS_CORE_COMMAND_STORAGE_MANAGER_DELEGATE_H_
 #define COMPONENTS_SESSIONS_CORE_COMMAND_STORAGE_MANAGER_DELEGATE_H_
 
+#include <stddef.h>
+
+#include <vector>
+
 namespace sessions {
 
 // The CommandStorageManagerDelegate decouples the CommandStorageManager from
@@ -19,6 +23,10 @@ class CommandStorageManagerDelegate {
 
   // Called when commands are about to be written to disc.
   virtual void OnWillSaveCommands() {}
+
+  // Called when a new crypto key has been generated. This is only called if
+  // CommandStorageManager was configured to enable encryption.
+  virtual void OnGeneratedNewCryptoKey(const std::vector<uint8_t>& key) {}
 
  protected:
   virtual ~CommandStorageManagerDelegate() {}

@@ -24,7 +24,5 @@ java_prebuilt("hamcrest_library_java") {
   testonly = true
   jar_path = "lib/hamcrest-library.jar"
   proguard_configs = [ "//third_party/hamcrest/proguard.flags" ]
-  deps = [
-    ":hamcrest_core_java",
-  ]
+  deps = [ ":hamcrest_core_java" ]
 }

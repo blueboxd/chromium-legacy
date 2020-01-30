@@ -20,7 +20,7 @@
 #include "base/strings/string16.h"
 #include "build/build_config.h"
 #include "chrome/browser/net/file_downloader.h"
-#include "chrome/browser/supervised_user/experimental/supervised_user_blacklist.h"
+#include "chrome/browser/supervised_user/supervised_user_blacklist.h"
 #include "chrome/browser/supervised_user/supervised_user_url_filter.h"
 #include "chrome/browser/supervised_user/supervised_users.h"
 #include "chrome/browser/ui/browser_list_observer.h"

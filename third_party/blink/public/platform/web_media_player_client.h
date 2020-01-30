@@ -187,7 +187,7 @@ class BLINK_PLATFORM_EXPORT WebMediaPlayerClient {
 
   // Called when a video frame has been presented to the compositor, after a
   // request was initiated via WebMediaPlayer::RequestAnimationFrame().
-  // TODO(https://crbug.com/1022186): Add pointer to spec.
+  // See https://wicg.github.io/video-raf/.
   virtual void OnRequestAnimationFrame(
       base::TimeTicks presentation_time,
       base::TimeTicks expected_presentation_time,

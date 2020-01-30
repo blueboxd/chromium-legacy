@@ -31,17 +31,17 @@ void NavigateAndWaitForEvent(const GURL& url,
 
 void NavigateAndWaitForCompletion(const GURL& url, Shell* shell) {
   NavigateAndWaitForEvent(url, shell->tab(),
-                          TestNavigationObserver::NavigationEvent::Completion);
+                          TestNavigationObserver::NavigationEvent::kCompletion);
 }
 
 void NavigateAndWaitForCompletion(const GURL& url, Tab* tab) {
   NavigateAndWaitForEvent(url, tab,
-                          TestNavigationObserver::NavigationEvent::Completion);
+                          TestNavigationObserver::NavigationEvent::kCompletion);
 }
 
 void NavigateAndWaitForFailure(const GURL& url, Shell* shell) {
   NavigateAndWaitForEvent(url, shell->tab(),
-                          TestNavigationObserver::NavigationEvent::Failure);
+                          TestNavigationObserver::NavigationEvent::kFailure);
 }
 
 base::Value ExecuteScript(Shell* shell,

@@ -16,6 +16,7 @@
 #include "third_party/pdfium/public/cpp/fpdf_scopers.h"
 #include "third_party/pdfium/public/fpdf_catalog.h"
 #include "third_party/pdfium/public/fpdf_ppo.h"
+#include "third_party/pdfium/public/fpdf_structtree.h"
 #include "third_party/pdfium/public/fpdfview.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
@@ -127,6 +128,41 @@ bool IsValidPrintableArea(const gfx::Size& page_size,
          printable_area.y() >= 0 &&
          printable_area.right() <= page_size.width() &&
          printable_area.bottom() <= page_size.height();
+}
+
+base::Value RecursiveGetStructTree(FPDF_STRUCTELEMENT struct_elem) {
+  constexpr int kBufLen = 64;
+  base::char16 elem_type_buffer[kBufLen];
+  if (!FPDF_StructElement_GetType(struct_elem, elem_type_buffer,
+                                  sizeof(elem_type_buffer))) {
+    return base::Value(base::Value::Type::NONE);
+  }
+
+  base::Value result(base::Value::Type::DICTIONARY);
+  base::string16 elem_type(elem_type_buffer);
+  result.SetStringKey("type", elem_type);
+
+  int children_count = FPDF_StructElement_CountChildren(struct_elem);
+  if (children_count == 0)
+    return base::Value(base::Value::Type::NONE);
+
+  base::Value children(base::Value::Type::LIST);
+  for (int i = 0; i < children_count; i++) {
+    FPDF_STRUCTELEMENT child_elem =
+        FPDF_StructElement_GetChildAtIndex(struct_elem, i);
+
+    base::Value child = RecursiveGetStructTree(child_elem);
+    if (child.is_dict())
+      children.Append(std::move(child));
+  }
+
+  // use "~children" instead of "children" because we pretty-print the
+  // result of this as JSON and the keys are sorted; it's much easier to
+  // understand when the children are the last key.
+  if (!children.GetList().empty())
+    result.SetKey("~children", std::move(children));
+
+  return result;
 }
 
 }  // namespace
@@ -360,6 +396,34 @@ base::Optional<bool> PDFiumEngineExports::IsPDFDocTagged(
     return base::nullopt;
 
   return FPDFCatalog_IsTagged(doc.get());
+}
+
+base::Value PDFiumEngineExports::GetPDFStructTreeForPage(
+    base::span<const uint8_t> pdf_buffer,
+    int page_index) {
+  ScopedFPDFDocument doc = LoadPdfData(pdf_buffer);
+  if (!doc)
+    return base::Value(base::Value::Type::NONE);
+
+  ScopedFPDFPage page(FPDF_LoadPage(doc.get(), page_index));
+  if (!page)
+    return base::Value(base::Value::Type::NONE);
+
+  ScopedFPDFStructTree struct_tree(FPDF_StructTree_GetForPage(page.get()));
+  if (!struct_tree)
+    return base::Value(base::Value::Type::NONE);
+
+  // We only expect one child of the struct tree - i.e. a single root node.
+  int children = FPDF_StructTree_CountChildren(struct_tree.get());
+  if (children != 1)
+    return base::Value(base::Value::Type::NONE);
+
+  FPDF_STRUCTELEMENT struct_root_elem =
+      FPDF_StructTree_GetChildAtIndex(struct_tree.get(), 0);
+  if (!struct_root_elem)
+    return base::Value(base::Value::Type::NONE);
+
+  return RecursiveGetStructTree(struct_root_elem);
 }
 
 bool PDFiumEngineExports::GetPDFPageSizeByIndex(

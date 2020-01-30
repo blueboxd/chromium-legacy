@@ -9,6 +9,7 @@
 #include <unistd.h>
 #include <xf86drm.h>
 #include <xf86drmMode.h>
+
 #include <memory>
 #include <utility>
 
@@ -146,7 +147,7 @@ DrmPropertyBlobMetadata::~DrmPropertyBlobMetadata() {
 class DrmDevice::PageFlipManager {
  public:
   PageFlipManager() : next_id_(0) {}
-  ~PageFlipManager() {}
+  ~PageFlipManager() = default;
 
   void OnPageFlip(uint32_t frame, base::TimeTicks timestamp, uint64_t id) {
     auto it =
@@ -248,7 +249,7 @@ DrmDevice::DrmDevice(const base::FilePath& device_path,
       is_primary_device_(is_primary_device),
       gbm_(std::move(gbm)) {}
 
-DrmDevice::~DrmDevice() {}
+DrmDevice::~DrmDevice() = default;
 
 bool DrmDevice::Initialize() {
   // Ignore devices that cannot perform modesetting.
@@ -302,36 +303,21 @@ ScopedDrmCrtcPtr DrmDevice::GetCrtc(uint32_t crtc_id) {
 bool DrmDevice::SetCrtc(uint32_t crtc_id,
                         uint32_t framebuffer,
                         std::vector<uint32_t> connectors,
-                        drmModeModeInfo* mode) {
+                        drmModeModeInfo mode) {
   DCHECK(file_.IsValid());
   DCHECK(!connectors.empty());
-  DCHECK(mode);
 
   TRACE_EVENT2("drm", "DrmDevice::SetCrtc", "crtc", crtc_id, "size",
-               gfx::Size(mode->hdisplay, mode->vdisplay).ToString());
+               gfx::Size(mode.hdisplay, mode.vdisplay).ToString());
   return !drmModeSetCrtc(file_.GetPlatformFile(), crtc_id, framebuffer, 0, 0,
-                         connectors.data(), connectors.size(), mode);
-}
-
-bool DrmDevice::SetCrtc(drmModeCrtc* crtc, std::vector<uint32_t> connectors) {
-  DCHECK(file_.IsValid());
-  // If there's no buffer then the CRTC was disabled.
-  if (!crtc->buffer_id)
-    return DisableCrtc(crtc->crtc_id);
-
-  DCHECK(!connectors.empty());
-
-  TRACE_EVENT1("drm", "DrmDevice::RestoreCrtc", "crtc", crtc->crtc_id);
-  return !drmModeSetCrtc(file_.GetPlatformFile(), crtc->crtc_id,
-                         crtc->buffer_id, crtc->x, crtc->y, connectors.data(),
-                         connectors.size(), &crtc->mode);
+                         connectors.data(), connectors.size(), &mode);
 }
 
 bool DrmDevice::DisableCrtc(uint32_t crtc_id) {
   DCHECK(file_.IsValid());
   TRACE_EVENT1("drm", "DrmDevice::DisableCrtc", "crtc", crtc_id);
-  return !drmModeSetCrtc(file_.GetPlatformFile(), crtc_id, 0, 0, 0, NULL, 0,
-                         NULL);
+  return !drmModeSetCrtc(file_.GetPlatformFile(), crtc_id, 0, 0, 0, nullptr, 0,
+                         nullptr);
 }
 
 ScopedDrmConnectorPtr DrmDevice::GetConnector(uint32_t connector_id) {
@@ -432,7 +418,8 @@ bool DrmDevice::SetProperty(uint32_t connector_id,
                                       property_id, value);
 }
 
-ScopedDrmPropertyBlob DrmDevice::CreatePropertyBlob(void* blob, size_t size) {
+ScopedDrmPropertyBlob DrmDevice::CreatePropertyBlob(const void* blob,
+                                                    size_t size) {
   uint32_t id = 0;
   int ret = drmModeCreatePropertyBlob(file_.GetPlatformFile(), blob, size, &id);
   DCHECK(!ret && id);

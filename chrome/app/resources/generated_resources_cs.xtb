@@ -26,7 +26,6 @@
 <translation id="1031362278801463162">Načítání náhledu</translation>
 <translation id="1032605640136438169">Prostudujte si nové smluvní podmínky</translation>
 <translation id="103279545524624934">Chcete-li spouštět aplikace pro Android, uvolněte místo na disku.</translation>
-<translation id="1033343386521881354">Na tiskovém serveru byla nalezena jedna tiskárna.</translation>
 <translation id="1033780634303702874">Přistupovat k zařízením připojeným pomocí sériového portu</translation>
 <translation id="1034942643314881546">Aktivace ADB k vytvoření ilustrace aplikací</translation>
 <translation id="1036348656032585052">Vypnout</translation>
@@ -34,7 +33,6 @@
 <translation id="1036982837258183574">Režim celé obrazovky ukončíte stisknutím klávesy |<ph name="ACCELERATOR" />|</translation>
 <translation id="1038168778161626396">Pouze šifrování</translation>
 <translation id="1039337018183941703">Neplatný nebo poškozený soubor</translation>
-<translation id="1039850285407663109">Vybraný soubor není znám a může být nebezpečný. Před otevřením ho doporučujeme zkontrolovat.</translation>
 <translation id="1041175011127912238">Tato stránka nereaguje</translation>
 <translation id="1041263367839475438">Dostupná zařízení</translation>
 <translation id="1042174272890264476">Počítač je dodáván s integrovanou knihovnou RLZ prohlížeče <ph name="SHORT_PRODUCT_NAME" />. RLZ přiřadí značku, která slouží k vyhodnocení vyhledávání a využití prohlížečů <ph name="SHORT_PRODUCT_NAME" />, které pocházejí z konkrétní propagační kampaně. Tato značka není jedinečná a neumožňuje osobní identifikaci. Tyto značky jsou někdy v prohlížeči <ph name="PRODUCT_NAME" /> uváděny v dotazech ve Vyhledávání Google.</translation>
@@ -639,7 +637,6 @@
 <translation id="1858585891038687145">Důvěřovat tomuto certifikátu při ověřování identity výrobců softwaru</translation>
 <translation id="1861262398884155592">Tato složka je prázdná</translation>
 <translation id="1863182668524159459">Nebyly nalezeny žádné sériové porty</translation>
-<translation id="1863552924692672565">Soubor <ph name="FILE_NAME" /> není znám. Chcete-li minimalizovat riziko, zkontrolujte soubor.</translation>
 <translation id="1864111464094315414">Přihlásit</translation>
 <translation id="1864400682872660285">Studenější</translation>
 <translation id="1864454756846565995">Zařízení USB Type-C (zadní port)</translation>
@@ -4023,7 +4020,6 @@ Zpráva serveru: <ph name="SERVER_MSG" /></translation>
 <translation id="6678717876183468697">Adresa URL dotazu</translation>
 <translation id="6680442031740878064">Volné místo: <ph name="AVAILABLE_SPACE" /></translation>
 <translation id="6680650203439190394">Ohodnotit</translation>
-<translation id="6681301928961274620">Na tiskovém serveru nebyly nalezeny žádné tiskárny.</translation>
 <translation id="6681668084120808868">Vyfotit</translation>
 <translation id="6681964764822470072">Aplikace <ph name="APP_NAME" /> bude odinstalována.</translation>
 <translation id="668599234725812620">Otevřít Google Play</translation>
@@ -5552,7 +5548,6 @@ Svůj soubor klíče uchovávejte na bezpečném místě. Budete jej potřebovat
 <translation id="8794025342371547160">Omezená IP adresa</translation>
 <translation id="879413103056696865">Při zapnutém hotspotu váš telefon <ph name="PHONE_NAME" />:</translation>
 <translation id="8795916974678578410">Nové okno</translation>
-<translation id="8797086401386164142">Na tiskovém serveru byl nalezen tento počet tiskáren: <ph name="NUM_PRINTERS" />.</translation>
 <translation id="8797459392481275117">Tento web nikdy nepřekládat</translation>
 <translation id="8798099450830957504">Výchozí</translation>
 <translation id="8798441408945964110">Název poskytovatele</translation>

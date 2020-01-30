@@ -114,15 +114,9 @@ using base::UserMetricsAction;
         if (IsSplitToolbarMode()) {
           [self.toolbarDelegate setScrollProgressForTabletOmnibox:1];
         }
-        [self.headerView updateForTopSafeAreaInset:[self topInset]];
       };
 
   [coordinator animateAlongsideTransition:transition completion:nil];
-}
-
-- (void)viewSafeAreaInsetsDidChange {
-  [super viewSafeAreaInsetsDidChange];
-  [self.headerView updateForTopSafeAreaInset:[self topInset]];
 }
 
 - (void)dealloc {
@@ -181,6 +175,7 @@ using base::UserMetricsAction;
 - (void)updateConstraints {
   self.doodleTopMarginConstraint.constant =
       content_suggestions::doodleTopMargin(YES, [self topInset]);
+  [self.headerView updateForTopSafeAreaInset:[self topInset]];
 }
 
 - (CGFloat)pinnedOffsetY {

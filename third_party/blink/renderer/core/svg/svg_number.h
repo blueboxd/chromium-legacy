@@ -33,6 +33,7 @@
 
 #include "third_party/blink/renderer/core/svg/properties/svg_property_helper.h"
 #include "third_party/blink/renderer/core/svg/svg_parsing_error.h"
+#include "third_party/blink/renderer/platform/wtf/casting.h"
 
 namespace blink {
 
@@ -77,7 +78,12 @@ class SVGNumber : public SVGPropertyHelper<SVGNumber> {
   float value_;
 };
 
-DEFINE_SVG_PROPERTY_TYPE_CASTS(SVGNumber);
+template <>
+struct DowncastTraits<SVGNumber> {
+  static bool AllowFrom(const SVGPropertyBase& value) {
+    return value.GetType() == SVGNumber::ClassType();
+  }
+};
 
 // SVGNumber which also accepts percentage as its value.
 // This is used for <stop> "offset"

@@ -111,6 +111,10 @@ EGLBoolean eglGetFrameTimestampsANDROIDFn(EGLDisplay dpy,
 EGLBoolean eglGetFrameTimestampSupportedANDROIDFn(EGLDisplay dpy,
                                                   EGLSurface surface,
                                                   EGLint timestamp) override;
+EGLBoolean eglGetMscRateCHROMIUMFn(EGLDisplay dpy,
+                                   EGLSurface surface,
+                                   EGLint* numerator,
+                                   EGLint* denominator) override;
 EGLClientBuffer eglGetNativeClientBufferANDROIDFn(
     const struct AHardwareBuffer* ahardwarebuffer) override;
 EGLBoolean eglGetNextFrameIdANDROIDFn(EGLDisplay dpy,

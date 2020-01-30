@@ -90,8 +90,9 @@ class CORE_EXPORT WebRemoteFrameImpl final
   void ResetReplicatedContentSecurityPolicy() override;
   void SetReplicatedInsecureRequestPolicy(WebInsecureRequestPolicy) override;
   void SetReplicatedInsecureNavigationsSet(const WebVector<unsigned>&) override;
+  void SetReplicatedAdFrameType(
+      mojom::blink::AdFrameType ad_frame_type) override;
   void DidStartLoading() override;
-  void DidStopLoading() override;
   bool IsIgnoredForHitTest() const override;
   void UpdateUserActivationState(
       mojom::blink::UserActivationUpdateType) override;

@@ -112,7 +112,7 @@
 <translation id="2352467521400612932">觸控筆設定</translation>
 <translation id="2354174487190027830">正在啟用 <ph name="NAME" /></translation>
 <translation id="2359808026110333948">繼續</translation>
-<translation id="2364154243880592194">狀態匣，時間 <ph name="TIME" />，<ph name="BATTERY" />。按下搜尋鍵 + 向左鍵即可存取通知中心。</translation>
+<translation id="2364154243880592194">狀態列，時間係 <ph name="TIME" />，<ph name="BATTERY" />。㩒搜尋鍵同埋向左鍵就可以存取通知中心。</translation>
 <translation id="2365393535144473978">如果您啟用流動數據，藍牙亦會隨之開啟。</translation>
 <translation id="2391579633712104609">180 度</translation>
 <translation id="2412593942846481727">有可用的更新</translation>
@@ -336,7 +336,7 @@
 <translation id="5669267381087807207">啟用</translation>
 <translation id="5673434351075758678">同步處理您的設定後，系統會將語言從「<ph name="FROM_LOCALE" />」改為「<ph name="TO_LOCALE" />」。</translation>
 <translation id="5682642926269496722">「Google 助理」不適用於目前的使用者帳戶。</translation>
-<translation id="5689633613396158040">夜燈功能可讓你在光線昏暗的環境下更容易看清畫面內容或閱讀文字。輕觸即可變更夜燈的開啟時間，或完全關閉夜燈功能。</translation>
+<translation id="5689633613396158040">「夜燈模式」讓您更易在光線昏暗的環境下觀看螢幕內容或閱讀。輕按即可變更「夜燈模式」的開啟時間，或完全關閉此功能。</translation>
 <translation id="5691772641933328258">識別唔到指紋</translation>
 <translation id="5710450975648804523">「請勿騷擾」模式已開啟</translation>
 <translation id="573413375004481890">此裝置無法支援所有顯示屏，因此已取消連接其中一個</translation>
@@ -516,7 +516,7 @@
 <translation id="8142441511840089262">連按兩下</translation>
 <translation id="8142699993796781067">私人網絡</translation>
 <translation id="8152092012181020186">㩒一下 Ctrl + W 就可以閂咗佢。</translation>
-<translation id="8155007568264258537"><ph name="FEATURE_NAME" /> 這項設定是由系統管理員管理。</translation>
+<translation id="8155007568264258537"><ph name="FEATURE_NAME" />，呢項設定由管理員管理。</translation>
 <translation id="8167567890448493835">正在使用「<ph name="LOCALE_NAME" />」</translation>
 <translation id="8190698733819146287">自訂語言與輸入法…</translation>
 <translation id="8192202700944119416">已隱藏通知。</translation>

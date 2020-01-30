@@ -27,9 +27,7 @@ source_set("settings") {
     "//ui/resources",
   ]
 
-  public_deps = [
-    "//ios/third_party/material_components_ios:material_components_ios+link",
-  ]
+  public_deps = [ "//ios/third_party/material_components_ios" ]
 
   configs += [ "//build/config/compiler:enable_arc" ]
 }

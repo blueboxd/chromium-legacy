@@ -78,6 +78,7 @@ class HoverListView : public views::View,
 
   std::unique_ptr<HoverListModel> model_;
   std::map<int, ListItemViews> tags_to_list_item_views_;
+  std::vector<HoverButton*> throbber_views_;
   base::Optional<ListItemViews> placeholder_list_item_view_;
   views::ScrollView* scroll_view_;
   views::View* item_container_;

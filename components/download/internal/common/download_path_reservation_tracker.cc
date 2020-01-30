@@ -20,7 +20,7 @@
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
-#include "base/task/lazy_task_runner.h"
+#include "base/task/lazy_thread_pool_task_runner.h"
 #include "base/task/post_task.h"
 #include "base/task_runner_util.h"
 #include "base/third_party/icu/icu_utf.h"
@@ -60,9 +60,9 @@ const size_t kZoneIdentifierLength = sizeof(":Zone.Identifier") - 1;
 // there are no more reservations.
 ReservationMap* g_reservation_map = NULL;
 
-base::LazySequencedTaskRunner g_sequenced_task_runner =
-    LAZY_SEQUENCED_TASK_RUNNER_INITIALIZER(
-        base::TaskTraits(base::ThreadPool(), base::MayBlock()));
+base::LazyThreadPoolSequencedTaskRunner g_sequenced_task_runner =
+    LAZY_THREAD_POOL_SEQUENCED_TASK_RUNNER_INITIALIZER(
+        base::TaskTraits(base::MayBlock()));
 
 // Observes a DownloadItem for changes to its target path and state. Updates or
 // revokes associated download path reservations as necessary. Created, invoked

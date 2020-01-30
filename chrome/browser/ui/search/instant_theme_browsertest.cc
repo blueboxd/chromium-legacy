@@ -4,6 +4,7 @@
 
 #include "base/feature_list.h"
 #include "base/macros.h"
+#include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/profiles/profile.h"
@@ -269,7 +270,15 @@ IN_PROC_BROWSER_TEST_F(InstantThemeTest, ThemeAppliedToNewTab) {
   EXPECT_EQ(css_text, new_tab_css_text);
 }
 
-IN_PROC_BROWSER_TEST_F(InstantThemeTest, ThemeChangedWhenApplyingNewTheme) {
+// The test is flaky on linux asan. crbug.com/1045708.
+#if defined(OS_LINUX) && defined(ADDRESS_SANITIZER)
+#define MAYBE_ThemeChangedWhenApplyingNewTheme \
+  DISABLED_ThemeChangedWhenApplyingNewTheme
+#else
+#define MAYBE_ThemeChangedWhenApplyingNewTheme ThemeChangedWhenApplyingNewTheme
+#endif
+IN_PROC_BROWSER_TEST_F(InstantThemeTest,
+                       MAYBE_ThemeChangedWhenApplyingNewTheme) {
   // On the existing tab.
   ASSERT_EQ(1, browser()->tab_strip_model()->count());
   ASSERT_EQ(0, browser()->tab_strip_model()->active_index());

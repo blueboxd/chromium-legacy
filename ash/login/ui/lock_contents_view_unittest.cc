@@ -811,6 +811,13 @@ TEST_F(LockContentsViewUnitTest, ShowStatusIndicatorIfAdbSideloadingEnabled) {
       false /*show*/, false /*enforced*/, "Best version ever", "Asset ID: 6666",
       "Bluetooth adapter", true /*adb_sideloading_enabled*/);
   EXPECT_TRUE(test_api.bottom_status_indicator()->GetVisible());
+
+  // bottom_status_indicator should always be visible when displaying ADB
+  // sideloading warning.
+  DataDispatcher()->NotifyOobeDialogState(OobeDialogState::EXTENSION_LOGIN);
+  EXPECT_TRUE(test_api.bottom_status_indicator()->GetVisible());
+  DataDispatcher()->NotifyOobeDialogState(OobeDialogState::HIDDEN);
+  EXPECT_TRUE(test_api.bottom_status_indicator()->GetVisible());
 }
 
 // Show bottom status indicator if device is enrolled
@@ -828,6 +835,13 @@ TEST_F(LockContentsViewUnitTest, ShowStatusIndicatorIfEnrolledDevice) {
   std::unique_ptr<views::Widget> widget = CreateWidgetWithContent(contents);
   LockContentsView::TestApi test_api(contents);
 
+  EXPECT_TRUE(test_api.bottom_status_indicator()->GetVisible());
+
+  // bottom_status_indicator should not be visible when displaying enterprise
+  // domain and extension UI is visible.
+  DataDispatcher()->NotifyOobeDialogState(OobeDialogState::EXTENSION_LOGIN);
+  EXPECT_FALSE(test_api.bottom_status_indicator()->GetVisible());
+  DataDispatcher()->NotifyOobeDialogState(OobeDialogState::HIDDEN);
   EXPECT_TRUE(test_api.bottom_status_indicator()->GetVisible());
 }
 

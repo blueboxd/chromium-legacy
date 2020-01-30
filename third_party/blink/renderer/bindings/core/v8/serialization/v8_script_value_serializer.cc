@@ -629,7 +629,7 @@ bool V8ScriptValueSerializer::WriteFile(File* file,
     size_t index = blob_info_array_->size();
     DCHECK_LE(index, std::numeric_limits<uint32_t>::max());
     blob_info_array_->emplace_back(
-        file->GetBlobDataHandle(), file->GetPath(), file->name(), file->type(),
+        file->GetBlobDataHandle(), file->name(), file->type(),
         file->LastModifiedTimeForSerialization(), file->size());
     WriteUint32(static_cast<uint32_t>(index));
   } else {

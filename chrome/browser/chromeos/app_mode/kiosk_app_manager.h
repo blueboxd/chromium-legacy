@@ -312,6 +312,9 @@ class KioskAppManager : public KioskAppManagerBase,
   bool GetSwitchesForSessionRestore(const std::string& app_id,
                                     base::CommandLine* switches);
 
+  // KioskAppDataDelegate:
+  void OnExternalCacheDamaged(const std::string& app_id) override;
+
   // Converts kiosk app data from internal representation KioskAppData to
   // App.
   App ConstructApp(const KioskAppData& data) const;

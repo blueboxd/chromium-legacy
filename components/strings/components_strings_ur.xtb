@@ -79,6 +79,7 @@
 <translation id="129553762522093515">حال ہی میں بند کردہ</translation>
 <translation id="1298536327547837046">میلوئیر اسکیننگ</translation>
 <translation id="129863573139666797"><ph name="BEGIN_LINK" />اپنی کوکیز صاف کرنے کی کوشش کریں<ph name="END_LINK" /></translation>
+<translation id="1301324364792935241">‏اپنی محفوظ DNS ترتیبات چیک کریں</translation>
 <translation id="1307966114820526988">فرسودہ خصوصیات</translation>
 <translation id="1314509827145471431">دائیں طرف باندھیں</translation>
 <translation id="1320233736580025032">Prc1 ‎(Envelope‎)‎</translation>
@@ -152,6 +153,7 @@
 <translation id="1569487616857761740">تاریخ اختتام درج کریں</translation>
 <translation id="1581080074034554886">CVC</translation>
 <translation id="1583429793053364125">یہ ویب صفحہ ڈسپلے کرتے ہوئے کچھ غلط ہو گیا۔</translation>
+<translation id="1586541204584340881">آپ نے کن ایکسٹینشنز کو انسٹال کیا ہے</translation>
 <translation id="1588438908519853928">حسب معمول</translation>
 <translation id="1592005682883173041">مقامی ڈیٹا تک رسائی</translation>
 <translation id="1594030484168838125">منتخب کریں</translation>
@@ -363,6 +365,7 @@
 <translation id="2544644783021658368">واحد دستاویز</translation>
 <translation id="254947805923345898">پالیسی کی قدر درست نہیں ہے۔</translation>
 <translation id="255002559098805027"><ph name="HOST_NAME" /> نے ایک غلط جواب بھیجا۔</translation>
+<translation id="2553853292994445426">‏اپنی محفوظ DNS ترتیبات کو چیک کریں۔ ممکن ہے کہ آپ نے ایک محفوظ DNS سرور ترتیب دیا ہو جس کی وجہ سے کنکشنز ناکام ہو رہے ہیں۔</translation>
 <translation id="2556876185419854533">ترمیم کریں کو &amp;کالعدم کریں</translation>
 <translation id="257674075312929031">گروپ</translation>
 <translation id="2586657967955657006">کلپ بورڈ</translation>
@@ -480,6 +483,7 @@
 <translation id="3095940652251934233">Statement</translation>
 <translation id="3096100844101284527">پک اپ کا پتہ شامل کریں</translation>
 <translation id="3105172416063519923">‏اثاثہ ID:</translation>
+<translation id="3107591622054137333">‏<ph name="BEGIN_LINK" />محفوظ DNS کنفیگریشن کو چیک کیا جا رہا ہے<ph name="END_LINK" /></translation>
 <translation id="3109728660330352905">آپ کو یہ صفحہ دیکھنے کی اجازت نہیں ہے۔</translation>
 <translation id="3113284927548439113">تیسری شفٹ</translation>
 <translation id="3116158981186517402">ورق چڑھائیں</translation>
@@ -778,6 +782,7 @@
 <translation id="4390472908992056574">کنارہ</translation>
 <translation id="4406896451731180161">تلاش کے نتائج</translation>
 <translation id="4408413947728134509">کوکیز <ph name="NUM_COOKIES" /></translation>
+<translation id="4414290883293381923">‏آپ نے ابھی ایک پُرفریب سائٹ پر اپنا پاس ورڈ درج کیا ہے۔ Chrome آپ کو <ph name="WEBSITE_1" />، <ph name="WEBSITE_2" />،<ph name="WEBSITE_3" /> اور دیگر ایسی سائٹس پر جانے اور ابھی اپنا پاس ورڈ بدلنے کی تجویز کرتا ہے جہاں آپ اس پاس ورڈ کو استعمال کرتے ہیں۔</translation>
 <translation id="4415426530740016218">پک اپ کا پتہ</translation>
 <translation id="4424024547088906515">‏یہ سرور یہ بات ثابت نہیں کر سکا کہ یہ <ph name="DOMAIN" /> ہے؛ اس کے سیکیورٹی سرٹیفکیٹ پر Chrome کو بھروسہ نہیں ہے۔ یہ غلط کنفیگرییشن یا آپ کے کنکشن کو قطع کرنے والے کسی حملہ آور کی وجہ سے ہو سکتا ہے۔</translation>
 <translation id="443121186588148776">سیریل پورٹ</translation>
@@ -1210,6 +1215,7 @@
 <translation id="6353505687280762741">{COUNT,plural, =0{کوئی نہیں}=1{1 پاس ورڈ (برائے <ph name="DOMAIN_LIST" />، مطابقت پذیر ہے)}=2{2 پاس ورڈز (برائے <ph name="DOMAIN_LIST" />، مطابقت پذیر ہیں)}other{# پاس ورڈز (برائے <ph name="DOMAIN_LIST" />، مطابقت پذیر ہیں)}}</translation>
 <translation id="6358450015545214790">ان کا کیا مطلب ہے؟</translation>
 <translation id="6361757823711327522">B7</translation>
+<translation id="6364095313648930329">‏<ph name="BEGIN_LINK" />پراکسی، فائروال اور محفوظ DNS کنفیگریشن کو چیک کیا جا رہا ہے<ph name="END_LINK" /></translation>
 <translation id="6366710531182496394">بائیں طرف دُہری سٹیپل</translation>
 <translation id="6377268785556383139">'<ph name="SEARCH_TEXT" />' کا 1 نتیجہ</translation>
 <translation id="6380497234672085559">A0</translation>
@@ -1232,6 +1238,7 @@
 <translation id="6433595998831338502"><ph name="HOST_NAME" /> نے منسلک ہونے سے منع کر دیا۔</translation>
 <translation id="6434309073475700221">مسترد کریں</translation>
 <translation id="6440503408713884761">نظر انداز کردہ</translation>
+<translation id="6443406338865242315">آپ نے کن ایکسٹینشنز اور پلگ انز کو انسٹال کیا ہے</translation>
 <translation id="6446163441502663861">Kahu ‎(Envelope‎)‎</translation>
 <translation id="6446608382365791566">مزید معلومات شامل کریں</translation>
 <translation id="6447842834002726250">کوکیز</translation>
@@ -1341,6 +1348,7 @@
 <translation id="7012363358306927923">China UnionPay</translation>
 <translation id="7016992613359344582">یہ چارجز ایک بار یا بار بار عائد ہوسکتے ہیں اور ہو سکتا ہے کہ واضح نہ ہوں۔</translation>
 <translation id="7029809446516969842">پاس ورڈز</translation>
+<translation id="7031646650991750659">‏آپ نے کن Google Play ایپس کو انسٹال کیا ہے</translation>
 <translation id="7050187094878475250">آپ نے <ph name="DOMAIN" /> تک پہنچنے کی کوشش کی، لیکن سرور نے ایک سرٹیفکیٹ پیش کیا جس کے جواز کا عرصہ اتنا طویل ہے کہ اس پر بھروسہ نہیں کیا جا سکتا۔</translation>
 <translation id="705310974202322020">{NUM_CARDS,plural, =1{اس کارڈ کو ابھی محفوظ نہیں کیا جا سکتا}other{ان کارڈز کو ابھی محفوظ نہیں کیا جا سکتا}}</translation>
 <translation id="7053983685419859001">مسدود کریں</translation>
@@ -1400,6 +1408,7 @@
 <translation id="7319430975418800333">A3</translation>
 <translation id="7320336641823683070">کنکشن سے متعلق مدد</translation>
 <translation id="733354035281974745">آلہ کے مقامی اکاؤنٹ کا اوور رائیڈ</translation>
+<translation id="7333654844024768166">‏آپ نے ابھی ایک پُرفریب سائٹ پر اپنا پاس ورڈ درج کیا ہے۔ Chromium آپ کو <ph name="WEBSITE_1" />، <ph name="WEBSITE_2" />،<ph name="WEBSITE_3" /> اور دیگر ایسی سائٹس پر جانے اور ابھی اپنا پاس ورڈ بدلنے کی تجویز کرتا ہے جہاں آپ اس پاس ورڈ کو استعمال کرتے ہیں۔</translation>
 <translation id="7334320624316649418">دوبارہ ترتیب کو &amp;واپس لائیں</translation>
 <translation id="7337706099755338005">آپ کے پلیٹ فارم پر دستیاب نہیں ہے۔</translation>
 <translation id="733923710415886693">سرٹیفیکیٹ کی شفافیت کے ذریعے سرور کے سرٹیفیکیٹ کا انکشاف نہیں کیا گیا۔</translation>

@@ -1249,4 +1249,12 @@ scoped_refptr<CanvasResource> CanvasResourceProvider::GetImportedResource()
   return canvas_resources_.back();
 }
 
+void CanvasResourceProvider::RestoreBackBuffer(const cc::PaintImage& image) {
+  DCHECK_EQ(image.height(), Size().Height());
+  DCHECK_EQ(image.width(), Size().Width());
+  cc::PaintFlags copy_paint;
+  copy_paint.setBlendMode(SkBlendMode::kSrc);
+  Canvas()->drawImage(image, 0, 0, &copy_paint);
+}
+
 }  // namespace blink

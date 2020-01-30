@@ -1230,12 +1230,12 @@ TraceEventHandle TraceLog::AddTraceEventWithThreadIdAndTimestamp(
 
   AutoThreadLocalBoolean thread_is_in_trace_event(&thread_is_in_trace_event_);
 
-  if (flags & TRACE_EVENT_FLAG_MANGLE_ID) {
-    if ((flags & TRACE_EVENT_FLAG_FLOW_IN) ||
-        (flags & TRACE_EVENT_FLAG_FLOW_OUT))
-      bind_id = MangleEventId(bind_id);
-    id = MangleEventId(id);
-  }
+  // Flow bind_ids don't have scopes, so we need to mangle in-process ones to
+  // avoid collisions.
+  bool has_flow =
+      flags & (TRACE_EVENT_FLAG_FLOW_OUT | TRACE_EVENT_FLAG_FLOW_IN);
+  if (has_flow && (flags & TRACE_EVENT_FLAG_HAS_LOCAL_ID))
+    bind_id = MangleEventId(bind_id);
 
   TimeTicks offset_event_timestamp = OffsetTimestamp(timestamp);
   ThreadTicks thread_now = ThreadNow();

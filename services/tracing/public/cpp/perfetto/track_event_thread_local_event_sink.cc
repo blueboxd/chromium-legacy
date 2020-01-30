@@ -525,18 +525,25 @@ TrackEvent* TrackEventThreadLocalEventSink::PrepareTrackEvent(
   uint32_t id_flags =
       flags & (TRACE_EVENT_FLAG_HAS_ID | TRACE_EVENT_FLAG_HAS_LOCAL_ID |
                TRACE_EVENT_FLAG_HAS_GLOBAL_ID);
-  switch (id_flags) {
-    case TRACE_EVENT_FLAG_HAS_ID:
-      legacy_event.GetOrCreate()->set_unscoped_id(trace_event->id());
-      break;
-    case TRACE_EVENT_FLAG_HAS_LOCAL_ID:
-      legacy_event.GetOrCreate()->set_local_id(trace_event->id());
-      break;
-    case TRACE_EVENT_FLAG_HAS_GLOBAL_ID:
-      legacy_event.GetOrCreate()->set_global_id(trace_event->id());
-      break;
-    default:
-      break;
+  uint32_t flow_flags =
+      flags & (TRACE_EVENT_FLAG_FLOW_OUT | TRACE_EVENT_FLAG_FLOW_IN);
+
+  // Legacy flow events use bind_id as their (unscoped) identifier. There's no
+  // need to also emit id in that case.
+  if (!flow_flags) {
+    switch (id_flags) {
+      case TRACE_EVENT_FLAG_HAS_ID:
+        legacy_event.GetOrCreate()->set_unscoped_id(trace_event->id());
+        break;
+      case TRACE_EVENT_FLAG_HAS_LOCAL_ID:
+        legacy_event.GetOrCreate()->set_local_id(trace_event->id());
+        break;
+      case TRACE_EVENT_FLAG_HAS_GLOBAL_ID:
+        legacy_event.GetOrCreate()->set_global_id(trace_event->id());
+        break;
+      default:
+        break;
+    }
   }
 
   // TODO(ssid): Add scope field as enum and do not filter this field.
@@ -551,8 +558,6 @@ TrackEvent* TrackEventThreadLocalEventSink::PrepareTrackEvent(
     legacy_event.GetOrCreate()->set_use_async_tts(true);
   }
 
-  uint32_t flow_flags =
-      flags & (TRACE_EVENT_FLAG_FLOW_OUT | TRACE_EVENT_FLAG_FLOW_IN);
   switch (flow_flags) {
     case TRACE_EVENT_FLAG_FLOW_OUT | TRACE_EVENT_FLAG_FLOW_IN:
       legacy_event.GetOrCreate()->set_flow_direction(

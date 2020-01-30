@@ -1653,10 +1653,13 @@ TEST(V8ScriptValueSerializerTest, RoundTripFileIndex) {
       RoundTrip(wrapper, scope, nullptr, nullptr, &blob_info_array);
 
   // As above, the resulting blob should be correct.
+  // The only users of the 'blob_info_array' version of serialization is
+  // IndexedDB, and the full path is not needed for that system - thus it is not
+  // sent in the round trip.
   ASSERT_TRUE(V8File::HasInstance(result, scope.GetIsolate()));
   File* new_file = V8File::ToImpl(result.As<v8::Object>());
-  EXPECT_TRUE(new_file->HasBackingFile());
-  EXPECT_EQ("/native/path", new_file->GetPath());
+  EXPECT_FALSE(new_file->HasBackingFile());
+  EXPECT_EQ("path", new_file->name());
   EXPECT_TRUE(new_file->FileSystemURL().IsEmpty());
 
   // The blob info array should also contain the details since it was serialized
@@ -1664,7 +1667,7 @@ TEST(V8ScriptValueSerializerTest, RoundTripFileIndex) {
   ASSERT_EQ(1u, blob_info_array.size());
   const WebBlobInfo& info = blob_info_array[0];
   EXPECT_TRUE(info.IsFile());
-  EXPECT_EQ("/native/path", info.FilePath());
+  EXPECT_EQ("path", info.FileName());
   EXPECT_EQ(file->Uuid(), String(info.Uuid()));
 }
 
@@ -1673,9 +1676,8 @@ TEST(V8ScriptValueSerializerTest, DecodeFileIndex) {
   scoped_refptr<SerializedScriptValue> input =
       SerializedValue({0xff, 0x09, 0x3f, 0x00, 0x65, 0x00});
   WebBlobInfoArray blob_info_array;
-  blob_info_array.emplace_back(
-      WebBlobInfo::FileForTesting("d875dfc2-4505-461b-98fe-0cf6cc5eaf44",
-                                  "/native/path", "path", "text/plain"));
+  blob_info_array.emplace_back(WebBlobInfo::FileForTesting(
+      "d875dfc2-4505-461b-98fe-0cf6cc5eaf44", "path", "text/plain"));
   V8ScriptValueDeserializer::Options options;
   options.blob_info = &blob_info_array;
   V8ScriptValueDeserializer deserializer(scope.GetScriptState(), input,
@@ -1685,7 +1687,7 @@ TEST(V8ScriptValueSerializerTest, DecodeFileIndex) {
   File* new_file = V8File::ToImpl(result.As<v8::Object>());
   EXPECT_EQ("d875dfc2-4505-461b-98fe-0cf6cc5eaf44", new_file->Uuid());
   EXPECT_EQ("text/plain", new_file->type());
-  EXPECT_EQ("/native/path", new_file->GetPath());
+  EXPECT_TRUE(new_file->GetPath().IsEmpty());
   EXPECT_EQ("path", new_file->name());
 }
 
@@ -1699,9 +1701,8 @@ TEST(V8ScriptValueSerializerTest, DecodeFileIndexOutOfRange) {
   }
   {
     WebBlobInfoArray blob_info_array;
-    blob_info_array.emplace_back(
-        WebBlobInfo::FileForTesting("d875dfc2-4505-461b-98fe-0cf6cc5eaf44",
-                                    "/native/path", "path", "text/plain"));
+    blob_info_array.emplace_back(WebBlobInfo::FileForTesting(
+        "d875dfc2-4505-461b-98fe-0cf6cc5eaf44", "path", "text/plain"));
     V8ScriptValueDeserializer::Options options;
     options.blob_info = &blob_info_array;
     V8ScriptValueDeserializer deserializer(scope.GetScriptState(), input,
@@ -1785,18 +1786,21 @@ TEST(V8ScriptValueSerializerTest, RoundTripFileListIndex) {
       RoundTrip(wrapper, scope, nullptr, nullptr, &blob_info_array);
 
   // FileList should be produced correctly.
+  // The only users of the 'blob_info_array' version of serialization is
+  // IndexedDB, and the full path is not needed for that system - thus it is not
+  // sent in the round trip.
   ASSERT_TRUE(V8FileList::HasInstance(result, scope.GetIsolate()));
   FileList* new_file_list = V8FileList::ToImpl(result.As<v8::Object>());
   ASSERT_EQ(2u, new_file_list->length());
-  EXPECT_EQ("/native/path", new_file_list->item(0)->GetPath());
-  EXPECT_EQ("/native/path2", new_file_list->item(1)->GetPath());
+  EXPECT_EQ("path", new_file_list->item(0)->name());
+  EXPECT_EQ("path2", new_file_list->item(1)->name());
 
   // And the blob info array should be populated.
   ASSERT_EQ(2u, blob_info_array.size());
   EXPECT_TRUE(blob_info_array[0].IsFile());
-  EXPECT_EQ("/native/path", blob_info_array[0].FilePath());
+  EXPECT_EQ("path", blob_info_array[0].FileName());
   EXPECT_TRUE(blob_info_array[1].IsFile());
-  EXPECT_EQ("/native/path2", blob_info_array[1].FilePath());
+  EXPECT_EQ("path2", blob_info_array[1].FileName());
 }
 
 TEST(V8ScriptValueSerializerTest, DecodeEmptyFileListIndex) {
@@ -1832,9 +1836,8 @@ TEST(V8ScriptValueSerializerTest, DecodeFileListIndex) {
   scoped_refptr<SerializedScriptValue> input =
       SerializedValue({0xff, 0x09, 0x3f, 0x00, 0x4c, 0x01, 0x00, 0x00});
   WebBlobInfoArray blob_info_array;
-  blob_info_array.emplace_back(
-      WebBlobInfo::FileForTesting("d875dfc2-4505-461b-98fe-0cf6cc5eaf44",
-                                  "/native/path", "name", "text/plain"));
+  blob_info_array.emplace_back(WebBlobInfo::FileForTesting(
+      "d875dfc2-4505-461b-98fe-0cf6cc5eaf44", "name", "text/plain"));
   V8ScriptValueDeserializer::Options options;
   options.blob_info = &blob_info_array;
   V8ScriptValueDeserializer deserializer(scope.GetScriptState(), input,
@@ -1843,7 +1846,7 @@ TEST(V8ScriptValueSerializerTest, DecodeFileListIndex) {
   FileList* new_file_list = V8FileList::ToImpl(result.As<v8::Object>());
   EXPECT_EQ(1u, new_file_list->length());
   File* new_file = new_file_list->item(0);
-  EXPECT_EQ("/native/path", new_file->GetPath());
+  EXPECT_TRUE(new_file->GetPath().IsEmpty());
   EXPECT_EQ("name", new_file->name());
   EXPECT_EQ("d875dfc2-4505-461b-98fe-0cf6cc5eaf44", new_file->Uuid());
   EXPECT_EQ("text/plain", new_file->type());

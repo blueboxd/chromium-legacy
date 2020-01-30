@@ -90,6 +90,9 @@ class CastContentRendererClient
   void OnSupportedBitstreamAudioCodecsChanged(
       const BitstreamAudioCodecsInfo& info) override;
 
+  bool CheckSupportedBitstreamAudioCodec(::media::AudioCodec codec,
+                                         bool check_spatial_rendering);
+
   std::unique_ptr<media::MediaCapsObserverImpl> media_caps_observer_;
   std::unique_ptr<media::SupportedCodecProfileLevelsMemo> supported_profiles_;
   mojo::Receiver<mojom::ApplicationMediaCapabilitiesObserver>

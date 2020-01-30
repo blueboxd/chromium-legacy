@@ -26,7 +26,6 @@
 <translation id="1031362278801463162">ቅድመ-እይታን በመጫን ላይ</translation>
 <translation id="1032605640136438169">እባክዎ አዲሶቹን ደንቦች ይገምግሙ</translation>
 <translation id="103279545524624934">የAndroid መተግበሪያዎችን ለማስጀመር የዲስክ ቦታ ያስለቅቁ።</translation>
-<translation id="1033343386521881354">ከህትመት አገልጋዩ 1 አታሚ ተገኝቷል።</translation>
 <translation id="1033780634303702874">ተከታታይ መሣሪያዎችዎን ይደርሳል</translation>
 <translation id="1034942643314881546">የመተግበሪያዎች ሥዕልን ለመፍጠር adb ን በማንቃት ላይ</translation>
 <translation id="1036348656032585052">አጥፋ</translation>
@@ -34,7 +33,6 @@
 <translation id="1036982837258183574">ከሙሉ ማያ ገጽ ለመውጣት |<ph name="ACCELERATOR" />|ን ይጫኑ</translation>
 <translation id="1038168778161626396">ምስጢራዊ ማድረግ ብቻ</translation>
 <translation id="1039337018183941703">ልክ ያልሆነ ወይም የተበላሸ ፋይል</translation>
-<translation id="1039850285407663109">የተመረጠው ፋይል ያልታወቀ ነው እና አደገኛ ሊሆን ይችላል። ይህን ከመክፈት በፊት መቃኘትን ከግምት ያስገቡ።</translation>
 <translation id="1041175011127912238">ይህ ግጽ ምላሽ እየሰጠ አይደለም</translation>
 <translation id="1041263367839475438">የሚገኙ መሣሪያዎች</translation>
 <translation id="1042174272890264476">እንዲሁም ኮምፒውተርዎ የ<ph name="SHORT_PRODUCT_NAME" /> RLZ ቤተ-ፍርግም አብሮ ተሰርቶለት ነው የሚመጣው። RLZ ፍለጋዎችን እና በአንድ የተወሰነ የማስተዋወቂያ ዘመቻ የሚነዳ የ<ph name="SHORT_PRODUCT_NAME" /> አጠቃቀምን ለመለካት ልዩ ያልሆነ፣ በግል ሊለይ የማይችል መለያ ይመድባል። እነዚህ መለያ ስሞች አንዳንድ ጊዜ በ<ph name="PRODUCT_NAME" /> የGoogle ፍለጋ መጠይቆች ላይ ይታያሉ።</translation>
@@ -639,7 +637,6 @@
 <translation id="1858585891038687145">የሶፍትዌር ሠሪዎችን ለመለየት ይህን የዕውቅና ማረጋገጫ እመን</translation>
 <translation id="1861262398884155592">ይህ አቃፊ ባዶ ነው</translation>
 <translation id="1863182668524159459">ምንም ተከታታይ ወደቦች አልተገኙም</translation>
-<translation id="1863552924692672565"><ph name="FILE_NAME" /> የማይታወቅ ነው። ስጋትን ለመቀነስ ፋይልን ይቃኙ።</translation>
 <translation id="1864111464094315414">ግባ</translation>
 <translation id="1864400682872660285">ማቀዥቀዣ</translation>
 <translation id="1864454756846565995">USB-C መሣሪያ (የኋላ ወደብ)</translation>
@@ -4022,7 +4019,6 @@
 <translation id="6678717876183468697">የጥያቄ ዩአርኤል</translation>
 <translation id="6680442031740878064">ይገኛል፦ <ph name="AVAILABLE_SPACE" /></translation>
 <translation id="6680650203439190394">ደረጃ ይስጡ</translation>
-<translation id="6681301928961274620">ከህትመት አገልጋዩ ምንም አታሚዎች አልተገኙም።</translation>
 <translation id="6681668084120808868">ፎቶ አንሳ</translation>
 <translation id="6681964764822470072">«<ph name="APP_NAME" />» ይራገፋል።</translation>
 <translation id="668599234725812620">Google Playን ይክፈቱ</translation>
@@ -5556,7 +5552,6 @@ nil</translation>
 <translation id="8794025342371547160">የተገደበ አይፒ</translation>
 <translation id="879413103056696865">የመገናኛ ነጥቡ በርቶ ሳለ የእርስዎ <ph name="PHONE_NAME" /> ይህን ያደርጋል፦</translation>
 <translation id="8795916974678578410">አዲስ መስኮት</translation>
-<translation id="8797086401386164142">ከህትመት አገልጋዩ <ph name="NUM_PRINTERS" /> አታሚዎች ተገኝተዋል</translation>
 <translation id="8797459392481275117">ይህን ጣቢያ በጭራሽ አትተርጉም</translation>
 <translation id="8798099450830957504">እንደወረደ</translation>
 <translation id="8798441408945964110">የአቅራቢ ስም</translation>

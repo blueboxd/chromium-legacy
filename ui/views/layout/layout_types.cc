@@ -4,9 +4,9 @@
 
 #include "ui/views/layout/layout_types.h"
 
-#include <algorithm>
+#include "base/strings/strcat.h"
+#include "base/strings/string_number_conversions.h"
 
-#include "base/strings/stringprintf.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace views {
@@ -15,9 +15,8 @@ namespace views {
 
 SizeBounds::SizeBounds() = default;
 
-SizeBounds::SizeBounds(const base::Optional<int>& width,
-                       const base::Optional<int>& height)
-    : width_(width), height_(height) {}
+SizeBounds::SizeBounds(base::Optional<int> width, base::Optional<int> height)
+    : width_(std::move(width)), height_(std::move(height)) {}
 
 SizeBounds::SizeBounds(const SizeBounds& other)
     : width_(other.width()), height_(other.height()) {}
@@ -33,7 +32,7 @@ void SizeBounds::Enlarge(int width, int height) {
 }
 
 bool SizeBounds::operator==(const SizeBounds& other) const {
-  return width_ == other.width_ && height_ == other.height_;
+  return std::tie(width_, height_) == std::tie(other.width_, other.height_);
 }
 
 bool SizeBounds::operator!=(const SizeBounds& other) const {
@@ -45,17 +44,8 @@ bool SizeBounds::operator<(const SizeBounds& other) const {
 }
 
 std::string SizeBounds::ToString() const {
-  std::ostringstream oss;
-  if (width().has_value())
-    oss << *width();
-  else
-    oss << "_";
-  oss << " x ";
-  if (height().has_value())
-    oss << *height();
-  else
-    oss << "_";
-  return oss.str();
+  return base::StrCat({width_ ? base::NumberToString(*width_) : "_", " x ",
+                       height_ ? base::NumberToString(*height_) : "_"});
 }
 
 }  // namespace views

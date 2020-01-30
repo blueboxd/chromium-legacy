@@ -173,11 +173,18 @@ void ShelfNavigationWidget::Delegate::Init(ui::Layer* parent_layer) {
 void ShelfNavigationWidget::Delegate::UpdateOpaqueBackground() {
   opaque_background_.SetColor(ShelfConfig::Get()->GetShelfControlButtonColor());
 
+  // Hide background if no buttons should be shown.
+  if (!IsHomeButtonShown() && !IsBackButtonShown()) {
+    opaque_background_.SetVisible(false);
+    return;
+  }
+
   if (chromeos::switches::ShouldShowShelfHotseat() && IsTabletMode() &&
       ShelfConfig::Get()->is_in_app()) {
     opaque_background_.SetVisible(false);
     return;
   }
+
   opaque_background_.SetVisible(true);
 
   int radius = ShelfConfig::Get()->control_border_radius();

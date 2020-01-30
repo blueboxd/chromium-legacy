@@ -117,8 +117,7 @@ class RulesMonitorService : public BrowserContextKeyedAPI,
 
   void UnloadRuleset(const ExtensionId& extension_id);
   void LoadRuleset(const ExtensionId& extension_id,
-                   std::unique_ptr<CompositeMatcher> matcher,
-                   URLPatternSet allowed_pages);
+                   std::unique_ptr<CompositeMatcher> matcher);
   void UpdateRuleset(const ExtensionId& extension_id,
                      std::unique_ptr<RulesetMatcher> ruleset_matcher);
 

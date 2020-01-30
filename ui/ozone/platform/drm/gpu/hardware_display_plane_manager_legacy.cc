@@ -6,6 +6,7 @@
 
 #include <errno.h>
 #include <sync/sync.h>
+
 #include <memory>
 #include <utility>
 
@@ -42,13 +43,31 @@ HardwareDisplayPlaneManagerLegacy::HardwareDisplayPlaneManagerLegacy(
     DrmDevice* drm)
     : HardwareDisplayPlaneManager(drm) {}
 
-HardwareDisplayPlaneManagerLegacy::~HardwareDisplayPlaneManagerLegacy() {
+HardwareDisplayPlaneManagerLegacy::~HardwareDisplayPlaneManagerLegacy() =
+    default;
+
+bool HardwareDisplayPlaneManagerLegacy::Modeset(
+    uint32_t crtc_id,
+    uint32_t framebuffer_id,
+    uint32_t connector_id,
+    const drmModeModeInfo& mode,
+    const HardwareDisplayPlaneList&) {
+  return drm_->SetCrtc(crtc_id, framebuffer_id,
+                       std::vector<uint32_t>(1, connector_id), mode);
+}
+
+bool HardwareDisplayPlaneManagerLegacy::DisableModeset(uint32_t crtc_id,
+                                                       uint32_t connector) {
+  return drm_->DisableCrtc(crtc_id);
 }
 
 bool HardwareDisplayPlaneManagerLegacy::Commit(
     const HardwareDisplayPlaneList& plane_list,
+    bool should_modeset,
     scoped_refptr<PageFlipRequest> page_flip_request,
     std::unique_ptr<gfx::GpuFence>* out_fence) {
+  DCHECK(!should_modeset);
+
   bool test_only = !page_flip_request;
   if (test_only) {
     for (HardwareDisplayPlane* plane : plane_list.plane_list) {

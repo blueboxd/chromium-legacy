@@ -369,6 +369,57 @@ TEST_F(PermissionDecisionAutoBlockerUnitTest,
             autoblocker()->GetIgnoreCount(url, ContentSettingsType::PLUGINS));
 }
 
+// Check that GetEmbargoedOrigins only returns origins where embargo is the
+// effective permission enforcement mechanism.
+TEST_F(PermissionDecisionAutoBlockerUnitTest, CheckEmbargoedOrigins) {
+  GURL url1("https://www.google.com");
+  GURL url2("https://www.google.com:8443");
+  std::vector<ContentSettingsType> content_types = {
+      ContentSettingsType::GEOLOCATION, ContentSettingsType::NOTIFICATIONS};
+  std::set<GURL> origins;
+  clock()->SetNow(base::Time::Now());
+
+  EXPECT_EQ(0UL, autoblocker()->GetEmbargoedOrigins(content_types).size());
+
+  // Place both origins under embargo and verify.
+  EXPECT_FALSE(autoblocker()->RecordDismissAndEmbargo(
+      url1, ContentSettingsType::GEOLOCATION, false));
+  EXPECT_FALSE(autoblocker()->RecordDismissAndEmbargo(
+      url1, ContentSettingsType::GEOLOCATION, false));
+  EXPECT_TRUE(autoblocker()->RecordDismissAndEmbargo(
+      url1, ContentSettingsType::GEOLOCATION, false));
+  EXPECT_FALSE(autoblocker()->RecordDismissAndEmbargo(
+      url2, ContentSettingsType::NOTIFICATIONS, false));
+  EXPECT_FALSE(autoblocker()->RecordDismissAndEmbargo(
+      url2, ContentSettingsType::NOTIFICATIONS, false));
+  EXPECT_TRUE(autoblocker()->RecordDismissAndEmbargo(
+      url2, ContentSettingsType::NOTIFICATIONS, false));
+
+  origins = autoblocker()->GetEmbargoedOrigins(content_types);
+  EXPECT_EQ(2UL, origins.size());
+  EXPECT_EQ(1UL, origins.count(url1));
+  EXPECT_EQ(1UL, origins.count(url2));
+
+  // Check no leakage between content types
+  origins =
+      autoblocker()->GetEmbargoedOrigins(ContentSettingsType::GEOLOCATION);
+  EXPECT_EQ(1UL, origins.count(url1));
+  origins =
+      autoblocker()->GetEmbargoedOrigins(ContentSettingsType::NOTIFICATIONS);
+  EXPECT_EQ(1UL, origins.count(url2));
+
+  // Remove an embargo and confirm it's removed from origins
+  autoblocker()->RemoveEmbargoByUrl(url1, ContentSettingsType::GEOLOCATION);
+  origins = autoblocker()->GetEmbargoedOrigins(content_types);
+  EXPECT_EQ(1UL, origins.size());
+  EXPECT_EQ(1UL, origins.count(url2));
+
+  // Expire the remaining embargo and confirm the origin is removed
+  clock()->Advance(base::TimeDelta::FromDays(8));
+  origins = autoblocker()->GetEmbargoedOrigins(content_types);
+  EXPECT_EQ(0UL, origins.size());
+}
+
 // Check that GetEmbargoResult returns the correct value when the embargo is set
 // and expires.
 TEST_F(PermissionDecisionAutoBlockerUnitTest, CheckEmbargoStatus) {

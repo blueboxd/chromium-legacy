@@ -79,9 +79,9 @@ public class AssistantCollectUserDataNativeDelegate implements AssistantCollectU
     }
 
     @Override
-    public void onTermsAndConditionsLinkClicked(int link) {
+    public void onTextLinkClicked(int link) {
         if (mNativeAssistantCollectUserDataDelegate != 0) {
-            AssistantCollectUserDataNativeDelegateJni.get().onTermsAndConditionsLinkClicked(
+            AssistantCollectUserDataNativeDelegateJni.get().onTextLinkClicked(
                     mNativeAssistantCollectUserDataDelegate,
                     AssistantCollectUserDataNativeDelegate.this, link);
         }
@@ -156,7 +156,7 @@ public class AssistantCollectUserDataNativeDelegate implements AssistantCollectU
                 @Nullable PersonalDataManager.AutofillProfile billingProfile);
         void onTermsAndConditionsChanged(long nativeAssistantCollectUserDataDelegate,
                 AssistantCollectUserDataNativeDelegate caller, int state);
-        void onTermsAndConditionsLinkClicked(long nativeAssistantCollectUserDataDelegate,
+        void onTextLinkClicked(long nativeAssistantCollectUserDataDelegate,
                 AssistantCollectUserDataNativeDelegate caller, int link);
         void onLoginChoiceChanged(long nativeAssistantCollectUserDataDelegate,
                 AssistantCollectUserDataNativeDelegate caller, String choice);

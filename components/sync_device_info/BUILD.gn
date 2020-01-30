@@ -56,7 +56,7 @@ jumbo_static_library("sync_device_info") {
   if (is_mac) {
     libs = [
       "CoreFoundation.framework",
-      "SystemConfiguration.framework",  # Required by local_device_info_util_mac.mm.
+      "SystemConfiguration.framework",  # For local_device_info_util_mac.mm.
     ]
   }
 

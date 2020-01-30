@@ -1074,6 +1074,10 @@ std::unique_ptr<Widget::PaintAsActiveLock> Widget::LockPaintAsActive() {
       weak_ptr_factory_.GetWeakPtr());
 }
 
+base::WeakPtr<Widget> Widget::GetWeakPtr() {
+  return weak_ptr_factory_.GetWeakPtr();
+}
+
 bool Widget::ShouldPaintAsActive() const {
   return native_widget_active_ || paint_as_active_refcount_;
 }

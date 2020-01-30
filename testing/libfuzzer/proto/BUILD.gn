@@ -6,9 +6,7 @@ import("//third_party/protobuf/proto_library.gni")
 
 proto_library("json_proto") {
   proto_in_dir = "//"
-  sources = [
-    "json.proto",
-  ]
+  sources = [ "json.proto" ]
 }
 
 source_set("json_proto_converter") {
@@ -16,9 +14,7 @@ source_set("json_proto_converter") {
     "json_proto_converter.cc",
     "json_proto_converter.h",
   ]
-  deps = [
-    ":json_proto",
-  ]
+  deps = [ ":json_proto" ]
 }
 
 static_library("skia_image_filter_converter") {
@@ -43,7 +39,5 @@ static_library("skia_image_filter_converter") {
   }
 }
 proto_library("skia_image_filter_proto") {
-  sources = [
-    "skia_image_filter.proto",
-  ]
+  sources = [ "skia_image_filter.proto" ]
 }

@@ -135,7 +135,7 @@ bool OpenXrRenderLoop::PreComposite() {
 }
 
 bool OpenXrRenderLoop::HasSessionEnded() {
-  return openxr_->session_ended();
+  return openxr_->UpdateAndGetSessionEnded();
 }
 
 bool OpenXrRenderLoop::SubmitCompositedFrame() {

@@ -2435,6 +2435,14 @@ EGL_FUNCTIONS = [
                    'EGL_ANDROID_get_frame_timestamps'
                  ] }],
   'arguments': 'EGLDisplay dpy, EGLSurface surface, EGLint timestamp', },
+{ 'return_type': 'EGLBoolean',
+  'versions': [{ 'name': 'eglGetMscRateCHROMIUM',
+                 'extensions': [
+                   'EGL_CHROMIUM_sync_control'
+                 ] }],
+  'arguments':
+      'EGLDisplay dpy, EGLSurface surface, '
+      'EGLint* numerator, EGLint* denominator', },
 { 'return_type': 'EGLClientBuffer',
   'versions': [{ 'name': 'eglGetNativeClientBufferANDROID',
                  'extensions': ['EGL_ANDROID_get_native_client_buffer'], }],
@@ -2464,7 +2472,10 @@ EGL_FUNCTIONS = [
   'arguments': 'EGLDisplay dpy, EGLSyncKHR sync, EGLint attribute, '
       'EGLint* value' },
 { 'return_type': 'EGLBoolean',
-  'names': ['eglGetSyncValuesCHROMIUM'],
+  'versions': [{ 'name': 'eglGetSyncValuesCHROMIUM',
+                 'extensions': [
+                   'EGL_CHROMIUM_sync_control'
+                 ] }],
   'arguments':
       'EGLDisplay dpy, EGLSurface surface, '
       'EGLuint64CHROMIUM* ust, EGLuint64CHROMIUM* msc, '

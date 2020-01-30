@@ -160,18 +160,18 @@ bool Thread::StartWithOptions(const Options& options) {
 
   if (options.delegate) {
     DCHECK(!options.message_pump_factory);
-    DCHECK(!options.task_queue_time_domain_);
+    DCHECK(!options.task_queue_time_domain);
     delegate_ = WrapUnique(options.delegate);
   } else if (options.message_pump_factory) {
     delegate_ = std::make_unique<SequenceManagerThreadDelegate>(
         MessagePumpType::CUSTOM, options.message_pump_factory,
-        options.task_queue_time_domain_);
+        options.task_queue_time_domain);
   } else {
     delegate_ = std::make_unique<SequenceManagerThreadDelegate>(
         options.message_pump_type,
         BindOnce([](MessagePumpType type) { return MessagePump::Create(type); },
                  options.message_pump_type),
-        options.task_queue_time_domain_);
+        options.task_queue_time_domain);
   }
 
   start_event_.Reset();

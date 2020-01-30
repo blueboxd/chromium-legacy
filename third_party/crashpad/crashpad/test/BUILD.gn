@@ -241,9 +241,7 @@ if (crashpad_is_ios) {
       "gtest_runner_ios.mm",
     ]
     configs += [ "..:crashpad_config" ]
-    deps = [
-      "../third_party/gtest:gtest",
-    ]
+    deps = [ "../third_party/gtest:gtest" ]
     libs = [ "UIKit.framework" ]
   }
 }

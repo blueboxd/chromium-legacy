@@ -648,4 +648,24 @@ bool KeyframeEffect::HasMultipleTransformProperties() const {
   return transform_property_count > 1;
 }
 
+ActiveInterpolationsMap KeyframeEffect::InterpolationsForCommitStyles() {
+  // If the associated animation has been removed, it needs to be temporarily
+  // reintroduced to the effect stack in order to be including in the
+  // interpolations map.
+  bool removed = owner_->ReplaceStateRemoved();
+  if (removed)
+    ApplyEffects();
+
+  ActiveInterpolationsMap results = EffectStack::ActiveInterpolations(
+      &target()->GetElementAnimations()->GetEffectStack(),
+      /*new_animations=*/nullptr,
+      /*suppressed_animations=*/nullptr, kDefaultPriority,
+      /*property_pass_filter=*/nullptr, this);
+
+  if (removed)
+    ClearEffects();
+
+  return results;
+}
+
 }  // namespace blink

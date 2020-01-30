@@ -11,8 +11,6 @@
 
 #include "base/lazy_instance.h"
 #include "base/macros.h"
-#include "base/optional.h"
-#include "url/gurl.h"
 
 namespace content {
 class NavigationHandle;
@@ -45,12 +43,7 @@ class ExtensionApiFrameIdMap {
   // The data for a RenderFrame. Every RenderFrameIdKey maps to a FrameData.
   struct FrameData {
     FrameData();
-    FrameData(int frame_id,
-              int parent_frame_id,
-              int tab_id,
-              int window_id,
-              GURL last_committed_main_frame_url,
-              base::Optional<GURL> pending_main_frame_url);
+    FrameData(int frame_id, int parent_frame_id, int tab_id, int window_id);
     ~FrameData();
 
     FrameData(const FrameData&);
@@ -69,15 +62,6 @@ class ExtensionApiFrameIdMap {
     // The id of the window that the frame is in, or -1 if the frame isn't in a
     // window.
     int window_id;
-
-    // The last committed url of the main frame to which this frame belongs.
-    // This ignores any same-document navigations.
-    GURL last_committed_main_frame_url;
-
-    // The pending main frame url. This is only non-empty for main frame data
-    // when the main frame is ready to commit navigation but hasn't fully
-    // completed the navigation yet. This ignores any same-document navigations.
-    base::Optional<GURL> pending_main_frame_url;
   };
 
   // An invalid extension API frame ID.

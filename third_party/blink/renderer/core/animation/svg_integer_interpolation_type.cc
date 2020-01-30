@@ -21,7 +21,7 @@ InterpolationValue SVGIntegerInterpolationType::MaybeConvertSVGValue(
   if (svg_value.GetType() != kAnimatedInteger)
     return nullptr;
   return InterpolationValue(
-      std::make_unique<InterpolableNumber>(ToSVGInteger(svg_value).Value()));
+      std::make_unique<InterpolableNumber>(To<SVGInteger>(svg_value).Value()));
 }
 
 SVGPropertyBase* SVGIntegerInterpolationType::AppliedSVGValue(

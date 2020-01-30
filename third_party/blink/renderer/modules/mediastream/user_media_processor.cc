@@ -518,6 +518,9 @@ UserMediaProcessor::RequestInfo::CreateAndStartVideoTrack(
   DCHECK(source.GetType() == blink::WebMediaStreamSource::kTypeVideo);
   DCHECK(web_request().Video());
   DCHECK(video_capture_settings_.HasValue());
+  SendLogMessage(base::StringPrintf(
+      "UMP::RI::CreateAndStartVideoTrack({request_id=%d})", request_id()));
+
   blink::MediaStreamVideoSource* native_source =
       blink::MediaStreamVideoSource::GetVideoSource(source);
   DCHECK(native_source);
@@ -1224,7 +1227,11 @@ blink::WebMediaStreamSource UserMediaProcessor::InitializeVideoSourceObject(
     const MediaStreamDevice& device) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(current_request_info_);
-
+  SendLogMessage(base::StringPrintf(
+      "UMP::InitializeVideoSourceObject({request_id=%d}, {device=[id: %s, "
+      "name: %s]})",
+      current_request_info_->request_id(), device.id.c_str(),
+      device.name.c_str()));
   blink::WebMediaStreamSource source = FindOrInitializeSourceObject(device);
   if (!source.GetPlatformSource()) {
     source.SetPlatformSource(CreateVideoSource(
@@ -1431,6 +1438,8 @@ void UserMediaProcessor::CreateVideoTracks(
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(current_request_info_);
   DCHECK_EQ(devices.size(), webkit_tracks->size());
+  SendLogMessage(base::StringPrintf("UMP::CreateVideoTracks({request_id=%d})",
+                                    current_request_info_->request_id()));
 
   for (WTF::wtf_size_t i = 0; i < devices.size(); ++i) {
     blink::WebMediaStreamSource source =
@@ -1482,7 +1491,9 @@ void UserMediaProcessor::OnCreateNativeTracksCompleted(
     MediaStreamRequestResult result,
     const String& constraint_name) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  SendLogMessage("OnCreateNativeTracksCompleted({label=" + label.Utf8() + "})");
+  SendLogMessage(base::StringPrintf(
+      "UMP::OnCreateNativeTracksCompleted({request_id = %d}, {label=%s})",
+      request_info->request_id(), label.Utf8().c_str()));
   if (result == MediaStreamRequestResult::OK) {
     GetUserMediaRequestSucceeded(*request_info->web_stream(),
                                  request_info->web_request());

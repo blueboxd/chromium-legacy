@@ -140,19 +140,6 @@ pattern which is matched against the request URL. Some examples of URL filters:
   </tr>
 </table>
 
-<h2 id="page-allowlisting">Page allowlisting</h2>
-
-<p>
-To disable the extension ruleset on a particular page, extensions can use the
-<a href="#method-addAllowedPages">
-chrome.declarativeNetRequest.addAllowedPages</a> API method. This allows
-extensions to specify <a href="/extensions/match_patterns">match patterns</a>
-that are compared against the tab URL. Any requests originating from these pages
-are not evaluated against the extension ruleset. The number of such patterns an
-extension can add is bound by the
-<a href="#property-MAX_NUMBER_OF_ALLOWED_PAGES">chrome.declarativeNetRequest.MAX_NUMBER_OF_ALLOWED_PAGES</a> constant.
-</p>
-
 <h2 id="dynamic-rules">Dynamic rules</h2>
 
 <p>
@@ -184,62 +171,45 @@ chrome.declarativeNetRequest.updateDynamicRules</a> API method.
 
 <ul>
   <li>
-    If any extension ruleset wants to block a request<sup>[1]</sup>, the network
+    If any extension ruleset wants to block a request<sup>1</sup>, the network
     request is blocked.
   </li>
   <li>
     If the request is not blocked, the request is redirected if any extension
-    ruleset wants to redirect the request<sup>[2]</sup>. The most recently
+    ruleset wants to redirect the request<sup>2</sup>. The most recently
     installed extension gets preference here. If multiple redirect rules from an
     extension’s ruleset match, the rule with the greatest priority determines
     the redirect URL.
   </li>
   <li>
     If the request is not blocked or redirected, <code>removeHeaders</code>
-    rules are evaluated<sup>[3]</sup>. Rules from all extensions are evaluated
+    rules are evaluated<sup>3</sup>. Rules from all extensions are evaluated
     to determine the set of removed headers.
   </li>
 </ul>
 
-[1] An extension wants to block a request, if all the following are true:
-<ul>
+<ol type="1">
   <li>
-      The extension has a matching block rule. Note the priority order between
-      the different block/allow actions: <br/>dynamic allow > dynamic block > static allow > static block.
+    An extension wants to block a request, if the the extension has a matching
+    block rule. Note the priority order between the different block/allow actions:
+    <br/>dynamic allow > dynamic block > static allow > static block.
   </li>
-  <li>
-    The page from which the request originated is not allow-listed by the
-    extension using <a href="#method-addAllowedPages">
-    chrome.declarativeNetRequest.addAllowedPages</a>.
-  </li>
-</ul>
 
-[2] An extension wants to redirect a request, if all the following are true:
-<ul>
   <li>
-      The extension has a matching redirect rule. Note the priority order
-      between the different redirect/allow actions: <br/>dynamic allow > dynamic redirect > static allow > static redirect.
+    An extension wants to redirect a request, if the extension has a matching
+    redirect rule. Note the priority order between the different redirect/allow
+    actions:
+    <br/>dynamic allow > dynamic redirect > static allow > static redirect.
   </li>
-  <li>
-    The page from which the request originated is not allow-listed by the
-    extension using <a href="#method-addAllowedPages">
-    chrome.declarativeNetRequest.addAllowedPages</a>.
-  </li>
-</ul>
 
-[3] An extension wants to remove a header from a request, if all the following
-are true:
-<ul>
   <li>
-      The extension has a matching removeHeaders rule. Note the priority order
-      between the different removeHeaders/allow actions: <br/>dynamic allow > dynamic removeHeaders > static allow > static removeHeaders.
+    An extension wants to remove a header from a request, if the extension has
+    a matching removeHeaders rule. Note the priority order between the different
+    removeHeaders/allow actions:
+    <br/>dynamic allow > dynamic removeHeaders > static allow > static
+    removeHeaders.
   </li>
-  <li>
-    The page from which the request originated is not allow-listed by the
-    extension using <a href="#method-addAllowedPages">
-    chrome.declarativeNetRequest.addAllowedPages</a>.
-  </li>
-</ul>
+</ol>
 
 <h3 id="web-request-comparison">
   Comparison with the <a href="webRequest">webRequest</a> API

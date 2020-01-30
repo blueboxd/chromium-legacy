@@ -124,8 +124,9 @@ class UiDelegate {
   // options.
   virtual void SetLoginOption(std::string identifier) = 0;
 
-  // Called when the user clicks a link on the terms & conditions message.
-  virtual void OnTermsAndConditionsLinkClicked(int link) = 0;
+  // Called when the user clicks a link of the form <link0>text</link0> in a
+  // text message.
+  virtual void OnTextLinkClicked(int link) = 0;
 
   // Called when the user clicks a link in the form action.
   virtual void OnFormActionLinkClicked(int link) = 0;

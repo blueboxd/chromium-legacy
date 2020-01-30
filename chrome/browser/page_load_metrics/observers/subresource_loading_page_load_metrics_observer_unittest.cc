@@ -29,7 +29,8 @@ page_load_metrics::mojom::ResourceDataUpdatePtr CreateBaseResource(
     bool was_cached,
     bool is_complete) {
   return CreateResource(was_cached, 1234 /* delta_bytes */,
-                        1234 /* encoded_body_length */, is_complete);
+                        1234 /* encoded_body_length */,
+                        1234 /* decoded_body_length */, is_complete);
 }
 
 }  // namespace

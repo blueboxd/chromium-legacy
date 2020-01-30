@@ -26,7 +26,6 @@
 <translation id="1031362278801463162">Hleður forskoðun</translation>
 <translation id="1032605640136438169">Kynntu þér nýju skilmálana</translation>
 <translation id="103279545524624934">Losaðu um geymslupláss til að opna Android forrit.</translation>
-<translation id="1033343386521881354">Einn prentari fannst á prentþjóninum.</translation>
 <translation id="1033780634303702874">Aðgangur að raðtengdu tækjunum þínum</translation>
 <translation id="1034942643314881546">ADB virkjað til að búa til skýringarmynd fyrir forrit</translation>
 <translation id="1036348656032585052">Slökkva</translation>
@@ -34,7 +33,6 @@
 <translation id="1036982837258183574">Ýttu á |<ph name="ACCELERATOR" />| til að hætta birtingu á öllum skjánum</translation>
 <translation id="1038168778161626396">Aðeins dulrita</translation>
 <translation id="1039337018183941703">Ógild eða skemmd skrá</translation>
-<translation id="1039850285407663109">Valin skrá þekkist ekki og gæti verið hættuleg. Íhugaðu að skanna skrána áður en þú opnar hana.</translation>
 <translation id="1041175011127912238">Þessi síða svarar ekki.</translation>
 <translation id="1041263367839475438">Tæki í boði</translation>
 <translation id="1042174272890264476">RLZ-safn <ph name="SHORT_PRODUCT_NAME" /> er einnig innbyggt í tölvuna. RLZ úthlutar merki sem er ekki einkvæmt og ekki persónugreinanlegt til að mæla leitarvirkni og notkun <ph name="SHORT_PRODUCT_NAME" /> hjá tiltekinni auglýsingaherferð. Þessi merki birtast stundum í leitarfyrirspurnum á Google í <ph name="PRODUCT_NAME" />.</translation>
@@ -639,7 +637,6 @@
 <translation id="1858585891038687145">Treysta þessu vottorði til að bera kennsl á hugbúnaðarframleiðendur</translation>
 <translation id="1861262398884155592">Mappan er tóm</translation>
 <translation id="1863182668524159459">Engin raðtengi fundust</translation>
-<translation id="1863552924692672565"><ph name="FILE_NAME" /> þekkist ekki. Skannaðu skrána til að lágmarka áhættu.</translation>
 <translation id="1864111464094315414">Innskráning</translation>
 <translation id="1864400682872660285">Kaldara</translation>
 <translation id="1864454756846565995">USB-C-tæki (tengi að aftan)</translation>
@@ -4025,7 +4022,6 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="6678717876183468697">Fyrirspurnarvefslóð</translation>
 <translation id="6680442031740878064">Laust: <ph name="AVAILABLE_SPACE" /></translation>
 <translation id="6680650203439190394">Hraði</translation>
-<translation id="6681301928961274620">Engir prentarar fundust á prentþjóni.</translation>
 <translation id="6681668084120808868">Taka mynd</translation>
 <translation id="6681964764822470072">„<ph name="APP_NAME" />“ verður fjarlægt.</translation>
 <translation id="668599234725812620">Opna Google Play</translation>
@@ -5554,7 +5550,6 @@ Geymdu lykilskrána á öruggum stað. Þú þarft hana til að búa til nýjar 
 <translation id="8794025342371547160">Takmarkaður IP-aðgangur</translation>
 <translation id="879413103056696865">Þegar kveikt er á heitum reit mun <ph name="PHONE_NAME" />:</translation>
 <translation id="8795916974678578410">Nýr gluggi</translation>
-<translation id="8797086401386164142"><ph name="NUM_PRINTERS" /> prentarar fundust á prentþjóni.</translation>
 <translation id="8797459392481275117">Aldrei þýða þetta vefsvæði</translation>
 <translation id="8798099450830957504">Sjálfgefið</translation>
 <translation id="8798441408945964110">Heiti veitu</translation>

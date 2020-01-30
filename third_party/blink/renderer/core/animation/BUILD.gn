@@ -264,9 +264,7 @@ blink_core_sources("animation") {
     "worklet_animation_controller.h",
   ]
 
-  deps = [
-    ":buildflags",
-  ]
+  deps = [ ":buildflags" ]
 }
 
 blink_core_tests("unit_tests") {

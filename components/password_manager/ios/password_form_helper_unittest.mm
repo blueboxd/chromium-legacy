@@ -42,12 +42,6 @@ using test_helpers::SetFillData;
 
 @interface PasswordFormHelper (Testing)
 
-// Provides access to the method below for testing with mocks.
-- (void)extractSubmittedPasswordForm:(const std::string&)formName
-                   completionHandler:
-                       (void (^)(BOOL found,
-                                 const PasswordForm& form))completionHandler;
-
 // Provides access to replace |jsPasswordManager| with Mock one for test.
 - (void)setJsPasswordManager:(JsPasswordManager*)jsPasswordManager;
 
@@ -162,97 +156,6 @@ class PasswordFormHelperTest : public web::WebTestWithWebState {
 
   DISALLOW_COPY_AND_ASSIGN(PasswordFormHelperTest);
 };
-
-struct GetSubmittedPasswordFormTestData {
-  // HTML String of the form.
-  NSString* html_string;
-  // Javascript to submit the form.
-  NSString* java_script;
-  // 0 based index of the form on the page to submit.
-  const int index_of_the_form_to_submit;
-  // Expected number of fields in found form.
-  const size_t expected_number_of_fields;
-  // Expected form name.
-  const char* expected_form_name;
-};
-
-// Check that HTML forms are captured and converted correctly into
-// PasswordForms on submission.
-TEST_F(PasswordFormHelperTest, GetSubmittedPasswordForm) {
-  // clang-format off
-  const GetSubmittedPasswordFormTestData test_data[] = {
-    // Two forms with no explicit names.
-    {
-      @"<form action='javascript:;'>"
-      "<input type='text' name='user1' value='user1'>"
-      "<input type='password' name='pass1' value='pw1'>"
-      "</form>"
-      "<form action='javascript:;'>"
-      "<input type='text' name='user2' value='user2'>"
-      "<input type='password' name='pass2' value='pw2'>"
-      "<input type='submit' id='s2'>"
-      "</form>",
-      @"document.getElementById('s2').click()",
-      1, 2, "gChrome~form~1"
-    },
-    // Two forms with explicit names.
-    {
-      @"<form name='test2a' action='javascript:;'>"
-      "<input type='text' name='user1' value='user1'>"
-      "<input type='password' name='pass1' value='pw1'>"
-      "<input type='submit' id='s1'>"
-      "</form>"
-      "<form name='test2b' action='javascript:;' value='user2'>"
-      "<input type='text' name='user2'>"
-      "<input type='password' name='pass2' value='pw2'>"
-      "</form>",
-      @"document.getElementById('s1').click()",
-      0, 2, "test2a"
-    },
-    // Not-password form.
-    {
-      @"<form action='javascript:;' name='form1'>"
-      "<input type='text' name='user1' value='user1'>"
-      "<input type='text' name='not_pass1' value='text1'>"
-      "<input type='submit' id='s1'>"
-      "</form>",
-      @"document.getElementById('s1').click()",
-      0, 2, "form1"
-    },
-    // Form with quotes in the form and field names.
-    {
-      @"<form name=\"foo'\" action='javascript:;'>"
-      "<input type='text' name=\"user1'\" value='user1'>"
-      "<input type='password' id='s1' name=\"pass1'\" value='pw2'>"
-      "</form>",
-      @"document.getElementById('s1').click()",
-      0, 2, "foo'"
-    },
-  };
-  // clang-format on
-
-  for (const GetSubmittedPasswordFormTestData& data : test_data) {
-    SCOPED_TRACE(testing::Message() << "for html_string=" << data.html_string
-                                    << " and java_script=" << data.java_script
-                                    << " and index_of_the_form_to_submit="
-                                    << data.index_of_the_form_to_submit);
-    LoadHtml(data.html_string);
-    ExecuteJavaScript(data.java_script);
-    __block BOOL block_was_called = NO;
-    id completion_handler = ^(BOOL found, const FormData& form) {
-      block_was_called = YES;
-      EXPECT_EQ(data.expected_number_of_fields, form.fields.size());
-      EXPECT_EQ(data.expected_form_name, base::UTF16ToUTF8(form.name));
-    };
-    [helper_
-        extractSubmittedPasswordForm:GetFormId(data.index_of_the_form_to_submit)
-                   completionHandler:completion_handler];
-    EXPECT_TRUE(
-        WaitUntilConditionOrTimeout(kWaitForJSCompletionTimeout, ^bool() {
-          return block_was_called;
-        }));
-  }
-}
 
 struct FindPasswordFormTestData {
   // HTML String of the form.

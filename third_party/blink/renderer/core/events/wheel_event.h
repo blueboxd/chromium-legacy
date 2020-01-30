@@ -48,6 +48,10 @@ class CORE_EXPORT WheelEvent final : public MouseEvent {
   static WheelEvent* Create(const WebMouseWheelEvent& native_event,
                             AbstractView*);
 
+  static WheelEvent* Create(const WebMouseWheelEvent& native_event,
+                            const gfx::Vector2dF& delta_in_pixels,
+                            AbstractView*);
+
   static WheelEvent* Create(const AtomicString& type,
                             const WheelEventInit* initializer) {
     return MakeGarbageCollected<WheelEvent>(type, initializer);
@@ -56,6 +60,9 @@ class CORE_EXPORT WheelEvent final : public MouseEvent {
   WheelEvent();
   WheelEvent(const AtomicString&, const WheelEventInit*);
   WheelEvent(const WebMouseWheelEvent&, AbstractView*);
+  WheelEvent(const WebMouseWheelEvent&,
+             const gfx::Vector2dF& delta_in_pixels,
+             AbstractView*);
 
   double deltaX() const { return delta_x_; }  // Positive when scrolling right.
   double deltaY() const { return delta_y_; }  // Positive when scrolling down.

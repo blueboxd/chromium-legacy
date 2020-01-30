@@ -6,8 +6,8 @@
 
 #include "base/test/bind_test_util.h"
 #include "chrome/browser/sharing/fake_device_info.h"
+#include "chrome/browser/sharing/mock_sharing_message_sender.h"
 #include "chrome/browser/sharing/proto/sharing_message.pb.h"
-#include "chrome/browser/sharing/sharing_message_sender.h"
 #include "chrome/browser/sharing/sharing_send_message_result.h"
 #include "chrome/services/sharing/public/mojom/webrtc.mojom.h"
 #include "content/public/test/browser_task_environment.h"
@@ -15,24 +15,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
-
-class MockSharingMessageSender : public SharingMessageSender {
- public:
-  MockSharingMessageSender()
-      : SharingMessageSender(
-            /*sync_prefs=*/nullptr,
-            /*local_device_info_provider=*/nullptr) {}
-  MockSharingMessageSender(const MockSharingMessageSender&) = delete;
-  MockSharingMessageSender& operator=(const MockSharingMessageSender&) = delete;
-  ~MockSharingMessageSender() override = default;
-
-  MOCK_METHOD5(SendMessageToDevice,
-               void(const syncer::DeviceInfo&,
-                    base::TimeDelta,
-                    chrome_browser_sharing::SharingMessage,
-                    DelegateType,
-                    ResponseCallback));
-};
 
 class MockSignallingService : public sharing::mojom::SignallingReceiver {
  public:

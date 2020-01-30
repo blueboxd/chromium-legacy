@@ -134,6 +134,7 @@
 <translation id="1994173015038366702">సైట్ URL</translation>
 <translation id="2000419248597011803">చిరునామా బార్ మరియు శోధన పెట్టెలోని కొన్ని కుక్కీలు మరియు శోధనలను మీ డిఫాల్ట్ శోధన ఇంజిన్‌కు పంపుతుంది</translation>
 <translation id="2002537628803770967">Google Pay ఉపయోగిస్తున్న క్రెడిట్ కార్డ్‌లు,చిరునామాలు</translation>
+<translation id="2012973609889389923">వేగవంతమైన సైట్</translation>
 <translation id="2013642289801508067">{FILE_COUNT,plural, =1{# ఫైల్}other{# ఫైల్‌లు}}</translation>
 <translation id="2017836877785168846">చిరునామా బార్‌లో చరిత్రను మరియు స్వీయ పూరణలను క్లియర్ చేస్తుంది.</translation>
 <translation id="2021896219286479412">పూర్తి స్క్రీన్ సైట్ నియంత్రణలు</translation>
@@ -307,6 +308,7 @@
 <translation id="3298243779924642547">లైట్</translation>
 <translation id="3303414029551471755">కంటెంట్‌ను డౌన్‌లోడ్ చేయడం కొనసాగించాలా?</translation>
 <translation id="3306398118552023113">ఈ యాప్ Chromeలో అమలవుతోంది</translation>
+<translation id="3312292613668865961">మీ వర్చువల్ రియాలిటీ పరికరం మరియు డేటాను యాక్సెస్ చేయడానికి సైట్‌లను అనుమతించే ముందు అడుగుతుంది (సిఫార్సు చేయబడింది)</translation>
 <translation id="3315103659806849044">మీరు ప్రస్తుతం మీ సింక్, Google సేవా సెట్టింగ్‌లను అనుకూలీకరిస్తున్నారు. సింక్‌ను ఆన్ చేయడం పూర్తి చేయడానికి, స్క్రీన్ దిగువ భాగం సమీపంలోని నిర్ధారించు బటన్‌ను నొక్కండి. పైకి నావిగేట్ చేయి</translation>
 <translation id="3328801116991980348">సైట్ సమాచారం</translation>
 <translation id="3333961966071413176">మొత్తం పరిచయాలు</translation>
@@ -512,6 +514,7 @@
 <translation id="4915549754973153784">పరికరాల కోసం స్కాన్ చేస్తున్నప్పుడు <ph name="BEGIN_LINK" />సహాయం పొందండి<ph name="END_LINK" />…</translation>
 <translation id="4921180162323349895">{FILE_COUNT,plural, =1{# పేజీ}other{# పేజీలు}}</translation>
 <translation id="4932247056774066048">మీరు <ph name="DOMAIN_NAME" /> నిర్వహణలోని ఖాతా నుండి సైన్ అవుట్ చేస్తున్నందున, ఈ పరికరం నుండి మీ Chrome డేటా తొలగించబడుతుంది. అది మీ Google ఖాతాలో అలాగే భద్రపరచబడుతుంది.</translation>
+<translation id="4935305910887312910">కెమెరా స్థానాన్ని పొందడానికి లేదా మీ గదిని మ్యాప్ చేయడానికి సైట్‌లను అనుమతించే ముందు అడగడం జరుగుతుంది (సిఫార్సు చేయబడింది)</translation>
 <translation id="4943703118917034429">వర్చువల్ రియాలిటీ</translation>
 <translation id="4943872375798546930">ఫలితాలు ఏవీ లేవు</translation>
 <translation id="4958708863221495346"><ph name="URL_OF_THE_CURRENT_TAB" /> మీ స్క్రీన్‌ని భాగస్వామ్యం చేస్తోంది</translation>
@@ -743,6 +746,7 @@
 <translation id="6573431926118603307">మీరు మీ ఇతర పరికరాల్లోని Chromeలో తెరిచిన ట్యాబ్‌లు ఇక్కడ చూపబడతాయి.</translation>
 <translation id="6583199322650523874">ప్రస్తుత పేజీని బుక్‌మార్క్ చేయండి</translation>
 <translation id="6593061639179217415">డెస్క్‌టాప్ సైట్</translation>
+<translation id="6597891566292541626">QR/బార్ కోడ్‌ను ఈ ఫ్రేమ్‌లో ఉంచండి.</translation>
 <translation id="6600954340915313787">Chromeకి కాపీ చేయబడింది</translation>
 <translation id="6608650720463149374"><ph name="GIGABYTES" /> GB</translation>
 <translation id="6612358246767739896">రక్షిత కంటెంట్</translation>
@@ -952,6 +956,7 @@
 <translation id="8109613176066109935">ఇక ఎప్పుడు ఎక్కడ బుక్‌మార్క్‌లను సెట్‌ చేసినా ఆటోమాటిక్‌గా మీ అన్ని పరికరాలలో పొందాలనుకుంటే, సమకాలీకరణ ఎంపికని ఆన్ చేయండి</translation>
 <translation id="8110087112193408731">డిజిటల్ సంక్షేమంలో మీ Chrome కార్యకలాపాన్ని చూపించాలా?</translation>
 <translation id="8116925261070264013">మ్యూట్ చేసినవి</translation>
+<translation id="8127542551745560481">హోమ్ పేజీని ఎడిట్ చేయండి</translation>
 <translation id="813082847718468539">సైట్ సమాచారాన్ని చూడండి</translation>
 <translation id="8156139159503939589">మీరు ఏ భాషలను చదవగలరు?</translation>
 <translation id="8168435359814927499">కంటెంట్</translation>
@@ -1023,6 +1028,7 @@
 <translation id="8676374126336081632">ఇన్‌పుట్‌ను తీసివేయండి</translation>
 <translation id="8687353297350450808">{N_BARS,plural, =1{సిగ్నల్ సామర్థ్యం స్థాయి: # బార్}other{సిగ్నల్ సామర్థ్యం స్థాయి: # బార్‌లు}}</translation>
 <translation id="868929229000858085">మీ పరిచయాలను వెతకండి</translation>
+<translation id="8698438463325761328">వర్చువల్ రియాలిటీ పరికరం మరియు డేటాను యాక్సెస్ చేయకుండా సైట్‌లను బ్లాక్ చేస్తుంది</translation>
 <translation id="869891660844655955">గడువు తేదీ</translation>
 <translation id="8728487861892616501">యాప్‌ని ఉపయోగించడం ద్వారా, మీరు Chrome యొక్క <ph name="BEGIN_LINK1" />సేవా నిబంధనలు<ph name="END_LINK1" />, <ph name="BEGIN_LINK2" />గోప్యతా నోటీసు<ph name="END_LINK2" /> మరియు <ph name="BEGIN_LINK3" />Google ఖాతాల కోసం Family Linkలో నిర్వహించే గోప్యతా నోటీసు<ph name="END_LINK3" />ను అంగీకరిస్తున్నారు.</translation>
 <translation id="8748850008226585750">కంటెంట్‌లు దాచబడ్డాయి</translation>
@@ -1039,6 +1045,7 @@
 <translation id="883806473910249246">కంటెంట్‌ను డౌన్‌లోడ్ చేస్తున్నప్పుడు ఎర్రర్ ఏర్పడింది.</translation>
 <translation id="8840953339110955557">ఈ పేజీ మరియు ఆన్‌లైన్ వెర్షన్ వేరుగా ఉండవచ్చు.</translation>
 <translation id="8847988622838149491">USB</translation>
+<translation id="884828189055900810">కెమెరా స్థానాన్ని పొందకుండా లేదా మీ గదిని మ్యాప్ చేయకుండా సైట్‌లను బ్లాక్ చేస్తుంది</translation>
 <translation id="8853345339104747198"><ph name="TAB_TITLE" />, ట్యాబ్</translation>
 <translation id="885701979325669005">నిల్వ</translation>
 <translation id="889338405075704026">Chrome సెట్టింగ్‌లకు వెళ్లు</translation>
@@ -1046,6 +1053,7 @@
 <translation id="8909135823018751308">భాగస్వామ్యం చేయి…</translation>
 <translation id="8912362522468806198">Google ఖాతా</translation>
 <translation id="8920114477895755567">తల్లిదండ్రుల వివరాల కోసం వేచి ఉంది.</translation>
+<translation id="8921772741368021346"><ph name="POSITION" /> / <ph name="DURATION" /></translation>
 <translation id="8922289737868596582">మరిన్ని ఎంపికలు బటన్ నుండి పేజీలను డౌన్‌లోడ్ చేసుకోవడం ద్వారా వాటిని ఆఫ్‌లైన్‌లో ఉపయోగించండి</translation>
 <translation id="8926666909099850184">ఈ పరికరంలో NFC ఆఫ్ చేయబడింది. <ph name="BEGIN_LINK" />Android సెట్టింగ్‌ల<ph name="END_LINK" />లో దాన్ని ఆన్ చేయండి.</translation>
 <translation id="8937772741022875483">డిజిటల్ సంక్షేమం నుండి మీ Chrome కార్యకలాపం తీసివేయాలా?</translation>

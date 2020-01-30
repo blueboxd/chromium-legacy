@@ -9,6 +9,7 @@
 
 #include <vector>
 
+#include "base/containers/span.h"
 #include "base/gtest_prod_util.h"
 #include "base/i18n/rtl.h"
 #include "base/memory/weak_ptr.h"
@@ -61,6 +62,13 @@ class AutofillPopupControllerImpl : public AutofillPopupController {
   // Updates the data list values currently shown with the popup.
   virtual void UpdateDataListValues(const std::vector<base::string16>& values,
                                     const std::vector<base::string16>& labels);
+
+  // Informs the controller that |Show| will be called again which enables
+  // keeping the UI alive.
+  void PinViewUntilUpdate();
+
+  // Returns (not elided) suggestions currently held by the controller.
+  base::span<const Suggestion> GetUnelidedSuggestions() const;
 
   // Hides the popup and destroys the controller. This also invalidates
   // |delegate_|.
@@ -172,6 +180,10 @@ class AutofillPopupControllerImpl : public AutofillPopupController {
   AutofillPopupView* view_ = nullptr;  // Weak reference.
   AutofillPopupLayoutModel layout_model_;
   base::WeakPtr<AutofillPopupDelegate> delegate_;
+
+  // If set to true, the popup will not be hidden because of stale data or if
+  // the user interacts with native UI.
+  bool pinned_until_update_ = false;
 
   // The current Autofill query values.
   std::vector<Suggestion> suggestions_;

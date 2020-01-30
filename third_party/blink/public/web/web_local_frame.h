@@ -189,11 +189,6 @@ class WebLocalFrame : public WebFrame {
   // kind of lookup what |window.open(..., name)| would in Javascript.
   virtual WebFrame* FindFrameByName(const WebString& name) = 0;
 
-  // Starts scrolling to a specific offset in a frame. Returns false on failure.
-  virtual bool ScrollTo(const gfx::Point& scrollPosition,
-                        bool animate,
-                        base::OnceClosure on_finish) = 0;
-
   // Sets an embedding token for the frame. This token is propagated to the
   // remote parent of this frame (via the browser) such that it can uniquely
   // refer to this frame.

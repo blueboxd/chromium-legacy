@@ -34,6 +34,7 @@
 #include "third_party/blink/renderer/core/svg/svg_integer.h"
 #include "third_party/blink/renderer/core/svg/svg_parsing_error.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/casting.h"
 
 namespace blink {
 
@@ -80,7 +81,12 @@ class SVGIntegerOptionalInteger final : public SVGPropertyBase {
   Member<SVGInteger> second_integer_;
 };
 
-DEFINE_SVG_PROPERTY_TYPE_CASTS(SVGIntegerOptionalInteger);
+template <>
+struct DowncastTraits<SVGIntegerOptionalInteger> {
+  static bool AllowFrom(const SVGPropertyBase& value) {
+    return value.GetType() == SVGIntegerOptionalInteger::ClassType();
+  }
+};
 
 }  // namespace blink
 

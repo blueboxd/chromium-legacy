@@ -65,7 +65,6 @@ class __declspec(uuid("562072fe-3390-43b1-9e2c-dd4118f5ac79"))
     BrowserAccessibilityComWin : public ui::AXPlatformNodeWin,
                                  public IAccessibleApplication,
                                  public IAccessibleHyperlink,
-                                 public IAccessibleHypertext,
                                  public IAccessibleImage,
                                  public IAccessibleValue,
                                  public ISimpleDOMDocument,
@@ -76,7 +75,6 @@ class __declspec(uuid("562072fe-3390-43b1-9e2c-dd4118f5ac79"))
   COM_INTERFACE_ENTRY(IAccessibleAction)
   COM_INTERFACE_ENTRY(IAccessibleApplication)
   COM_INTERFACE_ENTRY(IAccessibleHyperlink)
-  COM_INTERFACE_ENTRY(IAccessibleHypertext)
   COM_INTERFACE_ENTRY(IAccessibleImage)
   COM_INTERFACE_ENTRY(IAccessibleValue)
   COM_INTERFACE_ENTRY(ISimpleDOMDocument)
@@ -137,10 +135,6 @@ class __declspec(uuid("562072fe-3390-43b1-9e2c-dd4118f5ac79"))
   // IAccessibleText methods.
   //
 
-  CONTENT_EXPORT IFACEMETHODIMP get_nCharacters(LONG* n_characters) override;
-
-  CONTENT_EXPORT IFACEMETHODIMP get_caretOffset(LONG* offset) override;
-
   CONTENT_EXPORT IFACEMETHODIMP
   get_characterExtents(LONG offset,
                        enum IA2CoordinateType coord_type,
@@ -159,36 +153,9 @@ class __declspec(uuid("562072fe-3390-43b1-9e2c-dd4118f5ac79"))
                                          LONG end_offset,
                                          BSTR* text) override;
 
-  CONTENT_EXPORT IFACEMETHODIMP
-  get_textAtOffset(LONG offset,
-                   enum IA2TextBoundaryType boundary_type,
-                   LONG* start_offset,
-                   LONG* end_offset,
-                   BSTR* text) override;
-
-  CONTENT_EXPORT IFACEMETHODIMP
-  get_textBeforeOffset(LONG offset,
-                       enum IA2TextBoundaryType boundary_type,
-                       LONG* start_offset,
-                       LONG* end_offset,
-                       BSTR* text) override;
-
-  CONTENT_EXPORT IFACEMETHODIMP
-  get_textAfterOffset(LONG offset,
-                      enum IA2TextBoundaryType boundary_type,
-                      LONG* start_offset,
-                      LONG* end_offset,
-                      BSTR* text) override;
-
   CONTENT_EXPORT IFACEMETHODIMP get_newText(IA2TextSegment* new_text) override;
 
   CONTENT_EXPORT IFACEMETHODIMP get_oldText(IA2TextSegment* old_text) override;
-
-  CONTENT_EXPORT IFACEMETHODIMP
-  get_offsetAtPoint(LONG x,
-                    LONG y,
-                    enum IA2CoordinateType coord_type,
-                    LONG* offset) override;
 
   CONTENT_EXPORT IFACEMETHODIMP
   scrollSubstringTo(LONG start_index,
@@ -201,11 +168,6 @@ class __declspec(uuid("562072fe-3390-43b1-9e2c-dd4118f5ac79"))
                          enum IA2CoordinateType coordinate_type,
                          LONG x,
                          LONG y) override;
-
-  CONTENT_EXPORT IFACEMETHODIMP addSelection(LONG start_offset,
-                                             LONG end_offset) override;
-
-  CONTENT_EXPORT IFACEMETHODIMP removeSelection(LONG selection_index) override;
 
   CONTENT_EXPORT IFACEMETHODIMP setCaretOffset(LONG offset) override;
 
@@ -446,12 +408,6 @@ class __declspec(uuid("562072fe-3390-43b1-9e2c-dd4118f5ac79"))
 
   // Sets the selection given a start and end offset in IA2 Hypertext.
   void SetIA2HypertextSelection(LONG start_offset, LONG end_offset);
-
-  // Search forwards or backwards from the given offset until the given IA2
-  // text boundary is found, and return the offset of that boundary.
-  LONG FindIA2Boundary(IA2TextBoundaryType ia2_boundary,
-                       LONG start_offset,
-                       ui::AXTextBoundaryDirection direction);
 
   // Searches forward from the given offset until the start of the next style
   // is found, or searches backward from the given offset until the start of the

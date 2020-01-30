@@ -51,12 +51,8 @@ if (is_chrome_branded) {
 }
 
 copy("flapper_version_h") {
-  sources = [
-    flapper_version_h_file,
-  ]
-  outputs = [
-    "$root_gen_dir/{{source_file_part}}",
-  ]
+  sources = [ flapper_version_h_file ]
+  outputs = [ "$root_gen_dir/{{source_file_part}}" ]
 }
 
 if (flapper_binary_files == []) {
@@ -66,8 +62,6 @@ if (flapper_binary_files == []) {
 } else {
   copy("flapper_binaries") {
     sources = flapper_binary_files
-    outputs = [
-      "$root_out_dir/PepperFlash/{{source_file_part}}",
-    ]
+    outputs = [ "$root_out_dir/PepperFlash/{{source_file_part}}" ]
   }
 }

@@ -920,6 +920,7 @@ crbug.com/1033611 external/wpt/webxr/getInputPose_handedness.https.html [ Failur
 crbug.com/1033611 external/wpt/webxr/getInputPose_pointer.https.html [ Failure ]
 crbug.com/1033611 external/wpt/webxr/getViewerPose_emulatedPosition.https.html [ Failure ]
 crbug.com/1033611 external/wpt/webxr/hit-test/ar_hittest_subscription_refSpaces.https.html [ Failure ]
+crbug.com/1033611 external/wpt/webxr/hit-test/ar_hittest_subscription_states.https.html [ Failure ]
 crbug.com/1033611 external/wpt/webxr/navigator_xr_sameObject.https.html [ Failure ]
 crbug.com/1033611 external/wpt/webxr/render_state_vertical_fov_immersive.https.html [ Failure ]
 crbug.com/1033611 external/wpt/webxr/render_state_vertical_fov_inline.https.html [ Failure ]
@@ -1089,5 +1090,5 @@ external/wpt/fetch/cross-origin-resource-policy/fetch.https.any.html [ Pass Fail
 external/wpt/fetch/cross-origin-resource-policy/fetch.https.any.serviceworker.html [ Pass Failure ]
 external/wpt/fetch/cross-origin-resource-policy/fetch.https.any.sharedworker.html [ Pass Failure ]
 external/wpt/fetch/cross-origin-resource-policy/fetch.https.any.worker.html [ Pass Failure ]
-external/wpt/offscreen-canvas/fill-and-stroke-styles/2d.pattern.basic.nocontext.worker.html [ Pass Crash Failure ]
+external/wpt/offscreen-canvas/fill-and-stroke-styles/2d.pattern.basic.nocontext.worker.html [ Pass Crash Failure Timeout ]
 # ---- End tests differing between CQ and Waterfall

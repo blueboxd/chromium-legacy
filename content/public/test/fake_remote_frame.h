@@ -44,6 +44,8 @@ class FakeRemoteFrame : public blink::mojom::RemoteFrame {
   void SetReplicatedOrigin(
       const url::Origin& origin,
       bool is_potentially_trustworthy_unique_origin) override;
+  void SetReplicatedAdFrameType(
+      blink::mojom::AdFrameType ad_frame_type) override;
   void DispatchLoadEventForFrameOwner() override;
   void Collapse(bool collapsed) final;
   void Focus() override;
@@ -63,6 +65,8 @@ class FakeRemoteFrame : public blink::mojom::RemoteFrame {
   void ScrollRectToVisible(
       const gfx::Rect& rect,
       blink::mojom::ScrollIntoViewParamsPtr params) override;
+  void DidStartLoading() override;
+  void DidStopLoading() override;
 
  private:
   void BindFrameHostReceiver(mojo::ScopedInterfaceEndpointHandle handle);

@@ -36,7 +36,7 @@ InterpolationValue SVGNumberListInterpolationType::MaybeConvertSVGValue(
   if (svg_value.GetType() != kAnimatedNumberList)
     return nullptr;
 
-  const SVGNumberList& number_list = ToSVGNumberList(svg_value);
+  const SVGNumberList& number_list = To<SVGNumberList>(svg_value);
   auto result = std::make_unique<InterpolableList>(number_list.length());
   for (wtf_size_t i = 0; i < number_list.length(); i++) {
     result->Set(

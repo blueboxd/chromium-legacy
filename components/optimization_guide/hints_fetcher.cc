@@ -70,7 +70,7 @@ std::vector<GURL> GetValidURLsForFetching(const std::vector<GURL>& urls) {
 void RecordRequestStatusHistogram(proto::RequestContext request_context,
                                   HintsFetcherRequestStatus status) {
   base::UmaHistogramEnumeration(
-      "OptimizationGuide.HintsFetcher.GetHintsRequest.RequestStatus." +
+      "OptimizationGuide.HintsFetcher.RequestStatus." +
           GetStringNameForRequestContext(request_context),
       status);
 }

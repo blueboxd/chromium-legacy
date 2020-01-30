@@ -145,6 +145,7 @@ jumbo_static_library("weblayer_lib") {
     "common/features.h",
     "common/weblayer_paths.cc",
     "common/weblayer_paths.h",
+    "public/browser.cc",
     "public/browser.h",
     "public/browser_observer.h",
     "public/common/switches.cc",

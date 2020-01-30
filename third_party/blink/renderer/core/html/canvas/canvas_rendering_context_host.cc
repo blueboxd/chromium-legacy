@@ -183,9 +183,6 @@ CanvasRenderingContextHost::GetOrCreateCanvasResourceProviderImpl(
             presentation_mode, std::move(dispatcher), is_origin_top_left));
 
         if (ResourceProvider()) {
-          // Always save an initial frame, to support resetting the top level
-          // matrix and clip.
-          ResourceProvider()->Canvas()->save();
           ResourceProvider()->SetFilterQuality(FilterQuality());
           ResourceProvider()->SetResourceRecyclingEnabled(true);
         }

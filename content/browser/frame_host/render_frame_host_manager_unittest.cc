@@ -6,6 +6,7 @@
 
 #include <stdint.h>
 
+#include <map>
 #include <string>
 #include <tuple>
 #include <unordered_set>
@@ -98,19 +99,6 @@ void CheckInsecureRequestPolicyIPC(
   FrameMsg_EnforceInsecureRequestPolicy::Param params;
   EXPECT_TRUE(FrameMsg_EnforceInsecureRequestPolicy::Read(message, &params));
   EXPECT_EQ(expected_param, std::get<0>(params));
-}
-
-// Helper function to find a message with the specified type and routing ID in
-// an IPC sink.
-bool FindMessageForRoutingId(const IPC::TestSink& sink,
-                             uint32_t type,
-                             int routing_id) {
-  for (size_t i = 0; i < sink.message_count(); i++) {
-    const IPC::Message* msg = sink.GetMessageAt(i);
-    if (msg->type() == type && msg->routing_id() == routing_id)
-      return true;
-  }
-  return false;
 }
 
 class RenderFrameHostManagerTestWebUIControllerFactory
@@ -3008,11 +2996,52 @@ TEST_F(RenderFrameHostManagerTestWithSiteIsolation,
       root->child_at(0)->current_replication_state().insecure_request_policy);
 }
 
+// This class intercepts RenderFrameProxyHost creations, and overrides their
+// respective blink::mojom::RemoteFrame instances, so that it can watch the
+// start and stop loading states.
+class StartStopLoadingProxyObserver {
+ public:
+  StartStopLoadingProxyObserver() {
+    RenderFrameProxyHost::SetCreatedCallbackForTesting(base::BindRepeating(
+        &StartStopLoadingProxyObserver::RenderFrameProxyHostCreatedCallback,
+        base::Unretained(this)));
+  }
+  ~StartStopLoadingProxyObserver() {
+    RenderFrameProxyHost::SetCreatedCallbackForTesting(
+        RenderFrameProxyHost::CreatedCallback());
+  }
+  bool IsLoading(RenderFrameProxyHost* proxy) {
+    return remote_frames_[proxy]->is_loading();
+  }
+
+ private:
+  class Remote : public content::FakeRemoteFrame {
+   public:
+    explicit Remote(RenderFrameProxyHost* proxy) {
+      Init(proxy->GetRemoteAssociatedInterfacesTesting());
+    }
+    void DidStartLoading() override { is_loading_ = true; }
+    void DidStopLoading() override { is_loading_ = false; }
+    bool is_loading() { return is_loading_; }
+
+   private:
+    bool is_loading_ = false;
+  };
+
+  void RenderFrameProxyHostCreatedCallback(RenderFrameProxyHost* proxy_host) {
+    remote_frames_[proxy_host] = std::make_unique<Remote>(proxy_host);
+  }
+
+  std::map<RenderFrameProxyHost*, std::unique_ptr<Remote>> remote_frames_;
+};
+
 // Tests that new frame proxies receive an IPC to update their loading state,
 // if they are created for a frame that's currently loading.  See
 // https://crbug.com/916137.
 TEST_F(RenderFrameHostManagerTestWithSiteIsolation,
        NewProxyReceivesLoadingState) {
+  StartStopLoadingProxyObserver proxy_observer;
+
   const GURL kUrl1("http://www.chromium.org");
   const GURL kUrl2("http://www.google.com");
   const GURL kUrl3("http://foo.com");
@@ -3044,15 +3073,14 @@ TEST_F(RenderFrameHostManagerTestWithSiteIsolation,
           child_host->GetSiteInstance());
   ASSERT_TRUE(proxy_to_child);
   ASSERT_EQ(proxy_to_child->GetProcess(), child_host->GetProcess());
+  base::RunLoop().RunUntilIdle();
 
   // Since the main frame was loading at the time the main frame proxy was
   // created in child frame's process, verify that we sent a separate IPC to
   // update the proxy's loading state.  Note that we'll create two proxies for
   // the main frame and subframe, and we're interested in the message for
   // the main frame proxy.
-  EXPECT_TRUE(FindMessageForRoutingId(child_host->GetProcess()->sink(),
-                                      FrameMsg_DidStartLoading::ID,
-                                      proxy_to_child->GetRoutingID()));
+  EXPECT_TRUE(proxy_observer.IsLoading(proxy_to_child));
 
   // Simulate load stop in the main frame.
   navigation->StopLoading();
@@ -3064,13 +3092,12 @@ TEST_F(RenderFrameHostManagerTestWithSiteIsolation,
       child_host->GetSiteInstance());
   ASSERT_TRUE(proxy_to_child);
   ASSERT_EQ(proxy_to_child->GetProcess(), child_host->GetProcess());
+  base::RunLoop().RunUntilIdle();
 
   // Since this time the main frame wasn't loading at the time |proxy_to_child|
   // was created in the process for |kUrl3|, verify that we didn't send any
   // extra IPCs to update that proxy's loading state.
-  EXPECT_FALSE(FindMessageForRoutingId(child_host->GetProcess()->sink(),
-                                       FrameMsg_DidStartLoading::ID,
-                                       proxy_to_child->GetRoutingID()));
+  EXPECT_FALSE(proxy_observer.IsLoading(proxy_to_child));
 }
 
 // Tests that a BeginNavigation IPC from a no longer active RFH is ignored.
@@ -3173,6 +3200,330 @@ TEST_F(RenderFrameHostManagerTest,
             main_test_rfh()->GetSiteInstance()->GetSiteURL());
 
   SetBrowserClientForTesting(regular_client);
+}
+
+class AdTaggingSimulator : public WebContentsObserver {
+ public:
+  explicit AdTaggingSimulator(
+      const std::map<GURL, blink::mojom::AdFrameType>& ad_urls,
+      WebContents* web_contents)
+      : WebContentsObserver(web_contents), ad_urls_(ad_urls) {}
+
+  void ReadyToCommitNavigation(NavigationHandle* navigation_handle) override {
+    auto it = ad_urls_.find(navigation_handle->GetURL());
+    if (it == ad_urls_.end())
+      return;
+    navigation_handle->GetRenderFrameHost()->UpdateAdFrameType(it->second);
+  }
+
+  void SimulateOnFrameIsAdSubframe(RenderFrameHost* rfh) {
+    rfh->UpdateAdFrameType(blink::mojom::AdFrameType::kRootAd);
+  }
+
+ private:
+  std::map<GURL, blink::mojom::AdFrameType> ad_urls_;
+};
+
+class AdStatusInterceptingRemoteFrame : public content::FakeRemoteFrame {
+ public:
+  void SetReplicatedAdFrameType(
+      blink::mojom::AdFrameType ad_frame_type) override {
+    is_ad_subframe_ = ad_frame_type != blink::mojom::AdFrameType::kNonAd;
+  }
+
+  // These methods reset state back to default when they are called.
+  bool LastAdSubframe() {
+    bool is_ad_subframe = is_ad_subframe_;
+    is_ad_subframe_ = false;
+    return is_ad_subframe;
+  }
+
+ private:
+  bool is_ad_subframe_ = false;
+};
+
+class RenderFrameHostManagerAdTaggingSignalTest
+    : public RenderFrameHostManagerTest {
+ public:
+  RenderFrameHostManagerAdTaggingSignalTest() {
+    RenderFrameProxyHost::SetCreatedCallbackForTesting(base::BindRepeating(
+        &RenderFrameHostManagerAdTaggingSignalTest::OnProxyHostCreated,
+        base::Unretained(this)));
+  }
+
+  ~RenderFrameHostManagerAdTaggingSignalTest() override {
+    RenderFrameProxyHost::SetCreatedCallbackForTesting(
+        RenderFrameProxyHost::CreatedCallback());
+  }
+
+  void OnProxyHostCreated(RenderFrameProxyHost* proxy_host) {
+    auto fake_remote_frame =
+        std::make_unique<AdStatusInterceptingRemoteFrame>();
+    fake_remote_frame->Init(proxy_host->GetRemoteAssociatedInterfacesTesting());
+
+    // TODO(yaoxia): when a proxy host is deleted, remove the corresponding map
+    // entry.
+    proxy_map_[proxy_host] = std::move(fake_remote_frame);
+
+    if (proxy_host->frame_tree_node()
+            ->current_replication_state()
+            .ad_frame_type != blink::mojom::AdFrameType::kNonAd) {
+      ad_frames_on_proxy_created_.insert(proxy_host);
+    }
+  }
+
+  void ExpectAdSubframeSignalForFrameProxy(RenderFrameProxyHost* proxy_host,
+                                           bool expect_is_ad_subframe) {
+    base::RunLoop().RunUntilIdle();
+
+    auto it = proxy_map_.find(proxy_host);
+    EXPECT_TRUE(it != proxy_map_.end());
+
+    AdStatusInterceptingRemoteFrame* remote_frame = it->second.get();
+    EXPECT_EQ(expect_is_ad_subframe, remote_frame->LastAdSubframe());
+  }
+
+  void ExpectAdStatusOnFrameProxyCreated(RenderFrameProxyHost* proxy_host) {
+    EXPECT_TRUE(ad_frames_on_proxy_created_.find(proxy_host) !=
+                ad_frames_on_proxy_created_.end());
+  }
+
+  void AppendChildToFrame(const std::string& frame_name,
+                          const GURL& url,
+                          RenderFrameHost* rfh) {
+    RenderFrameHost* subframe_host =
+        RenderFrameHostTester::For(rfh)->AppendChild(frame_name);
+    if (url.is_valid())
+      NavigationSimulator::NavigateAndCommitFromDocument(url, subframe_host);
+  }
+
+  RenderFrameProxyHost* GetProxyHost(FrameTreeNode* proxy_node,
+                                     FrameTreeNode* proxy_to_node) {
+    return proxy_node->render_manager()->GetRenderFrameProxyHost(
+        proxy_to_node->current_frame_host()->GetSiteInstance());
+  }
+
+ private:
+  // The set of proxies that when created, the replication state of that frame
+  // indicates it's an ad.
+  std::set<RenderFrameProxyHost*> ad_frames_on_proxy_created_;
+
+  std::map<RenderFrameProxyHost*,
+           std::unique_ptr<AdStatusInterceptingRemoteFrame>>
+      proxy_map_;
+};
+
+// Test that when the proxy host is created for the local child frame to be
+// swapped out (which occurs before UnfreezableFrameMsg_SwapOut IPC was sent),
+// the frame replication state should already have the ad status set.
+TEST_F(RenderFrameHostManagerAdTaggingSignalTest,
+       AdStatusForLocalChildFrameToBeSwappedOut) {
+  if (!AreAllSitesIsolatedForTesting())
+    return;
+
+  const GURL kUrlA("http://a.com/");
+  const GURL kUrlB("http://b.com/");
+
+  std::map<GURL, blink::mojom::AdFrameType> ad_urls = {
+      {kUrlB, blink::mojom::AdFrameType::kRootAd}};
+
+  AdTaggingSimulator ad_tagging_simulator(ad_urls, contents());
+
+  contents()->NavigateAndCommit(kUrlA);
+
+  AppendChildToFrame("name", kUrlB, web_contents()->GetMainFrame());
+
+  FrameTreeNode* subframe_node =
+      contents()->GetFrameTree()->root()->child_at(0);
+
+  ExpectAdStatusOnFrameProxyCreated(
+      subframe_node->render_manager()->GetProxyToParent());
+
+  DCHECK_EQ(subframe_node->current_replication_state().ad_frame_type,
+            blink::mojom::AdFrameType::kRootAd);
+}
+
+// A page with top frame A that has subframes B and A1. A1 is an ad iframe that
+// does not commit. We expect that the proxy of A1 in B's process will receive
+// an ad tagging signal.
+TEST_F(RenderFrameHostManagerAdTaggingSignalTest,
+       AdTagSignalForFrameProxyOfFrameThatDoesNotCommit) {
+  if (!AreAllSitesIsolatedForTesting())
+    return;
+
+  const GURL kUrlA("http://a.com/");
+  const GURL kUrlB("http://b.com/");
+
+  AdTaggingSimulator ad_tagging_simulator({}, contents());
+
+  contents()->NavigateAndCommit(kUrlA);
+  DCHECK_EQ(contents()
+                ->GetFrameTree()
+                ->root()
+                ->current_replication_state()
+                .ad_frame_type,
+            blink::mojom::AdFrameType::kNonAd);
+
+  AppendChildToFrame("subframe_b", kUrlB, web_contents()->GetMainFrame());
+  AppendChildToFrame("subframe_a1", GURL(), web_contents()->GetMainFrame());
+
+  FrameTreeNode* top_frame_node_a = contents()->GetFrameTree()->root();
+  FrameTreeNode* subframe_node_b = top_frame_node_a->child_at(0);
+  FrameTreeNode* subframe_node_a1 = top_frame_node_a->child_at(1);
+
+  ad_tagging_simulator.SimulateOnFrameIsAdSubframe(
+      subframe_node_a1->current_frame_host());
+
+  RenderFrameProxyHost* proxy_a1_to_b =
+      GetProxyHost(subframe_node_a1, subframe_node_b);
+
+  EXPECT_EQ(subframe_node_a1->current_replication_state().ad_frame_type,
+            blink::mojom::AdFrameType::kRootAd);
+  ExpectAdSubframeSignalForFrameProxy(proxy_a1_to_b, true);
+}
+
+// A page with top frame A that has subframes B and C. C is then navigated to an
+// ad frame D. We expect that both the proxy of D in A's process and the proxy
+// of D in B's process will receive an ad tagging signal.
+TEST_F(RenderFrameHostManagerAdTaggingSignalTest,
+       AdTagSignalForFrameProxyOfNewFrame) {
+  if (!AreAllSitesIsolatedForTesting())
+    return;
+
+  const GURL kUrlA("http://a.com/");
+  const GURL kUrlB("http://b.com/");
+  const GURL kUrlC("http://c.com/");
+  const GURL kUrlD("http://d.com/");
+
+  std::map<GURL, blink::mojom::AdFrameType> ad_urls = {
+      {kUrlD, blink::mojom::AdFrameType::kRootAd}};
+
+  AdTaggingSimulator ad_tagging_simulator(ad_urls, contents());
+
+  contents()->NavigateAndCommit(kUrlA);
+  DCHECK_EQ(contents()
+                ->GetFrameTree()
+                ->root()
+                ->current_replication_state()
+                .ad_frame_type,
+            blink::mojom::AdFrameType::kNonAd);
+
+  AppendChildToFrame("subframe_b", kUrlB, web_contents()->GetMainFrame());
+  AppendChildToFrame("subframe_c", kUrlC, web_contents()->GetMainFrame());
+
+  FrameTreeNode* top_frame_node_a = contents()->GetFrameTree()->root();
+  FrameTreeNode* subframe_node_b = top_frame_node_a->child_at(0);
+  FrameTreeNode* subframe_node_c = top_frame_node_a->child_at(1);
+
+  EXPECT_EQ(subframe_node_b->current_replication_state().ad_frame_type,
+            blink::mojom::AdFrameType::kNonAd);
+  EXPECT_EQ(subframe_node_c->current_replication_state().ad_frame_type,
+            blink::mojom::AdFrameType::kNonAd);
+
+  RenderFrameProxyHost* proxy_c_to_a =
+      GetProxyHost(subframe_node_c, top_frame_node_a);
+  RenderFrameProxyHost* proxy_c_to_b =
+      GetProxyHost(subframe_node_c, subframe_node_b);
+  RenderFrameProxyHost* proxy_b_to_a =
+      GetProxyHost(subframe_node_b, top_frame_node_a);
+  RenderFrameProxyHost* proxy_b_to_c =
+      GetProxyHost(subframe_node_b, subframe_node_c);
+  RenderFrameProxyHost* proxy_a_to_b =
+      GetProxyHost(top_frame_node_a, subframe_node_b);
+  RenderFrameProxyHost* proxy_a_to_c =
+      GetProxyHost(top_frame_node_a, subframe_node_c);
+
+  NavigationSimulator::NavigateAndCommitFromDocument(
+      kUrlD, subframe_node_c->current_frame_host());
+
+  EXPECT_EQ(subframe_node_c->current_replication_state().ad_frame_type,
+            blink::mojom::AdFrameType::kRootAd);
+
+  ExpectAdSubframeSignalForFrameProxy(proxy_c_to_a, true);
+  ExpectAdSubframeSignalForFrameProxy(proxy_c_to_b, true);
+  ExpectAdSubframeSignalForFrameProxy(proxy_b_to_a, false);
+  ExpectAdSubframeSignalForFrameProxy(proxy_b_to_c, false);
+  ExpectAdSubframeSignalForFrameProxy(proxy_a_to_b, false);
+  ExpectAdSubframeSignalForFrameProxy(proxy_a_to_c, false);
+}
+
+// A page with top frame A that has an ad subframe B. Frame C is then created in
+// A. We expect that when the proxy host of B in C's process is created, the
+// frame's replication status already has the ad bit set, which will be
+// propagated to the renderer side later.
+TEST_F(RenderFrameHostManagerAdTaggingSignalTest,
+       AdStatusForFrameProxyOfExistingFrameToNewFrame) {
+  if (!AreAllSitesIsolatedForTesting())
+    return;
+
+  const GURL kUrlA("http://a.com/");
+  const GURL kUrlB("http://b.com/");
+  const GURL kUrlC("http://c.com/");
+
+  std::map<GURL, blink::mojom::AdFrameType> ad_urls = {
+      {kUrlB, blink::mojom::AdFrameType::kRootAd}};
+
+  AdTaggingSimulator ad_tagging_simulator(ad_urls, contents());
+
+  contents()->NavigateAndCommit(kUrlA);
+
+  AppendChildToFrame("subframe_b", kUrlB, web_contents()->GetMainFrame());
+  AppendChildToFrame("subframe_c", kUrlC, web_contents()->GetMainFrame());
+
+  FrameTreeNode* subframe_node_b =
+      contents()->GetFrameTree()->root()->child_at(0);
+  FrameTreeNode* subframe_node_c =
+      contents()->GetFrameTree()->root()->child_at(1);
+  RenderFrameProxyHost* proxy_b_to_c =
+      GetProxyHost(subframe_node_b, subframe_node_c);
+  ExpectAdStatusOnFrameProxyCreated(proxy_b_to_c);
+}
+
+// Test a A(B(C)) setup where B and C are ads. The creation of C will trigger
+// an ad tagging signal for the proxy of C in the process of A.
+TEST_F(RenderFrameHostManagerAdTaggingSignalTest, RemoteGrandchildAdTagSignal) {
+  if (!AreAllSitesIsolatedForTesting())
+    return;
+
+  const GURL kUrlA("http://a.com/");
+  const GURL kUrlB("http://b.com/");
+  const GURL kUrlC("http://c.com/");
+
+  std::map<GURL, blink::mojom::AdFrameType> ad_urls = {
+      {kUrlB, blink::mojom::AdFrameType::kRootAd},
+      {kUrlC, blink::mojom::AdFrameType::kChildAd}};
+
+  AdTaggingSimulator ad_tagging_simulator(ad_urls, contents());
+
+  contents()->NavigateAndCommit(kUrlA);
+
+  RenderFrameHost* subframe_host =
+      RenderFrameHostTester::For(web_contents()->GetMainFrame())
+          ->AppendChild("subframe_name");
+
+  auto navigation_simulator =
+      NavigationSimulator::CreateRendererInitiated(kUrlB, subframe_host);
+  navigation_simulator->Start();
+  navigation_simulator->Commit();
+
+  RenderFrameHost* grandchild_host =
+      RenderFrameHostTester::For(
+          navigation_simulator->GetFinalRenderFrameHost())
+          ->AppendChild("subframe_name");
+
+  FrameTreeNode* top_frame_node = contents()->GetFrameTree()->root();
+  FrameTreeNode* subframe_node = top_frame_node->child_at(0);
+  FrameTreeNode* grandchild_node = subframe_node->child_at(0);
+  RenderFrameProxyHost* proxy_to_main_frame =
+      GetProxyHost(grandchild_node, top_frame_node);
+
+  NavigationSimulator::NavigateAndCommitFromDocument(kUrlC, grandchild_host);
+
+  EXPECT_EQ(subframe_node->current_replication_state().ad_frame_type,
+            blink::mojom::AdFrameType::kRootAd);
+  EXPECT_EQ(grandchild_node->current_replication_state().ad_frame_type,
+            blink::mojom::AdFrameType::kChildAd);
+  ExpectAdSubframeSignalForFrameProxy(proxy_to_main_frame, true);
 }
 
 }  // namespace content

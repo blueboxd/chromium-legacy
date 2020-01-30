@@ -72,7 +72,7 @@ class MODULES_EXPORT PaintRenderingContext2D : public ScriptWrappable,
   sk_sp<PaintFilter> StateGetFilter() final;
   void SnapshotStateForFilter() final {}
 
-  void ValidateStateStack() const final;
+  void ValidateStateStackWithCanvas(const cc::PaintCanvas*) const final;
 
   bool HasAlpha() const final { return context_settings_->alpha(); }
 

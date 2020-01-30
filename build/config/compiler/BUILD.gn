@@ -499,19 +499,15 @@ config("compiler") {
       "-instcombine-lower-dbg-declare=0",
     ]
 
-    # Before Clang 10, lax vector conversions were allowed by default.
-    # Chromium currently relies on this behavior.
-    # TODO(crbug.com/1042470): Fix the code and remove this flag.
-    if (is_win) {
-      cflags += [
-        # TODO(thakis): Use /clang:-flax-vector-conversions=all once the
-        # goma client has been updated to understand it, b/148244706.
-        "-Xclang",
-        "-flax-vector-conversions=all",
-      ]
-    } else if (!is_chromeos ||
-               default_toolchain != "//build/toolchain/cros:target") {
-      cflags += [ "-flax-vector-conversions=all" ]
+    if (llvm_force_head_revision) {
+      # Before Clang 10, lax vector conversions were allowed by default.
+      # Chromium currently relies on this behavior.
+      # TODO(crbug.com/1042470): Fix the code and remove this flag.
+      if (is_win) {
+        cflags += [ "/clang:-flax-vector-conversions=all" ]
+      } else if (cros_sdk_version == "") {
+        cflags += [ "-flax-vector-conversions=all" ]
+      }
     }
   }
 
@@ -1544,18 +1540,22 @@ config("default_warnings") {
 
           # TODO(https://crbug.com/1028110): Evaluate and possible enable.
           "-Wno-deprecated-copy",
-
-          # TODO(https://crbug.com/1031169): Clean up and enable.
-          "-Wno-misleading-indentation",
-
-          # TODO(https://crbug.com/1039697): Evaluate and possibly enable.
-          "-Wno-range-loop-analysis",
         ]
 
         cflags_c += [
           # TODO(https://crbug.com/995993): Clean up and enable.
           "-Wno-implicit-fallthrough",
         ]
+
+        if (llvm_force_head_revision) {
+          cflags += [
+            # TODO(https://crbug.com/1031169): Clean up and enable.
+            "-Wno-misleading-indentation",
+
+            # TODO(https://crbug.com/1039697): Evaluate and possibly enable.
+            "-Wno-range-loop-analysis",
+          ]
+        }
       }
     }
   }

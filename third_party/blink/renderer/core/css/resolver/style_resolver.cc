@@ -763,6 +763,43 @@ scoped_refptr<ComputedStyle> StyleResolver::StyleForElement(
   bool can_cache_animation_base_computed_style =
       !default_parent && !default_layout_parent &&
       matching_behavior == kMatchAllRules;
+
+  ApplyBaseComputedStyle(element, state, matching_behavior,
+                         can_cache_animation_base_computed_style);
+
+  // FIXME: The CSSWG wants to specify that the effects of animations are
+  // applied before important rules, but this currently happens here as we
+  // require adjustment to have happened before deciding which properties to
+  // transition.
+  if (ApplyAnimatedStandardProperties(state)) {
+    INCREMENT_STYLE_STATS_COUNTER(GetDocument().GetStyleEngine(),
+                                  styles_animated, 1);
+    StyleAdjuster::AdjustComputedStyle(state, element);
+  }
+
+  if (IsA<HTMLBodyElement>(*element))
+    GetDocument().GetTextLinkColors().SetTextColor(state.Style()->GetColor());
+
+  SetAnimationUpdateIfNeeded(state, *element);
+
+  if (state.Style()->HasViewportUnits())
+    GetDocument().SetHasViewportUnits();
+
+  if (state.Style()->HasRemUnits())
+    GetDocument().GetStyleEngine().SetUsesRemUnit(true);
+
+  if (state.Style()->HasGlyphRelativeUnits())
+    UseCounter::Count(GetDocument(), WebFeature::kHasGlyphRelativeUnits);
+
+  // Now return the style.
+  return state.TakeStyle();
+}
+
+void StyleResolver::ApplyBaseComputedStyle(
+    Element* element,
+    StyleResolverState& state,
+    RuleMatchingBehavior matching_behavior,
+    bool can_cache_animation_base_computed_style) {
   const ComputedStyle* animation_base_computed_style =
       can_cache_animation_base_computed_style
           ? CachedAnimationBaseComputedStyle(state)
@@ -880,33 +917,6 @@ scoped_refptr<ComputedStyle> StyleResolver::StyleForElement(
     INCREMENT_STYLE_STATS_COUNTER(GetDocument().GetStyleEngine(),
                                   base_styles_used, 1);
   }
-
-  // FIXME: The CSSWG wants to specify that the effects of animations are
-  // applied before important rules, but this currently happens here as we
-  // require adjustment to have happened before deciding which properties to
-  // transition.
-  if (ApplyAnimatedStandardProperties(state)) {
-    INCREMENT_STYLE_STATS_COUNTER(GetDocument().GetStyleEngine(),
-                                  styles_animated, 1);
-    StyleAdjuster::AdjustComputedStyle(state, element);
-  }
-
-  if (IsA<HTMLBodyElement>(*element))
-    GetDocument().GetTextLinkColors().SetTextColor(state.Style()->GetColor());
-
-  SetAnimationUpdateIfNeeded(state, *element);
-
-  if (state.Style()->HasViewportUnits())
-    GetDocument().SetHasViewportUnits();
-
-  if (state.Style()->HasRemUnits())
-    GetDocument().GetStyleEngine().SetUsesRemUnit(true);
-
-  if (state.Style()->HasGlyphRelativeUnits())
-    UseCounter::Count(GetDocument(), WebFeature::kHasGlyphRelativeUnits);
-
-  // Now return the style.
-  return state.TakeStyle();
 }
 
 CompositorKeyframeValue* StyleResolver::CreateCompositorKeyframeValueSnapshot(
@@ -1955,6 +1965,19 @@ void StyleResolver::ApplyMatchedProperties(StyleResolverState& state,
 
   ApplyMatchedLowPriorityProperties(state, match_result, cache_success,
                                     apply_inherited_only, needs_apply_pass);
+}
+
+scoped_refptr<ComputedStyle> StyleResolver::StyleForInterpolations(
+    Element& element,
+    ActiveInterpolationsMap& interpolations) {
+  StyleResolverState state(GetDocument(), element);
+  ApplyBaseComputedStyle(&element, state, kMatchAllRules, true);
+
+  ApplyAnimatedStandardProperties<kHighPropertyPriority>(state, interpolations);
+  UpdateFont(state);
+  ApplyAnimatedStandardProperties<kLowPropertyPriority>(state, interpolations);
+
+  return state.TakeStyle();
 }
 
 void StyleResolver::CascadeAndApplyMatchedProperties(

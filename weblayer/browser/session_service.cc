@@ -59,23 +59,37 @@ constexpr int kWritesPerReset = 250;
 
 // SessionService -------------------------------------------------------------
 
-SessionService::SessionService(const base::FilePath& path, BrowserImpl* browser)
+SessionService::SessionService(const base::FilePath& path,
+                               BrowserImpl* browser,
+                               const std::vector<uint8_t>& decryption_key)
     : browser_(browser),
       browser_session_id_(SessionID::NewUnique()),
       command_storage_manager_(
-          std::make_unique<sessions::CommandStorageManager>(path, this)),
-      rebuild_on_next_save_(false) {
+          std::make_unique<sessions::CommandStorageManager>(
+              path,
+              this,
+              browser->profile()->GetBrowserContext()->IsOffTheRecord())),
+      rebuild_on_next_save_(false),
+      crypto_key_(decryption_key) {
   browser_->AddObserver(this);
   command_storage_manager_->ScheduleGetCurrentSessionCommands(
       base::BindOnce(&SessionService::OnGotCurrentSessionCommands,
                      base::Unretained(this)),
-      &cancelable_task_tracker_);
+      decryption_key, &cancelable_task_tracker_);
 }
 
 SessionService::~SessionService() {
+  SaveIfNecessary();
+  browser_->RemoveObserver(this);
+}
+
+void SessionService::SaveIfNecessary() {
   if (command_storage_manager_->HasPendingSave())
     command_storage_manager_->Save();
-  browser_->RemoveObserver(this);
+}
+
+const std::vector<uint8_t>& SessionService::GetCryptoKey() const {
+  return crypto_key_;
 }
 
 bool SessionService::ShouldUseDelayedSave() {
@@ -91,6 +105,10 @@ void SessionService::OnWillSaveCommands() {
   command_storage_manager_->ClearPendingCommands();
   tab_to_available_range_.clear();
   BuildCommandsForBrowser();
+}
+
+void SessionService::OnGeneratedNewCryptoKey(const std::vector<uint8_t>& key) {
+  crypto_key_ = key;
 }
 
 void SessionService::OnTabAdded(Tab* tab) {

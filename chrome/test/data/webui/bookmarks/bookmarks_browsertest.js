@@ -67,7 +67,7 @@ var BookmarksCommandManagerTest = class extends BookmarksBrowserTest {
 };
 
 // https://crbug.com/1010381: Flaky.
-TEST_F('BookmarksCommandManagerTest', 'All', function() {
+TEST_F('BookmarksCommandManagerTest', 'DISABLED_All', function() {
   mocha.run();
 });
 

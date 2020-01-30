@@ -6,6 +6,8 @@
 
 #include <memory>
 
+#include "base/command_line.h"
+#include "base/test/scoped_command_line.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "chrome/common/chrome_features.h"
@@ -62,6 +64,51 @@ TEST_F(SchedulerConfigurationManagerTest, Startup) {
   task_environment_.RunUntilIdle();
   EXPECT_EQ("config", debug_daemon_client_.scheduler_configuration_name());
   EXPECT_EQ(1u, configuration_set_count_);
+}
+
+TEST_F(SchedulerConfigurationManagerTest, CommandLineDefault) {
+  // In real usage the command line is set before Chrome launches, so set it as
+  // such here.
+  base::test::ScopedCommandLine scoped_command_line;
+  base::CommandLine* cmd_line = scoped_command_line.GetProcessCommandLine();
+  cmd_line->AppendSwitchASCII("scheduler-configuration-default",
+                              "cmd-line-default");
+
+  // Correct default is used when the command line is setup.
+  SchedulerConfigurationManager manager(&debug_daemon_client_, &local_state_);
+  manager.AddObserver(this);
+  task_environment_.RunUntilIdle();
+
+  EXPECT_EQ("cmd-line-default",
+            debug_daemon_client_.scheduler_configuration_name());
+  EXPECT_EQ(1u, configuration_set_count_);
+
+  // Change user pref, which should trigger a config change.
+  local_state_.SetUserPref(prefs::kSchedulerConfiguration,
+                           std::make_unique<base::Value>("user"));
+  task_environment_.RunUntilIdle();
+  EXPECT_EQ("user", debug_daemon_client_.scheduler_configuration_name());
+  EXPECT_EQ(2u, configuration_set_count_);
+
+  // Set a policy, which should override the user setting
+  local_state_.SetManagedPref(prefs::kSchedulerConfiguration,
+                              std::make_unique<base::Value>("policy"));
+  task_environment_.RunUntilIdle();
+  EXPECT_EQ("policy", debug_daemon_client_.scheduler_configuration_name());
+  EXPECT_EQ(3u, configuration_set_count_);
+
+  // Dropping the user pref doesn't change anything.
+  local_state_.RemoveUserPref(prefs::kSchedulerConfiguration);
+  task_environment_.RunUntilIdle();
+  EXPECT_EQ("policy", debug_daemon_client_.scheduler_configuration_name());
+  EXPECT_EQ(4u, configuration_set_count_);
+
+  // Dropping the policy as well reverts to the cmdline default.
+  local_state_.RemoveManagedPref(prefs::kSchedulerConfiguration);
+  task_environment_.RunUntilIdle();
+  EXPECT_EQ("cmd-line-default",
+            debug_daemon_client_.scheduler_configuration_name());
+  EXPECT_EQ(5u, configuration_set_count_);
 }
 
 TEST_F(SchedulerConfigurationManagerTest, ConfigChange) {

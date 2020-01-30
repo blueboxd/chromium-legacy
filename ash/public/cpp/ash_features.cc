@@ -110,6 +110,9 @@ const base::Feature kDragFromShelfToHomeOrOverview{
 const base::Feature kHideShelfControlsInTabletMode{
     "HideShelfControlsInTabletMode", base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kDragWindowFromTop{"DragWindowFromTop",
+                                       base::FEATURE_DISABLED_BY_DEFAULT};
+
 bool IsAllowAmbientEQEnabled() {
   return base::FeatureList::IsEnabled(kAllowAmbientEQ);
 }

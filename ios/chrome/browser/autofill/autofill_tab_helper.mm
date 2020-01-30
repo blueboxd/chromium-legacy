@@ -43,8 +43,8 @@ id<FormSuggestionProvider> AutofillTabHelper::GetSuggestionProvider() {
 AutofillTabHelper::AutofillTabHelper(
     web::WebState* web_state,
     password_manager::PasswordManager* password_manager)
-    : browser_state_(ios::ChromeBrowserState::FromBrowserState(
-          web_state->GetBrowserState())),
+    : browser_state_(
+          ChromeBrowserState::FromBrowserState(web_state->GetBrowserState())),
       autofill_agent_([[AutofillAgent alloc]
           initWithPrefService:browser_state_->GetPrefs()
                      webState:web_state]) {

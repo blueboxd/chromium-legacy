@@ -25,6 +25,7 @@ namespace {
 using chromeos::quick_answers::QuickAnswer;
 using chromeos::quick_answers::QuickAnswersClient;
 using chromeos::quick_answers::QuickAnswersRequest;
+using chromeos::quick_answers::ResultType;
 
 // TODO(llin): Update the placeholder after finalizing on the design.
 constexpr char kLoadingPlaceholder[] = "Loading...";
@@ -105,10 +106,18 @@ void QuickAnswersMenuObserver::ExecuteCommand(int command_id) {
       base::TimeDelta duration =
           base::TimeTicks::Now() - quick_answer_received_time_;
       RecordClick(quick_answer_->result_type, duration);
-    }
+    } else {
+      // No result is available.
 
-    // TODO(llin): Consider adding logging for clicks before quick answer
-    // received.
+      // Use default 0 duration for clicks before fetch finish.
+      base::TimeDelta duration;
+      if (!quick_answer_received_time_.is_null()) {
+        // Fetch finish with no result, set the duration to be between fetch
+        // finish and user clicks.
+        duration = base::TimeTicks::Now() - quick_answer_received_time_;
+      }
+      RecordClick(ResultType::kNoResult, duration);
+    }
   }
 }
 

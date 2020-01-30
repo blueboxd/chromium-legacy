@@ -396,8 +396,8 @@ public final class WebLayer {
      * @param profileName Null to indicate in-memory profile. Otherwise, name cannot be empty
      * and should contain only alphanumeric and underscore characters since it will be used as
      * a directory name in the file system.
-     * @param persistenceId If non-null (which includes an empty string) uniquely identifies the
-     * Browser for saving state.
+     * @param persistenceId If non-null and not empty uniquely identifies the Browser for saving
+     * state.
      *
      * @since 81
      */

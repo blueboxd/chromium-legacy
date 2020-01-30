@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <memory>
 
+#include "base/callback.h"
 #include "base/macros.h"
 #include "base/no_destructor.h"
 #include "build/build_config.h"
@@ -185,7 +186,8 @@ views::Widget* ShowWebModalDialogViews(
 #if defined(OS_MACOSX)
 views::Widget* ShowWebModalDialogWithOverlayViews(
     views::WidgetDelegate* dialog,
-    content::WebContents* initiator_web_contents) {
+    content::WebContents* initiator_web_contents,
+    base::OnceCallback<void(views::Widget*)> show_sheet) {
   DCHECK(CurrentClient());
   // For embedded WebContents, use the embedder's WebContents for constrained
   // window.
@@ -195,8 +197,8 @@ views::Widget* ShowWebModalDialogWithOverlayViews(
   web_modal::WebContentsModalDialogManager* manager =
       web_modal::WebContentsModalDialogManager::FromWebContents(web_contents);
   std::unique_ptr<web_modal::SingleWebContentsDialogManager> dialog_manager(
-      new NativeWebContentsModalDialogManagerViewsMac(widget->GetNativeWindow(),
-                                                      manager));
+      new NativeWebContentsModalDialogManagerViewsMac(
+          widget->GetNativeWindow(), manager, std::move(show_sheet)));
   manager->ShowDialogWithManager(widget->GetNativeWindow(),
                                  std::move(dialog_manager));
   return widget;

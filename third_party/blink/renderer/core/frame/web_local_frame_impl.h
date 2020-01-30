@@ -120,9 +120,6 @@ class CORE_EXPORT WebLocalFrameImpl final
   WebLocalFrameImpl* LocalRoot() override;
   WebFrameWidget* FrameWidget() const override;
   WebFrame* FindFrameByName(const WebString& name) override;
-  bool ScrollTo(const gfx::Point& scrollPosition,
-                bool animate,
-                base::OnceClosure on_finish) override;
   void SetEmbeddingToken(
       const base::UnguessableToken& embedding_token) override;
   const base::Optional<base::UnguessableToken>& GetEmbeddingToken() override;

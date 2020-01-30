@@ -274,7 +274,8 @@ template("mac_toolchain") {
     }
 
     tool("solink") {
-      dylib = "{{output_dir}}/{{target_output_name}}{{output_extension}}"  # eg "./libfoo.dylib"
+      # E.g. "./libfoo.dylib":
+      dylib = "{{output_dir}}/{{target_output_name}}{{output_extension}}"
       rspfile = dylib + ".rsp"
       pool = "//build/toolchain:link_pool($default_toolchain)"
 
@@ -345,7 +346,8 @@ template("mac_toolchain") {
     }
 
     tool("solink_module") {
-      sofile = "{{output_dir}}/{{target_output_name}}{{output_extension}}"  # eg "./libfoo.so"
+      # E.g. "./libfoo.so":
+      sofile = "{{output_dir}}/{{target_output_name}}{{output_extension}}"
       rspfile = sofile + ".rsp"
       pool = "//build/toolchain:link_pool($default_toolchain)"
 

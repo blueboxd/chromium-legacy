@@ -60,30 +60,31 @@ AppUninstallDialogView::AppUninstallDialogView(
       BubbleDialogDelegateView(nullptr, views::BubbleBorder::NONE),
       app_type_(app_type),
       app_name_(app_name) {
+  DialogDelegate::set_close_callback(base::BindOnce(
+      &AppUninstallDialogView::OnDialogCancelled, base::Unretained(this)));
+  DialogDelegate::set_cancel_callback(base::BindOnce(
+      &AppUninstallDialogView::OnDialogCancelled, base::Unretained(this)));
+  DialogDelegate::set_accept_callback(base::BindOnce(
+      &AppUninstallDialogView::OnDialogAccepted, base::Unretained(this)));
+
   InitializeView(profile, app_id);
 
   chrome::RecordDialogCreation(chrome::DialogIdentifier::APP_UNINSTALL);
 }
 
-bool AppUninstallDialogView::Cancel() {
-  return Close();
+void AppUninstallDialogView::OnDialogCancelled() {
+  uninstall_dialog()->OnDialogClosed(false /* uninstall */,
+                                     false /* clear_site_data */,
+                                     false /* report_abuse */);
 }
 
-bool AppUninstallDialogView::Accept() {
+void AppUninstallDialogView::OnDialogAccepted() {
   const bool clear_site_data =
       clear_site_data_checkbox_ && clear_site_data_checkbox_->GetChecked();
   const bool report_abuse_checkbox =
       report_abuse_checkbox_ && report_abuse_checkbox_->GetChecked();
   uninstall_dialog()->OnDialogClosed(true /* uninstall */, clear_site_data,
                                      report_abuse_checkbox);
-  return true;
-}
-
-bool AppUninstallDialogView::Close() {
-  uninstall_dialog()->OnDialogClosed(false /* uninstall */,
-                                     false /* clear_site_data */,
-                                     false /* report_abuse */);
-  return true;
 }
 
 gfx::Size AppUninstallDialogView::CalculatePreferredSize() const {

@@ -586,7 +586,15 @@ TEST_P(MediaEngagementServiceTest, CleanupOriginsOnHistoryDeletion) {
   }
 }
 
-TEST_P(MediaEngagementServiceTest, CleanUpDatabaseWhenHistoryIsExpired) {
+// The test is flaky: crbug.com/1042417.
+#if defined(OS_LINUX) || defined(OS_ANDROID)
+#define MAYBE_CleanUpDatabaseWhenHistoryIsExpired \
+  DISABLED_CleanUpDatabaseWhenHistoryIsExpired
+#else
+#define MAYBE_CleanUpDatabaseWhenHistoryIsExpired \
+  CleanUpDatabaseWhenHistoryIsExpired
+#endif
+TEST_P(MediaEngagementServiceTest, MAYBE_CleanUpDatabaseWhenHistoryIsExpired) {
   // |origin1| will have history that is before the expiry threshold and should
   // not be deleted. |origin2| will have history either side of the threshold
   // and should also not be deleted. |origin3| will have history before the

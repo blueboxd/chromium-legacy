@@ -895,7 +895,7 @@ void LayerTreeHost::ApplyScrollAndScale(ScrollAndScaleSet* info) {
   TRACE_EVENT0("cc", "LayerTreeHost::ApplyScrollAndScale");
   for (auto& swap_promise : info->swap_promises) {
     TRACE_EVENT_WITH_FLOW1("input,benchmark", "LatencyInfo.Flow",
-                           TRACE_ID_DONT_MANGLE(swap_promise->TraceId()),
+                           TRACE_ID_GLOBAL(swap_promise->TraceId()),
                            TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT,
                            "step", "Main thread scroll update");
     swap_promise_manager_.QueueSwapPromise(std::move(swap_promise));

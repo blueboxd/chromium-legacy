@@ -7,8 +7,10 @@
 #include <string>
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/metrics/field_trial_params.h"
 #include "chrome/common/chrome_features.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/dbus/debug_daemon/debug_daemon_client.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -71,17 +73,25 @@ void SchedulerConfigurationManager::OnPrefChange() {
     return;
   }
 
-  // Determine the effective configuration name. Prefer the value from local
-  // state if present, feature parameter if otherwise, hard-coded default if
-  // no configuration is present.
+  // Determine the effective configuration name.
   std::string config_name;
   PrefService* local_state = observer_.prefs();
   std::string feature_param_value = kSchedulerConfigurationParam.Get();
+  std::string cmdline_default =
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          switches::kSchedulerConfigurationDefault);
+
+  // A user-set or policy-set configuration takes precedence.
   if (local_state->HasPrefPath(prefs::kSchedulerConfiguration)) {
     config_name = local_state->GetString(prefs::kSchedulerConfiguration);
   } else if (!feature_param_value.empty()) {
+    // Next check for a Finch feature setting.
     config_name = feature_param_value;
+  } else if (!cmdline_default.empty()) {
+    // Next, if Finch isn't set, see if the command line passed in a default.
+    config_name = cmdline_default;
   } else {
+    // If nothing is found, default to conservative.
     config_name = debugd::scheduler_configuration::kConservativeScheduler;
   }
 

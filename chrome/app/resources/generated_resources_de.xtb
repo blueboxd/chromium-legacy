@@ -26,7 +26,6 @@
 <translation id="1031362278801463162">Vorschau wird geladen...</translation>
 <translation id="1032605640136438169">Bitte lesen Sie sich die neue Fassung durch</translation>
 <translation id="103279545524624934">Geben Sie Speicherplatz frei, um Android-Apps starten zu können.</translation>
-<translation id="1033343386521881354">Auf dem Druckerserver wurde 1 Drucker gefunden.</translation>
 <translation id="1033780634303702874">Auf Ihre seriellen Geräte zugreifen</translation>
 <translation id="1034942643314881546">Zulassen, dass ADB App-Illustrationen erstellt</translation>
 <translation id="1036348656032585052">Deaktivieren</translation>
@@ -34,7 +33,6 @@
 <translation id="1036982837258183574">Zum Beenden des Vollbildmodus |<ph name="ACCELERATOR" />| drücken</translation>
 <translation id="1038168778161626396">Nur verschlüsseln</translation>
 <translation id="1039337018183941703">Ungültige oder beschädigte Datei</translation>
-<translation id="1039850285407663109">Die ausgewählte Datei ist unbekannt und könnte schädlich sein. Möglicherweise sollten Sie sie vor dem Öffnen scannen.</translation>
 <translation id="1041175011127912238">Diese Seite reagiert nicht</translation>
 <translation id="1041263367839475438">Verfügbare Geräte</translation>
 <translation id="1042174272890264476">Auch die RLZ-Bibliothek von <ph name="SHORT_PRODUCT_NAME" /> ist auf Ihrem Computer vorinstalliert. RLZ sorgt für die Zuweisung von Tags, anhand derer gemessen wird, wie sich einzelne Werbekampagnen auf die Suchanfragen und die Nutzung von <ph name="SHORT_PRODUCT_NAME" /> auswirken. Die Tags sind weder eindeutig, noch personenbezogen und kommen manchmal in Google-Suchanfragen in <ph name="PRODUCT_NAME" /> vor.</translation>
@@ -636,7 +634,6 @@
 <translation id="1858585891038687145">Diesem Zertifikat zur Identifizierung von Softwareherstellern vertrauen</translation>
 <translation id="1861262398884155592">Dieser Ordner ist leer</translation>
 <translation id="1863182668524159459">Keine seriellen Schnittstellen gefunden</translation>
-<translation id="1863552924692672565"><ph name="FILE_NAME" /> ist unbekannt. Scannen Sie die Datei, um das Risiko zu minimieren.</translation>
 <translation id="1864111464094315414">Anmeldung</translation>
 <translation id="1864400682872660285">Kälter</translation>
 <translation id="1864454756846565995">USB-C-Gerät (Port hinten)</translation>
@@ -743,7 +740,7 @@
 <translation id="202352106777823113">Der Download hat zu lange gedauert und wurde vom Netzwerk gestoppt.</translation>
 <translation id="2025632980034333559"><ph name="APP_NAME" /> ist abgestürzt. Klicken Sie auf dieses Fenster, um die Erweiterung erneut zu laden.</translation>
 <translation id="2025891858974379949">Unsichere Inhalte</translation>
-<translation id="202918510990975568">Geben Sie Ihr Passwort ein, um die Sicherheit und die Anmeldung zu konfigurieren</translation>
+<translation id="202918510990975568">Geben Sie Ihr Passwort ein, um die Sicherheits- und Anmeldungseinstellungen zu konfigurieren</translation>
 <translation id="2034346955588403444">Anderes WLAN hinzufügen</translation>
 <translation id="203574396658008164">Notizen über Sperrbildschirm aktivieren</translation>
 <translation id="2037445849770872822">Für dieses Google-Konto wurde die Elternaufsicht eingerichtet. Wenn Sie zusätzliche Jugendschutzeinstellungen konfigurieren möchten, wählen Sie "Weiter" aus.
@@ -1369,7 +1366,7 @@ Wenn Sie die Family Link App auf Ihrem Gerät installieren, können Sie die Eins
 <translation id="2865919525181940183">Screenshot der Programme, die sich momentan auf dem Bildschirm befinden</translation>
 <translation id="286674810810214575">Stromquellen werden überprüft…</translation>
 <translation id="2867768963760577682">In angepinntem Tab öffnen</translation>
-<translation id="2868184003987917410">Websites nicht erlauben, auf Ihre Virtual-Reality-Geräte und -Daten zuzugreifen</translation>
+<translation id="2868184003987917410">Websites nicht erlauben, auf meine Virtual-Reality-Geräte und ‑Daten zuzugreifen</translation>
 <translation id="2868746137289129307">Diese Erweiterung ist veraltet und wurde aufgrund der Unternehmensrichtlinie deaktiviert. Die Erweiterung kann automatisch aktiviert werden, wenn eine neuere Version verfügbar ist.</translation>
 <translation id="2870560284913253234">Website</translation>
 <translation id="2870909136778269686">Wird aktualisiert…</translation>
@@ -1697,7 +1694,7 @@ Servernachricht: <ph name="SERVER_MSG" /></translation>
 <translation id="3348038390189153836">Externes Gerät erkannt</translation>
 <translation id="3349933790966648062">Speicherbedarf</translation>
 <translation id="3350117557200012647">In den Pairing-Modus wechseln</translation>
-<translation id="3350244554415289209">Nachfragen, wenn eine Website auf Ihre Kameraposition zugreifen oder Ihr Zimmer vermessen möchte (empfohlen)</translation>
+<translation id="3350244554415289209">Nachfragen, wenn eine Website auf meine Kameraposition zugreifen oder mein Zimmer vermessen möchte (empfohlen)</translation>
 <translation id="3355936511340229503">Verbindungsfehler</translation>
 <translation id="3356580349448036450">Fertig</translation>
 <translation id="3359256513598016054">Beschränkungen für Zertifikatrichtlinien</translation>
@@ -1754,7 +1751,7 @@ Servernachricht: <ph name="SERVER_MSG" /></translation>
 <translation id="3439153939049640737"><ph name="HOST" /> immer Zugriff auf Ihr Mikrofon gestatten</translation>
 <translation id="3439970425423980614">PDF-Vorschau wird geöffnet...</translation>
 <translation id="3440663250074896476">Weitere Aktionen für <ph name="BOOKMARK_NAME" /></translation>
-<translation id="3440761377721825626">Nachfragen, wenn eine Website ein Plug-in für den Zugriff auf Ihren Computer verwenden möchte</translation>
+<translation id="3440761377721825626">Nachfragen, wenn eine Website ein Plug-in für den Zugriff auf meinen Computer verwenden möchte</translation>
 <translation id="3441653493275994384">Bildschirm</translation>
 <translation id="3445925074670675829">USB-C-Gerät</translation>
 <translation id="344630545793878684">Ihre Daten auf verschiedenen Websites lesen</translation>
@@ -1814,7 +1811,7 @@ Servernachricht: <ph name="SERVER_MSG" /></translation>
 <translation id="3515983984924808886">Tippen Sie noch einmal auf Ihren Sicherheitsschlüssel, um das Zurücksetzen zu bestätigen. Damit werden alle auf dem Sicherheitsschlüssel gespeicherten Informationen und die zugehörige PIN gelöscht.</translation>
 <translation id="3518985090088779359">Akzeptieren &amp; weiter</translation>
 <translation id="351952459507671940">Neuer Gruppe hinzufügen</translation>
-<translation id="3523642406908660543">Nachfragen, wenn eine Website ein Plug-in für den Zugriff auf Ihren Computer verwenden möchte (empfohlen)</translation>
+<translation id="3523642406908660543">Nachfragen, wenn eine Website ein Plug-in für den Zugriff auf meinen Computer verwenden möchte (empfohlen)</translation>
 <translation id="3524965460886318643">Aktivitäten exportieren</translation>
 <translation id="3526034519184079374">Daten der Website können nicht gelesen oder geändert werden</translation>
 <translation id="3527085408025491307">Ordner</translation>
@@ -1935,7 +1932,7 @@ Servernachricht: <ph name="SERVER_MSG" /></translation>
 <translation id="3677657024345889897">Am leisesten</translation>
 <translation id="3677911431265050325">Mobile Version anfordern</translation>
 <translation id="3678156199662914018">Erweiterung: <ph name="EXTENSION_NAME" /></translation>
-<translation id="3678613690490567106">Für eine Personalisierung auf allen Geräten synchronisieren</translation>
+<translation id="3678613690490567106">Synchronisierung aktivieren für eine personalisierte Nutzung auf allen Geräten</translation>
 <translation id="3681311097828166361">Vielen Dank für Ihr Feedback. Sie sind jetzt offline und Ihr Bericht wird später versendet.</translation>
 <translation id="3682824389861648626">Grenzwert für Mausbewegungen</translation>
 <translation id="3683524264665795342">Anfrage zur Bildschirmfreigabe durch <ph name="APP_NAME" /></translation>
@@ -2512,11 +2509,11 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="4501530680793980440">Entfernen bestätigen</translation>
 <translation id="4502423230170890588">Von diesem Gerät entfernen</translation>
 <translation id="4504940961672722399">Klicken Sie auf dieses Symbol oder drücken Sie <ph name="EXTENSION_SHORTCUT" />, um diese Erweiterung zu verwenden.</translation>
-<translation id="4507164039066603071">Websites nicht erlauben, auf Ihre Kameraposition zuzugreifen oder Ihr Zimmer zu vermessen</translation>
+<translation id="4507164039066603071">Websites nicht erlauben, auf meine Kameraposition zuzugreifen oder mein Zimmer zu vermessen</translation>
 <translation id="4508051413094283164">Alle in Inkognitofenster öffnen</translation>
 <translation id="4508265954913339219">Aktivierung fehlgeschlagen</translation>
 <translation id="4508765956121923607">Q&amp;uelle anzeigen</translation>
-<translation id="4510614391273086606">Linux-Dateien und -Apps werden auf den Stand des letzten Back-ups zurückgesetzt.</translation>
+<translation id="4510614391273086606">Linux-Dateien und ‑Apps werden auf den Stand des letzten Back-ups zurückgesetzt.</translation>
 <translation id="451407183922382411">Powered by <ph name="COMPANY_NAME" /></translation>
 <translation id="4514610446763173167">Video wiedergeben oder pausieren</translation>
 <translation id="451515744433878153">Entfernen</translation>
@@ -3085,7 +3082,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="5341793073192892252">Die folgenden Cookies wurden blockiert (Cookies von Drittanbietern werden ausnahmslos blockiert)</translation>
 <translation id="5341980496415249280">Bitte warten, Paket wird erstellt...</translation>
 <translation id="5342091991439452114">PIN muss mindestens <ph name="MINIMUM" /> Ziffern umfassen</translation>
-<translation id="5344036115151554031">Linux wiederherstellen</translation>
+<translation id="5344036115151554031">Linux wird wiederhergestellt</translation>
 <translation id="5352033265844765294">Zeitstempeldienst</translation>
 <translation id="5353252989841766347">Passwörter aus Chrome exportieren</translation>
 <translation id="5355099869024327351">Zulassen, dass Assistant Ihnen Benachrichtigungen anzeigt</translation>
@@ -4021,7 +4018,6 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="6678717876183468697">Abfrage-URL</translation>
 <translation id="6680442031740878064">Verfügbar: <ph name="AVAILABLE_SPACE" /></translation>
 <translation id="6680650203439190394">Geschwindigkeit</translation>
-<translation id="6681301928961274620">Auf dem Druckerserver wurden keine Drucker gefunden.</translation>
 <translation id="6681668084120808868">Foto machen</translation>
 <translation id="6681964764822470072"><ph name="APP_NAME" /> wird deinstalliert.</translation>
 <translation id="668599234725812620">Google Play öffnen</translation>
@@ -4271,7 +4267,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="703001695939087067">Sie befinden sich jetzt im Modus "Fensterübersicht". Drücken Sie zum Navigieren auf den Tab.</translation>
 <translation id="7031608529463141342"><ph name="WINDOW_TITLE" />: serielle Schnittstelle verbunden</translation>
 <translation id="7031962166228839643">TPM wird vorbereitet, bitte warten (dies kann einige Minuten dauern)...</translation>
-<translation id="7034615910652881882">Nachfragen, wenn eine Website auf Virtual-Reality-Geräte und -Daten zugreifen möchte</translation>
+<translation id="7034615910652881882">Nachfragen, wenn eine Website auf meine Virtual-Reality-Geräte und ‑Daten zugreifen möchte</translation>
 <translation id="7037509989619051237">Text zum Anhören</translation>
 <translation id="7039326228527141150">Auf USB-Geräte von <ph name="VENDOR_NAME" /> zugreifen</translation>
 <translation id="7039912931802252762">Microsoft-Smartcard-Anmeldung</translation>
@@ -4569,7 +4565,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="7443806024147773267">Überall dort, wo Sie mit Ihrem Google-Konto angemeldet sind, können Sie auf Ihre Passwörter zugreifen</translation>
 <translation id="7444983668544353857"><ph name="NETWORKDEVICE" /> deaktivieren</translation>
 <translation id="7448430327655618736">Apps automatisch installieren</translation>
-<translation id="7448625729116931228">Nachfragen, wenn eine Website auf Virtual-Reality-Geräte und -Daten zugreifen möchte (empfohlen)</translation>
+<translation id="7448625729116931228">Nachfragen, wenn eine Website auf meine Virtual-Reality-Geräte und ‑Daten zugreifen möchte (empfohlen)</translation>
 <translation id="7450761244949417357">Wird jetzt in <ph name="ALTERNATIVE_BROWSER_NAME" /> geöffnet</translation>
 <translation id="7453008956351770337">Durch die Auswahl dieses Druckers berechtigen Sie die folgende Erweiterung, auf Ihren Drucker zuzugreifen:</translation>
 <translation id="7454548535253569100">Portal: <ph name="SUBFRAME_SITE" /></translation>
@@ -4707,7 +4703,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="7652808307838961528">Person bearbeiten: <ph name="PROFILE_NAME" /></translation>
 <translation id="765293928828334535">Von dieser Website können keine Apps, Erweiterungen und Nutzerskripte hinzugefügt werden</translation>
 <translation id="7652954539215530680">PIN erstellen</translation>
-<translation id="7653295403398566475">Nachfragen, wenn eine Website auf Ihre Kameraposition zugreifen oder Ihr Zimmer vermessen möchte</translation>
+<translation id="7653295403398566475">Nachfragen, wenn eine Website auf meine Kameraposition zugreifen oder mein Zimmer vermessen möchte</translation>
 <translation id="7654941827281939388">Dieses Konto wird bereits auf dem Computer verwendet.</translation>
 <translation id="7658239707568436148">Abbrechen</translation>
 <translation id="7659584679870740384">Sie sind nicht zur Verwendung dieses Geräts berechtigt. Bitten Sie den Administrator um eine Anmeldeberechtigung.</translation>
@@ -5550,7 +5546,6 @@ Speichern Sie Ihre Schlüsseldatei an einem sicheren Ort. Sie benötigen die Dat
 <translation id="8794025342371547160">IP eingeschränkt</translation>
 <translation id="879413103056696865">Während der Hotspot aktiviert ist, wird Ihr <ph name="PHONE_NAME" /> Folgendes tun:</translation>
 <translation id="8795916974678578410">Neues Fenster</translation>
-<translation id="8797086401386164142">Auf dem Druckerserver wurden <ph name="NUM_PRINTERS" /> Drucker gefunden.</translation>
 <translation id="8797459392481275117">Diese Website nie übersetzen</translation>
 <translation id="8798099450830957504">Standardeinstellung</translation>
 <translation id="8798441408945964110">Name des Anbieters</translation>

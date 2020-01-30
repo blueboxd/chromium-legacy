@@ -20,6 +20,7 @@
 #include "chrome/browser/media/webrtc/media_stream_capture_indicator.h"
 #include "chrome/browser/media/webrtc/native_desktop_media_list.h"
 #include "chrome/browser/media/webrtc/tab_desktop_media_list.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -27,7 +28,9 @@
 #include "chrome/browser/ui/simple_message_box.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/desktop_capture.h"
 #include "content/public/browser/desktop_streams_registry.h"
@@ -300,6 +303,15 @@ void DesktopCaptureAccessHandler::HandleRequest(
       blink::mojom::MediaStreamType::GUM_DESKTOP_VIDEO_CAPTURE) {
     std::move(callback).Run(
         devices, blink::mojom::MediaStreamRequestResult::INVALID_STATE,
+        std::move(ui));
+    return;
+  }
+
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents->GetBrowserContext());
+  if (!profile->GetPrefs()->GetBoolean(prefs::kScreenCaptureAllowed)) {
+    std::move(callback).Run(
+        devices, blink::mojom::MediaStreamRequestResult::PERMISSION_DENIED,
         std::move(ui));
     return;
   }

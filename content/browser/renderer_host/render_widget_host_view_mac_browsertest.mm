@@ -47,9 +47,7 @@
   _run_loop = std::make_unique<base::RunLoop>();
 }
 
-- (void)waitWithTimeout:(NSTimeInterval)timeout {
-  base::RunLoop::ScopedRunTimeoutForTest run_timeout(
-      base::TimeDelta::FromSecondsD(timeout), _run_loop->QuitClosure());
+- (void)wait {
   _run_loop->Run();
 
   [self reset];
@@ -147,14 +145,14 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewMacTest, UpdateInputFlags) {
           initWithRenderWidgetHostViewCocoa:rwhv_cocoa]);
 
   EXPECT_TRUE(ExecJs(shell(), "ta.focus();"));
-  [flag_change_waiter waitWithTimeout:5];
+  [flag_change_waiter wait];
   EXPECT_FALSE(rwhv_cocoa.textInputFlags &
                blink::kWebTextInputFlagAutocorrectOff);
 
   EXPECT_TRUE(ExecJs(
       shell(),
       "ta.setAttribute('autocorrect', 'off'); console.log(ta.outerHTML);"));
-  [flag_change_waiter waitWithTimeout:5];
+  [flag_change_waiter wait];
   EXPECT_TRUE(rwhv_cocoa.textInputFlags &
               blink::kWebTextInputFlagAutocorrectOff);
 }

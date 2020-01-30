@@ -16,7 +16,8 @@ enum class ScrollGranularity : uint8_t {
   kScrollByLine,
   kScrollByPage,
   kScrollByDocument,
-  kMaxValue = kScrollByDocument
+  kScrollByPercentage,
+  kMaxValue = kScrollByPercentage
 };
 
 }  // namespace input_types

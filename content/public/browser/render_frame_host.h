@@ -27,6 +27,7 @@
 #include "third_party/blink/public/common/frame/frame_owner_element_type.h"
 #include "third_party/blink/public/common/frame/sandbox_flags.h"
 #include "third_party/blink/public/common/scheduler/web_scheduler_tracked_feature.h"
+#include "third_party/blink/public/mojom/ad_tagging/ad_frame.mojom-forward.h"
 #include "third_party/blink/public/mojom/devtools/console_message.mojom.h"
 #include "third_party/blink/public/mojom/frame/frame.mojom.h"
 #include "third_party/blink/public/mojom/frame/sudden_termination_disabler_type.mojom.h"
@@ -462,6 +463,18 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
 
   // Returns true if this frame has fired DOMContentLoaded.
   virtual bool IsDOMContentLoaded() = 0;
+
+  // Update the ad frame state. The parameter |ad_frame_type| cannot be kNonAd,
+  // and once this has been called, it cannot be called again with a different
+  // |ad_frame_type|, since once a frame is determined to be an ad, it will stay
+  // tagged as an ad of the same type for its entire lifetime.
+  //
+  // Note: The ad frame type is currently maintained and updated *outside*
+  // content. This is used to ensure the render frame proxies are in sync (since
+  // they aren't exposed in the public API). Eventually, we might be able to
+  // simplify this somewhat (maybe //content would be responsible for
+  // maintaining the state, with some content client method used to update it).
+  virtual void UpdateAdFrameType(blink::mojom::AdFrameType ad_frame_type) = 0;
 
  private:
   // This interface should only be implemented inside content.

@@ -7,8 +7,7 @@
 
 #import <UIKit/UIKit.h>
 
-#include "ios/chrome/browser/browser_state/chrome_browser_state_forward.h"
-
+class ChromeBrowserState;
 @class ChromeCoordinator;
 class Browser;
 
@@ -23,8 +22,7 @@ typedef NSMutableArray<ChromeCoordinator*> MutableCoordinatorArray;
 - (instancetype)initWithBaseViewController:(UIViewController*)viewController;
 // Creates a coordinator that uses |viewController| and |browserState|.
 - (instancetype)initWithBaseViewController:(UIViewController*)viewController
-                              browserState:
-                                  (ios::ChromeBrowserState*)browserState
+                              browserState:(ChromeBrowserState*)browserState
     NS_DESIGNATED_INITIALIZER;
 
 // Creates a coordinator that uses |viewController| and |browser|.
@@ -50,7 +48,7 @@ typedef NSMutableArray<ChromeCoordinator*> MutableCoordinatorArray;
 @property(weak, nonatomic) UINavigationController* navigationController;
 
 // The coordinator's BrowserState.
-@property(assign, nonatomic, readonly) ios::ChromeBrowserState* browserState;
+@property(assign, nonatomic, readonly) ChromeBrowserState* browserState;
 
 // The coordinator's Browser, if one was assigned.
 @property(assign, nonatomic, readonly) Browser* browser;

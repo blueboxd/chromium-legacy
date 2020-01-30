@@ -26,7 +26,6 @@
 <translation id="1031362278801463162">正在載入預覽畫面</translation>
 <translation id="1032605640136438169">請詳閱新版條款</translation>
 <translation id="103279545524624934">請釋出磁碟空間以啟動 Android 應用程式。</translation>
-<translation id="1033343386521881354">在列印伺服器上找到 1 台印表機。</translation>
 <translation id="1033780634303702874">存取你的序列裝置</translation>
 <translation id="1034942643314881546">啟用 ADB 以建立應用程式圖例</translation>
 <translation id="1036348656032585052">關閉</translation>
@@ -34,7 +33,6 @@
 <translation id="1036982837258183574">按下 |<ph name="ACCELERATOR" />| 即可結束全螢幕模式</translation>
 <translation id="1038168778161626396">只有 Encipher</translation>
 <translation id="1039337018183941703">檔案無效或毀損</translation>
-<translation id="1039850285407663109">你選取了一個不明檔案，其中可能含有危險內容。建議你在開啟這個檔案前先進行掃描。</translation>
 <translation id="1041175011127912238">這個網頁沒有回應</translation>
 <translation id="1041263367839475438">可用的裝置</translation>
 <translation id="1042174272890264476">你的電腦也內建了 <ph name="SHORT_PRODUCT_NAME" /> 的 RLZ 程式庫。RLZ 可指定非重複、非個人的可辨識標記，以評估特定宣傳廣告活動所提升的搜尋數與 <ph name="SHORT_PRODUCT_NAME" /> 使用量。這些標籤有時也會顯示在 <ph name="PRODUCT_NAME" /> 的 Google 搜尋查詢中。</translation>
@@ -153,7 +151,7 @@
 <translation id="1197979282329025000">擷取 <ph name="PRINTER_NAME" /> 的印表機功能狀態時發生錯誤，無法向 <ph name="CLOUD_PRINT_NAME" /> 註冊該印表機。</translation>
 <translation id="119944043368869598">全部清除</translation>
 <translation id="1201402288615127009">繼續</translation>
-<translation id="1202556750060561551"><ph name="SITE_GROUP_NAME" /> 儲存的所有資料和 Cookie、包含的所有網站，以及該群組所安裝的應用程式都將遭到清除。</translation>
+<translation id="1202556750060561551"><ph name="SITE_GROUP_NAME" /> 儲存的所有資料和 Cookie、所包含的網站，以及所安裝的應用程式都將遭到清除。</translation>
 <translation id="1202596434010270079">Kiosk 應用程式已更新，請移除 USB 隨身碟。</translation>
 <translation id="120368089816228251">音符</translation>
 <translation id="1205489148908752564">讀取及變更使用者許可清單</translation>
@@ -284,7 +282,7 @@
 <translation id="1393787139683794508">這會清除 <ph name="ORIGIN_NAME" /> 儲存的所有資料和 Cookie。</translation>
 <translation id="1395730723686586365">更新程式已啟動</translation>
 <translation id="1396139853388185343">設定印表機時發生錯誤</translation>
-<translation id="1396259464226642517">這不是你預期的結果嗎？<ph name="BEGIN_LINK" />提供意見<ph name="END_LINK" /></translation>
+<translation id="1396259464226642517">這並非預期結果嗎？<ph name="BEGIN_LINK" />提供意見<ph name="END_LINK" /></translation>
 <translation id="1396963298126346194">你輸入的使用者名稱和密碼不相符</translation>
 <translation id="1397500194120344683">沒有適用裝置。<ph name="LINK_BEGIN" />瞭解詳情<ph name="LINK_END" /></translation>
 <translation id="1398853756734560583">放到最大</translation>
@@ -639,7 +637,6 @@
 <translation id="1858585891038687145">信任這個用於識別軟體製造商的憑證</translation>
 <translation id="1861262398884155592">這個資料夾是空的</translation>
 <translation id="1863182668524159459">找不到序列埠</translation>
-<translation id="1863552924692672565">「<ph name="FILE_NAME" />」是不明檔案。建議你掃描這個檔案，盡可能降低風險。</translation>
 <translation id="1864111464094315414">登入</translation>
 <translation id="1864400682872660285">冷色調</translation>
 <translation id="1864454756846565995">USB-C 裝置 (背面連接埠)</translation>
@@ -992,7 +989,7 @@
 <translation id="2353297238722298836">可使用攝影機和麥克風</translation>
 <translation id="2356070529366658676">詢問</translation>
 <translation id="2357330829548294574">移除「<ph name="USER_NAME" />」</translation>
-<translation id="235798134753548762">系統會同步處理你的應用程式、設定和 Wi‑Fi 偏好設定。你隨時可以前往「設定」變更這些設定。</translation>
+<translation id="235798134753548762">系統會同步處理你的應用程式、設定和 Wi‑Fi 偏好設定。設定後，你隨時可以前往「設定」進行變更。</translation>
 <translation id="2359345697448000899">如要管理擴充功能，只要按一下 [工具] 選單裡的 [擴充功能] 即可。</translation>
 <translation id="2359808026110333948">繼續</translation>
 <translation id="236117173274098341">最佳化</translation>
@@ -1700,7 +1697,7 @@
 <translation id="3348038390189153836">偵測到卸除式裝置</translation>
 <translation id="3349933790966648062">記憶體使用量</translation>
 <translation id="3350117557200012647">進入配對模式</translation>
-<translation id="3350244554415289209">網站必須先詢問你，才能存取攝影機位置或對應你的房間 (建議)</translation>
+<translation id="3350244554415289209">網站必須先詢問你，才能存取攝影機位置或對應你的房間 (建議設定)</translation>
 <translation id="3355936511340229503">連線錯誤</translation>
 <translation id="3356580349448036450">完成</translation>
 <translation id="3359256513598016054">憑證原則限制</translation>
@@ -2518,7 +2515,7 @@
 <translation id="4508051413094283164">在無痕式視窗中開啟所有書籤</translation>
 <translation id="4508265954913339219">啟用失敗</translation>
 <translation id="4508765956121923607">檢視原始碼(&amp;O)</translation>
-<translation id="4510614391273086606">系統正在將 Linux 檔案和應用程式還原至備份狀態。</translation>
+<translation id="4510614391273086606">系統正在將 Linux 檔案和應用程式還原到當初所備份的狀態。</translation>
 <translation id="451407183922382411">技術提供：<ph name="COMPANY_NAME" /></translation>
 <translation id="4514610446763173167">在播放和暫停影片之間切換</translation>
 <translation id="451515744433878153">移除</translation>
@@ -4023,7 +4020,6 @@
 <translation id="6678717876183468697">查詢網址</translation>
 <translation id="6680442031740878064">可用空間：<ph name="AVAILABLE_SPACE" /></translation>
 <translation id="6680650203439190394">語速</translation>
-<translation id="6681301928961274620">在列印伺服器上找不到任何印表機。</translation>
 <translation id="6681668084120808868">拍照</translation>
 <translation id="6681964764822470072">系統會解除安裝「<ph name="APP_NAME" />」。</translation>
 <translation id="668599234725812620">開啟 Google Play</translation>
@@ -4561,7 +4557,7 @@
 <translation id="7433692219247014412">{COUNT,plural, =0{在新視窗中開啟所有書籤(&amp;N)}=1{在新視窗中開啟(&amp;N)}other{在新視窗中開啟全部 # 個書籤(&amp;N)}}</translation>
 <translation id="7434509671034404296">開發人員選項</translation>
 <translation id="7434635829372401939">同步處理你的設定</translation>
-<translation id="7434969625063495310">無法新增列印伺服器。請檢查伺服器的設定，然後再試一次。</translation>
+<translation id="7434969625063495310">無法新增列印伺服器。請檢查伺服器設定，然後再試一次。</translation>
 <translation id="7436921188514130341">糟糕！重新命名過程中發生錯誤。</translation>
 <translation id="7438976808740265764">2020 年 12 月之後，系統將停止支援 Flash Player。</translation>
 <translation id="7441736921018636843">如要變更這項設定，請<ph name="BEGIN_LINK" />重設同步處理功能<ph name="END_LINK" />以移除同步處理通關密語</translation>
@@ -4862,7 +4858,7 @@
 <translation id="783214144752121388">禁止網站執行 Flash (建議)</translation>
 <translation id="7833720883933317473">你所儲存的自訂字詞會顯示在這裡</translation>
 <translation id="7835178595033117206">已移除書籤</translation>
-<translation id="7836850009646241041">請再次輕觸你的安全金鑰</translation>
+<translation id="7836850009646241041">請再次觸碰你的安全金鑰</translation>
 <translation id="7837776265184002579">你的首頁已變更為 <ph name="URL" />。</translation>
 <translation id="7839051173341654115">查看/備份媒體</translation>
 <translation id="7839192898639727867">憑證主體金鑰識別碼</translation>
@@ -5552,7 +5548,6 @@
 <translation id="8794025342371547160">受限 IP</translation>
 <translation id="879413103056696865">無線基地台開啟時，你的「<ph name="PHONE_NAME" />」會：</translation>
 <translation id="8795916974678578410">開新視窗</translation>
-<translation id="8797086401386164142">在列印伺服器上找到 <ph name="NUM_PRINTERS" /> 台印表機。</translation>
 <translation id="8797459392481275117">一律不翻譯這個網站的內容</translation>
 <translation id="8798099450830957504">預設</translation>
 <translation id="8798441408945964110">提供者名稱</translation>

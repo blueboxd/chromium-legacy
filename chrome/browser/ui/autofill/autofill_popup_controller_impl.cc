@@ -149,6 +149,7 @@ void AutofillPopupControllerImpl::Show(
       ->RegisterKeyPressHandler(
           base::Bind(&AutofillPopupControllerImpl::HandleKeyPressEvent,
                      base::Unretained(this)));
+  pinned_until_update_ = false;
   delegate_->OnPopupShown();
 
   DCHECK_EQ(suggestions_.size(), elided_values_.size());
@@ -220,9 +221,22 @@ void AutofillPopupControllerImpl::UpdateDataListValues(
   DCHECK_EQ(suggestions_.size(), elided_labels_.size());
 }
 
+void AutofillPopupControllerImpl::PinViewUntilUpdate() {
+  pinned_until_update_ = true;
+}
+
+base::span<const Suggestion>
+AutofillPopupControllerImpl::GetUnelidedSuggestions() const {
+  return base::span<const Suggestion>(suggestions_);
+}
+
 void AutofillPopupControllerImpl::Hide(PopupHidingReason reason) {
-  // TODO(https://crbug.com/1043963): Prevent hiding if waiting for updates and
-  // reason is kEndEditing or kStaleData.
+  // If the reason for hiding is only stale data or a user interacting with
+  // native Chrome UI (kEndEditing), the popup might be kept open.
+  if (pinned_until_update_ && (reason == PopupHidingReason::kEndEditing ||
+                               reason == PopupHidingReason::kStaleData)) {
+    return;  // Don't close the popup while waiting for an update.
+  }
   if (delegate_) {
     delegate_->ClearPreviewedForm();
     delegate_->OnPopupHidden();

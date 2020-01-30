@@ -142,9 +142,9 @@ export class TabsApiProxy {
    * @param {number} newIndex
    * @return {!Promise<!ExtensionsApiTab>}
    */
-  moveTab(tabId, newIndex) {
+  moveTab(tabId, windowId, newIndex) {
     return new Promise(resolve => {
-      chrome.tabs.move(tabId, {index: newIndex}, tab => {
+      chrome.tabs.move(tabId, {index: newIndex, windowId}, tab => {
         resolve(tab);
       });
     });

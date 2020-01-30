@@ -59,7 +59,7 @@ SVGParsingError SVGInteger::SetValueAsString(const String& string) {
 }
 
 void SVGInteger::Add(SVGPropertyBase* other, SVGElement*) {
-  SetValue(value_ + ToSVGInteger(other)->Value());
+  SetValue(value_ + To<SVGInteger>(other)->Value());
 }
 
 void SVGInteger::CalculateAnimatedValue(
@@ -70,10 +70,9 @@ void SVGInteger::CalculateAnimatedValue(
     SVGPropertyBase* to,
     SVGPropertyBase* to_at_end_of_duration,
     SVGElement*) {
-  SVGInteger* from_integer = ToSVGInteger(from);
-  SVGInteger* to_integer = ToSVGInteger(to);
-  SVGInteger* to_at_end_of_duration_integer =
-      ToSVGInteger(to_at_end_of_duration);
+  auto* from_integer = To<SVGInteger>(from);
+  auto* to_integer = To<SVGInteger>(to);
+  auto* to_at_end_of_duration_integer = To<SVGInteger>(to_at_end_of_duration);
 
   float animated_float = value_;
   animation_element.AnimateAdditiveNumber(
@@ -83,7 +82,7 @@ void SVGInteger::CalculateAnimatedValue(
 }
 
 float SVGInteger::CalculateDistance(SVGPropertyBase* other, SVGElement*) {
-  return abs(value_ - ToSVGInteger(other)->Value());
+  return abs(value_ - To<SVGInteger>(other)->Value());
 }
 
 }  // namespace blink

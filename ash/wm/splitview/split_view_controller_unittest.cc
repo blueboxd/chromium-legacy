@@ -19,6 +19,7 @@
 #include "ash/public/cpp/fps_counter.h"
 #include "ash/public/cpp/presentation_time_recorder.h"
 #include "ash/public/cpp/shelf_config.h"
+#include "ash/public/cpp/window_backdrop.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/root_window_controller.h"
 #include "ash/screen_util.h"
@@ -639,6 +640,10 @@ TEST_P(SplitViewControllerTest, SplitDividerBasicTest) {
 // while being dragged from the top.
 TEST_P(SplitViewControllerTest,
        DividerSetAsAlwaysOnTopAfterWindowDestroyedDuringDraggingFromTop) {
+  base::test::ScopedFeatureList scoped_features;
+  scoped_features.InitWithFeatures(
+      /*enabled_features=*/{features::kDragWindowFromTop},
+      /*disabled_features=*/{});
   std::unique_ptr<aura::Window> window1 = CreateTestWindow();
   std::unique_ptr<aura::Window> window2 = CreateTestWindow();
   std::unique_ptr<aura::Window> window3 = CreateTestWindow();
@@ -1459,6 +1464,15 @@ TEST_P(SplitViewControllerTest, LongPressWithUnsnappableWindow) {
                 kActiveDesk)[0]);
   LongPressOnOverivewButtonTray();
   EXPECT_FALSE(split_view_controller()->InSplitViewMode());
+}
+
+// Tests that long press works even if the window is minimized.
+TEST_P(SplitViewControllerTest, LongPressWithMinimizedWindow) {
+  std::unique_ptr<aura::Window> window(CreateWindow(gfx::Rect(400, 400)));
+  WindowState::Get(window.get())->Minimize();
+
+  LongPressOnOverivewButtonTray();
+  EXPECT_TRUE(split_view_controller()->InSplitViewMode());
 }
 
 // Test the rotation functionalities in split view mode.
@@ -2652,7 +2666,11 @@ TEST_P(SplitViewControllerTest, EndSplitViewWhileDragging) {
 // window.
 class SplitViewTabDraggingTest : public SplitViewControllerTest {
  public:
-  SplitViewTabDraggingTest() = default;
+  SplitViewTabDraggingTest() {
+    scoped_features_.InitWithFeatures(
+        /*enabled_features=*/{features::kDragWindowFromTop},
+        /*disabled_features=*/{});
+  }
   ~SplitViewTabDraggingTest() override = default;
 
  protected:
@@ -2792,6 +2810,8 @@ class SplitViewTabDraggingTest : public SplitViewControllerTest {
   }
 
  private:
+  base::test::ScopedFeatureList scoped_features_;
+
   DISALLOW_COPY_AND_ASSIGN(SplitViewTabDraggingTest);
 };
 
@@ -2887,22 +2907,26 @@ TEST_P(SplitViewTabDraggingTest, NoBackDropDuringDragging) {
   const gfx::Rect bounds(0, 0, 400, 400);
   std::unique_ptr<aura::Window> window(
       CreateWindowWithType(bounds, AppType::BROWSER));
-  EXPECT_EQ(window->GetProperty(kBackdropWindowMode),
-            BackdropWindowMode::kAutoOpaque);
+  WindowBackdrop* window_backdrop = WindowBackdrop::Get(window.get());
+  EXPECT_EQ(window_backdrop->mode(), WindowBackdrop::BackdropMode::kAuto);
+  EXPECT_EQ(window_backdrop->type(), WindowBackdrop::BackdropType::kOpaque);
 
   std::unique_ptr<WindowResizer> resizer =
       StartDrag(window.get(), window.get());
   ASSERT_TRUE(resizer.get());
-  EXPECT_EQ(window->GetProperty(kBackdropWindowMode),
-            BackdropWindowMode::kDisabled);
+  EXPECT_TRUE(window_backdrop->temporarily_disabled());
+  EXPECT_EQ(window_backdrop->mode(), WindowBackdrop::BackdropMode::kAuto);
+  EXPECT_EQ(window_backdrop->type(), WindowBackdrop::BackdropType::kOpaque);
 
   resizer->Drag(gfx::PointF(), 0);
-  EXPECT_EQ(window->GetProperty(kBackdropWindowMode),
-            BackdropWindowMode::kDisabled);
+  EXPECT_TRUE(window_backdrop->temporarily_disabled());
+  EXPECT_EQ(window_backdrop->mode(), WindowBackdrop::BackdropMode::kAuto);
+  EXPECT_EQ(window_backdrop->type(), WindowBackdrop::BackdropType::kOpaque);
 
   resizer->CompleteDrag();
-  EXPECT_EQ(window->GetProperty(kBackdropWindowMode),
-            BackdropWindowMode::kAutoOpaque);
+  EXPECT_FALSE(window_backdrop->temporarily_disabled());
+  EXPECT_EQ(window_backdrop->mode(), WindowBackdrop::BackdropMode::kAuto);
+  EXPECT_EQ(window_backdrop->type(), WindowBackdrop::BackdropType::kOpaque);
 }
 
 // Test that in tablet mode, the window that is in tab-dragging process should

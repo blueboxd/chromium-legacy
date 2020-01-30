@@ -279,6 +279,7 @@
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> закладка}one{<ph name="BOOKMARKS_COUNT_MANY" /> закладка}few{<ph name="BOOKMARKS_COUNT_MANY" /> закладки}many{<ph name="BOOKMARKS_COUNT_MANY" /> закладок}other{<ph name="BOOKMARKS_COUNT_MANY" /> закладки}}</translation>
 <translation id="3089395242580810162">Открыть в режиме инкогнито</translation>
 <translation id="3123473560110926937">Заблокировано на некоторых сайтах</translation>
+<translation id="3123734510202723619">Оповещения</translation>
 <translation id="3137521801621304719">Выключить режим инкогнито</translation>
 <translation id="3143515551205905069">Отмена</translation>
 <translation id="3157842584138209013">Чтобы узнать, сколько трафика вы сэкономили, нажмите кнопку "Ещё"</translation>

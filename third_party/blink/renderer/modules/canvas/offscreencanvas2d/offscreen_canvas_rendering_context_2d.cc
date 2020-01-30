@@ -327,10 +327,11 @@ void OffscreenCanvasRenderingContext2D::SnapshotStateForFilter() {
   ModifiableState().SetFontForFilter(AccessFont());
 }
 
-void OffscreenCanvasRenderingContext2D::ValidateStateStack() const {
+void OffscreenCanvasRenderingContext2D::ValidateStateStackWithCanvas(
+    const cc::PaintCanvas* canvas) const {
 #if DCHECK_IS_ON()
-  if (cc::PaintCanvas* sk_canvas = ExistingDrawingCanvas()) {
-    DCHECK_EQ(static_cast<size_t>(sk_canvas->getSaveCount()),
+  if (canvas) {
+    DCHECK_EQ(static_cast<size_t>(canvas->getSaveCount()),
               state_stack_.size() + 1);
   }
 #endif

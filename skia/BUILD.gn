@@ -198,7 +198,8 @@ config("skia_library_config") {
                   # assembly code contains flow control(jmp or jcc) statements.
 
       "/wd4800",  # forcing value to bool 'true/false'(assigning int to bool).
-      "/wd5041",  # out-of-line definition for constexpr static data member is not needed and is deprecated in C++17
+      "/wd5041",  # out-of-line definition for constexpr static data member is
+                  # not needed and is deprecated in C++17
     ]
     cflags_cc = [ "/std:c++17" ]
   } else {
@@ -223,9 +224,7 @@ source_set("skcms") {
     cflags += [ "-mfp16-format=ieee" ]
   }
 
-  public = [
-    "//third_party/skia/include/third_party/skcms/skcms.h",
-  ]
+  public = [ "//third_party/skia/include/third_party/skcms/skcms.h" ]
   include_dirs = [ "//third_party/skia/include/third_party/skcms" ]
   sources =
       rebase_path(skcms_sources, ".", "//third_party/skia/third_party/skcms")
@@ -645,7 +644,8 @@ template("skia_source_set") {
     if (is_win) {
       cflags_cc = [
         "/std:c++17",
-        "/wd5041",  # out-of-line definition for constexpr static data member is not needed and is deprecated in C++17
+        "/wd5041",  # out-of-line definition for constexpr static data member is
+                    # not needed and is deprecated in C++17
       ]
     } else {
       cflags_cc = [ "-std=c++17" ]
@@ -660,9 +660,7 @@ skia_source_set("skia_core_and_effects") {
   sources += skia_effects_sources
   sources += skia_effects_imagefilter_sources
   if (skia_support_gpu) {
-    deps = [
-      "//gpu/config:workaround_list",
-    ]
+    deps = [ "//gpu/config:workaround_list" ]
   }
   if (skia_use_dawn) {
     deps += [ "//third_party/dawn/src/dawn:dawncpp_headers" ]
@@ -742,9 +740,7 @@ skia_source_set("skia_opts") {
   cflags = []
   defines = []
 
-  deps = [
-    "//base",
-  ]
+  deps = [ "//base" ]
 
   if (current_cpu == "x86" || current_cpu == "x64") {
     sources = skia_opts.sse2_sources
@@ -811,9 +807,7 @@ if (is_mac) {
       "-Wno-unguarded-availability",
       "-fobjc-arc",
     ]
-    deps = [
-      "//gpu/config:workaround_list",
-    ]
+    deps = [ "//gpu/config:workaround_list" ]
     if (skia_use_dawn) {
       deps += [ "//third_party/dawn/src/dawn:dawncpp_headers" ]
     }
@@ -827,35 +821,25 @@ if (is_android) {
       "ext/data/test_fonts/android_fallback_fonts.xml",
       "ext/data/test_fonts/android_main_fonts.xml",
     ]
-    outputs = [
-      "$root_out_dir/test_fonts/{{source_file_part}}",
-    ]
+    outputs = [ "$root_out_dir/test_fonts/{{source_file_part}}" ]
   }
 }
 if (is_fuchsia) {
   copy("copy_fuchsia_fonts_manifest") {
-    sources = [
-      "ext/data/test_fonts/fuchsia_test_fonts_manifest.json",
-    ]
-    outputs = [
-      "$root_out_dir/test_fonts/{{source_file_part}}",
-    ]
+    sources = [ "ext/data/test_fonts/fuchsia_test_fonts_manifest.json" ]
+    outputs = [ "$root_out_dir/test_fonts/{{source_file_part}}" ]
   }
 }
 if (is_mac || is_ios) {
   bundle_data("test_fonts_bundle_data") {
-    public_deps = [
-      "//third_party/test_fonts",
-    ]
+    public_deps = [ "//third_party/test_fonts" ]
 
     sources = [
       "$root_out_dir/test_fonts/Ahem.ttf",
       "ext/data/test_fonts/ChromiumAATTest.ttf",
     ]
 
-    outputs = [
-      "{{bundle_resources_dir}}/{{source_file_part}}",
-    ]
+    outputs = [ "{{bundle_resources_dir}}/{{source_file_part}}" ]
   }
 }
 
@@ -884,9 +868,7 @@ group("test_fonts_resources") {
 source_set("test_fonts") {
   testonly = true
 
-  sources = [
-    "ext/test_fonts.h",
-  ]
+  sources = [ "ext/test_fonts.h" ]
   deps = [
     ":test_fonts_resources",
     "//base/test:test_support",
@@ -958,9 +940,7 @@ test("skia_unittests") {
       "//third_party/fuchsia-sdk/sdk:fuchsia-fonts",
       "//third_party/test_fonts",
     ]
-    data_deps = [
-      "//third_party/test_fonts",
-    ]
+    data_deps = [ "//third_party/test_fonts" ]
   }
 
   if (skia_support_skottie) {
@@ -970,9 +950,7 @@ test("skia_unittests") {
 
 if (!is_ios) {
   executable("image_operations_bench") {
-    sources = [
-      "ext/image_operations_bench.cc",
-    ]
+    sources = [ "ext/image_operations_bench.cc" ]
 
     deps = [
       ":skia",
@@ -983,9 +961,7 @@ if (!is_ios) {
 
   executable("filter_fuzz_stub") {
     testonly = true
-    sources = [
-      "tools/filter_fuzz_stub/filter_fuzz_stub.cc",
-    ]
+    sources = [ "tools/filter_fuzz_stub/filter_fuzz_stub.cc" ]
 
     deps = [
       ":skia",
@@ -997,7 +973,5 @@ if (!is_ios) {
 }
 
 group("fuzzers") {
-  deps = [
-    "//skia/tools/fuzzers",
-  ]
+  deps = [ "//skia/tools/fuzzers" ]
 }

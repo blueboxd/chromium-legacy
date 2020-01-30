@@ -26,7 +26,6 @@
 <translation id="1031362278801463162">Voorbeeld wordt geladen</translation>
 <translation id="1032605640136438169">Lees de nieuwe voorwaarden door</translation>
 <translation id="103279545524624934">Maak schijfruimte vrij om Android-apps te starten.</translation>
-<translation id="1033343386521881354">Er is één printer gevonden op de afdrukserver.</translation>
 <translation id="1033780634303702874">Toegang krijgen tot je seriële apparaten</translation>
 <translation id="1034942643314881546">ADB inschakelen om app-illustraties te maken</translation>
 <translation id="1036348656032585052">Uitschakelen</translation>
@@ -34,7 +33,6 @@
 <translation id="1036982837258183574">Druk op |<ph name="ACCELERATOR" />| om het volledige scherm te sluiten</translation>
 <translation id="1038168778161626396">Alleen coderen</translation>
 <translation id="1039337018183941703">Ongeldig of beschadigd bestand</translation>
-<translation id="1039850285407663109">Het geselecteerde bestand is onbekend en kan gevaarlijk zijn. Overweeg dit bestand te scannen voordat je het opent.</translation>
 <translation id="1041175011127912238">Deze pagina reageert niet</translation>
 <translation id="1041263367839475438">Beschikbare apparaten</translation>
 <translation id="1042174272890264476">Je computer is ook uitgerust met de RLZ-bibliotheek van <ph name="SHORT_PRODUCT_NAME" />. RLZ wijst een niet-unieke, niet-persoonlijke tag toe om de zoekopdrachten en het gebruik van <ph name="SHORT_PRODUCT_NAME" /> te meten als gevolg van een bepaalde promotiecampagne. Deze labels worden soms weergegeven in Google-zoekopdrachten in <ph name="PRODUCT_NAME" />.</translation>
@@ -639,7 +637,6 @@
 <translation id="1858585891038687145">Dit certificaat vertrouwen voor het identificeren van softwareontwikkelaars</translation>
 <translation id="1861262398884155592">Deze map is leeg</translation>
 <translation id="1863182668524159459">Geen seriële poorten gevonden</translation>
-<translation id="1863552924692672565"><ph name="FILE_NAME" /> is onbekend. Scan het bestand om het risico te minimaliseren.</translation>
 <translation id="1864111464094315414">Aanmelden</translation>
 <translation id="1864400682872660285">Koeler</translation>
 <translation id="1864454756846565995">USB-C-apparaat (poort aan achterkant)</translation>
@@ -4025,7 +4022,6 @@ Je kunt de instellingen van dit account beheren door de Family Link-app op je ap
 <translation id="6678717876183468697">Query-URL</translation>
 <translation id="6680442031740878064">Beschikbaar: <ph name="AVAILABLE_SPACE" /></translation>
 <translation id="6680650203439190394">Snelheid</translation>
-<translation id="6681301928961274620">Er zijn geen printers gevonden op de afdrukserver.</translation>
 <translation id="6681668084120808868">Foto nemen</translation>
 <translation id="6681964764822470072"><ph name="APP_NAME" /> wordt verwijderd</translation>
 <translation id="668599234725812620">Google Play openen</translation>
@@ -5555,7 +5551,6 @@ Bewaar je sleutelbestand op een veilige plaats. Je hebt het bestand nodig om nie
 <translation id="8794025342371547160">Beperkt IP-adres</translation>
 <translation id="879413103056696865">Terwijl de hotspot is ingeschakeld, doet je <ph name="PHONE_NAME" /> het volgende:</translation>
 <translation id="8795916974678578410">Nieuw venster</translation>
-<translation id="8797086401386164142">Er zijn <ph name="NUM_PRINTERS" /> printers gevonden op de afdrukserver.</translation>
 <translation id="8797459392481275117">Deze site nooit vertalen</translation>
 <translation id="8798099450830957504">Standaard</translation>
 <translation id="8798441408945964110">Naam provider</translation>

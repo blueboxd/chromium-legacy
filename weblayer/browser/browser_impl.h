@@ -34,10 +34,10 @@ class BrowserImpl : public Browser {
  public:
 #if defined(OS_ANDROID)
   BrowserImpl(ProfileImpl* profile,
-              const std::string& persistence_id,
+              const PersistenceInfo* persistence_info,
               const base::android::JavaParamRef<jobject>& java_impl);
 #endif
-  BrowserImpl(ProfileImpl* profile, const std::string& persistence_id);
+  BrowserImpl(ProfileImpl* profile, const PersistenceInfo* persistence_info);
   ~BrowserImpl() override;
   BrowserImpl(const BrowserImpl&) = delete;
   BrowserImpl& operator=(const BrowserImpl&) = delete;
@@ -70,6 +70,12 @@ class BrowserImpl : public Browser {
   base::android::ScopedJavaLocalRef<jstring> GetPersistenceId(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& caller);
+  void SaveSessionServiceIfNecessary(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& caller);
+  base::android::ScopedJavaLocalRef<jbyteArray> GetSessionServiceCryptoKey(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& caller);
 #endif
 
   // Browser:
@@ -79,12 +85,12 @@ class BrowserImpl : public Browser {
   Tab* GetActiveTab() override;
   const std::vector<Tab*>& GetTabs() override;
   void PrepareForShutdown() override;
-  const std::string& GetPersistenceId() override;
+  std::string GetPersistenceId() override;
   void AddObserver(BrowserObserver* observer) override;
   void RemoveObserver(BrowserObserver* observer) override;
 
  private:
-  void CreateSessionServiceAndRestore();
+  void CreateSessionServiceAndRestore(const PersistenceInfo& persistence_info);
 
   // Returns the path used by |session_service_|.
   base::FilePath GetSessionServiceDataPath();

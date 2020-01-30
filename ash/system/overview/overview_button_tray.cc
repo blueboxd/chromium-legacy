@@ -70,8 +70,10 @@ void OverviewButtonTray::SnapRippleToActivated() {
 void OverviewButtonTray::OnGestureEvent(ui::GestureEvent* event) {
   Button::OnGestureEvent(event);
   if (event->type() == ui::ET_GESTURE_LONG_PRESS) {
-    Shell::Get()->overview_controller()->OnOverviewButtonTrayLongPressed(
-        event->location());
+    // TODO(crbug.com/970013): Properly implement the multi-display behavior (in
+    // tablet position with an external pointing device).
+    SplitViewController::Get(Shell::GetPrimaryRootWindow())
+        ->OnOverviewButtonTrayLongPressed(event->location());
   }
 }
 

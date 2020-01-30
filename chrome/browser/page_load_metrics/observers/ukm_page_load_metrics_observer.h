@@ -126,6 +126,11 @@ class UkmPageLoadMetricsObserver
       content::NavigationHandle* navigation_handle,
       ukm::SourceId source_id);
 
+  // Records the metrics related to Generate URLs (Home page, default search
+  // engine) for starting URL and committed URL.
+  void RecordGeneratedNavigationUKM(ukm::SourceId source_id,
+                                    const GURL& committed_url);
+
   // Guaranteed to be non-null during the lifetime of |this|.
   network::NetworkQualityTracker* network_quality_tracker_;
 
@@ -133,6 +138,12 @@ class UkmPageLoadMetricsObserver
   // the page.
   int64_t cache_bytes_ = 0;
   int64_t network_bytes_ = 0;
+
+  // Sum of decoded body lengths of JS resources in bytes.
+  int64_t js_decoded_bytes_ = 0;
+
+  // Max decoded body length of JS resources in bytes.
+  int64_t js_max_decoded_bytes_ = 0;
 
   // Network quality estimates.
   net::EffectiveConnectionType effective_connection_type_ =
@@ -159,6 +170,14 @@ class UkmPageLoadMetricsObserver
 
   // True if the page main resource is inner response of a signed exchange.
   bool is_signed_exchange_inner_response_ = false;
+
+  // Whether the first URL in the redirect chain matches the default search
+  // engine template.
+  bool start_url_is_default_search_ = false;
+
+  // Whether the first URL in the redirect chain matches the user's home page
+  // URL.
+  bool start_url_is_home_page_ = false;
 
   // The number of main frame redirects that occurred before commit.
   uint32_t main_frame_request_redirect_count_ = 0;

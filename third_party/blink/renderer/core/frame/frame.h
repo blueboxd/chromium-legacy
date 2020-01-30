@@ -34,6 +34,7 @@
 #include "third_party/blink/public/common/frame/frame_policy.h"
 #include "third_party/blink/public/common/frame/user_activation_state.h"
 #include "third_party/blink/public/common/frame/user_activation_update_source.h"
+#include "third_party/blink/public/mojom/ad_tagging/ad_frame.mojom-blink.h"
 #include "third_party/blink/public/web/web_frame_load_type.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/frame/frame_lifecycle.h"
@@ -187,6 +188,15 @@ class CORE_EXPORT Frame : public GarbageCollected<Frame> {
     return lifecycle_.GetState() == FrameLifecycle::kAttached;
   }
 
+  // Ad Tagging
+  bool IsAdSubframe() const {
+    return ad_frame_type_ != mojom::blink::AdFrameType::kNonAd;
+  }
+
+  bool IsAdRoot() const {
+    return ad_frame_type_ == mojom::blink::AdFrameType::kRootAd;
+  }
+
   // Called to make a frame inert or non-inert. A frame is inert when there
   // is a modal dialog displayed within an ancestor frame, and this frame
   // itself is not within the dialog.
@@ -294,6 +304,18 @@ class CORE_EXPORT Frame : public GarbageCollected<Frame> {
   TouchAction inherited_effective_touch_action_ = TouchAction::kAuto;
 
   bool visible_to_hit_testing_ = true;
+
+  // Type of frame detected by heuristics checking if the frame was created
+  // for advertising purposes. It's per-frame (as opposed to per-document)
+  // because when an iframe is created on behalf of ad script that same frame is
+  // not typically reused for non-ad purposes.
+  //
+  // For LocalFrame, it might be (1) calculated directly in the renderer based
+  // on script in the stack, or (2) replicated from the browser process, or (3)
+  // signaled from the browser process at ready-to-commit time. For RemoteFrame,
+  // it might be (1) replicated from the browser process or (2) signaled from
+  // the browser process at ready-to-commit time.
+  mojom::blink::AdFrameType ad_frame_type_;
 
  private:
   Member<FrameClient> client_;

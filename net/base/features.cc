@@ -107,5 +107,8 @@ const base::Feature kUseRegistrableDomainInNetworkIsolationKey{
 const base::Feature kTurnOffStreamingMediaCaching{
     "TurnOffStreamingMediaCaching", base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kLegacyTLSEnforced{"LegacyTLSEnforced",
+                                       base::FEATURE_DISABLED_BY_DEFAULT};
+
 }  // namespace features
 }  // namespace net

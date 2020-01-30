@@ -212,10 +212,6 @@ constexpr const char kPrefNeedsSync[] = "needs_sync";
 // The indexed ruleset checksum for the Declarative Net Request API.
 constexpr const char kPrefDNRRulesetChecksum[] = "dnr_ruleset_checksum";
 
-// List of match patterns representing the set of allowed pages for an
-// extension for the Declarative Net Request API.
-constexpr const char kPrefDNRAllowedPages[] = "dnr_whitelisted_pages";
-
 constexpr const char kPrefDNRDynamicRulesetChecksum[] =
     "dnr_dynamic_ruleset_checksum";
 
@@ -1838,19 +1834,6 @@ void ExtensionPrefs::SetDNRDynamicRulesetChecksum(
                       std::make_unique<base::Value>(checksum));
 }
 
-void ExtensionPrefs::SetDNRAllowedPages(const ExtensionId& extension_id,
-                                        URLPatternSet set) {
-  SetExtensionPrefURLPatternSet(extension_id, kPrefDNRAllowedPages, set);
-}
-
-URLPatternSet ExtensionPrefs::GetDNRAllowedPages(
-    const ExtensionId& extension_id) const {
-  URLPatternSet result;
-  ReadPrefAsURLPatternSet(extension_id, kPrefDNRAllowedPages, &result,
-                          URLPattern::SCHEME_ALL);
-  return result;
-}
-
 bool ExtensionPrefs::GetDNRUseActionCountAsBadgeText(
     const ExtensionId& extension_id) const {
   return ReadPrefAsBooleanAndReturn(extension_id,
@@ -2187,6 +2170,9 @@ void ExtensionPrefs::MigrateObsoleteExtensionPrefs() {
 
       // Added 2019-10.
       "user_dragged_app_ntp",
+
+      // Added 2020-01
+      "dnr_whitelisted_pages",
   };
 
   for (const auto& key_value : extensions_dictionary->DictItems()) {

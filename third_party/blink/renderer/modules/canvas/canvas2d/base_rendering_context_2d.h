@@ -235,7 +235,10 @@ class MODULES_EXPORT BaseRenderingContext2D : public GarbageCollectedMixin,
   virtual sk_sp<PaintFilter> StateGetFilter() = 0;
   virtual void SnapshotStateForFilter() = 0;
 
-  virtual void ValidateStateStack() const = 0;
+  void ValidateStateStack() const {
+    ValidateStateStackWithCanvas(ExistingDrawingCanvas());
+  }
+  virtual void ValidateStateStackWithCanvas(const cc::PaintCanvas*) const = 0;
 
   virtual bool HasAlpha() const = 0;
 

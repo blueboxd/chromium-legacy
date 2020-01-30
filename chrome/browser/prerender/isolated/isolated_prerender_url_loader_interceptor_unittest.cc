@@ -14,6 +14,7 @@
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/prerender/prerender_manager_factory.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/resource_type.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -47,6 +48,16 @@ class IsolatedPrerenderURLLoaderInterceptorTest
  public:
   IsolatedPrerenderURLLoaderInterceptorTest() = default;
   ~IsolatedPrerenderURLLoaderInterceptorTest() override = default;
+
+  void SetDataSaverEnabled(bool enabled) {
+    data_reduction_proxy::DataReductionProxySettings::
+        SetDataSaverEnabledForTesting(profile()->GetPrefs(), enabled);
+  }
+
+  void SetUp() override {
+    ChromeRenderViewHostTestHarness::SetUp();
+    SetDataSaverEnabled(true);
+  }
 
   void TearDown() override {
     prerender::PrerenderManager* prerender_manager =
@@ -123,6 +134,39 @@ TEST_F(IsolatedPrerenderURLLoaderInterceptorTest, DISABLE_ASAN(WantIntercept)) {
 TEST_F(IsolatedPrerenderURLLoaderInterceptorTest, DISABLE_ASAN(FeatureOff)) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndDisableFeature(features::kIsolatePrerenders);
+
+  std::unique_ptr<prerender::PrerenderHandle> handle =
+      StartPrerender(TestURL());
+
+  std::unique_ptr<IsolatedPrerenderURLLoaderInterceptor> interceptor =
+      std::make_unique<IsolatedPrerenderURLLoaderInterceptor>(
+          handle->contents()
+              ->prerender_contents()
+              ->GetMainFrame()
+              ->GetFrameTreeNodeId());
+
+  network::ResourceRequest request;
+  request.url = TestURL();
+  request.resource_type = static_cast<int>(content::ResourceType::kMainFrame);
+  request.method = "GET";
+
+  interceptor->MaybeCreateLoader(
+      request, profile(),
+      base::BindOnce(
+          &IsolatedPrerenderURLLoaderInterceptorTest::HandlerCallback,
+          base::Unretained(this)));
+  WaitForCallback();
+
+  EXPECT_TRUE(was_intercepted().has_value());
+  EXPECT_FALSE(was_intercepted().value());
+}
+
+TEST_F(IsolatedPrerenderURLLoaderInterceptorTest,
+       DISABLE_ASAN(DataSaverDisabled)) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(features::kIsolatePrerenders);
+
+  SetDataSaverEnabled(false);
 
   std::unique_ptr<prerender::PrerenderHandle> handle =
       StartPrerender(TestURL());

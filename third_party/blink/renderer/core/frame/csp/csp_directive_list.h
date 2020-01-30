@@ -106,7 +106,8 @@ class CORE_EXPORT CSPDirectiveList final
                                     SecurityViolationReportingPolicy) const;
 
   bool AllowTrustedTypeAssignmentFailure(const String& message,
-                                         const String& sample) const;
+                                         const String& sample,
+                                         const String& sample_prefix) const;
 
   bool StrictMixedContentChecking() const {
     return strict_mixed_content_checking_enforced_;
@@ -221,7 +222,8 @@ class CORE_EXPORT CSPDirectiveList final
                        ResourceRequest::RedirectStatus,
                        ContentSecurityPolicy::ViolationType violation_type =
                            ContentSecurityPolicy::kURLViolation,
-                       const String& sample = String()) const;
+                       const String& sample = String(),
+                       const String& sample_prefix = String()) const;
   void ReportViolationWithFrame(const String& directive_text,
                                 const ContentSecurityPolicy::DirectiveType,
                                 const String& console_message,

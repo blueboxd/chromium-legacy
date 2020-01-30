@@ -11,6 +11,8 @@ COLOR_PALETTE_RELATIVE_PATH = 'ui/android/java/res/values/color_palette.xml'
 COLOR_PALETTE_PATH = os.path.join(_SRC_ROOT, COLOR_PALETTE_RELATIVE_PATH)
 SEMANTIC_COLORS_PATH = os.path.join(_SRC_ROOT,
     'ui/android/java/res/values/semantic_colors.xml')
+BUTTOM_COMPAT_WIDGET_RELATIVE_PATH = (
+    'ui/android/java/src/org/chromium/ui/widget/ButtonCompat.java')
 
 COLOR_PATTERN = re.compile(r'(>|")(#[0-9A-Fa-f]+)(<|")')
 VALID_COLOR_PATTERN = re.compile(

@@ -55,9 +55,9 @@ if (is_win) {
       "cryptui.lib",
       "dwmapi.lib",
       "netapi32.lib",
-      "ndfapi.lib",  # Used by browser/net/net_error_diagnostics_dialog_win.h
-      "pdh.lib",  # Used by browser/private_working_set_snapshot.h
-      "wbemuuid.lib",  # Used by browser/metrics/antivirus_metrics_provider_win.cc
+      "ndfapi.lib",  # For browser/net/net_error_diagnostics_dialog_win.h
+      "pdh.lib",  # For browser/private_working_set_snapshot.h
+      "wbemuuid.lib",  # For browser/metrics/antivirus_metrics_provider_win.cc
     ]
     ldflags = [
       "/DELAYLOAD:ndfapi.dll",
@@ -1322,6 +1322,10 @@ jumbo_static_library("browser") {
     "prerender/isolated/isolated_prerender_params.h",
     "prerender/isolated/isolated_prerender_proxy_configurator.cc",
     "prerender/isolated/isolated_prerender_proxy_configurator.h",
+    "prerender/isolated/isolated_prerender_service.cc",
+    "prerender/isolated/isolated_prerender_service.h",
+    "prerender/isolated/isolated_prerender_service_factory.cc",
+    "prerender/isolated/isolated_prerender_service_factory.h",
     "prerender/isolated/isolated_prerender_tab_helper.cc",
     "prerender/isolated/isolated_prerender_tab_helper.h",
     "prerender/isolated/isolated_prerender_url_loader.cc",
@@ -2973,7 +2977,7 @@ jumbo_static_library("browser") {
       "//components/payments/content/android",
       "//components/resources:components_resources",
       "//components/send_tab_to_self",
-      "//components/signin/internal/identity_manager",  # see android/signin/DEPS
+      "//components/signin/internal/identity_manager",  # cf android/signin/DEPS
       "//media/mojo/clients",
       "//rlz:rlz_utils",
       "//sandbox",
@@ -3560,7 +3564,9 @@ jumbo_static_library("browser") {
       "signin/signin_promo.h",
       "signin/signin_ui_util.cc",
       "signin/signin_ui_util.h",
-      "speech/extension_api/tts_extension_api_constants.cc",  # Should be moved to extensions section?
+      "speech/extension_api/tts_extension_api_constants.cc",  # Should be moved
+                                                              # to extensions
+                                                              # section?
       "speech/extension_api/tts_extension_api_constants.h",
       "ssl/ssl_client_auth_observer.cc",
       "ssl/ssl_client_auth_observer.h",
@@ -5202,10 +5208,6 @@ jumbo_static_library("browser") {
       "supervised_user/child_accounts/kids_management_api.h",
       "supervised_user/child_accounts/permission_request_creator_apiary.cc",
       "supervised_user/child_accounts/permission_request_creator_apiary.h",
-      "supervised_user/experimental/supervised_user_blacklist.cc",
-      "supervised_user/experimental/supervised_user_blacklist.h",
-      "supervised_user/experimental/supervised_user_filtering_switches.cc",
-      "supervised_user/experimental/supervised_user_filtering_switches.h",
       "supervised_user/kids_chrome_management/kids_chrome_management_client.cc",
       "supervised_user/kids_chrome_management/kids_chrome_management_client.h",
       "supervised_user/kids_chrome_management/kids_chrome_management_client_factory.cc",
@@ -5213,10 +5215,14 @@ jumbo_static_library("browser") {
       "supervised_user/kids_management_url_checker_client.cc",
       "supervised_user/kids_management_url_checker_client.h",
       "supervised_user/permission_request_creator.h",
+      "supervised_user/supervised_user_blacklist.cc",
+      "supervised_user/supervised_user_blacklist.h",
       "supervised_user/supervised_user_constants.cc",
       "supervised_user/supervised_user_constants.h",
       "supervised_user/supervised_user_features.cc",
       "supervised_user/supervised_user_features.h",
+      "supervised_user/supervised_user_filtering_switches.cc",
+      "supervised_user/supervised_user_filtering_switches.h",
       "supervised_user/supervised_user_google_auth_navigation_throttle.cc",
       "supervised_user/supervised_user_google_auth_navigation_throttle.h",
       "supervised_user/supervised_user_interstitial.cc",

@@ -53,9 +53,6 @@ class AppUninstallDialogView : public apps::UninstallDialog::UiBase,
   ~AppUninstallDialogView() override = default;
 
   // views::BubbleDialogDelegateView:
-  bool Cancel() override;
-  bool Accept() override;
-  bool Close() override;
   gfx::Size CalculatePreferredSize() const override;
   ui::ModalType GetModalType() const override;
   gfx::ImageSkia GetWindowIcon() override;
@@ -78,6 +75,9 @@ class AppUninstallDialogView : public apps::UninstallDialog::UiBase,
 #endif
   void InitializeView(Profile* profile,
                       const std::string& app_id);
+
+  void OnDialogCancelled();
+  void OnDialogAccepted();
 
   // The type of apps, e.g. Extension-backed app, Android app.
   apps::mojom::AppType app_type_;

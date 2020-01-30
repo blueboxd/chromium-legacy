@@ -60,6 +60,7 @@ using ::testing::Invoke;
 using ::testing::Property;
 using ::testing::Return;
 using ::testing::SizeIs;
+using ::testing::StrEq;
 using ::testing::UnorderedElementsAre;
 
 class CollectUserDataActionTest : public content::RenderViewHostTestHarness {
@@ -237,6 +238,30 @@ TEST_F(CollectUserDataActionTest, SucceedsForAllTermsTextPresent) {
               Property(
                   &CollectUserDataResultProto::is_terms_and_conditions_accepted,
                   true))))));
+  CollectUserDataAction action(&mock_action_delegate_, action_proto);
+  action.ProcessAction(callback_.Get());
+}
+
+TEST_F(CollectUserDataActionTest, InfoSectionText) {
+  const char kInfoSection[] = "Info section.";
+
+  ActionProto action_proto;
+  auto* collect_user_data_proto = action_proto.mutable_collect_user_data();
+  collect_user_data_proto->set_info_section_text(kInfoSection);
+  collect_user_data_proto->set_request_terms_and_conditions(false);
+
+  ON_CALL(mock_action_delegate_, CollectUserData(_))
+      .WillByDefault(
+          Invoke([this](CollectUserDataOptions* collect_user_data_options) {
+            user_data_.succeed_ = true;
+            std::move(collect_user_data_options->confirm_callback)
+                .Run(&user_data_, &user_model_);
+          }));
+  EXPECT_CALL(
+      mock_action_delegate_,
+      CollectUserData(Pointee(Field(&CollectUserDataOptions::info_section_text,
+                                    StrEq(kInfoSection)))));
+
   CollectUserDataAction action(&mock_action_delegate_, action_proto);
   action.ProcessAction(callback_.Get());
 }

@@ -1579,6 +1579,55 @@ TEST_F(NavigationManagerTest, ReloadWithUserAgentType) {
   EXPECT_EQ(UserAgentType::DESKTOP, pending_item->GetUserAgentType());
 }
 
+// Tests that ReloadWithUserAgentType reloads on the last committed item before
+// the redirect items.
+TEST_F(NavigationManagerTest, ReloadWithUserAgentTypeOnRedirect) {
+  GURL url("http://www.1.com");
+  navigation_manager()->AddPendingItem(
+      url, Referrer(), ui::PAGE_TRANSITION_TYPED,
+      NavigationInitiationType::BROWSER_INITIATED,
+      NavigationManager::UserAgentOverrideOption::MOBILE);
+  [mock_wk_list_ setCurrentURL:@"http://www.1.com"];
+  navigation_manager()->CommitPendingItem();
+
+  navigation_manager()->AddPendingItem(
+      GURL("http://www.redirect.com"), Referrer(),
+      ui::PAGE_TRANSITION_CLIENT_REDIRECT,
+      NavigationInitiationType::BROWSER_INITIATED,
+      NavigationManager::UserAgentOverrideOption::MOBILE);
+  [mock_wk_list_ setCurrentURL:@"http://www.url.com/redirect"
+                  backListURLs:@[ @"http://www.1.com" ]
+               forwardListURLs:nil];
+  navigation_manager()->CommitPendingItem();
+
+  navigation_manager()->ReloadWithUserAgentType(UserAgentType::DESKTOP);
+
+  NavigationItem* pending_item =
+      navigation_manager()->GetPendingItemInCurrentOrRestoredSession();
+  EXPECT_EQ(url, pending_item->GetURL());
+  EXPECT_EQ(UserAgentType::DESKTOP, pending_item->GetUserAgentType());
+}
+
+// Tests that ReloadWithUserAgentType reloads on the last committed item if
+// there are no item before a redirect (which happens when opening a new tab on
+// a redirect).
+TEST_F(NavigationManagerTest, ReloadWithUserAgentTypeOnNewTabRedirect) {
+  GURL url("http://www.1.com");
+  navigation_manager()->AddPendingItem(
+      url, Referrer(), ui::PAGE_TRANSITION_CLIENT_REDIRECT,
+      NavigationInitiationType::BROWSER_INITIATED,
+      NavigationManager::UserAgentOverrideOption::MOBILE);
+  [mock_wk_list_ setCurrentURL:@"http://www.1.com"];
+  navigation_manager()->CommitPendingItem();
+
+  navigation_manager()->ReloadWithUserAgentType(UserAgentType::DESKTOP);
+
+  NavigationItem* pending_item =
+      navigation_manager()->GetPendingItemInCurrentOrRestoredSession();
+  EXPECT_EQ(url, pending_item->GetURL());
+  EXPECT_EQ(UserAgentType::DESKTOP, pending_item->GetUserAgentType());
+}
+
 // Tests that ReloadWithUserAgentType does not expose internal URLs.
 TEST_F(NavigationManagerTest, ReloadWithUserAgentTypeOnIntenalUrl) {
   delegate_.SetWebState(&web_state_);

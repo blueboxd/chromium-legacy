@@ -68,6 +68,8 @@
     <structures>
       <structure name="IDR_NEW_TAB_PAGE_NEW_TAB_PAGE_HTML"
           file="new_tab_page.html" type="chrome_html" compress="gzip" />
+      <structure name="IDR_NEW_TAB_PAGE_SHARED_VARS_CSS"
+          file="shared_vars.css" type="chrome_html" compress="gzip" />
       <structure name="IDR_NEW_TAB_PAGE_BROWSER_PROXY_JS"
           file="browser_proxy.js" type="chrome_html" compress="gzip" />
       <structure name="IDR_NEW_TAB_PAGE_UTILS_JS"

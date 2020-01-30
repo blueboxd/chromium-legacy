@@ -36,6 +36,11 @@ class ShelfContextMenu : public ui::SimpleMenuModel::Delegate {
   bool IsCommandIdEnabled(int command_id) const override;
   void ExecuteCommand(int command_id, int event_flags) override;
 
+  // Helper method to get the gfx::VectorIcon for a |type|. Returns an empty
+  // gfx::VectorIcon if there is no icon for this |type|.
+  const gfx::VectorIcon& GetCommandIdVectorIcon(ash::CommandId type,
+                                                int string_id) const;
+
  protected:
   ShelfContextMenu(ChromeLauncherController* controller,
                    const ash::ShelfItem* item,
@@ -54,11 +59,6 @@ class ShelfContextMenu : public ui::SimpleMenuModel::Delegate {
   void AddContextMenuOption(ui::SimpleMenuModel* menu_model,
                             ash::CommandId type,
                             int string_id);
-
-  // Helper method to get the gfx::VectorIcon for a |type|. Returns an empty
-  // gfx::VectorIcon if there is no icon for this |type|.
-  const gfx::VectorIcon& GetCommandIdVectorIcon(ash::CommandId type,
-                                                int string_id) const;
 
   int64_t display_id() const { return display_id_; }
 

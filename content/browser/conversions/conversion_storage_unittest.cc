@@ -40,7 +40,7 @@ using AttributionCredits = std::list<int>;
 class MockStorageDelegate : public ConversionStorage::Delegate {
  public:
   MockStorageDelegate() = default;
-  virtual ~MockStorageDelegate() = default;
+  ~MockStorageDelegate() override = default;
 
   // ConversionStorage::Delegate
   void ProcessNewConversionReports(

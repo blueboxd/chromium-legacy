@@ -9,6 +9,12 @@
 #include "base/feature_list.h"
 #include "base/metrics/field_trial_params.h"
 #include "chrome/browser/prerender/isolated/isolated_prerender_features.h"
+#include "chrome/common/chrome_features.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
+
+bool IsolatedPrerenderIsEnabled() {
+  return base::FeatureList::IsEnabled(features::kIsolatePrerenders);
+}
 
 base::Optional<GURL> IsolatedPrerenderProxyServer() {
   if (!base::FeatureList::IsEnabled(features::kIsolatedPrerenderUsesProxy))
@@ -19,4 +25,14 @@ base::Optional<GURL> IsolatedPrerenderProxyServer() {
   if (!url.is_valid() || !url.has_host() || !url.has_scheme())
     return base::nullopt;
   return url;
+}
+
+bool IsolatedPrerenderShouldReplaceDataReductionCustomProxy() {
+  bool replace =
+      data_reduction_proxy::params::IsIncludedInHoldbackFieldTrial() &&
+      IsolatedPrerenderIsEnabled() &&
+      IsolatedPrerenderProxyServer().has_value();
+  // TODO(robertogden): Remove this once all pieces are landed.
+  DCHECK(!replace);
+  return replace;
 }

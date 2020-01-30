@@ -160,6 +160,8 @@ float ScrollableArea::ScrollStep(ScrollGranularity granularity,
     case ScrollGranularity::kScrollByPixel:
     case ScrollGranularity::kScrollByPrecisePixel:
       return PixelStep(orientation);
+    case ScrollGranularity::kScrollByPercentage:
+      return PercentageStep(orientation);
     default:
       NOTREACHED();
       return 0.0f;
@@ -283,26 +285,6 @@ void ScrollableArea::ScrollBy(
   SetScrollOffset(GetScrollOffset() + delta, type, behavior);
 }
 
-void ScrollableArea::SetScrollOffsetSingleAxis(
-    ScrollbarOrientation orientation,
-    float offset,
-    mojom::blink::ScrollIntoViewParams::Type scroll_type,
-    mojom::blink::ScrollIntoViewParams::Behavior behavior) {
-  ScrollOffset new_offset;
-  if (orientation == kHorizontalScrollbar)
-    new_offset =
-        ScrollOffset(offset, GetScrollAnimator().CurrentOffset().Height());
-  else
-    new_offset =
-        ScrollOffset(GetScrollAnimator().CurrentOffset().Width(), offset);
-
-  // TODO(bokan): Note, this doesn't use the derived class versions since this
-  // method is currently used exclusively by code that adjusts the position by
-  // the scroll origin and the derived class versions differ on whether they
-  // take that into account or not.
-  ScrollableArea::SetScrollOffset(new_offset, scroll_type, behavior);
-}
-
 void ScrollableArea::ProgrammaticScrollHelper(
     const ScrollOffset& offset,
     mojom::blink::ScrollIntoViewParams::Behavior scroll_behavior,
@@ -325,7 +307,8 @@ void ScrollableArea::ProgrammaticScrollHelper(
   }
 
   if (scroll_behavior ==
-      mojom::blink::ScrollIntoViewParams::Behavior::kSmooth) {
+          mojom::blink::ScrollIntoViewParams::Behavior::kSmooth &&
+      ScrollAnimatorEnabled()) {
     GetProgrammaticScrollAnimator().AnimateToOffset(offset, is_sequenced_scroll,
                                                     std::move(callback));
   } else {
@@ -769,6 +752,14 @@ int ScrollableArea::DocumentStep(ScrollbarOrientation orientation) const {
 
 float ScrollableArea::PixelStep(ScrollbarOrientation) const {
   return 1;
+}
+
+float ScrollableArea::PercentageStep(ScrollbarOrientation orientation) const {
+  int percent_basis =
+      (orientation == ScrollbarOrientation::kHorizontalScrollbar)
+          ? VisibleWidth()
+          : VisibleHeight();
+  return static_cast<float>(percent_basis);
 }
 
 int ScrollableArea::VerticalScrollbarWidth(

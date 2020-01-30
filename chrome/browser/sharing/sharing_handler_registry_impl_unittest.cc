@@ -7,20 +7,11 @@
 
 #include <memory>
 
+#include "chrome/browser/sharing/mock_sharing_message_handler.h"
 #include "chrome/browser/sharing/sharing_device_registration.h"
-#include "chrome/browser/sharing/sharing_message_handler.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
-
-class FakeMessageHandler : public SharingMessageHandler {
- public:
-  FakeMessageHandler() = default;
-  ~FakeMessageHandler() override = default;
-
-  void OnMessage(chrome_browser_sharing::SharingMessage message,
-                 SharingMessageHandler::DoneCallback done_callback) override {}
-};
 
 class FakeSharingDeviceRegistration : public SharingDeviceRegistration {
  public:
@@ -85,7 +76,7 @@ TEST_F(SharingHandlerRegistryImplTest, SharedClipboard_AddRemoveManually) {
       chrome_browser_sharing::SharingMessage::kSharedClipboardMessage));
 
   handler_registry->RegisterSharingHandler(
-      std::make_unique<FakeMessageHandler>(),
+      std::make_unique<MockSharingMessageHandler>(),
       chrome_browser_sharing::SharingMessage::kSharedClipboardMessage);
   EXPECT_TRUE(handler_registry->GetSharingHandler(
       chrome_browser_sharing::SharingMessage::kSharedClipboardMessage));

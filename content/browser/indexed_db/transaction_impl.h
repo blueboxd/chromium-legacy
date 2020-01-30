@@ -58,8 +58,7 @@ class TransactionImpl : public blink::mojom::IDBTransaction {
   // Also returns whether there was any security failures reading the
   // filenames passed in |value| via the |security_policy_failure| variable.
   void CreateBlobInfos(blink::mojom::IDBValuePtr& value,
-                       std::vector<IndexedDBBlobInfo>* blob_infos,
-                       bool* security_policy_failure);
+                       std::vector<IndexedDBBlobInfo>* blob_infos);
 
   base::WeakPtr<IndexedDBDispatcherHost> dispatcher_host_;
   scoped_refptr<IndexedDBContextImpl> indexed_db_context_;

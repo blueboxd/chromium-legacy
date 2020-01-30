@@ -26,7 +26,6 @@
 <translation id="1031362278801463162">Ladataan esikatselua</translation>
 <translation id="1032605640136438169">Lue uudet ehdot</translation>
 <translation id="103279545524624934">Vapauta levytilaa, jotta voit käynnistää Android-sovelluksia.</translation>
-<translation id="1033343386521881354">Tulostuspalvelimelta löytyi yksi tulostin.</translation>
 <translation id="1033780634303702874">Käyttää sarjaporttilaitteitasi</translation>
 <translation id="1034942643314881546">Otetaan ADB käyttöön sovelluskuvituksen luomista varten</translation>
 <translation id="1036348656032585052">Poista käytöstä</translation>
@@ -34,7 +33,6 @@
 <translation id="1036982837258183574">Poistu koko näytön tilasta painikkeella |<ph name="ACCELERATOR" />|.</translation>
 <translation id="1038168778161626396">Vain salakoodaus</translation>
 <translation id="1039337018183941703">Virheellinen tai korruptoitunut tiedosto</translation>
-<translation id="1039850285407663109">Tämä on tuntematon tiedosto, joka voi olla vaarallinen. Harkitse sen skannausta ennen avaamista.</translation>
 <translation id="1041175011127912238">Sivu ei vastaa</translation>
 <translation id="1041263367839475438">Käytettävissä olevat laitteet</translation>
 <translation id="1042174272890264476"><ph name="SHORT_PRODUCT_NAME" /> sisältää sisäänrakennetun RLZ-kirjaston. RLZ tuottaa ei-yksilöivän tagin, jolla voidaan mitata tietyn kampanjan aiheuttamia hakuja ja tuotteen <ph name="SHORT_PRODUCT_NAME" /> käyttöä. <ph name="PRODUCT_NAME" /> näyttää ajoittain näitä tunnisteita Google-hakujen kyselyissä.</translation>
@@ -639,7 +637,6 @@
 <translation id="1858585891038687145">Luota tähän varmenteeseen ohjelmiston tekijöitä tunnistettaessa.</translation>
 <translation id="1861262398884155592">Tämä kansio on tyhjä</translation>
 <translation id="1863182668524159459">Sarjaportteja ei löytynyt</translation>
-<translation id="1863552924692672565"><ph name="FILE_NAME" /> on tuntematon tiedosto. Skannaa tiedosto riskien minimoimiseksi.</translation>
 <translation id="1864111464094315414">Kirjaudu</translation>
 <translation id="1864400682872660285">Viileä</translation>
 <translation id="1864454756846565995">C-tyypin USB-laite (takaportti)</translation>
@@ -4024,7 +4021,6 @@ Julkinen eksponentti (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bittiä):
 <translation id="6678717876183468697">Haun URL-osoite</translation>
 <translation id="6680442031740878064">Käytettävissä: <ph name="AVAILABLE_SPACE" /></translation>
 <translation id="6680650203439190394">Nopeus</translation>
-<translation id="6681301928961274620">Tulostuspalvelimelta ei löytynyt yhtään tulostinta.</translation>
 <translation id="6681668084120808868">Ota valokuva</translation>
 <translation id="6681964764822470072"><ph name="APP_NAME" /> poistetaan</translation>
 <translation id="668599234725812620">Avaa Google Play</translation>
@@ -5553,7 +5549,6 @@ Tallenna avaintiedosto suojattuun sijaintiin. Tarvitset sitä, jos haluat luoda 
 <translation id="8794025342371547160">Rajoitettu IP</translation>
 <translation id="879413103056696865">Kun hotspot on päällä, <ph name="PHONE_NAME" /> tekee seuraavaa:</translation>
 <translation id="8795916974678578410">Uusi ikkuna</translation>
-<translation id="8797086401386164142">Tulostinpalvelimelta löytyi <ph name="NUM_PRINTERS" /> tulostinta.</translation>
 <translation id="8797459392481275117">Älä käännä tätä sivustoa</translation>
 <translation id="8798099450830957504">Oletus</translation>
 <translation id="8798441408945964110">Palveluntarjoajan nimi</translation>

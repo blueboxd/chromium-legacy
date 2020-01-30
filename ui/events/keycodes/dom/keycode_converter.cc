@@ -29,9 +29,20 @@ namespace {
 #elif defined(OS_ANDROID)
 #define DOM_CODE(usb, evdev, xkb, win, mac, code, id) \
   { usb, evdev, code }
-#else
+#elif defined(OS_FUCHSIA)
+// TODO(https://bugs.fuchsia.com/23982): Fuchsia currently delivers events
+// with a USB Code but no Page specified, so only map |native_keycode| for
+// Keyboard Usage Page codes, for now.
+inline constexpr uint32_t CodeIfOnKeyboardPage(uint32_t usage) {
+  constexpr uint32_t kUsbHidKeyboardPageBase = 0x070000;
+  if ((usage & 0xffff0000) == kUsbHidKeyboardPageBase)
+    return usage & 0xffff;
+  return 0;
+}
 #define DOM_CODE(usb, evdev, xkb, win, mac, code, id) \
-  { usb, 0, code }
+  { usb, CodeIfOnKeyboardPage(usb), code }
+#else
+#error Unsupported platform
 #endif
 #define DOM_CODE_DECLARATION const KeycodeMapEntry kDomCodeMappings[] =
 #include "ui/events/keycodes/dom/dom_code_data.inc"
@@ -258,8 +269,6 @@ uint32_t KeycodeConverter::InvalidUsbKeycode() {
 // static
 int KeycodeConverter::UsbKeycodeToNativeKeycode(uint32_t usb_keycode) {
   // Deal with some special-cases that don't fit the 1:1 mapping.
-  if (usb_keycode == 0x070032) // non-US hash.
-    usb_keycode = 0x070031; // US backslash.
 #if defined(OS_MACOSX)
   if (usb_keycode == 0x070046) // PrintScreen.
     usb_keycode = 0x070068; // F13.

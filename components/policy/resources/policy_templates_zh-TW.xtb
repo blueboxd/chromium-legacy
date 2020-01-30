@@ -4769,15 +4769,6 @@
 <translation id="8757552286070680084">設定 Wilco DTC</translation>
 <translation id="8758831693895931466">啟用雲端管理強制註冊設定</translation>
 <translation id="8759829385824155666">允許的 Kerberos 加密類型</translation>
-<translation id="87635449713742708">這項政策會強制網路程式碼在瀏覽器程序中執行。
-
-      這項政策預設為停用；如果你啟用政策，當網路程序採用沙箱機制時，使用者就可能會遇到安全性問題。
-
-      設置這項政策是為了讓企業能移轉到不需掛接網路 API 的第三方軟體。建議你在 LSP 和 Win32 API 修補程式使用 Proxy 伺服器。
-
-      如果不設定這項政策，網路程式碼依預設會在瀏覽器程序外執行。
-
-      這項政策將在 <ph name="PRODUCT_NAME" /> 第 82 版中移除。</translation>
 <translation id="8764119899999036911">指定是否要根據標準 DNS 名稱或輸入的原始名稱來產生 Kerberos SPN。如果啟用這項設定，系統會略過 CNAME 查詢，並且使用先前輸入的伺服器名稱。如果你停用或未調整這項設定，伺服器的標準名稱會透過 CNAME 查詢決定。</translation>
 <translation id="8764477907716150749">這項政策僅供 <ph name="PRODUCT_NAME" /> 內部使用。</translation>
 <translation id="8777369558049831576">在外部通訊協定對話方塊中顯示「一律開啟」核取方塊。</translation>

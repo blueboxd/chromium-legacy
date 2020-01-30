@@ -121,6 +121,12 @@ ScopedEvent Event::Deserialize(const void* buffer, size_t num_bytes) {
       return ObserveClosureEvent::Deserialize(port_name, header + 1, data_size);
     case Type::kMergePort:
       return MergePortEvent::Deserialize(port_name, header + 1, data_size);
+    case Type::kUserMessageReadAckRequest:
+      return UserMessageReadAckRequestEvent::Deserialize(port_name, header + 1,
+                                                         data_size);
+    case Type::kUserMessageReadAck:
+      return UserMessageReadAckEvent::Deserialize(port_name, header + 1,
+                                                  data_size);
     default:
       DVLOG(2) << "Ingoring unknown port event type: "
                << static_cast<uint32_t>(header->type);

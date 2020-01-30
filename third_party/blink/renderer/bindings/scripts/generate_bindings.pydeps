@@ -45,7 +45,6 @@ bind_gen/enumeration.py
 bind_gen/interface.py
 bind_gen/mako_renderer.py
 bind_gen/name_style.py
-bind_gen/output_file_list.py
 bind_gen/path_manager.py
 bind_gen/style_format.py
 bind_gen/union.py

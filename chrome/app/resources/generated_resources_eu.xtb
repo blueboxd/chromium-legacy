@@ -26,7 +26,6 @@
 <translation id="1031362278801463162">Aurrebista kargatzen</translation>
 <translation id="1032605640136438169">Irakurri baldintza berriak</translation>
 <translation id="103279545524624934">Egin tokia diskoan Android-erako aplikazioak abiarazteko.</translation>
-<translation id="1033343386521881354">Inprimagailu bat aurkitu da inprimatze-zerbitzarian.</translation>
 <translation id="1033780634303702874">Atzitu serieko gailuak</translation>
 <translation id="1034942643314881546">ADB gaitzen aplikazioen ilustrazioak egiteko</translation>
 <translation id="1036348656032585052">Desaktibatu</translation>
@@ -34,7 +33,6 @@
 <translation id="1036982837258183574">Pantaila osoko ikuspegitik irteteko, sakatu |<ph name="ACCELERATOR" />|</translation>
 <translation id="1038168778161626396">Zifratu soilik</translation>
 <translation id="1039337018183941703">Fitxategiak ez du balio edo hondatuta dago</translation>
-<translation id="1039850285407663109">Hautatutako fitxategia ezezaguna da eta baliteke arriskutsua izatea. Ireki aurretik, hura analizatzea gomendatzen dugu.</translation>
 <translation id="1041175011127912238">Orriak ez du erantzuten</translation>
 <translation id="1041263367839475438">Gailu erabilgarriak</translation>
 <translation id="1042174272890264476">Ordenagailuak <ph name="SHORT_PRODUCT_NAME" /> produktuaren RLZ liburutegia ere du integratuta. RLZ liburutegiak esklusiboa ez den eta pertsonalki identifikatu ezin zaitzakeen etiketa bat esleitzen du promozio-kanpaina jakin batek sortutako bilaketak eta <ph name="SHORT_PRODUCT_NAME" /> produktuaren erabilera neurtzeko. Etiketa horiek <ph name="PRODUCT_NAME" /> produktuko Google Bilaketa kontsultetan agertzen dira batzuetan.</translation>
@@ -639,7 +637,6 @@
 <translation id="1858585891038687145">Jo fidagarritzat software-egileak identifikatzeko ziurtagiri hau</translation>
 <translation id="1861262398884155592">Hutsik dago karpeta</translation>
 <translation id="1863182668524159459">Ez da aurkitu serie-atakarik</translation>
-<translation id="1863552924692672565"><ph name="FILE_NAME" /> ezezaguna da. Arriskua murrizteko, analizatu fitxategia.</translation>
 <translation id="1864111464094315414">Hasi saioa</translation>
 <translation id="1864400682872660285">Hotzagoa</translation>
 <translation id="1864454756846565995">USB-C gailua (atzealdeko ataka)</translation>
@@ -4025,7 +4022,6 @@ Kontu honen ezarpenak kudeatzeko, instalatu Family Link aplikazioa zure gailuan.
 <translation id="6678717876183468697">Kontsultaren URLa</translation>
 <translation id="6680442031740878064">Libre: <ph name="AVAILABLE_SPACE" /></translation>
 <translation id="6680650203439190394">Abiadura</translation>
-<translation id="6681301928961274620">Ez da aurkitu inprimagailurik inprimatze-zerbitzarian.</translation>
 <translation id="6681668084120808868">Atera argazkia</translation>
 <translation id="6681964764822470072">"<ph name="APP_NAME" />" desinstalatuko da.</translation>
 <translation id="668599234725812620">Ireki Google Play</translation>
@@ -5554,7 +5550,6 @@ Horrek ez die eragiten beste gailu batzuetako aplikazioei edo edukiei.</translat
 <translation id="8794025342371547160">IP murriztua</translation>
 <translation id="879413103056696865">Sare publikoa aktibatuta dagoen bitartean, <ph name="PHONE_NAME" /> telefonoak hau egingo du:</translation>
 <translation id="8795916974678578410">Leiho berria</translation>
-<translation id="8797086401386164142"><ph name="NUM_PRINTERS" /> inprimagailu aurkitu dira inprimatze-zerbitzarian.</translation>
 <translation id="8797459392481275117">Ez itzuli inoiz webgune hau</translation>
 <translation id="8798099450830957504">Lehenetsia</translation>
 <translation id="8798441408945964110">Hornitzailearen izena</translation>

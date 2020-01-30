@@ -47,14 +47,10 @@ def main():
     options, tasks = parse_options()
 
     dispatch_table = {
-        # IDL definitions
         'dictionary': bind_gen.generate_dictionaries,
         'enumeration': bind_gen.generate_enumerations,
         'interface': bind_gen.generate_interfaces,
         'union': bind_gen.generate_unions,
-
-        # GN settings
-        'generated_bindings_gni': bind_gen.update_generated_bindings_gni,
     }
 
     for task in tasks:

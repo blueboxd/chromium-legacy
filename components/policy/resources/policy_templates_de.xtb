@@ -4802,15 +4802,6 @@ Nutzer können diese Einstellung weder ändern noch überschreiben.</translation
 <translation id="8757552286070680084">Wilco DTC-Konfiguration</translation>
 <translation id="8758831693895931466">Erforderliche Registrierung für Cloud Management aktivieren</translation>
 <translation id="8759829385824155666">Erlaubte Kerberos-Verschlüsselungstypen</translation>
-<translation id="87635449713742708">Mit dieser Richtlinie wird erzwungen, dass der Netzwerkcode im Browserprozess ausgeführt wird.
-
-      Sie ist standardmäßig deaktiviert. Ist sie aktiviert, so ist der Nutzer nicht mehr vor den Sicherheitsproblemen geschützt, sobald der Netzwerkprozess in einer Sandbox ausgeführt wird.
-
-      Diese Richtlinie soll Unternehmen ermöglichen, zu Drittanbietersoftware zu migrieren, die nicht auf Hooking von Netzwerk-APIs angewiesen ist. Proxyserver werden anstelle von LSPs und Win32 API-Patching empfohlen.
-
-      Wenn diese Richtlinie nicht konfiguriert ist, wird der Netzwerkcode standardmäßig außerhalb des Browserprozesses ausgeführt.
-
-      Diese Richtlinie wird in <ph name="PRODUCT_NAME" /> 82 entfernt.</translation>
 <translation id="8764119899999036911">Gibt an, ob der generierte Kerberos-SPN auf dem kanonischen DNS-Namen oder dem ursprünglich eingegebenen Namen basiert. Wenn Sie diese Einstellung aktivieren, wird die CNAME-Suche übersprungen und der Servername so wie eingegeben verwendet. Sollten Sie die Einstellung deaktivieren oder nicht konfigurieren, wird der kanonische Name des Servers per CNAME-Suche ermittelt.</translation>
 <translation id="8764477907716150749">Diese Richtlinie ist zur internen Nutzung in <ph name="PRODUCT_NAME" /> vorgesehen.</translation>
 <translation id="8777369558049831576">Kästchen für "Immer öffnen" auf Bestätigungsaufforderung anzeigen</translation>

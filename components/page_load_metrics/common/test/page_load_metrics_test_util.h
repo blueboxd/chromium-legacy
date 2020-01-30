@@ -16,11 +16,12 @@
 void PopulateRequiredTimingFields(
     page_load_metrics::mojom::PageLoadTiming* inout_timing);
 
-// Helper that create a resource update mojo.
+// Helper that creates a resource update mojo.
 page_load_metrics::mojom::ResourceDataUpdatePtr CreateResource(
     bool was_cached,
     int64_t delta_bytes,
     int64_t encoded_body_length,
+    int64_t decoded_body_length,
     bool is_complete);
 
 // Helper that returns a sample resource data update using a variety of

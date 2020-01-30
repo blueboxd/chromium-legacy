@@ -46,6 +46,7 @@ class ViewAXPlatformNodeDelegate : public ViewAccessibility,
 #if defined(OS_MACOSX)
   void AnnounceText(const base::string16& text) override;
 #endif
+  void FireFocusAfterMenuClose() override;
 
   // ui::AXPlatformNodeDelegate
   const ui::AXNodeData& GetData() const override;

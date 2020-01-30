@@ -6,28 +6,10 @@
 
 #include "base/callback.h"
 #include "base/test/bind_test_util.h"
+#include "chrome/browser/sharing/mock_sharing_device_source.h"
 #include "components/sync_device_info/device_info.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-namespace {
-
-class MockSharingDeviceSource : public SharingDeviceSource {
- public:
-  MOCK_METHOD0(IsReady, bool());
-
-  MOCK_METHOD1(GetDeviceByGuid,
-               std::unique_ptr<syncer::DeviceInfo>(const std::string& guid));
-
-  MOCK_METHOD1(
-      GetDeviceCandidates,
-      std::vector<std::unique_ptr<syncer::DeviceInfo>>(
-          sync_pb::SharingSpecificFields::EnabledFeatures required_feature));
-
-  void MaybeRunReadyCallbacksForTesting() { MaybeRunReadyCallbacks(); }
-};
-
-}  // namespace
 
 TEST(SharingDeviceSourceTest, RunsCallbackImmediatelyIfReady) {
   MockSharingDeviceSource device_source;

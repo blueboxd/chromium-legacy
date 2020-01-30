@@ -39,6 +39,7 @@ class RealTimePolicyEngine {
   static bool CanPerformFullURLLookup(content::BrowserContext* browser_context);
 
   friend class SafeBrowsingService;
+  friend class SafeBrowsingUIHandler;
 
  private:
   // Is the feature to perform real-time URL lookup enabled?

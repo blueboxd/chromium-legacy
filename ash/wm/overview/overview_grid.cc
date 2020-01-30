@@ -1465,16 +1465,23 @@ int OverviewGrid::CalculateWidthAndMaybeSetUnclippedBounds(OverviewItem* item,
           screen_util::GetDisplayWorkAreaBoundsInScreenForActiveDeskContainer(
               root_window_)
               .size();
-      gfx::Size dragged_window_size = dragged_window->bounds().size();
-      // If the drag started from a different root window, |dragged_window| may
-      // not fit into the work area of |root_window_|. Then if |dragged_window|
-      // is dropped into this grid, |dragged_window| will shrink to fit into
-      // this work area. The drop target shall reflect that.
-      dragged_window_size.SetToMin(work_area_size);
-      grid_fill_mode = ScopedOverviewTransformWindow::GetWindowDimensionsType(
-          dragged_window_size);
-      target_size = ::ash::GetTargetBoundsInScreen(dragged_window).size();
-      target_size.SetToMin(gfx::SizeF(work_area_size));
+      if (WindowState::Get(dragged_window)->IsMaximized()) {
+        grid_fill_mode = ScopedOverviewTransformWindow::GetWindowDimensionsType(
+            work_area_size);
+        target_size = gfx::SizeF(work_area_size);
+      } else {
+        gfx::Size dragged_window_size = dragged_window->bounds().size();
+        // If the drag started from a different root window, |dragged_window|
+        // may not fit into the work area of |root_window_|. Then if
+        // |dragged_window| is dropped into this grid, |dragged_window| will
+        // shrink to fit into this work area. The drop target shall reflect
+        // that.
+        dragged_window_size.SetToMin(work_area_size);
+        grid_fill_mode = ScopedOverviewTransformWindow::GetWindowDimensionsType(
+            dragged_window_size);
+        target_size = ::ash::GetTargetBoundsInScreen(dragged_window).size();
+        target_size.SetToMin(gfx::SizeF(work_area_size));
+      }
       const gfx::SizeF inset_size(0, height - 2 * kWindowMargin);
       scale = ScopedOverviewTransformWindow::GetItemScale(
           target_size, inset_size,

@@ -14,11 +14,12 @@
 #include "base/test/task_environment.h"
 #include "chrome/browser/sharing/fake_device_info.h"
 #include "chrome/browser/sharing/features.h"
+#include "chrome/browser/sharing/mock_sharing_device_source.h"
+#include "chrome/browser/sharing/mock_sharing_message_sender.h"
 #include "chrome/browser/sharing/proto/sharing_message.pb.h"
 #include "chrome/browser/sharing/sharing_constants.h"
 #include "chrome/browser/sharing/sharing_device_registration.h"
 #include "chrome/browser/sharing/sharing_device_registration_result.h"
-#include "chrome/browser/sharing/sharing_device_source_sync.h"
 #include "chrome/browser/sharing/sharing_fcm_handler.h"
 #include "chrome/browser/sharing/sharing_fcm_sender.h"
 #include "chrome/browser/sharing/sharing_handler_registry.h"
@@ -90,25 +91,6 @@ class MockSharingFCMHandler : public SharingFCMHandler {
   MOCK_METHOD0(StopListening, void());
 };
 
-class MockSharingMessageSender : public SharingMessageSender {
- public:
-  MockSharingMessageSender()
-      : SharingMessageSender(
-            /*sync_prefs=*/nullptr,
-            /*local_device_info_provider=*/nullptr) {}
-  ~MockSharingMessageSender() override = default;
-
-  MOCK_METHOD5(SendMessageToDevice,
-               void(const syncer::DeviceInfo&,
-                    base::TimeDelta,
-                    chrome_browser_sharing::SharingMessage,
-                    DelegateType,
-                    ResponseCallback));
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockSharingMessageSender);
-};
-
 class FakeSharingDeviceRegistration : public SharingDeviceRegistration {
  public:
   FakeSharingDeviceRegistration(
@@ -151,19 +133,6 @@ class FakeSharingDeviceRegistration : public SharingDeviceRegistration {
   int unregistration_attempts_ = 0;
 };
 
-class MockSharingDeviceSource : public SharingDeviceSource {
- public:
-  bool IsReady() override { return true; }
-
-  MOCK_METHOD1(GetDeviceByGuid,
-               std::unique_ptr<syncer::DeviceInfo>(const std::string& guid));
-
-  MOCK_METHOD1(
-      GetDeviceCandidates,
-      std::vector<std::unique_ptr<syncer::DeviceInfo>>(
-          sync_pb::SharingSpecificFields::EnabledFeatures required_feature));
-};
-
 class SharingServiceTest : public testing::Test {
  public:
   SharingServiceTest() {
@@ -179,6 +148,8 @@ class SharingServiceTest : public testing::Test {
     device_source_ = new testing::NiceMock<MockSharingDeviceSource>();
     sharing_message_sender_ = new testing::NiceMock<MockSharingMessageSender>();
     SharingSyncPreference::RegisterProfilePrefs(prefs_.registry());
+
+    ON_CALL(*device_source_, IsReady()).WillByDefault(testing::Return(true));
   }
 
   ~SharingServiceTest() override {

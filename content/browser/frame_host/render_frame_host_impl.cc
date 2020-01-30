@@ -8150,6 +8150,11 @@ bool RenderFrameHostImpl::IsDOMContentLoaded() {
   return dom_content_loaded_;
 }
 
+void RenderFrameHostImpl::UpdateAdFrameType(
+    blink::mojom::AdFrameType ad_frame_type) {
+  frame_tree_node_->SetAdFrameType(ad_frame_type);
+}
+
 void RenderFrameHostImpl::IsClipboardPasteAllowed(
     const ui::ClipboardFormatType& data_type,
     const std::string& data,

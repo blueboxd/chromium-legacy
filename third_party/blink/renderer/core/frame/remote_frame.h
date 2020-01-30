@@ -102,6 +102,8 @@ class CORE_EXPORT RemoteFrame final : public Frame,
   void SetReplicatedOrigin(
       const scoped_refptr<const SecurityOrigin>& origin,
       bool is_potentially_trustworthy_unique_origin) override;
+  void SetReplicatedAdFrameType(
+      mojom::blink::AdFrameType ad_frame_type) override;
   void DispatchLoadEventForFrameOwner() override;
   void Collapse(bool collapsed) final;
   void Focus() override;
@@ -119,6 +121,8 @@ class CORE_EXPORT RemoteFrame final : public Frame,
   void ScrollRectToVisible(
       const WebRect& rect_to_scroll,
       mojom::blink::ScrollIntoViewParamsPtr params) override;
+  void DidStartLoading() override;
+  void DidStopLoading() override;
 
  private:
   // Frame protected overrides:

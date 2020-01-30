@@ -111,6 +111,9 @@ cr.define('safe_browsing', function() {
       addRTLookupResponse(result);
     });
 
+    cr.sendWithPromise('getRTLookupExperimentEnabled', [])
+        .then((enabled) => addRTLookupExperimentEnabled(enabled));
+
     cr.sendWithPromise('getLogMessages', []).then((logMessages) => {
       logMessages.forEach(function(message) {
         addLogMessage(message);
@@ -270,6 +273,11 @@ cr.define('safe_browsing', function() {
 
   function addRTLookupResponse(result) {
     addResultToTable('rt-lookup-ping-list', result, 1);
+  }
+
+  function addRTLookupExperimentEnabled(enabled) {
+    const enabledFormatted = '<b>RT Lookup Experiment Enabled:</b> ' + enabled;
+    $('rt-lookup-experiment-enabled').innerHTML = enabledFormatted;
   }
 
   function addLogMessage(result) {

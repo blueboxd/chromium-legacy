@@ -26,7 +26,6 @@
 <translation id="1031362278801463162">Läser in förhandsgranskning</translation>
 <translation id="1032605640136438169">Läs de nya villkoren</translation>
 <translation id="103279545524624934">Frigör diskutrymme om du vill starta Android-appar.</translation>
-<translation id="1033343386521881354">1 skrivare från utskriftsservern hittades.</translation>
 <translation id="1033780634303702874">Få åtkomst till dina seriella enheter</translation>
 <translation id="1034942643314881546">Aktiverar adb för att skapa illustration av appar</translation>
 <translation id="1036348656032585052">Inaktivera</translation>
@@ -34,7 +33,6 @@
 <translation id="1036982837258183574">Tryck på |<ph name="ACCELERATOR" />| för att stänga helskärmen</translation>
 <translation id="1038168778161626396">Endast chiffrering</translation>
 <translation id="1039337018183941703">Ogiltig eller skadad fil</translation>
-<translation id="1039850285407663109">Den valda filen är okänd och kan vara skadlig. Vi rekommenderar att du genomsöker filen innan du öppnar den.</translation>
 <translation id="1041175011127912238">Sidan svarar inte</translation>
 <translation id="1041263367839475438">Tillgängliga enheter</translation>
 <translation id="1042174272890264476">Datorn har även RLZ-biblioteket för <ph name="SHORT_PRODUCT_NAME" /> inbyggt. RLZ tilldelar en icke-unik, icke-personligt identifierbar tagg för att mäta antalet sökningar och användningen av <ph name="SHORT_PRODUCT_NAME" /> som drivs av en viss reklamkampanj. Dessa etiketter visas ibland vid sökningar på Google i <ph name="PRODUCT_NAME" />.</translation>
@@ -639,7 +637,6 @@
 <translation id="1858585891038687145">Lita på det här certifikatet för identifiering av programskapare</translation>
 <translation id="1861262398884155592">Mappen är tom</translation>
 <translation id="1863182668524159459">Ingen serieport hittades.</translation>
-<translation id="1863552924692672565"><ph name="FILE_NAME" /> är okänd. Genomsök filen för att minska skaderisken.</translation>
 <translation id="1864111464094315414">Inloggning</translation>
 <translation id="1864400682872660285">Kallare</translation>
 <translation id="1864454756846565995">USB-C-enhet (bakre port)</translation>
@@ -4025,7 +4022,6 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="6678717876183468697">Frågewebbadress</translation>
 <translation id="6680442031740878064">Tillgängligt: <ph name="AVAILABLE_SPACE" /></translation>
 <translation id="6680650203439190394">Hastighet</translation>
-<translation id="6681301928961274620">Inga skrivare från utskriftsservern hittades.</translation>
 <translation id="6681668084120808868">Ta foto</translation>
 <translation id="6681964764822470072"><ph name="APP_NAME" /> avinstalleras.</translation>
 <translation id="668599234725812620">Öppna Google Play</translation>
@@ -5555,7 +5551,6 @@ Spara nyckelfilen på ett säkert ställe. Den behövs om du ska skapa nya versi
 <translation id="8794025342371547160">Begränsad IP</translation>
 <translation id="879413103056696865">När den trådlösa surfzonen är aktiverad sker följande i <ph name="PHONE_NAME" />:</translation>
 <translation id="8795916974678578410">Nytt fönster</translation>
-<translation id="8797086401386164142"><ph name="NUM_PRINTERS" /> skrivare från utskriftsservern hittades.</translation>
 <translation id="8797459392481275117">Översätt aldrig den här webbplatsen</translation>
 <translation id="8798099450830957504">Standard</translation>
 <translation id="8798441408945964110">Leverantörens namn</translation>

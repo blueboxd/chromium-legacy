@@ -26,7 +26,6 @@
 <translation id="1031362278801463162">Inapakia nakala ya kuchungulia</translation>
 <translation id="1032605640136438169">Tafadhali pitia Sheria na Masharti mapya</translation>
 <translation id="103279545524624934">Futa maudhui katika hifadhi ya diski ili ufungue programu za Android.</translation>
-<translation id="1033343386521881354">Imepata printa moja kutoka seva ya kuchapisha.</translation>
 <translation id="1033780634303702874">Fikia vifaa vyako tambulishi</translation>
 <translation id="1034942643314881546">Inawasha ADB ili kuweka michoro ya programu</translation>
 <translation id="1036348656032585052">Zima</translation>
@@ -34,7 +33,6 @@
 <translation id="1036982837258183574">Bonyeza |<ph name="ACCELERATOR" />| ili uondoke kwenye skrini nzima</translation>
 <translation id="1038168778161626396">Usimabji Tu</translation>
 <translation id="1039337018183941703">Faili si sahihi au imeharibika</translation>
-<translation id="1039850285407663109">Faili iliyochaguliwa haijulikani na huenda ni hatari. Tunakushauri uchanganue kabla ya kuifungua.</translation>
 <translation id="1041175011127912238">Ukurasa huu haufanyi kazi</translation>
 <translation id="1041263367839475438">Vifaa vinavyopatikana</translation>
 <translation id="1042174272890264476">Kompyuta yako pia huja na maktaba ya <ph name="SHORT_PRODUCT_NAME" /> ya RLZ iliyojengewa ndani. RLZ hutoa lebo isiyo ya kipekee, isiyotambulika kibinafsi ili kupima utafutaji na matumizi ya <ph name="SHORT_PRODUCT_NAME" />  yanayoendeshwa na kampeni husika ya ukwezaji. Lebo hizi wakati mwingine hutokea katika hoja za Huduma ya Tafuta na Google katika <ph name="PRODUCT_NAME" />.</translation>
@@ -636,7 +634,6 @@
 <translation id="1858585891038687145">Amini cheti hiki kwa kutambua watengenezaji programu</translation>
 <translation id="1861262398884155592">Folda hii haina chochote</translation>
 <translation id="1863182668524159459">Haikupata milango yoyote ya kuingiza</translation>
-<translation id="1863552924692672565"><ph name="FILE_NAME" /> haijulikani. Changanua faili ili upunguze hatari.</translation>
 <translation id="1864111464094315414">Ingia</translation>
 <translation id="1864400682872660285">Isiyo angavu</translation>
 <translation id="1864454756846565995">Kifaa cha USB-C (mlango wa nyuma)</translation>
@@ -4020,7 +4017,6 @@ Ungependa kuanza <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="6678717876183468697">URL ya Hoja</translation>
 <translation id="6680442031740878064">Nafasi inayopatikana: <ph name="AVAILABLE_SPACE" /></translation>
 <translation id="6680650203439190394">Kadiria</translation>
-<translation id="6681301928961274620">Haikupata printa zozote kwenye seva ya kuchapisha.</translation>
 <translation id="6681668084120808868">Piga picha</translation>
 <translation id="6681964764822470072">"<ph name="APP_NAME" />" itasakinishwa.</translation>
 <translation id="668599234725812620">Fungua Google Play</translation>
@@ -5552,7 +5548,6 @@ Sidhani tovuti hii inapaswa kuzuiwa!</translation>
 <translation id="8794025342371547160">IP Iliyodhibitiwa</translation>
 <translation id="879413103056696865">Mtandaopepe wako ukiwa umewashwa, kifaa chako cha <ph name="PHONE_NAME" />:</translation>
 <translation id="8795916974678578410">Dirisha Jipya</translation>
-<translation id="8797086401386164142">Imepata printa <ph name="NUM_PRINTERS" /> kwenye seva ya kuchapisha.</translation>
 <translation id="8797459392481275117">Usitafsiri Tovuti Hii Kamwe</translation>
 <translation id="8798099450830957504">Chaguomsingi</translation>
 <translation id="8798441408945964110">Jina la mtoa huduma</translation>

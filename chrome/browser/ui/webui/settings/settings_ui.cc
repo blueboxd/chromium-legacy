@@ -121,12 +121,13 @@
 #include "chrome/browser/ui/webui/settings/printing_handler.h"
 #endif
 
+namespace settings {
+
 #if !BUILDFLAG(OPTIMIZE_WEBUI)
 constexpr char kGeneratedPath[] =
     "@out_folder@/gen/chrome/browser/resources/settings/";
 #endif
 
-namespace settings {
 // static
 void SettingsUI::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {

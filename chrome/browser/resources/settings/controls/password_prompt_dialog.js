@@ -19,9 +19,6 @@
  * </settings-password-prompt-dialog>
  */
 
-(function() {
-'use strict';
-
 Polymer({
   is: 'settings-password-prompt-dialog',
 
@@ -68,7 +65,7 @@ Polymer({
     /**
      * Interface for chrome.quickUnlockPrivate calls. May be overridden by
      * tests.
-     * @type {QuickUnlockPrivate}
+     * @type {Object}
      */
     quickUnlockPrivate: {type: Object, value: chrome.quickUnlockPrivate},
 
@@ -81,7 +78,7 @@ Polymer({
 
   /** @return {!CrInputElement} */
   get passwordInput() {
-    return this.$.passwordInput;
+    return /** @type {!CrInputElement} */ (this.$.passwordInput);
   },
 
   /** @override */
@@ -167,4 +164,3 @@ Polymer({
         this.inputValue_;
   },
 });
-})();

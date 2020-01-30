@@ -2,6 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// clang-format off
+// #import {assert} from 'chrome://resources/js/assert.m.js';
+// #import {CrPolicyPrefBehavior} from 'chrome://resources/cr_elements/policy/cr_policy_pref_behavior.m.js';
+// #import {PrefControlBehavior} from './pref_control_behavior.m.js';
+// clang-format on
+
 /**
  * @fileoverview
  * A behavior to help controls that handle a boolean preference, such as
@@ -131,7 +137,7 @@ const SettingsBooleanControlBehaviorImpl = {
 };
 
 /** @polymerBehavior */
-const SettingsBooleanControlBehavior = [
+/* #export */ const SettingsBooleanControlBehavior = [
   CrPolicyPrefBehavior,
   PrefControlBehavior,
   SettingsBooleanControlBehaviorImpl,

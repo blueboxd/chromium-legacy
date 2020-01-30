@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// #import {assert, assertNotReached} from 'chrome://resources/js/assert.m.js';
+
 cr.define('settings', function() {
   /**
    * @typedef {{
@@ -9,10 +11,10 @@ cr.define('settings', function() {
    *   ADVANCED: (settings.Route|undefined),
    * }}
    */
-  let MinimumRoutes;
+  /* #export */ let MinimumRoutes;
 
   /** Class for navigable routes. */
-  class Route {
+  /* #export */ class Route {
     /** @param {string} path */
     constructor(path) {
       /** @type {string} */
@@ -114,7 +116,7 @@ cr.define('settings', function() {
   /** @type {?settings.Router} */
   let routerInstance = null;
 
-  class Router {
+  /* #export */ class Router {
     /** @return {!settings.Router} The singleton instance. */
     static getInstance() {
       return assert(routerInstance);
@@ -340,7 +342,7 @@ cr.define('settings', function() {
   }
 
   /** @polymerBehavior */
-  const RouteObserverBehavior = {
+  /* #export */ const RouteObserverBehavior = {
     /** @override */
     attached() {
       routerInstance.addObserver(this);

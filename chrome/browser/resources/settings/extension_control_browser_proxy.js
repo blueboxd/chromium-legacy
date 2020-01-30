@@ -2,9 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// #import {addSingletonGetter} from 'chrome://resources/js/cr.m.js';
+
 cr.define('settings', function() {
   /** @interface */
-  class ExtensionControlBrowserProxy {
+  /* #export */ class ExtensionControlBrowserProxy {
     // TODO(dbeam): should be be returning !Promise<boolean> to indicate whether
     // it succeeded?
     /** @param {string} extensionId */
@@ -17,7 +19,7 @@ cr.define('settings', function() {
   /**
    * @implements {settings.ExtensionControlBrowserProxy}
    */
-  class ExtensionControlBrowserProxyImpl {
+  /* #export */ class ExtensionControlBrowserProxyImpl {
     /** @override */
     disableExtension(extensionId) {
       chrome.send('disableExtension', [extensionId]);

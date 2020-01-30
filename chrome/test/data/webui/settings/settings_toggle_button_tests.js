@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// clang-format off
+// #import 'chrome://settings/settings.js';
+// #import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+// clang-format on
+
 /** @fileoverview Suite of tests for settings-toggle-button. */
 suite('SettingsToggleButton', () => {
   /**
@@ -70,7 +75,7 @@ suite('SettingsToggleButton', () => {
   });
 
   test('fires a single change event per tap', () => {
-    counter = 0;
+    let counter = 0;
     testElement.addEventListener('change', () => {
       ++counter;
     });

@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//third_party/closure_compiler/compile_js.gni")
+import("//ui/webui/resources/tools/js_modulizer.gni")
 
 js_type_check("closure_compile") {
   deps = [
@@ -35,4 +36,34 @@ js_library("prefs_behavior") {
 }
 
 js_library("prefs_types") {
+}
+
+js_modulizer("modulize") {
+  input_files = [
+    "pref_util.js",
+    "prefs_types.js",
+  ]
+}
+
+js_type_check("closure_compile_module") {
+  is_polymer3 = true
+  deps = [
+    ":pref_util.m",
+    ":prefs_types.m",
+  ]
+}
+
+js_library("prefs_types.m") {
+  sources = [
+    "$root_gen_dir/chrome/browser/resources/settings/prefs/prefs_types.m.js",
+  ]
+  extra_deps = [ ":modulize" ]
+}
+
+js_library("pref_util.m") {
+  sources =
+      [ "$root_gen_dir/chrome/browser/resources/settings/prefs/pref_util.m.js" ]
+  deps = [ "//ui/webui/resources/js:assert.m" ]
+  externs_list = [ "$externs_path/settings_private.js" ]
+  extra_deps = [ ":modulize" ]
 }

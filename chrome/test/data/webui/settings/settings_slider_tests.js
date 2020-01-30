@@ -2,6 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// clang-format off
+// #import 'chrome://settings/settings.js';
+// #import {eventToPromise, flushTasks} from 'chrome://test/test_util.m.js';
+// #import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+// #import {keyDownOn, keyUpOn} from 'chrome://resources/polymer/v3_0/iron-test-helpers/mock-interactions.js';
+// clang-format on
+
 /** @fileoverview Suite of tests for settings-slider. */
 suite('SettingsSlider', function() {
   /** @type {!SettingsSliderElement} */
@@ -104,7 +111,7 @@ suite('SettingsSlider', function() {
   test('enforce value', function() {
     // Test that the indicator is not present until after the pref is
     // enforced.
-    indicator = slider.$$('cr-policy-pref-indicator');
+    let indicator = slider.$$('cr-policy-pref-indicator');
     assertFalse(!!indicator);
     slider.pref = {
       controlledBy: chrome.settingsPrivate.ControlledBy.DEVICE_POLICY,

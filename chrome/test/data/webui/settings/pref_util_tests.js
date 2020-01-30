@@ -2,6 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// clang-format off
+// #import {prefToString, stringToPrefValue} from 'chrome://settings/settings.js';
+// clang-format on
+
 /** @fileoverview Suite of tests for Settings.PrefUtil. */
 suite('PrefUtil', function() {
   const global = function() {

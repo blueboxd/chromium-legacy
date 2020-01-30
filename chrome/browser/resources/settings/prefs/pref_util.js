@@ -4,6 +4,8 @@
 
 /** @fileoverview Utility functions to help use prefs in Polymer controls. */
 
+// #import {assertNotReached} from 'chrome://resources/js/assert.m.js';
+
 // TODO(michaelpg): converge with other WebUI on capitalization. This is
 // consistent with Settings, but WebUI uses lower.underscore_case.
 cr.define('Settings.PrefUtil', function() {
@@ -13,7 +15,7 @@ cr.define('Settings.PrefUtil', function() {
    * @param {!chrome.settingsPrivate.PrefObject} pref
    * @return {boolean|number|string|undefined}
    */
-  function stringToPrefValue(value, pref) {
+  /* #export */ function stringToPrefValue(value, pref) {
     switch (pref.type) {
       case chrome.settingsPrivate.PrefType.BOOLEAN:
         return value == 'true';
@@ -39,7 +41,7 @@ cr.define('Settings.PrefUtil', function() {
    * @param {!chrome.settingsPrivate.PrefObject} pref
    * @return {string}
    */
-  function prefToString(pref) {
+  /* #export */ function prefToString(pref) {
     switch (pref.type) {
       case chrome.settingsPrivate.PrefType.BOOLEAN:
       case chrome.settingsPrivate.PrefType.NUMBER:

@@ -5,6 +5,7 @@
 import("//chrome/common/features.gni")
 import("//third_party/closure_compiler/compile_js.gni")
 import("//tools/grit/grit_rule.gni")
+import("//tools/polymer/polymer.gni")
 import("//ui/webui/resources/tools/js_modulizer.gni")
 import("//ui/webui/webui_features.gni")
 import("../optimize_webui.gni")
@@ -90,6 +91,11 @@ group("closure_compile") {
     "settings_ui:closure_compile",
     "site_settings:closure_compile",
     "site_settings_page:closure_compile",
+
+    # Polymer3 related targets
+    ":settings_module_resources",
+    "controls:closure_compile_module",
+    "prefs:closure_compile_module",
   ]
 
   if (is_win) {
@@ -194,9 +200,65 @@ js_library("search_settings") {
 # Polymer 3 related rules.
 
 group("polymer3_elements") {
-  public_deps = [ ":modulize" ]
+  public_deps = [
+    ":polymer3_elements_local",
+    "controls:polymer3_elements",
+    "prefs:modulize",
+  ]
+}
+
+group("polymer3_elements_local") {
+  public_deps = [
+    ":modulize",
+    ":settings_shared_css_module",
+    ":settings_vars_css_module",
+  ]
+}
+
+polymer_modulizer("settings_vars_css") {
+  js_file = "settings_vars_css.m.js"
+  html_file = "settings_vars_css.html"
+  html_type = "custom-style"
+}
+
+polymer_modulizer("settings_shared_css") {
+  js_file = "settings_shared_css.m.js"
+  html_file = "settings_shared_css.html"
+  html_type = "style-module"
 }
 
 js_modulizer("modulize") {
-  input_files = [ "search_settings.js" ]
+  input_files = [
+    "extension_control_browser_proxy.js",
+    "router.js",
+    "search_settings.js",
+  ]
+  namespace_rewrites = [
+    "cr.addSingletonGetter|addSingletonGetter",
+    "settings.ExtensionControlBrowserProxy|ExtensionControlBrowserProxy",
+    "settings.Route|Route",
+    "settings.MinimumRoutes|MinimumRoutes",
+  ]
+}
+
+js_type_check("settings_module_resources") {
+  is_polymer3 = true
+  deps = [
+    ":extension_control_browser_proxy.m",
+    ":router.m",
+  ]
+}
+
+js_library("extension_control_browser_proxy.m") {
+  sources = [ "$root_gen_dir/chrome/browser/resources/settings/extension_control_browser_proxy.m.js" ]
+  deps = [ "//ui/webui/resources/js:cr.m" ]
+  extra_deps = [ ":modulize" ]
+  externs_list = [ "$externs_path/chrome_send.js" ]
+}
+
+js_library("router.m") {
+  sources = [ "$root_gen_dir/chrome/browser/resources/settings/router.m.js" ]
+  deps = [ "//ui/webui/resources/js:assert.m" ]
+  extra_deps = [ ":modulize" ]
+  externs_list = [ "$externs_path/metrics_private.js" ]
 }

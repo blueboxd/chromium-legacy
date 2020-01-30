@@ -8,8 +8,6 @@
         <attr name="add_button_text" format="string"/>
         <attr name="row_spacing" format="dimension"/>
         <attr name="column_spacing" format="dimension"/>
-        <attr name="can_add_items" format="boolean"/>
-
         <attr name="layout_has_edit_button" format="boolean"/>
     </declare-styleable>
     <declare-styleable name="AssistantVerticalExpander">

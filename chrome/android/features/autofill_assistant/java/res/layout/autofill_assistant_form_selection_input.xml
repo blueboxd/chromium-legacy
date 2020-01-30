@@ -38,7 +38,6 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="20dp"
         android:layout_marginEnd="@dimen/autofill_assistant_bottombar_horizontal_spacing"
-        app:can_add_items="false"
         app:row_spacing="0dp"
         app:column_spacing="8dp"
         android:visibility="gone">

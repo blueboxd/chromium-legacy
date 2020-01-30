@@ -33,6 +33,7 @@ import android.support.test.filters.MediumTest;
 import android.view.View;
 import android.widget.FrameLayout;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -82,6 +83,13 @@ public class TabGroupPopupUiTest {
         FeatureUtilities.setTabGroupsAndroidEnabledForTesting(true);
         FeatureUtilities.setIsBottomToolbarEnabledForTesting(true);
         FeatureUtilities.setDuetTabStripIntegrationAndroidEnabledForTesting(true);
+    }
+
+    @After
+    public void tearDown() {
+        FeatureUtilities.setTabGroupsAndroidEnabledForTesting(null);
+        FeatureUtilities.setIsBottomToolbarEnabledForTesting(null);
+        FeatureUtilities.setDuetTabStripIntegrationAndroidEnabledForTesting(null);
     }
 
     @Test

@@ -20,6 +20,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 
+import org.junit.After;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
@@ -134,6 +135,11 @@ public class MessageCardProviderTest extends DummyUiActivityTestCase {
         mCoordinator = new MessageCardProviderCoordinator(getActivity(), mUiDismissActionProvider);
         mCoordinator.subscribeMessageService(mTestingService);
         mCoordinator.subscribeMessageService(mSuggestionService);
+    }
+
+    @After
+    public void tearDown() {
+        TabFeatureUtilities.setIsTabToGtsAnimationEnabledForTesting(null);
     }
 
     @Test

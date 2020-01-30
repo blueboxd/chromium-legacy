@@ -231,9 +231,11 @@ public abstract class AssistantCollectUserDataSection<T extends EditableOption> 
     }
 
     private AssistantChoiceList createChoiceList(@Nullable String addButtonText) {
-        AssistantChoiceList list = new AssistantChoiceList(mContext, null, addButtonText, 0,
+        AssistantChoiceList list = new AssistantChoiceList(mContext, /* attrs= */ null,
+                addButtonText, /* rowSpacingInPixels= */ 0,
                 mContext.getResources().getDimensionPixelSize(
-                        R.dimen.autofill_assistant_payment_request_column_spacing));
+                        R.dimen.autofill_assistant_payment_request_column_spacing),
+                /* layoutHasEditButton= */ true);
         int verticalPadding = mContext.getResources().getDimensionPixelSize(
                 R.dimen.autofill_assistant_payment_request_choice_top_bottom_padding);
         list.setPadding(mContext.getResources().getDimensionPixelSize(

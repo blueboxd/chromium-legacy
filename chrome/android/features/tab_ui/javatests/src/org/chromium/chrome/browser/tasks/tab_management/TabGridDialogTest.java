@@ -52,6 +52,7 @@ import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -108,6 +109,12 @@ public class TabGridDialogTest {
                                             .getTabModelSelector()
                                             .getTabModelFilterProvider()
                                             .getCurrentTabModelFilter()::isTabModelRestored);
+    }
+
+    @After
+    public void tearDown() {
+        FeatureUtilities.setGridTabSwitcherEnabledForTesting(null);
+        FeatureUtilities.setTabGroupsAndroidEnabledForTesting(null);
     }
 
     @Test

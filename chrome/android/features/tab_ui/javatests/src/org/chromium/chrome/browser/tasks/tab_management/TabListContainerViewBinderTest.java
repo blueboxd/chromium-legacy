@@ -265,6 +265,7 @@ public class TabListContainerViewBinderTest extends DummyUiActivityTestCase {
     @Override
     public void tearDownTest() throws Exception {
         mMCP.destroy();
+        FeatureUtilities.setGridTabSwitcherEnabledForTesting(null);
         super.tearDownTest();
     }
 }

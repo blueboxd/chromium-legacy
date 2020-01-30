@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.tasks.tab_management;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.MediumTest;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -67,6 +68,11 @@ public class TabSelectionEditorTest {
 
             mTabSelectionEditorController = tabSelectionEditorCoordinator.getController();
         });
+    }
+
+    @After
+    public void tearDown() {
+        FeatureUtilities.setTabGroupsAndroidEnabledForTesting(null);
     }
 
     @Test

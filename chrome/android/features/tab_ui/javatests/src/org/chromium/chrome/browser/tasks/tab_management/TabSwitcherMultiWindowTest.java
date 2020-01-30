@@ -23,6 +23,7 @@ import android.support.test.filters.MediumTest;
 import android.support.v7.widget.RecyclerView;
 import android.view.ViewGroup;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -76,6 +77,11 @@ public class TabSwitcherMultiWindowTest {
                         .getTabModelSelector()
                         .getTabModelFilterProvider()
                         .getCurrentTabModelFilter()::isTabModelRestored));
+    }
+
+    @After
+    public void tearDown() {
+        FeatureUtilities.setGridTabSwitcherEnabledForTesting(null);
     }
 
     @Test
